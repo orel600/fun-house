@@ -68,7 +68,7 @@ function botStep(god){
 }
 
 (async()=>{
-  const browser=await chromium.launch();
+  const browser=await chromium.launch(process.env.PW_CHANNEL?{channel:process.env.PW_CHANNEL}:{});  // ב-GitHub: ה-Chrome שכבר מותקן שם, בלי להוריד דפדפן
   const page=await browser.newPage({viewport:CFG.phone,deviceScaleFactor:1,isMobile:true,hasTouch:true});
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
