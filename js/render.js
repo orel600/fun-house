@@ -111,7 +111,7 @@ function render(){
   for(const b of eb){ctx.fillStyle=C.blood;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();ctx.fillStyle='#FFD9DB';ctx.beginPath();ctx.arc(b.x,b.y,b.r*0.45,0,7);ctx.fill()}
   for(const p of parts){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill()}
   ctx.globalAlpha=1;
-  ctx.textAlign='center';ctx.direction='rtl';
+  ctx.textAlign='center';ctx.direction=DIR;
   for(const f of floats){ctx.globalAlpha=Math.min(1,f.life*2);ctx.font='800 '+f.size+'px Heebo, system-ui, sans-serif';ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y)}
   ctx.globalAlpha=1;
   // screen space
@@ -130,12 +130,12 @@ function hud(){
   if(!P)return;
   $('hp').style.width=(100*P.hp/P.maxHp)+'%';
   $('xp').style.width=(100*P.xp/P.next)+'%';
-  const key=fmt(S.t)+'|'+P.level+'|'+(S.boss?1:fmt(S.nextBoss-S.t));
-  if(key!==lastHud){lastHud=key;$('clock').textContent=fmt(S.t);$('lvl').textContent='רמה '+P.level;
-    $('bossin').textContent=S.boss?'בוס בזירה':'בוס בעוד '+fmt(S.nextBoss-S.t)}
+  const key=LANG+'|'+fmt(S.t)+'|'+P.level+'|'+(S.boss?1:fmt(S.nextBoss-S.t));
+  if(key!==lastHud){lastHud=key;$('clock').textContent=fmt(S.t);$('lvl').textContent=T('level',P.level);
+    $('bossin').textContent=S.boss?T('bossHere'):T('bossIn',fmt(S.nextBoss-S.t))}
   const bb=$('bossbar');
   if(S.boss){bb.hidden=false;$('bossnm').textContent=S.boss.name+' · '+S.boss.title;
-    const wk=$('bossweak');wk.textContent='חלש ל'+(S.boss.weak==='sword'?'חרב':'קשת');wk.style.color=S.boss.weak==='sword'?C.ember:C.tide;
+    const wk=$('bossweak');wk.textContent=T('weak.'+S.boss.weak);wk.style.color=S.boss.weak==='sword'?C.ember:C.tide;
     $('bossfill').style.width=(100*Math.max(0,S.boss.hp)/S.boss.max)+'%';
     $('ragetrack').hidden=S.boss.rage<0.02;$('ragefill').style.width=(100*S.boss.rage)+'%'}
   else bb.hidden=true;

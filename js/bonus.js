@@ -8,9 +8,9 @@ const BONUS={
   bombBase:55, bombBossShare:0.35,                        // הפצצה: נזק לפי העוצמה, לבוס רק חלק
   powerTime:8, powerDmg:1.6, powerSpeed:1.25              // באף זמני
 };
-const PICKS={
-  bomb:{name:'פצצה',col:'#FF8A3D'},
-  power:{name:'כוח',col:'#F4C74F'}
+const PICKS={   // הטקסטים שלהם ב-lang.js
+  bomb:{col:'#FF8A3D'},
+  power:{col:'#F4C74F'}
 };
 
 function bonusReset(){
@@ -27,10 +27,10 @@ function bonusUpdate(dt){
   if(bn.door){
     bn.door.life-=dt;
     if(Math.hypot(P.x-bn.door.x,P.y-bn.door.y)<30){enterRoom(bn.door);bn.door=null;bn.doorT=rand(...BONUS.doorEvery);return}
-    if(bn.door.life<=0){bn.door=null;bn.doorT=rand(...BONUS.doorEvery);floatText(P.x,P.y-40,'הדלת נסגרה',C.dim,14)}
+    if(bn.door.life<=0){bn.door=null;bn.doorT=rand(...BONUS.doorEvery);floatText(P.x,P.y-40,T('doorClosed'),C.dim,14)}
   }else if(!S.boss){
     bn.doorT-=dt;
-    if(bn.doorT<=0){const a=rand(0,6.28),d=rand(160,220);bn.door={x:P.x+Math.cos(a)*d,y:P.y+Math.sin(a)*d,life:BONUS.doorLife};banner('דלת זהב נפתחה',C.gold)}
+    if(bn.doorT<=0){const a=rand(0,6.28),d=rand(160,220);bn.door={x:P.x+Math.cos(a)*d,y:P.y+Math.sin(a)*d,life:BONUS.doorLife};banner(T('doorOpen'),C.gold)}
   }
   // פריטים במקומות קשים
   bn.pickT-=dt;
@@ -61,9 +61,9 @@ function usePick(k){
       damage(e,e.isBoss?base*BONUS.bombBossShare:base,'bomb',Math.atan2(e.y-k.y,e.x-k.x));
     }
     S.bn.blasts.push({x:k.x,y:k.y,t:0});S.shake=Math.max(S.shake,12);S.hitstop=0.08;
-    banner('בום',PICKS.bomb.col);
+    banner(T('boom'),PICKS.bomb.col);
   }else{
-    P.power=BONUS.powerTime;sparks(P.x,P.y-8,C.gold,18,200);banner('כוח: נזק ומהירות',C.gold);
+    P.power=BONUS.powerTime;sparks(P.x,P.y-8,C.gold,18,200);banner(T('powerUp'),C.gold);
   }
 }
 
@@ -75,7 +75,7 @@ function enterRoom(door){
   if(Math.random()<BONUS.trapChance)for(let i=0;i<3;i++)saws.push({a:i*2.094,r:150});
   S.room={t:BONUS.roomTime,back:{x:door.x,y:door.y},cx,cy,coins,saws,got:0};
   eb=[];mines=[];P.x=cx;P.y=cy;S.cam.x=cx;S.cam.y=cy;
-  banner(saws.length?'חדר בונוס · זהירות, מסורים':'חדר בונוס · אספו מהר',C.gold);
+  banner(T(saws.length?'roomSaws':'roomGo'),C.gold);
 }
 function roomUpdate(dt){
   const R=S.room;
@@ -99,7 +99,7 @@ function roomUpdate(dt){
 function exitRoom(){
   const R=S.room;S.room=null;
   P.x=R.back.x;P.y=R.back.y;S.cam.x=P.x;S.cam.y=P.y;P.inv=1.2;
-  banner('יצאת עם '+R.got+' מטבעות',C.gold);
+  banner(T('roomOut',R.got),C.gold);
 }
 
 /* ---- ציור ---- */
@@ -138,9 +138,9 @@ function drawBonusWorld(){
 function drawBonusScreen(ox,oy){
   const bn=S.bn;
   if(S.room){
-    ctx.textAlign='center';ctx.direction='rtl';ctx.font='400 30px "Secular One", Heebo, sans-serif';
+    ctx.textAlign='center';ctx.direction=DIR;ctx.font='400 30px "Secular One", Heebo, sans-serif';
     ctx.fillStyle=C.gold;ctx.fillText(Math.ceil(S.room.t)+'',W/2,150);
-    ctx.font='800 14px Heebo, sans-serif';ctx.fillStyle=C.chalk;ctx.fillText('מטבעות: '+S.room.got,W/2,174);
+    ctx.font='800 14px Heebo, sans-serif';ctx.fillStyle=C.chalk;ctx.fillText(T('roomCoins',S.room.got),W/2,174);
     return;
   }
   for(const k of bn.picks)edgeArrow(k.x+ox,k.y+oy,PICKS[k.type].col);

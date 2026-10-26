@@ -12,7 +12,8 @@ body{margin:0}
 html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--chalk);font-family:var(--body);
   overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
-.hud{position:fixed;top:0;left:0;right:0;direction:rtl;pointer-events:none;z-index:2;
+/* הכיוון (ימין לשמאל או שמאל לימין) מגיע מ-<html dir>, שנקבע לפי השפה ב-lang.js */
+.hud{position:fixed;top:0;left:0;right:0;pointer-events:none;z-index:2;
   padding:calc(env(safe-area-inset-top,0px) + 10px) calc(env(safe-area-inset-right,0px) + 14px) 0 calc(env(safe-area-inset-left,0px) + 14px)}
 .xpbar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
 .xpfill{height:100%;width:0;background:var(--gold);transition:width .15s}
@@ -21,7 +22,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .hpfill{height:100%;width:100%;background:var(--blood);transition:width .12s}
 .clock{text-align:center;font-family:var(--display);font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
 .clock small{display:block;font-family:var(--body);font-size:11px;color:var(--dim);margin-top:3px;font-weight:700}
-.lvl{flex:0 1 38%;text-align:left;font-weight:800;font-size:14px;letter-spacing:.02em}
+.lvl{flex:0 1 38%;text-align:end;font-weight:800;font-size:14px;letter-spacing:.02em}
 .bossbar{margin-top:10px}
 .bossname{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px}
 .bossname em{font-style:normal;color:var(--dim);font-weight:400}
@@ -37,14 +38,19 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .swap.hint{animation:pulse .6s ease-in-out infinite alternate}
 @keyframes pulse{to{transform:scale(1.12);box-shadow:0 0 0 10px rgba(236,231,220,.12)}}
 .banner{position:fixed;z-index:3;left:0;right:0;top:32%;text-align:center;font-family:var(--display);font-size:28px;
-  pointer-events:none;opacity:0;transition:opacity .25s;direction:rtl;padding-inline:16px;text-shadow:0 2px 0 #0008}
+  pointer-events:none;opacity:0;transition:opacity .25s;padding-inline:16px;text-shadow:0 2px 0 #0008}
 .banner.on{opacity:1}
-.ov{position:fixed;inset:0;z-index:5;display:grid;place-items:center;direction:rtl;background:rgba(10,12,20,.8);backdrop-filter:blur(3px);
+.ov{position:fixed;inset:0;z-index:5;display:grid;place-items:center;background:rgba(10,12,20,.8);backdrop-filter:blur(3px);
   padding:calc(env(safe-area-inset-top,0px) + 16px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
 .panel{width:min(420px,100%);display:flex;flex-direction:column;gap:14px}
 h1,h2{font-family:var(--display);font-weight:400;margin:0;line-height:1.05;text-wrap:balance}
 h1{font-size:46px} h2{font-size:30px}
 .sub{color:var(--dim);font-size:14px;margin:0}
+/* מתג השפה במסך הפתיחה */
+.langs{display:flex;gap:6px;justify-content:flex-end}
+.lang{appearance:none;border:1px solid var(--line);background:transparent;color:var(--dim);border-radius:999px;padding:5px 12px;font:700 13px var(--body);cursor:pointer}
+.lang[aria-pressed="true"]{background:var(--chalk);border-color:var(--chalk);color:var(--ink)}
+.lang:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:15px;line-height:1.45}
 .rules li{padding-inline-start:16px;position:relative}
 .rules li::before{content:"";position:absolute;inset-inline-start:0;top:.6em;width:6px;height:6px;border-radius:50%;background:var(--chalk)}
@@ -52,7 +58,7 @@ h1{font-size:46px} h2{font-size:30px}
 .go{appearance:none;border:0;border-radius:14px;padding:15px;font:800 18px var(--body);background:var(--chalk);color:var(--ink);cursor:pointer}
 .go:focus-visible,.card:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 .cards{display:flex;flex-direction:column;gap:10px}
-.card{appearance:none;text-align:right;border:1px solid var(--line);border-inline-start:5px solid var(--dim);background:var(--panel);color:var(--chalk);
+.card{appearance:none;text-align:start;border:1px solid var(--line);border-inline-start:5px solid var(--dim);background:var(--panel);color:var(--chalk);
   border-radius:12px;padding:13px 14px;display:flex;flex-direction:column;gap:3px;font:400 14px var(--body);cursor:pointer}
 .card b{font-size:17px}
 .card .tag{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--dim)}

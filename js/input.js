@@ -14,3 +14,4 @@ addEventListener('blur',()=>{for(const k in keys)keys[k]=false;joy=null});
 function startRun(){reset();S.mode='play';['ovStart','ovOver','ovLevel','ovBoss'].forEach(id=>$(id).hidden=true)}
 $('startBtn').onclick=startRun;$('againBtn').onclick=startRun;
 $('fightBtn').onclick=()=>{$('ovBoss').hidden=true;S.mode='play';banner(S.boss?S.boss.name:'',C.lilac)};
+for(const b of document.querySelectorAll('[data-lang]'))b.onclick=()=>{setLang(b.dataset.lang);showLang()};

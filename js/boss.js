@@ -3,10 +3,10 @@ function makeBoss(){
   const t=P.track;const fav=t.sword>=t.gun?'sword':'gun',other=fav==='sword'?'gun':'sword';
   const mobile=t.move/(t.move+t.still+0.001)>0.65;
   const w={ring:1,spiral:1,aimed:1,charge:1,shields:1,wisps:1,shock:1,mines:1};const learned=[];
-  if(fav==='sword'){w.shock+=3;w.wisps+=3;learned.push('נלחמת בעיקר עם החרב, אז השריון שלו מקהה להבים.')}
-  else{w.charge+=3;w.shields+=3;learned.push('ירית בעיקר חצים מרחוק, אז השריון שלו בולע חצים.')}
-  if(mobile){w.spiral+=3;w.ring+=1;learned.push('אתה כל הזמן בתנועה, אז הוא ממלא את האוויר בספירלות.')}
-  else{w.mines+=3;w.aimed+=2;learned.push('אתה נוטה לעמוד במקום, אז הוא שותל מוקשים מתחתיך.')}
+  if(fav==='sword'){w.shock+=3;w.wisps+=3;learned.push(T('learn.sword'))}
+  else{w.charge+=3;w.shields+=3;learned.push(T('learn.gun'))}
+  if(mobile){w.spiral+=3;w.ring+=1;learned.push(T('learn.mobile'))}
+  else{w.mines+=3;w.aimed+=2;learned.push(T('learn.still'))}
   const ks=Object.keys(w),pats=[];
   while(pats.length<3){
     const c=ks.filter(k=>!pats.includes(k));let tot=c.reduce((s,k)=>s+w[k],0),r=Math.random()*tot,ch=c[c.length-1];
@@ -14,7 +14,7 @@ function makeBoss(){
   }
   const p2=pick(ks.filter(k=>!pats.includes(k)));
   const hp=650*(1+S.bossCount*0.7),p=spawnPos();
-  return{isBoss:true,type:'boss',name:pick(SYL1)+pick(SYL2),title:fav==='sword'?'שובר הלהבים':'בולע החצים',
+  return{isBoss:true,type:'boss',name:pick(T('syl1'))+pick(T('syl2')),title:T('bossTitle.'+fav),
     x:p.x,y:p.y,r:34,hp,max:hp,speed:62,mult:{[fav]:0.5,[other]:1.7},weak:other,pats,p2,phase:1,patT:2.4,
     flash:0,kx:0,ky:0,ph:0,dmg:20,learned,spin:0,charge:null,spiral:0,spA:0,spT:0,rage:0,flee:0,rageMsg:0,rageShot:0};
 }
@@ -38,8 +38,8 @@ function bossUpdate(b,dt){
   const away=(P.vx*dx+P.vy*dy)/d;
   if(d>200&&away>P.speed*0.5)b.flee+=dt;else b.flee=Math.max(0,b.flee-dt*1.5);
   if(b.flee>1.5)b.rage=Math.min(1,b.rage+dt*0.35);else if(d<220)b.rage=Math.max(0,b.rage-dt*0.12);
-  if(b.rage>0.35&&b.rageMsg<1){b.rageMsg=1;banner(b.name+' מתעצבן: אל תברח',C.blood)}
-  if(b.rage>=1&&b.rageMsg<2){b.rageMsg=2;banner(b.name+' זועם',C.blood);S.shake=Math.max(S.shake,8)}
+  if(b.rage>0.35&&b.rageMsg<1){b.rageMsg=1;banner(T('rage1',b.name),C.blood)}
+  if(b.rage>=1&&b.rageMsg<2){b.rageMsg=2;banner(T('rage2',b.name),C.blood);S.shake=Math.max(S.shake,8)}
   if(b.rage<0.1)b.rageMsg=0;
   b.rageShot-=dt;
   if(b.rage>0.6&&b.flee>1.5&&b.rageShot<=0){b.rageShot=0.9;const a=Math.atan2(dy,dx);for(let i=-1;i<=1;i++)shootE(b.x,b.y,a+i*0.12,270,6,12)}
@@ -58,7 +58,7 @@ function bossUpdate(b,dt){
   }
   b.patT-=dt*(1+b.rage*1.5);
   if(b.patT<=0&&!b.charge){b.patT=b.phase>1?1.7:2.4;doPattern(b,pick(b.pats))}
-  if(b.phase===1&&b.hp<b.max*0.5){b.phase=2;b.pats.push(b.p2);b.speed*=1.3;banner('שלב 2 · '+PNAME[b.p2],C.lilac);S.shake=10}
+  if(b.phase===1&&b.hp<b.max*0.5){b.phase=2;b.pats.push(b.p2);b.speed*=1.3;banner(T('phase2',T('pat.'+b.p2)),C.lilac);S.shake=10}
   if(d<b.r+P.r-4)hurt(b.dmg);
 }
 function bossDown(b){
@@ -66,6 +66,6 @@ function bossDown(b){
   for(let i=0;i<22;i++)orbs.push({x:b.x+rand(-40,40),y:b.y+rand(-40,40),v:1});
   sparks(b.x,b.y,C.lilac,40,320);sparks(b.x,b.y,C.gold,20,260);
   eb=[];waves=[];mines=[];S.hitstop=0.25;S.slow=0.8;S.shake=14;
-  banner(b.name+' הובס',C.gold);
+  banner(T('bossDown',b.name),C.gold);
   P.track={sword:0,gun:0,move:0,still:0,dist:0,distN:0};
 }

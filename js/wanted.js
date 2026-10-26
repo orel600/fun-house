@@ -5,13 +5,13 @@ const WANTED={
   rumor:[5,8], hint:0.5,                      // כמה שניות מהשמועה עד שהוא מופיע, וכמה הרמז לכיוון לא מדויק (רדיאנים)
   life:14, hp:70, speed:120, keep:170,        // שניות עד שהוא בורח, חיים (גדלים עם הזמן כמו אויב רגיל), מהירות, ומאיזה מרחק הוא בורח מהשחקן
   panic:3,                                    // בשניות האחרונות הוא רץ מהר יותר והטבעת מאדימה
-  rumors:['שמועה: המבוקש נראה באזור','מישהו ראה את המבוקש','ריח של שלל באוויר'],
-  // הסיכויים אמיתיים ונסכמים ל-1. orbs: כמה XP נופל. heal: כמה חיים חוזרים
+  // הסיכויים אמיתיים ונסכמים ל-1. orbs: כמה XP נופל. heal: כמה חיים חוזרים.
+  // השמות ב-lang.js תחת 'loot.<key>', השמועות תחת 'wanted.rumors', ופריטי הזבל תחת 'loot.junkItems'
   loot:[
-    {chance:0.5, name:'זבל', items:['גרב ישנה','כפית עקומה','עצם של דג','חשבונית מקומטת'], orbs:2, heal:0, col:C.dim},
-    {chance:0.3, name:'שק מטבעות', orbs:12, heal:0, col:C.chalk},
-    {chance:0.15, name:'תיבת שלל', orbs:25, heal:40, col:C.gold},
-    {chance:0.05, name:'אוצר אמיתי', orbs:50, heal:999, col:C.gold, party:true}
+    {chance:0.5, key:'junk', items:true, orbs:2, heal:0, col:C.dim},
+    {chance:0.3, key:'coins', orbs:12, heal:0, col:C.chalk},
+    {chance:0.15, key:'chest', orbs:25, heal:40, col:C.gold},
+    {chance:0.05, key:'treasure', orbs:50, heal:999, col:C.gold, party:true}
   ]
 };
 
@@ -25,7 +25,7 @@ function wantedUpdate(dt){
     const e=wn.e;
     if(e.dead){wn.e=null;wn.t=rand(...WANTED.every);return}   // נתפס, והשלל כבר נפל ב-wantedDown
     e.life-=dt;
-    if(e.life<=0){e.dead=true;wn.e=null;wn.escaped++;wn.t=rand(...WANTED.every);sparks(e.x,e.y,C.dim,16,260);banner('המבוקש ברח',C.dim)}
+    if(e.life<=0){e.dead=true;wn.e=null;wn.escaped++;wn.t=rand(...WANTED.every);sparks(e.x,e.y,C.dim,16,260);banner(T('wanted.gone'),C.dim)}
     return;
   }
   if(wn.rumor){
@@ -35,14 +35,14 @@ function wantedUpdate(dt){
   }
   if(S.boss)return;
   wn.t-=dt;
-  if(wn.t<=0){wn.rumor={a:rand(0,6.28),t:rand(...WANTED.rumor)};banner(pick(WANTED.rumors),C.gold)}
+  if(wn.t<=0){wn.rumor={a:rand(0,6.28),t:rand(...WANTED.rumor)};banner(pick(T('wanted.rumors')),C.gold)}
 }
 function wantedAppear(a){
   const d=rand(220,300),aa=a+rand(-WANTED.hint,WANTED.hint),k=1+S.t/80+S.bossCount*0.5;
   const e={type:'wanted',wanted:true,x:P.x+Math.cos(aa)*d,y:P.y+Math.sin(aa)*d,hp:WANTED.hp*k,max:WANTED.hp*k,r:13,speed:WANTED.speed,
     mult:{sword:1,gun:1},xp:0,dmg:0,flash:0,kx:0,ky:0,ph:0,told:false,life:WANTED.life,turn:0,side:1};
   enemies.push(e);S.wn.e=e;S.wn.seen++;
-  sparks(e.x,e.y,C.gold,16,220);banner('המבוקש כאן: תפסו אותו',C.gold);
+  sparks(e.x,e.y,C.gold,16,220);banner(T('wanted.here'),C.gold);
 }
 /* בורח כשמתקרבים אליו, אבל לא מתרחק יותר מדי, כדי שאפשר יהיה לרדוף. מחליף צד בלי התראה, כדי שלא יהיה צפוי */
 function wantedMove(e,dt){
@@ -57,7 +57,7 @@ function wantedDown(e){
   const wn=S.wn;wn.caught++;
   let r=Math.random(),L=WANTED.loot[WANTED.loot.length-1];
   for(const l of WANTED.loot){r-=l.chance;if(r<=0){L=l;break}}
-  const name=L.items?L.name+': '+pick(L.items):L.name;wn.got.push(name);
+  const name=T('loot.'+L.key)+(L.items?': '+pick(T('loot.'+L.key+'Items')):'');wn.got.push(name);
   for(let i=0;i<L.orbs;i++){const a=rand(0,6.28),rr=rand(8,60);orbs.push({x:e.x+Math.cos(a)*rr,y:e.y+Math.sin(a)*rr,v:1})}
   if(L.heal)P.hp=Math.min(P.maxHp,P.hp+L.heal);
   banner(name,L.col);

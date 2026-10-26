@@ -9,9 +9,11 @@ function frame(now){
   if(S&&S.mode==='play'){const k=Math.min(1,dt*8);S.cam.x+=(P.x-S.cam.x)*k;S.cam.y+=(P.y-S.cam.y)*k}
   render();hud();requestAnimationFrame(frame);
 }
+// כל הטקסט שעל המסך מחדש, בשפה הנוכחית: בהפעלה ובכל החלפת שפה
+function showLang(){applyLang();updateSwapBtn();$('bestLine').textContent=best>0?T('best',fmt(best)):''}
 function boot(){
   reset();
-  $('bestLine').textContent=best>0?'השיא שלך: '+fmt(best):'';
+  showLang();
   requestAnimationFrame(frame);
 }
 window.claude?.hot?.ready?window.claude.hot.ready(boot):boot();

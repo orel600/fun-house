@@ -9,7 +9,7 @@ function damage(e,base,w,ang){
   if(!e.isBoss){const kb=(w==='sword'?150:55)*(m>1?1.4:1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   const col=m>1?(w==='sword'?C.ember:C.tide):m<1?C.dim:C.chalk;
   floatText(e.x+rand(-8,8),e.y-e.r-8,Math.round(d)+(crit?'!':''),col,m>1?21:m<1?12:15);
-  if(m<1&&!e.told){e.told=true;floatText(e.x,e.y-e.r-26,'חסין',C.dim,13)}
+  if(m<1&&!e.told){e.told=true;floatText(e.x,e.y-e.r-26,T('immune'),C.dim,13)}
   sparks(e.x,e.y,col,m>1?8:3);
   if(m>1&&w==='sword')S.hitstop=Math.max(S.hitstop,0.03);
   if(e.hp<=0&&!e.dead)kill(e);
@@ -67,4 +67,4 @@ function swapWeapon(){
 // הנשק מרחוק הוא חץ וקשת. בקוד הוא נשאר gun, כדי לא לשנות את הלוגיקה
 const ICON={sword:'<path d="M20 4 9.5 14.5M20 4h-4M20 4v4M7 12l5 5M8.5 15.5 4 20"/>',
   gun:'<path d="M5 9Q16 8 15 19"/><path d="M5 9 15 19" stroke-width="1.2"/><path d="M7 17 20 4M20 4h-5M20 4v5M7 17H4M7 17v3"/>'};
-function updateSwapBtn(){const w=P?P.weapon:'sword';const b=$('swap');b.classList.toggle('gun',w==='gun');$('ico').innerHTML=ICON[w];$('swaplbl').textContent=w==='sword'?'חרב':'קשת'}
+function updateSwapBtn(){const w=P?P.weapon:'sword';const b=$('swap');b.classList.toggle('gun',w==='gun');$('ico').innerHTML=ICON[w];$('swaplbl').textContent=T('w.'+w)}

@@ -5,6 +5,7 @@
              --real       בלי חסינות: הבוט יכול למות, כדי לבדוק קושי ולא רק קריסות
              --shots      צילומי מסך לתיקייה tools/shots
              --skin nomad הדמות לובשת סקין מ-SKINS, כדי לראות עיצוב חדש בצילומים
+             --lang en    משחק באנגלית, ונכשל אם על המסך מופיע טקסט בעברית
    הזמן במשחק מואץ בשעון מזויף, אז דקה וחצי של משחק לוקחות כמה שניות. */
 const {chromium}=require('playwright');
 const path=require('path'),fs=require('fs');
@@ -17,14 +18,20 @@ const CFG={
   god:!opt('real'),
   shots:opt('shots')?path.join(__dirname,'shots'):null,
   skin:opt('skin'),
+  lang:opt('lang')||'he',
   step:200,                          // כל כמה מילישניות של משחק הבוט מחליט מחדש
   phone:{width:390,height:844}
 };
 
 /* הבוט רץ בתוך הדף, עם גישה למשתנים הגלובליים של המשחק. הזיכרון שלו ב-window.__bot */
-function botStep(god){
+function botStep({god,en}){
   const m=window.__bot||(window.__bot={log:{levels:0,swaps:0,taken:0,coins:0},faced:0,swapAt:0});
   const L=m.log,at=Math.round(S.t*10)/10,vis=id=>!document.getElementById(id).hidden;
+  // באנגלית: כל טקסט שמופיע על המסך (ממשק, באנר, מסכים, טקסט צף) נבדק לפני שהבוט לוחץ
+  if(en&&!L.heLeak){const he=/[֐-׿]/;
+    for(const s of [document.querySelector('.hud').innerText,document.getElementById('banner').textContent,document.getElementById('swaplbl').textContent,
+      ...['ovLevel','ovBoss','ovOver'].filter(vis).map(id=>document.getElementById(id).innerText),...floats.map(f=>f.txt)])
+      if(he.test(s)){L.heLeak=s.trim().slice(0,80);break}}
   if(vis('ovLevel')){document.querySelector('#cards .card').click();L.levels++;return L}
   if(vis('ovBoss')){L.bossIntro??=at;document.getElementById('fightBtn').click();return L}
   if(S.mode==='over'){L.died??=at;return L}
@@ -95,12 +102,18 @@ function botStep(god){
   check(open.length===1&&open[0]==='ovStart','מסך פתיחה: רק הוא גלוי'+(open.length===1?'':' (גלויים: '+open.join(', ')+')'));
   await shot('start');
   if(CFG.skin)await page.evaluate(n=>{LOOK.player=n},CFG.skin);
+  let startLeak=null;
+  if(CFG.lang!=='he'){
+    await page.click('[data-lang="'+CFG.lang+'"]');
+    startLeak=await page.evaluate(()=>{const s=document.getElementById('ovStart').innerText.replace('עברית','');return /[֐-׿]/.test(s)||document.documentElement.dir!=='ltr'?s.slice(0,80):null});
+    await shot('start-'+CFG.lang);
+  }
   await page.click('#startBtn');
 
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
     await page.clock.runFor(CFG.step);
-    L=await page.evaluate(botStep,CFG.god);
+    L=await page.evaluate(botStep,{god:CFG.god,en:CFG.lang==='en'});
     for(const k of ['door','room','wanted','boss','bossDown'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k)}
     if(L.died!=null||L.t>=CFG.time||L.bossDown!=null&&L.t>L.bossDown+3)break;  // אחרי שהבוס הובס אין עוד מה לבדוק
   }
@@ -121,10 +134,11 @@ function botStep(god){
     check(L.rageLow<L.rageMax,'נרגע כשמתעמתים: ירד ל-'+Math.round(100*(L.rageLow??1))+'%');
     check(L.bossDown!=null,'בוס הובס: '+t(L.bossDown));
   }
+  if(CFG.lang==='en')check(!startLeak&&!L.heLeak,startLeak||L.heLeak?'שפה: נשאר טקסט בעברית: '+(startLeak||L.heLeak):'שפה: כל המסכים באנגלית, משמאל לימין');
   if(!CFG.god)results.push(L.died!=null?'· מת ב-'+t(L.died):'· שרד עד '+t(L.t));
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
 
-  console.log('ריצה: seed '+CFG.seed+', '+t(L.t)+' זמן משחק'+(CFG.god?', עם חסינות':'')+(CFG.shots?', צילומים ב-'+CFG.shots:''));
+  console.log('ריצה: seed '+CFG.seed+', '+t(L.t)+' זמן משחק'+(CFG.god?', עם חסינות':'')+(CFG.lang==='en'?', באנגלית':'')+(CFG.shots?', צילומים ב-'+CFG.shots:''));
   console.log(results.join('\n'));
   process.exit(results.some(r=>r.startsWith('✗'))?1:0);
 })().catch(e=>{console.error(e);process.exit(1)});

@@ -4,14 +4,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&family=Secular+One&display=swap">
 <link rel="stylesheet" href="css/style.css">
 
-<canvas id="c" aria-label="זירת המשחק"></canvas>
+<!-- הטקסטים לא כתובים כאן: data-t ו-data-ta מתמלאים מהטבלה ב-js/lang.js, לפי השפה -->
+<canvas id="c" data-ta="arena"></canvas>
 
 <div class="hud">
   <div class="xpbar"><div class="xpfill" id="xp"></div></div>
   <div class="row">
     <div class="hp"><div class="hpfill" id="hp"></div></div>
-    <div class="clock"><span id="clock">0:00</span><small id="bossin">בוס בעוד 1:15</small></div>
-    <div class="lvl" id="lvl">רמה 1</div>
+    <div class="clock"><span id="clock">0:00</span><small id="bossin"></small></div>
+    <div class="lvl" id="lvl"></div>
   </div>
   <div class="bossbar" id="bossbar" hidden>
     <div class="bossname"><span id="bossnm"></span><em id="bossweak"></em></div>
@@ -20,72 +21,70 @@
   </div>
 </div>
 
-<button class="swap" id="swap" aria-label="החלף נשק">
+<button class="swap" id="swap" data-ta="swapWeapon">
   <svg id="ico" viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></svg>
-  <span id="swaplbl">חרב</span>
+  <span id="swaplbl"></span>
 </button>
 
 <div class="banner" id="banner"></div>
 
 <div class="ov" id="ovStart">
   <div class="panel">
-    <h1>זירת המקל</h1>
-    <p class="sub">דמו ראשון · כל בוס נבנה מחדש לפי איך ששיחקת</p>
-    <ul class="rules">
-      <li>גוררים אצבע בכל מקום על המסך כדי לזוז. התקיפה אוטומטית.</li>
-      <li>הכפתור העגול למטה מחליף בין <span class="e">חרב</span> ל<span class="t">קשת</span>.</li>
-      <li>צבע האויב הוא הנשק שפוגע בו: <span class="e">כתום</span> נופל מחרב, <span class="t">תכלת</span> נופל מחצים. כשהכפתור פועם, הגיע הזמן להחליף.</li>
-      <li>ב-<span class="l">1:15</span> מגיע בוס. הוא צפה בך כל הזמן הזה ובנה את עצמו נגדך. ואל תברחו ממנו, זה רק מעצבן אותו.</li>
-      <li>חדש: <span class="g">דלת זהב</span> נפתחת לכמה שניות ומובילה לחדר מטבעות, ובתוך <span class="r">אזורים אדומים</span> מחכים פצצה או באף. הם שורפים, אז נכנסים, לוקחים ויוצאים.</li>
-      <li>אחרי שמועה מופיע <span class="g">המבוקש</span>, עם שק שלל על הגב. רודפים אחריו ומפילים אותו לפני שהוא בורח. בשק יכול להיות זבל, ויכול להיות אוצר.</li>
-    </ul>
-    <button class="go" id="startBtn">יאללה</button>
+    <div class="langs" role="group" data-ta="langGroup">
+      <button class="lang" data-lang="he" lang="he">עברית</button>
+      <button class="lang" data-lang="en" lang="en">English</button>
+    </div>
+    <h1 data-t="title"></h1>
+    <p class="sub" data-t="tagline"></p>
+    <ul class="rules" data-t="rules"></ul>
+    <button class="go" id="startBtn" data-t="start"></button>
     <p class="sub" id="bestLine"></p>
   </div>
 </div>
 
 <div class="ov" id="ovLevel" hidden>
   <div class="panel">
-    <h2 id="lvTitle">רמה 2</h2>
-    <p class="sub">בחר שדרוג אחד</p>
+    <h2 id="lvTitle"></h2>
+    <p class="sub" data-t="pickUpgrade"></p>
     <div class="cards" id="cards"></div>
   </div>
 </div>
 
 <div class="ov" id="ovBoss" hidden>
   <div class="panel">
-    <p class="sub">בוס מתקרב</p>
+    <p class="sub" data-t="bossComing"></p>
     <h2 id="bTitle"></h2>
     <div class="learned">
-      <span class="k">מה הוא למד עליך</span>
+      <span class="k" data-t="bossLearned"></span>
       <div id="bLearned" style="display:flex;flex-direction:column;gap:6px"></div>
     </div>
     <div class="learned">
-      <span class="k">ההתקפות שהוא בחר</span>
+      <span class="k" data-t="bossPats"></span>
       <div class="chips" id="bPats"></div>
       <span id="bWeak"></span>
     </div>
-    <button class="go" id="fightBtn">להילחם</button>
+    <button class="go" id="fightBtn" data-t="fight"></button>
   </div>
 </div>
 
 <div class="ov" id="ovOver" hidden>
   <div class="panel">
-    <h2>נפלת</h2>
+    <h2 data-t="fell"></h2>
     <div class="stats">
-      <div class="stat"><span>שרדת</span><b id="sTime">0:00</b></div>
-      <div class="stat"><span>רמה</span><b id="sLvl">1</b></div>
-      <div class="stat"><span>בוסים שהפלת</span><b id="sBoss">0</b></div>
-      <div class="stat"><span>השיא שלך</span><b id="sBest">0:00</b></div>
-      <div class="stat"><span>מטבעות</span><b id="sCoins">0</b></div>
-      <div class="stat"><span>פריטים שלקחת</span><b id="sPicks">0</b></div>
+      <div class="stat"><span data-t="statTime"></span><b id="sTime">0:00</b></div>
+      <div class="stat"><span data-t="statLevel"></span><b id="sLvl">1</b></div>
+      <div class="stat"><span data-t="statBosses"></span><b id="sBoss">0</b></div>
+      <div class="stat"><span data-t="statBest"></span><b id="sBest">0:00</b></div>
+      <div class="stat"><span data-t="statCoins"></span><b id="sCoins">0</b></div>
+      <div class="stat"><span data-t="statPicks"></span><b id="sPicks">0</b></div>
     </div>
-    <p class="sub">בריצה הבאה הבוס יהיה שונה, לפי איך שתשחק.</p>
-    <button class="go" id="againBtn">עוד ריצה</button>
+    <p class="sub" data-t="nextRun"></p>
+    <button class="go" id="againBtn" data-t="again"></button>
   </div>
 </div>
 
 <script src="js/core.js"></script>
+<script src="js/lang.js"></script>
 <script src="js/data.js"></script>
 <script src="js/state.js"></script>
 <script src="js/spawn.js"></script>
