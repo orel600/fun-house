@@ -9,11 +9,12 @@ function showGain(v){
 function openLevelUp(){
   S.mode='level';S.pendingLv--;joy=null;
   const pool=UPS.filter(u=>!(u.max&&(S.picks[u.id]||0)>=u.max)).sort(()=>Math.random()-.5).slice(0,3);
-  $('lvTitle').textContent='רמה '+P.level;
+  $('lvTitle').textContent=T('level',P.level);
   const box=$('cards');box.innerHTML='';
   pool.forEach(u=>{
     const b=document.createElement('button');b.className='card '+(u.w==='any'?'':u.w);
-    b.innerHTML='<span class="tag">'+(u.w==='sword'?'חרב':u.w==='gun'?'קשת':'כללי')+'</span><b>'+u.name+'</b><span>'+u.desc+'</span>';
+    const [name,desc]=T('up.'+u.id);
+    b.innerHTML='<span class="tag">'+T('w.'+u.w)+'</span><b>'+name+'</b><span>'+desc+'</span>';
     b.onclick=()=>{u.f();S.picks[u.id]=(S.picks[u.id]||0)+1;$('ovLevel').hidden=true;S.mode='play';if(S.pendingLv>0)openLevelUp()};
     box.appendChild(b);
   });
@@ -23,8 +24,8 @@ function showIntro(b){
   S.mode='intro';joy=null;
   $('bTitle').innerHTML=b.name+'<br><span style="font-size:20px;color:var(--lilac)">'+b.title+'</span>';
   $('bLearned').innerHTML=b.learned.map(s=>'<span>'+s+'</span>').join('');
-  $('bPats').innerHTML=b.pats.map(k=>'<span class="chip">'+PNAME[k]+'</span>').join('')+'<span class="chip" style="color:var(--dim)">+ אחת סודית בשלב 2</span><span class="chip" style="color:var(--blood)">שונא שבורחים ממנו</span>';
-  $('bWeak').innerHTML='נקודת התורפה: <span class="'+(b.weak==='sword'?'e':'t')+'">'+(b.weak==='sword'?'חרב':'קשת')+'</span>. הזוהר סביבו בצבע הזה.';
+  $('bPats').innerHTML=b.pats.map(k=>'<span class="chip">'+T('pat.'+k)+'</span>').join('')+'<span class="chip" style="color:var(--dim)">'+T('secretAttack')+'</span><span class="chip" style="color:var(--blood)">'+T('hatesRunning')+'</span>';
+  $('bWeak').innerHTML=T('weakSpot',b.weak==='sword'?'e':'t',T('w.'+b.weak));
   $('ovBoss').hidden=false;
 }
 function gameOver(){
