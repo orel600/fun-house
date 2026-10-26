@@ -10,7 +10,7 @@ const BONES={headY:-20,headR:6.5,neckY:-13,hipY:2,shoulderY:-9,leg:13,legSpread:
    נשק: מצויר ביד ומסתובב לכיוון הכוונה, כשהקת בצד שמאל של התמונה.
    התמונות מצוירות כשהדמות פונה ימינה, ומתהפכות כשהיא פונה שמאלה.
    דוגמה: nomad:{head:{src:'skins/nomad/head.png',w:20,h:20}, body:{src:'skins/nomad/body.png',w:12,h:17}, ...}
-   שמות החלקים: head, body, armF, armB, legF, legB, sword, gun */
+   שמות החלקים: head, body, armF, armB, legF, legB, sword, gun (הקשת) */
 const SKINS={stick:{}};
 const LOOK={player:'stick',grunt:'stick',shield:'stick',wanted:'stick'};   // איזה סקין לבוש כל סוג דמות
 

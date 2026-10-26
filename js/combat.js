@@ -53,7 +53,7 @@ function attack(dt){
         const a=P.aim+(i-(g.multi-1)/2)*0.14,hx=P.x+Math.cos(a)*22,hy=P.y-6+Math.sin(a)*22;
         pb.push({x:hx,y:hy,vx:Math.cos(a)*g.speed,vy:Math.sin(a)*g.speed,life:0.9,pierce:g.pierce,hit:new Set()});
       }
-      parts.push({x:P.x+Math.cos(P.aim)*24,y:P.y-6+Math.sin(P.aim)*24,vx:0,vy:0,life:.06,max:.06,col:C.tide,size:7});
+      parts.push({x:P.x+Math.cos(P.aim)*24,y:P.y-6+Math.sin(P.aim)*24,vx:0,vy:0,life:.06,max:.06,col:C.tide,size:3});
     }
   }
 }
@@ -64,6 +64,7 @@ function swapWeapon(){
   sparks(P.x,P.y-8,P.weapon==='sword'?C.ember:C.tide,10,140);
   updateSwapBtn();
 }
+// הנשק מרחוק הוא חץ וקשת. בקוד הוא נשאר gun, כדי לא לשנות את הלוגיקה
 const ICON={sword:'<path d="M20 4 9.5 14.5M20 4h-4M20 4v4M7 12l5 5M8.5 15.5 4 20"/>',
-  gun:'<path d="M3 8h16l2 2v2h-9l-1.5 3H8L7 19H3.5l1-6H3z"/><path d="M15 12v2"/>'};
-function updateSwapBtn(){const w=P?P.weapon:'sword';const b=$('swap');b.classList.toggle('gun',w==='gun');$('ico').innerHTML=ICON[w];$('swaplbl').textContent=w==='sword'?'חרב':'רובה'}
+  gun:'<path d="M5 9Q16 8 15 19"/><path d="M5 9 15 19" stroke-width="1.2"/><path d="M7 17 20 4M20 4h-5M20 4v5M7 17H4M7 17v3"/>'};
+function updateSwapBtn(){const w=P?P.weapon:'sword';const b=$('swap');b.classList.toggle('gun',w==='gun');$('ico').innerHTML=ICON[w];$('swaplbl').textContent=w==='sword'?'חרב':'קשת'}
