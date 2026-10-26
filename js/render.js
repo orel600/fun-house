@@ -111,9 +111,10 @@ function render(){
   for(const b of eb){ctx.fillStyle=C.blood;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();ctx.fillStyle='#FFD9DB';ctx.beginPath();ctx.arc(b.x,b.y,b.r*0.45,0,7);ctx.fill()}
   for(const p of parts){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill()}
   ctx.globalAlpha=1;
-  ctx.textAlign='center';ctx.direction=DIR;
-  for(const f of floats){ctx.globalAlpha=Math.min(1,f.life*2);ctx.font='800 '+f.size+'px Heebo, system-ui, sans-serif';ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y)}
-  ctx.globalAlpha=1;
+  ctx.textAlign='center';
+  // מספר עם סימן (+12, -16) נכתב משמאל לימין בכל שפה, אחרת הסימן קופץ לצד הלא נכון
+  for(const f of floats){ctx.direction=/^[+\-]\d/.test(f.txt)?'ltr':DIR;ctx.globalAlpha=Math.min(1,f.life*2);ctx.font='800 '+f.size+'px Heebo, system-ui, sans-serif';ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y)}
+  ctx.globalAlpha=1;ctx.direction=DIR;
   // screen space
   ctx.setTransform(DPR,0,0,DPR,0,0);
   if(S.boss){const b=S.boss,sx=b.x+ox,sy=b.y+oy;
@@ -125,11 +126,13 @@ function render(){
     ctx.fillStyle='rgba(236,231,220,0.3)';ctx.beginPath();ctx.arc(joy.ox+joy.dx*55,joy.oy+joy.dy*55,22,0,7);ctx.fill()}
   if(S.hurt>0){const gr=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3,W/2,H/2,Math.max(W,H)*0.75);gr.addColorStop(0,'rgba(239,78,87,0)');gr.addColorStop(1,'rgba(239,78,87,'+(S.hurt*1.2)+')');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)}
 }
-let lastHud='';
+let lastHud='',lastNums='';
 function hud(){
   if(!P)return;
   $('hp').style.width=(100*P.hp/P.maxHp)+'%';
   $('xp').style.width=(100*P.xp/P.next)+'%';
+  const nums=Math.ceil(Math.max(0,P.hp))+' / '+P.maxHp+'|'+P.xp+' / '+P.next;
+  if(nums!==lastNums){lastNums=nums;const [h,x]=nums.split('|');$('hpTxt').textContent=h;$('xpTxt').textContent=x}
   const key=LANG+'|'+fmt(S.t)+'|'+P.level+'|'+(S.boss?1:fmt(S.nextBoss-S.t));
   if(key!==lastHud){lastHud=key;$('clock').textContent=fmt(S.t);$('lvl').textContent=T('level',P.level);
     $('bossin').textContent=S.boss?T('bossHere'):T('bossIn',fmt(S.nextBoss-S.t))}

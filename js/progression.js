@@ -1,5 +1,11 @@
 /* XP, שדרוגים, מסכי בוס וסוף */
-function gainXP(v){P.xp+=v;while(P.xp>=P.next){P.xp-=P.next;P.level++;P.next=Math.round(6+P.level*4.5);S.pendingLv++}}
+function gainXP(v){P.xp+=v;showGain(v);while(P.xp>=P.next){P.xp-=P.next;P.level++;P.next=Math.round(6+P.level*4.5);S.pendingLv++}}
+/* כמה אספת: מספר אחד מעל הראש שגדל כל עוד אוספים ברצף, במקום מספר לכל יהלום */
+function showGain(v){
+  let f=S.gain;
+  if(!f||f.life<0.2||!floats.includes(f)){f=S.gain={x:0,y:0,txt:'',col:C.gold,size:17,life:0,vy:-30,n:0};floats.push(f)}
+  f.n+=v;f.txt='+'+f.n;f.life=0.9;f.x=P.x;f.y=P.y-46;
+}
 function openLevelUp(){
   S.mode='level';S.pendingLv--;joy=null;
   const pool=UPS.filter(u=>!(u.max&&(S.picks[u.id]||0)>=u.max)).sort(()=>Math.random()-.5).slice(0,3);
