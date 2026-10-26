@@ -1,0 +1,25 @@
+# תיאור ה-PR: כל בקשת מיזוג מסבירה בקצרה מה נעשה, למה, ואיך בודקים.
+# הפורמט ב-.github/pull_request_template.md. בלי שלושת הפרקים, ה-PR מסומן באדום.
+name: תיאור ה-PR
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  description:
+    runs-on: ubuntu-latest
+    steps:
+      - name: יש "מה נעשה", "למה" ו"איך בודקים"
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          missing=""
+          for h in "## מה נעשה" "## למה" "## איך בודקים"; do
+            grep -qF "$h" <<< "$BODY" || missing="$missing $h,"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::בתיאור ה-PR חסר:${missing%,}. הפורמט נמצא ב-.github/pull_request_template.md"
+            exit 1
+          fi
+          echo "התיאור מלא"

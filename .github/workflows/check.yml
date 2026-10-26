@@ -1,0 +1,38 @@
+# בדיקת המשחק: רצה לבד על כל בקשת מיזוג (PR) ועל כל שינוי ב-main.
+# הבוט מ-tools/check.js משחק שלוש ריצות עד שהבוס מובס. הדוח מופיע בסיכום של הריצה, וצילומי המסך מצורפים לה.
+name: בדיקת המשחק
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: בוט משחק עד שהבוס מובס
+        run: |
+          for seed in 7 123 2026; do
+            shots=""; [ "$seed" = 7 ] && shots="--shots"
+            echo "### seed $seed" >> "$GITHUB_STEP_SUMMARY"
+            node tools/check.js --seed $seed $shots | tee -a "$GITHUB_STEP_SUMMARY"
+            echo >> "$GITHUB_STEP_SUMMARY"
+          done
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: screenshots
+          path: tools/shots
+          if-no-files-found: ignore
