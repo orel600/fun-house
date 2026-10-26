@@ -4,7 +4,7 @@ function makeBoss(){
   const mobile=t.move/(t.move+t.still+0.001)>0.65;
   const w={ring:1,spiral:1,aimed:1,charge:1,shields:1,wisps:1,shock:1,mines:1};const learned=[];
   if(fav==='sword'){w.shock+=3;w.wisps+=3;learned.push('נלחמת בעיקר עם החרב, אז השריון שלו מקהה להבים.')}
-  else{w.charge+=3;w.shields+=3;learned.push('ירית בעיקר מרחוק, אז השריון שלו בולע כדורים.')}
+  else{w.charge+=3;w.shields+=3;learned.push('ירית בעיקר חצים מרחוק, אז השריון שלו בולע חצים.')}
   if(mobile){w.spiral+=3;w.ring+=1;learned.push('אתה כל הזמן בתנועה, אז הוא ממלא את האוויר בספירלות.')}
   else{w.mines+=3;w.aimed+=2;learned.push('אתה נוטה לעמוד במקום, אז הוא שותל מוקשים מתחתיך.')}
   const ks=Object.keys(w),pats=[];
@@ -14,7 +14,7 @@ function makeBoss(){
   }
   const p2=pick(ks.filter(k=>!pats.includes(k)));
   const hp=650*(1+S.bossCount*0.7),p=spawnPos();
-  return{isBoss:true,type:'boss',name:pick(SYL1)+pick(SYL2),title:fav==='sword'?'שובר הלהבים':'בולע הכדורים',
+  return{isBoss:true,type:'boss',name:pick(SYL1)+pick(SYL2),title:fav==='sword'?'שובר הלהבים':'בולע החצים',
     x:p.x,y:p.y,r:34,hp,max:hp,speed:62,mult:{[fav]:0.5,[other]:1.7},weak:other,pats,p2,phase:1,patT:2.4,
     flash:0,kx:0,ky:0,ph:0,dmg:20,learned,spin:0,charge:null,spiral:0,spA:0,spT:0,rage:0,flee:0,rageMsg:0,rageShot:0};
 }

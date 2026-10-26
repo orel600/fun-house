@@ -12,7 +12,12 @@ function drawPlayer(){
       ctx.strokeStyle=C.ember;ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*24,hy+Math.sin(a)*24);ctx.stroke();
       ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hx+Math.cos(a+1.57)*5,hy+Math.sin(a+1.57)*5);ctx.lineTo(hx-Math.cos(a+1.57)*5,hy-Math.sin(a+1.57)*5);ctx.stroke();
     }else{
-      ctx.strokeStyle=C.tide;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*13,hy+Math.sin(a)*13);ctx.stroke();
+      // קשת: ניצבת לכיוון הירי, והמיתר נמתח לקראת החץ הבא
+      const cx=Math.cos(a),cy=Math.sin(a),k=Math.max(0,Math.min(1,1-P.gn.t/P.gn.cd));
+      const t1x=hx-cy*12-cx*3,t1y=hy+cx*12-cy*3,t2x=hx+cy*12-cx*3,t2y=hy-cx*12-cy*3,sx=hx-cx*(2+k*8),sy=hy-cy*(2+k*8);
+      ctx.strokeStyle=C.tide;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(t1x,t1y);ctx.quadraticCurveTo(hx+cx*9,hy+cy*9,t2x,t2y);ctx.stroke();
+      ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(t1x,t1y);ctx.lineTo(sx,sy);ctx.lineTo(t2x,t2y);ctx.stroke();
+      if(k>0.3){ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(hx+cx*10,hy+cy*10);ctx.stroke()}
     }
   }
   if(sword&&s.anim>0){
@@ -90,9 +95,13 @@ function render(){
   // actors sorted by y
   const actors=enemies.slice();actors.push({isPlayer:true,y:P.y});actors.sort((a,b)=>a.y-b.y);
   for(const a of actors){if(a.isPlayer)drawPlayer();else drawEnemy(a)}
-  // bullets
-  ctx.strokeStyle=C.tide;ctx.lineWidth=3;ctx.beginPath();
-  for(const b of pb){ctx.moveTo(b.x,b.y);ctx.lineTo(b.x-b.vx*0.025,b.y-b.vy*0.025)}ctx.stroke();
+  // חצים: מוט, נוצות וחוד
+  ctx.strokeStyle=C.tide;ctx.fillStyle=C.tide;ctx.lineWidth=2;
+  for(const b of pb){
+    ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));
+    ctx.beginPath();ctx.moveTo(-20,0);ctx.lineTo(0,0);ctx.moveTo(-17,0);ctx.lineTo(-22,-3.5);ctx.moveTo(-17,0);ctx.lineTo(-22,3.5);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(-2,-3.5);ctx.lineTo(-2,3.5);ctx.closePath();ctx.fill();ctx.restore();
+  }
   for(const b of eb){ctx.fillStyle=C.blood;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();ctx.fillStyle='#FFD9DB';ctx.beginPath();ctx.arc(b.x,b.y,b.r*0.45,0,7);ctx.fill()}
   for(const p of parts){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill()}
   ctx.globalAlpha=1;
@@ -119,7 +128,7 @@ function hud(){
     $('bossin').textContent=S.boss?'בוס בזירה':'בוס בעוד '+fmt(S.nextBoss-S.t)}
   const bb=$('bossbar');
   if(S.boss){bb.hidden=false;$('bossnm').textContent=S.boss.name+' · '+S.boss.title;
-    const wk=$('bossweak');wk.textContent='חלש ל'+(S.boss.weak==='sword'?'חרב':'רובה');wk.style.color=S.boss.weak==='sword'?C.ember:C.tide;
+    const wk=$('bossweak');wk.textContent='חלש ל'+(S.boss.weak==='sword'?'חרב':'קשת');wk.style.color=S.boss.weak==='sword'?C.ember:C.tide;
     $('bossfill').style.width=(100*Math.max(0,S.boss.hp)/S.boss.max)+'%';
     $('ragetrack').hidden=S.boss.rage<0.02;$('ragefill').style.width=(100*S.boss.rage)+'%'}
   else bb.hidden=true;
