@@ -17,6 +17,7 @@ function damage(e,base,w,ang){
 function kill(e){
   e.dead=true;S.kills++;
   if(e.isBoss){bossDown(e);return}
+  if(e.wanted){wantedDown(e);return}
   for(let i=0;i<e.xp;i++)orbs.push({x:e.x+rand(-8,8),y:e.y+rand(-8,8),v:1});
   const col=e.type==='shield'?C.ember:e.type==='wisp'?C.tide:C.chalk;
   sparks(e.x,e.y,col,10,220);

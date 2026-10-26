@@ -12,7 +12,7 @@ const BONES={headY:-20,headR:6.5,neckY:-13,hipY:2,shoulderY:-9,leg:13,legSpread:
    דוגמה: nomad:{head:{src:'skins/nomad/head.png',w:20,h:20}, body:{src:'skins/nomad/body.png',w:12,h:17}, ...}
    שמות החלקים: head, body, armF, armB, legF, legB, sword, gun (הקשת) */
 const SKINS={stick:{}};
-const LOOK={player:'stick',grunt:'stick',shield:'stick'};   // איזה סקין לבוש כל סוג דמות
+const LOOK={player:'stick',grunt:'stick',shield:'stick',wanted:'stick'};   // איזה סקין לבוש כל סוג דמות
 
 // סדר הציור: מה שמאחור קודם
 const ORDER=['legB','armB','body','legF','head','armF'];

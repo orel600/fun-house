@@ -135,11 +135,6 @@ function drawBonusWorld(){
   // הילה של באף
   if(P.power>0){ctx.strokeStyle='rgba(244,199,79,'+(0.35+0.25*Math.sin(S.t*12))+')';ctx.lineWidth=3;ctx.beginPath();ctx.arc(P.x,P.y-6,26,0,7);ctx.stroke()}
 }
-function edgeArrow(sx,sy,col){
-  if(sx>=-20&&sx<=W+20&&sy>=-20&&sy<=H+20)return;
-  const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(110,Math.min(H-40,H/2+Math.sin(a)*H));
-  ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-8);ctx.lineTo(-7,8);ctx.fill();ctx.restore();
-}
 function drawBonusScreen(ox,oy){
   const bn=S.bn;
   if(S.room){

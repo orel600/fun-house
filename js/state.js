@@ -11,5 +11,6 @@ function reset(){
   S={mode:'title',t:0,spawnT:1,nextBoss:75,boss:null,bossCount:0,kills:0,shake:0,hitstop:0,slow:0,picks:{},cam:{x:0,y:0},hurt:0,pendingLv:0};
   enemies=[];pb=[];eb=[];orbs=[];parts=[];floats=[];mines=[];waves=[];joy=null;
   bonusReset();
+  wantedReset();
   updateSwapBtn();
 }
