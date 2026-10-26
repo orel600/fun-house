@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {"type": "command", "command": "node", "args": ["${CLAUDE_PROJECT_DIR}/tools/hooks/session-start.js"], "timeout": 60}
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {"type": "command", "command": "node", "args": ["${CLAUDE_PROJECT_DIR}/tools/hooks/guard.js"], "timeout": 15}
+        ]
+      }
+    ]
+  }
+}
