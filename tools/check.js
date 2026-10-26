@@ -41,6 +41,10 @@ function botStep(god){
     if(L.room!=null&&L.roomBack==null)L.roomBack=at;
     for(const k of S.bn.picks)L['pick_'+k.type]??=at;
     if(S.bossCount>0)L.bossDown??=at;
+    const w=S.wn;
+    if(w.rumor)L.wRumor??=at;
+    if(w.e)L.wanted??=at;else if(L.wanted!=null)L.wEnd??=at;
+    L.wCaught=w.caught;L.wEscaped=w.escaped;L.wLoot=w.got.join(', ');
     const b=S.boss;
     if(b){
       L.boss??=at;L.bossName=b.name;L.rageMax=Math.max(L.rageMax||0,b.rage);
@@ -53,6 +57,7 @@ function botStep(god){
         tx=b.x;ty=b.y;stop=P.weapon==='sword'?b.r+30:240;
       }
     }else if(S.bn.door){L.door??=at;tx=S.bn.door.x;ty=S.bn.door.y}
+    else if(w.e){tx=w.e.x;ty=w.e.y}
     else if(S.bn.picks.length){const k=S.bn.picks[0];tx=k.x;ty=k.y}
     else{
       const n=nearest(220);
@@ -96,7 +101,7 @@ function botStep(god){
   while(guard++<CFG.time*30){
     await page.clock.runFor(CFG.step);
     L=await page.evaluate(botStep,CFG.god);
-    for(const k of ['door','room','boss','bossDown'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k)}
+    for(const k of ['door','room','wanted','boss','bossDown'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k)}
     if(L.died!=null||L.t>=CFG.time||L.bossDown!=null&&L.t>L.bossDown+3)break;  // אחרי שהבוס הובס אין עוד מה לבדוק
   }
   await shot('end');
@@ -108,6 +113,8 @@ function botStep(god){
   check(L.door!=null&&L.room!=null&&L.roomBack!=null,'דלת זהב: הופיעה '+t(L.door)+', נכנס לחדר '+t(L.room)+(L.saws?' (עם מסורים)':'')+', חזר '+t(L.roomBack)+', '+L.coins+' מטבעות');
   const picks=['bomb','power'].filter(k=>L['pick_'+k]!=null).map(k=>(k==='bomb'?'פצצה ':'כוח ')+t(L['pick_'+k]));
   check(picks.length>0&&L.taken>0,'פריטים באזורי סכנה: '+(picks.join(', ')||'לא הופיעו')+', נלקחו '+L.taken);
+  check(L.wanted!=null&&L.wRumor<L.wanted&&L.wEnd!=null,'מבוקש: שמועה '+t(L.wRumor)+', הופיע '+t(L.wanted)+', '+
+    (L.wEnd==null?'לא נתפס ולא ברח':'נגמר '+t(L.wEnd)+' · נתפס '+L.wCaught+', ברח '+L.wEscaped+(L.wLoot?' · שלל: '+L.wLoot:'')));
   check(L.boss!=null,'בוס: הופיע '+t(L.boss)+(L.bossName?' ('+L.bossName+')':''));
   if(L.boss!=null){
     check(L.rageMax>0.9,'זעם כשבורחים: הגיע ל-'+Math.round(100*(L.rageMax||0))+'%');

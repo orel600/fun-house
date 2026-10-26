@@ -23,6 +23,7 @@ function update(dt){
   for(const e of enemies){
     if(e.dead)continue;
     if(e.isBoss){bossUpdate(e,dt);continue}
+    if(e.wanted){wantedMove(e,dt);continue}
     const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;let mx=dx/d,my=dy/d;
     if(e.type==='wisp'){
       if(d<170){mx=-mx;my=-my}else if(d<240){const t=mx;mx=-my;my=t}
@@ -52,6 +53,8 @@ function update(dt){
   orbs=orbs.filter(o=>o.v>0);
   // הרעיונות של אוראל: דלת בונוס ופריטים במקומות קשים
   bonusUpdate(dt);if(S.room||S.mode!=='play')return;
+  // המבוקש: שמועה, מרדף ושלל
+  wantedUpdate(dt);
   // mines & waves
   for(const mn of mines){mn.t-=dt;if(mn.t<=0){if(Math.hypot(P.x-mn.x,P.y-mn.y)<58)hurt(16);sparks(mn.x,mn.y,C.blood,14,240);S.shake=Math.max(S.shake,4)}}
   mines=mines.filter(mn=>mn.t>0);

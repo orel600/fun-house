@@ -44,7 +44,7 @@ function drawEnemy(e){
     for(let i=0;i<=4;i++){const px=e.x+e.r-i*(e.r/2);ctx.lineTo(px,y+e.r+(i%2?6:0)+Math.sin(e.ph+i)*2)}
     ctx.closePath();ctx.fill();ctx.stroke();
     ctx.fillStyle=C.tide;ctx.beginPath();ctx.arc(e.x-4,y-2,2,0,7);ctx.arc(e.x+4,y-2,2,0,7);ctx.fill();
-  }else if(e.isBoss){drawBoss(e)}
+  }else if(e.isBoss){drawBoss(e)}else if(e.wanted){drawWanted(e)}
   if(!e.isBoss&&e.hp<e.max){const w=24;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,e.y-40,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,e.y-40,w*Math.max(0,e.hp/e.max),3)}
 }
 function drawBoss(b){
@@ -65,6 +65,12 @@ function drawBoss(b){
   ctx.fillStyle=C.lilac;ctx.beginPath();ctx.arc(0,0,13,0,7);ctx.fill();
   const ea=Math.atan2(P.y-b.y,P.x-b.x);ctx.fillStyle=C.ink;ctx.beginPath();ctx.arc(Math.cos(ea)*5,Math.sin(ea)*5,6,0,7);ctx.fill();
   ctx.restore();
+}
+/* חץ בקצה המסך שמצביע על משהו מחוץ למסך. s: גודל החץ */
+function edgeArrow(sx,sy,col,s=1){
+  if(sx>=-20&&sx<=W+20&&sy>=-20&&sy<=H+20)return;
+  const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(110,Math.min(H-40,H/2+Math.sin(a)*H));
+  ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.scale(s,s);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-8);ctx.lineTo(-7,8);ctx.fill();ctx.restore();
 }
 function render(){
   ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=S&&S.room?'#262114':C.ink;ctx.fillRect(0,0,W,H);
@@ -105,6 +111,7 @@ function render(){
     if(sx<-20||sx>W+20||sy<-20||sy>H+20){const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(110,Math.min(H-40,H/2+Math.sin(a)*H));
       ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.fillStyle=C.lilac;ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(-8,-10);ctx.lineTo(-8,10);ctx.fill();ctx.restore()}}
   drawBonusScreen(ox,oy);
+  drawWantedScreen(ox,oy);
   if(joy){ctx.strokeStyle='rgba(236,231,220,0.22)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(joy.ox,joy.oy,55,0,7);ctx.stroke();
     ctx.fillStyle='rgba(236,231,220,0.3)';ctx.beginPath();ctx.arc(joy.ox+joy.dx*55,joy.oy+joy.dy*55,22,0,7);ctx.fill()}
   if(S.hurt>0){const gr=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3,W/2,H/2,Math.max(W,H)*0.75);gr.addColorStop(0,'rgba(239,78,87,0)');gr.addColorStop(1,'rgba(239,78,87,'+(S.hurt*1.2)+')');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)}
