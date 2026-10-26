@@ -1,44 +1,38 @@
-/* ציור: דמויות, אויבים, בוס וממשק */
-function stick(x,y,col,ph,lw,moving){
-  ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';ctx.lineJoin='round';
-  const sw=moving?Math.sin(ph)*0.75:0,bob=moving?Math.abs(Math.sin(ph))*1.5:0;
-  ctx.beginPath();ctx.arc(x,y-20-bob,6.5,0,Math.PI*2);
-  ctx.moveTo(x,y-13-bob);ctx.lineTo(x,y+2-bob);
-  ctx.moveTo(x,y+2-bob);ctx.lineTo(x+Math.sin(sw)*9,y+2-bob+Math.cos(sw)*13);
-  ctx.moveTo(x,y+2-bob);ctx.lineTo(x-Math.sin(sw)*9,y+2-bob+Math.cos(sw)*13);
-  ctx.moveTo(x,y-9-bob);ctx.lineTo(x-Math.sin(sw)*7,y-1-bob);
-  ctx.stroke();
-  return bob;
-}
+/* ציור: דמויות, אויבים, בוס וממשק. השלד והסקינים של הדמויות ב-rig.js */
 function drawPlayer(){
   if(P.inv>0&&Math.floor(P.inv*20)%2===0)return;
   if(P.swapBuff>0){ctx.fillStyle='rgba(244,199,79,0.12)';ctx.beginPath();ctx.arc(P.x,P.y-6,30,0,Math.PI*2);ctx.fill()}
-  const bob=stick(P.x,P.y,C.chalk,P.walk,3,P.moving);
-  const sx=P.x,sy=P.y-9-bob;
-  if(P.weapon==='sword'){
-    const s=P.sw;const a=s.anim>0?s.ang-s.arc/2+s.arc*(1-s.anim/0.2):P.aim;
-    const hx=sx+Math.cos(a)*10,hy=sy+Math.sin(a)*10;
-    ctx.strokeStyle=C.chalk;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(hx,hy);ctx.stroke();
-    ctx.strokeStyle=C.ember;ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*24,hy+Math.sin(a)*24);ctx.stroke();
-    ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hx+Math.cos(a+1.57)*5,hy+Math.sin(a+1.57)*5);ctx.lineTo(hx-Math.cos(a+1.57)*5,hy-Math.sin(a+1.57)*5);ctx.stroke();
-    if(s.anim>0){
-      const k=s.anim/0.2,start=s.ang-s.arc/2,end=start+s.arc*(1-k);
-      ctx.strokeStyle='rgba(255,138,61,'+(0.55*k+0.15)+')';ctx.lineWidth=12*k+2;
-      ctx.beginPath();ctx.arc(P.x,P.y-8,s.range*0.72,start,end);ctx.stroke();
+  const s=P.sw,sword=P.weapon==='sword';
+  const a=sword&&s.anim>0?s.ang-s.arc/2+s.arc*(1-s.anim/0.2):P.aim;
+  const p=pose(P.x,P.y,P.walk,P.moving,a,sword?10:11-P.gn.recoil*4),o={skin:LOOK.player,col:C.chalk,lw:3};
+  drawRig(p,o);
+  const hand=p.armF[1],hx=hand.x,hy=hand.y;
+  if(!drawRigWeapon(p,o,P.weapon,a)){
+    if(sword){
+      ctx.strokeStyle=C.ember;ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*24,hy+Math.sin(a)*24);ctx.stroke();
+      ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hx+Math.cos(a+1.57)*5,hy+Math.sin(a+1.57)*5);ctx.lineTo(hx-Math.cos(a+1.57)*5,hy-Math.sin(a+1.57)*5);ctx.stroke();
+    }else{
+      ctx.strokeStyle=C.tide;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*13,hy+Math.sin(a)*13);ctx.stroke();
     }
-  }else{
-    const a=P.aim,rc=P.gn.recoil*4,hx=sx+Math.cos(a)*(11-rc),hy=sy+Math.sin(a)*(11-rc);
-    ctx.strokeStyle=C.chalk;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(hx,hy);ctx.stroke();
-    ctx.strokeStyle=C.tide;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*13,hy+Math.sin(a)*13);ctx.stroke();
   }
+  if(sword&&s.anim>0){
+    const k=s.anim/0.2,start=s.ang-s.arc/2,end=start+s.arc*(1-k);
+    ctx.strokeStyle='rgba(255,138,61,'+(0.55*k+0.15)+')';ctx.lineWidth=12*k+2;
+    ctx.beginPath();ctx.arc(P.x,P.y-8,s.range*0.72,start,end);ctx.stroke();
+  }
+}
+function drawEnemyRig(e){
+  const fl=e.flash>0,p=pose(e.x,e.y,e.ph,true,null);
+  drawRig(p,{skin:LOOK[e.type],col:fl?'#fff':C.dim,lw:fl?3.5:2.5});
+  return p;
 }
 function drawEnemy(e){
   const fl=e.flash>0;
   if(e.type==='grunt'){
-    stick(e.x,e.y,fl?'#fff':C.dim,e.ph,fl?3.5:2.5,true);
-    ctx.beginPath();ctx.moveTo(e.x-5,e.y-25);ctx.lineTo(e.x-7,e.y-31);ctx.moveTo(e.x+5,e.y-25);ctx.lineTo(e.x+7,e.y-31);ctx.stroke();
+    const h=drawEnemyRig(e).head;
+    ctx.beginPath();ctx.moveTo(h.x-5,h.y-5);ctx.lineTo(h.x-7,h.y-11);ctx.moveTo(h.x+5,h.y-5);ctx.lineTo(h.x+7,h.y-11);ctx.stroke();
   }else if(e.type==='shield'){
-    stick(e.x,e.y,fl?'#fff':C.dim,e.ph,fl?3.5:2.5,true);
+    drawEnemyRig(e);
     const a=Math.atan2(P.y-e.y,P.x-e.x),cx=e.x+Math.cos(a)*14,cy=e.y-8+Math.sin(a)*14;
     ctx.save();ctx.translate(cx,cy);ctx.rotate(a);
     ctx.fillStyle=fl?'#fff':'rgba(255,138,61,0.22)';ctx.strokeStyle=fl?'#fff':C.ember;ctx.lineWidth=2.5;
