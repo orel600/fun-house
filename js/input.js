@@ -15,3 +15,4 @@ function startRun(){reset();S.mode='play';['ovStart','ovOver','ovLevel','ovBoss'
 $('startBtn').onclick=startRun;$('againBtn').onclick=startRun;
 $('fightBtn').onclick=()=>{$('ovBoss').hidden=true;S.mode='play';banner(S.boss?S.boss.name:'',C.lilac)};
 for(const b of document.querySelectorAll('[data-lang]'))b.onclick=()=>{setLang(b.dataset.lang);showLang()};
+for(const b of document.querySelectorAll('[data-gfx]'))b.onclick=()=>setGfx(b.dataset.gfx);

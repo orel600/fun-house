@@ -1,5 +1,5 @@
 # בדיקת המשחק: רצה לבד על כל בקשת מיזוג (PR) ועל כל שינוי ב-main.
-# הבוט מ-tools/check.js משחק שלוש ריצות עד שהבוס מובס, והאחרונה באנגלית. הדוח מופיע בסיכום של הריצה, וצילומי המסך מצורפים לה.
+# הבוט מ-tools/check.js משחק שלוש ריצות עד שהבוס מובס: שתיים בתלת-ממד, השנייה בדו-ממד, והאחרונה באנגלית. הדוח מופיע בסיכום של הריצה, וצילומי המסך מצורפים לה.
 name: בדיקת המשחק
 
 on:
@@ -29,8 +29,9 @@ jobs:
           for seed in 7 123 2026; do
             shots=""; [ "$seed" = 7 ] && shots="--shots"
             lang=""; [ "$seed" = 2026 ] && lang="--lang en"
-            echo "### seed $seed $lang" >> "$GITHUB_STEP_SUMMARY"
-            node tools/check.js --seed $seed $shots $lang | tee -a "$GITHUB_STEP_SUMMARY"
+            gfx=""; [ "$seed" = 123 ] && gfx="--gfx 2d"
+            echo "### seed $seed $lang $gfx" >> "$GITHUB_STEP_SUMMARY"
+            node tools/check.js --seed $seed $shots $lang $gfx | tee -a "$GITHUB_STEP_SUMMARY"
             echo >> "$GITHUB_STEP_SUMMARY"
           done
       - uses: actions/upload-artifact@v7

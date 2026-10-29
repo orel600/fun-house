@@ -4,6 +4,7 @@ function drawPlayer(){
   if(P.swapBuff>0){ctx.fillStyle='rgba(244,199,79,0.12)';ctx.beginPath();ctx.arc(P.x,P.y-6,30,0,Math.PI*2);ctx.fill()}
   const s=P.sw,sword=P.weapon==='sword';
   const a=sword&&s.anim>0?s.ang-s.arc/2+s.arc*(1-s.anim/0.2):P.aim;
+  if(!R3D.on){
   const p=pose(P.x,P.y,P.walk,P.moving,a,sword?10:11-P.gn.recoil*4),o={skin:LOOK.player,col:C.chalk,lw:3};
   drawRig(p,o);
   const hand=p.armF[1],hx=hand.x,hy=hand.y;
@@ -19,7 +20,7 @@ function drawPlayer(){
       ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(t1x,t1y);ctx.lineTo(sx,sy);ctx.lineTo(t2x,t2y);ctx.stroke();
       if(k>0.3){ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(hx+cx*10,hy+cy*10);ctx.stroke()}
     }
-  }
+  }}
   if(sword&&s.anim>0){
     const k=s.anim/0.2,start=s.ang-s.arc/2,end=start+s.arc*(1-k);
     ctx.strokeStyle='rgba(255,138,61,'+(0.55*k+0.15)+')';ctx.lineWidth=12*k+2;
@@ -33,6 +34,10 @@ function drawEnemyRig(e){
 }
 function drawEnemy(e){
   const fl=e.flash>0;
+  // בתלת-ממד הגוף מצויר בשכבה שמתחת. כאן נשארים רק הסימונים: פס חיים, טבעת הזמן של המבוקש, וההתראות של הבוס
+  if(R3D.on&&lookOf(e)){if(e.isBoss)drawBoss(e);else if(e.wanted)drawWanted(e);
+    if(!e.isBoss&&e.hp<e.max){const L=lookOf(e),w=24,y=e.y+L.foot-L.h-6;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,y,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,y,w*Math.max(0,e.hp/e.max),3)}
+    return}
   if(e.type==='grunt'){
     const h=drawEnemyRig(e).head;
     ctx.beginPath();ctx.moveTo(h.x-5,h.y-5);ctx.lineTo(h.x-7,h.y-11);ctx.moveTo(h.x+5,h.y-5);ctx.lineTo(h.x+7,h.y-11);ctx.stroke();
@@ -58,6 +63,7 @@ function drawBoss(b){
     ctx.strokeStyle='rgba(239,78,87,0.18)';ctx.lineWidth=b.r*2;ctx.lineCap='butt';
     ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x+Math.cos(b.charge.a)*320,b.y+Math.sin(b.charge.a)*320);ctx.stroke();ctx.lineCap='round';
   }
+  if(R3D.on){if(b.rage>0.05){ctx.strokeStyle='rgba(239,78,87,'+b.rage+')';ctx.lineWidth=2+b.rage*4;ctx.beginPath();ctx.ellipse(b.x,b.y+b.r*0.8,b.r*1.5,b.r*0.9,0,0,7);ctx.stroke()}return}
   ctx.save();ctx.translate(b.x,b.y);
   ctx.shadowColor=glow;ctx.shadowBlur=18;
   const n=7,R=b.r+(b.phase>1?14:9);
@@ -78,17 +84,20 @@ function edgeArrow(sx,sy,col,s=1){
   ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.scale(s,s);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-8);ctx.lineTo(-7,8);ctx.fill();ctx.restore();
 }
 function render(){
-  ctx.setTransform(DPR,0,0,DPR,0,0);ctx.fillStyle=S&&S.room?'#262114':C.ink;ctx.fillRect(0,0,W,H);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  // בתלת-ממד הקנבס שקוף: הקרקע והדמויות מצוירות בשכבה שמתחתיו (render3d.js)
+  if(R3D.on)ctx.clearRect(0,0,W,H);else{ctx.fillStyle=S&&S.room?'#262114':C.ink;ctx.fillRect(0,0,W,H)}
   if(!P)return;
   const sh=RM?0:S.shake,ox=Math.round(W/2-S.cam.x+rand(-sh,sh)),oy=Math.round(H/2-S.cam.y+rand(-sh,sh));
+  render3d(ox,oy);
   ctx.translate(ox,oy);
   // ground
-  const g=90,x0=Math.floor(-ox/g)*g,y0=Math.floor(-oy/g)*g;
+  if(!R3D.on){const g=90,x0=Math.floor(-ox/g)*g,y0=Math.floor(-oy/g)*g;
   ctx.strokeStyle='rgba(236,231,220,0.07)';ctx.lineWidth=1.5;ctx.beginPath();
   for(let x=x0;x<-ox+W+g;x+=g)for(let y=y0;y<-oy+H+g;y+=g){const h=hash(x,y);
     if(h<0.5){ctx.moveTo(x-4,y);ctx.lineTo(x+4,y);ctx.moveTo(x,y-4);ctx.lineTo(x,y+4)}
     else if(h<0.72){ctx.moveTo(x+14,y+22);ctx.lineTo(x+26,y+18)}}
-  ctx.stroke();
+  ctx.stroke();}
   // mines & waves
   for(const mn of mines){const k=mn.t/1.3;ctx.strokeStyle='rgba(239,78,87,'+(0.5-k*0.3)+')';ctx.lineWidth=2;ctx.setLineDash([6,6]);ctx.beginPath();ctx.arc(mn.x,mn.y,58,0,7);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle=Math.floor(mn.t*(k<.4?16:6))%2?C.blood:C.ink;ctx.strokeStyle=C.blood;ctx.beginPath();ctx.arc(mn.x,mn.y,7,0,7);ctx.fill();ctx.stroke()}

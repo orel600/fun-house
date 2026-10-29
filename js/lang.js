@@ -26,6 +26,9 @@ const TEXT={
   start:{he:'יאללה',en:'Let’s go'},
   best:{he:t=>'השיא שלך: '+t,en:t=>'Your best: '+t},
   langGroup:{he:'שפה',en:'Language'},
+  gfxGroup:{he:'גרפיקה',en:'Graphics'},
+  gfx3d:{he:'תלת-ממד',en:'3D'},
+  gfx2d:{he:'דו-ממד',en:'2D'},
   arena:{he:'זירת המשחק',en:'Game arena'},
   swapWeapon:{he:'החלף נשק',en:'Switch weapon'},
 

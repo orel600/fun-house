@@ -6,6 +6,7 @@
              --shots      צילומי מסך לתיקייה tools/shots
              --skin nomad הדמות לובשת סקין מ-SKINS, כדי לראות עיצוב חדש בצילומים
              --lang en    משחק באנגלית, ונכשל אם על המסך מופיע טקסט בעברית
+             --gfx 2d     משחק בדו-ממד. ברירת המחדל: תלת-ממד, ונכשל אם הוא לא עלה
    הזמן במשחק מואץ בשעון מזויף, אז דקה וחצי של משחק לוקחות כמה שניות. */
 const {chromium}=require('playwright');
 const path=require('path'),fs=require('fs');
@@ -19,6 +20,7 @@ const CFG={
   shots:opt('shots')?path.join(__dirname,'shots'):null,
   skin:opt('skin'),
   lang:opt('lang')||'he',
+  gfx:opt('gfx')==='2d'?'2d':'3d',
   step:200,                          // כל כמה מילישניות של משחק הבוט מחליט מחדש
   phone:{width:390,height:844}
 };
@@ -37,6 +39,7 @@ function botStep({god,en}){
   if(S.mode==='over'){L.died??=at;return L}
   if(S.mode!=='play')return L;
   if(god)P.hp=P.maxHp;
+  if(R3D.on){L.actorsMax=Math.max(L.actorsMax||0,R3D.stats.actors||0);L.callsMax=Math.max(L.callsMax||0,R3D.stats.calls||0)}
   L.taken=S.bn.taken;L.coins=S.bn.coins;L.t=at;L.level=P.level;
   L.hpTxt=document.getElementById('hpTxt').textContent;L.xpTxt=document.getElementById('xpTxt').textContent;
   for(const f of floats)if(/^\+\d/.test(f.txt))L.gainMax=Math.max(L.gainMax||0,+f.txt.slice(1));
@@ -82,7 +85,8 @@ function botStep({god,en}){
 }
 
 (async()=>{
-  const browser=await chromium.launch(process.env.PW_CHANNEL?{channel:process.env.PW_CHANNEL}:{});  // ב-GitHub: ה-Chrome שכבר מותקן שם, בלי להוריד דפדפן
+  // תלת-ממד בלי כרטיס גרפי: WebGL רץ על המעבד (SwiftShader). איטי, אבל מספיק כדי לבדוק שהכל עולה ומצויר
+  const browser=await chromium.launch({...(process.env.PW_CHANNEL?{channel:process.env.PW_CHANNEL}:{}),args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});  // ב-GitHub: ה-Chrome שכבר מותקן שם, בלי להוריד דפדפן
   const page=await browser.newPage({viewport:CFG.phone,deviceScaleFactor:1,isMobile:true,hasTouch:true});
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
@@ -92,13 +96,19 @@ function botStep({god,en}){
   await page.addInitScript(seed=>{let a=seed>>>0;Math.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}},CFG.seed);
   await page.clock.install({time:0});
   await page.clock.pauseAt(1000);
+  await page.addInitScript(g=>{try{localStorage.setItem('zm-gfx',g)}catch(e){}},CFG.gfx);
   await page.goto('file://'+path.resolve(__dirname,'..','index.html'));
   await page.clock.runFor(300);
+  // הדמויות בתלת-ממד נטענות ברקע. מחכים להן לפני שמתחילים
+  await page.evaluate(()=>{R3D.drawEvery=30});   // בבדיקה מציירים תלת-ממד פעם ב-30 פריימים, אחרת היא לוקחת שעה
+  let g3={};for(let i=0;i<200;i++){g3=await page.evaluate(()=>({ready:R3D.ready,failed:R3D.failed,on:R3D.on}));if(g3.ready||g3.failed||CFG.gfx==='2d')break;await page.waitForTimeout(50);await page.clock.runFor(50)}
 
   const results=[];
   const check=(ok,txt)=>results.push((ok?'✓ ':'✗ ')+txt);
   let shotN=0;
-  const shot=async name=>{if(!CFG.shots)return;fs.mkdirSync(CFG.shots,{recursive:true});await page.screenshot({path:path.join(CFG.shots,String(++shotN).padStart(2,'0')+'-'+name+'.png')})};
+  const shot=async name=>{if(!CFG.shots)return;fs.mkdirSync(CFG.shots,{recursive:true});
+    await page.evaluate(()=>{R3D.drawEvery=0});await page.clock.runFor(34);await page.evaluate(()=>{R3D.drawEvery=30});
+    await page.screenshot({path:path.join(CFG.shots,String(++shotN).padStart(2,'0')+'-'+name+'.png')})};
 
   const open=await page.$$eval('.ov',els=>els.filter(e=>getComputedStyle(e).display!=='none').map(e=>e.id));
   check(open.length===1&&open[0]==='ovStart','מסך פתיחה: רק הוא גלוי'+(open.length===1?'':' (גלויים: '+open.join(', ')+')'));
@@ -138,11 +148,13 @@ function botStep({god,en}){
     check(L.rageLow<L.rageMax,'נרגע כשמתעמתים: ירד ל-'+Math.round(100*(L.rageLow??1))+'%');
     check(L.bossDown!=null,'בוס הובס: '+t(L.bossDown));
   }
+  if(CFG.gfx==='3d')check(g3.on&&L.actorsMax>0,g3.on?'תלת-ממד: פעיל, עד '+L.actorsMax+' דמויות במסך, עד '+L.callsMax+' ציורים בפריים':'תלת-ממד: לא עלה'+(g3.failed?' (נפל לדו-ממד)':''));
+  else check(!g3.on,'דו-ממד: פעיל לפי הבחירה');
   if(CFG.lang==='en')check(!startLeak&&!L.heLeak,startLeak||L.heLeak?'שפה: נשאר טקסט בעברית: '+(startLeak||L.heLeak):'שפה: כל המסכים באנגלית, משמאל לימין');
   if(!CFG.god)results.push(L.died!=null?'· מת ב-'+t(L.died):'· שרד עד '+t(L.t));
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
 
-  console.log('ריצה: seed '+CFG.seed+', '+t(L.t)+' זמן משחק'+(CFG.god?', עם חסינות':'')+(CFG.lang==='en'?', באנגלית':'')+(CFG.shots?', צילומים ב-'+CFG.shots:''));
+  console.log('ריצה: seed '+CFG.seed+', '+t(L.t)+' זמן משחק'+(CFG.god?', עם חסינות':'')+(CFG.lang==='en'?', באנגלית':'')+(CFG.gfx==='2d'?', בדו-ממד':', בתלת-ממד')+(CFG.shots?', צילומים ב-'+CFG.shots:''));
   console.log(results.join('\n'));
   process.exit(results.some(r=>r.startsWith('✗'))?1:0);
 })().catch(e=>{console.error(e);process.exit(1)});

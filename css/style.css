@@ -54,6 +54,9 @@ h1{font-size:46px} h2{font-size:30px}
 .lang{appearance:none;border:1px solid var(--line);background:transparent;color:var(--dim);border-radius:999px;padding:5px 12px;font:700 13px var(--body);cursor:pointer}
 .lang[aria-pressed="true"]{background:var(--chalk);border-color:var(--chalk);color:var(--ink)}
 .lang:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.gfx{margin-top:6px}
+#c3{z-index:0}
+#c{z-index:1}
 .rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:15px;line-height:1.45}
 .rules li{padding-inline-start:16px;position:relative}
 .rules li::before{content:"";position:absolute;inset-inline-start:0;top:.6em;width:6px;height:6px;border-radius:50%;background:var(--chalk)}
