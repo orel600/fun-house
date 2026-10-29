@@ -31,7 +31,8 @@ jobs:
     steps:
       - name: אין עדיין חיבור ל-Vercel
         if: env.VERCEL_TOKEN == ''
-        run: echo "דילוג: אין סוד VERCEL_TOKEN בריפו. ההוראות ב-CLAUDE.md, בפרק 'פרסום'." | tee -a "$GITHUB_STEP_SUMMARY"
+        run: |
+          echo "דילוג: אין סוד VERCEL_TOKEN בריפו. ההוראות ב-CLAUDE.md, בפרק 'פרסום'." | tee -a "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/checkout@v7
         if: env.VERCEL_TOKEN != ''
