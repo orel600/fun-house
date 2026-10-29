@@ -10,7 +10,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20   # שתי ריצות בתלת-ממד בלי כרטיס גרפי לוקחות כ-4 דקות כל אחת
     defaults:
       run:
         shell: bash
