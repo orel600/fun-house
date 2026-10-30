@@ -34,6 +34,8 @@ const LOOK3D={
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. בלי קסדה הוא נמוך יותר, אז h קטן כדי שהגוף יהיה בגודל של האביר.
   // לבדיקה בלבד: עם ?hero=pilot בכתובת הוא נכנס במקום האביר של הלוחם (דמות ההתחלה הראשונה)
   pilotHero:{model:'pilotHero',h:56,foot:14},
+  // הדמות האישית של ניר (HEROES.skins ב-heroes.js): מראה בלבד, מעל המחלקה שנבחרה. אותו גובה כמו הפיילוט
+  nirHero:{model:'nirHero',h:56,foot:14},
   /* תושבי הכפר (NPC ב-npc.js): דמויות KayKit בצבע משלהן, עם אנימציות העבודה של 2.0 (NPC_ANIM), עד שיגיעו הדמויות של ג'מיני.
      own:false מסתיר את הנשק שהדמות מחזיקה בקובץ המקורי. anim: מה מנגנים בכל מצב של התושב (idle, walk, work, wave, cheer) */
   npc_head:{model:'knight',h:64,foot:14,tint:'gold',anim:{...NPC_ANIM,idle:'Idle_B'}},
@@ -198,8 +200,8 @@ function crowdAdd(e){
 const SIN=()=>Math.sin(VIEW.tilt),COS=()=>Math.cos(VIEW.tilt);
 // השחקן: הדמות שנבחרה, ובידיים הנשק שלבוש (GRIP3D). נבנה מחדש רק כשהדמות או הנשק מתחלפים
 function heroLook(){
-  const wid=SAVE.gear.weapon,ck=heroId()+'|'+wid+'|'+PILOT3D;if(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
-  const L=Object.assign({},LOOK3D.player,PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()]),it=gItem(wid);
+  const wid=SAVE.gear.weapon,sk=heroSkin(),ck=heroId()+'|'+wid+'|'+PILOT3D+'|'+sk;if(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
+  const L=Object.assign({},LOOK3D.player,sk?LOOK3D[HEROES.skins[sk].look]:PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()]),it=gItem(wid);
   L.props={};L.anim=Object.assign({},L.anim);L.ck=ck;
   for(const w of ['sword','gun']){
     const mine=it&&wUse(wid)===w&&it.look&&R3D.props[it.look.model],model=mine?it.look.model:GRIP3D.spare[w],g=GRIP3D[GRIP3D.of(model)];
