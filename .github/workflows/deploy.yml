@@ -47,14 +47,12 @@ jobs:
           # רק מה שהמשחק צריך. התיקייה נקראת fun-house, וזה גם שם הפרויקט ב-Vercel
           site="$RUNNER_TEMP/fun-house"; mkdir -p "$site"
           cp index.html "$site/"; cp -r css js "$site/"; for d in skins sounds; do [ -d "$d" ] && cp -r "$d" "$site/"; done; true
-          # מספר הגרסה = כמה שינויים נכנסו ל-main. ב-PR: המספר של main שהוא נבנה עליו, ומספר ה-PR
-          base=$(sed -n "s/^const VERSION_BASE='\(.*\)';/\1/p" js/version.js)
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            n=$(git rev-list --count "origin/$GITHUB_BASE_REF"); ver="$base.$n-pr$PR_NUM"
-          else
-            n=$(git rev-list --count HEAD); ver="$base.$n"
-          fi
-          echo "const VERSION_BASE='$base';const VERSION='$ver';" > "$site/js/version.js"
+          # מספר הגרסה: ראשי.שלב.עדכון.בנייה. בנייה = כמה שינויים ב-main. עדכון = כמה מהם מאז שהשלב התחיל (STAGE_FROM)
+          eval "$(sed -n 's/^const MAJOR=\([0-9]*\), STAGE=\([0-9]*\), STAGE_FROM=\([0-9]*\);/major=\1 stage=\2 from=\3/p' js/version.js)"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then n=$(git rev-list --count "origin/$GITHUB_BASE_REF"); else n=$(git rev-list --count HEAD); fi
+          ver="$major.$stage.$((n-from)).$n"
+          [ "$GITHUB_EVENT_NAME" = "pull_request" ] && ver="$ver-pr$PR_NUM"
+          echo "const MAJOR=$major, STAGE=$stage, STAGE_FROM=$from;const VERSION='$ver';" > "$site/js/version.js"
           echo "גרסה: $ver" >> "$GITHUB_STEP_SUMMARY"
           cd "$site"
           # רווח או ירידת שורה שנדבקו לטוקן בהעתקה הופכים אותו ללא תקף, אז מנקים אותם
