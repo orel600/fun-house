@@ -143,7 +143,7 @@ A single fantasy [helmet / pair of shoulder pads / crown] for a low-poly mobile 
 
 ### תוצאות הפיילוט (30.10.2026)
 
-הדמות: הלוחם הצעיר מהדף שניר יצר ב-Gem של ג'מיני ([art/pilot/hero-sheet.jpg](../art/pilot/hero-sheet.jpg)). במשחק: `pilotHero`, ונכנס במקום האביר רק עם `?hero=pilot` בסוף הכתובת.
+הדמות: הלוחם הצעיר מהדף שניר יצר ב-Gem של ג'מיני ([art/pilot/hero-sheet.jpg](../art/pilot/hero-sheet.jpg)). במשחק: `pilotHero`, ונכנס במקום האביר של הלוחם (דמות ההתחלה) רק עם `?hero=pilot` בסוף הכתובת.
 
 ![הגיבור ליד האביר](../art/pilot/hero-vs-knight.jpg)
 משמאל האביר של KayKit, ואחריו הגיבור: עמידה, ריצה, תקיפה בחרב, עידוד ומוות. כל האנימציות הן של KayKit בלי שינוי.
