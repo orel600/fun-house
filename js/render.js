@@ -163,6 +163,7 @@ function render(){
     else drawEnemy(a)}
   drawAgeFx();   // זוהר, שובל וחלקיקים על נשק משודרג (aging.js)
   drawSkills(ox,oy);   // טבעות וברקים של סקילים, וסימני רטוב/קפוא/הלם (skills.js)
+  drawOrbits();   // החפצים המסתובבים (orbit.js)
   // חצים: מוט, נוצות וחוד. קסם: כדור זוהר עם שובל (weapons.js)
   const sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r;ctx.lineWidth=2;
   for(const b of pb){
