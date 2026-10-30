@@ -1,20 +1,20 @@
-/* בדיקה אוטומטית: פותח את המשחק בדפדפן ללא ממשק ברוחב טלפון, בוט משחק עד אחרי הבוס, ובסוף דוח.
+/* בדיקה אוטומטית: פותח את המשחק בדפדפן ללא ממשק בגודל טלפון לרוחב, בוט משחק עד אחרי הבוס, ובסוף דוח.
    הרצה: node tools/check.js
-   אפשרויות: --time 150   כמה שניות משחק לשחק
+   אפשרויות: --time 480   כמה שניות משחק לשחק, לכל היותר (הריצה נגמרת כשהבוס בסוף מובס)
              --seed 7     אותו מספר = אותה ריצה בדיוק, כדי לשחזר באג או להשוות לפני ואחרי שינוי
              --real       בלי חסינות: הבוט יכול למות, כדי לבדוק קושי ולא רק קריסות
              --shots      צילומי מסך לתיקייה tools/shots
              --skin nomad הדמות לובשת סקין מ-SKINS, כדי לראות עיצוב חדש בצילומים
              --lang en    משחק באנגלית, ונכשל אם על המסך מופיע טקסט בעברית
              --gfx 2d     משחק בדו-ממד. ברירת המחדל: תלת-ממד, ונכשל אם הוא לא עלה
-   הזמן במשחק מואץ בשעון מזויף, אז דקה וחצי של משחק לוקחות כמה שניות. */
+   הזמן במשחק מואץ בשעון מזויף, אז ריצה של שש דקות לוקחת דקה-שתיים. */
 const {chromium}=require('playwright');
 const path=require('path'),fs=require('fs');
 
 const args=process.argv.slice(2);
 const opt=k=>{const i=args.indexOf('--'+k);if(i<0)return null;const v=args[i+1];return v&&!v.startsWith('--')?v:true};
 const CFG={
-  time:+(opt('time')||150),
+  time:+(opt('time')||480),
   seed:+(opt('seed')||Math.floor(Math.random()*1e6)),
   god:!opt('real'),
   shots:opt('shots')?path.join(__dirname,'shots'):null,
@@ -22,7 +22,7 @@ const CFG={
   lang:opt('lang')||'he',
   gfx:opt('gfx')==='2d'?'2d':'3d',
   step:200,                          // כל כמה מילישניות של משחק הבוט מחליט מחדש
-  phone:{width:390,height:844}
+  phone:{width:844,height:390}       // טלפון לרוחב: המשחק משוחק כך (החלטה של ניר, 30.10.2026)
 };
 
 /* הבוט רץ בתוך הדף, עם גישה למשתנים הגלובליים של המשחק. הזיכרון שלו ב-window.__bot */
@@ -36,11 +36,20 @@ function botStep({god,en}){
       if(he.test(s)){L.heLeak=s.trim().slice(0,80);break}}
   if(vis('ovLevel')){document.querySelector('#cards .card').click();L.levels++;return L}
   if(vis('ovBoss')){L.bossIntro??=at;document.getElementById('fightBtn').click();return L}
-  if(S.mode==='over'){L.died??=at;return L}
+  if(S.mode==='over'){if(S.run.won)L.won??=at;else L.died??=at;
+    L.overTitle=document.querySelector('#ovOver h2').textContent;L.overShown=vis('ovOver');return L}
   if(S.mode!=='play')return L;
   if(god)P.hp=P.maxHp;
   if(R3D.on){L.actorsMax=Math.max(L.actorsMax||0,R3D.stats.actors||0);L.callsMax=Math.max(L.callsMax||0,R3D.stats.calls||0)}
   L.taken=S.bn.taken;L.coins=S.bn.coins;L.t=at;L.level=P.level;
+  // הריצה: טיימר, פס התקדמות, תחנות, וכמה אויבים היו בזירה יחד
+  L.peak=Math.max(L.peak||0,enemies.length);L.clock=document.getElementById('clock').textContent;
+  L.marks=document.querySelectorAll('#runbar .mk').length;L.marksDone=document.querySelectorAll('#runbar .mk.done').length;
+  L.stations=S.run.log.map(s=>s.kind+'@'+Math.round(s.t)).join(' ');L.elites=S.run.elites;L.nStations=RUN.stations.length;
+  // מספרים גדולים: הכי גדול שנראה, כמה קריטיות, ומספר נזק שלא נכתב משמאל לימין
+  const val=s=>{const x=/^([\d.]+)([KMBT]?)/.exec(s);return x?+x[1]*{'':1,K:1e3,M:1e6,B:1e9,T:1e12}[x[2]]:0};
+  for(const f of floats){if(!f.ltr&&/^[\d.]+[KMBT]?!?$/.test(f.txt))L.notLtr=f.txt;if(!f.ltr)continue;
+    if(val(f.txt)>(L.dmgMax||0)){L.dmgMax=val(f.txt);L.dmgMaxTxt=f.txt}if(f.crit&&!f.counted){f.counted=1;L.crits=(L.crits||0)+1}}
   L.hpTxt=document.getElementById('hpTxt').textContent;L.xpTxt=document.getElementById('xpTxt').textContent;
   for(const f of floats)if(/^\+\d/.test(f.txt))L.gainMax=Math.max(L.gainMax||0,+f.txt.slice(1));
   const useWeapon=w=>{if(P.weapon!==w){swapWeapon();L.swaps++;m.swapAt=S.t}};
@@ -68,6 +77,10 @@ function botStep({god,en}){
         const n=nearest(130);useWeapon(n&&!n.isBoss?(n.mult.sword>=n.mult.gun?'sword':'gun'):b.weak);
         tx=b.x;ty=b.y;stop=P.weapon==='sword'?b.r+30:240;
       }
+    }else if(enemies.some(e=>e.elite)){
+      // אויב-על: כמו שחקן אמיתי, הולכים אליו עם הנשק שהוא חלש אליו
+      const e=enemies.find(e=>e.elite),wk=e.mult.sword>=e.mult.gun?'sword':'gun';
+      useWeapon(wk);tx=e.x;ty=e.y;stop=wk==='sword'?e.r+40:220;
     }else if(S.bn.door){L.door??=at;tx=S.bn.door.x;ty=S.bn.door.y}
     else if(w.e){tx=w.e.x;ty=w.e.y}
     else if(S.bn.picks.length){const k=S.bn.picks[0];tx=k.x;ty=k.y}
@@ -127,7 +140,7 @@ function botStep({god,en}){
     await page.clock.runFor(CFG.step);
     L=await page.evaluate(botStep,{god:CFG.god,en:CFG.lang==='en'});
     for(const k of ['door','room','wanted','boss','bossDown'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k)}
-    if(L.died!=null||L.t>=CFG.time||L.bossDown!=null&&L.t>L.bossDown+3)break;  // אחרי שהבוס הובס אין עוד מה לבדוק
+    if(L.died!=null||L.t>=CFG.time||L.won!=null&&L.overShown)break;   // הבוס בסוף הובס והריצה נגמרה בניצחון
   }
   await shot('end');
   await browser.close();
@@ -142,11 +155,17 @@ function botStep({god,en}){
     (L.wEnd==null?'לא נתפס ולא ברח':'נגמר '+t(L.wEnd)+' · נתפס '+L.wCaught+', ברח '+L.wEscaped+(L.wLoot?' · שלל: '+L.wLoot:'')));
   const num=/^\d+ \/ \d+$/;
   check(num.test(L.hpTxt)&&num.test(L.xpTxt)&&L.gainMax>0,'מספרים בממשק: חיים '+L.hpTxt+', XP '+L.xpTxt+', הכי הרבה שנאסף ברצף: +'+(L.gainMax||0));
+  const nElite=(L.stations||'').split('elite').length-1;
+  check(L.marks===L.nStations+1&&/^\d+:\d\d$/.test(L.clock||''),'טיימר ופס התקדמות: השעון הגיע ל-'+L.clock+', '+L.marksDone+' מתוך '+L.marks+' סימנים בפס עברו');
+  check(L.stations&&L.stations.split(' ').length===L.nStations&&L.elites===nElite,'תחנות: '+(L.stations||'אף אחת')+' · אויבי-על שהופלו: '+L.elites+' מתוך '+nElite);
+  check(L.peak>=120,'גושים: עד '+L.peak+' אויבים בזירה יחד');
+  check(/[KMB]!?$/.test(L.dmgMaxTxt||'')&&L.crits>0&&!L.notLtr,'מספרים גדולים: הכי גדול '+(L.dmgMaxTxt||'-')+', קריטיות: '+(L.crits||0)+(L.notLtr?', מספר שלא נכתב משמאל לימין: '+L.notLtr:''));
   check(L.boss!=null,'בוס: הופיע '+t(L.boss)+(L.bossName?' ('+L.bossName+')':''));
   if(L.boss!=null){
     check(L.rageMax>0.9,'זעם כשבורחים: הגיע ל-'+Math.round(100*(L.rageMax||0))+'%');
     check(L.rageLow<L.rageMax,'נרגע כשמתעמתים: ירד ל-'+Math.round(100*(L.rageLow??1))+'%');
     check(L.bossDown!=null,'בוס הובס: '+t(L.bossDown));
+    check(L.won!=null&&L.overShown,'ניצחון: הריצה נגמרה '+t(L.won)+(L.overTitle?' ("'+L.overTitle+'")':''));
   }
   if(CFG.gfx==='3d')check(g3.on&&L.actorsMax>0,g3.on?'תלת-ממד: פעיל, עד '+L.actorsMax+' דמויות במסך, עד '+L.callsMax+' ציורים בפריים':'תלת-ממד: לא עלה'+(g3.failed?' (נפל לדו-ממד)':''));
   else check(!g3.on,'דו-ממד: פעיל לפי הבחירה');

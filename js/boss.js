@@ -13,7 +13,7 @@ function makeBoss(){
     for(const k of c){r-=w[k];if(r<=0){ch=k;break}}pats.push(ch);
   }
   const p2=pick(ks.filter(k=>!pats.includes(k)));
-  const hp=650*(1+S.bossCount*0.7),p=spawnPos();
+  const hp=RUN.bossHp*runK(),p=spawnPos();
   return{isBoss:true,type:'boss',name:pick(T('syl1'))+pick(T('syl2')),title:T('bossTitle.'+fav),
     x:p.x,y:p.y,r:34,hp,max:hp,speed:62,mult:{[fav]:0.5,[other]:1.7},weak:other,pats,p2,phase:1,patT:2.4,
     flash:0,kx:0,ky:0,ph:0,dmg:20,learned,spin:0,charge:null,spiral:0,spA:0,spT:0,rage:0,flee:0,rageMsg:0,rageShot:0};
@@ -62,7 +62,7 @@ function bossUpdate(b,dt){
   if(d<b.r+P.r-4)hurt(b.dmg);
 }
 function bossDown(b){
-  S.boss=null;S.bossCount++;S.nextBoss=S.t+110;
+  S.boss=null;S.bossCount++;S.nextBoss=Infinity;S.run.won=S.t;
   for(let i=0;i<22;i++)orbs.push({x:b.x+rand(-40,40),y:b.y+rand(-40,40),v:1});
   sparks(b.x,b.y,C.lilac,40,320);sparks(b.x,b.y,C.gold,20,260);
   eb=[];waves=[];mines=[];S.hitstop=0.25;S.slow=0.8;S.shake=14;

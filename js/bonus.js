@@ -55,7 +55,7 @@ function spawnPick(){
 function usePick(k){
   S.bn.taken++;
   if(k.type==='bomb'){
-    const base=BONUS.bombBase*(1+S.t/90),hw=W/2+40,hh=H/2+40;
+    const base=BONUS.bombBase*runK(),hw=W/2+40,hh=H/2+40;
     for(const e of enemies){
       if(e.dead||Math.abs(e.x-S.cam.x)>hw||Math.abs(e.y-S.cam.y)>hh)continue;
       damage(e,e.isBoss?base*BONUS.bombBossShare:base,'bomb',Math.atan2(e.y-k.y,e.x-k.x));
