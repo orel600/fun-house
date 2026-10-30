@@ -8,7 +8,7 @@
    נקודה (x,y) במשחק יושבת ב-(x, 0, y/sin(tilt)) בעולם התלת-ממדי, וכך היא מופיעה על המסך בדיוק איפה שהקנבס מצייר אותה.
    אם WebGL לא זמין, או שהשחקן בחר 2D, הכל נשאר כמו קודם (R3D.on=false). */
 
-const VIEW={tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018'};
+const VIEW={tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52'};
 
 /* מי לובש איזה מודל. h: גובה הדמות על המסך בפיקסלים. foot: כמה פיקסלים מתחת למרכז הלוגי הרגליים נוגעות בקרקע.
    props: חפצים ביד (bone: היד, ומיקום וסיבוב מקומיים כמו בחבילה המקורית). הטבעת מתחת לרגליים היא בצבע החולשה של האויב (e.weak, מ-data.js), ולא כתובה כאן. tint: צבע מ-TINT.
@@ -23,13 +23,33 @@ const LOOK3D={
     anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   wisp:{model:'mage',h:56,foot:12,float:6,props:{staff:{prop:'staff',...HAND_R,tint:'ice'}},
     anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons',cast:'Spellcasting'}},
+  // דמויות ההתחלה (HEROES ב-heroes.js): כמו player, עם מודל משלהן. המטה של הקוסם יושב במקום הקשת
+  hero_warrior:{model:'knight'},
+  hero_hunter:{model:'rogue'},
+  hero_mage:{model:'mage',props:{gun:{prop:'staff',...HAND_R,tint:'tide'}}},
   wanted:{model:'rogue',h:62,foot:13,tint:'gold',anim:{run:'Running_B',die:'Death_A'}},
-  boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle',charge:'2H_Melee_Attack_Spin',cast:'2H_Melee_Attack_Chop',taunt:'Taunt',die:'Death_A'}}
+  boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle',charge:'2H_Melee_Attack_Spin',cast:'2H_Melee_Attack_Chop',taunt:'Taunt',die:'Death_A'}},
+  // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. בלי קסדה הוא נמוך יותר, אז h קטן כדי שהגוף יהיה בגודל של האביר.
+  // לבדיקה בלבד: עם ?hero=pilot בכתובת הוא נכנס במקום האביר של הלוחם (דמות ההתחלה הראשונה)
+  pilotHero:{model:'pilotHero',h:56,foot:14,
+    props:{sword:{prop:'sword',...HAND_R},gun:{prop:'crossbow',bone:'handslotr',pos:[-0.105,-0.01,0],rot:[0,0.7071,0,0.7071]}},
+    anim:{idle:'Idle',run:'Running_A',sword:'1H_Melee_Attack_Slice_Horizontal',gun:'1H_Ranged_Shoot',die:'Death_A',win:'Cheer'}}
 };
 /* קהל: כשיש הרבה אויבים על המסך, רק הקרובים לשחקן מקבלים דמות מונפשת. כל השאר מצוירים יחד בתנוחת ריצה קפואה
    שמתחלפת בין שני צעדים: כמה ציורים בפריים במקום מאות. בטלפון זה ההבדל בין משחק שזורם למשחק שנתקע.
    full: כמה דמויות מונפשות לכל היותר. poses: באיזה רגע של אנימציית הריצה מצלמים כל צעד. dying: כמה אנימציות מוות יחד. max: כמה בקהל */
 const CROWD={full:30,poses:[0.25,0.75],dying:16,max:320,types:['grunt','shield','wisp']};
+const PILOT3D=/[?&]hero=pilot/.test(location.search);
+/* הכפר: המיקומים והמראה לפי רמה ב-VILLAGE (js/village.js). כאן רק איזה קובץ מודל לכל שם, ובאיזה רוחב על המסך בפיקסלים.
+   models: המבנים (השמות ב-look). site: פיגום, למבנה שעוד לא נבנה או שבונים אותו עכשיו. deco: קישוטים סביב מבנה.
+   decor: העצים והגבעות מסביב (villageDecor). stock: ערימה ליד מבנה שיש בו תוצרת שמחכה */
+const VIL3D={
+  models:{castle:{model:'v_castle',w:190},forge:{model:'v_forge',w:140},mill:{model:'v_mill',w:140},mine:{model:'v_mine',w:140},market:{model:'v_market',w:150},tent:{model:'v_tent',w:105}},
+  site:{model:'v_site',w:135},gate:{model:'v_gate',w:150},
+  deco:{flag:{model:'v_flag',w:46},crate:{model:'v_crate',w:30},barrel:{model:'v_barrel',w:28}},
+  decor:{tree:{model:['v_treeA','v_treeB'],w:55},rock:{model:'v_rock',w:55},hills:{model:'v_hills',w:260}},
+  stock:{mill:{model:'v_lumber',w:60},mine:{model:'v_stone',w:60}}
+};
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
@@ -85,7 +105,8 @@ async function init3d(){
       R3D.clips[a.name]=a;
       R3D.clips[a.name+'@up']=new THREE.AnimationClip(a.name+'@up',a.duration,a.tracks.filter(t=>UPPER.test(t.name)));
       R3D.clips[a.name+'@low']=new THREE.AnimationClip(a.name+'@low',a.duration,a.tracks.filter(t=>!UPPER.test(t.name)))}
-    for(const k of ['crossbow','blade','shield','staff']){const g=await parseGLB(k);lambert(g.scene);R3D.props[k]=g.scene}
+    for(const k of ['crossbow','blade','shield','staff','sword']){const g=await parseGLB(k);lambert(g.scene);R3D.props[k]=g.scene}
+    for(const k in MODELS3D)if(k.startsWith('v_')){const g=await parseGLB(k);lambert(g.scene);g.scene.traverse(o=>{o.frustumCulled=true});R3D.props[k]=g.scene}   // מבני הכפר
     for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t);lambert(t);t.updateMatrixWorld(true);
       // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
       const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=bb.max.y-bb.min.y||2}
@@ -150,7 +171,8 @@ function crowdAdd(e){
 
 /* ---- דמויות ---- */
 const SIN=()=>Math.sin(VIEW.tilt),COS=()=>Math.cos(VIEW.tilt);
-function lookOf(e){return e===P?LOOK3D.player:e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
+const heroLook=()=>Object.assign({},LOOK3D.player,PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()]);
+function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
 const TINT={gold:C.gold,...Object.fromEntries(Object.keys(DMG.types).map(k=>[k,DMG.types[k].col]))};   // צבע לכל סוג נזק, וזהב
 function makeActor(L){
   const pool=R3D.pool||(R3D.pool={});const free=pool[L.model+'|'+Object.keys(L.props||{}).join()];
@@ -196,11 +218,12 @@ const yawOf=(dx,dy)=>Math.atan2(dx,dy/SIN());
 function setFlash(a,k,col){for(const m of a.mats){if(k>0)m.emissive.set(col||0xffffff).multiplyScalar(k);else if(m.userData.em)m.emissive.copy(m.userData.em);else m.emissive.set(0)}}
 
 function syncPlayer(dt){
-  let a=R3D.player;if(!a)a=R3D.player=makeActor(LOOK3D.player);
-  const L=LOOK3D.player,sword=P.weapon==='sword';
-  if(a.own)a.own.visible=sword;if(a.props.gun)a.props.gun.visible=!sword;
+  const L=heroLook();
+  let a=R3D.player;if(!a||a.key!==L.model+'|'+Object.keys(L.props||{}).join()){if(a)freeActor(a);a=R3D.player=makeActor(L)}   // דמות חדשה: מודל חדש
+  const sword=P.weapon==='sword';
+  const blade=a.own||a.props.sword;if(blade)blade.visible=sword;if(a.props.gun)a.props.gun.visible=!sword;
   const st=a.st||(a.st={anim:0,gt:0,mode:''});
-  if(S.mode==='over'){if(st.mode!=='over'){st.mode='over';a.base=null;a.mixer.stopAllAction();once(a,L.anim.die,1.2,true)}}
+  if(S.mode==='over'){if(st.mode!=='over'){st.mode='over';a.base=null;a.mixer.stopAllAction();once(a,S.won?L.anim.win:L.anim.die,1.2,true)}}
   else{
     if(st.mode==='over'){st.mode='';a.one=null;a.mixer.stopAllAction()}
     // תקיפה: רק פלג הגוף העליון, כך שאפשר לתקוף תוך כדי ריצה
@@ -215,6 +238,8 @@ function syncPlayer(dt){
   a.root.visible=!(P.inv>0&&Math.floor(P.inv*20)%2===0)||RM;
   setFlash(a,P.inv>0.45?0.5:P.swapBuff>0?0.25:0,P.inv>0.45?C.blood:C.gold);
   a.mixer.update(dt);
+  // איפה הנשק על המסך, בשביל הזוהר של Aging שמצויר בקנבס (aging.js). מהעולם חזרה לקואורדינטות המשחק
+  const w=sword?a.own:a.props.gun;if(w){const v=w.getWorldPosition(R3D._v||(R3D._v=new THREE.Vector3()));AGE_FX.hand={x:v.x,y:v.z*SIN()-v.y*COS()}}
   mark('shadow',a.root.position.x,a.root.position.z,16);
 }
 function syncEnemy(e,dt){
@@ -264,12 +289,38 @@ function retire(e,a,dt){
   if(a.dieT<=0){R3D.actors.delete(e);freeActor(a)}
 }
 
+/* ---- הכפר ---- */
+// מודל במקום (x,y) במשחק, בגודל w פיקסלים לרוחב, יושב על הקרקע
+function vPut(model,x,y,w,rot=0){
+  const t=R3D.props[model],m=t.clone(true),bb=t.userData.bb||(t.userData.bb=new THREE.Box3().setFromObject(t));
+  const s=w/Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z,1e-3);
+  m.scale.setScalar(s);m.rotation.y=rot;m.position.set(x,-bb.min.y*s,y/SIN());R3D.vil.g.add(m);return m;
+}
+function syncVillage(){
+  let V=R3D.vil;
+  if(!V){V=R3D.vil={g:new THREE.Group(),b:{},stock:{}};R3D.scene.add(V.g);
+    for(const d of villageDecor()){const D=VIL3D.decor[d.kind],md=Array.isArray(D.model)?D.model[d.v<0.5?0:1]:D.model;vPut(md,d.x,d.y,D.w*(0.8+d.v*0.4),d.v*6.28)}
+    const g=VILLAGE.gate;vPut(VIL3D.gate.model,g.x,g.y,VIL3D.gate.w);
+    for(const k in VIL3D.stock){const B=VILLAGE.b[k];V.stock[k]=vPut(VIL3D.stock[k].model,B.x+B.r*1.05,B.y-B.r*0.25,VIL3D.stock[k].w)}}
+  V.g.visible=true;
+  // מבנה שעלה רמה מתחלף לפי vLook: פיגום עד שנבנה, ואחר כך המודל, הגודל, הקישוטים והזוהר של הרצועה שלו
+  for(const k in VILLAGE.b){
+    const B=VILLAGE.b[k],lk=vLook(k),key=lk?lk.model+lk.L:'site',cur=V.b[k];
+    if(cur&&cur.key===key)continue;if(cur)for(const m of cur.all)V.g.remove(m);
+    const D=lk?VIL3D.models[lk.model]:VIL3D.site,m=vPut(D.model,B.x,B.y,D.w*(lk?lk.size:1)),all=[m];
+    if(lk){if(lk.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(lk.glow).multiplyScalar(0.22)}});
+      lk.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length];all.push(vPut(VIL3D.deco[d].model,B.x+dx*B.r,B.y+dy*B.r,VIL3D.deco[d].w))})}
+    V.b[k]={key,all};
+  }
+  for(const k in V.stock)V.stock[k].visible=vStock(k)>0;
+}
+
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
 function render3d(ox,oy){
   if(!R3D.on||!P)return;
   if(!R3D._mx){R3D._mx=new THREE.Matrix4();R3D._p=new THREE.Vector3();R3D._q=new THREE.Quaternion();R3D._s=new THREE.Vector3();R3D._up=new THREE.Vector3(0,1,0)}
   // drawEvery: הבדיקה האוטומטית מציירת רק חלק מהפריימים, כי שם התלת-ממד רץ על המעבד בלי כרטיס גרפי. בשאר הפריימים לא עושים כלום
-  R3D.frame=(R3D.frame||0)+1;if(R3D.drawEvery&&R3D.frame%R3D.drawEvery!==0)return;
+  R3D.frame=(R3D.frame||0)+1;const skip=R3D.drawEvery&&R3D.frame%R3D.drawEvery!==0;if(skip&&!S.vil)return;   // בכפר ממשיכים לעדכן, כי שם נבנים המבנים
   const r=R3D.r,c=R3D.cam,now=performance.now(),dt=Math.min(0.05*(R3D.drawEvery||1),R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;
   const pr=Math.min(DPR,1.5);if(r.getPixelRatio()!==pr)r.setPixelRatio(pr);
   if(R3D.w!==W||R3D.h!==H){R3D.w=W;R3D.h=H;r.setSize(W,H,false);c.left=-W/2;c.right=W/2;c.top=H/2;c.bottom=-H/2;c.updateProjectionMatrix()}
@@ -277,11 +328,13 @@ function render3d(ox,oy){
   const S_=SIN(),cx=W/2-ox,cz=(H/2-oy)/S_;
   c.position.set(cx,2000*S_,cz+2000*COS());c.lookAt(cx,0,cz);
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
-  R3D.scene.background.set(S.room?VIEW.room:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':VIEW.groundLine);
+  R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:VIEW.groundLine);
   for(const k in R3D.marks)R3D.marks[k].count=0;
   for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;
-  if(!S.room){
+  if(R3D.vil)R3D.vil.g.visible=false;
+  if(S.vil){syncPlayer(dt);syncVillage()}   // בכפר: השחקן והמבנים
+  else if(!S.room){
     syncPlayer(dt);
     // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
     const vis=enemies.filter(e=>!e.dead&&(e.isBoss||onScreen(e.x+ox,e.y+oy)));
@@ -296,7 +349,7 @@ function render3d(ox,oy){
   const up=m=>{if(!m.count)return;const b=m.instanceMatrix;b.clearUpdateRanges();b.addUpdateRange(0,m.count*16);b.needsUpdate=true};
   for(const k in R3D.marks)up(R3D.marks[k]);
   for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)up(m);
-  r.render(R3D.scene,c);
+  if(!skip)r.render(R3D.scene,c);
   const i=r.info.render;R3D.stats={calls:i.calls,tris:i.triangles,actors:R3D.actors.size+1,crowd:R3D.nCrowd};
 }
 // התחלה מחדש: מנקים דמויות מהריצה הקודמת

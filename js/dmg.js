@@ -66,7 +66,7 @@ function onHit(e,d,base,w,t,ang,chained){
     for(const o of enemies){if(o===e||o.dead)continue;const dd=Math.hypot(o.x-e.x,o.y-e.y);if(dd<c.r)near.push([dd,o])}
     near.sort((a,b)=>a[0]-b[0]);
     for(const [,o] of near.slice(0,c.n)){
-      for(let i=1;i<4;i++)parts.length<FX.parts&&parts.push({x:e.x+(o.x-e.x)*i/4+rand(-6,6),y:e.y+(o.y-e.y)*i/4+rand(-6,6),vx:0,vy:0,life:.12,max:.12,col:T_.col,size:3});
+      for(let i=1;i<4;i++)parts.length<HITFX.parts&&parts.push({x:e.x+(o.x-e.x)*i/4+rand(-6,6),y:e.y+(o.y-e.y)*i/4+rand(-6,6),vx:0,vy:0,life:.12,max:.12,col:T_.col,size:3});
       damage(o,base*c.k,w,ang,t,true);
     }
   }

@@ -5,9 +5,10 @@ function drawPlayer(){
   const s=P.sw,sword=P.weapon==='sword';
   const a=sword&&s.anim>0?s.ang-s.arc/2+s.arc*(1-s.anim/0.2):P.aim;
   if(!R3D.on){
-  const p=pose(P.x,P.y,P.walk,P.moving,a,sword?10:11-P.gn.recoil*4),o={skin:LOOK.player,col:C.chalk,lw:3};
+  const p=pose(P.x,P.y,P.walk,P.moving,a,sword?10:11-P.gn.recoil*4),o={skin:LOOK.player,col:(HEROES.list[heroId()]||{}).col||C.chalk,lw:3};
   drawRig(p,o);
   const hand=p.armF[1],hx=hand.x,hy=hand.y;
+  AGE_FX.hand={x:hx+Math.cos(a)*14,y:hy+Math.sin(a)*14};   // הזוהר של Aging יושב על הנשק (aging.js)
   if(!drawRigWeapon(p,o,P.weapon,a)){
     if(sword){
       ctx.strokeStyle=dtCol(P.dt.sword);ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*24,hy+Math.sin(a)*24);ctx.stroke();
@@ -116,12 +117,14 @@ function render(){
   // orbs
   for(const o of orbs){ctx.fillStyle=C.gold;ctx.beginPath();ctx.moveTo(o.x,o.y-5);ctx.lineTo(o.x+4,o.y);ctx.lineTo(o.x,o.y+5);ctx.lineTo(o.x-4,o.y);ctx.fill()}
   drawBonusWorld();
+  drawVillage();
   // actors sorted by y
   // מציירים רק מי שעל המסך: עם מאות אויבים זה חוסך את רובם
   const actors=enemies.filter(e=>e.isBoss||onScreen(e.x+ox,e.y+oy));actors.push({isPlayer:true,y:P.y});actors.sort((a,b)=>a.y-b.y);
   for(const a of actors){if(a.isPlayer)drawPlayer();
     else if(a.big&&!R3D.on){ctx.save();ctx.translate(a.x,a.y);ctx.scale(a.big,a.big);ctx.translate(-a.x,-a.y);drawEnemy(a);ctx.restore()}
     else drawEnemy(a)}
+  drawAgeFx();   // זוהר, שובל וחלקיקים על נשק משודרג (aging.js)
   // חצים: מוט, נוצות וחוד
   ctx.strokeStyle=ctx.fillStyle=dtCol(P.dt.gun);ctx.lineWidth=2;
   for(const b of pb){
@@ -132,6 +135,7 @@ function render(){
   for(const b of eb){ctx.fillStyle=C.blood;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();ctx.fillStyle='#FFD9DB';ctx.beginPath();ctx.arc(b.x,b.y,b.r*0.45,0,7);ctx.fill()}
   for(const p of parts){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill()}
   ctx.globalAlpha=1;
+  drawFx();   // חגיגות של התקדמות (fx.js)
   ctx.textAlign='center';
   // מספר עם סימן (+12, -16) נכתב משמאל לימין בכל שפה, אחרת הסימן קופץ לצד הלא נכון
   // מכה קריטית קופצת לרגע ומקבלת מסגרת לבנה
@@ -148,6 +152,8 @@ function render(){
       ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.fillStyle=C.lilac;ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(-8,-10);ctx.lineTo(-8,10);ctx.fill();ctx.restore()}}
   drawBonusScreen(ox,oy);
   drawWantedScreen(ox,oy);
+  drawVillageScreen(ox,oy);
+  drawQuestMarks(ox,oy);
   if(joy){ctx.strokeStyle='rgba(236,231,220,0.22)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(joy.ox,joy.oy,55,0,7);ctx.stroke();
     ctx.fillStyle='rgba(236,231,220,0.3)';ctx.beginPath();ctx.arc(joy.ox+joy.dx*55,joy.oy+joy.dy*55,22,0,7);ctx.fill()}
   if(S.hurt>0){const gr=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3,W/2,H/2,Math.max(W,H)*0.75);gr.addColorStop(0,'rgba(239,78,87,0)');gr.addColorStop(1,'rgba(239,78,87,'+(S.hurt*1.2)+')');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)}

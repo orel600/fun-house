@@ -1,5 +1,5 @@
 /* XP, שדרוגים, מסכי בוס וסוף */
-function gainXP(v){P.xp+=v;showGain(v);while(P.xp>=P.next){P.xp-=P.next;P.level++;P.next=Math.round(6+P.level*4.5);S.pendingLv++}}
+function gainXP(v){P.xp+=v;sfx('xp');showGain(v);while(P.xp>=P.next){P.xp-=P.next;P.level++;P.next=Math.round(6+P.level*4.5);S.pendingLv++}}
 /* כמה אספת: מספר אחד מעל הראש שגדל כל עוד אוספים ברצף, במקום מספר לכל יהלום */
 function showGain(v){
   let f=S.gain;
@@ -7,7 +7,7 @@ function showGain(v){
   f.n+=v;f.txt='+'+f.n;f.life=0.9;f.x=P.x;f.y=P.y-46;
 }
 function openLevelUp(){
-  S.mode='level';S.pendingLv--;joy=null;
+  S.mode='level';S.pendingLv--;joy=null;sfx('levelup');
   // שדרוג של סוג נזק לא מוצע אם לנשק כבר יש את הסוג הזה
   const pool=UPS.filter(u=>!(u.max&&(S.picks[u.id]||0)>=u.max)&&!(u.el&&P.dt[u.w]===u.el)).sort(()=>Math.random()-.5).slice(0,3);
   $('lvTitle').textContent=T('level',P.level);
@@ -18,23 +18,23 @@ function openLevelUp(){
     if(u.w!=='any')b.style.setProperty('--dt',dtCol(u.el||P.dt[u.w]));if(u.el){b.dataset.el=u.el;b.dataset.w=u.w}
     const [name,desc]=T('up.'+u.id);
     b.innerHTML='<span class="tag">'+T('w.'+u.w)+(u.el?' '+dtSvg(u.el):'')+'</span><b>'+name+'</b><span>'+desc+'</span>';
-    b.onclick=()=>{if(u.el){P.dt[u.w]=u.el;updateSwapBtn()}else u.f();S.picks[u.id]=(S.picks[u.id]||0)+1;$('ovLevel').hidden=true;S.mode='play';if(S.pendingLv>0)openLevelUp()};
+    b.onclick=()=>{if(u.el){P.dt[u.w]=u.el;updateSwapBtn()}else u.f();sfx('celebrate');S.picks[u.id]=(S.picks[u.id]||0)+1;$('ovLevel').hidden=true;S.mode='play';if(S.pendingLv>0)openLevelUp()};
     box.appendChild(b);
   });
   $('ovLevel').hidden=false;
 }
 function showIntro(b){
-  S.mode='intro';joy=null;
+  S.mode='intro';joy=null;sfx('bossIn');
   $('bTitle').innerHTML=b.name+'<br><span style="font-size:20px;color:var(--lilac)">'+b.title+'</span>';
   $('bLearned').innerHTML=b.learned.map(s=>'<span>'+s+'</span>').join('');
   $('bPats').innerHTML=b.pats.map(k=>'<span class="chip">'+T('pat.'+k)+'</span>').join('')+'<span class="chip" style="color:var(--dim)">'+T('secretAttack')+'</span><span class="chip" style="color:var(--blood)">'+T('hatesRunning')+'</span>';
   $('bWeak').innerHTML=T('weakSpot',dtCol(b.weak),dtSvg(b.weak)+T('dt.'+b.weak));
   $('ovBoss').hidden=false;
 }
-// win: הבוס בסוף הריצה הופל
-function gameOver(win=false){
+function gameOver(){
   S.mode='over';joy=null;
-  const h=$('ovOver').querySelector('h2');h.dataset.t=win?'won':'fell';h.textContent=T(h.dataset.t);
+  runEnd();   // השלל עובר לתרמיל (village.js)
+  gearLoot();   // לפעמים גם פריט ציוד (gear.js)
   if(S.t>best){best=S.t;try{localStorage.setItem('zm-best',String(best))}catch(e){}}
   $('sTime').textContent=fmt(S.t);$('sLvl').textContent=P.level;$('sBoss').textContent=S.bossCount;$('sBest').textContent=fmt(best);$('sCoins').textContent=S.bn.coins;$('sPicks').textContent=S.bn.taken;
   setTimeout(()=>{$('ovOver').hidden=false},700);

@@ -12,6 +12,7 @@ function update(dt){
   if(S.room){roomUpdate(dt);return}
   S.t+=dt;P.inv-=dt;P.swapBuff-=dt;S.shake=Math.max(0,S.shake-dt*30);S.hurt-=dt;
   if(P.regen)P.hp=Math.min(P.maxHp,P.hp+P.regen*dt);
+  heroTick(dt);   // סגנון המשחק (heroes.js)
   // move
   const {ix,iy}=movePlayer(dt);
   if(P.moving&&!nearest(440))P.aim=Math.atan2(iy,ix);
@@ -26,7 +27,8 @@ function update(dt){
     if(e.wanted){wantedMove(e,dt);continue}
     const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;let mx=dx/d,my=dy/d;
     if(e.type==='wisp'){
-      if(d<170){mx=-mx;my=-my}else if(d<240){const t=mx;mx=-my;my=t}
+      // מכשף רגיל שומר מרחק. מכשף-על מתקדם אליך, כדי שלא יסתתר מאחורי המלווים שלו
+      if(e.elite){}else if(d<170){mx=-mx;my=-my}else if(d<240){const t=mx;mx=-my;my=t}
       e.shoot-=dt;if(e.shoot<=0&&d<380){e.shoot=rand(1.8,2.8);shootE(e.x,e.y,Math.atan2(dy,dx),175,6,8)}
     }
     const sp=e.speed*slowK(e);e.x+=mx*sp*dt+e.kx*dt;e.y+=my*sp*dt+e.ky*dt;
