@@ -14,6 +14,7 @@ const VIEW={tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a45
    props: חפצים ביד (bone: היד, ומיקום וסיבוב מקומיים כמו בחבילה המקורית). ring: טבעת בצבע הנשק שפוגע בו, מתחת לרגליים.
    anim: שמות האנימציות מהחבילה. דמות חדשה = שורה כאן (ומודל ב-build3d.js) */
 const HAND_R={bone:'handslotr',pos:[0,0.033,0],rot:[0,-1,0,0]};
+const NPC_ANIM={idle:'Idle',walk:'Walking_D_Skeletons',work:'Idle',wave:'Cheer',cheer:'Cheer'};   // אין עדיין נפנוף: בינתיים הרעה קצרה
 const LOOK3D={
   player:{model:'knight',h:66,foot:14,
     props:{gun:{prop:'crossbow',bone:'handslotr',pos:[-0.105,-0.01,0],rot:[0,0.7071,0,0.7071]}},
@@ -33,7 +34,14 @@ const LOOK3D={
   // לבדיקה בלבד: עם ?hero=pilot בכתובת הוא נכנס במקום האביר של הלוחם (דמות ההתחלה הראשונה)
   pilotHero:{model:'pilotHero',h:56,foot:14,
     props:{sword:{prop:'sword',...HAND_R},gun:{prop:'crossbow',bone:'handslotr',pos:[-0.105,-0.01,0],rot:[0,0.7071,0,0.7071]}},
-    anim:{idle:'Idle',run:'Running_A',sword:'1H_Melee_Attack_Slice_Horizontal',gun:'1H_Ranged_Shoot',die:'Death_A',win:'Cheer'}}
+    anim:{idle:'Idle',run:'Running_A',sword:'1H_Melee_Attack_Slice_Horizontal',gun:'1H_Ranged_Shoot',die:'Death_A',win:'Cheer'}},
+  /* תושבי הכפר (NPC ב-npc.js): בינתיים דמויות KayKit קיימות בצבע משלהן, עד שיגיעו דמויות KayKit 2.0 וג'מיני.
+     own:false מסתיר את הנשק שהדמות מחזיקה בקובץ המקורי. anim: מה מנגנים בכל מצב של התושב (idle, walk, work, wave, cheer) */
+  npc_head:{model:'knight',h:64,foot:14,tint:'gold',own:false,anim:NPC_ANIM},
+  npc_smith:{model:'barbarian',h:66,foot:14,tint:'ember',anim:{...NPC_ANIM,work:'1H_Melee_Attack_Chop'}},   // הגרזן שלו הוא הפטיש, בינתיים
+  npc_merchant:{model:'rogue',h:60,foot:13,tint:'gold',own:false,anim:NPC_ANIM},
+  npc_inn:{model:'barbarian',h:58,foot:13,own:false,anim:NPC_ANIM},
+  npc_priest:{model:'rogue',h:60,foot:13,tint:'lilac',own:false,props:{staff:{prop:'staff',...HAND_R,tint:'lilac'}},anim:{...NPC_ANIM,work:'Spellcasting'}}
 };
 /* קהל: כשיש הרבה אויבים על המסך, רק הקרובים לשחקן מקבלים דמות מונפשת. כל השאר מצוירים יחד בתנוחת ריצה קפואה
    שמתחלפת בין שני צעדים: כמה ציורים בפריים במקום מאות. בטלפון זה ההבדל בין משחק שזורם למשחק שנתקע.
@@ -173,9 +181,11 @@ function crowdAdd(e){
 const SIN=()=>Math.sin(VIEW.tilt),COS=()=>Math.cos(VIEW.tilt);
 const heroLook=()=>Object.assign({},LOOK3D.player,PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()]);
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
-const TINT={ember:C.ember,tide:C.tide,gold:C.gold};
+const TINT={ember:C.ember,tide:C.tide,gold:C.gold,lilac:C.lilac};
+// מפתח למאגר: רק דמות זהה (מודל, חפצים, צבע, נשק מוסתר) חוזרת לשימוש
+const actorKey=L=>L.model+'|'+Object.keys(L.props||{}).join()+(L.tint?'|'+L.tint:'')+(L.own===false?'|x':'');
 function makeActor(L){
-  const pool=R3D.pool||(R3D.pool={});const free=pool[L.model+'|'+Object.keys(L.props||{}).join()];
+  const pool=R3D.pool||(R3D.pool={});const free=pool[actorKey(L)];
   if(free&&free.length){const a=free.pop();a.root.visible=true;a.dieT=0;a.base=null;a.one=null;a.mixer.stopAllAction();return a}
   const t=R3D.tmpl[L.model],root=THREE.SkeletonUtils.clone(t),s=L.h/COS()/t.userData.h;
   root.scale.setScalar(s);
@@ -190,7 +200,7 @@ function makeActor(L){
   }
   // נשקים שהדמות מחזיקה בקובץ המקורי: חרב לשחקן, גרזן לבוס, סכין למבוקש
   let own=null;root.traverse(o=>{if(o.isMesh&&!o.isSkinnedMesh&&/^(1H|2H)_|Knife/.test(o.name))own=own||o});
-  const a={root,mats,props,own,mixer:new THREE.AnimationMixer(root),L,key:L.model+'|'+Object.keys(L.props||{}).join(),base:null,one:null,flash:0,dieT:0};
+  const a={root,mats,props,own,mixer:new THREE.AnimationMixer(root),L,key:actorKey(L),base:null,one:null,flash:0,dieT:0};
   R3D.scene.add(root);return a;
 }
 function freeActor(a){a.root.visible=false;a.mixer.stopAllAction();const p=R3D.pool;(p[a.key]||(p[a.key]=[])).push(a)}
@@ -219,7 +229,7 @@ function setFlash(a,k,col){for(const m of a.mats){if(k>0)m.emissive.set(col||0xf
 
 function syncPlayer(dt){
   const L=heroLook();
-  let a=R3D.player;if(!a||a.key!==L.model+'|'+Object.keys(L.props||{}).join()){if(a)freeActor(a);a=R3D.player=makeActor(L)}   // דמות חדשה: מודל חדש
+  let a=R3D.player;if(!a||a.key!==actorKey(L)){if(a)freeActor(a);a=R3D.player=makeActor(L)}   // דמות חדשה: מודל חדש
   const sword=P.weapon==='sword';
   const blade=a.own||a.props.sword;if(blade)blade.visible=sword;if(a.props.gun)a.props.gun.visible=!sword;
   const st=a.st||(a.st={anim:0,gt:0,mode:''});
@@ -314,6 +324,23 @@ function syncVillage(){
   }
   for(const k in V.stock)V.stock[k].visible=vStock(k)>0;
 }
+// תושבי הכפר: דמות לכל תושב שנמצא בכפר, והקישוטים בפינה של מי שאין לו מבנה. המצב (הולך, עובד, מנופף) מגיע מ-npc.js
+function syncNpcs(dt){
+  const all=npcState(),A=R3D.npcs||(R3D.npcs={}),V=R3D.vil;
+  if(!V.npcDeco){V.npcDeco=1;for(const id in NPC.list){const sp=NPC.list[id].spot;if(sp)sp.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length];vPut(VIL3D.deco[d].model,sp.x+dx*40,sp.y+dy*40,VIL3D.deco[d].w)})}}
+  for(const id in NPC.list){
+    const L=LOOK3D['npc_'+id],n=all[id];let a=A[id];
+    if(!npcHere(id)||!L){if(a){freeActor(a);delete A[id]}continue}
+    if(!a){a=A[id]=makeActor(L);a.npcSt=null}
+    if(a.own)a.own.visible=L.own!==false;
+    if(a.npcSt!==n.st){a.npcSt=n.st;if(n.st==='wave'||n.st==='cheer')once(a,L.anim[n.st],n.st==='wave'?NPC.waveT:NPC.cheerT);else a.one=null}
+    const busy=a.one&&a.one.isRunning();
+    loop(a,(n.st==='walk'?L.anim.walk:n.st==='work'?L.anim.work:L.anim.idle)+(busy?'@low':''),n.st==='walk'?0.8:1);
+    place(a,n.x,n.y,L.foot,yawOf(Math.cos(n.face),Math.sin(n.face)));
+    a.mixer.update(dt);mark('shadow',a.root.position.x,a.root.position.z,15);
+  }
+}
+function npcs3dOff(){if(!R3D.npcs)return;for(const id in R3D.npcs)freeActor(R3D.npcs[id]);R3D.npcs=null}
 
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
 function render3d(ox,oy){
@@ -333,7 +360,7 @@ function render3d(ox,oy){
   for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
-  if(S.vil){syncPlayer(dt);syncVillage()}   // בכפר: השחקן והמבנים
+  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt)}   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
     // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
@@ -353,6 +380,6 @@ function render3d(ox,oy){
   const i=r.info.render;R3D.stats={calls:i.calls,tris:i.triangles,actors:R3D.actors.size+1,crowd:R3D.nCrowd};
 }
 // התחלה מחדש: מנקים דמויות מהריצה הקודמת
-function reset3d(){if(!R3D.ready)return;for(const [e,a] of R3D.actors)freeActor(a);R3D.actors.clear();if(R3D.player){R3D.player.st=null;R3D.player.one=null;R3D.player.base=null;R3D.player.mixer.stopAllAction()}}
+function reset3d(){if(!R3D.ready)return;npcs3dOff();for(const [e,a] of R3D.actors)freeActor(a);R3D.actors.clear();if(R3D.player){R3D.player.st=null;R3D.player.one=null;R3D.player.base=null;R3D.player.mixer.stopAllAction()}}
 
 if(R3D.want)init3d();else showGfx();
