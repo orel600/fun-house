@@ -1,0 +1,75 @@
+# פרסום ל-Vercel: כל PR מקבל קישור משלו לטלפון (בתגובה על ה-PR), וכל מיזוג ל-main מעדכן את הקישור הקבוע.
+# למה לא החיבור הרגיל של Vercel ל-GitHub: בתוכנית החינמית של Vercel, ריפו פרטי עם שני כותבים נחסם.
+# כאן מעלים את קבצי המשחק בלבד, בלי היסטוריית git, אז לא משנה מי כתב את השינוי.
+# צריך סוד אחד בריפו: VERCEL_TOKEN (מהחשבון של אוראל ב-Vercel). בלעדיו הריצה מדלגת ולא נכשלת.
+name: פרסום ל-Vercel
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_TELEMETRY_DISABLED: 1
+      CLI: vercel@64.0.2
+    steps:
+      - name: אין עדיין חיבור ל-Vercel
+        if: env.VERCEL_TOKEN == ''
+        run: |
+          echo "דילוג: אין סוד VERCEL_TOKEN בריפו. ההוראות ב-CLAUDE.md, בפרק 'פרסום'." | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/checkout@v7
+        if: env.VERCEL_TOKEN != ''
+
+      - name: העלאה
+        id: up
+        if: env.VERCEL_TOKEN != ''
+        run: |
+          # רק מה שהמשחק צריך. התיקייה נקראת fun-house, וזה גם שם הפרויקט ב-Vercel
+          site="$RUNNER_TEMP/fun-house"; mkdir -p "$site"
+          cp index.html "$site/"; cp -r css js "$site/"; [ -d skins ] && cp -r skins "$site/" || true
+          cd "$site"
+          # רווח או ירידת שורה שנדבקו לטוקן בהעתקה הופכים אותו ללא תקף, אז מנקים אותם
+          tok=$(printf %s "$VERCEL_TOKEN" | tr -d '[:space:]')
+          if ! npx -y "$CLI" whoami --token "$tok" >/dev/null 2>&1; then
+            msg="Vercel דחה את הטוקן (VERCEL_TOKEN). צריך ליצור טוקן חדש ב-vercel.com/account/tokens ולשמור אותו שוב בסוד. ההוראות ב-CLAUDE.md, בפרק 'פרסום'."
+            echo "::error::$msg"; echo "$msg" >> "$GITHUB_STEP_SUMMARY"; exit 1
+          fi
+          prod=""; [ "$GITHUB_REF" = "refs/heads/main" ] && prod="--prod"
+          url=$(npx -y "$CLI" deploy --yes $prod --token "$tok")
+          # הקישור פתוח לכל מי שיש לו אותו, כדי שגם ניר וגם אוראל ייכנסו בלי חשבון ב-Vercel
+          npx -y "$CLI" project protection disable fun-house --sso --token "$tok" >/dev/null 2>&1 || true
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "### 🎮 [לשחק בגרסה הזו]($url)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: קישור בתגובה על ה-PR
+        if: env.VERCEL_TOKEN != '' && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL: ${{ steps.up.outputs.url }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          # תגובה אחת לכל PR, שמתעדכנת בכל שינוי, במקום תגובה חדשה בכל פעם
+          mark='<!-- vercel-preview -->'
+          body="$mark
+          🎮 **לשחק בגרסה הזו בטלפון:** $URL
+          (מתעדכן בכל שינוי ב-PR. גרסה: ${GITHUB_SHA::7})"
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --jq "[.[]|select(.body|startswith(\"$mark\"))][0].id // empty")
+          if [ -n "$id" ]; then gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -f body="$body" >/dev/null
+          else gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -f body="$body" >/dev/null; fi
