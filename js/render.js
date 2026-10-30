@@ -51,6 +51,8 @@ function drawPlayer(){
     ctx.beginPath();ctx.arc(P.x,P.y-8,s.range*0.72,start,end);ctx.stroke();ctx.globalAlpha=1;
   }
 }
+// הצבע של יצור משאבים בדו-ממד, לפי החומר שהוא עשוי ממנו (החומר הראשון ב-tags ב-ETYPES). בתלת-ממד: tint ב-LOOK3D
+const MATCOL={stone:'#8A8F9C',plant:'#5C9A48',metal:'#C87533',cloth:'#D9C9A3'};
 function drawEnemyRig(e){
   const fl=e.flash>0,p=pose(e.x,e.y,e.ph,true,null);
   drawRig(p,{skin:LOOK[e.type],col:fl?'#fff':C.dim,lw:fl?3.5:2.5});
@@ -87,6 +89,12 @@ function drawEnemy(e){
     ctx.closePath();ctx.fill();ctx.stroke();
     ctx.fillStyle=dtCol(e.weak);ctx.beginPath();ctx.arc(e.x-4,y-2,2,0,7);ctx.arc(e.x+4,y-2,2,0,7);ctx.fill();
   }else if(e.isBoss){drawBoss(e)}else if(e.wanted){drawWanted(e)}
+  else if(MATCOL[(ETYPES[e.type]?.tags||[])[0]]){   // יצורי משאבים: גוש בצבע החומר שלו, עם עיניים (ETYPES ב-data.js)
+    const r=e.r,bob=Math.abs(Math.sin(e.ph))*3,y=e.y-r*0.6-bob;
+    ctx.fillStyle=fl?'#fff':MATCOL[ETYPES[e.type].tags[0]];ctx.strokeStyle=C.ink;ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.roundRect(e.x-r,y-r,r*2,r*1.8,r*0.5);ctx.fill();ctx.stroke();
+    ctx.fillStyle=C.ink;ctx.beginPath();ctx.arc(e.x-r*0.35,y-r*0.2,2.5,0,7);ctx.arc(e.x+r*0.35,y-r*0.2,2.5,0,7);ctx.fill();
+  }
   if(!e.isBoss&&e.hp<e.max){const w=24;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,e.y-40,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,e.y-40,w*Math.max(0,e.hp/e.max),3)}
 }
 function drawBoss(b){
@@ -142,6 +150,8 @@ function render(){
   drawDrops();   // שלל על הרצפה (drops.js)
   drawBonusWorld();
   drawVillage();
+  drawNodes();   // עצים, סלעים ועורקים (nodes.js)
+  drawLoot();    // טבעות עלית ועמודי אור של שלל (loot.js)
   drawWorld();   // העולם הפתוח (world.js)
   drawNpcs();
   // actors sorted by y

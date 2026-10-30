@@ -13,26 +13,19 @@ const WORLD={
   gates:{grove:{x:-840,y:450,r:44},pit:{x:840,y:450,r:44}},   // שערים לזירה. השמות ב-lang.js ('w.gate.<id>')
   arrive:130,                            // כמה פיקסלים מתחת לשער עומדים כשמגיעים אליו
   near:55,                               // כמה פיקסלים מקצה שער נחשב "לידו": נפתח הפאנל עם הכפתור
-  /* מקורות משאבים בשדות: kind, כמה, מרכז ורדיוס. המקומות קבועים, כך שהיער תמיד באותו מקום.
-     kinds: עד שהכלכלה (#27) תגיע. אז השמות האלה עוברים ל-NODES.kinds (nodes.js), ו-kinds כאן נמחק */
-  fields:[{kind:'tree',n:14,x:-610,y:-210,r:260},{kind:'tree',n:5,x:145,y:210,r:170},
-          {kind:'rock',n:9,x:610,y:-190,r:230},{kind:'copper',n:4,x:785,y:-400,r:135},{kind:'rock',n:3,x:-210,y:240,r:125}],
-  kinds:{
-    tree:  {hp:40,r:28,shape:'tree',col:'#3E7A4A',drop:{wood:[1,3]}},   // r: גודל וגבול הפגיעה. גדולים, כדי שיראו אותם בטלפון
-    rock:  {hp:55,r:24,shape:'rock',col:'#7A8094',drop:{stone:[1,2],gem:[0.02,1]}},
-    copper:{hp:80,r:24,shape:'vein',col:'#C87533',drop:{ore:[1,1],stone:[0.5,1]}}
-  },
-  gather:{reach:65,cd:0.5,dmg:20,calm:120},   // מכה במקור: מאיזה מרחק, כל כמה שניות, כמה נזק. calm: אויב קרוב מזה, וקודם נלחמים
+  /* מקורות משאבים בשדות: kind (מ-NODES.kinds ב-nodes.js), כמה, מרכז ורדיוס. המקומות קבועים, כך שהיער תמיד באותו מקום.
+     ההתקפה האוטומטית מכה בהם כמו בזירה (aimTarget ב-combat.js), והשלל בדרגות כמו בזירה (runGive ב-loot.js) */
+  fields:[{kind:'tree',n:14,x:-610,y:-210,r:260},{kind:'tree',n:5,x:145,y:210,r:170},{kind:'bush',n:5,x:-335,y:65,r:130},
+          {kind:'rock',n:9,x:610,y:-190,r:230},{kind:'copper',n:4,x:785,y:-400,r:135},{kind:'iron',n:2,x:880,y:-240,r:75},{kind:'rock',n:3,x:-210,y:240,r:125}],
   regrow:45,                             // שניות עד שמקור שנשבר צומח מחדש
-  /* אויבים: קבוצות שמסתובבות ליד הבית שלהן. type: מ-ETYPES. creature: יצור משאב.
-     יצורי המשאבים מגיעים עם הכלכלה (#27). עד אז אין להם שורה ב-ETYPES, והקבוצה שלהם פשוט לא מופיעה.
+  /* אויבים: קבוצות שמסתובבות ליד הבית שלהן. type: מ-ETYPES. creature: יצור משאב (data.js), ליד המקור שלו.
      ראשונות: מפלצות קלות ממש מחוץ לשער, הדבר הראשון ששחקן חדש פוגש. מהן לומדים איך נראים קרב, מספרי נזק ושלל (ניר) */
   foes:[
     {type:'grunt',n:2,x:-185,y:-450,r:95},{type:'grunt',n:2,x:190,y:-430,r:95},{type:'grunt',n:3,x:0,y:-320,r:100},
     {type:'grunt',n:3,x:-100,y:-180,r:140},{type:'grunt',n:3,x:305,y:225,r:140},
     {type:'wisp',n:2,x:-510,y:95,r:150},{type:'shield',n:2,x:450,y:50,r:130},
     {type:'treant',creature:true,n:2,x:-690,y:-305,r:170},{type:'golem',creature:true,n:2,x:655,y:-210,r:150},
-    {type:'crawler',creature:true,n:2,x:785,y:-385,r:105}
+    {type:'crawler',creature:true,n:2,x:785,y:-385,r:105},{type:'sprite',creature:true,n:2,x:-335,y:65,r:115}
   ],
   aggro:240,                             // מאיזה מרחק אויב רודף
   wander:0.4,                            // מהירות ההסתובבות ליד הבית, יחסית לרדיפה
@@ -45,11 +38,10 @@ const WORLD={
     {id:'far',  to:1e9, hp:1,   dmg:1,   speed:1,   leash:480,back:45}
   ],
   regen:4,                               // חיים לשנייה כשאין אויב קרוב
-  deathLoss:{resources:0.5},             // מוות: איזה חלק מכל משאב בתרמיל הולך. פריטים לא. RES.deathLoss כשהכלכלה תגיע
   decor:{trees:74,hills:14}              // קישוטים מחוץ לגבול
 };
 
-const wKind=k=>WORLD.kinds[k];
+const wKind=k=>NODES.kinds[k];
 const wGates=()=>Object.assign({home:WORLD.home},WORLD.gates);
 let wRet=null;   // השער שממנו נכנסו לזירה: בסוף הריצה חוזרים אליו (againBtn ב-input.js)
 
@@ -59,7 +51,7 @@ function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden
 function enterWorld(at){
   wRet=null;reset();S.mode='play';
   S.wd={t:0,gt:0,near:null,ui:'',groups:WORLD.foes.map(()=>({t:0})),got:{}};
-  S.nd={list:wNodes()};
+  S.nd={list:wNodes(),broken:0,got:[]};
   const g=wGates()[at]||WORLD.home;
   P.x=g.x;P.y=g.y+WORLD.arrive;P.aim=P.face=Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
   ['ovStart','ovOver','ovLevel','ovBoss','ovWDeath'].forEach(id=>$(id).hidden=true);
@@ -70,36 +62,15 @@ function enterWorld(at){
 function wArena(id){wRet=id;worldUi(false);startRun();questEvent('reach','arena')}
 function wHome(){worldUi(false);enterVillage()}
 
-/* ---- מקורות משאבים: באותה צורה כמו ב-nodes.js, כדי שיתחברו כשהכלכלה תגיע ---- */
+/* ---- מקורות משאבים: אותם מקורות כמו ב-nodes.js, במקומות קבועים. שבור צומח מחדש אחרי regrow (nodeDown) ---- */
 function wNodes(){
   const out=[],block=Object.values(wGates());
   WORLD.fields.forEach((F,fi)=>{const K=wKind(F.kind);
     for(let i=0,tries=0;i<F.n&&tries<F.n*12;tries++){
       const a=hash(fi*31+tries,7)*Math.PI*2,r=Math.sqrt(hash(tries,fi*17+3))*F.r,x=F.x+Math.cos(a)*r,y=F.y+Math.sin(a)*r;
       if(out.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||block.some(g=>Math.hypot(g.x-x,g.y-y)<g.r+WORLD.arrive))continue;
-      out.push({node:true,id:fi+'_'+i,kind:F.kind,x,y,r:K.r,hp:K.hp,max:K.hp,mult:{sword:1,gun:1},flash:0,back:0});i++}});
+      out.push({node:true,id:fi+'_'+i,kind:F.kind,x,y,r:K.r,hp:K.hp,max:K.hp,mult:multOf(K.tags),flash:0,back:0,regrow:WORLD.regrow});i++}});
   return out;
-}
-// ההתקפה האוטומטית מכה במקור הכי קרוב, כשאין אויב קרוב. המשאבים נופלים לרצפה, ומה שנאסף נכנס לתרמיל (wLootIn)
-function wGather(dt){
-  const G=WORLD.gather,w=S.wd;w.gt-=dt;
-  if(nearest(G.calm))return;
-  let n=null,bd=G.reach;for(const k of S.nd.list){if(k.dead)continue;const d=Math.hypot(k.x-P.x,k.y-P.y)-k.r;if(d<bd){bd=d;n=k}}
-  if(!n)return;
-  P.aim=Math.atan2(n.y-P.y,n.x-P.x);
-  if(w.gt>0)return;w.gt=G.cd;
-  // מקרוב: מכה מיד. מרחוק: הנשק שביד יורה (wFire ב-weapons.js), והמקור נפגע כשהקליע מגיע אליו
-  if(P.weapon==='sword'){P.sw.anim=0.2;P.sw.ang=P.aim;wNodeHit(n)}else wFire(1,{node:n,home:0,pierce:0});
-}
-function wNodeHit(n){
-  const G=WORLD.gather;if(n.dead)return;
-  n.hp-=G.dmg;n.flash=0.09;sfx('hit');sparks(n.x,n.y-n.r*0.5,wKind(n.kind).col,5,160);
-  if(n.hp<=0)wNodeDown(n);
-}
-function wNodeDown(n){
-  const K=wKind(n.kind);
-  n.dead=true;n.back=WORLD.regrow;sfx('death');sparks(n.x,n.y,K.col,14,200);
-  for(const r in K.drop){const [ch,c]=K.drop[r];if(Math.random()<ch)dropSpawn(r,c,n.x,n.y)}   // נופל לרצפה ליד המקור (drops.js)
 }
 // מה שנאסף מהרצפה בעולם (drops.js) עובר מיד לתרמיל ונשמר. שם הוא בסיכון
 function wLootIn(){
@@ -150,11 +121,11 @@ function worldUpdate(dt){
     const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1,min=n.r+P.r;if(d<min){P.x=n.x+dx/d*min;P.y=n.y+dy/d*min}   // לא עוברים דרך עץ
     n.flash-=dt;
   }
-  attack(dt);wGather(dt);
+  attack(dt);   // פוגעת גם במקורות משאבים (aimTarget ב-combat.js)
   wFoes(dt);if(S.mode!=='play')return;
+  const hitable=S.nd.list.length?enemies.concat(S.nd.list):enemies;   // קליעים פוגעים גם במקורות משאבים (nodes.js), כמו בזירה
   for(const b of pb){shotFly(b,dt);
-    const n=b.node;if(n&&b.life>0&&Math.hypot(n.x-b.x,n.y-b.y)<n.r+4){b.life=0;wNodeHit(n);if(b.shot==='bolt')sparks(b.x,b.y,dtCol(P.dt.gun),WEAPONS.bolt.burst,140);continue}
-    for(const e of enemies){if(e.dead||b.hit.has(e)||b.life<=0)continue;
+    for(const e of hitable){if(e.dead||b.hit.has(e)||b.life<=0)continue;
       if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4)shotHit(b,e)}}
   pb=pb.filter(b=>b.life>0);
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
@@ -176,8 +147,8 @@ function worldUpdate(dt){
 /* ---- מוות בעולם: חצי מכל משאב בתרמיל הולך, הפריטים והמחסן נשארים. נקרא מ-gameOver ---- */
 function worldDeath(){
   S.mode='over';joy=null;
-  const lost={},k=WORLD.deathLoss.resources;
-  for(const r in SAVE.bag){if(!VILLAGE.icon[r])continue;const n=Math.floor(SAVE.bag[r]*k);if(n>0){bagTake(r,n);lost[r]=n}}
+  const lost={},k=RES.deathLoss.resources;   // resources.js
+  for(const r in SAVE.bag){if(!resOf(r))continue;const n=Math.floor(SAVE.bag[r]*k);if(n>0){bagTake(r,n);lost[r]=n}}
   S.wd.lost=lost;saveNow();
   $('wPanel').hidden=true;
   $('wLost').innerHTML=bagLine(lost)||T('w.lostNone');
@@ -190,7 +161,7 @@ function worldHud(){
   const w=S.wd,key=LANG+'|'+w.near+'|'+JSON.stringify(SAVE.bag);
   if(key===w.ui)return;w.ui=key;
   $('wName').textContent=T('w.region.'+WORLD.region);
-  $('wBag').innerHTML=bagLine(SAVE.bag);
+  $('wBag').innerHTML=bagLine(SAVE.bag,resShown('world'));
   const pn=$('wPanel'),k=w.near;pn.hidden=!k;if(!k)return;
   pn.innerHTML=k==='home'?'<h3>'+T('w.home')+'</h3><p>'+T('w.homeInfo')+'</p><button class="vbtn" data-act="home">'+T('w.goHome')+'</button>'
     :'<h3>'+T('w.gate.'+k)+'</h3><p>'+T('w.arenaInfo')+'</p><button class="vbtn" data-act="arena" data-g="'+k+'">'+T('w.enterArena')+'</button>';
