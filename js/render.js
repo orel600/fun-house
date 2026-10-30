@@ -37,7 +37,7 @@ function drawEnemy(e){
   const fl=e.flash>0;
   // בתלת-ממד הגוף מצויר בשכבה שמתחת. כאן נשארים רק הסימונים: פס חיים, טבעת הזמן של המבוקש, וההתראות של הבוס
   if(R3D.on&&lookOf(e)){if(e.isBoss)drawBoss(e);else if(e.wanted)drawWanted(e);
-    if(!e.isBoss&&e.hp<e.max){const L=lookOf(e),w=24,y=e.y+L.foot-L.h-6;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,y,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,y,w*Math.max(0,e.hp/e.max),3)}
+    if(!e.isBoss&&e.hp<e.max){const L=lookOf(e),k=e.big||1,w=24*k,y=e.y+(L.foot-L.h)*k-6;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,y,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,y,w*Math.max(0,e.hp/e.max),3)}
     return}
   if(e.type==='grunt'){
     const h=drawEnemyRig(e).head;
@@ -78,6 +78,7 @@ function drawBoss(b){
   const ea=Math.atan2(P.y-b.y,P.x-b.x);ctx.fillStyle=C.ink;ctx.beginPath();ctx.arc(Math.cos(ea)*5,Math.sin(ea)*5,6,0,7);ctx.fill();
   ctx.restore();
 }
+const onScreen=(sx,sy,m=90)=>sx>-m&&sx<W+m&&sy>-m&&sy<H+m+40;
 /* חץ בקצה המסך שמצביע על משהו מחוץ למסך. s: גודל החץ */
 function edgeArrow(sx,sy,col,s=1){
   if(sx>=-20&&sx<=W+20&&sy>=-20&&sy<=H+20)return;
@@ -110,8 +111,11 @@ function render(){
   drawBonusWorld();
   drawVillage();
   // actors sorted by y
-  const actors=enemies.slice();actors.push({isPlayer:true,y:P.y});actors.sort((a,b)=>a.y-b.y);
-  for(const a of actors){if(a.isPlayer)drawPlayer();else drawEnemy(a)}
+  // מציירים רק מי שעל המסך: עם מאות אויבים זה חוסך את רובם
+  const actors=enemies.filter(e=>e.isBoss||onScreen(e.x+ox,e.y+oy));actors.push({isPlayer:true,y:P.y});actors.sort((a,b)=>a.y-b.y);
+  for(const a of actors){if(a.isPlayer)drawPlayer();
+    else if(a.big&&!R3D.on){ctx.save();ctx.translate(a.x,a.y);ctx.scale(a.big,a.big);ctx.translate(-a.x,-a.y);drawEnemy(a);ctx.restore()}
+    else drawEnemy(a)}
   drawAgeFx();   // זוהר, שובל וחלקיקים על נשק משודרג (aging.js)
   // חצים: מוט, נוצות וחוד
   ctx.strokeStyle=C.tide;ctx.fillStyle=C.tide;ctx.lineWidth=2;
@@ -126,7 +130,12 @@ function render(){
   drawFx();   // חגיגות של התקדמות (fx.js)
   ctx.textAlign='center';
   // מספר עם סימן (+12, -16) נכתב משמאל לימין בכל שפה, אחרת הסימן קופץ לצד הלא נכון
-  for(const f of floats){ctx.direction=/^[+\-]\d/.test(f.txt)?'ltr':DIR;ctx.globalAlpha=Math.min(1,f.life*2);ctx.font='800 '+f.size+'px Heebo, system-ui, sans-serif';ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y)}
+  // מכה קריטית קופצת לרגע ומקבלת מסגרת לבנה
+  for(const f of floats){ctx.direction=f.ltr||/^[+\-]\d/.test(f.txt)?'ltr':DIR;ctx.globalAlpha=Math.min(1,f.life*2);
+    const sz=f.crit?f.size*(1+Math.max(0,f.life-0.8)*4):f.size;ctx.font='800 '+sz+'px Heebo, system-ui, sans-serif';
+    if(f.crit){ctx.lineWidth=4;ctx.strokeStyle='#fff';ctx.lineJoin='round';ctx.strokeText(f.txt,f.x,f.y)}
+    else{ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1)}
+    ctx.fillStyle=f.crit?C.ink:f.col;ctx.fillText(f.txt,f.x,f.y);if(f.crit){ctx.lineWidth=1.5;ctx.strokeStyle=f.col;ctx.strokeText(f.txt,f.x,f.y)}}
   ctx.globalAlpha=1;ctx.direction=DIR;
   // screen space
   ctx.setTransform(DPR,0,0,DPR,0,0);
@@ -142,15 +151,25 @@ function render(){
   if(S.hurt>0){const gr=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3,W/2,H/2,Math.max(W,H)*0.75);gr.addColorStop(0,'rgba(239,78,87,0)');gr.addColorStop(1,'rgba(239,78,87,'+(S.hurt*1.2)+')');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)}
 }
 let lastHud='',lastNums='';
+// פס ההתקדמות: התחנות נבנות פעם אחת, ואחר כך רק המילוי והסימון של מה שעבר זזים
+function drawRunBar(){
+  const bar=$('runbar');
+  if(!bar.dataset.n){bar.dataset.n=1;
+    for(const s of [...RUN.stations,{t:RUN.bossAt,kind:'boss'}]){const m=document.createElement('i');m.className='mk '+s.kind;m.style.insetInlineStart=(100*s.t/RUN.bossAt)+'%';bar.appendChild(m)}}
+  $('runfill').style.width=(100*Math.min(1,S.t/RUN.bossAt))+'%';
+  const ms=bar.querySelectorAll('.mk'),done=S.run.next+(S.boss||S.run.won?1:0);
+  if(bar.dataset.done!==String(done)){bar.dataset.done=done;ms.forEach((m,i)=>m.classList.toggle('done',i<done))}
+}
 function hud(){
   if(!P)return;
   $('hp').style.width=(100*P.hp/P.maxHp)+'%';
   $('xp').style.width=(100*P.xp/P.next)+'%';
   const nums=Math.ceil(Math.max(0,P.hp))+' / '+P.maxHp+'|'+P.xp+' / '+P.next;
   if(nums!==lastNums){lastNums=nums;const [h,x]=nums.split('|');$('hpTxt').textContent=h;$('xpTxt').textContent=x}
-  const key=LANG+'|'+fmt(S.t)+'|'+P.level+'|'+(S.boss?1:fmt(S.nextBoss-S.t));
+  const nx=nextStation(),key=LANG+'|'+fmt(S.t)+'|'+P.level+'|'+(S.boss?1:S.run.won?2:nx.kind+fmt(nx.t-S.t));
   if(key!==lastHud){lastHud=key;$('clock').textContent=fmt(S.t);$('lvl').textContent=T('level',P.level);
-    $('bossin').textContent=S.boss?T('bossHere'):T('bossIn',fmt(S.nextBoss-S.t))}
+    $('bossin').textContent=S.boss?T('bossHere'):S.run.won?T('bossBeaten'):T(nx.kind==='boss'?'bossIn':'next.'+nx.kind,fmt(nx.t-S.t))}
+  drawRunBar();
   const bb=$('bossbar');
   if(S.boss){bb.hidden=false;$('bossnm').textContent=S.boss.name+' · '+S.boss.title;
     const wk=$('bossweak');wk.textContent=T('weak.'+S.boss.weak);wk.style.color=S.boss.weak==='sword'?C.ember:C.tide;

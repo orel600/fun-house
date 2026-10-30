@@ -35,6 +35,10 @@ const LOOK3D={
     props:{sword:{prop:'sword',...HAND_R},gun:{prop:'crossbow',bone:'handslotr',pos:[-0.105,-0.01,0],rot:[0,0.7071,0,0.7071]}},
     anim:{idle:'Idle',run:'Running_A',sword:'1H_Melee_Attack_Slice_Horizontal',gun:'1H_Ranged_Shoot',die:'Death_A',win:'Cheer'}}
 };
+/* קהל: כשיש הרבה אויבים על המסך, רק הקרובים לשחקן מקבלים דמות מונפשת. כל השאר מצוירים יחד בתנוחת ריצה קפואה
+   שמתחלפת בין שני צעדים: כמה ציורים בפריים במקום מאות. בטלפון זה ההבדל בין משחק שזורם למשחק שנתקע.
+   full: כמה דמויות מונפשות לכל היותר. poses: באיזה רגע של אנימציית הריצה מצלמים כל צעד. dying: כמה אנימציות מוות יחד. max: כמה בקהל */
+const CROWD={full:30,poses:[0.25,0.75],dying:16,max:320,types:['grunt','shield','wisp']};
 const PILOT3D=/[?&]hero=pilot/.test(location.search);
 /* הכפר: המיקומים והמראה לפי רמה ב-VILLAGE (js/village.js). כאן רק איזה קובץ מודל לכל שם, ובאיזה רוחב על המסך בפיקסלים.
    models: המבנים (השמות ב-look). site: פיגום, למבנה שעוד לא נבנה או שבונים אותו עכשיו. deco: קישוטים סביב מבנה.
@@ -49,7 +53,7 @@ const VIL3D={
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
-const R3D={nid:0,on:false,ready:false,failed:false,want:true,actors:new Map(),dying:[],tmpl:{},clips:{},props:{},stats:{}};
+const R3D={shown:new WeakSet(),nid:0,on:false,ready:false,failed:false,want:true,actors:new Map(),dying:[],tmpl:{},clips:{},props:{},stats:{}};
 try{R3D.want=localStorage.getItem('zm-gfx')!=='2d'}catch(e){}
 
 function setGfx(g){R3D.want=g==='3d';try{localStorage.setItem('zm-gfx',g)}catch(e){}
@@ -106,6 +110,7 @@ async function init3d(){
     for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t);lambert(t);t.updateMatrixWorld(true);
       // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
       const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=bb.max.y-bb.min.y||2}
+    bakeCrowd();
     R3D.ready=true;R3D.on=R3D.want;c.hidden=!R3D.on;
   }catch(e){
     R3D.failed=true;R3D.on=false;if(R3D.cvs)R3D.cvs.hidden=true;
@@ -127,13 +132,42 @@ function makeGround(){
 }
 // צל עגול מתחת לכל דמות, וטבעת בצבע הנשק מתחת לאויבים מיוחדים. כולם באותה שכבה, כדי לחסוך ציורים
 function makeMarks(){
-  const N=128,mk=(geo,col,op)=>{const m=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false}),N);
-    m.count=0;m.frustumCulled=false;m.renderOrder=1;R3D.scene.add(m);return m};
+  const N=320,mk=(geo,col,op)=>{const m=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false}),N);
+    m.count=0;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.frustumCulled=false;m.renderOrder=1;R3D.scene.add(m);return m};
   const disc=new THREE.CircleGeometry(1,20).rotateX(-Math.PI/2),ring=new THREE.RingGeometry(0.78,1,28).rotateX(-Math.PI/2);
   R3D.marks={shadow:mk(disc,0x05070d,0.45),ember:mk(ring,C.ember,0.85),tide:mk(ring,C.tide,0.85)};
 }
 function mark(kind,x,z,r){const M=R3D.marks[kind];if(M.count>=M.instanceMatrix.count)return;
   R3D._mx.makeScale(r,1,r*0.92).setPosition(x,0.5,z);M.setMatrixAt(M.count++,R3D._mx)}
+
+/* ---- קהל ---- */
+// מצלמים כל סוג אויב בכמה תנוחות ריצה, והופכים כל תנוחה לצורה קבועה שאפשר לצייר מאות פעמים בציור אחד
+function bakeCrowd(){
+  R3D.crowd={};const v=new THREE.Vector3();
+  for(const k of CROWD.types){
+    const L=LOOK3D[k],a=makeActor(L),clip=R3D.clips[L.anim.run];a.mixer.clipAction(clip).play();
+    R3D.crowd[k]=CROWD.poses.map(f=>{
+      a.mixer.setTime(f*clip.duration);a.root.position.set(0,0,0);a.root.rotation.set(0,0,0);a.root.updateMatrixWorld(true);
+      const parts=[];
+      a.root.traverseVisible(o=>{if(!o.isMesh)return;
+        const src=o.geometry,n=src.attributes.position.count,pos=new Float32Array(n*3);
+        for(let i=0;i<n;i++){if(o.isSkinnedMesh)o.getVertexPosition(i,v);else v.fromBufferAttribute(src.attributes.position,i);v.applyMatrix4(o.matrixWorld).toArray(pos,i*3)}
+        const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+        if(src.attributes.uv)g.setAttribute('uv',src.attributes.uv);if(src.index)g.setIndex(src.index);g.computeVertexNormals();
+        const m=new THREE.InstancedMesh(g,o.material.clone(),CROWD.max);m.count=0;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.frustumCulled=false;R3D.scene.add(m);parts.push(m)});
+      return parts});
+    freeActor(a);
+  }
+}
+function crowdAdd(e){
+  const L=lookOf(e),k=e.big||1,lift=L.float?L.float+Math.sin(e.ph*0.6)*3:0,M=R3D._mx;
+  const parts=R3D.crowd[e.type][Math.floor(e.ph/1.6)%CROWD.poses.length];
+  R3D._p.set(e.x,lift/COS(),(e.y+L.foot*k)/SIN());R3D._q.setFromAxisAngle(R3D._up,yawOf(P.x-e.x,P.y-e.y));R3D._s.setScalar(k);
+  M.compose(R3D._p,R3D._q,R3D._s);
+  for(const m of parts)if(m.count<CROWD.max)m.setMatrixAt(m.count++,M);
+  R3D.nCrowd++;
+  const rr=e.r*1.15;mark('shadow',R3D._p.x,R3D._p.z,rr);if(L.ring)mark(L.ring,R3D._p.x,R3D._p.z,rr*1.15);
+}
 
 /* ---- דמויות ---- */
 const SIN=()=>Math.sin(VIEW.tilt),COS=()=>Math.cos(VIEW.tilt);
@@ -211,7 +245,10 @@ function syncPlayer(dt){
 function syncEnemy(e,dt){
   let a=R3D.actors.get(e);const L=lookOf(e);if(!L)return;
   if(!a){a=makeActor(L);R3D.actors.set(e,a);
-    if(L.anim.spawn&&!e.isBoss){once(a,L.anim.spawn,0.45)}
+    if(!e.isBoss)a.root.scale.setScalar(L.h/COS()/R3D.tmpl[L.model].userData.h*(e.big||1));
+    // קמים מהאדמה רק בפעם הראשונה, ולא בכל פעם שאויב חוזר למסך
+    if(L.anim.spawn&&!e.isBoss&&!R3D.shown.has(e)){once(a,L.anim.spawn,0.45)}
+    R3D.shown.add(e);
     a.prev={x:e.x,y:e.y,patT:e.patT||0,charge:null}}
   a.seen=R3D.frame;
   const dx=e.x-a.prev.x,dy=e.y-a.prev.y,sp=Math.hypot(dx,dy)/Math.max(dt,1e-3);
@@ -231,7 +268,7 @@ function syncEnemy(e,dt){
     if(!(a.one&&a.one.isRunning()&&a.one.getClip().name===L.anim.spawn))loop(a,L.anim.run,Math.max(0.6,Math.min(1.8,sp/(e.speed||80))));
   }
   const lift=L.float?L.float+Math.sin(e.ph*0.6)*3:0;
-  place(a,e.x,e.y,L.foot,yaw,lift);
+  place(a,e.x,e.y,L.foot*(e.big||1),yaw,lift);
   const rage=e.isBoss&&e.rage>0.05?e.rage:0;
   setFlash(a,e.flash>0?0.9:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,e.flash>0?0xffffff:C.blood);
   // כשיש הרבה אויבים, כל אחד מונפש רק בכל פריים שני (חצי מהם בכל פריים). בעין זה לא נראה, ובטלפון זה חוסך הרבה
@@ -241,9 +278,12 @@ function syncEnemy(e,dt){
   const z=a.root.position.z,x=a.root.position.x,rr=e.r*1.15;
   mark('shadow',x,z,rr);if(L.ring)mark(L.ring,x,z,rr*1.15);
 }
-// אויב שנעלם מהרשימה: אם הוא מת, מנגנים מוות ושוקע לאדמה. אם ברח (המבוקש), פשוט נעלם
+// אויב שנעלם מהרשימה: אם הוא מת, מנגנים מוות ושוקע לאדמה. אם ברח (המבוקש), יצא מהמסך, עבר לקהל,
+// או שכבר יש יותר מדי מתים על המסך, הדמות חוזרת מיד למאגר
 function retire(e,a,dt){
-  if(!a.dieT){const L=a.L;a.dieT=e.dead&&e.hp<=0&&L.anim.die?1.1:0.01;if(a.dieT>0.05){a.base=null;once(a,L.anim.die,0.7,true)}setFlash(a,0)}
+  if(!a.dieT){const L=a.L;setFlash(a,0);
+    if(!(e.dead&&e.hp<=0&&L.anim.die&&R3D.nDying++<CROWD.dying)){R3D.actors.delete(e);freeActor(a);return}
+    a.dieT=1.1;a.base=null;once(a,L.anim.die,0.7,true)}
   a.dieT-=dt;a.mixer.update(dt);
   if(a.dieT<0.35)a.root.position.y-=dt*60;
   if(a.dieT<=0){R3D.actors.delete(e);freeActor(a)}
@@ -278,9 +318,10 @@ function syncVillage(){
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
 function render3d(ox,oy){
   if(!R3D.on||!P)return;
-  if(!R3D._mx)R3D._mx=new THREE.Matrix4();
-  const r=R3D.r,c=R3D.cam,now=performance.now(),dt=Math.min(0.05,R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;
-  R3D.frame=(R3D.frame||0)+1;
+  if(!R3D._mx){R3D._mx=new THREE.Matrix4();R3D._p=new THREE.Vector3();R3D._q=new THREE.Quaternion();R3D._s=new THREE.Vector3();R3D._up=new THREE.Vector3(0,1,0)}
+  // drawEvery: הבדיקה האוטומטית מציירת רק חלק מהפריימים, כי שם התלת-ממד רץ על המעבד בלי כרטיס גרפי. בשאר הפריימים לא עושים כלום
+  R3D.frame=(R3D.frame||0)+1;const skip=R3D.drawEvery&&R3D.frame%R3D.drawEvery!==0;if(skip&&!S.vil)return;   // בכפר ממשיכים לעדכן, כי שם נבנים המבנים
+  const r=R3D.r,c=R3D.cam,now=performance.now(),dt=Math.min(0.05*(R3D.drawEvery||1),R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;
   const pr=Math.min(DPR,1.5);if(r.getPixelRatio()!==pr)r.setPixelRatio(pr);
   if(R3D.w!==W||R3D.h!==H){R3D.w=W;R3D.h=H;r.setSize(W,H,false);c.left=-W/2;c.right=W/2;c.top=H/2;c.bottom=-H/2;c.updateProjectionMatrix()}
   // המצלמה מסתכלת על אותה נקודה שבמרכז הקנבס
@@ -289,19 +330,27 @@ function render3d(ox,oy){
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
   R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:VIEW.groundLine);
   for(const k in R3D.marks)R3D.marks[k].count=0;
+  for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)m.count=0;
+  R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
   if(S.vil){syncPlayer(dt);syncVillage()}   // בכפר: השחקן והמבנים
   else if(!S.room){
     syncPlayer(dt);
-    for(const e of enemies)if(!(e.dead&&!R3D.actors.has(e)))syncEnemy(e,dt);
+    // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
+    const vis=enemies.filter(e=>!e.dead&&(e.isBoss||onScreen(e.x+ox,e.y+oy)));
+    if(vis.length>CROWD.full){const pr=e=>e.isBoss||e.wanted||e.elite?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}
+    vis.forEach((e,i)=>i<CROWD.full||!R3D.crowd[e.type]?syncEnemy(e,dt):crowdAdd(e));
+    R3D.nDying=0;for(const a of R3D.actors.values())if(a.dieT>0.05)R3D.nDying++;
     for(const [e,a] of R3D.actors)if(a.seen!==R3D.frame||e.dead)retire(e,a,dt);
   }else{ // בחדר הבונוס אין אויבים, רק השחקן
     syncPlayer(dt);for(const [e,a] of R3D.actors){R3D.actors.delete(e);freeActor(a)}
   }
-  for(const k in R3D.marks)R3D.marks[k].instanceMatrix.needsUpdate=true;
-  // drawEvery: הבדיקה האוטומטית מציירת רק חלק מהפריימים, כי שם התלת-ממד רץ על המעבד בלי כרטיס גרפי
-  if(!R3D.drawEvery||R3D.frame%R3D.drawEvery===0)r.render(R3D.scene,c);
-  const i=r.info.render;R3D.stats={calls:i.calls,tris:i.triangles,actors:R3D.actors.size+1};
+  // שולחים לכרטיס הגרפי רק את החלק שבשימוש: שליחה של הכל בכל פריים תוקעת את הציור
+  const up=m=>{if(!m.count)return;const b=m.instanceMatrix;b.clearUpdateRanges();b.addUpdateRange(0,m.count*16);b.needsUpdate=true};
+  for(const k in R3D.marks)up(R3D.marks[k]);
+  for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)up(m);
+  if(!skip)r.render(R3D.scene,c);
+  const i=r.info.render;R3D.stats={calls:i.calls,tris:i.triangles,actors:R3D.actors.size+1,crowd:R3D.nCrowd};
 }
 // התחלה מחדש: מנקים דמויות מהריצה הקודמת
 function reset3d(){if(!R3D.ready)return;for(const [e,a] of R3D.actors)freeActor(a);R3D.actors.clear();if(R3D.player){R3D.player.st=null;R3D.player.one=null;R3D.player.base=null;R3D.player.mixer.stopAllAction()}}

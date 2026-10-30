@@ -8,8 +8,9 @@ function reset(){
     gn:{dmg:9,cd:0.3,t:0,speed:580,multi:1,pierce:0,recoil:0},
     magnet:90,level:1,xp:0,next:6,swapLvl:0,swapBuff:0,regen:0,
     track:{sword:0,gun:0,move:0,still:0,dist:0,distN:0}};
-  S={mode:'title',t:0,spawnT:1,nextBoss:75,boss:null,bossCount:0,kills:0,shake:0,hitstop:0,slow:0,picks:{},cam:{x:0,y:0},hurt:0,pendingLv:0};
+  S={mode:'title',t:0,spawnT:1,hordeT:4,nextBoss:RUN.bossAt,boss:null,bossCount:0,kills:0,shake:0,hitstop:0,slow:0,picks:{},cam:{x:0,y:0},hurt:0,pendingLv:0};
   enemies=[];pb=[];eb=[];orbs=[];parts=[];floats=[];mines=[];waves=[];joy=null;
+  runReset();
   bonusReset();
   wantedReset();
   gearReset();   // הציוד מהכפר: מתנה ראשונה, והסטטים שלו על השחקן (gear.js)

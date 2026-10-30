@@ -26,7 +26,26 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .clock{text-align:center;font-family:var(--display);font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
 .clock small{display:block;font-family:var(--body);font-size:11px;color:var(--dim);margin-top:3px;font-weight:700}
 .lvl{flex:0 1 38%;text-align:end;font-weight:800;font-size:14px;letter-spacing:.02em}
+/* פס ההתקדמות של הריצה: יהלום לכל תחנה, עיגול לבוס בסוף. מתמלא מתחילת השורה, בכל שפה */
+.runbar{position:relative;height:6px;margin:10px 6px 0;background:var(--line);border-radius:3px}
+.runfill{position:absolute;inset-block:0;inset-inline-start:0;width:0;background:var(--chalk);opacity:.5;border-radius:3px}
+.mk{position:absolute;top:50%;width:10px;height:10px;margin-inline-start:-5px;margin-top:-5px;transform:rotate(45deg);background:var(--ink);border:2px solid var(--chalk)}
+.mk.elite{width:14px;height:14px;margin-inline-start:-7px;margin-top:-7px}
+.mk.boss{width:16px;height:16px;margin-inline-start:-8px;margin-top:-8px;border-radius:50%;border-color:var(--lilac)}
+.mk.done{background:var(--chalk)}
+.mk.boss.done{background:var(--lilac)}
 .bossbar{margin-top:10px}
+/* טלפון לרוחב: הגובה יקר. פסים צרים יותר, והטיימר והתחנה הבאה בשורה אחת */
+@media (orientation:landscape) and (max-height:500px){
+  .hud{padding-top:calc(env(safe-area-inset-top,0px) + 6px)}
+  .xpbar{height:10px}
+  .row{margin-top:5px}
+  .hp,.lvl{flex-basis:28%}
+  .clock{display:flex;align-items:baseline;gap:8px;font-size:19px}
+  .clock small{margin-top:0}
+  .runbar{margin-top:7px}
+  .bossbar{margin-top:6px}
+}
 .bossname{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px}
 .bossname em{font-style:normal;color:var(--dim);font-weight:400}
 .bosstrack{height:9px;background:var(--line);border-radius:5px;overflow:hidden}
