@@ -79,6 +79,20 @@ KayKit לא עושה חיות. Quaternius Ultimate Animated Animal Pack ו-Ultim
 | Poly Pizza | כל מודל ברישיון משלו (CC0 או CC-BY) | חינם | אוסף מעורב של אמנים. טוב לחפץ בודד, לא לבסיס |
 | itch.io, חבילות CC0 אחרות | משתנה | בעיקר חינם | איכות וסגנון לא אחידים. KayKit עצמו הוא הכי טוב שם |
 
+## מה מספרים בקהילה (Reddit ופורומים)
+
+ניר ביקש לבדוק גם ב-Reddit. **Reddit חוסם את הכלים של Claude** (גם חיפוש, גם הורדה ישירה וגם הדפדפן), ואתרי המראה שלו לא עבדו. מצאתי רק שני שרשורים דרך חיפוש רגיל, ולכן הוספתי את הפורום של three.js, שם יש בדיוק את השאלות שלנו. אם ניר רוצה עוד מ-Reddit, הוא יכול לשלוח קישורים לשרשורים, ו-Claude יקרא אותם.
+
+| מה למדנו | מקור | מה זה אומר לנו |
+| --- | --- | --- |
+| Quaternius פרסם 50+ דמויות מונפשות חינם ב-CC0, ובתגובות הוא ענה על שאלות רישיון ושימוש | [r/gamedev, 2019](https://www.reddit.com/r/gamedev/comments/dwqsl9/) | מתאים למה שמצאתי באתר שלו. אבל מדריך מ-2026 כותב "אסור להפיץ כחבילה". לבדוק את הרישיון בדף של כל חבילה, לא להניח |
+| 20,000 דמויות מונפשות ב-three.js, ודמו של 3,000 שרץ בטלפון. הסוד: לא מחשבים עצמות לדמויות רחוקות, ולא מציירים מה שמחוץ למסך | [r/threejs, ינואר 2025](https://www.reddit.com/r/threejs/comments/1hw39vs/) | אם מאות אויבים יאטו את הטלפון, יש פתרון מוכח (InstancedMesh2). לא צריך עכשיו |
+| ב-500 דמויות, החישוב של האנימציות (ולא הציור) הוא מה שמאט. ועצה: לאחד כל דמות לחלק אחד | [three.js forum](https://discourse.threejs.org/t/optimization-of-large-amounts-100-1000-of-skinned-meshes-cpu-bottlenecks/58196) | זה בדיוק מה ש-`render3d.js` כבר עושה (`mergeSkinned`, וזריקת עצמות העזר). עוד סיבה להעדיף אויבים עם מעט עצמות |
+| כמה עצמות לטלפון: בערך 30 | [three.js forum](https://discourse.threejs.org/t/tips-for-optimizing-skinned-boned-characters/47326) | השלד של KayKit החדש: 23. מצוין. השלד של Quaternius: 65 |
+| התאמת אנימציות בין שלדים: שמות עצמות זה לא מספיק, גם הכיוון של כל עצם בתנוחת הבסיס חייב להתאים, אחרת הידיים והרגליים מתעקמות | [three.js forum](https://discourse.threejs.org/t/skeletonutils-retarget-doesnt-work-with-mixamorig-skeleton-inverted-feet-backward-hands/54892), [Unreal forum](https://forums.unrealengine.com/t/animation-retargeting-problem-with-bone-orientation/374065) | לכן בדקתי ב-KayKit את תנוחת הבסיס ולא רק את השמות. וזה הסיכון בשלב השלד של פיילוט ג'מיני |
+| Mixamo: מותר בתוך משחק, אסור להפיץ את קבצי האנימציה עצמם, גם לא בריפו ב-GitHub | [Adobe community](https://community.adobe.com/questions-696/redistribute-mixamo-animations-as-part-of-589455) | אצלנו האנימציות נשמרות בתוך `models3d.js` בריפו. הריפו פרטי, אבל עדיף לא להכניס Mixamo בכלל. עוד סיבה ל-KayKit |
+| Tripo נחשב טוב יותר לדמויות ולשלד אוטומטי, Meshy לחפצים, ו-Hunyuan3D דורש ניקוי אחרי. "מוכן למשחק" אצל כולם הוא הבטחה שצריך לבדוק | [סקירת כלים, 2026](https://www.3daistudio.com/blog/best-ai-game-asset-generators-2026) (לא Reddit, וחלקית שיווקי) | מחזק את התוכנית: מתחילים ב-Hunyuan3D בחינם, ועוברים ל-Tripo רק אם צריך |
+
 ## מבצע ג'מיני: פיילוט על דמות אחת
 
 ### הפרומפטים (להעתיק כמו שהם)
