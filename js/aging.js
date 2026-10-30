@@ -114,7 +114,7 @@ const aPct=v=>'<bdi>'+Math.round(v*100)+'%</bdi>';
 function forgeDraw(){
   const sel=AUI.sel;
   $('fLevel').textContent=T('age.cap',ageCap());
-  $('fRes').innerHTML=bagLine(SAVE.bag,true);
+  $('fRes').innerHTML=bagLine(SAVE.bag,resShown('forge'));   // מתכות ואבנים שיש (RES.show)
   // מה לבוש קודם, ואז מה שבתרמיל
   let h='';
   for(const s of AGING.slots)for(let i=0;i<gOpen(s);i++){const id=gGet(s,i);if(gItem(id))h+=gTile(id,'data-slot="'+s+'" data-i="'+i+'"'+(sel&&sel.slot===s&&sel.i===i?' aria-pressed="true"':''),'<small>✓</small>')}

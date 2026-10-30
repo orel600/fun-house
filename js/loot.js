@@ -48,7 +48,7 @@ function runGive(D,x,y){
 function lootKill(e){
   const D=dropTable(e),y=e.y-e.r;
   runGive(D,e.x,y);
-  if(e.elite){runGive(D,e.x,y-20);runGive(ETYPES[e.type].elite,e.x,y-40)}
+  if(e.elite||e.champ){runGive(D,e.x,y-20);runGive(ETYPES[e.type].elite,e.x,y-40)}
   const key=e.isBoss?'boss':e.wanted?'wanted':e.type,dl=SAVE.daily;(S.killsBy||(S.killsBy={}))[key]=(S.killsBy[key]||0)+1;
   if(dl.day!==lootDay()){dl.day=lootDay();dl.first={}}
   if(!dl.first[key]){dl.first[key]=1;S.firstKills=(S.firstKills||0)+1;floatText(e.x,y-60,T('loot.first',T('foe.'+key)),C.gold,14);runGive(LOOT.firstKill,e.x,y-60)}
@@ -60,10 +60,10 @@ function lootKill(e){
   }
 }
 
-// נקרא מ-addEnemy: לפעמים אויב רגיל הוא אויב עלית
+// נקרא מ-addEnemy: לפעמים אויב רגיל הוא אויב עלית (e.champ). אויב-העל של התחנות (run.js, e.elite) מפיל את אותו שלל עלית
 function eliteRoll(e){
   const E=LOOT.elite;if(S.t<E.from||!ETYPES[e.type].elite||Math.random()>=E.chance)return;
-  e.elite=true;e.hp*=E.hp;e.max*=E.hp;e.r*=E.r;e.xp*=E.xp;e.dmg*=E.dmg;S.elites=(S.elites||0)+1;
+  e.champ=true;e.hp*=E.hp;e.max*=E.hp;e.r*=E.r;e.xp*=E.xp;e.dmg*=E.dmg;S.elites=(S.elites||0)+1;
 }
 
 // כל פריים בזירה: עמודי האור דועכים
@@ -72,7 +72,7 @@ function lootUpdate(dt){if(S.beams){for(const b of S.beams)b.t-=dt;S.beams=S.bea
 /* ---- ציור: עמודי אור, וטבעת זהב מתחת לאויבי עלית. בקנבס, מעל התלת-ממד ---- */
 function drawLoot(){
   if(S.room)return;
-  for(const e of enemies)if(e.elite&&!e.dead){ctx.strokeStyle=LOOT.elite.col;ctx.lineWidth=3;ctx.globalAlpha=0.6+0.3*Math.sin(S.t*6);
+  for(const e of enemies)if(e.champ&&!e.dead){ctx.strokeStyle=LOOT.elite.col;ctx.lineWidth=3;ctx.globalAlpha=0.6+0.3*Math.sin(S.t*6);
     ctx.beginPath();ctx.ellipse(e.x,e.y+e.r*0.8,e.r*1.3,e.r*0.5,0,0,7);ctx.stroke();ctx.globalAlpha=1}
   for(const b of S.beams||[]){
     const k=Math.min(1,b.t/LOOT.beam*1.5),g=ctx.createLinearGradient(0,b.y-b.h,0,b.y);
