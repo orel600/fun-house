@@ -99,9 +99,10 @@ function showGfx(){for(const b of document.querySelectorAll('[data-gfx]'))b.setA
 function b64buf(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer}
 function parseGLB(k){return new Promise((ok,bad)=>new THREE.GLTFLoader().parse(b64buf(MODELS3D[k]),'',ok,bad))}
 // הדמויות מגיעות מחולקות לחלקים (ראש, גוף, ידיים...). מאחדים אותם לחלק אחד, כדי שהטלפון יצייר כל דמות במכה אחת
-function mergeSkinned(root){
+// keep: חלקים שנשארים נפרדים כדי להדליק ולכבות אותם (שריון לפי דרגה, rankArmor3d)
+function mergeSkinned(root,keep){
   // רק חלקים עם אותה טקסטורה מתאחדים. העיניים הזוהרות של השלדים נשארות חלק נפרד
-  const all=[];root.traverse(o=>{if(o.isSkinnedMesh)all.push(o)});
+  const all=[];root.traverse(o=>{if(o.isSkinnedMesh&&!(keep&&armorPart(o,keep)))all.push(o)});
   const first=all.find(p=>p.material.map);if(!first)return;
   const parts=all.filter(p=>p.material.map===first.material.map&&p.skeleton.bones.length===first.skeleton.bones.length&&p.bindMatrix.equals(first.bindMatrix));
   if(parts.length<2)return;
@@ -147,7 +148,8 @@ async function init3d(){
       const img=new Image();img.src='data:image/png;base64,'+MODELS3D[k];await img.decode();
       const t=new THREE.Texture(img);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;R3D.wtex[k.slice(5)]=t}
     for(const k in MODELS3D)if(k.startsWith('v_')){const g=await parseGLB(k);lambert(g.scene);g.scene.traverse(o=>{o.frustumCulled=true});R3D.props[k]=g.scene}   // מבני הכפר
-    for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t);lambert(t);t.updateMatrixWorld(true);
+    const heroModels=new Set(Object.keys(LOOK3D).filter(k=>k==='player'||k.startsWith('hero_')).map(k=>LOOK3D[k].model));
+    for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t,heroModels.has(k)&&ARMOR3D);lambert(t);t.updateMatrixWorld(true);
       // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
       const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=bb.max.y-bb.min.y||2}
     bakeCrowd();
@@ -271,9 +273,21 @@ function place(a,x,y,foot,yaw,lift=0){
 const yawOf=(dx,dy)=>Math.atan2(dx,dy/SIN());
 function setFlash(a,k,col){for(const m of a.mats){if(k>0)m.emissive.set(col||0xffffff).multiplyScalar(k);else if(m.userData.em)m.emissive.copy(m.userData.em);else m.emissive.set(0)}}
 
+/* שריון לפי דרגה (RANKS ב-ranks.js): מדליקים ומכבים חלקים שכבר יש במודל, וזוהר בצבע הדרגה על מה שנדלק.
+   חלק נמצא לפי הסוף של השם שלו (Knight_Cape ← 'Cape'). חלק שאין במודל, למשל בדמות של ניר, לא קיים כאן ולא קורה כלום */
+const ARMOR3D=[...new Set([...RANKS.bare,...Object.values(RANKS.list).flatMap(R=>R.look?R.look.show:[])])];
+function armorPart(o,parts){const n=o.name||(o.parent&&o.parent.name)||'';return parts.find(p=>n.endsWith('_'+p))||null}
+function rankArmor3d(a){
+  const id=rankId(),R=RANKS.list[id],look=R&&R.look;if(a.rk===id)return;a.rk=id;
+  a.root.traverse(o=>{if(!o.isMesh)return;const p=armorPart(o,ARMOR3D);if(!p)return;
+    const on=look&&look.show.includes(p);o.visible=on||!RANKS.bare.includes(p);
+    const em=on&&look.glow?new THREE.Color(R.col).multiplyScalar(look.glow):new THREE.Color(0);
+    o.material.emissive.copy(em);o.material.userData.em=em});
+}
 function syncPlayer(dt){
   const L=heroLook();
   let a=R3D.player;if(!a||a.key!==lookKey(L)){if(a)freeActor(a);a=R3D.player=makeActor(L)}   // דמות או נשק חדשים: מודל חדש
+  rankArmor3d(a);   // אחרי עלייה בדרגה: החלקים מופיעים מיד
   const sword=P.weapon==='sword';
   for(const k in a.props)a.props[k].visible=(k==='sword')===sword;
   const st=a.st||(a.st={anim:0,gt:0,inv:0,mode:''});
