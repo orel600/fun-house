@@ -11,7 +11,7 @@ function frame(now){
   render();hud();requestAnimationFrame(frame);
 }
 // כל הטקסט שעל המסך מחדש, בשפה הנוכחית: בהפעלה ובכל החלפת שפה
-function showLang(){applyLang();showGfx();updateSwapBtn();$('bestLine').textContent=best>0?T('best',fmt(best)):'';$('verLine').textContent=VERSION}
+function showLang(){applyLang();showGfx();updateSwapBtn();$('bestLine').textContent=best>0?T('best',fmt(best)):'';$('verLine').textContent='v'+VERSION}
 function boot(){
   reset();
   showLang();

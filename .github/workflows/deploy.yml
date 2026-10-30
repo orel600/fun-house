@@ -48,13 +48,13 @@ jobs:
           site="$RUNNER_TEMP/fun-house"; mkdir -p "$site"
           cp index.html "$site/"; cp -r css js "$site/"; for d in skins sounds; do [ -d "$d" ] && cp -r "$d" "$site/"; done; true
           # מספר הגרסה = כמה שינויים נכנסו ל-main. ב-PR: המספר של main שהוא נבנה עליו, ומספר ה-PR
+          base=$(sed -n "s/^const VERSION_BASE='\(.*\)';/\1/p" js/version.js)
           if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            n=$(git rev-list --count "origin/$GITHUB_BASE_REF"); ver="v$n · PR #$PR_NUM"
+            n=$(git rev-list --count "origin/$GITHUB_BASE_REF"); ver="$base.$n-pr$PR_NUM"
           else
-            n=$(git rev-list --count HEAD); ver="v$n"
+            n=$(git rev-list --count HEAD); ver="$base.$n"
           fi
-          printf "const VERSION='%s';
-" "$ver" > "$site/js/version.js"
+          echo "const VERSION_BASE='$base';const VERSION='$ver';" > "$site/js/version.js"
           echo "גרסה: $ver" >> "$GITHUB_STEP_SUMMARY"
           cd "$site"
           # רווח או ירידת שורה שנדבקו לטוקן בהעתקה הופכים אותו ללא תקף, אז מנקים אותם
