@@ -50,13 +50,14 @@ const LOOK3D={
 };
 /* הנשק ביד השחקן: המודל מ-look.model של הפריט בציוד (GEAR.items ב-gear.js), והחומר לפי ה-tier שלו (טקסטורה wtex_<חומר>, build3d.js).
    כל משפחת נשקים יושבת ביד אחרת ותוקפת באנימציה אחרת. of: לאיזו משפחה שייך מודל, לפי השם.
-   spare: מה ביד כשהשחקן עבר לסוג הנשק השני (ההחלפה הזמנית ב-combat.js), או כשלפריט אין מודל. עץ, הכי פשוט */
+   spare: מה ביד כשלפריט אין מודל. עץ, הכי פשוט. איזה צד (sword או gun) מחליט סוג הנשק (WEAPONS ב-weapons.js) */
 const GRIP3D={
   blade:{...HAND_R,attack:'Melee_1H_Attack_Slice_Horizontal'},
-  bow:  {bone:'handslotl',pos:[0,0,0],rot:[0,-0.7071,0,0.7071],attack:'Ranged_Bow_Release',idle:'Ranged_Bow_Idle'},
+  chop: {...HAND_R,attack:'Melee_1H_Attack_Chop'},    // גרזן ופטיש: מכה מלמעלה
+  bow:  {bone:'handslotl',pos:[0,0,0],rot:[0,-0.7071,0,0.7071],attack:'Ranged_Bow_Release',draw:'Ranged_Bow_Draw',idle:'Ranged_Bow_Idle'},   // מותחים לפני כל חץ, ומשחררים ביריה
   magic:{...HAND_R,attack:'Ranged_Magic_Shoot'},
-  of:m=>/^w_bow/.test(m)?'bow':/^w_(staff|wand)/.test(m)?'magic':'blade',
-  spare:{sword:'w_sword_A',gun:'w_bow_A_withString'}
+  of:m=>/^w_bow/.test(m)?'bow':/^w_(staff|wand)/.test(m)?'magic':/^w_(axe|hammer)/.test(m)?'chop':'blade',
+  spare:{sword:'w_sword_A',gun:'w_bow_A_withString'}   // רק כשלפריט אין מודל
 };
 /* קהל: כשיש הרבה אויבים על המסך, רק הקרובים לשחקן מקבלים דמות מונפשת. כל השאר מצוירים יחד בתנוחת ריצה קפואה
    שמתחלפת בין שני צעדים: כמה ציורים בפריים במקום מאות. בטלפון זה ההבדל בין משחק שזורם למשחק שנתקע.
@@ -75,7 +76,7 @@ const VIL3D={
 };
 /* העולם הפתוח: המיקומים ב-WORLD (js/world.js). מקורות המשאבים לפי הצורה שלהם (shape), מתוך מודלי הכפר, כדי לא להכביד על הטלפון.
    glow: צבע לעורק מתכת. הקישוטים והשערים כמו בכפר (VIL3D.decor, VIL3D.gate) */
-const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:62},bush:{model:'v_treeB',w:30,glow:'#5FA35A'},chest:{model:'v_crate',w:34,glow:'#F4C74F'},rock:{model:'v_rock',w:44},vein:{model:'v_rock',w:44,glow:'#C87533'}}};
+const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',w:42,glow:'#5FA35A'},chest:{model:'v_crate',w:48,glow:'#F4C74F'},rock:{model:'v_rock',w:62},vein:{model:'v_rock',w:62,glow:'#C87533'}}};   // w: רוחב המודל. לפי r ב-NODES.kinds
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
@@ -207,9 +208,9 @@ function heroLook(){
   const L=Object.assign({},LOOK3D.player,PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()]),it=gItem(wid);
   L.props={};L.anim=Object.assign({},L.anim);L.ck=ck;
   for(const w of ['sword','gun']){
-    const mine=it&&it.w===w&&it.look&&R3D.props[it.look.model],model=mine?it.look.model:GRIP3D.spare[w],g=GRIP3D[GRIP3D.of(model)];
+    const mine=it&&wUse(wid)===w&&it.look&&R3D.props[it.look.model],model=mine?it.look.model:GRIP3D.spare[w],g=GRIP3D[GRIP3D.of(model)];
     L.props[w]=Object.assign({prop:model,tier:mine?GEAR.tiers[it.tier].id:'wood'},g);
-    L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;
+    L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
   return R3D._hl=L;
 }
@@ -273,15 +274,20 @@ function syncPlayer(dt){
     // תקיפה: רק פלג הגוף העליון, כך שאפשר לתקוף תוך כדי ריצה
     const swing=sword&&P.sw.anim>st.anim,shot=!sword&&P.gn.t>st.gt+0.01;
     st.anim=P.sw.anim;st.gt=P.gn.t;
-    if(swing)once(a,L.anim.sword+'@up',Math.max(0.28,Math.min(0.5,P.sw.cd*0.8)));
-    if(shot)once(a,L.anim.gun+'@up',Math.max(0.2,Math.min(0.45,P.gn.cd*0.9)));
+    if(swing)once(a,L.anim.sword+'@up',Math.max(0.28,Math.min(0.5,P.sw.cd*wK('cd')*0.8)));
+    const gcd=P.gn.cd*wK('cd');
+    if(shot){st.shots=(st.shots||0)+1;once(a,L.anim.gun+'@up',Math.max(0.2,Math.min(0.45,gcd*0.9)))}
+    // קשת: מותחים את המיתר ממש לפני החץ הבא, כשיש במי לירות
+    const drawT=Math.min(0.4,gcd*0.5);
+    if(!sword&&L.anim.gunDraw&&P.gn.t>0&&P.gn.t<=drawT&&st.drawn!==st.shots&&nearest(440)&&!(a.one&&a.one.isRunning())){st.drawn=st.shots;once(a,L.anim.gunDraw+'@up',P.gn.t)}
     // פגיעה (combat.js מדליק P.inv=0.6): הגוף נרתע, אם הוא לא באמצע תקיפה
     const hurt=P.inv>st.inv+0.3&&P.inv<=0.7;st.inv=P.inv;
     if(hurt&&!swing&&!shot&&!(a.one&&a.one.isRunning()))once(a,L.anim.hit+'@up',0.3);
     const busy=a.one&&a.one.isRunning(),idle=!sword&&L.anim.gunIdle||L.anim.idle;   // עם קשת ביד: עמידה עם קשת
     loop(a,(P.moving?L.anim.run:idle)+(busy?'@low':''),P.moving?Math.min(1.6,P.speed/165):1);
   }
-  place(a,P.x,P.y,L.foot,yawOf(Math.cos(P.aim),Math.sin(P.aim)));
+  // הגוף לפי P.face: לאן שהולכים (update.js). הסיבוב הרך כבר שם, אז כאן בלי עיכוב נוסף
+  place(a,P.x,P.y,L.foot,null);a.root.rotation.y=yawOf(Math.cos(P.face),Math.sin(P.face));
   a.root.visible=!(P.inv>0&&Math.floor(P.inv*20)%2===0)||RM;
   setFlash(a,P.inv>0.45?0.5:P.swapBuff>0?0.25:0,P.inv>0.45?C.blood:C.gold);
   a.mixer.update(dt);
@@ -310,7 +316,8 @@ function syncEnemy(e,dt){
     a.root.scale.setScalar(L.h/COS()/R3D.tmpl[L.model].userData.h*(b.phase>1?1.12:1)*(b.r/34));
     loop(a,sp>15?L.anim.run:L.anim.idle,Math.max(0.7,Math.min(1.8,sp/90)));
   }else{
-    yaw=sp>5?yawOf(dx,dy):yawOf(P.x-e.x,P.y-e.y);
+    // לאן שהוא הולך. כשהוא נהדף אחורה (kx,ky) הוא ממשיך להסתכל עליך, ולא מסתובב עם המכה
+    yaw=sp>5&&Math.hypot(e.kx||0,e.ky||0)<sp?yawOf(dx,dy):yawOf(P.x-e.x,P.y-e.y);
     if(e.type==='wisp'&&e.shoot<0.35&&L.anim.cast&&!(a.one&&a.one.isRunning()))once(a,L.anim.cast,0.5);
     if(!(a.one&&a.one.isRunning()&&a.one.getClip().name===L.anim.spawn))loop(a,L.anim.run,Math.max(0.6,Math.min(1.8,sp/(e.speed||80))));
   }

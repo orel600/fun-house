@@ -5,7 +5,7 @@ function drawPlayer(){
   const s=P.sw,sword=P.weapon==='sword';
   const a=sword&&s.anim>0?s.ang-s.arc/2+s.arc*(1-s.anim/0.2):P.aim;
   if(!R3D.on){
-  const p=pose(P.x,P.y,P.walk,P.moving,a,sword?10:11-P.gn.recoil*4),o={skin:LOOK.player,col:(HEROES.list[heroId()]||{}).col||C.chalk,lw:3};
+  const p=pose(P.x,P.y,P.walk,P.moving,a,sword?10:11-P.gn.recoil*4,P.face),o={skin:LOOK.player,col:(HEROES.list[heroId()]||{}).col||C.chalk,lw:3};
   drawRig(p,o);
   const hand=p.armF[1],hx=hand.x,hy=hand.y;
   AGE_FX.hand={x:hx+Math.cos(a)*14,y:hy+Math.sin(a)*14};   // הזוהר של Aging יושב על הנשק (aging.js)
@@ -13,6 +13,11 @@ function drawPlayer(){
     if(sword){
       ctx.strokeStyle=dtCol(P.dt.sword);ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*24,hy+Math.sin(a)*24);ctx.stroke();
       ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hx+Math.cos(a+1.57)*5,hy+Math.sin(a+1.57)*5);ctx.lineTo(hx-Math.cos(a+1.57)*5,hy-Math.sin(a+1.57)*5);ctx.stroke();
+    }else if(wNow().shot==='bolt'){
+      // מטה: מוט לכיוון הירי, ובראשו כדור בצבע סוג הנזק שנדלק לקראת הקסם הבא
+      const cx=Math.cos(a),cy=Math.sin(a),k=Math.max(0,Math.min(1,1-P.gn.t/(P.gn.cd*wK('cd'))));
+      ctx.strokeStyle=C.chalk;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hx-cx*12,hy-cy*12);ctx.lineTo(hx+cx*20,hy+cy*20);ctx.stroke();
+      ctx.fillStyle=dtCol(P.dt.gun);ctx.globalAlpha=0.5+0.5*k;ctx.beginPath();ctx.arc(hx+cx*23,hy+cy*23,3+k*2.5,0,7);ctx.fill();ctx.globalAlpha=1;
     }else{
       // קשת: ניצבת לכיוון הירי, והמיתר נמתח לקראת החץ הבא
       const cx=Math.cos(a),cy=Math.sin(a),k=Math.max(0,Math.min(1,1-P.gn.t/P.gn.cd));
@@ -137,10 +142,14 @@ function render(){
     else if(a.big&&!R3D.on){ctx.save();ctx.translate(a.x,a.y);ctx.scale(a.big,a.big);ctx.translate(-a.x,-a.y);drawEnemy(a);ctx.restore()}
     else drawEnemy(a)}
   drawAgeFx();   // זוהר, שובל וחלקיקים על נשק משודרג (aging.js)
-  // חצים: מוט, נוצות וחוד
-  ctx.strokeStyle=ctx.fillStyle=dtCol(P.dt.gun);ctx.lineWidth=2;
+  // חצים: מוט, נוצות וחוד. קסם: כדור זוהר עם שובל (weapons.js)
+  const sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r;ctx.lineWidth=2;
   for(const b of pb){
-    ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));
+    if(b.shot==='bolt'){ctx.fillStyle=sc;
+      for(let i=3;i>0;i--){ctx.globalAlpha=0.12*(4-i);ctx.beginPath();ctx.arc(b.x-b.vx*0.018*i,b.y-b.vy*0.018*i,br*(1-i*0.18),0,7);ctx.fill()}
+      ctx.globalAlpha=0.3;ctx.beginPath();ctx.arc(b.x,b.y,br*1.9,0,7);ctx.fill();
+      ctx.globalAlpha=1;ctx.beginPath();ctx.arc(b.x,b.y,br,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(b.x,b.y,br*0.4,0,7);ctx.fill();continue}
+    ctx.strokeStyle=ctx.fillStyle=sc;ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));
     ctx.beginPath();ctx.moveTo(-20,0);ctx.lineTo(0,0);ctx.moveTo(-17,0);ctx.lineTo(-22,-3.5);ctx.moveTo(-17,0);ctx.lineTo(-22,3.5);ctx.stroke();
     ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(-2,-3.5);ctx.lineTo(-2,3.5);ctx.closePath();ctx.fill();ctx.restore();
   }
@@ -199,7 +208,7 @@ function hud(){
     $('ragetrack').hidden=S.boss.rage<0.02;$('ragefill').style.width=(100*S.boss.rage)+'%'}
   else bb.hidden=true;
   let hint=false;
-  // הכפתור פועם כשהאויב הקרוב עמיד לסוג הנזק שביד, והנשק השני עדיף נגדו
-  if(S.mode==='play'){const n=nearest(260),o=P.weapon==='sword'?'gun':'sword';if(n&&(n.mult[P.dt[P.weapon]]??1)<(n.mult[P.dt[o]]??1)&&(n.mult[P.dt[P.weapon]]??1)<=1)hint=true}
+  // הכפתור פועם כשהאויב הקרוב עמיד לסוג הנזק שביד, והנשק השני עדיף נגדו. רק כשיש נשק שני לבוש
+  if(S.mode==='play'&&wHeld().length>1){const n=nearest(260),o=P.weapon==='sword'?'gun':'sword';if(n&&(n.mult[P.dt[P.weapon]]??1)<(n.mult[P.dt[o]]??1)&&(n.mult[P.dt[P.weapon]]??1)<=1)hint=true}
   $('swap').classList.toggle('hint',hint);
 }

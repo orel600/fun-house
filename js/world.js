@@ -8,28 +8,28 @@
 
 const WORLD={
   region:'meadow',                       // השם ב-lang.js: 'w.region.meadow'
-  size:{w:2600,h:1700},                  // גבולות האזור, סביב (0,0). הכפר כולו ברדיוס 480
-  home:{x:0,y:-760,r:44},                // השער חזרה לכפר. יוצאים מהכפר ומגיעים לכאן
-  gates:{grove:{x:-1050,y:560,r:44},pit:{x:1050,y:560,r:44}},   // שערים לזירה. השמות ב-lang.js ('w.gate.<id>')
+  size:{w:2100,h:1400},                  // גבולות האזור, סביב (0,0). צפוף, כדי שלא ילכו הרבה בשביל כלום (ניר, משחק ראשון בטלפון)
+  home:{x:0,y:-600,r:44},                // השער חזרה לכפר. יוצאים מהכפר ומגיעים לכאן
+  gates:{grove:{x:-840,y:450,r:44},pit:{x:840,y:450,r:44}},   // שערים לזירה. השמות ב-lang.js ('w.gate.<id>')
   arrive:130,                            // כמה פיקסלים מתחת לשער עומדים כשמגיעים אליו
   near:55,                               // כמה פיקסלים מקצה שער נחשב "לידו": נפתח הפאנל עם הכפתור
   /* מקורות משאבים בשדות: kind (מ-NODES.kinds ב-nodes.js), כמה, מרכז ורדיוס. המקומות קבועים, כך שהיער תמיד באותו מקום.
      ההתקפה האוטומטית מכה בהם כמו בזירה (aimTarget ב-combat.js), והשלל בדרגות כמו בזירה (runGive ב-loot.js) */
-  fields:[{kind:'tree',n:14,x:-760,y:-260,r:300},{kind:'tree',n:5,x:180,y:260,r:200},{kind:'bush',n:5,x:-420,y:80,r:160},
-          {kind:'rock',n:9,x:760,y:-240,r:260},{kind:'copper',n:4,x:980,y:-500,r:150},{kind:'iron',n:2,x:1100,y:-300,r:90},{kind:'rock',n:3,x:-260,y:300,r:140}],
+  fields:[{kind:'tree',n:14,x:-610,y:-210,r:260},{kind:'tree',n:5,x:145,y:210,r:170},{kind:'bush',n:5,x:-335,y:65,r:130},
+          {kind:'rock',n:9,x:610,y:-190,r:230},{kind:'copper',n:4,x:785,y:-400,r:135},{kind:'iron',n:2,x:880,y:-240,r:75},{kind:'rock',n:3,x:-210,y:240,r:125}],
   regrow:45,                             // שניות עד שמקור שנשבר צומח מחדש
   /* אויבים: קבוצות שמסתובבות ליד הבית שלהן. type: מ-ETYPES. creature: יצור משאב (data.js), ליד המקור שלו */
   foes:[
-    {type:'grunt',n:3,x:-120,y:-220,r:160},{type:'grunt',n:3,x:380,y:280,r:160},
-    {type:'wisp',n:2,x:-640,y:120,r:180},{type:'shield',n:2,x:560,y:60,r:150},
-    {type:'treant',creature:true,n:2,x:-860,y:-380,r:200},{type:'golem',creature:true,n:2,x:820,y:-260,r:180},
-    {type:'crawler',creature:true,n:2,x:980,y:-480,r:120},{type:'sprite',creature:true,n:2,x:-420,y:80,r:140}
+    {type:'grunt',n:3,x:-100,y:-180,r:140},{type:'grunt',n:3,x:305,y:225,r:140},
+    {type:'wisp',n:2,x:-510,y:95,r:150},{type:'shield',n:2,x:450,y:50,r:130},
+    {type:'treant',creature:true,n:2,x:-690,y:-305,r:170},{type:'golem',creature:true,n:2,x:655,y:-210,r:150},
+    {type:'crawler',creature:true,n:2,x:785,y:-385,r:105},{type:'sprite',creature:true,n:2,x:-335,y:65,r:115}
   ],
-  aggro:240, leash:560,                  // מאיזה מרחק אויב רודף, וכמה רחוק מהבית שלו הוא מוכן ללכת
+  aggro:240, leash:480,                  // מאיזה מרחק אויב רודף, וכמה רחוק מהבית שלו הוא מוכן ללכת
   wander:0.4,                            // מהירות ההסתובבות ליד הבית, יחסית לרדיפה
   back:40,                               // שניות עד שקבוצה שנוקתה חוזרת (רק כשהשחקן רחוק ממנה)
   regen:4,                               // חיים לשנייה כשאין אויב קרוב
-  decor:{trees:90,hills:16}              // קישוטים מחוץ לגבול
+  decor:{trees:74,hills:14}              // קישוטים מחוץ לגבול
 };
 
 const wKind=k=>NODES.kinds[k];
@@ -44,7 +44,7 @@ function enterWorld(at){
   S.wd={t:0,gt:0,near:null,ui:'',groups:WORLD.foes.map(()=>({t:0})),got:{}};
   S.nd={list:wNodes(),broken:0,got:[]};
   const g=wGates()[at]||WORLD.home;
-  P.x=g.x;P.y=g.y+WORLD.arrive;P.aim=Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
+  P.x=g.x;P.y=g.y+WORLD.arrive;P.aim=P.face=Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
   ['ovStart','ovOver','ovLevel','ovBoss','ovWDeath'].forEach(id=>$(id).hidden=true);
   WORLD.foes.forEach((G,i)=>wSpawn(G,i));
   banner(at==='home'?T('w.enter'):T('w.gate.'+at),C.gold);
@@ -111,9 +111,10 @@ function worldUpdate(dt){
   }
   attack(dt);   // פוגעת גם במקורות משאבים (aimTarget ב-combat.js)
   wFoes(dt);if(S.mode!=='play')return;
-  for(const b of pb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
-    for(const e of enemies){if(e.dead||b.hit.has(e)||b.life<=0)continue;
-      if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4){b.hit.add(e);damage(e,P.gn.dmg*dmgK(),'gun',Math.atan2(b.vy,b.vx));if(b.pierce--<=0)b.life=0}}}
+  const hitable=enemies.concat(S.nd.list);   // גם מקורות משאבים, כמו בזירה (update.js)
+  for(const b of pb){shotFly(b,dt);
+    for(const e of hitable){if(e.dead||b.hit.has(e)||b.life<=0)continue;
+      if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4)shotHit(b,e)}}
   pb=pb.filter(b=>b.life>0);
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;

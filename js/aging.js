@@ -86,7 +86,7 @@ function ageSprite(col){
 function drawAgeFx(){
   const now=fxNow(),dt=Math.min(0.05,now-(AGE_FX.t||now));AGE_FX.t=now;
   const id=SAVE.gear.weapon,it=gItem(id),lk=it&&ageLook(gPlus(id)),h=AGE_FX.hand,F=AGE_FX;
-  if(!lk||!h||!P||P.weapon!==it.w){F.trail.length=0;F.parts.length=0;return}
+  if(!lk||!h||!P||P.weapon!==wUse(id)){F.trail.length=0;F.parts.length=0;return}
   const col=(it.look||{}).glow||gTint(id),spr=ageSprite(col),pulse=1+0.08*Math.sin(now*5);
   ctx.save();ctx.globalCompositeOperation='lighter';
   if(lk.trail){F.trail.unshift({x:h.x,y:h.y});F.trail.length=Math.min(F.trail.length,lk.trail.n);
@@ -104,7 +104,7 @@ function drawAgeFx(){
 const AUI={sel:null,gem:false};   // sel: {id} מהתרמיל, או {slot,i} ממשבצת
 function forgeOpen(){
   if(!S.vil||S.mode!=='play'||!vLv('forge'))return;
-  const w=gItem(SAVE.gear.weapon);if(w&&w.w)P.weapon=w.w;   // הדמות מחזיקה את הנשק שלבוש, כדי שהזוהר החדש ייראה עליו
+  wEquip(SAVE.gear.weapon);   // הדמות מחזיקה את הנשק שלבוש, כדי שהזוהר החדש ייראה עליו
   S.mode='forge';joy=null;AUI.sel=null;$('ovForge').hidden=false;forgeDraw();
 }
 function forgeClose(){$('ovForge').hidden=true;if(S.mode==='forge')S.mode='play'}
