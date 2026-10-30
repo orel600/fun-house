@@ -197,7 +197,14 @@ const TEXT={
   'it.stoneOrb':{he:'כדור אבן',en:'Stone Orb'},
   'it.frostOrb':{he:'כדור כפור',en:'Frost Orb'},
   'it.leafOrb':{he:'כדור עלים',en:'Leaf Orb'},
-  'it.cloverOrb':{he:'כדור תלתן',en:'Clover Orb'}
+  'it.cloverOrb':{he:'כדור תלתן',en:'Clover Orb'},
+  // המחסן בכפר (stash.js)
+  'vil.stash':{he:'מחסן',en:'Stash'},
+  'vil.info.stash':{he:n=>'מקום בטוח לשלל: עד '+n+' יחידות',en:n=>'A safe place for loot: up to '+n+' units'},
+  'stash.space':{he:(u,c)=>'במחסן '+u+' מתוך '+c+'. מה שבתרמיל אפשר לאבד בעולם, ומה שבמחסן נשאר',en:(u,c)=>'Stash: '+u+' of '+c+'. What you carry can be lost out in the world, the stash is safe'},
+  'stash.bag':{he:'בתרמיל: לחיצה מכניסה למחסן',en:'In your bag: tap to store'},
+  'stash.in':{he:'במחסן: לחיצה מחזירה לתרמיל',en:'In the stash: tap to take back'},
+  'stash.empty':{he:'ריק',en:'Empty'}
 };
 
 function T(key,...a){const e=TEXT[key],v=e?(e[LANG]??e.he):key;return typeof v==='function'?v(...a):v}

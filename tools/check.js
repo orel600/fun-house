@@ -49,6 +49,14 @@ function botStep({god,en}){
   if(S.vil)return villageBot(m,L);
   // הריצה הראשונה אחרי שלבשנו קשת בכפר: מתחילים איתה, והנזק שלה גדל
   if(L.gearW==null){L.gearW=P.weapon;L.gearDmg=Math.round(P.gn.dmg/m.gdmg0*100)/100}
+  // באמצע הריצה: פותחים את הציוד מהכפתור בזירה, בודקים שהמשחק עוצר, לובשים קמע ורואים שהחיים עלו מיד
+  if(S.mode==='gear'||(!m.runGear&&S.t>5&&!S.room&&!S.boss&&S.mode==='play')){
+    if(!m.runGear){m.runGear=1;m.rt=S.t;m.hp0=P.maxHp;document.getElementById('gearBtnRun').click();L.rgOpen=S.mode==='gear'&&!document.getElementById('ovGear').hidden;return L}
+    if(m.runGear===1){L.rgPaused=S.t===m.rt;const it=document.querySelector('#gItems [data-id="boneCharm"]');
+      if(it){it.click();document.querySelector('#gDetail [data-act="equip"]').click()}
+      L.rgHp=P.maxHp-m.hp0;L.rgSaved=JSON.parse(localStorage.getItem(SAVE_STORE.key)).gear.acc.includes('boneCharm');
+      document.getElementById('gearClose').click();L.rgClosed=S.mode==='play';m.runGear=2;return L}
+  }
   if(god)P.hp=P.maxHp;
   if(R3D.on){L.actorsMax=Math.max(L.actorsMax||0,R3D.stats.actors||0);L.callsMax=Math.max(L.callsMax||0,R3D.stats.calls||0)}
   L.taken=S.bn.taken;L.coins=S.bn.coins;L.t=at;L.level=P.level;
@@ -122,6 +130,18 @@ function villageBot(m,L){
     const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key));
     L.gearEquip=SAVE.gear.weapon;L.gearFx=FX.some(f=>f.K===CELEBRATE.gear)&&!!document.querySelector('#gSlots .pop');L.gearSaved=sv.gear.weapon==='oakBow'&&!sv.bag.oakBow;
     document.getElementById('gearClose').click();L.gearClosed=S.mode==='play'&&document.getElementById('ovGear').hidden;m.gear=2;return L}
+  if(!m.stash){   // המחסן: בונים, מכניסים את חרב העץ ועץ, ומחזירים את החרב לתרמיל
+    const St=VILLAGE.b.stash;
+    if(S.vil.near!=='stash')return steer(St.x,St.y,false,0,L);
+    m.stash=1;const q=s=>document.querySelector('#vPanel '+s),up=q('[data-act="up"]');
+    if(up&&!up.disabled)up.click();L.stashLv=vLv('stash');
+    const w0=SAVE.bag.wood||0,mv=(d,r)=>{const b=q('[data-act="stash"][data-dir="'+d+'"][data-r="'+r+'"]');if(b)b.click();return!!b};
+    const swIn=mv('in','oakSword')&&SAVE.stash.oakSword===1&&!SAVE.bag.oakSword;
+    const wIn=mv('in','wood')&&SAVE.stash.wood===w0&&!SAVE.bag.wood;
+    const swOut=mv('out','oakSword')&&SAVE.bag.oakSword===1&&!SAVE.stash.oakSword;
+    const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key));
+    L.stash={swIn,wIn,swOut,saved:sv.stash.wood===w0&&!sv.stash.oakSword&&sv.bag.oakSword===1,cap:stashCap(),used:stashUsed()};
+    return L}
   m.runBag=bag();L.gateAt=1;   // לשער
   return steer(g.x,g.y,false,0,L);
 }
@@ -173,6 +193,7 @@ function villageBot(m,L){
     startLeak=await page.evaluate(()=>{const s=document.getElementById('ovStart').innerText.replace('עברית','');return /[֐-׿]/.test(s)||document.documentElement.dir!=='ltr'?s.slice(0,80):null});
     await shot('start-'+CFG.lang);
   }
+  const rgHp=await page.evaluate(()=>GEAR.items.boneCharm.stats.hp);   // כמה חיים הקמע מוסיף באמצע ריצה
   const gx=await page.evaluate(()=>Math.round((1+GEAR.items.oakBow.stats.gdmg/100)*100)/100);   // כמה קשת העץ אמורה להוסיף, לפי GEAR
   await page.click('#startBtn');
 
@@ -181,7 +202,7 @@ function villageBot(m,L){
   while(guard++<CFG.time*30){
     await page.clock.runFor(CFG.step);
     L=await page.evaluate(botStep,{god:CFG.god,en:CFG.lang==='en'});
-    for(const k of ['vilOpen','built','collected','gearOpen','door','room','wanted','boss','bossDown','lootTxt','back'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='vilOpen'?'village':k==='lootTxt'?'loot':k)}
+    for(const k of ['vilOpen','built','collected','gearOpen','stash','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='vilOpen'?'village':k==='lootTxt'?'loot':k)}
     if(L.back!=null||L.t>=CFG.time)break;   // חזרנו לכפר אחרי הריצה: אין עוד מה לבדוק
   }
   await shot('end');
@@ -195,6 +216,11 @@ function villageBot(m,L){
     (L.gearEquip==='oakBow'?', נלבשה קשת עץ':', לא נלבשה')+(L.gearSaved?', נשמר':', לא נשמר')+(L.gearFx?', חגיגה':', בלי חגיגה')+(L.gearClosed?', נסגר':', לא נסגר'));
   check(L.gearW==='gun'&&L.gearDmg===gx,'ציוד בריצה: מתחיל עם '+(L.gearW==='gun'?'קשת':L.gearW)+', נזק קשת x'+L.gearDmg+' (צפוי x'+gx+')');
   check(L.won==null||!!L.gearLoot,'שלל ציוד: '+(L.gearLoot||'לא נפל')+(L.won!=null?' (בוס = פריט בטוח)':''));
+  const st=L.stash||{};
+  check(L.stashLv===1&&st.swIn&&st.wIn&&st.swOut&&st.saved,'מחסן: '+(L.stashLv===1?'נבנה':'לא נבנה')+(st.swIn?', חרב נכנסה':', חרב לא נכנסה')+(st.wIn?', עץ נכנס':', עץ לא נכנס')+
+    (st.swOut?', חרב חזרה לתרמיל':', חרב לא חזרה')+(st.saved?', נשמר':', לא נשמר')+' ('+st.used+' מתוך '+st.cap+')');
+  check(L.rgOpen&&L.rgPaused&&L.rgHp===rgHp&&L.rgSaved&&L.rgClosed,'ציוד באמצע ריצה: '+(L.rgOpen?'נפתח':'לא נפתח')+(L.rgPaused?', המשחק עצר':', המשחק לא עצר')+
+    ', חיים +'+L.rgHp+' (צפוי +'+rgHp+')'+(L.rgSaved?', נשמר':', לא נשמר')+(L.rgClosed?', ממשיכים לשחק':', לא נסגר'));
   check(L.gateAt&&L.t!=null,'שער: '+(L.t!=null?'יצא לזירה':'לא יצא לזירה'));
   check(L.back!=null&&!!L.lootGot&&L.lootSaved,'שלל: '+(L.won!=null?'ניצחון '+t(L.won):L.died!=null?'נפל '+t(L.died):'הריצה לא נגמרה')+
     (L.back!=null?', חזר לכפר. במסך: '+L.lootTxt+' · בתרמיל: '+(L.lootGot||'כלום')+(L.lootSaved?', נשמר':', לא נשמר'):''));
