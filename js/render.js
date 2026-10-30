@@ -154,6 +154,7 @@ function render(){
   drawLoot();    // טבעות עלית ועמודי אור של שלל (loot.js)
   drawWorld();   // העולם הפתוח (world.js)
   drawNpcs();
+  drawPet();   // חיית המחמד: חול מהחפירה, להבות בשלב 3, ובדו-ממד גם הגוף (pet.js)
   // actors sorted by y
   // מציירים רק מי שעל המסך: עם מאות אויבים זה חוסך את רובם
   const actors=enemies.filter(e=>e.isBoss||onScreen(e.x+ox,e.y+oy));actors.push({isPlayer:true,y:P.y});actors.sort((a,b)=>a.y-b.y);

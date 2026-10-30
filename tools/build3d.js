@@ -11,6 +11,9 @@
         kaylousberg.itch.io/kaykit-character-animations KayKit_Character_Animations_1.1    -> C:/kk/anims
         kaylousberg.itch.io/kaykit-fantasy-weapons-bits KayKit_FantasyWeaponsBits_1.0_FREE -> C:/kk/weapons
       הורדה מ-itch.io בלי דפדפן: ההסבר ב-docs/3d-assets.md, "הערות טכניות".
+      ואחת מ-Poly Pizza, השלד והאנימציות של חיית המחמד: Husky של Quaternius (CC0), poly.pizza/m/wcWiuEqwzq
+        curl -L -o C:/kk/dog/Husky.glb https://static.poly.pizza/611d25c7-430f-4bb5-ab2c-d8f5f3cb9712.glb
+        python tools/pet3d/dogclips.py   (מוסיף ישיבה וחפירה, ויוצא C:/kk/dog/DogAnims.glb)
    2. npm i --no-save three@0.186.1 esbuild @gltf-transform/core @gltf-transform/functions @gltf-transform/extensions sharp
    3. node tools/build3d.js C:/kk
 
@@ -50,6 +53,10 @@ const CHARS={
   skelMage:{src:skel('Characters/gltf/Skeleton_Mage.glb'),   keep:['Skeleton_']},
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. נבנה ע"י tools/pilot3d (ההסבר ב-docs/3d-assets.md). הטקסטורה היא הציור עצמו ולא פלטה, אז 512 ו-JPEG
   pilotHero:{src:path.join(ROOT,'art/pilot/PilotHero.glb'),keep:['PilotHero_'],tex:512,fmt:'jpeg'},
+  // חיית המחמד: פיוחו בשלושה שלבים, מהדפים ב-art/pets, על השלד של ההאסקי (tools/pet3d, ההסבר בראש rig.py). בשלב 3 גם טקסטורת זוהר
+  piocho1:{src:path.join(ROOT,'art/pets/Piocho1.glb'),keep:['Piocho1_'],tex:512,fmt:'jpeg'},
+  piocho2:{src:path.join(ROOT,'art/pets/Piocho2.glb'),keep:['Piocho2_'],tex:512,fmt:'jpeg'},
+  piocho3:{src:path.join(ROOT,'art/pets/Piocho3.glb'),keep:['Piocho3_'],tex:512,fmt:'jpeg'},
   // הדמות האישית של ניר ("הנודד עם הניצוץ"), מ-art/heroes/nir-sheet.jpg. כמו הפיילוט, עם rig.py --apose --pack (ההסבר ב-tools/pilot3d/README.md)
   nirHero:{src:path.join(ROOT,'art/heroes/NirHero.glb'),keep:['NirHero_'],tex:512,fmt:'jpeg'}
 };
@@ -76,6 +83,8 @@ const ANIMS={
   ranged: {src:anim('CombatRanged'),keep:['Ranged_Bow_Draw','Ranged_Bow_Release','Ranged_Bow_Idle','Ranged_Magic_Shoot','Ranged_Magic_Spellcasting','Ranged_Magic_Summon']},
   life:   {src:anim('Simulation'),keep:['Cheering','Waving','Sit_Chair_Idle','Sit_Floor_Idle']},
   tools:  {src:anim('Tools'),keep:['Hammering','Digging']},
+  // חיות מחמד (שלד ההאסקי, לא Rig_Medium): הליכה, דהירה, עמידה, ישיבה, חפירה, תקיפה וקפיצה. השמות מתחילים ב-dog_
+  dog:{src:path.join(KK,'dog/DogAnims.glb'),keep:['dog_Idle','dog_Walk','dog_Gallop','dog_Sit','dog_Dig','dog_Attack','dog_Gallop_Jump']},
   skel:{src:skel('Characters/gltf/Skeleton_Minion.glb'),keep:['Walking_D_Skeletons','Running_C','Hit_B','Death_C_Skeletons','Spawn_Ground_Skeletons','1H_Melee_Attack_Chop','Spellcasting','Idle_Combat','Taunt']}
 };
 // מבני הכפר וקישוטים (Medieval Hexagon). המפתח מתחיל ב-v_, ומי משתמש במה: VIL3D ב-js/render3d.js

@@ -16,6 +16,7 @@ const VIEW={tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a45
    לשחקן אין props כאן: הוא מחזיק את הנשק שלבוש בציוד (heroLook, לפי GRIP3D) */
 const HAND_R={bone:'handslotr',pos:[0,0.033,0],rot:[0,-1,0,0]};
 const NPC_ANIM={idle:'Idle_A',walk:'Walking_A',work:'Idle_A',wave:'Waving',cheer:'Cheering'};   // תושבי הכפר: מה מנגנים בכל מצב (npc.js). KayKit 2.0
+const DOG_ANIM={idle:'dog_Idle',walk:'dog_Walk',run:'dog_Gallop',sit:'dog_Sit',dig:'dog_Dig',bark:'dog_Attack',jump:'dog_Gallop_Jump'};   // השלד של ההאסקי (build3d.js)
 const LOOK3D={
   player:{model:'knight',h:66,foot:14,
     anim:{idle:'Idle_A',run:'Running_A',hit:'Hit_A',die:'Death_A',win:'Cheering'}},
@@ -48,7 +49,11 @@ const LOOK3D={
   npc_smith:{model:'barbarian',h:66,foot:14,tint:'fire',own:false,props:{hammer:{prop:'w_hammer_A',...HAND_R}},anim:{...NPC_ANIM,work:'Hammering'}},
   npc_merchant:{model:'rogue',h:60,foot:13,tint:'gold',own:false,anim:NPC_ANIM},
   npc_inn:{model:'barbarian',h:58,foot:13,own:false,anim:NPC_ANIM},
-  npc_priest:{model:'mage',h:66,foot:13,tint:'lilac',props:{staff:{prop:'w_staff_A',...HAND_R}},anim:{...NPC_ANIM,work:'Ranged_Magic_Spellcasting'}}
+  npc_priest:{model:'mage',h:66,foot:13,tint:'lilac',props:{staff:{prop:'w_staff_A',...HAND_R}},anim:{...NPC_ANIM,work:'Ranged_Magic_Spellcasting'}},
+  /* חיית המחמד (pet.js): pet_<חיה><שלב>. הגובה על המסך מ-PET (stages[].h), כי גם הדו-ממד משתמש בו. anim: מה מנגנים בכל מצב של החיה */
+  pet_piocho1:{model:'piocho1',foot:2,anim:DOG_ANIM},
+  pet_piocho2:{model:'piocho2',foot:2,anim:DOG_ANIM},
+  pet_piocho3:{model:'piocho3',foot:2,anim:DOG_ANIM,glow:'#FF8A3D'}   // glow: הסימנים על הגוף זוהרים ופועמים (PET.fx)
 };
 /* הנשק ביד השחקן: המודל מ-look.model של הפריט בציוד (GEAR.items ב-gear.js), והחומר לפי ה-tier שלו (טקסטורה wtex_<חומר>, build3d.js).
    כל משפחת נשקים יושבת ביד אחרת ותוקפת באנימציה אחרת. of: לאיזו משפחה שייך מודל, לפי השם.
@@ -129,8 +134,10 @@ async function init3d(){
     for(const g of anims)for(const a0 of g.animations){
       // משאירים רק מה שמזיז את הגוף בפועל: סיבוב של עצמות הגוף והידיים, ותזוזה של האגן והרגליים.
       // עצמות העזר (IK, control) וקנה המידה לא משנים כלום במשחק, ומכפילים פי ארבעה את העבודה בכל פריים
+      // חיות (dog_): כל הסיבובים חוץ מעצמות העזר של הכפות, ו-Body זז (קפיצה, ישיבה)
+      const dog=a0.name.startsWith('dog_');
       const a=new THREE.AnimationClip(a0.name,a0.duration,a0.tracks.filter(t=>{const [n,pr]=t.name.split('.');
-        return !/IK|control/.test(n)&&(pr==='quaternion'||pr==='position'&&/^(root|hips|upperleg)/.test(n))}));
+        return dog?(pr==='quaternion'&&!/^(IK|FF|Pole)/.test(n)||n==='Body'&&pr==='position'):!/IK|control/.test(n)&&(pr==='quaternion'||pr==='position'&&/^(root|hips|upperleg)/.test(n))}));
       R3D.clips[a.name]=a;
       R3D.clips[a.name+'@up']=new THREE.AnimationClip(a.name+'@up',a.duration,a.tracks.filter(t=>UPPER.test(t.name)));
       R3D.clips[a.name+'@low']=new THREE.AnimationClip(a.name+'@low',a.duration,a.tracks.filter(t=>!UPPER.test(t.name)))}
@@ -401,6 +408,26 @@ function syncNpcs(dt){
     a.mixer.update(dt);mark('shadow',a.root.position.x,a.root.position.z,15);
   }
 }
+// חיית המחמד: המצב (הולכת, רצה, יושבת, חופרת) מ-pet.js. בשלב 3 הסימנים פועמים, ומיקום קצה הזנב נשלח ללהבה בקנבס
+function syncPet(dt){
+  const p=S.pet;let a=R3D.pet;
+  if(!p||!petHere()){if(a)a.root.visible=false;return}
+  const L0=LOOK3D['pet_'+(SAVE.pet.kind||PET.default)+(SAVE.pet.stage+1)];if(!L0)return;
+  const L=Object.assign({h:petStage().h},L0);
+  if(!a||a.key!==lookKey(L)){if(a)freeActor(a);a=R3D.pet=makeActor(L);a.st=null;a.bark=0}
+  a.root.visible=true;
+  if(a.st!==p.st&&p.st==='jump')once(a,L.anim.jump,0.9);
+  if(p.barkAt!=null&&p.barkAt!==a.bark){a.bark=p.barkAt;once(a,L.anim.bark,0.6)}
+  a.st=p.st;
+  const moving=p.st==='follow'||p.st==='go',busy=a.one&&a.one.isRunning();
+  if(!busy||moving)loop(a,moving?(p.run?L.anim.run:L.anim.walk):p.st==='dig'?L.anim.dig:p.st==='sit'?L.anim.sit:L.anim.idle,moving&&!p.run?1.4:1);
+  place(a,p.x,p.y,L.foot,null);a.root.rotation.y=yawOf(Math.cos(p.face),Math.sin(p.face));
+  if(L.glow)for(const m of a.mats)if(m.emissiveMap){m.emissive.set(L.glow);m.emissiveIntensity=0.4+0.35*Math.sin(p.fxT*PET.fx.pulse*6.28)}
+  a.mixer.update(dt);
+  const t=petStage().fx&&(a.tail||(a.tail=bone(a.root,'Tail6')));
+  if(t){const v=t.getWorldPosition(R3D._v||(R3D._v=new THREE.Vector3()));PET_FX.tail={x:v.x,y:v.z*SIN()-v.y*COS()}}else PET_FX.tail=null;
+  mark('shadow',a.root.position.x,a.root.position.z,10);
+}
 function npcs3dOff(){if(!R3D.npcs)return;for(const id in R3D.npcs)freeActor(R3D.npcs[id]);R3D.npcs=null}
 
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
@@ -422,6 +449,7 @@ function render3d(ox,oy){
   R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
   if(R3D.wld)R3D.wld.g.visible=false;
+  if(!S.room)syncPet(dt);else if(R3D.pet)R3D.pet.root.visible=false;   // חיית המחמד (pet.js), בכל מקום חוץ מחדר הבונוס
   if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt)}   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
