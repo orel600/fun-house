@@ -46,7 +46,7 @@ const wGates=()=>Object.assign({home:WORLD.home},WORLD.gates);
 let wRet=null;   // השער שממנו נכנסו לזירה: בסוף הריצה חוזרים אליו (againBtn ב-input.js)
 
 /* ---- מעבר בין מקומות ---- */
-function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden=!on;if(!on)$('wPanel').hidden=true}
+function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden=!on;if(!on){$('wPanel').hidden=true;wnpcOff()}}   // wnpcOff: הדמויות בעולם (worldnpc.js)
 // at: 'home' (מהכפר) או id של שער (חזרה מהזירה)
 function enterWorld(at){
   wRet=null;reset();S.mode='play';
@@ -142,6 +142,7 @@ function worldUpdate(dt){
   // ליד שער נפתח פאנל עם כפתור. נכנסים רק בלחיצה
   w.near=null;const gs=wGates();for(const k in gs){const g=gs[k];if(Math.hypot(P.x-g.x,P.y-g.y)<g.r+P.r+WORLD.near)w.near=k}
   worldHud();
+  wnpcUpdate(dt);   // דמויות שמגלים בעולם, וכפתור "לדבר" (worldnpc.js)
 }
 
 /* ---- מוות בעולם: חצי מכל משאב בתרמיל הולך, הפריטים והמחסן נשארים. נקרא מ-gameOver ---- */
@@ -209,6 +210,7 @@ function drawWorld(){
     }
     if(n.hp<n.max){const bw=r*2;ctx.fillStyle='rgba(5,7,13,0.6)';ctx.fillRect(x-bw/2,y-r*2.2,bw,4);ctx.fillStyle=C.gold;ctx.fillRect(x-bw/2,y-r*2.2,bw*Math.max(0,n.hp/n.max),4)}
   }
+  drawWnpcs();   // worldnpc.js
 }
 // שלטים מתחת לשערים, וחצים בקצה המסך אל השערים ואל הכפר. מעל הכל, בשני המצבים
 function drawWorldScreen(ox,oy){
@@ -218,4 +220,5 @@ function drawWorldScreen(ox,oy){
   for(const k in gs){const g=gs[k],col=k==='home'?C.chalk:C.lilac,txt=k==='home'?T('w.home'):T('w.gate.'+k),x=g.x+ox,y=g.y+oy+40,tw=ctx.measureText(txt).width+16;
     ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(x-tw/2,y-11,tw,22,11);ctx.fill();ctx.fillStyle=col;ctx.fillText(txt,x,y+5);
     edgeArrow(g.x+ox,g.y+oy,col)}
+  drawWnpcScreen(ox,oy);   // worldnpc.js
 }
