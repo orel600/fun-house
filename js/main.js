@@ -10,7 +10,7 @@ function frame(now){
   render();hud();requestAnimationFrame(frame);
 }
 // כל הטקסט שעל המסך מחדש, בשפה הנוכחית: בהפעלה ובכל החלפת שפה
-function showLang(){applyLang();updateSwapBtn();$('bestLine').textContent=best>0?T('best',fmt(best)):''}
+function showLang(){applyLang();showGfx();updateSwapBtn();$('bestLine').textContent=best>0?T('best',fmt(best)):''}
 function boot(){
   reset();
   showLang();

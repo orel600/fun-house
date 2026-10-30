@@ -71,6 +71,7 @@ function drawWanted(e){
   // טבעת הזמן מתחת לרגליים: כמה נשאר עד שהוא בורח
   ctx.strokeStyle=e.life<WANTED.panic?C.blood:'rgba(244,199,79,0.45)';ctx.lineWidth=2;
   ctx.beginPath();ctx.ellipse(e.x,e.y+19,20,7,0,-Math.PI/2,-Math.PI/2+Math.PI*2*k);ctx.stroke();
+  if(R3D.on)return;   // בתלת-ממד השודד עצמו מצויר בשכבה שמתחת
   drawRig(p,{skin:LOOK.wanted,col:fl?'#fff':C.gold,lw:fl?3.5:2.5});
   // מסכת שודד ושק שלל על הגב
   const h=p.head,s=p.body[0];
