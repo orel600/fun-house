@@ -528,7 +528,7 @@ function worldBot(m,L,god){
   // צלילים: כמה פעמים כל צליל התבקש, אם הקבצים נטענו מ-file://, ואם כפתור ההשתקה עובד ונשמר
   const au=await page.evaluate(()=>{const b=document.getElementById('muteBtn');b.click();const m=AUDIO.muted&&localStorage.getItem('zm-mute')==='1';b.click();
     return{count:AUDIO.count,errors:AUDIO.errors,unlocked:AUDIO.unlocked,ids:Object.keys(SOUNDS),mute:m&&!AUDIO.muted,
-      loaded:Object.values(AUDIO.pool).filter(p=>p.every(a=>a.readyState>=1)).length}});
+      loaded:Object.keys(AUDIO.buf).length}});
   // בפעם השנייה מסך הפתיחה מוביל ישר לכפר, בלי בחירת דמות
   const again=await page.evaluate(()=>{document.getElementById('startBtn').click();return document.getElementById('ovHero').hidden&&!!S.vil});
   const heroHp=await page.evaluate(()=>HEROES.list.warrior.passive.hp);
