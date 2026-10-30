@@ -66,14 +66,15 @@ function nodeNear(){
 }
 // נקרא מ-damage כשהחיים של מקור נגמרים
 function nodeDown(n){
-  n.dead=true;S.nd.broken++;if(NODES.kinds[n.kind].shape==='chest')S.nd.chests=(S.nd.chests||0)+1;sfx('coin');
+  n.dead=true;S.nd.broken++;if(n.regrow)n.back=n.regrow;   // בעולם הפתוח הוא צומח מחדש (world.js)
+  if(NODES.kinds[n.kind].shape==='chest')S.nd.chests=(S.nd.chests||0)+1;sfx('coin');
   const got=runGive(NODES.kinds[n.kind].drop,n.x,n.y-n.r);S.nd.got.push(...got);
   sparks(n.x,n.y,NODES.kinds[n.kind].col,14,200);
 }
 
 /* ---- ציור: צורות פשוטות בקנבס, בשני המצבים (מעל שכבת התלת-ממד). סדק כשנפגע ופס חיים ---- */
 function drawNodes(){
-  if(!S.nd||S.room)return;
+  if(!S.nd||S.room||S.wd)return;   // בעולם הפתוח המקורות מצוירים ב-drawWorld (world.js)
   for(const n of S.nd.list){
     const K=NODES.kinds[n.kind],fl=n.flash>0,r=n.r,x=n.x,y=n.y;
     ctx.fillStyle='rgba(5,7,13,0.35)';ctx.beginPath();ctx.ellipse(x,y+r*0.7,r*1.1,r*0.4,0,0,7);ctx.fill();

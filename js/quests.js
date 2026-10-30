@@ -1,15 +1,16 @@
 /* קווסטים: תמיד יש מה לעשות ולמה לשאוף (ניר, game-design.md "החלטות של ניר").
    כל קווסט הוא שורה ב-QUESTS.list, וקווסט חדש = שורה חדשה, בלי קוד. השם ומשפט הדיאלוג ב-lang.js תחת 'q.<id>': [שם, משפט].
    id: שם קבוע. giver: מי נותן (מבנה בכפר, ובהמשך NPC). צריך להיות בנוי כדי לתת. kind: הסוג, ההתנהגות שלו ב-QUESTS.kinds.
-   obj: מטרות, מתוך חמש:
+   obj: מטרות, מתוך שש:
      kill    להפיל n מ-what: grunt, shield, wisp, wanted, boss, או any (כל אויב)
      collect להביא הביתה n מ-what: משאב (כל משאב ב-RES, resources.js), מהייצור בכפר או מהשלל של ריצה
-     reach   להגיע n פעמים ל-what: arena (יציאה לזירה), room (חדר הבונוס)
+     reach   להגיע n פעמים ל-what: arena (יציאה לזירה), room (חדר הבונוס), world (יציאה מהכפר לעולם הפתוח)
+     gather  לאסוף בעולם הפתוח n מ-what: משאב שנפל ממקור או מאויב בעולם (world.js). נספר כשהוא נכנס לתרמיל
      upgrade המבנה what ברמה n לפחות. נבדק לפי הכפר עצמו, אז מה שכבר בנית נספר
      win     לנצח בוס n פעמים. אפשר בתנאי: noHit (בלי לחטוף פגיעה כל עוד הבוס בזירה), under (לפני שעברו כך וכך שניות בריצה)
    reward: משאבים לתרמיל לפי השם, xp לדמות, item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>'). id של פריט ציוד מ-GEAR.items (gear.js) נכנס לתרמיל כציוד שאפשר ללבוש.
    req: תנאי פתיחה. level: רמת דמות, quest: קווסט שכבר הושלם, b: {מבנה:רמה}.
-   המשחק מדווח מה קרה דרך questEvent(סוג, מה, כמה): שורה אחת בכל מקום (kill, hurt, win, collect, upgrade, reach). המנוע מחליט לאיזה קווסט זה שייך.
+   המשחק מדווח מה קרה דרך questEvent(סוג, מה, כמה): שורה אחת בכל מקום (kill, hurt, win, collect, gather, upgrade, reach). המנוע מחליט לאיזה קווסט זה שייך.
    ההתקדמות נשמרת רק ב-SAVE.quests (save.js). בזירה היא נשמרת יחד עם השלל, בסוף הריצה */
 
 const QUESTS={
@@ -39,6 +40,7 @@ const QUESTS={
     {id:'mine3',giver:'mine',kind:'village',obj:[{type:'upgrade',what:'mine',n:3},{type:'collect',what:'iron',n:10}],reward:{stone:40,iron:10},req:{quest:'center2'}},
     {id:'bones',giver:'forge',kind:'village',obj:[{type:'collect',what:'bone',n:10}],reward:{iron:5,coins:20}},
     {id:'shields',giver:'forge',kind:'village',obj:[{type:'kill',what:'shield',n:15}],reward:{iron:6,xp:20},req:{quest:'bones'}},
+    {id:'wFirst',giver:'center',kind:'village',obj:[{type:'reach',what:'world',n:1},{type:'gather',what:'wood',n:10}],reward:{coins:20,stone:10}},
     {id:'door',giver:'market',kind:'village',obj:[{type:'reach',what:'room',n:1}],reward:{coins:30}},
     // ---- ציד: אפשר לקחת שוב ושוב ----
     {id:'huntWanted',giver:'market',kind:'hunt',obj:[{type:'kill',what:'wanted',n:1}],reward:{coins:40}},
@@ -134,7 +136,7 @@ function questClaim(id){
 }
 
 /* ---- ממשק: היומן בכפר, וקו מעקב בזירה ---- */
-const qWhat=o=>o.type==='kill'?T('foe.'+o.what):o.type==='collect'?resName(o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
+const qWhat=o=>o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?resName(o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
 const qObjTxt=(q,i)=>{const o=q.obj[i];return T('qo.'+o.type,qWhat(o),o.n)+(o.noHit?T('qo.noHit'):'')+(o.under?T('qo.under',fmt(o.under)):'')};
 const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='item'?QUESTS.icon.item+' '+T('item.'+r[k]):(resIcon(k)||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
 // הקווסט שמוצג בזירה: זה שבחרת לעקוב אחריו, ואם אין, הראשון שעוד לא הושלם

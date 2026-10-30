@@ -5,7 +5,7 @@ function frame(now){
   if(S&&S.mode==='play'){
     if(S.vil)villageUpdate(dt);   // בכפר מתעדכן רק הכפר
     else if(S.hitstop>0)S.hitstop-=dt;
-    else{if(S.slow>0){S.slow-=dt;dt*=0.35}update(dt)}
+    else{if(S.slow>0){S.slow-=dt;dt*=0.35}S.wd?worldUpdate(dt):update(dt)}   // בעולם הפתוח מתעדכן רק העולם (world.js)
   }else if(S){S.cam.x+=(P.x-S.cam.x)*0.1;S.cam.y+=(P.y-S.cam.y)*0.1}
   if(S&&S.mode==='play'){const k=Math.min(1,dt*8);S.cam.x+=(P.x-S.cam.x)*k;S.cam.y+=(P.y-S.cam.y)*k}
   render();hud();requestAnimationFrame(frame);

@@ -1,4 +1,4 @@
-/* הכפר: הבית. ממנו יוצאים לזירה דרך השער, ואליו חוזרים בסוף ריצה עם השלל.
+/* הכפר: הבית. ממנו יוצאים לעולם הפתוח דרך השער (world.js), ואליו חוזרים עם השלל.
    הכפר הוא מקום, כמו חדר הבונוס: S.vil קיים רק כשנמצאים בכפר, ו-main.js מעדכן רק את המקום הנוכחי.
    מה שנשאר בין ריצות (רמות המבנים, התרמיל, הייצור) נקרא ונכתב רק דרך SAVE (save.js), ונשמר אחרי כל שינוי.
    כל המספרים באובייקט VILLAGE. השמות והתיאורים ב-lang.js ('vil.mill' וכו'). המודלים בתלת-ממד: VIL3D ב-render3d.js
@@ -112,7 +112,7 @@ function vTrade(kind,r){
 /* ---- מעבר בין הכפר לזירה ---- */
 function villageUi(on){document.body.classList.toggle('vil',on);$('vhud').hidden=!on;if(!on)$('vPanel').hidden=true}
 function enterVillage(){
-  const back=S&&S.mode==='over';
+  const back=S&&(S.mode==='over'||S.wd);   // חוזרים מהעולם (או מריצה): ליד השער
   reset();S.mode='play';S.vil={near:null,ui:'',raise:{}};
   const at=back?{x:VILLAGE.gate.x,y:VILLAGE.gate.y-110}:VILLAGE.spawn;
   P.x=at.x;P.y=at.y;P.aim=-Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
@@ -124,7 +124,7 @@ function enterVillage(){
   saveNow();
   villageUi(true);
 }
-function leaveVillage(){villageUi(false);startRun();questEvent('reach','arena')}
+function leaveVillage(){villageUi(false);enterWorld('home');questEvent('reach','world')}   // השער מוביל לעולם הפתוח (world.js), והזירות בתוכו
 
 /* ---- כל פריים בכפר ---- */
 function villageUpdate(dt){
@@ -190,7 +190,7 @@ function villageHud(){
   if(key===S.vil.ui)return;S.vil.ui=key;
   $('vBag').innerHTML=bagLine(SAVE.bag,resShown(k));   // רק מה שרלוונטי ליד המבנה הזה (RES.show)
   const pn=$('vPanel');pn.hidden=!k&&!S.vil.gate;
-  if(S.vil.gate){pn.innerHTML='<h3>'+T('vil.arena')+'</h3><p>'+T('vil.arenaInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.enter')+'</button>';return}
+  if(S.vil.gate){pn.innerHTML='<h3>'+T('vil.out')+'</h3><p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
   if(!k)return;
   const why=vBlock(k),c=vCost(k);
   let h='<h3>'+T('vil.'+k)+' <small>'+(L?T('level',L):'')+'</small></h3><p>'+vInfo(k,L)+'</p>';

@@ -60,7 +60,7 @@ const RES={
   },
   /* מה רואים בפס העליון בכל מקום (ניר: "לא חייבים לראות כל הזמן את כל המשאבים"). המפתח: המבנה שעומדים לידו.
      ברשימה: משפחות או משאבים. מה שב-always מוצג תמיד, וכל השאר רק כשיש ממנו. bag: כל מה שיש בתרמיל */
-  show:{village:['coins','wood','stone','cloth','resin'],forge:['coins','metal','rare'],mine:['coins','stone','metal'],market:'bag'},
+  show:{village:['coins','wood','stone','cloth','resin'],world:'bag',forge:['coins','metal','rare'],mine:['coins','stone','metal'],market:'bag'},
   always:['coins','wood','stone','copper','iron'],
   // מוות בעולם הפתוח: איזה חלק מהתרמיל הולך לאיבוד. עוד לא מחובר, כי אין עולם פתוח
   deathLoss:{resources:0.5,items:0},
