@@ -58,6 +58,19 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .swap:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
 .swap.hint{animation:pulse .6s ease-in-out infinite alternate}
 @keyframes pulse{to{transform:scale(1.12);box-shadow:0 0 0 10px rgba(236,231,220,.12)}}
+/* הסקילים (js/skills.js): לרוחב, תחת האגודל הימני, ולכן right ולא end. כפתור בצבע סוג הנזק, ומילוי כהה שמתרוקן בזמן הטעינה (--cd) */
+.skills{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 26px);right:calc(env(safe-area-inset-right,0px) + 20px);
+  display:flex;flex-direction:row-reverse;align-items:flex-end;gap:12px;direction:ltr}
+.swap:not([hidden])~.skills{bottom:calc(env(safe-area-inset-bottom,0px) + 130px)}
+.skb{position:relative;width:68px;height:68px;border-radius:50%;border:3px solid var(--dt);background:rgba(18,22,36,.8);
+  display:grid;place-items:center;padding:0;touch-action:none;cursor:pointer;overflow:hidden}
+.skb:first-child{width:80px;height:80px}
+.skb .dti{width:34px;height:34px}
+.skb i{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
+.skb.ready{box-shadow:0 0 12px var(--dt)}
+.skb:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
+.vil .skills{display:none}
 .banner{position:fixed;z-index:3;left:0;right:0;top:32%;text-align:center;font-family:var(--display);font-size:28px;
   pointer-events:none;opacity:0;transition:opacity .25s;padding-inline:16px;text-shadow:0 2px 0 #0008}
 .banner.on{opacity:1}
