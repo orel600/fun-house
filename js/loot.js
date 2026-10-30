@@ -33,7 +33,7 @@ function runGive(D,x,y){
   for(const r in D){
     const [ch,n,from]=D[r];if(from&&S.t<from)continue;
     const t=lootTier(r);if(t>=pf)hasRare=true;
-    if(Math.random()>=ch*(t>=pf?boost:1))continue;
+    if(Math.random()>=ch*(t>=pf?boost:1)*orbitLuck())continue;   // orbitLuck: חפץ מזל (orbit.js)
     // נופל לרצפה ונאסף כשעוברים לידו (drops.js). בחדר הבונוס נכנס ישר לשלל
     if(S.room)runLoot()[r]=(runLoot()[r]||0)+n;else dropSpawn(r,n,x,y);got.push(r);top=Math.max(top,t);
     (S.drops||(S.drops=[0,0,0,0,0]))[t]+=n;

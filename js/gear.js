@@ -11,7 +11,7 @@ const GEAR={
   tiers:[{id:'wood',col:'#B07A45',w:50,metal:'wood'},{id:'iron',col:'#9AA3AD',w:30,metal:'iron'},{id:'silver',col:'#DCE3EA',w:14,metal:'silver'},{id:'gold',col:C.gold,w:5,metal:'gold'},{id:'legend',col:'#FF6FB5',w:1,metal:'mythril'}],
   // הסטטים. איך כל אחד חל על השחקן: gearReset. unit: מה מוצג אחרי המספר. w: משקל בהשוואה "מה יותר טוב"
   stats:{sdmg:{unit:'%',w:1},gdmg:{unit:'%',w:1},hp:{unit:'',w:0.4},speed:{unit:'%',w:1.5},magnet:{unit:'%',w:0.3},regen:{unit:'',w:8}},
-  // חפצים מסתובבים: בינתיים רק סוג וצורה. ההתנהגות שלהם תגיע במשימה "חפצים מסתובבים" (orbit.js)
+  // חפצים מסתובבים: הסוג והאייקון במסך הציוד. מה כל סוג עושה בזירה: ORBIT ב-orbit.js
   orbit:{attack:'🔥',defense:'🛡️',control:'❄️',support:'💚',luck:'🍀'},
   /* הפריטים. slot: weapon / acc / boots / orbit. נעליים נותנות מהירות (speed). tier: מספר ב-tiers. w: סוג הנשק ב-WEAPONS (weapons.js): איך הוא תוקף. איתו מתחילים את הריצה.
      look: איך הפריט נראה, כדי שכל שדרוג ייראה. tint צבע, glow זוהר, model המודל בתלת-ממד (w_<שם> מ-Fantasy Weapons, והחומר לפי tier) */
@@ -58,8 +58,8 @@ const GEAR={
     cloverOrb:  {wood:6,flower:4,mushroom:2,coins:20}
   },
   // שלל בסוף ריצה. run: סיכוי לפריט אחד בכל ריצה. boss: סיכוי לפריט על כל בוס שהובס.
-  // slots: מה יכול ליפול. החפצים המסתובבים יצטרפו כשתהיה להם התנהגות
-  loot:{run:0.35,boss:1,slots:['weapon','acc','boots']},
+  // slots: מה יכול ליפול
+  loot:{run:0.35,boss:1,slots:['weapon','acc','boots','orbit']},
   /* מסך הציוד: הבובה באמצע, ומשבצות מסביב. start/end: הצדדים (מתהפכים לפי השפה), under: שורה מתחת לבובה.
      משבצת חדשה (למשל מגפיים) נכנסת לאחת הרשימות. drag: כמה פיקסלים זזים לפני שלחיצה הופכת לגרירה */
   doll:{start:['weapon'],end:['acc','boots'],under:['orbit']},
@@ -172,7 +172,7 @@ const gRarCol=k=>RES.rarity[Math.min(gRar(k),RES.rarity.length-1)].col;
 
 const gSign=(k,v)=>'<bdi>'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T('st.'+k);
 function gStatsHtml(id){const it=gItem(id),s=gStats(id);
-  if(it.slot==='orbit')return '<p>'+T('orb.'+it.type)+' · '+T('gear.soon')+'</p>';
+  if(it.slot==='orbit')return '<p>'+T('orb.'+it.type)+' · '+T('orb.do.'+it.type)+'</p>';
   return '<ul class="gstats">'+Object.keys(s).map(k=>'<li>'+gSign(k,s[k])+'</li>').join('')+'</ul>'}
 // מה ישתנה אם לובשים: לכל סטט, ההפרש מול מה שיוצא מהמשבצת, עם חץ למעלה או למטה
 function gCompare(id,old){
