@@ -1,6 +1,7 @@
 /* חיית המחמד: הולכת אחרי השחקן בכפר, בעולם ובזירה, וגדלה איתו בשלושה שלבים.
    הראשונה היא פיוחו (פיוחו), הכלבה של ניר: לבנה ורזה, קצות אוזניים בצבע חול, כתם עגול על הראש, וזנב מתולתל. היא אוהבת לחפור בחול.
-   היכולת שלה, "פיוחו חופרת": כל כמה זמן היא רצה לנקודה, חופרת, ומוציאה שלל שנופל לרצפה (drops.js) ונאסף כרגיל.
+   היכולת שלה, "פיוחו חופרת": כל כמה זמן היא רצה לנקודה, חופרת, ומוציאה שלל. טבלת השלל בפורמט של הכלכלה (runGive ב-loot.js):
+   דרגות, עמודי אור, חגיגה לנדיר ומזל עם הגנה. השלל נופל לרצפה (drops.js) ונאסף כרגיל.
    שלב 3 (אגדית) מקבל אפקטים חיים, מצוירים בקנבס כדי שיהיו זולים בטלפון: הסימנים על הגוף פועמים, להבה בקצה הזנב, ולהבונים ליד הכפות.
    כל חיה היא שורה ב-PET.kinds. חיה של אוראל = שורה חדשה (ומודל ב-LOOK3D, render3d.js), בלי לגעת בלוגיקה.
    מה נשמר: איזו חיה, שלב ו-XP, ב-SAVE.pet דרך save.js. המצב הרגעי (איפה היא, מה היא עושה) ב-S.pet, וחדש בכל מקום.
@@ -12,11 +13,12 @@ const PET={
     piocho:{
       owner:'nir',                           // של מי היא. היום רק לתיעוד: השמירה היא בטלפון של מי שמשחק
       col:'#F2D3A0',                         // צבע הנקודה בדו-ממד ובמפה (חול)
-      // השלבים: מאיזה XP מגיעים אליו, גודל על המסך (h בפיקסלים), ומה החפירה נותנת בשלב הזה
+      /* השלבים: מאיזה XP מגיעים אליו, גודל על המסך (h בפיקסלים), וכל כמה שניות היא חופרת (every).
+         loot: {משאב:[סיכוי, כמה]}, כמו טבלאות השלל של האויבים (data.js). כל שורה מוגרלת לבד. לא יצא כלום: miss */
       stages:[
-        {xp:0,   h:36, dig:{every:26,loot:{stone:5,wood:4,ore:1.2,gem:0.25},n:[1,2]}},
-        {xp:240, h:46, dig:{every:20,loot:{stone:4,wood:3,ore:2,gem:0.6},n:[1,3]}},
-        {xp:900, h:54, dig:{every:15,loot:{stone:3,wood:2,ore:3,gem:1.4,coins:1.5},n:[2,4]},fx:true}   // fx: הלהבות והזוהר
+        {xp:0,   h:36, dig:{every:26,loot:{stone:[0.55,1],wood:[0.45,1],herb:[0.4,1],copper:[0.25,1],rubyC:[0.05,1],amberC:[0.05,1]}}},
+        {xp:240, h:46, dig:{every:20,loot:{stone:[0.5,2],copper:[0.45,1],iron:[0.25,1],mushroom:[0.3,1],rubyC:[0.12,1],sapphireC:[0.12,1],ruby:[0.03,1]}}},
+        {xp:900, h:54, dig:{every:15,loot:{coins:[0.6,8],iron:[0.45,2],silver:[0.25,1],gold:[0.08,1],ruby:[0.1,1],sapphire:[0.1,1],amber:[0.08,1],star:[0.015,1]}},fx:true}   // fx: הלהבות והזוהר
       ]
     }
   },
@@ -25,7 +27,7 @@ const PET={
   // הליכה אחרי השחקן: trail מאחוריו, run: מרחק שממנו היא רצה, jump: מרחק שממנו היא פשוט מופיעה לידו (מעבר מקום, שער)
   follow:{trail:46,side:26,walk:150,run:330,runFrom:170,jump:700,sitAfter:1.4},
   // החפירה: arena: כמה פחות בזירה (פי כמה זמן בין חפירות), spot: כמה רחוק מהשחקן היא רצה לחפור, dur: כמה שניות חופרת
-  dig:{arena:2.2,spot:[70,150],dur:1.7,rare:['gem','coins'],sand:'#D9B87A',grains:5},
+  dig:{arena:2.2,spot:[70,150],dur:1.7,miss:{stone:1},sand:'#D9B87A',grains:5},   // miss: מה יוצא כשההגרלה לא הוציאה כלום
   bark:{range:90,cd:2.5},                    // מתלהבת מאויב קרוב: אנימציית תקיפה (רק מראה, בלי נזק)
   fx:{pulse:1.8,ember:'#FF8A3D',core:'#FFE08A'}   // שלב 3: קצב הפעימה וצבעי הלהבה
 };
@@ -83,23 +85,22 @@ function petUpdate(dt){
   // אויב קרוב: נובחת וקופצת עליו (רק מראה)
   p.bark-=dt;if(p.bark<=0&&!S.vil){const e=enemies.find(e=>!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<PET.bark.range);if(e){p.bark=PET.bark.cd;p.barkAt=p.t;p.face=Math.atan2(e.y-p.y,e.x-p.x)}}
 }
-// רצה לנקודה ליד השחקן. בעולם לא בתוך עץ או סלע
+// רצה לנקודה ליד השחקן, לא בתוך עץ, סלע או תיבה (nodes.js), ובעולם לא מחוץ לגבולות
 function petDigStart(p){
   p.digT=petStage().dig.every;
   for(let i=0;i<8;i++){const a=rand(0,6.28),r=rand(...PET.dig.spot),x=P.x+Math.cos(a)*r,y=P.y+Math.sin(a)*r;
-    if(S.wd&&S.nd.list.some(n=>!n.dead&&Math.hypot(n.x-x,n.y-y)<n.r+20))continue;
+    if(S.nd&&S.nd.list.some(n=>!n.dead&&Math.hypot(n.x-x,n.y-y)<n.r+20))continue;
     if(S.wd){const B=WORLD.size;if(Math.abs(x)>B.w/2-40||Math.abs(y)>B.h/2-40)continue}
     p.spot={x,y};p.st='go';p.t=0;return true}
   return false}
-// סוף החפירה: מה יצא, לפי הטבלה של השלב. נופל לרצפה ונאסף כמו כל שלל
+// סוף החפירה: הטבלה של השלב, דרך runGive של הכלכלה (דרגות, עמוד אור, חגיגה לנדיר). נופל לרצפה ונאסף כמו כל שלל
 function petDigEnd(p){
-  const D=petStage().dig,w=Object.entries(D.loot),sum=w.reduce((s,[,v])=>s+v,0);let r=rand(0,sum),res=w[0][0];
-  for(const [k,v] of w){if((r-=v)<=0){res=k;break}}
-  const n=Math.round(rand(D.n[0],D.n[1]));
-  const d=dropSpawn(res,n,p.x+Math.cos(p.face)*12,p.y+Math.sin(p.face)*12);d.pet=true;   // pet: לבדיקה, מי הוציא אותו
-  const rare=PET.dig.rare.includes(res);
-  if(rare){celebrate(p.x,p.y,'quest',VILLAGE.icon[res]);floatText(p.x,p.y-36,T('pet.found',T('pet.name.'+(SAVE.pet.kind||PET.default))),DROPS.rare[res]||C.gold,15)}else sfx('tap');
-  p.digs++;p.dug.push(res);p.st='idle';p.t=0;p.spot=null;petXP(PET.xp.dig);
+  const x=p.x+Math.cos(p.face)*12,y=p.y+Math.sin(p.face)*12-20,n0=drops().length;
+  let got=runGive(petStage().dig.loot,x,y);
+  if(!got.length){const [r,n]=Object.entries(PET.dig.miss)[0];dropSpawn(r,n,x,y+20);got=[r]}
+  for(const d of drops().slice(n0))d.pet=true;   // pet: לבדיקה, מה היא הוציאה (מה שהצטרף לערימה קיימת לא מסומן)
+  if(got.some(r=>lootTier(r)>=2))floatText(p.x,p.y-48,T('pet.found',T('pet.name.'+(SAVE.pet.kind||PET.default))),RES.rarity[2].col,15);else sfx('tap');
+  p.digs++;p.dug.push(...got);p.st='idle';p.t=0;p.spot=null;petXP(PET.xp.dig);
   if(typeof questEvent==='function')questEvent('pet','dig',1);
 }
 
