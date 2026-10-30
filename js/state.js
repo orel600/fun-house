@@ -12,5 +12,6 @@ function reset(){
   enemies=[];pb=[];eb=[];orbs=[];parts=[];floats=[];mines=[];waves=[];joy=null;
   bonusReset();
   wantedReset();
+  reset3d();
   updateSwapBtn();
 }
