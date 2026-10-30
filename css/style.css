@@ -163,3 +163,10 @@ h1{font-size:46px} h2{font-size:30px}
   .ghead h2{font-size:20px}
   .gtile{width:40px;height:40px;font-size:20px}
 }
+/* כפתור הציוד בזירה: בשורה העליונה, ליד הרמה. הפינה הימנית למטה נשארת לכישורים */
+.hud .gearbtn{position:static;pointer-events:auto;padding:3px 9px;font-size:16px;flex:none}
+/* המחסן בפאנל של הכפר (js/stash.js) */
+.smove{display:flex;flex-wrap:wrap;gap:6px}
+.smove .res{cursor:pointer;appearance:none}
+.smove .res:disabled{opacity:.5;cursor:default}
+.vpanel .sk{font-size:11px;font-weight:800;color:var(--dim)}
