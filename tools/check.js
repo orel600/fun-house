@@ -148,10 +148,11 @@ function botStep({god,en}){
     await shot('start-'+CFG.lang);
   }
   await page.click('#startBtn');
-  // חולשה: אותה מכה על מגן, פעם בסוג שהוא חלש אליו ופעם בפיזי, בלי מכה קריטית. אחר כך מנקים
+  // חולשה: אותה מכה של 10 על אויב לפי החומר שלו, בלי מכה קריטית. מגן (עצם ושריון) מהחולשה שלו, ואבן ממים, מברק ומאש. אחר כך מנקים
   const wk=await page.evaluate(()=>{const c=FX.crit;FX.crit=0;const tr=P.track,hits=S.hits;P.track=newTrack();S.hits={};
-    const hit=t=>{const e=addEnemy('shield',P.x+5000,P.y);e.hp=e.max=1e9;damage(e,10,'sword',0,t,true);e.dead=true;return 1e9-e.hp};
-    const r={weak:ETYPES.shield.mult&&weakOf(ETYPES.shield.mult),plain:hit('physical')};r.weakDmg=hit(r.weak);
+    const hit=(tags,t)=>{const e=addEnemy('shield',P.x+5000,P.y);e.mult=multOf(tags);e.hp=e.max=1e9;damage(e,10,'sword',0,t,true);e.dead=true;return Math.round(1e9-e.hp)};
+    const sh=ETYPES.shield.tags,r={weak:weakOf(multOf(sh)),plain:hit([],'physical')};r.weakDmg=hit(sh,r.weak);
+    r.stone={water:hit(['stone'],'water'),lightning:hit(['stone'],'lightning'),fire:hit(['stone'],'fire')};
     enemies=enemies.filter(e=>!e.dead);FX.crit=c;P.track=tr;S.hits=hits;return r});
 
   let L={},took={},guard=0;
@@ -167,7 +168,8 @@ function botStep({god,en}){
   const t=s=>s==null?'-':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
   check(L.levels>0,'עליית רמה ובחירת שדרוג: '+L.levels+' פעמים, הגיע לרמה '+L.level);
   check(L.swaps>0,'החלפת נשק: '+L.swaps+' פעמים');
-  check(wk.weakDmg>wk.plain*1.2,'חולשה: מכה של '+wk.weak+' על מגן עשתה '+Math.round(wk.weakDmg)+', ואותה מכה פיזית '+Math.round(wk.plain));
+  check(wk.weakDmg>wk.plain*1.2,'חולשה: מכה של '+wk.weak+' על מגן עשתה '+wk.weakDmg+', ואותה מכה בלי חולשה '+wk.plain);
+  check(wk.stone.lightning===0&&wk.stone.water===15&&wk.stone.fire===5,'טבלת יעילות: מכה של 10 על אבן · מים '+wk.stone.water+' (צריך 15), ברק '+wk.stone.lightning+' (צריך 0), אש '+wk.stone.fire+' (צריך 5)');
   const hits=L.hits||{},nTypes=Object.keys(hits).filter(k=>hits[k]>0).length;
   check(nTypes>=2,'פגיעות לפי סוג נזק: '+(Object.entries(hits).map(([k,v])=>k+' '+v).join(', ')||'אין')+' · בסוף: חרב/קשת '+L.dt);
   check(L.door!=null&&L.room!=null&&L.roomBack!=null,'דלת זהב: הופיעה '+t(L.door)+', נכנס לחדר '+t(L.room)+(L.saws?' (עם מסורים)':'')+', חזר '+t(L.roomBack)+', '+L.coins+' מטבעות');

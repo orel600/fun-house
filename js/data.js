@@ -1,10 +1,10 @@
 /* נתונים: סוגי אויבים ושדרוגים. השמות והתיאורים שלהם ב-lang.js, לפי ה-id (למשל 'up.sdmg')
-   mult: פי כמה נזק מכל סוג נזק (סוגי הנזק ב-dmg.js). מעל 1 חולשה, מתחת ל-1 עמידות, סוג שלא כתוב = 1.
+   tags: ממה האויב עשוי. מזה ומטבלת היעילות ב-dmg.js (DMG.chart) נקבע כמה נזק הוא מקבל מכל סוג.
    החולשה הכי גדולה היא צבע הטבעת שמתחת לאויב */
 const ETYPES={
-  grunt:{hp:22,r:13,speed:74,xp:1,dmg:10,mult:{}},
-  shield:{hp:46,r:15,speed:56,xp:2,dmg:12,mult:{fire:2,ice:0.4}},
-  wisp:{hp:18,r:11,speed:100,xp:2,dmg:8,mult:{ice:2,fire:0.4}}
+  grunt:{hp:33,r:13,speed:74,xp:1,dmg:10,tags:['bone']},            // חלש לפיזי ×1.5, אז יותר חיים כדי שהגושים לא יתאדו
+  shield:{hp:46,r:15,speed:56,xp:2,dmg:12,tags:['bone','metal']},   // שריון: חלש לאש, ברק ואדמה
+  wisp:{hp:18,r:11,speed:100,xp:2,dmg:8,tags:['magic','flying']}    // מרחף: חלש לקרח וברק, עמיד לאדמה
 };
 const UPS=[
   {id:'sdmg',w:'sword',f:()=>P.sw.dmg*=1.35},
@@ -19,6 +19,8 @@ const UPS=[
   {id:'slight',w:'sword',el:'lightning'},
   {id:'gice',w:'gun',el:'ice'},
   {id:'glight',w:'gun',el:'lightning'},
+  {id:'searth',w:'sword',el:'earth'},
+  {id:'gwater',w:'gun',el:'water'},
   {id:'hp',w:'any',f:()=>{P.maxHp+=25;P.hp=P.maxHp}},
   {id:'spd',w:'any',f:()=>P.speed*=1.12,max:3},
   {id:'mag',w:'any',f:()=>P.magnet*=1.6,max:2},

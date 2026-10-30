@@ -32,7 +32,7 @@ function swarm(){
   for(let i=0;i<n;i++){const a=o+i/n*Math.PI*2,d=RUN.swarmR*Math.max(W,H)+rand(-25,25);addEnemy('grunt',P.x+Math.cos(a)*d,P.y+Math.sin(a)*d,HORDE.weak)}
   banner(T('st.swarm'),C.chalk);S.shake=Math.max(S.shake,5);
 }
-// אויב-על: מתחלף בין מגן (חלש לאש) למכשף (חלש לקרח), כדי שיהיה שווה להחזיק יותר מסוג נזק אחד
+// אויב-על: מתחלף בין אביר בשריון (חלש לאש) למכשף מרחף (חלש לקרח), כדי שיהיה שווה להחזיק יותר מסוג נזק אחד
 function elite(){
   const E=RUN.elite,type=S.run.log.filter(s=>s.kind==='elite').length%2?'shield':'wisp',p=spawnPos();
   for(let i=0;i<E.escort;i++){const a=rand(0,6.28),d=rand(40,110);addEnemy('grunt',p.x+Math.cos(a)*d,p.y+Math.sin(a)*d,HORDE.weak)}

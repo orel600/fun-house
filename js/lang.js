@@ -51,8 +51,10 @@ const TEXT={
   // סוגי נזק (dmg.js)
   'dt.physical':{he:'פיזי',en:'Physical'},
   'dt.fire':{he:'אש',en:'Fire'},
+  'dt.water':{he:'מים',en:'Water'},
   'dt.ice':{he:'קרח',en:'Ice'},
   'dt.lightning':{he:'ברק',en:'Lightning'},
+  'dt.earth':{he:'אדמה',en:'Earth'},
   weakTo:{he:t=>'חלש ל'+t,en:t=>'Weak to '+t},
   immune:{he:'חסין',en:'Immune'},
 
@@ -68,6 +70,8 @@ const TEXT={
   'up.sfire':{he:['להב בוער','החרב עושה נזק אש, ששורף עוד קצת אחרי המכה'],en:['Burning Blade','Your sword deals fire damage that keeps burning']},
   'up.slight':{he:['להב סערה','החרב עושה נזק ברק, שקופץ לעוד שני אויבים'],en:['Storm Blade','Your sword deals lightning damage that jumps to two more enemies']},
   'up.gice':{he:['חיצי כפור','החצים עושים נזק קרח, שמאט את האויב'],en:['Frost Arrows','Your arrows deal ice damage that slows enemies']},
+  'up.searth':{he:['להב סלע','החרב עושה נזק אדמה, שהודף ועוצר את האויב לרגע'],en:['Rock Blade','Your sword deals earth damage that knocks enemies back and stops them for a moment']},
+  'up.gwater':{he:['חיצי גל','החצים עושים נזק מים, שמרטיב את האויב'],en:['Wave Arrows','Your arrows deal water damage that soaks enemies']},
   'up.glight':{he:['חיצי ברק','החצים עושים נזק ברק, שקופץ לעוד שני אויבים'],en:['Thunder Arrows','Your arrows deal lightning damage that jumps to two more enemies']},
   'up.hp':{he:['לב אבן','חיים מקסימליים +25 וריפוי מלא'],en:['Stone Heart','Max HP +25 and a full heal']},
   'up.spd':{he:['רגליים קלות','מהירות תנועה +12%'],en:['Light Feet','Move speed +12%']},
@@ -87,6 +91,8 @@ const TEXT={
   'bossTitle.fire':{he:'בולע הלהבות',en:'Flame Eater'},
   'bossTitle.ice':{he:'לב הכפור',en:'Frost Heart'},
   'bossTitle.lightning':{he:'מושך הברקים',en:'Storm Sink'},
+  'bossTitle.water':{he:'שותה הים',en:'Sea Drinker'},
+  'bossTitle.earth':{he:'שורש ההר',en:'Mountain Root'},
   'learn.res':{he:(col,t)=>'רוב הנזק שלך היה <b style="color:'+col+'">'+t+'</b>, אז הוא בנה שריון נגדו.',en:(col,t)=>'Most of your damage was <b style="color:'+col+'">'+t+'</b>, so it grew armor against it.'},
   'learn.melee':{he:'נלחמת בעיקר מקרוב, אז הוא הודף אותך בגלים ומזמן רוחות שיורות מרחוק.',en:'You fought mostly up close, so it pushes you back with shockwaves and summons wisps that shoot from afar.'},
   'learn.ranged':{he:'נלחמת בעיקר מרחוק, אז הוא מסתער עליך ומזמן מגינים.',en:'You fought mostly from afar, so it charges at you and summons shields.'},
