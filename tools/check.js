@@ -32,6 +32,7 @@ function botStep({god,en}){
   const m=window.__bot||(window.__bot={log:{levels:0,swaps:0,taken:0,coins:0},faced:0,swapAt:0,atGate:0});
   const L=m.log,at=Math.round(S.t*10)/10,vis=id=>!document.getElementById(id).hidden;
   faceStep(m,L);   // בכל מקום: הגוף פונה לאן שהולכים
+  petBot(m,L);     // חיית המחמד: הולכת אחרי השחקן, חופרת ומתפתחת
   // באנגלית: כל טקסט שמופיע על המסך (ממשק, באנר, מסכים, טקסט צף) נבדק לפני שהבוט לוחץ
   if(en&&!L.heLeak){const he=/[֐-׿]/;
     for(const s of [document.querySelector('.hud').innerText,document.getElementById('banner').textContent,document.getElementById('swaplbl').textContent,
@@ -158,6 +159,22 @@ function faceStep(m,L){
   const d=Math.abs(angDiff(P.face,Math.atan2(joy.dy,joy.dx)));
   F.n++;if(!S.vil&&!S.wd&&!S.room&&nearest(440))F.arena++;F.max=Math.max(F.max,Math.round(d*100)/100);if(d>0.1)F.bad++;   // 0.1 רדיאנים: כ-6 מעלות, לא רואים בעין;
   if(R3D.on&&S.vil&&R3D.player){F.n3++;if(Math.abs(angDiff(R3D.player.root.rotation.y,yawOf(Math.cos(P.face),Math.sin(P.face))))>0.15)F.bad3++}
+}
+/* חיית המחמד (pet.js): כמה פעמים היא קרובה לשחקן, באילו מצבים נראתה, ושהחפירה מוציאה שלל לרצפה.
+   בעולם הפתוח היא חופרת מיד (בלי לחכות לזמן), ואחרי החפירה הראשונה מוסיפים לה XP בכוח, פעמיים, ובודקים שהיא עוברת את שני השלבים ונשמרת */
+function petBot(m,L){
+  const p=S.pet,Q=L.pet||(L.pet={n:0,near:0,st:{},digs:0,dug:[],drop:false,evo:null});if(!p||!petHere())return;
+  if(S.mode==='play'&&p.st!=='go'&&p.st!=='dig'&&p.st!=='jump'){Q.n++;if(Math.hypot(p.x-P.x,p.y-P.y)<200)Q.near++}
+  Q.st[p.st]=(Q.st[p.st]||0)+1;
+  if(R3D.on&&R3D.pet){Q.r3=R3D.pet.root.visible;Q.clips=Object.values(DOG_ANIM).filter(c=>!R3D.clips[c]).join(',')||'ok'}
+  if(S.wd&&!m.petDig&&S.mode==='play'){m.petDig=1;p.digT=0}
+  if(p!==m.petP){m.petP=p;m.petDigs0=Q.digs}
+  Q.digs=m.petDigs0+p.digs;if(p.dug.length)Q.dug=[...new Set([...Q.dug,...p.dug])];
+  if((S.gd||[]).some(d=>d.pet))Q.drop=true;
+  if(Q.digs&&!m.petEvo&&S.mode==='play'){   // XP בכוח: שלב 1 → 2 → 3
+    const st=petKind().stages,a=SAVE.pet.stage;petXP(st[1].xp-SAVE.pet.xp);const b=SAVE.pet.stage;petXP(st[2].xp-SAVE.pet.xp);
+    m.petEvo=1;Q.evo=[a,b,SAVE.pet.stage].map(s=>s+1).join('→');Q.evoSaved=JSON.parse(localStorage.getItem(SAVE_STORE.key)).pet.stage===2;Q.evoFx=FX.length>0}
+  if(SAVE.pet.stage===2&&S.mode==='play')Q.fxOk=!R3D.on||!!PET_FX.tail;   // בתלת-ממד: הלהבה בקצה הזנב יודעת איפה הזנב
 }
 // מזיז את השחקן לכיוון (tx,ty), או הרחק ממנו (flee), עד מרחק stop. בלי יעד: הולך במעגל
 function steer(tx,ty,flee,stop,L){
@@ -408,6 +425,7 @@ function worldBot(m,L,god){
       for(const o of q.obj)if(o.type==='collect'&&o.what!=='coins'&&!resOf(o.what))bad.add(o.what+' (quest:'+q.id+')')}
     const placed=new Set(Object.values(NODES.arenas).flatMap(a=>a.spawn.map(s=>s.kind)));
     for(const k in NODES.kinds)if(placed.has(k))add(src,NODES.kinds[k].drop,'node:'+k);
+    for(const k in PET.kinds)PET.kinds[k].stages.forEach((s,i)=>add(src,s.dig.loot,'pet:'+k+(i+1)));   // החפירה של חיית המחמד (pet.js)
     AGING.cost.forEach(c=>add(use,c,'aging'));add(use,{[AGING.gem]:1},'aging:gem');
     for(const id in GEAR.recipes){if(!GEAR.items[id])bad.add(id+' (recipe)');add(use,GEAR.recipes[id],'craft:'+id)}
     const dead=[],few=[],out=[];
@@ -549,7 +567,7 @@ function worldBot(m,L,god){
     SAVE=JSON.parse(bak);reset();S.mode=mode;return out});
   const T_=t=>({sword:'חרב',bow:'קשת',staff:'מטה'})[t]||t;
 
-  await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
+  await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
     await page.clock.runFor(CFG.step);
@@ -681,6 +699,11 @@ function worldBot(m,L,god){
   else check(!g3.on,'דו-ממד: פעיל לפי הבחירה');
   if(CFG.lang==='en')check(!startLeak&&!L.heLeak,startLeak||L.heLeak?'שפה: נשאר טקסט בעברית: '+(startLeak||L.heLeak):'שפה: כל המסכים באנגלית, משמאל לימין');
   if(!CFG.god)results.push(L.died!=null?'· מת ב-'+t(L.died):'· שרד עד '+t(L.t));
+  const pt=L.pet||{st:{}},pst=Object.entries(pt.st).map(([k,v])=>k+' '+v).join(', ');
+  check(pt.n>20&&pt.near/pt.n>0.85,'חיית מחמד הולכת אחרי השחקן: קרובה אליו ב-'+Math.round(100*pt.near/(pt.n||1))+'% מהזמן · מצבים: '+(pst||'לא נראתה'));
+  check(pt.digs>0&&pt.drop,'פיוחו חופרת: '+(pt.digs||0)+' חפירות, הוציאה '+(pt.dug.join(', ')||'כלום')+(pt.drop?', השלל נפל לרצפה':', שום שלל לא נפל לרצפה'));
+  check(pt.evo==='1→2→3'&&pt.evoSaved&&pt.evoFx&&pt.fxOk,'פיוחו מתפתחת: '+(pt.evo||'לא נבדק')+(pt.evoSaved?', נשמר':', לא נשמר')+(pt.evoFx?', עם חגיגה':', בלי חגיגה')+(pt.fxOk?'':', להבה בשלב 3 לא מצאה את הזנב'));
+  if(CFG.gfx==='3d')check(pt.r3&&pt.clips==='ok','פיוחו בתלת-ממד: '+(pt.r3?'נראית':'לא נראתה')+(pt.clips==='ok'?', כל 7 האנימציות נטענו':', חסרות: '+pt.clips));
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
 
   console.log('ריצה: seed '+CFG.seed+', '+t(L.t)+' זמן משחק'+(CFG.god?', עם חסינות':'')+(CFG.lang==='en'?', באנגלית':'')+(CFG.gfx==='2d'?', בדו-ממד':', בתלת-ממד')+(CFG.shots?', צילומים ב-'+CFG.shots:''));
