@@ -8,7 +8,10 @@ const CELEBRATE={
   upgrade:{dust:0.7,col:'#F4C74F',burst:34,speed:260,pillar:1.1,pillarW:50,pillarH:240,label:'+1',sound:[523,659,784,1047]},
   rank:   {dust:0,  col:'#C7A6FF',burst:50,speed:320,pillar:1.4,pillarW:64,pillarH:320,label:'',sound:[440,554,659,880]},
   weapon: {dust:0,  col:'#FF8A3D',burst:26,speed:220,pillar:0.8,pillarW:36,pillarH:180,label:'+1',sound:[587,740,880]},
-  gear:   {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:44,pillarH:200,label:'+1',sound:[523,698,880,1047]}   // פריט טוב יותר במסך הציוד
+  gear:   {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:44,pillarH:200,label:'+1',sound:[523,698,880,1047]},  // פריט טוב יותר במסך הציוד
+  // Aging בנפחייה (aging.js): ניצוצות בסדן כשמצליחים, ואפר אפור שנופל בלי עמוד אור וצלילים יורדים כשנכשלים
+  aging:  {dust:0.35,col:'#FFB347',burst:56,speed:340,pillar:1.3,pillarW:60,pillarH:300,label:'+1',sound:[523,659,784,1047,1319]},
+  agingFail:{dust:0.35,col:'#7E8698',burst:22,speed:110,pillar:0,pillarW:0,pillarH:0,label:'-1',sound:[392,311,233]}
 };
 let FX=[];
 const fxNow=()=>performance.now()/1000;

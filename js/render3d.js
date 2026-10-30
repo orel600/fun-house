@@ -192,6 +192,8 @@ function syncPlayer(dt){
   a.root.visible=!(P.inv>0&&Math.floor(P.inv*20)%2===0)||RM;
   setFlash(a,P.inv>0.45?0.5:P.swapBuff>0?0.25:0,P.inv>0.45?C.blood:C.gold);
   a.mixer.update(dt);
+  // איפה הנשק על המסך, בשביל הזוהר של Aging שמצויר בקנבס (aging.js). מהעולם חזרה לקואורדינטות המשחק
+  const w=sword?a.own:a.props.gun;if(w){const v=w.getWorldPosition(R3D._v||(R3D._v=new THREE.Vector3()));AGE_FX.hand={x:v.x,y:v.z*SIN()-v.y*COS()}}
   mark('shadow',a.root.position.x,a.root.position.z,16);
 }
 function syncEnemy(e,dt){

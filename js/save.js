@@ -14,6 +14,7 @@ function saveBlank(){return{
   prod:{},                                          // ייצור במבנים, גם כשלא משחקים: {mill:{t:זמן,have:{wood:3.2}}}. מנוהל ב-village.js
   gift:false,                                       // מתנת הפתיחה של הכפר כבר ניתנה
   gearGift:false,                                   // הציוד הראשון (GEAR.gift ב-gear.js) כבר ניתן
+  agePity:0,                                        // כמה כישלונות ברצף ב-Aging, למזל הרך (aging.js)
   ts:0}}
 
 let SAVE=saveBlank();
