@@ -318,7 +318,6 @@ addEventListener('pointerup',e=>{
   if(!GDRAG.on){GDRAG.src=null;return}   // לא זז: זו לחיצה, וה-click מטפל בה
   const t=gDropAt(src,document.elementFromPoint(e.clientX,e.clientY));
   gDragEnd();
-  GUI.noClick=true;setTimeout(()=>GUI.noClick=false,0);   // הלחיצה שהדפדפן שולח אחרי גרירה לא בוחרת כלום
   if(!t)return;   // שוחרר באמצע שום מקום: הפריט חוזר למקומו
   if(!t.ok||!gDrop(src,t)){gShake(t.el);return}
   gRedraw();
@@ -326,7 +325,6 @@ addEventListener('pointerup',e=>{
 addEventListener('pointercancel',e=>{if(GDRAG.src&&e.pointerId===GDRAG.pid)gDragEnd()});
 
 $('ovGear').addEventListener('click',e=>{
-  if(GUI.noClick)return;
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.id==='gearClose'){gearClose();return}
   const a=b.dataset.act,sel=GUI.sel;
