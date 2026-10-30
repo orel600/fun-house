@@ -41,6 +41,7 @@ function doPattern(b,k){
 function bossUpdate(b,dt){
   b.spin+=dt*(b.phase>1?2.4:1.4);b.flash-=dt;
   const dx=P.x-b.x,dy=P.y-b.y,d=Math.hypot(dx,dy)||1;
+  if(b.stun>0)return;   // הלם מקומבו (skills.js): לא זז, לא יורה ולא פוגע
   // הרעיון של אוראל: בורחים ממנו? הוא מתעצבן. התחמקות קצרה לא נספרת, רק בריחה של יותר משנייה וחצי
   const away=(P.vx*dx+P.vy*dy)/d;
   if(d>200&&away>P.speed*0.5)b.flee+=dt;else b.flee=Math.max(0,b.flee-dt*1.5);

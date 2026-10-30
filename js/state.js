@@ -20,6 +20,7 @@ function reset(){
   nodesReset();   // מקורות משאבים בזירה (nodes.js)
   gearReset();   // הציוד מהכפר: מתנה ראשונה, והסטטים שלו על השחקן (gear.js)
   heroReset();   // הפסיבית של דמות ההתחלה (heroes.js)
+  skillsReset();   // הסקיל של הנשק (skills.js)
   reset3d();
   updateSwapBtn();
 }

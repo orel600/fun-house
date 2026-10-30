@@ -56,11 +56,12 @@ const dtSvg=t=>'<svg class="dti" viewBox="0 0 24 24" aria-hidden="true"><path fi
 // אחרי כל פגיעה: ספירה (בשביל הבוס שלומד), ומה שהסוג עושה
 function onHit(e,d,base,w,t,ang,chained){
   P.track.types[t]=(P.track.types[t]||0)+d;S.hits[t]=(S.hits[t]||0)+1;
+  comboHit(e,d,base,w,t,ang,chained);   // קומבו עם מה שכבר על האויב (skills.js)
   const T_=DMG.types[t];
   if(T_.burn){const dps=d*T_.burn.k/T_.burn.t;if(!e.burn||e.burn.dps<dps)e.burn={dps,t:T_.burn.t,tick:0.5,acc:0};else e.burn.t=T_.burn.t}
   if(T_.slow&&!e.isBoss)e.slow=T_.slow.t;
   if(T_.wet)e.wet=T_.wet.t;
-  if(T_.stagger&&!e.isBoss){e.stun=T_.stagger.t;e.kx*=T_.stagger.kb;e.ky*=T_.stagger.kb}
+  if(T_.stagger&&!e.isBoss){e.stun=Math.max(e.stun||0,T_.stagger.t);e.kx*=T_.stagger.kb;e.ky*=T_.stagger.kb}
   if(T_.chain&&!chained){
     const c=T_.chain,near=[];
     for(const o of enemies){if(o===e||o.dead)continue;const dd=Math.hypot(o.x-e.x,o.y-e.y);if(dd<c.r)near.push([dd,o])}
@@ -76,7 +77,7 @@ function dmgUpdate(dt){
   const F=DMG.types.fire;
   for(const e of enemies){
     if(e.dead)continue;
-    if(e.slow>0)e.slow-=dt;if(e.wet>0)e.wet-=dt;if(e.stun>0)e.stun-=dt;
+    if(e.slow>0)e.slow-=dt;if(e.wet>0)e.wet-=dt;if(e.stun>0)e.stun-=dt;if(e.frozen>0)e.frozen-=dt;
     const b=e.burn;if(!b)continue;
     const d=Math.min(b.dps*dt,b.dps*b.t);e.hp-=d;b.acc+=d;b.t-=dt;b.tick-=dt;P.track.types.fire+=d;
     if(b.tick<=0&&b.acc>=1){b.tick=0.5;floatText(e.x+rand(-6,6),e.y-e.r-4,big(b.acc),F.col,11,true);b.acc=0}
@@ -84,5 +85,5 @@ function dmgUpdate(dt){
     if(e.hp<=0)kill(e);
   }
 }
-// מהירות אויב: נעצר מאדמה, מאט מקרח
-const slowK=e=>e.stun>0?0:e.slow>0?DMG.types.ice.slow.k:1;
+// מהירות אויב: נעצר מאדמה, מהלם ומקיפאון (skills.js), מאט מקרח
+const slowK=e=>e.stun>0||e.frozen>0?0:e.slow>0?DMG.types.ice.slow.k:1;
