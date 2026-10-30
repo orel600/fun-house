@@ -32,6 +32,7 @@ function showIntro(b){
   $('ovBoss').hidden=false;
 }
 function gameOver(){
+  if(S.wd){worldDeath();return}   // מוות בעולם הפתוח: מאבדים חצי מהמשאבים וקמים בכפר (world.js)
   S.mode='over';joy=null;
   runEnd();   // השלל עובר לתרמיל (village.js)
   gearLoot();   // לפעמים גם פריט ציוד (gear.js)

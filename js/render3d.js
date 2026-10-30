@@ -8,7 +8,7 @@
    נקודה (x,y) במשחק יושבת ב-(x, 0, y/sin(tilt)) בעולם התלת-ממדי, וכך היא מופיעה על המסך בדיוק איפה שהקנבס מצייר אותה.
    אם WebGL לא זמין, או שהשחקן בחר 2D, הכל נשאר כמו קודם (R3D.on=false). */
 
-const VIEW={tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52'};
+const VIEW={tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52', world:'#2c4229', worldLine:'#6f8f55'};
 
 /* מי לובש איזה מודל. h: גובה הדמות על המסך בפיקסלים. foot: כמה פיקסלים מתחת למרכז הלוגי הרגליים נוגעות בקרקע.
    props: חפצים ביד (bone: היד, ומיקום וסיבוב מקומיים כמו בחבילה המקורית). הטבעת מתחת לרגליים היא בצבע החולשה של האויב (e.weak, מ-data.js), ולא כתובה כאן. tint: צבע מ-TINT.
@@ -50,6 +50,9 @@ const VIL3D={
   decor:{tree:{model:['v_treeA','v_treeB'],w:55},rock:{model:'v_rock',w:55},hills:{model:'v_hills',w:260}},
   stock:{mill:{model:'v_lumber',w:60},mine:{model:'v_stone',w:60}}
 };
+/* העולם הפתוח: המיקומים ב-WORLD (js/world.js). מקורות המשאבים לפי הצורה שלהם (shape), מתוך מודלי הכפר, כדי לא להכביד על הטלפון.
+   glow: צבע לעורק מתכת. הקישוטים והשערים כמו בכפר (VIL3D.decor, VIL3D.gate) */
+const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:62},rock:{model:'v_rock',w:44},vein:{model:'v_rock',w:44,glow:'#C87533'}}};
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
@@ -291,10 +294,10 @@ function retire(e,a,dt){
 
 /* ---- הכפר ---- */
 // מודל במקום (x,y) במשחק, בגודל w פיקסלים לרוחב, יושב על הקרקע
-function vPut(model,x,y,w,rot=0){
+function vPut(model,x,y,w,rot=0,group=R3D.vil.g){
   const t=R3D.props[model],m=t.clone(true),bb=t.userData.bb||(t.userData.bb=new THREE.Box3().setFromObject(t));
   const s=w/Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z,1e-3);
-  m.scale.setScalar(s);m.rotation.y=rot;m.position.set(x,-bb.min.y*s,y/SIN());R3D.vil.g.add(m);return m;
+  m.scale.setScalar(s);m.rotation.y=rot;m.position.set(x,-bb.min.y*s,y/SIN());group.add(m);return m;
 }
 function syncVillage(){
   let V=R3D.vil;
@@ -314,6 +317,21 @@ function syncVillage(){
   }
   for(const k in V.stock)V.stock[k].visible=vStock(k)>0;
 }
+// העולם הפתוח: קישוטים, שערים ומקורות משאבים נבנים פעם אחת (המקומות קבועים). מקור שנשבר נעלם עד שהוא צומח
+function syncWorld(){
+  let G=R3D.wld;
+  if(!G){G=R3D.wld={g:new THREE.Group(),nodes:{}};R3D.scene.add(G.g);
+    for(const d of worldDecor()){const D=VIL3D.decor[d.kind],md=Array.isArray(D.model)?D.model[d.v<0.5?0:1]:D.model;vPut(md,d.x,d.y,D.w*(0.8+d.v*0.4),d.v*6.28,G.g)}
+    for(const g of Object.values(wGates()))vPut(VIL3D.gate.model,g.x,g.y,VIL3D.gate.w,0,G.g)}
+  G.g.visible=true;
+  for(const n of S.nd.list){
+    let m=G.nodes[n.id];
+    if(!m){const D=W3D.nodes[wKind(n.kind).shape],v=hash(n.x,n.y),md=Array.isArray(D.model)?D.model[v<0.5?0:1]:D.model;
+      m=G.nodes[n.id]=vPut(md,n.x,n.y,D.w*(0.85+v*0.3),v*6.28,G.g);
+      if(D.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(D.glow).multiplyScalar(0.5)}})}
+    m.visible=!n.dead;
+  }
+}
 
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
 function render3d(ox,oy){
@@ -328,14 +346,16 @@ function render3d(ox,oy){
   const S_=SIN(),cx=W/2-ox,cz=(H/2-oy)/S_;
   c.position.set(cx,2000*S_,cz+2000*COS());c.lookAt(cx,0,cz);
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
-  R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:VIEW.groundLine);
+  R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?VIEW.world:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?VIEW.worldLine:VIEW.groundLine);
   for(const k in R3D.marks)R3D.marks[k].count=0;
   for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
+  if(R3D.wld)R3D.wld.g.visible=false;
   if(S.vil){syncPlayer(dt);syncVillage()}   // בכפר: השחקן והמבנים
   else if(!S.room){
     syncPlayer(dt);
+    if(S.wd)syncWorld();   // העולם הפתוח: עצים, סלעים ושערים (world.js)
     // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
     const vis=enemies.filter(e=>!e.dead&&(e.isBoss||onScreen(e.x+ox,e.y+oy)));
     if(vis.length>CROWD.full){const pr=e=>e.isBoss||e.wanted||e.elite?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}

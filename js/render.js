@@ -118,6 +118,7 @@ function render(){
   for(const o of orbs){ctx.fillStyle=C.gold;ctx.beginPath();ctx.moveTo(o.x,o.y-5);ctx.lineTo(o.x+4,o.y);ctx.lineTo(o.x,o.y+5);ctx.lineTo(o.x-4,o.y);ctx.fill()}
   drawBonusWorld();
   drawVillage();
+  drawWorld();   // העולם הפתוח (world.js)
   // actors sorted by y
   // מציירים רק מי שעל המסך: עם מאות אויבים זה חוסך את רובם
   const actors=enemies.filter(e=>e.isBoss||onScreen(e.x+ox,e.y+oy));actors.push({isPlayer:true,y:P.y});actors.sort((a,b)=>a.y-b.y);
@@ -153,6 +154,7 @@ function render(){
   drawBonusScreen(ox,oy);
   drawWantedScreen(ox,oy);
   drawVillageScreen(ox,oy);
+  drawWorldScreen(ox,oy);
   drawQuestMarks(ox,oy);
   if(joy){ctx.strokeStyle='rgba(236,231,220,0.22)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(joy.ox,joy.oy,55,0,7);ctx.stroke();
     ctx.fillStyle='rgba(236,231,220,0.3)';ctx.beginPath();ctx.arc(joy.ox+joy.dx*55,joy.oy+joy.dy*55,22,0,7);ctx.fill()}

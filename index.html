@@ -37,6 +37,9 @@
   <div class="qlog" id="qLog" hidden></div>
 </div>
 <div class="vpanel" id="vPanel" hidden></div>
+<!-- העולם הפתוח: שם האזור ומה שבתרמיל למעלה, ופאנל ליד שער (js/world.js) -->
+<div class="whud" id="whud" hidden><b id="wName"></b><div class="bag" id="wBag" role="group" data-ta="bagGroup"></div></div>
+<div class="vpanel" id="wPanel" hidden></div>
 
 <div class="banner" id="banner"></div>
 
@@ -126,7 +129,18 @@
       <div class="stat wide"><span data-t="statLoot"></span><b id="sLoot" class="bag"></b></div>
     </div>
     <p class="sub" data-t="nextRun"></p>
-    <button class="go" id="againBtn" data-t="toVillage"></button>
+    <button class="go" id="againBtn" data-t="w.back"></button>
+  </div>
+</div>
+
+<!-- מוות בעולם הפתוח: מה אבד, ומה נשאר בטוח (js/world.js) -->
+<div class="ov" id="ovWDeath" hidden>
+  <div class="panel">
+    <h2 data-t="w.fell"></h2>
+    <p class="sub" data-t="w.lost"></p>
+    <div class="bag" id="wLost"></div>
+    <p class="sub" data-t="w.safe"></p>
+    <button class="go" id="wRespawn" data-t="w.respawn"></button>
   </div>
 </div>
 
@@ -145,6 +159,7 @@
 <script src="js/bonus.js"></script>
 <script src="js/wanted.js"></script>
 <script src="js/village.js"></script>
+<script src="js/world.js"></script>
 <script src="js/quests.js"></script>
 <script src="js/gear.js"></script>
 <script src="js/aging.js"></script>
