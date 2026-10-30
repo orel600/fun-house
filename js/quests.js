@@ -1,15 +1,17 @@
 /* קווסטים: תמיד יש מה לעשות ולמה לשאוף (ניר, game-design.md "החלטות של ניר").
    כל קווסט הוא שורה ב-QUESTS.list, וקווסט חדש = שורה חדשה, בלי קוד. השם ומשפט הדיאלוג ב-lang.js תחת 'q.<id>': [שם, משפט].
-   id: שם קבוע. giver: מי נותן (מבנה בכפר, ובהמשך NPC). צריך להיות בנוי כדי לתת. kind: הסוג, ההתנהגות שלו ב-QUESTS.kinds.
-   obj: מטרות, מתוך חמש:
+   id: שם קבוע. giver: מי נותן, תושב בכפר (NPC.list ב-npc.js). אם יש לו מבנה בית, הוא צריך להיות בנוי כדי לתת. kind: הסוג, ההתנהגות שלו ב-QUESTS.kinds.
+   obj: מטרות, מתוך שש:
      kill    להפיל n מ-what: grunt, shield, wisp, wanted, boss, או any (כל אויב)
      collect להביא הביתה n מ-what: משאב (wood, stone, ore, bone, coins), מהייצור בכפר או מהשלל של ריצה
-     reach   להגיע n פעמים ל-what: arena (יציאה לזירה), room (חדר הבונוס)
+     reach   להגיע n פעמים ל-what: arena (יציאה לזירה), room (חדר הבונוס), world (יציאה מהכפר לעולם הפתוח)
+     gather  לאסוף בעולם הפתוח n מ-what: משאב שנפל ממקור או מאויב בעולם (world.js). נספר כשהוא נכנס לתרמיל
      upgrade המבנה what ברמה n לפחות. נבדק לפי הכפר עצמו, אז מה שכבר בנית נספר
      win     לנצח בוס n פעמים. אפשר בתנאי: noHit (בלי לחטוף פגיעה כל עוד הבוס בזירה), under (לפני שעברו כך וכך שניות בריצה)
-   reward: משאבים לתרמיל לפי השם, xp לדמות, item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>'). id של פריט ציוד מ-GEAR.items (gear.js) נכנס לתרמיל כציוד שאפשר ללבוש.
+   reward: משאבים לתרמיל לפי השם, xp לדמות, item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>'). id של פריט ציוד מ-GEAR.items (gear.js) נכנס לתרמיל כציוד שאפשר ללבוש,
+     ואם יש לו משבצת פנויה הוא נלבש מיד (השם שלו 'it.<id>').
    req: תנאי פתיחה. level: רמת דמות, quest: קווסט שכבר הושלם, b: {מבנה:רמה}.
-   המשחק מדווח מה קרה דרך questEvent(סוג, מה, כמה): שורה אחת בכל מקום (kill, hurt, win, collect, upgrade, reach). המנוע מחליט לאיזה קווסט זה שייך.
+   המשחק מדווח מה קרה דרך questEvent(סוג, מה, כמה): שורה אחת בכל מקום (kill, hurt, win, collect, gather, upgrade, reach). המנוע מחליט לאיזה קווסט זה שייך.
    ההתקדמות נשמרת רק ב-SAVE.quests (save.js). בזירה היא נשמרת יחד עם השלל, בסוף הריצה */
 
 const QUESTS={
@@ -25,37 +27,40 @@ const QUESTS={
   daily:4,       // כמה קווסטים יומיים בכל יום. מתחלפים בחצות, לפי השעון בטלפון
   list:[
     // ---- כפר: נותנים המבנים, ומובילים את השחקן בכפר ובזירה ----
-    {id:'firstMill',giver:'center',kind:'village',obj:[{type:'upgrade',what:'mill',n:1}],reward:{coins:15,wood:10}},
-    {id:'firstMine',giver:'center',kind:'village',obj:[{type:'upgrade',what:'mine',n:1}],reward:{coins:15,stone:10}},
-    {id:'grunts',giver:'center',kind:'village',obj:[{type:'kill',what:'grunt',n:15}],reward:{coins:20,xp:20}},
-    {id:'firstBoss',giver:'center',kind:'village',obj:[{type:'win',n:1}],reward:{coins:60,ore:8,xp:80},req:{quest:'grunts'}},
-    {id:'forge',giver:'center',kind:'village',obj:[{type:'upgrade',what:'forge',n:1}],reward:{stone:15,ore:3},req:{quest:'grunts'}},
-    {id:'market',giver:'center',kind:'village',obj:[{type:'upgrade',what:'market',n:1}],reward:{coins:20},req:{quest:'firstMine'}},
-    {id:'center2',giver:'center',kind:'village',obj:[{type:'upgrade',what:'center',n:2}],reward:{coins:40,xp:50},req:{quest:'forge'}},
-    {id:'millWood',giver:'mill',kind:'village',obj:[{type:'collect',what:'wood',n:30}],reward:{coins:20}},
-    {id:'wisps',giver:'mill',kind:'village',obj:[{type:'kill',what:'wisp',n:15}],reward:{wood:25,xp:20},req:{quest:'millWood'}},
-    {id:'mill3',giver:'mill',kind:'village',obj:[{type:'upgrade',what:'mill',n:3}],reward:{wood:40,coins:30},req:{quest:'center2'}},
-    {id:'mineStone',giver:'mine',kind:'village',obj:[{type:'collect',what:'stone',n:20}],reward:{coins:20,wood:10}},
-    {id:'mine3',giver:'mine',kind:'village',obj:[{type:'upgrade',what:'mine',n:3},{type:'collect',what:'ore',n:10}],reward:{stone:40,ore:10},req:{quest:'center2'}},
-    {id:'bones',giver:'forge',kind:'village',obj:[{type:'collect',what:'bone',n:10}],reward:{ore:5,coins:20}},
-    {id:'shields',giver:'forge',kind:'village',obj:[{type:'kill',what:'shield',n:15}],reward:{ore:6,xp:20},req:{quest:'bones'}},
-    {id:'door',giver:'market',kind:'village',obj:[{type:'reach',what:'room',n:1}],reward:{coins:30}},
+    // הראשון: קצר, ונעליים בפרס, כדי שההליכה תהיה מהירה כבר מההתחלה (ניר: "נעליים שנותנות מהירות שמקבלים מאיזה קווסט התחלתי")
+    {id:'boots',giver:'head',kind:'village',obj:[{type:'gather',what:'wood',n:5}],reward:{coins:10,item:'starterBoots'}},
+    {id:'firstMill',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mill',n:1}],reward:{coins:15,wood:10}},
+    {id:'firstMine',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mine',n:1}],reward:{coins:15,stone:10}},
+    {id:'grunts',giver:'head',kind:'village',obj:[{type:'kill',what:'grunt',n:15}],reward:{coins:20,xp:20}},
+    {id:'firstBoss',giver:'head',kind:'village',obj:[{type:'win',n:1}],reward:{coins:60,ore:8,xp:80},req:{quest:'grunts'}},
+    {id:'forge',giver:'head',kind:'village',obj:[{type:'upgrade',what:'forge',n:1}],reward:{stone:15,ore:3},req:{quest:'grunts'}},
+    {id:'market',giver:'head',kind:'village',obj:[{type:'upgrade',what:'market',n:1}],reward:{coins:20},req:{quest:'firstMine'}},
+    {id:'center2',giver:'head',kind:'village',obj:[{type:'upgrade',what:'center',n:2}],reward:{coins:40,xp:50},req:{quest:'forge'}},
+    {id:'millWood',giver:'merchant',kind:'village',obj:[{type:'collect',what:'wood',n:30}],reward:{coins:20},req:{b:{mill:1}}},
+    {id:'wisps',giver:'priest',kind:'village',obj:[{type:'kill',what:'wisp',n:15}],reward:{wood:25,xp:20},req:{quest:'millWood'}},
+    {id:'mill3',giver:'merchant',kind:'village',obj:[{type:'upgrade',what:'mill',n:3}],reward:{wood:40,coins:30},req:{quest:'center2'}},
+    {id:'mineStone',giver:'smith',kind:'village',obj:[{type:'collect',what:'stone',n:20}],reward:{coins:20,wood:10},req:{b:{mine:1}}},
+    {id:'mine3',giver:'smith',kind:'village',obj:[{type:'upgrade',what:'mine',n:3},{type:'collect',what:'ore',n:10}],reward:{stone:40,ore:10},req:{quest:'center2'}},
+    {id:'bones',giver:'smith',kind:'village',obj:[{type:'collect',what:'bone',n:10}],reward:{ore:5,coins:20}},
+    {id:'shields',giver:'smith',kind:'village',obj:[{type:'kill',what:'shield',n:15}],reward:{ore:6,xp:20},req:{quest:'bones'}},
+    {id:'wFirst',giver:'head',kind:'village',obj:[{type:'reach',what:'world',n:1},{type:'gather',what:'wood',n:10}],reward:{coins:20,stone:10}},
+    {id:'door',giver:'priest',kind:'village',obj:[{type:'reach',what:'room',n:1}],reward:{coins:30}},
     // ---- ציד: אפשר לקחת שוב ושוב ----
-    {id:'huntWanted',giver:'market',kind:'hunt',obj:[{type:'kill',what:'wanted',n:1}],reward:{coins:40}},
-    {id:'huntFast',giver:'forge',kind:'hunt',obj:[{type:'win',n:1,under:240}],reward:{ore:10,xp:40},req:{quest:'firstBoss'}},
+    {id:'huntWanted',giver:'merchant',kind:'hunt',obj:[{type:'kill',what:'wanted',n:1}],reward:{coins:40}},
+    {id:'huntFast',giver:'smith',kind:'hunt',obj:[{type:'win',n:1,under:240}],reward:{ore:10,xp:40},req:{quest:'firstBoss'}},
     // ---- יומיים: 4 מהמאגר הזה בכל יום ----
-    {id:'dGrunts',giver:'center',kind:'daily',obj:[{type:'kill',what:'grunt',n:40}],reward:{coins:20}},
-    {id:'dShields',giver:'center',kind:'daily',obj:[{type:'kill',what:'shield',n:12}],reward:{coins:15,ore:2}},
-    {id:'dWisps',giver:'center',kind:'daily',obj:[{type:'kill',what:'wisp',n:12}],reward:{coins:15,bone:3}},
-    {id:'dAny',giver:'center',kind:'daily',obj:[{type:'kill',what:'any',n:100}],reward:{coins:30}},
-    {id:'dWanted',giver:'center',kind:'daily',obj:[{type:'kill',what:'wanted',n:1}],reward:{coins:25}},
-    {id:'dBoss',giver:'center',kind:'daily',obj:[{type:'win',n:1}],reward:{coins:30,ore:3}},
-    {id:'dRuns',giver:'center',kind:'daily',obj:[{type:'reach',what:'arena',n:2}],reward:{coins:15}},
-    {id:'dRoom',giver:'center',kind:'daily',obj:[{type:'reach',what:'room',n:1}],reward:{coins:20}},
-    {id:'dWood',giver:'center',kind:'daily',obj:[{type:'collect',what:'wood',n:20}],reward:{coins:15}},
-    {id:'dStone',giver:'center',kind:'daily',obj:[{type:'collect',what:'stone',n:15}],reward:{coins:15}},
-    {id:'dBones',giver:'center',kind:'daily',obj:[{type:'collect',what:'bone',n:5}],reward:{coins:15,wood:10}},
-    {id:'dCoins',giver:'center',kind:'daily',obj:[{type:'collect',what:'coins',n:30}],reward:{stone:15,wood:15}},
+    {id:'dGrunts',giver:'inn',kind:'daily',obj:[{type:'kill',what:'grunt',n:40}],reward:{coins:20}},
+    {id:'dShields',giver:'inn',kind:'daily',obj:[{type:'kill',what:'shield',n:12}],reward:{coins:15,ore:2}},
+    {id:'dWisps',giver:'inn',kind:'daily',obj:[{type:'kill',what:'wisp',n:12}],reward:{coins:15,bone:3}},
+    {id:'dAny',giver:'inn',kind:'daily',obj:[{type:'kill',what:'any',n:100}],reward:{coins:30}},
+    {id:'dWanted',giver:'inn',kind:'daily',obj:[{type:'kill',what:'wanted',n:1}],reward:{coins:25}},
+    {id:'dBoss',giver:'inn',kind:'daily',obj:[{type:'win',n:1}],reward:{coins:30,ore:3}},
+    {id:'dRuns',giver:'inn',kind:'daily',obj:[{type:'reach',what:'arena',n:2}],reward:{coins:15}},
+    {id:'dRoom',giver:'inn',kind:'daily',obj:[{type:'reach',what:'room',n:1}],reward:{coins:20}},
+    {id:'dWood',giver:'inn',kind:'daily',obj:[{type:'collect',what:'wood',n:20}],reward:{coins:15}},
+    {id:'dStone',giver:'inn',kind:'daily',obj:[{type:'collect',what:'stone',n:15}],reward:{coins:15}},
+    {id:'dBones',giver:'inn',kind:'daily',obj:[{type:'collect',what:'bone',n:5}],reward:{coins:15,wood:10}},
+    {id:'dCoins',giver:'inn',kind:'daily',obj:[{type:'collect',what:'coins',n:30}],reward:{stone:15,wood:15}},
     // ---- הישגים: פעילים תמיד, פעם אחת ----
     {id:'aHunter',giver:null,kind:'achievement',obj:[{type:'kill',what:'any',n:500}],reward:{coins:100,item:'qTrophy'}},
     {id:'aClean',giver:null,kind:'achievement',obj:[{type:'win',n:1,noHit:true}],reward:{ore:20,item:'qSock'}},
@@ -80,7 +85,7 @@ function qProg(q,i){
 const qReady=q=>!!QS().active[q.id]&&q.obj.every((o,i)=>qProg(q,i)>=o.n);
 function qReq(q){
   const r=q.req||{};
-  if(q.giver&&VILLAGE.b[q.giver]&&!vLv(q.giver))return false;
+  if(q.giver&&!npcHere(q.giver))return false;
   if(r.level&&SAVE.hero.level<r.level)return false;
   if(r.quest&&!QS().done[r.quest])return false;
   if(r.b)for(const k in r.b)if(vLv(k)<r.b[k])return false;
@@ -122,9 +127,14 @@ function questEvent(type,what,n=1){
   }
   if(moved||type==='reach')questTrack();   // reach: גם בתחילת ריצה, כדי שקו המעקב יופיע מיד
 }
+// פרס פריט: לתרמיל. פריט ציוד עם משבצת פנויה נלבש מיד, והסטטים שלו חלים כבר עכשיו (נעליים: הולכים מהר יותר)
+function qGive(id){
+  bagAdd(id,1);const it=gItem(id);
+  if(it&&!gGet(it.slot,gTarget(it))){const before=gearStats();gearEquip(id);gearLive(before,id)}
+}
 function questClaim(id){
   const q=QBY[id],Q=QS();if(!q||!qReady(q))return false;
-  for(const k in q.reward){const v=q.reward[k];if(k==='xp')SAVE.hero.xp+=v;else if(k==='item')bagAdd(v,1);else bagAdd(k,v)}
+  for(const k in q.reward){const v=q.reward[k];if(k==='xp')SAVE.hero.xp+=v;else if(k==='item')qGive(v);else bagAdd(k,v)}
   delete Q.active[id];Q.done[id]=(Q.done[id]||0)+1;
   if(Q.track===id)Q.track=null;
   saveNow();
@@ -134,9 +144,9 @@ function questClaim(id){
 }
 
 /* ---- ממשק: היומן בכפר, וקו מעקב בזירה ---- */
-const qWhat=o=>o.type==='kill'?T('foe.'+o.what):o.type==='collect'?T('res.'+o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
+const qWhat=o=>o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?T('res.'+o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
 const qObjTxt=(q,i)=>{const o=q.obj[i];return T('qo.'+o.type,qWhat(o),o.n)+(o.noHit?T('qo.noHit'):'')+(o.under?T('qo.under',fmt(o.under)):'')};
-const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='item'?QUESTS.icon.item+' '+T('item.'+r[k]):(VILLAGE.icon[k]||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
+const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='item'?(gItem(r[k])?gIcon(r[k])+' '+gName(r[k]):QUESTS.icon.item+' '+T('item.'+r[k])):(VILLAGE.icon[k]||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
 // הקווסט שמוצג בזירה: זה שבחרת לעקוב אחריו, ואם אין, הראשון שעוד לא הושלם
 function qTracked(){
   const Q=QS(),ids=Object.keys(Q.active).filter(id=>QBY[id]);
@@ -153,7 +163,7 @@ function questTrack(){
 
 function qCard(q,act){
   const [name,say]=T('q.'+q.id),Q=QS(),on=!!Q.active[q.id];
-  let h='<div class="qc'+(act==='claim'?' ready':'')+'"><b>'+name+'</b><small>'+(q.giver?T('vil.'+q.giver)+' · ':'')+T('q.kind.'+q.kind)+'</small>';
+  let h='<div class="qc'+(act==='claim'?' ready':'')+'"><b>'+name+'</b><small>'+(q.giver?T('npc.'+q.giver)[0]+' · ':'')+T('q.kind.'+q.kind)+'</small>';
   if(say)h+='<p class="say">'+say+'</p>';
   h+='<ul>'+q.obj.map((o,i)=>'<li>'+qObjTxt(q,i)+' <em>'+(on||o.type==='upgrade'?qProg(q,i):0)+'/'+o.n+'</em></li>').join('')+'</ul>';
   h+='<div class="qrow"><div class="cost">'+qRewardLine(q.reward)+'</div>';
@@ -174,30 +184,33 @@ function questLog(){
   h+=sec('ach',act.filter(q=>!qReady(q)&&qKind(q).achievement).map(q=>qCard(q,'')));
   $('qLog').innerHTML=h;
 }
-function questLogOpen(on){$('qLog').hidden=!on;if(on)questLog()}
+function questLogOpen(on){$('qLog').hidden=!on;if(on){npcTalk(null);questLog()}}
 $('qBtn').addEventListener('click',()=>questLogOpen($('qLog').hidden));
-$('qLog').addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b)return;
-  const id=b.dataset.q,a=b.dataset.act;
-  if(a==='close'){questLogOpen(false);return}
+// כפתור בכרטיס קווסט: ביומן וגם בשיחה עם תושב (npc.js)
+function questAct(a,id){
   if(a==='accept'&&qOpen(QBY[id])){qStart(QBY[id]);saveNow()}
   else if(a==='claim')questClaim(id);
   else if(a==='track'){QS().track=QS().track===id?null:id;saveNow()}
+}
+$('qLog').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.act==='close'){questLogOpen(false);return}
+  questAct(b.dataset.act,b.dataset.q);
   questLog();
 });
 
-// בכפר: סימן מעל מי שיש לו קווסט חדש (!) או פרס שמחכה (✓), ומספר על כפתור היומן
+// בכפר: סימן מעל התושב שיש לו קווסט חדש (!) או פרס שמחכה (✓), ומספר על כפתור היומן
 function drawQuestMarks(ox,oy){
   if(!S.vil)return;
   const Q=QS(),mark={};let n=0;
   for(const q of QUESTS.list){
     const ready=Q.active[q.id]&&qReady(q);if(ready)n++;
-    if(!q.giver||!VILLAGE.b[q.giver])continue;
+    if(!q.giver||!npcHere(q.giver))continue;
     if(ready)mark[q.giver]='✓';else if(!mark[q.giver]&&qOpen(q))mark[q.giver]='!';
   }
   ctx.textAlign='center';ctx.direction='ltr';ctx.font='800 22px Heebo, system-ui, sans-serif';
   const bob=Math.sin(fxNow()*4)*4;
-  for(const k in mark){const B=VILLAGE.b[k],x=B.x+ox,y=B.y-B.r*1.25+oy+bob;
+  for(const k in mark){const N=npcAt(k);if(!N)continue;const x=N.x+ox,y=N.y-NPC.markUp+oy+bob;
     ctx.fillStyle='rgba(18,22,36,0.85)';ctx.beginPath();ctx.arc(x,y-7,15,0,7);ctx.fill();ctx.fillStyle=C.gold;ctx.fillText(mark[k],x,y+1)}
   ctx.direction=DIR;
   const t=n?String(n):'';if($('qBadge').textContent!==t){$('qBadge').textContent=t;$('qBadge').hidden=!n}

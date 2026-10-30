@@ -12,6 +12,8 @@ const rand=(a,b)=>a+Math.random()*(b-a);
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const angDiff=(a,b)=>{let d=a-b;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;return d};
 const fmt=t=>{t=Math.max(0,Math.floor(t));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
+// מספר גדול בקיצור: 950, 12.3K, 4.5M, 1.2B
+const big=n=>{n=Math.max(0,n);let i=0;while(n>=1000&&i<4){n/=1000;i++}return (i&&n<100?(Math.floor(n*10)/10):Math.floor(n))+['','K','M','B','T'][i]};
 const hash=(x,y)=>{const s=Math.sin(x*12.9898+y*78.233)*43758.5453;return s-Math.floor(s)};
 
 let best=0;try{best=+localStorage.getItem('zm-best')||0}catch(e){}
