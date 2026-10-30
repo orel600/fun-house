@@ -62,7 +62,10 @@ const BUILDS={
   v_rock:  {src:hex('decoration/nature/rock_single_C.gltf')},
   v_lumber:{src:hex('decoration/props/resource_lumber.gltf')},
   v_stone: {src:hex('decoration/props/resource_stone.gltf')},
-  v_flag:  {src:hex('decoration/props/flag_blue.gltf')}
+  v_flag:  {src:hex('decoration/props/flag_blue.gltf')},
+  v_tent:  {src:hex('decoration/props/tent.gltf')},
+  v_crate: {src:hex('decoration/props/crate_A_big.gltf')},
+  v_barrel:{src:hex('decoration/props/barrel.gltf')}
 };
 const TEX=256;   // גודל הטקסטורה. החבילות משתמשות בפלטת צבעים, אז 256 נראה כמו 1024
 

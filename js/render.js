@@ -121,6 +121,7 @@ function render(){
   for(const b of eb){ctx.fillStyle=C.blood;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();ctx.fillStyle='#FFD9DB';ctx.beginPath();ctx.arc(b.x,b.y,b.r*0.45,0,7);ctx.fill()}
   for(const p of parts){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill()}
   ctx.globalAlpha=1;
+  drawFx();   // חגיגות של התקדמות (fx.js)
   ctx.textAlign='center';
   // מספר עם סימן (+12, -16) נכתב משמאל לימין בכל שפה, אחרת הסימן קופץ לצד הלא נכון
   for(const f of floats){ctx.direction=/^[+\-]\d/.test(f.txt)?'ltr':DIR;ctx.globalAlpha=Math.min(1,f.life*2);ctx.font='800 '+f.size+'px Heebo, system-ui, sans-serif';ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y)}

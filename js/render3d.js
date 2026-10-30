@@ -26,11 +26,13 @@ const LOOK3D={
   wanted:{model:'rogue',h:62,foot:13,tint:'gold',anim:{run:'Running_B',die:'Death_A'}},
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle',charge:'2H_Melee_Attack_Spin',cast:'2H_Melee_Attack_Chop',taunt:'Taunt',die:'Death_A'}}
 };
-/* הכפר: איזה מודל עומד במקום כל מבנה (המיקומים ב-VILLAGE, js/village.js). w: רוחב על המסך בפיקסלים, rot: סיבוב.
-   site: מה עומד במקום מבנה שעוד לא נבנה. grow: בכמה המבנה גדל בכל רמה. decor: הקישוטים מ-villageDecor. stock: ערימה ליד מבנה שיש בו תוצרת */
+/* הכפר: המיקומים והמראה לפי רמה ב-VILLAGE (js/village.js). כאן רק איזה קובץ מודל לכל שם, ובאיזה רוחב על המסך בפיקסלים.
+   models: המבנים (השמות ב-look). site: פיגום, למבנה שעוד לא נבנה או שבונים אותו עכשיו. deco: קישוטים סביב מבנה.
+   decor: העצים והגבעות מסביב (villageDecor). stock: ערימה ליד מבנה שיש בו תוצרת שמחכה */
 const VIL3D={
-  center:{model:'v_castle',w:190},forge:{model:'v_forge',w:140},mill:{model:'v_mill',w:140},mine:{model:'v_mine',w:140},market:{model:'v_market',w:150},
-  site:{model:'v_site',w:135},gate:{model:'v_gate',w:150},grow:0.05,
+  models:{castle:{model:'v_castle',w:190},forge:{model:'v_forge',w:140},mill:{model:'v_mill',w:140},mine:{model:'v_mine',w:140},market:{model:'v_market',w:150},tent:{model:'v_tent',w:105}},
+  site:{model:'v_site',w:135},gate:{model:'v_gate',w:150},
+  deco:{flag:{model:'v_flag',w:46},crate:{model:'v_crate',w:30},barrel:{model:'v_barrel',w:28}},
   decor:{tree:{model:['v_treeA','v_treeB'],w:55},rock:{model:'v_rock',w:55},hills:{model:'v_hills',w:260}},
   stock:{mill:{model:'v_lumber',w:60},mine:{model:'v_stone',w:60}}
 };
@@ -245,13 +247,16 @@ function syncVillage(){
   if(!V){V=R3D.vil={g:new THREE.Group(),b:{},stock:{}};R3D.scene.add(V.g);
     for(const d of villageDecor()){const D=VIL3D.decor[d.kind],md=Array.isArray(D.model)?D.model[d.v<0.5?0:1]:D.model;vPut(md,d.x,d.y,D.w*(0.8+d.v*0.4),d.v*6.28)}
     const g=VILLAGE.gate;vPut(VIL3D.gate.model,g.x,g.y,VIL3D.gate.w);
-    for(const k in VIL3D.stock){const B=VILLAGE.b[k];V.stock[k]=vPut(VIL3D.stock[k].model,B.x+B.r*0.95,B.y+B.r*0.35,VIL3D.stock[k].w)}}
+    for(const k in VIL3D.stock){const B=VILLAGE.b[k];V.stock[k]=vPut(VIL3D.stock[k].model,B.x+B.r*1.05,B.y-B.r*0.25,VIL3D.stock[k].w)}}
   V.g.visible=true;
-  // מבנה שעלה רמה מתחלף: פיגום עד שנבנה, ואחר כך המבנה עצמו, קצת יותר גדול בכל רמה
+  // מבנה שעלה רמה מתחלף לפי vLook: פיגום עד שנבנה, ואחר כך המודל, הגודל, הקישוטים והזוהר של הרצועה שלו
   for(const k in VILLAGE.b){
-    const B=VILLAGE.b[k],L=vLv(k),key=L?k+L:'site',cur=V.b[k];
-    if(cur&&cur.key===key)continue;if(cur)V.g.remove(cur.m);
-    const D=L?VIL3D[k]:VIL3D.site;V.b[k]={key,m:vPut(D.model,B.x,B.y,D.w*(1+VIL3D.grow*Math.max(0,L-1)),D.rot||0)};
+    const B=VILLAGE.b[k],lk=vLook(k),key=lk?lk.model+lk.L:'site',cur=V.b[k];
+    if(cur&&cur.key===key)continue;if(cur)for(const m of cur.all)V.g.remove(m);
+    const D=lk?VIL3D.models[lk.model]:VIL3D.site,m=vPut(D.model,B.x,B.y,D.w*(lk?lk.size:1)),all=[m];
+    if(lk){if(lk.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(lk.glow).multiplyScalar(0.22)}});
+      lk.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length];all.push(vPut(VIL3D.deco[d].model,B.x+dx*B.r,B.y+dy*B.r,VIL3D.deco[d].w))})}
+    V.b[k]={key,all};
   }
   for(const k in V.stock)V.stock[k].visible=vStock(k)>0;
 }

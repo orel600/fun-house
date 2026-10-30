@@ -98,5 +98,13 @@ h1{font-size:46px} h2{font-size:30px}
 .trade button{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--chalk);border-radius:10px;padding:9px 6px;font:700 13px var(--body);cursor:pointer}
 .trade button:disabled{color:var(--dim);opacity:.6;cursor:default}
 .vbtn:focus-visible,.trade button:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
+/* לרוחב (ככה משחקים, ניר 30.10.2026): הפאנל בצד שמאל, והפינה הימנית למטה פנויה לכפתורי כישורים שיגיעו.
+   זה מיקום על המסך ולא כיוון טקסט, ולכן left גם בעברית */
+@media (orientation:landscape){
+  .vpanel{left:calc(env(safe-area-inset-left,0px) + 12px);right:auto;top:calc(env(safe-area-inset-top,0px) + 54px);bottom:auto;
+    width:min(300px,38vw);max-height:calc(100% - 66px);overflow-y:auto;margin:0;padding:10px 12px;gap:6px}
+  .vpanel h3{font-size:19px}
+  .vbtn{padding:9px}
+}
 .stat.wide{grid-column:1/-1}
 .stat.wide b{display:flex;justify-content:flex-start;margin-top:4px}

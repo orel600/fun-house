@@ -1,31 +1,41 @@
 /* הכפר: הבית. ממנו יוצאים לזירה דרך השער, ואליו חוזרים בסוף ריצה עם השלל.
    הכפר הוא מקום, כמו חדר הבונוס: S.vil קיים רק כשנמצאים בכפר, ו-main.js מעדכן רק את המקום הנוכחי.
    מה שנשאר בין ריצות (רמות המבנים, התרמיל, הייצור) נקרא ונכתב רק דרך SAVE (save.js), ונשמר אחרי כל שינוי.
-   כל המספרים באובייקט VILLAGE. השמות והתיאורים ב-lang.js ('vil.mill' וכו'). המודלים בתלת-ממד: VIL3D ב-render3d.js */
+   כל המספרים באובייקט VILLAGE. השמות והתיאורים ב-lang.js ('vil.mill' וכו'). המודלים בתלת-ממד: VIL3D ב-render3d.js
+   המשחק לרוחב (ניר, 30.10.2026): הכפר פרוש לרוחב, התרמיל למעלה, הפאנל בצד, והפינה הימנית למטה נשארת פנויה לכפתורי כישורים */
 
 const VILLAGE={
-  radius:600,                     // גבול הכפר: עד כאן אפשר ללכת. השער יושב על הגבול, למטה
-  spawn:{x:0,y:120},              // איפה עומדים כשנכנסים בפעם הראשונה. חוזרים מהזירה ליד השער
+  radius:480,                     // גבול הכפר: עד כאן אפשר ללכת. השער יושב על הגבול, למטה
+  spawn:{x:0,y:60},              // איפה עומדים כשנכנסים בפעם הראשונה. חוזרים מהזירה ליד השער
   near:55,                        // כמה פיקסלים מקצה מבנה נחשב "לידו": נפתח הפאנל שלו ונאספת התוצרת
   max:5,                          // הרמה הכי גבוהה. מבנה לא עולה מעל מרכז הכפר
   gift:{coins:25,wood:20,stone:12},   // מתנת פתיחה, פעם אחת: מספיק לבנות מנסרה ומכרה
   icon:{coins:'🪙',wood:'🪵',stone:'🪨',ore:'⛏️',bone:'🦴'},   // סדר המשאבים בממשק הוא הסדר כאן
-  gate:{x:0,y:600,r:44},
+  gate:{x:0,y:480,r:44},
+  /* איך מבנה נראה לפי רמה, כדי שכל שדרוג ייראה (ניר: "שידרגתי בניין בכפר גם צריך להיות אפקט").
+     look: רצועות רמה. at: מאיזו רמה. model: איזה מודל (השמות ב-VIL3D.models). scale: גודל. deco: קישוטים סביב (VIL3D.deco). glow: זוהר.
+     בתוך רצועה המבנה גדל עוד grow בכל רמה, ובכל שדרוג יש חגיגה (celebrate ב-fx.js) */
+  grow:0.05,
   // cost[L]: מה עולה להגיע לרמה L. make: ייצור בשעה לפי רמה. cap: כמה נאגר לכל משאב עד שאוספים
   b:{
-    center:{x:0,y:-230,r:92,
+    center:{x:0,y:-190,r:92,
+      look:[{at:1,model:'castle',scale:0.85,deco:[]},{at:3,model:'castle',scale:1,deco:['flag','flag']},{at:5,model:'castle',scale:1.1,deco:['flag','flag','flag','flag'],glow:C.gold}],
       cost:[null,null,{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50,ore:10},{coins:180,wood:120,stone:100,ore:30},{coins:350,wood:220,stone:200,ore:60}]},
-    forge:{x:-165,y:40,r:66,      // נפחייה: בינתיים רק רמות. הציוד עצמו יגיע בהמשך
+    forge:{x:-300,y:-30,r:66,     // נפחייה: בינתיים רק רמות. הציוד עצמו יגיע בהמשך
+      look:[{at:1,model:'tent',scale:1,deco:['barrel']},{at:3,model:'forge',scale:1,deco:['crate','barrel']},{at:5,model:'forge',scale:1.12,deco:['flag','flag','crate','barrel'],glow:C.ember}],
       cost:[null,{coins:20,wood:15,stone:10},{coins:50,wood:35,stone:25,ore:5},{coins:110,wood:70,stone:60,ore:15},{coins:220,wood:140,stone:120,ore:35},{coins:400,wood:250,stone:220,ore:70}]},
-    mill:{x:165,y:40,r:66,
+    mill:{x:300,y:-30,r:66,
+      look:[{at:1,model:'mill',scale:0.85,deco:[]},{at:3,model:'mill',scale:1,deco:['crate']},{at:5,model:'mill',scale:1.12,deco:['flag','flag','crate'],glow:C.gold}],
       cost:[null,{coins:10,stone:5},{coins:30,wood:15,stone:20},{coins:70,wood:30,stone:50},{coins:140,wood:60,stone:100,ore:10},{coins:260,wood:120,stone:180,ore:25}],
       make:{wood:[0,30,50,80,120,180]},cap:[0,60,120,200,320,500]},
-    mine:{x:-165,y:330,r:66,
+    mine:{x:-300,y:190,r:66,
+      look:[{at:1,model:'mine',scale:0.85,deco:[]},{at:3,model:'mine',scale:1,deco:['barrel']},{at:5,model:'mine',scale:1.12,deco:['flag','flag','barrel'],glow:C.gold}],
       cost:[null,{coins:10,wood:10},{coins:30,wood:25,stone:10},{coins:70,wood:55,stone:25},{coins:140,wood:110,stone:50},{coins:260,wood:200,stone:90}],
       make:{stone:[0,20,35,55,80,120],ore:[0,4,8,14,22,32]},cap:[0,40,80,140,220,350]},
-    market:{x:165,y:330,r:66,     // sell/buy: מטבעות ליחידה ברמה 1. כל רמה נוספת: bonus יותר טוב. lot: כמה יחידות בכל לחיצה
+    market:{x:300,y:190,r:66,     // sell/buy: מטבעות ליחידה ברמה 1. כל רמה נוספת: bonus יותר טוב. lot: כמה יחידות בכל לחיצה
       cost:[null,{coins:15,wood:15},{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50},{coins:180,wood:120,stone:100,ore:20},{coins:320,wood:220,stone:180,ore:50}],
-      sell:{wood:1,stone:1,ore:4,bone:2},buy:{wood:3,stone:3},lot:5,bonus:0.2}
+      sell:{wood:1,stone:1,ore:4,bone:2},buy:{wood:3,stone:3},lot:5,bonus:0.2,
+      look:[{at:1,model:'tent',scale:1,deco:['crate','crate']},{at:3,model:'market',scale:1,deco:['crate','barrel']},{at:5,model:'market',scale:1.1,deco:['flag','flag','crate','barrel'],glow:C.gold}]}
   },
   // שלל בזירה מכל אויב שנופל: {משאב:[סיכוי, כמה]}. מגיע לתרמיל בסוף הריצה, גם אם נפלת
   drops:{
@@ -39,6 +49,12 @@ const VILLAGE={
 };
 
 const vLv=k=>SAVE.village[k]||0;
+// המראה של מבנה עכשיו: הרצועה לפי הרמה, והגודל שגדל בתוכה. null: עוד לא נבנה, או שבונים אותו ממש עכשיו (פיגום)
+function vLook(k){
+  const L=vLv(k);if(!L||S.vil&&S.vil.raise[k]>fxNow())return null;
+  const look=VILLAGE.b[k].look;let band=look[0];for(const b of look)if(L>=b.at)band=b;
+  return{...band,size:band.scale*(1+VILLAGE.grow*(L-band.at)),L};
+}
 
 /* ---- ייצור לפי זמן אמיתי, גם כשהמשחק סגור ---- */
 function vProd(k){return SAVE.prod[k]||(SAVE.prod[k]={t:0,have:{}})}
@@ -70,7 +86,9 @@ function vUpgrade(k){
   if(vBlock(k))return false;
   vSettle(k);const c=vCost(k);for(const r in c)bagTake(r,c[r]);
   SAVE.village[k]=vLv(k)+1;saveNow();
-  const B=VILLAGE.b[k];sparks(B.x,B.y,C.gold,30,260);S.shake=Math.max(S.shake,5);
+  // חגיגה: אבק ופיגום, ואז פרץ, עמוד אור ו-+1. בזמן האבק המבנה מוצג כפיגום
+  const B=VILLAGE.b[k],dust=celebrate(B.x,B.y,'upgrade','+1');S.vil.raise[k]=fxNow()+dust;
+  setTimeout(()=>{if(S.vil)S.shake=Math.max(S.shake,6)},dust*1000);
   banner(T('vil.'+k)+' · '+T('level',vLv(k)),C.gold);
   return true;
 }
@@ -91,7 +109,7 @@ function vTrade(kind,r){
 function villageUi(on){document.body.classList.toggle('vil',on);$('vhud').hidden=!on;if(!on)$('vPanel').hidden=true}
 function enterVillage(){
   const back=S&&S.mode==='over';
-  reset();S.mode='play';S.vil={near:null,ui:''};
+  reset();S.mode='play';S.vil={near:null,ui:'',raise:{}};
   const at=back?{x:VILLAGE.gate.x,y:VILLAGE.gate.y-110}:VILLAGE.spawn;
   P.x=at.x;P.y=at.y;P.aim=-Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
   ['ovStart','ovOver','ovLevel','ovBoss'].forEach(id=>$(id).hidden=true);
@@ -193,6 +211,8 @@ function villageDecor(){
     const r=R+250+hash(i,4)*60;out.push({kind:'hills',x:Math.cos(a)*r,y:Math.sin(a)*r,v:hash(i,5)})}
   return villageDecor.list=out;
 }
+// איפה עומדים הקישוטים סביב מבנה, ביחס לרדיוס שלו (ראשונים: פינות קדמיות). משותף לדו-ממד ולתלת-ממד
+const VDECO=[[-0.9,0.6],[0.9,0.6],[-1.05,-0.2],[-0.75,-0.8]];
 const VCOL={center:C.lilac,forge:C.ember,mill:'#C08A52',mine:C.dim,market:C.gold};
 // דו-ממד: צורות פשוטות. בתלת-ממד המבנים מצוירים בשכבה שמתחת (render3d.js)
 function drawVillage(){
@@ -209,12 +229,18 @@ function drawVillage(){
   ctx.strokeStyle=C.chalk;ctx.lineWidth=4;ctx.fillStyle='rgba(236,231,220,0.12)';
   ctx.beginPath();ctx.moveTo(g.x-26,g.y+14);ctx.lineTo(g.x-26,g.y-14);ctx.arc(g.x,g.y-14,26,Math.PI,0);ctx.lineTo(g.x+26,g.y+14);ctx.closePath();ctx.fill();ctx.stroke();
   for(const k in VILLAGE.b){
-    const B=VILLAGE.b[k],L=vLv(k),w=B.r*1.5,h=B.r*(0.7+L*0.06),x=B.x-w/2,y=B.y+B.r*0.4-h;
+    const B=VILLAGE.b[k],lk=vLook(k),s=lk?lk.size:1,w=B.r*1.5*s,h=B.r*0.75*s,x=B.x-w/2,y=B.y+B.r*0.4-h;
     ctx.fillStyle='rgba(5,7,13,0.4)';ctx.beginPath();ctx.ellipse(B.x,B.y+B.r*0.4,B.r,B.r*0.35,0,0,7);ctx.fill();
     ctx.strokeStyle=VCOL[k];ctx.lineWidth=3;
-    if(!L){ctx.setLineDash([8,8]);ctx.strokeRect(x,y,w,h);ctx.setLineDash([]);continue}
-    ctx.fillStyle='#1A2033';ctx.fillRect(x,y,w,h);ctx.strokeRect(x,y,w,h);
-    ctx.fillStyle=VCOL[k];ctx.beginPath();ctx.moveTo(x-8,y);ctx.lineTo(B.x,y-B.r*0.55);ctx.lineTo(x+w+8,y);ctx.closePath();ctx.fill();
+    if(!lk){ctx.setLineDash([8,8]);ctx.strokeRect(x,y,w,h);ctx.setLineDash([]);continue}
+    if(lk.glow){ctx.shadowColor=lk.glow;ctx.shadowBlur=24}
+    if(lk.model==='tent'){ctx.fillStyle=VCOL[k];ctx.beginPath();ctx.moveTo(x,y+h);ctx.lineTo(B.x,y-B.r*0.3);ctx.lineTo(x+w,y+h);ctx.closePath();ctx.fill()}
+    else{ctx.fillStyle='#1A2033';ctx.fillRect(x,y,w,h);ctx.strokeRect(x,y,w,h);
+      ctx.fillStyle=VCOL[k];ctx.beginPath();ctx.moveTo(x-8,y);ctx.lineTo(B.x,y-B.r*0.55*s);ctx.lineTo(x+w+8,y);ctx.closePath();ctx.fill()}
+    ctx.shadowBlur=0;
+    lk.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length],px=B.x+dx*B.r,py=B.y+dy*B.r;
+      if(d==='flag'){ctx.strokeStyle=C.chalk;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py-34);ctx.stroke();ctx.fillStyle=C.tide;ctx.beginPath();ctx.moveTo(px,py-34);ctx.lineTo(px+16,py-28);ctx.lineTo(px,py-22);ctx.fill()}
+      else{ctx.fillStyle=d==='crate'?'#9A6B3C':'#7A4E2A';ctx.fillRect(px-7,py-12,14,12)}});
   }
 }
 // שלטים מתחת למבנים, התוצרת שמחכה, וחץ לשער. מעל הכל, בשני המצבים
