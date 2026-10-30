@@ -68,12 +68,13 @@ function botStep({god,en}){
       document.getElementById('gearClose').click();L.rgClosed=S.mode==='play';m.runGear=2;return L}
   }
   if(god)P.hp=P.maxHp;
-  // סקילים: לוחצים על הכפתור עצמו, כמו שחקן שמחפש קומבו. קודם מרטיבים, אחר כך קרח או ברק על רטובים, ואדמה על קפואים
+  // סקילים: לוחצים על הכפתור עצמו, כמו שחקן שמחפש קומבו. קודם מרטיבים, אחר כך קרח או ברק על רטובים, ואדמה על קפואים.
+  // רק מול אויב-על או בוס, כמו שחקן ששומר סקילים לאויבים קשים. בגושים לא, כדי שהבדיקה "גושים" תמדוד כמה אויבים הזירה מביאה
   const sb=document.getElementById('skills');
   if(S.sk&&!S.room&&S.mode==='play'){
     L.skBtns=sb.hidden?0:sb.querySelectorAll('[data-sk]').length;L.skIds=S.sk.ids.join(' ');L.skUsed=S.sk.used;L.combos={...S.sk.combos};
     const near=enemies.filter(e=>!e.dead&&Math.hypot(e.x-P.x,e.y-P.y)<150),ready=id=>{const i=S.sk.ids.indexOf(id);return i>=0&&S.sk.cd[i]<=0};
-    if(near.length){
+    if(near.length&&(S.boss||enemies.some(e=>e.elite))){
       const pick=near.some(e=>e.frozen>0)&&ready('quake')?'quake':near.some(e=>e.wet>0)&&(ready('frost')||ready('zap'))?(ready('frost')?'frost':'zap')
         :ready('splash')?'splash':S.sk.ids.includes('splash')?null:S.sk.ids.find(ready);
       const b=pick&&sb.querySelector('[data-sk="'+pick+'"]');if(b)b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));
