@@ -67,6 +67,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 h1,h2{font-family:var(--display);font-weight:400;margin:0;line-height:1.05;text-wrap:balance}
 h1{font-size:46px} h2{font-size:30px}
 .sub{color:var(--dim);font-size:14px;margin:0}
+.ver{color:var(--dim);font-size:11px;margin:0;opacity:.7;text-align:end}
 /* מתג השפה במסך הפתיחה */
 .langs{display:flex;gap:6px;justify-content:flex-end}
 .lang{appearance:none;border:1px solid var(--line);background:transparent;color:var(--dim);border-radius:999px;padding:5px 12px;font:700 13px var(--body);cursor:pointer}

@@ -28,6 +28,7 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_TELEMETRY_DISABLED: 1
       CLI: vercel@64.0.2
+      PR_NUM: ${{ github.event.pull_request.number }}
     steps:
       - name: אין עדיין חיבור ל-Vercel
         if: env.VERCEL_TOKEN == ''
@@ -35,6 +36,8 @@ jobs:
           echo "דילוג: אין סוד VERCEL_TOKEN בריפו. ההוראות ב-CLAUDE.md, בפרק 'פרסום'." | tee -a "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0   # כל ההיסטוריה, בשביל מספר הגרסה
         if: env.VERCEL_TOKEN != ''
 
       - name: העלאה
@@ -44,6 +47,15 @@ jobs:
           # רק מה שהמשחק צריך. התיקייה נקראת fun-house, וזה גם שם הפרויקט ב-Vercel
           site="$RUNNER_TEMP/fun-house"; mkdir -p "$site"
           cp index.html "$site/"; cp -r css js "$site/"; for d in skins sounds; do [ -d "$d" ] && cp -r "$d" "$site/"; done; true
+          # מספר הגרסה = כמה שינויים נכנסו ל-main. ב-PR: המספר של main שהוא נבנה עליו, ומספר ה-PR
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            n=$(git rev-list --count "origin/$GITHUB_BASE_REF"); ver="v$n · PR #$PR_NUM"
+          else
+            n=$(git rev-list --count HEAD); ver="v$n"
+          fi
+          printf "const VERSION='%s';
+" "$ver" > "$site/js/version.js"
+          echo "גרסה: $ver" >> "$GITHUB_STEP_SUMMARY"
           cd "$site"
           # רווח או ירידת שורה שנדבקו לטוקן בהעתקה הופכים אותו ללא תקף, אז מנקים אותם
           tok=$(printf %s "$VERCEL_TOKEN" | tr -d '[:space:]')
