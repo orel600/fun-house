@@ -20,6 +20,7 @@
     <div class="bosstrack"><div class="bossfill" id="bossfill"></div></div>
     <div class="ragetrack" id="ragetrack" hidden><div class="ragefill" id="ragefill"></div></div>
   </div>
+  <div class="qtrack" id="qTrack" hidden></div>
 </div>
 
 <button class="swap" id="swap" data-ta="swapWeapon">
@@ -29,7 +30,11 @@
 
 <button class="mute" id="muteBtn" data-ta="mute"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg></button>
 <!-- הכפר: התרמיל למעלה, והפאנל של המבנה שלידו למטה (js/village.js) -->
-<div class="vhud" id="vhud" hidden><div class="bag" id="vBag" role="group" data-ta="bagGroup"></div><button class="gearbtn" id="gearBtn">🎒 <span data-t="gear.btn"></span></button></div>
+<div class="vhud" id="vhud" hidden><div class="bag" id="vBag" role="group" data-ta="bagGroup"></div><button class="gearbtn" id="gearBtn">🎒 <span data-t="gear.btn"></span></button>
+  <!-- הקווסטים: כפתור היומן בפינה, והיומן עצמו (js/quests.js) -->
+  <button class="qbtn" id="qBtn"><span aria-hidden="true">📜</span> <span data-t="q.log"></span><b id="qBadge" hidden></b></button>
+  <div class="qlog" id="qLog" hidden></div>
+</div>
 <div class="vpanel" id="vPanel" hidden></div>
 
 <div class="banner" id="banner"></div>
@@ -127,6 +132,7 @@
 <script src="js/bonus.js"></script>
 <script src="js/wanted.js"></script>
 <script src="js/village.js"></script>
+<script src="js/quests.js"></script>
 <script src="js/gear.js"></script>
 <script src="js/stash.js"></script>
 <script src="js/heroes.js"></script>
