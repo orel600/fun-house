@@ -68,7 +68,7 @@ function nodeNear(){
 function nodeDown(n){
   n.dead=true;S.nd.broken++;if(n.regrow)n.back=n.regrow;   // בעולם הפתוח הוא צומח מחדש (world.js)
   if(NODES.kinds[n.kind].shape==='chest')S.nd.chests=(S.nd.chests||0)+1;sfx('coin');
-  const got=runGive(NODES.kinds[n.kind].drop,n.x,n.y-n.r);S.nd.got.push(...got);
+  const got=runGive(NODES.kinds[n.kind].drop,n.x,n.y);S.nd.got.push(...got);
   sparks(n.x,n.y,NODES.kinds[n.kind].col,14,200);
 }
 
