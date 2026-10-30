@@ -10,7 +10,7 @@ function floatText(x,y,txt,col,size){floats.push({x,y,txt,col,size,life:.75,vy:-
 function damage(e,base,w,ang){
   const m=e.mult[w]??1;const crit=Math.random()<0.12;
   const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?1.8:1);
-  e.hp-=d;e.flash=0.09;sfx('hit');
+  e.hp-=d;e.flash=0.09;sfx('hit');heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
   if(!e.isBoss&&!e.node){const kb=(w==='sword'?150:55)*(m>1?1.4:1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   const col=m>1?(w==='sword'?C.ember:C.tide):m<1?C.dim:C.chalk;
   floatText(e.x+rand(-8,8),e.y-e.r-8,Math.round(d)+(crit?'!':''),col,m>1?21:m<1?12:15);
@@ -20,7 +20,7 @@ function damage(e,base,w,ang){
   if(e.hp<=0&&!e.dead){if(e.node)nodeDown(e);else kill(e)}
 }
 function kill(e){
-  e.dead=true;S.kills++;sfx('death');
+  e.dead=true;S.kills++;sfx('death');heroCount('kills');if(e.isBoss)heroCount('bosses');
   lootKill(e);   // שלל לכפר (loot.js)
   questEvent('kill',e.isBoss?'boss':e.wanted?'wanted':e.type);
   if(e.isBoss){bossDown(e);return}

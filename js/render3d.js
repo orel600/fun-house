@@ -23,6 +23,10 @@ const LOOK3D={
     anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   wisp:{model:'mage',h:56,foot:12,ring:'tide',float:6,props:{staff:{prop:'staff',...HAND_R,tint:'tide'}},
     anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons',cast:'Spellcasting'}},
+  // דמויות ההתחלה (HEROES ב-heroes.js): כמו player, עם מודל משלהן. המטה של הקוסם יושב במקום הקשת
+  hero_warrior:{model:'knight'},
+  hero_hunter:{model:'rogue'},
+  hero_mage:{model:'mage',props:{gun:{prop:'staff',...HAND_R,tint:'tide'}}},
   wanted:{model:'rogue',h:62,foot:13,tint:'gold',anim:{run:'Running_B',die:'Death_A'}},
   // יצורי משאבים: בינתיים מודל קיים, צבוע בצבע החומר (tint) ובגודל אחר. כשיהיו מודלים משלהם מחליפים רק כאן
   golem:{model:'barbarian',h:84,foot:18,tint:'#8A8F9C',anim:{run:'Running_B',die:'Death_A'}},
@@ -133,7 +137,8 @@ function mark(kind,x,z,r){const M=R3D.marks[kind];if(M.count>=M.instanceMatrix.c
 
 /* ---- דמויות ---- */
 const SIN=()=>Math.sin(VIEW.tilt),COS=()=>Math.cos(VIEW.tilt);
-function lookOf(e){return e===P?LOOK3D.player:e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
+const heroLook=()=>Object.assign({},LOOK3D.player,LOOK3D['hero_'+heroId()]);
+function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
 const TINT={ember:C.ember,tide:C.tide,gold:C.gold};
 const tintOf=t=>TINT[t]||t;   // שם מ-TINT, או צבע ישיר ('#8A8F9C')
 const poolKey=L=>L.model+'|'+Object.keys(L.props||{}).join()+'|'+(L.tint||'')+'|'+L.h;   // מודל זהה בצבע או בגודל אחר לא חוזר מהמאגר
@@ -181,8 +186,9 @@ const yawOf=(dx,dy)=>Math.atan2(dx,dy/SIN());
 function setFlash(a,k,col){for(const m of a.mats){if(k>0)m.emissive.set(col||0xffffff).multiplyScalar(k);else if(m.userData.em)m.emissive.copy(m.userData.em);else m.emissive.set(0)}}
 
 function syncPlayer(dt){
-  let a=R3D.player;if(!a)a=R3D.player=makeActor(LOOK3D.player);
-  const L=LOOK3D.player,sword=P.weapon==='sword';
+  const L=heroLook();
+  let a=R3D.player;if(!a||a.key!==L.model+'|'+Object.keys(L.props||{}).join()){if(a)freeActor(a);a=R3D.player=makeActor(L)}   // דמות חדשה: מודל חדש
+  const sword=P.weapon==='sword';
   if(a.own)a.own.visible=sword;if(a.props.gun)a.props.gun.visible=!sword;
   const st=a.st||(a.st={anim:0,gt:0,mode:''});
   if(S.mode==='over'){if(st.mode!=='over'){st.mode='over';a.base=null;a.mixer.stopAllAction();once(a,S.won?L.anim.win:L.anim.die,1.2,true)}}
