@@ -35,7 +35,11 @@ const VILLAGE={
     market:{x:300,y:190,r:66,     // sell/buy: מטבעות ליחידה ברמה 1. כל רמה נוספת: bonus יותר טוב. lot: כמה יחידות בכל לחיצה
       cost:[null,{coins:15,wood:15},{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50},{coins:180,wood:120,stone:100,ore:20},{coins:320,wood:220,stone:180,ore:50}],
       sell:{wood:1,stone:1,ore:4,bone:2},buy:{wood:3,stone:3},lot:5,bonus:0.2,
-      look:[{at:1,model:'tent',scale:1,deco:['crate','crate']},{at:3,model:'market',scale:1,deco:['crate','barrel']},{at:5,model:'market',scale:1.1,deco:['flag','flag','crate','barrel'],glow:C.gold}]}
+      look:[{at:1,model:'tent',scale:1,deco:['crate','crate']},{at:3,model:'market',scale:1,deco:['crate','barrel']},{at:5,model:'market',scale:1.1,deco:['flag','flag','crate','barrel'],glow:C.gold}]},
+    stash:{x:-170,y:330,r:60,     // מחסן: המקום הבטוח לשלל (stash.js). cap[L]: כמה יחידות הוא מחזיק ברמה L
+      cost:[null,{coins:15,wood:10},{coins:40,wood:30,stone:15},{coins:90,wood:60,stone:45},{coins:180,wood:120,stone:90,ore:15},{coins:320,wood:220,stone:160,ore:40}],
+      cap:[0,150,400,900,2000,5000],
+      look:[{at:1,model:'tent',scale:0.9,deco:['crate']},{at:3,model:'market',scale:0.95,deco:['crate','crate','barrel']},{at:5,model:'market',scale:1.05,deco:['flag','flag','crate','barrel'],glow:C.tide}]}
   },
   // שלל בזירה מכל אויב שנופל: {משאב:[סיכוי, כמה]}. מגיע לתרמיל בסוף הריצה, גם אם נפלת
   drops:{
@@ -175,11 +179,12 @@ function vInfo(k,L){
   if(k==='mill')return T('vil.info.mill',B.make.wood[L],B.cap[L]);
   if(k==='mine')return T('vil.info.mine',B.make.stone[L],B.make.ore[L],B.cap[L]);
   if(k==='market')return T('vil.info.market',Math.round(B.bonus*(L-1)*100));
+  if(k==='stash')return T('vil.info.stash',B.cap[L]);
 }
 function villageHud(){
   const k=S.vil.near,L=k?vLv(k):0;
-  // בונים מחדש רק כשמשהו השתנה: מבנה אחר, רמות, תרמיל או שפה
-  const key=LANG+'|'+k+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag);
+  // בונים מחדש רק כשמשהו השתנה: מבנה אחר, רמות, תרמיל, מחסן או שפה
+  const key=LANG+'|'+k+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
   if(key===S.vil.ui)return;S.vil.ui=key;
   $('vBag').innerHTML=bagLine(SAVE.bag,true);
   const pn=$('vPanel');pn.hidden=!k;if(!k)return;
@@ -193,11 +198,12 @@ function villageHud(){
     for(const r in M.buy)h+='<button data-act="buy" data-r="'+r+'"'+(bagHas('coins',vPrice(r,'buy')*M.lot)?'':' disabled')+'>'+T('vil.buy')+' '+M.lot+VILLAGE.icon[r]+' · '+vPrice(r,'buy')*M.lot+VILLAGE.icon.coins+'</button>';
     h+='</div>';
   }
+  if(k==='stash'&&L>0)h+=stashHtml();   // stash.js
   pn.innerHTML=h;
 }
 $('vPanel').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled||!S.vil||!S.vil.near)return;
-  if(b.dataset.act==='up')vUpgrade(S.vil.near);else vTrade(b.dataset.act,b.dataset.r);
+  if(b.dataset.act==='up')vUpgrade(S.vil.near);else if(b.dataset.act==='stash')stashMove(b.dataset.dir,b.dataset.r);else vTrade(b.dataset.act,b.dataset.r);
   villageHud();
 });
 
@@ -214,7 +220,7 @@ function villageDecor(){
 }
 // איפה עומדים הקישוטים סביב מבנה, ביחס לרדיוס שלו (ראשונים: פינות קדמיות). משותף לדו-ממד ולתלת-ממד
 const VDECO=[[-0.9,0.6],[0.9,0.6],[-1.05,-0.2],[-0.75,-0.8]];
-const VCOL={center:C.lilac,forge:C.ember,mill:'#C08A52',mine:C.dim,market:C.gold};
+const VCOL={center:C.lilac,forge:C.ember,mill:'#C08A52',mine:C.dim,market:C.gold,stash:C.tide};
 // דו-ממד: צורות פשוטות. בתלת-ממד המבנים מצוירים בשכבה שמתחת (render3d.js)
 function drawVillage(){
   if(!S.vil||R3D.on)return;
