@@ -16,6 +16,7 @@ function saveBlank(){return{
   gift:false,                                       // מתנת הפתיחה של הכפר כבר ניתנה
   gearGift:false,                                   // הציוד הראשון (GEAR.gift ב-gear.js) כבר ניתן
   agePity:0,                                        // כמה כישלונות ברצף ב-Aging, למזל הרך (aging.js)
+  pet:{kind:null,stage:0,xp:0},                     // חיית המחמד (pet.js). kind: איזו חיה מ-PET.kinds (null: PET.default, פיוחו של ניר). stage: 0-2
   ts:0}}
 
 let SAVE=saveBlank();

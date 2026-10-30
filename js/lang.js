@@ -377,6 +377,10 @@ const TEXT={
   'stash.in':{he:'במחסן: לחיצה מחזירה לתרמיל',en:'In the stash: tap to take back'},
   'stash.empty':{he:'ריק',en:'Empty'},
   // תושבי הכפר (npc.js): [שם, תפקיד], ומשפט לכל מצב. low/high: לפי רמת מרכז הכפר. new: יש קווסט חדש. busy: קווסט באמצע. ready: פרס מחכה
+  // חיית המחמד (pet.js). השם לפי PET.kinds
+  'pet.name.piocho':{he:'פיוחו',en:'PioCho'},
+  'pet.up':{he:(n,s)=>n+' גדלה! שלב '+s,en:(n,s)=>n+' grew up! Stage '+s},
+  'pet.found':{he:n=>n+' מצאה משהו!',en:n=>n+' found something!'},
   'npc.talk':{he:n=>'לדבר עם '+n,en:n=>'Talk to '+n},
   'npc.noQuest':{he:'אין לי משימה בשבילך כרגע. תחזור אחר כך.',en:'Nothing for you right now. Come back later.'},
   'npc.head':{he:['אבנר','ראש הכפר'],en:['Avner','Village Chief']},
