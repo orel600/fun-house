@@ -17,6 +17,7 @@ function saveBlank(){return{
   gearGift:false,                                   // הציוד הראשון (GEAR.gift ב-gear.js) כבר ניתן
   pity:0,                                           // כמה פעמים ברצף שלל נדיר לא נפל (LOOT.pity ב-loot.js)
   daily:{day:'',first:{}},                          // איזה סוג אויב כבר הופל היום, לבונוס ההריגה הראשונה (loot.js)
+  met:{},                                           // דמויות בעולם שכבר נמצאו: {fisher:1} (worldnpc.js)
   agePity:0,                                        // כמה כישלונות ברצף ב-Aging, למזל הרך (aging.js)
   ts:0}}
 

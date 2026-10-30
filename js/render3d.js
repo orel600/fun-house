@@ -46,7 +46,11 @@ const LOOK3D={
   npc_smith:{model:'barbarian',h:66,foot:14,tint:'fire',own:false,props:{hammer:{prop:'w_hammer_A',...HAND_R}},anim:{...NPC_ANIM,work:'Hammering'}},
   npc_merchant:{model:'rogue',h:60,foot:13,tint:'gold',own:false,anim:NPC_ANIM},
   npc_inn:{model:'barbarian',h:58,foot:13,own:false,anim:NPC_ANIM},
-  npc_priest:{model:'mage',h:66,foot:13,tint:'lilac',props:{staff:{prop:'w_staff_A',...HAND_R}},anim:{...NPC_ANIM,work:'Ranged_Magic_Spellcasting'}}
+  npc_priest:{model:'mage',h:66,foot:13,tint:'lilac',props:{staff:{prop:'w_staff_A',...HAND_R}},anim:{...NPC_ANIM,work:'Ranged_Magic_Spellcasting'}},
+  // דמויות בעולם הפתוח (WNPC ב-worldnpc.js)
+  npc_fisher:{model:'ranger',h:58,foot:13,tint:'#3F7BF5',own:false,anim:{...NPC_ANIM,idle:'Idle_B'}},
+  npc_cutter:{model:'barbarian',h:62,foot:14,tint:'#A8784A',own:false,props:{hammer:{prop:'w_hammer_A',...HAND_R}},anim:NPC_ANIM},
+  npc_herbal:{model:'mage',h:60,foot:13,tint:'#5FA35A',anim:NPC_ANIM}
 };
 /* הנשק ביד השחקן: המודל מ-look.model של הפריט בציוד (GEAR.items ב-gear.js), והחומר לפי ה-tier שלו (טקסטורה wtex_<חומר>, build3d.js).
    כל משפחת נשקים יושבת ביד אחרת ותוקפת באנימציה אחרת. of: לאיזו משפחה שייך מודל, לפי השם.
@@ -423,7 +427,7 @@ function render3d(ox,oy){
   if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt)}   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
-    if(S.wd)syncWorld();   // העולם הפתוח: עצים, סלעים ושערים (world.js)
+    if(S.wd){syncWorld();syncWnpcs(dt)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)
     // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
     const vis=enemies.filter(e=>!e.dead&&(e.isBoss||onScreen(e.x+ox,e.y+oy)));
     if(vis.length>CROWD.full){const pr=e=>e.isBoss||e.wanted||e.elite?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}
