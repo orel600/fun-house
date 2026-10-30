@@ -31,6 +31,7 @@ const TEXT={
   gfx2d:{he:'דו-ממד',en:'2D'},
   arena:{he:'זירת המשחק',en:'Game arena'},
   swapWeapon:{he:'החלף נשק',en:'Switch weapon'},
+  mute:{he:'השתקת צלילים',en:'Mute sound'},
 
   // ממשק בזמן משחק
   level:{he:n=>'רמה '+n,en:n=>'Level '+n},
