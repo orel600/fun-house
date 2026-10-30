@@ -110,7 +110,7 @@ function vTrade(kind,r){
 }
 
 /* ---- מעבר בין הכפר לזירה ---- */
-function villageUi(on){document.body.classList.toggle('vil',on);$('vhud').hidden=!on;if(!on)$('vPanel').hidden=true}
+function villageUi(on){document.body.classList.toggle('vil',on);$('vhud').hidden=!on;if(!on){$('vPanel').hidden=true;npcHide()}}
 function enterVillage(){
   const back=S&&(S.mode==='over'||S.wd);   // חוזרים מהעולם (או מריצה): ליד השער
   reset();S.mode='play';S.vil={near:null,ui:'',raise:{}};
@@ -140,6 +140,7 @@ function villageUpdate(dt){
   let near=null,best=VILLAGE.near;
   for(const k in VILLAGE.b){const B=VILLAGE.b[k],d=Math.hypot(P.x-B.x,P.y-B.y)-B.r-P.r;if(d<best){best=d;near=k}}
   V.near=near;if(near)vCollect(near);
+  npcUpdate(dt);   // התושבים: הולכים, מנופפים, וכפתור "לדבר" (npc.js)
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}
   parts=parts.filter(p=>p.life>0);
   for(const f of floats){f.y+=f.vy*dt;f.life-=dt}
