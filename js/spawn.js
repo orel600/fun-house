@@ -34,6 +34,6 @@ function spawner(dt){
 function horde(n){
   const c=spawnPos(),r=Math.random();
   const type=S.t<HORDE.mixFrom||r<0.5?'grunt':r<0.75?'shield':'wisp';if(type==='wisp')n=Math.ceil(n/2);
-  n=Math.min(n,HORDE.cap-enemies.length);
+  n=Math.min(n,HORDE.cap-enemies.length);S.hordeMax=Math.max(S.hordeMax||0,n);   // לבדיקה: הגוש הכי גדול
   for(let i=0;i<n;i++){const a=rand(0,6.28),d=Math.sqrt(Math.random())*HORDE.spread*(1+n/30);addEnemy(type,c.x+Math.cos(a)*d,c.y+Math.sin(a)*d,HORDE.weak)}
 }
