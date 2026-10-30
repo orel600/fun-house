@@ -70,6 +70,13 @@ h1{font-size:46px} h2{font-size:30px}
 .card .tag{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--dim)}
 .card.sword{border-inline-start-color:var(--ember)}.card.sword .tag{color:var(--ember)}
 .card.gun{border-inline-start-color:var(--tide)}.card.gun .tag{color:var(--tide)}
+/* בחירת דמות התחלה (js/heroes.js): שלושה כרטיסים בשורה. --hero: הצבע של הדמות */
+.heropanel{width:min(720px,100%)}
+.herocards{display:grid;grid-template-columns:repeat(3,1fr)}
+.card.hero{align-items:center;text-align:center;border-inline-start-width:1px;border-top:5px solid var(--hero);gap:5px}
+.card.hero .hicon{font-size:30px;line-height:1}
+.card.hero b{color:var(--hero)}
+.card.hero .hline{font-size:13px;line-height:1.35;flex:1}
 .learned{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.45}
 .learned .k{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--dim)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -177,6 +184,10 @@ h1{font-size:46px} h2{font-size:30px}
 .cmp .up{color:#7BE495;font-weight:800}.cmp .down{color:var(--blood);font-weight:800}
 .vbtn.ghost{background:transparent;border:1px solid var(--line);color:var(--chalk)}
 @media (prefers-reduced-motion:reduce){.gtile.pop{animation:none}}
+/* Aging (js/aging.js): הרמה בפינה של הפריט, והסיכוי גדול וברור */
+.gtile .gplus{position:absolute;top:0;inset-inline-start:2px;font:800 10px var(--body);color:var(--gold);direction:ltr}
+.gdetail .odds{font:800 17px var(--body);color:var(--gold)}
+.vbtn.ghost[aria-pressed="true"]{border-color:var(--tide);color:var(--tide)}
 /* לרוחב: המסך בצד ימין, כדי שהדמות במרכז והחגיגה שלה ייראו. מיקום על המסך ולא כיוון טקסט, ולכן right גם באנגלית */
 @media (orientation:landscape){
   .gearov{place-items:start end;background:linear-gradient(to right,transparent 40%,rgba(10,12,20,.7))}

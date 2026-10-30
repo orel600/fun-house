@@ -13,6 +13,7 @@ function reset(){
   bonusReset();
   wantedReset();
   gearReset();   // הציוד מהכפר: מתנה ראשונה, והסטטים שלו על השחקן (gear.js)
+  heroReset();   // הפסיבית של דמות ההתחלה (heroes.js)
   reset3d();
   updateSwapBtn();
 }

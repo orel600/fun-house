@@ -21,6 +21,7 @@ const GEAR={
     oakBow:     {slot:'weapon',tier:0,w:'gun',icon:'🏹',stats:{gdmg:10},look:{model:'crossbow'}},
     ironBow:    {slot:'weapon',tier:1,w:'gun',icon:'🏹',stats:{gdmg:25},look:{model:'crossbow'}},
     goldBow:    {slot:'weapon',tier:3,w:'gun',icon:'🏹',stats:{gdmg:60,magnet:20},look:{model:'crossbow',glow:C.gold}},
+    oakStaff:   {slot:'weapon',tier:0,w:'gun',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'staff'}},   // הנשק של הקוסם: יורה כמו קשת
     boneCharm:  {slot:'acc',tier:0,icon:'🦴',stats:{hp:15}},
     ironRing:   {slot:'acc',tier:1,icon:'💍',stats:{regen:0.5}},
     swiftBoots: {slot:'acc',tier:2,icon:'👢',stats:{speed:8}},
@@ -38,11 +39,18 @@ const GEAR={
   loot:{run:0.35,boss:1,slots:['weapon','acc']}
 };
 
-const gItem=id=>id&&GEAR.items[id]||null;
+// פריט ששודרג בנפחייה נשמר עם הרמה שלו: 'oakBow+3' (aging.js). gBase: בלי הרמה, gPlus: הרמה
+const gBase=id=>String(id).split('+')[0];
+const gPlus=id=>id?+(String(id).split('+')[1]||0):0;
+const gItem=id=>id&&GEAR.items[gBase(id)]||null;
+// ה-+3 נכתב משמאל לימין גם בעברית (\u2066...\u2069), אחרת הסימן קופץ לצד השני
+const gName=id=>T('it.'+gBase(id))+(gPlus(id)?' \u2066+'+gPlus(id)+'\u2069':'');
+// הסטטים של הפריט, כולל השדרוג בנפחייה
+function gStats(id){const s=(gItem(id)||{}).stats||{},k=ageMult(gPlus(id)),o={};for(const x in s)o[x]=Math.round(s[x]*k*10)/10;return o}
 const gTint=id=>(gItem(id).look||{}).tint||GEAR.tiers[gItem(id).tier].col;
 const gIcon=id=>{const it=gItem(id);return it.icon||GEAR.orbit[it.type]};
 // כמה הפריט שווה, כדי לדעת אם החלפה היא שיפור. חומר טוב יותר שובר שוויון
-function gScore(id){const it=gItem(id);if(!it)return 0;let n=it.tier*0.01;for(const k in it.stats||{})n+=it.stats[k]*GEAR.stats[k].w;return n}
+function gScore(id){const it=gItem(id);if(!it)return 0;let n=it.tier*0.01;const s=gStats(id);for(const k in s)n+=s[k]*GEAR.stats[k].w;return n}
 const heroLv=()=>SAVE.hero.level||1;
 const gOrbOpen=()=>GEAR.slots.orbit.filter(l=>heroLv()>=l).length;
 const gOpen=slot=>slot==='weapon'?1:slot==='acc'?GEAR.slots.acc:gOrbOpen();
@@ -56,7 +64,7 @@ function gTarget(it){
 }
 // כל מה שלבוש עכשיו, בלי משבצות נעולות
 function gearWorn(){const out=[];for(const s of ['weapon','acc','orbit'])for(let i=0;i<gOpen(s);i++){const id=gGet(s,i);if(gItem(id))out.push(id)}return out}
-function gearStats(ids=gearWorn()){const t={};for(const id of ids){const s=gItem(id)&&gItem(id).stats||{};for(const k in s)t[k]=(t[k]||0)+s[k]}return t}
+function gearStats(ids=gearWorn()){const t={};for(const id of ids){const s=gStats(id);for(const k in s)t[k]=(t[k]||0)+s[k]}return t}
 
 /* ---- ללבוש ולהוריד: מהתרמיל למשבצת ובחזרה. מה שהיה במשבצת חוזר לתרמיל ---- */
 function gearEquip(id){
@@ -101,7 +109,7 @@ function gearLoot(){
   if(got.length){saveNow();const el=$('sLoot');el.innerHTML=(el.textContent===T('vil.noLoot')?'':el.innerHTML)+got.map(gChip).join('')}
   return got;
 }
-const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gIcon(id)+' '+T('it.'+id)+'</span>';
+const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gIcon(id)+' '+gName(id)+'</span>';
 
 /* ---- המסך: המשבצות למעלה, התרמיל באמצע, וההשוואה למטה. נפתח מכפתור 🎒 בכפר ובזירה.
    לרוחב הוא בצד ימין של המסך, כדי שהדמות במרכז והחגיגה שלה ייראו ---- */
@@ -111,7 +119,7 @@ function gearOpen(){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=nul
 function gearClose(){$('ovGear').hidden=true;if(S.mode==='gear')S.mode='play'}
 
 const gSign=(k,v)=>'<bdi>'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T('st.'+k);
-function gStatsHtml(id){const it=gItem(id),s=it.stats||{};
+function gStatsHtml(id){const it=gItem(id),s=gStats(id);
   if(it.slot==='orbit')return '<p>'+T('orb.'+it.type)+' · '+T('gear.soon')+'</p>';
   return '<p>'+Object.keys(s).map(k=>gSign(k,s[k])).join(' · ')+'</p>'}
 // מה ישתנה אם לובשים: לכל סטט, ההפרש מול מה שיוצא מהמשבצת
@@ -124,7 +132,7 @@ function gTile(id,attrs,extra){
   const it=gItem(id),cls='gtile'+(it&&it.w?' '+it.w:'');
   if(!it)return '<button class="'+cls+' empty" '+attrs+'>'+extra+'</button>';
   const glow=(it.look||{}).glow;
-  return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+T('it.'+id)+'">'+gIcon(id)+extra+'</button>';
+  return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gIcon(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+extra+'</button>';
 }
 function gearDraw(){
   const sel=GUI.sel,isSel=(s,i)=>sel&&sel.slot===s&&sel.i===i;
@@ -149,9 +157,9 @@ function gearDraw(){
   const id=sel&&(sel.id||gGet(sel.slot,sel.i));
   if(gItem(id)){
     const it=gItem(id);
-    d='<h3 style="color:'+gTint(id)+'">'+gIcon(id)+' '+T('it.'+id)+' <small>'+T('vil.tiers')[it.tier]+' · '+T('gear.slot.'+it.slot)+'</small></h3>'+gStatsHtml(id);
+    d='<h3 style="color:'+gTint(id)+'">'+gIcon(id)+' '+gName(id)+' <small>'+T('vil.tiers')[it.tier]+' · '+T('gear.slot.'+it.slot)+'</small></h3>'+gStatsHtml(id);
     if(sel.id){const old=gGet(it.slot,gTarget(it));
-      d+=(old?'<p class="dim">'+T('gear.vs',gIcon(old)+' '+T('it.'+old))+'</p>':'')+gCompare(id,old)+'<button class="vbtn" data-act="equip">'+T('gear.equip')+'</button>'}
+      d+=(old?'<p class="dim">'+T('gear.vs',gIcon(old)+' '+gName(old))+'</p>':'')+gCompare(id,old)+'<button class="vbtn" data-act="equip">'+T('gear.equip')+'</button>'}
     else d+='<button class="vbtn ghost" data-act="unequip">'+T('gear.unequip')+'</button>';
   }
   $('gDetail').innerHTML=d;

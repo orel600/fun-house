@@ -12,6 +12,7 @@ function update(dt){
   if(S.room){roomUpdate(dt);return}
   S.t+=dt;P.inv-=dt;P.swapBuff-=dt;S.shake=Math.max(0,S.shake-dt*30);S.hurt-=dt;
   if(P.regen)P.hp=Math.min(P.maxHp,P.hp+P.regen*dt);
+  heroTick(dt);   // סגנון המשחק (heroes.js)
   // move
   const {ix,iy}=movePlayer(dt);
   if(P.moving&&!nearest(440))P.aim=Math.atan2(iy,ix);

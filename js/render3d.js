@@ -23,15 +23,19 @@ const LOOK3D={
     anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   wisp:{model:'mage',h:56,foot:12,ring:'tide',float:6,props:{staff:{prop:'staff',...HAND_R,tint:'tide'}},
     anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons',cast:'Spellcasting'}},
+  // דמויות ההתחלה (HEROES ב-heroes.js): כמו player, עם מודל משלהן. המטה של הקוסם יושב במקום הקשת
+  hero_warrior:{model:'knight'},
+  hero_hunter:{model:'rogue'},
+  hero_mage:{model:'mage',props:{gun:{prop:'staff',...HAND_R,tint:'tide'}}},
   wanted:{model:'rogue',h:62,foot:13,tint:'gold',anim:{run:'Running_B',die:'Death_A'}},
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle',charge:'2H_Melee_Attack_Spin',cast:'2H_Melee_Attack_Chop',taunt:'Taunt',die:'Death_A'}},
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. בלי קסדה הוא נמוך יותר, אז h קטן כדי שהגוף יהיה בגודל של האביר.
-  // לבדיקה בלבד: נכנס במקום האביר רק עם ?hero=pilot בכתובת
+  // לבדיקה בלבד: עם ?hero=pilot בכתובת הוא נכנס במקום האביר של הלוחם (דמות ההתחלה הראשונה)
   pilotHero:{model:'pilotHero',h:56,foot:14,
     props:{sword:{prop:'sword',...HAND_R},gun:{prop:'crossbow',bone:'handslotr',pos:[-0.105,-0.01,0],rot:[0,0.7071,0,0.7071]}},
     anim:{idle:'Idle',run:'Running_A',sword:'1H_Melee_Attack_Slice_Horizontal',gun:'1H_Ranged_Shoot',die:'Death_A',win:'Cheer'}}
 };
-const PLAYER3D=/[?&]hero=pilot/.test(location.search)?'pilotHero':'player';
+const PILOT3D=/[?&]hero=pilot/.test(location.search);
 /* הכפר: המיקומים והמראה לפי רמה ב-VILLAGE (js/village.js). כאן רק איזה קובץ מודל לכל שם, ובאיזה רוחב על המסך בפיקסלים.
    models: המבנים (השמות ב-look). site: פיגום, למבנה שעוד לא נבנה או שבונים אותו עכשיו. deco: קישוטים סביב מבנה.
    decor: העצים והגבעות מסביב (villageDecor). stock: ערימה ליד מבנה שיש בו תוצרת שמחכה */
@@ -133,7 +137,8 @@ function mark(kind,x,z,r){const M=R3D.marks[kind];if(M.count>=M.instanceMatrix.c
 
 /* ---- דמויות ---- */
 const SIN=()=>Math.sin(VIEW.tilt),COS=()=>Math.cos(VIEW.tilt);
-function lookOf(e){return e===P?LOOK3D[PLAYER3D]:e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
+const heroLook=()=>Object.assign({},LOOK3D.player,PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()]);
+function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
 const TINT={ember:C.ember,tide:C.tide,gold:C.gold};
 function makeActor(L){
   const pool=R3D.pool||(R3D.pool={});const free=pool[L.model+'|'+Object.keys(L.props||{}).join()];
@@ -179,8 +184,9 @@ const yawOf=(dx,dy)=>Math.atan2(dx,dy/SIN());
 function setFlash(a,k,col){for(const m of a.mats){if(k>0)m.emissive.set(col||0xffffff).multiplyScalar(k);else if(m.userData.em)m.emissive.copy(m.userData.em);else m.emissive.set(0)}}
 
 function syncPlayer(dt){
-  let a=R3D.player;if(!a)a=R3D.player=makeActor(LOOK3D[PLAYER3D]);
-  const L=LOOK3D[PLAYER3D],sword=P.weapon==='sword';
+  const L=heroLook();
+  let a=R3D.player;if(!a||a.key!==L.model+'|'+Object.keys(L.props||{}).join()){if(a)freeActor(a);a=R3D.player=makeActor(L)}   // דמות חדשה: מודל חדש
+  const sword=P.weapon==='sword';
   const blade=a.own||a.props.sword;if(blade)blade.visible=sword;if(a.props.gun)a.props.gun.visible=!sword;
   const st=a.st||(a.st={anim:0,gt:0,mode:''});
   if(S.mode==='over'){if(st.mode!=='over'){st.mode='over';a.base=null;a.mixer.stopAllAction();once(a,S.won?L.anim.win:L.anim.die,1.2,true)}}
@@ -198,6 +204,8 @@ function syncPlayer(dt){
   a.root.visible=!(P.inv>0&&Math.floor(P.inv*20)%2===0)||RM;
   setFlash(a,P.inv>0.45?0.5:P.swapBuff>0?0.25:0,P.inv>0.45?C.blood:C.gold);
   a.mixer.update(dt);
+  // איפה הנשק על המסך, בשביל הזוהר של Aging שמצויר בקנבס (aging.js). מהעולם חזרה לקואורדינטות המשחק
+  const w=sword?a.own:a.props.gun;if(w){const v=w.getWorldPosition(R3D._v||(R3D._v=new THREE.Vector3()));AGE_FX.hand={x:v.x,y:v.z*SIN()-v.y*COS()}}
   mark('shadow',a.root.position.x,a.root.position.z,16);
 }
 function syncEnemy(e,dt){

@@ -50,6 +50,16 @@
   </div>
 </div>
 
+<!-- הנפחייה: Aging לציוד. הפריטים, הסיכוי, המחיר והכפתור (js/aging.js) -->
+<div class="ov gearov" id="ovForge" hidden>
+  <div class="panel gearpanel">
+    <div class="ghead"><h2 data-t="age.title"></h2><span id="fLevel"></span><button class="gclose" id="forgeClose" data-ta="gear.close">✕</button></div>
+    <div class="bag gres" id="fRes" role="group" data-ta="bagGroup"></div>
+    <div class="gitems" id="fItems"></div>
+    <div class="gdetail" id="fDetail"></div>
+  </div>
+</div>
+
 <div class="ov" id="ovStart">
   <div class="panel">
     <div class="langs" role="group" data-ta="langGroup">
@@ -65,6 +75,15 @@
     <ul class="rules" data-t="rules"></ul>
     <button class="go" id="startBtn" data-t="start"></button>
     <p class="sub" id="bestLine"></p>
+  </div>
+</div>
+
+<!-- בחירת דמות התחלה, רק במשחק הראשון (js/heroes.js) -->
+<div class="ov" id="ovHero" hidden>
+  <div class="panel heropanel">
+    <h2 data-t="hero.title"></h2>
+    <p class="sub" data-t="hero.sub"></p>
+    <div class="cards herocards" id="heroCards"></div>
   </div>
 </div>
 
@@ -125,7 +144,9 @@
 <script src="js/village.js"></script>
 <script src="js/quests.js"></script>
 <script src="js/gear.js"></script>
+<script src="js/aging.js"></script>
 <script src="js/stash.js"></script>
+<script src="js/heroes.js"></script>
 <script src="js/update.js"></script>
 <script src="js/rig.js"></script>
 <script src="js/fx.js"></script>
