@@ -175,12 +175,19 @@ function villageBot(m,L){
   if(!m.away){   // כאילו השחקן לא שיחק שעתיים: התוצרת מצטברת עד המחסן
     m.away=1;m.wood=SAVE.bag.wood||0;vProd('mill').t-=2*3600e3;L.expect=Math.min(B.cap[1],B.make.wood[1]*2);return steer(B.x,B.y,false,0,L)}
   if(L.collected==null){L.collected=(SAVE.bag.wood||0)-m.wood;return steer(B.x,B.y,false,0,L)}
-  if(m.gear!==2){   // מסך הציוד: פותחים, בוחרים את קשת העץ מהתרמיל, משווים ולובשים
+  if(m.gear!==2){   // מסך הציוד: פותחים, לוחצים על קשת העץ כדי להשוות, ואז גוררים אותה למשבצת הנשק
     const d=()=>document.getElementById('gDetail').innerText.replace(/\s+/g,' ').trim();
     if(!m.gear){m.gear=1;m.gdmg0=P.gn.dmg;document.getElementById('gearBtn').click();L.gearOpen=S.mode==='gear'&&!document.getElementById('ovGear').hidden;return L}
-    const it=document.querySelector('#gItems [data-id="oakBow"]');
+    // גרירה כמו של אצבע: לוחצים על הפריט, זזים עד המשבצת ומשחררים שם (pointer events, כמו בטלפון)
+    const drag=(from,to)=>{const at=el=>{const r=el.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}},a=at(from),b=at(to),
+      ev=(t,el,p)=>el.dispatchEvent(new PointerEvent(t,{bubbles:true,cancelable:true,pointerId:9,isPrimary:true,button:0,clientX:p.x,clientY:p.y}));
+      ev('pointerdown',from,a);ev('pointermove',to,{x:(a.x+b.x)/2,y:(a.y+b.y)/2});ev('pointermove',to,b);ev('pointerup',to,b)};
+    const it=document.querySelector('#gItems [data-id="oakBow"]'),acc=document.querySelector('#gSlots [data-slot="acc"][data-i="0"]');
+    // גרירה אסורה: קשת למשבצת אקססוריז. המשבצת רועדת, והקשת נשארת בתרמיל
+    if(it&&acc){const a0=SAVE.gear.acc[0];drag(it,acc);L.gearBad=SAVE.gear.acc[0]===a0&&SAVE.bag.oakBow===1&&SAVE.gear.weapon!=='oakBow'&&acc.classList.contains('shake')}
     // חגיגה רק כשזה שיפור. הלוחם כבר מחזיק חרב עץ, וקשת עץ שווה לה, אז כאן לא אמורה להיות חגיגה
-    if(it){L.gearBetter=gScore('oakBow')>gScore(SAVE.gear.weapon);it.click();L.gearCmp=d();document.querySelector('#gDetail [data-act="equip"]').click()}
+    const it2=document.querySelector('#gItems [data-id="oakBow"]');
+    if(it2){L.gearBetter=gScore('oakBow')>gScore(SAVE.gear.weapon);it2.click();L.gearCmp=d();drag(document.querySelector('#gItems [data-id="oakBow"]'),document.querySelector('#gSlots [data-slot="weapon"]'));L.gearDrag=SAVE.gear.weapon==='oakBow'}
     const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key));
     L.gearEquip=SAVE.gear.weapon;L.gearFx=FX.some(f=>f.K===CELEBRATE.gear)&&!!document.querySelector('#gSlots .pop');L.gearSaved=sv.gear.weapon==='oakBow'&&!sv.bag.oakBow;
     document.getElementById('gearClose').click();L.gearClosed=S.mode==='play'&&document.getElementById('ovGear').hidden;m.gear=2;return L}
@@ -462,6 +469,8 @@ function worldBot(m,L,god){
   check(L.collected>0&&L.collected===L.expect,'ייצור: אחרי שעתיים בלי לשחק נאספו '+L.collected+' עץ (צפוי '+L.expect+')');
   check(L.gearOpen&&L.gearEquip==='oakBow'&&L.gearSaved&&L.gearFx===L.gearBetter&&L.gearClosed&&/\+10%/.test(L.gearCmp||''),'ציוד: '+(L.gearOpen?'המסך נפתח':'המסך לא נפתח')+', השוואה: "'+(L.gearCmp||'-')+'"'+
     (L.gearEquip==='oakBow'?', נלבשה קשת עץ':', לא נלבשה')+(L.gearSaved?', נשמר':', לא נשמר')+(L.gearFx?', חגיגה':', בלי חגיגה')+(L.gearBetter?' (שיפור)':' (לא שיפור)')+(L.gearClosed?', נסגר':', לא נסגר'));
+  check(L.gearDrag&&L.gearSaved&&L.gearBad,'גרירה בציוד: '+(L.gearDrag?'קשת נגררה למשבצת הנשק ונלבשה':'הגרירה לא הלבישה')+(L.gearSaved?' ונשמרה':', לא נשמר')+
+    (L.gearBad?', קשת למשבצת אקססוריז נדחתה ברעידה':L.gearBad==null?', הגרירה האסורה לא נבדקה':', גרירה אסורה התקבלה'));
   const A=L.age||{};
   check(L.ageOpen&&A.up&&A.down&&A.pity&&A.gem&&A.saved&&L.ageClosed,'Aging: '+(L.ageOpen?'הנפחייה נפתחה, '+(A.odds||'בלי סיכוי'):'הנפחייה לא נפתחה')+
     (A.up?', הצלחה: '+A.name+', נזק קשת '+A.dmg:', הצלחה לא עבדה')+(A.down?', כישלון הוריד רמה':', כישלון לא הוריד')+(A.pity?'':', המזל הרך לא התאפס')+

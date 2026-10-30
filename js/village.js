@@ -214,6 +214,7 @@ $('vPanel').addEventListener('click',e=>{
   if(a==='go'){leaveVillage();return}
   if(!S.vil.near)return;
   if(a==='forge'){forgeOpen();return}
+  if(a==='bag'){gearOpen();return}   // מהמחסן: מסך הציוד, שם גוררים בין התרמיל למחסן (gear.js)
   if(a==='up')vUpgrade(S.vil.near);else if(a==='stash')stashMove(b.dataset.dir,b.dataset.r);else if(a==='craft')gearCraft(b.dataset.r);else vTrade(a,b.dataset.r);
   villageHud();
 });
