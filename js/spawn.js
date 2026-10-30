@@ -2,8 +2,9 @@
 function spawnPos(){const a=rand(0,Math.PI*2),d=Math.max(W,H)*0.62+40;return{x:P.x+Math.cos(a)*d,y:P.y+Math.sin(a)*d}}
 function addEnemy(type,x,y){
   const d=ETYPES[type],k=1+S.t/80+S.bossCount*0.5;
-  enemies.push({type,x,y,hp:d.hp*k,max:d.hp*k,r:d.r,speed:d.speed*(1+Math.min(0.4,S.t/400)),mult:d.mult,xp:d.xp,dmg:d.dmg,
-    flash:0,kx:0,ky:0,shoot:rand(1.2,2.6),ph:rand(0,6),told:false});
+  const e={type,x,y,hp:d.hp*k,max:d.hp*k,r:d.r,speed:d.speed*(1+Math.min(0.4,S.t/400)),mult:d.mult,mat:d.mat,xp:d.xp,dmg:d.dmg,
+    flash:0,kx:0,ky:0,shoot:rand(1.2,2.6),ph:rand(0,6),told:false};
+  enemies.push(e);eliteRoll(e);   // לפעמים אויב עלית (loot.js)
 }
 function spawner(dt){
   S.spawnT-=dt;if(S.spawnT>0||enemies.length>80)return;

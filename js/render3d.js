@@ -24,6 +24,12 @@ const LOOK3D={
   wisp:{model:'mage',h:56,foot:12,ring:'tide',float:6,props:{staff:{prop:'staff',...HAND_R,tint:'tide'}},
     anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons',cast:'Spellcasting'}},
   wanted:{model:'rogue',h:62,foot:13,tint:'gold',anim:{run:'Running_B',die:'Death_A'}},
+  // יצורי משאבים: בינתיים מודל קיים, צבוע בצבע החומר (tint) ובגודל אחר. כשיהיו מודלים משלהם מחליפים רק כאן
+  golem:{model:'barbarian',h:84,foot:18,tint:'#8A8F9C',anim:{run:'Running_B',die:'Death_A'}},
+  treant:{model:'warrior',h:74,foot:16,tint:'#4F8A3E',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  crawler:{model:'minion',h:40,foot:10,tint:'#C87533',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  sprite:{model:'mage',h:40,foot:10,float:8,tint:'#7BD88F',anim:{run:'Running_C',die:'Death_C_Skeletons'}},
+  mummy:{model:'minion',h:56,foot:12,tint:'#D9C9A3',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle',charge:'2H_Melee_Attack_Spin',cast:'2H_Melee_Attack_Chop',taunt:'Taunt',die:'Death_A'}}
 };
 /* הכפר: המיקומים והמראה לפי רמה ב-VILLAGE (js/village.js). כאן רק איזה קובץ מודל לכל שם, ובאיזה רוחב על המסך בפיקסלים.
@@ -129,13 +135,15 @@ function mark(kind,x,z,r){const M=R3D.marks[kind];if(M.count>=M.instanceMatrix.c
 const SIN=()=>Math.sin(VIEW.tilt),COS=()=>Math.cos(VIEW.tilt);
 function lookOf(e){return e===P?LOOK3D.player:e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
 const TINT={ember:C.ember,tide:C.tide,gold:C.gold};
+const tintOf=t=>TINT[t]||t;   // שם מ-TINT, או צבע ישיר ('#8A8F9C')
+const poolKey=L=>L.model+'|'+Object.keys(L.props||{}).join()+'|'+(L.tint||'')+'|'+L.h;   // מודל זהה בצבע או בגודל אחר לא חוזר מהמאגר
 function makeActor(L){
-  const pool=R3D.pool||(R3D.pool={});const free=pool[L.model+'|'+Object.keys(L.props||{}).join()];
+  const pool=R3D.pool||(R3D.pool={});const free=pool[poolKey(L)];
   if(free&&free.length){const a=free.pop();a.root.visible=true;a.dieT=0;a.base=null;a.one=null;a.mixer.stopAllAction();return a}
   const t=R3D.tmpl[L.model],root=THREE.SkeletonUtils.clone(t),s=L.h/COS()/t.userData.h;
   root.scale.setScalar(s);
   const mats=[];
-  root.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(L.tint)o.material.emissive.set(TINT[L.tint]).multiplyScalar(0.18);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
+  root.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(L.tint)o.material.emissive.set(tintOf(L.tint)).multiplyScalar(L.tint[0]==='#'?0.45:0.18);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
   const props={};
   for(const [k,p] of Object.entries(L.props||{})){
     const b=bone(root,p.bone);if(!b)continue;
@@ -145,7 +153,7 @@ function makeActor(L){
   }
   // נשקים שהדמות מחזיקה בקובץ המקורי: חרב לשחקן, גרזן לבוס, סכין למבוקש
   let own=null;root.traverse(o=>{if(o.isMesh&&!o.isSkinnedMesh&&/^(1H|2H)_|Knife/.test(o.name))own=own||o});
-  const a={root,mats,props,own,mixer:new THREE.AnimationMixer(root),L,key:L.model+'|'+Object.keys(L.props||{}).join(),base:null,one:null,flash:0,dieT:0};
+  const a={root,mats,props,own,mixer:new THREE.AnimationMixer(root),L,key:poolKey(L),base:null,one:null,flash:0,dieT:0};
   R3D.scene.add(root);return a;
 }
 function freeActor(a){a.root.visible=false;a.mixer.stopAllAction();const p=R3D.pool;(p[a.key]||(p[a.key]=[])).push(a)}

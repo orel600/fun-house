@@ -9,7 +9,11 @@ const CELEBRATE={
   rank:   {dust:0,  col:'#C7A6FF',burst:50,speed:320,pillar:1.4,pillarW:64,pillarH:320,label:''},
   quest:  {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:40,pillarH:200,label:'✓'},
   weapon: {dust:0,  col:'#FF8A3D',burst:26,speed:220,pillar:0.8,pillarW:36,pillarH:180,label:'+1'},
-  gear:   {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:44,pillarH:200,label:'+1'}   // פריט טוב יותר במסך הציוד
+  gear:   {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:44,pillarH:200,label:'+1'},   // פריט טוב יותר במסך הציוד
+  // שלל נדיר, אפי ואגדי (loot.js). הצבעים כמו ב-RES.rarity
+  loot2:  {dust:0,  col:'#5AA8FF',burst:18,speed:200,pillar:0.6,pillarW:26,pillarH:150,label:''},
+  loot3:  {dust:0,  col:'#B48CFF',burst:28,speed:240,pillar:0.8,pillarW:34,pillarH:200,label:''},
+  loot4:  {dust:0,  col:'#FFB347',burst:44,speed:300,pillar:1.1,pillarW:46,pillarH:280,label:''}
 };
 let FX=[];
 const fxNow=()=>performance.now()/1000;

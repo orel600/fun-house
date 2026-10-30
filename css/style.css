@@ -96,6 +96,11 @@ h1{font-size:46px} h2{font-size:30px}
 .fam{display:flex;flex-direction:column;gap:4px;width:100%}
 .fam .bag{justify-content:flex-start}
 .fam .sk,.vpanel .sk{font-size:11px;font-weight:800;color:var(--dim)}
+.ffilter{display:flex;flex-wrap:wrap;gap:4px;width:100%}
+.ffilter button{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--dim);border-radius:999px;padding:3px 9px;font:700 12px var(--body);cursor:pointer}
+.ffilter button[aria-pressed="true"]{color:var(--ink);background:var(--gold);border-color:var(--gold)}
+.tiers{display:flex;flex-wrap:wrap;gap:6px;width:100%;justify-content:center}
+.tier{font:800 12px var(--body);color:var(--tint)}
 .craft{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .craft button{cursor:pointer;appearance:none}
 .craft button:disabled{opacity:.5;cursor:default}

@@ -38,16 +38,22 @@ const GEAR={
      חרבות צריכות עצמות, קשתות עור או ארס, תכשיטים תמצית. האבנים לפי סוג הנזק: אודם לחרב, ספיר למגפיים, ברקית לקשת */
   recipes:{
     oakSword:   {wood:12,bone:4,coins:15},
-    oakBow:     {wood:12,cloth:4,coins:15},
-    boneCharm:  {wood:4,bone:10,cloth:2,coins:10},
-    ironSword:  {iron:10,copper:4,bone:8,coins:40},
-    ironBow:    {iron:6,wood:10,hide:6,coins:40},
-    ironRing:   {iron:6,copper:6,essence:4,coins:40},
+    oakBow:     {wood:12,cloth:4,resin:2,coins:15},
+    boneCharm:  {wood:4,bone:10,dust:2,cloth:2,coins:10},
+    ironSword:  {iron:10,copper:4,bone:8,plate:2,rubyC:1,coins:40},
+    ironBow:    {iron:6,wood:10,hide:6,resin:4,boltC:1,coins:40},
+    ironRing:   {iron:6,copper:6,essence:4,sapphireC:1,coins:40},
     silverBlade:{silver:8,iron:6,hide:6,ruby:1,coins:90},
     swiftBoots: {silver:4,hide:10,cloth:6,sapphire:1,coins:90},
     goldBow:    {gold:6,silver:4,venom:8,bolt:1,coins:160},
-    goldAmulet: {gold:8,essence:10,venom:4,horn:1,coins:160},
-    crown:      {mythril:6,gold:6,horn:3,star:1,essence:12,coins:300}
+    goldAmulet: {gold:8,essence:10,shadow:2,venom:4,aqua:1,horn:1,coins:160},
+    crown:      {mythril:6,gold:6,horn:3,star:1,shadow:4,amberF:1,coins:300},
+    // חפצים מסתובבים: עשבים, אבק וקליפות, ואבן שבורה לפי הסוג
+    emberOrb:   {wood:6,dust:4,rubyC:1,coins:20},
+    stoneOrb:   {wood:6,stone:10,plate:3,amberC:1,coins:20},
+    frostOrb:   {wood:6,mushroom:4,aquaC:1,coins:20},
+    leafOrb:    {wood:6,herb:8,flower:2,coins:20},
+    cloverOrb:  {wood:6,flower:4,mushroom:2,coins:20}
   },
   // שלל בסוף ריצה. run: סיכוי לפריט אחד בכל ריצה. boss: סיכוי לפריט על כל בוס שהובס.
   // slots: מה יכול ליפול. החפצים המסתובבים יצטרפו כשתהיה להם התנהגות
@@ -136,7 +142,7 @@ const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gIcon(id)
 
 /* ---- המסך: המשבצות למעלה, התרמיל באמצע, וההשוואה למטה. נפתח מכפתור 🎒 בכפר ובזירה.
    לרוחב הוא בצד ימין של המסך, כדי שהדמות במרכז והחגיגה שלה ייראו ---- */
-const GUI={sel:null};   // מה נבחר: {id} מהתרמיל, או {slot,i} ממשבצת
+const GUI={sel:null,fam:'all'};   // מה נבחר: {id} מהתרמיל, או {slot,i} ממשבצת
 // נפתח מכל מקום: מהכפר ומהזירה. בזירה הריצה עוצרת, כמו במסך השדרוג
 function gearOpen(){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;$('ovGear').hidden=false;gearDraw()}
 function gearClose(){$('ovGear').hidden=true;if(S.mode==='gear')S.mode='play'}
@@ -171,7 +177,10 @@ function gearDraw(){
     h+='</div></div>';
   }
   $('gSlots').innerHTML=h;
-  $('gRes').innerHTML=bagFams(SAVE.bag)||'<p class="dim">'+T('gear.noRes')+'</p>';   // כל המשאבים, לפי משפחות
+  // כל המשאבים לפי משפחות, עם סינון: הכל, או משפחה אחת שיש בה משהו
+  const fams=['all',...Object.keys(RES.fams).filter(f=>f!=='coins'&&resFam(f).some(r=>SAVE.bag[r]>0))];if(!fams.includes(GUI.fam))GUI.fam='all';
+  $('gRes').innerHTML=(fams.length>2?'<div class="ffilter">'+fams.map(f=>'<button data-fam="'+f+'"'+(GUI.fam===f?' aria-pressed="true"':'')+'>'+T('fam.'+f)+'</button>').join('')+'</div>':'')+
+    (bagFams(SAVE.bag,GUI.fam)||'<p class="dim">'+T('gear.noRes')+'</p>');
   const order=['weapon','acc','orbit'],ids=Object.keys(SAVE.bag).filter(gItem)
     .sort((a,b)=>order.indexOf(gItem(a).slot)-order.indexOf(gItem(b).slot)||gItem(b).tier-gItem(a).tier);
   $('gItems').innerHTML=ids.length?ids.map(id=>gTile(id,'data-id="'+id+'"'+(sel&&sel.id===id?' aria-pressed="true"':''),SAVE.bag[id]>1?'<small>'+SAVE.bag[id]+'</small>':'')).join(''):'<p class="dim">'+T('gear.noItems')+'</p>';
@@ -190,6 +199,7 @@ function gearDraw(){
 $('ovGear').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.id==='gearClose'){gearClose();return}
+  if(b.dataset.fam){GUI.fam=b.dataset.fam;gearDraw();return}
   if(b.dataset.id)GUI.sel={id:b.dataset.id};
   else if(b.dataset.slot)GUI.sel=gGet(b.dataset.slot,+b.dataset.i)?{slot:b.dataset.slot,i:+b.dataset.i}:null;
   else if(b.dataset.act==='equip'){

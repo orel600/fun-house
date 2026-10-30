@@ -3,7 +3,7 @@
 const BONUS={
   doorFirst:25, doorEvery:[40,65], doorLife:7,          // דלת הזהב: מתי מופיעה וכמה זמן נשארת פתוחה
   roomTime:7, roomCoins:28, trapChance:0.35,              // החדר: כמה זמן, כמה מטבעות, סיכוי למסורים
-  roomRes:{sapphire:[0.3,1],gold:[0.25,1],cloth:[0.5,2]},  // התיבה ביציאה מהחדר: {משאב:[סיכוי, כמה]} לשלל של הריצה (RES)
+  roomRes:{aquaC:[0.3,1],flower:[0.4,1],gold:[0.2,1],cloth:[0.5,2]},  // התיבה ביציאה מהחדר: {משאב:[סיכוי, כמה]} לשלל של הריצה (RES)
   pickFirst:[15,22], pickEvery:[28,42], pickLife:15,      // פריטים במקומות קשים
   zoneR:75, zoneBurn:10,                                  // אזור הסכנה סביב הפריט: רדיוס ונזק לשנייה
   bombBase:55, bombBossShare:0.35,                        // הפצצה: נזק לפי העוצמה, לבוס רק חלק

@@ -21,7 +21,7 @@ function damage(e,base,w,ang){
 }
 function kill(e){
   e.dead=true;S.kills++;sfx('death');
-  runGive(dropTable(e),e.x,e.y-e.r);   // שלל לכפר (village.js)
+  lootKill(e);   // שלל לכפר (loot.js)
   questEvent('kill',e.isBoss?'boss':e.wanted?'wanted':e.type);
   if(e.isBoss){bossDown(e);return}
   if(e.wanted){wantedDown(e);return}

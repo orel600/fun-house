@@ -58,6 +58,7 @@ function update(dt){
   wantedUpdate(dt);
   // עצים, סלעים ועורקי מתכת (nodes.js)
   nodesUpdate(dt);
+  lootUpdate(dt);   // עמודי אור של שלל (loot.js)
   // mines & waves
   for(const mn of mines){mn.t-=dt;if(mn.t<=0){if(Math.hypot(P.x-mn.x,P.y-mn.y)<58)hurt(16);sparks(mn.x,mn.y,C.blood,14,240);S.shake=Math.max(S.shake,4)}}
   mines=mines.filter(mn=>mn.t>0);

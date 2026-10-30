@@ -6,13 +6,14 @@ const WANTED={
   life:14, hp:70, speed:120, keep:170,        // שניות עד שהוא בורח, חיים (גדלים עם הזמן כמו אויב רגיל), מהירות, ומאיזה מרחק הוא בורח מהשחקן
   panic:3,                                    // בשניות האחרונות הוא רץ מהר יותר והטבעת מאדימה
   drop:{coins:[1,15],cloth:[0.5,2]},          // מה הוא מפיל תמיד לשלל של הריצה, {משאב:[סיכוי, כמה]} (המשאבים ב-RES)
+  // הוא נושא האוצר של המשחק: התיבה שלו מפילה אבנים, והאוצר אבנים מושלמות.
   // הסיכויים אמיתיים ונסכמים ל-1. orbs: כמה XP נופל. heal: כמה חיים חוזרים. res: משאבים, בעיקר אבנים נדירות.
   // השמות ב-lang.js תחת 'loot.<key>', השמועות תחת 'wanted.rumors', ופריטי הזבל תחת 'loot.junkItems'
   loot:[
     {chance:0.5, key:'junk', items:true, orbs:2, heal:0, col:C.dim},
     {chance:0.3, key:'coins', orbs:12, heal:0, col:C.chalk},
-    {chance:0.15, key:'chest', orbs:25, heal:40, col:C.gold, res:{ruby:[0.4,1],sapphire:[0.4,1],bolt:[0.4,1],cloth:[1,3]}},
-    {chance:0.05, key:'treasure', orbs:50, heal:999, col:C.gold, party:true, res:{ruby:[1,1],sapphire:[1,1],bolt:[1,1],star:[0.5,1],gold:[1,3],mythril:[0.5,1]}}
+    {chance:0.15, key:'chest', orbs:25, heal:40, col:C.gold, res:{ruby:[0.3,1],sapphire:[0.3,1],bolt:[0.3,1],aqua:[0.3,1],amber:[0.3,1],cloth:[1,3]}},
+    {chance:0.05, key:'treasure', orbs:50, heal:999, col:C.gold, party:true, res:{rubyF:[0.3,1],sapphireF:[0.3,1],boltF:[0.3,1],aquaF:[0.3,1],amberF:[0.3,1],star:[0.5,1],gold:[1,3],mythril:[0.5,1]}}
   ]
 };
 
