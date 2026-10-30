@@ -9,7 +9,7 @@ function saveBlank(){return{
   hero:{start:null,level:1,xp:0,rank:0,style:{}},   // start: דמות ההתחלה. style: במה שיחק הכי הרבה, לקווסטי הדרגה
   bag:{},                                           // התרמיל, בלי הגבלה: {wood:12,bone:3}. מה שסוחבים, ובעולם הפתוח מסתכנים בו
   stash:{},                                         // המחסן בכפר: המקום הבטוח, באותה צורה כמו התרמיל. מנוהל ב-stash.js
-  gear:{weapon:null,acc:[],orbit:[]},               // orbit: החפצים המסתובבים, עד 5
+  gear:{weapon:null,acc:[],boots:[],orbit:[]},               // orbit: החפצים המסתובבים, עד 5
   village:{center:1,forge:0,mill:0,mine:0,market:0,stash:0},// רמת כל מבנה. 0 = עוד לא נבנה
   quests:{active:{},done:{},track:null,day:'',daily:[]},   // מנוהל ב-quests.js. active: {id:{p:[התקדמות לכל מטרה]}}. done: {id:כמה פעמים}
   prod:{},                                          // ייצור במבנים, גם כשלא משחקים: {mill:{t:זמן,have:{wood:3.2}}}. מנוהל ב-village.js

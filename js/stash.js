@@ -26,7 +26,7 @@ function stashHtml(){
   const row=(src,dir)=>{const ks=Object.keys(src).filter(k=>src[k]>0&&stashIcon(k));
     return ks.length?'<div class="smove">'+ks.map(k=>'<button class="res" data-act="stash" data-dir="'+dir+'" data-r="'+k+'" aria-label="'+stashName(k)+'"'+(dir==='in'&&full?' disabled':'')+'>'+stashIcon(k)+' '+src[k]+'</button>').join('')+'</div>'
       :'<p class="next">'+T('stash.empty')+'</p>'};
-  return '<p class="next">'+T('stash.space',stashUsed(),stashCap())+'</p>'+
+  return '<p class="next">'+T('stash.space',stashUsed(),stashCap())+'</p><button class="vbtn ghost" data-act="bag">🎒 '+T('stash.drag')+'</button>'+
     '<span class="sk">'+T('stash.bag')+'</span>'+row(SAVE.bag,'in')+
     '<span class="sk">'+T('stash.in')+'</span>'+row(SAVE.stash,'out');
 }
