@@ -6,8 +6,9 @@
 
 const GEAR={
   slots:{acc:2,orbit:[1,1,5,10,15]},   // orbit: מאיזו רמת דמות נפתחת כל משבצת. 2 פתוחות בהתחלה
-  // החומרים, מהחלש לחזק. col: הצבע של הפריט (tint), אלא אם ב-look כתוב אחרת. w: כמה נפוץ בשלל
-  tiers:[{id:'wood',col:'#B07A45',w:50},{id:'iron',col:'#9AA3AD',w:30},{id:'silver',col:'#DCE3EA',w:14},{id:'gold',col:C.gold,w:5},{id:'legend',col:'#FF6FB5',w:1}],
+  // החומרים, מהחלש לחזק. col: הצבע של הפריט (tint), אלא אם ב-look כתוב אחרת. w: כמה נפוץ בשלל.
+  // metal: המשאב (RES) של השכבה. כל מתכון בשכבה צריך אותו, ובנפחייה ברמה L יוצרים עד שכבה L-1
+  tiers:[{id:'wood',col:'#B07A45',w:50,metal:'wood'},{id:'iron',col:'#9AA3AD',w:30,metal:'iron'},{id:'silver',col:'#DCE3EA',w:14,metal:'silver'},{id:'gold',col:C.gold,w:5,metal:'gold'},{id:'legend',col:'#FF6FB5',w:1,metal:'mythril'}],
   // הסטטים. איך כל אחד חל על השחקן: gearReset. unit: מה מוצג אחרי המספר. w: משקל בהשוואה "מה יותר טוב"
   stats:{sdmg:{unit:'%',w:1},gdmg:{unit:'%',w:1},hp:{unit:'',w:0.4},speed:{unit:'%',w:1.5},magnet:{unit:'%',w:0.3},regen:{unit:'',w:8}},
   // חפצים מסתובבים: בינתיים רק סוג וצורה. ההתנהגות שלהם תגיע במשימה "חפצים מסתובבים" (orbit.js)
@@ -33,6 +34,21 @@ const GEAR={
     cloverOrb:  {slot:'orbit',tier:0,type:'luck'}
   },
   gift:['oakSword','oakBow','boneCharm'],   // פעם אחת, בביקור הראשון בכפר
+  /* יצירה בנפחייה: מה עולה כל פריט. המתכת של השכבה, וחומרים מיצורים, מבוסים ואבנים, כדי שלכל משאב יהיה שימוש.
+     חרבות צריכות עצמות, קשתות עור או ארס, תכשיטים תמצית. האבנים לפי סוג הנזק: אודם לחרב, ספיר למגפיים, ברקית לקשת */
+  recipes:{
+    oakSword:   {wood:12,bone:4,coins:15},
+    oakBow:     {wood:12,cloth:4,coins:15},
+    boneCharm:  {wood:4,bone:10,cloth:2,coins:10},
+    ironSword:  {iron:10,copper:4,bone:8,coins:40},
+    ironBow:    {iron:6,wood:10,hide:6,coins:40},
+    ironRing:   {iron:6,copper:6,essence:4,coins:40},
+    silverBlade:{silver:8,iron:6,hide:6,ruby:1,coins:90},
+    swiftBoots: {silver:4,hide:10,cloth:6,sapphire:1,coins:90},
+    goldBow:    {gold:6,silver:4,venom:8,bolt:1,coins:160},
+    goldAmulet: {gold:8,essence:10,venom:4,horn:1,coins:160},
+    crown:      {mythril:6,gold:6,horn:3,star:1,essence:12,coins:300}
+  },
   // שלל בסוף ריצה. run: סיכוי לפריט אחד בכל ריצה. boss: סיכוי לפריט על כל בוס שהובס.
   // slots: מה יכול ליפול. החפצים המסתובבים יצטרפו כשתהיה להם התנהגות
   loot:{run:0.35,boss:1,slots:['weapon','acc']}
@@ -85,6 +101,21 @@ function gearLive(before,id){
   const max0=P.maxHp;gApply(before,-1);gApply(gearStats(),1);
   P.hp=Math.max(1,Math.min(P.maxHp,P.hp+Math.max(0,P.maxHp-max0)));
   const w=gItem(id);if(w&&w.w&&P.weapon!==w.w){P.weapon=w.w;updateSwapBtn()}
+}
+
+/* ---- יצירה בנפחייה: משלמים לפי GEAR.recipes, והפריט נכנס לתרמיל ---- */
+const gCanCraft=id=>gItem(id)&&GEAR.recipes[id]&&gItem(id).tier<vLv('forge');
+function gearCraft(id){
+  const c=GEAR.recipes[id];if(!gCanCraft(id)||Object.keys(c).some(r=>!bagHas(r,c[r])))return false;
+  for(const r in c)bagTake(r,c[r]);bagAdd(id);saveNow();
+  const B=VILLAGE.b.forge;celebrate(B.x,B.y,'gear',gIcon(id));banner(T('forge.made',T('it.'+id)),gTint(id));
+  return true;
+}
+// החלק של היצירה בפאנל הנפחייה (village.js): כל פריט שהרמה פותחת, עם המחיר שלו
+function forgeHtml(){
+  const ids=Object.keys(GEAR.recipes).filter(gCanCraft);
+  return '<span class="sk">'+T('forge.craft')+'</span>'+ids.map(id=>{const c=GEAR.recipes[id],ok=Object.keys(c).every(r=>bagHas(r,c[r]));
+    return '<div class="craft"><button class="res item" data-act="craft" data-r="'+id+'" style="--tint:'+gTint(id)+'"'+(ok?'':' disabled')+'>'+gIcon(id)+' '+T('it.'+id)+'</button><div class="cost">'+costLine(c)+'</div></div>'}).join('');
 }
 
 /* ---- שלל בסוף ריצה ---- */
@@ -140,7 +171,7 @@ function gearDraw(){
     h+='</div></div>';
   }
   $('gSlots').innerHTML=h;
-  $('gRes').innerHTML=bagLine(SAVE.bag,true);
+  $('gRes').innerHTML=bagFams(SAVE.bag)||'<p class="dim">'+T('gear.noRes')+'</p>';   // כל המשאבים, לפי משפחות
   const order=['weapon','acc','orbit'],ids=Object.keys(SAVE.bag).filter(gItem)
     .sort((a,b)=>order.indexOf(gItem(a).slot)-order.indexOf(gItem(b).slot)||gItem(b).tier-gItem(a).tier);
   $('gItems').innerHTML=ids.length?ids.map(id=>gTile(id,'data-id="'+id+'"'+(sel&&sel.id===id?' aria-pressed="true"':''),SAVE.bag[id]>1?'<small>'+SAVE.bag[id]+'</small>':'')).join(''):'<p class="dim">'+T('gear.noItems')+'</p>';

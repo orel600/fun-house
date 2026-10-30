@@ -91,6 +91,14 @@ h1{font-size:46px} h2{font-size:30px}
 .bag{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .res{background:rgba(18,22,36,.8);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font:800 14px var(--body);color:var(--chalk);direction:ltr;font-variant-numeric:tabular-nums;white-space:nowrap}
 .res.miss{color:var(--blood);border-color:rgba(239,78,87,.5)}
+.res.rare{border-color:var(--tint)}
+/* התרמיל לפי משפחות (resources.js), ושורות היצירה בנפחייה (gear.js) */
+.fam{display:flex;flex-direction:column;gap:4px;width:100%}
+.fam .bag{justify-content:flex-start}
+.fam .sk,.vpanel .sk{font-size:11px;font-weight:800;color:var(--dim)}
+.craft{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.craft button{cursor:pointer;appearance:none}
+.craft button:disabled{opacity:.5;cursor:default}
 .vpanel{position:fixed;z-index:3;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);max-width:420px;margin-inline:auto;
   background:rgba(26,32,51,.95);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
 .vpanel h3{margin:0;font-family:var(--display);font-weight:400;font-size:22px;line-height:1.1}

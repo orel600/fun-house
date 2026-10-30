@@ -108,6 +108,7 @@ function render(){
   for(const o of orbs){ctx.fillStyle=C.gold;ctx.beginPath();ctx.moveTo(o.x,o.y-5);ctx.lineTo(o.x+4,o.y);ctx.lineTo(o.x,o.y+5);ctx.lineTo(o.x-4,o.y);ctx.fill()}
   drawBonusWorld();
   drawVillage();
+  drawNodes();   // עצים, סלעים ועורקים (nodes.js)
   // actors sorted by y
   const actors=enemies.slice();actors.push({isPlayer:true,y:P.y});actors.sort((a,b)=>a.y-b.y);
   for(const a of actors){if(a.isPlayer)drawPlayer();else drawEnemy(a)}

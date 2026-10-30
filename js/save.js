@@ -32,7 +32,7 @@ function saveMerge(base,d){
   for(const k in d){if(isObj(base[k])&&isObj(d[k]))saveMerge(base[k],d[k]);else base[k]=d[k]}
   return base}
 
-function saveLoad(){const d=SAVE_STORE.load();SAVE=isObj(d)?saveMerge(saveBlank(),d):saveBlank();SAVE.v=SAVE_VER;return SAVE}
+function saveLoad(){const d=SAVE_STORE.load();SAVE=isObj(d)?saveMerge(saveBlank(),d):saveBlank();resMigrate(SAVE);SAVE.v=SAVE_VER;return SAVE}
 function saveNow(){SAVE.ts=Date.now();SAVE_STORE.write(SAVE)}
 
 function bagHas(k,n=1){return (SAVE.bag[k]||0)>=n}

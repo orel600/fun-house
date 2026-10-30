@@ -1,22 +1,27 @@
 /* קרב: פגיעה, נזק, החלפת נשק */
 function nearest(maxD){let b=null,bd=maxD;for(const e of enemies){if(e.dead)continue;const d=Math.hypot(e.x-P.x,e.y-P.y)-e.r;if(d<bd){bd=d;b=e}}return b}
+// במה ההתקפה האוטומטית מכוונת: האויב הקרוב, או מקור משאבים (nodes.js) כשעומדים לידו והוא קרוב יותר
+function aimTarget(maxD){
+  const e=nearest(maxD),n=nodeNear(),gap=t=>Math.hypot(t.x-P.x,t.y-P.y)-t.r;
+  return n&&(!e||gap(n)<gap(e))?n:e;
+}
 function sparks(x,y,col,n,sp=180){for(let i=0;i<n;i++){const a=rand(0,6.28),s=rand(sp*.3,sp);parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(.2,.45),max:.45,col,size:rand(1.5,3.5)})}}
 function floatText(x,y,txt,col,size){floats.push({x,y,txt,col,size,life:.75,vy:-55})}
 function damage(e,base,w,ang){
   const m=e.mult[w]??1;const crit=Math.random()<0.12;
   const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?1.8:1);
   e.hp-=d;e.flash=0.09;sfx('hit');
-  if(!e.isBoss){const kb=(w==='sword'?150:55)*(m>1?1.4:1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
+  if(!e.isBoss&&!e.node){const kb=(w==='sword'?150:55)*(m>1?1.4:1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   const col=m>1?(w==='sword'?C.ember:C.tide):m<1?C.dim:C.chalk;
   floatText(e.x+rand(-8,8),e.y-e.r-8,Math.round(d)+(crit?'!':''),col,m>1?21:m<1?12:15);
   if(m<1&&!e.told){e.told=true;floatText(e.x,e.y-e.r-26,T('immune'),C.dim,13)}
   sparks(e.x,e.y,col,m>1?8:3);
   if(m>1&&w==='sword')S.hitstop=Math.max(S.hitstop,0.03);
-  if(e.hp<=0&&!e.dead)kill(e);
+  if(e.hp<=0&&!e.dead){if(e.node)nodeDown(e);else kill(e)}
 }
 function kill(e){
   e.dead=true;S.kills++;sfx('death');
-  runDrop(e);   // שלל לכפר (village.js)
+  runGive(dropTable(e),e.x,e.y-e.r);   // שלל לכפר (village.js)
   if(e.isBoss){bossDown(e);return}
   if(e.wanted){wantedDown(e);return}
   for(let i=0;i<e.xp;i++)orbs.push({x:e.x+rand(-8,8),y:e.y+rand(-8,8),v:1});
@@ -32,11 +37,11 @@ function hurt(d){
 function attack(dt){
   if(P.weapon==='sword'){
     const s=P.sw;s.t-=dt;s.anim=Math.max(0,s.anim-dt);
-    const tgt=nearest(s.range);
+    const tgt=aimTarget(s.range);
     if(tgt)P.aim=Math.atan2(tgt.y-P.y,tgt.x-P.x);
     if(tgt&&s.t<=0){
       s.t=s.cd;s.anim=0.2;s.ang=P.aim;
-      for(const e of enemies){
+      for(const e of enemies.concat(S.nd.list)){
         if(e.dead)continue;const dx=e.x-P.x,dy=e.y-P.y,d=Math.hypot(dx,dy)-e.r;
         if(d>s.range)continue;const a=Math.atan2(dy,dx);
         if(Math.abs(angDiff(a,s.ang))>s.arc/2&&d>8)continue;
@@ -46,7 +51,7 @@ function attack(dt){
     }
   }else{
     const g=P.gn;g.t-=dt;g.recoil=Math.max(0,g.recoil-dt*8);
-    const tgt=nearest(440);
+    const tgt=aimTarget(440);
     if(tgt)P.aim=Math.atan2(tgt.y-P.y,tgt.x-P.x);
     if(tgt&&g.t<=0){
       g.t=g.cd;g.recoil=1;sfx('shoot');

@@ -72,6 +72,8 @@ function botStep({god,en}){
     if(L.room!=null&&L.roomBack==null)L.roomBack=at;
     for(const k of S.bn.picks)L['pick_'+k.type]??=at;
     if(S.bossCount>0)L.bossDown??=at;
+    L.nodes=S.nd.broken;L.nodeGot=[...new Set(S.nd.got)].join(', ');if(S.nd.broken)L.nodeAt??=at;
+    L.nodeInLoot=S.nd.got.length>0&&S.nd.got.every(r=>(S.loot||{})[r]>0);
     const w=S.wn;
     if(w.rumor)L.wRumor??=at;
     if(w.e)L.wanted??=at;else if(L.wanted!=null)L.wEnd??=at;
@@ -90,6 +92,10 @@ function botStep({god,en}){
     }else if(S.bn.door){L.door??=at;tx=S.bn.door.x;ty=S.bn.door.y}
     else if(w.e){tx=w.e.x;ty=w.e.y}
     else if(S.bn.picks.length){const k=S.bn.picks[0];tx=k.x;ty=k.y}
+    else if(S.nd.broken<2&&S.nd.list.length){   // מקור משאבים: עומדים לידו עם חרב עד שהוא נשבר (nodes.js)
+      const n=S.nd.list.reduce((b,n)=>!b||Math.hypot(n.x-P.x,n.y-P.y)<Math.hypot(b.x-P.x,b.y-P.y)?n:b,null);
+      L.nodeSeen??=at;useWeapon('sword');tx=n.x;ty=n.y;
+    }
     else{
       const n=nearest(220);
       if(n){tx=n.x;ty=n.y;flee=true}
@@ -113,7 +119,7 @@ function villageBot(m,L){
     if(L.back==null){L.back=S.t;const now=bag(),got=[];for(const r in now){const d=now[r]-(m.runBag[r]||0);if(d>0)got.push(r+' +'+d)}
       L.lootGot=got.join(', ');L.lootSaved=JSON.stringify(JSON.parse(localStorage.getItem(SAVE_STORE.key)).bag)===JSON.stringify(SAVE.bag)}
     return steer(null,null,false,0,L)}
-  if(!m.vil){m.vil=1;L.vilOpen=!!S.vil;L.gift=JSON.stringify(SAVE.bag);L.vilModels=R3D.on?(R3D.vil?R3D.vil.g.children.length:0):null}
+  if(!m.vil){m.vil=1;L.vilOpen=!!S.vil;L.topBar=document.querySelectorAll('#vBag .res').length+'/'+resShown(null).length;L.gift=JSON.stringify(SAVE.bag);L.vilModels=R3D.on?(R3D.vil?R3D.vil.g.children.length:0):null}
   if(vLv('mill')===0){   // הולכים למנסרה ובונים אותה
     if(S.vil.near==='mill'){const before=bag(),btn=document.querySelector('#vPanel [data-act="up"]');L.panel=document.getElementById('vPanel').innerText.split('\n')[0];
       if(btn&&!btn.disabled){btn.click();L.built=vLv('mill');L.fx=FX.length>0&&vLook('mill')===null;L.paid=Object.keys(before).filter(r=>(SAVE.bag[r]||0)<before[r]).map(r=>r+' -'+(before[r]-(SAVE.bag[r]||0))).join(', ');
@@ -186,6 +192,51 @@ function villageBot(m,L){
     const poor=!vTrade('buy','stone');bagAdd('coins',20);const buy=vTrade('buy','stone')&&SAVE.bag.stone===5&&SAVE.bag.coins===10;
     localStorage.removeItem(SAVE_STORE.key);saveLoad();return{sell,poor,buy}});
   check(mk.sell&&mk.poor&&mk.buy,'שוק: '+(mk.sell?'מכירה עובדת':'מכירה נכשלה')+', '+(mk.poor?'בלי מטבעות אי אפשר לקנות':'קנה בלי כסף')+', '+(mk.buy?'קנייה עובדת':'קנייה נכשלה'));
+  // כלכלה, בדיקה על הנתונים: לכל משאב לפחות שני מקורות (לחלק בוס: הבוס שלו) ושימוש אחד, וכל שם בטבלאות קיים ב-RES.
+  // השוק לא נספר כמקור או כשימוש, כי הוא קונה ומוכר הכל. מקור או שימוש חדש? מוסיפים אותו כאן
+  const eco=await page.evaluate(()=>{
+    const src={},use={},bad=new Set(),add=(o,tbl,tag)=>{for(const r in tbl||{}){if(r==='coins')continue;if(!resOf(r))bad.add(r+' ('+tag+')');(o[r]=o[r]||new Set()).add(tag)}};
+    for(const k in VILLAGE.b){const B=VILLAGE.b[k];
+      for(const r in B.make||{})if(B.make[r].some(n=>n>0))add(src,{[r]:1},'make:'+k);
+      B.cost.forEach(c=>add(use,c,'build:'+k))}
+    for(const t in ETYPES)add(src,ETYPES[t].drop,'drop:'+t);
+    for(const b in BOSSES)add(src,BOSSES[b].drop,'boss:'+b);
+    add(src,WANTED.drop,'wanted');WANTED.loot.forEach(l=>add(src,l.res,'wanted:'+l.key));
+    add(src,BONUS.roomRes,'room');
+    const placed=new Set(Object.values(NODES.arenas).flatMap(a=>a.spawn.map(s=>s.kind)));
+    for(const k in NODES.kinds)if(placed.has(k))add(src,NODES.kinds[k].drop,'node:'+k);
+    for(const id in GEAR.recipes){if(!GEAR.items[id])bad.add(id+' (recipe)');add(use,GEAR.recipes[id],'craft:'+id)}
+    const dead=[],few=[],out=[];
+    for(const r in RES.list){const R=RES.list[r];if(R.fam==='coins')continue;
+      const s=src[r]?src[r].size:0,u=use[r]?use[r].size:0;out.push(r+' '+s+'/'+u);
+      if(!u)dead.push(r);
+      if(s<RES.fams[R.fam].min||R.boss&&!(src[r]||new Set()).has('boss:'+R.boss))few.push(r)}
+    // שכבת ציוד ↔ מתכת: כל מתכון צריך את המתכת של השכבה שלו
+    const tier=Object.keys(GEAR.recipes).filter(id=>GEAR.items[id]&&!GEAR.recipes[id][GEAR.tiers[GEAR.items[id].tier].metal]);
+    return{n:out.length,dead,few,bad:[...bad],tier,out:out.join(', '),death:RES.deathLoss&&RES.deathLoss.resources===0.5&&RES.deathLoss.items===0}});
+  check(eco.n>=17&&!eco.dead.length&&!eco.few.length&&!eco.bad.length&&!eco.tier.length&&eco.death,'כלכלה: '+eco.n+' משאבים (מקורות/שימושים): '+eco.out+
+    (eco.dead.length?' · משאב מת: '+eco.dead.join(', '):'')+(eco.few.length?' · חסרים מקורות: '+eco.few.join(', '):'')+(eco.bad.length?' · לא ב-RES: '+eco.bad.join(', '):'')+
+    (eco.tier.length?' · מתכון בלי המתכת של השכבה: '+eco.tier.join(', '):'')+(eco.death?'':' · deathLoss חסר'));
+  // שוק מלא: מוכרים וקונים כל משאב, קנייה תמיד יקרה ממכירה בכל רמה, נדיר נפתח ברמה גבוהה, וחלק בוס אי אפשר לקנות.
+  // יצירה בנפחייה, שמירה ישנה עם 'עפרות' הופכת לברזל, והפס העליון בנפחייה מראה מתכות ולא עץ
+  const mk2=await page.evaluate(()=>{
+    const rs=Object.keys(RES.list).filter(r=>RES.list[r].fam!=='coins'),spread=[];
+    for(let L=1;L<=5;L++){SAVE.village.market=L;for(const r of rs)if(RES.list[r].buy&&vPrice(r,'buy')<=vPrice(r,'sell'))spread.push(r+'@'+L)}
+    SAVE.village.market=1;const gate=!vCanTrade('buy','star')&&vCanTrade('buy','wood');
+    SAVE.village.market=5;const top=vCanTrade('buy','star')&&!vCanTrade('buy','horn');
+    let sold=0,bought=0;for(const r of rs){bagAdd(r,5);const c=SAVE.bag.coins||0;if(vTrade('sell',r)&&SAVE.bag.coins>c)sold++;
+      if(vCanTrade('buy',r)){bagAdd('coins',vPrice(r,'buy')*vLot(r));const h=SAVE.bag[r]||0;if(vTrade('buy',r)&&SAVE.bag[r]>h)bought++}}
+    const buyable=rs.filter(r=>vCanTrade('buy',r)).length;
+    SAVE.village.forge=1;for(const r in GEAR.recipes.oakSword)bagAdd(r,GEAR.recipes.oakSword[r]);
+    const sw=SAVE.bag.oakSword||0,craft=gearCraft('oakSword')&&SAVE.bag.oakSword===sw+1&&!gearCraft('ironSword');
+    localStorage.setItem(SAVE_STORE.key,JSON.stringify({v:1,bag:{ore:7}}));saveLoad();const ore=SAVE.bag.iron===7&&!SAVE.bag.ore;
+    const bar=resShown('forge').includes('iron')&&!resShown('forge').includes('wood')&&resShown(null).includes('wood');
+    localStorage.removeItem(SAVE_STORE.key);saveLoad();
+    return{spread,gate,top,sold,bought,buyable,n:rs.length,craft,ore,bar}});
+  check(!mk2.spread.length&&mk2.gate&&mk2.top&&mk2.sold===mk2.n&&mk2.bought===mk2.buyable,'שוק מלא: נמכרו '+mk2.sold+'/'+mk2.n+', נקנו '+mk2.bought+'/'+mk2.buyable+
+    (mk2.spread.length?' · קנייה לא יקרה ממכירה: '+mk2.spread.join(', '):', קנייה תמיד יקרה ממכירה')+(mk2.gate&&mk2.top?', נדיר נפתח ברמה גבוהה, חלק בוס לא למכירה':', הרמות של השוק לא נכונות'));
+  check(mk2.craft&&mk2.ore&&mk2.bar,'נפחייה ופס עליון: '+(mk2.craft?'יוצרים חרב עץ, ברזל נעול ברמה 1':'יצירה נכשלה')+(mk2.ore?', עפרות ישנות הפכו לברזל':', עפרות לא הומרו')+
+    (mk2.bar?', בנפחייה רואים מתכות ולא עץ':', הפס העליון לא לפי מקום'));
   if(CFG.skin)await page.evaluate(n=>{LOOK.player=n},CFG.skin);
   let startLeak=null;
   if(CFG.lang!=='he'){
@@ -214,6 +265,9 @@ function villageBot(m,L){
 
   const t=s=>s==null?'-':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
   check(L.vilOpen&&L.gift&&L.gift!=='{}'&&(L.vilModels==null||L.vilModels>0),'כפר: נפתח אחרי מסך הפתיחה, מתנת פתיחה '+L.gift+(L.vilModels!=null?', '+L.vilModels+' מודלים בתלת-ממד':''));
+  check(L.topBar&&L.topBar.split('/')[0]===L.topBar.split('/')[1],'פס עליון בכפר: '+L.topBar+' משאבים (מטבעות וחומרי בנייה בלבד)');
+  check(L.nodes>0&&!!L.nodeGot&&L.nodeInLoot,'מקורות משאבים: '+(L.nodeSeen!=null?'הופיע '+t(L.nodeSeen):'לא הופיע')+', נשברו '+(L.nodes||0)+(L.nodeAt!=null?' (ראשון '+t(L.nodeAt)+')':'')+
+    ', נפל: '+(L.nodeGot||'כלום')+(L.nodeInLoot?', בשלל של הריצה':', לא הגיע לשלל'));
   check(L.built===1&&L.builtSaved&&L.fx,'בנייה: '+(L.panel||'הפאנל לא נפתח')+', '+(L.built===1?'נבנתה, שולם '+L.paid:'לא נבנתה')+(L.builtSaved?', נשמר':', לא נשמר')+(L.fx?', חגיגה עם פיגום':', בלי חגיגה'));
   check(L.collected>0&&L.collected===L.expect,'ייצור: אחרי שעתיים בלי לשחק נאספו '+L.collected+' עץ (צפוי '+L.expect+')');
   check(L.gearOpen&&L.gearEquip==='oakBow'&&L.gearSaved&&L.gearFx&&L.gearClosed&&/\+10%/.test(L.gearCmp||''),'ציוד: '+(L.gearOpen?'המסך נפתח':'המסך לא נפתח')+', השוואה: "'+(L.gearCmp||'-')+'"'+
