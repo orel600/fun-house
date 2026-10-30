@@ -6,21 +6,21 @@
 
 const NODES={
   reach:70,                       // מאיזה מרחק מהקצה של מקור ההתקפה האוטומטית פוגעת בו
-  // hp: כמה מכות הוא סופג. drop: {משאב:[סיכוי, כמה]}. col: הצבע בציור. shape: עץ, סלע, שיח, עורק או תיבה.
+  // hp: כמה מכות הוא סופג. r: גודל וגבול הפגיעה, גדולים כדי שיראו אותם בטלפון. drop: {משאב:[סיכוי, כמה]}. col: הצבע בציור. shape: עץ, סלע, שיח, עורק או תיבה.
   // tags: ממה הוא עשוי, כמו אויב (DMG.chart ב-dmg.js): סלע חלש למים, עץ לאש. guard: {type: היצור, chance: סיכוי, n: כמה} שמופיעים ליד המקור
   kinds:{
-    tree:   {tags:['plant'],hp:40, r:20,shape:'tree',col:'#3E7A4A',drop:{wood:[1,4],resin:[0.3,1],herb:[0.15,1]},guard:{type:'treant',chance:0.25,n:1}},
-    rock:   {tags:['stone'],hp:55, r:17,shape:'rock',col:'#7A8094',drop:{stone:[1,3],mushroom:[0.1,1],amberC:[0.03,1]},guard:{type:'golem',chance:0.3,n:1}},
-    bush:   {tags:['plant'],hp:25, r:15,shape:'bush',col:'#5FA35A',drop:{herb:[1,2],mushroom:[0.35,1],flower:[0.25,1]},guard:{type:'sprite',chance:0.35,n:2}},
-    copper: {tags:['metal'],hp:70, r:17,shape:'vein',col:'#C87533',drop:{copper:[1,2],stone:[0.5,1],rubyC:[0.04,1]},guard:{type:'crawler',chance:0.3,n:1}},
-    iron:   {tags:['metal'],hp:100,r:17,shape:'vein',col:'#9AA3AD',drop:{iron:[1,2],boltC:[0.04,1]},guard:{type:'crawler',chance:0.3,n:1}},
-    silver: {tags:['metal'],hp:140,r:18,shape:'vein',col:'#DCE3EA',drop:{silver:[1,2],sapphireC:[0.05,1]},guard:{type:'crawler',chance:0.35,n:2}},
-    gold:   {tags:['metal'],hp:190,r:18,shape:'vein',col:'#F4C74F',drop:{gold:[1,1],aquaC:[0.06,1]},guard:{type:'crawler',chance:0.4,n:2}},
-    mythril:{tags:['metal'],hp:260,r:19,shape:'vein',col:'#6FE3FF',drop:{mythril:[1,1],star:[0.1,1]},guard:{type:'crawler',chance:0.5,n:2}},
+    tree:   {tags:['plant'],hp:40, r:28,shape:'tree',col:'#3E7A4A',drop:{wood:[1,4],resin:[0.3,1],herb:[0.15,1]},guard:{type:'treant',chance:0.25,n:1}},
+    rock:   {tags:['stone'],hp:55, r:24,shape:'rock',col:'#7A8094',drop:{stone:[1,3],mushroom:[0.1,1],amberC:[0.03,1]},guard:{type:'golem',chance:0.3,n:1}},
+    bush:   {tags:['plant'],hp:25, r:21,shape:'bush',col:'#5FA35A',drop:{herb:[1,2],mushroom:[0.35,1],flower:[0.25,1]},guard:{type:'sprite',chance:0.35,n:2}},
+    copper: {tags:['metal'],hp:70, r:24,shape:'vein',col:'#C87533',drop:{copper:[1,2],stone:[0.5,1],rubyC:[0.04,1]},guard:{type:'crawler',chance:0.3,n:1}},
+    iron:   {tags:['metal'],hp:100,r:24,shape:'vein',col:'#9AA3AD',drop:{iron:[1,2],boltC:[0.04,1]},guard:{type:'crawler',chance:0.3,n:1}},
+    silver: {tags:['metal'],hp:140,r:25,shape:'vein',col:'#DCE3EA',drop:{silver:[1,2],sapphireC:[0.05,1]},guard:{type:'crawler',chance:0.35,n:2}},
+    gold:   {tags:['metal'],hp:190,r:25,shape:'vein',col:'#F4C74F',drop:{gold:[1,1],aquaC:[0.06,1]},guard:{type:'crawler',chance:0.4,n:2}},
+    mythril:{tags:['metal'],hp:260,r:26,shape:'vein',col:'#6FE3FF',drop:{mythril:[1,1],star:[0.1,1]},guard:{type:'crawler',chance:0.5,n:2}},
     // תיבות: עץ, ברזל וזהב. תיבת זהב נדירה, ובה אבנים מושלמות. המומיות שומרות עליהן
-    chestWood:{tags:['plant'],hp:30,r:15,shape:'chest',col:'#9A6B3C',drop:{coins:[1,8],cloth:[0.5,2],herb:[0.4,2],rubyC:[0.15,1],sapphireC:[0.15,1],boltC:[0.15,1],aquaC:[0.15,1],amberC:[0.15,1]},guard:{type:'mummy',chance:0.4,n:1}},
-    chestIron:{tags:['metal'],hp:60,r:16,shape:'chest',col:'#9AA3AD',drop:{coins:[1,20],gem:[0.1,1],iron:[0.6,2],silver:[0.25,1],ruby:[0.15,1],sapphire:[0.15,1],bolt:[0.15,1],aqua:[0.15,1],amber:[0.15,1]},guard:{type:'mummy',chance:0.5,n:2}},
-    chestGold:{tags:['metal'],hp:90,r:17,shape:'chest',col:'#F4C74F',drop:{coins:[1,50],gold:[0.6,2],mythril:[0.3,1],star:[0.15,1],rubyF:[0.12,1],sapphireF:[0.12,1],boltF:[0.12,1],aquaF:[0.12,1],amberF:[0.12,1]},guard:{type:'mummy',chance:0.6,n:3}}
+    chestWood:{tags:['plant'],hp:30,r:21,shape:'chest',col:'#9A6B3C',drop:{coins:[1,8],cloth:[0.5,2],herb:[0.4,2],rubyC:[0.15,1],sapphireC:[0.15,1],boltC:[0.15,1],aquaC:[0.15,1],amberC:[0.15,1]},guard:{type:'mummy',chance:0.4,n:1}},
+    chestIron:{tags:['metal'],hp:60,r:22,shape:'chest',col:'#9AA3AD',drop:{coins:[1,20],gem:[0.1,1],iron:[0.6,2],silver:[0.25,1],ruby:[0.15,1],sapphire:[0.15,1],bolt:[0.15,1],aqua:[0.15,1],amber:[0.15,1]},guard:{type:'mummy',chance:0.5,n:2}},
+    chestGold:{tags:['metal'],hp:90,r:24,shape:'chest',col:'#F4C74F',drop:{coins:[1,50],gold:[0.6,2],mythril:[0.3,1],star:[0.15,1],rubyF:[0.12,1],sapphireF:[0.12,1],boltF:[0.12,1],aquaF:[0.12,1],amberF:[0.12,1]},guard:{type:'mummy',chance:0.6,n:3}}
   },
   // לכל זירה: first מתי מופיע הראשון, every כל כמה שניות עוד אחד, max כמה בבת אחת, dist כמה רחוק מהשחקן, far מאיפה נעלם.
   // spawn: מה יכול להופיע. w כמה נפוץ, from מאיזו שנייה בריצה
@@ -68,7 +68,7 @@ function nodeNear(){
 function nodeDown(n){
   n.dead=true;S.nd.broken++;if(n.regrow)n.back=n.regrow;   // בעולם הפתוח הוא צומח מחדש (world.js)
   if(NODES.kinds[n.kind].shape==='chest')S.nd.chests=(S.nd.chests||0)+1;sfx('coin');
-  const got=runGive(NODES.kinds[n.kind].drop,n.x,n.y-n.r);S.nd.got.push(...got);
+  const got=runGive(NODES.kinds[n.kind].drop,n.x,n.y);S.nd.got.push(...got);
   sparks(n.x,n.y,NODES.kinds[n.kind].col,14,200);
 }
 

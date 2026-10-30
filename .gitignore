@@ -4,3 +4,4 @@ Thumbs.db
 node_modules/
 tools/shots/
 .claude/settings.local.json
+__pycache__/

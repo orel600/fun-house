@@ -3,7 +3,7 @@
    מה שנאסף נכנס לשלל של המקום (S.loot): בזירה הוא מגיע לתרמיל בסוף הריצה (runEnd ב-village.js), ובעולם הפתוח מיד (wLootIn ב-world.js).
    בסוף ריצה בזירה מה שנשאר על הרצפה נאסף לבד, כי הוא כבר נראה. בעולם, מי שנופל משאיר אותו שם.
    המקום עצמו לא משנה כאן: הרשימה ב-S.gd, ו-S חדש בכל מעבר מקום. הכל באובייקט DROPS.
-   מה נופל, ובאיזו דרגה: runGive ב-loot.js. כאן משאב שאינו רגיל מקבל טבעת ועמוד אור בצבע הדרגה שלו (RES.rarity) */
+   הצבע והעמוד לפי דרגת השלל (RES.rarity ב-resources.js, runGive ב-loot.js): רגיל בלי, ומלא שכיח ומעלה טבעת בצבע הדרגה ועמוד שגבוה יותר ככל שהדרגה נדירה */
 
 const DROPS={
   pop:[150,230], spread:[50,110], grav:700,  // הקפיצה: מהירות למעלה, מהירות לצדדים ומשיכה למטה
@@ -11,15 +11,16 @@ const DROPS={
   magnet:1,                                   // מאיזה מרחק נמשך לשחקן, כפול P.magnet
   fly:420, take:16,                           // מהירות המשיכה, ומאיזה מרחק נאסף
   stack:36,                                   // אותו משאב שנופל קרוב לערימה קיימת מצטרף אליה
-  max:140                                     // הכי הרבה על הרצפה יחד, בשביל הטלפון. מעבר לזה הישן ביותר נאסף לבד
+  max:140,                                    // הכי הרבה על הרצפה יחד, בשביל הטלפון. מעבר לזה הישן ביותר נאסף לבד
+  beam:0.8                                    // גובה עמוד האור: beam של הדרגה כפול זה
 };
+// הדרגה של שלל (צבע ועמוד אור), או null לרגיל
+const dropTier=r=>{const R=resOf(r);return R&&R.rar?RES.rarity[R.rar]:null};
 
 const drops=()=>S.gd||(S.gd=[]);
 const dropStats=()=>S.gdN||(S.gdN={spawned:0,picked:0,auto:0});
 
-// צבע הדרגה של משאב, או null למשאב רגיל
-const dropCol=r=>{const t=lootTier(r);return t?RES.rarity[t].col:null};
-// מפיל n יחידות של המשאב r מהנקודה (x,y). נקרא מ-runGive (loot.js): אויבים, מקורות משאבים, המבוקש
+// מפיל n יחידות של המשאב r מהנקודה (x,y). נקרא מ-runGive (loot.js): אויבים, מקורות, המבוקש וחדר הבונוס
 function dropSpawn(r,n,x,y){
   const L=drops(),near=L.find(d=>d.r===r&&!d.fly&&Math.hypot(d.x-x,d.y-y)<DROPS.stack);
   dropStats().spawned+=n;
@@ -30,7 +31,7 @@ function dropSpawn(r,n,x,y){
 }
 function dropTake(d,auto){
   d.got=true;const L=runLoot();L[d.r]=(L[d.r]||0)+d.n;
-  const st=dropStats();if(auto)st.auto+=d.n;else{st.picked+=d.n;sfx('coin');floatText(P.x,P.y-40,'+'+d.n+' '+resIcon(d.r),dropCol(d.r)||C.gold,16)}
+  const st=dropStats();if(auto)st.auto+=d.n;else{st.picked+=d.n;sfx('coin');floatText(P.x,P.y-40,'+'+d.n+' '+resIcon(d.r),(dropTier(d.r)||{}).col||C.gold,16)}
   const all=drops(),i=all.indexOf(d);if(i>=0)all.splice(i,1);
 }
 // כל פריים, בזירה ובעולם: קפיצה ונחיתה, ומשיכה לשחקן כשקרובים
@@ -53,9 +54,9 @@ function drawDrops(){
   if(!S.gd||S.room)return;
   ctx.textAlign='center';ctx.direction='ltr';
   for(const d of S.gd){
-    const col=dropCol(d.r),bob=d.z>0?0:Math.sin(d.ph*3)*2,y=d.y-d.z-10+bob;
-    if(col&&d.z===0){const g=ctx.createLinearGradient(0,d.y-90,0,d.y);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,col);
-      ctx.globalAlpha=0.45+0.15*Math.sin(d.ph*4);ctx.fillStyle=g;ctx.fillRect(d.x-4,d.y-90,8,90);ctx.globalAlpha=1}
+    const tr=dropTier(d.r),col=tr&&tr.col,h=tr?tr.beam*DROPS.beam:0,bob=d.z>0?0:Math.sin(d.ph*3)*2,y=d.y-d.z-10+bob;
+    if(h&&d.z===0){const g=ctx.createLinearGradient(0,d.y-h,0,d.y);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,col);
+      ctx.globalAlpha=0.45+0.15*Math.sin(d.ph*4);ctx.fillStyle=g;ctx.fillRect(d.x-4,d.y-h,8,h);ctx.globalAlpha=1}
     ctx.fillStyle='rgba(5,7,13,0.4)';ctx.beginPath();ctx.ellipse(d.x,d.y+2,9,3.5,0,0,7);ctx.fill();
     ctx.strokeStyle=col||'rgba(244,199,79,0.7)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(d.x,d.y+2,12,5,0,0,7);ctx.stroke();
     ctx.font='17px system-ui, sans-serif';ctx.fillText(resIcon(d.r)||'?',d.x,y);

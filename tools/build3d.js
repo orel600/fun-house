@@ -56,7 +56,9 @@ const CHARS={
   // חיית המחמד: פיוחו בשלושה שלבים, מהדפים ב-art/pets, על השלד של ההאסקי (tools/pet3d, ההסבר בראש rig.py). בשלב 3 גם טקסטורת זוהר
   piocho1:{src:path.join(ROOT,'art/pets/Piocho1.glb'),keep:['Piocho1_'],tex:512,fmt:'jpeg'},
   piocho2:{src:path.join(ROOT,'art/pets/Piocho2.glb'),keep:['Piocho2_'],tex:512,fmt:'jpeg'},
-  piocho3:{src:path.join(ROOT,'art/pets/Piocho3.glb'),keep:['Piocho3_'],tex:512,fmt:'jpeg'}
+  piocho3:{src:path.join(ROOT,'art/pets/Piocho3.glb'),keep:['Piocho3_'],tex:512,fmt:'jpeg'},
+  // הדמות האישית של ניר ("הנודד עם הניצוץ"), מ-art/heroes/nir-sheet.jpg. כמו הפיילוט, עם rig.py --apose --pack (ההסבר ב-tools/pilot3d/README.md)
+  nirHero:{src:path.join(ROOT,'art/heroes/NirHero.glb'),keep:['NirHero_'],tex:512,fmt:'jpeg'}
 };
 // חפצים שנאחזים ביד של אויב (המיקום ביד מוגדר ב-render3d.js)
 const PROPS={
