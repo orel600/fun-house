@@ -1,6 +1,6 @@
 /* שמירת התקדמות: מה שנשאר בין ריצות (רמת דמות, תרמיל, ציוד, כפר, קווסטים).
    הכפר, הציוד והקווסטים קוראים וכותבים רק דרך SAVE והפונקציות כאן.
-   איפה זה נשמר קובע SAVE_STORE בלבד: היום בטלפון, ובהמשך Supabase (ההחלטה ב-game-design.md, "החלטות של ניר").
+   איפה זה נשמר קובע SAVE_STORE בלבד: בטלפון, ועותק ברקע בענן (Supabase, js/cloud.js, דרך onWrite).
    שדה חדש נכנס ל-saveBlank עם ערך התחלתי, ושמירה ישנה מקבלת אותו לבד בטעינה. */
 const SAVE_VER=1;
 
@@ -24,11 +24,12 @@ function saveBlank(){return{
 
 let SAVE=saveBlank();
 
-// המקום היחיד שיודע איפה השמירה יושבת. בענן מחליפים רק את האובייקט הזה
+// המקום היחיד שיודע איפה השמירה יושבת. onWrite: מי שרוצה לדעת על כל שמירה (הענן, cloud.js). quiet: בלי להודיע
 const SAVE_STORE={
   key:'fh-save',
   load(){try{return JSON.parse(localStorage.getItem(this.key))}catch(e){return null}},
-  write(d){try{localStorage.setItem(this.key,JSON.stringify(d))}catch(e){}}
+  write(d,quiet){try{localStorage.setItem(this.key,JSON.stringify(d))}catch(e){}if(!quiet&&this.onWrite)this.onWrite()},
+  onWrite:null
 };
 
 const isObj=o=>o&&typeof o==='object'&&!Array.isArray(o);

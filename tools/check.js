@@ -427,6 +427,21 @@ function worldBot(m,L,god){
     localStorage.setItem(SAVE_STORE.key,JSON.stringify({v:0,bag:{bone:1}}));saveLoad();const old=SAVE.bag.bone===1&&SAVE.village.center===1&&Array.isArray(SAVE.gear.orbit);
     localStorage.removeItem(SAVE_STORE.key);saveLoad();return{back,old}});
   check(sv.back&&sv.old,'שמירה: '+(sv.back?'נשמרת ונטענת':'לא חזרה אחרי טעינה')+', '+(sv.old?'שמירה ישנה משלימה שדות חדשים':'שמירה ישנה נשברה'));
+  // שמירה בענן (cloud.js) בלי רשת: בבדיקה כל הרשת חסומה, אז ההפעלה נכשלה בשקט והמשחק ממשיך. אחר כך שרת מדומה: דחיפה, משיכה של שמירה חדשה יותר, ושמירה ישנה בענן לא דורסת
+  const cl=await page.evaluate(async()=>{const r={off:CLOUD.status==='off'&&!!SAVE&&!!document.getElementById('cloudLine').textContent};const bak=JSON.stringify(SAVE);
+    CLOUD.fake=cloudFakeServer();CLOUD.session=null;try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}
+    bagAdd('wood',3);saveNow();r.first=await cloudSync();const row=CLOUD.fake.rows.u1;r.push=!!row&&row.data.bag.wood===SAVE.bag.wood&&CLOUD.status==='ok';
+    const nd=JSON.parse(JSON.stringify(row.data));nd.ts=SAVE.ts+60000;nd.village.forge=7;CLOUD.fake.rows.u1.data=nd;
+    r.pull=await cloudSync()==='took'&&SAVE.village.forge===7&&JSON.parse(localStorage.getItem(SAVE_STORE.key)).village.forge===7;
+    const od=JSON.parse(JSON.stringify(nd));od.ts=1;od.village.forge=1;CLOUD.fake.rows.u1.data=od;
+    r.keep=await cloudSync()==='kept'&&SAVE.village.forge===7&&CLOUD.fake.rows.u1.data.village.forge===7;
+    CLOUD.fake.down=true;r.down=await cloudSync()==='offline'&&CLOUD.status==='off';CLOUD.fake.down=false;
+    r.users=CLOUD.fake.users;SAVE=JSON.parse(bak);SAVE_STORE.write(SAVE,true);CLOUD.dirty=false;r.p0=CLOUD.pushes;return r});
+  check(cl.off,'ענן: בלי רשת '+(cl.off?'המשחק עולה, והסמל אומר "לא מחובר"':'משהו נשבר'));
+  check(cl.push,'ענן: דחיפה '+(cl.push?'הגיעה לשרת המדומה':'לא הגיעה ('+cl.first+')'));
+  check(cl.pull,'ענן: שמירה חדשה יותר בענן '+(cl.pull?'נמשכה ונשמרה בטלפון':'לא נמשכה'));
+  check(cl.keep&&cl.users===1,'ענן: שמירה ישנה בענן '+(cl.keep?'לא דרסה, והחדשה נדחפה':'דרסה את החדשה')+(cl.users===1?'':', '+cl.users+' כניסות במקום אחת'));
+  check(cl.down,'ענן: שרת נופל '+(cl.down?'בשקט, הסמל חוזר ל"לא מחובר"':'שבר משהו'));
   // שוק: מוכרים עץ, לא מצליחים לקנות בלי מספיק מטבעות, ואז קונים אבן. בסוף מנקים
   const mk=await page.evaluate(()=>{SAVE.village.market=1;bagAdd('wood',10);const sell=vTrade('sell','wood')&&SAVE.bag.coins===5&&SAVE.bag.wood===5;
     const poor=!vTrade('buy','stone');bagAdd('coins',20);const buy=vTrade('buy','stone')&&SAVE.bag.stone===5&&SAVE.bag.coins===10;
@@ -534,6 +549,15 @@ function worldBot(m,L,god){
     const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key));r.saved=sv.hero.rankId==='knight'&&sv.hero.rank===1;
     SAVE.hero.rankId=null;reset();const base=P.maxHp;SAVE.hero.rankId='knight';reset();r.kept=P.maxHp-base;
     r.label=rankLabel();
+    // שריון לפי דרגה (rankArmor3d ב-render3d.js): בתלת-ממד, החלקים של הדרגה מוסתרים לפני ונדלקים אחרי. בדו-ממד אין מה לבדוק
+    if(R3D.on&&R3D.ready){
+      const vis=all=>{syncPlayer(0);const v=new Set();R3D.player.root.traverse(o=>{const p=o.isMesh&&armorPart(o,ARMOR3D);if(p&&(all||o.visible))v.add(p)});return v};
+      const look=RANKS.list.knight.look,has=vis(true),want=look.show.filter(p=>has.has(p));
+      SAVE.hero.rankId=null;const before=vis();SAVE.hero.rankId='knight';const after=vis();
+      let glow=false;R3D.player.root.traverse(o=>{if(o.isMesh&&o.visible&&armorPart(o,look.show)&&o.material.emissive.getHex())glow=true});
+      r.armor={model:R3D.player.L.model,want:want.join('+')||'-',before:[...before].join('+')||'-',after:[...after].join('+')||'-',glow,
+        ok:want.length>0&&want.every(p=>!before.has(p)&&after.has(p))&&glow};
+    }
     questLogOpen(false);localStorage.removeItem(SAVE_STORE.key);saveLoad();reset();S.mode=mode;S.q=null;FX=[];
     $('qTrack').hidden=true;$('qTrack').textContent='';document.getElementById('banner').textContent='';
     return r});
@@ -542,6 +566,8 @@ function worldBot(m,L,god){
   check(rk.accepted&&rk.card&&rk.claimed&&rk.rank==='knight'&&rk.saved&&rk.fx&&rk.hp===rk.want&&rk.kept===rk.want,'קווסט דרגה: '+(rk.accepted?'התקבל':'לא התקבל')+(rk.card?', הכרטיס מראה "אביר"':', הכרטיס לא מראה את הדרגה')+
     (rk.claimed?', הושלם ונלקח':', הפרס לא נלקח')+', דרגה: '+(rk.label||'-')+(rk.saved?', נשמרה':', לא נשמרה')+(rk.fx?', טקס':', בלי טקס')+
     ', חיים +'+rk.hp+' מיד ו-+'+rk.kept+' בכל ריצה (צפוי +'+rk.want+')');
+  if(rk.armor)check(rk.armor.ok,'שריון לפי דרגה ('+rk.armor.model+'): לפני הדרגה '+rk.armor.before+', אחרי '+rk.armor.after+' (צפוי שיופיעו '+rk.armor.want+')'+(rk.armor.glow?', זוהר בצבע הדרגה':', בלי זוהר'));
+  else results.push('· שריון לפי דרגה: דו-ממד, אין מה לבדוק');
   if(CFG.skin)await page.evaluate(n=>{LOOK.player=n},CFG.skin);
   let startLeak=null;
   // הבדיקות שלמעלה רצו בעברית, ויכלו להשאיר באנר בעברית (קווסט שהושלם). בלי זה מסך בחירת הדמות מציג אותו באנגלית
@@ -609,6 +635,8 @@ function worldBot(m,L,god){
   const au=await page.evaluate(()=>{const b=document.getElementById('muteBtn');b.click();const m=AUDIO.muted&&localStorage.getItem('zm-mute')==='1';b.click();
     return{count:AUDIO.count,errors:AUDIO.errors,unlocked:AUDIO.unlocked,ids:Object.keys(SOUNDS),mute:m&&!AUDIO.muted,
       loaded:Object.keys(AUDIO.buf).length}});
+  const cp=await page.evaluate(()=>({n:CLOUD.pushes,every:CLOUD.pushEvery}));
+  check(cp.n>cl.p0,'ענן: במשחק עצמו נדחפו '+(cp.n-cl.p0)+' שמירות לענן (המדומה), לכל היותר אחת בכל '+cp.every+' שניות');
   // בפעם השנייה מסך הפתיחה מוביל ישר לכפר, בלי בחירת דמות
   const again=await page.evaluate(()=>{document.getElementById('startBtn').click();return document.getElementById('ovHero').hidden&&!!S.vil});
   const heroHp=await page.evaluate(()=>HEROES.list.warrior.passive.hp);
