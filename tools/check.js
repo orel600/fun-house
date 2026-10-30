@@ -388,9 +388,14 @@ function worldBot(m,L,god){
     localStorage.setItem(SAVE_STORE.key,JSON.stringify({v:1,bag:{ore:7}}));saveLoad();const ore=SAVE.bag.iron===7&&!SAVE.bag.ore;
     bagAdd('silver',1);const bar=resShown('forge').includes('silver')&&!resShown('forge').includes('wood')&&resShown(null).includes('wood')&&!resShown(null).includes('silver');
     localStorage.removeItem(SAVE_STORE.key);saveLoad();
-    return{spread,gate,top,sold,bought,buyable,n:rs.length,craft,ore,bar}});
+    // "מה זה?": לכל משאב יש שורה עם מאיפה ובשביל מה, ונגיעה בתג מציגה אותה
+    const tipBad=Object.keys(RES.list).filter(r=>r!=='coins'&&!(resTip(r).includes(T('tip.from','').trim())&&resTip(r).includes(T('tip.for','').trim())));
+    document.body.insertAdjacentHTML('beforeend','<div id="tipT">'+resChip('iron',1)+'</div>');document.querySelector('#tipT .res').click();
+    const tt=document.getElementById('resTip'),tapTip=!!tt&&!tt.hidden&&tt.textContent===resTip('iron');document.getElementById('tipT').remove();if(tt)tt.hidden=true;
+    return{spread,gate,top,sold,bought,buyable,n:rs.length,craft,ore,bar,tipBad,tapTip}});
   check(!mk2.spread.length&&mk2.gate&&mk2.top&&mk2.sold===mk2.n&&mk2.bought===mk2.buyable,'שוק מלא: נמכרו '+mk2.sold+'/'+mk2.n+', נקנו '+mk2.bought+'/'+mk2.buyable+
     (mk2.spread.length?' · קנייה לא יקרה ממכירה: '+mk2.spread.join(', '):', קנייה תמיד יקרה ממכירה')+(mk2.gate&&mk2.top?', נדיר נפתח ברמה גבוהה, חלק בוס לא למכירה':', הרמות של השוק לא נכונות'));
+  check(!mk2.tipBad.length&&mk2.tapTip,'מה זה? על משאב: '+(mk2.tipBad.length?'בלי מקור או שימוש: '+mk2.tipBad.join(', '):'לכל משאב מאיפה ובשביל מה')+(mk2.tapTip?', נגיעה מציגה':', נגיעה לא מציגה'));
   check(mk2.craft&&mk2.ore&&mk2.bar,'נפחייה ופס עליון: '+(mk2.craft?'יוצרים חרב עץ, ברזל נעול ברמה 1':'יצירה נכשלה')+(mk2.ore?', עפרות ישנות הפכו לברזל':', עפרות לא הומרו')+
     (mk2.bar?', בנפחייה רואים מתכות ולא עץ':', הפס העליון לא לפי מקום'));
   // קווסטים: 4 יומיים ויום חדש מחליף אותם, הישגים פעילים לבד, ניצחון בלי פגיעה ושדרוג מבנה נספרים נכון. בסוף מנקים

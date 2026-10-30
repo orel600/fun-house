@@ -167,7 +167,7 @@ function runEnd(){
 
 /* ---- ממשק: התרמיל למעלה, והפאנל של המבנה שלידו למטה ---- */
 // משאב אחד כתג: אייקון ומספר. משאב נדיר מקבל מסגרת בצבע הנדירות שלו
-const resChip=(r,n,cls='')=>{const R=resOf(r);return '<span class="res'+cls+(R&&R.rar?' rare" style="--tint:'+RES.rarity[R.rar].col:'')+'" aria-label="'+resName(r)+'">'+resIcon(r)+' '+n+'</span>'};
+const resChip=(r,n,cls='')=>{const R=resOf(r);return '<span class="res'+cls+(R&&R.rar?' rare" style="--tint:'+RES.rarity[R.rar].col:'')+'" data-tip="'+r+'" aria-label="'+resName(r)+'">'+resIcon(r)+' '+n+'</span>'};
 // list: אילו משאבים להראות, גם כשיש 0. בלי list: רק מה שיש
 const bagLine=(bag,list)=>(list||Object.keys(RES.list).filter(r=>bag[r]>0)).map(r=>resChip(r,bag[r]||0)).join('');
 // התרמיל המלא לפי משפחות: טבע ובנייה, מתכות, יצורים, בוסים, נדיר. only: רק משפחה אחת (הסינון בתרמיל). משפחה ריקה לא מוצגת
