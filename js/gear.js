@@ -209,7 +209,7 @@ function gSlotHtml(s){
 }
 function gearDraw(){
   const D=GEAR.doll,hero=HEROES.list[heroId()]||{},sel=GUI.sel;
-  $('gHero').textContent=T('gear.hero',heroLv());
+  $('gHero').textContent=T('gear.hero',heroLv())+(rankId()?' · '+rankLabel():'');   // הדרגה (ranks.js)
   $('gCoins').innerHTML=resChip('coins',SAVE.bag.coins||0);
   // הבובה: הדמות באמצע, והמשבצות בשני הצדדים ומתחתיה
   const side=k=>'<div class="gd-'+k+'">'+D[k].map(gSlotHtml).join('')+'</div>';
