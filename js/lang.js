@@ -403,7 +403,51 @@ const TEXT={
   'stash.space':{he:(u,c)=>'במחסן '+u+' מתוך '+c+'. מה שבתרמיל אפשר לאבד בעולם, ומה שבמחסן נשאר',en:(u,c)=>'Stash: '+u+' of '+c+'. What you carry can be lost out in the world, the stash is safe'},
   'stash.bag':{he:'בתרמיל: לחיצה מכניסה למחסן',en:'In your bag: tap to store'},
   'stash.in':{he:'במחסן: לחיצה מחזירה לתרמיל',en:'In the stash: tap to take back'},
-  'stash.empty':{he:'ריק',en:'Empty'}
+  'stash.empty':{he:'ריק',en:'Empty'},
+  // תושבי הכפר (npc.js): [שם, תפקיד], ומשפט לכל מצב. low/high: לפי רמת מרכז הכפר. new: יש קווסט חדש. busy: קווסט באמצע. ready: פרס מחכה
+  'npc.talk':{he:n=>'לדבר עם '+n,en:n=>'Talk to '+n},
+  'npc.noQuest':{he:'אין לי משימה בשבילך כרגע. תחזור אחר כך.',en:'Nothing for you right now. Come back later.'},
+  'npc.head':{he:['אבנר','ראש הכפר'],en:['Avner','Village Chief']},
+  'npc.head.low':{he:'ברוך הבא לכפר! טוב, "כפר". כרגע זה בעיקר אוהל ותקווה. אבל תקווה גדולה!',en:'Welcome to the village! Well, "village". Right now it’s mostly a tent and hope. But big hope!'},
+  'npc.head.high':{he:'תסתכל סביבך! מגדלים, דגלים, תושבים מרוצים. אני כבר כותב נאום. הוא באורך שלוש שעות.',en:'Look around! Towers, flags, happy villagers. I’m already writing a speech. It’s three hours long.'},
+  'npc.head.new':{he:'יש לי משימה היסטורית בשבילך. כל המשימות שלי היסטוריות. זה הכלל.',en:'I have a historic task for you. All my tasks are historic. That’s the rule.'},
+  'npc.head.busy':{he:'עוד לא סיימת? לא נורא. גם רומא לא נבנתה ביום. אבל לרומא לא היה בוס שלומד אותה.',en:'Not done yet? That’s fine. Rome wasn’t built in a day. But Rome didn’t have a boss studying it.'},
+  'npc.head.ready':{he:'עשית את זה! אני מכריז על יום חג. שוב. זה החג השלישי השבוע.',en:'You did it! I declare a holiday. Again. That’s the third one this week.'},
+  'npc.smith':{he:['בורג','הנפח'],en:['Borg','Blacksmith']},
+  'npc.smith.low':{he:'הנפחייה שלי היא אוהל. האוהל שלי הוא נפחייה. אני לא מתלונן, אני רק דופק על דברים.',en:'My forge is a tent. My tent is a forge. I’m not complaining, I just hit things.'},
+  'npc.smith.high':{he:'תשמע את הסדן! דינג! דינג! הצליל הכי יפה בעולם. חוץ מ"+10 הצליח".',en:'Hear that anvil? DING! DING! Most beautiful sound in the world. Except "+10 succeeded".'},
+  'npc.smith.new':{he:'יש לי עבודה בשבילך. אל תדאג, היא לא כוללת לדפוק על דברים. טוב, קצת.',en:'Got a job for you. Don’t worry, it doesn’t involve hitting things. Okay, a little.'},
+  'npc.smith.busy':{he:'עוד לא? אם משהו לא עובד, תדפוק עליו חזק יותר. אצלי זה עובד תמיד.',en:'Not yet? If something doesn’t work, hit it harder. Works for me every time.'},
+  'npc.smith.ready':{he:'יפה! מגיע לך משהו. רצית חיבוק? אין. קח פרס.',en:'Nice! You earned something. Wanted a hug? No hugs. Take a reward.'},
+  'npc.merchant':{he:['רינה','הסוחרת'],en:['Rina','Merchant']},
+  'npc.merchant.low':{he:'שוק? זה ארגז. אבל ארגז עם פוטנציאל. ועם הנחה, רק בשבילך.',en:'A market? It’s a crate. But a crate with potential. And a discount, just for you.'},
+  'npc.merchant.high':{he:'הדוכן הכי גדול בכפר! עצה ממני עולה שתי מטבעות. זאת הייתה עצה. אתה חייב לי שתיים.',en:'Biggest stall in the village! My advice costs two coins. That was advice. You owe me two.'},
+  'npc.merchant.new':{he:'יש לי עסקה בשבילך. אל תשאל מה אני מרוויחה. אני תמיד מרוויחה.',en:'I have a deal for you. Don’t ask what I get out of it. I always get something.'},
+  'npc.merchant.busy':{he:'עוד עובד על זה? זמן זה כסף, ואתה מבזבז את שניהם.',en:'Still on it? Time is money, and you’re wasting both.'},
+  'npc.merchant.ready':{he:'סגרנו! הנה החלק שלך. ספרתי פעמיים. בשבילי.',en:'Deal closed! Here’s your share. I counted it twice. For me.'},
+  'npc.inn':{he:['דודה פלפל','הפונדקאית'],en:['Auntie Pepper','Innkeeper']},
+  'npc.inn.spot':{he:'פונדק (בקרוב)',en:'Inn (soon)'},
+  'npc.inn.low':{he:'אין לי עוד פונדק, יש לי סיר. בוא, תאכל משהו, אתה נראה כמו מקל.',en:'No inn yet, just a pot. Come eat something, you look like a stick.'},
+  'npc.inn.high':{he:'מי שלא אוכל מרק לא יוצא לזירה. זה חוק. אני המצאתי אותו.',en:'Nobody goes to the arena without soup. That’s the law. I made it up.'},
+  'npc.inn.new':{he:'שמעתי רכילות על שלדים בזירה. לך תבדוק, ותחזור לספר לי הכל.',en:'I heard gossip about skeletons in the arena. Go check, then come back and tell me everything.'},
+  'npc.inn.busy':{he:'המשימות של היום על הלוח. עוד לא גמרת? זה כמו מרק, דברים טובים לוקחים זמן.',en:'Today’s jobs are on the board. Not done? It’s like soup, good things take time.'},
+  'npc.inn.ready':{he:'כל הכבוד, חמוד! קח פרס, וקח גם קערה. לא, זאת לא הייתה שאלה.',en:'Well done, sweetie! Take a reward, and a bowl. No, that wasn’t a question.'},
+  'npc.priest':{he:['לונה','הכוהנת'],en:['Luna','Priestess']},
+  'npc.priest.spot':{he:'מקדש (בקרוב)',en:'Temple (soon)'},
+  'npc.priest.low':{he:'אני רואה בעתיד שלך... מקדש. כרגע זה שני דגלים. אבל דגלים מאוד רוחניים.',en:'I see in your future... a temple. Right now it’s two flags. Very spiritual flags.'},
+  'npc.priest.high':{he:'הכוכבים אומרים שתנצח היום. הם אמרו את זה גם אתמול. הכוכבים אופטימיים.',en:'The stars say you’ll win today. They said that yesterday too. The stars are optimists.'},
+  'npc.priest.new':{he:'חלמתי עליך הלילה. עשית משהו בשבילי. איזה צירוף מקרים.',en:'I dreamed about you last night. You were doing something for me. What a coincidence.'},
+  'npc.priest.busy':{he:'הרוחות לוחשות שעוד לא סיימת. גם בלי הרוחות ראיתי את זה.',en:'The spirits whisper that you’re not done. I could tell without the spirits.'},
+  'npc.priest.ready':{he:'ידעתי שתצליח! ראיתי את זה בחזון. טוב, ניחשתי. קח פרס.',en:'I knew you’d make it! I saw it in a vision. Okay, I guessed. Take a reward.'},
+  /* ======== בדיחות פנימיות ========
+     ניר: כאן כותבים בדיחות פנימיות לכל תושב. בכל שיחה יש סיכוי (NPC.joke ב-npc.js) שהוא יגיד אחת מהן במקום משפט רגיל.
+     כותבים בין גרשיים, עם פסיק בין משפט למשפט. למשל: he:['משפט אחד','משפט שני'].
+     אם אין גרסה באנגלית, משאירים en:[] ובאנגלית הוא פשוט לא יגיד אותן */
+  'npc.jokes.head':{he:[],en:[]},
+  'npc.jokes.smith':{he:[],en:[]},
+  'npc.jokes.merchant':{he:[],en:[]},
+  'npc.jokes.inn':{he:[],en:[]},
+  'npc.jokes.priest':{he:[],en:[]}
 };
 
 function T(key,...a){const e=TEXT[key],v=e?(e[LANG]??e.he):key;return typeof v==='function'?v(...a):v}

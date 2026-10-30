@@ -15,6 +15,7 @@ const VIEW={tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a45
    anim: שמות האנימציות מהחבילה. דמות חדשה = שורה כאן (ומודל ב-build3d.js).
    לשחקן אין props כאן: הוא מחזיק את הנשק שלבוש בציוד (heroLook, לפי GRIP3D) */
 const HAND_R={bone:'handslotr',pos:[0,0.033,0],rot:[0,-1,0,0]};
+const NPC_ANIM={idle:'Idle_A',walk:'Walking_A',work:'Idle_A',wave:'Waving',cheer:'Cheering'};   // תושבי הכפר: מה מנגנים בכל מצב (npc.js). KayKit 2.0
 const LOOK3D={
   player:{model:'knight',h:66,foot:14,
     anim:{idle:'Idle_A',run:'Running_A',hit:'Hit_A',die:'Death_A',win:'Cheering'}},
@@ -38,7 +39,14 @@ const LOOK3D={
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle_A',charge:'Melee_2H_Attack_Spin',cast:'Melee_2H_Attack_Chop',taunt:'Taunt',die:'Death_A'}},
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. בלי קסדה הוא נמוך יותר, אז h קטן כדי שהגוף יהיה בגודל של האביר.
   // לבדיקה בלבד: עם ?hero=pilot בכתובת הוא נכנס במקום האביר של הלוחם (דמות ההתחלה הראשונה)
-  pilotHero:{model:'pilotHero',h:56,foot:14}
+  pilotHero:{model:'pilotHero',h:56,foot:14},
+  /* תושבי הכפר (NPC ב-npc.js): דמויות KayKit בצבע משלהן, עם אנימציות העבודה של 2.0 (NPC_ANIM), עד שיגיעו הדמויות של ג'מיני.
+     own:false מסתיר את הנשק שהדמות מחזיקה בקובץ המקורי. anim: מה מנגנים בכל מצב של התושב (idle, walk, work, wave, cheer) */
+  npc_head:{model:'knight',h:64,foot:14,tint:'gold',anim:{...NPC_ANIM,idle:'Idle_B'}},
+  npc_smith:{model:'barbarian',h:66,foot:14,tint:'fire',own:false,props:{hammer:{prop:'w_hammer_A',...HAND_R}},anim:{...NPC_ANIM,work:'Hammering'}},
+  npc_merchant:{model:'rogue',h:60,foot:13,tint:'gold',own:false,anim:NPC_ANIM},
+  npc_inn:{model:'barbarian',h:58,foot:13,own:false,anim:NPC_ANIM},
+  npc_priest:{model:'mage',h:66,foot:13,tint:'lilac',props:{staff:{prop:'w_staff_A',...HAND_R}},anim:{...NPC_ANIM,work:'Ranged_Magic_Spellcasting'}}
 };
 /* הנשק ביד השחקן: המודל מ-look.model של הפריט בציוד (GEAR.items ב-gear.js), והחומר לפי ה-tier שלו (טקסטורה wtex_<חומר>, build3d.js).
    כל משפחת נשקים יושבת ביד אחרת ותוקפת באנימציה אחרת. of: לאיזו משפחה שייך מודל, לפי השם.
@@ -206,8 +214,9 @@ function heroLook(){
   return R3D._hl=L;
 }
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
-const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')).join()+'|'+(L.tint||'')+'|'+L.h;   // מודל זהה בצבע או בגודל אחר (יצורי משאבים) לא חוזר מהמאגר
-const TINT={ember:C.ember,tide:C.tide,gold:C.gold,...Object.fromEntries(Object.keys(DMG.types).map(k=>[k,DMG.types[k].col]))};   // צבע לכל סוג נזק, ושמות הצבעים של המשחק
+// מפתח למאגר: רק דמות זהה (מודל, חפצים, צבע, גודל, נשק מוסתר) חוזרת לשימוש. יצורי משאבים הם מודל קיים בצבע ובגודל אחר
+const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')).join()+(L.tint?'|'+L.tint:'')+'|'+L.h+(L.own===false?'|x':'');
+const TINT={ember:C.ember,tide:C.tide,gold:C.gold,...Object.fromEntries(Object.keys(DMG.types).map(k=>[k,DMG.types[k].col])),lilac:C.lilac};   // צבע לכל סוג נזק, ושמות הצבעים של המשחק
 const tintOf=t=>TINT[t]||t;   // שם מ-TINT, או צבע ישיר ('#8A8F9C')
 function makeActor(L){
   const pool=R3D.pool||(R3D.pool={});const free=pool[lookKey(L)];
@@ -367,6 +376,23 @@ function syncWorld(){
     m.visible=!n.dead;
   }
 }
+// תושבי הכפר: דמות לכל תושב שנמצא בכפר, והקישוטים בפינה של מי שאין לו מבנה. המצב (הולך, עובד, מנופף) מגיע מ-npc.js
+function syncNpcs(dt){
+  const all=npcState(),A=R3D.npcs||(R3D.npcs={}),V=R3D.vil;
+  if(!V.npcDeco){V.npcDeco=1;for(const id in NPC.list){const sp=NPC.list[id].spot;if(sp)sp.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length];vPut(VIL3D.deco[d].model,sp.x+dx*40,sp.y+dy*40,VIL3D.deco[d].w)})}}
+  for(const id in NPC.list){
+    const L=LOOK3D['npc_'+id],n=all[id];let a=A[id];
+    if(!npcHere(id)||!L){if(a){freeActor(a);delete A[id]}continue}
+    if(!a){a=A[id]=makeActor(L);a.npcSt=null}
+    if(a.own)a.own.visible=L.own!==false;
+    if(a.npcSt!==n.st){a.npcSt=n.st;if(n.st==='wave'||n.st==='cheer')once(a,L.anim[n.st],n.st==='wave'?NPC.waveT:NPC.cheerT);else a.one=null}
+    const busy=a.one&&a.one.isRunning();
+    loop(a,(n.st==='walk'?L.anim.walk:n.st==='work'?L.anim.work:L.anim.idle)+(busy?'@low':''),n.st==='walk'?0.8:1);
+    place(a,n.x,n.y,L.foot,yawOf(Math.cos(n.face),Math.sin(n.face)));
+    a.mixer.update(dt);mark('shadow',a.root.position.x,a.root.position.z,15);
+  }
+}
+function npcs3dOff(){if(!R3D.npcs)return;for(const id in R3D.npcs)freeActor(R3D.npcs[id]);R3D.npcs=null}
 
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
 function render3d(ox,oy){
@@ -387,7 +413,7 @@ function render3d(ox,oy){
   R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
   if(R3D.wld)R3D.wld.g.visible=false;
-  if(S.vil){syncPlayer(dt);syncVillage()}   // בכפר: השחקן והמבנים
+  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt)}   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
     if(S.wd)syncWorld();   // העולם הפתוח: עצים, סלעים ושערים (world.js)
@@ -408,6 +434,6 @@ function render3d(ox,oy){
   const i=r.info.render;R3D.stats={calls:i.calls,tris:i.triangles,actors:R3D.actors.size+1,crowd:R3D.nCrowd};
 }
 // התחלה מחדש: מנקים דמויות מהריצה הקודמת
-function reset3d(){if(!R3D.ready)return;for(const [e,a] of R3D.actors)freeActor(a);R3D.actors.clear();if(R3D.player){R3D.player.st=null;R3D.player.one=null;R3D.player.base=null;R3D.player.mixer.stopAllAction()}}
+function reset3d(){if(!R3D.ready)return;npcs3dOff();for(const [e,a] of R3D.actors)freeActor(a);R3D.actors.clear();if(R3D.player){R3D.player.st=null;R3D.player.one=null;R3D.player.base=null;R3D.player.mixer.stopAllAction()}}
 
 if(R3D.want)init3d();else showGfx();
