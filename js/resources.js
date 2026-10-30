@@ -23,38 +23,39 @@ const RES={
     herb:    {fam:'build',icon:'🌿',rar:0,sell:1,buy:4},
     mushroom:{fam:'build',icon:'🍄',rar:1,sell:3,buy:9},
     flower:  {fam:'build',icon:'🌸',rar:1,sell:3,buy:9},
-    // מתכות, מהחלשה לחזקה. ככל שהמקום רחוק וקשה יותר, המתכת טובה יותר
-    copper:  {fam:'metal',icon:'🥉',rar:0,sell:2,buy:6},
-    iron:    {fam:'metal',icon:'🔩',rar:1,sell:4,buy:12},
-    silver:  {fam:'metal',icon:'🥈',rar:2,sell:8,buy:25},
-    gold:    {fam:'metal',icon:'🥇',rar:3,sell:15,buy:50},
-    mythril: {fam:'metal',icon:'💠',rar:4,sell:30,buy:110},
+    // מתכות, מהחלשה לחזקה. ככל שהמקום רחוק וקשה יותר, המתכת טובה יותר.
+    // האייקון הוא גוש בצבע המתכת, לא כלי (ניר: "המשאב שנראה כמו PICK AXE לא ברור"). האבנים בצורות אחרות, כדי שלא יתבלבלו
+    copper:  {fam:'metal',icon:'🟤',rar:0,sell:2,buy:6},
+    iron:    {fam:'metal',icon:'⚫',rar:1,sell:4,buy:12},
+    silver:  {fam:'metal',icon:'⚪',rar:2,sell:8,buy:25},
+    gold:    {fam:'metal',icon:'🟡',rar:3,sell:15,buy:50},
+    mythril: {fam:'metal',icon:'🔵',rar:4,sell:30,buy:110},
     // יצורים: כל סוג אויב מפיל את שלו (drop ב-data.js). אבק עצמות משלד, שריון שבור ממשוריין, תמצית צל מרוח נדירה
     bone:    {fam:'creature',icon:'🦴',rar:0,sell:2,buy:6},
     dust:    {fam:'creature',icon:'🌫️',rar:1,sell:3,buy:9},
-    hide:    {fam:'creature',icon:'🐾',rar:0,sell:2,buy:6},
+    hide:    {fam:'creature',icon:'🟫',rar:0,sell:2,buy:6},
     plate:   {fam:'creature',icon:'🛡️',rar:1,sell:4,buy:12},
     essence: {fam:'creature',icon:'✨',rar:1,sell:4,buy:12},
     shadow:  {fam:'creature',icon:'🌑',rar:2,sell:9,buy:28},
-    venom:   {fam:'creature',icon:'🧪',rar:1,sell:4,buy:12},
+    venom:   {fam:'creature',icon:'🟢',rar:1,sell:4,buy:12},
     // חלקי בוס: boss הוא ה-id של הבוס (BOSSES ב-data.js). אי אפשר לקנות, רק להשיג ממנו
-    horn:    {fam:'boss',icon:'🦬',rar:4,sell:40,boss:'boss'},
+    horn:    {fam:'boss',icon:'🦏',rar:4,sell:40,boss:'boss'},
     // נדיר: אבן לכל סוג נזק (elem), בשלוש דרגות: שבורה (C), רגילה, מושלמת (F). אבן כוכב תגן ב-Aging
-    rubyC:   {fam:'rare',icon:'🔴',rar:2,sell:8,buy:30,elem:'fire',grade:0},
-    ruby:    {fam:'rare',icon:'🔴',rar:3,sell:20,buy:70,elem:'fire',grade:1},
-    rubyF:   {fam:'rare',icon:'🔴',rar:4,sell:50,buy:180,elem:'fire',grade:2},
+    rubyC:   {fam:'rare',icon:'♦️',rar:2,sell:8,buy:30,elem:'fire',grade:0},
+    ruby:    {fam:'rare',icon:'♦️',rar:3,sell:20,buy:70,elem:'fire',grade:1},
+    rubyF:   {fam:'rare',icon:'♦️',rar:4,sell:50,buy:180,elem:'fire',grade:2},
     sapphireC:{fam:'rare',icon:'🔷',rar:2,sell:8,buy:30,elem:'ice',grade:0},
     sapphire:{fam:'rare',icon:'🔷',rar:3,sell:20,buy:70,elem:'ice',grade:1},
     sapphireF:{fam:'rare',icon:'🔷',rar:4,sell:50,buy:180,elem:'ice',grade:2},
-    boltC:   {fam:'rare',icon:'⚡',rar:2,sell:8,buy:30,elem:'lightning',grade:0},
-    bolt:    {fam:'rare',icon:'⚡',rar:3,sell:20,buy:70,elem:'lightning',grade:1},
-    boltF:   {fam:'rare',icon:'⚡',rar:4,sell:50,buy:180,elem:'lightning',grade:2},
+    boltC:   {fam:'rare',icon:'🔮',rar:2,sell:8,buy:30,elem:'lightning',grade:0},
+    bolt:    {fam:'rare',icon:'🔮',rar:3,sell:20,buy:70,elem:'lightning',grade:1},
+    boltF:   {fam:'rare',icon:'🔮',rar:4,sell:50,buy:180,elem:'lightning',grade:2},
     aquaC:   {fam:'rare',icon:'💧',rar:2,sell:8,buy:30,elem:'water',grade:0},
     aqua:    {fam:'rare',icon:'💧',rar:3,sell:20,buy:70,elem:'water',grade:1},
     aquaF:   {fam:'rare',icon:'💧',rar:4,sell:50,buy:180,elem:'water',grade:2},
-    amberC:  {fam:'rare',icon:'🟠',rar:2,sell:8,buy:30,elem:'earth',grade:0},
-    amber:   {fam:'rare',icon:'🟠',rar:3,sell:20,buy:70,elem:'earth',grade:1},
-    amberF:  {fam:'rare',icon:'🟠',rar:4,sell:50,buy:180,elem:'earth',grade:2},
+    amberC:  {fam:'rare',icon:'🔶',rar:2,sell:8,buy:30,elem:'earth',grade:0},
+    amber:   {fam:'rare',icon:'🔶',rar:3,sell:20,buy:70,elem:'earth',grade:1},
+    amberF:  {fam:'rare',icon:'🔶',rar:4,sell:50,buy:180,elem:'earth',grade:2},
     gem:     {fam:'rare',icon:'💎',rar:2,sell:12,buy:45},   // אבן מגן: שומרת על פריט מירידה כשנכשלים ב-Aging (aging.js)
     star:    {fam:'rare',icon:'🌟',rar:4,sell:45,buy:160}
   },
@@ -62,9 +63,9 @@ const RES={
      ברשימה: משפחות או משאבים. מה שב-always מוצג תמיד, וכל השאר רק כשיש ממנו. bag: כל מה שיש בתרמיל */
   show:{village:['coins','wood','stone','cloth','resin'],world:'bag',forge:['coins','metal','rare'],mine:['coins','stone','metal'],market:'bag'},
   always:['coins','wood','stone','copper','iron'],
-  // מוות בעולם הפתוח: איזה חלק מהתרמיל הולך לאיבוד. עוד לא מחובר, כי אין עולם פתוח
+  // מוות בעולם הפתוח: איזה חלק מהתרמיל הולך לאיבוד (worldDeath ב-world.js)
   deathLoss:{resources:0.5,items:0},
-  // שמות ישנים בשמירה: 'עפרות' הפכו לברזל
+  // שמות ישנים בשמירה: 'עפרות' (⛏️) הפכו לברזל
   renamed:{ore:'iron'}
 };
 
@@ -83,3 +84,32 @@ function resShown(place){
 }
 // השם של משאב, עם הדרגה של אבן: 'אודם שבור'
 const resName=r=>{const R=resOf(r);return R&&R.grade!=null?T('gemName',T('gem.'+R.elem),R.grade):T('res.'+r)};
+
+/* "מה זה?": שורה אחת על משאב, כשנוגעים בו בתרמיל או בפס העליון. מה הוא, מאיפה הוא מגיע ובשביל מה, מחושב מהטבלאות עצמן,
+   כך שמקור או שימוש חדש מופיע כאן לבד. מכל סוג עד RES.tip.max שמות */
+RES.tip={max:3,ms:3500};
+function resWhere(r){
+  const src=new Set(),use=new Set(),has=t=>t&&t[r];
+  for(const k in NODES.kinds)if(has(NODES.kinds[k].drop))src.add(T('node.'+k));
+  for(const t in ETYPES)if(has(ETYPES[t].drop))src.add(T('foe.'+t));
+  for(const b in BOSSES)if(has(BOSSES[b].drop))src.add(T('foe.boss'));
+  if(has(WANTED.drop)||WANTED.loot.some(l=>has(l.res)))src.add(T('foe.wanted'));
+  for(const k in VILLAGE.b){const B=VILLAGE.b[k];if(B.make&&B.make[r]&&B.make[r].some(n=>n>0))src.add(T('vil.'+k));if(B.cost.some(has))use.add(T('vil.'+k))}
+  if(Object.values(GEAR.recipes).some(has))use.add(T('tip.craft'));
+  if(AGING.cost.some(has)||AGING.gem===r)use.add(T('tip.aging'));
+  if(RES.list[r].sell)use.add(T('vil.market'));
+  return{src:[...src],use:[...use]};
+}
+function resTip(r){
+  const R=resOf(r);if(!R)return '';
+  const w=resWhere(r),cut=a=>a.slice(0,RES.tip.max).join(', ')+(a.length>RES.tip.max?'…':'');
+  return R.icon+' '+resName(r)+' · '+T('tier')[R.rar]+(w.src.length?' · '+T('tip.from',cut(w.src)):'')+(w.use.length?' · '+T('tip.for',cut(w.use)):'');
+}
+// נגיעה בתג של משאב (resChip ב-village.js, data-r) מציגה את השורה מעליו לכמה שניות
+document.addEventListener('click',e=>{
+  const c=e.target.closest&&e.target.closest('.res[data-tip]');if(!c)return;
+  let t=document.getElementById('resTip');if(!t){t=document.createElement('div');t.id='resTip';t.className='restip';document.body.appendChild(t)}
+  t.textContent=resTip(c.dataset.tip);t.dir=DIR;t.hidden=false;
+  const b=c.getBoundingClientRect();t.style.top=Math.max(4,b.bottom+6)+'px';
+  clearTimeout(t._h);t._h=setTimeout(()=>{t.hidden=true},RES.tip.ms);
+});

@@ -120,7 +120,7 @@ function enterVillage(){
   for(const k in VILLAGE.b)vSettle(k);   // הייצור מאז הביקור הקודם
   if(!SAVE.gift){for(const r in VILLAGE.gift)bagAdd(r,VILLAGE.gift[r]);SAVE.gift=true;banner(T('vil.gift'),C.gold)}
   else banner(T('vil.home'),C.gold);
-  questsRefresh();   // יום חדש וקווסטים שנפתחו (quests.js)
+  rankSync();questsRefresh();   // רמת הדמות (ranks.js), יום חדש וקווסטים שנפתחו (quests.js)
   saveNow();
   villageUi(true);
 }
@@ -161,6 +161,7 @@ function runEnd(){
   dropsCollectAll();   // מה שנשאר על הרצפה (drops.js)
   const L=runLoot();if(S.bn&&S.bn.coins)L.coins=(L.coins||0)+S.bn.coins;
   for(const r in L){bagAdd(r,L[r]);questEvent('collect',r,L[r])}
+  rankRunXp();   // חלק מה-XP של הריצה נשאר לדמות (ranks.js)
   saveNow();
   $('overTitle').textContent=T(S.won?'vil.won':'fell');
   $('sLoot').innerHTML=lootSummary(L)||T('vil.noLoot');   // מהנדיר לרגיל (loot.js)
@@ -168,7 +169,7 @@ function runEnd(){
 
 /* ---- ממשק: התרמיל למעלה, והפאנל של המבנה שלידו למטה ---- */
 // משאב אחד כתג: אייקון ומספר. משאב נדיר מקבל מסגרת בצבע הנדירות שלו
-const resChip=(r,n,cls='')=>{const R=resOf(r);return '<span class="res'+cls+(R&&R.rar?' rare" style="--tint:'+RES.rarity[R.rar].col:'')+'" aria-label="'+resName(r)+'">'+resIcon(r)+' '+n+'</span>'};
+const resChip=(r,n,cls='')=>{const R=resOf(r);return '<span class="res'+cls+(R&&R.rar?' rare" style="--tint:'+RES.rarity[R.rar].col:'')+'" data-tip="'+r+'" aria-label="'+resName(r)+'">'+resIcon(r)+' '+n+'</span>'};
 // list: אילו משאבים להראות, גם כשיש 0. בלי list: רק מה שיש
 const bagLine=(bag,list)=>(list||Object.keys(RES.list).filter(r=>bag[r]>0)).map(r=>resChip(r,bag[r]||0)).join('');
 // התרמיל המלא לפי משפחות: טבע ובנייה, מתכות, יצורים, בוסים, נדיר. only: רק משפחה אחת (הסינון בתרמיל). משפחה ריקה לא מוצגת

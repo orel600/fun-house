@@ -62,7 +62,7 @@ function wantedDown(e){
   const name=T('loot.'+L.key)+(L.items?': '+pick(T('loot.'+L.key+'Items')):'');wn.got.push(name);
   for(let i=0;i<L.orbs;i++){const a=rand(0,6.28),rr=rand(8,60);orbs.push({x:e.x+Math.cos(a)*rr,y:e.y+Math.sin(a)*rr,v:1})}
   if(L.heal)P.hp=Math.min(P.maxHp,P.hp+L.heal);
-  if(L.res)runGive(L.res,e.x,e.y-e.r-20);   // לשלל של הריצה (village.js)
+  if(L.res)runGive(L.res,e.x,e.y);   // נופל לרצפה (drops.js)
   banner(name,L.col);
   sfx(L.party||L.heal?'celebrate':'coin');
   if(L.party){sparks(e.x,e.y,C.gold,40,320);S.shake=Math.max(S.shake,12);S.slow=0.7}

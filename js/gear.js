@@ -209,7 +209,7 @@ function gSlotHtml(s){
 }
 function gearDraw(){
   const D=GEAR.doll,hero=HEROES.list[heroId()]||{},sel=GUI.sel;
-  $('gHero').textContent=T('gear.hero',heroLv());
+  $('gHero').textContent=T('gear.hero',heroLv())+(rankId()?' · '+rankLabel():'');   // הדרגה (ranks.js)
   $('gCoins').innerHTML=resChip('coins',SAVE.bag.coins||0);
   // הבובה: הדמות באמצע, והמשבצות בשני הצדדים ומתחתיה
   const side=k=>'<div class="gd-'+k+'">'+D[k].map(gSlotHtml).join('')+'</div>';
@@ -236,6 +236,8 @@ function gDetailHtml(){
     '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
   if(it&&gPlus(k))d+='<p class="gage">'+T('gear.aged',gPlus(k))+'</p>';
   if(it)d+=gStatsHtml(k);
+  else{const w=resWhere(k),cut=a=>a.slice(0,RES.tip.max).join(', ')+(a.length>RES.tip.max?'…':'');   // משאב: מאיפה ובשביל מה (resources.js)
+    if(w.src.length)d+='<p class="dim">'+T('tip.from',cut(w.src))+'</p>';if(w.use.length)d+='<p class="dim">'+T('tip.for',cut(w.use))+'</p>'}
   const btn=(act,txt,ghost)=>'<button class="vbtn'+(ghost?' ghost':'')+'" data-act="'+act+'">'+txt+'</button>';
   let b='';
   if(sel.id&&it){const old=gGet(it.slot,gTarget(it));

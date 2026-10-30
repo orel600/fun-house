@@ -138,6 +138,9 @@ h1{font-size:46px} h2{font-size:30px}
 .res{background:rgba(18,22,36,.8);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font:800 14px var(--body);color:var(--chalk);direction:ltr;font-variant-numeric:tabular-nums;white-space:nowrap}
 .res.miss{color:var(--blood);border-color:rgba(239,78,87,.5)}
 .res.rare{border-color:var(--tint)}
+/* "מה זה?" על משאב: נוגעים בתג (resTip ב-resources.js). בפס העליון התגים מקבלים נגיעה, גם כשהפס עצמו לא */
+.res[data-tip]{cursor:help;pointer-events:auto}
+.restip{position:fixed;z-index:9;left:50%;transform:translateX(-50%);max-width:min(92vw,560px);background:rgba(10,13,22,.95);border:1px solid var(--line);border-radius:10px;padding:6px 12px;font:700 13px var(--body);color:var(--chalk);text-align:center;pointer-events:none}
 /* התרמיל לפי משפחות (resources.js), ושורות היצירה בנפחייה (gear.js) */
 .fam{display:flex;flex-direction:column;gap:4px;width:100%}
 .fam .bag{justify-content:flex-start}

@@ -6,7 +6,7 @@ const SAVE_VER=1;
 
 function saveBlank(){return{
   v:SAVE_VER,
-  hero:{start:null,skin:null,level:1,xp:0,rank:0,style:{}},   // start: דמות ההתחלה. skin: מראה אישי מעליה (HEROES.skins). style: במה שיחק הכי הרבה, לקווסטי הדרגה
+  hero:{start:null,skin:null,level:1,xp:0,rank:0,rankId:null,style:{}},   // start: דמות ההתחלה. skin: מראה אישי מעליה (HEROES.skins). xp: כל מה שנאסף, והרמה נגזרת ממנו. rank, rankId: שלב ודרגה (ranks.js). style: במה שיחק הכי הרבה, לקווסטי הדרגה
   bag:{},                                           // התרמיל, בלי הגבלה: {wood:12,bone:3}. מה שסוחבים, ובעולם הפתוח מסתכנים בו
   stash:{},                                         // המחסן בכפר: המקום הבטוח, באותה צורה כמו התרמיל. מנוהל ב-stash.js
   gear:{weapon:null,acc:[],boots:[],orbit:[]},               // orbit: החפצים המסתובבים, עד 5

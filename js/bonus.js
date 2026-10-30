@@ -101,7 +101,7 @@ function roomUpdate(dt){
 function exitRoom(){
   const R=S.room;S.room=null;
   P.x=R.back.x;P.y=R.back.y;S.cam.x=P.x;S.cam.y=P.y;P.inv=1.2;
-  runGive(BONUS.roomRes,P.x,P.y-30);
+  runGive(BONUS.roomRes,P.x,P.y);
   banner(T('roomOut',R.got),C.gold);
 }
 

@@ -8,7 +8,7 @@
      gather  לאסוף בעולם הפתוח n מ-what: משאב שנפל ממקור או מאויב בעולם (world.js). נספר כשהוא נכנס לתרמיל
      upgrade המבנה what ברמה n לפחות. נבדק לפי הכפר עצמו, אז מה שכבר בנית נספר
      win     לנצח בוס n פעמים. אפשר בתנאי: noHit (בלי לחטוף פגיעה כל עוד הבוס בזירה), under (לפני שעברו כך וכך שניות בריצה)
-   reward: משאבים לתרמיל לפי השם, xp לדמות, item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>'). id של פריט ציוד מ-GEAR.items (gear.js) נכנס לתרמיל כציוד שאפשר ללבוש,
+   reward: משאבים לתרמיל לפי השם, xp לדמות, rank: עלייה לשלב הזה בדרגה (ranks.js), item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>'). id של פריט ציוד מ-GEAR.items (gear.js) נכנס לתרמיל כציוד שאפשר ללבוש,
      ואם יש לו משבצת פנויה הוא נלבש מיד (השם שלו 'it.<id>').
    req: תנאי פתיחה. level: רמת דמות, quest: קווסט שכבר הושלם, b: {מבנה:רמה}.
    המשחק מדווח מה קרה דרך questEvent(סוג, מה, כמה): שורה אחת בכל מקום (kill, hurt, win, collect, gather, upgrade, reach). המנוע מחליט לאיזה קווסט זה שייך.
@@ -21,7 +21,7 @@ const QUESTS={
     hunt:{repeat:true},
     daily:{auto:true,daily:true},
     achievement:{auto:true},
-    rank:{},     // בהמשך: קווסט עלייה בדרגה, כל 20 רמות
+    rank:{},     // עלייה בדרגה, כל 20 רמות. הפרס rank:<שלב>, ואיזו דרגה נפתחת קובע ranks.js
     world:{}     // בהמשך: NPC שמוצאים בעולם הפתוח
   },
   daily:4,       // כמה קווסטים יומיים בכל יום. מתחלפים בחצות, לפי השעון בטלפון
@@ -45,6 +45,8 @@ const QUESTS={
     {id:'shields',giver:'smith',kind:'village',obj:[{type:'kill',what:'shield',n:15}],reward:{iron:6,xp:20},req:{quest:'bones'}},
     {id:'wFirst',giver:'head',kind:'village',obj:[{type:'reach',what:'world',n:1},{type:'gather',what:'wood',n:10}],reward:{coins:20,stone:10}},
     {id:'door',giver:'priest',kind:'village',obj:[{type:'reach',what:'room',n:1}],reward:{coins:30}},
+    // ---- דרגה: הכוהנת, כל RANKS.every רמות. "הבא 30 עצמות ונצח את השומר" (game-design.md) ----
+    {id:'rank1',giver:'priest',kind:'rank',obj:[{type:'collect',what:'bone',n:30},{type:'win',n:1}],reward:{rank:1,coins:50},req:{level:20}},
     // ---- ציד: אפשר לקחת שוב ושוב ----
     {id:'huntWanted',giver:'merchant',kind:'hunt',obj:[{type:'kill',what:'wanted',n:1}],reward:{coins:40}},
     {id:'huntFast',giver:'smith',kind:'hunt',obj:[{type:'win',n:1,under:240}],reward:{iron:10,xp:40},req:{quest:'firstBoss'}},
@@ -68,7 +70,7 @@ const QUESTS={
     {id:'aBuilder',giver:null,kind:'achievement',obj:[{type:'upgrade',what:'center',n:3}],reward:{coins:100,stone:50}},
     {id:'aWanted',giver:null,kind:'achievement',obj:[{type:'kill',what:'wanted',n:5}],reward:{coins:60,item:'qCrown'}}
   ],
-  icon:{xp:'✨',item:'🎁',track:'📜'}    // אייקונים לפרס (מעבר למשאבים ב-RES) ולקו המעקב
+  icon:{xp:'✨',item:'🎁',track:'📜',rank:'🎖️'}    // אייקונים לפרס (מעבר למשאבים ב-RES) ולקו המעקב
 };
 
 const QBY={};for(const q of QUESTS.list)QBY[q.id]=q;
@@ -134,19 +136,21 @@ function qGive(id){
 }
 function questClaim(id){
   const q=QBY[id],Q=QS();if(!q||!qReady(q))return false;
-  for(const k in q.reward){const v=q.reward[k];if(k==='xp')SAVE.hero.xp+=v;else if(k==='item')qGive(v);else bagAdd(k,v)}
+  for(const k in q.reward){const v=q.reward[k];if(k==='xp')SAVE.hero.xp+=v;else if(k==='item')qGive(v);else if(k!=='rank')bagAdd(k,v)}
+  rankSync();   // רמת הדמות מה-XP (ranks.js)
   delete Q.active[id];Q.done[id]=(Q.done[id]||0)+1;
   if(Q.track===id)Q.track=null;
   saveNow();
   celebrate(P.x,P.y-10,'quest');
   banner(T('q.claimed',T('q.'+id)[0]),C.gold);
+  if(q.reward.rank)rankUp(q.reward.rank);   // הטקס והדרגה (ranks.js)
   return true;
 }
 
 /* ---- ממשק: היומן בכפר, וקו מעקב בזירה ---- */
 const qWhat=o=>o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?resName(o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
 const qObjTxt=(q,i)=>{const o=q.obj[i];return T('qo.'+o.type,qWhat(o),o.n)+(o.noHit?T('qo.noHit'):'')+(o.under?T('qo.under',fmt(o.under)):'')};
-const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='item'?(gItem(r[k])?gIcon(r[k])+' '+gName(r[k]):QUESTS.icon.item+' '+T('item.'+r[k])):(resIcon(k)||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
+const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='rank'?QUESTS.icon.rank+' '+(rankFor(r[k])?rankName(rankFor(r[k])):''):k==='item'?(gItem(r[k])?gIcon(r[k])+' '+gName(r[k]):QUESTS.icon.item+' '+T('item.'+r[k])):(resIcon(k)||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
 // הקווסט שמוצג בזירה: זה שבחרת לעקוב אחריו, ואם אין, הראשון שעוד לא הושלם
 function qTracked(){
   const Q=QS(),ids=Object.keys(Q.active).filter(id=>QBY[id]);
