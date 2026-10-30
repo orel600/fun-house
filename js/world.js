@@ -8,19 +8,19 @@
 
 const WORLD={
   region:'meadow',                       // השם ב-lang.js: 'w.region.meadow'
-  size:{w:2600,h:1700},                  // גבולות האזור, סביב (0,0). הכפר כולו ברדיוס 480
-  home:{x:0,y:-760,r:44},                // השער חזרה לכפר. יוצאים מהכפר ומגיעים לכאן
-  gates:{grove:{x:-1050,y:560,r:44},pit:{x:1050,y:560,r:44}},   // שערים לזירה. השמות ב-lang.js ('w.gate.<id>')
+  size:{w:2100,h:1400},                  // גבולות האזור, סביב (0,0). צפוף, כדי שלא ילכו הרבה בשביל כלום (ניר, משחק ראשון בטלפון)
+  home:{x:0,y:-600,r:44},                // השער חזרה לכפר. יוצאים מהכפר ומגיעים לכאן
+  gates:{grove:{x:-840,y:450,r:44},pit:{x:840,y:450,r:44}},   // שערים לזירה. השמות ב-lang.js ('w.gate.<id>')
   arrive:130,                            // כמה פיקסלים מתחת לשער עומדים כשמגיעים אליו
   near:55,                               // כמה פיקסלים מקצה שער נחשב "לידו": נפתח הפאנל עם הכפתור
   /* מקורות משאבים בשדות: kind, כמה, מרכז ורדיוס. המקומות קבועים, כך שהיער תמיד באותו מקום.
      kinds: עד שהכלכלה (#27) תגיע. אז השמות האלה עוברים ל-NODES.kinds (nodes.js), ו-kinds כאן נמחק */
-  fields:[{kind:'tree',n:14,x:-760,y:-260,r:300},{kind:'tree',n:5,x:180,y:260,r:200},
-          {kind:'rock',n:9,x:760,y:-240,r:260},{kind:'copper',n:4,x:980,y:-500,r:150},{kind:'rock',n:3,x:-260,y:300,r:140}],
+  fields:[{kind:'tree',n:14,x:-610,y:-210,r:260},{kind:'tree',n:5,x:145,y:210,r:170},
+          {kind:'rock',n:9,x:610,y:-190,r:230},{kind:'copper',n:4,x:785,y:-400,r:135},{kind:'rock',n:3,x:-210,y:240,r:125}],
   kinds:{
-    tree:  {hp:40,r:20,shape:'tree',col:'#3E7A4A',drop:{wood:[1,3]}},
-    rock:  {hp:55,r:17,shape:'rock',col:'#7A8094',drop:{stone:[1,2],gem:[0.02,1]}},
-    copper:{hp:80,r:17,shape:'vein',col:'#C87533',drop:{ore:[1,1],stone:[0.5,1]}}
+    tree:  {hp:40,r:28,shape:'tree',col:'#3E7A4A',drop:{wood:[1,3]}},   // r: גודל וגבול הפגיעה. גדולים, כדי שיראו אותם בטלפון
+    rock:  {hp:55,r:24,shape:'rock',col:'#7A8094',drop:{stone:[1,2],gem:[0.02,1]}},
+    copper:{hp:80,r:24,shape:'vein',col:'#C87533',drop:{ore:[1,1],stone:[0.5,1]}}
   },
   gather:{reach:65,cd:0.5,dmg:20,calm:120},   // מכה במקור: מאיזה מרחק, כל כמה שניות, כמה נזק. calm: אויב קרוב מזה, וקודם נלחמים
   regrow:45,                             // שניות עד שמקור שנשבר צומח מחדש
@@ -28,25 +28,25 @@ const WORLD={
      יצורי המשאבים מגיעים עם הכלכלה (#27). עד אז אין להם שורה ב-ETYPES, והקבוצה שלהם פשוט לא מופיעה.
      ראשונות: מפלצות קלות ממש מחוץ לשער, הדבר הראשון ששחקן חדש פוגש. מהן לומדים איך נראים קרב, מספרי נזק ושלל (ניר) */
   foes:[
-    {type:'grunt',n:2,x:-230,y:-560,r:110},{type:'grunt',n:2,x:240,y:-540,r:110},{type:'grunt',n:3,x:0,y:-400,r:120},
-    {type:'grunt',n:3,x:-120,y:-220,r:160},{type:'grunt',n:3,x:380,y:280,r:160},
-    {type:'wisp',n:2,x:-640,y:120,r:180},{type:'shield',n:2,x:560,y:60,r:150},
-    {type:'treant',creature:true,n:2,x:-860,y:-380,r:200},{type:'golem',creature:true,n:2,x:820,y:-260,r:180},
-    {type:'crawler',creature:true,n:2,x:980,y:-480,r:120}
+    {type:'grunt',n:2,x:-185,y:-450,r:95},{type:'grunt',n:2,x:190,y:-430,r:95},{type:'grunt',n:3,x:0,y:-320,r:100},
+    {type:'grunt',n:3,x:-100,y:-180,r:140},{type:'grunt',n:3,x:305,y:225,r:140},
+    {type:'wisp',n:2,x:-510,y:95,r:150},{type:'shield',n:2,x:450,y:50,r:130},
+    {type:'treant',creature:true,n:2,x:-690,y:-305,r:170},{type:'golem',creature:true,n:2,x:655,y:-210,r:150},
+    {type:'crawler',creature:true,n:2,x:785,y:-385,r:105}
   ],
   aggro:240,                             // מאיזה מרחק אויב רודף
   wander:0.4,                            // מהירות ההסתובבות ליד הבית, יחסית לרדיפה
-  far:350,                               // קבוצה שנוקתה חוזרת רק כשהשחקן רחוק ממנה לפחות כך, כדי שלא תצוץ מול העיניים
+  far:300,                               // קבוצה שנוקתה חוזרת רק כשהשחקן רחוק ממנה לפחות כך, כדי שלא תצוץ מול העיניים
   /* כמה קשה, לפי המרחק של בית הקבוצה מהשער לכפר: ככל שמתרחקים, קשה יותר. to: עד איזה מרחק. hp, dmg, speed: פי כמה מהרגיל (ETYPES).
      leash: כמה רחוק מהבית האויב מוכן לרדוף לפני שהוא חוזר. back: שניות עד שקבוצה שנוקתה חוזרת */
   zones:[
-    {id:'start',to:450, hp:0.35,dmg:0.25,speed:0.6, leash:300,back:20},
-    {id:'near', to:1000,hp:0.7, dmg:0.6, speed:0.85,leash:450,back:35},
-    {id:'far',  to:1e9, hp:1,   dmg:1,   speed:1,   leash:560,back:45}
+    {id:'start',to:360, hp:0.35,dmg:0.25,speed:0.6, leash:240,back:20},
+    {id:'near', to:800, hp:0.7, dmg:0.6, speed:0.85,leash:360,back:35},
+    {id:'far',  to:1e9, hp:1,   dmg:1,   speed:1,   leash:480,back:45}
   ],
   regen:4,                               // חיים לשנייה כשאין אויב קרוב
   deathLoss:{resources:0.5},             // מוות: איזה חלק מכל משאב בתרמיל הולך. פריטים לא. RES.deathLoss כשהכלכלה תגיע
-  decor:{trees:90,hills:16}              // קישוטים מחוץ לגבול
+  decor:{trees:74,hills:14}              // קישוטים מחוץ לגבול
 };
 
 const wKind=k=>WORLD.kinds[k];
@@ -61,7 +61,7 @@ function enterWorld(at){
   S.wd={t:0,gt:0,near:null,ui:'',groups:WORLD.foes.map(()=>({t:0})),got:{}};
   S.nd={list:wNodes()};
   const g=wGates()[at]||WORLD.home;
-  P.x=g.x;P.y=g.y+WORLD.arrive;P.aim=Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
+  P.x=g.x;P.y=g.y+WORLD.arrive;P.aim=P.face=Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
   ['ovStart','ovOver','ovLevel','ovBoss','ovWDeath'].forEach(id=>$(id).hidden=true);
   WORLD.foes.forEach((G,i)=>wSpawn(G,i));
   banner(at==='home'?T('w.enter'):T('w.gate.'+at),C.gold);
@@ -88,7 +88,11 @@ function wGather(dt){
   if(!n)return;
   P.aim=Math.atan2(n.y-P.y,n.x-P.x);
   if(w.gt>0)return;w.gt=G.cd;
-  if(P.weapon==='sword'){P.sw.anim=0.2;P.sw.ang=P.aim}else{P.gn.t=P.gn.cd;P.gn.recoil=1}
+  // מקרוב: מכה מיד. מרחוק: הנשק שביד יורה (wFire ב-weapons.js), והמקור נפגע כשהקליע מגיע אליו
+  if(P.weapon==='sword'){P.sw.anim=0.2;P.sw.ang=P.aim;wNodeHit(n)}else wFire(1,{node:n,home:0,pierce:0});
+}
+function wNodeHit(n){
+  const G=WORLD.gather;if(n.dead)return;
   n.hp-=G.dmg;n.flash=0.09;sfx('hit');sparks(n.x,n.y-n.r*0.5,wKind(n.kind).col,5,160);
   if(n.hp<=0)wNodeDown(n);
 }
@@ -148,9 +152,10 @@ function worldUpdate(dt){
   }
   attack(dt);wGather(dt);
   wFoes(dt);if(S.mode!=='play')return;
-  for(const b of pb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
+  for(const b of pb){shotFly(b,dt);
+    const n=b.node;if(n&&b.life>0&&Math.hypot(n.x-b.x,n.y-b.y)<n.r+4){b.life=0;wNodeHit(n);if(b.shot==='bolt')sparks(b.x,b.y,dtCol(P.dt.gun),WEAPONS.bolt.burst,140);continue}
     for(const e of enemies){if(e.dead||b.hit.has(e)||b.life<=0)continue;
-      if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4){b.hit.add(e);damage(e,P.gn.dmg*dmgK(),'gun',Math.atan2(b.vy,b.vx));if(b.pierce--<=0)b.life=0}}}
+      if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4)shotHit(b,e)}}
   pb=pb.filter(b=>b.life>0);
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;

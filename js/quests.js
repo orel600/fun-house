@@ -8,7 +8,8 @@
      gather  לאסוף בעולם הפתוח n מ-what: משאב שנפל ממקור או מאויב בעולם (world.js). נספר כשהוא נכנס לתרמיל
      upgrade המבנה what ברמה n לפחות. נבדק לפי הכפר עצמו, אז מה שכבר בנית נספר
      win     לנצח בוס n פעמים. אפשר בתנאי: noHit (בלי לחטוף פגיעה כל עוד הבוס בזירה), under (לפני שעברו כך וכך שניות בריצה)
-   reward: משאבים לתרמיל לפי השם, xp לדמות, item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>'). id של פריט ציוד מ-GEAR.items (gear.js) נכנס לתרמיל כציוד שאפשר ללבוש.
+   reward: משאבים לתרמיל לפי השם, xp לדמות, item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>'). id של פריט ציוד מ-GEAR.items (gear.js) נכנס לתרמיל כציוד שאפשר ללבוש,
+     ואם יש לו משבצת פנויה הוא נלבש מיד (השם שלו 'it.<id>').
    req: תנאי פתיחה. level: רמת דמות, quest: קווסט שכבר הושלם, b: {מבנה:רמה}.
    המשחק מדווח מה קרה דרך questEvent(סוג, מה, כמה): שורה אחת בכל מקום (kill, hurt, win, collect, gather, upgrade, reach). המנוע מחליט לאיזה קווסט זה שייך.
    ההתקדמות נשמרת רק ב-SAVE.quests (save.js). בזירה היא נשמרת יחד עם השלל, בסוף הריצה */
@@ -26,6 +27,8 @@ const QUESTS={
   daily:4,       // כמה קווסטים יומיים בכל יום. מתחלפים בחצות, לפי השעון בטלפון
   list:[
     // ---- כפר: נותנים המבנים, ומובילים את השחקן בכפר ובזירה ----
+    // הראשון: קצר, ונעליים בפרס, כדי שההליכה תהיה מהירה כבר מההתחלה (ניר: "נעליים שנותנות מהירות שמקבלים מאיזה קווסט התחלתי")
+    {id:'boots',giver:'head',kind:'village',obj:[{type:'gather',what:'wood',n:5}],reward:{coins:10,item:'starterBoots'}},
     {id:'firstMill',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mill',n:1}],reward:{coins:15,wood:10}},
     {id:'firstMine',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mine',n:1}],reward:{coins:15,stone:10}},
     {id:'grunts',giver:'head',kind:'village',obj:[{type:'kill',what:'grunt',n:15}],reward:{coins:20,xp:20}},
@@ -124,9 +127,14 @@ function questEvent(type,what,n=1){
   }
   if(moved||type==='reach')questTrack();   // reach: גם בתחילת ריצה, כדי שקו המעקב יופיע מיד
 }
+// פרס פריט: לתרמיל. פריט ציוד עם משבצת פנויה נלבש מיד, והסטטים שלו חלים כבר עכשיו (נעליים: הולכים מהר יותר)
+function qGive(id){
+  bagAdd(id,1);const it=gItem(id);
+  if(it&&!gGet(it.slot,gTarget(it))){const before=gearStats();gearEquip(id);gearLive(before,id)}
+}
 function questClaim(id){
   const q=QBY[id],Q=QS();if(!q||!qReady(q))return false;
-  for(const k in q.reward){const v=q.reward[k];if(k==='xp')SAVE.hero.xp+=v;else if(k==='item')bagAdd(v,1);else bagAdd(k,v)}
+  for(const k in q.reward){const v=q.reward[k];if(k==='xp')SAVE.hero.xp+=v;else if(k==='item')qGive(v);else bagAdd(k,v)}
   delete Q.active[id];Q.done[id]=(Q.done[id]||0)+1;
   if(Q.track===id)Q.track=null;
   saveNow();
@@ -138,7 +146,7 @@ function questClaim(id){
 /* ---- ממשק: היומן בכפר, וקו מעקב בזירה ---- */
 const qWhat=o=>o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?T('res.'+o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
 const qObjTxt=(q,i)=>{const o=q.obj[i];return T('qo.'+o.type,qWhat(o),o.n)+(o.noHit?T('qo.noHit'):'')+(o.under?T('qo.under',fmt(o.under)):'')};
-const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='item'?QUESTS.icon.item+' '+T('item.'+r[k]):(VILLAGE.icon[k]||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
+const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='item'?(gItem(r[k])?gIcon(r[k])+' '+gName(r[k]):QUESTS.icon.item+' '+T('item.'+r[k])):(VILLAGE.icon[k]||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
 // הקווסט שמוצג בזירה: זה שבחרת לעקוב אחריו, ואם אין, הראשון שעוד לא הושלם
 function qTracked(){
   const Q=QS(),ids=Object.keys(Q.active).filter(id=>QBY[id]);

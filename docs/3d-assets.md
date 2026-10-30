@@ -124,6 +124,25 @@ Same character, same style. Fix: pure white background, no floor shadow, arms fu
 A single fantasy [helmet / pair of shoulder pads / crown] for a low-poly mobile game, in the exact style of KayKit 3D assets: chunky simple shapes, flat clean colors, no texture noise. Shown from the front and from the side, side by side, same scale, on a pure white background, no shadows, no text. Colors: [COLORS].
 ```
 
+### ה-Gem של ג׳מיני: הסגנון שלנו שמור (ניר, 30.10.2026)
+
+במקום להדביק פרומפט ארוך בכל פעם, ניר יצר Gem בג׳מיני בשם "Fun House Style". מצרפים לו כקובץ את תמונת הרפרנס של KayKit (`contents.png` מחבילת Adventurers 2.0: הדמויות בתנוחת T), ומדביקים בהוראות:
+
+```
+You create character art for our low-poly 3D mobile game. Always match the attached reference image (KayKit Adventurers style) exactly:
+- Chunky stylized proportions: oversized head (about one third of total height), short stubby legs, big blocky hands, simple rounded-box shapes.
+- Flat clean hand-painted colors, no texture noise, soft studio lighting, slightly cute and friendly faces.
+
+Every time I describe a character, output ONE image: a turnaround sheet of that single character, full body, strict T-pose (arms straight out to the sides, palms down, legs slightly apart). FRONT view on the left, SIDE view facing right in the middle, BACK view on the right. Same height and scale, same ground line.
+Pure white background, no floor shadow, no text, no labels, no frame. Hands empty, no weapons, no props.
+
+If I write "armor:" followed by an item, draw only that item (helmet, shoulder pads, crown...), front and side views, same style, white background.
+If I write "monster:" followed by a description, draw the creature in the same style and T-pose rules (a neutral standing pose if it has no arms).
+```
+
+**שיפור מהפיילוט:** להוסיף להוראות "flat colors, no shading, no baked lighting", כי הצבע של הדמות נלקח ישר מהציור, ואור וצל בציור הופכים אותה לכהה ורכה מ-KayKit.
+משתמשים בו כך: שורה אחת לכל דמות ("a young warrior in light leather and steel armor..."), ושולחים את התמונה ל-Claude עם המילים "פיילוט דמות". את ה-Gem אפשר לשתף עם אוראל.
+
 ### מה ניר עושה מהטלפון
 
 1. פותחים את אפליקציית Gemini ובוחרים יצירת תמונה.

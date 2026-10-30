@@ -5,38 +5,38 @@
    המשחק לרוחב (ניר, 30.10.2026): הכפר פרוש לרוחב, התרמיל למעלה, הפאנל בצד, והפינה הימנית למטה נשארת פנויה לכפתורי כישורים */
 
 const VILLAGE={
-  radius:480,                     // גבול הכפר: עד כאן אפשר ללכת. השער יושב על הגבול, למטה
-  spawn:{x:0,y:60},              // איפה עומדים כשנכנסים בפעם הראשונה. חוזרים מהזירה ליד השער
+  radius:410,                     // גבול הכפר: עד כאן אפשר ללכת. השער יושב על הגבול, למטה. הכל קרוב, בלי הליכה ריקה (ניר: "אתה הולך הרבה")
+  spawn:{x:0,y:50},              // איפה עומדים כשנכנסים בפעם הראשונה. חוזרים מהזירה ליד השער
   near:55,                        // כמה פיקסלים מקצה מבנה נחשב "לידו": נפתח הפאנל שלו ונאספת התוצרת
   max:5,                          // הרמה הכי גבוהה. מבנה לא עולה מעל מרכז הכפר
   gift:{coins:25,wood:20,stone:12},   // מתנת פתיחה, פעם אחת: מספיק לבנות מנסרה ומכרה
   icon:{coins:'🪙',wood:'🪵',stone:'🪨',ore:'⛏️',bone:'🦴',gem:'💎'},   // gem: אבן חן נדירה, מגינה ב-Aging (aging.js)   // סדר המשאבים בממשק הוא הסדר כאן
-  gate:{x:0,y:480,r:44},
+  gate:{x:0,y:410,r:44},
   /* איך מבנה נראה לפי רמה, כדי שכל שדרוג ייראה (ניר: "שידרגתי בניין בכפר גם צריך להיות אפקט").
      look: רצועות רמה. at: מאיזו רמה. model: איזה מודל (השמות ב-VIL3D.models). scale: גודל. deco: קישוטים סביב (VIL3D.deco). glow: זוהר.
      בתוך רצועה המבנה גדל עוד grow בכל רמה, ובכל שדרוג יש חגיגה (celebrate ב-fx.js) */
   grow:0.05,
   // cost[L]: מה עולה להגיע לרמה L. make: ייצור בשעה לפי רמה. cap: כמה נאגר לכל משאב עד שאוספים
   b:{
-    center:{x:0,y:-190,r:92,
+    center:{x:0,y:-162,r:92,
       look:[{at:1,model:'castle',scale:0.85,deco:[]},{at:3,model:'castle',scale:1,deco:['flag','flag']},{at:5,model:'castle',scale:1.1,deco:['flag','flag','flag','flag'],glow:C.gold}],
       cost:[null,null,{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50,ore:10},{coins:180,wood:120,stone:100,ore:30},{coins:350,wood:220,stone:200,ore:60}]},
-    forge:{x:-300,y:-30,r:66,     // נפחייה: Aging לציוד (aging.js). הרמה קובעת עד איזה + אפשר לשדרג
+    forge:{x:-255,y:-26,r:66,     // נפחייה: Aging לציוד (aging.js). הרמה קובעת עד איזה + אפשר לשדרג
       look:[{at:1,model:'tent',scale:1,deco:['barrel']},{at:3,model:'forge',scale:1,deco:['crate','barrel']},{at:5,model:'forge',scale:1.12,deco:['flag','flag','crate','barrel'],glow:C.ember}],
       cost:[null,{coins:20,wood:15,stone:10},{coins:50,wood:35,stone:25,ore:5},{coins:110,wood:70,stone:60,ore:15},{coins:220,wood:140,stone:120,ore:35},{coins:400,wood:250,stone:220,ore:70}]},
-    mill:{x:300,y:-30,r:66,
+    mill:{x:255,y:-26,r:66,
       look:[{at:1,model:'mill',scale:0.85,deco:[]},{at:3,model:'mill',scale:1,deco:['crate']},{at:5,model:'mill',scale:1.12,deco:['flag','flag','crate'],glow:C.gold}],
       cost:[null,{coins:10,stone:5},{coins:30,wood:15,stone:20},{coins:70,wood:30,stone:50},{coins:140,wood:60,stone:100,ore:10},{coins:260,wood:120,stone:180,ore:25}],
       make:{wood:[0,30,50,80,120,180]},cap:[0,60,120,200,320,500]},
-    mine:{x:-300,y:190,r:66,
+    mine:{x:-255,y:162,r:66,
       look:[{at:1,model:'mine',scale:0.85,deco:[]},{at:3,model:'mine',scale:1,deco:['barrel']},{at:5,model:'mine',scale:1.12,deco:['flag','flag','barrel'],glow:C.gold}],
       cost:[null,{coins:10,wood:10},{coins:30,wood:25,stone:10},{coins:70,wood:55,stone:25},{coins:140,wood:110,stone:50},{coins:260,wood:200,stone:90}],
       make:{stone:[0,20,35,55,80,120],ore:[0,4,8,14,22,32]},cap:[0,40,80,140,220,350]},
-    market:{x:300,y:190,r:66,     // sell/buy: מטבעות ליחידה ברמה 1. כל רמה נוספת: bonus יותר טוב. lot: כמה יחידות בכל לחיצה
+    market:{x:255,y:162,r:66,     // sell/buy: מטבעות ליחידה ברמה 1. כל רמה נוספת: bonus יותר טוב. lot: כמה יחידות בכל לחיצה
       cost:[null,{coins:15,wood:15},{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50},{coins:180,wood:120,stone:100,ore:20},{coins:320,wood:220,stone:180,ore:50}],
       sell:{wood:1,stone:1,ore:4,bone:2},buy:{wood:3,stone:3},lot:5,bonus:0.2,
       look:[{at:1,model:'tent',scale:1,deco:['crate','crate']},{at:3,model:'market',scale:1,deco:['crate','barrel']},{at:5,model:'market',scale:1.1,deco:['flag','flag','crate','barrel'],glow:C.gold}]},
-    stash:{x:-170,y:330,r:60,     // מחסן: המקום הבטוח לשלל (stash.js). cap[L]: כמה יחידות הוא מחזיק ברמה L
+    stash:{x:-145,y:280,r:60,     // מחסן: המקום הבטוח לשלל (stash.js). cap[L]: כמה יחידות הוא מחזיק ברמה L
       cost:[null,{coins:15,wood:10},{coins:40,wood:30,stone:15},{coins:90,wood:60,stone:45},{coins:180,wood:120,stone:90,ore:15},{coins:320,wood:220,stone:160,ore:40}],
       cap:[0,150,400,900,2000,5000],
       look:[{at:1,model:'tent',scale:0.9,deco:['crate']},{at:3,model:'market',scale:0.95,deco:['crate','crate','barrel']},{at:5,model:'market',scale:1.05,deco:['flag','flag','crate','barrel'],glow:C.tide}]}
@@ -115,7 +115,7 @@ function enterVillage(){
   const back=S&&(S.mode==='over'||S.wd);   // חוזרים מהעולם (או מריצה): ליד השער
   reset();S.mode='play';S.vil={near:null,ui:'',raise:{}};
   const at=back?{x:VILLAGE.gate.x,y:VILLAGE.gate.y-110}:VILLAGE.spawn;
-  P.x=at.x;P.y=at.y;P.aim=-Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
+  P.x=at.x;P.y=at.y;P.aim=P.face=-Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
   ['ovStart','ovOver','ovLevel','ovBoss'].forEach(id=>$(id).hidden=true);
   for(const k in VILLAGE.b)vSettle(k);   // הייצור מאז הביקור הקודם
   if(!SAVE.gift){for(const r in VILLAGE.gift)bagAdd(r,VILLAGE.gift[r]);SAVE.gift=true;banner(T('vil.gift'),C.gold)}
