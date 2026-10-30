@@ -73,6 +73,7 @@ function enterRoom(door){
   for(let i=0;i<BONUS.roomCoins;i++){const a=rand(0,6.28),r=rand(50,300);coins.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r,ph:rand(0,6)})}
   const saws=[];
   if(Math.random()<BONUS.trapChance)for(let i=0;i<3;i++)saws.push({a:i*2.094,r:150});
+  questEvent('reach','room');
   S.room={t:BONUS.roomTime,back:{x:door.x,y:door.y},cx,cy,coins,saws,got:0};
   eb=[];mines=[];P.x=cx;P.y=cy;S.cam.x=cx;S.cam.y=cy;
   banner(T(saws.length?'roomSaws':'roomGo'),C.gold);
