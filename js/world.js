@@ -25,16 +25,25 @@ const WORLD={
   gather:{reach:65,cd:0.5,dmg:20,calm:120},   // מכה במקור: מאיזה מרחק, כל כמה שניות, כמה נזק. calm: אויב קרוב מזה, וקודם נלחמים
   regrow:45,                             // שניות עד שמקור שנשבר צומח מחדש
   /* אויבים: קבוצות שמסתובבות ליד הבית שלהן. type: מ-ETYPES. creature: יצור משאב.
-     יצורי המשאבים מגיעים עם הכלכלה (#27). עד אז אין להם שורה ב-ETYPES, והקבוצה שלהם פשוט לא מופיעה */
+     יצורי המשאבים מגיעים עם הכלכלה (#27). עד אז אין להם שורה ב-ETYPES, והקבוצה שלהם פשוט לא מופיעה.
+     ראשונות: מפלצות קלות ממש מחוץ לשער, הדבר הראשון ששחקן חדש פוגש. מהן לומדים איך נראים קרב, מספרי נזק ושלל (ניר) */
   foes:[
+    {type:'grunt',n:2,x:-230,y:-560,r:110},{type:'grunt',n:2,x:240,y:-540,r:110},{type:'grunt',n:3,x:0,y:-400,r:120},
     {type:'grunt',n:3,x:-120,y:-220,r:160},{type:'grunt',n:3,x:380,y:280,r:160},
     {type:'wisp',n:2,x:-640,y:120,r:180},{type:'shield',n:2,x:560,y:60,r:150},
     {type:'treant',creature:true,n:2,x:-860,y:-380,r:200},{type:'golem',creature:true,n:2,x:820,y:-260,r:180},
     {type:'crawler',creature:true,n:2,x:980,y:-480,r:120}
   ],
-  aggro:240, leash:560,                  // מאיזה מרחק אויב רודף, וכמה רחוק מהבית שלו הוא מוכן ללכת
+  aggro:240,                             // מאיזה מרחק אויב רודף
   wander:0.4,                            // מהירות ההסתובבות ליד הבית, יחסית לרדיפה
-  back:40,                               // שניות עד שקבוצה שנוקתה חוזרת (רק כשהשחקן רחוק ממנה)
+  far:350,                               // קבוצה שנוקתה חוזרת רק כשהשחקן רחוק ממנה לפחות כך, כדי שלא תצוץ מול העיניים
+  /* כמה קשה, לפי המרחק של בית הקבוצה מהשער לכפר: ככל שמתרחקים, קשה יותר. to: עד איזה מרחק. hp, dmg, speed: פי כמה מהרגיל (ETYPES).
+     leash: כמה רחוק מהבית האויב מוכן לרדוף לפני שהוא חוזר. back: שניות עד שקבוצה שנוקתה חוזרת */
+  zones:[
+    {id:'start',to:450, hp:0.35,dmg:0.25,speed:0.6, leash:300,back:20},
+    {id:'near', to:1000,hp:0.7, dmg:0.6, speed:0.85,leash:450,back:35},
+    {id:'far',  to:1e9, hp:1,   dmg:1,   speed:1,   leash:560,back:45}
+  ],
   regen:4,                               // חיים לשנייה כשאין אויב קרוב
   deathLoss:{resources:0.5},             // מוות: איזה חלק מכל משאב בתרמיל הולך. פריטים לא. RES.deathLoss כשהכלכלה תגיע
   decor:{trees:90,hills:16}              // קישוטים מחוץ לגבול
@@ -71,7 +80,7 @@ function wNodes(){
       out.push({node:true,id:fi+'_'+i,kind:F.kind,x,y,r:K.r,hp:K.hp,max:K.hp,mult:{sword:1,gun:1},flash:0,back:0});i++}});
   return out;
 }
-// ההתקפה האוטומטית מכה במקור הכי קרוב, כשאין אויב קרוב. המשאבים נכנסים לשלל, ומשם לתרמיל (wLootIn)
+// ההתקפה האוטומטית מכה במקור הכי קרוב, כשאין אויב קרוב. המשאבים נופלים לרצפה, ומה שנאסף נכנס לתרמיל (wLootIn)
 function wGather(dt){
   const G=WORLD.gather,w=S.wd;w.gt-=dt;
   if(nearest(G.calm))return;
@@ -84,11 +93,11 @@ function wGather(dt){
   if(n.hp<=0)wNodeDown(n);
 }
 function wNodeDown(n){
-  const K=wKind(n.kind),L=runLoot();let y=n.y-n.r-22;
-  n.dead=true;n.back=WORLD.regrow;sfx('coin');sparks(n.x,n.y,K.col,14,200);
-  for(const r in K.drop){const [ch,c]=K.drop[r];if(Math.random()<ch){L[r]=(L[r]||0)+c;floatText(n.x,y,'+'+c+' '+VILLAGE.icon[r],C.gold,16);y-=18}}
+  const K=wKind(n.kind);
+  n.dead=true;n.back=WORLD.regrow;sfx('death');sparks(n.x,n.y,K.col,14,200);
+  for(const r in K.drop){const [ch,c]=K.drop[r];if(Math.random()<ch)dropSpawn(r,c,n.x,n.y)}   // נופל לרצפה ליד המקור (drops.js)
 }
-// מה שנפל בעולם (ממקור או מאויב, runDrop ב-village.js) עובר מיד לתרמיל ונשמר. שם הוא בסיכון
+// מה שנאסף מהרצפה בעולם (drops.js) עובר מיד לתרמיל ונשמר. שם הוא בסיכון
 function wLootIn(){
   const L=S.loot;if(!L)return;let any=false;
   for(const r in L)if(L[r]>0){bagAdd(r,L[r]);questEvent('gather',r,L[r]);S.wd.got[r]=(S.wd.got[r]||0)+L[r];any=true}
@@ -96,9 +105,12 @@ function wLootIn(){
 }
 
 /* ---- אויבים: קבוצה לכל שורה ב-WORLD.foes ---- */
+// האזור של קבוצה, לפי המרחק של הבית שלה מהשער לכפר
+const wZone=G=>WORLD.zones.find(z=>Math.hypot(G.x-WORLD.home.x,G.y-WORLD.home.y)<z.to);
 function wSpawn(G,i){
-  if(!ETYPES[G.type])return;
-  for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r);
+  if(!ETYPES[G.type])return;const Z=wZone(G);
+  for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp);
+    e.dmg*=Z.dmg;e.speed*=Z.speed;e.zone=Z.id;
     e.xp=0;e.home=i;e.creature=!!G.creature}   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
 }
 function wFoes(dt){
@@ -109,7 +121,7 @@ function wFoes(dt){
     alive[e.home]++;
     const G=WORLD.foes[e.home],dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;
     let mx=0,my=0,sp=e.speed;
-    if(d<WORLD.aggro&&Math.hypot(P.x-G.x,P.y-G.y)<WORLD.leash){mx=dx/d;my=dy/d;
+    if(d<WORLD.aggro&&Math.hypot(P.x-G.x,P.y-G.y)<wZone(G).leash){   // רודף, אבל לא רחוק מהבית. אחרת חוזר להסתובב שםmx=dx/d;my=dy/d;
       if(e.type==='wisp'){if(d<170){mx=-mx;my=-my}e.shoot-=dt;if(e.shoot<=0){e.shoot=rand(1.8,2.8);shootE(e.x,e.y,Math.atan2(dy,dx),175,6,8)}}}
     else{   // מסתובב ליד הבית
       if(e.wx==null||Math.hypot(e.wx-e.x,e.wy-e.y)<12){const a=rand(0,6.28),r=rand(0,G.r);e.wx=G.x+Math.cos(a)*r;e.wy=G.y+Math.sin(a)*r}
@@ -120,7 +132,7 @@ function wFoes(dt){
   }
   // קבוצה שנוקתה חוזרת אחרי זמן, כשהשחקן רחוק ממנה
   WORLD.foes.forEach((G,i)=>{const g=S.wd.groups[i];if(alive[i]||!ETYPES[G.type])return;
-    if(g.t<=0)g.t=WORLD.back;else if((g.t-=dt)<=0&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+500)wSpawn(G,i);else g.t=Math.max(g.t,0.01)});
+    if(g.t<=0)g.t=wZone(G).back;else if((g.t-=dt)<=0&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+WORLD.far){wSpawn(G,i);g.n=(g.n||0)+1}else g.t=Math.max(g.t,0.01)});
 }
 
 /* ---- כל פריים בעולם ---- */
@@ -144,7 +156,7 @@ function worldUpdate(dt){
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
   wantedUpdate(dt);
-  wLootIn();
+  dropsUpdate(dt);wLootIn();
   if(!nearest(WORLD.aggro))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}

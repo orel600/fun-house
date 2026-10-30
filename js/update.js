@@ -54,6 +54,7 @@ function update(dt){
     if(d<P.magnet){const s=Math.max(220,600-d*2);o.x+=dx/d*s*dt;o.y+=dy/d*s*dt}
     if(d<P.r+8){o.v<0||gainXP(o.v);o.v=-1}}
   orbs=orbs.filter(o=>o.v>0);
+  dropsUpdate(dt);   // שלל על הרצפה (drops.js)
   // הרעיונות של אוראל: דלת בונוס ופריטים במקומות קשים
   bonusUpdate(dt);if(S.room||S.mode!=='play')return;
   // המבוקש: שמועה, מרדף ושלל

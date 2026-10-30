@@ -153,8 +153,7 @@ const runLoot=()=>S.loot||(S.loot={});
 // נקרא מ-kill בכל אויב שנופל
 function runDrop(e){
   const D=VILLAGE.drops[e.isBoss?'boss':e.wanted?'wanted':e.type];if(!D)return;
-  const L=runLoot();let y=e.y-e.r-22;
-  for(const r in D){const [ch,n]=D[r];if(Math.random()<ch){L[r]=(L[r]||0)+n;if(r!=='coins'){floatText(e.x,y,VILLAGE.icon[r],C.gold,16);y-=18}}}
+  for(const r in D){const [ch,n]=D[r];if(Math.random()<ch)dropSpawn(r,n,e.x,e.y)}   // נופל לרצפה, ונאסף כשעוברים לידו (drops.js)
 }
 // נקרא מ-bossDown: אחרי רגע של ניצחון חוזרים הביתה (מחכים אם פתוח מסך שדרוג או חדר בונוס)
 function runWon(){
@@ -164,6 +163,7 @@ function runWon(){
 // נקרא מ-gameOver, גם במוות וגם בניצחון: השלל עובר לתרמיל ונשמר
 function runEnd(){
   if(S.lootDone)return;S.lootDone=true;
+  dropsCollectAll();   // מה שנשאר על הרצפה (drops.js)
   const L=runLoot();if(S.bn&&S.bn.coins)L.coins=(L.coins||0)+S.bn.coins;
   for(const r in L){bagAdd(r,L[r]);questEvent('collect',r,L[r])}
   saveNow();
