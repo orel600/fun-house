@@ -70,7 +70,7 @@ const VIL3D={
 };
 /* העולם הפתוח: המיקומים ב-WORLD (js/world.js). מקורות המשאבים לפי הצורה שלהם (shape), מתוך מודלי הכפר, כדי לא להכביד על הטלפון.
    glow: צבע לעורק מתכת. הקישוטים והשערים כמו בכפר (VIL3D.decor, VIL3D.gate) */
-const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:62},rock:{model:'v_rock',w:44},vein:{model:'v_rock',w:44,glow:'#C87533'}}};
+const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},rock:{model:'v_rock',w:62},vein:{model:'v_rock',w:62,glow:'#C87533'}}};   // w: רוחב המודל. לפי r ב-WORLD.kinds
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
@@ -279,7 +279,8 @@ function syncPlayer(dt){
     const busy=a.one&&a.one.isRunning(),idle=!sword&&L.anim.gunIdle||L.anim.idle;   // עם קשת ביד: עמידה עם קשת
     loop(a,(P.moving?L.anim.run:idle)+(busy?'@low':''),P.moving?Math.min(1.6,P.speed/165):1);
   }
-  place(a,P.x,P.y,L.foot,yawOf(Math.cos(P.aim),Math.sin(P.aim)));
+  // הגוף לפי P.face: לאן שהולכים (update.js). הסיבוב הרך כבר שם, אז כאן בלי עיכוב נוסף
+  place(a,P.x,P.y,L.foot,null);a.root.rotation.y=yawOf(Math.cos(P.face),Math.sin(P.face));
   a.root.visible=!(P.inv>0&&Math.floor(P.inv*20)%2===0)||RM;
   setFlash(a,P.inv>0.45?0.5:P.swapBuff>0?0.25:0,P.inv>0.45?C.blood:C.gold);
   a.mixer.update(dt);
@@ -308,7 +309,8 @@ function syncEnemy(e,dt){
     a.root.scale.setScalar(L.h/COS()/R3D.tmpl[L.model].userData.h*(b.phase>1?1.12:1)*(b.r/34));
     loop(a,sp>15?L.anim.run:L.anim.idle,Math.max(0.7,Math.min(1.8,sp/90)));
   }else{
-    yaw=sp>5?yawOf(dx,dy):yawOf(P.x-e.x,P.y-e.y);
+    // לאן שהוא הולך. כשהוא נהדף אחורה (kx,ky) הוא ממשיך להסתכל עליך, ולא מסתובב עם המכה
+    yaw=sp>5&&Math.hypot(e.kx||0,e.ky||0)<sp?yawOf(dx,dy):yawOf(P.x-e.x,P.y-e.y);
     if(e.type==='wisp'&&e.shoot<0.35&&L.anim.cast&&!(a.one&&a.one.isRunning()))once(a,L.anim.cast,0.5);
     if(!(a.one&&a.one.isRunning()&&a.one.getClip().name===L.anim.spawn))loop(a,L.anim.run,Math.max(0.6,Math.min(1.8,sp/(e.speed||80))));
   }

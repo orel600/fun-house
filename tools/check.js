@@ -31,6 +31,7 @@ const CFG={
 function botStep({god,en}){
   const m=window.__bot||(window.__bot={log:{levels:0,swaps:0,taken:0,coins:0},faced:0,swapAt:0,atGate:0});
   const L=m.log,at=Math.round(S.t*10)/10,vis=id=>!document.getElementById(id).hidden;
+  faceStep(m,L);   // בכל מקום: הגוף פונה לאן שהולכים
   // באנגלית: כל טקסט שמופיע על המסך (ממשק, באנר, מסכים, טקסט צף) נבדק לפני שהבוט לוחץ
   if(en&&!L.heLeak){const he=/[֐-׿]/;
     for(const s of [document.querySelector('.hud').innerText,document.getElementById('banner').textContent,document.getElementById('swaplbl').textContent,
@@ -128,6 +129,15 @@ function botStep({god,en}){
   }
   return steer(tx,ty,flee,stop,L);
 }
+// הגוף פונה לאן שהולכים (P.face, update.js). אחרי צעד שלם של הליכה (P.walk התקדם כל הצעד, והג'ויסטיק לא השתנה בו),
+// הזווית צריכה להיות בדיוק כיוון הג'ויסטיק, גם בזירה כשיש אויב קרוב. בכפר בודקים גם את הדמות בתלת-ממד
+function faceStep(m,L){
+  const F=L.face||(L.face={n:0,bad:0,max:0,arena:0,n3:0,bad3:0}),dw=P.walk-(m.fw??P.walk);m.fw=P.walk;
+  if(!joy||!P.moving||S.mode!=='play'||P.power>0||dw<P.speed*0.07*0.19)return;
+  const d=Math.abs(angDiff(P.face,Math.atan2(joy.dy,joy.dx)));
+  F.n++;if(!S.vil&&!S.wd&&!S.room&&nearest(440))F.arena++;F.max=Math.max(F.max,Math.round(d*100)/100);if(d>0.1)F.bad++;   // 0.1 רדיאנים: כ-6 מעלות, לא רואים בעין;
+  if(R3D.on&&S.vil&&R3D.player){F.n3++;if(Math.abs(angDiff(R3D.player.root.rotation.y,yawOf(Math.cos(P.face),Math.sin(P.face))))>0.15)F.bad3++}
+}
 // מזיז את השחקן לכיוון (tx,ty), או הרחק ממנו (flee), עד מרחק stop. בלי יעד: הולך במעגל
 function steer(tx,ty,flee,stop,L){
   let dx=0,dy=0;
@@ -145,6 +155,12 @@ function villageBot(m,L){
     if(L.back==null){L.back=S.t;const now=bag(),got=[];for(const r in now){const d=now[r]-(m.runBag[r]||0);if(d>0)got.push(r+' +'+d)}
       L.lootGot=got.join(', ');L.lootSaved=JSON.stringify(saved().bag)===JSON.stringify(SAVE.bag)
       const st=JSON.parse(localStorage.getItem(SAVE_STORE.key)).hero.style;L.style={};for(const k in st)L.style[k]=Math.round(st[k])}   // סגנון המשחק, כפי שנשמר
+    else if(L.boots==null){   // פרס הנעליים: נלבשות מיד, והמהירות עולה
+      document.getElementById('qBtn').click();const b=document.querySelector('#qLog [data-q="boots"][data-act="claim"]'),sp=P.speed;
+      if(b)b.click();const k=1+GEAR.items.starterBoots.stats.speed/100;
+      L.boots={claimed:!!b&&SAVE.quests.done.boots===1,worn:SAVE.gear.acc.includes('starterBoots'),k:Math.round(P.speed/sp*1000)/1000,want:k,
+        saved:JSON.parse(localStorage.getItem(SAVE_STORE.key)).gear.acc.includes('starterBoots'),sp:Math.round(P.speed)};
+      document.querySelector('#qLog [data-act="close"]').click()}
     else if(L.qClaimed==null){   // פותחים את היומן ולוקחים את הפרס: הוא צריך להגיע לתרמיל ולשמירה
       document.getElementById('qBtn').click();const btn=qBtn('claim'),rw=QUESTS.list.find(q=>q.id===m.qid).reward,before=bag(),xp=SAVE.hero.xp;
       if(btn)btn.click();
@@ -153,11 +169,16 @@ function villageBot(m,L){
       L.qReward=JSON.stringify(rw);L.qFx=FX.some(f=>f.K===CELEBRATE.quest);
       const sv=saved();L.qSaved=sv.quests.done[m.qid]===1&&!sv.quests.active[m.qid]&&JSON.stringify(sv.bag)===JSON.stringify(SAVE.bag)}
     return steer(null,null,false,0,L)}
-  if(!m.vil){m.vil=1;L.vilOpen=!!S.vil;L.gift=JSON.stringify(SAVE.bag);L.vilModels=R3D.on?(R3D.vil?R3D.vil.g.children.length:0):null}
+  if(!m.vil){m.vil=1;L.vilOpen=!!S.vil;L.gift=JSON.stringify(SAVE.bag);L.vilModels=R3D.on?(R3D.vil?R3D.vil.g.children.length:0):null;
+    // כמה הולכים בקו ישר: מהכניסה לכפר עד השער, ומהשער בעולם עד השער הקרוב לזירה
+    const h=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),wa={x:WORLD.home.x,y:WORLD.home.y+WORLD.arrive},wg=Object.values(WORLD.gates).sort((a,b)=>h(a,wa)-h(b,wa))[0];
+    L.walkPx=Math.round(h(VILLAGE.spawn,VILLAGE.gate)+h(wa,wg));L.walkSp=Math.round(P.speed)}
   if(!m.qid){   // יומן הקווסטים: מקבלים את הקווסט הראשון שמבקש להפיל אויבים. היומן נשאר פתוח לצעד אחד, לצילום
     m.qid=(QUESTS.list.find(q=>q.kind==='village'&&q.obj[0].type==='kill'&&qOpen(q))||{}).id;
     document.getElementById('qBtn').click();L.qLogTxt=document.querySelector('#qLog h3').textContent;
     const btn=qBtn('accept');if(btn)btn.click();
+    // הקווסט של הנעליים מראש הכפר: 5 עץ בעולם
+    const bb=document.querySelector('#qLog [data-q="boots"][data-act="accept"]');if(bb)bb.click();L.bootsAcc=!!SAVE.quests.active.boots;
     L.qAccepted=!!SAVE.quests.active[m.qid]&&!!saved().quests.active[m.qid];L.qName=m.qid;L.qDaily=SAVE.quests.daily.length;
     return steer(null,null,false,0,L)}
   if(!document.getElementById('qLog').hidden){document.querySelector('#qLog [data-act="close"]').click();return steer(null,null,false,0,L)}
@@ -255,10 +276,11 @@ function worldBot(m,L,god){
   if(!m.wp){m.wp='gather';L.wEnter=!S.vil&&S.mode==='play';L.wName=document.getElementById('wName').textContent;L.wHud=vis('whud')&&!vis('vhud');
     L.wNodes=S.nd.list.length;L.wFoes=enemies.length;L.wCreatures=enemies.filter(e=>e.creature).length;m.w0=SAVE.bag.wood||0;m.wt=W.t;return stay()}
   if(m.wp==='gather'){   // הולכים לעץ הכי קרוב ועומדים לידו עד שהוא נשבר
-    if((SAVE.bag.wood||0)>m.w0){L.wGather=(SAVE.bag.wood||0)-m.w0;L.wGatherSaved=(saved().bag.wood||0)===SAVE.bag.wood;L.wGatherT=Math.round(W.t-m.wt);
+    const bq=SAVE.quests.active.boots;L.bootsProg=bq?bq.p[0]:null;
+    if((SAVE.bag.wood||0)>m.w0&&!(bq&&!qReady(QBY.boots))){L.wGather=(SAVE.bag.wood||0)-m.w0;L.wGatherSaved=(saved().bag.wood||0)===SAVE.bag.wood;L.wGatherT=Math.round(W.t-m.wt);
       const q=SAVE.quests.active.wFirst;L.wQuest=q?q.p.join('/'):null;m.wp='kill';m.k0=S.kills;return L}
     const n=S.nd.list.filter(n=>!n.dead&&n.kind==='tree').sort(far)[0];
-    return n?steer(n.x,n.y,false,n.r+P.r+20,L):stay()}
+    return n?steer(n.x,n.y,false,n.r+P.r+20,L):stay()}   // אחרי שהעץ נשבר: לעץ הבא, עד שיש 5 לקווסט הנעליים
   if(m.wp==='kill'){   // מפילים אויב אחד: יצור משאב אם יש, אחרת הכי קרוב
     if(S.kills>m.k0){L.wKill=m.kt;m.wp='gate';return L}
     const pool=enemies.filter(e=>!e.dead&&!e.wanted),cr=pool.filter(e=>e.creature),e=(cr.length?cr:pool).sort(far)[0];if(!e)return stay();
@@ -379,7 +401,7 @@ function worldBot(m,L,god){
     SAVE=JSON.parse(bak);reset();S.mode=mode;return out});
   const T_=t=>({sword:'חרב',bow:'קשת',staff:'מטה'})[t]||t;
 
-  await page.addScriptTag({content:steer+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
+  await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
     await page.clock.runFor(CFG.step);
@@ -440,6 +462,15 @@ function worldBot(m,L,god){
   check(L.qAccepted&&L.qClaimed&&L.qPaid&&L.qSaved&&L.qFx,'קווסט: '+(L.qAccepted?'התקבל '+L.qName+' מהיומן ('+L.qLogTxt+', '+L.qDaily+' יומיים)':'לא התקבל')+
     ', בזירה '+(L.qProg??0)+(L.qReadyAt!=null?', הושלם '+t(L.qReadyAt):', לא הושלם')+(L.qTrack?' · מעקב: '+L.qTrack:'')+
     (L.qClaimed?', פרס נלקח '+L.qReward+(L.qPaid?' והגיע לתרמיל':' אבל לא הגיע לתרמיל')+(L.qSaved?', נשמר':', לא נשמר')+(L.qFx?', חגיגה':', בלי חגיגה'):', הפרס לא נלקח'));
+  const F=L.face||{};
+  check(F.n>20&&!F.bad&&F.arena>0&&!F.bad3,'כיוון הגוף: '+F.n+' בדיקות בהליכה ('+F.arena+' בזירה עם אויב קרוב), '+(F.bad?F.bad+' לא פנו לכיוון ההליכה (עד '+F.max+' רדיאנים)':'תמיד פונה לאן שהולכים')+
+    (F.n3?', בתלת-ממד '+(F.bad3?F.bad3+' מתוך '+F.n3+' לא פנו':F.n3+' בדיקות תקינות'):''));
+  const Bt=L.boots||{};
+  check(L.bootsAcc&&Bt.claimed&&Bt.worn&&Bt.saved&&Math.abs(Bt.k-Bt.want)<0.002,'נעליים: '+(L.bootsAcc?'קווסט התקבל מראש הכפר':'הקווסט לא התקבל')+', עץ בעולם '+(L.bootsProg??0)+'/5'+
+    (Bt.claimed?', פרס נלקח':', הפרס לא נלקח')+(Bt.worn?', נלבשו מיד':', לא נלבשו')+(Bt.saved?', נשמר':', לא נשמר')+', מהירות x'+Bt.k+' (צפוי x'+Bt.want+')');
+  // לפני השינוי (ניר, משחק ראשון בטלפון): 2007 פיקסלים במהירות 165, כלומר 12.2 שניות של הליכה רק כדי להגיע לזירה
+  const ws=L.walkPx/L.walkSp,wb=Bt.sp?L.walkPx/Bt.sp:null;
+  check(ws<12.2,'הליכה מהכפר לשער הזירה: '+L.walkPx+' פיקסלים, '+ws.toFixed(1)+' שניות'+(wb?', עם נעליים '+wb.toFixed(1):'')+' (לפני: 2007 פיקסלים, 12.2 שניות)');
   check(L.levels>0,'עליית רמה ובחירת שדרוג: '+L.levels+' פעמים, הגיע לרמה '+L.level);
   check(L.swapBtn&&(L.nHeld>1?L.swaps>0:L.swaps===0),'כפתור החלפת נשק: '+(L.nHeld>1?L.swaps+' החלפות בין '+L.nHeld+' נשקים':(L.swapBtn?'מוסתר, כי יש נשק אחד ביד':'מוצג עם נשק אחד')));
   // כל דמות עם הנשק שלה: לוחם מניף, צייד יורה חצים, קוסם יורה קסם (WEAPONS ב-weapons.js)
