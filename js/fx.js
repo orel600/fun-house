@@ -8,7 +8,8 @@ const CELEBRATE={
   upgrade:{dust:0.7,col:'#F4C74F',burst:34,speed:260,pillar:1.1,pillarW:50,pillarH:240,label:'+1',sound:[523,659,784,1047]},
   rank:   {dust:0,  col:'#C7A6FF',burst:50,speed:320,pillar:1.4,pillarW:64,pillarH:320,label:'',sound:[440,554,659,880]},
   quest:  {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:40,pillarH:200,label:'✓',sound:[659,784,988,1319]},
-  weapon: {dust:0,  col:'#FF8A3D',burst:26,speed:220,pillar:0.8,pillarW:36,pillarH:180,label:'+1',sound:[587,740,880]}
+  weapon: {dust:0,  col:'#FF8A3D',burst:26,speed:220,pillar:0.8,pillarW:36,pillarH:180,label:'+1',sound:[587,740,880]},
+  gear:   {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:44,pillarH:200,label:'+1',sound:[523,698,880,1047]}   // פריט טוב יותר במסך הציוד
 };
 let FX=[];
 const fxNow=()=>performance.now()/1000;

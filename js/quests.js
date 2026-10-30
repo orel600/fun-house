@@ -7,7 +7,7 @@
      reach   להגיע n פעמים ל-what: arena (יציאה לזירה), room (חדר הבונוס)
      upgrade המבנה what ברמה n לפחות. נבדק לפי הכפר עצמו, אז מה שכבר בנית נספר
      win     לנצח בוס n פעמים. אפשר בתנאי: noHit (בלי לחטוף פגיעה כל עוד הבוס בזירה), under (לפני שעברו כך וכך שניות בריצה)
-   reward: משאבים לתרמיל לפי השם, xp לדמות, item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>').
+   reward: משאבים לתרמיל לפי השם, xp לדמות, item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>'). id של פריט ציוד מ-GEAR.items (gear.js) נכנס לתרמיל כציוד שאפשר ללבוש.
    req: תנאי פתיחה. level: רמת דמות, quest: קווסט שכבר הושלם, b: {מבנה:רמה}.
    המשחק מדווח מה קרה דרך questEvent(סוג, מה, כמה): שורה אחת בכל מקום (kill, hurt, win, collect, upgrade, reach). המנוע מחליט לאיזה קווסט זה שייך.
    ההתקדמות נשמרת רק ב-SAVE.quests (save.js). בזירה היא נשמרת יחד עם השלל, בסוף הריצה */
@@ -57,11 +57,11 @@ const QUESTS={
     {id:'dBones',giver:'center',kind:'daily',obj:[{type:'collect',what:'bone',n:5}],reward:{coins:15,wood:10}},
     {id:'dCoins',giver:'center',kind:'daily',obj:[{type:'collect',what:'coins',n:30}],reward:{stone:15,wood:15}},
     // ---- הישגים: פעילים תמיד, פעם אחת ----
-    {id:'aHunter',giver:null,kind:'achievement',obj:[{type:'kill',what:'any',n:500}],reward:{coins:100,item:'trophy'}},
-    {id:'aClean',giver:null,kind:'achievement',obj:[{type:'win',n:1,noHit:true}],reward:{ore:20,item:'sock'}},
+    {id:'aHunter',giver:null,kind:'achievement',obj:[{type:'kill',what:'any',n:500}],reward:{coins:100,item:'qTrophy'}},
+    {id:'aClean',giver:null,kind:'achievement',obj:[{type:'win',n:1,noHit:true}],reward:{ore:20,item:'qSock'}},
     {id:'aSpeed',giver:null,kind:'achievement',obj:[{type:'win',n:1,under:150}],reward:{coins:80,xp:60}},
     {id:'aBuilder',giver:null,kind:'achievement',obj:[{type:'upgrade',what:'center',n:3}],reward:{coins:100,stone:50}},
-    {id:'aWanted',giver:null,kind:'achievement',obj:[{type:'kill',what:'wanted',n:5}],reward:{coins:60,item:'crown'}}
+    {id:'aWanted',giver:null,kind:'achievement',obj:[{type:'kill',what:'wanted',n:5}],reward:{coins:60,item:'qCrown'}}
   ],
   icon:{xp:'✨',item:'🎁',track:'📜'}    // אייקונים לפרס (מעבר למשאבים ב-VILLAGE.icon) ולקו המעקב
 };

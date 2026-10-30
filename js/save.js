@@ -13,6 +13,7 @@ function saveBlank(){return{
   quests:{active:{},done:{},track:null,day:'',daily:[]},   // מנוהל ב-quests.js. active: {id:{p:[התקדמות לכל מטרה]}}. done: {id:כמה פעמים}
   prod:{},                                          // ייצור במבנים, גם כשלא משחקים: {mill:{t:זמן,have:{wood:3.2}}}. מנוהל ב-village.js
   gift:false,                                       // מתנת הפתיחה של הכפר כבר ניתנה
+  gearGift:false,                                   // הציוד הראשון (GEAR.gift ב-gear.js) כבר ניתן
   ts:0}}
 
 let SAVE=saveBlank();

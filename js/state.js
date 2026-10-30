@@ -12,6 +12,7 @@ function reset(){
   enemies=[];pb=[];eb=[];orbs=[];parts=[];floats=[];mines=[];waves=[];joy=null;
   bonusReset();
   wantedReset();
+  gearReset();   // הציוד מהכפר: מתנה ראשונה, והסטטים שלו על השחקן (gear.js)
   reset3d();
   updateSwapBtn();
 }

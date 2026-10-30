@@ -28,7 +28,7 @@
 </button>
 
 <!-- הכפר: התרמיל למעלה, והפאנל של המבנה שלידו למטה (js/village.js) -->
-<div class="vhud" id="vhud" hidden><div class="bag" id="vBag" role="group" data-ta="bagGroup"></div>
+<div class="vhud" id="vhud" hidden><div class="bag" id="vBag" role="group" data-ta="bagGroup"></div><button class="gearbtn" id="gearBtn">🎒 <span data-t="gear.btn"></span></button>
   <!-- הקווסטים: כפתור היומן בפינה, והיומן עצמו (js/quests.js) -->
   <button class="qbtn" id="qBtn"><span aria-hidden="true">📜</span> <span data-t="q.log"></span><b id="qBadge" hidden></b></button>
   <div class="qlog" id="qLog" hidden></div>
@@ -36,6 +36,17 @@
 <div class="vpanel" id="vPanel" hidden></div>
 
 <div class="banner" id="banner"></div>
+
+<!-- מסך הציוד והתרמיל: המשבצות, התרמיל וההשוואה (js/gear.js) -->
+<div class="ov gearov" id="ovGear" hidden>
+  <div class="panel gearpanel">
+    <div class="ghead"><h2 data-t="gear.title"></h2><span id="gHero"></span><button class="gclose" id="gearClose" data-ta="gear.close">✕</button></div>
+    <div id="gSlots"></div>
+    <div class="bag gres" id="gRes" role="group" data-ta="bagGroup"></div>
+    <div class="gitems" id="gItems"></div>
+    <div class="gdetail" id="gDetail"></div>
+  </div>
+</div>
 
 <div class="ov" id="ovStart">
   <div class="panel">
@@ -110,6 +121,7 @@
 <script src="js/wanted.js"></script>
 <script src="js/village.js"></script>
 <script src="js/quests.js"></script>
+<script src="js/gear.js"></script>
 <script src="js/update.js"></script>
 <script src="js/rig.js"></script>
 <script src="js/fx.js"></script>
