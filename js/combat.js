@@ -54,16 +54,11 @@ function attack(dt){
     }
   }else{
     // מרחוק: מה שעף תלוי בנשק (WEAPONS ב-weapons.js). קשת יורה חצים, מטה יורה קסם שמתביית על האויב
-    const g=P.gn,W=wNow();g.t-=dt;g.recoil=Math.max(0,g.recoil-dt*8);
+    const g=P.gn;g.t-=dt;g.recoil=Math.max(0,g.recoil-dt*8);
     const tgt=nearest(440);
     if(tgt)P.aim=Math.atan2(tgt.y-P.y,tgt.x-P.x);
     if(tgt&&g.t<=0){
-      g.t=g.cd*wK('cd');g.recoil=1;sfx('shoot');const sp=g.speed*wK('speed');
-      for(let i=0;i<g.multi;i++){
-        const a=P.aim+(i-(g.multi-1)/2)*0.14,hx=P.x+Math.cos(a)*22,hy=P.y-6+Math.sin(a)*22;
-        pb.push({x:hx,y:hy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:W.life||0.9,pierce:g.pierce,hit:new Set(),shot:W.shot||'arrow',home:W.home||0});
-      }
-      parts.push({x:P.x+Math.cos(P.aim)*24,y:P.y-6+Math.sin(P.aim)*24,vx:0,vy:0,life:.06,max:.06,col:dtCol(P.dt.gun),size:3});
+      wFire(g.multi);
     }
   }
 }

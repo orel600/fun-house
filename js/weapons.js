@@ -31,7 +31,17 @@ function wLabel(use){
 // הנשק הזה נכנס ליד: מאיזה צד תוקפים, ואיך
 function wEquip(id){P.wid=id||null;P.wt=wTypeOf(id);P.weapon=WEAPONS[P.wt].use;updateSwapBtn()}
 
-/* ---- קליעים: כל פריים, ובפגיעה. נקרא מהזירה (update.js) ומהעולם (world.js) ---- */
+/* ---- קליעים: המקום היחיד שיוצר אותם, כל פריים, ובפגיעה. נקרא מהזירה (update.js, combat.js) ומהעולם (world.js) ----
+   wFire: יורה לכיוון P.aim לפי הנשק שביד. n: כמה קליעים במניפה. extra: שדות לקליע, כמו node, מקור משאבים שהוא בדרך אליו */
+function wFire(n=1,extra){
+  const g=P.gn,W=wNow(),sp=g.speed*wK('speed');
+  g.t=g.cd*wK('cd');g.recoil=1;sfx('shoot');
+  for(let i=0;i<n;i++){
+    const a=P.aim+(i-(n-1)/2)*0.14,hx=P.x+Math.cos(a)*22,hy=P.y-6+Math.sin(a)*22;
+    pb.push(Object.assign({x:hx,y:hy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:W.life||0.9,pierce:g.pierce,hit:new Set(),shot:W.shot||'arrow',home:W.home||0},extra));
+  }
+  parts.push({x:P.x+Math.cos(P.aim)*24,y:P.y-6+Math.sin(P.aim)*24,vx:0,vy:0,life:.06,max:.06,col:dtCol(P.dt.gun),size:3});
+}
 function shotFly(b,dt){
   if(b.home){
     let t=null,bd=WEAPONS.bolt.find;
