@@ -5,7 +5,7 @@ function drawPlayer(){
   const s=P.sw,sword=P.weapon==='sword';
   const a=sword&&s.anim>0?s.ang-s.arc/2+s.arc*(1-s.anim/0.2):P.aim;
   if(!R3D.on){
-  const p=pose(P.x,P.y,P.walk,P.moving,a,sword?10:11-P.gn.recoil*4),o={skin:LOOK.player,col:C.chalk,lw:3};
+  const p=pose(P.x,P.y,P.walk,P.moving,a,sword?10:11-P.gn.recoil*4),o={skin:LOOK.player,col:(HEROES.list[heroId()]||{}).col||C.chalk,lw:3};
   drawRig(p,o);
   const hand=p.armF[1],hx=hand.x,hy=hand.y;
   if(!drawRigWeapon(p,o,P.weapon,a)){
