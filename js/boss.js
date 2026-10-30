@@ -1,10 +1,15 @@
-/* בוס שלומד את השחקן */
+/* בוס שלומד את השחקן: סוגי הנזק (עמיד למה שהשתמשת בו הכי הרבה, וחלש למה שהשתמשת בו הכי פחות מבין מה שיש לך ביד.
+   אם לשני הנשקים אותו סוג, הוא חלש לסוג שהכי פחות השתמשת בו בכלל, וכדאי להחליף סוג נזק),
+   התפקיד (מקרוב או מרחוק) והתנועה. המכפילים ב-DMG.boss (dmg.js) */
 function makeBoss(){
-  const t=P.track;const fav=t.sword>=t.gun?'sword':'gun',other=fav==='sword'?'gun':'sword';
+  const t=P.track,role=t.sword>=t.gun?'melee':'ranged';
   const mobile=t.move/(t.move+t.still+0.001)>0.65;
-  const w={ring:1,spiral:1,aimed:1,charge:1,shields:1,wisps:1,shock:1,mines:1};const learned=[];
-  if(fav==='sword'){w.shock+=3;w.wisps+=3;learned.push(T('learn.sword'))}
-  else{w.charge+=3;w.shields+=3;learned.push(T('learn.gun'))}
+  // מערבבים לפני המיון, כדי שבתיקו (למשל שני סוגים שלא השתמשת בהם בכלל) הבחירה תהיה אקראית
+  const byUse=Object.keys(DMG.types).sort(()=>Math.random()-.5).sort((a,b)=>t.types[b]-t.types[a]);
+  const res=byUse[0],held=byUse.filter(k=>k!==res&&Object.values(P.dt).includes(k)),weak=held.length?held[held.length-1]:byUse[byUse.length-1];
+  const w={ring:1,spiral:1,aimed:1,charge:1,shields:1,wisps:1,shock:1,mines:1};const learned=[T('learn.res',dtCol(res),T('dt.'+res))];
+  if(role==='melee'){w.shock+=3;w.wisps+=3;learned.push(T('learn.melee'))}
+  else{w.charge+=3;w.shields+=3;learned.push(T('learn.ranged'))}
   if(mobile){w.spiral+=3;w.ring+=1;learned.push(T('learn.mobile'))}
   else{w.mines+=3;w.aimed+=2;learned.push(T('learn.still'))}
   const ks=Object.keys(w),pats=[];
@@ -14,8 +19,8 @@ function makeBoss(){
   }
   const p2=pick(ks.filter(k=>!pats.includes(k)));
   const hp=RUN.bossHits*Math.max(P.sw.dmg,P.gn.dmg)*dmgK(),p=spawnPos();
-  return{isBoss:true,type:'boss',name:pick(T('syl1'))+pick(T('syl2')),title:T('bossTitle.'+fav),
-    x:p.x,y:p.y,r:34,hp,max:hp,speed:62,mult:{[fav]:0.5,[other]:1.7},weak:other,pats,p2,phase:1,patT:2.4,
+  return{isBoss:true,type:'boss',name:pick(T('syl1'))+pick(T('syl2')),title:T('bossTitle.'+res),
+    x:p.x,y:p.y,r:34,hp,max:hp,speed:62,mult:{[res]:DMG.boss.resist,[weak]:DMG.boss.weak},res,weak,role,used:{...t.types},pats,p2,phase:1,patT:2.4,
     flash:0,kx:0,ky:0,ph:0,dmg:20,learned,spin:0,charge:null,spiral:0,spA:0,spT:0,rage:0,flee:0,rageMsg:0,rageShot:0};
 }
 function shootE(x,y,a,sp,r,dmg){eb.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r,dmg,life:5})}
@@ -67,7 +72,7 @@ function bossDown(b){
   sparks(b.x,b.y,C.lilac,40,320);sparks(b.x,b.y,C.gold,20,260);
   eb=[];waves=[];mines=[];S.hitstop=0.25;S.slow=0.8;S.shake=14;
   banner(T('bossDown',b.name),C.gold);sfx('bossDown');
-  P.track={sword:0,gun:0,move:0,still:0,dist:0,distN:0};
+  P.track=newTrack();
   questEvent('win');
   runWon();   // אחרי רגע חוזרים לכפר עם השלל (village.js)
 }

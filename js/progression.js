@@ -8,14 +8,17 @@ function showGain(v){
 }
 function openLevelUp(){
   S.mode='level';S.pendingLv--;joy=null;sfx('levelup');
-  const pool=UPS.filter(u=>!(u.max&&(S.picks[u.id]||0)>=u.max)).sort(()=>Math.random()-.5).slice(0,3);
+  // שדרוג של סוג נזק לא מוצע אם לנשק כבר יש את הסוג הזה
+  const pool=UPS.filter(u=>!(u.max&&(S.picks[u.id]||0)>=u.max)&&!(u.el&&P.dt[u.w]===u.el)).sort(()=>Math.random()-.5).slice(0,3);
   $('lvTitle').textContent=T('level',P.level);
   const box=$('cards');box.innerHTML='';
   pool.forEach(u=>{
-    const b=document.createElement('button');b.className='card '+(u.w==='any'?'':u.w);
+    const b=document.createElement('button');b.className='card';
+    // הצבע של הכרטיס: סוג הנזק שהוא נותן, או סוג הנזק של הנשק שהוא משפר
+    if(u.w!=='any')b.style.setProperty('--dt',dtCol(u.el||P.dt[u.w]));if(u.el){b.dataset.el=u.el;b.dataset.w=u.w}
     const [name,desc]=T('up.'+u.id);
-    b.innerHTML='<span class="tag">'+T('w.'+u.w)+'</span><b>'+name+'</b><span>'+desc+'</span>';
-    b.onclick=()=>{u.f();sfx('celebrate');S.picks[u.id]=(S.picks[u.id]||0)+1;$('ovLevel').hidden=true;S.mode='play';if(S.pendingLv>0)openLevelUp()};
+    b.innerHTML='<span class="tag">'+T('w.'+u.w)+(u.el?' '+dtSvg(u.el):'')+'</span><b>'+name+'</b><span>'+desc+'</span>';
+    b.onclick=()=>{if(u.el){P.dt[u.w]=u.el;updateSwapBtn()}else u.f();sfx('celebrate');S.picks[u.id]=(S.picks[u.id]||0)+1;$('ovLevel').hidden=true;S.mode='play';if(S.pendingLv>0)openLevelUp()};
     box.appendChild(b);
   });
   $('ovLevel').hidden=false;
@@ -25,7 +28,7 @@ function showIntro(b){
   $('bTitle').innerHTML=b.name+'<br><span style="font-size:20px;color:var(--lilac)">'+b.title+'</span>';
   $('bLearned').innerHTML=b.learned.map(s=>'<span>'+s+'</span>').join('');
   $('bPats').innerHTML=b.pats.map(k=>'<span class="chip">'+T('pat.'+k)+'</span>').join('')+'<span class="chip" style="color:var(--dim)">'+T('secretAttack')+'</span><span class="chip" style="color:var(--blood)">'+T('hatesRunning')+'</span>';
-  $('bWeak').innerHTML=T('weakSpot',b.weak==='sword'?'e':'t',T('w.'+b.weak));
+  $('bWeak').innerHTML=T('weakSpot',dtCol(b.weak),dtSvg(b.weak)+T('dt.'+b.weak));
   $('ovBoss').hidden=false;
 }
 function gameOver(){
