@@ -120,7 +120,7 @@ function enterVillage(){
   for(const k in VILLAGE.b)vSettle(k);   // הייצור מאז הביקור הקודם
   if(!SAVE.gift){for(const r in VILLAGE.gift)bagAdd(r,VILLAGE.gift[r]);SAVE.gift=true;banner(T('vil.gift'),C.gold)}
   else banner(T('vil.home'),C.gold);
-  questsRefresh();   // יום חדש וקווסטים שנפתחו (quests.js)
+  rankSync();questsRefresh();   // רמת הדמות (ranks.js), יום חדש וקווסטים שנפתחו (quests.js)
   saveNow();
   villageUi(true);
 }
@@ -161,6 +161,7 @@ function runEnd(){
   dropsCollectAll();   // מה שנשאר על הרצפה (drops.js)
   const L=runLoot();if(S.bn&&S.bn.coins)L.coins=(L.coins||0)+S.bn.coins;
   for(const r in L){bagAdd(r,L[r]);questEvent('collect',r,L[r])}
+  rankRunXp();   // חלק מה-XP של הריצה נשאר לדמות (ranks.js)
   saveNow();
   $('overTitle').textContent=T(S.won?'vil.won':'fell');
   $('sLoot').innerHTML=lootSummary(L)||T('vil.noLoot');   // מהנדיר לרגיל (loot.js)
