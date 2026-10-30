@@ -358,11 +358,11 @@ function worldBot(m,L,god){
     if(M.step===2){   // משלימים את המטרות (בכאילו, כמו בבדיקת מנוע הקווסטים), סוגרים, ובודקים שהסימן התחלף ל-✓
       const q=QBY[M.q];for(const o of q.obj)questEvent(o.type,o.what,o.n);
       N.ready=qReady(q);btn('close').click();N.closed=dlg.hidden;N.markReady=wnpcMarks()[id]||null;
-      N.logClaim=(questLog(),!!document.querySelector('#qLog [data-act="claim"][data-q="'+M.q+'"]'));M.b0=Object.assign({},SAVE.bag);M.fx2=window.__cel;M.step=3;return steer(null,null,false,0,L)}
+      N.logClaim=(questLog(),!!document.querySelector('#qLog [data-act="claim"][data-q="'+M.q+'"]'));M.fx2=window.__cel;M.step=3;return steer(null,null,false,0,L)}
     if(M.step===3){   // שוב "לדבר", ולוקחים את הפרס
       if(tb.hidden)return steer(n.x,n.y,false,25,L);
       tb.click();const c=btn('claim');if(!c){N.err='אין כפתור פרס';m.wp='gate';return L}
-      c.click();const q=QBY[M.q],r=q.reward;
+      M.b0=Object.assign({},SAVE.bag);c.click();const q=QBY[M.q],r=q.reward;   // התרמיל ממש לפני הלחיצה: פיוחו (pet.js) חופרת ומוסיפה בינתיים
       N.claimed=!SAVE.quests.active[M.q]&&!!SAVE.quests.done[M.q];N.paid=Object.keys(r).filter(k=>resOf(k)).every(k=>(SAVE.bag[k]||0)-(M.b0[k]||0)===r[k]);
       N.claimSaved=!!(saved().quests.done||{})[M.q];N.claimFx=window.__cel>M.fx2;btn('close').click();
       // דמות שעוד לא נמצאה: אין לה סימן ואין לה קווסט פתוח
