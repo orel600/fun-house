@@ -17,6 +17,7 @@ function damage(e,base,w,ang){
 function kill(e){
   e.dead=true;S.kills++;sfx('death');
   runDrop(e);   // שלל לכפר (village.js)
+  questEvent('kill',e.isBoss?'boss':e.wanted?'wanted':e.type);
   if(e.isBoss){bossDown(e);return}
   if(e.wanted){wantedDown(e);return}
   for(let i=0;i<e.xp;i++)orbs.push({x:e.x+rand(-8,8),y:e.y+rand(-8,8),v:1});
@@ -25,7 +26,7 @@ function kill(e){
 }
 function hurt(d){
   if(P.inv>0||S.mode!=='play')return;
-  P.hp-=d;P.inv=0.6;sfx('hurt');S.shake=Math.max(S.shake,7);S.hurt=0.3;
+  P.hp-=d;P.inv=0.6;sfx('hurt');questEvent('hurt');S.shake=Math.max(S.shake,7);S.hurt=0.3;
   floatText(P.x,P.y-36,'-'+Math.round(d),C.blood,17);
   if(P.hp<=0){P.hp=0;gameOver()}
 }
