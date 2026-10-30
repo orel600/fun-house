@@ -512,7 +512,7 @@ function worldBot(m,L,god){
     SAVE=JSON.parse(bak);reset();S.mode=mode;return out});
   const T_=t=>({sword:'חרב',bow:'קשת',staff:'מטה'})[t]||t;
 
-  await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
+  await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
     await page.clock.runFor(CFG.step);
