@@ -5,7 +5,7 @@ function floatText(x,y,txt,col,size){floats.push({x,y,txt,col,size,life:.75,vy:-
 function damage(e,base,w,ang){
   const m=e.mult[w]??1;const crit=Math.random()<0.12;
   const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?1.8:1);
-  e.hp-=d;e.flash=0.09;heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
+  e.hp-=d;e.flash=0.09;sfx('hit');heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
   if(!e.isBoss){const kb=(w==='sword'?150:55)*(m>1?1.4:1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   const col=m>1?(w==='sword'?C.ember:C.tide):m<1?C.dim:C.chalk;
   floatText(e.x+rand(-8,8),e.y-e.r-8,Math.round(d)+(crit?'!':''),col,m>1?21:m<1?12:15);
@@ -15,7 +15,7 @@ function damage(e,base,w,ang){
   if(e.hp<=0&&!e.dead)kill(e);
 }
 function kill(e){
-  e.dead=true;S.kills++;heroCount('kills');if(e.isBoss)heroCount('bosses');
+  e.dead=true;S.kills++;sfx('death');heroCount('kills');if(e.isBoss)heroCount('bosses');
   runDrop(e);   // שלל לכפר (village.js)
   if(e.isBoss){bossDown(e);return}
   if(e.wanted){wantedDown(e);return}
@@ -25,7 +25,7 @@ function kill(e){
 }
 function hurt(d){
   if(P.inv>0||S.mode!=='play')return;
-  P.hp-=d;P.inv=0.6;S.shake=Math.max(S.shake,7);S.hurt=0.3;
+  P.hp-=d;P.inv=0.6;sfx('hurt');S.shake=Math.max(S.shake,7);S.hurt=0.3;
   floatText(P.x,P.y-36,'-'+Math.round(d),C.blood,17);
   if(P.hp<=0){P.hp=0;gameOver()}
 }
@@ -49,7 +49,7 @@ function attack(dt){
     const tgt=nearest(440);
     if(tgt)P.aim=Math.atan2(tgt.y-P.y,tgt.x-P.x);
     if(tgt&&g.t<=0){
-      g.t=g.cd;g.recoil=1;
+      g.t=g.cd;g.recoil=1;sfx('shoot');
       for(let i=0;i<g.multi;i++){
         const a=P.aim+(i-(g.multi-1)/2)*0.14,hx=P.x+Math.cos(a)*22,hy=P.y-6+Math.sin(a)*22;
         pb.push({x:hx,y:hy,vx:Math.cos(a)*g.speed,vy:Math.sin(a)*g.speed,life:0.9,pierce:g.pierce,hit:new Set()});

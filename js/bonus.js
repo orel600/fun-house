@@ -53,7 +53,7 @@ function spawnPick(){
   addEnemy('shield',x+60,y);addEnemy(S.t>28?'wisp':'grunt',x-60,y);
 }
 function usePick(k){
-  S.bn.taken++;
+  S.bn.taken++;sfx('coin');
   if(k.type==='bomb'){
     const base=BONUS.bombBase*(1+S.t/90),hw=W/2+40,hh=H/2+40;
     for(const e of enemies){
@@ -86,7 +86,7 @@ function roomUpdate(dt){
     c.ph+=dt*4;
     const dx=P.x-c.x,dy=P.y-c.y,d=Math.hypot(dx,dy)||1;
     if(d<P.magnet*0.6){c.x+=dx/d*320*dt;c.y+=dy/d*320*dt}
-    if(d<P.r+9&&!c.got){c.got=true;R.got++;S.bn.coins++;gainXP(1);sparks(c.x,c.y,C.gold,5,120)}
+    if(d<P.r+9&&!c.got){c.got=true;sfx('coin');R.got++;S.bn.coins++;gainXP(1);sparks(c.x,c.y,C.gold,5,120)}
   }
   R.coins=R.coins.filter(c=>!c.got);
   for(const s of R.saws){s.a+=dt*1.6;const x=R.cx+Math.cos(s.a)*s.r,y=R.cy+Math.sin(s.a)*s.r;s.x=x;s.y=y;if(Math.hypot(P.x-x,P.y-y)<P.r+14)hurt(12)}

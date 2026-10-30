@@ -5,10 +5,10 @@
    הזמן כאן הוא זמן אמיתי (performance.now), כי האפקט לא תלוי במצב המשחק */
 
 const CELEBRATE={
-  upgrade:{dust:0.7,col:'#F4C74F',burst:34,speed:260,pillar:1.1,pillarW:50,pillarH:240,label:'+1',sound:[523,659,784,1047]},
-  rank:   {dust:0,  col:'#C7A6FF',burst:50,speed:320,pillar:1.4,pillarW:64,pillarH:320,label:'',sound:[440,554,659,880]},
-  weapon: {dust:0,  col:'#FF8A3D',burst:26,speed:220,pillar:0.8,pillarW:36,pillarH:180,label:'+1',sound:[587,740,880]},
-  gear:   {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:44,pillarH:200,label:'+1',sound:[523,698,880,1047]}   // פריט טוב יותר במסך הציוד
+  upgrade:{dust:0.7,col:'#F4C74F',burst:34,speed:260,pillar:1.1,pillarW:50,pillarH:240,label:'+1'},
+  rank:   {dust:0,  col:'#C7A6FF',burst:50,speed:320,pillar:1.4,pillarW:64,pillarH:320,label:''},
+  weapon: {dust:0,  col:'#FF8A3D',burst:26,speed:220,pillar:0.8,pillarW:36,pillarH:180,label:'+1'},
+  gear:   {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:44,pillarH:200,label:'+1'}   // פריט טוב יותר במסך הציוד
 };
 let FX=[];
 const fxNow=()=>performance.now()/1000;
@@ -19,16 +19,8 @@ function celebrate(x,y,kind='upgrade',label){
   for(let i=0;i<14;i++)f.dust.push({a:rand(0,6.28),r:rand(20,60),s:rand(8,16),d:rand(0,K.dust*0.6)});
   for(let i=0;i<K.burst;i++){const a=rand(0,6.28),s=rand(K.speed*0.35,K.speed);f.burst.push({vx:Math.cos(a)*s,vy:Math.sin(a)*s-K.speed*0.4,z:rand(2,4.5),life:rand(0.6,1.1)})}
   FX.push(f);
-  setTimeout(()=>chime(K.sound),K.dust*1000);
+  setTimeout(()=>sfx('celebrate'),K.dust*1000);   // הצליל מ-audio.js, כדי שההשתקה תחול גם עליו
   return K.dust;
-}
-// צליל קצר: כמה צלילים עולים, בלי קבצים. אם הדפדפן לא מרשה צליל, פשוט שקט
-let AC=null;
-function chime(notes){
-  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;
-    notes.forEach((hz,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.value=hz;
-      g.gain.setValueAtTime(0,t+i*0.07);g.gain.linearRampToValueAtTime(0.12,t+i*0.07+0.02);g.gain.exponentialRampToValueAtTime(0.001,t+i*0.07+0.45);
-      o.connect(g).connect(AC.destination);o.start(t+i*0.07);o.stop(t+i*0.07+0.5)})}catch(e){}
 }
 // נקרא מ-render() בקואורדינטות העולם, אחרי הדמויות
 function drawFx(){
