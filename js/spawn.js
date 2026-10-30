@@ -13,7 +13,7 @@ const HORDE={
 function spawnPos(){const a=rand(0,Math.PI*2),d=Math.max(W,H)*0.62+40;return{x:P.x+Math.cos(a)*d,y:P.y+Math.sin(a)*d}}
 function addEnemy(type,x,y,hpMul=1){
   const d=ETYPES[type],k=runK()*hpMul;
-  const e={type,x,y,hp:d.hp*k,max:d.hp*k,r:d.r,speed:d.speed*(1+Math.min(0.4,S.t/400)),mult:d.mult,xp:d.xp,dmg:d.dmg,
+  const e={type,x,y,hp:d.hp*k,max:d.hp*k,r:d.r,speed:d.speed*(1+Math.min(0.4,S.t/400)),mult:d.mult,weak:weakOf(d.mult),xp:d.xp,dmg:d.dmg,
     flash:0,kx:0,ky:0,shoot:rand(1.2,2.6),ph:rand(0,6),told:false};
   enemies.push(e);return e;
 }

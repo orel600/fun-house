@@ -29,10 +29,11 @@ function update(dt){
       if(d<170){mx=-mx;my=-my}else if(d<240){const t=mx;mx=-my;my=t}
       e.shoot-=dt;if(e.shoot<=0&&d<380){e.shoot=rand(1.8,2.8);shootE(e.x,e.y,Math.atan2(dy,dx),175,6,8)}
     }
-    e.x+=mx*e.speed*dt+e.kx*dt;e.y+=my*e.speed*dt+e.ky*dt;
+    const sp=e.speed*slowK(e);e.x+=mx*sp*dt+e.kx*dt;e.y+=my*sp*dt+e.ky*dt;
     const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
     if(d<e.r+P.r-3)hurt(e.dmg);
   }
+  dmgUpdate(dt);
   // separation
   for(let i=0;i<enemies.length;i++){const a=enemies[i];for(let j=i+1;j<enemies.length;j++){const b=enemies[j];const dx=b.x-a.x,dy=b.y-a.y,rr=a.r+b.r;if(Math.abs(dx)>rr||Math.abs(dy)>rr)continue;const d=Math.hypot(dx,dy)||.01;if(d<rr){const p=(rr-d)/2,ux=dx/d,uy=dy/d;if(!a.isBoss){a.x-=ux*p;a.y-=uy*p}if(!b.isBoss){b.x+=ux*p;b.y+=uy*p}}}}
   // player bullets

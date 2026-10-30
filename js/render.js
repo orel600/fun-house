@@ -10,21 +10,21 @@ function drawPlayer(){
   const hand=p.armF[1],hx=hand.x,hy=hand.y;
   if(!drawRigWeapon(p,o,P.weapon,a)){
     if(sword){
-      ctx.strokeStyle=C.ember;ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*24,hy+Math.sin(a)*24);ctx.stroke();
+      ctx.strokeStyle=dtCol(P.dt.sword);ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*24,hy+Math.sin(a)*24);ctx.stroke();
       ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hx+Math.cos(a+1.57)*5,hy+Math.sin(a+1.57)*5);ctx.lineTo(hx-Math.cos(a+1.57)*5,hy-Math.sin(a+1.57)*5);ctx.stroke();
     }else{
       // קשת: ניצבת לכיוון הירי, והמיתר נמתח לקראת החץ הבא
       const cx=Math.cos(a),cy=Math.sin(a),k=Math.max(0,Math.min(1,1-P.gn.t/P.gn.cd));
       const t1x=hx-cy*12-cx*3,t1y=hy+cx*12-cy*3,t2x=hx+cy*12-cx*3,t2y=hy-cx*12-cy*3,sx=hx-cx*(2+k*8),sy=hy-cy*(2+k*8);
-      ctx.strokeStyle=C.tide;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(t1x,t1y);ctx.quadraticCurveTo(hx+cx*9,hy+cy*9,t2x,t2y);ctx.stroke();
+      ctx.strokeStyle=dtCol(P.dt.gun);ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(t1x,t1y);ctx.quadraticCurveTo(hx+cx*9,hy+cy*9,t2x,t2y);ctx.stroke();
       ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(t1x,t1y);ctx.lineTo(sx,sy);ctx.lineTo(t2x,t2y);ctx.stroke();
       if(k>0.3){ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(hx+cx*10,hy+cy*10);ctx.stroke()}
     }
   }}
   if(sword&&s.anim>0){
     const k=s.anim/0.2,start=s.ang-s.arc/2,end=start+s.arc*(1-k);
-    ctx.strokeStyle='rgba(255,138,61,'+(0.55*k+0.15)+')';ctx.lineWidth=12*k+2;
-    ctx.beginPath();ctx.arc(P.x,P.y-8,s.range*0.72,start,end);ctx.stroke();
+    ctx.globalAlpha=0.55*k+0.15;ctx.strokeStyle=dtCol(P.dt.sword);ctx.lineWidth=12*k+2;
+    ctx.beginPath();ctx.arc(P.x,P.y-8,s.range*0.72,start,end);ctx.stroke();ctx.globalAlpha=1;
   }
 }
 function drawEnemyRig(e){
@@ -32,8 +32,16 @@ function drawEnemyRig(e){
   drawRig(p,{skin:LOOK[e.type],col:fl?'#fff':C.dim,lw:fl?3.5:2.5});
   return p;
 }
+// טבעת בצבע החולשה מתחת לרגליים (בתלת-ממד היא בשכבה שמתחת). לאויב-על ולבוס גם הצורה של סוג הנזק מעל הראש.
+// בדו-ממד אויב-על מצויר בתוך הגדלה, אז המידות כאן בלי הגודל שלו
+function weakRing(e,top){
+  if(!e.weak)return;const k=R3D.on?e.big||1:1,r=R3D.on?e.r:e.r/(e.big||1);
+  if(!R3D.on){ctx.strokeStyle=dtCol(e.weak);ctx.globalAlpha=0.85;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(e.x,e.y+r*0.75,r*1.25,r*0.55,0,0,7);ctx.stroke();ctx.globalAlpha=1}
+  if(e.elite||e.isBoss)dtIcon(e.x,top-12*k,e.weak,14+4*k);
+}
 function drawEnemy(e){
   const fl=e.flash>0;
+  {const L=R3D.on&&lookOf(e);weakRing(e,L?e.y+(L.foot-L.h)*(e.big||1)-6:e.y-(e.isBoss?60:44))}
   // בתלת-ממד הגוף מצויר בשכבה שמתחת. כאן נשארים רק הסימונים: פס חיים, טבעת הזמן של המבוקש, וההתראות של הבוס
   if(R3D.on&&lookOf(e)){if(e.isBoss)drawBoss(e);else if(e.wanted)drawWanted(e);
     if(!e.isBoss&&e.hp<e.max){const L=lookOf(e),k=e.big||1,w=24*k,y=e.y+(L.foot-L.h)*k-6;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,y,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,y,w*Math.max(0,e.hp/e.max),3)}
@@ -45,20 +53,20 @@ function drawEnemy(e){
     drawEnemyRig(e);
     const a=Math.atan2(P.y-e.y,P.x-e.x),cx=e.x+Math.cos(a)*14,cy=e.y-8+Math.sin(a)*14;
     ctx.save();ctx.translate(cx,cy);ctx.rotate(a);
-    ctx.fillStyle=fl?'#fff':'rgba(255,138,61,0.22)';ctx.strokeStyle=fl?'#fff':C.ember;ctx.lineWidth=2.5;
+    ctx.fillStyle=fl?'#fff':C.ink;ctx.strokeStyle=fl?'#fff':dtCol(e.weak);ctx.lineWidth=2.5;
     ctx.beginPath();ctx.roundRect(-3,-13,7,26,3);ctx.fill();ctx.stroke();ctx.restore();
   }else if(e.type==='wisp'){
     const bob=Math.sin(e.ph*0.6)*4,y=e.y-14+bob;
-    ctx.strokeStyle=fl?'#fff':C.tide;ctx.fillStyle=fl?'rgba(255,255,255,.4)':'rgba(70,211,230,0.14)';ctx.lineWidth=2.5;
+    ctx.strokeStyle=fl?'#fff':dtCol(e.weak);ctx.fillStyle=fl?'rgba(255,255,255,.4)':C.ink;ctx.lineWidth=2.5;
     ctx.beginPath();ctx.arc(e.x,y,e.r,Math.PI,0);
     for(let i=0;i<=4;i++){const px=e.x+e.r-i*(e.r/2);ctx.lineTo(px,y+e.r+(i%2?6:0)+Math.sin(e.ph+i)*2)}
     ctx.closePath();ctx.fill();ctx.stroke();
-    ctx.fillStyle=C.tide;ctx.beginPath();ctx.arc(e.x-4,y-2,2,0,7);ctx.arc(e.x+4,y-2,2,0,7);ctx.fill();
+    ctx.fillStyle=dtCol(e.weak);ctx.beginPath();ctx.arc(e.x-4,y-2,2,0,7);ctx.arc(e.x+4,y-2,2,0,7);ctx.fill();
   }else if(e.isBoss){drawBoss(e)}else if(e.wanted){drawWanted(e)}
   if(!e.isBoss&&e.hp<e.max){const w=24;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,e.y-40,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,e.y-40,w*Math.max(0,e.hp/e.max),3)}
 }
 function drawBoss(b){
-  const fl=b.flash>0,glow=b.weak==='sword'?C.ember:C.tide;
+  const fl=b.flash>0,glow=dtCol(b.weak);
   if(b.charge&&b.charge.stage===0){
     ctx.strokeStyle='rgba(239,78,87,0.18)';ctx.lineWidth=b.r*2;ctx.lineCap='butt';
     ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x+Math.cos(b.charge.a)*320,b.y+Math.sin(b.charge.a)*320);ctx.stroke();ctx.lineCap='round';
@@ -115,7 +123,7 @@ function render(){
     else if(a.big&&!R3D.on){ctx.save();ctx.translate(a.x,a.y);ctx.scale(a.big,a.big);ctx.translate(-a.x,-a.y);drawEnemy(a);ctx.restore()}
     else drawEnemy(a)}
   // חצים: מוט, נוצות וחוד
-  ctx.strokeStyle=C.tide;ctx.fillStyle=C.tide;ctx.lineWidth=2;
+  ctx.strokeStyle=ctx.fillStyle=dtCol(P.dt.gun);ctx.lineWidth=2;
   for(const b of pb){
     ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));
     ctx.beginPath();ctx.moveTo(-20,0);ctx.lineTo(0,0);ctx.moveTo(-17,0);ctx.lineTo(-22,-3.5);ctx.moveTo(-17,0);ctx.lineTo(-22,3.5);ctx.stroke();
@@ -166,11 +174,12 @@ function hud(){
   drawRunBar();
   const bb=$('bossbar');
   if(S.boss){bb.hidden=false;$('bossnm').textContent=S.boss.name+' · '+S.boss.title;
-    const wk=$('bossweak');wk.textContent=T('weak.'+S.boss.weak);wk.style.color=S.boss.weak==='sword'?C.ember:C.tide;
+    const wk=$('bossweak');if(wk.dataset.k!==LANG+S.boss.weak){wk.dataset.k=LANG+S.boss.weak;wk.innerHTML=dtSvg(S.boss.weak)+T('weakTo',T('dt.'+S.boss.weak));wk.style.color=dtCol(S.boss.weak)}
     $('bossfill').style.width=(100*Math.max(0,S.boss.hp)/S.boss.max)+'%';
     $('ragetrack').hidden=S.boss.rage<0.02;$('ragefill').style.width=(100*S.boss.rage)+'%'}
   else bb.hidden=true;
   let hint=false;
-  if(S.mode==='play'){const n=nearest(260);if(n&&(n.mult[P.weapon]??1)<1)hint=true}
+  // הכפתור פועם כשהאויב הקרוב עמיד לסוג הנזק שביד, והנשק השני עדיף נגדו
+  if(S.mode==='play'){const n=nearest(260),o=P.weapon==='sword'?'gun':'sword';if(n&&(n.mult[P.dt[P.weapon]]??1)<(n.mult[P.dt[o]]??1)&&(n.mult[P.dt[P.weapon]]??1)<=1)hint=true}
   $('swap').classList.toggle('hint',hint);
 }

@@ -34,7 +34,10 @@ function botStep({god,en}){
     for(const s of [document.querySelector('.hud').innerText,document.getElementById('banner').textContent,document.getElementById('swaplbl').textContent,
       ...['ovLevel','ovBoss','ovOver'].filter(vis).map(id=>document.getElementById(id).innerText),...floats.map(f=>f.txt)])
       if(he.test(s)){L.heLeak=s.trim().slice(0,80);break}}
-  if(vis('ovLevel')){document.querySelector('#cards .card').click();L.levels++;return L}
+  // שדרוגים: מול הבוס, סוג הנזק שהוא חלש אליו. אחרת סוג נזק לנשק שעוד אין לו, ושונה מהנשק השני, כדי שהריצה תפגע בכמה סוגים
+  if(vis('ovLevel')){const cs=[...document.querySelectorAll('#cards .card')],o=w=>P.dt[w==='sword'?'gun':'sword'];
+    (cs.find(c=>S.boss&&c.dataset.el===S.boss.weak)||cs.find(c=>c.dataset.el&&P.dt[c.dataset.w]==='physical'&&c.dataset.el!==o(c.dataset.w))||cs.find(c=>!c.dataset.el)||cs[0]).click();
+    L.levels++;return L}
   if(vis('ovBoss')){L.bossIntro??=at;document.getElementById('fightBtn').click();return L}
   if(S.mode==='over'){if(S.run.won)L.won??=at;else L.died??=at;
     L.overTitle=document.querySelector('#ovOver h2').textContent;L.overShown=vis('ovOver');return L}
@@ -53,6 +56,9 @@ function botStep({god,en}){
   L.hpTxt=document.getElementById('hpTxt').textContent;L.xpTxt=document.getElementById('xpTxt').textContent;
   for(const f of floats)if(/^\+\d/.test(f.txt))L.gainMax=Math.max(L.gainMax||0,+f.txt.slice(1));
   const useWeapon=w=>{if(P.weapon!==w){swapWeapon();L.swaps++;m.swapAt=S.t}};
+  // הנשק שסוג הנזק שלו הכי טוב נגד האויב
+  const best=e=>(e.mult[P.dt.sword]??1)>=(e.mult[P.dt.gun]??1)?'sword':'gun';
+  L.hits={...S.hits};L.dt=P.dt.sword+'/'+P.dt.gun;
   let tx=null,ty=null,flee=false,stop=0;
   if(S.room){
     L.room??=at;L.saws??=S.room.saws.length;
@@ -69,17 +75,19 @@ function botStep({god,en}){
     const b=S.boss;
     if(b){
       L.boss??=at;L.bossName=b.name;L.rageMax=Math.max(L.rageMax||0,b.rage);
+      if(!L.bossRes){L.bossRes=b.res;L.bossWeak=b.weak;L.bossRole=b.role;const u=b.used;L.usedTop=Object.keys(u).sort((a,c)=>u[c]-u[a])[0];
+        L.held=Object.values(P.dt).includes(b.weak)}
       // קודם בורחים כדי לבדוק שהבוס מתעצבן, ואז מתעמתים ובודקים שהוא נרגע.
-      // כמו שחקן אמיתי: מנקים את המגינים שהוא מזמן עם הנשק הנכון להם, ואת הבוס עם הנשק שהוא חלש אליו
+      // כמו שחקן אמיתי: מנקים את המגינים שהוא מזמן עם הנשק הנכון להם, ואת הבוס עם הנשק שסוג הנזק שלו הכי טוב נגדו
       if(!m.faced&&b.rage<0.99){tx=b.x;ty=b.y;flee=true}
       else{
         if(!m.faced)m.faced=S.t;L.rageLow=Math.min(L.rageLow??1,b.rage);
-        const n=nearest(130);useWeapon(n&&!n.isBoss?(n.mult.sword>=n.mult.gun?'sword':'gun'):b.weak);
+        const n=nearest(130);useWeapon(best(n&&!n.isBoss?n:b));
         tx=b.x;ty=b.y;stop=P.weapon==='sword'?b.r+30:240;
       }
     }else if(enemies.some(e=>e.elite)){
-      // אויב-על: כמו שחקן אמיתי, הולכים אליו עם הנשק שהוא חלש אליו
-      const e=enemies.find(e=>e.elite),wk=e.mult.sword>=e.mult.gun?'sword':'gun';
+      // אויב-על: כמו שחקן אמיתי, הולכים אליו עם הנשק שסוג הנזק שלו הכי טוב נגדו
+      const e=enemies.find(e=>e.elite),wk=best(e);
       useWeapon(wk);tx=e.x;ty=e.y;stop=wk==='sword'?e.r+40:220;
     }else if(S.bn.door){L.door??=at;tx=S.bn.door.x;ty=S.bn.door.y}
     else if(w.e){tx=w.e.x;ty=w.e.y}
@@ -140,6 +148,11 @@ function botStep({god,en}){
     await shot('start-'+CFG.lang);
   }
   await page.click('#startBtn');
+  // חולשה: אותה מכה על מגן, פעם בסוג שהוא חלש אליו ופעם בפיזי, בלי מכה קריטית. אחר כך מנקים
+  const wk=await page.evaluate(()=>{const c=FX.crit;FX.crit=0;const tr=P.track,hits=S.hits;P.track=newTrack();S.hits={};
+    const hit=t=>{const e=addEnemy('shield',P.x+5000,P.y);e.hp=e.max=1e9;damage(e,10,'sword',0,t,true);e.dead=true;return 1e9-e.hp};
+    const r={weak:ETYPES.shield.mult&&weakOf(ETYPES.shield.mult),plain:hit('physical')};r.weakDmg=hit(r.weak);
+    enemies=enemies.filter(e=>!e.dead);FX.crit=c;P.track=tr;S.hits=hits;return r});
 
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
@@ -154,6 +167,9 @@ function botStep({god,en}){
   const t=s=>s==null?'-':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
   check(L.levels>0,'עליית רמה ובחירת שדרוג: '+L.levels+' פעמים, הגיע לרמה '+L.level);
   check(L.swaps>0,'החלפת נשק: '+L.swaps+' פעמים');
+  check(wk.weakDmg>wk.plain*1.2,'חולשה: מכה של '+wk.weak+' על מגן עשתה '+Math.round(wk.weakDmg)+', ואותה מכה פיזית '+Math.round(wk.plain));
+  const hits=L.hits||{},nTypes=Object.keys(hits).filter(k=>hits[k]>0).length;
+  check(nTypes>=2,'פגיעות לפי סוג נזק: '+(Object.entries(hits).map(([k,v])=>k+' '+v).join(', ')||'אין')+' · בסוף: חרב/קשת '+L.dt);
   check(L.door!=null&&L.room!=null&&L.roomBack!=null,'דלת זהב: הופיעה '+t(L.door)+', נכנס לחדר '+t(L.room)+(L.saws?' (עם מסורים)':'')+', חזר '+t(L.roomBack)+', '+L.coins+' מטבעות');
   const picks=['bomb','power'].filter(k=>L['pick_'+k]!=null).map(k=>(k==='bomb'?'פצצה ':'כוח ')+t(L['pick_'+k]));
   check(picks.length>0&&L.taken>0,'פריטים באזורי סכנה: '+(picks.join(', ')||'לא הופיעו')+', נלקחו '+L.taken);
@@ -168,6 +184,7 @@ function botStep({god,en}){
   check(/[KMB]!?$/.test(L.dmgMaxTxt||'')&&L.crits>0&&!L.notLtr,'מספרים גדולים: הכי גדול '+(L.dmgMaxTxt||'-')+', קריטיות: '+(L.crits||0)+(L.notLtr?', מספר שלא נכתב משמאל לימין: '+L.notLtr:''));
   check(L.boss!=null,'בוס: הופיע '+t(L.boss)+(L.bossName?' ('+L.bossName+')':''));
   if(L.boss!=null){
+    check(L.bossRes===L.usedTop&&L.bossWeak!==L.bossRes,'הבוס למד: עמיד ל-'+L.bossRes+' (הכי הרבה נזק שלך: '+L.usedTop+'), חלש ל-'+L.bossWeak+(L.held?' (יש לך אותו ביד)':' (אין לך אותו ביד)')+', תפקיד '+L.bossRole);
     check(L.rageMax>0.9,'זעם כשבורחים: הגיע ל-'+Math.round(100*(L.rageMax||0))+'%');
     check(L.rageLow<L.rageMax,'נרגע כשמתעמתים: ירד ל-'+Math.round(100*(L.rageLow??1))+'%');
     check(L.bossDown!=null,'בוס הובס: '+t(L.bossDown));
