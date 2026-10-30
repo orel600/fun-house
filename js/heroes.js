@@ -25,10 +25,24 @@ const HEROES={
       defense:()=>gearWorn().some(id=>gItem(id).type==='defense'||(gItem(id).stats||{}).hp>0)   // חפץ הגנה או אקססוריז שנותן חיים
     },
     on:['dmg_sword','dmg_gun','kills','bosses']
+  },
+  /* מראה אישי: רק הדמות בתלת-ממד מתחלפת. המחלקה, הנשק והפסיבית נשארים של דמות ההתחלה. נשמר ב-SAVE.hero.skin.
+     בוחרים במסך הבחירה ("הדמות שלי"), או עם ?hero=nir בסוף הכתובת (ו-?hero=none מחזיר את הרגיל).
+     look: שורה ב-LOOK3D (render3d.js). spark: ניצוץ שמרחף ליד הכתף (drawSpark ב-render.js).
+     dx,up: איפה ליד הדמות (פיקסלים לצד, וחלק מהגובה). bob: כמה הוא עולה ויורד, ובאיזו מהירות. r: גודל. lag: כמה מהר הוא מדביק את הדמות */
+  skins:{
+    // ניר: "הנודד עם הניצוץ", מ-art/heroes/nir-sheet.jpg. הניצוץ קישוט בינתיים, ומיועד להיות החפץ המסתובב הראשון שלו (המשימה של אוראל, orbit)
+    nir:{look:'nirHero',spark:{dx:24,up:0.62,bob:3,speed:2.2,r:5,lag:6}}
   }
 };
 
 const heroId=()=>HEROES.list[SAVE.hero.start]?SAVE.hero.start:null;
+// המראה האישי. ?hero=<שם> בכתובת בוחר אותו ונשמר, כדי שבטלפון מספיק לפתוח את הקישור פעם אחת
+function heroSkin(){
+  const q=/[?&]hero=(\w+)/.exec(location.search),k=q&&q[1];
+  if(k&&!heroSkin.url){heroSkin.url=1;if(HEROES.skins[k])SAVE.hero.skin=k;else if(k==='none')SAVE.hero.skin=null}
+  return HEROES.skins[SAVE.hero.skin]?SAVE.hero.skin:null;
+}
 
 /* ---- בתחילת כל ריצה (ובכפר): הפסיבית של הדמות ---- */
 function heroReset(){const h=HEROES.list[heroId()];if(h)gApply(h.passive,1);rankReset();P.hp=P.maxHp}   // אותם סטטים כמו ציוד (gApply ב-gear.js), ואחריהם הבונוס של הדרגה (ranks.js)
@@ -45,7 +59,7 @@ function heroOpen(){
       '<span class="hline">'+T('hero.'+id+'.line')+'</span>'+
       '<span class="tag">'+gIcon(h.weapon)+' '+T('it.'+h.weapon)+'</span>'+
       '<span class="tag">'+Object.keys(h.passive).map(k=>gSign(k,h.passive[k])).join(' · ')+'</span></button>'}).join('');
-  $('ovHero').hidden=false;
+  heroSkinBtn();$('ovHero').hidden=false;
 }
 function heroPick(id){
   const h=HEROES.list[id];if(!h)return;
@@ -55,4 +69,8 @@ function heroPick(id){
   $('ovHero').hidden=true;
   enterVillage();
 }
-$('ovHero').addEventListener('click',e=>{const b=e.target.closest('[data-hero]');if(b)heroPick(b.dataset.hero)});
+// "הדמות שלי": מדליק ומכבה את המראה האישי של ניר מעל הדמות שבוחרים
+function heroSkinBtn(){$('heroSkin').setAttribute('aria-pressed',String(heroSkin()==='nir'))}
+$('ovHero').addEventListener('click',e=>{
+  if(e.target.closest('#heroSkin')){SAVE.hero.skin=heroSkin()==='nir'?null:'nir';heroSkinBtn();return}
+  const b=e.target.closest('[data-hero]');if(b)heroPick(b.dataset.hero)});
