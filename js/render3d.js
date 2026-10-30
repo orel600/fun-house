@@ -8,10 +8,10 @@
    נקודה (x,y) במשחק יושבת ב-(x, 0, y/sin(tilt)) בעולם התלת-ממדי, וכך היא מופיעה על המסך בדיוק איפה שהקנבס מצייר אותה.
    אם WebGL לא זמין, או שהשחקן בחר 2D, הכל נשאר כמו קודם (R3D.on=false). */
 
-const VIEW={tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52'};
+const VIEW={tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52', world:'#2c4229', worldLine:'#6f8f55'};
 
 /* מי לובש איזה מודל. h: גובה הדמות על המסך בפיקסלים. foot: כמה פיקסלים מתחת למרכז הלוגי הרגליים נוגעות בקרקע.
-   props: חפצים ביד (bone: היד, ומיקום וסיבוב מקומיים כמו בחבילה המקורית). ring: טבעת בצבע הנשק שפוגע בו, מתחת לרגליים.
+   props: חפצים ביד (bone: היד, ומיקום וסיבוב מקומיים כמו בחבילה המקורית). הטבעת מתחת לרגליים היא בצבע החולשה של האויב (e.weak, מ-data.js), ולא כתובה כאן. tint: צבע מ-TINT.
    anim: שמות האנימציות מהחבילה. דמות חדשה = שורה כאן (ומודל ב-build3d.js) */
 const HAND_R={bone:'handslotr',pos:[0,0.033,0],rot:[0,-1,0,0]};
 const NPC_ANIM={idle:'Idle',walk:'Walking_D_Skeletons',work:'Idle',wave:'Cheer',cheer:'Cheer'};   // אין עדיין נפנוף: בינתיים הרעה קצרה
@@ -20,9 +20,9 @@ const LOOK3D={
     props:{gun:{prop:'crossbow',bone:'handslotr',pos:[-0.105,-0.01,0],rot:[0,0.7071,0,0.7071]}},
     anim:{idle:'Idle',run:'Running_A',sword:'1H_Melee_Attack_Slice_Horizontal',gun:'1H_Ranged_Shoot',die:'Death_A',win:'Cheer'}},
   grunt:{model:'minion',h:54,foot:12,props:{blade:{prop:'blade',...HAND_R}},anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
-  shield:{model:'warrior',h:60,foot:14,ring:'ember',props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'ember'}},
+  shield:{model:'warrior',h:60,foot:14,props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'fire'}},
     anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
-  wisp:{model:'mage',h:56,foot:12,ring:'tide',float:6,props:{staff:{prop:'staff',...HAND_R,tint:'tide'}},
+  wisp:{model:'mage',h:56,foot:12,float:6,props:{staff:{prop:'staff',...HAND_R,tint:'ice'}},
     anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons',cast:'Spellcasting'}},
   // דמויות ההתחלה (HEROES ב-heroes.js): כמו player, עם מודל משלהן. המטה של הקוסם יושב במקום הקשת
   hero_warrior:{model:'knight'},
@@ -38,7 +38,7 @@ const LOOK3D={
   /* תושבי הכפר (NPC ב-npc.js): בינתיים דמויות KayKit קיימות בצבע משלהן, עד שיגיעו דמויות KayKit 2.0 וג'מיני.
      own:false מסתיר את הנשק שהדמות מחזיקה בקובץ המקורי. anim: מה מנגנים בכל מצב של התושב (idle, walk, work, wave, cheer) */
   npc_head:{model:'knight',h:64,foot:14,tint:'gold',own:false,anim:NPC_ANIM},
-  npc_smith:{model:'barbarian',h:66,foot:14,tint:'ember',anim:{...NPC_ANIM,work:'1H_Melee_Attack_Chop'}},   // הגרזן שלו הוא הפטיש, בינתיים
+  npc_smith:{model:'barbarian',h:66,foot:14,tint:'fire',anim:{...NPC_ANIM,work:'1H_Melee_Attack_Chop'}},   // הגרזן שלו הוא הפטיש, בינתיים
   npc_merchant:{model:'rogue',h:60,foot:13,tint:'gold',own:false,anim:NPC_ANIM},
   npc_inn:{model:'barbarian',h:58,foot:13,own:false,anim:NPC_ANIM},
   npc_priest:{model:'rogue',h:60,foot:13,tint:'lilac',own:false,props:{staff:{prop:'staff',...HAND_R,tint:'lilac'}},anim:{...NPC_ANIM,work:'Spellcasting'}}
@@ -58,6 +58,9 @@ const VIL3D={
   decor:{tree:{model:['v_treeA','v_treeB'],w:55},rock:{model:'v_rock',w:55},hills:{model:'v_hills',w:260}},
   stock:{mill:{model:'v_lumber',w:60},mine:{model:'v_stone',w:60}}
 };
+/* העולם הפתוח: המיקומים ב-WORLD (js/world.js). מקורות המשאבים לפי הצורה שלהם (shape), מתוך מודלי הכפר, כדי לא להכביד על הטלפון.
+   glow: צבע לעורק מתכת. הקישוטים והשערים כמו בכפר (VIL3D.decor, VIL3D.gate) */
+const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:62},rock:{model:'v_rock',w:44},vein:{model:'v_rock',w:44,glow:'#C87533'}}};
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
@@ -143,7 +146,7 @@ function makeMarks(){
   const N=320,mk=(geo,col,op)=>{const m=new THREE.InstancedMesh(geo,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:op,depthWrite:false}),N);
     m.count=0;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.frustumCulled=false;m.renderOrder=1;R3D.scene.add(m);return m};
   const disc=new THREE.CircleGeometry(1,20).rotateX(-Math.PI/2),ring=new THREE.RingGeometry(0.78,1,28).rotateX(-Math.PI/2);
-  R3D.marks={shadow:mk(disc,0x05070d,0.45),ember:mk(ring,C.ember,0.85),tide:mk(ring,C.tide,0.85)};
+  R3D.marks={shadow:mk(disc,0x05070d,0.45)};for(const k in DMG.types)R3D.marks[k]=mk(ring,DMG.types[k].col,0.85);   // טבעת לכל סוג נזק
 }
 function mark(kind,x,z,r){const M=R3D.marks[kind];if(M.count>=M.instanceMatrix.count)return;
   R3D._mx.makeScale(r,1,r*0.92).setPosition(x,0.5,z);M.setMatrixAt(M.count++,R3D._mx)}
@@ -174,14 +177,14 @@ function crowdAdd(e){
   M.compose(R3D._p,R3D._q,R3D._s);
   for(const m of parts)if(m.count<CROWD.max)m.setMatrixAt(m.count++,M);
   R3D.nCrowd++;
-  const rr=e.r*1.15;mark('shadow',R3D._p.x,R3D._p.z,rr);if(L.ring)mark(L.ring,R3D._p.x,R3D._p.z,rr*1.15);
+  const rr=e.r*1.15;mark('shadow',R3D._p.x,R3D._p.z,rr);if(e.weak)mark(e.weak,R3D._p.x,R3D._p.z,rr*1.15);
 }
 
 /* ---- דמויות ---- */
 const SIN=()=>Math.sin(VIEW.tilt),COS=()=>Math.cos(VIEW.tilt);
 const heroLook=()=>Object.assign({},LOOK3D.player,PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()]);
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
-const TINT={ember:C.ember,tide:C.tide,gold:C.gold,lilac:C.lilac};
+const TINT={gold:C.gold,...Object.fromEntries(Object.keys(DMG.types).map(k=>[k,DMG.types[k].col])),lilac:C.lilac};   // צבע לכל סוג נזק, וזהב
 // מפתח למאגר: רק דמות זהה (מודל, חפצים, צבע, נשק מוסתר) חוזרת לשימוש
 const actorKey=L=>L.model+'|'+Object.keys(L.props||{}).join()+(L.tint?'|'+L.tint:'')+(L.own===false?'|x':'');
 function makeActor(L){
@@ -286,7 +289,7 @@ function syncEnemy(e,dt){
   if(e.isBoss||R3D.actors.size<25||((a.id||(a.id=++R3D.nid))+R3D.frame)%2===0){a.mixer.update(a.acc);a.acc=0}
   a.prev.x=e.x;a.prev.y=e.y;
   const z=a.root.position.z,x=a.root.position.x,rr=e.r*1.15;
-  mark('shadow',x,z,rr);if(L.ring)mark(L.ring,x,z,rr*1.15);
+  mark('shadow',x,z,rr);if(e.weak)mark(e.weak,x,z,rr*1.15);
 }
 // אויב שנעלם מהרשימה: אם הוא מת, מנגנים מוות ושוקע לאדמה. אם ברח (המבוקש), יצא מהמסך, עבר לקהל,
 // או שכבר יש יותר מדי מתים על המסך, הדמות חוזרת מיד למאגר
@@ -301,10 +304,10 @@ function retire(e,a,dt){
 
 /* ---- הכפר ---- */
 // מודל במקום (x,y) במשחק, בגודל w פיקסלים לרוחב, יושב על הקרקע
-function vPut(model,x,y,w,rot=0){
+function vPut(model,x,y,w,rot=0,group=R3D.vil.g){
   const t=R3D.props[model],m=t.clone(true),bb=t.userData.bb||(t.userData.bb=new THREE.Box3().setFromObject(t));
   const s=w/Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z,1e-3);
-  m.scale.setScalar(s);m.rotation.y=rot;m.position.set(x,-bb.min.y*s,y/SIN());R3D.vil.g.add(m);return m;
+  m.scale.setScalar(s);m.rotation.y=rot;m.position.set(x,-bb.min.y*s,y/SIN());group.add(m);return m;
 }
 function syncVillage(){
   let V=R3D.vil;
@@ -323,6 +326,21 @@ function syncVillage(){
     V.b[k]={key,all};
   }
   for(const k in V.stock)V.stock[k].visible=vStock(k)>0;
+}
+// העולם הפתוח: קישוטים, שערים ומקורות משאבים נבנים פעם אחת (המקומות קבועים). מקור שנשבר נעלם עד שהוא צומח
+function syncWorld(){
+  let G=R3D.wld;
+  if(!G){G=R3D.wld={g:new THREE.Group(),nodes:{}};R3D.scene.add(G.g);
+    for(const d of worldDecor()){const D=VIL3D.decor[d.kind],md=Array.isArray(D.model)?D.model[d.v<0.5?0:1]:D.model;vPut(md,d.x,d.y,D.w*(0.8+d.v*0.4),d.v*6.28,G.g)}
+    for(const g of Object.values(wGates()))vPut(VIL3D.gate.model,g.x,g.y,VIL3D.gate.w,0,G.g)}
+  G.g.visible=true;
+  for(const n of S.nd.list){
+    let m=G.nodes[n.id];
+    if(!m){const D=W3D.nodes[wKind(n.kind).shape],v=hash(n.x,n.y),md=Array.isArray(D.model)?D.model[v<0.5?0:1]:D.model;
+      m=G.nodes[n.id]=vPut(md,n.x,n.y,D.w*(0.85+v*0.3),v*6.28,G.g);
+      if(D.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(D.glow).multiplyScalar(0.5)}})}
+    m.visible=!n.dead;
+  }
 }
 // תושבי הכפר: דמות לכל תושב שנמצא בכפר, והקישוטים בפינה של מי שאין לו מבנה. המצב (הולך, עובד, מנופף) מגיע מ-npc.js
 function syncNpcs(dt){
@@ -355,14 +373,16 @@ function render3d(ox,oy){
   const S_=SIN(),cx=W/2-ox,cz=(H/2-oy)/S_;
   c.position.set(cx,2000*S_,cz+2000*COS());c.lookAt(cx,0,cz);
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
-  R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:VIEW.groundLine);
+  R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?VIEW.world:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?VIEW.worldLine:VIEW.groundLine);
   for(const k in R3D.marks)R3D.marks[k].count=0;
   for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
+  if(R3D.wld)R3D.wld.g.visible=false;
   if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt)}   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
+    if(S.wd)syncWorld();   // העולם הפתוח: עצים, סלעים ושערים (world.js)
     // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
     const vis=enemies.filter(e=>!e.dead&&(e.isBoss||onScreen(e.x+ox,e.y+oy)));
     if(vis.length>CROWD.full){const pr=e=>e.isBoss||e.wanted||e.elite?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}

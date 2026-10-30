@@ -40,7 +40,7 @@ function wantedUpdate(dt){
 function wantedAppear(a){
   const d=rand(220,300),aa=a+rand(-WANTED.hint,WANTED.hint),k=runK();
   const e={type:'wanted',wanted:true,x:P.x+Math.cos(aa)*d,y:P.y+Math.sin(aa)*d,hp:WANTED.hp*k,max:WANTED.hp*k,r:13,speed:WANTED.speed,
-    mult:{sword:1,gun:1},xp:0,dmg:0,flash:0,kx:0,ky:0,ph:0,told:false,life:WANTED.life,turn:0,side:1};
+    mult:{},xp:0,dmg:0,flash:0,kx:0,ky:0,ph:0,told:false,life:WANTED.life,turn:0,side:1};
   enemies.push(e);S.wn.e=e;S.wn.seen++;
   sparks(e.x,e.y,C.gold,16,220);banner(T('wanted.here'),C.gold);
 }

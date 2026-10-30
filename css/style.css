@@ -53,9 +53,8 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .ragetrack{height:4px;margin-top:4px;background:var(--line);border-radius:2px;overflow:hidden}
 .ragefill{height:100%;width:0;background:var(--blood);transition:width .15s}
 .swap{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 30px);right:calc(env(safe-area-inset-right,0px) + 22px);
-  width:88px;height:88px;border-radius:50%;border:3px solid var(--ember);background:rgba(18,22,36,.78);color:var(--ember);
+  width:88px;height:88px;border-radius:50%;border:3px solid var(--dt,var(--chalk));background:rgba(18,22,36,.78);color:var(--dt,var(--chalk));
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:800 12px var(--body);touch-action:none;cursor:pointer}
-.swap.gun{border-color:var(--tide);color:var(--tide)}
 .swap:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
 .swap.hint{animation:pulse .6s ease-in-out infinite alternate}
 @keyframes pulse{to{transform:scale(1.12);box-shadow:0 0 0 10px rgba(236,231,220,.12)}}
@@ -87,8 +86,9 @@ h1{font-size:46px} h2{font-size:30px}
   border-radius:12px;padding:13px 14px;display:flex;flex-direction:column;gap:3px;font:400 14px var(--body);cursor:pointer}
 .card b{font-size:17px}
 .card .tag{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--dim)}
-.card.sword{border-inline-start-color:var(--ember)}.card.sword .tag{color:var(--ember)}
-.card.gun{border-inline-start-color:var(--tide)}.card.gun .tag{color:var(--tide)}
+/* --dt: צבע סוג הנזק, נקבע בקוד (progression.js) */
+.card{border-inline-start-color:var(--dt,var(--dim))}.card .tag{color:var(--dt,var(--dim));display:flex;align-items:center;gap:4px}
+.dti{width:1.1em;height:1.1em;vertical-align:-0.15em;margin-inline-end:3px}
 /* בחירת דמות התחלה (js/heroes.js): שלושה כרטיסים בשורה. --hero: הצבע של הדמות */
 .heropanel{width:min(720px,100%)}
 .herocards{display:grid;grid-template-columns:repeat(3,1fr)}
@@ -113,6 +113,12 @@ h1{font-size:46px} h2{font-size:30px}
 .mute:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 /* הכפר: התרמיל למעלה, והפאנל של המבנה שלידו למטה. ממשק הזירה מוסתר (body.vil) */
 .vil .hud,.vil .swap{display:none}
+/* העולם הפתוח (js/world.js): פס החיים והתרמיל נשארים, הטיימר והפס של הריצה מוסתרים. שם האזור ומה שבתרמיל למעלה באמצע */
+.world .xpbar,.world .clock,.world .lvl,.world .runbar{display:none}
+.whud{position:fixed;z-index:2;top:calc(env(safe-area-inset-top,0px) + 6px);left:50%;transform:translateX(-50%);max-width:46vw;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;gap:4px}
+.whud b{font-family:var(--display);font-weight:400;font-size:17px;color:var(--gold);text-shadow:0 0 3px #000,0 0 3px #000;white-space:nowrap}
+.whud .res{font-size:12px;padding:2px 8px}
 .vhud{position:fixed;top:0;left:0;right:0;z-index:2;pointer-events:none;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 0}
 .bag{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .res{background:rgba(18,22,36,.8);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font:800 14px var(--body);color:var(--chalk);direction:ltr;font-variant-numeric:tabular-nums;white-space:nowrap}
