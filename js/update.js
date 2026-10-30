@@ -42,9 +42,10 @@ function update(dt){
   // separation
   for(let i=0;i<enemies.length;i++){const a=enemies[i];for(let j=i+1;j<enemies.length;j++){const b=enemies[j];const dx=b.x-a.x,dy=b.y-a.y,rr=a.r+b.r;if(Math.abs(dx)>rr||Math.abs(dy)>rr)continue;const d=Math.hypot(dx,dy)||.01;if(d<rr){const p=(rr-d)/2,ux=dx/d,uy=dy/d;if(!a.isBoss){a.x-=ux*p;a.y-=uy*p}if(!b.isBoss){b.x+=ux*p;b.y+=uy*p}}}}
   // player bullets
+  const hitable=S.nd.list.length?enemies.concat(S.nd.list):enemies;   // גם מקורות משאבים (nodes.js)
   for(const b of pb){
     shotFly(b,dt);   // חץ טס ישר, קסם מתביית (weapons.js)
-    for(const e of enemies){
+    for(const e of hitable){
       if(e.dead||b.hit.has(e)||b.life<=0)continue;
       if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4)shotHit(b,e);
     }
@@ -62,6 +63,9 @@ function update(dt){
   bonusUpdate(dt);if(S.room||S.mode!=='play')return;
   // המבוקש: שמועה, מרדף ושלל
   wantedUpdate(dt);
+  // עצים, סלעים ועורקי מתכת (nodes.js)
+  nodesUpdate(dt);
+  lootUpdate(dt);   // עמודי אור של שלל (loot.js)
   // mines & waves
   for(const mn of mines){mn.t-=dt;if(mn.t<=0){if(Math.hypot(P.x-mn.x,P.y-mn.y)<58)hurt(16);sparks(mn.x,mn.y,C.blood,14,240);S.shake=Math.max(S.shake,4)}}
   mines=mines.filter(mn=>mn.t>0);

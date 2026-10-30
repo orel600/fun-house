@@ -11,16 +11,16 @@ const AGING={
   max:10,
   // chance[L]: הסיכוי להצליח לעלות ל-‎+L. cost[L]: מה זה עולה, לפריט מעץ
   chance:[null,1,0.95,0.85,0.75,0.65,0.55,0.45,0.35,0.25,0.15],
-  cost:[null,{coins:10,stone:5},{coins:20,stone:10},{coins:35,ore:3},{coins:55,ore:5},{coins:80,ore:8},
-    {coins:120,ore:12},{coins:170,ore:18},{coins:240,ore:26},{coins:330,ore:36},{coins:450,ore:50}],
+  cost:[null,{coins:10,stone:5},{coins:20,stone:10},{coins:35,iron:3},{coins:55,iron:5},{coins:80,iron:8},
+    {coins:120,iron:12},{coins:170,silver:6},{coins:240,silver:9},{coins:330,gold:5},{coins:450,gold:8,mythril:1}],
   tierCost:0.5,           // כל חומר מעל עץ מייקר ב-50%
   scale:0.1,              // כל ‎+1 מוסיף 10% לכל הסטטים של הפריט. ב-‎+10 הוא כפול
   // רמת הנפחייה: עד איזה ‎+ אפשר להגיע (byForge[רמת נפחייה]), וכמה סיכוי מוסיפה כל רמה מעל 1
   byForge:[0,4,6,8,9,10],forgeBonus:0.03,
   drop:1,                 // כמה רמות יורדים בכישלון
-  gem:'gem',              // המשאב שמגן מירידה. נופל מהמבוקש ומבוסים (VILLAGE.drops)
+  gem:'gem',              // המשאב שמגן מירידה. נופל מהמבוקש, מבוסים ומתיבות (RES ב-resources.js)
   pity:{step:0.05,max:0.25},
-  slots:['weapon','acc'], // מה אפשר לשדרג. החפצים המסתובבים יצטרפו כשיהיו להם סטטים
+  slots:['weapon','acc','boots'], // מה אפשר לשדרג. החפצים המסתובבים יצטרפו כשיהיו להם סטטים
   /* המראה על הנשק. at: מאיזו רמה. glow: זוהר סביב הנשק (r רדיוס, a שקיפות). trail: שובל (n נקודות).
      parts: חלקיקים שעולים מהנשק (rate בשנייה, life שניות). grow: כמה הזוהר גדל בכל רמה בתוך רצועה */
   look:[
@@ -114,7 +114,7 @@ const aPct=v=>'<bdi>'+Math.round(v*100)+'%</bdi>';
 function forgeDraw(){
   const sel=AUI.sel;
   $('fLevel').textContent=T('age.cap',ageCap());
-  $('fRes').innerHTML=bagLine(SAVE.bag,true);
+  $('fRes').innerHTML=bagLine(SAVE.bag,resShown('forge'));   // מתכות ואבנים שיש (RES.show)
   // מה לבוש קודם, ואז מה שבתרמיל
   let h='';
   for(const s of AGING.slots)for(let i=0;i<gOpen(s);i++){const id=gGet(s,i);if(gItem(id))h+=gTile(id,'data-slot="'+s+'" data-i="'+i+'"'+(sel&&sel.slot===s&&sel.i===i?' aria-pressed="true"':''),'<small>✓</small>')}

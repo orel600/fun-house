@@ -15,7 +15,7 @@ function addEnemy(type,x,y,hpMul=1){
   const d=ETYPES[type],k=runK()*hpMul;
   const e={type,x,y,hp:d.hp*k,max:d.hp*k,r:d.r,speed:d.speed*(1+Math.min(0.4,S.t/400)),mult:d.mult||(d.mult=multOf(d.tags)),weak:weakOf(d.mult),xp:d.xp,dmg:d.dmg,
     flash:0,kx:0,ky:0,shoot:rand(1.2,2.6),ph:rand(0,6),told:false};
-  enemies.push(e);return e;
+  enemies.push(e);eliteRoll(e);return e;   // לפעמים אויב עלית (loot.js)
 }
 const runP=()=>Math.min(1,S.t/RUN.bossAt);
 const lerp=([a,b])=>a+(b-a)*runP();
