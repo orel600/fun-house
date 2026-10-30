@@ -442,6 +442,36 @@ function worldBot(m,L,god){
   check(cl.pull,'ענן: שמירה חדשה יותר בענן '+(cl.pull?'נמשכה ונשמרה בטלפון':'לא נמשכה'));
   check(cl.keep&&cl.users===1,'ענן: שמירה ישנה בענן '+(cl.keep?'לא דרסה, והחדשה נדחפה':'דרסה את החדשה')+(cl.users===1?'':', '+cl.users+' כניסות במקום אחת'));
   check(cl.down,'ענן: שרת נופל '+(cl.down?'בשקט, הסמל חוזר ל"לא מחובר"':'שבר משהו'));
+  // כניסה עם Google (שלב 2), על השרת המדומה: חיבור המשתמש הזמני, כניסה רגילה כשהחיבור נכשל, מיזוג (טלפון חדש לוקח, שמירות שונות מאוד = שאלה), והתנתקות
+  const gl=await page.evaluate(async()=>{const r={},bak=JSON.stringify(SAVE),F=CLOUD.fake=cloudFakeServer();let went=null;CLOUD.nav=u=>{went=u};
+    CLOUD.session=null;try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}
+    const p=cloudHash('#access_token=a%2Bb&refresh_token=r&expires_at=99&x=1'),bad=cloudHash('#foo=1');r.parse=p.access_token==='a+b'&&p.expires_at==='99'&&bad===null&&cloudHash('#error=x&error_code=identity_already_exists').error_code==='identity_already_exists';
+    r.btnFile=document.getElementById('cloudIn').hidden;   // הבדיקה רצה מ-file://: אין כפתור
+    // 1. חיבור: אותו משתמש, אותה שמירה, ובסמל מופיע השם
+    bagAdd('wood',2);saveNow();await cloudSync();const u=CLOUD.session.uid;
+    r.link=await cloudGoogle()==='link'&&/link=/.test(went);F.google[u]='Nir';
+    r.linked=await cloudBack(F.back(u))==='linked'&&CLOUD.session.uid===u&&CLOUD.session.name==='Nir'&&!!F.rows[u]&&/Nir/.test(document.getElementById('cloudLine').textContent)&&!document.getElementById('cloudOut').hidden&&!localStorage.getItem(CLOUD.lsKey+'-go');
+    // 2. החיבור נכשל (Google כבר שייך למשתמש אחר): חזרה עם שגיאה מובילה לכניסה רגילה
+    CLOUD.session=null;localStorage.removeItem(CLOUD.lsKey);await cloudSync();
+    await cloudGoogle();r.relink=await cloudBack('#error=server_error&error_code=identity_already_exists')==='relink'&&/\/auth\/v1\/authorize\?provider=google/.test(went);
+    // 3. מכשיר שני (בלי התקדמות) לוקח את השמירה מהחשבון
+    const g='u90';F.google[g]='Nir';const far=JSON.parse(bak);far.hero.xp=(SAVE.hero.xp||0)+5000;far.hero.level=9;far.village.forge=5;far.ts=1;F.rows[g]={data:far};
+    const mine=JSON.stringify(SAVE);SAVE=saveBlank();r.second=await cloudBack(F.back(g))==='cloud'&&SAVE.village.forge===5&&CLOUD.status==='ok';
+    // 4. שתי שמירות שונות מאוד: שואלים, והשחקן בוחר את הטלפון. הטלפון נשמר ונדחף לחשבון
+    SAVE=JSON.parse(mine);SAVE.hero.xp=1;saveNow();CLOUD.session=null;localStorage.removeItem(CLOUD.lsKey);await cloudGoogle(true);
+    const pr=cloudBack(F.back(g));await new Promise(ok=>setTimeout(ok,50));const ov=document.getElementById('ovCloud');r.ask=!ov.hidden&&/9/.test(document.getElementById('cloudAcct').textContent);
+    document.getElementById('cloudPhone').click();r.kept=await pr==='phone'&&ov.hidden&&F.rows[g].data.hero.xp===1&&SAVE.village.forge!==5;
+    // 5. התנתקות: הכניסה נמחקת מהטלפון, השמירה נשארת
+    const wood=SAVE.bag.wood;document.getElementById('cloudOut').click();await new Promise(ok=>setTimeout(ok,20));
+    r.out=!CLOUD.session&&!localStorage.getItem(CLOUD.lsKey)&&F.calls.includes('POST /auth/v1/logout')&&SAVE.bag.wood===wood&&document.getElementById('cloudOut').hidden&&CLOUD.status==='off';
+    SAVE=JSON.parse(bak);SAVE_STORE.write(SAVE,true);CLOUD.fake=cloudFakeServer();CLOUD.session=null;CLOUD.dirty=false;r.p0=CLOUD.pushes;return r});
+  cl.p0=gl.p0;
+  check(gl.parse&&gl.btnFile,'ענן: כתובת החזרה מ-Google '+(gl.parse?'נקראת':'לא נקראה')+', '+(gl.btnFile?'ומ-file:// אין כפתור כניסה':'וכפתור הכניסה מופיע גם מ-file://'));
+  check(gl.link&&gl.linked,'ענן: Google '+(gl.link?'מתחבר למשתמש הזמני':'לא ניסה להתחבר')+', '+(gl.linked?'אותה שמירה, והסמל אומר "מחובר כ-"':'בחזרה משהו לא עבד'));
+  check(gl.relink,'ענן: כשהחיבור נכשל '+(gl.relink?'עוברים לכניסה רגילה עם Google':'נתקע'));
+  check(gl.second,'ענן: מכשיר שני '+(gl.second?'לוקח את השמירה מהחשבון':'לא לקח את השמירה'));
+  check(gl.ask&&gl.kept,'ענן: שתי שמירות שונות '+(gl.ask?'השחקן נשאל':'לא נשאל')+', '+(gl.kept?'ומה שבחר נשמר':'הבחירה לא נשמרה'));
+  check(gl.out,'ענן: התנתקות '+(gl.out?'מוחקת את הכניסה ומשאירה את השמירה':'לא עבדה'));
   // שוק: מוכרים עץ, לא מצליחים לקנות בלי מספיק מטבעות, ואז קונים אבן. בסוף מנקים
   const mk=await page.evaluate(()=>{SAVE.village.market=1;bagAdd('wood',10);const sell=vTrade('sell','wood')&&SAVE.bag.coins===5&&SAVE.bag.wood===5;
     const poor=!vTrade('buy','stone');bagAdd('coins',20);const buy=vTrade('buy','stone')&&SAVE.bag.stone===5&&SAVE.bag.coins===10;

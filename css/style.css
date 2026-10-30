@@ -87,6 +87,7 @@ h1{font-size:46px} h2{font-size:30px}
 .lang[aria-pressed="true"]{background:var(--chalk);border-color:var(--chalk);color:var(--ink)}
 .lang:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .gfx{margin-top:6px}
+.cloudbtns{justify-content:center}
 #c3{z-index:0}
 #c{z-index:1}
 .rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:15px;line-height:1.45}

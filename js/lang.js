@@ -30,6 +30,13 @@ const TEXT={
   'cloud.off':{he:'☁ לא מחובר: שמור בטלפון',en:'☁ Offline: saved on this phone'},
   'cloud.sync':{he:'☁ מסנכרן…',en:'☁ Syncing…'},
   'cloud.ok':{he:'☁ שמור בענן',en:'☁ Saved to the cloud'},
+  'cloud.as':{he:n=>'☁ מחובר כ-'+n,en:n=>'☁ Signed in as '+n},
+  'cloud.google':{he:'כניסה עם Google',en:'Sign in with Google'},
+  'cloud.signout':{he:'התנתקות',en:'Sign out'},
+  'cloud.askT':{he:'איזו שמירה לשמור?',en:'Which save do you want to keep?'},
+  'cloud.askS':{he:'בטלפון הזה ובחשבון Google יש שתי שמירות שונות. השנייה תוחלף.',en:'This phone and your Google account have two different saves. The other one will be replaced.'},
+  'cloud.keepPhone':{he:l=>'📱 השמירה בטלפון (רמה '+l+')',en:l=>'📱 This phone (level '+l+')'},
+  'cloud.keepCloud':{he:l=>'☁ השמירה בחשבון (רמה '+l+')',en:l=>'☁ My account (level '+l+')'},
   langGroup:{he:'שפה',en:'Language'},
   gfxGroup:{he:'גרפיקה',en:'Graphics'},
   gfx3d:{he:'תלת-ממד',en:'3D'},
@@ -546,4 +553,5 @@ function applyLang(){
   for(const el of document.querySelectorAll('[data-t]')){const v=T(el.dataset.t);el.innerHTML=Array.isArray(v)?v.map(s=>'<li>'+s+'</li>').join(''):v}
   for(const el of document.querySelectorAll('[data-ta]'))el.setAttribute('aria-label',T(el.dataset.ta));
   for(const b of document.querySelectorAll('[data-lang]'))b.setAttribute('aria-pressed',String(b.dataset.lang===LANG));
+  if(typeof cloudShow==='function'&&typeof CLOUD!=='undefined')cloudShow(CLOUD.status);   // "מחובר כ-<שם>" בשפה החדשה
 }
