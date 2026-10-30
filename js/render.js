@@ -121,6 +121,7 @@ function render(){
     else{ctx.strokeStyle='rgba(199,166,255,'+(0.9-w.t)+')';ctx.lineWidth=14;ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,7);ctx.stroke()}}
   // orbs
   for(const o of orbs){ctx.fillStyle=C.gold;ctx.beginPath();ctx.moveTo(o.x,o.y-5);ctx.lineTo(o.x+4,o.y);ctx.lineTo(o.x,o.y+5);ctx.lineTo(o.x-4,o.y);ctx.fill()}
+  drawDrops();   // שלל על הרצפה (drops.js)
   drawBonusWorld();
   drawVillage();
   drawWorld();   // העולם הפתוח (world.js)
