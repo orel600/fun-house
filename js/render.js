@@ -8,6 +8,7 @@ function drawPlayer(){
   const p=pose(P.x,P.y,P.walk,P.moving,a,sword?10:11-P.gn.recoil*4),o={skin:LOOK.player,col:(HEROES.list[heroId()]||{}).col||C.chalk,lw:3};
   drawRig(p,o);
   const hand=p.armF[1],hx=hand.x,hy=hand.y;
+  AGE_FX.hand={x:hx+Math.cos(a)*14,y:hy+Math.sin(a)*14};   // הזוהר של Aging יושב על הנשק (aging.js)
   if(!drawRigWeapon(p,o,P.weapon,a)){
     if(sword){
       ctx.strokeStyle=C.ember;ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*24,hy+Math.sin(a)*24);ctx.stroke();
@@ -115,6 +116,7 @@ function render(){
   for(const a of actors){if(a.isPlayer)drawPlayer();
     else if(a.big&&!R3D.on){ctx.save();ctx.translate(a.x,a.y);ctx.scale(a.big,a.big);ctx.translate(-a.x,-a.y);drawEnemy(a);ctx.restore()}
     else drawEnemy(a)}
+  drawAgeFx();   // זוהר, שובל וחלקיקים על נשק משודרג (aging.js)
   // חצים: מוט, נוצות וחוד
   ctx.strokeStyle=C.tide;ctx.fillStyle=C.tide;ctx.lineWidth=2;
   for(const b of pb){
