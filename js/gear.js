@@ -21,6 +21,7 @@ const GEAR={
     oakBow:     {slot:'weapon',tier:0,w:'gun',icon:'🏹',stats:{gdmg:10},look:{model:'crossbow'}},
     ironBow:    {slot:'weapon',tier:1,w:'gun',icon:'🏹',stats:{gdmg:25},look:{model:'crossbow'}},
     goldBow:    {slot:'weapon',tier:3,w:'gun',icon:'🏹',stats:{gdmg:60,magnet:20},look:{model:'crossbow',glow:C.gold}},
+    oakStaff:   {slot:'weapon',tier:0,w:'gun',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'staff'}},   // הנשק של הקוסם: יורה כמו קשת
     boneCharm:  {slot:'acc',tier:0,icon:'🦴',stats:{hp:15}},
     ironRing:   {slot:'acc',tier:1,icon:'💍',stats:{regen:0.5}},
     swiftBoots: {slot:'acc',tier:2,icon:'👢',stats:{speed:8}},
