@@ -86,6 +86,7 @@
     <button class="go" id="startBtn" data-t="start"></button>
     <p class="sub" id="bestLine"></p>
     <p class="sub cloud" id="cloudLine" data-t="cloud.off"></p>
+    <div class="langs cloudbtns"><button class="lang" id="cloudIn" data-t="cloud.google" hidden></button><button class="lang" id="cloudOut" data-t="cloud.signout" hidden></button></div>
     <p class="ver" id="verLine" dir="ltr"></p>
   </div>
 </div>
@@ -143,6 +144,16 @@
 </div>
 
 <!-- מוות בעולם הפתוח: מה אבד, ומה נשאר בטוח (js/world.js) -->
+<!-- כניסה עם Google ממכשיר אחר: איזו שמירה לשמור (js/cloud.js) -->
+<div class="ov" id="ovCloud" hidden>
+  <div class="panel">
+    <h2 data-t="cloud.askT"></h2>
+    <p class="sub" data-t="cloud.askS"></p>
+    <button class="go" id="cloudPhone"></button>
+    <button class="go" id="cloudAcct"></button>
+  </div>
+</div>
+
 <div class="ov" id="ovWDeath" hidden>
   <div class="panel">
     <h2 data-t="w.fell"></h2>
