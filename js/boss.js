@@ -66,7 +66,7 @@ function bossDown(b){
   for(let i=0;i<22;i++)orbs.push({x:b.x+rand(-40,40),y:b.y+rand(-40,40),v:1});
   sparks(b.x,b.y,C.lilac,40,320);sparks(b.x,b.y,C.gold,20,260);
   eb=[];waves=[];mines=[];S.hitstop=0.25;S.slow=0.8;S.shake=14;
-  banner(T('bossDown',b.name),C.gold);
+  banner(T('bossDown',b.name),C.gold);sfx('bossDown');
   P.track={sword:0,gun:0,move:0,still:0,dist:0,distN:0};
   runWon();   // אחרי רגע חוזרים לכפר עם השלל (village.js)
 }
