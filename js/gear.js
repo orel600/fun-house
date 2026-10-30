@@ -21,6 +21,7 @@ const GEAR={
     oakBow:     {slot:'weapon',tier:0,w:'gun',icon:'🏹',stats:{gdmg:10},look:{model:'crossbow'}},
     ironBow:    {slot:'weapon',tier:1,w:'gun',icon:'🏹',stats:{gdmg:25},look:{model:'crossbow'}},
     goldBow:    {slot:'weapon',tier:3,w:'gun',icon:'🏹',stats:{gdmg:60,magnet:20},look:{model:'crossbow',glow:C.gold}},
+    oakStaff:   {slot:'weapon',tier:0,w:'gun',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'staff'}},   // הנשק של הקוסם: יורה כמו קשת
     boneCharm:  {slot:'acc',tier:0,icon:'🦴',stats:{hp:15}},
     ironRing:   {slot:'acc',tier:1,icon:'💍',stats:{regen:0.5}},
     swiftBoots: {slot:'acc',tier:2,icon:'👢',stats:{speed:8}},
@@ -71,11 +72,14 @@ function gearUnequip(slot,i){const id=gGet(slot,i);if(!id)return false;gSet(slot
 /* ---- בתחילת כל ריצה (ובכפר): מתנת פתיחה פעם אחת, והסטטים של הציוד חלים על השחקן ---- */
 function gearReset(){
   if(!SAVE.gearGift){GEAR.gift.forEach(id=>bagAdd(id));SAVE.gearGift=true;saveNow()}
-  const s=gearStats(),pc=k=>1+(s[k]||0)/100;
-  P.sw.dmg*=pc('sdmg');P.gn.dmg*=pc('gdmg');P.speed*=pc('speed');P.magnet*=pc('magnet');
-  P.maxHp+=s.hp||0;P.hp=P.maxHp;P.regen+=s.regen||0;
+  gApply(gearStats());
   const w=gItem(SAVE.gear.weapon);if(w&&w.w)P.weapon=w.w;
 }
+
+// סטטים על השחקן: {sdmg:10,hp:15}. גם הפסיבית של דמות ההתחלה עוברת כאן (heroes.js)
+function gApply(s){const pc=k=>1+(s[k]||0)/100;
+  P.sw.dmg*=pc('sdmg');P.gn.dmg*=pc('gdmg');P.speed*=pc('speed');P.magnet*=pc('magnet');
+  P.maxHp+=s.hp||0;P.hp=P.maxHp;P.regen+=s.regen||0}
 
 /* ---- שלל בסוף ריצה ---- */
 function gRoll(){

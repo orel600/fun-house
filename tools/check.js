@@ -1,5 +1,5 @@
 /* בדיקה אוטומטית: פותח את המשחק בדפדפן ללא ממשק ברוחב טלפון, ובסוף דוח.
-   הבוט מתחיל בכפר (בונה, אוסף תוצרת, יוצא בשער), משחק בזירה עד אחרי הבוס, וחוזר לכפר עם השלל.
+   הבוט בוחר דמות התחלה, מתחיל בכפר (בונה, אוסף תוצרת, יוצא בשער), משחק בזירה עד אחרי הבוס, וחוזר לכפר עם השלל.
    הרצה: node tools/check.js
    אפשרויות: --time 150   כמה שניות משחק לשחק
              --seed 7     אותו מספר = אותה ריצה בדיוק, כדי לשחזר באג או להשוות לפני ואחרי שינוי
@@ -33,8 +33,11 @@ function botStep({god,en}){
   // באנגלית: כל טקסט שמופיע על המסך (ממשק, באנר, מסכים, טקסט צף) נבדק לפני שהבוט לוחץ
   if(en&&!L.heLeak){const he=/[֐-׿]/;
     for(const s of [document.querySelector('.hud').innerText,document.getElementById('banner').textContent,document.getElementById('swaplbl').textContent,
-      ...['ovLevel','ovBoss','ovOver','vhud','vPanel','ovGear'].filter(vis).map(id=>document.getElementById(id).innerText),...floats.map(f=>f.txt)])
+      ...['ovHero','ovLevel','ovBoss','ovOver','vhud','vPanel','ovGear'].filter(vis).map(id=>document.getElementById(id).innerText),...floats.map(f=>f.txt)])
       if(he.test(s)){L.heLeak=s.trim().slice(0,80);break}}
+  // משחק ראשון: בוחרים לוחם, ובודקים שהחרב שלו נלבשה ושהבחירה נשמרה
+  if(vis('ovHero')){L.heroCards=document.querySelectorAll('#heroCards [data-hero]').length;document.querySelector('#heroCards [data-hero="warrior"]').click();
+    const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key));L.heroStart=sv.hero.start;L.heroW=SAVE.gear.weapon;L.heroVil=!!S.vil&&document.getElementById('ovHero').hidden;return L}
   if(vis('ovLevel')){document.querySelector('#cards .card').click();L.levels++;return L}
   if(vis('ovBoss')){L.bossIntro??=at;document.getElementById('fightBtn').click();return L}
   // סוף ריצה: רושמים איך נגמרה ומה השלל, וחוזרים לכפר
@@ -48,7 +51,7 @@ function botStep({god,en}){
   if(S.mode!=='play')return L;
   if(S.vil)return villageBot(m,L);
   // הריצה הראשונה אחרי שלבשנו קשת בכפר: מתחילים איתה, והנזק שלה גדל
-  if(L.gearW==null){L.gearW=P.weapon;L.gearDmg=Math.round(P.gn.dmg/m.gdmg0*100)/100}
+  if(L.gearW==null){L.gearW=P.weapon;L.gearDmg=Math.round(P.gn.dmg/m.gdmg0*100)/100;L.heroHp=P.maxHp-100-(gearStats().hp||0)}   // 100: החיים ההתחלתיים ב-reset
   if(god)P.hp=P.maxHp;
   if(R3D.on){L.actorsMax=Math.max(L.actorsMax||0,R3D.stats.actors||0);L.callsMax=Math.max(L.callsMax||0,R3D.stats.calls||0)}
   L.taken=S.bn.taken;L.coins=S.bn.coins;L.t=at;L.level=P.level;
@@ -103,7 +106,8 @@ function villageBot(m,L){
   const bag=()=>Object.assign({},SAVE.bag),B=VILLAGE.b.mill,g=VILLAGE.gate;
   if(m.home){   // חזרנו מהזירה
     if(L.back==null){L.back=S.t;const now=bag(),got=[];for(const r in now){const d=now[r]-(m.runBag[r]||0);if(d>0)got.push(r+' +'+d)}
-      L.lootGot=got.join(', ');L.lootSaved=JSON.stringify(JSON.parse(localStorage.getItem(SAVE_STORE.key)).bag)===JSON.stringify(SAVE.bag)}
+      L.lootGot=got.join(', ');L.lootSaved=JSON.stringify(JSON.parse(localStorage.getItem(SAVE_STORE.key)).bag)===JSON.stringify(SAVE.bag);
+      const st=JSON.parse(localStorage.getItem(SAVE_STORE.key)).hero.style;L.style={};for(const k in st)L.style[k]=Math.round(st[k])}   // סגנון המשחק, כפי שנשמר
     return steer(null,null,false,0,L)}
   if(!m.vil){m.vil=1;L.vilOpen=!!S.vil;L.gift=JSON.stringify(SAVE.bag);L.vilModels=R3D.on?(R3D.vil?R3D.vil.g.children.length:0):null}
   if(vLv('mill')===0){   // הולכים למנסרה ובונים אותה
@@ -185,9 +189,18 @@ function villageBot(m,L){
     if(L.back!=null||L.t>=CFG.time)break;   // חזרנו לכפר אחרי הריצה: אין עוד מה לבדוק
   }
   await shot('end');
+  // בפעם השנייה מסך הפתיחה מוביל ישר לכפר, בלי בחירת דמות
+  const again=await page.evaluate(()=>{document.getElementById('startBtn').click();return document.getElementById('ovHero').hidden&&!!S.vil});
+  const heroHp=await page.evaluate(()=>HEROES.list.warrior.passive.hp);
   await browser.close();
 
   const t=s=>s==null?'-':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
+  check(L.heroCards===3&&L.heroStart==='warrior'&&L.heroW==='oakSword'&&L.heroVil,'דמות התחלה: '+(L.heroCards||0)+' כרטיסים, '+(L.heroStart==='warrior'?'נבחר לוחם ונשמר':'הבחירה לא נשמרה')+
+    ', נשק: '+(L.heroW||'-')+(L.heroVil?', ומשם לכפר':', לא נכנס לכפר'));
+  check(L.heroHp===heroHp,'פסיבית בריצה: הלוחם קיבל +'+L.heroHp+' חיים (צפוי +'+heroHp+')');
+  check(again,'בחירת דמות: '+(again?'לא חוזרת במשחק השני':'הופיעה שוב'));
+  const sty=L.style||{};
+  check(sty.t_run>0&&sty.kills>0&&(sty.dmg_sword||0)+(sty.dmg_gun||0)>0,'סגנון משחק: '+(Object.keys(sty).map(k=>k+' '+sty[k]).join(', ')||'לא נספר'));
   check(L.vilOpen&&L.gift&&L.gift!=='{}'&&(L.vilModels==null||L.vilModels>0),'כפר: נפתח אחרי מסך הפתיחה, מתנת פתיחה '+L.gift+(L.vilModels!=null?', '+L.vilModels+' מודלים בתלת-ממד':''));
   check(L.built===1&&L.builtSaved&&L.fx,'בנייה: '+(L.panel||'הפאנל לא נפתח')+', '+(L.built===1?'נבנתה, שולם '+L.paid:'לא נבנתה')+(L.builtSaved?', נשמר':', לא נשמר')+(L.fx?', חגיגה עם פיגום':', בלי חגיגה'));
   check(L.collected>0&&L.collected===L.expect,'ייצור: אחרי שעתיים בלי לשחק נאספו '+L.collected+' עץ (צפוי '+L.expect+')');

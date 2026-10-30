@@ -155,6 +155,15 @@ const TEXT={
   'res.stone':{he:'אבן',en:'Stone'},
   'res.ore':{he:'עפרות',en:'Ore'},
   'res.bone':{he:'עצמות',en:'Bones'},
+  // בחירת דמות התחלה (heroes.js)
+  'hero.title':{he:'מי אתה?',en:'Who are you?'},
+  'hero.sub':{he:'זו רק נקודת הפתיחה. כל דמות יכולה להחזיק כל נשק',en:'Just a starting point. Any hero can hold any weapon'},
+  'hero.warrior':{he:'לוחם',en:'Warrior'},
+  'hero.warrior.line':{he:'נכנס ראשון לקרב, ויוצא אחרון',en:'First into the fight, last one out'},
+  'hero.hunter':{he:'צייד',en:'Hunter'},
+  'hero.hunter.line':{he:'מהיר, שקט, ופוגע מרחוק',en:'Fast, quiet, and deadly from afar'},
+  'hero.mage':{he:'קוסם',en:'Mage'},
+  'hero.mage.line':{he:'קסם שמרפא תוך כדי קרב',en:'Magic that heals mid-fight'},
   // מסך הציוד והתרמיל (gear.js)
   'gear.btn':{he:'ציוד',en:'Gear'},
   'gear.title':{he:'ציוד ותרמיל',en:'Gear & Bag'},
@@ -186,6 +195,7 @@ const TEXT={
   'it.ironSword':{he:'חרב ברזל',en:'Iron Sword'},
   'it.silverBlade':{he:'להב כסף',en:'Silver Blade'},
   'it.oakBow':{he:'קשת עץ',en:'Oak Bow'},
+  'it.oakStaff':{he:'מטה עץ',en:'Oak Staff'},
   'it.ironBow':{he:'קשת ברזל',en:'Iron Bow'},
   'it.goldBow':{he:'קשת זהב',en:'Golden Bow'},
   'it.boneCharm':{he:'קמע עצם',en:'Bone Charm'},
