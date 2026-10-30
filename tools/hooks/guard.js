@@ -1,6 +1,8 @@
 /* שומר: רץ לפני כל פקודת טרמינל של Claude (Bash או PowerShell) ועוצר טעויות שקשה לתקן.
    חסום לגמרי: commit או push ישירות ל-main, ו-push בכוח.
    עוצר לאישור של המשתמש: מחיקות, פקודות git שמוחקות עבודה, ומיזוג ל-main.
+   לא עוצר: מחיקה של קבצים זמניים בתיקיית Temp (מחוץ למשחק), ומיזוג במחשב שבו FH_SELF_MERGE=1
+   (אצל ניר, בהגדרות של Claude במחשב שלו: Claude ממזג לבד כשהבדיקות ירוקות, CLAUDE.md כלל 9).
    מוגדר ב-.claude/settings.json. תקלה בסקריפט עצמו לא חוסמת כלום. */
 const {execFileSync}=require('child_process');
 
@@ -35,9 +37,21 @@ process.stdin.on('data',d=>raw+=d).on('end',()=>{
     deny('חסום: כל מיזוג נכנס להיסטוריה עם סיכום קצר. הוסף --subject "<כותרת בעברית> (#<n>)" --body "מה נעשה: ... | למה: ... | אישר: <מי>".');
   if(onMain&&/\bgit\s+commit\b/.test(cmd))
     deny('חסום: אסור commit ישירות על main. קודם ענף: git switch -c feature/<תיאור-קצר> (השינויים שלא נשמרו עוברים איתך), ואז commit.');
-  for(const [re,why] of ASK)if(re.test(cmd))ask(why+'. ודא שהמשתמש ביקש בדיוק את זה, ושאמרת לו בשם מה יימחק או ישתנה.');
+  for(const [re,why] of ASK)if(re.test(cmd)&&!skip(re,cmd))ask(why+'. ודא שהמשתמש ביקש בדיוק את זה, ושאמרת לו בשם מה יימחק או ישתנה.');
   process.exit(0);
 });
+
+// מחיקה שכל הנתיבים שלה בתיקיית Temp, ומיזוג במחשב שהוגדר לו מיזוג עצמי, עוברים בלי לעצור
+const TEMP=/[\\/]AppData[\\/]+Local[\\/]+Temp[\\/]|^\/tmp\//i;
+function skip(re,cmd){
+  if(/merge/.test(re.source))return process.env.FH_SELF_MERGE==='1';
+  if(!/Remove-Item/.test(re.source))return false;
+  return cmd.split(/[;&|]+/).filter(seg=>re.test(seg)).every(seg=>{
+    const args=(seg.match(/"[^"]*"|'[^']*'|\S+/g)||[]).map(a=>a.replace(/^["']|["']$/g,''));
+    const i=args.findIndex(a=>/^(rm|del|rd|rmdir|Remove-Item)$/i.test(a));
+    const paths=args.slice(i+1).filter(a=>!/^-/.test(a));
+    return paths.length>0&&paths.every(a=>TEMP.test(a))});
+}
 
 function deny(msg){process.stderr.write(msg+'\n');process.exit(2)}
 function ask(msg){process.stdout.write(JSON.stringify({hookSpecificOutput:{hookEventName:'PreToolUse',permissionDecision:'ask',permissionDecisionReason:msg}}));process.exit(0)}
