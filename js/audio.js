@@ -1,5 +1,5 @@
 /* צלילים: sfx('מזהה') משמיע צליל, מכל מקום בקוד. צליל חדש = קובץ ב-sounds/ ושורה ב-SOUNDS.
-   הקבצים נטענים דרך <audio>, לא דרך fetch, כדי שיעבדו גם מ-file://.
+   הקבצים ב-sounds/, ומשם tools/build-sounds.js בונה את js/sounds-data.js (מריצים אחרי כל שינוי בצלילים). מתנגנים דרך Web Audio, ראו למטה.
    vol: עוצמה 0 עד 1. pitch: כמה הגובה משתנה באקראי בכל פעם (0.1 = עד 10%), כדי שמאה פגיעות לא יישמעו אותו דבר.
    max: כמה עותקים יכולים להתנגן יחד. gap: כמה שניות לפחות בין שתי השמעות, כדי שמאות פגיעות לא יצטברו לרעש */
 const SOUNDS={
@@ -15,42 +15,44 @@ const SOUNDS={
   tap:      {file:'tap.mp3',      vol:0.5,  pitch:0,    max:2, gap:0.05},  // לחיצה על כפתור
   celebrate:{file:'celebrate.mp3',vol:0.6,  pitch:0,    max:2, gap:0.3}    // שדרוג, שלל נדיר, כל רגע של "יש!"
 };
+/* איך מנגנים: Web Audio. כל קובץ מפוענח פעם אחת בטעינה (buf), וכל השמעה היא מקור קטן וזול שנזרק בסוף.
+   קודם כל צליל ניגן דרך <audio>, ובאייפון כל השמעה כזו עצרה את המשחק לרגע: בקרב העולם ירד ל-17 פריימים בשנייה (אוראל, 30.10.2026).
+   הקבצים מגיעים מ-js/sounds-data.js (נבנה ע"י tools/build-sounds.js), כי fetch לא עובד מ-file:// */
 // count: כמה פעמים כל צליל התבקש (גם כשהשתקה), בשביל הבדיקה. errors: קבצים שלא נטענו או לא התנגנו
-const AUDIO={muted:false,unlocked:false,pool:{},last:{},count:{},errors:[]};
+// playing: כמה עותקים של כל צליל מתנגנים עכשיו (עד max), ו-src המקורות עצמם, כדי שהשתקה תעצור אותם
+const AUDIO={muted:false,unlocked:false,ctx:null,buf:{},playing:{},src:new Set(),last:{},count:{},errors:[]};
 try{AUDIO.muted=localStorage.getItem('zm-mute')==='1'}catch(e){}
-
-for(const id in SOUNDS){
-  AUDIO.pool[id]=[];
-  for(let i=0;i<SOUNDS[id].max;i++){
-    const a=new Audio('sounds/'+SOUNDS[id].file);a.preload='auto';a.preservesPitch=false;
-    a.addEventListener('error',()=>AUDIO.errors.push(id+': '+(a.error?a.error.code:'?')));
-    AUDIO.pool[id].push(a);
-  }
+try{AUDIO.ctx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){AUDIO.errors.push('AudioContext: '+e.name)}
+if(AUDIO.ctx)for(const id in SOUNDS){
+  const b64=SOUND_DATA[SOUNDS[id].file];if(!b64){AUDIO.errors.push(id+': missing');continue}
+  const bin=atob(b64),u8=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+  AUDIO.ctx.decodeAudioData(u8.buffer,b=>{AUDIO.buf[id]=b},e=>AUDIO.errors.push(id+': decode '+(e&&e.name||'?')));
 }
 function sfx(id){
   const s=SOUNDS[id];if(!s)return;
   AUDIO.count[id]=(AUDIO.count[id]||0)+1;
-  if(AUDIO.muted||!AUDIO.unlocked)return;
-  const now=performance.now()/1000;if(now-(AUDIO.last[id]||-9)<s.gap)return;
-  const a=AUDIO.pool[id].find(a=>a.paused||a.ended);if(!a)return;
+  const c=AUDIO.ctx,b=AUDIO.buf[id];
+  if(AUDIO.muted||!AUDIO.unlocked||!c||!b||c.state!=='running')return;
+  const now=performance.now()/1000;if(now-(AUDIO.last[id]||-9)<s.gap||(AUDIO.playing[id]||0)>=s.max)return;
   AUDIO.last[id]=now;
-  a.volume=s.vol;a.playbackRate=1+(Math.random()*2-1)*s.pitch;a.currentTime=0;
-  const p=a.play();if(p)p.catch(sfxFail(id));
+  const src=c.createBufferSource(),g=c.createGain();
+  src.buffer=b;src.playbackRate.value=1+(Math.random()*2-1)*s.pitch;g.gain.value=s.vol;
+  src.connect(g).connect(c.destination);
+  AUDIO.playing[id]=(AUDIO.playing[id]||0)+1;AUDIO.src.add(src);
+  src.onended=()=>{AUDIO.playing[id]--;AUDIO.src.delete(src);g.disconnect()};
+  src.start();
 }
-// "לא הורשה" ו"נקטע" הם לא תקלה: הדפדפן עוד לא קיבל נגיעה, או שהצליל הבא החליף אותו
-const sfxFail=id=>e=>{if(e&&e.name!=='NotAllowedError'&&e.name!=='AbortError')AUDIO.errors.push(id+': '+e.name)};
-// בטלפון אין צליל לפני הנגיעה הראשונה. בנגיעה הזו מנגנים כל קובץ פעם אחת בשקט, וכך הוא מותר מעכשיו
+// בטלפון אין צליל לפני הנגיעה הראשונה. בנגיעה הזו מעירים את Web Audio, ומעכשיו הוא מותר
 function unlockAudio(){
-  if(AUDIO.unlocked)return;AUDIO.unlocked=true;
-  for(const id in AUDIO.pool)for(const a of AUDIO.pool[id]){
-    a.muted=true;const p=a.play();
-    if(p)p.then(()=>{a.pause();a.currentTime=0;a.muted=false},e=>{a.muted=false;sfxFail(id)(e)});else{a.pause();a.muted=false}
-  }
+  if(AUDIO.unlocked||!AUDIO.ctx)return;AUDIO.unlocked=true;
+  const p=AUDIO.ctx.resume();if(p)p.catch(e=>AUDIO.errors.push('resume: '+e.name));
 }
 addEventListener('pointerdown',unlockAudio,{capture:true});addEventListener('keydown',unlockAudio,{capture:true});
+// אחרי שחוזרים לאפליקציה (מסך נעול, לשונית אחרת) הדפדפן לפעמים משאיר את הצליל מושהה
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&AUDIO.unlocked&&AUDIO.ctx&&AUDIO.ctx.state!=='running')AUDIO.ctx.resume().catch(()=>{})});
 function setMute(m){
   AUDIO.muted=m;try{localStorage.setItem('zm-mute',m?'1':'0')}catch(e){}
-  if(m)for(const id in AUDIO.pool)for(const a of AUDIO.pool[id])a.pause();
+  if(m)for(const s of AUDIO.src)try{s.stop()}catch(e){}
   showMute();
 }
 const MUTE_ICON='<path d="M4 9h4l5-4v14l-5-4H4z"/>';

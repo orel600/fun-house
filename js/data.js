@@ -44,6 +44,12 @@ const UPS=[
   {id:'glight',w:'gun',el:'lightning'},
   {id:'searth',w:'sword',el:'earth'},
   {id:'gwater',w:'gun',el:'water'},
+  // סקיל חדש לכפתור פנוי (skills.js). מוצע רק אם עוד אין אותו ויש מקום
+  {id:'k_splash',w:'any',sk:'splash',f:()=>skillAdd('splash')},
+  {id:'k_frost',w:'any',sk:'frost',f:()=>skillAdd('frost')},
+  {id:'k_zap',w:'any',sk:'zap',f:()=>skillAdd('zap')},
+  {id:'k_quake',w:'any',sk:'quake',f:()=>skillAdd('quake')},
+  {id:'k_flame',w:'any',sk:'flame',f:()=>skillAdd('flame')},
   {id:'hp',w:'any',f:()=>{P.maxHp+=25;P.hp=P.maxHp}},
   {id:'spd',w:'any',f:()=>P.speed*=1.12,max:3},
   {id:'mag',w:'any',f:()=>P.magnet*=1.6,max:2},

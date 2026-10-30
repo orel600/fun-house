@@ -96,6 +96,23 @@ const TEXT={
   'up.mag':{he:['מגנט','טווח איסוף XP +60%'],en:['Magnet','XP pickup range +60%']},
   'up.swap':{he:['החלפה זריזה','אחרי כל החלפת נשק: נזק כפול לשנייה וחצי'],en:['Quick Swap','After each weapon switch: double damage for 1.5 seconds']},
   'up.regen':{he:['נשימה עמוקה','מרפא 1.5 חיים בשנייה'],en:['Deep Breath','Heals 1.5 HP per second']},
+  // סקילים וקומבו (skills.js)
+  'up.k_splash':{he:['גל מים','סקיל: גל שמרטיב את כל מי שסביבך'],en:['Splash','Skill: a wave that soaks everyone around you']},
+  'up.k_frost':{he:['פיצוץ קרח','סקיל: טבעת קרח שמאטה. על רטובים היא מקפיאה'],en:['Frost Nova','Skill: an ice ring that slows. It freezes wet enemies']},
+  'up.k_zap':{he:['פגיעת ברק','סקיל: ברק שקופץ בין אויבים. אוהב רטובים'],en:['Zap','Skill: lightning that jumps between enemies. Loves wet ones']},
+  'up.k_quake':{he:['רקיעת אדמה','סקיל: הודף את כל מי שסביבך. מנפץ קפואים'],en:['Quake','Skill: knocks back everyone around you. Shatters frozen ones']},
+  'up.k_flame':{he:['פרץ להבה','סקיל: אש שורפת סביבך. ממיסה קפואים ומואטים'],en:['Flame Burst','Skill: fire burns around you. Melts frozen and slowed enemies']},
+  'sk.tag':{he:'סקיל',en:'Skill'},
+  'sk.group':{he:'סקילים',en:'Skills'},
+  'sk.splash':{he:'גל מים',en:'Splash'},
+  'sk.frost':{he:'פיצוץ קרח',en:'Frost Nova'},
+  'sk.zap':{he:'פגיעת ברק',en:'Zap'},
+  'sk.quake':{he:'רקיעת אדמה',en:'Quake'},
+  'sk.flame':{he:'פרץ להבה',en:'Flame Burst'},
+  'combo.shock':{he:'חשמול!',en:'Shock!'},
+  'combo.freeze':{he:'קפוא!',en:'Frozen!'},
+  'combo.melt':{he:'נמס!',en:'Melt!'},
+  'combo.stun':{he:'הלם!',en:'Stunned!'},
 
   // הבוס
   bossComing:{he:'בוס מתקרב',en:'Boss incoming'},
