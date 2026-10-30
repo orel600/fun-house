@@ -8,7 +8,7 @@
    נקודה (x,y) במשחק יושבת ב-(x, 0, y/sin(tilt)) בעולם התלת-ממדי, וכך היא מופיעה על המסך בדיוק איפה שהקנבס מצייר אותה.
    אם WebGL לא זמין, או שהשחקן בחר 2D, הכל נשאר כמו קודם (R3D.on=false). */
 
-const VIEW={tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018'};
+const VIEW={tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52'};
 
 /* מי לובש איזה מודל. h: גובה הדמות על המסך בפיקסלים. foot: כמה פיקסלים מתחת למרכז הלוגי הרגליים נוגעות בקרקע.
    props: חפצים ביד (bone: היד, ומיקום וסיבוב מקומיים כמו בחבילה המקורית). ring: טבעת בצבע הנשק שפוגע בו, מתחת לרגליים.
@@ -25,6 +25,16 @@ const LOOK3D={
     anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons',cast:'Spellcasting'}},
   wanted:{model:'rogue',h:62,foot:13,tint:'gold',anim:{run:'Running_B',die:'Death_A'}},
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle',charge:'2H_Melee_Attack_Spin',cast:'2H_Melee_Attack_Chop',taunt:'Taunt',die:'Death_A'}}
+};
+/* הכפר: המיקומים והמראה לפי רמה ב-VILLAGE (js/village.js). כאן רק איזה קובץ מודל לכל שם, ובאיזה רוחב על המסך בפיקסלים.
+   models: המבנים (השמות ב-look). site: פיגום, למבנה שעוד לא נבנה או שבונים אותו עכשיו. deco: קישוטים סביב מבנה.
+   decor: העצים והגבעות מסביב (villageDecor). stock: ערימה ליד מבנה שיש בו תוצרת שמחכה */
+const VIL3D={
+  models:{castle:{model:'v_castle',w:190},forge:{model:'v_forge',w:140},mill:{model:'v_mill',w:140},mine:{model:'v_mine',w:140},market:{model:'v_market',w:150},tent:{model:'v_tent',w:105}},
+  site:{model:'v_site',w:135},gate:{model:'v_gate',w:150},
+  deco:{flag:{model:'v_flag',w:46},crate:{model:'v_crate',w:30},barrel:{model:'v_barrel',w:28}},
+  decor:{tree:{model:['v_treeA','v_treeB'],w:55},rock:{model:'v_rock',w:55},hills:{model:'v_hills',w:260}},
+  stock:{mill:{model:'v_lumber',w:60},mine:{model:'v_stone',w:60}}
 };
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
@@ -82,6 +92,7 @@ async function init3d(){
       R3D.clips[a.name+'@up']=new THREE.AnimationClip(a.name+'@up',a.duration,a.tracks.filter(t=>UPPER.test(t.name)));
       R3D.clips[a.name+'@low']=new THREE.AnimationClip(a.name+'@low',a.duration,a.tracks.filter(t=>!UPPER.test(t.name)))}
     for(const k of ['crossbow','blade','shield','staff']){const g=await parseGLB(k);lambert(g.scene);R3D.props[k]=g.scene}
+    for(const k in MODELS3D)if(k.startsWith('v_')){const g=await parseGLB(k);lambert(g.scene);g.scene.traverse(o=>{o.frustumCulled=true});R3D.props[k]=g.scene}   // מבני הכפר
     for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t);lambert(t);t.updateMatrixWorld(true);
       // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
       const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=bb.max.y-bb.min.y||2}
@@ -166,7 +177,7 @@ function syncPlayer(dt){
   const L=LOOK3D.player,sword=P.weapon==='sword';
   if(a.own)a.own.visible=sword;if(a.props.gun)a.props.gun.visible=!sword;
   const st=a.st||(a.st={anim:0,gt:0,mode:''});
-  if(S.mode==='over'){if(st.mode!=='over'){st.mode='over';a.base=null;a.mixer.stopAllAction();once(a,L.anim.die,1.2,true)}}
+  if(S.mode==='over'){if(st.mode!=='over'){st.mode='over';a.base=null;a.mixer.stopAllAction();once(a,S.won?L.anim.win:L.anim.die,1.2,true)}}
   else{
     if(st.mode==='over'){st.mode='';a.one=null;a.mixer.stopAllAction()}
     // תקיפה: רק פלג הגוף העליון, כך שאפשר לתקוף תוך כדי ריצה
@@ -224,6 +235,32 @@ function retire(e,a,dt){
   if(a.dieT<=0){R3D.actors.delete(e);freeActor(a)}
 }
 
+/* ---- הכפר ---- */
+// מודל במקום (x,y) במשחק, בגודל w פיקסלים לרוחב, יושב על הקרקע
+function vPut(model,x,y,w,rot=0){
+  const t=R3D.props[model],m=t.clone(true),bb=t.userData.bb||(t.userData.bb=new THREE.Box3().setFromObject(t));
+  const s=w/Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z,1e-3);
+  m.scale.setScalar(s);m.rotation.y=rot;m.position.set(x,-bb.min.y*s,y/SIN());R3D.vil.g.add(m);return m;
+}
+function syncVillage(){
+  let V=R3D.vil;
+  if(!V){V=R3D.vil={g:new THREE.Group(),b:{},stock:{}};R3D.scene.add(V.g);
+    for(const d of villageDecor()){const D=VIL3D.decor[d.kind],md=Array.isArray(D.model)?D.model[d.v<0.5?0:1]:D.model;vPut(md,d.x,d.y,D.w*(0.8+d.v*0.4),d.v*6.28)}
+    const g=VILLAGE.gate;vPut(VIL3D.gate.model,g.x,g.y,VIL3D.gate.w);
+    for(const k in VIL3D.stock){const B=VILLAGE.b[k];V.stock[k]=vPut(VIL3D.stock[k].model,B.x+B.r*1.05,B.y-B.r*0.25,VIL3D.stock[k].w)}}
+  V.g.visible=true;
+  // מבנה שעלה רמה מתחלף לפי vLook: פיגום עד שנבנה, ואחר כך המודל, הגודל, הקישוטים והזוהר של הרצועה שלו
+  for(const k in VILLAGE.b){
+    const B=VILLAGE.b[k],lk=vLook(k),key=lk?lk.model+lk.L:'site',cur=V.b[k];
+    if(cur&&cur.key===key)continue;if(cur)for(const m of cur.all)V.g.remove(m);
+    const D=lk?VIL3D.models[lk.model]:VIL3D.site,m=vPut(D.model,B.x,B.y,D.w*(lk?lk.size:1)),all=[m];
+    if(lk){if(lk.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(lk.glow).multiplyScalar(0.22)}});
+      lk.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length];all.push(vPut(VIL3D.deco[d].model,B.x+dx*B.r,B.y+dy*B.r,VIL3D.deco[d].w))})}
+    V.b[k]={key,all};
+  }
+  for(const k in V.stock)V.stock[k].visible=vStock(k)>0;
+}
+
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
 function render3d(ox,oy){
   if(!R3D.on||!P)return;
@@ -236,9 +273,11 @@ function render3d(ox,oy){
   const S_=SIN(),cx=W/2-ox,cz=(H/2-oy)/S_;
   c.position.set(cx,2000*S_,cz+2000*COS());c.lookAt(cx,0,cz);
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
-  R3D.scene.background.set(S.room?VIEW.room:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':VIEW.groundLine);
+  R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:VIEW.groundLine);
   for(const k in R3D.marks)R3D.marks[k].count=0;
-  if(!S.room){
+  if(R3D.vil)R3D.vil.g.visible=false;
+  if(S.vil){syncPlayer(dt);syncVillage()}   // בכפר: השחקן והמבנים
+  else if(!S.room){
     syncPlayer(dt);
     for(const e of enemies)if(!(e.dead&&!R3D.actors.has(e)))syncEnemy(e,dt);
     for(const [e,a] of R3D.actors)if(a.seen!==R3D.frame||e.dead)retire(e,a,dt);

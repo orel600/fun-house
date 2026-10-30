@@ -16,6 +16,7 @@ function damage(e,base,w,ang){
 }
 function kill(e){
   e.dead=true;S.kills++;sfx('death');
+  runDrop(e);   // שלל לכפר (village.js)
   if(e.isBoss){bossDown(e);return}
   if(e.wanted){wantedDown(e);return}
   for(let i=0;i<e.xp;i++)orbs.push({x:e.x+rand(-8,8),y:e.y+rand(-8,8),v:1});

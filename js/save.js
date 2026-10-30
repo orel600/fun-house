@@ -11,6 +11,8 @@ function saveBlank(){return{
   gear:{weapon:null,acc:[],orbit:[]},               // orbit: החפצים המסתובבים, עד 5
   village:{center:1,forge:0,mill:0,mine:0,market:0},// רמת כל מבנה. 0 = עוד לא נבנה
   quests:{active:{},done:{}},
+  prod:{},                                          // ייצור במבנים, גם כשלא משחקים: {mill:{t:זמן,have:{wood:3.2}}}. מנוהל ב-village.js
+  gift:false,                                       // מתנת הפתיחה של הכפר כבר ניתנה
   ts:0}}
 
 let SAVE=saveBlank();

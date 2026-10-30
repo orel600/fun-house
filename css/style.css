@@ -85,3 +85,32 @@ h1{font-size:46px} h2{font-size:30px}
   display:grid;place-items:center;padding:0;cursor:pointer}
 .mute.off{color:var(--dim)}
 .mute:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+/* הכפר: התרמיל למעלה, והפאנל של המבנה שלידו למטה. ממשק הזירה מוסתר (body.vil) */
+.vil .hud,.vil .swap{display:none}
+.vhud{position:fixed;top:0;left:0;right:0;z-index:2;pointer-events:none;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 0}
+.bag{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.res{background:rgba(18,22,36,.8);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font:800 14px var(--body);color:var(--chalk);direction:ltr;font-variant-numeric:tabular-nums;white-space:nowrap}
+.res.miss{color:var(--blood);border-color:rgba(239,78,87,.5)}
+.vpanel{position:fixed;z-index:3;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);max-width:420px;margin-inline:auto;
+  background:rgba(26,32,51,.95);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.vpanel h3{margin:0;font-family:var(--display);font-weight:400;font-size:22px;line-height:1.1}
+.vpanel h3 small{font-family:var(--body);font-size:13px;font-weight:800;color:var(--gold);margin-inline-start:6px}
+.vpanel p{margin:0;font-size:14px;line-height:1.4}
+.vpanel .next{color:var(--dim);font-size:13px}
+.cost{display:flex;flex-wrap:wrap;gap:6px}
+.vbtn{appearance:none;border:0;border-radius:12px;padding:12px;font:800 16px var(--body);background:var(--gold);color:var(--ink);cursor:pointer}
+.vbtn:disabled{background:var(--line);color:var(--dim);cursor:default}
+.trade{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.trade button{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--chalk);border-radius:10px;padding:9px 6px;font:700 13px var(--body);cursor:pointer}
+.trade button:disabled{color:var(--dim);opacity:.6;cursor:default}
+.vbtn:focus-visible,.trade button:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
+/* לרוחב (ככה משחקים, ניר 30.10.2026): הפאנל בצד שמאל, והפינה הימנית למטה פנויה לכפתורי כישורים שיגיעו.
+   זה מיקום על המסך ולא כיוון טקסט, ולכן left גם בעברית */
+@media (orientation:landscape){
+  .vpanel{left:calc(env(safe-area-inset-left,0px) + 12px);right:auto;top:calc(env(safe-area-inset-top,0px) + 54px);bottom:auto;
+    width:min(300px,38vw);max-height:calc(100% - 66px);overflow-y:auto;margin:0;padding:10px 12px;gap:6px}
+  .vpanel h3{font-size:19px}
+  .vbtn{padding:9px}
+}
+.stat.wide{grid-column:1/-1}
+.stat.wide b{display:flex;justify-content:flex-start;margin-top:4px}
