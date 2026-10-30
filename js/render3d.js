@@ -320,7 +320,7 @@ function render3d(ox,oy){
   if(!R3D.on||!P)return;
   if(!R3D._mx){R3D._mx=new THREE.Matrix4();R3D._p=new THREE.Vector3();R3D._q=new THREE.Quaternion();R3D._s=new THREE.Vector3();R3D._up=new THREE.Vector3(0,1,0)}
   // drawEvery: הבדיקה האוטומטית מציירת רק חלק מהפריימים, כי שם התלת-ממד רץ על המעבד בלי כרטיס גרפי. בשאר הפריימים לא עושים כלום
-  R3D.frame=(R3D.frame||0)+1;if(R3D.drawEvery&&R3D.frame%R3D.drawEvery!==0)return;
+  R3D.frame=(R3D.frame||0)+1;const skip=R3D.drawEvery&&R3D.frame%R3D.drawEvery!==0;if(skip&&!S.vil)return;   // בכפר ממשיכים לעדכן, כי שם נבנים המבנים
   const r=R3D.r,c=R3D.cam,now=performance.now(),dt=Math.min(0.05*(R3D.drawEvery||1),R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;
   const pr=Math.min(DPR,1.5);if(r.getPixelRatio()!==pr)r.setPixelRatio(pr);
   if(R3D.w!==W||R3D.h!==H){R3D.w=W;R3D.h=H;r.setSize(W,H,false);c.left=-W/2;c.right=W/2;c.top=H/2;c.bottom=-H/2;c.updateProjectionMatrix()}
@@ -349,7 +349,7 @@ function render3d(ox,oy){
   const up=m=>{if(!m.count)return;const b=m.instanceMatrix;b.clearUpdateRanges();b.addUpdateRange(0,m.count*16);b.needsUpdate=true};
   for(const k in R3D.marks)up(R3D.marks[k]);
   for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)up(m);
-  r.render(R3D.scene,c);
+  if(!skip)r.render(R3D.scene,c);
   const i=r.info.render;R3D.stats={calls:i.calls,tris:i.triangles,actors:R3D.actors.size+1,crowd:R3D.nCrowd};
 }
 // התחלה מחדש: מנקים דמויות מהריצה הקודמת

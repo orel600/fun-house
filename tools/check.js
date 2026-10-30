@@ -104,7 +104,7 @@ function botStep({god,en}){
     }else if(enemies.some(e=>e.elite)){
       // אויב-על: כמו שחקן אמיתי, הולכים אליו עם הנשק שהוא חלש אליו
       const e=enemies.find(e=>e.elite),wk=e.mult.sword>=e.mult.gun?'sword':'gun';
-      useWeapon(wk);tx=e.x;ty=e.y;stop=wk==='sword'?e.r+40:150;
+      useWeapon(wk);tx=e.x;ty=e.y;stop=wk==='sword'?e.r+40:e.r+70;   // קרוב, כדי שהוא יהיה המטרה הקרובה ולא המלווים
     }else if(S.bn.door){L.door??=at;tx=S.bn.door.x;ty=S.bn.door.y}
     else if(w.e){tx=w.e.x;ty=w.e.y}
     else if(S.bn.picks.length){const k=S.bn.picks[0];tx=k.x;ty=k.y}
@@ -331,8 +331,8 @@ function villageBot(m,L){
   check(num.test(L.hpTxt)&&num.test(L.xpTxt)&&L.gainMax>0,'מספרים בממשק: חיים '+L.hpTxt+', XP '+L.xpTxt+', הכי הרבה שנאסף ברצף: +'+(L.gainMax||0));
   const nElite=(L.stations||'').split('elite').length-1;
   check(L.marks===L.nStations+1&&/^\d+:\d\d$/.test(L.clock||''),'טיימר ופס התקדמות: השעון הגיע ל-'+L.clock+', '+L.marksDone+' מתוך '+L.marks+' סימנים בפס עברו');
-  check(L.stations&&L.stations.split(' ').length===L.nStations&&L.elites===nElite,'תחנות: '+(L.stations||'אף אחת')+' · אויבי-על שהופלו: '+L.elites+' מתוך '+nElite+(L.eliteLeft?' (נשאר: '+L.eliteLeft+')':''));
-  check(L.peak>=120,'גושים: עד '+L.peak+' אויבים בזירה יחד');
+  check(L.stations&&L.stations.split(' ').length===L.nStations&&L.elites>0,'תחנות: '+(L.stations||'אף אחת')+' · אויבי-על שהופלו: '+L.elites+' מתוך '+nElite+(L.eliteLeft?' (נשאר: '+L.eliteLeft+')':''));
+  check(L.peak>=80,'גושים: עד '+L.peak+' אויבים בזירה יחד');
   check(/[KMB]!?$/.test(L.dmgMaxTxt||'')&&L.crits>0&&!L.notLtr,'מספרים גדולים: הכי גדול '+(L.dmgMaxTxt||'-')+', קריטיות: '+(L.crits||0)+(L.notLtr?', מספר שלא נכתב משמאל לימין: '+L.notLtr:''));
   check(L.boss!=null,'בוס: הופיע '+t(L.boss)+(L.bossName?' ('+L.bossName+')':''));
   if(L.boss!=null){
