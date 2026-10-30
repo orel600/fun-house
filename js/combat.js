@@ -1,4 +1,4 @@
-/* קרב: פגיעה, נזק, החלפת נשק. סוגי הנזק ומה שהם עושים ב-dmg.js */
+/* קרב: פגיעה, נזק, החלפת נשק. סוגי הנזק ומה שהם עושים ב-dmg.js, וסוגי הנשק (חרב, קשת, מטה) ב-weapons.js */
 const HITFX={floats:70,parts:450,crit:0.12,critMul:2.5};   // תקרה לטקסט צף ולניצוצות בשביל הטלפון, וסיכוי ועוצמה של מכה קריטית
 function nearest(maxD){let b=null,bd=maxD;for(const e of enemies){if(e.dead)continue;const d=Math.hypot(e.x-P.x,e.y-P.y)-e.r;if(d<bd){bd=d;b=e}}return b}
 // במה ההתקפה האוטומטית מכוונת: האויב הקרוב, או מקור משאבים (nodes.js) כשעומדים לידו והוא קרוב יותר
@@ -48,38 +48,36 @@ function attack(dt){
     const tgt=aimTarget(s.range);
     if(tgt)P.aim=Math.atan2(tgt.y-P.y,tgt.x-P.x);
     if(tgt&&s.t<=0){
-      s.t=s.cd;s.anim=0.2;s.ang=P.aim;
+      s.t=s.cd*wK('cd');s.anim=0.2;s.ang=P.aim;
       for(const e of enemies.concat(S.nd.list)){
         if(e.dead)continue;const dx=e.x-P.x,dy=e.y-P.y,d=Math.hypot(dx,dy)-e.r;
         if(d>s.range)continue;const a=Math.atan2(dy,dx);
         if(Math.abs(angDiff(a,s.ang))>s.arc/2&&d>8)continue;
-        damage(e,s.dmg*dmgK(),'sword',a);
+        damage(e,s.dmg*wK('dmg')*dmgK(),'sword',a);
       }
       S.shake=Math.max(S.shake,2);
     }
   }else{
+    // מרחוק: מה שעף תלוי בנשק (WEAPONS ב-weapons.js). קשת יורה חצים, מטה יורה קסם שמתביית על האויב
     const g=P.gn;g.t-=dt;g.recoil=Math.max(0,g.recoil-dt*8);
     const tgt=aimTarget(440);
     if(tgt)P.aim=Math.atan2(tgt.y-P.y,tgt.x-P.x);
     if(tgt&&g.t<=0){
-      g.t=g.cd;g.recoil=1;sfx('shoot');
-      for(let i=0;i<g.multi;i++){
-        const a=P.aim+(i-(g.multi-1)/2)*0.14,hx=P.x+Math.cos(a)*22,hy=P.y-6+Math.sin(a)*22;
-        pb.push({x:hx,y:hy,vx:Math.cos(a)*g.speed,vy:Math.sin(a)*g.speed,life:0.9,pierce:g.pierce,hit:new Set()});
-      }
-      parts.push({x:P.x+Math.cos(P.aim)*24,y:P.y-6+Math.sin(P.aim)*24,vx:0,vy:0,life:.06,max:.06,col:dtCol(P.dt.gun),size:3});
+      wFire(g.multi);
     }
   }
 }
+// מחליפים רק בין נשקים שבאמת לבושים (wHeld ב-weapons.js). עם נשק אחד אין מה להחליף, והכפתור מוסתר
 function swapWeapon(){
-  if(S.mode!=='play')return;
-  P.weapon=P.weapon==='sword'?'gun':'sword';
+  const held=wHeld();if(S.mode!=='play'||held.length<2)return;
+  wEquip(held[(held.indexOf(P.wid)+1)%held.length]);
   if(P.swapLvl>0)P.swapBuff=1.5;
   sparks(P.x,P.y-8,dtCol(P.dt[P.weapon]),10,140);
-  updateSwapBtn();
 }
-// הנשק מרחוק הוא חץ וקשת. בקוד הוא נשאר gun, כדי לא לשנות את הלוגיקה
+// הסמל לפי סוג הנשק (WEAPONS), ולצד שאין לו סמל משלו: חרב או קשת
 const ICON={sword:'<path d="M20 4 9.5 14.5M20 4h-4M20 4v4M7 12l5 5M8.5 15.5 4 20"/>',
-  gun:'<path d="M5 9Q16 8 15 19"/><path d="M5 9 15 19" stroke-width="1.2"/><path d="M7 17 20 4M20 4h-5M20 4v5M7 17H4M7 17v3"/>'};
+  gun:'<path d="M5 9Q16 8 15 19"/><path d="M5 9 15 19" stroke-width="1.2"/><path d="M7 17 20 4M20 4h-5M20 4v5M7 17H4M7 17v3"/>',
+  staff:'<path d="M5 20 15 9"/><circle cx="17.5" cy="6.5" r="3"/>'};
 // הכפתור בצבע של סוג הנזק של הנשק שביד
-function updateSwapBtn(){const w=P?P.weapon:'sword',t=P?P.dt[w]:'physical';const b=$('swap');b.classList.toggle('gun',w==='gun');b.style.setProperty('--dt',dtCol(t));$('ico').innerHTML=ICON[w];$('swaplbl').textContent=T('w.'+w)}
+function updateSwapBtn(){const w=P?P.weapon:'sword',t=P?P.dt[w]:'physical';const b=$('swap');b.hidden=!P||wHeld().length<2;
+  b.classList.toggle('gun',w==='gun');b.style.setProperty('--dt',dtCol(t));$('ico').innerHTML=ICON[P&&P.wt]||ICON[w];$('swaplbl').textContent=P?wLabel(w):T('w.'+w)}

@@ -22,11 +22,11 @@ const NPC={
      at: איפה הוא עומד. area: כמה רחוק הוא מסתובב משם. work: עובד בזמן העמידה (פטיש, תפילה) במקום לעמוד סתם.
      col: הצבע שלו בדו-ממד ובסימנים */
   list:{
-    head:    {home:'center',at:{x:125,y:-105},area:45,col:C.gold},
-    smith:   {home:'forge', at:{x:-215,y:30},area:35,work:true,col:C.ember},
-    merchant:{home:'market',at:{x:205,y:135},area:40,col:C.gold},
-    inn:     {home:null,spot:{x:175,y:335,deco:['barrel','crate','barrel']},at:{x:140,y:300},area:35,col:'#C08A52'},
-    priest:  {home:null,spot:{x:-175,y:-330,deco:['flag','flag']},at:{x:-140,y:-290},area:35,work:true,col:C.lilac}
+    head:    {home:'center',at:{x:106,y:-89},area:45,col:C.gold},
+    smith:   {home:'forge', at:{x:-180,y:30},area:35,work:true,col:C.ember},
+    merchant:{home:'market',at:{x:174,y:115},area:40,col:C.gold},
+    inn:     {home:null,spot:{x:149,y:285,deco:['barrel','crate','barrel']},at:{x:119,y:255},area:35,col:'#C08A52'},
+    priest:  {home:null,spot:{x:-149,y:-281,deco:['flag','flag']},at:{x:-119,y:-247},area:35,work:true,col:C.lilac}
   }
 };
 

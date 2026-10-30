@@ -5,7 +5,7 @@
    המסך נפתח מכל מקום (כפתור בכפר ובזירה), ובזירה הריצה עוצרת. השמות והטקסטים ב-lang.js: 'it.<id>' לפריטים, 'st.<סטט>', 'orb.<סוג>' ו-'gear.*' */
 
 const GEAR={
-  slots:{acc:2,orbit:[1,1,5,10,15]},   // orbit: מאיזו רמת דמות נפתחת כל משבצת. 2 פתוחות בהתחלה
+  slots:{acc:2,boots:1,orbit:[1,1,5,10,15]},   // boots: משבצת לנעליים, מתחת לאקססוריז בבובה   // orbit: מאיזו רמת דמות נפתחת כל משבצת. 2 פתוחות בהתחלה
   // החומרים, מהחלש לחזק. col: הצבע של הפריט (tint), אלא אם ב-look כתוב אחרת. w: כמה נפוץ בשלל.
   // metal: המשאב (RES) של השכבה. כל מתכון בשכבה צריך אותו, ובנפחייה ברמה L יוצרים עד שכבה L-1
   tiers:[{id:'wood',col:'#B07A45',w:50,metal:'wood'},{id:'iron',col:'#9AA3AD',w:30,metal:'iron'},{id:'silver',col:'#DCE3EA',w:14,metal:'silver'},{id:'gold',col:C.gold,w:5,metal:'gold'},{id:'legend',col:'#FF6FB5',w:1,metal:'mythril'}],
@@ -13,19 +13,20 @@ const GEAR={
   stats:{sdmg:{unit:'%',w:1},gdmg:{unit:'%',w:1},hp:{unit:'',w:0.4},speed:{unit:'%',w:1.5},magnet:{unit:'%',w:0.3},regen:{unit:'',w:8}},
   // חפצים מסתובבים: בינתיים רק סוג וצורה. ההתנהגות שלהם תגיע במשימה "חפצים מסתובבים" (orbit.js)
   orbit:{attack:'🔥',defense:'🛡️',control:'❄️',support:'💚',luck:'🍀'},
-  /* הפריטים. slot: weapon / acc / orbit. tier: מספר ב-tiers. w: איזה נשק (sword חרב, gun קשת), ואיתו מתחילים את הריצה.
+  /* הפריטים. slot: weapon / acc / boots / orbit. נעליים נותנות מהירות (speed). tier: מספר ב-tiers. w: סוג הנשק ב-WEAPONS (weapons.js): איך הוא תוקף. איתו מתחילים את הריצה.
      look: איך הפריט נראה, כדי שכל שדרוג ייראה. tint צבע, glow זוהר, model המודל בתלת-ממד (w_<שם> מ-Fantasy Weapons, והחומר לפי tier) */
   items:{
     oakSword:   {slot:'weapon',tier:0,w:'sword',icon:'🗡️',stats:{sdmg:10},look:{model:'w_sword_A'}},
     ironSword:  {slot:'weapon',tier:1,w:'sword',icon:'🗡️',stats:{sdmg:25},look:{model:'w_sword_B'}},
     silverBlade:{slot:'weapon',tier:2,w:'sword',icon:'⚔️',stats:{sdmg:40,speed:5},look:{model:'w_sword_D',glow:'#DCE3EA'}},
-    oakBow:     {slot:'weapon',tier:0,w:'gun',icon:'🏹',stats:{gdmg:10},look:{model:'w_bow_A_withString'}},
-    ironBow:    {slot:'weapon',tier:1,w:'gun',icon:'🏹',stats:{gdmg:25},look:{model:'w_bow_A_withString'}},
-    goldBow:    {slot:'weapon',tier:3,w:'gun',icon:'🏹',stats:{gdmg:60,magnet:20},look:{model:'w_bow_B_withString',glow:C.gold}},
-    oakStaff:   {slot:'weapon',tier:0,w:'gun',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'w_staff_B'}},   // הנשק של הקוסם: יורה כמו קשת
+    oakBow:     {slot:'weapon',tier:0,w:'bow',icon:'🏹',stats:{gdmg:10},look:{model:'w_bow_A_withString'}},
+    ironBow:    {slot:'weapon',tier:1,w:'bow',icon:'🏹',stats:{gdmg:25},look:{model:'w_bow_A_withString'}},
+    goldBow:    {slot:'weapon',tier:3,w:'bow',icon:'🏹',stats:{gdmg:60,magnet:20},look:{model:'w_bow_B_withString',glow:C.gold}},
+    oakStaff:   {slot:'weapon',tier:0,w:'staff',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'w_staff_B'}},   // הנשק של הקוסם: קסם שמתביית
     boneCharm:  {slot:'acc',tier:0,icon:'🦴',stats:{hp:15}},
     ironRing:   {slot:'acc',tier:1,icon:'💍',stats:{regen:0.5}},
-    swiftBoots: {slot:'acc',tier:2,icon:'👢',stats:{speed:8}},
+    starterBoots:{slot:'boots',tier:0,type:'boots',icon:'👟',stats:{speed:10}},   // הפרס של הקווסט הראשון של ראש הכפר (quests.js)
+    swiftBoots: {slot:'boots',tier:2,type:'boots',icon:'👢',stats:{speed:8}},
     goldAmulet: {slot:'acc',tier:3,icon:'📿',stats:{hp:30,magnet:30},look:{glow:C.gold}},
     crown:      {slot:'acc',tier:4,icon:'👑',stats:{hp:40,sdmg:15,gdmg:15},look:{glow:'#FF6FB5'}},
     emberOrb:   {slot:'orbit',tier:0,type:'attack'},
@@ -58,10 +59,10 @@ const GEAR={
   },
   // שלל בסוף ריצה. run: סיכוי לפריט אחד בכל ריצה. boss: סיכוי לפריט על כל בוס שהובס.
   // slots: מה יכול ליפול. החפצים המסתובבים יצטרפו כשתהיה להם התנהגות
-  loot:{run:0.35,boss:1,slots:['weapon','acc']},
+  loot:{run:0.35,boss:1,slots:['weapon','acc','boots']},
   /* מסך הציוד: הבובה באמצע, ומשבצות מסביב. start/end: הצדדים (מתהפכים לפי השפה), under: שורה מתחת לבובה.
      משבצת חדשה (למשל מגפיים) נכנסת לאחת הרשימות. drag: כמה פיקסלים זזים לפני שלחיצה הופכת לגרירה */
-  doll:{start:['weapon'],end:['acc'],under:['orbit']},
+  doll:{start:['weapon'],end:['acc','boots'],under:['orbit']},
   drag:8
 };
 
@@ -79,7 +80,7 @@ const gIcon=id=>{const it=gItem(id);return it.icon||GEAR.orbit[it.type]};
 function gScore(id){const it=gItem(id);if(!it)return 0;let n=it.tier*0.01;const s=gStats(id);for(const k in s)n+=s[k]*GEAR.stats[k].w;return n}
 const heroLv=()=>SAVE.hero.level||1;
 const gOrbOpen=()=>GEAR.slots.orbit.filter(l=>heroLv()>=l).length;
-const gOpen=slot=>slot==='weapon'?1:slot==='acc'?GEAR.slots.acc:gOrbOpen();
+const gOpen=slot=>slot==='weapon'?1:slot==='orbit'?gOrbOpen():GEAR.slots[slot];
 const gGet=(slot,i)=>slot==='weapon'?SAVE.gear.weapon:SAVE.gear[slot][i]||null;
 function gSet(slot,i,id){if(slot==='weapon')SAVE.gear.weapon=id;else SAVE.gear[slot][i]=id}
 // לאיזו משבצת ייכנס פריט: הראשונה הריקה, ואם הכל מלא, זו עם הפריט הכי חלש
@@ -89,7 +90,7 @@ function gTarget(it){
   return best;
 }
 // כל מה שלבוש עכשיו, בלי משבצות נעולות
-function gearWorn(){const out=[];for(const s of ['weapon','acc','orbit'])for(let i=0;i<gOpen(s);i++){const id=gGet(s,i);if(gItem(id))out.push(id)}return out}
+function gearWorn(){const out=[];for(const s of ['weapon','acc','boots','orbit'])for(let i=0;i<gOpen(s);i++){const id=gGet(s,i);if(gItem(id))out.push(id)}return out}
 function gearStats(ids=gearWorn()){const t={};for(const id of ids){const s=gStats(id);for(const k in s)t[k]=(t[k]||0)+s[k]}return t}
 
 /* ---- ללבוש ולהוריד: מהתרמיל למשבצת ובחזרה. מה שהיה במשבצת חוזר לתרמיל ---- */
@@ -110,7 +111,7 @@ function gearUnequip(slot,i){const id=gGet(slot,i);if(!id)return false;gSet(slot
 function gearReset(){
   if(!SAVE.gearGift){GEAR.gift.forEach(id=>bagAdd(id));SAVE.gearGift=true;saveNow()}
   gApply(gearStats(),1);P.hp=P.maxHp;
-  const w=gItem(SAVE.gear.weapon);if(w&&w.w)P.weapon=w.w;
+  wEquip(SAVE.gear.weapon);   // הנשק שלבוש ביד, ואיתו איך תוקפים (weapons.js)
 }
 // מלביש סטטים על השחקן (k=1) או מוריד אותם (k=-1). כך ציוד שמחליפים באמצע ריצה שומר על השדרוגים של הריצה
 function gApply(s,k){
@@ -122,7 +123,7 @@ function gApply(s,k){
 function gearLive(before,id){
   const max0=P.maxHp;gApply(before,-1);gApply(gearStats(),1);
   P.hp=Math.max(1,Math.min(P.maxHp,P.hp+Math.max(0,P.maxHp-max0)));
-  const w=gItem(id);if(w&&w.w&&P.weapon!==w.w){P.weapon=w.w;updateSwapBtn()}
+  if(P.wid!==SAVE.gear.weapon)wEquip(SAVE.gear.weapon);
 }
 
 /* ---- יצירה בנפחייה: משלמים לפי GEAR.recipes, והפריט נכנס לתרמיל ---- */
@@ -181,7 +182,7 @@ function gCompare(id,old){
 }
 // משבצת או תא בתרמיל: מסגרת בצבע הנדירות, ופס בצבע סוג הנזק לנשק
 function gTile(id,attrs,extra){
-  const it=gItem(id),cls='gtile'+(it&&it.w?' '+it.w:'');
+  const it=gItem(id),cls='gtile'+(it&&it.w?' '+WEAPONS[it.w].use:'');
   if(!it)return '<button class="'+cls+' empty" '+attrs+'>'+extra+'</button>';
   const glow=(it.look||{}).glow;
   return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gIcon(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+extra+'</button>';
@@ -191,7 +192,7 @@ const gResTile=(r,n,attrs)=>'<button class="gtile res" '+attrs+' style="--rar:'+
 const gCell=(k,n,attrs)=>gItem(k)?gTile(k,attrs,n>1?'<small>'+n+'</small>':''):gResTile(k,n,attrs);
 // מה בתרמיל בלשונית הנוכחית: items לפריטים, או משפחת משאבים (RES.fams)
 function gBagKeys(tab){
-  if(tab==='items'){const order=['weapon','acc','orbit'];return Object.keys(SAVE.bag).filter(gItem)
+  if(tab==='items'){const order=['weapon','acc','boots','orbit'];return Object.keys(SAVE.bag).filter(gItem)
     .sort((a,b)=>order.indexOf(gItem(a).slot)-order.indexOf(gItem(b).slot)||gItem(b).tier-gItem(a).tier)}
   return resFam(tab).filter(r=>SAVE.bag[r]>0);
 }
@@ -199,7 +200,7 @@ function gBagKeys(tab){
 const gTabs=()=>['items',...Object.keys(RES.fams).filter(f=>f!=='coins'&&resFam(f).some(r=>SAVE.bag[r]>0))];
 
 function gSlotHtml(s){
-  const n=s==='weapon'?1:s==='acc'?GEAR.slots.acc:GEAR.slots.orbit.length,sel=GUI.sel;let h='';
+  const n=s==='weapon'?1:s==='orbit'?GEAR.slots.orbit.length:GEAR.slots[s],sel=GUI.sel;let h='';
   for(let i=0;i<n;i++){
     if(i>=gOpen(s)){h+='<button class="gtile locked" disabled aria-label="'+T('gear.locked',GEAR.slots.orbit[i])+'">🔒<small>'+GEAR.slots.orbit[i]+'</small></button>';continue}
     h+=gTile(gGet(s,i),'data-slot="'+s+'" data-i="'+i+'"'+(sel&&sel.slot===s&&sel.i===i?' aria-pressed="true"':''),'');

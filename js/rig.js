@@ -17,11 +17,12 @@ const LOOK={player:'stick',grunt:'stick',shield:'stick',wanted:'stick'};   // א
 // סדר הציור: מה שמאחור קודם
 const ORDER=['legB','armB','body','legF','head','armF'];
 
-/* x,y מרכז הדמות. ph שלב ההליכה. aim כיוון היד הקדמית (null לדמות בלי יד קדמית). reach אורך היד הקדמית */
-function pose(x,y,ph,moving,aim,reach){
+/* x,y מרכז הדמות. ph שלב ההליכה. aim כיוון היד הקדמית (null לדמות בלי יד קדמית). reach אורך היד הקדמית.
+   face: לאן הגוף פונה (זווית). בלי face הגוף פונה לכיוון היד */
+function pose(x,y,ph,moving,aim,reach,face=aim){
   const B=BONES,sw=moving?Math.sin(ph)*B.swing:0,bob=moving?Math.abs(Math.sin(ph))*B.bob:0,yy=y-bob;
   const hip={x,y:yy+B.hipY},sh={x,y:yy+B.shoulderY};
-  return{bob,face:aim!=null&&Math.cos(aim)<0?-1:1,aim,
+  return{bob,face:face!=null&&Math.cos(face)<0?-1:1,aim,
     head:{x,y:yy+B.headY,r:B.headR},
     body:[{x,y:yy+B.neckY},hip],
     legF:[hip,{x:x+Math.sin(sw)*B.legSpread,y:hip.y+Math.cos(sw)*B.leg}],
