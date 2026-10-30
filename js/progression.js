@@ -1,5 +1,5 @@
 /* XP, שדרוגים, מסכי בוס וסוף */
-function gainXP(v){P.xp+=v;sfx('xp');showGain(v);while(P.xp>=P.next){P.xp-=P.next;P.level++;P.next=Math.round(6+P.level*4.5);S.pendingLv++}}
+function gainXP(v){P.xp+=v;S.xpRun=(S.xpRun||0)+v;sfx('xp');showGain(v);while(P.xp>=P.next){P.xp-=P.next;P.level++;P.next=Math.round(6+P.level*4.5);S.pendingLv++}}
 /* כמה אספת: מספר אחד מעל הראש שגדל כל עוד אוספים ברצף, במקום מספר לכל יהלום */
 function showGain(v){
   let f=S.gain;
