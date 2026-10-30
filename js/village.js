@@ -10,44 +10,37 @@ const VILLAGE={
   near:55,                        // כמה פיקסלים מקצה מבנה נחשב "לידו": נפתח הפאנל שלו ונאספת התוצרת
   max:5,                          // הרמה הכי גבוהה. מבנה לא עולה מעל מרכז הכפר
   gift:{coins:25,wood:20,stone:12},   // מתנת פתיחה, פעם אחת: מספיק לבנות מנסרה ומכרה
-  icon:{coins:'🪙',wood:'🪵',stone:'🪨',ore:'⛏️',bone:'🦴',gem:'💎'},   // gem: אבן חן נדירה, מגינה ב-Aging (aging.js)   // סדר המשאבים בממשק הוא הסדר כאן
   gate:{x:0,y:410,r:44},
   /* איך מבנה נראה לפי רמה, כדי שכל שדרוג ייראה (ניר: "שידרגתי בניין בכפר גם צריך להיות אפקט").
      look: רצועות רמה. at: מאיזו רמה. model: איזה מודל (השמות ב-VIL3D.models). scale: גודל. deco: קישוטים סביב (VIL3D.deco). glow: זוהר.
      בתוך רצועה המבנה גדל עוד grow בכל רמה, ובכל שדרוג יש חגיגה (celebrate ב-fx.js) */
   grow:0.05,
-  // cost[L]: מה עולה להגיע לרמה L. make: ייצור בשעה לפי רמה. cap: כמה נאגר לכל משאב עד שאוספים
+  // cost[L]: מה עולה להגיע לרמה L. make: ייצור בשעה לפי רמה. cap: כמה נאגר לכל משאב עד שאוספים. המשאבים עצמם ב-RES (resources.js)
+  // ברמות גבוהות מבנים צריכים מתכות טובות יותר וחומרים מיצורים, כדי שלכל משאב יהיה שימוש
   b:{
     center:{x:0,y:-162,r:92,
       look:[{at:1,model:'castle',scale:0.85,deco:[]},{at:3,model:'castle',scale:1,deco:['flag','flag']},{at:5,model:'castle',scale:1.1,deco:['flag','flag','flag','flag'],glow:C.gold}],
-      cost:[null,null,{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50,ore:10},{coins:180,wood:120,stone:100,ore:30},{coins:350,wood:220,stone:200,ore:60}]},
-    forge:{x:-255,y:-26,r:66,     // נפחייה: Aging לציוד (aging.js). הרמה קובעת עד איזה + אפשר לשדרג
+      cost:[null,null,{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50,copper:10,cloth:5},{coins:180,wood:120,stone:100,iron:20,cloth:15},{coins:350,wood:220,stone:200,silver:15,gold:5,horn:1,star:1}]},
+    forge:{x:-255,y:-26,r:66,     // נפחייה: כל רמה פותחת עוד שכבת ציוד ליצירה (GEAR.recipes ב-gear.js), ו-Aging לציוד (aging.js) עד ה-+ של הרמה
       look:[{at:1,model:'tent',scale:1,deco:['barrel']},{at:3,model:'forge',scale:1,deco:['crate','barrel']},{at:5,model:'forge',scale:1.12,deco:['flag','flag','crate','barrel'],glow:C.ember}],
-      cost:[null,{coins:20,wood:15,stone:10},{coins:50,wood:35,stone:25,ore:5},{coins:110,wood:70,stone:60,ore:15},{coins:220,wood:140,stone:120,ore:35},{coins:400,wood:250,stone:220,ore:70}]},
+      cost:[null,{coins:20,wood:15,stone:10},{coins:50,wood:35,stone:25,copper:8},{coins:110,wood:70,stone:60,iron:15,bone:10},{coins:220,wood:140,stone:120,silver:12,hide:15},{coins:400,wood:250,stone:220,gold:10,essence:15,rubyF:1}]},
     mill:{x:255,y:-26,r:66,
       look:[{at:1,model:'mill',scale:0.85,deco:[]},{at:3,model:'mill',scale:1,deco:['crate']},{at:5,model:'mill',scale:1.12,deco:['flag','flag','crate'],glow:C.gold}],
-      cost:[null,{coins:10,stone:5},{coins:30,wood:15,stone:20},{coins:70,wood:30,stone:50},{coins:140,wood:60,stone:100,ore:10},{coins:260,wood:120,stone:180,ore:25}],
-      make:{wood:[0,30,50,80,120,180]},cap:[0,60,120,200,320,500]},
+      cost:[null,{coins:10,stone:5},{coins:30,wood:15,stone:20},{coins:70,wood:30,stone:50,copper:5},{coins:140,wood:60,stone:100,iron:10},{coins:260,wood:120,stone:180,silver:8,aquaF:1}],
+      make:{wood:[0,30,50,80,120,180],cloth:[0,0,0,4,8,12]},cap:[0,60,120,200,320,500]},   // מרמה 3 גם אורגת בד
     mine:{x:-255,y:162,r:66,
       look:[{at:1,model:'mine',scale:0.85,deco:[]},{at:3,model:'mine',scale:1,deco:['barrel']},{at:5,model:'mine',scale:1.12,deco:['flag','flag','barrel'],glow:C.gold}],
-      cost:[null,{coins:10,wood:10},{coins:30,wood:25,stone:10},{coins:70,wood:55,stone:25},{coins:140,wood:110,stone:50},{coins:260,wood:200,stone:90}],
-      make:{stone:[0,20,35,55,80,120],ore:[0,4,8,14,22,32]},cap:[0,40,80,140,220,350]},
-    market:{x:255,y:162,r:66,     // sell/buy: מטבעות ליחידה ברמה 1. כל רמה נוספת: bonus יותר טוב. lot: כמה יחידות בכל לחיצה
-      cost:[null,{coins:15,wood:15},{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50},{coins:180,wood:120,stone:100,ore:20},{coins:320,wood:220,stone:180,ore:50}],
-      sell:{wood:1,stone:1,ore:4,bone:2},buy:{wood:3,stone:3},lot:5,bonus:0.2,
+      cost:[null,{coins:10,wood:10},{coins:30,wood:25,stone:10},{coins:70,wood:55,stone:25,copper:8},{coins:140,wood:110,stone:50,iron:12},{coins:260,wood:200,stone:90,silver:10,amber:1}],
+      // מכרה עמוק יותר, מתכת טובה יותר: נחושת מההתחלה, ברזל מרמה 2, כסף מ-4, זהב ב-5
+      make:{stone:[0,20,35,55,80,120],copper:[0,4,6,8,10,12],iron:[0,0,3,6,9,12],silver:[0,0,0,0,2,4],gold:[0,0,0,0,0,1.5]},cap:[0,40,80,140,220,350]},
+    market:{x:255,y:162,r:66,     // המחירים והכמות בכל לחיצה ב-RES (resources.js). כל רמה נוספת: bonus יותר טוב, ועוד נדירות שאפשר לקנות
+      cost:[null,{coins:15,wood:15},{coins:40,wood:30,stone:20,cloth:4},{coins:90,wood:60,stone:50,cloth:10,copper:6},{coins:180,wood:120,stone:100,iron:15,venom:6},{coins:320,wood:220,stone:180,silver:10,essence:10,sapphireF:1}],
+      bonus:0.2,
       look:[{at:1,model:'tent',scale:1,deco:['crate','crate']},{at:3,model:'market',scale:1,deco:['crate','barrel']},{at:5,model:'market',scale:1.1,deco:['flag','flag','crate','barrel'],glow:C.gold}]},
     stash:{x:-145,y:280,r:60,     // מחסן: המקום הבטוח לשלל (stash.js). cap[L]: כמה יחידות הוא מחזיק ברמה L
-      cost:[null,{coins:15,wood:10},{coins:40,wood:30,stone:15},{coins:90,wood:60,stone:45},{coins:180,wood:120,stone:90,ore:15},{coins:320,wood:220,stone:160,ore:40}],
+      cost:[null,{coins:15,wood:10},{coins:40,wood:30,stone:15,cloth:6},{coins:90,wood:60,stone:45,copper:10,hide:8},{coins:180,wood:120,stone:90,iron:15,bone:15},{coins:320,wood:220,stone:160,silver:10,venom:8,boltF:1}],
       cap:[0,150,400,900,2000,5000],
       look:[{at:1,model:'tent',scale:0.9,deco:['crate']},{at:3,model:'market',scale:0.95,deco:['crate','crate','barrel']},{at:5,model:'market',scale:1.05,deco:['flag','flag','crate','barrel'],glow:C.tide}]}
-  },
-  // שלל בזירה מכל אויב שנופל: {משאב:[סיכוי, כמה]}. מגיע לתרמיל בסוף הריצה, גם אם נפלת
-  drops:{
-    grunt:{coins:[0.6,1],bone:[0.15,1]},
-    shield:{coins:[0.8,2],ore:[0.12,1],bone:[0.2,1]},
-    wisp:{coins:[0.8,2],bone:[0.3,1]},
-    wanted:{coins:[1,15],gem:[0.3,1]},
-    boss:{coins:[1,40],ore:[1,6],bone:[1,8],gem:[0.5,1]}
   },
   winDelay:2.5                    // שניות אחרי שהבוס נופל, עד שחוזרים הביתה
 };
@@ -71,7 +64,7 @@ function vSettle(k){
 }
 function vCollect(k){
   const p=vSettle(k);if(!p)return 0;let n=0,y=P.y-50;
-  for(const r in p.have){const w=Math.floor(p.have[r]);if(w>0){bagAdd(r,w);questEvent('collect',r,w);p.have[r]-=w;n+=w;floatText(P.x,y,'+'+w+' '+VILLAGE.icon[r],C.gold,17);y-=20}}
+  for(const r in p.have){const w=Math.floor(p.have[r]);if(w>0){bagAdd(r,w);questEvent('collect',r,w);p.have[r]-=w;n+=w;floatText(P.x,y,'+'+w+' '+resIcon(r),C.gold,17);y-=20}}
   if(n)saveNow();
   return n;
 }
@@ -98,12 +91,19 @@ function vUpgrade(k){
 }
 
 /* ---- שוק ---- */
+// מחיר ליחידה. רמת שוק גבוהה משלמת יותר וגובה פחות, אבל קנייה תמיד יקרה ממכירה, אחרת אפשר להרוויח בלי לשחק
 function vPrice(r,kind){
-  const M=VILLAGE.b.market,k=1+M.bonus*Math.max(0,vLv('market')-1);
-  return kind==='sell'?Math.round(M.sell[r]*k):Math.max(1,Math.round(M.buy[r]/k));
+  const R=resOf(r),k=1+VILLAGE.b.market.bonus*Math.max(0,vLv('market')-1),sell=Math.round(R.sell*k);
+  return kind==='sell'?sell:Math.max(sell+1,Math.round(R.buy/k));
+}
+const vLot=r=>RES.rarity[resOf(r).rar].lot;
+// מה השוק מוכן לעשות עם משאב עכשיו: למכור צריך מחיר מכירה, ולקנות צריך מחיר קנייה ורמת שוק לפי הנדירות
+function vCanTrade(kind,r){
+  const R=resOf(r),L=vLv('market');if(!R||!L)return false;
+  return kind==='sell'?!!R.sell:!!R.buy&&L>=RES.rarity[R.rar].market;
 }
 function vTrade(kind,r){
-  const M=VILLAGE.b.market,n=M.lot;if(!vLv('market'))return false;
+  if(!vCanTrade(kind,r))return false;const n=vLot(r);
   if(kind==='sell'){if(!bagTake(r,n))return false;bagAdd('coins',vPrice(r,'sell')*n)}
   else{if(!bagTake('coins',vPrice(r,'buy')*n))return false;bagAdd(r,n)}
   saveNow();return true;
@@ -150,11 +150,6 @@ function villageUpdate(dt){
 
 /* ---- שלל מהזירה ---- */
 const runLoot=()=>S.loot||(S.loot={});
-// נקרא מ-kill בכל אויב שנופל
-function runDrop(e){
-  const D=VILLAGE.drops[e.isBoss?'boss':e.wanted?'wanted':e.type];if(!D)return;
-  for(const r in D){const [ch,n]=D[r];if(Math.random()<ch)dropSpawn(r,n,e.x,e.y)}   // נופל לרצפה, ונאסף כשעוברים לידו (drops.js)
-}
 // נקרא מ-bossDown: אחרי רגע של ניצחון חוזרים הביתה (מחכים אם פתוח מסך שדרוג או חדר בונוס)
 function runWon(){
   const s=S;
@@ -168,18 +163,25 @@ function runEnd(){
   for(const r in L){bagAdd(r,L[r]);questEvent('collect',r,L[r])}
   saveNow();
   $('overTitle').textContent=T(S.won?'vil.won':'fell');
-  $('sLoot').innerHTML=bagLine(L)||T('vil.noLoot');
+  $('sLoot').innerHTML=lootSummary(L)||T('vil.noLoot');   // מהנדיר לרגיל (loot.js)
 }
 
 /* ---- ממשק: התרמיל למעלה, והפאנל של המבנה שלידו למטה ---- */
-const bagLine=(bag,all)=>Object.keys(VILLAGE.icon).filter(r=>all||bag[r]>0).map(r=>'<span class="res" aria-label="'+T('res.'+r)+'">'+VILLAGE.icon[r]+' '+(bag[r]||0)+'</span>').join('');
-function costLine(c){return Object.keys(c).map(r=>'<span class="res'+(bagHas(r,c[r])?'':' miss')+'" aria-label="'+T('res.'+r)+'">'+VILLAGE.icon[r]+' '+c[r]+'</span>').join('')}
+// משאב אחד כתג: אייקון ומספר. משאב נדיר מקבל מסגרת בצבע הנדירות שלו
+const resChip=(r,n,cls='')=>{const R=resOf(r);return '<span class="res'+cls+(R&&R.rar?' rare" style="--tint:'+RES.rarity[R.rar].col:'')+'" aria-label="'+resName(r)+'">'+resIcon(r)+' '+n+'</span>'};
+// list: אילו משאבים להראות, גם כשיש 0. בלי list: רק מה שיש
+const bagLine=(bag,list)=>(list||Object.keys(RES.list).filter(r=>bag[r]>0)).map(r=>resChip(r,bag[r]||0)).join('');
+// התרמיל המלא לפי משפחות: טבע ובנייה, מתכות, יצורים, בוסים, נדיר. only: רק משפחה אחת (הסינון בתרמיל). משפחה ריקה לא מוצגת
+const bagFams=(bag,only)=>Object.keys(RES.fams).filter(f=>!only||only==='all'||f===only).map(f=>{const rs=resFam(f).filter(r=>bag[r]>0);
+  return rs.length?'<div class="fam"><span class="sk">'+T('fam.'+f)+'</span><div class="bag">'+bagLine(bag,rs)+'</div></div>':''}).join('');
+function costLine(c){return Object.keys(c).map(r=>resChip(r,c[r],bagHas(r,c[r])?'':' miss')).join('')}
+// מה מבנה מייצר בשעה ברמה L, למשל '30🪵 4🧵'
+const makeLine=(B,L)=>Object.keys(B.make).filter(r=>B.make[r][L]>0).map(r=>'<bdi>'+B.make[r][L]+resIcon(r)+'</bdi>').join(' ');
 function vInfo(k,L){
   const B=VILLAGE.b[k];if(L<1)return T('vil.notBuilt');
   if(k==='center')return T('vil.info.center',L);
-  if(k==='forge')return T('vil.info.forge',AGING.byForge[L]);
-  if(k==='mill')return T('vil.info.mill',B.make.wood[L],B.cap[L]);
-  if(k==='mine')return T('vil.info.mine',B.make.stone[L],B.make.ore[L],B.cap[L]);
+  if(k==='forge')return T('vil.info.forge',T('vil.tiers')[L-1],AGING.byForge[L]);
+  if(B.make)return T('vil.info.make',makeLine(B,L),B.cap[L]);
   if(k==='market')return T('vil.info.market',Math.round(B.bonus*(L-1)*100));
   if(k==='stash')return T('vil.info.stash',B.cap[L]);
 }
@@ -188,7 +190,7 @@ function villageHud(){
   // בונים מחדש רק כשמשהו השתנה: מבנה אחר, רמות, תרמיל, מחסן או שפה
   const key=LANG+'|'+k+'|'+S.vil.gate+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
   if(key===S.vil.ui)return;S.vil.ui=key;
-  $('vBag').innerHTML=bagLine(SAVE.bag,true);
+  $('vBag').innerHTML=bagLine(SAVE.bag,resShown(k));   // רק מה שרלוונטי ליד המבנה הזה (RES.show)
   const pn=$('vPanel');pn.hidden=!k&&!S.vil.gate;
   if(S.vil.gate){pn.innerHTML='<h3>'+T('vil.out')+'</h3><p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
   if(!k)return;
@@ -197,21 +199,24 @@ function villageHud(){
   if(why!=='max')h+='<p class="next">'+T('vil.next',vInfo(k,L+1))+'</p><div class="cost">'+costLine(c)+'</div>';
   h+='<button class="vbtn" data-act="up"'+(why?' disabled':'')+'>'+(why==='max'?T('vil.max'):why==='center'?T('vil.needCenter'):L?T('vil.up',L+1):T('vil.build'))+'</button>';
   if(k==='forge'&&L>0)h+='<button class="vbtn ghost" data-act="forge">⚒️ '+T('age.open')+'</button>';
-  if(k==='market'&&L>0){
-    const M=VILLAGE.b.market;h+='<div class="trade">';
-    for(const r in M.sell)h+='<button data-act="sell" data-r="'+r+'"'+(bagHas(r,M.lot)?'':' disabled')+'>'+T('vil.sell')+' '+M.lot+VILLAGE.icon[r]+' · +'+vPrice(r,'sell')*M.lot+VILLAGE.icon.coins+'</button>';
-    for(const r in M.buy)h+='<button data-act="buy" data-r="'+r+'"'+(bagHas('coins',vPrice(r,'buy')*M.lot)?'':' disabled')+'>'+T('vil.buy')+' '+M.lot+VILLAGE.icon[r]+' · '+vPrice(r,'buy')*M.lot+VILLAGE.icon.coins+'</button>';
-    h+='</div>';
+  if(k==='market'&&L>0){   // מוכרים כל מה שיש בתרמיל, וקונים כל מה שהרמה של השוק מרשה
+    const rs=Object.keys(RES.list),btn=(kind,r,ok,p)=>'<button data-act="'+kind+'" data-r="'+r+'"'+(ok?'':' disabled')+' aria-label="'+T('vil.'+kind)+' '+resName(r)+'"><bdi>'+vLot(r)+resIcon(r)+' · '+p+resIcon('coins')+'</bdi></button>';
+    const sell=rs.filter(r=>vCanTrade('sell',r)&&bagHas(r)),buy=rs.filter(r=>vCanTrade('buy',r));
+    h+='<span class="sk">'+T('vil.sell')+'</span>'+(sell.length?'<div class="trade">'+sell.map(r=>btn('sell',r,bagHas(r,vLot(r)),'+'+vPrice(r,'sell')*vLot(r))).join('')+'</div>':'<p class="next">'+T('stash.empty')+'</p>');
+    h+='<span class="sk">'+T('vil.buy')+'</span><div class="trade">'+buy.map(r=>btn('buy',r,bagHas('coins',vPrice(r,'buy')*vLot(r)),vPrice(r,'buy')*vLot(r))).join('')+'</div>';
   }
+  if(k==='forge'&&L>0)h+=forgeHtml();   // gear.js
   if(k==='stash'&&L>0)h+=stashHtml();   // stash.js
   pn.innerHTML=h;
 }
 $('vPanel').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled||!S.vil)return;
-  if(b.dataset.act==='go'){leaveVillage();return}
+  const a=b.dataset.act;
+  if(a==='go'){leaveVillage();return}
   if(!S.vil.near)return;
-  if(b.dataset.act==='forge'){forgeOpen();return}
-  if(b.dataset.act==='up')vUpgrade(S.vil.near);else if(b.dataset.act==='stash')stashMove(b.dataset.dir,b.dataset.r);else vTrade(b.dataset.act,b.dataset.r);
+  if(a==='forge'){forgeOpen();return}
+  if(a==='bag'){gearOpen();return}   // מהמחסן: מסך הציוד, שם גוררים בין התרמיל למחסן (gear.js)
+  if(a==='up')vUpgrade(S.vil.near);else if(a==='stash')stashMove(b.dataset.dir,b.dataset.r);else if(a==='craft')gearCraft(b.dataset.r);else vTrade(a,b.dataset.r);
   villageHud();
 });
 
@@ -267,7 +272,7 @@ function drawVillageScreen(ox,oy){
   for(const k in VILLAGE.b){
     const B=VILLAGE.b[k],L=vLv(k),x=B.x+ox,y=B.y+B.r*0.62+oy;
     sign(x,y,T('vil.'+k)+(L?' · '+L:''),L?C.chalk:C.dim);
-    const n=vStock(k);if(n>0){const r=Object.keys(VILLAGE.b[k].make)[0];sign(x,y-B.r*1.6,VILLAGE.icon[r]+' '+n,C.gold)}
+    const n=vStock(k);if(n>0){const r=Object.keys(VILLAGE.b[k].make)[0];sign(x,y-B.r*1.6,resIcon(r)+' '+n,C.gold)}
   }
   const g=VILLAGE.gate;sign(g.x+ox,g.y+oy+40,T('vil.gate'),C.chalk);
   edgeArrow(g.x+ox,g.y+oy,C.chalk);

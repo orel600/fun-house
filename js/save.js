@@ -9,12 +9,14 @@ function saveBlank(){return{
   hero:{start:null,level:1,xp:0,rank:0,style:{}},   // start: דמות ההתחלה. style: במה שיחק הכי הרבה, לקווסטי הדרגה
   bag:{},                                           // התרמיל, בלי הגבלה: {wood:12,bone:3}. מה שסוחבים, ובעולם הפתוח מסתכנים בו
   stash:{},                                         // המחסן בכפר: המקום הבטוח, באותה צורה כמו התרמיל. מנוהל ב-stash.js
-  gear:{weapon:null,acc:[],orbit:[]},               // orbit: החפצים המסתובבים, עד 5
+  gear:{weapon:null,acc:[],boots:[],orbit:[]},               // orbit: החפצים המסתובבים, עד 5
   village:{center:1,forge:0,mill:0,mine:0,market:0,stash:0},// רמת כל מבנה. 0 = עוד לא נבנה
   quests:{active:{},done:{},track:null,day:'',daily:[]},   // מנוהל ב-quests.js. active: {id:{p:[התקדמות לכל מטרה]}}. done: {id:כמה פעמים}
   prod:{},                                          // ייצור במבנים, גם כשלא משחקים: {mill:{t:זמן,have:{wood:3.2}}}. מנוהל ב-village.js
   gift:false,                                       // מתנת הפתיחה של הכפר כבר ניתנה
   gearGift:false,                                   // הציוד הראשון (GEAR.gift ב-gear.js) כבר ניתן
+  pity:0,                                           // כמה פעמים ברצף שלל נדיר לא נפל (LOOT.pity ב-loot.js)
+  daily:{day:'',first:{}},                          // איזה סוג אויב כבר הופל היום, לבונוס ההריגה הראשונה (loot.js)
   agePity:0,                                        // כמה כישלונות ברצף ב-Aging, למזל הרך (aging.js)
   pet:{kind:null,stage:0,xp:0},                     // חיית המחמד (pet.js). kind: איזו חיה מ-PET.kinds (null: PET.default, פיוחו של ניר). stage: 0-2
   ts:0}}
@@ -34,7 +36,7 @@ function saveMerge(base,d){
   for(const k in d){if(isObj(base[k])&&isObj(d[k]))saveMerge(base[k],d[k]);else base[k]=d[k]}
   return base}
 
-function saveLoad(){const d=SAVE_STORE.load();SAVE=isObj(d)?saveMerge(saveBlank(),d):saveBlank();SAVE.v=SAVE_VER;return SAVE}
+function saveLoad(){const d=SAVE_STORE.load();SAVE=isObj(d)?saveMerge(saveBlank(),d):saveBlank();resMigrate(SAVE);SAVE.v=SAVE_VER;return SAVE}
 function saveNow(){SAVE.ts=Date.now();SAVE_STORE.write(SAVE)}
 
 function bagHas(k,n=1){return (SAVE.bag[k]||0)>=n}

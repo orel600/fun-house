@@ -46,14 +46,15 @@
 
 <div class="banner" id="banner"></div>
 
-<!-- מסך הציוד והתרמיל: המשבצות, התרמיל וההשוואה (js/gear.js) -->
+<!-- מסך הציוד והתרמיל: התרמיל, הבובה עם המשבצות, והפרטים. גוררים או לוחצים (js/gear.js) -->
 <div class="ov gearov" id="ovGear" hidden>
   <div class="panel gearpanel">
-    <div class="ghead"><h2 data-t="gear.title"></h2><span id="gHero"></span><button class="gclose" id="gearClose" data-ta="gear.close">✕</button></div>
-    <div id="gSlots"></div>
-    <div class="bag gres" id="gRes" role="group" data-ta="bagGroup"></div>
-    <div class="gitems" id="gItems"></div>
-    <div class="gdetail" id="gDetail"></div>
+    <div class="ghead"><h2 data-t="gear.title"></h2><span id="gHero"></span><span class="bag" id="gCoins"></span><button class="gclose" id="gearClose" data-ta="gear.close">✕</button></div>
+    <div class="gbody">
+      <section class="gbag" id="gBag"><div class="ffilter" id="gTabs"></div><div class="ggrid" id="gItems"></div></section>
+      <section class="gdoll" id="gSlots"></section>
+      <section class="gsidep"><div class="gdetail" id="gDetail"></div><div class="gstash" id="gStash" hidden></div></section>
+    </div>
   </div>
 </div>
 
@@ -82,6 +83,7 @@
     <ul class="rules" data-t="rules"></ul>
     <button class="go" id="startBtn" data-t="start"></button>
     <p class="sub" id="bestLine"></p>
+    <p class="ver" id="verLine" dir="ltr"></p>
   </div>
 </div>
 
@@ -147,11 +149,13 @@
   </div>
 </div>
 
+<script src="js/version.js"></script>
 <script src="js/core.js"></script>
 <script src="js/lang.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/data.js"></script>
 <script src="js/dmg.js"></script>
+<script src="js/resources.js"></script>
 <script src="js/weapons.js"></script>
 <script src="js/save.js"></script>
 <script src="js/run.js"></script>
@@ -162,6 +166,8 @@
 <script src="js/progression.js"></script>
 <script src="js/bonus.js"></script>
 <script src="js/wanted.js"></script>
+<script src="js/loot.js"></script>
+<script src="js/nodes.js"></script>
 <script src="js/village.js"></script>
 <script src="js/world.js"></script>
 <script src="js/drops.js"></script>
