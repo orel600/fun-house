@@ -1,4 +1,5 @@
 # offline check: skin the rigged hero with KayKit clips (numpy LBS) and render frames
+# python animtest.py [2]: עם 2, האנימציות של KayKit 2.0 (Rig_Medium) שהמשחק מנגן, ועם הכישוף. בלי: האנימציות של האביר 1.0
 import sys;sys.path.insert(0,__import__('os').path.dirname(__file__))
 import numpy as np,pygltflib
 from PIL import Image
@@ -7,22 +8,31 @@ from rast import raster
 g=pygltflib.GLTF2().load('C:/kk/adv/addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb')
 r=np.load('gen/rig.npy',allow_pickle=True).item();V,NV,NF,UV,J,Wt=r['V'],r['NV'],r['NF'],r['UV'],r['J'],r['W']
 T=np.asarray(Image.open('gen/hero_tex.png').convert('RGB')).astype(float)
-sk=g.skins[0];ibm=acc(g,sk.inverseBindMatrices).reshape(-1,4,4).transpose(0,2,1)
+sk=g.skins[0];ibm=r['IBM'] if 'IBM' in r else acc(g,sk.inverseBindMatrices).reshape(-1,4,4).transpose(0,2,1)
+for i,q in r.get('rot',{}).items():g.nodes[i].rotation=q   # תנוחת הבסיס של השלד אחרי rig.py
+V2='2' in sys.argv[1:];AN='C:/kk/anims/Animations/gltf/Rig_Medium/Rig_Medium_'
+CL={n:pygltflib.GLTF2().load(AN+n+'.glb') for n in ('General','MovementBasic','CombatMelee','CombatRanged','Simulation')} if V2 else {}
+byname={n.name:i for i,n in enumerate(g.nodes)}
 par={c:i for i,n in enumerate(g.nodes) for c in (n.children or [])}
 def qm(q):
     x,y,z,w=q;return np.array([[1-2*(y*y+z*z),2*(x*y-z*w),2*(x*z+y*w)],[2*(x*y+z*w),1-2*(x*x+z*z),2*(y*z-x*w)],[2*(x*z-y*w),2*(y*z+x*w),1-2*(x*x+y*y)]])
 def pose(clip,t):
-    an=[a for a in g.animations if a.name==clip][0]
+    src=g
+    for G in CL.values():
+        if any(a.name==clip for a in G.animations):src=G
+    an=[a for a in src.animations if a.name==clip][0]
     tr={i:{'t':np.array(n.translation or [0,0,0],float),'r':np.array(n.rotation or [0,0,0,1],float),'s':np.array(n.scale or [1,1,1],float)} for i,n in enumerate(g.nodes)}
     for ch in an.channels:
-        s=an.samplers[ch.sampler];ti=acc(g,s.input)[:,0];vo=acc(g,s.output)
+        nm=src.nodes[ch.target.node].name
+        if nm not in byname:continue
+        s=an.samplers[ch.sampler];ti=acc(src,s.input)[:,0];vo=acc(src,s.output)
         k=np.searchsorted(ti,t)
         if k<=0:v=vo[0]
         elif k>=len(ti):v=vo[-1]
         else:
             f=(t-ti[k-1])/(ti[k]-ti[k-1]);v=vo[k-1]*(1-f)+vo[k]*f
             if ch.target.path=='rotation':v=v/np.linalg.norm(v)
-        p={'translation':'t','rotation':'r','scale':'s'}[ch.target.path];tr[ch.target.node][p]=v
+        p={'translation':'t','rotation':'r','scale':'s'}[ch.target.path];tr[byname[nm]][p]=v
     Wm={}
     def w(i):
         if i in Wm:return Wm[i]
@@ -42,8 +52,9 @@ def render(X,ang=30,W=300,H=330,s=120):
     L=np.array([-0.4,0.6,0.7]);L/=np.linalg.norm(L);sh=np.clip(0.75+0.35*(fn[fi]@L),0.4,1.15)
     out[ys,xs]=c*sh[:,None];return out
 rows=[]
-for clip,ang in [('Running_A',35),('1H_Melee_Attack_Slice_Horizontal',20),('Death_A',60),('Cheer',0)]:
-    _,an=pose(clip,0);dur=max(acc(g,s.input).max() for s in an.samplers)
+CLIPS=[('Idle_A',0),('Running_A',35),('Melee_1H_Attack_Slice_Horizontal',20),('Ranged_Magic_Spellcasting',20),('Death_A',60),('Cheering',0)] if V2 else [('Running_A',35),('1H_Melee_Attack_Slice_Horizontal',20),('Death_A',60),('Cheer',0)]
+for clip,ang in CLIPS:
+    _,an=pose(clip,0);G=[G for G in [g,*CL.values()] if an in G.animations][0];dur=max(acc(G,s.input).max() for s in an.samplers)
     fr=[]
     for t in np.linspace(0,dur*0.95,5):
         M,_=pose(clip,t)

@@ -303,6 +303,7 @@ const TEXT={
   'hero.hunter.line':{he:'מהיר, שקט, ופוגע מרחוק',en:'Fast, quiet, and deadly from afar'},
   'hero.mage':{he:'קוסם',en:'Mage'},
   'hero.mage.line':{he:'קסם שמרפא תוך כדי קרב',en:'Magic that heals mid-fight'},
+  'hero.skin':{he:'✨ הדמות שלי',en:'✨ My character'},
 
   // קווסטים (js/quests.js). כל קווסט: [שם, משפט של מי שנותן]. מותרות בדיחות פנימיות
   'q.log':{he:'קווסטים',en:'Quests'},

@@ -49,7 +49,9 @@ const CHARS={
   warrior: {src:skel('Characters/gltf/Skeleton_Warrior.glb'),keep:['Skeleton_']},
   skelMage:{src:skel('Characters/gltf/Skeleton_Mage.glb'),   keep:['Skeleton_']},
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. נבנה ע"י tools/pilot3d (ההסבר ב-docs/3d-assets.md). הטקסטורה היא הציור עצמו ולא פלטה, אז 512 ו-JPEG
-  pilotHero:{src:path.join(ROOT,'art/pilot/PilotHero.glb'),keep:['PilotHero_'],tex:512,fmt:'jpeg'}
+  pilotHero:{src:path.join(ROOT,'art/pilot/PilotHero.glb'),keep:['PilotHero_'],tex:512,fmt:'jpeg'},
+  // הדמות האישית של ניר ("הנודד עם הניצוץ"), מ-art/heroes/nir-sheet.jpg. כמו הפיילוט, עם rig.py --apose --pack (ההסבר ב-tools/pilot3d/README.md)
+  nirHero:{src:path.join(ROOT,'art/heroes/NirHero.glb'),keep:['NirHero_'],tex:512,fmt:'jpeg'}
 };
 // חפצים שנאחזים ביד של אויב (המיקום ביד מוגדר ב-render3d.js)
 const PROPS={
