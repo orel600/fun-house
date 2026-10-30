@@ -43,7 +43,7 @@ jobs:
         run: |
           # רק מה שהמשחק צריך. התיקייה נקראת fun-house, וזה גם שם הפרויקט ב-Vercel
           site="$RUNNER_TEMP/fun-house"; mkdir -p "$site"
-          cp index.html "$site/"; cp -r css js "$site/"; [ -d skins ] && cp -r skins "$site/" || true
+          cp index.html "$site/"; cp -r css js "$site/"; for d in skins sounds; do [ -d "$d" ] && cp -r "$d" "$site/"; done; true
           cd "$site"
           # רווח או ירידת שורה שנדבקו לטוקן בהעתקה הופכים אותו ללא תקף, אז מנקים אותם
           tok=$(printf %s "$VERCEL_TOKEN" | tr -d '[:space:]')
