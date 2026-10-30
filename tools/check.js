@@ -141,11 +141,12 @@ function villageBot(m,L){
     m.stash=1;const q=s=>document.querySelector('#vPanel '+s),up=q('[data-act="up"]');
     if(up&&!up.disabled)up.click();L.stashLv=vLv('stash');
     const w0=SAVE.bag.wood||0,mv=(d,r)=>{const b=q('[data-act="stash"][data-dir="'+d+'"][data-r="'+r+'"]');if(b)b.click();return!!b};
-    const swIn=mv('in','oakSword')&&SAVE.stash.oakSword===1&&!SAVE.bag.oakSword;
+    const s0=SAVE.bag.oakSword||0;   // כמה חרבות עץ בתרמיל: הלוחם מקבל אחת בבחירה ועוד אחת במתנה
+    const swIn=mv('in','oakSword')&&SAVE.stash.oakSword===1&&(SAVE.bag.oakSword||0)===s0-1;   // פריט עובר אחד-אחד
     const wIn=mv('in','wood')&&SAVE.stash.wood===w0&&!SAVE.bag.wood;
-    const swOut=mv('out','oakSword')&&SAVE.bag.oakSword===1&&!SAVE.stash.oakSword;
+    const swOut=mv('out','oakSword')&&SAVE.bag.oakSword===s0&&!SAVE.stash.oakSword;
     const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key));
-    L.stash={swIn,wIn,swOut,saved:sv.stash.wood===w0&&!sv.stash.oakSword&&sv.bag.oakSword===1,cap:stashCap(),used:stashUsed()};
+    L.stash={swIn,wIn,swOut,saved:sv.stash.wood===w0&&!sv.stash.oakSword&&sv.bag.oakSword===s0,cap:stashCap(),used:stashUsed()};
     return L}
   m.runBag=bag();L.gateAt=1;   // לשער
   return steer(g.x,g.y,false,0,L);
