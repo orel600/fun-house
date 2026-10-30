@@ -30,6 +30,12 @@ const LOOK3D={
   hero_hunter:{model:'ranger',h:59},
   hero_mage:{model:'mage',h:69},
   wanted:{model:'rogue',h:62,foot:13,tint:'gold',anim:{run:'Running_B',die:'Death_A'}},
+  // יצורי משאבים: בינתיים מודל קיים, צבוע בצבע החומר (tint) ובגודל אחר. כשיהיו מודלים משלהם מחליפים רק כאן
+  golem:{model:'barbarian',h:84,foot:18,tint:'#8A8F9C',anim:{run:'Running_B',die:'Death_A'}},
+  treant:{model:'warrior',h:74,foot:16,tint:'#4F8A3E',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  crawler:{model:'minion',h:40,foot:10,tint:'#C87533',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  sprite:{model:'mage',h:40,foot:10,float:8,tint:'#7BD88F',anim:{run:'Running_C',die:'Death_C_Skeletons'}},
+  mummy:{model:'minion',h:56,foot:12,tint:'#D9C9A3',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle_A',charge:'Melee_2H_Attack_Spin',cast:'Melee_2H_Attack_Chop',taunt:'Taunt',die:'Death_A'}},
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. בלי קסדה הוא נמוך יותר, אז h קטן כדי שהגוף יהיה בגודל של האביר.
   // לבדיקה בלבד: עם ?hero=pilot בכתובת הוא נכנס במקום האביר של הלוחם (דמות ההתחלה הראשונה)
@@ -70,7 +76,7 @@ const VIL3D={
 };
 /* העולם הפתוח: המיקומים ב-WORLD (js/world.js). מקורות המשאבים לפי הצורה שלהם (shape), מתוך מודלי הכפר, כדי לא להכביד על הטלפון.
    glow: צבע לעורק מתכת. הקישוטים והשערים כמו בכפר (VIL3D.decor, VIL3D.gate) */
-const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},rock:{model:'v_rock',w:62},vein:{model:'v_rock',w:62,glow:'#C87533'}}};   // w: רוחב המודל. לפי r ב-WORLD.kinds
+const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',w:42,glow:'#5FA35A'},chest:{model:'v_crate',w:48,glow:'#F4C74F'},rock:{model:'v_rock',w:62},vein:{model:'v_rock',w:62,glow:'#C87533'}}};   // w: רוחב המודל
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
@@ -209,16 +215,17 @@ function heroLook(){
   return R3D._hl=L;
 }
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
-// מפתח למאגר: רק דמות זהה (מודל, חפצים, צבע, נשק מוסתר) חוזרת לשימוש
-const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')).join()+(L.tint?'|'+L.tint:'')+(L.own===false?'|x':'');
-const TINT={gold:C.gold,...Object.fromEntries(Object.keys(DMG.types).map(k=>[k,DMG.types[k].col])),lilac:C.lilac};   // צבע לכל סוג נזק, וזהב
+// מפתח למאגר: רק דמות זהה (מודל, חפצים, צבע, גודל, נשק מוסתר) חוזרת לשימוש. יצורי משאבים הם מודל קיים בצבע ובגודל אחר
+const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')).join()+(L.tint?'|'+L.tint:'')+'|'+L.h+(L.own===false?'|x':'');
+const TINT={ember:C.ember,tide:C.tide,gold:C.gold,...Object.fromEntries(Object.keys(DMG.types).map(k=>[k,DMG.types[k].col])),lilac:C.lilac};   // צבע לכל סוג נזק, ושמות הצבעים של המשחק
+const tintOf=t=>TINT[t]||t;   // שם מ-TINT, או צבע ישיר ('#8A8F9C')
 function makeActor(L){
   const pool=R3D.pool||(R3D.pool={});const free=pool[lookKey(L)];
   if(free&&free.length){const a=free.pop();a.root.visible=true;a.dieT=0;a.base=null;a.one=null;a.mixer.stopAllAction();return a}
   const t=R3D.tmpl[L.model],root=THREE.SkeletonUtils.clone(t),s=L.h/COS()/t.userData.h;
   root.scale.setScalar(s);
   const mats=[];
-  root.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(L.tint)o.material.emissive.set(TINT[L.tint]).multiplyScalar(0.18);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
+  root.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(L.tint)o.material.emissive.set(tintOf(L.tint)).multiplyScalar(L.tint[0]==='#'?0.45:0.18);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
   const props={};
   for(const [k,p] of Object.entries(L.props||{})){
     const b=bone(root,p.bone);if(!b)continue;

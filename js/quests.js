@@ -3,7 +3,7 @@
    id: שם קבוע. giver: מי נותן, תושב בכפר (NPC.list ב-npc.js). אם יש לו מבנה בית, הוא צריך להיות בנוי כדי לתת. kind: הסוג, ההתנהגות שלו ב-QUESTS.kinds.
    obj: מטרות, מתוך שש:
      kill    להפיל n מ-what: grunt, shield, wisp, wanted, boss, או any (כל אויב)
-     collect להביא הביתה n מ-what: משאב (wood, stone, ore, bone, coins), מהייצור בכפר או מהשלל של ריצה
+     collect להביא הביתה n מ-what: משאב (כל משאב ב-RES, resources.js), מהייצור בכפר או מהשלל של ריצה
      reach   להגיע n פעמים ל-what: arena (יציאה לזירה), room (חדר הבונוס), world (יציאה מהכפר לעולם הפתוח)
      gather  לאסוף בעולם הפתוח n מ-what: משאב שנפל ממקור או מאויב בעולם (world.js). נספר כשהוא נכנס לתרמיל
      upgrade המבנה what ברמה n לפחות. נבדק לפי הכפר עצמו, אז מה שכבר בנית נספר
@@ -32,29 +32,29 @@ const QUESTS={
     {id:'firstMill',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mill',n:1}],reward:{coins:15,wood:10}},
     {id:'firstMine',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mine',n:1}],reward:{coins:15,stone:10}},
     {id:'grunts',giver:'head',kind:'village',obj:[{type:'kill',what:'grunt',n:15}],reward:{coins:20,xp:20}},
-    {id:'firstBoss',giver:'head',kind:'village',obj:[{type:'win',n:1}],reward:{coins:60,ore:8,xp:80},req:{quest:'grunts'}},
-    {id:'forge',giver:'head',kind:'village',obj:[{type:'upgrade',what:'forge',n:1}],reward:{stone:15,ore:3},req:{quest:'grunts'}},
+    {id:'firstBoss',giver:'head',kind:'village',obj:[{type:'win',n:1}],reward:{coins:60,iron:8,xp:80},req:{quest:'grunts'}},
+    {id:'forge',giver:'head',kind:'village',obj:[{type:'upgrade',what:'forge',n:1}],reward:{stone:15,iron:3},req:{quest:'grunts'}},
     {id:'market',giver:'head',kind:'village',obj:[{type:'upgrade',what:'market',n:1}],reward:{coins:20},req:{quest:'firstMine'}},
     {id:'center2',giver:'head',kind:'village',obj:[{type:'upgrade',what:'center',n:2}],reward:{coins:40,xp:50},req:{quest:'forge'}},
     {id:'millWood',giver:'merchant',kind:'village',obj:[{type:'collect',what:'wood',n:30}],reward:{coins:20},req:{b:{mill:1}}},
     {id:'wisps',giver:'priest',kind:'village',obj:[{type:'kill',what:'wisp',n:15}],reward:{wood:25,xp:20},req:{quest:'millWood'}},
     {id:'mill3',giver:'merchant',kind:'village',obj:[{type:'upgrade',what:'mill',n:3}],reward:{wood:40,coins:30},req:{quest:'center2'}},
     {id:'mineStone',giver:'smith',kind:'village',obj:[{type:'collect',what:'stone',n:20}],reward:{coins:20,wood:10},req:{b:{mine:1}}},
-    {id:'mine3',giver:'smith',kind:'village',obj:[{type:'upgrade',what:'mine',n:3},{type:'collect',what:'ore',n:10}],reward:{stone:40,ore:10},req:{quest:'center2'}},
-    {id:'bones',giver:'smith',kind:'village',obj:[{type:'collect',what:'bone',n:10}],reward:{ore:5,coins:20}},
-    {id:'shields',giver:'smith',kind:'village',obj:[{type:'kill',what:'shield',n:15}],reward:{ore:6,xp:20},req:{quest:'bones'}},
+    {id:'mine3',giver:'smith',kind:'village',obj:[{type:'upgrade',what:'mine',n:3},{type:'collect',what:'iron',n:10}],reward:{stone:40,iron:10},req:{quest:'center2'}},
+    {id:'bones',giver:'smith',kind:'village',obj:[{type:'collect',what:'bone',n:10}],reward:{iron:5,coins:20}},
+    {id:'shields',giver:'smith',kind:'village',obj:[{type:'kill',what:'shield',n:15}],reward:{iron:6,xp:20},req:{quest:'bones'}},
     {id:'wFirst',giver:'head',kind:'village',obj:[{type:'reach',what:'world',n:1},{type:'gather',what:'wood',n:10}],reward:{coins:20,stone:10}},
     {id:'door',giver:'priest',kind:'village',obj:[{type:'reach',what:'room',n:1}],reward:{coins:30}},
     // ---- ציד: אפשר לקחת שוב ושוב ----
     {id:'huntWanted',giver:'merchant',kind:'hunt',obj:[{type:'kill',what:'wanted',n:1}],reward:{coins:40}},
-    {id:'huntFast',giver:'smith',kind:'hunt',obj:[{type:'win',n:1,under:240}],reward:{ore:10,xp:40},req:{quest:'firstBoss'}},
+    {id:'huntFast',giver:'smith',kind:'hunt',obj:[{type:'win',n:1,under:240}],reward:{iron:10,xp:40},req:{quest:'firstBoss'}},
     // ---- יומיים: 4 מהמאגר הזה בכל יום ----
     {id:'dGrunts',giver:'inn',kind:'daily',obj:[{type:'kill',what:'grunt',n:40}],reward:{coins:20}},
-    {id:'dShields',giver:'inn',kind:'daily',obj:[{type:'kill',what:'shield',n:12}],reward:{coins:15,ore:2}},
+    {id:'dShields',giver:'inn',kind:'daily',obj:[{type:'kill',what:'shield',n:12}],reward:{coins:15,iron:2}},
     {id:'dWisps',giver:'inn',kind:'daily',obj:[{type:'kill',what:'wisp',n:12}],reward:{coins:15,bone:3}},
     {id:'dAny',giver:'inn',kind:'daily',obj:[{type:'kill',what:'any',n:100}],reward:{coins:30}},
     {id:'dWanted',giver:'inn',kind:'daily',obj:[{type:'kill',what:'wanted',n:1}],reward:{coins:25}},
-    {id:'dBoss',giver:'inn',kind:'daily',obj:[{type:'win',n:1}],reward:{coins:30,ore:3}},
+    {id:'dBoss',giver:'inn',kind:'daily',obj:[{type:'win',n:1}],reward:{coins:30,iron:3}},
     {id:'dRuns',giver:'inn',kind:'daily',obj:[{type:'reach',what:'arena',n:2}],reward:{coins:15}},
     {id:'dRoom',giver:'inn',kind:'daily',obj:[{type:'reach',what:'room',n:1}],reward:{coins:20}},
     {id:'dWood',giver:'inn',kind:'daily',obj:[{type:'collect',what:'wood',n:20}],reward:{coins:15}},
@@ -63,12 +63,12 @@ const QUESTS={
     {id:'dCoins',giver:'inn',kind:'daily',obj:[{type:'collect',what:'coins',n:30}],reward:{stone:15,wood:15}},
     // ---- הישגים: פעילים תמיד, פעם אחת ----
     {id:'aHunter',giver:null,kind:'achievement',obj:[{type:'kill',what:'any',n:500}],reward:{coins:100,item:'qTrophy'}},
-    {id:'aClean',giver:null,kind:'achievement',obj:[{type:'win',n:1,noHit:true}],reward:{ore:20,item:'qSock'}},
+    {id:'aClean',giver:null,kind:'achievement',obj:[{type:'win',n:1,noHit:true}],reward:{iron:20,item:'qSock'}},
     {id:'aSpeed',giver:null,kind:'achievement',obj:[{type:'win',n:1,under:150}],reward:{coins:80,xp:60}},
     {id:'aBuilder',giver:null,kind:'achievement',obj:[{type:'upgrade',what:'center',n:3}],reward:{coins:100,stone:50}},
     {id:'aWanted',giver:null,kind:'achievement',obj:[{type:'kill',what:'wanted',n:5}],reward:{coins:60,item:'qCrown'}}
   ],
-  icon:{xp:'✨',item:'🎁',track:'📜'}    // אייקונים לפרס (מעבר למשאבים ב-VILLAGE.icon) ולקו המעקב
+  icon:{xp:'✨',item:'🎁',track:'📜'}    // אייקונים לפרס (מעבר למשאבים ב-RES) ולקו המעקב
 };
 
 const QBY={};for(const q of QUESTS.list)QBY[q.id]=q;
@@ -144,9 +144,9 @@ function questClaim(id){
 }
 
 /* ---- ממשק: היומן בכפר, וקו מעקב בזירה ---- */
-const qWhat=o=>o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?T('res.'+o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
+const qWhat=o=>o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?resName(o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
 const qObjTxt=(q,i)=>{const o=q.obj[i];return T('qo.'+o.type,qWhat(o),o.n)+(o.noHit?T('qo.noHit'):'')+(o.under?T('qo.under',fmt(o.under)):'')};
-const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='item'?(gItem(r[k])?gIcon(r[k])+' '+gName(r[k]):QUESTS.icon.item+' '+T('item.'+r[k])):(VILLAGE.icon[k]||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
+const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='item'?(gItem(r[k])?gIcon(r[k])+' '+gName(r[k]):QUESTS.icon.item+' '+T('item.'+r[k])):(resIcon(k)||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
 // הקווסט שמוצג בזירה: זה שבחרת לעקוב אחריו, ואם אין, הראשון שעוד לא הושלם
 function qTracked(){
   const Q=QS(),ids=Object.keys(Q.active).filter(id=>QBY[id]);

@@ -5,13 +5,15 @@ const WANTED={
   rumor:[5,8], hint:0.5,                      // כמה שניות מהשמועה עד שהוא מופיע, וכמה הרמז לכיוון לא מדויק (רדיאנים)
   life:14, hp:70, speed:120, keep:170,        // שניות עד שהוא בורח, חיים (גדלים עם הזמן כמו אויב רגיל), מהירות, ומאיזה מרחק הוא בורח מהשחקן
   panic:3,                                    // בשניות האחרונות הוא רץ מהר יותר והטבעת מאדימה
-  // הסיכויים אמיתיים ונסכמים ל-1. orbs: כמה XP נופל. heal: כמה חיים חוזרים.
+  drop:{coins:[1,15],cloth:[0.5,2]},          // מה הוא מפיל תמיד לשלל של הריצה, {משאב:[סיכוי, כמה]} (המשאבים ב-RES)
+  // הוא נושא האוצר של המשחק: התיבה שלו מפילה אבנים, והאוצר אבנים מושלמות.
+  // הסיכויים אמיתיים ונסכמים ל-1. orbs: כמה XP נופל. heal: כמה חיים חוזרים. res: משאבים, בעיקר אבנים נדירות.
   // השמות ב-lang.js תחת 'loot.<key>', השמועות תחת 'wanted.rumors', ופריטי הזבל תחת 'loot.junkItems'
   loot:[
     {chance:0.5, key:'junk', items:true, orbs:2, heal:0, col:C.dim},
     {chance:0.3, key:'coins', orbs:12, heal:0, col:C.chalk},
-    {chance:0.15, key:'chest', orbs:25, heal:40, col:C.gold},
-    {chance:0.05, key:'treasure', orbs:50, heal:999, col:C.gold, party:true}
+    {chance:0.15, key:'chest', orbs:25, heal:40, col:C.gold, res:{gem:[0.4,1],ruby:[0.3,1],sapphire:[0.3,1],bolt:[0.3,1],aqua:[0.3,1],amber:[0.3,1],cloth:[1,3]}},
+    {chance:0.05, key:'treasure', orbs:50, heal:999, col:C.gold, party:true, res:{rubyF:[0.3,1],sapphireF:[0.3,1],boltF:[0.3,1],aquaF:[0.3,1],amberF:[0.3,1],star:[0.5,1],gold:[1,3],mythril:[0.5,1]}}
   ]
 };
 
@@ -60,6 +62,7 @@ function wantedDown(e){
   const name=T('loot.'+L.key)+(L.items?': '+pick(T('loot.'+L.key+'Items')):'');wn.got.push(name);
   for(let i=0;i<L.orbs;i++){const a=rand(0,6.28),rr=rand(8,60);orbs.push({x:e.x+Math.cos(a)*rr,y:e.y+Math.sin(a)*rr,v:1})}
   if(L.heal)P.hp=Math.min(P.maxHp,P.hp+L.heal);
+  if(L.res)runGive(L.res,e.x,e.y-e.r-20);   // לשלל של הריצה (village.js)
   banner(name,L.col);
   sfx(L.party||L.heal?'celebrate':'coin');
   if(L.party){sparks(e.x,e.y,C.gold,40,320);S.shake=Math.max(S.shake,12);S.slow=0.7}

@@ -5,8 +5,8 @@
 
 const stashCap=()=>VILLAGE.b.stash.cap[vLv('stash')]||0;
 const stashUsed=()=>Object.values(SAVE.stash).reduce((n,v)=>n+v,0);
-const stashIcon=k=>VILLAGE.icon[k]||(gItem(k)?gIcon(k):'');
-const stashName=k=>VILLAGE.icon[k]?T('res.'+k):gName(k);
+const stashIcon=k=>resIcon(k)||(gItem(k)?gIcon(k):'');
+const stashName=k=>resOf(k)?resName(k):gName(k);
 
 // מעביר לתוך המחסן (in) או בחזרה לתרמיל (out): משאב כולו, כמה שנכנס, ופריט אחד בכל לחיצה. מחזיר כמה עבר
 function stashMove(dir,k){
@@ -26,7 +26,7 @@ function stashHtml(){
   const row=(src,dir)=>{const ks=Object.keys(src).filter(k=>src[k]>0&&stashIcon(k));
     return ks.length?'<div class="smove">'+ks.map(k=>'<button class="res" data-act="stash" data-dir="'+dir+'" data-r="'+k+'" aria-label="'+stashName(k)+'"'+(dir==='in'&&full?' disabled':'')+'>'+stashIcon(k)+' '+src[k]+'</button>').join('')+'</div>'
       :'<p class="next">'+T('stash.empty')+'</p>'};
-  return '<p class="next">'+T('stash.space',stashUsed(),stashCap())+'</p>'+
+  return '<p class="next">'+T('stash.space',stashUsed(),stashCap())+'</p><button class="vbtn ghost" data-act="bag">🎒 '+T('stash.drag')+'</button>'+
     '<span class="sk">'+T('stash.bag')+'</span>'+row(SAVE.bag,'in')+
     '<span class="sk">'+T('stash.in')+'</span>'+row(SAVE.stash,'out');
 }
