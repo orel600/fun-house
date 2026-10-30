@@ -136,9 +136,9 @@ function worldUpdate(dt){
   }
   attack(dt);wGather(dt);
   wFoes(dt);if(S.mode!=='play')return;
-  for(const b of pb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
+  for(const b of pb){shotFly(b,dt);
     for(const e of enemies){if(e.dead||b.hit.has(e)||b.life<=0)continue;
-      if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4){b.hit.add(e);damage(e,P.gn.dmg*dmgK(),'gun',Math.atan2(b.vy,b.vx));if(b.pierce--<=0)b.life=0}}}
+      if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4)shotHit(b,e)}}
   pb=pb.filter(b=>b.life>0);
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
