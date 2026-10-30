@@ -6,7 +6,7 @@ const SAVE_VER=1;
 
 function saveBlank(){return{
   v:SAVE_VER,
-  hero:{start:null,level:1,xp:0,rank:0,rankId:null,style:{}},   // start: דמות ההתחלה. xp: כל מה שנאסף, והרמה נגזרת ממנו. rank, rankId: שלב ודרגה (ranks.js). style: במה שיחק הכי הרבה, לקווסטי הדרגה
+  hero:{start:null,skin:null,level:1,xp:0,rank:0,rankId:null,style:{}},   // start: דמות ההתחלה. skin: מראה אישי מעליה (HEROES.skins). xp: כל מה שנאסף, והרמה נגזרת ממנו. rank, rankId: שלב ודרגה (ranks.js). style: במה שיחק הכי הרבה, לקווסטי הדרגה
   bag:{},                                           // התרמיל, בלי הגבלה: {wood:12,bone:3}. מה שסוחבים, ובעולם הפתוח מסתכנים בו
   stash:{},                                         // המחסן בכפר: המקום הבטוח, באותה צורה כמו התרמיל. מנוהל ב-stash.js
   gear:{weapon:null,acc:[],boots:[],orbit:[]},               // orbit: החפצים המסתובבים, עד 5
@@ -19,6 +19,7 @@ function saveBlank(){return{
   daily:{day:'',first:{}},                          // איזה סוג אויב כבר הופל היום, לבונוס ההריגה הראשונה (loot.js)
   met:{},                                           // דמויות בעולם שכבר נמצאו: {fisher:1} (worldnpc.js)
   agePity:0,                                        // כמה כישלונות ברצף ב-Aging, למזל הרך (aging.js)
+  pet:{kind:null,stage:0,xp:0},                     // חיית המחמד (pet.js). kind: איזו חיה מ-PET.kinds (null: PET.default, פיוחו של ניר). stage: 0-2
   ts:0}}
 
 let SAVE=saveBlank();

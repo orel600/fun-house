@@ -1,5 +1,23 @@
 /* ציור: דמויות, אויבים, בוס וממשק. השלד והסקינים של הדמויות ב-rig.js */
+/* הניצוץ של מראה אישי (HEROES.skins ב-heroes.js): להבה קטנה וזוהרת שמרחפת ליד הכתף, עולה ויורדת, ומדביקה את הדמות באיחור קטן.
+   רק בתלת-ממד, כי רק שם הדמות היא המודל האישי. קישוט בינתיים: בהמשך הוא החפץ המסתובב הראשון (orbit) */
+function drawSpark(){
+  const sk=R3D.on&&heroSkin(),sp=sk&&HEROES.skins[sk].spark;if(!sp)return;
+  const L=heroLook(),now=performance.now()/1000,st=drawSpark.st||(drawSpark.st={x:P.x,y:P.y,t:now});
+  const tx=P.x+sp.dx,ty=P.y+L.foot-L.h*sp.up+(RM?0:Math.sin(now*sp.speed)*sp.bob),k=1-Math.exp(-sp.lag*Math.min(0.1,now-st.t));
+  if(Math.hypot(tx-st.x,ty-st.y)>200){st.x=tx;st.y=ty}   // אחרי מעבר מקום: מופיע ליד הדמות ולא עף אליה
+  st.x+=(tx-st.x)*k;st.y+=(ty-st.y)*k;st.t=now;
+  const x=st.x,y=st.y,r=sp.r*(1+(RM?0:0.12*Math.sin(now*7))),g=ctx.createRadialGradient(x,y,0,x,y,r*3.2);
+  g.addColorStop(0,'rgba(255,190,90,0.55)');g.addColorStop(1,'rgba(255,138,61,0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r*3.2,0,7);ctx.fill();
+  // להבה: טיפה הפוכה כתומה, ובתוכה לב צהוב
+  for(const [c,m] of [[C.ember,1],[C.gold,0.55]]){
+    ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x,y-r*2.2*m);
+    ctx.quadraticCurveTo(x+r*1.3*m,y-r*0.2*m,x,y+r*m);ctx.quadraticCurveTo(x-r*1.3*m,y-r*0.2*m,x,y-r*2.2*m);ctx.fill();
+  }
+}
 function drawPlayer(){
+  drawSpark();
   if(P.inv>0&&Math.floor(P.inv*20)%2===0)return;
   if(P.swapBuff>0){ctx.fillStyle='rgba(244,199,79,0.12)';ctx.beginPath();ctx.arc(P.x,P.y-6,30,0,Math.PI*2);ctx.fill()}
   const s=P.sw,sword=P.weapon==='sword';
@@ -136,6 +154,7 @@ function render(){
   drawLoot();    // טבעות עלית ועמודי אור של שלל (loot.js)
   drawWorld();   // העולם הפתוח (world.js)
   drawNpcs();
+  drawPet();   // חיית המחמד: חול מהחפירה, להבות בשלב 3, ובדו-ממד גם הגוף (pet.js)
   // actors sorted by y
   // מציירים רק מי שעל המסך: עם מאות אויבים זה חוסך את רובם
   const actors=enemies.filter(e=>e.isBoss||onScreen(e.x+ox,e.y+oy));actors.push({isPlayer:true,y:P.y});actors.sort((a,b)=>a.y-b.y);

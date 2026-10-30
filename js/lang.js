@@ -303,6 +303,7 @@ const TEXT={
   'hero.hunter.line':{he:'מהיר, שקט, ופוגע מרחוק',en:'Fast, quiet, and deadly from afar'},
   'hero.mage':{he:'קוסם',en:'Mage'},
   'hero.mage.line':{he:'קסם שמרפא תוך כדי קרב',en:'Magic that heals mid-fight'},
+  'hero.skin':{he:'✨ הדמות שלי',en:'✨ My character'},
 
   // קווסטים (js/quests.js). כל קווסט: [שם, משפט של מי שנותן]. מותרות בדיחות פנימיות
   'q.log':{he:'קווסטים',en:'Quests'},
@@ -468,6 +469,10 @@ const TEXT={
   'stash.empty':{he:'ריק',en:'Empty'},
   'stash.drag':{he:'לגרור בין התרמיל למחסן',en:'Drag between bag and stash'},
   // תושבי הכפר (npc.js): [שם, תפקיד], ומשפט לכל מצב. low/high: לפי רמת מרכז הכפר. new: יש קווסט חדש. busy: קווסט באמצע. ready: פרס מחכה
+  // חיית המחמד (pet.js). השם לפי PET.kinds
+  'pet.name.piocho':{he:'פיוחו',en:'PioCho'},
+  'pet.up':{he:(n,s)=>n+' גדלה! שלב '+s,en:(n,s)=>n+' grew up! Stage '+s},
+  'pet.found':{he:n=>n+' מצאה משהו!',en:n=>n+' found something!'},
   'npc.talk':{he:n=>'לדבר עם '+n,en:n=>'Talk to '+n},
   'npc.noQuest':{he:'אין לי משימה בשבילך כרגע. תחזור אחר כך.',en:'Nothing for you right now. Come back later.'},
   'npc.head':{he:['אבנר','ראש הכפר'],en:['Avner','Village Chief']},
