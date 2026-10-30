@@ -12,7 +12,7 @@ const GEAR={
   stats:{sdmg:{unit:'%',w:1},gdmg:{unit:'%',w:1},hp:{unit:'',w:0.4},speed:{unit:'%',w:1.5},magnet:{unit:'%',w:0.3},regen:{unit:'',w:8}},
   // חפצים מסתובבים: בינתיים רק סוג וצורה. ההתנהגות שלהם תגיע במשימה "חפצים מסתובבים" (orbit.js)
   orbit:{attack:'🔥',defense:'🛡️',control:'❄️',support:'💚',luck:'🍀'},
-  /* הפריטים. slot: weapon / acc / orbit. tier: מספר ב-tiers. w: איזה נשק (sword חרב, gun קשת), ואיתו מתחילים את הריצה.
+  /* הפריטים. slot: weapon / acc / orbit. נעליים (type:'boots') הן אקססורי שנותן מהירות (speed). tier: מספר ב-tiers. w: איזה נשק (sword חרב, gun קשת), ואיתו מתחילים את הריצה.
      look: איך הפריט נראה, כדי שכל שדרוג ייראה. tint צבע, glow זוהר, model המודל בתלת-ממד (w_<שם> מ-Fantasy Weapons, והחומר לפי tier) */
   items:{
     oakSword:   {slot:'weapon',tier:0,w:'sword',icon:'🗡️',stats:{sdmg:10},look:{model:'w_sword_A'}},
@@ -24,7 +24,8 @@ const GEAR={
     oakStaff:   {slot:'weapon',tier:0,w:'gun',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'w_staff_B'}},   // הנשק של הקוסם: יורה כמו קשת
     boneCharm:  {slot:'acc',tier:0,icon:'🦴',stats:{hp:15}},
     ironRing:   {slot:'acc',tier:1,icon:'💍',stats:{regen:0.5}},
-    swiftBoots: {slot:'acc',tier:2,icon:'👢',stats:{speed:8}},
+    starterBoots:{slot:'acc',tier:0,type:'boots',icon:'👟',stats:{speed:10}},   // הפרס של הקווסט הראשון של ראש הכפר (quests.js)
+    swiftBoots: {slot:'acc',tier:2,type:'boots',icon:'👢',stats:{speed:8}},
     goldAmulet: {slot:'acc',tier:3,icon:'📿',stats:{hp:30,magnet:30},look:{glow:C.gold}},
     crown:      {slot:'acc',tier:4,icon:'👑',stats:{hp:40,sdmg:15,gdmg:15},look:{glow:'#FF6FB5'}},
     emberOrb:   {slot:'orbit',tier:0,type:'attack'},

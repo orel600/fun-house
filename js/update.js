@@ -6,6 +6,9 @@ function movePlayer(dt){
   const sp=P.speed*(P.power>0?BONUS.powerSpeed:1);
   P.moving=m>0.12;P.vx=ix*sp;P.vy=iy*sp;P.x+=P.vx*dt;P.y+=P.vy*dt;
   if(P.moving)P.walk+=dt*sp*0.07;
+  // הגוף פונה לאן שהולכים. בעמידה הוא מסתובב אל מה שתוקפים (P.aim). מסתובב ברכות, בלי קפיצות
+  const want=P.moving?Math.atan2(iy,ix):P.aim,d=angDiff(want,P.face),k=MOVE.turn*dt;
+  P.face=Math.abs(d)<=k?want:angDiff(P.face+Math.sign(d)*k,0);
   return{ix,iy};
 }
 function update(dt){
