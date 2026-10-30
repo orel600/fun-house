@@ -123,7 +123,7 @@ function worldUpdate(dt){
   }
   attack(dt);   // פוגעת גם במקורות משאבים (aimTarget ב-combat.js)
   wFoes(dt);if(S.mode!=='play')return;
-  const hitable=enemies.concat(S.nd.list);   // גם מקורות משאבים, כמו בזירה (update.js)
+  const hitable=S.nd.list.length?enemies.concat(S.nd.list):enemies;   // קליעים פוגעים גם במקורות משאבים (nodes.js), כמו בזירה
   for(const b of pb){shotFly(b,dt);
     for(const e of hitable){if(e.dead||b.hit.has(e)||b.life<=0)continue;
       if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4)shotHit(b,e)}}
