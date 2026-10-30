@@ -1,5 +1,5 @@
 # בדיקת המשחק: רצה לבד על כל בקשת מיזוג (PR) ועל כל שינוי ב-main.
-# הבוט מ-tools/check.js משחק שלוש ריצות עד שהבוס מובס: שתיים בתלת-ממד, השנייה בדו-ממד, והאחרונה באנגלית. הדוח מופיע בסיכום של הריצה, וצילומי המסך מצורפים לה.
+# הבוט מ-tools/check.js משחק שלוש ריצות במקביל עד שהבוס מובס: בתלת-ממד, בדו-ממד, ובאנגלית (בתלת-ממד). הדוח מופיע בסיכום של הריצה, וצילומי המסך מצורפים לה.
 name: בדיקת המשחק
 
 on:
@@ -10,7 +10,16 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 20   # שתי ריצות בתלת-ממד בלי כרטיס גרפי לוקחות כ-4 דקות כל אחת
+    # שלוש ריצות במקביל, כל אחת במחשב משלה: ריצה של שש דקות משחק בתלת-ממד בלי כרטיס גרפי לוקחת כמה דקות
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {seed: 7, flags: "--shots"}
+          - {seed: 123, flags: "--gfx 2d"}
+          - {seed: 2026, flags: "--lang en"}
+    name: seed ${{ matrix.seed }} ${{ matrix.flags }}
+    timeout-minutes: 25
     defaults:
       run:
         shell: bash
@@ -26,16 +35,11 @@ jobs:
       - run: google-chrome --version
       - name: בוט משחק עד שהבוס מובס
         run: |
-          for seed in 7 123 2026; do
-            shots=""; [ "$seed" = 7 ] && shots="--shots"
-            lang=""; [ "$seed" = 2026 ] && lang="--lang en"
-            gfx=""; [ "$seed" = 123 ] && gfx="--gfx 2d"
-            echo "### seed $seed $lang $gfx" >> "$GITHUB_STEP_SUMMARY"
-            node tools/check.js --seed $seed $shots $lang $gfx | tee -a "$GITHUB_STEP_SUMMARY"
-            echo >> "$GITHUB_STEP_SUMMARY"
-          done
+          echo "### seed ${{ matrix.seed }} ${{ matrix.flags }}" >> "$GITHUB_STEP_SUMMARY"
+          set -o pipefail
+          node tools/check.js --seed ${{ matrix.seed }} ${{ matrix.flags }} | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
-        if: always()
+        if: always() && matrix.seed == 7
         with:
           name: screenshots
           path: tools/shots

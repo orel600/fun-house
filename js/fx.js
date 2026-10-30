@@ -13,7 +13,10 @@ const CELEBRATE={
   // שלל נדיר, אפי ואגדי (loot.js). הצבעים כמו ב-RES.rarity
   loot2:  {dust:0,  col:'#5AA8FF',burst:18,speed:200,pillar:0.6,pillarW:26,pillarH:150,label:''},
   loot3:  {dust:0,  col:'#B48CFF',burst:28,speed:240,pillar:0.8,pillarW:34,pillarH:200,label:''},
-  loot4:  {dust:0,  col:'#FFB347',burst:44,speed:300,pillar:1.1,pillarW:46,pillarH:280,label:''}
+  loot4:  {dust:0,  col:'#FFB347',burst:44,speed:300,pillar:1.1,pillarW:46,pillarH:280,label:''},
+  // Aging בנפחייה (aging.js): ניצוצות בסדן כשמצליחים. כשנכשלים: אפר אפור שנופל, בלי עמוד אור, וצליל עצוב (sound: מזהה ב-SOUNDS)
+  aging:  {dust:0.35,col:'#FFB347',burst:56,speed:340,pillar:1.3,pillarW:60,pillarH:300,label:'+1'},
+  agingFail:{dust:0.35,col:'#7E8698',burst:22,speed:110,pillar:0,pillarW:0,pillarH:0,label:'-1',sound:'hurt'}
 };
 let FX=[];
 const fxNow=()=>performance.now()/1000;
@@ -24,7 +27,7 @@ function celebrate(x,y,kind='upgrade',label){
   for(let i=0;i<14;i++)f.dust.push({a:rand(0,6.28),r:rand(20,60),s:rand(8,16),d:rand(0,K.dust*0.6)});
   for(let i=0;i<K.burst;i++){const a=rand(0,6.28),s=rand(K.speed*0.35,K.speed);f.burst.push({vx:Math.cos(a)*s,vy:Math.sin(a)*s-K.speed*0.4,z:rand(2,4.5),life:rand(0.6,1.1)})}
   FX.push(f);
-  setTimeout(()=>sfx('celebrate'),K.dust*1000);   // הצליל מ-audio.js, כדי שההשתקה תחול גם עליו
+  setTimeout(()=>sfx(K.sound||'celebrate'),K.dust*1000);   // הצליל מ-audio.js, כדי שההשתקה תחול גם עליו
   return K.dust;
 }
 // נקרא מ-render() בקואורדינטות העולם, אחרי הדמויות

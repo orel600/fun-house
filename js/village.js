@@ -21,7 +21,7 @@ const VILLAGE={
     center:{x:0,y:-190,r:92,
       look:[{at:1,model:'castle',scale:0.85,deco:[]},{at:3,model:'castle',scale:1,deco:['flag','flag']},{at:5,model:'castle',scale:1.1,deco:['flag','flag','flag','flag'],glow:C.gold}],
       cost:[null,null,{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50,copper:10,cloth:5},{coins:180,wood:120,stone:100,iron:20,cloth:15},{coins:350,wood:220,stone:200,silver:15,gold:5,horn:1,star:1}]},
-    forge:{x:-300,y:-30,r:66,     // נפחייה: כל רמה פותחת עוד שכבת ציוד ליצירה (GEAR.recipes ב-gear.js)
+    forge:{x:-300,y:-30,r:66,     // נפחייה: כל רמה פותחת עוד שכבת ציוד ליצירה (GEAR.recipes ב-gear.js), ו-Aging לציוד (aging.js) עד ה-+ של הרמה
       look:[{at:1,model:'tent',scale:1,deco:['barrel']},{at:3,model:'forge',scale:1,deco:['crate','barrel']},{at:5,model:'forge',scale:1.12,deco:['flag','flag','crate','barrel'],glow:C.ember}],
       cost:[null,{coins:20,wood:15,stone:10},{coins:50,wood:35,stone:25,copper:8},{coins:110,wood:70,stone:60,iron:15,bone:10},{coins:220,wood:140,stone:120,silver:12,hide:15},{coins:400,wood:250,stone:220,gold:10,essence:15,rubyF:1}]},
     mill:{x:300,y:-30,r:66,
@@ -134,7 +134,8 @@ function villageUpdate(dt){
   // לא נכנסים לתוך מבנים, ולא יוצאים מהכפר
   for(const k in VILLAGE.b){const B=VILLAGE.b[k],dx=P.x-B.x,dy=P.y-B.y,d=Math.hypot(dx,dy)||1,min=B.r+P.r;if(d<min){P.x=B.x+dx/d*min;P.y=B.y+dy/d*min}}
   const R=VILLAGE.radius,d0=Math.hypot(P.x,P.y);if(d0>R){P.x*=R/d0;P.y*=R/d0}
-  const g=VILLAGE.gate;if(Math.hypot(P.x-g.x,P.y-g.y)<g.r+P.r){leaveVillage();return}
+  // ליד השער נפתח פאנל עם כפתור כניסה. הריצה מתחילה רק בלחיצה, לא כשעוברים לידו (ניר: "נכנסתי לזירה בלי כוונה")
+  const g=VILLAGE.gate;V.gate=Math.hypot(P.x-g.x,P.y-g.y)<g.r+P.r+VILLAGE.near;
   // המבנה הכי קרוב: הפאנל שלו נפתח, והתוצרת שלו נאספת
   let near=null,best=VILLAGE.near;
   for(const k in VILLAGE.b){const B=VILLAGE.b[k],d=Math.hypot(P.x-B.x,P.y-B.y)-B.r-P.r;if(d<best){best=d;near=k}}
@@ -177,7 +178,7 @@ const makeLine=(B,L)=>Object.keys(B.make).filter(r=>B.make[r][L]>0).map(r=>'<bdi
 function vInfo(k,L){
   const B=VILLAGE.b[k];if(L<1)return T('vil.notBuilt');
   if(k==='center')return T('vil.info.center',L);
-  if(k==='forge')return T('vil.info.forge',T('vil.tiers')[L-1]);
+  if(k==='forge')return T('vil.info.forge',T('vil.tiers')[L-1],AGING.byForge[L]);
   if(B.make)return T('vil.info.make',makeLine(B,L),B.cap[L]);
   if(k==='market')return T('vil.info.market',Math.round(B.bonus*(L-1)*100));
   if(k==='stash')return T('vil.info.stash',B.cap[L]);
@@ -185,14 +186,17 @@ function vInfo(k,L){
 function villageHud(){
   const k=S.vil.near,L=k?vLv(k):0;
   // בונים מחדש רק כשמשהו השתנה: מבנה אחר, רמות, תרמיל, מחסן או שפה
-  const key=LANG+'|'+k+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
+  const key=LANG+'|'+k+'|'+S.vil.gate+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
   if(key===S.vil.ui)return;S.vil.ui=key;
   $('vBag').innerHTML=bagLine(SAVE.bag,resShown(k));   // רק מה שרלוונטי ליד המבנה הזה (RES.show)
-  const pn=$('vPanel');pn.hidden=!k;if(!k)return;
+  const pn=$('vPanel');pn.hidden=!k&&!S.vil.gate;
+  if(S.vil.gate){pn.innerHTML='<h3>'+T('vil.arena')+'</h3><p>'+T('vil.arenaInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.enter')+'</button>';return}
+  if(!k)return;
   const why=vBlock(k),c=vCost(k);
   let h='<h3>'+T('vil.'+k)+' <small>'+(L?T('level',L):'')+'</small></h3><p>'+vInfo(k,L)+'</p>';
   if(why!=='max')h+='<p class="next">'+T('vil.next',vInfo(k,L+1))+'</p><div class="cost">'+costLine(c)+'</div>';
   h+='<button class="vbtn" data-act="up"'+(why?' disabled':'')+'>'+(why==='max'?T('vil.max'):why==='center'?T('vil.needCenter'):L?T('vil.up',L+1):T('vil.build'))+'</button>';
+  if(k==='forge'&&L>0)h+='<button class="vbtn ghost" data-act="forge">⚒️ '+T('age.open')+'</button>';
   if(k==='market'&&L>0){   // מוכרים כל מה שיש בתרמיל, וקונים כל מה שהרמה של השוק מרשה
     const rs=Object.keys(RES.list),btn=(kind,r,ok,p)=>'<button data-act="'+kind+'" data-r="'+r+'"'+(ok?'':' disabled')+' aria-label="'+T('vil.'+kind)+' '+resName(r)+'"><bdi>'+vLot(r)+resIcon(r)+' · '+p+resIcon('coins')+'</bdi></button>';
     const sell=rs.filter(r=>vCanTrade('sell',r)&&bagHas(r)),buy=rs.filter(r=>vCanTrade('buy',r));
@@ -204,8 +208,11 @@ function villageHud(){
   pn.innerHTML=h;
 }
 $('vPanel').addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b||b.disabled||!S.vil||!S.vil.near)return;
+  const b=e.target.closest('button');if(!b||b.disabled||!S.vil)return;
   const a=b.dataset.act;
+  if(a==='go'){leaveVillage();return}
+  if(!S.vil.near)return;
+  if(a==='forge'){forgeOpen();return}
   if(a==='up')vUpgrade(S.vil.near);else if(a==='stash')stashMove(b.dataset.dir,b.dataset.r);else if(a==='craft')gearCraft(b.dataset.r);else vTrade(a,b.dataset.r);
   villageHud();
 });

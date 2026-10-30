@@ -12,7 +12,7 @@ const WANTED={
   loot:[
     {chance:0.5, key:'junk', items:true, orbs:2, heal:0, col:C.dim},
     {chance:0.3, key:'coins', orbs:12, heal:0, col:C.chalk},
-    {chance:0.15, key:'chest', orbs:25, heal:40, col:C.gold, res:{ruby:[0.3,1],sapphire:[0.3,1],bolt:[0.3,1],aqua:[0.3,1],amber:[0.3,1],cloth:[1,3]}},
+    {chance:0.15, key:'chest', orbs:25, heal:40, col:C.gold, res:{gem:[0.4,1],ruby:[0.3,1],sapphire:[0.3,1],bolt:[0.3,1],aqua:[0.3,1],amber:[0.3,1],cloth:[1,3]}},
     {chance:0.05, key:'treasure', orbs:50, heal:999, col:C.gold, party:true, res:{rubyF:[0.3,1],sapphireF:[0.3,1],boltF:[0.3,1],aquaF:[0.3,1],amberF:[0.3,1],star:[0.5,1],gold:[1,3],mythril:[0.5,1]}}
   ]
 };
@@ -40,9 +40,9 @@ function wantedUpdate(dt){
   if(wn.t<=0){wn.rumor={a:rand(0,6.28),t:rand(...WANTED.rumor)};banner(pick(T('wanted.rumors')),C.gold)}
 }
 function wantedAppear(a){
-  const d=rand(220,300),aa=a+rand(-WANTED.hint,WANTED.hint),k=1+S.t/80+S.bossCount*0.5;
+  const d=rand(220,300),aa=a+rand(-WANTED.hint,WANTED.hint),k=runK();
   const e={type:'wanted',wanted:true,x:P.x+Math.cos(aa)*d,y:P.y+Math.sin(aa)*d,hp:WANTED.hp*k,max:WANTED.hp*k,r:13,speed:WANTED.speed,
-    mult:{sword:1,gun:1},xp:0,dmg:0,flash:0,kx:0,ky:0,ph:0,told:false,life:WANTED.life,turn:0,side:1};
+    mult:{},xp:0,dmg:0,flash:0,kx:0,ky:0,ph:0,told:false,life:WANTED.life,turn:0,side:1};
   enemies.push(e);S.wn.e=e;S.wn.seen++;
   sparks(e.x,e.y,C.gold,16,220);banner(T('wanted.here'),C.gold);
 }

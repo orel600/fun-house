@@ -15,6 +15,7 @@
     <div class="lvl" id="lvl"></div>
     <button class="gearbtn" id="gearBtnRun" data-ta="gear.btn">🎒</button>
   </div>
+  <div class="runbar" id="runbar"><div class="runfill" id="runfill"></div></div>
   <div class="bossbar" id="bossbar" hidden>
     <div class="bossname"><span id="bossnm"></span><em id="bossweak"></em></div>
     <div class="bosstrack"><div class="bossfill" id="bossfill"></div></div>
@@ -47,6 +48,16 @@
     <div class="bag gres" id="gRes" role="group" data-ta="bagGroup"></div>
     <div class="gitems" id="gItems"></div>
     <div class="gdetail" id="gDetail"></div>
+  </div>
+</div>
+
+<!-- הנפחייה: Aging לציוד. הפריטים, הסיכוי, המחיר והכפתור (js/aging.js) -->
+<div class="ov gearov" id="ovForge" hidden>
+  <div class="panel gearpanel">
+    <div class="ghead"><h2 data-t="age.title"></h2><span id="fLevel"></span><button class="gclose" id="forgeClose" data-ta="gear.close">✕</button></div>
+    <div class="bag gres" id="fRes" role="group" data-ta="bagGroup"></div>
+    <div class="gitems" id="fItems"></div>
+    <div class="gdetail" id="fDetail"></div>
   </div>
 </div>
 
@@ -123,8 +134,10 @@
 <script src="js/lang.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/data.js"></script>
+<script src="js/dmg.js"></script>
 <script src="js/resources.js"></script>
 <script src="js/save.js"></script>
+<script src="js/run.js"></script>
 <script src="js/state.js"></script>
 <script src="js/spawn.js"></script>
 <script src="js/combat.js"></script>
@@ -137,6 +150,7 @@
 <script src="js/village.js"></script>
 <script src="js/quests.js"></script>
 <script src="js/gear.js"></script>
+<script src="js/aging.js"></script>
 <script src="js/stash.js"></script>
 <script src="js/heroes.js"></script>
 <script src="js/update.js"></script>

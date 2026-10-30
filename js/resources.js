@@ -55,6 +55,7 @@ const RES={
     amberC:  {fam:'rare',icon:'🟠',rar:2,sell:8,buy:30,elem:'earth',grade:0},
     amber:   {fam:'rare',icon:'🟠',rar:3,sell:20,buy:70,elem:'earth',grade:1},
     amberF:  {fam:'rare',icon:'🟠',rar:4,sell:50,buy:180,elem:'earth',grade:2},
+    gem:     {fam:'rare',icon:'💎',rar:2,sell:12,buy:45},   // אבן מגן: שומרת על פריט מירידה כשנכשלים ב-Aging (aging.js)
     star:    {fam:'rare',icon:'🌟',rar:4,sell:45,buy:160}
   },
   /* מה רואים בפס העליון בכל מקום (ניר: "לא חייבים לראות כל הזמן את כל המשאבים"). המפתח: המבנה שעומדים לידו.

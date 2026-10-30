@@ -26,7 +26,26 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .clock{text-align:center;font-family:var(--display);font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
 .clock small{display:block;font-family:var(--body);font-size:11px;color:var(--dim);margin-top:3px;font-weight:700}
 .lvl{flex:0 1 38%;text-align:end;font-weight:800;font-size:14px;letter-spacing:.02em}
+/* פס ההתקדמות של הריצה: יהלום לכל תחנה, עיגול לבוס בסוף. מתמלא מתחילת השורה, בכל שפה */
+.runbar{position:relative;height:6px;margin:10px 6px 0;background:var(--line);border-radius:3px}
+.runfill{position:absolute;inset-block:0;inset-inline-start:0;width:0;background:var(--chalk);opacity:.5;border-radius:3px}
+.mk{position:absolute;top:50%;width:10px;height:10px;margin-inline-start:-5px;margin-top:-5px;transform:rotate(45deg);background:var(--ink);border:2px solid var(--chalk)}
+.mk.elite{width:14px;height:14px;margin-inline-start:-7px;margin-top:-7px}
+.mk.boss{width:16px;height:16px;margin-inline-start:-8px;margin-top:-8px;border-radius:50%;border-color:var(--lilac)}
+.mk.done{background:var(--chalk)}
+.mk.boss.done{background:var(--lilac)}
 .bossbar{margin-top:10px}
+/* טלפון לרוחב: הגובה יקר. פסים צרים יותר, והטיימר והתחנה הבאה בשורה אחת */
+@media (orientation:landscape) and (max-height:500px){
+  .hud{padding-top:calc(env(safe-area-inset-top,0px) + 6px)}
+  .xpbar{height:10px}
+  .row{margin-top:5px}
+  .hp,.lvl{flex-basis:28%}
+  .clock{display:flex;align-items:baseline;gap:8px;font-size:19px}
+  .clock small{margin-top:0}
+  .runbar{margin-top:7px}
+  .bossbar{margin-top:6px}
+}
 .bossname{display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px}
 .bossname em{font-style:normal;color:var(--dim);font-weight:400}
 .bosstrack{height:9px;background:var(--line);border-radius:5px;overflow:hidden}
@@ -34,9 +53,8 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .ragetrack{height:4px;margin-top:4px;background:var(--line);border-radius:2px;overflow:hidden}
 .ragefill{height:100%;width:0;background:var(--blood);transition:width .15s}
 .swap{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 30px);right:calc(env(safe-area-inset-right,0px) + 22px);
-  width:88px;height:88px;border-radius:50%;border:3px solid var(--ember);background:rgba(18,22,36,.78);color:var(--ember);
+  width:88px;height:88px;border-radius:50%;border:3px solid var(--dt,var(--chalk));background:rgba(18,22,36,.78);color:var(--dt,var(--chalk));
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:800 12px var(--body);touch-action:none;cursor:pointer}
-.swap.gun{border-color:var(--tide);color:var(--tide)}
 .swap:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
 .swap.hint{animation:pulse .6s ease-in-out infinite alternate}
 @keyframes pulse{to{transform:scale(1.12);box-shadow:0 0 0 10px rgba(236,231,220,.12)}}
@@ -68,8 +86,9 @@ h1{font-size:46px} h2{font-size:30px}
   border-radius:12px;padding:13px 14px;display:flex;flex-direction:column;gap:3px;font:400 14px var(--body);cursor:pointer}
 .card b{font-size:17px}
 .card .tag{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--dim)}
-.card.sword{border-inline-start-color:var(--ember)}.card.sword .tag{color:var(--ember)}
-.card.gun{border-inline-start-color:var(--tide)}.card.gun .tag{color:var(--tide)}
+/* --dt: צבע סוג הנזק, נקבע בקוד (progression.js) */
+.card{border-inline-start-color:var(--dt,var(--dim))}.card .tag{color:var(--dt,var(--dim));display:flex;align-items:center;gap:4px}
+.dti{width:1.1em;height:1.1em;vertical-align:-0.15em;margin-inline-end:3px}
 /* בחירת דמות התחלה (js/heroes.js): שלושה כרטיסים בשורה. --hero: הצבע של הדמות */
 .heropanel{width:min(720px,100%)}
 .herocards{display:grid;grid-template-columns:repeat(3,1fr)}
@@ -197,6 +216,10 @@ h1{font-size:46px} h2{font-size:30px}
 .cmp .up{color:#7BE495;font-weight:800}.cmp .down{color:var(--blood);font-weight:800}
 .vbtn.ghost{background:transparent;border:1px solid var(--line);color:var(--chalk)}
 @media (prefers-reduced-motion:reduce){.gtile.pop{animation:none}}
+/* Aging (js/aging.js): הרמה בפינה של הפריט, והסיכוי גדול וברור */
+.gtile .gplus{position:absolute;top:0;inset-inline-start:2px;font:800 10px var(--body);color:var(--gold);direction:ltr}
+.gdetail .odds{font:800 17px var(--body);color:var(--gold)}
+.vbtn.ghost[aria-pressed="true"]{border-color:var(--tide);color:var(--tide)}
 /* לרוחב: המסך בצד ימין, כדי שהדמות במרכז והחגיגה שלה ייראו. מיקום על המסך ולא כיוון טקסט, ולכן right גם באנגלית */
 @media (orientation:landscape){
   .gearov{place-items:start end;background:linear-gradient(to right,transparent 40%,rgba(10,12,20,.7))}
