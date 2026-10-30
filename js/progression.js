@@ -31,6 +31,7 @@ function showIntro(b){
 function gameOver(){
   S.mode='over';joy=null;
   runEnd();   // השלל עובר לתרמיל (village.js)
+  gearLoot();   // לפעמים גם פריט ציוד (gear.js)
   if(S.t>best){best=S.t;try{localStorage.setItem('zm-best',String(best))}catch(e){}}
   $('sTime').textContent=fmt(S.t);$('sLvl').textContent=P.level;$('sBoss').textContent=S.bossCount;$('sBest').textContent=fmt(best);$('sCoins').textContent=S.bn.coins;$('sPicks').textContent=S.bn.taken;
   setTimeout(()=>{$('ovOver').hidden=false},700);
