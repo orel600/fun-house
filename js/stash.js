@@ -6,7 +6,7 @@
 const stashCap=()=>VILLAGE.b.stash.cap[vLv('stash')]||0;
 const stashUsed=()=>Object.values(SAVE.stash).reduce((n,v)=>n+v,0);
 const stashIcon=k=>VILLAGE.icon[k]||(gItem(k)?gIcon(k):'');
-const stashName=k=>VILLAGE.icon[k]?T('res.'+k):T('it.'+k);
+const stashName=k=>VILLAGE.icon[k]?T('res.'+k):gName(k);
 
 // מעביר לתוך המחסן (in) או בחזרה לתרמיל (out): משאב כולו, כמה שנכנס, ופריט אחד בכל לחיצה. מחזיר כמה עבר
 function stashMove(dir,k){

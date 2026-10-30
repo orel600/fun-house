@@ -184,6 +184,10 @@ h1{font-size:46px} h2{font-size:30px}
 .cmp .up{color:#7BE495;font-weight:800}.cmp .down{color:var(--blood);font-weight:800}
 .vbtn.ghost{background:transparent;border:1px solid var(--line);color:var(--chalk)}
 @media (prefers-reduced-motion:reduce){.gtile.pop{animation:none}}
+/* Aging (js/aging.js): הרמה בפינה של הפריט, והסיכוי גדול וברור */
+.gtile .gplus{position:absolute;top:0;inset-inline-start:2px;font:800 10px var(--body);color:var(--gold);direction:ltr}
+.gdetail .odds{font:800 17px var(--body);color:var(--gold)}
+.vbtn.ghost[aria-pressed="true"]{border-color:var(--tide);color:var(--tide)}
 /* לרוחב: המסך בצד ימין, כדי שהדמות במרכז והחגיגה שלה ייראו. מיקום על המסך ולא כיוון טקסט, ולכן right גם באנגלית */
 @media (orientation:landscape){
   .gearov{place-items:start end;background:linear-gradient(to right,transparent 40%,rgba(10,12,20,.7))}

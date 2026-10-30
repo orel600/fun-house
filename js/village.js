@@ -10,7 +10,7 @@ const VILLAGE={
   near:55,                        // כמה פיקסלים מקצה מבנה נחשב "לידו": נפתח הפאנל שלו ונאספת התוצרת
   max:5,                          // הרמה הכי גבוהה. מבנה לא עולה מעל מרכז הכפר
   gift:{coins:25,wood:20,stone:12},   // מתנת פתיחה, פעם אחת: מספיק לבנות מנסרה ומכרה
-  icon:{coins:'🪙',wood:'🪵',stone:'🪨',ore:'⛏️',bone:'🦴'},   // סדר המשאבים בממשק הוא הסדר כאן
+  icon:{coins:'🪙',wood:'🪵',stone:'🪨',ore:'⛏️',bone:'🦴',gem:'💎'},   // gem: אבן חן נדירה, מגינה ב-Aging (aging.js)   // סדר המשאבים בממשק הוא הסדר כאן
   gate:{x:0,y:480,r:44},
   /* איך מבנה נראה לפי רמה, כדי שכל שדרוג ייראה (ניר: "שידרגתי בניין בכפר גם צריך להיות אפקט").
      look: רצועות רמה. at: מאיזו רמה. model: איזה מודל (השמות ב-VIL3D.models). scale: גודל. deco: קישוטים סביב (VIL3D.deco). glow: זוהר.
@@ -21,7 +21,7 @@ const VILLAGE={
     center:{x:0,y:-190,r:92,
       look:[{at:1,model:'castle',scale:0.85,deco:[]},{at:3,model:'castle',scale:1,deco:['flag','flag']},{at:5,model:'castle',scale:1.1,deco:['flag','flag','flag','flag'],glow:C.gold}],
       cost:[null,null,{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50,ore:10},{coins:180,wood:120,stone:100,ore:30},{coins:350,wood:220,stone:200,ore:60}]},
-    forge:{x:-300,y:-30,r:66,     // נפחייה: בינתיים רק רמות. הציוד עצמו יגיע בהמשך
+    forge:{x:-300,y:-30,r:66,     // נפחייה: Aging לציוד (aging.js). הרמה קובעת עד איזה + אפשר לשדרג
       look:[{at:1,model:'tent',scale:1,deco:['barrel']},{at:3,model:'forge',scale:1,deco:['crate','barrel']},{at:5,model:'forge',scale:1.12,deco:['flag','flag','crate','barrel'],glow:C.ember}],
       cost:[null,{coins:20,wood:15,stone:10},{coins:50,wood:35,stone:25,ore:5},{coins:110,wood:70,stone:60,ore:15},{coins:220,wood:140,stone:120,ore:35},{coins:400,wood:250,stone:220,ore:70}]},
     mill:{x:300,y:-30,r:66,
@@ -46,8 +46,8 @@ const VILLAGE={
     grunt:{coins:[0.6,1],bone:[0.15,1]},
     shield:{coins:[0.8,2],ore:[0.12,1],bone:[0.2,1]},
     wisp:{coins:[0.8,2],bone:[0.3,1]},
-    wanted:{coins:[1,15]},
-    boss:{coins:[1,40],ore:[1,6],bone:[1,8]}
+    wanted:{coins:[1,15],gem:[0.3,1]},
+    boss:{coins:[1,40],ore:[1,6],bone:[1,8],gem:[0.5,1]}
   },
   winDelay:2.5                    // שניות אחרי שהבוס נופל, עד שחוזרים הביתה
 };
@@ -175,7 +175,7 @@ function costLine(c){return Object.keys(c).map(r=>'<span class="res'+(bagHas(r,c
 function vInfo(k,L){
   const B=VILLAGE.b[k];if(L<1)return T('vil.notBuilt');
   if(k==='center')return T('vil.info.center',L);
-  if(k==='forge')return T('vil.info.forge',T('vil.tiers')[L-1]);
+  if(k==='forge')return T('vil.info.forge',AGING.byForge[L]);
   if(k==='mill')return T('vil.info.mill',B.make.wood[L],B.cap[L]);
   if(k==='mine')return T('vil.info.mine',B.make.stone[L],B.make.ore[L],B.cap[L]);
   if(k==='market')return T('vil.info.market',Math.round(B.bonus*(L-1)*100));
@@ -192,6 +192,7 @@ function villageHud(){
   let h='<h3>'+T('vil.'+k)+' <small>'+(L?T('level',L):'')+'</small></h3><p>'+vInfo(k,L)+'</p>';
   if(why!=='max')h+='<p class="next">'+T('vil.next',vInfo(k,L+1))+'</p><div class="cost">'+costLine(c)+'</div>';
   h+='<button class="vbtn" data-act="up"'+(why?' disabled':'')+'>'+(why==='max'?T('vil.max'):why==='center'?T('vil.needCenter'):L?T('vil.up',L+1):T('vil.build'))+'</button>';
+  if(k==='forge'&&L>0)h+='<button class="vbtn ghost" data-act="forge">⚒️ '+T('age.open')+'</button>';
   if(k==='market'&&L>0){
     const M=VILLAGE.b.market;h+='<div class="trade">';
     for(const r in M.sell)h+='<button data-act="sell" data-r="'+r+'"'+(bagHas(r,M.lot)?'':' disabled')+'>'+T('vil.sell')+' '+M.lot+VILLAGE.icon[r]+' · +'+vPrice(r,'sell')*M.lot+VILLAGE.icon.coins+'</button>';
@@ -203,6 +204,7 @@ function villageHud(){
 }
 $('vPanel').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled||!S.vil||!S.vil.near)return;
+  if(b.dataset.act==='forge'){forgeOpen();return}
   if(b.dataset.act==='up')vUpgrade(S.vil.near);else if(b.dataset.act==='stash')stashMove(b.dataset.dir,b.dataset.r);else vTrade(b.dataset.act,b.dataset.r);
   villageHud();
 });
