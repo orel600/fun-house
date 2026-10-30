@@ -67,7 +67,7 @@ function vSettle(k){
 }
 function vCollect(k){
   const p=vSettle(k);if(!p)return 0;let n=0,y=P.y-50;
-  for(const r in p.have){const w=Math.floor(p.have[r]);if(w>0){bagAdd(r,w);p.have[r]-=w;n+=w;floatText(P.x,y,'+'+w+' '+VILLAGE.icon[r],C.gold,17);y-=20}}
+  for(const r in p.have){const w=Math.floor(p.have[r]);if(w>0){bagAdd(r,w);questEvent('collect',r,w);p.have[r]-=w;n+=w;floatText(P.x,y,'+'+w+' '+VILLAGE.icon[r],C.gold,17);y-=20}}
   if(n)saveNow();
   return n;
 }
@@ -85,7 +85,7 @@ function vBlock(k){
 function vUpgrade(k){
   if(vBlock(k))return false;
   vSettle(k);const c=vCost(k);for(const r in c)bagTake(r,c[r]);
-  SAVE.village[k]=vLv(k)+1;saveNow();
+  SAVE.village[k]=vLv(k)+1;questEvent('upgrade',k);saveNow();
   // חגיגה: אבק ופיגום, ואז פרץ, עמוד אור ו-+1. בזמן האבק המבנה מוצג כפיגום
   const B=VILLAGE.b[k],dust=celebrate(B.x,B.y,'upgrade','+1');S.vil.raise[k]=fxNow()+dust;
   setTimeout(()=>{if(S.vil)S.shake=Math.max(S.shake,6)},dust*1000);
@@ -116,10 +116,11 @@ function enterVillage(){
   for(const k in VILLAGE.b)vSettle(k);   // הייצור מאז הביקור הקודם
   if(!SAVE.gift){for(const r in VILLAGE.gift)bagAdd(r,VILLAGE.gift[r]);SAVE.gift=true;banner(T('vil.gift'),C.gold)}
   else banner(T('vil.home'),C.gold);
+  questsRefresh();   // יום חדש וקווסטים שנפתחו (quests.js)
   saveNow();
   villageUi(true);
 }
-function leaveVillage(){villageUi(false);startRun()}
+function leaveVillage(){villageUi(false);startRun();questEvent('reach','arena')}
 
 /* ---- כל פריים בכפר ---- */
 function villageUpdate(dt){
@@ -158,7 +159,7 @@ function runWon(){
 function runEnd(){
   if(S.lootDone)return;S.lootDone=true;
   const L=runLoot();if(S.bn&&S.bn.coins)L.coins=(L.coins||0)+S.bn.coins;
-  for(const r in L)bagAdd(r,L[r]);
+  for(const r in L){bagAdd(r,L[r]);questEvent('collect',r,L[r])}
   saveNow();
   $('overTitle').textContent=T(S.won?'vil.won':'fell');
   $('sLoot').innerHTML=bagLine(L)||T('vil.noLoot');

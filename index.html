@@ -19,6 +19,7 @@
     <div class="bosstrack"><div class="bossfill" id="bossfill"></div></div>
     <div class="ragetrack" id="ragetrack" hidden><div class="ragefill" id="ragefill"></div></div>
   </div>
+  <div class="qtrack" id="qTrack" hidden></div>
 </div>
 
 <button class="swap" id="swap" data-ta="swapWeapon">
@@ -27,7 +28,11 @@
 </button>
 
 <!-- הכפר: התרמיל למעלה, והפאנל של המבנה שלידו למטה (js/village.js) -->
-<div class="vhud" id="vhud" hidden><div class="bag" id="vBag" role="group" data-ta="bagGroup"></div></div>
+<div class="vhud" id="vhud" hidden><div class="bag" id="vBag" role="group" data-ta="bagGroup"></div>
+  <!-- הקווסטים: כפתור היומן בפינה, והיומן עצמו (js/quests.js) -->
+  <button class="qbtn" id="qBtn"><span aria-hidden="true">📜</span> <span data-t="q.log"></span><b id="qBadge" hidden></b></button>
+  <div class="qlog" id="qLog" hidden></div>
+</div>
 <div class="vpanel" id="vPanel" hidden></div>
 
 <div class="banner" id="banner"></div>
@@ -104,6 +109,7 @@
 <script src="js/bonus.js"></script>
 <script src="js/wanted.js"></script>
 <script src="js/village.js"></script>
+<script src="js/quests.js"></script>
 <script src="js/update.js"></script>
 <script src="js/rig.js"></script>
 <script src="js/fx.js"></script>
