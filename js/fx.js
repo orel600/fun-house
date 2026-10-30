@@ -7,6 +7,7 @@
 const CELEBRATE={
   upgrade:{dust:0.7,col:'#F4C74F',burst:34,speed:260,pillar:1.1,pillarW:50,pillarH:240,label:'+1'},
   rank:   {dust:0,  col:'#C7A6FF',burst:50,speed:320,pillar:1.4,pillarW:64,pillarH:320,label:''},
+  quest:  {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:40,pillarH:200,label:'✓'},
   weapon: {dust:0,  col:'#FF8A3D',burst:26,speed:220,pillar:0.8,pillarW:36,pillarH:180,label:'+1'},
   gear:   {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:44,pillarH:200,label:'+1'},  // פריט טוב יותר במסך הציוד
   // Aging בנפחייה (aging.js): ניצוצות בסדן כשמצליחים. כשנכשלים: אפר אפור שנופל, בלי עמוד אור, וצליל עצוב (sound: מזהה ב-SOUNDS)

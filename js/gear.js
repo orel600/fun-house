@@ -2,7 +2,7 @@
    כל פריט הוא שורה ב-GEAR.items. בתרמיל פריט נשמר לפי ה-id שלו, כמו משאב (SAVE.bag.oakSword=1), ומה שלבוש נשמר ב-SAVE.gear.
    הסטטים של מה שלבוש חלים על השחקן בתחילת כל ריצה: gearReset, נקרא מ-reset.
    שלל: בסוף ריצה נופלים לפעמים פריטים לתרמיל (gearLoot, נקרא מ-gameOver), ליד המשאבים שהכפר מטפל בהם.
-   המסך נפתח מכפתור בכפר. השמות והטקסטים ב-lang.js: 'it.<id>' לפריטים, 'st.<סטט>', 'orb.<סוג>' ו-'gear.*' */
+   המסך נפתח מכל מקום (כפתור בכפר ובזירה), ובזירה הריצה עוצרת. השמות והטקסטים ב-lang.js: 'it.<id>' לפריטים, 'st.<סטט>', 'orb.<סוג>' ו-'gear.*' */
 
 const GEAR={
   slots:{acc:2,orbit:[1,1,5,10,15]},   // orbit: מאיזו רמת דמות נפתחת כל משבצת. 2 פתוחות בהתחלה
@@ -21,6 +21,7 @@ const GEAR={
     oakBow:     {slot:'weapon',tier:0,w:'gun',icon:'🏹',stats:{gdmg:10},look:{model:'crossbow'}},
     ironBow:    {slot:'weapon',tier:1,w:'gun',icon:'🏹',stats:{gdmg:25},look:{model:'crossbow'}},
     goldBow:    {slot:'weapon',tier:3,w:'gun',icon:'🏹',stats:{gdmg:60,magnet:20},look:{model:'crossbow',glow:C.gold}},
+    oakStaff:   {slot:'weapon',tier:0,w:'gun',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'staff'}},   // הנשק של הקוסם: יורה כמו קשת
     boneCharm:  {slot:'acc',tier:0,icon:'🦴',stats:{hp:15}},
     ironRing:   {slot:'acc',tier:1,icon:'💍',stats:{regen:0.5}},
     swiftBoots: {slot:'acc',tier:2,icon:'👢',stats:{speed:8}},
@@ -78,10 +79,20 @@ function gearUnequip(slot,i){const id=gGet(slot,i);if(!id)return false;gSet(slot
 /* ---- בתחילת כל ריצה (ובכפר): מתנת פתיחה פעם אחת, והסטטים של הציוד חלים על השחקן ---- */
 function gearReset(){
   if(!SAVE.gearGift){GEAR.gift.forEach(id=>bagAdd(id));SAVE.gearGift=true;saveNow()}
-  const s=gearStats(),pc=k=>1+(s[k]||0)/100;
-  P.sw.dmg*=pc('sdmg');P.gn.dmg*=pc('gdmg');P.speed*=pc('speed');P.magnet*=pc('magnet');
-  P.maxHp+=s.hp||0;P.hp=P.maxHp;P.regen+=s.regen||0;
+  gApply(gearStats(),1);P.hp=P.maxHp;
   const w=gItem(SAVE.gear.weapon);if(w&&w.w)P.weapon=w.w;
+}
+// מלביש סטטים על השחקן (k=1) או מוריד אותם (k=-1). כך ציוד שמחליפים באמצע ריצה שומר על השדרוגים של הריצה
+function gApply(s,k){
+  const m=x=>Math.pow(1+(s[x]||0)/100,k);
+  P.sw.dmg*=m('sdmg');P.gn.dmg*=m('gdmg');P.speed*=m('speed');P.magnet*=m('magnet');
+  P.maxHp+=k*(s.hp||0);P.regen+=k*(s.regen||0);
+}
+// אחרי שינוי בציוד: מורידים את מה שהיה ומלבישים את החדש, מיד. חיים שנוספו מתמלאים, ונשק חדש נכנס ליד
+function gearLive(before,id){
+  const max0=P.maxHp;gApply(before,-1);gApply(gearStats(),1);
+  P.hp=Math.max(1,Math.min(P.maxHp,P.hp+Math.max(0,P.maxHp-max0)));
+  const w=gItem(id);if(w&&w.w&&P.weapon!==w.w){P.weapon=w.w;updateSwapBtn()}
 }
 
 /* ---- שלל בסוף ריצה ---- */
@@ -100,10 +111,11 @@ function gearLoot(){
 }
 const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gIcon(id)+' '+gName(id)+'</span>';
 
-/* ---- המסך: המשבצות למעלה, התרמיל באמצע, וההשוואה למטה.
+/* ---- המסך: המשבצות למעלה, התרמיל באמצע, וההשוואה למטה. נפתח מכפתור 🎒 בכפר ובזירה.
    לרוחב הוא בצד ימין של המסך, כדי שהדמות במרכז והחגיגה שלה ייראו ---- */
 const GUI={sel:null};   // מה נבחר: {id} מהתרמיל, או {slot,i} ממשבצת
-function gearOpen(){if(!S.vil||S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;$('ovGear').hidden=false;gearDraw()}
+// נפתח מכל מקום: מהכפר ומהזירה. בזירה הריצה עוצרת, כמו במסך השדרוג
+function gearOpen(){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;$('ovGear').hidden=false;gearDraw()}
 function gearClose(){$('ovGear').hidden=true;if(S.mode==='gear')S.mode='play'}
 
 const gSign=(k,v)=>'<bdi>'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T('st.'+k);
@@ -158,14 +170,15 @@ $('ovGear').addEventListener('click',e=>{
   if(b.dataset.id)GUI.sel={id:b.dataset.id};
   else if(b.dataset.slot)GUI.sel=gGet(b.dataset.slot,+b.dataset.i)?{slot:b.dataset.slot,i:+b.dataset.i}:null;
   else if(b.dataset.act==='equip'){
-    const r=gearEquip(GUI.sel.id);
+    const before=gearStats(),r=gearEquip(GUI.sel.id);
+    if(r)gearLive(before,GUI.sel.id);
     if(r){GUI.sel={slot:r.slot,i:r.i};
       // שיפור נראה: חגיגה על הדמות, והמשבצת קופצת
       if(r.better){celebrate(P.x,P.y-20,'gear',gIcon(gGet(r.slot,r.i)));GUI.pop=r}}
   }
-  else if(b.dataset.act==='unequip'){gearUnequip(GUI.sel.slot,GUI.sel.i);GUI.sel=null}
+  else if(b.dataset.act==='unequip'){const before=gearStats();gearUnequip(GUI.sel.slot,GUI.sel.i);gearLive(before);GUI.sel=null}
   gearDraw();
   if(GUI.pop){const t=document.querySelector('#gSlots [data-slot="'+GUI.pop.slot+'"][data-i="'+GUI.pop.i+'"]');if(t)t.classList.add('pop');GUI.pop=null}
 });
-$('gearBtn').addEventListener('click',gearOpen);
+$('gearBtn').addEventListener('click',gearOpen);$('gearBtnRun').addEventListener('click',gearOpen);
 addEventListener('keydown',e=>{if(e.code==='Escape'&&!$('ovGear').hidden)gearClose()});
