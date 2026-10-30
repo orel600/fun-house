@@ -6,7 +6,7 @@ function makeBoss(){
   const mobile=t.move/(t.move+t.still+0.001)>0.65;
   // מערבבים לפני המיון, כדי שבתיקו (למשל שני סוגים שלא השתמשת בהם בכלל) הבחירה תהיה אקראית
   const byUse=Object.keys(DMG.types).sort(()=>Math.random()-.5).sort((a,b)=>t.types[b]-t.types[a]);
-  const res=byUse[0],held=byUse.filter(k=>k!==res&&Object.values(P.dt).includes(k)),weak=held.length?held[held.length-1]:byUse[byUse.length-1];
+  const res=byUse[0],held=byUse.filter(k=>k!==res&&bossHeld().includes(k)),weak=held.length?held[held.length-1]:byUse[byUse.length-1];
   const w={ring:1,spiral:1,aimed:1,charge:1,shields:1,wisps:1,shock:1,mines:1};const learned=[T('learn.res',dtCol(res),T('dt.'+res))];
   if(role==='melee'){w.shock+=3;w.wisps+=3;learned.push(T('learn.melee'))}
   else{w.charge+=3;w.shields+=3;learned.push(T('learn.ranged'))}
@@ -23,6 +23,8 @@ function makeBoss(){
     x:p.x,y:p.y,r:34,hp,max:hp,speed:62,mult:{[res]:DMG.boss.resist,[weak]:DMG.boss.weak},res,weak,role,used:{...t.types},pats,p2,phase:1,patT:2.4,
     flash:0,kx:0,ky:0,ph:0,dmg:20,learned,spin:0,charge:null,spiral:0,spA:0,spT:0,rage:0,flee:0,rageMsg:0,rageShot:0};
 }
+// סוגי הנזק שבאמת ביד: של הנשקים שלבושים (weapons.js), ובלי נשק, של מה שתוקף עכשיו
+function bossHeld(){const h=wHeld().map(id=>P.dt[wUse(id)]);return h.length?h:[P.dt[P.weapon]]}
 function shootE(x,y,a,sp,r,dmg){eb.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r,dmg,life:5})}
 function doPattern(b,k){
   const aP=Math.atan2(P.y-b.y,P.x-b.x);

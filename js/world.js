@@ -79,7 +79,11 @@ function wGather(dt){
   if(!n)return;
   P.aim=Math.atan2(n.y-P.y,n.x-P.x);
   if(w.gt>0)return;w.gt=G.cd;
-  if(P.weapon==='sword'){P.sw.anim=0.2;P.sw.ang=P.aim}else{P.gn.t=P.gn.cd;P.gn.recoil=1}
+  // מקרוב: מכה מיד. מרחוק: הנשק שביד יורה (wFire ב-weapons.js), והמקור נפגע כשהקליע מגיע אליו
+  if(P.weapon==='sword'){P.sw.anim=0.2;P.sw.ang=P.aim;wNodeHit(n)}else wFire(1,{node:n,home:0,pierce:0});
+}
+function wNodeHit(n){
+  const G=WORLD.gather;if(n.dead)return;
   n.hp-=G.dmg;n.flash=0.09;sfx('hit');sparks(n.x,n.y-n.r*0.5,wKind(n.kind).col,5,160);
   if(n.hp<=0)wNodeDown(n);
 }
@@ -136,9 +140,10 @@ function worldUpdate(dt){
   }
   attack(dt);wGather(dt);
   wFoes(dt);if(S.mode!=='play')return;
-  for(const b of pb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
+  for(const b of pb){shotFly(b,dt);
+    const n=b.node;if(n&&b.life>0&&Math.hypot(n.x-b.x,n.y-b.y)<n.r+4){b.life=0;wNodeHit(n);if(b.shot==='bolt')sparks(b.x,b.y,dtCol(P.dt.gun),WEAPONS.bolt.burst,140);continue}
     for(const e of enemies){if(e.dead||b.hit.has(e)||b.life<=0)continue;
-      if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4){b.hit.add(e);damage(e,P.gn.dmg*dmgK(),'gun',Math.atan2(b.vy,b.vx));if(b.pierce--<=0)b.life=0}}}
+      if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4)shotHit(b,e)}}
   pb=pb.filter(b=>b.life>0);
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;

@@ -43,10 +43,10 @@ function update(dt){
   for(let i=0;i<enemies.length;i++){const a=enemies[i];for(let j=i+1;j<enemies.length;j++){const b=enemies[j];const dx=b.x-a.x,dy=b.y-a.y,rr=a.r+b.r;if(Math.abs(dx)>rr||Math.abs(dy)>rr)continue;const d=Math.hypot(dx,dy)||.01;if(d<rr){const p=(rr-d)/2,ux=dx/d,uy=dy/d;if(!a.isBoss){a.x-=ux*p;a.y-=uy*p}if(!b.isBoss){b.x+=ux*p;b.y+=uy*p}}}}
   // player bullets
   for(const b of pb){
-    b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
+    shotFly(b,dt);   // חץ טס ישר, קסם מתביית (weapons.js)
     for(const e of enemies){
       if(e.dead||b.hit.has(e)||b.life<=0)continue;
-      if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4){b.hit.add(e);damage(e,P.gn.dmg*dmgK(),'gun',Math.atan2(b.vy,b.vx));if(b.pierce--<=0)b.life=0}
+      if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4)shotHit(b,e);
     }
   }
   pb=pb.filter(b=>b.life>0);

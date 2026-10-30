@@ -7,7 +7,7 @@ const keys={};
 const newTrack=()=>({sword:0,gun:0,move:0,still:0,dist:0,distN:0,types:Object.fromEntries(Object.keys(DMG.types).map(k=>[k,0]))});
 
 function reset(){
-  P={x:0,y:0,r:14,hp:100,maxHp:100,speed:MOVE.speed,weapon:'sword',aim:0,face:0,walk:0,inv:0,moving:false,
+  P={x:0,y:0,r:14,hp:100,maxHp:100,speed:MOVE.speed,weapon:'sword',wt:'sword',wid:null,aim:0,face:0,walk:0,inv:0,moving:false,
     sw:{dmg:20,range:80,arc:2.3,cd:0.55,t:0,anim:0,ang:0},
     gn:{dmg:9,cd:0.3,t:0,speed:580,multi:1,pierce:0,recoil:0},
     magnet:90,level:1,xp:0,next:6,swapLvl:0,swapBuff:0,regen:0,

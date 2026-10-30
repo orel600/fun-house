@@ -12,16 +12,16 @@ const GEAR={
   stats:{sdmg:{unit:'%',w:1},gdmg:{unit:'%',w:1},hp:{unit:'',w:0.4},speed:{unit:'%',w:1.5},magnet:{unit:'%',w:0.3},regen:{unit:'',w:8}},
   // חפצים מסתובבים: בינתיים רק סוג וצורה. ההתנהגות שלהם תגיע במשימה "חפצים מסתובבים" (orbit.js)
   orbit:{attack:'🔥',defense:'🛡️',control:'❄️',support:'💚',luck:'🍀'},
-  /* הפריטים. slot: weapon / acc / orbit. נעליים (type:'boots') הן אקססורי שנותן מהירות (speed). tier: מספר ב-tiers. w: איזה נשק (sword חרב, gun קשת), ואיתו מתחילים את הריצה.
+  /* הפריטים. slot: weapon / acc / orbit. נעליים (type:'boots') הן אקססורי שנותן מהירות (speed). tier: מספר ב-tiers. w: סוג הנשק ב-WEAPONS (weapons.js): איך הוא תוקף. איתו מתחילים את הריצה.
      look: איך הפריט נראה, כדי שכל שדרוג ייראה. tint צבע, glow זוהר, model המודל בתלת-ממד (w_<שם> מ-Fantasy Weapons, והחומר לפי tier) */
   items:{
     oakSword:   {slot:'weapon',tier:0,w:'sword',icon:'🗡️',stats:{sdmg:10},look:{model:'w_sword_A'}},
     ironSword:  {slot:'weapon',tier:1,w:'sword',icon:'🗡️',stats:{sdmg:25},look:{model:'w_sword_B'}},
     silverBlade:{slot:'weapon',tier:2,w:'sword',icon:'⚔️',stats:{sdmg:40,speed:5},look:{model:'w_sword_D',glow:'#DCE3EA'}},
-    oakBow:     {slot:'weapon',tier:0,w:'gun',icon:'🏹',stats:{gdmg:10},look:{model:'w_bow_A_withString'}},
-    ironBow:    {slot:'weapon',tier:1,w:'gun',icon:'🏹',stats:{gdmg:25},look:{model:'w_bow_A_withString'}},
-    goldBow:    {slot:'weapon',tier:3,w:'gun',icon:'🏹',stats:{gdmg:60,magnet:20},look:{model:'w_bow_B_withString',glow:C.gold}},
-    oakStaff:   {slot:'weapon',tier:0,w:'gun',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'w_staff_B'}},   // הנשק של הקוסם: יורה כמו קשת
+    oakBow:     {slot:'weapon',tier:0,w:'bow',icon:'🏹',stats:{gdmg:10},look:{model:'w_bow_A_withString'}},
+    ironBow:    {slot:'weapon',tier:1,w:'bow',icon:'🏹',stats:{gdmg:25},look:{model:'w_bow_A_withString'}},
+    goldBow:    {slot:'weapon',tier:3,w:'bow',icon:'🏹',stats:{gdmg:60,magnet:20},look:{model:'w_bow_B_withString',glow:C.gold}},
+    oakStaff:   {slot:'weapon',tier:0,w:'staff',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'w_staff_B'}},   // הנשק של הקוסם: קסם שמתביית
     boneCharm:  {slot:'acc',tier:0,icon:'🦴',stats:{hp:15}},
     ironRing:   {slot:'acc',tier:1,icon:'💍',stats:{regen:0.5}},
     starterBoots:{slot:'acc',tier:0,type:'boots',icon:'👟',stats:{speed:10}},   // הפרס של הקווסט הראשון של ראש הכפר (quests.js)
@@ -81,7 +81,7 @@ function gearUnequip(slot,i){const id=gGet(slot,i);if(!id)return false;gSet(slot
 function gearReset(){
   if(!SAVE.gearGift){GEAR.gift.forEach(id=>bagAdd(id));SAVE.gearGift=true;saveNow()}
   gApply(gearStats(),1);P.hp=P.maxHp;
-  const w=gItem(SAVE.gear.weapon);if(w&&w.w)P.weapon=w.w;
+  wEquip(SAVE.gear.weapon);   // הנשק שלבוש ביד, ואיתו איך תוקפים (weapons.js)
 }
 // מלביש סטטים על השחקן (k=1) או מוריד אותם (k=-1). כך ציוד שמחליפים באמצע ריצה שומר על השדרוגים של הריצה
 function gApply(s,k){
@@ -93,7 +93,7 @@ function gApply(s,k){
 function gearLive(before,id){
   const max0=P.maxHp;gApply(before,-1);gApply(gearStats(),1);
   P.hp=Math.max(1,Math.min(P.maxHp,P.hp+Math.max(0,P.maxHp-max0)));
-  const w=gItem(id);if(w&&w.w&&P.weapon!==w.w){P.weapon=w.w;updateSwapBtn()}
+  if(P.wid!==SAVE.gear.weapon)wEquip(SAVE.gear.weapon);
 }
 
 /* ---- שלל בסוף ריצה ---- */
@@ -130,7 +130,7 @@ function gCompare(id,old){
   return '<p class="cmp">'+ks.map(k=>{const d=(a[k]||0)-(b[k]||0);return '<span class="'+(d>0?'up':'down')+'">'+gSign(k,d)+'</span>'}).join('')+'</p>';
 }
 function gTile(id,attrs,extra){
-  const it=gItem(id),cls='gtile'+(it&&it.w?' '+it.w:'');
+  const it=gItem(id),cls='gtile'+(it&&it.w?' '+WEAPONS[it.w].use:'');
   if(!it)return '<button class="'+cls+' empty" '+attrs+'>'+extra+'</button>';
   const glow=(it.look||{}).glow;
   return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gIcon(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+extra+'</button>';
