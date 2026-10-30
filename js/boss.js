@@ -68,4 +68,5 @@ function bossDown(b){
   eb=[];waves=[];mines=[];S.hitstop=0.25;S.slow=0.8;S.shake=14;
   banner(T('bossDown',b.name),C.gold);
   P.track={sword:0,gun:0,move:0,still:0,dist:0,distN:0};
+  runWon();   // אחרי רגע חוזרים לכפר עם השלל (village.js)
 }

@@ -1,27 +1,29 @@
 /* בונה את הדמויות בתלת-ממד מהחבילות החינמיות של KayKit, ואת three.js, לשני קבצים שהמשחק טוען כרגיל.
    זה לא חלק מהמשחק ולא רץ בבדיקה. מריצים רק כשמוסיפים או מחליפים דמות או אנימציה.
 
-   1. מורידים את שתי החבילות (CC0, מותר הכל, בלי קרדיט חובה):
+   1. מורידים את שלוש החבילות (CC0, מותר הכל, בלי קרדיט חובה). בווינדוס: לתיקייה עם נתיב קצר, למשל C:\kk, אחרת git נכשל על שמות ארוכים:
       git clone --depth 1 https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0 ../kaykit-adv
       git clone --depth 1 https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0 ../kaykit-skel
+      git clone --depth 1 https://github.com/KayKit-Game-Assets/KayKit-Medieval-Hexagon-Pack-1.0 ../kaykit-hex
    2. npm i --no-save three@0.186.1 esbuild @gltf-transform/core @gltf-transform/functions @gltf-transform/extensions sharp
-   3. node tools/build3d.js ../kaykit-adv ../kaykit-skel
+   3. node tools/build3d.js ../kaykit-adv ../kaykit-skel ../kaykit-hex
 
    יוצא: js/vendor/three-bundle.js (three.js בלי import, כי המשחק נפתח גם מ-file://)
-          js/models3d.js (כל הדמויות והאנימציות, מוטמעות בקובץ JS מאותה סיבה)
+          js/models3d.js (כל הדמויות, האנימציות ומבני הכפר, מוטמעות בקובץ JS מאותה סיבה)
 
    כל הדמויות בחבילות האלה בנויות על אותו שלד (41 עצמות באותם שמות), ולכן אנימציה אחת עובדת על כולן.
-   מה נכנס: הטבלאות CHARS, PROPS ו-ANIMS למטה. דמות או אנימציה חדשה = שורה חדשה כאן ובטבלה ב-js/render3d.js */
+   מה נכנס: הטבלאות CHARS, PROPS, ANIMS ו-BUILDS למטה. דמות או אנימציה חדשה = שורה חדשה כאן ובטבלה ב-js/render3d.js */
 const path=require('path'),fs=require('fs');
 const {NodeIO}=require('@gltf-transform/core');
 const {ALL_EXTENSIONS}=require('@gltf-transform/extensions');
 const {prune,dedup,resample,textureCompress}=require('@gltf-transform/functions');
 const sharp=require('sharp');
 
-const [advDir,skelDir]=process.argv.slice(2);
-if(!advDir||!skelDir){console.log('שימוש: node tools/build3d.js <תיקיית Adventurers> <תיקיית Skeletons>');process.exit(1)}
+const [advDir,skelDir,hexDir]=process.argv.slice(2);
+if(!advDir||!skelDir||!hexDir){console.log('שימוש: node tools/build3d.js <תיקיית Adventurers> <תיקיית Skeletons> <תיקיית Medieval Hexagon>');process.exit(1)}
 const adv=p=>path.join(advDir,'addons/kaykit_character_pack_adventures',p);
 const skel=p=>path.join(skelDir,'addons/kaykit_character_pack_skeletons',p);
+const hex=p=>path.join(hexDir,'addons/kaykit_medieval_hexagon_pack/Assets/gltf',p);
 const ROOT=path.join(__dirname,'..');
 
 // דמויות: מאיזה קובץ, ואילו חלקים נשארים (כל השאר, בעיקר נשקים אחרים, נמחק)
@@ -44,6 +46,23 @@ const PROPS={
 const ANIMS={
   hero:{src:adv('Characters/gltf/Knight.glb'),keep:['Idle','Running_A','Running_B','1H_Melee_Attack_Slice_Horizontal','1H_Ranged_Shoot','Hit_A','Death_A','Cheer','2H_Melee_Attack_Spin','2H_Melee_Attack_Chop']},
   skel:{src:skel('Characters/gltf/Skeleton_Minion.glb'),keep:['Walking_D_Skeletons','Running_C','Hit_B','Death_C_Skeletons','Spawn_Ground_Skeletons','1H_Melee_Attack_Chop','Spellcasting','Idle_Combat','Taunt']}
+};
+// מבני הכפר וקישוטים (Medieval Hexagon). המפתח מתחיל ב-v_, ומי משתמש במה: VIL3D ב-js/render3d.js
+const BUILDS={
+  v_castle:{src:hex('buildings/blue/building_castle_blue.gltf')},
+  v_forge: {src:hex('buildings/blue/building_blacksmith_blue.gltf')},
+  v_mill:  {src:hex('buildings/blue/building_lumbermill_blue.gltf')},
+  v_mine:  {src:hex('buildings/blue/building_mine_blue.gltf')},
+  v_market:{src:hex('buildings/blue/building_market_blue.gltf')},
+  v_site:  {src:hex('buildings/neutral/building_scaffolding.gltf')},
+  v_gate:  {src:hex('buildings/neutral/wall_straight_gate.gltf')},
+  v_treeA: {src:hex('decoration/nature/tree_single_A.gltf')},
+  v_treeB: {src:hex('decoration/nature/tree_single_B.gltf')},
+  v_hills: {src:hex('decoration/nature/hills_A_trees.gltf')},
+  v_rock:  {src:hex('decoration/nature/rock_single_C.gltf')},
+  v_lumber:{src:hex('decoration/props/resource_lumber.gltf')},
+  v_stone: {src:hex('decoration/props/resource_stone.gltf')},
+  v_flag:  {src:hex('decoration/props/flag_blue.gltf')}
 };
 const TEX=256;   // גודל הטקסטורה. החבילות משתמשות בפלטת צבעים, אז 256 נראה כמו 1024
 
@@ -69,12 +88,13 @@ n.getMesh().dispose();n.dispose()}
   const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
   for(const [k,c] of Object.entries(CHARS))add(k,await slim(await io.read(c.src),{keepMeshes:c.keep}));
   for(const [k,c] of Object.entries(PROPS))add(k,await slim(await io.read(c.src),{}));
+  for(const [k,c] of Object.entries(BUILDS))add(k,await slim(await io.read(c.src),{}));
   for(const [k,c] of Object.entries(ANIMS)){
     const doc=await io.read(c.src),miss=c.keep.filter(n=>!doc.getRoot().listAnimations().some(a=>a.getName()===n));
     if(miss.length)throw new Error('אנימציה חסרה ב-'+k+': '+miss.join(', '));
     add('anim_'+k,await slim(doc,{keepMeshes:null,keepAnims:c.keep}));
   }
-  const head='/* נוצר אוטומטית ע"י tools/build3d.js. לא עורכים ביד.\n   דמויות ואנימציות: KayKit Adventurers ו-Skeletons מאת Kay Lousberg (www.kaylousberg.com), רישיון CC0.\n   מוטמעות כאן כטקסט ולא כקבצים, כי המשחק נפתח גם מ-file:// ושם הדפדפן לא טוען קבצים לבד */\n';
+  const head='/* נוצר אוטומטית ע"י tools/build3d.js. לא עורכים ביד.\n   דמויות, אנימציות ומבנים: KayKit Adventurers, Skeletons ו-Medieval Hexagon מאת Kay Lousberg (www.kaylousberg.com), רישיון CC0.\n   מוטמעות כאן כטקסט ולא כקבצים, כי המשחק נפתח גם מ-file:// ושם הדפדפן לא טוען קבצים לבד */\n';
   fs.writeFileSync(path.join(ROOT,'js/models3d.js'),head+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
 
   // three.js בלי import: חבילה אחת שמגדירה את THREE גלובלי

@@ -26,6 +26,10 @@
   <span id="swaplbl"></span>
 </button>
 
+<!-- הכפר: התרמיל למעלה, והפאנל של המבנה שלידו למטה (js/village.js) -->
+<div class="vhud" id="vhud" hidden><div class="bag" id="vBag" role="group" data-ta="bagGroup"></div></div>
+<div class="vpanel" id="vPanel" hidden></div>
+
 <div class="banner" id="banner"></div>
 
 <div class="ov" id="ovStart">
@@ -73,7 +77,7 @@
 
 <div class="ov" id="ovOver" hidden>
   <div class="panel">
-    <h2 data-t="fell"></h2>
+    <h2 id="overTitle" data-t="fell"></h2>
     <div class="stats">
       <div class="stat"><span data-t="statTime"></span><b id="sTime">0:00</b></div>
       <div class="stat"><span data-t="statLevel"></span><b id="sLvl">1</b></div>
@@ -81,9 +85,10 @@
       <div class="stat"><span data-t="statBest"></span><b id="sBest">0:00</b></div>
       <div class="stat"><span data-t="statCoins"></span><b id="sCoins">0</b></div>
       <div class="stat"><span data-t="statPicks"></span><b id="sPicks">0</b></div>
+      <div class="stat wide"><span data-t="statLoot"></span><b id="sLoot" class="bag"></b></div>
     </div>
     <p class="sub" data-t="nextRun"></p>
-    <button class="go" id="againBtn" data-t="again"></button>
+    <button class="go" id="againBtn" data-t="toVillage"></button>
   </div>
 </div>
 
@@ -98,6 +103,7 @@
 <script src="js/progression.js"></script>
 <script src="js/bonus.js"></script>
 <script src="js/wanted.js"></script>
+<script src="js/village.js"></script>
 <script src="js/update.js"></script>
 <script src="js/rig.js"></script>
 <script src="js/vendor/three-bundle.js"></script>
