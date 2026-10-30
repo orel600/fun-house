@@ -34,7 +34,8 @@ function runGive(D,x,y){
     const [ch,n,from]=D[r];if(from&&S.t<from)continue;
     const t=lootTier(r);if(t>=pf)hasRare=true;
     if(Math.random()>=ch*(t>=pf?boost:1))continue;
-    L[r]=(L[r]||0)+n;got.push(r);top=Math.max(top,t);
+    // נופל לרצפה ונאסף כשעוברים לידו (drops.js). בחדר הבונוס נכנס ישר לשלל
+    if(S.room)L[r]=(L[r]||0)+n;else dropSpawn(r,n,x,y+20);got.push(r);top=Math.max(top,t);
     const tr=RES.rarity[t];(S.drops||(S.drops=[0,0,0,0,0]))[t]+=n;
     if(r!=='coins'){floatText(x,fy,resIcon(r)+(n>1?n:''),t?tr.col:C.gold,16);fy-=18}
     if(tr.beam)(S.beams||(S.beams=[])).push({x:x+rand(-10,10),y:y+20,h:tr.beam,col:tr.col,t:LOOT.beam});

@@ -18,16 +18,25 @@ const WORLD={
   fields:[{kind:'tree',n:14,x:-610,y:-210,r:260},{kind:'tree',n:5,x:145,y:210,r:170},{kind:'bush',n:5,x:-335,y:65,r:130},
           {kind:'rock',n:9,x:610,y:-190,r:230},{kind:'copper',n:4,x:785,y:-400,r:135},{kind:'iron',n:2,x:880,y:-240,r:75},{kind:'rock',n:3,x:-210,y:240,r:125}],
   regrow:45,                             // שניות עד שמקור שנשבר צומח מחדש
-  /* אויבים: קבוצות שמסתובבות ליד הבית שלהן. type: מ-ETYPES. creature: יצור משאב (data.js), ליד המקור שלו */
+  /* אויבים: קבוצות שמסתובבות ליד הבית שלהן. type: מ-ETYPES. creature: יצור משאב (data.js), ליד המקור שלו.
+     ראשונות: מפלצות קלות ממש מחוץ לשער, הדבר הראשון ששחקן חדש פוגש. מהן לומדים איך נראים קרב, מספרי נזק ושלל (ניר) */
   foes:[
+    {type:'grunt',n:2,x:-185,y:-450,r:95},{type:'grunt',n:2,x:190,y:-430,r:95},{type:'grunt',n:3,x:0,y:-320,r:100},
     {type:'grunt',n:3,x:-100,y:-180,r:140},{type:'grunt',n:3,x:305,y:225,r:140},
     {type:'wisp',n:2,x:-510,y:95,r:150},{type:'shield',n:2,x:450,y:50,r:130},
     {type:'treant',creature:true,n:2,x:-690,y:-305,r:170},{type:'golem',creature:true,n:2,x:655,y:-210,r:150},
     {type:'crawler',creature:true,n:2,x:785,y:-385,r:105},{type:'sprite',creature:true,n:2,x:-335,y:65,r:115}
   ],
-  aggro:240, leash:480,                  // מאיזה מרחק אויב רודף, וכמה רחוק מהבית שלו הוא מוכן ללכת
+  aggro:240,                             // מאיזה מרחק אויב רודף
   wander:0.4,                            // מהירות ההסתובבות ליד הבית, יחסית לרדיפה
-  back:40,                               // שניות עד שקבוצה שנוקתה חוזרת (רק כשהשחקן רחוק ממנה)
+  far:300,                               // קבוצה שנוקתה חוזרת רק כשהשחקן רחוק ממנה לפחות כך, כדי שלא תצוץ מול העיניים
+  /* כמה קשה, לפי המרחק של בית הקבוצה מהשער לכפר: ככל שמתרחקים, קשה יותר. to: עד איזה מרחק. hp, dmg, speed: פי כמה מהרגיל (ETYPES).
+     leash: כמה רחוק מהבית האויב מוכן לרדוף לפני שהוא חוזר. back: שניות עד שקבוצה שנוקתה חוזרת */
+  zones:[
+    {id:'start',to:360, hp:0.35,dmg:0.25,speed:0.6, leash:240,back:20},
+    {id:'near', to:800, hp:0.7, dmg:0.6, speed:0.85,leash:360,back:35},
+    {id:'far',  to:1e9, hp:1,   dmg:1,   speed:1,   leash:480,back:45}
+  ],
   regen:4,                               // חיים לשנייה כשאין אויב קרוב
   decor:{trees:74,hills:14}              // קישוטים מחוץ לגבול
 };
@@ -63,7 +72,7 @@ function wNodes(){
       out.push({node:true,id:fi+'_'+i,kind:F.kind,x,y,r:K.r,hp:K.hp,max:K.hp,mult:multOf(K.tags),flash:0,back:0,regrow:WORLD.regrow});i++}});
   return out;
 }
-// מה שנפל בעולם (ממקור או מאויב, runDrop ב-village.js) עובר מיד לתרמיל ונשמר. שם הוא בסיכון
+// מה שנאסף מהרצפה בעולם (drops.js) עובר מיד לתרמיל ונשמר. שם הוא בסיכון
 function wLootIn(){
   const L=S.loot;if(!L)return;let any=false;
   for(const r in L)if(L[r]>0){bagAdd(r,L[r]);questEvent('gather',r,L[r]);S.wd.got[r]=(S.wd.got[r]||0)+L[r];any=true}
@@ -71,9 +80,12 @@ function wLootIn(){
 }
 
 /* ---- אויבים: קבוצה לכל שורה ב-WORLD.foes ---- */
+// האזור של קבוצה, לפי המרחק של הבית שלה מהשער לכפר
+const wZone=G=>WORLD.zones.find(z=>Math.hypot(G.x-WORLD.home.x,G.y-WORLD.home.y)<z.to);
 function wSpawn(G,i){
-  if(!ETYPES[G.type])return;
-  for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r);
+  if(!ETYPES[G.type])return;const Z=wZone(G);
+  for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp);
+    e.dmg*=Z.dmg;e.speed*=Z.speed;e.zone=Z.id;
     e.xp=0;e.home=i;e.creature=!!G.creature}   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
 }
 function wFoes(dt){
@@ -84,7 +96,7 @@ function wFoes(dt){
     alive[e.home]++;
     const G=WORLD.foes[e.home],dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;
     let mx=0,my=0,sp=e.speed;
-    if(d<WORLD.aggro&&Math.hypot(P.x-G.x,P.y-G.y)<WORLD.leash){mx=dx/d;my=dy/d;
+    if(d<WORLD.aggro&&Math.hypot(P.x-G.x,P.y-G.y)<wZone(G).leash){   // רודף, אבל לא רחוק מהבית. אחרת חוזר להסתובב שםmx=dx/d;my=dy/d;
       if(e.type==='wisp'){if(d<170){mx=-mx;my=-my}e.shoot-=dt;if(e.shoot<=0){e.shoot=rand(1.8,2.8);shootE(e.x,e.y,Math.atan2(dy,dx),175,6,8)}}}
     else{   // מסתובב ליד הבית
       if(e.wx==null||Math.hypot(e.wx-e.x,e.wy-e.y)<12){const a=rand(0,6.28),r=rand(0,G.r);e.wx=G.x+Math.cos(a)*r;e.wy=G.y+Math.sin(a)*r}
@@ -95,7 +107,7 @@ function wFoes(dt){
   }
   // קבוצה שנוקתה חוזרת אחרי זמן, כשהשחקן רחוק ממנה
   WORLD.foes.forEach((G,i)=>{const g=S.wd.groups[i];if(alive[i]||!ETYPES[G.type])return;
-    if(g.t<=0)g.t=WORLD.back;else if((g.t-=dt)<=0&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+500)wSpawn(G,i);else g.t=Math.max(g.t,0.01)});
+    if(g.t<=0)g.t=wZone(G).back;else if((g.t-=dt)<=0&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+WORLD.far){wSpawn(G,i);g.n=(g.n||0)+1}else g.t=Math.max(g.t,0.01)});
 }
 
 /* ---- כל פריים בעולם ---- */
@@ -120,7 +132,7 @@ function worldUpdate(dt){
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
   wantedUpdate(dt);
-  wLootIn();
+  dropsUpdate(dt);wLootIn();
   if(!nearest(WORLD.aggro))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}

@@ -158,6 +158,7 @@ function runWon(){
 // נקרא מ-gameOver, גם במוות וגם בניצחון: השלל עובר לתרמיל ונשמר
 function runEnd(){
   if(S.lootDone)return;S.lootDone=true;
+  dropsCollectAll();   // מה שנשאר על הרצפה (drops.js)
   const L=runLoot();if(S.bn&&S.bn.coins)L.coins=(L.coins||0)+S.bn.coins;
   for(const r in L){bagAdd(r,L[r]);questEvent('collect',r,L[r])}
   saveNow();

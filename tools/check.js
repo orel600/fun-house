@@ -49,6 +49,7 @@ function botStep({god,en}){
   // סוף ריצה: רושמים איך נגמרה ומה השלל, וחוזרים לכפר
   if(S.mode==='over'){
     if(S.won)L.won??=at;else L.died??=at;
+    L.dropsArena??=JSON.stringify(dropStats());   // שלל על הרצפה בזירה: כמה נפל, כמה נאסף בהליכה, וכמה נאסף לבד בסוף
     L.gearLoot??=(S.gearLoot||[]).join(', ');
     if(vis('ovOver')&&!m.home){   // צעד אחד מסתכלים על המסך (וצילום), ובצעד הבא חוזרים
       if(L.lootTxt==null)L.lootTxt=document.getElementById('sLoot').innerText.replace(/\s+/g,' ').trim();
@@ -81,7 +82,7 @@ function botStep({god,en}){
   const qa=SAVE.quests.active[m.qid];if(qa){L.qProg=qa.p[0];if(qa.r)L.qReadyAt??=at}
   if(!document.getElementById('qTrack').hidden)L.qTrack??=document.getElementById('qTrack').textContent;
   L.hpTxt=document.getElementById('hpTxt').textContent;L.xpTxt=document.getElementById('xpTxt').textContent;
-  for(const f of floats)if(/^\+\d/.test(f.txt))L.gainMax=Math.max(L.gainMax||0,+f.txt.slice(1));
+  for(const f of floats)if(/^\+\d+$/.test(f.txt))L.gainMax=Math.max(L.gainMax||0,+f.txt.slice(1));
   // החלפה רק בין נשקים שלבושים. עם נשק אחד הכפתור מוסתר, ובודקים את זה
   const useWeapon=w=>{if(P.weapon!==w&&wHeld().length>1){swapWeapon();L.swaps++;m.swapAt=S.t}};
   L.swapBtn=document.getElementById('swap').hidden===(wHeld().length<2);L.nHeld=wHeld().length;
@@ -289,8 +290,20 @@ function worldBot(m,L,god){
     document.getElementById('wRespawn').click();L.wRespawn=!!S.vil&&document.getElementById('ovWDeath').hidden;m.wp='done';return L}
   if(god&&m.wp!=='die')P.hp=P.maxHp;
   if(!m.wp){m.wp='gather';L.wEnter=!S.vil&&S.mode==='play';L.wName=document.getElementById('wName').textContent;L.wHud=vis('whud')&&!vis('vhud');
-    L.wNodes=S.nd.list.length;L.wFoes=enemies.length;L.wCreatures=enemies.filter(e=>e.creature).length;m.w0=SAVE.bag.wood||0;m.wt=W.t;return stay()}
-  if(m.wp==='gather'){   // הולכים לעץ הכי קרוב ועומדים לידו עד שהוא נשבר
+    L.wNodes=S.nd.list.length;L.wFoes=enemies.length;L.wCreatures=enemies.filter(e=>e.creature).length;m.w0=SAVE.bag.wood||0;m.wt=W.t;
+    // המפלצות הראשונות ליד השער: קלות. אחת נזרקת רחוק מהבית שלה (צריכה לחזור), וקבוצה אחת מופלת (צריכה לחזור אחרי זמן)
+    const st=enemies.filter(e=>e.zone==='start'),gi=G=>WORLD.foes.indexOf(G),home=e=>WORLD.foes[e.home];
+    L.wStart={n:st.length,easy:st.length>0&&st.every(e=>e.dmg<=ETYPES[e.type].dmg*0.5&&e.max<ETYPES[e.type].hp&&e.speed<ETYPES[e.type].speed),
+      dmg:st.map(e=>Math.round(e.dmg*10)/10).join('/')};
+    const east=st.filter(e=>home(e).x>100),west=st.filter(e=>home(e).x<-100);
+    if(east[0]){const e=east[0],G=home(e);m.le=e;e.x=G.x+600;e.y=G.y;m.leD0=Math.round(Math.hypot(e.x-G.x,e.y-G.y))}
+    if(west[0]){m.rg=west[0].home;for(const e of west)if(e.home===m.rg){e.hp=0;kill(e)}}
+    return stay()}
+  if(m.le&&!m.le.dead&&m.leD1==null&&W.t-m.wt>6){const G=WORLD.foes[m.le.home];m.leD1=Math.round(Math.hypot(m.le.x-G.x,m.le.y-G.y));L.wLeash=m.leD0+'→'+m.leD1}
+  if(m.rg!=null&&W.groups[m.rg].n)L.wFoeBack??=Math.round(W.t-m.wt);
+    if((SAVE.bag.wood||0)===m.w0&&(S.gd||[]).some(d=>d.r==='wood'))L.wDropGround=true;
+  if(m.wp==='gather'){   // הולכים לעץ הכי קרוב ועומדים לידו עד שהוא נשבר. העץ נופל לרצפה, ורק כשעוברים לידו הוא נכנס לתרמיל
+    if((SAVE.bag.wood||0)===m.w0&&(S.gd||[]).some(d=>d.r==='wood'))L.wDropGround=true;
     const bq=SAVE.quests.active.boots;L.bootsProg=bq?bq.p[0]:null;
     if((SAVE.bag.wood||0)>m.w0&&!(bq&&!qReady(QBY.boots))){L.wGather=(SAVE.bag.wood||0)-m.w0;L.wGatherSaved=(saved().bag.wood||0)===SAVE.bag.wood;L.wGatherT=Math.round(W.t-m.wt);
       const q=SAVE.quests.active.wFirst;L.wQuest=q?q.p.join('/'):null;m.wp='kill';m.k0=S.kills;return L}
@@ -302,7 +315,7 @@ function worldBot(m,L,god){
     m.kt=e.type+(e.creature?' (יצור)':'');return steer(e.x,e.y,false,P.weapon==='sword'?e.r+30:200,L)}
   if(m.wp==='gate'){   // שער החורשה: נכנסים רק בלחיצה על הכפתור בפאנל
     const g=WORLD.gates.grove,go=document.querySelector('#wPanel [data-act="arena"][data-g="grove"]');
-    if(W.near==='grove'&&go){m.runBag=bag();L.wGateBtn=go.innerText;go.click();L.wArena=!S.wd&&S.mode==='play';m.wp='arena';return L}
+    if(W.near==='grove'&&go&&(L.wFoeBack!=null||W.t-m.wt>90)){L.wPicked=dropStats().picked;m.runBag=bag();L.wGateBtn=go.innerText;go.click();L.wArena=!S.wd&&S.mode==='play';m.wp='arena';return L}
     return steer(g.x,g.y,false,0,L)}
   if(m.wp==='arena'){   // חזרנו מהזירה: לאותו שער, והשלל בתרמיל
     const g=WORLD.gates.grove;L.wBack=Math.round(Math.hypot(P.x-g.x,P.y-g.y));L.back=S.t;
@@ -539,6 +552,12 @@ function worldBot(m,L,god){
   check(L.wEnter&&L.wHud&&!!L.wName&&L.wNodes>0&&L.wFoes>0,'עולם פתוח: '+(L.wName||'בלי שם אזור')+(L.wHud?', ממשק העולם מוצג':', ממשק העולם חסר')+', '+L.wNodes+' מקורות משאבים, '+L.wFoes+' אויבים'+(L.wCreatures?' ('+L.wCreatures+' יצורי משאבים)':' (יצורי משאבים יגיעו עם הכלכלה)'));
   check(L.wGather>0&&L.wGatherSaved,'איסוף בעולם: '+(L.wGather?'עץ +'+L.wGather+' נכנס לתרמיל אחרי '+L.wGatherT+' שניות'+(L.wGatherSaved?', נשמר':', לא נשמר'):'לא נאסף')+(L.wQuest?' · קווסט '+L.wQuest:''));
   check(!!L.wKill,'אויב בעולם: '+(L.wKill?'הופל '+L.wKill:'לא הופל'));
+  const WS=L.wStart||{};
+  check(WS.easy&&!!L.wLeash&&+L.wLeash.split('→')[1]<+L.wLeash.split('→')[0]&&L.wFoeBack!=null,'מפלצות ליד השער: '+(WS.n||0)+(WS.easy?' קלות (נזק '+WS.dmg+')':' לא קלות')+
+    (L.wLeash?', חוזרות הביתה ('+L.wLeash+')':', לא נבדק שחוזרות')+(L.wFoeBack!=null?', קבוצה שהופלה חזרה אחרי '+L.wFoeBack+' שניות':', קבוצה שהופלה לא חזרה'));
+  const DA=JSON.parse(L.dropsArena||'{}');
+  check(L.wDropGround&&L.wPicked>0&&DA.spawned>0&&DA.picked>0,'שלל על הרצפה: '+(L.wDropGround?'עץ נפל לרצפה לפני התרמיל':'נכנס לתרמיל בלי להיראות')+', בעולם נאספו '+(L.wPicked||0)+' בהליכה'+
+    ' · בזירה נפלו '+(DA.spawned||0)+', נאספו בהליכה '+(DA.picked||0)+', ובסוף לבד '+(DA.auto||0));
   check(L.wArena&&L.wBack!=null&&L.wBack<200,'שער לזירה: '+(L.wArena?'לחיצה על "'+L.wGateBtn+'" מתחילה ריצה':'לא נכנס לזירה')+(L.wBack!=null?', בסוף חזר לשער ('+L.wBack+' פיקסלים ממנו)':', לא חזר לעולם'));
   check(L.back!=null&&!!L.lootGot&&L.lootSaved,'שלל: '+(L.won!=null?'ניצחון '+t(L.won):L.died!=null?'נפל '+t(L.died):'הריצה לא נגמרה')+
     (L.back!=null?', חזר לשער. במסך: '+L.lootTxt+' · בתרמיל: '+(L.lootGot||'כלום')+(L.lootSaved?', נשמר':', לא נשמר'):''));
