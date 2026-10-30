@@ -188,7 +188,12 @@ function villageBot(m,L){
     const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key));
     L.stash={swIn,wIn,swOut,saved:sv.stash.wood===w0&&!sv.stash.oakSword&&sv.bag.oakSword===s0,cap:stashCap(),used:stashUsed()};
     return L}
-  m.runBag=bag();L.gateAt=1;   // לשער
+  // לשער: הולכים לתוכו כמה צעדים. רק לעבור שם לא אמור להוציא לזירה, ורק הכפתור בפאנל מוציא
+  m.runBag=bag();L.gateAt=1;
+  if(S.vil.near==='gate'&&(m.gateWalk=(m.gateWalk||0)+1)>20){
+    const go=document.querySelector('#vPanel [data-act="go"]');
+    L.gateStay=!!S.vil;L.gatePanel=go?document.getElementById('vPanel').innerText.replace(/\s+/g,' ').trim():null;
+    if(go)go.click();L.gateTap=!S.vil;return L}
   return steer(g.x,g.y,false,0,L);
 }
 
@@ -301,7 +306,8 @@ function villageBot(m,L){
     (st.swOut?', חרב חזרה לתרמיל':', חרב לא חזרה')+(st.saved?', נשמר':', לא נשמר')+' ('+st.used+' מתוך '+st.cap+')');
   check(L.rgOpen&&L.rgPaused&&L.rgHp===rgHp&&L.rgSaved&&L.rgClosed,'ציוד באמצע ריצה: '+(L.rgOpen?'נפתח':'לא נפתח')+(L.rgPaused?', המשחק עצר':', המשחק לא עצר')+
     ', חיים +'+L.rgHp+' (צפוי +'+rgHp+')'+(L.rgSaved?', נשמר':', לא נשמר')+(L.rgClosed?', ממשיכים לשחק':', לא נסגר'));
-  check(L.gateAt&&L.t!=null,'שער: '+(L.t!=null?'יצא לזירה':'לא יצא לזירה'));
+  check(L.gateAt&&L.gateStay&&L.gateTap&&L.t!=null,'שער: '+(L.gateStay?'הליכה לשער לא מוציאה':'הליכה לשער הוציאה לזירה בלי לחיצה')+
+    (L.gatePanel?', פאנל: '+L.gatePanel:', אין כפתור')+(L.gateTap&&L.t!=null?', לחיצה יצאה לזירה':', לחיצה לא יצאה לזירה'));
   check(L.back!=null&&!!L.lootGot&&L.lootSaved,'שלל: '+(L.won!=null?'ניצחון '+t(L.won):L.died!=null?'נפל '+t(L.died):'הריצה לא נגמרה')+
     (L.back!=null?', חזר לכפר. במסך: '+L.lootTxt+' · בתרמיל: '+(L.lootGot||'כלום')+(L.lootSaved?', נשמר':', לא נשמר'):''));
   check(L.qAccepted&&L.qClaimed&&L.qPaid&&L.qSaved&&L.qFx,'קווסט: '+(L.qAccepted?'התקבל '+L.qName+' מהיומן ('+L.qLogTxt+', '+L.qDaily+' יומיים)':'לא התקבל')+

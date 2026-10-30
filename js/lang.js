@@ -136,6 +136,8 @@ const TEXT={
   'vil.mine':{he:'מכרה',en:'Mine'},
   'vil.market':{he:'שוק',en:'Market'},
   'vil.gate':{he:'לזירה',en:'To the arena'},
+  'vil.gateInfo':{he:t=>'הבוס מגיע אחרי '+t+'. מה שנאסף חוזר איתך הביתה',en:t=>'The boss comes after '+t+'. Your loot comes home with you'},
+  'vil.go':{he:'כניסה לזירה',en:'Enter the arena'},
   'vil.notBuilt':{he:'עוד לא נבנה',en:'Not built yet'},
   'vil.build':{he:'לבנות',en:'Build'},
   'vil.up':{he:n=>'לשדרג לרמה '+n,en:n=>'Upgrade to level '+n},

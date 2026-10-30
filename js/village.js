@@ -134,11 +134,12 @@ function villageUpdate(dt){
   // לא נכנסים לתוך מבנים, ולא יוצאים מהכפר
   for(const k in VILLAGE.b){const B=VILLAGE.b[k],dx=P.x-B.x,dy=P.y-B.y,d=Math.hypot(dx,dy)||1,min=B.r+P.r;if(d<min){P.x=B.x+dx/d*min;P.y=B.y+dy/d*min}}
   const R=VILLAGE.radius,d0=Math.hypot(P.x,P.y);if(d0>R){P.x*=R/d0;P.y*=R/d0}
-  const g=VILLAGE.gate;if(Math.hypot(P.x-g.x,P.y-g.y)<g.r+P.r){leaveVillage();return}
   // המבנה הכי קרוב: הפאנל שלו נפתח, והתוצרת שלו נאספת
   let near=null,best=VILLAGE.near;
   for(const k in VILLAGE.b){const B=VILLAGE.b[k],d=Math.hypot(P.x-B.x,P.y-B.y)-B.r-P.r;if(d<best){best=d;near=k}}
-  V.near=near;if(near)vCollect(near);
+  // ליד השער נפתח פאנל עם כפתור. יוצאים לזירה רק בלחיצה, לא כשעוברים לידו (ניר: "נכנסתי לזירה בלי כוונה")
+  const g=VILLAGE.gate;if(Math.hypot(P.x-g.x,P.y-g.y)-g.r-P.r<VILLAGE.near)near='gate';
+  V.near=near;if(near&&near!=='gate')vCollect(near);
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}
   parts=parts.filter(p=>p.life>0);
   for(const f of floats){f.y+=f.vy*dt;f.life-=dt}
@@ -188,6 +189,7 @@ function villageHud(){
   if(key===S.vil.ui)return;S.vil.ui=key;
   $('vBag').innerHTML=bagLine(SAVE.bag,true);
   const pn=$('vPanel');pn.hidden=!k;if(!k)return;
+  if(k==='gate'){pn.innerHTML='<h3>'+T('vil.gate')+'</h3><p>'+T('vil.gateInfo',fmt(S.nextBoss))+'</p><button class="vbtn" data-act="go">⚔️ '+T('vil.go')+'</button>';return}
   const why=vBlock(k),c=vCost(k);
   let h='<h3>'+T('vil.'+k)+' <small>'+(L?T('level',L):'')+'</small></h3><p>'+vInfo(k,L)+'</p>';
   if(why!=='max')h+='<p class="next">'+T('vil.next',vInfo(k,L+1))+'</p><div class="cost">'+costLine(c)+'</div>';
@@ -204,6 +206,7 @@ function villageHud(){
 }
 $('vPanel').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled||!S.vil||!S.vil.near)return;
+  if(b.dataset.act==='go'){leaveVillage();return}
   if(b.dataset.act==='forge'){forgeOpen();return}
   if(b.dataset.act==='up')vUpgrade(S.vil.near);else if(b.dataset.act==='stash')stashMove(b.dataset.dir,b.dataset.r);else vTrade(b.dataset.act,b.dataset.r);
   villageHud();
