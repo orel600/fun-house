@@ -19,12 +19,12 @@ const {ALL_EXTENSIONS}=require('@gltf-transform/extensions');
 const {prune,dedup,resample,textureCompress}=require('@gltf-transform/functions');
 const sharp=require('sharp');
 
+const ROOT=path.join(__dirname,'..');
 const [advDir,skelDir,hexDir]=process.argv.slice(2);
 if(!advDir||!skelDir||!hexDir){console.log('שימוש: node tools/build3d.js <תיקיית Adventurers> <תיקיית Skeletons> <תיקיית Medieval Hexagon>');process.exit(1)}
 const adv=p=>path.join(advDir,'addons/kaykit_character_pack_adventures',p);
 const skel=p=>path.join(skelDir,'addons/kaykit_character_pack_skeletons',p);
 const hex=p=>path.join(hexDir,'addons/kaykit_medieval_hexagon_pack/Assets/gltf',p);
-const ROOT=path.join(__dirname,'..');
 
 // דמויות: מאיזה קובץ, ואילו חלקים נשארים (כל השאר, בעיקר נשקים אחרים, נמחק)
 const CHARS={
@@ -33,14 +33,17 @@ const CHARS={
   barbarian:{src:adv('Characters/gltf/Barbarian.glb'),  keep:['Barbarian_Hat','Barbarian_Cape','Barbarian_Arm','Barbarian_Body','Barbarian_Head','Barbarian_Leg','2H_Axe']},
   minion:  {src:skel('Characters/gltf/Skeleton_Minion.glb'), keep:['Skeleton_']},
   warrior: {src:skel('Characters/gltf/Skeleton_Warrior.glb'),keep:['Skeleton_']},
-  mage:    {src:skel('Characters/gltf/Skeleton_Mage.glb'),   keep:['Skeleton_']}
+  mage:    {src:skel('Characters/gltf/Skeleton_Mage.glb'),   keep:['Skeleton_']},
+  // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. נבנה ע"י tools/pilot3d (ההסבר ב-docs/3d-assets.md). הטקסטורה היא הציור עצמו ולא פלטה, אז 512 ו-JPEG
+  pilotHero:{src:path.join(ROOT,'art/pilot/PilotHero.glb'),keep:['PilotHero_'],tex:512,fmt:'jpeg'}
 };
 // חפצים שנאחזים ביד של דמות (המיקום ביד מוגדר ב-render3d.js)
 const PROPS={
   crossbow:{src:adv('Assets/gltf/crossbow_1handed.gltf')},
   blade:   {src:skel('Assets/gltf/Skeleton_Blade.gltf')},
   shield:  {src:skel('Assets/gltf/Skeleton_Shield_Large_A.gltf')},
-  staff:   {src:skel('Assets/gltf/Skeleton_Staff.gltf')}
+  staff:   {src:skel('Assets/gltf/Skeleton_Staff.gltf')},
+  sword:   {src:adv('Assets/gltf/sword_1handed.gltf')}
 };
 // אנימציות: נלקחות מדמות אחת לכל חבילה ומשותפות לכולן
 const ANIMS={
@@ -70,7 +73,7 @@ const BUILDS={
 const TEX=256;   // גודל הטקסטורה. החבילות משתמשות בפלטת צבעים, אז 256 נראה כמו 1024
 
 const io=new NodeIO().registerExtensions(ALL_EXTENSIONS);
-async function slim(doc,{keepMeshes,keepAnims}){
+async function slim(doc,{keepMeshes,keepAnims,tex=TEX,fmt='png'}){
   const root=doc.getRoot();
   for(const a of root.listAnimations())if(!keepAnims||!keepAnims.includes(a.getName())){a.listChannels().forEach(c=>c.dispose());a.listSamplers().forEach(x=>x.dispose());a.dispose()}
   if(keepMeshes!==undefined)for(const n of root.listNodes()){
@@ -82,14 +85,14 @@ n.getMesh().dispose();n.dispose()}
   // אחרי מחיקת אנימציות נשארים נתונים יתומים שהן השתמשו בהם
   for(const a of root.listAccessors())if(a.listParents().every(p=>p===root||p.isDisposed?.()))a.dispose();
   await doc.transform(prune({keepLeaves:true,keepAttributes:false}),dedup(),resample({tolerance:0.004}),
-    textureCompress({encoder:sharp,targetFormat:'png',resize:[TEX,TEX]}));
+    textureCompress({encoder:sharp,targetFormat:fmt,resize:[tex,tex]}));
   return io.writeBinary(doc);
 }
 
 (async()=>{
   const out={},sizes=[];
   const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
-  for(const [k,c] of Object.entries(CHARS))add(k,await slim(await io.read(c.src),{keepMeshes:c.keep}));
+  for(const [k,c] of Object.entries(CHARS))add(k,await slim(await io.read(c.src),{keepMeshes:c.keep,tex:c.tex,fmt:c.fmt}));
   for(const [k,c] of Object.entries(PROPS))add(k,await slim(await io.read(c.src),{}));
   for(const [k,c] of Object.entries(BUILDS))add(k,await slim(await io.read(c.src),{}));
   for(const [k,c] of Object.entries(ANIMS)){
