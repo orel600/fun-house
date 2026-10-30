@@ -339,9 +339,36 @@ function worldBot(m,L,god){
     const n=S.nd.list.filter(n=>!n.dead&&n.kind==='tree').sort(far)[0];
     return n?steer(n.x,n.y,false,n.r+P.r+20,L):stay()}   // אחרי שהעץ נשבר: לעץ הבא, עד שיש 5 לקווסט הנעליים
   if(m.wp==='kill'){   // מפילים אויב אחד: יצור משאב אם יש, אחרת הכי קרוב
-    if(S.kills>m.k0){L.wKill=m.kt;m.wp='gate';return L}
+    if(S.kills>m.k0){L.wKill=m.kt;m.wp='wnpc';return L}
     const pool=enemies.filter(e=>!e.dead&&!e.wanted),cr=pool.filter(e=>e.creature),e=(cr.length?cr:pool).sort(far)[0];if(!e)return stay();
     m.kt=e.type+(e.creature?' (יצור)':'');return steer(e.x,e.y,false,P.weapon==='sword'?e.r+30:200,L)}
+  if(m.wp==='wnpc'){   // דמות בעולם (worldnpc.js): הולכים לקרובה, היא נמצאת (נשמר, חגיגה, חץ), מדברים, מקבלים קווסט, משלימים ולוקחים פרס רק אצלה
+    const N=L.wn||(L.wn={}),tb=document.getElementById('talkBtn'),dlg=document.getElementById('npcDlg'),btn=a=>dlg.querySelector('[data-act="'+a+'"]');
+    if(!m.wn){const id=Object.keys(WNPC.list).sort((a,b)=>far(WNPC.list[a].at,WNPC.list[b].at))[0];if(!window.__cel){window.__cel=0;const c=celebrate;window.celebrate=(...a)=>{window.__cel++;return c(...a)}}m.wn={id,step:0,fx:window.__cel};N.id=id;N.n=Object.keys(WNPC.list).length;N.metBefore=!!SAVE.met[id];N.markBefore=wnpcMarks()[id]||null}
+    const M=m.wn,id=M.id,n=wnpcState()[id];
+    if(M.step===0){
+      if(!SAVE.met[id])return steer(n.x,n.y,false,0,L);
+      N.found=true;N.saved=!!(saved().met||{})[id];N.fx=window.__cel>M.fx;N.mark=wnpcMarks()[id]||null;M.step=1}
+    if(M.step===1){   // כפתור "לדבר": רק לחיצה פותחת
+      if(S.wd.npcNear!==id||tb.hidden)return steer(n.x,n.y,false,25,L);
+      N.btn=tb.innerText;N.auto=!dlg.hidden;tb.click();N.open=!dlg.hidden;N.say=(dlg.querySelector('.npcsay')||{}).innerText;
+      const acc=btn('accept');if(!acc){N.err='אין קווסט לקבל';m.wp='gate';return L}
+      M.q=acc.dataset.q;N.q=M.q;N.inLogNew=(questLog(),!!document.querySelector('#qLog [data-act="accept"][data-q="'+M.q+'"]'));
+      acc.click();N.got=!!SAVE.quests.active[M.q];M.step=2;return steer(null,null,false,0,L)}
+    if(M.step===2){   // משלימים את המטרות (בכאילו, כמו בבדיקת מנוע הקווסטים), סוגרים, ובודקים שהסימן התחלף ל-✓
+      const q=QBY[M.q];for(const o of q.obj)questEvent(o.type,o.what,o.n);
+      N.ready=qReady(q);btn('close').click();N.closed=dlg.hidden;N.markReady=wnpcMarks()[id]||null;
+      N.logClaim=(questLog(),!!document.querySelector('#qLog [data-act="claim"][data-q="'+M.q+'"]'));M.fx2=window.__cel;M.step=3;return steer(null,null,false,0,L)}
+    if(M.step===3){   // שוב "לדבר", ולוקחים את הפרס
+      if(tb.hidden)return steer(n.x,n.y,false,25,L);
+      tb.click();const c=btn('claim');if(!c){N.err='אין כפתור פרס';m.wp='gate';return L}
+      M.b0=Object.assign({},SAVE.bag);c.click();const q=QBY[M.q],r=q.reward;   // התרמיל ממש לפני הלחיצה: פיוחו (pet.js) חופרת ומוסיפה בינתיים
+      N.claimed=!SAVE.quests.active[M.q]&&!!SAVE.quests.done[M.q];N.paid=Object.keys(r).filter(k=>resOf(k)).every(k=>(SAVE.bag[k]||0)-(M.b0[k]||0)===r[k]);
+      N.claimSaved=!!(saved().quests.done||{})[M.q];N.claimFx=window.__cel>M.fx2;btn('close').click();
+      // דמות שעוד לא נמצאה: אין לה סימן ואין לה קווסט פתוח
+      const other=Object.keys(WNPC.list).find(k=>!SAVE.met[k]);N.hidden=!other||(!wnpcMarks()[other]&&!QUESTS.list.some(q=>q.giver===other&&qOpen(q)));
+      L.wnDone=1;m.wp='gate';return L}
+  }
   if(m.wp==='gate'){   // שער החורשה: נכנסים רק בלחיצה על הכפתור בפאנל
     const g=WORLD.gates.grove,go=document.querySelector('#wPanel [data-act="arena"][data-g="grove"]');
     if(W.near==='grove'&&go&&(L.wFoeBack!=null||W.t-m.wt>90)){L.wPicked=dropStats().picked;m.runBag=bag();L.wGateBtn=go.innerText;go.click();L.wArena=!S.wd&&S.mode==='play';m.wp='arena';return L}
@@ -585,7 +612,7 @@ function worldBot(m,L,god){
     // התקדמות ל-stderr (לא נכנס לדוח): אם הבדיקה נתקעת ב-GitHub, רואים איפה
     if(guard%300===1)console.error('…',await page.evaluate(()=>[Math.round(S.t),S.mode,S.vil?'village':S.wd?'world':S.room?'room':'arena',enemies.length,S.nd?S.nd.list.length:0].join(' ')));
     L=await page.evaluate(botStep,{god:CFG.god,en:CFG.lang==='en'});
-    for(const k of ['vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','glowOn','stash','wEnter','wGather','wKill','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wDeathTxt'?'world-death':k)}
+    for(const k of ['vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='wDeathTxt'?'world-death':k)}
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
@@ -631,6 +658,12 @@ function worldBot(m,L,god){
     (st.swOut?', חרב חזרה לתרמיל':', חרב לא חזרה')+(st.saved?', נשמר':', לא נשמר')+' ('+st.used+' מתוך '+st.cap+')');
   check(L.rgOpen&&L.rgPaused&&L.rgHp===rgHp&&L.rgSaved&&L.rgClosed,'ציוד באמצע ריצה: '+(L.rgOpen?'נפתח':'לא נפתח')+(L.rgPaused?', המשחק עצר':', המשחק לא עצר')+
     ', חיים +'+L.rgHp+' (צפוי +'+rgHp+')'+(L.rgSaved?', נשמר':', לא נשמר')+(L.rgClosed?', ממשיכים לשחק':', לא נסגר'));
+  const WN=L.wn||{};
+  check(WN.found&&WN.saved&&WN.fx&&!WN.metBefore&&!WN.markBefore&&WN.mark==='!'&&WN.btn&&!WN.auto&&WN.open&&WN.got&&!WN.inLogNew&&WN.ready&&WN.closed&&WN.markReady==='✓'&&!WN.logClaim&&WN.claimed&&WN.paid&&WN.claimSaved&&WN.claimFx&&WN.hidden,
+    'דמויות בעולם: '+(WN.err?WN.err+' · ':'')+(WN.n||0)+' באחו, הלך אל '+(WN.id||'-')+(WN.found?', נמצאה'+(WN.saved?' ונשמרה':' (לא נשמרה)')+(WN.fx?' עם חגיגה':' בלי חגיגה'):', לא נמצאה')+(WN.markBefore?', היה סימן לפני שנמצאה':'')+
+    ', סימן '+(WN.mark||'אין')+(WN.btn?', כפתור "'+WN.btn+'"':', אין כפתור')+(WN.auto?', השיחה נפתחה לבד':'')+(WN.open?', שיחה: "'+(WN.say||'').slice(0,40)+'"':', השיחה לא נפתחה')+
+    (WN.got?', התקבל '+WN.q:', לא התקבל')+(WN.inLogNew?', מופיע לקבלה ביומן (לא אמור)':'')+(WN.ready?', הושלם':', לא הושלם')+', סימן '+(WN.markReady||'אין')+(WN.logClaim?', פרס ביומן (לא אמור)':'')+
+    (WN.claimed?', פרס נלקח אצלה'+(WN.paid?' והגיע לתרמיל':' אבל לא הגיע')+(WN.claimSaved?', נשמר':', לא נשמר')+(WN.claimFx?', חגיגה':', בלי חגיגה'):', הפרס לא נלקח')+(WN.hidden?'':', דמות שלא נמצאה כבר נותנת קווסט'));
   const Nn=L.npc||{};
   check(Nn.btn&&!Nn.auto&&Nn.open&&Nn.got&&Nn.after&&Nn.inLog&&Nn.closed&&Nn.push===0&&Nn.free&&Nn.waved&&Nn.cheer,'תושבים: '+(Nn.err||Nn.n+' בכפר')+
     (Nn.waved?', הנפח נופף':', לא נופף')+(Nn.btn?', כפתור "'+Nn.btn+'"':', אין כפתור')+(Nn.auto?', השיחה נפתחה לבד':'')+(Nn.open?', שיחה: "'+(Nn.say||'').slice(0,50)+'"':', השיחה לא נפתחה')+
