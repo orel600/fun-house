@@ -12,7 +12,7 @@ addEventListener('keyup',e=>{keys[e.code]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;joy=null});
 
 function startRun(){reset();S.mode='play';['ovStart','ovOver','ovLevel','ovBoss'].forEach(id=>$(id).hidden=true)}
-$('startBtn').onclick=startRun;$('againBtn').onclick=startRun;
+$('startBtn').onclick=()=>heroId()?enterVillage():heroOpen();$('againBtn').onclick=enterVillage;   // הכפר הוא הבית: מתחילים בו (במשחק הראשון אחרי בחירת דמות), וחוזרים אליו בסוף ריצה
 $('fightBtn').onclick=()=>{$('ovBoss').hidden=true;S.mode='play';banner(S.boss?S.boss.name:'',C.lilac)};
 for(const b of document.querySelectorAll('[data-lang]'))b.onclick=()=>{setLang(b.dataset.lang);showLang()};
 for(const b of document.querySelectorAll('[data-gfx]'))b.onclick=()=>setGfx(b.dataset.gfx);

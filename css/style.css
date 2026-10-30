@@ -70,6 +70,13 @@ h1{font-size:46px} h2{font-size:30px}
 .card .tag{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--dim)}
 .card.sword{border-inline-start-color:var(--ember)}.card.sword .tag{color:var(--ember)}
 .card.gun{border-inline-start-color:var(--tide)}.card.gun .tag{color:var(--tide)}
+/* בחירת דמות התחלה (js/heroes.js): שלושה כרטיסים בשורה. --hero: הצבע של הדמות */
+.heropanel{width:min(720px,100%)}
+.herocards{display:grid;grid-template-columns:repeat(3,1fr)}
+.card.hero{align-items:center;text-align:center;border-inline-start-width:1px;border-top:5px solid var(--hero);gap:5px}
+.card.hero .hicon{font-size:30px;line-height:1}
+.card.hero b{color:var(--hero)}
+.card.hero .hline{font-size:13px;line-height:1.35;flex:1}
 .learned{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.45}
 .learned .k{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--dim)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -79,3 +86,115 @@ h1{font-size:46px} h2{font-size:30px}
 .stat span{display:block;font-size:11px;color:var(--dim);font-weight:700}
 .stat b{font-family:var(--display);font-size:24px;font-weight:400;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){.swap.hint{animation:none;box-shadow:0 0 0 6px rgba(236,231,220,.2)}}
+/* כפתור ההשתקה: למעלה בפינה, מעל כל המסכים, כדי שיהיה גם במסך הפתיחה וגם בזמן משחק. לא בפינה הימנית התחתונה, השמורה לסקילים */
+.mute{position:fixed;z-index:6;top:calc(env(safe-area-inset-top,0px) + 58px);inset-inline-end:calc(env(safe-area-inset-right,0px) + 14px);
+  width:38px;height:38px;border-radius:50%;border:2px solid var(--line);background:rgba(18,22,36,.7);color:var(--chalk);
+  display:grid;place-items:center;padding:0;cursor:pointer}
+.mute.off{color:var(--dim)}
+.mute:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+/* הכפר: התרמיל למעלה, והפאנל של המבנה שלידו למטה. ממשק הזירה מוסתר (body.vil) */
+.vil .hud,.vil .swap{display:none}
+.vhud{position:fixed;top:0;left:0;right:0;z-index:2;pointer-events:none;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 0}
+.bag{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.res{background:rgba(18,22,36,.8);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font:800 14px var(--body);color:var(--chalk);direction:ltr;font-variant-numeric:tabular-nums;white-space:nowrap}
+.res.miss{color:var(--blood);border-color:rgba(239,78,87,.5)}
+.vpanel{position:fixed;z-index:3;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);max-width:420px;margin-inline:auto;
+  background:rgba(26,32,51,.95);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.vpanel h3{margin:0;font-family:var(--display);font-weight:400;font-size:22px;line-height:1.1}
+.vpanel h3 small{font-family:var(--body);font-size:13px;font-weight:800;color:var(--gold);margin-inline-start:6px}
+.vpanel p{margin:0;font-size:14px;line-height:1.4}
+.vpanel .next{color:var(--dim);font-size:13px}
+.cost{display:flex;flex-wrap:wrap;gap:6px}
+.vbtn{appearance:none;border:0;border-radius:12px;padding:12px;font:800 16px var(--body);background:var(--gold);color:var(--ink);cursor:pointer}
+.vbtn:disabled{background:var(--line);color:var(--dim);cursor:default}
+.trade{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.trade button{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--chalk);border-radius:10px;padding:9px 6px;font:700 13px var(--body);cursor:pointer}
+.trade button:disabled{color:var(--dim);opacity:.6;cursor:default}
+.vbtn:focus-visible,.trade button:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
+/* לרוחב (ככה משחקים, ניר 30.10.2026): הפאנל בצד שמאל, והפינה הימנית למטה פנויה לכפתורי כישורים שיגיעו.
+   זה מיקום על המסך ולא כיוון טקסט, ולכן left גם בעברית */
+@media (orientation:landscape){
+  .vpanel{left:calc(env(safe-area-inset-left,0px) + 12px);right:auto;top:calc(env(safe-area-inset-top,0px) + 54px);bottom:auto;
+    width:min(300px,38vw);max-height:calc(100% - 66px);overflow-y:auto;margin:0;padding:10px 12px;gap:6px}
+  .vpanel h3{font-size:19px}
+  .vbtn{padding:9px}
+}
+.stat.wide{grid-column:1/-1}
+.stat.wide b{display:flex;justify-content:flex-start;margin-top:4px}
+/* קווסטים (js/quests.js): כפתור היומן בפינה השמאלית העליונה (בימנית כפתור הציוד), היומן בצד ימין (הפאנל של המבנה בצד שמאל), וקו מעקב קטן בזירה.
+   ימין ושמאל כאן הם מיקום על המסך, לא כיוון טקסט */
+.qbtn{position:fixed;z-index:3;pointer-events:auto;top:calc(env(safe-area-inset-top,0px) + 8px);left:calc(env(safe-area-inset-left,0px) + 12px);
+  appearance:none;border:1px solid var(--gold);border-radius:999px;background:rgba(18,22,36,.88);color:var(--gold);padding:6px 12px;font:800 14px var(--body);cursor:pointer;display:flex;align-items:center;gap:4px}
+.qbtn b{background:var(--gold);color:var(--ink);border-radius:999px;min-width:20px;padding:0 6px;font-size:12px;line-height:20px;text-align:center}
+.qlog{position:fixed;z-index:4;pointer-events:auto;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 50px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
+  max-width:420px;margin-inline:auto;overflow-y:auto;background:rgba(26,32,51,.96);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.qhead{display:flex;justify-content:space-between;align-items:center}
+.qlog h3{margin:0;font-family:var(--display);font-weight:400;font-size:20px}
+.qlog h4{margin:4px 0 0;font-size:12px;font-weight:800;color:var(--dim);letter-spacing:.04em}
+.qx{appearance:none;border:0;background:none;color:var(--chalk);font:800 18px var(--body);padding:4px 8px;cursor:pointer}
+.qc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 10px;display:flex;flex-direction:column;gap:3px}
+.qc.ready{border-color:var(--gold)}
+.qc b{font-size:15px}
+.qc small{color:var(--dim);font-size:11px;font-weight:700}
+.qc .say{margin:0;font-size:13px;line-height:1.35;font-style:italic;color:var(--chalk);opacity:.85}
+.qc ul{margin:0;padding-inline-start:18px;font-size:13px}
+.qc em{font-style:normal;color:var(--gold);font-weight:800;direction:ltr;unicode-bidi:isolate}
+.qc .next{margin:0;color:var(--dim);font-size:12px}
+.qrow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.qc .vbtn{padding:7px 12px;font-size:14px;white-space:nowrap}
+.qtrk{appearance:none;border:1px solid var(--line);background:none;color:var(--dim);border-radius:10px;padding:6px 10px;white-space:nowrap;font:700 12px var(--body);cursor:pointer}
+.qtrk[aria-pressed="true"]{color:var(--gold);border-color:var(--gold)}
+.qbtn:focus-visible,.qx:focus-visible,.qtrk:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
+.qtrack{margin-top:8px;max-width:60%;font-size:12px;font-weight:700;color:var(--gold);text-shadow:0 0 3px #000,0 0 3px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (orientation:landscape){
+  .qlog{left:auto;right:calc(env(safe-area-inset-right,0px) + 12px);width:min(320px,40vw);margin:0}
+}
+/* מסך הציוד (js/gear.js): המשבצות, התרמיל וההשוואה. כל פריט מקבל את צבע החומר שלו (--tint) וזוהר (--glow) */
+.gearbtn{position:fixed;z-index:3;top:calc(env(safe-area-inset-top,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 12px);pointer-events:auto;
+  appearance:none;border:1px solid var(--gold);background:rgba(18,22,36,.85);color:var(--gold);border-radius:999px;padding:6px 12px;font:800 14px var(--body);cursor:pointer}
+.gearbtn:focus-visible,.gtile:focus-visible,.gclose:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
+.gearov{background:rgba(10,12,20,.55);backdrop-filter:none}
+.gearpanel{width:min(460px,100%);background:rgba(26,32,51,.96);border:1px solid var(--line);border-radius:14px;padding:12px 14px;gap:10px}
+.ghead{display:flex;align-items:center;gap:10px}
+.ghead h2{font-size:24px;flex:1}
+#gHero{color:var(--gold);font-weight:800;font-size:13px}
+.gclose{appearance:none;border:1px solid var(--line);background:transparent;color:var(--chalk);border-radius:50%;width:36px;height:36px;font:800 16px var(--body);cursor:pointer}
+#gSlots{display:flex;flex-wrap:wrap;gap:8px 14px}
+.gslot{display:flex;flex-direction:column;gap:4px}
+.gslot .k{font-size:11px;font-weight:800;color:var(--dim)}
+.grow,.gitems{display:flex;flex-wrap:wrap;gap:6px}
+.gtile{--tint:var(--line);position:relative;appearance:none;width:44px;height:44px;border-radius:10px;border:2px solid var(--tint);background:var(--panel);
+  color:var(--chalk);font:400 22px var(--body);display:grid;place-items:center;cursor:pointer;padding:0}
+.gtile[style*="--glow"]{box-shadow:0 0 10px var(--glow)}
+.gtile.sword{border-bottom:4px solid var(--ember)}.gtile.gun{border-bottom:4px solid var(--tide)}
+.gtile.empty{border-style:dashed;cursor:default}
+.gtile.locked{opacity:.5;font-size:15px;cursor:default}
+.gtile small{position:absolute;bottom:1px;inset-inline-end:3px;font:800 10px var(--body);color:var(--chalk);direction:ltr}
+.gtile[aria-pressed="true"]{outline:3px solid var(--gold);outline-offset:1px}
+.gtile.pop{animation:gpop .5s ease-out}
+@keyframes gpop{40%{transform:scale(1.3);box-shadow:0 0 18px var(--gold)}}
+.gres{justify-content:flex-start}
+.res.item{border-color:var(--tint)}
+.gdetail{background:var(--panel);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:60px}
+.gdetail h3{margin:0;font-family:var(--display);font-weight:400;font-size:19px}
+.gdetail h3 small{font-family:var(--body);font-size:12px;font-weight:700;color:var(--dim);margin-inline-start:6px}
+.gdetail p,.gitems p{margin:0;font-size:14px;line-height:1.4}
+.gearpanel .dim{color:var(--dim);font-size:13px}
+.cmp{display:flex;flex-wrap:wrap;gap:4px 12px}
+.cmp .up{color:#7BE495;font-weight:800}.cmp .down{color:var(--blood);font-weight:800}
+.vbtn.ghost{background:transparent;border:1px solid var(--line);color:var(--chalk)}
+@media (prefers-reduced-motion:reduce){.gtile.pop{animation:none}}
+/* לרוחב: המסך בצד ימין, כדי שהדמות במרכז והחגיגה שלה ייראו. מיקום על המסך ולא כיוון טקסט, ולכן right גם באנגלית */
+@media (orientation:landscape){
+  .gearov{place-items:start end;background:linear-gradient(to right,transparent 40%,rgba(10,12,20,.7))}
+  .gearpanel{width:min(440px,46vw);max-height:100%;overflow-y:auto;padding:10px 12px;gap:8px}
+  .ghead h2{font-size:20px}
+  .gtile{width:40px;height:40px;font-size:20px}
+}
+/* כפתור הציוד בזירה: בשורה העליונה, ליד הרמה. הפינה הימנית למטה נשארת לכישורים */
+.hud .gearbtn{position:static;pointer-events:auto;padding:3px 9px;font-size:16px;flex:none}
+/* המחסן בפאנל של הכפר (js/stash.js) */
+.smove{display:flex;flex-wrap:wrap;gap:6px}
+.smove .res{cursor:pointer;appearance:none}
+.smove .res:disabled{opacity:.5;cursor:default}
+.vpanel .sk{font-size:11px;font-weight:800;color:var(--dim)}
