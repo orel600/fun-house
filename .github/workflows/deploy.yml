@@ -4,10 +4,14 @@
 # צריך סוד אחד בריפו: VERCEL_TOKEN (מהחשבון של אוראל ב-Vercel). בלעדיו הריצה מדלגת ולא נכשלת.
 name: פרסום ל-Vercel
 
+# רק כשמשתנים קבצי המשחק: ב-Vercel החינמי יש 100 פרסומים ביום, ושינוי בתוכנית או ביומן לא צריך קישור חדש
 on:
   pull_request:
+    paths: [index.html, 'css/**', 'js/**', 'skins/**', 'sounds/**', .github/workflows/deploy.yml]
   push:
     branches: [main]
+    paths: [index.html, 'css/**', 'js/**', 'skins/**', 'sounds/**', .github/workflows/deploy.yml]
+  workflow_dispatch:   # פרסום ידני, למשל אחרי שהמגבלה היומית נגמרה
 
 permissions:
   contents: read
