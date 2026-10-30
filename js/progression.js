@@ -8,16 +8,18 @@ function showGain(v){
 }
 function openLevelUp(){
   S.mode='level';S.pendingLv--;joy=null;sfx('levelup');
-  // שדרוג של סוג נזק לא מוצע אם לנשק כבר יש את הסוג הזה
-  const pool=UPS.filter(u=>!(u.max&&(S.picks[u.id]||0)>=u.max)&&!(u.el&&P.dt[u.w]===u.el)).sort(()=>Math.random()-.5).slice(0,3);
+  // שדרוג של סוג נזק לא מוצע אם לנשק כבר יש את הסוג הזה. שדרוג לנשק מוצע רק אם הוא ביד, והחלפה זריזה רק כשיש מה להחליף
+  const uses=wHeld().map(wUse).concat(P.weapon);
+  const pool=UPS.filter(u=>!(u.max&&(S.picks[u.id]||0)>=u.max)&&!(u.el&&P.dt[u.w]===u.el)&&(u.w==='any'||uses.includes(u.w))&&!(u.id==='swap'&&wHeld().length<2)).sort(()=>Math.random()-.5).slice(0,3);
   $('lvTitle').textContent=T('level',P.level);
   const box=$('cards');box.innerHTML='';
   pool.forEach(u=>{
     const b=document.createElement('button');b.className='card';
     // הצבע של הכרטיס: סוג הנזק שהוא נותן, או סוג הנזק של הנשק שהוא משפר
     if(u.w!=='any')b.style.setProperty('--dt',dtCol(u.el||P.dt[u.w]));if(u.el){b.dataset.el=u.el;b.dataset.w=u.w}
-    const [name,desc]=T('up.'+u.id);
-    b.innerHTML='<span class="tag">'+T('w.'+u.w)+(u.el?' '+dtSvg(u.el):'')+'</span><b>'+name+'</b><span>'+desc+'</span>';
+    // לקסם יש טקסט משלו ('up.gdmg.bolt'), כדי שהקוסם לא יקרא על חצים
+    const shot=u.w==='gun'&&wNow().shot,[name,desc]=T(TEXT['up.'+u.id+'.'+shot]?'up.'+u.id+'.'+shot:'up.'+u.id);
+    b.innerHTML='<span class="tag">'+(u.w==='any'?T('w.any'):wLabel(u.w))+(u.el?' '+dtSvg(u.el):'')+'</span><b>'+name+'</b><span>'+desc+'</span>';
     b.onclick=()=>{if(u.el){P.dt[u.w]=u.el;updateSwapBtn()}else u.f();sfx('celebrate');S.picks[u.id]=(S.picks[u.id]||0)+1;$('ovLevel').hidden=true;S.mode='play';if(S.pendingLv>0)openLevelUp()};
     box.appendChild(b);
   });
