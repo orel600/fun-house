@@ -19,4 +19,4 @@ https://creativecommons.org/publicdomain/zero/1.0/
 | tap.mp3 | לחיצה על כפתור | Interface Sounds | click_002 |
 | celebrate.mp3 | שדרוג, שלל נדיר | Interface Sounds | confirmation_002 |
 
-צליל חדש: קובץ קצר כאן, ושורה ב-`SOUNDS` בראש `js/audio.js`.
+צליל חדש: קובץ קצר כאן, שורה ב-`SOUNDS` בראש `js/audio.js`, ואז `node tools/build-sounds.js`, שבונה מחדש את `js/sounds-data.js`.
