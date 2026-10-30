@@ -30,7 +30,7 @@ const NPC={
   }
 };
 
-const npcHere=id=>{const N=NPC.list[id];return !!N&&(!N.home||vLv(N.home)>0)};
+const npcHere=id=>{const N=NPC.list[id];return N?(!N.home||vLv(N.home)>0):wnpcMet(id)};   // דמות בעולם (worldnpc.js): כשכבר נמצאה
 // המצב החי של התושבים, רק בכפר. נוצר מחדש בכל כניסה לכפר
 function npcState(){
   const V=S.vil;if(!V)return null;

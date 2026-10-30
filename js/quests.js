@@ -22,7 +22,7 @@ const QUESTS={
     daily:{auto:true,daily:true},
     achievement:{auto:true},
     rank:{},     // עלייה בדרגה, כל 20 רמות. הפרס rank:<שלב>, ואיזו דרגה נפתחת קובע ranks.js
-    world:{}     // בהמשך: NPC שמוצאים בעולם הפתוח
+    world:{talk:true}   // דמויות שמוצאים בעולם הפתוח (worldnpc.js). talk: מקבלים ולוקחים פרס רק אצלן, לא ביומן
   },
   daily:4,       // כמה קווסטים יומיים בכל יום. מתחלפים בחצות, לפי השעון בטלפון
   list:[
@@ -45,6 +45,12 @@ const QUESTS={
     {id:'shields',giver:'smith',kind:'village',obj:[{type:'kill',what:'shield',n:15}],reward:{iron:6,xp:20},req:{quest:'bones'}},
     {id:'wFirst',giver:'head',kind:'village',obj:[{type:'reach',what:'world',n:1},{type:'gather',what:'wood',n:10}],reward:{coins:20,stone:10}},
     {id:'door',giver:'priest',kind:'village',obj:[{type:'reach',what:'room',n:1}],reward:{coins:30}},
+    // ---- עולם: נותנות הדמויות שמוצאים באחו (WNPC ב-worldnpc.js) ----
+    {id:'wFish',giver:'fisher',kind:'world',obj:[{type:'kill',what:'wisp',n:6}],reward:{coins:30,xp:30}},
+    {id:'wQuarry',giver:'cutter',kind:'world',obj:[{type:'gather',what:'stone',n:12}],reward:{coins:20,iron:4}},
+    {id:'wGolems',giver:'cutter',kind:'world',obj:[{type:'kill',what:'golem',n:3}],reward:{iron:8,xp:30},req:{quest:'wQuarry'}},
+    {id:'wHerbs',giver:'herbal',kind:'world',obj:[{type:'gather',what:'herb',n:6}],reward:{coins:20,resin:3}},
+    {id:'wSprites',giver:'herbal',kind:'world',obj:[{type:'kill',what:'sprite',n:4}],reward:{coins:30,xp:30},req:{quest:'wHerbs'}},
     // ---- דרגה: הכוהנת, כל RANKS.every רמות. "הבא 30 עצמות ונצח את השומר" (game-design.md) ----
     {id:'rank1',giver:'priest',kind:'rank',obj:[{type:'collect',what:'bone',n:30},{type:'win',n:1}],reward:{rank:1,coins:50},req:{level:20}},
     // ---- ציד: אפשר לקחת שוב ושוב ----
@@ -181,9 +187,9 @@ function questLog(){
   const Q=QS(),act=Object.keys(Q.active).map(id=>QBY[id]).filter(Boolean),L=QUESTS.list;
   const sec=(k,cards)=>cards.length?'<h4>'+T('q.sec.'+k)+'</h4>'+cards.join(''):'';
   let h='<div class="qhead"><h3>'+T('q.log')+'</h3><button class="qx" data-act="close" aria-label="'+T('q.close')+'">✕</button></div>';
-  h+=sec('ready',act.filter(qReady).map(q=>qCard(q,'claim')));
-  h+=sec('active',act.filter(q=>!qReady(q)&&!qKind(q).auto).map(q=>qCard(q,'track')));
-  h+=sec('new',L.filter(qOpen).map(q=>qCard(q,'accept')));
+  h+=sec('ready',act.filter(q=>qReady(q)&&!qKind(q).talk).map(q=>qCard(q,'claim')));
+  h+=sec('active',act.filter(q=>(!qReady(q)||qKind(q).talk)&&!qKind(q).auto).map(q=>qCard(q,'track')));   // talk: הפרס אצל מי שנתן
+  h+=sec('new',L.filter(q=>qOpen(q)&&!qKind(q).talk).map(q=>qCard(q,'accept')));
   h+=sec('daily',Q.daily.map(id=>QBY[id]).filter(q=>q&&!(Q.active[q.id]&&qReady(q))).map(q=>qCard(q,Q.active[q.id]?'track':'done')));
   h+=sec('ach',act.filter(q=>!qReady(q)&&qKind(q).achievement).map(q=>qCard(q,'')));
   $('qLog').innerHTML=h;
@@ -208,7 +214,7 @@ function drawQuestMarks(ox,oy){
   if(!S.vil)return;
   const Q=QS(),mark={};let n=0;
   for(const q of QUESTS.list){
-    const ready=Q.active[q.id]&&qReady(q);if(ready)n++;
+    const ready=Q.active[q.id]&&qReady(q);if(ready&&!qKind(q).talk)n++;
     if(!q.giver||!npcHere(q.giver))continue;
     if(ready)mark[q.giver]='✓';else if(!mark[q.giver]&&qOpen(q))mark[q.giver]='!';
   }
