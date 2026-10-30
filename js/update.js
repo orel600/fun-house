@@ -26,7 +26,8 @@ function update(dt){
     if(e.wanted){wantedMove(e,dt);continue}
     const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;let mx=dx/d,my=dy/d;
     if(e.type==='wisp'){
-      if(d<170){mx=-mx;my=-my}else if(d<240){const t=mx;mx=-my;my=t}
+      // מכשף רגיל שומר מרחק. מכשף-על מתקדם אליך, כדי שלא יסתתר מאחורי המלווים שלו
+      if(e.elite){}else if(d<170){mx=-mx;my=-my}else if(d<240){const t=mx;mx=-my;my=t}
       e.shoot-=dt;if(e.shoot<=0&&d<380){e.shoot=rand(1.8,2.8);shootE(e.x,e.y,Math.atan2(dy,dx),175,6,8)}
     }
     e.x+=mx*e.speed*dt+e.kx*dt;e.y+=my*e.speed*dt+e.ky*dt;

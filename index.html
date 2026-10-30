@@ -27,11 +27,23 @@
   <span id="swaplbl"></span>
 </button>
 
+<button class="mute" id="muteBtn" data-ta="mute"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg></button>
 <!-- הכפר: התרמיל למעלה, והפאנל של המבנה שלידו למטה (js/village.js) -->
-<div class="vhud" id="vhud" hidden><div class="bag" id="vBag" role="group" data-ta="bagGroup"></div></div>
+<div class="vhud" id="vhud" hidden><div class="bag" id="vBag" role="group" data-ta="bagGroup"></div><button class="gearbtn" id="gearBtn">🎒 <span data-t="gear.btn"></span></button></div>
 <div class="vpanel" id="vPanel" hidden></div>
 
 <div class="banner" id="banner"></div>
+
+<!-- מסך הציוד והתרמיל: המשבצות, התרמיל וההשוואה (js/gear.js) -->
+<div class="ov gearov" id="ovGear" hidden>
+  <div class="panel gearpanel">
+    <div class="ghead"><h2 data-t="gear.title"></h2><span id="gHero"></span><button class="gclose" id="gearClose" data-ta="gear.close">✕</button></div>
+    <div id="gSlots"></div>
+    <div class="bag gres" id="gRes" role="group" data-ta="bagGroup"></div>
+    <div class="gitems" id="gItems"></div>
+    <div class="gdetail" id="gDetail"></div>
+  </div>
+</div>
 
 <div class="ov" id="ovStart">
   <div class="panel">
@@ -95,6 +107,7 @@
 
 <script src="js/core.js"></script>
 <script src="js/lang.js"></script>
+<script src="js/audio.js"></script>
 <script src="js/data.js"></script>
 <script src="js/save.js"></script>
 <script src="js/run.js"></script>
@@ -106,6 +119,7 @@
 <script src="js/bonus.js"></script>
 <script src="js/wanted.js"></script>
 <script src="js/village.js"></script>
+<script src="js/gear.js"></script>
 <script src="js/update.js"></script>
 <script src="js/rig.js"></script>
 <script src="js/fx.js"></script>

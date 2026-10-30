@@ -13,6 +13,7 @@ function reset(){
   runReset();
   bonusReset();
   wantedReset();
+  gearReset();   // הציוד מהכפר: מתנה ראשונה, והסטטים שלו על השחקן (gear.js)
   reset3d();
   updateSwapBtn();
 }
