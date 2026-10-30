@@ -1,4 +1,4 @@
-/* ריצה בזירה בסגנון XP Hero: כמה דקות עם תחנות בדרך, והבוס מחכה בסוף. הבוס שמופל מסיים את הריצה בניצחון.
+/* ריצה בזירה בסגנון XP Hero: כמה דקות עם תחנות בדרך, והבוס מחכה בסוף. הבוס שמופל מסיים את הריצה בניצחון (runWon ב-village.js).
    המספרים גדלים פי כמה ולא באחוזים: חיי האויבים גדלים עם הזמן, ונזק השחקן גדל עם כל רמה.
    הגושים והאויבים הבודדים ב-spawn.js (HORDE). הפס והטיימר מצוירים ב-render.js */
 
@@ -10,8 +10,7 @@ const RUN={
   lvlDmg:1.35,                   // נזק השחקן גדל פי כך בכל רמה
   bossHp:1800,                   // חיי הבוס לפני הגדילה
   swarmN:56, swarmR:0.58,        // גל ענק: כמה אויבים, ובאיזה מרחק מסביב (חלק מהצלע הארוכה של המסך, כדי שיתחיל מחוץ לתמונה)
-  elite:{hp:40,size:1.9,dmg:2,xp:30,speed:0.75,escort:16},   // אויב-על: פי כמה חיים, גודל, נזק ומהירות, כמה XP, וכמה מלווים
-  winDelay:4                     // כמה שניות אחרי שהבוס נופל, כדי לאסוף את ה-XP, מסתיימת הריצה
+  elite:{hp:40,size:1.9,dmg:2,xp:30,speed:0.75,escort:16}    // אויב-על: פי כמה חיים, גודל, נזק ומהירות, כמה XP, וכמה מלווים
 };
 
 // פי כמה האויבים חזקים עכשיו, ופי כמה השחקן
@@ -22,7 +21,6 @@ function runReset(){S.run={next:0,log:[],elites:0,won:0}}
 function runUpdate(){
   const r=S.run,st=RUN.stations[r.next];
   if(st&&S.t>=st.t){r.next++;r.log.push({kind:st.kind,t:S.t});st.kind==='swarm'?swarm():elite()}
-  if(r.won&&S.t>=r.won+RUN.winDelay)gameOver(true);
 }
 // התחנה הבאה בדרך לבוס, בשביל הטקסט מתחת לטיימר
 function nextStation(){return RUN.stations[S.run.next]||{t:RUN.bossAt,kind:'boss'}}

@@ -28,10 +28,9 @@ function showIntro(b){
   $('bWeak').innerHTML=T('weakSpot',b.weak==='sword'?'e':'t',T('w.'+b.weak));
   $('ovBoss').hidden=false;
 }
-// win: הבוס בסוף הריצה הופל
-function gameOver(win=false){
+function gameOver(){
   S.mode='over';joy=null;
-  const h=$('ovOver').querySelector('h2');h.dataset.t=win?'won':'fell';h.textContent=T(h.dataset.t);
+  runEnd();   // השלל עובר לתרמיל (village.js)
   if(S.t>best){best=S.t;try{localStorage.setItem('zm-best',String(best))}catch(e){}}
   $('sTime').textContent=fmt(S.t);$('sLvl').textContent=P.level;$('sBoss').textContent=S.bossCount;$('sBest').textContent=fmt(best);$('sCoins').textContent=S.bn.coins;$('sPicks').textContent=S.bn.taken;
   setTimeout(()=>{$('ovOver').hidden=false},700);

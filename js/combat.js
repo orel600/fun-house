@@ -1,15 +1,15 @@
 /* קרב: פגיעה, נזק, החלפת נשק */
-const FX={floats:70,parts:450,crit:0.12,critMul:2.5};   // תקרה לטקסט צף ולניצוצות בשביל הטלפון, וסיכוי ועוצמה של מכה קריטית
+const HITFX={floats:70,parts:450,crit:0.12,critMul:2.5};   // תקרה לטקסט צף ולניצוצות בשביל הטלפון, וסיכוי ועוצמה של מכה קריטית
 function nearest(maxD){let b=null,bd=maxD;for(const e of enemies){if(e.dead)continue;const d=Math.hypot(e.x-P.x,e.y-P.y)-e.r;if(d<bd){bd=d;b=e}}return b}
-function sparks(x,y,col,n,sp=180){n=Math.min(n,FX.parts-parts.length);for(let i=0;i<n;i++){const a=rand(0,6.28),s=rand(sp*.3,sp);parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(.2,.45),max:.45,col,size:rand(1.5,3.5)})}}
+function sparks(x,y,col,n,sp=180){n=Math.min(n,HITFX.parts-parts.length);for(let i=0;i<n;i++){const a=rand(0,6.28),s=rand(sp*.3,sp);parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(.2,.45),max:.45,col,size:rand(1.5,3.5)})}}
 // ltr: מספר שנכתב תמיד משמאל לימין, גם בעברית. crit: מכה קריטית, גדולה ועם מסגרת
 function floatText(x,y,txt,col,size,ltr=false,crit=false){
-  if(floats.length>=FX.floats){const i=floats.findIndex(f=>f!==S.gain);if(i>=0)floats.splice(i,1)}
+  if(floats.length>=HITFX.floats){const i=floats.findIndex(f=>f!==S.gain);if(i>=0)floats.splice(i,1)}
   floats.push({x,y,txt,col,size,ltr,crit,life:crit?.95:.75,vy:crit?-70:-55});
 }
 function damage(e,base,w,ang){
-  const m=e.mult[w]??1;const crit=Math.random()<FX.crit;
-  const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?FX.critMul:1);
+  const m=e.mult[w]??1;const crit=Math.random()<HITFX.crit;
+  const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?HITFX.critMul:1);
   e.hp-=d;e.flash=0.09;
   if(!e.isBoss){const kb=(w==='sword'?150:55)*(m>1?1.4:1)/(e.big||1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   const col=m>1?(w==='sword'?C.ember:C.tide):m<1?C.dim:C.chalk;
@@ -21,6 +21,7 @@ function damage(e,base,w,ang){
 }
 function kill(e){
   e.dead=true;S.kills++;
+  runDrop(e);   // שלל לכפר (village.js)
   if(e.isBoss){bossDown(e);return}
   if(e.wanted){wantedDown(e);return}
   if(e.elite)eliteDown(e);
