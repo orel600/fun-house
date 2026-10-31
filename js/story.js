@@ -8,8 +8,12 @@
    1. כשפנס האדמה דולק, נפתחת דרך מהאחו לאגם (WORLD.paths). מגיעים אליו.
    2. אויבים רטובים ואבני גאות: מביאים מים זוהרים (aquaC).
    3. שומר המים קם ליד פנס המים. נופל, הפנס נדלק, והאגם בטוח יותר. ראש הכפר אומר משפט.
+   פרק 3, פנס הקרח (הרכס הקפוא, WORLD.regions.ridge ב-world.js):
+   1. כשפנס המים דולק, נפתח שביל מהאגם לרכס (paths של האגם). מגיעים אליו, בשלג.
+   2. אבירי כפור (חלשים לאש) וגבישי קרח: מביאים ספיר גולמי (sapphireC).
+   3. שומר הקרח קם ליד פנס הקרח, ויורה מניפה של רסיסי קרח. נופל, הפנס נדלק, והרכס בטוח יותר.
    כל פנס הוא שורה ב-STORY.lanterns: באיזה אזור, איפה, איזה קווסט מעיר את השומר, והשומר עצמו.
-   מה נשמר: SAVE.story ({intro, shard, earth, water}). הטקסטים ב-lang.js תחת 'story.' ו-'q.s1*', 'q.s2*' */
+   מה נשמר: SAVE.story ({intro, shard, earth, water, ice}). הטקסטים ב-lang.js תחת 'story.' ו-'q.s1*', 'q.s2*', 'q.s3*' */
 
 const STORY={
   lanterns:{
@@ -17,8 +21,12 @@ const STORY={
     earth:{reg:'meadow',x:880,y:-560,quest:'s1Warden',glow:'#FFD36B',col:C.ember,
       warden:{type:'golem',hp:30,dmg:1.6,r:1.7,speed:0.8,wake:520,leash:420}},
     // פנס המים: בפינה הדרום-מערבית של האגם. שומר המים גם יורה מים בשלושה כיוונים (shoot)
-    water:{reg:'lake',x:-860,y:470,quest:'s2Warden',glow:'#6FD3FF',col:'#3F7BF5',
-      warden:{type:'tidewarden',hp:26,dmg:1.3,r:1.6,speed:0.9,wake:520,leash:420,shoot:{every:2.4,n:3,spread:0.32,speed:190,r:7,dmg:11}}}
+    // ev: מה מדווחים לקווסט כשהשומר נופל (questEvent('story',ev)). head: ראש הכפר אומר משפט אחרי שהפנס נדלק
+    water:{reg:'lake',x:-860,y:470,quest:'s2Warden',glow:'#6FD3FF',col:'#3F7BF5',ev:'tide',head:true,
+      warden:{type:'tidewarden',hp:26,dmg:1.3,r:1.6,speed:0.9,wake:520,leash:420,shoot:{every:2.4,n:3,spread:0.32,speed:190,r:7,dmg:11}}},
+    // פנס הקרח: בפינה הדרום-מזרחית של הרכס. שומר הקרח יורה מניפה רחבה של חמישה רסיסים, לאט יותר
+    ice:{reg:'ridge',x:860,y:500,quest:'s3Warden',glow:'#CFF3FF',col:'#7FD4FF',ev:'frost',head:true,
+      warden:{type:'frostwarden',hp:28,dmg:1.35,r:1.65,speed:0.85,wake:520,leash:420,shoot:{every:2.8,n:5,spread:0.24,speed:170,r:7,dmg:12}}}
   },
   introDelay:0.9,                          // שניות אחרי הכניסה הראשונה לכפר עד שראש הכפר מדבר
   headDelay:1.4,                           // אחרי שפנס נדלק (הפרס נלקח בכפר): ראש הכפר אומר משפט
@@ -55,7 +63,7 @@ function storyUpdate(dt){
     const W=L.warden,e=addEnemy(W.type,L.x,L.y+70,W.hp);
     e.warden=k;e.elite=false;e.dmg*=W.dmg;e.r*=W.r;e.speed*=W.speed;e.xp=0;e.big=W.r;e.shoot=W.shoot?W.shoot.every:0;w.warden=e;
     banner(T('story.'+k+'.rise'),L.col);S.shake=Math.max(S.shake,8)}
-  if(w.warden&&w.warden.dead){if(w.warden.warden==='water')questEvent('story','tide');w.warden=null}   // שומר המים: מטרה 'tide' (s2Warden)
+  if(w.warden&&w.warden.dead){const ev=(STORY.lanterns[w.warden.warden]||{}).ev;if(ev)questEvent('story',ev);w.warden=null}   // שומר המים: 'tide' (s2Warden), שומר הקרח: 'frost' (s3Warden)
 }
 // השומר: רודף את השחקן, אבל לא מתרחק מהפנס (wFoes ב-world.js). שומר המים גם יורה
 function storyWardenMove(e,dt){
@@ -72,7 +80,7 @@ function storyWardenMove(e,dt){
 function storyReward(what){
   const L=STORY.lanterns[what];if(!L)return;
   STO()[what]=true;saveNow();banner(T('story.'+what+'.lit'),L.glow);if(P)celebrate(P.x,P.y-20,'rank',T('story.litShort'));
-  if(what==='water'&&S.vil)storySay('story.water.head',STORY.headDelay);   // ראש הכפר על הדרך הבאה (לא מגלים מה יש שם)
+  if(L.head&&S.vil)storySay('story.'+what+'.head',STORY.headDelay);   // ראש הכפר על הדרך הבאה (לא מגלים מה יש שם)
 }
 // האויבים פוגעים פחות אחרי שהפנס של האזור נדלק (wSpawn ב-world.js)
 const storySafe=()=>{const k=storyLantern();return k&&STO()[k]?STORY.lit.dmg:1};

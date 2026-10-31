@@ -38,6 +38,10 @@ const QUESTS={
     {id:'s2Mist',giver:'head',kind:'story',obj:[{type:'story',what:'lake',n:1}],reward:{coins:30,xp:50},req:{quest:'s1Warden'}},
     {id:'s2Glow',giver:'head',kind:'story',obj:[{type:'kill',what:'drowned',n:8},{type:'gather',what:'aquaC',n:3}],reward:{iron:6,xp:80},req:{quest:'s2Mist'}},
     {id:'s2Warden',giver:'head',kind:'story',obj:[{type:'story',what:'tide',n:1}],reward:{coins:120,xp:180,story:'water'},req:{quest:'s2Glow'}},
+    // ---- העלילה, פרק 3: פנס הקרח, ברכס הקפוא (story.js, WORLD.regions.ridge ב-world.js). נפתח אחרי פנס המים ----
+    {id:'s3Climb',giver:'head',kind:'story',obj:[{type:'story',what:'ridge',n:1}],reward:{coins:40,xp:70},req:{quest:'s2Warden'}},
+    {id:'s3Frost',giver:'head',kind:'story',obj:[{type:'kill',what:'rimeknight',n:8},{type:'gather',what:'sapphireC',n:3}],reward:{iron:8,resin:4,xp:110},req:{quest:'s3Climb'}},
+    {id:'s3Warden',giver:'head',kind:'story',obj:[{type:'story',what:'frost',n:1}],reward:{coins:160,xp:240,story:'ice'},req:{quest:'s3Frost'}},
     {id:'boots',giver:'head',kind:'village',obj:[{type:'gather',what:'wood',n:5}],reward:{coins:10,item:'starterBoots'}},
     {id:'firstMill',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mill',n:1}],reward:{coins:15,wood:10}},
     {id:'firstMine',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mine',n:1}],reward:{coins:15,stone:10}},
