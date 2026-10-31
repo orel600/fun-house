@@ -824,7 +824,34 @@ const TEXT={
   'npc.jokes.smith':{he:[],en:[]},
   'npc.jokes.merchant':{he:[],en:[]},
   'npc.jokes.inn':{he:[],en:[]},
-  'npc.jokes.priest':{he:[],en:[]}
+  'npc.jokes.priest':{he:[],en:[]},
+  // ---- דיג (js/fishing.js) ----
+  'fam.fish':{he:'דגים',en:'Fish'},
+  'res.minnow':{he:'דגיג',en:'Minnow'},
+  'res.perch':{he:'אוקונוס',en:'Perch'},
+  'res.crab':{he:'סרטן',en:'Crab'},
+  'res.puffer':{he:'דג נפוח',en:'Pufferfish'},
+  'res.eel':{he:'צלופח',en:'Eel'},
+  'res.mistfin':{he:'סנפיר ערפל',en:'Mistfin'},
+  'res.koi':{he:'קוי זהב',en:'Golden Koi'},
+  'fish.btn':{he:'🎣 לדוג',en:'🎣 Fish'},
+  'fish.wait':{he:'⏳ מחכים…',en:'⏳ Waiting…'},
+  'fish.bite':{he:'❗ למשוך!',en:'❗ Pull!'},
+  'fish.reel':{he:'🎯 עכשיו!',en:'🎯 Now!'},
+  'fish.early':{he:'מוקדם מדי, הדג נבהל',en:'Too early, it got scared'},
+  'fish.away':{he:'הדג ברח…',en:'It got away…'},
+  'fish.miss':{he:'פספוס! הדג ברח',en:'Missed! It got away'},
+  'fish.src':{he:'דיג',en:'Fishing'},
+  'fish.cookT':{he:'🍳 לבשל דגים (חיזוק בעולם הפתוח)',en:'🍳 Cook fish (a boost out in the world)'},
+  'fish.cook':{he:'לבשל',en:'Cook'},
+  'fish.mealNow':{he:(m,n)=>'אכלת: '+m+', עוד '+n+' דק׳ בעולם',en:(m,n)=>'You ate: '+m+', '+n+' more min in the world'},
+  'fish.mealEnd':{he:'החיזוק מהארוחה נגמר',en:'The meal boost wore off'},
+  'meal.stew':{he:['מרק דגים','+40 חיים'],en:['Fish Soup','+40 health']},
+  'meal.grill':{he:['שיפוד ים','+12% מהירות'],en:['Sea Skewer','+12% speed']},
+  'meal.feast':{he:['ארוחת אגם','+15% נזק'],en:['Lake Feast','+15% damage']},
+  'meal.gold':{he:['סושי זהב','חיים, מהירות ונזק'],en:['Golden Sushi','Health, speed and damage']},
+  'qo.fish':{he:'לדוג דגים',en:'Catch fish'},
+  'q.wCatch':{he:['סוף סוף דגים','הרוחות הלכו והדגים חזרו! תדוג לי 3 מהבריכה. לחץ "לדוג", חכה ל-! ולחץ כשהמחוג בירוק.'],en:['Fish at Last','The wisps are gone and the fish are back! Catch me 3 from the pond. Tap "Fish", wait for the !, then tap when the needle is in the green.']}
 };
 
 // ======== מפת העולם (worldmap.js) ========
