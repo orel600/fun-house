@@ -7,11 +7,12 @@
 const NODES={
   reach:70,                       // מאיזה מרחק מהקצה של מקור ההתקפה האוטומטית פוגעת בו
   // hp: כמה מכות הוא סופג. r: גודל וגבול הפגיעה, גדולים כדי שיראו אותם בטלפון. drop: {משאב:[סיכוי, כמה]}. col: הצבע בציור. shape: עץ, סלע, שיח, עורק או תיבה.
-  // tags: ממה הוא עשוי, כמו אויב (DMG.chart ב-dmg.js): סלע חלש למים, עץ לאש. guard: {type: היצור, chance: סיכוי, n: כמה} שמופיעים ליד המקור
+  // tags: ממה הוא עשוי, כמו אויב (DMG.chart ב-dmg.js): סלע חלש למים, עץ לאש. guard: {type: היצור, chance: סיכוי, n: כמה} שמופיעים ליד המקור.
+  // wdrop: שלל נוסף רק בעולם הפתוח (ניר, 31.10.2026: מה שהוא מבקש הוא לכפר ולעולם, והזירה של אוראל)
   kinds:{
     tree:   {tags:['plant'],hp:40, r:28,shape:'tree',col:'#3E7A4A',drop:{wood:[1,4],resin:[0.3,1],herb:[0.15,1]},guard:{type:'treant',chance:0.25,n:1}},
     rock:   {tags:['stone'],hp:55, r:24,shape:'rock',col:'#7A8094',drop:{stone:[1,3],mushroom:[0.1,1],amberC:[0.03,1]},guard:{type:'golem',chance:0.3,n:1}},
-    bush:   {tags:['plant'],hp:25, r:21,shape:'bush',col:'#5FA35A',drop:{herb:[1,2],mushroom:[0.35,1],flower:[0.25,1]},guard:{type:'sprite',chance:0.35,n:2}},
+    bush:   {tags:['plant'],hp:25, r:21,shape:'bush',col:'#5FA35A',drop:{herb:[1,2],mushroom:[0.35,1],flower:[0.25,1]},wdrop:{carrot:[0.4,1]},guard:{type:'sprite',chance:0.35,n:2}},
     copper: {tags:['metal'],hp:70, r:24,shape:'vein',col:'#C87533',drop:{copper:[1,2],stone:[0.5,1],rubyC:[0.04,1]},guard:{type:'crawler',chance:0.3,n:1}},
     iron:   {tags:['metal'],hp:100,r:24,shape:'vein',col:'#9AA3AD',drop:{iron:[1,2],boltC:[0.04,1]},guard:{type:'crawler',chance:0.3,n:1}},
     silver: {tags:['metal'],hp:140,r:25,shape:'vein',col:'#DCE3EA',drop:{silver:[1,2],sapphireC:[0.05,1]},guard:{type:'crawler',chance:0.35,n:2}},
@@ -71,7 +72,7 @@ function nodeNear(){
 function nodeDown(n){
   n.dead=true;S.nd.broken++;if(n.regrow)n.back=n.regrow;   // בעולם הפתוח הוא צומח מחדש (world.js)
   if(NODES.kinds[n.kind].shape==='chest')S.nd.chests=(S.nd.chests||0)+1;sfx('coin');
-  const got=runGive(NODES.kinds[n.kind].drop,n.x,n.y);S.nd.got.push(...got);
+  const K=NODES.kinds[n.kind],got=runGive(S.wd&&K.wdrop?Object.assign({},K.drop,K.wdrop):K.drop,n.x,n.y);S.nd.got.push(...got);
   sparks(n.x,n.y,NODES.kinds[n.kind].col,14,200);
 }
 

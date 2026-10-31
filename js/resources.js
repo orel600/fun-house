@@ -23,6 +23,7 @@ const RES={
     herb:    {fam:'build',icon:'🌿',rar:0,sell:1,buy:4},
     mushroom:{fam:'build',icon:'🍄',rar:1,sell:3,buy:9},
     flower:  {fam:'build',icon:'🌸',rar:1,sell:3,buy:9},
+    carrot:  {fam:'build',icon:'🥕',rar:0,sell:1,buy:4,glow:1},   // הגזר הקסום (שני, 31.10.2026). glow: זוהר זהב כשהוא על הרצפה (drops.js). אוכל לחיית המחמד (PET.feed ב-pet.js). משיחים, ופיוחו חופרת אותו
     // מתכות, מהחלשה לחזקה. ככל שהמקום רחוק וקשה יותר, המתכת טובה יותר.
     // האייקון הוא גוש בצבע המתכת, לא כלי (ניר: "המשאב שנראה כמו PICK AXE לא ברור"). האבנים בצורות אחרות, כדי שלא יתבלבלו
     copper:  {fam:'metal',icon:'🟤',rar:0,sell:2,buy:6},
@@ -73,7 +74,7 @@ const resOf=r=>RES.list[r]||null;
 const resIcon=r=>(RES.list[r]||{}).icon||'';
 /* תמונה למשאב בממשק (HTML), מהעיצוב של ניר מג'מיני ומ-Creative Claw (icons/ui/res, נחתך עם tools/slice-icons.py). למשאב בלי תמונה: האימוג'י. על הקנבס תמיד האימוג'י (resIcon).
    משאב חדש עם תמונה: קובץ ב-icons/ui/res בשם המשאב, ושורה כאן. אבנים בשלוש דרגות (רסיס, אבן, מושלמת) חולקות תמונה, והמסגרת בצבע הנדירות מבדילה */
-const RES_PIC={coins:1,wood:1,stone:1,cloth:1,copper:1,iron:1,silver:1,gold:1,bone:1,hide:1,herb:1,mushroom:1,flower:1,ruby:1,sapphire:1,star:1,resin:1,mythril:1,dust:1,plate:1,essence:1,shadow:1,venom:1,horn:1,bolt:1,aqua:1,amber:1,gem:1,boltC:'bolt',boltF:'bolt',aquaC:'aqua',aquaF:'aqua',amberC:'amber',amberF:'amber',rubyC:'ruby',rubyF:'ruby',sapphireC:'sapphire',sapphireF:'sapphire'};
+const RES_PIC={coins:1,wood:1,stone:1,cloth:1,copper:1,iron:1,silver:1,gold:1,bone:1,hide:1,herb:1,mushroom:1,flower:1,ruby:1,sapphire:1,star:1,resin:1,mythril:1,dust:1,plate:1,essence:1,shadow:1,venom:1,horn:1,bolt:1,aqua:1,amber:1,gem:1,carrot:1,boltC:'bolt',boltF:'bolt',aquaC:'aqua',aquaF:'aqua',amberC:'amber',amberF:'amber',rubyC:'ruby',rubyF:'ruby',sapphireC:'sapphire',sapphireF:'sapphire'};
 const resPic=r=>{const p=RES_PIC[r];return p?'<img class="ri" src="icons/ui/res/'+(p===1?r:p)+'.png" alt="">':resIcon(r)};
 // כל המשאבים של משפחה, לפי הסדר בטבלה
 const resFam=f=>Object.keys(RES.list).filter(r=>RES.list[r].fam===f);
@@ -94,13 +95,15 @@ const resName=r=>{const R=resOf(r);return R&&R.grade!=null?T('gemName',T('gem.'+
 RES.tip={max:3,ms:3500};
 function resWhere(r){
   const src=new Set(),use=new Set(),has=t=>t&&t[r];
-  for(const k in NODES.kinds)if(has(NODES.kinds[k].drop))src.add(T('node.'+k));
+  for(const k in NODES.kinds)if(has(NODES.kinds[k].drop)||has(NODES.kinds[k].wdrop))src.add(T('node.'+k));
   for(const t in ETYPES)if(has(ETYPES[t].drop))src.add(T('foe.'+t));
   for(const b in BOSSES)if(has(BOSSES[b].drop))src.add(T('foe.boss'));
   if(has(WANTED.drop)||WANTED.loot.some(l=>has(l.res)))src.add(T('foe.wanted'));
   for(const k in VILLAGE.b){const B=VILLAGE.b[k];if(B.make&&B.make[r]&&B.make[r].some(n=>n>0))src.add(T('vil.'+k));if(B.cost.some(has))use.add(T('vil.'+k))}
   if(Object.values(GEAR.recipes).some(has))use.add(T('tip.craft'));
   if(AGING.cost.some(has)||AGING.gem===r)use.add(T('tip.aging'));
+  for(const k in PET.kinds)if(PET.kinds[k].stages.some(s=>has(s.dig.loot)))src.add(T('pet.name.'+k));   // חפירה של חיית המחמד
+  if(PET.feed.res===r)use.add(T('tip.pet'));
   if(RES.list[r].sell)use.add(T('vil.market'));
   return{src:[...src],use:[...use]};
 }
