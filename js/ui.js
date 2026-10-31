@@ -9,6 +9,7 @@ const WINS=[
   {id:'ovHelp',close:()=>helpOpen(false),backdrop:true},
   {id:'ovGear',close:()=>gearClose(),backdrop:true},
   {id:'ovForge',close:()=>forgeClose(),backdrop:true},
+  {id:'ovDaily',close:()=>dailyClose(),backdrop:true},
   {id:'npcDlg',close:()=>S.wd?wnpcTalk(null):npcTalk(null),outside:true},
   {id:'qLog',close:()=>questLogOpen(false),outside:true},
   {id:'bookWin',close:()=>bookOpen(false),outside:true},

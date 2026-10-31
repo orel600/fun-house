@@ -125,6 +125,7 @@ function enterVillage(){
   saveNow();
   villageUi(true);
   storyVillage();   // ההקדמה של העלילה, פעם אחת (story.js)
+  dailyVillage();   // המתנה היומית (daily.js)
 }
 function leaveVillage(){villageUi(false);enterWorld('home');questEvent('reach','world')}   // השער מוביל לעולם הפתוח (world.js), והזירות בתוכו
 
