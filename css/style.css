@@ -513,13 +513,6 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .stplus:active{transform:translateY(2px);box-shadow:0 1px 0 #9A7A22}
 .stplus:disabled{background:var(--line);color:var(--dim);box-shadow:none;cursor:default}
 .gfig{cursor:pointer}
-@media (orientation:landscape) and (max-height:500px){
-  /* בלי פריט נבחר: הנקודות מקבלות את רוב הגובה, והתרמיל מתקצר */
-  #ovGear.stv .gbody{grid-template-rows:auto minmax(0,1fr)}
-  #ovGear.stv .gbag{max-height:34vh}
-  #ovGear.stv .gsidep{max-height:none}
-  .strows{display:grid;grid-template-columns:1fr 1fr}
-}
 /* עץ הסקילים (js/stats.js): שלושה ענפים בטורים, בתוך חלון הציוד */
 .gtree{display:flex;flex-direction:column;gap:8px;min-height:0;flex:1;overflow:hidden}
 .trtop{display:flex;align-items:center;gap:10px}.trtop .vbtn{padding:8px 12px;font-size:14px}.trtop .stfree{margin:0}
@@ -551,3 +544,22 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 @media (orientation:landscape) and (max-height:500px){#qBtn .ni,#gearBtn .ni{width:28px;height:28px}}
 .trkey{margin:4px 0 0;font:800 11px var(--body);color:var(--gold)}.tror{margin:-2px 0;text-align:center;font:700 11px var(--body);color:var(--dim)}.trn.gone{opacity:.3}
 .bname{color:var(--chalk);background:rgba(255,138,61,.2);border:1px solid var(--ember);border-radius:8px;padding:0 6px}
+
+/* ===== סידור המסכים לטלפון לרוחב (ניר, 31.10.2026: "הפרופורציות לא טובות") =====
+   מסגרת דקה יותר, כפתורים שלא נמתחים (border-image: הקצוות נשארים בצורתם, והאמצע נמתח), ומסך הציוד בשלושה טורים */
+.win{border-width:20px;border-image:url(../icons/ui/frame.png) 76 fill / 20px stretch}
+.vbtn{background:none;border:0 solid transparent;border-width:0 34px;border-image:url(../icons/ui/btn-gold.png) 0 120 fill / 0 34px stretch;padding:11px 4px;min-height:46px;border-radius:0}
+.vbtn:disabled{background:none;border-image-source:url(../icons/ui/btn-off.png)}
+.vbtn.ghost{background:none;border-image-source:url(../icons/ui/btn-dark.png);border-width:0 30px;border-image-width:0 30px}
+.gbtns,.vpanel .vbtn{align-self:center;width:100%;max-width:320px}
+.gbtns{display:flex;flex-direction:column;align-items:center;gap:6px;margin-inline:auto}
+@media (orientation:landscape) and (max-height:500px){
+  .gbody{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr);grid-template-areas:"doll bag side"}
+  .gsidep{max-height:none;overflow-y:auto;min-height:0}
+  .gbag{min-height:0;overflow:hidden}.gbag .ggrid{overflow-y:auto;min-height:0}
+  .ggrid{grid-template-columns:repeat(auto-fill,minmax(50px,1fr))}
+  .gdoll .gtile{width:44px}#ovGear .gd-start .gtile{width:52px;font-size:26px}#ovGear .gd-under .gtile{flex:0 1 36px;width:36px}
+  .gfig span{font-size:clamp(48px,14vh,80px)}
+  .strows{display:flex}
+  .vbtn{min-height:42px;padding:9px 4px;font-size:15px}
+}
