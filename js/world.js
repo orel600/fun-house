@@ -96,7 +96,8 @@ const WORLD={
     // heat: אדי חום ורוח חול בקנבס (wHeat). ponds כאן הם בורות לבה שאי אפשר לעבור
     desert:{
       region:'desert',back:'ridge',enter:'w.enter.desert',noNpc:true,heat:true,ground:'#5A4129',pondCol:['#7A2A10','#FF8A3D'],
-      home:{x:0,y:-600,r:44},gates:{},paths:{},
+      home:{x:0,y:-600,r:44},gates:{},
+      paths:{storm:{x:860,y:-590,r:44,need:'fire'}},   // פרק 5: אחרי שפנס האש נדלק, שביל בצפון-מזרח שעולה למגדלי הסערה
       ponds:[{x:140,y:20,r:140},{x:-420,y:-140,r:95},{x:560,y:300,r:110}],
       fields:[{kind:'cactus',n:8,x:-560,y:-300,r:220},{kind:'cactus',n:6,x:300,y:-320,r:170},{kind:'cactus',n:4,x:-120,y:420,r:140},
               {kind:'emberRock',n:6,x:640,y:-120,r:180},{kind:'emberRock',n:4,x:-700,y:160,r:140},{kind:'rock',n:4,x:220,y:330,r:130}],
@@ -113,6 +114,29 @@ const WORLD={
         {id:'far',  to:1e9, hp:2.1,dmg:1.5, speed:1.1,leash:480,back:45}
       ],
       decor:{trees:30,hills:22,rocks:0.7}
+    },
+    // ---- פרק 5: מגדלי הסערה (docs/story.md). גשם, ברקים, מגדלים שבורים, אויבים מחושמלים (אדמה!), ופנס הברק בפינה הדרום-מזרחית (STORY.lanterns.bolt).
+    // storm: גשם והבזקי ברק בקנבס (wStorm). towers: מגדלי אבן שבורים שאי אפשר לעבור דרכם (h גובה הציור). ponds: שלוליות עמוקות
+    storm:{
+      region:'storm',back:'desert',enter:'w.enter.storm',noNpc:true,storm:true,ground:'#2E2C3A',pondCol:['#1E1A30','#8E7CC8'],
+      home:{x:0,y:-600,r:44},gates:{},paths:{},
+      ponds:[{x:-80,y:60,r:120},{x:520,y:-40,r:85}],
+      towers:[{x:-620,y:-330,r:46,h:150},{x:300,y:-330,r:40,h:110},{x:-380,y:330,r:44,h:170},{x:420,y:300,r:38,h:95},{x:-880,y:120,r:36,h:120}],
+      fields:[{kind:'deadTree',n:8,x:-560,y:-80,r:200},{kind:'deadTree',n:5,x:120,y:420,r:150},{kind:'deadTree',n:4,x:680,y:-380,r:130},
+              {kind:'stormRock',n:6,x:640,y:120,r:170},{kind:'stormRock',n:4,x:-250,y:-360,r:130},{kind:'rock',n:4,x:-700,y:420,r:120}],
+      foes:[
+        {type:'sparkwisp',n:2,x:-190,y:-420,r:110},{type:'sparkwisp',n:2,x:200,y:-420,r:110},
+        {type:'stormknight',n:2,x:-420,y:-200,r:130},{type:'sparkwisp',n:3,x:380,y:-200,r:140},{type:'stormknight',n:3,x:640,y:120,r:150},
+        {type:'stormknight',n:3,x:-640,y:200,r:150},{type:'sparkwisp',n:3,x:-60,y:330,r:140},{type:'stormknight',n:3,x:620,y:440,r:150},
+        {type:'stormknight',creature:true,n:2,x:640,y:120,r:120},{type:'sparkwisp',creature:true,n:2,x:-560,y:-80,r:130}
+      ],
+      // קשה מהמדבר: מי שהגיע לכאן כבר הדליק ארבעה פנסים
+      zones:[
+        {id:'start',to:360, hp:0.95,dmg:0.7,speed:0.8, leash:260,back:25},
+        {id:'near', to:800, hp:1.7, dmg:1.25,speed:1,  leash:380,back:35},
+        {id:'far',  to:1e9, hp:2.4, dmg:1.65,speed:1.12,leash:480,back:45}
+      ],
+      decor:{trees:40,hills:20,rocks:0.6}
     }
   }
 };
@@ -327,9 +351,10 @@ function drawWorld(){
   if(WR().fog)wFog();
   if(WR().snow)wSnow();   // הרכס הקפוא
   if(WR().heat)wHeat();   // המדבר הבוער
+  if(WR().storm)wStorm();   // מגדלי הסערה
 }
 // מים שאי אפשר ללכת בהם: דוחפים החוצה, כמו מעץ
-function wPonds(o){for(const p of WR().ponds||[]){const dx=o.x-p.x,dy=o.y-p.y,d=Math.hypot(dx,dy)||1,min=p.r+(o.r||12);if(d<min){o.x=p.x+dx/d*min;o.y=p.y+dy/d*min}}}
+function wPonds(o){for(const p of (WR().ponds||[]).concat(WR().towers||[])){const dx=o.x-p.x,dy=o.y-p.y,d=Math.hypot(dx,dy)||1,min=p.r+(o.r||12);if(d<min){o.x=p.x+dx/d*min;o.y=p.y+dy/d*min}}}
 /* ערפל עדין: כמה כתמים לבנים שקופים שנעים לאט סביב השחקן. ציור אחד מוכן מראש לכל כתם, כדי שיהיה קל לטלפון */
 const FOG={n:7,size:360,alpha:0.16,drift:9,spread:520};
 function wFog(){
@@ -369,6 +394,34 @@ function wHeat(){
     const x=P.x-F.spread+(((bx-P.x)%W)+W)%W,y=P.y-F.spread+(((by-P.y)%W)+W)%W,r=F.size[0]+hash(i,37)*(F.size[1]-F.size[0]);
     ctx.globalAlpha=F.alpha*(0.4+hash(i,38)*0.6);ctx.fillRect(x,y,r*2.4,r)}
   ctx.restore();
+}
+/* ---- מגדלי הסערה (פרק 5): מגדלים שבורים, גשם באלכסון, והבזקי ברק. כמו השלג: הכל מחושב מהזמן, בלי מערך חי ----
+   flash: כל every שניות (בערך) ברק רחוק מאיר את המסך ל-len שניות. bolt: ברק אמיתי נראה בשמיים, רחוק מהשחקן */
+const STORM={rain:80,spread:560,fall:620,slant:0.32,len:18,alpha:0.45,dark:0.12,flash:{every:5.5,len:0.18,alpha:0.35}};
+function wStorm(){
+  const t=fxNow(),F=STORM,W=F.spread*2;ctx.save();
+  for(const tw of WR().towers||[])wTower(tw);
+  ctx.fillStyle='rgba(20,16,50,'+F.dark+')';ctx.fillRect(P.x-F.spread*2,P.y-F.spread*2,W*2,W*2);
+  ctx.strokeStyle='#B9C4F0';ctx.lineWidth=1.4;
+  for(let i=0;i<F.rain;i++){   // טיפות: קווים קצרים שנופלים באלכסון
+    const sp=0.75+hash(i,41)*0.5,bx=hash(i,42)*W-t*F.fall*sp*F.slant,by=hash(i,43)*W+t*F.fall*sp;
+    const x=P.x-F.spread+(((bx-P.x)%W)+W)%W,y=P.y-F.spread+(((by-P.y)%W)+W)%W;
+    ctx.globalAlpha=F.alpha*(0.5+hash(i,44)*0.5);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-F.len*F.slant,y+F.len);ctx.stroke()}
+  const n=Math.floor(t/F.flash.every),ph=t-n*F.flash.every,at=hash(n,45)*(F.flash.every-F.flash.len);   // ברק אחד בכל מחזור, ברגע אקראי
+  if(ph>at&&ph<at+F.flash.len){const k=1-(ph-at)/F.flash.len;
+    ctx.globalAlpha=F.flash.alpha*k;ctx.fillStyle='#EDE6FF';ctx.fillRect(P.x-F.spread*2,P.y-F.spread*2,W*2,W*2);
+    const bx=P.x+(hash(n,46)-0.5)*F.spread*1.6,by=P.y-F.spread*0.9;ctx.globalAlpha=k;ctx.strokeStyle='#FFFFFF';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(bx,by);for(let j=1;j<=7;j++)ctx.lineTo(bx+(hash(n,50+j)-0.5)*70,by+j*45);ctx.stroke()}
+  ctx.restore();
+}
+// מגדל שבור: גוף אבן עם ראש משונן, סדקים, וחלון שמהבהב בסגול כשברק עובר
+function wTower(o){
+  const {x,y,r,h}=o,top=y-h;
+  ctx.fillStyle='rgba(5,7,13,0.4)';ctx.beginPath();ctx.ellipse(x,y+4,r*1.2,r*0.45,0,0,7);ctx.fill();
+  ctx.fillStyle='#4C4A5C';ctx.strokeStyle='#17151F';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(x-r,y);ctx.lineTo(x-r*0.85,top+h*0.12);ctx.lineTo(x-r*0.5,top);ctx.lineTo(x-r*0.15,top+h*0.16);ctx.lineTo(x+r*0.25,top+h*0.05);ctx.lineTo(x+r*0.55,top+h*0.24);ctx.lineTo(x+r*0.85,top+h*0.18);ctx.lineTo(x+r,y);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.strokeStyle='#2A2836';ctx.lineWidth=2;for(let j=1;j<4;j++){const yy=y-h*j/4.4;ctx.beginPath();ctx.moveTo(x-r*0.9,yy);ctx.lineTo(x+r*0.9,yy);ctx.stroke()}
+  ctx.fillStyle=Math.sin(fxNow()*3+x)>0.6?'#C7A6FF':'#1C1A26';ctx.fillRect(x-5,top+h*0.35,10,16);
 }
 // שלטים מתחת לשערים, וחצים בקצה המסך אל השערים ואל הכפר. מעל הכל, בשני המצבים
 function drawWorldScreen(ox,oy){
