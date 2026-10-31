@@ -239,6 +239,8 @@ const TEXT={
   'vil.notBuilt':{he:'עוד לא נבנה',en:'Not built yet'},
   'vil.build':{he:'לבנות',en:'Build'},
   'vil.up':{he:n=>'לשדרג לרמה '+n,en:n=>'Upgrade to level '+n},
+  'vil.collect':{he:n=>'לאסוף ('+n+')',en:n=>'Collect ('+n+')'},
+  'vil.nothing':{he:'עוד אין מה לאסוף',en:'Nothing to collect yet'},
   'vil.max':{he:'רמה מקסימלית',en:'Max level'},
   'vil.needCenter':{he:'קודם משדרגים את מרכז הכפר',en:'Upgrade the Village Center first'},
   'vil.next':{he:s=>'ברמה הבאה: '+s,en:s=>'Next level: '+s},

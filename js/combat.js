@@ -2,9 +2,13 @@
 const HITFX={floats:70,parts:450,crit:0.12,critMul:2.5};   // תקרה לטקסט צף ולניצוצות בשביל הטלפון, וסיכוי ועוצמה של מכה קריטית
 function nearest(maxD){let b=null,bd=maxD;for(const e of enemies){if(e.dead)continue;const d=Math.hypot(e.x-P.x,e.y-P.y)-e.r;if(d<bd){bd=d;b=e}}return b}
 // במה ההתקפה האוטומטית מכוונת: האויב הקרוב, או מקור משאבים (nodes.js) כשעומדים לידו והוא קרוב יותר
+// בעולם הפתוח (ניר, 31.10.2026): קודם המבוקש, אחריו בוס, אחריו כל אויב, ורק כשאין אויב בטווח מקורות משאבים. בזירה כמו קודם (התחום של אוראל)
 function aimTarget(maxD){
-  if(S.wd)maxD=Math.min(maxD,WORLD.attackRange);   // בעולם הפתוח הטווח קצר יותר (WORLD.attackRange ב-world.js)
-  const e=nearest(maxD),n=nodeNear(),gap=t=>Math.hypot(t.x-P.x,t.y-P.y)-t.r;
+  const gap=t=>Math.hypot(t.x-P.x,t.y-P.y)-t.r;
+  if(S.wd){maxD=Math.min(maxD,WORLD.attackRange);   // בעולם הפתוח הטווח קצר יותר (WORLD.attackRange ב-world.js)
+    let w=null,b=null;for(const e of enemies){if(e.dead||gap(e)>maxD)continue;if(e.wanted)w=e;else if(e.isBoss)b=e}
+    return w||b||nearest(maxD)||nodeNear()}
+  const e=nearest(maxD),n=nodeNear();
   return n&&(!e||gap(n)<gap(e))?n:e;
 }
 function sparks(x,y,col,n,sp=180){n=Math.min(n,HITFX.parts-parts.length);for(let i=0;i<n;i++){const a=rand(0,6.28),s=rand(sp*.3,sp);parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(.2,.45),max:.45,col,size:rand(1.5,3.5)})}}
