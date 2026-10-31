@@ -902,6 +902,34 @@ function worldBot(m,L,god){
     (ch3.reg==='ridge'&&ch3.climb?', הגעה לרכס':', לא הגיע לרכס')+(ch3.snow?' בשלג':', בלי שלג')+', '+ch3.foes+' אויבים קפואים'+(ch3.weak?' (חלשים לאש)':' (לא חלשים לאש!)')+(ch3.noNpc?'':', דמויות האחו ברכס!')+
     (ch3.frost?', ספיר':', קווסט הספיר שבור')+(ch3.warden?', שומר הקרח קם':', שומר הקרח לא קם')+(ch3.ready?' והופל':', לא הופל')+(ch3.back?', חזרה לאגם ליד השביל':', החזרה לאגם שבורה')+
     (ch3.lit?', פנס הקרח נדלק':', פנס הקרח לא נדלק')+(ch3.safer?', הרכס בטוח יותר':''));
+  // העלילה, פרק 4 (story.js, WORLD.regions.desert): המעבר מהרכס למדבר סגור עד שפנס הקרח דולק, במדבר חום ואויבים חמים (חלשים למים),
+  // שומר האש שולח טבעות אש שמתרחבות (עם פתח), והקווסטים מובילים אליו ולפנס האש
+  const ch4=await page.evaluate(()=>{
+    const o={},Q=QS();
+    SAVE.story.ice=false;enterWorld('home','ridge');o.closed=!wGates().desert;
+    SAVE.story.ice=true;enterWorld('home','ridge');o.open=!!wGates().desert;
+    for(const id of ['s4Sand','s4Ember','s4Warden']){delete Q.done[id];delete Q.active[id]}delete SAVE.story.fire;
+    Q.done.s3Warden=Q.done.s3Warden||1;o.offer=qOpen(QBY.s4Sand)&&!qOpen(QBY.s4Ember);
+    qStart(QBY.s4Sand);wGo('desert');o.reg=S.wd.reg;o.sand=qReady(QBY.s4Sand);questClaim('s4Sand');
+    const hot=enemies.filter(e=>!e.dead&&(e.type==='cinderscorp'||e.type==='flamewisp'));o.foes=hot.length;
+    o.weak=hot.length>0&&hot.every(e=>e.weak==='water');o.noNpc=!Object.keys(wnpcState()).length;o.heat=!!WR().heat&&typeof wHeat==='function';
+    return o});
+  await page.clock.runFor(400);await shot('world-desert');
+  const ch4b=await page.evaluate(()=>{
+    const o={};qStart(QBY.s4Ember);questEvent('kill','cinderscorp',8);questEvent('gather','rubyC',3);o.ember=qReady(QBY.s4Ember);questClaim('s4Ember');
+    qStart(QBY.s4Warden);const L=STORY.lanterns.fire;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='emberwarden';
+    if(w){w.ring=0;P.inv=0;const hp0=P.hp;storyWardenMove(w,0.016);o.ring=(S.wd.rings||[]).length>0;
+      const R=S.wd.rings&&S.wd.rings[0];if(R){R.gap=Math.atan2(P.y-R.y,P.x-R.x)+Math.PI;for(let i=0;i<120&&!R.hit;i++)storyRings(1/60);o.ringHit=R.hit&&P.hp<hp0}
+      P.inv=99;damage(w,w.hp*10,'sword',0,'water');storyUpdate(0.1)}o.ready=qReady(QBY.s4Warden);
+    wGo('ridge');const pd=WORLD.regions.ridge.paths.desert;o.back=S.wd.reg==='ridge'&&Math.hypot(P.x-pd.x,P.y-pd.y)<WORLD.arrive+10;
+    enterVillage();questClaim('s4Warden');o.lit=!!SAVE.story.fire;
+    enterWorld('home','desert');o.safer=storySafe()<1;P.inv=0;enterVillage();return o});
+  Object.assign(ch4,ch4b);
+  check(ch4.closed&&ch4.open&&ch4.offer&&ch4.reg==='desert'&&ch4.sand&&ch4.foes>0&&ch4.weak&&ch4.noNpc&&ch4.heat&&ch4.ember&&ch4.warden&&ch4.ring&&ch4.ringHit&&ch4.ready&&ch4.back&&ch4.lit,
+    'עלילה, פרק 4: '+(ch4.closed&&ch4.open?'המעבר למדבר נפתח רק אחרי פנס הקרח':'המעבר למדבר לא נשלט ע"י הפנס')+(ch4.offer?', קווסט ראשון מוצע':', סדר הקווסטים שבור')+
+    (ch4.reg==='desert'&&ch4.sand?', הגעה למדבר':', לא הגיע למדבר')+(ch4.heat?' בחום':', בלי חום')+', '+ch4.foes+' אויבים חמים'+(ch4.weak?' (חלשים למים)':' (לא חלשים למים!)')+(ch4.noNpc?'':', דמויות האחו במדבר!')+
+    (ch4.ember?', אודם':', קווסט האודם שבור')+(ch4.warden?', שומר האש קם':', שומר האש לא קם')+(ch4.ring?(ch4.ringHit?', טבעת אש פוגעת':', טבעת אש לא פוגעת'):', בלי טבעות אש')+(ch4.ready?' והופל':', לא הופל')+
+    (ch4.back?', חזרה לרכס ליד המעבר':', החזרה לרכס שבורה')+(ch4.lit?', פנס האש נדלק':', פנס האש לא נדלק')+(ch4.safer?', המדבר בטוח יותר':''));
   // כל פנס שנדלק משנה את הכפר (homecoming.js): בכניסה הבאה לכפר התושב חוזר, העמוד שלו דולק, ראש הכפר מספר, ובעולם נופל חפץ ביסוד של הפנס
   const hm=await page.evaluate(()=>{
     const o={},b0=SAVE.home.back;SAVE.home.back={};
