@@ -91,7 +91,7 @@ const wZone=G=>WORLD.zones.find(z=>Math.hypot(G.x-WORLD.home.x,G.y-WORLD.home.y)
 function wSpawn(G,i){
   if(!ETYPES[G.type])return;const Z=wZone(G);
   for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp);
-    e.dmg*=Z.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;   // storySafe: אחרי שפנס האדמה נדלק (story.js)
+    e.dmg*=Z.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);   // affixRoll: אולי אויב מיוחד (affix.js). storySafe: אחרי שפנס האדמה נדלק (story.js)
     e.xp=0;e.home=i;e.creature=!!G.creature}   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
 }
 function wFoes(dt){
@@ -138,7 +138,7 @@ function worldUpdate(dt){
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
-  wantedUpdate(dt);storyUpdate(dt);   // העלילה (story.js)
+  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js)
   dropsUpdate(dt);wLootIn();
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
@@ -222,6 +222,7 @@ function drawWorld(){
   }
   drawWnpcs();   // worldnpc.js
   storyDraw();   // הפנס והשומר (story.js)
+  affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
 }
 // שלטים מתחת לשערים, וחצים בקצה המסך אל השערים ואל הכפר. מעל הכל, בשני המצבים
 function drawWorldScreen(ox,oy){
@@ -233,4 +234,5 @@ function drawWorldScreen(ox,oy){
     edgeArrow(g.x+ox,g.y+oy,col)}
   drawWnpcScreen(ox,oy);   // worldnpc.js
   storyScreen(ox,oy);   // story.js
+  affixScreen(ox,oy);   // affix.js
 }
