@@ -22,7 +22,15 @@ const ETYPES={
   sprite:{hp:24,r:11,speed:96,xp:2,dmg:8,tags:['plant','flying'],   // פיית צמח מרחפת: קרח הכי חזק נגדה
     drop:{herb:[0.7,2],mushroom:[0.3,1],flower:[0.25,1],essence:[0.3,1]},elite:{flower:[1,2],mushroom:[1,2],aquaC:[0.15,1]}},
   mummy:{hp:50,r:14,speed:56,xp:3,dmg:12,tags:['cloth','bone'],     // תחבושות על עצמות: אש ופיזי
-    drop:{cloth:[0.9,3],hide:[0.4,2],bone:[0.3,1],dust:[0.15,1]},elite:{cloth:[1,6],shadow:[0.3,1]}}
+    drop:{cloth:[0.9,3],hide:[0.4,2],bone:[0.3,1],dust:[0.15,1]},elite:{cloth:[1,6],shadow:[0.3,1]}},
+  // אגם הערפל (פרק 2, story.js): אויבים רטובים. ברק חזק נגדם (DMG.chart), ואש כמעט לא עובדת. רק בעולם, לא בזירה
+  drowned:{hp:60,r:15,speed:62,xp:3,dmg:13,tags:['water','metal'],  // אביר חלוד שטבע: ברק ×2.25, פיזי חלש
+    drop:{coins:[0.8,2],iron:[0.3,1],plate:[0.15,1],aquaC:[0.08,1]},elite:{aquaC:[1,2],plate:[1,2],aqua:[0.1,1]}},
+  mistling:{hp:28,r:12,speed:98,xp:2,dmg:9,tags:['water','flying'],  // ערפלון: רוח ערפל מרחפת. ברק וקרח
+    drop:{essence:[0.4,1],herb:[0.3,1],aquaC:[0.1,1],sapphireC:[0.05,1]},elite:{essence:[1,3],sapphireC:[0.4,1]}},
+  // שומר המים: הבוס של פרק 2, ליד פנס המים (STORY.lanterns.water). warden: לא יצור משאב, לא צריך מקור ששומר עליו
+  tidewarden:{hp:120,r:20,speed:58,xp:0,dmg:16,tags:['water','metal'],warden:true,
+    drop:{coins:[1,40],aqua:[1,2],aquaC:[1,3],sapphireC:[0.6,2],sapphire:[0.25,1]}}
 };
 // הבוסים לפי id (היום יש אחד, type:'boss' ב-boss.js). drop כמו באויבים, כולל החלק שרק הוא מפיל (RES, משפחת boss)
 const BOSSES={

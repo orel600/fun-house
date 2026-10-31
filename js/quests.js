@@ -34,6 +34,10 @@ const QUESTS={
     {id:'s1Shard',giver:'head',kind:'story',obj:[{type:'story',what:'shard',n:1}],reward:{coins:25,xp:30},req:{quest:'s1Lanterns'}},
     {id:'s1Path',giver:'head',kind:'story',obj:[{type:'kill',what:'any',n:25}],reward:{iron:5,xp:40},req:{quest:'s1Shard'}},
     {id:'s1Warden',giver:'head',kind:'story',obj:[{type:'kill',what:'warden',n:1}],reward:{coins:80,xp:120,story:'earth'},req:{quest:'s1Path'}},
+    // ---- העלילה, פרק 2: פנס המים, באגם הערפל (story.js, WORLD.regions.lake ב-world.js). נפתח אחרי פנס האדמה ----
+    {id:'s2Mist',giver:'head',kind:'story',obj:[{type:'story',what:'lake',n:1}],reward:{coins:30,xp:50},req:{quest:'s1Warden'}},
+    {id:'s2Glow',giver:'head',kind:'story',obj:[{type:'kill',what:'drowned',n:8},{type:'gather',what:'aquaC',n:3}],reward:{iron:6,xp:80},req:{quest:'s2Mist'}},
+    {id:'s2Warden',giver:'head',kind:'story',obj:[{type:'story',what:'tide',n:1}],reward:{coins:120,xp:180,story:'water'},req:{quest:'s2Glow'}},
     {id:'boots',giver:'head',kind:'village',obj:[{type:'gather',what:'wood',n:5}],reward:{coins:10,item:'starterBoots'}},
     {id:'firstMill',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mill',n:1}],reward:{coins:15,wood:10}},
     {id:'firstMine',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mine',n:1}],reward:{coins:15,stone:10}},
@@ -161,9 +165,9 @@ function questClaim(id){
 }
 
 /* ---- ממשק: היומן בכפר, וקו מעקב בזירה ---- */
-const qWhat=o=>o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?resName(o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
+const qWhat=o=>o.type==='story'?o.what:o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?resName(o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
 const qObjTxt=(q,i)=>{const o=q.obj[i];return T('qo.'+o.type,qWhat(o),o.n)+(o.noHit?T('qo.noHit'):'')+(o.under?T('qo.under',fmt(o.under)):'')};
-const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='story'?'🏮 '+T('story.reward'):k==='rank'?QUESTS.icon.rank+' '+(rankFor(r[k])?rankName(rankFor(r[k])):''):k==='item'?(gItem(r[k])?gIcon(r[k])+' '+gName(r[k]):QUESTS.icon.item+' '+T('item.'+r[k])):(resIcon(k)||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
+const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='story'?'🏮 '+T('story.'+r[k]+'.reward'):k==='rank'?QUESTS.icon.rank+' '+(rankFor(r[k])?rankName(rankFor(r[k])):''):k==='item'?(gItem(r[k])?gIcon(r[k])+' '+gName(r[k]):QUESTS.icon.item+' '+T('item.'+r[k])):(resIcon(k)||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
 // הקווסט שמוצג בזירה: זה שבחרת לעקוב אחריו, ואם אין, הראשון שעוד לא הושלם
 function qTracked(){
   const Q=QS(),ids=Object.keys(Q.active).filter(id=>QBY[id]);
