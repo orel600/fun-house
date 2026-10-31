@@ -26,7 +26,7 @@ const wnpcMet=id=>!!WNPC.list[id]&&!!SAVE.met[id];
 // המצב החי, רק בעולם. נוצר מחדש בכל כניסה לעולם
 function wnpcState(){
   const W=S.wd;if(!W)return null;
-  if(!W.npc){W.npc={};for(const id in WNPC.list){const A=WNPC.list[id].at;W.npc[id]={id,x:A.x,y:A.y,face:Math.PI/2,st:'idle',t:0,waved:false}}}
+  if(!W.npc){W.npc={};if(!WR().noNpc)for(const id in WNPC.list){const A=WNPC.list[id].at;W.npc[id]={id,x:A.x,y:A.y,face:Math.PI/2,st:'idle',t:0,waved:false}}}
   return W.npc;
 }
 // הסימן מעל כל דמות שנמצאה: ✓ פרס מחכה, ! קווסט חדש. גם החצים בקצה המסך הולכים לפיו
