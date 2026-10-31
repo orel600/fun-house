@@ -124,6 +124,7 @@ function enterVillage(){
   rankSync();questsRefresh();   // רמת הדמות (ranks.js), יום חדש וקווסטים שנפתחו (quests.js)
   saveNow();
   villageUi(true);
+  storyVillage();   // ההקדמה של העלילה, פעם אחת (story.js)
 }
 function leaveVillage(){villageUi(false);enterWorld('home');questEvent('reach','world')}   // השער מוביל לעולם הפתוח (world.js), והזירות בתוכו
 
