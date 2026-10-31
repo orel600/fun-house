@@ -827,6 +827,14 @@ const TEXT={
   'npc.jokes.priest':{he:[],en:[]}
 };
 
+// ======== מפת העולם (worldmap.js) ========
+Object.assign(TEXT,{
+  'wm.title':{he:'מפה',en:'Map'},
+  'wm.world':{he:'העולם',en:'The world'},
+  'wm.here':{he:'אתה כאן',en:'You are here'},
+  'wm.key':{he:'★ אתה · ● פנס (זוהר: דולק) · 🔍 סודות שמצאת · ? אזור שעוד לא ביקרת בו',en:'★ You · ● Lantern (glowing: lit) · 🔍 Secrets found · ? A place you haven’t been yet'}
+});
+
 // ======== סודות בעולם (secrets.js) ========
 Object.assign(TEXT,{
   'sc.found':{he:(n,of)=>'🔍 גילית סוד! '+n+'/'+of+' באזור',en:(n,of)=>'🔍 Secret found! '+n+'/'+of+' here'},

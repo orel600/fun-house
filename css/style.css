@@ -677,3 +677,25 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .chtag{font-size:12px;font-weight:800;color:var(--tide,#7FD6E8);background:rgba(10,12,20,.7);border-radius:10px;padding:2px 8px;white-space:nowrap}
 .chtag[hidden]{display:none}
 @media (orientation:portrait){.chtag{display:none}}   /* בטלפון עומד אין מקום בפס העליון. האתגר ביומן */
+
+/* מפת העולם (js/worldmap.js): כפתור עגול בפינה העליונה, מתחת להשתקה, רק בעולם (במקום של כפתור המתנה, שמוסתר בעולם). לא בפינה של הסקילים */
+.wmapbtn{display:none;position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 62px);inset-inline-end:max(16px,env(safe-area-inset-right,0px));width:52px;height:52px;
+  border-radius:50%;border:2px solid var(--gold);background:rgba(18,22,36,.85);font-size:26px;padding:0;cursor:pointer;place-items:center;box-shadow:0 3px 0 #0B0E18}
+.world .wmapbtn{display:grid}
+.wmapbtn:active{transform:scale(.92)}
+.wmapbtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+/* החלון: שתי מפות, אחת ליד השנייה לרוחב ואחת מעל השנייה כשהטלפון עומד. בלי גלילה */
+.qlog.win.wmapwin{z-index:7;display:flex;flex-direction:column;gap:6px;overflow:hidden}   /* מעל ההשתקה, כדי שה-✕ לא יוסתר */
+.wmcols{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.wmcols section{flex:1;min-height:0;display:flex;flex-direction:column;gap:4px}
+.wmcols h4{margin:0;font-size:14px;color:var(--gold)}
+.wmcols h4 small{color:var(--chalk);font-weight:700;font-size:12px}
+.wmbox{flex:1;min-height:0;position:relative;border-radius:12px;border:1px solid var(--line);overflow:hidden}
+.wmcols canvas{position:absolute;inset:0;width:100%;height:100%;display:block}   /* בתוך קופסה, כדי שגודל הציור לא ימתח את החלון */
+.wmkey{margin:0;font-size:12px;color:var(--dim);line-height:1.3}
+@media (orientation:landscape){
+  .qlog.win.wmapwin{left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));width:auto;max-width:900px;margin-inline:auto;top:calc(env(safe-area-inset-top,0px) + 10px);bottom:calc(env(safe-area-inset-bottom,0px) + 10px)}
+  .wmcols{flex-direction:row}
+  .wmcols section:first-child{flex:5}
+  .wmcols section:last-child{flex:4}
+}
