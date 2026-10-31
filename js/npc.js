@@ -75,7 +75,7 @@ function npcUpdate(dt){
     }else if(D!==id&&(n.t-=dt)<=0){const p=npcPick(n);n.tx=p.x;n.ty=p.y;n.st='walk'}
   }
   S.vil.npcNear=near;
-  if(D&&(!npcHere(D)||Math.hypot(P.x-all[D].x,P.y-all[D].y)>NPC.leave))npcTalk(null);
+  if(D&&!S.vil.dlgStay&&(!npcHere(D)||Math.hypot(P.x-all[D].x,P.y-all[D].y)>NPC.leave))npcTalk(null);   // dlgStay: ההקדמה של העלילה נשארת עד שסוגרים (story.js)
   const btn=$('talkBtn'),show=!!near&&D!==near;
   if(btn.hidden===show||btn.dataset.id!==(near||'')){btn.hidden=!show;btn.dataset.id=near||'';if(near)btn.textContent='💬 '+T('npc.talk',T('npc.'+near)[0])}
 }
@@ -104,7 +104,7 @@ function npcDialog(){
 // פותח שיחה עם id, או סוגר עם null
 function npcTalk(id){
   if(!S.vil)return;
-  S.vil.dlg=id;if(id){$('qLog').hidden=true;S.vil.dlgLine=npcLine(id);sfx('ui')}
+  S.vil.dlg=id;S.vil.dlgStay=false;if(id){$('qLog').hidden=true;S.vil.dlgLine=npcLine(id);sfx('ui')}
   npcDialog();
 }
 $('talkBtn').addEventListener('click',()=>{const id=$('talkBtn').dataset.id;if(id&&S.vil)npcTalk(id)});

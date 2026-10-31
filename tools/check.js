@@ -288,7 +288,7 @@ function villageBot(m,L){
     if(!n){L.npc={err:'אין נפח'};m.npc=3;return L}
     if(!m.npc){
       if(S.vil.npcNear!=='smith'||tb.hidden)return steer(n.x,n.y,false,25,L);
-      const N=L.npc={waved:n.waved,btn:tb.innerText,auto:!dlg.hidden};tb.click();
+      const N=L.npc={waved:n.waved,btn:tb.innerText,auto:!dlg.hidden&&!S.vil.dlgStay};tb.click();
       const acc=dlg.querySelector('[data-act="accept"]'),qid=acc&&acc.dataset.q;
       N.open=!dlg.hidden;N.say=(dlg.querySelector('.npcsay')||{}).innerText;N.qid=qid;
       if(acc)acc.click();
@@ -772,10 +772,10 @@ function worldBot(m,L,god){
   // וציוד מאויב: פריט שנפל (בכוח) נוחת על הרצפה, נמשך לשחקן ונכנס לתרמיל ולשמירה
   // העלילה, פרק 1 (story.js): ההקדמה אצל ראש הכפר, הרסיס מפיוחו, השומר ליד הפנס, והפנס נדלק
   const sto=await page.evaluate(()=>{
-    const o={};SAVE.story={intro:false};enterVillage();return o});
-  await page.clock.runFor(1500);
+    const o={};SAVE.story={intro:false};questLogOpen(false);gearClose();forgeClose();enterVillage();npcTalk(null);return o});   // בלי חלונות פתוחים, אחרת ההקדמה מחכה (ואם יש, היא מנסה שוב כל שנייה)
+  await page.clock.runFor(6000);
   const sto2=await page.evaluate(()=>{
-    const o={intro:SAVE.story.intro&&!$('npcDlg').hidden&&$('npcDlg').innerText.includes(T('story.intro').slice(0,12))};npcTalk(null);
+    const o={intro:SAVE.story.intro&&!$('npcDlg').hidden&&$('npcDlg').innerText.includes(T('story.intro').slice(0,12)),dbg:[SAVE.story.intro,$('npcDlg').hidden,S.mode,$('qLog').hidden,$('ovGear').hidden,!!S.vil].join('/')};npcTalk(null);
     const Q=QS();for(const id of ['s1Lanterns','s1Shard','s1Path','s1Warden']){delete Q.done[id];delete Q.active[id]}
     o.offer=qOpen(QBY.s1Lanterns)&&!qOpen(QBY.s1Shard);
     qStart(QBY.s1Lanterns);leaveVillage();questEvent('reach','world');questClaim('s1Lanterns');
@@ -786,7 +786,7 @@ function worldBot(m,L,god){
     const d0=SAVE.story.earth;questClaim('s1Warden');o.lit=!d0&&SAVE.story.earth;
     enterWorld('home');o.safer=enemies.filter(e=>!e.dead&&e.type==='grunt').every(e=>e.dmg<=ETYPES.grunt.dmg*0.75*0.26+0.001);
     P.inv=0;enterVillage();return o});
-  check(sto2.intro&&sto2.offer&&sto2.shard&&sto2.warden&&sto2.ready&&sto2.lit,'עלילה, פרק 1: '+(sto2.intro?'ההקדמה אצל ראש הכפר':'אין הקדמה')+(sto2.offer?', קווסט ראשון מוצע והבא נעול':', סדר הקווסטים שבור')+
+  check(sto2.intro&&sto2.offer&&sto2.shard&&sto2.warden&&sto2.ready&&sto2.lit,'עלילה, פרק 1: '+(sto2.intro?'ההקדמה אצל ראש הכפר':'אין הקדמה ('+sto2.dbg+')')+(sto2.offer?', קווסט ראשון מוצע והבא נעול':', סדר הקווסטים שבור')+
     (sto2.shard?', פיוחו מצאה רסיס':', אין רסיס')+(sto2.warden?', השומר קם ליד הפנס':', השומר לא קם')+(sto2.ready?' והופל':', לא הופל')+(sto2.lit?', הפנס נדלק':', הפנס לא נדלק')+(sto2.safer?', האחו בטוח יותר':''));
   // אויבים מיוחדים בעולם (affix.js): מתפצל נותן שניים, מתפוצץ פוגע אחרי רגע, מתחדש מרפא, ולכולם שם ושלל
   const afx=await page.evaluate(()=>{
