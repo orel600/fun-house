@@ -89,10 +89,6 @@
         <button class="lang" data-lang="he" lang="he">עברית</button>
         <button class="lang" data-lang="en" lang="en">English</button>
       </div>
-      <div class="langs gfx" role="group" data-ta="gfxGroup">
-        <button class="lang" data-gfx="3d" data-t="gfx3d"></button>
-        <button class="lang" data-gfx="2d" data-t="gfx2d"></button>
-      </div>
       <button class="lang" id="helpBtn" data-t="help.btn"></button>
     </div>
     <div class="smid">
@@ -185,11 +181,18 @@
 <!-- חלון הצלילים: נפתח מכפתור הרמקול (js/audio.js) -->
 <div class="ov" id="ovSound" hidden>
   <div class="panel win sndpanel">
-    <div class="whd"><h2 data-t="snd.title"></h2><button class="wx" id="sndClose" data-ta="gear.close">✕</button></div>
+    <div class="whd"><h2 data-t="set.title"></h2><button class="wx" id="sndClose" data-ta="gear.close">✕</button></div>
     <label class="sub"><span data-t="snd.master"></span><input type="range" min="0" max="100" step="5" data-ch="master" style="width:100%;accent-color:var(--gold)"></label>
     <label class="sub"><span data-t="snd.fight"></span><input type="range" min="0" max="100" step="5" data-ch="fight" style="width:100%;accent-color:var(--gold)"></label>
     <label class="sub"><span data-t="snd.fx"></span><input type="range" min="0" max="100" step="5" data-ch="fx" style="width:100%;accent-color:var(--gold)"></label>
     <button class="go" id="sndMute"></button>
+    <!-- גרפיקה: תלת-ממד כברירת מחדל, ומעבר אוטומטי לדו-ממד בטלפון איטי (js/render3d.js, GFX_AUTO). בחירה כאן מנצחת את האוטומטי -->
+    <div class="sub gfx"><span data-t="gfxGroup"></span>
+      <div class="langs" role="group" data-ta="gfxGroup">
+        <button class="lang" data-gfx="3d" data-t="gfx3d"></button>
+        <button class="lang" data-gfx="2d" data-t="gfx2d"></button>
+      </div>
+    </div>
   </div>
 </div>
 

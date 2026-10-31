@@ -86,7 +86,7 @@ h1{font-size:46px} h2{font-size:30px}
 .lang{appearance:none;border:1px solid var(--line);background:transparent;color:var(--dim);border-radius:999px;padding:5px 12px;font:700 13px var(--body);cursor:pointer}
 .lang[aria-pressed="true"]{background:var(--chalk);border-color:var(--chalk);color:var(--ink)}
 .lang:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-.gfx{margin-top:6px}
+.gfx .langs{justify-content:flex-start}
 .cloudbtns{justify-content:center}
 #c3{z-index:0}
 #c{z-index:1}
@@ -475,7 +475,6 @@ h1{font-size:46px} h2{font-size:30px}
 .stop{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-inline-end:56px}   /* בסוף השורה כפתור ההשתקה */
 .stop .langs{justify-content:flex-start}
 .spanel .lang{min-height:44px;padding:6px 14px;font-size:14px}
-.stop .gfx{margin-top:0}
 .smid{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;min-height:0}
 .smid h1{font-size:clamp(40px,11vh,72px);text-shadow:0 4px 0 #0008}
 .smid .best{color:var(--gold);font-weight:800;font-size:15px}
@@ -502,6 +501,14 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .sndpanel{width:min(420px,100%);padding:0 16px 16px;gap:12px}
 .sndpanel .sub{display:flex;flex-direction:column;gap:6px;font-weight:700;color:var(--chalk)}
 .sndpanel input[type=range]{height:32px}
+.sndpanel{max-height:calc(100% - 16px);overflow-y:auto;overscroll-behavior:contain}
+/* טלפון לרוחב: שני טורים, כדי שהכל ייכנס בלי גלילה. צלילים מימין, גרפיקה והשתקה משמאל */
+@media (orientation:landscape) and (max-height:500px){
+  .sndpanel{width:min(640px,100%);display:grid;grid-template-columns:1fr 1fr;column-gap:20px;row-gap:10px;align-items:end}
+  .sndpanel .whd{grid-column:1/-1}
+  .sndpanel #sndMute{grid-column:2;grid-row:3}
+  .sndpanel .gfx{grid-column:2;grid-row:2}
+}
 .panel.win>.whd{margin-top:8px}
 
 /* נקודות דמות (js/stats.js): בחלון הציוד, כשלא נבחר פריט */
@@ -515,6 +522,8 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .strows{display:flex;flex-direction:column;gap:4px}
 .strow{display:flex;align-items:center;gap:8px;background:rgba(18,22,36,.6);border:1px solid var(--line);border-radius:10px;padding:2px 6px}
 .sti{font-size:20px;width:26px;text-align:center}
+.sti .ski{width:28px;height:28px;object-fit:contain;vertical-align:middle}
+.trb h4 .ski,.vbtn .ski{width:1.4em;height:1.4em;object-fit:contain;vertical-align:-.35em}
 .stn{flex:1;display:flex;flex-direction:column;line-height:1.15;min-width:0}
 .stn b{font:800 14px var(--body)}
 .stn small{font-size:11px;color:var(--dim)}
