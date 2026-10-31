@@ -522,6 +522,8 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .strows{display:flex;flex-direction:column;gap:4px}
 .strow{display:flex;align-items:center;gap:8px;background:rgba(18,22,36,.6);border:1px solid var(--line);border-radius:10px;padding:2px 6px}
 .sti{font-size:20px;width:26px;text-align:center}
+.sti .ski{width:28px;height:28px;object-fit:contain;vertical-align:middle}
+.trb h4 .ski,.vbtn .ski{width:1.4em;height:1.4em;object-fit:contain;vertical-align:-.35em}
 .stn{flex:1;display:flex;flex-direction:column;line-height:1.15;min-width:0}
 .stn b{font:800 14px var(--body)}
 .stn small{font-size:11px;color:var(--dim)}
