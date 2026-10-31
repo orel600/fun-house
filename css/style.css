@@ -193,7 +193,8 @@ h1{font-size:46px} h2{font-size:30px}
 .qc ul{margin:0;padding-inline-start:18px;font-size:13px}
 .qc em{font-style:normal;color:var(--gold);font-weight:800;direction:ltr;unicode-bidi:isolate}
 .qc .next{margin:0;color:var(--dim);font-size:12px}
-.qrow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.qrow{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px}
+.qc{min-width:0}
 .qc .vbtn{padding:7px 12px;font-size:14px;white-space:nowrap}
 .qtrk{appearance:none;border:1px solid var(--line);background:none;color:var(--dim);border-radius:10px;padding:6px 10px;white-space:nowrap;font:700 12px var(--body);cursor:pointer}
 .qtrk[aria-pressed="true"]{color:var(--gold);border-color:var(--gold)}
@@ -368,7 +369,7 @@ h1{font-size:46px} h2{font-size:30px}
   .vpanel.win.big{left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:var(--safeb);width:auto;margin-inline:auto;max-height:none}
   .tcols{flex-direction:row;overflow:hidden}
   .tcols>section{flex:1;overflow-y:auto;padding-inline-end:2px}
-  .qlog.win:not(.npcdlg){display:grid;grid-template-columns:1fr 1fr;align-content:start;column-gap:10px}
+  .qlog.win:not(.npcdlg){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-content:start;column-gap:10px}
   .qlog.win:not(.npcdlg)>.whd,.qlog.win:not(.npcdlg)>h4{grid-column:1/-1}
   .npcdlg.win{z-index:5;left:0;right:0;top:var(--topb);bottom:auto;width:min(560px,70vw);max-width:none;margin-inline:auto;max-height:calc(100% - var(--topb) - var(--safeb))}
 }
