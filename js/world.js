@@ -99,7 +99,8 @@ function wFoes(dt){
   for(const e of enemies){
     if(e.dead)continue;
     if(e.wanted){wantedMove(e,dt);continue}
-    if(e.warden){storyWardenMove(e,dt);continue}   // השומר האבן (story.js)
+    if(e.warden){storyWardenMove(e,dt);continue}
+    if(e.evt){evFoeMove(e,dt);continue}   // גל של אירוע (events.js)   // השומר האבן (story.js)
     alive[e.home]++;
     const G=WORLD.foes[e.home],dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;
     let mx=0,my=0,sp=e.speed;
@@ -138,7 +139,7 @@ function worldUpdate(dt){
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
-  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js)
+  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js)
   dropsUpdate(dt);wLootIn();
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
@@ -223,6 +224,7 @@ function drawWorld(){
   drawWnpcs();   // worldnpc.js
   storyDraw();   // הפנס והשומר (story.js)
   affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
+  eventsDraw();   // אירועים (events.js)
 }
 // שלטים מתחת לשערים, וחצים בקצה המסך אל השערים ואל הכפר. מעל הכל, בשני המצבים
 function drawWorldScreen(ox,oy){
@@ -235,4 +237,5 @@ function drawWorldScreen(ox,oy){
   drawWnpcScreen(ox,oy);   // worldnpc.js
   storyScreen(ox,oy);   // story.js
   affixScreen(ox,oy);   // affix.js
+  eventsScreen(ox,oy);   // events.js
 }

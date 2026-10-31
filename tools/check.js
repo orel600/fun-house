@@ -788,6 +788,15 @@ function worldBot(m,L,god){
     P.inv=0;enterVillage();return o});
   check(sto2.intro&&sto2.offer&&sto2.shard&&sto2.warden&&sto2.ready&&sto2.lit,'עלילה, פרק 1: '+(sto2.intro?'ההקדמה אצל ראש הכפר':'אין הקדמה ('+sto2.dbg+')')+(sto2.offer?', קווסט ראשון מוצע והבא נעול':', סדר הקווסטים שבור')+
     (sto2.shard?', פיוחו מצאה רסיס':', אין רסיס')+(sto2.warden?', השומר קם ליד הפנס':', השומר לא קם')+(sto2.ready?' והופל':', לא הופל')+(sto2.lit?', הפנס נדלק':', הפנס לא נדלק')+(sto2.safer?', האחו בטוח יותר':''));
+  // אירועים בעולם (events.js): גל שנגמר בתיבה, עגלה שנותנת שלל כשמגיעים, ומטר שמפיל מתכות
+  const evt=await page.evaluate(()=>{
+    enterWorld('home');const o={},n0=()=>drops().length;
+    const W=evStart('wave');o.wave=W.foes.length;for(const e of W.foes)damage(e,e.hp*10,'sword',0,'water');let d0=n0();eventsUpdate(0.1);o.waveLoot=n0()-d0;o.waveEnd=!S.wd.ev;
+    const C_=evStart('cart');P.x=C_.x;P.y=C_.y;d0=n0();eventsUpdate(0.1);o.cartLoot=n0()-d0;o.cartEnd=!S.wd.ev;
+    evStart('rain');d0=n0();for(let i=0;i<15;i++)eventsUpdate(1);o.rain=n0()-d0;o.rainEnd=!S.wd.ev;o.next=S.wd.evT>0;
+    enterVillage();return o});
+  check(evt.wave>0&&evt.waveLoot>0&&evt.waveEnd&&evt.cartLoot>0&&evt.cartEnd&&evt.rain>3&&evt.rainEnd&&evt.next,'אירועים בעולם: גל של '+evt.wave+(evt.waveEnd?', הופל ונפל שלל '+evt.waveLoot:', לא נגמר')+
+    ', עגלה '+(evt.cartEnd?'נלקחה ('+evt.cartLoot+')':'לא נלקחה')+', מטר הפיל '+evt.rain+(evt.next?', והבא מתוזמן':', אין אירוע הבא'));
   // אויבים מיוחדים בעולם (affix.js): מתפצל נותן שניים, מתפוצץ פוגע אחרי רגע, מתחדש מרפא, ולכולם שם ושלל
   const afx=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=enemies.length,L=WORLD.foes[3],mk=id=>{const e=addEnemy('grunt',P.x+60,P.y,1);e.home=3;affixSet(e,id);return e};
