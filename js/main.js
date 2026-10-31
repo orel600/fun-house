@@ -10,6 +10,7 @@ function frame(now){
   }else if(S){S.cam.x+=(P.x-S.cam.x)*0.1;S.cam.y+=(P.y-S.cam.y)*0.1}
   if(S&&!(S.hitstop>0)){petUpdate(dt);statTick(dt)}   // ועץ הסקילים (stats.js)   // חיית המחמד הולכת אחרי השחקן בכל מקום (pet.js)
   if(S&&S.mode==='play'){const k=Math.min(1,dt*8);S.cam.x+=(P.x-S.cam.x)*k;S.cam.y+=(P.y-S.cam.y)*k}
+  if(R3D.note&&S&&S.mode==='play'){R3D.note=false;banner(T('gfx.auto'))}   // מעבר אוטומטי לדו-ממד: הודעה אחת (render3d.js, GFX_AUTO)
   render();hud();requestAnimationFrame(frame);
 }
 // כל הטקסט שעל המסך מחדש, בשפה הנוכחית: בהפעלה ובכל החלפת שפה
