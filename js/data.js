@@ -46,7 +46,15 @@ const ETYPES={
     drop:{essence:[0.5,1],resin:[0.3,1],rubyC:[0.08,1]},elite:{essence:[1,3],rubyC:[0.5,1]}},
   // שומר האש: הבוס של פרק 4, ליד פנס האש (STORY.lanterns.fire). warden: לא יצור משאב
   emberwarden:{hp:160,r:20,speed:56,xp:0,dmg:18,tags:['fire','stone'],warden:true,
-    drop:{coins:[1,60],ruby:[1,2],rubyC:[1,3],rubyF:[0.2,1],copper:[0.6,3]}}
+    drop:{coins:[1,60],ruby:[1,2],rubyC:[1,3],rubyF:[0.2,1],copper:[0.6,3]}},
+  // מגדלי הסערה (פרק 5, story.js): אויבים מחושמלים. אדמה חזקה נגדם (DMG.chart: אדמה מארקת ברק). רק בעולם, לא בזירה
+  stormknight:{hp:84,r:15,speed:60,xp:3,dmg:15,tags:['lightning','metal'],  // אביר סערה בשריון מחושמל: אדמה ×2.25
+    drop:{coins:[0.8,3],iron:[0.5,2],silver:[0.25,1],boltC:[0.1,1]},elite:{boltC:[1,2],silver:[1,2],bolt:[0.12,1]}},
+  sparkwisp:{hp:38,r:12,speed:118,xp:2,dmg:11,tags:['lightning'],  // ניצוץ מהיר שקופץ באוויר: אדמה ×1.5
+    drop:{essence:[0.5,1],dust:[0.3,1],boltC:[0.08,1]},elite:{essence:[1,3],boltC:[0.5,1]}},
+  // שומר הסערה: הבוס של פרק 5, ליד פנס הברק (STORY.lanterns.bolt). warden: לא יצור משאב
+  stormwarden:{hp:170,r:20,speed:58,xp:0,dmg:19,tags:['lightning','metal'],warden:true,
+    drop:{coins:[1,70],bolt:[1,2],boltC:[1,3],boltF:[0.2,1],silver:[0.6,3]}}
 };
 // הבוסים לפי id (היום יש אחד, type:'boss' ב-boss.js). drop כמו באויבים, כולל החלק שרק הוא מפיל (RES, משפחת boss)
 const BOSSES={

@@ -13,7 +13,8 @@ const HOME={
     earth:{res:'gardener',at:{x:-110,y:120},area:35,col:'#8BC34A',item:'stoneOrb',chance:0.012},
     water:{res:'washer',  at:{x:110,y:30},  area:35,col:'#3F7BF5',item:'leafOrb', chance:0.012},
     ice:  {res:'singer',  at:{x:200,y:-140},area:30,col:'#7FD4FF',item:'frostOrb',chance:0.012},
-    fire: {res:'baker',   at:{x:-200,y:-130},area:30,col:C.ember, item:'emberOrb',chance:0.012}
+    fire: {res:'baker',   at:{x:-200,y:-130},area:30,col:C.ember, item:'emberOrb',chance:0.012},
+    bolt: {res:'bellringer',at:{x:140,y:270},area:30,col:'#C7A6FF',item:'cloverOrb',chance:0.012}   // פרק 5: הפעמונאי. תלתן: מזל, כמו ברק שפוגע פעמיים
   },
   // שישה עמודים בקשת מול מרכז הכפר, לפי סדר הפרקים. לכל אחד זווית סביב מרכז הכפר (לא על הדרך לשער). col: לפנס שעוד אין ב-STORY.lanterns
   posts:[{k:'earth',a:59},{k:'water',a:121},{k:'ice',a:42},{k:'fire',a:138,col:'#FF8A3D'},{k:'bolt',a:25,col:'#C7A6FF'},{k:'light',a:155,col:'#FFFFFF'}],

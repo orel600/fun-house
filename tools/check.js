@@ -930,6 +930,38 @@ function worldBot(m,L,god){
     (ch4.reg==='desert'&&ch4.sand?', הגעה למדבר':', לא הגיע למדבר')+(ch4.heat?' בחום':', בלי חום')+', '+ch4.foes+' אויבים חמים'+(ch4.weak?' (חלשים למים)':' (לא חלשים למים!)')+(ch4.noNpc?'':', דמויות האחו במדבר!')+
     (ch4.ember?', אודם':', קווסט האודם שבור')+(ch4.warden?', שומר האש קם':', שומר האש לא קם')+(ch4.ring?(ch4.ringHit?', טבעת אש פוגעת':', טבעת אש לא פוגעת'):', בלי טבעות אש')+(ch4.ready?' והופל':', לא הופל')+
     (ch4.back?', חזרה לרכס ליד המעבר':', החזרה לרכס שבורה')+(ch4.lit?', פנס האש נדלק':', פנס האש לא נדלק')+(ch4.safer?', המדבר בטוח יותר':''));
+  // העלילה, פרק 5 (story.js, WORLD.regions.storm): השביל מהמדבר למגדלים סגור עד שפנס האש דולק, במגדלים גשם, ברקים ומגדלים שבורים שאי אפשר לעבור,
+  // אויבים מחושמלים (חלשים לאדמה), ושומר הסערה מסמן עיגולי ברק שמתפוצצים אחרי שנייה: מי שנשאר נפגע, מי שזז לא
+  const ch5=await page.evaluate(()=>{
+    const o={},Q=QS();
+    SAVE.story.fire=false;enterWorld('home','desert');o.closed=!wGates().storm;
+    SAVE.story.fire=true;enterWorld('home','desert');o.open=!!wGates().storm;
+    for(const id of ['s5Climb','s5Spark','s5Warden']){delete Q.done[id];delete Q.active[id]}delete SAVE.story.bolt;
+    Q.done.s4Warden=Q.done.s4Warden||1;o.offer=qOpen(QBY.s5Climb)&&!qOpen(QBY.s5Spark);
+    qStart(QBY.s5Climb);wGo('storm');o.reg=S.wd.reg;o.climb=qReady(QBY.s5Climb);questClaim('s5Climb');
+    const zap=enemies.filter(e=>!e.dead&&(e.type==='stormknight'||e.type==='sparkwisp'));o.foes=zap.length;
+    o.weak=zap.length>0&&zap.every(e=>e.weak==='earth');o.noNpc=!Object.keys(wnpcState()).length;
+    const tw=(WR().towers||[])[0];o.storm=!!WR().storm&&typeof wStorm==='function'&&!!tw;
+    if(tw){P.x=tw.x+3;P.y=tw.y;wPonds(P);o.solid=Math.hypot(P.x-tw.x,P.y-tw.y)>=tw.r}
+    return o});
+  await page.clock.runFor(400);await shot('world-storm');
+  const ch5b=await page.evaluate(()=>{
+    const o={};qStart(QBY.s5Spark);questEvent('kill','stormknight',8);questEvent('gather','boltC',3);o.spark=qReady(QBY.s5Spark);questClaim('s5Spark');
+    qStart(QBY.s5Warden);const L=STORY.lanterns.bolt;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='stormwarden';
+    if(w){const mk=L.warden.marks;w.marks=0;P.inv=0;const hp0=P.hp;storyWardenMove(w,0.016);const M=S.wd.marks||[];o.marks=M.length===mk.n&&M.some(m=>Math.hypot(m.x-P.x,m.y-P.y)<1);
+      for(let i=0;i<90;i++)storyMarks(1/60);o.markHit=M.some(m=>m.hit)&&P.hp<hp0;
+      S.wd.marks=[];w.marks=0;P.inv=0;storyWardenMove(w,0.016);const M2=S.wd.marks.slice();P.x+=mk.spread+mk.r*3;
+      for(let i=0;i<90;i++)storyMarks(1/60);o.dodge=M2.length>0&&!M2.some(m=>m.hit)&&!S.wd.marks.length;
+      P.inv=99;damage(w,w.hp*10,'sword',0,'earth');storyUpdate(0.1)}o.ready=qReady(QBY.s5Warden);
+    wGo('desert');const pd=WORLD.regions.desert.paths.storm;o.back=S.wd.reg==='desert'&&Math.hypot(P.x-pd.x,P.y-pd.y)<WORLD.arrive+10;
+    enterVillage();questClaim('s5Warden');o.lit=!!SAVE.story.bolt;
+    enterWorld('home','storm');o.safer=storySafe()<1;P.inv=0;enterVillage();return o});
+  Object.assign(ch5,ch5b);
+  check(ch5.closed&&ch5.open&&ch5.offer&&ch5.reg==='storm'&&ch5.climb&&ch5.foes>0&&ch5.weak&&ch5.noNpc&&ch5.storm&&ch5.solid&&ch5.spark&&ch5.warden&&ch5.marks&&ch5.markHit&&ch5.dodge&&ch5.ready&&ch5.back&&ch5.lit,
+    'עלילה, פרק 5: '+(ch5.closed&&ch5.open?'השביל למגדלים נפתח רק אחרי פנס האש':'השביל למגדלים לא נשלט ע"י הפנס')+(ch5.offer?', קווסט ראשון מוצע':', סדר הקווסטים שבור')+
+    (ch5.reg==='storm'&&ch5.climb?', הגעה למגדלים':', לא הגיע למגדלים')+(ch5.storm?' בסערה':', בלי סערה')+(ch5.solid?', מגדל חוסם':', עוברים דרך מגדל')+', '+ch5.foes+' אויבים מחושמלים'+(ch5.weak?' (חלשים לאדמה)':' (לא חלשים לאדמה!)')+(ch5.noNpc?'':', דמויות האחו במגדלים!')+
+    (ch5.spark?', ברק גולמי':', קווסט הברק שבור')+(ch5.warden?', שומר הסערה קם':', שומר הסערה לא קם')+(ch5.marks?(ch5.markHit?', עיגול ברק פוגע':', עיגול ברק לא פוגע')+(ch5.dodge?' ומי שזז ניצל':', ואי אפשר להתחמק'):', בלי עיגולי ברק')+(ch5.ready?' והופל':', לא הופל')+
+    (ch5.back?', חזרה למדבר ליד השביל':', החזרה למדבר שבורה')+(ch5.lit?', פנס הברק נדלק':', פנס הברק לא נדלק')+(ch5.safer?', המגדלים בטוחים יותר':''));
   // כל פנס שנדלק משנה את הכפר (homecoming.js): בכניסה הבאה לכפר התושב חוזר, העמוד שלו דולק, ראש הכפר מספר, ובעולם נופל חפץ ביסוד של הפנס
   const hm=await page.evaluate(()=>{
     const o={},b0=SAVE.home.back;SAVE.home.back={};
@@ -940,9 +972,10 @@ function worldBot(m,L,god){
     o.saved=!!JSON.parse(localStorage.getItem(SAVE_STORE.key)).home.back.earth;
     enterVillage();o.next=homeBack('water');enterVillage();o.three=homeBack('ice');
     o.fire=!homeBack('fire')&&!npcHere('baker')||!!STO().fire;
+    o.bolt=!homeBack('bolt')&&!npcHere('bellringer')||!!STO().bolt;
     enterWorld('home');const H=HOME.list.earth,c=H.chance;H.chance=2;const n0=drops().length;o.gift=homeKill({x:P.x,y:P.y,r:13})===H.item&&drops().length>n0;H.chance=c;
     SAVE.home.back={...b0,...SAVE.home.back};npcTalk(null);enterVillage();return o});
-  check(hm.away&&hm.k&&hm.here&&hm.free&&hm.posts>=1&&hm.line&&hm.saved&&hm.next&&hm.three&&hm.fire&&hm.gift,'פנס משנה את הכפר: '+(hm.away&&hm.here?'הגנן חוזר בכניסה לכפר':'הגנן לא חזר')+(hm.k?' (פנס אחד בכל כניסה)':', כמה פנסים בבת אחת')+
+  check(hm.away&&hm.k&&hm.here&&hm.free&&hm.posts>=1&&hm.line&&hm.saved&&hm.next&&hm.three&&hm.fire&&hm.bolt&&hm.gift,'פנס משנה את הכפר: '+(hm.away&&hm.here?'הגנן חוזר בכניסה לכפר':'הגנן לא חזר')+(hm.k?' (פנס אחד בכל כניסה)':', כמה פנסים בבת אחת')+
     (hm.saved?', נשמר':', לא נשמר')+', '+hm.posts+' עמודים דולקים'+(hm.next&&hm.three?', המים והקרח בכניסות הבאות':', המים והקרח לא חזרו')+(hm.free?'':', תושב עומד במקום אסור')+(hm.line?'':', אין לו משפט')+(hm.gift?', וחפץ ביסוד נופל בעולם':', החפץ לא נפל'));
   // אירועים בעולם (events.js): גל שנגמר בתיבה, עגלה שנותנת שלל כשמגיעים, ומטר שמפיל מתכות
   const evt=await page.evaluate(()=>{

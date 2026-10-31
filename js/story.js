@@ -16,8 +16,12 @@
    1. כשפנס הקרח דולק, נפתח מעבר מהרכס למדבר (paths של הרכס). מגיעים אליו, בחום וברוח חול.
    2. עקרבי אבן-אש (חלשים למים) וסלעי להבה: מביאים אודם גולמי (rubyC).
    3. שומר האש קם ליד פנס האש, ושולח טבעות אש שמתרחבות, עם פתח אחד שאפשר לעבור בו (ring). נופל, הפנס נדלק, והמדבר בטוח יותר.
+   פרק 5, פנס הברק (מגדלי הסערה, WORLD.regions.storm ב-world.js):
+   1. כשפנס האש דולק, נפתח שביל מהמדבר למגדלים (paths של המדבר). מגיעים אליו, בגשם ובברקים.
+   2. אבירי סערה (חלשים לאדמה) וגבישי סערה: מביאים ברק גולמי (boltC).
+   3. שומר הסערה קם ליד פנס הברק, ומסמן על הרצפה עיגולי ברק שמתפוצצים אחרי שנייה (marks): יוצאים מהעיגול. נופל, הפנס נדלק, והמגדלים בטוחים יותר.
    כל פנס הוא שורה ב-STORY.lanterns: באיזה אזור, איפה, איזה קווסט מעיר את השומר, והשומר עצמו.
-   מה נשמר: SAVE.story ({intro, shard, earth, water, ice, fire}). הטקסטים ב-lang.js תחת 'story.' ו-'q.s1*' עד 'q.s4*' */
+   מה נשמר: SAVE.story ({intro, shard, earth, water, ice, fire, bolt}). הטקסטים ב-lang.js תחת 'story.' ו-'q.s1*' עד 'q.s5*' */
 
 const STORY={
   lanterns:{
@@ -34,7 +38,11 @@ const STORY={
     // פנס האש: בפינה הדרום-מערבית של המדבר. שומר האש שולח טבעת אש שמתרחבת ממנו (ring): speed פיקסלים לשנייה עד max,
     // w עובי הטבעת, gap רוחב הפתח (ברדיאנים) שבו עוברים בלי להיפגע. הטבעת פוגעת פעם אחת לכל היותר
     fire:{reg:'desert',x:-860,y:480,quest:'s4Warden',glow:'#FFB347',col:'#FF6A2A',ev:'blaze',head:true,
-      warden:{type:'emberwarden',hp:30,dmg:1.4,r:1.7,speed:0.85,wake:520,leash:420,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}}
+      warden:{type:'emberwarden',hp:30,dmg:1.4,r:1.7,speed:0.85,wake:520,leash:420,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}},
+    // פנס הברק: בפינה הדרום-מזרחית של מגדלי הסערה. שומר הסערה מסמן n עיגולי ברק (marks): אחד מתחת לשחקן והשאר עד spread ממנו.
+    // כל עיגול ברדיוס r מתפוצץ אחרי fuse שניות. מי שעוד בתוכו נפגע. מספיק לזוז
+    bolt:{reg:'storm',x:860,y:480,quest:'s5Warden',glow:'#E2CCFF',col:'#B07CFF',ev:'thunder',head:true,
+      warden:{type:'stormwarden',hp:32,dmg:1.45,r:1.7,speed:0.85,wake:520,leash:420,marks:{every:2.8,n:4,spread:170,r:50,fuse:1.0,dmg:16,flash:0.25}}}
   },
   introDelay:0.9,                          // שניות אחרי הכניסה הראשונה לכפר עד שראש הכפר מדבר
   headDelay:1.4,                           // אחרי שפנס נדלק (הפרס נלקח בכפר): ראש הכפר אומר משפט
@@ -69,9 +77,10 @@ function storyUpdate(dt){
   const k=storyLantern(),L=k&&STORY.lanterns[k];
   if(L&&qOn(L.quest)&&!w.warden&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake){
     const W=L.warden,e=addEnemy(W.type,L.x,L.y+70,W.hp);
-    e.warden=k;e.elite=false;e.dmg*=W.dmg;e.r*=W.r;e.speed*=W.speed;e.xp=0;e.big=W.r;e.shoot=W.shoot?W.shoot.every:0;e.ring=W.ring?W.ring.every*0.6:0;w.warden=e;
+    e.warden=k;e.elite=false;e.dmg*=W.dmg;e.r*=W.r;e.speed*=W.speed;e.xp=0;e.big=W.r;e.shoot=W.shoot?W.shoot.every:0;e.ring=W.ring?W.ring.every*0.6:0;e.marks=W.marks?W.marks.every*0.5:0;w.warden=e;
     banner(T('story.'+k+'.rise'),L.col);S.shake=Math.max(S.shake,8)}
   storyRings(dt);   // טבעות האש של שומר האש
+  storyMarks(dt);   // עיגולי הברק של שומר הסערה
   if(w.warden&&w.warden.dead){const ev=(STORY.lanterns[w.warden.warden]||{}).ev;if(ev)questEvent('story',ev);w.warden=null}   // שומר המים: 'tide' (s2Warden), שומר הקרח: 'frost' (s3Warden)
 }
 // השומר: רודף את השחקן, אבל לא מתרחק מהפנס (wFoes ב-world.js). שומר המים גם יורה
@@ -86,6 +95,31 @@ function storyWardenMove(e,dt){
     for(let i=0;i<sh.n;i++)shootE(e.x,e.y,a+(i-(sh.n-1)/2)*sh.spread,sh.speed,sh.r,sh.dmg*storySafe())}
   const rg=W.ring;   // שומר האש: טבעת אש חדשה כל every שניות, כשהשחקן קרוב. הפתח בכיוון אקראי
   if(rg&&!far&&d<rg.max+80&&(e.ring-=dt)<=0){e.ring=rg.every;(S.wd.rings||(S.wd.rings=[])).push({x:e.x,y:e.y,rad:e.r,gap:Math.random()*Math.PI*2,hit:false,k:e.warden});sfx('shoot');S.shake=Math.max(S.shake,4)}
+  const mk=W.marks;   // שומר הסערה: עיגולי ברק על הרצפה. אחד בדיוק איפה שהשחקן עומד, כדי שתמיד צריך לזוז
+  if(mk&&!far&&d<WORLD.attackRange+260&&(e.marks-=dt)<=0){e.marks=mk.every;const list=S.wd.marks||(S.wd.marks=[]);
+    for(let i=0;i<mk.n;i++){const a=Math.random()*Math.PI*2,s=i?mk.spread*(0.35+Math.random()*0.65):0;list.push({x:P.x+Math.cos(a)*s,y:P.y+Math.sin(a)*s,t:mk.fuse,boom:0,k:e.warden})}
+    sfx('shoot')}
+}
+// עיגולי ברק: סופרים לאחור, ובאפס מכה ברק. מי שבתוך העיגול נפגע. אחרי הפיצוץ נשאר הבזק קצר (boom)
+function storyMarks(dt){
+  const w=S.wd,list=w.marks;if(!list||!list.length)return;
+  for(const M of list){const mk=STORY.lanterns[M.k].warden.marks;
+    if(M.t>0){M.t-=dt;if(M.t<=0){M.boom=mk.flash;S.shake=Math.max(S.shake,5);sparks(M.x,M.y,STORY.lanterns[M.k].glow,8,220);
+      if(Math.hypot(P.x-M.x,P.y-M.y)<mk.r+P.r*0.5){M.hit=true;hurt(mk.dmg*storySafe())}}}
+    else M.boom-=dt}
+  w.marks=list.filter(M=>M.t>0||M.boom>0);
+}
+function storyMarksDraw(){
+  const list=S.wd.marks;if(!list||!list.length)return;ctx.save();
+  for(const M of list){const L=STORY.lanterns[M.k],mk=L.warden.marks;
+    if(M.t>0){const k=1-M.t/mk.fuse;   // העיגול מתמלא עד הפיצוץ, ומהבהב בסוף
+      ctx.globalAlpha=0.25+k*0.35;ctx.fillStyle=L.col;ctx.beginPath();ctx.arc(M.x,M.y,mk.r*k,0,7);ctx.fill();
+      ctx.globalAlpha=k>0.7&&Math.floor(M.t*20)%2?1:0.8;ctx.strokeStyle=L.glow;ctx.lineWidth=3;ctx.beginPath();ctx.arc(M.x,M.y,mk.r,0,7);ctx.stroke();
+      ctx.globalAlpha=0.9;dtIcon(M.x,M.y,'lightning',22,L.glow)}
+    else{const a=M.boom/mk.flash;ctx.globalAlpha=a;ctx.strokeStyle='#FFFFFF';ctx.lineWidth=4;ctx.lineJoin='round';   // הברק עצמו: קו שבור מלמעלה
+      ctx.beginPath();let x=M.x,y=M.y-260;ctx.moveTo(x,y);for(let i=1;i<=6;i++){x=M.x+(i<6?(hash(i,M.x|0)-0.5)*40:0);y=M.y-260+i*260/6;ctx.lineTo(x,y)}ctx.stroke();
+      ctx.fillStyle=L.glow;ctx.globalAlpha=a*0.6;ctx.beginPath();ctx.arc(M.x,M.y,mk.r,0,7);ctx.fill()}}
+  ctx.restore();
 }
 // טבעות אש: מתרחבות, ופוגעות בשחקן כשהקצה עובר דרכו, חוץ מבפתח
 function storyRings(dt){
@@ -122,7 +156,7 @@ function storyDraw(){
   ctx.fillStyle='#4A3A2A';ctx.fillRect(L.x-4,L.y-70,8,76);
   if(lit){const g=ctx.createRadialGradient(L.x,L.y-80,4,L.x,L.y-80,90+Math.sin(t*2)*8);g.addColorStop(0,gl+'8C');g.addColorStop(1,gl+'00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(L.x,L.y-80,100,0,7);ctx.fill()}
   ctx.fillStyle=lit?gl:'#3A3F52';ctx.strokeStyle='#2A2018';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(L.x-14,L.y-98,28,32,6);ctx.fill();ctx.stroke();
-  storyRingsDraw();
+  storyRingsDraw();storyMarksDraw();
   const e=S.wd.warden;
   if(e&&!e.dead){const bw=90,x=e.x,y=e.y-e.r-48;
     ctx.fillStyle='rgba(5,7,13,0.7)';ctx.fillRect(x-bw/2,y,bw,7);ctx.fillStyle=L.col;ctx.fillRect(x-bw/2,y,bw*Math.max(0,e.hp/e.max),7)}

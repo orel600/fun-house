@@ -434,7 +434,7 @@ const TEXT={
   'q.kind.village':{he:'כפר',en:'Village'},
   'q.kind.story':{he:'⭐ עלילה',en:'⭐ Story'},
   // מטרה מסוג 'story' (quests.js): הטקסט לפי מה צריך לקרות
-  'qo.story':{he:w=>({shard:'למצוא את הרסיס הזוהר',lake:'להגיע לאגם הערפל',tide:'להפיל את שומר המים',ridge:'לטפס לרכס הקפוא',frost:'להפיל את שומר הקרח',desert:'לרדת למדבר הבוער',blaze:'להפיל את שומר האש'})[w]||'',en:w=>({shard:'Find the glowing shard',lake:'Reach the Mist Lake',tide:'Defeat the Tide Warden',ridge:'Climb to the Frost Ridge',frost:'Defeat the Frost Warden',desert:'Descend into the Burning Desert',blaze:'Defeat the Ember Warden'})[w]||''},
+  'qo.story':{he:w=>({shard:'למצוא את הרסיס הזוהר',lake:'להגיע לאגם הערפל',tide:'להפיל את שומר המים',ridge:'לטפס לרכס הקפוא',frost:'להפיל את שומר הקרח',desert:'לרדת למדבר הבוער',blaze:'להפיל את שומר האש',storm:'לעלות למגדלי הסערה',thunder:'להפיל את שומר הסערה'})[w]||'',en:w=>({shard:'Find the glowing shard',lake:'Reach the Mist Lake',tide:'Defeat the Tide Warden',ridge:'Climb to the Frost Ridge',frost:'Defeat the Frost Warden',desert:'Descend into the Burning Desert',blaze:'Defeat the Ember Warden',storm:'Climb to the Storm Towers',thunder:'Defeat the Storm Warden'})[w]||''},
   'foe.warden':{he:'את השומר האבן',en:'the Stone Warden'},
   // העלילה, פרק 1: פנס האדמה (story.js, docs/story.md)
   // אירועים בעולם (events.js)
@@ -500,6 +500,21 @@ const TEXT={
   'q.s4Warden':{he:['⭐ שומר האש','ליד פנס האש שוכב גל של גחלים. כשהוא קם, הוא שולח טבעות אש. בכל טבעת יש פתח אחד: תמצא אותו ותעבור דרכו, או תתרחק.'],en:['⭐ The Ember Warden','By the Fire Lantern lies a heap of glowing coals. When it rises, it sends out rings of fire. Each ring has one gap: find it and slip through, or stay back.']},
   'foe.cinderscorp':{he:'עקרבי אבן-אש',en:'cinder scorpions'},'foe.flamewisp':{he:'רוחות אש',en:'flame wisps'},'foe.emberwarden':{he:'שומרי אש',en:'ember wardens'},
   'node.cactus':{he:'קקטוסים',en:'cacti'},'node.emberRock':{he:'סלעי להבה',en:'ember rocks'},
+  // העלילה, פרק 5: פנס הברק, מגדלי הסערה (story.js, WORLD.regions.storm ב-world.js, docs/story.md)
+  'w.region.storm':{he:'מגדלי הסערה',en:'The Storm Towers'},
+  'w.enter.storm':{he:'מגדלי הסערה. גשם לא נגמר, והשמיים רועמים',en:'The Storm Towers. Endless rain, and the sky rumbles'},
+  'w.path.storm':{he:'למגדלי הסערה',en:'To the Storm Towers'},
+  'w.pathInfo.storm':{he:'שביל שעולה מהחול אל המגדלים השבורים, ונפתח כשפנס האש נדלק. רטוב ומחשמל שם. אדמה מארקת ברק.',en:'A trail up from the sand to the broken towers, opened when the Fire Lantern lit. It is wet and crackling up there. Earth grounds lightning.'},
+  'story.bolt.rise':{he:'שומר הסערה יורד עם הברק!',en:'The Storm Warden comes down with the lightning!'},
+  'story.bolt.name':{he:'שומר הסערה',en:'Storm Warden'},
+  'story.bolt.lit':{he:'🏮 פנס הברק דולק! הגשם נרגע קצת',en:'🏮 The Lightning Lantern burns! The rain eases a little'},
+  'story.bolt.reward':{he:'פנס הברק נדלק',en:'The Lightning Lantern is lit'},
+  'story.bolt.head':{he:'חמישה! השערות שלי עומדות מהחשמל, ואשתי אומרת שסוף סוף יש לי תסרוקת. נשאר רק אחד... הפנס הראשון, זה שהדליק את כל השאר. אף אחד לא זוכר איפה הוא. אבל כשכל החמישה דולקים, האור שלהם מצביע לאותו מקום.',en:'Five! My hair is standing up from the static, and my wife says I finally have a hairstyle. Only one left... the first lantern, the one that lit all the others. No one remembers where it is. But when all five burn, their light points to the same place.'},
+  'q.s5Climb':{he:['⭐ השביל לסערה','מאז שפנס האש דולק, בלילה רואים ברקים מעל המגדלים הישנים בצפון. פעם השומרים גרו שם. עכשיו גר שם רק רעם, והוא שכן רועש.'],en:['⭐ The Trail to the Storm','Since the Fire Lantern lit, you can see lightning at night above the old towers up north. The Keepers lived there once. Now only thunder lives there, and he is a noisy neighbor.']},
+  'q.s5Spark':{he:['⭐ ברק בבקבוק','פנס הברק צריך ברק שאפשר להחזיק ביד. הוא ישן בתוך גבישי הסערה. האבירים שם עשויים מברזל ומחשמל. אדמה מארקת אותם, אז תביא אבן. או תזרוק את עצמך עליהם. אבן עדיף.'],en:['⭐ Lightning in a Bottle','The Lightning Lantern needs lightning you can hold in your hand. It sleeps inside the storm crystals. The knights there are made of iron and static. Earth grounds them, so bring stone. Or throw yourself at them. Stone is better.']},
+  'q.s5Warden':{he:['⭐ שומר הסערה','ליד פנס הברק עומד מישהו שהברק אוהב יותר מדי. הוא מסמן עיגולים על הרצפה, ושנייה אחרי זה הברק נופל בדיוק שם. עיגול מתחתיך? זוז.'],en:['⭐ The Storm Warden','By the Lightning Lantern stands someone the lightning loves too much. He marks circles on the ground, and a second later lightning strikes right there. Circle under you? Move.']},
+  'foe.stormknight':{he:'אבירי סערה',en:'storm knights'},'foe.sparkwisp':{he:'ניצוצות',en:'spark wisps'},'foe.stormwarden':{he:'שומרי סערה',en:'storm wardens'},
+  'node.deadTree':{he:'עצים שרופים',en:'scorched trees'},'node.stormRock':{he:'גבישי סערה',en:'storm crystals'},
   'q.s2Mist':{he:['⭐ הדרך בערפל','מאז שהפנס דולק, הרסיס מושך צפון-מערבה, ליער. שם יש שביל ישן לאגם. הדייג אומר שהוא לא דג שם מאז שהדגים התחילו לדוג אותו.'],en:['⭐ The Path in the Mist','Since the lantern lit, the shard pulls north-west, into the woods. There’s an old trail to the lake. The fisher says he stopped fishing there when the fish started fishing him.']},
   'q.s2Glow':{he:['⭐ מים שזוהרים','פנס המים צריך מים שזוכרים איך לזהור. הם נוצצים בתוך אבני הגאות. אה, ויש שם אבירים חלודים שטבעו מזמן. הם לא אוהבים אורחים. וגם לא ברקים.'],en:['⭐ Water That Glows','The Water Lantern needs water that remembers how to glow. It sparkles inside the tide rocks. Oh, and there are rusty knights down there who drowned long ago. They don’t like guests. Or lightning.']},
   'q.s2Warden':{he:['⭐ שומר המים','בפינה הרחוקה של האגם עומד פנס המים. משהו ענק ורטוב שוכב לידו ולא מוכן לזוז. תעיר אותו, ותשכיב אותו לישון. לתמיד.'],en:['⭐ The Tide Warden','In the far corner of the lake stands the Water Lantern. Something huge and wet lies beside it and won’t budge. Wake it up, and put it back to sleep. For good.']},
@@ -800,6 +815,8 @@ const TEXT={
   'home.water.gift':{he:'🏮 מתנה מפנס המים!',en:'🏮 A gift from the Water Lantern!'},
   'home.ice.gift':{he:'🏮 מתנה מפנס הקרח!',en:'🏮 A gift from the Ice Lantern!'},
   'home.fire.gift':{he:'🏮 מתנה מפנס האש!',en:'🏮 A gift from the Fire Lantern!'},
+  'home.bolt.tale':{he:'שמעת את הפעמון? טוני הפעמונאי חזר! הוא צלצל מהמגדלים כל ערב, עד שהברק פגע בפעמון שלו ושלח אותו לכפר השכן. עכשיו הוא מצלצל שוב, ואומר שהברק פוגע פעמיים רק במי שיש לו מזל.',en:'Hear that bell? Tony the bell-ringer is back! He rang from the towers every evening, until lightning hit his bell and sent it to the next village. Now he rings again, and says lightning strikes twice only for the lucky.'},
+  'home.bolt.gift':{he:'🏮 מתנה מפנס הברק!',en:'🏮 A gift from the Lightning Lantern!'},
   'npc.gardener':{he:['סבא שורש','הגנן'],en:['Grandpa Root','Gardener']},
   'npc.gardener.low':{he:'הגזר שלכם עקום. לא נורא, גם אני. תביא לי קצת זמן ואני אסדר את שנינו.',en:'Your carrots are crooked. That\'s fine, so am I. Give me some time and I\'ll fix us both.'},
   'npc.gardener.high':{he:'כפר כזה גדול וכל הגינה עליי? טוב, לפחות האדמה כבר לא רועדת. רק הברכיים שלי.',en:'A village this big and the whole garden is on me? Well, at least the ground stopped shaking. Just my knees now.'},
@@ -816,6 +833,10 @@ const TEXT={
   'npc.jokes.washer':{he:['מצאתי בכיס של שלד מפתח. אין לו בית. יש לו מפתח. עצוב.'],en:['Found a key in a skeleton\'s pocket. No house. Just a key. Sad.']},
   'npc.jokes.singer':{he:['אני מכירה שיר לכל שומר. לשומר האבן יש שיר של מילה אחת: "בום".'],en:['I know a song for every Keeper. The Stone Warden\'s song is one word: "boom".']},
   'npc.jokes.baker':{he:['ניסיתי לאפות לחם בצורת שלד. הוא קם והלך.'],en:['I tried baking skeleton-shaped bread. It got up and walked away.']},
+  'npc.bellringer':{he:['טוני','הפעמונאי'],en:['Tony','Bell-ringer']},
+  'npc.bellringer.low':{he:'הפעמון שלי עוד בכפר השכן. בינתיים אני מצלצל בסיר. אף אחד לא שם לב להבדל.',en:'My bell is still in the next village. For now I ring a pot. Nobody notices the difference.'},
+  'npc.bellringer.high':{he:'כפר כזה גדול צריך פעמון גדול! או שני סירים.',en:'A village this big needs a big bell! Or two pots.'},
+  'npc.jokes.bellringer':{he:['הברק פגע בי שלוש פעמים. עכשיו אני מדליק נרות עם האצבע.'],en:['Lightning hit me three times. Now I light candles with my finger.']},
   /* ======== בדיחות פנימיות ========
      ניר: כאן כותבים בדיחות פנימיות לכל תושב. בכל שיחה יש סיכוי (NPC.joke ב-npc.js) שהוא יגיד אחת מהן במקום משפט רגיל.
      כותבים בין גרשיים, עם פסיק בין משפט למשפט. למשל: he:['משפט אחד','משפט שני'].
