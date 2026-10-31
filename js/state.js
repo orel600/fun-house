@@ -22,6 +22,7 @@ function reset(){
   heroReset();   // הפסיבית של דמות ההתחלה (heroes.js)
   skillsReset();   // הסקיל של הנשק (skills.js)
   orbitReset();   // החפצים המסתובבים (orbit.js)
+  divineReset();   // ברק אלוהי (divine.js)
   reset3d();
   updateSwapBtn();
 }
