@@ -127,10 +127,10 @@ function petBite(p,e){
   p.dealt+=Math.max(0,h0-Math.max(0,e.hp));
 }
 /* ---- גזר ---- */
-// הכפתור מופיע כשהיא קרובה, פנויה, ויש גזר בתרמיל. p=null: מסתירים
+// הכפתור (בסרגל למטה, בכפר ובעולם) מופיע כשהיא קרובה, פנויה, ויש גזר בתרמיל. p=null: מסתירים
 function petFeedBtn(p,dP){
   const b=$('feedBtn');if(!b)return;
-  const show=!!p&&dP<PET.feed.near&&p.st!=='hunt'&&p.st!=='back'&&p.st!=='go'&&p.feedCd<=0&&bagHas(PET.feed.res);
+  const show=!!p&&(S.vil||S.wd)&&dP<PET.feed.near&&p.st!=='hunt'&&p.st!=='back'&&p.st!=='go'&&p.feedCd<=0&&bagHas(PET.feed.res);
   if(b.hidden===show){b.hidden=!show;if(show)b.textContent=T('pet.feed',T('pet.name.'+(SAVE.pet.kind||PET.default)))}
 }
 function petFeed(){

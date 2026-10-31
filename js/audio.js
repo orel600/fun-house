@@ -109,7 +109,7 @@ $('sndMute').addEventListener('click',e=>{e.stopPropagation();setMute(!AUDIO.mut
 for(const el of document.querySelectorAll('#ovSound input[data-ch]')){
   el.addEventListener('input',()=>setVol(el.dataset.ch,el.value/100));
   el.addEventListener('change',()=>{sfx(el.dataset.ch==='fx'?'levelup':'hit')})}   // שומעים מיד איך זה נשמע
-addEventListener('keydown',e=>{if(e.code==='Escape'&&!$('ovSound').hidden)soundClose()});
+// Esc וחזור סוגרים: ui.js (WINS)
 showMute();
 // כל כפתור בממשק משמיע "טאפ", גם כפתורים שיתווספו בעתיד (כפר, ציוד, קווסטים)
 document.addEventListener('click',e=>{if(e.target.closest('button'))sfx('tap')});

@@ -190,8 +190,8 @@ function gTile(id,attrs,extra){
   return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gIcon(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+extra+'</button>';
 }
 // תא של משאב: אייקון, כמה יש, ומסגרת בצבע הנדירות
-const gResTile=(r,n,attrs)=>'<button class="gtile res" '+attrs+' style="--rar:'+gRarCol(r)+'" aria-label="'+resName(r)+'">'+resIcon(r)+'<small>'+n+'</small></button>';
-const gCell=(k,n,attrs)=>gItem(k)?gTile(k,attrs,n>1?'<small>'+n+'</small>':''):gResTile(k,n,attrs);
+const gResTile=(r,n,attrs)=>'<button class="gtile res" '+attrs+' style="--rar:'+gRarCol(r)+'" aria-label="'+resName(r)+' '+n+'">'+resIcon(r)+'<small>×'+shortN(n)+'</small></button>';
+const gCell=(k,n,attrs)=>gItem(k)?gTile(k,attrs,n>1?'<small>×'+shortN(n)+'</small>':''):gResTile(k,n,attrs);
 // מה בתרמיל בלשונית הנוכחית: items לפריטים, או משפחת משאבים (RES.fams)
 function gBagKeys(tab){
   if(tab==='items'){const order=['weapon','acc','boots','orbit'];return Object.keys(SAVE.bag).filter(gItem)
@@ -344,4 +344,4 @@ $('ovGear').addEventListener('click',e=>{
   gRedraw();
 });
 $('gearBtn').addEventListener('click',gearOpen);$('gearBtnRun').addEventListener('click',gearOpen);
-addEventListener('keydown',e=>{if(e.code==='Escape'&&!$('ovGear').hidden)gearClose()});
+// Esc ולחיצה על הרקע סוגרים: ui.js

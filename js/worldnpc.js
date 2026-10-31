@@ -66,7 +66,7 @@ function wnpcDialog(){
   const id=S.wd&&S.wd.dlg,el=$('npcDlg');if(!id){el.hidden=true;return}
   const Q=QS(),[name,role]=T('npc.'+id),mine=QUESTS.list.filter(q=>q.giver===id);
   const ready=mine.filter(q=>Q.active[q.id]&&qReady(q)),open=mine.filter(qOpen),on=mine.filter(q=>Q.active[q.id]&&!qReady(q));
-  let h='<div class="qhead"><h3>'+name+' <small>'+role+'</small></h3><button class="qx" data-act="close" aria-label="'+T('q.close')+'">✕</button></div>';
+  let h=winHead(name,role);   // ui.js
   h+='<p class="npcsay">'+S.wd.dlgLine+'</p>';
   h+=ready.map(q=>qCard(q,'claim')).join('')+open.map(q=>qCard(q,'accept')).join('')+on.map(q=>qCard(q,'track')).join('');
   if(!ready.length&&!open.length&&!on.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
