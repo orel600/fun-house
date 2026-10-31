@@ -1,5 +1,5 @@
 # חותך דף אייקונים (רשת) לאייקונים נפרדים עם רקע שקוף, בגודל של icons/ui/res.
-# שימוש: python3 tools/slice-icons.py <דף.jpg> <עמודות> <שורות> <תיקיית-יעד> שם1 שם2 ...
+# שימוש: python3 tools/slice-icons.py <דף.jpg> <עמודות> <שורות> <תיקיית-יעד> שם1 שם2:holes ...
 # הרקע הלבן נמחק רק מהקצוות פנימה (flood fill), כך שלבן בתוך האייקון (יהלום) נשאר.
 import sys
 from PIL import Image, ImageDraw
@@ -11,6 +11,7 @@ im = Image.open(src).convert('RGB')
 W, H = im.size
 cw, ch = W / cols, H / rows
 for i, name in enumerate(names):
+    name, holes = name.split(':')[0], name.endswith(':holes')
     c, r = i % cols, i // cols
     cell = im.crop((int(c * cw), int(r * ch), int((c + 1) * cw), int((r + 1) * ch))).convert('RGBA')
     w, h = cell.size
@@ -24,6 +25,13 @@ for i, name in enumerate(names):
         for x in (0, w - 1):
             if cell.getpixel((x, y))[:3] != KEY[:3] and min(cell.getpixel((x, y))[:3]) > 255 - TOL:
                 ImageDraw.floodfill(cell, (x, y), KEY, thresh=TOL)
+    # שם עם ':holes' (כמו קשת עם מיתר): גם אזורים לבנים סגורים בפנים נמחקים. לא לשימוש באייקון שהוא עצמו לבן (יהלום)
+    if holes:
+        for y in range(0, h, 3):
+            for x in range(0, w, 3):
+                p = cell.getpixel((x, y))
+                if p[:3] != KEY[:3] and min(p[:3]) >= 248:
+                    ImageDraw.floodfill(cell, (x, y), KEY, thresh=TOL)
     px = cell.load()
     for y in range(h):
         for x in range(w):
@@ -41,5 +49,5 @@ for i, name in enumerate(names):
     bb = cell.getbbox()
     cell = cell.crop(bb)
     cell.thumbnail((SIZE, SIZE), Image.LANCZOS)
-    cell.quantize(colors=255, method=Image.FASTOCTREE).save(f'{out}/{name}.png', optimize=True) if False else cell.save(f'{out}/{name}.png', optimize=True)
+    cell.quantize(colors=256, method=Image.FASTOCTREE).save(f'{out}/{name}.png', optimize=True)
     print(name, cell.size)
