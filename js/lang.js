@@ -355,6 +355,10 @@ const TEXT={
   'qo.story':{he:()=>'למצוא את הרסיס הזוהר',en:()=>'Find the glowing shard'},
   'foe.warden':{he:'את השומר האבן',en:'the Stone Warden'},
   // העלילה, פרק 1: פנס האדמה (story.js, docs/story.md)
+  // אירועים בעולם (events.js)
+  'ev.wave':{he:'⚔️ גל שלדים יוצא מהאדמה!',en:'⚔️ A skeleton wave rises!'},'ev.waveDone':{he:'הגל נעצר! תיבה נפלה',en:'Wave stopped! A chest dropped'},
+  'ev.cart':{he:'🛒 עגלת סוחר התהפכה בדרך!',en:'🛒 A merchant cart overturned nearby!'},'ev.cartDone':{he:'מה שנפל מהעגלה שלך',en:'The spilled goods are yours'},
+  'ev.rain':{he:'✨ מטר רסיסים!',en:'✨ A shower of shards!'},'ev.rainDone':{he:'המטר נגמר',en:'The shower is over'},
   // אויבים מיוחדים בעולם (affix.js)
   'af.fast':{he:'מהיר',en:'Swift'},'af.tough':{he:'משוריין',en:'Armored'},'af.burst':{he:'מתפוצץ',en:'Volatile'},'af.split':{he:'מתפצל',en:'Splitting'},'af.regen':{he:'מתחדש',en:'Regenerating'},
   'story.intro':{he:'הגעת! סוף סוף מישהו עם נשק. פעם דלקו כאן שישה פנסים, והצל לא העז להתקרב. לילה אחד כולם כבו, והשלדים קמו מהאדמה. בוא, נתחיל מקטן.',en:'You came! Finally someone with a weapon. Six lanterns once burned here, and the Shadow never dared come near. One night they all went dark, and the skeletons rose. Come, let’s start small.'},
