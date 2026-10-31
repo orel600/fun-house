@@ -26,6 +26,8 @@ const TEXT={
       'New: a <span class="g">golden door</span> opens for a few seconds and leads to a coin room, and inside <span class="r">red zones</span> a bomb or a power-up is waiting. The zones burn, so get in, grab it and get out.',
       'After a rumor, <span class="g">the Wanted</span> shows up with a loot sack on his back. Chase him down before he escapes. The sack might hold junk, or real treasure.']},
   start:{he:'יאללה',en:'Let’s go'},
+  'help.btn':{he:'📖 איך משחקים',en:'📖 How to play'},
+  'help.title':{he:'איך משחקים',en:'How to play'},
   best:{he:t=>'השיא שלך: '+t,en:t=>'Your best: '+t},
   'pwa.install':{he:'📲 התקנה כאפליקציה',en:'📲 Install app'},
   'pwa.ios':{he:'📲 להתקנה: שיתוף ← הוספה למסך הבית',en:'📲 To install: Share → Add to Home Screen'},

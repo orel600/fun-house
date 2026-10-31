@@ -5,6 +5,7 @@ const UI={
   top:4,   // כמה משאבים לכל היותר בפס העליון. השאר בתרמיל, וכפתור "+N" פותח אותו
 };
 const WINS=[
+  {id:'ovHelp',close:()=>helpOpen(false),backdrop:true},
   {id:'ovGear',close:()=>gearClose(),backdrop:true},
   {id:'ovForge',close:()=>forgeClose(),backdrop:true},
   {id:'npcDlg',close:()=>S.wd?wnpcTalk(null):npcTalk(null),outside:true},
@@ -34,3 +35,22 @@ for(const w of WINS.filter(w=>w.backdrop)){const el=$(w.id);let down=false;
 $('c').addEventListener('pointerdown',()=>{for(const w of WINS.filter(w=>w.outside))if(uiOpen(w))w.close()});
 // "+N" בפס העליון: מה שלא נכנס לפס נמצא בתרמיל
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.resmore');if(b&&S&&S.mode==='play')gearOpen()});
+
+// איך משחקים: מכפתור במסך הפתיחה
+function helpOpen(on){$('ovHelp').hidden=!on;if(on)$('ovHelp').querySelector('.rules').scrollTop=0}
+$('helpBtn').addEventListener('click',()=>{helpOpen(true);sfx('ui')});
+$('helpClose').addEventListener('click',()=>helpOpen(false));
+// "חזור" באנדרואיד (וחץ אחורה בדפדפן): כשנפתח חלון שעוצר את המשחק, נכנסת רשומה להיסטוריה, וחזור סוגר את החלון במקום לצאת מהמשחק.
+// פאנל של מבנה או שער נפתח לבד כשעוברים לידו, ולכן רק חלון המסחר הגדול נחשב
+const uiModal=w=>uiOpen(w)&&(w.id!=='vPanel'&&w.id!=='wPanel'||$(w.id).classList.contains('big'));
+const UIH={on:false,skip:false};
+function uiHistory(){
+  const any=WINS.some(uiModal);
+  if(any&&!UIH.on){UIH.on=true;try{history.pushState({ui:1},'')}catch(e){}}
+  else if(!any&&UIH.on){UIH.on=false;UIH.skip=true;try{history.back()}catch(e){UIH.skip=false}}
+}
+addEventListener('popstate',()=>{
+  if(UIH.skip){UIH.skip=false;return}
+  UIH.on=false;if(WINS.some(uiModal))uiCloseTop();uiHistory();
+});
+{const mo=new MutationObserver(uiHistory);for(const w of WINS)mo.observe($(w.id),{attributes:true,attributeFilter:['hidden','class']})}

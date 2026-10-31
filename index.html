@@ -79,25 +79,41 @@
   </div>
 </div>
 
-<div class="ov" id="ovStart">
-  <div class="panel">
-    <div class="langs" role="group" data-ta="langGroup">
-      <button class="lang" data-lang="he" lang="he">עברית</button>
-      <button class="lang" data-lang="en" lang="en">English</button>
+<!-- מסך הפתיחה: מסך אחד בלי גלילה. כותרת, כפתור "יאללה" גדול בפינה של האגודל הימני, וכפתורים קטנים להגדרות. ההסבר בחלון (js/ui.js) -->
+<div class="ov start" id="ovStart">
+  <div class="panel spanel">
+    <div class="stop">
+      <div class="langs" role="group" data-ta="langGroup">
+        <button class="lang" data-lang="he" lang="he">עברית</button>
+        <button class="lang" data-lang="en" lang="en">English</button>
+      </div>
+      <div class="langs gfx" role="group" data-ta="gfxGroup">
+        <button class="lang" data-gfx="3d" data-t="gfx3d"></button>
+        <button class="lang" data-gfx="2d" data-t="gfx2d"></button>
+      </div>
+      <button class="lang" id="helpBtn" data-t="help.btn"></button>
     </div>
-    <div class="langs gfx" role="group" data-ta="gfxGroup">
-      <button class="lang" data-gfx="3d" data-t="gfx3d"></button>
-      <button class="lang" data-gfx="2d" data-t="gfx2d"></button>
+    <div class="smid">
+      <h1 data-t="title"></h1>
+      <p class="sub" data-t="tagline"></p>
+      <p class="sub best" id="bestLine"></p>
     </div>
-    <h1 data-t="title"></h1>
-    <p class="sub" data-t="tagline"></p>
-    <ul class="rules" data-t="rules"></ul>
-    <button class="go" id="startBtn" data-t="start"></button>
-    <p class="sub" id="bestLine"></p>
-    <p class="sub cloud" id="cloudLine" data-t="cloud.off"></p>
-    <div class="langs cloudbtns"><button class="lang" id="cloudIn" data-t="cloud.google" hidden></button><button class="lang" id="cloudOut" data-t="cloud.signout" hidden></button></div>
-    <div class="langs"><button class="lang" id="pwaInstall" data-t="pwa.install" hidden></button></div><p class="sub" id="pwaIos" data-t="pwa.ios" hidden></p>
+    <div class="sbot">
+      <div class="sside">
+        <p class="sub cloud" id="cloudLine" data-t="cloud.off"></p>
+        <div class="langs cloudbtns"><button class="lang" id="cloudIn" data-t="cloud.google" hidden></button><button class="lang" id="cloudOut" data-t="cloud.signout" hidden></button><button class="lang" id="pwaInstall" data-t="pwa.install" hidden></button></div>
+        <p class="sub" id="pwaIos" data-t="pwa.ios" hidden></p>
+      </div>
+      <button class="go" id="startBtn" data-t="start"></button>
+    </div>
     <p class="ver" id="verLine" dir="ltr"></p>
+  </div>
+</div>
+<!-- איך משחקים: נפתח מכפתור במסך הפתיחה, גולל בפנים, ונסגר ב-✕, ב-Esc, בחזור ובנגיעה בחוץ (js/ui.js) -->
+<div class="ov helpov" id="ovHelp" hidden>
+  <div class="panel win helppanel">
+    <div class="whd"><h2 data-t="help.title"></h2><button class="wx" id="helpClose" data-ta="q.close">✕</button></div>
+    <ul class="rules" data-t="rules"></ul>
   </div>
 </div>
 
