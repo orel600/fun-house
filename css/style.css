@@ -353,9 +353,11 @@ h1{font-size:46px} h2{font-size:30px}
    כך ה-40% השמאליים נשארים לג'ויסטיק. מסחר בשני טורים (מוכרים | קונים), יומן בשני טורים, ושיחה באמצע.
    מיקום על המסך ולא כיוון טקסט, ולכן left/right גם בעברית */
 @media (orientation:landscape){
-  /* פאנל של מבנה: מעל הסרגל ועד למטה, כדי שייראה כמעט כולו בלי לגלול (ניר: "רואים רק קצת"). ✕ מחזיר את הסרגל */
-  .vpanel.win{left:auto;right:max(16px,env(safe-area-inset-right,0px));top:auto;bottom:var(--safeb);width:min(380px,46vw);margin:0;z-index:5;
-    max-height:calc(100% - var(--topb) - var(--safeb))}
+  .vpanel.win{left:auto;right:max(16px,env(safe-area-inset-right,0px));top:auto;bottom:var(--navb);width:min(340px,42vw);margin:0;
+    max-height:calc(100% - var(--topb) - var(--navb))}
+  /* פאנל של מבנה בכפר: יורד עד למטה, והסרגל מוסתר כל עוד הוא פתוח, כדי שייראה כמעט כולו בלי לגלול (ניר: "רואים רק קצת"). ✕ מחזיר את הסרגל */
+  #vPanel.win:not(.big){bottom:var(--safeb);width:min(380px,46vw);max-height:calc(100% - var(--topb) - var(--safeb))}
+  body.vpan #nav{display:none}
   .vpanel.win.big{left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:var(--safeb);width:auto;margin-inline:auto;max-height:none}
   .tcols{flex-direction:row;overflow:hidden}
   .tcols>section{flex:1;overflow-y:auto;padding-inline-end:2px}

@@ -111,7 +111,7 @@ function vTrade(kind,r){
 }
 
 /* ---- מעבר בין הכפר לזירה ---- */
-function villageUi(on){document.body.classList.toggle('vil',on);$('vhud').hidden=!on;if(!on){$('vPanel').hidden=true;npcHide()}}
+function villageUi(on){document.body.classList.toggle('vil',on);if(!on)document.body.classList.remove('vpan');$('vhud').hidden=!on;if(!on){$('vPanel').hidden=true;npcHide()}}
 function enterVillage(){
   const back=S&&(S.mode==='over'||S.wd);   // חוזרים מהעולם (או מריצה): ליד השער
   reset();S.mode='play';S.vil={near:null,ui:'',raise:{}};
@@ -202,7 +202,7 @@ function villageHud(){
   $('vBag').innerHTML=topLine(SAVE.bag,resShown(k));   // רק מה שרלוונטי ליד המבנה הזה (RES.show)
   // נפחייה ומחסן: הרבה תוכן, אז חלון גדול בשני טורים (ניר: "רואים רק קצת")
   const wide=!S.vil.gate&&(k==='forge'||k==='stash')&&L>0;
-  const pn=$('vPanel');pn.hidden=!cur||shut;pn.classList.toggle('big',!!S.vil.trade||wide);if(pn.hidden)return;
+  const pn=$('vPanel');pn.hidden=!cur||shut;pn.classList.toggle('big',!!S.vil.trade||wide);document.body.classList.toggle('vpan',!pn.hidden);if(pn.hidden)return;
   if(S.vil.trade){pn.innerHTML=winHead(T('vil.market'),T('level',L))+tradeHtml(L);return}
   if(S.vil.gate){pn.innerHTML=winHead(T('vil.out'))+'<p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
   const why=vBlock(k),c=vCost(k);
