@@ -46,6 +46,8 @@ const TEXT={
   gfxGroup:{he:'גרפיקה',en:'Graphics'},
   gfx3d:{he:'תלת-ממד',en:'3D'},
   gfx2d:{he:'דו-ממד',en:'2D'},
+  'gfx.auto':{he:'עברנו לדו-ממד, שירוץ חלק',en:'Switched to 2D for smoother play'},
+  'set.title':{he:'הגדרות',en:'Settings'},
   arena:{he:'זירת המשחק',en:'Game arena'},
   swapWeapon:{he:'החלף נשק',en:'Switch weapon'},
   mute:{he:'צלילים',en:'Sound'},
