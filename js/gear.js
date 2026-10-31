@@ -241,6 +241,7 @@ function gearDraw(){
   // הבובה: הדמות באמצע, והמשבצות בשני הצדדים ומתחתיה
   const side=k=>'<div class="gd-'+k+'">'+D[k].map(gSlotHtml).join('')+'</div>';
   $('gSlots').innerHTML=side('start')+'<div class="gfig" style="--hero:'+(hero.col||'#ECE7DC')+'"><span>🧍</span>'+(hero.icon?'<b>'+hero.icon+'</b>':'')+'</div>'+side('end')+side('under');
+  dollShow();   // הדמות בתלת-ממד במקום האימוג'י, עם מה שלבוש (doll3d.js)
   // התרמיל: לשוניות ורשת
   const tabs=gTabs();if(!tabs.includes(GUI.tab))GUI.tab='items';
   $('gTabs').innerHTML=tabs.map(f=>'<button data-tab="'+f+'"'+(GUI.tab===f?' aria-pressed="true"':'')+'>'+T(f==='items'?'gear.tab.items':'fam.'+f)+'</button>').join('');
@@ -282,6 +283,7 @@ function gDetailHtml(){
 function gDoEquip(id,slot,i){
   const before=gearStats(),worn=gearWorn(),r=gearEquip(id,slot,i);if(!r)return null;
   gearLive(before,id);GUI.sel={slot:r.slot,i:r.i};
+  dollWantCheer=true;   // הדמות בחלון מריעה (doll3d.js)
   if(setCheck(worn))GUI.pop=r;   // מדרגה חדשה של סט (sets.js)
   else if(r.better){celebrate(P.x,P.y-20,'gear',gIcon(gGet(r.slot,r.i)));GUI.pop=r}else sfx('tap');
   return r;

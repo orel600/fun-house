@@ -578,3 +578,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .gset b{color:var(--set)}
 .gset p{margin:2px 0;font-size:13px;color:var(--dim)}
 .gset p.on{color:var(--chalk);font-weight:800}
+
+/* הדמות בתלת-ממד בחלון הציוד (doll3d.js): הקנבס ממלא את מקום הבובה, והאימוג'י מוסתר */
+.gfig.d3 span{visibility:hidden}
+.gfig .doll3d{position:absolute;inset:-12% -20%;width:140%;height:124%;pointer-events:none}   /* גדול מהמשבצת: הדמות ממלאת את האמצע */
