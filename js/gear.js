@@ -118,6 +118,8 @@ function gApply(s,k){
   const m=x=>Math.pow(1+(s[x]||0)/100,k);
   P.sw.dmg*=m('sdmg');P.gn.dmg*=m('gdmg');P.speed*=m('speed');P.magnet*=m('magnet');
   P.maxHp+=k*(s.hp||0);P.regen+=k*(s.regen||0);
+  if(s.aspd){P.sw.cd/=m('aspd');P.gn.cd/=m('aspd')}   // קצב התקפה (נקודות דמות, stats.js)
+  P.def+=k*(s.def||0);P.crit+=k*(s.crit||0);P.loot+=k*(s.loot||0);
 }
 // אחרי שינוי בציוד: מורידים את מה שהיה ומלבישים את החדש, מיד. חיים שנוספו מתמלאים, ונשק חדש נכנס ליד
 function gearLive(before,id){
@@ -228,11 +230,12 @@ function gearDraw(){
   if(st)$('gStash').innerHTML='<span class="k">'+T('gear.stash',stashUsed(),stashCap())+'</span><div class="ggrid">'+
     (sk.length?sk.map(k=>gCell(k,SAVE.stash[k],'data-sid="'+k+'"'+(sel&&sel.sid===k?' aria-pressed="true"':''))).join(''):'<p class="dim">'+T('stash.empty')+'</p>')+'</div>';
   $('gDetail').innerHTML=gDetailHtml();
+  $('ovGear').classList.toggle('stv',!!$('gDetail').querySelector('.strows'));   // מסך הנקודות פתוח (stats.js)
 }
 // הפרטים: שם בצבע הנדירות, נדירות וחומר, רמת Aging, סטטים, השוואה למה שלבוש, וכפתורים
 function gDetailHtml(){
   const sel=GUI.sel,k=sel&&(sel.id||sel.sid||gGet(sel.slot,sel.i)),n=!sel?0:sel.id?SAVE.bag[k]:sel.sid?SAVE.stash[k]:1;
-  if(!k||!n)return '<p class="dim">'+T('gear.hint')+'</p>';
+  if(!k||!n)return statsHtml()+'<p class="dim">'+T('gear.hint')+'</p>';   // בלי פריט: הרמה והנקודות (stats.js)
   const it=gItem(k),col=gRarCol(k);
   let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gIcon(k):resIcon(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
     '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
@@ -330,8 +333,10 @@ addEventListener('pointerup',e=>{
 addEventListener('pointercancel',e=>{if(GDRAG.src&&e.pointerId===GDRAG.pid)gDragEnd()});
 
 $('ovGear').addEventListener('click',e=>{
+  if(e.target.closest('.gfig')){GUI.sel=null;gRedraw();return}   // נגיעה בדמות: הנקודות שלה
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.id==='gearClose'){gearClose();return}
+  if(b.dataset.act==='stat'){statAdd(b.dataset.k);statBadge();gRedraw();return}
   const a=b.dataset.act,sel=GUI.sel;
   if(b.dataset.tab){GUI.tab=b.dataset.tab;GUI.sel=null}
   else if(b.dataset.id)GUI.sel={id:b.dataset.id};

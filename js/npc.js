@@ -98,6 +98,7 @@ function npcDialog(){
   h+='<p class="npcsay">'+S.vil.dlgLine+'</p>';
   h+=ready.map(q=>qCard(q,'claim')).join('')+open.map(q=>qCard(q,'accept')).join('')+on.map(q=>qCard(q,'track')).join('');
   if(!ready.length&&!open.length&&!on.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
+  if(id===STATS.respec.npc)h+=statRespecHtml();   // איפוס נקודות הדמות (stats.js)
   el.innerHTML=h;el.hidden=false;
 }
 // פותח שיחה עם id, או סוגר עם null
@@ -110,6 +111,7 @@ $('talkBtn').addEventListener('click',()=>{const id=$('talkBtn').dataset.id;if(i
 $('npcDlg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||!S.vil)return;
   if(b.dataset.act==='close'){npcTalk(null);return}
+  if(b.dataset.act==='respec'){statRespec();statBadge();npcDialog();return}
   questAct(b.dataset.act,b.dataset.q);   // quests.js
   npcDialog();
 });

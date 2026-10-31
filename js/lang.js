@@ -442,6 +442,18 @@ const TEXT={
   // מסך הציוד והתרמיל (gear.js)
   'gear.btn':{he:'ציוד',en:'Gear'},
   'gear.title':{he:'ציוד ותרמיל',en:'Gear & Bag'},
+  // נקודות דמות (stats.js): [שם, מה זה נותן]
+  'st.str':{he:['כוח','נזק מקרוב ומרחוק'],en:['Strength','Melee and ranged damage']},
+  'st.vit':{he:['חיוניות','עוד חיים'],en:['Vitality','More health']},
+  'st.agi':{he:['זריזות','הולכים מהר יותר'],en:['Agility','Move faster']},
+  'st.haste':{he:['קצב','תוקפים מהר יותר'],en:['Haste','Attack faster']},
+  'st.def':{he:['הגנה','פחות נזק מכל מכה'],en:['Defense','Take less damage']},
+  'st.luck':{he:['מזל','מכה קריטית ויותר שלל'],en:['Luck','Critical hits and more loot']},
+  'st.free':{he:n=>'⭐ יש לך '+n+' נקודות לחלק',en:n=>'⭐ You have '+n+' points to spend'},
+  'st.none':{he:'כל רמה נותנת נקודה. XP מגיע מאויבים בעולם, מהזירה ומקווסטים',en:'Every level gives a point. XP comes from enemies in the world, the arena and quests'},
+  'st.got':{he:n=>'+'+n+' נקודה',en:n=>'+'+n+' point'},
+  'st.respecWhere':{he:n=>'רוצה לחלק מחדש? '+n+' בכפר מאפסת את הנקודות',en:n=>'Want to start over? '+n+' in the village resets your points'},
+  'st.respec':{he:n=>'לאפס את הנקודות · '+n,en:n=>'Reset points · '+n},
   'gear.hero':{he:n=>'רמת דמות '+n,en:n=>'Hero level '+n},
   'gear.close':{he:'סגור',en:'Close'},
   'gear.slot.weapon':{he:'נשק',en:'Weapon'},

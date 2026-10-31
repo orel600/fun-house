@@ -19,7 +19,7 @@ function floatText(x,y,txt,col,size,ltr=false,crit=false){
 }
 // w: הנשק שפגע. t: סוג הנזק, ברירת המחדל היא הסוג של הנשק (ופיזי למה שאינו נשק, כמו פצצה). chained: פגיעה של ברק שקפץ, שלא קופץ שוב
 function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
-  const m=e.mult[t]??1;const crit=Math.random()<HITFX.crit+orbitCrit();   // חפץ מזל מוסיף (orbit.js)
+  const m=e.mult[t]??1;const crit=Math.random()<HITFX.crit+orbitCrit()+Math.min(STATS.cap.crit,P.crit||0)/100;   // ונקודות מזל (stats.js)   // חפץ מזל מוסיף (orbit.js)
   const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?HITFX.critMul:1);
   e.hp-=d;e.flash=0.09;sfx('hit');heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
   if(!e.isBoss&&!e.node){const kb=(w==='sword'?150:55)*(m>1?1.4:1)/(e.big||1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
@@ -34,6 +34,7 @@ function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
 function kill(e){
   e.dead=true;S.kills++;sfx('death');heroCount('kills');if(e.isBoss)heroCount('bosses');
   lootKill(e);   // שלל לכפר (loot.js)
+  statKillXp(e);   // XP לדמות בעולם הפתוח (stats.js)
   questEvent('kill',e.isBoss?'boss':e.wanted?'wanted':e.type);
   if(e.isBoss){bossDown(e);return}
   if(e.wanted){wantedDown(e);return}
@@ -44,6 +45,7 @@ function kill(e){
 function hurt(d){
   if(P.inv>0||S.mode!=='play')return;
   if(orbitShield())return;   // חפץ הגנה בולע את המכה (orbit.js)
+  d*=1-Math.min(STATS.cap.def,P.def||0)/100;   // נקודות הגנה (stats.js)
   P.hp-=d;P.inv=0.6;sfx('hurt');questEvent('hurt');S.shake=Math.max(S.shake,7);S.hurt=0.3;
   floatText(P.x,P.y-36,'-'+Math.round(d),C.blood,17);
   if(P.hp<=0){P.hp=0;gameOver()}
