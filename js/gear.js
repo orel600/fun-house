@@ -76,6 +76,9 @@ const gName=id=>T('it.'+gBase(id))+(gPlus(id)?' \u2066+'+gPlus(id)+'\u2069':'');
 function gStats(id){const s=(gItem(id)||{}).stats||{},k=ageMult(gPlus(id)),o={};for(const x in s)o[x]=Math.round(s[x]*k*10)/10;return o}
 const gTint=id=>(gItem(id).look||{}).tint||GEAR.tiers[gItem(id).tier].col;
 const gIcon=id=>{const it=gItem(id);return it.icon||GEAR.orbit[it.type]};
+/* תמונה לפריט בממשק (HTML), מ-Creative Claw (icons/ui/gear, נחתך עם tools/slice-icons.py). בלי תמונה: האימוג'י. על הקנבס תמיד האימוג'י (gIcon) */
+const GEAR_PIC={oakSword:1,ironSword:1,silverBlade:1,oakBow:1,ironBow:1,goldBow:1,oakStaff:1,boneCharm:1,ironRing:1,starterBoots:1,swiftBoots:1,goldAmulet:1,crown:1};
+const gPic=id=>GEAR_PIC[gBase(id)]?'<img class="ri" src="icons/ui/gear/'+gBase(id)+'.png" alt="">':gIcon(id);
 // כמה הפריט שווה, כדי לדעת אם החלפה היא שיפור. חומר טוב יותר שובר שוויון
 function gScore(id){const it=gItem(id);if(!it)return 0;let n=it.tier*0.01;const s=gStats(id);for(const k in s)n+=s[k]*GEAR.stats[k].w;return n}
 const heroLv=()=>SAVE.hero.level||1;
@@ -141,7 +144,7 @@ function gearCraft(id){
 function forgeHtml(){
   const ids=Object.keys(GEAR.recipes).filter(gCanCraft);
   return '<span class="sk">'+T('forge.craft')+'</span>'+ids.map(id=>{const c=GEAR.recipes[id],ok=Object.keys(c).every(r=>bagHas(r,c[r]));
-    return '<div class="craft"><button class="res item" data-act="craft" data-r="'+id+'" style="--tint:'+gTint(id)+'"'+(ok?'':' disabled')+'>'+gIcon(id)+' '+T('it.'+id)+'</button><div class="cost">'+costLine(c)+'</div></div>'}).join('');
+    return '<div class="craft"><button class="res item" data-act="craft" data-r="'+id+'" style="--tint:'+gTint(id)+'"'+(ok?'':' disabled')+'>'+gPic(id)+' '+T('it.'+id)+'</button><div class="cost">'+costLine(c)+'</div></div>'}).join('');
 }
 
 /* ---- שלל בסוף ריצה ---- */
@@ -160,7 +163,7 @@ function gearLoot(){
   if(got.length){saveNow();const el=$('sLoot');el.innerHTML=(el.textContent===T('vil.noLoot')?'':el.innerHTML)+got.map(gChip).join('')}
   return got;
 }
-const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gIcon(id)+' '+gName(id)+'</span>';
+const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gPic(id)+' '+gName(id)+'</span>';
 
 /* ---- המסך: התרמיל בצד אחד, הבובה עם המשבצות באמצע, והפרטים בצד השני. נפתח מכפתור 🎒 בכפר ובזירה.
    גוררים פריט מהתרמיל למשבצת כדי ללבוש, ממשבצת לתרמיל כדי להוריד, ובין התרמיל למחסן כשעומדים ליד המחסן.
@@ -190,7 +193,7 @@ function gTile(id,attrs,extra){
   const it=gItem(id),cls='gtile'+(it&&it.w?' '+WEAPONS[it.w].use:'');
   if(!it)return '<button class="'+cls+' empty" '+attrs+'>'+extra+'</button>';
   const glow=(it.look||{}).glow;
-  return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gIcon(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+extra+'</button>';
+  return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gPic(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+extra+'</button>';
 }
 // תא של משאב: אייקון, כמה יש, ומסגרת בצבע הנדירות
 const gResTile=(r,n,attrs)=>'<button class="gtile res" '+attrs+' style="--rar:'+gRarCol(r)+'" aria-label="'+resName(r)+' '+n+'">'+resPic(r)+'<small>×'+shortN(n)+'</small></button>';
@@ -239,7 +242,7 @@ function gDetailHtml(){
   const sel=GUI.sel,k=sel&&(sel.id||sel.sid||gGet(sel.slot,sel.i)),n=!sel?0:sel.id?SAVE.bag[k]:sel.sid?SAVE.stash[k]:1;
   if(!k||!n)return statsHtml()+'<p class="dim">'+T('gear.hint')+'</p>';   // בלי פריט: הרמה והנקודות (stats.js)
   const it=gItem(k),col=gRarCol(k);
-  let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gIcon(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
+  let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
     '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
   if(it&&gPlus(k))d+='<p class="gage">'+T('gear.aged',gPlus(k))+'</p>';
   if(it)d+=gStatsHtml(k);
