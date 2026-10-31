@@ -20,13 +20,14 @@ const PET={
          bite: כמה נזק בכל נשיכה (פיזי, לפני חולשות). loot: {משאב:[סיכוי, כמה]}, כמו טבלאות השלל של האויבים (data.js). כל שורה מוגרלת לבד. לא יצא כלום: miss */
       stages:[
         {xp:0,   h:36, bite:5,  dig:{every:26,loot:{stone:[0.55,1],wood:[0.45,1],herb:[0.4,1],carrot:[0.3,1],copper:[0.25,1],rubyC:[0.05,1],amberC:[0.05,1]}}},
-        {xp:240, h:46, bite:9,  dig:{every:20,loot:{stone:[0.5,2],copper:[0.45,1],iron:[0.25,1],carrot:[0.25,1],mushroom:[0.3,1],rubyC:[0.12,1],sapphireC:[0.12,1],ruby:[0.03,1]}}},
-        {xp:900, h:54, bite:15, dig:{every:15,loot:{coins:[0.6,8],iron:[0.45,2],silver:[0.25,1],gold:[0.08,1],ruby:[0.1,1],sapphire:[0.1,1],amber:[0.08,1],star:[0.015,1]}},fx:true}   // fx: הלהבות והזוהר
+        {xp:720, h:46, bite:9,  dig:{every:20,loot:{stone:[0.5,2],copper:[0.45,1],iron:[0.25,1],carrot:[0.25,1],mushroom:[0.3,1],rubyC:[0.12,1],sapphireC:[0.12,1],ruby:[0.03,1]}}},
+        {xp:2700,h:54, bite:15, dig:{every:15,loot:{coins:[0.6,8],iron:[0.45,2],silver:[0.25,1],gold:[0.08,1],ruby:[0.1,1],sapphire:[0.1,1],amber:[0.08,1],star:[0.015,1]}},fx:true}   // fx: הלהבות והזוהר
       ]
     }
   },
-  // XP של החיה: ממשחק משותף. sec: לכל שנייה שמשחקים (לא בכפר), kill: לכל אויב שנפל, dig: לכל חפירה
-  xp:{sec:0.5,kill:1,dig:6},
+  // XP של החיה: ממשחק משותף. sec: לכל שנייה שמשחקים (לא בכפר), kill: לכל אויב שנפל, dig: לכל חפירה.
+  // arena: כמה שווה הריגה בזירה, כי שם נופלים אלפי אויבים בריצה (ניר, 31.10.2026: "שתגדל לאט יותר". קודם ריצה אחת הקפיצה אותה לשלב 3)
+  xp:{sec:0.5,kill:1,dig:6,arena:0.05},
   // הליכה אחרי השחקן: trail מאחוריו, run: מרחק שממנו היא רצה, jump: מרחק שממנו היא פשוט מופיעה לידו (מעבר מקום, שער)
   follow:{trail:46,side:26,walk:150,run:330,runFrom:170,jump:700,sitAfter:1.4},
   // החפירה: world: מה יוצא רק בעולם הפתוח (גזר), arena: כמה פחות בזירה (פי כמה זמן בין חפירות), spot: כמה רחוק מהשחקן היא רצה לחפור, dur: כמה שניות חופרת
@@ -68,7 +69,7 @@ function petUpdate(dt){
   p.t+=dt;p.fxT+=dt;
   // XP: זמן משותף מחוץ לכפר, ואויבים שנפלו
   if(!S.vil&&S.mode==='play')petXP(PET.xp.sec*dt);
-  if((S.kills||0)>p.kills){petXP(PET.xp.kill*(S.kills-p.kills));p.kills=S.kills}
+  if((S.kills||0)>p.kills){petXP(PET.xp.kill*(S.wd?1:PET.xp.arena)*(S.kills-p.kills));p.kills=S.kills}
   for(const g of p.sand){g.x+=g.vx*dt;g.y+=g.vy*dt;g.vy+=500*dt;g.life-=dt}
   p.sand=p.sand.filter(g=>g.life>0);
   for(const g of p.hearts){g.x+=g.vx*dt;g.y+=g.vy*dt;g.vy+=40*dt;g.life-=dt}

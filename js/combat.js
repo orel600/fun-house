@@ -2,9 +2,13 @@
 const HITFX={floats:70,parts:450,crit:0.12,critMul:2.5};   // תקרה לטקסט צף ולניצוצות בשביל הטלפון, וסיכוי ועוצמה של מכה קריטית
 function nearest(maxD){let b=null,bd=maxD;for(const e of enemies){if(e.dead)continue;const d=Math.hypot(e.x-P.x,e.y-P.y)-e.r;if(d<bd){bd=d;b=e}}return b}
 // במה ההתקפה האוטומטית מכוונת: האויב הקרוב, או מקור משאבים (nodes.js) כשעומדים לידו והוא קרוב יותר
+// בעולם הפתוח (ניר, 31.10.2026): קודם המבוקש, אחריו בוס, אחריו כל אויב, ורק כשאין אויב בטווח מקורות משאבים. בזירה כמו קודם (התחום של אוראל)
 function aimTarget(maxD){
-  if(S.wd)maxD=Math.min(maxD,WORLD.attackRange);   // בעולם הפתוח הטווח קצר יותר (WORLD.attackRange ב-world.js)
-  const e=nearest(maxD),n=nodeNear(),gap=t=>Math.hypot(t.x-P.x,t.y-P.y)-t.r;
+  const gap=t=>Math.hypot(t.x-P.x,t.y-P.y)-t.r;
+  if(S.wd){maxD=Math.min(maxD,WORLD.attackRange);   // בעולם הפתוח הטווח קצר יותר (WORLD.attackRange ב-world.js)
+    let w=null,b=null;for(const e of enemies){if(e.dead||gap(e)>maxD)continue;if(e.wanted)w=e;else if(e.isBoss)b=e}
+    return w||b||nearest(maxD)||nodeNear()}
+  const e=nearest(maxD),n=nodeNear();
   return n&&(!e||gap(n)<gap(e))?n:e;
 }
 function sparks(x,y,col,n,sp=180){n=Math.min(n,HITFX.parts-parts.length);for(let i=0;i<n;i++){const a=rand(0,6.28),s=rand(sp*.3,sp);parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:rand(.2,.45),max:.45,col,size:rand(1.5,3.5)})}}
@@ -15,8 +19,10 @@ function floatText(x,y,txt,col,size,ltr=false,crit=false){
 }
 // w: הנשק שפגע. t: סוג הנזק, ברירת המחדל היא הסוג של הנשק (ופיזי למה שאינו נשק, כמו פצצה). chained: פגיעה של ברק שקפץ, שלא קופץ שוב
 function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
-  const m=e.mult[t]??1;const crit=Math.random()<HITFX.crit+orbitCrit();   // חפץ מזל מוסיף (orbit.js)
-  const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?HITFX.critMul:1);
+  t=statDmgType(w,t);   // גלגל היסודות של הקוסם (stats.js)
+  const m=e.mult[t]??1;const crit=Math.random()<HITFX.crit+orbitCrit()+Math.min(STATS.cap.crit,P.crit||0)/100;   // ונקודות מזל (stats.js)   // חפץ מזל מוסיף (orbit.js)
+  const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?HITFX.critMul:1)*statDmgFx(w,e);   // עץ הסקילים (stats.js)
+  statOnDamage(d);
   e.hp-=d;e.flash=0.09;sfx('hit');heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
   if(!e.isBoss&&!e.node){const kb=(w==='sword'?150:55)*(m>1?1.4:1)/(e.big||1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   const col=m>1?dtCol(t):m<1?C.dim:C.chalk;
@@ -30,7 +36,8 @@ function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
 function kill(e){
   e.dead=true;S.kills++;sfx('death');heroCount('kills');if(e.isBoss)heroCount('bosses');
   lootKill(e);   // שלל לכפר (loot.js)
-  questEvent('kill',e.isBoss?'boss':e.wanted?'wanted':e.type);
+  statKillXp(e);statOnKill(e);affixOnKill(e);   // XP לדמות בעולם הפתוח, וזעם (stats.js)
+  questEvent('kill',e.isBoss?'boss':e.wanted?'wanted':e.warden?'warden':e.type);
   if(e.isBoss){bossDown(e);return}
   if(e.wanted){wantedDown(e);return}
   if(e.elite)eliteDown(e);
@@ -40,7 +47,9 @@ function kill(e){
 function hurt(d){
   if(P.inv>0||S.mode!=='play')return;
   if(orbitShield())return;   // חפץ הגנה בולע את המכה (orbit.js)
-  P.hp-=d;P.inv=0.6;sfx('hurt');questEvent('hurt');S.shake=Math.max(S.shake,7);S.hurt=0.3;
+  if(statDodge())return;   // רוח (stats.js)
+  d*=1-Math.min(STATS.cap.def,(P.def||0)+statDefFx())/100;   // נקודות הגנה ועץ הסקילים (stats.js)
+  P.hp-=d;P.inv=0.6;statOnHurt();sfx('hurt');questEvent('hurt');S.shake=Math.max(S.shake,7);S.hurt=0.3;
   floatText(P.x,P.y-36,'-'+Math.round(d),C.blood,17);
   if(P.hp<=0){P.hp=0;gameOver()}
 }
@@ -50,12 +59,15 @@ function attack(dt){
     const tgt=aimTarget(s.range);
     if(tgt)P.aim=Math.atan2(tgt.y-P.y,tgt.x-P.x);
     if(tgt&&s.t<=0){
-      s.t=s.cd*wK('cd');s.anim=0.2;s.ang=P.aim;
+      s.t=s.cd*wK('cd')/(P.raging?1+TREE.fx.blood.aspd/100:1);s.anim=0.2;s.ang=P.aim;   // דם רותח: מהר יותר (stats.js)
+      // עץ הסקילים (stats.js): רעידת אדמה כל הנפה רביעית, מסביב ובסוג אדמה. מכה חוזרת: אחרי 3 מכות שחטפת, המכה הבאה פי 3
+      const quake=TF('quake')&&(s.n=(s.n||0)+1)%TREE.fx.quake.every===0,cm=P.cnt>=TREE.fx.counter.hits?TREE.fx.counter.mul:1;if(cm>1)P.cnt=0;
+      if(quake){sparks(P.x,P.y,dtCol('earth'),16,260);S.shake=Math.max(S.shake,6)}
       for(const e of enemies.concat(S.nd.list)){
         if(e.dead)continue;const dx=e.x-P.x,dy=e.y-P.y,d=Math.hypot(dx,dy)-e.r;
         if(d>s.range)continue;const a=Math.atan2(dy,dx);
-        if(Math.abs(angDiff(a,s.ang))>s.arc/2&&d>8)continue;
-        damage(e,s.dmg*wK('dmg')*dmgK(),'sword',a);
+        if(!quake&&Math.abs(angDiff(a,s.ang))>s.arc/2&&d>8)continue;
+        damage(e,s.dmg*wK('dmg')*dmgK()*cm*(quake?TREE.fx.quake.dmg:1),'sword',a,quake?'earth':undefined);
       }
       S.shake=Math.max(S.shake,2);
     }

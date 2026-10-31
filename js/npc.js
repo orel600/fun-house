@@ -75,7 +75,7 @@ function npcUpdate(dt){
     }else if(D!==id&&(n.t-=dt)<=0){const p=npcPick(n);n.tx=p.x;n.ty=p.y;n.st='walk'}
   }
   S.vil.npcNear=near;
-  if(D&&(!npcHere(D)||Math.hypot(P.x-all[D].x,P.y-all[D].y)>NPC.leave))npcTalk(null);
+  if(D&&!S.vil.dlgStay&&(!npcHere(D)||Math.hypot(P.x-all[D].x,P.y-all[D].y)>NPC.leave))npcTalk(null);   // dlgStay: ההקדמה של העלילה נשארת עד שסוגרים (story.js)
   const btn=$('talkBtn'),show=!!near&&D!==near;
   if(btn.hidden===show||btn.dataset.id!==(near||'')){btn.hidden=!show;btn.dataset.id=near||'';if(near)btn.textContent='💬 '+T('npc.talk',T('npc.'+near)[0])}
 }
@@ -95,21 +95,26 @@ function npcDialog(){
   const mine=QUESTS.list.filter(q=>q.giver===id&&npcHere(id));
   const ready=mine.filter(q=>Q.active[q.id]&&qReady(q)),open=mine.filter(qOpen),on=mine.filter(q=>Q.active[q.id]&&!qReady(q));
   let h=winHead(name,role);   // ui.js
-  h+='<p class="npcsay">'+S.vil.dlgLine+'</p>';
+  h+='<p class="npcsay">'+npcPic(id)+S.vil.dlgLine+'</p>';
   h+=ready.map(q=>qCard(q,'claim')).join('')+open.map(q=>qCard(q,'accept')).join('')+on.map(q=>qCard(q,'track')).join('');
   if(!ready.length&&!open.length&&!on.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
+  if(id===STATS.respec.npc)h+=statRespecHtml();   // איפוס נקודות הדמות (stats.js)
   el.innerHTML=h;el.hidden=false;
 }
+// דיוקן בשיחה, מ-Creative Claw (icons/ui/npc, נחתך עם tools/slice-icons.py). דמות בלי דיוקן: בלי תמונה. משמש גם את worldnpc.js
+const NPC_PIC={head:1,smith:1,merchant:1,inn:1,priest:1,fisher:1,cutter:1,herbal:1};
+const npcPic=id=>NPC_PIC[id]?'<img class="npcpic" src="icons/ui/npc/'+id+'.png" alt="">':'';
 // פותח שיחה עם id, או סוגר עם null
 function npcTalk(id){
   if(!S.vil)return;
-  S.vil.dlg=id;if(id){$('qLog').hidden=true;S.vil.dlgLine=npcLine(id);sfx('ui')}
+  S.vil.dlg=id;S.vil.dlgStay=false;if(id){$('qLog').hidden=true;S.vil.dlgLine=npcLine(id);sfx('ui')}
   npcDialog();
 }
 $('talkBtn').addEventListener('click',()=>{const id=$('talkBtn').dataset.id;if(id&&S.vil)npcTalk(id)});
 $('npcDlg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||!S.vil)return;
   if(b.dataset.act==='close'){npcTalk(null);return}
+  if(b.dataset.act==='respec'){statRespec();statBadge();npcDialog();return}
   questAct(b.dataset.act,b.dataset.q);   // quests.js
   npcDialog();
 });

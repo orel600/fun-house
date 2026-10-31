@@ -4,8 +4,9 @@ const cvs=$('c'),ctx=cvs.getContext('2d');
 const C={ink:'#121624',line:'#2A3249',chalk:'#ECE7DC',dim:'#8D94A8',ember:'#FF8A3D',tide:'#46D3E6',gold:'#F4C74F',blood:'#EF4E57',lilac:'#C7A6FF'};
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FONT="800 15px Heebo, system-ui, sans-serif";
-let W=0,H=0,DPR=1;
-function resize(){DPR=Math.min(2,window.devicePixelRatio||1);W=window.innerWidth;H=window.innerHeight;cvs.width=Math.round(W*DPR);cvs.height=Math.round(H*DPR)}
+let W=0,H=0,DPR=1,ZOOM=1;   // W,H: כמה מהעולם רואים, ביחידות של המשחק. ZOOM מתחת ל-1: המצלמה גבוהה יותר ורואים יותר (VIEW.zoom ב-render3d.js)
+function resize(){DPR=Math.min(2,window.devicePixelRatio||1);W=window.innerWidth/ZOOM;H=window.innerHeight/ZOOM;cvs.width=Math.round(window.innerWidth*DPR);cvs.height=Math.round(window.innerHeight*DPR)}
+function setZoom(z){if(z!==ZOOM){ZOOM=z;resize()}}
 addEventListener('resize',resize);resize();
 
 const rand=(a,b)=>a+Math.random()*(b-a);

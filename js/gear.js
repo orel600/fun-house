@@ -76,6 +76,9 @@ const gName=id=>T('it.'+gBase(id))+(gPlus(id)?' \u2066+'+gPlus(id)+'\u2069':'');
 function gStats(id){const s=(gItem(id)||{}).stats||{},k=ageMult(gPlus(id)),o={};for(const x in s)o[x]=Math.round(s[x]*k*10)/10;return o}
 const gTint=id=>(gItem(id).look||{}).tint||GEAR.tiers[gItem(id).tier].col;
 const gIcon=id=>{const it=gItem(id);return it.icon||GEAR.orbit[it.type]};
+/* תמונה לפריט בממשק (HTML), מ-Creative Claw (icons/ui/gear, נחתך עם tools/slice-icons.py). בלי תמונה: האימוג'י. על הקנבס תמיד האימוג'י (gIcon) */
+const GEAR_PIC={oakSword:1,ironSword:1,silverBlade:1,oakBow:1,ironBow:1,goldBow:1,oakStaff:1,boneCharm:1,ironRing:1,starterBoots:1,swiftBoots:1,goldAmulet:1,crown:1};
+const gPic=id=>GEAR_PIC[gBase(id)]?'<img class="ri" src="icons/ui/gear/'+gBase(id)+'.png" alt="">':gIcon(id);
 // כמה הפריט שווה, כדי לדעת אם החלפה היא שיפור. חומר טוב יותר שובר שוויון
 function gScore(id){const it=gItem(id);if(!it)return 0;let n=it.tier*0.01;const s=gStats(id);for(const k in s)n+=s[k]*GEAR.stats[k].w;return n}
 const heroLv=()=>SAVE.hero.level||1;
@@ -118,6 +121,9 @@ function gApply(s,k){
   const m=x=>Math.pow(1+(s[x]||0)/100,k);
   P.sw.dmg*=m('sdmg');P.gn.dmg*=m('gdmg');P.speed*=m('speed');P.magnet*=m('magnet');
   P.maxHp+=k*(s.hp||0);P.regen+=k*(s.regen||0);
+  if(s.aspd){P.sw.cd/=m('aspd');P.gn.cd/=m('aspd')}   // קצב התקפה (נקודות דמות, stats.js)
+  if(s.hpPct)P.maxHp*=m('hpPct');if(s.arc)P.sw.arc*=m('arc');P.gn.multi+=k*(s.multi||0);P.gn.pierce+=k*(s.pierce||0);   // עץ הסקילים (stats.js)
+  P.def+=k*(s.def||0);P.crit+=k*(s.crit||0);P.loot+=k*(s.loot||0);
 }
 // אחרי שינוי בציוד: מורידים את מה שהיה ומלבישים את החדש, מיד. חיים שנוספו מתמלאים, ונשק חדש נכנס ליד
 function gearLive(before,id){
@@ -138,7 +144,7 @@ function gearCraft(id){
 function forgeHtml(){
   const ids=Object.keys(GEAR.recipes).filter(gCanCraft);
   return '<span class="sk">'+T('forge.craft')+'</span>'+ids.map(id=>{const c=GEAR.recipes[id],ok=Object.keys(c).every(r=>bagHas(r,c[r]));
-    return '<div class="craft"><button class="res item" data-act="craft" data-r="'+id+'" style="--tint:'+gTint(id)+'"'+(ok?'':' disabled')+'>'+gIcon(id)+' '+T('it.'+id)+'</button><div class="cost">'+costLine(c)+'</div></div>'}).join('');
+    return '<div class="craft"><button class="res item" data-act="craft" data-r="'+id+'" style="--tint:'+gTint(id)+'"'+(ok?'':' disabled')+'>'+gPic(id)+' '+T('it.'+id)+'</button><div class="cost">'+costLine(c)+'</div></div>'}).join('');
 }
 
 /* ---- שלל בסוף ריצה ---- */
@@ -157,14 +163,14 @@ function gearLoot(){
   if(got.length){saveNow();const el=$('sLoot');el.innerHTML=(el.textContent===T('vil.noLoot')?'':el.innerHTML)+got.map(gChip).join('')}
   return got;
 }
-const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gIcon(id)+' '+gName(id)+'</span>';
+const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gPic(id)+' '+gName(id)+'</span>';
 
 /* ---- המסך: התרמיל בצד אחד, הבובה עם המשבצות באמצע, והפרטים בצד השני. נפתח מכפתור 🎒 בכפר ובזירה.
    גוררים פריט מהתרמיל למשבצת כדי ללבוש, ממשבצת לתרמיל כדי להוריד, ובין התרמיל למחסן כשעומדים ליד המחסן.
    לחיצה בוחרת ומראה פרטים והשוואה, עם כפתור: הדרך החלופית לגרירה ---- */
 const GUI={sel:null,tab:'items'};   // sel: מה נבחר: {id} מהתרמיל, {slot,i} ממשבצת, או {sid} מהמחסן. tab: הלשונית בתרמיל
 // נפתח מכל מקום: מהכפר ומהזירה. בזירה הריצה עוצרת, כמו במסך השדרוג
-function gearOpen(){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;$('ovGear').hidden=false;gearDraw()}
+function gearOpen(){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;GUI.view=null;$('ovGear').hidden=false;gearDraw()}
 function gearClose(){gDragEnd();$('ovGear').hidden=true;if(S.mode==='gear')S.mode='play'}
 // המחסן פתוח במסך רק כשעומדים לידו בכפר, והוא בנוי
 const gStashOn=()=>!!(S.vil&&S.vil.near==='stash'&&vLv('stash')>0);
@@ -187,10 +193,10 @@ function gTile(id,attrs,extra){
   const it=gItem(id),cls='gtile'+(it&&it.w?' '+WEAPONS[it.w].use:'');
   if(!it)return '<button class="'+cls+' empty" '+attrs+'>'+extra+'</button>';
   const glow=(it.look||{}).glow;
-  return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gIcon(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+extra+'</button>';
+  return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gPic(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+extra+'</button>';
 }
 // תא של משאב: אייקון, כמה יש, ומסגרת בצבע הנדירות
-const gResTile=(r,n,attrs)=>'<button class="gtile res" '+attrs+' style="--rar:'+gRarCol(r)+'" aria-label="'+resName(r)+' '+n+'">'+resIcon(r)+'<small>×'+shortN(n)+'</small></button>';
+const gResTile=(r,n,attrs)=>'<button class="gtile res" '+attrs+' style="--rar:'+gRarCol(r)+'" aria-label="'+resName(r)+' '+n+'">'+resPic(r)+'<small>×'+shortN(n)+'</small></button>';
 const gCell=(k,n,attrs)=>gItem(k)?gTile(k,attrs,n>1?'<small>×'+shortN(n)+'</small>':''):gResTile(k,n,attrs);
 // מה בתרמיל בלשונית הנוכחית: items לפריטים, או משפחת משאבים (RES.fams)
 function gBagKeys(tab){
@@ -228,13 +234,15 @@ function gearDraw(){
   if(st)$('gStash').innerHTML='<span class="k">'+T('gear.stash',stashUsed(),stashCap())+'</span><div class="ggrid">'+
     (sk.length?sk.map(k=>gCell(k,SAVE.stash[k],'data-sid="'+k+'"'+(sel&&sel.sid===k?' aria-pressed="true"':''))).join(''):'<p class="dim">'+T('stash.empty')+'</p>')+'</div>';
   $('gDetail').innerHTML=gDetailHtml();
+  const tv=GUI.view==='tree';$('ovGear').querySelector('.gbody').hidden=tv;$('gTree').hidden=!tv;if(tv)$('gTree').innerHTML=treeHtml();   // עץ הסקילים (stats.js)
+  $('ovGear').classList.toggle('stv',!!$('gDetail').querySelector('.strows'));   // מסך הנקודות פתוח (stats.js)
 }
 // הפרטים: שם בצבע הנדירות, נדירות וחומר, רמת Aging, סטטים, השוואה למה שלבוש, וכפתורים
 function gDetailHtml(){
   const sel=GUI.sel,k=sel&&(sel.id||sel.sid||gGet(sel.slot,sel.i)),n=!sel?0:sel.id?SAVE.bag[k]:sel.sid?SAVE.stash[k]:1;
-  if(!k||!n)return '<p class="dim">'+T('gear.hint')+'</p>';
+  if(!k||!n)return statsHtml()+'<p class="dim">'+T('gear.hint')+'</p>';   // בלי פריט: הרמה והנקודות (stats.js)
   const it=gItem(k),col=gRarCol(k);
-  let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gIcon(k):resIcon(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
+  let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
     '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
   if(it&&gPlus(k))d+='<p class="gage">'+T('gear.aged',gPlus(k))+'</p>';
   if(it)d+=gStatsHtml(k);
@@ -330,8 +338,12 @@ addEventListener('pointerup',e=>{
 addEventListener('pointercancel',e=>{if(GDRAG.src&&e.pointerId===GDRAG.pid)gDragEnd()});
 
 $('ovGear').addEventListener('click',e=>{
+  if(e.target.closest('.gfig')){GUI.sel=null;gRedraw();return}   // נגיעה בדמות: הנקודות שלה
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.id==='gearClose'){gearClose();return}
+  if(b.dataset.act==='stat'){statAdd(b.dataset.k);statBadge();gRedraw();return}
+  if(b.dataset.act==='tree'||b.dataset.act==='back'){GUI.view=b.dataset.act==='tree'?'tree':null;GUI.sel=null;gRedraw();return}
+  if(b.dataset.act==='learn'){treeLearn(b.dataset.b,b.dataset.id);statBadge();gRedraw();return}
   const a=b.dataset.act,sel=GUI.sel;
   if(b.dataset.tab){GUI.tab=b.dataset.tab;GUI.sel=null}
   else if(b.dataset.id)GUI.sel={id:b.dataset.id};

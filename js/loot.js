@@ -42,7 +42,7 @@ function runGive(D,x,y){
   for(const r in D){
     const [ch,n,from]=D[r];if(from&&S.t<from)continue;
     const t=lootTier(r);if(t>=pf)hasRare=true;
-    if(Math.random()>=ch*(t>=pf?boost:1)*orbitLuck())continue;   // orbitLuck: חפץ מזל (orbit.js)
+    if(Math.random()>=ch*(t>=pf?boost:1)*orbitLuck()*statLoot())continue;   // orbitLuck: חפץ מזל (orbit.js)
     // נופל לרצפה ונאסף כשעוברים לידו (drops.js). בחדר הבונוס נכנס ישר לשלל
     if(S.room)runLoot()[r]=(runLoot()[r]||0)+n;else dropSpawn(r,n,x,y);got.push(r);top=Math.max(top,t);
     (S.drops||(S.drops=[0,0,0,0,0]))[t]+=n;
@@ -73,7 +73,7 @@ function lootKill(e){
 function lootGear(e,force){
   const G=LOOT.gear,k=e.isBoss?'boss':e.wanted?'wanted':e.elite?'elite':e.champ?'champ':'foe',R=G[k];
   if(e.node||!R||S.room||(!S.wd&&!force))return null;   // רק בעולם הפתוח, לא בזירה
-  const ch=R.chance*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck();
+  const ch=R.chance*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck()*statLoot();
   if(!force&&Math.random()>=ch){SAVE.gearPity=(SAVE.gearPity||0)+1;return null}
   SAVE.gearPity=0;const id=gRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;
   dropSpawn(id,1,e.x,e.y);banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id),dropTier(id).col);

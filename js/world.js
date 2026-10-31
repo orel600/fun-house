@@ -91,7 +91,7 @@ const wZone=G=>WORLD.zones.find(z=>Math.hypot(G.x-WORLD.home.x,G.y-WORLD.home.y)
 function wSpawn(G,i){
   if(!ETYPES[G.type])return;const Z=wZone(G);
   for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp);
-    e.dmg*=Z.dmg;e.speed*=Z.speed;e.zone=Z.id;
+    e.dmg*=Z.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);   // affixRoll: אולי אויב מיוחד (affix.js). storySafe: אחרי שפנס האדמה נדלק (story.js)
     e.xp=0;e.home=i;e.creature=!!G.creature}   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
 }
 function wFoes(dt){
@@ -99,6 +99,8 @@ function wFoes(dt){
   for(const e of enemies){
     if(e.dead)continue;
     if(e.wanted){wantedMove(e,dt);continue}
+    if(e.warden){storyWardenMove(e,dt);continue}
+    if(e.evt){evFoeMove(e,dt);continue}   // גל של אירוע (events.js)   // השומר האבן (story.js)
     alive[e.home]++;
     const G=WORLD.foes[e.home],dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;
     let mx=0,my=0,sp=e.speed;
@@ -137,9 +139,9 @@ function worldUpdate(dt){
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
-  wantedUpdate(dt);
+  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js)
   dropsUpdate(dt);wLootIn();
-  if(!nearest(WORLD.aggro))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
+  if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}
   parts=parts.filter(p=>p.life>0);
@@ -220,6 +222,9 @@ function drawWorld(){
     if(n.hp<n.max){const bw=r*2;ctx.fillStyle='rgba(5,7,13,0.6)';ctx.fillRect(x-bw/2,y-r*2.2,bw,4);ctx.fillStyle=C.gold;ctx.fillRect(x-bw/2,y-r*2.2,bw*Math.max(0,n.hp/n.max),4)}
   }
   drawWnpcs();   // worldnpc.js
+  storyDraw();   // הפנס והשומר (story.js)
+  affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
+  eventsDraw();   // אירועים (events.js)
 }
 // שלטים מתחת לשערים, וחצים בקצה המסך אל השערים ואל הכפר. מעל הכל, בשני המצבים
 function drawWorldScreen(ox,oy){
@@ -230,4 +235,7 @@ function drawWorldScreen(ox,oy){
     ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(x-tw/2,y-11,tw,22,11);ctx.fill();ctx.fillStyle=col;ctx.fillText(txt,x,y+5);
     edgeArrow(g.x+ox,g.y+oy,col)}
   drawWnpcScreen(ox,oy);   // worldnpc.js
+  storyScreen(ox,oy);   // story.js
+  affixScreen(ox,oy);   // affix.js
+  eventsScreen(ox,oy);   // events.js
 }

@@ -42,6 +42,7 @@ const VILLAGE={
       cap:[0,150,400,900,2000,5000],
       look:[{at:1,model:'tent',scale:0.9,deco:['crate']},{at:3,model:'market',scale:0.95,deco:['crate','crate','barrel']},{at:5,model:'market',scale:1.05,deco:['flag','flag','crate','barrel'],glow:C.tide}]}
   },
+  settleEvery:2,                  // כל כמה שניות מתעדכן המלאי שהצטבר במנסרה ובמכרה (המספר מעל המבנה ובפאנל)
   winDelay:2.5                    // שניות אחרי שהבוס נופל, עד שחוזרים הביתה
 };
 
@@ -110,7 +111,7 @@ function vTrade(kind,r){
 }
 
 /* ---- מעבר בין הכפר לזירה ---- */
-function villageUi(on){document.body.classList.toggle('vil',on);$('vhud').hidden=!on;if(!on){$('vPanel').hidden=true;npcHide()}}
+function villageUi(on){document.body.classList.toggle('vil',on);if(!on)document.body.classList.remove('vpan');$('vhud').hidden=!on;if(!on){$('vPanel').hidden=true;npcHide()}}
 function enterVillage(){
   const back=S&&(S.mode==='over'||S.wd);   // חוזרים מהעולם (או מריצה): ליד השער
   reset();S.mode='play';S.vil={near:null,ui:'',raise:{}};
@@ -123,6 +124,7 @@ function enterVillage(){
   rankSync();questsRefresh();   // רמת הדמות (ranks.js), יום חדש וקווסטים שנפתחו (quests.js)
   saveNow();
   villageUi(true);
+  storyVillage();   // ההקדמה של העלילה, פעם אחת (story.js)
 }
 function leaveVillage(){villageUi(false);enterWorld('home');questEvent('reach','world')}   // השער מוביל לעולם הפתוח (world.js), והזירות בתוכו
 
@@ -136,10 +138,11 @@ function villageUpdate(dt){
   const R=VILLAGE.radius,d0=Math.hypot(P.x,P.y);if(d0>R){P.x*=R/d0;P.y*=R/d0}
   // ליד השער נפתח פאנל עם כפתור כניסה. הריצה מתחילה רק בלחיצה, לא כשעוברים לידו (ניר: "נכנסתי לזירה בלי כוונה")
   const g=VILLAGE.gate;V.gate=Math.hypot(P.x-g.x,P.y-g.y)<g.r+P.r+VILLAGE.near;
-  // המבנה הכי קרוב: הפאנל שלו נפתח, והתוצרת שלו נאספת
+  // המבנה הכי קרוב: הפאנל שלו נפתח. התוצרת נאספת בכפתור "לאסוף" בפאנל (ניר: "צריך להוסיף אפשרות לאסוף")
   let near=null,best=VILLAGE.near;
   for(const k in VILLAGE.b){const B=VILLAGE.b[k],d=Math.hypot(P.x-B.x,P.y-B.y)-B.r-P.r;if(d<best){best=d;near=k}}
-  V.near=near;if(near)vCollect(near);
+  V.near=near;
+  V.settle=(V.settle||0)-dt;if(V.settle<=0){V.settle=VILLAGE.settleEvery;for(const k in VILLAGE.b)vSettle(k)}   // המלאי על המבנים גדל גם בזמן שמסתובבים בכפר
   npcUpdate(dt);   // התושבים: הולכים, מנופפים, וכפתור "לדבר" (npc.js)
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}
   parts=parts.filter(p=>p.life>0);
@@ -169,7 +172,7 @@ function runEnd(){
 
 /* ---- ממשק: התרמיל למעלה, והפאנל של המבנה שלידו למטה ---- */
 // משאב אחד כתג: אייקון ומספר. משאב נדיר מקבל מסגרת בצבע הנדירות שלו
-const resChip=(r,n,cls='')=>{const R=resOf(r);return '<span class="res'+cls+(R&&R.rar?' rare" style="--tint:'+RES.rarity[R.rar].col:'')+'" data-tip="'+r+'" aria-label="'+resName(r)+'">'+resIcon(r)+' '+n+'</span>'};
+const resChip=(r,n,cls='')=>{const R=resOf(r);return '<span class="res'+cls+(R&&R.rar?' rare" style="--tint:'+RES.rarity[R.rar].col:'')+'" data-tip="'+r+'" aria-label="'+resName(r)+'">'+resPic(r)+' '+n+'</span>'};
 // list: אילו משאבים להראות, גם כשיש 0. בלי list: רק מה שיש
 const bagLine=(bag,list)=>(list||Object.keys(RES.list).filter(r=>bag[r]>0)).map(r=>resChip(r,bag[r]||0)).join('');
 // הפס העליון: שורה אחת, מספרים קצרים (1.3K), ולכל היותר UI.top משאבים. מה שלא נכנס: כפתור "+N" שפותח את התרמיל (ui.js)
@@ -195,28 +198,35 @@ function villageHud(){
   // ✕ סוגר את הפאנל עד שמתרחקים (shut). ליד מבנה אחר הוא נפתח שוב
   const cur=S.vil.gate?'gate':k;if(S.vil.shut&&S.vil.shut!==cur)S.vil.shut=null;const shut=!!cur&&S.vil.shut===cur;
   if(cur!=='market'||shut)S.vil.trade=false;   // חלון המסחר הגדול: רק ליד השוק
-  const key=LANG+'|'+k+'|'+S.vil.gate+'|'+shut+'|'+S.vil.trade+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
+  const key=LANG+'|'+k+'|'+S.vil.gate+'|'+shut+'|'+S.vil.trade+'|'+(k?vStock(k):0)+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
   if(key===S.vil.ui)return;S.vil.ui=key;
   $('vBag').innerHTML=topLine(SAVE.bag,resShown(k));   // רק מה שרלוונטי ליד המבנה הזה (RES.show)
-  const pn=$('vPanel');pn.hidden=!cur||shut;pn.classList.toggle('big',!!S.vil.trade);if(pn.hidden)return;
+  // נפחייה ומחסן: הרבה תוכן, אז חלון גדול בשני טורים (ניר: "רואים רק קצת")
+  const wide=!S.vil.gate&&(k==='forge'||k==='stash')&&L>0;
+  const pn=$('vPanel');pn.hidden=!cur||shut;pn.classList.toggle('big',!!S.vil.trade||wide);document.body.classList.toggle('vpan',!pn.hidden);if(pn.hidden)return;
   if(S.vil.trade){pn.innerHTML=winHead(T('vil.market'),T('level',L))+tradeHtml(L);return}
   if(S.vil.gate){pn.innerHTML=winHead(T('vil.out'))+'<p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
   const why=vBlock(k),c=vCost(k);
-  let h=winHead(T('vil.'+k),L?T('level',L):'')+'<p>'+vInfo(k,L)+'</p>';
+  let h='<p>'+vInfo(k,L)+'</p>';
+  // מנסרה ומכרה: כמה מחכה לאיסוף, וכפתור לאסוף
+  const B=VILLAGE.b[k];
+  if(B.make&&L>0){const p=vProd(k),n=vStock(k),rs=Object.keys(B.make).filter(r=>B.make[r][L]>0);
+    h+='<div class="cost">'+rs.map(r=>'<span class="res">'+resPic(r)+' '+Math.floor(p.have[r]||0)+'/'+B.cap[L]+'</span>').join('')+'</div>';
+    h+='<button class="vbtn" data-act="collect"'+(n?'':' disabled')+'>'+(n?T('vil.collect',n):T('vil.nothing'))+'</button>'}
   if(why!=='max')h+='<p class="next">'+T('vil.next',vInfo(k,L+1))+'</p><div class="cost">'+costLine(c)+'</div>';
   h+='<button class="vbtn" data-act="up"'+(why?' disabled':'')+'>'+(why==='max'?T('vil.max'):why==='center'?T('vil.needCenter'):L?T('vil.up',L+1):T('vil.build'))+'</button>';
   if(k==='forge'&&L>0)h+='<button class="vbtn ghost" data-act="forge">⚒️ '+T('age.open')+'</button>';
   if(k==='market'&&L>0)h+='<button class="vbtn" data-act="trade">🛒 '+T('vil.trade')+'</button>';
-  if(k==='forge'&&L>0)h+=forgeHtml();   // gear.js
-  if(k==='stash'&&L>0)h+=stashHtml();   // stash.js
-  pn.innerHTML=h;
+  const more=k==='forge'&&L>0?forgeHtml():k==='stash'&&L>0?stashHtml():'';   // gear.js, stash.js
+  const head=winHead(T('vil.'+k),L?T('level',L):'');
+  pn.innerHTML=wide?head+'<div class="tcols"><section>'+h+'</section><section>'+more+'</section></div>':head+h+more;
 }
 // חלון המסחר: מסך כמעט מלא, מוכרים בטור אחד וקונים בטור השני (לרוחב), ורק הרשתות גוללות.
 // מוכרים כל מה שיש בתרמיל, וקונים כל מה שהרמה של השוק מרשה. כרטיס שאי אפשר ללחוץ עליו אומר למה
 function tradeHtml(L){
   let h='';{
     const rs=Object.keys(RES.list),card=(kind,r,why,p)=>'<button class="tcard" data-act="'+kind+'" data-r="'+r+'"'+(why?' disabled':'')+' aria-label="'+T('vil.'+kind)+' '+resName(r)+'" style="--rar:'+RES.rarity[resOf(r).rar||0].col+'">'+
-      '<span class="ti">'+resIcon(r)+'<small>×'+vLot(r)+'</small></span><span class="tp"><bdi>'+p+'</bdi>'+resIcon('coins')+'</span>'+(why?'<span class="tw">'+why+'</span>':'')+'</button>';
+      '<span class="ti">'+resPic(r)+'<small>×'+vLot(r)+'</small></span><span class="tp"><bdi>'+p+'</bdi>'+resPic('coins')+'</span>'+(why?'<span class="tw">'+why+'</span>':'')+'</button>';
     const sell=rs.filter(r=>vCanTrade('sell',r)&&bagHas(r)),buy=rs.filter(r=>resOf(r).buy);
     h+='<section><span class="sk">'+T('vil.sell')+'</span>'+(sell.length?'<div class="trade">'+sell.map(r=>card('sell',r,bagHas(r,vLot(r))?'':T('vil.needN',vLot(r)),'+'+vPrice(r,'sell')*vLot(r))).join('')+'</div>':'<p class="next">'+T('stash.empty')+'</p>')+'</section>';
     h+='<section><span class="sk">'+T('vil.buy')+'</span><div class="trade">'+buy.map(r=>{const p=vPrice(r,'buy')*vLot(r);
@@ -233,6 +243,7 @@ $('vPanel').addEventListener('click',e=>{
   if(!S.vil.near)return;
   if(a==='forge'){forgeOpen();return}
   if(a==='bag'){gearOpen();return}   // מהמחסן: מסך הציוד, שם גוררים בין התרמיל למחסן (gear.js)
+  if(a==='collect'){if(vCollect(S.vil.near))sfx('coin');villageHud();return}
   if(a==='up')vUpgrade(S.vil.near);else if(a==='stash')stashMove(b.dataset.dir,b.dataset.r);else if(a==='craft')gearCraft(b.dataset.r);else vTrade(a,b.dataset.r);
   villageHud();
 });

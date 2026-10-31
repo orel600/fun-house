@@ -45,7 +45,8 @@ function drawPlayer(){
       if(k>0.3){ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(hx+cx*10,hy+cy*10);ctx.stroke()}
     }
   }}
-  if(sword&&s.anim>0){
+  if(sword&&s.anim>0&&fluteOn())fluteSwing(s,s.anim/0.2,dtCol(P.dt.sword));   // הנודד עם החליל: חמשה ותווים (flute.js)
+  else if(sword&&s.anim>0){
     const k=s.anim/0.2,start=s.ang-s.arc/2,end=start+s.arc*(1-k);
     ctx.globalAlpha=0.55*k+0.15;ctx.strokeStyle=dtCol(P.dt.sword);ctx.lineWidth=12*k+2;
     ctx.beginPath();ctx.arc(P.x,P.y-8,s.range*0.72,start,end);ctx.stroke();ctx.globalAlpha=1;
@@ -125,7 +126,8 @@ function edgeArrow(sx,sy,col,s=1){
   ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.scale(s,s);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-8);ctx.lineTo(-7,8);ctx.fill();ctx.restore();
 }
 function render(){
-  ctx.setTransform(DPR,0,0,DPR,0,0);
+  setZoom(S&&S.vil?VIEW.zoom.village:S&&S.wd?VIEW.zoom.world:1);   // כמה גבוה המצלמה בכל מקום (render3d.js)
+  ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);
   // בתלת-ממד הקנבס שקוף: הקרקע והדמויות מצוירות בשכבה שמתחתיו (render3d.js)
   if(R3D.on)ctx.clearRect(0,0,W,H);else{ctx.fillStyle=S&&S.room?'#262114':C.ink;ctx.fillRect(0,0,W,H)}
   if(!P)return;
@@ -165,8 +167,9 @@ function render(){
   drawSkills(ox,oy);   // טבעות וברקים של סקילים, וסימני רטוב/קפוא/הלם (skills.js)
   drawOrbits();   // החפצים המסתובבים (orbit.js)
   // חצים: מוט, נוצות וחוד. קסם: כדור זוהר עם שובל (weapons.js)
-  const sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r;ctx.lineWidth=2;
+  const sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r,fl=fluteOn();ctx.lineWidth=2;
   for(const b of pb){
+    if(fl){fluteShot(b,sc);continue}   // הנודד עם החליל: חלילים ותווים עפים (flute.js)
     if(b.shot==='bolt'){ctx.fillStyle=sc;
       for(let i=3;i>0;i--){ctx.globalAlpha=0.12*(4-i);ctx.beginPath();ctx.arc(b.x-b.vx*0.018*i,b.y-b.vy*0.018*i,br*(1-i*0.18),0,7);ctx.fill()}
       ctx.globalAlpha=0.3;ctx.beginPath();ctx.arc(b.x,b.y,br*1.9,0,7);ctx.fill();
@@ -188,8 +191,8 @@ function render(){
     else{ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1)}
     ctx.fillStyle=f.crit?C.ink:f.col;ctx.fillText(f.txt,f.x,f.y);if(f.crit){ctx.lineWidth=1.5;ctx.strokeStyle=f.col;ctx.strokeText(f.txt,f.x,f.y)}}
   ctx.globalAlpha=1;ctx.direction=DIR;
-  // screen space
-  ctx.setTransform(DPR,0,0,DPR,0,0);
+  // screen space (ביחידות של המשחק, כמו W,H)
+  ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);
   if(S.boss){const b=S.boss,sx=b.x+ox,sy=b.y+oy;
     if(sx<-20||sx>W+20||sy<-20||sy>H+20){const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(110,Math.min(H-40,H/2+Math.sin(a)*H));
       ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.fillStyle=C.lilac;ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(-8,-10);ctx.lineTo(-8,10);ctx.fill();ctx.restore()}}
@@ -198,7 +201,7 @@ function render(){
   drawVillageScreen(ox,oy);
   drawWorldScreen(ox,oy);
   drawNpcScreen(ox,oy);
-  drawQuestMarks(ox,oy);
+  drawQuestMarks(ox,oy);statDraw(ox,oy);   // סימן מעל הדמות כשסקיל פעיל (stats.js)
   if(joy){ctx.strokeStyle='rgba(236,231,220,0.22)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(joy.ox,joy.oy,55,0,7);ctx.stroke();
     ctx.fillStyle='rgba(236,231,220,0.3)';ctx.beginPath();ctx.arc(joy.ox+joy.dx*55,joy.oy+joy.dy*55,22,0,7);ctx.fill()}
   if(S.hurt>0){const gr=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3,W/2,H/2,Math.max(W,H)*0.75);gr.addColorStop(0,'rgba(239,78,87,0)');gr.addColorStop(1,'rgba(239,78,87,'+(S.hurt*1.2)+')');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)}

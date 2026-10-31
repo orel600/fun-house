@@ -22,12 +22,18 @@ const QUESTS={
     daily:{auto:true,daily:true},
     achievement:{auto:true},
     rank:{},     // עלייה בדרגה, כל 20 רמות. הפרס rank:<שלב>, ואיזו דרגה נפתחת קובע ranks.js
+    story:{},    // העלילה (story.js, docs/story.md): שרשרת אצל ראש הכפר, ⭐ ביומן
     world:{talk:true}   // דמויות שמוצאים בעולם הפתוח (worldnpc.js). talk: מקבלים ולוקחים פרס רק אצלן, לא ביומן
   },
   daily:4,       // כמה קווסטים יומיים בכל יום. מתחלפים בחצות, לפי השעון בטלפון
   list:[
     // ---- כפר: נותנים המבנים, ומובילים את השחקן בכפר ובזירה ----
     // הראשון: קצר, ונעליים בפרס, כדי שההליכה תהיה מהירה כבר מההתחלה (ניר: "נעליים שנותנות מהירות שמקבלים מאיזה קווסט התחלתי")
+    // ---- העלילה, פרק 1: פנס האדמה (story.js). כל אחד נפתח אחרי הקודם ----
+    {id:'s1Lanterns',giver:'head',kind:'story',obj:[{type:'reach',what:'world',n:1}],reward:{coins:20,xp:20}},
+    {id:'s1Shard',giver:'head',kind:'story',obj:[{type:'story',what:'shard',n:1}],reward:{coins:25,xp:30},req:{quest:'s1Lanterns'}},
+    {id:'s1Path',giver:'head',kind:'story',obj:[{type:'kill',what:'any',n:25}],reward:{iron:5,xp:40},req:{quest:'s1Shard'}},
+    {id:'s1Warden',giver:'head',kind:'story',obj:[{type:'kill',what:'warden',n:1}],reward:{coins:80,xp:120,story:'earth'},req:{quest:'s1Path'}},
     {id:'boots',giver:'head',kind:'village',obj:[{type:'gather',what:'wood',n:5}],reward:{coins:10,item:'starterBoots'}},
     {id:'firstMill',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mill',n:1}],reward:{coins:15,wood:10}},
     {id:'firstMine',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mine',n:1}],reward:{coins:15,stone:10}},
@@ -116,6 +122,7 @@ function questsRefresh(){
   }
   for(const q of QUESTS.list){const K=qKind(q);if(K.auto&&!K.daily&&!Q.active[q.id]&&!Q.done[q.id]&&qReq(q))qStart(q)}
   if(Q.track&&!Q.active[Q.track])Q.track=null;
+  questTrack();
   $('qLog').hidden=true;   // חוזרים הביתה עם יומן סגור, ולא עם מה שהיה פתוח לפני הריצה
 }
 
@@ -142,11 +149,11 @@ function qGive(id){
 }
 function questClaim(id){
   const q=QBY[id],Q=QS();if(!q||!qReady(q))return false;
-  for(const k in q.reward){const v=q.reward[k];if(k==='xp')SAVE.hero.xp+=v;else if(k==='item')qGive(v);else if(k!=='rank')bagAdd(k,v)}
+  for(const k in q.reward){const v=q.reward[k];if(k==='xp')SAVE.hero.xp+=v;else if(k==='item')qGive(v);else if(k==='story')storyReward(v);else if(k!=='rank')bagAdd(k,v)}
   rankSync();   // רמת הדמות מה-XP (ranks.js)
   delete Q.active[id];Q.done[id]=(Q.done[id]||0)+1;
   if(Q.track===id)Q.track=null;
-  saveNow();
+  saveNow();questTrack();
   celebrate(P.x,P.y-10,'quest');
   banner(T('q.claimed',T('q.'+id)[0]),C.gold);
   if(q.reward.rank)rankUp(q.reward.rank);   // הטקס והדרגה (ranks.js)
@@ -156,11 +163,11 @@ function questClaim(id){
 /* ---- ממשק: היומן בכפר, וקו מעקב בזירה ---- */
 const qWhat=o=>o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?resName(o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
 const qObjTxt=(q,i)=>{const o=q.obj[i];return T('qo.'+o.type,qWhat(o),o.n)+(o.noHit?T('qo.noHit'):'')+(o.under?T('qo.under',fmt(o.under)):'')};
-const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='rank'?QUESTS.icon.rank+' '+(rankFor(r[k])?rankName(rankFor(r[k])):''):k==='item'?(gItem(r[k])?gIcon(r[k])+' '+gName(r[k]):QUESTS.icon.item+' '+T('item.'+r[k])):(resIcon(k)||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
+const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='story'?'🏮 '+T('story.reward'):k==='rank'?QUESTS.icon.rank+' '+(rankFor(r[k])?rankName(rankFor(r[k])):''):k==='item'?(gItem(r[k])?gIcon(r[k])+' '+gName(r[k]):QUESTS.icon.item+' '+T('item.'+r[k])):(resIcon(k)||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
 // הקווסט שמוצג בזירה: זה שבחרת לעקוב אחריו, ואם אין, הראשון שעוד לא הושלם
 function qTracked(){
   const Q=QS(),ids=Object.keys(Q.active).filter(id=>QBY[id]);
-  if(Q.track&&Q.active[Q.track])return QBY[Q.track];
+  if(Q.track&&Q.active[Q.track]&&!qReady(QBY[Q.track]))return QBY[Q.track];   // קווסט שהושלם יוצא מהשורה: הפרס מחכה ביומן (ניר: "מראה לי קווסט שסיימתי")
   const open=ids.map(id=>QBY[id]).filter(q=>!qReady(q));
   return open.find(q=>!qKind(q).auto)||open.find(q=>qKind(q).daily)||null;
 }
@@ -201,6 +208,7 @@ function questAct(a,id){
   if(a==='accept'&&qOpen(QBY[id])){qStart(QBY[id]);saveNow()}
   else if(a==='claim')questClaim(id);
   else if(a==='track'){QS().track=QS().track===id?null:id;saveNow()}
+  questTrack();
 }
 $('qLog').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;

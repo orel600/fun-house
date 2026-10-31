@@ -8,7 +8,9 @@
    נקודה (x,y) במשחק יושבת ב-(x, 0, y/sin(tilt)) בעולם התלת-ממדי, וכך היא מופיעה על המסך בדיוק איפה שהקנבס מצייר אותה.
    אם WebGL לא זמין, או שהשחקן בחר 2D, הכל נשאר כמו קודם (R3D.on=false). */
 
-const VIEW={tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52', world:'#2c4229', worldLine:'#6f8f55'};
+/* zoom: כמה רחוק המצלמה בכל מקום. 1 = כמו קודם, 0.75 = רואים בערך פי 1.8 שטח (ניר, 31.10.2026: "נקודת המבט צריכה להיות מגבוה יותר").
+   הזירה נשארת 1 (התחום של אוראל). יותר שטח = יותר דברים לצייר, אז בטלפון חלש כדאי למדוד עם ?fps */
+const VIEW={zoom:{village:0.8,world:0.72},tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52', world:'#2c4229', worldLine:'#6f8f55'};
 
 /* מי לובש איזה מודל. h: גובה הדמות על המסך בפיקסלים. foot: כמה פיקסלים מתחת למרכז הלוגי הרגליים נוגעות בקרקע.
    props: חפצים ביד (bone: היד, ומיקום וסיבוב מקומיים כמו בחבילה המקורית). הטבעת מתחת לרגליים היא בצבע החולשה של האויב (e.weak, מ-data.js), ולא כתובה כאן. tint: צבע מ-TINT.
@@ -43,6 +45,7 @@ const LOOK3D={
   pilotHero:{model:'pilotHero',h:56,foot:14},
   // הדמות האישית של ניר (HEROES.skins ב-heroes.js): מראה בלבד, מעל המחלקה שנבחרה. אותו גובה כמו הפיילוט
   nirHero:{model:'nirHero',h:56,foot:14},
+  orelHero:{model:'orelHero',h:58,foot:14},   // הדמות האישית של אוראל. הברדס מגביה אותו קצת
   /* תושבי הכפר (NPC ב-npc.js): דמויות KayKit בצבע משלהן, עם אנימציות העבודה של 2.0 (NPC_ANIM), עד שיגיעו הדמויות של ג'מיני.
      own:false מסתיר את הנשק שהדמות מחזיקה בקובץ המקורי. anim: מה מנגנים בכל מצב של התושב (idle, walk, work, wave, cheer) */
   npc_head:{model:'knight',h:64,foot:14,tint:'gold',anim:{...NPC_ANIM,idle:'Idle_B'}},
@@ -227,6 +230,7 @@ function heroLook(){
     L.props[w]=Object.assign({prop:model,tier:mine?GEAR.tiers[it.tier].id:'wood'},g);
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
+  if(fluteOn())fluteGrip(L);   // הנודד עם החליל: חליל ביד במקום הנשק (flute.js)
   return R3D._hl=L;
 }
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
@@ -460,7 +464,7 @@ function render3d(ox,oy){
   R3D.frame=(R3D.frame||0)+1;const skip=R3D.drawEvery&&R3D.frame%R3D.drawEvery!==0;if(skip&&!S.vil)return;   // בכפר ממשיכים לעדכן, כי שם נבנים המבנים
   const r=R3D.r,c=R3D.cam,now=performance.now(),dt=Math.min(0.05*(R3D.drawEvery||1),R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;
   const pr=Math.min(DPR,1.5);if(r.getPixelRatio()!==pr)r.setPixelRatio(pr);
-  if(R3D.w!==W||R3D.h!==H){R3D.w=W;R3D.h=H;r.setSize(W,H,false);c.left=-W/2;c.right=W/2;c.top=H/2;c.bottom=-H/2;c.updateProjectionMatrix()}
+  if(R3D.w!==W||R3D.h!==H){R3D.w=W;R3D.h=H;r.setSize(innerWidth,innerHeight,false);c.left=-W/2;c.right=W/2;c.top=H/2;c.bottom=-H/2;c.updateProjectionMatrix()}
   // המצלמה מסתכלת על אותה נקודה שבמרכז הקנבס
   const S_=SIN(),cx=W/2-ox,cz=(H/2-oy)/S_;
   c.position.set(cx,2000*S_,cz+2000*COS());c.lookAt(cx,0,cz);
