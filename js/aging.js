@@ -156,4 +156,4 @@ $('ovForge').addEventListener('click',e=>{
   }
   forgeDraw();
 });
-addEventListener('keydown',e=>{if(e.code==='Escape'&&!$('ovForge').hidden)forgeClose()});
+// Esc ולחיצה על הרקע סוגרים: ui.js
