@@ -786,6 +786,18 @@ const TEXT={
   'npc.jokes.priest':{he:[],en:[]}
 };
 
+// ======== סודות בעולם (secrets.js) ========
+Object.assign(TEXT,{
+  'sc.found':{he:(n,of)=>'🔍 גילית סוד! '+n+'/'+of+' באזור',en:(n,of)=>'🔍 Secret found! '+n+'/'+of+' here'},
+  'sc.hud':{he:'סודות שנמצאו באזור',en:'Secrets found here'},
+  'sc.bless.speed':{he:'🌀 ברכת הרוח: רגליים קלות לדקה',en:'🌀 Wind blessing: light feet for a minute'},
+  'sc.bless.loot':{he:'✨ ברכת השפע: יותר שלל לדקה',en:'✨ Plenty blessing: more loot for a minute'},
+  'sc.blessEnd':{he:'הברכה נגמרה',en:'The blessing faded'},
+  'sc.look':{he:'👁️ מכאן רואים הכל! כל המקורות באזור',en:'👁️ You can see everything from here! Every resource around'},
+  'sc.carve':{he:'🌳 חץ חרוט בעץ... הוא מצביע למשהו',en:'🌳 An arrow carved in the tree... it points somewhere'},
+  'sc.sniff':{he:n=>n+' מרחרחת! יש פה משהו',en:n=>n+' is sniffing! Something’s here'}
+});
+
 function T(key,...a){const e=TEXT[key],v=e?(e[LANG]??e.he):key;return typeof v==='function'?v(...a):v}
 function setLang(l){if(!LANGS[l])return;LANG=l;DIR=LANGS[l].dir;try{localStorage.setItem('zm-lang',l)}catch(e){}}
 // ממלא את כל הטקסטים הקבועים בדף לפי השפה הנוכחית, והופך את כיוון המסך
