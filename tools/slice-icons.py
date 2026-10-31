@@ -1,12 +1,13 @@
 # חותך דף אייקונים (רשת) לאייקונים נפרדים עם רקע שקוף, בגודל של icons/ui/res.
-# שימוש: python3 tools/slice-icons.py <דף.jpg> <עמודות> <שורות> <תיקיית-יעד> שם1 שם2:holes ...
+# שימוש: [SIZE=160] [SOLO=1] python3 tools/slice-icons.py <דף.jpg> <עמודות> <שורות> <תיקיית-יעד> שם1 שם2:holes ...
 # הרקע הלבן נמחק רק מהקצוות פנימה (flood fill), כך שלבן בתוך האייקון (יהלום) נשאר.
 import sys
 from PIL import Image, ImageDraw
 
 src, cols, rows, out = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), sys.argv[4]
 names = sys.argv[5:]
-SIZE, TOL = 96, 40
+import os
+SIZE, TOL = int(os.environ.get("SIZE", 96)), 40   # SIZE=160 לדיוקנאות
 im = Image.open(src).convert('RGB')
 W, H = im.size
 cw, ch = W / cols, H / rows
@@ -46,6 +47,26 @@ for i, name in enumerate(names):
                 m = min(px[x, y][:3])
                 if m > 200:
                     px[x, y] = px[x, y][:3] + (int(255 * (255 - m) / 55),)
+    # SOLO=1 (דיוקנאות): נשאר רק הגוש הגדול, בלי פיסות מהשכן שגלשו לתא. לא לאייקונים עם ניצוצות מסביב
+    if os.environ.get('SOLO'):
+        seen, best = set(), []
+        for y0 in range(h):
+            for x0 in range(w):
+                if px[x0, y0][3] and (x0, y0) not in seen:
+                    comp, st = [], [(x0, y0)]
+                    seen.add((x0, y0))
+                    while st:
+                        x, y = st.pop(); comp.append((x, y))
+                        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                            if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in seen and px[nx, ny][3]:
+                                seen.add((nx, ny)); st.append((nx, ny))
+                    if len(comp) > len(best):
+                        best = comp
+        keep = set(best)
+        for y in range(h):
+            for x in range(w):
+                if px[x, y][3] and (x, y) not in keep:
+                    px[x, y] = (0, 0, 0, 0)
     bb = cell.getbbox()
     cell = cell.crop(bb)
     cell.thumbnail((SIZE, SIZE), Image.LANCZOS)

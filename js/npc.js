@@ -95,12 +95,15 @@ function npcDialog(){
   const mine=QUESTS.list.filter(q=>q.giver===id&&npcHere(id));
   const ready=mine.filter(q=>Q.active[q.id]&&qReady(q)),open=mine.filter(qOpen),on=mine.filter(q=>Q.active[q.id]&&!qReady(q));
   let h=winHead(name,role);   // ui.js
-  h+='<p class="npcsay">'+S.vil.dlgLine+'</p>';
+  h+='<p class="npcsay">'+npcPic(id)+S.vil.dlgLine+'</p>';
   h+=ready.map(q=>qCard(q,'claim')).join('')+open.map(q=>qCard(q,'accept')).join('')+on.map(q=>qCard(q,'track')).join('');
   if(!ready.length&&!open.length&&!on.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
   if(id===STATS.respec.npc)h+=statRespecHtml();   // איפוס נקודות הדמות (stats.js)
   el.innerHTML=h;el.hidden=false;
 }
+// דיוקן בשיחה, מ-Creative Claw (icons/ui/npc, נחתך עם tools/slice-icons.py). דמות בלי דיוקן: בלי תמונה. משמש גם את worldnpc.js
+const NPC_PIC={head:1,smith:1,merchant:1,inn:1,priest:1,fisher:1,cutter:1,herbal:1};
+const npcPic=id=>NPC_PIC[id]?'<img class="npcpic" src="icons/ui/npc/'+id+'.png" alt="">':'';
 // פותח שיחה עם id, או סוגר עם null
 function npcTalk(id){
   if(!S.vil)return;

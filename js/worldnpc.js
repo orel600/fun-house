@@ -67,7 +67,7 @@ function wnpcDialog(){
   const Q=QS(),[name,role]=T('npc.'+id),mine=QUESTS.list.filter(q=>q.giver===id);
   const ready=mine.filter(q=>Q.active[q.id]&&qReady(q)),open=mine.filter(qOpen),on=mine.filter(q=>Q.active[q.id]&&!qReady(q));
   let h=winHead(name,role);   // ui.js
-  h+='<p class="npcsay">'+S.wd.dlgLine+'</p>';
+  h+='<p class="npcsay">'+npcPic(id)+S.wd.dlgLine+'</p>';
   h+=ready.map(q=>qCard(q,'claim')).join('')+open.map(q=>qCard(q,'accept')).join('')+on.map(q=>qCard(q,'track')).join('');
   if(!ready.length&&!open.length&&!on.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
   el.innerHTML=h;el.hidden=false;

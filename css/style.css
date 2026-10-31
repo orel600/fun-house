@@ -266,6 +266,9 @@ h1{font-size:46px} h2{font-size:30px}
 /* תושבי הכפר (js/npc.js): כפתור "לדבר" בסרגל למטה, והשיחה במקום היומן */
 .npcdlg h3 small{font-family:var(--body);font-size:13px;font-weight:800;color:var(--gold);margin-inline-start:6px}
 .npcsay{margin:0;font-size:15px;line-height:1.45;background:var(--panel);border-radius:12px;padding:8px 10px;border-inline-start:3px solid var(--gold)}
+/* דיוקן הדמות בשיחה (npcPic): בתחילת השורה, והטקסט עוטף אותו */
+.npcsay{display:flow-root}
+.npcpic{float:inline-start;width:84px;height:84px;object-fit:contain;margin-inline-end:10px;margin-block:-4px;filter:drop-shadow(0 2px 3px #0008)}
 /* מסך הציוד (js/gear.js): שלושה טורים. התרמיל בתחילת השורה, הבובה עם המשבצות באמצע, והפרטים בסוף. הטורים מתהפכים לבד לפי השפה.
    המסגרת של כל פריט ומשאב בצבע הנדירות שלו (--rar, מ-RES.rarity), כמו השלל שנופל */
 #ovGear,.gearov#ovGear{z-index:7;place-items:center;background:rgba(10,12,20,.72)}
