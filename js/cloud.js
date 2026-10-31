@@ -91,7 +91,7 @@ function cloudMark(){
 // סנכרון: בהפעלה מושכים ואז דוחפים, ובזמן משחק רק דוחפים. כל תקלה = "לא מחובר", בשקט
 async function cloudSync(pushOnly){
   cloudShow('sync');
-  try{let r='pushed';if(!pushOnly)r=await cloudPull();if(r!=='took'||CLOUD.dirty)await cloudPush();cloudShow('ok');return r}
+  try{let r='pushed';if(!pushOnly)r=await cloudPull();if(r!=='took'||CLOUD.dirty)await cloudPush();cloudShow('ok');if(typeof visitCloud==='function')visitCloud();return r}
   catch(e){cloudShow('off');return'offline'}
 }
 

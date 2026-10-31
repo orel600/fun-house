@@ -545,6 +545,35 @@ function worldBot(m,L,god){
   check(gl.second,'ענן: מכשיר שני '+(gl.second?'לוקח את השמירה מהחשבון':'לא לקח את השמירה'));
   check(gl.ask&&gl.kept,'ענן: שתי שמירות שונות '+(gl.ask?'השחקן נשאל':'לא נשאל')+', '+(gl.kept?'ומה שבחר נשמר':'הבחירה לא נשמרה'));
   check(gl.out,'ענן: התנתקות '+(gl.out?'מוחקת את הכניסה ומשאירה את השמירה':'לא עבדה'));
+  // ביקור אצל חבר (visit.js), על השרת המדומה עם שתי הטבלאות: בלי Google מוסבר, פרופיל מתפרסם, הכפר של החבר מוצג, מתנה נשלחת פעם ביום ומתקבלת פעם אחת, וכשהטבלאות חסרות הכפתור מוסבר
+  const vs=await page.evaluate(async()=>{const r={},F=CLOUD.fake=cloudFakeServer();window.__visBak=JSON.stringify(SAVE);
+    CLOUD.session=null;try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}VISIT.ready=null;VISIT.last='';
+    await cloudSync();r.anon=visitWhy()==='noName'&&await visitOpen()===false&&$('ovVisit').hidden;
+    F.google.u1='Nir';CLOUD.session.name='Nir';await visitPublish();const me=F.profiles.u1;
+    r.pub=!!me&&me.name==='Nir'&&me.data.village.center===SAVE.village.center&&await visitPublish()==='same';
+    F.google.u2='Orel';F.profiles.u2={user_id:'u2',name:'Orel',level:7,data:{village:{center:3,forge:2,mill:1},start:'warrior',pet:'piocho'}};
+    bagAdd('wood',12);window.__visWood=SAVE.bag.wood;await visitOpen();
+    r.open=!$('ovVisit').hidden&&!!VISIT.sel&&VISIT.sel.name==='Orel'&&document.querySelectorAll('#visitWin .visb').length===Object.keys(VILLAGE.b).length&&
+      document.querySelectorAll('#visitWin .visb.none').length===Object.keys(VILLAGE.b).length-3&&!!document.querySelector('#visitWin [data-act="send"]');
+    window.__visSt=$('ovStart').hidden;$('ovStart').hidden=true;return r});
+  await shot('visit');
+  const vs2=await page.evaluate(async()=>{const r={},F=CLOUD.fake;$('ovStart').hidden=window.__visSt;
+    document.querySelector('#visitWin [data-act="send"]').click();for(let i=0;i<2000&&!document.querySelector('#visitWin .visdone');i++)await Promise.resolve();
+    const g=F.gifts[0];r.send=!!g&&g.from_id==='u1'&&g.to_id==='u2'&&g.res==='wood'&&g.n===1&&SAVE.bag.wood===window.__visWood-1;
+    r.once=await visitSend()===false&&F.gifts.length===1&&!!document.querySelector('#visitWin .visdone');visitClose();r.closed=$('ovVisit').hidden;
+    const anon={user_id:'u1',to_id:'u2',from_id:'u3',res:'wood',n:1,note:0};let bad=false;try{await F.req('POST','/rest/v1/gifts',anon,'au3')}catch(e){bad=true}r.rls=bad;
+    const w=SAVE.bag.wood;CLOUD.session=Object.assign({},CLOUD.session,{uid:'u2',access:'au2',name:'Orel',exp:Date.now()/1000+3600});
+    r.got=await visitInbox()===1&&SAVE.bag.wood===w+1&&!F.gifts.length&&await visitInbox()===0;
+    F.noVisit=true;VISIT.ready=null;VISIT.last='';await visitPublish();r.noTable=VISIT.ready===false&&visitWhy()==='noTable';
+    SAVE=JSON.parse(window.__visBak);SAVE_STORE.write(SAVE,true);CLOUD.fake=cloudFakeServer();CLOUD.session=null;try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}
+    CLOUD.dirty=false;VISIT.ready=null;VISIT.last='';r.p0=CLOUD.pushes;return r}).catch(e=>({err:String(e)}));
+  if(vs2.p0!=null)cl.p0=vs2.p0;
+  check(vs.anon,'ביקור: בלי Google '+(vs.anon?'הכפתור מסביר ולא נפתח':'החלון נפתח בכל זאת'));
+  check(vs.pub,'ביקור: הפרופיל הציבורי '+(vs.pub?'מתפרסם, ולא נשלח שוב כשלא השתנה':'לא התפרסם כמו שצריך'));
+  check(vs.open,'ביקור: הכפר של החבר '+(vs.open?'מוצג עם כל המבנים והרמות':'לא הוצג'));
+  check(vs2.send&&vs2.once&&vs2.closed,'ביקור: מתנה '+(vs2.send?'נשלחה ויצאה מהתרמיל':'לא נשלחה'+(vs2.err?' ('+vs2.err+')':''))+', '+(vs2.once?'ופעם אחת ביום':'ונשלחה שוב'));
+  check(vs2.rls&&vs2.got,'ביקור: החבר '+(vs2.got?'מקבל את המתנה פעם אחת':'לא קיבל')+', '+(vs2.rls?'ואי אפשר לשלוח בשם מישהו אחר':'ומישהו שלח בשם אחר'));
+  check(vs2.noTable,'ביקור: בלי הטבלאות בענן '+(vs2.noTable?'הכפתור מוסבר והמשחק ממשיך':'משהו נשבר'));
   // שוק: מוכרים עץ, לא מצליחים לקנות בלי מספיק מטבעות, ואז קונים אבן. בסוף מנקים
   const mk=await page.evaluate(()=>{SAVE.village.market=1;bagAdd('wood',10);const sell=vTrade('sell','wood')&&SAVE.bag.coins===5&&SAVE.bag.wood===5;
     const poor=!vTrade('buy','stone');bagAdd('coins',20);const buy=vTrade('buy','stone')&&SAVE.bag.stone===5&&SAVE.bag.coins===10;
