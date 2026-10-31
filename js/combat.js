@@ -36,7 +36,7 @@ function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
 function kill(e){
   e.dead=true;S.kills++;sfx('death');heroCount('kills');if(e.isBoss)heroCount('bosses');
   lootKill(e);   // שלל לכפר (loot.js)
-  statKillXp(e);statOnKill(e);   // XP לדמות בעולם הפתוח, וזעם (stats.js)
+  statKillXp(e);statOnKill(e);affixOnKill(e);   // XP לדמות בעולם הפתוח, וזעם (stats.js)
   questEvent('kill',e.isBoss?'boss':e.wanted?'wanted':e.warden?'warden':e.type);
   if(e.isBoss){bossDown(e);return}
   if(e.wanted){wantedDown(e);return}

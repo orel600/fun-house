@@ -788,6 +788,15 @@ function worldBot(m,L,god){
     P.inv=0;enterVillage();return o});
   check(sto2.intro&&sto2.offer&&sto2.shard&&sto2.warden&&sto2.ready&&sto2.lit,'עלילה, פרק 1: '+(sto2.intro?'ההקדמה אצל ראש הכפר':'אין הקדמה')+(sto2.offer?', קווסט ראשון מוצע והבא נעול':', סדר הקווסטים שבור')+
     (sto2.shard?', פיוחו מצאה רסיס':', אין רסיס')+(sto2.warden?', השומר קם ליד הפנס':', השומר לא קם')+(sto2.ready?' והופל':', לא הופל')+(sto2.lit?', הפנס נדלק':', הפנס לא נדלק')+(sto2.safer?', האחו בטוח יותר':''));
+  // אויבים מיוחדים בעולם (affix.js): מתפצל נותן שניים, מתפוצץ פוגע אחרי רגע, מתחדש מרפא, ולכולם שם ושלל
+  const afx=await page.evaluate(()=>{
+    enterWorld('home');const o={},n0=enemies.length,L=WORLD.foes[3],mk=id=>{const e=addEnemy('grunt',P.x+60,P.y,1);e.home=3;affixSet(e,id);return e};
+    const s=mk('split');damage(s,s.hp*10,'sword',0,'water');o.split=enemies.filter(e=>!e.dead&&e.split).length;
+    const b=mk('burst');P.inv=0;const h0=P.hp;damage(b,b.hp*10,'sword',0,'water');o.wait=(S.wd.blasts||[]).length;P.inv=0;affixUpdate(1);o.blast=Math.round(h0-P.hp);P.hp=P.maxHp;
+    const r=mk('regen');r.hp=r.max*0.5;affixUpdate(1);o.regen=r.hp>r.max*0.5;
+    const f=mk('fast');o.fast=f.speed>ETYPES.grunt.speed*1.5;o.name=T('af.fast');o.drops=drops().filter(d=>d.r==='coins').length;
+    enterVillage();return o});
+  check(afx.split===2&&afx.wait===1&&afx.blast>0&&afx.regen&&afx.fast&&afx.drops>0,'אויבים מיוחדים: מתפצל → '+afx.split+' קטנים, מתפוצץ: '+(afx.wait?'מחכה רגע':'מיד')+' ופגע '+afx.blast+', מתחדש '+(afx.regen?'מרפא':'לא מרפא')+', מהיר '+(afx.fast?'רץ מהר':'לא')+', שלל מטבעות '+afx.drops+' · "'+afx.name+'"');
   // נקודות דמות (stats.js): הריגה בעולם נותנת XP לדמות, רמה נותנת נקודה, נקודה מעלה נזק, נשמרת, ואיפוס אצל הכוהנת עולה מטבעות
   const stt=await page.evaluate(()=>{
     enterWorld('home');const o={};const xp0=SAVE.hero.xp||0,e={x:P.x+40,y:P.y,xp:3,type:'grunt',hp:0,r:10,mult:{}};
