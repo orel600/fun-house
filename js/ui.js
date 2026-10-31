@@ -13,6 +13,7 @@ const WINS=[
   {id:'npcDlg',close:()=>S.wd?wnpcTalk(null):npcTalk(null),outside:true},
   {id:'qLog',close:()=>questLogOpen(false),outside:true},
   {id:'bookWin',close:()=>bookOpen(false),outside:true},
+  {id:'wMap',close:()=>wmapOpen(false),outside:true},   // מפת העולם (worldmap.js)
   {id:'vPanel',close:()=>vShut()},
   {id:'wPanel',close:()=>wShut()},
 ];
