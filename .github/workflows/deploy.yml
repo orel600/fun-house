@@ -7,10 +7,10 @@ name: פרסום ל-Vercel
 # רק כשמשתנים קבצי המשחק: ב-Vercel החינמי יש 100 פרסומים ביום, ושינוי בתוכנית או ביומן לא צריך קישור חדש
 on:
   pull_request:
-    paths: [index.html, 'css/**', 'js/**', 'skins/**', 'sounds/**', .github/workflows/deploy.yml]
+    paths: [index.html, manifest.webmanifest, sw.js, 'css/**', 'js/**', 'icons/**', 'skins/**', 'sounds/**', .github/workflows/deploy.yml]
   push:
     branches: [main]
-    paths: [index.html, 'css/**', 'js/**', 'skins/**', 'sounds/**', .github/workflows/deploy.yml]
+    paths: [index.html, manifest.webmanifest, sw.js, 'css/**', 'js/**', 'icons/**', 'skins/**', 'sounds/**', .github/workflows/deploy.yml]
   workflow_dispatch:   # פרסום ידני, למשל אחרי שהמגבלה היומית נגמרה
 
 permissions:
@@ -50,7 +50,7 @@ jobs:
         run: |
           # רק מה שהמשחק צריך. התיקייה נקראת fun-house, וזה גם שם הפרויקט ב-Vercel
           site="$RUNNER_TEMP/fun-house"; mkdir -p "$site"
-          cp index.html "$site/"; cp -r css js "$site/"; for d in skins sounds; do [ -d "$d" ] && cp -r "$d" "$site/"; done; true
+          cp index.html manifest.webmanifest sw.js "$site/"; cp -r css js icons "$site/"; for d in skins sounds; do [ -d "$d" ] && cp -r "$d" "$site/"; done; true
           # מספר הגרסה: ראשי.שלב.עדכון.בנייה. בנייה = כמה שינויים ב-main. עדכון = כמה מהם מאז שהשלב התחיל (STAGE_FROM)
           eval "$(sed -n 's/^const MAJOR=\([0-9]*\), STAGE=\([0-9]*\), STAGE_FROM=\([0-9]*\);/major=\1 stage=\2 from=\3/p' js/version.js)"
           if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then n=$(git rev-list --count "origin/$GITHUB_BASE_REF"); else n=$(git rev-list --count HEAD); fi
