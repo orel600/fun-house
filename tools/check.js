@@ -161,15 +161,26 @@ function faceStep(m,L){
   if(R3D.on&&S.vil&&R3D.player){F.n3++;if(Math.abs(angDiff(R3D.player.root.rotation.y,yawOf(Math.cos(P.face),Math.sin(P.face))))>0.15)F.bad3++}
 }
 /* חיית המחמד (pet.js): כמה פעמים היא קרובה לשחקן, באילו מצבים נראתה, ושהחפירה מוציאה שלל לרצפה.
-   בעולם הפתוח היא חופרת מיד (בלי לחכות לזמן), ואחרי החפירה הראשונה מוסיפים לה XP בכוח, פעמיים, ובודקים שהיא עוברת את שני השלבים ונשמרת */
+   בעולם הפתוח היא חופרת מיד (בלי לחכות לזמן), ואחרי החפירה הראשונה מוסיפים לה XP בכוח, פעמיים, ובודקים שהיא עוברת את שני השלבים ונשמרת.
+   גזר: נותנים לבוט גזר, מקרבים אותה, ובודקים שהכפתור מופיע, שהלחיצה מורידה גזר, מוסיפה XP, מפעילה חיזוק ולבבות.
+   תקיפה: סופרים נשיכות, נזק וחזרות לשחקן, כמה רחוק היא הגיעה ממנו בזמן תקיפה, ושבעולם היא לא יצאה מהגבולות */
 function petBot(m,L){
-  const p=S.pet,Q=L.pet||(L.pet={n:0,near:0,st:{},digs:0,dug:[],drop:false,evo:null});if(!p||!petHere())return;
-  if(S.mode==='play'&&p.st!=='go'&&p.st!=='dig'&&p.st!=='jump'){Q.n++;if(Math.hypot(p.x-P.x,p.y-P.y)<200)Q.near++}
+  const p=S.pet,Q=L.pet||(L.pet={n:0,near:0,st:{},digs:0,dug:[],drop:false,evo:null,bites:0,dealt:0,ret:0,far:0,oob:0,feed:null});if(!p||!petHere())return;
+  if(S.mode==='play'&&!['go','dig','jump','hunt','back'].includes(p.st)){Q.n++;if(Math.hypot(p.x-P.x,p.y-P.y)<200)Q.near++}
   Q.st[p.st]=(Q.st[p.st]||0)+1;
   if(R3D.on&&R3D.pet){Q.r3=R3D.pet.root.visible;Q.clips=Object.values(DOG_ANIM).filter(c=>!R3D.clips[c]).join(',')||'ok'}
   if(S.wd&&!m.petDig&&S.mode==='play'){m.petDig=1;p.digT=0}
-  if(p!==m.petP){m.petP=p;m.petDigs0=Q.digs}
-  Q.digs=m.petDigs0+p.digs;if(p.dug.length)Q.dug=[...new Set([...Q.dug,...p.dug])];
+  if(p!==m.petP){m.petP=p;m.petDigs0=Q.digs;m.petB0=[Q.bites,Q.dealt,Q.ret]}
+  Q.digs=m.petDigs0+p.digs;Q.bites=m.petB0[0]+p.bitesAll;Q.dealt=m.petB0[1]+p.dealt;Q.ret=m.petB0[2]+p.returns;
+  Q.far=Math.max(Q.far,Math.round(p.far||0));
+  if(S.wd){const B=WORLD.size;if(Math.abs(p.x)>B.w/2||Math.abs(p.y)>B.h/2)Q.oob++}
+  // גזר: פעם אחת, במקום הראשון שהיא פנויה בו
+  if(S.mode==='play'&&!m.petFed){const b=document.getElementById('feedBtn');
+    if(!m.petCarrot){m.petCarrot=1;Q.leash=PET.attack.leash;bagAdd(PET.feed.res,1)}
+    if(b&&!b.hidden){const xp=SAVE.pet.xp,c=SAVE.bag[PET.feed.res]||0;b.click();m.petFed=1;
+      Q.feed={btn:true,xp:Math.round(SAVE.pet.xp-xp),ate:c-(SAVE.bag[PET.feed.res]||0),buff:SAVE.pet.buff,hearts:p.hearts.length,fed:SAVE.pet.fed,hide:b.hidden,
+        saved:JSON.parse(localStorage.getItem(SAVE_STORE.key)).pet.fed===SAVE.pet.fed}}
+    else if(!['hunt','back','go','dig'].includes(p.st)){p.x=P.x+30;p.y=P.y;p.feedCd=0;m.petTry=(m.petTry||0)+1}}if(p.dug.length)Q.dug=[...new Set([...Q.dug,...p.dug])];
   if((S.gd||[]).some(d=>d.pet))Q.drop=true;
   if(Q.digs&&!m.petEvo&&S.mode==='play'){   // XP בכוח: שלב 1 → 2 → 3
     const st=petKind().stages,a=SAVE.pet.stage;petXP(st[1].xp-SAVE.pet.xp);const b=SAVE.pet.stage;petXP(st[2].xp-SAVE.pet.xp);
@@ -498,6 +509,7 @@ function worldBot(m,L,god){
     const placed=new Set(Object.values(NODES.arenas).flatMap(a=>a.spawn.map(s=>s.kind)));
     for(const k in NODES.kinds)if(placed.has(k))add(src,NODES.kinds[k].drop,'node:'+k);
     for(const k in PET.kinds)PET.kinds[k].stages.forEach((s,i)=>add(src,s.dig.loot,'pet:'+k+(i+1)));   // החפירה של חיית המחמד (pet.js)
+    add(use,{[PET.feed.res]:1},'pet:feed');   // גזר: להאכיל את חיית המחמד (pet.js)
     AGING.cost.forEach(c=>add(use,c,'aging'));add(use,{[AGING.gem]:1},'aging:gem');
     for(const id in GEAR.recipes){if(!GEAR.items[id])bad.add(id+' (recipe)');add(use,GEAR.recipes[id],'craft:'+id)}
     const dead=[],few=[],out=[];
@@ -808,6 +820,9 @@ function worldBot(m,L,god){
   const pt=L.pet||{st:{}},pst=Object.entries(pt.st).map(([k,v])=>k+' '+v).join(', ');
   check(pt.n>20&&pt.near/pt.n>0.85,'חיית מחמד הולכת אחרי השחקן: קרובה אליו ב-'+Math.round(100*pt.near/(pt.n||1))+'% מהזמן · מצבים: '+(pst||'לא נראתה'));
   check(pt.digs>0&&pt.drop,'פיוחו חופרת: '+(pt.digs||0)+' חפירות, הוציאה '+(pt.dug.join(', ')||'כלום')+(pt.drop?', השלל נפל לרצפה':', שום שלל לא נפל לרצפה'));
+  const fd=pt.feed;
+  check(fd&&fd.btn&&fd.xp>0&&fd.ate===1&&fd.buff>0&&fd.hearts>0&&fd.hide&&fd.saved,'פיוחו אוכלת גזר: '+(fd?'הכפתור הופיע, אכלה '+fd.ate+', ‎+'+fd.xp+' XP, חיזוק '+Math.round(fd.buff)+' שניות, '+fd.hearts+' לבבות'+(fd.hide?'':', הכפתור לא נעלם')+(fd.saved?', נשמר':', לא נשמר'):'הכפתור לא הופיע'));
+  check(pt.bites>0&&pt.dealt>0&&pt.ret>0&&!pt.oob&&pt.far<=pt.leash*1.6,'פיוחו תוקפת: '+(pt.bites||0)+' נשיכות, '+Math.round(pt.dealt||0)+' נזק, חזרה לשחקן '+(pt.ret||0)+' פעמים, הכי רחוק ממנו '+(pt.far||0)+(pt.oob?' · יצאה מגבולות העולם '+pt.oob+' פעמים':''));
   check(pt.evo==='1→2→3'&&pt.evoSaved&&pt.evoFx&&pt.fxOk,'פיוחו מתפתחת: '+(pt.evo||'לא נבדק')+(pt.evoSaved?', נשמר':', לא נשמר')+(pt.evoFx?', עם חגיגה':', בלי חגיגה')+(pt.fxOk?'':', להבה בשלב 3 לא מצאה את הזנב'));
   if(CFG.gfx==='3d')check(pt.r3&&pt.clips==='ok','פיוחו בתלת-ממד: '+(pt.r3?'נראית':'לא נראתה')+(pt.clips==='ok'?', כל 7 האנימציות נטענו':', חסרות: '+pt.clips));
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');

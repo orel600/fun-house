@@ -11,7 +11,7 @@ const NODES={
   kinds:{
     tree:   {tags:['plant'],hp:40, r:28,shape:'tree',col:'#3E7A4A',drop:{wood:[1,4],resin:[0.3,1],herb:[0.15,1]},guard:{type:'treant',chance:0.25,n:1}},
     rock:   {tags:['stone'],hp:55, r:24,shape:'rock',col:'#7A8094',drop:{stone:[1,3],mushroom:[0.1,1],amberC:[0.03,1]},guard:{type:'golem',chance:0.3,n:1}},
-    bush:   {tags:['plant'],hp:25, r:21,shape:'bush',col:'#5FA35A',drop:{herb:[1,2],mushroom:[0.35,1],flower:[0.25,1]},guard:{type:'sprite',chance:0.35,n:2}},
+    bush:   {tags:['plant'],hp:25, r:21,shape:'bush',col:'#5FA35A',drop:{herb:[1,2],mushroom:[0.35,1],flower:[0.25,1],carrot:[0.4,1]},guard:{type:'sprite',chance:0.35,n:2}},
     copper: {tags:['metal'],hp:70, r:24,shape:'vein',col:'#C87533',drop:{copper:[1,2],stone:[0.5,1],rubyC:[0.04,1]},guard:{type:'crawler',chance:0.3,n:1}},
     iron:   {tags:['metal'],hp:100,r:24,shape:'vein',col:'#9AA3AD',drop:{iron:[1,2],boltC:[0.04,1]},guard:{type:'crawler',chance:0.3,n:1}},
     silver: {tags:['metal'],hp:140,r:25,shape:'vein',col:'#DCE3EA',drop:{silver:[1,2],sapphireC:[0.05,1]},guard:{type:'crawler',chance:0.35,n:2}},

@@ -23,6 +23,7 @@ const RES={
     herb:    {fam:'build',icon:'🌿',rar:0,sell:1,buy:4},
     mushroom:{fam:'build',icon:'🍄',rar:1,sell:3,buy:9},
     flower:  {fam:'build',icon:'🌸',rar:1,sell:3,buy:9},
+    carrot:  {fam:'build',icon:'🥕',rar:0,sell:1,buy:4},   // אוכל לחיית המחמד (PET.feed ב-pet.js). משיחים, ופיוחו חופרת אותו
     // מתכות, מהחלשה לחזקה. ככל שהמקום רחוק וקשה יותר, המתכת טובה יותר.
     // האייקון הוא גוש בצבע המתכת, לא כלי (ניר: "המשאב שנראה כמו PICK AXE לא ברור"). האבנים בצורות אחרות, כדי שלא יתבלבלו
     copper:  {fam:'metal',icon:'🟤',rar:0,sell:2,buy:6},
@@ -97,6 +98,8 @@ function resWhere(r){
   for(const k in VILLAGE.b){const B=VILLAGE.b[k];if(B.make&&B.make[r]&&B.make[r].some(n=>n>0))src.add(T('vil.'+k));if(B.cost.some(has))use.add(T('vil.'+k))}
   if(Object.values(GEAR.recipes).some(has))use.add(T('tip.craft'));
   if(AGING.cost.some(has)||AGING.gem===r)use.add(T('tip.aging'));
+  for(const k in PET.kinds)if(PET.kinds[k].stages.some(s=>has(s.dig.loot)))src.add(T('pet.name.'+k));   // חפירה של חיית המחמד
+  if(PET.feed.res===r)use.add(T('tip.pet'));
   if(RES.list[r].sell)use.add(T('vil.market'));
   return{src:[...src],use:[...use]};
 }

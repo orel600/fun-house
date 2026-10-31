@@ -4,7 +4,10 @@
    דרגות, עמודי אור, חגיגה לנדיר ומזל עם הגנה. השלל נופל לרצפה (drops.js) ונאסף כרגיל.
    שלב 3 (אגדית) מקבל אפקטים חיים, מצוירים בקנבס כדי שיהיו זולים בטלפון: הסימנים על הגוף פועמים, להבה בקצה הזנב, ולהבונים ליד הכפות.
    כל חיה היא שורה ב-PET.kinds. חיה של אוראל = שורה חדשה (ומודל ב-LOOK3D, render3d.js), בלי לגעת בלוגיקה.
-   מה נשמר: איזו חיה, שלב ו-XP, ב-SAVE.pet דרך save.js. המצב הרגעי (איפה היא, מה היא עושה) ב-S.pet, וחדש בכל מקום.
+   גזר (ניר, 31.10.2026): כשעומדים לידה ויש גזר בתרמיל, מופיע כפתור "תן גזר". היא קופצת משמחה, לבבות, XP, וחיזוק לדקה (PET.feed).
+   תקיפה (ניר, 31.10.2026): רצה לאויב הכי קרוב שליד השחקן, נושכת כמה פעמים דרך damage() הרגיל (נזק פיזי, אז חולשות וקומבו עובדים),
+   וחוזרת. לא מתרחקת מהשחקן יותר מהרצועה (PET.attack.leash), לא יוצאת מגבולות העולם, ולא יכולה למות. בשלב 3 הנשיכה גם שורפת.
+   מה נשמר: איזו חיה, שלב ו-XP, כמה גזרים אכלה והחיזוק, ב-SAVE.pet דרך save.js. המצב הרגעי (איפה היא, מה היא עושה) ב-S.pet, וחדש בכל מקום.
    השמות והטקסטים ב-lang.js תחת 'pet.'. המראה בתלת-ממד: LOOK3D.pet_<חיה><שלב> ו-syncPet ב-render3d.js */
 
 const PET={
@@ -14,11 +17,11 @@ const PET={
       owner:'nir',                           // של מי היא. היום רק לתיעוד: השמירה היא בטלפון של מי שמשחק
       col:'#F2D3A0',                         // צבע הנקודה בדו-ממד ובמפה (חול)
       /* השלבים: מאיזה XP מגיעים אליו, גודל על המסך (h בפיקסלים), וכל כמה שניות היא חופרת (every).
-         loot: {משאב:[סיכוי, כמה]}, כמו טבלאות השלל של האויבים (data.js). כל שורה מוגרלת לבד. לא יצא כלום: miss */
+         bite: כמה נזק בכל נשיכה (פיזי, לפני חולשות). loot: {משאב:[סיכוי, כמה]}, כמו טבלאות השלל של האויבים (data.js). כל שורה מוגרלת לבד. לא יצא כלום: miss */
       stages:[
-        {xp:0,   h:36, dig:{every:26,loot:{stone:[0.55,1],wood:[0.45,1],herb:[0.4,1],copper:[0.25,1],rubyC:[0.05,1],amberC:[0.05,1]}}},
-        {xp:240, h:46, dig:{every:20,loot:{stone:[0.5,2],copper:[0.45,1],iron:[0.25,1],mushroom:[0.3,1],rubyC:[0.12,1],sapphireC:[0.12,1],ruby:[0.03,1]}}},
-        {xp:900, h:54, dig:{every:15,loot:{coins:[0.6,8],iron:[0.45,2],silver:[0.25,1],gold:[0.08,1],ruby:[0.1,1],sapphire:[0.1,1],amber:[0.08,1],star:[0.015,1]}},fx:true}   // fx: הלהבות והזוהר
+        {xp:0,   h:36, bite:5,  dig:{every:26,loot:{stone:[0.55,1],wood:[0.45,1],herb:[0.4,1],carrot:[0.3,1],copper:[0.25,1],rubyC:[0.05,1],amberC:[0.05,1]}}},
+        {xp:240, h:46, bite:9,  dig:{every:20,loot:{stone:[0.5,2],copper:[0.45,1],iron:[0.25,1],carrot:[0.25,1],mushroom:[0.3,1],rubyC:[0.12,1],sapphireC:[0.12,1],ruby:[0.03,1]}}},
+        {xp:900, h:54, bite:15, dig:{every:15,loot:{coins:[0.6,8],iron:[0.45,2],silver:[0.25,1],gold:[0.08,1],ruby:[0.1,1],sapphire:[0.1,1],amber:[0.08,1],star:[0.015,1]}},fx:true}   // fx: הלהבות והזוהר
       ]
     }
   },
@@ -28,7 +31,13 @@ const PET={
   follow:{trail:46,side:26,walk:150,run:330,runFrom:170,jump:700,sitAfter:1.4},
   // החפירה: arena: כמה פחות בזירה (פי כמה זמן בין חפירות), spot: כמה רחוק מהשחקן היא רצה לחפור, dur: כמה שניות חופרת
   dig:{arena:2.2,spot:[70,150],dur:1.7,miss:{stone:1},sand:'#D9B87A',grains:5},   // miss: מה יוצא כשההגרלה לא הוציאה כלום
-  bark:{range:90,cd:2.5},                    // מתלהבת מאויב קרוב: אנימציית תקיפה (רק מראה, בלי נזק)
+  /* גזר: res המשאב, near: מאיזה מרחק מופיע הכפתור, xp: כמה XP לחיה, buff: כמה שניות החיזוק, dig: פי כמה מהר חופרת, bite: פי כמה חזק נושכת,
+     hearts: כמה לבבות עפים, cd: כמה שניות בין שני גזרים */
+  feed:{res:'carrot',near:120,xp:40,buff:60,dig:2,bite:1.5,hearts:9,cd:1,heart:'#FF6B8A'},
+  /* תקיפה: leash: רק אויב שקרוב לשחקן עד כאן, ואם השחקן התרחק יותר מפי 1.4 ממנו היא חוזרת. reach: כמה קרוב לאויב כדי לנשוך.
+     speed: מהירות ריצה. gap: שניות בין נשיכות. bites: כמה נשיכות ואז חוזרת. rest: שניות מנוחה ליד השחקן לפני ההתקפה הבאה.
+     fire: בשלב 3, איזה חלק מהנשיכה מגיע גם כאש (שורף). home: מאיזה מרחק מהשחקן היא "חזרה" */
+  attack:{leash:240,reach:12,speed:400,gap:0.5,bites:3,rest:2.2,fire:0.4,home:70},
   fx:{pulse:1.8,ember:'#FF8A3D',core:'#FFE08A'}   // שלב 3: קצב הפעימה וצבעי הלהבה
 };
 
@@ -50,11 +59,11 @@ function petXP(n){
 function petMake(){
   const f=PET.follow,b=P.face+Math.PI;
   return S.pet={x:P.x+Math.cos(b)*f.trail,y:P.y+Math.sin(b)*f.trail,face:P.face,st:'idle',t:0,still:0,digT:petStage().dig.every*0.5,
-    spot:null,sand:[],bark:0,kills:S.kills||0,fxT:0,digs:0,dug:[]}}
+    spot:null,sand:[],hearts:[],kills:S.kills||0,fxT:0,digs:0,dug:[],atkCd:PET.attack.rest,foe:null,bites:0,bitesAll:0,dealt:0,returns:0,feedCd:0}}
 
 /* ---- כל פריים, בכל מקום (main.js) ---- */
 function petUpdate(dt){
-  if(!petHere()){return}
+  if(!petHere()){petFeedBtn(null);return}
   const p=S.pet||petMake(),f=PET.follow,stg=petStage();
   p.t+=dt;p.fxT+=dt;
   // XP: זמן משותף מחוץ לכפר, ואויבים שנפלו
@@ -62,11 +71,16 @@ function petUpdate(dt){
   if((S.kills||0)>p.kills){petXP(PET.xp.kill*(S.kills-p.kills));p.kills=S.kills}
   for(const g of p.sand){g.x+=g.vx*dt;g.y+=g.vy*dt;g.vy+=500*dt;g.life-=dt}
   p.sand=p.sand.filter(g=>g.life>0);
-  if(S.mode!=='play')return;
+  for(const g of p.hearts){g.x+=g.vx*dt;g.y+=g.vy*dt;g.vy+=40*dt;g.life-=dt}
+  p.hearts=p.hearts.filter(g=>g.life>0);
+  if(S.mode!=='play'){petFeedBtn(null);return}
+  const sv=SAVE.pet;if(sv.buff>0)sv.buff=Math.max(0,sv.buff-dt);p.feedCd-=dt;
   const dP=Math.hypot(P.x-p.x,P.y-p.y);
-  if(dP>f.jump){Object.assign(p,petMake(),{digs:p.digs,dug:p.dug,sand:p.sand});return}   // רחוק מדי (שער, מעבר מקום): מופיעה לידו
+  petFeedBtn(p,dP);
+  if(dP>f.jump){Object.assign(p,petMake(),{digs:p.digs,dug:p.dug,sand:p.sand,hearts:p.hearts,bitesAll:p.bitesAll,dealt:p.dealt,returns:p.returns});return}   // רחוק מדי (שער, מעבר מקום): מופיעה לידו
   // חפירה: בעולם, ובזירה לעתים רחוקות יותר. לא בכפר
-  if(!S.vil&&p.st!=='dig'&&p.st!=='go'&&p.st!=='jump'){p.digT-=dt/(S.wd?1:PET.dig.arena);if(p.digT<=0)petDigStart(p)}
+  if(p.st==='hunt'||p.st==='back'){petHunt(p,dt,dP);return}   // תקיפה: רצה לאויב ונושכת, או חוזרת לשחקן
+  if(!S.vil&&p.st!=='dig'&&p.st!=='go'&&p.st!=='jump'){p.digT-=dt*(sv.buff>0?PET.feed.dig:1)/(S.wd?1:PET.dig.arena);if(p.digT<=0)petDigStart(p)}
   if(p.st==='jump'){if(p.t>0.9){p.st='idle';p.t=0}return}
   if(p.st==='go'){const s=p.spot,dx=s.x-p.x,dy=s.y-p.y,d=Math.hypot(dx,dy);
     if(d<8||dP>f.run*1.6){if(d<8){p.st='dig';p.t=0}else{p.st='follow';p.spot=null}}   // השחקן התרחק מאוד: עוזבת ורצה אחריו
@@ -82,9 +96,53 @@ function petUpdate(dt){
   p.still=P.moving?0:p.still+dt;
   if(d>10){const sp=Math.min(d/dt,dP>f.runFrom?f.run:Math.max(f.walk,P.moving?P.speed:0));p.x+=dx/d*sp*dt;p.y+=dy/d*sp*dt;p.face=Math.atan2(dy,dx);p.run=sp>f.walk*1.2;p.st='follow'}
   else{p.run=false;p.st=p.still>f.sitAfter?'sit':'idle';if(!P.moving)p.face+=angDiff(Math.atan2(P.y-p.y,P.x-p.x),p.face)*Math.min(1,dt*3)}
-  // אויב קרוב: נובחת וקופצת עליו (רק מראה)
-  p.bark-=dt;if(p.bark<=0&&!S.vil){const e=enemies.find(e=>!e.dead&&Math.hypot(e.x-p.x,e.y-p.y)<PET.bark.range);if(e){p.bark=PET.bark.cd;p.barkAt=p.t;p.face=Math.atan2(e.y-p.y,e.x-p.x)}}
+  // אויב ליד השחקן: יוצאת לתקוף
+  p.atkCd-=dt;if(p.atkCd<=0&&!S.vil){const e=petFoe();if(e){p.st='hunt';p.foe=e;p.bites=0;p.biteT=0;p.t=0}}
 }
+/* ---- תקיפה ---- */
+// האויב הכי קרוב לשחקן בתוך הרצועה (לא מקורות משאבים, לא מת)
+function petFoe(){
+  let b=null,bd=PET.attack.leash;
+  for(const e of enemies){if(e.dead||e.node)continue;const d=Math.hypot(e.x-P.x,e.y-P.y);if(d<bd){bd=d;b=e}}
+  return b}
+function petHunt(p,dt,dP){
+  const A=PET.attack;
+  if(p.st==='hunt'){const e=p.foe;
+    if(!e||e.dead||p.bites>=A.bites||Math.hypot(e.x-P.x,e.y-P.y)>A.leash*1.25||dP>A.leash*1.4){p.st='back';p.foe=null;p.atkCd=A.rest;return}
+    const dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy)||1,gap=d-e.r-A.reach;p.face=Math.atan2(dy,dx);
+    if(gap>0){const sp=Math.min(gap/dt+1,A.speed);p.x+=dx/d*sp*dt;p.y+=dy/d*sp*dt;p.run=true}
+    else{p.run=false;p.biteT-=dt;if(p.biteT<=0){p.biteT=A.gap;petBite(p,e)}}
+    p.far=Math.max(p.far||0,Math.hypot(P.x-p.x,P.y-p.y))}   // far: הכי רחוק מהשחקן בזמן תקיפה (לבדיקה)
+  else{const dx=P.x-p.x,dy=P.y-p.y,d=Math.hypot(dx,dy)||1;
+    if(d<A.home){p.st='follow';p.run=false;p.returns++;return}
+    const sp=Math.min(d/dt,A.speed);p.x+=dx/d*sp*dt;p.y+=dy/d*sp*dt;p.face=Math.atan2(dy,dx);p.run=true}
+  if(S.wd){const B=WORLD.size,mx=B.w/2-20,my=B.h/2-20;p.x=Math.max(-mx,Math.min(mx,p.x));p.y=Math.max(-my,Math.min(my,p.y))}   // לא יוצאת מגבולות העולם
+}
+// נשיכה: דרך damage() הרגיל של השחקן, כך שחולשות, קומבו והבוס שלומד רואים אותה. בשלב 3 גם קצת אש, כמו הלהבות שלה
+function petBite(p,e){
+  const st=petStage(),n=st.bite*(SAVE.pet.buff>0?PET.feed.bite:1),h0=e.hp;
+  p.barkAt=p.t;p.bites++;p.bitesAll++;
+  damage(e,n,'pet',p.face,'physical');
+  if(st.fx&&!e.dead)damage(e,n*PET.attack.fire,'pet',p.face,'fire',true);
+  p.dealt+=Math.max(0,h0-Math.max(0,e.hp));
+}
+/* ---- גזר ---- */
+// הכפתור מופיע כשהיא קרובה, פנויה, ויש גזר בתרמיל. p=null: מסתירים
+function petFeedBtn(p,dP){
+  const b=$('feedBtn');if(!b)return;
+  const show=!!p&&dP<PET.feed.near&&p.st!=='hunt'&&p.st!=='back'&&p.st!=='go'&&p.feedCd<=0&&bagHas(PET.feed.res);
+  if(b.hidden===show){b.hidden=!show;if(show)b.textContent=T('pet.feed',T('pet.name.'+(SAVE.pet.kind||PET.default)))}
+}
+function petFeed(){
+  const p=S.pet,F=PET.feed;if(!p||!petHere()||S.mode!=='play'||p.feedCd>0||!bagTake(F.res))return false;
+  const sv=SAVE.pet;sv.fed=(sv.fed||0)+1;sv.buff=F.buff;p.feedCd=F.cd;
+  p.st='jump';p.t=0;p.spot=null;p.face=Math.atan2(P.y-p.y,P.x-p.x);
+  for(let i=0;i<F.hearts;i++)p.hearts.push({x:p.x+rand(-12,12),y:p.y-petStage().h*0.8,vx:rand(-40,40),vy:-rand(50,110),life:rand(0.9,1.5),s:rand(4,7)});
+  floatText(p.x,p.y-petStage().h-14,T('pet.yum'),F.heart,15);sfx('xp');
+  if(typeof questEvent==='function')questEvent('pet','feed',1);
+  petXP(F.xp);saveNow();$('feedBtn').hidden=true;
+  return true}
+$('feedBtn').addEventListener('click',petFeed);
 // רצה לנקודה ליד השחקן, לא בתוך עץ, סלע או תיבה (nodes.js), ובעולם לא מחוץ לגבולות
 function petDigStart(p){
   p.digT=petStage().dig.every;
@@ -124,6 +182,10 @@ function drawPet(){
   ctx.fillStyle=PET.dig.sand;for(const g of p.sand){ctx.globalAlpha=Math.min(1,g.life*3);ctx.fillRect(g.x-1.5,g.y-1.5,3,3)}ctx.globalAlpha=1;
   if(p.st==='dig'){ctx.fillStyle='rgba(120,90,50,0.45)';ctx.beginPath();ctx.ellipse(p.x+Math.cos(p.face)*12,p.y+Math.sin(p.face)*12+2,10,4,0,0,7);ctx.fill()}
   if(stg.fx)petFlames(p,h);
+  // לבבות מהגזר
+  ctx.fillStyle=PET.feed.heart;for(const g of p.hearts){ctx.globalAlpha=Math.min(1,g.life*2);const r=g.s;
+    ctx.beginPath();ctx.moveTo(g.x,g.y+r);ctx.bezierCurveTo(g.x-r*1.6,g.y-r*0.2,g.x-r*0.6,g.y-r*1.4,g.x,g.y-r*0.5);ctx.bezierCurveTo(g.x+r*0.6,g.y-r*1.4,g.x+r*1.6,g.y-r*0.2,g.x,g.y+r);ctx.fill()}
+  ctx.globalAlpha=1;
 }
 // שלב 3: להבה בקצה הזנב (מהעצם בתלת-ממד), ולהבונים ליד ארבע הכפות. עיגולים בחיבור אור, בלי תמונות
 function petFlames(p,h){
