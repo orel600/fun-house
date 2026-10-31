@@ -159,7 +159,7 @@ const wGateCol=k=>k==='home'?C.chalk:wIsPath(k)?C.tide:C.lilac;
 let wRet=null;   // השער שממנו נכנסו לזירה: בסוף הריצה חוזרים אליו (againBtn ב-input.js)
 
 /* ---- מעבר בין מקומות ---- */
-function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden=!on;$('chTag').hidden=!on;if(!on){$('wPanel').hidden=true;wnpcOff()}}   // wnpcOff: הדמויות בעולם (worldnpc.js)
+function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden=!on;$('chTag').hidden=!on;if(!on){$('wPanel').hidden=true;wnpcOff();fishOff()}}   // wnpcOff: הדמויות בעולם (worldnpc.js)   // fishOff: הדיג (fishing.js)
 // at: 'home' (מהכפר, או מהאזור הקודם), id של שער (חזרה מהזירה) או של דרך (חזרה מאזור אחר). reg: איזה אזור, ברירת המחדל האחו
 function enterWorld(at,reg){
   wRet=null;reset();S.mode='play';
@@ -173,6 +173,7 @@ function enterWorld(at,reg){
   R.foes.forEach((G,i)=>wSpawn(G,i));
   banner(at==='home'?T(R.enter||'w.enter'):wGateName(at),C.gold);
   worldUi(true);
+  fishMealOn();   // ארוחה מהפונדקאית: חיזוק בעולם (fishing.js)
   challengeEnter();   // אתגר יומי (challenge.js)
   if(reg!=='meadow')questEvent('story',reg);   // קווסט עלילה "להגיע לאגם" (quests.js)
 }
@@ -266,6 +267,7 @@ function worldUpdate(dt){
   w.near=null;const gs=wGates();for(const k in gs){const g=gs[k];if(Math.hypot(P.x-g.x,P.y-g.y)<g.r+P.r+WORLD.near)w.near=k}
   worldHud();
   wnpcUpdate(dt);   // דמויות שמגלים בעולם, וכפתור "לדבר" (worldnpc.js)
+  fishUpdate(dt);   // דיג ליד מים, וכפתור "לדוג" (fishing.js)
 }
 
 /* ---- מוות בעולם: חצי מכל משאב בתרמיל הולך, הפריטים והמחסן נשארים. נקרא מ-gameOver ---- */
@@ -340,6 +342,7 @@ function drawWorld(){
     if(n.hp<n.max){const bw=r*2;ctx.fillStyle='rgba(5,7,13,0.6)';ctx.fillRect(x-bw/2,y-r*2.2,bw,4);ctx.fillStyle=C.gold;ctx.fillRect(x-bw/2,y-r*2.2,bw*Math.max(0,n.hp/n.max),4)}
   }
   drawWnpcs();   // worldnpc.js
+  fishDraw();   // החכה והמצוף (fishing.js)
   storyDraw();   // הפנס והשומר (story.js)
   affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
   eventsDraw();   // אירועים (events.js)
@@ -428,6 +431,7 @@ function drawWorldScreen(ox,oy){
     ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(x-tw/2,y-11,tw,22,11);ctx.fill();ctx.fillStyle=col;ctx.fillText(txt,x,y+5);
     edgeArrow(g.x+ox,g.y+oy,col)}
   drawWnpcScreen(ox,oy);   // worldnpc.js
+  fishScreen(ox,oy);   // "!" והפס של הדיג (fishing.js)
   storyScreen(ox,oy);   // story.js
   affixScreen(ox,oy);   // affix.js
   eventsScreen(ox,oy);   // events.js
