@@ -166,7 +166,7 @@ function render(){
     else drawEnemy(a)}
   drawAgeFx();   // זוהר, שובל וחלקיקים על נשק משודרג (aging.js)
   drawSkills(ox,oy);   // טבעות וברקים של סקילים, וסימני רטוב/קפוא/הלם (skills.js)
-  drawOrbits();   // החפצים המסתובבים (orbit.js)
+  drawOrbits();drawDivine();   // החפצים המסתובבים (orbit.js)
   // חצים: מוט, נוצות וחוד. קסם: כדור זוהר עם שובל (weapons.js)
   const sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r,fl=fluteOn();ctx.lineWidth=2;
   for(const b of pb){
@@ -226,7 +226,7 @@ function hud(){
   const nx=nextStation(),key=LANG+'|'+fmt(S.t)+'|'+P.level+'|'+(S.boss?1:S.run.won?2:nx.kind+fmt(nx.t-S.t));
   if(key!==lastHud){lastHud=key;$('clock').textContent=fmt(S.t);$('lvl').textContent=T('level',P.level);
     $('bossin').textContent=S.boss?T('bossHere'):S.run.won?T('bossBeaten'):T(nx.kind==='boss'?'bossIn':'next.'+nx.kind,fmt(nx.t-S.t))}
-  drawRunBar();skillsHud();
+  drawRunBar();skillsHud();divineHud();
   const bb=$('bossbar');
   if(S.boss){bb.hidden=false;$('bossnm').textContent=S.boss.name+' · '+S.boss.title;
     const wk=$('bossweak');if(wk.dataset.k!==LANG+S.boss.weak){wk.dataset.k=LANG+S.boss.weak;wk.innerHTML=dtSvg(S.boss.weak)+T('weakTo',T('dt.'+S.boss.weak));wk.style.color=dtCol(S.boss.weak)}

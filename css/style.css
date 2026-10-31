@@ -70,7 +70,17 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
   background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
 .skb.ready{box-shadow:0 0 12px var(--dt)}
 .skb:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
-.vil .skills{display:none}
+/* ברק אלוהי (js/divine.js): מעל כפתורי הסקילים */
+.divine{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 124px);right:calc(env(safe-area-inset-right,0px) + 28px);
+  width:60px;height:60px;border-radius:50%;border:3px solid var(--gold);background:rgba(18,22,36,.8);display:grid;place-items:center;padding:0;
+  touch-action:none;cursor:pointer;overflow:hidden;--dt:#D46BFF}
+.divine[hidden]{display:none}
+.swap:not([hidden])~.divine{bottom:calc(env(safe-area-inset-bottom,0px) + 228px)}
+.divine .dti{width:30px;height:30px}
+.divine i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
+.divine.ready{box-shadow:0 0 12px var(--gold)}
+.divine:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
+.vil .skills,.vil .divine{display:none}
 .banner{position:fixed;z-index:3;left:0;right:0;top:32%;text-align:center;font-family:var(--display);font-size:28px;
   pointer-events:none;opacity:0;transition:opacity .25s;padding-inline:16px;text-shadow:0 2px 0 #0008}
 .banner.on{opacity:1}
