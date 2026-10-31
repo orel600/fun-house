@@ -29,6 +29,15 @@ const GEAR={
     swiftBoots: {slot:'boots',tier:2,type:'boots',icon:'👢',stats:{speed:8}},
     goldAmulet: {slot:'acc',tier:3,icon:'📿',stats:{hp:30,magnet:30},look:{glow:C.gold}},
     crown:      {slot:'acc',tier:4,icon:'👑',stats:{hp:40,sdmg:15,gdmg:15},look:{glow:'#FF6FB5'}},
+    // סטים (sets.js): שניים או ארבעה חלקים מאותו סט נותנים בונוס. השומר האבן: מקרוב ועמיד. צייד הסערה: מרחוק ומהיר
+    wardenHammer:{slot:'weapon',tier:1,w:'hammer',set:'warden',icon:'🔨',stats:{sdmg:22},look:{model:'w_hammer_B'}},
+    wardenRing: {slot:'acc',tier:1,set:'warden',icon:'💍',stats:{hp:15}},
+    wardenCharm:{slot:'acc',tier:1,set:'warden',icon:'🪨',stats:{hp:10,regen:0.3}},
+    wardenBoots:{slot:'boots',tier:1,type:'boots',set:'warden',icon:'🥾',stats:{speed:5,hp:10}},
+    stormBow:   {slot:'weapon',tier:2,w:'bow',set:'storm',icon:'🏹',stats:{gdmg:35},look:{model:'w_bow_B_withString',glow:'#C7A6FF'}},
+    stormRing:  {slot:'acc',tier:2,set:'storm',icon:'💍',stats:{gdmg:8}},
+    stormFeather:{slot:'acc',tier:2,set:'storm',icon:'🪶',stats:{speed:4,magnet:15}},
+    stormBoots: {slot:'boots',tier:2,type:'boots',set:'storm',icon:'👢',stats:{speed:10}},
     emberOrb:   {slot:'orbit',tier:0,type:'attack'},
     stoneOrb:   {slot:'orbit',tier:0,type:'defense'},
     frostOrb:   {slot:'orbit',tier:0,type:'control'},
@@ -50,6 +59,15 @@ const GEAR={
     goldBow:    {gold:6,silver:4,venom:8,bolt:1,coins:160},
     goldAmulet: {gold:8,essence:10,shadow:2,venom:4,aqua:1,horn:1,coins:160},
     crown:      {mythril:6,gold:6,horn:3,star:1,shadow:4,amberF:1,coins:300},
+    // סטים: השומר מאבן, ברזל וקליפות (מהמחצבה), הצייד מכסף, נוצות ותמצית, עם רסיס ברק
+    wardenHammer:{iron:10,stone:16,plate:4,amberC:1,coins:50},
+    wardenRing: {iron:6,stone:10,plate:2,coins:40},
+    wardenCharm:{iron:4,stone:14,plate:3,essence:2,coins:40},
+    wardenBoots:{iron:4,stone:8,hide:6,coins:40},
+    stormBow:   {silver:6,wood:10,essence:6,bolt:1,coins:100},
+    stormRing:  {silver:5,essence:5,boltC:1,coins:80},
+    stormFeather:{silver:3,cloth:6,dust:6,essence:3,coins:80},
+    stormBoots: {silver:4,hide:8,dust:4,coins:80},
     // חפצים מסתובבים: עשבים, אבק וקליפות, ואבן שבורה לפי הסוג
     emberOrb:   {wood:6,dust:4,rubyC:1,coins:20},
     stoneOrb:   {wood:6,stone:10,plate:3,amberC:1,coins:20},
@@ -77,7 +95,7 @@ function gStats(id){const s=(gItem(id)||{}).stats||{},k=ageMult(gPlus(id)),o={};
 const gTint=id=>(gItem(id).look||{}).tint||GEAR.tiers[gItem(id).tier].col;
 const gIcon=id=>{const it=gItem(id);return it.icon||GEAR.orbit[it.type]};
 /* תמונה לפריט בממשק (HTML), מ-Creative Claw (icons/ui/gear, נחתך עם tools/slice-icons.py). בלי תמונה: האימוג'י. על הקנבס תמיד האימוג'י (gIcon) */
-const GEAR_PIC={oakSword:1,ironSword:1,silverBlade:1,oakBow:1,ironBow:1,goldBow:1,oakStaff:1,boneCharm:1,ironRing:1,starterBoots:1,swiftBoots:1,goldAmulet:1,crown:1};
+const GEAR_PIC={oakSword:1,ironSword:1,silverBlade:1,oakBow:1,ironBow:1,goldBow:1,oakStaff:1,boneCharm:1,ironRing:1,starterBoots:1,swiftBoots:1,goldAmulet:1,crown:1,wardenHammer:1,wardenRing:1,wardenCharm:1,wardenBoots:1,stormBow:1,stormRing:1,stormFeather:1,stormBoots:1};
 const gPic=id=>GEAR_PIC[gBase(id)]?'<img class="ri" src="icons/ui/gear/'+gBase(id)+'.png" alt="">':gIcon(id);
 // כמה הפריט שווה, כדי לדעת אם החלפה היא שיפור. חומר טוב יותר שובר שוויון
 function gScore(id){const it=gItem(id);if(!it)return 0;let n=it.tier*0.01;const s=gStats(id);for(const k in s)n+=s[k]*GEAR.stats[k].w;return n}
@@ -94,7 +112,8 @@ function gTarget(it){
 }
 // כל מה שלבוש עכשיו, בלי משבצות נעולות
 function gearWorn(){const out=[];for(const s of ['weapon','acc','boots','orbit'])for(let i=0;i<gOpen(s);i++){const id=gGet(s,i);if(gItem(id))out.push(id)}return out}
-function gearStats(ids=gearWorn()){const t={};for(const id of ids){const s=gStats(id);for(const k in s)t[k]=(t[k]||0)+s[k]}return t}
+// כולל את הבונוס של סטים (sets.js), כדי שכל מי שמלביש ומוריד ציוד יקבל גם אותו
+function gearStats(ids=gearWorn()){const t={};for(const id of ids){const s=gStats(id);for(const k in s)t[k]=(t[k]||0)+s[k]}const b=setStats(ids);for(const k in b)t[k]=(t[k]||0)+b[k];return t}
 
 /* ---- ללבוש ולהוריד: מהתרמיל למשבצת ובחזרה. מה שהיה במשבצת חוזר לתרמיל ---- */
 // i: לאיזו משבצת (בגרירה). בלי i: המשבצת שמתאימה הכי (gTarget). משבצת מסוג אחר או נעולה: לא לובשים
@@ -245,7 +264,7 @@ function gDetailHtml(){
   let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
     '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
   if(it&&gPlus(k))d+='<p class="gage">'+T('gear.aged',gPlus(k))+'</p>';
-  if(it)d+=gStatsHtml(k);
+  if(it)d+=gStatsHtml(k)+setHtml(k);   // סט: מה הוא נותן וכמה חלקים לבושים (sets.js)
   else{const w=resWhere(k),cut=a=>a.slice(0,RES.tip.max).join(', ')+(a.length>RES.tip.max?'…':'');   // משאב: מאיפה ובשביל מה (resources.js)
     if(w.src.length)d+='<p class="dim">'+T('tip.from',cut(w.src))+'</p>';if(w.use.length)d+='<p class="dim">'+T('tip.for',cut(w.use))+'</p>'}
   const btn=(act,txt,ghost)=>'<button class="vbtn'+(ghost?' ghost':'')+'" data-act="'+act+'">'+txt+'</button>';
@@ -261,9 +280,10 @@ function gDetailHtml(){
 /* ---- פעולות: הגרירה והכפתורים עוברים שניהם דרך כאן ---- */
 // לובשים, ואם זה שיפור: חגיגה על הדמות (עם הצליל שלה) והמשבצת קופצת
 function gDoEquip(id,slot,i){
-  const before=gearStats(),r=gearEquip(id,slot,i);if(!r)return null;
+  const before=gearStats(),worn=gearWorn(),r=gearEquip(id,slot,i);if(!r)return null;
   gearLive(before,id);GUI.sel={slot:r.slot,i:r.i};
-  if(r.better){celebrate(P.x,P.y-20,'gear',gIcon(gGet(r.slot,r.i)));GUI.pop=r}else sfx('tap');
+  if(setCheck(worn))GUI.pop=r;   // מדרגה חדשה של סט (sets.js)
+  else if(r.better){celebrate(P.x,P.y-20,'gear',gIcon(gGet(r.slot,r.i)));GUI.pop=r}else sfx('tap');
   return r;
 }
 function gDoUnequip(slot,i){const before=gearStats();if(!gearUnequip(slot,i))return false;gearLive(before);GUI.sel=null;sfx('tap');return true}

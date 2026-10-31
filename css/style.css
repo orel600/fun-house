@@ -572,3 +572,9 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .strows{display:flex}
   .vbtn{min-height:42px;padding:9px 4px;font-size:15px}
 }
+
+/* סט ציוד בפרטי פריט (sets.js): שם הסט בצבע שלו, ומדרגה פעילה מודגשת */
+.gset{margin:6px 0;padding:6px 10px;border-radius:10px;background:#0003;border-inline-start:3px solid var(--set)}
+.gset b{color:var(--set)}
+.gset p{margin:2px 0;font-size:13px;color:var(--dim)}
+.gset p.on{color:var(--chalk);font-weight:800}
