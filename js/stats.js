@@ -27,7 +27,7 @@ const stFree=()=>Math.max(0,(heroLv()-1)*STATS.perLevel-stSpent());
 // כל מה שהנקודות נותנות יחד, בפורמט של סטטי ציוד
 function statsGive(){const t={},p=stPts();for(const k in STATS.list){const n=p[k]||0;if(!n)continue;const g=STATS.list[k].give;for(const s in g)t[s]=(t[s]||0)+g[s]*n}return t}
 // בתחילת כל ריצה, בכפר ובעולם (heroReset ב-heroes.js)
-function statsReset(){gApply(statsGive(),1)}
+function statsReset(){gApply(statsGive(),1);gApply(treeGive(),1)}   // וגם עץ הסקילים
 // שמים נקודה: חל מיד, גם באמצע ריצה
 function statAdd(k){
   if(!STATS.list[k]||stFree()<1)return false;
@@ -37,8 +37,8 @@ function statAdd(k){
 }
 const statRespecCost=()=>STATS.respec.base+STATS.respec.per*heroLv();
 function statRespec(){
-  const c=statRespecCost();if(!stSpent()||!bagHas('coins',c))return false;
-  bagTake('coins',c);gApply(statsGive(),-1);SAVE.hero.pts={};P.hp=Math.min(P.hp,P.maxHp);
+  const c=statRespecCost();if(!stSpent()&&!trSpent()||!bagHas('coins',c))return false;
+  bagTake('coins',c);gApply(statsGive(),-1);gApply(treeGive(),-1);SAVE.hero.pts={};SAVE.hero.tree={};P.hp=Math.min(P.hp,P.maxHp);
   saveNow();celebrate(P.x,P.y-20,'quest');return true;
 }
 // XP לדמות מאויב שנפל בעולם הפתוח
@@ -57,14 +57,69 @@ function statsHtml(){
     const val=[...new Set(Object.keys(S_.give).map(s=>'+'+(Math.round((g[s]||0)*10)/10)+(s==='hp'?'':'%')))].join(' / ');
     return '<div class="strow"><span class="sti">'+S_.icon+'</span><span class="stn"><b>'+name+' <bdi>'+n+'</bdi></b><small>'+what+(n?' · <bdi>'+val+'</bdi>':'')+'</small></span>'+
       '<button class="stplus" data-act="stat" data-k="'+k+'"'+(free?'':' disabled')+' aria-label="+ '+name+'">+</button></div>'}).join('')+'</div>';
-  if(stSpent())h+='<p class="dim">'+T('st.respecWhere',T('npc.'+STATS.respec.npc)[0])+'</p>';
+  h+='<button class="vbtn" data-act="tree">🌳 '+T('tr.open')+(trFree()?' ('+trFree()+')':'')+'</button>';
+  if(stSpent()||trSpent())h+='<p class="dim">'+T('st.respecWhere',T('npc.'+STATS.respec.npc)[0])+'</p>';
   return h;
 }
 // אצל הכוהנת: כפתור איפוס (npc.js)
 function statRespecHtml(){
-  if(!stSpent())return '';
+  if(!stSpent()&&!trSpent())return '';
   const c=statRespecCost();
   return '<button class="vbtn ghost" data-act="respec"'+(bagHas('coins',c)?'':' disabled')+'>'+T('st.respec',c)+' '+resIcon('coins')+'</button>';
 }
 // מספר על כפתור הציוד כשיש נקודות לשים
-function statBadge(){const el=$('gBadge');if(!el)return;const n=stFree(),t=n?String(n):'';if(el.textContent!==t){el.textContent=t;el.hidden=!n}}
+function statBadge(){const el=$('gBadge');if(!el)return;const n=stFree()+trFree(),t=n?String(n):'';if(el.textContent!==t){el.textContent=t;el.hidden=!n}}
+
+/* ---- עץ סקילים (ניר, 31.10.2026): שלושה ענפים לפי נשק. נקודת סקיל כל tree.every רמות.
+   בכל ענף הסקילים בשורה: כל אחד פותח את הבא. האחרון הוא הגדול, ועולה יותר. מה שנלמד נשמר ב-SAVE.hero.tree ({war:3,hunt:1}: כמה נלמדו בכל ענף).
+   give: סטטים כמו ציוד (gApply ב-gear.js), ועוד: arc (רוחב הנפה %), multi (עוד חץ), pierce (חץ עובר דרך), whirl (כל הנפה רביעית מסביב).
+   השמות והתיאורים ב-lang.js תחת 'tr.<id>' ---- */
+const TREE={
+  every:2,                    // נקודת סקיל כל כמה רמות
+  branches:{
+    war: {icon:'⚔️',col:'#FF8A3D',nodes:[
+      {id:'w1',icon:'🗡️',give:{sdmg:10}},
+      {id:'w2',icon:'❤️',give:{hp:20}},
+      {id:'w3',icon:'🌙',give:{arc:20}},
+      {id:'w4',icon:'🛡️',give:{def:5}},
+      {id:'w5',icon:'⚡',give:{sdmg:15,aspd:6}},
+      {id:'w6',icon:'🌀',cost:2,give:{whirl:1}}]},
+    hunt:{icon:'🏹',col:'#A8D08D',nodes:[
+      {id:'h1',icon:'🎯',give:{gdmg:10}},
+      {id:'h2',icon:'👟',give:{speed:6}},
+      {id:'h3',icon:'🍀',give:{crit:5}},
+      {id:'h4',icon:'⚡',give:{aspd:8}},
+      {id:'h5',icon:'🏹',give:{multi:1}},
+      {id:'h6',icon:'💨',cost:2,give:{pierce:2,gdmg:10}}]},
+    mage:{icon:'🪄',col:'#C7A6FF',nodes:[
+      {id:'m1',icon:'✨',give:{gdmg:8,magnet:15}},
+      {id:'m2',icon:'💚',give:{regen:0.6}},
+      {id:'m3',icon:'💰',give:{loot:10}},
+      {id:'m4',icon:'🔮',give:{hp:15,def:3}},
+      {id:'m5',icon:'🌟',give:{gdmg:15}},
+      {id:'m6',icon:'☄️',cost:2,give:{crit:10,gdmg:20}}]}
+  },
+  whirlEvery:4                // הסקיל הגדול של הלוחם: כל כמה הנפות אחת מסתובבת מסביב
+};
+const trHave=()=>SAVE.hero.tree||(SAVE.hero.tree={});
+const trCost=n=>n.cost||1;
+const trSpent=()=>{let s=0;for(const b in TREE.branches)TREE.branches[b].nodes.slice(0,trHave()[b]||0).forEach(n=>s+=trCost(n));return s};
+const trFree=()=>Math.max(0,Math.floor((heroLv()-1)/TREE.every)-trSpent());
+function treeGive(){const t={};for(const b in TREE.branches)for(const n of TREE.branches[b].nodes.slice(0,trHave()[b]||0))for(const s in n.give)t[s]=(t[s]||0)+n.give[s];return t}
+// לומדים את הסקיל הבא בענף: חל מיד
+function treeLearn(b){
+  const B=TREE.branches[b],i=trHave()[b]||0,n=B&&B.nodes[i];if(!n||trFree()<trCost(n))return false;
+  const before=treeGive();trHave()[b]=i+1;gApply(before,-1);gApply(treeGive(),1);
+  saveNow();celebrate(P.x,P.y-20,'gear',n.icon);return true;
+}
+function treeHtml(){
+  const free=trFree(),H=trHave();
+  let h='<div class="trtop"><button class="vbtn ghost" data-act="back">'+T('tr.back')+'</button><p class="stfree'+(free?' on':'')+'">'+(free?T('tr.free',free):T('tr.none',TREE.every))+'</p></div><div class="trcols">';
+  for(const b in TREE.branches){const B=TREE.branches[b],have=H[b]||0;
+    h+='<section class="trb" style="--br:'+B.col+'"><h4>'+B.icon+' '+T('tr.'+b)+' <bdi>'+have+'/'+B.nodes.length+'</bdi></h4>';
+    B.nodes.forEach((n,i)=>{const [name,what]=T('tr.'+n.id),st=i<have?'got':i===have?'next':'lock',c=trCost(n);
+      h+='<div class="trn '+st+'"><span class="sti">'+n.icon+'</span><span class="stn"><b>'+name+'</b><small>'+what+'</small></span>'+
+        (st==='got'?'<span class="trok">✓</span>':st==='next'?'<button class="stplus" data-act="learn" data-b="'+b+'"'+(free>=c?'':' disabled')+'>'+(c>1?c:'+')+'</button>':'<span class="trok">🔒</span>')+'</div>'});
+    h+='</section>'}
+  return h+'</div>';
+}

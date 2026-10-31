@@ -57,10 +57,12 @@ function attack(dt){
     if(tgt)P.aim=Math.atan2(tgt.y-P.y,tgt.x-P.x);
     if(tgt&&s.t<=0){
       s.t=s.cd*wK('cd');s.anim=0.2;s.ang=P.aim;
+      const whirl=P.whirl>0&&(s.n=(s.n||0)+1)%TREE.whirlEvery===0;   // סקיל הלוחם: הנפה מסביב (stats.js)
+      if(whirl)sparks(P.x,P.y,C.ember,14,260);
       for(const e of enemies.concat(S.nd.list)){
         if(e.dead)continue;const dx=e.x-P.x,dy=e.y-P.y,d=Math.hypot(dx,dy)-e.r;
         if(d>s.range)continue;const a=Math.atan2(dy,dx);
-        if(Math.abs(angDiff(a,s.ang))>s.arc/2&&d>8)continue;
+        if(!whirl&&Math.abs(angDiff(a,s.ang))>s.arc/2&&d>8)continue;
         damage(e,s.dmg*wK('dmg')*dmgK(),'sword',a);
       }
       S.shake=Math.max(S.shake,2);

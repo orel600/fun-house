@@ -520,3 +520,13 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   #ovGear.stv .gsidep{max-height:none}
   .strows{display:grid;grid-template-columns:1fr 1fr}
 }
+/* עץ הסקילים (js/stats.js): שלושה ענפים בטורים, בתוך חלון הציוד */
+.gtree{display:flex;flex-direction:column;gap:8px;min-height:0;flex:1;overflow:hidden}
+.trtop{display:flex;align-items:center;gap:10px}.trtop .vbtn{padding:8px 12px;font-size:14px}.trtop .stfree{margin:0}
+.trcols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;min-height:0;overflow-y:auto}
+.trb{display:flex;flex-direction:column;gap:4px;border-top:3px solid var(--br);background:rgba(18,22,36,.5);border-radius:10px;padding:6px}
+.trb h4{margin:0 0 2px;font:800 15px var(--body);color:var(--br)}.trb h4 bdi{color:var(--dim);font-size:12px}
+.trn{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:10px;padding:2px 6px;min-height:38px}
+.trn.got{border-color:var(--br);background:rgba(244,199,79,.08)}.trn.lock{opacity:.45}
+.trok{width:32px;text-align:center;font-size:16px;color:var(--gold)}
+@media (orientation:portrait){.trcols{grid-template-columns:1fr}}

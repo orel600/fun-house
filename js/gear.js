@@ -119,6 +119,7 @@ function gApply(s,k){
   P.sw.dmg*=m('sdmg');P.gn.dmg*=m('gdmg');P.speed*=m('speed');P.magnet*=m('magnet');
   P.maxHp+=k*(s.hp||0);P.regen+=k*(s.regen||0);
   if(s.aspd){P.sw.cd/=m('aspd');P.gn.cd/=m('aspd')}   // קצב התקפה (נקודות דמות, stats.js)
+  if(s.arc)P.sw.arc*=m('arc');P.gn.multi+=k*(s.multi||0);P.gn.pierce+=k*(s.pierce||0);P.whirl+=k*(s.whirl||0);   // עץ הסקילים (stats.js)
   P.def+=k*(s.def||0);P.crit+=k*(s.crit||0);P.loot+=k*(s.loot||0);
 }
 // אחרי שינוי בציוד: מורידים את מה שהיה ומלבישים את החדש, מיד. חיים שנוספו מתמלאים, ונשק חדש נכנס ליד
@@ -166,7 +167,7 @@ const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gIcon(id)
    לחיצה בוחרת ומראה פרטים והשוואה, עם כפתור: הדרך החלופית לגרירה ---- */
 const GUI={sel:null,tab:'items'};   // sel: מה נבחר: {id} מהתרמיל, {slot,i} ממשבצת, או {sid} מהמחסן. tab: הלשונית בתרמיל
 // נפתח מכל מקום: מהכפר ומהזירה. בזירה הריצה עוצרת, כמו במסך השדרוג
-function gearOpen(){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;$('ovGear').hidden=false;gearDraw()}
+function gearOpen(){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;GUI.view=null;$('ovGear').hidden=false;gearDraw()}
 function gearClose(){gDragEnd();$('ovGear').hidden=true;if(S.mode==='gear')S.mode='play'}
 // המחסן פתוח במסך רק כשעומדים לידו בכפר, והוא בנוי
 const gStashOn=()=>!!(S.vil&&S.vil.near==='stash'&&vLv('stash')>0);
@@ -230,6 +231,7 @@ function gearDraw(){
   if(st)$('gStash').innerHTML='<span class="k">'+T('gear.stash',stashUsed(),stashCap())+'</span><div class="ggrid">'+
     (sk.length?sk.map(k=>gCell(k,SAVE.stash[k],'data-sid="'+k+'"'+(sel&&sel.sid===k?' aria-pressed="true"':''))).join(''):'<p class="dim">'+T('stash.empty')+'</p>')+'</div>';
   $('gDetail').innerHTML=gDetailHtml();
+  const tv=GUI.view==='tree';$('ovGear').querySelector('.gbody').hidden=tv;$('gTree').hidden=!tv;if(tv)$('gTree').innerHTML=treeHtml();   // עץ הסקילים (stats.js)
   $('ovGear').classList.toggle('stv',!!$('gDetail').querySelector('.strows'));   // מסך הנקודות פתוח (stats.js)
 }
 // הפרטים: שם בצבע הנדירות, נדירות וחומר, רמת Aging, סטטים, השוואה למה שלבוש, וכפתורים
@@ -337,6 +339,8 @@ $('ovGear').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.id==='gearClose'){gearClose();return}
   if(b.dataset.act==='stat'){statAdd(b.dataset.k);statBadge();gRedraw();return}
+  if(b.dataset.act==='tree'||b.dataset.act==='back'){GUI.view=b.dataset.act==='tree'?'tree':null;GUI.sel=null;gRedraw();return}
+  if(b.dataset.act==='learn'){treeLearn(b.dataset.b);statBadge();gRedraw();return}
   const a=b.dataset.act,sel=GUI.sel;
   if(b.dataset.tab){GUI.tab=b.dataset.tab;GUI.sel=null}
   else if(b.dataset.id)GUI.sel={id:b.dataset.id};

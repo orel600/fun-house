@@ -776,13 +776,16 @@ function worldBot(m,L,god){
     SAVE.hero.xp+=rankNeed(SAVE.hero.level)+5;rankSync();o.free=stFree();
     const d0=P.sw.dmg;o.add=statAdd('str');o.dmg=Math.round(P.sw.dmg/d0*100)/100;o.saved=(JSON.parse(localStorage.getItem(SAVE_STORE.key)).hero.pts||{}).str>=1;
     statAdd('def');const h0=P.hp;P.inv=0;hurt(100);o.def=Math.round((h0-P.hp)*10)/10;P.hp=P.maxHp;
-    gearOpen();o.ui=document.querySelectorAll('#gDetail .strow').length;gearClose();
+    gearOpen();o.ui=document.querySelectorAll('#gDetail .strow').length;
+    SAVE.hero.xp+=4000;rankSync();o.tfree=trFree();const sw0=P.sw.dmg;document.querySelector('#gDetail [data-act="tree"]').click();
+    o.tree=document.querySelectorAll('#gTree .trn').length;const lb=document.querySelector('#gTree [data-act="learn"][data-b="war"]');if(lb)lb.click();
+    o.learned=(SAVE.hero.tree||{}).war===1&&P.sw.dmg>sw0;gearClose();
     enterVillage();bagAdd('coins',statRespecCost());const c0=SAVE.bag.coins;S.vil.dlg=null;npcTalk(STATS.respec.npc);
     const rb=document.querySelector('#npcDlg [data-act="respec"]');o.btn=!!rb;if(rb)rb.click();o.reset=stSpent()===0;o.paid=c0-(SAVE.bag.coins||0);npcTalk(null);
     return o});
-  check(stt.xp>0&&stt.free>0&&stt.add&&stt.dmg>1&&stt.saved&&stt.def<100&&stt.ui===6&&stt.btn&&stt.reset&&stt.paid>0,
+  check(stt.xp>0&&stt.free>0&&stt.add&&stt.dmg>1&&stt.saved&&stt.def<100&&stt.ui===6&&stt.tree===18&&stt.learned&&stt.btn&&stt.reset&&stt.paid>0,
     'נקודות דמות: הריגה בעולם +'+stt.xp+' XP, נקודות פנויות '+stt.free+', כוח: נזק x'+stt.dmg+(stt.saved?', נשמר':', לא נשמר')+', הגנה: מכה של 100 עשתה '+stt.def+
-    ', במסך הציוד '+stt.ui+' סטטים, איפוס אצל הכוהנת '+(stt.btn?'':'(אין כפתור) ')+(stt.reset?'עבד':'לא עבד')+' ושילם '+stt.paid);
+    ', במסך הציוד '+stt.ui+' סטטים, עץ סקילים: '+stt.tree+' סקילים, '+stt.tfree+' נקודות, '+(stt.learned?'נלמד להב חד ונזק עלה':'לא נלמד')+', איפוס אצל הכוהנת '+(stt.btn?'':'(אין כפתור) ')+(stt.reset?'עבד':'לא עבד')+' ושילם '+stt.paid);
   const edge=await page.evaluate(()=>{
     enterWorld('home');const B=placeBox(),n0=drops().length,out=o=>o.x<B.x0||o.x>B.x1||o.y<B.y0||o.y>B.y1;
     wantedAppear(0);const e=S.wn.e;e.x=B.x1+300;e.y=B.y0-200;wantedMove(e,0.05);const wIn=!out(e);

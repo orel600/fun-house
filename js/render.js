@@ -125,7 +125,8 @@ function edgeArrow(sx,sy,col,s=1){
   ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.scale(s,s);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-8);ctx.lineTo(-7,8);ctx.fill();ctx.restore();
 }
 function render(){
-  ctx.setTransform(DPR,0,0,DPR,0,0);
+  setZoom(S&&S.vil?VIEW.zoom.village:S&&S.wd?VIEW.zoom.world:1);   // כמה גבוה המצלמה בכל מקום (render3d.js)
+  ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);
   // בתלת-ממד הקנבס שקוף: הקרקע והדמויות מצוירות בשכבה שמתחתיו (render3d.js)
   if(R3D.on)ctx.clearRect(0,0,W,H);else{ctx.fillStyle=S&&S.room?'#262114':C.ink;ctx.fillRect(0,0,W,H)}
   if(!P)return;
@@ -188,8 +189,8 @@ function render(){
     else{ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1)}
     ctx.fillStyle=f.crit?C.ink:f.col;ctx.fillText(f.txt,f.x,f.y);if(f.crit){ctx.lineWidth=1.5;ctx.strokeStyle=f.col;ctx.strokeText(f.txt,f.x,f.y)}}
   ctx.globalAlpha=1;ctx.direction=DIR;
-  // screen space
-  ctx.setTransform(DPR,0,0,DPR,0,0);
+  // screen space (ביחידות של המשחק, כמו W,H)
+  ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);
   if(S.boss){const b=S.boss,sx=b.x+ox,sy=b.y+oy;
     if(sx<-20||sx>W+20||sy<-20||sy>H+20){const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(110,Math.min(H-40,H/2+Math.sin(a)*H));
       ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.fillStyle=C.lilac;ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(-8,-10);ctx.lineTo(-8,10);ctx.fill();ctx.restore()}}
