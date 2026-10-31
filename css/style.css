@@ -247,6 +247,13 @@ h1{font-size:46px} h2{font-size:30px}
   .gearpanel{width:min(440px,46vw);max-height:100%;overflow-y:auto;padding:10px 12px;gap:8px}
   .ghead h2{font-size:20px}
   .gtile{width:40px;height:40px;font-size:20px}
+  /* Aging בנפחייה: חלון גבוה בצד ימין, פריטים בטור אחד והפרטים בשני (ניר: "הנפחייה עדיין אותו הדבר") */
+  #ovForge{display:block;z-index:7}
+  #ovForge .gearpanel{position:absolute;right:max(12px,env(safe-area-inset-right,0px));top:8px;bottom:8px;width:min(600px,64vw);max-height:none;
+    display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto minmax(0,1fr);overflow:hidden}
+  #ovForge .ghead,#ovForge #fRes{grid-column:1/-1}
+  #ovForge #fItems{align-content:start;overflow-y:auto}
+  #ovForge #fDetail{overflow-y:auto;display:flex;flex-direction:column;gap:6px}
 }
 /* כפתור הציוד בזירה: בשורה העליונה, ליד הרמה. הפינה הימנית למטה נשארת לכישורים */
 .hud .gearbtn{position:static;pointer-events:auto;padding:3px 9px;font-size:16px;flex:none}

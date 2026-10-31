@@ -105,9 +105,9 @@ const AUI={sel:null,gem:false};   // sel: {id} מהתרמיל, או {slot,i} מ�
 function forgeOpen(){
   if(!S.vil||S.mode!=='play'||!vLv('forge'))return;
   wEquip(SAVE.gear.weapon);   // הדמות מחזיקה את הנשק שלבוש, כדי שהזוהר החדש ייראה עליו
-  S.mode='forge';joy=null;AUI.sel=null;$('ovForge').hidden=false;forgeDraw();
+  S.mode='forge';joy=null;AUI.sel=null;$('vPanel').hidden=true;document.body.classList.remove('vpan');$('ovForge').hidden=false;forgeDraw();
 }
-function forgeClose(){$('ovForge').hidden=true;if(S.mode==='forge')S.mode='play'}
+function forgeClose(){$('ovForge').hidden=true;if(S.mode==='forge')S.mode='play';if(S.vil)S.vil.ui=''}   // הפאנל של הנפחייה חוזר
 const aSelId=()=>AUI.sel&&(AUI.sel.id||gGet(AUI.sel.slot,AUI.sel.i));
 const aPct=v=>'<bdi>'+Math.round(v*100)+'%</bdi>';
 
