@@ -44,6 +44,11 @@ const LOOK3D={
     anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   mistling:{model:'skelMage',h:46,foot:11,float:10,tint:'#BFE3F2',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   tidewarden:{model:'barbarian',h:84,foot:18,tint:'#1E5FD0',props:{staff:{prop:'staff',...HAND_R,tint:'water'}},anim:{run:'Running_B',die:'Death_A'}},
+  // הרכס הקפוא (פרק 3): אבירי כפור בתכלת, רוחות שלג מרחפות, ושומר הקרח: ברבריאן גדול בלבן-תכלת עם מטה קרח
+  rimeknight:{model:'warrior',h:64,foot:14,tint:'#9FD8F0',props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'ice'}},
+    anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  frostwraith:{model:'skelMage',h:46,foot:11,float:10,tint:'#EAF8FF',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  frostwarden:{model:'barbarian',h:88,foot:18,tint:'#7FD4FF',props:{staff:{prop:'staff',...HAND_R,tint:'ice'}},anim:{run:'Running_B',die:'Death_A'}},
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle_A',charge:'Melee_2H_Attack_Spin',cast:'Melee_2H_Attack_Chop',taunt:'Taunt',die:'Death_A'}},
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. בלי קסדה הוא נמוך יותר, אז h קטן כדי שהגוף יהיה בגודל של האביר.
   // לבדיקה בלבד: עם ?hero=pilot בכתובת הוא נכנס במקום האביר של הלוחם (דמות ההתחלה הראשונה)
@@ -98,7 +103,8 @@ const VIL3D={
 const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',w:42,glow:'#5FA35A'},chest:{model:'v_crate',w:48,glow:'#F4C74F'},rock:{model:'v_rock',w:62},vein:{model:'v_rock',w:62,glow:'#C87533'},
   reed:{model:'v_treeB',w:34,glow:'#3FA7A0'},crystal:{model:'v_rock',w:62,glow:'#4FB4FF'}},   // w: רוחב המודל
   // צבע לכל אזור (WORLD.regions ב-world.js): bg הרקע, line הקרקע, pond המים. אזור שלא כתוב כאן: VIEW.world
-  regions:{lake:{bg:'#1d3238',line:'#4f7a78',pond:'#2a6d8f'}}};
+  regions:{lake:{bg:'#1d3238',line:'#4f7a78',pond:'#2a6d8f'},
+    ridge:{bg:'#2b3644',line:'#9fb3c4',pond:'#26384a'}}};   // הרכס הקפוא (פרק 3): שלג
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
