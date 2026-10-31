@@ -113,6 +113,7 @@ function botStep({god,en}){
     if(S.bossCount>0)L.bossDown??=at;
     L.nodes=S.nd.broken;L.nodeGot=[...new Set(S.nd.got)].join(', ');if(S.nd.broken)L.nodeAt??=at;
     L.nodeInLoot=S.nd.got.length>0&&S.nd.got.every(r=>(S.loot||{})[r]>0);
+    L.gearDrops=S.gearDrops||0;
     L.drops=(S.drops||[0,0,0,0,0]).join('/');L.elites=S.elites||0;L.jackpots=S.jackpots||0;L.firstKills=S.firstKills||0;
     L.chests=S.nd.got.length?S.nd.chests||0:0;L.creatures=Object.entries(S.killsBy||{}).filter(([k])=>ETYPES[k]&&!['grunt','shield','wisp'].includes(k)).map(([k,n])=>k+' '+n).join(', ');
     const w=S.wn;
@@ -329,6 +330,9 @@ function worldBot(m,L,god){
     if(L.wDeathTxt==null){L.wDeathTxt=document.getElementById('wLost').innerText.replace(/\s+/g,' ').trim();return stay()}
     document.getElementById('wRespawn').click();L.wRespawn=!!S.vil&&document.getElementById('ovWDeath').hidden;m.wp='done';return L}
   if(god&&m.wp!=='die')P.hp=P.maxHp;
+  // טווח ההתקפה בעולם: כל מכה ישירה (לא ברק שקפץ) נמדדת, והרחוקה ביותר נרשמת
+  if(!m.hitHook){m.hitHook=1;const d0=damage;damage=function(e,b,w,a,t,ch){if(S.wd&&!ch){const d=Math.hypot(e.x-P.x,e.y-P.y)-(e.r||0);L.wHitMax=Math.max(L.wHitMax||0,Math.round(d));L.wHits=(L.wHits||0)+1}return d0.apply(this,arguments)}}
+  L.wRange=WORLD.attackRange;
   if(!m.wp){m.wp='gather';L.wEnter=!S.vil&&S.mode==='play';L.wName=document.getElementById('wName').textContent;L.wHud=vis('whud')&&!vis('vhud');
     L.wNodes=S.nd.list.length;L.wFoes=enemies.length;L.wCreatures=enemies.filter(e=>e.creature).length;m.w0=SAVE.bag.wood||0;m.wt=W.t;
     // המפלצות הראשונות ליד השער: קלות. אחת נזרקת רחוק מהבית שלה (צריכה לחזור), וקבוצה אחת מופלת (צריכה לחזור אחרי זמן)
@@ -715,14 +719,34 @@ function worldBot(m,L,god){
   }
   await shot('end');
   // צלילים: כמה פעמים כל צליל התבקש, אם הקבצים נטענו מ-file://, ואם כפתור ההשתקה עובד ונשמר
-  const au=await page.evaluate(()=>{const b=document.getElementById('muteBtn');b.click();const m=AUDIO.muted&&localStorage.getItem('zm-mute')==='1';b.click();
-    return{count:AUDIO.count,errors:AUDIO.errors,unlocked:AUDIO.unlocked,ids:Object.keys(SOUNDS),mute:m&&!AUDIO.muted,
-      loaded:Object.keys(AUDIO.buf).length}});
+  // הכפתור פותח את חלון הצלילים: השתקה בתוכו, ועוצמה לכל ערוץ שנשמרת בטלפון
+  const au=await page.evaluate(()=>{const $=id=>document.getElementById(id);$('muteBtn').click();const open=!$('ovSound').hidden;
+    $('sndMute').click();const m=AUDIO.muted&&localStorage.getItem('zm-mute')==='1';$('sndMute').click();
+    const v0=AUDIO.vol.fight,sl=document.querySelector('#ovSound input[data-ch="fight"]');sl.value=30;sl.dispatchEvent(new Event('input'));
+    const vSaved=JSON.parse(localStorage.getItem(SOUND_MIX.key)).fight===0.3&&audioPrefsLoad().fight===0.3;setVol('fight',v0);
+    $('sndClose').click();const closed=$('ovSound').hidden;
+    // כמה פעמים צליל יכול להתנגן בשנייה: מאה בקשות בשנייה אחת, וסופרים כמה עברו
+    const rate={};for(const id in SOUNDS){AUDIO.last={};AUDIO.grpLast={};let n=0;for(let i=0;i<100;i++)if(sfxGate(id,1000+i/100))n++;rate[id]=n}
+    AUDIO.last={};AUDIO.grpLast={};
+    return{count:AUDIO.count,played:AUDIO.played,errors:AUDIO.errors,unlocked:AUDIO.unlocked,ids:Object.keys(SOUNDS),mute:m&&!AUDIO.muted,open,closed,vSaved,rate,
+      grp:Object.fromEntries(Object.keys(SOUNDS).map(id=>[id,SOUNDS[id].grp])),loaded:Object.keys(AUDIO.buf).length}});
   const cp=await page.evaluate(()=>({n:CLOUD.pushes,every:CLOUD.pushEvery}));
   check(cp.n>cl.p0,'ענן: במשחק עצמו נדחפו '+(cp.n-cl.p0)+' שמירות לענן (המדומה), לכל היותר אחת בכל '+cp.every+' שניות');
   // בפעם השנייה מסך הפתיחה מוביל ישר לכפר, בלי בחירת דמות
   const again=await page.evaluate(()=>{document.getElementById('startBtn').click();return document.getElementById('ovHero').hidden&&!!S.vil});
   const heroHp=await page.evaluate(()=>HEROES.list.warrior.passive.hp);
+  // ניר (31.10.2026): המבוקש נהרג מחוץ לגבולות העולם, והשלל לא נאסף. כאן הוא בורח לקצה ונהרג מעבר לו: הוא נשאר בפנים, והשלל נוחת בפנים ונאסף.
+  // וציוד מאויב: פריט שנפל (בכוח) נוחת על הרצפה, נמשך לשחקן ונכנס לתרמיל ולשמירה
+  const edge=await page.evaluate(()=>{
+    enterWorld('home');const B=placeBox(),n0=drops().length,out=o=>o.x<B.x0||o.x>B.x1||o.y<B.y0||o.y>B.y1;
+    wantedAppear(0);const e=S.wn.e;e.x=B.x1+300;e.y=B.y0-200;wantedMove(e,0.05);const wIn=!out(e);
+    e.x=B.x1+120;e.y=B.y1+120;lootKill(e);wantedDown(e);e.dead=true;S.wn.e=null;
+    const ds=drops().slice(n0);P.x=B.x1-10;P.y=B.y1-10;P.inv=99;enemies.length=0;
+    for(let i=0;i<120;i++)dropsUpdate(1/30);
+    const left=ds.filter(d=>!d.got),gid=lootGear({x:P.x+60,y:P.y-60},true),g0=SAVE.bag[gid]||0;
+    for(let i=0;i<120;i++)dropsUpdate(1/30);
+    return{wIn,n:ds.length,inside:ds.every(d=>!out(d)),left:left.length,kept:dropStats().kept,gid,gBag:(SAVE.bag[gid]||0)>g0,
+      gSaved:(JSON.parse(localStorage.getItem(SAVE_STORE.key)).bag[gid]||0)>0,gGround:!drops().some(d=>d.r===gid)}});
   await browser.close();
 
   const t=s=>s==null?'-':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
@@ -841,7 +865,17 @@ function worldBot(m,L,god){
   const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null));
   check(au.unlocked&&!quiet.length,'צלילים: '+au.ids.map(id=>id+' '+(au.count[id]||0)).join(', ')+(au.unlocked?'':' · לא נפתחו בנגיעה')+(quiet.length?' · לא נשמעו: '+quiet.join(', '):''));
   check(!au.errors.length&&au.loaded===au.ids.length,'קבצי צליל: נטענו '+au.loaded+' מתוך '+au.ids.length+(au.errors.length?' · שגיאות: '+[...new Set(au.errors)].join(', '):''));
-  check(au.mute,'כפתור השתקה: '+(au.mute?'משתיק, נשמר ומחזיר':'לא עובד'));
+  check(au.open&&au.mute&&au.vSaved&&au.closed,'חלון צלילים: '+(au.open?'נפתח מהרמקול':'לא נפתח')+(au.mute?', השתקה עובדת ונשמרת':', השתקה לא עובדת')+
+    (au.vSaved?', עוצמת קרב נשמרת':', העוצמה לא נשמרה')+(au.closed?', נסגר':', לא נסגר'));
+  // צלילי קרב חוזרים כל הזמן: לכל היותר 8 בשנייה מכל אחד. הבוט גם רואה כמה באמת התנגנו בריצה (played) מול כמה התבקשו (count)
+  const loud=au.ids.filter(id=>au.grp[id]==='fight'&&au.rate[id]>8);
+  check(!loud.length,'קצב צלילים בשנייה: '+au.ids.map(id=>id+' '+au.rate[id]).join(', ')+(loud.length?' · יותר מדי: '+loud.join(', '):'')+
+    ' · התנגנו בריצה: '+(au.ids.map(id=>au.played[id]?id+' '+au.played[id]:'').filter(Boolean).join(', ')||'0 (בלי צליל בדפדפן ללא ממשק)'));
+  check(L.wHits>0&&L.wHitMax<=L.wRange,'טווח התקפה בעולם: '+(L.wHits||0)+' מכות, הרחוקה '+(L.wHitMax??'-')+' (מותר עד '+L.wRange+')');
+  check(edge.wIn&&edge.n>0&&edge.inside&&!edge.left,'מבוקש בקצה העולם: '+(edge.wIn?'לא יצא מהגבול':'יצא מהגבול')+', '+edge.n+' שלל'+(edge.inside?' נחת בפנים':' נחת בחוץ')+
+    (edge.left?', '+edge.left+' לא נאספו':', הכל נאסף')+' (הוחזרו פנימה: '+edge.kept+')');
+  check(edge.gid&&edge.gBag&&edge.gSaved&&edge.gGround,'ציוד מאויב: '+(edge.gid||'לא נפל')+(edge.gBag?' בתרמיל':' לא בתרמיל')+(edge.gSaved?', נשמר':', לא נשמר')+
+    ' · נפל לבד בריצה בזירה: '+(L.gearDrops||0));
   if(CFG.gfx==='3d')check(g3.on&&L.actorsMax>0,g3.on?'תלת-ממד: פעיל, עד '+L.actorsMax+' דמויות במסך, עד '+L.callsMax+' ציורים בפריים':'תלת-ממד: לא עלה'+(g3.failed?' (נפל לדו-ממד)':''));
   else check(!g3.on,'דו-ממד: פעיל לפי הבחירה');
   if(CFG.lang==='en')check(!startLeak&&!L.heLeak,startLeak||L.heLeak?'שפה: נשאר טקסט בעברית: '+(startLeak||L.heLeak):'שפה: כל המסכים באנגלית, משמאל לימין');

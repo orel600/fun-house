@@ -43,7 +43,7 @@ function wantedAppear(a){
   const d=rand(220,300),aa=a+rand(-WANTED.hint,WANTED.hint),k=runK();
   const e={type:'wanted',wanted:true,x:P.x+Math.cos(aa)*d,y:P.y+Math.sin(aa)*d,hp:WANTED.hp*k,max:WANTED.hp*k,r:13,speed:WANTED.speed,
     mult:{},xp:0,dmg:0,flash:0,kx:0,ky:0,ph:0,told:false,life:WANTED.life,turn:0,side:1};
-  enemies.push(e);S.wn.e=e;S.wn.seen++;
+  placeClamp(e);enemies.push(e);S.wn.e=e;S.wn.seen++;
   sparks(e.x,e.y,C.gold,16,220);banner(T('wanted.here'),C.gold);
 }
 /* בורח כשמתקרבים אליו, אבל לא מתרחק יותר מדי, כדי שאפשר יהיה לרדוף. מחליף צד בלי התראה, כדי שלא יהיה צפוי */
@@ -53,6 +53,8 @@ function wantedMove(e,dt){
   const out=d<WANTED.keep?1:d>WANTED.keep*1.8?-0.6:0.2;
   const mx=dx/d*out-dy/d*e.side,my=dy/d*out+dx/d*e.side,m=Math.hypot(mx,my)||1,sp=e.speed*(e.life<WANTED.panic?1.5:1);
   e.x+=mx/m*sp*dt+e.kx*dt;e.y+=my/m*sp*dt+e.ky*dt;
+  // בקצה העולם הוא לא יוצא החוצה: נדחק לאורך הגבול ומחליף צד, כדי שאפשר יהיה לתפוס אותו ולאסוף את השלל
+  const x0=e.x,y0=e.y;placeClamp(e);if(e.x!==x0||e.y!==y0){e.kx=e.ky=0;if(e.turn>0.3)e.turn=0.3}
   const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*sp*0.08;e.flash-=dt;
 }
 function wantedDown(e){

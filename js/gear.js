@@ -142,11 +142,13 @@ function forgeHtml(){
 }
 
 /* ---- שלל בסוף ריצה ---- */
-function gRoll(){
+// מגריל פריט לפי כמה כל שכבה נפוצה. n: כמה הגרלות, והשכבה הגבוהה מביניהן נבחרת (שלל מהמבוקש ומהבוס, LOOT.gear ב-loot.js)
+function gRoll(n=1){
   const pool=Object.keys(GEAR.items).filter(id=>GEAR.loot.slots.includes(GEAR.items[id].slot));
-  let r=Math.random()*pool.reduce((n,id)=>n+GEAR.tiers[GEAR.items[id].tier].w,0);
-  for(const id of pool){r-=GEAR.tiers[GEAR.items[id].tier].w;if(r<0)return id}
-  return pool[0];
+  const one=()=>{let r=Math.random()*pool.reduce((n,id)=>n+GEAR.tiers[GEAR.items[id].tier].w,0);
+    for(const id of pool){r-=GEAR.tiers[GEAR.items[id].tier].w;if(r<0)return id}return pool[0]};
+  let best=one();for(let i=1;i<n;i++){const id=one();if(GEAR.items[id].tier>GEAR.items[best].tier)best=id}
+  return best;
 }
 function gearLoot(){
   if(S.gearLoot)return S.gearLoot;

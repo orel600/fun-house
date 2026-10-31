@@ -289,6 +289,7 @@ function rankArmor3d(a){
     o.material.emissive.copy(em);o.material.userData.em=em});
 }
 function syncPlayer(dt){
+  r3dScratch();
   const L=heroLook();
   let a=R3D.player;if(!a||a.key!==lookKey(L)){if(a)freeActor(a);a=R3D.player=makeActor(L)}   // דמות או נשק חדשים: מודל חדש
   rankArmor3d(a);   // אחרי עלייה בדרגה: החלקים מופיעים מיד
@@ -448,10 +449,13 @@ function syncPet(dt){
 }
 function npcs3dOff(){if(!R3D.npcs)return;for(const id in R3D.npcs)freeActor(R3D.npcs[id]);R3D.npcs=null}
 
+// מטריצה ווקטורים לשימוש חוזר, בלי זבל בכל פריים. נוצרים בפעם הראשונה שמישהו צריך אותם, גם לפני הציור הראשון (syncPlayer מהבדיקה)
+function r3dScratch(){if(!R3D._mx){R3D._mx=new THREE.Matrix4();R3D._p=new THREE.Vector3();R3D._q=new THREE.Quaternion();R3D._s=new THREE.Vector3();R3D._up=new THREE.Vector3(0,1,0)}}
+
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
 function render3d(ox,oy){
   if(!R3D.on||!P)return;
-  if(!R3D._mx){R3D._mx=new THREE.Matrix4();R3D._p=new THREE.Vector3();R3D._q=new THREE.Quaternion();R3D._s=new THREE.Vector3();R3D._up=new THREE.Vector3(0,1,0)}
+  r3dScratch();
   // drawEvery: הבדיקה האוטומטית מציירת רק חלק מהפריימים, כי שם התלת-ממד רץ על המעבד בלי כרטיס גרפי. בשאר הפריימים לא עושים כלום
   R3D.frame=(R3D.frame||0)+1;const skip=R3D.drawEvery&&R3D.frame%R3D.drawEvery!==0;if(skip&&!S.vil)return;   // בכפר ממשיכים לעדכן, כי שם נבנים המבנים
   const r=R3D.r,c=R3D.cam,now=performance.now(),dt=Math.min(0.05*(R3D.drawEvery||1),R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;
