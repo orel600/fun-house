@@ -355,9 +355,9 @@ function worldBot(m,L,god){
     const n=S.nd.list.filter(n=>!n.dead&&n.kind==='tree').sort(far)[0];
     return n?steer(n.x,n.y,false,n.r+P.r+20,L):stay()}   // אחרי שהעץ נשבר: לעץ הבא, עד שיש 5 לקווסט הנעליים
   if(m.wp==='kill'){   // מפילים אויב אחד: יצור משאב אם יש, אחרת הכי קרוב
-    if(S.kills>m.k0){L.wKill=m.kt;m.wp='wnpc';return L}
+    if(m.kt!=null&&S.kills>m.k0){L.wKill=m.kt;m.wp='wnpc';return L}   // סופרים רק מאז שנבחר אויב: פיוחו (pet.js) יכולה להפיל אחד לפני כן
     const pool=enemies.filter(e=>!e.dead&&!e.wanted),cr=pool.filter(e=>e.creature),e=(cr.length?cr:pool).sort(far)[0];if(!e)return stay();
-    m.kt=e.type+(e.creature?' (יצור)':'');return steer(e.x,e.y,false,P.weapon==='sword'?e.r+30:200,L)}
+    if(m.kt==null)m.k0=S.kills;m.kt=e.type+(e.creature?' (יצור)':'');return steer(e.x,e.y,false,P.weapon==='sword'?e.r+30:200,L)}
   if(m.wp==='wnpc'){   // דמות בעולם (worldnpc.js): הולכים לקרובה, היא נמצאת (נשמר, חגיגה, חץ), מדברים, מקבלים קווסט, משלימים ולוקחים פרס רק אצלה
     const N=L.wn||(L.wn={}),tb=document.getElementById('talkBtn'),dlg=document.getElementById('npcDlg'),btn=a=>dlg.querySelector('[data-act="'+a+'"]');
     if(!m.wn){const id=Object.keys(WNPC.list).sort((a,b)=>far(WNPC.list[a].at,WNPC.list[b].at))[0];if(!window.__cel){window.__cel=0;const c=celebrate;window.celebrate=(...a)=>{window.__cel++;return c(...a)}}m.wn={id,step:0,fx:window.__cel};N.id=id;N.n=Object.keys(WNPC.list).length;N.metBefore=!!SAVE.met[id];N.markBefore=wnpcMarks()[id]||null}
