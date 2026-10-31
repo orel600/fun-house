@@ -900,15 +900,15 @@ function worldBot(m,L,god){
     SAVE.challenge=null;CHALLENGE.rules.test={hp:2,speed:1.5,type:'fire',boost:2,cut:0.5,coins:[3,3]};const real=chRule;chRule=()=>'test';
     enterWorld('home');o.tag=!$('chTag').hidden&&$('chTag').textContent.includes('/'+CHALLENGE.goal);
     const e=enemies.find(x=>!x.dead&&x.ch&&!x.creature);o.rule=!!e&&e.mult!==ETYPES[e.type].mult&&e.mult.fire>=(ETYPES[e.type].mult.fire??1)*1.9&&e.mult.water<=(ETYPES[e.type].mult.water??1)*0.6;
-    const c0=drops().filter(d=>d.r==='coins').length;for(let i=0;i<CHALLENGE.goal;i++){const k=addEnemy('grunt',P.x+60,P.y,1);k.home=0;challengeSpawn(k);damage(k,k.hp*10,'sword',0,'fire')}
-    o.n=chSave().n;o.coins=drops().filter(d=>d.r==='coins').length>c0;o.noWorld=!challengeClaim();
-    enterVillage();questLogOpen(true);const b=document.querySelector('#qLog [data-act="chClaim"]');const m=SAVE.bag.coins||0;if(b)b.click();o.got=(SAVE.bag.coins||0)-m;o.once=!challengeClaim();questLogOpen(false);
+    const c0=dropStats().spawned;for(let i=0;i<CHALLENGE.goal;i++){const k=addEnemy('grunt',P.x+60,P.y,1);k.home=0;challengeSpawn(k);damage(k,k.hp*10,'sword',0,'fire')}
+    o.n=chSave().n;o.coins=dropStats().spawned-c0>=CHALLENGE.goal*3;o.noWorld=!challengeClaim();
+    wHome();o.tag2=$('chTag').hidden;questLogOpen(true);const b=document.querySelector('#qLog [data-act="chClaim"]');const m=SAVE.bag.coins||0;if(b)b.click();o.got=(SAVE.bag.coins||0)-m;o.once=!challengeClaim();questLogOpen(false);
     o.saved=JSON.parse(localStorage.getItem(SAVE_STORE.key)).challenge.got===chDay();
-    SAVE.challenge={day:'1999-1-1',n:CHALLENGE.goal,got:'',owed:false};o.owed=chCan()&&chSave().n===0&&challengeClaim();o.tag2=$('chTag').hidden;
+    SAVE.challenge={day:'1999-1-1',n:CHALLENGE.goal,got:'',owed:false};o.owed=chCan()&&chSave().n===0&&challengeClaim();
     o.goal=CHALLENGE.goal;o.want=CHALLENGE.reward.coins;chRule=real;delete CHALLENGE.rules.test;SAVE.challenge=null;return o});
   check(chl.same&&chl.many>=3&&chl.tag&&chl.rule&&chl.n===chl.goal&&chl.coins&&chl.noWorld&&chl.got>=chl.want&&chl.once&&chl.saved&&chl.owed&&chl.tag2,
     'אתגר יומי: '+chl.many+' חוקים שונים ב-8 ימים, '+(chl.tag?'סימן בפס העליון':'אין סימן בעולם')+', '+(chl.rule?'החוק נכנס לאויב':'החוק לא נכנס לאויב')+', '+chl.n+'/'+chl.goal+' הריגות'+
-    (chl.noWorld?', לא נאסף בעולם':', נאסף בעולם')+', בכפר +'+chl.got+' מטבעות'+(chl.once?' פעם אחת':' יותר מפעם')+(chl.saved?', נשמר':', לא נשמר')+(chl.owed?', פרס מאתמול מחכה':', פרס מאתמול אבד'));
+    (chl.noWorld?', לא נאסף בעולם':', נאסף בעולם')+', בכפר +'+chl.got+' מטבעות'+(chl.once?' פעם אחת':' יותר מפעם')+(chl.saved?', נשמר':', לא נשמר')+(chl.owed?', פרס מאתמול מחכה':', פרס מאתמול אבד')+(chl.coins?'':', אין מטבעות מהחוק')+(chl.tag2?'':', הסימן נשאר בכפר')+(chl.same?'':', החוק לא קבוע לתאריך'));
   // ספר ההרפתקאות (book.js): הריגה נרשמת, פריט ומשאב מהתרמיל נרשמים, פרס מגיע כל BOOK.every רשומות, והחלון נפתח, מראה צללית ונסגר
   const bk=await page.evaluate(()=>{
     enterWorld('home');const o={},b=BK();
