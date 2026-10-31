@@ -393,6 +393,8 @@ h1{font-size:46px} h2{font-size:30px}
 .nbtn.talkbtn{flex-direction:row;border-color:var(--gold);color:var(--gold);font-size:15px;max-width:min(52vw,260px);overflow:hidden;text-overflow:ellipsis;
   background:linear-gradient(#3A3220,#241F14);animation:tpulse 1.2s ease-in-out infinite alternate}
 @keyframes tpulse{to{box-shadow:0 3px 0 #0B0E18,0 0 14px rgba(244,199,79,.45)}}
+/* כשאין מקום (טלפון עומד, "לדבר" ו"תן לפיוחו" יחד): רק הכפתורים הרחבים מתכווצים, עם "…", וכל השאר נשארים במסך */
+.nbtn.talkbtn{flex:0 1 auto;min-width:0}
 @media (orientation:landscape) and (max-height:500px){.nbtn .ni{font-size:20px}.nbtn{font-size:11px}}
 @media (orientation:landscape){.bnav{left:auto;right:max(16px,env(safe-area-inset-right,0px));transform:none}}
 /* הפס העליון בכפר ובעולם: שורה אחת שלא נשברת, מספרים קצרים, וההשתקה בפינה משלה */
