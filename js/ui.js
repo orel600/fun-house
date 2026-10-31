@@ -12,6 +12,7 @@ const WINS=[
   {id:'ovDaily',close:()=>dailyClose(),backdrop:true},
   {id:'npcDlg',close:()=>S.wd?wnpcTalk(null):npcTalk(null),outside:true},
   {id:'qLog',close:()=>questLogOpen(false),outside:true},
+  {id:'bookWin',close:()=>bookOpen(false),outside:true},
   {id:'vPanel',close:()=>vShut()},
   {id:'wPanel',close:()=>wShut()},
 ];
