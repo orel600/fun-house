@@ -102,7 +102,7 @@ function petUpdate(dt){
 /* ---- תקיפה ---- */
 // האויב הכי קרוב לשחקן בתוך הרצועה (לא מקורות משאבים, לא מת)
 function petFoe(){
-  let b=null,bd=PET.attack.leash;
+  let b=null,bd=S.wd?Math.min(PET.attack.leash,WORLD.attackRange):PET.attack.leash;   // בעולם לא יותר מטווח ההתקפה של השחקן (world.js)
   for(const e of enemies){if(e.dead||e.node)continue;const d=Math.hypot(e.x-P.x,e.y-P.y);if(d<bd){bd=d;b=e}}
   return b}
 function petHunt(p,dt,dP){
