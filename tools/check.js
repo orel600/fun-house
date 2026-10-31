@@ -974,6 +974,51 @@ function worldBot(m,L,god){
     (ch5.reg==='storm'&&ch5.climb?', הגעה למגדלים':', לא הגיע למגדלים')+(ch5.storm?' בסערה':', בלי סערה')+(ch5.solid?', מגדל חוסם':', עוברים דרך מגדל')+', '+ch5.foes+' אויבים מחושמלים'+(ch5.weak?' (חלשים לאדמה)':' (לא חלשים לאדמה!)')+(ch5.noNpc?'':', דמויות האחו במגדלים!')+
     (ch5.spark?', ברק גולמי':', קווסט הברק שבור')+(ch5.warden?', שומר הסערה קם':', שומר הסערה לא קם')+(ch5.marks?(ch5.markHit?', עיגול ברק פוגע':', עיגול ברק לא פוגע')+(ch5.dodge?' ומי שזז ניצל':', ואי אפשר להתחמק'):', בלי עיגולי ברק')+(ch5.ready?' והופל':', לא הופל')+
     (ch5.back?', חזרה למדבר ליד השביל':', החזרה למדבר שבורה')+(ch5.lit?', פנס הברק נדלק':', פנס הברק לא נדלק')+(ch5.safer?', המגדלים בטוחים יותר':''));
+  // העלילה, פרק 6 והאחרון (story.js, WORLD.regions.shadow): השביל ללב הצל נפתח רק כשכל חמשת הפנסים דולקים, שם חושך וצללים עם חומרים מעורבבים.
+  // הצל לומד את סוג הנזק שהכי השתמשת בו בעולם ועובר בחמישה שלבים (שומר אחרי שומר, עם ההתקפה שלו). אחרי הניצחון: הפנס הלבן, הריעות בכפר ו"תודה ששיחקת"
+  const ch6=await page.evaluate(()=>{
+    const o={},Q=QS();
+    Object.assign(SAVE.story,{earth:true,water:true,ice:false,fire:true,bolt:true});enterWorld('home','storm');o.closed=!wGates().shadow;
+    SAVE.story.ice=true;enterWorld('home','storm');o.open=!!wGates().shadow;
+    for(const id of ['s6Dark','s6Echo','s6Heart']){delete Q.done[id];delete Q.active[id]}delete SAVE.story.light;delete SAVE.story.end;
+    Q.done.s5Warden=Q.done.s5Warden||1;o.offer=qOpen(QBY.s6Dark)&&!qOpen(QBY.s6Echo);
+    qStart(QBY.s6Dark);wGo('shadow');o.reg=S.wd.reg;o.dark=qReady(QBY.s6Dark);questClaim('s6Dark');
+    const sh=enemies.filter(e=>!e.dead&&(e.type==='shadeknight'||e.type==='shadewisp'));o.foes=sh.length;
+    o.mixed=['shadeknight','shadewisp'].every(t=>(ETYPES[t].tags||[]).length>1);
+    o.noNpc=!Object.keys(wnpcState()).length;o.shadow=!!WR().shadow&&typeof wShadow==='function';
+    qStart(QBY.s6Echo);questEvent('kill','shadeknight',6);questEvent('kill','shadewisp',6);o.echo=qReady(QBY.s6Echo);questClaim('s6Echo');
+    return o});
+  await page.clock.runFor(400);await shot('world-shadow');
+  const ch6b=await page.evaluate(()=>{
+    const o={};STO().use={fire:5000,water:10};   // "השתמשת" הכי הרבה באש
+    qStart(QBY.s6Heart);const L=STORY.lanterns.light;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='shade';
+    if(w){P.inv=99;o.learn=w.res==='fire';const seen=[];let res=true;
+      for(const f of [0.9,0.7,0.5,0.3,0.1]){w.hp=w.max*f;storyWardenMove(w,0.016);seen.push(w.pk);res=res&&w.mult.fire<1}
+      o.phases=seen.join(',');o.allPhases=o.phases===STORY.lanterns.light.warden.phases.join(',');o.learnAll=res;
+      w.hp=w.max*0.7;storyWardenMove(w,0.016);w.shoot=0;const eb0=eb.length;storyWardenMove(w,0.016);o.shoot=eb.length>eb0;
+      w.hp=w.max*0.3;storyWardenMove(w,0.016);w.ring=0;storyWardenMove(w,0.016);o.ring=(S.wd.rings||[]).some(r=>r.k==='fire');
+      w.hp=w.max*0.1;storyWardenMove(w,0.016);w.marks=0;storyWardenMove(w,0.016);o.marks=(S.wd.marks||[]).some(m=>m.k==='bolt');
+      S.wd.rings=[];S.wd.marks=[];damage(w,w.max*10,'sword',0,'water');storyUpdate(0.1)}
+    o.ready=qReady(QBY.s6Heart);
+    wGo('storm');const ps=WORLD.regions.storm.paths.shadow;o.back=S.wd.reg==='storm'&&Math.hypot(P.x-ps.x,P.y-ps.y)<WORLD.arrive+10;
+    enterVillage();$('ovDaily').hidden=true;questLogOpen(false);questClaim('s6Heart');o.lit=!!SAVE.story.light;return o});
+  // הסוף: התושבים מריעים, ראש הכפר מדבר, ואחרי שסוגרים את השיחה: "תודה ששיחקת" עם סיכום. סוגרים, וממשיכים לשחק
+  await page.clock.runFor(900);
+  ch6b.cheer=await page.evaluate(()=>Object.values(npcState()||{}).filter(n=>n.st==='cheer').length);
+  for(let i=0;i<14;i++){await page.clock.runFor(1500);
+    const st=await page.evaluate(()=>{const o={end:!$('ovEnd').hidden,dlg:!$('npcDlg').hidden};
+      if(o.dlg){o.head=S.vil&&S.vil.dlgLine===T('story.light.head');npcTalk(null)}return o});
+    if(st.head)ch6b.head=true;if(st.end){ch6b.end=true;break}}
+  if(ch6b.end)await shot('the-end');
+  Object.assign(ch6b,await page.evaluate(()=>{const o={rows:document.querySelectorAll('#endWin .endrow').length,sum:storySummary(),saved:!!JSON.parse(localStorage.getItem(SAVE_STORE.key)).story.end};
+    const b=document.querySelector('#endWin [data-act="close"]');if(b)b.click();o.goOn=$('ovEnd').hidden&&S.mode==='play';return o}));
+  Object.assign(ch6,ch6b);
+  check(ch6.closed&&ch6.open&&ch6.offer&&ch6.reg==='shadow'&&ch6.dark&&ch6.foes>0&&ch6.mixed&&ch6.noNpc&&ch6.shadow&&ch6.echo&&ch6.warden&&ch6.learn&&ch6.learnAll&&ch6.allPhases&&ch6.shoot&&ch6.ring&&ch6.marks&&ch6.ready&&ch6.back&&ch6.lit&&ch6.cheer>=3&&ch6.head&&ch6.end&&ch6.rows===4&&ch6.saved&&ch6.goOn,
+    'עלילה, פרק 6: '+(ch6.closed&&ch6.open?'השביל ללב הצל נפתח רק עם חמשת הפנסים':'השביל ללב הצל לא נשלט ע"י הפנסים')+(ch6.offer?', קווסט ראשון מוצע':', סדר הקווסטים שבור')+
+    (ch6.reg==='shadow'&&ch6.dark?', הגעה ללב הצל':', לא הגיע ללב הצל')+(ch6.shadow?' בחושך':', בלי חושך')+', '+ch6.foes+' צללים'+(ch6.mixed?' (חומרים מעורבבים)':' (חומר אחד!)')+(ch6.noNpc?'':', דמויות האחו בחושך!')+(ch6.echo?'':', קווסט ההדים שבור')+
+    (ch6.warden?', הצל קם':', הצל לא קם')+(ch6.learn&&ch6.learnAll?' ולמד (עמיד לאש בכל השלבים)':', לא למד')+', שלבים: '+(ch6.phases||'-')+(ch6.shoot&&ch6.ring&&ch6.marks?' עם ההתקפות של השומרים':', התקפה של שלב חסרה')+(ch6.ready?', הופל':', לא הופל')+
+    (ch6.back?', חזרה למגדלים':', החזרה למגדלים שבורה')+(ch6.lit?', הפנס הלבן נדלק':', הפנס הלבן לא נדלק')+', '+(ch6.cheer||0)+' תושבים מריעים'+(ch6.head?', ראש הכפר מדבר':', ראש הכפר שותק')+
+    (ch6.end?', "תודה ששיחקת" ('+ch6.rows+' שורות: '+(ch6.sum?ch6.sum.time+' · '+ch6.sum.kills+' · '+ch6.sum.secrets+' · '+ch6.sum.fish:'')+')':', בלי מסך סיום')+(ch6.saved?'':', לא נשמר')+(ch6.goOn?' וממשיכים לשחק':', אי אפשר להמשיך'));
   // כל פנס שנדלק משנה את הכפר (homecoming.js): בכניסה הבאה לכפר התושב חוזר, העמוד שלו דולק, ראש הכפר מספר, ובעולם נופל חפץ ביסוד של הפנס
   const hm=await page.evaluate(()=>{
     const o={},b0=SAVE.home.back;SAVE.home.back={};
@@ -985,9 +1030,10 @@ function worldBot(m,L,god){
     enterVillage();o.next=homeBack('water');enterVillage();o.three=homeBack('ice');
     o.fire=!homeBack('fire')&&!npcHere('baker')||!!STO().fire;
     o.bolt=!homeBack('bolt')&&!npcHere('bellringer')||!!STO().bolt;
+    o.light=!homeBack('light')&&!npcHere('lamplighter')||!!STO().light;
     enterWorld('home');const H=HOME.list.earth,c=H.chance;H.chance=2;const n0=drops().length;o.gift=homeKill({x:P.x,y:P.y,r:13})===H.item&&drops().length>n0;H.chance=c;
     SAVE.home.back={...b0,...SAVE.home.back};npcTalk(null);enterVillage();return o});
-  check(hm.away&&hm.k&&hm.here&&hm.free&&hm.posts>=1&&hm.line&&hm.saved&&hm.next&&hm.three&&hm.fire&&hm.bolt&&hm.gift,'פנס משנה את הכפר: '+(hm.away&&hm.here?'הגנן חוזר בכניסה לכפר':'הגנן לא חזר')+(hm.k?' (פנס אחד בכל כניסה)':', כמה פנסים בבת אחת')+
+  check(hm.away&&hm.k&&hm.here&&hm.free&&hm.posts>=1&&hm.line&&hm.saved&&hm.next&&hm.three&&hm.fire&&hm.bolt&&hm.light&&hm.gift,'פנס משנה את הכפר: '+(hm.away&&hm.here?'הגנן חוזר בכניסה לכפר':'הגנן לא חזר')+(hm.k?' (פנס אחד בכל כניסה)':', כמה פנסים בבת אחת')+
     (hm.saved?', נשמר':', לא נשמר')+', '+hm.posts+' עמודים דולקים'+(hm.next&&hm.three?', המים והקרח בכניסות הבאות':', המים והקרח לא חזרו')+(hm.free?'':', תושב עומד במקום אסור')+(hm.line?'':', אין לו משפט')+(hm.gift?', וחפץ ביסוד נופל בעולם':', החפץ לא נפל'));
   // אירועים בעולם (events.js): גל שנגמר בתיבה, עגלה שנותנת שלל כשמגיעים, ומטר שמפיל מתכות
   const evt=await page.evaluate(()=>{

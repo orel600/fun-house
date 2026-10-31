@@ -54,7 +54,15 @@ const ETYPES={
     drop:{essence:[0.5,1],dust:[0.3,1],boltC:[0.08,1]},elite:{essence:[1,3],boltC:[0.5,1]}},
   // שומר הסערה: הבוס של פרק 5, ליד פנס הברק (STORY.lanterns.bolt). warden: לא יצור משאב
   stormwarden:{hp:170,r:20,speed:58,xp:0,dmg:19,tags:['lightning','metal'],warden:true,
-    drop:{coins:[1,70],bolt:[1,2],boltC:[1,3],boltF:[0.2,1],silver:[0.6,3]}}
+    drop:{coins:[1,70],bolt:[1,2],boltC:[1,3],boltF:[0.2,1],silver:[0.6,3]}},
+  // לב הצל (פרק 6, story.js): צללים של אויבים מכל האזורים, עם חומרים מעורבבים, כדי שאף סוג נזק אחד לא יספיק. רק בעולם, לא בזירה
+  shadeknight:{hp:96,r:15,speed:62,xp:3,dmg:16,tags:['stone','ice'],  // צל של אביר: מים ×1.5, ברק ×0, פיזי חלש
+    drop:{coins:[0.8,3],stone:[0.5,2],sapphireC:[0.12,1],amberC:[0.12,1]},elite:{gem:[0.4,1],sapphire:[0.12,1],amber:[0.12,1]}},
+  shadewisp:{hp:42,r:12,speed:120,xp:2,dmg:12,tags:['flying','fire'],  // צל של רוח: מים, קרח וברק ×1.5
+    drop:{essence:[0.5,1],dust:[0.3,1],rubyC:[0.08,1],aquaC:[0.08,1]},elite:{essence:[1,3],rubyC:[0.5,1],aquaC:[0.5,1]}},
+  // הצל: הבוס האחרון, ליד הפנס הלבן (STORY.lanterns.light). בלי חומרים: את המכפילים שלו הוא בונה מהשחקן ומהשומרים (storyShade ב-story.js)
+  shade:{hp:190,r:20,speed:60,xp:0,dmg:20,tags:[],warden:true,
+    drop:{coins:[1,120],gem:[1,2],star:[0.6,1],ruby:[0.3,1],sapphire:[0.3,1],bolt:[0.3,1],aqua:[0.3,1],amber:[0.3,1]}}
 };
 // הבוסים לפי id (היום יש אחד, type:'boss' ב-boss.js). drop כמו באויבים, כולל החלק שרק הוא מפיל (RES, משפחת boss)
 const BOSSES={
