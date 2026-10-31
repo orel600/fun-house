@@ -524,7 +524,7 @@ function worldBot(m,L,god){
     add(src,LOOT.firstKill,'first');add(src,LOOT.jackpot.table,'jackpot');
     // יצורי משאבים לא באים מה-spawner: כל אחד חייב מקור ששומר עליו, ושורה ב-LOOK3D
     const guards=new Set(Object.values(NODES.kinds).map(k=>k.guard&&k.guard.type).filter(Boolean)),lost=[];
-    for(const t in ETYPES)if(!['grunt','shield','wisp'].includes(t)&&(!guards.has(t)||!LOOK3D[t]||!(ETYPES[t].tags||[]).length))lost.push(t);
+    for(const t in ETYPES)if(!['grunt','shield','wisp'].includes(t)&&!ETYPES[t].warden&&(!guards.has(t)||!LOOK3D[t]||!(ETYPES[t].tags||[]).length))lost.push(t);
     for(const b in BOSSES)add(src,BOSSES[b].drop,'boss:'+b);
     add(src,WANTED.drop,'wanted');WANTED.loot.forEach(l=>add(src,l.res,'wanted:'+l.key));
     add(src,BONUS.roomRes,'room');
@@ -788,13 +788,39 @@ function worldBot(m,L,god){
     qStart(QBY.s1Lanterns);leaveVillage();questEvent('reach','world');questClaim('s1Lanterns');
     qStart(QBY.s1Shard);const p=S.pet||petMake();S.wd.digs0=p.digs;p.digs++;storyUpdate(0.1);o.shard=qReady(QBY.s1Shard);questClaim('s1Shard');
     qStart(QBY.s1Path);questEvent('kill','grunt',25);questClaim('s1Path');
-    qStart(QBY.s1Warden);const L=STORY.lantern;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.warden;
+    qStart(QBY.s1Warden);const L=STORY.lanterns.earth;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.warden;
     if(w){P.inv=99;damage(w,w.hp*10,'sword',0,'water')}o.ready=qReady(QBY.s1Warden);
     const d0=SAVE.story.earth;questClaim('s1Warden');o.lit=!d0&&SAVE.story.earth;
     enterWorld('home');o.safer=enemies.filter(e=>!e.dead&&e.type==='grunt').every(e=>e.dmg<=ETYPES.grunt.dmg*0.75*0.26+0.001);
     P.inv=0;enterVillage();return o});
   check(sto2.intro&&sto2.offer&&sto2.shard&&sto2.warden&&sto2.ready&&sto2.lit,'עלילה, פרק 1: '+(sto2.intro?'ההקדמה אצל ראש הכפר':'אין הקדמה ('+sto2.dbg+')')+(sto2.offer?', קווסט ראשון מוצע והבא נעול':', סדר הקווסטים שבור')+
     (sto2.shard?', פיוחו מצאה רסיס':', אין רסיס')+(sto2.warden?', השומר קם ליד הפנס':', השומר לא קם')+(sto2.ready?' והופל':', לא הופל')+(sto2.lit?', הפנס נדלק':', הפנס לא נדלק')+(sto2.safer?', האחו בטוח יותר':''));
+  // העלילה, פרק 2 (story.js, WORLD.regions.lake): הדרך לאגם סגורה עד שפנס האדמה דולק, באגם יש אויבים רטובים (חלשים לברק),
+  // והקווסטים מובילים לשומר המים, שמפיל את פנס המים
+  const ch2=await page.evaluate(()=>{
+    const o={},Q=QS(),e0=SAVE.story.earth;
+    SAVE.story.earth=false;enterWorld('home');o.closed=!wGates().lake;
+    SAVE.story.earth=true;enterWorld('home');o.open=!!wGates().lake;SAVE.story.earth=e0||true;
+    for(const id of ['s2Mist','s2Glow','s2Warden']){delete Q.done[id];delete Q.active[id]}delete SAVE.story.water;
+    o.offer=qOpen(QBY.s2Mist)&&!qOpen(QBY.s2Glow);
+    qStart(QBY.s2Mist);wGo('lake');o.reg=S.wd.reg;o.mist=qReady(QBY.s2Mist);questClaim('s2Mist');
+    const wet=enemies.filter(e=>!e.dead&&(e.type==='drowned'||e.type==='mistling'));o.foes=wet.length;
+    o.weak=wet.some(e=>e.type==='drowned'&&e.weak==='lightning');o.noNpc=!Object.keys(wnpcState()).length;
+    return o});
+  await page.clock.runFor(400);await shot('world-lake');
+  const ch2b=await page.evaluate(()=>{
+    const o={};qStart(QBY.s2Glow);questEvent('kill','drowned',8);questEvent('gather','aquaC',3);o.glow=qReady(QBY.s2Glow);questClaim('s2Glow');
+    qStart(QBY.s2Warden);const L=STORY.lanterns.water;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='tidewarden';
+    if(w){P.inv=99;damage(w,w.hp*10,'sword',0,'lightning');storyUpdate(0.1)}o.ready=qReady(QBY.s2Warden);
+    wGo('meadow');o.back=S.wd.reg==='meadow'&&Math.hypot(P.x-WORLD.paths.lake.x,P.y-WORLD.paths.lake.y)<WORLD.arrive+10;
+    enterVillage();questClaim('s2Warden');o.lit=!!SAVE.story.water;
+    enterWorld('home','lake');o.safer=storySafe()<1;P.inv=0;enterVillage();return o});
+  Object.assign(ch2,ch2b);
+  check(ch2.closed&&ch2.open&&ch2.offer&&ch2.reg==='lake'&&ch2.mist&&ch2.foes>0&&ch2.weak&&ch2.noNpc&&ch2.glow&&ch2.warden&&ch2.ready&&ch2.back&&ch2.lit,
+    'עלילה, פרק 2: '+(ch2.closed&&ch2.open?'הדרך לאגם נפתחת רק אחרי פנס האדמה':'הדרך לאגם לא נשלטת ע"י הפנס')+(ch2.offer?', קווסט ראשון מוצע':', סדר הקווסטים שבור')+
+    (ch2.reg==='lake'&&ch2.mist?', הגעה לאגם':', לא הגיע לאגם')+', '+ch2.foes+' אויבים רטובים'+(ch2.weak?' (חלשים לברק)':' (לא חלשים לברק!)')+(ch2.noNpc?'':', דמויות האחו באגם!')+
+    (ch2.glow?', מים זוהרים':', קווסט המים שבור')+(ch2.warden?', שומר המים קם':', שומר המים לא קם')+(ch2.ready?' והופל':', לא הופל')+(ch2.back?', חזרה לאחו ליד השביל':', החזרה לאחו שבורה')+
+    (ch2.lit?', פנס המים נדלק':', פנס המים לא נדלק')+(ch2.safer?', האגם בטוח יותר':''));
   // אירועים בעולם (events.js): גל שנגמר בתיבה, עגלה שנותנת שלל כשמגיעים, ומטר שמפיל מתכות
   const evt=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=()=>drops().length;
