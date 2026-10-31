@@ -20,7 +20,8 @@ function floatText(x,y,txt,col,size,ltr=false,crit=false){
 // w: הנשק שפגע. t: סוג הנזק, ברירת המחדל היא הסוג של הנשק (ופיזי למה שאינו נשק, כמו פצצה). chained: פגיעה של ברק שקפץ, שלא קופץ שוב
 function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
   const m=e.mult[t]??1;const crit=Math.random()<HITFX.crit+orbitCrit()+Math.min(STATS.cap.crit,P.crit||0)/100;   // ונקודות מזל (stats.js)   // חפץ מזל מוסיף (orbit.js)
-  const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?HITFX.critMul:1);
+  const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?HITFX.critMul:1)*statDmgFx(w);   // עץ הסקילים (stats.js)
+  statOnDamage(d);
   e.hp-=d;e.flash=0.09;sfx('hit');heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
   if(!e.isBoss&&!e.node){const kb=(w==='sword'?150:55)*(m>1?1.4:1)/(e.big||1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   const col=m>1?dtCol(t):m<1?C.dim:C.chalk;
@@ -34,7 +35,7 @@ function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
 function kill(e){
   e.dead=true;S.kills++;sfx('death');heroCount('kills');if(e.isBoss)heroCount('bosses');
   lootKill(e);   // שלל לכפר (loot.js)
-  statKillXp(e);   // XP לדמות בעולם הפתוח (stats.js)
+  statKillXp(e);statOnKill();   // XP לדמות בעולם הפתוח, וזעם (stats.js)
   questEvent('kill',e.isBoss?'boss':e.wanted?'wanted':e.type);
   if(e.isBoss){bossDown(e);return}
   if(e.wanted){wantedDown(e);return}
@@ -45,7 +46,7 @@ function kill(e){
 function hurt(d){
   if(P.inv>0||S.mode!=='play')return;
   if(orbitShield())return;   // חפץ הגנה בולע את המכה (orbit.js)
-  d*=1-Math.min(STATS.cap.def,P.def||0)/100;   // נקודות הגנה (stats.js)
+  d*=1-Math.min(STATS.cap.def,(P.def||0)+statDefFx())/100;statOnHurt();   // נקודות הגנה ועץ הסקילים (stats.js)
   P.hp-=d;P.inv=0.6;sfx('hurt');questEvent('hurt');S.shake=Math.max(S.shake,7);S.hurt=0.3;
   floatText(P.x,P.y-36,'-'+Math.round(d),C.blood,17);
   if(P.hp<=0){P.hp=0;gameOver()}
@@ -56,14 +57,15 @@ function attack(dt){
     const tgt=aimTarget(s.range);
     if(tgt)P.aim=Math.atan2(tgt.y-P.y,tgt.x-P.x);
     if(tgt&&s.t<=0){
-      s.t=s.cd*wK('cd');s.anim=0.2;s.ang=P.aim;
-      const whirl=P.whirl>0&&(s.n=(s.n||0)+1)%TREE.whirlEvery===0;   // סקיל הלוחם: הנפה מסביב (stats.js)
-      if(whirl)sparks(P.x,P.y,C.ember,14,260);
+      s.t=s.cd*wK('cd')/(P.raging?1+TREE.fx.blood.aspd/100:1);s.anim=0.2;s.ang=P.aim;   // דם רותח: מהר יותר (stats.js)
+      // עץ הסקילים (stats.js): רעידת אדמה כל הנפה רביעית, מסביב ובסוג אדמה. מכה חוזרת: אחרי 3 מכות שחטפת, המכה הבאה פי 3
+      const quake=TF('quake')&&(s.n=(s.n||0)+1)%TREE.fx.quake.every===0,cm=P.cnt>=TREE.fx.counter.hits?TREE.fx.counter.mul:1;if(cm>1)P.cnt=0;
+      if(quake){sparks(P.x,P.y,dtCol('earth'),16,260);S.shake=Math.max(S.shake,6)}
       for(const e of enemies.concat(S.nd.list)){
         if(e.dead)continue;const dx=e.x-P.x,dy=e.y-P.y,d=Math.hypot(dx,dy)-e.r;
         if(d>s.range)continue;const a=Math.atan2(dy,dx);
-        if(!whirl&&Math.abs(angDiff(a,s.ang))>s.arc/2&&d>8)continue;
-        damage(e,s.dmg*wK('dmg')*dmgK(),'sword',a);
+        if(!quake&&Math.abs(angDiff(a,s.ang))>s.arc/2&&d>8)continue;
+        damage(e,s.dmg*wK('dmg')*dmgK()*cm*(quake?TREE.fx.quake.dmg:1),'sword',a,quake?'earth':undefined);
       }
       S.shake=Math.max(S.shake,2);
     }

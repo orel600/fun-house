@@ -139,7 +139,7 @@ function worldUpdate(dt){
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
   wantedUpdate(dt);
   dropsUpdate(dt);wLootIn();
-  if(!nearest(WORLD.aggro))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
+  if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}
   parts=parts.filter(p=>p.life>0);

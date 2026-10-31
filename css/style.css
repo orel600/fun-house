@@ -549,3 +549,5 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 #qBtn .ni,#gearBtn .ni{font-size:0;width:34px;height:34px;background:center/contain no-repeat}
 #qBtn .ni{background-image:url(../icons/ui/nav-quests.png)}#gearBtn .ni{background-image:url(../icons/ui/nav-gear.png)}
 @media (orientation:landscape) and (max-height:500px){#qBtn .ni,#gearBtn .ni{width:28px;height:28px}}
+.trkey{margin:4px 0 0;font:800 11px var(--body);color:var(--gold)}.tror{margin:-2px 0;text-align:center;font:700 11px var(--body);color:var(--dim)}.trn.gone{opacity:.3}
+.bname{color:var(--chalk);background:rgba(255,138,61,.2);border:1px solid var(--ember);border-radius:8px;padding:0 6px}

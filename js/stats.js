@@ -27,7 +27,7 @@ const stFree=()=>Math.max(0,(heroLv()-1)*STATS.perLevel-stSpent());
 // כל מה שהנקודות נותנות יחד, בפורמט של סטטי ציוד
 function statsGive(){const t={},p=stPts();for(const k in STATS.list){const n=p[k]||0;if(!n)continue;const g=STATS.list[k].give;for(const s in g)t[s]=(t[s]||0)+g[s]*n}return t}
 // בתחילת כל ריצה, בכפר ובעולם (heroReset ב-heroes.js)
-function statsReset(){gApply(statsGive(),1);gApply(treeGive(),1)}   // וגם עץ הסקילים
+function statsReset(){gApply(statsGive(),1);gApply(treeGive(),1);P.tfx=treeFx()}   // וגם עץ הסקילים
 // שמים נקודה: חל מיד, גם באמצע ריצה
 function statAdd(k){
   if(!STATS.list[k]||stFree()<1)return false;
@@ -35,10 +35,10 @@ function statAdd(k){
   gApply(before,-1);gApply(statsGive(),1);if(k==='vit')P.hp=Math.min(P.maxHp,P.hp+STATS.list.vit.give.hp);
   saveNow();sfx('tap');return true;
 }
-const statRespecCost=()=>STATS.respec.base+STATS.respec.per*heroLv();
+const statRespecCost=()=>SAVE.hero.respecs?STATS.respec.base+STATS.respec.per*heroLv():0;   // הפעם הראשונה חינם, כדי שינסו (המחקר: "בלי איפוס זול אף אחד לא ינסה")
 function statRespec(){
-  const c=statRespecCost();if(!stSpent()&&!trSpent()||!bagHas('coins',c))return false;
-  bagTake('coins',c);gApply(statsGive(),-1);gApply(treeGive(),-1);SAVE.hero.pts={};SAVE.hero.tree={};P.hp=Math.min(P.hp,P.maxHp);
+  const c=statRespecCost();if(!stSpent()&&!trSpent()||c&&!bagHas('coins',c))return false;
+  if(c)bagTake('coins',c);gApply(statsGive(),-1);gApply(treeGive(),-1);SAVE.hero.pts={};SAVE.hero.tree={};P.tfx={};SAVE.hero.respecs=(SAVE.hero.respecs||0)+1;P.hp=Math.min(P.hp,P.maxHp);
   saveNow();celebrate(P.x,P.y-20,'quest');return true;
 }
 // XP לדמות מאויב שנפל בעולם הפתוח
@@ -51,7 +51,8 @@ const statLoot=()=>1+(P.loot||0)/100;
 /* ---- המסך: בחלון הציוד, כשלא נבחר פריט ---- */
 function statsHtml(){
   const x=heroXpNow(),free=stFree(),p=stPts(),g=statsGive();
-  let h='<div class="sthead"><b>'+T('gear.hero',heroLv())+'</b><span class="stxp"><i style="width:'+Math.round(x.have/x.need*100)+'%"></i><bdi>'+Math.floor(x.have)+' / '+x.need+' XP</bdi></span></div>';
+  const bn=buildName();
+  let h='<div class="sthead"><b>'+T('gear.hero',heroLv())+(bn?' · '+T('st.build')+' <span class="bname">'+bn+'</span>':'')+'</b><span class="stxp"><i style="width:'+Math.round(x.have/x.need*100)+'%"></i><bdi>'+Math.floor(x.have)+' / '+x.need+' XP</bdi></span></div>';
   h+='<p class="stfree'+(free?' on':'')+'">'+(free?T('st.free',free):T('st.none'))+'</p>';
   h+='<div class="strows">'+Object.keys(STATS.list).map(k=>{const S_=STATS.list[k],[name,what]=T('st.'+k),n=p[k]||0;
     const val=[...new Set(Object.keys(S_.give).map(s=>'+'+(Math.round((g[s]||0)*10)/10)+(s==='hp'?'':'%')))].join(' / ');
@@ -65,61 +66,116 @@ function statsHtml(){
 function statRespecHtml(){
   if(!stSpent()&&!trSpent())return '';
   const c=statRespecCost();
-  return '<button class="vbtn ghost" data-act="respec"'+(bagHas('coins',c)?'':' disabled')+'>'+T('st.respec',c)+' '+resIcon('coins')+'</button>';
+  return '<button class="vbtn ghost" data-act="respec"'+(!c||bagHas('coins',c)?'':' disabled')+'>'+(c?T('st.respec',c)+' '+resPic('coins'):T('st.respecFree'))+'</button>';
 }
 // מספר על כפתור הציוד כשיש נקודות לשים
 function statBadge(){const el=$('gBadge');if(!el)return;const n=stFree()+trFree(),t=n?String(n):'';if(el.textContent!==t){el.textContent=t;el.hidden=!n}}
 
-/* ---- עץ סקילים (ניר, 31.10.2026): שלושה ענפים לפי נשק. נקודת סקיל כל tree.every רמות.
-   בכל ענף הסקילים בשורה: כל אחד פותח את הבא. האחרון הוא הגדול, ועולה יותר. מה שנלמד נשמר ב-SAVE.hero.tree ({war:3,hunt:1}: כמה נלמדו בכל ענף).
-   give: סטטים כמו ציוד (gApply ב-gear.js), ועוד: arc (רוחב הנפה %), multi (עוד חץ), pierce (חץ עובר דרך), whirl (כל הנפה רביעית מסביב).
-   השמות והתיאורים ב-lang.js תחת 'tr.<id>' ---- */
+/* ---- עץ סקילים (ניר, 31.10.2026), גרסה 2 לפי המחקר (docs/research-skills.md): שלושה ענפים לפי נשק, נקודת סקיל כל tree.every רמות.
+   כל ענף הוא שלבים לפי הסדר. שלב הוא סקיל אחד, או צומת "אחד משניים" (pick): בוחרים אחד, והשני נסגר. key: סקיל מפתח, עם מחיר אמיתי, ורק אחד במשחק כולו.
+   give: סטטים כמו ציוד (gApply ב-gear.js). fx: התנהגות שמופעלת לפי מצב (statTick וההוקים ב-combat.js), בלי כפתורים.
+   מה שנלמד נשמר ב-SAVE.hero.tree ({war:['w1','wRoot']}). השמות ב-lang.js תחת 'tr.<id>' ---- */
 const TREE={
-  every:2,                    // נקודת סקיל כל כמה רמות
+  every:2,
   branches:{
-    war: {icon:'⚔️',col:'#FF8A3D',nodes:[
-      {id:'w1',icon:'🗡️',give:{sdmg:10}},
-      {id:'w2',icon:'❤️',give:{hp:20}},
-      {id:'w3',icon:'🌙',give:{arc:20}},
-      {id:'w4',icon:'🛡️',give:{def:5}},
-      {id:'w5',icon:'⚡',give:{sdmg:15,aspd:6}},
-      {id:'w6',icon:'🌀',cost:2,give:{whirl:1}}]},
-    hunt:{icon:'🏹',col:'#A8D08D',nodes:[
-      {id:'h1',icon:'🎯',give:{gdmg:10}},
-      {id:'h2',icon:'👟',give:{speed:6}},
-      {id:'h3',icon:'🍀',give:{crit:5}},
-      {id:'h4',icon:'⚡',give:{aspd:8}},
-      {id:'h5',icon:'🏹',give:{multi:1}},
-      {id:'h6',icon:'💨',cost:2,give:{pierce:2,gdmg:10}}]},
-    mage:{icon:'🪄',col:'#C7A6FF',nodes:[
-      {id:'m1',icon:'✨',give:{gdmg:8,magnet:15}},
-      {id:'m2',icon:'💚',give:{regen:0.6}},
-      {id:'m3',icon:'💰',give:{loot:10}},
-      {id:'m4',icon:'🔮',give:{hp:15,def:3}},
-      {id:'m5',icon:'🌟',give:{gdmg:15}},
-      {id:'m6',icon:'☄️',cost:2,give:{crit:10,gdmg:20}}]}
+    war: {icon:'⚔️',col:'#FF8A3D',steps:[   // "הסלע שלא זז": עומד, סופג ומחזיר
+      {id:'w1',icon:'🪨',give:{hpPct:10}},
+      {pick:[{id:'wRoot',icon:'🌳',fx:'rooted'},{id:'wCounter',icon:'🔁',fx:'counter'}]},
+      {id:'w3',icon:'🗡️',give:{sdmg:15}},
+      {pick:[{id:'wBlood',icon:'🩸',fx:'blood'},{id:'wQuake',icon:'💥',fx:'quake'}]},
+      {id:'w5',icon:'🛡️',fx:'lockArmor'},
+      {key:true,cost:2,pick:[{id:'wMountain',icon:'⛰️',give:{hpPct:50,sdmg:40,speed:-35}},{id:'wBerserk',icon:'😡',fx:'berserk'}]}]},
+    hunt:{icon:'🏹',col:'#A8D08D',steps:[
+      {id:'h1',icon:'🎯',give:{gdmg:10}},{id:'h2',icon:'👟',give:{speed:6}},{id:'h3',icon:'🍀',give:{crit:5}},
+      {id:'h4',icon:'⚡',give:{aspd:8}},{id:'h5',icon:'🏹',give:{multi:1}},{id:'h6',icon:'💨',cost:2,give:{pierce:2,gdmg:10}}]},
+    mage:{icon:'🪄',col:'#C7A6FF',steps:[
+      {id:'m1',icon:'✨',give:{gdmg:8,magnet:15}},{id:'m2',icon:'💚',give:{regen:0.6}},{id:'m3',icon:'💰',give:{loot:10}},
+      {id:'m4',icon:'🔮',give:{hp:15,def:3}},{id:'m5',icon:'🌟',give:{gdmg:15}},{id:'m6',icon:'☄️',cost:2,give:{crit:10,gdmg:20}}]}
   },
-  whirlEvery:4                // הסקיל הגדול של הלוחם: כל כמה הנפות אחת מסתובבת מסביב
+  // המספרים של ההתנהגויות (fx)
+  fx:{
+    rooted:{after:1,def:30,dmg:20},          // עומדים שנייה: 30% פחות נזק, 20% יותר נזק מקרוב
+    counter:{hits:3,mul:3},                  // 3 מכות שחטפת: המכה הבאה פי 3
+    blood:{below:0.5,aspd:30,leech:0.05},    // מתחת לחצי חיים: מהיר יותר, ומחזיר 5% מהנזק כחיים
+    quake:{every:4,dmg:1.2},                 // כל הנפה רביעית: אדמה מסביב (קפוא + אדמה = הלם, dmg.js)
+    lockArmor:{range:110,per:3,max:12},      // כל אויב קרוב: עוד 3% הגנה
+    berserk:{per:6,max:10,decay:3,drain:0.02,calm:320}   // כל הריגה +6% נזק (עד 10), יורד אחד כל 3 שניות. אין ריפוי בעולם, ובלי אויב קרוב החיים יורדים 2% בשנייה
+  }
 };
-const trHave=()=>SAVE.hero.tree||(SAVE.hero.tree={});
-const trCost=n=>n.cost||1;
-const trSpent=()=>{let s=0;for(const b in TREE.branches)TREE.branches[b].nodes.slice(0,trHave()[b]||0).forEach(n=>s+=trCost(n));return s};
+const trHave=()=>{const t=SAVE.hero.tree||(SAVE.hero.tree={});for(const b in t)if(!Array.isArray(t[b]))t[b]=[];return t};   // שמירה מגרסה 1 (מספרים): מתחילים מחדש, והנקודות חוזרות
+const trOpts=st=>st.pick||[st];
+const trNode=id=>{for(const b in TREE.branches)for(const st of TREE.branches[b].steps)for(const n of trOpts(st))if(n.id===id)return{n,st,b};return null};
+const trCost=st=>st.cost||1;
+const trSpent=()=>{let s=0;const H=trHave();for(const b in H)for(const id of H[b]){const x=trNode(id);if(x)s+=trCost(x.st)}return s};
 const trFree=()=>Math.max(0,Math.floor((heroLv()-1)/TREE.every)-trSpent());
-function treeGive(){const t={};for(const b in TREE.branches)for(const n of TREE.branches[b].nodes.slice(0,trHave()[b]||0))for(const s in n.give)t[s]=(t[s]||0)+n.give[s];return t}
-// לומדים את הסקיל הבא בענף: חל מיד
-function treeLearn(b){
-  const B=TREE.branches[b],i=trHave()[b]||0,n=B&&B.nodes[i];if(!n||trFree()<trCost(n))return false;
-  const before=treeGive();trHave()[b]=i+1;gApply(before,-1);gApply(treeGive(),1);
-  saveNow();celebrate(P.x,P.y-20,'gear',n.icon);return true;
+const trKeyTaken=()=>{const H=trHave();for(const b in H)for(const id of H[b]){const x=trNode(id);if(x&&x.st.key)return id}return null};
+const trLearned=()=>{const out=[],H=trHave();for(const b in H)for(const id of H[b]){const x=trNode(id);if(x)out.push(x.n)}return out};
+function treeGive(){const t={};for(const n of trLearned())for(const s in n.give||{})t[s]=(t[s]||0)+n.give[s];return t}
+const treeFx=()=>{const f={};for(const n of trLearned())if(n.fx)f[n.fx]=true;return f};
+// אפשר ללמוד את id עכשיו? מחזיר סיבה, או null
+function trWhy(b,id){
+  const B=TREE.branches[b],i=(trHave()[b]||[]).length,st=B&&B.steps[i];
+  if(!st||!trOpts(st).some(n=>n.id===id))return 'order';
+  if(st.key&&trKeyTaken())return 'key';
+  if(trFree()<trCost(st))return 'points';
+  return null;
 }
+function treeLearn(b,id){
+  if(!id){const st=TREE.branches[b].steps[(trHave()[b]||[]).length];id=st&&trOpts(st)[0].id}   // בלי בחירה: האפשרות הראשונה
+  if(trWhy(b,id))return false;
+  const before=treeGive();(trHave()[b]=trHave()[b]||[]).push(id);gApply(before,-1);gApply(treeGive(),1);P.tfx=treeFx();
+  saveNow();celebrate(P.x,P.y-20,'gear',trNode(id).n.icon);return true;
+}
+
+/* ---- ההתנהגויות (fx): כל פריים, בכל מקום (main.js), וההוקים ב-combat.js ---- */
+const TF=k=>!!(P&&P.tfx&&P.tfx[k]);
+function statTick(dt){
+  if(!P||!S||S.mode!=='play')return;
+  const F=TREE.fx;
+  P.stillT=P.moving?0:(P.stillT||0)+dt;
+  P.rooted=TF('rooted')&&P.stillT>=F.rooted.after&&!S.vil;
+  P.raging=TF('blood')&&P.hp<P.maxHp*F.blood.below;
+  if(TF('lockArmor')&&!S.vil){let n=0;for(const e of enemies)if(!e.dead&&Math.hypot(e.x-P.x,e.y-P.y)<F.lockArmor.range)n++;P.lockDef=Math.min(F.lockArmor.max,n*F.lockArmor.per)}else P.lockDef=0;
+  if(TF('berserk')){const B=F.berserk;
+    if(P.fury>0){P.furyT=(P.furyT||0)+dt;if(P.furyT>=B.decay){P.furyT=0;P.fury--}}
+    if(!S.vil&&!nearest(B.calm))P.hp=Math.max(1,P.hp-P.maxHp*B.drain*dt)}
+}
+// כמה פחות נזק נכנס מההתנהגויות (hurt ב-combat.js)
+const statDefFx=()=>(P.rooted?TREE.fx.rooted.def:0)+(P.lockDef||0);
+// מכפיל נזק מקרוב מההתנהגויות (damage ב-combat.js)
+const statDmgFx=w=>(w==='sword'&&P.rooted?1+TREE.fx.rooted.dmg/100:1)*(TF('berserk')?1+(P.fury||0)*TREE.fx.berserk.per/100:1);
+function statOnHurt(){if(TF('counter'))P.cnt=Math.min(TREE.fx.counter.hits,(P.cnt||0)+1)}
+function statOnKill(){if(TF('berserk')){P.fury=Math.min(TREE.fx.berserk.max,(P.fury||0)+1);P.furyT=0}}
+function statOnDamage(d){if(P.raging&&d>0)P.hp=Math.min(P.maxHp,P.hp+d*TREE.fx.blood.leech)}
+// סימן קטן מעל הדמות כשהתנהגות פעילה, כדי שהשחקן יבין מה קורה
+function statDraw(ox,oy){
+  if(!P||!P.tfx||S.vil)return;
+  const ic=[];if(P.rooted)ic.push('🌳');if(P.cnt>=TREE.fx.counter.hits)ic.push('🔁');if(P.raging)ic.push('🩸');if(P.lockDef)ic.push('🛡️');if(P.fury)ic.push('😡'+P.fury);
+  if(!ic.length)return;
+  ctx.font='700 15px Heebo, system-ui, sans-serif';ctx.textAlign='center';ctx.direction='ltr';ctx.fillText(ic.join(' '),P.x+ox,P.y+oy-58);ctx.direction=DIR;
+}
+
 function treeHtml(){
-  const free=trFree(),H=trHave();
+  const free=trFree(),H=trHave(),key=trKeyTaken();
   let h='<div class="trtop"><button class="vbtn ghost" data-act="back">'+T('tr.back')+'</button><p class="stfree'+(free?' on':'')+'">'+(free?T('tr.free',free):T('tr.none',TREE.every))+'</p></div><div class="trcols">';
-  for(const b in TREE.branches){const B=TREE.branches[b],have=H[b]||0;
-    h+='<section class="trb" style="--br:'+B.col+'"><h4>'+B.icon+' '+T('tr.'+b)+' <bdi>'+have+'/'+B.nodes.length+'</bdi></h4>';
-    B.nodes.forEach((n,i)=>{const [name,what]=T('tr.'+n.id),st=i<have?'got':i===have?'next':'lock',c=trCost(n);
-      h+='<div class="trn '+st+'"><span class="sti">'+n.icon+'</span><span class="stn"><b>'+name+'</b><small>'+what+'</small></span>'+
-        (st==='got'?'<span class="trok">✓</span>':st==='next'?'<button class="stplus" data-act="learn" data-b="'+b+'"'+(free>=c?'':' disabled')+'>'+(c>1?c:'+')+'</button>':'<span class="trok">🔒</span>')+'</div>'});
+  for(const b in TREE.branches){const B=TREE.branches[b],have=H[b]||[];
+    h+='<section class="trb" style="--br:'+B.col+'"><h4>'+B.icon+' '+T('tr.'+b)+' <bdi>'+have.length+'/'+B.steps.length+'</bdi></h4>';
+    B.steps.forEach((st,i)=>{const os=trOpts(st);
+      if(st.key)h+='<p class="trkey">'+T('tr.key')+'</p>';
+      os.forEach((n,k)=>{const [name,what]=T('tr.'+n.id),got=have[i]===n.id,gone=i<have.length&&!got,next=i===have.length,why=next?trWhy(b,n.id):'order',c=trCost(st);
+        if(k)h+='<p class="tror">'+T('tr.or')+'</p>';
+        h+='<div class="trn '+(got?'got':next&&why!=='key'?'next':'lock')+(gone?' gone':'')+'"><span class="sti">'+n.icon+'</span><span class="stn"><b>'+name+'</b><small>'+what+'</small></span>'+
+          (got?'<span class="trok">✓</span>':next&&why!=='key'?'<button class="stplus" data-act="learn" data-b="'+b+'" data-id="'+n.id+'"'+(why?' disabled':'')+'>'+(c>1?c:'+')+'</button>':'<span class="trok">'+(gone?'✗':'🔒')+'</span>')+'</div>'});
+    });
     h+='</section>'}
   return h+'</div>';
+}
+// שם לבנייה (המחקר: "בילד עם שם מרגיש מכוון"): לפי סקיל המפתח, ואם אין, לפי הענף שהשקעת בו הכי הרבה
+const BUILDS={key:{wMountain:'mountain',wBerserk:'berserk'},branch:{war:'rock',hunt:'wind',mage:'elements'}};
+function buildName(){
+  const k=trKeyTaken();if(k&&BUILDS.key[k])return T('bn.'+BUILDS.key[k]);
+  const H=trHave(),bs=Object.keys(H).filter(b=>(H[b]||[]).length).sort((a,b)=>H[b].length-H[a].length);
+  if(!bs.length)return '';
+  if(bs.length>1&&H[bs[0]].length===H[bs[1]].length)return T('bn.mixed');
+  return T('bn.'+BUILDS.branch[bs[0]]);
 }
