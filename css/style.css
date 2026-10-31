@@ -582,3 +582,11 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 /* הדמות בתלת-ממד בחלון הציוד (doll3d.js): הקנבס ממלא את מקום הבובה, והאימוג'י מוסתר */
 .gfig.d3 span{visibility:hidden}
 .gfig .doll3d{position:absolute;inset:-12% -20%;width:140%;height:124%;pointer-events:none}   /* גדול מהמשבצת: הדמות ממלאת את האמצע */
+/* כוחות על ציוד (js/powers.js): ✦ בפינה של פריט עם כוח, שורת הכוח בזהב, והלשוניות בנפחייה */
+.gtile .gpw{position:absolute;top:0;inset-inline-end:2px;direction:ltr;font:800 11px var(--body);color:var(--gold)}
+.gpow{color:var(--gold);font-weight:800;margin:4px 0}
+#fTabs{display:flex;gap:6px}
+#fTabs button{min-height:36px;padding:4px 12px;font-size:14px}
+.pwrow{display:flex;flex-wrap:wrap;gap:6px}
+.pwrow .pwc{min-height:36px;padding:4px 10px;font-size:13px}
+@media (orientation:landscape){#ovForge #fTabs{grid-column:1/-1}#ovForge .gearpanel{grid-template-rows:auto auto auto minmax(0,1fr)}}
