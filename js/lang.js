@@ -458,7 +458,7 @@ const TEXT={
   'q.kind.village':{he:'כפר',en:'Village'},
   'q.kind.story':{he:'⭐ עלילה',en:'⭐ Story'},
   // מטרה מסוג 'story' (quests.js): הטקסט לפי מה צריך לקרות
-  'qo.story':{he:w=>({shard:'למצוא את הרסיס הזוהר',lake:'להגיע לאגם הערפל',tide:'להפיל את שומר המים'})[w]||'',en:w=>({shard:'Find the glowing shard',lake:'Reach the Mist Lake',tide:'Defeat the Tide Warden'})[w]||''},
+  'qo.story':{he:w=>({shard:'למצוא את הרסיס הזוהר',lake:'להגיע לאגם הערפל',tide:'להפיל את שומר המים',ridge:'לטפס לרכס הקפוא',frost:'להפיל את שומר הקרח'})[w]||'',en:w=>({shard:'Find the glowing shard',lake:'Reach the Mist Lake',tide:'Defeat the Tide Warden',ridge:'Climb to the Frost Ridge',frost:'Defeat the Frost Warden'})[w]||''},
   'foe.warden':{he:'את השומר האבן',en:'the Stone Warden'},
   // העלילה, פרק 1: פנס האדמה (story.js, docs/story.md)
   // אירועים בעולם (events.js)
@@ -480,6 +480,21 @@ const TEXT={
   'story.water.lit':{he:'🏮 פנס המים דולק! הערפל נסוג קצת',en:'🏮 The Water Lantern burns! The mist pulls back a little'},
   'story.water.reward':{he:'פנס המים נדלק',en:'The Water Lantern is lit'},
   'story.water.head':{he:'שניים מתוך שישה! ראיתי את האור מהחלון ושפכתי את התה מרוב התרגשות. עכשיו קר לי ברגליים, אבל שווה. מעבר לאגם יש דרך שעולה להרים... לא היום. תנוח.',en:'Two out of six! I saw the light from my window and spilled my tea from sheer excitement. Now my feet are cold, but worth it. Past the lake a road climbs into the mountains... not today. Rest.'},
+  // העלילה, פרק 3: פנס הקרח, הרכס הקפוא (story.js, WORLD.regions.ridge ב-world.js, docs/story.md)
+  'w.region.ridge':{he:'הרכס הקפוא',en:'The Frost Ridge'},
+  'w.enter.ridge':{he:'הרכס הקפוא. השלג חורק, והרוח לוחשת את השם שלך',en:'The Frost Ridge. The snow creaks, and the wind whispers your name'},
+  'w.path.ridge':{he:'לרכס הקפוא',en:'To the Frost Ridge'},
+  'w.pathInfo.ridge':{he:'שביל תלול שעולה להרים, ונפתח כשפנס המים נדלק. קר שם. תביא אש.',en:'A steep trail into the mountains, opened when the Water Lantern lit. It is cold up there. Bring fire.'},
+  'story.ice.rise':{he:'שומר הקרח מתנער מהשלג!',en:'The Frost Warden shakes off the snow!'},
+  'story.ice.name':{he:'שומר הקרח',en:'Frost Warden'},
+  'story.ice.lit':{he:'🏮 פנס הקרח דולק! הרוח נרגעת',en:'🏮 The Ice Lantern burns! The wind calms down'},
+  'story.ice.reward':{he:'פנס הקרח נדלק',en:'The Ice Lantern is lit'},
+  'story.ice.head':{he:'שלושה! חצי מהדרך! הכנתי לך מרק חם, אבל אכלתי אותו בזמן שחיכיתי. נבשל עוד. ותגיד... מתי בפעם האחרונה הרגשת חום כזה? כאילו משהו בוער שם, הרחק בדרום...',en:'Three! Halfway there! I made you hot soup, but I ate it while I waited. We’ll cook more. And tell me... when did you last feel warmth like this? As if something is burning out there, far to the south...'},
+  'q.s3Climb':{he:['⭐ השביל להרים','מעבר לאגם יש שביל שעולה לרכס. פעם הייתי מטפס שם כל בוקר. היום אני מטפס על כיסא ומתנשם. תעלה, ותגיד לי אם השלג עדיין לבן.'],en:['⭐ The Mountain Trail','Past the lake a trail climbs to the ridge. I used to climb it every morning. Today I climb onto a chair and wheeze. Go up, and tell me if the snow is still white.']},
+  'q.s3Frost':{he:['⭐ ספיר בשלג','פנס הקרח צריך ספיר שנולד בקור. הוא קפוא בתוך גבישי הקרח. האבירים שם קפאו בשריון שלהם לפני מאה שנה, והם עדיין כועסים על זה. אש מפשירה להם את מצב הרוח.'],en:['⭐ Sapphire in the Snow','The Ice Lantern needs sapphire born in the cold. It’s frozen inside the ice crystals. The knights up there froze in their armor a hundred years ago, and they’re still grumpy about it. Fire thaws their mood.']},
+  'q.s3Warden':{he:['⭐ שומר הקרח','בקצה הרכס, ליד פנס הקרח, ישן משהו שנראה כמו גבעת שלג. זה לא גבעת שלג. הוא יורה רסיסי קרח, אז תזוז הרבה.'],en:['⭐ The Frost Warden','At the edge of the ridge, by the Ice Lantern, sleeps something that looks like a snow hill. It is not a snow hill. It shoots ice shards, so keep moving.']},
+  'foe.rimeknight':{he:'אבירי כפור',en:'rime knights'},'foe.frostwraith':{he:'רוחות שלג',en:'frost wraiths'},'foe.frostwarden':{he:'שומרי קרח',en:'frost wardens'},
+  'node.pine':{he:'אורנים מושלגים',en:'snowy pines'},'node.iceRock':{he:'גבישי קרח',en:'ice crystals'},
   'q.s2Mist':{he:['⭐ הדרך בערפל','מאז שהפנס דולק, הרסיס מושך צפון-מערבה, ליער. שם יש שביל ישן לאגם. הדייג אומר שהוא לא דג שם מאז שהדגים התחילו לדוג אותו.'],en:['⭐ The Path in the Mist','Since the lantern lit, the shard pulls north-west, into the woods. There’s an old trail to the lake. The fisher says he stopped fishing there when the fish started fishing him.']},
   'q.s2Glow':{he:['⭐ מים שזוהרים','פנס המים צריך מים שזוכרים איך לזהור. הם נוצצים בתוך אבני הגאות. אה, ויש שם אבירים חלודים שטבעו מזמן. הם לא אוהבים אורחים. וגם לא ברקים.'],en:['⭐ Water That Glows','The Water Lantern needs water that remembers how to glow. It sparkles inside the tide rocks. Oh, and there are rusty knights down there who drowned long ago. They don’t like guests. Or lightning.']},
   'q.s2Warden':{he:['⭐ שומר המים','בפינה הרחוקה של האגם עומד פנס המים. משהו ענק ורטוב שוכב לידו ולא מוכן לזוז. תעיר אותו, ותשכיב אותו לישון. לתמיד.'],en:['⭐ The Tide Warden','In the far corner of the lake stands the Water Lantern. Something huge and wet lies beside it and won’t budge. Wake it up, and put it back to sleep. For good.']},

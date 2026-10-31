@@ -905,6 +905,32 @@ function worldBot(m,L,god){
     (ch2.reg==='lake'&&ch2.mist?', הגעה לאגם':', לא הגיע לאגם')+', '+ch2.foes+' אויבים רטובים'+(ch2.weak?' (חלשים לברק)':' (לא חלשים לברק!)')+(ch2.noNpc?'':', דמויות האחו באגם!')+
     (ch2.glow?', מים זוהרים':', קווסט המים שבור')+(ch2.warden?', שומר המים קם':', שומר המים לא קם')+(ch2.ready?' והופל':', לא הופל')+(ch2.back?', חזרה לאחו ליד השביל':', החזרה לאחו שבורה')+
     (ch2.lit?', פנס המים נדלק':', פנס המים לא נדלק')+(ch2.safer?', האגם בטוח יותר':''));
+  // העלילה, פרק 3 (story.js, WORLD.regions.ridge): השביל מהאגם לרכס סגור עד שפנס המים דולק, ברכס שלג ואויבים קפואים (חלשים לאש),
+  // והקווסטים מובילים לשומר הקרח, שמדליק את פנס הקרח
+  const ch3=await page.evaluate(()=>{
+    const o={},Q=QS(),w0=SAVE.story.water;
+    SAVE.story.water=false;enterWorld('home','lake');o.closed=!wGates().ridge;
+    SAVE.story.water=true;enterWorld('home','lake');o.open=!!wGates().ridge;
+    for(const id of ['s3Climb','s3Frost','s3Warden']){delete Q.done[id];delete Q.active[id]}delete SAVE.story.ice;
+    o.offer=qOpen(QBY.s3Climb)&&!qOpen(QBY.s3Frost);
+    qStart(QBY.s3Climb);wGo('ridge');o.reg=S.wd.reg;o.climb=qReady(QBY.s3Climb);questClaim('s3Climb');
+    const cold=enemies.filter(e=>!e.dead&&(e.type==='rimeknight'||e.type==='frostwraith'));o.foes=cold.length;
+    o.weak=cold.length>0&&cold.every(e=>e.weak==='fire');o.noNpc=!Object.keys(wnpcState()).length;o.snow=!!WR().snow&&typeof wSnow==='function';
+    return o});
+  await page.clock.runFor(400);await shot('world-ridge');
+  const ch3b=await page.evaluate(()=>{
+    const o={};qStart(QBY.s3Frost);questEvent('kill','rimeknight',8);questEvent('gather','sapphireC',3);o.frost=qReady(QBY.s3Frost);questClaim('s3Frost');
+    qStart(QBY.s3Warden);const L=STORY.lanterns.ice;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='frostwarden';
+    if(w){P.inv=99;damage(w,w.hp*10,'sword',0,'fire');storyUpdate(0.1)}o.ready=qReady(QBY.s3Warden);
+    wGo('lake');const pr=WORLD.regions.lake.paths.ridge;o.back=S.wd.reg==='lake'&&Math.hypot(P.x-pr.x,P.y-pr.y)<WORLD.arrive+10;
+    enterVillage();questClaim('s3Warden');o.lit=!!SAVE.story.ice;
+    enterWorld('home','ridge');o.safer=storySafe()<1;P.inv=0;enterVillage();return o});
+  Object.assign(ch3,ch3b);
+  check(ch3.closed&&ch3.open&&ch3.offer&&ch3.reg==='ridge'&&ch3.climb&&ch3.foes>0&&ch3.weak&&ch3.noNpc&&ch3.snow&&ch3.frost&&ch3.warden&&ch3.ready&&ch3.back&&ch3.lit,
+    'עלילה, פרק 3: '+(ch3.closed&&ch3.open?'השביל לרכס נפתח רק אחרי פנס המים':'השביל לרכס לא נשלט ע"י הפנס')+(ch3.offer?', קווסט ראשון מוצע':', סדר הקווסטים שבור')+
+    (ch3.reg==='ridge'&&ch3.climb?', הגעה לרכס':', לא הגיע לרכס')+(ch3.snow?' בשלג':', בלי שלג')+', '+ch3.foes+' אויבים קפואים'+(ch3.weak?' (חלשים לאש)':' (לא חלשים לאש!)')+(ch3.noNpc?'':', דמויות האחו ברכס!')+
+    (ch3.frost?', ספיר':', קווסט הספיר שבור')+(ch3.warden?', שומר הקרח קם':', שומר הקרח לא קם')+(ch3.ready?' והופל':', לא הופל')+(ch3.back?', חזרה לאגם ליד השביל':', החזרה לאגם שבורה')+
+    (ch3.lit?', פנס הקרח נדלק':', פנס הקרח לא נדלק')+(ch3.safer?', הרכס בטוח יותר':''));
   // אירועים בעולם (events.js): גל שנגמר בתיבה, עגלה שנותנת שלל כשמגיעים, ומטר שמפיל מתכות
   const evt=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=()=>drops().length;
