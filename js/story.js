@@ -18,8 +18,10 @@ const qOn=id=>!!(QS().active[id]&&!qReady(QBY[id]));
 /* ---- בכפר: ההקדמה, פעם אחת ---- */
 function storyVillage(){
   if(STO().intro)return;
-  setTimeout(()=>{if(!S.vil||STO().intro)return;STO().intro=true;saveNow();
-    npcTalk('head');S.vil.dlgLine=T('story.intro');npcDialog()},STORY.introDelay*1000);
+  // מחכים שלא יהיה חלון פתוח (יומן, ציוד, שיחה), כדי לא לסגור לשחקן משהו באמצע
+  setTimeout(function go(){if(!S.vil||STO().intro)return;
+    if(S.mode!=='play'||!$('qLog').hidden||!$('npcDlg').hidden||!$('ovGear').hidden){setTimeout(go,1000);return}
+    STO().intro=true;saveNow();npcTalk('head');S.vil.dlgLine=T('story.intro');npcDialog()},STORY.introDelay*1000);
 }
 
 /* ---- בעולם, כל פריים (world.js) ---- */
