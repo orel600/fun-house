@@ -116,6 +116,7 @@ function questsRefresh(){
   }
   for(const q of QUESTS.list){const K=qKind(q);if(K.auto&&!K.daily&&!Q.active[q.id]&&!Q.done[q.id]&&qReq(q))qStart(q)}
   if(Q.track&&!Q.active[Q.track])Q.track=null;
+  questTrack();
   $('qLog').hidden=true;   // חוזרים הביתה עם יומן סגור, ולא עם מה שהיה פתוח לפני הריצה
 }
 
@@ -146,7 +147,7 @@ function questClaim(id){
   rankSync();   // רמת הדמות מה-XP (ranks.js)
   delete Q.active[id];Q.done[id]=(Q.done[id]||0)+1;
   if(Q.track===id)Q.track=null;
-  saveNow();
+  saveNow();questTrack();
   celebrate(P.x,P.y-10,'quest');
   banner(T('q.claimed',T('q.'+id)[0]),C.gold);
   if(q.reward.rank)rankUp(q.reward.rank);   // הטקס והדרגה (ranks.js)
@@ -160,7 +161,7 @@ const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='rank'?QUES
 // הקווסט שמוצג בזירה: זה שבחרת לעקוב אחריו, ואם אין, הראשון שעוד לא הושלם
 function qTracked(){
   const Q=QS(),ids=Object.keys(Q.active).filter(id=>QBY[id]);
-  if(Q.track&&Q.active[Q.track])return QBY[Q.track];
+  if(Q.track&&Q.active[Q.track]&&!qReady(QBY[Q.track]))return QBY[Q.track];   // קווסט שהושלם יוצא מהשורה: הפרס מחכה ביומן (ניר: "מראה לי קווסט שסיימתי")
   const open=ids.map(id=>QBY[id]).filter(q=>!qReady(q));
   return open.find(q=>!qKind(q).auto)||open.find(q=>qKind(q).daily)||null;
 }
@@ -201,6 +202,7 @@ function questAct(a,id){
   if(a==='accept'&&qOpen(QBY[id])){qStart(QBY[id]);saveNow()}
   else if(a==='claim')questClaim(id);
   else if(a==='track'){QS().track=QS().track===id?null:id;saveNow()}
+  questTrack();
 }
 $('qLog').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;

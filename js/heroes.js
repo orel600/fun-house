@@ -45,7 +45,7 @@ function heroSkin(){
 }
 
 /* ---- בתחילת כל ריצה (ובכפר): הפסיבית של הדמות ---- */
-function heroReset(){const h=HEROES.list[heroId()];if(h)gApply(h.passive,1);rankReset();P.hp=P.maxHp}   // אותם סטטים כמו ציוד (gApply ב-gear.js), ואחריהם הבונוס של הדרגה (ranks.js)
+function heroReset(){const h=HEROES.list[heroId()];if(h)gApply(h.passive,1);rankReset();statsReset();statBadge();P.hp=P.maxHp}   // אותם סטטים כמו ציוד (gApply ב-gear.js), ואחריהם הבונוס של הדרגה (ranks.js)
 
 /* ---- סגנון המשחק ---- */
 function heroCount(k,n=1){if(HEROES.style.on.includes(k))SAVE.hero.style[k]=(SAVE.hero.style[k]||0)+n}
