@@ -458,7 +458,7 @@ const TEXT={
   'q.kind.village':{he:'כפר',en:'Village'},
   'q.kind.story':{he:'⭐ עלילה',en:'⭐ Story'},
   // מטרה מסוג 'story' (quests.js): הטקסט לפי מה צריך לקרות
-  'qo.story':{he:w=>({shard:'למצוא את הרסיס הזוהר',lake:'להגיע לאגם הערפל',tide:'להפיל את שומר המים',ridge:'לטפס לרכס הקפוא',frost:'להפיל את שומר הקרח',desert:'לרדת למדבר הבוער',blaze:'להפיל את שומר האש',storm:'לעלות למגדלי הסערה',thunder:'להפיל את שומר הסערה'})[w]||'',en:w=>({shard:'Find the glowing shard',lake:'Reach the Mist Lake',tide:'Defeat the Tide Warden',ridge:'Climb to the Frost Ridge',frost:'Defeat the Frost Warden',desert:'Descend into the Burning Desert',blaze:'Defeat the Ember Warden',storm:'Climb to the Storm Towers',thunder:'Defeat the Storm Warden'})[w]||''},
+  'qo.story':{he:w=>({shard:'למצוא את הרסיס הזוהר',lake:'להגיע לאגם הערפל',tide:'להפיל את שומר המים',ridge:'לטפס לרכס הקפוא',frost:'להפיל את שומר הקרח',desert:'לרדת למדבר הבוער',blaze:'להפיל את שומר האש',storm:'לעלות למגדלי הסערה',thunder:'להפיל את שומר הסערה',shadow:'לרדת ללב הצל',heart:'להביס את הצל'})[w]||'',en:w=>({shard:'Find the glowing shard',lake:'Reach the Mist Lake',tide:'Defeat the Tide Warden',ridge:'Climb to the Frost Ridge',frost:'Defeat the Frost Warden',desert:'Descend into the Burning Desert',blaze:'Defeat the Ember Warden',storm:'Climb to the Storm Towers',thunder:'Defeat the Storm Warden',shadow:'Descend into the Heart of Shadow',heart:'Defeat the Shadow'})[w]||''},
   'foe.warden':{he:'את השומר האבן',en:'the Stone Warden'},
   // העלילה, פרק 1: פנס האדמה (story.js, docs/story.md)
   // אירועים בעולם (events.js)
@@ -539,6 +539,28 @@ const TEXT={
   'q.s5Warden':{he:['⭐ שומר הסערה','ליד פנס הברק עומד מישהו שהברק אוהב יותר מדי. הוא מסמן עיגולים על הרצפה, ושנייה אחרי זה הברק נופל בדיוק שם. עיגול מתחתיך? זוז.'],en:['⭐ The Storm Warden','By the Lightning Lantern stands someone the lightning loves too much. He marks circles on the ground, and a second later lightning strikes right there. Circle under you? Move.']},
   'foe.stormknight':{he:'אבירי סערה',en:'storm knights'},'foe.sparkwisp':{he:'ניצוצות',en:'spark wisps'},'foe.stormwarden':{he:'שומרי סערה',en:'storm wardens'},
   'node.deadTree':{he:'עצים שרופים',en:'scorched trees'},'node.stormRock':{he:'גבישי סערה',en:'storm crystals'},
+  // העלילה, פרק 6 והאחרון: הפנס הלבן, לב הצל (story.js, WORLD.regions.shadow ב-world.js, docs/story.md)
+  'w.region.shadow':{he:'לב הצל',en:'The Heart of Shadow'},
+  'w.enter.shadow':{he:'לב הצל. חושך. רק האור שלך, ושל פיוחו',en:'The Heart of Shadow. Darkness. Only your light, and Piocho’s'},
+  'w.path.shadow':{he:'ללב הצל',en:'To the Heart of Shadow'},
+  'w.pathInfo.shadow':{he:'האור של חמשת הפנסים מצביע לכאן, אל שביל שיורד לחושך. מה שמחכה למטה מכיר אותך. תביא כמה סוגי נזק.',en:'The light of all five lanterns points here, to a trail down into the dark. Whatever waits below knows you. Bring more than one kind of damage.'},
+  'story.light.rise':{he:'הצל קם. הוא נראה... מוכר',en:'The Shadow rises. It looks... familiar'},
+  'story.light.name':{he:'הצל',en:'The Shadow'},
+  'story.light.learn':{he:t=>'הצל למד ממך: עמיד ל'+t,en:t=>'The Shadow learned from you: resists '+t},
+  'story.light.phase':{he:n=>'הצל לובש את הצורה של '+n+'!',en:n=>'The Shadow takes the shape of the '+n+'!'},
+  'story.light.lit':{he:'🏮 הפנס הלבן דולק! העמק מואר',en:'🏮 The White Lantern burns! The valley is bright'},
+  'story.light.reward':{he:'הפנס הלבן נדלק',en:'The White Lantern is lit'},
+  'story.light.head':{he:'כולם! תסתכלו למעלה! כל ששת הפנסים דולקים, בפעם הראשונה מאז שהייתי צעיר ויפה. טוב, צעיר. הגעת לכפר ריק, עם כלבה וחרב, ותראה מה בנית. תודה, גיבור. ועכשיו... מי רוצה עוגה?',en:'Everyone! Look up! All six lanterns are burning, for the first time since I was young and handsome. Well, young. You came to an empty village with a dog and a sword, and look what you built. Thank you, hero. And now... who wants cake?'},
+  'q.s6Dark':{he:['⭐ ללב החושך','מאז שפנס הברק דולק, האור של כל החמישה נמתח כמו חוט, ומצביע לאותו מקום: שביל מאחורי המגדלים, שיורד לחושך. שם, אומרים, נמצא הפנס הלבן. תיקח את פיוחו. היא זוהרת יותר ממני.'],en:['⭐ Into the Dark','Since the Lightning Lantern lit, the light of all five stretches like a thread and points to one place: a trail behind the towers, down into the dark. That is where the White Lantern is, they say. Take Piocho. She glows more than I do.']},
+  'q.s6Echo':{he:['⭐ הדים','בחושך יש צללים של כל מה שהבסת: אבירים, רוחות, מכל האזורים. הם עשויים מכמה דברים בבת אחת, אז סוג נזק אחד לא יספיק. תחליף, תנסה, ותספר לי מה עבד.'],en:['⭐ Echoes','In the dark are shadows of everything you beat: knights, wisps, from every land. They are made of several things at once, so one kind of damage won’t do. Switch, try, and tell me what worked.']},
+  'q.s6Heart':{he:['⭐ לב הצל','ליד הפנס הלבן מחכה הצל עצמו. כל שומר שהפלת היה חתיכה ממנו, והוא זוכר את כולם. והוא לומד: מה שהכי השתמשת בו, פחות יעבוד עליו. תפתיע אותו.'],en:['⭐ The Heart of Shadow','By the White Lantern waits the Shadow itself. Every Warden you beat was a piece of it, and it remembers them all. And it learns: what you used most will work least. Surprise it.']},
+  'foe.shadeknight':{he:'אבירי צל',en:'shade knights'},'foe.shadewisp':{he:'רוחות צל',en:'shade wisps'},'foe.shade':{he:'צללים',en:'shadows'},
+  'node.shadeTree':{he:'עצי צל',en:'shade trees'},'node.voidRock':{he:'גבישי ריק',en:'void crystals'},
+  // הסוף: מסך "תודה ששיחקת" (storyEndOpen ב-story.js)
+  'end.title':{he:'🏮 תודה ששיחקת! 🏮',en:'🏮 Thanks for playing! 🏮'},
+  'end.text':{he:'ששת הפנסים דולקים, העמק מואר, והכפר מלא שוב. זה הסוף של הסיפור, אבל לא של המשחק: העולם, הזירה, הדיג והסודות מחכים לך.',en:'All six lanterns burn, the valley is bright, and the village is full again. This is the end of the story, but not of the game: the world, the arena, the fishing and the secrets are waiting.'},
+  'end.time':{he:'זמן משחק',en:'Time played'},'end.kills':{he:'הריגות',en:'Defeated'},'end.secrets':{he:'סודות',en:'Secrets'},'end.fish':{he:'דגים',en:'Fish'},
+  'end.go':{he:'להמשיך לשחק',en:'Keep playing'},
   'q.s2Mist':{he:['⭐ הדרך בערפל','מאז שהפנס דולק, הרסיס מושך צפון-מערבה, ליער. שם יש שביל ישן לאגם. הדייג אומר שהוא לא דג שם מאז שהדגים התחילו לדוג אותו.'],en:['⭐ The Path in the Mist','Since the lantern lit, the shard pulls north-west, into the woods. There’s an old trail to the lake. The fisher says he stopped fishing there when the fish started fishing him.']},
   'q.s2Glow':{he:['⭐ מים שזוהרים','פנס המים צריך מים שזוכרים איך לזהור. הם נוצצים בתוך אבני הגאות. אה, ויש שם אבירים חלודים שטבעו מזמן. הם לא אוהבים אורחים. וגם לא ברקים.'],en:['⭐ Water That Glows','The Water Lantern needs water that remembers how to glow. It sparkles inside the tide rocks. Oh, and there are rusty knights down there who drowned long ago. They don’t like guests. Or lightning.']},
   'q.s2Warden':{he:['⭐ שומר המים','בפינה הרחוקה של האגם עומד פנס המים. משהו ענק ורטוב שוכב לידו ולא מוכן לזוז. תעיר אותו, ותשכיב אותו לישון. לתמיד.'],en:['⭐ The Tide Warden','In the far corner of the lake stands the Water Lantern. Something huge and wet lies beside it and won’t budge. Wake it up, and put it back to sleep. For good.']},
@@ -841,6 +863,7 @@ const TEXT={
   'home.fire.gift':{he:'🏮 מתנה מפנס האש!',en:'🏮 A gift from the Fire Lantern!'},
   'home.bolt.tale':{he:'שמעת את הפעמון? טוני הפעמונאי חזר! הוא צלצל מהמגדלים כל ערב, עד שהברק פגע בפעמון שלו ושלח אותו לכפר השכן. עכשיו הוא מצלצל שוב, ואומר שהברק פוגע פעמיים רק במי שיש לו מזל.',en:'Hear that bell? Tony the bell-ringer is back! He rang from the towers every evening, until lightning hit his bell and sent it to the next village. Now he rings again, and says lightning strikes twice only for the lucky.'},
   'home.bolt.gift':{he:'🏮 מתנה מפנס הברק!',en:'🏮 A gift from the Lightning Lantern!'},
+  'home.light.tale':{he:'רגע. אתה מכיר את האישה הזאת עם הפנס? זו אורה, מדליקת הפנסים. היא הדליקה את כל ששת הפנסים לפני שנים, ונעלמה בלילה שהם כבו. היא אומרת שהייתה "תקועה בחושך" כל הזמן הזה. ממש תקועה. היא לא רוצה לדבר על זה. אני חושב שהיא מתביישת.',en:'Wait. Do you know that woman with the lantern? That is Ora, the Lamplighter. She lit all six lanterns years ago, and vanished the night they went out. She says she was "stuck in the dark" all this time. Really stuck. She won’t talk about it. I think she is embarrassed.'},
   'npc.gardener':{he:['סבא שורש','הגנן'],en:['Grandpa Root','Gardener']},
   'npc.gardener.low':{he:'הגזר שלכם עקום. לא נורא, גם אני. תביא לי קצת זמן ואני אסדר את שנינו.',en:'Your carrots are crooked. That\'s fine, so am I. Give me some time and I\'ll fix us both.'},
   'npc.gardener.high':{he:'כפר כזה גדול וכל הגינה עליי? טוב, לפחות האדמה כבר לא רועדת. רק הברכיים שלי.',en:'A village this big and the whole garden is on me? Well, at least the ground stopped shaking. Just my knees now.'},
@@ -861,6 +884,10 @@ const TEXT={
   'npc.bellringer.low':{he:'הפעמון שלי עוד בכפר השכן. בינתיים אני מצלצל בסיר. אף אחד לא שם לב להבדל.',en:'My bell is still in the next village. For now I ring a pot. Nobody notices the difference.'},
   'npc.bellringer.high':{he:'כפר כזה גדול צריך פעמון גדול! או שני סירים.',en:'A village this big needs a big bell! Or two pots.'},
   'npc.jokes.bellringer':{he:['הברק פגע בי שלוש פעמים. עכשיו אני מדליק נרות עם האצבע.'],en:['Lightning hit me three times. Now I light candles with my finger.']},
+  'npc.lamplighter':{he:['אורה','מדליקת הפנסים'],en:['Ora','Lamplighter']},
+  'npc.lamplighter.low':{he:'רציתי להחזיק את כל האור לבד, שאף אחד לא יצטרך לפחד. מסתבר שאור שמחזיקים לבד נהיה צל. תודה שהוצאת אותי.',en:'I wanted to hold all the light myself, so no one would ever be afraid. Turns out light you hold alone turns into shadow. Thank you for getting me out.'},
+  'npc.lamplighter.high':{he:'כפר כזה גדול, וכל הפנסים דולקים. עכשיו אני רק מנקה אותם. זה פחות דרמטי, אבל יותר נעים.',en:'A village this big, and all the lanterns lit. Now I just polish them. Less dramatic, but much nicer.'},
+  'npc.jokes.lamplighter':{he:['הייתי צל שנים. הדבר הכי קשה? שאף אחד לא שם לב שהסתפרתי.'],en:['I was a shadow for years. The hardest part? Nobody noticed my haircut.']},
   /* ======== בדיחות פנימיות ========
      ניר: כאן כותבים בדיחות פנימיות לכל תושב. בכל שיחה יש סיכוי (NPC.joke ב-npc.js) שהוא יגיד אחת מהן במקום משפט רגיל.
      כותבים בין גרשיים, עם פסיק בין משפט למשפט. למשל: he:['משפט אחד','משפט שני'].

@@ -30,6 +30,9 @@ const NODES={
     // מגדלי הסערה (WORLD.regions.storm ב-world.js): עצים שנשרפו מברק וגבישי סערה. רק בעולם, לא בזירה
     deadTree: {tags:['plant'],hp:48,r:22,shape:'tree',col:'#5E5A6E',drop:{wood:[1,2],dust:[0.4,1],boltC:[0.06,1]},guard:{type:'sparkwisp',chance:0.35,n:2}},
     stormRock:{tags:['metal'],hp:100,r:24,shape:'crystal',col:'#B48CFF',drop:{iron:[1,2],boltC:[0.45,1],bolt:[0.06,1]},guard:{type:'stormknight',chance:0.3,n:1}},
+    // לב הצל (WORLD.regions.shadow ב-world.js): עצי צל וגבישי ריק. בגביש יש קצת מכל אבן, כמו שבצל יש קצת מכל אזור. רק בעולם, לא בזירה
+    shadeTree:{tags:['plant'],hp:52,r:22,shape:'tree',col:'#4A3A6E',drop:{wood:[1,2],essence:[0.4,1],dust:[0.3,1]},guard:{type:'shadewisp',chance:0.35,n:2}},
+    voidRock:{tags:['stone'],hp:110,r:24,shape:'crystal',col:'#8E6BD8',drop:{stone:[1,2],gem:[0.15,1],rubyC:[0.12,1],sapphireC:[0.12,1],boltC:[0.12,1],aquaC:[0.12,1],amberC:[0.12,1]},guard:{type:'shadeknight',chance:0.3,n:1}},
     // תיבות: עץ, ברזל וזהב. תיבת זהב נדירה, ובה אבנים מושלמות. המומיות שומרות עליהן
     chestWood:{tags:['plant'],hp:30,r:21,shape:'chest',col:'#9A6B3C',drop:{coins:[1,8],cloth:[0.5,2],herb:[0.4,2],rubyC:[0.15,1],sapphireC:[0.15,1],boltC:[0.15,1],aquaC:[0.15,1],amberC:[0.15,1]},guard:{type:'mummy',chance:0.4,n:1}},
     chestIron:{tags:['metal'],hp:60,r:22,shape:'chest',col:'#9AA3AD',drop:{coins:[1,20],gem:[0.1,1],iron:[0.6,2],silver:[0.25,1],ruby:[0.15,1],sapphire:[0.15,1],bolt:[0.15,1],aqua:[0.15,1],amber:[0.15,1]},guard:{type:'mummy',chance:0.5,n:2}},

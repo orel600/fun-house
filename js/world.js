@@ -119,7 +119,8 @@ const WORLD={
     // storm: גשם והבזקי ברק בקנבס (wStorm). towers: מגדלי אבן שבורים שאי אפשר לעבור דרכם (h גובה הציור). ponds: שלוליות עמוקות
     storm:{
       region:'storm',back:'desert',enter:'w.enter.storm',noNpc:true,storm:true,ground:'#2E2C3A',pondCol:['#1E1A30','#8E7CC8'],
-      home:{x:0,y:-600,r:44},gates:{},paths:{},
+      home:{x:0,y:-600,r:44},gates:{},
+      paths:{shadow:{x:-860,y:-590,r:44,need:['earth','water','ice','fire','bolt']}},   // פרק 6: רק כשכל חמשת הפנסים דולקים, שביל בצפון-מערב שיורד ללב הצל
       ponds:[{x:-80,y:60,r:120},{x:520,y:-40,r:85}],
       towers:[{x:-620,y:-330,r:46,h:150},{x:300,y:-330,r:40,h:110},{x:-380,y:330,r:44,h:170},{x:420,y:300,r:38,h:95},{x:-880,y:120,r:36,h:120}],
       fields:[{kind:'deadTree',n:8,x:-560,y:-80,r:200},{kind:'deadTree',n:5,x:120,y:420,r:150},{kind:'deadTree',n:4,x:680,y:-380,r:130},
@@ -137,6 +138,28 @@ const WORLD={
         {id:'far',  to:1e9, hp:2.4, dmg:1.65,speed:1.12,leash:480,back:45}
       ],
       decor:{trees:40,hills:20,rocks:0.6}
+    },
+    // ---- פרק 6 והאחרון: לב הצל (docs/story.md). חושך, ערפל סגול, ואור רק סביב הגיבור ופיוחו (wShadow). צללים של אויבים מכל האזורים,
+    // והצל עצמו ליד הפנס הלבן, באמצע הדרום (STORY.lanterns.light). shadow: החושך בקנבס. ponds: בורות של חושך שאי אפשר לעבור
+    shadow:{
+      region:'shadow',back:'storm',enter:'w.enter.shadow',noNpc:true,shadow:true,ground:'#16101F',pondCol:['#07040D','#5B3F8C'],
+      home:{x:0,y:-600,r:44},gates:{},paths:{},
+      ponds:[{x:-460,y:-40,r:115},{x:470,y:-60,r:105},{x:-760,y:420,r:80}],
+      fields:[{kind:'shadeTree',n:8,x:-560,y:-300,r:210},{kind:'shadeTree',n:6,x:560,y:-320,r:190},{kind:'shadeTree',n:4,x:-80,y:120,r:140},
+              {kind:'voidRock',n:5,x:700,y:240,r:160},{kind:'voidRock',n:4,x:-640,y:200,r:140},{kind:'rock',n:4,x:220,y:-220,r:120}],
+      foes:[
+        {type:'shadewisp',n:2,x:-190,y:-420,r:110},{type:'shadewisp',n:2,x:200,y:-420,r:110},
+        {type:'shadeknight',n:2,x:-420,y:-220,r:130},{type:'shadewisp',n:3,x:380,y:-200,r:140},{type:'shadeknight',n:3,x:700,y:240,r:150},
+        {type:'shadeknight',n:3,x:-640,y:200,r:150},{type:'shadewisp',n:3,x:-60,y:160,r:140},{type:'shadeknight',n:2,x:380,y:470,r:130},
+        {type:'shadeknight',creature:true,n:2,x:700,y:240,r:120},{type:'shadewisp',creature:true,n:2,x:-560,y:-300,r:130}
+      ],
+      // הכי קשה: מי שהגיע לכאן כבר הדליק חמישה פנסים
+      zones:[
+        {id:'start',to:360, hp:1.1, dmg:0.8, speed:0.85,leash:260,back:25},
+        {id:'near', to:800, hp:1.9, dmg:1.35,speed:1,   leash:380,back:35},
+        {id:'far',  to:1e9, hp:2.6, dmg:1.8, speed:1.14,leash:480,back:45}
+      ],
+      decor:{trees:50,hills:18,rocks:0.5}
     }
   }
 };
@@ -150,7 +173,7 @@ const wKind=k=>NODES.kinds[k];
 function placeBox(){if(!S.wd)return null;const {w,h}=WR().size,m=WORLD.edge;return{x0:-w/2+m,x1:w/2-m,y0:-h/2+m,y1:h/2-m}}
 function placeClamp(o){const B=placeBox();if(!B)return o;o.x=Math.max(B.x0,Math.min(B.x1,o.x));o.y=Math.max(B.y0,Math.min(B.y1,o.y));return o}
 // השערים של האזור: הבית, שערי הזירה, והדרכים שהעלילה כבר פתחה (storyOpen ב-story.js)
-const wPathOpen=p=>!p.need||storyOpen(p.need);
+const wPathOpen=p=>!p.need||[].concat(p.need).every(storyOpen);   // need יכול להיות רשימה: כל הפנסים בה דולקים (לב הצל)
 function wGates(all){const R=WR(),o=Object.assign({home:R.home},R.gates);for(const k in R.paths)if(all||wPathOpen(R.paths[k]))o[k]=R.paths[k];return o}
 const wIsPath=k=>k!=='home'&&!!WR().paths[k];
 // השם של שער: לכפר, לאזור אחר, או זירה
@@ -352,6 +375,7 @@ function drawWorld(){
   if(WR().snow)wSnow();   // הרכס הקפוא
   if(WR().heat)wHeat();   // המדבר הבוער
   if(WR().storm)wStorm();   // מגדלי הסערה
+  if(WR().shadow)wShadow();   // לב הצל
 }
 // מים שאי אפשר ללכת בהם: דוחפים החוצה, כמו מעץ
 function wPonds(o){for(const p of (WR().ponds||[]).concat(WR().towers||[])){const dx=o.x-p.x,dy=o.y-p.y,d=Math.hypot(dx,dy)||1,min=p.r+(o.r||12);if(d<min){o.x=p.x+dx/d*min;o.y=p.y+dy/d*min}}}
@@ -412,6 +436,23 @@ function wStorm(){
     ctx.globalAlpha=F.flash.alpha*k;ctx.fillStyle='#EDE6FF';ctx.fillRect(P.x-F.spread*2,P.y-F.spread*2,W*2,W*2);
     const bx=P.x+(hash(n,46)-0.5)*F.spread*1.6,by=P.y-F.spread*0.9;ctx.globalAlpha=k;ctx.strokeStyle='#FFFFFF';ctx.lineWidth=3;
     ctx.beginPath();ctx.moveTo(bx,by);for(let j=1;j<=7;j++)ctx.lineTo(bx+(hash(n,50+j)-0.5)*70,by+j*45);ctx.stroke()}
+  ctx.restore();
+}
+/* ---- לב הצל (פרק 6): חושך על כל המסך, ועיגול אור רך סביב הגיבור. פיוחו והפנס הלבן (כשהוא דולק) זוהרים בחושך, וערפל סגול נע לאט.
+   החושך הוא שיפוע אחד סביב הגיבור, בלי קנבס נוסף, כדי שיהיה קל לטלפון. אחרי שהפנס הלבן נדלק: litDark במקום dark.
+   light: רדיוס האור בפיקסלים של העולם. pet, lantern: רדיוס הזוהר. mist: כתמים סגולים, כמו הערפל באגם ---- */
+const SHADOW={col:'10,5,22',dark:0.82,litDark:0.35,light:250,pet:110,lantern:280,flicker:7,mist:{n:6,size:300,alpha:0.1,drift:11,spread:520}};
+function wShadow(){
+  const F=SHADOW,t=fxNow(),R=F.light+Math.sin(t*3)*F.flicker,a=STO().light?F.litDark:F.dark,big=3000,cx=P.x,cy=P.y-20;ctx.save();
+  const g=ctx.createRadialGradient(cx,cy,R*0.35,cx,cy,R);g.addColorStop(0,'rgba('+F.col+',0)');g.addColorStop(1,'rgba('+F.col+','+a+')');
+  ctx.fillStyle=g;ctx.fillRect(cx-big,cy-big,big*2,big*2);
+  ctx.globalCompositeOperation='lighter';
+  const glow=(x,y,r,c)=>{const q=ctx.createRadialGradient(x,y,0,x,y,r);q.addColorStop(0,c);q.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=q;ctx.fillRect(x-r,y-r,r*2,r*2)};
+  if(S.pet)glow(S.pet.x,S.pet.y-10,F.pet,'rgba(255,240,215,0.22)');   // פיוחו זוהרת קצת
+  const L=STORY.lanterns.light;if(L&&STO().light)glow(L.x,L.y-80,F.lantern,'rgba(255,255,255,0.3)');
+  const M=F.mist,MW=M.spread*2;   // ערפל סגול
+  for(let i=0;i<M.n;i++){const bx=hash(i,61)*MW+t*M.drift*(hash(i,62)-0.5)*2,by=hash(i,63)*MW+t*M.drift*0.5;
+    const x=P.x-M.spread+(((bx-P.x)%MW)+MW)%MW,y=P.y-M.spread+(((by-P.y)%MW)+MW)%MW;glow(x,y,M.size*(0.6+hash(i,64)*0.6),'rgba(120,70,200,'+M.alpha+')')}
   ctx.restore();
 }
 // מגדל שבור: גוף אבן עם ראש משונן, סדקים, וחלון שמהבהב בסגול כשברק עובר

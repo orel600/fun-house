@@ -55,7 +55,7 @@ const dtSvg=t=>'<svg class="dti" viewBox="0 0 24 24" aria-hidden="true"><path fi
 
 // אחרי כל פגיעה: ספירה (בשביל הבוס שלומד), ומה שהסוג עושה
 function onHit(e,d,base,w,t,ang,chained){
-  P.track.types[t]=(P.track.types[t]||0)+d;S.hits[t]=(S.hits[t]||0)+1;
+  P.track.types[t]=(P.track.types[t]||0)+d;S.hits[t]=(S.hits[t]||0)+1;storyUse(t,d);   // storyUse: גם בעולם, בשביל הצל (story.js)
   comboHit(e,d,base,w,t,ang,chained);   // קומבו עם מה שכבר על האויב (skills.js)
   const T_=DMG.types[t];
   if(T_.burn){const dps=d*T_.burn.k/T_.burn.t;if(!e.burn||e.burn.dps<dps)e.burn={dps,t:T_.burn.t,tick:0.5,acc:0};else e.burn.t=T_.burn.t}

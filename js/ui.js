@@ -11,6 +11,7 @@ const WINS=[
   {id:'ovForge',close:()=>forgeClose(),backdrop:true},
   {id:'ovDaily',close:()=>dailyClose(),backdrop:true},
   {id:'ovVisit',close:()=>visitClose(),backdrop:true},
+  {id:'ovEnd',close:()=>storyEndClose(),backdrop:true},   // "תודה ששיחקת" בסוף העלילה (story.js)
   {id:'npcDlg',close:()=>S.wd?wnpcTalk(null):npcTalk(null),outside:true},
   {id:'qLog',close:()=>questLogOpen(false),outside:true},
   {id:'bookWin',close:()=>bookOpen(false),outside:true},
