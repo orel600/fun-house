@@ -15,13 +15,14 @@ const LOOT={
   firstKill:{coins:[1,10],rubyC:[0.25,1],sapphireC:[0.25,1],boltC:[0.25,1],aquaC:[0.25,1],amberC:[0.25,1]},
   // מזל עם הגנה: משלל בדרגה from ומעלה. כל החטאה מוסיפה step לסיכוי (כפול), עד max. נופל = מתאפס
   pity:{from:2,step:0.04,max:3},
-  /* ציוד מאויבים (ניר, 31.10.2026: "הרגתי כמה מפלצות וקיבלתי כל מיני דברים, אבל אף פעם לא נשק או פריט"). עד עכשיו ציוד נפל רק בסוף ריצה בזירה (GEAR.loot).
-     עכשיו גם מכל אויב, בזירה ובעולם: נשק, תכשיט, מגפיים או חפץ מסתובב (gRoll ב-gear.js, לפי GEAR.tiers). הסיכוי לפי מי נפל,
-     rolls: כמה הגרלות, והנדיר ביותר נבחר. pity: כמו המזל עם ההגנה, כל אויב בלי ציוד מגדיל קצת את הסיכוי הבא, עד max (SAVE.gearPity) */
+  /* ציוד מאויבים בעולם הפתוח (ניר, 31.10.2026: "הרגתי כמה מפלצות וקיבלתי כל מיני דברים, אבל אף פעם לא נשק או פריט"; התכוון לאזור הראשון).
+     רק בעולם הפתוח (S.wd). הזירה היא של אוראל, ושם ציוד נופל כמו קודם, בסוף ריצה (GEAR.loot).
+     נשק, תכשיט, מגפיים או חפץ מסתובב (gRoll ב-gear.js, לפי GEAR.tiers). הסיכוי לפי מי נפל, rolls: כמה הגרלות, והנדיר ביותר נבחר.
+     pity: כמו המזל עם ההגנה, כל אויב בלי ציוד מגדיל קצת את הסיכוי הבא, עד max (SAVE.gearPity) */
   gear:{
-    foe:{chance:0.0004,rolls:1}, champ:{chance:0.015,rolls:2}, elite:{chance:0.15,rolls:2},   // בזירה כ-1800 הריגות: בערך 3 פריטים בריצה
-    wanted:{chance:0.2,rolls:3}, boss:{chance:0.5,rolls:3},
-    pity:{step:0.002,max:3}
+    foe:{chance:0.03,rolls:1}, champ:{chance:0.1,rolls:2}, elite:{chance:0.25,rolls:2},   // בעולם: בערך פריט אחד כל 25-30 מפלצות
+    wanted:{chance:0.6,rolls:3}, boss:{chance:0.5,rolls:3},
+    pity:{step:0.06,max:3}
   },
   beam:90                          // גובה עמוד האור של שלל נדיר על הרצפה, כפול beam של הדרגה חלקי 100 (drops.js)
 };
@@ -68,10 +69,10 @@ function lootKill(e){
   }
 }
 
-// פריט ציוד שנופל מאויב: נוחת על הרצפה, נמשך לשחקן ונכנס לתרמיל (dropTake ב-drops.js). force: לבדיקה, נופל תמיד. מחזיר את הפריט או null
+// פריט ציוד שנופל מאויב בעולם הפתוח: נוחת על הרצפה, נמשך לשחקן ונכנס לתרמיל (dropTake ב-drops.js). force: לבדיקה, נופל תמיד. מחזיר את הפריט או null
 function lootGear(e,force){
   const G=LOOT.gear,k=e.isBoss?'boss':e.wanted?'wanted':e.elite?'elite':e.champ?'champ':'foe',R=G[k];
-  if(e.node||!R||S.room)return null;
+  if(e.node||!R||S.room||(!S.wd&&!force))return null;   // רק בעולם הפתוח, לא בזירה
   const ch=R.chance*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck();
   if(!force&&Math.random()>=ch){SAVE.gearPity=(SAVE.gearPity||0)+1;return null}
   SAVE.gearPity=0;const id=gRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;
