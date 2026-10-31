@@ -885,6 +885,29 @@ function worldBot(m,L,god){
     enterVillage();return o});
   check(evt.wave>0&&evt.waveLoot>0&&evt.waveEnd&&evt.cartLoot>0&&evt.cartEnd&&evt.rain>3&&evt.rainEnd&&evt.next,'אירועים בעולם: גל של '+evt.wave+(evt.waveEnd?', הופל ונפל שלל '+evt.waveLoot:', לא נגמר')+
     ', עגלה '+(evt.cartEnd?'נלקחה ('+evt.cartLoot+')':'לא נלקחה')+', מטר הפיל '+evt.rain+(evt.next?', והבא מתוזמן':', אין אירוע הבא'));
+  // סודות בעולם (secrets.js): כל המקומות בתוך האזור ולא במים, תיבה נחשפת ונפתחת, מקדש מברך ונגמר, תצפית חושפת מקורות, וסימן בעץ שפיוחו חופרת את האוצר שלו
+  const sec=await page.evaluate(()=>{
+    const o={bad:[]};SAVE.secrets={found:{},read:{}};
+    for(const reg in SECRETS.regions){enterWorld('home',reg);const B=placeBox(),R=WR();
+      for(const s of SECRETS.regions[reg])for(const q of [s,s.to].filter(Boolean)){
+        if(q.x<B.x0||q.x>B.x1||q.y<B.y0||q.y>B.y1||(R.ponds||[]).some(p=>Math.hypot(p.x-q.x,p.y-q.y)<p.r+20)||Object.values(wGates(true)).some(g=>Math.hypot(g.x-q.x,g.y-q.y)<g.r+60))o.bad.push(s.id)}}
+    enterWorld('home');const L=SECRETS.regions.meadow,go=s=>{P.x=s.x;P.y=s.y;secretsUpdate(0.05)},n0=()=>drops().length,of=k=>L.find(s=>s.kind===k);
+    for(const e of enemies)e.dead=true;
+    const ch=of('chest');P.x=ch.x+SECRETS.reveal-10;P.y=ch.y;secretsUpdate(0.05);o.shown=!!scState()['v'+ch.id]&&!scFound(ch.id);let d0=n0();go(ch);o.chest=scFound(ch.id)&&n0()>d0;
+    const sp0=P.speed,sh=of('shrine');go(sh);o.bless=scState().bless&&P.speed>sp0;for(let i=0;i<70;i++)secretsUpdate(1);o.blessEnd=!scState().bless&&Math.abs(P.speed-sp0)<1e-6;
+    const lk=of('lookout');go(lk);o.look=scState().look>0&&scFound(lk.id);
+    const cv=of('carving');go(cv);o.read=!!SC().read[cv.id];P.x=cv.to.x;P.y=cv.to.y+20;petUpdate(0.05);d0=n0();secretsUpdate(0.05);o.sniff=S.pet&&S.pet.st==='go';
+    for(let i=0;i<200&&!scFound(cv.id);i++){petUpdate(0.05);secretsUpdate(0.05)}
+    o.dug=scFound(cv.id)&&n0()>d0;o.count=scCount('meadow')+'/'+L.length;secretsHud();o.hud=$('wSec').textContent;
+    o.saved=Object.keys((JSON.parse(localStorage.getItem(SAVE_STORE.key)).secrets||{}).found||{}).length;
+    o.lake=(SECRETS.regions.lake||[]).length;
+    return o});
+  if(CFG.shots){await page.clock.runFor(300);await shot('world-secrets')}
+  await page.evaluate(()=>enterVillage());
+  check(!sec.bad.length&&sec.shown&&sec.chest&&sec.bless&&sec.blessEnd&&sec.look&&sec.read&&sec.dug&&sec.saved===4&&sec.hud.includes('4/'),
+    'סודות בעולם: '+(sec.bad.length?'מחוץ לאזור או במים: '+sec.bad.join(','):'כל המקומות תקינים')+(sec.shown?', תיבה נחשפת':', התיבה לא נחשפה')+(sec.chest?' ונפתחת':' ולא נפתחת')+
+    (sec.bless?', מקדש מברך':', המקדש לא מברך')+(sec.blessEnd?' והברכה נגמרת':' והברכה לא נגמרת!')+(sec.look?', תצפית חושפת':', התצפית לא עובדת')+
+    (sec.read?', סימן בעץ':', הסימן לא נקרא')+(sec.sniff?', פיוחו רצה':'')+(sec.dug?' וחופרת אוצר':' ולא חפרה')+', '+sec.count+' באחו ("'+sec.hud+'"), נשמר '+sec.saved+', באגם '+sec.lake);
   // אויבים מיוחדים בעולם (affix.js): מתפצל נותן שניים, מתפוצץ פוגע אחרי רגע, מתחדש מרפא, ולכולם שם ושלל
   const afx=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=enemies.length,L=WORLD.foes[3],mk=id=>{const e=addEnemy('grunt',P.x+60,P.y,1);e.home=3;affixSet(e,id);return e};

@@ -183,7 +183,7 @@ function worldUpdate(dt){
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
   wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js)
-  dropsUpdate(dt);wLootIn();
+  dropsUpdate(dt);secretsUpdate(dt);wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}
@@ -271,6 +271,7 @@ function drawWorld(){
   storyDraw();   // הפנס והשומר (story.js)
   affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
   eventsDraw();   // אירועים (events.js)
+  secretsDraw();   // סודות (secrets.js)
   if(WR().fog)wFog();
 }
 // מים שאי אפשר ללכת בהם: דוחפים החוצה, כמו מעץ
@@ -299,4 +300,5 @@ function drawWorldScreen(ox,oy){
   storyScreen(ox,oy);   // story.js
   affixScreen(ox,oy);   // affix.js
   eventsScreen(ox,oy);   // events.js
+  secretsScreen(ox,oy);secretsHud();   // secrets.js
 }
