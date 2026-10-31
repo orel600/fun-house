@@ -99,6 +99,7 @@ function npcDialog(){
   h+=ready.map(q=>qCard(q,'claim')).join('')+open.map(q=>qCard(q,'accept')).join('')+on.map(q=>qCard(q,'track')).join('');
   if(!ready.length&&!open.length&&!on.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
   if(id===STATS.respec.npc)h+=statRespecHtml();   // איפוס נקודות הדמות (stats.js)
+  if(id===FISH.cookAt)h+=fishCookHtml();   // בישול דגים (fishing.js)
   el.innerHTML=h;el.hidden=false;
 }
 // דיוקן בשיחה, מ-Creative Claw (icons/ui/npc, נחתך עם tools/slice-icons.py). דמות בלי דיוקן: בלי תמונה. משמש גם את worldnpc.js
@@ -115,6 +116,7 @@ $('npcDlg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||!S.vil)return;
   if(b.dataset.act==='close'){npcTalk(null);return}
   if(b.dataset.act==='respec'){statRespec();statBadge();npcDialog();return}
+  if(b.dataset.act==='cook'){fishCook(b.dataset.m);npcDialog();return}   // fishing.js
   questAct(b.dataset.act,b.dataset.q);   // quests.js
   npcDialog();
 });

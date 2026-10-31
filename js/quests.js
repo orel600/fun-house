@@ -6,6 +6,7 @@
      collect להביא הביתה n מ-what: משאב (כל משאב ב-RES, resources.js), מהייצור בכפר או מהשלל של ריצה
      reach   להגיע n פעמים ל-what: arena (יציאה לזירה), room (חדר הבונוס), world (יציאה מהכפר לעולם הפתוח)
      gather  לאסוף בעולם הפתוח n מ-what: משאב שנפל ממקור או מאויב בעולם (world.js). נספר כשהוא נכנס לתרמיל
+     fish    לדוג n מ-what: דג (fishing.js), או any
      upgrade המבנה what ברמה n לפחות. נבדק לפי הכפר עצמו, אז מה שכבר בנית נספר
      win     לנצח בוס n פעמים. אפשר בתנאי: noHit (בלי לחטוף פגיעה כל עוד הבוס בזירה), under (לפני שעברו כך וכך שניות בריצה)
    reward: משאבים לתרמיל לפי השם, xp לדמות, rank: עלייה לשלב הזה בדרגה (ranks.js), item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>'). id של פריט ציוד מ-GEAR.items (gear.js) נכנס לתרמיל כציוד שאפשר ללבוש,
@@ -61,6 +62,7 @@ const QUESTS={
     {id:'door',giver:'priest',kind:'village',obj:[{type:'reach',what:'room',n:1}],reward:{coins:30}},
     // ---- עולם: נותנות הדמויות שמוצאים באחו (WNPC ב-worldnpc.js) ----
     {id:'wFish',giver:'fisher',kind:'world',obj:[{type:'kill',what:'wisp',n:6}],reward:{coins:30,xp:30}},
+    {id:'wCatch',giver:'fisher',kind:'world',obj:[{type:'fish',what:'any',n:3}],reward:{coins:40,xp:40},req:{quest:'wFish'}},   // דיג (fishing.js): מחכה בבריכה שלו
     {id:'wQuarry',giver:'cutter',kind:'world',obj:[{type:'gather',what:'stone',n:12}],reward:{coins:20,iron:4}},
     {id:'wGolems',giver:'cutter',kind:'world',obj:[{type:'kill',what:'golem',n:3}],reward:{iron:8,xp:30},req:{quest:'wQuarry'}},
     {id:'wHerbs',giver:'herbal',kind:'world',obj:[{type:'gather',what:'herb',n:6}],reward:{coins:20,resin:3}},
