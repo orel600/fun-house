@@ -43,6 +43,9 @@
 <!-- העולם הפתוח: שם האזור ומה שבתרמיל למעלה, ופאנל ליד שער (js/world.js) -->
 <div class="whud" id="whud" hidden><b id="wName"></b><b id="wSec" class="wsec"></b><span class="chtag" id="chTag" hidden></span><div class="bag tbar" id="wBag" role="group" data-ta="bagGroup"></div></div>
 <div class="vpanel win" id="wPanel" hidden></div>
+<!-- מפת העולם (js/worldmap.js): כפתור בפינה העליונה, רק בעולם, וחלון עם מפה של כל האזורים ושל האזור הנוכחי -->
+<button class="wmapbtn" id="wMapBtn" data-ta="wm.title"><span aria-hidden="true">🗺️</span></button>
+<div class="qlog win wmapwin" id="wMap" hidden></div>
 <!-- סרגל למטה, בכפר ובעולם (js/ui.js): היומן, "לדבר" כשעומדים ליד מישהו, והציוד. הוא לא מכסה אף חלון: החלונות נגמרים מעליו -->
 <nav class="bnav" id="nav">
   <button class="nbtn" id="qBtn"><span class="ni" aria-hidden="true">📜</span><span data-t="q.log"></span><b id="qBadge" hidden></b></button>
@@ -256,6 +259,7 @@
 <script src="js/affix.js"></script>
 <script src="js/events.js"></script>
 <script src="js/secrets.js"></script>
+<script src="js/worldmap.js"></script>
 <script src="js/challenge.js"></script>
 <script src="js/gear.js"></script>
 <script src="js/sets.js"></script>
