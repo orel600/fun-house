@@ -1,4 +1,9 @@
-<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- התקנה כאפליקציה בטלפון (js/pwa.js) -->
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#121624">
+<link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="זירת המקל">
 <title>זירת המקל</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&family=Secular+One&display=swap">
@@ -47,6 +52,8 @@
 <div class="qlog npcdlg" id="npcDlg" hidden></div>
 
 <div class="banner" id="banner"></div>
+<!-- אפליקציה מותקנת שמוחזקת לאורך: בקשה לסובב (js/pwa.js) -->
+<div class="pwa-turn" id="pwaTurn"><b aria-hidden="true">📱↻</b><p data-t="pwa.turn"></p></div>
 
 <!-- מסך הציוד והתרמיל: התרמיל, הבובה עם המשבצות, והפרטים. גוררים או לוחצים (js/gear.js) -->
 <div class="ov gearov" id="ovGear" hidden>
@@ -87,6 +94,7 @@
     <p class="sub" id="bestLine"></p>
     <p class="sub cloud" id="cloudLine" data-t="cloud.off"></p>
     <div class="langs cloudbtns"><button class="lang" id="cloudIn" data-t="cloud.google" hidden></button><button class="lang" id="cloudOut" data-t="cloud.signout" hidden></button></div>
+    <div class="langs"><button class="lang" id="pwaInstall" data-t="pwa.install" hidden></button></div><p class="sub" id="pwaIos" data-t="pwa.ios" hidden></p>
     <p class="ver" id="verLine" dir="ltr"></p>
   </div>
 </div>
@@ -209,5 +217,6 @@
 <script src="js/input.js"></script>
 <script src="js/main.js"></script>
 <script src="js/perf.js"></script>
+<script src="js/pwa.js"></script>
 
 </body></html>
