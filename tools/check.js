@@ -65,6 +65,7 @@ function botStep({god,en}){
     if(!m.runGear){m.runGear=1;m.rt=S.t;m.hp0=P.maxHp;document.getElementById('gearBtnRun').click();L.rgOpen=S.mode==='gear'&&!document.getElementById('ovGear').hidden;return L}
     if(m.runGear===1){L.rgPaused=S.t===m.rt;const it=document.querySelector('#gItems [data-id="boneCharm"]');
       if(it){it.click();document.querySelector('#gDetail [data-act="equip"]').click()}
+      L.doll=R3D.on?(document.querySelector('#gSlots .gfig .doll3d')&&R3D.doll&&R3D.doll.a?'3d':'חסר'):'2d';   // הדמות בתלת-ממד בחלון (doll3d.js)
       L.rgHp=P.maxHp-m.hp0;L.rgSaved=JSON.parse(localStorage.getItem(SAVE_STORE.key)).gear.acc.includes('boneCharm');
       document.getElementById('gearClose').click();L.rgClosed=S.mode==='play';m.runGear=2;return L}
   }
@@ -279,6 +280,20 @@ function villageBot(m,L){
       A.saved=JSON.parse(localStorage.getItem(SAVE_STORE.key)).gear.weapon==='oakBow+1';
       if(LANG==='en'&&/[֐-׿]/.test(q('#ovForge').innerText))L.heLeak=q('#ovForge').innerText.trim().slice(0,80);
       m.age=2;return L}   // המסך נשאר פתוח לצעד אחד, בשביל הצילום
+    // כוחות (powers.js): לשונית בנפחייה, מוציאים כוח מחרב שבתרמיל (היא נהרסת), ומטביעים אותו על הקשת שלבושה. הנזק מרחוק עולה
+    if(m.age===2&&!m.pow){
+      const W=L.pow={},box=()=>SAVE.powers||{};bagAdd('coins',300);bagAdd('iron',5);bagAdd('oakSword#hunt');
+      q('#fTabs [data-tab="pow"]').click();W.tab=AUI.tab==='pow';
+      W.roll=gPow(powRoll('ironRing',0))!=null&&powRoll('ironRing',0.99)==='ironRing';
+      q('#fItems [data-id="oakSword#hunt"]').click();W.line=!!q('#fDetail .gpow');
+      q('#fDetail [data-act="extract"]').click();W.out=box().hunt===1&&!SAVE.bag['oakSword#hunt'];
+      q('#fItems [data-slot="weapon"]').click();const d0=gearStats().gdmg||0;FX.length=0;
+      const pb=q('#fDetail [data-pw="hunt"]');if(pb)pb.click();q('#fDetail [data-act="imprint"]').click();
+      const d1=gearStats().gdmg||0;W.dmg=d0+'→'+d1;
+      W.in=gPow(SAVE.gear.weapon)==='hunt'&&Math.abs(d1-d0-POWERS.list.hunt.give.gdmg)<0.01&&!box().hunt&&FX.some(f=>f.K===CELEBRATE.aging);
+      W.saved=/#hunt$/.test(JSON.parse(localStorage.getItem(SAVE_STORE.key)).gear.weapon);
+      if(LANG==='en'&&/[֐-׿]/.test(q('#ovForge').innerText))L.heLeak=q('#ovForge').innerText.trim().slice(0,80);
+      m.pow=1;L.powOpen=1;return L}   // המסך נשאר פתוח לצעד אחד, בשביל הצילום
     if(m.age===2){q('#forgeClose').click();L.ageClosed=S.mode==='play';m.age=3;return L}
     // הזוהר: לרגע הקשת היא +10, ובודקים שיש שובל וחלקיקים על הנשק
     if(m.age===3){m.age=4;SAVE.gear.weapon='oakBow+10';P.weapon='gun';L.glowOn=1;return L}
@@ -537,7 +552,7 @@ function worldBot(m,L,god){
     add(src,LOOT.firstKill,'first');add(src,LOOT.jackpot.table,'jackpot');
     // יצורי משאבים לא באים מה-spawner: כל אחד חייב מקור ששומר עליו, ושורה ב-LOOK3D
     const guards=new Set(Object.values(NODES.kinds).map(k=>k.guard&&k.guard.type).filter(Boolean)),lost=[];
-    for(const t in ETYPES)if(!['grunt','shield','wisp'].includes(t)&&(!guards.has(t)||!LOOK3D[t]||!(ETYPES[t].tags||[]).length))lost.push(t);
+    for(const t in ETYPES)if(!['grunt','shield','wisp'].includes(t)&&!ETYPES[t].warden&&(!guards.has(t)||!LOOK3D[t]||!(ETYPES[t].tags||[]).length))lost.push(t);
     for(const b in BOSSES)add(src,BOSSES[b].drop,'boss:'+b);
     add(src,WANTED.drop,'wanted');WANTED.loot.forEach(l=>add(src,l.res,'wanted:'+l.key));
     add(src,BONUS.roomRes,'room');
@@ -659,6 +674,11 @@ function worldBot(m,L,god){
     await shot('start-'+CFG.lang);
   }
   const rgHp=await page.evaluate(()=>GEAR.items.boneCharm.stats.hp);   // כמה חיים הקמע מוסיף באמצע ריצה
+  // סטים (sets.js): חלק אחד לא נותן כלום, שניים נותנים את מדרגה 2, ארבעה את שתי המדרגות. וכל פריט בסט מקבל שם ומתכון
+  const setT=await page.evaluate(()=>{const r={};for(const s in SETS){const it=setItems(s),b=SETS[s].bonus;
+    const one=setStats(it.slice(0,1)),two=setStats(it.slice(0,2)),four=gearStats(it);
+    r[s]={n:it.length,one:Object.keys(one).length===0,two:JSON.stringify(two)===JSON.stringify(b[2]),
+      four:Object.keys(b[4]).every(k=>four[k]>=(b[4][k]+(b[2][k]||0))),named:it.every(k=>!/^it\./.test(T('it.'+k))&&GEAR.recipes[k])}}return r});
   // כמה קשת העץ אמורה להוסיף, לפי GEAR. בנפחייה היא עולה ל-+1 (AGING.scale)
   const gx=await page.evaluate(()=>Math.round((1+GEAR.items.oakBow.stats.gdmg*(1+AGING.scale)/100)*100)/100);
   await page.click('#startBtn');
@@ -727,7 +747,7 @@ function worldBot(m,L,god){
     // התקדמות ל-stderr (לא נכנס לדוח): אם הבדיקה נתקעת ב-GitHub, רואים איפה
     if(guard%300===1)console.error('…',await page.evaluate(()=>[Math.round(S.t),S.mode,S.vil?'village':S.wd?'world':S.room?'room':'arena',enemies.length,S.nd?S.nd.list.length:0].join(' ')));
     L=await page.evaluate(botStep,{god:CFG.god,en:CFG.lang==='en'});
-    for(const k of ['vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='wDeathTxt'?'world-death':k)}
+    for(const k of ['vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='wDeathTxt'?'world-death':k)}
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
@@ -803,13 +823,39 @@ function worldBot(m,L,god){
     qStart(QBY.s1Lanterns);leaveVillage();questEvent('reach','world');questClaim('s1Lanterns');
     qStart(QBY.s1Shard);const p=S.pet||petMake();S.wd.digs0=p.digs;p.digs++;storyUpdate(0.1);o.shard=qReady(QBY.s1Shard);questClaim('s1Shard');
     qStart(QBY.s1Path);questEvent('kill','grunt',25);questClaim('s1Path');
-    qStart(QBY.s1Warden);const L=STORY.lantern;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.warden;
+    qStart(QBY.s1Warden);const L=STORY.lanterns.earth;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.warden;
     if(w){P.inv=99;damage(w,w.hp*10,'sword',0,'water')}o.ready=qReady(QBY.s1Warden);
     const d0=SAVE.story.earth;questClaim('s1Warden');o.lit=!d0&&SAVE.story.earth;
     enterWorld('home');o.safer=enemies.filter(e=>!e.dead&&e.type==='grunt').every(e=>e.dmg<=ETYPES.grunt.dmg*0.75*0.26+0.001);
     P.inv=0;enterVillage();return o});
   check(sto2.intro&&sto2.offer&&sto2.shard&&sto2.warden&&sto2.ready&&sto2.lit,'עלילה, פרק 1: '+(sto2.intro?'ההקדמה אצל ראש הכפר':'אין הקדמה ('+sto2.dbg+')')+(sto2.offer?', קווסט ראשון מוצע והבא נעול':', סדר הקווסטים שבור')+
     (sto2.shard?', פיוחו מצאה רסיס':', אין רסיס')+(sto2.warden?', השומר קם ליד הפנס':', השומר לא קם')+(sto2.ready?' והופל':', לא הופל')+(sto2.lit?', הפנס נדלק':', הפנס לא נדלק')+(sto2.safer?', האחו בטוח יותר':''));
+  // העלילה, פרק 2 (story.js, WORLD.regions.lake): הדרך לאגם סגורה עד שפנס האדמה דולק, באגם יש אויבים רטובים (חלשים לברק),
+  // והקווסטים מובילים לשומר המים, שמפיל את פנס המים
+  const ch2=await page.evaluate(()=>{
+    const o={},Q=QS(),e0=SAVE.story.earth;
+    SAVE.story.earth=false;enterWorld('home');o.closed=!wGates().lake;
+    SAVE.story.earth=true;enterWorld('home');o.open=!!wGates().lake;SAVE.story.earth=e0||true;
+    for(const id of ['s2Mist','s2Glow','s2Warden']){delete Q.done[id];delete Q.active[id]}delete SAVE.story.water;
+    o.offer=qOpen(QBY.s2Mist)&&!qOpen(QBY.s2Glow);
+    qStart(QBY.s2Mist);wGo('lake');o.reg=S.wd.reg;o.mist=qReady(QBY.s2Mist);questClaim('s2Mist');
+    const wet=enemies.filter(e=>!e.dead&&(e.type==='drowned'||e.type==='mistling'));o.foes=wet.length;
+    o.weak=wet.some(e=>e.type==='drowned'&&e.weak==='lightning');o.noNpc=!Object.keys(wnpcState()).length;
+    return o});
+  await page.clock.runFor(400);await shot('world-lake');
+  const ch2b=await page.evaluate(()=>{
+    const o={};qStart(QBY.s2Glow);questEvent('kill','drowned',8);questEvent('gather','aquaC',3);o.glow=qReady(QBY.s2Glow);questClaim('s2Glow');
+    qStart(QBY.s2Warden);const L=STORY.lanterns.water;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='tidewarden';
+    if(w){P.inv=99;damage(w,w.hp*10,'sword',0,'lightning');storyUpdate(0.1)}o.ready=qReady(QBY.s2Warden);
+    wGo('meadow');o.back=S.wd.reg==='meadow'&&Math.hypot(P.x-WORLD.paths.lake.x,P.y-WORLD.paths.lake.y)<WORLD.arrive+10;
+    enterVillage();questClaim('s2Warden');o.lit=!!SAVE.story.water;
+    enterWorld('home','lake');o.safer=storySafe()<1;P.inv=0;enterVillage();return o});
+  Object.assign(ch2,ch2b);
+  check(ch2.closed&&ch2.open&&ch2.offer&&ch2.reg==='lake'&&ch2.mist&&ch2.foes>0&&ch2.weak&&ch2.noNpc&&ch2.glow&&ch2.warden&&ch2.ready&&ch2.back&&ch2.lit,
+    'עלילה, פרק 2: '+(ch2.closed&&ch2.open?'הדרך לאגם נפתחת רק אחרי פנס האדמה':'הדרך לאגם לא נשלטת ע"י הפנס')+(ch2.offer?', קווסט ראשון מוצע':', סדר הקווסטים שבור')+
+    (ch2.reg==='lake'&&ch2.mist?', הגעה לאגם':', לא הגיע לאגם')+', '+ch2.foes+' אויבים רטובים'+(ch2.weak?' (חלשים לברק)':' (לא חלשים לברק!)')+(ch2.noNpc?'':', דמויות האחו באגם!')+
+    (ch2.glow?', מים זוהרים':', קווסט המים שבור')+(ch2.warden?', שומר המים קם':', שומר המים לא קם')+(ch2.ready?' והופל':', לא הופל')+(ch2.back?', חזרה לאחו ליד השביל':', החזרה לאחו שבורה')+
+    (ch2.lit?', פנס המים נדלק':', פנס המים לא נדלק')+(ch2.safer?', האגם בטוח יותר':''));
   // אירועים בעולם (events.js): גל שנגמר בתיבה, עגלה שנותנת שלל כשמגיעים, ומטר שמפיל מתכות
   const evt=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=()=>drops().length;
@@ -892,6 +938,9 @@ function worldBot(m,L,god){
   check(L.ageOpen&&A.up&&A.down&&A.pity&&A.gem&&A.saved&&L.ageClosed,'Aging: '+(L.ageOpen?'הנפחייה נפתחה, '+(A.odds||'בלי סיכוי'):'הנפחייה לא נפתחה')+
     (A.up?', הצלחה: '+A.name+', נזק קשת '+A.dmg:', הצלחה לא עבדה')+(A.down?', כישלון הוריד רמה':', כישלון לא הוריד')+(A.pity?'':', המזל הרך לא התאפס')+
     (A.gem?', אבן חן הגנה':', אבן חן לא הגנה')+(A.saved?', נשמר':', לא נשמר')+(L.ageClosed?'':', לא נסגר'));
+  const W=L.pow||{};
+  check(W.tab&&W.roll&&W.line&&W.out&&W.in&&W.saved,'כוחות: '+(W.tab?'הלשונית נפתחה':'הלשונית לא נפתחה')+(W.roll?', שלל עם כוח':', שלל בלי כוח')+(W.out?', הוצאה':', לא הוצא')+
+    (W.in?', הוטבע (נזק מרחוק '+W.dmg+')':', לא הוטבע ('+(W.dmg||'')+')')+(W.saved?', נשמר':', לא נשמר'));
   const G=L.glow||{};
   check(G.hand&&G.trail>1&&G.parts>0,'זוהר Aging ב-+10: '+(G.hand?'שובל '+G.trail+' נקודות, '+G.parts+' חלקיקים':'לא נמצא הנשק'));
   check(L.gearW==='gun'&&L.gearDmg===gx,'ציוד בריצה: מתחיל עם '+(L.gearW==='gun'?'קשת':L.gearW)+', נזק קשת x'+L.gearDmg+' (צפוי x'+gx+')');
@@ -1007,6 +1056,9 @@ function worldBot(m,L,god){
   const fd=pt.feed;
   check(fd&&fd.btn&&fd.xp>0&&fd.ate===1&&fd.buff>0&&fd.hearts>0&&fd.hide&&fd.saved,'פיוחו אוכלת גזר: '+(fd?'הכפתור הופיע, אכלה '+fd.ate+', ‎+'+fd.xp+' XP, חיזוק '+Math.round(fd.buff)+' שניות, '+fd.hearts+' לבבות'+(fd.hide?'':', הכפתור לא נעלם')+(fd.saved?', נשמר':', לא נשמר'):'הכפתור לא הופיע'));
   check(pt.wBites>0&&!pt.aBites&&pt.dealt>0&&pt.ret>0&&!pt.oob&&pt.far<=pt.leash*1.6,'פיוחו תוקפת בעולם: '+(pt.wBites||0)+' נשיכות, בזירה '+(pt.aBites||0)+' (צריך 0), '+Math.round(pt.dealt||0)+' נזק, חזרה לשחקן '+(pt.ret||0)+' פעמים, הכי רחוק ממנו '+(pt.far||0)+(pt.oob?' · יצאה מגבולות העולם '+pt.oob+' פעמים':''));
+  check(L.doll==='3d'||L.doll==='2d','הדמות בחלון הציוד: '+(L.doll==='3d'?'בתלת-ממד, עם מה שלבוש':L.doll==='2d'?'דו-ממד, אימוג\'י':'לא הופיעה ('+L.doll+')'));
+  const setBad=Object.entries(setT).filter(([s,v])=>!(v.n===4&&v.one&&v.two&&v.four&&v.named)).map(([s,v])=>s+' '+JSON.stringify(v));
+  check(Object.keys(setT).length&&!setBad.length,'סטים של ציוד: '+Object.keys(setT).length+' סטים, 2 ו-4 חלקים נותנים בונוס'+(setBad.length?' · בעיה: '+setBad.join(', '):''));
   check(pt.evo==='1→2→3'&&pt.evoSaved&&pt.evoFx&&pt.fxOk,'פיוחו מתפתחת: '+(pt.evo||'לא נבדק')+(pt.evoSaved?', נשמר':', לא נשמר')+(pt.evoFx?', עם חגיגה':', בלי חגיגה')+(pt.fxOk?'':', להבה בשלב 3 לא מצאה את הזנב'));
   if(CFG.gfx==='3d')check(pt.r3&&pt.clips==='ok','פיוחו בתלת-ממד: '+(pt.r3?'נראית':'לא נראתה')+(pt.clips==='ok'?', כל 7 האנימציות נטענו':', חסרות: '+pt.clips));
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');

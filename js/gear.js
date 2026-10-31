@@ -10,7 +10,9 @@ const GEAR={
   // metal: המשאב (RES) של השכבה. כל מתכון בשכבה צריך אותו, ובנפחייה ברמה L יוצרים עד שכבה L-1
   tiers:[{id:'wood',col:'#B07A45',w:50,metal:'wood'},{id:'iron',col:'#9AA3AD',w:30,metal:'iron'},{id:'silver',col:'#DCE3EA',w:14,metal:'silver'},{id:'gold',col:C.gold,w:5,metal:'gold'},{id:'legend',col:'#FF6FB5',w:1,metal:'mythril'}],
   // הסטטים. איך כל אחד חל על השחקן: gearReset. unit: מה מוצג אחרי המספר. w: משקל בהשוואה "מה יותר טוב"
-  stats:{sdmg:{unit:'%',w:1},gdmg:{unit:'%',w:1},hp:{unit:'',w:0.4},speed:{unit:'%',w:1.5},magnet:{unit:'%',w:0.3},regen:{unit:'',w:8}},
+  stats:{sdmg:{unit:'%',w:1},gdmg:{unit:'%',w:1},hp:{unit:'',w:0.4},speed:{unit:'%',w:1.5},magnet:{unit:'%',w:0.3},regen:{unit:'',w:8},
+    // מגיעים מכוחות (powers.js). t: מפתח השם ב-lang.js, כש-'st.<סטט>' כבר תפוס
+    aspd:{unit:'%',w:1.5,t:'gst.aspd'},crit:{unit:'%',w:1.5,t:'gst.crit'},loot:{unit:'%',w:0.5,t:'gst.loot'},def:{unit:'%',w:1.5,t:'gst.def'}},
   // חפצים מסתובבים: הסוג והאייקון במסך הציוד. מה כל סוג עושה בזירה: ORBIT ב-orbit.js
   orbit:{attack:'🔥',defense:'🛡️',control:'❄️',support:'💚',luck:'🍀'},
   /* הפריטים. slot: weapon / acc / boots / orbit. נעליים נותנות מהירות (speed). tier: מספר ב-tiers. w: סוג הנשק ב-WEAPONS (weapons.js): איך הוא תוקף. איתו מתחילים את הריצה.
@@ -29,6 +31,15 @@ const GEAR={
     swiftBoots: {slot:'boots',tier:2,type:'boots',icon:'👢',stats:{speed:8}},
     goldAmulet: {slot:'acc',tier:3,icon:'📿',stats:{hp:30,magnet:30},look:{glow:C.gold}},
     crown:      {slot:'acc',tier:4,icon:'👑',stats:{hp:40,sdmg:15,gdmg:15},look:{glow:'#FF6FB5'}},
+    // סטים (sets.js): שניים או ארבעה חלקים מאותו סט נותנים בונוס. השומר האבן: מקרוב ועמיד. צייד הסערה: מרחוק ומהיר
+    wardenHammer:{slot:'weapon',tier:1,w:'hammer',set:'warden',icon:'🔨',stats:{sdmg:22},look:{model:'w_hammer_B'}},
+    wardenRing: {slot:'acc',tier:1,set:'warden',icon:'💍',stats:{hp:15}},
+    wardenCharm:{slot:'acc',tier:1,set:'warden',icon:'🪨',stats:{hp:10,regen:0.3}},
+    wardenBoots:{slot:'boots',tier:1,type:'boots',set:'warden',icon:'🥾',stats:{speed:5,hp:10}},
+    stormBow:   {slot:'weapon',tier:2,w:'bow',set:'storm',icon:'🏹',stats:{gdmg:35},look:{model:'w_bow_B_withString',glow:'#C7A6FF'}},
+    stormRing:  {slot:'acc',tier:2,set:'storm',icon:'💍',stats:{gdmg:8}},
+    stormFeather:{slot:'acc',tier:2,set:'storm',icon:'🪶',stats:{speed:4,magnet:15}},
+    stormBoots: {slot:'boots',tier:2,type:'boots',set:'storm',icon:'👢',stats:{speed:10}},
     emberOrb:   {slot:'orbit',tier:0,type:'attack'},
     stoneOrb:   {slot:'orbit',tier:0,type:'defense'},
     frostOrb:   {slot:'orbit',tier:0,type:'control'},
@@ -50,6 +61,15 @@ const GEAR={
     goldBow:    {gold:6,silver:4,venom:8,bolt:1,coins:160},
     goldAmulet: {gold:8,essence:10,shadow:2,venom:4,aqua:1,horn:1,coins:160},
     crown:      {mythril:6,gold:6,horn:3,star:1,shadow:4,amberF:1,coins:300},
+    // סטים: השומר מאבן, ברזל וקליפות (מהמחצבה), הצייד מכסף, נוצות ותמצית, עם רסיס ברק
+    wardenHammer:{iron:10,stone:16,plate:4,amberC:1,coins:50},
+    wardenRing: {iron:6,stone:10,plate:2,coins:40},
+    wardenCharm:{iron:4,stone:14,plate:3,essence:2,coins:40},
+    wardenBoots:{iron:4,stone:8,hide:6,coins:40},
+    stormBow:   {silver:6,wood:10,essence:6,bolt:1,coins:100},
+    stormRing:  {silver:5,essence:5,boltC:1,coins:80},
+    stormFeather:{silver:3,cloth:6,dust:6,essence:3,coins:80},
+    stormBoots: {silver:4,hide:8,dust:4,coins:80},
     // חפצים מסתובבים: עשבים, אבק וקליפות, ואבן שבורה לפי הסוג
     emberOrb:   {wood:6,dust:4,rubyC:1,coins:20},
     stoneOrb:   {wood:6,stone:10,plate:3,amberC:1,coins:20},
@@ -66,18 +86,21 @@ const GEAR={
   drag:8
 };
 
-// פריט ששודרג בנפחייה נשמר עם הרמה שלו: 'oakBow+3' (aging.js). gBase: בלי הרמה, gPlus: הרמה
-const gBase=id=>String(id).split('+')[0];
-const gPlus=id=>id?+(String(id).split('+')[1]||0):0;
+// פריט ששודרג בנפחייה נשמר עם הרמה שלו: 'oakBow+3' (aging.js), ועם כוח אחריה: 'oakBow+3#keen' (powers.js).
+// gBase: בלי הרמה והכוח, gPlus: הרמה, gPow: הכוח
+const gBase=id=>String(id).split(/[+#]/)[0];
+const gPlus=id=>{const m=/\+(\d+)/.exec(id||'');return m?+m[1]:0};
+const gPow=id=>{const m=/#(\w+)/.exec(id||'');return m?m[1]:null};
 const gItem=id=>id&&GEAR.items[gBase(id)]||null;
 // ה-+3 נכתב משמאל לימין גם בעברית (\u2066...\u2069), אחרת הסימן קופץ לצד השני
 const gName=id=>T('it.'+gBase(id))+(gPlus(id)?' \u2066+'+gPlus(id)+'\u2069':'');
-// הסטטים של הפריט, כולל השדרוג בנפחייה
-function gStats(id){const s=(gItem(id)||{}).stats||{},k=ageMult(gPlus(id)),o={};for(const x in s)o[x]=Math.round(s[x]*k*10)/10;return o}
+// הסטטים של הפריט, כולל השדרוג בנפחייה והכוח שעליו (powers.js)
+function gStats(id){const s=(gItem(id)||{}).stats||{},k=ageMult(gPlus(id)),o={};for(const x in s)o[x]=Math.round(s[x]*k*10)/10;
+  const p=powGive(gPow(id));for(const x in p)o[x]=(o[x]||0)+p[x];return o}
 const gTint=id=>(gItem(id).look||{}).tint||GEAR.tiers[gItem(id).tier].col;
 const gIcon=id=>{const it=gItem(id);return it.icon||GEAR.orbit[it.type]};
 /* תמונה לפריט בממשק (HTML), מ-Creative Claw (icons/ui/gear, נחתך עם tools/slice-icons.py). בלי תמונה: האימוג'י. על הקנבס תמיד האימוג'י (gIcon) */
-const GEAR_PIC={oakSword:1,ironSword:1,silverBlade:1,oakBow:1,ironBow:1,goldBow:1,oakStaff:1,boneCharm:1,ironRing:1,starterBoots:1,swiftBoots:1,goldAmulet:1,crown:1};
+const GEAR_PIC={oakSword:1,ironSword:1,silverBlade:1,oakBow:1,ironBow:1,goldBow:1,oakStaff:1,boneCharm:1,ironRing:1,starterBoots:1,swiftBoots:1,goldAmulet:1,crown:1,wardenHammer:1,wardenRing:1,wardenCharm:1,wardenBoots:1,stormBow:1,stormRing:1,stormFeather:1,stormBoots:1};
 const gPic=id=>GEAR_PIC[gBase(id)]?'<img class="ri" src="icons/ui/gear/'+gBase(id)+'.png" alt="">':gIcon(id);
 // כמה הפריט שווה, כדי לדעת אם החלפה היא שיפור. חומר טוב יותר שובר שוויון
 function gScore(id){const it=gItem(id);if(!it)return 0;let n=it.tier*0.01;const s=gStats(id);for(const k in s)n+=s[k]*GEAR.stats[k].w;return n}
@@ -94,7 +117,8 @@ function gTarget(it){
 }
 // כל מה שלבוש עכשיו, בלי משבצות נעולות
 function gearWorn(){const out=[];for(const s of ['weapon','acc','boots','orbit'])for(let i=0;i<gOpen(s);i++){const id=gGet(s,i);if(gItem(id))out.push(id)}return out}
-function gearStats(ids=gearWorn()){const t={};for(const id of ids){const s=gStats(id);for(const k in s)t[k]=(t[k]||0)+s[k]}return t}
+// כולל את הבונוס של סטים (sets.js), כדי שכל מי שמלביש ומוריד ציוד יקבל גם אותו
+function gearStats(ids=gearWorn()){const t={};for(const id of ids){const s=gStats(id);for(const k in s)t[k]=(t[k]||0)+s[k]}const b=setStats(ids);for(const k in b)t[k]=(t[k]||0)+b[k];return t}
 
 /* ---- ללבוש ולהוריד: מהתרמיל למשבצת ובחזרה. מה שהיה במשבצת חוזר לתרמיל ---- */
 // i: לאיזו משבצת (בגרירה). בלי i: המשבצת שמתאימה הכי (gTarget). משבצת מסוג אחר או נעולה: לא לובשים
@@ -154,7 +178,7 @@ function gRoll(n=1){
   const one=()=>{let r=Math.random()*pool.reduce((n,id)=>n+GEAR.tiers[GEAR.items[id].tier].w,0);
     for(const id of pool){r-=GEAR.tiers[GEAR.items[id].tier].w;if(r<0)return id}return pool[0]};
   let best=one();for(let i=1;i<n;i++){const id=one();if(GEAR.items[id].tier>GEAR.items[best].tier)best=id}
-  return best;
+  return powRoll(best);   // לפעמים עם כוח (powers.js)
 }
 function gearLoot(){
   if(S.gearLoot)return S.gearLoot;
@@ -178,7 +202,7 @@ const gStashOn=()=>!!(S.vil&&S.vil.near==='stash'&&vLv('stash')>0);
 const gRar=k=>gItem(k)?gItem(k).tier:(resOf(k)||{}).rar||0;
 const gRarCol=k=>RES.rarity[Math.min(gRar(k),RES.rarity.length-1)].col;
 
-const gSign=(k,v)=>'<bdi>'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T('st.'+k);
+const gSign=(k,v)=>'<bdi>'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T(GEAR.stats[k].t||'st.'+k);
 function gStatsHtml(id){const it=gItem(id),s=gStats(id);
   if(it.slot==='orbit')return '<p>'+T('orb.'+it.type)+' · '+T('orb.do.'+it.type)+'</p>';
   return '<ul class="gstats">'+Object.keys(s).map(k=>'<li>'+gSign(k,s[k])+'</li>').join('')+'</ul>'}
@@ -193,7 +217,7 @@ function gTile(id,attrs,extra){
   const it=gItem(id),cls='gtile'+(it&&it.w?' '+WEAPONS[it.w].use:'');
   if(!it)return '<button class="'+cls+' empty" '+attrs+'>'+extra+'</button>';
   const glow=(it.look||{}).glow;
-  return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gPic(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+extra+'</button>';
+  return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gPic(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+(gPow(id)?'<b class="gpw">✦</b>':'')+extra+'</button>';
 }
 // תא של משאב: אייקון, כמה יש, ומסגרת בצבע הנדירות
 const gResTile=(r,n,attrs)=>'<button class="gtile res" '+attrs+' style="--rar:'+gRarCol(r)+'" aria-label="'+resName(r)+' '+n+'">'+resPic(r)+'<small>×'+shortN(n)+'</small></button>';
@@ -222,6 +246,7 @@ function gearDraw(){
   // הבובה: הדמות באמצע, והמשבצות בשני הצדדים ומתחתיה
   const side=k=>'<div class="gd-'+k+'">'+D[k].map(gSlotHtml).join('')+'</div>';
   $('gSlots').innerHTML=side('start')+'<div class="gfig" style="--hero:'+(hero.col||'#ECE7DC')+'"><span>🧍</span>'+(hero.icon?'<b>'+hero.icon+'</b>':'')+'</div>'+side('end')+side('under');
+  dollShow();   // הדמות בתלת-ממד במקום האימוג'י, עם מה שלבוש (doll3d.js)
   // התרמיל: לשוניות ורשת
   const tabs=gTabs();if(!tabs.includes(GUI.tab))GUI.tab='items';
   $('gTabs').innerHTML=tabs.map(f=>'<button data-tab="'+f+'"'+(GUI.tab===f?' aria-pressed="true"':'')+'>'+T(f==='items'?'gear.tab.items':'fam.'+f)+'</button>').join('');
@@ -245,7 +270,7 @@ function gDetailHtml(){
   let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
     '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
   if(it&&gPlus(k))d+='<p class="gage">'+T('gear.aged',gPlus(k))+'</p>';
-  if(it)d+=gStatsHtml(k);
+  if(it)d+=gStatsHtml(k)+powLine(k)+setHtml(k);   // הכוח בזהב (powers.js)   // סט: מה הוא נותן וכמה חלקים לבושים (sets.js)
   else{const w=resWhere(k),cut=a=>a.slice(0,RES.tip.max).join(', ')+(a.length>RES.tip.max?'…':'');   // משאב: מאיפה ובשביל מה (resources.js)
     if(w.src.length)d+='<p class="dim">'+T('tip.from',cut(w.src))+'</p>';if(w.use.length)d+='<p class="dim">'+T('tip.for',cut(w.use))+'</p>'}
   const btn=(act,txt,ghost)=>'<button class="vbtn'+(ghost?' ghost':'')+'" data-act="'+act+'">'+txt+'</button>';
@@ -261,9 +286,11 @@ function gDetailHtml(){
 /* ---- פעולות: הגרירה והכפתורים עוברים שניהם דרך כאן ---- */
 // לובשים, ואם זה שיפור: חגיגה על הדמות (עם הצליל שלה) והמשבצת קופצת
 function gDoEquip(id,slot,i){
-  const before=gearStats(),r=gearEquip(id,slot,i);if(!r)return null;
+  const before=gearStats(),worn=gearWorn(),r=gearEquip(id,slot,i);if(!r)return null;
   gearLive(before,id);GUI.sel={slot:r.slot,i:r.i};
-  if(r.better){celebrate(P.x,P.y-20,'gear',gIcon(gGet(r.slot,r.i)));GUI.pop=r}else sfx('tap');
+  dollWantCheer=true;   // הדמות בחלון מריעה (doll3d.js)
+  if(setCheck(worn))GUI.pop=r;   // מדרגה חדשה של סט (sets.js)
+  else if(r.better){celebrate(P.x,P.y-20,'gear',gIcon(gGet(r.slot,r.i)));GUI.pop=r}else sfx('tap');
   return r;
 }
 function gDoUnequip(slot,i){const before=gearStats();if(!gearUnequip(slot,i))return false;gearLive(before);GUI.sel=null;sfx('tap');return true}

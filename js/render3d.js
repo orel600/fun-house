@@ -39,6 +39,11 @@ const LOOK3D={
   crawler:{model:'minion',h:40,foot:10,tint:'#C87533',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   sprite:{model:'mage',h:40,foot:10,float:8,tint:'#7BD88F',anim:{run:'Running_C',die:'Death_C_Skeletons'}},
   mummy:{model:'minion',h:56,foot:12,tint:'#D9C9A3',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  // אגם הערפל (פרק 2): אבירים טבועים בכחול-ירוק חלוד, ערפלונים מרחפים, ושומר המים: ברבריאן גדול בכחול עמוק עם מטה מים
+  drowned:{model:'warrior',h:62,foot:14,tint:'#2E7F8F',props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'water'}},
+    anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  mistling:{model:'skelMage',h:46,foot:11,float:10,tint:'#BFE3F2',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  tidewarden:{model:'barbarian',h:84,foot:18,tint:'#1E5FD0',props:{staff:{prop:'staff',...HAND_R,tint:'water'}},anim:{run:'Running_B',die:'Death_A'}},
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle_A',charge:'Melee_2H_Attack_Spin',cast:'Melee_2H_Attack_Chop',taunt:'Taunt',die:'Death_A'}},
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. בלי קסדה הוא נמוך יותר, אז h קטן כדי שהגוף יהיה בגודל של האביר.
   // לבדיקה בלבד: עם ?hero=pilot בכתובת הוא נכנס במקום האביר של הלוחם (דמות ההתחלה הראשונה)
@@ -90,14 +95,32 @@ const VIL3D={
 };
 /* העולם הפתוח: המיקומים ב-WORLD (js/world.js). מקורות המשאבים לפי הצורה שלהם (shape), מתוך מודלי הכפר, כדי לא להכביד על הטלפון.
    glow: צבע לעורק מתכת. הקישוטים והשערים כמו בכפר (VIL3D.decor, VIL3D.gate) */
-const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',w:42,glow:'#5FA35A'},chest:{model:'v_crate',w:48,glow:'#F4C74F'},rock:{model:'v_rock',w:62},vein:{model:'v_rock',w:62,glow:'#C87533'}}};   // w: רוחב המודל
+const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',w:42,glow:'#5FA35A'},chest:{model:'v_crate',w:48,glow:'#F4C74F'},rock:{model:'v_rock',w:62},vein:{model:'v_rock',w:62,glow:'#C87533'},
+  reed:{model:'v_treeB',w:34,glow:'#3FA7A0'},crystal:{model:'v_rock',w:62,glow:'#4FB4FF'}},   // w: רוחב המודל
+  // צבע לכל אזור (WORLD.regions ב-world.js): bg הרקע, line הקרקע, pond המים. אזור שלא כתוב כאן: VIEW.world
+  regions:{lake:{bg:'#1d3238',line:'#4f7a78',pond:'#2a6d8f'}}};
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
 const R3D={shown:new WeakSet(),nid:0,on:false,ready:false,failed:false,want:true,actors:new Map(),dying:[],tmpl:{},clips:{},props:{},stats:{}};
-try{R3D.want=localStorage.getItem('zm-gfx')!=='2d'}catch(e){}
+/* גרפיקה: תלת-ממד כברירת מחדל. אם WebGL לא עולה, או שהמשחק איטי בשניות הראשונות, עוברים לבד לדו-ממד, עם הודעה אחת.
+   בחירה של השחקן בחלון ההגדרות ('zm-gfx') מנצחת תמיד, ואז לא מודדים. המעבר האוטומטי נזכר ('zm-gfx-auto'), כדי לא להאט שוב בפעם הבאה */
+const GFX_AUTO={minFps:24,warm:1.5,secs:4};   // מתחת ל-minFps ממוצע: דו-ממד. warm: שניות ראשונות שלא נמדדות (טעינה). secs: כמה שניות משחק מודדים
+try{const u=localStorage.getItem('zm-gfx');R3D.user=!!u;R3D.want=u?u==='3d':localStorage.getItem('zm-gfx-auto')!=='2d'}catch(e){}
 
-function setGfx(g){R3D.want=g==='3d';try{localStorage.setItem('zm-gfx',g)}catch(e){}
+// נקרא מ-render3d בכל פריים שמצויר: סופר פריימים בזמן משחק אמיתי, ופעם אחת מחליט
+function gfxMeasure(now){
+  const m=R3D.fm||(R3D.fm={t:0,n:0,last:0});const gap=m.last?(now-m.last)/1000:0;m.last=now;
+  if(R3D.user||R3D.drawEvery||R3D.measured||S.mode!=='play'||!gap||gap>0.5)return;   // הפסקה, חלון ברקע או הבדיקה האוטומטית: לא נחשב
+  m.t+=gap;if(m.t<GFX_AUTO.warm)return;m.n++;
+  if(m.t<GFX_AUTO.warm+GFX_AUTO.secs)return;
+  R3D.measured=true;const fps=m.n/GFX_AUTO.secs;R3D.fps=Math.round(fps);
+  if(fps<GFX_AUTO.minFps){try{localStorage.setItem('zm-gfx-auto','2d')}catch(e){}gfxAuto()}
+}
+// מעבר אוטומטי לדו-ממד, בלי לשמור כבחירה של השחקן. ההודעה מוצגת כשהמשחק רץ (main.js)
+function gfxAuto(){R3D.want=false;R3D.on=false;if(R3D.cvs)R3D.cvs.hidden=true;if(!R3D.user)R3D.note=true;showGfx()}
+
+function setGfx(g){R3D.want=g==='3d';R3D.user=true;try{localStorage.setItem('zm-gfx',g)}catch(e){}
   if(R3D.want&&!R3D.ready&&!R3D.failed)init3d();R3D.on=R3D.want&&R3D.ready;if(R3D.cvs)R3D.cvs.hidden=!R3D.on;showGfx()}
 function showGfx(){for(const b of document.querySelectorAll('[data-gfx]'))b.setAttribute('aria-pressed',String((b.dataset.gfx==='3d')===R3D.want));
   const g=document.querySelector('.gfx');if(g)g.hidden=R3D.failed}
@@ -164,6 +187,7 @@ async function init3d(){
   }catch(e){
     R3D.failed=true;R3D.on=false;if(R3D.cvs)R3D.cvs.hidden=true;
     console.warn('תלת-ממד לא זמין, ממשיכים בדו-ממד:',e&&e.message);
+    if(!R3D.user)R3D.note=true;
   }
   R3D.loading=false;showGfx();
 }
@@ -400,13 +424,17 @@ function syncVillage(){
   }
   for(const k in V.stock)V.stock[k].visible=vStock(k)>0;
 }
-// העולם הפתוח: קישוטים, שערים ומקורות משאבים נבנים פעם אחת (המקומות קבועים). מקור שנשבר נעלם עד שהוא צומח
+// העולם הפתוח: קישוטים, שערים, מים ומקורות משאבים נבנים פעם אחת לכל אזור (המקומות קבועים). מקור שנשבר נעלם עד שהוא צומח.
+// דרך שהעלילה עוד לא פתחה (WORLD.paths) מוסתרת
 function syncWorld(){
-  let G=R3D.wld;
-  if(!G){G=R3D.wld={g:new THREE.Group(),nodes:{}};R3D.scene.add(G.g);
+  const A=R3D.wlds||(R3D.wlds={}),reg=S.wd.reg||'meadow',RG=WR(),W=W3D.regions[reg]||{};let G=A[reg];
+  if(!G){G=A[reg]={g:new THREE.Group(),nodes:{},paths:{}};R3D.scene.add(G.g);
     for(const d of worldDecor()){const D=VIL3D.decor[d.kind],md=Array.isArray(D.model)?D.model[d.v<0.5?0:1]:D.model;vPut(md,d.x,d.y,D.w*(0.8+d.v*0.4),d.v*6.28,G.g)}
-    for(const g of Object.values(wGates()))vPut(VIL3D.gate.model,g.x,g.y,VIL3D.gate.w,0,G.g)}
-  G.g.visible=true;
+    const gs=wGates(true);for(const k in gs){const m=vPut(VIL3D.gate.model,gs[k].x,gs[k].y,VIL3D.gate.w,0,G.g);if(wIsPath(k))G.paths[k]=m}
+    for(const p of RG.ponds||[]){const m=new THREE.Mesh(new THREE.CircleGeometry(p.r,40),new THREE.MeshLambertMaterial({color:W.pond||'#2a6d8f',transparent:true,opacity:0.9}));
+      m.rotation.x=-Math.PI/2;m.scale.set(1,1/SIN(),1);m.position.set(p.x,0.6,p.y/SIN());G.g.add(m)}}
+  R3D.wld=G;G.g.visible=true;
+  for(const k in G.paths)G.paths[k].visible=wPathOpen(RG.paths[k]);
   for(const n of S.nd.list){
     let m=G.nodes[n.id];
     if(!m){const D=W3D.nodes[wKind(n.kind).shape],v=hash(n.x,n.y),md=Array.isArray(D.model)?D.model[v<0.5?0:1]:D.model;
@@ -469,12 +497,12 @@ function render3d(ox,oy){
   const S_=SIN(),cx=W/2-ox,cz=(H/2-oy)/S_;
   c.position.set(cx,2000*S_,cz+2000*COS());c.lookAt(cx,0,cz);
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
-  R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?VIEW.world:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?VIEW.worldLine:VIEW.groundLine);
+  R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?(W3D.regions[S.wd.reg]||{}).bg||VIEW.world:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?(W3D.regions[S.wd.reg]||{}).line||VIEW.worldLine:VIEW.groundLine);
   for(const k in R3D.marks)R3D.marks[k].count=0;
   for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
-  if(R3D.wld)R3D.wld.g.visible=false;
+  for(const k in R3D.wlds||{})R3D.wlds[k].g.visible=false;
   if(!S.room)syncPet(dt);else if(R3D.pet)R3D.pet.root.visible=false;   // חיית המחמד (pet.js), בכל מקום חוץ מחדר הבונוס
   if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt)}   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
@@ -493,7 +521,7 @@ function render3d(ox,oy){
   const up=m=>{if(!m.count)return;const b=m.instanceMatrix;b.clearUpdateRanges();b.addUpdateRange(0,m.count*16);b.needsUpdate=true};
   for(const k in R3D.marks)up(R3D.marks[k]);
   for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)up(m);
-  if(!skip)r.render(R3D.scene,c);
+  if(!skip){r.render(R3D.scene,c);gfxMeasure(now)}
   const i=r.info.render;R3D.stats={calls:i.calls,tris:i.triangles,actors:R3D.actors.size+1,crowd:R3D.nCrowd};
 }
 // התחלה מחדש: מנקים דמויות מהריצה הקודמת
