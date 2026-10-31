@@ -15,6 +15,14 @@ const LOOT={
   firstKill:{coins:[1,10],rubyC:[0.25,1],sapphireC:[0.25,1],boltC:[0.25,1],aquaC:[0.25,1],amberC:[0.25,1]},
   // מזל עם הגנה: משלל בדרגה from ומעלה. כל החטאה מוסיפה step לסיכוי (כפול), עד max. נופל = מתאפס
   pity:{from:2,step:0.04,max:3},
+  /* ציוד מאויבים (ניר, 31.10.2026: "הרגתי כמה מפלצות וקיבלתי כל מיני דברים, אבל אף פעם לא נשק או פריט"). עד עכשיו ציוד נפל רק בסוף ריצה בזירה (GEAR.loot).
+     עכשיו גם מכל אויב, בזירה ובעולם: נשק, תכשיט, מגפיים או חפץ מסתובב (gRoll ב-gear.js, לפי GEAR.tiers). הסיכוי לפי מי נפל,
+     rolls: כמה הגרלות, והנדיר ביותר נבחר. pity: כמו המזל עם ההגנה, כל אויב בלי ציוד מגדיל קצת את הסיכוי הבא, עד max (SAVE.gearPity) */
+  gear:{
+    foe:{chance:0.0004,rolls:1}, champ:{chance:0.015,rolls:2}, elite:{chance:0.15,rolls:2},   // בזירה כ-1800 הריגות: בערך 3 פריטים בריצה
+    wanted:{chance:0.2,rolls:3}, boss:{chance:0.5,rolls:3},
+    pity:{step:0.002,max:3}
+  },
   beam:90                          // גובה עמוד האור של שלל נדיר על הרצפה, כפול beam של הדרגה חלקי 100 (drops.js)
 };
 
@@ -51,12 +59,25 @@ function lootKill(e){
   const key=e.isBoss?'boss':e.wanted?'wanted':e.type,dl=SAVE.daily;(S.killsBy||(S.killsBy={}))[key]=(S.killsBy[key]||0)+1;
   if(dl.day!==lootDay()){dl.day=lootDay();dl.first={}}
   if(!dl.first[key]){dl.first[key]=1;S.firstKills=(S.firstKills||0)+1;floatText(e.x,y-60,T('loot.first',T('foe.'+key)),C.gold,14);runGive(LOOT.firstKill,e.x,e.y)}
+  lootGear(e);
   const J=LOOT.jackpot;
   if(!e.isBoss&&!e.wanted&&Math.random()<J.chance){
     S.jackpots=(S.jackpots||0)+1;runGive(J.table,e.x,e.y);
     for(let i=0;i<J.orbs;i++){const a=rand(0,6.28),rr=rand(8,70);orbs.push({x:e.x+Math.cos(a)*rr,y:e.y+Math.sin(a)*rr,v:1})}
     banner(T('loot.jackpot'),C.gold);celebrate(e.x,e.y,'loot4','💰');sparks(e.x,e.y,C.gold,40,320);S.shake=Math.max(S.shake,10);
   }
+}
+
+// פריט ציוד שנופל מאויב: נוחת על הרצפה, נמשך לשחקן ונכנס לתרמיל (dropTake ב-drops.js). force: לבדיקה, נופל תמיד. מחזיר את הפריט או null
+function lootGear(e,force){
+  const G=LOOT.gear,k=e.isBoss?'boss':e.wanted?'wanted':e.elite?'elite':e.champ?'champ':'foe',R=G[k];
+  if(e.node||!R||S.room)return null;
+  const ch=R.chance*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck();
+  if(!force&&Math.random()>=ch){SAVE.gearPity=(SAVE.gearPity||0)+1;return null}
+  SAVE.gearPity=0;const id=gRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;
+  dropSpawn(id,1,e.x,e.y);banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id),dropTier(id).col);
+  celebrate(e.x,e.y,'loot'+Math.max(2,dropRar(id)),gIcon(id));
+  return id;
 }
 
 // נקרא מ-addEnemy: לפעמים אויב רגיל הוא אויב עלית (e.champ). אויב-העל של התחנות (run.js, e.elite) מפיל את אותו שלל עלית
