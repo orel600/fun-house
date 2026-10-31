@@ -5,7 +5,7 @@
    שלב 3 (אגדית) מקבל אפקטים חיים, מצוירים בקנבס כדי שיהיו זולים בטלפון: הסימנים על הגוף פועמים, להבה בקצה הזנב, ולהבונים ליד הכפות.
    כל חיה היא שורה ב-PET.kinds. חיה של אוראל = שורה חדשה (ומודל ב-LOOK3D, render3d.js), בלי לגעת בלוגיקה.
    גזר (ניר, 31.10.2026): כשעומדים לידה ויש גזר בתרמיל, מופיע כפתור "תן גזר". היא קופצת משמחה, לבבות, XP, וחיזוק לדקה (PET.feed).
-   תקיפה (ניר, 31.10.2026): רצה לאויב הכי קרוב שליד השחקן, נושכת כמה פעמים דרך damage() הרגיל (נזק פיזי, אז חולשות וקומבו עובדים),
+   תקיפה (ניר, 31.10.2026), רק בעולם הפתוח: רצה לאויב הכי קרוב שליד השחקן, נושכת כמה פעמים דרך damage() הרגיל (נזק פיזי, אז חולשות וקומבו עובדים),
    וחוזרת. לא מתרחקת מהשחקן יותר מהרצועה (PET.attack.leash), לא יוצאת מגבולות העולם, ולא יכולה למות. בשלב 3 הנשיכה גם שורפת.
    מה נשמר: איזו חיה, שלב ו-XP, כמה גזרים אכלה והחיזוק, ב-SAVE.pet דרך save.js. המצב הרגעי (איפה היא, מה היא עושה) ב-S.pet, וחדש בכל מקום.
    השמות והטקסטים ב-lang.js תחת 'pet.'. המראה בתלת-ממד: LOOK3D.pet_<חיה><שלב> ו-syncPet ב-render3d.js */
@@ -29,8 +29,8 @@ const PET={
   xp:{sec:0.5,kill:1,dig:6},
   // הליכה אחרי השחקן: trail מאחוריו, run: מרחק שממנו היא רצה, jump: מרחק שממנו היא פשוט מופיעה לידו (מעבר מקום, שער)
   follow:{trail:46,side:26,walk:150,run:330,runFrom:170,jump:700,sitAfter:1.4},
-  // החפירה: arena: כמה פחות בזירה (פי כמה זמן בין חפירות), spot: כמה רחוק מהשחקן היא רצה לחפור, dur: כמה שניות חופרת
-  dig:{arena:2.2,spot:[70,150],dur:1.7,miss:{stone:1},sand:'#D9B87A',grains:5},   // miss: מה יוצא כשההגרלה לא הוציאה כלום
+  // החפירה: world: מה יוצא רק בעולם הפתוח (גזר), arena: כמה פחות בזירה (פי כמה זמן בין חפירות), spot: כמה רחוק מהשחקן היא רצה לחפור, dur: כמה שניות חופרת
+  dig:{world:['carrot'],arena:2.2,spot:[70,150],dur:1.7,miss:{stone:1},sand:'#D9B87A',grains:5},   // miss: מה יוצא כשההגרלה לא הוציאה כלום
   /* גזר: res המשאב, near: מאיזה מרחק מופיע הכפתור, xp: כמה XP לחיה, buff: כמה שניות החיזוק, dig: פי כמה מהר חופרת, bite: פי כמה חזק נושכת,
      hearts: כמה לבבות עפים, cd: כמה שניות בין שני גזרים */
   feed:{res:'carrot',near:120,xp:40,buff:60,dig:2,bite:1.5,hearts:9,cd:1,heart:'#FF6B8A'},
@@ -96,8 +96,8 @@ function petUpdate(dt){
   p.still=P.moving?0:p.still+dt;
   if(d>10){const sp=Math.min(d/dt,dP>f.runFrom?f.run:Math.max(f.walk,P.moving?P.speed:0));p.x+=dx/d*sp*dt;p.y+=dy/d*sp*dt;p.face=Math.atan2(dy,dx);p.run=sp>f.walk*1.2;p.st='follow'}
   else{p.run=false;p.st=p.still>f.sitAfter?'sit':'idle';if(!P.moving)p.face+=angDiff(Math.atan2(P.y-p.y,P.x-p.x),p.face)*Math.min(1,dt*3)}
-  // אויב ליד השחקן: יוצאת לתקוף
-  p.atkCd-=dt;if(p.atkCd<=0&&!S.vil){const e=petFoe();if(e){p.st='hunt';p.foe=e;p.bites=0;p.biteT=0;p.t=0}}
+  // אויב ליד השחקן: יוצאת לתקוף. רק בעולם הפתוח, לא בזירה (הזירה של אוראל, ניר 31.10.2026)
+  p.atkCd-=dt;if(p.atkCd<=0&&S.wd){const e=petFoe();if(e){p.st='hunt';p.foe=e;p.bites=0;p.biteT=0;p.t=0}}
 }
 /* ---- תקיפה ---- */
 // האויב הכי קרוב לשחקן בתוך הרצועה (לא מקורות משאבים, לא מת)
@@ -154,7 +154,8 @@ function petDigStart(p){
 // סוף החפירה: הטבלה של השלב, דרך runGive של הכלכלה (דרגות, עמוד אור, חגיגה לנדיר). נופל לרצפה ונאסף כמו כל שלל
 function petDigEnd(p){
   const x=p.x+Math.cos(p.face)*12,y=p.y+Math.sin(p.face)*12-20,n0=drops().length;
-  let got=runGive(petStage().dig.loot,x,y);
+  const L=Object.assign({},petStage().dig.loot);if(!S.wd)for(const r of PET.dig.world)delete L[r];   // בזירה בלי שלל חדש
+  let got=runGive(L,x,y);
   if(!got.length){const [r,n]=Object.entries(PET.dig.miss)[0];dropSpawn(r,n,x,y+20);got=[r]}
   for(const d of drops().slice(n0))d.pet=true;   // pet: לבדיקה, מה היא הוציאה (מה שהצטרף לערימה קיימת לא מסומן)
   if(got.some(r=>lootTier(r)>=2))floatText(p.x,p.y-48,T('pet.found',T('pet.name.'+(SAVE.pet.kind||PET.default))),RES.rarity[2].col,15);else sfx('tap');

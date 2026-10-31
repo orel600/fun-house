@@ -91,7 +91,7 @@ const resName=r=>{const R=resOf(r);return R&&R.grade!=null?T('gemName',T('gem.'+
 RES.tip={max:3,ms:3500};
 function resWhere(r){
   const src=new Set(),use=new Set(),has=t=>t&&t[r];
-  for(const k in NODES.kinds)if(has(NODES.kinds[k].drop))src.add(T('node.'+k));
+  for(const k in NODES.kinds)if(has(NODES.kinds[k].drop)||has(NODES.kinds[k].wdrop))src.add(T('node.'+k));
   for(const t in ETYPES)if(has(ETYPES[t].drop))src.add(T('foe.'+t));
   for(const b in BOSSES)if(has(BOSSES[b].drop))src.add(T('foe.boss'));
   if(has(WANTED.drop)||WANTED.loot.some(l=>has(l.res)))src.add(T('foe.wanted'));
