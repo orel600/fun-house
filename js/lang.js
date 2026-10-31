@@ -239,6 +239,7 @@ const TEXT={
   'vil.buy':{he:'קנה',en:'Buy'},
   // למה אי אפשר לקנות או למכור עכשיו: שורה קטנה על הכרטיס בשוק
   'vil.needN':{he:n=>'צריך '+n,en:n=>'Need '+n},
+  'vil.trade':{he:'מסחר',en:'Trade'},
   'vil.noCoins':{he:'חסרים מטבעות',en:'Not enough coins'},
   'vil.mkLv':{he:n=>'שוק רמה '+n,en:n=>'Market lv '+n},
   'ui.more':{he:'עוד בתרמיל',en:'More in your bag'},

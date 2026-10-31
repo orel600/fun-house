@@ -207,7 +207,7 @@ function villageBot(m,L){
       L.qReward=JSON.stringify(rw);L.qFx=FX.some(f=>f.K===CELEBRATE.quest);
       const sv=saved();L.qSaved=sv.quests.done[m.qid]===1&&!sv.quests.active[m.qid]&&JSON.stringify(sv.bag)===JSON.stringify(SAVE.bag)}
     return steer(null,null,false,0,L)}
-  if(!m.vil){m.vil=1;L.vilOpen=!!S.vil;L.topBar=document.querySelectorAll('#vBag .res').length+'/'+resShown(null).length;L.gift=JSON.stringify(SAVE.bag);L.vilModels=R3D.on?(R3D.vil?R3D.vil.g.children.length:0):null;
+  if(!m.vil){m.vil=1;L.vilOpen=!!S.vil;const mr=document.querySelector('#vBag .resmore');L.topBar=(document.querySelectorAll('#vBag .res').length+(mr?+mr.textContent.slice(1):0))+'/'+resShown(null).length;L.topMax=document.querySelectorAll('#vBag .res').length<=UI.top;L.gift=JSON.stringify(SAVE.bag);L.vilModels=R3D.on?(R3D.vil?R3D.vil.g.children.length:0):null;
     // כמה הולכים בקו ישר: מהכניסה לכפר עד השער, ומהשער בעולם עד השער הקרוב לזירה
     const h=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),wa={x:WORLD.home.x,y:WORLD.home.y+WORLD.arrive},wg=Object.values(WORLD.gates).sort((a,b)=>h(a,wa)-h(b,wa))[0];
     L.walkPx=Math.round(h(VILLAGE.spawn,VILLAGE.gate)+h(wa,wg));L.walkSp=Math.round(P.speed)}
@@ -694,7 +694,10 @@ function worldBot(m,L,god){
     const pid=place==='world'?'wPanel':'vPanel',pn=vis($(pid));if(pn)for(const x of box('#nav .nbtn'))if(hit(pn,x.r))bad.push(pid+'×'+x.n);
     const win=(open,panel,sel)=>{open();const p=$(panel),b=document.querySelector(sel),r=vis(b),ok=!!r&&r.width>=40&&r.height>=40&&r.left>=0&&r.right<=W&&r.top>=0&&r.bottom<=H&&!p.hidden;
       if(b)b.click();return !ok?'אין ✕ גלוי':!p.hidden?'לא נסגר':S.mode!=='play'?'מצב '+S.mode:'ok'};
-    const o={n:els.length,bad,off,panel:!!pn,more:!!document.querySelector('#'+(place==='world'?'w':'v')+'Bag .resmore'),cards:document.querySelectorAll('#vPanel .tcard').length,wins:{}};
+    const o={n:els.length,bad,off,panel:!!pn,more:!!document.querySelector('#'+(place==='world'?'w':'v')+'Bag .resmore'),cards:0,wins:{}};
+    if(place!=='world'){const tb=document.querySelector('#vPanel [data-act="trade"]');if(tb)tb.click();const ss=[...document.querySelectorAll('#vPanel .tcols>section')].map(vis);
+      o.cards=document.querySelectorAll('#vPanel .tcard').length;o.cols=ss.length===2&&ss[0]&&ss[1]?(Math.abs(ss[0].top-ss[1].top)<2?2:1):0;
+      const x=document.querySelector('#vPanel [data-act="close"]');if(x)x.click();o.tradeBack=!!document.querySelector('#vPanel [data-act="trade"]')&&!$('vPanel').hidden}
     o.wins[place==='world'?'gate':'market']=win(()=>{},pid,'#'+pid+' [data-act="close"]');
     o.wins.gear=win(gearOpen,'ovGear','#gearClose');
     o.wins.quests=win(()=>questLogOpen(true),'qLog','#qLog [data-act="close"]');
@@ -728,14 +731,14 @@ function worldBot(m,L,god){
   check(L.heroHp===heroHp,'פסיבית בריצה: הלוחם קיבל +'+L.heroHp+' חיים (צפוי +'+heroHp+')');
   check(again,'בחירת דמות: '+(again?'לא חוזרת במשחק השני':'הופיעה שוב'));
   for(const nm in uiR){const {v,w}=uiR[nm],all=[...Object.entries(v.wins),...Object.entries(w.wins)],bad=[...v.bad,...w.bad],off=[...v.off,...w.off];
-    check(!bad.length&&!off.length&&v.n>3&&w.n>3&&v.panel&&w.panel&&v.more&&v.cards>0&&all.every(x=>x[1]==='ok')&&v.esc&&v.backdrop&&v.tapOut,
+    check(!bad.length&&!off.length&&v.n>3&&w.n>3&&v.panel&&w.panel&&v.more&&v.cards>0&&v.tradeBack&&(nm!=='land'||v.cols===2)&&all.every(x=>x[1]==='ok')&&v.esc&&v.backdrop&&v.tapOut,
       'ממשק, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(bad.length?'נוגעים זה בזה: '+bad.join(', '):'הפס העליון והסרגל לא נוגעים')+(off.length?', מחוץ למסך: '+off.join(', '):'')+
-      (v.more?', "+N" לשאר התרמיל':', אין "+N"')+', '+v.cards+' כרטיסים בשוק · יציאה: '+all.map(x=>x[0]+(x[1]==='ok'?' ✕':' '+x[1])).join(', ')+
+      (v.more?', "+N" לשאר התרמיל':', אין "+N"')+', '+v.cards+' כרטיסים במסחר'+(v.cols===2?' בשני טורים':'')+(v.tradeBack?', ✕ חוזר לשוק':', ✕ לא חזר לשוק')+' · יציאה: '+all.map(x=>x[0]+(x[1]==='ok'?' ✕':' '+x[1])).join(', ')+
       (v.esc?', Esc':', Esc לא סוגר')+(v.backdrop?', רקע':', רקע לא סוגר')+(v.tapOut?', נגיעה במשחק':', נגיעה במשחק לא סוגרת יומן'))}
   const sty=L.style||{};
   check(sty.t_run>0&&sty.kills>0&&(sty.dmg_sword||0)+(sty.dmg_gun||0)>0,'סגנון משחק: '+(Object.keys(sty).map(k=>k+' '+sty[k]).join(', ')||'לא נספר'));
   check(L.vilOpen&&L.gift&&L.gift!=='{}'&&(L.vilModels==null||L.vilModels>0),'כפר: נפתח אחרי מסך הפתיחה, מתנת פתיחה '+L.gift+(L.vilModels!=null?', '+L.vilModels+' מודלים בתלת-ממד':''));
-  check(L.topBar&&L.topBar.split('/')[0]===L.topBar.split('/')[1],'פס עליון בכפר: '+L.topBar+' משאבים (מטבעות וחומרי בנייה בלבד)');
+  check(L.topBar&&L.topBar.split('/')[0]===L.topBar.split('/')[1]&&L.topMax,'פס עליון בכפר: '+L.topBar+' משאבים (מטבעות וחומרי בנייה בלבד), לכל היותר 4 בפס והשאר ב-"+N"');
   check(L.nodes>0&&!!L.nodeGot&&L.nodeInLoot,'מקורות משאבים: '+(L.nodeSeen!=null?'הופיע '+t(L.nodeSeen):'לא הופיע')+', נשברו '+(L.nodes||0)+(L.nodeAt!=null?' (ראשון '+t(L.nodeAt)+')':'')+
     ', נפל: '+(L.nodeGot||'כלום')+(L.nodeInLoot?', בשלל של הריצה':', לא הגיע לשלל'));
   const dr=(L.drops||'0/0/0/0/0').split('/').map(Number);

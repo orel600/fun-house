@@ -326,7 +326,7 @@ h1{font-size:46px} h2{font-size:30px}
 /* ===== הממשק המשותף (js/ui.js, ניר 31.10.2026: "כפתור יציאה מהדבר שאתה נמצא בו, ולסדר את הפרופורציות").
    כל חלון באותה מסגרת (.win), עם כותרת באמצע ו-✕ אדום גדול בסוף (.whd, .wx). בכפר ובעולם יש סרגל למטה (.bnav),
    והחלונות נגמרים מעליו (--navb), כך ששום כפתור לא מכסה חלון. מטרה ללחיצה: 44px לפחות ===== */
-:root{--navh:60px;--navb:calc(env(safe-area-inset-bottom,0px) + var(--navh) + 38px);--topb:calc(env(safe-area-inset-top,0px) + 58px)}
+:root{--navh:60px;--safeb:max(16px,env(safe-area-inset-bottom,0px));--navb:calc(var(--safeb) + var(--navh) + 34px);--topb:calc(env(safe-area-inset-top,0px) + 58px)}
 @media (orientation:landscape) and (max-height:500px){:root{--navh:50px;--topb:calc(env(safe-area-inset-top,0px) + 60px)}}
 .world{--topb:calc(env(safe-area-inset-top,0px) + 96px)}
 .win{background:linear-gradient(180deg,#232B44,#1A2033 70%);border:2px solid #3A4566;border-radius:16px;box-shadow:0 10px 30px #0009,inset 0 1px 0 #ffffff14}
@@ -343,15 +343,27 @@ h1{font-size:46px} h2{font-size:30px}
 .vpanel.win{left:12px;right:12px;top:auto;bottom:var(--navb);max-width:440px;margin-inline:auto;max-height:min(60vh,calc(100% - var(--topb) - var(--navb)));gap:8px}
 .qlog.win{left:12px;right:12px;top:var(--topb);bottom:var(--navb);max-width:440px;margin-inline:auto}
 .npcdlg.win{top:auto;max-height:calc(100% - var(--topb) - var(--navb))}
-/* לרוחב: הסרגל בפינה הימנית למטה (בכפר ובעולם אין שם סקילים), היומן והשיחה מעליו בצד ימין, והפאנל של המבנה בצד שמאל לכל הגובה.
+/* חלון גדול (מסחר, יומן): כמעט כל המסך, מעל הסרגל, ורק התוכן שבפנים גולל (docs/ui-guide.md, פרק 4) */
+.vpanel.win.big,.qlog.win:not(.npcdlg){z-index:5;top:var(--topb);bottom:var(--safeb);left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));
+  width:auto;max-width:760px;max-height:none;margin-inline:auto}
+.vpanel.win.big{overflow:hidden}
+.tcols{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;overflow-y:auto}
+.tcols>section{display:flex;flex-direction:column;gap:6px;min-height:0}
+/* לרוחב (הכיוון הראשי, docs/ui-guide.md): הסרגל בפינה הימנית למטה, מתחת לאגודל (בכפר ובעולם אין שם סקילים), והפאנל של מבנה או שער מעליו.
+   כך ה-40% השמאליים נשארים לג'ויסטיק. מסחר בשני טורים (מוכרים | קונים), יומן בשני טורים, ושיחה באמצע.
    מיקום על המסך ולא כיוון טקסט, ולכן left/right גם בעברית */
 @media (orientation:landscape){
-  .vpanel.win{left:calc(env(safe-area-inset-left,0px) + 12px);right:auto;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:min(320px,38vw);margin:0;
-    max-height:calc(100% - var(--topb) - env(safe-area-inset-bottom,0px) - 12px)}
-  .qlog.win{left:auto;right:calc(env(safe-area-inset-right,0px) + 12px);width:min(340px,40vw);margin:0}
+  .vpanel.win{left:auto;right:max(16px,env(safe-area-inset-right,0px));top:auto;bottom:var(--navb);width:min(340px,42vw);margin:0;
+    max-height:calc(100% - var(--topb) - var(--navb))}
+  .vpanel.win.big{left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:var(--safeb);width:auto;margin-inline:auto;max-height:none}
+  .tcols{flex-direction:row;overflow:hidden}
+  .tcols>section{flex:1;overflow-y:auto;padding-inline-end:2px}
+  .qlog.win:not(.npcdlg){display:grid;grid-template-columns:1fr 1fr;align-content:start;column-gap:10px}
+  .qlog.win:not(.npcdlg)>.whd,.qlog.win:not(.npcdlg)>h4{grid-column:1/-1}
+  .npcdlg.win{z-index:5;left:0;right:0;top:var(--topb);bottom:auto;width:min(560px,70vw);max-width:none;margin-inline:auto;max-height:calc(100% - var(--topb) - var(--safeb))}
 }
 /* הסרגל למטה: יומן, "לדבר" כשעומדים ליד מישהו, וציוד. רק בכפר ובעולם */
-.bnav{position:fixed;z-index:4;display:none;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+.bnav{position:fixed;z-index:4;display:none;left:50%;transform:translateX(-50%);bottom:calc(var(--safeb) + 8px);
   gap:8px;padding:6px;border-radius:18px;background:rgba(14,18,30,.9);border:2px solid #3A4566;box-shadow:0 6px 20px #0008;max-width:calc(100% - 24px)}
 .vil .bnav,.world .bnav{display:flex}
 .nbtn{appearance:none;position:relative;flex:none;min-width:calc(var(--navh) + 6px);height:var(--navh);padding:0 8px;border-radius:14px;border:2px solid #3A4566;
@@ -366,7 +378,7 @@ h1{font-size:46px} h2{font-size:30px}
   background:linear-gradient(#3A3220,#241F14);animation:tpulse 1.2s ease-in-out infinite alternate}
 @keyframes tpulse{to{box-shadow:0 3px 0 #0B0E18,0 0 14px rgba(244,199,79,.45)}}
 @media (orientation:landscape) and (max-height:500px){.nbtn .ni{font-size:20px}.nbtn{font-size:11px}}
-@media (orientation:landscape){.bnav{left:auto;right:calc(env(safe-area-inset-right,0px) + 12px);transform:none}}
+@media (orientation:landscape){.bnav{left:auto;right:max(16px,env(safe-area-inset-right,0px));transform:none}}
 /* הפס העליון בכפר ובעולם: שורה אחת שלא נשברת, מספרים קצרים, וההשתקה בפינה משלה */
 .mute{width:44px;height:44px;top:calc(env(safe-area-inset-top,0px) + 66px)}
 .vil .mute,.world .mute{top:calc(env(safe-area-inset-top,0px) + 8px)}
@@ -383,6 +395,9 @@ h1{font-size:46px} h2{font-size:30px}
 .whud .res{font-size:13px;padding:0 8px}
 .world .qtrack{margin-top:46px;max-width:100%}
 @media (orientation:portrait){.whud b{display:none}}
+/* שם האזור: מופיע כשנכנסים, ונעלם אחרי כמה שניות כדי לפנות את המרכז העליון */
+.whud b{overflow:hidden;animation:wfade 5s ease-in forwards}
+@keyframes wfade{75%{opacity:1;max-width:300px}to{opacity:0;max-width:0}}
 /* השוק: רשת של כרטיסים שווים, מסגרת בצבע הנדירות, מחיר מיושר, וכרטיס נעול אומר למה */
 .trade{grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}
 .trade .tcard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:74px;padding:6px 4px;border-radius:12px;
@@ -418,6 +433,9 @@ h1{font-size:46px} h2{font-size:30px}
 @media (orientation:landscape) and (max-height:500px){
   #ovGear{padding:8px max(10px,env(safe-area-inset-right,0px)) 8px max(10px,env(safe-area-inset-left,0px))}
   #ovGear .gearpanel{height:100%}
+  .gbody{grid-template-columns:minmax(0,4fr) minmax(0,6fr);grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"doll bag" "doll side"}
+  .gdoll{grid-area:doll}.gbag{grid-area:bag}.gsidep{grid-area:side;max-height:42%}
+  .gsidep .gdetail{min-height:0}
   .gdoll{overflow-y:auto}
   .gfig{min-height:96px}
   .gfig span{font-size:clamp(56px,17vh,92px)}
