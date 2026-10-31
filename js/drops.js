@@ -15,23 +15,32 @@ const DROPS={
   beam:0.8                                    // גובה עמוד האור: beam של הדרגה כפול זה
 };
 // הדרגה של שלל (צבע ועמוד אור), או null לרגיל
-const dropTier=r=>{const R=resOf(r);return R&&R.rar?RES.rarity[R.rar]:null};
+// פריט ציוד (gear.js) מקבל תמיד צבע ועמוד, לפי השכבה שלו ועוד אחת: גם חרב עץ שנפלה מאויב היא רגע מיוחד
+const dropGear=r=>!!gItem(r);
+const dropRar=r=>dropGear(r)?Math.min(RES.rarity.length-1,gItem(r).tier+1):(resOf(r)||{rar:0}).rar;
+const dropTier=r=>{const t=dropRar(r);return t?RES.rarity[t]:null};
+const dropIcon=r=>dropGear(r)?gIcon(r):resIcon(r);
 
 const drops=()=>S.gd||(S.gd=[]);
-const dropStats=()=>S.gdN||(S.gdN={spawned:0,picked:0,auto:0});
+const dropStats=()=>S.gdN||(S.gdN={spawned:0,picked:0,auto:0,kept:0,gear:[]});   // kept: כמה שלל הוחזר לתוך הגבולות
 
 // מפיל n יחידות של המשאב r מהנקודה (x,y). נקרא מ-runGive (loot.js): אויבים, מקורות, המבוקש וחדר הבונוס
 function dropSpawn(r,n,x,y){
-  const L=drops(),near=L.find(d=>d.r===r&&!d.fly&&Math.hypot(d.x-x,d.y-y)<DROPS.stack);
+  const p=placeClamp({x,y});x=p.x;y=p.y;   // אויב שמת בקצה: השלל נוחת בתוך המקום (placeBox ב-world.js)
+  const L=drops(),near=!dropGear(r)&&L.find(d=>d.r===r&&!d.fly&&Math.hypot(d.x-x,d.y-y)<DROPS.stack);
   dropStats().spawned+=n;
   if(near){near.n+=n;near.vz=DROPS.pop[0]*0.6;return near}
   if(L.length>=DROPS.max)dropTake(L[0],true);
-  const a=rand(0,6.28),s=rand(...DROPS.spread),d={r,n,x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,z:0,vz:rand(...DROPS.pop),t:0,ph:rand(0,6)};
+  const a=rand(0,6.28),s=rand(...DROPS.spread),d={r,n,x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,z:0,vz:rand(...DROPS.pop),t:0,ph:rand(0,6),fly:dropGear(r)};   // ציוד נמשך לשחקן מכל מרחק, כדי שלא יישאר מאחור
   L.push(d);return d;
 }
 function dropTake(d,auto){
-  d.got=true;const L=runLoot();L[d.r]=(L[d.r]||0)+d.n;
-  const st=dropStats();if(auto)st.auto+=d.n;else{st.picked+=d.n;sfx('coin');floatText(P.x,P.y-40,'+'+d.n+' '+resIcon(d.r),(dropTier(d.r)||{}).col||C.gold,16)}
+  d.got=true;const st=dropStats();
+  // פריט ציוד נכנס ישר לתרמיל ונשמר, בכל מקום: הוא לא הולך לאיבוד במוות בעולם
+  if(dropGear(d.r)){bagAdd(d.r,d.n);saveNow();st.gear.push(d.r);if(!auto)sfx('coin');
+    floatText(P.x,P.y-40,gIcon(d.r)+' '+gName(d.r),dropTier(d.r).col,16);const all=drops(),i=all.indexOf(d);if(i>=0)all.splice(i,1);return}
+  const L=runLoot();L[d.r]=(L[d.r]||0)+d.n;
+  if(auto)st.auto+=d.n;else{st.picked+=d.n;sfx('coin');floatText(P.x,P.y-40,'+'+d.n+' '+resIcon(d.r),(dropTier(d.r)||{}).col||C.gold,16)}
   const all=drops(),i=all.indexOf(d);if(i>=0)all.splice(i,1);
 }
 // כל פריים, בזירה ובעולם: קפיצה ונחיתה, ומשיכה לשחקן כשקרובים
@@ -41,10 +50,18 @@ function dropsUpdate(dt){
     d.t+=dt;d.ph+=dt;
     if(d.z>0||d.vz>0){d.vz-=DROPS.grav*dt;d.z=Math.max(0,d.z+d.vz*dt);if(d.z===0)d.vz=0;d.x+=d.vx*dt;d.y+=d.vy*dt;d.vx*=0.96;d.vy*=0.96}
     if(d.t<DROPS.land)continue;
+    if(!d.ok){d.ok=true;dropReach(d)}   // פעם אחת, כשנחת: בתוך הגבולות ולא בתוך עץ או סלע
     const dx=P.x-d.x,dy=P.y-d.y,dd=Math.hypot(dx,dy)||1;
     if(dd<R||d.fly){d.fly=true;const s=DROPS.fly*dt;d.x+=dx/dd*Math.min(s,dd);d.y+=dy/dd*Math.min(s,dd)}
     if(dd<DROPS.take)dropTake(d,false);
   }
+}
+// שלל שנחת איפה שאי אפשר להגיע (מחוץ לגבול, בתוך מקור משאבים) זז למקום הכי קרוב שאפשר לעמוד בו
+function dropReach(d){
+  const x=d.x,y=d.y;placeClamp(d);
+  for(const n of (S.nd&&S.nd.list)||[]){if(n.dead)continue;const dx=d.x-n.x,dy=d.y-n.y,dd=Math.hypot(dx,dy)||1,min=n.r+P.r;
+    if(dd<min){d.x=n.x+dx/dd*min;d.y=n.y+dy/dd*min;placeClamp(d)}}
+  if(d.x!==x||d.y!==y)dropStats().kept++;
 }
 // סוף ריצה בזירה: מה שנשאר על הרצפה נאסף לבד
 function dropsCollectAll(){for(const d of drops().slice())dropTake(d,true)}
@@ -59,7 +76,7 @@ function drawDrops(){
       ctx.globalAlpha=0.45+0.15*Math.sin(d.ph*4);ctx.fillStyle=g;ctx.fillRect(d.x-4,d.y-h,8,h);ctx.globalAlpha=1}
     ctx.fillStyle='rgba(5,7,13,0.4)';ctx.beginPath();ctx.ellipse(d.x,d.y+2,9,3.5,0,0,7);ctx.fill();
     ctx.strokeStyle=col||'rgba(244,199,79,0.7)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(d.x,d.y+2,12,5,0,0,7);ctx.stroke();
-    ctx.font='17px system-ui, sans-serif';ctx.fillText(resIcon(d.r)||'?',d.x,y);
+    ctx.font='17px system-ui, sans-serif';ctx.fillText(dropIcon(d.r)||'?',d.x,y);
     if(d.n>1){ctx.font='800 11px Heebo, system-ui, sans-serif';ctx.fillStyle='#000a';ctx.fillText(d.n,d.x+11,y+5);ctx.fillStyle=C.chalk;ctx.fillText(d.n,d.x+10,y+4)}
   }
   ctx.direction=DIR;

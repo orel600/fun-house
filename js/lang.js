@@ -43,7 +43,14 @@ const TEXT={
   gfx2d:{he:'דו-ממד',en:'2D'},
   arena:{he:'זירת המשחק',en:'Game arena'},
   swapWeapon:{he:'החלף נשק',en:'Switch weapon'},
-  mute:{he:'השתקת צלילים',en:'Mute sound'},
+  mute:{he:'צלילים',en:'Sound'},
+  'snd.title':{he:'צלילים',en:'Sound'},
+  'snd.master':{he:'עוצמה כללית',en:'Master volume'},
+  'snd.fight':{he:'קרב: פגיעות, יריות ומטבעות',en:'Combat: hits, shots and coins'},
+  'snd.fx':{he:'רגעים גדולים וכפתורים',en:'Big moments and buttons'},
+  'snd.off':{he:'🔇 השתק הכל',en:'🔇 Mute all'},
+  'snd.on':{he:'🔊 החזר צלילים',en:'🔊 Unmute'},
+  'loot.gear':{he:'ציוד!',en:'Gear!'},
 
   // ממשק בזמן משחק
   level:{he:n=>'רמה '+n,en:n=>'Level '+n},

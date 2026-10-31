@@ -9,6 +9,7 @@
 const WORLD={
   region:'meadow',                       // השם ב-lang.js: 'w.region.meadow'
   size:{w:2100,h:1400},                  // גבולות האזור, סביב (0,0). צפוף, כדי שלא ילכו הרבה בשביל כלום (ניר, משחק ראשון בטלפון)
+  edge:20,                               // כמה מהקצה השחקן, המבוקש והשלל עוצרים (placeBox)
   home:{x:0,y:-600,r:44},                // השער חזרה לכפר. יוצאים מהכפר ומגיעים לכאן
   gates:{grove:{x:-840,y:450,r:44},pit:{x:840,y:450,r:44}},   // שערים לזירה. השמות ב-lang.js ('w.gate.<id>')
   arrive:130,                            // כמה פיקסלים מתחת לשער עומדים כשמגיעים אליו
@@ -42,6 +43,10 @@ const WORLD={
 };
 
 const wKind=k=>NODES.kinds[k];
+/* הגבולות של המקום הנוכחי, שאפשר ללכת בהם: {x0,x1,y0,y1}, או null כשאין גבול (הזירה פתוחה לכל הכיוונים).
+   השחקן, המבוקש והשלל על הרצפה נשארים בתוכם, כדי ששלל תמיד ינחת איפה שאפשר להגיע (ניר: "הרגתי את המבוקש מחוץ לגבולות, והשלל לא נאסף") */
+function placeBox(){if(!S.wd)return null;const {w,h}=WORLD.size,m=WORLD.edge;return{x0:-w/2+m,x1:w/2-m,y0:-h/2+m,y1:h/2-m}}
+function placeClamp(o){const B=placeBox();if(!B)return o;o.x=Math.max(B.x0,Math.min(B.x1,o.x));o.y=Math.max(B.y0,Math.min(B.y1,o.y));return o}
 const wGates=()=>Object.assign({home:WORLD.home},WORLD.gates);
 let wRet=null;   // השער שממנו נכנסו לזירה: בסוף הריצה חוזרים אליו (againBtn ב-input.js)
 
@@ -112,10 +117,10 @@ function wFoes(dt){
 
 /* ---- כל פריים בעולם ---- */
 function worldUpdate(dt){
-  const w=S.wd,B=WORLD.size;w.t+=dt;
+  const w=S.wd;w.t+=dt;
   P.inv-=dt;P.swapBuff-=dt;S.hurt-=dt;S.shake=Math.max(0,S.shake-dt*30);
   const {ix,iy}=movePlayer(dt);if(P.moving&&!nearest(440))P.aim=Math.atan2(iy,ix);
-  P.x=Math.max(-B.w/2+20,Math.min(B.w/2-20,P.x));P.y=Math.max(-B.h/2+20,Math.min(B.h/2-20,P.y));
+  placeClamp(P);
   for(const n of S.nd.list){
     if(n.dead){if((n.back-=dt)<=0){n.dead=false;n.hp=n.max}continue}
     const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1,min=n.r+P.r;if(d<min){P.x=n.x+dx/d*min;P.y=n.y+dy/d*min}   // לא עוברים דרך עץ
