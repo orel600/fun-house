@@ -671,3 +671,4 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .world .dgift{display:none}
 @media (orientation:landscape) and (max-height:500px){.dday{min-height:58px}.dday .dchest{width:42px;height:42px}.dailywin{padding:8px 10px}}
 @media (orientation:portrait){.dbody{flex-direction:column}}
+.stbuilds{display:flex;gap:6px;margin-top:4px}.stbuilds .vbtn{flex:1;min-height:36px;padding:6px 4px;font-size:13px}.stbuilds .vbtn[aria-pressed="true"]{border-image-source:url(../icons/ui/btn-gold.png);color:#FFF6E0}
