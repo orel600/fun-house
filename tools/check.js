@@ -112,7 +112,8 @@ function botStep({god,en}){
     for(const k of S.bn.picks)L['pick_'+k.type]??=at;
     if(S.bossCount>0)L.bossDown??=at;
     L.nodes=S.nd.broken;L.nodeGot=[...new Set(S.nd.got)].join(', ');if(S.nd.broken)L.nodeAt??=at;
-    L.nodeInLoot=S.nd.got.length>0&&S.nd.got.every(r=>(S.loot||{})[r]>0);
+    // בשלל, או עדיין על הרצפה: מה שנפל רגע לפני הדגימה עוד לא נאסף, ובסוף הריצה הוא נאסף לבד (drops.js)
+    L.nodeInLoot=S.nd.got.length>0&&S.nd.got.every(r=>(S.loot||{})[r]>0||drops().some(d=>d.r===r));
     L.gearDrops=S.gearDrops||0;
     L.drops=(S.drops||[0,0,0,0,0]).join('/');L.elites=S.elites||0;L.jackpots=S.jackpots||0;L.firstKills=S.firstKills||0;
     L.chests=S.nd.got.length?S.nd.chests||0:0;L.creatures=Object.entries(S.killsBy||{}).filter(([k])=>ETYPES[k]&&!['grunt','shield','wisp'].includes(k)).map(([k,n])=>k+' '+n).join(', ');
