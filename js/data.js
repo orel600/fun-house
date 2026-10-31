@@ -30,7 +30,15 @@ const ETYPES={
     drop:{essence:[0.4,1],herb:[0.3,1],aquaC:[0.1,1],sapphireC:[0.05,1]},elite:{essence:[1,3],sapphireC:[0.4,1]}},
   // שומר המים: הבוס של פרק 2, ליד פנס המים (STORY.lanterns.water). warden: לא יצור משאב, לא צריך מקור ששומר עליו
   tidewarden:{hp:120,r:20,speed:58,xp:0,dmg:16,tags:['water','metal'],warden:true,
-    drop:{coins:[1,40],aqua:[1,2],aquaC:[1,3],sapphireC:[0.6,2],sapphire:[0.25,1]}}
+    drop:{coins:[1,40],aqua:[1,2],aquaC:[1,3],sapphireC:[0.6,2],sapphire:[0.25,1]}},
+  // הרכס הקפוא (פרק 3, story.js): אויבים קפואים. אש חזקה נגדם (DMG.chart), וקרח כמעט לא עובד. רק בעולם, לא בזירה
+  rimeknight:{hp:70,r:15,speed:58,xp:3,dmg:14,tags:['ice','metal'],  // אביר כפור בשריון קפוא: אש ×2.25, פיזי וקרח חלשים
+    drop:{coins:[0.8,3],iron:[0.35,1],plate:[0.2,1],sapphireC:[0.1,1]},elite:{sapphireC:[1,2],plate:[1,2],sapphire:[0.12,1]}},
+  frostwraith:{hp:34,r:12,speed:104,xp:2,dmg:10,tags:['ice','cloth'],  // רוח שלג עטופה בסמרטוטים קפואים: אש ×2.25
+    drop:{cloth:[0.6,2],essence:[0.4,1],sapphireC:[0.08,1]},elite:{essence:[1,3],sapphireC:[0.5,1]}},
+  // שומר הקרח: הבוס של פרק 3, ליד פנס הקרח (STORY.lanterns.ice). warden: לא יצור משאב
+  frostwarden:{hp:140,r:20,speed:56,xp:0,dmg:17,tags:['ice','metal'],warden:true,
+    drop:{coins:[1,50],sapphire:[1,2],sapphireC:[1,3],sapphireF:[0.2,1],plate:[0.6,2]}}
 };
 // הבוסים לפי id (היום יש אחד, type:'boss' ב-boss.js). drop כמו באויבים, כולל החלק שרק הוא מפיל (RES, משפחת boss)
 const BOSSES={

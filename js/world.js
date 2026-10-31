@@ -50,7 +50,8 @@ const WORLD={
     // פרק 2: אגם הערפל (docs/story.md). אויבים רטובים (ברק!), אבני גאות עם מים זוהרים, ופנס המים בפינה הדרום-מערבית (STORY.lanterns.water)
     lake:{
       region:'lake',back:'meadow',enter:'w.enter.lake',noNpc:true,fog:true,ground:'#16252C',
-      home:{x:0,y:-600,r:44},gates:{},paths:{},
+      home:{x:0,y:-600,r:44},gates:{},
+      paths:{ridge:{x:860,y:-590,r:44,need:'water'}},   // פרק 3: אחרי שפנס המים נדלק, שביל בצפון-מזרח שעולה לרכס הקפוא
       ponds:[{x:60,y:60,r:230},{x:-480,y:-120,r:120},{x:560,y:330,r:140},{x:-260,y:420,r:80}],
       fields:[{kind:'reeds',n:8,x:-220,y:-180,r:200},{kind:'reeds',n:6,x:330,y:-90,r:170},{kind:'reeds',n:5,x:-640,y:240,r:150},
               {kind:'tideRock',n:6,x:640,y:-330,r:190},{kind:'tideRock',n:4,x:-760,y:-330,r:150},{kind:'tree',n:5,x:820,y:120,r:160},{kind:'rock',n:3,x:250,y:500,r:120}],
@@ -67,6 +68,28 @@ const WORLD={
         {id:'far',  to:1e9, hp:1.4,dmg:1.2,speed:1.05,leash:480,back:45}
       ],
       decor:{trees:60,hills:14,rocks:0.45}
+    },
+    // פרק 3: הרכס הקפוא (docs/story.md). שלג, אויבים קפואים (אש!), גבישי קרח עם ספיר, ופנס הקרח בפינה הדרום-מזרחית (STORY.lanterns.ice).
+    // snow: פתיתי שלג בקנבס (wSnow). ponds כאן הם סדקים בקרח שאי אפשר לעבור
+    ridge:{
+      region:'ridge',back:'lake',enter:'w.enter.ridge',noNpc:true,snow:true,ground:'#33404E',pondCol:['#1C2A3A','#9FD8F0'],
+      home:{x:0,y:-600,r:44},gates:{},paths:{},
+      ponds:[{x:-120,y:40,r:150},{x:420,y:-160,r:90},{x:-560,y:300,r:110}],
+      fields:[{kind:'pine',n:10,x:-560,y:-260,r:230},{kind:'pine',n:6,x:250,y:280,r:180},{kind:'pine',n:4,x:-820,y:80,r:120},
+              {kind:'iceRock',n:6,x:620,y:-330,r:190},{kind:'iceRock',n:4,x:-300,y:480,r:140},{kind:'rock',n:4,x:180,y:-260,r:130}],
+      foes:[
+        {type:'frostwraith',n:2,x:-180,y:-430,r:110},{type:'frostwraith',n:2,x:210,y:-410,r:110},
+        {type:'rimeknight',n:2,x:-420,y:-200,r:130},{type:'frostwraith',n:3,x:330,y:-60,r:140},{type:'rimeknight',n:3,x:640,y:-280,r:150},
+        {type:'rimeknight',n:3,x:-700,y:200,r:150},{type:'frostwraith',n:3,x:120,y:360,r:140},{type:'rimeknight',n:3,x:620,y:300,r:150},
+        {type:'rimeknight',creature:true,n:2,x:620,y:-330,r:120},{type:'frostwraith',creature:true,n:2,x:-560,y:-260,r:130}
+      ],
+      // קשה מהאגם: מי שהגיע לכאן כבר הדליק שני פנסים
+      zones:[
+        {id:'start',to:360, hp:0.8,dmg:0.6,speed:0.8, leash:260,back:25},
+        {id:'near', to:800, hp:1.3,dmg:1.05,speed:1,  leash:380,back:35},
+        {id:'far',  to:1e9, hp:1.8,dmg:1.35,speed:1.08,leash:480,back:45}
+      ],
+      decor:{trees:66,hills:16,rocks:0.35}
     }
   }
 };
@@ -248,7 +271,7 @@ function drawWorld(){
   if(!S.wd)return;
   if(!R3D.on){
     const R=WR(),{w,h}=R.size;ctx.fillStyle=R.ground;ctx.fillRect(-w/2,-h/2,w,h);
-    for(const p of R.ponds||[]){ctx.fillStyle='#1E4A63';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();ctx.strokeStyle='#3F7BA0';ctx.lineWidth=4;ctx.stroke()}
+    const pc=R.pondCol||['#1E4A63','#3F7BA0'];for(const p of R.ponds||[]){ctx.fillStyle=pc[0];ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();ctx.strokeStyle=pc[1];ctx.lineWidth=4;ctx.stroke()}
     for(const d of worldDecor()){
       if(d.kind==='tree'){ctx.fillStyle='#24452F';ctx.beginPath();ctx.arc(d.x,d.y,20+d.v*10,0,7);ctx.fill()}
       else if(d.kind==='rock'){ctx.fillStyle='#4A5064';ctx.beginPath();ctx.arc(d.x,d.y,12,0,7);ctx.fill()}
@@ -272,6 +295,7 @@ function drawWorld(){
   affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
   eventsDraw();   // אירועים (events.js)
   if(WR().fog)wFog();
+  if(WR().snow)wSnow();   // הרכס הקפוא
 }
 // מים שאי אפשר ללכת בהם: דוחפים החוצה, כמו מעץ
 function wPonds(o){for(const p of WR().ponds||[]){const dx=o.x-p.x,dy=o.y-p.y,d=Math.hypot(dx,dy)||1,min=p.r+(o.r||12);if(d<min){o.x=p.x+dx/d*min;o.y=p.y+dy/d*min}}}
@@ -285,6 +309,18 @@ function wFog(){
     const bx=hash(i,11)*W+t*F.drift*(0.5+hash(i,12)),by=hash(i,13)*W+Math.sin(t*0.2+i)*30;
     const x=P.x-F.spread+(((bx-P.x)%W)+W)%W,y=P.y-F.spread+(((by-P.y)%W)+W)%W,sz=F.size*(0.7+hash(i,14)*0.6);
     ctx.drawImage(s,x-sz/2,y-sz/2,sz,sz*0.6)}
+  ctx.restore();
+}
+/* שלג: פתיתים לבנים שיורדים באלכסון סביב השחקן, ועוד שכבת קור כחלחלה עדינה. בלי מערך חי: כל פתית מחושב מהזמן, אז זול לטלפון */
+const SNOW={n:70,spread:560,fall:46,sway:18,size:[1.5,3.6],alpha:0.75,chill:0.07};
+function wSnow(){
+  const t=fxNow(),F=SNOW,W=F.spread*2;ctx.save();
+  ctx.fillStyle='rgba(170,210,255,'+F.chill+')';ctx.fillRect(P.x-F.spread*2,P.y-F.spread*2,W*2,W*2);
+  ctx.fillStyle='#F4FAFF';
+  for(let i=0;i<F.n;i++){
+    const sp=0.6+hash(i,21)*0.8,bx=hash(i,22)*W+Math.sin(t*0.7+i)*F.sway+t*F.fall*0.35*sp,by=hash(i,23)*W+t*F.fall*sp;
+    const x=P.x-F.spread+(((bx-P.x)%W)+W)%W,y=P.y-F.spread+(((by-P.y)%W)+W)%W,r=F.size[0]+hash(i,24)*(F.size[1]-F.size[0]);
+    ctx.globalAlpha=F.alpha*(0.5+hash(i,25)*0.5);ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill()}
   ctx.restore();
 }
 // שלטים מתחת לשערים, וחצים בקצה המסך אל השערים ואל הכפר. מעל הכל, בשני המצבים
