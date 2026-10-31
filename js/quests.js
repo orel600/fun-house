@@ -206,6 +206,7 @@ function questLog(){
   const Q=QS(),act=Object.keys(Q.active).map(id=>QBY[id]).filter(Boolean),L=QUESTS.list;
   const sec=(k,cards)=>cards.length?'<h4>'+T('q.sec.'+k)+'</h4>'+cards.join(''):'';
   let h=winHead(T('q.log'));   // ui.js
+  h+=challengeCard();   // אתגר יומי (challenge.js)
   h+=sec('ready',act.filter(q=>qReady(q)&&!qKind(q).talk).map(q=>qCard(q,'claim')));
   h+=sec('active',act.filter(q=>(!qReady(q)||qKind(q).talk)&&!qKind(q).auto).map(q=>qCard(q,'track')));   // talk: הפרס אצל מי שנתן
   h+=sec('new',L.filter(q=>qOpen(q)&&!qKind(q).talk).map(q=>qCard(q,'accept')));
