@@ -759,6 +759,7 @@ function worldBot(m,L,god){
     o.wins[place==='world'?'gate':'market']=win(()=>{},pid,'#'+pid+' [data-act="close"]');
     o.wins.gear=win(gearOpen,'ovGear','#gearClose');
     o.wins.quests=win(()=>questLogOpen(true),'qLog','#qLog [data-act="close"]');
+    o.wins.book=win(()=>bookOpen(true),'bookWin','#bookWin [data-act="close"]');
     if(place==='world')return o;
     o.wins.forge=win(forgeOpen,'ovForge','#forgeClose');
     const npc=Object.keys(NPC.list).find(npcHere);o.wins.npc=win(()=>npcTalk(npc),'npcDlg','#npcDlg [data-act="close"]');
@@ -819,6 +820,29 @@ function worldBot(m,L,god){
     const f=mk('fast');o.fast=f.speed>ETYPES.grunt.speed*1.5;o.name=T('af.fast');o.drops=drops().filter(d=>d.r==='coins').length;
     enterVillage();return o});
   check(afx.split===2&&afx.wait===1&&afx.blast>0&&afx.regen&&afx.fast&&afx.drops>0,'אויבים מיוחדים: מתפצל → '+afx.split+' קטנים, מתפוצץ: '+(afx.wait?'מחכה רגע':'מיד')+' ופגע '+afx.blast+', מתחדש '+(afx.regen?'מרפא':'לא מרפא')+', מהיר '+(afx.fast?'רץ מהר':'לא')+', שלל מטבעות '+afx.drops+' · "'+afx.name+'"');
+  // ספר ההרפתקאות (book.js): הריגה נרשמת, פריט ומשאב מהתרמיל נרשמים, פרס מגיע כל BOOK.every רשומות, והחלון נפתח, מראה צללית ונסגר
+  const bk=await page.evaluate(()=>{
+    enterWorld('home');const o={},b=BK();
+    o.k0=b.f.mummy||0;kill(addEnemy('mummy',P.x+60,P.y,1));o.kill=(b.f.mummy||0)-o.k0;
+    o.weak=bookWeak('golem');
+    const it=Object.keys(GEAR.items).find(k=>!b.i[k]);if(it){bagAdd(it);o.item=!!b.i[it];bagTake(it)}else o.item=true;
+    const rs=Object.keys(RES.list).filter(k=>!b.r[k]);if(rs[0]){bagAdd(rs[0]);o.res=!!b.r[rs[0]]}else o.res=true;
+    // מספיק רשומות לפרס: משאבים חדשים עד שיש פרס שמחכה
+    for(const r of rs.slice(1)){if(bookPending())break;bagAdd(r)}
+    o.pend=bookPending();o.badge=!$('bBadge').hidden;
+    bookOpen(true);o.open=!$('bookWin').hidden&&S.mode==='book';o.cards=document.querySelectorAll('#bookWin .bkc').length;
+    document.querySelector('#bookWin [data-tab="r"]').click();o.unk=document.querySelectorAll('#bookWin .bkc.unk').length;
+    const c0=SAVE.bag.coins||0,cl=document.querySelector('#bookWin [data-act="claim"]');o.btn=!!cl;if(cl)cl.click();o.coins=(SAVE.bag.coins||0)-c0;o.after=bookPending();
+    o.saved=!!(JSON.parse(localStorage.getItem(SAVE_STORE.key)).book||{}).paid;o.fx=FX.length>0;
+    document.querySelector('#bookWin [data-act="close"]').click();o.closed=$('bookWin').hidden&&S.mode==='play';
+    bookOpen(true);dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape'}));keys.Escape=false;o.esc=$('bookWin').hidden&&S.mode==='play';
+    bookOpen(true);return o});
+  if(CFG.shots){await page.setViewportSize(CFG.phone);await page.clock.runFor(200);await shot('book')}
+  await page.evaluate(()=>{bookOpen(false);enterVillage()});
+  check(bk.kill===1&&bk.weak==='water'&&bk.item&&bk.res&&bk.pend>0&&bk.badge&&bk.open&&bk.cards>0&&bk.btn&&bk.coins>0&&bk.after===0&&bk.saved&&bk.fx&&bk.closed&&bk.esc,
+    'ספר ההרפתקאות: הריגה '+(bk.kill===1?'נרשמה':'לא נרשמה')+', חולשת גולם '+bk.weak+(bk.item?', פריט נרשם':', פריט לא נרשם')+(bk.res?', משאב נרשם':', משאב לא נרשם')+
+    ', פרס מחכה '+bk.pend+(bk.badge?' עם נקודה':' בלי נקודה')+', החלון '+(bk.open?'נפתח ('+bk.cards+' רשומות, '+bk.unk+' צלליות)':'לא נפתח')+
+    (bk.btn?', נלקח +'+bk.coins+' מטבעות':', אין כפתור פרס')+(bk.saved?', נשמר':', לא נשמר')+(bk.closed?', נסגר ב-✕':', לא נסגר')+(bk.esc?' וב-Esc':''));
   // נקודות דמות (stats.js): הריגה בעולם נותנת XP לדמות, רמה נותנת נקודה, נקודה מעלה נזק, נשמרת, ואיפוס אצל הכוהנת עולה מטבעות
   const stt=await page.evaluate(()=>{
     enterWorld('home');const o={};const xp0=SAVE.hero.xp||0,e={x:P.x+40,y:P.y,xp:3,type:'grunt',hp:0,r:10,mult:{}};
