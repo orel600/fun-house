@@ -193,7 +193,7 @@ function gTile(id,attrs,extra){
   return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gIcon(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+extra+'</button>';
 }
 // תא של משאב: אייקון, כמה יש, ומסגרת בצבע הנדירות
-const gResTile=(r,n,attrs)=>'<button class="gtile res" '+attrs+' style="--rar:'+gRarCol(r)+'" aria-label="'+resName(r)+' '+n+'">'+resIcon(r)+'<small>×'+shortN(n)+'</small></button>';
+const gResTile=(r,n,attrs)=>'<button class="gtile res" '+attrs+' style="--rar:'+gRarCol(r)+'" aria-label="'+resName(r)+' '+n+'">'+resPic(r)+'<small>×'+shortN(n)+'</small></button>';
 const gCell=(k,n,attrs)=>gItem(k)?gTile(k,attrs,n>1?'<small>×'+shortN(n)+'</small>':''):gResTile(k,n,attrs);
 // מה בתרמיל בלשונית הנוכחית: items לפריטים, או משפחת משאבים (RES.fams)
 function gBagKeys(tab){
@@ -239,7 +239,7 @@ function gDetailHtml(){
   const sel=GUI.sel,k=sel&&(sel.id||sel.sid||gGet(sel.slot,sel.i)),n=!sel?0:sel.id?SAVE.bag[k]:sel.sid?SAVE.stash[k]:1;
   if(!k||!n)return statsHtml()+'<p class="dim">'+T('gear.hint')+'</p>';   // בלי פריט: הרמה והנקודות (stats.js)
   const it=gItem(k),col=gRarCol(k);
-  let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gIcon(k):resIcon(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
+  let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gIcon(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
     '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
   if(it&&gPlus(k))d+='<p class="gage">'+T('gear.aged',gPlus(k))+'</p>';
   if(it)d+=gStatsHtml(k);

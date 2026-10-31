@@ -530,3 +530,22 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .trn.got{border-color:var(--br);background:rgba(244,199,79,.08)}.trn.lock{opacity:.45}
 .trok{width:32px;text-align:center;font-size:16px;color:var(--gold)}
 @media (orientation:portrait){.trcols{grid-template-columns:1fr}}
+
+/* ===== העיצוב שלנו (ניר, 31.10.2026, מג'מיני): מסגרת עץ לחלונות, כפתורי עץ וזהב, ✕ אדום ואייקונים. התמונות ב-icons/ui.
+   מסגרת: border-image, כך שהפינות נשארות בגודלן והצלעות נמתחות לכל גודל חלון ===== */
+.win{border:26px solid transparent;border-image:url(../icons/ui/frame.png) 76 fill / 26px stretch;background:none;border-radius:0;box-shadow:0 10px 30px #0009}
+.vpanel.win,.qlog.win{padding:0 6px 6px}
+.vpanel.win>.whd,.qlog.win>.whd{margin:0 -6px 2px;padding:2px 4px 6px 6px;background:#1F2638}
+#ovGear .gearpanel,#ovForge .gearpanel{padding:4px 6px}
+.wx{background:url(../icons/ui/x.png) center/contain no-repeat;border:0;box-shadow:none;color:transparent;text-shadow:none;border-radius:10px}
+.wx:active{transform:translateY(2px) scale(.96);box-shadow:none}
+.vbtn{background:url(../icons/ui/btn-gold.png) center/100% 100% no-repeat;color:#FFF6E0;text-shadow:0 1px 0 #5A3410,0 0 4px #3A2008;border-radius:18px;padding:13px 18px}
+.vbtn:active:not(:disabled){transform:translateY(2px)}
+.vbtn:disabled{background:url(../icons/ui/btn-off.png) center/100% 100% no-repeat;color:#E4E4E4;text-shadow:0 1px 0 #444}
+.vbtn.ghost{background:url(../icons/ui/btn-dark.png) center/100% 100% no-repeat;border:0;color:var(--chalk);text-shadow:none}
+.res .ri,.ti .ri,.tp .ri,.gtile .ri{width:1.35em;height:1.35em;vertical-align:-.3em;object-fit:contain}
+.gtile .ri{width:70%;height:70%}
+.gdicon .ri{width:42px;height:42px}
+#qBtn .ni,#gearBtn .ni{font-size:0;width:34px;height:34px;background:center/contain no-repeat}
+#qBtn .ni{background-image:url(../icons/ui/nav-quests.png)}#gearBtn .ni{background-image:url(../icons/ui/nav-gear.png)}
+@media (orientation:landscape) and (max-height:500px){#qBtn .ni,#gearBtn .ni{width:28px;height:28px}}
