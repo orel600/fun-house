@@ -163,15 +163,28 @@ function faceStep(m,L){
   if(R3D.on&&S.vil&&R3D.player){F.n3++;if(Math.abs(angDiff(R3D.player.root.rotation.y,yawOf(Math.cos(P.face),Math.sin(P.face))))>0.15)F.bad3++}
 }
 /* חיית המחמד (pet.js): כמה פעמים היא קרובה לשחקן, באילו מצבים נראתה, ושהחפירה מוציאה שלל לרצפה.
-   בעולם הפתוח היא חופרת מיד (בלי לחכות לזמן), ואחרי החפירה הראשונה מוסיפים לה XP בכוח, פעמיים, ובודקים שהיא עוברת את שני השלבים ונשמרת */
+   בעולם הפתוח היא חופרת מיד (בלי לחכות לזמן), ואחרי החפירה הראשונה מוסיפים לה XP בכוח, פעמיים, ובודקים שהיא עוברת את שני השלבים ונשמרת.
+   גזר: נותנים לבוט גזר, מקרבים אותה, ובודקים שהכפתור מופיע, שהלחיצה מורידה גזר, מוסיפה XP, מפעילה חיזוק ולבבות.
+   תקיפה: סופרים נשיכות, נזק וחזרות לשחקן, כמה רחוק היא הגיעה ממנו בזמן תקיפה, ושבעולם היא לא יצאה מהגבולות */
 function petBot(m,L){
-  const p=S.pet,Q=L.pet||(L.pet={n:0,near:0,st:{},digs:0,dug:[],drop:false,evo:null});if(!p||!petHere())return;
-  if(S.mode==='play'&&p.st!=='go'&&p.st!=='dig'&&p.st!=='jump'){Q.n++;if(Math.hypot(p.x-P.x,p.y-P.y)<200)Q.near++}
+  const p=S.pet,Q=L.pet||(L.pet={n:0,near:0,st:{},digs:0,dug:[],drop:false,evo:null,bites:0,dealt:0,ret:0,far:0,oob:0,feed:null});if(!p||!petHere())return;
+  if(S.mode==='play'&&!['go','dig','jump','hunt','back'].includes(p.st)){Q.n++;if(Math.hypot(p.x-P.x,p.y-P.y)<200)Q.near++}
   Q.st[p.st]=(Q.st[p.st]||0)+1;
   if(R3D.on&&R3D.pet){Q.r3=R3D.pet.root.visible;Q.clips=Object.values(DOG_ANIM).filter(c=>!R3D.clips[c]).join(',')||'ok'}
   if(S.wd&&!m.petDig&&S.mode==='play'){m.petDig=1;p.digT=0}
-  if(p!==m.petP){m.petP=p;m.petDigs0=Q.digs}
-  Q.digs=m.petDigs0+p.digs;if(p.dug.length)Q.dug=[...new Set([...Q.dug,...p.dug])];
+  if(S.wd&&S.mode==='play'&&(Q.wBites||0)<3&&p.st!=='hunt'&&p.st!=='back')p.atkCd=0;   // בעולם: תוקפת מיד כשיש אויב קרוב, בלי לחכות למנוחה
+  if(p!==m.petP){m.petP=p;m.petDigs0=Q.digs;m.petB0=[Q.bites,Q.dealt,Q.ret]}
+  Q.digs=m.petDigs0+p.digs;Q.bites=m.petB0[0]+p.bitesAll;Q.dealt=m.petB0[1]+p.dealt;Q.ret=m.petB0[2]+p.returns;
+  if(S.wd)Q.wBites=Math.max(Q.wBites||0,p.bitesAll);else if(!S.vil&&!S.room)Q.aBites=Math.max(Q.aBites||0,p.bitesAll);   // תוקפת רק בעולם
+  Q.far=Math.max(Q.far,Math.round(p.far||0));
+  if(S.wd){const B=WORLD.size;if(Math.abs(p.x)>B.w/2||Math.abs(p.y)>B.h/2)Q.oob++}
+  // גזר: פעם אחת, במקום הראשון שהיא פנויה בו
+  if(S.mode==='play'&&!m.petFed){const b=document.getElementById('feedBtn');
+    if(!m.petCarrot){m.petCarrot=1;Q.leash=PET.attack.leash;bagAdd(PET.feed.res,1)}
+    if(b&&!b.hidden){const xp=SAVE.pet.xp,c=SAVE.bag[PET.feed.res]||0;b.click();m.petFed=1;
+      Q.feed={btn:true,xp:Math.round(SAVE.pet.xp-xp),ate:c-(SAVE.bag[PET.feed.res]||0),buff:SAVE.pet.buff,hearts:p.hearts.length,fed:SAVE.pet.fed,hide:b.hidden,
+        saved:JSON.parse(localStorage.getItem(SAVE_STORE.key)).pet.fed===SAVE.pet.fed}}
+    else if(!['hunt','back','go','dig'].includes(p.st)){p.x=P.x+30;p.y=P.y;p.feedCd=0;m.petTry=(m.petTry||0)+1}}if(p.dug.length)Q.dug=[...new Set([...Q.dug,...p.dug])];
   if((S.gd||[]).some(d=>d.pet))Q.drop=true;
   if(Q.digs&&!m.petEvo&&S.mode==='play'){   // XP בכוח: שלב 1 → 2 → 3
     const st=petKind().stages,a=SAVE.pet.stage;petXP(st[1].xp-SAVE.pet.xp);const b=SAVE.pet.stage;petXP(st[2].xp-SAVE.pet.xp);
@@ -340,8 +353,8 @@ function worldBot(m,L,god){
     document.getElementById('wRespawn').click();L.wRespawn=!!S.vil&&document.getElementById('ovWDeath').hidden;m.wp='done';return L}
   if(god&&m.wp!=='die')P.hp=P.maxHp;
   // טווח ההתקפה בעולם: כל מכה ישירה (לא ברק שקפץ) נמדדת, והרחוקה ביותר נרשמת
-  if(!m.hitHook){m.hitHook=1;const d0=damage;damage=function(e,b,w,a,t,ch){if(S.wd&&!ch){const d=Math.hypot(e.x-P.x,e.y-P.y)-(e.r||0);L.wHitMax=Math.max(L.wHitMax||0,Math.round(d));L.wHits=(L.wHits||0)+1}return d0.apply(this,arguments)}}
-  L.wRange=WORLD.attackRange;
+  if(!m.hitHook){m.hitHook=1;const d0=damage;damage=function(e,b,w,a,t,ch){if(S.wd&&!ch&&w!=='pet'){const d=Math.hypot(e.x-P.x,e.y-P.y)-(e.r||0);L.wHitMax=Math.max(L.wHitMax||0,Math.round(d));L.wHits=(L.wHits||0)+1}return d0.apply(this,arguments)}}
+  L.wRange=WORLD.attackRange;   // רק מכות של השחקן: נשיכות של פיוחו (w='pet') רצות רחוק יותר, עד PET.attack.leash
   if(!m.wp){m.wp='gather';L.wEnter=!S.vil&&S.mode==='play';L.wName=document.getElementById('wName').textContent;L.wHud=vis('whud')&&!vis('vhud');
     L.wNodes=S.nd.list.length;L.wFoes=enemies.length;L.wCreatures=enemies.filter(e=>e.creature).length;m.w0=SAVE.bag.wood||0;m.wt=W.t;
     // המפלצות הראשונות ליד השער: קלות. אחת נזרקת רחוק מהבית שלה (צריכה לחזור), וקבוצה אחת מופלת (צריכה לחזור אחרי זמן)
@@ -363,9 +376,9 @@ function worldBot(m,L,god){
     const n=S.nd.list.filter(n=>!n.dead&&n.kind==='tree').sort(far)[0];
     return n?steer(n.x,n.y,false,n.r+P.r+20,L):stay()}   // אחרי שהעץ נשבר: לעץ הבא, עד שיש 5 לקווסט הנעליים
   if(m.wp==='kill'){   // מפילים אויב אחד: יצור משאב אם יש, אחרת הכי קרוב
-    if(S.kills>m.k0){L.wKill=m.kt;m.wp='wnpc';return L}
+    if(m.kt!=null&&S.kills>m.k0){L.wKill=m.kt;m.wp='wnpc';return L}   // סופרים רק מאז שנבחר אויב: פיוחו (pet.js) יכולה להפיל אחד לפני כן
     const pool=enemies.filter(e=>!e.dead&&!e.wanted),cr=pool.filter(e=>e.creature),e=(cr.length?cr:pool).sort(far)[0];if(!e)return stay();
-    m.kt=e.type+(e.creature?' (יצור)':'');return steer(e.x,e.y,false,P.weapon==='sword'?e.r+30:200,L)}
+    if(m.kt==null)m.k0=S.kills;m.kt=e.type+(e.creature?' (יצור)':'');return steer(e.x,e.y,false,P.weapon==='sword'?e.r+30:200,L)}
   if(m.wp==='wnpc'){   // דמות בעולם (worldnpc.js): הולכים לקרובה, היא נמצאת (נשמר, חגיגה, חץ), מדברים, מקבלים קווסט, משלימים ולוקחים פרס רק אצלה
     const N=L.wn||(L.wn={}),tb=document.getElementById('talkBtn'),dlg=document.getElementById('npcDlg'),btn=a=>dlg.querySelector('[data-act="'+a+'"]');
     if(!m.wn){const id=Object.keys(WNPC.list).sort((a,b)=>far(WNPC.list[a].at,WNPC.list[b].at))[0];if(!window.__cel){window.__cel=0;const c=celebrate;window.celebrate=(...a)=>{window.__cel++;return c(...a)}}m.wn={id,step:0,fx:window.__cel};N.id=id;N.n=Object.keys(WNPC.list).length;N.metBefore=!!SAVE.met[id];N.markBefore=wnpcMarks()[id]||null}
@@ -550,7 +563,9 @@ function worldBot(m,L,god){
       for(const o of q.obj)if(o.type==='collect'&&o.what!=='coins'&&!resOf(o.what))bad.add(o.what+' (quest:'+q.id+')')}
     const placed=new Set(Object.values(NODES.arenas).flatMap(a=>a.spawn.map(s=>s.kind)));
     for(const k in NODES.kinds)if(placed.has(k))add(src,NODES.kinds[k].drop,'node:'+k);
+    for(const f of WORLD.fields)add(src,NODES.kinds[f.kind].wdrop,'world:'+f.kind);   // שלל שרק בעולם הפתוח
     for(const k in PET.kinds)PET.kinds[k].stages.forEach((s,i)=>add(src,s.dig.loot,'pet:'+k+(i+1)));   // החפירה של חיית המחמד (pet.js)
+    add(use,{[PET.feed.res]:1},'pet:feed');   // גזר: להאכיל את חיית המחמד (pet.js)
     AGING.cost.forEach(c=>add(use,c,'aging'));add(use,{[AGING.gem]:1},'aging:gem');
     for(const id in GEAR.recipes){if(!GEAR.items[id])bad.add(id+' (recipe)');add(use,GEAR.recipes[id],'craft:'+id)}
     const dead=[],few=[],out=[];
@@ -775,6 +790,7 @@ function worldBot(m,L,god){
     o.wins[place==='world'?'gate':'market']=win(()=>{},pid,'#'+pid+' [data-act="close"]');
     o.wins.gear=win(gearOpen,'ovGear','#gearClose');
     o.wins.quests=win(()=>questLogOpen(true),'qLog','#qLog [data-act="close"]');
+    o.wins.book=win(()=>bookOpen(true),'bookWin','#bookWin [data-act="close"]');
     if(place==='world')return o;
     o.wins.forge=win(forgeOpen,'ovForge','#forgeClose');
     const npc=Object.keys(NPC.list).find(npcHere);o.wins.npc=win(()=>npcTalk(npc),'npcDlg','#npcDlg [data-act="close"]');
@@ -861,6 +877,29 @@ function worldBot(m,L,god){
     const f=mk('fast');o.fast=f.speed>ETYPES.grunt.speed*1.5;o.name=T('af.fast');o.drops=drops().filter(d=>d.r==='coins').length;
     enterVillage();return o});
   check(afx.split===2&&afx.wait===1&&afx.blast>0&&afx.regen&&afx.fast&&afx.drops>0,'אויבים מיוחדים: מתפצל → '+afx.split+' קטנים, מתפוצץ: '+(afx.wait?'מחכה רגע':'מיד')+' ופגע '+afx.blast+', מתחדש '+(afx.regen?'מרפא':'לא מרפא')+', מהיר '+(afx.fast?'רץ מהר':'לא')+', שלל מטבעות '+afx.drops+' · "'+afx.name+'"');
+  // ספר ההרפתקאות (book.js): הריגה נרשמת, פריט ומשאב מהתרמיל נרשמים, פרס מגיע כל BOOK.every רשומות, והחלון נפתח, מראה צללית ונסגר
+  const bk=await page.evaluate(()=>{
+    enterWorld('home');const o={},b=BK();
+    o.k0=b.f.mummy||0;kill(addEnemy('mummy',P.x+60,P.y,1));o.kill=(b.f.mummy||0)-o.k0;
+    o.weak=bookWeak('golem');
+    const it=Object.keys(GEAR.items).find(k=>!b.i[k]);if(it){bagAdd(it);o.item=!!b.i[it];bagTake(it)}else o.item=true;
+    const rs=Object.keys(RES.list).filter(k=>!b.r[k]);if(rs[0]){bagAdd(rs[0]);o.res=!!b.r[rs[0]]}else o.res=true;
+    // מספיק רשומות לפרס: משאבים חדשים עד שיש פרס שמחכה
+    for(const r of rs.slice(1)){if(bookPending())break;bagAdd(r)}
+    o.pend=bookPending();o.badge=!$('bBadge').hidden;
+    bookOpen(true);o.open=!$('bookWin').hidden&&S.mode==='book';o.cards=document.querySelectorAll('#bookWin .bkc').length;
+    document.querySelector('#bookWin [data-tab="r"]').click();o.unk=document.querySelectorAll('#bookWin .bkc.unk').length;
+    const c0=SAVE.bag.coins||0,cl=document.querySelector('#bookWin [data-act="claim"]');o.btn=!!cl;if(cl)cl.click();o.coins=(SAVE.bag.coins||0)-c0;o.after=bookPending();
+    o.saved=!!(JSON.parse(localStorage.getItem(SAVE_STORE.key)).book||{}).paid;o.fx=FX.length>0;
+    document.querySelector('#bookWin [data-act="close"]').click();o.closed=$('bookWin').hidden&&S.mode==='play';
+    bookOpen(true);dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape'}));keys.Escape=false;o.esc=$('bookWin').hidden&&S.mode==='play';
+    bookOpen(true);return o});
+  if(CFG.shots){await page.setViewportSize(CFG.phone);await page.clock.runFor(200);await shot('book')}
+  await page.evaluate(()=>{bookOpen(false);enterVillage()});
+  check(bk.kill===1&&bk.weak==='water'&&bk.item&&bk.res&&bk.pend>0&&bk.badge&&bk.open&&bk.cards>0&&bk.btn&&bk.coins>0&&bk.after===0&&bk.saved&&bk.fx&&bk.closed&&bk.esc,
+    'ספר ההרפתקאות: הריגה '+(bk.kill===1?'נרשמה':'לא נרשמה')+', חולשת גולם '+bk.weak+(bk.item?', פריט נרשם':', פריט לא נרשם')+(bk.res?', משאב נרשם':', משאב לא נרשם')+
+    ', פרס מחכה '+bk.pend+(bk.badge?' עם נקודה':' בלי נקודה')+', החלון '+(bk.open?'נפתח ('+bk.cards+' רשומות, '+bk.unk+' צלליות)':'לא נפתח')+
+    (bk.btn?', נלקח +'+bk.coins+' מטבעות':', אין כפתור פרס')+(bk.saved?', נשמר':', לא נשמר')+(bk.closed?', נסגר ב-✕':', לא נסגר')+(bk.esc?' וב-Esc':''));
   // נקודות דמות (stats.js): הריגה בעולם נותנת XP לדמות, רמה נותנת נקודה, נקודה מעלה נזק, נשמרת, ואיפוס אצל הכוהנת עולה מטבעות
   const stt=await page.evaluate(()=>{
     enterWorld('home');const o={};const xp0=SAVE.hero.xp||0,e={x:P.x+40,y:P.y,xp:3,type:'grunt',hp:0,r:10,mult:{}};
@@ -1040,6 +1079,9 @@ function worldBot(m,L,god){
   const pt=L.pet||{st:{}},pst=Object.entries(pt.st).map(([k,v])=>k+' '+v).join(', ');
   check(pt.n>20&&pt.near/pt.n>0.85,'חיית מחמד הולכת אחרי השחקן: קרובה אליו ב-'+Math.round(100*pt.near/(pt.n||1))+'% מהזמן · מצבים: '+(pst||'לא נראתה'));
   check(pt.digs>0&&pt.drop,'פיוחו חופרת: '+(pt.digs||0)+' חפירות, הוציאה '+(pt.dug.join(', ')||'כלום')+(pt.drop?', השלל נפל לרצפה':', שום שלל לא נפל לרצפה'));
+  const fd=pt.feed;
+  check(fd&&fd.btn&&fd.xp>0&&fd.ate===1&&fd.buff>0&&fd.hearts>0&&fd.hide&&fd.saved,'פיוחו אוכלת גזר: '+(fd?'הכפתור הופיע, אכלה '+fd.ate+', ‎+'+fd.xp+' XP, חיזוק '+Math.round(fd.buff)+' שניות, '+fd.hearts+' לבבות'+(fd.hide?'':', הכפתור לא נעלם')+(fd.saved?', נשמר':', לא נשמר'):'הכפתור לא הופיע'));
+  check(pt.wBites>0&&!pt.aBites&&pt.dealt>0&&pt.ret>0&&!pt.oob&&pt.far<=pt.leash*1.6,'פיוחו תוקפת בעולם: '+(pt.wBites||0)+' נשיכות, בזירה '+(pt.aBites||0)+' (צריך 0), '+Math.round(pt.dealt||0)+' נזק, חזרה לשחקן '+(pt.ret||0)+' פעמים, הכי רחוק ממנו '+(pt.far||0)+(pt.oob?' · יצאה מגבולות העולם '+pt.oob+' פעמים':''));
   check(L.doll==='3d'||L.doll==='2d','הדמות בחלון הציוד: '+(L.doll==='3d'?'בתלת-ממד, עם מה שלבוש':L.doll==='2d'?'דו-ממד, אימוג\'י':'לא הופיעה ('+L.doll+')'));
   const setBad=Object.entries(setT).filter(([s,v])=>!(v.n===4&&v.one&&v.two&&v.four&&v.named)).map(([s,v])=>s+' '+JSON.stringify(v));
   check(Object.keys(setT).length&&!setBad.length,'סטים של ציוד: '+Object.keys(setT).length+' סטים, 2 ו-4 חלקים נותנים בונוס'+(setBad.length?' · בעיה: '+setBad.join(', '):''));
