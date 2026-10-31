@@ -43,6 +43,10 @@ const QUESTS={
     {id:'s3Climb',giver:'head',kind:'story',obj:[{type:'story',what:'ridge',n:1}],reward:{coins:40,xp:70},req:{quest:'s2Warden'}},
     {id:'s3Frost',giver:'head',kind:'story',obj:[{type:'kill',what:'rimeknight',n:8},{type:'gather',what:'sapphireC',n:3}],reward:{iron:8,resin:4,xp:110},req:{quest:'s3Climb'}},
     {id:'s3Warden',giver:'head',kind:'story',obj:[{type:'story',what:'frost',n:1}],reward:{coins:160,xp:240,story:'ice'},req:{quest:'s3Frost'}},
+    // ---- העלילה, פרק 4: פנס האש, במדבר הבוער (story.js, WORLD.regions.desert ב-world.js). נפתח אחרי פנס הקרח ----
+    {id:'s4Sand',giver:'head',kind:'story',obj:[{type:'story',what:'desert',n:1}],reward:{coins:50,xp:90},req:{quest:'s3Warden'}},
+    {id:'s4Ember',giver:'head',kind:'story',obj:[{type:'kill',what:'cinderscorp',n:8},{type:'gather',what:'rubyC',n:3}],reward:{iron:10,copper:6,xp:140},req:{quest:'s4Sand'}},
+    {id:'s4Warden',giver:'head',kind:'story',obj:[{type:'story',what:'blaze',n:1}],reward:{coins:200,xp:300,story:'fire'},req:{quest:'s4Ember'}},
     {id:'boots',giver:'head',kind:'village',obj:[{type:'gather',what:'wood',n:5}],reward:{coins:10,item:'starterBoots'}},
     {id:'firstMill',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mill',n:1}],reward:{coins:15,wood:10}},
     {id:'firstMine',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mine',n:1}],reward:{coins:15,stone:10}},
