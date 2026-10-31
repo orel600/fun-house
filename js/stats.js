@@ -59,6 +59,7 @@ function statsHtml(){
   const x=heroXpNow(),free=stFree(),p=stPts(),g=statsGive();
   const bn=buildName();
   let h='<div class="sthead"><b>'+T('gear.hero',heroLv())+(bn?' · '+T('st.build')+' <span class="bname">'+bn+'</span>':'')+'</b><span class="stxp"><i style="width:'+Math.round(x.have/x.need*100)+'%"></i><bdi>'+Math.floor(x.have)+' / '+x.need+' XP</bdi></span></div>';
+  h+='<div class="stbuilds">'+[0,1].map(i=>'<button class="vbtn ghost" data-act="build" data-i="'+i+'"'+((SAVE.hero.build||0)===i?' aria-pressed="true"':'')+(S.vil?'':' disabled')+'>'+T('st.slot',i+1)+'</button>').join('')+'</div>';   // שתי בניות שמורות
   h+='<p class="stfree'+(free?' on':'')+'">'+(free?T('st.free',free):T('st.none'))+'</p>';
   h+='<div class="strows">'+Object.keys(STATS.list).map(k=>{const S_=STATS.list[k],[name,what]=T('st.'+k),n=p[k]||0;
     const val=[...new Set(Object.keys(S_.give).map(s=>'+'+(Math.round((g[s]||0)*10)/10)+(s==='hp'?'':'%')))].join(' / ');
@@ -230,4 +231,16 @@ function buildName(){
   if(!bs.length)return '';
   if(bs.length>1&&H[bs[0]].length===H[bs[1]].length)return T('bn.mixed');
   return T('bn.'+BUILDS.branch[bs[0]]);
+}
+
+/* ---- שתי בניות שמורות (המחקר, מקום 9: "בלי איפוס זול אף אחד לא ינסה סקיל מפתח"). Claude מוביל, 31.10.2026.
+   כל בנייה שומרת נקודות ועץ סקילים משלה. מחליפים בכפר בלי לשלם, והנקודות של הרמה זמינות בשתיהן.
+   נשמר ב-SAVE.hero.builds ([{pts,tree},{pts,tree}]) ו-SAVE.hero.build (איזו פעילה) ---- */
+function statBuild(i){
+  const H=SAVE.hero,cur=H.build||0;if(i===cur||!S.vil||(i!==0&&i!==1))return false;
+  gApply(statsGive(),-1);gApply(treeGive(),-1);
+  const B=H.builds||(H.builds=[{},{}]);B[cur]={pts:H.pts||{},tree:H.tree||{}};
+  const n=B[i]||{};H.pts=n.pts||{};H.tree=n.tree||{};H.build=i;
+  gApply(statsGive(),1);gApply(treeGive(),1);P.tfx=treeFx();P.hp=Math.min(P.hp,P.maxHp);
+  saveNow();sfx('tap');return true;
 }

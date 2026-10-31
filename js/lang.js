@@ -606,6 +606,7 @@ const TEXT={
   'bn.rock':{he:'הסלע',en:'The Rock'},'bn.wind':{he:'הרוח',en:'The Wind'},'bn.elements':{he:'אדון היסודות',en:'Elementalist'},
   'bn.mountain':{he:'ההר',en:'The Mountain'},'bn.berserk':{he:'המשתולל',en:'The Berserker'},'bn.mixed':{he:'הנווד',en:'The Wanderer'},
   'bn.sniper':{he:'הצלף',en:'The Sniper'},'bn.gale':{he:'הסופה',en:'The Gale'},'bn.tempest':{he:'אדון הסערה',en:'Tempest Lord'},'bn.glass':{he:'תותח הזכוכית',en:'Glass Cannon'},
+  'st.slot':{he:n=>'בנייה '+n,en:n=>'Build '+n},
   'st.got':{he:n=>'+'+n+' נקודה',en:n=>'+'+n+' point'},
   'st.respecWhere':{he:n=>'רוצה לחלק מחדש? '+n+' בכפר מאפסת את הנקודות',en:n=>'Want to start over? '+n+' in the village resets your points'},
   'st.respec':{he:n=>'לאפס את הנקודות · '+n,en:n=>'Reset points · '+n},

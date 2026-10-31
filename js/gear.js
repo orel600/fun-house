@@ -369,6 +369,7 @@ $('ovGear').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.id==='gearClose'){gearClose();return}
   if(b.dataset.act==='stat'){statAdd(b.dataset.k);statBadge();gRedraw();return}
+  if(b.dataset.act==='build'){statBuild(+b.dataset.i);statBadge();gRedraw();return}   // שתי בניות שמורות (stats.js)
   if(b.dataset.act==='tree'||b.dataset.act==='back'){GUI.view=b.dataset.act==='tree'?'tree':null;GUI.sel=null;gRedraw();return}
   if(b.dataset.act==='learn'){treeLearn(b.dataset.b,b.dataset.id);statBadge();gRedraw();return}
   const a=b.dataset.act,sel=GUI.sel;
