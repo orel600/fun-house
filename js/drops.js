@@ -12,7 +12,8 @@ const DROPS={
   fly:420, take:16,                           // מהירות המשיכה, ומאיזה מרחק נאסף
   stack:36,                                   // אותו משאב שנופל קרוב לערימה קיימת מצטרף אליה
   max:140,                                    // הכי הרבה על הרצפה יחד, בשביל הטלפון. מעבר לזה הישן ביותר נאסף לבד
-  beam:0.8                                    // גובה עמוד האור: beam של הדרגה כפול זה
+  beam:0.8,                                   // גובה עמוד האור: beam של הדרגה כפול זה
+  glow:{r:13,alpha:0.28,pulse:3,spin:2.5}     // זוהר זהב למשאב עם glow ב-resources.js (הגזר הקסום): גודל ההילה, שקיפות, קצב פעימה וסיבוב הניצוץ
 };
 // הדרגה של שלל (צבע ועמוד אור), או null לרגיל
 // פריט ציוד (gear.js) מקבל תמיד צבע ועמוד, לפי השכבה שלו ועוד אחת: גם חרב עץ שנפלה מאויב היא רגע מיוחד
@@ -74,6 +75,8 @@ function drawDrops(){
     const tr=dropTier(d.r),col=tr&&tr.col,h=tr?tr.beam*DROPS.beam:0,bob=d.z>0?0:Math.sin(d.ph*3)*2,y=d.y-d.z-10+bob;
     if(h&&d.z===0){const g=ctx.createLinearGradient(0,d.y-h,0,d.y);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,col);
       ctx.globalAlpha=0.45+0.15*Math.sin(d.ph*4);ctx.fillStyle=g;ctx.fillRect(d.x-4,d.y-h,8,h);ctx.globalAlpha=1}
+    if(d.z===0&&(resOf(d.r)||{}).glow){const a=DROPS.glow;ctx.globalAlpha=a.alpha*(0.75+0.25*Math.sin(d.ph*a.pulse));ctx.fillStyle=C.gold;
+      ctx.beginPath();ctx.arc(d.x,y-6,a.r,0,7);ctx.fill();ctx.beginPath();ctx.arc(d.x+7*Math.cos(d.ph*a.spin),y-6+7*Math.sin(d.ph*a.spin),2,0,7);ctx.fill();ctx.globalAlpha=1}   // הגזר הקסום: הילה וניצוץ שמסתובב
     ctx.fillStyle='rgba(5,7,13,0.4)';ctx.beginPath();ctx.ellipse(d.x,d.y+2,9,3.5,0,0,7);ctx.fill();
     ctx.strokeStyle=col||'rgba(244,199,79,0.7)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(d.x,d.y+2,12,5,0,0,7);ctx.stroke();
     ctx.font='17px system-ui, sans-serif';ctx.fillText(dropIcon(d.r)||'?',d.x,y);

@@ -264,6 +264,8 @@ h1{font-size:46px} h2{font-size:30px}
 .smove .res:disabled{opacity:.5;cursor:default}
 .vpanel .sk{font-size:11px;font-weight:800;color:var(--dim)}
 /* תושבי הכפר (js/npc.js): כפתור "לדבר" בסרגל למטה, והשיחה במקום היומן */
+/* להאכיל את חיית המחמד (js/pet.js): בסרגל למטה, ליד "לדבר", בכתום של גזר */
+.nbtn.talkbtn.feedbtn{border-color:#FF9F43;color:#FFB86B}
 .npcdlg h3 small{font-family:var(--body);font-size:13px;font-weight:800;color:var(--gold);margin-inline-start:6px}
 .npcsay{margin:0;font-size:15px;line-height:1.45;background:var(--panel);border-radius:12px;padding:8px 10px;border-inline-start:3px solid var(--gold)}
 /* דיוקן הדמות בשיחה (npcPic): בתחילת השורה, והטקסט עוטף אותו */
