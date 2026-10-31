@@ -53,6 +53,11 @@ const LOOK3D={
   cinderscorp:{model:'minion',h:46,foot:13,tint:'#D2582A',props:{blade:{prop:'blade',...HAND_R,tint:'fire'}},anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   flamewisp:{model:'skelMage',h:46,foot:11,float:12,tint:'#FFB04A',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   emberwarden:{model:'barbarian',h:90,foot:18,tint:'#E0502A',props:{staff:{prop:'staff',...HAND_R,tint:'fire'}},anim:{run:'Running_B',die:'Death_A'}},
+  // מגדלי הסערה (פרק 5): אבירי סערה בסגול עם מגן מחושמל, ניצוצות מרחפים, ושומר הסערה: ברבריאן גדול בסגול-חשמל עם מטה ברק
+  stormknight:{model:'warrior',h:64,foot:14,tint:'#8A7BC8',props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'lightning'}},
+    anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  sparkwisp:{model:'skelMage',h:44,foot:11,float:14,tint:'#E2CCFF',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  stormwarden:{model:'barbarian',h:92,foot:18,tint:'#7A4FE0',props:{staff:{prop:'staff',...HAND_R,tint:'lightning'}},anim:{run:'Running_B',die:'Death_A'}},
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle_A',charge:'Melee_2H_Attack_Spin',cast:'Melee_2H_Attack_Chop',taunt:'Taunt',die:'Death_A'}},
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. בלי קסדה הוא נמוך יותר, אז h קטן כדי שהגוף יהיה בגודל של האביר.
   // לבדיקה בלבד: עם ?hero=pilot בכתובת הוא נכנס במקום האביר של הלוחם (דמות ההתחלה הראשונה)
@@ -76,6 +81,7 @@ const LOOK3D={
   npc_washer:{model:'rogue',h:58,foot:13,tint:'#3F7BF5',own:false,anim:NPC_ANIM},
   npc_singer:{model:'mage',h:60,foot:13,tint:'#BFEFFF',anim:NPC_ANIM},
   npc_baker:{model:'barbarian',h:60,foot:14,tint:'fire',own:false,anim:NPC_ANIM},
+  npc_bellringer:{model:'rogue',h:58,foot:13,tint:'lightning',own:false,anim:NPC_ANIM},
   /* חיית המחמד (pet.js): pet_<חיה><שלב>. הגובה על המסך מ-PET (stages[].h), כי גם הדו-ממד משתמש בו. anim: מה מנגנים בכל מצב של החיה */
   pet_piocho1:{model:'piocho1',foot:2,anim:DOG_ANIM},
   pet_piocho2:{model:'piocho2',foot:2,anim:DOG_ANIM},
@@ -114,7 +120,8 @@ const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',
   // צבע לכל אזור (WORLD.regions ב-world.js): bg הרקע, line הקרקע, pond המים. אזור שלא כתוב כאן: VIEW.world
   regions:{lake:{bg:'#1d3238',line:'#4f7a78',pond:'#2a6d8f'},
     ridge:{bg:'#2b3644',line:'#9fb3c4',pond:'#26384a'},   // הרכס הקפוא (פרק 3): שלג
-    desert:{bg:'#4a3522',line:'#d9a865',pond:'#6b2a14'}}};   // המדבר הבוער (פרק 4): חול, ובורות לבה
+    desert:{bg:'#4a3522',line:'#d9a865',pond:'#6b2a14'},   // המדבר הבוער (פרק 4): חול, ובורות לבה
+    storm:{bg:'#23222e',line:'#6e6a8a',pond:'#2a2440'}}};   // מגדלי הסערה (פרק 5): סלע רטוב בגשם, ושלוליות סגולות
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
