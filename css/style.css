@@ -699,3 +699,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .visnotes{flex-wrap:nowrap;align-items:stretch}.visnote{flex:1;min-height:48px;text-align:start}.visnote i{font-style:normal;color:var(--gold)}
 .visnotes .vbtn{flex:1;min-height:48px;margin:0}
 @media (orientation:portrait){.viswin .visbody{flex-direction:column}}
+/* אתגר יומי (challenge.js): הסימן בפס העליון בעולם */
+.chtag{font-size:12px;font-weight:800;color:var(--tide,#7FD6E8);background:rgba(10,12,20,.7);border-radius:10px;padding:2px 8px;white-space:nowrap}
+.chtag[hidden]{display:none}
+@media (orientation:portrait){.chtag{display:none}}   /* בטלפון עומד אין מקום בפס העליון. האתגר ביומן */
