@@ -112,7 +112,7 @@ const wGateCol=k=>k==='home'?C.chalk:wIsPath(k)?C.tide:C.lilac;
 let wRet=null;   // השער שממנו נכנסו לזירה: בסוף הריצה חוזרים אליו (againBtn ב-input.js)
 
 /* ---- מעבר בין מקומות ---- */
-function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden=!on;if(!on){$('wPanel').hidden=true;wnpcOff();fishOff()}}   // fishOff: כפתור הדיג (fishing.js)   // wnpcOff: הדמויות בעולם (worldnpc.js)
+function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden=!on;$('chTag').hidden=!on;if(!on){$('wPanel').hidden=true;wnpcOff();fishOff()}}   // wnpcOff: הדמויות בעולם (worldnpc.js)   // fishOff: הדיג (fishing.js)
 // at: 'home' (מהכפר, או מהאזור הקודם), id של שער (חזרה מהזירה) או של דרך (חזרה מאזור אחר). reg: איזה אזור, ברירת המחדל האחו
 function enterWorld(at,reg){
   wRet=null;reset();S.mode='play';
@@ -127,6 +127,7 @@ function enterWorld(at,reg){
   banner(at==='home'?T(R.enter||'w.enter'):wGateName(at),C.gold);
   worldUi(true);
   fishMealOn();   // ארוחה מהפונדקאית: חיזוק בעולם (fishing.js)
+  challengeEnter();   // אתגר יומי (challenge.js)
   if(reg!=='meadow')questEvent('story',reg);   // קווסט עלילה "להגיע לאגם" (quests.js)
 }
 // דרך לאזור אחר. חוזרים לאזור הקודם ליד הדרך שממנה יצאו
@@ -158,7 +159,8 @@ function wSpawn(G,i){
   if(!ETYPES[G.type])return;const Z=wZone(G);
   for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp);
     e.dmg*=Z.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);   // affixRoll: אולי אויב מיוחד (affix.js). storySafe: אחרי שפנס האדמה נדלק (story.js)
-    e.xp=0;e.home=i;e.creature=!!G.creature}   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
+    e.xp=0;e.home=i;e.creature=!!G.creature;
+    challengeSpawn(e)}   // החוק של היום (challenge.js)   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
 }
 function wFoes(dt){
   const FO=WR().foes,alive=FO.map(()=>0);
