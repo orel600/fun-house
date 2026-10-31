@@ -133,9 +133,10 @@ const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
 const R3D={shown:new WeakSet(),nid:0,on:false,ready:false,failed:false,want:true,actors:new Map(),dying:[],tmpl:{},clips:{},props:{},stats:{}};
 /* גרפיקה: תלת-ממד כברירת מחדל. אם WebGL לא עולה, או שהמשחק איטי בשניות הראשונות, עוברים לבד לדו-ממד, עם הודעה אחת.
-   בחירה של השחקן בחלון ההגדרות ('zm-gfx') מנצחת תמיד, ואז לא מודדים. המעבר האוטומטי נזכר ('zm-gfx-auto'), כדי לא להאט שוב בפעם הבאה */
-const GFX_AUTO={minFps:24,warm:1.5,secs:4};   // מתחת ל-minFps ממוצע: דו-ממד. warm: שניות ראשונות שלא נמדדות (טעינה). secs: כמה שניות משחק מודדים
-try{const u=localStorage.getItem('zm-gfx');R3D.user=!!u;R3D.want=u?u==='3d':localStorage.getItem('zm-gfx-auto')!=='2d'}catch(e){}
+   בחירה של השחקן בחלון ההגדרות ('zm-gfx') מנצחת תמיד, ואז לא מודדים. פתיחה איטית נספרת (GFX_AUTO.key), ורק אחרי strikes פתיחות איטיות ברצף
+   הדו-ממד נזכר לפעם הבאה, כדי שטעינה איטית אחת לא תנעל טלפון חזק על דו-ממד (אוראל, אייפון 16, 1.11.2026). פתיחה מהירה מאפסת את הספירה */
+const GFX_AUTO={minFps:24,warm:3,secs:4,strikes:2,key:'zm-gfx-slow'};   // מתחת ל-minFps ממוצע: דו-ממד. warm: שניות ראשונות שלא נמדדות (טעינה). secs: כמה שניות משחק מודדים
+try{const u=localStorage.getItem('zm-gfx');R3D.user=!!u;R3D.want=u?u==='3d':(+localStorage.getItem(GFX_AUTO.key)||0)<GFX_AUTO.strikes}catch(e){}
 
 // נקרא מ-render3d בכל פריים שמצויר: סופר פריימים בזמן משחק אמיתי, ופעם אחת מחליט
 function gfxMeasure(now){
@@ -144,7 +145,8 @@ function gfxMeasure(now){
   m.t+=gap;if(m.t<GFX_AUTO.warm)return;m.n++;
   if(m.t<GFX_AUTO.warm+GFX_AUTO.secs)return;
   R3D.measured=true;const fps=m.n/GFX_AUTO.secs;R3D.fps=Math.round(fps);
-  if(fps<GFX_AUTO.minFps){try{localStorage.setItem('zm-gfx-auto','2d')}catch(e){}gfxAuto()}
+  try{if(fps<GFX_AUTO.minFps)localStorage.setItem(GFX_AUTO.key,(+localStorage.getItem(GFX_AUTO.key)||0)+1);else localStorage.removeItem(GFX_AUTO.key)}catch(e){}
+  if(fps<GFX_AUTO.minFps)gfxAuto();
 }
 // מעבר אוטומטי לדו-ממד, בלי לשמור כבחירה של השחקן. ההודעה מוצגת כשהמשחק רץ (main.js)
 function gfxAuto(){R3D.want=false;R3D.on=false;if(R3D.cvs)R3D.cvs.hidden=true;if(!R3D.user)R3D.note=true;showGfx()}
