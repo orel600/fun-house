@@ -119,7 +119,7 @@ function gApply(s,k){
   P.sw.dmg*=m('sdmg');P.gn.dmg*=m('gdmg');P.speed*=m('speed');P.magnet*=m('magnet');
   P.maxHp+=k*(s.hp||0);P.regen+=k*(s.regen||0);
   if(s.aspd){P.sw.cd/=m('aspd');P.gn.cd/=m('aspd')}   // קצב התקפה (נקודות דמות, stats.js)
-  if(s.arc)P.sw.arc*=m('arc');P.gn.multi+=k*(s.multi||0);P.gn.pierce+=k*(s.pierce||0);P.whirl+=k*(s.whirl||0);   // עץ הסקילים (stats.js)
+  if(s.hpPct)P.maxHp*=m('hpPct');if(s.arc)P.sw.arc*=m('arc');P.gn.multi+=k*(s.multi||0);P.gn.pierce+=k*(s.pierce||0);   // עץ הסקילים (stats.js)
   P.def+=k*(s.def||0);P.crit+=k*(s.crit||0);P.loot+=k*(s.loot||0);
 }
 // אחרי שינוי בציוד: מורידים את מה שהיה ומלבישים את החדש, מיד. חיים שנוספו מתמלאים, ונשק חדש נכנס ליד
@@ -340,7 +340,7 @@ $('ovGear').addEventListener('click',e=>{
   if(b.id==='gearClose'){gearClose();return}
   if(b.dataset.act==='stat'){statAdd(b.dataset.k);statBadge();gRedraw();return}
   if(b.dataset.act==='tree'||b.dataset.act==='back'){GUI.view=b.dataset.act==='tree'?'tree':null;GUI.sel=null;gRedraw();return}
-  if(b.dataset.act==='learn'){treeLearn(b.dataset.b);statBadge();gRedraw();return}
+  if(b.dataset.act==='learn'){treeLearn(b.dataset.b,b.dataset.id);statBadge();gRedraw();return}
   const a=b.dataset.act,sel=GUI.sel;
   if(b.dataset.tab){GUI.tab=b.dataset.tab;GUI.sel=null}
   else if(b.dataset.id)GUI.sel={id:b.dataset.id};
