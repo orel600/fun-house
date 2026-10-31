@@ -125,6 +125,7 @@ function enterVillage(){
   saveNow();
   villageUi(true);
   storyVillage();   // ההקדמה של העלילה, פעם אחת (story.js)
+  homeVillage();   // פנס שנדלק: תושב חוזר וראש הכפר מספר (homecoming.js)
   dailyVillage();   // המתנה היומית (daily.js)
   visitVillage();   // ביקור אצל חבר: פרופיל ציבורי ומתנות שמחכות (visit.js)
 }

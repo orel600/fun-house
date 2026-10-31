@@ -19,6 +19,7 @@ function saveBlank(){return{
   gearPity:0,                                       // כמה אויבים ברצף לא הפילו ציוד (LOOT.gear ב-loot.js)
   daily:{day:'',first:{}},                          // איזה סוג אויב כבר הופל היום, לבונוס ההריגה הראשונה (loot.js)
   met:{},                                           // דמויות בעולם שכבר נמצאו: {fisher:1} (worldnpc.js)
+  home:{back:{}},                                   // אחרי איזה פנס התושב כבר חזר לכפר: {earth:1} (homecoming.js)
   agePity:0,                                        // כמה כישלונות ברצף ב-Aging, למזל הרך (aging.js)
   pet:{kind:null,stage:0,xp:0,fed:0,buff:0},                     // חיית המחמד (pet.js). kind: איזו חיה מ-PET.kinds (null: PET.default, פיוחו של ניר). stage: 0-2. fed: כמה גזרים אכלה, buff: כמה שניות נשארו לחיזוק מהגזר
   ts:0}}
