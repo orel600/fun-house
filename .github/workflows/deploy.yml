@@ -5,8 +5,10 @@
 name: פרסום ל-Vercel
 
 # רק כשמשתנים קבצי המשחק: ב-Vercel החינמי יש 100 פרסומים ביום, ושינוי בתוכנית או ביומן לא צריך קישור חדש
+# PR בטיוטה (עבודה באמצע) לא מתפרסם: כך נחסכים רוב הפרסומים. כשה-PR מסומן "מוכן", הוא מתפרסם (ready_for_review)
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths: [index.html, manifest.webmanifest, sw.js, 'css/**', 'js/**', 'icons/**', 'skins/**', 'sounds/**', .github/workflows/deploy.yml]
   push:
     branches: [main]
@@ -23,6 +25,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
