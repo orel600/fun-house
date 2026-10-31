@@ -73,7 +73,8 @@ const WORLD={
     // snow: פתיתי שלג בקנבס (wSnow). ponds כאן הם סדקים בקרח שאי אפשר לעבור
     ridge:{
       region:'ridge',back:'lake',enter:'w.enter.ridge',noNpc:true,snow:true,ground:'#33404E',pondCol:['#1C2A3A','#9FD8F0'],
-      home:{x:0,y:-600,r:44},gates:{},paths:{},
+      home:{x:0,y:-600,r:44},gates:{},
+      paths:{desert:{x:-860,y:-590,r:44,need:'ice'}},   // פרק 4: אחרי שפנס הקרח נדלק, מעבר בצפון-מערב שיורד למדבר הבוער
       ponds:[{x:-120,y:40,r:150},{x:420,y:-160,r:90},{x:-560,y:300,r:110}],
       fields:[{kind:'pine',n:10,x:-560,y:-260,r:230},{kind:'pine',n:6,x:250,y:280,r:180},{kind:'pine',n:4,x:-820,y:80,r:120},
               {kind:'iceRock',n:6,x:620,y:-330,r:190},{kind:'iceRock',n:4,x:-300,y:480,r:140},{kind:'rock',n:4,x:180,y:-260,r:130}],
@@ -90,6 +91,28 @@ const WORLD={
         {id:'far',  to:1e9, hp:1.8,dmg:1.35,speed:1.08,leash:480,back:45}
       ],
       decor:{trees:66,hills:16,rocks:0.35}
+    },
+    // פרק 4: המדבר הבוער (docs/story.md). חום, אויבים חמים (מים!), סלעי להבה עם אודם, ופנס האש בפינה הדרום-מערבית (STORY.lanterns.fire).
+    // heat: אדי חום ורוח חול בקנבס (wHeat). ponds כאן הם בורות לבה שאי אפשר לעבור
+    desert:{
+      region:'desert',back:'ridge',enter:'w.enter.desert',noNpc:true,heat:true,ground:'#5A4129',pondCol:['#7A2A10','#FF8A3D'],
+      home:{x:0,y:-600,r:44},gates:{},paths:{},
+      ponds:[{x:140,y:20,r:140},{x:-420,y:-140,r:95},{x:560,y:300,r:110}],
+      fields:[{kind:'cactus',n:8,x:-560,y:-300,r:220},{kind:'cactus',n:6,x:300,y:-320,r:170},{kind:'cactus',n:4,x:-120,y:420,r:140},
+              {kind:'emberRock',n:6,x:640,y:-120,r:180},{kind:'emberRock',n:4,x:-700,y:160,r:140},{kind:'rock',n:4,x:220,y:330,r:130}],
+      foes:[
+        {type:'flamewisp',n:2,x:-190,y:-420,r:110},{type:'flamewisp',n:2,x:200,y:-420,r:110},
+        {type:'cinderscorp',n:2,x:-420,y:-260,r:130},{type:'flamewisp',n:3,x:380,y:-180,r:140},{type:'cinderscorp',n:3,x:660,y:-120,r:150},
+        {type:'cinderscorp',n:3,x:-640,y:180,r:150},{type:'flamewisp',n:3,x:-60,y:330,r:140},{type:'cinderscorp',n:3,x:640,y:420,r:150},
+        {type:'cinderscorp',creature:true,n:2,x:640,y:-120,r:120},{type:'flamewisp',creature:true,n:2,x:-560,y:-300,r:130}
+      ],
+      // קשה מהרכס: מי שהגיע לכאן כבר הדליק שלושה פנסים
+      zones:[
+        {id:'start',to:360, hp:0.9,dmg:0.65,speed:0.8, leash:260,back:25},
+        {id:'near', to:800, hp:1.5,dmg:1.15,speed:1,  leash:380,back:35},
+        {id:'far',  to:1e9, hp:2.1,dmg:1.5, speed:1.1,leash:480,back:45}
+      ],
+      decor:{trees:30,hills:22,rocks:0.7}
     }
   }
 };
@@ -296,6 +319,7 @@ function drawWorld(){
   eventsDraw();   // אירועים (events.js)
   if(WR().fog)wFog();
   if(WR().snow)wSnow();   // הרכס הקפוא
+  if(WR().heat)wHeat();   // המדבר הבוער
 }
 // מים שאי אפשר ללכת בהם: דוחפים החוצה, כמו מעץ
 function wPonds(o){for(const p of WR().ponds||[]){const dx=o.x-p.x,dy=o.y-p.y,d=Math.hypot(dx,dy)||1,min=p.r+(o.r||12);if(d<min){o.x=p.x+dx/d*min;o.y=p.y+dy/d*min}}}
@@ -321,6 +345,22 @@ function wSnow(){
     const sp=0.6+hash(i,21)*0.8,bx=hash(i,22)*W+Math.sin(t*0.7+i)*F.sway+t*F.fall*0.35*sp,by=hash(i,23)*W+t*F.fall*sp;
     const x=P.x-F.spread+(((bx-P.x)%W)+W)%W,y=P.y-F.spread+(((by-P.y)%W)+W)%W,r=F.size[0]+hash(i,24)*(F.size[1]-F.size[0]);
     ctx.globalAlpha=F.alpha*(0.5+hash(i,25)*0.5);ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill()}
+  ctx.restore();
+}
+/* חום: אדי חום שמתנודדים מעל החול, גרגרי חול שהרוח סוחפת לרוחב, וגוון כתום חם. כמו השלג: הכל מחושב מהזמן, בלי מערך חי */
+const HEAT={haze:14,sand:60,spread:560,wind:150,size:[1,2.6],alpha:0.55,warm:0.08};
+function wHeat(){
+  const t=fxNow(),F=HEAT,W=F.spread*2;ctx.save();
+  ctx.fillStyle='rgba(255,140,60,'+F.warm+')';ctx.fillRect(P.x-F.spread*2,P.y-F.spread*2,W*2,W*2);
+  ctx.strokeStyle='rgba(255,220,170,0.12)';ctx.lineWidth=3;
+  for(let i=0;i<F.haze;i++){   // אדי חום: קווים גליים שעולים לאט
+    const bx=P.x-F.spread+hash(i,31)*W,by=P.y-F.spread+((((hash(i,32)*W-t*18)%W)+W)%W),len=60+hash(i,33)*90;
+    ctx.beginPath();for(let k=0;k<=8;k++){const x=bx+k/8*len,y=by+Math.sin(t*3+i+k*0.9)*4;k?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke()}
+  ctx.fillStyle='#F2D19A';
+  for(let i=0;i<F.sand;i++){   // רוח חול: גרגרים שעפים לרוחב
+    const sp=0.6+hash(i,34)*0.9,bx=hash(i,35)*W+t*F.wind*sp,by=hash(i,36)*W+Math.sin(t*1.3+i)*14;
+    const x=P.x-F.spread+(((bx-P.x)%W)+W)%W,y=P.y-F.spread+(((by-P.y)%W)+W)%W,r=F.size[0]+hash(i,37)*(F.size[1]-F.size[0]);
+    ctx.globalAlpha=F.alpha*(0.4+hash(i,38)*0.6);ctx.fillRect(x,y,r*2.4,r)}
   ctx.restore();
 }
 // שלטים מתחת לשערים, וחצים בקצה המסך אל השערים ואל הכפר. מעל הכל, בשני המצבים

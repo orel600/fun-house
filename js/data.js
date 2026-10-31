@@ -38,7 +38,15 @@ const ETYPES={
     drop:{cloth:[0.6,2],essence:[0.4,1],sapphireC:[0.08,1]},elite:{essence:[1,3],sapphireC:[0.5,1]}},
   // שומר הקרח: הבוס של פרק 3, ליד פנס הקרח (STORY.lanterns.ice). warden: לא יצור משאב
   frostwarden:{hp:140,r:20,speed:56,xp:0,dmg:17,tags:['ice','metal'],warden:true,
-    drop:{coins:[1,50],sapphire:[1,2],sapphireC:[1,3],sapphireF:[0.2,1],plate:[0.6,2]}}
+    drop:{coins:[1,50],sapphire:[1,2],sapphireC:[1,3],sapphireF:[0.2,1],plate:[0.6,2]}},
+  // המדבר הבוער (פרק 4, story.js): אויבים חמים. מים חזקים נגדם (DMG.chart), ואש כמעט לא עובדת. רק בעולם, לא בזירה
+  cinderscorp:{hp:78,r:15,speed:62,xp:3,dmg:15,tags:['fire','stone'],  // עקרב אבן-אש: מים ×2.25, אש וברק כמעט לא עובדים
+    drop:{coins:[0.8,3],stone:[0.5,2],copper:[0.3,1],rubyC:[0.1,1]},elite:{rubyC:[1,2],copper:[1,3],ruby:[0.12,1]}},
+  flamewisp:{hp:36,r:12,speed:110,xp:2,dmg:11,tags:['fire','flying'],  // רוח אש מרחפת ומהירה: מים ×1.5
+    drop:{essence:[0.5,1],resin:[0.3,1],rubyC:[0.08,1]},elite:{essence:[1,3],rubyC:[0.5,1]}},
+  // שומר האש: הבוס של פרק 4, ליד פנס האש (STORY.lanterns.fire). warden: לא יצור משאב
+  emberwarden:{hp:160,r:20,speed:56,xp:0,dmg:18,tags:['fire','stone'],warden:true,
+    drop:{coins:[1,60],ruby:[1,2],rubyC:[1,3],rubyF:[0.2,1],copper:[0.6,3]}}
 };
 // הבוסים לפי id (היום יש אחד, type:'boss' ב-boss.js). drop כמו באויבים, כולל החלק שרק הוא מפיל (RES, משפחת boss)
 const BOSSES={

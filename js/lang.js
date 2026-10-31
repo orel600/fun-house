@@ -434,7 +434,7 @@ const TEXT={
   'q.kind.village':{he:'כפר',en:'Village'},
   'q.kind.story':{he:'⭐ עלילה',en:'⭐ Story'},
   // מטרה מסוג 'story' (quests.js): הטקסט לפי מה צריך לקרות
-  'qo.story':{he:w=>({shard:'למצוא את הרסיס הזוהר',lake:'להגיע לאגם הערפל',tide:'להפיל את שומר המים',ridge:'לטפס לרכס הקפוא',frost:'להפיל את שומר הקרח'})[w]||'',en:w=>({shard:'Find the glowing shard',lake:'Reach the Mist Lake',tide:'Defeat the Tide Warden',ridge:'Climb to the Frost Ridge',frost:'Defeat the Frost Warden'})[w]||''},
+  'qo.story':{he:w=>({shard:'למצוא את הרסיס הזוהר',lake:'להגיע לאגם הערפל',tide:'להפיל את שומר המים',ridge:'לטפס לרכס הקפוא',frost:'להפיל את שומר הקרח',desert:'לרדת למדבר הבוער',blaze:'להפיל את שומר האש'})[w]||'',en:w=>({shard:'Find the glowing shard',lake:'Reach the Mist Lake',tide:'Defeat the Tide Warden',ridge:'Climb to the Frost Ridge',frost:'Defeat the Frost Warden',desert:'Descend into the Burning Desert',blaze:'Defeat the Ember Warden'})[w]||''},
   'foe.warden':{he:'את השומר האבן',en:'the Stone Warden'},
   // העלילה, פרק 1: פנס האדמה (story.js, docs/story.md)
   // אירועים בעולם (events.js)
@@ -471,6 +471,21 @@ const TEXT={
   'q.s3Warden':{he:['⭐ שומר הקרח','בקצה הרכס, ליד פנס הקרח, ישן משהו שנראה כמו גבעת שלג. זה לא גבעת שלג. הוא יורה רסיסי קרח, אז תזוז הרבה.'],en:['⭐ The Frost Warden','At the edge of the ridge, by the Ice Lantern, sleeps something that looks like a snow hill. It is not a snow hill. It shoots ice shards, so keep moving.']},
   'foe.rimeknight':{he:'אבירי כפור',en:'rime knights'},'foe.frostwraith':{he:'רוחות שלג',en:'frost wraiths'},'foe.frostwarden':{he:'שומרי קרח',en:'frost wardens'},
   'node.pine':{he:'אורנים מושלגים',en:'snowy pines'},'node.iceRock':{he:'גבישי קרח',en:'ice crystals'},
+  // העלילה, פרק 4: פנס האש, המדבר הבוער (story.js, WORLD.regions.desert ב-world.js, docs/story.md)
+  'w.region.desert':{he:'המדבר הבוער',en:'The Burning Desert'},
+  'w.enter.desert':{he:'המדבר הבוער. החול לוהט, והאוויר רועד מחום',en:'The Burning Desert. The sand is scorching, and the air shimmers with heat'},
+  'w.path.desert':{he:'למדבר הבוער',en:'To the Burning Desert'},
+  'w.pathInfo.desert':{he:'מעבר שיורד מההרים לחול, ונפתח כשפנס הקרח נדלק. חם שם. תביא מים.',en:'A pass down from the mountains to the sand, opened when the Ice Lantern lit. It is hot down there. Bring water.'},
+  'story.fire.rise':{he:'שומר האש מתלקח מתוך החול!',en:'The Ember Warden flares up out of the sand!'},
+  'story.fire.name':{he:'שומר האש',en:'Ember Warden'},
+  'story.fire.lit':{he:'🏮 פנס האש דולק! החול מתקרר קצת',en:'🏮 The Fire Lantern burns! The sand cools a little'},
+  'story.fire.reward':{he:'פנס האש נדלק',en:'The Fire Lantern is lit'},
+  'story.fire.head':{he:'ארבעה! ארבעה פנסים! הנחתי את המרק על החלון והוא התחמם לבד, מהאור. סוף סוף מרק חם. ושמת לב לשמיים בלילה? משהו מהבהב שם, מעל המגדלים הרחוקים... כמו ברק שמחכה.',en:'Four! Four lanterns! I set my soup on the windowsill and it warmed up by itself, from the light. Hot soup at last. And have you seen the night sky? Something flickers out there, above the distant towers... like lightning, waiting.'},
+  'q.s4Sand':{he:['⭐ הדרך לחול','מאז שפנס הקרח דולק, הרוח מההרים מביאה ריח של חול חם. יש מעבר שיורד מהרכס למדבר. פעם הלכתי שם יחף. פעם אחת.'],en:['⭐ The Road to the Sand','Since the Ice Lantern lit, the mountain wind smells of hot sand. There’s a pass from the ridge down to the desert. I once walked there barefoot. Once.']},
+  'q.s4Ember':{he:['⭐ אודם מהלהבה','פנס האש צריך אודם שנולד באש. הוא בוער בתוך סלעי הלהבה. העקרבים שם עשויים מאבן ומגחלים, ועוקצים כמו הדודה שלי. מים מכבים להם את החשק.'],en:['⭐ Ruby from the Flame','The Fire Lantern needs ruby born in fire. It burns inside the ember rocks. The scorpions there are made of stone and coals, and they sting like my aunt. Water puts out their mood.']},
+  'q.s4Warden':{he:['⭐ שומר האש','ליד פנס האש שוכב גל של גחלים. כשהוא קם, הוא שולח טבעות אש. בכל טבעת יש פתח אחד: תמצא אותו ותעבור דרכו, או תתרחק.'],en:['⭐ The Ember Warden','By the Fire Lantern lies a heap of glowing coals. When it rises, it sends out rings of fire. Each ring has one gap: find it and slip through, or stay back.']},
+  'foe.cinderscorp':{he:'עקרבי אבן-אש',en:'cinder scorpions'},'foe.flamewisp':{he:'רוחות אש',en:'flame wisps'},'foe.emberwarden':{he:'שומרי אש',en:'ember wardens'},
+  'node.cactus':{he:'קקטוסים',en:'cacti'},'node.emberRock':{he:'סלעי להבה',en:'ember rocks'},
   'q.s2Mist':{he:['⭐ הדרך בערפל','מאז שהפנס דולק, הרסיס מושך צפון-מערבה, ליער. שם יש שביל ישן לאגם. הדייג אומר שהוא לא דג שם מאז שהדגים התחילו לדוג אותו.'],en:['⭐ The Path in the Mist','Since the lantern lit, the shard pulls north-west, into the woods. There’s an old trail to the lake. The fisher says he stopped fishing there when the fish started fishing him.']},
   'q.s2Glow':{he:['⭐ מים שזוהרים','פנס המים צריך מים שזוכרים איך לזהור. הם נוצצים בתוך אבני הגאות. אה, ויש שם אבירים חלודים שטבעו מזמן. הם לא אוהבים אורחים. וגם לא ברקים.'],en:['⭐ Water That Glows','The Water Lantern needs water that remembers how to glow. It sparkles inside the tide rocks. Oh, and there are rusty knights down there who drowned long ago. They don’t like guests. Or lightning.']},
   'q.s2Warden':{he:['⭐ שומר המים','בפינה הרחוקה של האגם עומד פנס המים. משהו ענק ורטוב שוכב לידו ולא מוכן לזוז. תעיר אותו, ותשכיב אותו לישון. לתמיד.'],en:['⭐ The Tide Warden','In the far corner of the lake stands the Water Lantern. Something huge and wet lies beside it and won’t budge. Wake it up, and put it back to sleep. For good.']},
