@@ -29,6 +29,7 @@ const WORLD={
     {type:'crawler',creature:true,n:2,x:785,y:-385,r:105},{type:'sprite',creature:true,n:2,x:-335,y:65,r:115}
   ],
   aggro:240,                             // מאיזה מרחק אויב רודף
+  attackRange:260,                       // ההתקפה האוטומטית בוחרת רק מטרות עד המרחק הזה, וחץ או קסם לא פוגעים במה שרחוק ממנו (ניר, 31.10.2026: "בעולם הפתוח טווח ההתקפה צריך להיות מוגבל יותר"). בזירה הטווח של הנשק עצמו (אוראל)
   wander:0.4,                            // מהירות ההסתובבות ליד הבית, יחסית לרדיפה
   far:300,                               // קבוצה שנוקתה חוזרת רק כשהשחקן רחוק ממנה לפחות כך, כדי שלא תצוץ מול העיניים
   /* כמה קשה, לפי המרחק של בית הקבוצה מהשער לכפר: ככל שמתרחקים, קשה יותר. to: עד איזה מרחק. hp, dmg, speed: פי כמה מהרגיל (ETYPES).
@@ -130,7 +131,7 @@ function worldUpdate(dt){
   wFoes(dt);if(S.mode!=='play')return;
   const hitable=S.nd.list.length?enemies.concat(S.nd.list):enemies;   // קליעים פוגעים גם במקורות משאבים (nodes.js), כמו בזירה
   for(const b of pb){shotFly(b,dt);
-    for(const e of hitable){if(e.dead||b.hit.has(e)||b.life<=0)continue;
+    for(const e of hitable){if(e.dead||b.hit.has(e)||b.life<=0||Math.hypot(e.x-P.x,e.y-P.y)-e.r>WORLD.attackRange)continue;
       if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+4)shotHit(b,e)}}
   pb=pb.filter(b=>b.life>0);
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}

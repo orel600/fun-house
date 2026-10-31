@@ -319,6 +319,9 @@ function worldBot(m,L,god){
     if(L.wDeathTxt==null){L.wDeathTxt=document.getElementById('wLost').innerText.replace(/\s+/g,' ').trim();return stay()}
     document.getElementById('wRespawn').click();L.wRespawn=!!S.vil&&document.getElementById('ovWDeath').hidden;m.wp='done';return L}
   if(god&&m.wp!=='die')P.hp=P.maxHp;
+  // טווח ההתקפה בעולם: כל מכה ישירה (לא ברק שקפץ) נמדדת, והרחוקה ביותר נרשמת
+  if(!m.hitHook){m.hitHook=1;const d0=damage;damage=function(e,b,w,a,t,ch){if(S.wd&&!ch){const d=Math.hypot(e.x-P.x,e.y-P.y)-(e.r||0);L.wHitMax=Math.max(L.wHitMax||0,Math.round(d));L.wHits=(L.wHits||0)+1}return d0.apply(this,arguments)}}
+  L.wRange=WORLD.attackRange;
   if(!m.wp){m.wp='gather';L.wEnter=!S.vil&&S.mode==='play';L.wName=document.getElementById('wName').textContent;L.wHud=vis('whud')&&!vis('vhud');
     L.wNodes=S.nd.list.length;L.wFoes=enemies.length;L.wCreatures=enemies.filter(e=>e.creature).length;m.w0=SAVE.bag.wood||0;m.wt=W.t;
     // המפלצות הראשונות ליד השער: קלות. אחת נזרקת רחוק מהבית שלה (צריכה לחזור), וקבוצה אחת מופלת (צריכה לחזור אחרי זמן)
@@ -856,6 +859,7 @@ function worldBot(m,L,god){
   const loud=au.ids.filter(id=>au.grp[id]==='fight'&&au.rate[id]>8);
   check(!loud.length,'קצב צלילים בשנייה: '+au.ids.map(id=>id+' '+au.rate[id]).join(', ')+(loud.length?' · יותר מדי: '+loud.join(', '):'')+
     ' · התנגנו בריצה: '+(au.ids.map(id=>au.played[id]?id+' '+au.played[id]:'').filter(Boolean).join(', ')||'0 (בלי צליל בדפדפן ללא ממשק)'));
+  check(L.wHits>0&&L.wHitMax<=L.wRange,'טווח התקפה בעולם: '+(L.wHits||0)+' מכות, הרחוקה '+(L.wHitMax??'-')+' (מותר עד '+L.wRange+')');
   check(edge.wIn&&edge.n>0&&edge.inside&&!edge.left,'מבוקש בקצה העולם: '+(edge.wIn?'לא יצא מהגבול':'יצא מהגבול')+', '+edge.n+' שלל'+(edge.inside?' נחת בפנים':' נחת בחוץ')+
     (edge.left?', '+edge.left+' לא נאספו':', הכל נאסף')+' (הוחזרו פנימה: '+edge.kept+')');
   check(edge.gid&&edge.gBag&&edge.gSaved&&edge.gGround,'ציוד מאויב: '+(edge.gid||'לא נפל')+(edge.gBag?' בתרמיל':' לא בתרמיל')+(edge.gSaved?', נשמר':', לא נשמר')+

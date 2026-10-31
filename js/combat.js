@@ -3,6 +3,7 @@ const HITFX={floats:70,parts:450,crit:0.12,critMul:2.5};   // תקרה לטקס�
 function nearest(maxD){let b=null,bd=maxD;for(const e of enemies){if(e.dead)continue;const d=Math.hypot(e.x-P.x,e.y-P.y)-e.r;if(d<bd){bd=d;b=e}}return b}
 // במה ההתקפה האוטומטית מכוונת: האויב הקרוב, או מקור משאבים (nodes.js) כשעומדים לידו והוא קרוב יותר
 function aimTarget(maxD){
+  if(S.wd)maxD=Math.min(maxD,WORLD.attackRange);   // בעולם הפתוח הטווח קצר יותר (WORLD.attackRange ב-world.js)
   const e=nearest(maxD),n=nodeNear(),gap=t=>Math.hypot(t.x-P.x,t.y-P.y)-t.r;
   return n&&(!e||gap(n)<gap(e))?n:e;
 }
