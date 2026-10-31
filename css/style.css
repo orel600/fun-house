@@ -582,3 +582,30 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 /* הדמות בתלת-ממד בחלון הציוד (doll3d.js): הקנבס ממלא את מקום הבובה, והאימוג'י מוסתר */
 .gfig.d3 span{visibility:hidden}
 .gfig .doll3d{position:absolute;inset:-12% -20%;width:140%;height:124%;pointer-events:none}   /* גדול מהמשבצת: הדמות ממלאת את האמצע */
+
+/* מתנה יומית (daily.js): שני טורים. משמאל 7 הימים (היום מאיר, יום 7 תיבה גדולה), מימין מה מקבלים היום והכפתור */
+#ovDaily{z-index:7;background:rgba(10,12,20,.6)}
+.dailywin{width:min(760px,92vw);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;padding:12px 14px;color:var(--chalk);animation:dpop .16s ease-out}
+@keyframes dpop{from{transform:scale(.9);opacity:0}}
+.dbody{display:flex;gap:14px;min-height:0;align-items:stretch}
+.dgrid{flex:1.5;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;align-content:start}
+.dday{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:72px;padding:6px 4px;border-radius:12px;
+  border:2px solid #3A4566;background:linear-gradient(#2C3654,#1D2438);font:800 13px/1.1 var(--body);text-align:center}
+.dday small{font:800 12px var(--body);opacity:.8}
+.dday span{display:flex;align-items:center;gap:2px;font-size:13px}
+.dday .ri{width:30px;height:30px}.dday span .ri{width:16px;height:16px}
+.dday.big{grid-column:span 2}
+.dday .dchest{width:52px;height:52px;object-fit:contain}
+.dday.now{border-color:var(--gold);box-shadow:0 0 14px rgba(244,199,79,.55);animation:tpulse 1.2s ease-in-out infinite alternate}
+.dday.done{opacity:.5}
+.dday i{position:absolute;top:2px;inset-inline-end:6px;color:#6BD66B;font:900 18px var(--body);font-style:normal}
+.dside{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.dside h3{margin:0;color:var(--gold);font:900 20px var(--body)}
+.dside ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font:700 15px var(--body)}
+.dside li{display:flex;align-items:center;gap:6px}.dside li .ri{width:26px;height:26px}
+.dside .dim{font-size:13px;opacity:.8;margin:2px 0}
+.dside .vbtn{margin-top:auto;min-height:48px}
+#dBtn .ndot{min-width:14px;width:14px;height:14px;padding:0;top:-4px;inset-inline-end:-4px}
+.world #dBtn{display:none}
+@media (orientation:landscape) and (max-height:500px){.dday{min-height:58px}.dday .dchest{width:42px;height:42px}.dailywin{padding:8px 10px}}
+@media (orientation:portrait){.dbody{flex-direction:column}}

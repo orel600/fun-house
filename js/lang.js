@@ -205,6 +205,18 @@ const TEXT={
   again:{he:'עוד ריצה',en:'Run again'},
   statLoot:{he:'שלל שהגיע הביתה',en:'Loot brought home'},
 
+
+  // מתנה יומית (js/daily.js)
+  'daily.title':{he:'מתנה יומית',en:'Daily gift'},
+  'daily.sub':{he:'7 ימים',en:'7 days'},
+  'daily.btn':{he:'מתנה',en:'Gift'},
+  'daily.day':{he:n=>'יום '+n,en:n=>'Day '+n},
+  'daily.chest':{he:'תיבה: אבני מגן או פריט ציוד',en:'Chest: ward gems or a gear item'},
+  'daily.take':{he:'לקחת',en:'Take'},
+  'daily.keep':{he:'פספסת יום? לא נורא, ממשיכים מאיפה שעצרת',en:'Missed a day? No problem, you pick up where you left off'},
+  'daily.back':{he:'מחר יש עוד מתנה',en:'Another gift tomorrow'},
+  'daily.got':{he:s=>'מתנה: '+s,en:s=>'Gift: '+s},
+
   // הכפר (js/village.js)
   'vil.home':{he:'הכפר שלך',en:'Your village'},
   'vil.gift':{he:'מתנת פתיחה: מספיק למנסרה ולמכרה',en:'A welcome gift: enough for a sawmill and a mine'},

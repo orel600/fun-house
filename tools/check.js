@@ -56,6 +56,13 @@ function botStep({god,en}){
       if(L.lootTxt==null)L.lootTxt=document.getElementById('sLoot').innerText.replace(/\s+/g,' ').trim();
       else{m.home=1;document.getElementById('againBtn').click()}}
     return L}
+  // מתנה יומית (daily.js): נפתחת לבד בכניסה הראשונה לכפר היום. צעד אחד מסתכלים (צילום), ובצעד הבא לוקחים
+  if(vis('ovDaily')){const b=document.querySelector('#dailyWin [data-act="take"]');
+    if(L.dailyOpen==null)L.dailyOpen={at,now:document.querySelectorAll('#dailyWin .dday.now').length,days:document.querySelectorAll('#dailyWin .dday').length,want:DAILY.days.length};
+    else if(b&&L.dailyUi==null){const c=SAVE.bag.coins||0;b.click();L.dailyUi={got:(SAVE.bag.coins||0)-c,want:DAILY.days[0].coins,btn:document.getElementById('dBtn').hidden,
+      saved:JSON.parse(localStorage.getItem(SAVE_STORE.key)).daily.gift.n}}
+    else if(!b)dailyClose();
+    return L}
   if(S.mode!=='play'&&S.mode!=='gear'&&S.mode!=='forge')return L;   // gear, forge: מסך הציוד או הנפחייה פתוח בכפר
   if(S.vil)return villageBot(m,L);
   // הריצה הראשונה אחרי שלבשנו קשת בכפר: מתחילים איתה, והנזק שלה גדל
@@ -514,6 +521,14 @@ function worldBot(m,L,god){
     const poor=!vTrade('buy','stone');bagAdd('coins',20);const buy=vTrade('buy','stone')&&SAVE.bag.stone===5&&SAVE.bag.coins===10;
     localStorage.removeItem(SAVE_STORE.key);saveLoad();return{sell,poor,buy}});
   check(mk.sell&&mk.poor&&mk.buy,'שוק: '+(mk.sell?'מכירה עובדת':'מכירה נכשלה')+', '+(mk.poor?'בלי מטבעות אי אפשר לקנות':'קנה בלי כסף')+', '+(mk.buy?'קנייה עובדת':'קנייה נכשלה'));
+  // מתנה יומית: יום ראשון נותן, אותו יום לא נותן שוב, יום חדש מתקדם. יום 7 נותן תיבה, ואחריו הלוח מתחיל מחדש. בסוף מנקים
+  const dg=await page.evaluate(()=>{const r1=dailyClaim('t1'),c=SAVE.bag.coins||0,r2=dailyClaim('t1'),again=r2===null&&(SAVE.bag.coins||0)===c,r3=dailyClaim('t2');
+    const first=!!r1&&r1.i===0&&r1.got.coins===DAILY.days[0].coins,next=!!r3&&r3.i===1;
+    let last;for(let d=3;d<=7;d++)last=dailyClaim('t'+d);
+    const chest=last.i===6&&last.big&&Object.keys(last.got).some(k=>k==='gem'||GEAR.items[k]),wrap=dailyIdx()===0;
+    localStorage.removeItem(SAVE_STORE.key);saveLoad();return{first,again,next,chest,wrap}});
+  check(dg.first&&dg.again&&dg.next,'מתנה יומית: '+(dg.first?'יום ראשון נותן פרס':'יום ראשון לא נתן')+', '+(dg.again?'אותו יום לא נותן שוב':'נתן פעמיים ביום')+', '+(dg.next?'יום חדש מתקדם':'יום חדש לא התקדם'));
+  check(dg.chest&&dg.wrap,'מתנה יומית: יום 7 '+(dg.chest?'נותן תיבה (אבן חן או ציוד)':'בלי תיבה')+', '+(dg.wrap?'ואחריו הלוח מתחיל מחדש':'והלוח לא חזר להתחלה'));
   // כלכלה, בדיקה על הנתונים: לכל משאב לפחות שני מקורות (לחלק בוס: הבוס שלו) ושימוש אחד, וכל שם בטבלאות קיים ב-RES.
   // השוק לא נספר כמקור או כשימוש, כי הוא קונה ומוכר הכל. מקור או שימוש חדש? מוסיפים אותו כאן
   const eco=await page.evaluate(()=>{
@@ -718,10 +733,12 @@ function worldBot(m,L,god){
     // התקדמות ל-stderr (לא נכנס לדוח): אם הבדיקה נתקעת ב-GitHub, רואים איפה
     if(guard%300===1)console.error('…',await page.evaluate(()=>[Math.round(S.t),S.mode,S.vil?'village':S.wd?'world':S.room?'room':'arena',enemies.length,S.nd?S.nd.list.length:0].join(' ')));
     L=await page.evaluate(botStep,{god:CFG.god,en:CFG.lang==='en'});
-    for(const k of ['vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='wDeathTxt'?'world-death':k)}
+    for(const k of ['dailyOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='dailyOpen'?'daily':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='wDeathTxt'?'world-death':k)}
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
+  check(L.dailyOpen&&L.dailyOpen.now===1&&L.dailyOpen.days===L.dailyOpen.want,'מתנה יומית: '+(L.dailyOpen?'החלון נפתח לבד בכניסה לכפר, עם '+L.dailyOpen.days+' ימים':'החלון לא נפתח בכניסה לכפר'));
+  check(L.dailyUi&&L.dailyUi.got>=L.dailyUi.want&&L.dailyUi.btn&&L.dailyUi.saved===1,'מתנה יומית: "לקחת" '+(L.dailyUi?'נתן '+L.dailyUi.got+' מטבעות, '+(L.dailyUi.saved===1?'נשמר':'לא נשמר')+(L.dailyUi.btn?' והכפתור נעלם':' והכפתור נשאר'):'לא נלחץ'));
   // צלילים: כמה פעמים כל צליל התבקש, אם הקבצים נטענו מ-file://, ואם כפתור ההשתקה עובד ונשמר
   // הכפתור פותח את חלון הצלילים: השתקה בתוכו, ועוצמה לכל ערוץ שנשמרת בטלפון
   const au=await page.evaluate(()=>{const $=id=>document.getElementById(id);$('muteBtn').click();const open=!$('ovSound').hidden;
