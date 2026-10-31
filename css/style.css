@@ -479,3 +479,8 @@ h1{font-size:46px} h2{font-size:30px}
 /* "יאללה" תמיד מימין למטה, מתחת לאגודל הימני, גם בעברית: זה מיקום על המסך ולא כיוון טקסט */
 [dir=rtl] .sbot{flex-direction:row-reverse}
 body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px))}
+/* חלון הצלילים (js/audio.js): אותה מסגרת כמו כל חלון */
+.sndpanel{width:min(420px,100%);padding:0 16px 16px;gap:12px}
+.sndpanel .sub{display:flex;flex-direction:column;gap:6px;font-weight:700;color:var(--chalk)}
+.sndpanel input[type=range]{height:32px}
+.panel.win>.whd{margin-top:8px}

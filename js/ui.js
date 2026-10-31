@@ -5,6 +5,7 @@ const UI={
   top:4,   // כמה משאבים לכל היותר בפס העליון. השאר בתרמיל, וכפתור "+N" פותח אותו
 };
 const WINS=[
+  {id:'ovSound',close:()=>soundClose()},   // נגיעה בחוץ: audio.js
   {id:'ovHelp',close:()=>helpOpen(false),backdrop:true},
   {id:'ovGear',close:()=>gearClose(),backdrop:true},
   {id:'ovForge',close:()=>forgeClose(),backdrop:true},
