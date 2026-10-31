@@ -330,3 +330,8 @@ h1{font-size:46px} h2{font-size:30px}
   .gdoll{order:-1}
 }
 @media (prefers-reduced-motion:reduce){.shake{animation:none}#ovGear .gtile{transition:none}}
+/* PWA (js/pwa.js): אפליקציה מותקנת שמוחזקת לאורך מבקשת לסובב. בדפדפן הרגיל לא מוצג */
+.pwa-turn{display:none}
+@media (orientation:portrait){html.pwa-app .pwa-turn{position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  background:var(--ink);color:var(--chalk);font:800 20px var(--body);text-align:center;padding:24px}
+  html.pwa-app .pwa-turn b{font-size:56px}}

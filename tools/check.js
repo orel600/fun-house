@@ -432,6 +432,35 @@ function worldBot(m,L,god){
   const ver=await page.$eval('#verLine',e=>e.textContent);
   check(/^v\d+\.\d+\.(dev|\d+\.\d+(-pr\d+)?)$/.test(ver),'מספר גרסה במסך הפתיחה: '+(ver||'חסר'));
   await shot('start');
+  // התקנה כאפליקציה (js/pwa.js): ה-manifest תקין והאייקונים קיימים, מ-file:// אין service worker, ומשרת http הוא נרשם ושומר את המשחק
+  const pw={file:await page.evaluate(()=>PWA.state)};
+  try{const root=path.resolve(__dirname,'..'),mf=JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8'));
+    const png=f=>{try{const b=fs.readFileSync(path.join(root,f));return b.readUInt32BE(16)+'x'+b.readUInt32BE(20)}catch(e){return null}};
+    pw.bad=['name','short_name','start_url','display','orientation','background_color','theme_color'].filter(k=>!mf[k]);
+    if(mf.orientation!=='landscape')pw.bad.push('orientation='+mf.orientation);
+    for(const i of mf.icons||[])if(png(i.src)!==i.sizes)pw.bad.push(i.src+' '+(png(i.src)||'חסר'));
+    if(!(mf.icons||[]).some(i=>i.purpose==='maskable'))pw.bad.push('maskable');
+    const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+    for(const f of [...html.matchAll(/<link rel="(?:manifest|icon|apple-touch-icon)" href="([^"]+)"/g)].map(m=>m[1]))if(!fs.existsSync(path.join(root,f)))pw.bad.push(f+' חסר');
+    if(!/viewport-fit=cover/.test(html)||!/apple-mobile-web-app-capable/.test(html))pw.bad.push('meta של אייפון');
+    const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webmanifest':'application/manifest+json','.json':'application/json'};
+    const srv=require('http').createServer((q,r)=>{let f=decodeURIComponent(q.url.split('?')[0]);if(f.endsWith('/'))f+='index.html';f=path.join(root,path.normalize(f));
+      if(!f.startsWith(root)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){r.writeHead(404);return r.end()}
+      r.writeHead(200,{'content-type':types[path.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(r)});
+    await new Promise(ok=>srv.listen(0,'127.0.0.1',ok));
+    const ctx=await browser.newContext({viewport:CFG.phone,isMobile:true,hasTouch:true}),pg=await ctx.newPage(),perr=[];
+    pg.on('pageerror',e=>perr.push(e.message));pg.on('console',m=>{if(m.type()==='error')perr.push(m.text())});
+    await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/,r=>r.fulfill({status:200,contentType:'text/css',body:''}));
+    await ctx.addInitScript(()=>{try{localStorage.setItem('zm-gfx','2d')}catch(e){}});
+    await pg.goto('http://127.0.0.1:'+srv.address().port+'/');
+    pw.http=await pg.evaluate(async()=>{const t=Date.now();await Promise.race([navigator.serviceWorker.ready,new Promise(ok=>setTimeout(ok,20000))]);
+      const k=(await caches.keys()).filter(n=>n.startsWith('fh-'));let n=0;for(const c of k)n+=(await (await caches.open(c)).keys()).length;
+      return{state:PWA.state,active:!!(await navigator.serviceWorker.getRegistration()),cache:k.join(','),n,ms:Date.now()-t}});
+    pw.errs=perr;await ctx.close();srv.close();
+  }catch(e){pw.crash=e.message}
+  check(!pw.crash&&!pw.bad.length,'אפליקציה: '+(pw.crash?'הבדיקה נפלה: '+pw.crash:pw.bad.length?'בעיות ב-manifest: '+pw.bad.join(', '):'manifest תקין, לרוחב, עם אייקונים 192/512 ו-maskable'));
+  check(pw.file==='file','אפליקציה: מ-file:// '+(pw.file==='file'?'אין service worker':'ניסה לרשום service worker ('+pw.file+')'));
+  if(!pw.crash)check(pw.http&&pw.http.state==='ok'&&pw.http.active&&pw.http.n>40&&!pw.errs.length,'אפליקציה: משרת http '+(pw.http&&pw.http.active?'ה-service worker נרשם ושמר '+pw.http.n+' קבצים ('+pw.http.cache+')':'ה-service worker לא נרשם ('+(pw.http&&pw.http.state)+')')+(pw.errs.length?' · שגיאות: '+[...new Set(pw.errs)].join(' | '):''));
   // שמירה: נכתבת, נטענת חזרה, ושמירה ישנה בלי שדה חדש מקבלת אותו. בסוף מנקים, כדי שהריצה תתחיל נקייה
   const sv=await page.evaluate(()=>{bagAdd('wood',5);bagAdd('wood',2);const took=bagTake('wood',3)&&!bagTake('wood',99);SAVE.village.forge=2;saveNow();
     SAVE=saveBlank();saveLoad();const back=SAVE.bag.wood===4&&SAVE.village.forge===2&&took;
