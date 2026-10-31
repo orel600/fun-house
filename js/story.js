@@ -12,8 +12,12 @@
    1. כשפנס המים דולק, נפתח שביל מהאגם לרכס (paths של האגם). מגיעים אליו, בשלג.
    2. אבירי כפור (חלשים לאש) וגבישי קרח: מביאים ספיר גולמי (sapphireC).
    3. שומר הקרח קם ליד פנס הקרח, ויורה מניפה של רסיסי קרח. נופל, הפנס נדלק, והרכס בטוח יותר.
+   פרק 4, פנס האש (המדבר הבוער, WORLD.regions.desert ב-world.js):
+   1. כשפנס הקרח דולק, נפתח מעבר מהרכס למדבר (paths של הרכס). מגיעים אליו, בחום וברוח חול.
+   2. עקרבי אבן-אש (חלשים למים) וסלעי להבה: מביאים אודם גולמי (rubyC).
+   3. שומר האש קם ליד פנס האש, ושולח טבעות אש שמתרחבות, עם פתח אחד שאפשר לעבור בו (ring). נופל, הפנס נדלק, והמדבר בטוח יותר.
    כל פנס הוא שורה ב-STORY.lanterns: באיזה אזור, איפה, איזה קווסט מעיר את השומר, והשומר עצמו.
-   מה נשמר: SAVE.story ({intro, shard, earth, water, ice}). הטקסטים ב-lang.js תחת 'story.' ו-'q.s1*', 'q.s2*', 'q.s3*' */
+   מה נשמר: SAVE.story ({intro, shard, earth, water, ice, fire}). הטקסטים ב-lang.js תחת 'story.' ו-'q.s1*' עד 'q.s4*' */
 
 const STORY={
   lanterns:{
@@ -26,7 +30,11 @@ const STORY={
       warden:{type:'tidewarden',hp:26,dmg:1.3,r:1.6,speed:0.9,wake:520,leash:420,shoot:{every:2.4,n:3,spread:0.32,speed:190,r:7,dmg:11}}},
     // פנס הקרח: בפינה הדרום-מזרחית של הרכס. שומר הקרח יורה מניפה רחבה של חמישה רסיסים, לאט יותר
     ice:{reg:'ridge',x:860,y:500,quest:'s3Warden',glow:'#CFF3FF',col:'#7FD4FF',ev:'frost',head:true,
-      warden:{type:'frostwarden',hp:28,dmg:1.35,r:1.65,speed:0.85,wake:520,leash:420,shoot:{every:2.8,n:5,spread:0.24,speed:170,r:7,dmg:12}}}
+      warden:{type:'frostwarden',hp:28,dmg:1.35,r:1.65,speed:0.85,wake:520,leash:420,shoot:{every:2.8,n:5,spread:0.24,speed:170,r:7,dmg:12}}},
+    // פנס האש: בפינה הדרום-מערבית של המדבר. שומר האש שולח טבעת אש שמתרחבת ממנו (ring): speed פיקסלים לשנייה עד max,
+    // w עובי הטבעת, gap רוחב הפתח (ברדיאנים) שבו עוברים בלי להיפגע. הטבעת פוגעת פעם אחת לכל היותר
+    fire:{reg:'desert',x:-860,y:480,quest:'s4Warden',glow:'#FFB347',col:'#FF6A2A',ev:'blaze',head:true,
+      warden:{type:'emberwarden',hp:30,dmg:1.4,r:1.7,speed:0.85,wake:520,leash:420,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}}
   },
   introDelay:0.9,                          // שניות אחרי הכניסה הראשונה לכפר עד שראש הכפר מדבר
   headDelay:1.4,                           // אחרי שפנס נדלק (הפרס נלקח בכפר): ראש הכפר אומר משפט
@@ -61,8 +69,9 @@ function storyUpdate(dt){
   const k=storyLantern(),L=k&&STORY.lanterns[k];
   if(L&&qOn(L.quest)&&!w.warden&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake){
     const W=L.warden,e=addEnemy(W.type,L.x,L.y+70,W.hp);
-    e.warden=k;e.elite=false;e.dmg*=W.dmg;e.r*=W.r;e.speed*=W.speed;e.xp=0;e.big=W.r;e.shoot=W.shoot?W.shoot.every:0;w.warden=e;
+    e.warden=k;e.elite=false;e.dmg*=W.dmg;e.r*=W.r;e.speed*=W.speed;e.xp=0;e.big=W.r;e.shoot=W.shoot?W.shoot.every:0;e.ring=W.ring?W.ring.every*0.6:0;w.warden=e;
     banner(T('story.'+k+'.rise'),L.col);S.shake=Math.max(S.shake,8)}
+  storyRings(dt);   // טבעות האש של שומר האש
   if(w.warden&&w.warden.dead){const ev=(STORY.lanterns[w.warden.warden]||{}).ev;if(ev)questEvent('story',ev);w.warden=null}   // שומר המים: 'tide' (s2Warden), שומר הקרח: 'frost' (s3Warden)
 }
 // השומר: רודף את השחקן, אבל לא מתרחק מהפנס (wFoes ב-world.js). שומר המים גם יורה
@@ -75,6 +84,26 @@ function storyWardenMove(e,dt){
   const sh=W.shoot;
   if(sh&&!far&&d<WORLD.attackRange+120&&(e.shoot-=dt)<=0){e.shoot=sh.every;const a=Math.atan2(dy,dx);
     for(let i=0;i<sh.n;i++)shootE(e.x,e.y,a+(i-(sh.n-1)/2)*sh.spread,sh.speed,sh.r,sh.dmg*storySafe())}
+  const rg=W.ring;   // שומר האש: טבעת אש חדשה כל every שניות, כשהשחקן קרוב. הפתח בכיוון אקראי
+  if(rg&&!far&&d<rg.max+80&&(e.ring-=dt)<=0){e.ring=rg.every;(S.wd.rings||(S.wd.rings=[])).push({x:e.x,y:e.y,rad:e.r,gap:Math.random()*Math.PI*2,hit:false,k:e.warden});sfx('shoot');S.shake=Math.max(S.shake,4)}
+}
+// טבעות אש: מתרחבות, ופוגעות בשחקן כשהקצה עובר דרכו, חוץ מבפתח
+function storyRings(dt){
+  const w=S.wd,list=w.rings;if(!list||!list.length)return;
+  for(const R of list){const rg=STORY.lanterns[R.k].warden.ring;R.rad+=rg.speed*dt;
+    const d=Math.hypot(P.x-R.x,P.y-R.y);
+    if(!R.hit&&Math.abs(d-R.rad)<rg.w+P.r*0.6){
+      const a=Math.atan2(P.y-R.y,P.x-R.x),off=Math.abs(((a-R.gap)%(Math.PI*2)+Math.PI*3)%(Math.PI*2)-Math.PI);
+      if(off>rg.gap/2){R.hit=true;hurt(rg.dmg*storySafe())}}}
+  w.rings=list.filter(R=>R.rad<STORY.lanterns[R.k].warden.ring.max);
+}
+function storyRingsDraw(){
+  const list=S.wd.rings;if(!list||!list.length)return;ctx.save();
+  for(const R of list){const rg=STORY.lanterns[R.k].warden.ring,fade=1-R.rad/rg.max,L=STORY.lanterns[R.k];
+    ctx.globalAlpha=0.35+fade*0.55;ctx.lineWidth=rg.w*2;ctx.strokeStyle=L.col;ctx.lineCap='round';
+    ctx.beginPath();ctx.arc(R.x,R.y,R.rad,R.gap+rg.gap/2,R.gap-rg.gap/2+Math.PI*2);ctx.stroke();
+    ctx.lineWidth=rg.w*0.7;ctx.strokeStyle=L.glow;ctx.beginPath();ctx.arc(R.x,R.y,R.rad,R.gap+rg.gap/2,R.gap-rg.gap/2+Math.PI*2);ctx.stroke()}
+  ctx.restore();
 }
 // פרס של קווסט עלילה: הפנס נדלק (questClaim ב-quests.js)
 function storyReward(what){
@@ -93,6 +122,7 @@ function storyDraw(){
   ctx.fillStyle='#4A3A2A';ctx.fillRect(L.x-4,L.y-70,8,76);
   if(lit){const g=ctx.createRadialGradient(L.x,L.y-80,4,L.x,L.y-80,90+Math.sin(t*2)*8);g.addColorStop(0,gl+'8C');g.addColorStop(1,gl+'00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(L.x,L.y-80,100,0,7);ctx.fill()}
   ctx.fillStyle=lit?gl:'#3A3F52';ctx.strokeStyle='#2A2018';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(L.x-14,L.y-98,28,32,6);ctx.fill();ctx.stroke();
+  storyRingsDraw();
   const e=S.wd.warden;
   if(e&&!e.dead){const bw=90,x=e.x,y=e.y-e.r-48;
     ctx.fillStyle='rgba(5,7,13,0.7)';ctx.fillRect(x-bw/2,y,bw,7);ctx.fillStyle=L.col;ctx.fillRect(x-bw/2,y,bw*Math.max(0,e.hp/e.max),7)}
