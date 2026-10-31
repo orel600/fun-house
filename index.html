@@ -162,6 +162,17 @@
   </div>
 </div>
 
+<!-- חלון הצלילים: נפתח מכפתור הרמקול (js/audio.js) -->
+<div class="ov" id="ovSound" hidden>
+  <div class="panel">
+    <div class="ghead"><h2 data-t="snd.title"></h2><button class="gclose" id="sndClose" data-ta="gear.close">✕</button></div>
+    <label class="sub"><span data-t="snd.master"></span><input type="range" min="0" max="100" step="5" data-ch="master" style="width:100%;accent-color:var(--gold)"></label>
+    <label class="sub"><span data-t="snd.fight"></span><input type="range" min="0" max="100" step="5" data-ch="fight" style="width:100%;accent-color:var(--gold)"></label>
+    <label class="sub"><span data-t="snd.fx"></span><input type="range" min="0" max="100" step="5" data-ch="fx" style="width:100%;accent-color:var(--gold)"></label>
+    <button class="go" id="sndMute"></button>
+  </div>
+</div>
+
 <div class="ov" id="ovWDeath" hidden>
   <div class="panel">
     <h2 data-t="w.fell"></h2>
