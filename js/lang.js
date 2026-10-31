@@ -237,6 +237,11 @@ const TEXT={
   'vil.info.market':{he:p=>'מוכרים וקונים משאבים'+(p?' · מחירים +'+p+'%':''),en:p=>'Sell and buy resources'+(p?' · prices +'+p+'%':'')},
   'vil.sell':{he:'מכור',en:'Sell'},
   'vil.buy':{he:'קנה',en:'Buy'},
+  // למה אי אפשר לקנות או למכור עכשיו: שורה קטנה על הכרטיס בשוק
+  'vil.needN':{he:n=>'צריך '+n,en:n=>'Need '+n},
+  'vil.noCoins':{he:'חסרים מטבעות',en:'Not enough coins'},
+  'vil.mkLv':{he:n=>'שוק רמה '+n,en:n=>'Market lv '+n},
+  'ui.more':{he:'עוד בתרמיל',en:'More in your bag'},
   bagGroup:{he:'תרמיל',en:'Bag'},
   'res.coins':{he:'מטבעות',en:'Coins'},
   'res.wood':{he:'עץ',en:'Wood'},

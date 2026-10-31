@@ -159,18 +159,21 @@ $('wRespawn').onclick=()=>{$('ovWDeath').hidden=true;wHome()};
 
 /* ---- ממשק: שם האזור והתרמיל למעלה, ופאנל ליד שער ---- */
 function worldHud(){
-  const w=S.wd,key=LANG+'|'+w.near+'|'+JSON.stringify(SAVE.bag);
+  const w=S.wd;if(w.shut&&w.shut!==w.near)w.shut=null;   // ✕ סוגר את הפאנל עד שמתרחקים מהשער
+  const shut=!!w.near&&w.shut===w.near,key=LANG+'|'+w.near+'|'+shut+'|'+JSON.stringify(SAVE.bag);
   if(key===w.ui)return;w.ui=key;
   $('wName').textContent=T('w.region.'+WORLD.region);
-  $('wBag').innerHTML=bagLine(SAVE.bag,resShown('world'));
-  const pn=$('wPanel'),k=w.near;pn.hidden=!k;if(!k)return;
-  pn.innerHTML=k==='home'?'<h3>'+T('w.home')+'</h3><p>'+T('w.homeInfo')+'</p><button class="vbtn" data-act="home">'+T('w.goHome')+'</button>'
-    :'<h3>'+T('w.gate.'+k)+'</h3><p>'+T('w.arenaInfo')+'</p><button class="vbtn" data-act="arena" data-g="'+k+'">'+T('w.enterArena')+'</button>';
+  $('wBag').innerHTML=topLine(SAVE.bag,resShown('world'));   // שורה אחת, והשאר בתרמיל (village.js)
+  const pn=$('wPanel'),k=w.near;pn.hidden=!k||shut;if(pn.hidden)return;
+  pn.innerHTML=k==='home'?winHead(T('w.home'))+'<p>'+T('w.homeInfo')+'</p><button class="vbtn" data-act="home">'+T('w.goHome')+'</button>'
+    :winHead(T('w.gate.'+k))+'<p>'+T('w.arenaInfo')+'</p><button class="vbtn" data-act="arena" data-g="'+k+'">'+T('w.enterArena')+'</button>';
 }
 $('wPanel').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||!S.wd||S.mode!=='play')return;
-  if(b.dataset.act==='home')wHome();else if(b.dataset.act==='arena')wArena(b.dataset.g);
+  if(b.dataset.act==='close')wShut();else if(b.dataset.act==='home')wHome();else if(b.dataset.act==='arena')wArena(b.dataset.g);
 });
+
+function wShut(){if(!S.wd)return;S.wd.shut=S.wd.near;worldHud()}
 
 /* ---- ציור ---- */
 // קישוטים מחוץ לגבול: עצים וגבעות. תמיד באותם מקומות, ופתוח מול השער לכפר

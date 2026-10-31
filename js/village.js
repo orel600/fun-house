@@ -172,6 +172,9 @@ function runEnd(){
 const resChip=(r,n,cls='')=>{const R=resOf(r);return '<span class="res'+cls+(R&&R.rar?' rare" style="--tint:'+RES.rarity[R.rar].col:'')+'" data-tip="'+r+'" aria-label="'+resName(r)+'">'+resIcon(r)+' '+n+'</span>'};
 // list: אילו משאבים להראות, גם כשיש 0. בלי list: רק מה שיש
 const bagLine=(bag,list)=>(list||Object.keys(RES.list).filter(r=>bag[r]>0)).map(r=>resChip(r,bag[r]||0)).join('');
+// הפס העליון: שורה אחת, מספרים קצרים (1.3K), ולכל היותר UI.top משאבים. מה שלא נכנס: כפתור "+N" שפותח את התרמיל (ui.js)
+const topLine=(bag,list)=>{const ks=list||Object.keys(RES.list).filter(r=>bag[r]>0),sh=ks.length>UI.top?ks.slice(0,UI.top-1):ks;
+  return sh.map(r=>resChip(r,shortN(bag[r]))).join('')+(ks.length>sh.length?'<button class="resmore" aria-label="'+T('ui.more')+'">+'+(ks.length-sh.length)+'</button>':'')};
 // התרמיל המלא לפי משפחות: טבע ובנייה, מתכות, יצורים, בוסים, נדיר. only: רק משפחה אחת (הסינון בתרמיל). משפחה ריקה לא מוצגת
 const bagFams=(bag,only)=>Object.keys(RES.fams).filter(f=>!only||only==='all'||f===only).map(f=>{const rs=resFam(f).filter(r=>bag[r]>0);
   return rs.length?'<div class="fam"><span class="sk">'+T('fam.'+f)+'</span><div class="bag">'+bagLine(bag,rs)+'</div></div>':''}).join('');
@@ -189,22 +192,25 @@ function vInfo(k,L){
 function villageHud(){
   const k=S.vil.near,L=k?vLv(k):0;
   // בונים מחדש רק כשמשהו השתנה: מבנה אחר, רמות, תרמיל, מחסן או שפה
-  const key=LANG+'|'+k+'|'+S.vil.gate+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
+  // ✕ סוגר את הפאנל עד שמתרחקים (shut). ליד מבנה אחר הוא נפתח שוב
+  const cur=S.vil.gate?'gate':k;if(S.vil.shut&&S.vil.shut!==cur)S.vil.shut=null;const shut=!!cur&&S.vil.shut===cur;
+  const key=LANG+'|'+k+'|'+S.vil.gate+'|'+shut+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
   if(key===S.vil.ui)return;S.vil.ui=key;
-  $('vBag').innerHTML=bagLine(SAVE.bag,resShown(k));   // רק מה שרלוונטי ליד המבנה הזה (RES.show)
-  const pn=$('vPanel');pn.hidden=!k&&!S.vil.gate;
-  if(S.vil.gate){pn.innerHTML='<h3>'+T('vil.out')+'</h3><p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
-  if(!k)return;
+  $('vBag').innerHTML=topLine(SAVE.bag,resShown(k));   // רק מה שרלוונטי ליד המבנה הזה (RES.show)
+  const pn=$('vPanel');pn.hidden=!cur||shut;if(pn.hidden)return;
+  if(S.vil.gate){pn.innerHTML=winHead(T('vil.out'))+'<p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
   const why=vBlock(k),c=vCost(k);
-  let h='<h3>'+T('vil.'+k)+' <small>'+(L?T('level',L):'')+'</small></h3><p>'+vInfo(k,L)+'</p>';
+  let h=winHead(T('vil.'+k),L?T('level',L):'')+'<p>'+vInfo(k,L)+'</p>';
   if(why!=='max')h+='<p class="next">'+T('vil.next',vInfo(k,L+1))+'</p><div class="cost">'+costLine(c)+'</div>';
   h+='<button class="vbtn" data-act="up"'+(why?' disabled':'')+'>'+(why==='max'?T('vil.max'):why==='center'?T('vil.needCenter'):L?T('vil.up',L+1):T('vil.build'))+'</button>';
   if(k==='forge'&&L>0)h+='<button class="vbtn ghost" data-act="forge">⚒️ '+T('age.open')+'</button>';
-  if(k==='market'&&L>0){   // מוכרים כל מה שיש בתרמיל, וקונים כל מה שהרמה של השוק מרשה
-    const rs=Object.keys(RES.list),btn=(kind,r,ok,p)=>'<button data-act="'+kind+'" data-r="'+r+'"'+(ok?'':' disabled')+' aria-label="'+T('vil.'+kind)+' '+resName(r)+'"><bdi>'+vLot(r)+resIcon(r)+' · '+p+resIcon('coins')+'</bdi></button>';
-    const sell=rs.filter(r=>vCanTrade('sell',r)&&bagHas(r)),buy=rs.filter(r=>vCanTrade('buy',r));
-    h+='<span class="sk">'+T('vil.sell')+'</span>'+(sell.length?'<div class="trade">'+sell.map(r=>btn('sell',r,bagHas(r,vLot(r)),'+'+vPrice(r,'sell')*vLot(r))).join('')+'</div>':'<p class="next">'+T('stash.empty')+'</p>');
-    h+='<span class="sk">'+T('vil.buy')+'</span><div class="trade">'+buy.map(r=>btn('buy',r,bagHas('coins',vPrice(r,'buy')*vLot(r)),vPrice(r,'buy')*vLot(r))).join('')+'</div>';
+  if(k==='market'&&L>0){   // מוכרים כל מה שיש בתרמיל, וקונים כל מה שהרמה של השוק מרשה. כרטיס שאי אפשר ללחוץ עליו אומר למה
+    const rs=Object.keys(RES.list),card=(kind,r,why,p)=>'<button class="tcard" data-act="'+kind+'" data-r="'+r+'"'+(why?' disabled':'')+' aria-label="'+T('vil.'+kind)+' '+resName(r)+'" style="--rar:'+RES.rarity[resOf(r).rar||0].col+'">'+
+      '<span class="ti">'+resIcon(r)+'<small>×'+vLot(r)+'</small></span><span class="tp"><bdi>'+p+'</bdi>'+resIcon('coins')+'</span>'+(why?'<span class="tw">'+why+'</span>':'')+'</button>';
+    const sell=rs.filter(r=>vCanTrade('sell',r)&&bagHas(r)),buy=rs.filter(r=>resOf(r).buy);
+    h+='<span class="sk">'+T('vil.sell')+'</span>'+(sell.length?'<div class="trade">'+sell.map(r=>card('sell',r,bagHas(r,vLot(r))?'':T('vil.needN',vLot(r)),'+'+vPrice(r,'sell')*vLot(r))).join('')+'</div>':'<p class="next">'+T('stash.empty')+'</p>');
+    h+='<span class="sk">'+T('vil.buy')+'</span><div class="trade">'+buy.map(r=>{const p=vPrice(r,'buy')*vLot(r);
+      return card('buy',r,!vCanTrade('buy',r)?'🔒 '+T('vil.mkLv',RES.rarity[resOf(r).rar].market):bagHas('coins',p)?'':T('vil.noCoins'),p)}).join('')+'</div>';
   }
   if(k==='forge'&&L>0)h+=forgeHtml();   // gear.js
   if(k==='stash'&&L>0)h+=stashHtml();   // stash.js
@@ -214,12 +220,16 @@ $('vPanel').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled||!S.vil)return;
   const a=b.dataset.act;
   if(a==='go'){leaveVillage();return}
+  if(a==='close'){vShut();return}
   if(!S.vil.near)return;
   if(a==='forge'){forgeOpen();return}
   if(a==='bag'){gearOpen();return}   // מהמחסן: מסך הציוד, שם גוררים בין התרמיל למחסן (gear.js)
   if(a==='up')vUpgrade(S.vil.near);else if(a==='stash')stashMove(b.dataset.dir,b.dataset.r);else if(a==='craft')gearCraft(b.dataset.r);else vTrade(a,b.dataset.r);
   villageHud();
 });
+
+// ✕ בפאנל: נסגר עד שמתרחקים מהמבנה (או מהשער)
+function vShut(){if(!S.vil)return;S.vil.shut=S.vil.gate?'gate':S.vil.near;villageHud()}
 
 /* ---- ציור ---- */
 // קישוטים סביב הגבול: עצים, סלעים וגבעות. תמיד באותם מקומות, ופתוח מול השער

@@ -179,9 +179,6 @@ h1{font-size:46px} h2{font-size:30px}
 .stat.wide b{display:flex;justify-content:flex-start;margin-top:4px}
 /* קווסטים (js/quests.js): כפתור היומן בפינה השמאלית העליונה (בימנית כפתור הציוד), היומן בצד ימין (הפאנל של המבנה בצד שמאל), וקו מעקב קטן בזירה.
    ימין ושמאל כאן הם מיקום על המסך, לא כיוון טקסט */
-.qbtn{position:fixed;z-index:3;pointer-events:auto;top:calc(env(safe-area-inset-top,0px) + 8px);left:calc(env(safe-area-inset-left,0px) + 12px);
-  appearance:none;border:1px solid var(--gold);border-radius:999px;background:rgba(18,22,36,.88);color:var(--gold);padding:6px 12px;font:800 14px var(--body);cursor:pointer;display:flex;align-items:center;gap:4px}
-.qbtn b{background:var(--gold);color:var(--ink);border-radius:999px;min-width:20px;padding:0 6px;font-size:12px;line-height:20px;text-align:center}
 .qlog{position:fixed;z-index:4;pointer-events:auto;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 50px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
   max-width:420px;margin-inline:auto;overflow-y:auto;background:rgba(26,32,51,.96);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
 .qhead{display:flex;justify-content:space-between;align-items:center}
@@ -200,7 +197,7 @@ h1{font-size:46px} h2{font-size:30px}
 .qc .vbtn{padding:7px 12px;font-size:14px;white-space:nowrap}
 .qtrk{appearance:none;border:1px solid var(--line);background:none;color:var(--dim);border-radius:10px;padding:6px 10px;white-space:nowrap;font:700 12px var(--body);cursor:pointer}
 .qtrk[aria-pressed="true"]{color:var(--gold);border-color:var(--gold)}
-.qbtn:focus-visible,.qx:focus-visible,.qtrk:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
+.qtrk:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
 .qtrack{margin-top:8px;max-width:60%;font-size:12px;font-weight:700;color:var(--gold);text-shadow:0 0 3px #000,0 0 3px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (orientation:landscape){
   .qlog{left:auto;right:calc(env(safe-area-inset-right,0px) + 12px);width:min(320px,40vw);margin:0}
@@ -258,10 +255,7 @@ h1{font-size:46px} h2{font-size:30px}
 .smove .res{cursor:pointer;appearance:none}
 .smove .res:disabled{opacity:.5;cursor:default}
 .vpanel .sk{font-size:11px;font-weight:800;color:var(--dim)}
-/* תושבי הכפר (js/npc.js): כפתור "לדבר" באמצע למטה (הפינה הימנית שמורה לכישורים), והשיחה במקום היומן */
-.talkbtn{position:fixed;z-index:3;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);
-  appearance:none;border:2px solid var(--gold);border-radius:999px;background:rgba(18,22,36,.92);color:var(--gold);padding:10px 18px;font:800 16px var(--body);cursor:pointer;white-space:nowrap}
-.talkbtn:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
+/* תושבי הכפר (js/npc.js): כפתור "לדבר" בסרגל למטה, והשיחה במקום היומן */
 .npcdlg h3 small{font-family:var(--body);font-size:13px;font-weight:800;color:var(--gold);margin-inline-start:6px}
 .npcsay{margin:0;font-size:15px;line-height:1.45;background:var(--panel);border-radius:12px;padding:8px 10px;border-inline-start:3px solid var(--gold)}
 /* מסך הציוד (js/gear.js): שלושה טורים. התרמיל בתחילת השורה, הבובה עם המשבצות באמצע, והפרטים בסוף. הטורים מתהפכים לבד לפי השפה.
@@ -328,3 +322,108 @@ h1{font-size:46px} h2{font-size:30px}
   .gdoll{order:-1}
 }
 @media (prefers-reduced-motion:reduce){.shake{animation:none}#ovGear .gtile{transition:none}}
+
+/* ===== הממשק המשותף (js/ui.js, ניר 31.10.2026: "כפתור יציאה מהדבר שאתה נמצא בו, ולסדר את הפרופורציות").
+   כל חלון באותה מסגרת (.win), עם כותרת באמצע ו-✕ אדום גדול בסוף (.whd, .wx). בכפר ובעולם יש סרגל למטה (.bnav),
+   והחלונות נגמרים מעליו (--navb), כך ששום כפתור לא מכסה חלון. מטרה ללחיצה: 44px לפחות ===== */
+:root{--navh:60px;--navb:calc(env(safe-area-inset-bottom,0px) + var(--navh) + 38px);--topb:calc(env(safe-area-inset-top,0px) + 58px)}
+@media (orientation:landscape) and (max-height:500px){:root{--navh:50px;--topb:calc(env(safe-area-inset-top,0px) + 60px)}}
+.world{--topb:calc(env(safe-area-inset-top,0px) + 96px)}
+.win{background:linear-gradient(180deg,#232B44,#1A2033 70%);border:2px solid #3A4566;border-radius:16px;box-shadow:0 10px 30px #0009,inset 0 1px 0 #ffffff14}
+.whd{display:flex;align-items:center;gap:8px;min-height:48px}
+.whd>h2,.whd>h3{flex:1;margin:0;text-align:center;padding-inline-start:44px;line-height:1.1}
+.whd small{font-family:var(--body);font-size:13px;font-weight:800;color:var(--gold);margin-inline-start:6px}
+.wx{appearance:none;flex:none;width:44px;height:44px;border-radius:12px;border:2px solid #0006;background:linear-gradient(#FF6B73,#D93A44);color:#fff;
+  font:900 20px/1 var(--body);display:grid;place-items:center;padding:0;cursor:pointer;box-shadow:0 3px 0 #8E2129;text-shadow:0 1px 0 #0006}
+.wx:active{transform:translateY(2px);box-shadow:0 1px 0 #8E2129}
+.wx:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
+/* חלונות צפים (מבנה, שער, יומן, שיחה): הכותרת נשארת למעלה כשגוללים */
+.vpanel.win,.qlog.win{padding:0 12px 12px;overflow-y:auto;overscroll-behavior:contain}
+.vpanel.win>.whd,.qlog.win>.whd{position:sticky;top:0;z-index:1;margin:0 -12px 2px;padding:8px 8px 6px 12px;background:#232B44;border-bottom:1px solid var(--line)}
+.vpanel.win{left:12px;right:12px;top:auto;bottom:var(--navb);max-width:440px;margin-inline:auto;max-height:min(60vh,calc(100% - var(--topb) - var(--navb)));gap:8px}
+.qlog.win{left:12px;right:12px;top:var(--topb);bottom:var(--navb);max-width:440px;margin-inline:auto}
+.npcdlg.win{top:auto;max-height:calc(100% - var(--topb) - var(--navb))}
+/* לרוחב: הסרגל בפינה הימנית למטה (בכפר ובעולם אין שם סקילים), היומן והשיחה מעליו בצד ימין, והפאנל של המבנה בצד שמאל לכל הגובה.
+   מיקום על המסך ולא כיוון טקסט, ולכן left/right גם בעברית */
+@media (orientation:landscape){
+  .vpanel.win{left:calc(env(safe-area-inset-left,0px) + 12px);right:auto;top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);width:min(320px,38vw);margin:0;
+    max-height:calc(100% - var(--topb) - env(safe-area-inset-bottom,0px) - 12px)}
+  .qlog.win{left:auto;right:calc(env(safe-area-inset-right,0px) + 12px);width:min(340px,40vw);margin:0}
+}
+/* הסרגל למטה: יומן, "לדבר" כשעומדים ליד מישהו, וציוד. רק בכפר ובעולם */
+.bnav{position:fixed;z-index:4;display:none;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+  gap:8px;padding:6px;border-radius:18px;background:rgba(14,18,30,.9);border:2px solid #3A4566;box-shadow:0 6px 20px #0008;max-width:calc(100% - 24px)}
+.vil .bnav,.world .bnav{display:flex}
+.nbtn{appearance:none;position:relative;flex:none;min-width:calc(var(--navh) + 6px);height:var(--navh);padding:0 8px;border-radius:14px;border:2px solid #3A4566;
+  background:linear-gradient(#2C3654,#1D2438);color:var(--chalk);font:800 12px/1 var(--body);cursor:pointer;box-shadow:0 3px 0 #0B0E18;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;white-space:nowrap}
+.nbtn .ni{font-size:24px;line-height:1}
+.nbtn:active{transform:translateY(2px);box-shadow:0 1px 0 #0B0E18}
+.nbtn:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
+.nbtn>b{position:absolute;top:-7px;inset-inline-end:-7px;min-width:22px;height:22px;padding:0 5px;border-radius:11px;border:2px solid var(--ink);
+  background:var(--blood);color:#fff;font:900 12px/18px var(--body);text-align:center}
+.nbtn.talkbtn{flex-direction:row;border-color:var(--gold);color:var(--gold);font-size:15px;max-width:min(52vw,260px);overflow:hidden;text-overflow:ellipsis;
+  background:linear-gradient(#3A3220,#241F14);animation:tpulse 1.2s ease-in-out infinite alternate}
+@keyframes tpulse{to{box-shadow:0 3px 0 #0B0E18,0 0 14px rgba(244,199,79,.45)}}
+@media (orientation:landscape) and (max-height:500px){.nbtn .ni{font-size:20px}.nbtn{font-size:11px}}
+@media (orientation:landscape){.bnav{left:auto;right:calc(env(safe-area-inset-right,0px) + 12px);transform:none}}
+/* הפס העליון בכפר ובעולם: שורה אחת שלא נשברת, מספרים קצרים, וההשתקה בפינה משלה */
+.mute{width:44px;height:44px;top:calc(env(safe-area-inset-top,0px) + 66px)}
+.vil .mute,.world .mute{top:calc(env(safe-area-inset-top,0px) + 8px)}
+.vhud{padding:calc(env(safe-area-inset-top,0px) + 10px) 0 0;padding-inline:calc(env(safe-area-inset-left,0px) + 12px) calc(env(safe-area-inset-right,0px) + 64px)}
+.tbar{flex-wrap:nowrap;overflow:hidden;gap:5px}
+.tbar .res{flex:none;height:34px;display:inline-flex;align-items:center;gap:3px;padding:0 9px;font-size:14px}
+.resmore{appearance:none;pointer-events:auto;flex:none;height:34px;min-width:44px;padding:0 8px;border-radius:999px;border:1px solid var(--gold);
+  background:rgba(18,22,36,.9);color:var(--gold);font:800 14px var(--body);cursor:pointer;direction:ltr}
+.world .hud{padding-inline-end:calc(env(safe-area-inset-right,0px) + 64px)}
+.world .hud .gearbtn{display:none}
+.whud{left:0;right:0;transform:none;max-width:none;top:calc(env(safe-area-inset-top,0px) + 34px);flex-direction:row;justify-content:center;gap:8px;
+  padding-inline:calc(env(safe-area-inset-left,0px) + 12px) calc(env(safe-area-inset-right,0px) + 64px)}
+.whud .tbar{min-width:0}
+.whud .res{font-size:13px;padding:0 8px}
+.world .qtrack{margin-top:46px;max-width:100%}
+@media (orientation:portrait){.whud b{display:none}}
+/* השוק: רשת של כרטיסים שווים, מסגרת בצבע הנדירות, מחיר מיושר, וכרטיס נעול אומר למה */
+.trade{grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px}
+.trade .tcard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:74px;padding:6px 4px;border-radius:12px;
+  border:2px solid color-mix(in srgb,var(--rar) 60%,var(--line));background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--rar) 22%,var(--panel)),var(--panel) 75%)}
+.tcard .ti{font-size:24px;line-height:1;direction:ltr;white-space:nowrap}
+.tcard .ti small{font:800 11px var(--body);color:var(--chalk);margin-inline-start:2px}
+.tcard .tp{font:800 14px var(--body);color:var(--gold);direction:ltr;white-space:nowrap}
+.tcard .tw{font:700 10px/1.1 var(--body);color:var(--blood);text-align:center}
+.trade .tcard:disabled{opacity:1;color:var(--dim)}
+.tcard:disabled .ti{opacity:.45;filter:grayscale(.7)}
+.tcard:disabled .tp{color:var(--dim)}
+/* מסך הציוד: דמות גדולה באמצע, המשבצות משני הצדדים, תרמיל גדול עם לשוניות בשורה אחת שגוללת, ומספרים בתג בפינה */
+#ovGear .gearpanel{padding:0 12px 12px}
+.ghead.whd{gap:8px;min-height:52px}
+.ghead.whd>h2{text-align:start;padding-inline-start:0;flex:1;font-size:22px}
+#gTabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+#gTabs::-webkit-scrollbar{display:none}
+#gTabs button{flex:none;min-height:36px}
+.ggrid{grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:7px}
+#ovGear .gtile small,.gtile small{bottom:3px;inset-inline-end:3px;padding:0 4px;border-radius:6px;background:#000A;font:800 11px/15px var(--body);text-shadow:none}
+.gfig{min-height:150px}
+.gfig::before{width:78%;border:2px solid rgba(244,199,79,.25);background:radial-gradient(circle,color-mix(in srgb,var(--hero) 22%,transparent),transparent 70%)}
+.gfig span{font-size:clamp(72px,20vw,128px)}
+.gdoll .gtile{width:62px}
+#ovGear .gd-start .gtile{width:74px;font-size:34px}
+#ovGear .gd-under .gtile{flex:0 1 48px;width:48px}
+@media (orientation:portrait){
+  #ovGear{padding:calc(env(safe-area-inset-top,0px) + 10px) 10px calc(env(safe-area-inset-bottom,0px) + 10px)}
+  #ovGear .gearpanel{width:100%;max-height:100%}
+  .gbag{min-height:240px}
+  .gsidep .gdetail{min-height:90px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  #ovGear{padding:8px max(10px,env(safe-area-inset-right,0px)) 8px max(10px,env(safe-area-inset-left,0px))}
+  #ovGear .gearpanel{height:100%}
+  .gdoll{overflow-y:auto}
+  .gfig{min-height:96px}
+  .gfig span{font-size:clamp(56px,17vh,92px)}
+  .gdoll .gtile{width:48px}
+  #ovGear .gd-start .gtile{width:58px;font-size:28px}
+  #ovGear .gd-under .gtile{flex:0 1 40px;width:40px}
+  .gdoll .gslot .k{font-size:10px}
+  .ggrid{grid-template-columns:repeat(auto-fill,minmax(54px,1fr))}
+}
