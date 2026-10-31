@@ -17,6 +17,9 @@ const NODES={
     silver: {tags:['metal'],hp:140,r:25,shape:'vein',col:'#DCE3EA',drop:{silver:[1,2],sapphireC:[0.05,1]},guard:{type:'crawler',chance:0.35,n:2}},
     gold:   {tags:['metal'],hp:190,r:25,shape:'vein',col:'#F4C74F',drop:{gold:[1,1],aquaC:[0.06,1]},guard:{type:'crawler',chance:0.4,n:2}},
     mythril:{tags:['metal'],hp:260,r:26,shape:'vein',col:'#6FE3FF',drop:{mythril:[1,1],star:[0.1,1]},guard:{type:'crawler',chance:0.5,n:2}},
+    // אגם הערפל (WORLD.regions.lake ב-world.js): קני סוף ואבני גאות. רק בעולם, לא בזירה
+    reeds:  {tags:['plant'],hp:30, r:21,shape:'reed',col:'#3FA7A0',drop:{herb:[1,2],flower:[0.3,1],aquaC:[0.1,1]},guard:{type:'mistling',chance:0.35,n:2}},
+    tideRock:{tags:['stone'],hp:80,r:24,shape:'crystal',col:'#4FB4FF',drop:{stone:[1,2],aquaC:[0.45,1],sapphireC:[0.12,1]},guard:{type:'drowned',chance:0.3,n:1}},
     // תיבות: עץ, ברזל וזהב. תיבת זהב נדירה, ובה אבנים מושלמות. המומיות שומרות עליהן
     chestWood:{tags:['plant'],hp:30,r:21,shape:'chest',col:'#9A6B3C',drop:{coins:[1,8],cloth:[0.5,2],herb:[0.4,2],rubyC:[0.15,1],sapphireC:[0.15,1],boltC:[0.15,1],aquaC:[0.15,1],amberC:[0.15,1]},guard:{type:'mummy',chance:0.4,n:1}},
     chestIron:{tags:['metal'],hp:60,r:22,shape:'chest',col:'#9AA3AD',drop:{coins:[1,20],gem:[0.1,1],iron:[0.6,2],silver:[0.25,1],ruby:[0.15,1],sapphire:[0.15,1],bolt:[0.15,1],aqua:[0.15,1],amber:[0.15,1]},guard:{type:'mummy',chance:0.5,n:2}},
