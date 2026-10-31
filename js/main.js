@@ -2,6 +2,7 @@
 let last=performance.now();
 function frame(now){
   let dt=Math.min(0.033,(now-last)/1000);last=now;
+  if(typeof pwaHeld==='function'&&pwaHeld())dt=0;   // אפליקציה מותקנת שמוחזקת לאורך: המשחק עוצר עד שמסובבים (pwa.js)
   if(S&&S.mode==='play'){
     if(S.vil)villageUpdate(dt);   // בכפר מתעדכן רק הכפר
     else if(S.hitstop>0)S.hitstop-=dt;
