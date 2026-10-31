@@ -171,7 +171,7 @@ function runEnd(){
 
 /* ---- ממשק: התרמיל למעלה, והפאנל של המבנה שלידו למטה ---- */
 // משאב אחד כתג: אייקון ומספר. משאב נדיר מקבל מסגרת בצבע הנדירות שלו
-const resChip=(r,n,cls='')=>{const R=resOf(r);return '<span class="res'+cls+(R&&R.rar?' rare" style="--tint:'+RES.rarity[R.rar].col:'')+'" data-tip="'+r+'" aria-label="'+resName(r)+'">'+resIcon(r)+' '+n+'</span>'};
+const resChip=(r,n,cls='')=>{const R=resOf(r);return '<span class="res'+cls+(R&&R.rar?' rare" style="--tint:'+RES.rarity[R.rar].col:'')+'" data-tip="'+r+'" aria-label="'+resName(r)+'">'+resPic(r)+' '+n+'</span>'};
 // list: אילו משאבים להראות, גם כשיש 0. בלי list: רק מה שיש
 const bagLine=(bag,list)=>(list||Object.keys(RES.list).filter(r=>bag[r]>0)).map(r=>resChip(r,bag[r]||0)).join('');
 // הפס העליון: שורה אחת, מספרים קצרים (1.3K), ולכל היותר UI.top משאבים. מה שלא נכנס: כפתור "+N" שפותח את התרמיל (ui.js)
@@ -210,7 +210,7 @@ function villageHud(){
   // מנסרה ומכרה: כמה מחכה לאיסוף, וכפתור לאסוף
   const B=VILLAGE.b[k];
   if(B.make&&L>0){const p=vProd(k),n=vStock(k),rs=Object.keys(B.make).filter(r=>B.make[r][L]>0);
-    h+='<div class="cost">'+rs.map(r=>'<span class="res">'+resIcon(r)+' '+Math.floor(p.have[r]||0)+'/'+B.cap[L]+'</span>').join('')+'</div>';
+    h+='<div class="cost">'+rs.map(r=>'<span class="res">'+resPic(r)+' '+Math.floor(p.have[r]||0)+'/'+B.cap[L]+'</span>').join('')+'</div>';
     h+='<button class="vbtn" data-act="collect"'+(n?'':' disabled')+'>'+(n?T('vil.collect',n):T('vil.nothing'))+'</button>'}
   if(why!=='max')h+='<p class="next">'+T('vil.next',vInfo(k,L+1))+'</p><div class="cost">'+costLine(c)+'</div>';
   h+='<button class="vbtn" data-act="up"'+(why?' disabled':'')+'>'+(why==='max'?T('vil.max'):why==='center'?T('vil.needCenter'):L?T('vil.up',L+1):T('vil.build'))+'</button>';
@@ -225,7 +225,7 @@ function villageHud(){
 function tradeHtml(L){
   let h='';{
     const rs=Object.keys(RES.list),card=(kind,r,why,p)=>'<button class="tcard" data-act="'+kind+'" data-r="'+r+'"'+(why?' disabled':'')+' aria-label="'+T('vil.'+kind)+' '+resName(r)+'" style="--rar:'+RES.rarity[resOf(r).rar||0].col+'">'+
-      '<span class="ti">'+resIcon(r)+'<small>×'+vLot(r)+'</small></span><span class="tp"><bdi>'+p+'</bdi>'+resIcon('coins')+'</span>'+(why?'<span class="tw">'+why+'</span>':'')+'</button>';
+      '<span class="ti">'+resPic(r)+'<small>×'+vLot(r)+'</small></span><span class="tp"><bdi>'+p+'</bdi>'+resPic('coins')+'</span>'+(why?'<span class="tw">'+why+'</span>':'')+'</button>';
     const sell=rs.filter(r=>vCanTrade('sell',r)&&bagHas(r)),buy=rs.filter(r=>resOf(r).buy);
     h+='<section><span class="sk">'+T('vil.sell')+'</span>'+(sell.length?'<div class="trade">'+sell.map(r=>card('sell',r,bagHas(r,vLot(r))?'':T('vil.needN',vLot(r)),'+'+vPrice(r,'sell')*vLot(r))).join('')+'</div>':'<p class="next">'+T('stash.empty')+'</p>')+'</section>';
     h+='<section><span class="sk">'+T('vil.buy')+'</span><div class="trade">'+buy.map(r=>{const p=vPrice(r,'buy')*vLot(r);

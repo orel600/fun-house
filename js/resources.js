@@ -71,6 +71,10 @@ const RES={
 
 const resOf=r=>RES.list[r]||null;
 const resIcon=r=>(RES.list[r]||{}).icon||'';
+/* תמונה למשאב בממשק (HTML), מהעיצוב של ניר מג'מיני (icons/ui/res). למשאב בלי תמונה: האימוג'י. על הקנבס תמיד האימוג'י (resIcon).
+   משאב חדש עם תמונה: קובץ ב-icons/ui/res בשם המשאב, ושורה כאן. אבנים בשלוש דרגות (רסיס, אבן, מושלמת) חולקות תמונה, והמסגרת בצבע הנדירות מבדילה */
+const RES_PIC={coins:1,wood:1,stone:1,cloth:1,copper:1,iron:1,silver:1,gold:1,bone:1,hide:1,herb:1,mushroom:1,flower:1,ruby:1,sapphire:1,star:1,rubyC:'ruby',rubyF:'ruby',sapphireC:'sapphire',sapphireF:'sapphire'};
+const resPic=r=>{const p=RES_PIC[r];return p?'<img class="ri" src="icons/ui/res/'+(p===1?r:p)+'.png" alt="">':resIcon(r)};
 // כל המשאבים של משפחה, לפי הסדר בטבלה
 const resFam=f=>Object.keys(RES.list).filter(r=>RES.list[r].fam===f);
 // שמירה ישנה: משאב ששמו השתנה עובר לשם החדש, בתרמיל ובמחסן. נקרא מ-saveLoad
