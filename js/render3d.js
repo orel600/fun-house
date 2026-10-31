@@ -71,6 +71,11 @@ const LOOK3D={
   npc_fisher:{model:'ranger',h:58,foot:13,tint:'#3F7BF5',own:false,anim:{...NPC_ANIM,idle:'Idle_B'}},
   npc_cutter:{model:'barbarian',h:62,foot:14,tint:'#A8784A',own:false,props:{hammer:{prop:'w_hammer_A',...HAND_R}},anim:NPC_ANIM},
   npc_herbal:{model:'mage',h:60,foot:13,tint:'#5FA35A',anim:NPC_ANIM},
+  // תושבים שחוזרים כשפנס נדלק (HOME ב-homecoming.js)
+  npc_gardener:{model:'barbarian',h:56,foot:13,tint:'#8BC34A',own:false,anim:{...NPC_ANIM,idle:'Idle_B'}},
+  npc_washer:{model:'rogue',h:58,foot:13,tint:'#3F7BF5',own:false,anim:NPC_ANIM},
+  npc_singer:{model:'mage',h:60,foot:13,tint:'#BFEFFF',anim:NPC_ANIM},
+  npc_baker:{model:'barbarian',h:60,foot:14,tint:'fire',own:false,anim:NPC_ANIM},
   /* חיית המחמד (pet.js): pet_<חיה><שלב>. הגובה על המסך מ-PET (stages[].h), כי גם הדו-ממד משתמש בו. anim: מה מנגנים בכל מצב של החיה */
   pet_piocho1:{model:'piocho1',foot:2,anim:DOG_ANIM},
   pet_piocho2:{model:'piocho2',foot:2,anim:DOG_ANIM},

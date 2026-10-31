@@ -930,6 +930,20 @@ function worldBot(m,L,god){
     (ch4.reg==='desert'&&ch4.sand?', הגעה למדבר':', לא הגיע למדבר')+(ch4.heat?' בחום':', בלי חום')+', '+ch4.foes+' אויבים חמים'+(ch4.weak?' (חלשים למים)':' (לא חלשים למים!)')+(ch4.noNpc?'':', דמויות האחו במדבר!')+
     (ch4.ember?', אודם':', קווסט האודם שבור')+(ch4.warden?', שומר האש קם':', שומר האש לא קם')+(ch4.ring?(ch4.ringHit?', טבעת אש פוגעת':', טבעת אש לא פוגעת'):', בלי טבעות אש')+(ch4.ready?' והופל':', לא הופל')+
     (ch4.back?', חזרה לרכס ליד המעבר':', החזרה לרכס שבורה')+(ch4.lit?', פנס האש נדלק':', פנס האש לא נדלק')+(ch4.safer?', המדבר בטוח יותר':''));
+  // כל פנס שנדלק משנה את הכפר (homecoming.js): בכניסה הבאה לכפר התושב חוזר, העמוד שלו דולק, ראש הכפר מספר, ובעולם נופל חפץ ביסוד של הפנס
+  const hm=await page.evaluate(()=>{
+    const o={},b0=SAVE.home.back;SAVE.home.back={};
+    o.away=!npcHere('gardener');enterVillage();o.k=homeBack('earth')&&!homeBack('water');o.here=npcHere('gardener')&&!!npcAt('gardener');
+    o.free=Object.keys(HOME.list).every(k=>npcFree(HOME.list[k].at.x,HOME.list[k].at.y));
+    o.posts=HOME.posts.filter(p=>STO()[p.k]&&homeBack(p.k)).length;
+    o.line=!!npcLine('gardener')&&!/^npc\./.test(npcLine('gardener'));
+    o.saved=!!JSON.parse(localStorage.getItem(SAVE_STORE.key)).home.back.earth;
+    enterVillage();o.next=homeBack('water');enterVillage();o.three=homeBack('ice');
+    o.fire=!homeBack('fire')&&!npcHere('baker')||!!STO().fire;
+    enterWorld('home');const H=HOME.list.earth,c=H.chance;H.chance=2;const n0=drops().length;o.gift=homeKill({x:P.x,y:P.y,r:13})===H.item&&drops().length>n0;H.chance=c;
+    SAVE.home.back={...b0,...SAVE.home.back};npcTalk(null);enterVillage();return o});
+  check(hm.away&&hm.k&&hm.here&&hm.free&&hm.posts>=1&&hm.line&&hm.saved&&hm.next&&hm.three&&hm.fire&&hm.gift,'פנס משנה את הכפר: '+(hm.away&&hm.here?'הגנן חוזר בכניסה לכפר':'הגנן לא חזר')+(hm.k?' (פנס אחד בכל כניסה)':', כמה פנסים בבת אחת')+
+    (hm.saved?', נשמר':', לא נשמר')+', '+hm.posts+' עמודים דולקים'+(hm.next&&hm.three?', המים והקרח בכניסות הבאות':', המים והקרח לא חזרו')+(hm.free?'':', תושב עומד במקום אסור')+(hm.line?'':', אין לו משפט')+(hm.gift?', וחפץ ביסוד נופל בעולם':', החפץ לא נפל'));
   // אירועים בעולם (events.js): גל שנגמר בתיבה, עגלה שנותנת שלל כשמגיעים, ומטר שמפיל מתכות
   const evt=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=()=>drops().length;
