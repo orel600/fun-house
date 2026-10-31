@@ -43,7 +43,7 @@ function saveLoad(){const d=SAVE_STORE.load();SAVE=isObj(d)?saveMerge(saveBlank(
 function saveNow(){SAVE.ts=Date.now();SAVE_STORE.write(SAVE)}
 
 function bagHas(k,n=1){return (SAVE.bag[k]||0)>=n}
-function bagAdd(k,n=1){SAVE.bag[k]=(SAVE.bag[k]||0)+n}
+function bagAdd(k,n=1){SAVE.bag[k]=(SAVE.bag[k]||0)+n;if(typeof bookSee==='function')bookSee(k)}   // ספר ההרפתקאות (book.js)
 function bagTake(k,n=1){if(!bagHas(k,n))return false;SAVE.bag[k]-=n;if(!SAVE.bag[k])delete SAVE.bag[k];return true}
 
 saveLoad();

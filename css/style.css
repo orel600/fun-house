@@ -593,6 +593,43 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 /* הדמות בתלת-ממד בחלון הציוד (doll3d.js): הקנבס ממלא את מקום הבובה, והאימוג'י מוסתר */
 .gfig.d3 span{visibility:hidden}
 .gfig .doll3d{position:absolute;inset:-12% -20%;width:140%;height:124%;pointer-events:none}   /* גדול מהמשבצת: הדמות ממלאת את האמצע */
+
+/* ספר ההרפתקאות (js/book.js): חלון גדול, לשוניות, ובשני טורים הרשת (רק היא גוללת) והפרטים עם הפרס */
+.qlog.win.bookwin{display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.bktabs button{min-height:40px;padding:4px 12px;font-size:14px}
+.bktabs small{opacity:.8}
+.bkcols{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;overflow-y:auto}
+.bkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:6px;align-content:start}
+.bkc{appearance:none;position:relative;aspect-ratio:1;min-height:52px;border-radius:12px;padding:0;cursor:pointer;color:var(--chalk);
+  border:2px solid color-mix(in srgb,var(--rar,#3A4566) 60%,var(--line));background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--rar,#3A4566) 20%,var(--panel)),var(--panel) 75%)}
+.bkc.on{outline:3px solid var(--gold);outline-offset:1px}
+.bkc:active{transform:scale(.92)}
+.bpic{font-size:28px;line-height:1;display:grid;place-items:center;height:100%}
+.bpic .ri{width:70%;height:70%;object-fit:contain}
+.bkc.unk,.bkc.unk:active{border-color:var(--line);background:var(--panel)}
+.bkc.unk .bpic,.bpic.unk{filter:brightness(0);opacity:.35}
+.bkc>b{position:absolute;inset:0;display:grid;place-items:center;font:900 22px var(--body);color:var(--dim)}
+.bkc>small{position:absolute;bottom:2px;inset-inline-end:5px;font:800 11px var(--body);color:var(--chalk);text-shadow:0 1px 2px #000;direction:ltr}
+.bkside{display:flex;flex-direction:column;gap:8px}
+.bkdet{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px}
+.bkdet b{font-size:17px}
+.bkdet p,.bkrew p,.bkhint{margin:0;font-size:13px;line-height:1.35;color:var(--chalk)}
+.bkhint{color:var(--dim)}
+.bpic.big{font-size:44px;width:64px;height:64px}
+.bkrew{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center}
+.bkrew.ready{border-color:var(--gold)}
+.bkrew .ri{width:1.35em;height:1.35em;vertical-align:-.3em;object-fit:contain}
+.bkbar{width:100%;height:10px;border-radius:5px;background:#0006;overflow:hidden}
+.bkbar i{display:block;height:100%;background:var(--gold)}
+.bkclaim{appearance:none;min-height:48px;min-width:140px;border-radius:12px;border:2px solid #0006;background:linear-gradient(#FFD86B,#E0A92E);color:var(--ink);
+  font:900 17px var(--body);cursor:pointer;box-shadow:0 3px 0 #8A6414}
+.bkclaim:active{transform:scale(.92)}
+@media (orientation:landscape){
+  .qlog.win.bookwin{display:flex}
+  .bkcols{flex-direction:row;overflow:hidden}
+  .bkgrid{flex:3;overflow-y:auto;overscroll-behavior:contain;padding:2px}
+  .bkside{flex:2;overflow-y:auto}
+}
 /* כוחות על ציוד (js/powers.js): ✦ בפינה של פריט עם כוח, שורת הכוח בזהב, והלשוניות בנפחייה */
 .gtile .gpw{position:absolute;top:0;inset-inline-end:2px;direction:ltr;font:800 11px var(--body);color:var(--gold)}
 .gpow{color:var(--gold);font-weight:800;margin:4px 0}
