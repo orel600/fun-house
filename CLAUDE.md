@@ -52,7 +52,7 @@ Claude לא מדפיס את הטוקן, לא כותב אותו בקובץ ולא
 - כתובת: `https://yucbzntldpwvjqnyfdcf.supabase.co`
 - מפתח ציבורי: `sb_publishable_1DRHbwtyGm6Ke0GVvtWiNQ_gwSkAomG`
 
-סיסמת מסד הנתונים והמפתח `secret` נשארים אצל אוראל, ולא נכנסים לריפו או ליומן. **כניסה עם Google מוגדרת** (אוראל, 30.10.2026): הלקוח ב-Google Cloud בפרויקט `fun-house`, והכתובות שמותר לחזור אליהן הן הקישור הקבוע וקישורי ה-PR (`https://fun-house-*-fun-house2.vercel.app/**`). האפליקציה ב-Google במצב בדיקה, אז רק מי שברשימת Test users (ב-Google Auth Platform ← Audience) יכול להיכנס. מי שצריך גישה: אוראל מוסיף אותו שם.
+סיסמת מסד הנתונים והמפתח `secret` נשארים אצל אוראל, ולא נכנסים לריפו או ליומן. **כניסה עם Google מוגדרת** (אוראל, 30.10.2026): הלקוח `Fun house` ב-Google Cloud בפרויקט "My First Project", והכתובות שמותר לחזור אליהן הן הקישור הקבוע וקישורי ה-PR (`https://fun-house-*-fun-house2.vercel.app/**`). האפליקציה ב-Google במצב בדיקה, אז רק מי שברשימת Test users (ב-Google Auth Platform ← Audience) יכול להיכנס. מי שצריך גישה: אוראל מוסיף אותו שם. כניסה אנונימית וקישור ידני (Allow anonymous sign-ins, Allow manual linking) דלוקים מ-31.10.2026.
 
 ## מבנה הקוד
 
