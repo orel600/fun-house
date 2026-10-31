@@ -7,7 +7,7 @@
 
 const RES={
   // סדר המשפחות בתרמיל. min: כמה מקורות לפחות. לחלקי בוס יש מקור אחד בכוונה: רק הבוס שלהם (ניר)
-  fams:{coins:{min:0},build:{min:2},metal:{min:2},creature:{min:2},boss:{min:1},rare:{min:2}},
+  fams:{coins:{min:0},build:{min:2},metal:{min:2},creature:{min:2},boss:{min:1},rare:{min:2},fish:{min:1}},   // fish: רק מדיג (fishing.js), בכל מקום מים מאגר משלו
   /* דרגות הנדירות של שלל: רגיל, לא שכיח, נדיר, אפי, אגדי. הדרגה של שלל היא הנדירות של המשאב (rar).
      col: הצבע של המסגרת ושל עמוד האור שעל הקרקע. beam: כמה גבוה עמוד האור (0: בלי). party: חגיגה וצליל כשנופל (celebrate ב-fx.js).
      lot: כמה יחידות בכל לחיצה בשוק. market: מאיזו רמת שוק אפשר לקנות */
@@ -58,7 +58,15 @@ const RES={
     amber:   {fam:'rare',icon:'🔶',rar:3,sell:20,buy:70,elem:'earth',grade:1},
     amberF:  {fam:'rare',icon:'🔶',rar:4,sell:50,buy:180,elem:'earth',grade:2},
     gem:     {fam:'rare',icon:'💎',rar:2,sell:12,buy:45},   // אבן מגן: שומרת על פריט מירידה כשנכשלים ב-Aging (aging.js)
-    star:    {fam:'rare',icon:'🌟',rar:4,sell:45,buy:160}
+    star:    {fam:'rare',icon:'🌟',rar:4,sell:45,buy:160},
+    // ---- דגים (fishing.js): רק מדיג, אי אפשר לקנות. מוכרים בשוק, או מבשלים אצל הפונדקאית לחיזוק בעולם (FISH.meals) ----
+    minnow:  {fam:'fish',icon:'🐟',rar:0,sell:2},
+    perch:   {fam:'fish',icon:'🐠',rar:0,sell:3},
+    crab:    {fam:'fish',icon:'🦀',rar:1,sell:5},
+    puffer:  {fam:'fish',icon:'🐡',rar:1,sell:6},
+    eel:     {fam:'fish',icon:'🐍',rar:2,sell:12},
+    mistfin: {fam:'fish',icon:'🦑',rar:3,sell:25},
+    koi:     {fam:'fish',icon:'🎏',rar:4,sell:60}
   },
   /* מה רואים בפס העליון בכל מקום (ניר: "לא חייבים לראות כל הזמן את כל המשאבים"). המפתח: המבנה שעומדים לידו.
      ברשימה: משפחות או משאבים. מה שב-always מוצג תמיד, וכל השאר רק כשיש ממנו. bag: כל מה שיש בתרמיל */
@@ -104,6 +112,7 @@ function resWhere(r){
   if(AGING.cost.some(has)||AGING.gem===r)use.add(T('tip.aging'));
   for(const k in PET.kinds)if(PET.kinds[k].stages.some(s=>has(s.dig.loot)))src.add(T('pet.name.'+k));   // חפירה של חיית המחמד
   if(PET.feed.res===r)use.add(T('tip.pet'));
+  if(typeof FISH!=='undefined'){if(Object.values(FISH.pools).some(has))src.add(T('fish.src'));if(Object.values(FISH.meals).some(m=>has(m.need)))use.add(T('npc.inn')[0])}   // דיג ובישול (fishing.js)
   if(RES.list[r].sell)use.add(T('vil.market'));
   return{src:[...src],use:[...use]};
 }
