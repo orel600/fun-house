@@ -95,9 +95,24 @@ const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
 const R3D={shown:new WeakSet(),nid:0,on:false,ready:false,failed:false,want:true,actors:new Map(),dying:[],tmpl:{},clips:{},props:{},stats:{}};
-try{R3D.want=localStorage.getItem('zm-gfx')!=='2d'}catch(e){}
+/* גרפיקה: תלת-ממד כברירת מחדל. אם WebGL לא עולה, או שהמשחק איטי בשניות הראשונות, עוברים לבד לדו-ממד, עם הודעה אחת.
+   בחירה של השחקן בחלון ההגדרות ('zm-gfx') מנצחת תמיד, ואז לא מודדים. המעבר האוטומטי נזכר ('zm-gfx-auto'), כדי לא להאט שוב בפעם הבאה */
+const GFX_AUTO={minFps:24,warm:1.5,secs:4};   // מתחת ל-minFps ממוצע: דו-ממד. warm: שניות ראשונות שלא נמדדות (טעינה). secs: כמה שניות משחק מודדים
+try{const u=localStorage.getItem('zm-gfx');R3D.user=!!u;R3D.want=u?u==='3d':localStorage.getItem('zm-gfx-auto')!=='2d'}catch(e){}
 
-function setGfx(g){R3D.want=g==='3d';try{localStorage.setItem('zm-gfx',g)}catch(e){}
+// נקרא מ-render3d בכל פריים שמצויר: סופר פריימים בזמן משחק אמיתי, ופעם אחת מחליט
+function gfxMeasure(now){
+  const m=R3D.fm||(R3D.fm={t:0,n:0,last:0});const gap=m.last?(now-m.last)/1000:0;m.last=now;
+  if(R3D.user||R3D.drawEvery||R3D.measured||S.mode!=='play'||!gap||gap>0.5)return;   // הפסקה, חלון ברקע או הבדיקה האוטומטית: לא נחשב
+  m.t+=gap;if(m.t<GFX_AUTO.warm)return;m.n++;
+  if(m.t<GFX_AUTO.warm+GFX_AUTO.secs)return;
+  R3D.measured=true;const fps=m.n/GFX_AUTO.secs;R3D.fps=Math.round(fps);
+  if(fps<GFX_AUTO.minFps){try{localStorage.setItem('zm-gfx-auto','2d')}catch(e){}gfxAuto()}
+}
+// מעבר אוטומטי לדו-ממד, בלי לשמור כבחירה של השחקן. ההודעה מוצגת כשהמשחק רץ (main.js)
+function gfxAuto(){R3D.want=false;R3D.on=false;if(R3D.cvs)R3D.cvs.hidden=true;if(!R3D.user)R3D.note=true;showGfx()}
+
+function setGfx(g){R3D.want=g==='3d';R3D.user=true;try{localStorage.setItem('zm-gfx',g)}catch(e){}
   if(R3D.want&&!R3D.ready&&!R3D.failed)init3d();R3D.on=R3D.want&&R3D.ready;if(R3D.cvs)R3D.cvs.hidden=!R3D.on;showGfx()}
 function showGfx(){for(const b of document.querySelectorAll('[data-gfx]'))b.setAttribute('aria-pressed',String((b.dataset.gfx==='3d')===R3D.want));
   const g=document.querySelector('.gfx');if(g)g.hidden=R3D.failed}
@@ -164,6 +179,7 @@ async function init3d(){
   }catch(e){
     R3D.failed=true;R3D.on=false;if(R3D.cvs)R3D.cvs.hidden=true;
     console.warn('תלת-ממד לא זמין, ממשיכים בדו-ממד:',e&&e.message);
+    if(!R3D.user)R3D.note=true;
   }
   R3D.loading=false;showGfx();
 }
@@ -493,7 +509,7 @@ function render3d(ox,oy){
   const up=m=>{if(!m.count)return;const b=m.instanceMatrix;b.clearUpdateRanges();b.addUpdateRange(0,m.count*16);b.needsUpdate=true};
   for(const k in R3D.marks)up(R3D.marks[k]);
   for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)up(m);
-  if(!skip)r.render(R3D.scene,c);
+  if(!skip){r.render(R3D.scene,c);gfxMeasure(now)}
   const i=r.info.render;R3D.stats={calls:i.calls,tris:i.triangles,actors:R3D.actors.size+1,crowd:R3D.nCrowd};
 }
 // התחלה מחדש: מנקים דמויות מהריצה הקודמת
