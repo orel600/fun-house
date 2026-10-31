@@ -20,7 +20,7 @@ const SECRETS={
   lookout:{dur:7,cd:20,col:'#FFE08A'},   // כמה שניות רואים את המקורות, וכל כמה אפשר לעלות שוב
   // אוצר קבור: near מאיזה מרחק פיוחו רצה לחפור. loot כמו בתיבה, ויותר
   carving:{near:70,loot:{coins:[1,70],gold:[0.5,1],silver:[0.7,2],amber:[0.3,1],star:[0.05,1],ruby:[0.25,1]}},
-  /* המקומות, לכל אזור (WORLD.regions ב-world.js. האחו הוא 'meadow', כולל המחצבה במזרח).
+  /* המקומות, לכל אזור (WORLD.regions ב-world.js. האחו הוא 'meadow', כולל המחצבה במזרח. האגם 'lake', הרכס הקפוא 'ridge').
      hide: מה מסתיר את התיבה (rock או bush). bless: איזו ברכה. to: איפה האוצר הקבור. כל מקום רחוק משערים, ממים ומהפנס */
   regions:{
     meadow:[
@@ -32,9 +32,15 @@ const SECRETS={
     ],
     lake:[
       {id:'l_chest',kind:'chest',x:960,y:580,hide:'bush'},           // בפינה הדרום-מזרחית
-      {id:'l_shrine',kind:'shrine',x:900,y:-610,bless:'loot'},       // צפון-מזרח, מעבר לאבני הגאות
+      {id:'l_shrine',kind:'shrine',x:520,y:620,bless:'loot'},        // בדרום, מתחת לבריכה המזרחית
       {id:'l_look',kind:'lookout',x:-930,y:-620},                    // צפון-מערב
       {id:'l_carve',kind:'carving',x:40,y:430,to:{x:-520,y:620}}     // בין הבריכות, ומצביע אל הדרום
+    ],
+    ridge:[
+      {id:'r_chest',kind:'chest',x:-960,y:-560,hide:'rock'},         // בפינה הצפון-מערבית, מאחורי סלע מושלג
+      {id:'r_shrine',kind:'shrine',x:-900,y:560,bless:'speed'},      // דרום-מערב
+      {id:'r_look',kind:'lookout',x:930,y:-120},                     // על השפה המזרחית של הרכס
+      {id:'r_carve',kind:'carving',x:380,y:600,to:{x:-60,y:640}}     // אורן בודד בדרום, מצביע מערבה
     ]
   }
 };

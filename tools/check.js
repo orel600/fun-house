@@ -926,14 +926,14 @@ function worldBot(m,L,god){
     for(let i=0;i<200&&!scFound(cv.id);i++){petUpdate(0.05);secretsUpdate(0.05)}
     o.dug=scFound(cv.id)&&n0()>d0;o.count=scCount('meadow')+'/'+L.length;secretsHud();o.hud=$('wSec').textContent;
     o.saved=Object.keys((JSON.parse(localStorage.getItem(SAVE_STORE.key)).secrets||{}).found||{}).length;
-    o.lake=(SECRETS.regions.lake||[]).length;
+    o.lake=(SECRETS.regions.lake||[]).length;o.ridge=(SECRETS.regions.ridge||[]).length;
     return o});
   if(CFG.shots){await page.clock.runFor(300);await shot('world-secrets')}
   await page.evaluate(()=>enterVillage());
-  check(!sec.bad.length&&sec.shown&&sec.chest&&sec.bless&&sec.blessEnd&&sec.look&&sec.read&&sec.dug&&sec.saved===4&&sec.hud.includes('4/'),
+  check(!sec.bad.length&&sec.shown&&sec.chest&&sec.bless&&sec.blessEnd&&sec.look&&sec.read&&sec.dug&&sec.saved===4&&sec.hud.includes('4/')&&sec.ridge>0,
     'סודות בעולם: '+(sec.bad.length?'מחוץ לאזור או במים: '+sec.bad.join(','):'כל המקומות תקינים')+(sec.shown?', תיבה נחשפת':', התיבה לא נחשפה')+(sec.chest?' ונפתחת':' ולא נפתחת')+
     (sec.bless?', מקדש מברך':', המקדש לא מברך')+(sec.blessEnd?' והברכה נגמרת':' והברכה לא נגמרת!')+(sec.look?', תצפית חושפת':', התצפית לא עובדת')+
-    (sec.read?', סימן בעץ':', הסימן לא נקרא')+(sec.sniff?', פיוחו רצה':'')+(sec.dug?' וחופרת אוצר':' ולא חפרה')+', '+sec.count+' באחו ("'+sec.hud+'"), נשמר '+sec.saved+', באגם '+sec.lake);
+    (sec.read?', סימן בעץ':', הסימן לא נקרא')+(sec.sniff?', פיוחו רצה':'')+(sec.dug?' וחופרת אוצר':' ולא חפרה')+', '+sec.count+' באחו ("'+sec.hud+'"), נשמר '+sec.saved+', באגם '+sec.lake+', ברכס '+sec.ridge);
   // אויבים מיוחדים בעולם (affix.js): מתפצל נותן שניים, מתפוצץ פוגע אחרי רגע, מתחדש מרפא, ולכולם שם ושלל
   const afx=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=enemies.length,L=WORLD.foes[3],mk=id=>{const e=addEnemy('grunt',P.x+60,P.y,1);e.home=3;affixSet(e,id);return e};
