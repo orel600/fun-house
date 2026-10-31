@@ -48,6 +48,12 @@ function heroXpNow(){let xp=SAVE.hero.xp||0,lv=1;while(xp>=rankNeed(lv)){xp-=ran
 // כמה מזל הנקודות נותנות לשלל (loot.js)
 const statLoot=()=>1+(P.loot||0)/100;
 
+/* ---- אייקונים מצוירים (Creative Claw) לסטטים, לענפים ולצמתים. מה שאין לו תמונה נשאר אימוג'י, ועל הקנבס תמיד אימוג'י ---- */
+const SK_PIC={w5:'def',h3:'agi',h5:'hunt',hMark:'h1'};   // צמתים שחולקים תמונה עם אייקון אחר
+['str','vit','agi','haste','def','luck','war','hunt','mage','w1','wRoot','wCounter','w3','wBlood','wQuake','wMountain','wBerserk',
+ 'h1','hMomentum','hFirst','hHop','hSniper','hWind','m1','mRotate','mFocus','m3','mSpread','mCircle','m5','mStorm','mGlass'].forEach(k=>SK_PIC[k]=k);
+const skPic=(k,emoji)=>SK_PIC[k]?'<img class="ski" src="icons/ui/skills/'+SK_PIC[k]+'.png" alt="">':emoji;
+
 /* ---- המסך: בחלון הציוד, כשלא נבחר פריט ---- */
 function statsHtml(){
   const x=heroXpNow(),free=stFree(),p=stPts(),g=statsGive();
@@ -56,9 +62,9 @@ function statsHtml(){
   h+='<p class="stfree'+(free?' on':'')+'">'+(free?T('st.free',free):T('st.none'))+'</p>';
   h+='<div class="strows">'+Object.keys(STATS.list).map(k=>{const S_=STATS.list[k],[name,what]=T('st.'+k),n=p[k]||0;
     const val=[...new Set(Object.keys(S_.give).map(s=>'+'+(Math.round((g[s]||0)*10)/10)+(s==='hp'?'':'%')))].join(' / ');
-    return '<div class="strow"><span class="sti">'+S_.icon+'</span><span class="stn"><b>'+name+' <bdi>'+n+'</bdi></b><small>'+what+(n?' · <bdi>'+val+'</bdi>':'')+'</small></span>'+
+    return '<div class="strow"><span class="sti">'+skPic(k,S_.icon)+'</span><span class="stn"><b>'+name+' <bdi>'+n+'</bdi></b><small>'+what+(n?' · <bdi>'+val+'</bdi>':'')+'</small></span>'+
       '<button class="stplus" data-act="stat" data-k="'+k+'"'+(free?'':' disabled')+' aria-label="+ '+name+'">+</button></div>'}).join('')+'</div>';
-  h+='<button class="vbtn" data-act="tree">🌳 '+T('tr.open')+(trFree()?' ('+trFree()+')':'')+'</button>';
+  h+='<button class="vbtn" data-act="tree">'+skPic('wRoot','🌳')+' '+T('tr.open')+(trFree()?' ('+trFree()+')':'')+'</button>';
   if(stSpent()||trSpent())h+='<p class="dim">'+T('st.respecWhere',T('npc.'+STATS.respec.npc)[0])+'</p>';
   return h;
 }
@@ -205,12 +211,12 @@ function treeHtml(){
   const free=trFree(),H=trHave(),key=trKeyTaken();
   let h='<div class="trtop"><button class="vbtn ghost" data-act="back">'+T('tr.back')+'</button><p class="stfree'+(free?' on':'')+'">'+(free?T('tr.free',free):T('tr.none',TREE.every))+'</p></div><div class="trcols">';
   for(const b in TREE.branches){const B=TREE.branches[b],have=H[b]||[];
-    h+='<section class="trb" style="--br:'+B.col+'"><h4>'+B.icon+' '+T('tr.'+b)+' <bdi>'+have.length+'/'+B.steps.length+'</bdi></h4>';
+    h+='<section class="trb" style="--br:'+B.col+'"><h4>'+skPic(b,B.icon)+' '+T('tr.'+b)+' <bdi>'+have.length+'/'+B.steps.length+'</bdi></h4>';
     B.steps.forEach((st,i)=>{const os=trOpts(st);
       if(st.key)h+='<p class="trkey">'+T('tr.key')+'</p>';
       os.forEach((n,k)=>{const [name,what]=T('tr.'+n.id),got=have[i]===n.id,gone=i<have.length&&!got,next=i===have.length,why=next?trWhy(b,n.id):'order',c=trCost(st);
         if(k)h+='<p class="tror">'+T('tr.or')+'</p>';
-        h+='<div class="trn '+(got?'got':next&&why!=='key'?'next':'lock')+(gone?' gone':'')+'"><span class="sti">'+n.icon+'</span><span class="stn"><b>'+name+'</b><small>'+what+'</small></span>'+
+        h+='<div class="trn '+(got?'got':next&&why!=='key'?'next':'lock')+(gone?' gone':'')+'"><span class="sti">'+skPic(n.id,n.icon)+'</span><span class="stn"><b>'+name+'</b><small>'+what+'</small></span>'+
           (got?'<span class="trok">✓</span>':next&&why!=='key'?'<button class="stplus" data-act="learn" data-b="'+b+'" data-id="'+n.id+'"'+(why?' disabled':'')+'>'+(c>1?c:'+')+'</button>':'<span class="trok">'+(gone?'✗':'🔒')+'</span>')+'</div>'});
     });
     h+='</section>'}
