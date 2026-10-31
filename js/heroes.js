@@ -27,12 +27,14 @@ const HEROES={
     on:['dmg_sword','dmg_gun','kills','bosses']
   },
   /* מראה אישי: רק הדמות בתלת-ממד מתחלפת. המחלקה, הנשק והפסיבית נשארים של דמות ההתחלה. נשמר ב-SAVE.hero.skin.
-     בוחרים במסך הבחירה ("הדמות שלי"), או עם ?hero=nir בסוף הכתובת (ו-?hero=none מחזיר את הרגיל).
+     בוחרים במסך הבחירה ("הדמות שלי"), או עם ?hero=nir או ?hero=orel בסוף הכתובת (ו-?hero=none מחזיר את הרגיל).
      look: שורה ב-LOOK3D (render3d.js). spark: ניצוץ שמרחף ליד הכתף (drawSpark ב-render.js).
      dx,up: איפה ליד הדמות (פיקסלים לצד, וחלק מהגובה). bob: כמה הוא עולה ויורד, ובאיזו מהירות. r: גודל. lag: כמה מהר הוא מדביק את הדמות */
   skins:{
     // ניר: "הנודד עם הניצוץ", מ-art/heroes/nir-sheet.jpg. הניצוץ קישוט בינתיים, ומיועד להיות החפץ המסתובב הראשון שלו (המשימה של אוראל, orbit)
-    nir:{look:'nirHero',spark:{dx:24,up:0.62,bob:3,speed:2.2,r:5,lag:6}}
+    nir:{look:'nirHero',spark:{dx:24,up:0.62,bob:3,speed:2.2,r:5,lag:6}},
+    // אוראל: "הנודד עם החליל", מ-art/heroes/orel-sheet.jpg. theme: ערכת מראה לנשק, ליריות ולסקילים (flute.js)
+    orel:{look:'orelHero',theme:'flute'}
   }
 };
 
@@ -69,8 +71,8 @@ function heroPick(id){
   $('ovHero').hidden=true;
   enterVillage();
 }
-// "הדמות שלי": מדליק ומכבה את המראה האישי של ניר מעל הדמות שבוחרים
-function heroSkinBtn(){$('heroSkin').setAttribute('aria-pressed',String(heroSkin()==='nir'))}
+// "הדמות שלי": כל לחיצה עוברת למראה האישי הבא (ניר, אוראל), ואחרי האחרון חוזרת לדמות הרגילה
+function heroSkinBtn(){$('heroSkin').setAttribute('aria-pressed',String(!!heroSkin()))}
 $('ovHero').addEventListener('click',e=>{
-  if(e.target.closest('#heroSkin')){SAVE.hero.skin=heroSkin()==='nir'?null:'nir';heroSkinBtn();return}
+  if(e.target.closest('#heroSkin')){const ks=Object.keys(HEROES.skins);SAVE.hero.skin=ks[ks.indexOf(heroSkin())+1]||null;heroSkinBtn();return}
   const b=e.target.closest('[data-hero]');if(b)heroPick(b.dataset.hero)});

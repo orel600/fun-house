@@ -45,6 +45,7 @@ const LOOK3D={
   pilotHero:{model:'pilotHero',h:56,foot:14},
   // הדמות האישית של ניר (HEROES.skins ב-heroes.js): מראה בלבד, מעל המחלקה שנבחרה. אותו גובה כמו הפיילוט
   nirHero:{model:'nirHero',h:56,foot:14},
+  orelHero:{model:'orelHero',h:58,foot:14},   // הדמות האישית של אוראל. הברדס מגביה אותו קצת
   /* תושבי הכפר (NPC ב-npc.js): דמויות KayKit בצבע משלהן, עם אנימציות העבודה של 2.0 (NPC_ANIM), עד שיגיעו הדמויות של ג'מיני.
      own:false מסתיר את הנשק שהדמות מחזיקה בקובץ המקורי. anim: מה מנגנים בכל מצב של התושב (idle, walk, work, wave, cheer) */
   npc_head:{model:'knight',h:64,foot:14,tint:'gold',anim:{...NPC_ANIM,idle:'Idle_B'}},
@@ -229,6 +230,7 @@ function heroLook(){
     L.props[w]=Object.assign({prop:model,tier:mine?GEAR.tiers[it.tier].id:'wood'},g);
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
+  if(fluteOn())fluteGrip(L);   // הנודד עם החליל: חליל ביד במקום הנשק (flute.js)
   return R3D._hl=L;
 }
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
