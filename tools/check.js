@@ -297,6 +297,8 @@ function villageBot(m,L){
     if(m.age===2){q('#forgeClose').click();L.ageClosed=S.mode==='play';m.age=3;return L}
     // הזוהר: לרגע הקשת היא +10, ובודקים שיש שובל וחלקיקים על הנשק
     if(m.age===3){m.age=4;SAVE.gear.weapon='oakBow+10';P.weapon='gun';L.glowOn=1;return L}
+    // החלקיקים יוצאים באקראי (rate בשנייה, aging.js), אז מחכים עד כ-2 שניות של פריימים לפני שקובעים שאין
+    m.ageT=(m.ageT||0)+1;if(!AGE_FX.parts.length&&m.ageT<120)return L;
     L.glow={trail:AGE_FX.trail.length,parts:AGE_FX.parts.length,hand:!!AGE_FX.hand};SAVE.gear.weapon='oakBow+1';m.age=5;return L}
   if(!m.stash){   // המחסן: בונים, מכניסים את חרב העץ ועץ, ומחזירים את החרב לתרמיל
     const St=VILLAGE.b.stash;
