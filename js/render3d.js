@@ -443,7 +443,8 @@ function syncWorld(){
     for(const d of worldDecor()){const D=VIL3D.decor[d.kind],md=Array.isArray(D.model)?D.model[d.v<0.5?0:1]:D.model;vPut(md,d.x,d.y,D.w*(0.8+d.v*0.4),d.v*6.28,G.g)}
     const gs=wGates(true);for(const k in gs){const m=vPut(VIL3D.gate.model,gs[k].x,gs[k].y,VIL3D.gate.w,0,G.g);if(wIsPath(k))G.paths[k]=m}
     for(const p of RG.ponds||[]){const m=new THREE.Mesh(new THREE.CircleGeometry(p.r,40),new THREE.MeshLambertMaterial({color:W.pond||'#2a6d8f',transparent:true,opacity:0.9}));
-      m.rotation.x=-Math.PI/2;m.scale.set(1,1/SIN(),1);m.position.set(p.x,0.6,p.y/SIN());G.g.add(m)}}
+      m.rotation.x=-Math.PI/2;m.scale.set(1,1/SIN(),1);m.position.set(p.x,0.6,p.y/SIN());G.g.add(m)}
+    secrets3D(reg,(md,x,y,w,r)=>vPut(md,x,y,w,r,G.g))}   // סודות (secrets.js)
   R3D.wld=G;G.g.visible=true;
   for(const k in G.paths)G.paths[k].visible=wPathOpen(RG.paths[k]);
   for(const n of S.nd.list){
