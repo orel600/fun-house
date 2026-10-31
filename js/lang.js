@@ -854,6 +854,14 @@ const TEXT={
   'q.wCatch':{he:['סוף סוף דגים','הרוחות הלכו והדגים חזרו! תדוג לי 3 מהבריכה. לחץ "לדוג", חכה ל-! ולחץ כשהמחוג בירוק.'],en:['Fish at Last','The wisps are gone and the fish are back! Catch me 3 from the pond. Tap "Fish", wait for the !, then tap when the needle is in the green.']}
 };
 
+// ======== מפת העולם (worldmap.js) ========
+Object.assign(TEXT,{
+  'wm.title':{he:'מפה',en:'Map'},
+  'wm.world':{he:'העולם',en:'The world'},
+  'wm.here':{he:'אתה כאן',en:'You are here'},
+  'wm.key':{he:'★ אתה · ● פנס (זוהר: דולק) · 🔍 סודות שמצאת · ? אזור שעוד לא ביקרת בו',en:'★ You · ● Lantern (glowing: lit) · 🔍 Secrets found · ? A place you haven’t been yet'}
+});
+
 // ======== סודות בעולם (secrets.js) ========
 Object.assign(TEXT,{
   'sc.found':{he:(n,of)=>'🔍 גילית סוד! '+n+'/'+of+' באזור',en:(n,of)=>'🔍 Secret found! '+n+'/'+of+' here'},

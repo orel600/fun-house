@@ -805,7 +805,7 @@ function worldBot(m,L,god){
   const uiMeasure=place=>{const vis=e=>{if(!e||e.closest('[hidden]'))return null;const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>0&&r.height>0&&cs.display!=='none'&&cs.visibility!=='hidden'?r:null};
     const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1,W=innerWidth,H=innerHeight;
     const box=sel=>[...document.querySelectorAll(sel)].map(e=>({n:e.id||(e.className.split(' ')[0]+(e.dataset.tip?':'+e.dataset.tip:'')),r:vis(e)})).filter(x=>x.r);
-    const els=box(place==='world'?'#muteBtn,.hud .hp,#wBag .res,#wBag .resmore,#nav .nbtn':'#muteBtn,#vBag .res,#vBag .resmore,#nav .nbtn'),bad=[],off=[];
+    const els=box(place==='world'?'#muteBtn,#wMapBtn,.hud .hp,#wBag .res,#wBag .resmore,#nav .nbtn':'#muteBtn,#vBag .res,#vBag .resmore,#nav .nbtn'),bad=[],off=[];
     els.forEach((a,i)=>els.slice(i+1).forEach(b=>{if(hit(a.r,b.r))bad.push(a.n+'×'+b.n)}));
     for(const x of els)if(x.r.left<-0.5||x.r.right>W+0.5||x.r.top<-0.5||x.r.bottom>H+0.5)off.push(x.n);
     const pid=place==='world'?'wPanel':'vPanel',pn=vis($(pid));if(pn)for(const x of box('#nav .nbtn'))if(hit(pn,x.r))bad.push(pid+'×'+x.n);
@@ -820,7 +820,7 @@ function worldBot(m,L,god){
     o.wins.gear=win(gearOpen,'ovGear','#gearClose');
     o.wins.quests=win(()=>questLogOpen(true),'qLog','#qLog [data-act="close"]');
     o.wins.book=win(()=>bookOpen(true),'bookWin','#bookWin [data-act="close"]');
-    if(place==='world')return o;
+    if(place==='world'){o.wins.map=win(()=>wmapOpen(true),'wMap','#wMap [data-act="close"]');return o}
     o.wins.forge=win(forgeOpen,'ovForge','#forgeClose');
     const npc=Object.keys(NPC.list).find(npcHere);o.wins.npc=win(()=>npcTalk(npc),'npcDlg','#npcDlg [data-act="close"]');
     gearOpen();dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape'}));keys.Escape=false;o.esc=$('ovGear').hidden&&S.mode==='play';
@@ -1035,6 +1035,27 @@ function worldBot(m,L,god){
     'ספר ההרפתקאות: הריגה '+(bk.kill===1?'נרשמה':'לא נרשמה')+', חולשת גולם '+bk.weak+(bk.item?', פריט נרשם':', פריט לא נרשם')+(bk.res?', משאב נרשם':', משאב לא נרשם')+
     ', פרס מחכה '+bk.pend+(bk.badge?' עם נקודה':' בלי נקודה')+', החלון '+(bk.open?'נפתח ('+bk.cards+' רשומות, '+bk.unk+' צלליות)':'לא נפתח')+
     (bk.btn?', נלקח +'+bk.coins+' מטבעות':', אין כפתור פרס')+(bk.saved?', נשמר':', לא נשמר')+(bk.closed?', נסגר ב-✕':', לא נסגר')+(bk.esc?' וב-Esc':''));
+  // מפת העולם (worldmap.js): הכפתור פותח חלון עם שתי מפות, האזור הנוכחי מסומן, אזור שלא ביקרו בו הוא צללית, הביקור נשמר, וחלון נסגר ב-✕ וב-Esc
+  const wm=await page.evaluate(()=>{
+    const o={};SAVE.wmap={seen:{}};const st0=JSON.stringify(SAVE.story),sc0=JSON.stringify(SAVE.secrets);
+    SAVE.story=Object.assign({},SAVE.story,{earth:true,water:false,ice:false,fire:false});SAVE.secrets={found:{},read:{}};
+    enterWorld('home');o.btn=!$('wMapBtn').closest('[hidden]')&&getComputedStyle($('wMapBtn')).display!=='none';
+    $('wMapBtn').click();o.open=!$('wMap').hidden&&S.mode==='map';const G=wmGraph();o.show=G.show.join(',');o.edges=G.edges.length;
+    o.fog=G.show.filter(r=>!wmSeen(r)).join(',');o.canv=['wmWorld','wmHere'].every(id=>{const c=$(id);return c&&c.width>50&&c.height>50});
+    o.hidden=!G.show.includes('ridge');   // הרכס עוד סגור: לא מופיע
+    document.querySelector('#wMap [data-act="close"]').click();o.closed=$('wMap').hidden&&S.mode==='play';
+    wGo('lake');o.saved=!!(JSON.parse(localStorage.getItem(SAVE_STORE.key)).wmap||{seen:{}}).seen.lake;
+    wmapOpen(true);o.cur=S.wd.reg;o.lakeSeen=wmSeen('lake');dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape'}));keys.Escape=false;o.esc=$('wMap').hidden&&S.mode==='play';
+    // כל אזור ב-WORLD.regions מגיע למפה לבד, בלי שני איים באותו מקום
+    const P0=wmGraph().pos,ks=Object.keys(P0);o.all=['meadow',...Object.keys(WORLD.regions)].every(r=>P0[r]);
+    o.apart=ks.every((a,i)=>ks.slice(i+1).every(b=>Math.hypot(P0[a].x-P0[b].x,P0[a].y-P0[b].y)>=WMAP.minGap*WMAP.step-1e-6));
+    SAVE.story=JSON.parse(st0);SAVE.secrets=sc0?JSON.parse(sc0):SAVE.secrets;wmapOpen(true);return o});
+  if(CFG.shots){await page.setViewportSize(CFG.phone);await page.clock.runFor(200);await shot('world-map')}
+  await page.evaluate(()=>{wmapOpen(false);enterVillage()});
+  check(wm.btn&&wm.open&&wm.canv&&wm.fog==='lake'&&wm.hidden&&wm.closed&&wm.saved&&wm.lakeSeen&&wm.esc&&wm.all&&wm.apart&&wm.edges>=1,
+    'מפת העולם: '+(wm.btn?'כפתור בעולם':'אין כפתור')+', '+(wm.open?'נפתחה':'לא נפתחה')+(wm.canv?' עם שתי מפות':' בלי מפות')+', אזורים: '+wm.show+' (צללית: '+(wm.fog||'אין')+')'+
+    (wm.hidden?', הרכס הסגור מוסתר':', הרכס הסגור מופיע')+(wm.closed?', נסגרה ב-✕':', לא נסגרה')+(wm.saved?', הביקור באגם נשמר':', הביקור לא נשמר')+(wm.esc?' ונסגרה ב-Esc':'')+
+    (wm.all?'':', אזור חסר במפה')+(wm.apart?'':', שני איים חופפים'));
   // נקודות דמות (stats.js): הריגה בעולם נותנת XP לדמות, רמה נותנת נקודה, נקודה מעלה נזק, נשמרת, ואיפוס אצל הכוהנת עולה מטבעות
   const stt=await page.evaluate(()=>{
     enterWorld('home');const o={};const xp0=SAVE.hero.xp||0,e={x:P.x+40,y:P.y,xp:3,type:'grunt',hp:0,r:10,mult:{}};
