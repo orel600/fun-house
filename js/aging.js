@@ -50,7 +50,7 @@ function ageBlock(id){
   const c=ageCost(id);for(const r in c)if(!bagHas(r,c[r]))return 'cost';
   return null;
 }
-const ageId=(id,n)=>gBase(id)+(n>0?'+'+n:'');
+const ageId=(id,n)=>gBase(id)+(n>0?'+'+n:'')+(gPow(id)?'#'+gPow(id):'');   // הכוח נשאר על הפריט (powers.js)
 
 /* ניסיון אחד. ref: {id} פריט בתרמיל, או {slot,i} משבצת. gem: להשתמש באבן חן.
    roll: מספר בין 0 ל-1 (ברירת מחדל: אקראי). מחזיר {ok,from,to,id,saved} או null אם אי אפשר */
@@ -101,26 +101,29 @@ function drawAgeFx(){
 
 /* ---- המסך: נפתח מהפאנל של הנפחייה. למעלה מה שלבוש ומה שבתרמיל, ולמטה הסיכוי, המחיר והכפתור.
    לרוחב הוא בצד ימין, כמו מסך הציוד, כדי שהחגיגה על הדמות תיראה ---- */
-const AUI={sel:null,gem:false};   // sel: {id} מהתרמיל, או {slot,i} ממשבצת
+const AUI={sel:null,gem:false,tab:'age',pw:null};   // sel: {id} מהתרמיל, או {slot,i} ממשבצת. tab: 'age' או 'pow' (כוחות, powers.js). pw: הכוח שנבחר להטבעה
 function forgeOpen(){
   if(!S.vil||S.mode!=='play'||!vLv('forge'))return;
   wEquip(SAVE.gear.weapon);   // הדמות מחזיקה את הנשק שלבוש, כדי שהזוהר החדש ייראה עליו
-  S.mode='forge';joy=null;AUI.sel=null;$('vPanel').hidden=true;document.body.classList.remove('vpan');$('ovForge').hidden=false;forgeDraw();
+  S.mode='forge';joy=null;AUI.sel=null;AUI.tab='age';$('vPanel').hidden=true;document.body.classList.remove('vpan');$('ovForge').hidden=false;forgeDraw();
 }
 function forgeClose(){$('ovForge').hidden=true;if(S.mode==='forge')S.mode='play';if(S.vil)S.vil.ui=''}   // הפאנל של הנפחייה חוזר
 const aSelId=()=>AUI.sel&&(AUI.sel.id||gGet(AUI.sel.slot,AUI.sel.i));
 const aPct=v=>'<bdi>'+Math.round(v*100)+'%</bdi>';
 
+// הפריטים בחלון: מה לבוש קודם, ואז מה שבתרמיל. slots: אילו סוגים (גם הלשונית של הכוחות משתמשת בזה)
+function forgeItemsHtml(slots){
+  const sel=AUI.sel;let h='';
+  for(const s of slots)for(let i=0;i<gOpen(s);i++){const id=gGet(s,i);if(gItem(id))h+=gTile(id,'data-slot="'+s+'" data-i="'+i+'"'+(sel&&sel.slot===s&&sel.i===i?' aria-pressed="true"':''),'<small>✓</small>')}
+  const ids=Object.keys(SAVE.bag).filter(id=>gItem(id)&&slots.includes(gItem(id).slot)).sort((a,b)=>gPlus(b)-gPlus(a)||gItem(b).tier-gItem(a).tier);
+  return h+ids.map(id=>gTile(id,'data-id="'+id+'"'+(sel&&sel.id===id?' aria-pressed="true"':''),SAVE.bag[id]>1?'<small>'+SAVE.bag[id]+'</small>':'')).join('');
+}
 function forgeDraw(){
-  const sel=AUI.sel;
-  $('fLevel').textContent=T('age.cap',ageCap());
+  $('fLevel').textContent=AUI.tab==='age'?T('age.cap',ageCap()):'';
   $('fRes').innerHTML=bagLine(SAVE.bag,resShown('forge'));   // מתכות ואבנים שיש (RES.show)
-  // מה לבוש קודם, ואז מה שבתרמיל
-  let h='';
-  for(const s of AGING.slots)for(let i=0;i<gOpen(s);i++){const id=gGet(s,i);if(gItem(id))h+=gTile(id,'data-slot="'+s+'" data-i="'+i+'"'+(sel&&sel.slot===s&&sel.i===i?' aria-pressed="true"':''),'<small>✓</small>')}
-  const ids=Object.keys(SAVE.bag).filter(id=>gItem(id)&&AGING.slots.includes(gItem(id).slot)).sort((a,b)=>gPlus(b)-gPlus(a)||gItem(b).tier-gItem(a).tier);
-  h+=ids.map(id=>gTile(id,'data-id="'+id+'"'+(sel&&sel.id===id?' aria-pressed="true"':''),SAVE.bag[id]>1?'<small>'+SAVE.bag[id]+'</small>':'')).join('');
-  $('fItems').innerHTML=h||'<p class="dim">'+T('age.noItems')+'</p>';
+  $('fTabs').innerHTML=['age','pow'].map(t=>'<button data-tab="'+t+'"'+(AUI.tab===t?' aria-pressed="true"':'')+'>'+T('forge.tab.'+t)+'</button>').join('');
+  if(AUI.tab==='pow'){powDraw();return}   // כוחות: powers.js
+  $('fItems').innerHTML=forgeItemsHtml(AGING.slots)||'<p class="dim">'+T('age.noItems')+'</p>';
   // הפרטים: מה ישתנה, הסיכוי, המחיר, ומה קורה בכישלון
   const id=aSelId();let d='<p class="dim">'+T('age.hint')+'</p>';
   if(gItem(id)){
@@ -147,7 +150,9 @@ function forgeResult(r){
 $('ovForge').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.id==='forgeClose'){forgeClose();return}
-  if(b.dataset.id)AUI.sel={id:b.dataset.id};
+  if(b.dataset.tab){AUI.tab=b.dataset.tab;AUI.sel=null}
+  else if(AUI.tab==='pow'&&powClick(b));   // כוחות (powers.js)
+  else if(b.dataset.id)AUI.sel={id:b.dataset.id};
   else if(b.dataset.slot)AUI.sel={slot:b.dataset.slot,i:+b.dataset.i};
   else if(b.dataset.act==='gem')AUI.gem=!AUI.gem;
   else if(b.dataset.act==='age'){
