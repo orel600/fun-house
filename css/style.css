@@ -706,3 +706,10 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .wmcols section:first-child{flex:5}
   .wmcols section:last-child{flex:4}
 }
+/* "תודה ששיחקת": הסוף של העלילה (storyEndOpen ב-story.js) */
+.endwin{width:min(560px,92vw);max-height:calc(100dvh - 32px);overflow:auto;display:flex;flex-direction:column;gap:10px;padding:12px 16px;color:var(--chalk);animation:dpop .16s ease-out;text-align:center}
+.endwin .endtxt{margin:0;line-height:1.45}
+.endwin .endsum{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.endwin .endrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.07)}
+.endwin .endrow b{color:var(--gold,#FFD36B);font-size:1.1em}
+.endwin .vbtn{align-self:center;min-height:44px}
