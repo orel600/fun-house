@@ -661,7 +661,11 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .dside li{display:flex;align-items:center;gap:6px}.dside li .ri{width:26px;height:26px}
 .dside .dim{font-size:13px;opacity:.8;margin:2px 0}
 .dside .vbtn{margin-top:auto;min-height:48px}
-#dBtn .ndot{min-width:14px;width:14px;height:14px;padding:0;top:-4px;inset-inline-end:-4px}
-.world #dBtn{display:none}
+.dgift{position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 62px);inset-inline-end:max(16px,env(safe-area-inset-right,0px));width:52px;height:52px;
+  border-radius:50%;border:2px solid var(--gold);background:linear-gradient(#3A3220,#241F14);font-size:28px;line-height:1;cursor:pointer;padding:0;
+  box-shadow:0 3px 0 #0B0E18;animation:tpulse 1.2s ease-in-out infinite alternate}
+.dgift:active{transform:scale(.92)}
+.dgift b{position:absolute;top:-2px;inset-inline-end:-2px;width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);background:var(--blood)}
+.world .dgift{display:none}
 @media (orientation:landscape) and (max-height:500px){.dday{min-height:58px}.dday .dchest{width:42px;height:42px}.dailywin{padding:8px 10px}}
 @media (orientation:portrait){.dbody{flex-direction:column}}
