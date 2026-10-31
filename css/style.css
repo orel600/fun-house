@@ -672,3 +672,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 @media (orientation:landscape) and (max-height:500px){.dday{min-height:58px}.dday .dchest{width:42px;height:42px}.dailywin{padding:8px 10px}}
 @media (orientation:portrait){.dbody{flex-direction:column}}
 .stbuilds{display:flex;gap:6px;margin-top:4px}.stbuilds .vbtn{flex:1;min-height:36px;padding:6px 4px;font-size:13px}.stbuilds .vbtn[aria-pressed="true"]{border-image-source:url(../icons/ui/btn-gold.png);color:#FFF6E0}
+/* אתגר יומי (challenge.js): הסימן בפס העליון בעולם */
+.chtag{font-size:12px;font-weight:800;color:var(--tide,#7FD6E8);background:rgba(10,12,20,.7);border-radius:10px;padding:2px 8px;white-space:nowrap}
+.chtag[hidden]{display:none}
+@media (orientation:portrait){.chtag{display:none}}   /* בטלפון עומד אין מקום בפס העליון. האתגר ביומן */
