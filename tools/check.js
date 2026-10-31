@@ -411,8 +411,19 @@ function worldBot(m,L,god){
       N.claimSaved=!!(saved().quests.done||{})[M.q];N.claimFx=window.__cel>M.fx2;btn('close').click();
       // דמות שעוד לא נמצאה: אין לה סימן ואין לה קווסט פתוח
       const other=Object.keys(WNPC.list).find(k=>!SAVE.met[k]);N.hidden=!other||(!wnpcMarks()[other]&&!QUESTS.list.some(q=>q.giver===other&&qOpen(q)));
-      L.wnDone=1;m.wp='gate';return L}
+      L.wnDone=1;m.wp='fish';return L}
   }
+  if(m.wp==='fish'){   // דיג (fishing.js): הולכים לבריכה של הדייג, "לדוג", מחכים ל-!, ולוחצים כשהמחוג בירוק. הדג בתרמיל, בשמירה ובספר
+    const F=L.fish||(L.fish={}),b=document.getElementById('fishBtn'),f=W.fish,tap=()=>b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));
+    if(!m.fs){const N=WNPC.list.fisher;m.fs={t0:W.t,x:N.at.x+N.pond.dx,y:N.at.y+N.pond.dy,n0:fishList().reduce((a,r)=>a+(SAVE.bag[r]||0),0),bites:0,tries:0}}
+    const M=m.fs,got=fishList().filter(r=>(SAVE.bag[r]||0)>0);
+    if(fishList().reduce((a,r)=>a+(SAVE.bag[r]||0),0)>M.n0){const id=got[0];F.caught=id;F.inBag=true;F.saved=(saved().bag[id]||0)===SAVE.bag[id];F.book=bookHas('r',id);F.count=FS().caught[id]||0;
+      F.bites=M.bites;F.tries=M.tries;F.t=Math.round(W.t-M.t0);L.fishDone=1;m.wp='gate';return stay()}
+    if(W.t-M.t0>90){F.err='לא נתפס דג ב-90 שניות';m.wp='gate';return stay()}
+    if(!f){if(b.hidden)return steer(M.x,M.y,false,40,L);F.btn=b.innerText;M.tries++;tap();return stay()}
+    if(f.st==='bite'){M.bites++;F.bite=true;tap();return stay()}
+    if(f.st==='reel'){F.reel=true;if(fishNeedleIn())tap();return stay()}
+    return stay()}
   if(m.wp==='gate'){   // שער החורשה: נכנסים רק בלחיצה על הכפתור בפאנל
     const g=WORLD.gates.grove,go=document.querySelector('#wPanel [data-act="arena"][data-g="grove"]');
     if(W.near==='grove'&&go&&(L.wFoeBack!=null||W.t-m.wt>90)){L.wPicked=dropStats().picked;m.runBag=bag();L.wGateBtn=go.innerText;go.click();L.wArena=!S.wd&&S.mode==='play';m.wp='arena';return L}
@@ -580,7 +591,8 @@ function worldBot(m,L,god){
     for(const k in NODES.kinds)if(placed.has(k))add(src,NODES.kinds[k].drop,'node:'+k);
     for(const f of WORLD.fields)add(src,NODES.kinds[f.kind].wdrop,'world:'+f.kind);   // שלל שרק בעולם הפתוח
     for(const k in PET.kinds)PET.kinds[k].stages.forEach((s,i)=>add(src,s.dig.loot,'pet:'+k+(i+1)));   // החפירה של חיית המחמד (pet.js)
-    add(use,{[PET.feed.res]:1},'pet:feed');   // גזר: להאכיל את חיית המחמד (pet.js)
+    add(use,{[PET.feed.res]:1},'pet:feed');
+    for(const p in FISH.pools)add(src,FISH.pools[p],'fish:'+p);for(const k in FISH.meals)add(use,FISH.meals[k].need,'cook:'+k);   // דיג ובישול (fishing.js)   // גזר: להאכיל את חיית המחמד (pet.js)
     AGING.cost.forEach(c=>add(use,c,'aging'));add(use,{[AGING.gem]:1},'aging:gem');
     for(const id in GEAR.recipes){if(!GEAR.items[id])bad.add(id+' (recipe)');add(use,GEAR.recipes[id],'craft:'+id)}
     const dead=[],few=[],out=[];
@@ -764,7 +776,7 @@ function worldBot(m,L,god){
     // התקדמות ל-stderr (לא נכנס לדוח): אם הבדיקה נתקעת ב-GitHub, רואים איפה
     if(guard%300===1)console.error('…',await page.evaluate(()=>[Math.round(S.t),S.mode,S.vil?'village':S.wd?'world':S.room?'room':'arena',enemies.length,S.nd?S.nd.list.length:0].join(' ')));
     L=await page.evaluate(botStep,{god:CFG.god,en:CFG.lang==='en'});
-    for(const k of ['dailyOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='dailyOpen'?'daily':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='wDeathTxt'?'world-death':k)}
+    for(const k of ['dailyOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','fishDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='dailyOpen'?'daily':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='fishDone'?'fishing':k==='wDeathTxt'?'world-death':k)}
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
@@ -793,7 +805,7 @@ function worldBot(m,L,god){
   const uiMeasure=place=>{const vis=e=>{if(!e||e.closest('[hidden]'))return null;const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>0&&r.height>0&&cs.display!=='none'&&cs.visibility!=='hidden'?r:null};
     const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1,W=innerWidth,H=innerHeight;
     const box=sel=>[...document.querySelectorAll(sel)].map(e=>({n:e.id||(e.className.split(' ')[0]+(e.dataset.tip?':'+e.dataset.tip:'')),r:vis(e)})).filter(x=>x.r);
-    const els=box(place==='world'?'#muteBtn,.hud .hp,#wBag .res,#wBag .resmore,#nav .nbtn':'#muteBtn,#vBag .res,#vBag .resmore,#nav .nbtn'),bad=[],off=[];
+    const els=box(place==='world'?'#muteBtn,#wMapBtn,.hud .hp,#wBag .res,#wBag .resmore,#nav .nbtn':'#muteBtn,#vBag .res,#vBag .resmore,#nav .nbtn'),bad=[],off=[];
     els.forEach((a,i)=>els.slice(i+1).forEach(b=>{if(hit(a.r,b.r))bad.push(a.n+'×'+b.n)}));
     for(const x of els)if(x.r.left<-0.5||x.r.right>W+0.5||x.r.top<-0.5||x.r.bottom>H+0.5)off.push(x.n);
     const pid=place==='world'?'wPanel':'vPanel',pn=vis($(pid));if(pn)for(const x of box('#nav .nbtn'))if(hit(pn,x.r))bad.push(pid+'×'+x.n);
@@ -808,7 +820,7 @@ function worldBot(m,L,god){
     o.wins.gear=win(gearOpen,'ovGear','#gearClose');
     o.wins.quests=win(()=>questLogOpen(true),'qLog','#qLog [data-act="close"]');
     o.wins.book=win(()=>bookOpen(true),'bookWin','#bookWin [data-act="close"]');
-    if(place==='world')return o;
+    if(place==='world'){o.wins.map=win(()=>wmapOpen(true),'wMap','#wMap [data-act="close"]');return o}
     o.wins.forge=win(forgeOpen,'ovForge','#forgeClose');
     const npc=Object.keys(NPC.list).find(npcHere);o.wins.npc=win(()=>npcTalk(npc),'npcDlg','#npcDlg [data-act="close"]');
     gearOpen();dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape'}));keys.Escape=false;o.esc=$('ovGear').hidden&&S.mode==='play';
@@ -1023,6 +1035,27 @@ function worldBot(m,L,god){
     'ספר ההרפתקאות: הריגה '+(bk.kill===1?'נרשמה':'לא נרשמה')+', חולשת גולם '+bk.weak+(bk.item?', פריט נרשם':', פריט לא נרשם')+(bk.res?', משאב נרשם':', משאב לא נרשם')+
     ', פרס מחכה '+bk.pend+(bk.badge?' עם נקודה':' בלי נקודה')+', החלון '+(bk.open?'נפתח ('+bk.cards+' רשומות, '+bk.unk+' צלליות)':'לא נפתח')+
     (bk.btn?', נלקח +'+bk.coins+' מטבעות':', אין כפתור פרס')+(bk.saved?', נשמר':', לא נשמר')+(bk.closed?', נסגר ב-✕':', לא נסגר')+(bk.esc?' וב-Esc':''));
+  // מפת העולם (worldmap.js): הכפתור פותח חלון עם שתי מפות, האזור הנוכחי מסומן, אזור שלא ביקרו בו הוא צללית, הביקור נשמר, וחלון נסגר ב-✕ וב-Esc
+  const wm=await page.evaluate(()=>{
+    const o={};SAVE.wmap={seen:{}};const st0=JSON.stringify(SAVE.story),sc0=JSON.stringify(SAVE.secrets);
+    SAVE.story=Object.assign({},SAVE.story,{earth:true,water:false,ice:false,fire:false});SAVE.secrets={found:{},read:{}};
+    enterWorld('home');o.btn=!$('wMapBtn').closest('[hidden]')&&getComputedStyle($('wMapBtn')).display!=='none';
+    $('wMapBtn').click();o.open=!$('wMap').hidden&&S.mode==='map';const G=wmGraph();o.show=G.show.join(',');o.edges=G.edges.length;
+    o.fog=G.show.filter(r=>!wmSeen(r)).join(',');o.canv=['wmWorld','wmHere'].every(id=>{const c=$(id);return c&&c.width>50&&c.height>50});
+    o.hidden=!G.show.includes('ridge');   // הרכס עוד סגור: לא מופיע
+    document.querySelector('#wMap [data-act="close"]').click();o.closed=$('wMap').hidden&&S.mode==='play';
+    wGo('lake');o.saved=!!(JSON.parse(localStorage.getItem(SAVE_STORE.key)).wmap||{seen:{}}).seen.lake;
+    wmapOpen(true);o.cur=S.wd.reg;o.lakeSeen=wmSeen('lake');dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape'}));keys.Escape=false;o.esc=$('wMap').hidden&&S.mode==='play';
+    // כל אזור ב-WORLD.regions מגיע למפה לבד, בלי שני איים באותו מקום
+    const P0=wmGraph().pos,ks=Object.keys(P0);o.all=['meadow',...Object.keys(WORLD.regions)].every(r=>P0[r]);
+    o.apart=ks.every((a,i)=>ks.slice(i+1).every(b=>Math.hypot(P0[a].x-P0[b].x,P0[a].y-P0[b].y)>=WMAP.minGap*WMAP.step-1e-6));
+    SAVE.story=JSON.parse(st0);SAVE.secrets=sc0?JSON.parse(sc0):SAVE.secrets;wmapOpen(true);return o});
+  if(CFG.shots){await page.setViewportSize(CFG.phone);await page.clock.runFor(200);await shot('world-map')}
+  await page.evaluate(()=>{wmapOpen(false);enterVillage()});
+  check(wm.btn&&wm.open&&wm.canv&&wm.fog==='lake'&&wm.hidden&&wm.closed&&wm.saved&&wm.lakeSeen&&wm.esc&&wm.all&&wm.apart&&wm.edges>=1,
+    'מפת העולם: '+(wm.btn?'כפתור בעולם':'אין כפתור')+', '+(wm.open?'נפתחה':'לא נפתחה')+(wm.canv?' עם שתי מפות':' בלי מפות')+', אזורים: '+wm.show+' (צללית: '+(wm.fog||'אין')+')'+
+    (wm.hidden?', הרכס הסגור מוסתר':', הרכס הסגור מופיע')+(wm.closed?', נסגרה ב-✕':', לא נסגרה')+(wm.saved?', הביקור באגם נשמר':', הביקור לא נשמר')+(wm.esc?' ונסגרה ב-Esc':'')+
+    (wm.all?'':', אזור חסר במפה')+(wm.apart?'':', שני איים חופפים'));
   // נקודות דמות (stats.js): הריגה בעולם נותנת XP לדמות, רמה נותנת נקודה, נקודה מעלה נזק, נשמרת, ואיפוס אצל הכוהנת עולה מטבעות
   const stt=await page.evaluate(()=>{
     enterWorld('home');const o={};const xp0=SAVE.hero.xp||0,e={x:P.x+40,y:P.y,xp:3,type:'grunt',hp:0,r:10,mult:{}};
@@ -1058,6 +1091,17 @@ function worldBot(m,L,god){
     for(let i=0;i<120;i++)dropsUpdate(1/30);
     return{wIn,n:ds.length,inside:ds.every(d=>!out(d)),left:left.length,kept:dropStats().kept,gid,gBag:(SAVE.bag[gid]||0)>g0,
       gSaved:(JSON.parse(localStorage.getItem(SAVE_STORE.key)).bag[gid]||0)>0,gGround:!drops().some(d=>d.r===gid)}});
+  const fc=await page.evaluate(()=>{
+    const bak=JSON.stringify(SAVE),mode=S.mode,vil=!!S.vil,out={};
+    // בלי מים: אין כפתור. הקווסט של הדייג סופר דגים. בישול אצל הפונדקאית: לוקח את הדגים ונותן ארוחה, והחיזוק חל בעולם ונגמר בזמן
+    SAVE.quests.active.wCatch={p:[0]};questEvent('fish','minnow',3);out.quest=qReady(QBY.wCatch);delete SAVE.quests.active.wCatch;
+    bagAdd('minnow',2);bagAdd('perch',1);const n0=(SAVE.bag.minnow||0)+(SAVE.bag.perch||0);
+    enterVillage();npcTalk('inn');const cb=document.querySelector('#npcDlg [data-act="cook"][data-m="stew"]');out.cookBtn=!!cb&&!cb.disabled;if(cb)cb.click();
+    out.taken=n0-((SAVE.bag.minnow||0)+(SAVE.bag.perch||0))===3;out.meal=(FS().meal||{}).id;npcTalk(null);
+    enterWorld('home');const hp0=P.maxHp;out.on=S.wd.meal==='stew';
+    P.x=9999;P.y=9999;out.noBtn=(fishBtn(true),document.getElementById('fishBtn').hidden);
+    FS().meal.t=0.01;fishUpdate(0.1);out.off=!S.wd.meal&&!FS().meal&&P.maxHp===hp0-FISH.meals.stew.buff.hp;
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return out});
   await browser.close();
 
   const t=s=>s==null?'-':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
@@ -1107,6 +1151,11 @@ function worldBot(m,L,god){
     ', סימן '+(WN.mark||'אין')+(WN.btn?', כפתור "'+WN.btn+'"':', אין כפתור')+(WN.auto?', השיחה נפתחה לבד':'')+(WN.open?', שיחה: "'+(WN.say||'').slice(0,40)+'"':', השיחה לא נפתחה')+
     (WN.got?', התקבל '+WN.q:', לא התקבל')+(WN.inLogNew?', מופיע לקבלה ביומן (לא אמור)':'')+(WN.ready?', הושלם':', לא הושלם')+', סימן '+(WN.markReady||'אין')+(WN.logClaim?', פרס ביומן (לא אמור)':'')+
     (WN.claimed?', פרס נלקח אצלה'+(WN.paid?' והגיע לתרמיל':' אבל לא הגיע')+(WN.claimSaved?', נשמר':', לא נשמר')+(WN.claimFx?', חגיגה':', בלי חגיגה'):', הפרס לא נלקח')+(WN.hidden?'':', דמות שלא נמצאה כבר נותנת קווסט'));
+  const FI=L.fish||{};
+  check(FI.btn&&FI.bite&&FI.reel&&FI.caught&&FI.saved&&FI.book&&FI.count===1,'דיג: '+(FI.err?FI.err+' · ':'')+(FI.btn?'כפתור "'+FI.btn+'" ליד הבריכה':'אין כפתור ליד המים')+(FI.bite?', נשיכה (!)':', אין נשיכה')+(FI.reel?', פס עם מחוג':', בלי פס')+
+    (FI.caught?', נתפס '+FI.caught+' אחרי '+FI.tries+' הטלות ו-'+FI.t+' שניות'+(FI.saved?', בתרמיל ונשמר':', לא נשמר')+(FI.book?', בספר':', לא בספר'):', לא נתפס דג'));
+  check(fc.quest&&fc.cookBtn&&fc.taken&&fc.meal==='stew'&&fc.on&&fc.off&&fc.noBtn,'דיג: '+(fc.quest?'קווסט הדייג סופר דגים':'הקווסט לא סופר')+(fc.cookBtn?', הפונדקאית מבשלת':', אין כפתור בישול')+(fc.taken?' (הדגים נלקחו)':' (הדגים לא נלקחו)')+
+    (fc.on?', החיזוק חל בעולם':', החיזוק לא חל')+(fc.off?' ונגמר בזמן':' ולא נגמר')+(fc.noBtn?', בלי מים אין כפתור':', הכפתור מופיע רחוק מהמים'));
   const Nn=L.npc||{};
   check(Nn.btn&&!Nn.auto&&Nn.open&&Nn.got&&Nn.after&&Nn.inLog&&Nn.closed&&Nn.push===0&&Nn.free&&Nn.waved&&Nn.cheer,'תושבים: '+(Nn.err||Nn.n+' בכפר')+
     (Nn.waved?', הנפח נופף':', לא נופף')+(Nn.btn?', כפתור "'+Nn.btn+'"':', אין כפתור')+(Nn.auto?', השיחה נפתחה לבד':'')+(Nn.open?', שיחה: "'+(Nn.say||'').slice(0,50)+'"':', השיחה לא נפתחה')+
