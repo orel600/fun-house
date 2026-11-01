@@ -53,7 +53,7 @@ function wispsUpdate(dt){
   types.forEach((ty,i)=>{const w=WL.list[i];w.ty=ty;
     if(fire[ty]){w.fl=W.flash.t;W.stat.flashes++}else w.fl=Math.max(0,w.fl-dt);
     const a=o.a+i*6.283/n+W.wob*Math.sin(t*0.7*w.sp+w.ph),R=W.r*(1+W.rVar*Math.sin(t*1.3*w.sp+w.ph*2));
-    const tx=P.x+Math.cos(a)*R,ty_=P.y+Math.sin(a)*R*0.85,k=1-Math.exp(-W.lag*dt);
+    const hh=typeof WH!=='undefined'&&WH[i]&&WH[i].ph,tx=hh?WH[i].x:P.x+Math.cos(a)*R,ty_=hh?WH[i].y:P.y+Math.sin(a)*R*0.85,k=hh?1:1-Math.exp(-W.lag*dt);   // בציד (WHUNT למטה) האור עף לאויב
     w.x+=(tx-w.x)*k;w.y+=(ty_-w.y)*k;w.h=W.h+W.hBob*Math.sin(t*2.1*w.sp+w.ph)+3*Math.sin(t*5.3+w.ph);
     w.tr.unshift({x:w.x,y:w.y-w.h});if(w.tr.length>W.trail)w.tr.pop();
     const pd=W.parts[ty];if(!pd||!pd.rate)return;
@@ -138,6 +138,31 @@ const wTipN=ty=>{const D=ORBIT.types[ty];return D.shield?D.shield.every:D.heal?D
 (()=>{if(typeof juiceHit!=='function')return;const old=juiceHit;
   juiceHit=function(e,d,m,crit){const r=old.apply(this,arguments);
     if(crit&&wActOn()&&S.orb&&S.orb.types.includes('luck')){wAct('star',{e});WA.lit.luck=WACT.row.flash}return r}})();
+
+/* ---- ציד (בעולם בלבד): אור האש והכפור יוצאים לאויב הקרוב ופוגעים בו, וחוזרים (מדידה, 1.11: בלי זה אש פוגעת פעם ב-30 שניות, כי האויבים מתים לפני שהם מגיעים לטבעת).
+   ORBIT ו-orbit.js לא משתנים: עוטפים את orbitUpdate מבחוץ, והנזק הוא אותו נזק של החפץ (ORBIT.types[..].dmg ו-dt) */
+const WHUNT={types:['attack','control'], every:1.5, range:240, speed:520, back:420, hit:14};   // כל כמה שניות, מאיזה מרחק מהדמות, מהירות יציאה וחזרה, ומאיזה מרחק נחשב פגיעה.
+// נמדד (רמה 15, 60 שניות): בלי ציד אש פוגעת פעם ב-30 שניות וכפור פעם ב-15. עם ציד: כל אור פועל פעם ב-1.6 עד 3 שניות
+const WH=[];   // לכל אור: {cd, ph:'out'|'back'|null, e, x, y}
+function wispsHunt(dt){
+  const o=S.orb;if(!wActOn()||!o||!o.types.length){WH.length=0;return}
+  o.types.forEach((ty,i)=>{const h=WH[i]||(WH[i]={cd:WHUNT.every*(0.5+i*0.2),ph:null});
+    if(!WHUNT.types.includes(ty)){h.ph=null;return}
+    const home=o.pos[i]||{x:P.x,y:P.y};
+    if(!h.ph){h.cd-=dt;h.x=home.x;h.y=home.y;if(h.cd>0)return;
+      let best=null,bd=WHUNT.range;for(const e of enemies){if(e.dead||e.node||e.creature)continue;   // יצורים שלווים לא נצודים
+        const d=Math.hypot(e.x-P.x,e.y-P.y);if(d<bd){bd=d;best=e}}
+      if(!best){h.cd=0.3;return}h.ph='out';h.e=best}
+    if(h.ph==='out'){const e=h.e;if(!e||e.dead){h.ph='back';return}
+      const dx=e.x-h.x,dy=e.y-h.y,d=Math.hypot(dx,dy)||1,st=WHUNT.speed*dt;
+      if(d<=WHUNT.hit+e.r*0.5||d<=st){const D=ORBIT.types[ty];damage(e,skBase()*D.dmg,'orbit',Math.atan2(dy,dx),D.dt);o.hits++;
+        (e.oh||(e.oh=[]))[i]=S.t+D.every;WACT.stat.hunt=(WACT.stat.hunt||0)+1;h.ph='back'}
+      else{h.x+=dx/d*st;h.y+=dy/d*st}}
+    else if(h.ph==='back'){const dx=home.x-h.x,dy=home.y-h.y,d=Math.hypot(dx,dy)||1,st=WHUNT.back*dt;
+      if(d<=st){h.ph=null;h.cd=WHUNT.every}else{h.x+=dx/d*st;h.y+=dy/d*st}}
+  });
+}
+(()=>{const old=orbitUpdate;orbitUpdate=function(dt){old.apply(this,arguments);wispsHunt(dt)}})();
 
 function drawWispAct(){
   if(!WA.fx.length)return;ctx.save();
