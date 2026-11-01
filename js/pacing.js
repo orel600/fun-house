@@ -23,6 +23,7 @@ const PACE={
   chase:750,                                 // עד איזה מרחק הלהקה רודפת. רחוק מזה היא נעלמת אחרי lose שניות
   lose:6,
   cap:45,                                    // הכי הרבה אויבים חיים בעולם יחד (כולל הקבוצות הקבועות, כ-30), בשביל הטלפון (CROWD ב-render3d.js)
+  reserve:2,                                 // מקום שנשמר תמיד לשומר הפנס ולמבוקש, שמופיעים בלי לשאול. כל השאר (להקות, קבוצות שחוזרות, גל של אירוע, פיצול) נעצר ב-cap פחות reserve
   bonus:{coins:[6,12]},                      // להקה שהופלה כולה: מטבעות, ועוד שלל מאחד המקורות של האזור (NODES)
   hush:6                                     // בכניסה לאזור: הודעה אחת. מה שמגיע בשניות האלה מחכה לסופן, ורק האחרונה מוצגת (בדיקת חוויה, #121)
 };
@@ -31,6 +32,10 @@ const paceBanner0=banner;
 function paceHush(t,c){const w=S&&S.wd;if(w&&w.t<PACE.hush){if(w.hushed){w.later=[t,c];return}w.hushed=1}return paceBanner0(t,c)}
 banner=paceHush;   // התור של welcome.js (אחת בכל 2 שניות) נטען אחרי ועוטף את זה
 
+// כמה אויבים חיים בעולם, והאם יש מקום לעוד n. כל מי שמוסיף אויבים בעולם שואל כאן, כדי שהמגבלה תישמר תמיד
+function paceAlive(){let n=0;for(const e of enemies)if(!e.dead)n++;return n}
+const paceFree=()=>PACE.cap-PACE.reserve-paceAlive();
+const paceRoom=n=>!S.wd||paceFree()>=n;
 // הסוגים של להקה באזור הנוכחי: האויבים הרגילים שלו (לא יצורי משאבים)
 function paceTypes(){const t=[];for(const G of WR().foes)if(!G.creature&&ETYPES[G.type]&&!t.includes(G.type))t.push(G.type);return t.length?t:['grunt']}
 // הדרכים: קו מהבית לכל שער ודרך פתוחה
@@ -43,7 +48,7 @@ function paceOnPath(x,y){
 const paceBeat=p=>PACE.beats[p.b];   // השלב הנוכחי במחזור
 // האם עכשיו מותר להביא להקה: לא בדיג, לא מול שומר, לא בגל של אירוע, ולא מעל המגבלה
 function paceBusy(w){
-  return w.fish||w.warden||(w.ev&&w.ev.kind==='wave')||Math.hypot(P.x-WR().home.x,P.y-WR().home.y)<PACE.safe*0.7||enemies.length>=PACE.cap;
+  return w.fish||w.warden||(w.ev&&w.ev.kind==='wave')||Math.hypot(P.x-WR().home.x,P.y-WR().home.y)<PACE.safe*0.7||paceFree()<=0;
 }
 function paceSpot(){
   const R=WR(),gs=Object.values(wGates(true)),dir=P.moving?Math.atan2(P.vy,P.vx):rand(0,6.28);
@@ -55,12 +60,12 @@ function paceSpot(){
     return s}
   return null;
 }
-// להקה אחת. n: כמה (אחרת לפי השלב)
-function paceSpawn(n){
-  const w=S.wd,B=paceBeat(w.pace),s=paceSpot();if(!s)return null;
+// להקה אחת. n: כמה (אחרת לפי השלב). at: איפה (אחרת בקצה המסך, paceSpot)
+function paceSpawn(n,at){
+  const w=S.wd,B=paceBeat(w.pace),s=at||paceSpot();if(!s)return null;
   const Z=wZone(s),types=paceTypes(),mix=B.id==='peak';
   n=n||Math.round(rand(...(B.size||PACE.beats[0].size)));if(Z.id==='start')n=Math.max(2,Math.round(n*PACE.startSize));
-  n=Math.min(n,PACE.cap-enemies.length);if(n<=0)return null;
+  n=Math.min(n,paceFree());if(n<2)return null;   // אין מקום לשתיים: אין להקה (לא להקה של אחת)
   const type=types[Math.floor(Math.random()*types.length)],pk={id:++w.pace.id,x:s.x,y:s.y,n,left:n,big:B.id==='peak'};
   for(let k=0;k<n;k++){
     const t=mix?types[Math.floor(Math.random()*types.length)]:type,a=rand(0,6.28),r=rand(0,PACE.spread);

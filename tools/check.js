@@ -875,17 +875,23 @@ function worldBot(m,L,god){
     worldUi(false);document.getElementById('banner').textContent='';
     SAVE=JSON.parse(bak);reset();S.mode=mode;return out});
   const T_=t=>({sword:'חרב',bow:'קשת',staff:'מטה'})[t]||t;
-  // קצב העולם (pacing.js): 3 דקות של סיבוב באחו. להקות מגיעות בקצב שנקבע ב-PACE, בגודל שלו, יש שיא ושקט, לא עוברים את המגבלה, ולהקה שהופלה משאירה שלל
+  // קצב העולם (pacing.js): 3 דקות של סיבוב באחו. להקות מגיעות בקצב שנקבע ב-PACE, בגודל שלו, יש שיא ושקט, לא עוברים את המגבלה גם בעומס, ולהקה שהופלה משאירה שלל (נבדק ישירות, לא תלוי במזל)
   const pace=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode;let maxE=0,first=null;
     enterWorld('home');const secs=180,dt=1/30;paceHush('__pace1');paceHush('__pace2');const hush=document.getElementById('banner').textContent!=='__pace2'&&!!S.wd.later&&S.wd.later[0]==='__pace2';   // השם של האזור יכול לחכות בתור של welcome.js, אז שתיים: השנייה תמיד מחכה   // בכניסה: הודעה אחת, השנייה מחכה
     for(let t=0;t<secs;t+=dt){P.hp=P.maxHp;const a=t*0.12;joy={id:-1,ox:-999,oy:-999,dx:-Math.sin(a),dy:Math.cos(a)};
       if(S.mode!=='play')S.mode='play';worldUpdate(dt);maxE=Math.max(maxE,enemies.length);if(first==null&&S.wd.pace&&S.wd.pace.packs)first=Math.round(t)}
+    // עומס: מנסים להכניס הרבה להקות ועוד 20 שניות של עולם (קבוצות שחוזרות, פיצולים, אירועים). המגבלה נשמרת תמיד
+    for(let i=0;i<40;i++)paceSpawn(8);for(let t=0;t<20;t+=dt){P.hp=P.maxHp;worldUpdate(dt);maxE=Math.max(maxE,paceAlive())}
+    // בונוס להקה, ישירות: להקה של 3 ליד השחקן, כולן מופלות, והבונוס ניתן פעם אחת
+    enemies=[];const b0=S.wd.pace.bonus,pk=paceSpawn(3,{x:P.x+60,y:P.y}),pkN=pk?enemies.filter(e=>e.pack===pk).length:0;
+    for(const e of enemies.filter(e=>e.pack===pk)){e.affix=null;kill(e)}paceUpdate(0.01);const pkBonus=S.wd.pace.bonus-b0;paceUpdate(0.01);
     const p=S.wd.pace,o={secs,packs:p.packs,first,min:Math.min(...p.sizes),max:Math.max(...p.sizes),peaks:p.peaks,rests:p.rests,bonus:p.bonus,maxE,cap:PACE.cap,
+      pkN,pkBonus,pkTwice:S.wd.pace.bonus-b0,
       want:Math.floor(secs/(PACE.beats[0].every[1]+8)),firstWant:PACE.first,hush:hush&&!S.wd.later};   // לפחות להקה כל every הארוך + 8 שניות (שקט, הפסקה אחרי קרב גדול, ועומס)
     worldUi(false);document.getElementById('banner').textContent='';enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
-  check(pace.packs>=pace.want&&pace.first!=null&&pace.first<=pace.firstWant+2&&pace.min>=2&&pace.max<=8&&pace.peaks>=1&&pace.rests>=1&&pace.maxE<=pace.cap&&pace.bonus>=1&&pace.hush,
+  check(pace.packs>=pace.want&&pace.first!=null&&pace.first<=pace.firstWant+2&&pace.min>=2&&pace.max<=8&&pace.peaks>=1&&pace.rests>=1&&pace.maxE<=pace.cap&&pace.pkN>=2&&pace.pkBonus===1&&pace.pkTwice===1&&pace.hush,
     'קצב העולם: '+pace.packs+' להקות ב-'+pace.secs+' שניות (לפחות '+pace.want+'), הראשונה אחרי '+pace.first+' שניות, '+pace.min+' עד '+pace.max+' מפלצות בלהקה, '+
-    pace.peaks+' שיאים, '+pace.rests+' רגעי שקט, '+pace.bonus+' בונוסי להקה, הכי הרבה אויבים יחד '+pace.maxE+' (מגבלה '+pace.cap+')'+(pace.hush?', בכניסה הודעה אחת':', בכניסה כמה הודעות יחד'));
+    pace.peaks+' שיאים, '+pace.rests+' רגעי שקט, '+pace.bonus+' בונוסי להקה בסיבוב, להקה של '+pace.pkN+' שהופלה נתנה '+pace.pkBonus+' בונוס'+(pace.pkTwice===1?'':' (ניתן שוב!)')+', הכי הרבה אויבים יחד '+pace.maxE+' גם בעומס (מגבלה '+pace.cap+')'+(pace.hush?', בכניסה הודעה אחת':', בכניסה כמה הודעות יחד'));
 
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;

@@ -32,7 +32,8 @@ function affixOnKill(e){
   const A=AFFIX.list[e.affix];
   dropSpawn('coins',Math.round(rand(...AFFIX.loot.coins)),e.x,e.y);
   if(e.affix==='burst')(S.wd.blasts||(S.wd.blasts=[])).push({x:e.x,y:e.y,t:A.fuse,max:A.fuse});
-  if(e.affix==='split')for(let i=0;i<A.n;i++){const k=addEnemy(e.type,e.x+rand(-20,20),e.y+rand(-20,20),1);
+  if(e.affix==='split')for(let i=0,n=Math.min(A.n,paceFree());i<n;i++){   // paceFree: לא עוברים את המגבלה (pacing.js)
+    const k=addEnemy(e.type,e.x+rand(-20,20),e.y+rand(-20,20),1);
     k.hp=k.max=e.max*A.hp;k.r=e.r*0.75;k.dmg=e.dmg*0.6;k.speed=e.speed;k.xp=0;k.home=e.home;k.split=true;k.elite=false;if(e.pack){k.pack=e.pack;e.pack.left++}}
 }
 // כל פריים בעולם (world.js): פיצוצים שמחכים, ומרפאים
