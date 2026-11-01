@@ -2,6 +2,8 @@
    מי שמרים אותה: כל האויבים הרגילים ברדיוס קרוב נעלמים (נופלים כמו בהריגה, אז יש להם שלל). בוס ומבוקש רק נפגעים.
    ההגרלה פעם אחת בריצה, ואם יצא לא, זהו. העצם נעלמת בהדרגה אחרי כמה שניות.
    מראה שקט במכוון: עצם קטנה עם הילה דקה, וטבעת אחת דקה שנפתחת בהרמה. בלי ניצוצות ובלי עמודי אור.
+   לכל חיית מחמד (אוראל, 1.11.2026: "החוק הזה יחול על הפרעוש ובכללי על כל חיית מחמד שתהיה"): אותו חוק, ורק הפריט שלה.
+   חיה בוחרת פריט ב-PET.kinds[...].rescue ({item,col,glow}), למשל הפרעוש: שק שלל. בלי rescue: העצם של פיוחו.
    קובץ משלו: ב-pet.js רק שורות חיבור (rescueUpdate, rescueDraw). המצב ב-S.rs, חדש בכל ריצה. הטקסט ב-lang.js: 'rs.saved' */
 const RESCUE={
   hpBelow:0.3,     // מתחת לאיזה חלק מהחיים (מ-maxHp) מגרילים
@@ -13,6 +15,8 @@ const RESCUE={
   ring:{dur:0.5,w:1.5,alpha:0.5},   // הטבעת בהרמה
   col:'#F4F2EC',glow:'#F2D3A0'      // עצם לבנה, הילה בצבע החול של פיוחו
 };
+// הפריט של החיה הנוכחית: הצורה והצבעים. ברירת המחדל: העצם
+const rescueLook=()=>Object.assign({item:'bone',col:RESCUE.col,glow:RESCUE.glow},petKind().rescue);
 const rescueOn=()=>!!(S&&skArena()&&S.mode==='play');
 // נקרא מ-petUpdate (pet.js), כל פריים בזירה
 function rescueUpdate(dt){
@@ -39,20 +43,23 @@ function rescueTake(r){
     if(e.isBoss||e.wanted){damage(e,skBase()*RESCUE.bossHit,'skill',Math.atan2(e.y-P.y,e.x-P.x),'physical');continue}
     e.hp=0;kill(e);n++}
   r.saved+=n;
-  floatText(P.x,P.y-50,T('rs.saved'),RESCUE.glow,18,false,true);sfx('celebrate');
+  floatText(P.x,P.y-50,T(petTx('rs.saved')),rescueLook().glow,18,false,true);sfx('celebrate');
 }
 // נקרא מ-drawPet (pet.js), בקואורדינטות העולם
 function rescueDraw(){
   const r=S&&S.rs;if(!r||!rescueOn())return;
-  const it=r.item;
+  const it=r.item,K=rescueLook();
   if(it){
     const fade=Math.min(1,(RESCUE.life-it.t)/(RESCUE.life*0.25)),blink=fade<1?(Math.sin(it.t*14)>0?1:0.4):1,bob=RM?0:Math.sin(it.t*4)*2,y=it.y-14+bob;
-    ctx.save();ctx.globalAlpha=0.3*fade*blink;ctx.strokeStyle=RESCUE.glow;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(it.x,y,12+(RM?0:Math.sin(it.t*5)*2),0,7);ctx.stroke();
-    ctx.globalAlpha=fade*blink;ctx.strokeStyle=RESCUE.col;ctx.fillStyle=RESCUE.col;ctx.lineWidth=4;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(it.x-7,y+4);ctx.lineTo(it.x+7,y-4);ctx.stroke();   // עצם: מוט ושני קצוות כפולים
-    for(const [dx,dy] of [[-9,2],[-6,8],[9,-8],[6,-2]]){ctx.beginPath();ctx.arc(it.x+dx,y+dy,3,0,7);ctx.fill()}
+    ctx.save();ctx.globalAlpha=0.3*fade*blink;ctx.strokeStyle=K.glow;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(it.x,y,12+(RM?0:Math.sin(it.t*5)*2),0,7);ctx.stroke();
+    ctx.globalAlpha=fade*blink;ctx.strokeStyle=K.col;ctx.fillStyle=K.col;ctx.lineWidth=4;ctx.lineCap='round';
+    if(K.item==='pouch'){   // שק שלל: גוף עגול, קשירה למעלה, ומטבע מציץ
+      ctx.beginPath();ctx.arc(it.x,y+2,7,0,7);ctx.fill();ctx.beginPath();ctx.moveTo(it.x-4,y-7);ctx.lineTo(it.x,y-3);ctx.lineTo(it.x+4,y-7);ctx.closePath();ctx.fill();
+      ctx.fillStyle=K.glow;ctx.fillRect(it.x-3,y-4,6,1.5);ctx.beginPath();ctx.arc(it.x+5,y-5,2.2,0,7);ctx.fill()}
+    else{ctx.beginPath();ctx.moveTo(it.x-7,y+4);ctx.lineTo(it.x+7,y-4);ctx.stroke();   // עצם: מוט ושני קצוות כפולים
+      for(const [dx,dy] of [[-9,2],[-6,8],[9,-8],[6,-2]]){ctx.beginPath();ctx.arc(it.x+dx,y+dy,3,0,7);ctx.fill()}}
     ctx.restore()}
   if(r.ring){const k=r.ring.t/RESCUE.ring.dur;
-    ctx.save();ctx.globalAlpha=RESCUE.ring.alpha*(1-k);ctx.strokeStyle=RESCUE.glow;ctx.lineWidth=RESCUE.ring.w;
+    ctx.save();ctx.globalAlpha=RESCUE.ring.alpha*(1-k);ctx.strokeStyle=K.glow;ctx.lineWidth=RESCUE.ring.w;
     ctx.beginPath();ctx.arc(r.ring.x,r.ring.y-8,20+(RESCUE.radius-20)*Math.sqrt(k),0,7);ctx.stroke();ctx.restore()}
 }

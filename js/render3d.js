@@ -93,7 +93,10 @@ const LOOK3D={
   /* חיית המחמד (pet.js): pet_<חיה><שלב>. הגובה על המסך מ-PET (stages[].h), כי גם הדו-ממד משתמש בו. anim: מה מנגנים בכל מצב של החיה */
   pet_piocho1:{model:'piocho1',foot:2,anim:DOG_ANIM},
   pet_piocho2:{model:'piocho2',foot:2,anim:DOG_ANIM},
-  pet_piocho3:{model:'piocho3',foot:2,anim:DOG_ANIM,glow:'#FF8A3D'}   // glow: הסימנים על הגוף זוהרים ופועמים (PET.fx)
+  pet_piocho3:{model:'piocho3',foot:2,anim:DOG_ANIM,glow:'#FF8A3D'},   // glow: הסימנים על הגוף זוהרים ופועמים (PET.fx)
+  pet_parosh1:{model:'parosh1',foot:2,anim:DOG_ANIM},   // הפרעוש של אוראל (parosh.js): אותו מודל לשלושת השלבים
+  pet_parosh2:{model:'parosh1',foot:2,anim:DOG_ANIM},
+  pet_parosh3:{model:'parosh1',foot:2,anim:DOG_ANIM}
 };
 /* הנשק ביד השחקן: המודל מ-look.model של הפריט בציוד (GEAR.items ב-gear.js), והחומר לפי ה-tier שלו (טקסטורה wtex_<חומר>, build3d.js).
    כל משפחת נשקים יושבת ביד אחרת ותוקפת באנימציה אחרת. of: לאיזו משפחה שייך מודל, לפי השם.
@@ -196,7 +199,7 @@ function mergeSkinned(root,keep){
   for(const p of parts)p.parent.remove(p);
 }
 // חומר פשוט יותר מהמקורי: נראה אותו דבר בסגנון הזה, ומהיר יותר בטלפון
-function lambert(root){root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap});o.frustumCulled=false}})}
+function lambert(root){root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap,side:m.side});o.frustumCulled=false}})}
 function bone(root,name){let b=null;root.traverse(o=>{if(!b&&o.isBone&&o.name===name)b=o});return b}
 
 async function init3d(){
@@ -307,7 +310,7 @@ function heroLook(){
     L.props[w]=Object.assign({prop:model,tier:mine?GEAR.tiers[it.tier].id:'wood'},g);
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
-  if(fluteOn())fluteGrip(L);   // הנודד עם החליל: חליל ביד במקום הנשק (flute.js)
+  {const th=heroTheme();if(th&&th.grip)th.grip(L)}   // דמות אישית: חפץ ביד במקום הנשק. החליל ביד במקום הנשק (flute.js)
   return R3D._hl=L;
 }
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
@@ -565,7 +568,7 @@ function syncPet(dt){
   if(a.st!==p.st&&p.st==='jump')once(a,L.anim.jump,0.9);
   if(p.barkAt!=null&&p.barkAt!==a.bark){a.bark=p.barkAt;once(a,L.anim.bark,0.6)}
   a.st=p.st;
-  const moving=p.st==='follow'||p.st==='go'||p.st==='back'||(p.st==='hunt'&&p.run),busy=a.one&&a.one.isRunning();
+  const moving=p.st==='follow'||p.st==='go'||p.st==='back'||((p.st==='hunt'||p.st==='sneak'||p.st==='flee')&&p.run),busy=a.one&&a.one.isRunning();
   if(!busy||moving)loop(a,moving?(p.run?L.anim.run:L.anim.walk):p.st==='dig'?L.anim.dig:p.st==='sit'?L.anim.sit:L.anim.idle,moving&&!p.run?1.4:1);
   place(a,p.x,p.y,L.foot,null);a.root.rotation.y=yawOf(Math.cos(p.face),Math.sin(p.face));
   if(L.glow)for(const m of a.mats)if(m.emissiveMap){m.emissive.set(L.glow);m.emissiveIntensity=0.4+0.35*Math.sin(p.fxT*PET.fx.pulse*6.28)}
