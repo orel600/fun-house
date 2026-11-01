@@ -1544,6 +1544,17 @@ function worldBot(m,L,god){
   check(stt.xp>0&&stt.free>0&&stt.add&&stt.dmg>1&&stt.saved&&stt.def<100&&stt.ui===6&&stt.tree>=18&&stt.learned&&stt.fork&&stt.rooted&&!!stt.build&&stt.b2&&stt.b1&&stt.mom>1.2&&!!stt.rot&&stt.btn&&stt.reset&&stt.paid===0,
     'נקודות דמות: הריגה בעולם +'+stt.xp+' XP, נקודות פנויות '+stt.free+', כוח: נזק x'+stt.dmg+(stt.saved?', נשמר':', לא נשמר')+', הגנה: מכה של 100 עשתה '+stt.def+
     ', במסך הציוד '+stt.ui+' סטטים, עץ סקילים: '+stt.tree+' סקילים, '+stt.tfree+' נקודות, '+(stt.learned?'נלמד עור עבה והחיים עלו':'לא נלמד')+(stt.fork?', אחד משניים נסגר':', הצומת לא נסגר')+(stt.rooted?', נטוע באדמה מוריד נזק':', נטוע באדמה לא עבד')+', הבנייה: '+(stt.build||'בלי שם')+(stt.b2&&stt.b1?', שתי בניות מתחלפות':', שתי הבניות לא עובדות')+', צייד בתנועה: נזק x'+stt.mom+', גלגל יסודות: '+(stt.rot||'לא עבד')+', איפוס אצל הכוהנת '+(stt.btn?'':'(אין כפתור) ')+(stt.reset?'עבד':'לא עבד')+(stt.paid?' ושילם '+stt.paid+' (צריך חינם בפעם הראשונה)':' בחינם, פעם ראשונה'));
+  // ציוד שרואים (GEAR3D ב-render3d.js): עם חרב מגן ביד השנייה, עם קשת בלי, ונשק נדיר זוהר. בתלת-ממד גם בודקים שהמגן באמת ביד
+  const gv=await page.evaluate(()=>{
+    enterWorld('home');const o={},g0=JSON.stringify(SAVE.gear),b0=JSON.stringify(SAVE.bag);
+    for(const id of ['silverBlade','oakBow','goldAmulet','swiftBoots'])bagAdd(id,1);
+    SAVE.gear.weapon='silverBlade';SAVE.gear.acc=['goldAmulet'];SAVE.gear.boots=['swiftBoots'];R3D._hl=null;
+    let L=heroLook();o.shield=!!L.props.shield&&L.props.shield.prop==='w_shield_C';o.head=!!L.g3&&!!L.g3.head;
+    if(R3D.on&&R3D.ready){P.weapon='sword';syncPlayer(0);const a=R3D.player;o.in3d=!!a.props.shield&&a.props.shield.visible;
+      let g=false;a.props.sword.traverse(m=>{if(m.isMesh&&m.material.emissive.getHex())g=true});o.glow=g}else{o.in3d=true;o.glow=true}
+    SAVE.gear.weapon='oakBow';R3D._hl=null;L=heroLook();o.noBow=!L.props.shield;
+    SAVE.gear=JSON.parse(g0);SAVE.bag=JSON.parse(b0);R3D._hl=null;return o});
+  check(gv.shield&&gv.head&&gv.in3d&&gv.glow&&gv.noBow,'ציוד שרואים: '+(gv.shield?'מגן זהב עם להב כסף':'אין מגן')+(gv.head?', קסדה זוהרת מקמע זהב':', קסדה בלי זוהר')+(gv.in3d?'':', המגן לא נראה בתלת-ממד')+(gv.glow?', הנשק זוהר':', הנשק לא זוהר')+(gv.noBow?', ועם קשת אין מגן':', מגן גם עם קשת'));
   const edge=await page.evaluate(()=>{
     enterWorld('home');const B=placeBox(),n0=drops().length,out=o=>o.x<B.x0||o.x>B.x1||o.y<B.y0||o.y>B.y1;
     wantedAppear(0);const e=S.wn.e;e.x=B.x1+300;e.y=B.y0-200;wantedMove(e,0.05);const wIn=!out(e);
