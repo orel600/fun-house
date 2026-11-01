@@ -84,8 +84,8 @@ function welcomeCollect(){
   WELCOME.gifts=[];saveNow();
   celebrate(P.x,P.y,big?'rank':'quest','✓');   // חגיגה אחת לכל האיסוף
   welcomeFly(got);
-  const q=qTracked();
-  WELCOME.done={got,next:q?T('wel.next',T('q.'+q.id)[0]):T('wel.nextGate')};
+  const G=typeof guideGoal==='function'?guideGoal():null,q=qTracked();   // המטרה הבאה, כמו בשורה למעלה (guide.js)
+  WELCOME.done={got,next:G?T('g.now')+' '+G.icon+' '+G.text:q?T('wel.next',T('q.'+q.id)[0]):T('wel.nextGate')};
   welcomeDraw();dailyBtn();bookBadge();
   WELCOME.timer=setTimeout(()=>{if(!$('ovWelcome').hidden)welcomeClose()},WELCOME.closeAfter*1000);
   return got;
