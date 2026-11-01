@@ -289,6 +289,9 @@ const TEXT={
   // העולם הפתוח (js/world.js)
   'w.region.meadow':{he:'האחו והמחצבה',en:'The Meadow & the Quarry'},
   'w.region.lake':{he:'אגם הערפל',en:'The Mist Lake'},
+  // שם קצר לאזור, למפת העולם (worldmap.js) כשאין מקום לשם המלא
+  'wm.short.meadow':{he:'האחו',en:'Meadow'},'wm.short.lake':{he:'האגם',en:'Mist Lake'},'wm.short.ridge':{he:'הרכס',en:'Frost Ridge'},
+  'wm.short.desert':{he:'המדבר',en:'Desert'},'wm.short.storm':{he:'הסערה',en:'Storm Towers'},'wm.short.shadow':{he:'לב הצל',en:'Shadow'},
   'w.enter.lake':{he:'אגם הערפל. רטוב, קר, ומישהו מסתכל',en:'The Mist Lake. Wet, cold, and something is watching'},
   'w.path.lake':{he:'לאגם הערפל',en:'To the Mist Lake'},
   'w.path.meadow':{he:'חזרה לאחו',en:'Back to the meadow'},
@@ -703,6 +706,7 @@ const TEXT={
   'st.def':{he:['הגנה','פחות נזק מכל מכה'],en:['Defense','Take less damage']},
   'st.luck':{he:['מזל','מכה קריטית ויותר שלל'],en:['Luck','Critical hits and more loot']},
   'st.free':{he:n=>'⭐ יש לך '+n+' נקודות לחלק',en:n=>'⭐ You have '+n+' points to spend'},
+  'st.freeS':{he:n=>'⭐ '+n+' נקודות',en:n=>'⭐ '+n+' points'},
   'st.none':{he:'כל רמה נותנת נקודה. XP מגיע מאויבים בעולם, מהזירה ומקווסטים',en:'Every level gives a point. XP comes from enemies in the world, the arena and quests'},
   // עץ הסקילים (stats.js): [שם, מה זה נותן]
   'tr.open':{he:'עץ סקילים',en:'Skill tree'},

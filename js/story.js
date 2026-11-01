@@ -112,7 +112,8 @@ function storyWardenMove(e,dt){
   let tx=far?L.x-e.x:dx,ty=far?L.y+70-e.y:dy;const td=Math.hypot(tx,ty)||1;
   if(td>6){e.x+=tx/td*e.speed*sp*slowK(e)*dt;e.y+=ty/td*e.speed*sp*slowK(e)*dt}
   e.x+=e.kx*dt;e.y+=e.ky*dt;
-  const B=placeBox();if(B){e.x=Math.max(B.x0,Math.min(B.x1,e.x));e.y=Math.max(B.y0,Math.min(B.y1,e.y))}   // מכה לא דוחפת אותו אל מחוץ לאזור (על הגבעות)const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
+  const B=placeBox();if(B){e.x=Math.max(B.x0,Math.min(B.x1,e.x));e.y=Math.max(B.y0,Math.min(B.y1,e.y))}   // מכה לא דוחפת אותו אל מחוץ לאזור (על הגבעות)
+  const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
   if(d<e.r+P.r-3)hurt(e.dmg);
   const sh=W.shoot;
   if(sh&&!far&&d<WORLD.attackRange+120&&(e.shoot-=dt)<=0){e.shoot=sh.every;const a=Math.atan2(dy,dx);
