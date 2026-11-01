@@ -123,6 +123,7 @@ function p3Chest(band){
 /* ---- חיבור לעולם ולכפר (render3d.js) ---- */
 // נבנה פעם אחת לכל אזור (syncWorld): הפנס של האזור והסודות
 function props3dWorld(G,reg){
+  p3Carvings(reg,G.g);p3Towers(reg,G);
   for(const k in STORY.lanterns){const L=STORY.lanterns[k];if(L.reg!==reg)continue;(G.lan||(G.lan={}))[k]=p3At(p3Lantern(L.glow,PROPS3D.lantern.world),L.x,L.y,G.g)}
   for(const s of SECRETS.regions[reg]||[]){
     if(s.kind==='shrine')(G.shr||(G.shr={}))[s.id]=p3At(p3Shrine(SECRETS.shrine.col[s.bless]),s.x,s.y,G.g);
@@ -137,6 +138,7 @@ function props3dWorldTick(G){
   if(G.shr||G.chest){const st=scState();
     for(const id in G.shr||{})p3ShrineTick(G.shr[id],!(st.cd[id]>0),t);
     for(const id in G.chest||{})G.chest[id].visible=!scFound(id)&&!!st['v'+id]}
+  for(const m of G.tow||[]){const w=m.userData.win;w.material.color.set(Math.sin(t*3+m.position.x)>0.6?PROPS3D.tower.glow:'#2a2638')}   // החלון מהבהב כמו בדו-ממד
   for(const m of G.look||[]){const f=m.userData.flag;f.rotation.y=Math.sin(t*3+m.position.x)*0.25}
 }
 // הכפר: שישה עמודים קטנים (HOME.posts), באותו עיצוב. נדלקים כשהתושב חוזר (homeBack)
@@ -170,4 +172,30 @@ function props3dNode(n,g){
   if(K.shape==='vein'||K.shape==='crystal')return p3Ore(n,K,K.shape,g);
   if(K.shape==='chest'){const c=p3At(p3Chest(K.col),n.x,n.y,g);c.scale.setScalar(PROPS3D.node.chest.w/PROPS3D.chest.w);c.rotation.y=hash(n.x,n.y)*1.2-0.6;return c}
   return null;
+}
+
+/* ---- העץ החרוט (סוד carving): עץ של האזור עצמו (W3D.decor), ולא עץ ירוק של הכפר באמצע המדבר או הסערה.
+   החץ החרוט ממשיך להיות מצויר בקנבס (secrets.js). באחו: העץ של הכפר, כמו קודם (secrets3D) ---- */
+function props3dCarve(reg){const D=typeof HD!=='undefined'&&HD.on&&W3D.decor[reg];return !!(D&&D.tree)}
+function p3Carvings(reg,g){
+  if(!props3dCarve(reg))return;const T=W3D.decor[reg].tree,sp=T.pick?T.pick.find(p=>p.model!=='n_cactus'&&p.model!=='n_reeds')||T.pick[0]:T;
+  for(const s of SECRETS.regions[reg]||[])if(s.kind==='carving')wPut(Object.assign({},sp,sp.h?{h:sp.h*1.1}:{}),s.x,s.y-6,hash(s.x,s.y),1,g);
+}
+/* ---- המגדלים השבורים במגדלי הסערה (WR().towers ב-world.js): מגדל אבן עגול, שכבות אבנים, ראש שבור ומשונן,
+   וחלון שמהבהב בסגול של הברק. h: הגובה מהנתונים, r: הרוחב (גם הגבול שאי אפשר לעבור) ---- */
+PROPS3D.tower={stone:'#6b6880',dark:'#4a4860',glow:'#C7A6FF',rings:5};
+function p3Tower(o){
+  const T=PROPS3D.tower,g=new THREE.Group(),{r,h}=o,st=p3Mat(T.stone),dk=p3Mat(T.dark),seed=hash(o.x,o.y);
+  p3Mesh(p3Cyl(r*1.1,r*1.25,10,10),dk,0,5,0,g);   // בסיס
+  const body=h*0.78;p3Mesh(p3Cyl(r*0.9,r,body,10),st,0,10+body/2,0,g);
+  for(let i=1;i<=T.rings;i++)p3Mesh(p3Cyl(r*0.95+1,r*0.95+1,3,10),dk,0,10+body*i/(T.rings+1),0,g);   // שורות אבנים
+  for(let i=0;i<7;i++){const a=i/7*6.28+seed*3,hh=8+hash(i,o.x)*h*0.28;if(hash(i,o.y)<0.3)continue;   // הראש השבור: שיניים בגבהים שונים, וחלק חסר
+    p3Mesh(p3Box(r*0.55,hh,r*0.35),st,Math.cos(a)*r*0.72,10+body+hh/2,Math.sin(a)*r*0.72,g).rotation.y=-a}
+  for(let i=0;i<4;i++){const a=seed*6+i*1.7,d=r*(1.3+hash(i,o.x+1)*0.6);p3Mesh(p3Box(9+hash(i,3)*8,7,9),dk,Math.cos(a)*d,3.5,Math.sin(a)*d,g).rotation.y=a}   // אבנים שנפלו
+  const win=p3Mesh(p3Box(9,15,2),new THREE.MeshBasicMaterial({color:T.glow,toneMapped:false}),0,10+body*0.55,r*0.92,g);
+  g.userData.win=win;return g;
+}
+function p3Towers(reg,G){
+  const R=WORLD.regions[reg];if(!R||!R.towers)return;
+  G.tow=R.towers.map(o=>{const m=p3At(p3Tower(o),o.x,o.y,G.g);m.rotation.y=Math.PI*0.15;return m});
 }
