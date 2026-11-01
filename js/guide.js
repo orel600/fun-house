@@ -133,7 +133,7 @@ function guideUpdate(){
   guideG=S&&(S.vil||S.wd)&&SAVE&&SAVE.quests?guideGoal():null;
   guideUi();
 }
-$('guideMain').addEventListener('click',()=>{if(!S.vil&&!S.wd)return;questLogOpen(true);if(typeof wmapOpen==='function'&&S.wd)wmapOpen(false);sfx('ui')});
+$('guideMain').addEventListener('click',()=>{if(!S.vil&&!S.wd)return;if(typeof wmapOpen==='function'&&S.wd&&!$('wMap').hidden)wmapOpen(false);if($('qLog').hidden)menuShow('qBtn');sfx('ui')});   // היומן נפתח בתפריט הראשי (menu.js)
 $('guideJump').addEventListener('click',()=>{const to=$('guideJump').dataset.to;if(!to)return;
   const why=travelBlock();if(why){banner(T('g.noJump'),C.blood);return}travelGo(to)});
 $('guideMin').addEventListener('click',()=>{try{localStorage.setItem(GUIDE.key,guideMin()?'0':'1')}catch(e){}guideKey='';guideUi();sfx('ui')});

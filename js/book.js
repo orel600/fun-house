@@ -108,7 +108,7 @@ function bookOpen(on){
   if(on){if(!S||S.mode!=='play')return;if(!$('qLog').hidden)questLogOpen(false);npcTalk(null);S.mode='book';joy=null;BKU.sel=null;w.hidden=false;bookDraw()}
   else{w.hidden=true;if(S&&S.mode==='book')S.mode='play'}
 }
-$('bookBtn').addEventListener('click',()=>bookOpen($('bookWin').hidden));
+// הכפתור: לשונית בתפריט הראשי (menu.js)
 $('bookWin').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;const a=b.dataset.act;
   if(a==='close'){bookOpen(false);return}

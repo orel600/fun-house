@@ -958,7 +958,7 @@ function worldBot(m,L,god){
   const uiMeasure=place=>{const vis=e=>{if(!e||e.closest('[hidden]'))return null;const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>0&&r.height>0&&cs.display!=='none'&&cs.visibility!=='hidden'?r:null};
     const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1,W=innerWidth,H=innerHeight;
     const box=sel=>[...document.querySelectorAll(sel)].map(e=>({n:e.id||(e.className.split(' ')[0]+(e.dataset.tip?':'+e.dataset.tip:'')),r:vis(e)})).filter(x=>x.r);
-    const els=box(place==='world'?'#muteBtn,#wMapBtn,.hud .hp,#wBag .res,#wBag .resmore,#nav .nbtn,#guide':'#muteBtn,#vBag .res,#vBag .resmore,#nav .nbtn,#guide'),bad=[],off=[];
+    const els=box(place==='world'?'#menuBtn,#muteBtn,.hud .hp,#wBag .res,#wBag .resmore,#nav .nbtn,#guide':'#menuBtn,#muteBtn,#vBag .res,#vBag .resmore,#nav .nbtn,#guide'),bad=[],off=[];
     els.forEach((a,i)=>els.slice(i+1).forEach(b=>{if(hit(a.r,b.r))bad.push(a.n+'×'+b.n)}));
     for(const x of els)if(x.r.left<-0.5||x.r.right>W+0.5||x.r.top<-0.5||x.r.bottom>H+0.5)off.push(x.n);
     const pid=place==='world'?'wPanel':'vPanel',pn=vis($(pid));if(pn)for(const x of box('#nav .nbtn,#guide'))if(hit(pn,x.r))bad.push(pid+'×'+x.n);
@@ -980,6 +980,28 @@ function worldBot(m,L,god){
     gearOpen();const ov=$('ovGear');ov.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));ov.click();o.backdrop=ov.hidden&&S.mode==='play';
     questLogOpen(true);$('c').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:7}));joy=null;o.tapOut=$('qLog').hidden;
     return o};
+  // התפריט הראשי (menu.js): ☰ גלוי, הלשוניות לפחות 48 ולא נוגעות ב-✕ של החלון, כל לשונית מחליפה את החלון (רק אחד פתוח), ו-✕, Esc והרקע סוגרים הכל.
+  // async: התפריט נסגר אחרי שהחלון נסגר (MutationObserver), אז מחכים רגע לפני שבודקים
+  const menuTest=async place=>{const $=id=>document.getElementById(id),tick=()=>Promise.resolve().then(()=>{}),on=()=>document.body.classList.contains('menu'),W=innerWidth,H=innerHeight;
+    const vis=e=>{if(!e||e.closest('[hidden]'))return null;const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>0&&r.height>0&&cs.display!=='none'&&cs.visibility!=='hidden'?r:null};
+    const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1;
+    const m={},mb=vis($('menuBtn'));m.btn=!!mb&&mb.width>=44&&mb.height>=44&&mb.right<=W&&mb.top>=0;
+    $('menuBtn').click();await tick();m.open=on()&&!!MENU.cur;
+    const tabs=[...document.querySelectorAll('#menuRail .mtab')].map(e=>({n:e.id,r:vis(e)})).filter(x=>x.r);
+    m.tabs=tabs.length;m.want=place==='world'?5:4;m.small=tabs.filter(x=>x.r.width<48||x.r.height<48).map(x=>x.n);
+    m.out=tabs.filter(x=>x.r.left<0||x.r.right>W+0.5||x.r.top<0||x.r.bottom>H+0.5).map(x=>x.n);
+    const seen=[];for(const t of MENU.tabs){const b=$(t.id);if(!vis(b))continue;if(MENU.cur!==t.id)b.click();await tick();
+      const xr=vis(document.querySelector('#'+t.win+' .wx'));
+      const why=$(t.win).hidden?'סגור':MENU.cur!==t.id||!on()?'בלי תפריט':!MENU.tabs.every(u=>u===t||$(u.win).hidden)?'שני חלונות':!xr?'אין ✕':xr.right>W||xr.bottom>H||xr.left<0||xr.top<0?'✕ מחוץ למסך':tabs.some(y=>hit(y.r,xr))?'✕ מתחת ללשונית':'';
+      seen.push(t.id.replace('Btn','')+(why?' ('+why+')':''))}
+    m.seen=seen.join(', ');m.allOk=!/\(/.test(m.seen);
+    const xx=MENU.cur&&document.querySelector('#'+menuTab(MENU.cur).win+' .wx');if(xx)xx.click();await tick();m.xClose=!on()&&S.mode==='play'&&MENU.tabs.every(u=>$(u.win).hidden);
+    $('menuBtn').click();await tick();dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape'}));keys.Escape=false;await tick();m.esc=!on()&&S.mode==='play';
+    $('menuBtn').click();await tick();$('menuBg').click();await tick();m.bg=!on()&&S.mode==='play';
+    const gb=$('gBadge'),h0=gb.hidden;gb.hidden=false;menuDot();m.dot=!$('menuBtn').querySelector('b').hidden;gb.hidden=h0;menuDot();
+    m.nav=[...document.querySelectorAll('#nav button')].every(b=>b.classList.contains('talkbtn'));   // בסרגל רק כפתורים של המקום
+    m.ok=m.btn&&m.open&&m.tabs===m.want&&!m.small.length&&!m.out.length&&m.allOk&&m.xClose&&m.esc&&m.bg&&m.dot&&m.nav;return m};
+  const uiMenu={};
   for(const nm in UIV){
     await page.setViewportSize(UIV[nm]);
     await page.evaluate(()=>{SAVE.village.market=Math.max(1,vLv('market'));SAVE.village.forge=Math.max(1,vLv('forge'));bagAdd('coins',1300);
@@ -992,10 +1014,14 @@ function worldBot(m,L,god){
       const br=b&&b.getBoundingClientRect(),o={fit:r.top>=0&&r.left>=0&&r.bottom<=innerHeight&&r.right<=innerWidth,btn:!!br&&br.bottom<=innerHeight&&br.height>=40};return o});
     await shot('ui-welcome-'+nm);await page.evaluate(()=>{welcomeClose();dailySave().day=dailyDay()});
     const v=await page.evaluate(uiMeasure,'village');
+    const vm=await page.evaluate(menuTest,'village');
+    if(CFG.shots){await page.evaluate(()=>$('menuBtn').click());await shot('ui-menu-'+nm);await page.evaluate(()=>menuClose())}
     await page.evaluate(()=>{leaveVillage();const g=WORLD.home;P.x=g.x;P.y=g.y+g.r+P.r+2;S.cam.x=P.x;S.cam.y=P.y});
     await page.clock.runFor(200);
     await shot('ui-world-'+nm);
     const w=await page.evaluate(uiMeasure,'world');
+    const wm=await page.evaluate(menuTest,'world');uiMenu[nm]={vm,wm};
+    if(CFG.shots){await page.evaluate(()=>{$('menuBtn').click();$('wMapBtn').click()});await shot('ui-menu-map-'+nm);await page.evaluate(()=>menuClose())}
     await page.evaluate(()=>enterVillage());await page.clock.runFor(100);
     uiR[nm]={v,w};
   }
@@ -1030,7 +1056,7 @@ function worldBot(m,L,god){
       await page.evaluate(pl=>{questLogOpen(false);if(pl==='world'){leaveVillage();P.x=-300;P.y=-100}else{enterVillage();P.x=0;P.y=60}S.cam.x=P.x;S.cam.y=P.y;guideT=0},pl);
       await page.clock.runFor(200);if(nm==='land'&&pl==='world')await shot('guide-world');
       gdHit[nm+'-'+pl]=await page.evaluate(()=>{const g=$('guide');if(g.hidden)return 'מוסתרת';const r=g.getBoundingClientRect(),bad=[];
-        for(const e of document.querySelectorAll('#muteBtn,#wMapBtn,.dgift,.hud .hp,#vBag .res,#vBag .resmore,#wBag .res,#wBag .resmore,#nav .nbtn')){if(e.closest('[hidden]'))continue;const q=e.getBoundingClientRect();
+        for(const e of document.querySelectorAll('#menuBtn,#muteBtn,.dgift,.hud .hp,#vBag .res,#vBag .resmore,#wBag .res,#wBag .resmore,#nav .nbtn')){if(e.closest('[hidden]'))continue;const q=e.getBoundingClientRect();
           if(q.width&&getComputedStyle(e).display!=='none'&&r.left<q.right-1&&q.left<r.right-1&&r.top<q.bottom-1&&q.top<r.bottom-1)bad.push(e.id||e.className.split(' ')[0])}
         return r.right>innerWidth||r.left<0?'מחוץ למסך':bad.join(',')})}}
   await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();npcTalk(null);const g=VILLAGE.gate;P.x=g.x;P.y=g.y-90;S.cam.x=P.x;S.cam.y=P.y});
@@ -1328,7 +1354,7 @@ function worldBot(m,L,god){
   const wm=await page.evaluate(()=>{
     const o={};SAVE.wmap={seen:{}};const st0=JSON.stringify(SAVE.story),sc0=JSON.stringify(SAVE.secrets);
     SAVE.story=Object.assign({},SAVE.story,{earth:true,water:false,ice:false,fire:false});SAVE.secrets={found:{},read:{}};
-    enterWorld('home');o.btn=!$('wMapBtn').closest('[hidden]')&&getComputedStyle($('wMapBtn')).display!=='none';
+    enterWorld('home');o.btn=getComputedStyle($('menuBtn')).display!=='none'&&menuTab('wMapBtn').when();   // המפה: לשונית בתפריט הראשי (menu.js)
     $('wMapBtn').click();o.open=!$('wMap').hidden&&S.mode==='map';const G=wmGraph();o.show=G.show.join(',');o.edges=G.edges.length;
     o.fog=G.show.filter(r=>!wmSeen(r)).join(',');o.canv=['wmWorld','wmHere'].every(id=>{const c=$(id);return c&&c.width>50&&c.height>50});
     o.hidden=!G.show.includes('ridge');   // הרכס עוד סגור: לא מופיע
@@ -1419,6 +1445,9 @@ function worldBot(m,L,god){
       'ממשק, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(bad.length?'נוגעים זה בזה: '+bad.join(', '):'הפס העליון והסרגל לא נוגעים')+(off.length?', מחוץ למסך: '+off.join(', '):'')+
       (v.more?', "+N" לשאר התרמיל':', אין "+N"')+', '+v.cards+' כרטיסים במסחר'+(v.cols===2?' בשני טורים':'')+(v.tradeBack?', ✕ חוזר לשוק':', ✕ לא חזר לשוק')+' · יציאה: '+all.map(x=>x[0]+(x[1]==='ok'?' ✕':' '+x[1])).join(', ')+
       (v.esc?', Esc':', Esc לא סוגר')+(v.backdrop?', רקע':', רקע לא סוגר')+(v.tapOut?', נגיעה במשחק':', נגיעה במשחק לא סוגרת יומן'))}
+  for(const nm in uiMenu){const {vm,wm}=uiMenu[nm],d=(m,p)=>p+': '+(m.btn?'☰':'אין ☰')+(m.open?'':' לא נפתח')+', '+m.tabs+'/'+m.want+' לשוניות'+(m.small.length?' קטנות: '+m.small.join(','):'')+(m.out.length?' מחוץ למסך: '+m.out.join(','):'')+
+      ' ['+m.seen+']'+(m.xClose?', ✕':', ✕ לא סוגר')+(m.esc?', Esc':', Esc לא סוגר')+(m.bg?', רקע':', רקע לא סוגר')+(m.dot?', נקודה על ☰':', אין נקודה על ☰')+(m.nav?'':', בסרגל יש כפתור שלא שייך למקום');
+    check(vm.ok&&wm.ok,'תפריט ראשי, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+d(vm,'כפר')+' · '+d(wm,'עולם'))}
   check(gd.vil&&gd.vilGate&&gd.lantern&&gd.lakeBack&&gd.jump==='earth'&&gd.claim&&gd.changed&&gd.min&&gd.log&&gd.arena,'מטרה ברורה: '+(gd.vil?'בכפר "'+gd.txt+'" '+gd.dist:'אין שורה בכפר')+(gd.vilGate?', החץ לשער':', החץ לא לשער')+
     (gd.lantern?', בעולם לפנס':', לא לפנס')+(gd.lakeBack?', מהאגם לשער חזרה':', מהאגם לא לשער')+(gd.jump==='earth'?', ו"קפוץ" לפנס האדמה':', בלי "קפוץ" ('+gd.jump+')')+(gd.claim?', לפרס':', לא לפרס')+(gd.changed?', אחר כך: "'+gd.after+'"':', המטרה לא התחלפה')+
     (gd.min?', מתכווצת':', לא מתכווצת')+(gd.log?', נגיעה פותחת יומן עם "עכשיו"':', נגיעה לא פותחת יומן עם "עכשיו"')+(gd.arena?', בזירה מוסתרת':', מופיעה בזירה'));
