@@ -812,3 +812,4 @@ body:not(.vil):not(.world) .guide{display:none}
 .welnext{margin:0;text-align:center;font:700 16px var(--body)}
 .welfly{position:fixed;z-index:30;pointer-events:none;display:flex;align-items:center;gap:3px;font:900 18px var(--body);color:var(--gold);text-shadow:0 1px 3px #000}
 .welfly .ri{width:24px;height:24px}
+.gjump{flex:none;padding:0 10px;color:var(--gold);font-weight:800}

@@ -951,6 +951,8 @@ Object.assign(TEXT,{
   'g.min':{he:'לכווץ את המטרה',en:'Collapse the goal'},
   'g.open':{he:'להציג את המטרה',en:'Show the goal'},
   'g.now':{he:'עכשיו:',en:'Now:'},
+  'g.jump':{he:'קפוץ',en:'Jump'},
+  'g.noJump':{he:'אי אפשר לקפוץ באמצע קרב',en:'You cannot jump in the middle of a fight'},
   'g.why.sec':{he:'🔍 סודות שמצאת באזור הזה, מתוך כולם',en:'🔍 Secrets you found in this area, out of all of them'},
   'g.why.ch':{he:'🌀 האתגר היומי: כמה אויבים הפלת היום תחת החוק המיוחד',en:'🌀 Daily challenge: foes defeated today under the special rule'}
 });

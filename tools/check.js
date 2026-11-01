@@ -931,7 +931,8 @@ function worldBot(m,L,god){
     o.lantern=!!t2&&t2.x===L.x&&t2.y===L.y&&ang(t2)===ang(L);
     worldUi(false);enterWorld('home','lake');P.x=300;P.y=200;tick();const h=WR().home,t3=guideTarget(guideG);   // מהאגם: החץ לשער חזרה לאחו
     o.lakeBack=!!t3&&t3.x===h.x&&t3.y===h.y&&ang(t3)===ang(h)&&/·/.test($('guideTxt').textContent);
-    worldUi(false);enterWorld('home');tick();const before=guideG.text;
+    SAVE.story.earth=true;worldUi(false);enterWorld('home','lake');tick();o.jump=$('guideJump').hidden?'':$('guideJump').dataset.to;   // מהאגם, המטרה באחו והפנס שם דולק: "קפוץ"
+    SAVE.story.earth=false;worldUi(false);enterWorld('home');tick();const before=guideG.text;
     questEvent('kill','warden');tick();o.claim=guideG.icon===GUIDE.icon.claim;
     SAVE.story.earth=true;questClaim('s1Warden');tick();o.after=guideG.text;o.changed=before!==guideG.text&&guideG.q!=='s1Warden';
     $('guideMin').click();o.min=$('guide').classList.contains('min')&&$('guideTxt').textContent==='';$('guideMin').click();
@@ -1335,8 +1336,8 @@ function worldBot(m,L,god){
       'ממשק, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(bad.length?'נוגעים זה בזה: '+bad.join(', '):'הפס העליון והסרגל לא נוגעים')+(off.length?', מחוץ למסך: '+off.join(', '):'')+
       (v.more?', "+N" לשאר התרמיל':', אין "+N"')+', '+v.cards+' כרטיסים במסחר'+(v.cols===2?' בשני טורים':'')+(v.tradeBack?', ✕ חוזר לשוק':', ✕ לא חזר לשוק')+' · יציאה: '+all.map(x=>x[0]+(x[1]==='ok'?' ✕':' '+x[1])).join(', ')+
       (v.esc?', Esc':', Esc לא סוגר')+(v.backdrop?', רקע':', רקע לא סוגר')+(v.tapOut?', נגיעה במשחק':', נגיעה במשחק לא סוגרת יומן'))}
-  check(gd.vil&&gd.vilGate&&gd.lantern&&gd.lakeBack&&gd.claim&&gd.changed&&gd.min&&gd.log&&gd.arena,'מטרה ברורה: '+(gd.vil?'בכפר "'+gd.txt+'" '+gd.dist:'אין שורה בכפר')+(gd.vilGate?', החץ לשער':', החץ לא לשער')+
-    (gd.lantern?', בעולם לפנס':', לא לפנס')+(gd.lakeBack?', מהאגם לשער חזרה':', מהאגם לא לשער')+(gd.claim?', לפרס':', לא לפרס')+(gd.changed?', אחר כך: "'+gd.after+'"':', המטרה לא התחלפה')+
+  check(gd.vil&&gd.vilGate&&gd.lantern&&gd.lakeBack&&gd.jump==='earth'&&gd.claim&&gd.changed&&gd.min&&gd.log&&gd.arena,'מטרה ברורה: '+(gd.vil?'בכפר "'+gd.txt+'" '+gd.dist:'אין שורה בכפר')+(gd.vilGate?', החץ לשער':', החץ לא לשער')+
+    (gd.lantern?', בעולם לפנס':', לא לפנס')+(gd.lakeBack?', מהאגם לשער חזרה':', מהאגם לא לשער')+(gd.jump==='earth'?', ו"קפוץ" לפנס האדמה':', בלי "קפוץ" ('+gd.jump+')')+(gd.claim?', לפרס':', לא לפרס')+(gd.changed?', אחר כך: "'+gd.after+'"':', המטרה לא התחלפה')+
     (gd.min?', מתכווצת':', לא מתכווצת')+(gd.log?', נגיעה פותחת יומן עם "עכשיו"':', נגיעה לא פותחת יומן עם "עכשיו"')+(gd.arena?', בזירה מוסתרת':', מופיעה בזירה'));
   check(Object.values(gdHit).every(v=>v===''),'מטרה ברורה, מקום השורה: '+Object.entries(gdHit).map(([k,v])=>k+' '+(v||'פנוי')).join(', '));
   for(const nm in uiWel){const u=uiWel[nm];check(u.fit&&u.btn,'בזמן שלא היית, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(u.fit?'החלון כולו בתוך המסך':'החלון יוצא מהמסך')+(u.btn?', והכפתור "אסוף הכל" נראה':', והכפתור "אסוף הכל" לא נראה'))}

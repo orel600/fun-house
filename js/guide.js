@@ -7,7 +7,7 @@
      3. קווסט פעיל אחר: זה שבחרת לעקוב אחריו, אחר כך כל השאר, ובסוף היומיים
      4. אם אין כלום, הצעה: פרס האתגר היומי, קווסט חדש אצל תושב, האתגר עצמו, או אזור שעוד לא ביקרת בו
    מטרה באזור אחר: החץ מצביע על השער הנכון (WORLD.paths, home), ובכפר על השער לעולם. מחשבים את הדרך בכל פעם (guideStep).
-   נגיעה בשורה פותחת את היומן, ו-▴ מכווץ אותה לאייקון ומרחק (נשמר בטלפון). רק בכפר ובעולם: בזירה נשאר קו המעקב של הקווסט (qTrack).
+   נגיעה בשורה פותחת את היומן, ✨ קופץ לפנס דולק באזור של המטרה (travel.js), ו-▴ מכווץ אותה לאייקון ומרחק (נשמר בטלפון). רק בכפר ובעולם: בזירה נשאר קו המעקב של הקווסט (qTrack).
    ההיגיון לא יודע איך החץ נראה: guideGoal ו-guideTarget מחזירים נתונים, והציור ב-guideDraw */
 
 const GUIDE={
@@ -114,11 +114,19 @@ function guideUi(){
   const G=guideG,t=guideTarget(G),d=t&&P?Math.hypot(t.x-P.x,t.y-P.y):0;
   const dist=t?(d<GUIDE.near?T('g.here'):T('g.m',Math.max(5,Math.round(d/GUIDE.m/5)*5))):'';
   const via=t&&t.gate?T('g.via',t.gate):'',min=guideMin();
-  const key=[LANG,min,G.icon,G.text,via,dist].join('|');if(key===guideKey)return;guideKey=key;
+  const jump=guideJump(G),jb=$('guideJump');
+  const key=[LANG,min,G.icon,G.text,via,dist,jump].join('|');if(key===guideKey)return;guideKey=key;
+  jb.hidden=!jump;jb.dataset.to=jump||'';jb.textContent='✨ '+T('g.jump');
   el.classList.toggle('min',min);
   $('guideTxt').textContent=min?'':G.text+(via?' · '+via:'');
   $('guideIco').textContent=G.icon;$('guideDist').textContent=dist;
   $('guideMin').textContent=min?'▾':'▴';$('guideMin').setAttribute('aria-label',T(min?'g.open':'g.min'));
+}
+// קפיצה (travel.js): המטרה באזור עם פנס דולק, או בכפר כשנמצאים רחוק ממנו. מחזיר למה לקפוץ ('home' או מזהה פנס), או null
+function guideJump(G){
+  const here=gHere();if(!G||!G.place||G.place===here||typeof travelGo!=='function')return null;
+  if(G.place==='village')return here&&here!=='village'&&here!=='meadow'?'home':null;
+  const o=travelOf(G.place);return o?o.k:null;
 }
 function guideUpdate(){
   const now=fxNow();if(now<guideT)return;guideT=now+GUIDE.every;
@@ -126,6 +134,8 @@ function guideUpdate(){
   guideUi();
 }
 $('guideMain').addEventListener('click',()=>{if(!S.vil&&!S.wd)return;questLogOpen(true);if(typeof wmapOpen==='function'&&S.wd)wmapOpen(false);sfx('ui')});
+$('guideJump').addEventListener('click',()=>{const to=$('guideJump').dataset.to;if(!to)return;
+  const why=travelBlock();if(why){banner(T('g.noJump'),C.blood);return}travelGo(to)});
 $('guideMin').addEventListener('click',()=>{try{localStorage.setItem(GUIDE.key,guideMin()?'0':'1')}catch(e){}guideKey='';guideUi();sfx('ui')});
 
 /* ---- ביומן: "עכשיו" בגדול בראש (questLog ב-quests.js) ---- */
