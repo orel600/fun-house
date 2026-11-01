@@ -100,6 +100,24 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .ult:active{transform:scale(.92)}
 .swap:not([hidden])~.ult{right:calc(env(safe-area-inset-right,0px) + 230px)}
 .vil .skills,.vil .divine,.vil .ult,.world .ult{display:none}
+/* כישוף מיוחד (js/spell.js): כפתור קטן מעל השורה התחתונה, משמאל לקשת. צבע קלף, כי כישוף הוא לא סוג נזק. בחירה בתחילת ריצה: שלושה סמלים מעליו */
+.spellb{position:fixed;z-index:3;width:56px;height:56px;right:calc(env(safe-area-inset-right,0px) + 226px);bottom:calc(env(safe-area-inset-bottom,0px) + 130px);
+  border-radius:50%;border:3px solid #E9D8A6;color:#E9D8A6;display:grid;place-items:center;padding:0;overflow:hidden;touch-action:none;cursor:pointer;
+  background:radial-gradient(circle at 50% 35%,#2E3854e6,#141A2Ae6 72%);box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 4px 10px #000a}
+.swap:not([hidden])~.spellb{right:calc(env(safe-area-inset-right,0px) + 240px)}
+.spellb .dti{width:26px;height:26px}
+.spellb:not(.ready) .dti{opacity:.45}
+.spellb i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
+.spellb.ready{box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 0 10px #E9D8A688}
+.spellb:active{transform:scale(.92)}
+.spellb[data-sec]:not([data-sec=""])::after{content:attr(data-sec);position:absolute;inset:0;display:grid;place-items:center;z-index:1;font:900 20px/1 var(--body);color:#fff;text-shadow:0 0 4px #000,0 2px 0 #000;pointer-events:none}
+.spellb[hidden],.spellpick[hidden]{display:none}
+.spellpick{position:fixed;z-index:3;display:flex;gap:8px;direction:ltr;right:calc(env(safe-area-inset-right,0px) + 196px);bottom:calc(env(safe-area-inset-bottom,0px) + 196px)}
+.swap:not([hidden])~.spellpick{right:calc(env(safe-area-inset-right,0px) + 210px)}
+.spellpick button{width:44px;height:44px;border-radius:50%;border:2px solid #E9D8A688;background:#141A2Ae6;color:#E9D8A6;display:grid;place-items:center;padding:0;touch-action:none}
+.spellpick button.on{border-color:#E9D8A6;box-shadow:0 0 10px #E9D8A688}
+.spellpick .dti{width:22px;height:22px}
+.vil .skills,.vil .divine{display:none}
 /* בעולם (js/wskill.js): בזמן ההמתנה מספר השניות גדול באמצע, ובגרירה הכפתור מתכווץ */
 /* הסרגל התחתון כבר לא בפינה הזו (התפריט הראשי, menu.js), אז הכפתורים בגובה הרגיל */
 .world .skb[data-sec]:not([data-sec=""])::after{content:attr(data-sec);position:absolute;inset:0;display:grid;place-items:center;z-index:1;

@@ -862,6 +862,15 @@ function worldBot(m,L,god){
       const es=[0,1,2].map(i=>{const e=addEnemy('grunt',P.x+60+i*40,P.y);e.hp=e.max=1e9;return e});r.use=ultUse()===true&&es.every(e=>e.hp<e.max)&&S.ult.c===0;
       ultHud();r.btn=!document.getElementById('ult').hidden;for(const e of es)e.dead=true;enemies=enemies.filter(e=>!e.dead)}catch(err){r.err=String(err)}
     S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.ult=bak.u;S.slow=0;return r});
+  // כישוף מיוחד (spell.js): קפיצה מזיזה ומגינה, ואז מחכים. ריפוי מחזיר חיים. מכה פוגעת באויב-העל. הבחירה נזכרת
+  const spl=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,spl:S.spl,hp:P.hp,x:P.x,y:P.y},r={};let mem=null;try{mem=localStorage.getItem(SPELL.key)}catch(e){}
+    S.vil=S.wd=S.room=null;S.mode='play';S.spl=null;
+    try{spellPick('dash');const x0=P.x,y0=P.y;r.dash=spellUse()===true&&Math.hypot(P.x-x0,P.y-y0)>100&&P.inv>0&&spellUse()===false;
+      spellPick('heal');S.spl.until=0;P.hp=P.maxHp*0.3;const h0=P.hp;r.heal=spellUse()===true&&P.hp>h0;
+      spellPick('smite');S.spl.until=0;const e=addEnemy('grunt',P.x+100,P.y);e.hp=e.max=1e6;e.elite=true;r.smite=spellUse()===true&&e.hp<e.max;e.dead=true;enemies=enemies.filter(x=>!x.dead);
+      r.mem=spellId()==='smite';spellHud();r.btn=!document.getElementById('spell').hidden}catch(err){r.err=String(err)}
+    try{mem?localStorage.setItem(SPELL.key,mem):localStorage.removeItem(SPELL.key)}catch(e){}
+    S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.spl=bak.spl;P.hp=bak.hp;P.x=bak.x;P.y=bak.y;return r});
   // פיוחו מצילה (rescue.js): מתחת ל-30% חיים בזירה, עם סיכוי, מופיעה עצם. הרמה מעלימה אויבים רגילים בקרבת מקום, בוס רק נפגע, ופעם אחת בריצה
   const rsr=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,rs:S.rs,hp:P.hp,rnd:Math.random,kills:S.kills},r={};
     S.vil=S.wd=S.room=null;S.mode='play';S.rs=null;
@@ -1858,6 +1867,7 @@ function worldBot(m,L,god){
     'חפצים מסתובבים: '+wsk.orbs,wsk.orbHit?'פוגעים':'לא פוגעים',wsk.orbDraw?'מצוירים כאורות':'לא מצוירים',wsk.orbFlash?'מבזיקים בפגיעה':'לא מבזיקים'].join(', ')));
   check(!prs.err&&prs.sneak&&prs.flee&&prs.grab&&prs.give&&prs.draw===true&&prs.name&&prs.rescue===true,'הפרעוש: '+(prs.err||[prs.sneak?'מתגנב':'לא התגנב',prs.grab?'חוטף':'לא חטף',prs.flee&&prs.give?'מביא שלל לשחקן':'לא הביא שלל',prs.draw===true?'מצויר':'ציור: '+prs.draw,prs.name?'עם שם וטקסט משלו':'בלי טקסט משלו',prs.rescue===true?'ומציל עם שק שלל':'הצלה: '+prs.rescue].join(', ')));
   check(!ult.err&&ult.early&&ult.use&&ult.btn,'אולטימייט: '+(ult.err||[ult.btn?'כפתור בזירה':'אין כפתור',ult.early?'לא עובד לפני שמלא':'עבד לפני שמלא',ult.use?'מלא: פוגע בכולם ומתאפס':'לא פגע או לא התאפס'].join(', ')));
+  check(!spl.err&&spl.dash&&spl.heal&&spl.smite&&spl.mem&&spl.btn,'כישוף מיוחד: '+(spl.err||[spl.btn?'כפתור בזירה':'אין כפתור',spl.dash?'קפיצה':'הקפיצה לא עבדה',spl.heal?'ריפוי':'הריפוי לא עבד',spl.smite?'מכה באויב-על':'המכה לא עבדה',spl.mem?'הבחירה נזכרת':'הבחירה לא נזכרה'].join(', ')));
   check(!rsr.err&&!rsr.early&&rsr.missNo&&rsr.once&&rsr.item&&rsr.draw===true&&rsr.draw2===true&&rsr.took&&rsr.gone&&rsr.far&&rsr.boss,'פיוחו מצילה: '+(rsr.err||[rsr.early?'הופיעה מוקדם':'לא לפני סכנה',rsr.missNo?'הגרלה שנכשלה לא חוזרת':'הגרלה לא נכשלה',rsr.once?'פעם אחת':'שוב',rsr.item?'עצם':'אין עצם',rsr.draw===true&&rsr.draw2===true?'מצויר':'ציור נכשל',rsr.took&&rsr.gone?'אויב קרוב נעלם':'אויב לא נעלם',rsr.far?'רחוק נשאר':'רחוק נעלם',rsr.boss?'בוס רק נפגע':'בוס לא נפגע'].join(', ')));
   check(!dvr.err&&!dvr.early&&dvr.ready&&dvr.btn&&dvr.used&&dvr.five&&dvr.hit&&dvr.draw===true&&dvr.ended&&dvr.back&&dvr.once,'ברק אלוהי: '+(dvr.err||[dvr.early?'התעורר מוקדם':'מחכה לשני אויבי-על',dvr.ready?'מוכן':'לא מוכן',dvr.btn?'כפתור':'אין כפתור',dvr.five?'חמשת החפצים':'לא חמישה',dvr.hit?'ברק פגע':'ברק לא פגע',dvr.draw===true?'מצויר':'ציור נכשל: '+dvr.draw,dvr.ended&&dvr.back?'נגמר אחרי 5 שניות':'לא נגמר',dvr.once?'פעם אחת בריצה':'שוב'].join(', ')));
   check(spk.on&&spk.off&&spk.slow&&spk.noFlute&&spk.draw===true,'הנודד עם הניצוץ: '+[spk.on?'נדלק':'לא נדלק',spk.noFlute?'בלי חליל':'החליל נדלק אצלו',spk.draw===true?'להבונים וגצים מצוירים':'ציור: '+spk.draw,spk.off?'וכבה':'לא כבה'].join(', '));
