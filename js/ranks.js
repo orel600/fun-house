@@ -32,7 +32,8 @@ function rankLevelOf(xp){let lv=1;while(xp>=rankNeed(lv)){xp-=rankNeed(lv);lv++}
 // אחרי כל שינוי ב-SAVE.hero.xp: הרמה מתעדכנת, ועלייה מקבלת באנר
 function rankSync(){
   const lv=rankLevelOf(SAVE.hero.xp||0);
-  if(lv>SAVE.hero.level){SAVE.hero.level=lv;banner(T('rank.level',lv)+' · '+T('st.got',STATS.perLevel),C.gold);statBadge();if(P&&S&&S.mode==='play')celebrate(P.x,P.y-20,'rank');if(lv%RANKS.every===0)banner(T('rank.open',lv),C.lilac)}
+  if(lv>SAVE.hero.level){const from=SAVE.hero.level;SAVE.hero.level=lv;lpLevelUp(from,lv);   // הרגע הגדול וכרטיס של מה שנפתח (levelpath.js)
+    statBadge();if(P&&S&&S.mode==='play')celebrate(P.x,P.y-20,'rank');if(lv%RANKS.every===0)banner(T('rank.open',lv),C.lilac)}
 }
 // בסוף ריצה (runEnd ב-village.js): חלק מה-XP של הריצה נשאר
 function rankRunXp(){const v=Math.round((S.xpRun||0)*RANKS.xp.run);if(v>0){SAVE.hero.xp=(SAVE.hero.xp||0)+v;rankSync()}}

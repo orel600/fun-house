@@ -1018,6 +1018,20 @@ body.menu .minimap{display:none!important}
 #ovGear .strows{gap:3px}
 #ovGear .stplus{width:38px;height:38px}
 #ovGear .stfoot .vbtn{min-height:38px}
+/* מסלול רמות (levelpath.js): "הבא" בחלון הדמות, כרטיס עליית רמה, והבזק */
+.lpnext b{color:var(--gold)}.lpbig{opacity:.75}
+.stxp bdi{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-inline:6px}
+.lpcard{position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 64px);left:50%;transform:translate(-50%,-12px);min-width:220px;max-width:min(92vw,360px);
+  padding:10px 16px 12px;border-radius:14px;border:2px solid var(--gold);background:rgba(20,18,30,.92);box-shadow:0 0 24px #F4C74F66;color:var(--chalk);
+  text-align:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
+.lpcard.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.lpcard h3{margin:0 0 6px;font-family:var(--display);font-size:26px;color:var(--gold);text-shadow:0 2px 0 #0008}
+.lpcard ul{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-size:14px}
+.lpcard li{display:flex;gap:8px;justify-content:center;align-items:center}
+.lpcard p{margin:8px 0 0;font-size:12px;opacity:.85}.lpcard p b{color:var(--gold)}
+.lpflash{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 55%,#fff8 0,#F4C74F55 35%,transparent 70%)}
+.lpflash.on{animation:lpflash .9s ease-out}
+@keyframes lpflash{0%{opacity:0}12%{opacity:var(--k,1)}100%{opacity:0}}
 /* ===== ממצאי המבקר על המסך (docs/critic/2026-11-01, ניר אישר 1.11.2026) ===== */
 /* dialog-under-hud + guide-over-windows: כשחלון פתוח בכפר ובעולם, הכפתורים העליונים, המשאבים, שורת המטרה והמפה הקטנה נעלמים.
    כך ה-✕ של החלון לא יושב מתחת ל-☰, ושורת המטרה לא עולה על הכותרת שלו */
