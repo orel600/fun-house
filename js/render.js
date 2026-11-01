@@ -46,6 +46,7 @@ function drawPlayer(){
     }
   }}
   if(sword&&s.anim>0&&fluteOn())fluteSwing(s,s.anim/0.2,dtCol(P.dt.sword));   // הנודד עם החליל: חמשה ותווים (flute.js)
+  else if(sword&&s.anim>0&&jSwing(s,s.anim/0.2,dtCol(P.dt.sword))){}   // בעולם ובכפר: שובל חרמש (juice.js)
   else if(sword&&s.anim>0){
     const k=s.anim/0.2,start=s.ang-s.arc/2,end=start+s.arc*(1-k);
     ctx.globalAlpha=0.55*k+0.15;ctx.strokeStyle=dtCol(P.dt.sword);ctx.lineWidth=12*k+2;

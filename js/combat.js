@@ -23,7 +23,7 @@ function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
   const m=e.mult[t]??1;const crit=Math.random()<HITFX.crit+orbitCrit()+Math.min(STATS.cap.crit,P.crit||0)/100;   // ונקודות מזל (stats.js)   // חפץ מזל מוסיף (orbit.js)
   const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?HITFX.critMul:1)*statDmgFx(w,e);   // עץ הסקילים (stats.js)
   statOnDamage(d);
-  e.hp-=d;e.flash=0.09;sfx('hit');heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
+  e.hp-=d;e.flash=0.09;sfx('hit',jSnd(m,crit));heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
   if(!e.isBoss&&!e.node){const kb=(w==='sword'?150:55)*(m>1?1.4:1)/(e.big||1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   const col=m>1?dtCol(t):m<1?C.dim:C.chalk,J=juiceHit(e,d,m,crit,t,ang);   // אפקטים של קרב בעולם (juice.js)
   if(!J)floatText(e.x+rand(-8,8),e.y-e.r-8,big(d)+(crit?'!':''),col,(m>1?21:m<1?12:15)*(crit?1.45:1),true,crit);
