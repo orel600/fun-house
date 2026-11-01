@@ -525,6 +525,7 @@ const TEXT={
   'ch.r.giants':{he:['יום הענקים','האויבים ענקיים וחזקים, ומפילים הרבה מטבעות'],en:['Day of Giants','Enemies are huge and tough, and drop lots of coins']},
   'ch.r.glass':{he:['יום הזכוכית','האויבים נופלים מהר, אבל מכים חזק'],en:['Day of Glass','Enemies fall fast, but hit hard']},
   'ch.r.gold':{he:['בהלה לזהב','כל אויב מפיל מטבעות, אבל הם מכים חזק יותר'],en:['Gold Rush','Every enemy drops coins, but they hit harder']},
+  'fai.leader':{he:'מנהיג הלהקה',en:'Pack Leader'},'fai.leaderCome':{he:'👑 להקה עם מנהיג מתקרבת!',en:'👑 A pack leader approaches!'},'fai.leaderDown':{he:'👑 המנהיג הופל! ערימת שלל',en:'👑 Leader down! Loot pile'},
   'af.fast':{he:'מהיר',en:'Swift'},'af.tough':{he:'משוריין',en:'Armored'},'af.burst':{he:'מתפוצץ',en:'Volatile'},'af.split':{he:'מתפצל',en:'Splitting'},'af.regen':{he:'מתחדש',en:'Regenerating'},
   // שומרים חוזרים (story.js, STORY.rematch)
   'story.re.btn':{he:'לשומר',en:'Warden'},
