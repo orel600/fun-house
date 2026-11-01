@@ -56,6 +56,10 @@ const TEXT={
   'upd.new':{he:'🔄 גרסה חדשה',en:'🔄 New version'},
   'upd.going':{he:'מתעדכן…',en:'Updating…'},
   'upd.check':{he:'בדוק עדכון',en:'Check for update'},
+  'bug.btn':{he:'🐞 דיווח על באג',en:'🐞 Report a bug'},
+  'bug.copied':{he:'הועתק. הדביקו ל-Claude בצ׳אט',en:'Copied. Paste it to Claude in the chat'},
+  'bug.shared':{he:'נשלח. הדוח גם הועתק',en:'Shared. The report was also copied'},
+  'bug.fail':{he:'לא הצלחתי להעתיק. צלמו את המסך',en:'Could not copy. Take a screenshot'},
   'upd.latest':{he:'יש לך את הגרסה הכי חדשה',en:'You have the latest version'},
   'upd.off':{he:'אין חיבור, נסו שוב אחר כך',en:'No connection, try again later'},
   'upd.later':{he:'יש גרסה חדשה: נגיעה ב-🔄 אחרי הריצה',en:'New version: tap 🔄 after the run'},
@@ -1021,6 +1025,10 @@ Object.assign(TEXT,{
   'ctx.arena':{he:'לזירה',en:'Arena'},
   'ctx.go':{he:'ללכת',en:'Go'},
   'mm.open':{he:'מפה',en:'Map'},
+  'jc.resist':{he:'עמיד',en:'Resists'},
+  'jc.immune':{he:'חסין',en:'Immune'},
+  'jc.tip':{he:(d,b)=>d+' חלש כאן. נסו '+b,en:(d,b)=>d+' is weak here. Try '+b},
+  'jc.tipN':{he:(n,d,b)=>n+' עמיד ל'+d+'. נסו '+b,en:(n,d,b)=>'The '+n+' resists '+d+'. Try '+b},
   'tr.no.fight':{he:'אי אפשר לקפוץ באמצע קרב',en:'Can’t jump in the middle of a fight'},
   'tr.no.warden':{he:'אי אפשר לקפוץ כשהשומר ער',en:'Can’t jump while the guardian is awake'}
 });
