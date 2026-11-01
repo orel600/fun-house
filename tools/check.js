@@ -1114,6 +1114,27 @@ function worldBot(m,L,god){
     P.inv=0;enterVillage();return o});
   check(sto2.intro&&sto2.offer&&sto2.shard&&sto2.warden&&sto2.ready&&sto2.lit,'עלילה, פרק 1: '+(sto2.intro?'ההקדמה אצל ראש הכפר':'אין הקדמה ('+sto2.dbg+')')+(sto2.offer?', קווסט ראשון מוצע והבא נעול':', סדר הקווסטים שבור')+
     (sto2.shard?', פיוחו מצאה רסיס':', אין רסיס')+(sto2.warden?', השומר קם ליד הפנס':', השומר לא קם')+(sto2.ready?' והופל':', לא הופל')+(sto2.lit?', הפנס נדלק':', הפנס לא נדלק')+(sto2.safer?', האחו בטוח יותר':''));
+  // השומר לא בורח (ניר, 1.11: "ברח לי"): כשמתרחקים הוא ממשיך לרדוף, מוותר רק אחרי כמה שניות רחוק, חוזר בלי להתרפא,
+  // ומכה לא דוחפת אותו מחוץ לאזור. וסביב כל פנס שטח פתוח: רחוק מהקצה ומהקישוטים (גבעות ועצים)
+  const wch=await page.evaluate(()=>{
+    const o={open:[]},CH=STORY.chase;
+    for(const k in STORY.lanterns){const L=STORY.lanterns[k];enterWorld('home',L.reg);const {w,h}=WR().size;
+      const edge=Math.min(w/2-Math.abs(L.x),h/2-Math.abs(L.y)),dec=Math.min(...worldDecor().map(d=>Math.hypot(d.x-L.x,d.y-L.y)-(d.kind==='hills'?130:0)));
+      if(edge<CH.clear||dec<200)o.open.push(k+':'+Math.round(edge)+'/'+Math.round(dec))}
+    const Q=QS(),was=Q.active.s1Warden;enemies.length=0;enterWorld('home','meadow');qStart(QBY.s1Warden);
+    const L=STORY.lanterns.earth;P.x=L.x;P.y=L.y+200;P.inv=1e9;storyUpdate(0.1);const e=S.wd.warden;o.warden=!!e;
+    if(e){e.hp=e.max/2;const hp=e.hp,B=placeBox();
+      const run=(px,py,sec)=>{for(let t=0;t<sec;t+=0.05){P.x=px;P.y=py;storyWardenMove(e,0.05)}};
+      run(L.x-600,L.y+200,3);o.chase=!e.back&&Math.hypot(e.x-L.x,e.y-L.y-70)>150;     // 600 מהפנס: עוד רודף
+      run(L.x-1500,L.y+300,CH.giveUp+1);o.gaveUp=e.back&&e.say>0;                      // רחוק מספיק זמן: חוזר ואומר משהו
+      run(L.x-1500,L.y+300,20);o.home=Math.hypot(e.x-L.x,e.y-L.y-70)<20;o.heal=e.hp!==hp; // חזר לפנס, בלי ריפוי
+      run(L.x,L.y+150,0.2);o.back=!e.back;                                             // חוזרים אליו: הקרב ממשיך
+      e.kx=9000;run(L.x,L.y+150,0.5);o.inside=e.x>=B.x0&&e.x<=B.x1&&e.y>=B.y0&&e.y<=B.y1;  // מכה חזקה לא מעיפה אותו אל הגבעות
+      e.dead=true;storyUpdate(0.1)}
+    if(!was)delete Q.active.s1Warden;P.inv=0;enterVillage();return o});
+  check(!wch.open.length&&wch.warden&&wch.chase&&wch.gaveUp&&wch.home&&!wch.heal&&wch.back&&wch.inside,'השומר לא בורח: '+
+    (wch.chase?'רודף כשמתרחקים':'חוזר לפנס מיד כשמתרחקים')+(wch.gaveUp?', מוותר רק אחרי כמה שניות ואומר משהו':', לא מוותר או לא אומר כלום')+(wch.heal?', מתרפא!':', בלי ריפוי')+
+    (wch.back?', הקרב ממשיך כשחוזרים':', לא חוזר לקרב')+(wch.inside?', נשאר בתוך האזור':', נדחף מחוץ לאזור')+(wch.open.length?', פנס ליד קצה או קישוט: '+wch.open.join(' '):', שטח פתוח סביב כל 6 הפנסים'));
   // העלילה, פרק 2 (story.js, WORLD.regions.lake): הדרך לאגם סגורה עד שפנס האדמה דולק, באגם יש אויבים רטובים (חלשים לברק),
   // והקווסטים מובילים לשומר המים, שמפיל את פנס המים
   const ch2=await page.evaluate(()=>{
