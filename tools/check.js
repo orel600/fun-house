@@ -1456,6 +1456,35 @@ function worldBot(m,L,god){
     const f=mk('fast');o.fast=f.speed>ETYPES.grunt.speed*1.5;o.name=T('af.fast');o.drops=drops().filter(d=>d.r==='coins').length;
     enterVillage();return o});
   check(afx.split===2&&afx.wait===1&&afx.blast>0&&afx.regen&&afx.fast&&afx.drops>0,'אויבים מיוחדים: מתפצל → '+afx.split+' קטנים, מתפוצץ: '+(afx.wait?'מחכה רגע':'מיד')+' ופגע '+afx.blast+', מתחדש '+(afx.regen?'מרפא':'לא מרפא')+', מהיר '+(afx.fast?'רץ מהר':'לא')+', שלל מטבעות '+afx.drops+' · "'+afx.name+'"');
+  // אויבים עם התנהגות (foeai.js): קבוצה רודפת, מסתער עם פס אדום, יורה מרחוק עם קו, קופץ עם עיגול, קורא שמביא חברים. בכל אחד: פוגע כשנשארים, ולא כשזזים
+  const fai=await page.evaluate(()=>{
+    enterWorld('home');enemies=[];eb=[];const o={},h0=hurt;let hits=0;hurt=()=>{hits++};
+    try{
+      const g=addEnemy('grunt',P.x+150,P.y,1);g.home=3;g.zone='near';const d0=Math.hypot(P.x-g.x,P.y-g.y);for(let i=0;i<10;i++)wFoes(0.05);o.chase=Math.hypot(P.x-g.x,P.y-g.y)<d0-15;enemies=[];
+      const run=(e,t)=>{for(let i=0;i<t/0.02;i++)foeAi(e,0.02,Math.hypot(P.x-e.x,P.y-e.y))};
+      const mk=(type,ai,dx)=>{const e=addEnemy(type,P.x+dx,P.y,1);e.zone='far';foeAiInit(e);e.ai=ai;e.acd=0;e.caller=0;return e};
+      // הסתערות: נשארים = נפגעים. זזים הצידה בזמן ההכנה = התחמקות
+      let e=mk('shield','charge',200);hits=0;foeAi(e,0.02,200);o.cWind=e.act==='wind';run(e,0.3);o.cEarly=hits===0;run(e,1.5);o.cHit=hits===1;
+      e=mk('shield','charge',200);hits=0;foeAi(e,0.02,200);P.y+=120;run(e,2);P.y-=120;o.cDodge=hits===0&&e.dodged>=1;
+      // ירייה מרחוק: קו ואז חץ קסם
+      e=mk('wisp','ranged',200);const b0=eb.length;foeAi(e,0.02,200);o.rAim=e.act==='aim';run(e,0.3);o.rWait=eb.length===b0;run(e,0.5);o.rShot=eb.length===b0+1;
+      // קפיצה: עיגול על המקום שלך, נוחת. זזת = התחמקת
+      e=mk('grunt','leap',160);hits=0;foeAi(e,0.02,160);o.lCrouch=e.act==='crouch';run(e,1.4);o.lHit=hits===1;
+      e=mk('grunt','leap',160);hits=0;foeAi(e,0.02,160);P.x-=150;run(e,1.4);P.x+=150;o.lDodge=hits===0&&e.dodged>=1;
+      // קורא: נפצע, בורח, ואם לא הופל, מביא חברים
+      enemies=[];e=mk('grunt','flank',150);e.caller=1;e.hp=e.max*0.3;const n0=enemies.length;foeAi(e,0.02,150);o.flee=e.act==='flee';run(e,2.5);o.called=!!e.called&&enemies.length===n0+FOEAI.call.friends;
+      // ליד השער: אין קופצים וקוראים, וההכנה איטית יותר
+      o.calm=FOEAI.leapChance.start===0&&FOEAI.callChance.start===0&&FOEAI.startWind>1;
+      // מנהיג להקה: בסוף שיא מגיעה להקה עם מנהיג (גדול, מהיר יותר ללהקה), ונפילה שלו נותנת ערימה פעם אחת
+      enemies=[];P.x=0;P.y=0;P.moving=false;paceUpdate(0.01);const p=S.wd.pace;p.b=PACE.beats.findIndex(b=>b.id==='peak');p.bt=PACE.beats[p.b].dur-FOEAI.leader.at+0.1;p.peaks=1;
+      foeLeaderTick();const ld=enemies.find(x=>x.leader);o.leader=!!ld&&ld.r>ETYPES[ld.type].r*1.2&&enemies.filter(x=>x.pack===ld.pack).length>=2;foeLeaderTick();o.once=enemies.filter(x=>x.leader).length===1;
+      if(ld){const dr0=drops().length;kill(ld);foeLeaderTick();foeLeaderTick();o.pile=(p.leaders||0)===1&&drops().length>dr0}
+    }finally{hurt=h0}
+    enemies=[];eb=[];enterVillage();return o});
+  check(fai.chase&&fai.cWind&&fai.cEarly&&fai.cHit&&fai.cDodge&&fai.rAim&&fai.rWait&&fai.rShot&&fai.lCrouch&&fai.lHit&&fai.lDodge&&fai.flee&&fai.called&&fai.calm&&fai.leader&&fai.once&&fai.pile,
+    'אויבים עם התנהגות (foeai.js): '+(fai.chase?'קבוצה רודפת':'קבוצה לא רודפת!')+', מסתער '+(fai.cWind&&fai.cEarly?'מסמן קודם':'בלי סימון')+(fai.cHit?' ופוגע':' ולא פוגע')+(fai.cDodge?', צעד הצידה = התחמקות':', אי אפשר להתחמק')+
+    ', יורה '+(fai.rAim&&fai.rWait?'עם קו':'בלי קו')+(fai.rShot?' ויורה':' ולא יורה')+', קופץ '+(fai.lCrouch?'עם עיגול':'בלי עיגול')+(fai.lHit?' ונוחת עליך':' ולא פוגע')+(fai.lDodge?', זזת = התחמקת':', אי אפשר להתחמק')+
+    ', קורא '+(fai.flee?'בורח':'לא בורח')+(fai.called?' ומביא חברים':' ולא מביא')+(fai.calm?', ליד השער רגוע':', ליד השער לא רגוע')+(fai.leader?', מנהיג מגיע בשיא':', אין מנהיג')+(fai.once?'':' (יותר מאחד!)')+(fai.pile?' ומשאיר ערימה':' בלי ערימה'));
   // אתגר יומי (challenge.js): אותו חוק לאותו תאריך, החוק נכנס לאויב בעולם, הריגות נספרות, הפרס נאסף רק בכפר ופעם אחת, ופספוס לא מעניש
   const chl=await page.evaluate(()=>{
     const o={},ids=Object.keys(CHALLENGE.rules);o.same=chRule('2026-11-1')===chRule('2026-11-1');o.many=new Set(['2026-11-1','2026-11-2','2026-11-3','2026-11-4','2026-11-5','2026-11-6','2026-11-7','2026-11-8'].map(d=>chRule(d))).size;

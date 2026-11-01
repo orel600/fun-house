@@ -279,12 +279,13 @@ const storySafe=()=>{const k=storyLantern();return k&&STO()[k]?STORY.lit.dmg:1};
 function storyDraw(){
   const k=storyLantern();if(!k)return;
   const L=STORY.lanterns[k],lit=STO()[k],t=fxNow(),gl=L.glow;
-  ctx.fillStyle='rgba(5,7,13,0.35)';ctx.beginPath();ctx.ellipse(L.x,L.y+6,22,8,0,0,7);ctx.fill();
-  ctx.fillStyle='#4A3A2A';ctx.fillRect(L.x-4,L.y-70,8,76);
+  const two=!R3D.on;   // בתלת-ממד הפנס עצמו מודל (props3d.js), וכאן רק טבעת השומר
+  if(two){ctx.fillStyle='rgba(5,7,13,0.35)';ctx.beginPath();ctx.ellipse(L.x,L.y+6,22,8,0,0,7);ctx.fill();
+  ctx.fillStyle='#4A3A2A';ctx.fillRect(L.x-4,L.y-70,8,76)}
   const ew=S.wd.warden;if(ew&&!ew.dead&&ew.back){ctx.save();ctx.globalAlpha=0.35+Math.sin(t*4)*0.15;ctx.strokeStyle=gl;ctx.lineWidth=6;   // השומר חזר לשמור: טבעת אור סביב הפנס
     ctx.beginPath();ctx.ellipse(L.x,L.y+6,120+Math.sin(t*3)*10,48,0,0,7);ctx.stroke();ctx.restore()}
-  if(lit){const g=ctx.createRadialGradient(L.x,L.y-80,4,L.x,L.y-80,90+Math.sin(t*2)*8);g.addColorStop(0,gl+'8C');g.addColorStop(1,gl+'00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(L.x,L.y-80,100,0,7);ctx.fill()}
-  ctx.fillStyle=lit?gl:'#3A3F52';ctx.strokeStyle='#2A2018';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(L.x-14,L.y-98,28,32,6);ctx.fill();ctx.stroke();
+  if(two){if(lit){const g=ctx.createRadialGradient(L.x,L.y-80,4,L.x,L.y-80,90+Math.sin(t*2)*8);g.addColorStop(0,gl+'8C');g.addColorStop(1,gl+'00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(L.x,L.y-80,100,0,7);ctx.fill()}
+  ctx.fillStyle=lit?gl:'#3A3F52';ctx.strokeStyle='#2A2018';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(L.x-14,L.y-98,28,32,6);ctx.fill();ctx.stroke()}
   storyRingsDraw();storyMarksDraw();
   const e=S.wd.warden;
   if(e&&!e.dead&&e.pk){const O=STORY.lanterns[e.pk];ctx.save();ctx.globalAlpha=0.5+Math.sin(t*6)*0.2;ctx.strokeStyle=O.col;ctx.lineWidth=5;   // הצל: טבעת בצבע השומר של השלב
