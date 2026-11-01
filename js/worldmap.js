@@ -114,7 +114,7 @@ function wmDraw(){
   $('wMap').innerHTML=winHead('🗺️ '+T('wm.title'))+
     '<div class="wmcols"><section><h4>'+T('wm.world')+'</h4><div class="wmbox"><canvas id="wmWorld"></canvas></div></section>'+
     '<section><h4>'+T('w.region.'+S.wd.reg)+' <small>★ '+T('wm.here')+'</small></h4><div class="wmbox"><canvas id="wmHere"></canvas></div></section></div>'+
-    tierRow()+travelMapRow()+'<p class="wmkey">'+T('wm.key')+'</p>';   // דרגת העולם (tiers.js)
+    tierRow()+travelMapRow()+'<p class="wmkey">'+[$('wSec').textContent,$('chTag').hidden?'':$('chTag').textContent].filter(Boolean).map(s=>'<b>'+s+'</b>').join(' ')+' '+T('wm.key')+'</p>';   // 🔍 ו-🌀 עברו מהפס העליון לכאן (docs/plan-hud.md)   // דרגת העולם (tiers.js)
   wmDrawWorld();wmDrawHere();
 }
 
