@@ -1002,6 +1002,16 @@ Object.assign(TEXT,{
   'tr.at':{he:r=>'🏮 '+r,en:r=>'🏮 '+r},
   'tr.home':{he:'🏮 חזרה לכפר',en:'🏮 Back home'},
   'tr.homeBtn':{he:'חזרה לכפר',en:'Go home'},
+  // כפתורי ההקשר העגולים (docs/plan-hud.md): מילה אחת מתחת לאייקון. המשפט המלא נשאר לקורא מסך (aria-label)
+  'ctx.talk':{he:'לדבר',en:'Talk'},
+  'ctx.feed':{he:'להאכיל',en:'Feed'},
+  'ctx.fish':{he:'לדוג',en:'Fish'},
+  'ctx.wait':{he:'מחכים',en:'Wait'},
+  'ctx.pull':{he:'למשוך!',en:'Pull!'},
+  'ctx.now':{he:'עכשיו!',en:'Now!'},
+  'ctx.enter':{he:'להיכנס',en:'Enter'},
+  'ctx.out':{he:'לעולם',en:'Out'},
+  'ctx.home':{he:'הביתה',en:'Home'},
   'tr.no.fight':{he:'אי אפשר לקפוץ באמצע קרב',en:'Can’t jump in the middle of a fight'},
   'tr.no.warden':{he:'אי אפשר לקפוץ כשהשומר ער',en:'Can’t jump while the guardian is awake'}
 });

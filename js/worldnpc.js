@@ -53,7 +53,7 @@ function wnpcUpdate(dt){
   W.npcNear=near;
   if(D&&Math.hypot(P.x-all[D].x,P.y-all[D].y)>WNPC.leave)wnpcTalk(null);
   const btn=$('talkBtn'),show=!!near&&W.dlg!==near;
-  if(btn.hidden===show||btn.dataset.id!==(near||'')){btn.hidden=!show;btn.dataset.id=near||'';if(near)btn.textContent='💬 '+T('npc.talk',T('npc.'+near)[0])}
+  if(btn.hidden===show||btn.dataset.id!==(near||'')){btn.hidden=!show;btn.dataset.id=near||'';if(near){btn.innerHTML='<span class="ni" aria-hidden="true">💬</span>'+T('ctx.talk');btn.setAttribute('aria-label',T('npc.talk',T('npc.'+near)[0]))}}
 }
 
 /* ---- שיחה: באותו חלון כמו תושבי הכפר (#npcDlg) ---- */

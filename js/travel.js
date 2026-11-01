@@ -77,7 +77,7 @@ $('wMap').addEventListener('click',e=>{const b=e.target.closest('[data-act="jump
 function travelUpdate(){
   const b=$('trBtn'),o=S.wd&&travelOf(S.wd.reg),on=!!o&&Math.hypot(P.x-o.L.x,P.y-o.L.y)<TRAVEL.near+P.r;
   if(b.hidden===!on&&b.dataset.lang===LANG)return;
-  b.hidden=!on;b.dataset.lang=LANG;if(on){b.style.setProperty('--trc',o.L.glow);b.innerHTML='<span class="ni" aria-hidden="true">🏮</span>'+T('tr.homeBtn')}
+  b.hidden=!on;b.dataset.lang=LANG;if(on){b.style.setProperty('--trc',o.L.glow);b.innerHTML='<span class="ni" aria-hidden="true">🏮</span>'+T('ctx.home');b.setAttribute('aria-label',T('tr.homeBtn'))}
 }
 function travelOff(){$('trBtn').hidden=true;trPick=null}
 $('trBtn').addEventListener('click',()=>{if(!S.wd)return;const why=travelBlock();if(why){banner(T('tr.no.'+why),C.ember);sfx('ui');return}travelGo('home')});
