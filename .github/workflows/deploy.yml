@@ -52,7 +52,7 @@ jobs:
       - name: אין עדיין חיבור ל-Vercel
         if: env.VERCEL_TOKEN == ''
         run: |
-          echo "דילוג: אין סוד VERCEL_TOKEN בריפו. ההוראות ב-CLAUDE.md, בפרק 'פרסום'." | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "דילוג: אין סוד VERCEL_TOKEN בריפו. ההוראות ב-docs/setup.md." | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: מה מפרסמים
         id: what
@@ -109,7 +109,7 @@ jobs:
           # רווח או ירידת שורה שנדבקו לטוקן בהעתקה הופכים אותו ללא תקף, אז מנקים אותם
           tok=$(printf %s "$VERCEL_TOKEN" | tr -d '[:space:]')
           if ! npx -y "$CLI" whoami --token "$tok" >/dev/null 2>&1; then
-            msg="Vercel דחה את הטוקן (VERCEL_TOKEN). צריך ליצור טוקן חדש ב-vercel.com/account/tokens ולשמור אותו שוב בסוד. ההוראות ב-CLAUDE.md, בפרק 'פרסום'."
+            msg="Vercel דחה את הטוקן (VERCEL_TOKEN). צריך ליצור טוקן חדש ב-vercel.com/account/tokens ולשמור אותו שוב בסוד. ההוראות ב-docs/setup.md."
             echo "::error::$msg"; echo "$msg" >> "$GITHUB_STEP_SUMMARY"; exit 1
           fi
           prod=""; [ -n "$PROD" ] && prod="--prod"
