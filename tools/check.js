@@ -861,8 +861,9 @@ function worldBot(m,L,god){
   const jc=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,hs:S.hitstop,sh:S.shake,jc:S.jc,ar:JUICE.where.arena,tr:P.track,hits:S.hits},c=HITFX.crit,r={};
     try{S.vil=S.wd=S.room=null;S.mode='play';S.jc=null;HITFX.crit=0;JUICE.where.arena=true;P.track=newTrack();S.hits={};
       const e=addEnemy('grunt',P.x+60,P.y);e.mult={fire:1.5};e.hp=e.max=1e9;S.hitstop=0;S.shake=0;
-      damage(e,10,'sword',0,'fire');const J=juice();r.stop=S.hitstop>0&&S.hitstop<=JUICE.stop.weak+1e-6;r.fl=J.fl.length===1;S.hitstop=0;damage(e,10,'sword',0,'fire');r.stopGap=!(S.hitstop>0);r.flash=e.flash>=JUICE.flash-1e-6;r.kb=e.kx>0;r.parts=J.p.length>0;r.num=J.n.length===1&&J.n[0].weak==='fire';
+      damage(e,10,'sword',0,'fire');const J=juice();r.stop=S.hitstop>0&&S.hitstop<=JUICE.stop.weak+1e-6;r.fl=J.fl.length===1;r.flash=e.flash>=JUICE.flash-1e-6;r.kb=e.kx>0;r.parts=J.p.length>0;r.num=J.n.length===1&&J.n[0].weak==='fire';
       r.squash=(e.jT=jNow()-JUICE.squash.t/2,juiceSquash(e)>0);
+      S.hitstop=0;damage(e,10,'sword',0,'fire');r.stopGap=!(S.hitstop>0);   // מכה שנייה מיד: בלי עצירה (gapHit)
       HITFX.crit=1;S.hitstop=0;J.last=-9;damage(e,10,'sword',0,'ice');const N=J.n[J.n.length-1];r.crit=!!N&&N.crit&&N.col===JUICE.nums.critCol&&S.hitstop>=JUICE.stop.crit-1e-6;r.shake=S.shake>0;HITFX.crit=0;
       e.elite=true;S.hitstop=0;J.last=jNow();juiceKill(e);r.poof=J.poofs.length===1&&S.hitstop>=JUICE.stop.big-1e-6;
       // מכה עם הכנה (strike.js): נעצר ומתכונן, לא פוגע לפני הסוף, פוגע כשנשארים בטווח, ולא פוגע כשמתרחקים (התחמקות)
