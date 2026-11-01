@@ -128,6 +128,7 @@ function enterVillage(){
   homeVillage();   // פנס שנדלק: תושב חוזר וראש הכפר מספר (homecoming.js)
   dailyVillage();   // המתנה היומית (daily.js)
   visitVillage();   // ביקור אצל חבר: פרופיל ציבורי ומתנות שמחכות (visit.js)
+  welcomeVillage();   // "בזמן שלא היית": חלון אחד שאוסף הכל (welcome.js)
 }
 function leaveVillage(){villageUi(false);enterWorld('home');questEvent('reach','world')}   // השער מוביל לעולם הפתוח (world.js), והזירות בתוכו
 
