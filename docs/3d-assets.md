@@ -207,6 +207,15 @@ If I write "monster:" followed by a description, draw the creature in the same s
 - **אנימציות (28):** בשימוש כבר עכשיו: עמידה, ריצה, חרב, ירי בקשת ועמידה עם קשת, כישוף, פגיעה, עידוד, מוות, ושתי התקפות הבוס. מוכנות למשימות הבאות: התחמקות לארבעה כיוונים, חסימה, זימון, הטלת כישוף ארוכה, נפנוף, הליכה, ישיבה על כיסא ועל הרצפה, פטיש וחפירה (ל-NPC בכפר). להוסיף עוד: שורה ב-`ANIMS` ב-`build3d.js`.
 - **משקל:** `js/models3d.js` עלה מ-6,210KB ל-8,741KB. מה הוסיף: הנשקים (כל 31, וחמשת החומרים) 1,120KB אחרי כיווץ המיקומים (`quantize`). הצייד והקוסמת 1,080KB, והאביר החדש 70KB יותר מהישן. האנימציות 1,170KB במקום 790KB. הקשת-יד והחרב הישנות יצאו (120KB).
 
+## TRELLIS מ-Hugging Face: מודל צבוע מתמונה אחת (אוראל, 1.11.2026)
+
+הדמות של אוראל והפרעוש הוחלפו במודלים של TRELLIS (`trellis-community/TRELLIS`, חינם). הוא נותן צורה **וגם צבע** מתמונה אחת מלפנים, בלי הצביעה מהדף שהשאירה כתמים במקומות נסתרים.
+- **איפה זה רץ:** ב-GitHub, לא בסשן (לסשנים של Claude אין גישה ל-huggingface.co). `.github/workflows/trellis.yml` רץ בענף `feature/hf-trellis` כשמשנים את `tools/trellis/go.txt`, ושומר `out/<שם>.glb` ו-`.mp4` בחזרה בענף. התמונות ב-`tools/trellis/in/<שם>-front.png`.
+- **מפתח:** סוד `HF_TOKEN` בהגדרות הריפו (אוראל הוסיף, Read). בלי מפתח המכסה היומית נגמרת אחרי ניסיון אחד.
+- **שלד:** `python tools/trellis/reskin.py <ישן.glb> <חדש.glb> <יוצא.glb> 0 [--color]` מעתיק את השלד והמשקלים מהמודל הקודם שכבר עבד, לפי הנקודה הקרובה, ולכן כל האנימציות עובדות בלי KayKit. הוא גם מותח לקופסה של הישן (TRELLIS שיטח את הפרעוש מהצד), ו-`--color` מבהיר טקסטורה כהה (הפרעוש יצא פי 2 כהה). אחר כך `node tools/build3d.js x --only orelHero` (או `parosh1`).
+- **לקחים:** החומר צריך `doubleSided`: המצלמה מלמעלה רואה לתוך הברדס, ובלי זה רואים דרכו את הדשא (`lambert` ב-render3d.js שומר עכשיו את `side`). ליצור עגול הכיוון לא נקבע לפי צבע, אז נותנים 0 (TRELLIS תמיד מוציא פנים קדימה).
+- **המקור הישן נשאר:** `art/heroes/OrelHero.glb` ו-`art/pets/Parosh1.glb`. החדשים: `OrelHeroHF.glb` ו-`ParoshHF.glb`.
+
 ## הערות טכניות ל-Claude הבא
 
 - ההורדה מ-itch.io עובדת גם בלי דפדפן: POST ל-`<page>/download_url` עם `csrf_token` מהדף, ואז POST ל-`<page>/file/<upload_id>?source=view_game&as_props=1&after_download_lightbox=true`, שמחזיר קישור ישיר.

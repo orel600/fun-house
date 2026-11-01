@@ -2,6 +2,11 @@
    רק מראה: הנזק, הטווח והסקילים לא משתנים, והצבע תמיד של סוג הנזק, כמו בכל המשחק.
    ביד: חליל במקום הנשק (fluteGrip, נקרא מ-heroLook ב-render3d.js). חצים: חלילים קטנים שעפים. קסם: תווים. מכת חרב: חמשה עם תווים.
    סקילים: טבעת של חלילים מסתובבים ותווים, וברק כחמשה שהתווים קופצים עליה. נקודות החיבור: render.js ו-drawSkills ב-skills.js */
+/* ערכות מראה למתקפות של דמות אישית: theme ב-HEROES.skins בוחר שורה ב-THEMES. כל ערכה: shot, swing, ring, line, grip (לא חובה) ו-slow.
+   render.js, skills.js ו-render3d.js מציירים דרך heroTheme(), אז ערכה חדשה (הניצוץ של ניר, spark.js) לא צריכה חיבורים משלה */
+const THEMES={};
+const heroTheme=()=>{const sk=heroSkin();return sk&&THEMES[HEROES.skins[sk].theme]||null};
+const themeK=()=>{const t=heroTheme();return t&&t.slow||1};   // skills.js: כמה זמן אפקט של סקיל נשאר על המסך
 const FLUTE={
   notes:['♪','♫','♬','♩'],
   wood:'#B98552',dark:'#4A2E1A',   // החליל: עץ, וחורים כהים
@@ -87,3 +92,5 @@ function fluteGrip(L){
   L.props.gun=Object.assign({prop:'flute'},GRIP3D.magic);
   L.anim.gun=GRIP3D.magic.attack;delete L.anim.gunIdle;delete L.anim.gunDraw;
 }
+
+THEMES.flute={shot:fluteShot,swing:fluteSwing,ring:fluteRing,line:fluteLine,grip:fluteGrip,slow:FLUTE.slow};

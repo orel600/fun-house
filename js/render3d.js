@@ -199,7 +199,7 @@ function mergeSkinned(root,keep){
   for(const p of parts)p.parent.remove(p);
 }
 // חומר פשוט יותר מהמקורי: נראה אותו דבר בסגנון הזה, ומהיר יותר בטלפון
-function lambert(root){root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap});o.frustumCulled=false}})}
+function lambert(root){root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap,side:m.side});o.frustumCulled=false}})}
 function bone(root,name){let b=null;root.traverse(o=>{if(!b&&o.isBone&&o.name===name)b=o});return b}
 
 async function init3d(){
@@ -310,7 +310,7 @@ function heroLook(){
     L.props[w]=Object.assign({prop:model,tier:mine?GEAR.tiers[it.tier].id:'wood'},g);
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
-  if(fluteOn())fluteGrip(L);   // הנודד עם החליל: חליל ביד במקום הנשק (flute.js)
+  {const th=heroTheme();if(th&&th.grip)th.grip(L)}   // דמות אישית: חפץ ביד במקום הנשק. החליל ביד במקום הנשק (flute.js)
   return R3D._hl=L;
 }
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}

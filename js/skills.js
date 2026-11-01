@@ -61,13 +61,13 @@ function skillUse(id){
     hit.push(...near.slice(0,D.n));
     let from=P;for(const e of hit){skLine(from,e,col);damage(e,base,'skill',Math.atan2(e.y-from.y,e.x-from.x),D.dt);from=e}
   }else{   // טבעת סביב הדמות
-    k.fx.push({ring:1,x:P.x,y:P.y,r:D.r,t:0,max:0.35*fluteK(),col});
+    k.fx.push({ring:1,x:P.x,y:P.y,r:D.r,t:0,max:0.35*themeK(),col});
     for(const e of enemies){if(e.dead)continue;const dx=e.x-P.x,dy=e.y-P.y;if(Math.hypot(dx,dy)-e.r>D.r)continue;damage(e,base,'skill',Math.atan2(dy,dx),D.dt)}
   }
   k.cd[i]=D.cd;k.used++;sfx('shoot');S.shake=Math.max(S.shake,3);
   return true;
 }
-const skLine=(a,b,col)=>S.sk.fx.push({line:1,ax:a.x,ay:a.y-6,bx:b.x,by:b.y-6,t:0,max:0.18*fluteK(),col});
+const skLine=(a,b,col)=>S.sk.fx.push({line:1,ax:a.x,ay:a.y-6,bx:b.x,by:b.y-6,t:0,max:0.18*themeK(),col});
 
 /* ---- קומבו: נקרא מ-onHit לפני שסוג הנזק של המכה הזו משאיר את הסימן שלו ---- */
 function comboHit(e,d,base,w,t,ang,chained){
@@ -99,9 +99,9 @@ function comboShow(e,kind){
 /* ---- ציור: הטבעות והברקים של הסקילים, והסימן של מצב מעל אויב (רטוב, קפוא, הלם) ---- */
 function drawSkills(ox,oy){
   if(!S.sk)return;
-  const fl=fluteOn();
+  const th=heroTheme();
   for(const f of S.sk.fx){const k=f.t/f.max;ctx.globalAlpha=1-k;ctx.strokeStyle=f.col;
-    if(fl){f.ring?fluteRing(f,k):fluteLine(f,k);continue}   // הנודד עם החליל: חלילים מסתובבים וחמשה (flute.js)
+    if(th){f.ring?th.ring(f,k):th.line(f,k);continue}   // דמות אישית: חלילים וחמשה (flute.js) או להבונים וגצים (spark.js)
     if(f.ring){ctx.lineWidth=10*(1-k)+2;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(0.35+0.65*k),0,7);ctx.stroke()}
     else{ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(f.ax,f.ay);
       for(let i=1;i<6;i++){const p=i/6;ctx.lineTo(f.ax+(f.bx-f.ax)*p+rand(-7,7),f.ay+(f.by-f.ay)*p+rand(-7,7))}

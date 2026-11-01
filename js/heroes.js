@@ -32,7 +32,7 @@ const HEROES={
      dx,up: איפה ליד הדמות (פיקסלים לצד, וחלק מהגובה). bob: כמה הוא עולה ויורד, ובאיזו מהירות. r: גודל. lag: כמה מהר הוא מדביק את הדמות */
   skins:{
     // ניר: "הנודד עם הניצוץ", מ-art/heroes/nir-sheet.jpg. הניצוץ קישוט בינתיים, ומיועד להיות החפץ המסתובב הראשון שלו (המשימה של אוראל, orbit)
-    nir:{look:'nirHero',spark:{dx:24,up:0.62,bob:3,speed:2.2,r:5,lag:6}},
+    nir:{look:'nirHero',theme:'spark',spark:{dx:24,up:0.62,bob:3,speed:2.2,r:5,lag:6}},   // theme: המתקפות כלהבונים וגצים (spark.js, אוראל 1.11.2026)
     // אוראל: "הנודד עם החליל", מ-art/heroes/orel-sheet.jpg. theme: ערכת מראה לנשק, ליריות ולסקילים (flute.js)
     orel:{look:'orelHero',theme:'flute',pet:'parosh'}   // pet: חיית המחמד של הסקין (parosh.js), כל עוד לא נבחרה אחרת
   }
