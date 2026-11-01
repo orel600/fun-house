@@ -861,6 +861,11 @@ function worldBot(m,L,god){
       r.squash=(e.jT=jNow()-JUICE.squash.t/2,juiceSquash(e)>0);
       HITFX.crit=1;S.hitstop=0;J.last=-9;damage(e,10,'sword',0,'ice');const N=J.n[J.n.length-1];r.crit=!!N&&N.crit&&N.col===JUICE.nums.critCol&&S.hitstop>=JUICE.stop.crit-1e-6;r.shake=S.shake>0;HITFX.crit=0;
       e.elite=true;S.hitstop=0;J.last=jNow();juiceKill(e);r.poof=J.poofs.length===1&&S.hitstop>=JUICE.stop.big-1e-6;
+      // מכה עם הכנה (strike.js): נעצר ומתכונן, לא פוגע לפני הסוף, פוגע כשנשארים בטווח, ולא פוגע כשמתרחקים (התחמקות)
+      {const h0=hurt;let hits=0;hurt=()=>{hits++};try{const s=addEnemy('grunt',P.x+e.r+P.r,P.y);s.scd=0;s.sw=null;strikeTick(s,0.01,Math.hypot(P.x-s.x,P.y-s.y));s.scd=0;
+        const d0=Math.hypot(P.x-s.x,P.y-s.y);strikeTick(s,0.01,d0);r.swStart=s.sw>0&&strikeTick(s,0.001,d0);strikeTick(s,STRIKE.wind*0.5,d0);r.swEarly=hits===0;strikeTick(s,STRIKE.wind,d0);r.swHit=hits===1;
+        s.x=P.x+e.r+P.r;s.y=P.y;s.kx=s.ky=0;s.scd=0;strikeTick(s,0.01,d0);P.x-=200;strikeTick(s,STRIKE.wind+0.1,999);P.x+=200;r.swDodge=hits===1&&(s.dodged||0)>=1;
+        s.dead=true}finally{hurt=h0}}
       // עמיד: במקום "0" כתוב "חסין" באפור, ואחרי כמה שניות של מכות חלשות טיפ בפיד עם סוג נזק טוב יותר (פעם אחת)
       e.mult={fire:1.5,water:0};damage(e,10,'sword',0,'water');const R=J.n[J.n.length-1];r.resist=!!R&&R.txt.includes(T('jc.immune'))&&R.col===C.dim&&R.weak==='water';
       const fa=FEED.where.arena;FEED.where.arena=true;delete JTIP[e.type];e.jRes={t:'water',t0:jNow()-9,last:jNow()};const f0=FEED.stat.added;damage(e,10,'sword',0,'water');
@@ -1691,6 +1696,7 @@ function worldBot(m,L,god){
   check(!dvr.err&&!dvr.early&&dvr.ready&&dvr.btn&&dvr.used&&dvr.five&&dvr.hit&&dvr.draw===true&&dvr.ended&&dvr.back&&dvr.once,'ברק אלוהי: '+(dvr.err||[dvr.early?'התעורר מוקדם':'מחכה לשני אויבי-על',dvr.ready?'מוכן':'לא מוכן',dvr.btn?'כפתור':'אין כפתור',dvr.five?'חמשת החפצים':'לא חמישה',dvr.hit?'ברק פגע':'ברק לא פגע',dvr.draw===true?'מצויר':'ציור נכשל: '+dvr.draw,dvr.ended&&dvr.back?'נגמר אחרי 5 שניות':'לא נגמר',dvr.once?'פעם אחת בריצה':'שוב'].join(', ')));
   check(fl.on&&fl.off&&fl.slow&&fl.prop&&fl.draw===true,'הנודד עם החליל: '+[fl.on?'נדלק':'לא נדלק',fl.prop?'חליל ביד':'אין חליל ביד',fl.slow?'אפקט סקיל ארוך יותר':'אפקט סקיל באורך רגיל',
     fl.draw===true?'תווים וחלילים מצוירים':'ציור נכשל: '+fl.draw,fl.off?'כבה בחזרה':'נשאר דלוק'].join(', '));
+  check(jc.swStart&&jc.swEarly&&jc.swHit&&jc.swDodge,'אויבים שנלחמים בחזרה (strike.js): '+(jc.swStart?'נעצר ומתכונן':'לא מתכונן')+', '+(jc.swEarly?'לא פוגע באמצע ההכנה':'פוגע לפני הזמן')+', '+(jc.swHit?'מכה בסוף':'אין מכה')+', '+(jc.swDodge?'התרחקות = התחמקות':'פוגע גם כשהתרחקת'));
   check(jc.resist&&jc.tip&&jc.tipOnce,'עמיד במכה: '+(jc.resist?'"🛡 חסין" באפור עם סמל הסוג':'עדיין מספר')+', '+(jc.tip?'טיפ בפיד עם סוג טוב יותר':'אין טיפ')+(jc.tipOnce?', פעם אחת':', חוזר'));
   check(!jc.err&&jc.stop&&jc.flash&&jc.kb&&jc.parts&&jc.num&&jc.squash&&jc.crit&&jc.shake&&jc.poof&&jc.cap&&jc.draw===true&&jc.arenaOff,'אפקטים של קרב: '+(jc.err||[jc.stop?'מכה רגילה בלי עצירה':'עוצר בכל מכה',jc.flash?'הבזק':'בלי הבזק',jc.kb?'הדיפה':'בלי הדיפה',jc.parts?'ניצוצות':'בלי ניצוצות',jc.num?'מספר עם סמל חולשה':'אין מספר',jc.squash?'מעיכה':'בלי מעיכה',
     jc.crit?'קריטי צהוב':'קריטי רגיל',jc.shake?'רעידה':'בלי רעידה',jc.poof?'פוף בהריגה':'בלי פוף',jc.cap?'בתקרה':'מעל התקרה',jc.draw===true?'מצויר':'ציור נכשל: '+jc.draw,jc.arenaOff?'כבוי בזירה':'דלוק בזירה'].join(', ')));
