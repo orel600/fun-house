@@ -89,15 +89,19 @@ function npcLine(id){
   const k=mine.some(q=>Q.active[q.id]&&qReady(q))?'ready':mine.some(qOpen)?'new':mine.some(q=>Q.active[q.id])?'busy':vLv('center')>=NPC.high?'high':'low';
   return T('npc.'+id+'.'+k);
 }
-// קווסט אחד בכל פעם, עם ‹ › ומספר (docs/plan-hud.md פרק 5): בלי גלילה, והכפתור הראשי תמיד נראה. גם בעולם (worldnpc.js).
-// זוכר איזה קווסט מוצג (לא רק מספר), כדי שאחרי "לקבל" נשארים על אותו קווסט
+// קווסט אחד בשיחה (המבקר, 1.11: "אבנר מציג שש משימות, ולא ברור איזו חשובה"): פרס שמחכה (עלילה קודם), אחרת העלילה ⭐,
+// אחרת הקרוב לסיום, ואחרת החדש הראשון. השאר ביומן הקווסטים, ושורה אחת אומרת כמה. גם בעולם (worldnpc.js).
+// זוכר איזה קווסט מוצג, כדי שאחרי "לקבל" נשארים עליו ולא קופצים לאחר
 const NPCPG={id:'',q:null,list:[]};
+const npcDone=q=>{const a=QS().active[q.id];return a?q.obj.reduce((s,o,i)=>s+qProg(q,i)/o.n,0)/q.obj.length:0};
 function npcCards(id,ready,open,on){
   const L=[...ready.map(q=>[q,'claim']),...open.map(q=>[q,'accept']),...on.map(q=>[q,'track'])];if(!L.length)return '';
   if(NPCPG.id!==id){NPCPG.id=id;NPCPG.q=null}
-  let i=Math.max(0,L.findIndex(c=>c[0].id===NPCPG.q));NPCPG.q=L[i][0].id;NPCPG.list=L.map(c=>c[0].id);
-  const nav=L.length>1?'<div class="qpager"><button class="vbtn ghost" data-act="pg" data-d="-1" aria-label="‹">‹</button><b><bdi>'+(i+1)+' / '+L.length+'</bdi></b><button class="vbtn ghost" data-act="pg" data-d="1" aria-label="›">›</button></div>':'';
-  return nav+qCard(L[i][0],L[i][1]);
+  const st=c=>c[0].kind==='story';
+  const pick=L.find(c=>c[1]==='claim'&&st(c))||L.find(c=>c[1]==='claim')||(!ready.length&&L.find(c=>c[0].id===NPCPG.q))||L.find(st)||
+    on.slice().sort((a,b)=>npcDone(b)-npcDone(a)).map(q=>[q,'track'])[0]||L[0];
+  NPCPG.q=pick[0].id;NPCPG.list=[pick[0].id];
+  return qCard(pick[0],pick[1])+(L.length>1?'<p class="next">'+T('npc.more',L.length-1)+'</p>':'');
 }
 // ‹ ›: הקווסט הקודם או הבא ברשימה של מי שמדברים איתו
 function npcPg(d){const L=NPCPG.list,n=L.length;if(n)NPCPG.q=L[((L.indexOf(NPCPG.q)+d)%n+n)%n];sfx('ui')}
@@ -120,7 +124,7 @@ const npcPic=id=>NPC_PIC[id]?'<img class="npcpic" src="icons/ui/npc/'+id+'.png" 
 // פותח שיחה עם id, או סוגר עם null
 function npcTalk(id){
   if(!S.vil)return;
-  S.vil.dlg=id;S.vil.dlgStay=false;if(id){$('qLog').hidden=true;S.vil.dlgLine=npcLine(id);sfx('ui')}
+  S.vil.dlg=id;S.vil.dlgStay=false;if(id){NPCPG.id='';$('qLog').hidden=true;S.vil.dlgLine=npcLine(id);sfx('ui')}
   npcDialog();
 }
 $('talkBtn').addEventListener('click',()=>{const id=$('talkBtn').dataset.id;if(id&&S.vil)npcTalk(id)});
