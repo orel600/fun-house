@@ -9,6 +9,7 @@ const WINS=[
   {id:'ovHelp',close:()=>helpOpen(false),backdrop:true},
   {id:'ovGear',close:()=>gearClose(),backdrop:true},
   {id:'ovForge',close:()=>forgeClose(),backdrop:true},
+  {id:'ovWelcome',close:()=>welcomeClose(),backdrop:true},   // "בזמן שלא היית" (welcome.js)
   {id:'ovDaily',close:()=>dailyClose(),backdrop:true},
   {id:'ovVisit',close:()=>visitClose(),backdrop:true},
   {id:'ovEnd',close:()=>storyEndClose(),backdrop:true},   // "תודה ששיחקת" בסוף העלילה (story.js)
