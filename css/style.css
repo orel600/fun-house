@@ -1018,3 +1018,69 @@ body.menu .minimap{display:none!important}
 #ovGear .strows{gap:3px}
 #ovGear .stplus{width:38px;height:38px}
 #ovGear .stfoot .vbtn{min-height:38px}
+
+/* ===== מראה אחיד (ניר ואוראל, 1.11.2026: "נראה לא יפה: הכפתורים והחלונות") =====
+   שכבה אחרונה, רק מראה: לא משנה מיקום, גודל או התנהגות. הקו של icons/ui (מסגרת עץ, פליז וזהב, צפחה כהה בפנים).
+   כל הכפתורים העגולים והמרובעים באותה משפחה: מילוי צפחה, טבעת פליז, קצה תחתון כהה (עומק), ונגיעה מקטינה ל-0.92.
+   הצבעים כאן בלבד: --brass (טבעת), --wood (צל), --slate (מילוי). צבע של סוג נזק (--dt) נשאר צבע הטבעת של סקיל */
+:root{--brass:#D9A85B;--brass-hi:#F6D38A;--brass-lo:#8A5A26;--wood:#3B2414;--slate:#1F2638;--slate-hi:#2E3854;
+  --bevel:inset 0 2px 0 #ffffff22,inset 0 -3px 0 #00000055;--lift:0 3px 0 var(--wood),0 6px 14px #000a}
+/* חלונות: צל רך מתחת למסגרת, ופתיחה קצרה מ-0.95, בלי שקיפות כדי שצילומי הבדיקה לא ייראו דהויים (ui-guide פרק 4: 120-200ms). scale ולא transform, כדי לא לדרוס מיקום */
+.win,.ov>.panel{animation:winIn .16s ease-out}
+@keyframes winIn{from{scale:.95}to{scale:1}}
+/* כותרת חלון: גופן התצוגה, זהב עם צל כהה, וקו פליז דק מתחתיה */
+.whd>h2,.whd>h3{font-family:var(--display);font-weight:400;color:#F8D37A;letter-spacing:.01em;
+  text-shadow:0 2px 0 var(--wood),0 0 8px #0008}
+.whd small{color:var(--brass);text-shadow:0 1px 0 #000}
+.vpanel.win>.whd,.qlog.win>.whd{background:linear-gradient(var(--slate),#1C2233);border-bottom:0;
+  box-shadow:0 1px 0 #0008,0 2px 0 color-mix(in srgb,var(--brass) 45%,transparent)}
+.whd{position:relative}
+.wx{filter:drop-shadow(0 2px 2px #0009);transition:transform .08s}
+.wx:active{transform:scale(.9)}
+/* כפתור עגול בפינות (☰, השתקה, מתנה, ביקור) */
+.mute,.menubtn,.dgift{border:2px solid var(--brass);background:radial-gradient(circle at 50% 30%,var(--slate-hi),var(--slate) 70%);
+  box-shadow:var(--bevel),0 0 0 2px var(--wood),0 4px 10px #0009;color:var(--brass-hi);transition:transform .08s}
+.dgift{background:radial-gradient(circle at 50% 30%,#4A3B1E,#241A0C 75%);border-color:var(--brass-hi)}
+.mute:active,.menubtn:active,.dgift:active{transform:scale(.92)}
+.menubtn span{text-shadow:0 2px 0 var(--wood)}
+@keyframes tpulse{to{box-shadow:var(--bevel),0 0 0 2px var(--wood),0 0 16px rgba(244,199,79,.55)}}
+/* כפתורי מקום (לדבר, לדוג) ולשוניות התפריט: לוח צפחה עם מסגרת פליז וקצה עץ */
+.nbtn,.mtab{border:2px solid color-mix(in srgb,var(--brass) 70%,#3A4566);background:linear-gradient(var(--slate-hi),var(--slate));
+  box-shadow:var(--bevel),var(--lift);color:var(--chalk);text-shadow:0 1px 0 #000;transition:transform .08s,box-shadow .08s}
+.nbtn:active,.mtab:active{transform:translateY(2px) scale(.96);box-shadow:var(--bevel),0 1px 0 var(--wood)}
+.nbtn.talkbtn{background:linear-gradient(#4A3B1E,#2A2010);border-color:var(--brass-hi);color:#FBE3A6}
+.mtab[aria-selected=true]{background:linear-gradient(#5A4520,#2E220E);border-color:var(--brass-hi);color:#FBE3A6;
+  box-shadow:var(--bevel),0 3px 0 var(--wood),0 0 12px rgba(244,199,79,.35)}
+.nbtn>b,.mtab>b,.menubtn>b,.dgift b{box-shadow:0 1px 3px #000a}
+/* הסרגל התחתון ופס הלשוניות: עץ כהה עם קו פליז */
+.bnav{background:linear-gradient(#2A1C12f0,#1A110Af0);border:2px solid var(--brass-lo);box-shadow:inset 0 1px 0 #ffffff14,0 6px 20px #000a}
+.mrail{background:linear-gradient(90deg,#24170E,#2E1F13);border-inline-start:3px solid var(--brass-lo);box-shadow:inset 1px 0 0 #ffffff12,0 0 24px #000b}
+@media (orientation:portrait){.mrail{border-inline-start:0;border-top:3px solid var(--brass-lo);background:linear-gradient(#2E1F13,#24170E)}}
+/* סקילים: הטבעת נשארת בצבע סוג הנזק, ומסביבה טבעת עץ כהה, מילוי מעוגל ועומק. מוכן = זוהר בצבע שלו */
+.skb,.swap,.divine{background:radial-gradient(circle at 50% 35%,#2E3854e6,#141A2Ae6 72%);
+  box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 4px 10px #000a;transition:transform .08s}
+.skb.ready{box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 0 14px var(--dt)}
+.divine.ready{box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 0 14px var(--gold)}
+.skb:active,.divine:active,.swap:active{transform:scale(.92)}
+.skb .dti,.divine .dti{filter:drop-shadow(0 2px 1px #000a)}
+/* גלולות משאבים ו-+N בפס העליון: אותה צפחה עם קו פליז דק */
+.tbar .res,.resmore{background:linear-gradient(#262E46e6,#161B2Ae6);border-color:color-mix(in srgb,var(--brass) 45%,#2A3249);
+  box-shadow:inset 0 1px 0 #ffffff14,0 2px 4px #0008}
+.resmore{border-color:var(--brass);color:var(--brass-hi)}
+.resmore:active{transform:scale(.92)}
+/* לשוניות ומסננים בתוך חלון (תרמיל, שוק): גלולה אחת. נבחר = זהב */
+#gTabs button,.ffilter button,.qtrk{border-color:color-mix(in srgb,var(--brass) 40%,#2A3249);background:linear-gradient(var(--slate-hi),var(--slate));
+  box-shadow:inset 0 1px 0 #ffffff14,0 2px 0 #0008;transition:transform .08s}
+#gTabs button[aria-pressed="true"],.ffilter button[aria-pressed="true"]{background:linear-gradient(var(--brass-hi),var(--brass));border-color:var(--brass-hi);color:var(--wood)}
+#gTabs button:active,.ffilter button:active,.qtrk:active{transform:scale(.94)}
+/* כרטיסים בתוך חלון: מגש כהה ששקוע במסגרת */
+.qc,.gdetail,.npcsay,.fmeal{box-shadow:inset 0 1px 0 #ffffff0d,inset 0 -2px 0 #0005;border-color:#323C5A}
+.qc.ready{border-color:var(--gold);box-shadow:inset 0 0 0 1px #F4C74F55,0 0 10px #F4C74F33}
+/* כפתור ראשי: לחיצה מקטינה וצל קצר */
+.vbtn{transition:transform .08s,filter .08s;filter:drop-shadow(0 3px 2px #0008)}
+.vbtn:active:not(:disabled){transform:translateY(2px) scale(.97);filter:drop-shadow(0 1px 1px #0008) brightness(.95)}
+.vbtn:disabled{filter:none}
+@media (prefers-reduced-motion:reduce){.win,.ov>.panel{animation:none}}
+/* המטרה הבאה (guide.js) והמעקב: אותה גלולה כהה עם קו פליז */
+.guide button{background:linear-gradient(#262E46eb,#161B2Aeb);border-color:var(--brass);box-shadow:inset 0 1px 0 #ffffff14,0 3px 6px #0009}
+.guide button:active{scale:.96}
