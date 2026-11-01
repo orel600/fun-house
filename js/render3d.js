@@ -126,6 +126,9 @@ const VIL3D={
 const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',w:42,glow:'#5FA35A'},chest:{model:'v_crate',w:48,glow:'#F4C74F'},rock:{model:'v_rock',w:62},vein:{model:'v_rock',w:62,glow:'#C87533'},
   reed:{model:'v_treeB',w:34,glow:'#3FA7A0'},crystal:{model:'v_rock',w:62,glow:'#4FB4FF'}},   // w: רוחב המודל
   // צבע לכל אזור (WORLD.regions ב-world.js): bg הרקע, line הקרקע, pond המים. אזור שלא כתוב כאן: VIEW.world
+  // water/glow: המים במראה החדש (look-hd.js, בלי ?look=classic), עם שוליים רכים. glow: זוהר, ו-pulse: כמה הוא פועם (לבה). החוף סביבם: GROUND ב-ground.js
+  water:{meadow:{col:'#3f8fb4'},lake:{col:'#3c8aa0'},ridge:{col:'#8fd0ee',glow:'#3a86b8',g:0.3},desert:{col:'#f0561a',glow:'#ff4a08',g:0.9,pulse:0.25},
+    storm:{col:'#3a3060',glow:'#6e5fa6',g:0.25},shadow:{col:'#1a0f2c',glow:'#5b3f8c',g:0.3}},
   regions:{lake:{bg:'#1d3238',line:'#4f7a78',pond:'#2a6d8f'},
     ridge:{bg:'#2b3644',line:'#9fb3c4',pond:'#26384a'},   // הרכס הקפוא (פרק 3): שלג
     desert:{bg:'#4a3522',line:'#d9a865',pond:'#6b2a14'},   // המדבר הבוער (פרק 4): חול, ובורות לבה
@@ -460,6 +463,14 @@ function syncVillage(){
   }
   for(const k in V.stock)V.stock[k].visible=vStock(k)>0;
 }
+// מים במראה החדש: עיגול עם שוליים רכים (שקיפות שיורדת בקצה), והחוף של ground.js נראה מתחתיו. קרח מבריק, לבה זוהרת
+function pondMat(Wt){
+  const A=pondMat.a||(pondMat.a=(()=>{const T=128,c=document.createElement('canvas');c.width=c.height=T;const g=c.getContext('2d'),gr=g.createRadialGradient(T/2,T/2,0,T/2,T/2,T/2);
+    gr.addColorStop(0,'#fff');gr.addColorStop(0.8,'#fff');gr.addColorStop(1,'#000');g.fillStyle=gr;g.fillRect(0,0,T,T);return new THREE.CanvasTexture(c)})());
+  const m=new THREE.MeshLambertMaterial({color:Wt.col,alphaMap:A,transparent:true,opacity:0.95,depthWrite:false});
+  if(Wt.glow){m.emissive.set(Wt.glow);m.emissiveIntensity=Wt.g}
+  return m;
+}
 // העולם הפתוח: קישוטים, שערים, מים ומקורות משאבים נבנים פעם אחת לכל אזור (המקומות קבועים). מקור שנשבר נעלם עד שהוא צומח.
 // דרך שהעלילה עוד לא פתחה (WORLD.paths) מוסתרת
 function syncWorld(){
@@ -467,10 +478,12 @@ function syncWorld(){
   if(!G){G=A[reg]={g:new THREE.Group(),nodes:{},paths:{}};R3D.scene.add(G.g);
     for(const d of worldDecor()){const D=VIL3D.decor[d.kind],md=Array.isArray(D.model)?D.model[d.v<0.5?0:1]:D.model;vPut(md,d.x,d.y,D.w*(0.8+d.v*0.4),d.v*6.28,G.g)}
     const gs=wGates(true);for(const k in gs){const m=vPut(VIL3D.gate.model,gs[k].x,gs[k].y,VIL3D.gate.w,0,G.g);if(wIsPath(k))G.paths[k]=m}
-    for(const p of RG.ponds||[]){const m=new THREE.Mesh(new THREE.CircleGeometry(p.r,40),new THREE.MeshLambertMaterial({color:W.pond||'#2a6d8f',transparent:true,opacity:0.9}));
-      m.rotation.x=-Math.PI/2;m.scale.set(1,1/SIN(),1);m.position.set(p.x,0.6,p.y/SIN());G.g.add(m)}
+    const hd=typeof HD!=='undefined'&&HD.on,Wt=hd&&(W3D.water[reg]||W3D.water.meadow);
+    for(const p of RG.ponds||[]){const m=new THREE.Mesh(new THREE.CircleGeometry(p.r,40),Wt?pondMat(Wt):new THREE.MeshLambertMaterial({color:W.pond||'#2a6d8f',transparent:true,opacity:0.9}));
+      m.rotation.x=-Math.PI/2;m.scale.set(1,1/SIN(),1);m.position.set(p.x,0.6,p.y/SIN());G.g.add(m);if(Wt&&Wt.pulse)(G.pulse||(G.pulse=[])).push([m.material,Wt])}
     secrets3D(reg,(md,x,y,w,r)=>vPut(md,x,y,w,r,G.g))}   // סודות (secrets.js)
   R3D.wld=G;G.g.visible=true;
+  if(G.pulse){const t=performance.now()/1000;for(const [m,Wt] of G.pulse)m.emissiveIntensity=Wt.g*(1+Wt.pulse*Math.sin(t*1.7+Math.sin(t*0.6)*2))}   // לבה שנושמת
   for(const k in G.paths)G.paths[k].visible=wPathOpen(RG.paths[k]);
   for(const n of S.nd.list){
     let m=G.nodes[n.id];
