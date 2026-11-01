@@ -7,6 +7,7 @@
    השמות ב-lang.js: 'sk.<id>' לסקילים, 'combo.<סוג>' למילה שקופצת, 'up.k_<id>' לכרטיס השדרוג */
 const SKILLS={
   max:3,
+  tip:16,   // ברק יוצא מהנשק: כמה פיקסלים מהיד לכיוון המטרה, כדי שייצא מקצה הלהב
   // הסקיל שכל סוג נשק נותן (WEAPONS ב-weapons.js)
   weapon:{sword:'quake',axe:'quake',hammer:'quake',bow:'zap',staff:'splash',wand:'splash'},
   /* הסקילים. dt: סוג הנזק. cd: שניות עד שאפשר שוב. dmg: כמה נזק, כפול הנזק של הנשק שביד.
@@ -67,7 +68,8 @@ function skillUse(id){
   k.cd[i]=D.cd;k.used++;sfx('shoot');S.shake=Math.max(S.shake,3);
   return true;
 }
-const skLine=(a,b,col)=>S.sk.fx.push({line:1,ax:a.x,ay:a.y-6,bx:b.x,by:b.y-6,t:0,max:0.18*fluteK(),col});
+// ברק מהשחקן יוצא מהנשק שביד (AGE_FX.hand, מתעדכן בציור בדו-ממד ובתלת-ממד), ונשאר צמוד אליו גם כשזזים (אוראל, 1.11.2026)
+const skLine=(a,b,col)=>S.sk.fx.push({line:1,ax:a.x,ay:a.y-6,bx:b.x,by:b.y-6,t:0,max:0.18*fluteK(),col,hand:a===P});
 
 /* ---- קומבו: נקרא מ-onHit לפני שסוג הנזק של המכה הזו משאיר את הסימן שלו ---- */
 function comboHit(e,d,base,w,t,ang,chained){
@@ -101,6 +103,7 @@ function drawSkills(ox,oy){
   if(!S.sk)return;
   const fl=fluteOn();
   for(const f of S.sk.fx){const k=f.t/f.max;ctx.globalAlpha=1-k;ctx.strokeStyle=f.col;
+    if(f.hand&&AGE_FX.hand){const h=AGE_FX.hand,d=Math.hypot(f.bx-h.x,f.by-h.y)||1;f.ax=h.x+(f.bx-h.x)/d*SKILLS.tip;f.ay=h.y+(f.by-h.y)/d*SKILLS.tip}   // מקצה הלהב: מהיד לכיוון המטרה
     if(fl){f.ring?fluteRing(f,k):fluteLine(f,k);continue}   // הנודד עם החליל: חלילים מסתובבים וחמשה (flute.js)
     // טבעת: גל הדף. מילוי רך ושקוף, קו חד בקצה, וקו דק שני שנגרר מאחוריו
     if(f.ring){const r=f.r*(0.35+0.65*k),a=1-k;ctx.fillStyle=f.col;
