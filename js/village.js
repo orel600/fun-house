@@ -267,10 +267,9 @@ function vShut(){if(!S.vil)return;if(S.vil.trade){S.vil.trade=false;villageHud()
   S.vil.open=null;villageHud()}
 
 /* ---- פתיחת פאנל: בנגיעה, לא במעבר ---- */
-// k: מבנה או 'gate'. לא נפתח מעל "בזמן שלא היית" או מעל שיחת העלילה (תור הקפיצות, welcome.js). שיחה רגילה נסגרת: חלון אחד בכל רגע
+// k: מבנה או 'gate'. לא נפתח מעל "בזמן שלא היית" (תור הקפיצות, welcome.js). שיחה פתוחה נסגרת: חלון אחד בכל רגע, והשחקן ביקש את המבנה
 function vOpen(k){
-  if(!S.vil||S.mode!=='play'||!k)return false;
-  if(!$('ovWelcome').hidden||S.vil.dlgStay&&!$('npcDlg').hidden)return false;
+  if(!S.vil||S.mode!=='play'||!k||!$('ovWelcome').hidden)return false;
   if(!$('npcDlg').hidden)npcTalk(null);
   // שער בלי פנס דולק: אין מה לבחור, אז הכפתור יוצא ישר לעולם
   if(k==='gate'&&!travelLit().length){leaveVillage();return true}
