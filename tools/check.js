@@ -386,7 +386,7 @@ function worldBot(m,L,god){
     L.wNodes=S.nd.list.length;L.wFoes=enemies.length;L.wCreatures=enemies.filter(e=>e.creature).length;m.w0=SAVE.bag.wood||0;m.wt=W.t;
     // המפלצות הראשונות ליד השער: קלות. אחת נזרקת רחוק מהבית שלה (צריכה לחזור), וקבוצה אחת מופלת (צריכה לחזור אחרי זמן)
     const st=enemies.filter(e=>e.zone==='start'),gi=G=>WORLD.foes.indexOf(G),home=e=>WORLD.foes[e.home];
-    L.wStart={n:st.length,easy:st.length>0&&st.every(e=>e.dmg<=ETYPES[e.type].dmg*0.5&&e.max<ETYPES[e.type].hp&&e.speed<ETYPES[e.type].speed),
+    L.wStart={n:st.length,easy:st.length>0&&st.every(e=>e.dmg<=ETYPES[e.type].dmg*0.5&&e.speed<ETYPES[e.type].speed&&(e.wind||STRIKE.wind)>STRIKE.wind),   // קלות: חצי נזק, איטיות, והכנה ארוכה יותר למכה. חיים: לא פחות, כדי שגם כאן אויב ייקח 2-3 מכות (fix/start-zone-fight)
       dmg:st.map(e=>Math.round(e.dmg*10)/10).join('/')};
     const east=st.filter(e=>home(e).x>100),west=st.filter(e=>home(e).x<-100);
     if(east[0]){const e=east[0],G=home(e);m.le=e;e.x=G.x+600;e.y=G.y;m.leD0=Math.round(Math.hypot(e.x-G.x,e.y-G.y))}
