@@ -933,6 +933,14 @@ Object.assign(TEXT,{
   'wm.title':{he:'מפה',en:'Map'},
   'wm.world':{he:'העולם',en:'The world'},
   'wm.here':{he:'אתה כאן',en:'You are here'},
+  // ---- דרגות עולם (tiers.js) ----
+  'tier.title':{he:'דרגת העולם',en:'World tier'},
+  'tier.n1':{he:'רגיל',en:'Normal'},'tier.n2':{he:'אמיץ',en:'Brave'},'tier.n3':{he:'אגדי',en:'Legend'},
+  'tier.lock2':{he:'נפתח אחרי סוף הסיפור',en:'Opens after the story ends'},
+  'tier.lock3':{he:n=>'אגדי נפתח אחרי עוד '+n+' הריגות באמיץ',en:n=>'Legend opens after '+n+' more kills on Brave'},
+  'tier.info':{he:'קשה יותר = שלל ומטבעות נוספים',en:'Harder = extra loot and coins'},
+  'tier.set':{he:x=>'דרגת העולם: '+x+'. האויבים התחזקו, וגם השלל',en:x=>'World tier: '+x+'. Tougher foes, better loot'},
+  'tier.open3':{he:'דרגה אגדית נפתחה! במפת העולם',en:'Legend tier unlocked! Check the world map'},
   'wm.key':{he:'★ אתה · ● פנס (זוהר: דולק) · 🔍 סודות שמצאת · ? אזור שעוד לא ביקרת בו',en:'★ You · ● Lantern (glowing: lit) · 🔍 Secrets found · ? A place you haven’t been yet'}
 });
 
