@@ -802,6 +802,29 @@ function worldBot(m,L,god){
     catch(e){r.draw=e.message}
     SAVE.hero.skin=sk;r.off=!fluteOn();return r});
 
+  // סקילים וחפצים מסתובבים בעולם הפתוח (wskill.js): כפתור סקיל מעל הסרגל, נגיעה יורה אל הקרוב, גרירה מכוונת, הכדור נוחת ופוגע, קירור עם מספר,
+  // וחמשת החפצים מסתובבים, פוגעים ומצוירים (מרחפים עם צל). אחר כך הכל חוזר
+  const wsk=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{SAVE.hero.level=99;SAVE.gear.orbit=['emberOrb','frostOrb','stoneOrb','leafOrb','cloverOrb'];enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
+      const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;return e};
+      run(0.1);hud();const box=$('skills'),b=box.querySelector('[data-sk]'),nav=$('nav').getBoundingClientRect();
+      r.btn=!box.hidden&&!!b;r.id=S.sk.ids[0];
+      if(b){const q=b.getBoundingClientRect();r.place=q.right>innerWidth*0.6&&q.bottom<=innerHeight-24&&q.right<=innerWidth-16&&(q.bottom<=nav.top||q.right<=nav.left||q.left>=nav.right)}
+      const wh=()=>S.sk.wHits||0,e=mk(150,0),h1=wh();r.tap=wskUse(r.id);run(0.6);r.tapHit=wh()>h1&&e.hp<e.max;r.cd=S.sk.cd[0]>0;wskHud();r.sec=+(b&&b.dataset.sec)>0;
+      r.again=!wskUse(r.id);   // בזמן ההמתנה לא יורה
+      S.sk.cd[0]=0;const e2=mk(-160,0),h2=wh();r.drag=wskUse(r.id,{a:Math.PI,len:200});run(0.6);r.dragHit=wh()>h2&&e2.hp<e2.max;
+      // אצבע אמיתית על הכפתור: לוחצים, גוררים ומרימים
+      S.sk.cd[0]=0;const u0=S.sk.wUsed;if(b){const q=b.getBoundingClientRect(),x=q.left+q.width/2,y=q.top+q.height/2,o={bubbles:true,pointerId:7,isPrimary:true};
+        b.dispatchEvent(new PointerEvent('pointerdown',{...o,clientX:x,clientY:y}));window.dispatchEvent(new PointerEvent('pointermove',{...o,clientX:x-90,clientY:y}));
+        let aimed=false;const a0=ctx.setLineDash;ctx.setLineDash=function(v){if(v&&v.length)aimed=true;return a0.apply(this,arguments)};try{drawWSkill()}finally{ctx.setLineDash=a0}r.aimDraw=aimed;
+        b.dispatchEvent(new PointerEvent('pointerup',{...o,clientX:x-90,clientY:y}))}
+      r.finger=S.sk.wUsed===u0+1&&!wskAim;
+      for(const x of enemies)x.dead=true;enemies=enemies.filter(x=>!x.dead);run(0.2);
+      r.orbs=S.orb.types.length;const p=S.orb.pos[0],e3=mk(p.x-P.x,p.y-P.y);orbitUpdate(0);r.orbHit=e3.hp<e3.max;
+      let arcs=0;const a1=ctx.arc;ctx.arc=function(){arcs++;return a1.apply(this,arguments)};try{drawOrbits()}finally{ctx.arc=a1}r.orbDraw=arcs>=5;
+      e3.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // כל דמות התחלה לשתי שניות מול אויב אחד: איך היא תוקפת, מה עף, ואיזו הנפשה. אחר כך הכל חוזר כמו שהיה
   const heroes=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,out={};
     const W3={sword:'Melee_1H_Attack_Slice_Horizontal',bow:'Ranged_Bow_Release',staff:'Ranged_Magic_Shoot'};   // ההנפשה שכל נשק צריך (GRIP3D)
@@ -1420,6 +1443,10 @@ function worldBot(m,L,god){
   check(ob.fire&&ob.slow&&ob.block&&ob.shield&&ob.shieldOnce&&ob.heal&&ob.crit>0&&ob.luck>1&&ob.draw===true,'חפצים מסתובבים ('+ob.types+'): '+[ob.fire?'אש שורפת':'אש לא פגעה',ob.slow?'כפור מאט':'כפור לא האט',
     ob.block?'אבן עצרה ירייה':'ירייה עברה',ob.shield?(ob.shieldOnce?'מגן בלע מכה אחת':'מגן בלע יותר ממכה'):'מגן לא בלע',ob.heal?'עלה ריפא':'אין ריפוי',
     'תלתן: קריטי +'+ob.crit+', שלל x'+ob.luck,ob.draw===true?'מצויר':'ציור נכשל: '+ob.draw].join(', '));
+  check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw,
+    'סקילים בעולם ('+wsk.id+'): '+(wsk.err||[wsk.btn?'כפתור':'אין כפתור',wsk.place?'למטה מימין, מעל הסרגל':'הכפתור לא במקום',wsk.tap&&wsk.tapHit?'נגיעה יורה ופוגעת':'נגיעה לא פגעה',
+    wsk.cd&&wsk.sec&&wsk.again?'קירור עם מספר':'אין קירור',wsk.drag&&wsk.dragHit?'גרירה מכוונת ופוגעת':'גרירה לא פגעה',wsk.aimDraw?'כוונת מצוירת':'אין כוונת',wsk.finger?'אצבע על הכפתור יורה':'אצבע לא ירתה',
+    'חפצים מסתובבים: '+wsk.orbs,wsk.orbHit?'פוגעים':'לא פוגעים',wsk.orbDraw?'מצוירים':'לא מצוירים'].join(', ')));
   check(!dvr.err&&!dvr.early&&dvr.ready&&dvr.btn&&dvr.used&&dvr.five&&dvr.hit&&dvr.draw===true&&dvr.ended&&dvr.back&&dvr.once,'ברק אלוהי: '+(dvr.err||[dvr.early?'התעורר מוקדם':'מחכה לשני אויבי-על',dvr.ready?'מוכן':'לא מוכן',dvr.btn?'כפתור':'אין כפתור',dvr.five?'חמשת החפצים':'לא חמישה',dvr.hit?'ברק פגע':'ברק לא פגע',dvr.draw===true?'מצויר':'ציור נכשל: '+dvr.draw,dvr.ended&&dvr.back?'נגמר אחרי 5 שניות':'לא נגמר',dvr.once?'פעם אחת בריצה':'שוב'].join(', ')));
   check(fl.on&&fl.off&&fl.slow&&fl.prop&&fl.draw===true,'הנודד עם החליל: '+[fl.on?'נדלק':'לא נדלק',fl.prop?'חליל ביד':'אין חליל ביד',fl.slow?'אפקט סקיל ארוך יותר':'אפקט סקיל באורך רגיל',
     fl.draw===true?'תווים וחלילים מצוירים':'ציור נכשל: '+fl.draw,fl.off?'כבה בחזרה':'נשאר דלוק'].join(', '));
