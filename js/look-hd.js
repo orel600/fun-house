@@ -1,21 +1,23 @@
-/* מראה HD: פיילוט של שיפור ויזואלי (ניר, 1.11.2026). התוכנית והצילומים ב-docs/visual-plan.md.
-   כבוי כברירת מחדל: רק עם ?look=hd בכתובת. בלי זה הקובץ לא עושה כלום, והמשחק נשאר בדיוק כמו שהוא.
-   רק בכפר ובעולם הפתוח. בזירה (של אוראל) ובחדר הבונוס הכל חוזר למקור.
+/* מראה: שיפור ויזואלי בכפר ובעולם (ניר, 1.11.2026, "עולם חי בשלבים"). התוכנית, השלבים והצילומים ב-docs/visual-plan.md.
+   שלב 1 דלוק לכולם: תאורה, קרקע מצוירת ואובך (STAGE). רק בכפר ובעולם הפתוח, ורק בתלת-ממד.
+   בזירה (של אוראל) ובחדר הבונוס הכל חוזר למקור. אוראל רוצה גם בזירה? מרחיבים את התנאי want בסוף הקובץ.
    לא נוגע ב-render3d.js: עוטף את render3d ואת makeActor/vPut מבחוץ, כמו perf.js.
-   ארבעה שיפורים, וכל אחד אפשר להדליק לבד לבדיקה: ?look=hd&hd=light,ground (בלי hd= הכל דלוק)
+   בכתובת: ?look=classic מכבה הכל (כמו לפני). ?look=hd מוסיף את מה שעוד בניסוי (צללים). ?hd=light,ground בוחר בדיוק מה דולק.
    - light:  תאורה חמה של שמש ושמיים, ומיפוי צבעים של קולנוע (tone mapping). כמעט חינם
    - ground: קרקע מצוירת עם עשב, כתמים ואבנים, שלא חוזרת על עצמה. כמעט חינם
-   - shadow: צללים אמיתיים ורכים מהשמש לדמויות, לבתים ולעצים. הכי יקר: עוד מעבר ציור אחד
-   - air:    אובך באופק (fog) ומסגרת כהה רכה בפינות (vignette). כמעט חינם */
+   - air:    אובך באופק (fog) ומסגרת כהה רכה בפינות (vignette). כמעט חינם
+   - shadow: צללים אמיתיים ורכים מהשמש. ניסוי לשלב 2: בערך שליש מהמהירות, אז רק עם ?look=hd */
 const HD={
-  on:/[?&]look=hd\b/.test(location.search),
+  on:!/[?&]look=classic\b/.test(location.search),
+  stage:['light','ground','air'],   // מה דלוק לכולם. שלב חדש שמוכן = שם נוסף כאן
+  lab:['shadow'],   // בניסוי: רק עם ?look=hd
   light:{exposure:1.12,hemiSky:0xcfe3ff,hemiGround:0x6b5a44,hemi:1.25,sun:0xffe0b0,sunI:2.9},
   ground:{tile:520,macro:2600,grade:1.2,sat:1.22},   // tile: גודל אריח העשב בעולם. macro: כתמים גדולים שמסתירים את החזרה
   shadow:{map:1024,soft:2,dir:[-0.75,0.85,0.45],bias:-0.0004,normal:1.2,blob:0.22},   // dir: מאיפה השמש, נמוכה יותר מהמקור כדי שהצללים יהיו ארוכים. blob: הצל העגול מתחת לדמויות נשאר עדין (צל מגע)
   air:{haze:0.45,sky:0xbfd6e6,near:-0.15,far:1.5,vig:0.38}   // haze: כמה צבע שמיים באובך. near/far: לפי גובה המסך
 };
-HD.parts=(()=>{const m=location.search.match(/[?&]hd=([\w,]+)/),all=['light','ground','shadow','air'];
-  return new Set(m?m[1].split(',').filter(p=>all.includes(p)):all)})();
+HD.parts=(()=>{const q=location.search,m=q.match(/[?&]hd=([\w,]+)/),all=[...HD.stage,...HD.lab];
+  return new Set(m?m[1].split(',').filter(p=>all.includes(p)):/[?&]look=hd\b/.test(q)?all:HD.stage)})();
 HD.has=p=>HD.parts.has(p);
 
 (()=>{
