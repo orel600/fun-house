@@ -68,7 +68,7 @@ function attack(dt){
         if(e.dead)continue;const dx=e.x-P.x,dy=e.y-P.y,d=Math.hypot(dx,dy)-e.r;
         if(d>s.range)continue;const a=Math.atan2(dy,dx);
         if(!quake&&Math.abs(angDiff(a,s.ang))>s.arc/2&&d>8)continue;
-        damage(e,s.dmg*wK('dmg')*dmgK()*cm*(quake?TREE.fx.quake.dmg:1),'sword',a,quake?'earth':undefined);
+        damage(e,wRoll(s.dmg*wK('dmg')*dmgK())*cm*(quake?TREE.fx.quake.dmg:1),'sword',a,quake?'earth':undefined);
       }
       S.shake=Math.max(S.shake,2);
     }

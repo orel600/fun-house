@@ -647,6 +647,20 @@ function worldBot(m,L,god){
     return{low,high,reset,grow,first}});
   check(lt.high>lt.low*2&&lt.reset&&lt.grow&&lt.first,'מזל עם הגנה: נדיר '+Math.round(lt.low*100)+'% בהתחלה, '+Math.round(lt.high*100)+'% אחרי הרבה החטאות'+
     (lt.reset&&lt.grow?', מתאפס כשנופל':', לא מתאפס')+(lt.first?', הריגה ראשונה היום: בונוס פעם אחת':', בונוס הריגה ראשונה שבור'));
+  // טווח נזק (weapons.js): לכל נשק טווח, הממוצע שווה לנזק של לפני הטווח (בסיס × סוג × ציוד), כבדים רחבים יותר, והמכות באמת בטווח
+  const wr=await page.evaluate(()=>{
+    const bad=[],ids=Object.keys(GEAR.items).filter(id=>GEAR.items[id].slot==='weapon'),P0=P,out=[];
+    for(const id of ids){const it=GEAR.items[id],W=WEAPONS[it.w],st=gStats(id);
+      const old=(W.use==='sword'?20:9)*((W.k||{}).dmg||1)*(1+(st[W.use==='sword'?'sdmg':'gdmg']||0)/100),avg=wItemAvg(id),r=wRange(avg,it.w);
+      if(!(W.spread>0)||Math.abs(avg-old)>1e-9||!(r[0]<avg&&avg<r[1]))bad.push(id);
+      P={wt:it.w};let sum=0,lo=1e9,hi=0;const N=4000;for(let i=0;i<N;i++){const d=wRoll(avg);sum+=d;lo=Math.min(lo,d);hi=Math.max(hi,d)}P=P0;
+      if(lo<avg*(1-W.spread)-1e-9||hi>avg*(1+W.spread)+1e-9||Math.abs(sum/N-avg)>avg*0.03)bad.push(id+' (הגרלה)');
+      out.push(id+' '+r[0]+'–'+r[1])}
+    const order=wSpread('wand')<wSpread('bow')&&wSpread('sword')<wSpread('bow')&&wSpread('bow')<wSpread('axe')&&wSpread('axe')<wSpread('hammer');
+    const card=/–/.test(gStatsHtml('oakSword'))&&/▲/.test(gCompare('ironSword','oakSword'))&&/▼/.test(gCompare('oakSword','ironSword'));
+    return{bad,order,card,out:out.slice(0,4).join(', ')}});
+  check(!wr.bad.length&&wr.order&&wr.card,'טווח נזק: '+(wr.bad.length?'שבור ב-'+wr.bad.join(', '):'לכל נשק טווח, הממוצע כמו קודם והמכות בטווח')+
+    (wr.order?', כבדים רחבים יותר':', הסדר של הטווחים לא נכון')+(wr.card?', בכרטיס ובהשוואה':', חסר בכרטיס או בהשוואה')+' ('+wr.out+')');
   // שוק מלא: מוכרים וקונים כל משאב, קנייה תמיד יקרה ממכירה בכל רמה, נדיר נפתח ברמה גבוהה, וחלק בוס אי אפשר לקנות.
   // יצירה בנפחייה, שמירה ישנה עם 'עפרות' הופכת לברזל, והפס העליון בנפחייה מראה מתכות ולא עץ
   const mk2=await page.evaluate(()=>{

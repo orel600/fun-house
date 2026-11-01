@@ -742,6 +742,7 @@ const TEXT={
   'gear.equip':{he:'ללבוש',en:'Equip'},
   'gear.unequip':{he:'להוריד',en:'Take off'},
   'gear.vs':{he:s=>'במקום '+s,en:s=>'Replaces '+s},
+  'gear.dmg':{he:r=>'נזק '+r,en:r=>'Damage '+r},
   'gear.same':{he:'בלי שינוי',en:'No change'},
   'st.sdmg':{he:'נזק מקרוב',en:'melee damage'},
   'st.gdmg':{he:'נזק מרחוק',en:'ranged damage'},
