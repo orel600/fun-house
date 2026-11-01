@@ -999,9 +999,11 @@ function worldBot(m,L,god){
   const uiMeasure=place=>{const o0={},vis=e=>{if(!e||e.closest('[hidden]'))return null;const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>0&&r.height>0&&cs.display!=='none'&&cs.visibility!=='hidden'?r:null};
     const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1,W=innerWidth,H=innerHeight;
     const box=sel=>[...document.querySelectorAll(sel)].map(e=>({n:e.id||(e.className.split(' ')[0]+(e.dataset.tip?':'+e.dataset.tip:'')),r:vis(e)})).filter(x=>x.r);
-    const els=box(place==='world'?'#menuBtn,#muteBtn,.hud .hp,#wBag .res,#wBag .resmore,#nav .nbtn,#guide':'#menuBtn,#muteBtn,#vBag .res,#vBag .resmore,#nav .nbtn,#guide'),bad=[],off=[];
+    const els=box(place==='world'?'#menuBtn,#muteBtn,.hud .hp,#who,#miniMap,#wBag .res,#wBag .resmore,#nav .nbtn,#guide':'#menuBtn,#muteBtn,#who,.dgift,#vBag .res,#vBag .resmore,#nav .nbtn,#guide'),bad=[],off=[];
     els.forEach((a,i)=>els.slice(i+1).forEach(b=>{if(hit(a.r,b.r))bad.push(a.n+'×'+b.n)}));
     for(const x of els)if(x.r.left<-0.5||x.r.right>W+0.5||x.r.top<-0.5||x.r.bottom>H+0.5)off.push(x.n);
+    o0.who=!!vis($('who'));o0.res=document.querySelectorAll('#'+(place==='world'?'w':'v')+'Bag .res').length;
+    if(place==='world'){const mm=$('miniMap');o0.mini=!!vis(mm);if(o0.mini){mm.click();o0.miniOpen=!$('wMap').hidden&&S.mode==='map';wmapOpen(false)}}   // המפה הקטנה (minimap.js)
     if(place==='world'){const g=$('wGo');o0.gateAuto=!$('wPanel').hidden;o0.goBtn=!!g&&!g.hidden;if(o0.goBtn)g.click()}   // שער: נפתח רק בלחיצה על העיגול
     const pid=place==='world'?'wPanel':'vPanel',pn=vis($(pid));if(pn)for(const x of box('#nav .nbtn,#guide'))if(hit(pn,x.r))bad.push(pid+'×'+x.n);
     const win=(open,panel,sel)=>{open();const p=$(panel),b=document.querySelector(sel),r=vis(b),ok=!!r&&r.width>=40&&r.height>=40&&r.left>=0&&r.right<=W&&r.top>=0&&r.bottom<=H&&!p.hidden;
@@ -1091,7 +1093,7 @@ function worldBot(m,L,god){
     SAVE.story.earth=false;worldUi(false);enterWorld('home');tick();const before=guideG.text;
     questEvent('kill','warden');tick();o.claim=guideG.icon===GUIDE.icon.claim;
     SAVE.story.earth=true;questClaim('s1Warden');tick();o.after=guideG.text;o.changed=before!==guideG.text&&guideG.q!=='s1Warden';
-    $('guideMin').click();o.min=$('guide').classList.contains('min')&&$('guideTxt').textContent==='';$('guideMin').click();
+    $('guideMin').click();o.min=$('guide').classList.contains('min')&&(t=>t.length>0&&t.split(' ').length<=3)($('guideTxt').textContent);   // מכווצת: 2-3 מילים, לא ריקה$('guideMin').click();
     $('guideMain').click();o.log=!$('qLog').hidden&&!!document.querySelector('#qLog .gnow');questLogOpen(false);
     worldUi(false);startRun();tick();o.arena=$('guide').hidden;
     const k=JSON.parse(keep);SAVE.quests=k.q;k.s.intro=k.s.intro||SAVE.story.intro;SAVE.story=k.s;saveNow();enterVillage();npcTalk(null);   // הקדמה שכבר נאמרה נשארת אמורה. חוזרים לכפר רק אחרי השחזור, אחרת פנס האדמה הדלוק מפעיל שם סיפור (homecoming.js)
@@ -1103,7 +1105,7 @@ function worldBot(m,L,god){
       await page.evaluate(pl=>{questLogOpen(false);if(pl==='world'){leaveVillage();P.x=-300;P.y=-100}else{enterVillage();P.x=0;P.y=60}S.cam.x=P.x;S.cam.y=P.y;guideT=0},pl);
       await page.clock.runFor(200);if(nm==='land'&&pl==='world')await shot('guide-world');
       gdHit[nm+'-'+pl]=await page.evaluate(()=>{const g=$('guide');if(g.hidden)return 'מוסתרת';const r=g.getBoundingClientRect(),bad=[];
-        for(const e of document.querySelectorAll('#menuBtn,#muteBtn,.dgift,.hud .hp,#vBag .res,#vBag .resmore,#wBag .res,#wBag .resmore,#nav .nbtn')){if(e.closest('[hidden]'))continue;const q=e.getBoundingClientRect();
+        for(const e of document.querySelectorAll('#menuBtn,#muteBtn,.dgift,.hud .hp,#who,#miniMap,#vBag .res,#vBag .resmore,#wBag .res,#wBag .resmore,#nav .nbtn')){if(e.closest('[hidden]'))continue;const q=e.getBoundingClientRect();
           if(q.width&&getComputedStyle(e).display!=='none'&&r.left<q.right-1&&q.left<r.right-1&&r.top<q.bottom-1&&q.top<r.bottom-1)bad.push(e.id||e.className.split(' ')[0])}
         return r.right>innerWidth||r.left<0?'מחוץ למסך':bad.join(',')})}}
   await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();npcTalk(null);const g=VILLAGE.gate;P.x=g.x;P.y=g.y-90;S.cam.x=P.x;S.cam.y=P.y});
@@ -1127,6 +1129,27 @@ function worldBot(m,L,god){
     P.inv=0;enterVillage();return o});
   check(sto2.intro&&sto2.offer&&sto2.shard&&sto2.warden&&sto2.ready&&sto2.lit,'עלילה, פרק 1: '+(sto2.intro?'ההקדמה אצל ראש הכפר':'אין הקדמה ('+sto2.dbg+')')+(sto2.offer?', קווסט ראשון מוצע והבא נעול':', סדר הקווסטים שבור')+
     (sto2.shard?', פיוחו מצאה רסיס':', אין רסיס')+(sto2.warden?', השומר קם ליד הפנס':', השומר לא קם')+(sto2.ready?' והופל':', לא הופל')+(sto2.lit?', הפנס נדלק':', הפנס לא נדלק')+(sto2.safer?', האחו בטוח יותר':''));
+  // השומר לא בורח (ניר, 1.11: "ברח לי"): כשמתרחקים הוא ממשיך לרדוף, מוותר רק אחרי כמה שניות רחוק, חוזר בלי להתרפא,
+  // ומכה לא דוחפת אותו מחוץ לאזור. וסביב כל פנס שטח פתוח: רחוק מהקצה ומהקישוטים (גבעות ועצים)
+  const wch=await page.evaluate(()=>{
+    const o={open:[]},CH=STORY.chase;
+    for(const k in STORY.lanterns){const L=STORY.lanterns[k];enterWorld('home',L.reg);const {w,h}=WR().size;
+      const edge=Math.min(w/2-Math.abs(L.x),h/2-Math.abs(L.y)),dec=Math.min(...worldDecor().map(d=>Math.hypot(d.x-L.x,d.y-L.y)-(d.kind==='hills'?130:0)));
+      if(edge<CH.clear||dec<200)o.open.push(k+':'+Math.round(edge)+'/'+Math.round(dec))}
+    const Q=QS(),was=Q.active.s1Warden;enemies.length=0;enterWorld('home','meadow');qStart(QBY.s1Warden);
+    const L=STORY.lanterns.earth;P.x=L.x;P.y=L.y+200;P.inv=1e9;storyUpdate(0.1);const e=S.wd.warden;o.warden=!!e;
+    if(e){e.hp=e.max/2;const hp=e.hp,B=placeBox();
+      const run=(px,py,sec)=>{for(let t=0;t<sec;t+=0.05){P.x=px;P.y=py;storyWardenMove(e,0.05)}};
+      const d0=Math.hypot(e.x-(L.x-600),e.y-(L.y+200));run(L.x-600,L.y+200,3);o.chase=!e.back&&Math.hypot(e.x-P.x,e.y-P.y)<d0-40;     // 600 מהפנס: עוד רודף
+      run(L.x-1500,L.y+300,CH.giveUp+1);o.gaveUp=e.back&&e.say>0;                      // רחוק מספיק זמן: חוזר ואומר משהו
+      run(L.x-1500,L.y+300,20);o.home=Math.hypot(e.x-L.x,e.y-L.y-70)<20;o.heal=e.hp!==hp; // חזר לפנס, בלי ריפוי
+      run(L.x,L.y+150,0.2);o.back=!e.back;                                             // חוזרים אליו: הקרב ממשיך
+      e.kx=9000;run(L.x,L.y+150,0.5);o.inside=e.x>=B.x0&&e.x<=B.x1&&e.y>=B.y0&&e.y<=B.y1;  // מכה חזקה לא מעיפה אותו אל הגבעות
+      e.dead=true;storyUpdate(0.1)}
+    if(!was)delete Q.active.s1Warden;P.inv=0;enterVillage();return o});
+  check(!wch.open.length&&wch.warden&&wch.chase&&wch.gaveUp&&wch.home&&!wch.heal&&wch.back&&wch.inside,'השומר לא בורח: '+
+    (wch.chase?'רודף כשמתרחקים':'חוזר לפנס מיד כשמתרחקים')+(wch.gaveUp?', מוותר רק אחרי כמה שניות ואומר משהו':', לא מוותר או לא אומר כלום')+(wch.heal?', מתרפא!':', בלי ריפוי')+
+    (wch.back?', הקרב ממשיך כשחוזרים':', לא חוזר לקרב')+(wch.inside?', נשאר בתוך האזור':', נדחף מחוץ לאזור')+(wch.open.length?', פנס ליד קצה או קישוט: '+wch.open.join(' '):', שטח פתוח סביב כל 6 הפנסים'));
   // העלילה, פרק 2 (story.js, WORLD.regions.lake): הדרך לאגם סגורה עד שפנס האדמה דולק, באגם יש אויבים רטובים (חלשים לברק),
   // והקווסטים מובילים לשומר המים, שמפיל את פנס המים
   const ch2=await page.evaluate(()=>{
@@ -1488,9 +1511,9 @@ function worldBot(m,L,god){
   check(L.heroHp===heroHp,'פסיבית בריצה: הלוחם קיבל +'+L.heroHp+' חיים (צפוי +'+heroHp+')');
   check(again,'בחירת דמות: '+(again?'לא חוזרת במשחק השני':'הופיעה שוב'));
   for(const nm in uiR){const {v,w}=uiR[nm],all=[...Object.entries(v.wins),...Object.entries(w.wins)],bad=[...v.bad,...w.bad],off=[...v.off,...w.off];
-    check(!bad.length&&!off.length&&v.n>3&&w.n>3&&v.panel&&w.panel&&w.gateAuto===false&&w.goBtn&&v.more&&v.cards>0&&v.tradeBack&&(nm!=='land'||v.cols===2)&&all.every(x=>x[1]==='ok')&&v.esc&&v.backdrop&&v.tapOut,
+    check(!bad.length&&!off.length&&v.n>3&&w.n>3&&v.panel&&w.panel&&w.gateAuto===false&&w.goBtn&&v.who&&w.who&&w.mini&&w.miniOpen&&v.res<=2&&w.res<=2&&v.more&&v.cards>0&&v.tradeBack&&(nm!=='land'||v.cols===2)&&all.every(x=>x[1]==='ok')&&v.esc&&v.backdrop&&v.tapOut,
       'ממשק, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(bad.length?'נוגעים זה בזה: '+bad.join(', '):'הפס העליון והסרגל לא נוגעים')+(off.length?', מחוץ למסך: '+off.join(', '):'')+
-      (w.gateAuto?', כרטיס השער נפתח לבד':w.goBtn?', שער: עיגול ואז כרטיס':', אין עיגול ליד השער')+(v.more?', "+N" לשאר התרמיל':', אין "+N"')+', '+v.cards+' כרטיסים במסחר'+(v.cols===2?' בשני טורים':'')+(v.tradeBack?', ✕ חוזר לשוק':', ✕ לא חזר לשוק')+' · יציאה: '+all.map(x=>x[0]+(x[1]==='ok'?' ✕':' '+x[1])).join(', ')+
+      (v.who&&w.who?', רמה וחיים בפינה':', אין "מי אני"')+(w.mini?(w.miniOpen?', מפה קטנה פותחת את המפה':', המפה הקטנה לא פותחת'):', אין מפה קטנה')+', '+Math.max(v.res,w.res)+' משאבים למעלה'+(w.gateAuto?', כרטיס השער נפתח לבד':w.goBtn?', שער: עיגול ואז כרטיס':', אין עיגול ליד השער')+(v.more?', "+N" לשאר התרמיל':', אין "+N"')+', '+v.cards+' כרטיסים במסחר'+(v.cols===2?' בשני טורים':'')+(v.tradeBack?', ✕ חוזר לשוק':', ✕ לא חזר לשוק')+' · יציאה: '+all.map(x=>x[0]+(x[1]==='ok'?' ✕':' '+x[1])).join(', ')+
       (v.esc?', Esc':', Esc לא סוגר')+(v.backdrop?', רקע':', רקע לא סוגר')+(v.tapOut?', נגיעה במשחק':', נגיעה במשחק לא סוגרת יומן'))}
   for(const nm in uiR){const b=[...new Set([...uiR[nm].v.big.map(x=>'כפר '+x),...uiR[nm].w.big.map(x=>'עולם '+x)])];   // אזהרה, לא כישלון (plan-hud.md)
     results.push((b.length?'⚠ ':'· ')+'גודל ממשק, '+(nm==='port'?'טלפון עומד':'לרוחב')+': '+(b.length?'גדול מהגבול: '+b.join(', '):'הכל בתוך הגבולות'))}

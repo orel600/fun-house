@@ -46,6 +46,9 @@
 <div class="vpanel win" id="wPanel" hidden></div>
 <!-- המטרה הבאה (js/guide.js): שורה אחת למעלה, בכפר ובעולם. נגיעה פותחת את היומן, ▴ מכווץ -->
 <div class="guide" id="guide" hidden><button class="gmain" id="guideMain" type="button" data-ta="g.tap"><span class="gico" id="guideIco"></span><span class="gtxt" id="guideTxt"></span><b class="gdist" id="guideDist"></b></button><button class="gjump" id="guideJump" type="button" hidden></button><button class="gmin" id="guideMin" type="button"></button></div>
+<!-- הפינות העליונות בכפר ובעולם (js/minimap.js): "מי אני" (רמה, חיים, XP) בתחילת השורה, ומפה קטנה עגולה מתחת ל-☰ בעולם. נגיעה במפה פותחת את מפת העולם -->
+<div class="who" id="who" role="img" hidden><b class="wlv" id="whoLv"></b><div class="wbars"><div class="whp"><i id="whoHp"></i></div><div class="wxp"><i id="whoXp"></i></div></div></div>
+<button class="minimap" id="miniMap" data-ta="mm.open" hidden><canvas id="mmC"></canvas></button>
 <!-- מפת העולם (js/worldmap.js): חלון עם מפה של כל האזורים ושל האזור הנוכחי. נפתח מהתפריט הראשי -->
 <div class="qlog win wmapwin" id="wMap" hidden></div>
 <!-- קפיצה בין פנסים (js/travel.js): הבזק אור בצבע הפנס על כל המסך -->
@@ -307,6 +310,7 @@
 <script src="js/visit.js"></script>
 <script src="js/book.js"></script>
 <script src="js/guide.js"></script>
+<script src="js/minimap.js"></script>
 <script src="js/welcome.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/menu.js"></script>
