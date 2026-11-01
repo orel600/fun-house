@@ -1,5 +1,5 @@
 /* מתנה יומית: לוח של 7 ימים בכפר (Claude מוביל, 31.10.2026).
-   בכניסה הראשונה לכפר בכל יום (תאריך מקומי, כמו הקווסטים היומיים) נפתח חלון. היום הנוכחי מאיר, ולוחצים "לקחת".
+   בכניסה הראשונה לכפר בכל יום המתנה מופיעה כשורה בחלון "בזמן שלא היית" (welcome.js). הלוח עצמו נפתח מכפתור 🎁: היום הנוכחי מאיר, ולוחצים "לקחת".
    מי שפספס יום לא מתחיל מאפס, אלא ממשיך מאיפה שעצר (נדיב, בשביל ילדים). אחרי יום 7 הלוח מתחיל מחדש.
    סגרו בלי לקחת? כפתור קטן עם נקודה אדומה בסרגל למטה מזכיר. נשמר ב-SAVE.daily.gift: {n:כמה ימים נלקחו בלוח, day:התאריך האחרון שנלקח}.
    (SAVE.daily עצמו משמש גם את ההריגה הראשונה היום ב-loot.js, ולכן המתנה בתוכו, בשדה משלה) */
@@ -15,7 +15,6 @@ const DAILY={
     {coins:400,chest:1},
   ],
   chest:{gem:0.55,gems:2,gearTier:2},   // gem: הסיכוי לאבני חן (gems כמה). אחרת פריט ציוד אקראי עד הדרגה gearTier
-  openDelay:0.6,                        // שניות אחרי הכניסה לכפר, כדי שהכפר יופיע קודם
 };
 
 const dailyDay=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
@@ -59,12 +58,8 @@ function dailyOpen(){if(!S||S.mode!=='play'||!S.vil)return;S.mode='daily';joy=nu
 function dailyClose(){$('ovDaily').hidden=true;if(S&&S.mode==='daily')S.mode='play';dailyBtn()}
 // הכפתור הקטן בסרגל: רק בכפר, ורק כשיש מה לקחת
 function dailyBtn(){$('dBtn').hidden=!(S&&S.vil&&dailyCan())}
-// נקרא בכניסה לכפר (village.js): פעם ראשונה היום, החלון נפתח לבד, אם אין חלון אחר פתוח
-function dailyVillage(){
-  dailyBtn();
-  if(!dailyCan())return;
-  setTimeout(()=>{if(S.vil&&dailyCan()&&S.mode==='play'&&$('npcDlg').hidden&&$('qLog').hidden)dailyOpen()},DAILY.openDelay*1000);
-}
+// נקרא בכניסה לכפר (village.js): רק הכפתור. המתנה של היום מופיעה בחלון "בזמן שלא היית" (welcome.js), ולא בחלון קופץ משלה
+function dailyVillage(){dailyBtn()}
 $('dailyWin').addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b)return;
   if(b.dataset.act==='close'){dailyClose();sfx('ui');return}
