@@ -119,11 +119,13 @@ function drawBoss(b){
   ctx.restore();
 }
 const onScreen=(sx,sy,m=90)=>sx>-m&&sx<W+m&&sy>-m&&sy<H+m+40;
-/* חץ בקצה המסך שמצביע על משהו מחוץ למסך. s: גודל החץ */
-function edgeArrow(sx,sy,col,s=1){
+/* חץ בקצה המסך שמצביע על משהו מחוץ למסך. s: גודל החץ.
+   strong: החץ של המטרה הבאה (guide.js). בכפר ובעולם, כשיש מטרה, שאר החצים קטנים ושקופים יותר כדי שהיא תבלוט */
+function edgeArrow(sx,sy,col,s=1,strong){
   if(sx>=-20&&sx<=W+20&&sy>=-20&&sy<=H+20)return;
+  const soft=!strong&&S&&(S.vil||S.wd)&&typeof guideG!=='undefined'&&guideG;if(soft)s*=0.8;
   const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(110,Math.min(H-40,H/2+Math.sin(a)*H));
-  ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.scale(s,s);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-8);ctx.lineTo(-7,8);ctx.fill();ctx.restore();
+  ctx.save();if(soft)ctx.globalAlpha=0.45;ctx.translate(ex,ey);ctx.rotate(a);ctx.scale(s,s);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-8);ctx.lineTo(-7,8);ctx.fill();ctx.restore();
 }
 function render(){
   setZoom(S&&S.vil?VIEW.zoom.village:S&&S.wd?VIEW.zoom.world:1);   // כמה גבוה המצלמה בכל מקום (render3d.js)
@@ -203,7 +205,7 @@ function render(){
   drawVillageScreen(ox,oy);
   drawWorldScreen(ox,oy);
   drawNpcScreen(ox,oy);
-  drawQuestMarks(ox,oy);statDraw(ox,oy);   // סימן מעל הדמות כשסקיל פעיל (stats.js)
+  drawQuestMarks(ox,oy);statDraw(ox,oy);guideDraw(ox,oy);   // guideDraw: המטרה הבאה, שובל וחץ (guide.js)   // סימן מעל הדמות כשסקיל פעיל (stats.js)
   if(joy){ctx.strokeStyle='rgba(236,231,220,0.22)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(joy.ox,joy.oy,55,0,7);ctx.stroke();
     ctx.fillStyle='rgba(236,231,220,0.3)';ctx.beginPath();ctx.arc(joy.ox+joy.dx*55,joy.oy+joy.dy*55,22,0,7);ctx.fill()}
   if(S.hurt>0){const gr=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3,W/2,H/2,Math.max(W,H)*0.75);gr.addColorStop(0,'rgba(239,78,87,0)');gr.addColorStop(1,'rgba(239,78,87,'+(S.hurt*1.2)+')');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)}
