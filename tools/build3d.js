@@ -57,12 +57,12 @@ const CHARS={
   piocho1:{src:path.join(ROOT,'art/pets/Piocho1.glb'),keep:['Piocho1_'],tex:512,fmt:'jpeg'},
   piocho2:{src:path.join(ROOT,'art/pets/Piocho2.glb'),keep:['Piocho2_'],tex:512,fmt:'jpeg'},
   piocho3:{src:path.join(ROOT,'art/pets/Piocho3.glb'),keep:['Piocho3_'],tex:512,fmt:'jpeg'},
-  parosh1:{src:path.join(ROOT,'art/pets/Parosh1.glb'),keep:['Parosh1_'],tex:512,fmt:'jpeg'},   // הפרעוש של אוראל (parosh.js), אותו מודל לשלושת השלבים
+  parosh1:{src:path.join(ROOT,'art/pets/ParoshHF.glb'),keep:['Parosh1_'],tex:512,fmt:'jpeg'},   // הפרעוש של אוראל (parosh.js), אותו מודל לשלושת השלבים
   // הדמות האישית של ניר ("הנודד עם הניצוץ"), מ-art/heroes/nir-sheet.jpg. כמו הפיילוט, עם rig.py --apose --pack (ההסבר ב-tools/pilot3d/README.md)
   nirHero:{src:path.join(ROOT,'art/heroes/NirHero.glb'),keep:['NirHero_'],tex:512,fmt:'jpeg'},
   // הדמות האישית של אוראל ("הנודד עם החליל"), מ-art/heroes/orel-sheet.jpg. בתנוחת T, אז rig.py בלי דגלים.
   // הדף מורכב משני דפים של ג'מיני: מלפנים ומאחור מהראשון (חד), ומהצד מהשני (בראשון היו פנים כפולות), מוגדל לאותו גובה והפוך כך שיפנה ימינה
-  orelHero:{src:path.join(ROOT,'art/heroes/OrelHero.glb'),keep:['OrelHero_'],tex:512,fmt:'jpeg'}
+  orelHero:{src:path.join(ROOT,'art/heroes/OrelHeroHF.glb'),keep:['OrelHero_'],tex:512,fmt:'jpeg'}
 };
 // חפצים שנאחזים ביד של אויב (המיקום ביד מוגדר ב-render3d.js)
 const PROPS={

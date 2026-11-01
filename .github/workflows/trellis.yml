@@ -1,0 +1,40 @@
+# כלי זמני: הופך ציורי דמויות למודלים צבועים ב-TRELLIS (Hugging Face), ושומר את התוצאה בחזרה בענף.
+# רץ רק בענף feature/hf-trellis, או ידנית. לא נוגע במשחק.
+name: TRELLIS (תלת-ממד מ-Hugging Face)
+# רץ רק כשמשנים את tools/trellis/go.txt בענף הזה, כדי לא לבזבז את המכסה היומית של Hugging Face על כל דחיפה
+on:
+  push:
+    branches: [feature/hf-trellis]
+    paths: ['tools/trellis/go.txt']
+permissions:
+  contents: write
+jobs:
+  trellis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install gradio_client
+      - name: הפרעוש
+        continue-on-error: true
+        run: '[ -f tools/trellis/out/parosh.glb ] || python tools/trellis/run.py parosh'
+      - name: הדמות של אוראל
+        continue-on-error: true
+        run: '[ -f tools/trellis/out/orel.glb ] || python tools/trellis/run.py orel'
+      - name: תמונות מהסרטונים
+        continue-on-error: true
+        run: |
+          cd tools/trellis/out || exit 0
+          for v in *.mp4; do [ -f "$v" ] || continue
+            ffmpeg -loglevel error -y -i "$v" -vf "select='not(mod(n\,15))',scale=320:-1,tile=4x2" -frames:v 1 "${v%.mp4}-turn.png"; done
+          ls -la
+      - name: שמירה בענף
+        run: |
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tools/trellis/out || true
+          git diff --cached --quiet && echo "אין תוצאות" && exit 0
+          git commit -m "TRELLIS: תוצאות"; git push
