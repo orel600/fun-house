@@ -44,17 +44,23 @@
 <!-- העולם הפתוח: שם האזור ומה שבתרמיל למעלה, ופאנל ליד שער (js/world.js) -->
 <div class="whud" id="whud" hidden><b id="wName"></b><b id="wSec" class="wsec"></b><span class="chtag" id="chTag" hidden></span><div class="bag tbar" id="wBag" role="group" data-ta="bagGroup"></div></div>
 <div class="vpanel win" id="wPanel" hidden></div>
-<!-- מפת העולם (js/worldmap.js): כפתור בפינה העליונה, רק בעולם, וחלון עם מפה של כל האזורים ושל האזור הנוכחי -->
-<button class="wmapbtn" id="wMapBtn" data-ta="wm.title"><span aria-hidden="true">🗺️</span></button>
+<!-- מפת העולם (js/worldmap.js): חלון עם מפה של כל האזורים ושל האזור הנוכחי. נפתח מהתפריט הראשי -->
 <div class="qlog win wmapwin" id="wMap" hidden></div>
-<!-- סרגל למטה, בכפר ובעולם (js/ui.js): היומן, "לדבר" כשעומדים ליד מישהו, והציוד. הוא לא מכסה אף חלון: החלונות נגמרים מעליו -->
+<!-- סרגל למטה, בכפר ובעולם: רק מה ששייך למקום שבו עומדים ("לדבר" ליד דמות, לדוג ליד מים). הוא לא מכסה אף חלון -->
 <nav class="bnav" id="nav">
-  <button class="nbtn" id="qBtn"><span class="ni" aria-hidden="true">📜</span><span data-t="q.log"></span><b id="qBadge" hidden></b></button>
   <button class="nbtn talkbtn" id="talkBtn" hidden></button>
   <button class="nbtn talkbtn feedbtn" id="feedBtn" hidden></button>
   <button class="nbtn talkbtn fishbtn" id="fishBtn" hidden></button>
-  <button class="nbtn" id="gearBtn"><span class="ni" aria-hidden="true">🎒</span><span data-t="gear.btn"></span><b id="gBadge" hidden></b></button>
-  <button class="nbtn" id="bookBtn"><span class="ni" aria-hidden="true">📖</span><span data-t="book.btn"></span><b id="bBadge" hidden></b></button>
+</nav>
+<!-- התפריט הראשי (js/menu.js): ☰ בפינה העליונה, בכפר ובעולם, ומסך מלא עם לשוניות בצד. כל לשונית מציגה חלון קיים -->
+<button class="mute menubtn" id="menuBtn" data-ta="menu.btn"><span aria-hidden="true">☰</span><b hidden></b></button>
+<div class="menubg" id="menuBg"></div>
+<nav class="mrail" id="menuRail" role="tablist" data-ta="menu.btn">
+  <button class="mtab" id="gearBtn" role="tab"><span class="ni" aria-hidden="true">🎒</span><span data-t="menu.hero"></span><b id="gBadge" hidden></b></button>
+  <button class="mtab" id="qBtn" role="tab"><span class="ni" aria-hidden="true">📜</span><span data-t="q.log"></span><b id="qBadge" hidden></b></button>
+  <button class="mtab" id="bookBtn" role="tab"><span class="ni" aria-hidden="true">📖</span><span data-t="book.btn"></span><b id="bBadge" hidden></b></button>
+  <button class="mtab" id="wMapBtn" role="tab"><span class="ni" aria-hidden="true">🗺️</span><span data-t="wm.title"></span></button>
+  <button class="mtab" id="setBtn" role="tab"><span class="ni" aria-hidden="true">⚙️</span><span data-t="set.title"></span></button>
 </nav>
 <!-- מתנה יומית שעוד לא נלקחה: כפתור עגול קטן בפינה העליונה, מתחת להשתקה. לא בסרגל, כדי שלא ידחוף כפתורים החוצה (js/daily.js) -->
 <!-- ביקור אצל חבר: כפתור עגול מתחת למתנה, רק בכפר. דהוי בלי Google (js/visit.js) -->
@@ -279,6 +285,7 @@
 <script src="js/visit.js"></script>
 <script src="js/book.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/menu.js"></script>
 <script src="js/update.js"></script>
 <script src="js/rig.js"></script>
 <script src="js/fx.js"></script>

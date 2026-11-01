@@ -225,7 +225,7 @@ function questLog(){
   $('qLog').innerHTML=h;
 }
 function questLogOpen(on){$('qLog').hidden=!on;if(on){npcTalk(null);questLog()}}
-$('qBtn').addEventListener('click',()=>questLogOpen($('qLog').hidden));
+// הכפתור: לשונית בתפריט הראשי (menu.js)
 // כפתור בכרטיס קווסט: ביומן וגם בשיחה עם תושב (npc.js)
 function questAct(a,id){
   if(a==='accept'&&qOpen(QBY[id])){qStart(QBY[id]);saveNow()}
