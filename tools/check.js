@@ -901,7 +901,7 @@ function worldBot(m,L,god){
     await page.clock.runFor(300);
     await shot('ui-market-'+nm);await page.evaluate(()=>gearOpen());await shot('ui-gear-'+nm);await page.evaluate(()=>gearClose());
     // "בזמן שלא היית" בגודל הזה: כל החלון בתוך המסך, והכפתור הגדול נראה (welcome.js)
-    uiWel[nm]=await page.evaluate(()=>{vShut();dailySave().day='';welcomeOpen();const r=document.getElementById('welWin').getBoundingClientRect(),b=document.querySelector('#welWin [data-act="all"]');
+    uiWel[nm]=await page.evaluate(()=>{dailySave().day='';welcomeOpen();const r=document.getElementById('welWin').getBoundingClientRect(),b=document.querySelector('#welWin [data-act="all"]');
       const br=b&&b.getBoundingClientRect(),o={fit:r.top>=0&&r.left>=0&&r.bottom<=innerHeight&&r.right<=innerWidth,btn:!!br&&br.bottom<=innerHeight&&br.height>=40};return o});
     await shot('ui-welcome-'+nm);await page.evaluate(()=>{welcomeClose();dailySave().day=dailyDay()});
     const v=await page.evaluate(uiMeasure,'village');
