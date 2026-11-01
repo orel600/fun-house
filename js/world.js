@@ -182,7 +182,7 @@ const wGateCol=k=>k==='home'?C.chalk:wIsPath(k)?C.tide:C.lilac;
 let wRet=null;   // השער שממנו נכנסו לזירה: בסוף הריצה חוזרים אליו (againBtn ב-input.js)
 
 /* ---- מעבר בין מקומות ---- */
-function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden=!on;$('chTag').hidden=!on;if(!on){$('wPanel').hidden=true;wnpcOff();fishOff();wmapOpen(false)}}   // wnpcOff: הדמויות בעולם (worldnpc.js)   // fishOff: הדיג (fishing.js)   // wmapOpen: המפה (worldmap.js)
+function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden=!on;$('chTag').hidden=!on;if(!on){$('wPanel').hidden=true;wnpcOff();fishOff();wmapOpen(false);travelOff()}}   // wnpcOff: הדמויות בעולם (worldnpc.js)   // fishOff: הדיג (fishing.js)   // wmapOpen: המפה (worldmap.js)
 // at: 'home' (מהכפר, או מהאזור הקודם), id של שער (חזרה מהזירה) או של דרך (חזרה מאזור אחר). reg: איזה אזור, ברירת המחדל האחו
 function enterWorld(at,reg){
   wRet=null;reset();S.mode='play';
@@ -293,6 +293,7 @@ function worldUpdate(dt){
   worldHud();
   wnpcUpdate(dt);   // דמויות שמגלים בעולם, וכפתור "לדבר" (worldnpc.js)
   fishUpdate(dt);   // דיג ליד מים, וכפתור "לדוג" (fishing.js)
+  travelUpdate();   // ליד פנס דולק: "חזרה לכפר" (travel.js)
 }
 
 /* ---- מוות בעולם: חצי מכל משאב בתרמיל הולך, הפריטים והמחסן נשארים. נקרא מ-gameOver ---- */

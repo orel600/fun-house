@@ -1109,6 +1109,24 @@ function worldBot(m,L,god){
     SAVE.home.back={...b0,...SAVE.home.back};npcTalk(null);enterVillage();return o});
   check(hm.away&&hm.k&&hm.here&&hm.free&&hm.posts>=1&&hm.line&&hm.saved&&hm.next&&hm.three&&hm.fire&&hm.bolt&&hm.light&&hm.gift,'פנס משנה את הכפר: '+(hm.away&&hm.here?'הגנן חוזר בכניסה לכפר':'הגנן לא חזר')+(hm.k?' (פנס אחד בכל כניסה)':', כמה פנסים בבת אחת')+
     (hm.saved?', נשמר':', לא נשמר')+', '+hm.posts+' עמודים דולקים'+(hm.next&&hm.three?', המים והקרח בכניסות הבאות':', המים והקרח לא חזרו')+(hm.free?'':', תושב עומד במקום אסור')+(hm.line?'':', אין לו משפט')+(hm.gift?', וחפץ ביסוד נופל בעולם':', החפץ לא נפל'));
+  // קפיצה בין פנסים (travel.js): בשער בכפר "לאן?" עם הפנסים הדולקים, קפיצה לאגם ליד פנס המים, "חזרה לכפר" ליד הפנס (לא באמצע קרב), וקפיצה ממפת העולם
+  const lj=await page.evaluate(()=>{const o={};SAVE.story.water=true;P.inv=99;npcTalk(null);enterVillage();$('ovDaily').hidden=true;
+    S.vil.gate=true;S.vil.shut=null;S.vil.ui='';villageHud();o.list=document.querySelectorAll('#vPanel [data-act="jump"]').length;o.lit=travelLit().length;
+    const b=document.querySelector('#vPanel [data-act="jump"][data-k="water"]');if(b)b.click();return o});
+  await page.clock.runFor(1200);
+  Object.assign(lj,await page.evaluate(()=>{const o={},L=STORY.lanterns.water;P.inv=99;
+    o.reg=S.wd&&S.wd.reg;o.at=!!S.wd&&Math.hypot(P.x-L.x,P.y-L.y)<TRAVEL.arrive+30;
+    for(const e of enemies)e.dead=true;P.x=L.x;P.y=L.y+60;travelUpdate();o.btn=!$('trBtn').hidden;
+    const e=addEnemy('grunt',P.x+30,P.y,1);o.fight=travelBlock()==='fight';$('trBtn').click();o.stay=!!S.wd;e.dead=true;
+    $('trBtn').click();return o}));
+  await page.clock.runFor(1200);
+  Object.assign(lj,await page.evaluate(()=>{const o={};o.home=!!S.vil&&!S.wd;
+    enterWorld('home');for(const e of enemies)e.dead=true;wmapOpen(true);travelMapPick('ridge');const b=document.querySelector('#wMap [data-act="jump"]');o.mapBtn=!!b;if(b)b.click();return o}));
+  await page.clock.runFor(1200);
+  Object.assign(lj,await page.evaluate(()=>{const o={ridge:!!S.wd&&S.wd.reg==='ridge'&&$('wMap').hidden};P.inv=0;enterVillage();return o}));
+  check(lj.list===lj.lit&&lj.lit>=2&&lj.reg==='lake'&&lj.at&&lj.btn&&lj.fight&&lj.stay&&lj.home&&lj.mapBtn&&lj.ridge,'קפיצה בין פנסים: '+(lj.list===lj.lit?lj.list+' פנסים דולקים בשער':'השער מציג '+lj.list+' מתוך '+lj.lit+' פנסים')+
+    (lj.reg==='lake'&&lj.at?', קפיצה לפנס המים':', הקפיצה לאגם נכשלה ('+lj.reg+')')+(lj.btn?', "חזרה לכפר" ליד הפנס':', אין כפתור ליד הפנס')+(lj.fight&&lj.stay?' (לא באמצע קרב)':', קופצים באמצע קרב!')+
+    (lj.home?', חזרה לכפר':', החזרה לכפר נכשלה')+(lj.mapBtn&&lj.ridge?', וקפיצה ממפת העולם לרכס':', הקפיצה מהמפה נכשלה'));
   // אירועים בעולם (events.js): גל שנגמר בתיבה, עגלה שנותנת שלל כשמגיעים, ומטר שמפיל מתכות
   const evt=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=()=>drops().length;

@@ -952,6 +952,18 @@ Object.assign(TEXT,{
   'wm.key':{he:'★ אתה · ● פנס (זוהר: דולק) · 🔍 סודות שמצאת · ? אזור שעוד לא ביקרת בו',en:'★ You · ● Lantern (glowing: lit) · 🔍 Secrets found · ? A place you haven’t been yet'}
 });
 
+// ======== קפיצה בין פנסים (travel.js) ========
+Object.assign(TEXT,{
+  'tr.where':{he:'לאן?',en:'Where to?'},
+  'tr.mapHint':{he:'נגע באי עם פנס דולק כדי לקפוץ אליו',en:'Tap an island with a lit lantern to jump there'},
+  'tr.jump':{he:r=>'קפוץ ל'+r,en:r=>'Jump to '+r},
+  'tr.at':{he:r=>'🏮 '+r,en:r=>'🏮 '+r},
+  'tr.home':{he:'🏮 חזרה לכפר',en:'🏮 Back home'},
+  'tr.homeBtn':{he:'חזרה לכפר',en:'Go home'},
+  'tr.no.fight':{he:'אי אפשר לקפוץ באמצע קרב',en:'Can’t jump in the middle of a fight'},
+  'tr.no.warden':{he:'אי אפשר לקפוץ כשהשומר ער',en:'Can’t jump while the guardian is awake'}
+});
+
 // ======== סודות בעולם (secrets.js) ========
 Object.assign(TEXT,{
   'sc.found':{he:(n,of)=>'🔍 גילית סוד! '+n+'/'+of+' באזור',en:(n,of)=>'🔍 Secret found! '+n+'/'+of+' here'},
