@@ -1511,7 +1511,8 @@ function worldBot(m,L,god){
   const bg=await page.evaluate(()=>{
     const o={bad:gLadder().map(b=>b.weak+'<'+b.top+' ×'+b.k)},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,seen:SAVE.gseen||null}),c0=celebrate;celebrate=()=>0;
     enterVillage();const g0=gearStats();SAVE.gear.boots=['starterBoots'];gearLive(g0);SAVE.gseen={};
-    ['swiftBoots','wardenBoots','wardenBoots','oakSword','ironSword','boneCharm'].forEach(k=>bagAdd(k));SAVE.bag.starterBoots=0;bagAdd('starterBoots');bagAdd('starterBoots');
+    for(const k in SAVE.bag)if(gItem(k))delete SAVE.bag[k];   // תרמיל נקי: פריטים מהריצה (שלל, קווסטים) לא משנים את הבדיקה
+    ['swiftBoots','wardenBoots','wardenBoots','oakSword','ironSword','boneCharm'].forEach(k=>bagAdd(k));bagAdd('starterBoots');bagAdd('starterBoots');
     gSeen().oakSword=1;S.mode='play';gearOpen();
     o.chips=Object.keys(GEAR.filter).every(f=>!!document.querySelector('#gTabs [data-tab="'+f+'"]'));
     const ids=[...document.querySelectorAll('#gItems [data-id]')].map(e=>e.dataset.id),sl=ids.map(k=>Object.keys(GEAR.filter).indexOf(gItem(k).slot));
