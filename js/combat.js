@@ -29,7 +29,7 @@ function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
   if(!J)floatText(e.x+rand(-8,8),e.y-e.r-8,big(d)+(crit?'!':''),col,(m>1?21:m<1?12:15)*(crit?1.45:1),true,crit);
   if(m<1&&!e.told){e.told=true;floatText(e.x,e.y-e.r-26,T('immune'),C.dim,13)}
   if(!J)sparks(e.x,e.y,col,m>1?8:3);
-  if(m>1&&w==='sword')S.hitstop=Math.max(S.hitstop,0.03);
+  if(m>1&&w==='sword'&&!J)S.hitstop=Math.max(S.hitstop,0.03);   // בעולם העצירה ב-juice.js
   onHit(e,d,base,w,t,ang,chained);
   if(e.hp<=0&&!e.dead){if(e.node)nodeDown(e);else kill(e)}
 }
