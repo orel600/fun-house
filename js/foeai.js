@@ -5,6 +5,8 @@
    - ranged (מרחפים): שומרים מרחק, קו אדום מראה לאן הירייה תטוס, ואז חץ קסם מהיר לאורכו.
    - leap (חלק מהשלדים הרחוקים, עקרבים): עיגול אדום על המקום שלך מתמלא, והאויב קופץ ונוחת עליו.
    - caller (תכונה, לא סוג): כשנפצע, בורח ותוקע בקרן (טבעת צהובה מתמלאת). הפלת אותו לפני הסוף = אין תגבורת. לא הספקת: מגיעים חברים, וכל מי שקרוב מתעורר.
+   - leader (מנהיג להקה, docs/plan-combat.md שינוי 7): בסוף כל שיא של להקות (PACE.beats ב-pacing.js) מגיעה להקה עם מנהיג: גדול, עם כתר ושם, מסתער,
+     והלהקה שלו מהירה יותר כל עוד הוא חי. הפלת אותו: ערימת שלל אחת גדולה, ואז השקט.
    ליד השער (אזור start) הכל איטי יותר, ואין קפיצות או קוראים, כדי לא לשבור את "עשר הדקות הראשונות" (#169, #172).
    החיבור: foeAi מ-wFoes ב-world.js (קבוצות ולהקות), foeAiDraw מהציור של העולם. מכה רגילה מקרוב נשארת של strike.js.
    רק בעולם. הזירה לא קוראת לקובץ הזה. כל המספרים באובייקט FOEAI */
@@ -21,6 +23,8 @@ const FOEAI={
   charge:{min:120,max:300,wind:0.8,speed:560,len:380,w:24,dmg:1.4,daze:0.8,cd:[3,4.5]},
   ranged:{keep:210,band:50,range:330,wind:0.6,speed:360,r:7,dmg:1,cd:[2,3],strafe:0.55},
   leap:{min:90,max:250,wind:0.75,r:54,dur:0.4,dmg:1.3,cd:[3.5,5]},
+  leader:{at:8,n:4,hp:3,r:1.35,rally:1.15,col:'#FFC83D',
+          loot:{coins:[1,10],wood:[0.8,4],stone:[0.8,4],iron:[0.6,2],silver:[0.3,1],ruby:[0.08,1],sapphire:[0.08,1]}},   // at: כמה שניות לפני סוף השיא. loot: הערימה כשהוא נופל (runGive ב-loot.js), מעבר לשלל העלית שלו
   call:{at:0.5,flee:1.3,fleeSpd:1.35,r:450,alert:6,friends:2,col:'#FFD84D'}
 };
 
@@ -92,6 +96,21 @@ function aiCall(e){
     sparks(x,y,C.col,10,200)}
   sparks(e.x,e.y,C.col,18,260);S.shake=Math.max(S.shake,3);
 }
+// כל פריים בעולם (worldUpdate): להקה עם מנהיג בסוף כל שיא, והערימה כשהוא נופל
+function foeLeaderTick(){
+  const w=S.wd,p=w&&w.pace,L=FOEAI.leader;if(!p)return;
+  const B=PACE.beats[p.b];
+  if(B.id==='peak'&&p.bt>=B.dur-L.at&&p.lead!==p.peaks&&!paceBusy(w)&&paceFree()>=L.n){
+    const pk=paceSpawn(L.n);if(pk){const e=enemies.find(o=>o.pack===pk&&!o.dead);if(e)foeLeaderMake(e);p.lead=p.peaks}}
+  for(const e of enemies)if(e.leader&&e.dead&&!e.gone&&!e.paid){e.paid=1;p.leaders=(p.leaders||0)+1;
+    runGive(L.loot,e.x,e.y);banner(T('fai.leaderDown'),L.col);celebrate(e.x,e.y,'loot3','👑')}
+}
+function foeLeaderMake(e){
+  const L=FOEAI.leader;e.leader=1;e.elite=true;e.affix=null;e.caller=0;
+  e.hp*=L.hp;e.max*=L.hp;e.r*=L.r;e.ai='charge';e.acd=1.5;e.fa=0;e.sd=1;
+  for(const o of enemies)if(o.pack===e.pack&&o!==e)o.speed*=L.rally;   // הלהקה שלו מהירה יותר
+  banner(T('fai.leaderCome'),L.col);sfx('celebrate');
+}
 // ציור על הרצפה, לפני הדמויות (world.js): כל מה שעומד לפגוע מסומן באדום, והקרן בצהוב
 function foeAiDraw(){
   const A=FOEAI,t=fxNow();
@@ -114,8 +133,11 @@ function foeAiDraw(){
     ctx.restore()}
   ctx.globalAlpha=1;
 }
-// מעל הראש (במסך): קורא שבורח מקבל "!" צהוב, כדי שיהיה ברור שהוא המטרה עכשיו
+// מעל הראש (במסך): קורא שבורח מקבל "!" צהוב, כדי שיהיה ברור שהוא המטרה עכשיו. מנהיג: כתר ושם
 function foeAiScreen(ox,oy){
-  ctx.textAlign='center';ctx.font='900 '+(20/ZOOM)+'px Heebo, system-ui, sans-serif';ctx.fillStyle=FOEAI.call.col;
-  for(const e of enemies)if(!e.dead&&e.act==='flee'){const x=e.x+ox,y=e.y+oy-e.r-34;if(onScreen(x,y))ctx.fillText('!',x,y)}
+  ctx.textAlign='center';ctx.direction=DIR;
+  for(const e of enemies){if(e.dead)continue;const x=e.x+ox,y=e.y+oy-e.r-34;if(!onScreen(x,y))continue;
+    if(e.act==='flee'){ctx.font='900 '+(20/ZOOM)+'px Heebo, system-ui, sans-serif';ctx.fillStyle=FOEAI.call.col;ctx.fillText('!',x,y)}
+    else if(e.leader){const fs=13/ZOOM,t='👑 '+T('fai.leader');ctx.font='800 '+fs+'px Heebo, system-ui, sans-serif';const tw=ctx.measureText(t).width+10;
+      ctx.fillStyle='rgba(10,12,20,0.75)';ctx.fillRect(x-tw/2,y-fs*0.92-8,tw,fs*1.25);ctx.fillStyle=FOEAI.leader.col;ctx.fillText(t,x,y-8)}}
 }
