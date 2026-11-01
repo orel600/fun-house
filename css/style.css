@@ -1002,6 +1002,7 @@ body.menu .minimap{display:none!important}
 /* שיחה לרוחב בלי גלילה: הטור הראשון לדיוקן, למשפט ולמה שמיוחד לתושב (בישול, איפוס), השני ל-‹ › ולקווסט. בלי 20 שורות ריקות של רווח */
 @media (orientation:landscape){
   .npcdlg.win>.npcsay{grid-row:2/span 2;position:static}
+  .npcdlg.win{top:var(--ctop);max-height:calc(100% - var(--ctop) - var(--safeb))}   /* השיחה היא החלון היחיד: היא מכסה גם את הפס העליון, וכך נכנסת בלי גלילה */
   .npcdlg.win>.fcook.fcook,.npcdlg.win>[data-act="respec"][data-act]{grid-column:1}   /* חזק מהכלל הישן ששולח הכל לטור השני */
   .npcdlg.win:has(.fcook)>.npcsay{grid-row:2;font-size:14px;line-height:1.35}
   .npcdlg.win:has(.fcook) .npcpic{width:64px;height:64px}
