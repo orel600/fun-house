@@ -132,17 +132,17 @@ function secretsDraw(){
   if(!S.wd)return;const st=scState(),t=fxNow(),Z=SECRETS,two=!R3D.on;
   for(const s of scList()){const x=s.x,y=s.y,found=scFound(s.id);
     if(s.kind==='chest'){
-      if(!found&&st['v'+s.id]){   // התיבה, שנחשפה
+      if(two&&!found&&st['v'+s.id]){   // התיבה, שנחשפה. בתלת-ממד: מודל (props3d.js)
         ctx.fillStyle='#7A5230';ctx.strokeStyle='#3A2412';ctx.lineWidth=2;ctx.fillRect(x-14+18,y-10,28,18);ctx.strokeRect(x-14+18,y-10,28,18);
         ctx.fillStyle=C.gold;ctx.fillRect(x+16,y-3,4,6)}
       if(two)scHide(s.hide,x,y);
       if(!found&&(st.hint%Z.hint.every)<0.5)scTwinkle(x+8,y-26,(st.hint%Z.hint.every)/0.5);}   // ניצוץ קטן מעל הסלע
-    else if(s.kind==='shrine'){const ready=!(st.cd[s.id]>0),col=Z.shrine.col[s.bless];
+    else if(s.kind==='shrine'&&two){const ready=!(st.cd[s.id]>0),col=Z.shrine.col[s.bless];   // בתלת-ממד המקדש ומגדל התצפית הם מודלים (props3d.js)
       ctx.fillStyle='rgba(5,7,13,0.35)';ctx.beginPath();ctx.ellipse(x,y+6,26,8,0,0,7);ctx.fill();
       ctx.fillStyle='#8E9AAE';ctx.strokeStyle=C.ink;ctx.lineWidth=2;ctx.fillRect(x-20,y-6,40,10);ctx.strokeRect(x-20,y-6,40,10);   // בסיס
       ctx.fillRect(x-16,y-40,6,34);ctx.fillRect(x+10,y-40,6,34);ctx.fillRect(x-20,y-46,40,7);   // שני עמודים וגג
       if(ready){const a=0.35+Math.sin(t*2.4)*0.2;ctx.globalAlpha=a;ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(x,y-20,9,14,0,0,7);ctx.fill();ctx.globalAlpha=1}}
-    else if(s.kind==='lookout'){   // מגדל אבנים גבוה עם דגל: רואים אותו מרחוק
+    else if(s.kind==='lookout'&&two){   // מגדל אבנים גבוה עם דגל: רואים אותו מרחוק
       ctx.fillStyle='rgba(5,7,13,0.35)';ctx.beginPath();ctx.ellipse(x,y+6,30,9,0,0,7);ctx.fill();
       ctx.strokeStyle=C.ink;ctx.lineWidth=2;
       for(let i=0;i<4;i++){const w=28-i*5;ctx.fillStyle=i%2?'#6C7488':'#7E8698';ctx.beginPath();ctx.ellipse(x,y-i*18,w,10,0,0,7);ctx.fill();ctx.stroke()}

@@ -61,7 +61,7 @@ function statsHtml(){
   const x=heroXpNow(),free=stFree(),p=stPts(),g=statsGive();
   const bn=buildName();
   let h='<div class="sthead"><b>'+T('gear.hero',heroLv())+(bn?' · <span class="bname">'+bn+'</span>':'')+'</b>'+(free?'<span class="stfree on">'+T('st.freeS',free)+'</span>':'')+'</div>'+
-    '<span class="stxp"><i style="width:'+Math.round(x.have/x.need*100)+'%"></i><bdi>'+Math.floor(x.have)+' / '+x.need+' XP</bdi></span>';
+    '<span class="stxp"'+lpTitle()+'><i style="width:'+Math.round(x.have/x.need*100)+'%"></i><bdi>'+Math.floor(x.have)+' / '+x.need+' XP'+lpHtml()+'</bdi></span>';   // lpHtml: מה נפתח ברמה הבאה (levelpath.js)
   h+='<p class="stdmg">'+T('wt.'+P.wt)+' · '+wRangeTxt(wAvgNow(),P.wt)+'</p>';   // טווח הנזק של הנשק שביד, עם כל השדרוגים (weapons.js)
   if(!free)h+='<p class="stfree stnone">'+T('st.none')+'</p>';
   h+='<div class="strows">'+Object.keys(STATS.list).map(k=>{const S_=STATS.list[k],[name,what]=T('st.'+k),n=p[k]||0;

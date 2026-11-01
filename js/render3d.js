@@ -132,6 +132,7 @@ const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',
      model: מפתח ב-MODELS3D (n_ מ-KayKit Forest Nature, v_ מהכפר), או n_cactus/n_reeds שנבנים בקוד (natureProp). pick: כמה אפשרויות, לפי המקום.
      h: גובה (לעצים צרים וגבוהים) או w: רוחב. tint: צבע שמוכפל בצבעים של המודל (חול, צל). snow: כמה להלבין (שלג). רק במראה החדש, ?look=classic מחזיר את עצי האחו */
   decor:{
+    meadow:{hills:{pick:[{model:'n_tree',h:150,tint:'#cfe6bf'},{model:'n_pine',h:160},{model:'v_treeA',w:120}]}},   // האחו: יער גבוה בשוליים במקום אריחי המשושה (שנראו כמו לוח משחק). העצים והסלעים הקטנים כמו בכפר
     lake:  {tree:{pick:[{model:'n_tree',h:100,tint:'#a9d2bf'},{model:'v_treeB',w:55,tint:'#bfe0d0'},{model:'n_reeds',h:55}]},rock:{model:'n_round',w:55,tint:'#a9bcb8'},hills:{model:'v_hills',w:260,tint:'#bfd8cc'}},
     ridge: {tree:{pick:[{model:'n_pine',h:125,snow:0.35},{model:'n_pine',h:95,snow:0.5}]},rock:{model:'n_crag',w:62,tint:'#eef4fa'},hills:{model:'n_crag',w:230,tint:'#e2ecf4'}},
     desert:{tree:{pick:[{model:'n_acacia',h:85,tint:'#d8c27a'},{model:'n_cactus',h:70},{model:'n_dead',h:105,tint:'#e0b58a'}]},rock:{model:'n_crag',w:62,tint:'#e7b47a'},hills:{model:'n_crag',w:220,tint:'#d9a05e'}},
@@ -523,13 +524,16 @@ function syncWorld(){
     const Wt=hd&&(W3D.water[reg]||W3D.water.meadow);
     for(const p of RG.ponds||[]){const m=new THREE.Mesh(new THREE.CircleGeometry(p.r,40),Wt?pondMat(Wt):new THREE.MeshLambertMaterial({color:W.pond||'#2a6d8f',transparent:true,opacity:0.9}));
       m.rotation.x=-Math.PI/2;m.scale.set(1,1/SIN(),1);m.position.set(p.x,0.6,p.y/SIN());G.g.add(m);if(Wt&&Wt.pulse)(G.pulse||(G.pulse=[])).push([m.material,Wt])}
-    secrets3D(reg,(md,x,y,w,r)=>vPut(md,x,y,w,r,G.g))}   // סודות (secrets.js)
+    secrets3D(reg,(md,x,y,w,r)=>vPut(md,x,y,w,r,G.g));   // סודות (secrets.js)
+    if(typeof props3dWorld==='function')props3dWorld(G,reg)}   // הפנס, המקדש, מגדל התצפית והתיבה (props3d.js)
   R3D.wld=G;G.g.visible=true;
+  if(typeof props3dWorldTick==='function')props3dWorldTick(G);
   if(G.pulse){const t=performance.now()/1000;for(const [m,Wt] of G.pulse)m.emissiveIntensity=Wt.g*(1+Wt.pulse*Math.sin(t*1.7+Math.sin(t*0.6)*2))}   // לבה שנושמת
   for(const k in G.paths)G.paths[k].visible=wPathOpen(RG.paths[k]);
   for(const n of S.nd.list){
     let m=G.nodes[n.id];
     const K=G.kinds&&W3D.kinds[n.kind];if(!m&&K)m=G.nodes[n.id]=wPut(K,n.x,n.y,hash(n.x,n.y),0.85+hash(n.x,n.y)*0.3,G.g);   // אורן, קקטוס, עץ מת (W3D.kinds)
+    if(!m&&typeof props3dNode==='function'&&(m=props3dNode(n,G.g)))G.nodes[n.id]=m;   // עורקים, גבישים ותיבות (props3d.js)
     if(!m){const D=W3D.nodes[wKind(n.kind).shape],v=hash(n.x,n.y),md=Array.isArray(D.model)?D.model[v<0.5?0:1]:D.model;
       m=G.nodes[n.id]=vPut(md,n.x,n.y,D.w*(0.85+v*0.3),v*6.28,G.g);
       if(D.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(D.glow).multiplyScalar(0.5)}})}
@@ -597,7 +601,7 @@ function render3d(ox,oy){
   if(R3D.vil)R3D.vil.g.visible=false;
   for(const k in R3D.wlds||{})R3D.wlds[k].g.visible=false;
   if(!S.room)syncPet(dt);else if(R3D.pet)R3D.pet.root.visible=false;   // חיית המחמד (pet.js), בכל מקום חוץ מחדר הבונוס
-  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt)}   // בכפר: השחקן, המבנים והתושבים
+  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
     if(S.wd){syncWorld();syncWnpcs(dt)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)
