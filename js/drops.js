@@ -3,7 +3,8 @@
    מה שנאסף נכנס לשלל של המקום (S.loot): בזירה הוא מגיע לתרמיל בסוף הריצה (runEnd ב-village.js), ובעולם הפתוח מיד (wLootIn ב-world.js).
    בסוף ריצה בזירה מה שנשאר על הרצפה נאסף לבד, כי הוא כבר נראה. בעולם, מי שנופל משאיר אותו שם.
    המקום עצמו לא משנה כאן: הרשימה ב-S.gd, ו-S חדש בכל מעבר מקום. הכל באובייקט DROPS.
-   הצבע והעמוד לפי דרגת השלל (RES.rarity ב-resources.js, runGive ב-loot.js): רגיל בלי, ומלא שכיח ומעלה טבעת בצבע הדרגה ועמוד שגבוה יותר ככל שהדרגה נדירה */
+   הצבע והעמוד לפי דרגת השלל (RES.rarity ב-resources.js, runGive ב-loot.js): רגיל בלי, ומלא שכיח ומעלה טבעת בצבע הדרגה ועמוד שגבוה יותר ככל שהדרגה נדירה.
+   בעולם ובכפר: "נצנוץ" (DROPS.look, docs/plan-fx.md): בלי טבעת ובלי מספר, אור רך בצבע הדרגה וקרן דקה רק מנדיר ומעלה. הזוהר מ-wispGlow (wisps.js) */
 
 const DROPS={
   pop:[150,230], spread:[50,110], grav:700,  // הקפיצה: מהירות למעלה, מהירות לצדדים ומשיכה למטה
@@ -13,7 +14,14 @@ const DROPS={
   stack:36,                                   // אותו משאב שנופל קרוב לערימה קיימת מצטרף אליה
   max:140,                                    // הכי הרבה על הרצפה יחד, בשביל הטלפון. מעבר לזה הישן ביותר נאסף לבד
   beam:0.8,                                   // גובה עמוד האור: beam של הדרגה כפול זה
-  glow:{r:13,alpha:0.28,pulse:3,spin:2.5}     // זוהר זהב למשאב עם glow ב-resources.js (הגזר הקסום): גודל ההילה, שקיפות, קצב פעימה וסיבוב הניצוץ
+  glow:{r:13,alpha:0.28,pulse:3,spin:2.5},    // זוהר זהב למשאב עם glow ב-resources.js (הגזר הקסום): גודל ההילה, שקיפות, קצב פעימה וסיבוב הניצוץ
+  /* "נצנוץ" (docs/plan-fx.md, כיוון 1): בלי טבעת ובלי מספר. אור רך בצבע הדרגה, נצנוץ כוכב מדי פעם, וקרן דקה רק מנדיר ומעלה.
+     בעולם ובכפר. בזירה ובמראה הקלאסי (?look=classic) הציור הישן. אוראל, להדליק בזירה: where.arena=true */
+  look:{where:{world:true,village:true,arena:false},
+    light:{r:11,rRar:18,a:0.25,aRar:0.45},   // האור על הקרקע: גודל ושקיפות, לרגיל ולשכיח ומעלה
+    beamFrom:2, beamH:[40,28], beamW:3,      // קרן: מאיזו דרגה (2 = נדיר), גובה (בסיס ועוד לכל דרגה), ורוחב
+    star:{every:2, on:0.12, s:7},            // נצנוץ: כל כמה שניות, איזה חלק מהזמן הוא דולק, וגודל
+    icon:13, iconGear:15, bob:1.6}           // גודל האייקון (ציוד קצת יותר), וכמה הוא מתנדנד
 };
 // הדרגה של שלל (צבע ועמוד אור), או null לרגיל
 // פריט ציוד (gear.js) מקבל תמיד צבע ועמוד, לפי השכבה שלו ועוד אחת: גם חרב עץ שנפלה מאויב היא רגע מיוחד
@@ -70,6 +78,7 @@ function dropsCollectAll(){for(const d of drops().slice())dropTake(d,true)}
 /* ---- ציור: אייקון שקופץ ומתנדנד מעל צל, טבעת, ועמוד אור למשאב נדיר. בקנבס, מעל התלת-ממד ---- */
 function drawDrops(){
   if(!S.gd||S.room)return;
+  if(dropsGlint())return drawGlint();
   ctx.textAlign='center';ctx.direction='ltr';
   for(const d of S.gd){
     const tr=dropTier(d.r),col=tr&&tr.col,h=tr?tr.beam*DROPS.beam:0,bob=d.z>0?0:Math.sin(d.ph*3)*2,y=d.y-d.z-10+bob;
@@ -83,4 +92,24 @@ function drawDrops(){
     if(d.n>1){ctx.font='800 11px Heebo, system-ui, sans-serif';ctx.fillStyle='#000a';ctx.fillText(d.n,d.x+11,y+5);ctx.fillStyle=C.chalk;ctx.fillText(d.n,d.x+10,y+4)}
   }
   ctx.direction=DIR;
+}
+
+// נצנוץ: האם המקום הנוכחי מצויר בסגנון החדש
+function dropsGlint(){const W=DROPS.look.where;if(typeof HD!=='undefined'&&!HD.on||typeof wispGlow==='undefined')return false;return S.wd?W.world:S.vil?W.village:W.arena}
+function drawGlint(){
+  const L=DROPS.look,blit=wispBlit;ctx.save();ctx.textAlign='center';ctx.direction='ltr';
+  for(const d of S.gd){
+    const tr=dropTier(d.r),col=tr?tr.col:C.gold,rar=dropRar(d.r),y=d.y-d.z,bob=d.z>0?0:Math.sin(d.ph*2.4)*L.bob,gear=dropGear(d.r),G=wispGlow(col);
+    ctx.globalCompositeOperation='lighter';
+    blit(G,d.x,d.y,rar?L.light.rRar:L.light.r,(rar?L.light.aRar:L.light.a)*(0.8+0.2*Math.sin(d.ph*3)));   // אור על הקרקע
+    if(rar>=L.beamFrom&&d.z===0){const h=L.beamH[0]+rar*L.beamH[1],gr=ctx.createLinearGradient(0,d.y-h,0,d.y);gr.addColorStop(0,col+'00');gr.addColorStop(1,col+'aa');
+      ctx.globalAlpha=0.55+0.15*Math.sin(d.ph*4);ctx.fillStyle=gr;ctx.fillRect(d.x-L.beamW/2,d.y-h,L.beamW,h);blit(G,d.x,d.y-h*0.35,6,0.3)}   // קרן דקה
+    if(d.z===0&&(resOf(d.r)||{}).glow){const a=DROPS.glow,g=wispGlow(C.gold);blit(g,d.x,y-6+bob,a.r*1.6,a.alpha*2*(0.75+0.25*Math.sin(d.ph*a.pulse)));
+      blit(wispGlow(C.gold,'#fff'),d.x+7*Math.cos(d.ph*a.spin),y-6+bob+7*Math.sin(d.ph*a.spin),3,0.9)}   // הגזר הקסום: הילה וניצוץ שמסתובב
+    const gl=(d.ph/L.star.every)%1;if(gl<L.star.on){const k=Math.sin(gl/L.star.on*3.14),s=L.star.s*k;ctx.globalAlpha=k;ctx.strokeStyle='#fff';ctx.lineWidth=1.2;   // נצנוץ: כוכב ארבע קרניים לרגע
+      ctx.beginPath();ctx.moveTo(d.x+6-s,y-14);ctx.lineTo(d.x+6+s,y-14);ctx.moveTo(d.x+6,y-14-s);ctx.lineTo(d.x+6,y-14+s);ctx.stroke()}
+    ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+    ctx.font=(gear?L.iconGear:L.icon)+'px system-ui, sans-serif';ctx.fillText(dropIcon(d.r)||'?',d.x,y-4+bob);
+  }
+  ctx.restore();ctx.direction=DIR;
 }
