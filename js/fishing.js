@@ -116,7 +116,7 @@ function fishBtn(force){
   const show=!!w&&S.mode==='play'&&(!!f||!!fishSpot()&&!(w.fishRest>0)&&!w.dlg);
   const k=!show?'':!f?'fish.btn':f.st==='bite'?'fish.bite':f.st==='reel'?'fish.reel':'fish.wait';
   if(!force&&b.dataset.k===k+LANG)return;
-  b.dataset.k=k+LANG;b.hidden=!show;if(show)b.textContent=T(k);
+  b.dataset.k=k+LANG;b.hidden=!show;if(show){const c={'fish.btn':['🎣','fish'],'fish.wait':['⏳','wait'],'fish.bite':['❗','pull'],'fish.reel':['🎯','now']}[k];b.innerHTML='<span class="ni" aria-hidden="true">'+c[0]+'</span>'+T('ctx.'+c[1]);b.setAttribute('aria-label',T(k))}
   b.classList.toggle('fishbite',!!f&&(f.st==='bite'||f.st==='reel'));
 }
 $('fishBtn').addEventListener('pointerdown',e=>{e.preventDefault();fishTap()});   // בלחיצה ולא בהרמה: תזמון (docs/ui-guide.md, "בסקיל כשלוחצים")

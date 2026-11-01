@@ -77,7 +77,7 @@ function npcUpdate(dt){
   S.vil.npcNear=near;
   if(D&&!S.vil.dlgStay&&(!npcHere(D)||Math.hypot(P.x-all[D].x,P.y-all[D].y)>NPC.leave))npcTalk(null);   // dlgStay: ההקדמה של העלילה נשארת עד שסוגרים (story.js)
   const btn=$('talkBtn'),show=!!near&&D!==near;
-  if(btn.hidden===show||btn.dataset.id!==(near||'')){btn.hidden=!show;btn.dataset.id=near||'';if(near)btn.textContent='💬 '+T('npc.talk',T('npc.'+near)[0])}
+  if(btn.hidden===show||btn.dataset.id!==(near||'')){btn.hidden=!show;btn.dataset.id=near||'';if(near){btn.innerHTML='<span class="ni" aria-hidden="true">💬</span>'+T('ctx.talk');btn.setAttribute('aria-label',T('npc.talk',T('npc.'+near)[0]))}}
 }
 
 /* ---- שיחה ---- */
