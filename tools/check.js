@@ -1510,6 +1510,22 @@ function worldBot(m,L,god){
   check(tr.lock&&tr.btn&&tr.on&&tr.lock3&&tr.live&&tr.coins&&tr.k===1&&tr.open3&&tr.saved&&tr.back,
     'דרגות עולם: '+(tr.lock?'סגור לפני הסוף':'פתוח לפני הסוף')+(tr.btn?', נפתח אחרי הסוף':', לא נפתח')+(tr.on?', אמיץ נבחר במפה':', הבחירה לא עבדה')+(tr.lock3?', אגדי נעול':', אגדי פתוח מוקדם')+
     (tr.live?', אויב קיים התחזק':', אויב קיים לא השתנה')+(tr.coins?', שלל נוסף':', בלי שלל נוסף')+', נספרו '+tr.k+(tr.open3?', אגדי נפתח':', אגדי לא נפתח')+(tr.saved?', נשמר':', לא נשמר')+(tr.back?'':', לא חוזר לרגיל בלי סוף'));
+  // שומרים חוזרים (story.js, STORY.rematch): כפתור 🔔 ליד פנס דולק רק אחרי הסוף ובדרגה אמיץ ומעלה. השומר יוצא חזק יותר, נופל שלל, ופעם ביום לכל שומר
+  const rm=await page.evaluate(()=>{
+    const o={},st0=JSON.stringify(SAVE.story),ti0=JSON.stringify(SAVE.tier||null),L=STORY.lanterns.earth,vis=()=>{worldUpdate(0.016);return !$('wardBtn').hidden};
+    Object.assign(STO(),{earth:true,end:false,re:{}});SAVE.tier={t:2,k:0};
+    enterWorld('home','meadow');for(const e of enemies)e.dead=true;P.x=L.x;P.y=L.y+60;P.hp=P.maxHp;
+    o.preEnd=vis();STO().end=true;SAVE.tier.t=1;o.tier1=vis();SAVE.tier.t=2;o.btn=vis();
+    const hp1=STORY.lanterns.earth.warden.hp;$('wardBtn').click();const e=S.wd.warden;
+    o.spawn=!!e&&e.rematch===2;o.hard=!!e&&e.max>addEnemy(L.warden.type,0,0,hp1).max*1.5;enemies.pop();
+    o.saved=(JSON.parse(localStorage.getItem(SAVE_STORE.key)).story.re||{}).earth===qDay();o.gone=!vis();
+    if(e){damage(e,e.hp*10,'sword',0,'physical');worldUpdate(0.016)}o.loot=(S.wd.reGot||[]).length>0&&drops().some(d=>dropGear(d.r));
+    o.feed=FL.some(f=>/🏆/.test(f.icon||''));o.today=!vis();STO().re.earth='2000-1-1';o.tomorrow=vis();
+    SAVE.story=JSON.parse(st0);SAVE.tier=JSON.parse(ti0);enterVillage();return o});
+  check(!rm.preEnd&&!rm.tier1&&rm.btn&&rm.spawn&&rm.hard&&rm.saved&&rm.gone&&rm.loot&&rm.today&&rm.tomorrow,
+    'שומרים חוזרים: '+(rm.preEnd?'כפתור לפני הסוף':'אין כפתור לפני הסוף')+(rm.tier1?', כפתור בדרגה רגילה':', אין בדרגה רגילה')+(rm.btn?', 🔔 באמיץ':', אין 🔔 באמיץ')+
+    (rm.spawn?', השומר יצא':', השומר לא יצא')+(rm.hard?' חזק יותר':' לא חזק יותר')+(rm.saved?', היום נשמר':', היום לא נשמר')+(rm.loot?', שלל נדיר נפל':', בלי שלל')+(rm.feed?' ובפיד':'')+
+    (rm.today?', אין קריאה שנייה היום':', קריאה שנייה היום')+(rm.tomorrow?', למחרת שוב':', למחרת לא'));
   // נקודות דמות (stats.js): הריגה בעולם נותנת XP לדמות, רמה נותנת נקודה, נקודה מעלה נזק, נשמרת, ואיפוס אצל הכוהנת עולה מטבעות
   const stt=await page.evaluate(()=>{
     enterWorld('home');const o={};const xp0=SAVE.hero.xp||0,e={x:P.x+40,y:P.y,xp:3,type:'grunt',hp:0,r:10,mult:{}};
