@@ -535,6 +535,14 @@ function worldBot(m,L,god){
   if(!pw.crash)check(pw.upStart===1&&pw.upBtn1,'עדכון: במסך הפתיחה '+(pw.upStart===1?'רענון אחד לבד':pw.upStart+' רענונים במקום אחד')+(pw.upBtn1?', ואחריו רק הכפתור':', הכפתור לא הופיע אחרי הרענון'));
   if(!pw.crash)check(pw.upArena&&!pw.upArena.navs&&pw.upArena.keep&&pw.upArena.btn,'עדכון: בזירה '+(pw.upArena&&!pw.upArena.navs?'לא מרעננים':'רענן באמצע ריצה')+(pw.upArena&&pw.upArena.btn?', רק כפתור 🔄':', אין כפתור'));
   check(await page.evaluate(()=>!updWeb()&&!!$('updBtn').hidden&&$('updCheckBtn').hidden),'עדכון: מ-file:// לא בודקים ולא מציגים כפתור');
+  // דיווח באג (bugreport.js): הכפתור בהגדרות, הדוח עם גרסה ומקום, ושגיאה מכוונת מופיעה בו. שגיאה מדומה (ErrorEvent), כדי לא לסמן את הבדיקה
+  const bug=await page.evaluate(()=>{const b=$('bugBtn'),inSet=!!b&&!!b.closest('#ovSound')&&b.textContent.includes('🐞');
+    window.dispatchEvent(new ErrorEvent('error',{message:'bugtest-boom',filename:'x.js',lineno:7,error:new Error('bugtest-boom')}));
+    Object.defineProperty(navigator,'share',{value:undefined,configurable:true});b&&b.click();   // הדוח נכתב מיד בלחיצה (BUG.lastText). בלי setTimeout: השעון של הבדיקה עצור כאן
+   
+    const r=BUG.lastText||'';BUG.errs=BUG.errs.filter(e=>!e.msg.includes('bugtest'));
+    return{inSet,ver:r.includes('version: v'+VERSION),place:/\nplace: \S/.test(r),err:r.includes('bugtest-boom'),lines:r.split('\n').length}});
+  check(bug.inSet&&bug.ver&&bug.place&&bug.err,'דיווח באג: '+(!bug.inSet?'אין כפתור 🐞 בהגדרות':!bug.ver?'אין גרסה בדוח':!bug.place?'אין מקום בדוח':!bug.err?'השגיאה המכוונת לא בדוח':'כפתור בהגדרות, דוח של '+bug.lines+' שורות עם גרסה, מקום ושגיאה'));
   // שמירה: נכתבת, נטענת חזרה, ושמירה ישנה בלי שדה חדש מקבלת אותו. בסוף מנקים, כדי שהריצה תתחיל נקייה
   const sv=await page.evaluate(()=>{bagAdd('wood',5);bagAdd('wood',2);const took=bagTake('wood',3)&&!bagTake('wood',99);SAVE.village.forge=2;saveNow();
     SAVE=saveBlank();saveLoad();const back=SAVE.bag.wood===4&&SAVE.village.forge===2&&took;
