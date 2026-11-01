@@ -285,6 +285,9 @@ const TEXT={
   // העולם הפתוח (js/world.js)
   'w.region.meadow':{he:'האחו והמחצבה',en:'The Meadow & the Quarry'},
   'w.region.lake':{he:'אגם הערפל',en:'The Mist Lake'},
+  // שם קצר לאזור, למפת העולם (worldmap.js) כשאין מקום לשם המלא
+  'wm.short.meadow':{he:'האחו',en:'Meadow'},'wm.short.lake':{he:'האגם',en:'Mist Lake'},'wm.short.ridge':{he:'הרכס',en:'Frost Ridge'},
+  'wm.short.desert':{he:'המדבר',en:'Desert'},'wm.short.storm':{he:'הסערה',en:'Storm Towers'},'wm.short.shadow':{he:'לב הצל',en:'Shadow'},
   'w.enter.lake':{he:'אגם הערפל. רטוב, קר, ומישהו מסתכל',en:'The Mist Lake. Wet, cold, and something is watching'},
   'w.path.lake':{he:'לאגם הערפל',en:'To the Mist Lake'},
   'w.path.meadow':{he:'חזרה לאחו',en:'Back to the meadow'},
