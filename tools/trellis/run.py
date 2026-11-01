@@ -22,8 +22,8 @@ else:
     pre = c.predict(image=handle_file(inp('front')), api_name="/preprocess_image")
     r = c.predict(image=handle_file(pre), multiimages=[], seed=1, mesh_simplify=0.95, texture_size=1024, multiimage_algo="stochastic", api_name="/generate_and_extract_glb")
 print('result', r)
-info, video, glb, glb2 = r
+video, glb = r[0], r[-1]   # (סרטון, מודל לתצוגה, מודל להורדה)
 v = video['video'] if isinstance(video, dict) else video
 shutil.copy(v, os.path.join(out, tag + '.mp4'))
-shutil.copy(glb if isinstance(glb, str) else glb2, os.path.join(out, tag + '.glb'))
+shutil.copy(glb, os.path.join(out, tag + '.glb'))
 print('saved', tag)
