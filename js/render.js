@@ -126,7 +126,7 @@ function edgeArrow(sx,sy,col,s=1){
   ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.scale(s,s);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-8);ctx.lineTo(-7,8);ctx.fill();ctx.restore();
 }
 function render(){
-  setZoom(S&&S.vil?VIEW.zoom.village:S&&S.wd?VIEW.zoom.world:1);   // כמה גבוה המצלמה בכל מקום (render3d.js)
+  setZoom(camZoom());   // כמה רחוק המצלמה בכל מקום (camera.js, VIEW ב-render3d.js)
   ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);
   // בתלת-ממד הקנבס שקוף: הקרקע והדמויות מצוירות בשכבה שמתחתיו (render3d.js)
   if(R3D.on)ctx.clearRect(0,0,W,H);else{ctx.fillStyle=S&&S.room?'#262114':C.ink;ctx.fillRect(0,0,W,H)}
