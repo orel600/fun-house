@@ -12,8 +12,20 @@ const FEED={
   gap:4, padX:8, padY:4, bar:3,                // רווח בין שורות, ריפוד, ופס הצבע בקצה
   edge:16, top:0.24, low:0.64,                 // מרחק מהקצה, וגבולות הגובה: לא מתחת לסקילים וכפתורי ההקשר, ולא עד הפינה העליונה
   bg:'rgba(5,7,13,0.58)', text:'#ECE7DC',
-  stat:{added:0,merged:0,drawn:0,most:0}       // לבדיקה: כמה נוספו, כמה התאחדו, כמה פעמים צויר, והכי הרבה שורות יחד
+  stat:{added:0,merged:0,drawn:0,most:0,titles:0},   // לבדיקה: כמה נוספו, כמה התאחדו, כמה פעמים צויר, והכי הרבה שורות יחד, וכמה כותרות
+  // כותרת אזור (world.js): פעם אחת בכניסה הראשונה לכל אזור, למעלה במרכז, בגודל --t2, ל-2 שניות (docs/plan-hud.md פרק 6). במקום הבאנר הגדול באמצע
+  title:{life:2, size:[13,0.031,16], y:0.2}
 };
+let FTITLE=null;
+function feedTitle(txt,col){FTITLE={txt,col:col||C.gold,t:feedNow()};FEED.stat.titles++}
+function drawFeedTitle(){
+  const T_=FEED.title,f=FTITLE;if(!f)return;const age=feedNow()-f.t;if(age>T_.life){FTITLE=null;return}
+  const fs=Math.round(Math.max(T_.size[0],Math.min(T_.size[2],innerHeight*T_.size[1]))),a=Math.min(1,age/0.2,(T_.life-age)/0.4);
+  ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.globalAlpha=a;ctx.direction=DIR;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.font='800 '+fs+'px Heebo, system-ui, sans-serif';const x=innerWidth/2,y=Math.max(64,innerHeight*T_.y),w=ctx.measureText(f.txt).width+fs*1.6;
+  ctx.fillStyle=FEED.bg;ctx.beginPath();ctx.roundRect?ctx.roundRect(x-w/2,y-fs,w,fs*2,fs):ctx.rect(x-w/2,y-fs,w,fs*2);ctx.fill();
+  ctx.fillStyle='#000a';ctx.fillText(f.txt,x+1,y+1);ctx.fillStyle=f.col;ctx.fillText(f.txt,x,y);
+  ctx.restore();ctx.direction=DIR}
 const FL=[];   // השורות עכשיו, מהישנה לחדשה
 const feedNow=()=>performance.now()/1000;
 function feedOn(){const W=FEED.where;return !!S&&(S.wd?W.world:S.vil?W.village:W.arena)}
@@ -50,7 +62,7 @@ function drawFeed(){
     // החלקים לפי סדר הקריאה: אייקון, כמות, טקסט. בעברית מימין לשמאל, באנגלית משמאל לימין, וכל השורה צמודה לקצה הימני
     ctx.font=font;const parts=[];if(f.icon)parts.push({s:f.icon,d:'ltr'});if(f.n)parts.push({s:'+'+f.n,d:'ltr',c:f.col});parts.push({s:f.txt,d:DIR,c:f.tint?f.col:null});
     for(const p of parts){ctx.direction=p.d;p.w=ctx.measureText(p.s).width}
-    const sp=fs*0.35,w=parts.reduce((s,p)=>s+p.w,0)+sp*(parts.length-1)+F.padX*2+F.bar,x0=x1-w,pop=1+0.12*Math.max(0,1-(now-f.pop)/0.15);
+    const sp=fs*0.35,w=parts.reduce((s,p)=>s+p.w,0)+sp*(parts.length-1)+F.padX*2+F.bar,x0=x1-w,pop=fxLess()?1:1+0.12*Math.max(0,1-(now-f.pop)/0.15);   // בפחות אפקטים (juice.js) בלי קפיצה
     ctx.globalAlpha=a;ctx.fillStyle=F.bg;ctx.beginPath();ctx.roundRect?ctx.roundRect(x0,y,w,lh,lh/2.6):ctx.rect(x0,y,w,lh);ctx.fill();
     ctx.fillStyle=f.col;ctx.fillRect(x1-F.bar,y+2,F.bar,lh-4);
     // מניחים מהקצה פנימה: בעברית החלק הראשון ליד הקצה, באנגלית האחרון
@@ -65,4 +77,4 @@ function drawFeed(){
 }
 
 // חיבור: אחרי כל ציור של המסך. render.js קורא ל-render בשם, אז העטיפה נתפסת
-(()=>{const old=render;render=function(){old.apply(this,arguments);drawFeed()}})();
+(()=>{const old=render;render=function(){old.apply(this,arguments);drawFeed();if(feedOn())drawFeedTitle()}})();

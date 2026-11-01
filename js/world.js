@@ -195,7 +195,8 @@ function enterWorld(at,reg){
   P.x=g.x;P.y=g.y+WORLD.arrive;P.aim=P.face=Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
   ['ovStart','ovOver','ovLevel','ovBoss','ovWDeath'].forEach(id=>$(id).hidden=true);
   R.foes.forEach((G,i)=>wSpawn(G,i));
-  banner(at==='home'||wIsPath(at)?T(R.enter||'w.enter'):wGateName(at),C.gold);   // שם האזור בבאנר הכניסה, לא בפס העליון (docs/plan-hud.md)
+  // שם האזור: פעם אחת בכניסה הראשונה לכל אזור, כותרת קטנה למעלה במרכז (feedTitle ב-feed.js, docs/plan-hud.md פרק 6). האזהרה על התרמיל בכרטיס השער (vil.outInfo)
+  const seen=SAVE.regSeen||(SAVE.regSeen={});if(!seen[reg]){seen[reg]=1;saveNow();feedTitle(T(R.enter||'w.enter'),C.gold)}
   worldUi(true);
   fishMealOn();   // ארוחה מהפונדקאית: חיזוק בעולם (fishing.js)
   challengeEnter();   // אתגר יומי (challenge.js)
