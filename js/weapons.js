@@ -26,8 +26,9 @@ const WEAPONS={
 };
 
 // הנשקים שלבושים עכשיו. היום יש משבצת נשק אחת, אז כפתור ההחלפה מוסתר. משבצת שנייה תיכנס כאן
-// מה שביד, והנשק הכי חזק בתרמיל מהצד השני (מקרוב <-> מרחוק). כפתור ההחלפה עובר ביניהם (swapWeapon ב-combat.js)
-const wHeld=()=>[SAVE.gear.weapon,wBestOther()].filter(gItem);
+// מה שביד, ובזירה גם הנשק הכי חזק בתרמיל מהצד השני (מקרוב <-> מרחוק). כפתור ההחלפה עובר ביניהם (swapWeapon ב-combat.js).
+// רק בזירה: בעולם כפתורי ההקשר יושבים מעל כפתור ההחלפה, ובמסך נמוך הם היו מגיעים למפה הקטנה
+const wHeld=()=>[SAVE.gear.weapon,typeof skArena==='function'&&skArena()?wBestOther():null].filter(gItem);
 // החלפה מהירה (אוראל, 1.11.2026: "אופציה מהירה להחלפה בין חץ וקשת הכי חזקים שיש לי בתיק ובין החרב הכי חזקה"). הכי חזק: gScore (gear.js)
 function wBestOther(){
   const cur=SAVE.gear.weapon,use=gItem(cur)?wUse(cur):'sword';let b=null,bs=-1;
