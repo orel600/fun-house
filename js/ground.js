@@ -24,7 +24,20 @@ const GROUND={
   edge:{from:-40,to:90},       // הקצה הכהה: מתחיל 40 לפני הגבול ונגמר 90 אחריו
   shadow:{dark:0.42,size:1.5,dx:0.22,dy:-0.12,decor:{tree:40,rock:32},tower:1.2,gate:40},   // צל מגע: כמה כהה, פי כמה מהרדיוס, וקצת לכיוון שהשמש מטילה
   grain:{tile:240,lo:0.72,hi:0.42},   // גרגר עדין מעל המפה (קווי עשב ונקודות), כדי שמקרוב היא לא תיראה חלקה
-  maxSeg:24,maxPond:10
+  maxSeg:24,maxPond:10,
+  /* פיזור (שלב 3, ניר: "בינוני"): גושי עשב ופרחים שזזים ברוח, ואבנים קטנות. רק בחלון סביב השחקן, על הכתמים העשירים ולא על השבילים, במים או על מקורות.
+     שלושה ציורים בסך הכל. נכבה לבד בטלפון חלש (minFps, לפי המדידה של GFX_AUTO ב-render3d.js), ועם ?scatter=0.
+     cell: כל כמה פיקסלים בודקים אם לשים משהו. win: גודל החלון סביב השחקן. step: כמה לזוז עד שבונים את החלון מחדש.
+     לכל אזור: n כמה מכל סוג לכל היותר בחלון, col צבעים. tuft עשב, flower פרחים (בגושים), pebble אבנים */
+  scatter:{cell:30,win:{w:1700,h:1500},step:320,minFps:40,wind:1,
+    size:{tuft:[18,30],flower:[3.5,5],pebble:[3.5,7]},
+    meadow:{tuft:{n:600,col:['#6fae44','#7fba4a','#8cc456','#5f9a3a']},flower:{n:220,col:['#ffffff','#ffd94a','#ff8fb0','#b58cff','#ffb347']},pebble:{n:90,col:['#9a9a92','#7d7f78','#b0aa9a']}},
+    lake:  {tuft:{n:520,col:['#5a8f6a','#6a9f72','#7aa878']},flower:{n:90,col:['#e8f4ff','#b8d8ff','#c8b8ff']},pebble:{n:110,col:['#7f8f88','#6a7a74']}},
+    ridge: {tuft:{n:120,col:['#b8c4b0','#a8b6a6']},flower:{n:120,col:['#bfe8ff','#9fd8f0','#e6f7ff']},pebble:{n:220,col:['#ffffff','#eef4fa','#dbe6f0']}},
+    desert:{tuft:{n:110,col:['#d8c27a','#c9b06a','#e2cc8a']},pebble:{n:220,col:['#c08d55','#b07a48','#d6a46c']}},
+    storm: {tuft:{n:120,col:['#7f8a7a','#6f7a72']},pebble:{n:300,col:['#6e6a86','#57546e','#8a86a2']}},
+    shadow:{pebble:{n:160,col:['#3c2f5a','#2a2140','#5b3f8c']}}
+  }
 };
 
 (()=>{
@@ -138,4 +151,67 @@ const GROUND={
     const u=mat.userData.u;u.gBake.value=bk.texture;u.gBox.value.copy(box);u.gSin.value=SIN();
     return mat;
   };
+
+  // ---- פיזור: עשב, פרחים ואבנים ----
+  // אותו רעש כמו בשיידר, ב-JS, כדי שהעשב ישב על הכתמים העשירים של המפה
+  const hh=(x,y)=>{const t=Math.sin(x*127.1+y*311.7)*43758.5453;return t-Math.floor(t)};
+  const vn=(x,y)=>{const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy,ux=fx*fx*(3-2*fx),uy=fy*fy*(3-2*fy),a=hh(ix,iy),b=hh(ix+1,iy),c=hh(ix,iy+1),d=hh(ix+1,iy+1);return a+(b-a)*ux+(c-a)*uy+(a-b-c+d)*ux*uy};
+  const fbm=(x,y)=>0.5*vn(x,y)+0.3*vn(x*2.03+1.7,y*2.03+9.2)+0.2*vn(x*4.01+5.1,y*4.01+3.3);
+  const dSeg=(x,y,q)=>{const bx=q[2]-q[0],by=q[3]-q[1],t=Math.max(0,Math.min(1,((x-q[0])*bx+(y-q[1])*by)/(bx*bx+by*by||1)));return Math.hypot(x-q[0]-bx*t,y-q[1]-by*t)};
+  let sc=null,scKey=null,scAt=null,t0=performance.now();
+  const scOn=()=>{const F=GROUND.scatter;if(/[?&]scatter=0\b/.test(location.search))return false;
+    try{if((+localStorage.getItem(GFX_AUTO.key)||0)>0)return false}catch(e){}
+    return !(R3D.fps&&R3D.fps<F.minFps)};
+  function tuftGeo(){const pos=[];for(let k=0;k<3;k++){const a=k*2.1,c=Math.cos(a),s_=Math.sin(a),w=0.35;pos.push(-c*w,0,-s_*w, c*w,0,s_*w, c*0.15,1,s_*0.15, c*w,0,s_*w, -c*w,0,-s_*w, c*0.15,1,s_*0.15)}   // כל להב פעמיים (שני הצדדים), כדי שהאור יהיה זהה מכל כיוון
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));return up(g)}
+  // הנורמל כלפי מעלה: העשב מואר כמו הקרקע שמתחתיו, ולא כהה מהצד
+  const up=g=>{const n=g.getAttribute('position').count,a=new Float32Array(n*3);for(let i=0;i<n;i++)a[i*3+1]=1;g.setAttribute('normal',new THREE.BufferAttribute(a,3));return g};
+  // רוח: הקודקודים העליונים זזים לפי המקום והזמן. הבסיס נשאר במקום
+  function windMat(){const m=new THREE.MeshLambertMaterial(),U={gT:{value:0},gW:{value:GROUND.scatter.wind}};m.userData.u=U;
+    m.onBeforeCompile=sh=>{Object.assign(sh.uniforms,U);sh.vertexShader='uniform float gT,gW;\n'+sh.vertexShader.replace('#include <begin_vertex>',
+      '#include <begin_vertex>\nvec4 gI=instanceMatrix*vec4(0,0,0,1);float gS=(sin(gT*1.7+gI.x*0.013+gI.z*0.009)*0.5+sin(gT*3.1+gI.x*0.03)*0.18)*gW;transformed.x+=gS*0.35*position.y;transformed.z+=gS*0.12*position.y;')};
+    return m}
+  function scBuild(reg){
+    const K=GROUND.scatter[reg]||{},grp=new THREE.Group(),geos={tuft:tuftGeo(),flower:up(new THREE.OctahedronGeometry(1,0).translate(0,1.2,0)),pebble:new THREE.IcosahedronGeometry(1,0).scale(1,0.45,1)};
+    for(const k of ['tuft','flower','pebble']){if(!K[k]||!K[k].n)continue;
+      const m=new THREE.InstancedMesh(geos[k],k==='pebble'?new THREE.MeshLambertMaterial({flatShading:true}):windMat(),K[k].n);
+      m.count=0;m.frustumCulled=false;m.userData.k=k;grp.add(m)}
+    R3D.scene.add(grp);return grp}
+  // ממלא את החלון סביב (cx,cy): משבצת לכל cell, ובכל אחת אולי משהו, לפי רעש קבוע. אותו מקום תמיד מקבל אותו דבר
+  function scFill(reg,cx,cy){
+    const F=GROUND.scatter,K=F[reg]||{},R=WR(),sg=segs(R),sin=SIN(),c=F.cell,mx=new THREE.Matrix4(),q=new THREE.Quaternion(),e=new THREE.Euler(),v=new THREE.Vector3(),s3=new THREE.Vector3(),col=new THREE.Color();
+    const mesh={};for(const m of sc.children){mesh[m.userData.k]=m;m.count=0}
+    const ponds=(R.ponds||[]).concat(R.towers||[]),nodes=S.nd.list,hw=R.size.w/2+60,hh_=R.size.h/2+60;
+    const x0=Math.floor((cx-F.win.w/2)/c),x1=Math.ceil((cx+F.win.w/2)/c),y0=Math.floor((cy-F.win.h/2)/c),y1=Math.ceil((cy+F.win.h/2)/c);
+    for(let j=y0;j<=y1;j++)for(let i=x0;i<=x1;i++){
+      const r=hh(i*1.13,j*0.71),x=(i+hh(i,j+5))*c,y=(j+hh(i+9,j))*c;
+      if(Math.abs(x)>hw||Math.abs(y)>hh_)continue;
+      const nb=fbm(x/GROUND.big,y/GROUND.big),cl=fbm(x/90+4,y/90+2);
+      // עשב בכתמים העשירים, פרחים בגושים, אבנים בכתמים היבשים
+      const k=r<0.6?'tuft':r<0.8?'flower':'pebble',m=mesh[k];if(!m||m.count>=K[k].n)continue;
+      const want=k==='pebble'?0.15+0.4*nb:k==='flower'?(cl>0.6?0.9:0.01):0.15+1.1*(1-nb)*(cl>0.42?1:0.45);
+      if(hh(i+3,j+7)>want)continue;
+      let ok=true;for(const s_ of sg)if(dSeg(x,y,s_)<GROUND.pathW*1.1){ok=false;break}
+      if(ok)for(const p of ponds)if(Math.hypot(x-p.x,y-p.y)<p.r+16){ok=false;break}
+      if(ok)for(const n of nodes)if(Math.abs(x-n.x)<n.r+12&&Math.abs(y-n.y)<n.r+12){ok=false;break}
+      if(!ok)continue;
+      const sz=F.size[k],z=sz[0]+(sz[1]-sz[0])*hh(i+1,j+2),wd=k==='tuft'?1.2:1;
+      e.set(0,hh(i+4,j+1)*6.28,0);q.setFromEuler(e);s3.set(z*wd,z,z*wd);v.set(x,0,y/sin);mx.compose(v,q,s3);
+      m.setMatrixAt(m.count,mx);m.setColorAt(m.count,col.set(K[k].col[Math.floor(hh(i+6,j+3)*K[k].col.length)]).multiplyScalar(0.9+hh(i+2,j+8)*0.2));m.count++;
+    }
+    for(const m of sc.children){m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true}
+  }
+  function scTick(){
+    const inW=on()&&!!(S&&S.wd&&!S.vil&&!S.room&&P);
+    if(!inW||!scOn()){if(sc)sc.visible=false;return}
+    const reg=S.wd.reg||'meadow',k=reg+':'+S.nd.list.length;
+    if(k!==scKey){if(sc){R3D.scene.remove(sc);sc.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose()}})}sc=scBuild(reg);scKey=k;scAt=null}
+    sc.visible=true;
+    const st=GROUND.scatter.step;
+    if(!scAt||Math.abs(P.x-scAt.x)>st||Math.abs(P.y-scAt.y)>st){const t=performance.now();scAt={x:Math.round(P.x/st)*st,y:Math.round(P.y/st)*st};scFill(reg,scAt.x,scAt.y);GROUND.fillMs=Math.round(performance.now()-t)}
+    const tt=(performance.now()-t0)/1000;for(const m of sc.children)if(m.material.userData.u)m.material.userData.u.gT.value=tt;
+  }
+  // מתחברים לציור: לפני כל ציור מעדכנים את הפיזור (ומסתירים אותו בכפר ובזירה)
+  const base=window.render3d;
+  window.render3d=function(...a){try{scTick()}catch(e){GROUND.scFailed=e.message;sc&&(sc.visible=false)}return base.apply(this,a)};
 })();

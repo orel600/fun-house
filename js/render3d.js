@@ -125,6 +125,19 @@ const VIL3D={
    glow: צבע לעורק מתכת. הקישוטים והשערים כמו בכפר (VIL3D.decor, VIL3D.gate) */
 const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',w:42,glow:'#5FA35A'},chest:{model:'v_crate',w:48,glow:'#F4C74F'},rock:{model:'v_rock',w:62},vein:{model:'v_rock',w:62,glow:'#C87533'},
   reed:{model:'v_treeB',w:34,glow:'#3FA7A0'},crystal:{model:'v_rock',w:62,glow:'#4FB4FF'}},   // w: רוחב המודל
+  /* קישוטים לכל אזור, מסביב לגבול (worldDecor ב-world.js): במקום עצי האחו בכל מקום. אזור שלא כתוב כאן: VIL3D.decor, כמו בכפר.
+     model: מפתח ב-MODELS3D (n_ מ-KayKit Forest Nature, v_ מהכפר), או n_cactus/n_reeds שנבנים בקוד (natureProp). pick: כמה אפשרויות, לפי המקום.
+     h: גובה (לעצים צרים וגבוהים) או w: רוחב. tint: צבע שמוכפל בצבעים של המודל (חול, צל). snow: כמה להלבין (שלג). רק במראה החדש, ?look=classic מחזיר את עצי האחו */
+  decor:{
+    lake:  {tree:{pick:[{model:'n_tree',h:100,tint:'#a9d2bf'},{model:'v_treeB',w:55,tint:'#bfe0d0'},{model:'n_reeds',h:55}]},rock:{model:'n_round',w:55,tint:'#a9bcb8'},hills:{model:'v_hills',w:260,tint:'#bfd8cc'}},
+    ridge: {tree:{pick:[{model:'n_pine',h:125,snow:0.35},{model:'n_pine',h:95,snow:0.5}]},rock:{model:'n_crag',w:62,tint:'#eef4fa'},hills:{model:'n_crag',w:230,tint:'#e2ecf4'}},
+    desert:{tree:{pick:[{model:'n_acacia',h:85,tint:'#d8c27a'},{model:'n_cactus',h:70},{model:'n_dead',h:105,tint:'#e0b58a'}]},rock:{model:'n_crag',w:62,tint:'#e7b47a'},hills:{model:'n_crag',w:220,tint:'#d9a05e'}},
+    storm: {tree:{pick:[{model:'n_dead',h:115,tint:'#8f86aa'},{model:'n_bare',h:90,tint:'#7d7598'}]},rock:{model:'n_block',w:60,tint:'#9a96b4'},hills:{model:'n_block',w:200,tint:'#7f7b98'}},
+    shadow:{tree:{pick:[{model:'n_bare',h:95,tint:'#6e5a98'},{model:'n_dead',h:115,tint:'#5a4a80'}]},rock:{model:'n_round',w:58,tint:'#5d4a86'},hills:{model:'n_block',w:200,tint:'#3e3260'}}
+  },
+  // מקורות משאבים לפי הסוג (kind ב-nodes.js), במראה החדש: אורן מושלג, קקטוס, עץ מת. כל השאר לפי הצורה (nodes למעלה)
+  kinds:{pine:{model:'n_pine',h:115,snow:0.3},cactus:{model:'n_cactus',h:62,glow:'#5FA35A'},deadTree:{model:'n_dead',h:115,tint:'#8c8494'},
+    shadeTree:{model:'n_bare',h:95,tint:'#6a5aa0'},reeds:{model:'n_reeds',h:55,glow:'#2a6f6a'}},
   // צבע לכל אזור (WORLD.regions ב-world.js): bg הרקע, line הקרקע, pond המים. אזור שלא כתוב כאן: VIEW.world
   // water/glow: המים במראה החדש (look-hd.js, בלי ?look=classic), עם שוליים רכים. glow: זוהר, ו-pulse: כמה הוא פועם (לבה). החוף סביבם: GROUND ב-ground.js
   water:{meadow:{col:'#3f8fb4'},lake:{col:'#3c8aa0'},ridge:{col:'#8fd0ee',glow:'#3a86b8',g:0.3},desert:{col:'#f0561a',glow:'#ff4a08',g:0.9,pulse:0.25},
@@ -214,7 +227,7 @@ async function init3d(){
     R3D.wtex={};for(const k in MODELS3D)if(k.startsWith('wtex_')){
       const img=new Image();img.src='data:image/png;base64,'+MODELS3D[k];await img.decode();
       const t=new THREE.Texture(img);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;R3D.wtex[k.slice(5)]=t}
-    for(const k in MODELS3D)if(k.startsWith('v_')){const g=await parseGLB(k);lambert(g.scene);g.scene.traverse(o=>{o.frustumCulled=true});R3D.props[k]=g.scene}   // מבני הכפר
+    for(const k in MODELS3D)if(k.startsWith('v_')||k.startsWith('n_')){const g=await parseGLB(k);lambert(g.scene);g.scene.traverse(o=>{o.frustumCulled=true});R3D.props[k]=g.scene}   // מבני הכפר
     const heroModels=new Set(Object.keys(LOOK3D).filter(k=>k==='player'||k.startsWith('hero_')).map(k=>LOOK3D[k].model));
     for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t,heroModels.has(k)&&ARMOR3D);lambert(t);t.updateMatrixWorld(true);
       // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
@@ -463,6 +476,30 @@ function syncVillage(){
   }
   for(const k in V.stock)V.stock[k].visible=vStock(k)>0;
 }
+// קקטוס וקני סוף: נבנים בקוד (אין בחבילות החינמיות), גיאומטריה אחת לכל אחד כדי שיהיו ציור אחד
+function natureProp(k){
+  if(R3D.props[k])return R3D.props[k];
+  const parts=[],C=(r,h,x,y,z,rz=0)=>{const g=new THREE.CylinderGeometry(r*0.85,r,h,7);g.translate(0,h/2,0);if(rz)g.rotateZ(rz);g.translate(x,y,z);parts.push(g)};
+  let col;
+  if(k==='n_cactus'){col='#5c9a45';C(0.17,1,0,0,0);C(0.11,0.28,0,0,0,Math.PI/2);parts[1].translate(0.03,0.42,0);C(0.1,0.32,0.3,0.42,0);
+    C(0.1,0.22,0,0,0,-Math.PI/2);parts[3].translate(-0.02,0.58,0);C(0.09,0.26,-0.26,0.58,0)}
+  else{col='#5f7f3a';for(let i=0;i<9;i++){const a=i*2.4,r=0.05+0.17*Math.sqrt(i/9),h=0.6+((i*37)%10)/22;const g=new THREE.ConeGeometry(0.035,h,4);g.translate(Math.cos(a)*r,h/2,Math.sin(a)*r);parts.push(g)}}
+  const geo=THREE.mergeGeometries(parts.map(g=>g.toNonIndexed()));geo.computeVertexNormals();
+  const root=new THREE.Group();root.add(new THREE.Mesh(geo,new THREE.MeshLambertMaterial({color:col,flatShading:true})));
+  return R3D.props[k]=root;
+}
+// קישוט או מקור לפי המפרט ב-W3D (decor, kinds): צבע (tint) בעותק של התבנית, וגודל לפי גובה (h) או רוחב (w)
+function wPut(D,x,y,v,mul,g){
+  const sp=D.pick?D.pick[Math.floor(v*D.pick.length)%D.pick.length]:D,md=Array.isArray(sp.model)?sp.model[v<0.5?0:1]:sp.model,key=md+(sp.tint||'')+(sp.snow||'');
+  if(md==='n_cactus'||md==='n_reeds')natureProp(md);
+  if((sp.tint||sp.snow)&&!R3D.props[key]){const t=R3D.props[md].clone(true),c=new THREE.Color(sp.tint||'#fff'),w=new THREE.Color('#f2f8fc');
+    t.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.color.multiply(c);if(sp.snow)o.material.emissive.copy(w).multiplyScalar(sp.snow)}});R3D.props[key]=t}   // שלג: אור לבן מבפנים (הצבע עצמו מגיע מטקסטורה)
+  const t=R3D.props[key],bb=t.userData.bb||(t.userData.bb=new THREE.Box3().setFromObject(t));
+  const w=sp.h?sp.h*Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z,1e-3)/Math.max(bb.max.y-bb.min.y,1e-3):sp.w;
+  const m=vPut(key,x,y,w*mul,v*6.28,g);
+  if(sp.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(sp.glow).multiplyScalar(0.5)}});
+  return m;
+}
 // מים במראה החדש: עיגול עם שוליים רכים (שקיפות שיורדת בקצה), והחוף של ground.js נראה מתחתיו. קרח מבריק, לבה זוהרת
 function pondMat(Wt){
   const A=pondMat.a||(pondMat.a=(()=>{const T=128,c=document.createElement('canvas');c.width=c.height=T;const g=c.getContext('2d'),gr=g.createRadialGradient(T/2,T/2,0,T/2,T/2,T/2);
@@ -476,9 +513,11 @@ function pondMat(Wt){
 function syncWorld(){
   const A=R3D.wlds||(R3D.wlds={}),reg=S.wd.reg||'meadow',RG=WR(),W=W3D.regions[reg]||{};let G=A[reg];
   if(!G){G=A[reg]={g:new THREE.Group(),nodes:{},paths:{}};R3D.scene.add(G.g);
-    for(const d of worldDecor()){const D=VIL3D.decor[d.kind],md=Array.isArray(D.model)?D.model[d.v<0.5?0:1]:D.model;vPut(md,d.x,d.y,D.w*(0.8+d.v*0.4),d.v*6.28,G.g)}
+    const hd=typeof HD!=='undefined'&&HD.on,DEC=hd&&W3D.decor[reg];G.kinds=hd;   // קישוטים לפי אזור (W3D.decor), במראה החדש
+    for(const d of worldDecor()){const D=DEC&&DEC[d.kind];if(D){wPut(D,d.x,d.y,d.v,0.8+d.v*0.4,G.g);continue}
+      const V=VIL3D.decor[d.kind],md=Array.isArray(V.model)?V.model[d.v<0.5?0:1]:V.model;vPut(md,d.x,d.y,V.w*(0.8+d.v*0.4),d.v*6.28,G.g)}
     const gs=wGates(true);for(const k in gs){const m=vPut(VIL3D.gate.model,gs[k].x,gs[k].y,VIL3D.gate.w,0,G.g);if(wIsPath(k))G.paths[k]=m}
-    const hd=typeof HD!=='undefined'&&HD.on,Wt=hd&&(W3D.water[reg]||W3D.water.meadow);
+    const Wt=hd&&(W3D.water[reg]||W3D.water.meadow);
     for(const p of RG.ponds||[]){const m=new THREE.Mesh(new THREE.CircleGeometry(p.r,40),Wt?pondMat(Wt):new THREE.MeshLambertMaterial({color:W.pond||'#2a6d8f',transparent:true,opacity:0.9}));
       m.rotation.x=-Math.PI/2;m.scale.set(1,1/SIN(),1);m.position.set(p.x,0.6,p.y/SIN());G.g.add(m);if(Wt&&Wt.pulse)(G.pulse||(G.pulse=[])).push([m.material,Wt])}
     secrets3D(reg,(md,x,y,w,r)=>vPut(md,x,y,w,r,G.g))}   // סודות (secrets.js)
@@ -487,6 +526,7 @@ function syncWorld(){
   for(const k in G.paths)G.paths[k].visible=wPathOpen(RG.paths[k]);
   for(const n of S.nd.list){
     let m=G.nodes[n.id];
+    const K=G.kinds&&W3D.kinds[n.kind];if(!m&&K)m=G.nodes[n.id]=wPut(K,n.x,n.y,hash(n.x,n.y),0.85+hash(n.x,n.y)*0.3,G.g);   // אורן, קקטוס, עץ מת (W3D.kinds)
     if(!m){const D=W3D.nodes[wKind(n.kind).shape],v=hash(n.x,n.y),md=Array.isArray(D.model)?D.model[v<0.5?0:1]:D.model;
       m=G.nodes[n.id]=vPut(md,n.x,n.y,D.w*(0.85+v*0.3),v*6.28,G.g);
       if(D.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(D.glow).multiplyScalar(0.5)}})}
