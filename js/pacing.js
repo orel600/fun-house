@@ -69,7 +69,7 @@ function paceSpawn(n,at){
   const type=types[Math.floor(Math.random()*types.length)],pk={id:++w.pace.id,x:s.x,y:s.y,n,left:n,big:B.id==='peak'};
   for(let k=0;k<n;k++){
     const t=mix?types[Math.floor(Math.random()*types.length)]:type,a=rand(0,6.28),r=rand(0,PACE.spread);
-    const e=addEnemy(t,s.x+Math.cos(a)*r,s.y+Math.sin(a)*r,Z.hp*PACE.weak.hp*WORLD.foeHp);   // foeHp: אויבים בעולם חזקים יותר (world.js)
+    const e=addEnemy(t,s.x+Math.cos(a)*r,s.y+Math.sin(a)*r,Z.hp*PACE.weak.hp*WORLD.foeHp);wTough(e,{hp:Z.hp*PACE.weak.hp});   // foeHp ו-foeMin: אויבים בעולם חזקים יותר (world.js)
     e.dmg*=Z.dmg*PACE.weak.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);
     e.xp=0;e.home=0;e.pack=pk;e.far=0;challengeSpawn(e);tierSpawn(e)}
   w.pace.packs++;w.pace.sizes.push(n);

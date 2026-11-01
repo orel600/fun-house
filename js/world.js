@@ -35,7 +35,8 @@ const WORLD={
   far:260,                               // קבוצה שנוקתה חוזרת רק כשהשחקן רחוק ממנה לפחות כך, כדי שלא תצוץ מול העיניים. ולפחות חצי אלכסון המסך, כי המצלמה רואה רחוק (camera.js)
   /* כמה קשה, לפי המרחק של בית הקבוצה מהשער לכפר: ככל שמתרחקים, קשה יותר. to: עד איזה מרחק. hp, dmg, speed: פי כמה מהרגיל (ETYPES).
      leash: כמה רחוק מהבית האויב מוכן לרדוף לפני שהוא חוזר. back: שניות עד שקבוצה שנוקתה חוזרת */
-  foeHp:2.5,                             // אויבים בעולם: פי כמה חיים, כדי שאויב רגיל ייקח 2-3 מכות (docs/plan-combat.md שינוי 3). גם בלהקות (pacing.js). המכה עם הכנה: STRIKE ב-strike.js
+  foeHp:2.2,                             // אויבים בעולם: פי כמה חיים (docs/plan-combat.md שינוי 3). גם בלהקות (pacing.js). המכה עם הכנה: STRIKE ב-strike.js
+  foeMin:70,                             // ולפחות כך הרבה חיים (כפול ה-hp של האזור): גרנט חלש לחרב לוקח 2-3 מכות ולא נעלם במכה אחת. אויב חזק לא מושפע. אחרי שדרוגים שוב מכה אחת, וזה ה"וואו, התחזקתי"
   zones:[
     {id:'start',to:360, hp:0.35,dmg:0.25,speed:0.6, leash:240,back:12},
     {id:'near', to:800, hp:0.7, dmg:0.6, speed:0.85,leash:360,back:22},
@@ -228,9 +229,11 @@ function wLootIn(){
 /* ---- אויבים: קבוצה לכל שורה ב-WORLD.foes ---- */
 // האזור של קבוצה, לפי המרחק של הבית שלה מהשער לכפר
 const wZone=G=>{const R=WR();return R.zones.find(z=>Math.hypot(G.x-R.home.x,G.y-R.home.y)<z.to)};
+// רצפה לחיים של אויב בעולם (WORLD.foeMin), לפני תכונה מיוחדת (affix.js)
+function wTough(e,Z){const m=WORLD.foeMin*Z.hp;if(e.max<m){e.hp=e.max=m}}
 function wSpawn(G,i){
   if(!ETYPES[G.type])return;const Z=wZone(G);
-  for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp*WORLD.foeHp);
+  for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp*WORLD.foeHp);wTough(e,Z);
     e.dmg*=Z.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);   // affixRoll: אולי אויב מיוחד (affix.js). storySafe: אחרי שפנס האדמה נדלק (story.js)
     e.xp=0;e.home=i;e.creature=!!G.creature;
     challengeSpawn(e);tierSpawn(e)}   // דרגת העולם (tiers.js)

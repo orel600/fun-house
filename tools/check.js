@@ -855,7 +855,7 @@ function worldBot(m,L,god){
       e.elite=true;S.hitstop=0;J.last=jNow();juiceKill(e);r.poof=J.poofs.length===1&&S.hitstop>=JUICE.stop.big-1e-6;
       // מכה עם הכנה (strike.js): נעצר ומתכונן, לא פוגע לפני הסוף, פוגע כשנשארים בטווח, ולא פוגע כשמתרחקים (התחמקות)
       {const h0=hurt;let hits=0;hurt=()=>{hits++};try{const s=addEnemy('grunt',P.x+e.r+P.r,P.y);s.scd=0;s.sw=null;strikeTick(s,0.01,Math.hypot(P.x-s.x,P.y-s.y));s.scd=0;
-        const d0=Math.hypot(P.x-s.x,P.y-s.y);r.swStart=strikeTick(s,0.01,d0)&&s.sw>0;strikeTick(s,STRIKE.wind*0.5,d0);r.swEarly=hits===0;strikeTick(s,STRIKE.wind,d0);r.swHit=hits===1;
+        const d0=Math.hypot(P.x-s.x,P.y-s.y);strikeTick(s,0.01,d0);r.swStart=s.sw>0&&strikeTick(s,0.001,d0);strikeTick(s,STRIKE.wind*0.5,d0);r.swEarly=hits===0;strikeTick(s,STRIKE.wind,d0);r.swHit=hits===1;
         s.x=P.x+e.r+P.r;s.y=P.y;s.kx=s.ky=0;s.scd=0;strikeTick(s,0.01,d0);P.x-=200;strikeTick(s,STRIKE.wind+0.1,999);P.x+=200;r.swDodge=hits===1&&(s.dodged||0)>=1;
         s.dead=true}finally{hurt=h0}}
       for(let i=0;i<300;i++)damage(e,1,'sword',0,'lightning',true);r.cap=J.p.length<=JUICE.parts.max&&J.n.length<=JUICE.nums.max;
