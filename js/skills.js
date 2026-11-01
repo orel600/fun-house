@@ -7,7 +7,7 @@
    השמות ב-lang.js: 'sk.<id>' לסקילים, 'combo.<סוג>' למילה שקופצת, 'up.k_<id>' לכרטיס השדרוג */
 const SKILLS={
   max:3,
-  tip:16,   // ברק יוצא מהנשק: כמה פיקסלים מהיד לכיוון המטרה, כדי שייצא מקצה הלהב
+  tip:16,   // ברק יוצא מהנשק. בחרב מקצה הלהב (AGE_FX.tip), ובשאר: כמה פיקסלים מהיד לכיוון המטרה
   // הסקיל שכל סוג נשק נותן (WEAPONS ב-weapons.js)
   weapon:{sword:'quake',axe:'quake',hammer:'quake',bow:'zap',staff:'splash',wand:'splash'},
   /* הסקילים. dt: סוג הנזק. cd: שניות עד שאפשר שוב. dmg: כמה נזק, כפול הנזק של הנשק שביד.
@@ -103,7 +103,8 @@ function drawSkills(ox,oy){
   if(!S.sk)return;
   const fl=fluteOn();
   for(const f of S.sk.fx){const k=f.t/f.max;ctx.globalAlpha=1-k;ctx.strokeStyle=f.col;
-    if(f.hand&&AGE_FX.hand){const h=AGE_FX.hand,d=Math.hypot(f.bx-h.x,f.by-h.y)||1;f.ax=h.x+(f.bx-h.x)/d*SKILLS.tip;f.ay=h.y+(f.by-h.y)/d*SKILLS.tip}   // מקצה הלהב: מהיד לכיוון המטרה
+    if(f.hand&&AGE_FX.tip){f.ax=AGE_FX.tip.x;f.ay=AGE_FX.tip.y}   // חרב: מקצה הלהב
+    else if(f.hand&&AGE_FX.hand){const h=AGE_FX.hand,d=Math.hypot(f.bx-h.x,f.by-h.y)||1;f.ax=h.x+(f.bx-h.x)/d*SKILLS.tip;f.ay=h.y+(f.by-h.y)/d*SKILLS.tip}   // קשת או מטה: מהיד לכיוון המטרה
     if(fl){f.ring?fluteRing(f,k):fluteLine(f,k);continue}   // הנודד עם החליל: חלילים מסתובבים וחמשה (flute.js)
     // טבעת: גל הדף. מילוי רך ושקוף, קו חד בקצה, וקו דק שני שנגרר מאחוריו
     if(f.ring){const r=f.r*(0.35+0.65*k),a=1-k;ctx.fillStyle=f.col;

@@ -26,7 +26,7 @@ function drawPlayer(){
   const p=pose(P.x,P.y,P.walk,P.moving,a,sword?10:11-P.gn.recoil*4,P.face),o={skin:LOOK.player,col:(HEROES.list[heroId()]||{}).col||C.chalk,lw:3};
   drawRig(p,o);
   const hand=p.armF[1],hx=hand.x,hy=hand.y;
-  AGE_FX.hand={x:hx+Math.cos(a)*14,y:hy+Math.sin(a)*14};   // הזוהר של Aging יושב על הנשק (aging.js)
+  AGE_FX.hand={x:hx+Math.cos(a)*14,y:hy+Math.sin(a)*14};AGE_FX.tip=sword?{x:hx+Math.cos(a)*24,y:hy+Math.sin(a)*24}:null;   // tip: קצה הלהב, ממנו יוצא הברק (skills.js)   // הזוהר של Aging יושב על הנשק (aging.js)
   if(!drawRigWeapon(p,o,P.weapon,a)){
     if(sword){
       ctx.strokeStyle=dtCol(P.dt.sword);ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*24,hy+Math.sin(a)*24);ctx.stroke();

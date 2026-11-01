@@ -402,6 +402,9 @@ function syncPlayer(dt){
   a.mixer.update(dt);
   // איפה הנשק על המסך, בשביל הזוהר של Aging שמצויר בקנבס (aging.js). מהעולם חזרה לקואורדינטות המשחק
   const w=a.props[sword?'sword':'gun'];if(w){const v=w.getWorldPosition(R3D._v||(R3D._v=new THREE.Vector3()));AGE_FX.hand={x:v.x,y:v.z*SIN()-v.y*COS()}}
+  // קצה הלהב (הברק של הסקיל יוצא ממנו, skills.js): הלהב לאורך y המקומי של הנשק, עד הגובה של הצורה שלו
+  if(w&&sword){const len=w.userData.tip??(w.userData.tip=(()=>{let m=0;w.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();m=Math.max(m,o.geometry.boundingBox.max.y)}});return m})());
+    const t=w.localToWorld((R3D._v2||(R3D._v2=new THREE.Vector3())).set(0,len,0));AGE_FX.tip={x:t.x,y:t.z*SIN()-t.y*COS()}}else AGE_FX.tip=null;
   mark('shadow',a.root.position.x,a.root.position.z,16);
 }
 function syncEnemy(e,dt){
