@@ -699,6 +699,7 @@ const TEXT={
   'st.def':{he:['הגנה','פחות נזק מכל מכה'],en:['Defense','Take less damage']},
   'st.luck':{he:['מזל','מכה קריטית ויותר שלל'],en:['Luck','Critical hits and more loot']},
   'st.free':{he:n=>'⭐ יש לך '+n+' נקודות לחלק',en:n=>'⭐ You have '+n+' points to spend'},
+  'st.freeS':{he:n=>'⭐ '+n+' נקודות',en:n=>'⭐ '+n+' points'},
   'st.none':{he:'כל רמה נותנת נקודה. XP מגיע מאויבים בעולם, מהזירה ומקווסטים',en:'Every level gives a point. XP comes from enemies in the world, the arena and quests'},
   // עץ הסקילים (stats.js): [שם, מה זה נותן]
   'tr.open':{he:'עץ סקילים',en:'Skill tree'},
