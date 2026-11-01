@@ -1018,6 +1018,53 @@ body.menu .minimap{display:none!important}
 #ovGear .strows{gap:3px}
 #ovGear .stplus{width:38px;height:38px}
 #ovGear .stfoot .vbtn{min-height:38px}
+/* התרמיל מסודר (js/gear.js, ניר 1.11.2026): מסננים לפי משבצת (אייקונים), ▲/▼ מול מה שלבוש, נקודה לחדש,
+   ושני כפתורים מתחת לרשת: ללבוש הכי טוב ולמכור חלשים (האישור בחלון הפרטים) */
+#gTabs button.gf{min-width:38px;padding:4px 8px;font-size:17px;line-height:1}
+.gtile .gmk{position:absolute;bottom:2px;inset-inline-start:3px;direction:ltr;font:900 11px/1 var(--body);font-style:normal;text-shadow:0 0 3px #000,0 0 2px #000}
+.gtile .gmk.up{color:#6FD08C}.gtile .gmk.down{color:#FF6B6B}
+.gtile .gnew{position:absolute;top:3px;inset-inline-end:3px;direction:ltr;width:9px;height:9px;border-radius:50%;background:#FF5A5A;box-shadow:0 0 0 2px var(--panel),0 0 6px #FF5A5A}
+.gtile:has(.gpw) .gnew{inset-inline-end:14px}
+.gacts{display:flex;gap:6px;flex:none}
+.gacts[hidden]{display:none}
+.gacts .vbtn{flex:1 1 0;min-width:0;min-height:34px;margin:0;padding:3px 4px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gacts .vbtn:disabled{opacity:.4}
+.gacts .vbtn.ghost{border:1px solid var(--line);border-radius:10px}
+.gsell{display:flex;flex-wrap:wrap;gap:6px}
+#ovGear .gsell .gtile{width:46px;min-width:0;font-size:22px;cursor:default}
+/* ===== חלון הציוד בשני דפים (ניר 1.11.2026: "עדיין בלגן". כמו Diablo Immortal, Archero 2 ו-Genshin: דמות ותרמיל לא נדחסים לאותו מסך).
+   בכותרת: 🎒 ציוד | 🧍 דמות. דף ציוד: הבובה עם המשבצות, התרמיל הרחב (4–6 בשורה) והפרטים, שלושה טורים בגובה מלא.
+   דף דמות: הנקודות, הבניות ועץ הסקילים ברוחב מלא, בלי טקסט חתוך */
+.gpages{display:flex;gap:4px;flex:none}
+.gpages button{appearance:none;position:relative;border:1px solid var(--line);background:var(--panel);color:var(--dim);border-radius:999px;min-height:38px;padding:4px 14px;font:800 var(--t1,14px) var(--body);cursor:pointer;white-space:nowrap}
+.gpages button[aria-pressed="true"]{color:var(--ink);background:var(--gold);border-color:var(--gold)}
+.gpages .gdot{position:absolute;top:-5px;inset-inline-end:-5px;min-width:18px;height:18px;border-radius:9px;background:#FF5A5A;color:#fff;font:800 11px/18px var(--body);font-style:normal;text-align:center;padding:0 4px}
+.ghead.whd>h2{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ghead.whd>#gHero{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (orientation:landscape){
+  #ovGear .gbody{grid-template-columns:minmax(0,3.2fr) minmax(0,4fr) minmax(0,2.8fr);grid-template-rows:minmax(0,1fr);grid-template-areas:"doll bag side"}
+  #ovGear .gdoll{grid-area:doll}#ovGear .gbag{grid-area:bag}#ovGear .gsidep{grid-area:side;max-height:none}
+  #ovGear .ggrid{grid-template-columns:repeat(auto-fill,minmax(54px,1fr))}
+}
+@media (orientation:landscape) and (max-height:500px){.ghead.whd>h2{display:none}}   /* טלפון שוכב: הלשוניות הן הכותרת */
+.gsidep .gdetail h3{font-size:16px}
+/* דף דמות */
+.gchar{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;background:var(--panel);border-radius:12px;padding:10px 14px;overflow:hidden}
+.gchar[hidden]{display:none}
+.gchar>*{flex:none;margin:0}
+#ovGear .gchar .strows{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.gchar .strow{padding:4px 6px 4px 8px;gap:8px}
+.gchar .stn b{font-size:15px}.gchar .stn small{font-size:12px}
+.gchar .sti{width:30px;font-size:22px}.gchar .sti .ski{width:30px;height:30px}
+.gchar .stxp{height:14px}.gchar .stxp bdi{font-size:11px;line-height:14px}
+.gchar .stfoot{margin-top:auto}
+#ovGear .gchar .stfoot .vbtn{min-height:44px;font-size:15px}
+@media (orientation:landscape) and (max-height:500px){.gchar{padding:8px 10px;gap:6px}.gchar .stwhere,.gchar .stfree.stnone{display:block}}
+@media (orientation:portrait){#ovGear .gchar .strows{grid-template-columns:repeat(2,minmax(0,1fr))}.gchar{overflow:visible;flex:none}}
+.gchar .stn small{white-space:normal;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-overflow:clip}
+/* טלפון עומד: הלשוניות הן הכותרת, והתרמיל והמסננים לא מרחיבים את החלון (המסננים נגללים הצידה) */
+@media (orientation:portrait){.ghead.whd>h2{display:none}.gpages button{padding:4px 10px}}
+#ovGear .gbag,#ovGear .gsidep,#ovGear .gdoll,#gTabs{min-width:0;max-width:100%}
 
 /* ===== מראה אחיד (ניר ואוראל, 1.11.2026: "נראה לא יפה: הכפתורים והחלונות") =====
    שכבה אחרונה, רק מראה: לא משנה מיקום, גודל או התנהגות. הקו של icons/ui (מסגרת עץ, פליז וזהב, צפחה כהה בפנים).
@@ -1069,10 +1116,10 @@ body.menu .minimap{display:none!important}
 .resmore{border-color:var(--brass);color:var(--brass-hi)}
 .resmore:active{transform:scale(.92)}
 /* לשוניות ומסננים בתוך חלון (תרמיל, שוק): גלולה אחת. נבחר = זהב */
-#gTabs button,.ffilter button,.qtrk{border-color:color-mix(in srgb,var(--brass) 40%,#2A3249);background:linear-gradient(var(--slate-hi),var(--slate));
+#gTabs button,.ffilter button,.gpages button,.qtrk{border-color:color-mix(in srgb,var(--brass) 40%,#2A3249);background:linear-gradient(var(--slate-hi),var(--slate));
   box-shadow:inset 0 1px 0 #ffffff14,0 2px 0 #0008;transition:transform .08s}
-#gTabs button[aria-pressed="true"],.ffilter button[aria-pressed="true"]{background:linear-gradient(var(--brass-hi),var(--brass));border-color:var(--brass-hi);color:var(--wood)}
-#gTabs button:active,.ffilter button:active,.qtrk:active{transform:scale(.94)}
+#gTabs button[aria-pressed="true"],.ffilter button[aria-pressed="true"],.gpages button[aria-pressed="true"]{background:linear-gradient(var(--brass-hi),var(--brass));border-color:var(--brass-hi);color:var(--wood)}
+#gTabs button:active,.ffilter button:active,.gpages button:active,.qtrk:active{transform:scale(.94)}
 /* כרטיסים בתוך חלון: מגש כהה ששקוע במסגרת */
 .qc,.gdetail,.npcsay,.fmeal{box-shadow:inset 0 1px 0 #ffffff0d,inset 0 -2px 0 #0005;border-color:#323C5A}
 .qc.ready{border-color:var(--gold);box-shadow:inset 0 0 0 1px #F4C74F55,0 0 10px #F4C74F33}
