@@ -918,7 +918,7 @@ function worldBot(m,L,god){
   }
   // תמיד מטרה ברורה (guide.js): יש מטרה בשורה למעלה, החץ מצביע לכיוון הנכון גם כשהמטרה באזור אחר, והמטרה מתחלפת כשקווסט נגמר
   const gd=await page.evaluate(()=>{
-    const keep=JSON.stringify({q:SAVE.quests,s:SAVE.story}),o={},Q=QS();
+    const keep=JSON.stringify({q:SAVE.quests,s:SAVE.story}),o={},Q=QS();SAVE.story.intro=true;   // בלי הקדמה של ראש הכפר באמצע (story.js)
     const ang=t=>t?Math.round(Math.atan2(t.y-P.y,t.x-P.x)*100):null;
     const tick=()=>{guideT=0;guideUpdate()};
     questLogOpen(false);gearClose();enterVillage();npcTalk(null);
@@ -937,8 +937,8 @@ function worldBot(m,L,god){
     SAVE.story.earth=true;questClaim('s1Warden');tick();o.after=guideG.text;o.changed=before!==guideG.text&&guideG.q!=='s1Warden';
     $('guideMin').click();o.min=$('guide').classList.contains('min')&&$('guideTxt').textContent==='';$('guideMin').click();
     $('guideMain').click();o.log=!$('qLog').hidden&&!!document.querySelector('#qLog .gnow');questLogOpen(false);
-    worldUi(false);startRun();tick();o.arena=$('guide').hidden;enterVillage();
-    const k=JSON.parse(keep);SAVE.quests=k.q;SAVE.story=k.s;saveNow();
+    worldUi(false);startRun();tick();o.arena=$('guide').hidden;
+    const k=JSON.parse(keep);SAVE.quests=k.q;k.s.intro=k.s.intro||SAVE.story.intro;SAVE.story=k.s;saveNow();enterVillage();npcTalk(null);   // הקדמה שכבר נאמרה נשארת אמורה. חוזרים לכפר רק אחרי השחזור, אחרת פנס האדמה הדלוק מפעיל שם סיפור (homecoming.js)
     return o});
   // השורה עצמה (בלי פאנל פתוח): לא נוגעת בפס העליון, במפה, בהשתקה ובסרגל, בטלפון שוכב ועומד, בכפר ובעולם
   const gdHit={};
