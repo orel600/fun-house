@@ -44,6 +44,8 @@
 <!-- העולם הפתוח: שם האזור ומה שבתרמיל למעלה, ופאנל ליד שער (js/world.js) -->
 <div class="whud" id="whud" hidden><b id="wName"></b><b id="wSec" class="wsec"></b><span class="chtag" id="chTag" hidden></span><div class="bag tbar" id="wBag" role="group" data-ta="bagGroup"></div></div>
 <div class="vpanel win" id="wPanel" hidden></div>
+<!-- המטרה הבאה (js/guide.js): שורה אחת למעלה, בכפר ובעולם. נגיעה פותחת את היומן, ▴ מכווץ -->
+<div class="guide" id="guide" hidden><button class="gmain" id="guideMain" type="button" data-ta="g.tap"><span class="gico" id="guideIco"></span><span class="gtxt" id="guideTxt"></span><b class="gdist" id="guideDist"></b></button><button class="gjump" id="guideJump" type="button" hidden></button><button class="gmin" id="guideMin" type="button"></button></div>
 <!-- מפת העולם (js/worldmap.js): חלון עם מפה של כל האזורים ושל האזור הנוכחי. נפתח מהתפריט הראשי -->
 <div class="qlog win wmapwin" id="wMap" hidden></div>
 <!-- קפיצה בין פנסים (js/travel.js): הבזק אור בצבע הפנס על כל המסך -->
@@ -292,6 +294,7 @@
 <script src="js/daily.js"></script>
 <script src="js/visit.js"></script>
 <script src="js/book.js"></script>
+<script src="js/guide.js"></script>
 <script src="js/welcome.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/menu.js"></script>
