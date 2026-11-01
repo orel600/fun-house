@@ -195,7 +195,7 @@ function enterWorld(at,reg){
   P.x=g.x;P.y=g.y+WORLD.arrive;P.aim=P.face=Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
   ['ovStart','ovOver','ovLevel','ovBoss','ovWDeath'].forEach(id=>$(id).hidden=true);
   R.foes.forEach((G,i)=>wSpawn(G,i));
-  banner(at==='home'?T(R.enter||'w.enter'):wGateName(at),C.gold);
+  banner(at==='home'||wIsPath(at)?T(R.enter||'w.enter'):wGateName(at),C.gold);   // שם האזור בבאנר הכניסה, לא בפס העליון (docs/plan-hud.md)
   worldUi(true);
   fishMealOn();   // ארוחה מהפונדקאית: חיזוק בעולם (fishing.js)
   challengeEnter();   // אתגר יומי (challenge.js)
@@ -293,7 +293,7 @@ function worldUpdate(dt){
   floats=floats.filter(f=>f.life>0);
   // ליד שער: בועה מעליו וכפתור עגול (wGoBtn). הכרטיס נפתח רק בלחיצה, ונכנסים רק מהכרטיס (docs/plan-hud.md, פרק 5)
   w.near=null;const gs=wGates();for(const k in gs){const g=gs[k];if(Math.hypot(P.x-g.x,P.y-g.y)<g.r+P.r+WORLD.near)w.near=k}
-  worldHud();
+  worldHud();cornerHud();   // הפינות העליונות והמפה הקטנה (minimap.js)
   wnpcUpdate(dt);   // דמויות שמגלים בעולם, וכפתור "לדבר" (worldnpc.js)
   fishUpdate(dt);   // דיג ליד מים, וכפתור "לדוג" (fishing.js)
   travelUpdate();   // ליד פנס דולק: "חזרה לכפר" (travel.js)
@@ -317,7 +317,7 @@ function worldHud(){
   const open=!!w.near&&w.open===w.near,key=LANG+'|'+w.near+'|'+open+'|'+S.mode+'|'+JSON.stringify(SAVE.bag);
   if(key===w.ui)return;w.ui=key;
   $('wName').textContent=T('w.region.'+WR().region);
-  $('wBag').innerHTML=topLine(SAVE.bag,resShown('world'));   // שורה אחת, והשאר בתרמיל (village.js)
+  $('wBag').innerHTML=cornerRes(resShown('world'));   // עד 2 משאבים ליד ☰, והשאר ב-"+N" (minimap.js)
   wGoBtn(w);
   const pn=$('wPanel'),k=w.near;pn.hidden=!open;if(pn.hidden)return;
   const back=k==='home'&&WR().back,to=back||(wIsPath(k)&&k);
