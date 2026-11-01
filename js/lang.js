@@ -45,9 +45,15 @@ const TEXT={
   langGroup:{he:'שפה',en:'Language'},
   gfxGroup:{he:'גרפיקה',en:'Graphics'},
   gfx3d:{he:'תלת-ממד',en:'3D'},
+  camGroup:{he:'מצלמה',en:'Camera'},
+  'cam.near':{he:'קרוב',en:'Close'},
+  'cam.mid':{he:'רגיל',en:'Normal'},
+  'cam.far':{he:'רחוק',en:'Far'},
   gfx2d:{he:'דו-ממד',en:'2D'},
   'gfx.auto':{he:'עברנו לדו-ממד, שירוץ חלק',en:'Switched to 2D for smoother play'},
   'set.title':{he:'הגדרות',en:'Settings'},
+  'menu.btn':{he:'תפריט',en:'Menu'},
+  'menu.hero':{he:'דמות',en:'Hero'},
   arena:{he:'זירת המשחק',en:'Game arena'},
   swapWeapon:{he:'החלף נשק',en:'Switch weapon'},
   mute:{he:'צלילים',en:'Sound'},
@@ -244,6 +250,14 @@ const TEXT={
   'daily.keep':{he:'פספסת יום? לא נורא, ממשיכים מאיפה שעצרת',en:'Missed a day? No problem, you pick up where you left off'},
   'daily.back':{he:'מחר יש עוד מתנה',en:'Another gift tomorrow'},
   'daily.got':{he:s=>'מתנה: '+s,en:s=>'Gift: '+s},
+  // "בזמן שלא היית" (welcome.js)
+  'wel.title':{he:'בזמן שלא היית',en:'While you were away'},
+  'wel.gift':{he:n=>'מתנה מ'+n,en:n=>'Gift from '+n},
+  'wel.all':{he:'אסוף הכל',en:'Collect all'},
+  'wel.done':{he:'הכל נאסף!',en:'All collected!'},
+  'wel.go':{he:'יאללה',en:"Let's go"},
+  'wel.next':{he:s=>'מה עכשיו? ⭐ '+s,en:s=>'What now? ⭐ '+s},
+  'wel.nextGate':{he:'מה עכשיו? צא מהשער לעולם, ותביא עוד שלל',en:'What now? Head out the gate and bring back more loot'},
 
   // הכפר (js/village.js)
   'vil.home':{he:'הכפר שלך',en:'Your village'},
@@ -301,6 +315,10 @@ const TEXT={
   // למה אי אפשר לקנות או למכור עכשיו: שורה קטנה על הכרטיס בשוק
   'vil.needN':{he:n=>'צריך '+n,en:n=>'Need '+n},
   'vil.trade':{he:'מסחר',en:'Trade'},
+  'vil.enter':{he:n=>'להיכנס: '+n,en:n=>'Enter: '+n},
+  'vil.need':{he:s=>'חסר: '+s,en:s=>'Missing: '+s},
+  'vil.tagUp':{he:'אפשר לשדרג',en:'Can upgrade'},
+  'vil.tagBuild':{he:'אפשר לבנות',en:'Can build'},
   'vil.noCoins':{he:'חסרים מטבעות',en:'Not enough coins'},
   'vil.mkLv':{he:n=>'שוק רמה '+n,en:n=>'Market lv '+n},
   'ui.more':{he:'עוד בתרמיל',en:'More in your bag'},
@@ -464,6 +482,7 @@ const TEXT={
   'foe.warden':{he:'את השומר האבן',en:'the Stone Warden'},
   // העלילה, פרק 1: פנס האדמה (story.js, docs/story.md)
   // אירועים בעולם (events.js)
+  'pace.peak':{he:'👹 להקות מפלצות מתקרבות!',en:'👹 Monster packs incoming!'},'pace.bonus':{he:'להקה הופלה! +שלל',en:'Pack down! +loot'},
   'ev.wave':{he:'⚔️ גל שלדים יוצא מהאדמה!',en:'⚔️ A skeleton wave rises!'},'ev.waveDone':{he:'הגל נעצר! תיבה נפלה',en:'Wave stopped! A chest dropped'},
   'ev.cart':{he:'🛒 עגלת סוחר התהפכה בדרך!',en:'🛒 A merchant cart overturned nearby!'},'ev.cartDone':{he:'מה שנפל מהעגלה שלך',en:'The spilled goods are yours'},
   'ev.rain':{he:'✨ מטר רסיסים!',en:'✨ A shower of shards!'},'ev.rainDone':{he:'המטר נגמר',en:'The shower is over'},
@@ -734,6 +753,7 @@ const TEXT={
   'gear.equip':{he:'ללבוש',en:'Equip'},
   'gear.unequip':{he:'להוריד',en:'Take off'},
   'gear.vs':{he:s=>'במקום '+s,en:s=>'Replaces '+s},
+  'gear.dmg':{he:r=>'נזק '+r,en:r=>'Damage '+r},
   'gear.same':{he:'בלי שינוי',en:'No change'},
   'st.sdmg':{he:'נזק מקרוב',en:'melee damage'},
   'st.gdmg':{he:'נזק מרחוק',en:'ranged damage'},
@@ -797,6 +817,7 @@ const TEXT={
   // תושבי הכפר (npc.js): [שם, תפקיד], ומשפט לכל מצב. low/high: לפי רמת מרכז הכפר. new: יש קווסט חדש. busy: קווסט באמצע. ready: פרס מחכה
   // חיית המחמד (pet.js). השם לפי PET.kinds
   'pet.name.piocho':{he:'פיוחו',en:'PioCho'},
+  'rs.saved':{he:'פיוחו הצילה!',en:'Pyocho to the rescue!'},
   'pet.up':{he:(n,s)=>n+' גדלה! שלב '+s,en:(n,s)=>n+' grew up! Stage '+s},
   'pet.found':{he:n=>n+' מצאה משהו!',en:n=>n+' found something!'},
   'pet.feed':{he:n=>'🥕 תן ל'+n+' גזר קסום',en:n=>'🥕 Give '+n+' a Magical Carrot'},
@@ -927,6 +948,27 @@ const TEXT={
   'qo.fish':{he:'לדוג דגים',en:'Catch fish'},
   'q.wCatch':{he:['סוף סוף דגים','הרוחות הלכו והדגים חזרו! תדוג לי 3 מהבריכה. לחץ "לדוג", חכה ל-! ולחץ כשהמחוג בירוק.'],en:['Fish at Last','The wisps are gone and the fish are back! Catch me 3 from the pond. Tap "Fish", wait for the !, then tap when the needle is in the green.']}
 };
+
+// ======== המטרה הבאה (guide.js) ========
+Object.assign(TEXT,{
+  'g.talk':{he:n=>'דבר עם '+n+': מחכה לך משימה',en:n=>'Talk to '+n+': a quest is waiting'},
+  'g.claim':{he:n=>'חזור אל '+n+' וקח את הפרס',en:n=>'Go back to '+n+' for your reward'},
+  'g.reward':{he:n=>'הושלם: '+n+'. גע כאן לקחת את הפרס',en:n=>'Done: '+n+'. Tap here for your reward'},
+  'g.chClaim':{he:'חזור לכפר: פרס האתגר היומי מחכה',en:'Head home: your daily challenge reward is waiting'},
+  'g.challenge':{he:'נסה את האתגר היומי בעולם',en:'Try the daily challenge out in the world'},
+  'g.explore':{he:r=>'חקור את '+r,en:r=>'Explore '+r},
+  'g.via':{he:g=>'דרך השער: '+g,en:g=>'via the gate: '+g},
+  'g.here':{he:'כאן',en:'here'},
+  'g.m':{he:d=>d+' מ׳',en:d=>d+' m'},
+  'g.tap':{he:'המטרה הבאה: פתח את היומן',en:'Next goal: open the journal'},
+  'g.min':{he:'לכווץ את המטרה',en:'Collapse the goal'},
+  'g.open':{he:'להציג את המטרה',en:'Show the goal'},
+  'g.now':{he:'עכשיו:',en:'Now:'},
+  'g.jump':{he:'קפוץ',en:'Jump'},
+  'g.noJump':{he:'אי אפשר לקפוץ באמצע קרב',en:'You cannot jump in the middle of a fight'},
+  'g.why.sec':{he:'🔍 סודות שמצאת באזור הזה, מתוך כולם',en:'🔍 Secrets you found in this area, out of all of them'},
+  'g.why.ch':{he:'🌀 האתגר היומי: כמה אויבים הפלת היום תחת החוק המיוחד',en:'🌀 Daily challenge: foes defeated today under the special rule'}
+});
 
 // ======== מפת העולם (worldmap.js) ========
 Object.assign(TEXT,{

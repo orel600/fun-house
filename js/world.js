@@ -24,6 +24,7 @@ const WORLD={
   foes:[
     {type:'grunt',n:2,x:-185,y:-450,r:95},{type:'grunt',n:2,x:190,y:-430,r:95},{type:'grunt',n:3,x:0,y:-320,r:100},
     {type:'grunt',n:3,x:-100,y:-180,r:140},{type:'grunt',n:3,x:305,y:225,r:140},
+    {type:'grunt',n:3,x:-420,y:-560,r:110},   // על הדרך מהבית לאגם (1.11.2026: "העולם ריק")
     {type:'wisp',n:2,x:-510,y:95,r:150},{type:'shield',n:2,x:450,y:50,r:130},
     {type:'treant',creature:true,n:2,x:-690,y:-305,r:170},{type:'golem',creature:true,n:2,x:655,y:-210,r:150},
     {type:'crawler',creature:true,n:2,x:785,y:-385,r:105},{type:'sprite',creature:true,n:2,x:-335,y:65,r:115}
@@ -31,13 +32,13 @@ const WORLD={
   aggro:240,                             // מאיזה מרחק אויב רודף
   attackRange:260,                       // ההתקפה האוטומטית בוחרת רק מטרות עד המרחק הזה, וחץ או קסם לא פוגעים במה שרחוק ממנו (ניר, 31.10.2026: "בעולם הפתוח טווח ההתקפה צריך להיות מוגבל יותר"). בזירה הטווח של הנשק עצמו (אוראל)
   wander:0.4,                            // מהירות ההסתובבות ליד הבית, יחסית לרדיפה
-  far:300,                               // קבוצה שנוקתה חוזרת רק כשהשחקן רחוק ממנה לפחות כך, כדי שלא תצוץ מול העיניים
+  far:260,                               // קבוצה שנוקתה חוזרת רק כשהשחקן רחוק ממנה לפחות כך, כדי שלא תצוץ מול העיניים. ולפחות חצי אלכסון המסך, כי המצלמה רואה רחוק (camera.js)
   /* כמה קשה, לפי המרחק של בית הקבוצה מהשער לכפר: ככל שמתרחקים, קשה יותר. to: עד איזה מרחק. hp, dmg, speed: פי כמה מהרגיל (ETYPES).
      leash: כמה רחוק מהבית האויב מוכן לרדוף לפני שהוא חוזר. back: שניות עד שקבוצה שנוקתה חוזרת */
   zones:[
-    {id:'start',to:360, hp:0.35,dmg:0.25,speed:0.6, leash:240,back:20},
-    {id:'near', to:800, hp:0.7, dmg:0.6, speed:0.85,leash:360,back:35},
-    {id:'far',  to:1e9, hp:1,   dmg:1,   speed:1,   leash:480,back:45}
+    {id:'start',to:360, hp:0.35,dmg:0.25,speed:0.6, leash:240,back:12},
+    {id:'near', to:800, hp:0.7, dmg:0.6, speed:0.85,leash:360,back:22},
+    {id:'far',  to:1e9, hp:1,   dmg:1,   speed:1,   leash:480,back:30}
   ],
   regen:4,                               // חיים לשנייה כשאין אויב קרוב
   decor:{trees:74,hills:14,rocks:0.15},  // קישוטים מחוץ לגבול. rocks: איזה חלק מהם סלעים
@@ -63,9 +64,9 @@ const WORLD={
       ],
       // קשה מהאחו: מי שהגיע לכאן כבר הדליק פנס אחד
       zones:[
-        {id:'start',to:360, hp:0.6,dmg:0.5,speed:0.75,leash:260,back:25},
-        {id:'near', to:800, hp:1,  dmg:0.9,speed:0.95,leash:380,back:35},
-        {id:'far',  to:1e9, hp:1.4,dmg:1.2,speed:1.05,leash:480,back:45}
+        {id:'start',to:360, hp:0.6,dmg:0.5,speed:0.75,leash:260,back:16},
+        {id:'near', to:800, hp:1,  dmg:0.9,speed:0.95,leash:380,back:22},
+        {id:'far',  to:1e9, hp:1.4,dmg:1.2,speed:1.05,leash:480,back:30}
       ],
       decor:{trees:60,hills:14,rocks:0.45}
     },
@@ -86,9 +87,9 @@ const WORLD={
       ],
       // קשה מהאגם: מי שהגיע לכאן כבר הדליק שני פנסים
       zones:[
-        {id:'start',to:360, hp:0.8,dmg:0.6,speed:0.8, leash:260,back:25},
-        {id:'near', to:800, hp:1.3,dmg:1.05,speed:1,  leash:380,back:35},
-        {id:'far',  to:1e9, hp:1.8,dmg:1.35,speed:1.08,leash:480,back:45}
+        {id:'start',to:360, hp:0.8,dmg:0.6,speed:0.8, leash:260,back:16},
+        {id:'near', to:800, hp:1.3,dmg:1.05,speed:1,  leash:380,back:22},
+        {id:'far',  to:1e9, hp:1.8,dmg:1.35,speed:1.08,leash:480,back:30}
       ],
       decor:{trees:66,hills:16,rocks:0.35}
     },
@@ -109,9 +110,9 @@ const WORLD={
       ],
       // קשה מהרכס: מי שהגיע לכאן כבר הדליק שלושה פנסים
       zones:[
-        {id:'start',to:360, hp:0.9,dmg:0.65,speed:0.8, leash:260,back:25},
-        {id:'near', to:800, hp:1.5,dmg:1.15,speed:1,  leash:380,back:35},
-        {id:'far',  to:1e9, hp:2.1,dmg:1.5, speed:1.1,leash:480,back:45}
+        {id:'start',to:360, hp:0.9,dmg:0.65,speed:0.8, leash:260,back:16},
+        {id:'near', to:800, hp:1.5,dmg:1.15,speed:1,  leash:380,back:22},
+        {id:'far',  to:1e9, hp:2.1,dmg:1.5, speed:1.1,leash:480,back:30}
       ],
       decor:{trees:30,hills:22,rocks:0.7}
     },
@@ -133,9 +134,9 @@ const WORLD={
       ],
       // קשה מהמדבר: מי שהגיע לכאן כבר הדליק ארבעה פנסים
       zones:[
-        {id:'start',to:360, hp:0.95,dmg:0.7,speed:0.8, leash:260,back:25},
-        {id:'near', to:800, hp:1.7, dmg:1.25,speed:1,  leash:380,back:35},
-        {id:'far',  to:1e9, hp:2.4, dmg:1.65,speed:1.12,leash:480,back:45}
+        {id:'start',to:360, hp:0.95,dmg:0.7,speed:0.8, leash:260,back:16},
+        {id:'near', to:800, hp:1.7, dmg:1.25,speed:1,  leash:380,back:22},
+        {id:'far',  to:1e9, hp:2.4, dmg:1.65,speed:1.12,leash:480,back:30}
       ],
       decor:{trees:40,hills:20,rocks:0.6}
     },
@@ -155,9 +156,9 @@ const WORLD={
       ],
       // הכי קשה: מי שהגיע לכאן כבר הדליק חמישה פנסים
       zones:[
-        {id:'start',to:360, hp:1.1, dmg:0.8, speed:0.85,leash:260,back:25},
-        {id:'near', to:800, hp:1.9, dmg:1.35,speed:1,   leash:380,back:35},
-        {id:'far',  to:1e9, hp:2.6, dmg:1.8, speed:1.14,leash:480,back:45}
+        {id:'start',to:360, hp:1.1, dmg:0.8, speed:0.85,leash:260,back:16},
+        {id:'near', to:800, hp:1.9, dmg:1.35,speed:1,   leash:380,back:22},
+        {id:'far',  to:1e9, hp:2.6, dmg:1.8, speed:1.14,leash:480,back:30}
       ],
       decor:{trees:50,hills:18,rocks:0.5}
     }
@@ -240,7 +241,8 @@ function wFoes(dt){
     if(e.dead)continue;
     if(e.wanted){wantedMove(e,dt);continue}
     if(e.warden){storyWardenMove(e,dt);continue}
-    if(e.evt){evFoeMove(e,dt);continue}   // גל של אירוע (events.js)   // השומר האבן (story.js)
+    if(e.evt){evFoeMove(e,dt);continue}
+    if(e.pack){paceFoeMove(e,dt);continue}   // להקה שמגיעה מקצה המסך (pacing.js)   // גל של אירוע (events.js)   // השומר האבן (story.js)
     alive[e.home]++;
     const G=FO[e.home]||FO[0],dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;
     let mx=0,my=0,sp=e.speed;
@@ -255,7 +257,7 @@ function wFoes(dt){
   }
   // קבוצה שנוקתה חוזרת אחרי זמן, כשהשחקן רחוק ממנה
   FO.forEach((G,i)=>{const g=S.wd.groups[i];if(alive[i]||!ETYPES[G.type])return;
-    if(g.t<=0)g.t=wZone(G).back;else if((g.t-=dt)<=0&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+WORLD.far){wSpawn(G,i);g.n=(g.n||0)+1}else g.t=Math.max(g.t,0.01)});
+    if(g.t<=0)g.t=wZone(G).back;else if((g.t-=dt)<=0&&paceRoom(G.n)&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+Math.max(WORLD.far,Math.hypot(W,H)/2)){wSpawn(G,i);g.n=(g.n||0)+1}else g.t=Math.max(g.t,0.01)});
 }
 
 /* ---- כל פריים בעולם ---- */
@@ -271,6 +273,7 @@ function worldUpdate(dt){
   }
   wPonds(P);
   attack(dt);   // פוגעת גם במקורות משאבים (aimTarget ב-combat.js)
+  skillsUpdate(dt);orbitUpdate(dt);wskUpdate(dt);wskHud();   // סקילים שיורים והחפצים המסתובבים, כמו בזירה (wskill.js, skills.js, orbit.js)
   wFoes(dt);if(S.mode!=='play')return;
   const hitable=S.nd.list.length?enemies.concat(S.nd.list):enemies;   // קליעים פוגעים גם במקורות משאבים (nodes.js), כמו בזירה
   for(const b of pb){shotFly(b,dt);
@@ -280,7 +283,7 @@ function worldUpdate(dt){
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
-  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js)
+  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
   dropsUpdate(dt);secretsUpdate(dt);wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);

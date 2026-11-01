@@ -206,12 +206,14 @@ const gRarCol=k=>RES.rarity[Math.min(gRar(k),RES.rarity.length-1)].col;
 const gSign=(k,v)=>'<bdi>'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T(GEAR.stats[k].t||'st.'+k);
 function gStatsHtml(id){const it=gItem(id),s=gStats(id);
   if(it.slot==='orbit')return '<p>'+T('orb.'+it.type)+' · '+T('orb.do.'+it.type)+'</p>';
-  return '<ul class="gstats">'+Object.keys(s).map(k=>'<li>'+gSign(k,s[k])+'</li>').join('')+'</ul>'}
+  return '<ul class="gstats">'+(it.w?'<li class="gdmg">'+wRangeTxt(wItemAvg(id),it.w)+'</li>':'')+Object.keys(s).map(k=>'<li>'+gSign(k,s[k])+'</li>').join('')+'</ul>'}
 // מה ישתנה אם לובשים: לכל סטט, ההפרש מול מה שיוצא מהמשבצת, עם חץ למעלה או למטה
 function gCompare(id,old){
   const a=gearStats([id]),b=gearStats(old?[old]:[]),ks=[...new Set([...Object.keys(a),...Object.keys(b)])].filter(k=>(a[k]||0)!==(b[k]||0));
-  if(!ks.length)return '<p class="dim">'+T('gear.same')+'</p>';
-  return '<p class="cmp">'+ks.map(k=>{const d=(a[k]||0)-(b[k]||0);return '<span class="'+(d>0?'up':'down')+'">'+(d>0?'▲':'▼')+' '+gSign(k,d)+'</span>'}).join('')+'</p>';
+  // נשק: הטווח החדש, עם חץ לפי הממוצע מול הנשק שיוצא
+  const it=gItem(id),da=it&&it.w?wItemAvg(id)-wItemAvg(old):0,dmg=it&&it.w&&Math.abs(da)>0.05?'<span class="'+(da>0?'up':'down')+'">'+(da>0?'▲':'▼')+' '+wRangeTxt(wItemAvg(id),it.w)+'</span>':'';
+  if(!ks.length&&!dmg)return '<p class="dim">'+T('gear.same')+'</p>';
+  return '<p class="cmp">'+dmg+ks.map(k=>{const d=(a[k]||0)-(b[k]||0);return '<span class="'+(d>0?'up':'down')+'">'+(d>0?'▲':'▼')+' '+gSign(k,d)+'</span>'}).join('')+'</p>';
 }
 // משבצת או תא בתרמיל: מסגרת בצבע הנדירות, ופס בצבע סוג הנזק לנשק
 function gTile(id,attrs,extra){
@@ -387,5 +389,5 @@ $('ovGear').addEventListener('click',e=>{
   else if(a==='take')gDoStash('out',sel.sid);
   gRedraw();
 });
-$('gearBtn').addEventListener('click',gearOpen);$('gearBtnRun').addEventListener('click',gearOpen);
+$('gearBtnRun').addEventListener('click',gearOpen);
 // Esc ולחיצה על הרקע סוגרים: ui.js

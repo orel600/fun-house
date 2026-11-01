@@ -33,7 +33,7 @@
   <svg id="ico" viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></svg>
   <span id="swaplbl"></span>
 </button>
-<!-- הסקילים: עד 3 כפתורים בצד ימין למטה, רק בזירה (js/skills.js) -->
+<!-- הסקילים: עד 3 כפתורים בצד ימין למטה, בזירה ובעולם (js/skills.js, ובעולם גם js/wskill.js) -->
 <button class="divine" id="divine" type="button" hidden></button>
 <div class="skills" id="skills" role="group" data-ta="sk.group" hidden></div>
 
@@ -44,20 +44,28 @@
 <!-- העולם הפתוח: שם האזור ומה שבתרמיל למעלה, ופאנל ליד שער (js/world.js) -->
 <div class="whud" id="whud" hidden><b id="wName"></b><b id="wSec" class="wsec"></b><span class="chtag" id="chTag" hidden></span><div class="bag tbar" id="wBag" role="group" data-ta="bagGroup"></div></div>
 <div class="vpanel win" id="wPanel" hidden></div>
-<!-- מפת העולם (js/worldmap.js): כפתור בפינה העליונה, רק בעולם, וחלון עם מפה של כל האזורים ושל האזור הנוכחי -->
-<button class="wmapbtn" id="wMapBtn" data-ta="wm.title"><span aria-hidden="true">🗺️</span></button>
+<!-- המטרה הבאה (js/guide.js): שורה אחת למעלה, בכפר ובעולם. נגיעה פותחת את היומן, ▴ מכווץ -->
+<div class="guide" id="guide" hidden><button class="gmain" id="guideMain" type="button" data-ta="g.tap"><span class="gico" id="guideIco"></span><span class="gtxt" id="guideTxt"></span><b class="gdist" id="guideDist"></b></button><button class="gjump" id="guideJump" type="button" hidden></button><button class="gmin" id="guideMin" type="button"></button></div>
+<!-- מפת העולם (js/worldmap.js): חלון עם מפה של כל האזורים ושל האזור הנוכחי. נפתח מהתפריט הראשי -->
 <div class="qlog win wmapwin" id="wMap" hidden></div>
 <!-- קפיצה בין פנסים (js/travel.js): הבזק אור בצבע הפנס על כל המסך -->
 <div class="trflash" id="trFlash" hidden></div>
-<!-- סרגל למטה, בכפר ובעולם (js/ui.js): היומן, "לדבר" כשעומדים ליד מישהו, והציוד. הוא לא מכסה אף חלון: החלונות נגמרים מעליו -->
+<!-- סרגל למטה, בכפר ובעולם: רק מה ששייך למקום שבו עומדים ("לדבר" ליד דמות, לדוג ליד מים, קפיצה ליד פנס). הוא לא מכסה אף חלון -->
 <nav class="bnav" id="nav">
-  <button class="nbtn" id="qBtn"><span class="ni" aria-hidden="true">📜</span><span data-t="q.log"></span><b id="qBadge" hidden></b></button>
   <button class="nbtn talkbtn" id="talkBtn" hidden></button>
   <button class="nbtn talkbtn feedbtn" id="feedBtn" hidden></button>
   <button class="nbtn talkbtn fishbtn" id="fishBtn" hidden></button>
   <button class="nbtn talkbtn trbtn" id="trBtn" hidden></button>
-  <button class="nbtn" id="gearBtn"><span class="ni" aria-hidden="true">🎒</span><span data-t="gear.btn"></span><b id="gBadge" hidden></b></button>
-  <button class="nbtn" id="bookBtn"><span class="ni" aria-hidden="true">📖</span><span data-t="book.btn"></span><b id="bBadge" hidden></b></button>
+</nav>
+<!-- התפריט הראשי (js/menu.js): ☰ בפינה העליונה, בכפר ובעולם, ומסך מלא עם לשוניות בצד. כל לשונית מציגה חלון קיים -->
+<button class="mute menubtn" id="menuBtn" data-ta="menu.btn"><span aria-hidden="true">☰</span><b hidden></b></button>
+<div class="menubg" id="menuBg"></div>
+<nav class="mrail" id="menuRail" role="tablist" data-ta="menu.btn">
+  <button class="mtab" id="gearBtn" role="tab"><span class="ni" aria-hidden="true">🎒</span><span data-t="menu.hero"></span><b id="gBadge" hidden></b></button>
+  <button class="mtab" id="qBtn" role="tab"><span class="ni" aria-hidden="true">📜</span><span data-t="q.log"></span><b id="qBadge" hidden></b></button>
+  <button class="mtab" id="bookBtn" role="tab"><span class="ni" aria-hidden="true">📖</span><span data-t="book.btn"></span><b id="bBadge" hidden></b></button>
+  <button class="mtab" id="wMapBtn" role="tab"><span class="ni" aria-hidden="true">🗺️</span><span data-t="wm.title"></span></button>
+  <button class="mtab" id="setBtn" role="tab"><span class="ni" aria-hidden="true">⚙️</span><span data-t="set.title"></span></button>
 </nav>
 <!-- מתנה יומית שעוד לא נלקחה: כפתור עגול קטן בפינה העליונה, מתחת להשתקה. לא בסרגל, כדי שלא ידחוף כפתורים החוצה (js/daily.js) -->
 <!-- ביקור אצל חבר: כפתור עגול מתחת למתנה, רק בכפר. דהוי בלי Google (js/visit.js) -->
@@ -97,6 +105,8 @@
   </div>
 </div>
 
+<!-- "בזמן שלא היית": חלון אחד בכניסה לכפר שאוסף הכל (js/welcome.js) -->
+<div class="ov gearov" id="ovWelcome" hidden><div class="panel win dailywin welwin" id="welWin"></div></div>
 <!-- מתנה יומית: לוח של 7 ימים, נפתח בכניסה הראשונה לכפר בכל יום (js/daily.js) -->
 <div class="ov gearov" id="ovDaily" hidden><div class="panel win dailywin" id="dailyWin"></div></div>
 <!-- ביקור אצל חבר: רשימת חברים, הכפר שלו לקריאה בלבד, ומתנה עם פתק (js/visit.js) -->
@@ -215,6 +225,14 @@
         <button class="lang" data-gfx="2d" data-t="gfx2d"></button>
       </div>
     </div>
+    <!-- מצלמה בעולם ובכפר: קרוב / רגיל / רחוק (js/camera.js). הזירה לא משתנה -->
+    <div class="sub gfx cam"><span data-t="camGroup"></span>
+      <div class="langs" role="group" data-ta="camGroup">
+        <button class="lang" data-cam="near" data-t="cam.near"></button>
+        <button class="lang" data-cam="mid" data-t="cam.mid"></button>
+        <button class="lang" data-cam="far" data-t="cam.far"></button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -255,6 +273,7 @@
 <script src="js/nodes.js"></script>
 <script src="js/village.js"></script>
 <script src="js/world.js"></script>
+<script src="js/wskill.js"></script>
 <script src="js/drops.js"></script>
 <script src="js/quests.js"></script>
 <script src="js/npc.js"></script>
@@ -264,6 +283,7 @@
 <script src="js/homecoming.js"></script>
 <script src="js/affix.js"></script>
 <script src="js/events.js"></script>
+<script src="js/pacing.js"></script>
 <script src="js/secrets.js"></script>
 <script src="js/worldmap.js"></script>
 <script src="js/travel.js"></script>
@@ -279,16 +299,23 @@
 <script src="js/ranks.js"></script>
 <script src="js/stats.js"></script>
 <script src="js/pet.js"></script>
+<script src="js/rescue.js"></script>
 <script src="js/daily.js"></script>
 <script src="js/visit.js"></script>
 <script src="js/book.js"></script>
+<script src="js/guide.js"></script>
+<script src="js/welcome.js"></script>
 <script src="js/ui.js"></script>
+<script src="js/menu.js"></script>
 <script src="js/update.js"></script>
 <script src="js/rig.js"></script>
 <script src="js/fx.js"></script>
+<script src="js/juice.js"></script>
 <script src="js/vendor/three-bundle.js"></script>
 <script src="js/models3d.js"></script>
 <script src="js/render3d.js"></script>
+<script src="js/camera.js"></script>
+<script src="js/look-hd.js"></script>   <!-- מראה הכפר והעולם: שלב 1 לכולם, ?look=classic מכבה, ?look=hd מוסיף ניסויים (docs/visual-plan.md) -->
 <script src="js/render.js"></script>
 <script src="js/input.js"></script>
 <script src="js/main.js"></script>

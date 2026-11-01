@@ -61,12 +61,12 @@ function bookWeak(k){
   const x=BOOK.extra[k]||{};if(x.learns)return 'learns';
   const t=ETYPES[x.same||k];return t?weakOf(multOf(t.tags)):null;
 }
-function bookClaim(){
+function bookClaim(quiet){   // quiet: בלי חגיגה והודעה (welcome.js)
   const n=bookPending();if(!n)return false;
   const b=BK(),got={};
   for(let i=0;i<n;i++){b.paid++;const r=bookReward(b.paid);for(const k in r)got[k]=(got[k]||0)+r[k]}
   for(const k in got)bagAdd(k,got[k]);
-  saveNow();sfx('celebrate');
+  saveNow();if(quiet){bookBadge();return got}sfx('celebrate');
   if(P)celebrate(P.x,P.y,'quest','📖');
   banner(T('book.got',Object.keys(got).map(k=>resIcon(k)+got[k]).join(' ')),C.gold);
   bookBadge();return got;
@@ -108,7 +108,7 @@ function bookOpen(on){
   if(on){if(!S||S.mode!=='play')return;if(!$('qLog').hidden)questLogOpen(false);npcTalk(null);S.mode='book';joy=null;BKU.sel=null;w.hidden=false;bookDraw()}
   else{w.hidden=true;if(S&&S.mode==='book')S.mode='play'}
 }
-$('bookBtn').addEventListener('click',()=>bookOpen($('bookWin').hidden));
+// הכפתור: לשונית בתפריט הראשי (menu.js)
 $('bookWin').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;const a=b.dataset.act;
   if(a==='close'){bookOpen(false);return}

@@ -74,7 +74,7 @@ function storyVillage(){
 // ראש הכפר אומר משפט, כשאין חלון פתוח (יומן, ציוד, שיחה), כדי לא לסגור לשחקן משהו באמצע
 function storySay(key,delay,first){
   setTimeout(function go(){if(!S.vil)return;
-    if(S.mode!=='play'||!$('qLog').hidden||!$('npcDlg').hidden||!$('ovGear').hidden||!$('ovDaily').hidden){setTimeout(go,1000);return}
+    if(S.mode!=='play'||!$('qLog').hidden||!$('npcDlg').hidden||!$('ovGear').hidden||!$('ovDaily').hidden||!$('ovWelcome').hidden){setTimeout(go,1000);return}
     if(first)first();npcTalk('head');S.vil.dlgStay=true;S.vil.dlgLine=T(key);npcDialog()},delay*1000);
 }
 
@@ -229,6 +229,6 @@ function storyDraw(){
 }
 function storyScreen(ox,oy){
   const k=storyLantern();if(!k)return;const L=STORY.lanterns[k],e=S.wd.warden;
-  if(qOn(L.quest))edgeArrow(L.x+ox,L.y+oy,L.col,1.2);   // חץ לפנס כשהקווסט פעיל
+  // החץ לפנס כשהקווסט פעיל: guide.js
   if(e&&!e.dead){ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 14px Heebo, system-ui, sans-serif';ctx.fillStyle=L.col;ctx.fillText(T('story.'+k+'.name'),e.x+ox,e.y+oy-e.r-56)}
 }

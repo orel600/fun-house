@@ -32,8 +32,9 @@ function affixOnKill(e){
   const A=AFFIX.list[e.affix];
   dropSpawn('coins',Math.round(rand(...AFFIX.loot.coins)),e.x,e.y);
   if(e.affix==='burst')(S.wd.blasts||(S.wd.blasts=[])).push({x:e.x,y:e.y,t:A.fuse,max:A.fuse});
-  if(e.affix==='split')for(let i=0;i<A.n;i++){const k=addEnemy(e.type,e.x+rand(-20,20),e.y+rand(-20,20),1);
-    k.hp=k.max=e.max*A.hp;k.r=e.r*0.75;k.dmg=e.dmg*0.6;k.speed=e.speed;k.xp=0;k.home=e.home;k.split=true;k.elite=false}
+  if(e.affix==='split')for(let i=0,n=Math.min(A.n,paceFree());i<n;i++){   // paceFree: לא עוברים את המגבלה (pacing.js)
+    const k=addEnemy(e.type,e.x+rand(-20,20),e.y+rand(-20,20),1);
+    k.hp=k.max=e.max*A.hp;k.r=e.r*0.75;k.dmg=e.dmg*0.6;k.speed=e.speed;k.xp=0;k.home=e.home;k.split=true;k.elite=false;if(e.pack){k.pack=e.pack;e.pack.left++}}
 }
 // כל פריים בעולם (world.js): פיצוצים שמחכים, ומרפאים
 function affixUpdate(dt){
@@ -56,7 +57,10 @@ function affixDraw(){
 function affixScreen(ox,oy){
   if(!S.wd)return;
   ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 12px Heebo, system-ui, sans-serif';
-  for(const e of enemies){if(e.dead||!e.affix)continue;const x=e.x+ox,y=e.y+oy-e.r-30;if(!onScreen(x,y))continue;
-    ctx.fillStyle='rgba(10,12,20,0.7)';const t=T('af.'+e.affix),tw=ctx.measureText(t).width+10;ctx.fillRect(x-tw/2,y-11,tw,15);
+  // מהקרוב לרחוק, ושם שהיה עולה על שם אחר לא מצויר: עם הרבה מפלצות השמות לא נערמים (בדיקת חוויה, #121)
+  const box=[],list=enemies.filter(e=>!e.dead&&e.affix).sort((a,b)=>Math.hypot(a.x-P.x,a.y-P.y)-Math.hypot(b.x-P.x,b.y-P.y));
+  for(const e of list){const x=e.x+ox,y=e.y+oy-e.r-30;if(!onScreen(x,y))continue;
+    const t=T('af.'+e.affix),tw=ctx.measureText(t).width+10;if(box.some(b=>Math.abs(b.x-x)<(b.w+tw)/2+4&&Math.abs(b.y-y)<19))continue;box.push({x,y,w:tw});
+    ctx.fillStyle='rgba(10,12,20,0.7)';ctx.fillRect(x-tw/2,y-11,tw,15);
     ctx.fillStyle=AFFIX.list[e.affix].col;ctx.fillText(t,x,y)}
 }

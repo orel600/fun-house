@@ -81,6 +81,11 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .divine.ready{box-shadow:0 0 12px var(--gold)}
 .divine:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
 .vil .skills,.vil .divine{display:none}
+/* בעולם (js/wskill.js): בזמן ההמתנה מספר השניות גדול באמצע, ובגרירה הכפתור מתכווץ */
+/* הסרגל התחתון כבר לא בפינה הזו (התפריט הראשי, menu.js), אז הכפתורים בגובה הרגיל */
+.world .skb[data-sec]:not([data-sec=""])::after{content:attr(data-sec);position:absolute;inset:0;display:grid;place-items:center;z-index:1;
+  font:900 26px/1 var(--body);color:#fff;text-shadow:0 0 4px #000,0 2px 0 #000;pointer-events:none}
+.world .skills.aiming .skb{transform:scale(.92)}
 .banner{position:fixed;z-index:3;left:0;right:0;top:32%;text-align:center;font-family:var(--display);font-size:28px;
   pointer-events:none;opacity:0;transition:opacity .25s;padding-inline:16px;text-shadow:0 2px 0 #0008}
 .banner.on{opacity:1}
@@ -349,6 +354,7 @@ h1{font-size:46px} h2{font-size:30px}
 .gdhead h3{font-size:18px;line-height:1.1}
 .gdhead small{color:var(--dim);font-weight:700;font-size:12px}
 .gstats{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;font-size:14px;font-weight:700}
+.gstats .gdmg{color:var(--chalk);font-size:15px}
 .gage{color:var(--gold);font-weight:800}
 /* הכפתורים נשארים גלויים גם כשהפרטים גוללים */
 .gbtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;position:sticky;bottom:-10px;padding:6px 0 2px;background:var(--panel)}
@@ -541,6 +547,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .sndpanel .whd{grid-column:1/-1}
   .sndpanel #sndMute{grid-column:2;grid-row:3}
   .sndpanel .gfx{grid-column:2;grid-row:2}
+  .sndpanel .cam{grid-column:2;grid-row:4}
 }
 .panel.win>.whd{margin-top:8px}
 
@@ -552,6 +559,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .stxp bdi{position:relative;display:block;text-align:center;font:800 11px/16px var(--body);color:var(--chalk);text-shadow:0 1px 2px #000}
 .stfree{margin:6px 0 2px;font:700 13px var(--body);color:var(--dim)}
 .stfree.on{color:var(--gold)}
+.stdmg{margin:4px 0 0;font:800 14px var(--body);color:var(--chalk)}
 .strows{display:flex;flex-direction:column;gap:4px}
 .strow{display:flex;align-items:center;gap:8px;background:rgba(18,22,36,.6);border:1px solid var(--line);border-radius:10px;padding:2px 6px}
 .sti{font-size:20px;width:26px;text-align:center}
@@ -590,9 +598,8 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .res .ri,.ti .ri,.tp .ri,.gtile .ri{width:1.35em;height:1.35em;vertical-align:-.3em;object-fit:contain}
 .gtile .ri{width:70%;height:70%}
 .gdicon .ri{width:42px;height:42px}
-#qBtn .ni,#gearBtn .ni{font-size:0;width:34px;height:34px;background:center/contain no-repeat}
+#qBtn .ni,#gearBtn .ni{font-size:0;width:30px;height:30px;background:center/contain no-repeat}
 #qBtn .ni{background-image:url(../icons/ui/nav-quests.png)}#gearBtn .ni{background-image:url(../icons/ui/nav-gear.png)}
-@media (orientation:landscape) and (max-height:500px){#qBtn .ni,#gearBtn .ni{width:28px;height:28px}}
 .trkey{margin:4px 0 0;font:800 11px var(--body);color:var(--gold)}.tror{margin:-2px 0;text-align:center;font:700 11px var(--body);color:var(--dim)}.trn.gone{opacity:.3}
 .bname{color:var(--chalk);background:rgba(255,138,61,.2);border:1px solid var(--ember);border-radius:8px;padding:0 6px}
 
@@ -733,12 +740,6 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .chtag[hidden]{display:none}
 @media (orientation:portrait){.chtag{display:none}}   /* בטלפון עומד אין מקום בפס העליון. האתגר ביומן */
 
-/* מפת העולם (js/worldmap.js): כפתור עגול בפינה העליונה, מתחת להשתקה, רק בעולם (במקום של כפתור המתנה, שמוסתר בעולם). לא בפינה של הסקילים */
-.wmapbtn{display:none;position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 62px);inset-inline-end:max(16px,env(safe-area-inset-right,0px));width:52px;height:52px;
-  border-radius:50%;border:2px solid var(--gold);background:rgba(18,22,36,.85);font-size:26px;padding:0;cursor:pointer;place-items:center;box-shadow:0 3px 0 #0B0E18}
-.world .wmapbtn{display:grid}
-.wmapbtn:active{transform:scale(.92)}
-.wmapbtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 /* החלון: שתי מפות, אחת ליד השנייה לרוחב ואחת מעל השנייה כשהטלפון עומד. בלי גלילה */
 .qlog.win.wmapwin{z-index:7;display:flex;flex-direction:column;gap:6px;overflow:hidden}   /* מעל ההשתקה, כדי שה-✕ לא יוסתר */
 .wmcols{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
@@ -773,3 +774,103 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .gdoll .gslot .k{font-size:9px}
   .gd-end .grow{display:grid;grid-template-columns:repeat(2,40px);gap:4px}   /* אקססוריז ונעליים בשני טורים במקום עמודה גבוהה */
 }
+
+/* ===== התפריט הראשי (js/menu.js, ניר 1.11.2026: "יש הרבה כפתורים וחלונות") =====
+   ☰ אחד בפינה העליונה (במקום ההשתקה, שעברה ללשונית "הגדרות"), רק בכפר ובעולם. נפתח מסך מלא: רקע כהה, לשוניות בצד,
+   והחלון של הלשונית בכל השאר. בטלפון עומד הלשוניות למטה. בזירה הכל נשאר כמו שהיה */
+:root{--rail:calc(88px + max(0px,env(safe-area-inset-left,0px),env(safe-area-inset-right,0px)));--railh:calc(70px + env(safe-area-inset-bottom,0px))}
+.menubtn{display:none;font-size:24px;line-height:1;border-color:var(--gold);color:var(--gold);width:48px;height:48px}
+.vil .menubtn,.world .menubtn{display:grid}
+.vil #muteBtn,.world #muteBtn{display:none}
+.menubtn>b{position:absolute;top:-3px;inset-inline-end:-3px;width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);background:var(--blood)}
+.menubtn:active{transform:scale(.92)}
+.bnav:not(:has(.nbtn:not([hidden]))){display:none!important}   /* סרגל בלי כפתורים לא נראה */
+.menubg{display:none;position:fixed;inset:0;z-index:4;background:rgba(10,12,20,.78);backdrop-filter:blur(2px)}
+.mrail{display:none;position:fixed;z-index:8;top:0;bottom:0;inset-inline-end:0;width:var(--rail);box-sizing:border-box;
+  flex-direction:column;justify-content:center;gap:6px;padding:8px max(8px,env(safe-area-inset-left,0px),env(safe-area-inset-right,0px));
+  background:linear-gradient(90deg,#141A2B,#1D2438);border-inline-start:2px solid #3A4566;box-shadow:0 0 20px #0009}
+body.menu .menubg,body.menu .mrail{display:flex}
+body.menu #nav,body.menu .menubtn,body.menu .dgift{display:none!important}
+.mtab{appearance:none;position:relative;flex:0 1 60px;min-height:50px;max-height:64px;border-radius:14px;border:2px solid #3A4566;padding:2px;
+  background:linear-gradient(#2C3654,#1D2438);color:var(--chalk);font:800 11px/1 var(--body);cursor:pointer;box-shadow:0 3px 0 #0B0E18;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;white-space:nowrap;touch-action:manipulation}
+.mtab[hidden]{display:none}
+.mtab .ni{font-size:22px;line-height:1}
+.mtab[aria-selected=true]{border-color:var(--gold);color:var(--gold);background:linear-gradient(#3A3220,#241F14)}
+.mtab:active{transform:scale(.92)}
+.mtab:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
+.mtab>b{position:absolute;top:-6px;inset-inline-start:-6px;min-width:20px;height:20px;padding:0 4px;border-radius:10px;border:2px solid var(--ink);
+  background:var(--blood);color:#fff;font:900 11px/16px var(--body);text-align:center}
+/* החלון של הלשונית: כל המסך חוץ מהלשוניות */
+body.menu .qlog.win:not(.npcdlg){top:max(8px,env(safe-area-inset-top,0px));bottom:max(8px,env(safe-area-inset-bottom,0px));
+  inset-inline-start:max(12px,env(safe-area-inset-left,0px),env(safe-area-inset-right,0px));inset-inline-end:calc(var(--rail) + 8px);width:auto;max-width:none;margin:0}
+body.menu #ovGear,body.menu #ovSound{padding-inline-end:var(--rail);background:none;backdrop-filter:none}
+body.menu #ovGear .gearpanel{height:100%}
+@media (orientation:portrait){
+  .mrail{top:auto;inset-inline:0;bottom:0;width:auto;height:var(--railh);flex-direction:row;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));
+    border-inline-start:0;border-top:2px solid #3A4566;background:linear-gradient(#1D2438,#141A2B)}
+  .mtab{flex:1 1 0;max-height:none;min-width:0}
+  body.menu .qlog.win:not(.npcdlg){inset-inline-end:max(12px,env(safe-area-inset-right,0px));bottom:calc(var(--railh) + 8px)}
+  body.menu #ovGear,body.menu #ovSound{padding-inline-end:16px;padding-bottom:var(--railh)}
+}
+/* המטרה הבאה (js/guide.js): שורה אחת באמצע למעלה, מתחת לפס העליון. לא בפינות (השתקה, מפה, מתנה) ולא למטה (הסרגל והסקילים) */
+.guide{position:fixed;z-index:3;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 50px);max-width:min(60vw,560px);
+  display:flex;align-items:stretch;gap:2px;pointer-events:auto}
+.world .guide{top:calc(env(safe-area-inset-top,0px) + 74px)}
+body:not(.vil):not(.world) .guide{display:none}
+.guided .qtrack{display:none}
+.guide button{appearance:none;border:1px solid var(--gold);background:rgba(18,22,36,.82);color:var(--chalk);cursor:pointer;font:700 13px var(--body);min-height:36px}
+.gmain{display:flex;align-items:center;gap:6px;min-width:0;padding:0 12px;border-start-start-radius:999px;border-end-start-radius:999px}
+.gmin{width:36px;padding:0;border-start-end-radius:999px;border-end-end-radius:999px;color:var(--gold)}
+.gico{flex:none;font-size:15px}
+.gtxt{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 3px #000}
+.gdist{flex:none;color:var(--gold);font-weight:800;direction:ltr;unicode-bidi:isolate}
+.guide.min .gtxt{display:none}
+.guide button:active{transform:scale(.92)}
+.guide button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+@media (orientation:portrait){.guide{max-width:calc(100vw - 32px)}}
+.whud .wsec,.whud .chtag{pointer-events:auto;cursor:pointer}
+.qsec summary{list-style:none;cursor:pointer;padding:6px 0}
+.qsec summary::-webkit-details-marker{display:none}
+.qsec summary h4::after{content:' ▾'}.qsec[open] summary h4::after{content:' ▴'}
+.gnow{border-color:var(--gold)}.gnow small{color:var(--gold);font-weight:800}.gnow b{font-size:16px;line-height:1.35}
+@media (orientation:portrait){.world .guide{top:calc(env(safe-area-inset-top,0px) + 124px)}}   /* עומד: מתחת לכפתור המפה */
+/* "בזמן שלא היית" (js/welcome.js): רשימה של מה שמחכה, וכפתור גדול אחד */
+.welwin{width:min(560px,92vw)}
+.welbody{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
+.wellist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;overflow:auto;min-height:0}
+.welrow{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--line);font:700 15px var(--body)}
+.welrow b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.welic{font-size:22px;width:28px;text-align:center}
+.welgot{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.welgot .ri,.welsum .ri{width:22px;height:22px}
+.welrow.daily{border-color:var(--gold)}
+.welgo{align-self:center;width:100%;max-width:340px;min-height:52px;font-size:18px}
+.weldone{margin:0;text-align:center;color:var(--gold);font:900 22px var(--body)}
+.welsum{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.welnext{margin:0;text-align:center;font:700 16px var(--body)}
+.welfly{position:fixed;z-index:30;pointer-events:none;display:flex;align-items:center;gap:3px;font:900 18px var(--body);color:var(--gold);text-shadow:0 1px 3px #000}
+.welfly .ri{width:24px;height:24px}
+
+/* ===== מטרות לחיצה ושיחה (בדיקת החוויה, docs/ux-audit.md, סעיפים 2 ו-10) =====
+   כל כפתור בחלון לפחות 48 (docs/ui-guide.md פרק 2): כפתורים ראשיים, לשוניות, מתכונים, מחסן, נקודות דמות ודרגות עולם */
+.vbtn,.stbuilds .vbtn,.gbtns .vbtn,.endwin .vbtn{min-height:48px}
+.ffilter button{min-height:48px;padding-inline:14px}
+button.res{min-height:48px;min-width:48px}
+.stplus{width:48px;height:48px}
+.tierb{min-height:48px}
+/* שיחה לרוחב: הדיוקן והמשפט בטור אחד, הקווסטים והכפתורים בטור השני, כדי שהכל ייכנס בלי לגלול את כל החלון */
+@media (orientation:landscape){
+  .npcdlg.win{width:min(780px,calc(100vw - 32px));display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);column-gap:12px;align-content:start}
+  .npcdlg.win>.whd{grid-column:1/-1}
+  .npcdlg.win>.npcsay{grid-column:1;grid-row:2/span 20;align-self:start;position:sticky;top:52px}
+  .npcdlg.win>:not(.whd):not(.npcsay){grid-column:2}
+}
+/* כפתורי המקום ("לדבר", "לדוג", קפיצה): למטה באמצע, בין הג'ויסטיק (40% השמאליים) לסקילים בפינה הימנית, תמיד באותו מקום (ux-audit סעיף 9) */
+@media (orientation:landscape){.bnav{left:42%;right:auto;transform:none;max-width:calc(58% - 250px)}}
+/* פאנל מבנה בנגיעה (village.js): כפתורים של 48px לפחות, הפעולה העיקרית גדולה, ובמקום כפתור אפור שורה שאומרת למה */
+.vpanel .vbtn{min-height:48px}
+.vpanel .vbtn.vmain{min-height:56px;font-size:18px;box-shadow:0 0 0 2px var(--gold),0 0 14px rgba(255,211,107,.45)}
+.vpanel .vwhy{color:var(--dim);font-size:13px;display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.vpanel .vwhy .res{font-size:13px}
+.gjump{flex:none;padding:0 10px;color:var(--gold);font-weight:800}
