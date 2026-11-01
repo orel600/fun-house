@@ -4,13 +4,16 @@
    המודלים והאנימציות ב-js/models3d.js (KayKit, CC0), ונבנים מחדש עם tools/build3d.js.
    כל דמות משתמשת באותו שלד, אז כל אנימציה עובדת על כל דמות.
 
-   התאמה לקנבס: מצלמה אורתוגרפית ביחידות של פיקסלים, בזווית VIEW.tilt מעל הקרקע.
+   התאמה לקנבס: מצלמה אורתוגרפית ביחידות של פיקסלים, בזווית camTilt() מעל הקרקע (VIEW.tilt לפי המקום).
    נקודה (x,y) במשחק יושבת ב-(x, 0, y/sin(tilt)) בעולם התלת-ממדי, וכך היא מופיעה על המסך בדיוק איפה שהקנבס מצייר אותה.
    אם WebGL לא זמין, או שהשחקן בחר 2D, הכל נשאר כמו קודם (R3D.on=false). */
 
 /* zoom: כמה רחוק המצלמה בכל מקום. 1 = כמו קודם, 0.75 = רואים בערך פי 1.8 שטח (ניר, 31.10.2026: "נקודת המבט צריכה להיות מגבוה יותר").
-   הזירה נשארת 1 (התחום של אוראל). יותר שטח = יותר דברים לצייר, אז בטלפון חלש כדאי למדוד עם ?fps */
-const VIEW={zoom:{village:0.8,world:0.72},tilt:42*Math.PI/180, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52', world:'#2c4229', worldLine:'#6f8f55'};
+   tilt: הזווית מעל הקרקע בכל מקום (90 = ישר מלמעלה). בעולם ובכפר גבוה יותר, כמו ARPG בטלפון (ניר, 1.11.2026: "המצלמה צריכה להיות יותר מגבוהה").
+   הזירה נשארת zoom 1 ו-tilt 42 (התחום של אוראל). כדי לאמץ: arena ב-zoom וב-tilt. השחקן מכוון קרוב/רגיל/רחוק בהגדרות (CAM ב-camera.js).
+   baseTilt: הגודל של הדמויות נקבע לפיו ולא משתנה בין מקומות. בזווית גבוהה יותר הן נראות קצת נמוכות, כמו כשמסתכלים מלמעלה.
+   יותר שטח = יותר דברים לצייר, אז בטלפון חלש כדאי למדוד עם ?fps */
+const VIEW={zoom:{village:0.72,world:0.64},tilt:{arena:42,village:52,world:52},baseTilt:42, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52', world:'#2c4229', worldLine:'#6f8f55'};
 
 /* מי לובש איזה מודל. h: גובה הדמות על המסך בפיקסלים. foot: כמה פיקסלים מתחת למרכז הלוגי הרגליים נוגעות בקרקע.
    props: חפצים ביד (bone: היד, ומיקום וסיבוב מקומיים כמו בחבילה המקורית). הטבעת מתחת לרגליים היא בצבע החולשה של האויב (e.weak, מ-data.js), ולא כתובה כאן. tint: צבע מ-TINT.
@@ -274,7 +277,8 @@ function crowdAdd(e){
 }
 
 /* ---- דמויות ---- */
-const SIN=()=>Math.sin(VIEW.tilt),COS=()=>Math.cos(VIEW.tilt);
+const SIN=()=>Math.sin(camTilt()),COS=()=>Math.cos(camTilt());   // הזווית של המקום הנוכחי (camera.js)
+const COSB=()=>Math.cos(VIEW.baseTilt*Math.PI/180);   // לגודל הדמויות: קבוע בכל מקום, כדי שדמות שנבנתה בכפר תתאים גם בעולם
 // השחקן: הדמות שנבחרה, ובידיים הנשק שלבוש (GRIP3D). נבנה מחדש רק כשהדמות או הנשק מתחלפים
 function heroLook(){
   const wid=SAVE.gear.weapon,sk=heroSkin(),ck=heroId()+'|'+wid+'|'+PILOT3D+'|'+sk;if(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
@@ -296,7 +300,7 @@ const tintOf=t=>TINT[t]||t;   // שם מ-TINT, או צבע ישיר ('#8A8F9C')
 function makeActor(L){
   const pool=R3D.pool||(R3D.pool={});const free=pool[lookKey(L)];
   if(free&&free.length){const a=free.pop();a.root.visible=true;a.dieT=0;a.base=null;a.one=null;a.mixer.stopAllAction();return a}
-  const t=R3D.tmpl[L.model],root=THREE.SkeletonUtils.clone(t),s=L.h/COS()/t.userData.h;
+  const t=R3D.tmpl[L.model],root=THREE.SkeletonUtils.clone(t),s=L.h/COSB()/t.userData.h;
   root.scale.setScalar(s);
   const mats=[];
   root.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(L.tint)o.material.emissive.set(tintOf(L.tint)).multiplyScalar(L.tint[0]==='#'?0.45:0.18);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
@@ -385,7 +389,7 @@ function syncPlayer(dt){
 function syncEnemy(e,dt){
   let a=R3D.actors.get(e);const L=lookOf(e);if(!L)return;
   if(!a){a=makeActor(L);R3D.actors.set(e,a);
-    if(!e.isBoss){a.root.scale.setScalar(L.h/COS()/R3D.tmpl[L.model].userData.h*(e.big||1));a.sc0=a.root.scale.x}
+    if(!e.isBoss){a.root.scale.setScalar(L.h/COSB()/R3D.tmpl[L.model].userData.h*(e.big||1));a.sc0=a.root.scale.x}
     // קמים מהאדמה רק בפעם הראשונה, ולא בכל פעם שאויב חוזר למסך
     if(L.anim.spawn&&!e.isBoss&&!R3D.shown.has(e)){once(a,L.anim.spawn,0.45)}
     R3D.shown.add(e);
@@ -400,7 +404,7 @@ function syncEnemy(e,dt){
     else if(!b.charge&&b.patT>st.patT+0.5)once(a,L.anim.cast,0.5);
     st.charge=b.charge?b.charge.stage:null;st.patT=b.patT;
     yaw=b.charge?yawOf(Math.cos(b.charge.a),Math.sin(b.charge.a)):yawOf(P.x-b.x,P.y-b.y);
-    a.root.scale.setScalar(L.h/COS()/R3D.tmpl[L.model].userData.h*(b.phase>1?1.12:1)*(b.r/34));
+    a.root.scale.setScalar(L.h/COSB()/R3D.tmpl[L.model].userData.h*(b.phase>1?1.12:1)*(b.r/34));
     loop(a,sp>15?L.anim.run:L.anim.idle,Math.max(0.7,Math.min(1.8,sp/90)));
   }else{
     // לאן שהוא הולך. כשהוא נהדף אחורה (kx,ky) הוא ממשיך להסתכל עליך, ולא מסתובב עם המכה

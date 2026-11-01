@@ -15,12 +15,12 @@ const PACE={
   bigFight:{kills:10,within:12,rest:10},     // 10 הריגות תוך 12 שניות: 10 שניות בלי להקות חדשות
   weak:{hp:0.7,dmg:0.55},                     // מפלצת בלהקה חלשה מקבוצה קבועה: הרבה ונופלות מהר, כמו הגושים בזירה (HORDE.weak)
   startSize:0.6,                             // ליד הכפר (אזור start) הלהקות קטנות יותר
-  dist:[500,600],                            // כמה רחוק מהשחקן הלהקה מופיעה: ממש מחוץ למסך
+  dist:[500,600],                            // כמה רחוק מהשחקן הלהקה מופיעה: ממש מחוץ למסך. ולפחות קצה המסך באותו כיוון (camEdge, camera.js)
   ahead:0.9,                                 // כמה רדיאנים לכל צד מכיוון ההליכה
   spread:55,                                 // כמה הלהקה צפופה
   path:{near:170,every:0.65},                // על דרך בין שערים (עד near פיקסלים ממנה): להקות תכופות יותר, פי every
   safe:300,                                  // לא מופיעות ליד שער, ולא כשהשחקן ממש ליד הבית
-  chase:750,                                 // עד איזה מרחק הלהקה רודפת. רחוק מזה היא נעלמת אחרי lose שניות
+  chase:750,                                 // עד איזה מרחק הלהקה רודפת (ולפחות קצת יותר מחצי אלכסון המסך). רחוק מזה היא נעלמת אחרי lose שניות
   lose:6,
   cap:45,                                    // הכי הרבה אויבים חיים בעולם יחד (כולל הקבוצות הקבועות, כ-30), בשביל הטלפון (CROWD ב-render3d.js)
   reserve:2,                                 // מקום שנשמר תמיד לשומר הפנס ולמבוקש, שמופיעים בלי לשאול. כל השאר (להקות, קבוצות שחוזרות, גל של אירוע, פיצול) נעצר ב-cap פחות reserve
@@ -53,7 +53,7 @@ function paceBusy(w){
 function paceSpot(){
   const R=WR(),gs=Object.values(wGates(true)),dir=P.moving?Math.atan2(P.vy,P.vx):rand(0,6.28);
   for(let i=0;i<8;i++){
-    const a=dir+rand(-PACE.ahead,PACE.ahead)*(i<5?1:3),d=rand(...PACE.dist),s=placeClamp({x:P.x+Math.cos(a)*d,y:P.y+Math.sin(a)*d});
+    const a=dir+rand(-PACE.ahead,PACE.ahead)*(i<5?1:3),d=Math.max(rand(...PACE.dist),camEdge(a)+40),s=placeClamp({x:P.x+Math.cos(a)*d,y:P.y+Math.sin(a)*d});
     if(Math.hypot(s.x-P.x,s.y-P.y)<PACE.dist[0]*0.6)continue;   // נדחק לקצה וקרוב מדי
     if(gs.some(g=>Math.hypot(g.x-s.x,g.y-s.y)<PACE.safe))continue;
     if((R.ponds||[]).concat(R.towers||[]).some(p=>Math.hypot(p.x-s.x,p.y-s.y)<p.r+40))continue;
@@ -97,7 +97,7 @@ function paceUpdate(dt){
 // תנועה של מפלצת מלהקה (wFoes ב-world.js): רודפת אחרי השחקן. רחוקה מדי לאורך זמן: נעלמת בלי שלל
 function paceFoeMove(e,dt){
   const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1,sp=e.speed*slowK(e);
-  if(d<PACE.chase){e.far=0;e.x+=dx/d*sp*dt;e.y+=dy/d*sp*dt}
+  if(d<Math.max(PACE.chase,Math.hypot(W,H)/2+150)){e.far=0;e.x+=dx/d*sp*dt;e.y+=dy/d*sp*dt}
   else if((e.far+=dt)>PACE.lose){e.dead=true;e.pack.left--;e.gone=true}
   e.x+=e.kx*dt;e.y+=e.ky*dt;const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
   if(ETYPES[e.type].speed>=95&&d<240){e.shoot-=dt;if(e.shoot<=0){e.shoot=rand(2,3);shootE(e.x,e.y,Math.atan2(dy,dx),175,6,8)}}   // המרחפים יורים, כמו ה-wisp בקבוצות
