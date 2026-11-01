@@ -865,4 +865,9 @@ button.res{min-height:48px;min-width:48px}
 }
 /* כפתורי המקום ("לדבר", "לדוג", קפיצה): למטה באמצע, בין הג'ויסטיק (40% השמאליים) לסקילים בפינה הימנית, תמיד באותו מקום (ux-audit סעיף 9) */
 @media (orientation:landscape){.bnav{left:42%;right:auto;transform:none;max-width:calc(58% - 250px)}}
+/* פאנל מבנה בנגיעה (village.js): כפתורים של 48px לפחות, הפעולה העיקרית גדולה, ובמקום כפתור אפור שורה שאומרת למה */
+.vpanel .vbtn{min-height:48px}
+.vpanel .vbtn.vmain{min-height:56px;font-size:18px;box-shadow:0 0 0 2px var(--gold),0 0 14px rgba(255,211,107,.45)}
+.vpanel .vwhy{color:var(--dim);font-size:13px;display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.vpanel .vwhy .res{font-size:13px}
 .gjump{flex:none;padding:0 10px;color:var(--gold);font-weight:800}

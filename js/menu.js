@@ -26,6 +26,8 @@ function menuShow(id){
   if(!$(t.win).hidden){t.close();menuEnd();sfx('ui');return}
   if(!menuHere()){t.open();return}   // לא בכפר ולא בעולם: רק החלון, בלי התפריט
   const c=MENU.cur&&menuTab(MENU.cur);if(c&&!$(c.win).hidden)c.close();
+  // חלון אחד בכל פעם: חלון שקפץ מחוץ לתפריט (שיחה, "בזמן שלא היית", מתנה) נסגר לפני שהתפריט נפתח
+  if(!MENU.cur)for(let i=0;i<8;i++){const w=WINS.find(w=>uiModal(w)&&!MENU.tabs.some(t=>t.win===w.id));if(!w)break;w.close()}
   t.open();
   if($(t.win).hidden){menuEnd();return}   // לא נפתח (למשל חלון אחר עוצר את המשחק)
   MENU.cur=MENU.last=id;document.body.classList.add('menu');menuDraw();sfx('ui');
