@@ -801,6 +801,11 @@ function worldBot(m,L,god){
   }
   const rgHp=await page.evaluate(()=>GEAR.items.boneCharm.stats.hp);   // כמה חיים הקמע מוסיף באמצע ריצה
   // סטים (sets.js): חלק אחד לא נותן כלום, שניים נותנים את מדרגה 2, ארבעה את שתי המדרגות. וכל פריט בסט מקבל שם ומתכון
+  // "תביא לי" (ניר 1.11: "הנפח רוצה 10 עצמות ויש עליי מאות"): מה שכבר בתרמיל נספר, ובקבלת הפרס נמסר לנותן. על עותק, בלי לשנות את השמירה
+  const qHandT=await page.evaluate(()=>{const keep=JSON.stringify(SAVE),q=QBY.bones;if(!q)return{skip:1};
+    try{const Q=QS();delete Q.done.bones;delete Q.active.bones;SAVE.bag.bone=200;qStart(q);const ready=qReady(q);
+      questEvent('gather','bone',1);const ok=questClaim('bones',true);return{ready,ok,left:SAVE.bag.bone}}
+    finally{const o=JSON.parse(keep);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,o)}});
   const setT=await page.evaluate(()=>{const r={};for(const s in SETS){const it=setItems(s),b=SETS[s].bonus;
     const one=setStats(it.slice(0,1)),two=setStats(it.slice(0,2)),four=gearStats(it);
     r[s]={n:it.length,one:Object.keys(one).length===0,two:JSON.stringify(two)===JSON.stringify(b[2]),
@@ -1862,6 +1867,7 @@ function worldBot(m,L,god){
   check(fd&&fd.btn&&fd.xp>0&&fd.ate===1&&fd.buff>0&&fd.hearts>0&&fd.hide&&fd.saved,'פיוחו אוכלת גזר: '+(fd?'הכפתור הופיע, אכלה '+fd.ate+', ‎+'+fd.xp+' XP, חיזוק '+Math.round(fd.buff)+' שניות, '+fd.hearts+' לבבות'+(fd.hide?'':', הכפתור לא נעלם')+(fd.saved?', נשמר':', לא נשמר'):'הכפתור לא הופיע'));
   check(pt.wBites>0&&!pt.aBites&&pt.dealt>0&&pt.ret>0&&!pt.oob&&pt.far<=pt.leash*1.6,'פיוחו תוקפת בעולם: '+(pt.wBites||0)+' נשיכות, בזירה '+(pt.aBites||0)+' (צריך 0), '+Math.round(pt.dealt||0)+' נזק, חזרה לשחקן '+(pt.ret||0)+' פעמים, הכי רחוק ממנו '+(pt.far||0)+(pt.oob?' · יצאה מגבולות העולם '+pt.oob+' פעמים':''));
   check(L.doll==='3d'||L.doll==='2d','הדמות בחלון הציוד: '+(L.doll==='3d'?'בתלת-ממד, עם מה שלבוש':L.doll==='2d'?'דו-ממד, אימוג\'י':'לא הופיעה ('+L.doll+')'));
+  check(qHandT.skip||qHandT.ready&&qHandT.ok&&qHandT.left===190,'קווסט "תביא לי": '+(qHandT.skip?'אין קווסט עצמות':(qHandT.ready?'200 עצמות בתרמיל = מוכן מיד':'לא נספר מהתרמיל')+(qHandT.ok?', הפרס התקבל':', הפרס לא התקבל')+', נשארו '+qHandT.left+' (צריך 190)'));
   const setBad=Object.entries(setT).filter(([s,v])=>!(v.n===4&&v.one&&v.two&&v.four&&v.named)).map(([s,v])=>s+' '+JSON.stringify(v));
   check(Object.keys(setT).length&&!setBad.length,'סטים של ציוד: '+Object.keys(setT).length+' סטים, 2 ו-4 חלקים נותנים בונוס'+(setBad.length?' · בעיה: '+setBad.join(', '):''));
   check(pt.evo==='1→2→3'&&pt.evoSaved&&pt.evoFx&&pt.fxOk,'פיוחו מתפתחת: '+(pt.evo||'לא נבדק')+(pt.evoSaved?', נשמר':', לא נשמר')+(pt.evoFx?', עם חגיגה':', בלי חגיגה')+(pt.fxOk?'':', להבה בשלב 3 לא מצאה את הזנב'));
