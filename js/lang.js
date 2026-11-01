@@ -1053,6 +1053,8 @@ Object.assign(TEXT,{
   'ctx.go':{he:'ללכת',en:'Go'},
   'mm.open':{he:'מפה',en:'Map'},
   'jc.resist':{he:'עמיד',en:'Resists'},
+  'book.arena':{he:'בזירה',en:'In the arena'},
+  'book.grpN':{he:(n,m)=>n+' מתוך '+m,en:(n,m)=>n+' of '+m},
   'jc.immune':{he:'חסין',en:'Immune'},
   'jc.tip':{he:(d,b)=>d+' חלש כאן. נסו '+b,en:(d,b)=>d+' is weak here. Try '+b},
   'jc.tipN':{he:(n,d,b)=>n+' עמיד ל'+d+'. נסו '+b,en:(n,d,b)=>'The '+n+' resists '+d+'. Try '+b},
