@@ -19,6 +19,7 @@ const JUICE={
   push:60,                                                      // הדיפה נוספת, לפני חלוקה בגודל האויב. חולשה פי 1.4
   parts:{max:160,hit:5,weak:8,crit:12,kill:10},                 // ניצוצות: תקרה בשביל הטלפון, וכמה בכל סוג מכה
   nums:{max:12,life:0.7,pop:0.12,popK:1.7,rise:40,size:11,weak:14,resist:11,crit:19,critCol:'#FFE14D'},   // מספרי נזק: תקרה, משך, קפיצה בהתחלה, כמה עולים, גדלים, צבע קריטי. קטנים ב-25% וקצרים יותר מ-1.11 (docs/plan-hud.md פרק 6), ולא יותר מ-12 על המסך
+  resist:0.5,tip:{after:3,gap:1.2},                             // מכפיל של 0.5 ומטה: "עמיד" במקום מספר. tip: אחרי 3 שניות של מכות חלשות (בלי הפסקה של יותר מ-1.2) שורה בפיד עם סוג נזק טוב יותר, פעם אחת לכל סוג אויב
   shake:{crit:3,elite:6,big:9},                                 // רעידה: קריטי, עלית או מיוחד, שומר/מבוקש/בוס
   poof:{max:8,life:0.45,puffs:7,r:[8,18],col:'#E9E3D6',ring:46},   // עשן בהריגה: כמה ענני הריגה יחד, משך, כמה עננים קטנים, גודל, צבע וגודל הטבעת
   scatter:1.5                                                   // השלל שנפל בהריגה עף רחוק יותר פי זה
@@ -39,9 +40,22 @@ function juiceHit(e,d,m,crit,t,ang){
   jBurst(e.x,e.y-(e.node?4:e.r*0.6),t,crit?K.parts.crit:m>1?K.parts.weak:K.parts.hit,ang);
   if(J.n.length>=K.nums.max)J.n.shift();
   const N=K.nums;
-  J.n.push({x:e.x+rand(-10,10),y:e.y-e.r-10,txt:big(d)+(crit?'!':''),crit,t0:jNow(),
-    col:crit?N.critCol:m>1?dtCol(t):m<1?C.dim:C.chalk,size:crit?N.crit:m>1?N.weak:m<1?N.resist:N.size,weak:m>1?t:null,dx:rand(-14,14)});
+  // עמיד (ניר, 1.11: "0!" נראה כמו באג): במקום המספר "🛡 עמיד" באפור, וסמל סוג הנזק לידו
+  const res=m<=K.resist;
+  J.n.push({x:e.x+rand(-10,10),y:e.y-e.r-10,txt:res?'🛡 '+T(m<=0?'jc.immune':'jc.resist'):big(d)+(crit&&!res?'!':''),crit:crit&&!res,t0:jNow(),
+    col:res?C.dim:crit?N.critCol:m>1?dtCol(t):m<1?C.dim:C.chalk,size:res?N.resist:crit?N.crit:m>1?N.weak:m<1?N.resist:N.size,weak:m>1||res?t:null,dx:rand(-14,14)});
+  if(m<1&&!e.node)jTip(e,t);else if(e.jRes)e.jRes=null;
   return true;
+}
+// טיפ בפיד: מכים כמה שניות בסוג נזק חלש נגד אותו אויב. אילו סוגים עדיפים: לפי e.mult (מטבלת היעילות DMG.chart). פעם אחת לכל סוג אויב
+const JTIP={};
+function jTip(e,t){
+  const now=jNow(),r=e.jRes&&e.jRes.t===t&&now-e.jRes.last<JUICE.tip.gap?e.jRes:(e.jRes={t,t0:now});r.last=now;
+  const kind=e.warden||e.type;if(JTIP[kind]||now-r.t0<JUICE.tip.after||typeof feedOn!=='function'||!feedOn())return;
+  const better=Object.keys(e.mult||{}).filter(k=>(e.mult[k]??1)>(e.mult[t]??1)&&(e.mult[k]??1)>=1).sort((a,b)=>e.mult[b]-e.mult[a]).slice(0,2);
+  if(!better.length)return;JTIP[kind]=1;
+  const dts=better.map(k=>T('dt.'+k)).join(' / '),name=e.warden?T('story.'+e.warden+'.name'):null;
+  feedAdd('💡',name?T('jc.tipN',name,T('dt.'+t),dts):T('jc.tip',T('dt.'+t),dts),C.gold,'tip:'+kind,0,true);
 }
 // נקרא מ-kill (combat.js), אחרי שהשלל נפל
 function juiceKill(e){

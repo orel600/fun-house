@@ -853,6 +853,10 @@ function worldBot(m,L,god){
       r.squash=(e.jT=jNow()-JUICE.squash.t/2,juiceSquash(e)>0);
       HITFX.crit=1;S.hitstop=0;J.last=-9;damage(e,10,'sword',0,'ice');const N=J.n[J.n.length-1];r.crit=!!N&&N.crit&&N.col===JUICE.nums.critCol&&S.hitstop>=JUICE.stop.crit-1e-6;r.shake=S.shake>0;HITFX.crit=0;
       e.elite=true;S.hitstop=0;J.last=jNow();juiceKill(e);r.poof=J.poofs.length===1&&S.hitstop>=JUICE.stop.big-1e-6;
+      // עמיד: במקום "0" כתוב "חסין" באפור, ואחרי כמה שניות של מכות חלשות טיפ בפיד עם סוג נזק טוב יותר (פעם אחת)
+      e.mult={fire:1.5,water:0};damage(e,10,'sword',0,'water');const R=J.n[J.n.length-1];r.resist=!!R&&R.txt.includes(T('jc.immune'))&&R.col===C.dim&&R.weak==='water';
+      const fa=FEED.where.arena;FEED.where.arena=true;delete JTIP[e.type];e.jRes={t:'water',t0:jNow()-9,last:jNow()};const f0=FEED.stat.added;damage(e,10,'sword',0,'water');
+      r.tip=FEED.stat.added===f0+1&&!!FL.find(f=>f.key==='tip:'+e.type&&f.txt.includes(T('dt.fire')));damage(e,10,'sword',0,'water');r.tipOnce=FEED.stat.added===f0+1;FEED.where.arena=fa;
       for(let i=0;i<300;i++)damage(e,1,'sword',0,'lightning',true);r.cap=J.p.length<=JUICE.parts.max&&J.n.length<=JUICE.nums.max;
       try{ctx.save();juiceDraw();ctx.restore();r.draw=true}catch(err){r.draw=String(err)}
       JUICE.where.arena=false;const n0=J.n.length;damage(e,10,'sword',0,'fire');r.arenaOff=J.n.length===n0;
@@ -1091,6 +1095,8 @@ function worldBot(m,L,god){
     o.vilGate=!!t1&&t1.x===g.x&&t1.y===g.y&&ang(t1)===ang(g);o.txt=$('guideTxt').textContent;o.dist=$('guideDist').textContent;
     leaveVillage();P.x=0;P.y=0;$('wPanel').hidden=true;tick();const L=STORY.lanterns.earth,t2=guideTarget(guideG);
     o.lantern=!!t2&&t2.x===L.x&&t2.y===L.y&&ang(t2)===ang(L);
+    // שומר חי ליד הפנס וליד השחקן: המרחק אליו, לא לפנס (ניר, 1.11)
+    {P.x=L.x+150;P.y=L.y+100;const w=addEnemy('grunt',L.x+60,L.y+40,1);w.warden='earth';const tw=guideTarget(guideG);o.toWarden=!!tw&&tw.x===w.x&&tw.y===w.y;w.dead=true;enemies=enemies.filter(e=>!e.dead);P.x=0;P.y=0}
     worldUi(false);enterWorld('home','lake');P.x=300;P.y=200;tick();const h=WR().home,t3=guideTarget(guideG);   // מהאגם: החץ לשער חזרה לאחו
     o.lakeBack=!!t3&&t3.x===h.x&&t3.y===h.y&&ang(t3)===ang(h)&&/·/.test($('guideTxt').textContent);
     SAVE.story.earth=true;worldUi(false);enterWorld('home','lake');tick();o.jump=$('guideJump').hidden?'':$('guideJump').dataset.to;   // מהאגם, המטרה באחו והפנס שם דולק: "קפוץ"
@@ -1526,8 +1532,8 @@ function worldBot(m,L,god){
   for(const nm in uiMenu){const {vm,wm}=uiMenu[nm],d=(m,p)=>p+': '+(m.btn?'☰':'אין ☰')+(m.open?'':' לא נפתח')+', '+m.tabs+'/'+m.want+' לשוניות'+(m.small.length?' קטנות: '+m.small.join(','):'')+(m.out.length?' מחוץ למסך: '+m.out.join(','):'')+
       ' ['+m.seen+']'+(m.xClose?', ✕':', ✕ לא סוגר')+(m.esc?', Esc':', Esc לא סוגר')+(m.bg?', רקע':', רקע לא סוגר')+(m.dot?', נקודה על ☰':', אין נקודה על ☰')+(m.nav?'':', בסרגל יש כפתור שלא שייך למקום');
     check(vm.ok&&wm.ok,'תפריט ראשי, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+d(vm,'כפר')+' · '+d(wm,'עולם'))}
-  check(gd.vil&&gd.vilGate&&gd.lantern&&gd.lakeBack&&gd.jump==='earth'&&gd.claim&&gd.changed&&gd.min&&gd.log&&gd.arena,'מטרה ברורה: '+(gd.vil?'בכפר "'+gd.txt+'" '+gd.dist:'אין שורה בכפר')+(gd.vilGate?', החץ לשער':', החץ לא לשער')+
-    (gd.lantern?', בעולם לפנס':', לא לפנס')+(gd.lakeBack?', מהאגם לשער חזרה':', מהאגם לא לשער')+(gd.jump==='earth'?', ו"קפוץ" לפנס האדמה':', בלי "קפוץ" ('+gd.jump+')')+(gd.claim?', לפרס':', לא לפרס')+(gd.changed?', אחר כך: "'+gd.after+'"':', המטרה לא התחלפה')+
+  check(gd.vil&&gd.vilGate&&gd.lantern&&gd.toWarden&&gd.lakeBack&&gd.jump==='earth'&&gd.claim&&gd.changed&&gd.min&&gd.log&&gd.arena,'מטרה ברורה: '+(gd.vil?'בכפר "'+gd.txt+'" '+gd.dist:'אין שורה בכפר')+(gd.vilGate?', החץ לשער':', החץ לא לשער')+
+    (gd.lantern?', בעולם לפנס':', לא לפנס')+(gd.toWarden?', שומר ליד: המרחק אליו':', שומר ליד: עדיין לפנס')+(gd.lakeBack?', מהאגם לשער חזרה':', מהאגם לא לשער')+(gd.jump==='earth'?', ו"קפוץ" לפנס האדמה':', בלי "קפוץ" ('+gd.jump+')')+(gd.claim?', לפרס':', לא לפרס')+(gd.changed?', אחר כך: "'+gd.after+'"':', המטרה לא התחלפה')+
     (gd.min?', מתכווצת':', לא מתכווצת')+(gd.log?', נגיעה פותחת יומן עם "עכשיו"':', נגיעה לא פותחת יומן עם "עכשיו"')+(gd.arena?', בזירה מוסתרת':', מופיעה בזירה'));
   check(Object.values(gdHit).every(v=>v===''),'מטרה ברורה, מקום השורה: '+Object.entries(gdHit).map(([k,v])=>k+' '+(v||'פנוי')).join(', '));
   for(const nm in uiWel){const u=uiWel[nm];check(u.fit&&u.btn,'בזמן שלא היית, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(u.fit?'החלון כולו בתוך המסך':'החלון יוצא מהמסך')+(u.btn?', והכפתור "אסוף הכל" נראה':', והכפתור "אסוף הכל" לא נראה'))}
@@ -1636,6 +1642,7 @@ function worldBot(m,L,god){
   check(!dvr.err&&!dvr.early&&dvr.ready&&dvr.btn&&dvr.used&&dvr.five&&dvr.hit&&dvr.draw===true&&dvr.ended&&dvr.back&&dvr.once,'ברק אלוהי: '+(dvr.err||[dvr.early?'התעורר מוקדם':'מחכה לשני אויבי-על',dvr.ready?'מוכן':'לא מוכן',dvr.btn?'כפתור':'אין כפתור',dvr.five?'חמשת החפצים':'לא חמישה',dvr.hit?'ברק פגע':'ברק לא פגע',dvr.draw===true?'מצויר':'ציור נכשל: '+dvr.draw,dvr.ended&&dvr.back?'נגמר אחרי 5 שניות':'לא נגמר',dvr.once?'פעם אחת בריצה':'שוב'].join(', ')));
   check(fl.on&&fl.off&&fl.slow&&fl.prop&&fl.draw===true,'הנודד עם החליל: '+[fl.on?'נדלק':'לא נדלק',fl.prop?'חליל ביד':'אין חליל ביד',fl.slow?'אפקט סקיל ארוך יותר':'אפקט סקיל באורך רגיל',
     fl.draw===true?'תווים וחלילים מצוירים':'ציור נכשל: '+fl.draw,fl.off?'כבה בחזרה':'נשאר דלוק'].join(', '));
+  check(jc.resist&&jc.tip&&jc.tipOnce,'עמיד במכה: '+(jc.resist?'"🛡 חסין" באפור עם סמל הסוג':'עדיין מספר')+', '+(jc.tip?'טיפ בפיד עם סוג טוב יותר':'אין טיפ')+(jc.tipOnce?', פעם אחת':', חוזר'));
   check(!jc.err&&jc.stop&&jc.flash&&jc.kb&&jc.parts&&jc.num&&jc.squash&&jc.crit&&jc.shake&&jc.poof&&jc.cap&&jc.draw===true&&jc.arenaOff,'אפקטים של קרב: '+(jc.err||[jc.stop?'מכה רגילה בלי עצירה':'עוצר בכל מכה',jc.flash?'הבזק':'בלי הבזק',jc.kb?'הדיפה':'בלי הדיפה',jc.parts?'ניצוצות':'בלי ניצוצות',jc.num?'מספר עם סמל חולשה':'אין מספר',jc.squash?'מעיכה':'בלי מעיכה',
     jc.crit?'קריטי צהוב':'קריטי רגיל',jc.shake?'רעידה':'בלי רעידה',jc.poof?'פוף בהריגה':'בלי פוף',jc.cap?'בתקרה':'מעל התקרה',jc.draw===true?'מצויר':'ציור נכשל: '+jc.draw,jc.arenaOff?'כבוי בזירה':'דלוק בזירה'].join(', ')));
   const cmb=Object.entries(L.combos||{}).map(([k,v])=>k+' '+v).join(', ');
