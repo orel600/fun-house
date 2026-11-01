@@ -1460,7 +1460,7 @@ function worldBot(m,L,god){
     $('wMapBtn').click();o.open=!$('wMap').hidden&&S.mode==='map';const G=wmGraph();o.show=G.show.join(',');o.edges=G.edges.length;
     o.fog=G.show.filter(r=>!wmSeen(r)).join(',');o.canv=['wmWorld','wmHere'].every(id=>{const c=$(id);return c&&c.width>50&&c.height>50});
     // כל אזור שעוד לא התגלה מופיע כצללית עם ? (המבקר, worldmap-locked-tiers): גם הרכס הסגור, כצללית ולא כאי שביקרו בו
-    o.fogAll=['meadow',...Object.keys(WORLD.regions)].every(r=>G.show.includes(r))&&G.show.filter(r=>!wmSeen(r)).length===G.show.length-1;o.hidden=o.fogAll&&!wmSeen('ridge');
+    o.fogAll=['meadow',...Object.keys(WORLD.regions)].every(r=>G.show.includes(r));o.hidden=o.fogAll&&!wmSeen('ridge');   // כל האזורים במפה, והרכס (שעוד לא התגלה) ביניהם כצללית
     document.querySelector('#wMap [data-act="close"]').click();o.closed=$('wMap').hidden&&S.mode==='play';
     wGo('lake');o.saved=!!(JSON.parse(localStorage.getItem(SAVE_STORE.key)).wmap||{seen:{}}).seen.lake;
     wmapOpen(true);o.cur=S.wd.reg;o.lakeSeen=wmSeen('lake');dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape'}));keys.Escape=false;o.esc=$('wMap').hidden&&S.mode==='play';
