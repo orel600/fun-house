@@ -60,9 +60,9 @@ function paceSpot(){
     return s}
   return null;
 }
-// להקה אחת. n: כמה (אחרת לפי השלב)
-function paceSpawn(n){
-  const w=S.wd,B=paceBeat(w.pace),s=paceSpot();if(!s)return null;
+// להקה אחת. n: כמה (אחרת לפי השלב). at: איפה (אחרת בקצה המסך, paceSpot)
+function paceSpawn(n,at){
+  const w=S.wd,B=paceBeat(w.pace),s=at||paceSpot();if(!s)return null;
   const Z=wZone(s),types=paceTypes(),mix=B.id==='peak';
   n=n||Math.round(rand(...(B.size||PACE.beats[0].size)));if(Z.id==='start')n=Math.max(2,Math.round(n*PACE.startSize));
   n=Math.min(n,paceFree());if(n<2)return null;   // אין מקום לשתיים: אין להקה (לא להקה של אחת)

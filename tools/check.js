@@ -840,7 +840,7 @@ function worldBot(m,L,god){
     // עומס: מנסים להכניס הרבה להקות ועוד 20 שניות של עולם (קבוצות שחוזרות, פיצולים, אירועים). המגבלה נשמרת תמיד
     for(let i=0;i<40;i++)paceSpawn(8);for(let t=0;t<20;t+=dt){P.hp=P.maxHp;worldUpdate(dt);maxE=Math.max(maxE,paceAlive())}
     // בונוס להקה, ישירות: להקה של 3 ליד השחקן, כולן מופלות, והבונוס ניתן פעם אחת
-    enemies=[];const b0=S.wd.pace.bonus,pk=paceSpawn(3),pkN=pk?enemies.filter(e=>e.pack===pk).length:0;
+    enemies=[];const b0=S.wd.pace.bonus,pk=paceSpawn(3,{x:P.x+60,y:P.y}),pkN=pk?enemies.filter(e=>e.pack===pk).length:0;
     for(const e of enemies.filter(e=>e.pack===pk)){e.affix=null;kill(e)}paceUpdate(0.01);const pkBonus=S.wd.pace.bonus-b0;paceUpdate(0.01);
     const p=S.wd.pace,o={secs,packs:p.packs,first,min:Math.min(...p.sizes),max:Math.max(...p.sizes),peaks:p.peaks,rests:p.rests,bonus:p.bonus,maxE,cap:PACE.cap,
       pkN,pkBonus,pkTwice:S.wd.pace.bonus-b0,
