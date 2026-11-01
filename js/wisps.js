@@ -10,8 +10,8 @@ const WISPS={
   // צבע הליבה (כמעט לבן) וההילה לכל סוג. אש ממשיכה את C.ember, קרח את C.tide (סוגי הנזק, dmg.js). הגנה: לבן-חמים (ניר, 1.11)
   col:{attack:['#FFF4D6','#FF7A2E'],control:['#F2FDFF','#5FD2FF'],defense:['#FFFBEF','#E8D9B0'],support:['#F2FFE8','#5BD46B'],luck:['#FFFDE6','#FFD23F']},
   r:58, rVar:0.16, wob:0.35,   // רדיוס סביב הדמות, כמה הוא נושם, וכמה כל אור מקדים או מפגר אחרי המקום שלו במעגל
-  h:26, hBob:6,                 // גובה מעל הקרקע, וכמה הוא עולה ויורד
-  core:4.6, halo:24, trail:9,   // גודל הליבה, ההילה, ואורך השובל (נקודות)
+  h:10, hBob:2,                 // גובה מעל הקרקע, וכמה הוא עולה ויורד. נמוך: האור מצויר איפה שהוא פוגע (מחקר הקרב, docs/plan-combat.md שינוי 2)
+  core:7.8, halo:32, trail:9,   // גודל הליבה, ההילה, ואורך השובל (נקודות). פי 1.7 מהגחלילית הראשונה, כדי שיראו אותו בקרב
   lag:7,                        // כמה מהר האור משיג את הדמות כשהיא זזה (קפיץ). קטן = נגרר יותר
   flash:{t:0.28,k:0.9},         // הבזק כשהחפץ פועל: כמה זמן, וכמה בהירות נוספת
   // חלקיקים לכל סוג: כמה בשנייה, מהירות (vx אקראי, vy), כמה זמן חיים, וגודל. vy שלילי עולה, חיובי נופל
@@ -48,12 +48,13 @@ function wispsUpdate(dt){
   WL.list.length=types.length;
   // הבזקים מהמונים של orbit.js: פגיעה (אש וקרח), עצירת ירייה ובליעת מכה (הגנה), ריפוי (עלה)
   const now={hits:o.hits,def:o.blocked+o.shields,heal:o.healed},was=WL.seen||now;WL.seen=now;
-  const fire={attack:now.hits>was.hits,control:now.hits>was.hits,defense:now.def>was.def,support:now.heal>was.heal};
+  const fire={defense:now.def>was.def,support:now.heal>was.heal};   // אש וכפור מהבהבים כל אחד לבד, כשהוא עצמו פגע (wispsAct)
   const n=types.length;
   types.forEach((ty,i)=>{const w=WL.list[i];w.ty=ty;
     if(fire[ty]){w.fl=W.flash.t;W.stat.flashes++}else w.fl=Math.max(0,w.fl-dt);
     const a=o.a+i*6.283/n+W.wob*Math.sin(t*0.7*w.sp+w.ph),R=W.r*(1+W.rVar*Math.sin(t*1.3*w.sp+w.ph*2));
-    const hh=typeof WH!=='undefined'&&WH[i]&&WH[i].ph,tx=hh?WH[i].x:P.x+Math.cos(a)*R,ty_=hh?WH[i].y:P.y+Math.sin(a)*R*0.85,k=hh?1:1-Math.exp(-W.lag*dt);   // בציד (WHUNT למטה) האור עף לאויב
+    // בדיוק איפה שהחפץ פוגע (S.orb.pos, orbit.js), בלי גרירה. בציד (WHUNT למטה) האור עף לאויב
+    const hh=typeof WH!=='undefined'&&WH[i]&&WH[i].ph,g=o.pos[i]||{x:P.x+Math.cos(a)*R,y:P.y+Math.sin(a)*R},tx=hh?WH[i].x:g.x,ty_=hh?WH[i].y:g.y,k=1;
     w.x+=(tx-w.x)*k;w.y+=(ty_-w.y)*k;w.h=W.h+W.hBob*Math.sin(t*2.1*w.sp+w.ph)+3*Math.sin(t*5.3+w.ph);
     w.tr.unshift({x:w.x,y:w.y-w.h});if(w.tr.length>W.trail)w.tr.pop();
     const pd=W.parts[ty];if(!pd||!pd.rate)return;
@@ -87,6 +88,7 @@ function drawWisps(){
     for(let k=1;k<w.tr.length;k++){const p=w.tr[k],f=1-k/w.tr.length;wispBlit(g,p.x,p.y,W.halo*0.55*f+2,0.45*f*b)}   // שובל
     wispBlit(g,c.x,c.y,W.halo*(0.9+0.1*Math.min(b,1.5)),0.75*b);
     wispBlit(gh,c.x,c.y,W.core*(2.4+w.fl/W.flash.t),b);
+    ctx.globalCompositeOperation='source-over';ctx.globalAlpha=0.35;ctx.strokeStyle='#05070D';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(c.x,c.y,W.core*0.95,0,7);ctx.stroke();ctx.globalCompositeOperation='lighter';   // טבעת כהה דקה: מפרידה מהדשא
     if(w.ty==='defense'&&(o.sh[i]||0)<=S.t){ctx.globalAlpha=0.25+0.1*Math.sin(WL.t*3);ctx.strokeStyle=col;ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(P.x,P.y,22,9,0,0,7);ctx.stroke()}   // מגן מוכן: טבעת דקה ברגלי הדמות
   });
   for(const p of WL.parts){const f=1-p.t/p.life;
@@ -118,9 +120,9 @@ function wispsAct(dt,was){
   // פגיעה של אש או קרח: e.oh[i] התחלף
   for(const e of enemies){if(e.dead||!e.oh){e._wo=null;continue}const prev=e._wo||[];
     for(let i=0;i<e.oh.length;i++){if(!e.oh[i]||e.oh[i]===prev[i])continue;const ty=o.types[i],w=WL.list[i];if(!w)continue;
-      if(ty==='attack'){wAct('fire',{x1:w.x,y1:w.y-w.h,e});wAct('icon',{e,s:'🔥'})}
-      else if(ty==='control')wAct('ring',{e});
-      WA.lit[ty]=WACT.row.flash}
+      if(ty==='attack'){wAct('fire',{x1:w.x,y1:w.y-w.h,e,ty});wAct('icon',{e,s:'🔥'})}
+      else if(ty==='control'){wAct('fire',{x1:w.x,y1:w.y-w.h,e,ty});wAct('ring',{e})}   // פס אור מהאור לאויב, וטבעת כפור
+      w.fl=WISPS.flash.t;WISPS.stat.flashes++;WA.lit[ty]=WACT.row.flash}
     e._wo=e.oh.slice()}
   // אבן: ירייה שנעצרה או מכה שנבלעה. עלה: ריפוי
   const di=o.types.indexOf('defense'),dw=WL.list[di];
@@ -136,7 +138,9 @@ function wispsAct(dt,was){
 const wTipN=ty=>{const D=ORBIT.types[ty];return D.shield?D.shield.every:D.heal?D.heal.every:''};
 // מכה קריטית כשהתלתן לבוש: כוכב על האויב. עוטפים את juiceHit (juice.js) מבחוץ
 (()=>{if(typeof juiceHit!=='function')return;const old=juiceHit;
-  juiceHit=function(e,d,m,crit){const r=old.apply(this,arguments);
+  juiceHit=function(e,d,m,crit,t){const r=old.apply(this,arguments);
+    // מספר הנזק של אור בצבע של האור (לא לבן כמו החרב): הפגיעות בתוך orbitUpdate הן של האורות
+    if(r&&WA.inOrb&&wActOn()&&!crit){const ty=t==='fire'?'attack':t==='ice'?'control':null,J=juice(),n=J.n[J.n.length-1];if(ty&&n)n.col=WISPS.col[ty][1]}
     if(crit&&wActOn()&&S.orb&&S.orb.types.includes('luck')){wAct('star',{e});WA.lit.luck=WACT.row.flash}return r}})();
 
 /* ---- ציד (בעולם בלבד): אור האש והכפור יוצאים לאויב הקרוב ופוגעים בו, וחוזרים (מדידה, 1.11: בלי זה אש פוגעת פעם ב-30 שניות, כי האויבים מתים לפני שהם מגיעים לטבעת).
@@ -150,8 +154,9 @@ function wispsHunt(dt){
     if(!WHUNT.types.includes(ty)){h.ph=null;return}
     const home=o.pos[i]||{x:P.x,y:P.y};
     if(!h.ph){h.cd-=dt;h.x=home.x;h.y=home.y;if(h.cd>0)return;
-      let best=null,bd=WHUNT.range;for(const e of enemies){if(e.dead||e.node||e.creature)continue;   // יצורים שלווים לא נצודים
-        const d=Math.hypot(e.x-P.x,e.y-P.y);if(d<bd){bd=d;best=e}}
+      // מטרה שההתקפה האוטומטית לא בוחרת (מחקר הקרב): קודם משוריין, אחר כך הרחוק ביותר בטווח. יצורים שלווים לא נצודים
+      let best=null,bs=-1;for(const e of enemies){if(e.dead||e.node||e.creature)continue;const d=Math.hypot(e.x-P.x,e.y-P.y);if(d>WHUNT.range)continue;
+        const sc=d+(e.affix==='tough'?1000:0)+(WH.some(o=>o&&o.ph==='out'&&o.e===e)?-2000:0);if(sc>bs){bs=sc;best=e}}
       if(!best){h.cd=0.3;return}h.ph='out';h.e=best}
     if(h.ph==='out'){const e=h.e;if(!e||e.dead){h.ph='back';return}
       const dx=e.x-h.x,dy=e.y-h.y,d=Math.hypot(dx,dy)||1,st=WHUNT.speed*dt;
@@ -162,13 +167,15 @@ function wispsHunt(dt){
       if(d<=st){h.ph=null;h.cd=WHUNT.every}else{h.x+=dx/d*st;h.y+=dy/d*st}}
   });
 }
-(()=>{const old=orbitUpdate;orbitUpdate=function(dt){old.apply(this,arguments);wispsHunt(dt)}})();
+(()=>{const old=orbitUpdate;orbitUpdate=function(dt){WA.inOrb=true;try{old.apply(this,arguments);wispsHunt(dt)}finally{WA.inOrb=false}}})();
 
 function drawWispAct(){
+  if(wActOn()&&S.orb&&S.orb.types.includes('control')){ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle=WISPS.col.control[1];ctx.lineWidth=2;   // מואט מכפור: קרח על הרגליים
+    for(const e of enemies)if(!e.dead&&e.slow>0){ctx.globalAlpha=0.35+0.25*Math.min(1,e.slow);ctx.beginPath();ctx.ellipse(e.x,e.y+2,e.r+3,(e.r+3)*0.4,0,0,7);ctx.stroke()}ctx.restore()}
   if(!WA.fx.length)return;ctx.save();
   for(const f of WA.fx){const k=f.t/f.life,a=1-k;
     if(f.e&&f.e.dead&&f.k!=='fire'){continue}
-    if(f.k==='fire'){const x2=f.e.x,y2=f.e.y-f.e.r*0.6,g=wispGlow(WISPS.col.attack[1]);ctx.globalCompositeOperation='lighter';   // שובל גחלים מהאור לאויב
+    if(f.k==='fire'){const x2=f.e.x,y2=f.e.y-f.e.r*0.6,g=wispGlow(WISPS.col[f.ty||'attack'][1]);ctx.globalCompositeOperation='lighter';   // שובל גחלים מהאור לאויב
       for(let j=0;j<=6;j++){const u=j/6;if(u>k*1.6+0.2)break;wispBlit(g,f.x1+(x2-f.x1)*u,f.y1+(y2-f.y1)*u-Math.sin(u*3.14)*10,5*(1-u*0.4),0.8*a)}}
     else if(f.k==='icon'){ctx.globalCompositeOperation='source-over';ctx.globalAlpha=a;ctx.textAlign='center';ctx.direction='ltr';ctx.font=Math.round(11/ZOOM)+'px system-ui';ctx.fillText(f.s,f.e.x,f.e.y-f.e.r-14-k*10)}
     else if(f.k==='ring'){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=0.8*a;ctx.strokeStyle=WISPS.col.control[1];ctx.lineWidth=2.5;ctx.beginPath();ctx.ellipse(f.e.x,f.e.y,f.e.r*(1+k*0.5)+4,(f.e.r*(1+k*0.5)+4)*0.45,0,0,7);ctx.stroke()}
