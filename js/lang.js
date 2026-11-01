@@ -519,6 +519,7 @@ const TEXT={
   'ch.r.gold':{he:['בהלה לזהב','כל אויב מפיל מטבעות, אבל הם מכים חזק יותר'],en:['Gold Rush','Every enemy drops coins, but they hit harder']},
   'af.fast':{he:'מהיר',en:'Swift'},'af.tough':{he:'משוריין',en:'Armored'},'af.burst':{he:'מתפוצץ',en:'Volatile'},'af.split':{he:'מתפצל',en:'Splitting'},'af.regen':{he:'מתחדש',en:'Regenerating'},
   // שומרים חוזרים (story.js, STORY.rematch)
+  'story.ward.stuck':{he:'נתקע! עכשיו!',en:'Stuck! Now!'},
   'story.re.btn':{he:'לשומר',en:'Warden'},
   'story.re.call':{he:n=>'לקרוא ל'+n,en:n=>'Call '+n},
   'story.re.rise':{he:(n,t)=>n+' חוזר לקרב ('+t+')',en:(n,t)=>n+' returns to fight ('+t+')'},
