@@ -18,7 +18,11 @@ const WEAPONS={
   staff: {use:'gun',spread:0.3,shot:'bolt',home:5,life:1.2,k:{dmg:1.15,cd:1.1,speed:0.7}},
   wand:  {use:'gun',spread:0.2,shot:'bolt',home:7,life:1,k:{dmg:0.7,cd:0.75,speed:0.8}},
   base:{sword:20,gun:9},   // הנזק הבסיסי של דמות בלי כלום, מקרוב ומרחוק (P.sw.dmg / P.gn.dmg ב-reset, state.js)
-  bolt:{r:6,burst:7,find:260}   // קליע קסם: גודל, כמה ניצוצות בפגיעה, ומאיזה מרחק הוא מרגיש אויב
+  bolt:{r:6,burst:7,find:260},   // קליע קסם: גודל, כמה ניצוצות בפגיעה, ומאיזה מרחק הוא מרגיש אויב
+  /* כוח שרואים (docs/plan-combat.md שינוי 4): רק מראה וצליל, לא נזק. ככל שהנשק משודרג (‎+N ב-Aging, כוח מוטבע) והדמות ברמה גבוהה,
+     שובל ההנפה רחב יותר, החץ והקסם גדולים יותר וצליל הפגיעה חזק יותר. plus: לכל ‎+1, power: לנשק עם כוח, lvl: לכל רמת דמות, max: תקרה.
+     step: כל כמה ‎+ נוסף הד לשובל (‎+3, ‎+6, ‎+9). בעולם ובכפר בלבד (juiceOn ב-juice.js) */
+  grow:{plus:0.06,power:0.12,lvl:0.012,max:1.7,step:3}
 };
 
 // הנשקים שלבושים עכשיו. היום יש משבצת נשק אחת, אז כפתור ההחלפה מוסתר. משבצת שנייה תיכנס כאן
@@ -43,6 +47,10 @@ function wLabel(use){
   if(P.weapon===use)return T('wt.'+P.wt);
   const id=wHeld().find(i=>wUse(i)===use);return id?T('wt.'+wTypeOf(id)):T('w.'+use);
 }
+// כמה הנשק שביד "גדל": 1 בנשק רגיל ברמה 1, עד grow.max. wSteps: כמה הדים לשובל
+function wGrow(){const G=WEAPONS.grow,id=typeof P!=='undefined'&&P&&P.wid,lv=(typeof SAVE!=='undefined'&&SAVE.hero&&SAVE.hero.level)||1;
+  return Math.min(G.max,1+gPlus(id)*G.plus+(gPow(id)?G.power:0)+(lv-1)*G.lvl)}
+const wSteps=()=>Math.floor(gPlus(typeof P!=='undefined'&&P&&P.wid)/WEAPONS.grow.step);
 // הנשק הזה נכנס ליד: מאיזה צד תוקפים, ואיך
 function wEquip(id){P.wid=id||null;P.wt=wTypeOf(id);P.weapon=WEAPONS[P.wt].use;updateSwapBtn()}
 

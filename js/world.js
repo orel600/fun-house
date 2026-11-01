@@ -448,7 +448,7 @@ function wHeat(){
 const STORM={rain:80,spread:560,fall:620,slant:0.32,len:18,alpha:0.45,dark:0.12,flash:{every:5.5,len:0.18,alpha:0.35}};
 function wStorm(){
   const t=fxNow(),F=STORM,W=F.spread*2;ctx.save();
-  for(const tw of WR().towers||[])wTower(tw);
+  if(!R3D.on)for(const tw of WR().towers||[])wTower(tw);   // בתלת-ממד: מגדל אבן אמיתי (props3d.js)
   ctx.fillStyle='rgba(20,16,50,'+F.dark+')';ctx.fillRect(P.x-F.spread*2,P.y-F.spread*2,W*2,W*2);
   ctx.strokeStyle='#B9C4F0';ctx.lineWidth=1.4;
   for(let i=0;i<F.rain;i++){   // טיפות: קווים קצרים שנופלים באלכסון

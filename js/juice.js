@@ -28,8 +28,11 @@ const JUICE={
   nums:{max:12,life:0.7,pop:0.12,popK:1.8,rise:40,size:11,weak:15,resist:11,crit:22,critCol:'#FFE14D'},   // מספרי נזק: תקרה, משך, קפיצה בהתחלה, כמה עולים, גדלים, צבע קריטי. קטנים ב-25% וקצרים יותר מ-1.11 (docs/plan-hud.md פרק 6), ולא יותר מ-12 על המסך
   resist:0.5,tip:{after:3,gap:1.2},                             // מכפיל של 0.5 ומטה: "עמיד" במקום מספר. tip: אחרי 3 שניות של מכות חלשות (בלי הפסקה של יותר מ-1.2) שורה בפיד עם סוג נזק טוב יותר, פעם אחת לכל סוג אויב
   shake:{kill:1.6,crit:3.5,elite:6,big:9},                      // רעידה: הריגה רגילה (קטנטנה), קריטי, עלית או מיוחד, שומר/מבוקש/בוס
-  snd:{weak:1.3,crit:1.7},                                      // צליל הפגיעה חזק יותר: חולשה, קריטי (combat.js קורא jSnd)
+  snd:{weak:1.3,crit:1.7,grow:0.6},                                      // צליל הפגיעה חזק יותר: חולשה, קריטי (combat.js קורא jSnd)
   poof:{max:8,life:0.45,puffs:7,r:[8,18],col:'#E9E3D6',ring:46},   // עשן בהריגה: כמה ענני הריגה יחד, משך, כמה עננים קטנים, גודל, צבע וגודל הטבעת
+  // רצף הריגות (docs/plan-combat.md שינוי 4): "×N" בזהב ליד הדמות כשהורגים ברצף בלי הפסקה של יותר מ-gap שניות.
+  // מופיע מ-show, ובכל אחד מ-marks קופץ גדול, עם ניצוצות וצליל. אחרי הפסקה נעלם. רק מספרים, בלי טקסט
+  streak:{gap:2.2,show:5,marks:[10,25,50,100,200],size:15,pop:0.35,popK:2},
   scatter:1.5                                                   // השלל שנפל בהריגה עף רחוק יותר פי זה
 };
 // "פחות אפקטים" בהגדרות (ניר, docs/plan-fx.md משימה 6): חצי חלקיקים, בלי שובל לאורות, בלי נצנוץ לשלל, ומספרי נזק קטנים יותר.
@@ -46,7 +49,7 @@ function jStop(s,force,small){if(!(s>0))return;const J=juice(),now=jNow(),G=JUIC
   else{if(!force&&now-J.last<G.gap)return;J.last=now}
   S.hitstop=Math.max(S.hitstop||0,s)}
 // עוצמת צליל הפגיעה (combat.js: sfx('hit',jSnd(m,crit))): 1 בזירה ובמכה רגילה
-const jSnd=(m,crit)=>!juiceOn()?1:crit?JUICE.snd.crit:m>1?JUICE.snd.weak:1;
+const jSnd=(m,crit)=>!juiceOn()?1:(crit?JUICE.snd.crit:m>1?JUICE.snd.weak:1)*(1+(wGrow()-1)*JUICE.snd.grow);   // נשק משודרג נשמע חזק יותר (wGrow ב-weapons.js)
 
 // נקרא מ-damage (combat.js). מחזיר true כשהאפקטים כאן מחליפים את המספר והניצוצות הרגילים
 function juiceHit(e,d,m,crit,t,ang){
@@ -87,6 +90,8 @@ function juiceKill(e){
   if(J.poofs.length>=K.poof.max)J.poofs.shift();
   const pf=[];for(let i=0;i<K.poof.puffs*(fxLess()?FX_LESS.parts:1);i++){const a=rand(0,6.28);pf.push({a,s:rand(20,55),r:rand(...K.poof.r)})}
   J.poofs.push({x:e.x,y:e.y,t0:jNow(),pf,r:e.r*(e.big||1),col:dtCol(e.weak)});
+  const now=jNow(),St=K.streak;J.st=now-(J.stT||-9)<St.gap?(J.st||0)+1:1;J.stT=now;
+  const mi=St.marks.indexOf(J.st);if(mi>=0){J.stPop=now;jBurst(P.x,P.y+24,'gold',K.parts.kill,null);sfx('coin',1.2+mi*0.25)}
   jBurst(e.x,e.y-e.r*0.5,'gold',K.parts.kill,null);
   for(const d of (S.gd||[]))if(d.t===0&&Math.hypot(d.x-e.x,d.y-e.y)<e.r+40){d.vx*=K.scatter;d.vy*=K.scatter}   // השלל שנפל עכשיו (drops.js)
 }
@@ -113,7 +118,7 @@ function jBurst(x,y,t,n,ang){
 function jSwing(s,k,col){
   if(!juiceOn())return false;
   const W=JUICE.swing,R=s.range*0.72,cx=P.x,cy=P.y-8,start=s.ang-s.arc/2,end=start+s.arc*Math.min(1,(1-k)*1.6),n=14,
-    a0=Math.max(start,end-s.arc*0.85),fade=Math.min(1,k*1.8),w=W.w*(0.5+0.5*fade);
+    a0=Math.max(start,end-s.arc*0.85),fade=Math.min(1,k*1.8),w=W.w*wGrow()*(0.5+0.5*fade);
   if(end-a0<0.05)return true;
   ctx.save();ctx.globalCompositeOperation='lighter';
   // החרמש: קשת חיצונית ברדיוס R+w/2 וחוזרים בקשת פנימית, העובי גדל לכיוון הלהב
@@ -125,6 +130,9 @@ function jSwing(s,k,col){
   ctx.globalCompositeOperation='source-over';
   ctx.globalAlpha=0.9*fade;ctx.strokeStyle='#fff';ctx.lineWidth=W.edge;ctx.lineCap='round';
   ctx.beginPath();ctx.arc(cx,cy,R+w*0.42,Math.max(a0,end-0.5),end);ctx.stroke();
+  // הדים: ‎+3, ‎+6, ‎+9 מוסיפים קשת דקה נוספת מחוץ לשובל, בצבע סוג הנזק
+  const ns=wSteps();if(ns){ctx.globalCompositeOperation='lighter';ctx.strokeStyle=col;
+    for(let i=1;i<=ns;i++){ctx.globalAlpha=0.55*fade/i;ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,R+w*0.5+i*7,a0+(end-a0)*0.25,end);ctx.stroke()}}
   ctx.restore();return true;
 }
 // נקרא מ-render() בקואורדינטות העולם, אחרי הניצוצות הרגילים
@@ -167,6 +175,11 @@ function juiceDraw(){
     ctx.lineWidth=f.crit?5:3.5;ctx.strokeStyle='#000b';ctx.strokeText(f.txt,x,y);ctx.fillStyle=f.col;ctx.fillText(f.txt,x,y);
     if(f.weak){const w=ctx.measureText(f.txt).width;dtIcon(x+w/2+sz*0.45,y-sz*0.35,f.weak,sz*0.7)}}   // חולשה: הסמל של סוג הנזק ליד המספר
   J.n=J.n.filter(f=>now-f.t0<N.life);
+  // רצף הריגות ליד הדמות
+  const St=JUICE.streak;if(J.st>=St.show&&now-J.stT<St.gap){const pk=J.stPop&&now-J.stPop<St.pop?1+(St.popK-1)*(1-(now-J.stPop)/St.pop):1,
+    sz=St.size*pk*(1+Math.min(0.5,J.st/200)),fade=Math.min(1,(St.gap-(now-J.stT))/0.5),txt='×'+J.st;
+    ctx.globalAlpha=fade;ctx.font='900 '+sz.toFixed(1)+'px Heebo, system-ui, sans-serif';ctx.lineWidth=4;ctx.strokeStyle='#000b';
+    ctx.textAlign='center';ctx.strokeText(txt,P.x,P.y+30);ctx.fillStyle=C.gold;ctx.fillText(txt,P.x,P.y+30)}
   ctx.restore();
 }
 

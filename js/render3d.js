@@ -134,10 +134,11 @@ const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',
   decor:{
     meadow:{hills:{pick:[{model:'n_tree',h:150,tint:'#cfe6bf'},{model:'n_pine',h:160},{model:'v_treeA',w:120}]}},   // האחו: יער גבוה בשוליים במקום אריחי המשושה (שנראו כמו לוח משחק). העצים והסלעים הקטנים כמו בכפר
     lake:  {tree:{pick:[{model:'n_tree',h:100,tint:'#a9d2bf'},{model:'v_treeB',w:55,tint:'#bfe0d0'},{model:'n_reeds',h:55}]},rock:{model:'n_round',w:55,tint:'#a9bcb8'},hills:{model:'v_hills',w:260,tint:'#bfd8cc'}},
-    ridge: {tree:{pick:[{model:'n_pine',h:125,snow:0.35},{model:'n_pine',h:95,snow:0.5}]},rock:{model:'n_crag',w:62,tint:'#eef4fa'},hills:{model:'n_crag',w:230,tint:'#e2ecf4'}},
-    desert:{tree:{pick:[{model:'n_acacia',h:85,tint:'#d8c27a'},{model:'n_cactus',h:70},{model:'n_dead',h:105,tint:'#e0b58a'}]},rock:{model:'n_crag',w:62,tint:'#e7b47a'},hills:{model:'n_crag',w:220,tint:'#d9a05e'}},
-    storm: {tree:{pick:[{model:'n_dead',h:115,tint:'#8f86aa'},{model:'n_bare',h:90,tint:'#7d7598'}]},rock:{model:'n_block',w:60,tint:'#9a96b4'},hills:{model:'n_block',w:200,tint:'#7f7b98'}},
-    shadow:{tree:{pick:[{model:'n_bare',h:95,tint:'#6e5a98'},{model:'n_dead',h:115,tint:'#5a4a80'}]},rock:{model:'n_round',w:58,tint:'#5d4a86'},hills:{model:'n_block',w:200,tint:'#3e3260'}}
+    ridge: {tree:{pick:[{model:'n_pine',h:125,snow:0.35},{model:'n_pine',h:95,snow:0.5}]},rock:{model:'n_crag',w:62,tint:'#eef4fa'},hills:{pick:[{model:'n_pine',h:175,snow:0.45},{model:'n_crag',w:120,tint:'#e2ecf4'},{model:'n_pine',h:150,snow:0.55}]}},
+    desert:{tree:{pick:[{model:'n_acacia',h:85,tint:'#d8c27a'},{model:'n_cactus',h:70},{model:'n_dead',h:105,tint:'#e0b58a'}]},rock:{model:'n_crag',w:62,tint:'#e7b47a'},hills:{pick:[{model:'n_crag',w:115,tint:'#d9a05e'},{model:'n_dead',h:160,tint:'#e0b58a'},{model:'n_acacia',h:140,tint:'#d8c27a'}]}},
+    storm: {tree:{pick:[{model:'n_dead',h:115,tint:'#8f86aa'},{model:'n_bare',h:90,tint:'#7d7598'}]},rock:{model:'n_block',w:60,tint:'#9a96b4'},hills:{pick:[{model:'n_block',w:105,tint:'#8a86a4'},{model:'n_dead',h:165,tint:'#8f86aa'},{model:'n_bare',h:130,tint:'#7d7598'}]}},
+    // hills: בשוליים, יער גבוה וסלעים בגודל סביר במקום גוש סלע ענק אחד שנראה כמו קופסה (ניר, 1.11: "דברים מוזרים")
+    shadow:{tree:{pick:[{model:'n_bare',h:95,tint:'#6e5a98'},{model:'n_dead',h:115,tint:'#5a4a80'}]},rock:{model:'n_round',w:58,tint:'#5d4a86'},hills:{pick:[{model:'n_bare',h:150,tint:'#5a4a80'},{model:'n_round',w:110,tint:'#4a3a70'},{model:'n_dead',h:165,tint:'#4e3f78'}]}}
   },
   // מקורות משאבים לפי הסוג (kind ב-nodes.js), במראה החדש: אורן מושלג, קקטוס, עץ מת. כל השאר לפי הצורה (nodes למעלה)
   kinds:{pine:{model:'n_pine',h:115,snow:0.3},cactus:{model:'n_cactus',h:62,glow:'#5FA35A'},deadTree:{model:'n_dead',h:115,tint:'#8c8494'},
