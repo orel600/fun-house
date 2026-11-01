@@ -63,24 +63,36 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .swap:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
 .swap.hint{animation:pulse .6s ease-in-out infinite alternate}
 @keyframes pulse{to{transform:scale(1.12);box-shadow:0 0 0 10px rgba(236,231,220,.12)}}
-/* הסקילים (js/skills.js): לרוחב, תחת האגודל הימני, ולכן right ולא end. כפתור בצבע סוג הנזק, ומילוי כהה שמתרוקן בזמן הטעינה (--cd) */
-.skills{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 26px);right:calc(env(safe-area-inset-right,0px) + 20px);
-  display:flex;flex-direction:row-reverse;align-items:flex-end;gap:12px;direction:ltr}
-.swap:not([hidden])~.skills{bottom:calc(env(safe-area-inset-bottom,0px) + 130px)}
-.skb{position:relative;width:68px;height:68px;border-radius:50%;border:3px solid var(--dt);background:rgba(18,22,36,.8);
+/* הסקילים (js/skills.js): לרוחב, תחת האגודל הימני, ולכן right ולא end. כפתור בצבע סוג הנזק, ומילוי כהה שמתרוקן בזמן הטעינה (--cd).
+   בקשת סביב הכפתור שבפינה (docs/ui-guide.md, ובהשראת MLBB לבקשת אוראל, 1.11.2026): הקופסה היא ריבוע של 88 בפינה, וכל כפתור יושב
+   לפי --x (שמאלה) ו---y (למעלה) של המרכז שלו מהמרכז של הפינה. בלי כפתור החלפה: הסקיל הראשי בפינה, והשאר משמאלו ומעליו.
+   עם כפתור החלפה: הוא בפינה, ושלושת הסקילים בקשת סביבו (שמאלה, באלכסון ולמעלה) */
+.skills{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 30px);right:calc(env(safe-area-inset-right,0px) + 22px);
+  width:88px;height:88px;direction:ltr;pointer-events:none}
+.skb{position:absolute;--w:66px;width:var(--w);height:var(--w);right:calc(44px - var(--w)/2 + var(--x,0px));bottom:calc(44px - var(--w)/2 + var(--y,0px));
+  border-radius:50%;border:3px solid var(--dt);background:rgba(18,22,36,.8);pointer-events:auto;
   display:grid;place-items:center;padding:0;touch-action:none;cursor:pointer;overflow:hidden}
-.skb:first-child{width:80px;height:80px}
-.skb .dti{width:34px;height:34px}
+.skb:nth-child(1){--w:84px}
+.skb:nth-child(2){--x:104px}
+.skb:nth-child(3){--y:104px}
+.swap:not([hidden])~.skills .skb:nth-child(1){--w:72px;--x:116px;--y:0px}
+.swap:not([hidden])~.skills .skb:nth-child(2){--x:84px;--y:84px}
+.swap:not([hidden])~.skills .skb:nth-child(3){--x:0px;--y:116px}
+.skb .dti{width:34px;height:34px;transition:opacity .15s}
+.skb:nth-child(1) .dti{width:40px;height:40px}
+.skb:not(.ready) .dti{opacity:.45}   /* בטעינה: האייקון דהוי, והשניות באמצע */
 .skb i{position:absolute;inset:0;border-radius:50%;pointer-events:none;
   background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
 .skb.ready{box-shadow:0 0 12px var(--dt)}
+.skb.ping{animation:skping .45s ease-out}   /* נטען: טבעת אחת קצרה שיוצאת מהכפתור */
+@keyframes skping{from{box-shadow:0 0 0 0 var(--dt)}to{box-shadow:0 0 0 14px transparent}}
 .skb:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
-/* ברק אלוהי (js/divine.js): מעל כפתורי הסקילים */
-.divine{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 124px);right:calc(env(safe-area-inset-right,0px) + 28px);
+/* ברק אלוהי (js/divine.js): באלכסון, מחוץ לקשת של הסקילים, כדי שבמסך נמוך הוא לא יעלה עד פס החיים */
+.divine{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 154px);right:calc(env(safe-area-inset-right,0px) + 146px);
   width:60px;height:60px;border-radius:50%;border:3px solid var(--gold);background:rgba(18,22,36,.8);display:grid;place-items:center;padding:0;
   touch-action:none;cursor:pointer;overflow:hidden;--dt:#D46BFF}
 .divine[hidden]{display:none}
-.swap:not([hidden])~.divine{bottom:calc(env(safe-area-inset-bottom,0px) + 228px)}
+.swap:not([hidden])~.divine{bottom:calc(env(safe-area-inset-bottom,0px) + 194px);right:calc(env(safe-area-inset-right,0px) + 186px)}
 .divine .dti{width:30px;height:30px}
 .divine i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
 .divine.ready{box-shadow:0 0 12px var(--gold)}
@@ -137,9 +149,9 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .shopit button:disabled{opacity:.4;border-color:#5A4B26}
 .shopit .shopmax{text-align:center;border-color:#3A4566;color:var(--dim);background:none}
 .vil .skills,.vil .divine{display:none}
-/* בעולם (js/wskill.js): בזמן ההמתנה מספר השניות גדול באמצע, ובגרירה הכפתור מתכווץ */
+/* בזמן ההמתנה מספר השניות גדול באמצע (בזירה: skillsHud, בעולם: wskill.js), ובעולם בגרירה הכפתור מתכווץ */
 /* הסרגל התחתון כבר לא בפינה הזו (התפריט הראשי, menu.js), אז הכפתורים בגובה הרגיל */
-.world .skb[data-sec]:not([data-sec=""])::after{content:attr(data-sec);position:absolute;inset:0;display:grid;place-items:center;z-index:1;
+.skb[data-sec]:not([data-sec=""])::after{content:attr(data-sec);position:absolute;inset:0;display:grid;place-items:center;z-index:1;
   font:900 26px/1 var(--body);color:#fff;text-shadow:0 0 4px #000,0 2px 0 #000;pointer-events:none}
 .world .skills.aiming .skb{transform:scale(.92)}
 .banner{position:fixed;z-index:3;left:0;right:0;top:32%;text-align:center;font-family:var(--display);font-size:28px;
