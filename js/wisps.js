@@ -96,11 +96,87 @@ function drawWisps(){
   W.stat.draws++;W.stat.lights=WL.list.length;W.stat.parts=WL.parts.length;
 }
 
+/* ---- רואים מה כל אור עושה (ניר, 1.11: "מפריע לי שלא ברור איך האורות שמסתובבים סביבי תורמים"). רק בעולם ----
+   על המטרה: אש משאירה שובל גחלים עד האויב ו-🔥 מעליו, כפור טבעת כחולה על האויב, אבן "קופצת" עם פיצוץ קטן כשהיא עוצרת ירייה או בולעת מכה,
+   עלה שולח קו ירוק לדמות ו"+N ריפוי" בפיד, ותלתן מצייר כוכב על מכה קריטית.
+   שורת אייקונים ליד פינת "מי אני": אור לכל חפץ, עם טבעת טעינה (מגן, ריפוי), שנדלק לרגע כשהוא פועל.
+   בפעם הראשונה שכל אור מופיע: שורה אחת בפיד שמסבירה מה הוא עושה (SAVE.wispTip).
+   הפגיעות נקראות מ-e.oh (הזמן שבו כל חפץ יכול לפגוע שוב באותו אויב, orbit.js), בלי לשנות את orbit.js */
+const WACT={
+  life:{fire:0.45,icon:0.7,ring:0.55,pop:0.4,heal:0.6,star:0.5},   // כמה זמן כל סימן נשאר
+  row:{size:22,gap:6,ring:2.5,flash:0.5},                          // שורת האייקונים: גודל, רווח, עובי טבעת הטעינה, וכמה זמן היא מוארת אחרי פעולה
+  max:40,
+  stat:{fire:0,ring:0,pop:0,heal:0,star:0,tips:0}                   // לבדיקה: כמה סימנים מכל סוג
+};
+const WA={fx:[],lit:{}};
+const wActOn=()=>!!(S&&S.wd&&!S.room);
+function wAct(k,o){if(WA.fx.length>=WACT.max)WA.fx.shift();o.k=k;o.t=0;o.life=WACT.life[k];WA.fx.push(o);if(k in WACT.stat)WACT.stat[k]++}
+function wispsAct(dt,was){
+  const o=S.orb;for(const f of WA.fx)f.t+=dt;WA.fx=WA.fx.filter(f=>f.t<f.life);
+  for(const k in WA.lit)WA.lit[k]=Math.max(0,WA.lit[k]-dt);
+  if(!wActOn())return;
+  // פגיעה של אש או קרח: e.oh[i] התחלף
+  for(const e of enemies){if(e.dead||!e.oh){e._wo=null;continue}const prev=e._wo||[];
+    for(let i=0;i<e.oh.length;i++){if(!e.oh[i]||e.oh[i]===prev[i])continue;const ty=o.types[i],w=WL.list[i];if(!w)continue;
+      if(ty==='attack'){wAct('fire',{x1:w.x,y1:w.y-w.h,e});wAct('icon',{e,s:'🔥'})}
+      else if(ty==='control')wAct('ring',{e});
+      WA.lit[ty]=WACT.row.flash}
+    e._wo=e.oh.slice()}
+  // אבן: ירייה שנעצרה או מכה שנבלעה. עלה: ריפוי
+  const di=o.types.indexOf('defense'),dw=WL.list[di];
+  if(was&&dw&&o.blocked+o.shields>was.def){wAct('pop',{x:dw.x,y:dw.y-dw.h,big:o.shields>was.sh});WA.lit.defense=WACT.row.flash}
+  const si=o.types.indexOf('support'),sw=WL.list[si];
+  if(was&&sw&&o.healed>was.heal){const h=Math.round(o.healed-was.heal);wAct('heal',{x1:sw.x,y1:sw.y-sw.h});WA.lit.support=WACT.row.flash;
+    if(h>0&&typeof feedAdd==='function'&&feedOn())feedAdd(GEAR.orbit.support,T('wisp.heal'),WISPS.col.support[1],'wheal',h)}
+  // הסבר בפעם הראשונה
+  const seen=SAVE.wispTip||(SAVE.wispTip={});
+  for(const ty of o.types)if(!seen[ty]&&typeof feedAdd==='function'&&feedOn()){seen[ty]=1;saveNow();WACT.stat.tips++;
+    feedAdd(GEAR.orbit[ty],T('wisp.tip.'+ty,wTipN(ty)),WISPS.col[ty][1],'wtip:'+ty,0,true)}
+}
+const wTipN=ty=>{const D=ORBIT.types[ty];return D.shield?D.shield.every:D.heal?D.heal.every:''};
+// מכה קריטית כשהתלתן לבוש: כוכב על האויב. עוטפים את juiceHit (juice.js) מבחוץ
+(()=>{if(typeof juiceHit!=='function')return;const old=juiceHit;
+  juiceHit=function(e,d,m,crit){const r=old.apply(this,arguments);
+    if(crit&&wActOn()&&S.orb&&S.orb.types.includes('luck')){wAct('star',{e});WA.lit.luck=WACT.row.flash}return r}})();
+
+function drawWispAct(){
+  if(!WA.fx.length)return;ctx.save();
+  for(const f of WA.fx){const k=f.t/f.life,a=1-k;
+    if(f.e&&f.e.dead&&f.k!=='fire'){continue}
+    if(f.k==='fire'){const x2=f.e.x,y2=f.e.y-f.e.r*0.6,g=wispGlow(WISPS.col.attack[1]);ctx.globalCompositeOperation='lighter';   // שובל גחלים מהאור לאויב
+      for(let j=0;j<=6;j++){const u=j/6;if(u>k*1.6+0.2)break;wispBlit(g,f.x1+(x2-f.x1)*u,f.y1+(y2-f.y1)*u-Math.sin(u*3.14)*10,5*(1-u*0.4),0.8*a)}}
+    else if(f.k==='icon'){ctx.globalCompositeOperation='source-over';ctx.globalAlpha=a;ctx.textAlign='center';ctx.direction='ltr';ctx.font=Math.round(11/ZOOM)+'px system-ui';ctx.fillText(f.s,f.e.x,f.e.y-f.e.r-14-k*10)}
+    else if(f.k==='ring'){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=0.8*a;ctx.strokeStyle=WISPS.col.control[1];ctx.lineWidth=2.5;ctx.beginPath();ctx.ellipse(f.e.x,f.e.y,f.e.r*(1+k*0.5)+4,(f.e.r*(1+k*0.5)+4)*0.45,0,0,7);ctx.stroke()}
+    else if(f.k==='pop'){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=a;ctx.strokeStyle=WISPS.col.defense[1];ctx.lineWidth=2;ctx.beginPath();ctx.arc(f.x,f.y,6+k*(f.big?30:16),0,7);ctx.stroke();
+      if(f.big){ctx.beginPath();ctx.ellipse(P.x,P.y,24+k*12,10+k*5,0,0,7);ctx.stroke()}}
+    else if(f.k==='heal'){const g=wispGlow(WISPS.col.support[1]);ctx.globalCompositeOperation='lighter';   // קו ירוק מהעלה לדמות
+      for(let j=0;j<=7;j++){const u=j/7;if(u>k*1.6+0.15)break;wispBlit(g,f.x1+(P.x-f.x1)*u,f.y1+(P.y-24-f.y1)*u,5,0.75*a)}}
+    else if(f.k==='star'){const x=f.e.x,y=f.e.y-f.e.r-8,s=(5+k*9)*Math.sin(Math.min(1,k*2)*1.57);ctx.globalCompositeOperation='lighter';ctx.globalAlpha=a;ctx.strokeStyle=WISPS.col.luck[1];ctx.lineWidth=2;
+      ctx.beginPath();for(let q=0;q<4;q++){const an=q*1.571+0.785*0;ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(an)*s,y+Math.sin(an)*s)}ctx.stroke()}}
+  ctx.restore();
+}
+// שורת אייקונים ליד פינת "מי אני" (minimap.js): בפיקסלים של המסך
+function drawWispRow(){
+  const o=S.orb,who=document.getElementById('who');if(!who||who.hidden||!o||!o.types.length)return;const q=who.getBoundingClientRect();if(!q.width)return;
+  const R=WACT.row,rtl=DIR==='rtl',n=o.types.length,y=q.top+q.height/2;let x=rtl?q.left-R.gap-R.size/2:q.right+R.gap+R.size/2;
+  ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='ltr';
+  o.types.forEach((ty,i)=>{const lit=(WA.lit[ty]||0)/R.flash,col=WISPS.col[ty][1],r=R.size/2;
+    ctx.globalAlpha=0.55+0.45*lit;ctx.fillStyle='rgba(5,7,13,0.6)';ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
+    if(lit>0){ctx.globalCompositeOperation='lighter';wispBlit(wispGlow(col),x,y,r*1.8,0.6*lit);ctx.globalCompositeOperation='source-over'}
+    // טבעת טעינה: מגן (אבן) וריפוי (עלה). אש, קרח ותלתן תמיד מוכנים
+    const D=ORBIT.types[ty];let f=1;if(D.shield)f=1-Math.max(0,(o.sh[i]||0)-S.t)/D.shield.every;else if(D.heal)f=1-Math.max(0,(o.hl[i]||0)-S.t)/D.heal.every;
+    ctx.globalAlpha=1;ctx.strokeStyle=col;ctx.lineWidth=R.ring;ctx.beginPath();ctx.arc(x,y,r-1,-1.571,-1.571+6.283*Math.max(0,Math.min(1,f)));ctx.stroke();
+    ctx.globalAlpha=f>=1?1:0.6;ctx.font=Math.round(R.size*0.55)+'px system-ui';ctx.fillText(GEAR.orbit[ty],x,y+1);
+    x+=(rtl?-1:1)*(R.size+R.gap)});
+  ctx.restore();ctx.direction=DIR;
+}
+
 /* ---- חיבור: עוטפים את drawOrbits (orbit.js) מבחוץ. render.js קורא לו בשם, אז העטיפה נתפסת ---- */
 (()=>{const old=drawOrbits;
   drawOrbits=function(){
     const o=S.orb;if(!wispsOn())return old();
     const s=performance.now(),dt=WL.last?Math.min(0.05,(s-WL.last)/1000):0;WL.last=s;
-    if(!o||!o.types.length||!skHere()){WL.list.length=0;WL.parts.length=0;WL.seen=null;return}
-    wispsUpdate(dt);drawWisps()};
+    if(!o||!o.types.length||!skHere()){WL.list.length=0;WL.parts.length=0;WL.seen=null;WL.was=null;WA.fx.length=0;return}
+    const was={def:o.blocked+o.shields,sh:o.shields,heal:o.healed};
+    wispsUpdate(dt);wispsAct(dt,WL.was);WL.was=was;drawWisps();drawWispAct();if(wActOn())drawWispRow()};
 })();

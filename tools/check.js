@@ -895,6 +895,19 @@ function worldBot(m,L,god){
       for(const f of FL)f.t-=FEED.life+0.1;render();r.gone=FL.length===0;
       S.wd=null;S.vil=null;r.arena=!feedOn()}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);FL.length=0;if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // רואים מה כל אור עושה (wisps.js, WACT): פגיעה של אש וכפור מסומנת על האויב, ריפוי בפיד, הסבר בפעם הראשונה, ושורת אייקונים ליד "מי אני"
+  const wac=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{SAVE.hero.level=99;SAVE.gear.orbit=['emberOrb','frostOrb','stoneOrb','leafOrb','cloverOrb'];SAVE.wispTip={};enterWorld('home');enemies=[];FL.length=0;
+      const st=WACT.stat,s0={...st};worldUpdate(1/60);drawOrbits();
+      r.tips=st.tips-s0.tips===5;
+      const p0=S.orb.pos[0],e=addEnemy('grunt',p0.x,p0.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;
+      const p1=S.orb.pos[1],e2=addEnemy('grunt',p1.x,p1.y);e2.home=0;e2.mult={};e2.hp=e2.max=1e9;e2.speed=0;e2.dmg=0;
+      orbitUpdate(0);drawOrbits();r.fire=st.fire>s0.fire;r.ring=st.ring>s0.ring;
+      P.hp=P.maxHp/2;S.t+=ORBIT.types.support.heal.every+0.1;orbitUpdate(0);drawOrbits();r.heal=st.heal>s0.heal&&FL.some(f=>f.key==='wheal');
+      const draws=[];const ft=ctx.fillText;ctx.fillText=function(t){draws.push(t);return ft.apply(this,arguments)};try{drawOrbits()}finally{ctx.fillText=ft}
+      r.row=!document.getElementById('who').hidden?Object.values(GEAR.orbit).every(ic=>draws.includes(ic)):true;
+      e.dead=e2.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);FL.length=0;if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // כל דמות התחלה לשתי שניות מול אויב אחד: איך היא תוקפת, מה עף, ואיזו הנפשה. אחר כך הכל חוזר כמו שהיה
   const heroes=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,out={};
     const W3={sword:'Melee_1H_Attack_Slice_Horizontal',bow:'Ranged_Bow_Release',staff:'Ranged_Magic_Shoot'};   // ההנפשה שכל נשק צריך (GRIP3D)
@@ -1626,6 +1639,8 @@ function worldBot(m,L,god){
   check(ob.fire&&ob.slow&&ob.block&&ob.shield&&ob.shieldOnce&&ob.heal&&ob.crit>0&&ob.luck>1&&ob.draw===true,'חפצים מסתובבים ('+ob.types+'): '+[ob.fire?'אש שורפת':'אש לא פגעה',ob.slow?'כפור מאט':'כפור לא האט',
     ob.block?'אבן עצרה ירייה':'ירייה עברה',ob.shield?(ob.shieldOnce?'מגן בלע מכה אחת':'מגן בלע יותר ממכה'):'מגן לא בלע',ob.heal?'עלה ריפא':'אין ריפוי',
     'תלתן: קריטי +'+ob.crit+', שלל x'+ob.luck,ob.draw===true?'מצויר':'ציור נכשל: '+ob.draw].join(', '));
+  check(!wac.err&&wac.tips&&wac.fire&&wac.ring&&wac.heal&&wac.row,'רואים מה האורות עושים: '+(wac.err||[wac.tips?'הסבר לכל אור בפעם הראשונה':'אין הסבר',wac.fire?'אש מסומנת על האויב':'אש לא מסומנת',
+    wac.ring?'טבעת כפור':'אין טבעת כפור',wac.heal?'ריפוי בפיד':'ריפוי לא בפיד',wac.row?'שורת אייקונים':'אין שורת אייקונים'].join(', ')));
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
   check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw&&wsk.orbFlash,
