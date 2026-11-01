@@ -38,7 +38,7 @@ const WORLD={
   foeHp:2.2,                             // אויבים בעולם: פי כמה חיים (docs/plan-combat.md שינוי 3). גם בלהקות (pacing.js). המכה עם הכנה: STRIKE ב-strike.js
   foeMin:70,                             // ולפחות כך הרבה חיים (כפול ה-hp של האזור): גרנט חלש לחרב לוקח 2-3 מכות ולא נעלם במכה אחת. אויב חזק לא מושפע. אחרי שדרוגים שוב מכה אחת, וזה ה"וואו, התחזקתי"
   zones:[
-    {id:'start',to:360, hp:0.35,dmg:0.25,speed:0.6, leash:240,back:12},
+    {id:'start',to:360, hp:0.35,dmg:0.25,speed:0.6, leash:240,back:12,min:80,wind:0.65},   // min: רצפת חיים משלו, כדי שגם ליד השער אויב לוקח 2-3 מכות (ולא foeMin×0.35). wind: הכנה איטית יותר למכה, קל להתחמק
     {id:'near', to:800, hp:0.7, dmg:0.6, speed:0.85,leash:360,back:22},
     {id:'far',  to:1e9, hp:1,   dmg:1,   speed:1,   leash:480,back:30}
   ],
@@ -231,7 +231,7 @@ function wLootIn(){
 // האזור של קבוצה, לפי המרחק של הבית שלה מהשער לכפר
 const wZone=G=>{const R=WR();return R.zones.find(z=>Math.hypot(G.x-R.home.x,G.y-R.home.y)<z.to)};
 // רצפה לחיים של אויב בעולם (WORLD.foeMin), לפני תכונה מיוחדת (affix.js)
-function wTough(e,Z){const m=WORLD.foeMin*Z.hp;if(e.max<m){e.hp=e.max=m}}
+function wTough(e,Z){const m=Z.min??WORLD.foeMin*Z.hp;if(e.max<m){e.hp=e.max=m}if(Z.wind)e.wind=Z.wind}   // Z.min ו-Z.wind: אזור שמגדיר בעצמו (start)
 function wSpawn(G,i){
   if(!ETYPES[G.type])return;const Z=wZone(G);
   for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp*WORLD.foeHp);wTough(e,Z);
