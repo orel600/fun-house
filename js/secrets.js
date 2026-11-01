@@ -190,7 +190,7 @@ function secretsHud(){
 /* בתלת-ממד: המודלים הקיימים של הכפר (VIL3D.decor) לעץ החרוט ולמה שמסתיר תיבה. נקרא פעם אחת לכל אזור, מ-syncWorld */
 function secrets3D(reg,put){
   for(const s of SECRETS.regions[reg]||[]){
-    if(s.kind==='carving')put('v_treeA',s.x,s.y-6,70,hash(s.x,s.y)*6.28);
+    if(s.kind==='carving'){if(!(typeof props3dCarve==='function'&&props3dCarve(reg)))put('v_treeA',s.x,s.y-6,70,hash(s.x,s.y)*6.28)}   // באזור עם עצים משלו: עץ של האזור (props3d.js)
     else if(s.kind==='chest')put(s.hide==='bush'?'v_treeB':'v_rock',s.x,s.y,s.hide==='bush'?44:52,hash(s.x,s.y)*6.28);
   }
 }
