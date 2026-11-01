@@ -692,6 +692,33 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 @media (orientation:landscape) and (max-height:500px){.dday{min-height:58px}.dday .dchest{width:42px;height:42px}.dailywin{padding:8px 10px}}
 @media (orientation:portrait){.dbody{flex-direction:column}}
 .stbuilds{display:flex;gap:6px;margin-top:4px}.stbuilds .vbtn{flex:1;min-height:36px;padding:6px 4px;font-size:13px}.stbuilds .vbtn[aria-pressed="true"]{border-image-source:url(../icons/ui/btn-gold.png);color:#FFF6E0}
+
+/* ביקור אצל חבר (js/visit.js): כפתור עגול מתחת למתנה היומית, וחלון בשני טורים: חברים, והכפר שלו עם המתנה */
+.visbtn{top:calc(env(safe-area-inset-top,0px) + 122px);animation:none}
+.visbtn.off{opacity:.45;filter:grayscale(.8)}
+.viswin .visbody{display:flex;gap:14px;min-height:0;flex:1}
+.vislist{flex:.8;display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-width:0}
+.visf{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:52px;padding:6px 12px;border-radius:12px;border:2px solid var(--line,#2A3249);background:rgba(255,255,255,.05);color:var(--chalk);font:800 16px var(--body);text-align:start}
+.visf small{font:700 12px var(--body);opacity:.8}
+.visf.on{border-color:var(--gold);box-shadow:0 0 10px rgba(244,199,79,.45)}
+.visf:active,.visr:active,.visn:active,.visnote:active{transform:scale(.92)}
+.visside{flex:1.6;display:flex;flex-direction:column;gap:6px;min-width:0;overflow-y:auto}
+.visside h3{margin:2px 0 0;color:var(--gold);font:900 18px var(--body)}
+.visside .dim,.visdone{font-size:14px;opacity:.85;margin:4px 0}
+.visgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.visb{display:flex;flex-direction:column;align-items:center;gap:0;padding:4px 2px;border-radius:10px;background:rgba(255,255,255,.06);min-width:0}
+.visb span{font-size:20px}.visb b{font:800 12px var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.visb small{color:var(--gold);font-size:11px;white-space:nowrap}
+.visb.none{opacity:.45}.visb.none small{color:var(--chalk)}
+.visres,.visamt,.visnotes{display:flex;flex-wrap:wrap;gap:6px}
+.vispick{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.visr{position:relative;width:48px;height:48px;border-radius:10px;border:2px solid var(--line,#2A3249);background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center}
+.visr .ri{width:32px;height:32px}.visr small{position:absolute;bottom:1px;inset-inline-end:3px;font:800 11px var(--body);color:var(--chalk)}
+.visn,.visnote{min-height:44px;padding:0 10px;border-radius:10px;border:2px solid var(--line,#2A3249);background:rgba(255,255,255,.05);color:var(--chalk);font:800 14px var(--body)}
+.visr.on,.visn.on,.visnote.on{border-color:var(--gold);box-shadow:0 0 8px rgba(244,199,79,.45)}
+.visn:disabled{opacity:.4}
+.visnotes{flex-wrap:nowrap;align-items:stretch}.visnote{flex:1;min-height:48px;text-align:start}.visnote i{font-style:normal;color:var(--gold)}
+.visnotes .vbtn{flex:1;min-height:48px;margin:0}
+@media (orientation:portrait){.viswin .visbody{flex-direction:column}}
 /* אתגר יומי (challenge.js): הסימן בפס העליון בעולם */
 .chtag{font-size:12px;font-weight:800;color:var(--tide,#7FD6E8);background:rgba(10,12,20,.7);border-radius:10px;padding:2px 8px;white-space:nowrap}
 .chtag[hidden]{display:none}

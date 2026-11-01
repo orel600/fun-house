@@ -111,7 +111,7 @@ function vTrade(kind,r){
 }
 
 /* ---- מעבר בין הכפר לזירה ---- */
-function villageUi(on){document.body.classList.toggle('vil',on);if(!on)document.body.classList.remove('vpan');$('vhud').hidden=!on;if(!on){$('vPanel').hidden=true;npcHide()}}
+function villageUi(on){document.body.classList.toggle('vil',on);if(!on)document.body.classList.remove('vpan');$('vhud').hidden=!on;if(!on){$('vPanel').hidden=true;npcHide()}if(typeof visitBtn==='function')visitBtn()}
 function enterVillage(){
   const back=S&&(S.mode==='over'||S.wd);   // חוזרים מהעולם (או מריצה): ליד השער
   reset();S.mode='play';S.vil={near:null,ui:'',raise:{}};
@@ -127,6 +127,7 @@ function enterVillage(){
   storyVillage();   // ההקדמה של העלילה, פעם אחת (story.js)
   homeVillage();   // פנס שנדלק: תושב חוזר וראש הכפר מספר (homecoming.js)
   dailyVillage();   // המתנה היומית (daily.js)
+  visitVillage();   // ביקור אצל חבר: פרופיל ציבורי ומתנות שמחכות (visit.js)
 }
 function leaveVillage(){villageUi(false);enterWorld('home');questEvent('reach','world')}   // השער מוביל לעולם הפתוח (world.js), והזירות בתוכו
 
