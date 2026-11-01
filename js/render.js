@@ -128,6 +128,9 @@ function edgeArrow(sx,sy,col,s=1,strong){
   const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(110,Math.min(H-40,H/2+Math.sin(a)*H));
   ctx.save();if(soft)ctx.globalAlpha=0.45;ctx.translate(ex,ey);ctx.rotate(a);ctx.scale(s,s);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-8);ctx.lineTo(-7,8);ctx.fill();ctx.restore();
 }
+// התחתית של הממשק העליון בזירה, בפיקסלים של המסך. נמדד פעם בחצי שנייה, כי מדידה של הדף בכל פריים יקרה
+let floatTopV=0,floatTopT=0;
+function floatTop(){const n=performance.now();if(n-floatTopT>500){floatTopT=n;const h=document.querySelector('.hud');floatTopV=h&&getComputedStyle(h).display!=='none'?h.getBoundingClientRect().bottom:0}return floatTopV}
 function render(){
   setZoom(camZoom());   // כמה רחוק המצלמה בכל מקום (camera.js, VIEW ב-render3d.js)
   ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);
@@ -191,7 +194,9 @@ function render(){
   ctx.textAlign='center';
   // מספר עם סימן (+12, -16) נכתב משמאל לימין בכל שפה, אחרת הסימן קופץ לצד הלא נכון
   // מכה קריטית קופצת לרגע ומקבלת מסגרת לבנה
-  for(const f of floats){ctx.direction=f.ltr||/^[+\-]\d/.test(f.txt)?'ltr':DIR;ctx.globalAlpha=Math.min(1,f.life*2);
+  // בזירה הטקסט הצף לא עולה על הממשק העליון (בדיקת הזירה, 1.11.2026): מעל הקו שלו הוא שקוף, ומתחתיו מתגלה בהדרגה
+  const hudY=S.wd||S.vil?-1e9:floatTop(),fadeK=y=>{const sy=(y+oy)*ZOOM-hudY;return sy>=HITFX.hudFade?1:Math.max(0,sy/HITFX.hudFade)};
+  for(const f of floats){const fk=fadeK(f.y);if(fk<=0)continue;ctx.direction=f.ltr||/^[+\-]\d/.test(f.txt)?'ltr':DIR;ctx.globalAlpha=Math.min(1,f.life*2)*fk;
     const sz=f.crit?f.size*(1+Math.max(0,f.life-0.8)*4):f.size;ctx.font='800 '+sz+'px Heebo, system-ui, sans-serif';
     if(f.crit){ctx.lineWidth=4;ctx.strokeStyle='#fff';ctx.lineJoin='round';ctx.strokeText(f.txt,f.x,f.y)}
     else{ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1)}
