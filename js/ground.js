@@ -15,14 +15,14 @@ const GROUND={
     storm: {base:'#5d5a6e',lush:'#454256',dry:'#7a7790',path:'#3a3846',shore:'#6e5fa6',out:'#2a2836'},
     shadow:{base:'#2a2140',lush:'#1b1430',dry:'#3c2f5a',path:'#4b3a70',shore:'#5b3f8c',out:'#0f0a18'}
   },
-  res:4,                       // כמה פיקסלים של המשחק לכל נקודה בתמונה האפויה. פחות = חד יותר וכבד יותר
+  res:2.5,                      // כמה פיקסלים של המשחק לכל נקודה בתמונה האפויה. פחות = חד יותר וכבד יותר
   margin:{w:1800,h:1600},      // כמה מעבר לגבול האזור אופים (שם הקצה הכהה). מעבר לזה: הצבע של out
   big:720,small:170,           // גודל הכתמים: הגדולים (עשיר מול בסיס) והקטנים (יבש)
   pathW:34,                    // רוחב השביל
   hub:{x:0,y:-120},            // הצומת שאליו מגיעים כל השבילים. אם הוא במים, הוא זז לשפה
   shoreW:46,shoreA:0.85,rimW:16,rimA:0.9,
   edge:{from:-40,to:90},       // הקצה הכהה: מתחיל 40 לפני הגבול ונגמר 90 אחריו
-  shadow:{dark:0.42,size:1.5,dx:0.22,dy:-0.12,decor:{tree:40,rock:32},tower:1.2,gate:40},   // צל מגע: כמה כהה, פי כמה מהרדיוס, וקצת לכיוון שהשמש מטילה
+  shadow:{dark:0.28,size:1.05,dx:0.18,dy:-0.1,decor:{tree:30,rock:24},tower:1.1,gate:34},   // צל מגע: כמה כהה, פי כמה מהרדיוס, וקצת לכיוון שהשמש מטילה
   grain:{tile:240,lo:0.72,hi:0.42},   // גרגר עדין מעל המפה (קווי עשב ונקודות), כדי שמקרוב היא לא תיראה חלקה
   maxSeg:24,maxPond:10,
   /* פיזור (שלב 3, ניר: "בינוני"): גושי עשב ופרחים שזזים ברוח, ואבנים קטנות. רק בחלון סביב השחקן, על הכתמים העשירים ולא על השבילים, במים או על מקורות.
@@ -45,13 +45,13 @@ const GROUND={
   let mat=null,bk=null,key=null,box=null;
   const rgb=h=>{const n=parseInt(h.slice(1),16);return new THREE.Vector3((n>>16&255)/255,(n>>8&255)/255,(n&255)/255)};   // צבע כמו שהוא (sRGB), בלי המרה
   const NOISE=`
-    float gH(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+    float gH(vec2 p){vec3 q=fract(vec3(p.xyx)*0.1031);q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
     float gN(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);float a=gH(i),b=gH(i+vec2(1,0)),c=gH(i+vec2(0,1)),d=gH(i+vec2(1,1));return a+(b-a)*u.x+(c-a)*u.y+(a-b-c+d)*u.x*u.y;}
     float gF(vec2 p){return 0.5*gN(p)+0.3*gN(p*2.03+vec2(1.7,9.2))+0.2*gN(p*4.01+vec2(5.1,3.3));}`;
 
   // השבילים: מכל שער אל הצומת, בעיקול קל. מהשערים של האזור, אז אזור חדש מקבל שבילים לבד
   function segs(R){
-    const gs=wGates(true),out=[],hub={x:GROUND.hub.x,y:GROUND.hub.y};
+    const gs=wGates(),out=[],hub={x:GROUND.hub.x,y:GROUND.hub.y};
     for(const p of R.ponds||[]){const dx=hub.x-p.x,dy=hub.y-p.y,d=Math.hypot(dx,dy)||1,m=p.r+GROUND.pathW*1.6;if(d<m){hub.x=p.x+dx/d*m;hub.y=p.y+dy/d*m}}
     let k=1;
     for(const id in gs){const a=gs[id],mx=(a.x+hub.x)/2,my=(a.y+hub.y)/2,dx=hub.x-a.x,dy=hub.y-a.y,L=Math.hypot(dx,dy)||1,o=(hash(k++,3)-0.5)*0.35*L,m={x:mx-dy/L*o,y:my+dx/L*o};
@@ -61,10 +61,10 @@ const GROUND={
   // צל מגע: מקורות, קישוטים מסביב, מגדלים ושערים
   function shadows(R){
     const D=GROUND.shadow,o=[];
-    for(const n of S.nd.list)o.push([n.x,n.y,n.r*D.size]);
+    for(const n of S.nd.list)if(!n.dead)o.push([n.x,n.y,n.r*D.size]);   // רק מה שעומד עכשיו
     for(const d of worldDecor())if(D.decor[d.kind])o.push([d.x,d.y,D.decor[d.kind]*(0.8+d.v*0.4)*D.size]);
     for(const t of R.towers||[])o.push([t.x,t.y,t.r*D.tower*D.size]);
-    const gs=wGates(true);for(const k in gs)o.push([gs[k].x,gs[k].y,D.gate*D.size]);
+    const gs=wGates();for(const k in gs)o.push([gs[k].x,gs[k].y,D.gate*D.size]);   // רק שערים פתוחים (דרך סגורה לא מצוירת)
     return o;
   }
 
@@ -145,7 +145,7 @@ const GROUND={
   // look-hd.js שואל בכל פריים: בעולם מקבל את החומר הזה, ובכל מקום אחר null (נשארת הקרקע של שלב 1)
   GROUND.mat=()=>{
     if(GROUND.failed||!on()||!(S&&S.wd&&!S.vil&&!S.room))return null;
-    const reg=S.wd.reg||'meadow',k=reg+':'+S.nd.list.length;   // אם המקורות עוד לא היו כשנאפה, אופים שוב עם הצללים שלהם
+    const reg=S.wd.reg||'meadow',k=reg+':'+S.nd.list.filter(n=>!n.dead).length+':'+Object.keys(wGates()).length;   // מקור שנשבר או צמח, או דרך שנפתחה: אופים שוב (1-2ms)
     try{if(k!==key){key=k;bake(reg)}}catch(e){GROUND.failed=e.message;console.warn('ground',e);return null}   // תקלה: נשארת הקרקע של שלב 1
     if(!mat)mat=makeMat();
     const u=mat.userData.u;u.gBake.value=bk.texture;u.gBox.value.copy(box);u.gSin.value=SIN();
@@ -154,7 +154,7 @@ const GROUND={
 
   // ---- פיזור: עשב, פרחים ואבנים ----
   // אותו רעש כמו בשיידר, ב-JS, כדי שהעשב ישב על הכתמים העשירים של המפה
-  const hh=(x,y)=>{const t=Math.sin(x*127.1+y*311.7)*43758.5453;return t-Math.floor(t)};
+  const fr=v=>v-Math.floor(v),hh=(x,y)=>{let a=fr(x*0.1031),b=fr(y*0.1031),c=a;const d=a*(b+33.33)+b*(c+33.33)+c*(a+33.33);a+=d;b+=d;c+=d;return fr((a+b)*c)};   // אותו hash כמו בשיידר
   const vn=(x,y)=>{const ix=Math.floor(x),iy=Math.floor(y),fx=x-ix,fy=y-iy,ux=fx*fx*(3-2*fx),uy=fy*fy*(3-2*fy),a=hh(ix,iy),b=hh(ix+1,iy),c=hh(ix,iy+1),d=hh(ix+1,iy+1);return a+(b-a)*ux+(c-a)*uy+(a-b-c+d)*ux*uy};
   const fbm=(x,y)=>0.5*vn(x,y)+0.3*vn(x*2.03+1.7,y*2.03+9.2)+0.2*vn(x*4.01+5.1,y*4.01+3.3);
   const dSeg=(x,y,q)=>{const bx=q[2]-q[0],by=q[3]-q[1],t=Math.max(0,Math.min(1,((x-q[0])*bx+(y-q[1])*by)/(bx*bx+by*by||1)));return Math.hypot(x-q[0]-bx*t,y-q[1]-by*t)};
