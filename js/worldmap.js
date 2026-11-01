@@ -124,6 +124,6 @@ function wmapOpen(on){
     S.mode='map';joy=null;w.hidden=false;wmDraw()}
   else{w.hidden=true;if(S&&S.mode==='map')S.mode='play'}
 }
-$('wMapBtn').addEventListener('click',()=>{wmapOpen($('wMap').hidden);sfx('ui')});
+// הכפתור: לשונית בתפריט הראשי (menu.js)
 $('wMap').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.act==='close'){wmapOpen(false);sfx('ui')}if(b&&b.dataset.act==='tier'&&tierSet(+b.dataset.n))wmDraw()});
 addEventListener('resize',()=>{if(!$('wMap').hidden&&S.wd)wmDraw()});
