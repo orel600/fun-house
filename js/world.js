@@ -35,6 +35,7 @@ const WORLD={
   far:260,                               // קבוצה שנוקתה חוזרת רק כשהשחקן רחוק ממנה לפחות כך, כדי שלא תצוץ מול העיניים. ולפחות חצי אלכסון המסך, כי המצלמה רואה רחוק (camera.js)
   /* כמה קשה, לפי המרחק של בית הקבוצה מהשער לכפר: ככל שמתרחקים, קשה יותר. to: עד איזה מרחק. hp, dmg, speed: פי כמה מהרגיל (ETYPES).
      leash: כמה רחוק מהבית האויב מוכן לרדוף לפני שהוא חוזר. back: שניות עד שקבוצה שנוקתה חוזרת */
+  foeHp:2.5,                             // אויבים בעולם: פי כמה חיים, כדי שאויב רגיל ייקח 2-3 מכות (docs/plan-combat.md שינוי 3). גם בלהקות (pacing.js). המכה עם הכנה: STRIKE ב-strike.js
   zones:[
     {id:'start',to:360, hp:0.35,dmg:0.25,speed:0.6, leash:240,back:12},
     {id:'near', to:800, hp:0.7, dmg:0.6, speed:0.85,leash:360,back:22},
@@ -229,7 +230,7 @@ function wLootIn(){
 const wZone=G=>{const R=WR();return R.zones.find(z=>Math.hypot(G.x-R.home.x,G.y-R.home.y)<z.to)};
 function wSpawn(G,i){
   if(!ETYPES[G.type])return;const Z=wZone(G);
-  for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp);
+  for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp*WORLD.foeHp);
     e.dmg*=Z.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);   // affixRoll: אולי אויב מיוחד (affix.js). storySafe: אחרי שפנס האדמה נדלק (story.js)
     e.xp=0;e.home=i;e.creature=!!G.creature;
     challengeSpawn(e);tierSpawn(e)}   // דרגת העולם (tiers.js)
@@ -251,9 +252,9 @@ function wFoes(dt){
     else{   // מסתובב ליד הבית
       if(e.wx==null||Math.hypot(e.wx-e.x,e.wy-e.y)<12){const a=rand(0,6.28),r=rand(0,G.r);e.wx=G.x+Math.cos(a)*r;e.wy=G.y+Math.sin(a)*r}
       const wx=e.wx-e.x,wy=e.wy-e.y,wd=Math.hypot(wx,wy)||1;mx=wx/wd;my=wy/wd;sp*=WORLD.wander}
+    if(strikeTick(e,dt,d)){mx=my=0}   // מכה עם הכנה במקום נזק במגע. בזמן ההכנה עומד (strike.js)
     e.x+=mx*sp*dt+e.kx*dt;e.y+=my*sp*dt+e.ky*dt;
     const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*sp*0.08;e.flash-=dt;
-    if(d<e.r+P.r-3)hurt(e.dmg);
   }
   // קבוצה שנוקתה חוזרת אחרי זמן, כשהשחקן רחוק ממנה
   FO.forEach((G,i)=>{const g=S.wd.groups[i];if(alive[i]||!ETYPES[G.type])return;
@@ -383,6 +384,7 @@ function drawWorld(){
   fishDraw();   // החכה והמצוף (fishing.js)
   storyDraw();   // הפנס והשומר (story.js)
   affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
+  strikeDraw();   // קשת אדומה של מכה שמתכוננת (strike.js)
   eventsDraw();   // אירועים (events.js)
   secretsDraw();   // סודות (secrets.js)
   if(WR().fog)wFog();

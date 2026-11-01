@@ -8,7 +8,7 @@ const AFFIX={
   list:{
     fast:   {col:'#46D3E6',icon:'⚡',speed:1.7},                 // מהיר: רץ פי 1.7
     tough:  {col:'#B8C0D0',icon:'🛡',hp:2.6,r:1.25},             // שריון: פי 2.6 חיים, וגדול יותר
-    burst:  {col:'#FF8A3D',icon:'💥',blast:95,dmg:14,fuse:0.8},  // מתפוצץ: כשנופל, אחרי רגע מתפוצץ ברדיוס blast. לזוז! (לא r: r מגדיל את האויב עצמו)
+    burst:  {col:'#FF8A3D',icon:'💥',blast:95,dmg:14,fuse:1},    // fuse: שנייה שלמה, והעיגול מתמלא עד הפיצוץ, כדי שיהיה זמן לצאת  // מתפוצץ: כשנופל, אחרי רגע מתפוצץ ברדיוס blast. לזוז! (לא r: r מגדיל את האויב עצמו)
     split:  {col:'#A8D08D',icon:'➗',n:2,hp:0.35},               // מתפצל: כשנופל, יוצאים ממנו שניים קטנים
     regen:  {col:'#7FE08A',icon:'✚',heal:0.06}                  // מתחדש: מרפא 6% בשנייה. צריך נזק מהיר
   },
@@ -47,12 +47,13 @@ function affixUpdate(dt){
     if(Math.hypot(P.x-b.x,P.y-b.y)<A.blast+P.r)hurt(A.dmg)}}
   w.blasts=w.blasts.filter(b=>!b.done);
 }
-// ציור: טבעת מתרחבת לפני הפיצוץ (בעולם, לפני הדמויות)
+// ציור: האזור של הפיצוץ מסומן מההתחלה בקו מהבהב, ועיגול זוהר מתמלא ממנו עד הפיצוץ (docs/plan-combat.md שינוי 3: "עיגול שמתמלא")
 function affixDraw(){
   const w=S.wd;if(!w||!w.blasts)return;const A=AFFIX.list.burst;
-  for(const b of w.blasts){const k=1-b.t/b.max;
-    ctx.strokeStyle=A.col;ctx.globalAlpha=0.35+k*0.5;ctx.lineWidth=3;ctx.beginPath();ctx.arc(b.x,b.y,A.blast*k,0,7);ctx.stroke();
-    ctx.globalAlpha=0.12;ctx.fillStyle=A.col;ctx.beginPath();ctx.arc(b.x,b.y,A.blast,0,7);ctx.fill();ctx.globalAlpha=1}
+  for(const b of w.blasts){const k=1-b.t/b.max,pulse=0.5+0.5*Math.sin(fxNow()*(10+k*20));
+    ctx.globalAlpha=0.14+k*0.3;ctx.fillStyle=A.col;ctx.beginPath();ctx.arc(b.x,b.y,A.blast*k,0,7);ctx.fill();
+    ctx.globalAlpha=0.5+0.45*pulse;ctx.strokeStyle=A.col;ctx.lineWidth=3;ctx.setLineDash([10,7]);ctx.beginPath();ctx.arc(b.x,b.y,A.blast,0,7);ctx.stroke();ctx.setLineDash([]);
+    ctx.globalAlpha=0.6*k;ctx.fillStyle='#FFE0B0';ctx.beginPath();ctx.arc(b.x,b.y,10+14*k*pulse,0,7);ctx.fill();ctx.globalAlpha=1}
 }
 // מעל הראש, בצבע של התכונה (מעל הכל): לקרוב ביותר אייקון ושם, ולשאר רק אייקון קטן (docs/plan-hud.md פרק 6)
 function affixScreen(ox,oy){
