@@ -109,7 +109,7 @@ function welcomeFly(got){
 function welcomeVillage(){
   clearTimeout(WELCOME.timer);if(!WELCOME.auto)return;
   const go=()=>{WELCOME.timer=0;if(!S||!S.vil||!$('ovWelcome').hidden)return;
-    if(S.mode!=='play'||!$('npcDlg').hidden||!$('qLog').hidden||!$('ovGear').hidden){WELCOME.timer=setTimeout(go,WELCOME.retry*1000);return}
+    if(S.mode!=='play'||!$('npcDlg').hidden||!$('qLog').hidden||!$('ovGear').hidden||!$('vPanel').hidden){WELCOME.timer=setTimeout(go,WELCOME.retry*1000);return}
     welcomeOpen()};
   WELCOME.timer=setTimeout(go,WELCOME.delay*1000);
 }

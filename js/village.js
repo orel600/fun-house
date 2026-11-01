@@ -7,7 +7,8 @@
 const VILLAGE={
   radius:410,                     // גבול הכפר: עד כאן אפשר ללכת. השער יושב על הגבול, למטה. הכל קרוב, בלי הליכה ריקה (ניר: "אתה הולך הרבה")
   spawn:{x:0,y:50},              // איפה עומדים כשנכנסים בפעם הראשונה. חוזרים מהזירה ליד השער
-  near:55,                        // כמה פיקסלים מקצה מבנה נחשב "לידו": נפתח הפאנל שלו ונאספת התוצרת
+  near:55,                        // כמה פיקסלים מקצה מבנה נחשב "לידו": מופיע כפתור "להיכנס" בסרגל (הפאנל נפתח רק בנגיעה)
+  tap:{move:14,ms:400},           // נגיעה במבנה פותחת את הפאנל שלו: עד כמה פיקסלים זזה האצבע ועד כמה אלפיות שנייה, כדי שזה לא ייחשב תזוזה
   max:5,                          // הרמה הכי גבוהה. מבנה לא עולה מעל מרכז הכפר
   gift:{coins:25,wood:20,stone:12},   // מתנת פתיחה, פעם אחת: מספיק לבנות מנסרה ומכרה
   gate:{x:0,y:410,r:44},
@@ -111,10 +112,10 @@ function vTrade(kind,r){
 }
 
 /* ---- מעבר בין הכפר לזירה ---- */
-function villageUi(on){document.body.classList.toggle('vil',on);if(!on)document.body.classList.remove('vpan');$('vhud').hidden=!on;if(!on){$('vPanel').hidden=true;npcHide()}if(typeof visitBtn==='function')visitBtn()}
+function villageUi(on){document.body.classList.toggle('vil',on);if(!on)document.body.classList.remove('vpan');$('vhud').hidden=!on;if(!on){$('vPanel').hidden=true;$('vEnter').hidden=true;npcHide()}if(typeof visitBtn==='function')visitBtn()}
 function enterVillage(){
   const back=S&&(S.mode==='over'||S.wd);   // חוזרים מהעולם (או מריצה): ליד השער
-  reset();S.mode='play';S.vil={near:null,ui:'',raise:{}};
+  reset();S.mode='play';S.vil={near:null,open:null,ui:'',raise:{}};
   const at=back?{x:VILLAGE.gate.x,y:VILLAGE.gate.y-110}:VILLAGE.spawn;
   P.x=at.x;P.y=at.y;P.aim=P.face=-Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
   ['ovStart','ovOver','ovLevel','ovBoss'].forEach(id=>$(id).hidden=true);
@@ -140,12 +141,15 @@ function villageUpdate(dt){
   // לא נכנסים לתוך מבנים, ולא יוצאים מהכפר
   for(const k in VILLAGE.b){const B=VILLAGE.b[k],dx=P.x-B.x,dy=P.y-B.y,d=Math.hypot(dx,dy)||1,min=B.r+P.r;if(d<min){P.x=B.x+dx/d*min;P.y=B.y+dy/d*min}}
   const R=VILLAGE.radius,d0=Math.hypot(P.x,P.y);if(d0>R){P.x*=R/d0;P.y*=R/d0}
-  // ליד השער נפתח פאנל עם כפתור כניסה. הריצה מתחילה רק בלחיצה, לא כשעוברים לידו (ניר: "נכנסתי לזירה בלי כוונה")
+  // ליד השער או מבנה לא נפתח שום חלון (בדיקת החוויה, 1.11: "פאנל נפתח לבד כשעוברים לידו"). מופיע כפתור "להיכנס" בסרגל,
+  // והפאנל נפתח בו או בנגיעה במבנה. הריצה מתחילה רק בלחיצה (ניר: "נכנסתי לזירה בלי כוונה")
   const g=VILLAGE.gate;V.gate=Math.hypot(P.x-g.x,P.y-g.y)<g.r+P.r+VILLAGE.near;
-  // המבנה הכי קרוב: הפאנל שלו נפתח. התוצרת נאספת בכפתור "לאסוף" בפאנל (ניר: "צריך להוסיף אפשרות לאסוף")
   let near=null,best=VILLAGE.near;
   for(const k in VILLAGE.b){const B=VILLAGE.b[k],d=Math.hypot(P.x-B.x,P.y-B.y)-B.r-P.r;if(d<best){best=d;near=k}}
-  V.near=near;
+  V.here=V.gate?'gate':near;
+  // פאנל פתוח נסגר כשהולכים ממנו, או כשנפתחה שיחה (חלון אחד בכל רגע)
+  if(V.open&&(P.moving&&V.open!==V.here||!$('npcDlg').hidden))V.open=null;
+  V.near=V.open&&V.open!=='gate'?V.open:near;
   V.settle=(V.settle||0)-dt;if(V.settle<=0){V.settle=VILLAGE.settleEvery;for(const k in VILLAGE.b)vSettle(k)}   // המלאי על המבנים גדל גם בזמן שמסתובבים בכפר
   npcUpdate(dt);   // התושבים: הולכים, מנופפים, וכפתור "לדבר" (npc.js)
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}
@@ -186,6 +190,8 @@ const topLine=(bag,list)=>{const ks=list||Object.keys(RES.list).filter(r=>bag[r]
 const bagFams=(bag,only)=>Object.keys(RES.fams).filter(f=>!only||only==='all'||f===only).map(f=>{const rs=resFam(f).filter(r=>bag[r]>0);
   return rs.length?'<div class="fam"><span class="sk">'+T('fam.'+f)+'</span><div class="bag">'+bagLine(bag,rs)+'</div></div>':''}).join('');
 function costLine(c){return Object.keys(c).map(r=>resChip(r,c[r],bagHas(r,c[r])?'':' miss')).join('')}
+// מה חסר כדי לשלם: רק המשאבים שאין מספיק מהם, וכמה חסר מכל אחד ("חסר: 🪵 20")
+const vMissing=c=>Object.keys(c).filter(r=>!bagHas(r,c[r])).map(r=>resChip(r,c[r]-(SAVE.bag[r]||0),' miss')).join('');
 // מה מבנה מייצר בשעה ברמה L, למשל '30🪵 4🧵'
 const makeLine=(B,L)=>Object.keys(B.make).filter(r=>B.make[r][L]>0).map(r=>'<bdi>'+B.make[r][L]+resIcon(r)+'</bdi>').join(' ');
 function vInfo(k,L){
@@ -197,30 +203,33 @@ function vInfo(k,L){
   if(k==='stash')return T('vil.info.stash',B.cap[L]);
 }
 function villageHud(){
-  const k=S.vil.near,L=k?vLv(k):0;
-  // בונים מחדש רק כשמשהו השתנה: מבנה אחר, רמות, תרמיל, מחסן או שפה
-  // ✕ סוגר את הפאנל עד שמתרחקים (shut). ליד מבנה אחר הוא נפתח שוב
-  const cur=S.vil.gate?'gate':k;if(S.vil.shut&&S.vil.shut!==cur)S.vil.shut=null;const shut=!!cur&&S.vil.shut===cur;
-  if(cur!=='market'||shut)S.vil.trade=false;   // חלון המסחר הגדול: רק ליד השוק
-  const key=LANG+'|'+k+'|'+S.vil.gate+'|'+shut+'|'+S.vil.trade+'|'+(k?vStock(k):0)+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
+  const k=S.vil.near,L=k?vLv(k):0,cur=S.vil.open;
+  vEnterBtn();
+  // בונים מחדש רק כשמשהו השתנה: מבנה אחר, פאנל שנפתח או נסגר, רמות, תרמיל, מחסן או שפה
+  if(cur!=='market')S.vil.trade=false;   // חלון המסחר הגדול: רק מהפאנל של השוק
+  const key=LANG+'|'+k+'|'+cur+'|'+S.vil.trade+'|'+(k?vStock(k):0)+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
   if(key===S.vil.ui)return;S.vil.ui=key;
   $('vBag').innerHTML=topLine(SAVE.bag,resShown(k));   // רק מה שרלוונטי ליד המבנה הזה (RES.show)
   // נפחייה ומחסן: הרבה תוכן, אז חלון גדול בשני טורים (ניר: "רואים רק קצת")
-  const wide=!S.vil.gate&&(k==='forge'||k==='stash')&&L>0;
-  const pn=$('vPanel');pn.hidden=!cur||shut;pn.classList.toggle('big',!!S.vil.trade||wide);document.body.classList.toggle('vpan',!pn.hidden);if(pn.hidden)return;
+  const wide=cur!=='gate'&&(k==='forge'||k==='stash')&&L>0;
+  const pn=$('vPanel');pn.hidden=!cur;pn.classList.toggle('big',!!S.vil.trade||wide);document.body.classList.toggle('vpan',!pn.hidden);if(pn.hidden)return;
   if(S.vil.trade){pn.innerHTML=winHead(T('vil.market'),T('level',L))+tradeHtml(L);return}
-  if(S.vil.gate){pn.innerHTML=travelGateHtml()||winHead(T('vil.out'))+'<p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
-  const why=vBlock(k),c=vCost(k);
+  if(cur==='gate'){pn.innerHTML=travelGateHtml()||winHead(T('vil.out'))+'<p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
+  const why=vBlock(k),c=vCost(k),B=VILLAGE.b[k],n=B.make&&L>0?vStock(k):0;
+  // הפעולה העיקרית גדולה ובולטת: לאסוף, אחרת לבנות או לשדרג, אחרת להיכנס לנפחייה או לשוק.
+  // כפתור שאי אפשר ללחוץ עליו לא מוצג אפור: במקומו שורה שאומרת למה (בדיקת החוויה, 1.11)
+  const main=n?'collect':!why?'up':L>0&&k==='forge'?'forge':L>0&&k==='market'?'trade':'',
+    btn=(act,txt,cls)=>'<button class="vbtn'+(cls?' '+cls:'')+(act===main?' vmain':'')+'" data-act="'+act+'">'+txt+'</button>',
+    whyLine=t=>'<p class="vwhy">'+t+'</p>';
   let h='<p>'+vInfo(k,L)+'</p>';
   // מנסרה ומכרה: כמה מחכה לאיסוף, וכפתור לאסוף
-  const B=VILLAGE.b[k];
-  if(B.make&&L>0){const p=vProd(k),n=vStock(k),rs=Object.keys(B.make).filter(r=>B.make[r][L]>0);
+  if(B.make&&L>0){const p=vProd(k),rs=Object.keys(B.make).filter(r=>B.make[r][L]>0);
     h+='<div class="cost">'+rs.map(r=>'<span class="res">'+resPic(r)+' '+Math.floor(p.have[r]||0)+'/'+B.cap[L]+'</span>').join('')+'</div>';
-    h+='<button class="vbtn" data-act="collect"'+(n?'':' disabled')+'>'+(n?T('vil.collect',n):T('vil.nothing'))+'</button>'}
+    h+=n?btn('collect',T('vil.collect',n)):whyLine(T('vil.nothing'))}
   if(why!=='max')h+='<p class="next">'+T('vil.next',vInfo(k,L+1))+'</p><div class="cost">'+costLine(c)+'</div>';
-  h+='<button class="vbtn" data-act="up"'+(why?' disabled':'')+'>'+(why==='max'?T('vil.max'):why==='center'?T('vil.needCenter'):L?T('vil.up',L+1):T('vil.build'))+'</button>';
-  if(k==='forge'&&L>0)h+='<button class="vbtn ghost" data-act="forge">⚒️ '+T('age.open')+'</button>';
-  if(k==='market'&&L>0)h+='<button class="vbtn" data-act="trade">🛒 '+T('vil.trade')+'</button>';
+  h+=!why?btn('up',L?T('vil.up',L+1):T('vil.build')):whyLine(why==='max'?T('vil.max'):why==='center'?T('vil.needCenter'):T('vil.need',vMissing(c)));
+  if(k==='forge'&&L>0)h+=btn('forge','⚒️ '+T('age.open'),'ghost');
+  if(k==='market'&&L>0)h+=btn('trade','🛒 '+T('vil.trade'));
   const more=k==='forge'&&L>0?forgeHtml():k==='stash'&&L>0?stashHtml():'';   // gear.js, stash.js
   const head=winHead(T('vil.'+k),L?T('level',L):'');
   pn.innerHTML=wide?head+'<div class="tcols"><section>'+h+'</section><section>'+more+'</section></div>':head+h+more;
@@ -253,9 +262,42 @@ $('vPanel').addEventListener('click',e=>{
   villageHud();
 });
 
-// ✕ בפאנל: נסגר עד שמתרחקים מהמבנה (או מהשער)
+// ✕ בפאנל: נסגר. נפתח שוב רק בנגיעה במבנה או בכפתור "להיכנס"
 function vShut(){if(!S.vil)return;if(S.vil.trade){S.vil.trade=false;villageHud();return}   // מחלון המסחר חוזרים לפאנל של השוק
-  S.vil.shut=S.vil.gate?'gate':S.vil.near;villageHud()}
+  S.vil.open=null;villageHud()}
+
+/* ---- פתיחת פאנל: בנגיעה, לא במעבר ---- */
+// k: מבנה או 'gate'. לא נפתח מעל "בזמן שלא היית" או מעל שיחת העלילה (תור הקפיצות, welcome.js). שיחה רגילה נסגרת: חלון אחד בכל רגע
+function vOpen(k){
+  if(!S.vil||S.mode!=='play'||!k)return false;
+  if(!$('ovWelcome').hidden||S.vil.dlgStay&&!$('npcDlg').hidden)return false;
+  if(!$('npcDlg').hidden)npcTalk(null);
+  // שער בלי פנס דולק: אין מה לבחור, אז הכפתור יוצא ישר לעולם
+  if(k==='gate'&&!travelLit().length){leaveVillage();return true}
+  S.vil.open=k;if(k!=='gate')S.vil.near=k;S.vil.trade=false;sfx('ui');villageHud();return true;
+}
+// הכפתור הקבוע של המקום בסרגל: "להיכנס: מנסרה" ליד מבנה, "לעולם" ליד השער. נעלם כשהפאנל של המקום הזה פתוח
+const vEnterEl=(()=>{const b=document.createElement('button');b.id='vEnter';b.className='nbtn talkbtn venter';b.hidden=true;
+  $('talkBtn').before(b);b.addEventListener('click',()=>{if(S.vil)vOpen(b.dataset.k)});return b})();
+function vEnterBtn(){
+  const V=S.vil,k=V&&V.here,show=!!k&&V.open!==k&&S.mode==='play',key=show?LANG+k:'';
+  if(vEnterEl.dataset.key===key)return;vEnterEl.dataset.key=key;vEnterEl.hidden=!show;vEnterEl.dataset.k=k||'';
+  if(show)vEnterEl.textContent=k==='gate'?'🚪 '+T('vil.gate'):'🏠 '+T('vil.enter',T('vil.'+k));
+}
+// נגיעה קצרה בקנבס, בלי לגרור: איזה מבנה (או השער) נמצא שם. האזור כולל את הגג ואת השלט שמתחת
+function vTapAt(cx,cy){
+  const wx=cx/ZOOM-W/2+S.cam.x,wy=cy/ZOOM-H/2+S.cam.y,g=VILLAGE.gate;let best=null,bd=1e9;
+  for(const k in VILLAGE.b){const B=VILLAGE.b[k],dx=Math.abs(wx-B.x);
+    if(dx<B.r*1.1&&wy>B.y-B.r*1.4&&wy<B.y+B.r*0.95){const d=Math.hypot(wx-B.x,wy-B.y);if(d<bd){bd=d;best=k}}}
+  if(!best&&Math.hypot(wx-g.x,wy-g.y)<g.r+20)best='gate';
+  return best;
+}
+{let t0=null;
+  cvs.addEventListener('pointerdown',e=>{t0=S&&S.vil&&S.mode==='play'?{x:e.clientX,y:e.clientY,t:performance.now(),id:e.pointerId}:null});
+  cvs.addEventListener('pointerup',e=>{const d=t0;t0=null;if(!d||d.id!==e.pointerId||!S.vil||S.mode!=='play')return;
+    if(Math.hypot(e.clientX-d.x,e.clientY-d.y)>VILLAGE.tap.move||performance.now()-d.t>VILLAGE.tap.ms)return;
+    const k=vTapAt(e.clientX,e.clientY);if(k){joy=null;vOpen(k)}});
+}
 
 /* ---- ציור ---- */
 // קישוטים סביב הגבול: עצים, סלעים וגבעות. תמיד באותם מקומות, ופתוח מול השער
@@ -307,9 +349,12 @@ function drawVillageScreen(ox,oy){
   const sign=(x,y,txt,col)=>{ctx.font='800 13px Heebo, system-ui, sans-serif';const w=ctx.measureText(txt).width+16;
     ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(x-w/2,y-11,w,22,11);ctx.fill();ctx.fillStyle=col;ctx.fillText(txt,x,y+5)};
   for(const k in VILLAGE.b){
-    const B=VILLAGE.b[k],L=vLv(k),x=B.x+ox,y=B.y+B.r*0.62+oy;
-    sign(x,y,T('vil.'+k)+(L?' · '+L:''),L?C.chalk:C.dim);
-    const n=vStock(k);if(n>0){const r=Object.keys(VILLAGE.b[k].make)[0];sign(x,y-B.r*1.6,resIcon(r)+' '+n,C.gold)}
+    const B=VILLAGE.b[k],L=vLv(k),x=B.x+ox,y=B.y+B.r*0.62+oy,here=S.vil.here===k&&!S.vil.open;
+    sign(x,y,(here?'👆 ':'')+T('vil.'+k)+(L?' · '+L:''),here?C.gold:L?C.chalk:C.dim);   // המבנה שלידו: 👆 וזהב, אפשר לגעת
+    // תג מעליו: מה מחכה שם. תוצרת לאסוף קודמת לשדרוג אפשרי
+    const n=vStock(k);
+    if(n>0){const r=Object.keys(VILLAGE.b[k].make)[0];sign(x,y-B.r*1.6,'✓ '+resIcon(r)+' '+n,C.gold)}
+    else if(!vBlock(k))sign(x,y-B.r*1.6,'⬆ '+T(L?'vil.tagUp':'vil.tagBuild'),C.gold);
   }
   const g=VILLAGE.gate;sign(g.x+ox,g.y+oy+40,T('vil.gate'),C.chalk);
   edgeArrow(g.x+ox,g.y+oy,C.chalk);
