@@ -30,6 +30,7 @@ const SKILLS={
 };
 
 const skArena=()=>S&&!S.vil&&!S.wd&&!S.room;
+const skHere=()=>skArena()||!!(S&&S.wd&&!S.room);   // איפה הכפתורים והחפצים המסתובבים פועלים: בזירה, וגם בעולם הפתוח (wskill.js)
 const skDef=id=>SKILLS.list[id];
 // הנזק שסקיל מתחיל ממנו: הנזק של הנשק שביד, עם השדרוגים והרמה של הריצה
 const skBase=()=>(P.weapon==='sword'?P.sw.dmg:P.gn.dmg)*wK('dmg')*dmgK();
@@ -115,10 +116,10 @@ function drawSkills(ox,oy){
   }
 }
 
-/* ---- הכפתורים: בצד ימין למטה, רק בזירה. כל כפתור בצבע סוג הנזק, ומתמלא בזמן שהוא נטען ---- */
+/* ---- הכפתורים: בצד ימין למטה, בזירה ובעולם (בעולם הם מכוונים ויורים, wskill.js). כל כפתור בצבע סוג הנזק, ומתמלא בזמן שהוא נטען ---- */
 let skKey='';
 function skillsHud(){
-  const box=$('skills'),on=!!S.sk&&skArena()&&S.mode==='play'&&S.sk.ids.length>0;
+  const box=$('skills'),on=!!S.sk&&skHere()&&S.mode==='play'&&S.sk.ids.length>0;
   box.hidden=!on;if(!on)return;
   const key=LANG+'|'+S.sk.ids.join(',');
   if(key!==skKey){skKey=key;
