@@ -504,7 +504,8 @@ function worldBot(m,L,god){
     for(const f of [...html.matchAll(/<link rel="(?:manifest|icon|apple-touch-icon)" href="([^"]+)"/g)].map(m=>m[1]))if(!fs.existsSync(path.join(root,f)))pw.bad.push(f+' חסר');
     if(!/viewport-fit=cover/.test(html)||!/apple-mobile-web-app-capable/.test(html))pw.bad.push('meta של אייפון');
     const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webmanifest':'application/manifest+json','.json':'application/json'};
-    const srv=require('http').createServer((q,r)=>{let f=decodeURIComponent(q.url.split('?')[0]);if(f.endsWith('/'))f+='index.html';f=path.join(root,path.normalize(f));
+    const srv=require('http').createServer((q,r)=>{let f=decodeURIComponent(q.url.split('?')[0]);if(f==='/version.json'){r.writeHead(200,{'content-type':'application/json'});return r.end('{"v":""}')}   // כמו במחשב: אין גרסה מפורסמת (update-check.js לא עושה כלום)
+      if(f.endsWith('/'))f+='index.html';f=path.join(root,path.normalize(f));
       if(!f.startsWith(root)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){r.writeHead(404);return r.end()}
       r.writeHead(200,{'content-type':types[path.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(r)});
     await new Promise(ok=>srv.listen(0,'127.0.0.1',ok));
@@ -516,11 +517,22 @@ function worldBot(m,L,god){
     pw.http=await pg.evaluate(async()=>{const t=Date.now();await Promise.race([navigator.serviceWorker.ready,new Promise(ok=>setTimeout(ok,20000))]);
       const k=(await caches.keys()).filter(n=>n.startsWith('fh-'));let n=0;for(const c of k)n+=(await (await caches.open(c)).keys()).length;
       return{state:PWA.state,active:!!(await navigator.serviceWorker.getRegistration()),cache:k.join(','),n,ms:Date.now()-t}});
+    // עדכון לבד (js/update-check.js): מדמים גרסה חדשה ב-version.json. במסך הפתיחה: רענון אחד לבד ואז רק הכפתור (בלי לולאה). בזירה: רק כפתור, בלי רענון
+    {let navs=0;pg.on('framenavigated',f=>{if(f===pg.mainFrame())navs++});
+      await ctx.route(/\/version\.json/,r=>r.fulfill({status:200,contentType:'application/json',body:'{"v":"9.9.9.9"}'}));
+      await pg.evaluate(()=>{updCheck();return 1});await pg.waitForTimeout(6000);
+      pw.upStart=navs;pw.upBtn1=await pg.evaluate(()=>!$('updBtn').hidden&&UPD.next==='9.9.9.9');
+      await pg.evaluate(()=>{sessionStorage.removeItem(UPD.key);startRun();window.__keep=1});navs=0;
+      await pg.evaluate(()=>updCheck());await pg.waitForTimeout(2500);
+      pw.upArena={navs,keep:await pg.evaluate(()=>window.__keep===1),btn:await pg.evaluate(()=>!$('updBtn').hidden)}}
     pw.errs=perr;await ctx.close();srv.close();
   }catch(e){pw.crash=e.message}
   check(!pw.crash&&!pw.bad.length,'אפליקציה: '+(pw.crash?'הבדיקה נפלה: '+pw.crash:pw.bad.length?'בעיות ב-manifest: '+pw.bad.join(', '):'manifest תקין, לרוחב, עם אייקונים 192/512 ו-maskable'));
   check(pw.file==='file','אפליקציה: מ-file:// '+(pw.file==='file'?'אין service worker':'ניסה לרשום service worker ('+pw.file+')'));
   if(!pw.crash)check(pw.http&&pw.http.state==='ok'&&pw.http.active&&pw.http.n>40&&!pw.errs.length,'אפליקציה: משרת http '+(pw.http&&pw.http.active?'ה-service worker נרשם ושמר '+pw.http.n+' קבצים ('+pw.http.cache+')':'ה-service worker לא נרשם ('+(pw.http&&pw.http.state)+')')+(pw.errs.length?' · שגיאות: '+[...new Set(pw.errs)].join(' | '):''));
+  if(!pw.crash)check(pw.upStart===1&&pw.upBtn1,'עדכון: במסך הפתיחה '+(pw.upStart===1?'רענון אחד לבד':pw.upStart+' רענונים במקום אחד')+(pw.upBtn1?', ואחריו רק הכפתור':', הכפתור לא הופיע אחרי הרענון'));
+  if(!pw.crash)check(pw.upArena&&!pw.upArena.navs&&pw.upArena.keep&&pw.upArena.btn,'עדכון: בזירה '+(pw.upArena&&!pw.upArena.navs?'לא מרעננים':'רענן באמצע ריצה')+(pw.upArena&&pw.upArena.btn?', רק כפתור 🔄':', אין כפתור'));
+  check(await page.evaluate(()=>!updWeb()&&!!$('updBtn').hidden&&$('updCheckBtn').hidden),'עדכון: מ-file:// לא בודקים ולא מציגים כפתור');
   // שמירה: נכתבת, נטענת חזרה, ושמירה ישנה בלי שדה חדש מקבלת אותו. בסוף מנקים, כדי שהריצה תתחיל נקייה
   const sv=await page.evaluate(()=>{bagAdd('wood',5);bagAdd('wood',2);const took=bagTake('wood',3)&&!bagTake('wood',99);SAVE.village.forge=2;saveNow();
     SAVE=saveBlank();saveLoad();const back=SAVE.bag.wood===4&&SAVE.village.forge===2&&took;
