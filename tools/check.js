@@ -829,8 +829,11 @@ function worldBot(m,L,god){
     dailySave().day='';const Q=QS(),q=QUESTS.list.find(q=>!q.giver&&!Q.done[q.id]&&!q.reward.rank&&!q.reward.story&&!qKind(q).talk&&q.obj.every(x=>x.type!=='upgrade'));
     if(q){Q.active[q.id]={p:q.obj.map(x=>x.n)};o.q=q.id}
     bagAdd('stone',3);WELCOME.gifts.push({from:'Orel',res:'stone',n:3,note:0});
-    enterVillage();return o});
-  await page.clock.runFor(1500);
+    window.__ban0=BANNER.shown;enterVillage();return o});
+  // תור קפיצות: בשלוש השניות הראשונות בכפר, לכל היותר חלון אחד בכל רגע, והודעה אחת בכל 2 שניות
+  wl.maxWin=0;for(let i=0;i<12;i++){await page.clock.runFor(250);
+    wl.maxWin=Math.max(wl.maxWin,await page.evaluate(()=>['ovWelcome','ovDaily','ovVisit','npcDlg','qLog','ovGear'].filter(id=>!document.getElementById(id).hidden).length))}
+  wl.bans=await page.evaluate(()=>BANNER.shown-window.__ban0);
   Object.assign(wl,await page.evaluate(()=>{const o={},$=id=>document.getElementById(id),kinds=[...document.querySelectorAll('#welWin .welrow')].map(e=>e.classList[1]);
     o.open=!$('ovWelcome').hidden&&S.mode==='welcome';o.kinds=kinds.join(',');o.all=['prod','daily','gift','quest'].every(k=>kinds.includes(k));return o}));
   await shot('welcome-back');
@@ -845,6 +848,7 @@ function worldBot(m,L,god){
   await page.clock.runFor(1500);
   Object.assign(wl,await page.evaluate(()=>{const o={empty:document.getElementById('ovWelcome').hidden};WELCOME.auto=false;return o}));   // מכאן הבדיקות האחרות נכנסות לכפר בלי החלון
   check(wl.open&&wl.all,'בזמן שלא היית: חוזרים לכפר, '+(wl.open?'חלון אחד עם '+wl.kinds:'החלון לא נפתח')+(wl.all?'':' (חסר משהו מ-prod,daily,gift,quest)'));
+  check(wl.maxWin<=1&&wl.bans<=2,'כניסה לכפר: '+(wl.maxWin<=1?'לכל היותר חלון אחד בכל רגע':wl.maxWin+' חלונות יחד')+', '+wl.bans+' הודעות ב-3 שניות (לכל היותר 2)');
   check(wl.prod&&wl.daily&&wl.quest&&wl.fx===1&&wl.fly&&wl.next,'בזמן שלא היית: "אסוף הכל" '+(wl.prod?'אסף '+wl.wood+' עץ':'לא אסף את הייצור')+(wl.daily?', מתנה יומית':', בלי המתנה היומית')+(wl.quest?', קווסט':', הקווסט לא נלקח')+
     ', '+wl.fx+' חגיגות (צפוי 1)'+(wl.fly?', מספרים עפים':', בלי מספרים עפים')+(wl.next?', ושורה מה עכשיו':', בלי שורה מה עכשיו'));
   check(wl.closed&&wl.noPop&&wl.empty,'בזמן שלא היית: '+(wl.closed?'נסגר לבד אחרי האיסוף':'לא נסגר')+(wl.noPop?', שום חלון לא קפץ אחריו':', קפץ עוד חלון')+(wl.empty?', ובלי כלום שמחכה הוא לא מופיע':', והופיע גם בלי כלום שמחכה'));

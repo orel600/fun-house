@@ -127,3 +127,15 @@ $('welWin').addEventListener('click',e=>{
   if(b.dataset.act==='close'){welcomeClose();sfx('ui');return}
   if(b.dataset.act==='all'&&!WELCOME.done)welcomeCollect();
 });
+
+/* ---- תור קפיצות (בדיקת החוויה, 1.11: "מטח בכניסה לכפר") ----
+   חלון אחד בכל פעם: "בזמן שלא היית" מחכה לשיחה פתוחה, ושיחת העלילה (storySay ב-story.js) מחכה לחלון הזה.
+   הודעות (banner): לכל היותר אחת בכל BANNER.gap שניות. מה שמגיע בינתיים מחכה בתור, ומהתור נשארות רק האחרונות (max), כדי שלא יגיעו הודעות ישנות */
+const BANNER={gap:2,max:2,q:[],last:-1e9,t:0,shown:0};
+{const show=banner;
+  const pump=()=>{BANNER.t=0;if(!BANNER.q.length)return;
+    const w=BANNER.last+BANNER.gap*1000-Date.now();if(w>0){BANNER.t=setTimeout(pump,w);return}
+    const [t,c]=BANNER.q.shift();BANNER.last=Date.now();BANNER.shown++;show(t,c);
+    if(BANNER.q.length)BANNER.t=setTimeout(pump,BANNER.gap*1000)};
+  banner=function(txt,col){if(BANNER.q.some(b=>b[0]===txt))return;BANNER.q.push([txt,col]);while(BANNER.q.length>BANNER.max)BANNER.q.shift();if(!BANNER.t)pump()};
+}
