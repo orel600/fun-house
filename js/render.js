@@ -231,7 +231,7 @@ function hud(){
   const nx=nextStation(),key=LANG+'|'+fmt(S.t)+'|'+P.level+'|'+(S.boss?1:S.run.won?2:nx.kind+fmt(nx.t-S.t));
   if(key!==lastHud){lastHud=key;$('clock').textContent=fmt(S.t);$('lvl').textContent=T('level',P.level);
     $('bossin').textContent=S.boss?T('bossHere'):S.run.won?T('bossBeaten'):T(nx.kind==='boss'?'bossIn':'next.'+nx.kind,fmt(nx.t-S.t))}
-  drawRunBar();skillsHud();divineHud();
+  drawRunBar();skillsHud();divineHud();swapCheck();
   const bb=$('bossbar');
   if(S.boss){bb.hidden=false;$('bossnm').textContent=S.boss.name+' · '+S.boss.title;
     const wk=$('bossweak');if(wk.dataset.k!==LANG+S.boss.weak){wk.dataset.k=LANG+S.boss.weak;wk.innerHTML=dtSvg(S.boss.weak)+T('weakTo',T('dt.'+S.boss.weak));wk.style.color=dtCol(S.boss.weak)}

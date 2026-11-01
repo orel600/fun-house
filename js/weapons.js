@@ -26,7 +26,13 @@ const WEAPONS={
 };
 
 // הנשקים שלבושים עכשיו. היום יש משבצת נשק אחת, אז כפתור ההחלפה מוסתר. משבצת שנייה תיכנס כאן
-const wHeld=()=>[SAVE.gear.weapon].filter(gItem);
+// מה שביד, והנשק הכי חזק בתרמיל מהצד השני (מקרוב <-> מרחוק). כפתור ההחלפה עובר ביניהם (swapWeapon ב-combat.js)
+const wHeld=()=>[SAVE.gear.weapon,wBestOther()].filter(gItem);
+// החלפה מהירה (אוראל, 1.11.2026: "אופציה מהירה להחלפה בין חץ וקשת הכי חזקים שיש לי בתיק ובין החרב הכי חזקה"). הכי חזק: gScore (gear.js)
+function wBestOther(){
+  const cur=SAVE.gear.weapon,use=gItem(cur)?wUse(cur):'sword';let b=null,bs=-1;
+  for(const id in SAVE.bag){if(!(SAVE.bag[id]>0))continue;const it=gItem(id);if(!it||it.slot!=='weapon'||wUse(id)===use)continue;const s=gScore(id);if(s>bs){bs=s;b=id}}
+  return b}
 const wTypeOf=id=>{const it=gItem(id);return it&&WEAPONS[it.w]&&it.w||'sword'};
 const wUse=id=>WEAPONS[wTypeOf(id)].use;
 const wNow=()=>WEAPONS[P.wt]||WEAPONS.sword;
