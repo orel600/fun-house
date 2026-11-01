@@ -4,28 +4,39 @@
 # צריך סוד אחד בריפו: VERCEL_TOKEN (מהחשבון של אוראל ב-Vercel). בלעדיו הריצה מדלגת ולא נכשלת.
 name: פרסום ל-Vercel
 
-# רק כשמשתנים קבצי המשחק: ב-Vercel החינמי יש 100 פרסומים ביום, ושינוי בתוכנית או ביומן לא צריך קישור חדש
-# PR בטיוטה (עבודה באמצע) לא מתפרסם: כך נחסכים רוב הפרסומים. כשה-PR מסומן "מוכן", הוא מתפרסם (ready_for_review)
+# ב-Vercel החינמי יש 100 פרסומים ביום לכל הסשנים יחד, ולכן מפרסמים מעט:
+# - PR מתפרסם פעם אחת: כשהוא נפתח כמוכן, או עובר מטיוטה למוכן. דחיפות נוספות (synchronize) לא מפרסמות.
+# - קישור חדש לפי בקשה: תגובה ב-PR שמתחילה ב-/preview (רק מי שיש לו הרשאת כתיבה).
+# - main: כמה מיזוגים רצופים מתאחדים לפרסום אחד (המתנה של 90 שניות, וריצה חדשה מבטלת את הקודמת).
+# - רק שינוי בקבצי המשחק מפרסם, לא תיעוד או roadmap.
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, ready_for_review]
     paths: [index.html, manifest.webmanifest, sw.js, 'css/**', 'js/**', 'icons/**', 'skins/**', 'sounds/**', .github/workflows/deploy.yml]
   push:
     branches: [main]
     paths: [index.html, manifest.webmanifest, sw.js, 'css/**', 'js/**', 'icons/**', 'skins/**', 'sounds/**', .github/workflows/deploy.yml]
-  workflow_dispatch:   # פרסום ידני, למשל אחרי שהמגבלה היומית נגמרה
+  issue_comment:
+    types: [created]
+  workflow_dispatch:   # פרסום ידני, למשל אחרי שהמגבלה היומית התאפסה
 
 permissions:
   contents: read
   pull-requests: write
 
-concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   deploy:
-    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    # PR: רק לא-טיוטה. תגובה: רק /preview על PR, ורק מבעלי הרשאת כתיבה
+    if: >-
+      (github.event_name == 'pull_request' && !github.event.pull_request.draft) ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request &&
+       startsWith(github.event.comment.body, '/preview') &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)) ||
+      github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    # ריצה חדשה מבטלת את הקודמת באותו PR או ב-main. ריצה שבוטלה לפני ההעלאה לא נספרת ב-Vercel
+    concurrency:
+      group: deploy-${{ github.event.pull_request.number || github.event.issue.number || github.ref }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -35,58 +46,103 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_TELEMETRY_DISABLED: 1
       CLI: vercel@64.0.2
-      PR_NUM: ${{ github.event.pull_request.number }}
+      PR_NUM: ${{ github.event.pull_request.number || github.event.issue.number }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: אין עדיין חיבור ל-Vercel
         if: env.VERCEL_TOKEN == ''
         run: |
           echo "דילוג: אין סוד VERCEL_TOKEN בריפו. ההוראות ב-CLAUDE.md, בפרק 'פרסום'." | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0   # כל ההיסטוריה, בשביל מספר הגרסה
+      - name: מה מפרסמים
+        id: what
         if: env.VERCEL_TOKEN != ''
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "issue_comment" ]; then
+            # בתגובה, הריצה היא של main. לוקחים את הגרסה הנוכחית של ה-PR, אבל אף פעם לא כ-prod
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/comments/${{ github.event.comment.id }}/reactions" -f content=rocket >/dev/null || true
+            echo "ref=refs/pull/$PR_NUM/head" >> "$GITHUB_OUTPUT"
+            echo "base=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUM" --jq .base.ref)" >> "$GITHUB_OUTPUT"
+            echo "pr=1" >> "$GITHUB_OUTPUT"
+          elif [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            echo "ref=$GITHUB_REF" >> "$GITHUB_OUTPUT"; echo "base=$GITHUB_BASE_REF" >> "$GITHUB_OUTPUT"; echo "pr=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=$GITHUB_REF" >> "$GITHUB_OUTPUT"
+            [ "$GITHUB_REF" = "refs/heads/main" ] && echo "prod=1" >> "$GITHUB_OUTPUT"
+          fi
+          true
+
+      - name: מחכים למיזוגים נוספים (90 שניות)
+        # מיזוג נוסף בזמן הזה מבטל את הריצה הזו, וכך כמה מיזוגים רצופים מתפרסמים פעם אחת
+        if: env.VERCEL_TOKEN != '' && github.event_name == 'push'
+        run: sleep 90
+
+      - uses: actions/checkout@v7
+        if: env.VERCEL_TOKEN != ''
+        with:
+          ref: ${{ steps.what.outputs.ref }}
+          fetch-depth: 0   # כל ההיסטוריה, בשביל מספר הגרסה
+          persist-credentials: false
 
       - name: העלאה
         id: up
         if: env.VERCEL_TOKEN != ''
+        env:
+          IS_PR: ${{ steps.what.outputs.pr }}
+          BASE: ${{ steps.what.outputs.base }}
+          PROD: ${{ steps.what.outputs.prod }}
         run: |
           # רק מה שהמשחק צריך. התיקייה נקראת fun-house, וזה גם שם הפרויקט ב-Vercel
+          # אבטחה: קוד ה-PR רק מועתק ומועלה, אף סקריפט ממנו לא רץ עם הטוקן
           site="$RUNNER_TEMP/fun-house"; mkdir -p "$site"
           cp index.html manifest.webmanifest sw.js "$site/"; cp -r css js icons "$site/"; for d in skins sounds; do [ -d "$d" ] && cp -r "$d" "$site/"; done; true
+          find "$site" -type l -delete   # קיצורי דרך (symlinks) לא מועלים: הם יכולים להצביע על קבצים מחוץ למשחק
           # מספר הגרסה: ראשי.שלב.עדכון.בנייה. בנייה = כמה שינויים ב-main. עדכון = כמה מהם מאז שהשלב התחיל (STAGE_FROM)
           eval "$(sed -n 's/^const MAJOR=\([0-9]*\), STAGE=\([0-9]*\), STAGE_FROM=\([0-9]*\);/major=\1 stage=\2 from=\3/p' js/version.js)"
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then n=$(git rev-list --count "origin/$GITHUB_BASE_REF"); else n=$(git rev-list --count HEAD); fi
+          if [ -n "$IS_PR" ]; then n=$(git rev-list --count "origin/$BASE"); else n=$(git rev-list --count HEAD); fi
           ver="$major.$stage.$((n-from)).$n"
-          [ "$GITHUB_EVENT_NAME" = "pull_request" ] && ver="$ver-pr$PR_NUM"
+          [ -n "$IS_PR" ] && ver="$ver-pr$PR_NUM"
           echo "const MAJOR=$major, STAGE=$stage, STAGE_FROM=$from;const VERSION='$ver';" > "$site/js/version.js"
           echo "גרסה: $ver" >> "$GITHUB_STEP_SUMMARY"
-          cd "$site"
+          cd "$RUNNER_TEMP"   # npx רץ מחוץ לקוד של ה-PR
           # רווח או ירידת שורה שנדבקו לטוקן בהעתקה הופכים אותו ללא תקף, אז מנקים אותם
           tok=$(printf %s "$VERCEL_TOKEN" | tr -d '[:space:]')
           if ! npx -y "$CLI" whoami --token "$tok" >/dev/null 2>&1; then
             msg="Vercel דחה את הטוקן (VERCEL_TOKEN). צריך ליצור טוקן חדש ב-vercel.com/account/tokens ולשמור אותו שוב בסוד. ההוראות ב-CLAUDE.md, בפרק 'פרסום'."
             echo "::error::$msg"; echo "$msg" >> "$GITHUB_STEP_SUMMARY"; exit 1
           fi
-          prod=""; [ "$GITHUB_REF" = "refs/heads/main" ] && prod="--prod"
-          url=$(npx -y "$CLI" deploy --yes $prod --token "$tok")
+          prod=""; [ -n "$PROD" ] && prod="--prod"
+          err="$RUNNER_TEMP/deploy-err.txt"
+          if ! url=$(npx -y "$CLI" deploy "$site" --yes $prod --token "$tok" 2>"$err"); then
+            if grep -qiE 'api-deployments-free-per-day|deployments per day|rate.?limit' "$err"; then
+              # המכסה היומית נגמרה: זו לא שגיאה של ה-PR, אז הריצה עוברת עם אזהרה
+              msg="מכסת הפרסומים היומית של Vercel (100 ביום) נגמרה. הקישור לא עודכן. מחר: תגובה /preview ב-PR, או Run workflow ב-Actions."
+              echo "::warning::$msg"; echo "### ⚠️ $msg" >> "$GITHUB_STEP_SUMMARY"
+              echo "quota=1" >> "$GITHUB_OUTPUT"; exit 0
+            fi
+            cat "$err"; exit 1
+          fi
           # הקישור פתוח לכל מי שיש לו אותו, כדי שגם ניר וגם אוראל ייכנסו בלי חשבון ב-Vercel
           npx -y "$CLI" project protection disable fun-house --sso --token "$tok" >/dev/null 2>&1 || true
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "### 🎮 [לשחק בגרסה הזו]($url)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: קישור בתגובה על ה-PR
-        if: env.VERCEL_TOKEN != '' && github.event_name == 'pull_request'
+        if: env.VERCEL_TOKEN != '' && steps.what.outputs.pr == '1' && steps.up.outputs.url != ''
         env:
-          GH_TOKEN: ${{ github.token }}
           URL: ${{ steps.up.outputs.url }}
-          PR: ${{ github.event.pull_request.number }}
         run: |
-          # תגובה אחת לכל PR, שמתעדכנת בכל שינוי, במקום תגובה חדשה בכל פעם
+          # תגובה אחת לכל PR, שמתעדכנת בכל פרסום, במקום תגובה חדשה בכל פעם
           mark='<!-- vercel-preview -->'
+          sha=$(git rev-parse --short HEAD)
           body="$mark
           🎮 **לשחק בגרסה הזו בטלפון:** $URL
-          (מתעדכן בכל שינוי ב-PR. גרסה: ${GITHUB_SHA::7})"
-          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --jq "[.[]|select(.body|startswith(\"$mark\"))][0].id // empty")
+          (גרסה: $sha. דחיפות נוספות לא מפרסמות, כדי לחסוך במכסה. לקישור חדש: תגובה \`/preview\`)"
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUM/comments" --paginate --jq "[.[]|select(.body|startswith(\"$mark\"))][0].id // empty" | head -1)
           if [ -n "$id" ]; then gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -f body="$body" >/dev/null
-          else gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -f body="$body" >/dev/null; fi
+          else gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUM/comments" -f body="$body" >/dev/null; fi
+
+      - name: המכסה נגמרה, תשובה ל-/preview
+        if: github.event_name == 'issue_comment' && steps.up.outputs.quota == '1'
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUM/comments" -f body="⚠️ מכסת הפרסומים היומית של Vercel נגמרה, אז אין קישור חדש. אפשר לכתוב \`/preview\` שוב מחר." >/dev/null
