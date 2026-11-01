@@ -62,7 +62,19 @@ const STORY={
   introDelay:0.9,                          // שניות אחרי הכניסה הראשונה לכפר עד שראש הכפר מדבר
   headDelay:1.4,                           // אחרי שפנס נדלק (הפרס נלקח בכפר): ראש הכפר אומר משפט
   lit:{dmg:0.75},                          // אחרי שהפנס של אזור נדלק: האויבים באזור פוגעים פחות
-  end:{cheer:7,show:1.2}                   // הסוף: כמה שניות התושבים מריעים, וכמה אחרי שראש הכפר סיים מופיע מסך "תודה ששיחקת"
+  end:{cheer:7,show:1.2},                  // הסוף: כמה שניות התושבים מריעים, וכמה אחרי שראש הכפר סיים מופיע מסך "תודה ששיחקת"
+  /* שומרים חוזרים (roadmap.md, "Claude מוביל", 1.11.2026): אחרי הסוף, בדרגת עולם "אמיץ" ומעלה (tiers.js), ליד כל פנס דולק יש כפתור 🔔.
+     השומר יוצא מהפנס לקרב חוזר, חזק יותר לפי הדרגה (TIERS.list: hp, dmg), פעם ביום לכל שומר (SAVE.story.re: {פנס: יום}).
+     near: מאיזה מרחק מהפנס מופיע הכפתור. hp, dmg: פי כמה, על הדרגה. loot: מה נופל בניצחון. gear: אחד מהם תמיד (חלק מסט, או ציוד של השומר),
+     res: משאבים נדירים [כמה], legend: סיכוי לכתר (הפריט האגדי) לפי הדרגה */
+  rematch:{near:150,minTier:2,hp:1,dmg:1,
+    loot:{earth:{gear:['wardenHammer','wardenRing','wardenCharm','wardenBoots'],res:{amberF:1,gem:1}},
+      water:{gear:['ironRing','swiftBoots'],res:{aqua:2,gem:1}},
+      ice:{gear:['swiftBoots','silverBlade'],res:{sapphire:2,gem:1}},
+      fire:{gear:['silverBlade','goldBow'],res:{ruby:2,gem:1}},
+      bolt:{gear:['stormBow','stormRing','stormFeather','stormBoots'],res:{bolt:2,gem:1}},
+      light:{gear:['goldAmulet','goldBow'],res:{star:1,shadow:3,gem:2}}},
+    legend:{item:'crown',2:0.12,3:0.3}}
 };
 const STO=()=>SAVE.story||(SAVE.story={intro:false,shard:false,earth:false});
 const qOn=id=>!!(QS().active[id]&&!qReady(QBY[id]));
@@ -91,14 +103,58 @@ function storyUpdate(dt){
     if(p.digs>w.digs0){STO().shard=true;questEvent('story','shard');celebrate(p.x,p.y,'rank',T('story.shard'));sfx('celebrate');saveNow()}}
   // השומר קם כשמתקרבים לפנס של האזור, רק כשהקווסט שלו פעיל
   const k=storyLantern(),L=k&&STORY.lanterns[k];
-  if(L&&qOn(L.quest)&&!w.warden&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake){
-    const W=L.warden,e=addEnemy(W.type,L.x,L.y+70,W.hp);
-    e.warden=k;e.elite=false;e.dmg*=W.dmg;e.r*=W.r;e.speed*=W.speed;e.xp=0;e.big=W.r;e.shoot=W.shoot?W.shoot.every:0;e.ring=W.ring?W.ring.every*0.6:0;e.marks=W.marks?W.marks.every*0.5:0;w.warden=e;
-    banner(T('story.'+k+'.rise'),L.col);S.shake=Math.max(S.shake,8);
-    if(W.phases){e.base=e.speed;e.res=storyMost();e.phase=-1;storyShade(e)}}   // הצל: לומד את השחקן ולובש את השלב הראשון
+  if(L&&qOn(L.quest)&&!w.warden&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake){storyWarden(k,L.y+70);banner(T('story.'+k+'.rise'),L.col)}
   storyRings(dt);   // טבעות האש של שומר האש
   storyMarks(dt);   // עיגולי הברק של שומר הסערה
-  if(w.warden&&w.warden.dead){const ev=(STORY.lanterns[w.warden.warden]||{}).ev;if(ev)questEvent('story',ev);w.warden=null}   // שומר המים: 'tide' (s2Warden), שומר הקרח: 'frost' (s3Warden)
+  if(w.warden&&w.warden.dead){const e=w.warden;w.warden=null;
+    if(e.rematch){storyReWin(e);return}   // קרב חוזר: שלל, בלי קווסט
+    const ev=(STORY.lanterns[e.warden]||{}).ev;if(ev)questEvent('story',ev)}   // שומר המים: 'tide' (s2Warden), שומר הקרח: 'frost' (s3Warden)
+  storyReBtn();   // כפתור 🔔 ליד פנס דולק, אחרי הסוף
+}
+// השומר קם ליד הפנס. t: דרגת עולם לקרב חוזר (חזק יותר), או בלי בקרב הראשון
+function storyWarden(k,y,t){
+  const L=STORY.lanterns[k],W=L.warden,e=addEnemy(W.type,L.x,y,W.hp);
+  e.warden=k;e.elite=false;e.dmg*=W.dmg;e.r*=W.r;e.speed*=W.speed;e.xp=0;e.big=W.r;e.shoot=W.shoot?W.shoot.every:0;e.ring=W.ring?W.ring.every*0.6:0;e.marks=W.marks?W.marks.every*0.5:0;S.wd.warden=e;
+  if(t){const D=TIERS.list[t-1],RM=STORY.rematch;e.hp*=D.hp*RM.hp;e.max*=D.hp*RM.hp;e.dmg*=D.dmg*RM.dmg;e.rematch=t}
+  S.shake=Math.max(S.shake,8);
+  if(W.phases){e.base=e.speed;e.res=storyMost();e.phase=-1;storyShade(e)}   // הצל: לומד את השחקן ולובש את השלב הראשון
+  return e;
+}
+
+/* ---- שומרים חוזרים (STORY.rematch): אחרי הסוף, בדרגה 2 ומעלה, פעם ביום לכל שומר ---- */
+const storyRe=()=>STO().re||(STO().re={});
+// אפשר לקרוא לשומר של הפנס הזה עכשיו? null אם לא, ואחרת הפנס
+function storyReCan(){
+  const w=S.wd,k=storyLantern();if(!w||!k||!STO().end||tierNow()<STORY.rematch.minTier||!STO()[k]||w.warden||storyRe()[k]===qDay())return null;
+  const L=STORY.lanterns[k];return Math.hypot(P.x-L.x,P.y-L.y)<STORY.rematch.near?k:null;
+}
+// הכפתור העגול בסרגל ההקשר (כמו wGo ב-world.js)
+const storyReEl=(()=>{const b=document.createElement('button');b.id='wardBtn';b.className='nbtn talkbtn';b.hidden=true;
+  $('talkBtn').before(b);b.addEventListener('click',()=>{if(S&&S.mode==='play')storyReCall()});return b})();
+function storyReBtn(){
+  const k=S.mode==='play'&&storyReCan(),show=!!k;if(storyReEl.hidden!==!show)storyReEl.hidden=!show;
+  if(show&&storyReEl.dataset.k!==k+LANG){storyReEl.dataset.k=k+LANG;storyReEl.innerHTML='<span class="ni" aria-hidden="true">🔔</span>'+T('story.re.btn');storyReEl.setAttribute('aria-label',T('story.re.call',T('story.'+k+'.name')))}
+}
+{const wu=worldUi;worldUi=function(on){wu(on);if(!on)storyReEl.hidden=true}}   // יוצאים מהעולם: הכפתור נעלם
+// לוחצים: השומר יוצא מהפנס, עם חגיגה קטנה. היום של השומר הזה נספר כבר עכשיו, גם אם בורחים או מתים
+function storyReCall(){
+  const k=storyReCan();if(!k)return false;const L=STORY.lanterns[k],t=tierNow();
+  storyRe()[k]=qDay();saveNow();storyReEl.hidden=true;
+  const e=storyWarden(k,L.y+20,t);e.kx=0;e.ky=260;   // יוצא מהפנס לכיוון השחקן
+  celebrate(L.x,L.y-60,'rank','🔔');sparks(L.x,L.y-80,L.glow,18,260);sfx('celebrate');
+  const txt=T('story.re.rise',T('story.'+k+'.name'),T('tier.n'+t));
+  if(feedOn())feedAdd('🔔',txt,L.col,'re:'+k);else banner(txt,L.col);
+  return true;
+}
+// ניצחון בקרב חוזר: ציוד מהטבלה של השומר, משאבים נדירים, וסיכוי לכתר לפי הדרגה. הכל נופל לרצפה ליד השומר
+function storyReWin(e){
+  const k=e.warden,L=STORY.lanterns[k],RM=STORY.rematch,lt=RM.loot[k]||RM.loot.earth,t=e.rematch,got=[];
+  const g=lt.gear[Math.floor(Math.random()*lt.gear.length)];dropSpawn(g,1,e.x,e.y);got.push(g);
+  if(Math.random()<(RM.legend[t]||0)){dropSpawn(RM.legend.item,1,e.x+24,e.y);got.push(RM.legend.item)}
+  for(const r in lt.res)dropSpawn(r,lt.res[r]*(t>2?2:1),e.x+(Math.random()-0.5)*60,e.y+20);
+  celebrate(e.x,e.y-30,'loot2','🏆');sfx('celebrate');
+  const txt=T('story.re.win',T('story.'+k+'.name'));if(feedOn())feedAdd('🏆',txt,L.glow,'rew:'+k);else banner(txt,L.glow);
+  S.wd.reGot=got;   // לבדיקה (check.js)
 }
 // השומר: רודף את השחקן, אבל לא מתרחק מהפנס (wFoes ב-world.js). שומר המים גם יורה
 function storyWardenMove(e,dt){

@@ -513,6 +513,11 @@ const TEXT={
   'ch.r.glass':{he:['יום הזכוכית','האויבים נופלים מהר, אבל מכים חזק'],en:['Day of Glass','Enemies fall fast, but hit hard']},
   'ch.r.gold':{he:['בהלה לזהב','כל אויב מפיל מטבעות, אבל הם מכים חזק יותר'],en:['Gold Rush','Every enemy drops coins, but they hit harder']},
   'af.fast':{he:'מהיר',en:'Swift'},'af.tough':{he:'משוריין',en:'Armored'},'af.burst':{he:'מתפוצץ',en:'Volatile'},'af.split':{he:'מתפצל',en:'Splitting'},'af.regen':{he:'מתחדש',en:'Regenerating'},
+  // שומרים חוזרים (story.js, STORY.rematch)
+  'story.re.btn':{he:'לשומר',en:'Warden'},
+  'story.re.call':{he:n=>'לקרוא ל'+n,en:n=>'Call '+n},
+  'story.re.rise':{he:(n,t)=>n+' חוזר לקרב ('+t+')',en:(n,t)=>n+' returns to fight ('+t+')'},
+  'story.re.win':{he:n=>'ניצחת שוב את '+n+'!',en:n=>'You beat '+n+' again!'},
   'story.intro':{he:'הגעת! סוף סוף מישהו עם נשק. פעם דלקו כאן שישה פנסים, והצל לא העז להתקרב. לילה אחד כולם כבו, והשלדים קמו מהאדמה. בוא, נתחיל מקטן.',en:'You came! Finally someone with a weapon. Six lanterns once burned here, and the Shadow never dared come near. One night they all went dark, and the skeletons rose. Come, let’s start small.'},
   'story.shard':{he:'פיוחו מצאה רסיס זוהר!',en:'Piocho found a glowing shard!'},
   'story.ward.back':{he:'אני שומר על הפנס. תחזור כשתהיה מוכן!',en:'I guard the lantern. Come back when you are ready!'},
