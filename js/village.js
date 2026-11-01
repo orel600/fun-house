@@ -208,7 +208,7 @@ function villageHud(){
   const wide=!S.vil.gate&&(k==='forge'||k==='stash')&&L>0;
   const pn=$('vPanel');pn.hidden=!cur||shut;pn.classList.toggle('big',!!S.vil.trade||wide);document.body.classList.toggle('vpan',!pn.hidden);if(pn.hidden)return;
   if(S.vil.trade){pn.innerHTML=winHead(T('vil.market'),T('level',L))+tradeHtml(L);return}
-  if(S.vil.gate){pn.innerHTML=winHead(T('vil.out'))+'<p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
+  if(S.vil.gate){pn.innerHTML=travelGateHtml()||winHead(T('vil.out'))+'<p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
   const why=vBlock(k),c=vCost(k);
   let h='<p>'+vInfo(k,L)+'</p>';
   // מנסרה ומכרה: כמה מחכה לאיסוף, וכפתור לאסוף
@@ -243,6 +243,7 @@ $('vPanel').addEventListener('click',e=>{
   if(a==='go'){leaveVillage();return}
   if(a==='close'){vShut();return}
   if(a==='trade'){S.vil.trade=true;villageHud();return}
+  if(a==='jump'){travelGo(b.dataset.k);return}   // קפיצה לפנס דולק (travel.js)
   if(!S.vil.near)return;
   if(a==='forge'){forgeOpen();return}
   if(a==='bag'){gearOpen();return}   // מהמחסן: מסך הציוד, שם גוררים בין התרמיל למחסן (gear.js)
