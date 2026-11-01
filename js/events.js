@@ -41,7 +41,7 @@ function eventsUpdate(dt){
   const w=S.wd;if(!w)return;
   if(w.evT==null)w.evT=EVENTS.first;
   const E=w.ev;
-  if(!E){if((w.evT-=dt)<=0)evStart();return}
+  if(!E){if((w.evT-=dt)<=0&&paceRoom(EVENTS.wave.n))evStart();return}   // אין מקום לגל (PACE.cap ב-pacing.js): מחכים
   E.t+=dt;
   if(E.kind==='wave'){
     if(E.foes.every(e=>e.dead)){evLoot(EVENTS.wave.loot,E.x,E.y);evEnd(true);return}
