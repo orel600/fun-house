@@ -2,8 +2,8 @@
    כמו במשחקי עולם פתוח בטלפון (Genshin, Pokémon Go, Diablo Immortal): שורה אחת קבועה למעלה עם המטרה הבאה בשפה פשוטה ומרחק,
    חץ בקצה המסך כשהמטרה מחוץ למסך, ושובל נקודות על הרצפה מהגיבור לכיוון שלה.
    מה המטרה, לפי הסדר (guideGoal):
-     1. קווסט עלילה ⭐ פעיל (quests.js, story.js), או הפרק הבא שמחכה אצל ראש הכפר
-     2. קווסט שהושלם ומחכה לפרס
+     1. קווסט עלילה ⭐ פעיל (quests.js, story.js)
+     2. קווסט שהושלם ומחכה לפרס, ואחריו הפרק הבא בעלילה שמחכה אצל ראש הכפר
      3. קווסט פעיל אחר: זה שבחרת לעקוב אחריו, אחר כך כל השאר, ובסוף היומיים
      4. אם אין כלום, הצעה: פרס האתגר היומי, קווסט חדש אצל תושב, האתגר עצמו, או אזור שעוד לא ביקרת בו
    מטרה באזור אחר: החץ מצביע על השער הנכון (WORLD.paths, home), ובכפר על השער לעולם. מחשבים את הדרך בכל פעם (guideStep).
@@ -63,13 +63,13 @@ const gNpcName=id=>T('npc.'+id)[0];
 function guideGoal(){
   const Q=QS(),I=GUIDE.icon,act=Object.keys(Q.active).map(id=>QBY[id]).filter(Boolean),open=q=>!qReady(q);
   let q=act.find(q=>q.kind==='story'&&open(q));if(q)return gQuest(q,I.story);
-  q=QUESTS.list.find(q=>q.kind==='story'&&qOpen(q));
-  if(q)return{icon:I.story,q:q.id,text:T('g.talk',gNpcName(q.giver)),...gNpc(q.giver)};
   const ready=act.filter(qReady).sort((a,b)=>(b.kind==='story')-(a.kind==='story'));
   if(q=ready[0]){
     if(q.kind==='story'||qKind(q).talk)return{icon:I.claim,q:q.id,text:T('g.claim',gNpcName(q.giver)),...gNpc(q.giver)};
     return{icon:I.claim,q:q.id,text:T('g.reward',T('q.'+q.id)[0]),place:null};   // את הפרס לוקחים ביומן, מכל מקום
   }
+  q=QUESTS.list.find(q=>q.kind==='story'&&qOpen(q));   // הפרק הבא מחכה אצל ראש הכפר
+  if(q)return{icon:I.story,q:q.id,text:T('g.talk',gNpcName(q.giver)),...gNpc(q.giver)};
   q=Q.track&&QBY[Q.track];if(!(q&&Q.active[q.id]&&open(q)))q=act.find(q=>open(q)&&!qKind(q).auto);
   if(q)return gQuest(q,I.quest);
   if(chCan())return{icon:I.challenge,text:T('g.chClaim'),place:'village'};
@@ -108,7 +108,7 @@ function guideTarget(G){
 /* ---- השורה למעלה ---- */
 const guideMin=()=>{try{return localStorage.getItem(GUIDE.key)==='1'}catch(e){return false}};
 function guideUi(){
-  const el=$('guide'),on=!!(S&&(S.vil||S.wd)&&S.mode==='play'&&guideG);
+  const el=$('guide'),on=!!(S&&(S.vil||S.wd)&&S.mode==='play'&&guideG&&$('vPanel').hidden&&$('wPanel').hidden);   // ליד מבנה או שער הפאנל שלו במקום השורה
   document.body.classList.toggle('guided',on);
   if(el.hidden===on)el.hidden=!on;if(!on)return;
   const G=guideG,t=guideTarget(G),d=t&&P?Math.hypot(t.x-P.x,t.y-P.y):0;

@@ -786,3 +786,4 @@ body:not(.vil):not(.world) .guide{display:none}
 .qsec summary::-webkit-details-marker{display:none}
 .qsec summary h4::after{content:' ▾'}.qsec[open] summary h4::after{content:' ▴'}
 .gnow{border-color:var(--gold)}.gnow small{color:var(--gold);font-weight:800}.gnow b{font-size:16px;line-height:1.35}
+@media (orientation:portrait){.world .guide{top:calc(env(safe-area-inset-top,0px) + 124px)}}   /* עומד: מתחת לכפתור המפה */
