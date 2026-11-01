@@ -1122,7 +1122,10 @@ function worldBot(m,L,god){
     uiR[nm]={v,w};
     // בלי גלילה (docs/plan-hud.md פרק 5): מסך הנקודות והבובה בחלון הציוד, והשיחה עם תושב (קווסט אחד בכל פעם)
     if(nm==='land')uiNoScroll=await page.evaluate(()=>{const sc=id=>{const e=$(id);return e&&e.scrollHeight>e.clientHeight+4?id+' '+e.scrollHeight+'/'+e.clientHeight:''},o={};
-      gearOpen();GUI.sel=null;gearDraw();o.gear=[sc('gDetail'),sc('gSlots')].filter(Boolean);o.stv=$('ovGear').classList.contains('stv');gearClose();
+      // חלון הציוד בשני דפים (gear.js): בדף ציוד הבובה והפרטים, בדף דמות הנקודות. בלי גלילה ובלי טקסט חתוך (…), והתרמיל לפחות 4 בשורה
+      const cut=()=>[...document.querySelectorAll('#ovGear *')].filter(e=>e.offsetParent&&getComputedStyle(e).textOverflow==='ellipsis'&&e.scrollWidth>e.clientWidth+1).map(e=>e.textContent.trim().slice(0,14));
+      gearOpen();GUI.sel=null;gearDraw();o.gear=[sc('gDetail'),sc('gSlots')].filter(Boolean);o.cols=getComputedStyle($('gItems')).gridTemplateColumns.split(' ').length;o.cut=cut();
+      $('gPages').querySelector('[data-page="char"]').click();o.gear.push(...[sc('gChar')].filter(Boolean));o.stv=$('ovGear').classList.contains('stv')&&!$('gChar').hidden&&$('ovGear').querySelector('.gbody').hidden;o.cut.push(...cut());gearClose();
       const id=Object.keys(NPC.list).find(npcHere);npcTalk(id);o.npc=sc('npcDlg');o.pager=document.querySelectorAll('#npcDlg .qc').length<=1;npcTalk(null);return o});
   }
   // תמיד מטרה ברורה (guide.js): יש מטרה בשורה למעלה, החץ מצביע לכיוון הנכון גם כשהמטרה באזור אחר, והמטרה מתחלפת כשקווסט נגמר
@@ -1483,7 +1486,8 @@ function worldBot(m,L,god){
     enterWorld('home');o.btn=getComputedStyle($('menuBtn')).display!=='none'&&menuTab('wMapBtn').when();   // המפה: לשונית בתפריט הראשי (menu.js)
     $('wMapBtn').click();o.open=!$('wMap').hidden&&S.mode==='map';const G=wmGraph();o.show=G.show.join(',');o.edges=G.edges.length;
     o.fog=G.show.filter(r=>!wmSeen(r)).join(',');o.canv=['wmWorld','wmHere'].every(id=>{const c=$(id);return c&&c.width>50&&c.height>50});
-    o.hidden=!G.show.includes('ridge');   // הרכס עוד סגור: לא מופיע
+    // כל אזור שעוד לא התגלה מופיע כצללית עם ? (המבקר, worldmap-locked-tiers): גם הרכס הסגור, כצללית ולא כאי שביקרו בו
+    o.fogAll=['meadow',...Object.keys(WORLD.regions)].every(r=>G.show.includes(r));o.hidden=o.fogAll&&!wmSeen('ridge');   // כל האזורים במפה, והרכס (שעוד לא התגלה) ביניהם כצללית
     document.querySelector('#wMap [data-act="close"]').click();o.closed=$('wMap').hidden&&S.mode==='play';
     wGo('lake');o.saved=!!(JSON.parse(localStorage.getItem(SAVE_STORE.key)).wmap||{seen:{}}).seen.lake;
     wmapOpen(true);o.cur=S.wd.reg;o.lakeSeen=wmSeen('lake');dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape'}));keys.Escape=false;o.esc=$('wMap').hidden&&S.mode==='play';
@@ -1493,9 +1497,9 @@ function worldBot(m,L,god){
     SAVE.story=JSON.parse(st0);SAVE.secrets=sc0?JSON.parse(sc0):SAVE.secrets;wmapOpen(true);return o});
   if(CFG.shots){await page.setViewportSize(CFG.phone);await page.clock.runFor(200);await shot('world-map')}
   await page.evaluate(()=>{wmapOpen(false);enterVillage()});
-  check(wm.btn&&wm.open&&wm.canv&&wm.fog==='lake'&&wm.hidden&&wm.closed&&wm.saved&&wm.lakeSeen&&wm.esc&&wm.all&&wm.apart&&wm.edges>=1,
+  check(wm.btn&&wm.open&&wm.canv&&wm.fogAll&&wm.hidden&&wm.closed&&wm.saved&&wm.lakeSeen&&wm.esc&&wm.all&&wm.apart&&wm.edges>=1,
     'מפת העולם: '+(wm.btn?'כפתור בעולם':'אין כפתור')+', '+(wm.open?'נפתחה':'לא נפתחה')+(wm.canv?' עם שתי מפות':' בלי מפות')+', אזורים: '+wm.show+' (צללית: '+(wm.fog||'אין')+')'+
-    (wm.hidden?', הרכס הסגור מוסתר':', הרכס הסגור מופיע')+(wm.closed?', נסגרה ב-✕':', לא נסגרה')+(wm.saved?', הביקור באגם נשמר':', הביקור לא נשמר')+(wm.esc?' ונסגרה ב-Esc':'')+
+    (wm.hidden?', כל מה שלא התגלה (גם הרכס) בצללית עם ?':', אזור שלא התגלה חסר או מופיע כגלוי')+(wm.closed?', נסגרה ב-✕':', לא נסגרה')+(wm.saved?', הביקור באגם נשמר':', הביקור לא נשמר')+(wm.esc?' ונסגרה ב-Esc':'')+
     (wm.all?'':', אזור חסר במפה')+(wm.apart?'':', שני איים חופפים'));
   // מפת העולם, כל האזורים פתוחים (worldmap.js, wmLabels): אף שם או מונה לא עולה על שם אחר או על אי, בגודל טלפון ובגודל מחשב. האנגלית: בריצה עם --lang en
   const wml={};
@@ -1514,7 +1518,7 @@ function worldBot(m,L,god){
   // דרגות עולם (tiers.js): סגור עד סוף הסיפור, נבחר במפה, מחזק אויבים בעולם (גם את מי שכבר שם), שלל נוסף, ודרגה 3 נפתחת אחרי הריגות
   const tr=await page.evaluate(()=>{
     const o={},st0=JSON.stringify(SAVE.story);SAVE.tier=null;SAVE.story=Object.assign({},SAVE.story,{end:false});
-    enterWorld('home');wmapOpen(true);o.lock=!!document.querySelector('#wMap [data-act="tier"][data-n="2"]:disabled')&&!tierSet(2);wmapOpen(false);
+    enterWorld('home');wmapOpen(true);o.lock=!document.querySelector('#wMap .tierrow')&&!tierSet(2);wmapOpen(false);   // לפני סוף הסיפור אין בחירת דרגה במפה בכלל (המבקר)
     const a=addEnemy('grunt',P.x+300,P.y,1);a.home=0;tierSpawn(a);const h1=a.max,d1=a.dmg;
     SAVE.story.end=true;wmapOpen(true);const b2=document.querySelector('#wMap [data-act="tier"][data-n="2"]');o.btn=!!b2&&!b2.disabled;if(b2)b2.click();
     o.on=TS().t===2&&!!document.querySelector('#wMap .tierb.on[data-n="2"]');o.lock3=!!document.querySelector('#wMap [data-act="tier"][data-n="3"]:disabled');wmapOpen(false);
@@ -1527,6 +1531,32 @@ function worldBot(m,L,god){
   check(tr.lock&&tr.btn&&tr.on&&tr.lock3&&tr.live&&tr.coins&&tr.k===1&&tr.open3&&tr.saved&&tr.back,
     'דרגות עולם: '+(tr.lock?'סגור לפני הסוף':'פתוח לפני הסוף')+(tr.btn?', נפתח אחרי הסוף':', לא נפתח')+(tr.on?', אמיץ נבחר במפה':', הבחירה לא עבדה')+(tr.lock3?', אגדי נעול':', אגדי פתוח מוקדם')+
     (tr.live?', אויב קיים התחזק':', אויב קיים לא השתנה')+(tr.coins?', שלל נוסף':', בלי שלל נוסף')+', נספרו '+tr.k+(tr.open3?', אגדי נפתח':', אגדי לא נפתח')+(tr.saved?', נשמר':', לא נשמר')+(tr.back?'':', לא חוזר לרגיל בלי סוף'));
+  // חוק הנדירות (gear.js, GEAR.ladder): בכל משבצת, פריט נדיר יותר חזק לפחות פי ladder מהשכבה שמתחת. ניר: "נעליים נדירות גרועות מרגילות"
+  // והתרמיל המסודר: מסננים לפי משבצת, מיון לפי משבצת ונדירות, ▲/▼ מול מה שלבוש, נקודה לחדש, ללבוש הכי טוב, ולמכור חלשים עם אישור בחלון
+  const bg=await page.evaluate(()=>{
+    const o={bad:gLadder().map(b=>b.weak+'<'+b.top+' ×'+b.k)},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,seen:SAVE.gseen||null}),c0=celebrate;celebrate=()=>0;
+    enterVillage();const g0=gearStats();SAVE.gear.boots=['starterBoots'];gearLive(g0);SAVE.gseen={};
+    for(const k in SAVE.bag)if(gItem(k))delete SAVE.bag[k];   // תרמיל נקי: פריטים מהריצה (שלל, קווסטים) לא משנים את הבדיקה
+    ['swiftBoots','wardenBoots','wardenBoots','oakSword','ironSword','boneCharm'].forEach(k=>bagAdd(k));bagAdd('starterBoots');bagAdd('starterBoots');
+    gSeen().oakSword=1;S.mode='play';gearOpen();
+    o.chips=Object.keys(GEAR.filter).every(f=>!!document.querySelector('#gTabs [data-tab="'+f+'"]'));
+    const ids=[...document.querySelectorAll('#gItems [data-id]')].map(e=>e.dataset.id),sl=ids.map(k=>Object.keys(GEAR.filter).indexOf(gItem(k).slot));
+    o.sorted=sl.every((v,i)=>!i||v>=sl[i-1])&&ids.indexOf('swiftBoots')<ids.indexOf('wardenBoots');
+    const t=k=>document.querySelector('#gItems [data-id="'+k+'"]');
+    o.up=!!t('swiftBoots').querySelector('.gmk.up');o.new=!!t('swiftBoots').querySelector('.gnew')&&!t('oakSword').querySelector('.gnew');
+    t('swiftBoots').click();o.seen=!t('swiftBoots').querySelector('.gnew');
+    document.querySelector('#gTabs [data-tab="boots"]').click();o.filter=[...document.querySelectorAll('#gItems [data-id]')].every(e=>gItem(e.dataset.id).slot==='boots');
+    document.querySelector('#gActs [data-act="best"]').click();o.best=SAVE.gear.boots[0]==='swiftBoots';
+    o.down=!!t('starterBoots')&&!!t('starterBoots').querySelector('.gmk.down');
+    const coins=SAVE.bag.coins||0,l=gSellList();document.querySelector('#gActs [data-act="sell"]').click();
+    o.ask=!!document.querySelector('#gDetail [data-act="sellYes"]')&&(SAVE.bag.starterBoots||0)>0;
+    document.querySelector('#gDetail [data-act="sellYes"]').click();
+    o.sold=!SAVE.bag.starterBoots&&SAVE.bag.wardenBoots===1&&!!SAVE.bag.swiftBoots===false&&(SAVE.bag.coins||0)>coins;o.got=(SAVE.bag.coins||0)-coins;o.list=Object.keys(l).join(',');
+    gearClose();const g1=gearStats(),k=JSON.parse(keep);SAVE.bag=k.bag;SAVE.gear=k.gear;SAVE.gseen=k.seen||undefined;gearLive(g1);celebrate=c0;saveNow();return o});
+  check(!bg.bad.length&&bg.chips&&bg.sorted&&bg.up&&bg.new&&bg.seen&&bg.filter&&bg.best&&bg.down&&bg.ask&&bg.sold,
+    'ציוד ותרמיל: '+(bg.bad.length?'פריט נדיר חלש מדי: '+bg.bad.join(', '):'כל נדירות חזקה מזו שמתחת')+(bg.chips?', מסננים':', אין מסננים')+(bg.sorted?', ממוין':', לא ממוין')+
+    (bg.up&&bg.down?', ▲/▼':', חסר ▲/▼')+(bg.new&&bg.seen?', נקודה לחדש':', הנקודה לא עובדת')+(bg.filter?'':', המסנן לא מסנן')+(bg.best?', ללבוש הכי טוב':', "הכי טוב" לא עבד')+
+    (bg.ask?', אישור בחלון':', בלי אישור')+(bg.sold?', נמכרו ('+bg.list+', +'+bg.got+')':', המכירה לא עבדה ('+bg.list+')'));
   // שומרים חוזרים (story.js, STORY.rematch): כפתור 🔔 ליד פנס דולק רק אחרי הסוף ובדרגה אמיץ ומעלה. השומר יוצא חזק יותר, נופל שלל, ופעם ביום לכל שומר
   const rm=await page.evaluate(()=>{
     const o={},st0=JSON.stringify(SAVE.story),ti0=JSON.stringify(SAVE.tier||null),L=STORY.lanterns.earth,vis=()=>{worldUpdate(0.016);return !$('wardBtn').hidden};
@@ -1550,8 +1580,8 @@ function worldBot(m,L,god){
     SAVE.hero.xp+=rankNeed(SAVE.hero.level)+5;rankSync();o.free=stFree();
     const d0=P.sw.dmg;o.add=statAdd('str');o.dmg=Math.round(P.sw.dmg/d0*100)/100;o.saved=(JSON.parse(localStorage.getItem(SAVE_STORE.key)).hero.pts||{}).str>=1;
     statAdd('def');const h0=P.hp;P.inv=0;hurt(100);o.def=Math.round((h0-P.hp)*10)/10;P.hp=P.maxHp;
-    gearOpen();o.ui=document.querySelectorAll('#gDetail .strow').length;
-    SAVE.hero.xp+=4000;rankSync();o.tfree=trFree();const sw0=P.sw.dmg;document.querySelector('#gDetail [data-act="tree"]').click();
+    gearOpen('char');o.ui=document.querySelectorAll('#gChar .strow').length;
+    SAVE.hero.xp+=4000;rankSync();o.tfree=trFree();const sw0=P.sw.dmg;document.querySelector('#gChar [data-act="tree"]').click();
     o.tree=document.querySelectorAll('#gTree .trn').length;const hp0=P.maxHp,lb=document.querySelector('#gTree [data-act="learn"][data-b="war"]');if(lb)lb.click();
     o.learned=((SAVE.hero.tree||{}).war||[])[0]==='w1'&&P.maxHp>hp0;
     // צומת "אחד משניים": נטוע באדמה. עומדים שנייה, ומכה נחלשת. והשני (מכה חוזרת) נסגר
@@ -1601,7 +1631,8 @@ function worldBot(m,L,god){
       'ממשק, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(bad.length?'נוגעים זה בזה: '+bad.join(', '):'הפס העליון והסרגל לא נוגעים')+(off.length?', מחוץ למסך: '+off.join(', '):'')+
       (v.who&&w.who?', רמה וחיים בפינה':', אין "מי אני"')+(w.mini?(w.miniOpen?', מפה קטנה פותחת את המפה':', המפה הקטנה לא פותחת'):', אין מפה קטנה')+', '+Math.max(v.res,w.res)+' משאבים למעלה'+(w.gateAuto?', כרטיס השער נפתח לבד':w.goBtn?', שער: עיגול ואז כרטיס':', אין עיגול ליד השער')+(v.more?', "+N" לשאר התרמיל':', אין "+N"')+', '+v.cards+' כרטיסים במסחר'+(v.cols===2?' בשני טורים':'')+(v.tradeBack?', ✕ חוזר לשוק':', ✕ לא חזר לשוק')+' · יציאה: '+all.map(x=>x[0]+(x[1]==='ok'?' ✕':' '+x[1])).join(', ')+
       (v.esc?', Esc':', Esc לא סוגר')+(v.backdrop?', רקע':', רקע לא סוגר')+(v.tapOut?', נגיעה במשחק':', נגיעה במשחק לא סוגרת יומן'))}
-  if(uiNoScroll){const n=uiNoScroll;check(n.stv&&!n.gear.length&&!n.npc&&n.pager,'חלונות בלי גלילה, לרוחב: '+(n.gear.length?'הציוד נגלל ('+n.gear.join(', ')+')':'הציוד והנקודות נכנסים')+
+  if(uiNoScroll){const n=uiNoScroll;check(n.stv&&!n.gear.length&&!n.cut.length&&n.cols>=4&&!n.npc&&n.pager,'חלונות בלי גלילה, לרוחב: '+(n.gear.length?'הציוד נגלל ('+n.gear.join(', ')+')':'הציוד ודף הדמות נכנסים')+
+    (n.stv?'':', דף הדמות לא נפתח')+(n.cut.length?', טקסט חתוך: '+n.cut.join(' | '):'')+', התרמיל '+n.cols+' בשורה'+
     (n.npc?', השיחה נגללת ('+n.npc+')':', השיחה נכנסת')+(n.pager?', קווסט אחד בכל פעם':', כמה קווסטים יחד'))}
   for(const nm in uiR){const b=[...new Set([...uiR[nm].v.big.map(x=>'כפר '+x),...uiR[nm].w.big.map(x=>'עולם '+x)])];   // אזהרה, לא כישלון (plan-hud.md)
     results.push((b.length?'⚠ ':'· ')+'גודל ממשק, '+(nm==='port'?'טלפון עומד':'לרוחב')+': '+(b.length?'גדול מהגבול: '+b.join(', '):'הכל בתוך הגבולות'))}
