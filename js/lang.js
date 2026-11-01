@@ -810,6 +810,7 @@ const TEXT={
   // תושבי הכפר (npc.js): [שם, תפקיד], ומשפט לכל מצב. low/high: לפי רמת מרכז הכפר. new: יש קווסט חדש. busy: קווסט באמצע. ready: פרס מחכה
   // חיית המחמד (pet.js). השם לפי PET.kinds
   'pet.name.piocho':{he:'פיוחו',en:'PioCho'},
+  'rs.saved':{he:'פיוחו הצילה!',en:'Pyocho to the rescue!'},
   'pet.up':{he:(n,s)=>n+' גדלה! שלב '+s,en:(n,s)=>n+' grew up! Stage '+s},
   'pet.found':{he:n=>n+' מצאה משהו!',en:n=>n+' found something!'},
   'pet.feed':{he:n=>'🥕 תן ל'+n+' גזר קסום',en:n=>'🥕 Give '+n+' a Magical Carrot'},
@@ -940,6 +941,27 @@ const TEXT={
   'qo.fish':{he:'לדוג דגים',en:'Catch fish'},
   'q.wCatch':{he:['סוף סוף דגים','הרוחות הלכו והדגים חזרו! תדוג לי 3 מהבריכה. לחץ "לדוג", חכה ל-! ולחץ כשהמחוג בירוק.'],en:['Fish at Last','The wisps are gone and the fish are back! Catch me 3 from the pond. Tap "Fish", wait for the !, then tap when the needle is in the green.']}
 };
+
+// ======== המטרה הבאה (guide.js) ========
+Object.assign(TEXT,{
+  'g.talk':{he:n=>'דבר עם '+n+': מחכה לך משימה',en:n=>'Talk to '+n+': a quest is waiting'},
+  'g.claim':{he:n=>'חזור אל '+n+' וקח את הפרס',en:n=>'Go back to '+n+' for your reward'},
+  'g.reward':{he:n=>'הושלם: '+n+'. גע כאן לקחת את הפרס',en:n=>'Done: '+n+'. Tap here for your reward'},
+  'g.chClaim':{he:'חזור לכפר: פרס האתגר היומי מחכה',en:'Head home: your daily challenge reward is waiting'},
+  'g.challenge':{he:'נסה את האתגר היומי בעולם',en:'Try the daily challenge out in the world'},
+  'g.explore':{he:r=>'חקור את '+r,en:r=>'Explore '+r},
+  'g.via':{he:g=>'דרך השער: '+g,en:g=>'via the gate: '+g},
+  'g.here':{he:'כאן',en:'here'},
+  'g.m':{he:d=>d+' מ׳',en:d=>d+' m'},
+  'g.tap':{he:'המטרה הבאה: פתח את היומן',en:'Next goal: open the journal'},
+  'g.min':{he:'לכווץ את המטרה',en:'Collapse the goal'},
+  'g.open':{he:'להציג את המטרה',en:'Show the goal'},
+  'g.now':{he:'עכשיו:',en:'Now:'},
+  'g.jump':{he:'קפוץ',en:'Jump'},
+  'g.noJump':{he:'אי אפשר לקפוץ באמצע קרב',en:'You cannot jump in the middle of a fight'},
+  'g.why.sec':{he:'🔍 סודות שמצאת באזור הזה, מתוך כולם',en:'🔍 Secrets you found in this area, out of all of them'},
+  'g.why.ch':{he:'🌀 האתגר היומי: כמה אויבים הפלת היום תחת החוק המיוחד',en:'🌀 Daily challenge: foes defeated today under the special rule'}
+});
 
 // ======== מפת העולם (worldmap.js) ========
 Object.assign(TEXT,{

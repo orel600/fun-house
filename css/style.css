@@ -779,6 +779,29 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .gdoll .gslot .k{font-size:9px}
   .gd-end .grow{display:grid;grid-template-columns:repeat(2,40px);gap:4px}   /* אקססוריז ונעליים בשני טורים במקום עמודה גבוהה */
 }
+
+/* המטרה הבאה (js/guide.js): שורה אחת באמצע למעלה, מתחת לפס העליון. לא בפינות (השתקה, מפה, מתנה) ולא למטה (הסרגל והסקילים) */
+.guide{position:fixed;z-index:3;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 50px);max-width:min(60vw,560px);
+  display:flex;align-items:stretch;gap:2px;pointer-events:auto}
+.world .guide{top:calc(env(safe-area-inset-top,0px) + 74px)}
+body:not(.vil):not(.world) .guide{display:none}
+.guided .qtrack{display:none}
+.guide button{appearance:none;border:1px solid var(--gold);background:rgba(18,22,36,.82);color:var(--chalk);cursor:pointer;font:700 13px var(--body);min-height:36px}
+.gmain{display:flex;align-items:center;gap:6px;min-width:0;padding:0 12px;border-start-start-radius:999px;border-end-start-radius:999px}
+.gmin{width:36px;padding:0;border-start-end-radius:999px;border-end-end-radius:999px;color:var(--gold)}
+.gico{flex:none;font-size:15px}
+.gtxt{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 3px #000}
+.gdist{flex:none;color:var(--gold);font-weight:800;direction:ltr;unicode-bidi:isolate}
+.guide.min .gtxt{display:none}
+.guide button:active{transform:scale(.92)}
+.guide button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+@media (orientation:portrait){.guide{max-width:calc(100vw - 32px)}}
+.whud .wsec,.whud .chtag{pointer-events:auto;cursor:pointer}
+.qsec summary{list-style:none;cursor:pointer;padding:6px 0}
+.qsec summary::-webkit-details-marker{display:none}
+.qsec summary h4::after{content:' ▾'}.qsec[open] summary h4::after{content:' ▴'}
+.gnow{border-color:var(--gold)}.gnow small{color:var(--gold);font-weight:800}.gnow b{font-size:16px;line-height:1.35}
+@media (orientation:portrait){.world .guide{top:calc(env(safe-area-inset-top,0px) + 124px)}}   /* עומד: מתחת לכפתור המפה */
 /* "בזמן שלא היית" (js/welcome.js): רשימה של מה שמחכה, וכפתור גדול אחד */
 .welwin{width:min(560px,92vw)}
 .welbody{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
@@ -795,3 +818,4 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .welnext{margin:0;text-align:center;font:700 16px var(--body)}
 .welfly{position:fixed;z-index:30;pointer-events:none;display:flex;align-items:center;gap:3px;font:900 18px var(--body);color:var(--gold);text-shadow:0 1px 3px #000}
 .welfly .ri{width:24px;height:24px}
+.gjump{flex:none;padding:0 10px;color:var(--gold);font-weight:800}

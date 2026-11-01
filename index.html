@@ -44,6 +44,8 @@
 <!-- העולם הפתוח: שם האזור ומה שבתרמיל למעלה, ופאנל ליד שער (js/world.js) -->
 <div class="whud" id="whud" hidden><b id="wName"></b><b id="wSec" class="wsec"></b><span class="chtag" id="chTag" hidden></span><div class="bag tbar" id="wBag" role="group" data-ta="bagGroup"></div></div>
 <div class="vpanel win" id="wPanel" hidden></div>
+<!-- המטרה הבאה (js/guide.js): שורה אחת למעלה, בכפר ובעולם. נגיעה פותחת את היומן, ▴ מכווץ -->
+<div class="guide" id="guide" hidden><button class="gmain" id="guideMain" type="button" data-ta="g.tap"><span class="gico" id="guideIco"></span><span class="gtxt" id="guideTxt"></span><b class="gdist" id="guideDist"></b></button><button class="gjump" id="guideJump" type="button" hidden></button><button class="gmin" id="guideMin" type="button"></button></div>
 <!-- מפת העולם (js/worldmap.js): כפתור בפינה העליונה, רק בעולם, וחלון עם מפה של כל האזורים ושל האזור הנוכחי -->
 <button class="wmapbtn" id="wMapBtn" data-ta="wm.title"><span aria-hidden="true">🗺️</span></button>
 <div class="qlog win wmapwin" id="wMap" hidden></div>
@@ -291,9 +293,11 @@
 <script src="js/ranks.js"></script>
 <script src="js/stats.js"></script>
 <script src="js/pet.js"></script>
+<script src="js/rescue.js"></script>
 <script src="js/daily.js"></script>
 <script src="js/visit.js"></script>
 <script src="js/book.js"></script>
+<script src="js/guide.js"></script>
 <script src="js/welcome.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/update.js"></script>
@@ -303,7 +307,7 @@
 <script src="js/models3d.js"></script>
 <script src="js/render3d.js"></script>
 <script src="js/camera.js"></script>
-<script src="js/look-hd.js"></script>   <!-- ?look=hd: פיילוט מראה, כבוי כברירת מחדל (docs/visual-plan.md) -->
+<script src="js/look-hd.js"></script>   <!-- מראה הכפר והעולם: שלב 1 לכולם, ?look=classic מכבה, ?look=hd מוסיף ניסויים (docs/visual-plan.md) -->
 <script src="js/render.js"></script>
 <script src="js/input.js"></script>
 <script src="js/main.js"></script>
