@@ -105,7 +105,8 @@ HD.has=p=>HD.parts.has(p);
   }
   const base=window.render3d;
   window.render3d=function(...a){
-    if(R3D.on&&R3D.ready){if(!ready)setup();const want=!!(S&&(S.vil||S.wd)&&!S.room);if(want!==here)apply(want);if(vig)vig.hidden=!here}
+    if(R3D.on&&R3D.ready){if(!ready)setup();const want=!!(S&&(S.vil||S.wd)&&!S.room);if(want!==here)apply(want);if(vig)vig.hidden=!here;
+      if(here&&groundMat)R3D.ground.material=(typeof GROUND!=='undefined'&&GROUND.mat())||groundMat}   // בעולם: המפה המצוירת (ground.js). בכפר: הקרקע של שלב 1
     else if(vig)vig.hidden=true;
     return base.apply(this,a);
   };
