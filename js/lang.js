@@ -472,6 +472,7 @@ const TEXT={
   'foe.warden':{he:'את השומר האבן',en:'the Stone Warden'},
   // העלילה, פרק 1: פנס האדמה (story.js, docs/story.md)
   // אירועים בעולם (events.js)
+  'pace.peak':{he:'👹 להקות מפלצות מתקרבות!',en:'👹 Monster packs incoming!'},'pace.bonus':{he:'להקה הופלה! +שלל',en:'Pack down! +loot'},
   'ev.wave':{he:'⚔️ גל שלדים יוצא מהאדמה!',en:'⚔️ A skeleton wave rises!'},'ev.waveDone':{he:'הגל נעצר! תיבה נפלה',en:'Wave stopped! A chest dropped'},
   'ev.cart':{he:'🛒 עגלת סוחר התהפכה בדרך!',en:'🛒 A merchant cart overturned nearby!'},'ev.cartDone':{he:'מה שנפל מהעגלה שלך',en:'The spilled goods are yours'},
   'ev.rain':{he:'✨ מטר רסיסים!',en:'✨ A shower of shards!'},'ev.rainDone':{he:'המטר נגמר',en:'The shower is over'},
