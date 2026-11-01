@@ -310,7 +310,7 @@ function heroLook(){
     L.props[w]=Object.assign({prop:model,tier:mine?GEAR.tiers[it.tier].id:'wood'},g);
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
-  if(fluteOn())fluteGrip(L);   // הנודד עם החליל: חליל ביד במקום הנשק (flute.js)
+  {const th=heroTheme();if(th&&th.grip)th.grip(L)}   // דמות אישית: חפץ ביד במקום הנשק. החליל ביד במקום הנשק (flute.js)
   return R3D._hl=L;
 }
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
