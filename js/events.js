@@ -71,7 +71,8 @@ function eventsScreen(ox,oy){
 // אויבי הגל: רודפים אחרי השחקן, בלי בית (wFoes ב-world.js)
 function evFoeMove(e,dt){
   const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;
-  if(d<600){e.x+=dx/d*e.speed*slowK(e)*dt;e.y+=dy/d*e.speed*slowK(e)*dt}
+  if(foeAi(e,dt,d)){foeAiTail(e,dt);return}   // מקיפים מכל הצדדים (foeai.js)
+  const busy=strikeTick(e,dt,d);   // מכה עם הכנה, כמו שאר האויבים בעולם (strike.js), ולא נזק במגע
+  if(d<600&&!busy){e.x+=dx/d*e.speed*slowK(e)*dt;e.y+=dy/d*e.speed*slowK(e)*dt}
   e.x+=e.kx*dt;e.y+=e.ky*dt;const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
-  if(d<e.r+P.r-3)hurt(e.dmg);
 }
