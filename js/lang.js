@@ -528,6 +528,7 @@ const TEXT={
   'fai.leader':{he:'מנהיג הלהקה',en:'Pack Leader'},'fai.leaderCome':{he:'👑 להקה עם מנהיג מתקרבת!',en:'👑 A pack leader approaches!'},'fai.leaderDown':{he:'👑 המנהיג הופל! ערימת שלל',en:'👑 Leader down! Loot pile'},
   'af.fast':{he:'מהיר',en:'Swift'},'af.tough':{he:'משוריין',en:'Armored'},'af.burst':{he:'מתפוצץ',en:'Volatile'},'af.split':{he:'מתפצל',en:'Splitting'},'af.regen':{he:'מתחדש',en:'Regenerating'},
   // שומרים חוזרים (story.js, STORY.rematch)
+  'story.ward.stuck':{he:'נתקע! עכשיו!',en:'Stuck! Now!'},
   'story.re.btn':{he:'לשומר',en:'Warden'},
   'story.re.call':{he:n=>'לקרוא ל'+n,en:n=>'Call '+n},
   'story.re.rise':{he:(n,t)=>n+' חוזר לקרב ('+t+')',en:(n,t)=>n+' returns to fight ('+t+')'},
