@@ -1461,7 +1461,7 @@ function worldBot(m,L,god){
       o.calm=FOEAI.leapChance.start===0&&FOEAI.callChance.start===0&&FOEAI.startWind>1;
       // מנהיג להקה: בסוף שיא מגיעה להקה עם מנהיג (גדול, מהיר יותר ללהקה), ונפילה שלו נותנת ערימה פעם אחת
       enemies=[];P.x=0;P.y=0;P.moving=false;paceUpdate(0.01);const p=S.wd.pace;p.b=PACE.beats.findIndex(b=>b.id==='peak');p.bt=PACE.beats[p.b].dur-FOEAI.leader.at+0.1;p.peaks=1;
-      foeLeaderTick();const ld=enemies.find(x=>x.leader);o.leader=!!ld&&ld.r>ETYPES[ld.type].r*1.2&&enemies.filter(x=>x.pack===ld.pack).length>=3;foeLeaderTick();o.once=enemies.filter(x=>x.leader).length===1;
+      foeLeaderTick();const ld=enemies.find(x=>x.leader);o.leader=!!ld&&ld.r>ETYPES[ld.type].r*1.2&&enemies.filter(x=>x.pack===ld.pack).length>=2;foeLeaderTick();o.once=enemies.filter(x=>x.leader).length===1;
       if(ld){const dr0=drops().length;kill(ld);foeLeaderTick();foeLeaderTick();o.pile=(p.leaders||0)===1&&drops().length>dr0}
     }finally{hurt=h0}
     enemies=[];eb=[];enterVillage();return o});
