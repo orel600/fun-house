@@ -591,6 +591,11 @@ function worldBot(m,L,god){
     document.getElementById('cloudPhone').click();r.kept=await pr==='phone'&&ov.hidden&&F.rows[g].data.hero.xp===1&&SAVE.village.forge!==5;
     // חשבון בלי התקדמות (נפתח בדפדפן אחר), גם כשהוא חדש יותר, לא דורס את הטלפון
     F.rows[g]={data:Object.assign(saveBlank(),{ts:Date.now()+1e7})};SAVE.hero.xp=50;saveNow();await cloudGoogle(true);r.emptyAcct=await cloudBack(F.back(g))==='phone'&&F.rows[g].data.hero.xp===50;
+    // נשארים מחוברים: Supabase דוחה את הרענון. לא נפתח משתמש זמני במקום החשבון, ובפתיחה חוזרים ל-Google לבד
+    const n0=F.users;CLOUD.session.exp=0;cloudKeep(CLOUD.session);F.badRefresh=true;went=null;
+    r.stay=await cloudSync()==='offline'&&!CLOUD.session&&cloudWas()==='Nir'&&await cloudSync()==='offline'&&F.users===n0;
+    F.badRefresh=false;r.relog=await cloudRelog()==='plain'&&/\/auth\/v1\/authorize\?provider=google/.test(went)&&F.users===n0;
+    await cloudBack(F.back(g));r.relog=r.relog&&!!CLOUD.session&&CLOUD.session.name==='Nir'&&!cloudWas();
     // 5. התנתקות: הכניסה נמחקת מהטלפון, השמירה נשארת
     const wood=SAVE.bag.wood;document.getElementById("cloudOut").click();for(let i=0;i<500&&CLOUD.session;i++)await Promise.resolve();
     r.out=!CLOUD.session&&!localStorage.getItem(CLOUD.lsKey)&&F.calls.includes('POST /auth/v1/logout')&&SAVE.bag.wood===wood&&document.getElementById('cloudOut').hidden&&CLOUD.status==='off';
@@ -600,6 +605,7 @@ function worldBot(m,L,god){
   check(gl.link&&gl.linked,'ענן: Google '+(gl.link?'מתחבר למשתמש הזמני':'לא ניסה להתחבר')+', '+(gl.linked?'אותה שמירה, והסמל אומר "מחובר כ-"':'בחזרה משהו לא עבד'));
   check(gl.relink,'ענן: כשהחיבור נכשל '+(gl.relink?'עוברים לכניסה רגילה עם Google':'נתקע'));
   check(gl.emptyAcct,'ענן: חשבון ריק '+(gl.emptyAcct?'לא דורס את ההתקדמות בטלפון':'דרס את ההתקדמות בטלפון'));
+  check(gl.stay&&gl.relog,'ענן: כשהכניסה ל-Google נדחית '+(gl.stay?'לא נפתח משתמש זמני במקומה':'נפתח משתמש זמני במקום החשבון')+', '+(gl.relog?'ובפתיחה חוזרים ל-Google לבד':'ולא חוזרים ל-Google'));
   check(gl.err,'ענן: כשגם הכניסה הרגילה נכשלת '+(gl.err?'הסמל אומר שהכניסה לא הצליחה, בלי עוד ניסיון':'השחקן לא יודע שנכשל, או שיש לופ'));
   check(gl.second,'ענן: מכשיר שני '+(gl.second?'לוקח את השמירה מהחשבון':'לא לקח את השמירה'));
   check(gl.ask&&gl.kept,'ענן: שתי שמירות שונות '+(gl.ask?'השחקן נשאל':'לא נשאל')+', '+(gl.kept?'ומה שבחר נשמר':'הבחירה לא נשמרה'));
