@@ -1,10 +1,8 @@
 # כלי זמני: הופך ציורי דמויות למודלים צבועים ב-TRELLIS (Hugging Face), ושומר את התוצאה בחזרה בענף.
 # רץ רק בענף feature/hf-trellis, או ידנית. לא נוגע במשחק.
 name: TRELLIS (תלת-ממד מ-Hugging Face)
+# רץ רק ידנית (Actions, Run workflow), כדי לא לבזבז את המכסה היומית של Hugging Face על כל דחיפה
 on:
-  push:
-    branches: [feature/hf-trellis]
-    paths: ['tools/trellis/**', '.github/workflows/trellis.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -12,6 +10,8 @@ jobs:
   trellis:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -23,9 +23,6 @@ jobs:
       - name: הדמות של אוראל
         continue-on-error: true
         run: python tools/trellis/run.py orel
-      - name: הדמות של אוראל, משלוש זוויות
-        continue-on-error: true
-        run: python tools/trellis/run.py orel multi
       - name: תמונות מהסרטונים
         run: |
           cd tools/trellis/out || exit 0

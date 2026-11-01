@@ -8,7 +8,7 @@ here = os.path.dirname(os.path.abspath(__file__))
 inp = lambda v: os.path.join(here, 'in', f'{name}-{v}.png')
 out = os.path.join(here, 'out'); os.makedirs(out, exist_ok=True)
 tag = name + ('-multi' if multi else '')
-c = Client("trellis-community/TRELLIS")
+c = Client("trellis-community/TRELLIS", token=os.environ.get("HF_TOKEN") or None)   # המפתח מסוד HF_TOKEN ב-GitHub: בלי חשבון המכסה היומית זעירה
 try: c.view_api()
 except Exception as e: print('view_api:', e)
 try: c.predict(api_name="/start_session")
