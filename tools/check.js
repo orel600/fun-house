@@ -58,7 +58,11 @@ function botStep({god,en}){
     return L}
   // "בזמן שלא היית" (welcome.js): בכניסה הראשונה לכפר היום, עם המתנה היומית בתוכו. צעד אחד מסתכלים (צילום), בצעד הבא "אסוף הכל".
   // בכניסות הבאות (חזרה מהזירה) סוגרים ב-✕ בלי לאסוף, כדי שהבוט ייקח את הקווסטים מהיומן כמו קודם
+  // הביקור הראשון (המבקר, 1.11): בלי "בזמן שלא היית". המתנה של היום הראשון כבר בתרמיל, והכפתור 🎁 מוסתר
+  if(S.vil&&!L.v1)L.v1={daily:!dailyCan(),n:dailySave().n,btn:document.getElementById('dBtn').hidden,coins:SAVE.bag.coins||0,want:DAILY.days[0].coins};
+  if(!S.vil&&L.v1)L.v1x=1;
   if(vis('ovWelcome')){const b=document.querySelector('#welWin [data-act="all"]');
+    if(!L.v1x)L.welFirst=1;
     if(L.welOpen==null)L.welOpen={at,rows:document.querySelectorAll('#welWin .welrow').length,daily:document.querySelectorAll('#welWin .welrow.daily').length,daily0:!document.getElementById('ovDaily').hidden};
     else if(b&&L.welUi==null){const c=SAVE.bag.coins||0;b.click();L.welUi={got:(SAVE.bag.coins||0)-c,want:DAILY.days[0].coins,btn:document.getElementById('dBtn').hidden,
       saved:JSON.parse(localStorage.getItem(SAVE_STORE.key)).daily.gift.n,next:!!(document.querySelector('#welWin .welnext')||{}).textContent}}
@@ -971,8 +975,8 @@ function worldBot(m,L,god){
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
-  check(L.welOpen&&L.welOpen.daily===1&&!L.welOpen.daily0&&!L.dailyPop,'בזמן שלא היית: '+(L.welOpen?'החלון נפתח לבד בכניסה לכפר, '+L.welOpen.rows+' שורות'+(L.welOpen.daily===1?' עם המתנה היומית':' בלי המתנה היומית')+(L.welOpen.daily0||L.dailyPop?', אבל גם הלוח של 7 ימים קפץ':', והלוח של 7 ימים לא קפץ'):'החלון לא נפתח בכניסה לכפר'));
-  check(L.welUi&&L.welUi.got>=L.welUi.want&&L.welUi.btn&&L.welUi.saved===1&&L.welUi.next,'בזמן שלא היית: "אסוף הכל" '+(L.welUi?'נתן '+L.welUi.got+' מטבעות, '+(L.welUi.saved===1?'המתנה היומית נשמרה':'המתנה היומית לא נשמרה')+(L.welUi.btn?', הכפתור 🎁 נעלם':', הכפתור 🎁 נשאר')+(L.welUi.next?', ושורה מה עכשיו':', בלי שורה מה עכשיו'):'לא נלחץ'));
+  check(L.v1&&!L.welFirst&&!L.dailyPop,'ביקור ראשון בכפר: '+(L.welFirst?'"בזמן שלא היית" קפץ, אבל השחקן עוד לא היה כאן':'בלי "בזמן שלא היית"')+(L.dailyPop?', אבל הלוח של 7 ימים קפץ':', והלוח של 7 ימים לא קפץ'));
+  check(L.v1&&L.v1.daily&&L.v1.n===1&&L.v1.btn&&L.v1.coins>=L.v1.want,'ביקור ראשון בכפר: '+(L.v1?(L.v1.daily&&L.v1.n===1?'המתנה של היום הראשון נכנסה לתרמיל':'המתנה של היום הראשון לא נלקחה')+(L.v1.btn?', הכפתור 🎁 מוסתר':', הכפתור 🎁 נשאר')+', '+L.v1.coins+' מטבעות':'לא הגענו לכפר'));
   // חוזרים לכפר אחרי זמן: ייצור, מתנה יומית, מתנה מחבר וקווסט מוכן. חלון אחד, "אסוף הכל" אוסף את כולם עם חגיגה אחת, ושום חלון לא קופץ אחריו
   const wl=await page.evaluate(()=>{const o={};welcomeClose();questLogOpen(false);npcTalk(null);gearClose();
     SAVE.village.center=Math.max(1,vLv('center'));SAVE.village.mill=Math.max(1,vLv('mill'));vSettle('mill');vProd('mill').have={};vProd('mill').t=Date.now()-2*3600e3;
@@ -1110,7 +1114,7 @@ function worldBot(m,L,god){
     const ang=t=>t?Math.round(Math.atan2(t.y-P.y,t.x-P.x)*100):null;
     const tick=()=>{guideT=0;guideUpdate()};
     questLogOpen(false);gearClose();enterVillage();npcTalk(null);
-    for(const id of ['s1Lanterns','s1Shard','s1Path','s1Warden'])delete Q.active[id],delete Q.done[id];Q.track=null;
+    for(const id of ['s1Lanterns','s1Bones','s1Shard','s1Path','s1Warden'])delete Q.active[id],delete Q.done[id];Q.track=null;
     qStart(QBY.s1Warden);P.x=0;P.y=0;$('vPanel').hidden=true;$('wPanel').hidden=true;tick();
     const g=VILLAGE.gate,t1=guideTarget(guideG);
     o.vil=!$('guide').hidden&&$('guideTxt').textContent.length>3&&guideG.icon===GUIDE.icon.story;
@@ -1149,9 +1153,11 @@ function worldBot(m,L,god){
   await page.clock.runFor(6000);
   const sto2=await page.evaluate(()=>{
     const o={intro:SAVE.story.intro&&!$('npcDlg').hidden&&$('npcDlg').innerText.includes(T('story.intro').slice(0,12)),dbg:[SAVE.story.intro,$('npcDlg').hidden,S.mode,$('qLog').hidden,$('ovGear').hidden,!!S.vil].join('/')};npcTalk(null);
-    const Q=QS();for(const id of ['s1Lanterns','s1Shard','s1Path','s1Warden']){delete Q.done[id];delete Q.active[id]}
+    const Q=QS();for(const id of ['s1Lanterns','s1Bones','s1Shard','s1Path','s1Warden']){delete Q.done[id];delete Q.active[id]}
     o.offer=qOpen(QBY.s1Lanterns)&&!qOpen(QBY.s1Shard);
-    qStart(QBY.s1Lanterns);leaveVillage();questEvent('reach','world');questClaim('s1Lanterns');
+    // יוצאים לאחו: הפרס של הקווסט הראשון ניתן במקום, ו"עצמות באחו" מתחיל לבד. שלושה שלדים, והוא נגמר גם במקום
+    const c0=SAVE.bag.coins||0;qStart(QBY.s1Lanterns);leaveVillage();o.spot=!!Q.done.s1Lanterns&&!!Q.active.s1Bones&&(SAVE.bag.coins||0)-c0===QBY.s1Lanterns.reward.coins&&QS().track==='s1Bones';
+    questEvent('kill','grunt',3);o.bones=!!Q.done.s1Bones&&!!Q.active.s1Shard;delete Q.active.s1Shard;
     qStart(QBY.s1Shard);const p=S.pet||petMake();S.wd.digs0=p.digs;p.digs++;storyUpdate(0.1);o.shard=qReady(QBY.s1Shard);questClaim('s1Shard');
     qStart(QBY.s1Path);questEvent('kill','grunt',25);questClaim('s1Path');
     qStart(QBY.s1Warden);const L=STORY.lanterns.earth;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.warden;
@@ -1159,6 +1165,7 @@ function worldBot(m,L,god){
     const d0=SAVE.story.earth;questClaim('s1Warden');o.lit=!d0&&SAVE.story.earth;
     enterWorld('home');o.safer=enemies.filter(e=>!e.dead&&e.type==='grunt').every(e=>e.dmg<=ETYPES.grunt.dmg*0.75*0.26+0.001);
     P.inv=0;enterVillage();return o});
+  check(sto2.spot&&sto2.bones,'עלילה, פרק 1: '+(sto2.spot?'ביציאה לאחו הפרס ניתן במקום, ו"עצמות באחו" התחיל לבד':'ביציאה לאחו הפרס לא ניתן במקום או שהקווסט הבא לא התחיל')+(sto2.bones?', ואחרי שלושה שלדים הרסיס מתחיל לבד':', ואחרי שלושה שלדים לא התקדם'));
   check(sto2.intro&&sto2.offer&&sto2.shard&&sto2.warden&&sto2.ready&&sto2.lit,'עלילה, פרק 1: '+(sto2.intro?'ההקדמה אצל ראש הכפר':'אין הקדמה ('+sto2.dbg+')')+(sto2.offer?', קווסט ראשון מוצע והבא נעול':', סדר הקווסטים שבור')+
     (sto2.shard?', פיוחו מצאה רסיס':', אין רסיס')+(sto2.warden?', השומר קם ליד הפנס':', השומר לא קם')+(sto2.ready?' והופל':', לא הופל')+(sto2.lit?', הפנס נדלק':', הפנס לא נדלק')+(sto2.safer?', האחו בטוח יותר':''));
   // השומר לא בורח (ניר, 1.11: "ברח לי"): כשמתרחקים הוא ממשיך לרדוף, מוותר רק אחרי כמה שניות רחוק, חוזר בלי להתרפא,

@@ -8,8 +8,8 @@
 const EVENTS={
   first:45,every:[80,130],            // השני הראשון אחרי כמה שניות בעולם, ואחר כך כל כמה שניות (בין-לבין)
   dist:[300,480],                     // כמה רחוק מהשחקן האירוע קורה
-  wave:{type:'grunt',n:6,r:90,dur:60,loot:{coins:[20,35],iron:[2,4]}},
-  cart:{dur:50,reach:60,loot:{coins:[25,50],wood:[6,10],stone:[6,10],cloth:[2,4]}},
+  wave:{type:'grunt',n:6,r:90,dur:60,loot:{coins:[10,18],iron:[2,4]}},
+  cart:{dur:50,reach:60,loot:{coins:[12,24],wood:[6,10],stone:[6,10],cloth:[2,4]}},
   rain:{dur:10,every:0.8,r:220,pool:['stone','copper','iron','silver']},
   col:{wave:'#EF4E57',cart:'#F4C74F',rain:'#C7A6FF'}
 };
