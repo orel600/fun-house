@@ -504,7 +504,8 @@ function worldBot(m,L,god){
     for(const f of [...html.matchAll(/<link rel="(?:manifest|icon|apple-touch-icon)" href="([^"]+)"/g)].map(m=>m[1]))if(!fs.existsSync(path.join(root,f)))pw.bad.push(f+' חסר');
     if(!/viewport-fit=cover/.test(html)||!/apple-mobile-web-app-capable/.test(html))pw.bad.push('meta של אייפון');
     const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webmanifest':'application/manifest+json','.json':'application/json'};
-    const srv=require('http').createServer((q,r)=>{let f=decodeURIComponent(q.url.split('?')[0]);if(f.endsWith('/'))f+='index.html';f=path.join(root,path.normalize(f));
+    const srv=require('http').createServer((q,r)=>{let f=decodeURIComponent(q.url.split('?')[0]);if(f==='/version.json'){r.writeHead(200,{'content-type':'application/json'});return r.end('{"v":""}')}   // כמו במחשב: אין גרסה מפורסמת (update-check.js לא עושה כלום)
+      if(f.endsWith('/'))f+='index.html';f=path.join(root,path.normalize(f));
       if(!f.startsWith(root)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){r.writeHead(404);return r.end()}
       r.writeHead(200,{'content-type':types[path.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(r)});
     await new Promise(ok=>srv.listen(0,'127.0.0.1',ok));
