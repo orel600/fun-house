@@ -1012,6 +1012,8 @@ Object.assign(TEXT,{
   'ctx.enter':{he:'להיכנס',en:'Enter'},
   'ctx.out':{he:'לעולם',en:'Out'},
   'ctx.home':{he:'הביתה',en:'Home'},
+  'ctx.arena':{he:'לזירה',en:'Arena'},
+  'ctx.go':{he:'ללכת',en:'Go'},
   'tr.no.fight':{he:'אי אפשר לקפוץ באמצע קרב',en:'Can’t jump in the middle of a fight'},
   'tr.no.warden':{he:'אי אפשר לקפוץ כשהשומר ער',en:'Can’t jump while the guardian is awake'}
 });

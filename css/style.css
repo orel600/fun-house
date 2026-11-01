@@ -901,3 +901,10 @@ button.res{min-height:48px;min-width:48px}
 .world .nbtn.fishbite .ni{border-color:#EF4E57;background:linear-gradient(#5A2228,#3A1418);animation-duration:.25s}
 /* חלון של מבנה או שער פתוח: הוא הפעולה עכשיו, והעיגולים לא יושבים מתחתיו */
 body:has(#vPanel:not([hidden])) #nav,body:has(#wPanel:not([hidden])) #nav{display:none}
+/* כרטיס של שער בעולם (docs/plan-hud.md, פרק 5): נפתח רק מהכפתור העגול, קטן, בפינה הימנית מתחת לאגודל, בלי רקע כהה על המסך.
+   כותרת, משפט אחד וכפתור. בזמן שהוא פתוח העיגולים מוסתרים (הכלל למעלה) */
+.world #wPanel.win{left:auto;right:calc(env(safe-area-inset-right,0px) + 16px);bottom:var(--safeb);top:auto;width:min(380px,calc(100% - 32px));max-width:none;margin:0;
+  max-height:calc(100% - var(--topb) - var(--safeb))}
+.world #wPanel.win>p{margin:6px 2px 10px;font-size:var(--t2);line-height:1.35}
+@media (orientation:landscape){.world #wPanel.win{width:min(380px,46vw)}}
+

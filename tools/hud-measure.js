@@ -104,8 +104,9 @@ async function session(view,key,report){
   await safe('menu',async()=>{await page.evaluate(()=>document.getElementById('menuBtn').click());await run(300);await scene('menu','התפריט ☰');
     await page.evaluate(()=>menuClose());await run(200)});
   await safe('world',async()=>{await page.evaluate(()=>{villageUi(false);enterWorld('home')});await run(900);
-    await page.evaluate(()=>{const g=WR().home;P.x=g.x;P.y=g.y+g.r+8;S.cam.x=P.x;S.cam.y=P.y;joy=null;S.wd.shut=null});await petNear();await run(400);
-    await scene('world-home','העולם ליד הבית: החלון "לכפר" נפתח לבד')});
+    await page.evaluate(()=>{const g=WR().home;P.x=g.x;P.y=g.y+g.r+8;S.cam.x=P.x;S.cam.y=P.y;joy=null});await petNear();await run(400);
+    await scene('world-home','העולם ליד הבית: בועה וכפתור עגול, בלי חלון');
+    await page.evaluate(()=>{const g=document.getElementById('wGo');if(g&&!g.hidden)g.click()});await run(200);await scene('world-gate-card','הכרטיס של השער אחרי לחיצה')});
   await safe('fight',async()=>{
     await page.evaluate(()=>{const g=WR().gates.grove||Object.values(WR().gates)[0];P.x=g.x+160;P.y=g.y+120;S.cam.x=P.x;S.cam.y=P.y;joy=null});await run(400);
     await page.evaluate(()=>{P.hp=P.maxHp*0.62;
