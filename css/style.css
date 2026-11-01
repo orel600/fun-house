@@ -547,6 +547,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .sndpanel .whd{grid-column:1/-1}
   .sndpanel #sndMute{grid-column:2;grid-row:3}
   .sndpanel .gfx{grid-column:2;grid-row:2}
+  .sndpanel .cam{grid-column:2;grid-row:4}
 }
 .panel.win>.whd{margin-top:8px}
 
