@@ -20,6 +20,7 @@ const PAROSH={
 // השלבים, כמו של פיוחו (pet.js). dig.every: כל כמה שניות גונב (בזירה פי PET.dig.arena). dig.loot: מה יוצא, בפורמט של runGive
 PET.kinds.parosh={
   owner:'orel',col:PAROSH.col,steal:true,
+  rescue:{item:'pouch',col:'#8A5A2B',glow:PAROSH.coin},   // פריט ההצלה שלו (rescue.js): שק שלל חום עם זוהר זהב
   stages:[
     {xp:0,   h:34,bite:4, dig:{every:22,loot:{coins:[0.85,3],copper:[0.3,1],rubyC:[0.05,1],sapphireC:[0.05,1]}}},
     {xp:720, h:40,bite:7, dig:{every:17,loot:{coins:[0.85,6],copper:[0.35,1],iron:[0.2,1],rubyC:[0.12,1],sapphireC:[0.12,1],ruby:[0.03,1]}}},
