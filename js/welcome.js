@@ -106,8 +106,11 @@ function welcomeFly(got){
 
 /* ---- חיבורים ---- */
 // בכניסה לכפר (village.js): פותחים אחרי רגע, כשאין חלון אחר פתוח
+// הביקור הראשון (המבקר, 1.11: "בזמן שלא היית" לשחקן שעוד לא היה כאן): רק ראש הכפר מדבר. המתנה של היום הראשון נכנסת לתרמיל עם חגיגה קטנה
+const welcomeFirst=()=>!(SAVE.story&&SAVE.story.intro);
 function welcomeVillage(){
   clearTimeout(WELCOME.timer);if(!WELCOME.auto)return;
+  if(welcomeFirst()){const r=dailyClaim();if(r){celebrate(P.x,P.y-20,'loot2','🎁');dailyBtn()}return}
   const go=()=>{WELCOME.timer=0;if(!S||!S.vil||!$('ovWelcome').hidden)return;
     if(S.mode!=='play'||document.body.classList.contains('menu')||!$('npcDlg').hidden||!$('qLog').hidden||!$('ovGear').hidden||!$('vPanel').hidden){WELCOME.timer=setTimeout(go,WELCOME.retry*1000);return}
     welcomeOpen()};
