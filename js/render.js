@@ -72,7 +72,7 @@ function drawEnemy(e){
   {const L=R3D.on&&lookOf(e);weakRing(e,L?e.y+(L.foot-L.h)*(e.big||1)-6:e.y-(e.isBoss?60:44))}
   // בתלת-ממד הגוף מצויר בשכבה שמתחת. כאן נשארים רק הסימונים: פס חיים, טבעת הזמן של המבוקש, וההתראות של הבוס
   if(R3D.on&&lookOf(e)){if(e.isBoss)drawBoss(e);else if(e.wanted)drawWanted(e);
-    if(!e.isBoss&&e.hp<e.max){const L=lookOf(e),k=e.big||1,w=24*k,y=e.y+(L.foot-L.h)*k-6;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,y,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,y,w*Math.max(0,e.hp/e.max),3)}
+    if(!e.isBoss&&e.hp<e.max&&hpBarOn(e)){const L=lookOf(e),k=e.big||1,w=24*k,y=e.y+(L.foot-L.h)*k-6;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,y,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,y,w*Math.max(0,e.hp/e.max),3)}
     return}
   if(e.type==='grunt'){
     const h=drawEnemyRig(e).head;
@@ -97,7 +97,7 @@ function drawEnemy(e){
     ctx.beginPath();ctx.roundRect(e.x-r,y-r,r*2,r*1.8,r*0.5);ctx.fill();ctx.stroke();
     ctx.fillStyle=C.ink;ctx.beginPath();ctx.arc(e.x-r*0.35,y-r*0.2,2.5,0,7);ctx.arc(e.x+r*0.35,y-r*0.2,2.5,0,7);ctx.fill();
   }
-  if(!e.isBoss&&e.hp<e.max){const w=24;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,e.y-40,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,e.y-40,w*Math.max(0,e.hp/e.max),3)}
+  if(!e.isBoss&&e.hp<e.max&&hpBarOn(e)){const w=24;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,e.y-40,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,e.y-40,w*Math.max(0,e.hp/e.max),3)}
 }
 function drawBoss(b){
   const fl=b.flash>0,glow=dtCol(b.weak);
@@ -193,7 +193,7 @@ function render(){
   // מכה קריטית קופצת לרגע ומקבלת מסגרת לבנה
   for(const f of floats){ctx.direction=f.ltr||/^[+\-]\d/.test(f.txt)?'ltr':DIR;ctx.globalAlpha=Math.min(1,f.life*2);
     const sz=f.crit?f.size*(1+Math.max(0,f.life-0.8)*4):f.size;ctx.font='800 '+sz+'px Heebo, system-ui, sans-serif';
-    if(f.crit){ctx.lineWidth=4;ctx.strokeStyle='#fff';ctx.lineJoin='round';ctx.strokeText(f.txt,f.x,f.y)}
+    if(f.crit){ctx.lineWidth=4;ctx.strokeStyle=C.gold;ctx.lineJoin='round';ctx.strokeText(f.txt,f.x,f.y)}
     else{ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1)}
     ctx.fillStyle=f.crit?C.ink:f.col;ctx.fillText(f.txt,f.x,f.y);if(f.crit){ctx.lineWidth=1.5;ctx.strokeStyle=f.col;ctx.strokeText(f.txt,f.x,f.y)}}
   ctx.globalAlpha=1;ctx.direction=DIR;
@@ -203,7 +203,7 @@ function render(){
     if(sx<-20||sx>W+20||sy<-20||sy>H+20){const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(110,Math.min(H-40,H/2+Math.sin(a)*H));
       ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.fillStyle=C.lilac;ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(-8,-10);ctx.lineTo(-8,10);ctx.fill();ctx.restore()}}
   drawBonusScreen(ox,oy);
-  drawWantedScreen(ox,oy);
+  drawWantedScreen(ox,oy);arenaArrows(ox,oy);   // חץ לאויב-על מחוץ למסך (arenaui.js)
   drawVillageScreen(ox,oy);
   drawWorldScreen(ox,oy);
   drawNpcScreen(ox,oy);
@@ -231,7 +231,7 @@ function hud(){
   const nx=nextStation(),key=LANG+'|'+fmt(S.t)+'|'+P.level+'|'+(S.boss?1:S.run.won?2:nx.kind+fmt(nx.t-S.t));
   if(key!==lastHud){lastHud=key;$('clock').textContent=fmt(S.t);$('lvl').textContent=T('level',P.level);
     $('bossin').textContent=S.boss?T('bossHere'):S.run.won?T('bossBeaten'):T(nx.kind==='boss'?'bossIn':'next.'+nx.kind,fmt(nx.t-S.t))}
-  drawRunBar();skillsHud();divineHud();
+  drawRunBar();skillsHud();divineHud();arenaQuiet();
   const bb=$('bossbar');
   if(S.boss){bb.hidden=false;$('bossnm').textContent=S.boss.name+' · '+S.boss.title;
     const wk=$('bossweak');if(wk.dataset.k!==LANG+S.boss.weak){wk.dataset.k=LANG+S.boss.weak;wk.innerHTML=dtSvg(S.boss.weak)+T('weakTo',T('dt.'+S.boss.weak));wk.style.color=dtCol(S.boss.weak)}
