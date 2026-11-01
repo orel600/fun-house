@@ -52,7 +52,7 @@ function homeKill(e){
 
 /* ---- ציור: העמודים, בשני המצבים (גם בתלת-ממד, כמו הפנס בעולם ב-story.js) ---- */
 function homeDraw(){
-  if(!S.vil)return;const t=fxNow();
+  if(!S.vil||R3D.on)return;const t=fxNow();   // בתלת-ממד: מודל (props3d.js)
   for(const p of HOME.posts){const {x,y}=homePost(p),lit=!!STO()[p.k]&&homeBack(p.k),gl=homeCol(p.k);
     ctx.fillStyle='rgba(5,7,13,0.35)';ctx.beginPath();ctx.ellipse(x,y+4,14,5,0,0,7);ctx.fill();
     ctx.fillStyle='#4A3A2A';ctx.fillRect(x-3,y-46,6,50);
