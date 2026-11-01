@@ -34,7 +34,7 @@ const HEROES={
     // ניר: "הנודד עם הניצוץ", מ-art/heroes/nir-sheet.jpg. הניצוץ קישוט בינתיים, ומיועד להיות החפץ המסתובב הראשון שלו (המשימה של אוראל, orbit)
     nir:{look:'nirHero',spark:{dx:24,up:0.62,bob:3,speed:2.2,r:5,lag:6}},
     // אוראל: "הנודד עם החליל", מ-art/heroes/orel-sheet.jpg. theme: ערכת מראה לנשק, ליריות ולסקילים (flute.js)
-    orel:{look:'orelHero',theme:'flute'}
+    orel:{look:'orelHero',theme:'flute',pet:'parosh'}   // pet: חיית המחמד של הסקין (parosh.js), כל עוד לא נבחרה אחרת
   }
 };
 
@@ -43,7 +43,8 @@ const heroId=()=>HEROES.list[SAVE.hero.start]?SAVE.hero.start:null;
 function heroSkin(){
   const q=/[?&]hero=(\w+)/.exec(location.search),k=q&&q[1];
   if(k&&!heroSkin.url){heroSkin.url=1;if(HEROES.skins[k])SAVE.hero.skin=k;else if(k==='none')SAVE.hero.skin=null}
-  return HEROES.skins[SAVE.hero.skin]?SAVE.hero.skin:null;
+  const sk=HEROES.skins[SAVE.hero.skin];if(sk&&sk.pet&&!SAVE.pet.kind&&typeof PET!=='undefined'&&PET.kinds[sk.pet])SAVE.pet.kind=sk.pet;
+  return sk?SAVE.hero.skin:null;
 }
 
 /* ---- בתחילת כל ריצה (ובכפר): הפסיבית של הדמות ---- */

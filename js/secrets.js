@@ -119,7 +119,7 @@ function secretsUpdate(dt){
 }
 function scDig(s){
   const st=scState(),p=S.pet;st.dig=s;st.saw=false;
-  floatText(P.x,P.y-50,T('sc.sniff',T('pet.name.'+(SAVE.pet.kind||PET.default))),C.gold,15);
+  floatText(P.x,P.y-50,T(petTx('sc.sniff'),T('pet.name.'+(SAVE.pet.kind||PET.default))),C.gold,15);
   if(p){p.spot={x:s.to.x,y:s.to.y};p.st='go';p.t=0;p.foe=null;p.digT=petStage().dig.every}
 }
 function scTreasure(s){

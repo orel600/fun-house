@@ -39,7 +39,7 @@ function rescueTake(r){
     if(e.isBoss||e.wanted){damage(e,skBase()*RESCUE.bossHit,'skill',Math.atan2(e.y-P.y,e.x-P.x),'physical');continue}
     e.hp=0;kill(e);n++}
   r.saved+=n;
-  floatText(P.x,P.y-50,T('rs.saved'),RESCUE.glow,18,false,true);sfx('celebrate');
+  floatText(P.x,P.y-50,T(petTx('rs.saved')),RESCUE.glow,18,false,true);sfx('celebrate');
 }
 // נקרא מ-drawPet (pet.js), בקואורדינטות העולם
 function rescueDraw(){
