@@ -1,0 +1,140 @@
+<!doctype html>
+<!-- הדמיה סטטית לתוכנית docs/plan-hud.md. לא חלק מהמשחק. פותחים עם #A / #B / #C / #win-before / #win-after.
+     הרקע: צילום אמיתי מהעולם (tools/hud-measure.js), בלי הממשק. כל הגדלים לפי הסקאלה המוצעת (--u = 1% מגובה המסך). -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<style>
+:root{--u:1vh;--ink:#121624;--panel:rgba(18,22,36,.82);--line:#2A3249;--chalk:#ECE7DC;--dim:#8D94A8;--gold:#F4C74F;--blood:#EF4E57;--tide:#46D3E6;--ember:#FF8A3D;--lilac:#C7A6FF;
+  /* הסקאלה: 4 גדלי טקסט, 3 גדלי כפתור */
+  --t1:clamp(11px,2.6vh,14px);   /* תווית, מספר משני */
+  --t2:clamp(13px,3.1vh,16px);   /* טקסט רגיל, קווסט */
+  --t3:clamp(16px,4vh,21px);     /* כותרת חלון */
+  --t4:clamp(20px,5.4vh,30px);   /* רגע גדול, עד 1.5 שניות */
+  --b1:clamp(32px,7.5vh,40px);   /* כפתור קטן: ☰, ✕, גלולה */
+  --b2:clamp(44px,11vh,60px);    /* כפתור הקשר, סקיל משני */
+  --b3:clamp(72px,19vh,96px);    /* סקיל ראשי */
+  --gap:clamp(8px,2vh,12px);--safe:max(16px,env(safe-area-inset-left,0px))}
+*{box-sizing:border-box;margin:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:Heebo,system-ui,sans-serif;color:var(--chalk)}
+.bg{position:fixed;inset:0;background:url(base-world.jpg) center/cover}
+.v{display:none}body.A .A,body.B .B,body.C .C,body.wb .wb,body.wa .wa{display:block}
+.ab{position:fixed}
+.pill{display:inline-flex;align-items:center;gap:4px;height:calc(var(--b1)*.8);padding:0 8px;border-radius:999px;background:var(--panel);font:800 var(--t1)/1 Heebo,sans-serif;font-variant-numeric:tabular-nums}
+.pill img{width:1.3em;height:1.3em}
+.rbtn{width:var(--b1);height:var(--b1);border-radius:50%;background:var(--panel);border:2px solid var(--gold);display:grid;place-items:center;font-size:calc(var(--b1)*.5);position:relative}
+.dot{position:absolute;top:-2px;inset-inline-end:-2px;width:10px;height:10px;border-radius:50%;background:var(--blood)}
+.sk{border-radius:50%;background:var(--panel);border:3px solid var(--ember);display:grid;place-items:center}
+.sk.m{width:var(--b3);height:var(--b3);font-size:calc(var(--b3)*.42)}.sk.s{width:var(--b2);height:var(--b2);font-size:calc(var(--b2)*.42);border-color:var(--tide)}
+.ctx{width:var(--b2);height:var(--b2);border-radius:50%;background:radial-gradient(#3a2a12,#1b1408);border:3px solid var(--gold);display:grid;place-items:center;box-shadow:0 0 14px #F4C74F99;position:relative}
+.ctx img{width:62%;height:62%}.ctx small{position:absolute;top:100%;margin-top:2px;font:800 var(--t1) Heebo,sans-serif;white-space:nowrap;text-shadow:0 1px 2px #000,0 0 3px #000}
+.qt{font:700 var(--t1)/1.35 Heebo,sans-serif;text-shadow:0 1px 2px #000,0 0 4px #000}.qt b{color:var(--gold)}.qt .n{color:var(--gold);font-variant-numeric:tabular-nums}
+.hpbar{height:clamp(8px,1.8vh,12px);border-radius:6px;background:#0008;overflow:hidden;border:1px solid #0009}.hpbar i{display:block;height:100%;width:62%;background:linear-gradient(#ff6b6b,#d8343e)}
+.xpbar{height:4px;border-radius:2px;background:#0008;overflow:hidden;margin-top:3px}.xpbar i{display:block;height:100%;width:35%;background:var(--gold)}
+.toast{display:flex;align-items:center;gap:6px;padding:4px 10px 4px 6px;border-radius:8px;background:linear-gradient(90deg,#3a2a6acc,#12162400);font:800 var(--t1) Heebo,sans-serif;border-inline-start:3px solid var(--lilac)}
+.toast img{width:22px;height:22px}
+.elite{position:absolute;font:900 10px Heebo,sans-serif;padding:0 4px;border-radius:4px;background:#000a;color:#FFD34E}
+.num{position:absolute;font:900 var(--t1) Heebo,sans-serif;text-shadow:0 1px 2px #000}
+.chip{position:absolute;display:flex;align-items:center;gap:2px;font:800 10px Heebo,sans-serif;text-shadow:0 1px 2px #000}.chip img{width:16px;height:16px}
+.mini{width:clamp(80px,22vh,130px);height:clamp(80px,22vh,130px);border-radius:50%;border:2px solid #c9a24a;background:radial-gradient(#5d8c3a,#2f5420);position:relative;overflow:hidden;box-shadow:0 2px 8px #0008}
+.mini::before{content:'';position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border-radius:50%;background:#fff;box-shadow:0 0 0 2px #000}
+.mini i{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--blood)}
+.face{width:clamp(44px,11vh,60px);height:clamp(44px,11vh,60px);border-radius:50%;border:2px solid var(--gold);background:#2a3249 center/cover;display:grid;place-items:center;font-size:calc(var(--b2)*.5);position:relative}
+.face b{position:absolute;bottom:-4px;inset-inline-end:-6px;font:900 10px Heebo,sans-serif;background:var(--gold);color:#000;border-radius:999px;padding:0 4px}
+.lbl{position:fixed;inset-inline-end:var(--safe);bottom:6px;font:800 12px Heebo,sans-serif;background:#000b;padding:2px 8px;border-radius:6px;color:var(--gold)}
+/* חלונות */
+.dim{position:fixed;inset:0;background:#0009}
+.win{position:fixed;background:#1A2033f2;border:2px solid #8a6a2e;border-radius:12px;box-shadow:0 8px 30px #000a}
+.whd{display:flex;align-items:center;justify-content:center;position:relative;padding:8px 48px;border-bottom:1px solid var(--line);font:800 var(--t3) Heebo,sans-serif}
+.wx{position:absolute;inset-inline-end:8px;top:50%;transform:translateY(-50%);width:var(--b1);height:var(--b1);border-radius:8px;background:#c2343c;display:grid;place-items:center;font:900 18px Heebo,sans-serif}
+.gbtn{display:inline-grid;place-items:center;height:var(--b2);padding:0 22px;border-radius:12px;background:linear-gradient(#c9894a,#8a5626);border:2px solid #F4C74F;font:900 var(--t2) Heebo,sans-serif;color:#fff;text-shadow:0 1px 2px #000}
+</style></head><body>
+<div class="bg"></div>
+
+<!-- ===== כיוון A: נקי (Archero / Vampire Survivors) ===== -->
+<div class="v A">
+  <!-- חיים מעל הראש בלבד -->
+  <div class="ab" style="left:calc(50% - 22px);top:calc(48.8% - 50px);width:44px"><div class="hpbar" style="height:6px"><i></i></div></div>
+  <div class="ab qt" style="left:var(--safe);top:12px;max-width:36%"><span>📜</span> <b>Morning Sweep</b> <span class="n">0/40</span></div>
+  <div class="ab" style="right:var(--safe);top:10px;display:flex;gap:8px;align-items:center"><span class="pill"><img src="../../icons/ui/res/coins.png">1.8K</span><div class="rbtn">☰<i class="dot"></i></div></div>
+  <div class="ab toast" style="left:var(--safe);top:22%"><img src="../../icons/ui/gear/oakSword.png">Oak Sword</div>
+  <span class="elite" style="left:45.5%;top:34.9%">⚡</span><span class="elite" style="left:53.3%;top:30.2%">🛡</span>
+  <span class="num" style="left:52.2%;top:40.7%">27</span>
+  <span class="chip" style="left:46.3%;top:54.6%"><img src="../../icons/ui/res/coins.png"></span>
+  <div class="ab" style="right:calc(var(--safe) + 6px);bottom:16px;display:flex;align-items:flex-end;gap:var(--gap)">
+    <div class="ctx" style="margin-bottom:calc(var(--b3)*.55)"><img src="../../icons/ui/res/carrot.png"><small>Feed</small></div>
+    <div class="sk m">⚔️</div></div>
+  <div class="lbl">A · Clean</div>
+</div>
+
+<!-- ===== כיוון B: Diablo Immortal ===== -->
+<div class="v B">
+  <div class="ab" style="left:var(--safe);top:10px;display:flex;gap:8px;align-items:center">
+    <div class="face">🛡️<b>7</b></div>
+    <div style="width:clamp(120px,26vh,170px)"><div class="hpbar"><i></i></div><div class="xpbar"><i></i></div>
+      <div class="qt" style="margin-top:4px;font-size:10px;color:var(--dim)">78 / 125</div></div></div>
+  <div class="ab qt" style="left:var(--safe);top:calc(10px + clamp(44px,11vh,60px) + 8px);max-width:30%;background:linear-gradient(90deg,#0008,#0000);padding:4px 8px;border-radius:6px">
+    <div><b>📜 Morning Sweep</b></div><div>Defeat white grunts <span class="n">0/40</span></div></div>
+  <div class="ab" style="right:var(--safe);top:10px;display:flex;gap:8px;align-items:flex-start">
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><div class="rbtn">☰<i class="dot"></i></div>
+      <span class="pill"><img src="../../icons/ui/res/coins.png">1.8K</span><span class="pill"><img src="../../icons/ui/res/wood.png">323</span></div>
+    <div class="mini"><i style="left:30%;top:40%"></i><i style="left:60%;top:30%"></i><i style="left:68%;top:62%;background:var(--gold)"></i></div></div>
+  <div class="ab" style="right:var(--safe);top:42%;display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+    <div class="toast" style="background:linear-gradient(270deg,#3a2a6acc,#12162400);border-inline-start:0;border-inline-end:3px solid var(--lilac)"><img src="../../icons/ui/gear/oakSword.png">Oak Sword</div>
+    <div class="toast" style="background:linear-gradient(270deg,#2a2a2acc,#0000);border-inline-start:0;border-inline-end:3px solid #aaa"><img src="../../icons/ui/res/wood.png">Wood ×3</div></div>
+  <span class="elite" style="left:45.5%;top:34.9%">Swift</span><span class="elite" style="left:52.8%;top:30.2%">Armored</span>
+  <span class="num" style="left:52.2%;top:40.7%">27</span>
+  <span class="chip" style="left:46.3%;top:54.6%"><img src="../../icons/ui/res/coins.png"></span>
+  <div class="ab" style="right:calc(var(--safe) + 4px);bottom:14px;width:calc(var(--b3) + var(--b2)*1.6);height:calc(var(--b3) + var(--b2)*1.6)">
+    <div class="sk m" style="position:absolute;right:0;bottom:0">⚔️</div>
+    <div class="sk s" style="position:absolute;right:calc(var(--b3)*.95);bottom:2px">🌀</div>
+    <div class="sk s" style="position:absolute;right:calc(var(--b3)*.7);bottom:calc(var(--b3)*.75)">❄️</div>
+    <div class="ctx" style="position:absolute;right:4px;bottom:calc(var(--b3) + 14px)"><img src="../../icons/ui/res/carrot.png"><small style="top:auto;bottom:100%;margin:0 0 2px">Feed</small></div></div>
+  <div class="lbl">B · Diablo Immortal</div>
+</div>
+
+<!-- ===== כיוון C: Genshin ===== -->
+<div class="v C">
+  <div class="ab" style="left:var(--safe);top:10px;display:flex;gap:8px;align-items:flex-start">
+    <div class="rbtn">☰<i class="dot"></i></div>
+    <div class="mini" style="width:clamp(70px,19vh,110px);height:clamp(70px,19vh,110px)"><i style="left:30%;top:40%"></i><i style="left:60%;top:30%"></i></div></div>
+  <div class="ab qt" style="left:var(--safe);top:calc(14px + clamp(70px,19vh,110px));max-width:28%"><div><b>📜 Morning Sweep</b></div><div>Defeat white grunts <span class="n">0/40</span></div></div>
+  <div class="ab" style="right:var(--safe);top:10px;display:flex;gap:6px"><span class="pill"><img src="../../icons/ui/res/coins.png">1.8K</span><span class="pill"><img src="../../icons/ui/res/wood.png">323</span><span class="pill"><img src="../../icons/ui/res/stone.png">210</span></div>
+  <div class="ab" style="left:50%;transform:translateX(-50%);bottom:14px;width:clamp(160px,34vh,220px)"><div class="qt" style="text-align:center;font-size:10px">Lv 7 · 78/125</div><div class="hpbar"><i></i></div></div>
+  <div class="ab" style="left:58%;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:4px">
+    <div class="pill" style="height:var(--b1);border:1px solid var(--gold);font-size:var(--t2)"><img src="../../icons/ui/res/carrot.png">Feed PioCho</div>
+    <div class="pill" style="height:var(--b1);font-size:var(--t2)">💬 Talk</div></div>
+  <div class="ab" style="left:var(--safe);top:46%;display:flex;flex-direction:column;gap:4px"><div class="toast"><img src="../../icons/ui/gear/oakSword.png">Oak Sword</div><div class="toast" style="border-color:#aaa;background:linear-gradient(90deg,#2a2a2acc,#0000)"><img src="../../icons/ui/res/wood.png">Wood ×3</div></div>
+  <span class="elite" style="left:45.5%;top:34.9%">⚡</span><span class="elite" style="left:53.3%;top:30.2%">🛡</span>
+  <span class="num" style="left:52.2%;top:40.7%">27</span>
+  <div class="ab" style="right:calc(var(--safe) + 6px);bottom:16px;display:flex;align-items:flex-end;gap:var(--gap)"><div class="sk s">🌀</div><div class="sk m">⚔️</div></div>
+  <div class="lbl">C · Genshin</div>
+</div>
+
+<!-- ===== חלון: לפני (עכשיו) ואחרי (כלל החלונות) ===== -->
+<div class="v wb">
+  <div class="dim" style="background:#0004"></div>
+  <div class="win" style="right:6%;top:17%;width:40%;height:50%">
+    <div class="whd" style="font-size:22px;padding:16px 60px">To the village<span class="wx" style="width:44px;height:44px">✕</span></div>
+    <p style="padding:14px 20px;font:16px/1.5 Heebo,sans-serif">Head home. Put your loot in the stash there, and it is safe.</p>
+    <div style="padding:0 20px"><span class="gbtn" style="width:100%;height:56px;font-size:16px">Back to the village</span></div></div>
+  <div class="ab" style="left:42%;bottom:8px;padding:8px;border-radius:14px;background:#121624cc;border:1px solid var(--line)"><span class="gbtn" style="height:56px;font-size:16px">🥕 Give PioCho a Magical Carrot</span></div>
+  <div class="lbl">Window: now</div>
+</div>
+<div class="v wa">
+  <!-- לא חלון: בועה קטנה מעל השער, וכפתור הקשר עגול ליד האגודל -->
+  <div class="ab" style="left:calc(42% - 70px);top:20%;width:140px;text-align:center">
+    <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--gold);font:800 var(--t1) Heebo,sans-serif">🏠 Village</div></div>
+  <div class="ab" style="right:calc(var(--safe) + 6px);bottom:16px;display:flex;align-items:flex-end;gap:var(--gap)">
+    <div style="display:flex;flex-direction:column;gap:22px;margin-bottom:calc(var(--b3)*.3)">
+      <div class="ctx"><span style="font-size:calc(var(--b2)*.45)">🏠</span><small>Home</small></div>
+      <div class="ctx" style="border-color:#c98a3a"><img src="../../icons/ui/res/carrot.png"><small>Feed</small></div></div>
+    <div class="sk m">⚔️</div></div>
+  <!-- חלון קטן בגודל התוכן, כשבאמת צריך לשאול -->
+  <div class="win" style="left:50%;top:50%;transform:translate(-50%,-50%);width:min(52%,420px)">
+    <div class="whd">Back to the village?<span class="wx">✕</span></div>
+    <div style="display:flex;gap:14px;align-items:center;padding:12px 16px">
+      <p style="flex:1;font:var(--t2)/1.45 Heebo,sans-serif">Your loot will be safe in the stash.</p>
+      <span class="gbtn">Go home</span></div></div>
+  <div class="lbl">Window: after (fits, no scroll)</div>
+</div>
+<script>document.body.className=(location.hash.slice(1)||'A').replace('win-before','wb').replace('win-after','wa')</script>
+</body></html>
