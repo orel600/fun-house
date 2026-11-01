@@ -617,6 +617,10 @@ const TEXT={
   'rank.hybrid':{he:'לוחם-קשת',en:'Battle Archer'},
   'rank.up':{he:n=>'עלית בדרגה: '+n+'!',en:n=>'Rank up: '+n+'!'},
   'rank.level':{he:n=>'רמת דמות '+n,en:n=>'Hero level '+n},
+  // מסלול רמות (levelpath.js)
+  'lp.next':{he:'הבא:',en:'Next:'},'lp.at':{he:n=>'רמה '+n+':',en:n=>'Level '+n+':'},'lp.up':{he:n=>'רמה '+n+'!',en:n=>'Level '+n+'!'},
+  'lp.orbit':{he:n=>'משבצת אור '+n,en:n=>'Light slot '+n},'lp.tree':{he:'נקודת סקיל',en:'Skill point'},'lp.rank':{he:'קווסט דרגה',en:'Rank quest'},
+  'lp.pts':{he:n=>'+'+n+' נקודות דמות',en:n=>'+'+n+' hero points'},
   'rank.open':{he:n=>'רמה '+n+': הכוהנת מחכה לך',en:n=>'Level '+n+': the priestess is waiting'},
   'q.kind.world':{he:'עולם',en:'World'},
   'qo.kill':{he:w=>'להפיל '+w,en:w=>'Defeat '+w},
