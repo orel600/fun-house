@@ -133,7 +133,7 @@ function petBite(p,e){
 function petFeedBtn(p,dP){
   const b=$('feedBtn');if(!b)return;
   const show=!!p&&(S.vil||S.wd)&&dP<PET.feed.near&&p.st!=='hunt'&&p.st!=='back'&&p.st!=='go'&&p.feedCd<=0&&bagHas(PET.feed.res);
-  if(b.hidden===show){b.hidden=!show;if(show)b.textContent=T('pet.feed',T('pet.name.'+(SAVE.pet.kind||PET.default)))}
+  if(b.hidden===show){b.hidden=!show;if(show){b.innerHTML='<span class="ni" aria-hidden="true">🥕</span>'+T('ctx.feed');b.setAttribute('aria-label',T('pet.feed',T('pet.name.'+(SAVE.pet.kind||PET.default))))}}
 }
 function petFeed(){
   const p=S.pet,F=PET.feed;if(!p||!petHere()||S.mode!=='play'||p.feedCd>0||!bagTake(F.res))return false;
