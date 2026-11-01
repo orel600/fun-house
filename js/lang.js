@@ -32,6 +32,7 @@ const TEXT={
   'pwa.install':{he:'📲 התקנה כאפליקציה',en:'📲 Install app'},
   'pwa.ios':{he:'📲 להתקנה: שיתוף ← הוספה למסך הבית',en:'📲 To install: Share → Add to Home Screen'},
   'pwa.turn':{he:'סובבו את הטלפון לרוחב',en:'Turn your phone sideways'},
+  'ult.name':{he:'פרץ הפנס (אולטימייט)',en:'Lantern Burst (ultimate)'},   // ult.js
   'cloud.off':{he:'☁ לא מחובר: שמור בטלפון',en:'☁ Offline: saved on this phone'},
   'cloud.sync':{he:'☁ מסנכרן…',en:'☁ Syncing…'},
   'cloud.ok':{he:'☁ שמור בענן',en:'☁ Saved to the cloud'},

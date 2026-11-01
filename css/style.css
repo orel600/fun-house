@@ -85,7 +85,21 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .divine i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
 .divine.ready{box-shadow:0 0 12px var(--gold)}
 .divine:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
-.vil .skills,.vil .divine{display:none}
+/* אולטימייט (js/ult.js): משמאל לקשת של הסקילים, בשורה התחתונה. המילוי הכהה (--cd) מתרוקן ככל שהורגים, ומלא: זוהר וטבעת קצרה */
+.ult{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 36px);right:calc(env(safe-area-inset-right,0px) + 216px);
+  width:76px;height:76px;border-radius:50%;border:3px solid var(--dt,var(--gold));display:grid;place-items:center;padding:0;color:var(--dt,var(--gold));
+  touch-action:none;cursor:pointer;overflow:hidden;background:radial-gradient(circle at 50% 35%,#2E3854e6,#141A2Ae6 72%);
+  box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 4px 10px #000a;transition:transform .08s}
+.ult[hidden]{display:none}
+.ult .dti{width:40px;height:40px;transition:opacity .15s}
+.ult:not(.ready) .dti{opacity:.45}
+.ult i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,1)*360deg),transparent 0)}
+.ult.ready{box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 0 16px var(--dt)}
+.ult.ping{animation:ultping .45s ease-out}
+@keyframes ultping{from{box-shadow:0 0 0 0 var(--dt)}to{box-shadow:0 0 0 16px transparent}}
+.ult:active{transform:scale(.92)}
+.swap:not([hidden])~.ult{right:calc(env(safe-area-inset-right,0px) + 230px)}
+.vil .skills,.vil .divine,.vil .ult,.world .ult{display:none}
 /* בעולם (js/wskill.js): בזמן ההמתנה מספר השניות גדול באמצע, ובגרירה הכפתור מתכווץ */
 /* הסרגל התחתון כבר לא בפינה הזו (התפריט הראשי, menu.js), אז הכפתורים בגובה הרגיל */
 .world .skb[data-sec]:not([data-sec=""])::after{content:attr(data-sec);position:absolute;inset:0;display:grid;place-items:center;z-index:1;
