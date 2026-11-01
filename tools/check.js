@@ -811,7 +811,7 @@ function worldBot(m,L,god){
   const T_=t=>({sword:'חרב',bow:'קשת',staff:'מטה'})[t]||t;
   // קצב העולם (pacing.js): 3 דקות של סיבוב באחו. להקות מגיעות בקצב שנקבע ב-PACE, בגודל שלו, יש שיא ושקט, לא עוברים את המגבלה, ולהקה שהופלה משאירה שלל
   const pace=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode;let maxE=0,first=null;
-    enterWorld('home');const secs=180,dt=1/30;banner('__pace');const hush=document.getElementById('banner').textContent!=='__pace'&&!!S.wd.later;   // בכניסה: הודעה אחת, השנייה מחכה
+    enterWorld('home');const secs=180,dt=1/30;paceHush('__pace1');paceHush('__pace2');const hush=document.getElementById('banner').textContent!=='__pace2'&&!!S.wd.later&&S.wd.later[0]==='__pace2';   // השם של האזור יכול לחכות בתור של welcome.js, אז שתיים: השנייה תמיד מחכה   // בכניסה: הודעה אחת, השנייה מחכה
     for(let t=0;t<secs;t+=dt){P.hp=P.maxHp;const a=t*0.12;joy={id:-1,ox:-999,oy:-999,dx:-Math.sin(a),dy:Math.cos(a)};
       if(S.mode!=='play')S.mode='play';worldUpdate(dt);maxE=Math.max(maxE,enemies.length);if(first==null&&S.wd.pace&&S.wd.pace.packs)first=Math.round(t)}
     const p=S.wd.pace,o={secs,packs:p.packs,first,min:Math.min(...p.sizes),max:Math.max(...p.sizes),peaks:p.peaks,rests:p.rests,bonus:p.bonus,maxE,cap:PACE.cap,

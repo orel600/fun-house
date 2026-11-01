@@ -26,9 +26,10 @@ const PACE={
   bonus:{coins:[6,12]},                      // להקה שהופלה כולה: מטבעות, ועוד שלל מאחד המקורות של האזור (NODES)
   hush:6                                     // בכניסה לאזור: הודעה אחת. מה שמגיע בשניות האלה מחכה לסופן, ורק האחרונה מוצגת (בדיקת חוויה, #121)
 };
-// הודעות בכניסה לעולם: הראשונה (שם האזור) מוצגת, והבאות מחכות לסוף hush. banner מ-progression.js
+// הודעות בכניסה לעולם: הראשונה (שם האזור) מוצגת, והבאות מחכות לסוף hush. banner מ-progression.js, ומעליו התור של welcome.js
 const paceBanner0=banner;
-banner=function(t,c){const w=S&&S.wd;if(w&&w.t<PACE.hush){if(w.hushed){w.later=[t,c];return}w.hushed=1}return paceBanner0(t,c)};
+function paceHush(t,c){const w=S&&S.wd;if(w&&w.t<PACE.hush){if(w.hushed){w.later=[t,c];return}w.hushed=1}return paceBanner0(t,c)}
+banner=paceHush;   // התור של welcome.js (אחת בכל 2 שניות) נטען אחרי ועוטף את זה
 
 // הסוגים של להקה באזור הנוכחי: האויבים הרגילים שלו (לא יצורי משאבים)
 function paceTypes(){const t=[];for(const G of WR().foes)if(!G.creature&&ETYPES[G.type]&&!t.includes(G.type))t.push(G.type);return t.length?t:['grunt']}
@@ -72,7 +73,7 @@ function paceSpawn(n){
 // כל פריים בעולם (worldUpdate)
 function paceUpdate(dt){
   const w=S.wd;if(!w)return;
-  if(w.later&&w.t>=PACE.hush){paceBanner0(...w.later);w.later=null}
+  if(w.later&&w.t>=PACE.hush){banner(...w.later);w.later=null}   // דרך התור, כדי שלא תדרוס הודעה אחרת
   const p=w.pace||(w.pace={b:0,bt:0,next:PACE.first,id:0,packs:0,sizes:[],kills:[],quiet:0,peaks:0,rests:0,bonus:0});
   if(p.k==null)p.k=S.kills;for(;p.k<S.kills;p.k++)p.kills.push(w.t);   // כל הריגה בעולם נספרת לקרב הגדול
   for(const e of enemies)if(e.pack&&e.dead&&!e.gone&&!e.counted){e.counted=true;paceKill(e)}
