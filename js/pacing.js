@@ -69,7 +69,7 @@ function paceSpawn(n,at){
   const type=types[Math.floor(Math.random()*types.length)],pk={id:++w.pace.id,x:s.x,y:s.y,n,left:n,big:B.id==='peak'};
   for(let k=0;k<n;k++){
     const t=mix?types[Math.floor(Math.random()*types.length)]:type,a=rand(0,6.28),r=rand(0,PACE.spread);
-    const e=addEnemy(t,s.x+Math.cos(a)*r,s.y+Math.sin(a)*r,Z.hp*PACE.weak.hp);
+    const e=addEnemy(t,s.x+Math.cos(a)*r,s.y+Math.sin(a)*r,Z.hp*PACE.weak.hp*WORLD.foeHp);wTough(e,{hp:Z.hp*PACE.weak.hp});   // foeHp ו-foeMin: אויבים בעולם חזקים יותר (world.js)
     e.dmg*=Z.dmg*PACE.weak.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);
     e.xp=0;e.home=0;e.pack=pk;e.far=0;challengeSpawn(e);tierSpawn(e)}
   w.pace.packs++;w.pace.sizes.push(n);
@@ -97,12 +97,12 @@ function paceUpdate(dt){
 // תנועה של מפלצת מלהקה (wFoes ב-world.js): רודפת אחרי השחקן. רחוקה מדי לאורך זמן: נעלמת בלי שלל
 function paceFoeMove(e,dt){
   const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1,sp=e.speed*slowK(e);
-  if(d<Math.max(PACE.chase,Math.hypot(W,H)/2+150)){e.far=0;e.x+=dx/d*sp*dt;e.y+=dy/d*sp*dt}
+  const busy=strikeTick(e,dt,d);   // מכה עם הכנה במקום נזק במגע (strike.js)
+  if(d<Math.max(PACE.chase,Math.hypot(W,H)/2+150)){e.far=0;if(!busy){e.x+=dx/d*sp*dt;e.y+=dy/d*sp*dt}}
   else if((e.far+=dt)>PACE.lose){e.dead=true;e.pack.left--;e.gone=true}
   e.x+=e.kx*dt;e.y+=e.ky*dt;const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
   if(ETYPES[e.type].speed>=95&&d<240){e.shoot-=dt;if(e.shoot<=0){e.shoot=rand(2,3);shootE(e.x,e.y,Math.atan2(dy,dx),175,6,8)}}   // המרחפים יורים, כמו ה-wisp בקבוצות
   wPonds(e);
-  if(d<e.r+P.r-3)hurt(e.dmg);
 }
 // מפלצת מלהקה הופלה. להקה שהופלה כולה משאירה שלל
 function paceKill(e){
