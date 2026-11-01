@@ -46,11 +46,14 @@
 <div class="vpanel win" id="wPanel" hidden></div>
 <!-- מפת העולם (js/worldmap.js): חלון עם מפה של כל האזורים ושל האזור הנוכחי. נפתח מהתפריט הראשי -->
 <div class="qlog win wmapwin" id="wMap" hidden></div>
-<!-- סרגל למטה, בכפר ובעולם: רק מה ששייך למקום שבו עומדים ("לדבר" ליד דמות, לדוג ליד מים). הוא לא מכסה אף חלון -->
+<!-- קפיצה בין פנסים (js/travel.js): הבזק אור בצבע הפנס על כל המסך -->
+<div class="trflash" id="trFlash" hidden></div>
+<!-- סרגל למטה, בכפר ובעולם: רק מה ששייך למקום שבו עומדים ("לדבר" ליד דמות, לדוג ליד מים, קפיצה ליד פנס). הוא לא מכסה אף חלון -->
 <nav class="bnav" id="nav">
   <button class="nbtn talkbtn" id="talkBtn" hidden></button>
   <button class="nbtn talkbtn feedbtn" id="feedBtn" hidden></button>
   <button class="nbtn talkbtn fishbtn" id="fishBtn" hidden></button>
+  <button class="nbtn talkbtn trbtn" id="trBtn" hidden></button>
 </nav>
 <!-- התפריט הראשי (js/menu.js): ☰ בפינה העליונה, בכפר ובעולם, ומסך מלא עם לשוניות בצד. כל לשונית מציגה חלון קיים -->
 <button class="mute menubtn" id="menuBtn" data-ta="menu.btn"><span aria-hidden="true">☰</span><b hidden></b></button>
@@ -100,6 +103,8 @@
   </div>
 </div>
 
+<!-- "בזמן שלא היית": חלון אחד בכניסה לכפר שאוסף הכל (js/welcome.js) -->
+<div class="ov gearov" id="ovWelcome" hidden><div class="panel win dailywin welwin" id="welWin"></div></div>
 <!-- מתנה יומית: לוח של 7 ימים, נפתח בכניסה הראשונה לכפר בכל יום (js/daily.js) -->
 <div class="ov gearov" id="ovDaily" hidden><div class="panel win dailywin" id="dailyWin"></div></div>
 <!-- ביקור אצל חבר: רשימת חברים, הכפר שלו לקריאה בלבד, ומתנה עם פתק (js/visit.js) -->
@@ -269,6 +274,7 @@
 <script src="js/events.js"></script>
 <script src="js/secrets.js"></script>
 <script src="js/worldmap.js"></script>
+<script src="js/travel.js"></script>
 <script src="js/challenge.js"></script>
 <script src="js/tiers.js"></script>
 <script src="js/gear.js"></script>
@@ -284,6 +290,7 @@
 <script src="js/daily.js"></script>
 <script src="js/visit.js"></script>
 <script src="js/book.js"></script>
+<script src="js/welcome.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/menu.js"></script>
 <script src="js/update.js"></script>

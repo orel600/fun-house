@@ -169,15 +169,14 @@ function qGive(id){
   bagAdd(id,1);const it=gItem(id);
   if(it&&!gGet(it.slot,gTarget(it))){const before=gearStats();gearEquip(id);gearLive(before,id)}
 }
-function questClaim(id){
+function questClaim(id,quiet){   // quiet: בלי חגיגה והודעה משלו (האיסוף ב-welcome.js חוגג פעם אחת)
   const q=QBY[id],Q=QS();if(!q||!qReady(q))return false;
   for(const k in q.reward){const v=q.reward[k];if(k==='xp')SAVE.hero.xp+=v;else if(k==='item')qGive(v);else if(k==='story')storyReward(v);else if(k!=='rank')bagAdd(k,v)}
   rankSync();   // רמת הדמות מה-XP (ranks.js)
   delete Q.active[id];Q.done[id]=(Q.done[id]||0)+1;
   if(Q.track===id)Q.track=null;
   saveNow();questTrack();
-  celebrate(P.x,P.y-10,'quest');
-  banner(T('q.claimed',T('q.'+id)[0]),C.gold);
+  if(!quiet){celebrate(P.x,P.y-10,'quest');banner(T('q.claimed',T('q.'+id)[0]),C.gold)}
   if(q.reward.rank)rankUp(q.reward.rank);   // הטקס והדרגה (ranks.js)
   return true;
 }

@@ -279,6 +279,15 @@ h1{font-size:46px} h2{font-size:30px}
 .nbtn.talkbtn.feedbtn{border-color:#FF9F43;color:#FFB86B}
 /* דיג (js/fishing.js): הכפתור בסרגל, ובנשיכה הוא אדום ופועם מהר. הבישול בשיחה עם הפונדקאית */
 .nbtn.talkbtn.fishbtn{border-color:var(--tide,#46D3E6);color:#9FE8F2;touch-action:manipulation}
+/* קפיצה בין פנסים (js/travel.js): כפתור "חזרה לכפר" ליד פנס, רשימת "לאן?" בשער, והבזק האור בצבע הפנס */
+.nbtn.talkbtn.trbtn{border-color:var(--trc,#FFD36B);color:var(--trc,#FFD36B)}
+.trlist{display:flex;flex-direction:column;gap:6px}
+.vbtn.trgo{border-color:var(--trc);box-shadow:0 0 10px color-mix(in srgb,var(--trc) 45%,transparent)}
+.trrow{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0}
+.trrow .vbtn{width:auto;margin:0}
+.trflash{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;background:radial-gradient(circle,#fff 0%,var(--trc,#FFD36B) 45%,transparent 100%);transition:opacity .28s ease-in}
+.trflash.on{opacity:.85}
+.trflash.out{opacity:0;transition:opacity .28s ease-out}
 .nbtn.talkbtn.fishbtn.fishbite{border-color:#EF4E57;color:#fff;background:linear-gradient(#5A2228,#3A1418);animation-duration:.25s}
 .fcook{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .fmeal{display:flex;align-items:center;gap:8px;background:var(--panel);border-radius:12px;padding:6px 8px}
@@ -796,3 +805,19 @@ body.menu #ovGear .gearpanel{height:100%}
   body.menu .qlog.win:not(.npcdlg){inset-inline-end:max(12px,env(safe-area-inset-right,0px));bottom:calc(var(--railh) + 8px)}
   body.menu #ovGear,body.menu #ovSound{padding-inline-end:16px;padding-bottom:var(--railh)}
 }
+/* "בזמן שלא היית" (js/welcome.js): רשימה של מה שמחכה, וכפתור גדול אחד */
+.welwin{width:min(560px,92vw)}
+.welbody{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
+.wellist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;overflow:auto;min-height:0}
+.welrow{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--line);font:700 15px var(--body)}
+.welrow b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.welic{font-size:22px;width:28px;text-align:center}
+.welgot{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.welgot .ri,.welsum .ri{width:22px;height:22px}
+.welrow.daily{border-color:var(--gold)}
+.welgo{align-self:center;width:100%;max-width:340px;min-height:52px;font-size:18px}
+.weldone{margin:0;text-align:center;color:var(--gold);font:900 22px var(--body)}
+.welsum{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.welnext{margin:0;text-align:center;font:700 16px var(--body)}
+.welfly{position:fixed;z-index:30;pointer-events:none;display:flex;align-items:center;gap:3px;font:900 18px var(--body);color:var(--gold);text-shadow:0 1px 3px #000}
+.welfly .ri{width:24px;height:24px}

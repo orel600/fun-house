@@ -63,17 +63,13 @@ async function visitInbox(){
     try{await visitReq('DELETE','/rest/v1/gifts?id=eq.'+g.id)}catch(e){continue}
     if(!resOf(g.res))continue;   // משאב שלא קיים אצלי (גרסה אחרת): מדלגים
     const k=Math.max(1,Math.min(VISIT.giftMax,Math.floor(g.n)||1));bagAdd(g.res,k);n++;
-    visitShowGift(g,k,n);
+    visitShowGift(g,k);
   }
   if(n){saveNow();VISIT.got+=n}
   return n;
 }
-function visitShowGift(g,k,i){
-  setTimeout(()=>{
-    if(P&&S)celebrate(P.x,P.y-20,'quest','🎁');sfx('ui');
-    banner(T('visit.got',String(g.from_name||'').slice(0,40),'+'+k+' '+T('res.'+g.res),T('visit.note.'+(Math.abs(g.note|0)%VISIT.notes))),C.gold);
-  },(i-1)*1800);
-}
+// המתנה כבר בתרמיל. מראים אותה בחלון "בזמן שלא היית" (welcome.js), ולא בהודעה משלה
+function visitShowGift(g,k){welcomeGift({from:String(g.from_name||'').slice(0,40),res:g.res,n:k,note:Math.abs(g.note|0)%VISIT.notes})}
 
 async function visitFriends(){
   try{const r=await visitReq('GET','/rest/v1/profiles?select=user_id,name,level,data,updated_at&user_id=neq.'+CLOUD.session.uid+'&order=updated_at.desc&limit='+VISIT.listMax);

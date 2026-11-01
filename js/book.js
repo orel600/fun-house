@@ -61,12 +61,12 @@ function bookWeak(k){
   const x=BOOK.extra[k]||{};if(x.learns)return 'learns';
   const t=ETYPES[x.same||k];return t?weakOf(multOf(t.tags)):null;
 }
-function bookClaim(){
+function bookClaim(quiet){   // quiet: בלי חגיגה והודעה (welcome.js)
   const n=bookPending();if(!n)return false;
   const b=BK(),got={};
   for(let i=0;i<n;i++){b.paid++;const r=bookReward(b.paid);for(const k in r)got[k]=(got[k]||0)+r[k]}
   for(const k in got)bagAdd(k,got[k]);
-  saveNow();sfx('celebrate');
+  saveNow();if(quiet){bookBadge();return got}sfx('celebrate');
   if(P)celebrate(P.x,P.y,'quest','📖');
   banner(T('book.got',Object.keys(got).map(k=>resIcon(k)+got[k]).join(' ')),C.gold);
   bookBadge();return got;

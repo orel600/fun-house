@@ -1,4 +1,4 @@
-/* מפת העולם (WMAP): כפתור 🗺️ בעולם הפתוח פותח חלון עם שתי מפות, רק להתמצאות. בלי מסע מהיר (המחקר: מסע מהיר מוריד מהחקירה).
+/* מפת העולם (WMAP): כפתור 🗺️ בעולם הפתוח פותח חלון עם שתי מפות, להתמצאות. קפיצה רק לאי עם פנס דולק (travel.js), כי מסע מהיר לכל מקום מוריד מהחקירה.
    משמאל (או למעלה בטלפון עומד): כל האזורים כאיים, מחוברים בשבילים (WORLD.paths). אזור שעוד לא ביקרת בו הוא צללית עם ?,
    ומופיעים רק אזורים שביקרת בהם והשכנים שלהם, כדי שיישאר מה לגלות. לכל אזור שביקרת: הפנס (דולק או כבוי, STORY.lanterns ו-SAVE.story)
    ומונה הסודות 🔍 x/y (secrets.js). מימין: האזור הנוכחי, עם הדמות, השערים, המקורות, הפנס והדמויות שגילית (worldnpc.js).
@@ -80,6 +80,7 @@ function wmDrawWorld(){
     const sc=wmSecrets(r);if(sc)wmText(x,'🔍 '+sc,p.x,p.y+rad*0.82+29,12,C.chalk);
     if(r===cur)wmText(x,'★',p.x,p.y+rad*0.25,20,C.gold);
   }
+  travelMapSpots(G.show.map(r=>Object.assign({r},at(r))),rad);   // נגיעה באי עם פנס דולק: קפיצה (travel.js)
 }
 
 function wmDrawHere(){
@@ -113,7 +114,7 @@ function wmDraw(){
   $('wMap').innerHTML=winHead('🗺️ '+T('wm.title'))+
     '<div class="wmcols"><section><h4>'+T('wm.world')+'</h4><div class="wmbox"><canvas id="wmWorld"></canvas></div></section>'+
     '<section><h4>'+T('w.region.'+S.wd.reg)+' <small>★ '+T('wm.here')+'</small></h4><div class="wmbox"><canvas id="wmHere"></canvas></div></section></div>'+
-    tierRow()+'<p class="wmkey">'+T('wm.key')+'</p>';   // דרגת העולם (tiers.js)
+    tierRow()+travelMapRow()+'<p class="wmkey">'+T('wm.key')+'</p>';   // דרגת העולם (tiers.js)
   wmDrawWorld();wmDrawHere();
 }
 

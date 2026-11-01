@@ -246,6 +246,14 @@ const TEXT={
   'daily.keep':{he:'פספסת יום? לא נורא, ממשיכים מאיפה שעצרת',en:'Missed a day? No problem, you pick up where you left off'},
   'daily.back':{he:'מחר יש עוד מתנה',en:'Another gift tomorrow'},
   'daily.got':{he:s=>'מתנה: '+s,en:s=>'Gift: '+s},
+  // "בזמן שלא היית" (welcome.js)
+  'wel.title':{he:'בזמן שלא היית',en:'While you were away'},
+  'wel.gift':{he:n=>'מתנה מ'+n,en:n=>'Gift from '+n},
+  'wel.all':{he:'אסוף הכל',en:'Collect all'},
+  'wel.done':{he:'הכל נאסף!',en:'All collected!'},
+  'wel.go':{he:'יאללה',en:"Let's go"},
+  'wel.next':{he:s=>'מה עכשיו? ⭐ '+s,en:s=>'What now? ⭐ '+s},
+  'wel.nextGate':{he:'מה עכשיו? צא מהשער לעולם, ותביא עוד שלל',en:'What now? Head out the gate and bring back more loot'},
 
   // הכפר (js/village.js)
   'vil.home':{he:'הכפר שלך',en:'Your village'},
@@ -944,6 +952,18 @@ Object.assign(TEXT,{
   'tier.set':{he:x=>'דרגת העולם: '+x+'. האויבים התחזקו, וגם השלל',en:x=>'World tier: '+x+'. Tougher foes, better loot'},
   'tier.open3':{he:'דרגה אגדית נפתחה! במפת העולם',en:'Legend tier unlocked! Check the world map'},
   'wm.key':{he:'★ אתה · ● פנס (זוהר: דולק) · 🔍 סודות שמצאת · ? אזור שעוד לא ביקרת בו',en:'★ You · ● Lantern (glowing: lit) · 🔍 Secrets found · ? A place you haven’t been yet'}
+});
+
+// ======== קפיצה בין פנסים (travel.js) ========
+Object.assign(TEXT,{
+  'tr.where':{he:'לאן?',en:'Where to?'},
+  'tr.mapHint':{he:'נגע באי עם פנס דולק כדי לקפוץ אליו',en:'Tap an island with a lit lantern to jump there'},
+  'tr.jump':{he:r=>'קפוץ ל'+r,en:r=>'Jump to '+r},
+  'tr.at':{he:r=>'🏮 '+r,en:r=>'🏮 '+r},
+  'tr.home':{he:'🏮 חזרה לכפר',en:'🏮 Back home'},
+  'tr.homeBtn':{he:'חזרה לכפר',en:'Go home'},
+  'tr.no.fight':{he:'אי אפשר לקפוץ באמצע קרב',en:'Can’t jump in the middle of a fight'},
+  'tr.no.warden':{he:'אי אפשר לקפוץ כשהשומר ער',en:'Can’t jump while the guardian is awake'}
 });
 
 // ======== סודות בעולם (secrets.js) ========
