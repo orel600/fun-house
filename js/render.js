@@ -167,6 +167,7 @@ function render(){
   drawAgeFx();   // זוהר, שובל וחלקיקים על נשק משודרג (aging.js)
   drawSkills(ox,oy);   // טבעות וברקים של סקילים, וסימני רטוב/קפוא/הלם (skills.js)
   drawOrbits();drawDivine();   // החפצים המסתובבים (orbit.js)
+  drawWSkill();   // בעולם: כדורי הסקילים בדרך, והכוונת בגרירה (wskill.js)
   // חצים: מוט, נוצות וחוד. קסם: כדור זוהר עם שובל (weapons.js)
   const sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r,fl=fluteOn();ctx.lineWidth=2;
   for(const b of pb){
