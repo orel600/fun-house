@@ -3,8 +3,8 @@
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#121624">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="זירת המקל">
-<title>זירת המקל</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="שישה פנסים">
+<title>שישה פנסים · Six Lanterns</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&family=Secular+One&display=swap">
 <link rel="stylesheet" href="css/style.css">
@@ -88,12 +88,13 @@
 <!-- מסך הציוד והתרמיל: התרמיל, הבובה עם המשבצות, והפרטים. גוררים או לוחצים (js/gear.js) -->
 <div class="ov gearov" id="ovGear" hidden>
   <div class="panel gearpanel win">
-    <div class="ghead whd"><h2 data-t="gear.title"></h2><span id="gHero"></span><span class="bag" id="gCoins"></span><button class="gclose wx" id="gearClose" data-ta="gear.close">✕</button></div>
+    <div class="ghead whd"><h2 data-t="gear.title"></h2><div class="gpages" id="gPages"></div><span id="gHero"></span><span class="bag" id="gCoins"></span><button class="gclose wx" id="gearClose" data-ta="gear.close">✕</button></div>
     <div class="gbody">
-      <section class="gbag" id="gBag"><div class="ffilter" id="gTabs"></div><div class="ggrid" id="gItems"></div></section>
+      <section class="gbag" id="gBag"><div class="ffilter" id="gTabs"></div><div class="ggrid" id="gItems"></div><div class="gacts" id="gActs"></div></section>
       <section class="gdoll" id="gSlots"></section>
       <section class="gsidep"><div class="gdetail" id="gDetail"></div><div class="gstash" id="gStash" hidden></div></section>
     </div>
+    <div class="gchar" id="gChar" hidden></div>
     <div class="gtree" id="gTree" hidden></div>
   </div>
 </div>
@@ -296,6 +297,7 @@
 <script src="js/strike.js"></script>
 <script src="js/events.js"></script>
 <script src="js/pacing.js"></script>
+<script src="js/foeai.js"></script>
 <script src="js/secrets.js"></script>
 <script src="js/worldmap.js"></script>
 <script src="js/travel.js"></script>
@@ -310,6 +312,7 @@
 <script src="js/heroes.js"></script>
 <script src="js/ranks.js"></script>
 <script src="js/stats.js"></script>
+<script src="js/levelpath.js"></script>
 <script src="js/pet.js"></script>
 <script src="js/rescue.js"></script>
 <script src="js/daily.js"></script>
@@ -327,6 +330,7 @@
 <script src="js/vendor/three-bundle.js"></script>
 <script src="js/models3d.js"></script>
 <script src="js/render3d.js"></script>
+<script src="js/props3d.js"></script>   <!-- הפנסים, המקדשים, מגדלי התצפית והתיבות בתלת-ממד -->
 <script src="js/camera.js"></script>
 <script src="js/look-hd.js"></script>   <!-- מראה הכפר והעולם: שלב 1 לכולם, ?look=classic מכבה, ?look=hd מוסיף ניסויים (docs/visual-plan.md) -->
 <script src="js/ground.js"></script>   <!-- הקרקע בעולם: מפה מצוירת לכל אזור, שבילים, חוף וצל מגע (docs/plan-ground.md) -->

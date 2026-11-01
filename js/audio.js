@@ -55,7 +55,7 @@ function sfxGate(id,now){
   if(g.gap&&now-(AUDIO.grpLast[s.grp]??-9)<g.gap)return false;
   AUDIO.last[id]=now;AUDIO.grpLast[s.grp]=now;return true;
 }
-function sfx(id){
+function sfx(id,k=1){   // k: עוצמה יחסית (מכה חזקה, juice.js), וגם צליל קצת נמוך יותר
   const s=SOUNDS[id];if(!s)return;
   AUDIO.count[id]=(AUDIO.count[id]||0)+1;
   const c=AUDIO.ctx,b=AUDIO.buf[id];
@@ -63,7 +63,7 @@ function sfx(id){
   if(!sfxGate(id,performance.now()/1000))return;
   AUDIO.played[id]=(AUDIO.played[id]||0)+1;
   const src=c.createBufferSource(),g=c.createGain();
-  src.buffer=b;src.playbackRate.value=1+(Math.random()*2-1)*s.pitch;g.gain.value=s.vol*(0.85+Math.random()*0.15);
+  src.buffer=b;src.playbackRate.value=(1+(Math.random()*2-1)*s.pitch)*(k>1?0.88:1);g.gain.value=Math.min(1,s.vol*k*(0.85+Math.random()*0.15));
   src.connect(g).connect(AUDIO.gain[s.grp]||AUDIO.gain.master);
   AUDIO.playing[id]=(AUDIO.playing[id]||0)+1;AUDIO.src.add(src);
   src.onended=()=>{AUDIO.playing[id]--;AUDIO.src.delete(src);g.disconnect()};

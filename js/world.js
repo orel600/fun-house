@@ -247,11 +247,14 @@ function wFoes(dt){
     if(e.wanted){wantedMove(e,dt);continue}
     if(e.warden){storyWardenMove(e,dt);continue}
     if(e.evt){evFoeMove(e,dt);continue}
-    if(e.pack){paceFoeMove(e,dt);continue}   // להקה שמגיעה מקצה המסך (pacing.js)   // גל של אירוע (events.js)   // השומר האבן (story.js)
+    if(e.pack){if(foeAi(e,dt,Math.hypot(P.x-e.x,P.y-e.y)))foeAiTail(e,dt);else paceFoeMove(e,dt);continue}   // התנהגות לפי סוג (foeai.js)   // להקה שמגיעה מקצה המסך (pacing.js)   // גל של אירוע (events.js)   // השומר האבן (story.js)
     alive[e.home]++;
     const G=FO[e.home]||FO[0],dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;
     let mx=0,my=0,sp=e.speed;
-    if(d<WORLD.aggro&&Math.hypot(P.x-G.x,P.y-G.y)<wZone(G).leash){   // רודף, אבל לא רחוק מהבית. אחרת חוזר להסתובב שםmx=dx/d;my=dy/d;
+    if(e.alert>0)e.alert-=dt;   // קורא תקע בקרן (foeai.js): רודף גם מרחוק, ורחוק יותר מהבית
+    if((d<WORLD.aggro||e.alert>0)&&Math.hypot(P.x-G.x,P.y-G.y)<wZone(G).leash*(e.alert>0?1.6:1)){   // רודף, אבל לא רחוק מהבית. אחרת חוזר להסתובב שם
+      if(foeAi(e,dt,d)){foeAiTail(e,dt);continue}   // התנהגות לפי סוג: מקיף, מסתער, יורה מרחוק, קופץ (foeai.js)
+      mx=dx/d;my=dy/d;   // הייתה בסוף שורת ההערה מעל ונבלעה בה (#114), ולכן קבוצות לא רדפו
       if(e.type==='wisp'){if(d<170){mx=-mx;my=-my}e.shoot-=dt;if(e.shoot<=0){e.shoot=rand(1.8,2.8);shootE(e.x,e.y,Math.atan2(dy,dx),175,6,8)}}}
     else{   // מסתובב ליד הבית
       if(e.wx==null||Math.hypot(e.wx-e.x,e.wy-e.y)<12){const a=rand(0,6.28),r=rand(0,G.r);e.wx=G.x+Math.cos(a)*r;e.wy=G.y+Math.sin(a)*r}
@@ -288,7 +291,7 @@ function worldUpdate(dt){
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
-  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
+  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
   dropsUpdate(dt);secretsUpdate(dt);wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
@@ -389,6 +392,7 @@ function drawWorld(){
   storyDraw();   // הפנס והשומר (story.js)
   affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
   strikeDraw();   // קשת אדומה של מכה שמתכוננת (strike.js)
+  foeAiDraw();   // הסתערות, ירייה וקפיצה שמסומנות על הרצפה (foeai.js)
   eventsDraw();   // אירועים (events.js)
   secretsDraw();   // סודות (secrets.js)
   if(WR().fog)wFog();
@@ -444,7 +448,7 @@ function wHeat(){
 const STORM={rain:80,spread:560,fall:620,slant:0.32,len:18,alpha:0.45,dark:0.12,flash:{every:5.5,len:0.18,alpha:0.35}};
 function wStorm(){
   const t=fxNow(),F=STORM,W=F.spread*2;ctx.save();
-  for(const tw of WR().towers||[])wTower(tw);
+  if(!R3D.on)for(const tw of WR().towers||[])wTower(tw);   // בתלת-ממד: מגדל אבן אמיתי (props3d.js)
   ctx.fillStyle='rgba(20,16,50,'+F.dark+')';ctx.fillRect(P.x-F.spread*2,P.y-F.spread*2,W*2,W*2);
   ctx.strokeStyle='#B9C4F0';ctx.lineWidth=1.4;
   for(let i=0;i<F.rain;i++){   // טיפות: קווים קצרים שנופלים באלכסון
@@ -507,6 +511,7 @@ function drawWorldScreen(ox,oy){
   fishScreen(ox,oy);   // "!" והפס של הדיג (fishing.js)
   storyScreen(ox,oy);   // story.js
   affixScreen(ox,oy);   // affix.js
+  foeAiScreen(ox,oy);   // "!" מעל קורא שבורח (foeai.js)
   eventsScreen(ox,oy);   // events.js
   secretsScreen(ox,oy);secretsHud();   // secrets.js
 }
