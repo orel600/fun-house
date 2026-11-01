@@ -75,6 +75,7 @@ function petUpdate(dt){
   for(const g of p.hearts){g.x+=g.vx*dt;g.y+=g.vy*dt;g.vy+=40*dt;g.life-=dt}
   p.hearts=p.hearts.filter(g=>g.life>0);
   if(S.mode!=='play'){petFeedBtn(null);return}
+  rescueUpdate(dt);   // פיוחו מצילה, בזירה (rescue.js)
   const sv=SAVE.pet;if(sv.buff>0)sv.buff=Math.max(0,sv.buff-dt);p.feedCd-=dt;
   const dP=Math.hypot(P.x-p.x,P.y-p.y);
   petFeedBtn(p,dP);
@@ -188,6 +189,7 @@ function drawPet(){
   ctx.fillStyle=PET.feed.heart;for(const g of p.hearts){ctx.globalAlpha=Math.min(1,g.life*2);const r=g.s;
     ctx.beginPath();ctx.moveTo(g.x,g.y+r);ctx.bezierCurveTo(g.x-r*1.6,g.y-r*0.2,g.x-r*0.6,g.y-r*1.4,g.x,g.y-r*0.5);ctx.bezierCurveTo(g.x+r*0.6,g.y-r*1.4,g.x+r*1.6,g.y-r*0.2,g.x,g.y+r);ctx.fill()}
   ctx.globalAlpha=1;
+  rescueDraw();   // העצם של פיוחו מצילה (rescue.js)
 }
 // שלב 3: להבה בקצה הזנב (מהעצם בתלת-ממד), ולהבונים ליד ארבע הכפות. עיגולים בחיבור אור, בלי תמונות
 function petFlames(p,h){
