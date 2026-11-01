@@ -873,7 +873,7 @@ function worldBot(m,L,god){
       for(let i=0;i<600&&!p.digs;i++){petUpdate(1/60);seen[p.st]=1}
       r.sneak=!!seen.sneak;r.flee=!!seen.flee;r.grab=p.grabs===1;r.give=p.digs===1&&drops().length>n0;
       p.bag=true;try{drawPet();r.draw=true}catch(err){r.draw=String(err)}
-      r.name=T('pet.name.parosh')!=='pet.name.parosh'&&T(petTx('pet.up'),'x',2)!==T('pet.up','x',2);
+      r.name=T('pet.name.parosh')!=='pet.name.parosh'&&petTx('pet.up')==='pet.up.parosh';
       S.rs={rolled:true,done:false,ring:null,saved:0,item:{x:P.x-60,y:P.y,t:0}};try{rescueDraw();r.rescue=rescueLook().item==='pouch'&&T(petTx('rs.saved'))!==T('rs.saved')}catch(err){r.rescue=String(err)}S.rs=null;   // פיוחו מצילה, עם הפריט של הפרעוש
       e.dead=true;enemies=enemies.filter(x=>!x.dead)}catch(err){r.err=String(err)}
     SAVE.pet.kind=bak.kind;S.pet=bak.pet;S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;return r});
