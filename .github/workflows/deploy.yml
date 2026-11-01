@@ -103,6 +103,7 @@ jobs:
           ver="$major.$stage.$((n-from)).$n"
           [ -n "$IS_PR" ] && ver="$ver-pr$PR_NUM"
           echo "const MAJOR=$major, STAGE=$stage, STAGE_FROM=$from;const VERSION='$ver';" > "$site/js/version.js"
+          echo "{\"v\":\"$ver\"}" > "$site/version.json"   # המשחק בודק בו אם יש גרסה חדשה (js/update-check.js)
           echo "גרסה: $ver" >> "$GITHUB_STEP_SUMMARY"
           cd "$RUNNER_TEMP"   # npx רץ מחוץ לקוד של ה-PR
           # רווח או ירידת שורה שנדבקו לטוקן בהעתקה הופכים אותו ללא תקף, אז מנקים אותם

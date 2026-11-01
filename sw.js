@@ -1,8 +1,9 @@
 /* Service worker: המשחק עובד גם בלי רשת כשהוא מותקן כאפליקציה (js/pwa.js רושם אותו, רק מ-http/https).
-   תמיד קודם מהרשת, ורק כשאין רשת (או שהיא איטית מדי) מהעותק השמור. ככה כל עדכון שמתפרסם מגיע מיד.
+   תמיד קודם מהרשת, בלי מטמון הדפדפן (cache:'no-cache': הדפדפן שואל את השרת אם הקובץ השתנה), ורק כשאין רשת בכלל,
+   או שאין תשובה אחרי WAIT, מהעותק השמור. ככה כל עדכון שמתפרסם מגיע מיד. version.json לא נשמר: js/update-check.js בודק בו אם יש גרסה חדשה.
    הגרסה מגיעה בכתובת (sw.js?v=<VERSION>): גרסה חדשה = service worker חדש, ששומר עותק חדש ומוחק את הישן. */
 const VER=new URL(self.location).searchParams.get('v')||'dev';
-const CACHE='fh-'+VER, WAIT=4000;   // כמה מילישניות מחכים לרשת לפני שעוברים לעותק השמור (אם יש)
+const CACHE='fh-'+VER, WAIT=10000;   // כמה מילישניות מחכים לתשובה מהרשת לפני שעוברים לעותק השמור (אם יש). בלי רשת בכלל: מיד
 const EXTRA=['./','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'];
 
 // התקנה: שומרים את כל מה ש-index.html טוען (סקריפטים, עיצוב), כדי שגם הפעם הראשונה בלי רשת תעבוד
@@ -23,10 +24,11 @@ self.addEventListener('activate',e=>e.waitUntil((async()=>{
 self.addEventListener('fetch',e=>{
   const r=e.request,u=new URL(r.url);
   if(r.method!=='GET'||u.origin!==self.location.origin)return;   // פונטים, Supabase וכל השאר: כרגיל
+  if(u.pathname.endsWith('/version.json'))return;                   // הבדיקה של העדכון: תמיד ישר מהרשת
   e.respondWith((async()=>{
     const c=await caches.open(CACHE),key=r.mode==='navigate'?'./':r;
     const old=await c.match(key,{ignoreSearch:r.mode==='navigate'});
-    const net=fetch(r).then(res=>{if(res.ok&&res.type==='basic')c.put(key,res.clone());return res});
+    const net=fetch(r,{cache:'no-cache'}).then(res=>{if(res.ok&&res.type==='basic')c.put(key,res.clone());return res});
     if(!old)return net;
     const slow=new Promise(ok=>setTimeout(()=>ok(old),WAIT));
     return Promise.race([net.catch(()=>old),slow]);
