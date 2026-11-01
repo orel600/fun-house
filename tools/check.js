@@ -136,12 +136,12 @@ function botStep({god,en}){
       if(!L.bossRes){L.bossRes=b.res;L.bossWeak=b.weak;L.bossRole=b.role;const u=b.used;L.usedTop=Object.keys(u).sort((a,c)=>u[c]-u[a])[0];
         L.held=bossHeld().includes(b.weak)}
       // קודם בורחים כדי לבדוק שהבוס מתעצבן, ואז מתעמתים ובודקים שהוא נרגע.
-      // כמו שחקן אמיתי: מנקים את המגינים שהוא מזמן עם הנשק הנכון להם, ואת הבוס עם הנשק שסוג הנזק שלו הכי טוב נגדו
+      // כמו שחקן אמיתי: מתמקדים בבוס עם הנשק שסוג הנזק שלו הכי טוב נגדו, והמלווים נופלים בדרך
       if(!m.faced&&b.rage<0.99){tx=b.x;ty=b.y;flee=true}
       else{
         if(!m.faced)m.faced=S.t;L.rageLow=Math.min(L.rageLow??1,b.rage);
-        const n=nearest(130);useWeapon(best(n&&!n.isBoss?n:b));
-        tx=b.x;ty=b.y;stop=P.weapon==='sword'?b.r+30:240;
+        useWeapon(best(b));   // תמיד הנשק הכי טוב נגד הבוס. קודם מלווה קרוב "גנב" את הנשק, ובוס עמיד לנזק הזה לא נפל עד 8:00 (1.11)
+        tx=b.x;ty=b.y;stop=b.r+30;   // גם עם קשת צמוד לבוס: ההתקפה האוטומטית בזירה מכוונת לקרוב (aimTarget), ומ-240 המלווים באמצע ספגו את החצים
       }
     }else if(enemies.some(e=>e.elite)){
       // אויב-על: כמו שחקן אמיתי, הולכים אליו עם הנשק שסוג הנזק שלו הכי טוב נגדו
