@@ -35,6 +35,7 @@ const TEXT={
   'cloud.off':{he:'☁ לא מחובר: שמור בטלפון',en:'☁ Offline: saved on this phone'},
   'cloud.sync':{he:'☁ מסנכרן…',en:'☁ Syncing…'},
   'cloud.ok':{he:'☁ שמור בענן',en:'☁ Saved to the cloud'},
+  'cloud.err':{he:'☁ הכניסה עם Google לא הצליחה: שמור בטלפון',en:'☁ Google sign-in failed: saved on this phone'},
   'cloud.as':{he:n=>'☁ מחובר כ-'+n,en:n=>'☁ Signed in as '+n},
   'cloud.google':{he:'כניסה עם Google',en:'Sign in with Google'},
   'cloud.signout':{he:'התנתקות',en:'Sign out'},
