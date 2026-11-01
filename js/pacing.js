@@ -8,9 +8,9 @@
 const PACE={
   first:5,                                   // הלהקה הראשונה אחרי כמה שניות בעולם
   beats:[                                    // המחזור: כמה שניות כל שלב, כל כמה שניות להקה, וכמה בה
-    {id:'build',dur:45,every:[12,18],size:[3,5]},
+    {id:'build',dur:45,every:[8,12],size:[3,5]},   // מפגש לפחות כל ~12 שניות של הליכה (המבקר מדד 34 שניות של שקט)
     {id:'peak', dur:20,every:[5,7], size:[4,7],banner:true},
-    {id:'rest', dur:16,every:null}           // שקט אחרי השיא
+    {id:'rest', dur:8,every:null}            // שקט קצר אחרי השיא (היה 16: יחד עם ההפסקה עד הלהקה הבאה יצא חצי דקה בלי כלום)
   ],
   bigFight:{kills:10,within:12,rest:10},     // 10 הריגות תוך 12 שניות: 10 שניות בלי להקות חדשות
   weak:{hp:0.7,dmg:0.55},                     // מפלצת בלהקה חלשה מקבוצה קבועה: הרבה ונופלות מהר, כמו הגושים בזירה (HORDE.weak)
@@ -24,7 +24,7 @@ const PACE={
   lose:6,
   cap:45,                                    // הכי הרבה אויבים חיים בעולם יחד (כולל הקבוצות הקבועות, כ-30), בשביל הטלפון (CROWD ב-render3d.js)
   reserve:2,                                 // מקום שנשמר תמיד לשומר הפנס ולמבוקש, שמופיעים בלי לשאול. כל השאר (להקות, קבוצות שחוזרות, גל של אירוע, פיצול) נעצר ב-cap פחות reserve
-  bonus:{coins:[6,12]},                      // להקה שהופלה כולה: מטבעות, ועוד שלל מאחד המקורות של האזור (NODES)
+  bonus:{coins:[1,3]},                      // להקה שהופלה כולה: מטבעות, ועוד שלל מאחד המקורות של האזור (NODES)
   hush:6                                     // בכניסה לאזור: הודעה אחת. מה שמגיע בשניות האלה מחכה לסופן, ורק האחרונה מוצגת (בדיקת חוויה, #121)
 };
 // הודעות בכניסה לעולם: הראשונה (שם האזור) מוצגת, והבאות מחכות לסוף hush. banner מ-progression.js, ומעליו התור של welcome.js
@@ -69,7 +69,7 @@ function paceSpawn(n,at){
   const type=types[Math.floor(Math.random()*types.length)],pk={id:++w.pace.id,x:s.x,y:s.y,n,left:n,big:B.id==='peak'};
   for(let k=0;k<n;k++){
     const t=mix?types[Math.floor(Math.random()*types.length)]:type,a=rand(0,6.28),r=rand(0,PACE.spread);
-    const e=addEnemy(t,s.x+Math.cos(a)*r,s.y+Math.sin(a)*r,Z.hp*PACE.weak.hp*WORLD.foeHp);wTough(e,{hp:Z.hp*PACE.weak.hp});   // foeHp ו-foeMin: אויבים בעולם חזקים יותר (world.js)
+    const e=addEnemy(t,s.x+Math.cos(a)*r,s.y+Math.sin(a)*r,Z.hp*PACE.weak.hp*WORLD.foeHp);wTough(e,{hp:Z.hp*PACE.weak.hp,min:Z.min&&Z.min*PACE.weak.hp,wind:Z.wind});   // foeHp ו-foeMin: אויבים בעולם חזקים יותר (world.js)
     e.dmg*=Z.dmg*PACE.weak.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);
     e.xp=0;e.home=0;e.pack=pk;e.far=0;challengeSpawn(e);tierSpawn(e)}
   w.pace.packs++;w.pace.sizes.push(n);
@@ -111,5 +111,5 @@ function paceKill(e){
   const B=PACE.bonus,R=WR(),F=R.fields[Math.floor(Math.random()*R.fields.length)],K=F&&NODES.kinds[F.kind];
   dropSpawn('coins',Math.round(rand(...B.coins)*(pk.big?1.5:1)),e.x,e.y);
   if(K)runGive(K.wdrop?Object.assign({},K.drop,K.wdrop):K.drop,e.x,e.y);
-  w.pace.bonus++;floatText(e.x,e.y-e.r-30,T('pace.bonus'),C.gold,15);sparks(e.x,e.y,C.gold,22,240);sfx('celebrate');
+  w.pace.bonus++;floatText(e.x,e.y-e.r-30,T('pace.bonus'),C.gold,15);celebrate(e.x,e.y,'loot2');   // להקה שהופלה: רגע של פרס שרואים (fx.js)
 }

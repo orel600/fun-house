@@ -11,6 +11,7 @@
      win     לנצח בוס n פעמים. אפשר בתנאי: noHit (בלי לחטוף פגיעה כל עוד הבוס בזירה), under (לפני שעברו כך וכך שניות בריצה)
    reward: משאבים לתרמיל לפי השם, xp לדמות, rank: עלייה לשלב הזה בדרגה (ranks.js), item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>'). id של פריט ציוד מ-GEAR.items (gear.js) נכנס לתרמיל כציוד שאפשר ללבוש,
      ואם יש לו משבצת פנויה הוא נלבש מיד (השם שלו 'it.<id>').
+   spot: הפרס ניתן במקום ברגע שהמטרה הושגה, בלי לחזור למי שנתן. then: id של קווסט שמתחיל לבד אחרי שהפרס נלקח.
    req: תנאי פתיחה. level: רמת דמות, quest: קווסט שכבר הושלם, b: {מבנה:רמה}.
    המשחק מדווח מה קרה דרך questEvent(סוג, מה, כמה): שורה אחת בכל מקום (kill, hurt, win, collect, gather, upgrade, reach). המנוע מחליט לאיזה קווסט זה שייך.
    ההתקדמות נשמרת רק ב-SAVE.quests (save.js). בזירה היא נשמרת יחד עם השלל, בסוף הריצה */
@@ -31,8 +32,10 @@ const QUESTS={
     // ---- כפר: נותנים המבנים, ומובילים את השחקן בכפר ובזירה ----
     // הראשון: קצר, ונעליים בפרס, כדי שההליכה תהיה מהירה כבר מההתחלה (ניר: "נעליים שנותנות מהירות שמקבלים מאיזה קווסט התחלתי")
     // ---- העלילה, פרק 1: פנס האדמה (story.js). כל אחד נפתח אחרי הקודם ----
-    {id:'s1Lanterns',giver:'head',kind:'story',obj:[{type:'reach',what:'world',n:1}],reward:{coins:20,xp:20}},
-    {id:'s1Shard',giver:'head',kind:'story',obj:[{type:'story',what:'shard',n:1}],reward:{coins:25,xp:30},req:{quest:'s1Lanterns'}},
+    // spot: הפרס ניתן במקום, בלי לחזור לכפר. then: הקווסט הבא מתחיל לבד (המבקר, 1.11: "המשימה הראשונה שולחת אותך הביתה ברגע שיצאת")
+    {id:'s1Lanterns',giver:'head',kind:'story',obj:[{type:'reach',what:'world',n:1}],reward:{coins:20,xp:20},spot:true,then:'s1Bones'},
+    {id:'s1Bones',giver:'head',kind:'story',obj:[{type:'kill',what:'grunt',n:3}],reward:{coins:15,xp:25},req:{quest:'s1Lanterns'},spot:true,then:'s1Shard'},
+    {id:'s1Shard',giver:'head',kind:'story',obj:[{type:'story',what:'shard',n:1}],reward:{coins:25,xp:30},req:{quest:'s1Bones'}},
     {id:'s1Path',giver:'head',kind:'story',obj:[{type:'kill',what:'any',n:25}],reward:{iron:5,xp:40},req:{quest:'s1Shard'}},
     {id:'s1Warden',giver:'head',kind:'story',obj:[{type:'kill',what:'warden',n:1}],reward:{coins:80,xp:120,story:'earth'},req:{quest:'s1Path'}},
     // ---- העלילה, פרק 2: פנס המים, באגם הערפל (story.js, WORLD.regions.lake ב-world.js). נפתח אחרי פנס האדמה ----
@@ -151,7 +154,7 @@ function questsRefresh(){
 /* ---- מה שקרה במשחק ---- */
 function questEvent(type,what,n=1){
   if(type==='hurt'){if(S.boss)qRun().bossHit++;return}
-  const Q=QS();let moved=false;
+  const Q=QS(),spot=[];let moved=false;
   for(const id in Q.active){
     const q=QBY[id],a=Q.active[id];if(!q)continue;
     q.obj.forEach((o,i)=>{
@@ -160,9 +163,16 @@ function questEvent(type,what,n=1){
       if(type==='win'&&(o.noHit&&qRun().bossHit||o.under&&S.t>o.under))return;
       a.p[i]=Math.min(o.n,(a.p[i]||0)+n);moved=true;
     });
-    if(!a.r&&qReady(q)){a.r=true;moved=true;banner(T('q.ready',T('q.'+id)[0]),C.gold)}
+    if(!a.r&&qReady(q)){a.r=true;moved=true;if(q.spot)spot.push(id);else banner(T('q.ready',T('q.'+id)[0]),C.gold)}
   }
+  for(const id of spot)questSpot(id);
   if(moved||type==='reach')questTrack();   // reach: גם בתחילת ריצה, כדי שקו המעקב יופיע מיד
+}
+// spot: הפרס במקום (חגיגה קטנה והודעה), והקווסט הבא (then) מתחיל לבד ונכנס לקו המעקב
+function questSpot(id){
+  const q=QBY[id];if(!questClaim(id))return;
+  const n=q.then&&QBY[q.then],Q=QS();
+  if(n&&!Q.active[n.id]&&!Q.done[n.id]){qStart(n);saveNow();banner(T('q.next',T('q.'+n.id)[0]),C.gold)}
 }
 // פרס פריט: לתרמיל. פריט ציוד עם משבצת פנויה נלבש מיד, והסטטים שלו חלים כבר עכשיו (נעליים: הולכים מהר יותר)
 function qGive(id){

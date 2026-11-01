@@ -33,14 +33,14 @@ function strikeTick(e,dt,d){
     }
     return true;
   }
-  if((e.scd-=dt)<=0&&d<touch+K.start){e.sw=K.wind;e.sa=Math.atan2(P.y-e.y,P.x-e.x)}
+  if((e.scd-=dt)<=0&&d<touch+K.start){e.sw=e.wind||K.wind;e.sa=Math.atan2(P.y-e.y,P.x-e.x)}   // e.wind: אזור עם הכנה איטית יותר (WORLD.zones, start)
   return false;
 }
 // ציור (בעולם, לפני הדמויות): קשת אדומה על הרצפה שמתמלאת עד המכה
 function strikeDraw(){
   const K=STRIKE;
   for(const e of enemies){if(e.dead||!(e.sw>0))continue;
-    const k=1-e.sw/K.wind,R=e.r+P.r+K.reach;
+    const k=1-e.sw/(e.wind||K.wind),R=e.r+P.r+K.reach;
     ctx.save();ctx.translate(e.x,e.y);
     ctx.globalAlpha=0.18;ctx.fillStyle=K.col;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,e.sa-K.arc,e.sa+K.arc);ctx.closePath();ctx.fill();
     ctx.globalAlpha=0.45+0.4*k;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R*k,e.sa-K.arc,e.sa+K.arc);ctx.closePath();ctx.fill();
