@@ -590,7 +590,7 @@ function worldBot(m,L,god){
     const pr=cloudBack(F.back(g));for(let i=0;i<500&&document.getElementById("ovCloud").hidden;i++)await Promise.resolve();const ov=document.getElementById('ovCloud');r.ask=!ov.hidden&&/9/.test(document.getElementById('cloudAcct').textContent);
     document.getElementById('cloudPhone').click();r.kept=await pr==='phone'&&ov.hidden&&F.rows[g].data.hero.xp===1&&SAVE.village.forge!==5;
     // חשבון בלי התקדמות (נפתח בדפדפן אחר), גם כשהוא חדש יותר, לא דורס את הטלפון
-    F.rows[g]={data:Object.assign(saveBlank(),{ts:Date.now()+1e7})};SAVE.hero.xp=50;saveNow();await cloudGoogle(true);r.emptyAcct=await cloudBack(F.back(g))==='phone'&&F.rows[g].data.hero.xp===50;
+    F.rows[g]={data:Object.assign(saveBlank(),{ts:Date.now()+1e7})};SAVE.hero.xp=50;saveNow();CLOUD.session=null;localStorage.removeItem(CLOUD.lsKey);await cloudGoogle(true);r.emptyAcct=await cloudBack(F.back(g))==='phone'&&F.rows[g].data.hero.xp===50;
     // נשארים מחוברים: Supabase דוחה את הרענון. לא נפתח משתמש זמני במקום החשבון, ובפתיחה חוזרים ל-Google לבד
     const n0=F.users;CLOUD.session.exp=0;cloudKeep(CLOUD.session);F.badRefresh=true;went=null;
     r.stay=await cloudSync()==='offline'&&!CLOUD.session&&cloudWas()==='Nir'&&await cloudSync()==='offline'&&F.users===n0;
