@@ -1485,7 +1485,8 @@ function worldBot(m,L,god){
     enterWorld('home');o.btn=getComputedStyle($('menuBtn')).display!=='none'&&menuTab('wMapBtn').when();   // המפה: לשונית בתפריט הראשי (menu.js)
     $('wMapBtn').click();o.open=!$('wMap').hidden&&S.mode==='map';const G=wmGraph();o.show=G.show.join(',');o.edges=G.edges.length;
     o.fog=G.show.filter(r=>!wmSeen(r)).join(',');o.canv=['wmWorld','wmHere'].every(id=>{const c=$(id);return c&&c.width>50&&c.height>50});
-    o.hidden=!G.show.includes('ridge');   // הרכס עוד סגור: לא מופיע
+    // כל אזור שעוד לא התגלה מופיע כצללית עם ? (המבקר, worldmap-locked-tiers): גם הרכס הסגור, כצללית ולא כאי שביקרו בו
+    o.fogAll=['meadow',...Object.keys(WORLD.regions)].every(r=>G.show.includes(r));o.hidden=o.fogAll&&!wmSeen('ridge');   // כל האזורים במפה, והרכס (שעוד לא התגלה) ביניהם כצללית
     document.querySelector('#wMap [data-act="close"]').click();o.closed=$('wMap').hidden&&S.mode==='play';
     wGo('lake');o.saved=!!(JSON.parse(localStorage.getItem(SAVE_STORE.key)).wmap||{seen:{}}).seen.lake;
     wmapOpen(true);o.cur=S.wd.reg;o.lakeSeen=wmSeen('lake');dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',key:'Escape'}));keys.Escape=false;o.esc=$('wMap').hidden&&S.mode==='play';
@@ -1495,9 +1496,9 @@ function worldBot(m,L,god){
     SAVE.story=JSON.parse(st0);SAVE.secrets=sc0?JSON.parse(sc0):SAVE.secrets;wmapOpen(true);return o});
   if(CFG.shots){await page.setViewportSize(CFG.phone);await page.clock.runFor(200);await shot('world-map')}
   await page.evaluate(()=>{wmapOpen(false);enterVillage()});
-  check(wm.btn&&wm.open&&wm.canv&&wm.fog==='lake'&&wm.hidden&&wm.closed&&wm.saved&&wm.lakeSeen&&wm.esc&&wm.all&&wm.apart&&wm.edges>=1,
+  check(wm.btn&&wm.open&&wm.canv&&wm.fogAll&&wm.hidden&&wm.closed&&wm.saved&&wm.lakeSeen&&wm.esc&&wm.all&&wm.apart&&wm.edges>=1,
     'מפת העולם: '+(wm.btn?'כפתור בעולם':'אין כפתור')+', '+(wm.open?'נפתחה':'לא נפתחה')+(wm.canv?' עם שתי מפות':' בלי מפות')+', אזורים: '+wm.show+' (צללית: '+(wm.fog||'אין')+')'+
-    (wm.hidden?', הרכס הסגור מוסתר':', הרכס הסגור מופיע')+(wm.closed?', נסגרה ב-✕':', לא נסגרה')+(wm.saved?', הביקור באגם נשמר':', הביקור לא נשמר')+(wm.esc?' ונסגרה ב-Esc':'')+
+    (wm.hidden?', כל מה שלא התגלה (גם הרכס) בצללית עם ?':', אזור שלא התגלה חסר או מופיע כגלוי')+(wm.closed?', נסגרה ב-✕':', לא נסגרה')+(wm.saved?', הביקור באגם נשמר':', הביקור לא נשמר')+(wm.esc?' ונסגרה ב-Esc':'')+
     (wm.all?'':', אזור חסר במפה')+(wm.apart?'':', שני איים חופפים'));
   // מפת העולם, כל האזורים פתוחים (worldmap.js, wmLabels): אף שם או מונה לא עולה על שם אחר או על אי, בגודל טלפון ובגודל מחשב. האנגלית: בריצה עם --lang en
   const wml={};
@@ -1516,7 +1517,7 @@ function worldBot(m,L,god){
   // דרגות עולם (tiers.js): סגור עד סוף הסיפור, נבחר במפה, מחזק אויבים בעולם (גם את מי שכבר שם), שלל נוסף, ודרגה 3 נפתחת אחרי הריגות
   const tr=await page.evaluate(()=>{
     const o={},st0=JSON.stringify(SAVE.story);SAVE.tier=null;SAVE.story=Object.assign({},SAVE.story,{end:false});
-    enterWorld('home');wmapOpen(true);o.lock=!!document.querySelector('#wMap [data-act="tier"][data-n="2"]:disabled')&&!tierSet(2);wmapOpen(false);
+    enterWorld('home');wmapOpen(true);o.lock=!document.querySelector('#wMap .tierrow')&&!tierSet(2);wmapOpen(false);   // לפני סוף הסיפור אין בחירת דרגה במפה בכלל (המבקר)
     const a=addEnemy('grunt',P.x+300,P.y,1);a.home=0;tierSpawn(a);const h1=a.max,d1=a.dmg;
     SAVE.story.end=true;wmapOpen(true);const b2=document.querySelector('#wMap [data-act="tier"][data-n="2"]');o.btn=!!b2&&!b2.disabled;if(b2)b2.click();
     o.on=TS().t===2&&!!document.querySelector('#wMap .tierb.on[data-n="2"]');o.lock3=!!document.querySelector('#wMap [data-act="tier"][data-n="3"]:disabled');wmapOpen(false);
