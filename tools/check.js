@@ -1031,6 +1031,18 @@ function worldBot(m,L,god){
     'קצב העולם: '+pace.packs+' להקות ב-'+pace.secs+' שניות (לפחות '+pace.want+'), הראשונה אחרי '+pace.first+' שניות, '+pace.min+' עד '+pace.max+' מפלצות בלהקה, '+
     pace.peaks+' שיאים, '+pace.rests+' רגעי שקט, '+pace.bonus+' בונוסי להקה בסיבוב, להקה של '+pace.pkN+' שהופלה נתנה '+pace.pkBonus+' בונוס'+(pace.pkTwice===1?'':' (ניתן שוב!)')+', הכי הרבה אויבים יחד '+pace.maxE+' גם בעומס (מגבלה '+pace.cap+')'+(pace.hush?', בכניסה הודעה אחת':', בכניסה כמה הודעות יחד'));
 
+  // עומס בזירה (arena-load.js): מעל המגבלה הרחוקים נעלמים, אויב רחוק ואויב-על רחוק קופצים קרוב, וכדורי XP מתאחדים בלי לאבד XP
+  const crowd=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={};startRun();P.x=P.y=0;enemies=[];orbs=[];
+    for(let i=0;i<HORDE.cap+40;i++)addEnemy('grunt',rand(-300,300),rand(-200,200)).elite=false;
+    const far=addEnemy('grunt',6000,0),el=addEnemy('shield',0,-6000);far.elite=false;el.elite=true;
+    for(let i=0;i<400;i++)orbs.push({x:rand(-2000,2000),y:rand(-2000,2000),v:1});
+    S.aloadT=0;arenaLoad(0.01);enemies=enemies.filter(e=>!e.dead);
+    const lim=ALOAD.far*Math.max(W,H),d=e=>Math.hypot(e.x-P.x,e.y-P.y);
+    o.n=enemies.length;o.cap=HORDE.cap;o.far=enemies.includes(far)?Math.round(d(far)):'נעלם';o.elite=enemies.includes(el)?Math.round(d(el)):'נעלם';o.lim=Math.round(lim);
+    o.orbs=orbs.length;o.xp=orbs.reduce((a,b)=>a+b.v,0);
+    enemies=[];orbs=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(crowd.n<=crowd.cap&&typeof crowd.elite==='number'&&crowd.elite<=crowd.lim&&(crowd.far==='נעלם'||crowd.far<=crowd.lim)&&crowd.orbs<=150&&crowd.xp===400,
+    'עומס בזירה: '+crowd.n+' אויבים (מגבלה '+crowd.cap+'), אויב רחוק: '+crowd.far+', אויב-על רחוק קפץ ל-'+crowd.elite+' (עד '+crowd.lim+'), כדורי XP: 400→'+crowd.orbs+' ששווים '+crowd.xp+' XP');
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
