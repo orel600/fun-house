@@ -52,6 +52,14 @@ const TEXT={
   gfx2d:{he:'דו-ממד',en:'2D'},
   'gfx.auto':{he:'עברנו לדו-ממד, שירוץ חלק',en:'Switched to 2D for smoother play'},
   'set.title':{he:'הגדרות',en:'Settings'},
+  // עדכון לגרסה חדשה (js/update-check.js)
+  'upd.new':{he:'🔄 גרסה חדשה',en:'🔄 New version'},
+  'upd.going':{he:'מתעדכן…',en:'Updating…'},
+  'upd.check':{he:'בדוק עדכון',en:'Check for update'},
+  'upd.latest':{he:'יש לך את הגרסה הכי חדשה',en:'You have the latest version'},
+  'upd.off':{he:'אין חיבור, נסו שוב אחר כך',en:'No connection, try again later'},
+  'upd.later':{he:'יש גרסה חדשה: נגיעה ב-🔄 אחרי הריצה',en:'New version: tap 🔄 after the run'},
+  'upd.ver':{he:'גרסה',en:'Version'},
   'menu.btn':{he:'תפריט',en:'Menu'},
   'menu.hero':{he:'דמות',en:'Hero'},
   arena:{he:'זירת המשחק',en:'Game arena'},
@@ -994,6 +1002,16 @@ Object.assign(TEXT,{
   'tr.at':{he:r=>'🏮 '+r,en:r=>'🏮 '+r},
   'tr.home':{he:'🏮 חזרה לכפר',en:'🏮 Back home'},
   'tr.homeBtn':{he:'חזרה לכפר',en:'Go home'},
+  // כפתורי ההקשר העגולים (docs/plan-hud.md): מילה אחת מתחת לאייקון. המשפט המלא נשאר לקורא מסך (aria-label)
+  'ctx.talk':{he:'לדבר',en:'Talk'},
+  'ctx.feed':{he:'להאכיל',en:'Feed'},
+  'ctx.fish':{he:'לדוג',en:'Fish'},
+  'ctx.wait':{he:'מחכים',en:'Wait'},
+  'ctx.pull':{he:'למשוך!',en:'Pull!'},
+  'ctx.now':{he:'עכשיו!',en:'Now!'},
+  'ctx.enter':{he:'להיכנס',en:'Enter'},
+  'ctx.out':{he:'לעולם',en:'Out'},
+  'ctx.home':{he:'הביתה',en:'Home'},
   'tr.no.fight':{he:'אי אפשר לקפוץ באמצע קרב',en:'Can’t jump in the middle of a fight'},
   'tr.no.warden':{he:'אי אפשר לקפוץ כשהשומר ער',en:'Can’t jump while the guardian is awake'}
 });

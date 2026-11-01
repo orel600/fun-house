@@ -9,6 +9,11 @@ body{margin:0}
   --display:'Secular One','Heebo',system-ui,sans-serif; --body:'Heebo',system-ui,sans-serif;
   color-scheme:dark;
 }
+/* סקאלה אחת לממשק (docs/plan-hud.md, פרק 3, ניר 1.11.2026): כל גודל לפי גובה המסך, עם רצפה ותקרה.
+   טקסט: 4 גדלים בלבד. t1 תווית/מספר/הודעה, t2 טקסט בחלון וכפתור, t3 כותרת חלון, t4 רגע גדול.
+   כפתורים: 3 גדלים בלבד. b1 ☰/✕/גלולה, b2 כפתור הקשר/סקיל משני, b3 הסקיל הראשי. חדש נכנס כאן, לא מספר חדש בכלל משלו */
+:root{--t1:clamp(11px,2.6vh,14px);--t2:clamp(13px,3.1vh,16px);--t3:clamp(16px,4vh,21px);--t4:clamp(20px,5.4vh,30px);
+  --b1:clamp(32px,7.5vh,40px);--b2:clamp(44px,11vh,60px);--b3:clamp(72px,19vh,96px)}
 html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--chalk);font-family:var(--body);
   overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
@@ -874,3 +879,25 @@ button.res{min-height:48px;min-width:48px}
 .vpanel .vwhy{color:var(--dim);font-size:13px;display:flex;flex-wrap:wrap;align-items:center;gap:4px}
 .vpanel .vwhy .res{font-size:13px}
 .gjump{flex:none;padding:0 10px;color:var(--gold);font-weight:800}
+
+/* גרסה חדשה (js/update-check.js): כפתור קטן למעלה באמצע, מעל הכל. לא בפינה הימנית התחתונה (סקילים) */
+.updbtn{position:fixed;z-index:30;top:calc(env(safe-area-inset-top,0px) + 6px);left:50%;transform:translateX(-50%);
+  padding:6px 14px;border-radius:999px;border:2px solid var(--gold);background:rgba(20,16,10,.88);color:var(--gold);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.updbtn:disabled{opacity:.8;cursor:default}
+.sub.upd{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+/* כפתורי ההקשר בכפר ובעולם (docs/plan-hud.md, פרק 4, ניר 1.11.2026: כיוון B, אייקון ומילה): במקום סרגל באמצע למטה,
+   עיגולים בגודל --b2 בפינה הימנית, מעל הסקילים, ומילה אחת מתחת. כך אזור הג'ויסטיק פנוי והכפתור ליד האגודל הימני.
+   הזהים (#talkBtn, #feedBtn...) לא השתנו. בזירה אין סרגל בכלל, ולכן הכל תחת .vil ו-.world */
+.vil .bnav,.world .bnav{left:auto;right:calc(env(safe-area-inset-right,0px) + 20px);transform:none;max-width:calc(100% - 40px);
+  bottom:calc(env(safe-area-inset-bottom,0px) + 120px);padding:0;gap:12px;border:0;border-radius:0;background:none;box-shadow:none;
+  flex-direction:row-reverse;align-items:flex-end;direction:ltr;pointer-events:none}
+.vil .bnav{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}   /* בכפר אין סקילים: הפינה עצמה */
+.world .swap:not([hidden])~.bnav{bottom:calc(env(safe-area-inset-bottom,0px) + 224px)}
+.vil .nbtn.talkbtn,.world .nbtn.talkbtn{pointer-events:auto;flex-direction:column;gap:3px;min-width:var(--b2);max-width:calc(var(--b2) + 28px);height:auto;padding:0;
+  border:0;background:none;box-shadow:none;animation:none;overflow:visible;font:800 var(--t1)/1.1 var(--body);text-shadow:0 1px 2px #000,0 0 3px #000;white-space:nowrap}
+.vil .nbtn.talkbtn .ni,.world .nbtn.talkbtn .ni{width:var(--b2);height:var(--b2);border-radius:50%;display:grid;place-items:center;font-size:calc(var(--b2)*.46);line-height:1;
+  border:3px solid currentColor;background:radial-gradient(circle at 50% 35%,#3A3220,#1A160E);box-shadow:0 3px 0 #0B0E18;text-shadow:none;animation:tpulse 1.2s ease-in-out infinite alternate}
+.vil .nbtn.talkbtn:active,.world .nbtn.talkbtn:active{transform:scale(.92)}
+.world .nbtn.fishbite .ni{border-color:#EF4E57;background:linear-gradient(#5A2228,#3A1418);animation-duration:.25s}
+/* חלון של מבנה או שער פתוח: הוא הפעולה עכשיו, והעיגולים לא יושבים מתחתיו */
+body:has(#vPanel:not([hidden])) #nav,body:has(#wPanel:not([hidden])) #nav{display:none}

@@ -504,7 +504,8 @@ function worldBot(m,L,god){
     for(const f of [...html.matchAll(/<link rel="(?:manifest|icon|apple-touch-icon)" href="([^"]+)"/g)].map(m=>m[1]))if(!fs.existsSync(path.join(root,f)))pw.bad.push(f+' חסר');
     if(!/viewport-fit=cover/.test(html)||!/apple-mobile-web-app-capable/.test(html))pw.bad.push('meta של אייפון');
     const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webmanifest':'application/manifest+json','.json':'application/json'};
-    const srv=require('http').createServer((q,r)=>{let f=decodeURIComponent(q.url.split('?')[0]);if(f.endsWith('/'))f+='index.html';f=path.join(root,path.normalize(f));
+    const srv=require('http').createServer((q,r)=>{let f=decodeURIComponent(q.url.split('?')[0]);if(f==='/version.json'){r.writeHead(200,{'content-type':'application/json'});return r.end('{"v":""}')}   // כמו במחשב: אין גרסה מפורסמת (update-check.js לא עושה כלום)
+      if(f.endsWith('/'))f+='index.html';f=path.join(root,path.normalize(f));
       if(!f.startsWith(root)||!fs.existsSync(f)||fs.statSync(f).isDirectory()){r.writeHead(404);return r.end()}
       r.writeHead(200,{'content-type':types[path.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(r)});
     await new Promise(ok=>srv.listen(0,'127.0.0.1',ok));
@@ -516,11 +517,22 @@ function worldBot(m,L,god){
     pw.http=await pg.evaluate(async()=>{const t=Date.now();await Promise.race([navigator.serviceWorker.ready,new Promise(ok=>setTimeout(ok,20000))]);
       const k=(await caches.keys()).filter(n=>n.startsWith('fh-'));let n=0;for(const c of k)n+=(await (await caches.open(c)).keys()).length;
       return{state:PWA.state,active:!!(await navigator.serviceWorker.getRegistration()),cache:k.join(','),n,ms:Date.now()-t}});
+    // עדכון לבד (js/update-check.js): מדמים גרסה חדשה ב-version.json. במסך הפתיחה: רענון אחד לבד ואז רק הכפתור (בלי לולאה). בזירה: רק כפתור, בלי רענון
+    {let navs=0;pg.on('framenavigated',f=>{if(f===pg.mainFrame())navs++});
+      await ctx.route(/\/version\.json/,r=>r.fulfill({status:200,contentType:'application/json',body:'{"v":"9.9.9.9"}'}));
+      await pg.evaluate(()=>{updCheck();return 1});await pg.waitForTimeout(6000);
+      pw.upStart=navs;pw.upBtn1=await pg.evaluate(()=>!$('updBtn').hidden&&UPD.next==='9.9.9.9');
+      await pg.evaluate(()=>{sessionStorage.removeItem(UPD.key);startRun();window.__keep=1});navs=0;
+      await pg.evaluate(()=>updCheck());await pg.waitForTimeout(2500);
+      pw.upArena={navs,keep:await pg.evaluate(()=>window.__keep===1),btn:await pg.evaluate(()=>!$('updBtn').hidden)}}
     pw.errs=perr;await ctx.close();srv.close();
   }catch(e){pw.crash=e.message}
   check(!pw.crash&&!pw.bad.length,'אפליקציה: '+(pw.crash?'הבדיקה נפלה: '+pw.crash:pw.bad.length?'בעיות ב-manifest: '+pw.bad.join(', '):'manifest תקין, לרוחב, עם אייקונים 192/512 ו-maskable'));
   check(pw.file==='file','אפליקציה: מ-file:// '+(pw.file==='file'?'אין service worker':'ניסה לרשום service worker ('+pw.file+')'));
   if(!pw.crash)check(pw.http&&pw.http.state==='ok'&&pw.http.active&&pw.http.n>40&&!pw.errs.length,'אפליקציה: משרת http '+(pw.http&&pw.http.active?'ה-service worker נרשם ושמר '+pw.http.n+' קבצים ('+pw.http.cache+')':'ה-service worker לא נרשם ('+(pw.http&&pw.http.state)+')')+(pw.errs.length?' · שגיאות: '+[...new Set(pw.errs)].join(' | '):''));
+  if(!pw.crash)check(pw.upStart===1&&pw.upBtn1,'עדכון: במסך הפתיחה '+(pw.upStart===1?'רענון אחד לבד':pw.upStart+' רענונים במקום אחד')+(pw.upBtn1?', ואחריו רק הכפתור':', הכפתור לא הופיע אחרי הרענון'));
+  if(!pw.crash)check(pw.upArena&&!pw.upArena.navs&&pw.upArena.keep&&pw.upArena.btn,'עדכון: בזירה '+(pw.upArena&&!pw.upArena.navs?'לא מרעננים':'רענן באמצע ריצה')+(pw.upArena&&pw.upArena.btn?', רק כפתור 🔄':', אין כפתור'));
+  check(await page.evaluate(()=>!updWeb()&&!!$('updBtn').hidden&&$('updCheckBtn').hidden),'עדכון: מ-file:// לא בודקים ולא מציגים כפתור');
   // שמירה: נכתבת, נטענת חזרה, ושמירה ישנה בלי שדה חדש מקבלת אותו. בסוף מנקים, כדי שהריצה תתחיל נקייה
   const sv=await page.evaluate(()=>{bagAdd('wood',5);bagAdd('wood',2);const took=bagTake('wood',3)&&!bagTake('wood',99);SAVE.village.forge=2;saveNow();
     SAVE=saveBlank();saveLoad();const back=SAVE.bag.wood===4&&SAVE.village.forge===2&&took;
@@ -979,7 +991,12 @@ function worldBot(m,L,god){
     const win=(open,panel,sel)=>{open();const p=$(panel),b=document.querySelector(sel),r=vis(b),ok=!!r&&r.width>=40&&r.height>=40&&r.left>=0&&r.right<=W&&r.top>=0&&r.bottom<=H&&!p.hidden;
       const why=!ok?(!b?'אין כפתור':!r?'מוסתר':'מקום '+[r.left,r.top,r.width,r.height].map(Math.round).join(',')+(p.hidden?' חלון סגור':'')+(!$('npcDlg').hidden?' שיחה פתוחה':'')+' · רוחב העמוד '+document.documentElement.scrollWidth+'/'+innerWidth+' · רחב מדי: '+[...document.querySelectorAll('body *')].filter(e=>{const q=e.getBoundingClientRect();return q.width>0&&q.right>innerWidth+2&&!e.closest('[hidden]')}).slice(0,4).map(e=>e.id||e.className||e.tagName).join(',')):'';
       if(b)b.click();return !ok?'אין ✕ גלוי ('+why+')':!p.hidden?'לא נסגר':S.mode!=='play'?'מצב '+S.mode:'ok'};
-    const o={n:els.length,bad,off,panel:!!pn,more:!!document.querySelector('#'+(place==='world'?'w':'v')+'Bag .resmore'),cards:0,wins:{}};
+    // גבולות הגודל (docs/plan-hud.md, פרק 3), באחוזים מגובה המסך. בינתיים אזהרה בלבד, כדי ששום PR לא יגדיל משהו בלי שנראה
+    const LIM={button:16,pill:9,bar:3.5,window:85},big=[];
+    for(const e of document.querySelectorAll('button:not(.skb),.res,.win,.hp')){const r=vis(e);if(!r)continue;   // .skb: הסקיל הראשי גדול בכוונה (--b3)const c=String(e.className),
+      k=/\bwin\b/.test(c)?'window':/\bres\b/.test(c)?'pill':/\bhp\b/.test(c)?'bar':e.tagName==='BUTTON'?'button':'';const p=r.height/H*100;
+      if(k&&p>LIM[k])big.push((e.id||c.split(' ')[0])+' '+p.toFixed(1)+'%>'+LIM[k])}
+    const o={n:els.length,bad,off,panel:!!pn,big,more:!!document.querySelector('#'+(place==='world'?'w':'v')+'Bag .resmore'),cards:0,wins:{}};
     if(place!=='world'){const tb=document.querySelector('#vPanel [data-act="trade"]');if(tb)tb.click();const ss=[...document.querySelectorAll('#vPanel .tcols>section')].map(vis);
       o.cards=document.querySelectorAll('#vPanel .tcard').length;o.cols=ss.length===2&&ss[0]&&ss[1]?(Math.abs(ss[0].top-ss[1].top)<2?2:1):0;
       const x=document.querySelector('#vPanel [data-act="close"]');if(x)x.click();o.tradeBack=!!document.querySelector('#vPanel [data-act="trade"]')&&!$('vPanel').hidden}
@@ -1459,6 +1476,8 @@ function worldBot(m,L,god){
       'ממשק, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(bad.length?'נוגעים זה בזה: '+bad.join(', '):'הפס העליון והסרגל לא נוגעים')+(off.length?', מחוץ למסך: '+off.join(', '):'')+
       (v.more?', "+N" לשאר התרמיל':', אין "+N"')+', '+v.cards+' כרטיסים במסחר'+(v.cols===2?' בשני טורים':'')+(v.tradeBack?', ✕ חוזר לשוק':', ✕ לא חזר לשוק')+' · יציאה: '+all.map(x=>x[0]+(x[1]==='ok'?' ✕':' '+x[1])).join(', ')+
       (v.esc?', Esc':', Esc לא סוגר')+(v.backdrop?', רקע':', רקע לא סוגר')+(v.tapOut?', נגיעה במשחק':', נגיעה במשחק לא סוגרת יומן'))}
+  for(const nm in uiR){const b=[...new Set([...uiR[nm].v.big.map(x=>'כפר '+x),...uiR[nm].w.big.map(x=>'עולם '+x)])];   // אזהרה, לא כישלון (plan-hud.md)
+    results.push((b.length?'⚠ ':'· ')+'גודל ממשק, '+(nm==='port'?'טלפון עומד':'לרוחב')+': '+(b.length?'גדול מהגבול: '+b.join(', '):'הכל בתוך הגבולות'))}
   for(const nm in uiMenu){const {vm,wm}=uiMenu[nm],d=(m,p)=>p+': '+(m.btn?'☰':'אין ☰')+(m.open?'':' לא נפתח')+', '+m.tabs+'/'+m.want+' לשוניות'+(m.small.length?' קטנות: '+m.small.join(','):'')+(m.out.length?' מחוץ למסך: '+m.out.join(','):'')+
       ' ['+m.seen+']'+(m.xClose?', ✕':', ✕ לא סוגר')+(m.esc?', Esc':', Esc לא סוגר')+(m.bg?', רקע':', רקע לא סוגר')+(m.dot?', נקודה על ☰':', אין נקודה על ☰')+(m.nav?'':', בסרגל יש כפתור שלא שייך למקום');
     check(vm.ok&&wm.ok,'תפריט ראשי, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+d(vm,'כפר')+' · '+d(wm,'עולם'))}
