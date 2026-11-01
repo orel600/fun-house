@@ -68,7 +68,7 @@ function wnpcDialog(){
   const ready=mine.filter(q=>Q.active[q.id]&&qReady(q)),open=mine.filter(qOpen),on=mine.filter(q=>Q.active[q.id]&&!qReady(q));
   let h=winHead(name,role);   // ui.js
   h+='<p class="npcsay">'+npcPic(id)+S.wd.dlgLine+'</p>';
-  h+=ready.map(q=>qCard(q,'claim')).join('')+open.map(q=>qCard(q,'accept')).join('')+on.map(q=>qCard(q,'track')).join('');
+  h+=npcCards(id,ready,open,on);   // קווסט אחד בכל פעם (npc.js)
   if(!ready.length&&!open.length&&!on.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
   el.innerHTML=h;el.hidden=false;
 }
@@ -81,6 +81,8 @@ $('talkBtn').addEventListener('click',()=>{const id=$('talkBtn').dataset.id;if(i
 $('npcDlg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||!S.wd)return;
   if(b.dataset.act==='close'){wnpcTalk(null);return}
+  if(b.dataset.act==='pg'){npcPg(+b.dataset.d);wnpcDialog();return}   // ‹ › (npc.js)
+  if(b.dataset.q)NPCPG.q=b.dataset.q;
   questAct(b.dataset.act,b.dataset.q);   // quests.js
   wnpcDialog();
 });

@@ -110,6 +110,20 @@ const BUILDS={
   v_crate: {src:hex('decoration/props/crate_A_big.gltf')},
   v_barrel:{src:hex('decoration/props/barrel.gltf')}
 };
+// טבע לכל אזור בעולם (KayKit Forest Nature Pack 1.0 FREE, CC0): עצים, עצים חשופים, סלעים, שיחים ועשב. המפתח מתחיל ב-n_, ומי משתמש במה: W3D.decor ב-js/render3d.js
+//   kaylousberg.itch.io/kaykit-forest  KayKit_Forest_Nature_Pack_1.0_FREE -> C:/kk/forest
+const forest=p=>path.join(KK,'forest/Assets/gltf',p+'_Color1.gltf');
+const NATURE={
+  n_tree: {src:forest('Tree_1_A')},        // עץ עגול (עצי האגם)
+  n_acacia:{src:forest('Tree_3_A')},       // עץ עם צמרת שטוחה (מדבר)
+  n_pine: {src:forest('Tree_4_A')},        // אורן (רכס)
+  n_bare: {src:forest('Tree_Bare_1_A')},   // עץ חשוף ועבה (לב הצל)
+  n_dead: {src:forest('Tree_Bare_2_A')},   // עץ מת וגבוה (מדבר, סערה)
+  n_block:{src:forest('Rock_1_A')},        // סלע מדרגות (מגדלי הסערה)
+  n_crag: {src:forest('Rock_2_A')},        // סלע זוויתי (רכס, מדבר)
+  n_round:{src:forest('Rock_3_A')},        // סלע עגול (אגם, לב הצל)
+  n_bush: {src:forest('Bush_1_A')}         // שיח
+};
 const TEX=256;   // גודל הטקסטורה. החבילות משתמשות בפלטת צבעים, אז 256 נראה כמו 1024
 
 const io=new NodeIO().registerExtensions(ALL_EXTENSIONS);
@@ -129,8 +143,19 @@ n.getMesh().dispose();n.dispose()}
   return io.writeBinary(doc);
 }
 
+// node tools/build3d.js C:/kk --only nature: מוסיף רק את NATURE לקובץ הקיים, בלי שאר החבילות ובלי לבנות מחדש את three.js
+const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
 (async()=>{
   const out={},sizes=[];
+  if(ONLY==='nature'){
+    const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
+    const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
+    Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
+    for(const k in out)if(k.startsWith('n_'))delete out[k];
+    for(const [k,c] of Object.entries(NATURE))add(k,await slim(await io.read(c.src),{q:true}));
+    fs.writeFileSync(f,src.slice(0,i).replace('Fantasy Weapons Bits ו-Medieval Hexagon מאת','Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת')+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
+  }
   const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
   for(const [k,c] of Object.entries(CHARS))add(k,await slim(await io.read(c.src),{keepMeshes:c.keep,tex:c.tex,fmt:c.fmt}));
   for(const [k,c] of Object.entries(PROPS))add(k,await slim(await io.read(c.src),{}));
@@ -147,12 +172,13 @@ n.getMesh().dispose();n.dispose()}
     add('wtex_'+t,await sharp(px,{raw:{width:N,height:N,channels:4}}).png().toBuffer());
   }
   for(const [k,c] of Object.entries(BUILDS))add(k,await slim(await io.read(c.src),{}));
+  for(const [k,c] of Object.entries(NATURE))add(k,await slim(await io.read(c.src),{q:true}));
   for(const [k,c] of Object.entries(ANIMS)){
     const doc=await io.read(c.src),miss=c.keep.filter(n=>!doc.getRoot().listAnimations().some(a=>a.getName()===n));
     if(miss.length)throw new Error('אנימציה חסרה ב-'+k+': '+miss.join(', '));
     add('anim_'+k,await slim(doc,{keepMeshes:null,keepAnims:c.keep}));
   }
-  const head='/* נוצר אוטומטית ע"י tools/build3d.js. לא עורכים ביד.\n   דמויות, אנימציות, נשקים ומבנים: KayKit Adventurers, Skeletons, Character Animations, Fantasy Weapons Bits ו-Medieval Hexagon מאת Kay Lousberg (www.kaylousberg.com), רישיון CC0.\n   מוטמעות כאן כטקסט ולא כקבצים, כי המשחק נפתח גם מ-file:// ושם הדפדפן לא טוען קבצים לבד */\n';
+  const head='/* נוצר אוטומטית ע"י tools/build3d.js. לא עורכים ביד.\n   דמויות, אנימציות, נשקים ומבנים: KayKit Adventurers, Skeletons, Character Animations, Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת Kay Lousberg (www.kaylousberg.com), רישיון CC0.\n   מוטמעות כאן כטקסט ולא כקבצים, כי המשחק נפתח גם מ-file:// ושם הדפדפן לא טוען קבצים לבד */\n';
   fs.writeFileSync(path.join(ROOT,'js/models3d.js'),head+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
 
   // three.js בלי import: חבילה אחת שמגדירה את THREE גלובלי

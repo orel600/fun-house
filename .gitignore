@@ -6,3 +6,4 @@ tools/shots/
 .claude/settings.local.json
 __pycache__/
 tools/ux-shots/
+tools/critic/out/
