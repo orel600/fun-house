@@ -119,11 +119,13 @@ function cloudHash(h){h=String(h||'').replace(/^#/,'');if(!/(^|&)(access_token|e
 // חזרה מ-Google. מחזיר null כשלא חזרנו משם (הפעלה רגילה)
 async function cloudBack(h){
   const p=cloudHash(h!=null?h:location.hash);if(!p)return null;
-  try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}   // מנקים את הטוקנים מהכתובת
+  // מנקים מהכתובת את הטוקנים, ואת השגיאה ש-Supabase שם גם אחרי ה-?
+  try{const q=new URLSearchParams(location.search);for(const k of['error','error_code','error_description'])q.delete(k);const s=q.toString();history.replaceState(null,'',location.pathname+(s?'?'+s:''))}catch(e){}
   let prev=null;try{prev=JSON.parse(localStorage.getItem(CLOUD.lsKey+'-go'))}catch(e){}cloudGo(null);
   if(p.error){
     if(prev&&prev.mode==='link'){cloudGoogle(true);return'relink'}   // החיבור נכשל: מנסים כניסה רגילה
-    cloudShow('off');return'error';
+    // גם הכניסה הרגילה נכשלה: אומרים לשחקן, במקום "לא מחובר" בשקט. הסיבה בקונסול (אוראל, 1.11.2026: הסיסמה של Google ב-Supabase הייתה שגויה)
+    console.warn('cloud: Google',p.error_code||p.error,p.error_description||'');cloudShow('err');return'error';
   }
   cloudShow('sync');
   try{
@@ -134,14 +136,15 @@ async function cloudBack(h){
   }catch(e){cloudShow('off');return'offline'}
 }
 
-// נכנסנו לחשבון Google שיש לו כבר שמירה משלו. טלפון חדש (בלי התקדמות) לוקח את השמירה מהחשבון.
-// אחרת החדשה מנצחת, ואם הן שונות מאוד שואלים את השחקן. אף פעם לא מוחקים התקדמות בלי לשאול
+// נכנסנו לחשבון Google שיש לו כבר שמירה משלו. טלפון חדש (בלי התקדמות) לוקח את השמירה מהחשבון, וחשבון בלי התקדמות
+// (נפתח בדפדפן אחר) לא דורס טלפון עם התקדמות. אחרת החדשה מנצחת, ואם הן שונות מאוד שואלים את השחקן. אף פעם לא מוחקים התקדמות בלי לשאול
 async function cloudMergeIn(){
   const d=await cloudOnce(()=>cloudRow(CLOUD.session));
   let pick='phone';
   if(isObj(d)){
-    const xp=o=>(o&&o.hero&&o.hero.xp)||0,blank=!xp(SAVE)&&!Object.keys(SAVE.bag||{}).length;
-    if(blank)pick='cloud';
+    const xp=o=>(o&&o.hero&&o.hero.xp)||0,blank=o=>!xp(o)&&!Object.keys(o.bag||{}).length;
+    if(blank(SAVE))pick='cloud';
+    else if(blank(d))pick='phone';
     else if(Math.abs(xp(SAVE)-xp(d))>CLOUD.askXp)pick=await cloudAsk(SAVE,d);
     else pick=(d.ts||0)>(SAVE.ts||0)?'cloud':'phone';
   }
