@@ -111,7 +111,8 @@ function npcTalk(id){
   S.vil.dlg=id;S.vil.dlgStay=false;if(id){$('qLog').hidden=true;S.vil.dlgLine=npcLine(id);sfx('ui')}
   npcDialog();
 }
-$('talkBtn').addEventListener('click',()=>{const id=$('talkBtn').dataset.id;if(id&&S.vil)npcTalk(id)});
+// "לדבר": חלון אחד בכל פעם, אז הפאנל של המבנה שלידו נסגר עד שמתרחקים (בדיקת החוויה, docs/ux-audit.md סעיף 3)
+$('talkBtn').addEventListener('click',()=>{const id=$('talkBtn').dataset.id;if(!id||!S.vil)return;const cur=S.vil.gate?'gate':S.vil.near;if(cur)S.vil.shut=cur;npcTalk(id)});
 $('npcDlg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||!S.vil)return;
   if(b.dataset.act==='close'){npcTalk(null);return}

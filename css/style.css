@@ -821,3 +821,18 @@ body.menu #ovGear .gearpanel{height:100%}
 .welnext{margin:0;text-align:center;font:700 16px var(--body)}
 .welfly{position:fixed;z-index:30;pointer-events:none;display:flex;align-items:center;gap:3px;font:900 18px var(--body);color:var(--gold);text-shadow:0 1px 3px #000}
 .welfly .ri{width:24px;height:24px}
+
+/* ===== מטרות לחיצה ושיחה (בדיקת החוויה, docs/ux-audit.md, סעיפים 2 ו-10) =====
+   כל כפתור בחלון לפחות 48 (docs/ui-guide.md פרק 2): כפתורים ראשיים, לשוניות, מתכונים, מחסן, נקודות דמות ודרגות עולם */
+.vbtn,.stbuilds .vbtn,.gbtns .vbtn,.endwin .vbtn{min-height:48px}
+.ffilter button{min-height:48px;padding-inline:14px}
+button.res{min-height:48px;min-width:48px}
+.stplus{width:48px;height:48px}
+.tierb{min-height:48px}
+/* שיחה לרוחב: הדיוקן והמשפט בטור אחד, הקווסטים והכפתורים בטור השני, כדי שהכל ייכנס בלי לגלול את כל החלון */
+@media (orientation:landscape){
+  .npcdlg.win{width:min(780px,calc(100vw - 32px));display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);column-gap:12px;align-content:start}
+  .npcdlg.win>.whd{grid-column:1/-1}
+  .npcdlg.win>.npcsay{grid-column:1;grid-row:2/span 20;align-self:start;position:sticky;top:52px}
+  .npcdlg.win>:not(.whd):not(.npcsay){grid-column:2}
+}
