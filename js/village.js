@@ -281,7 +281,7 @@ const vEnterEl=(()=>{const b=document.createElement('button');b.id='vEnter';b.cl
 function vEnterBtn(){
   const V=S.vil,k=V&&V.here,show=!!k&&V.open!==k&&S.mode==='play',key=show?LANG+k:'';
   if(vEnterEl.dataset.key===key)return;vEnterEl.dataset.key=key;vEnterEl.hidden=!show;vEnterEl.dataset.k=k||'';
-  if(show)vEnterEl.textContent=k==='gate'?'🚪 '+T('vil.gate'):'🏠 '+T('vil.enter',T('vil.'+k));
+  if(show){const g=k==='gate';vEnterEl.innerHTML='<span class="ni" aria-hidden="true">'+(g?'🚪':'🏠')+'</span>'+T(g?'ctx.out':'ctx.enter');vEnterEl.setAttribute('aria-label',g?T('vil.gate'):T('vil.enter',T('vil.'+k)))}
 }
 // נגיעה קצרה בקנבס, בלי לגרור: איזה מבנה (או השער) נמצא שם. האזור כולל את הגג ואת השלט שמתחת
 function vTapAt(cx,cy){
