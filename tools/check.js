@@ -535,6 +535,14 @@ function worldBot(m,L,god){
   if(!pw.crash)check(pw.upStart===1&&pw.upBtn1,'עדכון: במסך הפתיחה '+(pw.upStart===1?'רענון אחד לבד':pw.upStart+' רענונים במקום אחד')+(pw.upBtn1?', ואחריו רק הכפתור':', הכפתור לא הופיע אחרי הרענון'));
   if(!pw.crash)check(pw.upArena&&!pw.upArena.navs&&pw.upArena.keep&&pw.upArena.btn,'עדכון: בזירה '+(pw.upArena&&!pw.upArena.navs?'לא מרעננים':'רענן באמצע ריצה')+(pw.upArena&&pw.upArena.btn?', רק כפתור 🔄':', אין כפתור'));
   check(await page.evaluate(()=>!updWeb()&&!!$('updBtn').hidden&&$('updCheckBtn').hidden),'עדכון: מ-file:// לא בודקים ולא מציגים כפתור');
+  // דיווח באג (bugreport.js): הכפתור בהגדרות, הדוח עם גרסה ומקום, ושגיאה מכוונת מופיעה בו. שגיאה מדומה (ErrorEvent), כדי לא לסמן את הבדיקה
+  const bug=await page.evaluate(()=>{const b=$('bugBtn'),inSet=!!b&&!!b.closest('#ovSound')&&b.textContent.includes('🐞');
+    window.dispatchEvent(new ErrorEvent('error',{message:'bugtest-boom',filename:'x.js',lineno:7,error:new Error('bugtest-boom')}));
+    Object.defineProperty(navigator,'share',{value:undefined,configurable:true});b&&b.click();   // הדוח נכתב מיד בלחיצה (BUG.lastText). בלי setTimeout: השעון של הבדיקה עצור כאן
+   
+    const r=BUG.lastText||'';BUG.errs=BUG.errs.filter(e=>!e.msg.includes('bugtest'));
+    return{inSet,ver:r.includes('version: v'+VERSION),place:/\nplace: \S/.test(r),err:r.includes('bugtest-boom'),lines:r.split('\n').length}});
+  check(bug.inSet&&bug.ver&&bug.place&&bug.err,'דיווח באג: '+(!bug.inSet?'אין כפתור 🐞 בהגדרות':!bug.ver?'אין גרסה בדוח':!bug.place?'אין מקום בדוח':!bug.err?'השגיאה המכוונת לא בדוח':'כפתור בהגדרות, דוח של '+bug.lines+' שורות עם גרסה, מקום ושגיאה'));
   // שמירה: נכתבת, נטענת חזרה, ושמירה ישנה בלי שדה חדש מקבלת אותו. בסוף מנקים, כדי שהריצה תתחיל נקייה
   const sv=await page.evaluate(()=>{bagAdd('wood',5);bagAdd('wood',2);const took=bagTake('wood',3)&&!bagTake('wood',99);SAVE.village.forge=2;saveNow();
     SAVE=saveBlank();saveLoad();const back=SAVE.bag.wood===4&&SAVE.village.forge===2&&took;
@@ -895,6 +903,15 @@ function worldBot(m,L,god){
       for(const f of FL)f.t-=FEED.life+0.1;render();r.gone=FL.length===0;
       S.wd=null;S.vil=null;r.arena=!feedOn()}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);FL.length=0;if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // כותרת אזור ופחות אפקטים (feed.js, juice.js): הכותרת רק בכניסה הראשונה לאזור, והמתג חוצה חלקיקים, מוריד את השובל ונשמר
+  const fxl=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{SAVE.regSeen={};const t0=FEED.stat.titles;enterWorld('home');r.first=FEED.stat.titles===t0+1&&!!FTITLE;FTITLE=null;
+      enterWorld('home');r.once=FEED.stat.titles===t0+1;
+      const btn=document.querySelector('[data-fxless="1"]');r.btn=!!btn;
+      const burst=()=>{const J=juice();J.p.length=0;jBurst(P.x,P.y,'fire',12,0);return J.p.length};
+      setFxLess(false);const full=burst();setFxLess(true);const less=burst();r.half=less>0&&less<full;r.saved=SAVE.fxLess===true&&btn.getAttribute('aria-pressed')==='true';
+      setFxLess(false);r.off=!SAVE.fxLess}catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);FTITLE=null;if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // כל דמות התחלה לשתי שניות מול אויב אחד: איך היא תוקפת, מה עף, ואיזו הנפשה. אחר כך הכל חוזר כמו שהיה
   const heroes=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,out={};
     const W3={sword:'Melee_1H_Attack_Slice_Horizontal',bow:'Ranged_Bow_Release',staff:'Ranged_Magic_Shoot'};   // ההנפשה שכל נשק צריך (GRIP3D)
@@ -1640,6 +1657,8 @@ function worldBot(m,L,god){
   check(ob.fire&&ob.slow&&ob.block&&ob.shield&&ob.shieldOnce&&ob.heal&&ob.crit>0&&ob.luck>1&&ob.draw===true,'חפצים מסתובבים ('+ob.types+'): '+[ob.fire?'אש שורפת':'אש לא פגעה',ob.slow?'כפור מאט':'כפור לא האט',
     ob.block?'אבן עצרה ירייה':'ירייה עברה',ob.shield?(ob.shieldOnce?'מגן בלע מכה אחת':'מגן בלע יותר ממכה'):'מגן לא בלע',ob.heal?'עלה ריפא':'אין ריפוי',
     'תלתן: קריטי +'+ob.crit+', שלל x'+ob.luck,ob.draw===true?'מצויר':'ציור נכשל: '+ob.draw].join(', '));
+  check(!fxl.err&&fxl.first&&fxl.once&&fxl.btn&&fxl.half&&fxl.saved&&fxl.off,'כותרת אזור ופחות אפקטים: '+(fxl.err||[fxl.first?'כותרת בכניסה הראשונה':'אין כותרת',fxl.once?'לא חוזרת':'חוזרת בכל כניסה',
+    fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
   check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw&&wsk.orbFlash,

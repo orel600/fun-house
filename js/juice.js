@@ -23,6 +23,12 @@ const JUICE={
   poof:{max:8,life:0.45,puffs:7,r:[8,18],col:'#E9E3D6',ring:46},   // עשן בהריגה: כמה ענני הריגה יחד, משך, כמה עננים קטנים, גודל, צבע וגודל הטבעת
   scatter:1.5                                                   // השלל שנפל בהריגה עף רחוק יותר פי זה
 };
+// "פחות אפקטים" בהגדרות (ניר, docs/plan-fx.md משימה 6): חצי חלקיקים, בלי שובל לאורות, בלי נצנוץ לשלל, ומספרי נזק קטנים יותר.
+// נשמר ב-SAVE.fxLess. נקרא כאן, ב-wisps.js, ב-drops.js וב-feed.js
+const FX_LESS={parts:0.5,nums:0.8};
+const fxLess=()=>typeof SAVE!=='undefined'&&!!SAVE.fxLess;
+function setFxLess(on){SAVE.fxLess=!!on;saveNow();showFxLess()}
+function showFxLess(){for(const b of document.querySelectorAll('[data-fxless]'))b.setAttribute('aria-pressed',String((b.dataset.fxless==='1')===fxLess()))}
 const juice=()=>S.jc||(S.jc={p:[],n:[],poofs:[],last:-9,t:0});   // S חדש בכל מקום, אז גם האפקטים מתאפסים
 const jNow=()=>performance.now()/1000;
 function juiceOn(){const W=JUICE.where;return S.wd?W.world:S.vil?W.village:W.arena}
@@ -40,7 +46,7 @@ function juiceHit(e,d,m,crit,t,ang){
   if(J.n.length>=K.nums.max)J.n.shift();
   const N=K.nums;
   J.n.push({x:e.x+rand(-10,10),y:e.y-e.r-10,txt:big(d)+(crit?'!':''),crit,t0:jNow(),
-    col:crit?N.critCol:m>1?dtCol(t):m<1?C.dim:C.chalk,size:crit?N.crit:m>1?N.weak:m<1?N.resist:N.size,weak:m>1?t:null,dx:rand(-14,14)});
+    col:crit?N.critCol:m>1?dtCol(t):m<1?C.dim:C.chalk,size:Math.max(9,(crit?N.crit:m>1?N.weak:m<1?N.resist:N.size)*(fxLess()?FX_LESS.nums:1)),weak:m>1?t:null,dx:rand(-14,14)});
   return true;
 }
 // נקרא מ-kill (combat.js), אחרי שהשלל נפל
@@ -50,7 +56,7 @@ function juiceKill(e){
   jStop(boss||elite?K.stop.big:K.stop.kill,boss||elite);
   if(boss||elite)S.shake=Math.max(S.shake,boss?K.shake.big:K.shake.elite);
   if(J.poofs.length>=K.poof.max)J.poofs.shift();
-  const pf=[];for(let i=0;i<K.poof.puffs;i++){const a=rand(0,6.28);pf.push({a,s:rand(20,55),r:rand(...K.poof.r)})}
+  const pf=[];for(let i=0;i<K.poof.puffs*(fxLess()?FX_LESS.parts:1);i++){const a=rand(0,6.28);pf.push({a,s:rand(20,55),r:rand(...K.poof.r)})}
   J.poofs.push({x:e.x,y:e.y,t0:jNow(),pf,r:e.r*(e.big||1),col:dtCol(e.weak)});
   jBurst(e.x,e.y-e.r*0.5,'gold',K.parts.kill,null);
   for(const d of (S.gd||[]))if(d.t===0&&Math.hypot(d.x-e.x,d.y-e.y)<e.r+40){d.vx*=K.scatter;d.vy*=K.scatter}   // השלל שנפל עכשיו (drops.js)
@@ -60,7 +66,7 @@ function juiceSquash(e){if(!e.jT)return 0;const k=(jNow()-e.jT)/JUICE.squash.t;r
 
 // ניצוצות לפי סוג הנזק. ang: כיוון המכה (פסים של פיזי עפים אחורה ממנה), או null לכל הכיוונים
 function jBurst(x,y,t,n,ang){
-  const L=juice().p;n=Math.min(n,JUICE.parts.max-L.length);
+  const L=juice().p;if(fxLess())n=Math.round(n*FX_LESS.parts);n=Math.min(n,JUICE.parts.max-L.length);   // פחות אפקטים: חצי
   const col=t==='gold'?C.gold:dtCol(t);
   for(let i=0;i<n;i++){
     const a=ang!=null&&(t==='physical'||!DMG.types[t])?ang+rand(-0.9,0.9):rand(0,6.28),s=rand(70,220);
@@ -105,3 +111,7 @@ function juiceDraw(){
   J.n=J.n.filter(f=>now-f.t0<N.life);
   ctx.restore();
 }
+
+// כפתורי "אפקטים: מלא / פחות" בהגדרות (index.html)
+for(const b of document.querySelectorAll('[data-fxless]'))b.onclick=()=>{setFxLess(b.dataset.fxless==='1');sfx('ui')};
+showFxLess();

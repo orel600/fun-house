@@ -106,7 +106,8 @@ function drawGlint(){
       ctx.globalAlpha=0.55+0.15*Math.sin(d.ph*4);ctx.fillStyle=gr;ctx.fillRect(d.x-L.beamW/2,d.y-h,L.beamW,h);blit(G,d.x,d.y-h*0.35,6,0.3)}   // קרן דקה
     if(d.z===0&&(resOf(d.r)||{}).glow){const a=DROPS.glow,g=wispGlow(C.gold);blit(g,d.x,y-6+bob,a.r*1.6,a.alpha*2*(0.75+0.25*Math.sin(d.ph*a.pulse)));
       blit(wispGlow(C.gold,'#fff'),d.x+7*Math.cos(d.ph*a.spin),y-6+bob+7*Math.sin(d.ph*a.spin),3,0.9)}   // הגזר הקסום: הילה וניצוץ שמסתובב
-    const gl=(d.ph/L.star.every)%1;if(gl<L.star.on){const k=Math.sin(gl/L.star.on*3.14),s=L.star.s*k;ctx.globalAlpha=k;ctx.strokeStyle='#fff';ctx.lineWidth=1.2;   // נצנוץ: כוכב ארבע קרניים לרגע
+    const gl=(d.ph/L.star.every)%1;if(gl<L.star.on&&!fxLess()){   // בפחות אפקטים (juice.js) בלי נצנוץ
+      const k=Math.sin(gl/L.star.on*3.14),s=L.star.s*k;ctx.globalAlpha=k;ctx.strokeStyle='#fff';ctx.lineWidth=1.2;   // נצנוץ: כוכב ארבע קרניים לרגע
       ctx.beginPath();ctx.moveTo(d.x+6-s,y-14);ctx.lineTo(d.x+6+s,y-14);ctx.moveTo(d.x+6,y-14-s);ctx.lineTo(d.x+6,y-14+s);ctx.stroke()}
     ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
     ctx.font=(gear?L.iconGear:L.icon)+'px system-ui, sans-serif';ctx.fillText(dropIcon(d.r)||'?',d.x,y-4+bob);
