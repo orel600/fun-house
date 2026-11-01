@@ -8,7 +8,7 @@ let DIR=LANGS[LANG].dir;   // כיוון הטקסט, גם לציור על הקנ
 
 const TEXT={
   // מסך פתיחה
-  title:{he:'זירת המקל',en:'Stick Arena'},
+  title:{he:'שישה פנסים',en:'Six Lanterns'},
   tagline:{he:'דמו ראשון · כל בוס נבנה מחדש לפי איך ששיחקת',en:'First demo · every boss is rebuilt around how you played'},
   rules:{
     he:['מתחילים ב<span class="g">כפר</span>: בונים ומשדרגים מבנים, ויוצאים דרך השער אל <span class="g">העולם</span>: כורתים עצים, שוברים סלעים, וצדים יצורים. מה שבתרמיל בסיכון: מי שנופל בעולם מאבד חצי מהמשאבים. בעולם יש שערים לזירה, ושלל מהזירה מגיע גם אם נפלת.',
