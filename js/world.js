@@ -271,6 +271,7 @@ function worldUpdate(dt){
   }
   wPonds(P);
   attack(dt);   // פוגעת גם במקורות משאבים (aimTarget ב-combat.js)
+  skillsUpdate(dt);orbitUpdate(dt);wskUpdate(dt);wskHud();   // סקילים שיורים והחפצים המסתובבים, כמו בזירה (wskill.js, skills.js, orbit.js)
   wFoes(dt);if(S.mode!=='play')return;
   const hitable=S.nd.list.length?enemies.concat(S.nd.list):enemies;   // קליעים פוגעים גם במקורות משאבים (nodes.js), כמו בזירה
   for(const b of pb){shotFly(b,dt);
