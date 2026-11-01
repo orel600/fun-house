@@ -908,3 +908,50 @@ body:has(#vPanel:not([hidden])) #nav,body:has(#wPanel:not([hidden])) #nav{displa
 .world #wPanel.win>p{margin:6px 2px 10px;font-size:var(--t2);line-height:1.35}
 @media (orientation:landscape){.world #wPanel.win{width:min(380px,46vw)}}
 
+/* הפינות העליונות בכפר ובעולם (js/minimap.js, docs/plan-hud.md פרק 4, ניר 1.11.2026: כיוון B).
+   תחילת השורה: "מי אני" (רמה, חיים, XP) ומתחתיו שורת המטרה בשתי שורות. סוף השורה: ☰, לידו עד 2 משאבים, ומתחתיו מפה קטנה (בעולם).
+   start/end ולא left/right: בעברית הפינות מתחלפות, כמו ☰. הזירה לא משתנה: הכל תחת .vil ו-.world */
+:root{--ctop:calc(env(safe-area-inset-top,0px) + 8px);--cside:calc(max(env(safe-area-inset-left,0px),env(safe-area-inset-right,0px)) + 14px);
+  --mmap:clamp(60px,15.5vh,88px)}
+.who{display:none;position:fixed;z-index:3;top:var(--ctop);inset-inline-start:var(--cside);align-items:center;gap:6px;pointer-events:none}
+.vil .who,.world .who{display:flex}
+.wlv{flex:none;width:var(--b1);height:var(--b1);border-radius:50%;border:2px solid var(--gold);background:radial-gradient(circle at 50% 35%,#2C3654,#141A2B);
+  display:grid;place-items:center;font:900 var(--t1)/1 var(--body);color:var(--gold);box-shadow:0 2px 6px #0008}
+.wbars{display:flex;flex-direction:column;gap:3px;width:clamp(120px,26vh,170px)}
+.whp,.wxp{background:rgba(18,22,36,.85);border:1px solid #0008;border-radius:6px;overflow:hidden}
+.whp{height:clamp(8px,1.8vh,12px)}.wxp{height:4px}
+.whp i,.wxp i{display:block;height:100%;width:100%;background:var(--blood);transition:width .15s}
+.wxp i{background:var(--gold)}
+/* בעולם: פס החיים של הזירה (#hp) מוסתר, ו"מי אני" במקומו. פס הבוס (אם יש) למעלה באמצע, בין הפינות */
+.world .hud .row{display:none}
+.world .hud{padding-top:var(--ctop)}
+.world .bossbar{max-width:36vw;margin-inline:auto}
+/* שורת המטרה (guide.js) וקו המעקב (qTrack): אותו מקום, מתחת ל"מי אני", עד שתי שורות */
+.vil .guide,.world .guide{left:auto;transform:none;inset-inline-start:var(--cside);top:calc(var(--ctop) + var(--b1) + 8px);max-width:min(32vw,340px)}
+.vil .guide button,.world .guide button{font-size:var(--t1);min-height:36px}
+.vil .gmain,.world .gmain{padding:4px 10px;border-start-start-radius:14px;border-end-start-radius:14px;text-align:start}
+.vil .gmin,.world .gmin{border-start-end-radius:14px;border-end-end-radius:14px}
+.vil .gtxt,.world .gtxt{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.25}
+.world .qtrack{position:fixed;margin:0;top:calc(var(--ctop) + var(--b1) + 8px);inset-inline-start:var(--cside);max-width:min(32vw,340px);font-size:var(--t1);
+  white-space:normal;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.25}
+.world:not(.guided) .qtrack:not([hidden]){display:-webkit-box}   /* כשיש שורת מטרה, היא במקומו (.guided) */
+/* המשאבים: שורה ליד ☰ (במקום פס לכל הרוחב באמצע). שם האזור עבר לבאנר הכניסה, ו-🔍 ו-🌀 לחלון המפה */
+.vhud,.whud{left:auto;right:auto;transform:none;max-width:none;padding:0;top:calc(var(--ctop) + 7px);inset-inline-end:calc(var(--cside) + 56px);
+  flex-direction:row;justify-content:flex-end;gap:6px}
+.vhud{position:fixed;width:auto}
+.vhud .bag,.whud .tbar{justify-content:flex-end}
+.world #wName,.world #wSec,.world #chTag{display:none}
+/* המפה הקטנה: עיגול מתחת ל-☰, רק בעולם */
+.minimap{display:none;position:fixed;z-index:3;top:calc(var(--ctop) + 56px);inset-inline-end:var(--cside);width:var(--mmap);height:var(--mmap);padding:0;
+  border-radius:50%;border:2px solid var(--gold);background:#0B0E18;box-shadow:0 3px 10px #0009;overflow:hidden;cursor:pointer}
+.world .minimap:not([hidden]){display:block}
+.minimap canvas{position:static;inset:auto;display:block;width:100%;height:100%;border-radius:50%}   /* לא כמו קנבס המשחק (fixed על כל המסך) */
+.minimap:active{transform:scale(.94)}
+.minimap:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+body.menu .minimap{display:none!important}
+.wmkey b{color:var(--gold);margin-inline-end:6px}
+/* טלפון עומד: אותן פינות, עם פסים קצרים יותר כדי שהמשאבים ייכנסו באותה שורה */
+@media (orientation:portrait){
+  .wbars{width:84px}
+  .world .hud{padding-top:calc(var(--ctop) + 64px + var(--mmap))}
+}
