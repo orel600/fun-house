@@ -1,6 +1,6 @@
 /* אפקטים של קרב, "juice" (ניר, 1.11.2026: "דברים שחסרים לי: אפקטים של קרב").
    מה שגורם למכה להרגיש חזקה, לפי Vlambeer ("The Art of Screenshake"), Hades, Vampire Survivors ו-Diablo:
-   - עצירה קצרה (hit-stop): המשחק קופא לשבריר שנייה ברגע הפגיעה. חזק יותר בקריטי ובהריגה, ולא בכל מכה ברצף (gap), אחרת זה מגמגם
+   - עצירה קצרה (hit-stop): המשחק קופא לשבריר שנייה, רק במכה קריטית ובהריגה, ולא יותר מפעם ב-gap, אחרת עם הרבה אויבים זה מגמגם
    - הבזק לבן על האויב (גם בתלת-ממד: render3d.js מדליק emissive כש-e.flash>0), ו"מעיכה" קטנה של המודל
    - הדיפה קטנה אחורה, בנוסף למה שכבר יש ב-combat.js
    - ניצוצות בצבע ובצורה של סוג הנזק (DMG ב-dmg.js): פיזי פסים, אש גחלים שעולות, מים טיפות שנופלות, קרח רסיסים, ברק זיגזג, אדמה גושים
@@ -13,7 +13,7 @@
 
 const JUICE={
   where:{world:true,village:true,arena:false},                  // איפה האפקטים פועלים. arena כולל את חדר הבונוס
-  stop:{hit:0.03,weak:0.045,crit:0.06,kill:0.07,big:0.11,gap:0.25},   // עצירה: מכה, חולשה, קריטי, הריגה, הריגת עלית/בוס. gap: מינימום בין עצירות של מכות רגילות
+  stop:{hit:0,weak:0,crit:0.05,kill:0.05,big:0.11,gap:0.3},   // עצירה רק במכה חזקה: קריטי, הריגה, הריגת עלית/בוס. מכה רגילה בלי (בעולם יש עד 45 אויבים). gap: מינימום בין עצירות, חוץ מעלית ובוס
   flash:0.11,                                                   // כמה זמן האויב לבן
   squash:{t:0.16,k:0.16},                                       // מעיכה בתלת-ממד: אורך ועוצמה (0.16 = 16% נמוך ורחב יותר)
   push:60,                                                      // הדיפה נוספת, לפני חלוקה בגודל האויב. חולשה פי 1.4
@@ -26,7 +26,7 @@ const JUICE={
 const juice=()=>S.jc||(S.jc={p:[],n:[],poofs:[],last:-9,t:0});   // S חדש בכל מקום, אז גם האפקטים מתאפסים
 const jNow=()=>performance.now()/1000;
 function juiceOn(){const W=JUICE.where;return S.wd?W.world:S.vil?W.village:W.arena}
-function jStop(s,force){const J=juice(),now=jNow();if(!force&&now-J.last<JUICE.stop.gap)return;J.last=now;S.hitstop=Math.max(S.hitstop||0,s)}
+function jStop(s,force){if(!(s>0))return;const J=juice(),now=jNow();if(!force&&now-J.last<JUICE.stop.gap)return;J.last=now;S.hitstop=Math.max(S.hitstop||0,s)}
 
 // נקרא מ-damage (combat.js). מחזיר true כשהאפקטים כאן מחליפים את המספר והניצוצות הרגילים
 function juiceHit(e,d,m,crit,t,ang){
@@ -34,7 +34,7 @@ function juiceHit(e,d,m,crit,t,ang){
   const J=juice(),K=JUICE;
   e.flash=Math.max(e.flash||0,K.flash);e.jT=jNow();
   if(!e.isBoss&&!e.node){const kb=K.push*(m>1?1.4:1)/(e.big||1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
-  if(crit){jStop(K.stop.crit,true);if(!e.node)S.shake=Math.max(S.shake,K.shake.crit)}
+  if(crit){jStop(K.stop.crit);if(!e.node)S.shake=Math.max(S.shake,K.shake.crit)}
   else jStop(m>1?K.stop.weak:K.stop.hit);
   jBurst(e.x,e.y-(e.node?4:e.r*0.6),t,crit?K.parts.crit:m>1?K.parts.weak:K.parts.hit,ang);
   if(J.n.length>=K.nums.max)J.n.shift();
@@ -47,7 +47,7 @@ function juiceHit(e,d,m,crit,t,ang){
 function juiceKill(e){
   if(!juiceOn())return;
   const J=juice(),K=JUICE,boss=e.isBoss||e.wanted||e.warden,elite=e.elite||e.affix;
-  jStop(boss||elite?K.stop.big:K.stop.kill,true);
+  jStop(boss||elite?K.stop.big:K.stop.kill,boss||elite);
   if(boss||elite)S.shake=Math.max(S.shake,boss?K.shake.big:K.shake.elite);
   if(J.poofs.length>=K.poof.max)J.poofs.shift();
   const pf=[];for(let i=0;i<K.poof.puffs;i++){const a=rand(0,6.28);pf.push({a,s:rand(20,55),r:rand(...K.poof.r)})}
