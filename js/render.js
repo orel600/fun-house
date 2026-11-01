@@ -172,14 +172,14 @@ function render(){
   drawOrbits();drawDivine();   // החפצים המסתובבים (orbit.js)
   drawWSkill();   // בעולם: כדורי הסקילים בדרך, והכוונת בגרירה (wskill.js)
   // חצים: מוט, נוצות וחוד. קסם: כדור זוהר עם שובל (weapons.js)
-  const sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r,th=heroTheme();ctx.lineWidth=2;
+  const gw=juiceOn()?wGrow():1,sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r*gw,th=heroTheme();ctx.lineWidth=2;   // gw: נשק משודרג יורה חץ/קסם גדול יותר, בעולם ובכפר (weapons.js)
   for(const b of pb){
     if(th){th.shot(b,sc);continue}   // דמות אישית: חלילים ותווים (flute.js) או להבונים (spark.js)
     if(b.shot==='bolt'){ctx.fillStyle=sc;
       for(let i=3;i>0;i--){ctx.globalAlpha=0.12*(4-i);ctx.beginPath();ctx.arc(b.x-b.vx*0.018*i,b.y-b.vy*0.018*i,br*(1-i*0.18),0,7);ctx.fill()}
       ctx.globalAlpha=0.3;ctx.beginPath();ctx.arc(b.x,b.y,br*1.9,0,7);ctx.fill();
       ctx.globalAlpha=1;ctx.beginPath();ctx.arc(b.x,b.y,br,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(b.x,b.y,br*0.4,0,7);ctx.fill();continue}
-    ctx.strokeStyle=ctx.fillStyle=sc;ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));
+    ctx.strokeStyle=ctx.fillStyle=sc;ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));ctx.scale(gw,gw);
     ctx.beginPath();ctx.moveTo(-20,0);ctx.lineTo(0,0);ctx.moveTo(-17,0);ctx.lineTo(-22,-3.5);ctx.moveTo(-17,0);ctx.lineTo(-22,3.5);ctx.stroke();
     ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(-2,-3.5);ctx.lineTo(-2,3.5);ctx.closePath();ctx.fill();ctx.restore();
   }

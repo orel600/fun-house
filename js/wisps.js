@@ -23,6 +23,8 @@ const WISPS={
     defense:{rate:0}
   },
   maxParts:160,
+  // כוח שרואים (docs/plan-combat.md שינוי 4): האורות גדלים מעט עם רמת הדמות (lvl לכל רמה, עד max), ומשבצת אור חדשה (GEAR.slots.orbit) נפתחת בחגיגה
+  grow:{lvl:0.015,max:0.35},
   stat:{draws:0,lights:0,parts:0,flashes:0}   // לבדיקה: כמה פעמים צוירו, כמה אורות וחלקיקים, וכמה הבזקים
 };
 
@@ -77,8 +79,9 @@ function wispBright(w,i){const o=S.orb,t=WL.t;let b;
   else b=0.9;
   return b+WISPS.flash.k*(w.fl/WISPS.flash.t)}
 
+const wispK=()=>1+Math.min(WISPS.grow.max,(((typeof SAVE!=='undefined'&&SAVE.hero&&SAVE.hero.level)||1)-1)*WISPS.grow.lvl);
 function drawWisps(){
-  const o=S.orb,W=WISPS;ctx.save();
+  const o=S.orb,W0=WISPS,gk=wispK(),W=Object.assign({},W0,{halo:W0.halo*gk,core:W0.core*gk});ctx.save();
   WL.list.forEach((w,i)=>{const [hot,col]=W.col[w.ty],b=wispBright(w,i),g=wispGlow(col),gh=wispGlow(col,hot),c=w.tr[0];
     // צל רך על הרצפה: מחבר את האור לעולם
     ctx.globalCompositeOperation='source-over';ctx.globalAlpha=0.18*Math.min(1,b);ctx.fillStyle='#000';ctx.beginPath();ctx.ellipse(w.x,w.y,7,2.6,0,0,7);ctx.fill();
@@ -208,6 +211,7 @@ function drawWispRow(){
 (()=>{const old=drawOrbits;
   drawOrbits=function(){
     const o=S.orb;if(!wispsOn())return old();
+    const lv=(SAVE.hero&&SAVE.hero.level)||1;if(WL.lv!=null&&lv>WL.lv&&GEAR.slots.orbit.some(a=>a>WL.lv&&a<=lv))celebrate(P.x,P.y,'rank');WL.lv=lv;   // משבצת אור חדשה
     const s=performance.now(),dt=WL.last?Math.min(0.05,(s-WL.last)/1000):0;WL.last=s;
     if(!o||!o.types.length||!skHere()){WL.list.length=0;WL.parts.length=0;WL.seen=null;WL.was=null;WA.fx.length=0;return}
     const was={def:o.blocked+o.shields,sh:o.shields,heal:o.healed};
