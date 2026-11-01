@@ -26,6 +26,7 @@ jobs:
         continue-on-error: true
         run: python tools/trellis/run.py orel
       - name: תמונות מהסרטונים
+        continue-on-error: true
         run: |
           cd tools/trellis/out || exit 0
           for v in *.mp4; do [ -f "$v" ] || continue
