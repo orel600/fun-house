@@ -57,6 +57,7 @@ const CHARS={
   piocho1:{src:path.join(ROOT,'art/pets/Piocho1.glb'),keep:['Piocho1_'],tex:512,fmt:'jpeg'},
   piocho2:{src:path.join(ROOT,'art/pets/Piocho2.glb'),keep:['Piocho2_'],tex:512,fmt:'jpeg'},
   piocho3:{src:path.join(ROOT,'art/pets/Piocho3.glb'),keep:['Piocho3_'],tex:512,fmt:'jpeg'},
+  parosh1:{src:path.join(ROOT,'art/pets/Parosh1.glb'),keep:['Parosh1_'],tex:512,fmt:'jpeg'},   // הפרעוש של אוראל (parosh.js), אותו מודל לשלושת השלבים
   // הדמות האישית של ניר ("הנודד עם הניצוץ"), מ-art/heroes/nir-sheet.jpg. כמו הפיילוט, עם rig.py --apose --pack (ההסבר ב-tools/pilot3d/README.md)
   nirHero:{src:path.join(ROOT,'art/heroes/NirHero.glb'),keep:['NirHero_'],tex:512,fmt:'jpeg'},
   // הדמות האישית של אוראל ("הנודד עם החליל"), מ-art/heroes/orel-sheet.jpg. בתנוחת T, אז rig.py בלי דגלים.
@@ -147,6 +148,14 @@ n.getMesh().dispose();n.dispose()}
 const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
 (async()=>{
   const out={},sizes=[];
+  // דמות אחת מ-CHARS, בלי לבנות את כל השאר (וגם בלי החבילות שלהן): node tools/build3d.js C:/kk --only parosh1
+  if(ONLY&&CHARS[ONLY]){
+    const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
+    Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));const c=CHARS[ONLY];
+    const bin=await slim(await io.read(c.src),{keepMeshes:c.keep,tex:c.tex,fmt:c.fmt});out[ONLY]=Buffer.from(bin).toString('base64');
+    fs.writeFileSync(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    console.log(ONLY,Math.round(bin.byteLength/1024)+'KB');console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
+  }
   if(ONLY==='nature'){
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
     const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');

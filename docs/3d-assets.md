@@ -141,6 +141,8 @@ If I write "monster:" followed by a description, draw the creature in the same s
 ```
 
 **שיפור מהפיילוט:** להוסיף להוראות "flat colors, no shading, no baked lighting", כי הצבע של הדמות נלקח ישר מהציור, ואור וצל בציור הופכים אותה לכהה ורכה מ-KayKit.
+
+**יצור עגול או סימטרי (אוראל, הפרעוש, 1.11.2026):** ג'מיני מצייר לו פרצוף גם במבט מאחור, או שניים במבט מהצד, כי אין לו רמז איפה האחור. מוסיפים לפרומפט: "It has exactly ONE face, on the front only. The BACK view shows no face, no eyes, no mouth. The SIDE view shows the face in profile at the right edge only". עוד עוזר: פרט שמסמן את האחור, כמו קשר של בנדנה. ליצור בלי ידיים: "neutral standing pose" במקום תנוחת T. הפרומפט המלא בהיסטוריה של `art/pets/parosh-sheet.jpg` (ה-PR של הפרעוש). את הדף הופכים לתלת-ממד עם `tools/pet3d` (יצור על ארבע), ומכניסים למשחק בלי לבנות את כל השאר: `node tools/build3d.js C:/kk --only <שם>`.
 משתמשים בו כך: שורה אחת לכל דמות ("a young warrior in light leather and steel armor..."), ושולחים את התמונה ל-Claude עם המילים "פיילוט דמות". את ה-Gem אפשר לשתף עם אוראל.
 
 ### מה ניר עושה מהטלפון
