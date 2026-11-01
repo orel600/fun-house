@@ -57,7 +57,8 @@ function wispsUpdate(dt){
     w.x+=(tx-w.x)*k;w.y+=(ty_-w.y)*k;w.h=W.h+W.hBob*Math.sin(t*2.1*w.sp+w.ph)+3*Math.sin(t*5.3+w.ph);
     w.tr.unshift({x:w.x,y:w.y-w.h});if(w.tr.length>W.trail)w.tr.pop();
     const pd=W.parts[ty];if(!pd||!pd.rate)return;
-    w.last+=dt*pd.rate;while(w.last>=1){w.last--;WL.parts.push(wispPart(pd,ty,w))}
+    w.last+=dt*pd.rate*(fxLess()?FX_LESS.parts:1);   // פחות אפקטים (juice.js): חצי חלקיקים
+    while(w.last>=1){w.last--;WL.parts.push(wispPart(pd,ty,w))}
   });
   for(const p of WL.parts){p.t+=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.97}
   WL.parts=WL.parts.filter(p=>p.t<p.life).slice(-W.maxParts);
@@ -84,7 +85,7 @@ function drawWisps(){
     ctx.globalAlpha=0.35*Math.min(1,b);ctx.drawImage(g,c.x-11,c.y-11,22,22);
     ctx.globalCompositeOperation='lighter';
     wispBlit(g,w.x,w.y,22,0.22*b);   // אור על הקרקע
-    for(let k=1;k<w.tr.length;k++){const p=w.tr[k],f=1-k/w.tr.length;wispBlit(g,p.x,p.y,W.halo*0.55*f+2,0.45*f*b)}   // שובל
+    if(!fxLess())for(let k=1;k<w.tr.length;k++){const p=w.tr[k],f=1-k/w.tr.length;wispBlit(g,p.x,p.y,W.halo*0.55*f+2,0.45*f*b)}   // שובל
     wispBlit(g,c.x,c.y,W.halo*(0.9+0.1*Math.min(b,1.5)),0.75*b);
     wispBlit(gh,c.x,c.y,W.core*(2.4+w.fl/W.flash.t),b);
     if(w.ty==='defense'&&(o.sh[i]||0)<=S.t){ctx.globalAlpha=0.25+0.1*Math.sin(WL.t*3);ctx.strokeStyle=col;ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(P.x,P.y,22,9,0,0,7);ctx.stroke()}   // מגן מוכן: טבעת דקה ברגלי הדמות
