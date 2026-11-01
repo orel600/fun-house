@@ -1018,3 +1018,26 @@ body.menu .minimap{display:none!important}
 #ovGear .strows{gap:3px}
 #ovGear .stplus{width:38px;height:38px}
 #ovGear .stfoot .vbtn{min-height:38px}
+/* ===== ממצאי המבקר על המסך (docs/critic/2026-11-01, ניר אישר 1.11.2026) ===== */
+/* dialog-under-hud + guide-over-windows: כשחלון פתוח בכפר ובעולם, הכפתורים העליונים, המשאבים, שורת המטרה והמפה הקטנה נעלמים.
+   כך ה-✕ של החלון לא יושב מתחת ל-☰, ושורת המטרה לא עולה על הכותרת שלו */
+body:is(.vil,.world):has(:is(#npcDlg,#qLog,#bookWin,#wMap,#ovGear,#ovForge,#ovSound,#ovDaily):not([hidden])) :is(#menuBtn,.dgift,.vhud,.whud,#guide,.minimap,.qtrack){visibility:hidden!important}
+/* gift-btn-arena: 🎁 (ו-🏡) רק בכפר ובעולם, לא בזירה */
+body:not(.vil):not(.world) .dgift{display:none!important}
+/* book-question-grid: צללית ברורה של היצור, ? קטן בפינה, בלי חפיפה באייפון, וכותרת לכל אזור (book.js) */
+.bkgrid{grid-auto-rows:max-content}   /* כל שורה בגובה התוכן שלה: בלי זה, בחלון נמוך השורות מתכווצות והכרטיסים עולים זה על זה */
+.bkc{width:100%}
+.bkc.unk .bpic{filter:brightness(0) drop-shadow(0 0 1px #A9B0C4);opacity:.6}
+.bkc>b{inset:auto;top:2px;inset-inline-end:5px;font-size:12px}
+.bkgrp{grid-column:1/-1;margin:6px 2px 0;font:800 var(--t1) var(--body);color:var(--gold)}
+.bkgrp small{color:var(--dim);font-weight:700;margin-inline-start:6px}
+/* forge-recipe-chips: בנפחייה, כרטיס לכל מתכון. הפריט גדול, מה שחסר באדום (.res.miss), ומה שאפשר לעשות עכשיו ראשון ועם מסגרת זהב */
+#vPanel .tcols>section:has(>.craft){display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));align-content:start;gap:6px}
+#vPanel .tcols>section>.sk{grid-column:1/-1;order:-2}
+#vPanel .craft{flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px}
+#vPanel .craft:has(>button:not(:disabled)){order:-1;border-color:var(--gold);box-shadow:0 0 0 1px rgba(244,199,79,.35)}
+#vPanel .craft>button{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:64px;font-size:var(--t1);white-space:normal;text-align:center;border-radius:10px}
+#vPanel .craft>button .ri,#vPanel .craft>button img{width:34px;height:34px}
+#vPanel .craft>button:disabled{opacity:.75}
+#vPanel .craft .cost{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
+#vPanel .craft .cost .res{font-size:12px;padding:1px 6px}
