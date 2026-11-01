@@ -89,6 +89,18 @@ function npcLine(id){
   const k=mine.some(q=>Q.active[q.id]&&qReady(q))?'ready':mine.some(qOpen)?'new':mine.some(q=>Q.active[q.id])?'busy':vLv('center')>=NPC.high?'high':'low';
   return T('npc.'+id+'.'+k);
 }
+// קווסט אחד בכל פעם, עם ‹ › ומספר (docs/plan-hud.md פרק 5): בלי גלילה, והכפתור הראשי תמיד נראה. גם בעולם (worldnpc.js).
+// זוכר איזה קווסט מוצג (לא רק מספר), כדי שאחרי "לקבל" נשארים על אותו קווסט
+const NPCPG={id:'',q:null,list:[]};
+function npcCards(id,ready,open,on){
+  const L=[...ready.map(q=>[q,'claim']),...open.map(q=>[q,'accept']),...on.map(q=>[q,'track'])];if(!L.length)return '';
+  if(NPCPG.id!==id){NPCPG.id=id;NPCPG.q=null}
+  let i=Math.max(0,L.findIndex(c=>c[0].id===NPCPG.q));NPCPG.q=L[i][0].id;NPCPG.list=L.map(c=>c[0].id);
+  const nav=L.length>1?'<div class="qpager"><button class="vbtn ghost" data-act="pg" data-d="-1" aria-label="‹">‹</button><b><bdi>'+(i+1)+' / '+L.length+'</bdi></b><button class="vbtn ghost" data-act="pg" data-d="1" aria-label="›">›</button></div>':'';
+  return nav+qCard(L[i][0],L[i][1]);
+}
+// ‹ ›: הקווסט הקודם או הבא ברשימה של מי שמדברים איתו
+function npcPg(d){const L=NPCPG.list,n=L.length;if(n)NPCPG.q=L[((L.indexOf(NPCPG.q)+d)%n+n)%n];sfx('ui')}
 function npcDialog(){
   const id=S.vil&&S.vil.dlg,el=$('npcDlg');if(!id){el.hidden=true;return}
   const Q=QS(),[name,role]=T('npc.'+id);
@@ -96,7 +108,7 @@ function npcDialog(){
   const ready=mine.filter(q=>Q.active[q.id]&&qReady(q)),open=mine.filter(qOpen),on=mine.filter(q=>Q.active[q.id]&&!qReady(q));
   let h=winHead(name,role);   // ui.js
   h+='<p class="npcsay">'+npcPic(id)+S.vil.dlgLine+'</p>';
-  h+=ready.map(q=>qCard(q,'claim')).join('')+open.map(q=>qCard(q,'accept')).join('')+on.map(q=>qCard(q,'track')).join('');
+  h+=npcCards(id,ready,open,on);   // קווסט אחד בכל פעם
   if(!ready.length&&!open.length&&!on.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
   if(id===STATS.respec.npc)h+=statRespecHtml();   // איפוס נקודות הדמות (stats.js)
   if(id===FISH.cookAt)h+=fishCookHtml();   // בישול דגים (fishing.js)
@@ -117,6 +129,8 @@ $('npcDlg').addEventListener('click',e=>{
   if(b.dataset.act==='close'){npcTalk(null);return}
   if(b.dataset.act==='respec'){statRespec();statBadge();npcDialog();return}
   if(b.dataset.act==='cook'){fishCook(b.dataset.m);npcDialog();return}   // fishing.js
+  if(b.dataset.act==='pg'){npcPg(+b.dataset.d);npcDialog();return}   // ‹ ›
+  if(b.dataset.q)NPCPG.q=b.dataset.q;
   questAct(b.dataset.act,b.dataset.q);   // quests.js
   npcDialog();
 });
