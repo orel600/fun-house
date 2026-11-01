@@ -580,6 +580,8 @@ function worldBot(m,L,god){
     // 2. החיבור נכשל (Google כבר שייך למשתמש אחר): חזרה עם שגיאה מובילה לכניסה רגילה
     CLOUD.session=null;localStorage.removeItem(CLOUD.lsKey);await cloudSync();
     await cloudGoogle();r.relink=await cloudBack('#error=server_error&error_code=identity_already_exists')==='relink'&&/\/auth\/v1\/authorize\?provider=google/.test(went);
+    // גם הכניסה הרגילה נכשלה: הסמל אומר שהכניסה לא הצליחה (ולא "לא מחובר" בשקט), ובלי עוד ניסיון
+    went=null;r.err=await cloudBack('#error=server_error&error_description=Unable+to+exchange+external+code')==='error'&&CLOUD.status==='err'&&/Google/.test(document.getElementById('cloudLine').textContent)&&went===null;
     // 3. מכשיר שני (בלי התקדמות) לוקח את השמירה מהחשבון
     const g='u90';F.google[g]='Nir';const far=JSON.parse(bak);far.hero.xp=(SAVE.hero.xp||0)+5000;far.hero.level=9;far.village.forge=5;far.ts=1;F.rows[g]={data:far};
     const mine=JSON.stringify(SAVE);SAVE=saveBlank();r.second=await cloudBack(F.back(g))==='cloud'&&SAVE.village.forge===5&&CLOUD.status==='ok';
@@ -587,6 +589,13 @@ function worldBot(m,L,god){
     SAVE=JSON.parse(mine);SAVE.hero.xp=1;saveNow();CLOUD.session=null;localStorage.removeItem(CLOUD.lsKey);await cloudGoogle(true);
     const pr=cloudBack(F.back(g));for(let i=0;i<500&&document.getElementById("ovCloud").hidden;i++)await Promise.resolve();const ov=document.getElementById('ovCloud');r.ask=!ov.hidden&&/9/.test(document.getElementById('cloudAcct').textContent);
     document.getElementById('cloudPhone').click();r.kept=await pr==='phone'&&ov.hidden&&F.rows[g].data.hero.xp===1&&SAVE.village.forge!==5;
+    // חשבון בלי התקדמות (נפתח בדפדפן אחר), גם כשהוא חדש יותר, לא דורס את הטלפון
+    F.rows[g]={data:Object.assign(saveBlank(),{ts:Date.now()+1e7})};SAVE.hero.xp=50;saveNow();CLOUD.session=null;localStorage.removeItem(CLOUD.lsKey);await cloudGoogle(true);r.emptyAcct=await cloudBack(F.back(g))==='phone'&&F.rows[g].data.hero.xp===50;
+    // נשארים מחוברים: Supabase דוחה את הרענון. לא נפתח משתמש זמני במקום החשבון, ובפתיחה חוזרים ל-Google לבד
+    const n0=F.users;CLOUD.session.exp=0;cloudKeep(CLOUD.session);F.badRefresh=true;went=null;
+    r.stay=await cloudSync()==='offline'&&!CLOUD.session&&cloudWas()==='Nir'&&await cloudSync()==='offline'&&F.users===n0;
+    F.badRefresh=false;r.relog=await cloudRelog()==='plain'&&/\/auth\/v1\/authorize\?provider=google/.test(went)&&F.users===n0;
+    await cloudBack(F.back(g));r.relog=r.relog&&!!CLOUD.session&&CLOUD.session.name==='Nir'&&!cloudWas();
     // 5. התנתקות: הכניסה נמחקת מהטלפון, השמירה נשארת
     const wood=SAVE.bag.wood;document.getElementById("cloudOut").click();for(let i=0;i<500&&CLOUD.session;i++)await Promise.resolve();
     r.out=!CLOUD.session&&!localStorage.getItem(CLOUD.lsKey)&&F.calls.includes('POST /auth/v1/logout')&&SAVE.bag.wood===wood&&document.getElementById('cloudOut').hidden&&CLOUD.status==='off';
@@ -595,6 +604,9 @@ function worldBot(m,L,god){
   check(gl.parse&&gl.btnFile,'ענן: כתובת החזרה מ-Google '+(gl.parse?'נקראת':'לא נקראה')+', '+(gl.btnFile?'ומ-file:// אין כפתור כניסה':'וכפתור הכניסה מופיע גם מ-file://'));
   check(gl.link&&gl.linked,'ענן: Google '+(gl.link?'מתחבר למשתמש הזמני':'לא ניסה להתחבר')+', '+(gl.linked?'אותה שמירה, והסמל אומר "מחובר כ-"':'בחזרה משהו לא עבד'));
   check(gl.relink,'ענן: כשהחיבור נכשל '+(gl.relink?'עוברים לכניסה רגילה עם Google':'נתקע'));
+  check(gl.emptyAcct,'ענן: חשבון ריק '+(gl.emptyAcct?'לא דורס את ההתקדמות בטלפון':'דרס את ההתקדמות בטלפון'));
+  check(gl.stay&&gl.relog,'ענן: כשהכניסה ל-Google נדחית '+(gl.stay?'לא נפתח משתמש זמני במקומה':'נפתח משתמש זמני במקום החשבון')+', '+(gl.relog?'ובפתיחה חוזרים ל-Google לבד':'ולא חוזרים ל-Google'));
+  check(gl.err,'ענן: כשגם הכניסה הרגילה נכשלת '+(gl.err?'הסמל אומר שהכניסה לא הצליחה, בלי עוד ניסיון':'השחקן לא יודע שנכשל, או שיש לופ'));
   check(gl.second,'ענן: מכשיר שני '+(gl.second?'לוקח את השמירה מהחשבון':'לא לקח את השמירה'));
   check(gl.ask&&gl.kept,'ענן: שתי שמירות שונות '+(gl.ask?'השחקן נשאל':'לא נשאל')+', '+(gl.kept?'ומה שבחר נשמר':'הבחירה לא נשמרה'));
   check(gl.out,'ענן: התנתקות '+(gl.out?'מוחקת את הכניסה ומשאירה את השמירה':'לא עבדה'));
@@ -1446,6 +1458,35 @@ function worldBot(m,L,god){
     const f=mk('fast');o.fast=f.speed>ETYPES.grunt.speed*1.5;o.name=T('af.fast');o.drops=drops().filter(d=>d.r==='coins').length;
     enterVillage();return o});
   check(afx.split===2&&afx.wait===1&&afx.blast>0&&afx.regen&&afx.fast&&afx.drops>0,'אויבים מיוחדים: מתפצל → '+afx.split+' קטנים, מתפוצץ: '+(afx.wait?'מחכה רגע':'מיד')+' ופגע '+afx.blast+', מתחדש '+(afx.regen?'מרפא':'לא מרפא')+', מהיר '+(afx.fast?'רץ מהר':'לא')+', שלל מטבעות '+afx.drops+' · "'+afx.name+'"');
+  // אויבים עם התנהגות (foeai.js): קבוצה רודפת, מסתער עם פס אדום, יורה מרחוק עם קו, קופץ עם עיגול, קורא שמביא חברים. בכל אחד: פוגע כשנשארים, ולא כשזזים
+  const fai=await page.evaluate(()=>{
+    enterWorld('home');enemies=[];eb=[];const o={},h0=hurt;let hits=0;hurt=()=>{hits++};
+    try{
+      const g=addEnemy('grunt',P.x+150,P.y,1);g.home=3;g.zone='near';const d0=Math.hypot(P.x-g.x,P.y-g.y);for(let i=0;i<10;i++)wFoes(0.05);o.chase=Math.hypot(P.x-g.x,P.y-g.y)<d0-15;enemies=[];
+      const run=(e,t)=>{for(let i=0;i<t/0.02;i++)foeAi(e,0.02,Math.hypot(P.x-e.x,P.y-e.y))};
+      const mk=(type,ai,dx)=>{const e=addEnemy(type,P.x+dx,P.y,1);e.zone='far';foeAiInit(e);e.ai=ai;e.acd=0;e.caller=0;return e};
+      // הסתערות: נשארים = נפגעים. זזים הצידה בזמן ההכנה = התחמקות
+      let e=mk('shield','charge',200);hits=0;foeAi(e,0.02,200);o.cWind=e.act==='wind';run(e,0.3);o.cEarly=hits===0;run(e,1.5);o.cHit=hits===1;
+      e=mk('shield','charge',200);hits=0;foeAi(e,0.02,200);P.y+=120;run(e,2);P.y-=120;o.cDodge=hits===0&&e.dodged>=1;
+      // ירייה מרחוק: קו ואז חץ קסם
+      e=mk('wisp','ranged',200);const b0=eb.length;foeAi(e,0.02,200);o.rAim=e.act==='aim';run(e,0.3);o.rWait=eb.length===b0;run(e,0.5);o.rShot=eb.length===b0+1;
+      // קפיצה: עיגול על המקום שלך, נוחת. זזת = התחמקת
+      e=mk('grunt','leap',160);hits=0;foeAi(e,0.02,160);o.lCrouch=e.act==='crouch';run(e,1.4);o.lHit=hits===1;
+      e=mk('grunt','leap',160);hits=0;foeAi(e,0.02,160);P.x-=150;run(e,1.4);P.x+=150;o.lDodge=hits===0&&e.dodged>=1;
+      // קורא: נפצע, בורח, ואם לא הופל, מביא חברים
+      enemies=[];e=mk('grunt','flank',150);e.caller=1;e.hp=e.max*0.3;const n0=enemies.length;foeAi(e,0.02,150);o.flee=e.act==='flee';run(e,2.5);o.called=!!e.called&&enemies.length===n0+FOEAI.call.friends;
+      // ליד השער: אין קופצים וקוראים, וההכנה איטית יותר
+      o.calm=FOEAI.leapChance.start===0&&FOEAI.callChance.start===0&&FOEAI.startWind>1;
+      // מנהיג להקה: בסוף שיא מגיעה להקה עם מנהיג (גדול, מהיר יותר ללהקה), ונפילה שלו נותנת ערימה פעם אחת
+      enemies=[];P.x=0;P.y=0;P.moving=false;paceUpdate(0.01);const p=S.wd.pace;p.b=PACE.beats.findIndex(b=>b.id==='peak');p.bt=PACE.beats[p.b].dur-FOEAI.leader.at+0.1;p.peaks=1;
+      foeLeaderTick();const ld=enemies.find(x=>x.leader);o.leader=!!ld&&ld.r>ETYPES[ld.type].r*1.2&&enemies.filter(x=>x.pack===ld.pack).length>=2;foeLeaderTick();o.once=enemies.filter(x=>x.leader).length===1;
+      if(ld){const dr0=drops().length;kill(ld);foeLeaderTick();foeLeaderTick();o.pile=(p.leaders||0)===1&&drops().length>dr0}
+    }finally{hurt=h0}
+    enemies=[];eb=[];enterVillage();return o});
+  check(fai.chase&&fai.cWind&&fai.cEarly&&fai.cHit&&fai.cDodge&&fai.rAim&&fai.rWait&&fai.rShot&&fai.lCrouch&&fai.lHit&&fai.lDodge&&fai.flee&&fai.called&&fai.calm&&fai.leader&&fai.once&&fai.pile,
+    'אויבים עם התנהגות (foeai.js): '+(fai.chase?'קבוצה רודפת':'קבוצה לא רודפת!')+', מסתער '+(fai.cWind&&fai.cEarly?'מסמן קודם':'בלי סימון')+(fai.cHit?' ופוגע':' ולא פוגע')+(fai.cDodge?', צעד הצידה = התחמקות':', אי אפשר להתחמק')+
+    ', יורה '+(fai.rAim&&fai.rWait?'עם קו':'בלי קו')+(fai.rShot?' ויורה':' ולא יורה')+', קופץ '+(fai.lCrouch?'עם עיגול':'בלי עיגול')+(fai.lHit?' ונוחת עליך':' ולא פוגע')+(fai.lDodge?', זזת = התחמקת':', אי אפשר להתחמק')+
+    ', קורא '+(fai.flee?'בורח':'לא בורח')+(fai.called?' ומביא חברים':' ולא מביא')+(fai.calm?', ליד השער רגוע':', ליד השער לא רגוע')+(fai.leader?', מנהיג מגיע בשיא':', אין מנהיג')+(fai.once?'':' (יותר מאחד!)')+(fai.pile?' ומשאיר ערימה':' בלי ערימה'));
   // אתגר יומי (challenge.js): אותו חוק לאותו תאריך, החוק נכנס לאויב בעולם, הריגות נספרות, הפרס נאסף רק בכפר ופעם אחת, ופספוס לא מעניש
   const chl=await page.evaluate(()=>{
     const o={},ids=Object.keys(CHALLENGE.rules);o.same=chRule('2026-11-1')===chRule('2026-11-1');o.many=new Set(['2026-11-1','2026-11-2','2026-11-3','2026-11-4','2026-11-5','2026-11-6','2026-11-7','2026-11-8'].map(d=>chRule(d))).size;
@@ -1603,6 +1644,19 @@ function worldBot(m,L,god){
   check(stt.xp>0&&stt.free>0&&stt.add&&stt.dmg>1&&stt.saved&&stt.def<100&&stt.ui===6&&stt.tree>=18&&stt.learned&&stt.fork&&stt.rooted&&!!stt.build&&stt.b2&&stt.b1&&stt.mom>1.2&&!!stt.rot&&stt.btn&&stt.reset&&stt.paid===0,
     'נקודות דמות: הריגה בעולם +'+stt.xp+' XP, נקודות פנויות '+stt.free+', כוח: נזק x'+stt.dmg+(stt.saved?', נשמר':', לא נשמר')+', הגנה: מכה של 100 עשתה '+stt.def+
     ', במסך הציוד '+stt.ui+' סטטים, עץ סקילים: '+stt.tree+' סקילים, '+stt.tfree+' נקודות, '+(stt.learned?'נלמד עור עבה והחיים עלו':'לא נלמד')+(stt.fork?', אחד משניים נסגר':', הצומת לא נסגר')+(stt.rooted?', נטוע באדמה מוריד נזק':', נטוע באדמה לא עבד')+', הבנייה: '+(stt.build||'בלי שם')+(stt.b2&&stt.b1?', שתי בניות מתחלפות':', שתי הבניות לא עובדות')+', צייד בתנועה: נזק x'+stt.mom+', גלגל יסודות: '+(stt.rot||'לא עבד')+', איפוס אצל הכוהנת '+(stt.btn?'':'(אין כפתור) ')+(stt.reset?'עבד':'לא עבד')+(stt.paid?' ושילם '+stt.paid+' (צריך חינם בפעם הראשונה)':' בחינם, פעם ראשונה'));
+  // מסלול רמות (levelpath.js): מה נפתח בכל רמה נגזר מהטבלאות, "הבא" בחלון הדמות, ובעליית רמה הבזק וכרטיס עם מה שנפתח ומה הבא
+  const lp=await page.evaluate(()=>{
+    enterWorld('home');const o={};
+    o.orbit=lpAt(GEAR.slots.orbit[2]).some(x=>x.k==='orbit');o.rank=lpAt(RANKS.every).some(x=>x.k==='rank');o.tree=lpAt(1+TREE.every).some(x=>x.k==='tree');
+    const n=lpNext(heroLv());o.next=!!n&&n.lv>heroLv()&&n.items.length>0;
+    const lv0=heroLv();SAVE.hero.xp+=rankNeed(lv0)+1;rankSync();
+    const c=document.getElementById('lpCard'),f=document.getElementById('lpFlash');
+    o.up=heroLv()===lv0+1;o.card=!!c&&c.classList.contains('on')&&c.querySelectorAll('li').length>=1&&c.textContent.includes(T('lp.up',heroLv()));
+    o.cardNext=!!c&&c.textContent.includes(T('lp.next'));o.flash=!!f&&f.classList.contains('on');
+    gearOpen('char');const el=document.querySelector('#gChar .lpnext');o.win=!!el&&el.textContent.includes(T('lp.next'));gearClose();
+    c.classList.remove('on');return o});
+  check(lp.orbit&&lp.rank&&lp.tree&&lp.next&&lp.up&&lp.card&&lp.cardNext&&lp.flash&&lp.win,
+    'מסלול רמות: '+(lp.orbit&&lp.rank&&lp.tree?'משבצת, דרגה ונקודת סקיל נמצאו':'חסר משהו בטבלה')+(lp.next?', יש "הבא"':', אין "הבא"')+(lp.card?', כרטיס בעליית רמה':', אין כרטיס')+(lp.cardNext?' עם הבא':'')+(lp.flash?', הבזק':', בלי הבזק')+(lp.win?', ובחלון הדמות':', לא בחלון הדמות'));
   const edge=await page.evaluate(()=>{
     enterWorld('home');const B=placeBox(),n0=drops().length,out=o=>o.x<B.x0||o.x>B.x1||o.y<B.y0||o.y>B.y1;
     wantedAppear(0);const e=S.wn.e;e.x=B.x1+300;e.y=B.y0-200;wantedMove(e,0.05);const wIn=!out(e);

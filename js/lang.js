@@ -35,6 +35,7 @@ const TEXT={
   'cloud.off':{he:'☁ לא מחובר: שמור בטלפון',en:'☁ Offline: saved on this phone'},
   'cloud.sync':{he:'☁ מסנכרן…',en:'☁ Syncing…'},
   'cloud.ok':{he:'☁ שמור בענן',en:'☁ Saved to the cloud'},
+  'cloud.err':{he:'☁ הכניסה עם Google לא הצליחה: שמור בטלפון',en:'☁ Google sign-in failed: saved on this phone'},
   'cloud.as':{he:n=>'☁ מחובר כ-'+n,en:n=>'☁ Signed in as '+n},
   'cloud.google':{he:'כניסה עם Google',en:'Sign in with Google'},
   'cloud.signout':{he:'התנתקות',en:'Sign out'},
@@ -524,6 +525,7 @@ const TEXT={
   'ch.r.giants':{he:['יום הענקים','האויבים ענקיים וחזקים, ומפילים הרבה מטבעות'],en:['Day of Giants','Enemies are huge and tough, and drop lots of coins']},
   'ch.r.glass':{he:['יום הזכוכית','האויבים נופלים מהר, אבל מכים חזק'],en:['Day of Glass','Enemies fall fast, but hit hard']},
   'ch.r.gold':{he:['בהלה לזהב','כל אויב מפיל מטבעות, אבל הם מכים חזק יותר'],en:['Gold Rush','Every enemy drops coins, but they hit harder']},
+  'fai.leader':{he:'מנהיג הלהקה',en:'Pack Leader'},'fai.leaderCome':{he:'👑 להקה עם מנהיג מתקרבת!',en:'👑 A pack leader approaches!'},'fai.leaderDown':{he:'👑 המנהיג הופל! ערימת שלל',en:'👑 Leader down! Loot pile'},
   'af.fast':{he:'מהיר',en:'Swift'},'af.tough':{he:'משוריין',en:'Armored'},'af.burst':{he:'מתפוצץ',en:'Volatile'},'af.split':{he:'מתפצל',en:'Splitting'},'af.regen':{he:'מתחדש',en:'Regenerating'},
   // שומרים חוזרים (story.js, STORY.rematch)
   'story.re.btn':{he:'לשומר',en:'Warden'},
@@ -630,6 +632,10 @@ const TEXT={
   'rank.hybrid':{he:'לוחם-קשת',en:'Battle Archer'},
   'rank.up':{he:n=>'עלית בדרגה: '+n+'!',en:n=>'Rank up: '+n+'!'},
   'rank.level':{he:n=>'רמת דמות '+n,en:n=>'Hero level '+n},
+  // מסלול רמות (levelpath.js)
+  'lp.next':{he:'הבא:',en:'Next:'},'lp.at':{he:n=>'רמה '+n+':',en:n=>'Level '+n+':'},'lp.up':{he:n=>'רמה '+n+'!',en:n=>'Level '+n+'!'},
+  'lp.orbit':{he:n=>'משבצת אור '+n,en:n=>'Light slot '+n},'lp.tree':{he:'נקודת סקיל',en:'Skill point'},'lp.rank':{he:'קווסט דרגה',en:'Rank quest'},
+  'lp.pts':{he:n=>'+'+n+' נקודות דמות',en:n=>'+'+n+' hero points'},
   'rank.open':{he:n=>'רמה '+n+': הכוהנת מחכה לך',en:n=>'Level '+n+': the priestess is waiting'},
   'q.kind.world':{he:'עולם',en:'World'},
   'qo.kill':{he:w=>'להפיל '+w,en:w=>'Defeat '+w},
