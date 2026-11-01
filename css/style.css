@@ -874,3 +874,9 @@ button.res{min-height:48px;min-width:48px}
 .vpanel .vwhy{color:var(--dim);font-size:13px;display:flex;flex-wrap:wrap;align-items:center;gap:4px}
 .vpanel .vwhy .res{font-size:13px}
 .gjump{flex:none;padding:0 10px;color:var(--gold);font-weight:800}
+
+/* גרסה חדשה (js/update-check.js): כפתור קטן למעלה באמצע, מעל הכל. לא בפינה הימנית התחתונה (סקילים) */
+.updbtn{position:fixed;z-index:30;top:calc(env(safe-area-inset-top,0px) + 6px);left:50%;transform:translateX(-50%);
+  padding:6px 14px;border-radius:999px;border:2px solid var(--gold);background:rgba(20,16,10,.88);color:var(--gold);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.updbtn:disabled{opacity:.8;cursor:default}
+.sub.upd{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
