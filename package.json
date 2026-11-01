@@ -1,7 +1,7 @@
 {
   "name": "fun-house",
   "private": true,
-  "description": "זירת המקל: משחק האקשן לטלפון של ניר ואוראל. המשחק עצמו לא צריך התקנה, זה רק לבדיקה האוטומטית",
+  "description": "Six Lanterns (שישה פנסים): משחק האקשן לטלפון של ניר ואוראל. המשחק עצמו לא צריך התקנה, זה רק לבדיקה האוטומטית",
   "scripts": {
     "setup": "npm install && npx playwright install chromium",
     "check": "node tools/check.js"
