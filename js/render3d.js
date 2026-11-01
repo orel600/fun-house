@@ -106,6 +106,72 @@ const GRIP3D={
   of:m=>/^w_bow/.test(m)?'bow':/^w_(staff|wand)/.test(m)?'magic':/^w_(axe|hammer)/.test(m)?'chop':'blade',
   spare:{sword:'w_sword_A',gun:'w_bow_A_withString'}   // רק כשלפריט אין מודל
 };
+/* פיילוט "ציוד שרואים על הגיבור" (docs/plan-progression.md). רק עם ?gear3d=1 בכתובת, בלי זה לא משתנה כלום.
+   glow: כמה חזק הנשק, המגן והחלקים זוהרים בצבע הדרגה (GEAR.tiers), לפי tier 0 עד 4. pulse: אגדי פועם.
+   shield: מגן ביד השנייה כשהנשק מקרוב ביד אחת (חרב, גרזן, פטיש). אין עדיין משבצת מגן ב-gear.js, אז בפיילוט המגן לוקח את הנדירות
+     של התכשיט הכי טוב שלבוש. המודל לפי הנדירות (Fantasy Weapons Bits), והחומר wtex כמו בנשק.
+   boots: הרגליים בצבע הנדירות של הנעליים (tint: כמה). head: הקסדה או הכובע זוהרים מנדירות 2 (נדיר) של התכשיט הכי טוב.
+   set: סט פעיל (sets.js) צובע את כל החלקים בצבע הסט, מראה אחיד. keep: החלקים שנשארים נפרדים במודל כדי לצבוע אותם */
+const GEAR3D={on:/[?&]gear3d=[12]/.test(location.search),
+  glow:[0,0.08,0.2,0.35,0.55],pulse:0.4,
+  shield:{model:['w_shield_A','w_shield_A','w_shield_B','w_shield_C','w_shield_C'],bone:'handslotl',pos:[0,0.02,0.05],rot:[0,0,0,1],s:0.6,metal:['wood','iron','silver','gold','legend']},
+  boots:{tint:0.55},head:{from:2},set:0.28,
+  keep:['LegLeft','LegRight','Helmet','Hat','Quiver']
+};
+const g3Rar=t=>GEAR.tiers[Math.min(t,GEAR.tiers.length-1)].col;   // הצבע של המתכת (עץ, ברזל, כסף, זהב, אגדי), כדי שהזוהר יתאים לחומר
+// מוסיף ל-L (heroLook) את מה שהציוד מצייר: זוהר לנשק, מגן, וצבעים לחלקים (gear3dParts)
+function gear3dLook(L,wid){
+  const it=gItem(wid),worn=gearWorn().map(gItem),best=s=>Math.max(-1,...worn.filter(x=>x.slot===s).map(x=>x.tier));
+  for(const w of ['sword','gun']){const p=L.props[w];if(it&&wUse(wid)===w&&it.tier>0){p.glow=g3Rar(it.tier);p.gk=GEAR3D.glow[it.tier]}}
+  const fam=it&&wUse(wid)==='sword'&&GRIP3D.of(L.props.sword.prop);
+  if(fam==='blade'||fam==='chop'){const t=Math.max(0,best('acc')),G=GEAR3D.shield;
+    L.props.shield={prop:G.model[t],tier:G.metal[t],bone:G.bone,pos:G.pos,rot:G.rot,s:G.s,glow:t>0?g3Rar(t):null,gk:GEAR3D.glow[t]}}
+  const b=best('boots'),h=best('acc'),set=Object.keys(SETS).find(s=>setTiers(gearWorn()).some(x=>x.startsWith(s)));
+  L.g3={boots:b>=0?g3Rar(b):null,bk:b>=0?GEAR3D.glow[b]:0,head:h>=GEAR3D.head.from?g3Rar(h):null,hk:h>=0?GEAR3D.glow[h]*0.7:0,set:set?SETS[set].col:null};
+}
+// צובע את החלקים של הדמות לפי L.g3. פעם אחת לכל דמות ולכל שינוי בציוד
+function gear3dParts(a,L){
+  const g=L.g3;if(!g||a.g3===L.ck)return;a.g3=L.ck;
+  a.rk=null;rankArmor3d(a);   // מתחילים נקי: השריון של הדרגה כמו שהוא, והחלקים של הציוד בלי צבע
+  a.root.traverse(o=>{if(!o.isMesh)return;const p=armorPart(o,GEAR3D.keep.concat(ARMOR3D));if(!p)return;
+    let col=null,k=0;if(GEAR3D.keep.includes(p)){o.material.color.set(0xffffff);o.material.emissive.set(0);o.material.userData.em=o.material.emissive.clone()}
+    if(/^Leg/.test(p)&&g.boots){o.material.color.set(0xffffff).lerp(new THREE.Color(g.boots),GEAR3D.boots.tint);col=g.boots;k=g.bk}
+    if(/^(Helmet|Hat)$/.test(p)&&g.head){col=g.head;k=g.hk}
+    if(g.set){col=g.set;k=GEAR3D.set}
+    if(col){const em=new THREE.Color(col).multiplyScalar(k);o.material.emissive.copy(em);o.material.userData.em=em}});
+}
+/* פיילוט 2 (docs/plan-gear-assets.md): ציוד שנבנה בקוד מצורות פשוטות, בלי מודל חדש. רק עם ?gear3d=2 (כולל את פיילוט 1).
+   כל חלק: עצם, מיקום ביחידות של העצם (הגיבור בגובה כ-2.5), וצורות: [סוג, מידות, מיקום, סיבוב, צבע]. 'm' = צבע המתכת של הדרגה.
+   horns: קרניים על הקסדה (רואים מלמעלה). pads: כתפיות. cuffs: שרוולי מגפיים. cloak: גלימה ארוכה מלוח מעוקל (לצייד ולקוסם, לאביר יש) */
+const GEARCODE={on:/[?&]gear3d=2/.test(location.search),
+  parts:{
+    horns:{bone:'head',shapes:[['cone',[0.11,0.5],[0.52,0.95,0],[0,0,-1.0],'#F1E6CC'],['cone',[0.11,0.5],[-0.52,0.95,0],[0,0,1.0],'#F1E6CC'],['box',[0.1,0.26,0.5],[0,1.22,-0.05],[0,0,0],'#C0392B']]},
+    pads:{bone:'chest',shapes:[['dome',[0.26],[0.46,0.12,0],[0,0,-0.7],'m'],['dome',[0.26],[-0.46,0.12,0],[0,0,0.7],'m'],['torus',[0.24,0.04],[0.46,0.12,0],[1.57,0,-0.7],'#3B2A1E'],['torus',[0.24,0.04],[-0.46,0.12,0],[1.57,0,0.7],'#3B2A1E']]},
+    cuffsL:{bone:'lowerlegl',shapes:[['cyl',[0.17,0.2,0.2],[0,0.3,0],[0,0,0],'m']]},
+    cuffsR:{bone:'lowerlegr',shapes:[['cyl',[0.17,0.2,0.2],[0,0.3,0],[0,0,0],'m']]},
+    cloak:{bone:'chest',shapes:[['cloak',[1.0,1.15],[0,0.35,-0.42],[0.12,0,0],'#7A1F2B']]}
+  }
+};
+function gcShape(t,d){const T=THREE;
+  if(t==='cone')return new T.ConeGeometry(d[0],d[1],6);
+  if(t==='box')return new T.BoxGeometry(d[0],d[1],d[2]);
+  if(t==='dome')return new T.SphereGeometry(d[0],8,5,0,Math.PI*2,0,Math.PI*0.5);
+  if(t==='torus')return new T.TorusGeometry(d[0],d[1],5,10);
+  if(t==='cyl')return new T.CylinderGeometry(d[0],d[1],d[2],8,1,true);
+  if(t==='cloak'){const g=new T.PlaneGeometry(d[0],d[1],4,4).translate(0,-d[1]/2,0),v=g.attributes.position;   // לוח שמתעקם אחורה ונפתח למטה
+    for(let i=0;i<v.count;i++){const x=v.getX(i),y=v.getY(i),k=-y/d[1];v.setX(i,x*(1+k*0.45));v.setZ(i,-k*k*0.35-Math.abs(x)*0.25*(1-k))}g.computeVertexNormals();return g}
+}
+// מחבר לגיבור את החלקים שנבחרו (L.gc: רשימת שמות ב-GEARCODE.parts), והמתכת לפי הדרגה. פעם אחת לכל דמות
+function gearCodeAdd(a,L){
+  if(!L.gc||a.gc===L.ck)return;a.gc=L.ck;
+  for(const m of a.gcm||[])m.parent&&m.parent.remove(m);a.gcm=[];
+  for(const k of L.gc){const P=GEARCODE.parts[k],b=bone(a.root,P.bone);if(!b)continue;
+    const g=new THREE.Group();
+    for(const [t,d,pos,rot,col] of P.shapes){const c=new THREE.Color(col==='m'?L.gcMetal:col),
+      m=new THREE.Mesh(gcShape(t,d),new THREE.MeshLambertMaterial({color:c,side:t==='cloak'||t==='cyl'?THREE.DoubleSide:THREE.FrontSide,flatShading:true}));
+      m.position.fromArray(pos);m.rotation.fromArray(rot);m.material.userData.em=m.material.emissive.clone();a.mats&&a.mats.push(m.material);g.add(m)}
+    b.add(g);a.gcm.push(g)}
+}
 /* קהל: כשיש הרבה אויבים על המסך, רק הקרובים לשחקן מקבלים דמות מונפשת. כל השאר מצוירים יחד בתנוחת ריצה קפואה
    שמתחלפת בין שני צעדים: כמה ציורים בפריים במקום מאות. בטלפון זה ההבדל בין משחק שזורם למשחק שנתקע.
    full: כמה דמויות מונפשות לכל היותר. poses: באיזה רגע של אנימציית הריצה מצלמים כל צעד. dying: כמה אנימציות מוות יחד. max: כמה בקהל */
@@ -229,7 +295,7 @@ async function init3d(){
       const t=new THREE.Texture(img);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;R3D.wtex[k.slice(5)]=t}
     for(const k in MODELS3D)if(k.startsWith('v_')||k.startsWith('n_')){const g=await parseGLB(k);lambert(g.scene);g.scene.traverse(o=>{o.frustumCulled=true});R3D.props[k]=g.scene}   // מבני הכפר
     const heroModels=new Set(Object.keys(LOOK3D).filter(k=>k==='player'||k.startsWith('hero_')).map(k=>LOOK3D[k].model));
-    for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t,heroModels.has(k)&&ARMOR3D);lambert(t);t.updateMatrixWorld(true);
+    for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t,heroModels.has(k)&&(GEAR3D.on?ARMOR3D.concat(GEAR3D.keep):ARMOR3D));lambert(t);t.updateMatrixWorld(true);
       // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
       const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=bb.max.y-bb.min.y||2}
     bakeCrowd();
@@ -297,7 +363,7 @@ const SIN=()=>Math.sin(camTilt()),COS=()=>Math.cos(camTilt());   // הזווית
 const COSB=()=>Math.cos(VIEW.baseTilt*Math.PI/180);   // לגודל הדמויות: קבוע בכל מקום, כדי שדמות שנבנתה בכפר תתאים גם בעולם
 // השחקן: הדמות שנבחרה, ובידיים הנשק שלבוש (GRIP3D). נבנה מחדש רק כשהדמות או הנשק מתחלפים
 function heroLook(){
-  const wid=SAVE.gear.weapon,sk=heroSkin(),ck=heroId()+'|'+wid+'|'+PILOT3D+'|'+sk;if(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
+  const wid=SAVE.gear.weapon,sk=heroSkin(),ck=heroId()+'|'+wid+'|'+PILOT3D+'|'+sk+(GEAR3D.on?'|'+gearWorn().join():'');if(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
   const L=Object.assign({},LOOK3D.player,sk?LOOK3D[HEROES.skins[sk].look]:PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()]),it=gItem(wid);
   L.props={};L.anim=Object.assign({},L.anim);L.ck=ck;
   for(const w of ['sword','gun']){
@@ -305,12 +371,14 @@ function heroLook(){
     L.props[w]=Object.assign({prop:model,tier:mine?GEAR.tiers[it.tier].id:'wood'},g);
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
+  if(GEAR3D.on)gear3dLook(L,wid);
+  if(GEARCODE.on){const w=gearWorn().map(gItem),t=Math.max(0,...w.map(x=>x.tier));L.gc=(window.GC_PARTS||['horns','pads','cuffsL','cuffsR']).slice();if(L.model!=='knight'&&!window.GC_PARTS)L.gc.push('cloak');L.gcMetal=['#8B5A2B','#9AA3AE','#D9DEE6','#F4C74F','#E36BD8'][Math.min(4,t)]}
   if(fluteOn())fluteGrip(L);   // הנודד עם החליל: חליל ביד במקום הנשק (flute.js)
   return R3D._hl=L;
 }
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
 // מפתח למאגר: רק דמות זהה (מודל, חפצים, צבע, גודל, נשק מוסתר) חוזרת לשימוש. יצורי משאבים הם מודל קיים בצבע ובגודל אחר
-const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')).join()+(L.tint?'|'+L.tint:'')+'|'+L.h+(L.own===false?'|x':'');
+const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')+(p.glow||'')).join()+(L.tint?'|'+L.tint:'')+'|'+L.h+(L.own===false?'|x':'');
 const TINT={ember:C.ember,tide:C.tide,gold:C.gold,...Object.fromEntries(Object.keys(DMG.types).map(k=>[k,DMG.types[k].col])),lilac:C.lilac};   // צבע לכל סוג נזק, ושמות הצבעים של המשחק
 const tintOf=t=>TINT[t]||t;   // שם מ-TINT, או צבע ישיר ('#8A8F9C')
 function makeActor(L){
@@ -323,8 +391,8 @@ function makeActor(L){
   const props={};
   for(const [k,p] of Object.entries(L.props||{})){
     const b=bone(root,p.bone);if(!b)continue;
-    const m=R3D.props[p.prop].clone(true);m.position.fromArray(p.pos);m.quaternion.fromArray(p.rot);
-    m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(p.tier&&R3D.wtex[p.tier])o.material.map=R3D.wtex[p.tier];if(p.tint)o.material.emissive.set(TINT[p.tint]).multiplyScalar(0.55);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
+    const m=R3D.props[p.prop].clone(true);m.position.fromArray(p.pos);m.quaternion.fromArray(p.rot);if(p.s)m.scale.setScalar(p.s);
+    m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(p.tier&&R3D.wtex[p.tier])o.material.map=R3D.wtex[p.tier];if(p.tint)o.material.emissive.set(TINT[p.tint]).multiplyScalar(0.55);if(p.glow)o.material.emissive.set(p.glow).multiplyScalar(p.gk);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
     b.add(m);props[k]=m;
   }
   // נשקים שהדמות מחזיקה בקובץ המקורי: גרזן לבוס, סכין למבוקש
@@ -372,8 +440,10 @@ function syncPlayer(dt){
   const L=heroLook();
   let a=R3D.player;if(!a||a.key!==lookKey(L)){if(a)freeActor(a);a=R3D.player=makeActor(L)}   // דמות או נשק חדשים: מודל חדש
   rankArmor3d(a);   // אחרי עלייה בדרגה: החלקים מופיעים מיד
+  if(GEAR3D.on)gear3dParts(a,L);
+  if(GEARCODE.on)gearCodeAdd(a,L);
   const sword=P.weapon==='sword';
-  for(const k in a.props)a.props[k].visible=(k==='sword')===sword;
+  for(const k in a.props)a.props[k].visible=k==='shield'?sword:(k==='sword')===sword;
   const st=a.st||(a.st={anim:0,gt:0,inv:0,mode:''});
   if(S.mode==='over'){if(st.mode!=='over'){st.mode='over';a.base=null;a.mixer.stopAllAction();once(a,S.won?L.anim.win:L.anim.die,1.2,true)}}
   else{
