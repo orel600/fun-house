@@ -56,13 +56,15 @@ function botStep({god,en}){
       if(L.lootTxt==null)L.lootTxt=document.getElementById('sLoot').innerText.replace(/\s+/g,' ').trim();
       else{m.home=1;document.getElementById('againBtn').click()}}
     return L}
-  // מתנה יומית (daily.js): נפתחת לבד בכניסה הראשונה לכפר היום. צעד אחד מסתכלים (צילום), ובצעד הבא לוקחים
-  if(vis('ovDaily')){const b=document.querySelector('#dailyWin [data-act="take"]');
-    if(L.dailyOpen==null)L.dailyOpen={at,now:document.querySelectorAll('#dailyWin .dday.now').length,days:document.querySelectorAll('#dailyWin .dday').length,want:DAILY.days.length};
-    else if(b&&L.dailyUi==null){const c=SAVE.bag.coins||0;b.click();L.dailyUi={got:(SAVE.bag.coins||0)-c,want:DAILY.days[0].coins,btn:document.getElementById('dBtn').hidden,
-      saved:JSON.parse(localStorage.getItem(SAVE_STORE.key)).daily.gift.n}}
-    else if(!b)dailyClose();
+  // "בזמן שלא היית" (welcome.js): בכניסה הראשונה לכפר היום, עם המתנה היומית בתוכו. צעד אחד מסתכלים (צילום), בצעד הבא "אסוף הכל".
+  // בכניסות הבאות (חזרה מהזירה) סוגרים ב-✕ בלי לאסוף, כדי שהבוט ייקח את הקווסטים מהיומן כמו קודם
+  if(vis('ovWelcome')){const b=document.querySelector('#welWin [data-act="all"]');
+    if(L.welOpen==null)L.welOpen={at,rows:document.querySelectorAll('#welWin .welrow').length,daily:document.querySelectorAll('#welWin .welrow.daily').length,daily0:!document.getElementById('ovDaily').hidden};
+    else if(b&&L.welUi==null){const c=SAVE.bag.coins||0;b.click();L.welUi={got:(SAVE.bag.coins||0)-c,want:DAILY.days[0].coins,btn:document.getElementById('dBtn').hidden,
+      saved:JSON.parse(localStorage.getItem(SAVE_STORE.key)).daily.gift.n,next:!!(document.querySelector('#welWin .welnext')||{}).textContent}}
+    else welcomeClose();
     return L}
+  if(vis('ovDaily'))L.dailyPop=1;   // הלוח של 7 ימים לא אמור לקפוץ לבד יותר
   if(S.mode!=='play'&&S.mode!=='gear'&&S.mode!=='forge')return L;   // gear, forge: מסך הציוד או הנפחייה פתוח בכפר
   if(S.vil)return villageBot(m,L);
   // הריצה הראשונה אחרי שלבשנו קשת בכפר: מתחילים איתה, והנזק שלה גדל
@@ -815,12 +817,37 @@ function worldBot(m,L,god){
     // התקדמות ל-stderr (לא נכנס לדוח): אם הבדיקה נתקעת ב-GitHub, רואים איפה
     if(guard%300===1)console.error('…',await page.evaluate(()=>[Math.round(S.t),S.mode,S.vil?'village':S.wd?'world':S.room?'room':'arena',enemies.length,S.nd?S.nd.list.length:0].join(' ')));
     L=await page.evaluate(botStep,{god:CFG.god,en:CFG.lang==='en'});
-    for(const k of ['dailyOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','fishDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='dailyOpen'?'daily':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='fishDone'?'fishing':k==='wDeathTxt'?'world-death':k)}
+    for(const k of ['welOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','fishDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='welOpen'?'welcome':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='fishDone'?'fishing':k==='wDeathTxt'?'world-death':k)}
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
-  check(L.dailyOpen&&L.dailyOpen.now===1&&L.dailyOpen.days===L.dailyOpen.want,'מתנה יומית: '+(L.dailyOpen?'החלון נפתח לבד בכניסה לכפר, עם '+L.dailyOpen.days+' ימים':'החלון לא נפתח בכניסה לכפר'));
-  check(L.dailyUi&&L.dailyUi.got>=L.dailyUi.want&&L.dailyUi.btn&&L.dailyUi.saved===1,'מתנה יומית: "לקחת" '+(L.dailyUi?'נתן '+L.dailyUi.got+' מטבעות, '+(L.dailyUi.saved===1?'נשמר':'לא נשמר')+(L.dailyUi.btn?' והכפתור נעלם':' והכפתור נשאר'):'לא נלחץ'));
+  check(L.welOpen&&L.welOpen.daily===1&&!L.welOpen.daily0&&!L.dailyPop,'בזמן שלא היית: '+(L.welOpen?'החלון נפתח לבד בכניסה לכפר, '+L.welOpen.rows+' שורות'+(L.welOpen.daily===1?' עם המתנה היומית':' בלי המתנה היומית')+(L.welOpen.daily0||L.dailyPop?', אבל גם הלוח של 7 ימים קפץ':', והלוח של 7 ימים לא קפץ'):'החלון לא נפתח בכניסה לכפר'));
+  check(L.welUi&&L.welUi.got>=L.welUi.want&&L.welUi.btn&&L.welUi.saved===1&&L.welUi.next,'בזמן שלא היית: "אסוף הכל" '+(L.welUi?'נתן '+L.welUi.got+' מטבעות, '+(L.welUi.saved===1?'המתנה היומית נשמרה':'המתנה היומית לא נשמרה')+(L.welUi.btn?', הכפתור 🎁 נעלם':', הכפתור 🎁 נשאר')+(L.welUi.next?', ושורה מה עכשיו':', בלי שורה מה עכשיו'):'לא נלחץ'));
+  // חוזרים לכפר אחרי זמן: ייצור, מתנה יומית, מתנה מחבר וקווסט מוכן. חלון אחד, "אסוף הכל" אוסף את כולם עם חגיגה אחת, ושום חלון לא קופץ אחריו
+  const wl=await page.evaluate(()=>{const o={};welcomeClose();questLogOpen(false);npcTalk(null);gearClose();
+    SAVE.village.center=Math.max(1,vLv('center'));SAVE.village.mill=Math.max(1,vLv('mill'));vSettle('mill');vProd('mill').have={};vProd('mill').t=Date.now()-2*3600e3;
+    dailySave().day='';const Q=QS(),q=QUESTS.list.find(q=>!q.giver&&!Q.done[q.id]&&!q.reward.rank&&!q.reward.story&&!qKind(q).talk&&q.obj.every(x=>x.type!=='upgrade'));
+    if(q){Q.active[q.id]={p:q.obj.map(x=>x.n)};o.q=q.id}
+    bagAdd('stone',3);WELCOME.gifts.push({from:'Orel',res:'stone',n:3,note:0});
+    enterVillage();return o});
+  await page.clock.runFor(1500);
+  Object.assign(wl,await page.evaluate(()=>{const o={},$=id=>document.getElementById(id),kinds=[...document.querySelectorAll('#welWin .welrow')].map(e=>e.classList[1]);
+    o.open=!$('ovWelcome').hidden&&S.mode==='welcome';o.kinds=kinds.join(',');o.all=['prod','daily','gift','quest'].every(k=>kinds.includes(k));return o}));
+  await shot('welcome-back');
+  Object.assign(wl,await page.evaluate(q=>{const o={},$=id=>document.getElementById(id),w0=SAVE.bag.wood||0,fx0=FX.length;
+    document.querySelector('#welWin [data-act="all"]').click();
+    o.wood=(SAVE.bag.wood||0)-w0;o.prod=vStock('mill')===0&&o.wood>0;o.daily=!dailyCan();o.quest=!q||!!QS().done[q]&&!QS().active[q];o.fx=FX.length-fx0;
+    o.fly=document.querySelectorAll('.welfly').length>0;o.next=!!(document.querySelector('#welWin .welnext')||{}).textContent;return o},wl.q));
+  await page.clock.runFor(5000);
+  Object.assign(wl,await page.evaluate(()=>{const o={},$=id=>document.getElementById(id);
+    o.closed=$('ovWelcome').hidden&&S.mode==='play';o.noPop=['ovDaily','ovVisit','qLog','ovGear'].every(id=>$(id).hidden);
+    enterVillage();return o}));
+  await page.clock.runFor(1500);
+  Object.assign(wl,await page.evaluate(()=>{const o={empty:document.getElementById('ovWelcome').hidden};WELCOME.auto=false;return o}));   // מכאן הבדיקות האחרות נכנסות לכפר בלי החלון
+  check(wl.open&&wl.all,'בזמן שלא היית: חוזרים לכפר, '+(wl.open?'חלון אחד עם '+wl.kinds:'החלון לא נפתח')+(wl.all?'':' (חסר משהו מ-prod,daily,gift,quest)'));
+  check(wl.prod&&wl.daily&&wl.quest&&wl.fx===1&&wl.fly&&wl.next,'בזמן שלא היית: "אסוף הכל" '+(wl.prod?'אסף '+wl.wood+' עץ':'לא אסף את הייצור')+(wl.daily?', מתנה יומית':', בלי המתנה היומית')+(wl.quest?', קווסט':', הקווסט לא נלקח')+
+    ', '+wl.fx+' חגיגות (צפוי 1)'+(wl.fly?', מספרים עפים':', בלי מספרים עפים')+(wl.next?', ושורה מה עכשיו':', בלי שורה מה עכשיו'));
+  check(wl.closed&&wl.noPop&&wl.empty,'בזמן שלא היית: '+(wl.closed?'נסגר לבד אחרי האיסוף':'לא נסגר')+(wl.noPop?', שום חלון לא קפץ אחריו':', קפץ עוד חלון')+(wl.empty?', ובלי כלום שמחכה הוא לא מופיע':', והופיע גם בלי כלום שמחכה'));
   // צלילים: כמה פעמים כל צליל התבקש, אם הקבצים נטענו מ-file://, ואם כפתור ההשתקה עובד ונשמר
   // הכפתור פותח את חלון הצלילים: השתקה בתוכו, ועוצמה לכל ערוץ שנשמרת בטלפון
   const au=await page.evaluate(()=>{const $=id=>document.getElementById(id);$('muteBtn').click();const open=!$('ovSound').hidden;
@@ -840,7 +867,7 @@ function worldBot(m,L,god){
   const heroHp=await page.evaluate(()=>HEROES.list.warrior.passive.hp);
   // הממשק (js/ui.js): בטלפון שוכב ועומד, הכפתורים בפס העליון ובסרגל למטה לא נוגעים זה בזה ולא יוצאים מהמסך,
   // וכל חלון שנפתח נסגר ב-✕ גלוי (44px לפחות) וחוזרים למשחק. גם Esc, לחיצה על הרקע, ונגיעה במשחק
-  const UIV={land:CFG.phone,port:{width:412,height:915}},uiR={};
+  const UIV={land:CFG.phone,port:{width:412,height:915}},uiR={},uiWel={};
   const uiMeasure=place=>{const vis=e=>{if(!e||e.closest('[hidden]'))return null;const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>0&&r.height>0&&cs.display!=='none'&&cs.visibility!=='hidden'?r:null};
     const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1,W=innerWidth,H=innerHeight;
     const box=sel=>[...document.querySelectorAll(sel)].map(e=>({n:e.id||(e.className.split(' ')[0]+(e.dataset.tip?':'+e.dataset.tip:'')),r:vis(e)})).filter(x=>x.r);
@@ -873,6 +900,10 @@ function worldBot(m,L,god){
       const B=VILLAGE.b.market;P.x=B.x;P.y=B.y+B.r+P.r+5;S.cam.x=P.x;S.cam.y=P.y;S.vil.ui='';S.vil.shut=null});
     await page.clock.runFor(300);
     await shot('ui-market-'+nm);await page.evaluate(()=>gearOpen());await shot('ui-gear-'+nm);await page.evaluate(()=>gearClose());
+    // "בזמן שלא היית" בגודל הזה: כל החלון בתוך המסך, והכפתור הגדול נראה (welcome.js)
+    uiWel[nm]=await page.evaluate(()=>{vShut();dailySave().day='';welcomeOpen();const r=document.getElementById('welWin').getBoundingClientRect(),b=document.querySelector('#welWin [data-act="all"]');
+      const br=b&&b.getBoundingClientRect(),o={fit:r.top>=0&&r.left>=0&&r.bottom<=innerHeight&&r.right<=innerWidth,btn:!!br&&br.bottom<=innerHeight&&br.height>=40};return o});
+    await shot('ui-welcome-'+nm);await page.evaluate(()=>{welcomeClose();dailySave().day=dailyDay()});
     const v=await page.evaluate(uiMeasure,'village');
     await page.evaluate(()=>{leaveVillage();const g=WORLD.home;P.x=g.x;P.y=g.y+g.r+P.r+2;S.cam.x=P.x;S.cam.y=P.y});
     await page.clock.runFor(200);
@@ -1040,7 +1071,7 @@ function worldBot(m,L,god){
       S.wd.rings=[];S.wd.marks=[];damage(w,w.max*10,'sword',0,'water');storyUpdate(0.1)}
     o.ready=qReady(QBY.s6Heart);
     wGo('storm');const ps=WORLD.regions.storm.paths.shadow;o.back=S.wd.reg==='storm'&&Math.hypot(P.x-ps.x,P.y-ps.y)<WORLD.arrive+10;
-    enterVillage();$('ovDaily').hidden=true;questLogOpen(false);questClaim('s6Heart');o.lit=!!SAVE.story.light;return o});
+    enterVillage();$('ovDaily').hidden=true;welcomeClose();questLogOpen(false);questClaim('s6Heart');o.lit=!!SAVE.story.light;return o});
   // הסוף: התושבים מריעים, ראש הכפר מדבר, ואחרי שסוגרים את השיחה: "תודה ששיחקת" עם סיכום. סוגרים, וממשיכים לשחק
   await page.clock.runFor(900);
   ch6b.cheer=await page.evaluate(()=>Object.values(npcState()||{}).filter(n=>n.st==='cheer').length);
@@ -1248,6 +1279,7 @@ function worldBot(m,L,god){
       'ממשק, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(bad.length?'נוגעים זה בזה: '+bad.join(', '):'הפס העליון והסרגל לא נוגעים')+(off.length?', מחוץ למסך: '+off.join(', '):'')+
       (v.more?', "+N" לשאר התרמיל':', אין "+N"')+', '+v.cards+' כרטיסים במסחר'+(v.cols===2?' בשני טורים':'')+(v.tradeBack?', ✕ חוזר לשוק':', ✕ לא חזר לשוק')+' · יציאה: '+all.map(x=>x[0]+(x[1]==='ok'?' ✕':' '+x[1])).join(', ')+
       (v.esc?', Esc':', Esc לא סוגר')+(v.backdrop?', רקע':', רקע לא סוגר')+(v.tapOut?', נגיעה במשחק':', נגיעה במשחק לא סוגרת יומן'))}
+  for(const nm in uiWel){const u=uiWel[nm];check(u.fit&&u.btn,'בזמן שלא היית, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(u.fit?'החלון כולו בתוך המסך':'החלון יוצא מהמסך')+(u.btn?', והכפתור "אסוף הכל" נראה':', והכפתור "אסוף הכל" לא נראה'))}
   const sty=L.style||{};
   check(sty.t_run>0&&sty.kills>0&&(sty.dmg_sword||0)+(sty.dmg_gun||0)>0,'סגנון משחק: '+(Object.keys(sty).map(k=>k+' '+sty[k]).join(', ')||'לא נספר'));
   check(L.vilOpen&&L.gift&&L.gift!=='{}'&&(L.vilModels==null||L.vilModels>0),'כפר: נפתח אחרי מסך הפתיחה, מתנת פתיחה '+L.gift+(L.vilModels!=null?', '+L.vilModels+' מודלים בתלת-ממד':''));

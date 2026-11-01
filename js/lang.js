@@ -244,6 +244,14 @@ const TEXT={
   'daily.keep':{he:'פספסת יום? לא נורא, ממשיכים מאיפה שעצרת',en:'Missed a day? No problem, you pick up where you left off'},
   'daily.back':{he:'מחר יש עוד מתנה',en:'Another gift tomorrow'},
   'daily.got':{he:s=>'מתנה: '+s,en:s=>'Gift: '+s},
+  // "בזמן שלא היית" (welcome.js)
+  'wel.title':{he:'בזמן שלא היית',en:'While you were away'},
+  'wel.gift':{he:n=>'מתנה מ'+n,en:n=>'Gift from '+n},
+  'wel.all':{he:'אסוף הכל',en:'Collect all'},
+  'wel.done':{he:'הכל נאסף!',en:'All collected!'},
+  'wel.go':{he:'יאללה',en:"Let's go"},
+  'wel.next':{he:s=>'מה עכשיו? ⭐ '+s,en:s=>'What now? ⭐ '+s},
+  'wel.nextGate':{he:'מה עכשיו? צא מהשער לעולם, ותביא עוד שלל',en:'What now? Head out the gate and bring back more loot'},
 
   // הכפר (js/village.js)
   'vil.home':{he:'הכפר שלך',en:'Your village'},

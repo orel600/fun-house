@@ -764,3 +764,19 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .gdoll .gslot .k{font-size:9px}
   .gd-end .grow{display:grid;grid-template-columns:repeat(2,40px);gap:4px}   /* אקססוריז ונעליים בשני טורים במקום עמודה גבוהה */
 }
+/* "בזמן שלא היית" (js/welcome.js): רשימה של מה שמחכה, וכפתור גדול אחד */
+.welwin{width:min(560px,92vw)}
+.welbody{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0}
+.wellist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;overflow:auto;min-height:0}
+.welrow{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid var(--line);font:700 15px var(--body)}
+.welrow b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.welic{font-size:22px;width:28px;text-align:center}
+.welgot{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.welgot .ri,.welsum .ri{width:22px;height:22px}
+.welrow.daily{border-color:var(--gold)}
+.welgo{align-self:center;width:100%;max-width:340px;min-height:52px;font-size:18px}
+.weldone{margin:0;text-align:center;color:var(--gold);font:900 22px var(--body)}
+.welsum{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.welnext{margin:0;text-align:center;font:700 16px var(--body)}
+.welfly{position:fixed;z-index:30;pointer-events:none;display:flex;align-items:center;gap:3px;font:900 18px var(--body);color:var(--gold);text-shadow:0 1px 3px #000}
+.welfly .ri{width:24px;height:24px}
