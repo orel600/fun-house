@@ -32,6 +32,8 @@ const TEXT={
   'pwa.install':{he:'📲 התקנה כאפליקציה',en:'📲 Install app'},
   'pwa.ios':{he:'📲 להתקנה: שיתוף ← הוספה למסך הבית',en:'📲 To install: Share → Add to Home Screen'},
   'pwa.turn':{he:'סובבו את הטלפון לרוחב',en:'Turn your phone sideways'},
+  // רצף הריגות (streak.js): מילים משלנו לכל מדרגה
+  'st.0':{he:'רצף!',en:'Streak!'},'st.1':{he:'מערבולת!',en:'Whirlwind!'},'st.2':{he:'מפולת!',en:'Avalanche!'},'st.3':{he:'סערה!',en:'Tempest!'},
   'cloud.off':{he:'☁ לא מחובר: שמור בטלפון',en:'☁ Offline: saved on this phone'},
   'cloud.sync':{he:'☁ מסנכרן…',en:'☁ Syncing…'},
   'cloud.ok':{he:'☁ שמור בענן',en:'☁ Saved to the cloud'},
