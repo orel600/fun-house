@@ -387,5 +387,5 @@ $('ovGear').addEventListener('click',e=>{
   else if(a==='take')gDoStash('out',sel.sid);
   gRedraw();
 });
-$('gearBtn').addEventListener('click',gearOpen);$('gearBtnRun').addEventListener('click',gearOpen);
+$('gearBtnRun').addEventListener('click',gearOpen);
 // Esc ולחיצה על הרקע סוגרים: ui.js
