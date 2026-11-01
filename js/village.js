@@ -309,6 +309,5 @@ function drawVillageScreen(ox,oy){
     sign(x,y,T('vil.'+k)+(L?' · '+L:''),L?C.chalk:C.dim);
     const n=vStock(k);if(n>0){const r=Object.keys(VILLAGE.b[k].make)[0];sign(x,y-B.r*1.6,resIcon(r)+' '+n,C.gold)}
   }
-  const g=VILLAGE.gate;sign(g.x+ox,g.y+oy+40,T('vil.gate'),C.chalk);
-  edgeArrow(g.x+ox,g.y+oy,C.chalk);
+  const g=VILLAGE.gate;sign(g.x+ox,g.y+oy+40,T('vil.gate'),C.chalk);   // החץ לשער: רק כשהמטרה בעולם (guide.js)
 }

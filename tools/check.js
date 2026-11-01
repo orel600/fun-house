@@ -844,10 +844,10 @@ function worldBot(m,L,god){
   const uiMeasure=place=>{const vis=e=>{if(!e||e.closest('[hidden]'))return null;const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>0&&r.height>0&&cs.display!=='none'&&cs.visibility!=='hidden'?r:null};
     const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1,W=innerWidth,H=innerHeight;
     const box=sel=>[...document.querySelectorAll(sel)].map(e=>({n:e.id||(e.className.split(' ')[0]+(e.dataset.tip?':'+e.dataset.tip:'')),r:vis(e)})).filter(x=>x.r);
-    const els=box(place==='world'?'#muteBtn,#wMapBtn,.hud .hp,#wBag .res,#wBag .resmore,#nav .nbtn':'#muteBtn,#vBag .res,#vBag .resmore,#nav .nbtn'),bad=[],off=[];
+    const els=box(place==='world'?'#muteBtn,#wMapBtn,.hud .hp,#wBag .res,#wBag .resmore,#nav .nbtn,#guide':'#muteBtn,#vBag .res,#vBag .resmore,#nav .nbtn,#guide'),bad=[],off=[];
     els.forEach((a,i)=>els.slice(i+1).forEach(b=>{if(hit(a.r,b.r))bad.push(a.n+'×'+b.n)}));
     for(const x of els)if(x.r.left<-0.5||x.r.right>W+0.5||x.r.top<-0.5||x.r.bottom>H+0.5)off.push(x.n);
-    const pid=place==='world'?'wPanel':'vPanel',pn=vis($(pid));if(pn)for(const x of box('#nav .nbtn'))if(hit(pn,x.r))bad.push(pid+'×'+x.n);
+    const pid=place==='world'?'wPanel':'vPanel',pn=vis($(pid));if(pn)for(const x of box('#nav .nbtn,#guide'))if(hit(pn,x.r))bad.push(pid+'×'+x.n);
     const win=(open,panel,sel)=>{open();const p=$(panel),b=document.querySelector(sel),r=vis(b),ok=!!r&&r.width>=40&&r.height>=40&&r.left>=0&&r.right<=W&&r.top>=0&&r.bottom<=H&&!p.hidden;
       const why=!ok?(!b?'אין כפתור':!r?'מוסתר':'מקום '+[r.left,r.top,r.width,r.height].map(Math.round).join(',')+(p.hidden?' חלון סגור':'')+(!$('npcDlg').hidden?' שיחה פתוחה':'')+' · רוחב העמוד '+document.documentElement.scrollWidth+'/'+innerWidth+' · רחב מדי: '+[...document.querySelectorAll('body *')].filter(e=>{const q=e.getBoundingClientRect();return q.width>0&&q.right>innerWidth+2&&!e.closest('[hidden]')}).slice(0,4).map(e=>e.id||e.className||e.tagName).join(',')):'';
       if(b)b.click();return !ok?'אין ✕ גלוי ('+why+')':!p.hidden?'לא נסגר':S.mode!=='play'?'מצב '+S.mode:'ok'};
@@ -881,6 +881,29 @@ function worldBot(m,L,god){
     await page.evaluate(()=>enterVillage());await page.clock.runFor(100);
     uiR[nm]={v,w};
   }
+  // תמיד מטרה ברורה (guide.js): יש מטרה בשורה למעלה, החץ מצביע לכיוון הנכון גם כשהמטרה באזור אחר, והמטרה מתחלפת כשקווסט נגמר
+  const gd=await page.evaluate(()=>{
+    const keep=JSON.stringify({q:SAVE.quests,s:SAVE.story}),o={},Q=QS();
+    const ang=t=>t?Math.round(Math.atan2(t.y-P.y,t.x-P.x)*100):null;
+    const tick=()=>{guideT=0;guideUpdate()};
+    questLogOpen(false);gearClose();enterVillage();npcTalk(null);
+    for(const id of ['s1Lanterns','s1Shard','s1Path','s1Warden'])delete Q.active[id],delete Q.done[id];Q.track=null;
+    qStart(QBY.s1Warden);P.x=0;P.y=0;tick();
+    const g=VILLAGE.gate,t1=guideTarget(guideG);
+    o.vil=!$('guide').hidden&&$('guideTxt').textContent.length>3&&guideG.icon===GUIDE.icon.story;
+    o.vilGate=!!t1&&t1.x===g.x&&t1.y===g.y&&ang(t1)===ang(g);o.txt=$('guideTxt').textContent;o.dist=$('guideDist').textContent;
+    leaveVillage();P.x=0;P.y=0;tick();const L=STORY.lanterns.earth,t2=guideTarget(guideG);
+    o.lantern=!!t2&&t2.x===L.x&&t2.y===L.y&&ang(t2)===ang(L);
+    worldUi(false);enterWorld('home','lake');P.x=300;P.y=200;tick();const h=WR().home,t3=guideTarget(guideG);   // מהאגם: החץ לשער חזרה לאחו
+    o.lakeBack=!!t3&&t3.x===h.x&&t3.y===h.y&&ang(t3)===ang(h)&&/·/.test($('guideTxt').textContent);
+    worldUi(false);enterWorld('home');tick();const before=guideG.text;
+    questEvent('kill','warden');tick();o.claim=guideG.icon===GUIDE.icon.claim;
+    SAVE.story.earth=true;questClaim('s1Warden');tick();o.after=guideG.text;o.changed=before!==guideG.text&&guideG.q!=='s1Warden';
+    $('guideMin').click();o.min=$('guide').classList.contains('min')&&$('guideTxt').textContent==='';$('guideMin').click();
+    $('guideMain').click();o.log=!$('qLog').hidden&&!!document.querySelector('#qLog .gnow');questLogOpen(false);
+    worldUi(false);startRun();tick();o.arena=$('guide').hidden;enterVillage();
+    const k=JSON.parse(keep);SAVE.quests=k.q;SAVE.story=k.s;saveNow();
+    return o});
   // ניר (31.10.2026): המבוקש נהרג מחוץ לגבולות העולם, והשלל לא נאסף. כאן הוא בורח לקצה ונהרג מעבר לו: הוא נשאר בפנים, והשלל נוחת בפנים ונאסף.
   // וציוד מאויב: פריט שנפל (בכוח) נוחת על הרצפה, נמשך לשחקן ונכנס לתרמיל ולשמירה
   // העלילה, פרק 1 (story.js): ההקדמה אצל ראש הכפר, הרסיס מפיוחו, השומר ליד הפנס, והפנס נדלק
@@ -1248,6 +1271,9 @@ function worldBot(m,L,god){
       'ממשק, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(bad.length?'נוגעים זה בזה: '+bad.join(', '):'הפס העליון והסרגל לא נוגעים')+(off.length?', מחוץ למסך: '+off.join(', '):'')+
       (v.more?', "+N" לשאר התרמיל':', אין "+N"')+', '+v.cards+' כרטיסים במסחר'+(v.cols===2?' בשני טורים':'')+(v.tradeBack?', ✕ חוזר לשוק':', ✕ לא חזר לשוק')+' · יציאה: '+all.map(x=>x[0]+(x[1]==='ok'?' ✕':' '+x[1])).join(', ')+
       (v.esc?', Esc':', Esc לא סוגר')+(v.backdrop?', רקע':', רקע לא סוגר')+(v.tapOut?', נגיעה במשחק':', נגיעה במשחק לא סוגרת יומן'))}
+  check(gd.vil&&gd.vilGate&&gd.lantern&&gd.lakeBack&&gd.claim&&gd.changed&&gd.min&&gd.log&&gd.arena,'מטרה ברורה: '+(gd.vil?'בכפר "'+gd.txt+'" '+gd.dist:'אין שורה בכפר')+(gd.vilGate?', החץ לשער':', החץ לא לשער')+
+    (gd.lantern?', בעולם לפנס':', לא לפנס')+(gd.lakeBack?', מהאגם לשער חזרה':', מהאגם לא לשער')+(gd.claim?', לפרס':', לא לפרס')+(gd.changed?', אחר כך: "'+gd.after+'"':', המטרה לא התחלפה')+
+    (gd.min?', מתכווצת':', לא מתכווצת')+(gd.log?', נגיעה פותחת יומן עם "עכשיו"':', נגיעה לא פותחת יומן עם "עכשיו"')+(gd.arena?', בזירה מוסתרת':', מופיעה בזירה'));
   const sty=L.style||{};
   check(sty.t_run>0&&sty.kills>0&&(sty.dmg_sword||0)+(sty.dmg_gun||0)>0,'סגנון משחק: '+(Object.keys(sty).map(k=>k+' '+sty[k]).join(', ')||'לא נספר'));
   check(L.vilOpen&&L.gift&&L.gift!=='{}'&&(L.vilModels==null||L.vilModels>0),'כפר: נפתח אחרי מסך הפתיחה, מתנת פתיחה '+L.gift+(L.vilModels!=null?', '+L.vilModels+' מודלים בתלת-ממד':''));

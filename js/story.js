@@ -229,6 +229,6 @@ function storyDraw(){
 }
 function storyScreen(ox,oy){
   const k=storyLantern();if(!k)return;const L=STORY.lanterns[k],e=S.wd.warden;
-  if(qOn(L.quest))edgeArrow(L.x+ox,L.y+oy,L.col,1.2);   // חץ לפנס כשהקווסט פעיל
+  // החץ לפנס כשהקווסט פעיל: guide.js
   if(e&&!e.dead){ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 14px Heebo, system-ui, sans-serif';ctx.fillStyle=L.col;ctx.fillText(T('story.'+k+'.name'),e.x+ox,e.y+oy-e.r-56)}
 }
