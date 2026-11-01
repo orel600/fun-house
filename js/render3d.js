@@ -385,7 +385,7 @@ function syncPlayer(dt){
 function syncEnemy(e,dt){
   let a=R3D.actors.get(e);const L=lookOf(e);if(!L)return;
   if(!a){a=makeActor(L);R3D.actors.set(e,a);
-    if(!e.isBoss)a.root.scale.setScalar(L.h/COS()/R3D.tmpl[L.model].userData.h*(e.big||1));
+    if(!e.isBoss){a.root.scale.setScalar(L.h/COS()/R3D.tmpl[L.model].userData.h*(e.big||1));a.sc0=a.root.scale.x}
     // קמים מהאדמה רק בפעם הראשונה, ולא בכל פעם שאויב חוזר למסך
     if(L.anim.spawn&&!e.isBoss&&!R3D.shown.has(e)){once(a,L.anim.spawn,0.45)}
     R3D.shown.add(e);
@@ -412,6 +412,7 @@ function syncEnemy(e,dt){
   place(a,e.x,e.y,L.foot*(e.big||1),yaw,lift);
   const rage=e.isBoss&&e.rage>0.05?e.rage:0;
   setFlash(a,e.flash>0?0.9:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,e.flash>0?0xffffff:C.blood);
+  if(a.sc0){const q=juiceSquash(e);a.root.scale.set(a.sc0*(1+q),a.sc0*(1-q),a.sc0*(1+q))}   // מעיכה קטנה במכה (juice.js)
   // כשיש הרבה אויבים, כל אחד מונפש רק בכל פריים שני (חצי מהם בכל פריים). בעין זה לא נראה, ובטלפון זה חוסך הרבה
   a.acc=(a.acc||0)+dt;
   if(e.isBoss||R3D.actors.size<25||((a.id||(a.id=++R3D.nid))+R3D.frame)%2===0){a.mixer.update(a.acc);a.acc=0}
