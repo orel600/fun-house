@@ -911,6 +911,15 @@ function worldBot(m,L,god){
       const h0=WACT.stat.hunt||0,e3=addEnemy('grunt',P.x+180,P.y);e3.home=0;e3.mult={};e3.hp=e3.max=1e9;e3.speed=0;e3.dmg=0;
       for(let k=0;k<240;k++)orbitUpdate(1/60);r.hunt=(WACT.stat.hunt||0)>h0&&e3.hp<e3.max;e3.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);FL.length=0;if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // כותרת אזור ופחות אפקטים (feed.js, juice.js): הכותרת רק בכניסה הראשונה לאזור, והמתג חוצה חלקיקים, מוריד את השובל ונשמר
+  const fxl=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{SAVE.regSeen={};const t0=FEED.stat.titles;enterWorld('home');r.first=FEED.stat.titles===t0+1&&!!FTITLE;FTITLE=null;
+      enterWorld('home');r.once=FEED.stat.titles===t0+1;
+      const btn=document.querySelector('[data-fxless="1"]');r.btn=!!btn;
+      const burst=()=>{const J=juice();J.p.length=0;jBurst(P.x,P.y,'fire',12,0);return J.p.length};
+      setFxLess(false);const full=burst();setFxLess(true);const less=burst();r.half=less>0&&less<full;r.saved=SAVE.fxLess===true&&btn.getAttribute('aria-pressed')==='true';
+      setFxLess(false);r.off=!SAVE.fxLess}catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);FTITLE=null;if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // כל דמות התחלה לשתי שניות מול אויב אחד: איך היא תוקפת, מה עף, ואיזו הנפשה. אחר כך הכל חוזר כמו שהיה
   const heroes=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,out={};
     const W3={sword:'Melee_1H_Attack_Slice_Horizontal',bow:'Ranged_Bow_Release',staff:'Ranged_Magic_Shoot'};   // ההנפשה שכל נשק צריך (GRIP3D)
@@ -1658,6 +1667,8 @@ function worldBot(m,L,god){
     'תלתן: קריטי +'+ob.crit+', שלל x'+ob.luck,ob.draw===true?'מצויר':'ציור נכשל: '+ob.draw].join(', '));
   check(!wac.err&&wac.tips&&wac.fire&&wac.ring&&wac.heal&&wac.row&&wac.hunt,'רואים מה האורות עושים: '+(wac.err||[wac.tips?'הסבר לכל אור בפעם הראשונה':'אין הסבר',wac.fire?'אש מסומנת על האויב':'אש לא מסומנת',
     wac.ring?'טבעת כפור':'אין טבעת כפור',wac.heal?'ריפוי בפיד':'ריפוי לא בפיד',wac.row?'שורת אייקונים':'אין שורת אייקונים',wac.hunt?'אש יוצאת לציד ופוגעת':'אין ציד'].join(', ')));
+  check(!fxl.err&&fxl.first&&fxl.once&&fxl.btn&&fxl.half&&fxl.saved&&fxl.off,'כותרת אזור ופחות אפקטים: '+(fxl.err||[fxl.first?'כותרת בכניסה הראשונה':'אין כותרת',fxl.once?'לא חוזרת':'חוזרת בכל כניסה',
+    fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
   check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw&&wsk.orbFlash,
