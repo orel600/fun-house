@@ -121,6 +121,22 @@
 | 🔨 1.11 | תוכנית ופיילוט: התקדמות שרואים | docs/plan-progression.md, סקר מודלים חינמיים (קסדות, מגנים, שריון), ופיילוט ציוד על הדמות בעולם מאחורי ?gear3d=1 | | docs, render3d.js מאחורי דגל |
 | ⬜ | ביצוע לפי התוכנית | אחרי שהתוכנית מוכנה, Claude בוחר ובונה | התוכנית | |
 
+## מהדוח של המבקר (ניר סימן, 1.11.2026)
+
+הדוח הראשון: `docs/critic/2026-11-01/findings.json` (#165). ניר אישר 19 מתוך 20, ודחה רק "מהירות בעולם". הסימונים בדף: https://claude.ai/artifact/4Yy5ZjM6VCwYH56TLQ5vsy
+
+| | משימה | מה זה כולל | אחרי | נוגע ב |
+| --- | --- | --- | --- | --- |
+| 🔨 1.11 | עשר הדקות הראשונות | first-quest-bounce, welcome-first-visit, npc-six-quests, coins-too-fast | | quests, welcome, daily, npc, מספרי מטבעות |
+| 🔨 1.11 | ליטוש מסך מהמבקר | dialog-under-hud, guide-over-windows, gift-btn-arena, book-question-grid, worldmap-locked-tiers, forge-recipe-chips | | css, ui, menu, book, worldmap, נפחייה |
+| ✅ #164 | (בקרב) | world-fights-no-tension, too-many-celebrations (#154, #156) | | |
+| 🔨 | (בקרב) | warden-long-flat: "קרב 1: שומרים עם התקפות שרואים", gear-cramped-iphone: "תרמיל מסודר" | | |
+| ⬜ | פיוחו מריחה ומובילה | idea-pet-detours: פעם בכ-3 דקות פיוחו רצה לכיוון, ושם תיבה, סוד או אויב עלית | | pet.js |
+| ⬜ | מבוקש היום | idea-daily-hunt: לוח בכפר עם אויב עלית בעל שם, מקום על המפה ושלל ייחודי | | wanted.js, quests |
+| ⬜ | הכפר מתמלא | idea-living-village: דמות שעזרת לה בעולם עוברת לגור בכפר עם בית ושירות | | worldnpc, village (גדול) |
+| ⏸ אוראל | גלגול התחמקות | idea-dodge: ניר אישר. נוגע בתנועה המשותפת, ולכן מחכה לאוראל (כמו "התחמקות בלי כפתור"). אחרי שבוע ניר יכול לקחת | | input, combat |
+| ⏸ אוראל | זירה עם התחלה מלאה | arena-empty-start: הזירה של אוראל. נרשם לו ביומן | | זירה |
+
 ## שיפור החוויה (ניר, 1.11.2026)
 
 ניר: "עכשיו המיקוד צריך להיות בלשפר את מה שבנינו... המסכים עדיין מרגישים מגושמים והזרימה של המשחק לא עובדת". התשובות של ניר לשאלות:
