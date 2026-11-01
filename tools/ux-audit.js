@@ -127,8 +127,8 @@ async function session(view,key,report){
   const t0=taps;F.vt0=await page.evaluate(()=>Date.now());
   const g=await page.evaluate(()=>VILLAGE.gate);
   F.walkToGate=await walk(g.x,g.y-10,20);
-  await run(300);await shot('gate','השער: הפאנל ליד השער');
-  await tap('#vPanel [data-act="go"]','יציאה בשער');
+  await run(300);await shot('gate','השער: כפתור "לעולם" בסרגל');
+  await tap('#vEnter','יציאה בשער');
   await run(600);F.inWorld=await page.evaluate(()=>!!S.wd);
   await shot('world-arrive','כניסה לעולם');
   // אל האויב הקרוב, עד שהוא נפגע
@@ -179,7 +179,7 @@ async function session(view,key,report){
     const D=SAVE.daily||(SAVE.daily={});saveNow()});
   await tap2('#startBtn');await r2(1200);
   if(await p2.evaluate(()=>!document.getElementById('ovDaily').hidden)){await shot2('daily','מתנה יומית');await tap2('#dailyWin [data-act="close"]')}
-  const near=async(k,name,note)=>{await p2.evaluate(k=>{const B=VILLAGE.b[k];P.x=B.x;P.y=B.y+B.r+20;S.cam.x=P.x;S.cam.y=P.y;joy=null},k);await r2(400);return shot2(name,note)};
+  const near=async(k,name,note)=>{await p2.evaluate(k=>{const B=VILLAGE.b[k];P.x=B.x;P.y=B.y+B.r+20;S.cam.x=P.x;S.cam.y=P.y;joy=null},k);await r2(400);await tap2('#vEnter');await r2(200);return shot2(name,note)};
   await safe2('village',async()=>{await tp2(0,50);await r2(300);await shot2('village','הכפר באמצע המשחק')});
   await safe2('mill',()=>near('mill','panel-mill','פאנל מנסרה'));
   await safe2('forge',async()=>{await near('forge','panel-forge','פאנל נפחייה (חלון גדול)');await tap2('#vPanel [data-act="forge"]');await shot2('forge','הנפחייה: Aging');
