@@ -5,15 +5,19 @@
      השחקן לא רואה אותם: הוא רואה את שם הסוג ('wt.<סוג>' ב-lang.js).
    k: מכפילים על המספרים של P.sw / P.gn. dmg נזק, cd זמן בין מכות, speed מהירות הקליע.
    shot: מה עף. arrow חץ, bolt קליע קסם (עיגול זוהר בצבע סוג הנזק, ופרץ ניצוצות בפגיעה).
+   spread: טווח הנזק (ניר, 1.11.2026, כמו ב-Diablo): כל מכה מגרילה נזק בין ממוצע×(1-spread) לממוצע×(1+spread), בהתפלגות שווה.
+     לכן הממוצע הוא בדיוק הנזק של לפני הטווח, והאיזון בזירה ובעולם לא זז. חרב ושרביט צר, קשת ומטה בינוני, גרזן ופטיש רחב.
+     Aging, נקודות דמות, סטים וכוחות מכפילים את הממוצע, אז הם מזיזים את שני הקצוות יחד.
    home: כמה מהר הקליע מסתובב לעבר האויב הקרוב, ברדיאנים לשנייה (0: ישר). life: כמה שניות הוא עף.
    ההנפשה בתלת-ממד לפי המודל של הפריט: GRIP3D ב-render3d.js */
 const WEAPONS={
-  sword: {use:'sword'},
-  axe:   {use:'sword',k:{dmg:1.25,cd:1.2}},
-  hammer:{use:'sword',k:{dmg:1.6,cd:1.5}},
-  bow:   {use:'gun',shot:'arrow',life:0.9},
-  staff: {use:'gun',shot:'bolt',home:5,life:1.2,k:{dmg:1.15,cd:1.1,speed:0.7}},
-  wand:  {use:'gun',shot:'bolt',home:7,life:1,k:{dmg:0.7,cd:0.75,speed:0.8}},
+  sword: {use:'sword',spread:0.25},
+  axe:   {use:'sword',spread:0.5,k:{dmg:1.25,cd:1.2}},
+  hammer:{use:'sword',spread:0.6,k:{dmg:1.6,cd:1.5}},
+  bow:   {use:'gun',spread:0.35,shot:'arrow',life:0.9},
+  staff: {use:'gun',spread:0.3,shot:'bolt',home:5,life:1.2,k:{dmg:1.15,cd:1.1,speed:0.7}},
+  wand:  {use:'gun',spread:0.2,shot:'bolt',home:7,life:1,k:{dmg:0.7,cd:0.75,speed:0.8}},
+  base:{sword:20,gun:9},   // הנזק הבסיסי של דמות בלי כלום, מקרוב ומרחוק (P.sw.dmg / P.gn.dmg ב-reset, state.js)
   bolt:{r:6,burst:7,find:260}   // קליע קסם: גודל, כמה ניצוצות בפגיעה, ומאיזה מרחק הוא מרגיש אויב
 };
 
@@ -23,6 +27,17 @@ const wTypeOf=id=>{const it=gItem(id);return it&&WEAPONS[it.w]&&it.w||'sword'};
 const wUse=id=>WEAPONS[wTypeOf(id)].use;
 const wNow=()=>WEAPONS[P.wt]||WEAPONS.sword;
 const wK=k=>(wNow().k||{})[k]||1;
+/* ---- טווח נזק: כל מכה של הנשק מגרילה בטווח (spread למעלה) ----
+   wRoll: נזק של מכה אחת סביב הממוצע. wRange: [מינימום, מקסימום] להצגה. wAvgNow: הממוצע של הנשק שביד עכשיו, עם כל השדרוגים.
+   wItemAvg: הממוצע של פריט לבד, על דמות בלי כלום, למה שכתוב בכרטיס ובהשוואה */
+const wSpread=t=>(WEAPONS[t]||WEAPONS.sword).spread||0;
+const wRoll=(avg,t=P.wt)=>avg*(1+wSpread(t)*(Math.random()*2-1));
+const wRange=(avg,t)=>{const s=wSpread(t);return[Math.max(1,Math.round(avg*(1-s))),Math.max(1,Math.round(avg*(1+s)))]};
+const wAvgNow=()=>(P.weapon==='sword'?P.sw.dmg:P.gn.dmg)*wK('dmg')*dmgK();
+function wItemAvg(id){const it=gItem(id);if(!it||!WEAPONS[it.w])return 0;const W=WEAPONS[it.w],s=gStats(id);
+  return WEAPONS.base[W.use]*((W.k||{}).dmg||1)*(1+(s[W.use==='sword'?'sdmg':'gdmg']||0)/100)}
+// "נזק 17–28": השורה בכרטיס הפריט, בהשוואה ובחלון הדמות
+const wRangeTxt=(avg,t)=>{const r=wRange(avg,t);return T('gear.dmg','<bdi>'+r[0]+'–'+r[1]+'</bdi>')};
 // השם שהשחקן רואה לצד (sword / gun): הנשק שביד, או נשק לבוש מאותו צד, ואם אין, שם כללי
 function wLabel(use){
   if(P.weapon===use)return T('wt.'+P.wt);
@@ -52,7 +67,7 @@ function shotFly(b,dt){
   b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;
 }
 function shotHit(b,e){
-  b.hit.add(e);damage(e,P.gn.dmg*wK('dmg')*dmgK(),'gun',Math.atan2(b.vy,b.vx));
+  b.hit.add(e);damage(e,wRoll(P.gn.dmg*wK('dmg')*dmgK()),'gun',Math.atan2(b.vy,b.vx));
   if(b.shot==='bolt')sparks(b.x,b.y,dtCol(P.dt.gun),WEAPONS.bolt.burst,140);
   if(b.pierce--<=0)b.life=0;
 }

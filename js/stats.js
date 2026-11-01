@@ -60,6 +60,7 @@ function statsHtml(){
   const bn=buildName();
   let h='<div class="sthead"><b>'+T('gear.hero',heroLv())+(bn?' · '+T('st.build')+' <span class="bname">'+bn+'</span>':'')+'</b><span class="stxp"><i style="width:'+Math.round(x.have/x.need*100)+'%"></i><bdi>'+Math.floor(x.have)+' / '+x.need+' XP</bdi></span></div>';
   h+='<div class="stbuilds">'+[0,1].map(i=>'<button class="vbtn ghost" data-act="build" data-i="'+i+'"'+((SAVE.hero.build||0)===i?' aria-pressed="true"':'')+(S.vil?'':' disabled')+'>'+T('st.slot',i+1)+'</button>').join('')+'</div>';   // שתי בניות שמורות
+  h+='<p class="stdmg">'+T('wt.'+P.wt)+' · '+wRangeTxt(wAvgNow(),P.wt)+'</p>';   // טווח הנזק של הנשק שביד, עם כל השדרוגים (weapons.js)
   h+='<p class="stfree'+(free?' on':'')+'">'+(free?T('st.free',free):T('st.none'))+'</p>';
   h+='<div class="strows">'+Object.keys(STATS.list).map(k=>{const S_=STATS.list[k],[name,what]=T('st.'+k),n=p[k]||0;
     const val=[...new Set(Object.keys(S_.give).map(s=>'+'+(Math.round((g[s]||0)*10)/10)+(s==='hp'?'':'%')))].join(' / ');
