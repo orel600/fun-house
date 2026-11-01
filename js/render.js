@@ -45,7 +45,7 @@ function drawPlayer(){
       if(k>0.3){ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(hx+cx*10,hy+cy*10);ctx.stroke()}
     }
   }}
-  if(sword&&s.anim>0&&fluteOn())fluteSwing(s,s.anim/0.2,dtCol(P.dt.sword));   // הנודד עם החליל: חמשה ותווים (flute.js)
+  if(sword&&s.anim>0&&heroTheme())heroTheme().swing(s,s.anim/0.2,dtCol(P.dt.sword));   // דמות אישית: חמשה ותווים (flute.js) או גצים (spark.js)
   else if(sword&&s.anim>0&&jSwing(s,s.anim/0.2,dtCol(P.dt.sword))){}   // בעולם ובכפר: שובל חרמש (juice.js)
   else if(sword&&s.anim>0){
     const k=s.anim/0.2,start=s.ang-s.arc/2,end=start+s.arc*(1-k);
@@ -175,9 +175,9 @@ function render(){
   drawOrbits();drawDivine();   // החפצים המסתובבים (orbit.js)
   drawWSkill();   // בעולם: כדורי הסקילים בדרך, והכוונת בגרירה (wskill.js)
   // חצים: מוט, נוצות וחוד. קסם: כדור זוהר עם שובל (weapons.js)
-  const gw=juiceOn()?wGrow():1,sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r*gw,fl=fluteOn();ctx.lineWidth=2;   // gw: נשק משודרג יורה חץ/קסם גדול יותר, בעולם ובכפר (weapons.js)
+  const gw=juiceOn()?wGrow():1,sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r*gw,th=heroTheme();ctx.lineWidth=2;   // gw: נשק משודרג יורה חץ/קסם גדול יותר, בעולם ובכפר (weapons.js)
   for(const b of pb){
-    if(fl){fluteShot(b,sc);continue}   // הנודד עם החליל: חלילים ותווים עפים (flute.js)
+    if(th){th.shot(b,sc);continue}   // דמות אישית: חלילים ותווים (flute.js) או להבונים (spark.js)
     if(b.shot==='bolt'){ctx.fillStyle=sc;
       for(let i=3;i>0;i--){ctx.globalAlpha=0.12*(4-i);ctx.beginPath();ctx.arc(b.x-b.vx*0.018*i,b.y-b.vy*0.018*i,br*(1-i*0.18),0,7);ctx.fill()}
       ctx.globalAlpha=0.3;ctx.beginPath();ctx.arc(b.x,b.y,br*1.9,0,7);ctx.fill();

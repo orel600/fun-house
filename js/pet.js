@@ -43,6 +43,8 @@ const PET={
 };
 
 const petKind=()=>PET.kinds[SAVE.pet.kind]||PET.kinds[PET.default];
+// טקסט לפי החיה: 'pet.up.parosh' אם יש (זכר), אחרת 'pet.up' (פיוחו, נקבה)
+const petTx=k=>{const n=k+'.'+(SAVE.pet.kind||PET.default);return TEXT[n]?n:k};
 const petStageOf=xp=>{const st=petKind().stages;let i=0;while(i+1<st.length&&xp>=st[i+1].xp)i++;return i};   // 0, 1 או 2
 const petStage=()=>petKind().stages[SAVE.pet.stage]||petKind().stages[0];
 const petHere=()=>!!(P&&S&&!S.room&&(S.vil||S.wd||S.mode==='play'||S.mode==='over'));   // בכל מקום חוץ מחדר הבונוס ומסך הפתיחה
@@ -52,7 +54,7 @@ function petXP(n){
   const sv=SAVE.pet,was=sv.stage;sv.xp+=n;sv.stage=petStageOf(sv.xp);
   if(sv.stage>was){const p=S.pet;
     if(p){p.st='jump';p.t=0}
-    celebrate(p?p.x:P.x,p?p.y:P.y,'rank',T('pet.up',T('pet.name.'+(sv.kind||PET.default)),sv.stage+1));sfx('levelup');
+    celebrate(p?p.x:P.x,p?p.y:P.y,'rank',T(petTx('pet.up'),T('pet.name.'+(sv.kind||PET.default)),sv.stage+1));sfx('levelup');
     if(typeof questEvent==='function')questEvent('pet','stage',1);
     saveNow()}
   return sv.stage}
@@ -82,7 +84,8 @@ function petUpdate(dt){
   if(dP>f.jump){Object.assign(p,petMake(),{digs:p.digs,dug:p.dug,sand:p.sand,hearts:p.hearts,bitesAll:p.bitesAll,dealt:p.dealt,returns:p.returns});return}   // רחוק מדי (שער, מעבר מקום): מופיעה לידו
   // חפירה: בעולם, ובזירה לעתים רחוקות יותר. לא בכפר
   if(p.st==='hunt'||p.st==='back'){petHunt(p,dt,dP);return}   // תקיפה: רצה לאויב ונושכת, או חוזרת לשחקן
-  if(!S.vil&&p.st!=='dig'&&p.st!=='go'&&p.st!=='jump'){p.digT-=dt*(sv.buff>0?PET.feed.dig:1)/(S.wd?1:PET.dig.arena);if(p.digT<=0)petDigStart(p)}
+  if(p.st==='sneak'||p.st==='flee'){paroshSteal(p,dt,dP);return}   // פרעוש גונב (parosh.js)
+  if(!S.vil&&p.st!=='dig'&&p.st!=='go'&&p.st!=='jump'){p.digT-=dt*(sv.buff>0?PET.feed.dig:1)/(S.wd?1:PET.dig.arena);if(p.digT<=0){if(!petKind().steal)petDigStart(p);else if(paroshStart(p))return}}   // steal: במקום לחפור, גונב מאויב (parosh.js)
   if(p.st==='jump'){if(p.t>0.9){p.st='idle';p.t=0}return}
   if(p.st==='go'){const s=p.spot,dx=s.x-p.x,dy=s.y-p.y,d=Math.hypot(dx,dy);
     if(d<8||dP>f.run*1.6){if(d<8){p.st='dig';p.t=0}else{p.st='follow';p.spot=null}}   // השחקן התרחק מאוד: עוזבת ורצה אחריו
@@ -133,14 +136,14 @@ function petBite(p,e){
 function petFeedBtn(p,dP){
   const b=$('feedBtn');if(!b)return;
   const show=!!p&&(S.vil||S.wd)&&dP<PET.feed.near&&p.st!=='hunt'&&p.st!=='back'&&p.st!=='go'&&p.feedCd<=0&&bagHas(PET.feed.res);
-  if(b.hidden===show){b.hidden=!show;if(show){b.innerHTML='<span class="ni" aria-hidden="true">🥕</span>'+T('ctx.feed');b.setAttribute('aria-label',T('pet.feed',T('pet.name.'+(SAVE.pet.kind||PET.default))))}}
+  if(b.hidden===show){b.hidden=!show;if(show){b.innerHTML='<span class="ni" aria-hidden="true">🥕</span>'+T('ctx.feed');b.setAttribute('aria-label',T(petTx('pet.feed'),T('pet.name.'+(SAVE.pet.kind||PET.default))))}}
 }
 function petFeed(){
   const p=S.pet,F=PET.feed;if(!p||!petHere()||S.mode!=='play'||p.feedCd>0||!bagTake(F.res))return false;
   const sv=SAVE.pet;sv.fed=(sv.fed||0)+1;sv.buff=F.buff;p.feedCd=F.cd;
   p.st='jump';p.t=0;p.spot=null;p.face=Math.atan2(P.y-p.y,P.x-p.x);
   for(let i=0;i<F.hearts;i++)p.hearts.push({x:p.x+rand(-12,12),y:p.y-petStage().h*0.8,vx:rand(-40,40),vy:-rand(50,110),life:rand(0.9,1.5),s:rand(4,7)});
-  floatText(p.x,p.y-petStage().h-14,T('pet.yum'),F.heart,15);sfx('xp');
+  floatText(p.x,p.y-petStage().h-14,T(petTx('pet.yum')),F.heart,15);sfx('xp');
   if(typeof questEvent==='function')questEvent('pet','feed',1);
   petXP(F.xp);saveNow();$('feedBtn').hidden=true;
   return true}
@@ -160,7 +163,7 @@ function petDigEnd(p){
   let got=runGive(L,x,y);
   if(!got.length){const [r,n]=Object.entries(PET.dig.miss)[0];dropSpawn(r,n,x,y+20);got=[r]}
   for(const d of drops().slice(n0))d.pet=true;   // pet: לבדיקה, מה היא הוציאה (מה שהצטרף לערימה קיימת לא מסומן)
-  if(got.some(r=>lootTier(r)>=2))floatText(p.x,p.y-48,T('pet.found',T('pet.name.'+(SAVE.pet.kind||PET.default))),RES.rarity[2].col,15);else sfx('tap');
+  if(got.some(r=>lootTier(r)>=2))floatText(p.x,p.y-48,T(petTx('pet.found'),T('pet.name.'+(SAVE.pet.kind||PET.default))),RES.rarity[2].col,15);else sfx('tap');
   p.digs++;p.dug.push(...got);p.st='idle';p.t=0;p.spot=null;petXP(PET.xp.dig);
   if(typeof questEvent==='function')questEvent('pet','dig',1);
 }
@@ -169,7 +172,8 @@ function petDigEnd(p){
 function drawPet(){
   const p=S.pet;if(!p||!petHere())return;
   const stg=petStage(),k=petKind(),h=stg.h;
-  if(!R3D.on){   // דו-ממד: גוף, ראש, אוזניים בצבע חול וזנב מתולתל
+  if(k.draw)k.draw(p,h);   // חיה עם ציור משלה (parosh.js). בתלת-ממד רק מה שמעל המודל
+  else if(!R3D.on){   // דו-ממד: גוף, ראש, אוזניים בצבע חול וזנב מתולתל
     const dir=Math.cos(p.face)<0?-1:1,sit=p.st==='sit',bob=p.st==='dig'?Math.sin(p.t*30)*1.5:p.run?Math.sin(p.t*18)*2:0;
     ctx.save();ctx.translate(p.x,p.y+bob);ctx.scale(dir*h/38,h/38);
     ctx.fillStyle='rgba(5,7,13,0.35)';ctx.beginPath();ctx.ellipse(0,2,16,4,0,0,7);ctx.fill();
