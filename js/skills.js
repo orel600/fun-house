@@ -102,10 +102,16 @@ function drawSkills(ox,oy){
   const fl=fluteOn();
   for(const f of S.sk.fx){const k=f.t/f.max;ctx.globalAlpha=1-k;ctx.strokeStyle=f.col;
     if(fl){f.ring?fluteRing(f,k):fluteLine(f,k);continue}   // הנודד עם החליל: חלילים מסתובבים וחמשה (flute.js)
-    if(f.ring){ctx.lineWidth=10*(1-k)+2;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(0.35+0.65*k),0,7);ctx.stroke()}
-    else{ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(f.ax,f.ay);
-      for(let i=1;i<6;i++){const p=i/6;ctx.lineTo(f.ax+(f.bx-f.ax)*p+rand(-7,7),f.ay+(f.by-f.ay)*p+rand(-7,7))}
-      ctx.lineTo(f.bx,f.by);ctx.stroke()}}
+    // טבעת: גל הדף. מילוי רך ושקוף, קו חד בקצה, וקו דק שני שנגרר מאחוריו
+    if(f.ring){const r=f.r*(0.35+0.65*k),a=1-k;ctx.fillStyle=f.col;
+      ctx.globalAlpha=a*0.16;ctx.beginPath();ctx.arc(f.x,f.y,r,0,7);ctx.fill();
+      ctx.globalAlpha=a;ctx.lineWidth=2+3*a;ctx.beginPath();ctx.arc(f.x,f.y,r,0,7);ctx.stroke();
+      ctx.globalAlpha=a*0.45;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(f.x,f.y,r*0.8,0,7);ctx.stroke()}
+    // ברק: שלוש שכבות על אותו קו שבור (הילה רחבה, צבע, ולב לבן), והבזק קטן במטרה
+    else{const pts=[[f.ax,f.ay]];for(let i=1;i<6;i++){const p=i/6;pts.push([f.ax+(f.bx-f.ax)*p+rand(-7,7),f.ay+(f.by-f.ay)*p+rand(-7,7)])}pts.push([f.bx,f.by]);
+      const a=1-k;ctx.lineJoin='round';
+      for(const [w,al,c] of [[9,0.18,f.col],[3,1,f.col],[1.2,0.9,'#fff']]){ctx.globalAlpha=a*al;ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke()}
+      ctx.globalAlpha=a*0.5;ctx.fillStyle=f.col;ctx.beginPath();ctx.arc(f.bx,f.by,4+8*a,0,7);ctx.fill()}}
   ctx.globalAlpha=1;
   for(const e of enemies){
     if(e.dead||!(e.wet>0||e.frozen>0||e.stun>0.3)||!onScreen(e.x+ox,e.y+oy))continue;
@@ -125,7 +131,9 @@ function skillsHud(){
   if(key!==skKey){skKey=key;
     box.innerHTML=S.sk.ids.map(id=>'<button class="skb" data-sk="'+id+'" style="--dt:'+dtCol(skDef(id).dt)+'" aria-label="'+T('sk.'+id)+'">'+dtSvg(skDef(id).dt)+'<i></i></button>').join('')}
   S.sk.ids.forEach((id,i)=>{const b=box.children[i],v=String(Math.round(20*S.sk.cd[i]/skDef(id).cd)/20);
-    if(b.dataset.cd!==v){b.dataset.cd=v;b.style.setProperty('--cd',v);b.classList.toggle('ready',v==='0')}});
+    if(b.dataset.cd!==v){const was=b.classList.contains('ready');b.dataset.cd=v;b.style.setProperty('--cd',v);b.classList.toggle('ready',v==='0');
+      if(v==='0'&&!was&&b.dataset.seen){b.classList.remove('ping');void b.offsetWidth;b.classList.add('ping')}b.dataset.seen=1}   // ping: נטען עכשיו (לא בהופעה הראשונה)
+    if(!S.wd){const s=S.sk.cd[i]>0?String(Math.ceil(S.sk.cd[i])):'';if(b.dataset.sec!==s)b.dataset.sec=s}});   // השניות באמצע. בעולם wskill.js כותב אותן
 }
 $('skills').addEventListener('pointerdown',e=>{const b=e.target.closest('[data-sk]');if(!b)return;e.preventDefault();e.stopPropagation();skillUse(b.dataset.sk)});
 $('skills').addEventListener('keydown',e=>{const b=e.target.closest('[data-sk]');if(b&&(e.key==='Enter'||e.key===' ')){e.preventDefault();skillUse(b.dataset.sk)}});
