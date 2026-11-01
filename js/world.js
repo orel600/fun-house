@@ -231,7 +231,8 @@ function wSpawn(G,i){
   for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp);
     e.dmg*=Z.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);   // affixRoll: אולי אויב מיוחד (affix.js). storySafe: אחרי שפנס האדמה נדלק (story.js)
     e.xp=0;e.home=i;e.creature=!!G.creature;
-    challengeSpawn(e)}   // החוק של היום (challenge.js)   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
+    challengeSpawn(e);tierSpawn(e)}   // דרגת העולם (tiers.js)
+   // החוק של היום (challenge.js)   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
 }
 function wFoes(dt){
   const FO=WR().foes,alive=FO.map(()=>0);

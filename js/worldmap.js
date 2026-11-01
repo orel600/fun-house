@@ -113,7 +113,7 @@ function wmDraw(){
   $('wMap').innerHTML=winHead('🗺️ '+T('wm.title'))+
     '<div class="wmcols"><section><h4>'+T('wm.world')+'</h4><div class="wmbox"><canvas id="wmWorld"></canvas></div></section>'+
     '<section><h4>'+T('w.region.'+S.wd.reg)+' <small>★ '+T('wm.here')+'</small></h4><div class="wmbox"><canvas id="wmHere"></canvas></div></section></div>'+
-    '<p class="wmkey">'+T('wm.key')+'</p>';
+    tierRow()+'<p class="wmkey">'+T('wm.key')+'</p>';   // דרגת העולם (tiers.js)
   wmDrawWorld();wmDrawHere();
 }
 
@@ -124,5 +124,5 @@ function wmapOpen(on){
   else{w.hidden=true;if(S&&S.mode==='map')S.mode='play'}
 }
 $('wMapBtn').addEventListener('click',()=>{wmapOpen($('wMap').hidden);sfx('ui')});
-$('wMap').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.act==='close'){wmapOpen(false);sfx('ui')}});
+$('wMap').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&b.dataset.act==='close'){wmapOpen(false);sfx('ui')}if(b&&b.dataset.act==='tier'&&tierSet(+b.dataset.n))wmDraw()});
 addEventListener('resize',()=>{if(!$('wMap').hidden&&S.wd)wmDraw()});
