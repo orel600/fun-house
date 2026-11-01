@@ -21,10 +21,10 @@ jobs:
       - run: pip install gradio_client
       - name: הפרעוש
         continue-on-error: true
-        run: python tools/trellis/run.py parosh
+        run: '[ -f tools/trellis/out/parosh.glb ] || python tools/trellis/run.py parosh'
       - name: הדמות של אוראל
         continue-on-error: true
-        run: python tools/trellis/run.py orel
+        run: '[ -f tools/trellis/out/orel.glb ] || python tools/trellis/run.py orel'
       - name: תמונות מהסרטונים
         continue-on-error: true
         run: |

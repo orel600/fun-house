@@ -20,7 +20,10 @@ if multi:
     r = c.predict(image=handle_file(inp('front')), multiimages=imgs, seed=1, mesh_simplify=0.95, texture_size=1024, multiimage_algo="stochastic", api_name="/generate_and_extract_glb")
 else:
     pre = c.predict(image=handle_file(inp('front')), api_name="/preprocess_image")
-    r = c.predict(image=handle_file(pre), multiimages=[], seed=1, mesh_simplify=0.95, texture_size=1024, multiimage_algo="stochastic", api_name="/generate_and_extract_glb")
+    r = None
+    for t in range(3):   # ההורדה מהשרת נתקעת לפעמים: מנסים שוב
+        try: r = c.predict(image=handle_file(pre), multiimages=[], seed=1, mesh_simplify=0.95, texture_size=1024, multiimage_algo="stochastic", api_name="/generate_and_extract_glb"); break
+        except Exception as e: print('try', t, e)
 print('result', r)
 video, glb = r[0], r[-1]   # (סרטון, מודל לתצוגה, מודל להורדה)
 v = video['video'] if isinstance(video, dict) else video
