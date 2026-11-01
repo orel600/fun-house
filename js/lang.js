@@ -512,6 +512,7 @@ const TEXT={
   'af.fast':{he:'מהיר',en:'Swift'},'af.tough':{he:'משוריין',en:'Armored'},'af.burst':{he:'מתפוצץ',en:'Volatile'},'af.split':{he:'מתפצל',en:'Splitting'},'af.regen':{he:'מתחדש',en:'Regenerating'},
   'story.intro':{he:'הגעת! סוף סוף מישהו עם נשק. פעם דלקו כאן שישה פנסים, והצל לא העז להתקרב. לילה אחד כולם כבו, והשלדים קמו מהאדמה. בוא, נתחיל מקטן.',en:'You came! Finally someone with a weapon. Six lanterns once burned here, and the Shadow never dared come near. One night they all went dark, and the skeletons rose. Come, let’s start small.'},
   'story.shard':{he:'פיוחו מצאה רסיס זוהר!',en:'Piocho found a glowing shard!'},
+  'story.ward.back':{he:'אני שומר על הפנס. תחזור כשתהיה מוכן!',en:'I guard the lantern. Come back when you are ready!'},
   'story.earth.rise':{he:'השומר האבן קם ליד הפנס!',en:'The Stone Warden rises by the lantern!'},
   'story.earth.name':{he:'השומר האבן',en:'Stone Warden'},
   'story.earth.lit':{he:'🏮 פנס האדמה דולק שוב! האחו בטוח יותר',en:'🏮 The Earth Lantern burns again! The meadow is safer'},
