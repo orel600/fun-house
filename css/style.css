@@ -117,6 +117,25 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .spellpick button{width:44px;height:44px;border-radius:50%;border:2px solid #E9D8A688;background:#141A2Ae6;color:#E9D8A6;display:grid;place-items:center;padding:0;touch-action:none}
 .spellpick button.on{border-color:#E9D8A6;box-shadow:0 0 10px #E9D8A688}
 .spellpick .dti{width:22px;height:22px}
+/* חנות הריצה (js/shop.js): כפתור זהב בפס העליון עם הסכום, וחלון של חמישה פריטים. זהב = השלל של הריצה */
+.hud .shopbtn{display:inline-flex;align-items:center;gap:4px;color:var(--gold)}
+.hud .shopbtn[hidden]{display:none}
+.hud .shopbtn svg{width:18px;height:18px}
+.hud .shopbtn b{font:800 14px var(--body)}
+.shopwin{width:min(560px,calc(100vw - 32px));max-height:calc(100dvh - 24px);overflow:auto;padding:4px 8px 10px}
+.shopwin .shopg{color:var(--gold);font-size:18px}
+.shopgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:6px}
+.shopit{display:grid;grid-template-columns:40px 1fr;grid-template-rows:auto auto auto;column-gap:8px;align-items:center;padding:8px;border-radius:12px;background:#141A2A;border:1px solid #3A4566}
+.shopit .shopic{grid-row:1/4;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--gold);background:#0D111C;border:2px solid #F2C14E66}
+.shopit .shopic svg{width:22px;height:22px}
+.shopit b{font:800 14px var(--body)}
+.shopit small{color:var(--dim);font-size:12px}
+.shopdots{display:flex;gap:4px;margin-top:2px}
+.shopdots i{width:8px;height:8px;border-radius:50%;background:#3A4566}
+.shopdots i.on{background:var(--gold)}
+.shopit button,.shopit .shopmax{grid-column:1/3;margin-top:6px;padding:6px;border-radius:10px;border:2px solid var(--gold);background:#2A2110;color:var(--gold);font:800 14px var(--body)}
+.shopit button:disabled{opacity:.4;border-color:#5A4B26}
+.shopit .shopmax{text-align:center;border-color:#3A4566;color:var(--dim);background:none}
 .vil .skills,.vil .divine{display:none}
 /* בעולם (js/wskill.js): בזמן ההמתנה מספר השניות גדול באמצע, ובגרירה הכפתור מתכווץ */
 /* הסרגל התחתון כבר לא בפינה הזו (התפריט הראשי, menu.js), אז הכפתורים בגובה הרגיל */

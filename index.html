@@ -19,6 +19,7 @@
     <div class="clock"><span id="clock">0:00</span><small id="bossin"></small></div>
     <div class="lvl" id="lvl"></div>
     <button class="gearbtn" id="gearBtnRun" data-ta="gear.btn">🎒</button>
+    <button class="gearbtn shopbtn" id="shopBtn" data-ta="shop.title" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 8v8M9.5 10h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><b>0</b></button>
   </div>
   <div class="runbar" id="runbar"><div class="runfill" id="runfill"></div></div>
   <div class="bossbar" id="bossbar" hidden>
@@ -90,6 +91,8 @@
 <div class="pwa-turn" id="pwaTurn"><b aria-hidden="true">📱↻</b><p data-t="pwa.turn"></p></div>
 
 <!-- מסך הציוד והתרמיל: התרמיל, הבובה עם המשבצות, והפרטים. גוררים או לוחצים (js/gear.js) -->
+<!-- חנות הריצה (js/shop.js): ציוד לריצה הזו בלבד, בזהב מהריגות -->
+<div class="ov" id="ovShop" hidden><div class="win shopwin" role="dialog"></div></div>
 <div class="ov gearov" id="ovGear" hidden>
   <div class="panel gearpanel win">
     <div class="ghead whd"><h2 data-t="gear.title"></h2><div class="gpages" id="gPages"></div><span id="gHero"></span><span class="bag" id="gCoins"></span><button class="gclose wx" id="gearClose" data-ta="gear.close">✕</button></div>
@@ -280,6 +283,7 @@
 <script src="js/skills.js"></script>
 <script src="js/ult.js"></script>
 <script src="js/spell.js"></script>
+<script src="js/shop.js"></script>
 <script src="js/orbit.js"></script>
 <script src="js/divine.js"></script>
 <script src="js/flute.js"></script>

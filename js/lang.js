@@ -35,6 +35,13 @@ const TEXT={
   'ult.name':{he:'פרץ הפנס (אולטימייט)',en:'Lantern Burst (ultimate)'},   // ult.js
   // כישוף מיוחד (spell.js)
   'sp.pick':{he:'בחירת כישוף',en:'Choose a spell'},'sp.dash':{he:'קפיצה',en:'Dash'},'sp.heal':{he:'ריפוי',en:'Heal'},'sp.smite':{he:'מכה',en:'Smite'},
+  // חנות הריצה (shop.js)
+  'shop.title':{he:'חנות הריצה',en:'Run Shop'},'shop.max':{he:'מקסימום',en:'Max'},
+  'shop.blade':{he:'להב חד',en:'Keen Edge'},'shop.blade.d':{he:'נזק ‎+15%',en:'Damage +15%'},
+  'shop.boots':{he:'מגפיים קלים',en:'Light Boots'},'shop.boots.d':{he:'מהירות ‎+8%',en:'Speed +8%'},
+  'shop.armor':{he:'שריון',en:'Armor'},'shop.armor.d':{he:'הגנה ‎+4',en:'Defense +4'},
+  'shop.charm':{he:'קמע מזל',en:'Lucky Charm'},'shop.charm.d':{he:'קריטית ‎+5%',en:'Crit +5%'},
+  'shop.heart':{he:'לב חזק',en:'Strong Heart'},'shop.heart.d':{he:'חיים ‎+25',en:'Health +25'},
   'cloud.off':{he:'☁ לא מחובר: שמור בטלפון',en:'☁ Offline: saved on this phone'},
   'cloud.sync':{he:'☁ מסנכרן…',en:'☁ Syncing…'},
   'cloud.ok':{he:'☁ שמור בענן',en:'☁ Saved to the cloud'},
