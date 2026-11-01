@@ -118,7 +118,7 @@ function guideUi(){
   const key=[LANG,min,G.icon,G.text,via,dist,jump].join('|');if(key===guideKey)return;guideKey=key;
   jb.hidden=!jump;jb.dataset.to=jump||'';jb.textContent='✨ '+T('g.jump');
   el.classList.toggle('min',min);
-  $('guideTxt').textContent=min?'':G.text+(via?' · '+via:'');
+  const w=G.text.split(' ');$('guideTxt').textContent=min?w.slice(0,3).join(' ')+(w.length>3?'…':''):G.text+(via?' · '+via:'');   // מכווצת: אייקון, 2-3 מילים של המטרה והמרחק
   $('guideIco').textContent=G.icon;$('guideDist').textContent=dist;
   $('guideMin').textContent=min?'▾':'▴';$('guideMin').setAttribute('aria-label',T(min?'g.open':'g.min'));
 }

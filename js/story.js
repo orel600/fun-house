@@ -230,5 +230,7 @@ function storyDraw(){
 function storyScreen(ox,oy){
   const k=storyLantern();if(!k)return;const L=STORY.lanterns[k],e=S.wd.warden;
   // החץ לפנס כשהקווסט פעיל: guide.js
-  if(e&&!e.dead){ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 14px Heebo, system-ui, sans-serif';ctx.fillStyle=L.col;ctx.fillText(T('story.'+k+'.name'),e.x+ox,e.y+oy-e.r-56)}
+  // השם מעל השומר: גודל קבוע על המסך (14px, לא מתכווץ עם המצלמה) עם קו מתאר כהה, כדי שייקרא גם על דשא (ניר, 1.11)
+  if(e&&!e.dead){ctx.save();ctx.translate(e.x+ox,e.y+oy-e.r-56);ctx.scale(1/ZOOM,1/ZOOM);ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 14px Heebo, system-ui, sans-serif';
+    ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle='#000c';ctx.strokeText(T('story.'+k+'.name'),0,0);ctx.fillStyle=L.col;ctx.fillText(T('story.'+k+'.name'),0,0);ctx.restore()}
 }

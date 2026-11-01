@@ -830,7 +830,7 @@ body:not(.vil):not(.world) .guide{display:none}
 .gico{flex:none;font-size:15px}
 .gtxt{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 3px #000}
 .gdist{flex:none;color:var(--gold);font-weight:800;direction:ltr;unicode-bidi:isolate}
-.guide.min .gtxt{display:none}
+.guide.min .gtxt{-webkit-line-clamp:1}   /* מכווצת: שורה אחת קצרה של המטרה (guide.js), לא רק מרחק */
 .guide button:active{transform:scale(.92)}
 .guide button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 @media (orientation:portrait){.guide{max-width:calc(100vw - 32px)}}
