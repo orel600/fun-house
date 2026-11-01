@@ -18,7 +18,8 @@ const ORBIT={
 };
 
 // הסוגים של מה שלבוש במשבצות הפתוחות, לפי הסדר
-function orbitTypes(){const out=[];for(let i=0;i<gOpen('orbit');i++){const it=gItem(gGet('orbit',i));if(it)out.push(it.type)}return out}
+function orbitTypes(){if(divineOn())return Object.keys(ORBIT.types);   // ברק אלוהי: כל החמישה (divine.js)
+  const out=[];for(let i=0;i<gOpen('orbit');i++){const it=gItem(gGet('orbit',i));if(it)out.push(it.type)}return out}
 // בתחילת כל ריצה. sh/hl: מתי המגן והריפוי של כל חפץ מוכנים. השאר ספירה, בשביל הבוט
 function orbitReset(){S.orb={a:0,types:[],pos:[],sh:[],hl:[],crit:0,loot:0,hits:0,blocked:0,shields:0,healed:0}}
 // נקראים מ-runGive (loot.js) ומ-damage (combat.js). רק בזירה
