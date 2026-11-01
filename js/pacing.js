@@ -65,7 +65,7 @@ function paceSpawn(n){
   const w=S.wd,B=paceBeat(w.pace),s=paceSpot();if(!s)return null;
   const Z=wZone(s),types=paceTypes(),mix=B.id==='peak';
   n=n||Math.round(rand(...(B.size||PACE.beats[0].size)));if(Z.id==='start')n=Math.max(2,Math.round(n*PACE.startSize));
-  n=Math.min(n,paceFree());if(n<=0)return null;
+  n=Math.min(n,paceFree());if(n<2)return null;   // אין מקום לשתיים: אין להקה (לא להקה של אחת)
   const type=types[Math.floor(Math.random()*types.length)],pk={id:++w.pace.id,x:s.x,y:s.y,n,left:n,big:B.id==='peak'};
   for(let k=0;k<n;k++){
     const t=mix?types[Math.floor(Math.random()*types.length)]:type,a=rand(0,6.28),r=rand(0,PACE.spread);
