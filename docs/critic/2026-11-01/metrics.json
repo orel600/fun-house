@@ -1,0 +1,756 @@
+{
+ "n-en": {
+  "metrics": {
+   "r3d": {
+    "ready": true,
+    "failed": false
+   },
+   "newPlayer": {
+    "autoPopups": [
+     "ovWelcome",
+     "npcDlg"
+    ],
+    "goalSec": 9.4,
+    "goalTxt": "Talk to Avner: a quest is waiting",
+    "activeQuests": [
+     "dShields",
+     "dWisps",
+     "dWood",
+     "dCoins",
+     "aHunter",
+     "aClean",
+     "aSpeed",
+     "aBuilder",
+     "aWanted",
+     "s1Lanterns"
+    ],
+    "worldSec": 183
+   },
+   "frameMs": {
+    "village": 196.4,
+    "world": 341.8,
+    "world-adv": 345.3,
+    "arena": 62.1
+   },
+   "firstKillSec": 0.2,
+   "killSec": [
+    0.2,
+    0.7,
+    0.7,
+    0.7,
+    1.3
+   ],
+   "freePlay": {
+    "sec": 90,
+    "moments": 34,
+    "byKind": {
+     "celebrate": 14,
+     "item": 3,
+     "banner": 13,
+     "choice": 4
+    },
+    "longestQuietSec": 19.7,
+    "items": [
+     "silverBlade",
+     "cloverOrb",
+     "stormFeather"
+    ]
+   },
+   "dieSec": 62.3,
+   "warden": {
+    "rose": true,
+    "killed": true,
+    "sec": 117.6,
+    "lowestHpPct": 81
+   },
+   "arena": {
+    "firstLevelSec": 11.9,
+    "popsPerMin": 1
+   },
+   "moments": 35
+  },
+  "stops": {
+   "start": {
+    "file": "n-en-01-start.jpg",
+    "uiPct": 100,
+    "small": 1,
+    "overlap": 1,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 6
+   },
+   "hero": {
+    "file": "n-en-02-hero.jpg",
+    "uiPct": 100,
+    "small": 2,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "village-arrive": {
+    "file": "n-en-03-village-arrive.jpg",
+    "uiPct": 100,
+    "small": 1,
+    "overlap": 1,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 2
+   },
+   "auto-ovWelcome": {
+    "file": "n-en-04-auto-ovWelcome.jpg",
+    "uiPct": 100,
+    "small": 1,
+    "overlap": 1,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 1
+   },
+   "auto-npcDlg": {
+    "file": "n-en-05-auto-npcDlg.jpg",
+    "uiPct": 36,
+    "small": 5,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 1
+   },
+   "npc-near": {
+    "file": "n-en-06-npc-near.jpg",
+    "uiPct": 4,
+    "small": 2,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "village-gate": {
+    "file": "n-en-07-village-gate.jpg",
+    "uiPct": 4,
+    "small": 2,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "world-arrive": {
+    "file": "n-en-08-world-arrive.jpg",
+    "uiPct": 4,
+    "small": 2,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "world-fight": {
+    "file": "n-en-09-world-fight.jpg",
+    "uiPct": 4,
+    "small": 2,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "world-loot": {
+    "file": "n-en-10-world-loot.jpg",
+    "uiPct": 4,
+    "small": 2,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "world-death": {
+    "file": "n-en-11-world-death.jpg",
+    "uiPct": 1,
+    "small": 1,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "village": {
+    "file": "n-en-12-village.jpg",
+    "uiPct": 4,
+    "small": 2,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "panel-forge": {
+    "file": "n-en-13-panel-forge.jpg",
+    "uiPct": 54,
+    "small": 1,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 0
+   },
+   "menu": {
+    "file": "n-en-14-menu.jpg",
+    "uiPct": 100,
+    "small": 10,
+    "overlap": 0,
+    "clipped": 1,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "gear": {
+    "file": "n-en-15-gear.jpg",
+    "uiPct": 100,
+    "small": 10,
+    "overlap": 0,
+    "clipped": 1,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "gear-item": {
+    "file": "n-en-16-gear-item.jpg",
+    "uiPct": 100,
+    "small": 6,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "quests": {
+    "file": "n-en-17-quests.jpg",
+    "uiPct": 100,
+    "small": 4,
+    "overlap": 1,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 11
+   },
+   "book": {
+    "file": "n-en-18-book.jpg",
+    "uiPct": 100,
+    "small": 1,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 9
+   },
+   "settings": {
+    "file": "n-en-19-settings.jpg",
+    "uiPct": 100,
+    "small": 7,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 0
+   },
+   "npc-head": {
+    "file": "n-en-20-npc-head.jpg",
+    "uiPct": 39,
+    "small": 4,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 2
+   },
+   "world": {
+    "file": "n-en-21-world.jpg",
+    "uiPct": 4,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "worldmap": {
+    "file": "n-en-22-worldmap.jpg",
+    "uiPct": 59,
+    "small": 1,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 1
+   },
+   "warden": {
+    "file": "n-en-23-warden.jpg",
+    "uiPct": 4,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "warden-fight": {
+    "file": "n-en-24-warden-fight.jpg",
+    "uiPct": 4,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "warden-down": {
+    "file": "n-en-25-warden-down.jpg",
+    "uiPct": 4,
+    "small": 2,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "arena": {
+    "file": "n-en-26-arena.jpg",
+    "uiPct": 2,
+    "small": 1,
+    "overlap": 1,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "arena-level": {
+    "file": "n-en-27-arena-level.jpg",
+    "uiPct": 100,
+    "small": 1,
+    "overlap": 1,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   }
+  }
+ },
+ "n-he": {
+  "metrics": {
+   "r3d": {
+    "ready": true,
+    "failed": false
+   },
+   "warden": {
+    "rose": true,
+    "killed": true,
+    "sec": 113.4,
+    "lowestHpPct": 89
+   },
+   "frameMs": {
+    "world-adv": 349.6
+   },
+   "moments": 33
+  },
+  "stops": {
+   "village": {
+    "file": "n-he-01-village.jpg",
+    "uiPct": 4,
+    "small": 2,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "panel-forge": {
+    "file": "n-he-02-panel-forge.jpg",
+    "uiPct": 54,
+    "small": 1,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 0
+   },
+   "menu": {
+    "file": "n-he-03-menu.jpg",
+    "uiPct": 100,
+    "small": 10,
+    "overlap": 0,
+    "clipped": 1,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "gear": {
+    "file": "n-he-04-gear.jpg",
+    "uiPct": 100,
+    "small": 10,
+    "overlap": 0,
+    "clipped": 1,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "gear-item": {
+    "file": "n-he-05-gear-item.jpg",
+    "uiPct": 100,
+    "small": 6,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "quests": {
+    "file": "n-he-06-quests.jpg",
+    "uiPct": 100,
+    "small": 4,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 10
+   },
+   "book": {
+    "file": "n-he-07-book.jpg",
+    "uiPct": 100,
+    "small": 1,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 9
+   },
+   "settings": {
+    "file": "n-he-08-settings.jpg",
+    "uiPct": 100,
+    "small": 7,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 0
+   },
+   "npc-head": {
+    "file": "n-he-09-npc-head.jpg",
+    "uiPct": 37,
+    "small": 4,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 2
+   },
+   "world": {
+    "file": "n-he-10-world.jpg",
+    "uiPct": 4,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "worldmap": {
+    "file": "n-he-11-worldmap.jpg",
+    "uiPct": 60,
+    "small": 1,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "warden": {
+    "file": "n-he-12-warden.jpg",
+    "uiPct": 4,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "warden-fight": {
+    "file": "n-he-13-warden-fight.jpg",
+    "uiPct": 4,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "warden-down": {
+    "file": "n-he-14-warden-down.jpg",
+    "uiPct": 4,
+    "small": 2,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   }
+  }
+ },
+ "s-en": {
+  "metrics": {
+   "r3d": {
+    "ready": true,
+    "failed": false
+   },
+   "warden": {
+    "rose": true,
+    "killed": true,
+    "sec": 104.5,
+    "lowestHpPct": 100
+   },
+   "frameMs": {
+    "world-adv": 194
+   },
+   "moments": 33
+  },
+  "stops": {
+   "village": {
+    "file": "s-en-01-village.jpg",
+    "uiPct": 7,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "panel-forge": {
+    "file": "s-en-02-panel-forge.jpg",
+    "uiPct": 75,
+    "small": 1,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 0
+   },
+   "menu": {
+    "file": "s-en-03-menu.jpg",
+    "uiPct": 100,
+    "small": 14,
+    "overlap": 1,
+    "clipped": 3,
+    "scroll": 0,
+    "textOverlap": 5
+   },
+   "gear": {
+    "file": "s-en-04-gear.jpg",
+    "uiPct": 100,
+    "small": 14,
+    "overlap": 1,
+    "clipped": 3,
+    "scroll": 0,
+    "textOverlap": 5
+   },
+   "gear-item": {
+    "file": "s-en-05-gear-item.jpg",
+    "uiPct": 100,
+    "small": 6,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 4
+   },
+   "quests": {
+    "file": "s-en-06-quests.jpg",
+    "uiPct": 100,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 4
+   },
+   "book": {
+    "file": "s-en-07-book.jpg",
+    "uiPct": 100,
+    "small": 1,
+    "overlap": 10,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 9
+   },
+   "settings": {
+    "file": "s-en-08-settings.jpg",
+    "uiPct": 100,
+    "small": 7,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 0
+   },
+   "npc-head": {
+    "file": "s-en-09-npc-head.jpg",
+    "uiPct": 81,
+    "small": 5,
+    "overlap": 3,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 6
+   },
+   "world": {
+    "file": "s-en-10-world.jpg",
+    "uiPct": 7,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "worldmap": {
+    "file": "s-en-11-worldmap.jpg",
+    "uiPct": 79,
+    "small": 1,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 1
+   },
+   "warden": {
+    "file": "s-en-12-warden.jpg",
+    "uiPct": 7,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "warden-fight": {
+    "file": "s-en-13-warden-fight.jpg",
+    "uiPct": 7,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "warden-down": {
+    "file": "s-en-14-warden-down.jpg",
+    "uiPct": 7,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 1,
+    "scroll": 0,
+    "textOverlap": 0
+   }
+  }
+ },
+ "s-he": {
+  "metrics": {
+   "r3d": {
+    "ready": true,
+    "failed": false
+   },
+   "warden": {
+    "rose": true,
+    "killed": true,
+    "sec": 109.4,
+    "lowestHpPct": 100
+   },
+   "frameMs": {
+    "world-adv": 190
+   },
+   "moments": 31
+  },
+  "stops": {
+   "village": {
+    "file": "s-he-01-village.jpg",
+    "uiPct": 7,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "panel-forge": {
+    "file": "s-he-02-panel-forge.jpg",
+    "uiPct": 75,
+    "small": 1,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 0
+   },
+   "menu": {
+    "file": "s-he-03-menu.jpg",
+    "uiPct": 100,
+    "small": 14,
+    "overlap": 1,
+    "clipped": 1,
+    "scroll": 0,
+    "textOverlap": 6
+   },
+   "gear": {
+    "file": "s-he-04-gear.jpg",
+    "uiPct": 100,
+    "small": 14,
+    "overlap": 1,
+    "clipped": 1,
+    "scroll": 0,
+    "textOverlap": 6
+   },
+   "gear-item": {
+    "file": "s-he-05-gear-item.jpg",
+    "uiPct": 100,
+    "small": 6,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 2
+   },
+   "quests": {
+    "file": "s-he-06-quests.jpg",
+    "uiPct": 100,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 4
+   },
+   "book": {
+    "file": "s-he-07-book.jpg",
+    "uiPct": 100,
+    "small": 1,
+    "overlap": 10,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 9
+   },
+   "settings": {
+    "file": "s-he-08-settings.jpg",
+    "uiPct": 100,
+    "small": 7,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 1,
+    "textOverlap": 0
+   },
+   "npc-head": {
+    "file": "s-he-09-npc-head.jpg",
+    "uiPct": 78,
+    "small": 5,
+    "overlap": 3,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 5
+   },
+   "world": {
+    "file": "s-he-10-world.jpg",
+    "uiPct": 7,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "worldmap": {
+    "file": "s-he-11-worldmap.jpg",
+    "uiPct": 79,
+    "small": 1,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "warden": {
+    "file": "s-he-12-warden.jpg",
+    "uiPct": 7,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "warden-fight": {
+    "file": "s-he-13-warden-fight.jpg",
+    "uiPct": 7,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   },
+   "warden-down": {
+    "file": "s-he-14-warden-down.jpg",
+    "uiPct": 8,
+    "small": 3,
+    "overlap": 0,
+    "clipped": 0,
+    "scroll": 0,
+    "textOverlap": 0
+   }
+  }
+ }
+}
