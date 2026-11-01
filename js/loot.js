@@ -11,7 +11,7 @@ const LOOT={
   elite:{chance:0.05,from:20,hp:3,r:1.3,xp:3,dmg:1.3,col:C.gold},
   // פיצוץ שלל: רגע נדיר בהריגה של אויב רגיל
   jackpot:{chance:0.004,orbs:30,table:{coins:[1,60],gold:[1,3],ruby:[0.4,1],sapphire:[0.4,1],bolt:[0.4,1],aqua:[0.4,1],amber:[0.4,1],star:[0.2,1]}},
-  // מטבעות בעולם הפתוח: פי כמה הסיכוי למטבעות בטבלת השלל של אויב או מקור (בזירה לא משתנה). יעד: כ-300 בעשר הדקות הראשונות (המבקר, 1.11)
+  // מטבעות בעולם הפתוח: פי כמה הסיכוי למטבעות בטבלת השלל של אויב רגיל (בזירה לא משתנה. שלל בטוח, סיכוי 1, כמו מבוקש, שומר ותיבה, לא משתנה). יעד: כ-300 בעשר הדקות הראשונות (המבקר, 1.11)
   worldCoins:0.25,
   // הריגה ראשונה של כל סוג אויב היום: בונוס קטן ואבן שבורה
   firstKill:{coins:[1,10],rubyC:[0.25,1],sapphireC:[0.25,1],boltC:[0.25,1],aquaC:[0.25,1],amberC:[0.25,1]},
@@ -44,7 +44,7 @@ function runGive(D,x,y){
   for(const r in D){
     const [ch,n,from]=D[r];if(from&&S.t<from)continue;
     const t=lootTier(r);if(t>=pf)hasRare=true;
-    if(Math.random()>=ch*(t>=pf?boost:1)*orbitLuck()*statLoot()*(r==='coins'&&S.wd?LOOT.worldCoins:1))continue;   // orbitLuck: חפץ מזל (orbit.js)
+    if(Math.random()>=ch*(t>=pf?boost:1)*orbitLuck()*statLoot()*(r==='coins'&&S.wd&&ch<1?LOOT.worldCoins:1))continue;   // orbitLuck: חפץ מזל (orbit.js)
     // נופל לרצפה ונאסף כשעוברים לידו (drops.js). בחדר הבונוס נכנס ישר לשלל
     if(S.room)runLoot()[r]=(runLoot()[r]||0)+n;else dropSpawn(r,n,x,y);got.push(r);top=Math.max(top,t);
     (S.drops||(S.drops=[0,0,0,0,0]))[t]+=n;
