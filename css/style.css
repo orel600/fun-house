@@ -818,4 +818,9 @@ body:not(.vil):not(.world) .guide{display:none}
 .welnext{margin:0;text-align:center;font:700 16px var(--body)}
 .welfly{position:fixed;z-index:30;pointer-events:none;display:flex;align-items:center;gap:3px;font:900 18px var(--body);color:var(--gold);text-shadow:0 1px 3px #000}
 .welfly .ri{width:24px;height:24px}
+/* פאנל מבנה בנגיעה (village.js): כפתורים של 48px לפחות, הפעולה העיקרית גדולה, ובמקום כפתור אפור שורה שאומרת למה */
+.vpanel .vbtn{min-height:48px}
+.vpanel .vbtn.vmain{min-height:56px;font-size:18px;box-shadow:0 0 0 2px var(--gold),0 0 14px rgba(255,211,107,.45)}
+.vpanel .vwhy{color:var(--dim);font-size:13px;display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.vpanel .vwhy .res{font-size:13px}
 .gjump{flex:none;padding:0 10px;color:var(--gold);font-weight:800}

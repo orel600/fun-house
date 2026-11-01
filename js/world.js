@@ -257,7 +257,7 @@ function wFoes(dt){
   }
   // קבוצה שנוקתה חוזרת אחרי זמן, כשהשחקן רחוק ממנה
   FO.forEach((G,i)=>{const g=S.wd.groups[i];if(alive[i]||!ETYPES[G.type])return;
-    if(g.t<=0)g.t=wZone(G).back;else if((g.t-=dt)<=0&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+Math.max(WORLD.far,Math.hypot(W,H)/2)){wSpawn(G,i);g.n=(g.n||0)+1}else g.t=Math.max(g.t,0.01)});
+    if(g.t<=0)g.t=wZone(G).back;else if((g.t-=dt)<=0&&paceRoom(G.n)&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+Math.max(WORLD.far,Math.hypot(W,H)/2)){wSpawn(G,i);g.n=(g.n||0)+1}else g.t=Math.max(g.t,0.01)});
 }
 
 /* ---- כל פריים בעולם ---- */
