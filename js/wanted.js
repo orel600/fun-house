@@ -37,7 +37,7 @@ function wantedUpdate(dt){
   }
   if(S.boss)return;
   wn.t-=dt;
-  if(wn.t<=0){wn.rumor={a:rand(0,6.28),t:rand(...WANTED.rumor)};banner(pick(T('wanted.rumors')),C.gold)}
+  if(wn.t<=0){wn.rumor={a:rand(0,6.28),t:rand(...WANTED.rumor)};(typeof feedOn==='function'&&feedOn()?feedAdd('💰',pick(T('wanted.rumors')),C.gold,'wanted'):banner(pick(T('wanted.rumors')),C.gold))}   // בעולם ובכפר: שורה בפיד, לא באמצע המסך (feed.js)
 }
 function wantedAppear(a){
   const d=rand(220,300),aa=a+rand(-WANTED.hint,WANTED.hint),k=runK();
