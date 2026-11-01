@@ -52,10 +52,14 @@ async function cloudAuth(){
   if(s&&s.exp-60>Date.now()/1000){CLOUD.session=s;return s}
   if(s&&s.refresh){
     try{s=cloudSess((await cloudReq('POST','/auth/v1/token?grant_type=refresh_token',{refresh_token:s.refresh})).json);cloudKeep(s);return s}
-    catch(e){if(!/cloud 4/.test(e.message))throw e}   // רק טוקן שנדחה (4xx) מוביל לכניסה חדשה. בלי רשת שומרים את הכניסה הישנה
+    catch(e){if(!/cloud 4/.test(e.message))throw e;   // רק טוקן שנדחה (4xx) מוביל לכניסה חדשה. בלי רשת שומרים את הכניסה הישנה
+      if(s.name){cloudKeep(null);cloudWas(s.name);throw e}}   // הכניסה ל-Google נדחתה: לא מחליפים אותה בשקט במשתמש זמני (cloudRelog)
   }
+  if(cloudWas())throw new Error('cloud relog');   // מחכים לכניסה מחדש עם Google, כדי שההתקדמות תמשיך להישמר על המייל
   s=cloudSess((await cloudReq('POST','/auth/v1/signup',{})).json);cloudKeep(s);return s;
 }
+// השם של חשבון Google שהכניסה אליו נדחתה. בלי ערך: קורא. null: מוחק
+function cloudWas(v){const k=CLOUD.lsKey+'-was';try{if(v===undefined)return localStorage.getItem(k);v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}return null}
 
 // בקשה אחת בכל פעם, כדי ששני רענונים של טוקן לא יתנגשו
 function cloudOnce(fn){const p=(CLOUD.busy||Promise.resolve()).then(fn,fn);CLOUD.busy=p.catch(()=>{});return p}
@@ -110,6 +114,8 @@ async function cloudGoogle(plain){
   }
   cloudGo({mode:'plain',uid:s&&s.uid});CLOUD.nav(CLOUD.url+'/auth/v1/authorize?provider=google&'+to);return'plain';
 }
+// נשארים מחוברים (אוראל, 1.11.2026): הכניסה ל-Google נשמרת בטלפון ומתחדשת לבד. אם Supabase דחה אותה, בפתיחה חוזרים ל-Google לבד, פעם אחת
+function cloudRelog(){if(!cloudWas()||CLOUD.session||!cloudHere()&&!CLOUD.fake)return false;return cloudGoogle(true)}
 function cloudGo(v){try{v?localStorage.setItem(CLOUD.lsKey+'-go',JSON.stringify(v)):localStorage.removeItem(CLOUD.lsKey+'-go')}catch(e){}}
 
 // הכתובת שחוזרים אליה מ-Google: #access_token=...&refresh_token=...&expires_at=... או #error=...&error_code=...
@@ -119,11 +125,13 @@ function cloudHash(h){h=String(h||'').replace(/^#/,'');if(!/(^|&)(access_token|e
 // חזרה מ-Google. מחזיר null כשלא חזרנו משם (הפעלה רגילה)
 async function cloudBack(h){
   const p=cloudHash(h!=null?h:location.hash);if(!p)return null;
-  try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}   // מנקים את הטוקנים מהכתובת
-  let prev=null;try{prev=JSON.parse(localStorage.getItem(CLOUD.lsKey+'-go'))}catch(e){}cloudGo(null);
+  // מנקים מהכתובת את הטוקנים, ואת השגיאה ש-Supabase שם גם אחרי ה-?
+  try{const q=new URLSearchParams(location.search);for(const k of['error','error_code','error_description'])q.delete(k);const s=q.toString();history.replaceState(null,'',location.pathname+(s?'?'+s:''))}catch(e){}
+  let prev=null;try{prev=JSON.parse(localStorage.getItem(CLOUD.lsKey+'-go'))}catch(e){}cloudGo(null);cloudWas(null);
   if(p.error){
     if(prev&&prev.mode==='link'){cloudGoogle(true);return'relink'}   // החיבור נכשל: מנסים כניסה רגילה
-    cloudShow('off');return'error';
+    // גם הכניסה הרגילה נכשלה: אומרים לשחקן, במקום "לא מחובר" בשקט. הסיבה בקונסול (אוראל, 1.11.2026: הסיסמה של Google ב-Supabase הייתה שגויה)
+    console.warn('cloud: Google',p.error_code||p.error,p.error_description||'');cloudShow('err');return'error';
   }
   cloudShow('sync');
   try{
@@ -134,14 +142,15 @@ async function cloudBack(h){
   }catch(e){cloudShow('off');return'offline'}
 }
 
-// נכנסנו לחשבון Google שיש לו כבר שמירה משלו. טלפון חדש (בלי התקדמות) לוקח את השמירה מהחשבון.
-// אחרת החדשה מנצחת, ואם הן שונות מאוד שואלים את השחקן. אף פעם לא מוחקים התקדמות בלי לשאול
+// נכנסנו לחשבון Google שיש לו כבר שמירה משלו. טלפון חדש (בלי התקדמות) לוקח את השמירה מהחשבון, וחשבון בלי התקדמות
+// (נפתח בדפדפן אחר) לא דורס טלפון עם התקדמות. אחרת החדשה מנצחת, ואם הן שונות מאוד שואלים את השחקן. אף פעם לא מוחקים התקדמות בלי לשאול
 async function cloudMergeIn(){
   const d=await cloudOnce(()=>cloudRow(CLOUD.session));
   let pick='phone';
   if(isObj(d)){
-    const xp=o=>(o&&o.hero&&o.hero.xp)||0,blank=!xp(SAVE)&&!Object.keys(SAVE.bag||{}).length;
-    if(blank)pick='cloud';
+    const xp=o=>(o&&o.hero&&o.hero.xp)||0,blank=o=>!xp(o)&&!Object.keys(o.bag||{}).length;
+    if(blank(SAVE))pick='cloud';
+    else if(blank(d))pick='phone';
     else if(Math.abs(xp(SAVE)-xp(d))>CLOUD.askXp)pick=await cloudAsk(SAVE,d);
     else pick=(d.ts||0)>(SAVE.ts||0)?'cloud':'phone';
   }
@@ -167,13 +176,13 @@ async function cloudSignOut(){
 }
 
 // שרת מדומה לבדיקה: כניסה, קריאה ודחיפה, בזיכרון
-// google: משתמשים שכבר מחוברים ל-Google ({u1:'Nir'}). noLink: החיבור כבוי. back(uid): הכתובת שחוזרים איתה מ-Google
-function cloudFakeServer(){const F={users:0,rows:{},down:false,google:{},noLink:false,calls:[],
+// google: משתמשים שכבר מחוברים ל-Google ({u1:'Nir'}). noLink: החיבור כבוי. badRefresh: Supabase דוחה רענון של טוקן. back(uid): הכתובת שחוזרים איתה מ-Google
+function cloudFakeServer(){const F={users:0,rows:{},down:false,google:{},noLink:false,badRefresh:false,calls:[],
   user(id){const g=F.google[id];return{id,is_anonymous:!g,email:g?id+'@test':'',user_metadata:g?{full_name:g}:{}}},
   back(id){return'#access_token=a'+id+'&refresh_token=r'+id+'&expires_in=3600&token_type=bearer'},
   req(method,path,body,token){return new Promise((ok,no)=>{
     if(F.down)return no(new Error('offline'));
-    if(path.startsWith('/auth/v1/signup')||path.startsWith('/auth/v1/token')){const id='u'+(++F.users);return ok({status:200,json:{access_token:'a'+id,refresh_token:'r'+id,expires_in:3600,user:F.user(id)}})}
+    if(path.startsWith('/auth/v1/token')&&F.badRefresh)return no(new Error('cloud 400'));if(path.startsWith('/auth/v1/signup')||path.startsWith('/auth/v1/token')){const id='u'+(++F.users);return ok({status:200,json:{access_token:'a'+id,refresh_token:'r'+id,expires_in:3600,user:F.user(id)}})}
     const uid=String(token||'').slice(1);if(!uid.startsWith('u'))return no(new Error('cloud 401'));
     F.calls.push(method+' '+path.split('?')[0]);
     if(path.startsWith('/auth/v1/user/identities/authorize'))return F.noLink?no(new Error('cloud 404')):ok({status:200,json:{url:'https://accounts.google.test/?link='+uid}});
@@ -188,4 +197,4 @@ SAVE_STORE.onWrite=cloudMark;
 // הטלפון עובר לרקע (סגרו את האפליקציה): דוחפים מיד מה שעוד לא נשלח
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&CLOUD.dirty){clearTimeout(CLOUD.timer);CLOUD.timer=null;cloudPush({keepalive:true}).catch(()=>{})}});
 (()=>{const i=document.getElementById('cloudIn'),o=document.getElementById('cloudOut');if(i)i.onclick=()=>cloudGoogle();if(o)o.onclick=()=>cloudSignOut()})();
-setTimeout(()=>{cloudShow('off');cloudBack().then(r=>r||cloudSync())},0);
+setTimeout(()=>{cloudShow('off');cloudBack().then(r=>r||cloudSync().then(r=>{cloudRelog();return r}))},0);
