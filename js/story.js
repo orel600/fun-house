@@ -32,29 +32,33 @@
 const STORY={
   lanterns:{
     // פנס האדמה: בפינת המחצבה, הכי רחוק מהשער. השומר האבן: פי כמה מגולם רגיל. wake: מאיזה מרחק מהפנס הוא קם
-    earth:{reg:'meadow',x:880,y:-560,quest:'s1Warden',glow:'#FFD36B',col:C.ember,
-      warden:{type:'golem',hp:30,dmg:1.6,r:1.7,speed:0.8,wake:520,leash:420}},
+    earth:{reg:'meadow',x:650,y:-320,quest:'s1Warden',glow:'#FFD36B',col:C.ember,
+      warden:{type:'golem',hp:30,dmg:1.6,r:1.7,speed:0.8,wake:520}},
     // פנס המים: בפינה הדרום-מערבית של האגם. שומר המים גם יורה מים בשלושה כיוונים (shoot)
     // ev: מה מדווחים לקווסט כשהשומר נופל (questEvent('story',ev)). head: ראש הכפר אומר משפט אחרי שהפנס נדלק
-    water:{reg:'lake',x:-860,y:470,quest:'s2Warden',glow:'#6FD3FF',col:'#3F7BF5',ev:'tide',head:true,
-      warden:{type:'tidewarden',hp:26,dmg:1.3,r:1.6,speed:0.9,wake:520,leash:420,shoot:{every:2.4,n:3,spread:0.32,speed:190,r:7,dmg:11}}},
+    water:{reg:'lake',x:-740,y:370,quest:'s2Warden',glow:'#6FD3FF',col:'#3F7BF5',ev:'tide',head:true,
+      warden:{type:'tidewarden',hp:26,dmg:1.3,r:1.6,speed:0.9,wake:520,shoot:{every:2.4,n:3,spread:0.32,speed:190,r:7,dmg:11}}},
     // פנס הקרח: בפינה הדרום-מזרחית של הרכס. שומר הקרח יורה מניפה רחבה של חמישה רסיסים, לאט יותר
-    ice:{reg:'ridge',x:860,y:500,quest:'s3Warden',glow:'#CFF3FF',col:'#7FD4FF',ev:'frost',head:true,
-      warden:{type:'frostwarden',hp:28,dmg:1.35,r:1.65,speed:0.85,wake:520,leash:420,shoot:{every:2.8,n:5,spread:0.24,speed:170,r:7,dmg:12}}},
+    ice:{reg:'ridge',x:720,y:370,quest:'s3Warden',glow:'#CFF3FF',col:'#7FD4FF',ev:'frost',head:true,
+      warden:{type:'frostwarden',hp:28,dmg:1.35,r:1.65,speed:0.85,wake:520,shoot:{every:2.8,n:5,spread:0.24,speed:170,r:7,dmg:12}}},
     // פנס האש: בפינה הדרום-מערבית של המדבר. שומר האש שולח טבעת אש שמתרחבת ממנו (ring): speed פיקסלים לשנייה עד max,
     // w עובי הטבעת, gap רוחב הפתח (ברדיאנים) שבו עוברים בלי להיפגע. הטבעת פוגעת פעם אחת לכל היותר
-    fire:{reg:'desert',x:-860,y:480,quest:'s4Warden',glow:'#FFB347',col:'#FF6A2A',ev:'blaze',head:true,
-      warden:{type:'emberwarden',hp:30,dmg:1.4,r:1.7,speed:0.85,wake:520,leash:420,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}},
+    fire:{reg:'desert',x:-650,y:400,quest:'s4Warden',glow:'#FFB347',col:'#FF6A2A',ev:'blaze',head:true,
+      warden:{type:'emberwarden',hp:30,dmg:1.4,r:1.7,speed:0.85,wake:520,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}},
     // פנס הברק: בפינה הדרום-מזרחית של מגדלי הסערה. שומר הסערה מסמן n עיגולי ברק (marks): אחד מתחת לשחקן והשאר עד spread ממנו.
     // כל עיגול ברדיוס r מתפוצץ אחרי fuse שניות. מי שעוד בתוכו נפגע. מספיק לזוז
-    bolt:{reg:'storm',x:860,y:480,quest:'s5Warden',glow:'#E2CCFF',col:'#B07CFF',ev:'thunder',head:true,
-      warden:{type:'stormwarden',hp:32,dmg:1.45,r:1.7,speed:0.85,wake:520,leash:420,marks:{every:2.8,n:4,spread:170,r:50,fuse:1.0,dmg:16,flash:0.25}}},
+    bolt:{reg:'storm',x:720,y:390,quest:'s5Warden',glow:'#E2CCFF',col:'#B07CFF',ev:'thunder',head:true,
+      warden:{type:'stormwarden',hp:32,dmg:1.45,r:1.7,speed:0.85,wake:520,marks:{every:2.8,n:4,spread:170,r:50,fuse:1.0,dmg:16,flash:0.25}}},
     // הפנס הלבן: באמצע הדרום של לב הצל. הצל עובר בשלבים לפי החיים שנשארו לו (phases, לפי הסדר): בכל שלב ההתקפה של השומר ההוא
     // (shoot, ring או marks מהשורה שלו כאן) והחולשה שלו. earth: אין לשומר האבן התקפה, אז הצל רץ מהר יותר (rush).
     // learn: המכפיל לסוג הנזק שהכי השתמשת בו בעולם, weak: המכפיל לחולשה של השלב. head:false: במקום משפט רגיל, הסוף (storyFinale)
-    light:{reg:'shadow',x:0,y:470,quest:'s6Heart',glow:'#FFFFFF',col:'#9C6BFF',ev:'heart',head:false,
-      warden:{type:'shade',hp:40,dmg:1.5,r:1.8,speed:0.9,wake:540,leash:460,phases:['earth','water','ice','fire','bolt'],rush:1.4,learn:0.4,weak:1.6}}
+    light:{reg:'shadow',x:0,y:370,quest:'s6Heart',glow:'#FFFFFF',col:'#9C6BFF',ev:'heart',head:false,
+      warden:{type:'shade',hp:40,dmg:1.5,r:1.8,speed:0.9,wake:540,phases:['earth','water','ice','fire','bolt'],rush:1.4,learn:0.4,weak:1.6}}
   },
+  // השומר לא בורח (ניר, 1.11.2026: "ברח לי"): הוא רודף כל עוד השחקן עד leash מהפנס. רק אחרי giveUp שניות רחוק יותר
+  // הוא חוזר לאט (back מהמהירות) לפנס, אומר משהו והפנס זוהר. בלי ריפוי: החיים נשארים, והקרב ממשיך מאיפה שעצר.
+  // clear: הפנסים לפחות כך רחוק מקצה האזור, כדי שהשטח סביבם פתוח וקישוטי הקצה (גבעות, עצים) רחוקים
+  chase:{leash:900,giveUp:5,back:0.45,say:2.6,clear:300},
   introDelay:0.9,                          // שניות אחרי הכניסה הראשונה לכפר עד שראש הכפר מדבר
   headDelay:1.4,                           // אחרי שפנס נדלק (הפרס נלקח בכפר): ראש הכפר אומר משפט
   lit:{dmg:0.75},                          // אחרי שהפנס של אזור נדלק: האויבים באזור פוגעים פחות
@@ -99,10 +103,16 @@ function storyUpdate(dt){
 // השומר: רודף את השחקן, אבל לא מתרחק מהפנס (wFoes ב-world.js). שומר המים גם יורה
 function storyWardenMove(e,dt){
   if(e.phases)storyShade(e);
-  const L=STORY.lanterns[e.warden]||STORY.lanterns.earth,W=e.pw||L.warden,K=e.pk||e.warden,dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1,far=Math.hypot(P.x-L.x,P.y-L.y)>W.leash;
+  const L=STORY.lanterns[e.warden]||STORY.lanterns.earth,W=e.pw||L.warden,K=e.pk||e.warden,CH=STORY.chase,dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1,pl=Math.hypot(P.x-L.x,P.y-L.y);
+  e.away=pl>CH.leash?(e.away||0)+dt:0;   // כמה זמן השחקן רחוק מהפנס
+  if(!e.back&&e.away>CH.giveUp){e.back=true;e.say=CH.say}   // מוותר: חוזר לשמור על הפנס
+  else if(e.back&&pl<L.warden.wake)e.back=false;            // השחקן חזר: הקרב ממשיך
+  e.say=Math.max(0,(e.say||0)-dt);
+  const far=e.back,sp=far?CH.back:1;
   let tx=far?L.x-e.x:dx,ty=far?L.y+70-e.y:dy;const td=Math.hypot(tx,ty)||1;
-  if(td>6){e.x+=tx/td*e.speed*slowK(e)*dt;e.y+=ty/td*e.speed*slowK(e)*dt}
-  e.x+=e.kx*dt;e.y+=e.ky*dt;const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
+  if(td>6){e.x+=tx/td*e.speed*sp*slowK(e)*dt;e.y+=ty/td*e.speed*sp*slowK(e)*dt}
+  e.x+=e.kx*dt;e.y+=e.ky*dt;
+  const B=placeBox();if(B){e.x=Math.max(B.x0,Math.min(B.x1,e.x));e.y=Math.max(B.y0,Math.min(B.y1,e.y))}   // מכה לא דוחפת אותו אל מחוץ לאזור (על הגבעות)const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
   if(d<e.r+P.r-3)hurt(e.dmg);
   const sh=W.shoot;
   if(sh&&!far&&d<WORLD.attackRange+120&&(e.shoot-=dt)<=0){e.shoot=sh.every;const a=Math.atan2(dy,dx);
@@ -214,6 +224,8 @@ function storyDraw(){
   const L=STORY.lanterns[k],lit=STO()[k],t=fxNow(),gl=L.glow;
   ctx.fillStyle='rgba(5,7,13,0.35)';ctx.beginPath();ctx.ellipse(L.x,L.y+6,22,8,0,0,7);ctx.fill();
   ctx.fillStyle='#4A3A2A';ctx.fillRect(L.x-4,L.y-70,8,76);
+  const ew=S.wd.warden;if(ew&&!ew.dead&&ew.back){ctx.save();ctx.globalAlpha=0.35+Math.sin(t*4)*0.15;ctx.strokeStyle=gl;ctx.lineWidth=6;   // השומר חזר לשמור: טבעת אור סביב הפנס
+    ctx.beginPath();ctx.ellipse(L.x,L.y+6,120+Math.sin(t*3)*10,48,0,0,7);ctx.stroke();ctx.restore()}
   if(lit){const g=ctx.createRadialGradient(L.x,L.y-80,4,L.x,L.y-80,90+Math.sin(t*2)*8);g.addColorStop(0,gl+'8C');g.addColorStop(1,gl+'00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(L.x,L.y-80,100,0,7);ctx.fill()}
   ctx.fillStyle=lit?gl:'#3A3F52';ctx.strokeStyle='#2A2018';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(L.x-14,L.y-98,28,32,6);ctx.fill();ctx.stroke();
   storyRingsDraw();storyMarksDraw();
@@ -230,5 +242,6 @@ function storyDraw(){
 function storyScreen(ox,oy){
   const k=storyLantern();if(!k)return;const L=STORY.lanterns[k],e=S.wd.warden;
   // החץ לפנס כשהקווסט פעיל: guide.js
-  if(e&&!e.dead){ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 14px Heebo, system-ui, sans-serif';ctx.fillStyle=L.col;ctx.fillText(T('story.'+k+'.name'),e.x+ox,e.y+oy-e.r-56)}
+  if(e&&!e.dead){ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 14px Heebo, system-ui, sans-serif';ctx.fillStyle=L.col;ctx.fillText(T('story.'+k+'.name'),e.x+ox,e.y+oy-e.r-56);
+    if(e.say>0){ctx.globalAlpha=Math.min(1,e.say*2);ctx.fillStyle='#fff';ctx.font='700 13px Heebo, system-ui, sans-serif';ctx.fillText(T('story.ward.back'),e.x+ox,e.y+oy-e.r-76);ctx.globalAlpha=1}}
 }
