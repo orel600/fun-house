@@ -1606,7 +1606,7 @@ function worldBot(m,L,god){
     const c=document.getElementById('lpCard'),f=document.getElementById('lpFlash');
     o.up=heroLv()===lv0+1;o.card=!!c&&c.classList.contains('on')&&c.querySelectorAll('li').length>=1&&c.textContent.includes(T('lp.up',heroLv()));
     o.cardNext=!!c&&c.textContent.includes(T('lp.next'));o.flash=!!f&&f.classList.contains('on');
-    gearOpen();const el=document.querySelector('#gDetail .lpnext');o.win=!!el&&el.textContent.includes(T('lp.next'));gearClose();
+    gearOpen('char');const el=document.querySelector('#gChar .lpnext');o.win=!!el&&el.textContent.includes(T('lp.next'));gearClose();
     c.classList.remove('on');return o});
   check(lp.orbit&&lp.rank&&lp.tree&&lp.next&&lp.up&&lp.card&&lp.cardNext&&lp.flash&&lp.win,
     'מסלול רמות: '+(lp.orbit&&lp.rank&&lp.tree?'משבצת, דרגה ונקודת סקיל נמצאו':'חסר משהו בטבלה')+(lp.next?', יש "הבא"':', אין "הבא"')+(lp.card?', כרטיס בעליית רמה':', אין כרטיס')+(lp.cardNext?' עם הבא':'')+(lp.flash?', הבזק':', בלי הבזק')+(lp.win?', ובחלון הדמות':', לא בחלון הדמות'));
