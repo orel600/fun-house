@@ -81,9 +81,10 @@ const GEAR={
   // slots: מה יכול ליפול
   loot:{run:0.35,boss:1,slots:['weapon','acc','boots','orbit']},
   /* מסך הציוד: הבובה באמצע, ומשבצות מסביב. start/end: הצדדים (מתהפכים לפי השפה), under: שורה מתחת לבובה.
-     משבצת חדשה (למשל מגפיים) נכנסת לאחת הרשימות. drag: כמה פיקסלים זזים לפני שלחיצה הופכת לגרירה */
+     משבצת חדשה (למשל מגפיים) נכנסת לאחת הרשימות. drag: כמה פיקסלים זזים לפני שלחיצה הופכת לגרירה.
+     hold: באצבע, בתוך התרמיל שנגלל: כמה מילישניות מחזיקים לפני שגוררים. תזוזה לפני כן היא גלילה, והפריט לא קופץ (אוראל, 1.11.2026) */
   doll:{start:['weapon'],end:['acc','boots'],under:['orbit']},
-  drag:8
+  drag:8,hold:220
 };
 
 // פריט ששודרג בנפחייה נשמר עם הרמה שלו: 'oakBow+3' (aging.js), ועם כוח אחריה: 'oakBow+3#keen' (powers.js).
@@ -338,12 +339,15 @@ function gDragEnd(){
 }
 $('ovGear').addEventListener('pointerdown',e=>{
   if(e.button>0)return;const src=gSrcOf(e.target);if(!src)return;
-  Object.assign(GDRAG,{src,pid:e.pointerId,x:e.clientX,y:e.clientY,on:false});
+  Object.assign(GDRAG,{src,pid:e.pointerId,x:e.clientX,y:e.clientY,on:false,t:performance.now(),touch:e.pointerType==='touch'&&!!e.target.closest('.ggrid')});
 });
+// אצבע שהחזיקה מספיק בתרמיל: מכאן זו גרירה, והרשימה לא נגללת מתחתיה
+addEventListener('touchmove',e=>{if(GDRAG.src&&GDRAG.touch&&(GDRAG.on||performance.now()-GDRAG.t>=GEAR.hold))e.preventDefault()},{passive:false});
 addEventListener('pointermove',e=>{
   const src=GDRAG.src;if(!src||e.pointerId!==GDRAG.pid)return;
   if(!GDRAG.on){
     if(Math.hypot(e.clientX-GDRAG.x,e.clientY-GDRAG.y)<GEAR.drag)return;
+    if(GDRAG.touch&&performance.now()-GDRAG.t<GEAR.hold){GDRAG.src=null;return}   // זז מהר: גלילה, לא גרירה
     GDRAG.on=true;const g=GDRAG.ghost=src.el.cloneNode(true);g.classList.add('gghost');g.removeAttribute('aria-pressed');
     $('ovGear').appendChild(g);src.el.classList.add('lift');gMarkTargets(src);
   }

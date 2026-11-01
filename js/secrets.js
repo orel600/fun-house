@@ -20,7 +20,7 @@ const SECRETS={
   lookout:{dur:7,cd:20,col:'#FFE08A'},   // כמה שניות רואים את המקורות, וכל כמה אפשר לעלות שוב
   // אוצר קבור: near מאיזה מרחק פיוחו רצה לחפור. loot כמו בתיבה, ויותר
   carving:{near:70,loot:{coins:[1,70],gold:[0.5,1],silver:[0.7,2],amber:[0.3,1],star:[0.05,1],ruby:[0.25,1]}},
-  /* המקומות, לכל אזור (WORLD.regions ב-world.js. האחו הוא 'meadow', כולל המחצבה במזרח. האגם 'lake', הרכס הקפוא 'ridge', המדבר הבוער 'desert', מגדלי הסערה 'storm').
+  /* המקומות, לכל אזור (WORLD.regions ב-world.js. האחו הוא 'meadow', כולל המחצבה במזרח. האגם 'lake', הרכס הקפוא 'ridge', המדבר הבוער 'desert', מגדלי הסערה 'storm', לב הצל 'shadow').
      hide: מה מסתיר את התיבה (rock או bush). bless: איזו ברכה. to: איפה האוצר הקבור. כל מקום רחוק משערים, ממים ומהפנס */
   regions:{
     meadow:[
@@ -53,6 +53,12 @@ const SECRETS={
       {id:'t_shrine',kind:'shrine',x:940,y:-560,bless:'speed'},       // צפון-מזרח, מקדש שהברק לא נגע בו
       {id:'t_look',kind:'lookout',x:-940,y:580},                      // דרום-מערב, על שרידי חומה
       {id:'t_carve',kind:'carving',x:220,y:620,to:{x:-180,y:640}}     // עץ שרוף בדרום, מצביע מערבה
+    ],
+    shadow:[
+      {id:'h_chest',kind:'chest',x:-960,y:-560,hide:'bush'},          // בפינה הצפון-מערבית, בתוך שיח צל
+      {id:'h_shrine',kind:'shrine',x:940,y:-540,bless:'loot'},        // צפון-מזרח, מקדש שהחושך לא נגע בו
+      {id:'h_look',kind:'lookout',x:940,y:600},                       // דרום-מזרח, על סלע גבוה מעל החושך
+      {id:'h_carve',kind:'carving',x:-420,y:620,to:{x:-560,y:560}}    // עץ צל בדרום-מערב, מצביע מערבה
     ]
   }
 };

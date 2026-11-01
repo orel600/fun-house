@@ -51,6 +51,10 @@ const QUESTS={
     {id:'s5Climb',giver:'head',kind:'story',obj:[{type:'story',what:'storm',n:1}],reward:{coins:60,xp:110},req:{quest:'s4Warden'}},
     {id:'s5Spark',giver:'head',kind:'story',obj:[{type:'kill',what:'stormknight',n:8},{type:'gather',what:'boltC',n:3}],reward:{iron:12,silver:4,xp:170},req:{quest:'s5Climb'}},
     {id:'s5Warden',giver:'head',kind:'story',obj:[{type:'story',what:'thunder',n:1}],reward:{coins:240,xp:360,story:'bolt'},req:{quest:'s5Spark'}},
+    // ---- העלילה, פרק 6 והאחרון: הפנס הלבן, בלב הצל (story.js, WORLD.regions.shadow ב-world.js). נפתח כשכל חמשת הפנסים דולקים ----
+    {id:'s6Dark',giver:'head',kind:'story',obj:[{type:'story',what:'shadow',n:1}],reward:{coins:70,xp:130},req:{quest:'s5Warden'}},
+    {id:'s6Echo',giver:'head',kind:'story',obj:[{type:'kill',what:'shadeknight',n:6},{type:'kill',what:'shadewisp',n:6}],reward:{gem:2,essence:10,xp:200},req:{quest:'s6Dark'}},
+    {id:'s6Heart',giver:'head',kind:'story',obj:[{type:'story',what:'heart',n:1}],reward:{coins:400,star:1,xp:500,story:'light'},req:{quest:'s6Echo'}},
     {id:'boots',giver:'head',kind:'village',obj:[{type:'gather',what:'wood',n:5}],reward:{coins:10,item:'starterBoots'}},
     {id:'firstMill',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mill',n:1}],reward:{coins:15,wood:10}},
     {id:'firstMine',giver:'head',kind:'village',obj:[{type:'upgrade',what:'mine',n:1}],reward:{coins:15,stone:10}},

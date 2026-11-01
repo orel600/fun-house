@@ -21,7 +21,7 @@ function update(dt){
   if(P.moving&&!nearest(440))P.aim=Math.atan2(iy,ix);
   const nn=nearest(600);
   if(nn){const tr=P.track;tr[P.weapon]+=dt;if(P.moving)tr.move+=dt;else tr.still+=dt;tr.dist+=Math.hypot(nn.x-P.x,nn.y-P.y);tr.distN++}
-  attack(dt);skillsUpdate(dt);orbitUpdate(dt);spawner(dt);runUpdate();if(S.mode!=='play')return;
+  attack(dt);skillsUpdate(dt);orbitUpdate(dt);divineUpdate(dt);spawner(dt);runUpdate();if(S.mode!=='play')return;
   if(!S.boss&&S.t>=S.nextBoss){const b=makeBoss();S.boss=b;enemies.push(b);showIntro(b);return}
   // enemies
   for(const e of enemies){

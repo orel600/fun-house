@@ -70,7 +70,17 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
   background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
 .skb.ready{box-shadow:0 0 12px var(--dt)}
 .skb:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
-.vil .skills{display:none}
+/* ברק אלוהי (js/divine.js): מעל כפתורי הסקילים */
+.divine{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 124px);right:calc(env(safe-area-inset-right,0px) + 28px);
+  width:60px;height:60px;border-radius:50%;border:3px solid var(--gold);background:rgba(18,22,36,.8);display:grid;place-items:center;padding:0;
+  touch-action:none;cursor:pointer;overflow:hidden;--dt:#D46BFF}
+.divine[hidden]{display:none}
+.swap:not([hidden])~.divine{bottom:calc(env(safe-area-inset-bottom,0px) + 228px)}
+.divine .dti{width:30px;height:30px}
+.divine i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
+.divine.ready{box-shadow:0 0 12px var(--gold)}
+.divine:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
+.vil .skills,.vil .divine{display:none}
 .banner{position:fixed;z-index:3;left:0;right:0;top:32%;text-align:center;font-family:var(--display);font-size:28px;
   pointer-events:none;opacity:0;transition:opacity .25s;padding-inline:16px;text-shadow:0 2px 0 #0008}
 .banner.on{opacity:1}
@@ -293,6 +303,7 @@ h1{font-size:46px} h2{font-size:30px}
 #ovGear .gtile{width:auto;height:auto;aspect-ratio:1;min-width:48px;font-size:26px;border-color:var(--rar,var(--line));touch-action:none;
   background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--rar,var(--line)) 30%,var(--panel)),var(--panel) 72%);transition:transform .12s,opacity .12s,box-shadow .12s}
 #ovGear .gtile.empty{background:rgba(18,22,36,.5);border-color:var(--line)}
+#ovGear .ggrid .gtile{touch-action:pan-y}   /* בתרמיל: האצבע גוללת, וגרירה רק אחרי החזקה (GEAR.hold ב-gear.js) */
 #ovGear .gtile.locked{min-width:0}
 #ovGear .gtile small{font-size:11px;bottom:2px;inset-inline-end:4px;text-shadow:0 0 2px #000,0 0 2px #000}
 #ovGear .gtile.sword{border-bottom:5px solid var(--ember)}#ovGear .gtile.gun{border-bottom:5px solid var(--tide)}
@@ -341,6 +352,7 @@ h1{font-size:46px} h2{font-size:30px}
   #ovGear .gearpanel{overflow-y:auto}
   .gbody{grid-template-columns:1fr}
   .gdoll{order:-1}
+  .gbody{flex:none}   /* בגובה התוכן, והחלון נגלל. אחרת הבובה גולשת על הכותרת ועל התרמיל */
 }
 @media (prefers-reduced-motion:reduce){.shake{animation:none}#ovGear .gtile{transition:none}}
 
@@ -462,7 +474,7 @@ h1{font-size:46px} h2{font-size:30px}
   .gbody{grid-template-columns:minmax(0,4fr) minmax(0,6fr);grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"doll bag" "doll side"}
   .gdoll{grid-area:doll}.gbag{grid-area:bag}.gsidep{grid-area:side;max-height:42%}
   .gsidep .gdetail{min-height:0}
-  .gdoll{overflow-y:auto}
+  .gdoll{overflow-y:auto;align-content:safe center}   /* safe: כשהבובה גבוהה מהמקום היא נגללת מלמעלה, ולא נחתכת מתחת לכותרת */
   .gfig{min-height:96px}
   .gfig span{font-size:clamp(56px,17vh,92px)}
   .gdoll .gtile{width:48px}
@@ -471,11 +483,11 @@ h1{font-size:46px} h2{font-size:30px}
   .gdoll .gslot .k{font-size:10px}
   .ggrid{grid-template-columns:repeat(auto-fill,minmax(54px,1fr))}
 }
-/* PWA (js/pwa.js): אפליקציה מותקנת שמוחזקת לאורך מבקשת לסובב. בדפדפן הרגיל לא מוצג */
+/* מסך "סובבו" (js/pwa.js, PWA.turn): טלפון שמוחזק לאורך, גם באפליקציה וגם בדפדפן (אוראל, 1.11.2026: החלונות נדחסו לאורך). במחשב ובטאבלט לא מוצג */
 .pwa-turn{display:none}
-@media (orientation:portrait){html.pwa-app .pwa-turn{position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+@media (orientation:portrait){html.turn .pwa-turn{position:fixed;inset:0;z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
   background:var(--ink);color:var(--chalk);font:800 20px var(--body);text-align:center;padding:24px}
-  html.pwa-app .pwa-turn b{font-size:56px}}
+  html.turn .pwa-turn b{font-size:56px}}
 /* מסך הפתיחה (ניר, 31.10.2026: "הכי פשוט, רק להתחיל לשחק"): מסך אחד בלי גלילה. הגדרות קטנות למעלה, כותרת באמצע,
    ו"יאללה" גדול למטה בצד של האגודל הימני (docs/ui-guide.md). ההסבר בחלון "איך משחקים" */
 #ovStart{display:block;padding:0;overflow:hidden;background:var(--ink) url(../icons/ui/title.jpg) center 70%/cover no-repeat}
@@ -705,4 +717,18 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .wmcols{flex-direction:row}
   .wmcols section:first-child{flex:5}
   .wmcols section:last-child{flex:4}
+}
+/* "תודה ששיחקת": הסוף של העלילה (storyEndOpen ב-story.js) */
+.endwin{width:min(560px,92vw);max-height:calc(100dvh - 32px);overflow:auto;display:flex;flex-direction:column;gap:10px;padding:12px 16px;color:var(--chalk);animation:dpop .16s ease-out;text-align:center}
+.endwin .endtxt{margin:0;line-height:1.45}
+.endwin .endsum{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.endwin .endrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.07)}
+.endwin .endrow b{color:var(--gold,#FFD36B);font-size:1.1em}
+.endwin .vbtn{align-self:center;min-height:44px}
+/* טלפון לרוחב עם שורת דפדפן (אייפון: כ-330 פיקסלים גובה): הבובה קטנה יותר, כדי שתיכנס בלי לגלול */
+@media (orientation:landscape) and (max-height:380px){
+  .gfig{min-height:72px}
+  .gdoll .gtile{width:40px}#ovGear .gd-start .gtile{width:48px;font-size:24px}#ovGear .gd-under .gtile{flex:0 1 32px;width:32px;font-size:16px}
+  .gdoll .gslot .k{font-size:9px}
+  .gd-end .grow{display:grid;grid-template-columns:repeat(2,40px);gap:4px}   /* אקססוריז ונעליים בשני טורים במקום עמודה גבוהה */
 }

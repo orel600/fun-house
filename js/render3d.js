@@ -58,6 +58,10 @@ const LOOK3D={
     anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   sparkwisp:{model:'skelMage',h:44,foot:11,float:14,tint:'#E2CCFF',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   stormwarden:{model:'barbarian',h:92,foot:18,tint:'#7A4FE0',props:{staff:{prop:'staff',...HAND_R,tint:'lightning'}},anim:{run:'Running_B',die:'Death_A'}},
+  // לב הצל (פרק 6): צללים כהים של אבירים ורוחות, והצל עצמו: ברבריאן ענק כמעט שחור עם מטה
+  shadeknight:{model:'warrior',h:64,foot:14,tint:'#3A2A5C',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  shadewisp:{model:'skelMage',h:44,foot:11,float:14,tint:'#5B3F8C',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  shade:{model:'barbarian',h:100,foot:20,tint:'#4B2A7A',props:{staff:{prop:'staff',...HAND_R,tint:'#9C6BFF'}},anim:{run:'Running_B',die:'Death_A'}},
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle_A',charge:'Melee_2H_Attack_Spin',cast:'Melee_2H_Attack_Chop',taunt:'Taunt',die:'Death_A'}},
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. בלי קסדה הוא נמוך יותר, אז h קטן כדי שהגוף יהיה בגודל של האביר.
   // לבדיקה בלבד: עם ?hero=pilot בכתובת הוא נכנס במקום האביר של הלוחם (דמות ההתחלה הראשונה)
@@ -82,6 +86,7 @@ const LOOK3D={
   npc_singer:{model:'mage',h:60,foot:13,tint:'#BFEFFF',anim:NPC_ANIM},
   npc_baker:{model:'barbarian',h:60,foot:14,tint:'fire',own:false,anim:NPC_ANIM},
   npc_bellringer:{model:'rogue',h:58,foot:13,tint:'lightning',own:false,anim:NPC_ANIM},
+  npc_lamplighter:{model:'mage',h:60,foot:13,tint:'#F4F0FF',anim:NPC_ANIM},
   /* חיית המחמד (pet.js): pet_<חיה><שלב>. הגובה על המסך מ-PET (stages[].h), כי גם הדו-ממד משתמש בו. anim: מה מנגנים בכל מצב של החיה */
   pet_piocho1:{model:'piocho1',foot:2,anim:DOG_ANIM},
   pet_piocho2:{model:'piocho2',foot:2,anim:DOG_ANIM},
@@ -121,15 +126,17 @@ const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',
   regions:{lake:{bg:'#1d3238',line:'#4f7a78',pond:'#2a6d8f'},
     ridge:{bg:'#2b3644',line:'#9fb3c4',pond:'#26384a'},   // הרכס הקפוא (פרק 3): שלג
     desert:{bg:'#4a3522',line:'#d9a865',pond:'#6b2a14'},   // המדבר הבוער (פרק 4): חול, ובורות לבה
-    storm:{bg:'#23222e',line:'#6e6a8a',pond:'#2a2440'}}};   // מגדלי הסערה (פרק 5): סלע רטוב בגשם, ושלוליות סגולות
+    storm:{bg:'#23222e',line:'#6e6a8a',pond:'#2a2440'},   // מגדלי הסערה (פרק 5): סלע רטוב בגשם, ושלוליות סגולות
+    shadow:{bg:'#0f0a18',line:'#3a2a58',pond:'#1a0f2c'}}};   // לב הצל (פרק 6): כמעט שחור, וסגול
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
 
 const R3D={shown:new WeakSet(),nid:0,on:false,ready:false,failed:false,want:true,actors:new Map(),dying:[],tmpl:{},clips:{},props:{},stats:{}};
 /* גרפיקה: תלת-ממד כברירת מחדל. אם WebGL לא עולה, או שהמשחק איטי בשניות הראשונות, עוברים לבד לדו-ממד, עם הודעה אחת.
-   בחירה של השחקן בחלון ההגדרות ('zm-gfx') מנצחת תמיד, ואז לא מודדים. המעבר האוטומטי נזכר ('zm-gfx-auto'), כדי לא להאט שוב בפעם הבאה */
-const GFX_AUTO={minFps:24,warm:1.5,secs:4};   // מתחת ל-minFps ממוצע: דו-ממד. warm: שניות ראשונות שלא נמדדות (טעינה). secs: כמה שניות משחק מודדים
-try{const u=localStorage.getItem('zm-gfx');R3D.user=!!u;R3D.want=u?u==='3d':localStorage.getItem('zm-gfx-auto')!=='2d'}catch(e){}
+   בחירה של השחקן בחלון ההגדרות ('zm-gfx') מנצחת תמיד, ואז לא מודדים. פתיחה איטית נספרת (GFX_AUTO.key), ורק אחרי strikes פתיחות איטיות ברצף
+   הדו-ממד נזכר לפעם הבאה, כדי שטעינה איטית אחת לא תנעל טלפון חזק על דו-ממד (אוראל, אייפון 16, 1.11.2026). פתיחה מהירה מאפסת את הספירה */
+const GFX_AUTO={minFps:24,warm:3,secs:4,strikes:2,key:'zm-gfx-slow'};   // מתחת ל-minFps ממוצע: דו-ממד. warm: שניות ראשונות שלא נמדדות (טעינה). secs: כמה שניות משחק מודדים
+try{const u=localStorage.getItem('zm-gfx');R3D.user=!!u;R3D.want=u?u==='3d':(+localStorage.getItem(GFX_AUTO.key)||0)<GFX_AUTO.strikes}catch(e){}
 
 // נקרא מ-render3d בכל פריים שמצויר: סופר פריימים בזמן משחק אמיתי, ופעם אחת מחליט
 function gfxMeasure(now){
@@ -138,7 +145,8 @@ function gfxMeasure(now){
   m.t+=gap;if(m.t<GFX_AUTO.warm)return;m.n++;
   if(m.t<GFX_AUTO.warm+GFX_AUTO.secs)return;
   R3D.measured=true;const fps=m.n/GFX_AUTO.secs;R3D.fps=Math.round(fps);
-  if(fps<GFX_AUTO.minFps){try{localStorage.setItem('zm-gfx-auto','2d')}catch(e){}gfxAuto()}
+  try{if(fps<GFX_AUTO.minFps)localStorage.setItem(GFX_AUTO.key,(+localStorage.getItem(GFX_AUTO.key)||0)+1);else localStorage.removeItem(GFX_AUTO.key)}catch(e){}
+  if(fps<GFX_AUTO.minFps)gfxAuto();
 }
 // מעבר אוטומטי לדו-ממד, בלי לשמור כבחירה של השחקן. ההודעה מוצגת כשהמשחק רץ (main.js)
 function gfxAuto(){R3D.want=false;R3D.on=false;if(R3D.cvs)R3D.cvs.hidden=true;if(!R3D.user)R3D.note=true;showGfx()}
