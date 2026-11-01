@@ -1,9 +1,11 @@
 # כלי זמני: הופך ציורי דמויות למודלים צבועים ב-TRELLIS (Hugging Face), ושומר את התוצאה בחזרה בענף.
 # רץ רק בענף feature/hf-trellis, או ידנית. לא נוגע במשחק.
 name: TRELLIS (תלת-ממד מ-Hugging Face)
-# רץ רק ידנית (Actions, Run workflow), כדי לא לבזבז את המכסה היומית של Hugging Face על כל דחיפה
+# רץ רק כשמשנים את tools/trellis/go.txt בענף הזה, כדי לא לבזבז את המכסה היומית של Hugging Face על כל דחיפה
 on:
-  workflow_dispatch:
+  push:
+    branches: [feature/hf-trellis]
+    paths: ['tools/trellis/go.txt']
 permissions:
   contents: write
 jobs:
