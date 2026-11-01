@@ -40,5 +40,5 @@ function elite(){
 }
 function eliteDown(e){
   S.run.elites++;S.hitstop=Math.max(S.hitstop,0.08);S.shake=Math.max(S.shake,8);
-  sparks(e.x,e.y,C.gold,24,280);banner(T('eliteDown'),C.gold);
+  sparks(e.x,e.y,C.gold,24,280);banner(T('eliteDown'),C.gold);divineElite();   // ברק אלוהי (divine.js)
 }

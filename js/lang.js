@@ -133,6 +133,8 @@ const TEXT={
   'sk.zap':{he:'פגיעת ברק',en:'Zap'},
   'sk.quake':{he:'רקיעת אדמה',en:'Quake'},
   'sk.flame':{he:'פרץ להבה',en:'Flame Burst'},
+  'dv.name':{he:'ברק אלוהי',en:'Divine Lightning'},
+  'dv.ready':{he:'ברק אלוהי מוכן!',en:'Divine Lightning ready!'},
   'combo.shock':{he:'חשמול!',en:'Shock!'},
   'combo.freeze':{he:'קפוא!',en:'Frozen!'},
   'combo.melt':{he:'נמס!',en:'Melt!'},

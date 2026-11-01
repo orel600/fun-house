@@ -1,11 +1,12 @@
 /* התקנה כאפליקציה בטלפון (PWA, ניר 31.10.2026): מסך מלא בלי שורת הדפדפן, לרוחב, ועובד גם בלי רשת.
    - אנדרואיד/Chrome: כפתור "התקנה" במסך הפתיחה כשהדפדפן מציע. אייפון: רמז "שיתוף ← הוספה למסך הבית".
-   - מותקן: נועלים לרוחב בנגיעה הראשונה, ואם אי אפשר (אייפון) מבקשים לסובב את הטלפון.
+   - מותקן: נועלים לרוחב בנגיעה הראשונה, ואם אי אפשר (אייפון) מבקשים לסובב את הטלפון. בטלפון בדפדפן רגיל מבקשים לסובב גם כן (PWA.turn).
    - ה-service worker (sw.js) נרשם רק מ-http/https, לעולם לא מ-file://. התיאור של האפליקציה: manifest.webmanifest */
 const PWA={
   sw:'sw.js',                 // בשורש, כדי שישמור את כל המשחק
   lock:'landscape',           // לאיזה כיוון נועלים כשמותקן
   hintIOS:true,               // רמז ההתקנה באייפון
+  phone:600,                  // מתחת לזה (הצד הקצר, בפיקסלים) זה טלפון, ומבקשים לסובב לרוחב
   state:'',                   // 'file' | 'none' | 'ok' | 'fail': מה קרה עם ה-service worker (נבדק ב-tools/check.js)
   prompt:null,                // ההצעה של Chrome להתקין, עד שלוחצים על הכפתור
 };
@@ -13,11 +14,13 @@ PWA.app=()=>matchMedia('(display-mode: fullscreen)').matches||matchMedia('(displ
 PWA.ios=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
 PWA.web=()=>/^https?:$/.test(location.protocol);
 
-function pwaHeld(){return PWA.app()&&matchMedia('(orientation: portrait)').matches}   // מסך "סובבו" מוצג, והמשחק עוצר (main.js)
+// מבקשים לסובב: באפליקציה מותקנת, ובכל טלפון עם מגע (הצד הקצר של המסך מתחת ל-PWA.phone). טאבלט ומחשב משחקים איך שרוצים
+PWA.turn=()=>PWA.app()||matchMedia('(pointer: coarse)').matches&&Math.min(screen.width,screen.height)<PWA.phone;
+function pwaHeld(){return PWA.turn()&&matchMedia('(orientation: portrait)').matches}   // מסך "סובבו" מוצג, והמשחק עוצר (main.js)
 
 function pwaShow(){   // מה מוצג במסך הפתיחה: כפתור התקנה, רמז לאייפון, או כלום
   const app=PWA.app(),btn=document.getElementById('pwaInstall'),ios=document.getElementById('pwaIos');
-  document.documentElement.classList.toggle('pwa-app',app);
+  document.documentElement.classList.toggle('pwa-app',app);document.documentElement.classList.toggle('turn',PWA.turn());
   if(btn)btn.hidden=app||!PWA.prompt;
   if(ios)ios.hidden=app||!PWA.hintIOS||!PWA.web()||!PWA.ios()||!!PWA.prompt;
 }
