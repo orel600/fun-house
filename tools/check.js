@@ -1433,6 +1433,26 @@ function worldBot(m,L,god){
     &&wav.bossAt===wav.N-1&&wav.won===1&&wav.bossCount===1&&wav.runWon&&wav.stations===0&&wav.after
     &&wav.news.length===4&&wav.sups.some(x=>x.startsWith('yeti'))&&wav.sups.some(x=>x.startsWith('demon'))&&wav.wanted===0&&wav.ovl&&!wav.ovl.length,
     'זירת גלים: '+(wav.err||'כפתור "'+wav.btn+'", '+wav.waves+'/'+wav.N+' גלים ב-'+wav.t+' שניות, '+wav.breaks+' הפסקות (אויבים בהפסקה: '+wav.breakSpawn+'), מונה "'+wav.tag3+'", בהפסקה "'+wav.tagBr+'", אחרון "'+wav.tagN+'", חוזק x'+wav.k1+'→x'+wav.kN+(wav.grow?' (עולה)':' (לא עולה!)')+', '+wav.sets+' הרכבי אויבים, בוס בגל '+(wav.bossAt==null?'-':wav.bossAt+1)+', ניצחון: '+(wav.won===1&&wav.runWon?'כן':'לא')+', תחנות רגילות: '+wav.stations+', אחרי: '+(wav.after?'זירה רגילה':'נשאר גלים!')+', מפלצות חדשות: '+(wav.news||[]).join('+')+', אויבי-על: '+(wav.sups||[]).join(' ')+', מבוקש: '+(wav.wanted?'הופיע!':'לא')+', המונה נוגע ב: '+(wav.ovl?wav.ovl.join(',')||'כלום':'-')));
+  // סוף הגל (lastCall ב-ARENAS.waves): 3 מכשפים נשארו רחוק בגל 3 והשחקן עומד. תוך 25 שניות של משחק הגל נגמר (או שהם הגיעו לטווח), וחצים מצוירים אליהם
+  const wlc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={arrows:0,minD:1e9},rnd=Math.random,ea=window.edgeArrow;let sd=7;
+    Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;
+    try{enterWorld('home');worldUi(false);startRun('waves');waveStart(2);const w=S.wv,L=ARENAS.waves.lastCall,dt=1/30;w.q=[];enemies=[];o.n=L.n;
+      for(let k=0;k<3;k++){const a=k*2.1;const e=addEnemy('wisp',P.x+Math.cos(a)*1100,P.y+Math.sin(a)*1100);e.wv=2}
+      window.edgeArrow=(...a)=>{if(S.wv&&S.wv.call)o.arrows++;return ea(...a)};
+      for(let t=0;t<25;t+=dt){
+        P.hp=P.maxHp;if(S.mode!=='play'){for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;S.mode='play';S.pendingLv=0}
+        update(dt);const live=enemies.filter(e=>!e.dead&&e.wv===2);
+        if(Math.round(t/dt)%15===0)render();
+        o.called??=w.call?Math.round(t*10)/10:null;if(w.rush)o.rush??=Math.round(t*10)/10;
+        for(const e of live)o.minD=Math.min(o.minD,Math.hypot(e.x-P.x,e.y-P.y));
+        if(w.phase==='break'){o.end=Math.round(t*10)/10;break}
+        if(live.length&&live.every(e=>Math.hypot(e.x-P.x,e.y-P.y)<200)){o.near=Math.round(t*10)/10;break}
+      }
+      o.left=enemies.filter(e=>!e.dead&&e.wv===2).length}catch(err){o.err=String(err&&err.stack||err)}
+    window.edgeArrow=ea;Math.random=rnd;enemies=[];wRet=null;for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;document.getElementById('banner').textContent='';
+    SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!wlc.err&&wlc.called===0&&wlc.arrows>0&&(wlc.end!=null||wlc.near!=null),
+    'סוף גל: '+(wlc.err||'3 מכשפים רחוק, '+(wlc.called===0?'מסומנים מיד':'לא סומנו!')+', '+wlc.arrows+' חצים, '+(wlc.end!=null?'הגל נגמר אחרי '+wlc.end+' שניות':wlc.near!=null?'הגיעו לטווח אחרי '+wlc.near+' שניות':'תקוע! נשארו '+wlc.left+', הכי קרוב '+Math.round(wlc.minD))+(wlc.rush!=null?', רצו אחרי '+wlc.rush:'')));
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
