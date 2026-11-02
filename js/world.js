@@ -246,7 +246,7 @@ function wFoes(dt){
   const FO=WR().foes,alive=FO.map(()=>0);
   wtGroups();   // מכים אחד, והקבוצה שלו מתעוררת (wtension.js)
   for(const e of enemies){
-    if(e.dead)continue;
+    if(e.dead||e.dummy)continue;   // בובות אימון (skpractice.js) לא זזות: בלי זה התנהגות של foeai.js (הסתערות, קפיצה) הזיזה אותן
     if(e.wanted){wantedMove(e,dt);continue}
     if(e.warden){storyWardenMove(e,dt);continue}
     if(e.evt){evFoeMove(e,dt);continue}
