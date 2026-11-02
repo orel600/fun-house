@@ -212,7 +212,7 @@ function render(){
   drawVillageScreen(ox,oy);
   drawWorldScreen(ox,oy);
   drawNpcScreen(ox,oy);
-  drawQuestMarks(ox,oy);statDraw(ox,oy);guideDraw(ox,oy);   // guideDraw: המטרה הבאה, שובל וחץ (guide.js)   // סימן מעל הדמות כשסקיל פעיל (stats.js)
+  drawQuestMarks(ox,oy);statDraw(ox,oy);guideDraw(ox,oy);streakDraw();   // streakDraw: רצף הריגות (streak.js)   // guideDraw: המטרה הבאה, שובל וחץ (guide.js)   // סימן מעל הדמות כשסקיל פעיל (stats.js)
   if(joy){ctx.strokeStyle='rgba(236,231,220,0.22)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(joy.ox,joy.oy,55,0,7);ctx.stroke();
     ctx.fillStyle='rgba(236,231,220,0.3)';ctx.beginPath();ctx.arc(joy.ox+joy.dx*55,joy.oy+joy.dy*55,22,0,7);ctx.fill()}
   if(S.hurt>0){const gr=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3,W/2,H/2,Math.max(W,H)*0.75);gr.addColorStop(0,'rgba(239,78,87,0)');gr.addColorStop(1,'rgba(239,78,87,'+(S.hurt*1.2)+')');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)}
