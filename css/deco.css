@@ -1,0 +1,25 @@
+/* חנות קישוטים (js/deco.js): לשונית בחלון השוק. טור קנייה (כרטיסים כמו בשוק), ומפה קטנה של הכפר עם המקומות */
+.dcols>section:last-child{align-items:stretch}
+.dmap{position:relative;flex:1 1 auto;min-height:120px;aspect-ratio:1;max-width:100%;align-self:center;max-height:100%;border-radius:50%;
+  background:radial-gradient(circle,#2f4a2a 0 60%,#1e3324 100%);border:2px solid var(--line,#2A3249)}
+.dbld{position:absolute;transform:translate(-50%,-50%);font-size:clamp(14px,3.4vmin,22px);pointer-events:none;filter:drop-shadow(0 1px 1px #000a)}
+.dbld.none{opacity:.35}
+/* כל מקום: נקודה קטנה, ואזור נגיעה של 44 פיקסלים סביבה (ui-guide) */
+.dslot{position:absolute;transform:translate(-50%,-50%);width:26px;height:26px;padding:0;border-radius:50%;border:2px dashed rgba(236,231,220,.25);background:transparent;
+  font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;color:var(--chalk)}
+.dslot::after{content:"";position:absolute;inset:-9px}
+.dslot.has{border:2px solid transparent;background:rgba(5,7,13,.35)}
+.dslot.go{border-color:var(--gold);background:rgba(244,199,79,.12)}
+.dslot.on{border:2px solid var(--gold);box-shadow:0 0 8px rgba(244,199,79,.7)}
+.dslot:active{transform:translate(-50%,-50%) scale(.9)}
+.downs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:none}
+.down{position:relative;width:44px;height:44px;border-radius:10px;border:2px solid var(--line,#2A3249);background:rgba(255,255,255,.05);font-size:22px}
+.down small{position:absolute;bottom:0;inset-inline-end:3px;font:800 11px var(--body);color:var(--chalk)}
+.down.on{border-color:var(--gold);box-shadow:0 0 8px rgba(244,199,79,.45)}
+.downs .dstore{width:auto;max-width:none;min-height:44px;margin:0;flex:none}
+.dhint{font:700 11px/1.3 var(--body);color:var(--dim);flex:1 1 120px}
+/* בחלון הביקור: שורה אחת של קישוטים מתחת למבנים */
+.visdeco{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:20px}
+.visdeco b{font:800 13px var(--body);color:var(--gold)}
+.visdeco span{position:relative}.visdeco small{font:800 11px var(--body);color:var(--chalk)}
+@media (orientation:landscape) and (max-height:420px){.dmap{min-height:100px}.dslot{width:22px;height:22px;font-size:13px}.dhint{display:none}}
