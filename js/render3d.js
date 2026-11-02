@@ -132,8 +132,8 @@ const GRIP3D={
    ההחלטות של ניר (1.11): זוהר עדין (רק נדיר ומעלה זוהר, ורק אגדי פועם), נשק ומגן קצת יותר גדולים מהמציאות, וכל פריט משנה את המראה בעדינות.
    glow: כמה חזק הנשק, המגן והחלקים זוהרים בצבע הדרגה (GEAR.tiers), לפי tier 0 עד 4. pulse: כמה אגדי פועם, ו-rate כמה מהר.
    wscale: גודל הנשק ביד ביחס למודל המקורי.
-   shield: מגן ביד השנייה כשהנשק מקרוב ביד אחת (חרב, גרזן, פטיש). אין עדיין משבצת מגן ב-gear.js, אז בפיילוט המגן לוקח את הנדירות
-     של התכשיט הכי טוב שלבוש. המודל לפי הנדירות (Fantasy Weapons Bits), והחומר wtex כמו בנשק.
+   shield: מגן ביד השנייה כשהנשק מקרוב ביד אחת (חרב, גרזן, פטיש). המגן בא ממשבצת המגן (armor.js), ובלי מגן לבוש
+     היד ריקה. המודל לפי הנדירות (Fantasy Weapons Bits), והחומר wtex כמו בנשק.
    boots: הרגליים בצבע הנדירות של הנעליים (tint: כמה). head: הקסדה או הכובע זוהרים מנדירות 2 (נדיר) של התכשיט הכי טוב.
    set: סט פעיל (sets.js) צובע את כל החלקים בצבע הסט, מראה אחיד. keep: החלקים שנשארים נפרדים במודל כדי לצבוע אותם */
 const GEAR3D={on:!/[?&]gear3d=0/.test(location.search),
@@ -148,7 +148,8 @@ function gear3dLook(L,wid){
   const it=gItem(wid),worn=gearWorn().map(gItem),best=s=>Math.max(-1,...worn.filter(x=>x.slot===s).map(x=>x.tier));
   for(const w of ['sword','gun']){const p=L.props[w];p.s=GEAR3D.wscale;if(it&&wUse(wid)===w&&GEAR3D.glow[it.tier]>0){p.glow=g3Rar(it.tier);p.gk=GEAR3D.glow[it.tier];p.pulse=it.tier>=4}}
   const fam=it&&wUse(wid)==='sword'&&GRIP3D.of(L.props.sword.prop);
-  if(fam==='blade'||fam==='chop'){const t=Math.max(0,best('acc')),G=GEAR3D.shield;
+  const t=best('shield');   // המגן מהמשבצת (armor.js). בלי מגן: יד ריקה
+  if((fam==='blade'||fam==='chop')&&t>=0){const G=GEAR3D.shield;
     L.props.shield={prop:G.model[t],tier:G.metal[t],bone:G.bone,pos:G.pos,rot:G.rot,s:G.s,glow:GEAR3D.glow[t]>0?g3Rar(t):null,gk:GEAR3D.glow[t],pulse:t>=4}}
   const b=best('boots'),h=best('acc'),set=Object.keys(SETS).find(s=>setTiers(gearWorn()).some(x=>x.startsWith(s)));
   L.g3={boots:b>=0?g3Rar(b):null,bk:b>=0?GEAR3D.glow[b]:0,head:h>=GEAR3D.head.from?g3Rar(h):null,hk:h>=0?GEAR3D.glow[h]*0.7:0,hp:h>=4,set:set?SETS[set].col:null};
@@ -156,7 +157,7 @@ function gear3dLook(L,wid){
 // צובע את החלקים של הדמות לפי L.g3. פעם אחת לכל דמות ולכל שינוי בציוד
 function gear3dParts(a,L){
   const g=L.g3;if(!g||a.g3===L.ck)return;a.g3=L.ck;
-  a.rk=null;rankArmor3d(a);   // מתחילים נקי: השריון של הדרגה כמו שהוא, והחלקים של הציוד בלי צבע
+  a.rk=0;rankArmor3d(a);   // מתחילים נקי: השריון של הדרגה כמו שהוא, והחלקים של הציוד בלי צבע
   a.root.traverse(o=>{if(!o.isMesh)return;const p=armorPart(o,GEAR3D.keep.concat(ARMOR3D));if(!p)return;
     let col=null,k=0;if(GEAR3D.keep.includes(p)){if(a.pulse)a.pulse=a.pulse.filter(m=>m!==o.material);o.material.color.set(0xffffff);o.material.emissive.set(0);o.material.userData.em=o.material.emissive.clone()}
     if(/^Leg/.test(p)&&g.boots){o.material.color.set(0xffffff).lerp(new THREE.Color(g.boots),GEAR3D.boots.tint);col=g.boots;k=g.bk}
@@ -443,6 +444,7 @@ function syncPlayer(dt){
   let a=R3D.player;if(!a||a.key!==lookKey(L)){if(a)freeActor(a);a=R3D.player=makeActor(L)}   // דמות או נשק חדשים: מודל חדש
   rankArmor3d(a);   // אחרי עלייה בדרגה: החלקים מופיעים מיד
   if(GEAR3D.on)gear3dParts(a,L);
+  armor3d(a);   // שריון לפי מחלקה (armor.js)
   const sword=P.weapon==='sword';
   for(const k in a.props)a.props[k].visible=k==='shield'?sword:(k==='sword')===sword;
   const st=a.st||(a.st={anim:0,gt:0,inv:0,mode:''});
