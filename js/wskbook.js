@@ -165,14 +165,18 @@ function wsbEl(){
   let ov=$('ovBook');if(ov)return ov;
   ov=document.createElement('div');ov.id='ovBook';ov.className='ov gearov';ov.hidden=true;
   ov.innerHTML='<div class="panel win dailywin wsbwin" role="dialog"></div>';document.body.appendChild(ov);
+  // עליון ב-WINS (ui.js): Esc וחזור סוגרים קודם את הספר, ואחר כך את חלון הדמות שמתחתיו
+  WINS.unshift({id:'ovBook',close:()=>wsbClose()});new MutationObserver(uiHistory).observe(ov,{attributes:true,attributeFilter:['hidden']});
   ov.addEventListener('click',e=>{
     if(e.target===ov||e.target.closest('[data-wsb="x"]')){wsbClose();return}
     const s=e.target.closest('[data-wslot]');if(s){wsbSel=+s.dataset.wslot;sfx('tap');wsbDrawUi();return}
     const c=e.target.closest('[data-wsbid]');if(c){wsbPick(c.dataset.wsbid);wsbDrawUi()}});
   return ov;
 }
-function wsbOpenUi(){const L=wsbLoad();wsbSel=L[0]&&!L[1]?1:0;wsbEl().hidden=false;wsbDrawUi()}
-function wsbClose(){const ov=$('ovBook');if(ov)ov.hidden=true;if(typeof gRedraw==='function'&&$('ovGear')&&!$('ovGear').hidden)gRedraw()}
+function wsbOpenUi(){const L=wsbLoad();wsbSel=L[0]&&!L[1]?1:0;wsbEl().hidden=false;wsbDrawUi();if(typeof skgSeen==='function')skgSeen()}   // הנקודה האדומה נעלמת (skguide.js)
+function wsbClose(){const ov=$('ovBook');if(ov)ov.hidden=true;
+  if(S.bookSolo){S.bookSolo=false;if(S.mode==='gear'&&$('ovGear').hidden)S.mode='play'}   // נפתח בנגיעה ארוכה מהעולם (skguide.js)
+  if(typeof gRedraw==='function'&&$('ovGear')&&!$('ovGear').hidden)gRedraw()}
 // בחירה: סקיל שכבר במשבצת יוצא ממנה. אחרת נכנס למשבצת שנבחרה
 function wsbPick(id){
   if(!SKILLS.list[id]||!wsbOpen(id)||id===wsbWeapon())return false;
@@ -196,5 +200,5 @@ function wsbDrawUi(){
     '<div class="wsbgrid">'+wrUi()+ids.map(id=>wsbCard(id,L.indexOf(id))).join('')+'</div></div>';
 }
 // הכפתור בחלון הדמות (statsHtml ב-stats.js)
-const wsbBtn=()=>'<button class="vbtn ghost wsbopen" data-wsbopen="1">📖 '+T('wsb.open')+'</button>';
+const wsbBtn=()=>'<button class="vbtn ghost wsbopen'+(typeof skgNew==='function'&&skgNew()?' sknew':'')+'" data-wsbopen="1">📖 '+T('wsb.open')+'</button>';   // sknew: נקודה אדומה (skguide.js)
 addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-wsbopen]')){e.stopPropagation();sfx('tap');wsbOpenUi()}},true);

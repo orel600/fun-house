@@ -6,7 +6,7 @@
 const MENU={
   // id: הכפתור בסרגל הצד. win: החלון שהוא מציג. badge: הנקודה האדומה שהחלון כבר מעדכן. when: מתי הלשונית מופיעה
   tabs:[
-    {id:'gearBtn',win:'ovGear',open:()=>gearOpen(),close:()=>gearClose(),badge:'gBadge'},          // דמות, ציוד ותרמיל (gear.js)
+    {id:'gearBtn',win:'ovGear',open:()=>gearOpen(),close:()=>gearClose(),badge:'gBadge',dot:'skDot'},   // דמות, ציוד ותרמיל (gear.js). dot: סקיל או רונה חדשים (skguide.js)
     {id:'qBtn',win:'qLog',open:()=>questLogOpen(true),close:()=>questLogOpen(false),badge:'qBadge'}, // קווסטים (quests.js)
     {id:'bookBtn',win:'bookWin',open:()=>bookOpen(true),close:()=>bookOpen(false),badge:'bBadge'},   // ספר ההרפתקאות (book.js)
     {id:'wMapBtn',win:'wMap',open:()=>wmapOpen(true),close:()=>wmapOpen(false),when:()=>!!(S&&S.wd)}, // מפה, רק בעולם (worldmap.js)
@@ -36,7 +36,7 @@ function menuShow(id){
 function menuClose(){const c=MENU.cur&&menuTab(MENU.cur);if(c&&!$(c.win).hidden)c.close();menuEnd()}
 function menuEnd(){MENU.cur=null;document.body.classList.remove('menu');menuDraw()}
 // הנקודה על ☰: יש משהו חדש באחת הלשוניות
-function menuDot(){const on=MENU.tabs.some(t=>t.badge&&!$(t.badge).hidden),d=$('menuBtn').querySelector('b');if(d.hidden===on)d.hidden=!on}
+function menuDot(){const on=MENU.tabs.some(t=>t.badge&&!$(t.badge).hidden||t.dot&&!$(t.dot).hidden),d=$('menuBtn').querySelector('b');if(d.hidden===on)d.hidden=!on}
 
 $('menuBtn').addEventListener('click',e=>{e.stopPropagation();const t=menuTab(MENU.last);menuShow(t&&(!t.when||t.when())?MENU.last:'gearBtn')});
 for(const t of MENU.tabs)$(t.id).addEventListener('click',e=>{e.stopPropagation();menuShow(t.id)});
@@ -44,5 +44,5 @@ $('menuBg').addEventListener('click',()=>{menuClose();sfx('ui')});
 // החלון נסגר לבד (✕, Esc, נגיעה ברקע): התפריט נסגר איתו. במעבר בין לשוניות החלון החדש כבר פתוח כשזה נבדק
 {const mo=new MutationObserver(()=>{
   const c=MENU.cur&&menuTab(MENU.cur);if(c&&$(c.win).hidden)menuEnd();menuDot()});
-  for(const t of MENU.tabs){mo.observe($(t.win),{attributes:true,attributeFilter:['hidden']});if(t.badge)mo.observe($(t.badge),{attributes:true,attributeFilter:['hidden']})}}
+  for(const t of MENU.tabs){mo.observe($(t.win),{attributes:true,attributeFilter:['hidden']});if(t.badge)mo.observe($(t.badge),{attributes:true,attributeFilter:['hidden']});if(t.dot)mo.observe($(t.dot),{attributes:true,attributeFilter:['hidden']})}}
 menuDraw();

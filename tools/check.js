@@ -1097,6 +1097,36 @@ function worldBot(m,L,god){
         catch(err){r.bad.push(id+':'+String(err))}}
       for(const x of enemies)x.dead=true;enemies=[];run(8);r.clean=!(S.wsb&&S.wsb.fx.length);r.noPic=Object.keys(WSKBOOK.list).filter(id=>wsbPicOk[id]!==true)}catch(err){r.err=String(err&&err.stack||err)}
     const o=$('ovBook');if(o)o.hidden=true;if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // איך מוצאים את הסקילים (skguide.js) ואימון (skpractice.js): הספר נפתח מעל חלון הדמות, נגיעה ארוכה על כפתור סקיל פותחת אותו (וקצרה לא),
+  // נקודה אדומה מופיעה כשיש סקיל חדש ונעלמת כשפותחים את הספר, והכרטיס אחרי רגע הגילוי מתחיל אימון עם בובות שלא מתות ונגמר ב-✕ או בזמן
+  // השעון של הדף עומד (page.clock), ולכן את זמן הנגיעה הארוכה מריצים מבחוץ, בין שלושה חלקים
+  await page.evaluate(()=>{const G=window.__skg={bak:JSON.stringify(SAVE),vil:!!S.vil,mode:S.mode,r:{}},r=G.r;
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
+      const ids=Object.keys(WSKBOOK.list).filter(id=>wsbOpen(id)&&id!==wsbWeapon());SAVE.hero.skLoad=ids.slice(0,2);run(0.05);hud();
+      gearOpen('char');wsbOpenUi();const ov=$('ovBook'),q=ov.querySelector('.wsbwin').getBoundingClientRect(),top=document.elementFromPoint(q.left+q.width/2,q.top+q.height/2);
+      r.top=!!top&&!!top.closest('#ovBook');wsbClose();r.gearStays=!$('ovGear').hidden;gearClose();r.play=S.mode==='play';
+      const b=$('skills').querySelector('[data-sk]'),bq=b.getBoundingClientRect();
+      G.pe=(t,id)=>b.dispatchEvent(new PointerEvent(t,{bubbles:true,pointerId:id,clientX:bq.left+9,clientY:bq.top+9}));
+      G.pe('pointerdown',11);G.pe('pointerup',11)}catch(err){r.err=String(err&&err.stack||err)}});
+  await page.clock.runFor(700);
+  await page.evaluate(()=>{const G=window.__skg,r=G.r;if(r.err)return;
+    try{r.shortNo=$('ovBook').hidden;for(let i=0;i<S.sk.cd.length;i++)S.sk.cd[i]=5;G.pe('pointerdown',12)}catch(err){r.err=String(err&&err.stack||err)}});
+  await page.clock.runFor(700);
+  const skg=await page.evaluate(async()=>{const G=window.__skg,r=G.r,ov=$('ovBook'),tick=async()=>{for(let i=0;i<4;i++)await Promise.resolve()};
+    try{if(r.err)throw r.err;
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
+      G.pe('pointerup',12);r.hold=!ov.hidden&&S.mode==='gear'&&!wskAim&&skgStat.holds>0;wsbClose();r.holdBack=S.mode==='play';
+      SAVE.hero.skKnown=[];skgDots();await tick();r.dotOn=!$('skDot').hidden&&$('skills').classList.contains('sknew')&&!$('menuBtn').querySelector('b').hidden;
+      wsbOpenUi();await tick();r.dotOff=$('skDot').hidden&&!$('skills').classList.contains('sknew');wsbClose();
+      const id=S.sk.ids[S.sk.ids.length-1];skgOffer(id);const of=$('skOffer');r.offer=!of.hidden&&!!of.querySelector('[data-skg="book"]');
+      of.querySelector('[data-skg="try"]').click();r.pStart=!!SKP&&SKP.dummies.length===SKPRACTICE.n&&of.hidden;
+      const d=SKP&&SKP.dummies[0],x0=d&&d.x;run(2);r.pDummy=!!d&&!d.dead&&d.x===x0&&enemies.filter(e=>e.dummy&&!e.dead).length===SKPRACTICE.n&&!$('skpBar').hidden;
+      $('skpBar').querySelector('[data-skp="x"]').click();run(0.05);r.pSkip=!SKP&&!enemies.some(e=>e.dummy)&&$('skpBar').hidden;
+      skpStart(id);run(SKPRACTICE.t+0.5);r.pEnd=!SKP&&!enemies.some(e=>e.dummy);
+      skgOffer(id);$('skOffer').querySelector('[data-skg="book"]').click();r.offerBook=!ov.hidden;wsbClose()}catch(err){r.err=String(err&&err.stack||err)}
+    if(ov)ov.hidden=true;skgOfferClose();if(SKP)skpEnd(true);if(S.mode==='gear')S.mode='play';if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(G.bak);
+    if(G.vil)enterVillage();else{reset();S.mode=G.mode}delete window.__skg;return r});
   // שילובים בעולם (wcombo.js): לכל דמות שני סקילים מהספר בסדר הנכון יוצרים שילוב. לוחם: שריון קרח ואז הסתערות = ניפוץ.
   // צייד: שורשים ואז גשם חצים = ננעץ. קוסם: רוח מים ואז מטאור = אדים, וענן סערה על רטוב = חשמול. אחר כך הכל חוזר
   const wcb=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:{},bad:[]};
@@ -2086,6 +2116,14 @@ function worldBot(m,L,god){
     mbOrder('attack');for(let i=0;i<30;i++)mobaUpdate(1/30);mobaHud();
     o.att=al.some(h=>!h.dead&&h.bot.mode==='order'&&h.bot.focus);o.btn=document.querySelector('#mbPing [data-o="attack"]').classList.contains('on');
     for(let i=0;i<30*9;i++)mobaUpdate(1/30);o.end=!MB.order;
+    // קומבו בתרחיש קבוע, לא לפי המזל של המשחק: רטוב + ברק = חשמול (נזק ×MOBA.combo.shock), ורטוב + סופת קרח = הקפאה ארוכה (×MOBA.combo.freeze)
+    {const e=mbHeroes(1)[0],w0={},ow=mbWord;mbWord=function(u,w){w0[w]=(w0[w]||0)+1;return ow(u,w)};
+     Object.assign(e.st,{wet:0,imm:0,stun:0,taunt:0,armor:0,rage:0});e.dead=false;e.hp=e.max=1e6;
+     const dry=mbDmg(null,e,100,'lightning');e.st.wet=3;const wetD=mbDmg(null,e,100,'lightning');
+     const mg=mbHero('mage',0,false,1);mg.lvl=MOBA.ultAt;mg.x=e.x-200;mg.y=e.y;MB.u.push(mg);e.st.wet=3;e.st.imm=0;
+     mbCast(mg,'ult',e);for(let i=0;i<30;i++)mobaUpdate(1/30);
+     o.combo={shock:w0.shock||0,k:Math.round(wetD/dry*100)/100,freeze:w0.freeze||0,frozen:e.st.stun>MBKIT.mage.ult.freeze*0.9,want:MOBA.combo.shock};
+     mbWord=ow;MB.u.splice(MB.u.indexOf(mg),1);e.hp=e.max=MBKIT[e.kit].hp}
     MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
     mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
     mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
@@ -2236,6 +2274,10 @@ function worldBot(m,L,god){
     fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
+  check(!skg.err&&skg.top&&skg.gearStays&&skg.play&&skg.shortNo&&skg.hold&&skg.holdBack&&skg.dotOn&&skg.dotOff&&skg.offer&&skg.pStart&&skg.pDummy&&skg.pSkip&&skg.pEnd&&skg.offerBook,
+    'מציאת הסקילים: '+(skg.err||[skg.top?'הספר מעל חלון הדמות':'הספר מוסתר',skg.shortNo&&skg.hold&&skg.holdBack?'נגיעה ארוכה פותחת':'נגיעה ארוכה לא עובדת',
+    skg.dotOn&&skg.dotOff?'נקודה אדומה מופיעה ונעלמת':'הנקודה האדומה לא עובדת',skg.offer&&skg.offerBook?'כרטיס אחרי הגילוי':'אין כרטיס',
+    skg.pStart&&skg.pDummy&&skg.pSkip&&skg.pEnd?'אימון: בובות, דילוג וסוף':'האימון לא עובד'].join(', ')+(skg.err||Object.values(skg).every(Boolean)?'':' '+JSON.stringify(skg))));
   check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean&&!wsb.noPic.length,
     'ספר הסקילים: '+(wsb.err||[wsb.one&&wsb.lock?'נעול בהתחלה':'לא נעול',wsb.lp?'במסלול הרמות':'לא במסלול',wsb.fill&&wsb.btns?'רמה ממלאת משבצות':'רמה לא מילאה',
     wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn?'הספר מחליף כפתור':'הספר לא החליף','עובדים: '+wsb.ok.join(', '),wsb.bad.length?'נכשלו: '+wsb.bad.join(', '):'',wsb.clean?'נגמרים':'לא נגמרו',wsb.noPic.length?'אייקונים שלא נטענו: '+wsb.noPic.join(', '):''+wsb.n+' אייקונים נטענו'].filter(Boolean).join(' · ')));
@@ -2331,7 +2373,8 @@ function worldBot(m,L,god){
     if(CFG.gfx==='3d')check(!mb.r3||mb.m3===6,'משחקי השאול בתלת-ממד: '+(mb.r3?mb.m3+' מבנים כמודלים (צריך 6)':'התלת-ממד כבוי'));
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));
     check(!mb.miss.length,'משחקי השאול: סקילים ('+mb.kits+') '+(mb.miss.length?'לא הוטלו: '+mb.miss.join(', '):'כולם הוטלו, כולל סקיל-העל'));
-    check(mb.cc.stun>0&&mb.cc.taunt>0&&(!mb.mage||(mb.cmb.shock||0)+(mb.cmb.freeze||0)>0),'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
+    const cb=mb.combo||{};check(cb.shock>0&&Math.abs(cb.k-cb.want)<0.01&&cb.freeze>0&&cb.frozen,'משחקי השאול: קומבו בתרחיש קבוע: חשמול '+(cb.shock?'✓ נזק ×'+cb.k:'לא קרה')+', קפוא '+(cb.freeze&&cb.frozen?'✓ הקפאה ארוכה':'לא קרה'));
+    check(mb.cc.stun>0&&mb.cc.taunt>0,'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
     if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');
   }
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
