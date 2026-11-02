@@ -54,6 +54,8 @@ function fuseTry(a,b,gem,roll=Math.random()){
 
 /* ---- הלשונית בחלון הנפחייה ---- */
 const FUI={a:null,b:null,gem:false};
+// מה מוצג בפס העליון בלשונית: רק מה שהתכה צריכה (🌟, 💎 ומטבעות), גם כשיש 0. aging.js מציג את זה במקום המתכות והאבנים
+const fuseRes=()=>{const ks=[...new Set(Object.values(FUSE.cost).flatMap(Object.keys))];return[...ks.filter(k=>k!=='coins'),FUSE.gem,...ks.filter(k=>k==='coins')]};
 function fuseDraw(){
   if(!fuseHas(FUI.a))FUI.a=null;if(!fuseHas(FUI.b))FUI.b=null;
   if(!FUI.a&&FUI.b){FUI.a=FUI.b;FUI.b=null}
