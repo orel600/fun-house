@@ -30,7 +30,7 @@ const NPC={
   }
 };
 
-const npcHere=id=>{const N=NPC.list[id];return N?(N.lantern?homeBack(N.lantern):!N.home||vLv(N.home)>0):wnpcMet(id)};   // דמות בעולם (worldnpc.js): כשכבר נמצאה. lantern: תושב שחוזר כשהפנס שלו נדלק (homecoming.js)
+const npcHere=id=>{const N=NPC.list[id];return N?(N.here?N.here():N.lantern?homeBack(N.lantern):!N.home||vLv(N.home)>0):wnpcMet(id)};   // דמות בעולם (worldnpc.js): כשכבר נמצאה. lantern: תושב שחוזר כשהפנס שלו נדלק (homecoming.js)
 // המצב החי של התושבים, רק בכפר. נוצר מחדש בכל כניסה לכפר
 function npcState(){
   const V=S.vil;if(!V)return null;
@@ -116,11 +116,12 @@ function npcDialog(){
   if(!ready.length&&!open.length&&!on.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
   if(id===STATS.respec.npc)h+=statRespecHtml();   // איפוס נקודות הדמות (stats.js)
   if(id===FISH.cookAt)h+=fishCookHtml();   // בישול דגים (fishing.js)
+  if(NPC.list[id].serve)h+=resHtml(id);   // השירות של מי שעברה מהעולם (residents.js)
   el.innerHTML=h;el.hidden=false;
 }
 // דיוקן בשיחה, מ-Creative Claw (icons/ui/npc, נחתך עם tools/slice-icons.py). דמות בלי דיוקן: בלי תמונה. משמש גם את worldnpc.js
 const NPC_PIC={head:1,smith:1,merchant:1,inn:1,priest:1,fisher:1,cutter:1,herbal:1};
-const npcPic=id=>NPC_PIC[id]?'<img class="npcpic" src="icons/ui/npc/'+id+'.png" alt="">':'';
+const npcPic=id=>{id=(NPC.list[id]||{}).pic||id;return NPC_PIC[id]?'<img class="npcpic" src="icons/ui/npc/'+id+'.png" alt="">':''};   // pic: תושב שעבר מהעולם (residents.js) עם הדיוקן שלו
 // פותח שיחה עם id, או סוגר עם null
 function npcTalk(id){
   if(!S.vil)return;
@@ -133,6 +134,7 @@ $('npcDlg').addEventListener('click',e=>{
   if(b.dataset.act==='close'){npcTalk(null);return}
   if(b.dataset.act==='respec'){statRespec();statBadge();npcDialog();return}
   if(b.dataset.act==='cook'){fishCook(b.dataset.m);npcDialog();return}   // fishing.js
+  if(b.dataset.act==='res'){resDo(S.vil.dlg,b.dataset.k);npcDialog();return}   // residents.js
   if(b.dataset.act==='pg'){npcPg(+b.dataset.d);npcDialog();return}   // ‹ ›
   if(b.dataset.q)NPCPG.q=b.dataset.q;
   questAct(b.dataset.act,b.dataset.q);   // quests.js
@@ -144,6 +146,7 @@ function npcHide(){$('talkBtn').hidden=true;$('talkBtn').dataset.id='';$('npcDlg
 /* ---- ציור ---- */
 // דו-ממד: גוף פשוט בצבע שלו, ובפינה של מי שאין לו מבנה, הקישוטים. בתלת-ממד הם מצוירים בשכבה שמתחת (render3d.js)
 function drawNpcs(){
+  resDraw();   // הבתים של מי שעברה מהעולם (residents.js)
   if(!S.vil||R3D.on)return;
   for(const id in NPC.list){const sp=NPC.list[id].spot;if(!sp)continue;
     sp.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length],px=sp.x+dx*40,py=sp.y+dy*40;
@@ -158,6 +161,7 @@ function drawNpcs(){
 // מעל הכל: אימוג'י של נפנוף או הרעה, השם כשעומדים לידו, ושלט לפינה של מי שאין לו מבנה
 function drawNpcScreen(ox,oy){
   const all=npcState();if(!all)return;
+  resScreen(ox,oy);   // residents.js
   ctx.textAlign='center';ctx.direction=DIR;
   for(const id in NPC.list){const sp=NPC.list[id].spot;if(!sp)continue;
     ctx.font='800 13px Heebo, system-ui, sans-serif';const txt=T('npc.'+id+'.spot'),w=ctx.measureText(txt).width+16,x=sp.x+ox,y=sp.y+oy+40;
