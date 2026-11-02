@@ -1038,6 +1038,25 @@ function worldBot(m,L,god){
       drawOrbits();r.orbDraw=W.draws>d0&&W.lights>=5;r.orbFlash=W.flashes>f0;
       e3.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // רגע גילוי של סקיל חדש בעולם (skillreveal.js): מתחיל אחרי SKREVEAL.delay, עוצר את הזמן ומקרב, האייקון עף ונגמר לבד, פעם אחת לכל סקיל.
+  // ההטלה הראשונה גדולה, נגיעה מדלגת, ודרגה גבוהה בעץ מגדילה ומחליפה צבע. אחר כך המשחק ממשיך
+  const skr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=[];SAVE.hero.tree={};enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}},s0={...skrStat},id=S.sk.ids[0];r.id=id;
+      run(SKREVEAL.delay*0.5);r.wait=!SKR;run(SKREVEAL.delay*0.6+0.05);hud();
+      r.start=!!SKR&&skrStat.starts===s0.starts+1&&S.hitstop>0&&SAVE.hero.skSeen.includes(id);
+      SKR.t0-=SKREVEAL.zin+0.05;r.zoom=skrZoom()>1;r.fly=!!document.querySelector('.skrfly');
+      SKR.t0-=SKREVEAL.dur+0.4;render();camZoom();   // השעון בבדיקה עומד: מזיזים את ההתחלה אחורה
+      r.end=!SKR&&!document.querySelector('.skrfly')&&skrStat.ends===s0.ends+1&&skrZoom()===1&&S.mode==='play';
+      run(1);r.once=skrStat.starts===s0.starts+1;
+      const e=addEnemy('grunt',P.x+150,P.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;S.sk.cd[0]=0;S.hitstop=0;
+      const b0=skrStat.big;r.big=wskUse(id)&&skrStat.big===b0+1;run(0.6);r.on=e.hp<e.max;
+      SAVE.hero.skSeen=[];run(0.02);r.skipStart=!!SKR;if(SKR)SKR.t0-=0.3;
+      dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));r.skip=!SKR&&skrStat.skips===s0.skips+1&&!(S.hitstop>0);
+      const g0=skSize(id),c0=skCol(id);SAVE.hero.tree={[SKREVEAL.branch[id]]:['w1','x','y','z','u','v']};
+      r.grade=skrGrade(id)===SKREVEAL.grade.max&&skSize(id)>g0&&skCol(id)!==c0&&c0===dtCol(skDef(id).dt);
+      e.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
+    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // פיד הודעות (feed.js): בעולם שלל שנאסף נכנס לפיד בצד ולא על הדמות, אותו משאב מתאחד, ציוד בצבע הדרגה, עד 3 שורות, נעלם אחרי FEED.life, ובזירה לא פועל
   const feed=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{enterWorld('home');enemies=[];FL.length=0;const f0=floats.length,st=FEED.stat,d0=st.drawn;
@@ -1871,6 +1890,23 @@ function worldBot(m,L,god){
     c.classList.remove('on');return o});
   check(lp.orbit&&lp.rank&&lp.tree&&lp.next&&lp.up&&lp.card&&lp.cardNext&&lp.flash&&lp.win,
     'מסלול רמות: '+(lp.orbit&&lp.rank&&lp.tree?'משבצת, דרגה ונקודת סקיל נמצאו':'חסר משהו בטבלה')+(lp.next?', יש "הבא"':', אין "הבא"')+(lp.card?', כרטיס בעליית רמה':', אין כרטיס')+(lp.cardNext?' עם הבא':'')+(lp.flash?', הבזק':', בלי הבזק')+(lp.win?', ובחלון הדמות':', לא בחלון הדמות'));
+  // סקרנות וחקירה (curiosity.js): שלט "רמה מומלצת" ומכשול בדרך הסגורה, שומרים בכניסה, המכשול נעלם ברמה. סוד לפי רמה נעול לפני ופתוח אחרי, ובמסלול הרמות ובמפה
+  const cu=await page.evaluate(()=>{
+    const o={},lv0=SAVE.hero.level,sc0=JSON.stringify(SAVE.secrets||{found:{},read:{}}),cu0=JSON.stringify(CU()),st0=JSON.stringify(SAVE.story);
+    SAVE.secrets={found:{},read:{}};SAVE.curio={clear:{}};SAVE.story=Object.assign({},SAVE.story,{earth:false});
+    const rec=CURIO.paths.lake.lv;SAVE.hero.level=rec-1;enterWorld('home');for(const e of enemies)e.dead=true;
+    let g=cuSigns().find(x=>x.k==='lake');o.sign=!!g&&!g.open&&g.ob==='log';o.guards=WORLD.foes.some(G=>G.guard==='lake'&&G.tough>1);
+    curioUpdate();o.stay=!CU().clear.lake;
+    SAVE.hero.level=rec;curioUpdate();g=cuSigns().find(x=>x.k==='lake');o.clear=!!CU().clear.lake&&!!g&&!g.ob;o.stillShut=!wPathOpen(WORLD.paths.lake);
+    const s=SECRETS.regions.meadow.find(q=>q.lv);SAVE.hero.level=s.lv-1;enterWorld('home');for(const e of enemies)e.dead=true;
+    o.locked=!scList().includes(s);P.x=s.x;P.y=s.y;secretsUpdate(0.05);o.noFind=!scFound(s.id);o.noMark=!cuNew('meadow');
+    SAVE.hero.level=s.lv;o.lp=lpAt(s.lv).some(x=>x.k==='secret'&&x.txt===T('cu.new',T('cu.in.meadow')));o.mark=cuNew('meadow');
+    o.open=scList().includes(s);P.x=s.x+SECRETS.reveal-10;P.y=s.y;secretsUpdate(0.05);P.x=s.x;P.y=s.y;secretsUpdate(0.05);o.found=scFound(s.id);o.markGone=!cuNew('meadow');
+    o.each=Object.keys(SECRETS.regions).every(r=>SECRETS.regions[r].some(q=>q.lv));o.lvs=[...new Set(Object.values(SECRETS.regions).flat().filter(q=>q.lv).map(q=>q.lv))].sort((a,b)=>a-b).join(',');
+    SAVE.hero.level=lv0;SAVE.secrets=JSON.parse(sc0);SAVE.curio=JSON.parse(cu0);SAVE.story=JSON.parse(st0);saveNow();enterVillage();return o});
+  check(cu.sign&&cu.guards&&cu.stay&&cu.clear&&cu.stillShut&&cu.locked&&cu.noFind&&cu.noMark&&cu.lp&&cu.mark&&cu.open&&cu.found&&cu.markGone&&cu.each,
+    'סקרנות: '+(cu.sign?'שלט ומכשול בדרך לאגם':'אין שלט או מכשול')+(cu.guards?', שומרים בכניסה':', בלי שומרים')+(cu.stay&&cu.clear?', המכשול נעלם ברמה':', המכשול לא נעלם בזמן')+(cu.stillShut?' והדרך עדיין לפי הפנס':', הדרך נפתחה בלי פנס!')+
+    (cu.locked&&cu.noFind?', סוד ברמה נעול לפני':', סוד ברמה פתוח מוקדם')+(cu.open&&cu.found?' ונמצא אחרי':' ולא נמצא אחרי')+(cu.lp?', "משהו חדש" במסלול הרמות':', לא במסלול הרמות')+(cu.noMark&&cu.mark&&cu.markGone?', ? במפה':', הסימן במפה לא עובד')+(cu.each?', בכל אזור (רמות '+cu.lvs+')':', חסר אזור'));
   const edge=await page.evaluate(()=>{
     enterWorld('home');const B=placeBox(),n0=drops().length,out=o=>o.x<B.x0||o.x>B.x1||o.y<B.y0||o.y>B.y1;
     wantedAppear(0);const e=S.wn.e;e.x=B.x1+300;e.y=B.y0-200;wantedMove(e,0.05);const wIn=!out(e);
@@ -2027,6 +2063,10 @@ function worldBot(m,L,god){
     fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
+  check(!skr.err&&skr.wait&&skr.start&&skr.zoom&&skr.fly&&skr.end&&skr.once&&skr.big&&skr.on&&skr.skipStart&&skr.skip&&skr.grade,
+    'סקיל חדש בעולם ('+skr.id+'): '+(skr.err||[skr.wait&&skr.start?'רגע גילוי מתחיל':'לא התחיל',skr.zoom&&skr.fly?'מצלמה מתקרבת ואייקון עף':'בלי מצלמה או אייקון',
+    skr.end?'נגמר והמשחק ממשיך':'לא נגמר',skr.once?'פעם אחת':'חוזר',skr.big&&skr.on?'הטלה ראשונה גדולה':'הטלה ראשונה רגילה',
+    skr.skipStart&&skr.skip?'נגיעה מדלגת':'אי אפשר לדלג',skr.grade?'דרגה בעץ משנה מראה':'דרגה לא משנה'].join(', ')));
   check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw&&wsk.orbFlash,
     'סקילים בעולם ('+wsk.id+'): '+(wsk.err||[wsk.btn?'כפתור':'אין כפתור',wsk.place?'למטה מימין, מעל הסרגל':'הכפתור לא במקום',wsk.tap&&wsk.tapHit?'נגיעה יורה ופוגעת':'נגיעה לא פגעה',
     wsk.cd&&wsk.sec&&wsk.again?'קירור עם מספר':'אין קירור',wsk.drag&&wsk.dragHit?'גרירה מכוונת ופוגעת':'גרירה לא פגעה',wsk.aimDraw?'כוונת מצוירת':'אין כוונת',wsk.finger?'אצבע על הכפתור יורה':'אצבע לא ירתה',

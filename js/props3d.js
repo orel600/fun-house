@@ -136,7 +136,7 @@ function props3dWorldTick(G){
   const t=(performance.now()-P3.t0)/1000,dt=Math.min(0.1,t-(P3.last||t));P3.last=t;
   for(const k in G.lan||{}){const L=STORY.lanterns[k];p3LanternTick(G.lan[k],storyOpen(k),t,dt,()=>{sparks(L.x,L.y-90,L.glow,26,260);S.shake=Math.max(S.shake||0,4);sfx('celebrate')})}
   if(G.shr||G.chest){const st=scState();
-    for(const id in G.shr||{})p3ShrineTick(G.shr[id],!(st.cd[id]>0),t);
+    for(const id in G.shr||{}){const s=(SECRETS.regions[S.wd.reg]||[]).find(q=>q.id===id);G.shr[id].visible=!s||scOpen(s);p3ShrineTick(G.shr[id],!(st.cd[id]>0),t)}   // מקדש שנפתח ברמה (curiosity.js)
     for(const id in G.chest||{})G.chest[id].visible=!scFound(id)&&!!st['v'+id]}
   for(const m of G.tow||[]){const w=m.userData.win;w.material.color.set(Math.sin(t*3+m.position.x)>0.6?PROPS3D.tower.glow:'#2a2638')}   // החלון מהבהב כמו בדו-ממד
   for(const m of G.look||[]){const f=m.userData.flag;f.rotation.y=Math.sin(t*3+m.position.x)*0.25}
