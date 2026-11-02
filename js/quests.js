@@ -213,8 +213,12 @@ function qTracked(){
   const open=ids.map(id=>QBY[id]).filter(q=>!qReady(q));
   return open.find(q=>!qKind(q).auto)||open.find(q=>qKind(q).daily)||null;
 }
+// בזירה: רק קווסט שאפשר להתקדם בו בריצה (הריגות, להגיע לזירה). עלילה ומקומות בעולם לא מוצגים שם (המבקר, 2.11.2026: "Climb to the Frost Ridge" בזירה)
+const qArenaOk=q=>q.kind!=='story'&&q.kind!=='world'&&q.obj.some(o=>o.type==='kill'&&!/warden/.test(o.what)||o.type==='reach'&&o.what==='arena');
+const qInArena=()=>!!S&&!S.vil&&!S.wd&&!S.mb&&S.mode==='play';
 function questTrack(){
-  const el=$('qTrack'),q=qTracked();
+  const el=$('qTrack');let q=qTracked();
+  if(q&&qInArena()&&!qArenaOk(q))q=Object.keys(QS().active).map(id=>QBY[id]).find(x=>x&&!qReady(x)&&qArenaOk(x))||null;
   if(!q){el.hidden=true;return}
   el.hidden=false;
   el.textContent=QUESTS.icon.track+' '+T('q.'+q.id)[0]+' · '+q.obj.map((o,i)=>qObjTxt(q,i)+' '+qProg(q,i)+'/'+o.n).join(' · ');
