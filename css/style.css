@@ -1369,3 +1369,27 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 /* תיאור של סקיל בעץ: שתי שורות במקום שורה עם "...", ונגיעה בסקיל פותחת את כולו */
 #ovGear .trn .stn small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:clip;line-height:1.2}
 #ovGear .trn.open .stn small{display:block;-webkit-line-clamp:unset;overflow:visible}
+
+/* ספר הסקילים (js/wskbook.js): משמאל שלוש המשבצות, מימין כל הסקילים. בעולם, אימוג'י קטן על כל כפתור סקיל */
+.world .skb::before{position:absolute;top:-4px;inset-inline-end:-4px;font-size:18px;line-height:1;filter:drop-shadow(0 1px 1px #000a);pointer-events:none;z-index:2}
+.wsbwin{width:min(820px,94vw)}
+.wsbcols{display:flex;gap:12px;min-height:0;flex:1}
+.wsbslots{flex:0 0 170px;display:flex;flex-direction:column;gap:8px}
+.wsbslots p{font-size:12px;margin:2px 0 0;line-height:1.3}
+.wsbs,.wsbc{appearance:none;position:relative;display:flex;align-items:center;gap:8px;text-align:start;color:var(--chalk);font:inherit;
+  background:#141A2Acc;border:2px solid #3A4566;border-radius:12px;padding:6px 8px;min-height:48px;cursor:pointer}
+.wsbs{border-color:var(--dt,#3A4566)}
+.wsbs.sel{box-shadow:0 0 0 3px var(--gold)}
+.wsbs[disabled]{cursor:default;opacity:.85}
+.wsbs small{position:absolute;bottom:2px;inset-inline-end:8px;font-size:10px;color:var(--gold)}
+.wsbgrid{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;overflow-y:auto;align-content:start}
+.wsbc.on{border-color:var(--dt);box-shadow:inset 0 0 0 1px var(--dt)}
+.wsbc.lock{opacity:.5;cursor:default}
+.wsbi{position:relative;flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#0006;box-shadow:0 0 0 2px var(--dt)}
+.wsbi .dti{width:22px;height:22px}
+.wsbi em{position:absolute;bottom:-4px;inset-inline-end:-6px;font-style:normal;font-size:15px}
+.wsbn{display:flex;flex-direction:column;min-width:0}
+.wsbn b{font-size:14px}.wsbn small{font-size:11px;opacity:.85;line-height:1.2}
+.wsbk{position:absolute;top:-6px;inset-inline-start:-6px;width:20px;height:20px;border-radius:50%;background:var(--gold);color:#1A2033;font-size:12px;font-weight:800;display:grid;place-items:center}
+.stfoot .wsbopen{flex:0.8;width:auto;max-width:none;margin:0}
+@media (max-height:430px){.wsbslots{flex-basis:150px}.wsbgrid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}}

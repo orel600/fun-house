@@ -1057,6 +1057,29 @@ function worldBot(m,L,god){
       r.grade=skrGrade(id)===SKREVEAL.grade.max&&skSize(id)>g0&&skCol(id)!==c0&&c0===dtCol(skDef(id).dt);
       e.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // ספר הסקילים (wskbook.js): סקיל נפתח ברמה ומופיע במסלול הרמות, עלייה ברמה ממלאת משבצת, הספר נפתח ומחליף מה על הכפתור,
+  // וכל אחד מתשעת הסקילים החדשים יורה ופוגע בלי שגיאות. אחר כך הכל חוזר
+  const wsb=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:[],bad:[],n:Object.keys(WSKBOOK.list).length};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=1;SAVE.hero.skLoad=[];SAVE.hero.skSeen=wsbIds().slice();enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
+      const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;return e};
+      run(0.05);r.one=S.sk.ids.length===(wsbWeapon()?1:0);r.lock=!wsbOpen('meteor')&&!wsbOpen('charge');
+      const n=Math.min(...Object.keys(WSKBOOK.list).map(wsbNeed));r.lp=lpAt(n).some(x=>x.k==='skill');
+      SAVE.hero.level=99;wsbLevelUp(1,99);r.fill=wsbLoad().filter(Boolean).length===WSKBOOK.slots;run(0.05);r.btns=S.sk.ids.length===SKILLS.max;
+      wsbOpenUi();const ov=$('ovBook');r.ui=!!ov&&!ov.hidden&&ov.querySelectorAll('.wsbc').length===wsbIds().filter(id=>id!==wsbWeapon()).length;
+      const c0=ov.querySelector('.wsbc:not(.on):not(.lock)'),pid=c0&&c0.dataset.wsbid;
+      if(pid){ov.querySelector('[data-wslot="1"]').click();ov.querySelector('[data-wsbid="'+pid+'"]').click();r.swap=wsbLoad()[1]===pid}
+      ov.querySelector('[data-wsb="x"]').click();r.close=ov.hidden;run(0.05);r.swapBtn=!!pid&&S.sk.ids.includes(pid);hud();
+      for(const id in WSKBOOK.list){
+        try{SAVE.hero.skLoad=[id,null];run(0.05);for(const x of enemies)x.dead=true;enemies=[];
+          const i=S.sk.ids.indexOf(id);if(i<0){r.bad.push(id+':לא על כפתור');continue}S.sk.cd[i]=0;
+          const e=mk(80,0),h0=wsbStat.hits[id]||0,D=WSKBOOK.list[id];
+          if(!wskUse(id)){r.bad.push(id+':לא ירה');continue}
+          run((D.t||D.delay||D.arm||0.4)+0.6);
+          const hit=(wsbStat.hits[id]||0)>h0&&e.hp<e.max;(hit?r.ok:r.bad).push(id+(hit?'':':לא פגע'))}
+        catch(err){r.bad.push(id+':'+String(err))}}
+      for(const x of enemies)x.dead=true;enemies=[];run(8);r.clean=!(S.wsb&&S.wsb.fx.length)}catch(err){r.err=String(err&&err.stack||err)}
+    const o=$('ovBook');if(o)o.hidden=true;if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // פיד הודעות (feed.js): בעולם שלל שנאסף נכנס לפיד בצד ולא על הדמות, אותו משאב מתאחד, ציוד בצבע הדרגה, עד 3 שורות, נעלם אחרי FEED.life, ובזירה לא פועל
   const feed=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{enterWorld('home');enemies=[];FL.length=0;const f0=floats.length,st=FEED.stat,d0=st.drawn;
@@ -2054,6 +2077,9 @@ function worldBot(m,L,god){
     fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
+  check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean,
+    'ספר הסקילים: '+(wsb.err||[wsb.one&&wsb.lock?'נעול בהתחלה':'לא נעול',wsb.lp?'במסלול הרמות':'לא במסלול',wsb.fill&&wsb.btns?'רמה ממלאת משבצות':'רמה לא מילאה',
+    wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn?'הספר מחליף כפתור':'הספר לא החליף','עובדים: '+wsb.ok.join(', '),wsb.bad.length?'נכשלו: '+wsb.bad.join(', '):'',wsb.clean?'נגמרים':'לא נגמרו'].filter(Boolean).join(' · ')));
   check(!skr.err&&skr.wait&&skr.start&&skr.zoom&&skr.fly&&skr.end&&skr.once&&skr.big&&skr.on&&skr.skipStart&&skr.skip&&skr.grade,
     'סקיל חדש בעולם ('+skr.id+'): '+(skr.err||[skr.wait&&skr.start?'רגע גילוי מתחיל':'לא התחיל',skr.zoom&&skr.fly?'מצלמה מתקרבת ואייקון עף':'בלי מצלמה או אייקון',
     skr.end?'נגמר והמשחק ממשיך':'לא נגמר',skr.once?'פעם אחת':'חוזר',skr.big&&skr.on?'הטלה ראשונה גדולה':'הטלה ראשונה רגילה',
