@@ -1531,3 +1531,8 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .skpbar .skpt{min-width:28px;text-align:center;font-size:20px;color:var(--gold)}
 /* כפתורי ההקשר בעולם (לדבר, להאכיל, לדוג, פנס): בשורה למטה, משמאל לקשת הסקילים, ולא מעליה. הפינה הימנית התחתונה רק לסקילים (docs/ui-guide.md) */
 .world .bnav{bottom:calc(env(safe-area-inset-bottom,0px) + 30px);right:calc(env(safe-area-inset-right,0px) + 228px);max-width:calc(60% - 228px)}
+/* זירת גלים (arenas.js): המונה "גל 3/10" בשעון במקום התחנות של הזירה הרגילה, ובלי פס התחנות */
+.clock .wavetag{display:block;font-family:var(--display);font-size:15px;color:var(--gold);margin-top:3px;white-space:nowrap}
+.clock .wavetag[hidden]{display:none}
+html.waves .clock small,html.waves .hud .runbar{display:none}
+html.fight.waves .hud .clock{opacity:1}
