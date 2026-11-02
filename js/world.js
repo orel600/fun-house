@@ -237,6 +237,7 @@ function wSpawn(G,i){
   for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp*WORLD.foeHp);wTough(e,Z);
     e.dmg*=Z.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);   // affixRoll: אולי אויב מיוחד (affix.js). storySafe: אחרי שפנס האדמה נדלק (story.js)
     e.xp=0;e.home=i;e.creature=!!G.creature;
+    if(G.tough){e.hp*=G.tough;e.max*=G.tough;e.dmg*=G.tough}   // שומרים בכניסה לדרך (curiosity.js)
     challengeSpawn(e);tierSpawn(e)}   // דרגת העולם (tiers.js)
    // החוק של היום (challenge.js)   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
 }
@@ -292,7 +293,7 @@ function worldUpdate(dt){
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
   wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
-  dropsUpdate(dt);secretsUpdate(dt);wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל
+  dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}
@@ -394,7 +395,7 @@ function drawWorld(){
   strikeDraw();   // קשת אדומה של מכה שמתכוננת (strike.js)
   foeAiDraw();   // הסתערות, ירייה וקפיצה שמסומנות על הרצפה (foeai.js)
   eventsDraw();scentDraw();   // אירועים (events.js), החיה מובילה (petscent.js)
-  secretsDraw();   // סודות (secrets.js)
+  secretsDraw();curioDraw();   // סודות (secrets.js), מכשול בדרך לאזור הבא (curiosity.js)
   if(WR().fog)wFog();
   if(WR().snow)wSnow();   // הרכס הקפוא
   if(WR().heat)wHeat();   // המדבר הבוער
@@ -513,5 +514,5 @@ function drawWorldScreen(ox,oy){
   affixScreen(ox,oy);huntScreen(ox,oy);   // affix.js, hunt.js
   foeAiScreen(ox,oy);   // "!" מעל קורא שבורח (foeai.js)
   eventsScreen(ox,oy);scentScreen(ox,oy);   // events.js, petscent.js
-  secretsScreen(ox,oy);secretsHud();   // secrets.js
+  secretsScreen(ox,oy);secretsHud();curioScreen(ox,oy);   // secrets.js, השלט "רמה מומלצת" (curiosity.js)
 }

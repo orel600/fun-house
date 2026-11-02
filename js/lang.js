@@ -1186,7 +1186,13 @@ Object.assign(TEXT,{
   'sc.blessEnd':{he:'הברכה נגמרה',en:'The blessing faded'},
   'sc.look':{he:'👁️ מכאן רואים הכל! כל המקורות באזור',en:'👁️ You can see everything from here! Every resource around'},
   'sc.carve':{he:'🌳 חץ חרוט בעץ... הוא מצביע למשהו',en:'🌳 An arrow carved in the tree... it points somewhere'},
-  'sc.sniff':{he:n=>n+' מרחרחת! יש פה משהו',en:n=>n+' is sniffing! Something’s here'}
+  'sc.sniff':{he:n=>n+' מרחרחת! יש פה משהו',en:n=>n+' is sniffing! Something’s here'},
+  // סקרנות וחקירה (curiosity.js)
+  'cu.rec':{he:n=>'רמה מומלצת '+n,en:n=>'Recommended level '+n},
+  'cu.clear':{he:r=>'✨ הדרך אל '+r+' התפנתה!',en:r=>'✨ The way to '+r+' is clear!'},
+  'cu.new':{he:r=>'משהו חדש '+r,en:r=>'Something new '+r},
+  'cu.in.meadow':{he:'באחו',en:'in the Meadow'},'cu.in.lake':{he:'באגם הערפל',en:'at the Mist Lake'},'cu.in.ridge':{he:'ברכס הקפוא',en:'on the Frost Ridge'},
+  'cu.in.desert':{he:'במדבר הבוער',en:'in the Burning Desert'},'cu.in.storm':{he:'במגדלי הסערה',en:'at the Storm Towers'},'cu.in.shadow':{he:'בלב הצל',en:'in the Heart of Shadow'}
 });
 
 function T(key,...a){const e=TEXT[key],v=e?(e[LANG]??e.he):key;return typeof v==='function'?v(...a):v}
