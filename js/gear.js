@@ -28,6 +28,16 @@ const GEAR={
     ironBow:    {slot:'weapon',tier:1,w:'bow',icon:'🏹',stats:{gdmg:25},look:{model:'w_bow_A_withString'}},
     goldBow:    {slot:'weapon',tier:3,w:'bow',icon:'🏹',stats:{gdmg:60,magnet:20},look:{model:'w_bow_B_withString',glow:C.gold}},
     oakStaff:   {slot:'weapon',tier:0,w:'staff',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'w_staff_B'}},   // הנשק של הקוסם: קסם שמתביית
+    /* נשקים לכל דמות בכל שכבה (ניר, 2.11.2026: "הגעתי לרמה 20 ולא נפל לי אף נשק שמתאים לקלאס שלי"). לקוסם היה רק מטה עץ,
+       ולכל דמות יש עכשיו נשק בכל שכבה עד אגדי. איזה נשק שייך לאיזו דמות: arms ב-HEROES (heroes.js), וההטיה בשלל: LOOT.gear.cls */
+    ironStaff:  {slot:'weapon',tier:1,w:'staff',icon:'🪄',stats:{gdmg:20,magnet:15},look:{model:'w_staff_A'}},
+    silverWand: {slot:'weapon',tier:2,w:'wand',icon:'🪄',stats:{gdmg:38,speed:4},look:{model:'w_wand_A',glow:'#DCE3EA'}},
+    goldStaff:  {slot:'weapon',tier:3,w:'staff',icon:'🪄',stats:{gdmg:60,regen:0.6},look:{model:'w_staff_A',glow:C.gold}},
+    starStaff:  {slot:'weapon',tier:4,w:'staff',icon:'🌟',stats:{gdmg:85,magnet:25,regen:0.6},look:{model:'w_staff_B',glow:'#FF6FB5'}},
+    ironAxe:    {slot:'weapon',tier:1,w:'axe',icon:'🪓',stats:{sdmg:24},look:{model:'w_axe_A'}},
+    goldAxe:    {slot:'weapon',tier:3,w:'axe',icon:'🪓',stats:{sdmg:60,hp:15},look:{model:'w_axe_C',glow:C.gold}},
+    dragonBlade:{slot:'weapon',tier:4,w:'sword',icon:'⚔️',stats:{sdmg:85,speed:6},look:{model:'w_sword_E',glow:'#FF6FB5'}},
+    skyBow:     {slot:'weapon',tier:4,w:'bow',icon:'🏹',stats:{gdmg:85,speed:6},look:{model:'w_bow_B_withString',glow:'#FF6FB5'}},
     boneCharm:  {slot:'acc',tier:0,icon:'🦴',stats:{hp:15}},
     ironRing:   {slot:'acc',tier:1,icon:'💍',stats:{regen:1}},
     starterBoots:{slot:'boots',tier:0,type:'boots',icon:'👟',stats:{speed:8}},   // הפרס של הקווסט הראשון של ראש הכפר (quests.js)
@@ -62,6 +72,15 @@ const GEAR={
     silverBlade:{silver:8,iron:6,hide:6,ruby:1,coins:90},
     swiftBoots: {silver:4,hide:10,cloth:6,sapphire:1,coins:90},
     goldBow:    {gold:6,silver:4,venom:8,bolt:1,coins:160},
+    // נשקי הדמויות: מטות ושרביט מתמצית ואבק, גרזנים מעצם וקליפות, והאגדיים ממיתריל
+    ironStaff:  {iron:6,wood:10,essence:4,aquaC:1,coins:40},
+    ironAxe:    {iron:10,wood:6,bone:6,rubyC:1,coins:40},
+    silverWand: {silver:6,wood:6,essence:8,aqua:1,coins:90},
+    goldStaff:  {gold:6,silver:4,essence:10,shadow:2,aqua:1,coins:160},
+    goldAxe:    {gold:6,iron:8,plate:4,horn:1,ruby:1,coins:160},
+    starStaff:  {mythril:6,gold:4,essence:12,star:1,shadow:4,coins:300},
+    dragonBlade:{mythril:6,gold:4,horn:3,star:1,ruby:2,coins:300},
+    skyBow:     {mythril:6,gold:4,venom:8,star:1,bolt:2,coins:300},
     goldAmulet: {gold:8,essence:10,shadow:2,venom:4,aqua:1,horn:1,coins:160},
     crown:      {mythril:6,gold:6,horn:3,star:1,shadow:4,amberF:1,coins:300},
     // סטים: השומר מאבן, ברזל וקליפות (מהמחצבה), הצייד מכסף, נוצות ותמצית, עם רסיס ברק
