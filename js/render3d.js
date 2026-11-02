@@ -13,7 +13,7 @@
    הזירה נשארת zoom 1 ו-tilt 42 (התחום של אוראל). כדי לאמץ: arena ב-zoom וב-tilt. השחקן מכוון קרוב/רגיל/רחוק בהגדרות (CAM ב-camera.js).
    baseTilt: הגודל של הדמויות נקבע לפיו ולא משתנה בין מקומות. בזווית גבוהה יותר הן נראות קצת נמוכות, כמו כשמסתכלים מלמעלה.
    יותר שטח = יותר דברים לצייר, אז בטלפון חלש כדאי למדוד עם ?fps */
-const VIEW={zoom:{village:0.72,world:0.64},tilt:{arena:42,village:52,world:52},baseTilt:42, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52', world:'#2c4229', worldLine:'#6f8f55'};
+const VIEW={zoom:{village:0.76,world:0.68},tilt:{arena:42,village:34,world:34},baseTilt:42, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52', world:'#2c4229', worldLine:'#6f8f55'};
 
 /* מי לובש איזה מודל. h: גובה הדמות על המסך בפיקסלים. foot: כמה פיקסלים מתחת למרכז הלוגי הרגליים נוגעות בקרקע.
    props: חפצים ביד (bone: היד, ומיקום וסיבוב מקומיים כמו בחבילה המקורית). הטבעת מתחת לרגליים היא בצבע החולשה של האויב (e.weak, מ-data.js), ולא כתובה כאן. tint: צבע מ-TINT.

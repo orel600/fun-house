@@ -267,6 +267,14 @@
         <button class="lang" data-cam="far" data-t="cam.far"></button>
       </div>
     </div>
+    <!-- זווית המצלמה בעולם ובכפר: נמוכה / רגילה / מלמעלה (js/camera.js, CAM.angs). הזירה לא משתנה -->
+    <div class="sub gfx ang"><span data-t="angGroup"></span>
+      <div class="langs" role="group" data-ta="angGroup">
+        <button class="lang" data-ang="low" data-t="ang.low"></button>
+        <button class="lang" data-ang="mid" data-t="ang.mid"></button>
+        <button class="lang" data-ang="top" data-t="ang.top"></button>
+      </div>
+    </div>
     <!-- צללים מהשמש בכפר ובעולם: נדלקים לבד, ונכבים לבד בטלפון איטי (js/look-hd.js, HD.shadow). בחירה כאן מנצחת את האוטומטי -->
     <div class="sub shd"><span data-t="shadowGroup"></span><div class="langs" role="group" data-ta="shadowGroup"><button class="lang" data-shadow="1" data-t="shadow.on"></button><button class="lang" data-shadow="0" data-t="shadow.off"></button></div></div>
     <!-- פחות אפקטים: חצי חלקיקים, בלי שובל ונצנוץ, מספרי נזק קטנים (FX_LESS ב-js/juice.js, נשמר ב-SAVE) -->
@@ -353,6 +361,7 @@
 <script src="js/tiers.js"></script>
 <script src="js/wtension.js"></script>
 <script src="js/hunt.js"></script>
+<script src="js/foelore.js"></script>   <!-- שמות ואופי לאויבים בעולם: שם מעל הראש, כרטיס בפגישה ראשונה, בועות -->
 <script src="js/gear.js"></script>
 <script src="js/sets.js"></script>
 <script src="js/doll3d.js"></script>
@@ -394,8 +403,10 @@
 <script src="js/look-hd.js"></script>   <!-- מראה הכפר והעולם: שלב 1 לכולם, ?look=classic מכבה, ?look=hd מוסיף ניסויים (docs/visual-plan.md) -->
 <script src="js/ground.js"></script>   <!-- הקרקע בעולם: מפה מצוירת לכל אזור, שבילים, חוף וצל מגע (docs/plan-ground.md) -->
 <script src="js/tex3d.js"></script>   <!-- טקסטורה למבנים ולטבע בכפר ובעולם (אבן, קרשים, רעפים, סלע, עלים). ?tex=0 מכבה (docs/plan-building-textures.md) -->
+<script src="js/ambient3d.js"></script>   <!-- חלקיקים לכל אזור בכפר ובעולם (אבקנים, גחלים, נצנוצים). ?amb=0 מכבה (docs/visual-plan.md, שלב 4) -->
 <script src="js/wisps.js"></script>   <!-- אורות מרחפים במקום החפצים המסתובבים, בעולם ובכפר (docs/plan-fx.md) -->
 <script src="js/arena-look.js"></script>   <!-- מראה הזירה: רצפת אבן, תאורה ואובך כמו בעולם, חותמות לסוגי הנזק, רונות שפועמות וכניסת הבוס -->
+<script src="js/vfx.js"></script>   <!-- אופי: אווירה לכל אזור, שעה ביום, אור סביב הגיבור וקו אור בקצוות שלו (VFX). ?vfx=off מכבה -->
 <script src="js/render.js"></script>
 <script src="js/feed.js"></script>   <!-- פיד הודעות בצד, בעולם ובכפר (docs/plan-hud.md פרק 6) -->
 <script src="js/moba-kits.js"></script>   <!-- משחקי השאול: מובה 3 על 3 עם בוטים (docs/moba.md) -->
