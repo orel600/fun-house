@@ -2008,6 +2008,23 @@ function worldBot(m,L,god){
   check(hu.same&&hu.seen&&hu.spawn&&hu.card&&hu.loot&&hu.done&&hu.saved&&hu.once,
     'מבוקש היום: '+(hu.same?'אותו מבוקש לאותו יום':'משתנה באותו יום')+(hu.seen?', רק באזורים שהתגלו':', באזור סגור')+(hu.spawn?', הופיע חזק עם שם':', לא הופיע')+(hu.card?', כרטיס ביומן':', אין כרטיס')+
     (hu.loot?', שלל':', בלי שלל')+(hu.done?', הופל':', לא נרשם')+(hu.saved?', נשמר':', לא נשמר')+(hu.once?', פעם ביום':', חוזר באותו יום'));
+  // שמות ואופי לאויבים (foelore.js): לכל סוג בעולם שם, שם אישי לעלית, כרטיס בפגישה ראשונה שנסגר לבד ונשמר, בועה מעל הראש
+  const flo=await page.evaluate(()=>{
+    const o={},m0=JSON.stringify(SAVE.lore||null);SAVE.lore=null;FLC.q=[];flCardNext();   // כרטיסים שנשארו בתור מהמשחק של הבוט
+    const types=[...new Set([WORLD,...Object.values(WORLD.regions||{})].flatMap(R=>(R.foes||[]).map(G=>G.type)))];
+    o.missing=types.filter(k=>!flName(k)||/^fl\./.test(flName(k))||!flLine(k));
+    o.elite=flPersonal(12345);o.eliteOk=/ /.test(o.elite)&&flPersonal(12345)===o.elite;
+    enterWorld('home');enemies=[];
+    const e=addEnemy('grunt',P.x+90,P.y,1);e.home=0;e.affix='fast';foeLoreUpdate(0.01);
+    o.pname=!!e.pname;o.card=flCardOn()&&!$('flCard').hidden&&$('flCard').textContent.includes(flName('grunt'));o.met=!!(SAVE.lore&&SAVE.lore.met.grunt);
+    o.say=!!(S.wd.flSay&&S.wd.flSay.txt);
+    for(let i=0;i<70;i++)foeLoreUpdate(0.1);o.closed=!flCardOn()&&$('flCard').hidden;
+    const e2=addEnemy('grunt',P.x+80,P.y,1);e2.home=0;foeLoreUpdate(0.01);o.once=!flCardOn();
+    o.saved=!!((JSON.parse(localStorage.getItem(SAVE_STORE.key)).lore||{}).met||{}).grunt;
+    enemies=[];enterVillage();SAVE.lore=JSON.parse(m0);return o});
+  check(!flo.missing.length&&flo.eliteOk&&flo.pname&&flo.card&&flo.met&&flo.say&&flo.closed&&flo.once&&flo.saved,
+    'שמות לאויבים: '+(flo.missing.length?'חסר שם ל-'+flo.missing.join(','):'לכל סוג בעולם יש שם')+', עלית: "'+flo.elite+'"'+(flo.pname?'':' (לא קיבל שם)')+(flo.card?', כרטיס פגישה ראשונה':', אין כרטיס')+
+    (flo.closed?' שנסגר לבד':' שלא נסגר')+(flo.once?', פעם אחת':', חוזר')+(flo.saved?', נשמר':', לא נשמר')+(flo.say?', בועה':', בלי בועה'));
   // החיה מריחה ומובילה (petscent.js): מרחרחת, רצה למקום ומחכה עם חץ, תיבה נותנת שלל כשמגיעים, אויב מיוחד נותן שלל כשנופל, ומי שלא בא היא מוותרת
   const ps=await page.evaluate(()=>{
     const o={};enterWorld('home');const p=S.pet||petMake();p.st='idle';const pk=SCENT.pick;
