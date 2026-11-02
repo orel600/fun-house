@@ -71,6 +71,14 @@ const LOOK3D={
   // לב הצל (פרק 6): צללים כהים של אבירים ורוחות, והצל עצמו: ברבריאן ענק כמעט שחור עם מטה
   shadeknight:{model:'warrior',h:64,foot:14,tint:'#3A2A5C',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   shadewisp:{model:'skelMage',h:44,foot:11,float:14,tint:'#5B3F8C',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  /* מפלצות בזירה (Quaternius Ultimate Monsters, build3d.js MONSTERS): מודל ואנימציות משלהן, בשמות mon_<שם>_<אנימציה>.
+     גושים ומרחפים מצטרפים לגושים ולטפטוף ב-spawn.js. ייתי ושד: אויבי-על בתחנות (run.js) */
+  slime:{model:'mon_slime',h:34,foot:10,anim:{run:'mon_slime_Walk',die:'mon_slime_Death'}},
+  mushnub:{model:'mon_mushnub',h:40,foot:11,anim:{run:'mon_mushnub_Walk',die:'mon_mushnub_Death'}},
+  goleling:{model:'mon_goleling',h:46,foot:12,float:10,anim:{run:'mon_goleling_Fast_Flying',die:'mon_goleling_Death'}},
+  ghost:{model:'mon_ghost',h:50,foot:12,float:12,anim:{run:'mon_ghost_Fast_Flying',die:'mon_ghost_Death'}},
+  yeti:{model:'mon_yeti',h:70,foot:15,anim:{run:'mon_yeti_Walk',die:'mon_yeti_Death'}},
+  demon:{model:'mon_demon',h:70,foot:15,anim:{run:'mon_demon_Walk',die:'mon_demon_Death'}},
   shade:{model:'barbarian',h:100,foot:20,tint:'#4B2A7A',props:{staff:{prop:'staff',...HAND_R,tint:'#9C6BFF'}},anim:{run:'Running_B',die:'Death_A'}},
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle_A',charge:'Melee_2H_Attack_Spin',cast:'Melee_2H_Attack_Chop',taunt:'Taunt',die:'Death_A'}},
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. בלי קסדה הוא נמוך יותר, אז h קטן כדי שהגוף יהיה בגודל של האביר.
@@ -271,9 +279,10 @@ async function init3d(){
       // משאירים רק מה שמזיז את הגוף בפועל: סיבוב של עצמות הגוף והידיים, ותזוזה של האגן והרגליים.
       // עצמות העזר (IK, control) וקנה המידה לא משנים כלום במשחק, ומכפילים פי ארבעה את העבודה בכל פריים
       // חיות (dog_): כל הסיבובים חוץ מעצמות העזר של הכפות, ו-Body זז (קפיצה, ישיבה)
-      const dog=a0.name.startsWith('dog_');
+      // מפלצות (mon_, Quaternius): כל הסיבובים והתזוזות. הגוש קופץ בתזוזה של Body, והרגליים של הגדולות הן עצמות נפרדות שזזות לבד
+      const dog=a0.name.startsWith('dog_'),mon=a0.name.startsWith('mon_');
       const a=new THREE.AnimationClip(a0.name,a0.duration,a0.tracks.filter(t=>{const [n,pr]=t.name.split('.');
-        return dog?(pr==='quaternion'&&!/^(IK|FF|Pole)/.test(n)||n==='Body'&&pr==='position'):!/IK|control/.test(n)&&(pr==='quaternion'||pr==='position'&&/^(root|hips|upperleg)/.test(n))}));
+        return mon?pr==='quaternion'||pr==='position':dog?(pr==='quaternion'&&!/^(IK|FF|Pole)/.test(n)||n==='Body'&&pr==='position'):!/IK|control/.test(n)&&(pr==='quaternion'||pr==='position'&&/^(root|hips|upperleg)/.test(n))}));
       R3D.clips[a.name]=a;
       R3D.clips[a.name+'@up']=new THREE.AnimationClip(a.name+'@up',a.duration,a.tracks.filter(t=>UPPER.test(t.name)));
       R3D.clips[a.name+'@low']=new THREE.AnimationClip(a.name+'@low',a.duration,a.tracks.filter(t=>!UPPER.test(t.name)))}
