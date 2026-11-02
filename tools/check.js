@@ -895,6 +895,16 @@ function worldBot(m,L,god){
     try{const w0=WISPS.stat.draws;drawOrbits();r.draw=WISPS.stat.draws===w0?true:'האורות (wisps.js) מצוירים בזירה'}catch(err){r.draw=String(err)}   // בזירה הציור הישן, לא האורות
     e1.dead=e2.dead=true;enemies=enemies.filter(e=>!e.dead);eb=eb.filter(b=>b.life>0);
     SAVE.gear.orbit=bak.orb;SAVE.hero.level=bak.lv;S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.orb=bak.o;P.hp=bak.hp;P.inv=bak.inv;S.t=bak.t;HITFX.crit=c;return r});
+  // חפצים משולבים (orbit.js, ORBIT.fuse): חפץ אחד של אש וכפור הוא חפץ אחד על המעגל, שורף ומאט, ובכוח 60% לכל חלק. שלושה חלקים: 45%
+  const fu=await page.evaluate(()=>{const bak={orb:SAVE.gear.orbit.slice(),lv:SAVE.hero.level,vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,o:S.orb,t:S.t},c=HITFX.crit,r={};
+    try{HITFX.crit=0;S.vil=S.wd=S.room=null;S.mode='play';SAVE.hero.level=99;SAVE.gear.orbit=['emberFrostOrb'];
+      orbitReset();orbitUpdate(0);r.n=S.orb.types.length;const p=S.orb.pos[0],e=addEnemy('grunt',p.x,p.y);e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;
+      orbitUpdate(0);r.both=e.max-e.hp>skBase()*ORBIT.types.attack.dmg*ORBIT.fuse[2]*1.01;e.dead=true;enemies=enemies.filter(x=>!x.dead);
+      SAVE.gear.orbit=['trioOrb'];orbitReset();orbitUpdate(0);r.luck=Math.abs(orbitLuck()-1-ORBIT.types.luck.loot*ORBIT.fuse[3])<1e-9;
+      r.facts=gOrbFacts(['attack','control']).length===2&&gOrbFacts(['attack','control'])[0].v===Math.round(ORBIT.types.attack.dmg*60);
+      drawOrbits();
+    }catch(err){r.err=String(err&&err.stack||err)}
+    SAVE.gear.orbit=bak.orb;SAVE.hero.level=bak.lv;S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.orb=bak.o;S.t=bak.t;HITFX.crit=c;return r});
   // ברק אלוהי (divine.js): אחרי שני אויבי-על מוכן, הכפתור מפעיל 5 שניות: כל החמישה מסתובבים, ברק פוגע באויב קרוב, ובסוף הכל חוזר
   const dvr=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,dv:S.dv,o:S.orb,orb:SAVE.gear.orbit.slice(),t:S.t},r={};
     S.vil=S.wd=S.room=null;S.mode='play';SAVE.gear.orbit=[];divineReset();orbitReset();
@@ -2026,6 +2036,7 @@ function worldBot(m,L,god){
   const hits=L.hits||{},nTypes=Object.keys(hits).filter(k=>hits[k]>0).length;
   check(cb.shock&&cb.frozen&&cb.stun&&cb.melt>=1.9&&cb.bossStun&&cb.plainIce,'קומבו: '+[cb.shock?'רטוב+ברק קפץ לרטוב רחוק':'חשמול לא קפץ',cb.frozen?'רטוב+קרח קפא ולא זז':'לא קפא',
     cb.stun?'קפוא+אדמה = הלם':'אין הלם','אש+קרח x'+cb.melt+(cb.melt>=1.9?'':' (צריך x2)'),cb.bossStun?'בוס בהלם פעם אחת ואז חסין':'הלם בבוס לא עבד',cb.plainIce?'קרח לבד לא מקפיא':'קרח לבד הקפיא'].join(', '));
+  check(fu.n===1&&fu.both&&fu.luck&&fu.facts&&!fu.err,'חפצים משולבים: '+[fu.n===1?'חפץ אחד על המעגל':'לא חפץ אחד',fu.both?'שני החלקים פגעו':'לא שני החלקים',fu.luck?'45% לכל חלק בשלושה':'המספרים לא נכונים',fu.facts?'המסך מראה':'המסך לא מראה',fu.err||''].join(', '));
   check(ob.fire&&ob.slow&&ob.block&&ob.shield&&ob.shieldOnce&&ob.heal&&ob.crit>0&&ob.luck>1&&ob.draw===true,'חפצים מסתובבים ('+ob.types+'): '+[ob.fire?'אש שורפת':'אש לא פגעה',ob.slow?'כפור מאט':'כפור לא האט',
     ob.block?'אבן עצרה ירייה':'ירייה עברה',ob.shield?(ob.shieldOnce?'מגן בלע מכה אחת':'מגן בלע יותר ממכה'):'מגן לא בלע',ob.heal?'עלה ריפא':'אין ריפוי',
     'תלתן: קריטי +'+ob.crit+', שלל x'+ob.luck,ob.draw===true?'מצויר':'ציור נכשל: '+ob.draw].join(', '));

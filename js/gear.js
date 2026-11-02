@@ -47,7 +47,11 @@ const GEAR={
     stoneOrb:   {slot:'orbit',tier:0,type:'defense'},
     frostOrb:   {slot:'orbit',tier:0,type:'control'},
     leafOrb:    {slot:'orbit',tier:0,type:'support'},
-    cloverOrb:  {slot:'orbit',tier:0,type:'luck'}
+    cloverOrb:  {slot:'orbit',tier:0,type:'luck'},
+    // משולבים (אוראל): types = כמה סוגים בחפץ אחד, והכוח של כל חלק לפי ORBIT.fuse. נדירים, נופלים כשלל רגיל (לא נמכרים בחנות)
+    emberFrostOrb:{slot:'orbit',tier:3,type:'attack',types:['attack','control']},
+    stoneLeafOrb: {slot:'orbit',tier:3,type:'defense',types:['defense','support']},
+    trioOrb:      {slot:'orbit',tier:4,type:'attack',types:['attack','control','luck']}
   },
   gift:['oakSword','oakBow','boneCharm'],   // פעם אחת, בביקור הראשון בכפר
   /* יצירה בנפחייה: מה עולה כל פריט. המתכת של השכבה, וחומרים מיצורים, מבוסים ואבנים, כדי שלכל משאב יהיה שימוש.
@@ -107,7 +111,7 @@ const gName=id=>T('it.'+gBase(id))+(gPlus(id)?' \u2066+'+gPlus(id)+'\u2069':'');
 function gStats(id){const s=(gItem(id)||{}).stats||{},k=ageMult(gPlus(id)),o={};for(const x in s)o[x]=Math.round(s[x]*k*10)/10;
   const p=powGive(gPow(id));for(const x in p)o[x]=(o[x]||0)+p[x];return o}
 const gTint=id=>(gItem(id).look||{}).tint||GEAR.tiers[gItem(id).tier].col;
-const gIcon=id=>{const it=gItem(id);return it.icon||GEAR.orbit[it.type]};
+const gIcon=id=>{const it=gItem(id);return it.icon||(it.types||[it.type]).map(t=>GEAR.orbit[t]).join('')};
 /* תמונה לפריט בממשק (HTML), מ-Creative Claw (icons/ui/gear, נחתך עם tools/slice-icons.py). בלי תמונה: האימוג'י. על הקנבס תמיד האימוג'י (gIcon) */
 const GEAR_PIC={oakSword:1,ironSword:1,silverBlade:1,oakBow:1,ironBow:1,goldBow:1,oakStaff:1,boneCharm:1,ironRing:1,starterBoots:1,swiftBoots:1,goldAmulet:1,crown:1,wardenHammer:1,wardenRing:1,wardenCharm:1,wardenBoots:1,stormBow:1,stormRing:1,stormFeather:1,stormBoots:1};
 const gPic=id=>GEAR_PIC[gBase(id)]?'<img class="ri" src="icons/ui/gear/'+gBase(id)+'.png" alt="">':gIcon(id);
@@ -226,8 +230,9 @@ const gRarCol=k=>RES.rarity[Math.min(gRar(k),RES.rarity.length-1)].col;
 const gSign=(k,v)=>'<bdi dir="ltr">'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T(GEAR.stats[k].t||'st.'+k);
 /* ---- חפץ מסתובב: מה הוא נותן, מהמספרים של ORBIT.types (orbit.js, של אוראל). רק תצוגה: לא משנה איך הוא עובד בזירה.
    כל שורה: k (המפתח, להשוואה), v (המספר), ו-b לשורה בלי מספר (עוצר יריות). הטקסט ב-lang.js תחת 'orb.f.<k>' ---- */
-function gOrbFacts(type){
-  const D=ORBIT.types[type]||{},out=[],pc=x=>Math.round(x*100);
+function gOrbFacts(type,kk){
+  if(Array.isArray(type)){const k=ORBIT.fuse[type.length]||1,out=[];for(const t of type)for(const f of gOrbFacts(t,k))if(!out.some(x=>x.k===f.k))out.push(f);return out}
+  const D=ORBIT.types[type]||{},out=[],pc=x=>Math.round(x*100*(kk||1));
   if(D.dmg)out.push({k:D.dt,v:pc(D.dmg)});   // אחוז מהנזק של הנשק, בסוג הנזק שלו
   if(D.block)out.push({k:'block',v:1,b:1});
   if(D.shield)out.push({k:'shield',v:1,b:1});
@@ -239,7 +244,7 @@ function gOrbFacts(type){
 const gOrbLine=(f,v)=>f.b?T('orb.f.'+f.k):'<bdi dir="ltr">'+(v>0?'+':'')+v+'%</bdi> '+T('orb.f.'+f.k);
 // lite: חפץ מסתובב מהתרמיל, כשההשוואה שמתחת כבר מראה את כל מה שהוא נותן (▲), כדי שהכל ייכנס בטור בלי גלילה
 function gStatsHtml(id,lite){const it=gItem(id),s=gStats(id);
-  if(it.slot==='orbit')return '<p class="gorb">'+T('orb.'+it.type)+' · '+T('orb.do.'+it.type)+'</p>'+(lite?'':'<ul class="gstats">'+gOrbFacts(it.type).map(f=>'<li>'+gOrbLine(f,f.v)+'</li>').join('')+'</ul>');
+  if(it.slot==='orbit')return '<p class="gorb">'+(it.types||[it.type]).map(t=>T('orb.'+t)).join(' + ')+(it.types?'':' · '+T('orb.do.'+it.type))+'</p>'+(lite?'':'<ul class="gstats">'+gOrbFacts(it.types||it.type).map(f=>'<li>'+gOrbLine(f,f.v)+'</li>').join('')+'</ul>');
   return '<ul class="gstats">'+(it.w?'<li class="gdmg">'+wRangeTxt(wItemAvg(id),it.w)+'</li>':'')+Object.keys(s).map(k=>'<li>'+gSign(k,s[k])+'</li>').join('')+'</ul>'}
 // מה ישתנה אם לובשים: לכל סטט, ההפרש מול מה שיוצא מהמשבצת, עם חץ למעלה או למטה
 function gCompare(id,old){
@@ -252,7 +257,7 @@ function gCompare(id,old){
 }
 // חפץ מסתובב מול מה שיוצא מהמשבצת (או משבצת ריקה): מה מתווסף ▲ ומה הולך ▼
 function gOrbCompare(id,old){
-  const a=gOrbFacts(gItem(id).type),b=old&&gItem(old)?gOrbFacts(gItem(old).type):[],ks=[...new Set([...a,...b].map(f=>f.k))];
+  const a=gOrbFacts(gItem(id).types||gItem(id).type),b=old&&gItem(old)?gOrbFacts(gItem(old).types||gItem(old).type):[],ks=[...new Set([...a,...b].map(f=>f.k))];
   const v=(l,k)=>(l.find(f=>f.k===k)||{v:0}).v,ds=ks.map(k=>({f:[...a,...b].find(f=>f.k===k),d:v(a,k)-v(b,k)})).filter(x=>x.d);
   if(!ds.length)return '<p class="dim">'+T('gear.same')+'</p>';
   return '<p class="cmp">'+ds.map(x=>'<span class="'+(x.d>0?'up':'down')+'">'+(x.d>0?'▲':'▼')+' '+gOrbLine(x.f,x.d)+'</span>').join('')+'</p>';

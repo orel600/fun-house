@@ -914,6 +914,9 @@ const TEXT={
   'it.frostOrb':{he:'כדור כפור',en:'Frost Orb'},
   'it.leafOrb':{he:'כדור עלים',en:'Leaf Orb'},
   'it.cloverOrb':{he:'כדור תלתן',en:'Clover Orb'},
+  'it.emberFrostOrb':{he:'כדור אש וכפור',en:'Fire & Frost Orb'},
+  'it.stoneLeafOrb':{he:'כדור אבן ועלה',en:'Stone & Leaf Orb'},
+  'it.trioOrb':{he:'כדור שלושת האורות',en:'Triple Light Orb'},
   // המחסן בכפר (stash.js)
   'vil.stash':{he:'מחסן',en:'Stash'},
   'vil.info.stash':{he:n=>'מקום בטוח לשלל: עד '+n+' יחידות',en:n=>'A safe place for loot: up to '+n+' units'},
