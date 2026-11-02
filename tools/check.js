@@ -234,7 +234,7 @@ function villageBot(m,L){
       const st=JSON.parse(localStorage.getItem(SAVE_STORE.key)).hero.style;L.style={};for(const k in st)L.style[k]=Math.round(st[k])}   // סגנון המשחק, כפי שנשמר
     else if(L.boots==null){   // פרס הנעליים: נלבשות מיד, והמהירות עולה
       document.getElementById('qBtn').click();const b=document.querySelector('#qLog [data-q="boots"][data-act="claim"]'),sp=P.speed;
-      if(b)b.click();const k=1+GEAR.items.starterBoots.stats.speed/100;
+      const s0=gearStats().speed||0;if(b)b.click();const k=Math.round((100+s0+GEAR.items.starterBoots.stats.speed)/(100+s0)*1000)/1000;   // אחוזי מהירות מתחברים: עם עוד מהירות (זריזות, עץ) הנעליים מוסיפות קצת פחות מ-8%
       L.boots={claimed:!!b&&SAVE.quests.done.boots===1,worn:SAVE.gear.boots.includes('starterBoots'),k:Math.round(P.speed/sp*1000)/1000,want:k,
         saved:JSON.parse(localStorage.getItem(SAVE_STORE.key)).gear.boots.includes('starterBoots'),sp:Math.round(P.speed)};
       document.querySelector('#qLog [data-act="close"]').click()}
