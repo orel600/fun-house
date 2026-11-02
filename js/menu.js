@@ -10,6 +10,7 @@ const MENU={
     {id:'qBtn',win:'qLog',open:()=>questLogOpen(true),close:()=>questLogOpen(false),badge:'qBadge'}, // קווסטים (quests.js)
     {id:'bookBtn',win:'bookWin',open:()=>bookOpen(true),close:()=>bookOpen(false),badge:'bBadge'},   // ספר ההרפתקאות (book.js)
     {id:'wMapBtn',win:'wMap',open:()=>wmapOpen(true),close:()=>wmapOpen(false),when:()=>!!(S&&S.wd)}, // מפה, רק בעולם (worldmap.js)
+    {id:'mbTab',win:'ovMoba',open:()=>mobaOpen(),close:()=>mobaPickClose()},                        // משחקי השאול (moba.js)
     {id:'setBtn',win:'ovSound',open:()=>soundOpen(),close:()=>soundClose()},                         // הגדרות וצלילים (audio.js)
   ],
   last:'gearBtn',   // ☰ פותח את הלשונית האחרונה שהייתה פתוחה

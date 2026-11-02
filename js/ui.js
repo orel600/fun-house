@@ -12,6 +12,7 @@ const WINS=[
   {id:'ovWelcome',close:()=>welcomeClose(),backdrop:true},   // "בזמן שלא היית" (welcome.js)
   {id:'ovDaily',close:()=>dailyClose(),backdrop:true},
   {id:'ovVisit',close:()=>visitClose(),backdrop:true},
+  {id:'ovMoba',close:()=>mobaPickClose(),backdrop:true},   // משחקי השאול: בחירת דמות וסוף (moba.js)
   {id:'ovEnd',close:()=>storyEndClose(),backdrop:true},   // "תודה ששיחקת" בסוף העלילה (story.js)
   {id:'npcDlg',close:()=>S.wd?wnpcTalk(null):npcTalk(null),outside:true},
   {id:'qLog',close:()=>questLogOpen(false),outside:true},

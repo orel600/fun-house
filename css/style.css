@@ -1168,3 +1168,46 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 /* המטרה הבאה (guide.js) והמעקב: אותה גלולה כהה עם קו פליז */
 .guide button{background:linear-gradient(#262E46eb,#161B2Aeb);border-color:var(--brass);box-shadow:inset 0 1px 0 #ffffff14,0 3px 6px #0009}
 .guide button:active{scale:.96}
+
+/* ---- משחקי השאול: מובה 3 על 3 (js/moba.js). ממשק הזירה מוסתר (body.mb) ---- */
+.mb .hud,.mb .swap,.mb #skills,.mb .divine,.mb #muteBtn{display:none!important}
+body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
+.mbhud{position:fixed;inset:0;z-index:3;pointer-events:none}
+.mbtop{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;
+  background:rgba(18,22,36,.82);border-radius:12px;padding:3px 16px;font:800 var(--t3) var(--body);color:var(--chalk);direction:ltr}
+.mbtop span{font-size:var(--t2);color:var(--dim)}
+.mbs0{color:#4C8DFF}.mbs1{color:#FF5A5A}
+.mbme{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);inset-inline-start:calc(env(safe-area-inset-left,0px) + 12px);display:flex;gap:8px;align-items:center}
+.mblv{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(18,22,36,.85);border:2px solid var(--gold);color:var(--gold);font:800 17px var(--body)}
+.mbbars{width:min(150px,22vw);display:flex;flex-direction:column;gap:4px}
+.mbhp,.mbxp{height:10px;border-radius:5px;background:rgba(18,22,36,.85);overflow:hidden}
+.mbxp{height:6px}
+.mbhp i,.mbxp i{display:block;height:100%;width:0;background:#7BD88F}
+.mbxp i{background:var(--gold)}
+.mbresp{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);margin:0;font:800 var(--t4) var(--body);color:var(--chalk);background:rgba(18,22,36,.75);padding:8px 18px;border-radius:12px}
+.mbexit{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);inset-inline-end:calc(env(safe-area-inset-right,0px) + 12px);pointer-events:auto}
+.mbski{font-size:30px;line-height:1}
+.mbskb:first-child .mbski{font-size:36px}
+.mblock{position:absolute;inset:0;display:grid;place-items:center;font:800 24px var(--body);color:var(--chalk);z-index:1}
+.mbwin{width:min(780px,94vw);max-height:92vh;overflow:auto}
+.mbgoal{margin:6px 0 10px;color:var(--dim);font:600 var(--t1) var(--body)}
+.mbkits{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:620px){.mbkits{grid-template-columns:repeat(2,1fr)}}
+.mbkit{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px;border-radius:14px;border:2px solid var(--dt);background:rgba(18,22,36,.85);color:var(--chalk);cursor:pointer;font:inherit}
+.mbkit:active{transform:scale(.96)}
+.mbki{font-size:34px;line-height:1.1}
+.mbkn{font:800 var(--t3) var(--body)}
+.mbkit small{color:var(--dt);font:700 var(--t1) var(--body);text-align:center}
+.mbkit ul{list-style:none;margin:4px 0 0;padding:0;font:500 var(--t1) var(--body);display:flex;flex-direction:column;gap:3px;align-self:stretch;text-align:start}
+.mbkit em{color:var(--gold);font-style:normal}
+.mbend{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mbend h4{margin:4px 0;font:800 var(--t2) var(--body)}
+.mbend ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
+.mbend li{display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.05);border-radius:8px;padding:4px 8px;font:600 var(--t1) var(--body)}
+.mbend li.me{outline:2px solid var(--gold)}
+.mbend li small{color:var(--dim)}
+.mbend li span{margin-inline-start:auto}
+.mbend li span+span{margin-inline-start:8px;color:var(--dim)}
+.mbkd{color:var(--dim);font:500 var(--t1) var(--body);margin:6px 0}
+.mbbtns{display:flex;gap:10px;justify-content:flex-end;align-items:center}
+.mbbtns .go{padding:12px 22px}
