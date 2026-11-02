@@ -13,8 +13,10 @@ const POWERS={
   list:{
     fury:   {slot:'weapon',icon:'🔥',give:{sdmg:15},  cost:{coins:60,iron:3}},
     hunt:   {slot:'weapon',icon:'🎯',give:{gdmg:15},  cost:{coins:60,iron:3}},
+    elem:   {slot:'weapon',icon:'💠',give:{combo:15,sdmg:5,gdmg:5},cost:{coins:70,iron:3}},   // יסודות: נזק שילובים, וקצת נזק
     haste:  {slot:'weapon',icon:'⚡',give:{aspd:8},   cost:{coins:80,silver:2}},
     keen:   {slot:'acc',   icon:'💥',give:{crit:5},   cost:{coins:70,silver:2}},
+    surge:  {slot:'acc',   icon:'🌀',give:{combo:25}, cost:{coins:70,silver:2}},   // נזק שילובים בעולם (wcombo.js)
     fortune:{slot:'acc',   icon:'🍀',give:{loot:12},  cost:{coins:70,gold:1}},
     mend:   {slot:'acc',   icon:'💚',give:{regen:1},  cost:{coins:50,stone:10}},
     wind:   {slot:'boots', icon:'🌬️',give:{speed:8},  cost:{coins:50,wood:10}},
