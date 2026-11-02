@@ -1788,13 +1788,24 @@ function worldBot(m,L,god){
     o.down=!!t('starterBoots')&&!!t('starterBoots').querySelector('.gmk.down');
     const coins=SAVE.bag.coins||0,l=gSellList();document.querySelector('#gActs [data-act="sell"]').click();
     o.ask=!!document.querySelector('#gDetail [data-act="sellYes"]')&&(SAVE.bag.starterBoots||0)>0;
+    // ניר 2.11: "המכירה נתקעת". הרשימה נגללת באצבע (לא touch-action:none), נגיעה בפריט שומרת אותו ומחזירה אותו, ואחרי המכירה יוצאים ממצב מכירה
+    const skq=k=>document.querySelector('#gDetail [data-sk="'+k+'"]'),sk0=document.querySelector('#gDetail [data-sk]'),skk=sk0&&sk0.dataset.sk;
+    o.scroll=!!sk0&&getComputedStyle(sk0).touchAction==='pan-y'&&getComputedStyle(document.querySelector('#gDetail .gsell')).overflowY==='auto';
+    if(skk){skq(skk).click();o.keep=skq(skk).getAttribute('aria-pressed')==='false'&&!gSellPick()[skk];skq(skk).click();o.keep=o.keep&&skq(skk).getAttribute('aria-pressed')==='true'&&!!gSellPick()[skk]}
     document.querySelector('#gDetail [data-act="sellYes"]').click();
+    o.out=!GUI.sell&&!document.querySelector('#gDetail [data-act="sellYes"]')&&!$('ovGear').hidden;
+    // חפץ מסתובב (gOrbFacts): בפרטים רואים מה הוא נותן, וההשוואה מראה ▲ ולא "בלי שינוי"
+    SAVE.gear.orbit=SAVE.gear.orbit.map(()=>null);bagAdd('cloverOrb');document.querySelector('#gTabs [data-tab="items"]').click();
+    const ob=document.querySelector('#gItems [data-id="cloverOrb"]');if(ob)ob.click();const ot=$('gDetail').innerText;
+    o.orb=!!ob&&/▲/.test(ot)&&!ot.includes(T('gear.same'))&&ot.includes(T('orb.f.crit'))&&ot.includes(T('orb.f.loot'));o.orbTxt=ot.replace(/\s+/g,' ').slice(0,90);
     o.sold=!SAVE.bag.starterBoots&&SAVE.bag.wardenBoots===1&&!!SAVE.bag.swiftBoots===false&&(SAVE.bag.coins||0)>coins;o.got=(SAVE.bag.coins||0)-coins;o.list=Object.keys(l).join(',');
     gearClose();const g1=gearStats(),k=JSON.parse(keep);SAVE.bag=k.bag;SAVE.gear=k.gear;SAVE.gseen=k.seen||undefined;gearLive(g1);celebrate=c0;saveNow();return o});
-  check(!bg.bad.length&&bg.chips&&bg.sorted&&bg.up&&bg.new&&bg.seen&&bg.filter&&bg.best&&bg.down&&bg.ask&&bg.sold,
+  check(!bg.bad.length&&bg.chips&&bg.sorted&&bg.up&&bg.new&&bg.seen&&bg.filter&&bg.best&&bg.down&&bg.ask&&bg.sold&&bg.scroll&&bg.keep&&bg.out&&bg.orb,
     'ציוד ותרמיל: '+(bg.bad.length?'פריט נדיר חלש מדי: '+bg.bad.join(', '):'כל נדירות חזקה מזו שמתחת')+(bg.chips?', מסננים':', אין מסננים')+(bg.sorted?', ממוין':', לא ממוין')+
     (bg.up&&bg.down?', ▲/▼':', חסר ▲/▼')+(bg.new&&bg.seen?', נקודה לחדש':', הנקודה לא עובדת')+(bg.filter?'':', המסנן לא מסנן')+(bg.best?', ללבוש הכי טוב':', "הכי טוב" לא עבד')+
-    (bg.ask?', אישור בחלון':', בלי אישור')+(bg.sold?', נמכרו ('+bg.list+', +'+bg.got+')':', המכירה לא עבדה ('+bg.list+')'));
+    (bg.ask?', אישור בחלון':', בלי אישור')+(bg.sold?', נמכרו ('+bg.list+', +'+bg.got+')':', המכירה לא עבדה ('+bg.list+')')+
+    (bg.scroll?', הרשימה נגללת':', הרשימה לא נגללת באצבע')+(bg.keep?', נגיעה שומרת פריט':', נגיעה בפריט לא עובדת')+(bg.out?', יוצאים ממצב מכירה':', נתקע במצב מכירה')+
+    (bg.orb?', חפץ מסתובב מראה מה הוא נותן':', חפץ מסתובב בלי סטטים ("'+bg.orbTxt+'")'));
   // שומרים חוזרים (story.js, STORY.rematch): כפתור 🔔 ליד פנס דולק רק אחרי הסוף ובדרגה אמיץ ומעלה. השומר יוצא חזק יותר, נופל שלל, ופעם ביום לכל שומר
   const rm=await page.evaluate(()=>{
     const o={},st0=JSON.stringify(SAVE.story),ti0=JSON.stringify(SAVE.tier||null),L=STORY.lanterns.earth,vis=()=>{worldUpdate(0.016);return !$('wardBtn').hidden};
