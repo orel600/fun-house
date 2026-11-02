@@ -26,7 +26,7 @@ function orbitParts(){if(divineOn())return Object.keys(ORBIT.types).map((t,g)=>(
   const out=[];for(let i=0;i<gOpen('orbit');i++){const it=gItem(gGet('orbit',i));if(!it)continue;
     const ts=it.types||[it.type],k=ts.length>1?ORBIT.combo.share[ts.length]:1;ts.forEach(t=>out.push({t,k,g:i}))}return out}
 const orbitTypes=()=>orbitParts().map(p=>p.t);
-// חפץ משולב שנופל מבוס (או null). נקרא מ-loot.js ו-gear.js
+// חפץ משולב שנופל מבוס בזירה (או null). נקרא מ-gear.js. בעולם של ניר לא נופל (אוראל, 2.11: רק בזירה)
 function orbitComboRoll(){
   if(Math.random()>=ORBIT.combo.bossDrop)return null;
   const ids=Object.keys(GEAR.items).filter(id=>GEAR.items[id].types),W=ORBIT.combo.w;
