@@ -421,6 +421,8 @@ const TEXT={
   'daily.got':{he:s=>'מתנה: '+s,en:s=>'Gift: '+s},
   // "בזמן שלא היית" (welcome.js)
   'wel.title':{he:'בזמן שלא היית',en:'While you were away'},
+  'wel.prodAll':{he:n=>'הייצור בכפר ('+n+' מבנים)',en:n=>'Village production ('+n+' buildings)'},
+  'wel.questAll':{he:n=>n+' קווסטים הושלמו',en:n=>n+' quests complete'},
   'wel.gift':{he:n=>'מתנה מ'+n,en:n=>'Gift from '+n},
   'wel.all':{he:'אסוף הכל',en:'Collect all'},
   'wel.done':{he:'הכל נאסף!',en:'All collected!'},
@@ -672,6 +674,7 @@ const TEXT={
   'ch.title':{he:'אתגר יומי',en:'Daily challenge'},
   'ch.sub':{he:'חוק מיוחד בעולם, עד חצות',en:'A special rule in the world, until midnight'},
   'ch.goal':{he:n=>'להפיל '+n+' אויבים בעולם',en:n=>'Defeat '+n+' enemies in the world'},
+  'ch.intro':{he:'נפתח: אתגר יומי! כל יום חוק אחר בעולם, ופרס ביומן',en:'Unlocked: daily challenge! A new rule in the world each day, and a reward in the log'},
   'ch.done':{he:'האתגר היומי הושלם! הפרס מחכה ביומן בכפר',en:'Daily challenge complete! Your reward waits in the village log'},
   'ch.claimed':{he:'פרס האתגר היומי!',en:'Daily challenge reward!'},
   'ch.home':{he:'לאסוף בכפר',en:'Collect in the village'},

@@ -21,8 +21,11 @@ const CHALLENGE={
     glass:  {hp:0.5,dmg:1.8},                     // זכוכית: נופלים מהר, אבל מכים חזק
     gold:   {dmg:1.4,coins:[1,2]}                // בהלה לזהב: מכים חזק יותר, וכל אחד מפיל מטבעות
   },
-  announce:1.2                                    // שניות אחרי הכניסה לעולם עד ההודעה על החוק
+  announce:1.2,                                   // שניות אחרי הכניסה לעולם עד ההודעה על החוק
+  after:'earth'                                   // נפתח רק אחרי הפנס הזה (SAVE.story ב-story.js). עד אז העולם רגיל (המבקר, 2.11: "שחקן ברמה 1 רואה רק אויבים מיוחדים")
 };
+// האתגר פתוח: הפרק הראשון נגמר. לפני זה אין חוק, אין סימן ואין כרטיס ביומן
+const chOpen=()=>!!(SAVE.story&&SAVE.story[CHALLENGE.after]);
 
 const chDay=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
 // החוק של התאריך: אותו חוק לכולם. day: לבדיקה בבוט
@@ -33,12 +36,12 @@ function chSave(day=chDay()){
   if(c.day!==day){if(c.n>=CHALLENGE.goal&&c.got!==c.day)c.owed=true;c.day=day;c.n=0}
   return c;
 }
-const chDone=()=>chSave().n>=CHALLENGE.goal;
-const chCan=()=>{const c=chSave();return c.owed||c.n>=CHALLENGE.goal&&c.got!==c.day};
+const chDone=()=>!chOpen()||chSave().n>=CHALLENGE.goal;   // סגור: אין מה להציע (guide.js)
+const chCan=()=>{if(!chOpen())return false;const c=chSave();return c.owed||c.n>=CHALLENGE.goal&&c.got!==c.day};
 
 // אויב שמופיע בעולם (wSpawn ב-world.js): החוק של היום נכנס אליו
 function challengeSpawn(e){
-  if(!S.wd||e.creature)return;
+  if(!S.wd||e.creature||!chOpen())return;
   const R=CHALLENGE.rules[chRule()];e.ch=1;
   if(R.speed)e.speed*=R.speed;
   if(R.hp){e.hp*=R.hp;e.max*=R.hp}
@@ -58,13 +61,15 @@ function challengeKill(e){
 }
 // כניסה לעולם (enterWorld ב-world.js): הסימן למעלה, והודעה על החוק
 function challengeEnter(){
-  challengeHud();
+  challengeHud();if(!chOpen())return;
+  const c=chSave();   // הפעם הראשונה: הודעה שמסבירה מה זה, לפני החוק של היום
+  if(!c.seen){c.seen=1;setTimeout(()=>{if(S.wd&&S.mode==='play')banner(CHALLENGE.icon+' '+T('ch.intro'),C.gold)},CHALLENGE.announce*500)}
   setTimeout(()=>{if(S.wd&&S.mode==='play')banner(CHALLENGE.icon+' '+T('ch.r.'+chRule())[0]+' · '+T('ch.r.'+chRule())[1],C.tide)},CHALLENGE.announce*1000);
 }
 // הסימן בפס העליון בעולם: אייקון והתקדמות (קצר, כדי שלא ידחוף את התרמיל). השם בהודעה בכניסה וביומן
 function challengeHud(){
   const el=$('chTag');if(!el)return;
-  if(!S.wd){el.hidden=true;return}
+  if(!S.wd||!chOpen()){el.hidden=true;return}
   const c=chSave(),t=CHALLENGE.icon+' '+Math.min(c.n,CHALLENGE.goal)+'/'+CHALLENGE.goal+(chDone()?' ✓':'');
   el.hidden=false;if(el.textContent!==t)el.textContent=t;
 }
@@ -79,6 +84,7 @@ function challengeClaim(){
 }
 // הכרטיס ביומן הקווסטים (questLog ב-quests.js)
 function challengeCard(){
+  if(!chOpen())return'';
   const c=chSave(),id=chRule(),[name,say]=T('ch.r.'+id),can=chCan();
   let h='<h4>'+CHALLENGE.icon+' '+T('ch.title')+'</h4><div class="qc chc'+(can?' ready':'')+'"><b>'+name+'</b><small>'+T('ch.sub')+'</small><p class="say">'+say+'</p>';
   h+='<ul><li>'+T('ch.goal',CHALLENGE.goal)+' <em>'+Math.min(c.n,CHALLENGE.goal)+'/'+CHALLENGE.goal+'</em></li></ul>';

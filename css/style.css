@@ -966,6 +966,8 @@ body:not(.vil):not(.world) .guide{display:none}
 .weldone{margin:0;text-align:center;color:var(--gold);font:900 22px var(--body)}
 .welsum{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .welnext{margin:0;text-align:center;font:700 16px var(--body)}
+/* טלפון שוכב (גובה 350): שורות נמוכות וכפתור קטן יותר, כדי שהרשימה לא תגלול ולא תיחתך */
+@media (max-height:420px){.welbody{gap:6px}.wellist{gap:4px}.welrow{padding:3px 10px;font-size:14px}.welic{font-size:18px}.welgot .ri{width:18px;height:18px}.welgo{min-height:42px;font-size:16px}}
 .welfly{position:fixed;z-index:30;pointer-events:none;display:flex;align-items:center;gap:3px;font:900 18px var(--body);color:var(--gold);text-shadow:0 1px 3px #000}
 .welfly .ri{width:24px;height:24px}
 

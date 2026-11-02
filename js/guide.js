@@ -76,7 +76,9 @@ function guideGoal(){
   if(chCan())return{icon:I.challenge,text:T('g.chClaim'),place:'village'};
   q=QUESTS.list.find(q=>qOpen(q)&&q.giver&&NPC.list[q.giver]);
   if(q)return{icon:I.talk,q:q.id,text:T('g.talk',gNpcName(q.giver)),...gNpc(q.giver)};
-  q=act.find(q=>open(q)&&qKind(q).daily);if(q)return gQuest(q,I.daily);
+  // יומי של הזירה (לצאת לזירה, לנצח בוס, החדר הסודי) לא נהיה מטרה בעולם: הזירה של אוראל, והמבקר (2.11) ראה "Head out to the arena" באמצע האחו
+  const arenaQ=q=>q.obj.some(o=>o.type==='win'||o.type==='reach'&&o.what!=='world');
+  q=act.find(q=>open(q)&&qKind(q).daily&&!arenaQ(q));if(q)return gQuest(q,I.daily);
   if(!chDone())return{icon:I.challenge,text:T('g.challenge'),place:gHere()&&gHere()!=='village'?gHere():'meadow'};
   // אזור פתוח שעוד לא ביקרת בו (wmSeen ב-worldmap.js), ואם ביקרת בכולם: האחרון שנפתח
   const regs=['meadow'];for(let i=0;i<regs.length;i++){const R=gReg(regs[i]);for(const k in R.paths||{})if(WORLD.regions[k]&&wPathOpen(R.paths[k])&&!regs.includes(k))regs.push(k)}
