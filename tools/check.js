@@ -1089,7 +1089,7 @@ function worldBot(m,L,god){
           run((D.t||D.delay||D.arm||0.4)+0.6);
           const hit=(wsbStat.hits[id]||0)>h0&&e.hp<e.max;(hit?r.ok:r.bad).push(id+(hit?'':':לא פגע'))}
         catch(err){r.bad.push(id+':'+String(err))}}
-      for(const x of enemies)x.dead=true;enemies=[];run(8);r.clean=!(S.wsb&&S.wsb.fx.length)}catch(err){r.err=String(err&&err.stack||err)}
+      for(const x of enemies)x.dead=true;enemies=[];run(8);r.clean=!(S.wsb&&S.wsb.fx.length);r.noPic=Object.keys(WSKBOOK.list).filter(id=>wsbPicOk[id]!==true)}catch(err){r.err=String(err&&err.stack||err)}
     const o=$('ovBook');if(o)o.hidden=true;if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // שילובים בעולם (wcombo.js): לכל דמות שני סקילים מהספר בסדר הנכון יוצרים שילוב. לוחם: שריון קרח ואז הסתערות = ניפוץ.
   // צייד: שורשים ואז גשם חצים = ננעץ. קוסם: רוח מים ואז מטאור = אדים, וענן סערה על רטוב = חשמול. אחר כך הכל חוזר
@@ -2194,9 +2194,9 @@ function worldBot(m,L,god){
     fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
-  check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean,
+  check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean&&!wsb.noPic.length,
     'ספר הסקילים: '+(wsb.err||[wsb.one&&wsb.lock?'נעול בהתחלה':'לא נעול',wsb.lp?'במסלול הרמות':'לא במסלול',wsb.fill&&wsb.btns?'רמה ממלאת משבצות':'רמה לא מילאה',
-    wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn?'הספר מחליף כפתור':'הספר לא החליף','עובדים: '+wsb.ok.join(', '),wsb.bad.length?'נכשלו: '+wsb.bad.join(', '):'',wsb.clean?'נגמרים':'לא נגמרו'].filter(Boolean).join(' · ')));
+    wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn?'הספר מחליף כפתור':'הספר לא החליף','עובדים: '+wsb.ok.join(', '),wsb.bad.length?'נכשלו: '+wsb.bad.join(', '):'',wsb.clean?'נגמרים':'לא נגמרו',wsb.noPic.length?'אייקונים שלא נטענו: '+wsb.noPic.join(', '):''+wsb.n+' אייקונים נטענו'].filter(Boolean).join(' · ')));
   check(!wrn.err&&wrn.lock&&wrn.lp&&wrn.auto&&wrn.ui&&wrn.pick&&wrn.unpick&&!wrn.bad.length&&wrn.ok.length===wrn.n&&wrn.clean,'רונות: '+(wrn.err||[wrn.lock?'נעולות בהתחלה':'לא נעולות',
     wrn.lp?'במסלול הרמות':'לא במסלול',wrn.auto?'רמה מכניסה רונה':'רמה לא הכניסה',wrn.ui&&wrn.pick&&wrn.unpick?'הספר מחליף רונה':'הספר לא החליף',
     'עובדות '+wrn.ok.length+'/'+wrn.n,wrn.bad.length?'נכשלו: '+wrn.bad.join(', '):'',wrn.clean?'נגמרות':'לא נגמרו'].filter(Boolean).join(' · ')));

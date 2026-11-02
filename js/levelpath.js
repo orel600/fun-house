@@ -37,7 +37,7 @@ const lpLine=n=>T('lp.at',n.lv)+' '+n.items.map(x=>x.icon+' '+x.txt).join(' · '
 // ההסבר המלא במילים ב-title של הפס (lpTitle)
 function lpHtml(){
   const lv=heroLv(),n=lpNext(lv);if(!n)return '';
-  const b=lpNext(lv,true),far=b&&b.lv!==n.lv,ic=x=>x.items.map(i=>i.icon).join('');
+  const b=lpNext(lv,true),far=b&&b.lv!==n.lv,ic=x=>x.items.map(i=>i.pic||i.icon).join('');
   return ' · <span class="lpnext"><b>'+T('lp.next')+'</b> '+T('lp.at',n.lv)+' '+ic(n)+(far?' <span class="lpbig">· '+T('lp.at',b.lv)+' '+ic(b)+'</span>':'')+'</span>';
 }
 function lpTitle(){const lv=heroLv(),n=lpNext(lv),b=lpNext(lv,true);if(!n)return '';
@@ -55,7 +55,7 @@ function lpLevelUp(from,lv){
   let c=$('lpCard');
   if(!c){c=document.createElement('div');c.id='lpCard';c.className='lpcard';c.setAttribute('role','status');c.onclick=()=>{c.classList.remove('on')};document.body.appendChild(c)}
   const n=lpNext(lv);
-  c.innerHTML='<h3>'+T('lp.up',lv)+'</h3><ul>'+got.map(x=>'<li><span>'+x.icon+'</span><bdi>'+x.txt+'</bdi></li>').join('')+'</ul>'+(n?'<p><b>'+T('lp.next')+'</b> <bdi>'+lpLine(n)+'</bdi></p>':'');
+  c.innerHTML='<h3>'+T('lp.up',lv)+'</h3><ul>'+got.map(x=>'<li><span>'+(x.pic||x.icon)+'</span><bdi>'+x.txt+'</bdi></li>').join('')+'</ul>'+(n?'<p><b>'+T('lp.next')+'</b> <bdi>'+lpLine(n)+'</bdi></p>':'');
   c.classList.add('on');clearTimeout(lpLevelUp.t);lpLevelUp.t=setTimeout(()=>c.classList.remove('on'),LEVELPATH.card.t*1000);
 }
 function lpFlash(){
