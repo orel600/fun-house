@@ -208,6 +208,7 @@ const TEXT={
   'mb.tower1':{he:'הרסת מגדל!',en:'Tower destroyed!'},
   'mb.ultReady':{he:'סקיל-העל מוכן!',en:'Ultimate ready!'},
   'mb.locked':{he:'נפתח ברמה 6',en:'Unlocks at level 6'},
+  'mb.tip':{he:'הישארו מאחורי החיילים: מגדל של האויב מכה חזק',en:'Stay behind your minions: enemy towers hit hard'},
   'mb.ping':{he:'פקודה לחברים',en:'Order your team'},
   'mb.o.attack':{he:'התקפה',en:'Attack'},'mb.o.back':{he:'נסיגה',en:'Fall back'},
   'mb.w.go':{he:'בדרך!',en:'On it!'},'mb.w.back':{he:'נסוג!',en:'Falling back!'},

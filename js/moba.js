@@ -17,6 +17,8 @@ const MOBA={
   grow:0.09,                  // כל רמה: 9% יותר חיים ונזק
   respawn:{base:4,lvl:2,min:2.5},   // שניות עד שגיבור חוזר: 4, ועוד 2 לכל רמה, ועוד 2.5 לכל דקה במשחק (סוף משחק מכריע)
   order:{attack:8,back:6},   // פקודה לבוטים החברים: כמה שניות היא נמשכת
+  warnR:160,                  // מאיזה מרחק מטווח מגדל של האויב רואים את הטבעת האדומה שלו
+  tips:3,                     // בכמה משחקים ראשונים מופיע הטיפ "הישארו מאחורי החיילים"
   ccImmune:1,                 // אחרי הלם או הכרחה: שנייה של חסינות לשליטה נוספת (אוראל: 3 שניות זה הרבה)
   combo:{shock:1.35,freeze:1.25},   // רטוב + ברק: נזק ×1.35. רטוב + קרח: הקפאה ארוכה ×1.25 (באיזון: ×1.6 נתן להרכב צייד+קוסמת+נפח 94% ניצחונות)
   team:['#4C8DFF','#FF5A5A'],
@@ -77,7 +79,7 @@ function mbPush(o,ang,d){if(o.k==='tower'||o.k==='base')return;mbStep(o,Math.cos
 function mbXp(h,v){
   if(h.dead||h.lvl>=MOBA.ultAt)return;h.xp+=v;const N=MOBA.xp.need;
   while(h.lvl<MOBA.ultAt&&h.xp>=N[h.lvl]){h.lvl++;const old=h.max;h.max=Math.round(MBKIT[h.kit].hp*mbK(h));h.hp+=h.max-old;
-    if(h.me){celebrate(h.x,h.y,'gear');banner(h.lvl>=MOBA.ultAt?T('mb.ultReady'):T('mb.lvup',h.lvl),C.gold)}}
+    if(h.me){celebrate(h.x,h.y,'gear');mbBanner(h.lvl>=MOBA.ultAt?T('mb.ultReady'):T('mb.lvup',h.lvl),C.gold)}}
 }
 function mbDie(t,src){
   t.hp=0;t.dead=true;const foe=1-t.team;
@@ -88,14 +90,14 @@ function mbDie(t,src){
     if(killer){killer.kills++;mbXp(killer,MOBA.xp.kill)}
     for(const [h,at] of t.hitBy)if(h!==killer&&MB.t-at<8)mbXp(h,MOBA.xp.kill*MOBA.xp.assist);
     t.hitBy.clear();Object.assign(t.st,{stun:0,taunt:0,slow:0,wet:0,armor:0,burn:0,rage:0,imm:0,ice:0,dash:null});
-    if(t.me){banner(T('mb.died'),C.blood);sfx('hurt')}
-    else if(killer&&killer.me){banner(T('mb.kill'),C.gold);sfx('bossDown')}
-    else if(t.team===0)banner(T('mb.ally'),C.dim);
+    if(t.me){mbBanner(T('mb.died'),C.blood);sfx('hurt')}
+    else if(killer&&killer.me){mbBanner(T('mb.kill'),C.gold);sfx('bossDown')}
+    else if(t.team===0)mbBanner(T('mb.ally'),C.dim);
     mbBoom(t.x,t.y,60,t.team?'red':'blue');
   }else{
     sfx('bossDown');S.shake=Math.max(S.shake,8);mbBoom(t.x,t.y,120,'fire');
     if(t.k==='base'){mbEnd(t.team===1);return}
-    banner(T(t.team?'mb.tower1':'mb.tower0'),t.team?C.gold:C.blood);
+    mbBanner(T(t.team?'mb.tower1':'mb.tower0'),t.team?C.gold:C.blood);
     for(const h of mbHeroes(foe))mbXp(h,MOBA.xp.tower);
   }
 }
@@ -148,6 +150,9 @@ function mbWall(u,x,s){
     const side=Math.sign(o.x-u.x)||1;o.x=x+side*(o.r+4);mbPush(o,side>0?0:Math.PI,s.push);mbCC(o,'stun',s.stun,u)}
   mbBoom(x,0,90,'earth');S.shake=Math.max(S.shake,6);
 }
+// הודעה של המובה: למעלה (CSS תחת .mb), ואותה הודעה לא חוזרת תוך שנייה וחצי
+function mbBanner(txt,col){const now=performance.now();if(mbBanner.t===txt&&now-mbBanner.at<1500)return;mbBanner.t=txt;mbBanner.at=now;banner(txt,col)}
+function mbShake(slot){const b=document.querySelector('#mbSk [data-sk="'+slot+'"]');if(!b)return;b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');sfx('tap')}
 const mbFloat=(x,y,txt,col)=>{if(MB.floats.length<60)MB.floats.push({x,y,txt:String(txt),col,life:0.9})};
 function mbWord(u,w){mbFloat(u.x,u.y-u.r-34,T('mb.w.'+w),w==='shock'?'#D46BFF':w==='freeze'?C.tide:w==='taunt'?C.ember:C.blood)}
 function mbBoom(x,y,r,t){if(MB.fx.length<40)MB.fx.push({x,y,r,col:t==='heal'?'#7BD88F':t==='blue'?MOBA.team[0]:t==='red'?MOBA.team[1]:dtCol(t),life:0.45})}
@@ -172,7 +177,9 @@ function mobaStart(kit){
   for(const tm of [0,1]){for(const x of MOBA.towers)MB.u.push(mbBuild(tm,'tower',x));MB.u.push(mbBuild(tm,'base',MOBA.base.x))}
   const me=MB.me;P.weapon=MBKIT[me.kit].atk.shot?'gun':'sword';P.x=me.x;P.y=me.y;P.face=P.aim=0;S.cam.x=P.x;S.cam.y=P.y;
   ['ovStart','ovOver','ovLevel','ovBoss'].forEach(id=>{const e=$(id);if(e)e.hidden=true});
-  mbUi(true);banner(T('mb.start'),C.gold);
+  mbUi(true);mbBanner(T('mb.start'),C.gold);
+  let n=0;try{n=+localStorage.getItem('fh-mb-tips')||0;localStorage.setItem('fh-mb-tips',n+1)}catch(e){}
+  if(n<MOBA.tips){const m=MB;setTimeout(()=>{if(S.mb===m)mbBanner(T('mb.tip'),C.chalk)},2200)}   // טיפ לשחקן חדש: בשלושת המשחקים הראשונים
 }
 function mobaUpdate(dt){
   const M=MB;if(!M||M.over)return;
@@ -242,7 +249,7 @@ function mbAimFor(u,s){
 function mbPress(slot){
   const u=mbMe();if(!u||u.dead||MB.over)return;
   const s=MBKIT[u.kit][slot];
-  if(slot==='ult'&&u.lvl<MOBA.ultAt){banner(T('mb.locked'),C.dim);return}
+  if(slot==='ult'&&u.lvl<MOBA.ultAt){mbShake(slot);return}   // נעול: הכפתור רועד, בלי הודעה באמצע המסך (הבודק, 2.11)
   if(u.cd[slot]>0)return;
   const aim=s.kind==='self'||s.kind==='away'?null:mbAimFor(u,s)||(s.kind==='point'?{x:u.x+Math.cos(u.face)*(s.range||200)*0.6,y:u.y+Math.sin(u.face)*(s.range||200)*0.6}:null);
   mbCast(u,slot,aim);
@@ -380,8 +387,8 @@ function mobaDraw(ox,oy){
     if(s.ice>0){ctx.fillStyle='rgba(70,211,230,0.35)';ctx.beginPath();ctx.arc(u.x,u.y-22,24,0,7);ctx.fill()}
     // חיים, ולגיבור גם הרמה והסמל של הערכה
     const bw=u.k==='hero'?46:24;ctx.fillStyle='#000a';ctx.fillRect(u.x-bw/2-1,top-1,bw+2,u.k==='hero'?7:5);ctx.fillStyle=u.me?'#7BD88F':col;ctx.fillRect(u.x-bw/2,top,bw*Math.max(0,u.hp)/u.max,u.k==='hero'?5:3);
-    if(u.k==='hero'){ctx.font='800 12px Heebo, system-ui, sans-serif';ctx.textAlign='center';ctx.direction='ltr';ctx.fillStyle=C.chalk;ctx.fillText(u.lvl,u.x-bw/2-9,top+6);ctx.fillText(MBKIT[u.kit].icon,u.x+bw/2+11,top+6);ctx.direction=DIR}
-    let ic=top-10;   // סימנים מעל הראש: הלם, הכרחה, רטוב
+    if(u.k==='hero'){ctx.font='800 12px Heebo, system-ui, sans-serif';ctx.textAlign='center';ctx.direction='ltr';ctx.fillStyle=C.chalk;ctx.fillText(u.lvl,u.x-bw/2-9,top+6);ctx.font='20px system-ui, sans-serif';ctx.fillText(MBKIT[u.kit].icon,u.x,top-8);ctx.direction=DIR}   // הסמל של הערכה גדול מעל הראש: רואים מי זה (הבודק, 2.11)
+    let ic=top-(u.k==='hero'?30:10);   // סימנים מעל הראש: הלם, הכרחה, רטוב (לגיבור מעל הסמל)
     if(s.stun>0&&!s.ice){ctx.fillStyle=C.gold;for(let i=0;i<3;i++){const a=M.t*5+i*2.1;ctx.beginPath();ctx.arc(u.x+Math.cos(a)*12,ic+Math.sin(a)*4,3,0,7);ctx.fill()}ic-=12}
     if(s.taunt>0){ctx.fillStyle=C.ember;ctx.font='900 16px Heebo, system-ui, sans-serif';ctx.textAlign='center';ctx.fillText('!',u.x,ic);ic-=14}
     if(s.wet>0){ctx.fillStyle=dtCol('water');ctx.beginPath();ctx.arc(u.x+16,top-6,4,0,7);ctx.fill()}
@@ -411,7 +418,9 @@ function mbDrawBuild(b,col){
   ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(b.x,b.y-h-(base?34:24));ctx.lineTo(b.x+(base?14:9),b.y-h-6);ctx.lineTo(b.x,b.y-h+4);ctx.lineTo(b.x-(base?14:9),b.y-h-6);ctx.fill();}
   if(!open){ctx.strokeStyle=col+'88';ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.arc(b.x,b.y-h/2,w+8,0,7);ctx.stroke();ctx.setLineDash([])}   // מוגן: קודם המגדל שלפניו
   const B=base?MOBA.base:MOBA.tower;
-  if(b.tgt&&!b.tgt.dead){ctx.strokeStyle=col+'55';ctx.lineWidth=1.5;ctx.setLineDash([4,6]);ctx.beginPath();ctx.arc(b.x,b.y,B.range,0,7);ctx.stroke();ctx.setLineDash([])}
+  const me=MB.me,foe=me&&b.team!==me.team&&!me.dead,near=foe&&mbDist(me,b)<B.range+MOBA.warnR;   // מגדל של האויב: טבעת אדומה כשמתקרבים, מלאה כשהוא מכוון אליך (הבודק, 2.11)
+  if(near){ctx.strokeStyle=b.tgt===me?C.blood:'rgba(239,78,87,0.55)';ctx.lineWidth=b.tgt===me?3:2;ctx.setLineDash(b.tgt===me?[]:[8,8]);ctx.beginPath();ctx.arc(b.x,b.y,B.range,0,7);ctx.stroke();ctx.setLineDash([])}
+  else if(b.tgt&&!b.tgt.dead){ctx.strokeStyle=col+'55';ctx.lineWidth=1.5;ctx.setLineDash([4,6]);ctx.beginPath();ctx.arc(b.x,b.y,B.range,0,7);ctx.stroke();ctx.setLineDash([])}
   const bw=base?84:60,top=b.y-h-(base?48:38);ctx.fillStyle='#000a';ctx.fillRect(b.x-bw/2-1,top-1,bw+2,8);ctx.fillStyle=col;ctx.fillRect(b.x-bw/2,top,bw*b.hp/b.max,6);
 }
 // מפה קטנה למעלה: כל הנתיב, המבנים, הגיבורים (נקודה גדולה) והחיילים
