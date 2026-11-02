@@ -16,7 +16,7 @@ const HD={
   light:{exposure:1.12,hemiSky:0xcfe3ff,hemiGround:0x6b5a44,hemi:1.25,sun:0xffe0b0,sunI:2.9},
   ground:{tile:520,macro:2600,grade:1.2,sat:1.22},   // tile: גודל אריח העשב בעולם. macro: כתמים גדולים שמסתירים את החזרה
   shadow:{map:1024,soft:2,dir:[-0.75,0.85,0.45],bias:-0.0004,normal:1.2,blob:0.22,   // dir: מאיפה השמש, נמוכה יותר מהמקור כדי שהצללים יהיו ארוכים. blob: הצל העגול מתחת לדמויות נשאר עדין (צל מגע)
-    every:2,step:96,   // every: מפת הצללים מצוירת פעם ב-every פריימים (הדמויות זזות). step: כמה פיקסלים המצלמה זזה לפני שהמפה מתרכזת מחדש
+    every:1,step:96,   // every: מפת הצללים מצוירת פעם ב-every פריימים. 1: כל פריים, אחרת הצל של הדמות מדלג ופריים כבד/קל לסירוגין קוטע את התנועה (ניר, 2.11). טלפון איטי מכבה צללים לבד (minFps). step: כמה פיקסלים המצלמה זזה לפני שהמפה מתרכזת מחדש
     cast:['castle','forge','mill','mine','market','tent','site','gate'],   // מה מטיל צל מלבד הדמויות: מבני הכפר (VIL3D.models), הפיגום והשערים. לא עצים, סלעים ועשב
     minFps:40,warm:1.5,secs:2.5,key:'zm-shadow',slow:'zm-shadow-slow'},   // בפתיחה: אחרי warm שניות מודדים secs שניות, ומתחת ל-minFps מכבים ונזכרים (slow). key: בחירה של השחקן
   air:{haze:0.45,sky:0xbfd6e6,near:-0.15,far:1.5,vig:0.38}   // haze: כמה צבע שמיים באובך. near/far: לפי גובה המסך

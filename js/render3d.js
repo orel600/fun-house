@@ -13,7 +13,7 @@
    הזירה נשארת zoom 1 ו-tilt 42 (התחום של אוראל). כדי לאמץ: arena ב-zoom וב-tilt. השחקן מכוון קרוב/רגיל/רחוק בהגדרות (CAM ב-camera.js).
    baseTilt: הגודל של הדמויות נקבע לפיו ולא משתנה בין מקומות. בזווית גבוהה יותר הן נראות קצת נמוכות, כמו כשמסתכלים מלמעלה.
    יותר שטח = יותר דברים לצייר, אז בטלפון חלש כדאי למדוד עם ?fps */
-const VIEW={zoom:{village:0.72,world:0.64},tilt:{arena:42,village:52,world:52},baseTilt:42, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52', world:'#2c4229', worldLine:'#6f8f55'};
+const VIEW={zoom:{village:0.76,world:0.68},tilt:{arena:42,village:34,world:34},baseTilt:42, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52', world:'#2c4229', worldLine:'#6f8f55'};
 
 /* מי לובש איזה מודל. h: גובה הדמות על המסך בפיקסלים. foot: כמה פיקסלים מתחת למרכז הלוגי הרגליים נוגעות בקרקע.
    props: חפצים ביד (bone: היד, ומיקום וסיבוב מקומיים כמו בחבילה המקורית). הטבעת מתחת לרגליים היא בצבע החולשה של האויב (e.weak, מ-data.js), ולא כתובה כאן. tint: צבע מ-TINT.
@@ -132,8 +132,8 @@ const GRIP3D={
    ההחלטות של ניר (1.11): זוהר עדין (רק נדיר ומעלה זוהר, ורק אגדי פועם), נשק ומגן קצת יותר גדולים מהמציאות, וכל פריט משנה את המראה בעדינות.
    glow: כמה חזק הנשק, המגן והחלקים זוהרים בצבע הדרגה (GEAR.tiers), לפי tier 0 עד 4. pulse: כמה אגדי פועם, ו-rate כמה מהר.
    wscale: גודל הנשק ביד ביחס למודל המקורי.
-   shield: מגן ביד השנייה כשהנשק מקרוב ביד אחת (חרב, גרזן, פטיש). אין עדיין משבצת מגן ב-gear.js, אז בפיילוט המגן לוקח את הנדירות
-     של התכשיט הכי טוב שלבוש. המודל לפי הנדירות (Fantasy Weapons Bits), והחומר wtex כמו בנשק.
+   shield: מגן ביד השנייה כשהנשק מקרוב ביד אחת (חרב, גרזן, פטיש). המגן בא ממשבצת המגן (armor.js), ובלי מגן לבוש
+     היד ריקה. המודל לפי הנדירות (Fantasy Weapons Bits), והחומר wtex כמו בנשק.
    boots: הרגליים בצבע הנדירות של הנעליים (tint: כמה). head: הקסדה או הכובע זוהרים מנדירות 2 (נדיר) של התכשיט הכי טוב.
    set: סט פעיל (sets.js) צובע את כל החלקים בצבע הסט, מראה אחיד. keep: החלקים שנשארים נפרדים במודל כדי לצבוע אותם */
 const GEAR3D={on:!/[?&]gear3d=0/.test(location.search),
@@ -148,7 +148,8 @@ function gear3dLook(L,wid){
   const it=gItem(wid),worn=gearWorn().map(gItem),best=s=>Math.max(-1,...worn.filter(x=>x.slot===s).map(x=>x.tier));
   for(const w of ['sword','gun']){const p=L.props[w];p.s=GEAR3D.wscale;if(it&&wUse(wid)===w&&GEAR3D.glow[it.tier]>0){p.glow=g3Rar(it.tier);p.gk=GEAR3D.glow[it.tier];p.pulse=it.tier>=4}}
   const fam=it&&wUse(wid)==='sword'&&GRIP3D.of(L.props.sword.prop);
-  if(fam==='blade'||fam==='chop'){const t=Math.max(0,best('acc')),G=GEAR3D.shield;
+  const t=best('shield');   // המגן מהמשבצת (armor.js). בלי מגן: יד ריקה
+  if((fam==='blade'||fam==='chop')&&t>=0){const G=GEAR3D.shield;
     L.props.shield={prop:G.model[t],tier:G.metal[t],bone:G.bone,pos:G.pos,rot:G.rot,s:G.s,glow:GEAR3D.glow[t]>0?g3Rar(t):null,gk:GEAR3D.glow[t],pulse:t>=4}}
   const b=best('boots'),h=best('acc'),set=Object.keys(SETS).find(s=>setTiers(gearWorn()).some(x=>x.startsWith(s)));
   L.g3={boots:b>=0?g3Rar(b):null,bk:b>=0?GEAR3D.glow[b]:0,head:h>=GEAR3D.head.from?g3Rar(h):null,hk:h>=0?GEAR3D.glow[h]*0.7:0,hp:h>=4,set:set?SETS[set].col:null};
@@ -156,7 +157,7 @@ function gear3dLook(L,wid){
 // צובע את החלקים של הדמות לפי L.g3. פעם אחת לכל דמות ולכל שינוי בציוד
 function gear3dParts(a,L){
   const g=L.g3;if(!g||a.g3===L.ck)return;a.g3=L.ck;
-  a.rk=null;rankArmor3d(a);   // מתחילים נקי: השריון של הדרגה כמו שהוא, והחלקים של הציוד בלי צבע
+  a.rk=0;rankArmor3d(a);   // מתחילים נקי: השריון של הדרגה כמו שהוא, והחלקים של הציוד בלי צבע
   a.root.traverse(o=>{if(!o.isMesh)return;const p=armorPart(o,GEAR3D.keep.concat(ARMOR3D));if(!p)return;
     let col=null,k=0;if(GEAR3D.keep.includes(p)){if(a.pulse)a.pulse=a.pulse.filter(m=>m!==o.material);o.material.color.set(0xffffff);o.material.emissive.set(0);o.material.userData.em=o.material.emissive.clone()}
     if(/^Leg/.test(p)&&g.boots){o.material.color.set(0xffffff).lerp(new THREE.Color(g.boots),GEAR3D.boots.tint);col=g.boots;k=g.bk}
@@ -443,6 +444,7 @@ function syncPlayer(dt){
   let a=R3D.player;if(!a||a.key!==lookKey(L)){if(a)freeActor(a);a=R3D.player=makeActor(L)}   // דמות או נשק חדשים: מודל חדש
   rankArmor3d(a);   // אחרי עלייה בדרגה: החלקים מופיעים מיד
   if(GEAR3D.on)gear3dParts(a,L);
+  armor3d(a);   // שריון לפי מחלקה (armor.js)
   const sword=P.weapon==='sword';
   for(const k in a.props)a.props[k].visible=k==='shield'?sword:(k==='sword')===sword;
   const st=a.st||(a.st={anim:0,gt:0,inv:0,mode:''});
@@ -655,13 +657,19 @@ function npcs3dOff(){if(!R3D.npcs)return;for(const id in R3D.npcs)freeActor(R3D.
 // מטריצה ווקטורים לשימוש חוזר, בלי זבל בכל פריים. נוצרים בפעם הראשונה שמישהו צריך אותם, גם לפני הציור הראשון (syncPlayer מהבדיקה)
 function r3dScratch(){if(!R3D._mx){R3D._mx=new THREE.Matrix4();R3D._p=new THREE.Vector3();R3D._q=new THREE.Quaternion();R3D._s=new THREE.Vector3();R3D._up=new THREE.Vector3(0,1,0)}}
 
+// הכפר: מכינים מראש את כל ה-shaders של מה שבכפר, גם של מה שעוד לא על המסך. אחרת בפעם הראשונה שמבנה, קישוט או תושב נכנס למסך
+// הציור נעצר להכנה שלו, והדמות "קופצת" באמצע ההליכה (ניר, 2.11: "התנועה מקוטעת"). רץ שוב רק כשנוסף משהו לכפר
+function vilWarm(r,c){
+  const n=R3D.vil.g.children.length+Object.keys(R3D.npcs||{}).length+(R3D.pet?1:0);if(R3D.vilWarm===n)return;R3D.vilWarm=n;
+  try{if(r.compileAsync)r.compileAsync(R3D.scene,c).catch(()=>{});else r.compile(R3D.scene,c)}catch(e){}
+}
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
 function render3d(ox,oy){
   if(!R3D.on||!P)return;
   r3dScratch();R3D.ox=ox;R3D.oy=oy;   // ההזזה של המסך, לבדיקה מי על המסך (worldnpc.js)
   // drawEvery: הבדיקה האוטומטית מציירת רק חלק מהפריימים, כי שם התלת-ממד רץ על המעבד בלי כרטיס גרפי. בשאר הפריימים לא עושים כלום
   R3D.frame=(R3D.frame||0)+1;const skip=R3D.drawEvery&&R3D.frame%R3D.drawEvery!==0;if(skip&&!S.vil)return;   // בכפר ממשיכים לעדכן, כי שם נבנים המבנים
-  const r=R3D.r,c=R3D.cam,now=performance.now(),dt=Math.min(0.05*(R3D.drawEvery||1),R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;
+  const r=R3D.r,c=R3D.cam,now=typeof FRAME_T==='number'&&FRAME_T>(R3D.last||0)?FRAME_T:performance.now(),dt=Math.min(0.05*(R3D.drawEvery||1),R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;
   const pr=Math.min(DPR,1.5);if(r.getPixelRatio()!==pr)r.setPixelRatio(pr);
   if(R3D.w!==W||R3D.h!==H){R3D.w=W;R3D.h=H;r.setSize(innerWidth,innerHeight,false);c.left=-W/2;c.right=W/2;c.top=H/2;c.bottom=-H/2;c.updateProjectionMatrix()}
   // המצלמה מסתכלת על אותה נקודה שבמרכז הקנבס
@@ -676,7 +684,7 @@ function render3d(ox,oy){
   if(R3D.vil)R3D.vil.g.visible=false;
   for(const k in R3D.wlds||{})R3D.wlds[k].g.visible=false;
   if(!S.room&&!S.mb)syncPet(dt);else if(R3D.pet)R3D.pet.root.visible=false;   // חיית המחמד (pet.js), בכל מקום חוץ מחדר הבונוס
-  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil);if(typeof deco3d==='function')deco3d(R3D.vil)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
+  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil);if(typeof deco3d==='function')deco3d(R3D.vil);vilWarm(r,c)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
     if(S.wd){syncWorld();syncWnpcs(dt)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)
