@@ -27,7 +27,7 @@
   /* חלונות המבנים (bwin): עולים מעל הפס העליון (הכסף כבר בכותרת בשוק ובנפחייה), מסגרת דקה */
   #vPanel.bw{top:max(6px,env(safe-area-inset-top,0px));bottom:max(8px,env(safe-area-inset-bottom,0px));border-width:12px;border-image-width:12px;gap:4px}
   #npcDlg.bw{border-width:12px;border-image-width:12px}
-  body.vpan:has(#vPanel.bw:not([hidden])) :is(#menuBtn,.dgift,.vhud){visibility:hidden}   /* החלון מכסה את הפינה: ☰ לא יושב על ה-✕ */
+  body.vpan:has(#vPanel.bw:not([hidden])) :is(#menuBtn,.dgift){visibility:hidden}   /* החלון מכסה את הפינה: ☰ לא יושב על ה-✕ */
   #vPanel.bw>.bwhd,#npcDlg.bw>.bwhd{padding:0 2px 2px 6px}
   /* השם, הרמה ומה עושים כאן בשורה אחת. תיאור ארוך נקטע ב-… */
   .bwhd .bwt{display:flex;align-items:baseline;gap:10px}
@@ -53,7 +53,7 @@
   .viswin.dailywin{height:calc(100dvh - 16px);max-height:none;border-width:14px;border-image-width:14px;padding:4px 10px 6px;gap:6px}
   .viswin>.whd{min-height:44px;padding-block:0 2px}
   .viswin>.whd h2{font-size:24px}
-  body:has(:is(#ovVisit,#ovTrade):not([hidden])) :is(#menuBtn,.dgift,.vhud){visibility:hidden}   /* ☰ לא יושב על ה-✕ */
+  body:has(:is(#ovVisit,#ovTrade):not([hidden])) :is(#menuBtn,.dgift){visibility:hidden}   /* ☰ לא יושב על ה-✕ */
   .visr{width:44px;height:44px}.visr .ri{width:30px;height:30px}   /* 8 משאבים בשורה אחת, והכמות (×1 ×5 ×10) נראית בלי לגלול */
   .trdcol h3{margin:0;font-size:15px}
   .trdhint{font-size:11px}
