@@ -45,7 +45,7 @@ function skrStart(id){
   sfx('levelup');banner(T('skr.new',T('sk.'+id)),col);
   // האייקון שעף: מתחיל על הגיבור (באמצע המסך) ונוחת על הכפתור שלו
   const el=document.createElement('div');el.className='skrfly';el.style.setProperty('--dt',col);el.style.setProperty('--s',K.icon+'px');
-  el.innerHTML=dtSvg(skDef(id).dt);document.body.appendChild(el);SKR.el=el;
+  el.innerHTML=(typeof wsbImg==='function'&&wsbImg(id))||dtSvg(skDef(id).dt);   // אייקון מצויר לסקילים של הספר (wskbook.js)document.body.appendChild(el);SKR.el=el;
   skrBtn(id,true);
 }
 const skrBtn=(id,hide)=>{const b=document.querySelector('#skills [data-sk="'+id+'"]');if(b)b.classList.toggle('skrwait',hide);return b};

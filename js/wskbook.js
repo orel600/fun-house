@@ -5,7 +5,7 @@
    וסקיל שנפתח נכנס לבד למשבצת פנויה, ואז רגע הגילוי (skillreveal.js) מציג אותו.
    הכפתורים: הראשון תמיד הסקיל של הנשק (skills.js מחזיק אותו שם), ואת שני האחרים בוחרים בספר: "📖 סקילים" בחלון הדמות.
    נשמר ב-SAVE.hero.skLoad (שני מזהים). הסקילים נרשמים ב-SKILLS.list עם kind, ו-wskUse (wskill.js) שולח אותם לכאן.
-   ic: אימוג'י זמני על הכרטיס ועל הכפתור. צריך להחליף באייקונים מצוירים (docs/creative-claw.md). השמות ב-lang.js: 'sk.<id>' ו-'wsb.d.<id>' */
+   ic: אימוג'י. לסקילים החדשים יש אייקון מצויר ב-icons/ui/skills/<id>.png (Creative Claw), והאימוג'י הוא הגיבוי אם התמונה לא נטענה. השמות ב-lang.js: 'sk.<id>' ו-'wsb.d.<id>' */
 const WSKBOOK={
   slots:2,      // כמה משבצות בוחרים (בנוסף לסקיל של הנשק)
   other:6,      // סקיל של דמות אחרת נפתח כמה רמות מאוחר יותר
@@ -26,12 +26,22 @@ const WSKBOOK={
 };
 // נרשמים ליד הסקילים של הזירה, כדי שהכפתורים (skillsHud), רגע הגילוי והכוונת יכירו אותם. בזירה אף אחד לא מוסיף אותם
 for(const id in WSKBOOK.list)SKILLS.list[id]=WSKBOOK.list[id];
-// האימוג'י על הכפתור בעולם (::before). רק בעולם, בזירה הכפתורים כמו קודם
+// על הכפתור בעולם (::before): אימוג'י קטן בפינה, ולסקיל עם אייקון מצויר, האייקון ממלא את הכפתור (רק אחרי שנטען). רק בעולם, בזירה הכפתורים כמו קודם
+const wsbPicSrc=id=>'icons/ui/skills/'+id+'.png';
+const wsbPicOk={};   // אילו אייקונים נטענו (בשביל הבוט)
 (()=>{const st=document.createElement('style'),ic={...WSKBOOK.ic};for(const id in WSKBOOK.list)ic[id]=WSKBOOK.list[id].ic;
-  st.textContent=Object.keys(ic).map(id=>'.world .skb[data-sk="'+id+'"]::before{content:"'+ic[id]+'"}').join('');document.head.appendChild(st)})();
+  st.textContent=Object.keys(ic).map(id=>'.world .skb[data-sk="'+id+'"]::before{content:"'+ic[id]+'"}').join('');document.head.appendChild(st);
+  for(const id in WSKBOOK.list){const im=new Image();im.onload=()=>{wsbPicOk[id]=true;
+      st.textContent+='.world .skb[data-sk="'+id+'"]::before{content:"";inset:3px;border-radius:50%;background:url('+wsbPicSrc(id)+') center/cover;filter:none;z-index:auto}'+
+        '.world .skb[data-sk="'+id+'"]:not(.ready)::before{opacity:.45}.world .skb[data-sk="'+id+'"] .dti{display:none}'};
+    im.onerror=()=>{wsbPicOk[id]=false};im.src=wsbPicSrc(id)}})();
 
 const wsbIds=()=>Object.keys(WSKBOOK.old).concat(Object.keys(WSKBOOK.list));
 const wsbIc=id=>(WSKBOOK.list[id]||{}).ic||WSKBOOK.ic[id]||'✨';
+// האייקון המצויר כ-HTML (ואם לא נטען, האימוג'י במקומו). לסקיל בלי אייקון: ''
+const wsbImg=id=>WSKBOOK.list[id]?'<img class="wsbp" src="'+wsbPicSrc(id)+'" alt="" data-e="'+wsbIc(id)+'" onerror="this.outerHTML=this.dataset.e">':'';
+// העיגול בכרטיס ובמשבצת: אייקון מצויר, או סוג הנזק עם אימוג'י (הסקילים של הזירה)
+const wsbIcon=id=>'<span class="wsbi'+(WSKBOOK.list[id]?' pic':'')+'">'+(wsbImg(id)||dtSvg(SKILLS.list[id].dt)+'<em>'+wsbIc(id)+'</em>')+'</span>';
 const wsbWeapon=()=>SKILLS.weapon[P.wt]||null;
 const wsbLoad=()=>{const h=SAVE.hero;if(!Array.isArray(h.skLoad))h.skLoad=[];return h.skLoad};
 // באיזו רמה נפתח. הסקיל של הנשק תמיד פתוח
@@ -60,7 +70,7 @@ function wsbLevelUp(from,lv){
   if(got)saveNow();
 }
 // מסלול הרמות (lpAt ב-levelpath.js): אילו סקילים נפתחים ברמה הזו
-const wsbAt=lv=>lv<2?[]:wsbIds().filter(id=>id!==wsbWeapon()&&wsbNeed(id)===lv).map(id=>({k:'skill',icon:wsbIc(id),txt:T('wsb.lp',T('sk.'+id))}));
+const wsbAt=lv=>lv<2?[]:wsbIds().filter(id=>id!==wsbWeapon()&&wsbNeed(id)===lv).map(id=>({k:'skill',icon:wsbIc(id),pic:wsbImg(id),txt:T('wsb.lp',T('sk.'+id))}));
 
 /* ---- הטלה: נקרא מ-wskUse אחרי שנבחרה מטרה. tg: הנקודה, base: הנזק, F: ההטלה הראשונה הגדולה (skillreveal.js) ---- */
 const wsbStat={casts:{},hits:{}};   // בשביל הבוט
@@ -170,13 +180,13 @@ function wsbPick(id){
 function wsbCard(id,where){
   const D=SKILLS.list[id],open=wsbOpen(id),on=where>=0;
   return '<button class="wsbc'+(on?' on':'')+(open?'':' lock')+'" data-wsbid="'+id+'" style="--dt:'+dtCol(D.dt)+'" title="'+T('wsb.d.'+id)+'"'+(open?'':' aria-disabled="true"')+'>'+
-    '<span class="wsbi">'+dtSvg(D.dt)+'<em>'+wsbIc(id)+'</em></span><span class="wsbn"><b>'+T('sk.'+id)+'</b><small>'+
+    wsbIcon(id)+'<span class="wsbn"><b>'+T('sk.'+id)+'</b><small>'+
     (open?T('wsb.d.'+id):'🔒 '+T('wsb.need',wsbNeed(id)))+'</small></span>'+(on?'<span class="wsbk">'+(where+1)+'</span>':'')+'</button>';
 }
 function wsbDrawUi(){
   const ov=$('ovBook');if(!ov||ov.hidden)return;
   const w=wsbWeapon(),L=wsbLoad(),slot=(id,i,fixed)=>'<button class="wsbs'+(i===wsbSel+1&&!fixed?' sel':'')+'"'+(fixed?' disabled':' data-wslot="'+(i-1)+'"')+(id?' style="--dt:'+dtCol(SKILLS.list[id].dt)+'"':'')+'>'+
-    '<span class="wsbk">'+(i+1)+'</span>'+(id?'<span class="wsbi">'+dtSvg(SKILLS.list[id].dt)+'<em>'+wsbIc(id)+'</em></span><b>'+T('sk.'+id)+'</b>':'<b class="dim">'+T('wsb.empty')+'</b>')+(fixed?'<small>'+T('wsb.weapon')+'</small>':'')+'</button>';
+    '<span class="wsbk">'+(i+1)+'</span>'+(id?wsbIcon(id)+'<b>'+T('sk.'+id)+'</b>':'<b class="dim">'+T('wsb.empty')+'</b>')+(fixed?'<small>'+T('wsb.weapon')+'</small>':'')+'</button>';
   const ids=wsbIds().filter(id=>id!==w).sort((a,b)=>wsbNeed(a)-wsbNeed(b));
   ov.firstChild.innerHTML='<div class="whd"><h2>📖 '+T('wsb.title')+'</h2><button class="wx" data-wsb="x" aria-label="'+T('q.close')+'">✕</button></div>'+
     '<div class="wsbcols"><div class="wsbslots">'+slot(w,0,true)+slot(L[0]&&wsbOpen(L[0])?L[0]:null,1)+slot(L[1]&&wsbOpen(L[1])?L[1]:null,2)+'<p class="dim">'+T('wsb.how')+'</p></div>'+
