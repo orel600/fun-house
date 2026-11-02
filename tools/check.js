@@ -337,7 +337,7 @@ function villageBot(m,L){
     if(m.age===2&&!m.fuse){
       const U=L.fuse={},press=roll=>{const r=Math.random;Math.random=()=>roll;try{const b=q('#fDetail [data-act="fuse"]');U.btn=!!b&&!b.disabled;if(b)b.click()}finally{Math.random=r}};
       bagAdd('emberOrb');bagAdd('frostOrb');bagAdd('cloverOrb');bagAdd('star',3);bagAdd('coins',300);
-      const bar=()=>[...document.querySelectorAll('#fRes [data-tip]')].map(e=>e.dataset.tip).join();U.barAge=bar();U.barAgeOk=U.barAge===(resShown('forge')||[]).join();
+      const bar=()=>[...document.querySelectorAll('#fRes [data-tip]')].map(e=>e.dataset.tip).join();
       q('#fTabs [data-tab="fuse"]').click();U.tab=AUI.tab==='fuse';U.bar=bar();   // הפס העליון בהתכה: רק 🌟, 💎 ומטבעות (fuse.js, fuseRes)
       U.same=fuseOut('emberOrb','steamOrb').why==='same'&&fuseOut('trinityOrb','cloverOrb').why==='big';
       q('#fItems [data-id="emberOrb"]').click();q('#fItems [data-id="frostOrb"]').click();
@@ -350,6 +350,7 @@ function villageBot(m,L){
       U.fail=!!SAVE.bag.steamOrb&&!SAVE.bag.cloverOrb&&!SAVE.bag.cometOrb&&st1-(SAVE.bag.star||0)===FUSE.cost[3].star&&FX.some(f=>f.K===CELEBRATE.agingFail);
       const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key)).bag;U.saved=!!sv.steamOrb&&!sv.cloverOrb&&!sv.emberOrb;
       if(LANG==='en'&&/[֐-׿]/.test(q('#ovForge').innerText))L.heLeak=q('#ovForge').innerText.trim().slice(0,80);
+      q('#fTabs [data-tab="age"]').click();U.barAge=bar();U.barAgeOk=U.barAge===(resShown('forge')||[]).join();q('#fTabs [data-tab="fuse"]').click();   // בשדרוג: הפס כמו קודם
       m.fuse=1;L.fuseOpen=1;return L}   // המסך נשאר פתוח לצעד אחד, בשביל הצילום
     if(m.age===2){q('#forgeClose').click();L.ageClosed=S.mode==='play';m.age=3;return L}
     // הזוהר: לרגע הקשת היא +10, ובודקים שיש שובל וחלקיקים על הנשק
