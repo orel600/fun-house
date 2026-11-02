@@ -41,7 +41,11 @@ function gameOver(){
   gearLoot();   // לפעמים גם פריט ציוד (gear.js)
   if(S.t>best){best=S.t;try{localStorage.setItem('zm-best',String(best))}catch(e){}}
   $('sTime').textContent=fmt(S.t);$('sLvl').textContent=P.level;$('sBoss').textContent=S.bossCount;$('sBest').textContent=fmt(best);$('sCoins').textContent=S.bn.coins;$('sPicks').textContent=S.bn.taken;
+  $('ovOver').classList.toggle('won',!!S.won);   // סמל הכותרת: 🏆 או 💀 (style.css)
   setTimeout(()=>{$('ovOver').hidden=false},700);
 }
 let banT=null;
-function banner(txt,col){const b=$('banner');b.textContent=txt;b.style.color=col||C.chalk;b.classList.add('on');clearTimeout(banT);banT=setTimeout(()=>b.classList.remove('on'),1600)}
+// בזירה (לא בכפר, בעולם או במשחקי השאול) ההודעה עולה לפס קטן מתחת ל-HUD, כדי לא לכסות את הגיבור (.banner.artop ב-style.css)
+function banner(txt,col){const b=$('banner'),bc=document.body.classList,ar=!['vil','world','mb'].some(c=>bc.contains(c));
+  b.classList.toggle('artop',ar);if(ar){const h=document.querySelector('.hud');b.style.top=Math.round((h?h.getBoundingClientRect().bottom:48)+6)+'px'}else b.style.top='';
+  b.textContent=txt;b.style.color=col||C.chalk;b.classList.add('on');clearTimeout(banT);banT=setTimeout(()=>b.classList.remove('on'),1600)}

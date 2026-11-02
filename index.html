@@ -192,16 +192,16 @@
   </div>
 </div>
 
-<div class="ov" id="ovLevel" hidden>
-  <div class="panel">
-    <h2 id="lvTitle"></h2>
+<div class="ov arov" id="ovLevel" hidden>
+  <div class="panel win arwin">
+    <h2 id="lvTitle" class="arhd"></h2>
     <p class="sub" data-t="pickUpgrade"></p>
     <div class="cards" id="cards"></div>
   </div>
 </div>
 
-<div class="ov" id="ovBoss" hidden>
-  <div class="panel">
+<div class="ov arov" id="ovBoss" hidden>
+  <div class="panel win arwin">
     <p class="sub" data-t="bossComing"></p>
     <h2 id="bTitle"></h2>
     <div class="learned">
@@ -217,17 +217,18 @@
   </div>
 </div>
 
-<div class="ov" id="ovOver" hidden>
-  <div class="panel">
-    <h2 id="overTitle" data-t="fell"></h2>
+<!-- מסך הסוף בזירה: מסגרת עץ, כותרת עם סמל (💀 נפלת / 🏆 ניצחת, לפי .won), כרטיסים עם סמלים ופס שלל זהוב -->
+<div class="ov arov" id="ovOver" hidden>
+  <div class="panel win arwin">
+    <h2 id="overTitle" class="arhd" data-t="fell"></h2>
     <div class="stats">
-      <div class="stat"><span data-t="statTime"></span><b id="sTime">0:00</b></div>
-      <div class="stat"><span data-t="statLevel"></span><b id="sLvl">1</b></div>
-      <div class="stat"><span data-t="statBosses"></span><b id="sBoss">0</b></div>
-      <div class="stat"><span data-t="statBest"></span><b id="sBest">0:00</b></div>
-      <div class="stat"><span data-t="statCoins"></span><b id="sCoins">0</b></div>
-      <div class="stat"><span data-t="statPicks"></span><b id="sPicks">0</b></div>
-      <div class="stat wide"><span data-t="statLoot"></span><b id="sLoot" class="bag"></b></div>
+      <div class="stat"><i aria-hidden="true">⏱️</i><span data-t="statTime"></span><b id="sTime">0:00</b></div>
+      <div class="stat"><i aria-hidden="true">⭐</i><span data-t="statLevel"></span><b id="sLvl">1</b></div>
+      <div class="stat"><i aria-hidden="true">👑</i><span data-t="statBosses"></span><b id="sBoss">0</b></div>
+      <div class="stat"><i aria-hidden="true">🏅</i><span data-t="statBest"></span><b id="sBest">0:00</b></div>
+      <div class="stat"><i aria-hidden="true">🪙</i><span data-t="statCoins"></span><b id="sCoins">0</b></div>
+      <div class="stat"><i aria-hidden="true">🎁</i><span data-t="statPicks"></span><b id="sPicks">0</b></div>
+      <div class="stat wide loot"><i aria-hidden="true">🎒</i><span data-t="statLoot"></span><b id="sLoot" class="bag"></b></div>
     </div>
     <p class="sub" data-t="nextRun"></p>
     <button class="go" id="againBtn" data-t="w.back"></button>
