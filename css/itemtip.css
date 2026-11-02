@@ -1,0 +1,28 @@
+/* בועת הסבר לחפץ (js/itemtip.js): חלון הפרטים צף ליד החפץ, עם טקסט גדול וקריא בטלפון לרוחב */
+.gdetail.itip{position:fixed;z-index:60;display:flex;flex-direction:column;gap:6px;min-height:0;margin:0;flex:none;
+  padding:10px 12px!important;overflow:visible!important;border:2px solid var(--rar,var(--gold));border-radius:14px;
+  background:linear-gradient(180deg,#232B44,#171C2D);box-shadow:0 10px 30px #000a,0 0 0 1px #0008,inset 0 1px 0 #ffffff14;
+  animation:itipIn .12s ease-out}
+@keyframes itipIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+/* החץ: מצביע על החפץ, בצד שבו הוא נמצא */
+.gdetail.itip::before{content:"";position:absolute;top:calc(var(--ay,50%) - 9px);width:16px;height:16px;background:#1E253A;
+  border:2px solid var(--rar,var(--gold));transform:rotate(45deg);pointer-events:none}
+.gdetail.itip[data-side="a"]::before{left:-10px;border-top:0;border-right:0}
+.gdetail.itip[data-side="b"]::before{right:-10px;border-bottom:0;border-left:0}
+/* הטקסט: גדול יותר מהטור הצדדי */
+.gdetail.itip .gdbody{flex:1 1 auto;min-height:0;overflow-y:auto;gap:6px;touch-action:pan-y;overscroll-behavior:contain}
+.gdetail.itip h3{font-size:21px!important;line-height:1.15}
+.gdetail.itip small{font-size:14px}
+.gdetail.itip p,.gdetail.itip li,.gdetail.itip .gcmp,.gdetail.itip .cost{font-size:15px;line-height:1.4}
+.gdetail.itip .dim{font-size:14px}
+.gdetail.itip .gdicon{flex:none}
+.gdetail.itip .gbtns{flex:none;display:flex;flex-direction:row;gap:8px;width:100%;max-width:none}
+.gdetail.itip .gbtns .vbtn,.gdetail.itip>.vbtn{min-height:46px;font-size:16px;margin:0}
+.gdetail.itip>.vbtn{flex:none;width:100%}
+.gdetail.itip .gdx{width:44px;height:44px;font-size:17px}
+/* מסך נמוך (760×350): קצת פחות ריווח, הטקסט נשאר גדול, והכפתורים תמיד נראים */
+@media (orientation:landscape) and (max-height:400px){
+  .gdetail.itip{padding:8px 10px!important;gap:4px}
+  .gdetail.itip h3{font-size:19px!important}
+  .gdetail.itip .gbtns .vbtn,.gdetail.itip>.vbtn{min-height:44px;font-size:15px}
+}
