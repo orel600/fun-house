@@ -135,6 +135,12 @@ function vTrade(kind,r){
 
 /* ---- מעבר בין הכפר לזירה ---- */
 function villageUi(on){document.body.classList.toggle('vil',on);if(!on)document.body.classList.remove('vpan');$('vhud').hidden=!on;if(!on){$('vPanel').hidden=true;$('vEnter').hidden=true;npcHide()}if(typeof visitBtn==='function')visitBtn()}
+// מתנת הפתיחה: ההודעה מחכה שהשיחה הראשונה עם ראש הכפר תיפתח ותיסגר, ולא נכתבת עליה (המבקר, 2.11)
+function vGiftNote(){
+  (function go(){if(!S.vil)return;
+    if(!(SAVE.story&&SAVE.story.intro)||!$('npcDlg').hidden||S.mode!=='play'){setTimeout(go,700);return}
+    banner(T('vil.gift'),C.gold)})();
+}
 function enterVillage(){
   const back=S&&(S.mode==='over'||S.wd);   // חוזרים מהעולם (או מריצה): ליד השער
   reset();S.mode='play';S.vil={near:null,open:null,ui:'',raise:{}};
@@ -142,7 +148,7 @@ function enterVillage(){
   P.x=at.x;P.y=at.y;P.aim=P.face=-Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
   ['ovStart','ovOver','ovLevel','ovBoss'].forEach(id=>$(id).hidden=true);
   for(const k in VILLAGE.b)vSettle(k);   // הייצור מאז הביקור הקודם
-  if(!SAVE.gift){for(const r in VILLAGE.gift)bagAdd(r,VILLAGE.gift[r]);SAVE.gift=true;banner(T('vil.gift'),C.gold)}
+  if(!SAVE.gift){for(const r in VILLAGE.gift)bagAdd(r,VILLAGE.gift[r]);SAVE.gift=true;vGiftNote()}
   else banner(T('vil.home'),C.gold);
   rankSync();questsRefresh();   // רמת הדמות (ranks.js), יום חדש וקווסטים שנפתחו (quests.js)
   saveNow();
