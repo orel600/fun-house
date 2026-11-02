@@ -1382,7 +1382,7 @@ function worldBot(m,L,god){
   const asc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},er=window.eliteRoll;window.eliteRoll=()=>{};
     try{SAVE=saveBlank();SAVE.gearGift=true;SAVE.hero.start='warrior';SAVE.gear.weapon='oakSword';   // שחקן חדש: לוחם עם חרב עץ, בלי כלום
       
-      startRun();S.mode='play';floats=[];runUpdate();const pw=arenaPower(),B=ARENA_SCALE.base;o.raw=pw.dps/B.dps;o.rawH=pw.ehp/B.ehp;o.new=S.run.sc.hp===1&&S.run.sc.dmg===1&&S.run.sc.boss===1;o.line0=floats.length;
+      startRun();S.mode='play';floats=[];runUpdate();const pw=arenaPower(),B=ARENA_SCALE.base;o.raw=pw.dps/B.dps;o.rawH=pw.ehp/B.ehp;o.new=S.run.sc.hp===1&&S.run.sc.dmg===1&&S.run.sc.boss===1;o.line0=floats.filter(f=>f.txt.includes('×')).length;
       S.t=120;const a=addEnemy('grunt',500,0),ttkA=a.max/pw.dps;
       const big=arenaScaleCalc({dps:B.dps*4,ehp:B.ehp*3,wdmg:B.wdmg});o.hp=big.hp;o.dmg=big.dmg;
       startRun();S.mode='play';P.sw.dmg*=4;P.maxHp*=3;P.hp=P.maxHp;floats=[];runUpdate();o.line=(floats.find(f=>f.txt.includes('×'))||{}).txt||'';o.sHp=S.run.sc.hp;o.sDmg=S.run.sc.dmg;
@@ -1393,6 +1393,26 @@ function worldBot(m,L,god){
   check(!asc.err&&asc.new&&asc.line0===0&&Math.abs(asc.raw-1)<0.1&&Math.abs(asc.rawH-1)<0.1&&Math.abs(asc.hp-4)<0.01&&asc.dmg>1.5&&Math.abs(asc.sHp-4)<0.05&&asc.ttk>0.7&&asc.ttk<1.3&&asc.hit>1.5&&!!asc.line&&asc.world,
     'קושי לפי הכוח שלך: '+(asc.err||'שחקן חדש '+(asc.new?'×1':'משתנה!')+' (מדידה '+asc.raw.toFixed(2)+'/'+asc.rawH.toFixed(2)+'), פי 4 נזק ופי 3 חיים → חיי אויב ×'+asc.hp.toFixed(1)+', נזק ×'+asc.dmg.toFixed(2)+
       ', שלד בדקה 2 נופל ב-×'+asc.ttk.toFixed(2)+' מהזמן של חדש, מכה של 10 → '+(asc.hit*10).toFixed(1)+', שורה "'+asc.line+'"'+(asc.world?', בעולם ×1':', בעולם משתנה!')));
+  // הממשק של הזירה (אוראל, 2.11): תג המכפיל ליד הרמה רק לשחקן חזק, טיפ בשתי הריצות הראשונות בלבד,
+  // והכישוף והאולטימייט בפינה: מחוץ לשליש האמצעי של המסך, לא אחד על השני ולא על הסקילים
+  const ahud=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},er=window.eliteRoll;window.eliteRoll=()=>{};const $b=()=>document.getElementById('ascB');
+    try{SAVE=saveBlank();SAVE.gearGift=true;SAVE.hero.start='warrior';SAVE.gear.weapon='oakSword';
+      try{localStorage.removeItem(ARENA_SCALE.tip.key)}catch(e){}
+      const run=strong=>{startRun();S.mode='play';if(strong){P.sw.dmg*=4;P.maxHp*=3;P.hp=P.maxHp}floats=[];runUpdate();drawRunBar();
+        return{tip:!!S.run.tip&&floats.some(f=>f.txt===T('arena.tip')),badge:!$b().hidden&&getComputedStyle($b()).display!=='none',txt:$b().textContent,title:$b().title}};
+      const r1=run(false),r2=run(true),r3=run(true);
+      o.tip1=r1.tip;o.tip3=r3.tip;o.newBadge=r1.badge;o.strong=r2.badge&&/^×\d/.test(r2.txt)&&r2.title===T('ascale.tip');o.txt=r2.txt;
+      for(const id of Object.keys(SKILLS.list))skillAdd(id);skillsHud();ultHud();spellHud();
+      const W=innerWidth,box=id=>document.getElementById(id).getBoundingClientRect(),sp=box('spell'),ul=box('ult');
+      const mid=b=>b.width>0&&b.right>W/3&&b.left<W*2/3,ovl=(a,b)=>a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
+      const circ=(a,b)=>Math.hypot(a.left+a.width/2-b.left-b.width/2,a.top+a.height/2-b.top-b.height/2)<(a.width+b.width)/2-1;
+      o.vis=sp.width>0&&ul.width>0;o.mid=[mid(sp)?'כישוף':'',mid(ul)?'אולטימייט':''].filter(Boolean);o.ovl=ovl(sp,ul);
+      o.onSk=[...document.querySelectorAll('#skills .skb')].filter(k=>circ(k.getBoundingClientRect(),sp)||circ(k.getBoundingClientRect(),ul)).length;
+      o.box='כישוף '+Math.round(sp.left)+'-'+Math.round(sp.right)+', אולטימייט '+Math.round(ul.left)+'-'+Math.round(ul.right)+' (אמצע '+Math.round(W/3)+'-'+Math.round(W*2/3)+')'}catch(err){o.err=String(err&&err.stack||err)}
+    window.eliteRoll=er;enemies=[];floats=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!ahud.err&&ahud.tip1&&!ahud.tip3&&!ahud.newBadge&&ahud.strong&&ahud.vis&&!ahud.mid.length&&!ahud.ovl&&!ahud.onSk,
+    'ממשק הזירה: '+(ahud.err||'טיפ בריצה 1 '+(ahud.tip1?'כן':'לא!')+', בריצה 3 '+(ahud.tip3?'כן!':'לא')+', תג מכפיל לחדש '+(ahud.newBadge?'יש!':'אין')+', לחזק '+(ahud.strong?'"'+ahud.txt+'"':'חסר!')+
+      ', '+ahud.box+(ahud.mid.length?', באמצע המסך: '+ahud.mid.join('+'):'')+(ahud.ovl?', הכישוף על האולטימייט!':'')+(ahud.onSk?', על סקיל!':'')));
   // הרמה הראשונה בזירה (run.js, RUN.ease.horde): שחקן שעומד במקום, מזל קבוע. הגוש הראשון מגיע מהר, אז רמה ראשונה לפני 15 שניות של משחק (המבקר, 2.11: היה עד 25)
   const flv=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,rnd=Math.random,er=window.eliteRoll;let sd=7,t=null;
     Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;window.eliteRoll=()=>{};
