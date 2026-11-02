@@ -17,6 +17,9 @@ body{margin:0}
 html,body{height:100%;overflow:hidden;background:var(--ink);color:var(--chalk);font-family:var(--body);
   overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+/* גובה המסך נמדד ב-JS (fitScreen ב-js/core.js): באייפון 100% נשאר לפעמים ישן אחרי שסרגלי הדפדפן זזו, ונשאר פס ריק למטה */
+html,body{height:var(--appH,100%)}
+#c,#c3,#ovStart,#ovStart .spanel{bottom:auto;height:var(--appH,100%)}
 /* הכיוון (ימין לשמאל או שמאל לימין) מגיע מ-<html dir>, שנקבע לפי השפה ב-lang.js */
 .hud{position:fixed;top:0;left:0;right:0;pointer-events:none;z-index:2;
   padding:calc(env(safe-area-inset-top,0px) + 10px) calc(env(safe-area-inset-right,0px) + 14px) 0 calc(env(safe-area-inset-left,0px) + 14px)}
@@ -132,8 +135,8 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
 .spellb:active{transform:scale(.92)}
 .spellb[data-sec]:not([data-sec=""])::after{content:attr(data-sec);position:absolute;inset:0;display:grid;place-items:center;z-index:1;font:900 20px/1 var(--body);color:#fff;text-shadow:0 0 4px #000,0 2px 0 #000;pointer-events:none}
 .spellb[hidden],.spellpick[hidden]{display:none}
-.spellpick{position:fixed;z-index:3;display:flex;gap:8px;direction:ltr;right:calc(env(safe-area-inset-right,0px) + 292px);bottom:calc(env(safe-area-inset-bottom,0px) + 136px)}
-.swap:not([hidden])~.spellpick{right:calc(env(safe-area-inset-right,0px) + 306px)}
+.spellpick{position:fixed;z-index:3;display:flex;gap:8px;direction:ltr;right:calc(env(safe-area-inset-right,0px) + 24px);bottom:calc(env(safe-area-inset-bottom,0px) + 206px)}   /* מעל הסקילים בפינה, ולא על הגיבור במרכז (המבקר, 2.11.2026) */
+.swap:not([hidden])~.spellpick{right:calc(env(safe-area-inset-right,0px) + 24px);bottom:calc(env(safe-area-inset-bottom,0px) + 236px)}
 .spellpick button{width:44px;height:44px;border-radius:50%;border:2px solid #E9D8A688;background:#141A2Ae6;color:#E9D8A6;display:grid;place-items:center;padding:0;touch-action:none}
 .spellpick button.on{border-color:#E9D8A6;box-shadow:0 0 10px #E9D8A688}
 .spellpick .dti{width:22px;height:22px}
