@@ -1,5 +1,5 @@
 /* כישוף מיוחד (אוראל, 1.11.2026, בהשראת MLBB): כפתור קטן ליד הסקילים, עם כישוף אחד שבוחרים בתחילת ריצה.
-   בתחילת כל ריצה בזירה, לכמה שניות, מעל הכפתור מופיעים שלושה סמלים. נגיעה בוחרת, והבחירה נזכרת לריצה הבאה (בטלפון, fh-spell).
+   בתחילת כל ריצה בזירה, לכמה שניות, כל נגיעה בכפתור מחליפה לכישוף הבא, והשם שלו מתחת לכפתור (אוראל, 2.11: בלי שורת סמלים על הדמות). הבחירה נזכרת לריצה הבאה (בטלפון, fh-spell).
    קפיצה: מזנקים לכיוון התנועה (או המבט) עם הגנה קצרה. ריפוי: מחזיר חלק מהחיים. מכה: נזק כבד לאויב-העל או לבוס הקרוב.
    רק בזירה. המצב ב-S.spl, חדש בכל ריצה. נקרא מ-render.js (spellHud). מקלדת: 5. הטקסטים ב-lang.js תחת 'sp.' */
 const SPELL={
@@ -9,14 +9,17 @@ const SPELL={
     smite:{cd:30,pct:0.12,dmg:4,range:420,icon:'M13 2 5 14h6l-1 8 8-12h-6z'}            // מכה: חלק מהחיים המלאים של המטרה, ועוד כפול הנזק של הנשק
   },
   pick:4,          // כמה שניות בתחילת ריצה אפשר לבחור
+  hold:2,          // אחרי החלפה, עוד כמה שניות אפשר להחליף שוב לפני שנגיעה מטילה
   col:'#E9D8A6',   // צבע הכפתור: קלף בהיר, כי כישוף הוא לא סוג נזק
   key:'fh-spell'
 };
 const spellArena=()=>!!S&&skArena()&&S.mode==='play';
 const spellId=()=>{let v=null;try{v=localStorage.getItem(SPELL.key)}catch(e){}return SPELL.list[v]?v:'dash'};
 function spellState(){return S.spl||(S.spl={id:spellId(),until:0,t0:S.t,used:0})}
+const spellPicking=()=>S.t-spellState().t0<=SPELL.pick;
 const spellCd=()=>Math.max(0,spellState().until-S.t);   // כמה שניות עד שאפשר שוב (זמן המשחק, אז עוצר בהפסקה)
 function spellPick(id){if(!SPELL.list[id])return;try{localStorage.setItem(SPELL.key,id)}catch(e){}const s=spellState();s.id=id;s.t0=-99;spellKey='';sfx('tap')}
+function spellNext(){const ks=Object.keys(SPELL.list),s=spellState(),id=ks[(ks.indexOf(s.id)+1)%ks.length];spellPick(id);s.t0=S.t-SPELL.pick+SPELL.hold}
 function spellUse(){
   const s=spellState(),D=SPELL.list[s.id];if(!spellArena()||spellCd()>0)return false;
   if(s.id==='dash'){const m=Math.hypot(P.vx||0,P.vy||0),a=m>1?Math.atan2(P.vy,P.vx):P.aim||0;
@@ -31,14 +34,12 @@ function spellUse(){
 // כל פריים בזירה: ההמתנה יורדת, הכפתור והבחירה מתעדכנים
 let spellKey='';
 function spellHud(){
-  const b=$('spell'),on=spellArena();if(b.hidden===on)b.hidden=!on;$('spellPick').hidden=!on||S.t-spellState().t0>SPELL.pick;if(!on)return;
-  const s=spellState(),cd=spellCd();
-  if(spellKey!==s.id+LANG){spellKey=s.id+LANG;b.innerHTML=spellSvg(s.id)+'<i></i>';b.setAttribute('aria-label',T('sp.'+s.id));
-    $('spellPick').innerHTML=Object.keys(SPELL.list).map(k=>'<button type="button" data-sp="'+k+'" aria-label="'+T('sp.'+k)+'" class="'+(k===s.id?'on':'')+'">'+spellSvg(k)+'</button>').join('')}
+  const b=$('spell'),on=spellArena();if(b.hidden===on)b.hidden=!on;if(!on)return;
+  const s=spellState(),cd=spellCd(),pk=spellPicking();if(b.classList.contains('pick')!==pk)b.classList.toggle('pick',pk);
+  if(spellKey!==s.id+LANG){spellKey=s.id+LANG;b.innerHTML=spellSvg(s.id)+'<i></i>';b.setAttribute('aria-label',T('sp.'+s.id));b.dataset.name='⇄ '+T('sp.'+s.id)}
   const v=String(Math.round(20*cd/SPELL.list[s.id].cd)/20);if(b.dataset.cd!==v){b.dataset.cd=v;b.style.setProperty('--cd',v);b.classList.toggle('ready',v==='0')}
   const sec=cd>0?String(Math.ceil(cd)):'';if(b.dataset.sec!==sec)b.dataset.sec=sec;
 }
 const spellSvg=id=>'<svg class="dti" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="'+SPELL.list[id].icon+'"/></svg>';
-$('spell').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();spellUse()});
-$('spellPick').addEventListener('pointerdown',e=>{const b=e.target.closest('[data-sp]');if(!b)return;e.preventDefault();e.stopPropagation();spellPick(b.dataset.sp)});
+$('spell').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(spellArena()&&spellPicking())spellNext();else spellUse()});
 addEventListener('keydown',e=>{if(e.code==='Digit5'&&S&&e.target===document.body)spellUse()});

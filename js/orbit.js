@@ -5,7 +5,7 @@
    השמות ב-lang.js: 'orb.<סוג>' לסוג, 'orb.do.<סוג>' למה שהוא עושה (מסך הציוד), 'orb.blocked' כשהמגן בולע מכה */
 const ORBIT={
   r:64,spin:2.4,size:11,   // רדיוס המעגל סביב הדמות, מהירות הסיבוב (רדיאנים לשנייה) וגודל החפץ
-  look:{k:1.25,k3d:1.4,lift:10,lift3d:22,bob:3},   // רק ציור: כמה גדול החפץ נראה (בתלת-ממד יותר, ליד הדמות הגבוהה), כמה הוא מרחף מעל הצל שלו, וכמה הוא עולה ויורד
+  look:{k:1.25,k3d:1.4,lift:10,lift3d:22,bob:3,arena:0.66},   // רק ציור: כמה גדול החפץ נראה (בתלת-ממד יותר, ליד הדמות הגבוהה), כמה הוא מרחף מעל הצל שלו, וכמה הוא עולה ויורד. arena: הקטנה בזירה, שהמצלמה בה קרובה, כדי שייראה כמו בעולם (אוראל, 2.11)
   /* dt: סוג הנזק. dmg: כמה נזק, כפול הנזק של הנשק שביד. every: שניות עד שאותו חפץ פוגע שוב באותו אויב.
      block: עוצר יריות של אויבים שפוגעות בו. shield: בולע מכה אחת, ונטען מחדש אחרי every שניות.
      heal: כל every שניות מרפא k מהחיים המלאים. crit: תוספת לסיכוי למכה קריטית. loot: תוספת לסיכוי של כל שלל (0.15 = פי 1.15) */
@@ -79,13 +79,14 @@ function orbitShield(){
 /* ---- ציור: כל חפץ בצורה של הסוג שלו. כדור אש וכפור בצורת סוג הנזק, אבן משושה (בהירה כשהמגן מוכן), עלה עם פלוס, ותלתן ---- */
 function drawOrbits(){
   const o=S.orb;if(!o||!o.types.length||!skHere())return;
-  const L=ORBIT.look,s=ORBIT.size*(R3D.on?L.k3d:L.k);
+  const L=ORBIT.look,ar=!S.wd&&!S.vil,z=ar?L.arena:1,s=ORBIT.size*(R3D.on?L.k3d:L.k)*z;
   o.types.forEach((t,i)=>{
     const D=ORBIT.types[t],g=o.pos[i];if(!g)return;
     // צל על הרצפה, והחפץ מרחף מעליו בגובה הגוף, עם זוהר בצבע הסוג (ניר, 1.11: "לא מופיעים ויזואלית על הדמות")
-    const p={x:g.x,y:g.y-(R3D.on?L.lift3d:L.lift)-Math.sin(S.t*4+i*1.3)*L.bob};
+    const p={x:g.x,y:g.y-((R3D.on?L.lift3d:L.lift)+Math.sin(S.t*4+i*1.3)*L.bob)*z};
     ctx.globalAlpha=0.3;ctx.fillStyle='#000';ctx.beginPath();ctx.ellipse(g.x,g.y,s*0.9,s*0.4,0,0,7);ctx.fill();
-    ctx.globalAlpha=0.35;ctx.fillStyle=D.col;ctx.beginPath();ctx.arc(p.x,p.y,s*1.7,0,7);ctx.fill();ctx.globalAlpha=1;
+    if(ar){const gr=ctx.createRadialGradient(p.x,p.y,s*0.3,p.x,p.y,s*1.6);gr.addColorStop(0,D.col+'88');gr.addColorStop(1,D.col+'00');ctx.globalAlpha=1;ctx.fillStyle=gr;ctx.beginPath();ctx.arc(p.x,p.y,s*1.6,0,7);ctx.fill()}   // בזירה: זוהר רך במקום עיגול שטוח
+    else{ctx.globalAlpha=0.35;ctx.fillStyle=D.col;ctx.beginPath();ctx.arc(p.x,p.y,s*1.7,0,7);ctx.fill();ctx.globalAlpha=1}
     if(D.dt){dtIcon(p.x,p.y,D.dt,s*2);return}
     ctx.strokeStyle=C.ink;ctx.lineWidth=2;ctx.fillStyle=D.col;
     if(t==='defense'){
