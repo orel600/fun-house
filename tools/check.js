@@ -1343,6 +1343,31 @@ function worldBot(m,L,god){
     window.eliteRoll=er;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(Math.abs(ease.d0-0.45)<0.01&&ease.d1===1&&ease.inv0>ease.inv1&&Math.abs(ease.inv1-0.6)<0.01,
     'התחלה רכה בזירה: נזק אויב בהתחלה x'+ease.d0.toFixed(2)+', אחרי הזמן x'+ease.d1+', חסינות אחרי מכה '+ease.inv0.toFixed(2)+'→'+ease.inv1.toFixed(2)+' שניות');
+  // זירת גלים (arenas.js): נכנסים מהכפתור בכרטיס של שער בעולם, ומשחקים עד הסוף (האויבים נופלים ביד, כדי שיהיה מהר). גלים לפי הסדר, הפסקה בלי אויבים, המונה, כל גל חזק יותר עם אויבים משלו, ובוס בגל האחרון שמנצח
+  const wav=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},rw=window.runWon,rnd=Math.random;let won=0,sd=99;window.runWon=()=>{won++};
+    Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;   // מזל משלה, כדי לא להזיז את המזל של הבדיקות שאחריה (אותו seed = אותה ריצה)
+    try{enterWorld('home');const w=S.wd;w.near=w.open='grove';w.ui='';worldHud();
+      const b=document.querySelector('#wPanel [data-a="waves"]');o.btn=b?b.innerText:null;if(b)b.click();else{worldUi(false);startRun('waves')}
+      o.arena=S.arena;o.floor=arenaFloor('d2');o.bar=getComputedStyle(document.getElementById('runbar')).display==='none';
+      const N=ARENAS.waves.list.length,dt=1/30,k={},tag={},types={};o.N=N;o.breaks=0;o.breakSpawn=0;let ph='';o.bossAt=null;
+      for(let t=0;t<900&&!won;t+=dt){
+        P.hp=P.maxHp;if(S.mode!=='play'){for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;S.mode='play';S.pendingLv=0}
+        update(dt);hud();const v=S.wv;if(!v)break;
+        if(v.phase==='break'){if(ph!=='break'){o.breaks++;tag.br??=document.getElementById('waveTag').textContent}if(enemies.some(e=>!e.dead&&e.wv>v.i))o.breakSpawn++}
+        ph=v.phase;
+        if(v.phase==='fight'&&k[v.i]==null){k[v.i]=runK();tag[v.i]=document.getElementById('waveTag').textContent}
+        for(const e of enemies)if(!e.dead&&e.wv!=null){(types[e.wv]=types[e.wv]||new Set()).add(e.type);if(e.wv===v.i&&Math.random()<0.06)kill(e)}
+        if(S.boss&&!S.boss.dead){o.bossAt??=v.i;if(Math.random()<0.03)kill(S.boss)}
+      }
+      const ks=Object.keys(k).map(Number).sort((a,b)=>a-b).map(i=>k[i]);
+      o.waves=ks.length;o.grow=ks.every((x,i)=>!i||x>ks[i-1]);o.k1=Math.round(ks[0]*10)/10;o.kN=Math.round(ks[ks.length-1]);
+      o.tag3=tag[2]||'';o.tagBr=tag.br||'';o.tagN=tag[N-1]||'';o.sets=new Set(Object.values(types).map(s=>[...s].sort().join('+'))).size;
+      o.won=won;o.bossCount=S.bossCount;o.runWon=S.run.won>0;o.stations=S.run.next;o.t=Math.round(S.t)}catch(err){o.err=String(err&&err.stack||err)}
+    window.runWon=rw;Math.random=rnd;enemies=[];wRet=null;for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;document.getElementById('banner').textContent='';
+    SAVE=JSON.parse(bak);reset();S.mode=mode;o.after=S.arena==='classic'&&!document.documentElement.classList.contains('waves');return o});
+  check(!wav.err&&!!wav.btn&&wav.arena==='waves'&&!!wav.floor&&wav.bar&&wav.waves===wav.N&&wav.grow&&wav.breaks>=wav.N-1&&wav.breakSpawn===0&&wav.tag3.includes('3/'+wav.N)&&!!wav.tagBr&&wav.sets>=4
+    &&wav.bossAt===wav.N-1&&wav.won===1&&wav.bossCount===1&&wav.runWon&&wav.stations===0&&wav.after,
+    'זירת גלים: '+(wav.err||'כפתור "'+wav.btn+'", '+wav.waves+'/'+wav.N+' גלים ב-'+wav.t+' שניות, '+wav.breaks+' הפסקות (אויבים בהפסקה: '+wav.breakSpawn+'), מונה "'+wav.tag3+'", בהפסקה "'+wav.tagBr+'", אחרון "'+wav.tagN+'", חוזק x'+wav.k1+'→x'+wav.kN+(wav.grow?' (עולה)':' (לא עולה!)')+', '+wav.sets+' הרכבי אויבים, בוס בגל '+(wav.bossAt==null?'-':wav.bossAt+1)+', ניצחון: '+(wav.won===1&&wav.runWon?'כן':'לא')+', תחנות רגילות: '+wav.stations+', אחרי: '+(wav.after?'זירה רגילה':'נשאר גלים!')));
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){

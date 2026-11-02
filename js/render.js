@@ -135,7 +135,7 @@ function render(){
   setZoom(camZoom());   // כמה רחוק המצלמה בכל מקום (camera.js, VIEW ב-render3d.js)
   ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);
   // בתלת-ממד הקנבס שקוף: הקרקע והדמויות מצוירות בשכבה שמתחתיו (render3d.js)
-  if(R3D.on)ctx.clearRect(0,0,W,H);else{ctx.fillStyle=S&&S.room?'#262114':C.ink;ctx.fillRect(0,0,W,H)}
+  if(R3D.on)ctx.clearRect(0,0,W,H);else{ctx.fillStyle=S&&S.room?'#262114':arenaFloor('d2')||C.ink;ctx.fillRect(0,0,W,H)}
   if(!P)return;
   const sh=RM?0:S.shake,ox=Math.round(W/2-S.cam.x+rand(-sh,sh)),oy=Math.round(H/2-S.cam.y+rand(-sh,sh));
   if(S.mb){render3d(ox,oy);ctx.translate(ox,oy);mobaDraw(ox,oy);return}   // משחקי השאול: ציור משלו (moba.js)
