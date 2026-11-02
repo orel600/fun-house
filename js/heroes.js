@@ -7,11 +7,12 @@
 
 const HEROES={
   /* weapon: פריט מ-GEAR.items שנלבש בבחירה. passive: סטטים כמו של ציוד (GEAR.stats), שחלים בכל ריצה.
-     icon: על הכרטיס במסך הבחירה. col: צבע הדמות בדו-ממד */
+     icon: על הכרטיס במסך הבחירה. col: צבע הדמות בדו-ממד.
+     arms: סוגי הנשק (WEAPONS) של הדמות. לא נועל כלום, רק מטה את השלל בעולם לטובתם (LOOT.gear.cls ב-loot.js) */
   list:{
-    warrior:{weapon:'oakSword',passive:{hp:25},icon:'🛡️',col:'#D9DEE6'},
-    hunter: {weapon:'oakBow',passive:{speed:10},icon:'🏹',col:'#A8D08D'},
-    mage:   {weapon:'oakStaff',passive:{regen:1},icon:'🔮',col:'#C7A6FF'}
+    warrior:{weapon:'oakSword',passive:{hp:25},arms:['sword','axe','hammer'],icon:'🛡️',col:'#D9DEE6'},
+    hunter: {weapon:'oakBow',passive:{speed:10},arms:['bow'],icon:'🏹',col:'#A8D08D'},
+    mage:   {weapon:'oakStaff',passive:{regen:1},arms:['staff','wand'],icon:'🔮',col:'#C7A6FF'}
   },
   /* סגנון המשחק, לקווסטי הדרגה. כל מונה נשמר ב-SAVE.hero.style.
      sec: כמה שניות בזירה התנאי היה נכון (heroTick, כל פריים). המפתח נשמר עם t_ לפניו.

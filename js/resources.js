@@ -123,7 +123,7 @@ function resTip(r){
 }
 // נגיעה בתג של משאב (resChip ב-village.js, data-r) מציגה את השורה מעליו לכמה שניות
 document.addEventListener('click',e=>{
-  const c=e.target.closest&&e.target.closest('.res[data-tip]');if(!c)return;
+  const c=e.target.closest&&e.target.closest('.res[data-tip],.bwpc[data-tip]');if(!c)return;
   let t=document.getElementById('resTip');if(!t){t=document.createElement('div');t.id='resTip';t.className='restip';document.body.appendChild(t)}
   t.textContent=resTip(c.dataset.tip);t.dir=DIR;t.hidden=false;
   const b=c.getBoundingClientRect();t.style.top=Math.max(4,b.bottom+6)+'px';

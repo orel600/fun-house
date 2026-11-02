@@ -28,6 +28,16 @@ const GEAR={
     ironBow:    {slot:'weapon',tier:1,w:'bow',icon:'🏹',stats:{gdmg:25},look:{model:'w_bow_A_withString'}},
     goldBow:    {slot:'weapon',tier:3,w:'bow',icon:'🏹',stats:{gdmg:60,magnet:20},look:{model:'w_bow_B_withString',glow:C.gold}},
     oakStaff:   {slot:'weapon',tier:0,w:'staff',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'w_staff_B'}},   // הנשק של הקוסם: קסם שמתביית
+    /* נשקים לכל דמות בכל שכבה (ניר, 2.11.2026: "הגעתי לרמה 20 ולא נפל לי אף נשק שמתאים לקלאס שלי"). לקוסם היה רק מטה עץ,
+       ולכל דמות יש עכשיו נשק בכל שכבה עד אגדי. איזה נשק שייך לאיזו דמות: arms ב-HEROES (heroes.js), וההטיה בשלל: LOOT.gear.cls */
+    ironStaff:  {slot:'weapon',tier:1,w:'staff',icon:'🪄',stats:{gdmg:20,magnet:15},look:{model:'w_staff_A'}},
+    silverWand: {slot:'weapon',tier:2,w:'wand',icon:'🪄',stats:{gdmg:38,speed:4},look:{model:'w_wand_A',glow:'#DCE3EA'}},
+    goldStaff:  {slot:'weapon',tier:3,w:'staff',icon:'🪄',stats:{gdmg:60,regen:0.6},look:{model:'w_staff_A',glow:C.gold}},
+    starStaff:  {slot:'weapon',tier:4,w:'staff',icon:'🌟',stats:{gdmg:85,magnet:25,regen:0.6},look:{model:'w_staff_B',glow:'#FF6FB5'}},
+    ironAxe:    {slot:'weapon',tier:1,w:'axe',icon:'🪓',stats:{sdmg:24},look:{model:'w_axe_A'}},
+    goldAxe:    {slot:'weapon',tier:3,w:'axe',icon:'🪓',stats:{sdmg:60,hp:15},look:{model:'w_axe_C',glow:C.gold}},
+    dragonBlade:{slot:'weapon',tier:4,w:'sword',icon:'⚔️',stats:{sdmg:85,speed:6},look:{model:'w_sword_E',glow:'#FF6FB5'}},
+    skyBow:     {slot:'weapon',tier:4,w:'bow',icon:'🏹',stats:{gdmg:85,speed:6},look:{model:'w_bow_B_withString',glow:'#FF6FB5'}},
     boneCharm:  {slot:'acc',tier:0,icon:'🦴',stats:{hp:15}},
     ironRing:   {slot:'acc',tier:1,icon:'💍',stats:{regen:1}},
     starterBoots:{slot:'boots',tier:0,type:'boots',icon:'👟',stats:{speed:8}},   // הפרס של הקווסט הראשון של ראש הכפר (quests.js)
@@ -47,7 +57,12 @@ const GEAR={
     stoneOrb:   {slot:'orbit',tier:0,type:'defense'},
     frostOrb:   {slot:'orbit',tier:0,type:'control'},
     leafOrb:    {slot:'orbit',tier:0,type:'support'},
-    cloverOrb:  {slot:'orbit',tier:0,type:'luck'}
+    cloverOrb:  {slot:'orbit',tier:0,type:'luck'},
+    // חפצים משולבים (orbit.js, ORBIT.combo): לא נופלים מהשלל הרגיל, רק מבוסים. types: החלקים, type: הראשי (לצבע)
+    steamOrb:   {slot:'orbit',tier:2,type:'attack',types:['attack','control'],icon:'🔥❄️'},
+    wardenOrb:  {slot:'orbit',tier:2,type:'defense',types:['defense','support'],icon:'🛡️💚'},
+    gambleOrb:  {slot:'orbit',tier:2,type:'attack',types:['attack','luck'],icon:'🔥🍀'},
+    trinityOrb: {slot:'orbit',tier:3,type:'attack',types:['attack','defense','support'],icon:'🔥🛡️💚'}
   },
   gift:['oakSword','oakBow','boneCharm'],   // פעם אחת, בביקור הראשון בכפר
   /* יצירה בנפחייה: מה עולה כל פריט. המתכת של השכבה, וחומרים מיצורים, מבוסים ואבנים, כדי שלכל משאב יהיה שימוש.
@@ -62,6 +77,15 @@ const GEAR={
     silverBlade:{silver:8,iron:6,hide:6,ruby:1,coins:90},
     swiftBoots: {silver:4,hide:10,cloth:6,sapphire:1,coins:90},
     goldBow:    {gold:6,silver:4,venom:8,bolt:1,coins:160},
+    // נשקי הדמויות: מטות ושרביט מתמצית ואבק, גרזנים מעצם וקליפות, והאגדיים ממיתריל
+    ironStaff:  {iron:6,wood:10,essence:4,aquaC:1,coins:40},
+    ironAxe:    {iron:10,wood:6,bone:6,rubyC:1,coins:40},
+    silverWand: {silver:6,wood:6,essence:8,aqua:1,coins:90},
+    goldStaff:  {gold:6,silver:4,essence:10,shadow:2,aqua:1,coins:160},
+    goldAxe:    {gold:6,iron:8,plate:4,horn:1,ruby:1,coins:160},
+    starStaff:  {mythril:6,gold:4,essence:12,star:1,shadow:4,coins:300},
+    dragonBlade:{mythril:6,gold:4,horn:3,star:1,ruby:2,coins:300},
+    skyBow:     {mythril:6,gold:4,venom:8,star:1,bolt:2,coins:300},
     goldAmulet: {gold:8,essence:10,shadow:2,venom:4,aqua:1,horn:1,coins:160},
     crown:      {mythril:6,gold:6,horn:3,star:1,shadow:4,amberF:1,coins:300},
     // סטים: השומר מאבן, ברזל וקליפות (מהמחצבה), הצייד מכסף, נוצות ותמצית, עם רסיס ברק
@@ -89,9 +113,10 @@ const GEAR={
   doll:{start:['weapon'],end:['acc','boots'],under:['orbit']},
   ladder:1.25,
   /* התרמיל (ניר, 1.11.2026: "הכל מרגיש בלגן"): מסננים לפי משבצת בראש התרמיל, באותו סדר שבו הפריטים ממוינים (ואחר כך נדירות וחוזק).
-     sell: כמה מטבעות מקבלים על פריט חלש ב"למכור חלשים", לפי שכבה. רק שכבות שכתובות כאן נמכרות (רגיל ולא שכיח) */
+     sell: כמה מטבעות מקבלים על פריט במכירה, לפי שכבה. sellPlus: כמה מוסיפה כל רמת Aging למחיר (0.2 = ‎+20%).
+     sellRare: מאיזו שכבה פריט "יקר" (נדיר ומעלה): לא נבחר ב"בחר חלשים", ומכירה שלו מבקשת אישור */
   filter:{weapon:'⚔️',boots:'👢',acc:'💍',orbit:'✨'},
-  sell:{0:6,1:15},
+  sell:{0:6,1:15,2:40,3:90,4:200},sellPlus:0.2,sellRare:2,
   drag:8,hold:220
 };
 
@@ -193,7 +218,7 @@ function forgeHtml(){
 /* ---- שלל בסוף ריצה ---- */
 // מגריל פריט לפי כמה כל שכבה נפוצה. n: כמה הגרלות, והשכבה הגבוהה מביניהן נבחרת (שלל מהמבוקש ומהבוס, LOOT.gear ב-loot.js)
 function gRoll(n=1){
-  const pool=Object.keys(GEAR.items).filter(id=>GEAR.loot.slots.includes(GEAR.items[id].slot));
+  const pool=Object.keys(GEAR.items).filter(id=>GEAR.loot.slots.includes(GEAR.items[id].slot)&&!GEAR.items[id].types);   // משולבים רק מבוסים (orbit.js)
   const one=()=>{let r=Math.random()*pool.reduce((n,id)=>n+GEAR.tiers[GEAR.items[id].tier].w,0);
     for(const id of pool){r-=GEAR.tiers[GEAR.items[id].tier].w;if(r<0)return id}return pool[0]};
   let best=one();for(let i=1;i<n;i++){const id=one();if(GEAR.items[id].tier>GEAR.items[best].tier)best=id}
@@ -203,6 +228,7 @@ function gearLoot(){
   if(S.gearLoot)return S.gearLoot;
   const got=S.gearLoot=[],rolls=[GEAR.loot.run];for(let i=0;i<S.bossCount;i++)rolls.push(GEAR.loot.boss);
   for(const ch of rolls)if(Math.random()<ch){const id=gRoll();bagAdd(id);got.push(id)}
+  for(let i=0;i<S.bossCount;i++){const id=orbitComboRoll();if(id){bagAdd(id);got.push(id)}}   // חפץ משולב מבוס (orbit.js)
   if(got.length){saveNow();const el=$('sLoot');el.innerHTML=(el.textContent===T('vil.noLoot')?'':el.innerHTML)+got.map(gChip).join('')}
   return got;
 }
@@ -215,25 +241,47 @@ const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gPic(id)+
    page 'gear': הבובה עם המשבצות, התרמיל הרחב והפרטים. page 'char': הנקודות, הבניות ועץ הסקילים, ברוחב מלא */
 const GUI={sel:null,tab:'items',page:'gear'};   // sel: מה נבחר: {id} מהתרמיל, {slot,i} ממשבצת, או {sid} מהמחסן. tab: הלשונית בתרמיל
 // נפתח מכל מקום: מהכפר ומהזירה. בזירה הריצה עוצרת, כמו במסך השדרוג
-function gearOpen(page){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;GUI.view=null;GUI.sell=false;GUI.page=page==='char'?'char':'gear';$('ovGear').hidden=false;gearDraw()}
-function gearClose(){gDragEnd();$('ovGear').hidden=true;if(S.mode==='gear')S.mode='play'}
+function gearOpen(page){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;GUI.view=null;GUI.sell=false;GUI.pick={};GUI.ask=false;GUI.undo=null;GUI.page=page==='char'?'char':'gear';$('ovGear').hidden=false;gearDraw()}
+function gearClose(){gDragEnd();GUI.undo=null;GUI.sell=false;$('ovGear').hidden=true;if(S.mode==='gear')S.mode='play'}
 // המחסן פתוח במסך רק כשעומדים לידו בכפר, והוא בנוי
 const gStashOn=()=>!!(S.vil&&S.vil.near==='stash'&&vLv('stash')>0);
 // הנדירות של פריט היא השכבה שלו (עץ = רגיל ... אגדי), ושל משאב היא rar שלו. כך הצבעים זהים לשלל שנופל
 const gRar=k=>gItem(k)?gItem(k).tier:(resOf(k)||{}).rar||0;
 const gRarCol=k=>RES.rarity[Math.min(gRar(k),RES.rarity.length-1)].col;
 
-const gSign=(k,v)=>'<bdi>'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T(GEAR.stats[k].t||'st.'+k);
-function gStatsHtml(id){const it=gItem(id),s=gStats(id);
-  if(it.slot==='orbit')return '<p>'+T('orb.'+it.type)+' · '+T('orb.do.'+it.type)+'</p>';
+const gSign=(k,v)=>'<bdi dir="ltr">'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T(GEAR.stats[k].t||'st.'+k);
+/* ---- חפץ מסתובב: מה הוא נותן, מהמספרים של ORBIT.types (orbit.js, של אוראל). רק תצוגה: לא משנה איך הוא עובד בזירה.
+   כל שורה: k (המפתח, להשוואה), v (המספר), ו-b לשורה בלי מספר (עוצר יריות). הטקסט ב-lang.js תחת 'orb.f.<k>' ---- */
+function gOrbFacts(type,k=1){
+  const D=ORBIT.types[type]||{},out=[],pc=x=>Math.round(x*100*k);
+  if(D.dmg)out.push({k:D.dt,v:pc(D.dmg)});   // אחוז מהנזק של הנשק, בסוג הנזק שלו
+  if(D.block)out.push({k:'block',v:1,b:1});
+  if(D.shield)out.push({k:'shield',v:1,b:1,n:Math.round(D.shield.every/k)});
+  if(D.heal)out.push({k:'heal',v:pc(D.heal.k)});
+  if(D.crit)out.push({k:'crit',v:pc(D.crit)});
+  if(D.loot)out.push({k:'loot',v:pc(D.loot)});
+  return out;
+}
+const gOrbLine=(f,v)=>f.b?T('orb.f.'+f.k,f.n):'<bdi dir="ltr">'+(v>0?'+':'')+v+'%</bdi> '+T('orb.f.'+f.k);
+// lite: חפץ מסתובב מהתרמיל, כשההשוואה שמתחת כבר מראה את כל מה שהוא נותן (▲), כדי שהכל ייכנס בטור בלי גלילה
+function gStatsHtml(id,lite){const it=gItem(id),s=gStats(id);
+  if(it.slot==='orbit')return '<p class="gorb">'+(it.types?it.types.map(t=>T('orb.'+t)).join(' + ')+' · '+T('orb.combo.do',Math.round(ORBIT.combo.share[it.types.length]*100)):T('orb.'+it.type)+' · '+T('orb.do.'+it.type))+'</p>'+(lite?'':'<ul class="gstats">'+orbitFacts(id).map(f=>'<li>'+gOrbLine(f,f.v)+'</li>').join('')+'</ul>');
   return '<ul class="gstats">'+(it.w?'<li class="gdmg">'+wRangeTxt(wItemAvg(id),it.w)+'</li>':'')+Object.keys(s).map(k=>'<li>'+gSign(k,s[k])+'</li>').join('')+'</ul>'}
 // מה ישתנה אם לובשים: לכל סטט, ההפרש מול מה שיוצא מהמשבצת, עם חץ למעלה או למטה
 function gCompare(id,old){
+  if(gItem(id)&&gItem(id).slot==='orbit')return gOrbCompare(id,old);
   const a=gearStats([id]),b=gearStats(old?[old]:[]),ks=[...new Set([...Object.keys(a),...Object.keys(b)])].filter(k=>(a[k]||0)!==(b[k]||0));
   // נשק: הטווח החדש, עם חץ לפי הממוצע מול הנשק שיוצא
   const it=gItem(id),da=it&&it.w?wItemAvg(id)-wItemAvg(old):0,dmg=it&&it.w&&Math.abs(da)>0.05?'<span class="'+(da>0?'up':'down')+'">'+(da>0?'▲':'▼')+' '+wRangeTxt(wItemAvg(id),it.w)+'</span>':'';
   if(!ks.length&&!dmg)return '<p class="dim">'+T('gear.same')+'</p>';
   return '<p class="cmp">'+dmg+ks.map(k=>{const d=(a[k]||0)-(b[k]||0);return '<span class="'+(d>0?'up':'down')+'">'+(d>0?'▲':'▼')+' '+gSign(k,d)+'</span>'}).join('')+'</p>';
+}
+// חפץ מסתובב מול מה שיוצא מהמשבצת (או משבצת ריקה): מה מתווסף ▲ ומה הולך ▼
+function gOrbCompare(id,old){
+  const a=orbitFacts(id),b=old&&gItem(old)?orbitFacts(old):[],ks=[...new Set([...a,...b].map(f=>f.k))];
+  const v=(l,k)=>(l.find(f=>f.k===k)||{v:0}).v,ds=ks.map(k=>({f:[...a,...b].find(f=>f.k===k),d:v(a,k)-v(b,k)})).filter(x=>x.d);
+  if(!ds.length)return '<p class="dim">'+T('gear.same')+'</p>';
+  return '<p class="cmp">'+ds.map(x=>'<span class="'+(x.d>0?'up':'down')+'">'+(x.d>0?'▲':'▼')+' '+gOrbLine(x.f,x.d)+'</span>').join('')+'</p>';
 }
 // משבצת או תא בתרמיל: מסגרת בצבע הנדירות, ופס בצבע סוג הנזק לנשק
 function gTile(id,attrs,extra){
@@ -244,7 +292,8 @@ function gTile(id,attrs,extra){
 }
 // תא בתרמיל: ▲/▼ מול מה שלבוש, ונקודה לחדש
 function gBagTile(k,n,attrs){
-  const m=gMark(k),x=(m?'<i class="gmk '+(m>0?'up':'down')+'" aria-hidden="true">'+(m>0?'▲':'▼')+'</i>':'')+(gIsNew(k)?'<i class="gnew" aria-hidden="true"></i>':'');
+  const m=gMark(k),pk=GUI.sell&&(GUI.pick||{})[k],x=(m?'<i class="gmk '+(m>0?'up':'down')+'" aria-hidden="true">'+(m>0?'▲':'▼')+'</i>':'')+(gIsNew(k)?'<i class="gnew" aria-hidden="true"></i>':'')+
+    (gLocked(k)?'<i class="glk" aria-hidden="true">🔒</i>':'')+(pk?'<i class="gpk" aria-hidden="true">✓</i>':'');   // מכירה: ✓ על מה שנבחר
   return gTile(k,attrs,(n>1?'<small>×'+shortN(n)+'</small>':'')+x);
 }
 // תא של משאב: אייקון, כמה יש, ומסגרת בצבע הנדירות
@@ -260,7 +309,7 @@ function gBagKeys(tab){
 }
 // הלשוניות: "הכל" ומסנן לכל משבצת, וכל משפחת משאבים שיש בה משהו. המטבעות למעלה, ליד הכותרת
 const gTabs=()=>['items',...Object.keys(GEAR.filter),...Object.keys(RES.fams).filter(f=>f!=='coins'&&resFam(f).some(r=>SAVE.bag[r]>0))];
-const gTabLabel=f=>f==='items'?T('gear.tab.all'):GEAR.filter[f]||T('fam.'+f);
+const gTabLabel=f=>f==='items'?T('gear.tab.all'):GEAR.filter[f]||(RES.list[resFam(f)[0]]||{}).icon||T('fam.'+f);   // משפחת משאבים: האייקון של המשאב הראשון בה, והשם ב-aria-label
 /* ---- סימנים על פריט בתרמיל: ▲ ירוק אם הוא חזק ממה שלבוש במשבצת שלו, ▼ אדום אם חלש, ונקודה לפריט שעוד לא פתחו ---- */
 // מה שלבוש במשבצת שהפריט ייכנס אליה (הכי חלש מבין המשבצות), כדי להשוות
 const gVsWorn=it=>gGet(it.slot,gTarget(it));
@@ -287,28 +336,47 @@ function gDoBest(){
   if(!setCheck(worn))celebrate(P.x,P.y-20,'gear',gIcon(p.id));
   return plan.length;
 }
-/* ---- למכור חלשים: רק פריטים רגילים ולא שכיחים (GEAR.sell) שחלשים ממה שלבוש (▼), בלי שדרוג ובלי כוח.
-   מסט נשאר עותק אחד, בשביל הבונוס. אישור בתוך החלון, לא confirm() ---- */
+/* ---- מכירה (ניר 2.11: "לא ברור איך משתמשים, נראה לי מכרתי משהו שלא התכוונתי, ואין לי אפשרות למכור הכל").
+   🪙 למכור נכנס למצב בחירה: נגיעה בפריט בתרמיל מסמנת אותו (✓) ולא מוכרת. כפתור אחד מוכר את הנבחרים, עם אישור רק כשיש ביניהם פריט יקר.
+   "בחר חלשים": כל מה שחלש ממה שלבוש (▼) והעותקים הכפולים, בלי יקרים ובלי נעולים. מסט נשאר עותק אחד, בשביל הבונוס.
+   לעולם לא נמכר: מה שלבוש (הוא לא בתרמיל) ופריט נעול (🔒, SAVE.glock). "החזר" קונה בחזרה את המכירה האחרונה, עד שסוגרים את החלון ---- */
+const gLocks=()=>SAVE.glock||(SAVE.glock={});
+const gLocked=k=>!!gLocks()[k];
+function gLockToggle(k){const l=gLocks();if(l[k])delete l[k];else l[k]=1;if(GUI.pick)delete GUI.pick[k];saveNow()}
+const gPrice=k=>{const it=gItem(k);return it&&GEAR.sell[it.tier]!=null?Math.round(GEAR.sell[it.tier]*(1+GEAR.sellPlus*gPlus(k))):0};
+const gPrecious=k=>gRar(k)>=GEAR.sellRare||!!gPlus(k)||!!gPow(k);   // נדיר ומעלה, משודרג או עם כוח
+const gCanSell=k=>!!gItem(k)&&SAVE.bag[k]>0&&!gLocked(k)&&gPrice(k)>0;
+// החלשים: ▼ (כל העותקים), וכפולים של כל השאר (חוץ מאחד). בלי יקרים ובלי נעולים
 function gSellList(){
   const o={};
-  for(const k in SAVE.bag){const it=gItem(k),n=SAVE.bag[k];if(!it||!(n>0)||GEAR.sell[it.tier]==null||k!==gBase(k)||gMark(k)!==-1)continue;
-    const m=it.set?n-1:n;if(m>0)o[k]=m}
+  for(const k in SAVE.bag){if(!gCanSell(k)||gPrecious(k))continue;const it=gItem(k),n=SAVE.bag[k];
+    const m=gMark(k)===-1&&!it.set?n:n-1;if(m>0)o[k]=m}
   return o;
 }
-const gSellCoins=l=>Object.keys(l).reduce((t,k)=>t+GEAR.sell[gItem(k).tier]*l[k],0);
-function gDoSell(){
-  const l=gSellList(),c=gSellCoins(l);if(!c)return 0;
-  for(const k in l)bagTake(k,l[k]);bagAdd('coins',c);saveNow();sfx('coin');banner(T('gear.sold',c),C.gold);
-  return c;
+const gSellPick=()=>{const o={},p=GUI.pick||{};for(const k in p){const n=Math.min(p[k],gCanSell(k)?SAVE.bag[k]:0);if(n>0)o[k]=n}return o};
+const gSellCoins=l=>Object.keys(l).reduce((t,k)=>t+gPrice(k)*l[k],0);
+const gSellN=l=>Object.keys(l).reduce((t,k)=>t+l[k],0);
+function gPickToggle(k){const p=GUI.pick||(GUI.pick={});if(!gCanSell(k))return false;if(p[k])delete p[k];else p[k]=SAVE.bag[k];return true}
+function gDoSell(l=gSellPick()){
+  const c=gSellCoins(l);if(!c)return 0;const got={};
+  for(const k in l)if(bagTake(k,l[k]))got[k]=l[k];
+  const cc=gSellCoins(got);bagAdd('coins',cc);GUI.undo={items:got,coins:cc};GUI.pick={};saveNow();sfx('coin');banner(T('gear.sold',cc),C.gold);
+  return cc;
+}
+// החזר: מחזיר את מה שנמכר אחרון תמורת אותו מחיר
+function gUndoSell(){
+  const u=GUI.undo;if(!u||!bagHas('coins',u.coins))return false;
+  bagTake('coins',u.coins);for(const k in u.items)bagAdd(k,u.items[k]);GUI.undo=null;saveNow();sfx('tap');banner(T('gear.unsold'),C.gold);return true;
 }
 
 function gSlotHtml(s){
   const n=s==='weapon'?1:s==='orbit'?GEAR.slots.orbit.length:GEAR.slots[s],sel=GUI.sel;let h='';
   for(let i=0;i<n;i++){
     if(i>=gOpen(s)){h+='<button class="gtile locked" disabled aria-label="'+T('gear.locked',GEAR.slots.orbit[i])+'">🔒<small>'+GEAR.slots.orbit[i]+'</small></button>';continue}
-    h+=gTile(gGet(s,i),'data-slot="'+s+'" data-i="'+i+'"'+(sel&&sel.slot===s&&sel.i===i?' aria-pressed="true"':''),'');
+    const id=gGet(s,i);
+    h+=gTile(id,'data-slot="'+s+'" data-i="'+i+'"'+(gItem(id)?'':' aria-label="'+T('gear.slot.'+s)+'"')+(sel&&sel.slot===s&&sel.i===i?' aria-pressed="true"':''),gItem(id)?'':'<i class="gsil" aria-hidden="true">'+GEARUI.empty[s]+'</i>');   // ריקה: צללית (gearui.js)
   }
-  return '<div class="gslot '+s+'"><span class="k">'+T('gear.slot.'+s)+'</span><div class="grow">'+h+'</div></div>';
+  return '<div class="gslot '+s+'"><div class="grow">'+h+'</div></div>';
 }
 function gearDraw(){
   const D=GEAR.doll,hero=HEROES.list[heroId()]||{},sel=GUI.sel;
@@ -316,55 +384,65 @@ function gearDraw(){
   $('gCoins').innerHTML=resChip('coins',SAVE.bag.coins||0);
   // הבובה: הדמות באמצע, והמשבצות בשני הצדדים ומתחתיה
   const side=k=>'<div class="gd-'+k+'">'+D[k].map(gSlotHtml).join('')+'</div>';
-  $('gSlots').innerHTML=side('start')+'<div class="gfig" style="--hero:'+(hero.col||'#ECE7DC')+'"><span>🧍</span>'+(hero.icon?'<b>'+hero.icon+'</b>':'')+'</div>'+side('end')+side('under');
+  $('gSlots').innerHTML='<div class="gsets">'+gSetBadge()+'</div>'+side('start')+'<div class="gfig" style="--hero:'+(hero.col||'#ECE7DC')+'"><span>🧍</span>'+(hero.icon?'<b>'+hero.icon+'</b>':'')+'</div>'+side('end')+side('under');   // תג הסט בשורה משלו מעל הדמות, לא עליה
   dollShow();   // הדמות בתלת-ממד במקום האימוג'י, עם מה שלבוש (doll3d.js)
   // התרמיל: לשוניות ורשת
   const tabs=gTabs();if(!tabs.includes(GUI.tab))GUI.tab='items';
-  $('gTabs').innerHTML=tabs.map(f=>'<button data-tab="'+f+'"'+(GEAR.filter[f]?' class="gf" aria-label="'+T('gear.slot.'+f)+'"':'')+(GUI.tab===f?' aria-pressed="true"':'')+'>'+gTabLabel(f)+'</button>').join('');
-  const ks=gBagKeys(GUI.tab),itm=gIsItemTab(GUI.tab);
-  $('gItems').innerHTML=ks.length?ks.map(k=>(itm?gBagTile:gCell)(k,SAVE.bag[k],'data-id="'+k+'"'+(sel&&sel.id===k?' aria-pressed="true"':''))).join('')
+  $('gTabs').innerHTML=tabs.map(f=>'<button data-tab="'+f+'"'+(GEAR.filter[f]?' class="gf" aria-label="'+T('gear.slot.'+f)+'"':f!=='items'?' class="gf" aria-label="'+T('fam.'+f)+'" title="'+T('fam.'+f)+'"':'')+(GUI.tab===f?' aria-pressed="true"':'')+'>'+gTabLabel(f)+'</button>').join('');
+  if(GUI.sell&&!gIsItemTab(GUI.tab))GUI.tab='items';   // במצב מכירה: רק פריטים
+  const ks=gBagKeys(GUI.tab),itm=gIsItemTab(GUI.tab),pk=GUI.pick||{};
+  const tA=k=>GUI.sell?(gCanSell(k)?' aria-pressed="'+!!pk[k]+'" class="gpick"':' disabled'):(sel&&sel.id===k?' aria-pressed="true"':'');   // מכירה: נגיעה מסמנת. נעול: לא לחיץ
+  $('gItems').classList.toggle('gselling',!!GUI.sell);
+  $('gItems').innerHTML=ks.length?ks.map(k=>(itm?gBagTile:gCell)(k,SAVE.bag[k],'data-id="'+k+'"'+tA(k))).join('')
     :'<p class="dim">'+T(itm?'gear.noItems':'gear.noRes')+'</p>';
-  // ללבוש הכי טוב ולמכור חלשים: מתחת לרשת, רק בפריטים
-  const best=gBestPlan().length,sc=gSellCoins(gSellList());
-  $('gActs').hidden=!itm;
-  $('gActs').innerHTML='<button class="vbtn" data-act="best" title="'+T('gear.bestT')+'"'+(best?'':' disabled')+'>'+T('gear.best')+'</button><button class="vbtn ghost" data-act="sell" title="'+T('gear.sellT')+'"'+(sc?'':' disabled')+'>'+T('gear.sellWeak')+'</button>';
+  // ללבוש הכי טוב ולמכור: מתחת לרשת, רק בפריטים. אחרי מכירה: ↩ החזר. במצב מכירה הכפתורים בטור הפרטים
+  const best=gBestPlan().length,sc=Object.keys(SAVE.bag).some(gCanSell);
+  $('gActs').hidden=!itm||!!GUI.sell;
+  $('gActs').innerHTML='<button class="vbtn" data-act="best" title="'+T('gear.bestT')+'"'+(best?'':' disabled')+'>'+T('gear.best')+'</button><button class="vbtn ghost" data-act="sell" title="'+T('gear.sellT')+'"'+(sc?'':' disabled')+'>'+T('gear.sellWeak')+'</button>'+
+    (GUI.undo?'<button class="vbtn ghost gundo" data-act="undo" title="'+T('gear.undoT',GUI.undo.coins)+'" aria-label="'+T('gear.undoT',GUI.undo.coins)+'">'+T('gear.undo')+'</button>':'');
   // המחסן: רק כשעומדים לידו
   const st=gStashOn(),sk=Object.keys(SAVE.stash).filter(k=>SAVE.stash[k]>0&&stashIcon(k));
   $('gStash').hidden=!st;
   if(st)$('gStash').innerHTML='<span class="k">'+T('gear.stash',stashUsed(),stashCap())+'</span><div class="ggrid">'+
     (sk.length?sk.map(k=>gCell(k,SAVE.stash[k],'data-sid="'+k+'"'+(sel&&sel.sid===k?' aria-pressed="true"':''))).join(''):'<p class="dim">'+T('stash.empty')+'</p>')+'</div>';
-  $('gDetail').innerHTML=gDetailHtml();
+  $('gDetail').innerHTML=gDetailHtml();$('gDetail').classList.toggle('selling',!!GUI.sell);$('gDetail').classList.toggle('gstatp',!$('gDetail').querySelector('.gdhead,.gsell'));   // gstatp: טור הסטטים (gearui.js)
   // הדפים: ציוד, או דמות (הנקודות, stats.js). עץ הסקילים נפתח מדף הדמות ומחליף אותו
   const ch=GUI.page==='char',tv=ch&&GUI.view==='tree',pts=stFree()+trFree();
   $('gPages').innerHTML=['gear','char'].map(pg=>'<button data-page="'+pg+'"'+(GUI.page===pg?' aria-pressed="true"':'')+'>'+T('gear.pg.'+pg)+(pg==='char'&&pts?'<i class="gdot">'+pts+'</i>':'')+'</button>').join('');
   $('ovGear').querySelector('.gbody').hidden=ch;$('gChar').hidden=!ch||tv;$('gTree').hidden=!tv;
-  if(ch&&!tv)$('gChar').innerHTML=statsHtml();if(tv)$('gTree').innerHTML=treeHtml();   // עץ הסקילים (stats.js)
+  const tcol=$('gTree').querySelector('.trcols'),tsc=tcol?tcol.scrollTop:0;   // הציור מחדש לא קופץ לראש העץ
+  if(ch&&!tv)$('gChar').innerHTML=statsHtml();if(tv){$('gTree').innerHTML=treeHtml();const c=$('gTree').querySelector('.trcols');if(c)c.scrollTop=tsc}   // עץ הסקילים (stats.js)
   $('ovGear').classList.toggle('stv',ch);
 }
 // הפרטים: שם בצבע הנדירות, נדירות וחומר, רמת Aging, סטטים, השוואה למה שלבוש, וכפתורים
 function gDetailHtml(){
-  if(GUI.sell){const l=gSellList(),ks=Object.keys(l);   // אישור למכירה, בתוך החלון: מה יימכר וכמה מקבלים
-    if(ks.length)return '<h3>'+T('gear.sellAsk',gSellCoins(l))+'</h3><div class="gsell">'+ks.map(k=>gCell(k,l[k],'disabled')).join('')+'</div>'+
-      '<div class="gbtns"><button class="vbtn" data-act="sellYes">'+T('gear.sellYes')+'</button><button class="vbtn ghost" data-act="sellNo">'+T('gear.sellNo')+'</button></div>';
-    GUI.sell=false}
+  if(GUI.sell){const l=gSellPick(),ks=Object.keys(l),n=gSellN(l),c=gSellCoins(l),rare=ks.filter(gPrecious);   // מצב מכירה: מה נבחר, כמה מקבלים, וכפתור אחד
+    if(GUI.ask&&rare.length)return '<h3>'+T('gear.sellRare')+'</h3><div class="gsell">'+rare.map(k=>gCell(k,l[k],'data-sk="'+k+'" aria-pressed="true"')).join('')+'</div>'+
+      '<div class="gbtns"><button class="vbtn" data-act="sellSure">'+T('gear.sellGo',n,c)+'</button></div><div class="gbtns"><button class="vbtn ghost" data-act="sellBack">'+T('gear.back')+'</button></div>';
+    GUI.ask=false;
+    return '<h3>'+T('gear.sellHead')+'</h3><p class="dim gsellhint">'+T('gear.sellPick')+'</p><div class="gsell">'+
+      (ks.length?ks.map(k=>gCell(k,l[k],'data-sk="'+k+'" aria-pressed="true"')).join(''):'<p class="dim">'+T('gear.sellNone')+'</p>')+'</div>'+
+      '<div class="gbtns"><button class="vbtn" data-act="sellYes"'+(n?'':' disabled')+'>'+T('gear.sellGo',n,c)+'</button></div>'+
+      '<div class="gbtns"><button class="vbtn ghost" data-act="sellWeak"'+(gSellN(gSellList())?'':' disabled')+'>'+T('gear.sellAllWeak')+'</button><button class="vbtn ghost" data-act="sellNo">'+T('gear.sellNo')+'</button></div>'}
   const sel=GUI.sel,k=sel&&(sel.id||sel.sid||gGet(sel.slot,sel.i)),n=!sel?0:sel.id?SAVE.bag[k]:sel.sid?SAVE.stash[k]:1;
-  if(!k||!n){const t=gearStats();   // בלי פריט: מה כל הציוד שלבוש נותן יחד, והסבר קצר. הנקודות בדף "דמות"
-    return '<h3>'+T('gear.total')+'</h3><ul class="gstats">'+(Object.keys(t).filter(x=>GEAR.stats[x]&&t[x]).map(x=>'<li>'+gSign(x,t[x])+'</li>').join('')||'<li class="dim">—</li>')+'</ul><p class="dim ghint">'+T('gear.hint')+'</p>'}
+  if(!k||!n)return gStatPanel();   // בלי פריט: הסטטים של הגיבור והעמידויות (gearui.js)
   const it=gItem(k),col=gRarCol(k);
-  let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
+  let d='<div class="gdhead" style="--rar:'+col+'"><button class="gdx" data-act="desel" aria-label="'+T('gear.close')+'">✕</button><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
     '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
   if(it&&gPlus(k))d+='<p class="gage">'+T('gear.aged',gPlus(k))+'</p>';
-  if(it)d+=gStatsHtml(k)+powLine(k)+setHtml(k);   // הכוח בזהב (powers.js)   // סט: מה הוא נותן וכמה חלקים לבושים (sets.js)
+  const orbOld=it&&sel.id&&it.slot==='orbit'?gItem(gGet('orbit',gTarget(it))):null;
+  if(it)d+=gStatsHtml(k,!!sel.id&&it.slot==='orbit'&&(!orbOld||orbOld.type!==it.type))+powLine(k)+setHtml(k);   // הכוח בזהב (powers.js)   // סט: מה הוא נותן וכמה חלקים לבושים (sets.js)
   else{const w=resWhere(k),cut=a=>a.slice(0,RES.tip.max).join(', ')+(a.length>RES.tip.max?'…':'');   // משאב: מאיפה ובשביל מה (resources.js)
     if(w.src.length)d+='<p class="dim">'+T('tip.from',cut(w.src))+'</p>';if(w.use.length)d+='<p class="dim">'+T('tip.for',cut(w.use))+'</p>'}
   const btn=(act,txt,ghost)=>'<button class="vbtn'+(ghost?' ghost':'')+'" data-act="'+act+'">'+txt+'</button>';
   let b='';
   if(sel.id&&it){const old=gGet(it.slot,gTarget(it));
     d+=(old?'<p class="dim">'+T('gear.vs',gIcon(old)+' '+gName(old))+'</p>':'')+gCompare(k,old);b+=btn('equip',T('gear.equip'))}
+  if(it&&(sel.id||sel.slot))b+='<button class="vbtn ghost glock" data-act="lock" aria-pressed="'+gLocked(k)+'" aria-label="'+T(gLocked(k)?'gear.unlock':'gear.lock')+'" title="'+T(gLocked(k)?'gear.unlock':'gear.lock')+'">'+(gLocked(k)?'🔒':'🔓')+'</button>';   // נעול: לא נמכר
   if(sel.slot)b+=btn('unequip',T('gear.unequip'),1);
   if(sel.id&&gStashOn())b+=btn('store',T('gear.store'),1);
   if(sel.sid)b+=btn('take',T('gear.take'));
-  return d+(b?'<div class="gbtns">'+b+'</div>':'');
+  return '<div class="gdbody">'+d+'</div>'+(b?'<div class="gbtns">'+b+'</div>':'');
 }
 
 /* ---- פעולות: הגרירה והכפתורים עוברים שניהם דרך כאן ---- */
@@ -454,6 +532,8 @@ addEventListener('pointercancel',e=>{if(GDRAG.src&&e.pointerId===GDRAG.pid)gDrag
 
 $('ovGear').addEventListener('click',e=>{
   if(e.target.closest('.gfig')){GUI.sel=null;GUI.page='char';GUI.view=null;gRedraw();return}   // נגיעה בדמות: הדף שלה (נקודות)
+  const tn=e.target.closest('.trn');   // עץ הסקילים: נגיעה בסקיל פותחת את התיאור המלא שלו (ניר 2.11: "לא רואים מה הסקילים עושים")
+  if(tn&&!e.target.closest('button')){GUI.trOpen=GUI.trOpen===tn.dataset.tr?null:tn.dataset.tr;sfx('tap');gRedraw();return}
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.id==='gearClose'){gearClose();return}
   if(b.dataset.act==='stat'){statAdd(b.dataset.k);statBadge();gRedraw();return}
@@ -461,13 +541,21 @@ $('ovGear').addEventListener('click',e=>{
   if(b.dataset.page){GUI.page=b.dataset.page;GUI.view=null;GUI.sel=null;GUI.sell=false;gRedraw();return}
   if(b.dataset.act==='tree'||b.dataset.act==='back'){GUI.view=b.dataset.act==='tree'?'tree':null;GUI.sel=null;gRedraw();return}
   if(b.dataset.act==='learn'){treeLearn(b.dataset.b,b.dataset.id);statBadge();gRedraw();return}
+  // מצב מכירה: נגיעה בפריט (בתרמיל או ברשימת הנבחרים) מסמנת או מבטלת, ולא מוכרת
+  if(GUI.sell&&(b.dataset.sk||b.dataset.id)){gPickToggle(b.dataset.sk||b.dataset.id);GUI.ask=false;sfx('tap');gRedraw();return}
   const a=b.dataset.act,sel=GUI.sel;
-  if(a!=='sellYes')GUI.sell=false;
+  if(GUI.sell&&!b.dataset.tab&&!/^sell/.test(a||''))GUI.sell=false;   // לשונית לא יוצאת ממצב מכירה
   if(b.dataset.tab){GUI.tab=b.dataset.tab;GUI.sel=null}
   else if(a==='best'){if(!gDoBest())sfx('tap')}
-  else if(a==='sell'){GUI.sell=true;GUI.sel=null}
-  else if(a==='sellYes'){gDoSell();GUI.sell=false}
-  else if(a==='sellNo'){}
+  else if(a==='sell'){GUI.sell=true;GUI.pick={};GUI.ask=false;GUI.sel=null}
+  else if(a==='sellWeak'){GUI.pick=Object.assign({},GUI.pick,gSellList());sfx('tap')}   // בחר חלשים: מוסיף לבחירה, ואפשר להוריד לפני המכירה
+  else if(a==='sellYes'){const l=gSellPick();if(Object.keys(l).some(gPrecious))GUI.ask=true;else{gDoSell(l);GUI.sell=false}}   // יש יקר: אישור קצר קודם
+  else if(a==='sellSure'){gDoSell(gSellPick());GUI.sell=false;GUI.ask=false}
+  else if(a==='sellBack')GUI.ask=false;
+  else if(a==='sellNo'){GUI.sell=false;GUI.pick={};GUI.ask=false}
+  else if(a==='undo'){if(!gUndoSell()){sfx('tap');return}}
+  else if(a==='lock'){const k=sel&&(sel.id||gGet(sel.slot,sel.i));if(k){gLockToggle(k);sfx('tap')}}
+  else if(a==='desel')GUI.sel=null;   // ✕ בפרטים: חוזרים לסטטים
   else if(b.dataset.id){GUI.sel={id:b.dataset.id};if(gIsNew(b.dataset.id)){gSeen()[b.dataset.id]=1;saveNow()}}
   else if(b.dataset.sid)GUI.sel={sid:b.dataset.sid};
   else if(b.dataset.slot)GUI.sel=gGet(b.dataset.slot,+b.dataset.i)?{slot:b.dataset.slot,i:+b.dataset.i}:null;

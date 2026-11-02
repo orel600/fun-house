@@ -35,6 +35,13 @@ const LOOK3D={
   hero_warrior:{model:'knight'},
   hero_hunter:{model:'ranger',h:59},
   hero_mage:{model:'mage',h:69},
+  // משחקי השאול (moba.js): גיבור לכל ערכה, וחיילים בצבע הקבוצה. הקבוצה מסומנת גם בטבעת שבקנבס
+  mb_tank:{model:'barbarian',h:72,foot:15,props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'earth'}},anim:{idle:'Idle_A',run:'Running_B',die:'Death_A'}},
+  mb_warrior:{model:'knight',h:66,foot:14,props:{blade:{prop:'blade',...HAND_R}},anim:{idle:'Idle_A',run:'Running_A',die:'Death_A'}},
+  mb_hunter:{model:'ranger',h:59,foot:14,anim:{idle:'Idle_A',run:'Running_A',die:'Death_A'}},
+  mb_mage:{model:'mage',h:69,foot:14,props:{staff:{prop:'staff',...HAND_R,tint:'water'}},anim:{idle:'Idle_A',run:'Running_C',die:'Death_A'}},
+  mb_m0:{model:'minion',h:44,foot:10,tint:'#4C8DFF',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  mb_m1:{model:'minion',h:44,foot:10,tint:'#FF5A5A',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   wanted:{model:'rogue',h:62,foot:13,tint:'gold',anim:{run:'Running_B',die:'Death_A'}},
   // יצורי משאבים: בינתיים מודל קיים, צבוע בצבע החומר (tint) ובגודל אחר. כשיהיו מודלים משלהם מחליפים רק כאן
   golem:{model:'barbarian',h:84,foot:18,tint:'#8A8F9C',anim:{run:'Running_B',die:'Death_A'}},
@@ -445,6 +452,7 @@ function syncPlayer(dt){
     // פגיעה (combat.js מדליק P.inv=0.6): הגוף נרתע, אם הוא לא באמצע תקיפה
     const hurt=P.inv>st.inv+0.3&&P.inv<=0.7;st.inv=P.inv;
     if(hurt&&!swing&&!shot&&!(a.one&&a.one.isRunning()))once(a,L.anim.hit+'@up',0.3);
+    if(P.skrCast&&st.cast!==P.skrCast){st.cast=P.skrCast;once(a,(R3D.clips[SKREVEAL.anim+'@up']?SKREVEAL.anim:L.anim.win)+'@up',SKREVEAL.cast)}   // סקיל חדש: הגיבור מטיל (skillreveal.js)
     const busy=a.one&&a.one.isRunning(),idle=!sword&&L.anim.gunIdle||L.anim.idle;   // עם קשת ביד: עמידה עם קשת
     loop(a,(P.moving?L.anim.run:idle)+(busy?'@low':''),P.moving?Math.min(1.6,P.speed/165):1);
   }
@@ -656,7 +664,7 @@ function render3d(ox,oy){
   R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
   for(const k in R3D.wlds||{})R3D.wlds[k].g.visible=false;
-  if(!S.room)syncPet(dt);else if(R3D.pet)R3D.pet.root.visible=false;   // חיית המחמד (pet.js), בכל מקום חוץ מחדר הבונוס
+  if(!S.room&&!S.mb)syncPet(dt);else if(R3D.pet)R3D.pet.root.visible=false;   // חיית המחמד (pet.js), בכל מקום חוץ מחדר הבונוס
   if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);

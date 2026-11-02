@@ -15,14 +15,32 @@ const ORBIT={
     defense:{block:true,shield:{every:8},col:'#B9B2A6'},
     support:{heal:{every:4,k:0.04},col:'#5BD46B'},
     luck:   {crit:0.08,loot:0.15,col:C.gold}
-  }
+  },
+  /* חפצים משולבים (הרעיון של אוראל, ניר אישר): חפץ ב-GEAR.items עם types במקום type. כל חלק עובד בחלק מהכוח (share, לפי כמה חלקים יש),
+     והחלקים מסתובבים צמודים זה לזה כמו זוג. gap: המרחק ביניהם ברדיאנים. bossDrop: סיכוי לחפץ משולב על כל בוס. w: משקל ההגרלה */
+  combo:{share:{2:0.6,3:0.45},gap:0.6,bossDrop:0.2,w:{2:3,3:1}}
 };
 
-// הסוגים של מה שלבוש במשבצות הפתוחות, לפי הסדר
-function orbitTypes(){if(divineOn())return Object.keys(ORBIT.types);   // ברק אלוהי: כל החמישה (divine.js)
-  const out=[];for(let i=0;i<gOpen('orbit');i++){const it=gItem(gGet('orbit',i));if(it)out.push(it.type)}return out}
+// החלקים של מה שלבוש במשבצות הפתוחות, לפי הסדר. t: הסוג, k: כמה מהכוח (חפץ משולב נותן לכל חלק פחות), g: איזה חפץ
+function orbitParts(){if(divineOn())return Object.keys(ORBIT.types).map((t,g)=>({t,k:1,g}));   // ברק אלוהי: כל החמישה בכוח מלא (divine.js)
+  const out=[];for(let i=0;i<gOpen('orbit');i++){const it=gItem(gGet('orbit',i));if(!it)continue;
+    const ts=it.types||[it.type],k=ts.length>1?ORBIT.combo.share[ts.length]:1;ts.forEach(t=>out.push({t,k,g:i}))}return out}
+const orbitTypes=()=>orbitParts().map(p=>p.t);
+// חפץ משולב שנופל מבוס בזירה (או null). נקרא מ-gear.js. בעולם של ניר לא נופל (אוראל, 2.11: רק בזירה)
+function orbitComboRoll(){
+  if(Math.random()>=ORBIT.combo.bossDrop)return null;
+  const ids=Object.keys(GEAR.items).filter(id=>GEAR.items[id].types),W=ORBIT.combo.w;
+  let r=Math.random()*ids.reduce((n,id)=>n+W[GEAR.items[id].types.length],0);
+  for(const id of ids){r-=W[GEAR.items[id].types.length];if(r<0)return id}return ids[0];
+}
+// מה חפץ נותן, לתצוגה במסך הציוד: השורות של כל חלק, מוכפלות בחלק שלו, ומאוחדות לפי סוג
+function orbitFacts(id){
+  const it=gItem(id),ts=it.types||[it.type],k=ts.length>1?ORBIT.combo.share[ts.length]:1,out=[];
+  for(const t of ts)for(const f of gOrbFacts(t,k)){const o=out.find(x=>x.k===f.k);if(o){o.v+=f.v;if(f.n)o.n=f.n}else out.push(f)}
+  return out;
+}
 // בתחילת כל ריצה. sh/hl: מתי המגן והריפוי של כל חפץ מוכנים. השאר ספירה, בשביל הבוט
-function orbitReset(){S.orb={a:0,types:[],pos:[],sh:[],hl:[],crit:0,loot:0,hits:0,blocked:0,shields:0,healed:0}}
+function orbitReset(){S.orb={a:0,types:[],ks:[],pos:[],sh:[],hl:[],crit:0,loot:0,hits:0,blocked:0,shields:0,healed:0}}
 // נקראים מ-runGive (loot.js) ומ-damage (combat.js). רק בזירה
 const orbitLuck=()=>1+(S.orb&&skHere()?S.orb.loot:0);
 const orbitCrit=()=>S.orb&&skHere()?S.orb.crit:0;
@@ -30,28 +48,30 @@ const orbitCrit=()=>S.orb&&skHere()?S.orb.crit:0;
 function orbitUpdate(dt){
   const o=S.orb;if(!o)return;
   o.crit=o.loot=0;if(!skHere()){o.types=[];return}
-  o.types=orbitTypes();const n=o.types.length;if(!n)return;
+  const parts=orbitParts();o.types=parts.map(p=>p.t);o.ks=parts.map(p=>p.k);const n=o.types.length;if(!n)return;
+  const gs=[...new Set(parts.map(p=>p.g))],cn=ORBIT.combo.gap;
   o.a+=ORBIT.spin*dt;
   o.types.forEach((t,i)=>{
-    const D=ORBIT.types[t],a=o.a+i*6.283/n,x=P.x+Math.cos(a)*ORBIT.r,y=P.y+Math.sin(a)*ORBIT.r;o.pos[i]={x,y};
+    const k=o.ks[i],mates=parts.filter(q=>q.g===parts[i].g),j=mates.indexOf(parts[i]);
+    const D=ORBIT.types[t],a=o.a+gs.indexOf(parts[i].g)*6.283/gs.length+(j-(mates.length-1)/2)*cn,x=P.x+Math.cos(a)*ORBIT.r,y=P.y+Math.sin(a)*ORBIT.r;o.pos[i]={x,y};
     if(D.dmg)for(const e of enemies){
       if(e.dead||Math.abs(e.x-x)>e.r+ORBIT.size||Math.abs(e.y-y)>e.r+ORBIT.size||Math.hypot(e.x-x,e.y-y)>e.r+ORBIT.size)continue;
       const oh=e.oh||(e.oh=[]);if((oh[i]||0)>S.t)continue;oh[i]=S.t+D.every;
-      damage(e,skBase()*D.dmg,'orbit',Math.atan2(e.y-P.y,e.x-P.x),D.dt);o.hits++;
+      damage(e,skBase()*D.dmg*k,'orbit',Math.atan2(e.y-P.y,e.x-P.x),D.dt);o.hits++;
     }
     if(D.block)for(const b of eb)if(b.life>0&&Math.hypot(b.x-x,b.y-y)<b.r+ORBIT.size){b.life=0;o.blocked++;sparks(x,y,D.col,5,120)}
     if(D.heal){if(o.hl[i]==null)o.hl[i]=S.t+D.heal.every;
       if(S.t>=o.hl[i]){o.hl[i]=S.t+D.heal.every;
-        if(P.hp<P.maxHp){const h=Math.min(P.maxHp-P.hp,P.maxHp*D.heal.k);P.hp+=h;o.healed+=h;floatText(P.x,P.y-40,'+'+Math.round(h),D.col,14,true)}}}
-    if(D.crit)o.crit+=D.crit;
-    if(D.loot)o.loot+=D.loot;
+        if(P.hp<P.maxHp){const h=Math.min(P.maxHp-P.hp,P.maxHp*D.heal.k*k);P.hp+=h;o.healed+=h;floatText(P.x,P.y-40,'+'+Math.round(h),D.col,14,true)}}}
+    if(D.crit)o.crit+=D.crit*k;
+    if(D.loot)o.loot+=D.loot*k;
   });
 }
 // נקרא מ-hurt (combat.js): חפץ הגנה שהמגן שלו מוכן בולע את המכה
 function orbitShield(){
   const o=S.orb;if(!o||!skHere())return false;
   const i=o.types.findIndex((t,j)=>ORBIT.types[t].shield&&(o.sh[j]||0)<=S.t);if(i<0)return false;
-  o.sh[i]=S.t+ORBIT.types.defense.shield.every;o.shields++;P.inv=0.4;
+  o.sh[i]=S.t+ORBIT.types.defense.shield.every/(o.ks[i]||1);o.shields++;P.inv=0.4;
   floatText(P.x,P.y-40,T('orb.blocked'),ORBIT.types.defense.col,15);sparks(P.x,P.y,ORBIT.types.defense.col,10,200);sfx('tap');
   return true;
 }

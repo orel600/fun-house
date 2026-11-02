@@ -50,7 +50,7 @@ function wmGraph(){
 }
 // הפנס של אזור: {k, lit} או null
 function wmLantern(r){for(const k in STORY.lanterns)if(STORY.lanterns[k].reg===r)return{k,L:STORY.lanterns[k],lit:storyOpen(k)};return null}
-const wmSecrets=r=>{const L=SECRETS.regions[r]||[];return L.length?scCount(r)+'/'+L.length:''};
+const wmSecrets=r=>{const L=(SECRETS.regions[r]||[]).filter(scOpen);return L.length?scCount(r)+'/'+L.length:''};
 
 /* ---- ציור ---- */
 function wmCanvas(id){
@@ -127,6 +127,7 @@ function wmDrawWorld(){
     if(ln){x.beginPath();x.arc(p.x,p.y-rad*0.3,9,0,Math.PI*2);x.fillStyle=ln.lit?ln.L.glow:'#2A2F3E';
       if(ln.lit){x.save();x.shadowColor=ln.L.glow;x.shadowBlur=14;x.fill();x.restore()}else x.fill();x.lineWidth=2;x.strokeStyle='#000a';x.stroke()}
     if(r===cur)wmText(x,'★',p.x,p.y+rad*0.25,20,C.gold);
+    if(cuNew(r))wmText(x,CURIO.mark,p.x+rad*0.72,p.y-rad*0.62,Math.round(Math.max(16,rad*0.42)),C.gold);   // סוד חדש שנפתח ברמה (curiosity.js)
   }
   // השמות ומוני הסודות, אחרי כל האיים, כדי שאף אי לא יכסה תווית. האזור הנוכחי בוחר מקום ראשון
   const L=WMAP.label,seen=G.show.filter(wmSeen).sort((a,b)=>(b===cur)-(a===cur));

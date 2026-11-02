@@ -89,6 +89,11 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
 .skb.ready{box-shadow:0 0 12px var(--dt)}
 .skb.ping{animation:skping .45s ease-out}   /* נטען: טבעת אחת קצרה שיוצאת מהכפתור */
 @keyframes skping{from{box-shadow:0 0 0 0 var(--dt)}to{box-shadow:0 0 0 14px transparent}}
+/* סקיל חדש (js/skillreveal.js): הכפתור מחכה לאייקון שעף אליו, והאייקון עצמו */
+.skb.skrwait{opacity:0}
+.skrfly{position:fixed;left:0;top:0;z-index:40;width:var(--s);height:var(--s);border-radius:50%;border:3px solid var(--dt);
+  background:rgba(18,22,36,.85);box-shadow:0 0 24px var(--dt);display:grid;place-items:center;pointer-events:none;will-change:transform}
+.skrfly .dti{width:60%;height:60%}
 .skb:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
 /* ברק אלוהי (js/divine.js): באלכסון, מחוץ לקשת של הסקילים, כדי שבמסך נמוך הוא לא יעלה עד פס החיים */
 .divine{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 154px);right:calc(env(safe-area-inset-right,0px) + 146px);
@@ -640,6 +645,8 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .sndpanel #sndMute{grid-column:2;grid-row:3}
   .sndpanel .gfx{grid-column:2;grid-row:2}
   .sndpanel .cam{grid-column:2;grid-row:4}
+  .sndpanel .fxl{grid-column:2;grid-row:5}
+  .sndpanel .shd{grid-column:1;grid-row:5}   /* צללים (look-hd.js) */
 }
 .panel.win>.whd{margin-top:8px}
 
@@ -827,6 +834,24 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .visnotes{flex-wrap:nowrap;align-items:stretch}.visnote{flex:1;min-height:48px;text-align:start}.visnote i{font-style:normal;color:var(--gold)}
 .visnotes .vbtn{flex:1;min-height:48px;margin:0}
 @media (orientation:portrait){.viswin .visbody{flex-direction:column}}
+/* מסחר עם חבר (js/trade.js): שני טורים, נותן ומבקש, וחץ ביניהם. מתחת: ההצעות שמחכות וכפתור "להציע" */
+.trdbody{display:flex;gap:10px;align-items:stretch;min-height:0;flex:1}
+.trdcol{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.trdcol h3{margin:2px 0 0;color:var(--gold);font:900 16px var(--body)}
+.trdres{max-height:112px;overflow-y:auto}
+.trdarrow{align-self:center;font:900 24px var(--body);color:var(--gold)}
+.trdfoot{display:flex;flex-direction:column;gap:6px}
+.trdinc{overflow-y:auto;flex:1;min-height:0}
+.trdd{display:inline-flex;align-items:center;gap:2px;vertical-align:middle}.trdd .ri{width:24px;height:24px}.trdd b{font:800 13px var(--body)}
+.trdrow{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:12px;background:rgba(255,255,255,.06)}
+.trdrow.mine small{flex:1;opacity:.8;font-size:12px}
+.trdwho{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.trdwho small{font:700 13px var(--body)}
+.trdlack{color:#ff9a8a}
+.trdrow .vbtn{margin:0;min-height:48px;flex:0 0 auto}.trdrow .visn{min-height:48px}
+.trdsend{margin:0;min-height:48px}.trdsend:disabled{opacity:.45}
+.trdhint{font-size:12px;margin:0}
+.trdgo{margin:6px 0 0;min-height:48px}
+@media (orientation:portrait){.trdbody{flex-direction:column}.trdarrow{transform:rotate(90deg)}}
 /* אתגר יומי (challenge.js): הסימן בפס העליון בעולם */
 .chtag{font-size:12px;font-weight:800;color:var(--tide,#7FD6E8);background:rgba(10,12,20,.7);border-radius:10px;padding:2px 8px;white-space:nowrap}
 .chtag[hidden]{display:none}
@@ -896,14 +921,14 @@ body.menu #nav,body.menu .menubtn,body.menu .dgift{display:none!important}
 /* החלון של הלשונית: כל המסך חוץ מהלשוניות */
 body.menu .qlog.win:not(.npcdlg){top:max(8px,env(safe-area-inset-top,0px));bottom:max(8px,env(safe-area-inset-bottom,0px));
   inset-inline-start:max(12px,env(safe-area-inset-left,0px),env(safe-area-inset-right,0px));inset-inline-end:calc(var(--rail) + 8px);width:auto;max-width:none;margin:0}
-body.menu #ovGear,body.menu #ovSound{padding-inline-end:var(--rail);background:none;backdrop-filter:none}
+body.menu #ovGear,body.menu #ovSound,body.menu #ovMoba{padding-inline-end:var(--rail);background:none;backdrop-filter:none}
 body.menu #ovGear .gearpanel{height:100%}
 @media (orientation:portrait){
   .mrail{top:auto;inset-inline:0;bottom:0;width:auto;height:var(--railh);flex-direction:row;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));
     border-inline-start:0;border-top:2px solid #3A4566;background:linear-gradient(#1D2438,#141A2B)}
   .mtab{flex:1 1 0;max-height:none;min-width:0}
   body.menu .qlog.win:not(.npcdlg){inset-inline-end:max(12px,env(safe-area-inset-right,0px));bottom:calc(var(--railh) + 8px)}
-  body.menu #ovGear,body.menu #ovSound{padding-inline-end:16px;padding-bottom:var(--railh)}
+  body.menu #ovGear,body.menu #ovSound,body.menu #ovMoba{padding-inline-end:16px;padding-bottom:var(--railh)}
 }
 /* המטרה הבאה (js/guide.js): שורה אחת באמצע למעלה, מתחת לפס העליון. לא בפינות (השתקה, מפה, מתנה) ולא למטה (הסרגל והסקילים) */
 .guide{position:fixed;z-index:3;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 50px);max-width:min(60vw,560px);
@@ -1255,3 +1280,214 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 /* המטרה הבאה (guide.js) והמעקב: אותה גלולה כהה עם קו פליז */
 .guide button{background:linear-gradient(#262E46eb,#161B2Aeb);border-color:var(--brass);box-shadow:inset 0 1px 0 #ffffff14,0 3px 6px #0009}
 .guide button:active{scale:.96}
+
+/* ===== חלון הציוד כמו מסך ציוד של RPG קלאסי (ניר, 2.11.2026: צילום של Titan Quest. המבנה, לא הגרפיקה) =====
+   שלושה טורים: הדמות עם המשבצות סביבה, התרמיל ברשת (רק הוא גולל), וטור סטטים עם עמידויות (gearui.js).
+   לחיצה על פריט מחליפה את טור הסטטים בפרטים, עם ✕ שחוזר. הכפתורים תמיד בתחתית הטור, והטקסט גולל מעליהם */
+#ovGear .gbody{gap:8px}
+#ovGear .gdoll{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"s f e" "u u u";
+  gap:6px;align-content:stretch;align-items:center;padding:6px;border-radius:12px;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 40%,rgba(244,199,79,.10),transparent 65%),rgba(18,22,36,.6);border:2px solid var(--line)}
+#ovGear .gd-start,#ovGear .gd-end{display:flex;flex-direction:column;justify-content:center;gap:6px}
+#ovGear .gd-start .grow,#ovGear .gd-end .grow{display:flex;flex-direction:column;flex-wrap:nowrap;gap:6px}
+#ovGear .gdoll .gslot{gap:0}
+#ovGear .gdoll .gtile,#ovGear .gd-start .gtile{width:52px;min-width:0;font-size:26px}
+#ovGear .gd-under .grow{justify-content:center;gap:4px;flex-wrap:nowrap;min-width:0}
+#ovGear .gd-under .gtile{flex:0 1 40px;width:40px;min-width:28px;font-size:20px}   /* חמש משבצות נכנסות גם כשהטור צר (בתפריט) */
+#ovGear .gfig{min-height:0;height:100%;align-self:stretch}
+#ovGear .gfig::before{width:min(86%,150px)}
+/* משבצת ריקה: צללית חלשה של מה שנכנס אליה */
+#ovGear .gtile .gsil{font-style:normal;opacity:.28;filter:grayscale(1)}
+/* סט פעיל: תג בצבע הסט מעל הדמות */
+.gsets{position:absolute;top:2px;inset-inline:2px;display:flex;flex-wrap:wrap;justify-content:center;gap:3px;pointer-events:none;z-index:1}
+.gsetb{font-style:normal;font:800 11px/14px var(--body);color:var(--set);background:#000a;border:1px solid var(--set);border-radius:8px;padding:1px 6px;text-align:center;max-width:100%;box-shadow:0 0 8px color-mix(in srgb,var(--set) 45%,transparent)}
+/* התרמיל: המסננים בשורה אחת שגוללת הצידה, הרשת גוללת, והכפתורים תמיד למטה */
+#ovGear #gTabs{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:4px;flex:none;scrollbar-width:none}
+#ovGear #gTabs button{flex:none}
+/* טור הסטטים */
+#ovGear .gdetail.gstatp{gap:3px;padding:8px 10px;overflow:hidden}
+.gstatp h3{font-size:15px!important;margin:0}
+.gstatp h4{margin:4px 0 0;font:800 12px var(--body);color:var(--dim);text-transform:uppercase;letter-spacing:.04em}
+.gsrows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.gsrows li{display:flex;align-items:center;gap:6px;font-size:13px;line-height:21px;border-bottom:1px solid #ffffff10;white-space:nowrap}
+.gsrows .gsi{width:18px;text-align:center;font-size:13px;flex:none}
+.gsrows .gsn{flex:1;min-width:0;color:var(--dim);font-weight:700}
+.gsrows b{font:800 14px var(--body);color:var(--chalk)}
+.gres{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.gres li{display:flex;align-items:center;justify-content:center;gap:4px;font:800 13px/22px var(--body);color:var(--chalk);border:1px solid var(--dt);border-radius:8px;
+  background:color-mix(in srgb,var(--dt) 14%,transparent);white-space:nowrap}
+.gres svg{width:13px;height:13px;color:var(--dt);flex:none}
+/* פרטי פריט: הכותרת עם ✕, טקסט שגולל, והכפתורים בשורה בתחתית */
+#ovGear .gsidep .gdetail:not(.gstatp){overflow:hidden;padding:8px 10px;gap:6px}
+.gdbody{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.gdbody>*{flex:none}
+.gdhead .gdx{order:3;margin-inline-start:auto;flex:none;align-self:flex-start;appearance:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
+  background:#0006;color:var(--chalk);font:800 15px/1 var(--body);cursor:pointer}
+.gdhead>div{min-width:0}
+.gdhead h3{overflow-wrap:break-word}
+#ovGear .gdetail .gbtns{flex:none;flex-direction:row;gap:6px;max-width:none;width:100%}
+#ovGear .gdetail .gbtns .vbtn{flex:1 1 0;min-width:0;max-width:none;margin:0;white-space:nowrap}
+#ovGear .gdetail .gbtns .vbtn.ghost{border:1px solid var(--line);border-radius:10px;border-image:none;background:var(--panel)}   /* ביטול/להוריד: מסגרת שנראית על הרקע הכהה */
+@media (orientation:landscape){
+  #ovGear .gbody{grid-template-columns:minmax(0,2.9fr) minmax(0,4fr) minmax(0,2.7fr)}
+  body.menu #ovGear .gbody{grid-template-columns:minmax(0,2.6fr) minmax(0,3.8fr) minmax(0,2.8fr)}
+  body.menu #ovGear .ggrid{grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px}   /* גם בתפריט: תא של 48 לפחות (ui-guide פרק 2) */
+}
+@media (orientation:landscape) and (max-height:500px){
+  #ovGear .gdoll .gtile,#ovGear .gd-start .gtile{width:48px;font-size:24px}
+  #ovGear .gd-under .gtile{flex-basis:38px;width:38px;font-size:18px}
+  #ovGear .gdicon{width:44px;height:44px;font-size:24px}
+  #ovGear .gdicon .ri{width:34px;height:34px}
+  #ovGear .gdetail .gbtns .vbtn{min-height:40px;padding:6px 2px;font-size:14px;border-width:0 18px;border-image-width:0 18px}
+}
+/* ===== חלונות שלא נחתכים (ניר 2.11.2026, טלפון שוכב באנגלית: ארבעה צילומים) =====
+   חלון הציוד נבנה מחדש בסשן אחר, ולכן כאן רק מה שהמכירה צריכה. מכירה: רשימה שנגללת באצבע ונגיעה שומרת פריט.
+   עץ הסקילים: נגיעה בסקיל פותחת את התיאור המלא, ודהייה בתחתית מראה שיש עוד. שירות של תושב: בטור השני, ברוחב שלו */
+.gorb{margin:0;font-size:13px;line-height:1.3}
+/* אזורים שנגללים: האצבע גוללת גם כשהיא מתחילה על משבצת (בגוף המשחק touch-action:none) */
+.gsidep .gdetail,.trcols,.gsell,.npcdlg .rserve{touch-action:pan-y;overscroll-behavior:contain}
+.gsidep .gdetail.selling{overflow:hidden}
+.gsellhint{margin:0;font-size:11px}
+.gsell{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;overflow-y:auto;min-height:0;flex:1 1 auto;align-content:start;padding:2px}
+#ovGear .gsell .gtile{touch-action:pan-y;min-width:0;font-size:22px;position:relative}
+#ovGear .gsell .gtile[aria-pressed="true"]{outline:0}
+#ovGear .gsell .gtile[aria-pressed="true"]::after{content:'✓';position:absolute;top:1px;inset-inline-start:3px;font:900 12px/1 var(--body);color:#5BD46B;text-shadow:0 0 2px #000,0 0 2px #000}
+#ovGear .gsell .gtile[aria-pressed="false"]{opacity:.35;filter:grayscale(1)}
+/* עץ הסקילים */
+.trcols{padding-bottom:22px;-webkit-mask-image:linear-gradient(#000 calc(100% - 22px),transparent);mask-image:linear-gradient(#000 calc(100% - 22px),transparent)}
+.trn{cursor:pointer}
+.trn.open{opacity:1;align-items:flex-start;padding-block:4px}
+.trn.open .stn small{white-space:normal;overflow:visible;text-overflow:clip;display:block;-webkit-line-clamp:unset;font-size:12px;line-height:1.3;color:var(--chalk)}
+/* שירות של תושב שעבר מהעולם (residents.js): בטור השני, איפה שהקווסטים, ושורה אחת לכל שירות */
+@media (orientation:landscape){
+  .npcdlg.win>.fcook.rserve.rserve{grid-column:2;grid-row:auto;display:flex;flex-direction:column;gap:6px;margin-top:0;max-height:none;overflow:visible}
+  .npcdlg.win:has(.rserve)>.npcsay{grid-row:2/span 4;font-size:inherit}
+  .npcdlg.win:has(.rserve) .npcpic{width:84px;height:84px}
+}
+.rserve>b{font-size:15px}
+.npcdlg .rserve .fmeal .fmt{font-size:14px;min-width:0}
+.npcdlg .rserve .fmeal .fmt>span{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.npcdlg .rserve .fmeal .vbtn{flex:none;min-width:80px;min-height:44px}
+/* תיאור של סקיל בעץ: שתי שורות במקום שורה עם "...", ונגיעה בסקיל פותחת את כולו */
+#ovGear .trn .stn small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:clip;line-height:1.2}
+#ovGear .trn.open .stn small{display:block;-webkit-line-clamp:unset;overflow:visible}
+
+/* ספר הסקילים (js/wskbook.js): משמאל שלוש המשבצות, מימין כל הסקילים. בעולם, אימוג'י קטן על כל כפתור סקיל */
+.world .skb::before{position:absolute;top:-4px;inset-inline-end:-4px;font-size:18px;line-height:1;filter:drop-shadow(0 1px 1px #000a);pointer-events:none;z-index:2}
+.wsbwin{width:min(820px,94vw)}
+.wsbcols{display:flex;gap:12px;min-height:0;flex:1}
+.wsbslots{flex:0 0 170px;display:flex;flex-direction:column;gap:8px}
+.wsbslots p{font-size:12px;margin:2px 0 0;line-height:1.3}
+.wsbs,.wsbc{appearance:none;position:relative;display:flex;align-items:center;gap:8px;text-align:start;color:var(--chalk);font:inherit;
+  background:#141A2Acc;border:2px solid #3A4566;border-radius:12px;padding:6px 8px;min-height:48px;cursor:pointer}
+.wsbs{border-color:var(--dt,#3A4566)}
+.wsbs.sel{box-shadow:0 0 0 3px var(--gold)}
+.wsbs[disabled]{cursor:default;opacity:.85}
+.wsbs small{position:absolute;bottom:2px;inset-inline-end:8px;font-size:10px;color:var(--gold)}
+.wsbgrid{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;overflow-y:auto;align-content:start}
+.wsbc.on{border-color:var(--dt);box-shadow:inset 0 0 0 1px var(--dt)}
+.wsbc.lock{opacity:.5;cursor:default}
+.wsbi{position:relative;flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#0006;box-shadow:0 0 0 2px var(--dt)}
+.wsbi .dti{width:22px;height:22px}
+.wsbi em{position:absolute;bottom:-4px;inset-inline-end:-6px;font-style:normal;font-size:15px}
+.wsbn{display:flex;flex-direction:column;min-width:0}
+.wsbn b{font-size:14px}.wsbn small{font-size:11px;opacity:.85;line-height:1.2}
+.wsbk{position:absolute;top:-6px;inset-inline-start:-6px;width:20px;height:20px;border-radius:50%;background:var(--gold);color:#1A2033;font-size:12px;font-weight:800;display:grid;place-items:center}
+.stfoot .wsbopen{flex:0.8;width:auto;max-width:none;margin:0}
+@media (max-height:430px){.wsbslots{flex-basis:150px}.wsbgrid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}}
+/* ===== חלון הציוד בטלפון קטן (ניר 2.11.2026: צילום מ-Android, כ-760×350). שום דבר לא נחתך מ-760×350 עד 932×430 =====
+   הגדלים לפי גובה המסך (vh), לא קבועים. תג הסט בשורה משלו מעל הדמות (gear.js), והמסננים נגללים הצידה עם דהייה בסוף */
+#ovGear .gdoll{grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"t t t" "s f e" "u u u"}
+#ovGear .gsets{grid-area:t;position:static;inset:auto;flex-wrap:nowrap;min-width:0}
+#ovGear .gsets:empty{display:none}
+#ovGear .gsetb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:16px}
+#ovGear #gTabs{-webkit-mask-image:linear-gradient(to var(--fade-end,right),#000 calc(100% - 18px),transparent);mask-image:linear-gradient(to var(--fade-end,right),#000 calc(100% - 18px),transparent);padding-inline-end:14px}
+html[dir="rtl"] #ovGear #gTabs{--fade-end:left}   /* הדהייה בסוף השורה, לפי כיוון השפה */
+#ovGear .gsidep{overflow-y:auto;overscroll-behavior:contain}
+.gsrows .gsn{overflow:hidden;text-overflow:ellipsis}   /* שם ארוך לא עולה על המספר */
+@media (orientation:landscape) and (max-height:500px){
+  #ovGear{padding-block:4px}
+  #ovGear .gearpanel.win{border-width:14px;border-image-width:14px;padding:0 4px 2px;gap:6px}
+  #ovGear .ghead.whd{min-height:44px;margin-top:0;gap:6px}
+  #ovGear .gpages button{min-height:34px;padding:2px 10px;font-size:13px}
+  #ovGear #gearClose{width:44px;height:44px;min-width:44px;min-height:44px;flex:none}
+  #ovGear .gbody,body.menu #ovGear .gbody{gap:6px;grid-template-columns:minmax(190px,3.2fr) minmax(0,3.6fr) minmax(158px,2.9fr)}
+  #ovGear .gdoll{padding:4px;gap:4px}
+  #ovGear .gdoll .gtile,#ovGear .gd-start .gtile{width:clamp(38px,12vh,50px);height:clamp(38px,12vh,50px);font-size:clamp(19px,6vh,24px)}
+  #ovGear .gd-start .grow,#ovGear .gd-end .grow{gap:4px}
+  #ovGear .gd-under .gtile{flex:0 1 clamp(32px,10vh,40px);width:clamp(32px,10vh,40px);height:clamp(32px,10vh,40px);min-width:0;font-size:clamp(16px,5vh,19px)}
+  #ovGear .gbag{padding:5px;gap:5px}
+  #ovGear #gTabs button{min-height:34px;padding:2px 9px}
+  #ovGear #gTabs button.gf{min-width:34px;padding:2px 6px;font-size:16px}
+  #ovGear .ggrid,body.menu #ovGear .ggrid{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:5px}
+  #ovGear .gacts .vbtn{min-height:34px;font-size:12px}
+  #ovGear .gacts .vbtn:not(.ghost){border-width:0 10px;border-image-width:0 10px}
+  #ovGear .gdetail.gstatp{padding:5px 8px;gap:2px}
+  .gstatp h3{font-size:14px!important}
+  .gstatp h4{margin-top:2px;font-size:11px}
+  .gsrows li{font-size:12px;line-height:clamp(16px,5.2vh,21px)}
+  .gsrows b{font-size:13px}
+  .gres{gap:3px}
+  .gres li{font:800 11px/clamp(17px,5.4vh,22px) var(--body);gap:2px}
+  .gres svg{width:11px;height:11px}
+}
+/* מכירה (gear.js): בתרמיל נגיעה מסמנת ✓, נעול 🔒 לא לחיץ. "החזר" ו-🔒 בפרטים: כפתורים צרים */
+.gtile .gpk{position:absolute;top:2px;inset-inline-start:3px;font:900 13px/1 var(--body);font-style:normal;color:#5BD46B;text-shadow:0 0 2px #000,0 0 2px #000}
+.gtile .glk{position:absolute;top:1px;inset-inline-end:2px;font-size:11px;font-style:normal;line-height:1}
+#ovGear .gselling .gtile.gpick[aria-pressed="false"]{opacity:.6}
+#ovGear .gselling .gtile.gpick[aria-pressed="true"]{outline:3px solid #5BD46B;outline-offset:-1px;opacity:1}
+#ovGear .gselling .gtile:disabled{opacity:.3;filter:grayscale(1)}
+#ovGear .gacts .gundo{flex:0 0 auto;padding-inline:8px}
+#ovGear .gdetail .gbtns .vbtn.glock{flex:0 0 44px;font-size:18px;padding:0}
+#ovGear .gdetail.selling{display:flex;flex-direction:column;gap:5px;padding:8px 10px}
+#ovGear .gdetail.selling h3{margin:0;font-size:15px}
+#ovGear .gdetail.selling .gsell{grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:5px}
+#ovGear .gdetail.selling .gsell .gtile{font-size:19px}
+#ovGear .gdetail.selling .gbtns+.gbtns{margin-top:0}
+@media (orientation:landscape) and (max-height:500px){
+  #ovGear .gdetail.selling{padding:5px 7px;gap:4px}
+  #ovGear .gdetail.selling .gbtns .vbtn{min-height:36px;font-size:13px}
+  .gsellhint{font-size:10px;line-height:1.25}
+}
+/* ---- משחקי השאול: מובה 3 על 3 (js/moba.js). ממשק הזירה מוסתר (body.mb) ---- */
+.mb .hud,.mb .swap,.mb #skills,.mb .divine,.mb #muteBtn,.mb #ult,.mb #spell,.mb #spellPick{display:none!important}
+body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
+.mbhud{position:fixed;inset:0;z-index:3;pointer-events:none}
+.mbtop{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;
+  background:rgba(18,22,36,.82);border-radius:12px;padding:3px 16px;font:800 var(--t3) var(--body);color:var(--chalk);direction:ltr}
+.mbtop span{font-size:var(--t2);color:var(--dim)}
+.mbs0{color:#4C8DFF}.mbs1{color:#FF5A5A}
+.mbme{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);inset-inline-start:calc(env(safe-area-inset-left,0px) + 12px);display:flex;gap:8px;align-items:center}
+.mblv{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(18,22,36,.85);border:2px solid var(--gold);color:var(--gold);font:800 17px var(--body)}
+.mbbars{width:min(150px,22vw);display:flex;flex-direction:column;gap:4px}
+.mbhp,.mbxp{height:10px;border-radius:5px;background:rgba(18,22,36,.85);overflow:hidden}
+.mbxp{height:6px}
+.mbhp i,.mbxp i{display:block;height:100%;width:0;background:#7BD88F}
+.mbxp i{background:var(--gold)}
+.mbresp{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);margin:0;font:800 var(--t4) var(--body);color:var(--chalk);background:rgba(18,22,36,.75);padding:8px 18px;border-radius:12px}
+.mbexit{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);inset-inline-end:calc(env(safe-area-inset-right,0px) + 12px);pointer-events:auto}
+.mbski{font-size:30px;line-height:1}
+.mbskb:first-child .mbski{font-size:36px}
+.mblock{position:absolute;inset:0;display:grid;place-items:center;font:800 24px var(--body);color:var(--chalk);z-index:1}
+.mbwin{width:min(780px,94%);max-height:92vh;overflow:auto}
+.mbgoal{margin:6px 0 10px;color:var(--dim);font:600 var(--t1) var(--body)}
+.mbkits{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:620px){.mbkits{grid-template-columns:repeat(2,1fr)}}
+.mbkit{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px;border-radius:14px;border:2px solid var(--dt);background:rgba(18,22,36,.85);color:var(--chalk);cursor:pointer;font:inherit}
+.mbkit:active{transform:scale(.96)}
+.mbki{font-size:34px;line-height:1.1}
+.mbkn{font:800 var(--t3) var(--body)}
+.mbkit small{color:var(--dt);font:700 var(--t1) var(--body);text-align:center}
+.mbkit ul{list-style:none;margin:4px 0 0;padding:0;font:500 var(--t1) var(--body);display:flex;flex-direction:column;gap:3px;align-self:stretch;text-align:start}
+.mbkit em{color:var(--gold);font-style:normal}
+.mbend{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mbend h4{margin:4px 0;font:800 var(--t2) var(--body)}
+.mbend ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
+.mbend li{display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.05);border-radius:8px;padding:4px 8px;font:600 var(--t1) var(--body)}
+.mbend li.me{outline:2px solid var(--gold)}
+.mbend li small{color:var(--dim)}
+.mbend li span{margin-inline-start:auto}
+.mbend li span+span{margin-inline-start:8px;color:var(--dim)}
+.mbkd{color:var(--dim);font:500 var(--t1) var(--body);margin:6px 0}
+.mbbtns{display:flex;gap:10px;justify-content:flex-end;align-items:center}
+.mbbtns .go{padding:12px 22px}

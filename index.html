@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&family=Secular+One&display=swap">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/bwin.css">
 
 <!-- הטקסטים לא כתובים כאן: data-t ו-data-ta מתמלאים מהטבלה ב-js/lang.js, לפי השפה -->
 <canvas id="c" data-ta="arena"></canvas>
@@ -73,6 +74,7 @@
   <button class="mtab" id="qBtn" role="tab"><span class="ni" aria-hidden="true">📜</span><span data-t="q.log"></span><b id="qBadge" hidden></b></button>
   <button class="mtab" id="bookBtn" role="tab"><span class="ni" aria-hidden="true">📖</span><span data-t="book.btn"></span><b id="bBadge" hidden></b></button>
   <button class="mtab" id="wMapBtn" role="tab"><span class="ni" aria-hidden="true">🗺️</span><span data-t="wm.title"></span></button>
+  <button class="mtab" id="mbTab" role="tab"><span class="ni" aria-hidden="true">⚔️</span><span data-t="mb.title"></span></button>
   <button class="mtab" id="setBtn" role="tab"><span class="ni" aria-hidden="true">⚙️</span><span data-t="set.title"></span></button>
 </nav>
 <!-- מתנה יומית שעוד לא נלקחה: כפתור עגול קטן בפינה העליונה, מתחת להשתקה. לא בסרגל, כדי שלא ידחוף כפתורים החוצה (js/daily.js) -->
@@ -85,6 +87,16 @@
 <div class="qlog npcdlg win" id="npcDlg" hidden></div>
 <!-- ספר ההרפתקאות: יצורים, פריטים ומשאבים שנמצאו, ופרס כל כמה רשומות (js/book.js) -->
 <div class="qlog win bookwin" id="bookWin" hidden></div>
+
+<!-- משחקי השאול (js/moba.js): הניקוד והשעון למעלה, הרמה והחיים בפינה, 3 סקילים בפינה הימנית, וחלון לבחירת דמות ולסוף -->
+<div class="mbhud" id="mbHud" hidden>
+  <div class="mbtop"><b class="mbs0" id="mbS0">0</b><span id="mbClock">0:00</span><b class="mbs1" id="mbS1">0</b></div>
+  <div class="mbme"><b class="mblv" id="mbLv">1</b><div class="mbbars"><div class="mbhp"><i id="mbHp"></i></div><div class="mbxp"><i id="mbXp"></i></div></div></div>
+  <p class="mbresp" id="mbResp" hidden></p>
+  <button class="wx mbexit" id="mbExit" data-ta="mb.exit">✕</button>
+</div>
+<div class="skills mbsk" id="mbSk" role="group" data-ta="sk.group" hidden></div>
+<div class="ov gearov" id="ovMoba" hidden><div class="panel win mbwin" id="mbWin"></div></div>
 
 <div class="banner" id="banner"></div>
 <!-- אפליקציה מותקנת שמוחזקת לאורך: בקשה לסובב (js/pwa.js) -->
@@ -123,6 +135,8 @@
 <div class="ov gearov" id="ovDaily" hidden><div class="panel win dailywin" id="dailyWin"></div></div>
 <!-- ביקור אצל חבר: רשימת חברים, הכפר שלו לקריאה בלבד, ומתנה עם פתק (js/visit.js) -->
 <div class="ov gearov" id="ovVisit" hidden><div class="panel win dailywin viswin" id="visitWin"></div></div>
+<!-- מסחר עם חבר: הצעה (מתוך הביקור) והצעות שמחכות לי (js/trade.js) -->
+<div class="ov gearov" id="ovTrade" hidden><div class="panel win dailywin viswin trdwin" id="tradeWin"></div></div>
 <div class="ov gearov" id="ovEnd" hidden><div class="panel win endwin" id="endWin"></div></div>
 
 <!-- מסך הפתיחה: מסך אחד בלי גלילה. כותרת, כפתור "יאללה" גדול בפינה של האגודל הימני, וכפתורים קטנים להגדרות. ההסבר בחלון (js/ui.js) -->
@@ -134,6 +148,7 @@
         <button class="lang" data-lang="en" lang="en">English</button>
       </div>
       <button class="lang" id="helpBtn" data-t="help.btn"></button>
+      <button class="lang mbbtn" id="mbBtn" data-t="mb.btn"></button>
     </div>
     <div class="smid">
       <h1 data-t="title"></h1>
@@ -244,6 +259,8 @@
         <button class="lang" data-cam="far" data-t="cam.far"></button>
       </div>
     </div>
+    <!-- צללים מהשמש בכפר ובעולם: נדלקים לבד, ונכבים לבד בטלפון איטי (js/look-hd.js, HD.shadow). בחירה כאן מנצחת את האוטומטי -->
+    <div class="sub shd"><span data-t="shadowGroup"></span><div class="langs" role="group" data-ta="shadowGroup"><button class="lang" data-shadow="1" data-t="shadow.on"></button><button class="lang" data-shadow="0" data-t="shadow.off"></button></div></div>
     <!-- פחות אפקטים: חצי חלקיקים, בלי שובל ונצנוץ, מספרי נזק קטנים (FX_LESS ב-js/juice.js, נשמר ב-SAVE) -->
     <div class="sub gfx fxl"><span data-t="fxGroup"></span><div class="langs" role="group" data-ta="fxGroup"><button class="lang" data-fxless="0" data-t="fx.full"></button><button class="lang" data-fxless="1" data-t="fx.less"></button></div></div>
     <!-- גרסה ועדכון (js/update-check.js) -->
@@ -299,6 +316,8 @@
 <script src="js/village.js"></script>
 <script src="js/world.js"></script>
 <script src="js/wskill.js"></script>
+<script src="js/wskbook.js"></script>   <!-- ספר הסקילים: עוד סקילים אקטיביים בעולם, ובוחרים מה על הכפתורים -->
+<script src="js/skillreveal.js"></script>   <!-- סקיל חדש: רגע גילוי, ומראה לפי הדרגה בעץ (docs/plan-progression.md עמוד 3) -->
 <script src="js/drops.js"></script>
 <script src="js/quests.js"></script>
 <script src="js/npc.js"></script>
@@ -314,6 +333,7 @@
 <script src="js/foeai.js"></script>
 <script src="js/secrets.js"></script>
 <script src="js/worldmap.js"></script>
+<script src="js/curiosity.js"></script>
 <script src="js/travel.js"></script>
 <script src="js/challenge.js"></script>
 <script src="js/tiers.js"></script>
@@ -321,9 +341,11 @@
 <script src="js/gear.js"></script>
 <script src="js/sets.js"></script>
 <script src="js/doll3d.js"></script>
+<script src="js/gearui.js"></script>
 <script src="js/aging.js"></script>
 <script src="js/powers.js"></script>
 <script src="js/stash.js"></script>
+<script src="js/bwin.js"></script>   <!-- חלונות המבנים והשירותים בכפר: תבנית אחת -->
 <script src="js/heroes.js"></script>
 <script src="js/ranks.js"></script>
 <script src="js/stats.js"></script>
@@ -334,6 +356,7 @@
 <script src="js/parosh.js"></script>
 <script src="js/daily.js"></script>
 <script src="js/visit.js"></script>
+<script src="js/trade.js"></script>
 <script src="js/book.js"></script>
 <script src="js/guide.js"></script>
 <script src="js/minimap.js"></script>
@@ -354,6 +377,9 @@
 <script src="js/wisps.js"></script>   <!-- אורות מרחפים במקום החפצים המסתובבים, בעולם ובכפר (docs/plan-fx.md) -->
 <script src="js/render.js"></script>
 <script src="js/feed.js"></script>   <!-- פיד הודעות בצד, בעולם ובכפר (docs/plan-hud.md פרק 6) -->
+<script src="js/moba-kits.js"></script>   <!-- משחקי השאול: מובה 3 על 3 עם בוטים (docs/moba.md) -->
+<script src="js/moba.js"></script>
+<script src="js/moba-bot.js"></script>
 <script src="js/input.js"></script>
 <script src="js/main.js"></script>
 <script src="js/perf.js"></script>

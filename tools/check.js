@@ -117,7 +117,7 @@ function botStep({god,en}){
   for(const f of floats)if(/^\+\d+$/.test(f.txt))L.gainMax=Math.max(L.gainMax||0,+f.txt.slice(1));
   // החלפה רק בין נשקים שלבושים. עם נשק אחד הכפתור מוסתר, ובודקים את זה
   const useWeapon=w=>{if(P.weapon!==w&&wHeld().length>1){swapWeapon();L.swaps++;m.swapAt=S.t}};
-  L.swapBtn=document.getElementById('swap').hidden===(wHeld().length<2);L.nHeld=wHeld().length;
+  L.swapBtn=document.getElementById('swap').hidden===(wHeld().length<2);L.nHeld=Math.max(L.nHeld||0,wHeld().length);   // הכי הרבה נשקים ביד בריצה: בדרך הבוט יכול למכור או ללבוש את הנשק השני, וההחלפות שכבר נספרו נשארות
   // הנשק שסוג הנזק שלו הכי טוב נגד האויב
   const best=e=>(e.mult[P.dt.sword]??1)>=(e.mult[P.dt.gun]??1)?'sword':'gun';
   L.hits={...S.hits};L.dt=P.dt.sword+'/'+P.dt.gun;
@@ -335,13 +335,15 @@ function villageBot(m,L){
       if(S.vil.open!=='stash'&&!enter('stash'))return steer(St.x,St.y,false,0,L)}
     m.stash=1;const q=s=>document.querySelector('#vPanel '+s),up=q('[data-act="up"]');
     if(up&&!up.disabled)up.click();L.stashLv=vLv('stash');
-    const w0=SAVE.bag.wood||0,mv=(d,r)=>{const b=q('[data-act="stash"][data-dir="'+d+'"][data-r="'+r+'"]');if(b)b.click();return!!b};
+    // נגיעה מעבירה BWIN.move, ולחיצה ארוכה הכל (bwin.js מסמן אותה ב-data-n="all")
+    const w0=SAVE.bag.wood||0,mv=(d,r,all)=>{const b=q('[data-act="stash"][data-dir="'+d+'"][data-r="'+r+'"]');if(b){if(all)b.dataset.n='all';b.click()}return!!b};
     const s0=SAVE.bag.oakSword||0;   // כמה חרבות עץ בתרמיל: הלוחם מקבל אחת בבחירה ועוד אחת במתנה
     const swIn=mv('in','oakSword')&&SAVE.stash.oakSword===1&&(SAVE.bag.oakSword||0)===s0-1;   // פריט עובר אחד-אחד
-    const wIn=mv('in','wood')&&SAVE.stash.wood===w0&&!SAVE.bag.wood;
+    const w1=Math.min(BWIN.move,w0),wTap=mv('in','wood')&&SAVE.stash.wood===w1&&(SAVE.bag.wood||0)===w0-w1;
+    const wIn=wTap&&(SAVE.bag.wood?mv('in','wood',true):true)&&SAVE.stash.wood===w0&&!SAVE.bag.wood;
     const swOut=mv('out','oakSword')&&SAVE.bag.oakSword===s0&&!SAVE.stash.oakSword;
     const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key));
-    L.stash={swIn,wIn,swOut,saved:sv.stash.wood===w0&&!sv.stash.oakSword&&sv.bag.oakSword===s0,cap:stashCap(),used:stashUsed()};
+    L.stash={move:BWIN.move,swIn,wTap,wIn,swOut,saved:sv.stash.wood===w0&&!sv.stash.oakSword&&sv.bag.oakSword===s0,cap:stashCap(),used:stashUsed()};
     return L}
   if(m.npc!==3){   // תושבים: הולכים לנפח, לוחצים "לדבר", מקבלים ממנו קווסט, ורואים אותו ביומן. בודקים שהם לא חוסמים, ושהוא מריע לשדרוג
     const n=npcAt('smith'),dlg=document.getElementById('npcDlg'),tb=document.getElementById('talkBtn');
@@ -644,6 +646,55 @@ function worldBot(m,L,god){
   check(vs2.send&&vs2.once&&vs2.closed,'ביקור: מתנה '+(vs2.send?'נשלחה ויצאה מהתרמיל':'לא נשלחה'+(vs2.err?' ('+vs2.err+')':''))+', '+(vs2.once?'ופעם אחת ביום':'ונשלחה שוב'));
   check(vs2.rls&&vs2.got,'ביקור: החבר '+(vs2.got?'מקבל את המתנה פעם אחת':'לא קיבל')+', '+(vs2.rls?'ואי אפשר לשלוח בשם מישהו אחר':'ומישהו שלח בשם אחר'));
   check(vs2.noTable,'ביקור: בלי הטבלאות בענן '+(vs2.noTable?'הכפתור מוסבר והמשחק ממשיך':'משהו נשבר'));
+  // מסחר עם חבר (trade.js), על השרת המדומה: הצעה נועלת את מה שנותנים, ביטול מחזיר, החבר מקבל או דוחה, השולח אוסף פעם אחת, ובלי הטבלה הכפתור לא מופיע
+  const td=await page.evaluate(async()=>{const r={},F=CLOUD.fake=cloudFakeServer();const bak=JSON.stringify(SAVE);
+    CLOUD.session=null;try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}VISIT.ready=null;VISIT.last='';TRADE.ready=null;
+    await cloudSync();F.google.u1='Nir';F.google.u2='Orel';CLOUD.session.name='Nir';const nir=Object.assign({},CLOUD.session);
+    const orel=Object.assign({},nir,{uid:'u2',access:'au2',name:'Orel'}),as=x=>{CLOUD.session=Object.assign({},x,{exp:Date.now()/1000+3600})};
+    F.profiles.u2={user_id:'u2',name:'Orel',level:5,data:{village:{center:2},bag:{stone:30,iron:4}}};
+    await tradeVillage(true);r.ready=TRADE.ready===true;
+    bagAdd('wood',20);const w0=SAVE.bag.wood,s0=SAVE.bag.stone||0;await visitOpen();
+    document.querySelector('#visitWin [data-act="trade"]').click();
+    r.open=!$('ovTrade').hidden&&$('ovVisit').hidden&&TRADE.mode==='make'&&!!document.querySelector('#tradeWin [data-act="want"][data-r="stone"]')&&
+      document.querySelectorAll('#tradeWin [data-act="want"]').length===2;
+    TRADE.give='wood';TRADE.gn=5;TRADE.want='stone';TRADE.wn=5;tradeDraw();
+    window.__trSt=$('ovStart').hidden;$('ovStart').hidden=true;
+    return Object.assign(r,{bak,w0,s0,nir,orel})}).catch(e=>({err:String(e)}));
+  await shot('trade');
+  const td2=await page.evaluate(async T0=>{const r={},F=CLOUD.fake,as=x=>{CLOUD.session=Object.assign({},x,{exp:Date.now()/1000+3600})};$('ovStart').hidden=window.__trSt;
+    const wait=async f=>{for(let i=0;i<3000&&!f();i++)await Promise.resolve()};
+    document.querySelector('#tradeWin [data-act="send"]').click();await wait(()=>F.trades.length&&!TRADE.busy);
+    const t=F.trades[0];r.lock=!!t&&t.status==='open'&&t.give_res==='wood'&&t.give_n===5&&t.want_res==='stone'&&t.want_n===5&&SAVE.bag.wood===T0.w0-5;
+    // ביטול מחזיר
+    TRADE.gn=1;TRADE.wn=1;await tradeSend();const c=F.trades[1];const back=c&&await tradeCancel(c.id);
+    r.cancel=!!back&&F.trades.length===1&&SAVE.bag.wood===T0.w0-5;
+    // עוד הצעה, שתידחה. ועד 3 פתוחות
+    TRADE.gn=1;TRADE.want='iron';await tradeSend();await tradeSend();const full=await tradeSend()===false&&F.trades.length===3;
+    tradeClose();r.back=!$('ovVisit').hidden;visitClose();
+    let bad=false;try{await F.req('POST','/rest/v1/trades',{from_id:'u1',to_id:'u2',give_res:'wood',give_n:1,want_res:'stone',want_n:1},'au1')}catch(e){bad=true}r.rls=bad&&full;
+    // אוראל: מקבל את הראשונה, דוחה את השנייה. אוראל לא יכול לשנות כמויות
+    as(T0.orel);const keep=JSON.stringify(SAVE.bag);SAVE.bag={stone:10};await tradeVillage(true);r.inc=TRADE.inc.length===3;
+    tradeInbox();r.win=!$('ovTrade').hidden&&document.querySelectorAll('#tradeWin [data-act="yes"]').length===3&&!!document.querySelector('#tradeWin [data-act="yes"][disabled]');
+    let bad2=false;try{await F.req('PATCH','/rest/v1/trades?id=eq.'+F.trades[0].id,{status:'accepted',give_n:20},'au2')}catch(e){bad2=true}
+    const ids=F.trades.map(x=>x.id);
+    document.querySelector('#tradeWin [data-act="yes"][data-id="'+ids[0]+'"]').click();await wait(()=>!TRADE.busy&&TRADE.inc.length===2);
+    r.acc=SAVE.bag.stone===5&&SAVE.bag.wood===5&&F.trades[0].status==='accepted'&&bad2;
+    r.no=await tradeAnswer(ids[1],false)&&F.trades[1].status==='declined'&&await tradeAnswer(ids[1],true)===false;
+    tradeClose();r.closed=$('ovTrade').hidden;
+    // ניר אוסף: אבן מהעסקה, עץ שחזר מהדחייה, פעם אחת בלבד
+    SAVE.bag=JSON.parse(keep);as(T0.nir);const w1=SAVE.bag.wood,s1=SAVE.bag.stone||0;await tradeVillage(true);
+    r.got=SAVE.bag.stone===s1+5&&SAVE.bag.wood===w1+1&&F.trades.length===1&&TRADE.out.length===1;
+    await tradeVillage(true);r.once=SAVE.bag.stone===s1+5&&SAVE.bag.wood===w1+1;
+    // בלי הטבלה: הכפתור לא מופיע
+    F.noTrade=true;TRADE.ready=null;await tradeVillage(true);VISIT.sel={user_id:'u2',name:'Orel',level:1,data:{}};r.noTable=TRADE.ready===false&&tradeBtnHtml(VISIT.sel)===''&&tradeOpen(VISIT.sel)===false;
+    SAVE=JSON.parse(T0.bak);SAVE_STORE.write(SAVE,true);CLOUD.fake=cloudFakeServer();CLOUD.session=null;try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}
+    CLOUD.dirty=false;VISIT.ready=null;VISIT.last='';TRADE.ready=null;TRADE.inc=[];TRADE.out=[];VISIT.sel=null;return r},td).catch(e=>({err:String(e)}));
+  check(td.ready&&td.open,'מסחר: חלון ההצעה '+(td.open?'נפתח מהביקור, עם מה שיש לחבר':'לא נפתח'));
+  check(td2.lock&&td2.cancel&&td2.back,'מסחר: הצעה '+(td2.lock?'נשלחה ומה שנותנים נעול':'לא ננעלה'+(td2.err?' ('+td2.err+')':''))+', '+(td2.cancel?'וביטול מחזיר אותו':'וביטול לא החזיר'));
+  check(td2.rls,'מסחר: '+(td2.rls?'עד 3 הצעות פתוחות':'יותר מ-3 הצעות פתוחות'));
+  check(td2.inc&&td2.win&&td2.acc&&td2.no&&td2.closed,'מסחר: החבר '+(td2.acc?'מקבל הצעה ומשאבים עוברים':'לא הצליח לקבל')+', '+(td2.no?'דוחה הצעה פעם אחת':'דחייה לא עבדה'));
+  check(td2.got&&td2.once,'מסחר: השולח '+(td2.got?'אוסף את מה שביקש ואת מה שנדחה':'לא קיבל')+', '+(td2.once?'פעם אחת בלבד':'וקיבל פעמיים'));
+  check(td2.noTable,'מסחר: בלי הטבלה בענן '+(td2.noTable?'הכפתור לא מופיע':'משהו נשבר'));
   // שוק: מוכרים עץ, לא מצליחים לקנות בלי מספיק מטבעות, ואז קונים אבן. בסוף מנקים
   const mk=await page.evaluate(()=>{SAVE.village.market=1;bagAdd('wood',10);const sell=vTrade('sell','wood')&&SAVE.bag.coins===5&&SAVE.bag.wood===5;
     const poor=!vTrade('buy','stone');bagAdd('coins',20);const buy=vTrade('buy','stone')&&SAVE.bag.stone===5&&SAVE.bag.coins===10;
@@ -846,6 +897,15 @@ function worldBot(m,L,god){
     try{const w0=WISPS.stat.draws;drawOrbits();r.draw=WISPS.stat.draws===w0?true:'האורות (wisps.js) מצוירים בזירה'}catch(err){r.draw=String(err)}   // בזירה הציור הישן, לא האורות
     e1.dead=e2.dead=true;enemies=enemies.filter(e=>!e.dead);eb=eb.filter(b=>b.life>0);
     SAVE.gear.orbit=bak.orb;SAVE.hero.level=bak.lv;S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.orb=bak.o;P.hp=bak.hp;P.inv=bak.inv;S.t=bak.t;HITFX.crit=c;return r});
+  // חפץ משולב (orbit.js, ORBIT.combo): אדים = אש + כפור במשבצת אחת. שני חלקים צמודים, כל אחד בחלק מהכוח, והמשולב נופל מבוס
+  const ocb=await page.evaluate(()=>{const bak={orb:SAVE.gear.orbit.slice(),lv:SAVE.hero.level,vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,o:S.orb,t:S.t,m:Math.random},r={};
+    S.vil=S.wd=S.room=null;S.mode='play';SAVE.hero.level=99;SAVE.gear.orbit=['steamOrb'];orbitReset();orbitUpdate(0);
+    r.parts=S.orb.types.join(',');r.k=S.orb.ks.join(',');r.close=Math.hypot(S.orb.pos[0].x-S.orb.pos[1].x,S.orb.pos[0].y-S.orb.pos[1].y)<60;
+    const p=S.orb.pos[0],e=addEnemy('grunt',p.x,p.y);e.mult={};e.hp=e.max=1e9;orbitUpdate(0);r.hit=e.hp<e.max;e.dead=true;enemies=enemies.filter(x=>!x.dead);
+    r.facts=orbitFacts('steamOrb').map(f=>f.k+':'+f.v).join(',');r.txt=gStatsHtml('trinityOrb').length>20&&gCompare('steamOrb',null).length>20;
+    Math.random=()=>0;r.drop=!!GEAR.items[orbitComboRoll()];Math.random=bak.m;
+    let pool=0;for(let i=0;i<300;i++)if(gItem(gRoll()).types)pool++;r.pool=pool;
+    SAVE.gear.orbit=bak.orb;SAVE.hero.level=bak.lv;S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.orb=bak.o;S.t=bak.t;return r});
   // ברק אלוהי (divine.js): אחרי שני אויבי-על מוכן, הכפתור מפעיל 5 שניות: כל החמישה מסתובבים, ברק פוגע באויב קרוב, ובסוף הכל חוזר
   const dvr=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,dv:S.dv,o:S.orb,orb:SAVE.gear.orbit.slice(),t:S.t},r={};
     S.vil=S.wd=S.room=null;S.mode='play';SAVE.gear.orbit=[];divineReset();orbitReset();
@@ -989,6 +1049,48 @@ function worldBot(m,L,god){
       drawOrbits();r.orbDraw=W.draws>d0&&W.lights>=5;r.orbFlash=W.flashes>f0;
       e3.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // רגע גילוי של סקיל חדש בעולם (skillreveal.js): מתחיל אחרי SKREVEAL.delay, עוצר את הזמן ומקרב, האייקון עף ונגמר לבד, פעם אחת לכל סקיל.
+  // ההטלה הראשונה גדולה, נגיעה מדלגת, ודרגה גבוהה בעץ מגדילה ומחליפה צבע. אחר כך המשחק ממשיך
+  const skr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=[];SAVE.hero.tree={};enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}},s0={...skrStat},id=S.sk.ids[0];r.id=id;
+      run(SKREVEAL.delay*0.5);r.wait=!SKR;run(SKREVEAL.delay*0.6+0.05);hud();
+      r.start=!!SKR&&skrStat.starts===s0.starts+1&&S.hitstop>0&&SAVE.hero.skSeen.includes(id);
+      SKR.t0-=SKREVEAL.zin+0.05;r.zoom=skrZoom()>1;r.fly=!!document.querySelector('.skrfly');
+      SKR.t0-=SKREVEAL.dur+0.4;render();camZoom();   // השעון בבדיקה עומד: מזיזים את ההתחלה אחורה
+      r.end=!SKR&&!document.querySelector('.skrfly')&&skrStat.ends===s0.ends+1&&skrZoom()===1&&S.mode==='play';
+      run(1);r.once=skrStat.starts===s0.starts+1;
+      const e=addEnemy('grunt',P.x+150,P.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;S.sk.cd[0]=0;S.hitstop=0;
+      const b0=skrStat.big;r.big=wskUse(id)&&skrStat.big===b0+1;run(0.6);r.on=e.hp<e.max;
+      SAVE.hero.skSeen=[];run(0.02);r.skipStart=!!SKR;if(SKR)SKR.t0-=0.3;
+      dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));r.skip=!SKR&&skrStat.skips===s0.skips+1&&!(S.hitstop>0);
+      const g0=skSize(id),c0=skCol(id);SAVE.hero.tree={[SKREVEAL.branch[id]]:['w1','x','y','z','u','v']};
+      r.grade=skrGrade(id)===SKREVEAL.grade.max&&skSize(id)>g0&&skCol(id)!==c0&&c0===dtCol(skDef(id).dt);
+      e.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
+    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // ספר הסקילים (wskbook.js): סקיל נפתח ברמה ומופיע במסלול הרמות, עלייה ברמה ממלאת משבצת, הספר נפתח ומחליף מה על הכפתור,
+  // וכל אחד מתשעת הסקילים החדשים יורה ופוגע בלי שגיאות. אחר כך הכל חוזר
+  const wsb=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:[],bad:[],n:Object.keys(WSKBOOK.list).length};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=1;SAVE.hero.skLoad=[];SAVE.hero.skSeen=wsbIds().slice();enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
+      const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;return e};
+      run(0.05);r.one=S.sk.ids.length===(wsbWeapon()?1:0);r.lock=!wsbOpen('meteor')&&!wsbOpen('charge');
+      const n=Math.min(...Object.keys(WSKBOOK.list).map(wsbNeed));r.lp=lpAt(n).some(x=>x.k==='skill');
+      SAVE.hero.level=99;wsbLevelUp(1,99);r.fill=wsbLoad().filter(Boolean).length===WSKBOOK.slots;run(0.05);r.btns=S.sk.ids.length===SKILLS.max;
+      wsbOpenUi();const ov=$('ovBook');r.ui=!!ov&&!ov.hidden&&ov.querySelectorAll('.wsbc').length===wsbIds().filter(id=>id!==wsbWeapon()).length;
+      const c0=ov.querySelector('.wsbc:not(.on):not(.lock)'),pid=c0&&c0.dataset.wsbid;
+      if(pid){ov.querySelector('[data-wslot="1"]').click();ov.querySelector('[data-wsbid="'+pid+'"]').click();r.swap=wsbLoad()[1]===pid}
+      ov.querySelector('[data-wsb="x"]').click();r.close=ov.hidden;run(0.05);r.swapBtn=!!pid&&S.sk.ids.includes(pid);hud();
+      for(const id in WSKBOOK.list){
+        try{SAVE.hero.skLoad=[id,null];run(0.05);for(const x of enemies)x.dead=true;enemies=[];
+          const i=S.sk.ids.indexOf(id);if(i<0){r.bad.push(id+':לא על כפתור');continue}S.sk.cd[i]=0;
+          const e=mk(80,0),h0=wsbStat.hits[id]||0,D=WSKBOOK.list[id];
+          if(!wskUse(id)){r.bad.push(id+':לא ירה');continue}
+          run((D.t||D.delay||D.arm||0.4)+0.6);
+          const hit=(wsbStat.hits[id]||0)>h0&&e.hp<e.max;(hit?r.ok:r.bad).push(id+(hit?'':':לא פגע'))}
+        catch(err){r.bad.push(id+':'+String(err))}}
+      for(const x of enemies)x.dead=true;enemies=[];run(8);r.clean=!(S.wsb&&S.wsb.fx.length)}catch(err){r.err=String(err&&err.stack||err)}
+    const o=$('ovBook');if(o)o.hidden=true;if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // פיד הודעות (feed.js): בעולם שלל שנאסף נכנס לפיד בצד ולא על הדמות, אותו משאב מתאחד, ציוד בצבע הדרגה, עד 3 שורות, נעלם אחרי FEED.life, ובזירה לא פועל
   const feed=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{enterWorld('home');enemies=[];FL.length=0;const f0=floats.length,st=FEED.stat,d0=st.drawn;
@@ -1052,7 +1154,7 @@ function worldBot(m,L,god){
     for(let t=0;t<secs;t+=dt){P.hp=P.maxHp;const a=t*0.12;joy={id:-1,ox:-999,oy:-999,dx:-Math.sin(a),dy:Math.cos(a)};
       if(S.mode!=='play')S.mode='play';worldUpdate(dt);maxE=Math.max(maxE,enemies.length);if(first==null&&S.wd.pace&&S.wd.pace.packs)first=Math.round(t)}
     // עומס: מנסים להכניס הרבה להקות ועוד 20 שניות של עולם (קבוצות שחוזרות, פיצולים, אירועים). המגבלה נשמרת תמיד
-    for(let i=0;i<40;i++)paceSpawn(8);for(let t=0;t<20;t+=dt){P.hp=P.maxHp;worldUpdate(dt);maxE=Math.max(maxE,paceAlive())}
+    for(let i=0;i<60;i++)paceSpawn(8);for(let t=0;t<20;t+=dt){P.hp=P.maxHp;worldUpdate(dt);maxE=Math.max(maxE,paceAlive())}
     // בונוס להקה, ישירות: להקה של 3 ליד השחקן, כולן מופלות, והבונוס ניתן פעם אחת
     enemies=[];const b0=S.wd.pace.bonus,pk=paceSpawn(3,{x:P.x+60,y:P.y}),pkN=pk?enemies.filter(e=>e.pack===pk).length:0;
     for(const e of enemies.filter(e=>e.pack===pk)){e.affix=null;kill(e)}paceUpdate(0.01);const pkBonus=S.wd.pace.bonus-b0;paceUpdate(0.01);
@@ -1158,9 +1260,10 @@ function worldBot(m,L,god){
       k=/\bwin\b/.test(c)?'window':/\bres\b/.test(c)?'pill':/\bhp\b/.test(c)?'bar':e.tagName==='BUTTON'?'button':'';const p=r.height/H*100;
       if(k&&p>LIM[k])big.push((e.id||c.split(' ')[0])+' '+p.toFixed(1)+'%>'+LIM[k])}
     const o={...o0,n:els.length,bad,off,panel:!!pn,big,more:!!document.querySelector('#'+(place==='world'?'w':'v')+'Bag .resmore'),cards:0,wins:{}};
-    if(place!=='world'){const tb=document.querySelector('#vPanel [data-act="trade"]');if(tb)tb.click();const ss=[...document.querySelectorAll('#vPanel .tcols>section')].map(vis);
+    if(place!=='world'){const ss=[...document.querySelectorAll('#vPanel .bwcols>section')].map(vis);   // השוק נפתח על לשונית המסחר (bwin.js)
       o.cards=document.querySelectorAll('#vPanel .tcard').length;o.cols=ss.length===2&&ss[0]&&ss[1]?(Math.abs(ss[0].top-ss[1].top)<2?2:1):0;
-      const x=document.querySelector('#vPanel [data-act="close"]');if(x)x.click();o.tradeBack=!!document.querySelector('#vPanel [data-act="trade"]')&&!$('vPanel').hidden}
+      const tab=t=>{const b=document.querySelector('#vPanel [data-act="tab"][data-tab="'+t+'"]');if(b)b.click();return!!b};
+      o.tradeBack=tab('up')&&!!document.querySelector('#vPanel .bwup')&&!document.querySelector('#vPanel .tcard')&&tab('main')&&document.querySelectorAll('#vPanel .tcard').length===o.cards}
     o.wins[place==='world'?'gate':'market']=win(()=>{},pid,'#'+pid+' [data-act="close"]');
     o.wins.gear=win(gearOpen,'ovGear','#gearClose');
     o.wins.quests=win(()=>questLogOpen(true),'qLog','#qLog [data-act="close"]');
@@ -1180,7 +1283,7 @@ function worldBot(m,L,god){
     const m={},mb=vis($('menuBtn'));m.btn=!!mb&&mb.width>=44&&mb.height>=44&&mb.right<=W&&mb.top>=0;
     $('menuBtn').click();await tick();m.open=on()&&!!MENU.cur;
     const tabs=[...document.querySelectorAll('#menuRail .mtab')].map(e=>({n:e.id,r:vis(e)})).filter(x=>x.r);
-    m.tabs=tabs.length;m.want=place==='world'?5:4;m.small=tabs.filter(x=>x.r.width<48||x.r.height<48).map(x=>x.n);
+    m.tabs=tabs.length;m.want=place==='world'?6:5;m.small=tabs.filter(x=>x.r.width<48||x.r.height<48).map(x=>x.n);
     m.out=tabs.filter(x=>x.r.left<0||x.r.right>W+0.5||x.r.top<0||x.r.bottom>H+0.5).map(x=>x.n);
     const seen=[];for(const t of MENU.tabs){const b=$(t.id);if(!vis(b))continue;if(MENU.cur!==t.id)b.click();await tick();
       const xr=vis(document.querySelector('#'+t.win+' .wx'));
@@ -1486,14 +1589,34 @@ function worldBot(m,L,god){
     enterWorld('home');o.gone=!wnpcState().cutter&&!!wnpcState().fisher;
     npcTalk(null);enterVillage();o.here=npcHere('vcutter')&&!!npcAt('vcutter')&&!npcHere('vfisher');o.arrived=RSS().cutter===2;
     o.free=Object.values(RESID.list).every(R=>npcFree(R.house.x,R.house.y+RESID.front));
-    SAVE.bag.stone=(SAVE.bag.stone||0)+10;const st=SAVE.bag.stone,ir=SAVE.bag.iron||0;npcTalk('vcutter');o.line=!/^npc\./.test(S.vil.dlgLine);
+    SAVE.bag.stone=(SAVE.bag.stone||0)+10;const st=SAVE.bag.stone,ir=SAVE.bag.iron||0;npcTalk('vcutter');o.line=!/^npc\./.test(S.vil.dlgLine);const svc=()=>{const t=document.querySelector('#npcDlg [data-act="tab"][data-tab="serve"]');if(t)t.click()};svc();
     const b=document.querySelector('#npcDlg [data-act="res"]');o.btn=!!b&&!b.disabled;if(b)b.click();o.swap=SAVE.bag.stone===st-10&&SAVE.bag.iron===ir+2;
-    Q.done.wCatch=1;bagAdd('perch',1);const c0=SAVE.bag.coins||0;npcTalk('vfisher');const f=document.querySelector('#npcDlg [data-act="res"][data-k="perch"]');if(f)f.click();
+    Q.done.wCatch=1;bagAdd('perch',1);const c0=SAVE.bag.coins||0;npcTalk('vfisher');svc();const f=document.querySelector('#npcDlg [data-act="res"][data-k="perch"]');if(f)f.click();
     o.fish=SAVE.bag.coins===c0+RES.list.perch.sell*RESID.list.fisher.mult;
     npcTalk(null);Object.assign(Q.done,d0);for(const k of ['wGolems','wCatch'])if(!d0[k])delete Q.done[k];SAVE.resid=r0;enterVillage();return o});
   check(rsd.away&&rsd.inWorld&&rsd.bye&&rsd.gone&&rsd.here&&rsd.arrived&&rsd.free&&rsd.line&&rsd.btn&&rsd.swap&&rsd.fish,'הכפר מתמלא: '+(rsd.away&&rsd.inWorld?'החוצבת באחו':'החוצבת לא במקום')+(rsd.bye?', נפרדת אחרי הקווסט האחרון':', לא נפרדת')+
     (rsd.gone?', נעלמת מהאחו':', נשארת באחו')+(rsd.here&&rsd.arrived?', גרה בכפר עם חגיגה':', לא הגיעה לכפר')+(rsd.free?'':', בית במקום אסור')+(rsd.line?'':', אין לה משפט')+
     (rsd.btn&&rsd.swap?', אבנים לברזל':', ההחלפה לא עובדת')+(rsd.fish?', והדייג קונה דגים':', הדייג לא קונה'));
+  // חלונות המבנים בתבנית אחת (bwin.js, ניר 2.11: "כל החנויות לא נוחות"): כל מבנה נפתח עם שם, שורה של מה עושים בו, גוף ו-✕,
+  // ושום כפתור לא יוצא מהחלון. בלשונית השדרוג יש מחיר. במחסן "הכל למחסן" ו"הכל לתרמיל", ובשוק קונים אבן. על עותק של השמירה
+  const bw=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={bad:[],n:0,all:Object.keys(VILLAGE.b).length};
+    try{npcTalk(null);enterVillage();for(const k in VILLAGE.b)SAVE.village[k]=Math.max(2,vLv(k));SAVE.village.stash=VILLAGE.max;SAVE.stash={};bagAdd('coins',500);bagAdd('wood',40);
+      for(const k in VILLAGE.b){S.vil.ui='';if(!vOpen(k)){o.bad.push(k+' לא נפתח');continue}const pn=$('vPanel'),r=pn.getBoundingClientRect();
+        const ok=pn.classList.contains('bw')&&!!pn.querySelector('.bwhd h3')&&!!pn.querySelector('.bwhd .bwt p')&&!!pn.querySelector('.bwbody')&&!!pn.querySelector('.bwhd [data-act="close"]');
+        const out=[...pn.querySelectorAll('button')].filter(b=>{const q=b.getBoundingClientRect();return q.width&&(q.left<r.left-1||q.right>r.right+1||q.top<r.top-1)}).length;
+        if(!ok||out)o.bad.push(k+(ok?'':' בלי תבנית')+(out?' '+out+' כפתורים בחוץ':''));
+        const up=pn.querySelector('[data-act="tab"][data-tab="up"]');if(up){up.click();if(!pn.querySelector('.bwup')||!pn.querySelector('.bwprice .bwpc'))o.bad.push(k+': שדרוג בלי מחיר')}
+        o.n++;S.vil.tab={}}
+      const q=s=>document.querySelector('#vPanel '+s);S.vil.ui='';vOpen('stash');const w0=SAVE.bag.wood;
+      q('[data-act="stashAll"][data-dir="in"]').click();o.allIn=SAVE.stash.wood===w0&&!SAVE.bag.wood&&!SAVE.stash.coins;
+      q('[data-act="stashAll"][data-dir="out"]').click();o.allOut=SAVE.bag.wood===w0&&!SAVE.stash.wood;
+      S.vil.ui='';vOpen('market');const c0=SAVE.bag.coins,s0=SAVE.bag.stone||0,b=q('.tcard[data-act="buy"][data-r="stone"]');o.buyBtn=!!b&&!b.disabled;
+      if(o.buyBtn)b.click();o.buy=SAVE.bag.stone===s0+vLot('stone')&&SAVE.bag.coins===c0-vPrice('stone','buy')*vLot('stone');
+      vShut();o.closed=$('vPanel').hidden;
+    }finally{const d=JSON.parse(bak);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,d);saveNow();if(S.vil){S.vil.tab={};S.vil.ui='';villageHud()}}
+    return o});
+  check(!bw.bad.length&&bw.n===bw.all&&bw.allIn&&bw.allOut&&bw.buy&&bw.closed,'חלונות המבנים: '+bw.n+'/'+bw.all+' בתבנית אחת (שם, מה עושים, לשוניות, ✕)'+(bw.bad.length?', בעיות: '+bw.bad.join(' | '):'')+
+    (bw.allIn?', "הכל למחסן" עובד':', "הכל למחסן" לא עובד')+(bw.allOut?', "הכל לתרמיל" עובד':', "הכל לתרמיל" לא עובד')+(bw.buy?', קנייה בשוק עובדת':bw.buyBtn?', הקנייה לא עברה':', אין כפתור קנייה')+(bw.closed?'':', לא נסגר'));
   // קפיצה בין פנסים (travel.js): בשער בכפר "לאן?" עם הפנסים הדולקים, קפיצה לאגם ליד פנס המים, "חזרה לכפר" ליד הפנס (לא באמצע קרב), וקפיצה ממפת העולם
   const lj=await page.evaluate(()=>{const o={};SAVE.story.water=true;P.inv=99;npcTalk(null);enterVillage();$('ovDaily').hidden=true;
     S.vil.gate=true;S.vil.open='gate';S.vil.ui='';villageHud();o.list=document.querySelectorAll('#vPanel [data-act="jump"]').length;o.lit=travelLit().length;
@@ -1737,15 +1860,35 @@ function worldBot(m,L,god){
     document.querySelector('#gTabs [data-tab="boots"]').click();o.filter=[...document.querySelectorAll('#gItems [data-id]')].every(e=>gItem(e.dataset.id).slot==='boots');
     document.querySelector('#gActs [data-act="best"]').click();o.best=SAVE.gear.boots[0]==='swiftBoots';
     o.down=!!t('starterBoots')&&!!t('starterBoots').querySelector('.gmk.down');
-    const coins=SAVE.bag.coins||0,l=gSellList();document.querySelector('#gActs [data-act="sell"]').click();
-    o.ask=!!document.querySelector('#gDetail [data-act="sellYes"]')&&(SAVE.bag.starterBoots||0)>0;
-    document.querySelector('#gDetail [data-act="sellYes"]').click();
-    o.sold=!SAVE.bag.starterBoots&&SAVE.bag.wardenBoots===1&&!!SAVE.bag.swiftBoots===false&&(SAVE.bag.coins||0)>coins;o.got=(SAVE.bag.coins||0)-coins;o.list=Object.keys(l).join(',');
+    // מכירה (ניר 2.11: "לא ברור איך משתמשים... מכרתי משהו שלא התכוונתי, ואין אפשרות למכור הכל"): מצב בחירה, ✓ בנגיעה, בחר חלשים, אישור ליקר, נעילה והחזר
+    bagAdd('ironSword');bagAdd('stormBow');document.querySelector('#gTabs [data-tab="items"]').click();
+    t('ironSword').click();document.querySelector('#gDetail [data-act="lock"]').click();o.lock=gLocked('ironSword');
+    const coins=SAVE.bag.coins||0,b0=Object.assign({},SAVE.bag),dq=s=>document.querySelector('#gDetail '+s);
+    document.querySelector('#gActs [data-act="sell"]').click();
+    o.ask=GUI.sell&&!!dq('[data-act="sellYes"]')&&dq('[data-act="sellYes"]').disabled&&(SAVE.bag.starterBoots||0)>0;   // נכנסים למצב בחירה, ולא מוכרים כלום
+    dq('[data-act="sellWeak"]').click();const pk=gSellPick();o.list=Object.keys(pk).join(',');
+    o.weak=pk.starterBoots===b0.starterBoots&&!pk.stormBow&&!pk.ironSword&&pk.wardenBoots===b0.wardenBoots-1;   // לא יקר, לא נעול, ומסט נשאר עותק
+    o.scroll=getComputedStyle(t('starterBoots')).touchAction==='pan-y'&&getComputedStyle(dq('.gsell')).overflowY==='auto';
+    t('starterBoots').click();o.keep=t('starterBoots').getAttribute('aria-pressed')==='false'&&!gSellPick().starterBoots;
+    t('starterBoots').click();o.keep=o.keep&&t('starterBoots').getAttribute('aria-pressed')==='true'&&gSellPick().starterBoots===b0.starterBoots&&t('ironSword').disabled;
+    t('stormBow').click();dq('[data-act="sellYes"]').click();o.rare=!!dq('[data-act="sellSure"]')&&SAVE.bag.stormBow===b0.stormBow;   // יקר: אישור קודם
+    dq('[data-act="sellBack"]').click();t('stormBow').click();dq('[data-act="sellYes"]').click();
+    o.out=!GUI.sell&&!dq('[data-act="sellYes"]')&&!$('ovGear').hidden;
+    o.sold=!SAVE.bag.starterBoots&&SAVE.bag.wardenBoots===1&&SAVE.bag.stormBow===b0.stormBow&&SAVE.bag.ironSword===b0.ironSword&&(SAVE.bag.coins||0)>coins;o.got=(SAVE.bag.coins||0)-coins;
+    document.querySelector('#gActs [data-act="undo"]').click();
+    o.undo=SAVE.bag.starterBoots===b0.starterBoots&&SAVE.bag.wardenBoots===b0.wardenBoots&&(SAVE.bag.coins||0)===coins&&!document.querySelector('#gActs [data-act="undo"]');
+    // חפץ מסתובב (gOrbFacts): בפרטים רואים מה הוא נותן, וההשוואה מראה ▲ ולא "בלי שינוי"
+    SAVE.gear.orbit=SAVE.gear.orbit.map(()=>null);bagAdd('cloverOrb');document.querySelector('#gTabs [data-tab="items"]').click();
+    const ob=document.querySelector('#gItems [data-id="cloverOrb"]');if(ob)ob.click();const ot=$('gDetail').innerText;
+    o.orb=!!ob&&/▲/.test(ot)&&!ot.includes(T('gear.same'))&&ot.includes(T('orb.f.crit'))&&ot.includes(T('orb.f.loot'));o.orbTxt=ot.replace(/\s+/g,' ').slice(0,90);
     gearClose();const g1=gearStats(),k=JSON.parse(keep);SAVE.bag=k.bag;SAVE.gear=k.gear;SAVE.gseen=k.seen||undefined;gearLive(g1);celebrate=c0;saveNow();return o});
-  check(!bg.bad.length&&bg.chips&&bg.sorted&&bg.up&&bg.new&&bg.seen&&bg.filter&&bg.best&&bg.down&&bg.ask&&bg.sold,
+  check(!bg.bad.length&&bg.chips&&bg.sorted&&bg.up&&bg.new&&bg.seen&&bg.filter&&bg.best&&bg.down&&bg.ask&&bg.sold&&bg.scroll&&bg.keep&&bg.out&&bg.orb&&bg.lock&&bg.weak&&bg.rare&&bg.undo,
     'ציוד ותרמיל: '+(bg.bad.length?'פריט נדיר חלש מדי: '+bg.bad.join(', '):'כל נדירות חזקה מזו שמתחת')+(bg.chips?', מסננים':', אין מסננים')+(bg.sorted?', ממוין':', לא ממוין')+
     (bg.up&&bg.down?', ▲/▼':', חסר ▲/▼')+(bg.new&&bg.seen?', נקודה לחדש':', הנקודה לא עובדת')+(bg.filter?'':', המסנן לא מסנן')+(bg.best?', ללבוש הכי טוב':', "הכי טוב" לא עבד')+
-    (bg.ask?', אישור בחלון':', בלי אישור')+(bg.sold?', נמכרו ('+bg.list+', +'+bg.got+')':', המכירה לא עבדה ('+bg.list+')'));
+    (bg.ask?', מצב בחירה':', אין מצב בחירה')+(bg.weak?', בחר חלשים ('+bg.list+')':', "בחר חלשים" בחר לא נכון ('+bg.list+')')+(bg.lock?', נעילה':', הנעילה לא עובדת')+
+    (bg.rare?', אישור ליקר':', יקר בלי אישור')+(bg.sold?', נמכרו (+'+bg.got+')':', המכירה לא עבדה')+(bg.undo?', החזר':', "החזר" לא החזיר')+
+    (bg.scroll?', נגלל':', לא נגלל באצבע')+(bg.keep?', נגיעה מסמנת':', נגיעה בפריט לא מסמנת')+(bg.out?', יוצאים ממצב מכירה':', נתקע במצב מכירה')+
+    (bg.orb?', חפץ מסתובב מראה מה הוא נותן':', חפץ מסתובב בלי סטטים ("'+bg.orbTxt+'")'));
   // שומרים חוזרים (story.js, STORY.rematch): כפתור 🔔 ליד פנס דולק רק אחרי הסוף ובדרגה אמיץ ומעלה. השומר יוצא חזק יותר, נופל שלל, ופעם ביום לכל שומר
   const rm=await page.evaluate(()=>{
     const o={},st0=JSON.stringify(SAVE.story),ti0=JSON.stringify(SAVE.tier||null),L=STORY.lanterns.earth,vis=()=>{worldUpdate(0.016);return !$('wardBtn').hidden};
@@ -1798,6 +1941,16 @@ function worldBot(m,L,god){
     SAVE.gear.weapon='oakBow';R3D._hl=null;L=heroLook();o.noBow=!L.props.shield;
     SAVE.gear=JSON.parse(g0);SAVE.bag=JSON.parse(b0);R3D._hl=null;return o});
   check(gv.shield&&gv.head&&gv.in3d&&gv.glow&&gv.noBow,'ציוד שרואים: '+(gv.shield?'מגן זהב עם להב כסף':'אין מגן')+(gv.head?', קסדה זוהרת מקמע זהב':', קסדה בלי זוהר')+(gv.in3d?'':', המגן לא נראה בתלת-ממד')+(gv.glow?', הנשק זוהר':', הנשק לא זוהר')+(gv.noBow?', ועם קשת אין מגן':', מגן גם עם קשת'));
+  // צללים (look-hd.js, HD.shadow): בתלת-ממד בעולם השמש מטילה צל, הגיבור מטיל ועצים לא, והמתג בהגדרות מכבה ומדליק
+  if(CFG.gfx==='3d'){const sd=await page.evaluate(()=>{
+    if(!R3D.on||!R3D.ready)return {skip:true};
+    const o={},sun=R3D.scene.children.find(x=>x.isDirectionalLight),u=HD.sh.user,de=R3D.drawEvery,casts=x=>{let c=false;x.traverse(m=>{if(m.isMesh&&m.castShadow)c=true});return c};
+    const draw=()=>{try{render3d(W/2-P.x,H/2-P.y)}catch(e){o.err=String(e)}};
+    enterWorld('home');R3D.drawEvery=0;draw();
+    o.on=sun.castShadow;o.hero=casts(R3D.player.root);o.trees=Object.values(R3D.wld.nodes).filter(casts).length;
+    setShadow(false);draw();o.off=!sun.castShadow;setShadow(true);draw();o.back=sun.castShadow;
+    HD.sh.user=u;try{if(u)localStorage.setItem(HD.shadow.key,u);else localStorage.removeItem(HD.shadow.key)}catch(e){}R3D.drawEvery=de;return o});
+    check(sd.skip||(sd.on&&sd.hero&&!sd.trees&&sd.off&&sd.back&&!sd.err),'צללים: '+(sd.skip?'אין תלת-ממד':(sd.on?'דלוקים בעולם':'לא דלוקים')+(sd.hero?', הגיבור מטיל צל':', הגיבור בלי צל')+(sd.trees?', '+sd.trees+' מקורות מטילים צל (רק דמויות ומבנים)':', עצים וסלעים בלי')+(sd.off&&sd.back?', המתג מכבה ומדליק':', המתג לא עובד')+(sd.err?', שגיאה: '+sd.err:'')))}
   // מסלול רמות (levelpath.js): מה נפתח בכל רמה נגזר מהטבלאות, "הבא" בחלון הדמות, ובעליית רמה הבזק וכרטיס עם מה שנפתח ומה הבא
   const lp=await page.evaluate(()=>{
     enterWorld('home');const o={};
@@ -1811,6 +1964,23 @@ function worldBot(m,L,god){
     c.classList.remove('on');return o});
   check(lp.orbit&&lp.rank&&lp.tree&&lp.next&&lp.up&&lp.card&&lp.cardNext&&lp.flash&&lp.win,
     'מסלול רמות: '+(lp.orbit&&lp.rank&&lp.tree?'משבצת, דרגה ונקודת סקיל נמצאו':'חסר משהו בטבלה')+(lp.next?', יש "הבא"':', אין "הבא"')+(lp.card?', כרטיס בעליית רמה':', אין כרטיס')+(lp.cardNext?' עם הבא':'')+(lp.flash?', הבזק':', בלי הבזק')+(lp.win?', ובחלון הדמות':', לא בחלון הדמות'));
+  // סקרנות וחקירה (curiosity.js): שלט "רמה מומלצת" ומכשול בדרך הסגורה, שומרים בכניסה, המכשול נעלם ברמה. סוד לפי רמה נעול לפני ופתוח אחרי, ובמסלול הרמות ובמפה
+  const cu=await page.evaluate(()=>{
+    const o={},lv0=SAVE.hero.level,sc0=JSON.stringify(SAVE.secrets||{found:{},read:{}}),cu0=JSON.stringify(CU()),st0=JSON.stringify(SAVE.story);
+    SAVE.secrets={found:{},read:{}};SAVE.curio={clear:{}};SAVE.story=Object.assign({},SAVE.story,{earth:false});
+    const rec=CURIO.paths.lake.lv;SAVE.hero.level=rec-1;enterWorld('home');for(const e of enemies)e.dead=true;
+    let g=cuSigns().find(x=>x.k==='lake');o.sign=!!g&&!g.open&&g.ob==='log';o.guards=WORLD.foes.some(G=>G.guard==='lake'&&G.tough>1);
+    curioUpdate();o.stay=!CU().clear.lake;
+    SAVE.hero.level=rec;curioUpdate();g=cuSigns().find(x=>x.k==='lake');o.clear=!!CU().clear.lake&&!!g&&!g.ob;o.stillShut=!wPathOpen(WORLD.paths.lake);
+    const s=SECRETS.regions.meadow.find(q=>q.lv);SAVE.hero.level=s.lv-1;enterWorld('home');for(const e of enemies)e.dead=true;
+    o.locked=!scList().includes(s);P.x=s.x;P.y=s.y;secretsUpdate(0.05);o.noFind=!scFound(s.id);o.noMark=!cuNew('meadow');
+    SAVE.hero.level=s.lv;o.lp=lpAt(s.lv).some(x=>x.k==='secret'&&x.txt===T('cu.new',T('cu.in.meadow')));o.mark=cuNew('meadow');
+    o.open=scList().includes(s);P.x=s.x+SECRETS.reveal-10;P.y=s.y;secretsUpdate(0.05);P.x=s.x;P.y=s.y;secretsUpdate(0.05);o.found=scFound(s.id);o.markGone=!cuNew('meadow');
+    o.each=Object.keys(SECRETS.regions).every(r=>SECRETS.regions[r].some(q=>q.lv));o.lvs=[...new Set(Object.values(SECRETS.regions).flat().filter(q=>q.lv).map(q=>q.lv))].sort((a,b)=>a-b).join(',');
+    SAVE.hero.level=lv0;SAVE.secrets=JSON.parse(sc0);SAVE.curio=JSON.parse(cu0);SAVE.story=JSON.parse(st0);saveNow();enterVillage();return o});
+  check(cu.sign&&cu.guards&&cu.stay&&cu.clear&&cu.stillShut&&cu.locked&&cu.noFind&&cu.noMark&&cu.lp&&cu.mark&&cu.open&&cu.found&&cu.markGone&&cu.each,
+    'סקרנות: '+(cu.sign?'שלט ומכשול בדרך לאגם':'אין שלט או מכשול')+(cu.guards?', שומרים בכניסה':', בלי שומרים')+(cu.stay&&cu.clear?', המכשול נעלם ברמה':', המכשול לא נעלם בזמן')+(cu.stillShut?' והדרך עדיין לפי הפנס':', הדרך נפתחה בלי פנס!')+
+    (cu.locked&&cu.noFind?', סוד ברמה נעול לפני':', סוד ברמה פתוח מוקדם')+(cu.open&&cu.found?' ונמצא אחרי':' ולא נמצא אחרי')+(cu.lp?', "משהו חדש" במסלול הרמות':', לא במסלול הרמות')+(cu.noMark&&cu.mark&&cu.markGone?', ? במפה':', הסימן במפה לא עובד')+(cu.each?', בכל אזור (רמות '+cu.lvs+')':', חסר אזור'));
   const edge=await page.evaluate(()=>{
     enterWorld('home');const B=placeBox(),n0=drops().length,out=o=>o.x<B.x0||o.x>B.x1||o.y<B.y0||o.y>B.y1;
     wantedAppear(0);const e=S.wn.e;e.x=B.x1+300;e.y=B.y0-200;wantedMove(e,0.05);const wIn=!out(e);
@@ -1826,12 +1996,39 @@ function worldBot(m,L,god){
     // בלי מים: אין כפתור. הקווסט של הדייג סופר דגים. בישול אצל הפונדקאית: לוקח את הדגים ונותן ארוחה, והחיזוק חל בעולם ונגמר בזמן
     SAVE.quests.active.wCatch={p:[0]};questEvent('fish','minnow',3);out.quest=qReady(QBY.wCatch);delete SAVE.quests.active.wCatch;
     bagAdd('minnow',2);bagAdd('perch',1);const n0=(SAVE.bag.minnow||0)+(SAVE.bag.perch||0);
-    enterVillage();npcTalk('inn');const cb=document.querySelector('#npcDlg [data-act="cook"][data-m="stew"]');out.cookBtn=!!cb&&!cb.disabled;if(cb)cb.click();
+    enterVillage();npcTalk('inn');document.querySelector('#npcDlg [data-act="tab"][data-tab="cook"]').click();const cb=document.querySelector('#npcDlg [data-act="cook"][data-m="stew"]');out.cookBtn=!!cb&&!cb.disabled;if(cb)cb.click();
     out.taken=n0-((SAVE.bag.minnow||0)+(SAVE.bag.perch||0))===3;out.meal=(FS().meal||{}).id;npcTalk(null);
     enterWorld('home');const hp0=P.maxHp;out.on=S.wd.meal==='stew';
     P.x=9999;P.y=9999;out.noBtn=(fishBtn(true),document.getElementById('fishBtn').hidden);
     FS().meal.t=0.01;fishUpdate(0.1);out.off=!S.wd.meal&&!FS().meal&&P.maxHp===hp0-FISH.meals.stew.buff.hp;
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return out});
+  // משחקי השאול (moba.js, docs/moba.md): משחק שלם, מואץ, שבו כל ששת הגיבורים בוטים. נגמר, כל הסקילים הוטלו, יש שליטה בקהל וקומבו
+  const mb=await page.evaluate(en=>{const o={};try{
+    const heb=x=>/[֐-׿]/.test(x);
+    mobaOpen();o.pick=document.querySelectorAll('#mbWin [data-kit]').length;if(en&&heb($('mbWin').innerText))o.he=$('mbWin').innerText.slice(0,60);
+    document.querySelector('#mbWin [data-kit="tank"]').click();o.on=!!S.mb&&document.body.classList.contains('mb');
+    if(en&&!o.he&&heb($('mbHud').innerText))o.he=$('mbHud').innerText.slice(0,60);
+    MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
+    mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
+    mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
+    mbWord=function(u,w){cmb[w]=(cmb[w]||0)+1;return f.word(u,w)};
+    let n=0;while(!MB.over&&n<MOBA.maxT*30+60){mobaUpdate(1/30);n++}
+    mbCast=f.cast;mbCC=f.cc;mbWord=f.word;
+    const kits=[...new Set(MB.u.filter(u=>u.k==='hero').map(u=>u.kit))];
+    o.kits=kits.join(',');o.miss=kits.flatMap(k=>MB_SLOTS.map(s=>MBKIT[k][s].id)).filter(id=>!casts[id]);o.mage=kits.includes('mage');
+    o.t=Math.round(MB.t);o.over=MB.over;o.towers=MB.u.filter(u=>u.k==='tower'&&u.dead).length;o.base=MB.u.some(u=>u.k==='base'&&u.dead);
+    o.cc=cc;o.cmb=cmb;o.lv=Math.max(...MB.u.filter(u=>u.k==='hero').map(u=>u.lvl));o.score=MB.score.join(':');
+    mobaExit();o.out=!S.mb&&!document.body.classList.contains('mb');
+  }catch(e){o.err=String(e)}return o},CFG.lang==='en');
+  // שלל לפי דמות (LOOT.gear ב-loot.js): לכל דמות רוב הנשקים בעולם שלה, יש לה נשק בכל שכבה, ה"מזל" מבטיח נשק שלה, וברמה 20 השכבה גבוהה יותר
+  const clsL=await page.evaluate(()=>{const bak=JSON.stringify(SAVE.hero),cp=SAVE.clsPity,out={};
+    try{for(const c in HEROES.list){const A=HEROES.list[c].arms;SAVE.hero.start=c;let w=0,m=0,t1=0,t20=0;
+      const tiers=new Set(Object.keys(GEAR.items).filter(id=>A.includes(GEAR.items[id].w)).map(id=>GEAR.items[id].tier));
+      SAVE.hero.level=1;for(let i=0;i<600;i++){const it=gItem(lootRoll());t1+=it.tier;if(it.slot==='weapon'){w++;if(A.includes(it.w))m++}}
+      SAVE.hero.level=20;for(let i=0;i<600;i++)t20+=gItem(lootRoll()).tier;
+      SAVE.clsPity=LOOT.gear.cls.pity;const p=gItem(lootRoll());
+      out[c]={share:Math.round(m/Math.max(1,w)*100),all:tiers.size===GEAR.tiers.length,pity:A.includes(p.w)&&SAVE.clsPity===0,up:t20>t1*1.5}}}catch(e){out.err=e.message}
+    SAVE.hero=JSON.parse(bak);SAVE.clsPity=cp;return out});
   await browser.close();
 
   const t=s=>s==null?'-':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
@@ -1886,7 +2083,7 @@ function worldBot(m,L,god){
   check(L.gearW==='gun'&&L.gearDmg===gx,'ציוד בריצה: מתחיל עם '+(L.gearW==='gun'?'קשת':L.gearW)+', נזק קשת x'+L.gearDmg+' (צפוי x'+gx+')');
   check(L.won==null||!!L.gearLoot,'שלל ציוד: '+(L.gearLoot||'לא נפל')+(L.won!=null?' (בוס = פריט בטוח)':''));
   const st=L.stash||{};
-  check(L.stashLv===1&&st.swIn&&st.wIn&&st.swOut&&st.saved,'מחסן: '+(L.stashLv===1?'נבנה':'לא נבנה')+(st.swIn?', חרב נכנסה':', חרב לא נכנסה')+(st.wIn?', עץ נכנס':', עץ לא נכנס')+
+  check(L.stashLv===1&&st.swIn&&st.wTap&&st.wIn&&st.swOut&&st.saved,'מחסן: '+(L.stashLv===1?'נבנה':'לא נבנה')+(st.swIn?', חרב נכנסה':', חרב לא נכנסה')+(st.wTap?', נגיעה העבירה '+st.move+' עץ':', נגיעה לא העבירה')+(st.wIn?', לחיצה ארוכה את כל העץ':', עץ לא נכנס')+
     (st.swOut?', חרב חזרה לתרמיל':', חרב לא חזרה')+(st.saved?', נשמר':', לא נשמר')+' ('+st.used+' מתוך '+st.cap+')');
   check(L.rgOpen&&L.rgPaused&&L.rgHp===rgHp&&L.rgSaved&&L.rgClosed,'ציוד באמצע ריצה: '+(L.rgOpen?'נפתח':'לא נפתח')+(L.rgPaused?', המשחק עצר':', המשחק לא עצר')+
     ', חיים +'+L.rgHp+' (צפוי +'+rgHp+')'+(L.rgSaved?', נשמר':', לא נשמר')+(L.rgClosed?', ממשיכים לשחק':', לא נסגר'));
@@ -1949,6 +2146,7 @@ function worldBot(m,L,god){
   const hits=L.hits||{},nTypes=Object.keys(hits).filter(k=>hits[k]>0).length;
   check(cb.shock&&cb.frozen&&cb.stun&&cb.melt>=1.9&&cb.bossStun&&cb.plainIce,'קומבו: '+[cb.shock?'רטוב+ברק קפץ לרטוב רחוק':'חשמול לא קפץ',cb.frozen?'רטוב+קרח קפא ולא זז':'לא קפא',
     cb.stun?'קפוא+אדמה = הלם':'אין הלם','אש+קרח x'+cb.melt+(cb.melt>=1.9?'':' (צריך x2)'),cb.bossStun?'בוס בהלם פעם אחת ואז חסין':'הלם בבוס לא עבד',cb.plainIce?'קרח לבד לא מקפיא':'קרח לבד הקפיא'].join(', '));
+  check(ocb.parts==='attack,control'&&ocb.k==='0.6,0.6'&&ocb.close&&ocb.hit&&ocb.txt&&ocb.drop&&ocb.pool===0,'חפץ משולב: '+(ocb.parts==='attack,control'?'שני חלקים ב-60% כל אחד':'חלקים שגויים '+ocb.parts+' '+ocb.k)+', '+(ocb.close?'צמודים':'רחוקים')+', '+(ocb.hit?'פגע':'לא פגע')+', '+(ocb.drop?'נופל מבוס':'לא נופל')+', '+(ocb.pool===0?'לא בשלל הרגיל':'נפל בשלל הרגיל')+(ocb.txt?'':', תצוגה ריקה')+' ['+ocb.facts+']');
   check(ob.fire&&ob.slow&&ob.block&&ob.shield&&ob.shieldOnce&&ob.heal&&ob.crit>0&&ob.luck>1&&ob.draw===true,'חפצים מסתובבים ('+ob.types+'): '+[ob.fire?'אש שורפת':'אש לא פגעה',ob.slow?'כפור מאט':'כפור לא האט',
     ob.block?'אבן עצרה ירייה':'ירייה עברה',ob.shield?(ob.shieldOnce?'מגן בלע מכה אחת':'מגן בלע יותר ממכה'):'מגן לא בלע',ob.heal?'עלה ריפא':'אין ריפוי',
     'תלתן: קריטי +'+ob.crit+', שלל x'+ob.luck,ob.draw===true?'מצויר':'ציור נכשל: '+ob.draw].join(', '));
@@ -1958,6 +2156,13 @@ function worldBot(m,L,god){
     fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
+  check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean,
+    'ספר הסקילים: '+(wsb.err||[wsb.one&&wsb.lock?'נעול בהתחלה':'לא נעול',wsb.lp?'במסלול הרמות':'לא במסלול',wsb.fill&&wsb.btns?'רמה ממלאת משבצות':'רמה לא מילאה',
+    wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn?'הספר מחליף כפתור':'הספר לא החליף','עובדים: '+wsb.ok.join(', '),wsb.bad.length?'נכשלו: '+wsb.bad.join(', '):'',wsb.clean?'נגמרים':'לא נגמרו'].filter(Boolean).join(' · ')));
+  check(!skr.err&&skr.wait&&skr.start&&skr.zoom&&skr.fly&&skr.end&&skr.once&&skr.big&&skr.on&&skr.skipStart&&skr.skip&&skr.grade,
+    'סקיל חדש בעולם ('+skr.id+'): '+(skr.err||[skr.wait&&skr.start?'רגע גילוי מתחיל':'לא התחיל',skr.zoom&&skr.fly?'מצלמה מתקרבת ואייקון עף':'בלי מצלמה או אייקון',
+    skr.end?'נגמר והמשחק ממשיך':'לא נגמר',skr.once?'פעם אחת':'חוזר',skr.big&&skr.on?'הטלה ראשונה גדולה':'הטלה ראשונה רגילה',
+    skr.skipStart&&skr.skip?'נגיעה מדלגת':'אי אפשר לדלג',skr.grade?'דרגה בעץ משנה מראה':'דרגה לא משנה'].join(', ')));
   check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw&&wsk.orbFlash,
     'סקילים בעולם ('+wsk.id+'): '+(wsk.err||[wsk.btn?'כפתור':'אין כפתור',wsk.place?'למטה מימין, מעל הסרגל':'הכפתור לא במקום',wsk.tap&&wsk.tapHit?'נגיעה יורה ופוגעת':'נגיעה לא פגעה',
     wsk.cd&&wsk.sec&&wsk.again?'קירור עם מספר':'אין קירור',wsk.drag&&wsk.dragHit?'גרירה מכוונת ופוגעת':'גרירה לא פגעה',wsk.aimDraw?'כוונת מצוירת':'אין כוונת',wsk.finger?'אצבע על הכפתור יורה':'אצבע לא ירתה',
@@ -2015,6 +2220,7 @@ function worldBot(m,L,god){
     (edge.left?', '+edge.left+' לא נאספו':', הכל נאסף')+' (הוחזרו פנימה: '+edge.kept+')');
   check(edge.gid&&edge.gBag&&edge.gSaved&&edge.gGround&&!(L.gearDrops>0),'ציוד מאויב: '+(edge.gid||'לא נפל')+(edge.gBag?' בתרמיל':' לא בתרמיל')+(edge.gSaved?', נשמר':', לא נשמר')+
     ' · בזירה לא נופל מאויבים (של אוראל): '+(L.gearDrops||0));
+  check(!clsL.err&&Object.values(clsL).every(o=>o.share>=50&&o.all&&o.pity&&o.up),'שלל לפי דמות: '+(clsL.err||Object.keys(clsL).map(c=>c+' '+clsL[c].share+'% מהנשקים'+(clsL[c].all?'':', חסרה שכבה')+(clsL[c].pity?'':', מזל שבור')+(clsL[c].up?'':', רמה 20 לא משפרת')).join(' · ')));
   if(CFG.gfx==='3d')check(g3.on&&L.actorsMax>0,g3.on?'תלת-ממד: פעיל, עד '+L.actorsMax+' דמויות במסך, עד '+L.callsMax+' ציורים בפריים':'תלת-ממד: לא עלה'+(g3.failed?' (נפל לדו-ממד)':''));
   else check(!g3.on,'דו-ממד: פעיל לפי הבחירה');
   if(CFG.lang==='en')check(!startLeak&&!L.heLeak,startLeak||L.heLeak?'שפה: נשאר טקסט בעברית: '+(startLeak||L.heLeak):'שפה: כל המסכים באנגלית, משמאל לימין');
@@ -2031,6 +2237,13 @@ function worldBot(m,L,god){
   check(Object.keys(setT).length&&!setBad.length,'סטים של ציוד: '+Object.keys(setT).length+' סטים, 2 ו-4 חלקים נותנים בונוס'+(setBad.length?' · בעיה: '+setBad.join(', '):''));
   check(pt.evo==='1→2→3'&&pt.evoSaved&&pt.evoFx&&pt.fxOk,'פיוחו מתפתחת: '+(pt.evo||'לא נבדק')+(pt.evoSaved?', נשמר':', לא נשמר')+(pt.evoFx?', עם חגיגה':', בלי חגיגה')+(pt.fxOk?'':', להבה בשלב 3 לא מצאה את הזנב'));
   if(CFG.gfx==='3d')check(pt.r3&&pt.clips==='ok','פיוחו בתלת-ממד: '+(pt.r3?'נראית':'לא נראתה')+(pt.clips==='ok'?', כל 7 האנימציות נטענו':', חסרות: '+pt.clips));
+  check(!mb.err&&mb.pick===4&&mb.on&&mb.out,'משחקי השאול: '+(mb.err||'חלון בחירה עם '+mb.pick+' דמויות'+(mb.on?', המשחק נפתח':', לא נפתח')+(mb.out?', יציאה עובדת':', היציאה לא עובדת')));
+  if(!mb.err){
+    check(mb.over,'משחקי השאול: משחק של בוטים '+(mb.over?'נגמר':'לא נגמר')+' אחרי '+t(mb.t)+' · '+mb.towers+' מגדלים נפלו'+(mb.base?', בסיס נהרס':', נגמר בזמן')+' · הריגות '+mb.score+' · רמה עד '+mb.lv);
+    check(!mb.miss.length,'משחקי השאול: סקילים ('+mb.kits+') '+(mb.miss.length?'לא הוטלו: '+mb.miss.join(', '):'כולם הוטלו, כולל סקיל-העל'));
+    check(mb.cc.stun>0&&mb.cc.taunt>0&&(!mb.mage||(mb.cmb.shock||0)+(mb.cmb.freeze||0)>0),'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
+    if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');
+  }
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
 
   console.log('ריצה: seed '+CFG.seed+', '+t(L.t)+' זמן משחק'+(CFG.god?', עם חסינות':'')+(CFG.lang==='en'?', באנגלית':'')+(CFG.gfx==='2d'?', בדו-ממד':', בתלת-ממד')+(CFG.shots?', צילומים ב-'+CFG.shots:''));

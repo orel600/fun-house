@@ -69,7 +69,7 @@ function statsHtml(){
     return '<div class="strow" title="'+what+'"><span class="sti">'+skPic(k,S_.icon)+'</span><span class="stn"><b>'+name+' <bdi>'+n+'</bdi></b><small>'+(n?'<bdi>'+val+'</bdi>':what)+'</small></span>'+
       '<button class="stplus" data-act="stat" data-k="'+k+'"'+(free?'':' disabled')+' aria-label="+ '+name+'">+</button></div>'}).join('')+'</div>';
   h+='<div class="stfoot"><div class="stbuilds">'+[0,1].map(i=>'<button class="vbtn ghost" data-act="build" data-i="'+i+'"'+((SAVE.hero.build||0)===i?' aria-pressed="true"':'')+(S.vil?'':' disabled')+'>'+T('st.slot',i+1)+'</button>').join('')+'</div>'+   // שתי בניות שמורות
-    '<button class="vbtn sttree" data-act="tree">'+skPic('wRoot','🌳')+' '+T('tr.open')+(trFree()?' ('+trFree()+')':'')+'</button></div>';
+    '<button class="vbtn sttree" data-act="tree">'+skPic('wRoot','🌳')+' '+T('tr.open')+(trFree()?' ('+trFree()+')':'')+'</button>'+(typeof wsbBtn==='function'?wsbBtn():'')+'</div>';   // ספר הסקילים (wskbook.js)
   if(stSpent()||trSpent())h+='<p class="dim stwhere">'+T('st.respecWhere',T('npc.'+STATS.respec.npc)[0])+'</p>';
   return h;
 }
@@ -221,7 +221,7 @@ function treeHtml(){
       if(st.key)h+='<p class="trkey">'+T('tr.key')+'</p>';
       os.forEach((n,k)=>{const [name,what]=T('tr.'+n.id),got=have[i]===n.id,gone=i<have.length&&!got,next=i===have.length,why=next?trWhy(b,n.id):'order',c=trCost(st);
         if(k)h+='<p class="tror">'+T('tr.or')+'</p>';
-        h+='<div class="trn '+(got?'got':next&&why!=='key'?'next':'lock')+(gone?' gone':'')+'"><span class="sti">'+skPic(n.id,n.icon)+'</span><span class="stn"><b>'+name+'</b><small>'+what+'</small></span>'+
+        h+='<div class="trn '+(got?'got':next&&why!=='key'?'next':'lock')+(gone?' gone':'')+(GUI.trOpen===n.id?' open':'')+'" data-tr="'+n.id+'"><span class="sti">'+skPic(n.id,n.icon)+'</span><span class="stn"><b>'+name+'</b><small>'+what+'</small></span>'+
           (got?'<span class="trok">✓</span>':next&&why!=='key'?'<button class="stplus" data-act="learn" data-b="'+b+'" data-id="'+n.id+'"'+(why?' disabled':'')+'>'+(c>1?c:'+')+'</button>':'<span class="trok">'+(gone?'✗':'🔒')+'</span>')+'</div>'});
     });
     h+='</section>'}

@@ -19,6 +19,7 @@ function wskReady(id){const k=S.sk,i=k?k.ids.indexOf(id):-1;return i>=0&&k.cd[i]
 // לאן הסקיל הולך: בגרירה לפי האצבע, ובנגיעה אל האויב הקרוב (או קדימה, אם אין)
 function wskTarget(id,aim){
   const D=skDef(id),R=wskRange();
+  if(D.self)return{x:P.x,y:P.y};   // סקיל סביב הגיבור (wskbook.js): אין לאן לכוון
   if(D.range){   // ברק: אויב אחד שממנו קופצים
     if(!aim){const t=nearest(R);return t&&{e:t,x:t.x,y:t.y}}
     let best=null,bd=WSKILL.cone;
@@ -33,27 +34,31 @@ function wskTarget(id,aim){
 function wskUse(id,aim){
   const i=wskReady(id);if(i<0)return false;
   const D=skDef(id),tg=wskTarget(id,aim);if(!tg)return false;
-  const base=skBase()*D.dmg,col=dtCol(D.dt);
-  P.aim=Math.atan2(tg.y-P.y,tg.x-P.x);
-  if(D.range){
+  const F=skrFirst(id),base=skBase()*D.dmg*(F?F.dmg:1),col=skCol(id),vis=skSize(id);   // ההטלה הראשונה גדולה, והמראה לפי הדרגה בעץ (skillreveal.js)
+  if(!D.self)P.aim=Math.atan2(tg.y-P.y,tg.x-P.x);
+  if(D.kind)wsbCast(id,D,tg,base,col,vis,F);   // הסקילים של הספר: מקף, הילה, מגן, מלכודת ועוד (wskbook.js)
+  else if(D.range){
     if(tg.e){const hit=[tg.e];
-      hit.push(...enemies.filter(e=>e!==tg.e&&wskIn(e,P)&&Math.hypot(e.x-tg.e.x,e.y-tg.e.y)<D.hop).sort((a,b)=>Math.hypot(a.x-tg.e.x,a.y-tg.e.y)-Math.hypot(b.x-tg.e.x,b.y-tg.e.y)).slice(0,D.n));
+      hit.push(...enemies.filter(e=>e!==tg.e&&wskIn(e,P)&&Math.hypot(e.x-tg.e.x,e.y-tg.e.y)<D.hop).sort((a,b)=>Math.hypot(a.x-tg.e.x,a.y-tg.e.y)-Math.hypot(b.x-tg.e.x,b.y-tg.e.y)).slice(0,D.n+(F?F.hops:0)));
       let from=P;for(const e of hit){skLine(from,e,col);damage(e,base,'skill',Math.atan2(e.y-from.y,e.x-from.x),D.dt);S.sk.wHits=(S.sk.wHits||0)+1;from=e}}
     else skLine(P,tg,col);   // ברק לאוויר: מכוונים ומפספסים
   }else{
     const W=S.wsk||(S.wsk={shots:[]});
-    W.shots.push({id,x:P.x,y:P.y-6,fx:P.x,fy:P.y,tx:tg.x,ty:tg.y,base,col,dt:D.dt,r:D.r*WSKILL.blast});
+    W.shots.push({id,x:P.x,y:P.y-6,fx:P.x,fy:P.y,tx:tg.x,ty:tg.y,base,col,dt:D.dt,r:D.r*WSKILL.blast*(F?F.r:1),vis,echo:skrGrade(id)>=SKREVEAL.grade.echo});
   }
   S.sk.cd[i]=D.cd;S.sk.used++;S.sk.wUsed=(S.sk.wUsed||0)+1;sfx('shoot');S.shake=Math.max(S.shake,2);
   return true;
 }
 // הכדורים שבדרך. כשנוחת: טבעת (מצוירת ב-drawSkills) ונזק לכל מי שבתוכה ובטווח
 function wskUpdate(dt){
+  skrCheck(dt);   // סקיל שעוד לא ראינו: רגע גילוי (skillreveal.js)
+  wsbUpdate(dt);   // הכפתורים לפי ספר הסקילים, והסקילים שלו שעוד פועלים (wskbook.js)
   const W=S.wsk;if(!W||!W.shots.length)return;
   for(const s of W.shots){const dx=s.tx-s.x,dy=s.ty-s.y,d=Math.hypot(dx,dy),step=WSKILL.speed*dt;
     if(d>step){s.x+=dx/d*step;s.y+=dy/d*step;continue}
     s.x=s.tx;s.y=s.ty;s.done=true;
-    S.sk.fx.push({ring:1,x:s.x,y:s.y,r:s.r,t:0,max:0.35*themeK(),col:s.col});sparks(s.x,s.y,s.col,10,220);
+    S.sk.fx.push({ring:1,x:s.x,y:s.y,r:s.r*s.vis,t:0,max:0.35*themeK(),col:s.col});sparks(s.x,s.y,s.col,Math.round(10*s.vis),220*s.vis);
+    if(s.echo)S.sk.fx.push({ring:1,x:s.x,y:s.y,r:s.r*s.vis*1.25,t:0,max:0.5*themeK(),col:s.col});   // דרגה גבוהה בעץ: טבעת שנייה
     for(const e of enemies){if(!wskIn(e,{x:s.fx,y:s.fy})||Math.hypot(e.x-s.x,e.y-s.y)-e.r>s.r)continue;
       damage(e,s.base,'skill',Math.atan2(e.y-s.y,e.x-s.x),s.dt);S.sk.wHits=(S.sk.wHits||0)+1}}
   W.shots=W.shots.filter(s=>!s.done);
@@ -68,14 +73,16 @@ function wskHud(){
 /* ---- ציור: הכדורים בדרך, והכוונת בזמן גרירה (קו מקווקו ועיגול איפה שינחת) ---- */
 function drawWSkill(){
   if(!S.wd)return;
+  skrDraw();   // רגע הגילוי (skillreveal.js)
+  wsbDraw();   // ספר הסקילים (wskbook.js)
   const W=S.wsk;
-  if(W)for(const s of W.shots){ctx.globalAlpha=0.35;ctx.fillStyle=s.col;ctx.beginPath();ctx.arc(s.x,s.y,15,0,7);ctx.fill();ctx.globalAlpha=1;dtIcon(s.x,s.y,s.dt,18)}
+  if(W)for(const s of W.shots){ctx.globalAlpha=0.35;ctx.fillStyle=s.col;ctx.beginPath();ctx.arc(s.x,s.y,15*s.vis,0,7);ctx.fill();ctx.globalAlpha=1;dtIcon(s.x,s.y,s.dt,18*s.vis)}
   const a=wskAim;if(!a||!a.len||a.len<WSKILL.drag||wskReady(a.id)<0)return;
-  const D=skDef(a.id),tg=wskTarget(a.id,a),col=dtCol(D.dt);
+  const D=skDef(a.id),tg=wskTarget(a.id,a),col=skCol(a.id);
   ctx.strokeStyle=col;ctx.lineWidth=3;ctx.globalAlpha=0.85;ctx.setLineDash([10,8]);
   ctx.beginPath();ctx.moveTo(P.x,P.y);ctx.lineTo(tg.x,tg.y);ctx.stroke();ctx.setLineDash([]);
-  ctx.globalAlpha=0.18;ctx.fillStyle=col;ctx.beginPath();ctx.arc(tg.x,tg.y,D.range?(tg.e?tg.e.r+10:14):D.r*WSKILL.blast,0,7);ctx.fill();
-  ctx.globalAlpha=0.9;ctx.beginPath();ctx.arc(tg.x,tg.y,D.range?(tg.e?tg.e.r+10:14):D.r*WSKILL.blast,0,7);ctx.stroke();ctx.globalAlpha=1;
+  ctx.globalAlpha=0.18;ctx.fillStyle=col;ctx.beginPath();ctx.arc(tg.x,tg.y,D.range?(tg.e?tg.e.r+10:14):D.r*(D.kind?1:WSKILL.blast),0,7);ctx.fill();
+  ctx.globalAlpha=0.9;ctx.beginPath();ctx.arc(tg.x,tg.y,D.range?(tg.e?tg.e.r+10:14):D.r*(D.kind?1:WSKILL.blast),0,7);ctx.stroke();ctx.globalAlpha=1;
 }
 
 /* ---- אצבע: בעולם הכפתור מכוון ויורה כשמרימים. נתפס לפני ה-pointerdown של skills.js, ולכן בזירה הכל כמו קודם ---- */

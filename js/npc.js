@@ -110,13 +110,17 @@ function npcDialog(){
   const Q=QS(),[name,role]=T('npc.'+id);
   const mine=QUESTS.list.filter(q=>q.giver===id&&npcHere(id));
   const ready=mine.filter(q=>Q.active[q.id]&&qReady(q)),open=mine.filter(qOpen),on=mine.filter(q=>Q.active[q.id]&&!qReady(q));
-  let h=winHead(name,role);   // ui.js
+  // תושב עם שירות (בישול, קנייה, החלפה): לשונית "שיחה" ולשונית לשירות, בתבנית של חלונות הכפר (bwin.js).
+  // נפתח על השירות, אלא אם יש פרס לקחת או קווסט חדש: אז על השיחה
+  const svc=npcSvcs(id),tabs=svc.length?[{id:'talk',label:'💬 '+T('bw.talk'),dot:ready.length>0||open.length>0},...svc]:null;
+  let tab=S.vil.dlgTab;if(tabs&&!tabs.some(t=>t.id===tab))tab=S.vil.dlgTab=ready.length||open.length?'talk':svc[0].id;
+  el.classList.toggle('bw',!!tabs);
+  let h=tabs?bwHead(name+' <small>'+role+'</small>','',tabs,tab):winHead(name,role);   // ui.js
+  if(tabs&&tab!=='talk'){el.innerHTML=h+'<div class="bwbody bw-'+tab+'">'+svc.find(t=>t.id===tab).html()+'</div>';el.hidden=false;return}
   h+='<p class="npcsay">'+npcPic(id)+S.vil.dlgLine+'</p>';
   h+=npcCards(id,ready,open,on);   // קווסט אחד בכל פעם
-  if(!ready.length&&!open.length&&!on.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
+  if(!ready.length&&!open.length&&!on.length&&!svc.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
   if(id===STATS.respec.npc)h+=statRespecHtml();   // איפוס נקודות הדמות (stats.js)
-  if(id===FISH.cookAt)h+=fishCookHtml();   // בישול דגים (fishing.js)
-  if(NPC.list[id].serve)h+=resHtml(id);   // השירות של מי שעברה מהעולם (residents.js)
   el.innerHTML=h;el.hidden=false;
 }
 // דיוקן בשיחה, מ-Creative Claw (icons/ui/npc, נחתך עם tools/slice-icons.py). דמות בלי דיוקן: בלי תמונה. משמש גם את worldnpc.js
@@ -125,13 +129,14 @@ const npcPic=id=>{id=(NPC.list[id]||{}).pic||id;return NPC_PIC[id]?'<img class="
 // פותח שיחה עם id, או סוגר עם null
 function npcTalk(id){
   if(!S.vil)return;
-  S.vil.dlg=id;S.vil.dlgStay=false;if(id){NPCPG.id='';$('qLog').hidden=true;S.vil.dlgLine=npcLine(id);sfx('ui')}
+  S.vil.dlg=id;S.vil.dlgStay=false;S.vil.dlgTab=null;if(id){NPCPG.id='';$('qLog').hidden=true;S.vil.dlgLine=npcLine(id);sfx('ui')}
   npcDialog();
 }
 $('talkBtn').addEventListener('click',()=>{const id=$('talkBtn').dataset.id;if(id&&S.vil)npcTalk(id)});
 $('npcDlg').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||!S.vil)return;
   if(b.dataset.act==='close'){npcTalk(null);return}
+  if(b.dataset.act==='tab'){S.vil.dlgTab=b.dataset.tab;sfx('ui');npcDialog();return}   // שיחה או שירות (bwin.js)
   if(b.dataset.act==='respec'){statRespec();statBadge();npcDialog();return}
   if(b.dataset.act==='cook'){fishCook(b.dataset.m);npcDialog();return}   // fishing.js
   if(b.dataset.act==='res'){resDo(S.vil.dlg,b.dataset.k);npcDialog();return}   // residents.js
