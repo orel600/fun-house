@@ -19,6 +19,7 @@ function wskReady(id){const k=S.sk,i=k?k.ids.indexOf(id):-1;return i>=0&&k.cd[i]
 // לאן הסקיל הולך: בגרירה לפי האצבע, ובנגיעה אל האויב הקרוב (או קדימה, אם אין)
 function wskTarget(id,aim){
   const D=skDef(id),R=wskRange();
+  if(D.self)return{x:P.x,y:P.y};   // סקיל סביב הגיבור (wskbook.js): אין לאן לכוון
   if(D.range){   // ברק: אויב אחד שממנו קופצים
     if(!aim){const t=nearest(R);return t&&{e:t,x:t.x,y:t.y}}
     let best=null,bd=WSKILL.cone;
@@ -34,8 +35,9 @@ function wskUse(id,aim){
   const i=wskReady(id);if(i<0)return false;
   const D=skDef(id),tg=wskTarget(id,aim);if(!tg)return false;
   const F=skrFirst(id),base=skBase()*D.dmg*(F?F.dmg:1),col=skCol(id),vis=skSize(id);   // ההטלה הראשונה גדולה, והמראה לפי הדרגה בעץ (skillreveal.js)
-  P.aim=Math.atan2(tg.y-P.y,tg.x-P.x);
-  if(D.range){
+  if(!D.self)P.aim=Math.atan2(tg.y-P.y,tg.x-P.x);
+  if(D.kind)wsbCast(id,D,tg,base,col,vis,F);   // הסקילים של הספר: מקף, הילה, מגן, מלכודת ועוד (wskbook.js)
+  else if(D.range){
     if(tg.e){const hit=[tg.e];
       hit.push(...enemies.filter(e=>e!==tg.e&&wskIn(e,P)&&Math.hypot(e.x-tg.e.x,e.y-tg.e.y)<D.hop).sort((a,b)=>Math.hypot(a.x-tg.e.x,a.y-tg.e.y)-Math.hypot(b.x-tg.e.x,b.y-tg.e.y)).slice(0,D.n+(F?F.hops:0)));
       let from=P;for(const e of hit){skLine(from,e,col);damage(e,base,'skill',Math.atan2(e.y-from.y,e.x-from.x),D.dt);S.sk.wHits=(S.sk.wHits||0)+1;from=e}}
@@ -50,6 +52,7 @@ function wskUse(id,aim){
 // הכדורים שבדרך. כשנוחת: טבעת (מצוירת ב-drawSkills) ונזק לכל מי שבתוכה ובטווח
 function wskUpdate(dt){
   skrCheck(dt);   // סקיל שעוד לא ראינו: רגע גילוי (skillreveal.js)
+  wsbUpdate(dt);   // הכפתורים לפי ספר הסקילים, והסקילים שלו שעוד פועלים (wskbook.js)
   const W=S.wsk;if(!W||!W.shots.length)return;
   for(const s of W.shots){const dx=s.tx-s.x,dy=s.ty-s.y,d=Math.hypot(dx,dy),step=WSKILL.speed*dt;
     if(d>step){s.x+=dx/d*step;s.y+=dy/d*step;continue}
@@ -71,14 +74,15 @@ function wskHud(){
 function drawWSkill(){
   if(!S.wd)return;
   skrDraw();   // רגע הגילוי (skillreveal.js)
+  wsbDraw();   // ספר הסקילים (wskbook.js)
   const W=S.wsk;
   if(W)for(const s of W.shots){ctx.globalAlpha=0.35;ctx.fillStyle=s.col;ctx.beginPath();ctx.arc(s.x,s.y,15*s.vis,0,7);ctx.fill();ctx.globalAlpha=1;dtIcon(s.x,s.y,s.dt,18*s.vis)}
   const a=wskAim;if(!a||!a.len||a.len<WSKILL.drag||wskReady(a.id)<0)return;
   const D=skDef(a.id),tg=wskTarget(a.id,a),col=skCol(a.id);
   ctx.strokeStyle=col;ctx.lineWidth=3;ctx.globalAlpha=0.85;ctx.setLineDash([10,8]);
   ctx.beginPath();ctx.moveTo(P.x,P.y);ctx.lineTo(tg.x,tg.y);ctx.stroke();ctx.setLineDash([]);
-  ctx.globalAlpha=0.18;ctx.fillStyle=col;ctx.beginPath();ctx.arc(tg.x,tg.y,D.range?(tg.e?tg.e.r+10:14):D.r*WSKILL.blast,0,7);ctx.fill();
-  ctx.globalAlpha=0.9;ctx.beginPath();ctx.arc(tg.x,tg.y,D.range?(tg.e?tg.e.r+10:14):D.r*WSKILL.blast,0,7);ctx.stroke();ctx.globalAlpha=1;
+  ctx.globalAlpha=0.18;ctx.fillStyle=col;ctx.beginPath();ctx.arc(tg.x,tg.y,D.range?(tg.e?tg.e.r+10:14):D.r*(D.kind?1:WSKILL.blast),0,7);ctx.fill();
+  ctx.globalAlpha=0.9;ctx.beginPath();ctx.arc(tg.x,tg.y,D.range?(tg.e?tg.e.r+10:14):D.r*(D.kind?1:WSKILL.blast),0,7);ctx.stroke();ctx.globalAlpha=1;
 }
 
 /* ---- אצבע: בעולם הכפתור מכוון ויורה כשמרימים. נתפס לפני ה-pointerdown של skills.js, ולכן בזירה הכל כמו קודם ---- */

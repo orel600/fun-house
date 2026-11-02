@@ -21,7 +21,8 @@ const SKREVEAL={
   less:{zoom:1.12,burst:0.5},             // "פחות אפקטים" (juice.js): פחות קרוב ופחות ניצוצות
   // 3ג: הדרגה של סקיל = נקודות בענף שלו בעץ, חלקי per, עד max
   grade:{per:2,max:3,size:0.14,sat:16,light:7,echo:2},
-  branch:{quake:'war',zap:'hunt',splash:'mage',frost:'mage',flame:'mage'}
+  branch:{quake:'war',zap:'hunt',splash:'mage',frost:'mage',flame:'mage',
+    charge:'war',whirl:'war',shield:'war',volley:'hunt',trap:'hunt',vines:'hunt',spirit:'mage',storm:'mage',meteor:'mage'}   // ספר הסקילים (wskbook.js)
 };
 let SKR=null;   // הרגע שרץ עכשיו: {id,t0,el,done}
 const skrNow=()=>performance.now()/1000;
