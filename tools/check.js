@@ -1151,7 +1151,8 @@ function worldBot(m,L,god){
       const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
       const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;return e};
       r.lock=!wrOf('charge');const lv=wrNeed('charge','trail');r.lp=lpAt(lv).some(x=>x.txt===T('wr.lp',T('sk.charge'),T('wr.charge.trail')));
-      SAVE.hero.level=99;wrLevelUp(1,99);r.auto=Object.keys(WRUNES.list).every(id=>!!wrOf(id));
+      SAVE.hero.level=99;wrLevelUp(1,99);r.auto=Object.keys(WRUNES.list).every(id=>!!wrOf(id));r.lootLock=!wrOpen('charge','quake');
+      for(const id in WRUNES.list)for(const k of wrKeys(id))if(wrLoot(id,k))wrGot().push(id+':'+k);   // הרונות השלישיות: כאילו כבר נמצאו
       for(const id in WRUNES.list)for(const k of wrKeys(id)){r.n++;
         try{SAVE.hero.skLoad=[id,null];SAVE.hero.skRune[id]=k;run(0.05);for(const x of enemies)x.dead=true;enemies=[];S.wr&&(S.wr.fx=[]);
           const i=S.sk.ids.indexOf(id);if(i<0){r.bad.push(id+':'+k+':לא על כפתור');continue}S.sk.cd[i]=0;
@@ -1161,7 +1162,7 @@ function worldBot(m,L,god){
           (did&&hit?r.ok:r.bad).push(id+':'+k+(did?'':':הרונה לא פעלה')+(hit?'':':לא פגע'))}
         catch(err){r.bad.push(id+':'+k+':'+String(err))}}
       SAVE.hero.skLoad=['charge','volley'];SAVE.hero.skRune={};run(0.05);wsbOpenUi();const ov=$('ovBook');
-      r.ui=ov.querySelectorAll('.wrc').length===4;const c=ov.querySelector('[data-wrune="volley:fire"]');if(c)c.click();
+      r.ui=ov.querySelectorAll('.wrc').length===6;const c=ov.querySelector('[data-wrune="volley:fire"]');if(c)c.click();
       r.pick=SAVE.hero.skRune.volley==='fire'&&!!ov.querySelector('.wrc.on');const c2=ov.querySelector('[data-wrune="volley:fire"]');if(c2)c2.click();r.unpick=!SAVE.hero.skRune.volley;
       ov.querySelector('[data-wsb="x"]').click();
       for(const x of enemies)x.dead=true;enemies=[];run(6);r.clean=!(S.wr&&S.wr.fx.length)&&!(S.wsb&&S.wsb.fx.length)}catch(err){r.err=String(err&&err.stack||err)}
@@ -1183,6 +1184,18 @@ function worldBot(m,L,god){
       r.tree=['w3','h3','m3'].every(id=>Object.values(TREE.branches).some(B=>B.steps.some(st=>st.id===id&&st.give.combo>0)));
       for(const x of enemies)x.dead=true;enemies=[];run(1)}catch(err){r.err=String(err&&err.stack||err)}
     if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // שלב 4 בסקילים: מגן יסודות (affix.js + wcombo.js) חוטף רבע נזק עד שילוב, שילוב שובר אותו, והשבירה הראשונה נותנת רונה שלישית (wrunes.js)
+  const wsh=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.skSeen=wsbIds().slice();SAVE.hero.level=99;SAVE.hero.skRuneGot=[];enterWorld('home');enemies=[];
+      const mk=()=>{const e=addEnemy('grunt',P.x+80,P.y);e.home=0;e.mult={};e.hp=e.max=1e7;e.speed=0;e.dmg=0;return e};
+      const c=mk(),e=mk();affixSet(e,'shell');const cr=HITFX.crit,pc=P.crit,tf=P.tfx;HITFX.crit=-9;P.crit=0;P.tfx={};P.markE=null;   // בלי מכות קריטיות ובלי צמתים מהעץ (מכה ראשונה, סימון, סערה), כדי שההשוואה תהיה מדויקת
+      const hit=(x,t)=>{const h=x.hp;damage(x,1000,'skill',0,t);return h-x.hp};
+      const dc=hit(c,'physical'),d0=hit(e,'physical');r.weak=d0>0&&Math.abs(d0/dc-WCOMBO.shell.k)<0.02;   // המגן: רבע ממכה רגילה
+      e.wet=3;const b0=wcStat.shellBreak||0;hit(e,'fire');r.broke=e.shellOff===1&&(wcStat.shellBreak||0)>b0;
+      const d1=hit(e,'physical');r.full=Math.abs(d1/dc-1)<0.02;HITFX.crit=cr;P.crit=pc;P.tfx=tf;c.dead=true;
+      r.rune=wrGot().length===1&&wrOpen(...wrGot()[0].split(':'));
+      e.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // פיד הודעות (feed.js): בעולם שלל שנאסף נכנס לפיד בצד ולא על הדמות, אותו משאב מתאחד, ציוד בצבע הדרגה, עד 3 שורות, נעלם אחרי FEED.life, ובזירה לא פועל
   const feed=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{enterWorld('home');enemies=[];FL.length=0;const f0=floats.length,st=FEED.stat,d0=st.drawn;
@@ -2282,12 +2295,14 @@ function worldBot(m,L,god){
   check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean&&!wsb.noPic.length,
     'ספר הסקילים: '+(wsb.err||[wsb.one&&wsb.lock?'נעול בהתחלה':'לא נעול',wsb.lp?'במסלול הרמות':'לא במסלול',wsb.fill&&wsb.btns?'רמה ממלאת משבצות':'רמה לא מילאה',
     wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn?'הספר מחליף כפתור':'הספר לא החליף','עובדים: '+wsb.ok.join(', '),wsb.bad.length?'נכשלו: '+wsb.bad.join(', '):'',wsb.clean?'נגמרים':'לא נגמרו',wsb.noPic.length?'אייקונים שלא נטענו: '+wsb.noPic.join(', '):''+wsb.n+' אייקונים נטענו'].filter(Boolean).join(' · ')));
-  check(!wrn.err&&wrn.lock&&wrn.lp&&wrn.auto&&wrn.ui&&wrn.pick&&wrn.unpick&&!wrn.bad.length&&wrn.ok.length===wrn.n&&wrn.clean,'רונות: '+(wrn.err||[wrn.lock?'נעולות בהתחלה':'לא נעולות',
+  check(!wrn.err&&wrn.lootLock&&wrn.lock&&wrn.lp&&wrn.auto&&wrn.ui&&wrn.pick&&wrn.unpick&&!wrn.bad.length&&wrn.ok.length===wrn.n&&wrn.clean,'רונות: '+(wrn.err||[wrn.lock?'נעולות בהתחלה':'לא נעולות',
     wrn.lp?'במסלול הרמות':'לא במסלול',wrn.auto?'רמה מכניסה רונה':'רמה לא הכניסה',wrn.ui&&wrn.pick&&wrn.unpick?'הספר מחליף רונה':'הספר לא החליף',
     'עובדות '+wrn.ok.length+'/'+wrn.n,wrn.bad.length?'נכשלו: '+wrn.bad.join(', '):'',wrn.clean?'נגמרות':'לא נגמרו'].filter(Boolean).join(' · ')));
   check(!wst.err&&wst.fire&&wst.mark&&wst.bonus&&wst.cd&&wst.stat&&wst.tree,'סקילים שלב 3: '+(wst.err||[wst.fire?'בוער מדליק שכן':'אין התפשטות',
     wst.mark?'צייד מסמן':'לא מסמן',wst.bonus?'מסומן חוטף יותר':'בלי תוספת',wst.cd?'הריגה מקצרת קירור':'הקירור לא התקצר',
     wst.stat?'כוח על ציוד נותן נזק שילובים':'הכוח לא נתן',wst.tree?'גם בעץ':'לא בעץ'].join(' · ')));
+  check(!wsh.err&&wsh.weak&&wsh.broke&&wsh.full&&wsh.rune,'סקילים שלב 4: '+(wsh.err||[wsh.weak?'מגן יסודות חוטף רבע':'המגן לא מגן',
+    wsh.broke?'שילוב שובר אותו':'השילוב לא שבר',wsh.full?'אחרי השבירה נזק מלא':'עדיין מוגן',wsh.rune?'נפלה רונה שלישית':'לא נפלה רונה'].join(' · ')));
   check(!wcb.err&&!wcb.bad.length&&wcb.ok.shatter&&wcb.ok.pinned&&wcb.ok.steam&&wcb.ok.shock,'שילובים בעולם: '+(wcb.err||[
     Object.entries(wcb.ok).map(([k,c])=>c+' '+k).join(', '),wcb.bad.length?'נכשלו: '+wcb.bad.join(', '):''].filter(Boolean).join(' · ')));
   check(!skr.err&&skr.wait&&skr.start&&skr.zoom&&skr.fly&&skr.end&&skr.once&&skr.big&&skr.on&&skr.skipStart&&skr.skip&&skr.grade,
