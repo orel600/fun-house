@@ -856,6 +856,26 @@ function worldBot(m,L,god){
       divineUpdate(DIVINE.dur+1);r.ended=!divineOn();orbitUpdate(0);r.back=S.orb.types.length===0;divineElite();r.once=!S.dv.ready;
       e.dead=true;enemies=enemies.filter(x=>!x.dead)}catch(err){r.err=String(err)}
     S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.dv=bak.dv;S.orb=bak.o;SAVE.gear.orbit=bak.orb;S.t=bak.t;return r});
+  // אולטימייט (ult.js): מתמלא מהריגות, לא עובד לפני שהוא מלא, ומלא פוגע בכל אויב על המסך ומתאפס
+  const ult=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,u:S.ult},r={};S.vil=S.wd=S.room=null;S.mode='play';S.ult=null;
+    try{for(let i=0;i<ULT.need/2;i++)ultKill({});r.early=ultUse()===false;for(let i=0;i<ULT.need;i++)ultKill({});
+      const es=[0,1,2].map(i=>{const e=addEnemy('grunt',P.x+60+i*40,P.y);e.hp=e.max=1e9;return e});r.use=ultUse()===true&&es.every(e=>e.hp<e.max)&&S.ult.c===0;
+      ultHud();r.btn=!document.getElementById('ult').hidden;for(const e of es)e.dead=true;enemies=enemies.filter(e=>!e.dead)}catch(err){r.err=String(err)}
+    S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.ult=bak.u;S.slow=0;return r});
+  // כישוף מיוחד (spell.js): קפיצה מזיזה ומגינה, ואז מחכים. ריפוי מחזיר חיים. מכה פוגעת באויב-העל. הבחירה נזכרת
+  const spl=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,spl:S.spl,hp:P.hp,x:P.x,y:P.y},r={};let mem=null;try{mem=localStorage.getItem(SPELL.key)}catch(e){}
+    S.vil=S.wd=S.room=null;S.mode='play';S.spl=null;
+    try{spellPick('dash');const x0=P.x,y0=P.y;r.dash=spellUse()===true&&Math.hypot(P.x-x0,P.y-y0)>100&&P.inv>0&&spellUse()===false;
+      spellPick('heal');S.spl.until=0;P.hp=P.maxHp*0.3;const h0=P.hp;r.heal=spellUse()===true&&P.hp>h0;
+      spellPick('smite');S.spl.until=0;const e=addEnemy('grunt',P.x+100,P.y);e.hp=e.max=1e6;e.elite=true;r.smite=spellUse()===true&&e.hp<e.max;e.dead=true;enemies=enemies.filter(x=>!x.dead);
+      r.mem=spellId()==='smite';spellHud();r.btn=!document.getElementById('spell').hidden}catch(err){r.err=String(err)}
+    try{mem?localStorage.setItem(SPELL.key,mem):localStorage.removeItem(SPELL.key)}catch(e){}
+    S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.spl=bak.spl;P.hp=bak.hp;P.x=bak.x;P.y=bak.y;return r});
+  // חנות הריצה (shop.js): הריגות נותנות זהב, קנייה מורידה זהב ומשפרת, ובלי מספיק זהב לא קונים. החלון עוצר את המשחק ונסגר ב-Esc
+  const shp=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,shop:S.shop,dmg:P.sw.dmg,gdmg:P.gn.dmg},r={};S.vil=S.wd=S.room=null;S.mode='play';S.shop=null;
+    try{for(let i=0;i<30;i++)shopKill({});r.gold=S.shop.gold===30;const d0=P.sw.dmg;r.buy=shopBuy('blade')===true&&P.sw.dmg>d0&&S.shop.gold===10;r.poor=shopBuy('blade')===false;
+      shopOpen();r.pause=S.mode==='shop'&&!document.getElementById('ovShop').hidden;uiCloseTop();r.close=S.mode==='play'&&document.getElementById('ovShop').hidden}catch(err){r.err=String(err)}
+    S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.shop=bak.shop;P.sw.dmg=bak.dmg;P.gn.dmg=bak.gdmg;return r});
   // רצף הריגות (streak.js): 10 הריגות ברצף מראות מילה, והפסקה ארוכה שוברת את הרצף
   const stk=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,st:S.st,t:S.t,kills:S.kills},r={};S.vil=S.wd=S.room=null;S.mode='play';S.st=null;
     try{for(let i=0;i<10;i++)streakKill();r.show=!!S.st.show&&S.st.show.k===0&&T('st.0')!=='st.0';try{streakDraw();r.draw=true}catch(err){r.draw=String(err)}
@@ -1900,6 +1920,9 @@ function worldBot(m,L,god){
     wsk.cd&&wsk.sec&&wsk.again?'קירור עם מספר':'אין קירור',wsk.drag&&wsk.dragHit?'גרירה מכוונת ופוגעת':'גרירה לא פגעה',wsk.aimDraw?'כוונת מצוירת':'אין כוונת',wsk.finger?'אצבע על הכפתור יורה':'אצבע לא ירתה',
     'חפצים מסתובבים: '+wsk.orbs,wsk.orbHit?'פוגעים':'לא פוגעים',wsk.orbDraw?'מצוירים כאורות':'לא מצוירים',wsk.orbFlash?'מבזיקים בפגיעה':'לא מבזיקים'].join(', ')));
   check(!prs.err&&prs.sneak&&prs.flee&&prs.grab&&prs.give&&prs.draw===true&&prs.name&&prs.rescue===true,'הפרעוש: '+(prs.err||[prs.sneak?'מתגנב':'לא התגנב',prs.grab?'חוטף':'לא חטף',prs.flee&&prs.give?'מביא שלל לשחקן':'לא הביא שלל',prs.draw===true?'מצויר':'ציור: '+prs.draw,prs.name?'עם שם וטקסט משלו':'בלי טקסט משלו',prs.rescue===true?'ומציל עם שק שלל':'הצלה: '+prs.rescue].join(', ')));
+  check(!ult.err&&ult.early&&ult.use&&ult.btn,'אולטימייט: '+(ult.err||[ult.btn?'כפתור בזירה':'אין כפתור',ult.early?'לא עובד לפני שמלא':'עבד לפני שמלא',ult.use?'מלא: פוגע בכולם ומתאפס':'לא פגע או לא התאפס'].join(', ')));
+  check(!spl.err&&spl.dash&&spl.heal&&spl.smite&&spl.mem&&spl.btn,'כישוף מיוחד: '+(spl.err||[spl.btn?'כפתור בזירה':'אין כפתור',spl.dash?'קפיצה':'הקפיצה לא עבדה',spl.heal?'ריפוי':'הריפוי לא עבד',spl.smite?'מכה באויב-על':'המכה לא עבדה',spl.mem?'הבחירה נזכרת':'הבחירה לא נזכרה'].join(', ')));
+  check(!shp.err&&shp.gold&&shp.buy&&shp.poor&&shp.pause&&shp.close,'חנות הריצה: '+(shp.err||[shp.gold?'זהב מהריגות':'אין זהב',shp.buy?'קנייה משפרת':'הקנייה לא עבדה',shp.poor?'בלי זהב לא קונים':'קנה בלי זהב',shp.pause?'החלון עוצר':'החלון לא עצר',shp.close?'ונסגר':'לא נסגר'].join(', ')));
   check(!stk.err&&stk.show&&stk.draw===true&&stk.reset,'רצף הריגות: '+(stk.err||[stk.show?'מילה ב-10':'אין מילה ב-10',stk.draw===true?'מצויר':'ציור: '+stk.draw,stk.reset?'הפסקה שוברת את הרצף':'הרצף לא נשבר'].join(', ')));
   check(!aui.err&&aui.merge&&aui.bars&&aui.arrow===true&&aui.quiet,'זירה נקייה: '+(aui.err||[aui.merge?'מכות מתמזגות למספר אחד':'המכות לא התמזגו',aui.bars?'פס חיים רק למי שנפגע ולאויב-על':'פסי חיים לא נכונים',aui.arrow===true?'חץ לאויב-על':'חץ: '+aui.arrow,aui.quiet?'פס עליון שקט':'הפס העליון לא נרגע'].join(', ')));
   check(!rsr.err&&!rsr.early&&rsr.missNo&&rsr.once&&rsr.item&&rsr.draw===true&&rsr.draw2===true&&rsr.took&&rsr.gone&&rsr.far&&rsr.boss,'פיוחו מצילה: '+(rsr.err||[rsr.early?'הופיעה מוקדם':'לא לפני סכנה',rsr.missNo?'הגרלה שנכשלה לא חוזרת':'הגרלה לא נכשלה',rsr.once?'פעם אחת':'שוב',rsr.item?'עצם':'אין עצם',rsr.draw===true&&rsr.draw2===true?'מצויר':'ציור נכשל',rsr.took&&rsr.gone?'אויב קרוב נעלם':'אויב לא נעלם',rsr.far?'רחוק נשאר':'רחוק נעלם',rsr.boss?'בוס רק נפגע':'בוס לא נפגע'].join(', ')));
