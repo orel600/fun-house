@@ -8,6 +8,15 @@ let W=0,H=0,DPR=1,ZOOM=1;   // W,H: כמה מהעולם רואים, ביחידו
 function resize(){DPR=Math.min(2,window.devicePixelRatio||1);W=window.innerWidth/ZOOM;H=window.innerHeight/ZOOM;cvs.width=Math.round(window.innerWidth*DPR);cvs.height=Math.round(window.innerHeight*DPR)}
 function setZoom(z){if(z!==ZOOM){ZOOM=z;resize()}}
 addEventListener('resize',resize);resize();
+/* גובה המסך האמיתי (אוראל, 2.11.2026: באייפון, לפעמים מסך הפתיחה נחתך ונשאר פס כהה למטה). בפתיחה הסרגלים של הדפדפן עוד זזים,
+   וספארי משאיר ל-fixed ול-100% גובה ישן. לכן מודדים שוב בכל שינוי, וגם כמה פעמים אחרי הטעינה, ושומרים ב---appH (css/style.css) */
+let fitWH='';
+function fitScreen(){const k=innerWidth+'x'+innerHeight;if(scrollY||scrollX)scrollTo(0,0);if(k===fitWH)return;fitWH=k;
+  document.documentElement.style.setProperty('--appH',innerHeight+'px');resize()}
+function fitSoon(){fitScreen();[100,500,1500].forEach(t=>setTimeout(fitScreen,t))}
+['orientationchange','pageshow','load'].forEach(e=>addEventListener(e,fitSoon));
+addEventListener('resize',fitScreen);if(window.visualViewport)visualViewport.addEventListener('resize',fitScreen);
+fitSoon();
 
 const rand=(a,b)=>a+Math.random()*(b-a);
 const pick=a=>a[Math.floor(Math.random()*a.length)];
