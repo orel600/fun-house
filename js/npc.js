@@ -113,7 +113,7 @@ function npcDialog(){
   let h=winHead(name,role);   // ui.js
   h+='<p class="npcsay">'+npcPic(id)+S.vil.dlgLine+'</p>';
   h+=npcCards(id,ready,open,on);   // קווסט אחד בכל פעם
-  if(!ready.length&&!open.length&&!on.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
+  if(!ready.length&&!open.length&&!on.length&&!NPC.list[id].serve)h+='<p class="next">'+T('npc.noQuest')+'</p>';
   if(id===STATS.respec.npc)h+=statRespecHtml();   // איפוס נקודות הדמות (stats.js)
   if(id===FISH.cookAt)h+=fishCookHtml();   // בישול דגים (fishing.js)
   if(NPC.list[id].serve)h+=resHtml(id);   // השירות של מי שעברה מהעולם (residents.js)
