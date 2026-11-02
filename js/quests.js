@@ -28,6 +28,9 @@ const QUESTS={
     world:{talk:true}   // דמויות שמוצאים בעולם הפתוח (worldnpc.js). talk: מקבלים ולוקחים פרס רק אצלן, לא ביומן
   },
   daily:4,       // כמה קווסטים יומיים בכל יום. מתחלפים בחצות, לפי השעון בטלפון
+  /* שחקן חדש (המבקר, 2.11: "10 משימות פעילות מהדקה הראשונה"): עד שהפנס after דולק (SAVE.story, story.js) רק העלילה,
+     הדמויות בעולם (kind world) והקווסטים ב-early. יומיים, הישגים ושאר הכפר נפתחים אחרי השומר הראשון */
+  early:{after:'earth',kinds:['story','world','rank'],ids:['boots']},
   list:[
     // ---- כפר: נותנים המבנים, ומובילים את השחקן בכפר ובזירה ----
     // הראשון: קצר, ונעליים בפרס, כדי שההליכה תהיה מהירה כבר מההתחלה (ניר: "נעליים שנותנות מהירות שמקבלים מאיזה קווסט התחלתי")
@@ -35,8 +38,8 @@ const QUESTS={
     // spot: הפרס ניתן במקום, בלי לחזור לכפר. then: הקווסט הבא מתחיל לבד (המבקר, 1.11: "המשימה הראשונה שולחת אותך הביתה ברגע שיצאת")
     {id:'s1Lanterns',giver:'head',kind:'story',obj:[{type:'reach',what:'world',n:1}],reward:{coins:20,xp:20},spot:true,then:'s1Bones'},
     {id:'s1Bones',giver:'head',kind:'story',obj:[{type:'kill',what:'grunt',n:3}],reward:{coins:15,xp:25},req:{quest:'s1Lanterns'},spot:true,then:'s1Shard'},
-    {id:'s1Shard',giver:'head',kind:'story',obj:[{type:'story',what:'shard',n:1}],reward:{coins:25,xp:30},req:{quest:'s1Bones'}},
-    {id:'s1Path',giver:'head',kind:'story',obj:[{type:'kill',what:'any',n:25}],reward:{iron:5,xp:40},req:{quest:'s1Shard'}},
+    {id:'s1Shard',giver:'head',kind:'story',obj:[{type:'story',what:'shard',n:1}],reward:{coins:25,xp:30},req:{quest:'s1Bones'},spot:true,then:'s1Path'},
+    {id:'s1Path',giver:'head',kind:'story',obj:[{type:'kill',what:'any',n:25}],reward:{iron:5,xp:40},req:{quest:'s1Shard'},spot:true,then:'s1Warden'},   // עד השומר הכל בעולם (המבקר, 2.11). השומר עצמו חוזר לאבנר: הפנס נדלק בטקס
     {id:'s1Warden',giver:'head',kind:'story',obj:[{type:'kill',what:'warden',n:1}],reward:{coins:80,xp:120,story:'earth'},req:{quest:'s1Path'}},
     // ---- העלילה, פרק 2: פנס המים, באגם הערפל (story.js, WORLD.regions.lake ב-world.js). נפתח אחרי פנס האדמה ----
     {id:'s2Mist',giver:'head',kind:'story',obj:[{type:'story',what:'lake',n:1}],reward:{coins:30,xp:50},req:{quest:'s1Warden'}},
@@ -127,8 +130,10 @@ function qProg(q,i){
 // באג (ניר, 1.11): "הנפח רוצה 10 עצמות ויש עליי מאות" — קודם נספר רק מה שנאסף אחרי שקיבלת את הקווסט, ובעולם לא בכלל
 const qHand=(q,o)=>o.type==='collect'&&o.what&&o.what!=='coins'&&o.what!=='any'&&!qKind(q).daily;
 const qReady=q=>!!QS().active[q.id]&&q.obj.every((o,i)=>qProg(q,i)>=o.n);
+const qEarly=()=>!(SAVE.story&&SAVE.story[QUESTS.early.after]);
 function qReq(q){
-  const r=q.req||{};
+  const r=q.req||{},E=QUESTS.early;
+  if(qEarly()&&!E.kinds.includes(q.kind)&&!E.ids.includes(q.id))return false;
   if(q.giver&&!npcHere(q.giver))return false;
   if(r.level&&SAVE.hero.level<r.level)return false;
   if(r.quest&&!QS().done[r.quest])return false;
@@ -144,7 +149,7 @@ function questsRefresh(){
   const Q=QS();
   for(const id in Q.active)if(!QBY[id])delete Q.active[id];   // קווסט שהוסר מהטבלה
   const day=qDay();
-  if(Q.day!==day){
+  if(Q.day!==day||!Q.daily.length){   // אין יומיים היום (שחקן חדש לפני השומר): בודקים שוב בכל כניסה
     for(const id of Q.daily)delete Q.active[id];
     const pool=QUESTS.list.filter(q=>qKind(q).daily&&qReq(q)).sort(()=>Math.random()-0.5);
     Q.daily=pool.slice(0,QUESTS.daily).map(q=>q.id);Q.day=day;
@@ -236,13 +241,14 @@ function questLog(){
   // כל סוג מכווץ, חוץ מפרסים שמחכים: בראש היומן "עכשיו" אחד (guideCard ב-guide.js), ולא רשימה ארוכה (docs/ux-audit.md)
   const sec=(k,cards)=>cards.length?'<details class="qsec"'+(k==='ready'?' open':'')+'><summary><h4>'+T('q.sec.'+k)+' · '+cards.length+'</h4></summary>'+cards.join('')+'</details>':'';
   let h=winHead(T('q.log'));   // ui.js
-  h+=guideCard();
-  h+=challengeCard()+huntCard();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js)
+  // שני טורים לרוחב (.qcol, המבקר 2.11.2026): הסיפור והמשימה הנוכחית, ולידם היומיים וההישגים. בטלפון עומד אחד מתחת לשני
+  h+='<div class="qcol">'+guideCard();
   h+=sec('ready',act.filter(q=>qReady(q)&&!qKind(q).talk).map(q=>qCard(q,'claim')));
   h+=sec('active',act.filter(q=>(!qReady(q)||qKind(q).talk)&&!qKind(q).auto).map(q=>qCard(q,'track')));   // talk: הפרס אצל מי שנתן
   h+=sec('new',L.filter(q=>qOpen(q)&&!qKind(q).talk).map(q=>qCard(q,'accept')));
+  h+='</div><div class="qcol">'+challengeCard()+huntCard();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js)
   h+=sec('daily',Q.daily.map(id=>QBY[id]).filter(q=>q&&!(Q.active[q.id]&&qReady(q))).map(q=>qCard(q,Q.active[q.id]?'track':'done')));
-  h+=sec('ach',act.filter(q=>!qReady(q)&&qKind(q).achievement).map(q=>qCard(q,'')));
+  h+=sec('ach',act.filter(q=>!qReady(q)&&qKind(q).achievement).map(q=>qCard(q,'')))+'</div>';
   $('qLog').innerHTML=h;
 }
 function questLogOpen(on){$('qLog').hidden=!on;if(on){npcTalk(null);questLog()}}

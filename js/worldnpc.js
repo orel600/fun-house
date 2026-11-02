@@ -121,7 +121,9 @@ function syncWnpcs(dt){
   const all=wnpcState();if(!all)return;const A=R3D.wnpcs||(R3D.wnpcs={});
   for(const id in all){
     const L=LOOK3D['npc_'+id],n=all[id];if(!L)continue;
-    let a=A[id];if(!a){a=A[id]=makeActor(L);a.npcSt=null}
+    let a=A[id];if(!onScreen(n.x+R3D.ox,n.y+R3D.oy)){if(a)a.root.visible=false;continue}   // מחוץ למסך: לא מציירים ולא מנפישים (מבקר 2: מהירות)
+    if(!a){a=A[id]=makeActor(L);a.npcSt=null}
+    a.root.visible=true;
     if(a.own)a.own.visible=L.own!==false;
     if(a.npcSt!==n.st){a.npcSt=n.st;if(n.st==='wave')once(a,L.anim.wave,WNPC.waveT);else a.one=null}
     loop(a,L.anim.idle+(a.one&&a.one.isRunning()?'@low':''));

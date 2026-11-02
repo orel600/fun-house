@@ -55,6 +55,7 @@ const GROUND={
     float gN(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);float a=gH(i),b=gH(i+vec2(1,0)),c=gH(i+vec2(0,1)),d=gH(i+vec2(1,1));return a+(b-a)*u.x+(c-a)*u.y+(a-b-c+d)*u.x*u.y;}
     float gF(vec2 p){return 0.5*gN(p)+0.3*gN(p*2.03+vec2(1.7,9.2))+0.2*gN(p*4.01+vec2(5.1,3.3));}`;
 
+  GROUND.noise=NOISE;   // גם רצפת הזירה (arena-look.js) משתמשת באותו רעש
   // השבילים: מכל שער אל הצומת, בעיקול קל. מהשערים של האזור, אז אזור חדש מקבל שבילים לבד
   function segs(R){
     const gs=wGates(),out=[],hub={x:GROUND.hub.x,y:GROUND.hub.y};

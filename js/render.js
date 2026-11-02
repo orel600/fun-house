@@ -54,7 +54,7 @@ function drawPlayer(){
   }
 }
 // הצבע של יצור משאבים בדו-ממד, לפי החומר שהוא עשוי ממנו (החומר הראשון ב-tags ב-ETYPES). בתלת-ממד: tint ב-LOOK3D
-const MATCOL={stone:'#8A8F9C',plant:'#5C9A48',metal:'#C87533',cloth:'#D9C9A3'};
+const MATCOL={stone:'#8A8F9C',plant:'#5C9A48',metal:'#C87533',cloth:'#D9C9A3',bone:'#E8E2D0',water:'#4A8FB8',ice:'#BFE3F2',fire:'#D2582A',lightning:'#8A7BC8'};   // חומר בלי צבע כאן = האויב לא מצויר בדו-ממד
 function drawEnemyRig(e){
   const fl=e.flash>0,p=pose(e.x,e.y,e.ph,true,null);
   drawRig(p,{skin:LOOK[e.type],col:fl?'#fff':C.dim,lw:fl?3.5:2.5});
@@ -135,7 +135,7 @@ function render(){
   setZoom(camZoom());   // כמה רחוק המצלמה בכל מקום (camera.js, VIEW ב-render3d.js)
   ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);
   // בתלת-ממד הקנבס שקוף: הקרקע והדמויות מצוירות בשכבה שמתחתיו (render3d.js)
-  if(R3D.on)ctx.clearRect(0,0,W,H);else{ctx.fillStyle=S&&S.room?'#262114':C.ink;ctx.fillRect(0,0,W,H)}
+  if(R3D.on)ctx.clearRect(0,0,W,H);else{ctx.fillStyle=S&&S.room?'#262114':arenaFloor('d2')||C.ink;ctx.fillRect(0,0,W,H)}
   if(!P)return;
   const sh=RM?0:S.shake,ox=Math.round(W/2-S.cam.x+rand(-sh,sh)),oy=Math.round(H/2-S.cam.y+rand(-sh,sh));
   if(S.mb){render3d(ox,oy);ctx.translate(ox,oy);mobaDraw(ox,oy);return}   // משחקי השאול: ציור משלו (moba.js)
@@ -147,7 +147,7 @@ function render(){
   for(let x=x0;x<-ox+W+g;x+=g)for(let y=y0;y<-oy+H+g;y+=g){const h=hash(x,y);
     if(h<0.5){ctx.moveTo(x-4,y);ctx.lineTo(x+4,y);ctx.moveTo(x,y-4);ctx.lineTo(x,y+4)}
     else if(h<0.72){ctx.moveTo(x+14,y+22);ctx.lineTo(x+26,y+18)}}
-  ctx.stroke();}
+  ctx.stroke();if(typeof aLook2d==='function')aLook2d()}   // טבעות עדינות בזירה (arena-look.js)
   // mines & waves
   for(const mn of mines){const k=mn.t/1.3;ctx.strokeStyle='rgba(239,78,87,'+(0.5-k*0.3)+')';ctx.lineWidth=2;ctx.setLineDash([6,6]);ctx.beginPath();ctx.arc(mn.x,mn.y,58,0,7);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle=Math.floor(mn.t*(k<.4?16:6))%2?C.blood:C.ink;ctx.strokeStyle=C.blood;ctx.beginPath();ctx.arc(mn.x,mn.y,7,0,7);ctx.fill();ctx.stroke()}

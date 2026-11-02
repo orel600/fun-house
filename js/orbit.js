@@ -29,7 +29,7 @@ const orbitTypes=()=>orbitParts().map(p=>p.t);
 // חפץ משולב שנופל מבוס בזירה (או null). נקרא מ-gear.js. בעולם של ניר לא נופל (אוראל, 2.11: רק בזירה)
 function orbitComboRoll(){
   if(Math.random()>=ORBIT.combo.bossDrop)return null;
-  const ids=Object.keys(GEAR.items).filter(id=>GEAR.items[id].types),W=ORBIT.combo.w;
+  const ids=Object.keys(GEAR.items).filter(id=>GEAR.items[id].types&&!GEAR.items[id].fuse),W=ORBIT.combo.w;   // fuse: רק מהתכה בנפחייה (fuse.js)
   let r=Math.random()*ids.reduce((n,id)=>n+W[GEAR.items[id].types.length],0);
   for(const id of ids){r-=W[GEAR.items[id].types.length];if(r<0)return id}return ids[0];
 }
