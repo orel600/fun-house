@@ -2025,6 +2025,7 @@ function worldBot(m,L,god){
     mobaOpen();o.pick=document.querySelectorAll('#mbWin [data-kit]').length;if(en&&heb($('mbWin').innerText))o.he=$('mbWin').innerText.slice(0,60);
     document.querySelector('#mbWin [data-kit="tank"]').click();o.on=!!S.mb&&document.body.classList.contains('mb');
     if(en&&!o.he&&heb($('mbHud').innerText))o.he=$('mbHud').innerText.slice(0,60);
+    for(let i=0;i<30;i++)mobaUpdate(1/30);render();o.m3=typeof M3!=='undefined'?M3.map.size:-1;o.r3=R3D.on;   // תלת-ממד: מגדלים ובסיסים כמודלים (moba3d.js)
     MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
     mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
     mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
@@ -2259,6 +2260,7 @@ function worldBot(m,L,god){
   check(!mb.err&&mb.pick===4&&mb.on&&mb.out,'משחקי השאול: '+(mb.err||'חלון בחירה עם '+mb.pick+' דמויות'+(mb.on?', המשחק נפתח':', לא נפתח')+(mb.out?', יציאה עובדת':', היציאה לא עובדת')));
   if(!mb.err){
     check(mb.over,'משחקי השאול: משחק של בוטים '+(mb.over?'נגמר':'לא נגמר')+' אחרי '+t(mb.t)+' · '+mb.towers+' מגדלים נפלו'+(mb.base?', בסיס נהרס':', נגמר בזמן')+' · הריגות '+mb.score+' · רמה עד '+mb.lv);
+    if(CFG.gfx==='3d')check(!mb.r3||mb.m3===6,'משחקי השאול בתלת-ממד: '+(mb.r3?mb.m3+' מבנים כמודלים (צריך 6)':'התלת-ממד כבוי'));
     check(!mb.miss.length,'משחקי השאול: סקילים ('+mb.kits+') '+(mb.miss.length?'לא הוטלו: '+mb.miss.join(', '):'כולם הוטלו, כולל סקיל-העל'));
     check(mb.cc.stun>0&&mb.cc.taunt>0&&(!mb.mage||(mb.cmb.shock||0)+(mb.cmb.freeze||0)>0),'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
     if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');

@@ -389,10 +389,11 @@ function mobaDraw(ox,oy){
 }
 function mbDrawBuild(b,col){
   const base=b.k==='base',h=base?96:74,w=base?54:30,open=mbHittable(b);
+  if(typeof mb3dHere!=='function'||!mb3dHere()){   // בתלת-ממד הגוף מצויר שם (moba3d.js)
   ctx.fillStyle='#0006';ctx.beginPath();ctx.ellipse(b.x,b.y+4,w,w*0.4,0,0,7);ctx.fill();
   ctx.fillStyle=b.flash>0?'#fff':'#4A4458';ctx.beginPath();ctx.moveTo(b.x-w*0.7,b.y);ctx.lineTo(b.x-w*0.45,b.y-h);ctx.lineTo(b.x+w*0.45,b.y-h);ctx.lineTo(b.x+w*0.7,b.y);ctx.fill();
   ctx.strokeStyle='#2A2436';ctx.lineWidth=2;ctx.stroke();
-  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(b.x,b.y-h-(base?34:24));ctx.lineTo(b.x+(base?14:9),b.y-h-6);ctx.lineTo(b.x,b.y-h+4);ctx.lineTo(b.x-(base?14:9),b.y-h-6);ctx.fill();
+  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(b.x,b.y-h-(base?34:24));ctx.lineTo(b.x+(base?14:9),b.y-h-6);ctx.lineTo(b.x,b.y-h+4);ctx.lineTo(b.x-(base?14:9),b.y-h-6);ctx.fill();}
   if(!open){ctx.strokeStyle=col+'88';ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.arc(b.x,b.y-h/2,w+8,0,7);ctx.stroke();ctx.setLineDash([])}   // מוגן: קודם המגדל שלפניו
   const B=base?MOBA.base:MOBA.tower;
   if(b.tgt&&!b.tgt.dead){ctx.strokeStyle=col+'55';ctx.lineWidth=1.5;ctx.setLineDash([4,6]);ctx.beginPath();ctx.arc(b.x,b.y,B.range,0,7);ctx.stroke();ctx.setLineDash([])}
