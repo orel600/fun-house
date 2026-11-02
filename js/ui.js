@@ -12,6 +12,7 @@ const WINS=[
   {id:'ovForge',close:()=>forgeClose(),backdrop:true},
   {id:'ovWelcome',close:()=>welcomeClose(),backdrop:true},   // "בזמן שלא היית" (welcome.js)
   {id:'ovDaily',close:()=>dailyClose(),backdrop:true},
+  {id:'ovTrade',close:()=>tradeClose(),backdrop:true},   // מסחר עם חבר (trade.js), נפתח מעל הביקור
   {id:'ovVisit',close:()=>visitClose(),backdrop:true},
   {id:'ovEnd',close:()=>storyEndClose(),backdrop:true},   // "תודה ששיחקת" בסוף העלילה (story.js)
   {id:'npcDlg',close:()=>S.wd?wnpcTalk(null):npcTalk(null),outside:true},
