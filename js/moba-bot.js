@@ -30,6 +30,13 @@ function mbThink(u){
   B.stop=6;B.focus=null;
   // 1. נסוג: חיים נמוכים, עד שהתרפא ליד הבסיס
   if(u.hp<u.max*MBBOT.retreat||B.mode==='retreat'&&u.hp<u.max*MBBOT.back){B.mode='retreat';B.goal=u.home;return}
+  // פקודה מהשחקן (mbOrder ב-moba.js): נסיגה אל המגדל הקדמי שלנו, או התקפה יחד איתו
+  const O=u.team===0&&MB.order;
+  if(O&&O.kind==='back'){const t=MB.u.filter(b=>b.k==='tower'&&b.team===u.team&&!b.dead).sort((a,b)=>Math.abs(a.x)-Math.abs(b.x))[0]||MB.u.find(b=>b.k==='base'&&b.team===u.team);
+    B.mode='order';B.goal={x:t.x-dir*90,y:u.home.y*0.6};return}
+  if(O&&O.kind==='attack'){const me=MB.me,near=MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&mbDist(o,me.dead?u:me)<MBBOT.engage);
+    const tgt=near.length?near.reduce((a,b)=>a.hp/a.max<=b.hp/b.max?a:b):MB.u.filter(b=>(b.k==='tower'||b.k==='base')&&b.team!==u.team&&mbHittable(b)).sort((a,b)=>mbDist(a,u)-mbDist(b,u))[0];
+    if(tgt){B.mode='order';B.focus=tgt;const a=Math.atan2(u.y-tgt.y,u.x-tgt.x),r=A.range*0.85+tgt.r+u.r;B.goal={x:tgt.x+Math.cos(a)*r,y:tgt.y+Math.sin(a)*r};return}}
   // 2. אזור מסומן של האויב: יוצאים ממנו (לא תמיד שמים לב)
   const z=MB.zones.find(z=>{if(z.team===u.team||z.delay<0.1&&!z.tick||Math.hypot(z.x-u.x,z.y-u.y)>z.r+u.r)return false;
     const s=z.seen||(z.seen={});if(s[u.id]===undefined)s[u.id]=Math.random()<MBBOT.dodge;return s[u.id]});
@@ -78,7 +85,7 @@ function mbBotSkills(u){
   const allies=MB.u.filter(o=>o.k==='hero'&&o.team===u.team&&!o.dead);
   const allyLow=allies.some(o=>o.hp<o.max*0.4&&mbDist(o,u)<350);
   const held=t=>t.st.stun>0||t.st.slow>0;
-  const fight=B.mode==='fight'||B.mode==='defend';
+  const fight=B.mode==='fight'||B.mode==='defend'||B.mode==='order'&&MB.order&&MB.order.kind==='attack';
   switch(u.kit){
     case 'tank':
       if(ready('s1')&&inR('s1')&&!(tgt.st.imm>0)&&B.mode!=='retreat'){mbCast(u,'s1',tgt);return}

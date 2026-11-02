@@ -16,6 +16,7 @@ const MOBA={
   ultAt:6,
   grow:0.09,                  // כל רמה: 9% יותר חיים ונזק
   respawn:{base:4,lvl:2,min:2.5},   // שניות עד שגיבור חוזר: 4, ועוד 2 לכל רמה, ועוד 2.5 לכל דקה במשחק (סוף משחק מכריע)
+  order:{attack:8,back:6},   // פקודה לבוטים החברים: כמה שניות היא נמשכת
   ccImmune:1,                 // אחרי הלם או הכרחה: שנייה של חסינות לשליטה נוספת (אוראל: 3 שניות זה הרבה)
   combo:{shock:1.35,freeze:1.25},   // רטוב + ברק: נזק ×1.35. רטוב + קרח: הקפאה ארוכה ×1.25 (באיזון: ×1.6 נתן להרכב צייד+קוסמת+נפח 94% ניצחונות)
   team:['#4C8DFF','#FF5A5A'],
@@ -157,7 +158,7 @@ function mobaStart(kit){
   $('ovMoba').hidden=true;
   if(typeof villageUi==='function')villageUi(false);if(typeof worldUi==='function')worldUi(false);
   reset();S.mode='play';
-  MB=S.mb={t:0,u:[],shots:[],zones:[],walls:[],fx:[],floats:[],queue:[],waveT:MOBA.minion.first,score:[0,0],over:false,keys:{}};
+  MB=S.mb={t:0,u:[],shots:[],zones:[],walls:[],fx:[],floats:[],queue:[],waveT:MOBA.minion.first,score:[0,0],over:false,keys:{},order:null};
   // הקבוצות: השחקן ושני בוטים מול שלושה. בכל קבוצה מישהו מקדימה (נפח או לוחם)
   const all=Object.keys(MBKIT),team=(first)=>{
     let t=first?[first]:[];const rest=all.filter(k=>!t.includes(k)).sort(()=>Math.random()-0.5);
@@ -176,6 +177,7 @@ function mobaStart(kit){
 function mobaUpdate(dt){
   const M=MB;if(!M||M.over)return;
   M.t+=dt;S.t=M.t;S.shake=Math.max(0,S.shake-dt*30);
+  if(M.order){M.order.t-=dt;if(M.order.t<=0)M.order=null}
   // גלי חיילים
   M.waveT-=dt;if(M.waveT<=0){M.waveT=MOBA.minion.every;for(const tm of [0,1])for(let i=0;i<MOBA.minion.count;i++)M.queue.push({team:tm,ranged:i===MOBA.minion.count-1,at:M.t+i*MOBA.minion.gap,k:1+MOBA.minion.grow*M.t/60+MOBA.minion.push*M.u.filter(o=>o.k==='tower'&&o.team!==tm&&o.dead).length})}
   for(const q of M.queue)if(q.at<=M.t){q.done=true;const N=MOBA.minion,R=q.ranged?N.ranged:N;
@@ -229,6 +231,7 @@ function mbPlayer(u,dt){
   const A=MBKIT[u.kit].atk;mbAttack(u,dt,mbAutoTarget(u,A.range),A);
   // מקלדת: 1/2/3 או Q/E/R
   [['Digit1','KeyQ'],['Digit2','KeyE'],['Digit3','KeyR']].forEach((ks,i)=>{const on=ks.some(k=>keys[k]);if(on&&!MB.keys[i])mbPress(MB_SLOTS[i]);MB.keys[i]=on});
+  [['KeyF','attack'],['KeyG','back']].forEach(([k,o])=>{if(keys[k]&&!MB.keys[k])mbOrder(o);MB.keys[k]=keys[k]});   // F: התקפה, G: נסיגה
 }
 // כפתור סקיל של השחקן: מכוון לבד. אל הגיבור הקרוב בטווח, אחרת חייל, אחרת קדימה
 function mbAimFor(u,s){
@@ -243,6 +246,14 @@ function mbPress(slot){
   if(u.cd[slot]>0)return;
   const aim=s.kind==='self'||s.kind==='away'?null:mbAimFor(u,s)||(s.kind==='point'?{x:u.x+Math.cos(u.face)*(s.range||200)*0.6,y:u.y+Math.sin(u.face)*(s.range||200)*0.6}:null);
   mbCast(u,slot,aim);
+}
+// פקודה לשני הבוטים החברים (אוראל, docs/moba.md שלב 4): "התקפה" אל המקום שלך, או "נסיגה" אל המגדל. נמשכת MOBA.order שניות
+function mbOrder(kind){
+  const me=mbMe();if(!me||MB.over||!MOBA.order[kind])return;
+  MB.order={kind,t:MOBA.order[kind],x:me.x,y:me.y};sfx('tap');
+  for(const h of mbHeroes(0))if(h!==me&&!h.dead){h.bot.t=0;mbWord(h,kind==='attack'?'go':'back')}
+  mbBoom(me.x,me.y,80,kind==='attack'?'red':'blue');
+  for(const b of document.querySelectorAll('#mbPing [data-o]'))b.classList.toggle('on',b.dataset.o===kind);
 }
 function mbMinion(m,dt){
   if(m.st.stun>0){m.moving=false;return}
@@ -299,7 +310,7 @@ function mbUi(on){
     for(const b of $('mbSk').querySelectorAll('[data-sk]'))b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();mbPress(b.dataset.sk)})}
 }
 const MB_ICON={anvil:'🔨',taunt:'📣',wall:'🧱',charge:'💨',spin:'🌀',rage:'😡',pierce:'⚡',leap:'🦘',rain:'🏹',wave:'🌊',heal:'💚',blizzard:'❄️'};
-let mbHudKey='';
+let mbHudKey='',mbOrdKey=null;
 function mobaHud(){
   const M=MB,u=M&&M.me;if(!u)return;
   $('mbHp').style.width=(100*Math.max(0,u.hp)/u.max)+'%';
@@ -307,6 +318,7 @@ function mobaHud(){
   const key=LANG+'|'+u.lvl+'|'+M.score+'|'+fmt(M.t)+'|'+(u.dead?Math.ceil(u.resp):'');
   if(key!==mbHudKey){mbHudKey=key;$('mbLv').textContent=u.lvl;$('mbS0').textContent=M.score[0];$('mbS1').textContent=M.score[1];$('mbClock').textContent=fmt(M.t);
     const r=$('mbResp');r.hidden=!u.dead;if(u.dead)r.textContent=T('mb.resp',Math.ceil(u.resp))}
+  const ok=M.order?M.order.kind:'';if(mbOrdKey!==ok){mbOrdKey=ok;for(const b of document.querySelectorAll('#mbPing [data-o]'))b.classList.toggle('on',b.dataset.o===ok)}
   for(const b of $('mbSk').querySelectorAll('[data-sk]')){const k=b.dataset.sk,s=MBKIT[u.kit][k],lock=k==='ult'&&u.lvl<MOBA.ultAt;
     b.style.setProperty('--cd',lock?1:Math.max(0,u.cd[k])/s.cd);const l=b.querySelector('.mblock');if(l.hidden===lock)l.hidden=!lock}
 }
@@ -336,6 +348,7 @@ $('mbWin').addEventListener('click',e=>{
   else if(a.dataset.act==='home')mobaExit();
 });
 $('mbExit').onclick=()=>{sfx('ui');mobaExit()};
+for(const b of document.querySelectorAll('#mbPing [data-o]'))b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();mbOrder(b.dataset.o)});
 $('mbBtn').onclick=()=>{sfx('ui');mobaOpen()};
 
 /* ---- ציור (בקנבס, מעל התלת-ממד). בתלת-ממד הגוף של הגיבורים והחיילים מצויר שם, וכאן רק טבעת, חיים וסימנים ---- */
@@ -405,6 +418,7 @@ function mbMini(ox,oy){
   const M=MB,L=MOBA.lane,mw=Math.min(340,W*0.42),mh=30,x0=W/2-mw/2,y0=Math.max(48,H*0.09),sx=x=>x0+(x+L.len)/(L.len*2)*mw,sy=y=>y0+mh/2+y/L.half*(mh/2-4);
   ctx.fillStyle='rgba(18,22,36,0.78)';ctx.fillRect(x0-4,y0-4,mw+8,mh+8);ctx.strokeStyle='rgba(236,231,220,0.25)';ctx.lineWidth=1;ctx.strokeRect(x0-4,y0-4,mw+8,mh+8);
   ctx.strokeStyle='rgba(236,231,220,0.5)';ctx.strokeRect(sx(P.x-W/2),y0-2,(W/(L.len*2))*mw,mh+4);
+  if(M.order){ctx.strokeStyle=M.order.kind==='attack'?C.blood:MOBA.team[0];ctx.lineWidth=2;ctx.beginPath();ctx.arc(sx(M.order.x),sy(M.order.y),5+3*Math.sin(M.t*8),0,7);ctx.stroke()}
   for(const u of M.u){if(u.dead)continue;const c=MOBA.team[u.team];ctx.fillStyle=c;
     if(u.k==='tower'||u.k==='base'){const s=u.k==='base'?8:6;ctx.fillRect(sx(u.x)-s/2,sy(0)-s/2,s,s)}
     else if(u.k==='hero'){ctx.beginPath();ctx.arc(sx(u.x),sy(u.y),u.me?4.5:3.5,0,7);ctx.fill();if(u.me){ctx.strokeStyle=C.gold;ctx.lineWidth=1.5;ctx.stroke()}}
