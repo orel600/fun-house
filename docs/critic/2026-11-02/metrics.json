@@ -1,0 +1,3855 @@
+{
+ "day": "2026-11-02",
+ "gfx": "3d",
+ "views": {
+  "n": {
+   "width": 760,
+   "height": 350
+  },
+  "s": {
+   "width": 844,
+   "height": 390
+  }
+ },
+ "n-en": {
+  "stops": {
+   "start": {
+    "file": "n-en-01-start.png",
+    "note": "מסך פתיחה",
+    "uiPct": 100,
+    "buttons": 7,
+    "small": [
+     "#gearBtnRun 🎒 40×28"
+    ],
+    "overlap": [
+     "#gearBtnRun 🎒 ✕ #muteBtn Sound"
+    ],
+    "clipped": [],
+    "tiny": [
+     "0 / 6 (10px)",
+     "100 / 100 (10px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [
+     "עברית"
+    ],
+    "textOverlap": [
+     "100 / 100 ✕ עברית",
+     "100 / 100 ✕ English",
+     "100 / 100 ✕ 📖 How to play",
+     "0:00 ✕ 📖 How to play",
+     "Huge wave in 1:00 ✕ ⚔️ Underworld Game",
+     "Level 1 ✕ ⚔️ Underworld Game"
+    ]
+   },
+   "hero": {
+    "file": "n-en-02-hero.png",
+    "note": "בחירת דמות",
+    "uiPct": 100,
+    "buttons": 6,
+    "small": [
+     "#gearBtnRun 🎒 40×28",
+     "#heroSkin ✨ My character 130×28"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "0 / 6 (10px)",
+     "100 / 100 (10px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🎒 ✕ Who are you?"
+    ]
+   },
+   "village-arrive": {
+    "file": "n-en-03-village-arrive.png",
+    "note": "כניסה ראשונה לכפר",
+    "uiPct": 90,
+    "buttons": 2,
+    "small": [],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "You came! Finally  ✕ A welcome gift: en",
+     "Avner · ⭐ Story ✕ A welcome gift: en",
+     "Go out the gate to ✕ A welcome gift: en"
+    ]
+   },
+   "auto-npcDlg": {
+    "file": "n-en-04-auto-npcDlg.png",
+    "note": "נפתח לבד בכפר",
+    "uiPct": 90,
+    "buttons": 2,
+    "small": [],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "npc-near": {
+    "file": "n-en-05-npc-near.png",
+    "note": "ליד הנפח",
+    "uiPct": 7,
+    "buttons": 6,
+    "small": [
+     ".resmore +2 44×34",
+     "#guideMain ⭐ Head out into the worl 220×38",
+     "#guideMin ▴ 21×38"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Head out into the world 0/1 · "
+    ],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "village-gate": {
+    "file": "n-en-06-village-gate.png",
+    "note": "השער",
+    "uiPct": 8,
+    "buttons": 6,
+    "small": [
+     ".resmore +1 44×34",
+     "#guideMain ⭐ Head out into the worl 220×38",
+     "#guideMin ▴ 22×38"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Head out into the world 0/1 · "
+    ],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-arrive": {
+    "file": "n-en-07-world-arrive.png",
+    "note": "כניסה לאחו",
+    "uiPct": 7,
+    "buttons": 5,
+    "small": [
+     ".resmore +1 44×34",
+     "#guideMain ⭐ Defeat white grunts 0/ 205×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-fight": {
+    "file": "n-en-08-world-fight.png",
+    "note": "קרב ראשון",
+    "uiPct": 7,
+    "buttons": 6,
+    "small": [
+     ".resmore +1 44×34",
+     "#guideMain ⭐ Defeat white grunts 2/ 199×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-loot": {
+    "file": "n-en-09-world-loot.png",
+    "note": "אחרי דקה בעולם: שלל ופיד",
+    "uiPct": 9,
+    "buttons": 7,
+    "small": [
+     ".resmore +12 44×34",
+     "#guideMain ✅ Go back to Avner for y 222×38",
+     "#guideMin ▴ 20×38"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Go back to Avner for your rewa"
+    ],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-death": {
+    "file": "n-en-10-world-death.png",
+    "note": "מוות בעולם",
+    "uiPct": 3,
+    "buttons": 3,
+    "small": [
+     ".resmore +24 46×34"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "lv20-auto-ovWelcome": {
+    "file": "n-en-11-lv20-auto-ovWelcome.png",
+    "note": "נפתח לבד לשחקן ברמה 20",
+    "uiPct": 100,
+    "buttons": 6,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     "#dBtn 🎁 ✕ .wx ✕"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "welWin > wellist 150/134"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🎁 ✕ ✕"
+    ]
+   },
+   "village": {
+    "file": "n-en-12-village.png",
+    "note": "הכפר, שחקן ברמה 20",
+    "uiPct": 8,
+    "buttons": 6,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 220×38",
+     "#guideMin ▴ 21×38"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Climb to the Frost Ridge 0/1 ·"
+    ],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "b-forge": {
+    "file": "n-en-13-b-forge.png",
+    "note": "חלון forge",
+    "uiPct": 80,
+    "buttons": 16,
+    "small": [
+     ".resmore +7 44×34",
+     ".vbtn ✨ Upgrade gear 178×40"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁",
+     ".vbtn ✨ Upgrade gear ✕ #visBtn 🏡"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwbody 987/174"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "✨ Upgrade gear ✕ 🏡"
+    ]
+   },
+   "b-forge-up": {
+    "file": "n-en-14-b-forge-up.png",
+    "note": "חלון forge לשונית up",
+    "uiPct": 80,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "Upgrade: level 4 → ✕ 🏡"
+    ]
+   },
+   "b-market": {
+    "file": "n-en-15-b-market.png",
+    "note": "חלון market",
+    "uiPct": 80,
+    "buttons": 19,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwgrid 222/126"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁"
+    ]
+   },
+   "b-market-up": {
+    "file": "n-en-16-b-market-up.png",
+    "note": "חלון market לשונית up",
+    "uiPct": 80,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "Upgrade: level 3 → ✕ 🏡"
+    ]
+   },
+   "b-stash": {
+    "file": "n-en-17-b-stash.png",
+    "note": "חלון stash",
+    "uiPct": 80,
+    "buttons": 18,
+    "small": [
+     ".resmore +7 44×34",
+     ".vbtn All to stash 76×40",
+     ".vbtn All to bag 64×40"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #visBtn 🏡",
+     ".wx ✕ ✕ #dBtn 🎁",
+     ".vbtn All to bag ✕ #visBtn 🏡"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwgrid 446/121"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "All to bag ✕ 🏡"
+    ]
+   },
+   "b-stash-up": {
+    "file": "n-en-18-b-stash-up.png",
+    "note": "חלון stash לשונית up",
+    "uiPct": 80,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #visBtn 🏡",
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwbody 190/169"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "Upgrade: level 3 → ✕ 🏡"
+    ]
+   },
+   "b-mine": {
+    "file": "n-en-19-b-mine.png",
+    "note": "חלון mine",
+    "uiPct": 80,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "Makes 55🪨 8🟤 6⚫  ✕ 🏡"
+    ]
+   },
+   "b-mine-up": {
+    "file": "n-en-20-b-mine-up.png",
+    "note": "חלון mine לשונית up",
+    "uiPct": 80,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwbody 190/174"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "Upgrade: level 3 → ✕ 🏡"
+    ]
+   },
+   "b-center": {
+    "file": "n-en-21-b-center.png",
+    "note": "חלון center",
+    "uiPct": 80,
+    "buttons": 5,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "Upgrade: level 4 → ✕ 🏡"
+    ]
+   },
+   "menu": {
+    "file": "n-en-22-menu.png",
+    "note": "☰: התפריט נפתח",
+    "uiPct": 100,
+    "buttons": 43,
+    "small": [
+     "BUTTON 🎒 Gear 72×34",
+     "BUTTON 🧍 Character 28 105×34",
+     "BUTTON All 37×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".vbtn ⬆ Best 113×34",
+     ".vbtn 🪙 Sell 95×34",
+     ".gtile ⚔️ 42×42",
+     ".gtile 💍 42×42"
+    ],
+    "overlap": [
+     ".gtile ×2 ▲ ✕ .vbtn ⬆ Best",
+     ".gtile ▲ ✕ .vbtn ⬆ Best",
+     ".gtile ▲ ✕ .vbtn 🪙 Sell"
+    ],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "panel > gItems 214/168"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 Gear",
+     "🟤 ✕ Stats",
+     "🟤 ✕ ❤️",
+     "🟤 ✕ Health",
+     "🦴 ✕ Stats",
+     "🦴 ✕ Health",
+     "♦️ ✕ Stats",
+     "♦️ ✕ Health",
+     "×2 ✕ ⬆ Best",
+     "▲ ✕ ⬆ Best"
+    ]
+   },
+   "gear": {
+    "file": "n-en-23-gear.png",
+    "note": "ציוד ותרמיל",
+    "uiPct": 100,
+    "buttons": 43,
+    "small": [
+     "BUTTON 🎒 Gear 72×34",
+     "BUTTON 🧍 Character 28 105×34",
+     "BUTTON All 37×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".vbtn ⬆ Best 113×34",
+     ".vbtn 🪙 Sell 95×34",
+     ".gtile ⚔️ 42×42",
+     ".gtile 💍 42×42"
+    ],
+    "overlap": [
+     ".gtile ×2 ▲ ✕ .vbtn ⬆ Best",
+     ".gtile ▲ ✕ .vbtn ⬆ Best",
+     ".gtile ▲ ✕ .vbtn 🪙 Sell"
+    ],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "panel > gItems 214/168"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 Gear",
+     "🟤 ✕ Stats",
+     "🟤 ✕ ❤️",
+     "🟤 ✕ Health",
+     "🦴 ✕ Stats",
+     "🦴 ✕ Health",
+     "♦️ ✕ Stats",
+     "♦️ ✕ Health",
+     "×2 ✕ ⬆ Best",
+     "▲ ✕ ⬆ Best"
+    ]
+   },
+   "gear-item": {
+    "file": "n-en-24-gear-item.png",
+    "note": "ציוד: פריט נבחר",
+    "uiPct": 100,
+    "buttons": 46,
+    "small": [
+     "BUTTON 🎒 Gear 72×34",
+     "BUTTON 🧍 Character 28 105×34",
+     "BUTTON All 37×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".vbtn ⬆ Best 113×34",
+     ".vbtn 🪙 Sell 95×34",
+     ".gtile ⚔️ 42×42",
+     ".gtile 💍 42×42"
+    ],
+    "overlap": [
+     ".gtile ×2 ▲ ✕ .vbtn ⬆ Best",
+     ".gtile ▲ ✕ .vbtn ⬆ Best",
+     ".gtile ▲ ✕ .vbtn 🪙 Sell"
+    ],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "panel > gItems 214/168"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 Gear",
+     "🟤 ✕ 🌟",
+     "🦴 ✕ 🌟",
+     "🦴 ✕ Star Staff",
+     "♦️ ✕ Star Staff",
+     "×2 ✕ ⬆ Best",
+     "▲ ✕ ⬆ Best",
+     "▲ ✕ 🪙 Sell",
+     "▲ +85% ranged dama ✕ Equip",
+     "▲ +85% ranged dama ✕ 🔓"
+    ]
+   },
+   "gear-sell": {
+    "file": "n-en-25-gear-sell.png",
+    "note": "ציוד: מכירה",
+    "uiPct": 100,
+    "buttons": 44,
+    "small": [
+     "BUTTON 🎒 Gear 72×34",
+     "BUTTON 🧍 Character 28 105×34",
+     "BUTTON All 37×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".gtile ⚔️ 42×42",
+     ".gtile 💍 42×42",
+     ".gtile 👢 42×42",
+     ".gtile ✨ 35×35"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "panel > gItems 214/207"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 Gear",
+     "🟤 ✕ Pick what to sell",
+     "🟤 ✕ Tap items in the b",
+     "🦴 ✕ Pick what to sell",
+     "🦴 ✕ Tap items in the b",
+     "♦️ ✕ Pick what to sell",
+     "♦️ ✕ Tap items in the b"
+    ]
+   },
+   "gear-char": {
+    "file": "n-en-26-gear-char.png",
+    "note": "ציוד: הדמות והסטטים",
+    "uiPct": 100,
+    "buttons": 18,
+    "small": [
+     "BUTTON 🎒 Gear 72×34",
+     "BUTTON 🧍 Character 28 105×34",
+     ".stplus + 38×38"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 Gear"
+    ]
+   },
+   "skillbook": {
+    "file": "n-en-27-skillbook.png",
+    "note": "ספר הסקילים והרונות",
+    "uiPct": 100,
+    "buttons": 32,
+    "small": [
+     "BUTTON 🎒 Gear 72×34",
+     "BUTTON 🧍 Character 28 105×34",
+     ".stplus + 38×38",
+     ".wrc Fire Trail Leaves fire p 216×40",
+     ".wrc Double Charge again righ 216×40",
+     ".wrc Vortex Pulls foes inward 203×40",
+     ".wrc Nova Explodes when it en 203×40"
+    ],
+    "overlap": [
+     "#gearBtn 🎒 Hero 28 ✕ .wx ✕",
+     "#qBtn 📜 Quests 1 ✕ .wrc Double Charge again righ",
+     "#bookBtn 📖 Book 2 ✕ .wrc Double Charge again righ",
+     "#bookBtn 📖 Book 2 ✕ .wrc Nova Explodes when it en",
+     "#mbTab ⚔️ Underworld Games ✕ .wrc Nova Explodes when it en",
+     "#mbTab ⚔️ Underworld Games ✕ .wsbc ⚡ Zap Lightning that jum",
+     "#setBtn ⚙️ Settings ✕ .wsbc ⚡ Zap Lightning that jum",
+     "#setBtn ⚙️ Settings ✕ .wsbc Flame Whirl Flames spin ",
+     ".stplus + ✕ .wsbs 1 🪨 Quake From weapon",
+     ".stplus + ✕ .wsbs 2 Charge",
+     ".stplus + ✕ .wrc Fire Trail Leaves fire p",
+     ".stplus + ✕ .wrc Vortex Pulls foes inward",
+     ".stplus + ✕ .wrc Double Charge again righ",
+     ".stplus + ✕ .wrc Nova Explodes when it en",
+     ".stplus + ✕ .wsbs 3 Flame Whirl"
+    ],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)",
+     "From weapon (10px)",
+     "Leaves fire pools on the way (10px)",
+     "Charge again right away (10px)",
+     "Pulls foes inward (10px)",
+     "Explodes when it ends (10px)"
+    ],
+    "scrollWins": [
+     "panel > wsbgrid 491/192"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 Gear",
+     "🎒 ✕ ✕",
+     "Hero ✕ ✕",
+     "📜 ✕ 💠 Runes",
+     "Settings ✕ Flame Whirl",
+     "Hero level 20 ✕ 📖 Skill Book",
+     "⭐ 19 points ✕ 📖 Skill Book",
+     "Sword · Damage 15– ✕ 1",
+     "Sword · Damage 15– ✕ 💠 Runes",
+     "Strength 0 ✕ 🪨",
+     "Strength 0 ✕ From weapon"
+    ]
+   },
+   "quests": {
+    "file": "n-en-28-quests.png",
+    "note": "יומן קווסטים",
+    "uiPct": 100,
+    "buttons": 6,
+    "small": [],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "qLog 632/258"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "book": {
+    "file": "n-en-29-book.png",
+    "note": "ספר ההרפתקאות",
+    "uiPct": 100,
+    "buttons": 19,
+    "small": [],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)",
+     "0 of 9 (10px)",
+     "0 of 2 (10px)"
+    ],
+    "scrollWins": [
+     "bookWin > bkgrid 817/134"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "💀 ✕ ?",
+     "🛡️ ✕ ?",
+     "👻 ✕ ?",
+     "🗿 ✕ ?",
+     "🌳 ✕ ?",
+     "🦂 ✕ ?",
+     "🧚 ✕ ?",
+     "🦹 ✕ ?",
+     "🪨 ✕ ?"
+    ]
+   },
+   "settings": {
+    "file": "n-en-30-settings.png",
+    "note": "הגדרות",
+    "uiPct": 100,
+    "buttons": 19,
+    "small": [
+     "INPUT  274×32",
+     ".lang 3D 44×28",
+     ".lang 2D 44×28",
+     ".lang Close 62×28",
+     ".lang Normal 72×28",
+     ".lang Far 46×28",
+     ".lang On 44×28",
+     ".lang Off 46×28",
+     ".lang Full 48×28",
+     ".lang Fewer 65×28"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "panel 378/262"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "npc-head": {
+    "file": "n-en-31-npc-head.png",
+    "note": "שיחה עם ראש הכפר",
+    "uiPct": 90,
+    "buttons": 3,
+    "small": [
+     ".qtrk Tracking 73×29"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🏠Enter ✕ 📜 5 more in the q",
+     "🏠 ✕ 📜 5 more in the q"
+    ]
+   },
+   "visit-btn": {
+    "file": "n-en-32-visit-btn.png",
+    "note": "כפתור הביקור בכפר",
+    "uiPct": 10,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 220×38",
+     "#guideMin ▴ 21×38"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Climb to the Frost Ridge 0/1 ·"
+    ],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "visit": {
+    "file": "n-en-33-visit.png",
+    "note": "ביקור אצל חבר",
+    "uiPct": 100,
+    "buttons": 19,
+    "small": [
+     ".resmore +7 44×34",
+     ".visn ×1 40×44",
+     ".visn ×5 43×44"
+    ],
+    "overlap": [
+     "#dBtn 🎁 ✕ .wx ✕"
+    ],
+    "clipped": [
+     "Village Center"
+    ],
+    "tiny": [],
+    "scrollWins": [
+     "visitWin > visside 306/192"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🏡 ✕ Not built yet",
+     "🎁 ✕ ✕"
+    ]
+   },
+   "trade": {
+    "file": "n-en-34-trade.png",
+    "note": "מסחר",
+    "uiPct": 100,
+    "buttons": 27,
+    "small": [
+     ".resmore +7 44×34",
+     ".visn ×1 40×44",
+     ".visn ×5 43×44"
+    ],
+    "overlap": [
+     "#vEnter 🏠 Enter ✕ .vbtn ⚖️ Offer ×1 ⇄ ×1",
+     "#talkBtn 💬 Talk ✕ .vbtn ⚖️ Offer ×1 ⇄ ×1",
+     "#dBtn 🎁 ✕ .wx ✕",
+     ".visr 900 ✕ .visn ×1",
+     ".visr 700 ✕ .visn ×5",
+     ".visr 700 ✕ .visn ×10",
+     ".visr 160 ✕ .visn ×10",
+     ".visr 160 ✕ .visn ×20",
+     ".visr 90 ✕ .visn ×20",
+     ".visr 40 ✕ .visn ×1",
+     ".visr 40 ✕ .vbtn ⚖️ Offer ×1 ⇄ ×1",
+     ".visr 35 ✕ .visn ×5",
+     ".visr 35 ✕ .visn ×10",
+     ".visr 35 ✕ .vbtn ⚖️ Offer ×1 ⇄ ×1",
+     ".visr 6 ✕ .visn ×10"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "tradeWin > visres 102/31"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🏠Enter ✕ ⚖️ Offer ×1⇄×1",
+     "🏠Enter ✕ What you give is s",
+     "🏠 ✕ ⚖️ Offer ×1⇄×1",
+     "🏠 ✕ What you give is s",
+     "💬Talk ✕ ⚖️ Offer ×1⇄×1",
+     "💬Talk ✕ What you give is s",
+     "💬 ✕ ⚖️ Offer ×1⇄×1",
+     "💬 ✕ What you give is s",
+     "🎁 ✕ ✕",
+     "900 ✕ ×1"
+    ]
+   },
+   "trade-pick": {
+    "file": "n-en-35-trade-pick.png",
+    "note": "מסחר: בחירה",
+    "uiPct": 100,
+    "buttons": 27,
+    "small": [
+     ".resmore +7 44×34",
+     ".visn ×1 40×44",
+     ".visn ×5 43×44"
+    ],
+    "overlap": [
+     "#vEnter 🏠 Enter ✕ .vbtn ⚖️ Offer ×1 ⇄ ×1",
+     "#talkBtn 💬 Talk ✕ .vbtn ⚖️ Offer ×1 ⇄ ×1",
+     "#dBtn 🎁 ✕ .wx ✕",
+     ".visr 900 ✕ .visn ×1",
+     ".visr 700 ✕ .visn ×5",
+     ".visr 700 ✕ .visn ×10",
+     ".visr 160 ✕ .visn ×10",
+     ".visr 160 ✕ .visn ×20",
+     ".visr 90 ✕ .visn ×20",
+     ".visr 40 ✕ .visn ×1",
+     ".visr 40 ✕ .vbtn ⚖️ Offer ×1 ⇄ ×1",
+     ".visr 35 ✕ .visn ×5",
+     ".visr 35 ✕ .visn ×10",
+     ".visr 35 ✕ .vbtn ⚖️ Offer ×1 ⇄ ×1",
+     ".visr 6 ✕ .visn ×10"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "tradeWin > visres 102/31"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🏠Enter ✕ ⚖️ Offer ×1⇄×1",
+     "🏠Enter ✕ What you give is s",
+     "🏠 ✕ ⚖️ Offer ×1⇄×1",
+     "🏠 ✕ What you give is s",
+     "💬Talk ✕ ⚖️ Offer ×1⇄×1",
+     "💬Talk ✕ What you give is s",
+     "💬 ✕ ⚖️ Offer ×1⇄×1",
+     "💬 ✕ What you give is s",
+     "🎁 ✕ ✕",
+     "900 ✕ ×1"
+    ]
+   },
+   "world": {
+    "file": "n-en-36-world.png",
+    "note": "העולם, שחקן ברמה 20",
+    "uiPct": 11,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 199×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "worldmap": {
+    "file": "n-en-37-worldmap.png",
+    "note": "מפת העולם",
+    "uiPct": 69,
+    "buttons": 7,
+    "small": [],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-skills": {
+    "file": "n-en-38-world-skills.png",
+    "note": "כפתורי הסקילים בעולם",
+    "uiPct": 11,
+    "buttons": 7,
+    "small": [
+     ".resmore +8 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 199×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-skill-cast": {
+    "file": "n-en-39-world-skill-cast.png",
+    "note": "סקיל באוויר",
+    "uiPct": 11,
+    "buttons": 7,
+    "small": [
+     ".resmore +8 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 199×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-after-skills": {
+    "file": "n-en-40-world-after-skills.png",
+    "note": "אחרי הסקילים",
+    "uiPct": 11,
+    "buttons": 8,
+    "small": [
+     ".resmore +10 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 199×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-lv20-play": {
+    "file": "n-en-41-world-lv20-play.png",
+    "note": "רמה 20: אחרי חצי דקה בעולם",
+    "uiPct": 11,
+    "buttons": 8,
+    "small": [
+     ".resmore +17 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 199×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "arena": {
+    "file": "n-en-42-arena.png",
+    "note": "הזירה (של אוראל)",
+    "uiPct": 8,
+    "buttons": 9,
+    "small": [
+     "#gearBtnRun 🎒 40×28",
+     "#shopBtn 0 52×26"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "0 / 6 (10px)",
+     "125 / 125 (10px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "arena-level": {
+    "file": "n-en-43-arena-level.png",
+    "note": "זירה: בחירת שדרוג",
+    "uiPct": 100,
+    "buttons": 5,
+    "small": [
+     "#gearBtnRun 🎒 40×28"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "0 / 15 (10px)",
+     "125 / 125 (10px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   }
+  },
+  "metrics": {
+   "r3d": {
+    "ready": true,
+    "failed": false
+   },
+   "newPlayer": {
+    "autoPopups": [
+     "npcDlg"
+    ],
+    "goalSec": 5.4,
+    "goalTxt": "Talk to Avner: a quest is waiting",
+    "activeQuests": [
+     "dBones",
+     "dRuns",
+     "dBoss",
+     "dRoom",
+     "aHunter",
+     "aClean",
+     "aSpeed",
+     "aBuilder",
+     "aWanted",
+     "s1Lanterns"
+    ],
+    "worldSec": 145
+   },
+   "frameMs": {
+    "village": 119.4,
+    "world": 132,
+    "world-adv": 118.3,
+    "arena": 29
+   },
+   "firstKillSec": 0.7,
+   "killSec": [
+    0.8,
+    0.7,
+    0.7,
+    1.8,
+    1.8
+   ],
+   "freePlay": {
+    "sec": 90,
+    "moments": 45,
+    "byKind": {
+     "celebrate": 24,
+     "item": 3,
+     "banner": 15,
+     "choice": 3
+    },
+    "longestQuietSec": 11.5,
+    "items": [
+     "leafOrb",
+     "boneCharm",
+     "ironSword#hunt"
+    ]
+   },
+   "dieSec": 30.2,
+   "trade": {
+    "visBtn": true,
+    "tradeBtn": true
+   },
+   "skills": {
+    "buttons": [
+     {
+      "id": "quake",
+      "ready": true,
+      "w": 84
+     },
+     {
+      "id": "charge",
+      "ready": true,
+      "w": 66
+     },
+     {
+      "id": "whirl",
+      "ready": true,
+      "w": 66
+     }
+    ]
+   },
+   "lv20play": {
+    "sec": 60,
+    "coins": 191,
+    "kills": 62,
+    "newKinds": 13,
+    "coinsNow": 4407
+   },
+   "arena": {
+    "firstLevelSec": 17.5,
+    "popsPerMin": 1
+   },
+   "moments": 76
+  },
+  "errors": [],
+  "fail": [
+   "לא הצלחתי לגעת ב-#vEnter (מכוסה או מחוץ למסך)"
+  ],
+  "canvasHebrew": {}
+ },
+ "n-he": {
+  "stops": {
+   "lv20-auto-ovWelcome": {
+    "file": "n-he-01-lv20-auto-ovWelcome.png",
+    "note": "נפתח לבד לשחקן ברמה 20",
+    "uiPct": 100,
+    "buttons": 6,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     "#dBtn 🎁 ✕ .wx ✕"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "welWin > wellist 150/134"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🎁 ✕ ✕"
+    ]
+   },
+   "village": {
+    "file": "n-he-02-village.png",
+    "note": "הכפר, שחקן ברמה 20",
+    "uiPct": 8,
+    "buttons": 6,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 ·  215×38",
+     "#guideMin ▴ 26×38"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "b-forge": {
+    "file": "n-he-03-b-forge.png",
+    "note": "חלון forge",
+    "uiPct": 80,
+    "buttons": 16,
+    "small": [
+     ".resmore +7 44×34",
+     ".vbtn ✨ לשדרג ציוד 156×40"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁",
+     ".vbtn ✨ לשדרג ציוד ✕ #visBtn 🏡"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwbody 987/174"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "✨ לשדרג ציוד ✕ 🏡"
+    ]
+   },
+   "b-forge-up": {
+    "file": "n-he-04-b-forge-up.png",
+    "note": "חלון forge לשונית up",
+    "uiPct": 80,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "שדרוג מרמה 4 לרמה  ✕ 🏡"
+    ]
+   },
+   "b-market": {
+    "file": "n-he-05-b-market.png",
+    "note": "חלון market",
+    "uiPct": 80,
+    "buttons": 19,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwgrid 222/126"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁"
+    ]
+   },
+   "b-market-up": {
+    "file": "n-he-06-b-market-up.png",
+    "note": "חלון market לשונית up",
+    "uiPct": 80,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "שדרוג מרמה 3 לרמה  ✕ 🏡"
+    ]
+   },
+   "b-stash": {
+    "file": "n-he-07-b-stash.png",
+    "note": "חלון stash",
+    "uiPct": 80,
+    "buttons": 18,
+    "small": [
+     ".resmore +7 44×34",
+     ".vbtn הכל למחסן 69×40",
+     ".vbtn הכל לתרמיל 74×40"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #visBtn 🏡",
+     ".wx ✕ ✕ #dBtn 🎁",
+     ".vbtn הכל לתרמיל ✕ #visBtn 🏡"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwgrid 446/121"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "הכל לתרמיל ✕ 🏡"
+    ]
+   },
+   "b-stash-up": {
+    "file": "n-he-08-b-stash-up.png",
+    "note": "חלון stash לשונית up",
+    "uiPct": 80,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #visBtn 🏡",
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwbody 191/169"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "שדרוג מרמה 3 לרמה  ✕ 🏡"
+    ]
+   },
+   "b-mine": {
+    "file": "n-he-09-b-mine.png",
+    "note": "חלון mine",
+    "uiPct": 80,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "מייצר 55🪨 8🟤 6⚫  ✕ 🏡"
+    ]
+   },
+   "b-mine-up": {
+    "file": "n-he-10-b-mine-up.png",
+    "note": "חלון mine לשונית up",
+    "uiPct": 80,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwbody 191/174"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "שדרוג מרמה 3 לרמה  ✕ 🏡"
+    ]
+   },
+   "b-center": {
+    "file": "n-he-11-b-center.png",
+    "note": "חלון center",
+    "uiPct": 80,
+    "buttons": 5,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "שדרוג מרמה 4 לרמה  ✕ 🏡"
+    ]
+   },
+   "menu": {
+    "file": "n-he-12-menu.png",
+    "note": "☰: התפריט נפתח",
+    "uiPct": 100,
+    "buttons": 43,
+    "small": [
+     "BUTTON 🎒 ציוד 64×34",
+     "BUTTON 🧍 דמות 28 71×34",
+     "BUTTON הכל 43×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".vbtn ⬆ הכי טוב 113×34",
+     ".vbtn 🪙 למכור 95×34",
+     ".gtile ⚔️ 42×42",
+     ".gtile 💍 42×42"
+    ],
+    "overlap": [
+     ".gtile ×2 ▲ ✕ .vbtn ⬆ הכי טוב",
+     ".gtile ▲ ✕ .vbtn ⬆ הכי טוב",
+     ".gtile ▲ ✕ .vbtn 🪙 למכור"
+    ],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "panel > gItems 214/168"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 ציוד",
+     "🟤 ✕ סטטים",
+     "🟤 ✕ ❤️",
+     "🟤 ✕ חיים",
+     "🦴 ✕ סטטים",
+     "🦴 ✕ חיים",
+     "♦️ ✕ סטטים",
+     "♦️ ✕ חיים",
+     "×2 ✕ ⬆ הכי טוב",
+     "▲ ✕ ⬆ הכי טוב"
+    ]
+   },
+   "gear": {
+    "file": "n-he-13-gear.png",
+    "note": "ציוד ותרמיל",
+    "uiPct": 100,
+    "buttons": 43,
+    "small": [
+     "BUTTON 🎒 ציוד 64×34",
+     "BUTTON 🧍 דמות 28 71×34",
+     "BUTTON הכל 43×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".vbtn ⬆ הכי טוב 113×34",
+     ".vbtn 🪙 למכור 95×34",
+     ".gtile ⚔️ 42×42",
+     ".gtile 💍 42×42"
+    ],
+    "overlap": [
+     ".gtile ×2 ▲ ✕ .vbtn ⬆ הכי טוב",
+     ".gtile ▲ ✕ .vbtn ⬆ הכי טוב",
+     ".gtile ▲ ✕ .vbtn 🪙 למכור"
+    ],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "panel > gItems 214/168"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 ציוד",
+     "🟤 ✕ סטטים",
+     "🟤 ✕ ❤️",
+     "🟤 ✕ חיים",
+     "🦴 ✕ סטטים",
+     "🦴 ✕ חיים",
+     "♦️ ✕ סטטים",
+     "♦️ ✕ חיים",
+     "×2 ✕ ⬆ הכי טוב",
+     "▲ ✕ ⬆ הכי טוב"
+    ]
+   },
+   "gear-item": {
+    "file": "n-he-14-gear-item.png",
+    "note": "ציוד: פריט נבחר",
+    "uiPct": 100,
+    "buttons": 46,
+    "small": [
+     "BUTTON 🎒 ציוד 64×34",
+     "BUTTON 🧍 דמות 28 71×34",
+     "BUTTON הכל 43×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".vbtn ⬆ הכי טוב 113×34",
+     ".vbtn 🪙 למכור 95×34",
+     ".gtile ⚔️ 42×42",
+     ".gtile 💍 42×42"
+    ],
+    "overlap": [
+     ".gtile ×2 ▲ ✕ .vbtn ⬆ הכי טוב",
+     ".gtile ▲ ✕ .vbtn ⬆ הכי טוב",
+     ".gtile ▲ ✕ .vbtn 🪙 למכור"
+    ],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "panel > gItems 214/168"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 ציוד",
+     "🟤 ✕ 🌟",
+     "🦴 ✕ 🌟",
+     "🦴 ✕ מטה הכוכבים",
+     "♦️ ✕ מטה הכוכבים",
+     "×2 ✕ ⬆ הכי טוב",
+     "▲ ✕ ⬆ הכי טוב",
+     "▲ ✕ 🪙 למכור",
+     "▲ +0.6 ריפוי בשניי ✕ ללבוש",
+     "▲ +0.6 ריפוי בשניי ✕ 🔓"
+    ]
+   },
+   "gear-sell": {
+    "file": "n-he-15-gear-sell.png",
+    "note": "ציוד: מכירה",
+    "uiPct": 100,
+    "buttons": 44,
+    "small": [
+     "BUTTON 🎒 ציוד 64×34",
+     "BUTTON 🧍 דמות 28 71×34",
+     "BUTTON הכל 43×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".gtile ⚔️ 42×42",
+     ".gtile 💍 42×42",
+     ".gtile 👢 42×42",
+     ".gtile ✨ 35×35"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "panel > gItems 214/207"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 ציוד",
+     "🟤 ✕ בחר מה למכור",
+     "🟤 ✕ נגיעה בפריט בתרמיל",
+     "🦴 ✕ בחר מה למכור",
+     "🦴 ✕ נגיעה בפריט בתרמיל",
+     "♦️ ✕ בחר מה למכור",
+     "♦️ ✕ נגיעה בפריט בתרמיל"
+    ]
+   },
+   "gear-char": {
+    "file": "n-he-16-gear-char.png",
+    "note": "ציוד: הדמות והסטטים",
+    "uiPct": 100,
+    "buttons": 18,
+    "small": [
+     "BUTTON 🎒 ציוד 64×34",
+     "BUTTON 🧍 דמות 28 71×34",
+     ".stplus + 38×38"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 ציוד",
+     "הבא: ✕ · רמה 40: 🎖️"
+    ]
+   },
+   "skillbook": {
+    "file": "n-he-17-skillbook.png",
+    "note": "ספר הסקילים והרונות",
+    "uiPct": 100,
+    "buttons": 32,
+    "small": [
+     "BUTTON 🎒 ציוד 64×34",
+     "BUTTON 🧍 דמות 28 71×34",
+     ".stplus + 38×38",
+     ".wrc שובל אש משאיר שלוליות אש 213×40",
+     ".wrc פעמיים אפשר להסתער שוב מ 213×40",
+     ".wrc שואבת מושכת אויבים פנימה 202×40",
+     ".wrc פיצוץ מתפוצצת כשנגמרת 202×40"
+    ],
+    "overlap": [
+     "#gearBtn 🎒 דמות 28 ✕ .wx ✕",
+     "#qBtn 📜 קווסטים 1 ✕ .wrc פעמיים אפשר להסתער שוב מ",
+     "#bookBtn 📖 ספר 2 ✕ .wrc פעמיים אפשר להסתער שוב מ",
+     "#bookBtn 📖 ספר 2 ✕ .wrc פיצוץ מתפוצצת כשנגמרת",
+     "#mbTab ⚔️ משחקי השאול ✕ .wrc פיצוץ מתפוצצת כשנגמרת",
+     "#mbTab ⚔️ משחקי השאול ✕ .wsbc ⚡ פגיעת ברק ברק שקופץ בי",
+     "#setBtn ⚙️ הגדרות ✕ .wsbc ⚡ פגיעת ברק ברק שקופץ בי",
+     "#setBtn ⚙️ הגדרות ✕ .wsbc מערבולת להבות להבות סביב",
+     ".stplus + ✕ .wsbs 1 🪨 רקיעת אדמה מהנשק",
+     ".stplus + ✕ .wsbs 2 הסתערות",
+     ".stplus + ✕ .wrc שובל אש משאיר שלוליות אש",
+     ".stplus + ✕ .wrc פעמיים אפשר להסתער שוב מ",
+     ".stplus + ✕ .wsbs 3 מערבולת להבות",
+     ".stplus + ✕ .wsbc הסתערות מזנק ופוגע בכל מ",
+     ".stplus + ✕ .wrc שואבת מושכת אויבים פנימה"
+    ],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)",
+     "מהנשק (10px)",
+     "משאיר שלוליות אש בדרך (10px)",
+     "אפשר להסתער שוב מיד (10px)",
+     "מושכת אויבים פנימה (10px)",
+     "מתפוצצת כשנגמרת (10px)"
+    ],
+    "scrollWins": [
+     "panel > wsbgrid 491/192"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 ציוד",
+     "🎒 ✕ ✕",
+     "דמות ✕ ✕",
+     "📜 ✕ 💠 רונות",
+     "רמת דמות 20 ✕ 📖 ספר הסקילים",
+     "⭐ 19 נקודות ✕ 📖 ספר הסקילים",
+     "הבא: ✕ · רמה 40: 🎖️",
+     "חרב · נזק 15–25 ✕ 1",
+     "חרב · נזק 15–25 ✕ רקיעת אדמה",
+     "חרב · נזק 15–25 ✕ 💠 רונות"
+    ]
+   },
+   "quests": {
+    "file": "n-he-18-quests.png",
+    "note": "יומן קווסטים",
+    "uiPct": 100,
+    "buttons": 6,
+    "small": [],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "qLog 615/258"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "book": {
+    "file": "n-he-19-book.png",
+    "note": "ספר ההרפתקאות",
+    "uiPct": 100,
+    "buttons": 19,
+    "small": [],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)",
+     "0 מתוך 9 (10px)",
+     "0 מתוך 2 (10px)"
+    ],
+    "scrollWins": [
+     "bookWin > bkgrid 817/134"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "💀 ✕ ?",
+     "🛡️ ✕ ?",
+     "👻 ✕ ?",
+     "🗿 ✕ ?",
+     "🌳 ✕ ?",
+     "🦂 ✕ ?",
+     "🧚 ✕ ?",
+     "🦹 ✕ ?",
+     "🪨 ✕ ?"
+    ]
+   },
+   "settings": {
+    "file": "n-he-20-settings.png",
+    "note": "הגדרות",
+    "uiPct": 100,
+    "buttons": 19,
+    "small": [
+     "INPUT  274×32",
+     ".lang תלת-ממד 84×28",
+     ".lang דו-ממד 70×28",
+     ".lang קרוב 54×28",
+     ".lang רגיל 50×28",
+     ".lang רחוק 55×28",
+     ".lang דלוק 53×28",
+     ".lang כבוי 49×28",
+     ".lang מלא 52×28",
+     ".lang פחות 57×28"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "panel 378/262"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "npc-head": {
+    "file": "n-he-21-npc-head.png",
+    "note": "שיחה עם ראש הכפר",
+    "uiPct": 90,
+    "buttons": 3,
+    "small": [
+     ".qtrk במעקב 61×29"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "visit-btn": {
+    "file": "n-he-22-visit-btn.png",
+    "note": "כפתור הביקור בכפר",
+    "uiPct": 10,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 ·  215×38",
+     "#guideMin ▴ 26×38"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "visit": {
+    "file": "n-he-23-visit.png",
+    "note": "ביקור אצל חבר",
+    "uiPct": 100,
+    "buttons": 19,
+    "small": [
+     ".resmore +7 44×34",
+     ".visn ×1 40×44",
+     ".visn ×5 43×44"
+    ],
+    "overlap": [
+     "#dBtn 🎁 ✕ .wx ✕"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "visitWin > visside 307/192"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🏡 ✕ עוד לא נבנה",
+     "🎁 ✕ ✕"
+    ]
+   },
+   "trade": {
+    "file": "n-he-24-trade.png",
+    "note": "מסחר",
+    "uiPct": 100,
+    "buttons": 27,
+    "small": [
+     ".resmore +7 44×34",
+     ".visn ×1 40×44",
+     ".visn ×5 43×44"
+    ],
+    "overlap": [
+     "#talkBtn 💬 לדבר ✕ .vbtn ⚖️ להציע ×1 ⇄ ×1",
+     "#dBtn 🎁 ✕ .wx ✕",
+     ".visr 900 ✕ .visn ×1",
+     ".visr 700 ✕ .visn ×5",
+     ".visr 700 ✕ .visn ×10",
+     ".visr 160 ✕ .visn ×10",
+     ".visr 160 ✕ .visn ×20",
+     ".visr 90 ✕ .visn ×20",
+     ".visr 40 ✕ .visn ×1",
+     ".visr 40 ✕ .vbtn ⚖️ להציע ×1 ⇄ ×1",
+     ".visr 35 ✕ .visn ×5",
+     ".visr 35 ✕ .visn ×10",
+     ".visr 35 ✕ .vbtn ⚖️ להציע ×1 ⇄ ×1",
+     ".visr 6 ✕ .visn ×10",
+     ".visr 6 ✕ .visn ×20"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "tradeWin > visres 102/31"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "💬לדבר ✕ ⚖️ להציע ×1⇄×1",
+     "💬לדבר ✕ מה שנותנים נשמר בצ",
+     "💬 ✕ ⚖️ להציע ×1⇄×1",
+     "💬 ✕ מה שנותנים נשמר בצ",
+     "🎁 ✕ ✕",
+     "900 ✕ ×1",
+     "700 ✕ ×5",
+     "160 ✕ ×10",
+     "90 ✕ ×20",
+     "300 ✕ ×1"
+    ]
+   },
+   "trade-pick": {
+    "file": "n-he-25-trade-pick.png",
+    "note": "מסחר: בחירה",
+    "uiPct": 100,
+    "buttons": 27,
+    "small": [
+     ".resmore +7 44×34",
+     ".visn ×1 40×44",
+     ".visn ×5 43×44"
+    ],
+    "overlap": [
+     "#talkBtn 💬 לדבר ✕ .vbtn ⚖️ להציע ×1 ⇄ ×1",
+     "#dBtn 🎁 ✕ .wx ✕",
+     ".visr 900 ✕ .visn ×1",
+     ".visr 700 ✕ .visn ×5",
+     ".visr 700 ✕ .visn ×10",
+     ".visr 160 ✕ .visn ×10",
+     ".visr 160 ✕ .visn ×20",
+     ".visr 90 ✕ .visn ×20",
+     ".visr 40 ✕ .visn ×1",
+     ".visr 40 ✕ .vbtn ⚖️ להציע ×1 ⇄ ×1",
+     ".visr 35 ✕ .visn ×5",
+     ".visr 35 ✕ .visn ×10",
+     ".visr 35 ✕ .vbtn ⚖️ להציע ×1 ⇄ ×1",
+     ".visr 6 ✕ .visn ×10",
+     ".visr 6 ✕ .visn ×20"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "tradeWin > visres 102/31"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "💬לדבר ✕ ⚖️ להציע ×1⇄×1",
+     "💬לדבר ✕ מה שנותנים נשמר בצ",
+     "💬 ✕ ⚖️ להציע ×1⇄×1",
+     "💬 ✕ מה שנותנים נשמר בצ",
+     "🎁 ✕ ✕",
+     "900 ✕ ×1",
+     "700 ✕ ×5",
+     "160 ✕ ×10",
+     "90 ✕ ×20",
+     "300 ✕ ×1"
+    ]
+   },
+   "world": {
+    "file": "n-he-26-world.png",
+    "note": "העולם, שחקן ברמה 20",
+    "uiPct": 10,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 164×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "worldmap": {
+    "file": "n-he-27-worldmap.png",
+    "note": "מפת העולם",
+    "uiPct": 66,
+    "buttons": 7,
+    "small": [],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-skills": {
+    "file": "n-he-28-world-skills.png",
+    "note": "כפתורי הסקילים בעולם",
+    "uiPct": 10,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 164×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-skill-cast": {
+    "file": "n-he-29-world-skill-cast.png",
+    "note": "סקיל באוויר",
+    "uiPct": 10,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 164×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-after-skills": {
+    "file": "n-he-30-world-after-skills.png",
+    "note": "אחרי הסקילים",
+    "uiPct": 10,
+    "buttons": 8,
+    "small": [
+     ".resmore +11 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 164×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-lv20-play": {
+    "file": "n-he-31-world-lv20-play.png",
+    "note": "רמה 20: אחרי חצי דקה בעולם",
+    "uiPct": 10,
+    "buttons": 8,
+    "small": [
+     ".resmore +18 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 164×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   }
+  },
+  "metrics": {
+   "r3d": {
+    "ready": true,
+    "failed": false
+   },
+   "trade": {
+    "visBtn": true,
+    "tradeBtn": true
+   },
+   "skills": {
+    "buttons": [
+     {
+      "id": "quake",
+      "ready": true,
+      "w": 84
+     },
+     {
+      "id": "charge",
+      "ready": true,
+      "w": 66
+     },
+     {
+      "id": "whirl",
+      "ready": true,
+      "w": 66
+     }
+    ]
+   },
+   "lv20play": {
+    "sec": 60,
+    "coins": 188,
+    "kills": 42,
+    "newKinds": 11,
+    "coinsNow": 4400
+   },
+   "frameMs": {
+    "world-adv": 241.9
+   },
+   "moments": 72
+  },
+  "errors": [],
+  "fail": [],
+  "canvasHebrew": {}
+ },
+ "s-en": {
+  "stops": {
+   "lv20-auto-ovWelcome": {
+    "file": "s-en-01-lv20-auto-ovWelcome.png",
+    "note": "נפתח לבד לשחקן ברמה 20",
+    "uiPct": 100,
+    "buttons": 6,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     "#dBtn 🎁 ✕ .wx ✕"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🎁 ✕ ✕"
+    ]
+   },
+   "village": {
+    "file": "s-en-02-village.png",
+    "note": "הכפר, שחקן ברמה 20",
+    "uiPct": 7,
+    "buttons": 6,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 244×38",
+     "#guideMin ▴ 24×38"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "b-forge": {
+    "file": "s-en-03-b-forge.png",
+    "note": "חלון forge",
+    "uiPct": 79,
+    "buttons": 16,
+    "small": [
+     ".resmore +7 44×34",
+     ".vbtn ✨ Upgrade gear 178×40"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁",
+     ".vbtn ✨ Upgrade gear ✕ #visBtn 🏡"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwbody 987/214"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "✨ Upgrade gear ✕ 🏡"
+    ]
+   },
+   "b-forge-up": {
+    "file": "s-en-04-b-forge-up.png",
+    "note": "חלון forge לשונית up",
+    "uiPct": 79,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "Upgrade: level 4 → ✕ 🏡"
+    ]
+   },
+   "b-market": {
+    "file": "s-en-05-b-market.png",
+    "note": "חלון market",
+    "uiPct": 79,
+    "buttons": 23,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwgrid 222/166"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁"
+    ]
+   },
+   "b-market-up": {
+    "file": "s-en-06-b-market-up.png",
+    "note": "חלון market לשונית up",
+    "uiPct": 79,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "Upgrade: level 3 → ✕ 🏡"
+    ]
+   },
+   "b-stash": {
+    "file": "s-en-07-b-stash.png",
+    "note": "חלון stash",
+    "uiPct": 79,
+    "buttons": 21,
+    "small": [
+     ".resmore +7 44×34",
+     ".vbtn All to stash 76×40",
+     ".vbtn All to bag 64×40"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #visBtn 🏡",
+     ".wx ✕ ✕ #dBtn 🎁",
+     ".vbtn All to bag ✕ #visBtn 🏡"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwgrid 446/161"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "All to bag ✕ 🏡"
+    ]
+   },
+   "b-stash-up": {
+    "file": "s-en-08-b-stash-up.png",
+    "note": "חלון stash לשונית up",
+    "uiPct": 79,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #visBtn 🏡",
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "Upgrade: level 3 → ✕ 🏡"
+    ]
+   },
+   "b-mine": {
+    "file": "s-en-09-b-mine.png",
+    "note": "חלון mine",
+    "uiPct": 79,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "Makes 55🪨 8🟤 6⚫  ✕ 🏡"
+    ]
+   },
+   "b-mine-up": {
+    "file": "s-en-10-b-mine-up.png",
+    "note": "חלון mine לשונית up",
+    "uiPct": 79,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "Upgrade: level 3 → ✕ 🏡"
+    ]
+   },
+   "b-center": {
+    "file": "s-en-11-b-center.png",
+    "note": "חלון center",
+    "uiPct": 79,
+    "buttons": 5,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "Upgrade: level 4 → ✕ 🏡"
+    ]
+   },
+   "menu": {
+    "file": "s-en-12-menu.png",
+    "note": "☰: התפריט נפתח",
+    "uiPct": 100,
+    "buttons": 43,
+    "small": [
+     "BUTTON 🎒 Gear 72×34",
+     "BUTTON 🧍 Character 28 105×34",
+     "BUTTON All 37×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".vbtn ⬆ Best 129×34",
+     ".vbtn 🪙 Sell 111×34",
+     ".gtile ✨ 39×39"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 Gear",
+     "🦴 ✕ Stats",
+     "🦴 ✕ ❤️",
+     "🦴 ✕ Health",
+     "♦️ ✕ Stats",
+     "♦️ ✕ Health"
+    ]
+   },
+   "gear": {
+    "file": "s-en-13-gear.png",
+    "note": "ציוד ותרמיל",
+    "uiPct": 100,
+    "buttons": 43,
+    "small": [
+     "BUTTON 🎒 Gear 72×34",
+     "BUTTON 🧍 Character 28 105×34",
+     "BUTTON All 37×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".vbtn ⬆ Best 129×34",
+     ".vbtn 🪙 Sell 111×34",
+     ".gtile ✨ 39×39"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 Gear",
+     "🦴 ✕ Stats",
+     "🦴 ✕ ❤️",
+     "🦴 ✕ Health",
+     "♦️ ✕ Stats",
+     "♦️ ✕ Health"
+    ]
+   },
+   "gear-item": {
+    "file": "s-en-14-gear-item.png",
+    "note": "ציוד: פריט נבחר",
+    "uiPct": 100,
+    "buttons": 46,
+    "small": [
+     "BUTTON 🎒 Gear 72×34",
+     "BUTTON 🧍 Character 28 105×34",
+     "BUTTON All 37×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".vbtn ⬆ Best 129×34",
+     ".vbtn 🪙 Sell 111×34",
+     ".gtile ✨ 39×39",
+     ".gdx ✕ 34×34"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 Gear",
+     "🦴 ✕ 🌟",
+     "♦️ ✕ 🌟",
+     "♦️ ✕ Star Staff",
+     "♦️ ✕ Legendary · Weapon"
+    ]
+   },
+   "gear-sell": {
+    "file": "s-en-15-gear-sell.png",
+    "note": "ציוד: מכירה",
+    "uiPct": 100,
+    "buttons": 44,
+    "small": [
+     "BUTTON 🎒 Gear 72×34",
+     "BUTTON 🧍 Character 28 105×34",
+     "BUTTON All 37×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".gtile ✨ 39×39",
+     ".vbtn Sell 0 · 0 🪙 189×36",
+     ".vbtn Pick weak 91×36",
+     ".vbtn Cancel 91×36"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 Gear",
+     "🦴 ✕ Pick what to sell",
+     "🦴 ✕ Tap items in the b",
+     "♦️ ✕ Pick what to sell",
+     "♦️ ✕ Tap items in the b"
+    ]
+   },
+   "gear-char": {
+    "file": "s-en-16-gear-char.png",
+    "note": "ציוד: הדמות והסטטים",
+    "uiPct": 100,
+    "buttons": 18,
+    "small": [
+     "BUTTON 🎒 Gear 72×34",
+     "BUTTON 🧍 Character 28 105×34",
+     ".stplus + 38×38"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 Gear"
+    ]
+   },
+   "skillbook": {
+    "file": "s-en-17-skillbook.png",
+    "note": "ספר הסקילים והרונות",
+    "uiPct": 100,
+    "buttons": 38,
+    "small": [
+     "BUTTON 🎒 Gear 72×34",
+     "BUTTON 🧍 Character 28 105×34",
+     ".stplus + 38×38"
+    ],
+    "overlap": [
+     "#gearBtn 🎒 Hero 28 ✕ .wx ✕",
+     "#qBtn 📜 Quests 1 ✕ .wrc Nova Explodes when it en",
+     "#bookBtn 📖 Book 2 ✕ .wrc Nova Explodes when it en",
+     "#bookBtn 📖 Book 2 ✕ .wsbc 🌊 Splash A wide wave th",
+     "#mbTab ⚔️ Underworld Games ✕ .wsbc 🌊 Splash A wide wave th",
+     "#mbTab ⚔️ Underworld Games ✕ .wsbc Ice Armor Brief immunity",
+     "#setBtn ⚙️ Settings ✕ .wsbc Ice Armor Brief immunity",
+     "#setBtn ⚙️ Settings ✕ .wsbc Water Spirit A spirit sh",
+     ".stplus + ✕ .wrc Double Charge again righ",
+     ".stplus + ✕ .wrc Vortex Pulls foes inward",
+     ".stplus + ✕ .wrc Nova Explodes when it en",
+     ".stplus + ✕ .wsbc Charge Dash through foes",
+     ".stplus + ✕ .wsbc ⚡ Zap Lightning that jum",
+     ".stplus + ✕ .wsbc 🌊 Splash A wide wave th",
+     ".vbtn Build 2 ✕ .wsbc 🔥 Flame Burst A strong "
+    ],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)",
+     "From weapon (10px)",
+     "Leaves fire pools on the way (10px)",
+     "Charge again right away (10px)",
+     "Pulls foes inward (10px)",
+     "Explodes when it ends (10px)"
+    ],
+    "scrollWins": [
+     "panel > wsbgrid 349/232"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 Gear",
+     "🎒 ✕ ✕",
+     "28 ✕ ✕",
+     "📜 ✕ 💠 Runes",
+     "1 ✕ 💠 Runes",
+     "2 ✕ Explodes when it e",
+     "Underworld Games ✕ Ice Armor",
+     "Settings ✕ Water Spirit",
+     "Hero level 20 ✕ 📖 Skill Book",
+     "⭐ 19 points ✕ 📖 Skill Book"
+    ]
+   },
+   "quests": {
+    "file": "s-en-18-quests.png",
+    "note": "יומן קווסטים",
+    "uiPct": 100,
+    "buttons": 6,
+    "small": [],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "qLog 632/292"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "book": {
+    "file": "s-en-19-book.png",
+    "note": "ספר ההרפתקאות",
+    "uiPct": 100,
+    "buttons": 21,
+    "small": [],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)",
+     "0 of 9 (10px)",
+     "0 of 2 (10px)"
+    ],
+    "scrollWins": [
+     "bookWin > bkgrid 785/168"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "💀 ✕ ?",
+     "🛡️ ✕ ?",
+     "👻 ✕ ?",
+     "🗿 ✕ ?",
+     "🌳 ✕ ?",
+     "🦂 ✕ ?",
+     "🧚 ✕ ?",
+     "🦹 ✕ ?",
+     "🪨 ✕ ?",
+     "❔ ✕ ?"
+    ]
+   },
+   "settings": {
+    "file": "s-en-20-settings.png",
+    "note": "הגדרות",
+    "uiPct": 100,
+    "buttons": 20,
+    "small": [
+     "INPUT  274×32",
+     ".lang 3D 44×28",
+     ".lang 2D 44×28",
+     ".lang Close 62×28",
+     ".lang Normal 72×28",
+     ".lang Far 46×28",
+     ".lang On 44×28",
+     ".lang Off 46×28",
+     ".lang Full 48×28",
+     ".lang Fewer 65×28",
+     "#bugBtn 🐞 Report a bug 274×28"
+    ],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "panel 378/302"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "npc-head": {
+    "file": "s-en-21-npc-head.png",
+    "note": "שיחה עם ראש הכפר",
+    "uiPct": 77,
+    "buttons": 3,
+    "small": [
+     ".qtrk Tracking 73×29"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "visit-btn": {
+    "file": "s-en-22-visit-btn.png",
+    "note": "כפתור הביקור בכפר",
+    "uiPct": 9,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 244×38",
+     "#guideMin ▴ 24×38"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "visit": {
+    "file": "s-en-23-visit.png",
+    "note": "ביקור אצל חבר",
+    "uiPct": 100,
+    "buttons": 21,
+    "small": [
+     ".resmore +7 44×34",
+     ".visn ×1 40×44",
+     ".visn ×5 43×44"
+    ],
+    "overlap": [
+     "#vEnter 🏠 Enter ✕ .vbtn 🎁 Leave ×1 Coins",
+     "#talkBtn 💬 Talk ✕ .vbtn 🎁 Leave ×1 Coins",
+     "#dBtn 🎁 ✕ .wx ✕"
+    ],
+    "clipped": [
+     "Village Center"
+    ],
+    "tiny": [],
+    "scrollWins": [
+     "visitWin > visside 252/232"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🏠Enter ✕ 🎁 Leave ×1 Coins",
+     "🏠 ✕ 🎁 Leave ×1 Coins",
+     "💬Talk ✕ 🎁 Leave ×1 Coins",
+     "💬 ✕ 🎁 Leave ×1 Coins",
+     "🏡 ✕ Not built yet",
+     "🎁 ✕ ✕"
+    ]
+   },
+   "trade": {
+    "file": "s-en-24-trade.png",
+    "note": "מסחר",
+    "uiPct": 100,
+    "buttons": 27,
+    "small": [
+     ".resmore +7 44×34",
+     ".visn ×1 40×44",
+     ".visn ×5 43×44"
+    ],
+    "overlap": [
+     "#vEnter 🏠 Enter ✕ .vbtn ⚖️ Offer ×1 ⇄ ×1",
+     "#talkBtn 💬 Talk ✕ .vbtn ⚖️ Offer ×1 ⇄ ×1",
+     "#dBtn 🎁 ✕ .wx ✕",
+     ".visr 35 ✕ .visn ×1",
+     ".visr 6 ✕ .visn ×5",
+     ".visr 6 ✕ .visn ×10"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "tradeWin > visres 102/71"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🏠Enter ✕ ⚖️ Offer ×1⇄×1",
+     "🏠Enter ✕ What you give is s",
+     "🏠 ✕ ⚖️ Offer ×1⇄×1",
+     "🏠 ✕ What you give is s",
+     "💬Talk ✕ ⚖️ Offer ×1⇄×1",
+     "💬Talk ✕ What you give is s",
+     "💬 ✕ ⚖️ Offer ×1⇄×1",
+     "💬 ✕ What you give is s",
+     "🎁 ✕ ✕",
+     "35 ✕ ×1"
+    ]
+   },
+   "trade-pick": {
+    "file": "s-en-25-trade-pick.png",
+    "note": "מסחר: בחירה",
+    "uiPct": 100,
+    "buttons": 27,
+    "small": [
+     ".resmore +7 44×34",
+     ".visn ×1 40×44",
+     ".visn ×5 43×44"
+    ],
+    "overlap": [
+     "#vEnter 🏠 Enter ✕ .vbtn ⚖️ Offer ×1 ⇄ ×1",
+     "#talkBtn 💬 Talk ✕ .vbtn ⚖️ Offer ×1 ⇄ ×1",
+     "#dBtn 🎁 ✕ .wx ✕",
+     ".visr 35 ✕ .visn ×1",
+     ".visr 6 ✕ .visn ×5",
+     ".visr 6 ✕ .visn ×10"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "tradeWin > visres 102/71"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🏠Enter ✕ ⚖️ Offer ×1⇄×1",
+     "🏠Enter ✕ What you give is s",
+     "🏠 ✕ ⚖️ Offer ×1⇄×1",
+     "🏠 ✕ What you give is s",
+     "💬Talk ✕ ⚖️ Offer ×1⇄×1",
+     "💬Talk ✕ What you give is s",
+     "💬 ✕ ⚖️ Offer ×1⇄×1",
+     "💬 ✕ What you give is s",
+     "🎁 ✕ ✕",
+     "35 ✕ ×1"
+    ]
+   },
+   "world": {
+    "file": "s-en-26-world.png",
+    "note": "העולם, שחקן ברמה 20",
+    "uiPct": 9,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 199×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "worldmap": {
+    "file": "s-en-27-worldmap.png",
+    "note": "מפת העולם",
+    "uiPct": 63,
+    "buttons": 7,
+    "small": [],
+    "overlap": [],
+    "clipped": [
+     "Underworld Games (יוצא מהמסך)"
+    ],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-skills": {
+    "file": "s-en-28-world-skills.png",
+    "note": "כפתורי הסקילים בעולם",
+    "uiPct": 9,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 199×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-skill-cast": {
+    "file": "s-en-29-world-skill-cast.png",
+    "note": "סקיל באוויר",
+    "uiPct": 9,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 199×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-after-skills": {
+    "file": "s-en-30-world-after-skills.png",
+    "note": "אחרי הסקילים",
+    "uiPct": 9,
+    "buttons": 8,
+    "small": [
+     ".resmore +8 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 199×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-lv20-play": {
+    "file": "s-en-31-world-lv20-play.png",
+    "note": "רמה 20: אחרי חצי דקה בעולם",
+    "uiPct": 9,
+    "buttons": 8,
+    "small": [
+     ".resmore +14 44×34",
+     "#guideMain ⭐ Climb to the Frost Rid 199×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   }
+  },
+  "metrics": {
+   "r3d": {
+    "ready": true,
+    "failed": false
+   },
+   "trade": {
+    "visBtn": true,
+    "tradeBtn": true
+   },
+   "skills": {
+    "buttons": [
+     {
+      "id": "quake",
+      "ready": true,
+      "w": 84
+     },
+     {
+      "id": "charge",
+      "ready": true,
+      "w": 66
+     },
+     {
+      "id": "whirl",
+      "ready": true,
+      "w": 66
+     }
+    ]
+   },
+   "lv20play": {
+    "sec": 60,
+    "coins": 176,
+    "kills": 55,
+    "newKinds": 11,
+    "coinsNow": 4390
+   },
+   "frameMs": {
+    "world-adv": 202.5
+   },
+   "moments": 73
+  },
+  "errors": [],
+  "fail": [],
+  "canvasHebrew": {}
+ },
+ "s-he": {
+  "stops": {
+   "lv20-auto-ovWelcome": {
+    "file": "s-he-01-lv20-auto-ovWelcome.png",
+    "note": "נפתח לבד לשחקן ברמה 20",
+    "uiPct": 100,
+    "buttons": 6,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     "#dBtn 🎁 ✕ .wx ✕"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🎁 ✕ ✕"
+    ]
+   },
+   "village": {
+    "file": "s-he-02-village.png",
+    "note": "הכפר, שחקן ברמה 20",
+    "uiPct": 7,
+    "buttons": 6,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 ·  239×38",
+     "#guideMin ▴ 29×38"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "b-forge": {
+    "file": "s-he-03-b-forge.png",
+    "note": "חלון forge",
+    "uiPct": 79,
+    "buttons": 16,
+    "small": [
+     ".resmore +7 44×34",
+     ".vbtn ✨ לשדרג ציוד 156×40"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁",
+     ".vbtn ✨ לשדרג ציוד ✕ #visBtn 🏡"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwbody 987/214"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "✨ לשדרג ציוד ✕ 🏡"
+    ]
+   },
+   "b-forge-up": {
+    "file": "s-he-04-b-forge-up.png",
+    "note": "חלון forge לשונית up",
+    "uiPct": 79,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "שדרוג מרמה 4 לרמה  ✕ 🏡"
+    ]
+   },
+   "b-market": {
+    "file": "s-he-05-b-market.png",
+    "note": "חלון market",
+    "uiPct": 79,
+    "buttons": 23,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwgrid 222/166"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁"
+    ]
+   },
+   "b-market-up": {
+    "file": "s-he-06-b-market-up.png",
+    "note": "חלון market לשונית up",
+    "uiPct": 79,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "שדרוג מרמה 3 לרמה  ✕ 🏡"
+    ]
+   },
+   "b-stash": {
+    "file": "s-he-07-b-stash.png",
+    "note": "חלון stash",
+    "uiPct": 79,
+    "buttons": 21,
+    "small": [
+     ".resmore +7 44×34",
+     ".vbtn הכל למחסן 69×40",
+     ".vbtn הכל לתרמיל 74×40"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁",
+     ".vbtn הכל לתרמיל ✕ #visBtn 🏡"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "vPanel > bwgrid 446/166"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "הכל לתרמיל ✕ 🏡"
+    ]
+   },
+   "b-stash-up": {
+    "file": "s-he-08-b-stash-up.png",
+    "note": "חלון stash לשונית up",
+    "uiPct": 79,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "שדרוג מרמה 3 לרמה  ✕ 🏡"
+    ]
+   },
+   "b-mine": {
+    "file": "s-he-09-b-mine.png",
+    "note": "חלון mine",
+    "uiPct": 79,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "מייצר 55🪨 8🟤 6⚫  ✕ 🏡"
+    ]
+   },
+   "b-mine-up": {
+    "file": "s-he-10-b-mine-up.png",
+    "note": "חלון mine לשונית up",
+    "uiPct": 79,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "שדרוג מרמה 3 לרמה  ✕ 🏡"
+    ]
+   },
+   "b-center": {
+    "file": "s-he-11-b-center.png",
+    "note": "חלון center",
+    "uiPct": 79,
+    "buttons": 5,
+    "small": [
+     ".resmore +7 44×34"
+    ],
+    "overlap": [
+     ".wx ✕ ✕ #dBtn 🎁"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "✕ ✕ 🎁",
+     "שדרוג מרמה 4 לרמה  ✕ 🏡"
+    ]
+   },
+   "menu": {
+    "file": "s-he-12-menu.png",
+    "note": "☰: התפריט נפתח",
+    "uiPct": 100,
+    "buttons": 43,
+    "small": [
+     "BUTTON 🎒 ציוד 64×34",
+     "BUTTON 🧍 דמות 28 71×34",
+     "BUTTON הכל 43×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".vbtn ⬆ הכי טוב 129×34",
+     ".vbtn 🪙 למכור 111×34",
+     ".gtile ✨ 39×39"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 ציוד",
+     "🟤 ✕ סטטים",
+     "🟤 ✕ ❤️",
+     "🦴 ✕ סטטים",
+     "🦴 ✕ ❤️",
+     "🦴 ✕ חיים",
+     "♦️ ✕ סטטים",
+     "♦️ ✕ חיים"
+    ]
+   },
+   "gear": {
+    "file": "s-he-13-gear.png",
+    "note": "ציוד ותרמיל",
+    "uiPct": 100,
+    "buttons": 43,
+    "small": [
+     "BUTTON 🎒 ציוד 64×34",
+     "BUTTON 🧍 דמות 28 71×34",
+     "BUTTON הכל 43×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".vbtn ⬆ הכי טוב 129×34",
+     ".vbtn 🪙 למכור 111×34",
+     ".gtile ✨ 39×39"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 ציוד",
+     "🟤 ✕ סטטים",
+     "🟤 ✕ ❤️",
+     "🦴 ✕ סטטים",
+     "🦴 ✕ ❤️",
+     "🦴 ✕ חיים",
+     "♦️ ✕ סטטים",
+     "♦️ ✕ חיים"
+    ]
+   },
+   "gear-item": {
+    "file": "s-he-14-gear-item.png",
+    "note": "ציוד: פריט נבחר",
+    "uiPct": 100,
+    "buttons": 46,
+    "small": [
+     "BUTTON 🎒 ציוד 64×34",
+     "BUTTON 🧍 דמות 28 71×34",
+     "BUTTON הכל 43×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".vbtn ⬆ הכי טוב 129×34",
+     ".vbtn 🪙 למכור 111×34",
+     ".gtile ✨ 39×39",
+     ".gdx ✕ 34×34"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 ציוד",
+     "🦴 ✕ 🌟",
+     "♦️ ✕ מטה הכוכבים"
+    ]
+   },
+   "gear-sell": {
+    "file": "s-he-15-gear-sell.png",
+    "note": "ציוד: מכירה",
+    "uiPct": 100,
+    "buttons": 44,
+    "small": [
+     "BUTTON 🎒 ציוד 64×34",
+     "BUTTON 🧍 דמות 28 71×34",
+     "BUTTON הכל 43×34",
+     ".gf ⚔️ 34×34",
+     ".gf 👢 34×34",
+     ".gf 💍 34×34",
+     ".gf ✨ 34×34",
+     ".gf 🪵 34×34",
+     ".gf 🟤 34×34",
+     ".gf 🦴 34×34",
+     ".gf ♦️ 34×34",
+     ".gtile ✨ 39×39",
+     ".vbtn למכור ⁦0⁩ · ⁦0⁩ 🪙 189×36",
+     ".vbtn בחר חלשים 91×36",
+     ".vbtn ביטול 91×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 ציוד",
+     "🦴 ✕ בחר מה למכור",
+     "🦴 ✕ נגיעה בפריט בתרמיל",
+     "♦️ ✕ בחר מה למכור",
+     "♦️ ✕ נגיעה בפריט בתרמיל"
+    ]
+   },
+   "gear-char": {
+    "file": "s-he-16-gear-char.png",
+    "note": "ציוד: הדמות והסטטים",
+    "uiPct": 100,
+    "buttons": 18,
+    "small": [
+     "BUTTON 🎒 ציוד 64×34",
+     "BUTTON 🧍 דמות 28 71×34",
+     ".stplus + 38×38"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 ציוד",
+     "הבא: ✕ · רמה 40: 🎖️"
+    ]
+   },
+   "skillbook": {
+    "file": "s-he-17-skillbook.png",
+    "note": "ספר הסקילים והרונות",
+    "uiPct": 100,
+    "buttons": 38,
+    "small": [
+     "BUTTON 🎒 ציוד 64×34",
+     "BUTTON 🧍 דמות 28 71×34",
+     ".stplus + 38×38"
+    ],
+    "overlap": [
+     "#gearBtn 🎒 דמות 28 ✕ .wx ✕",
+     "#qBtn 📜 קווסטים 1 ✕ .wrc פיצוץ מתפוצצת כשנגמרת",
+     "#bookBtn 📖 ספר 2 ✕ .wrc פיצוץ מתפוצצת כשנגמרת",
+     "#bookBtn 📖 ספר 2 ✕ .wsbc 🌊 גל מים גל מים רחב שמר",
+     "#mbTab ⚔️ משחקי השאול ✕ .wsbc 🌊 גל מים גל מים רחב שמר",
+     "#mbTab ⚔️ משחקי השאול ✕ .wsbc שריון קרח חסין לרגע, הוד",
+     "#setBtn ⚙️ הגדרות ✕ .wsbc שריון קרח חסין לרגע, הוד",
+     "#setBtn ⚙️ הגדרות ✕ .wsbc רוח מים רוח שיורה מים ומ",
+     ".stplus + ✕ .wrc פעמיים אפשר להסתער שוב מ",
+     ".stplus + ✕ .wrc שואבת מושכת אויבים פנימה",
+     ".stplus + ✕ .wrc פיצוץ מתפוצצת כשנגמרת",
+     ".stplus + ✕ .wsbc הסתערות מזנק ופוגע בכל מ",
+     ".stplus + ✕ .wsbc ⚡ פגיעת ברק ברק שקופץ בי",
+     ".stplus + ✕ .wsbc 🌊 גל מים גל מים רחב שמר",
+     ".vbtn בנייה 2 ✕ .wsbc 🔥 פרץ להבה פרץ אש חזק"
+    ],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)",
+     "מהנשק (10px)",
+     "משאיר שלוליות אש בדרך (10px)",
+     "אפשר להסתער שוב מיד (10px)",
+     "מושכת אויבים פנימה (10px)",
+     "מתפוצצת כשנגמרת (10px)"
+    ],
+    "scrollWins": [
+     "panel > wsbgrid 345/232"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "20 ✕ 🎒 ציוד",
+     "🎒 ✕ ✕",
+     "28 ✕ ✕",
+     "📜 ✕ 💠 רונות",
+     "1 ✕ 💠 רונות",
+     "2 ✕ מתפוצצת כשנגמרת",
+     "משחקי השאול ✕ שריון קרח",
+     "רמת דמות 20 ✕ 📖 ספר הסקילים",
+     "⭐ 19 נקודות ✕ 📖 ספר הסקילים",
+     "הבא: ✕ · רמה 40: 🎖️"
+    ]
+   },
+   "quests": {
+    "file": "s-he-18-quests.png",
+    "note": "יומן קווסטים",
+    "uiPct": 100,
+    "buttons": 6,
+    "small": [],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "qLog 580/292"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "book": {
+    "file": "s-he-19-book.png",
+    "note": "ספר ההרפתקאות",
+    "uiPct": 100,
+    "buttons": 21,
+    "small": [],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)",
+     "0 מתוך 9 (10px)",
+     "0 מתוך 2 (10px)"
+    ],
+    "scrollWins": [
+     "bookWin > bkgrid 785/168"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "💀 ✕ ?",
+     "🛡️ ✕ ?",
+     "👻 ✕ ?",
+     "🗿 ✕ ?",
+     "🌳 ✕ ?",
+     "🦂 ✕ ?",
+     "🧚 ✕ ?",
+     "🦹 ✕ ?",
+     "🪨 ✕ ?",
+     "❔ ✕ ?"
+    ]
+   },
+   "settings": {
+    "file": "s-he-20-settings.png",
+    "note": "הגדרות",
+    "uiPct": 100,
+    "buttons": 20,
+    "small": [
+     "INPUT  274×32",
+     ".lang תלת-ממד 84×28",
+     ".lang דו-ממד 70×28",
+     ".lang קרוב 54×28",
+     ".lang רגיל 50×28",
+     ".lang רחוק 55×28",
+     ".lang דלוק 53×28",
+     ".lang כבוי 49×28",
+     ".lang מלא 52×28",
+     ".lang פחות 57×28",
+     "#bugBtn 🐞 דיווח על באג 274×28"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [
+     "panel 378/302"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "npc-head": {
+    "file": "s-he-21-npc-head.png",
+    "note": "שיחה עם ראש הכפר",
+    "uiPct": 74,
+    "buttons": 3,
+    "small": [
+     ".qtrk במעקב 61×29"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "visit-btn": {
+    "file": "s-he-22-visit-btn.png",
+    "note": "כפתור הביקור בכפר",
+    "uiPct": 9,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 ·  239×38",
+     "#guideMin ▴ 30×38"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "visit": {
+    "file": "s-he-23-visit.png",
+    "note": "ביקור אצל חבר",
+    "uiPct": 100,
+    "buttons": 21,
+    "small": [
+     ".resmore +7 44×34",
+     ".visn ×1 40×44",
+     ".visn ×5 43×44"
+    ],
+    "overlap": [
+     "#dBtn 🎁 ✕ .wx ✕"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "visitWin > visside 253/232"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "🏡 ✕ עוד לא נבנה",
+     "🎁 ✕ ✕"
+    ]
+   },
+   "trade": {
+    "file": "s-he-24-trade.png",
+    "note": "מסחר",
+    "uiPct": 100,
+    "buttons": 27,
+    "small": [
+     ".resmore +7 44×34",
+     ".visn ×1 40×44",
+     ".visn ×5 43×44"
+    ],
+    "overlap": [
+     "#talkBtn 💬 לדבר ✕ .vbtn ⚖️ להציע ×1 ⇄ ×1",
+     "#dBtn 🎁 ✕ .wx ✕",
+     ".visr 35 ✕ .visn ×1",
+     ".visr 6 ✕ .visn ×5",
+     ".visr 6 ✕ .visn ×10"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "tradeWin > visres 102/71"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "💬לדבר ✕ ⚖️ להציע ×1⇄×1",
+     "💬לדבר ✕ מה שנותנים נשמר בצ",
+     "💬 ✕ ⚖️ להציע ×1⇄×1",
+     "💬 ✕ מה שנותנים נשמר בצ",
+     "🎁 ✕ ✕",
+     "35 ✕ ×1"
+    ]
+   },
+   "trade-pick": {
+    "file": "s-he-25-trade-pick.png",
+    "note": "מסחר: בחירה",
+    "uiPct": 100,
+    "buttons": 27,
+    "small": [
+     ".resmore +7 44×34",
+     ".visn ×1 40×44",
+     ".visn ×5 43×44"
+    ],
+    "overlap": [
+     "#talkBtn 💬 לדבר ✕ .vbtn ⚖️ להציע ×1 ⇄ ×1",
+     "#dBtn 🎁 ✕ .wx ✕",
+     ".visr 35 ✕ .visn ×1",
+     ".visr 6 ✕ .visn ×5",
+     ".visr 6 ✕ .visn ×10"
+    ],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [
+     "tradeWin > visres 102/71"
+    ],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": [
+     "💬לדבר ✕ ⚖️ להציע ×1⇄×1",
+     "💬לדבר ✕ מה שנותנים נשמר בצ",
+     "💬 ✕ ⚖️ להציע ×1⇄×1",
+     "💬 ✕ מה שנותנים נשמר בצ",
+     "🎁 ✕ ✕",
+     "35 ✕ ×1"
+    ]
+   },
+   "world": {
+    "file": "s-he-26-world.png",
+    "note": "העולם, שחקן ברמה 20",
+    "uiPct": 9,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 164×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "worldmap": {
+    "file": "s-he-27-worldmap.png",
+    "note": "מפת העולם",
+    "uiPct": 63,
+    "buttons": 7,
+    "small": [],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [
+     "🎒 (0px)",
+     "📜 (0px)"
+    ],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-skills": {
+    "file": "s-he-28-world-skills.png",
+    "note": "כפתורי הסקילים בעולם",
+    "uiPct": 9,
+    "buttons": 8,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 164×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-skill-cast": {
+    "file": "s-he-29-world-skill-cast.png",
+    "note": "סקיל באוויר",
+    "uiPct": 9,
+    "buttons": 7,
+    "small": [
+     ".resmore +7 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 164×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-after-skills": {
+    "file": "s-he-30-world-after-skills.png",
+    "note": "אחרי הסקילים",
+    "uiPct": 9,
+    "buttons": 8,
+    "small": [
+     ".resmore +10 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 164×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   },
+   "world-lv20-play": {
+    "file": "s-he-31-world-lv20-play.png",
+    "note": "רמה 20: אחרי חצי דקה בעולם",
+    "uiPct": 9,
+    "buttons": 8,
+    "small": [
+     ".resmore +14 44×34",
+     "#guideMain ⭐ לטפס לרכס הקפוא 0/1 164×36",
+     "#guideMin ▴ 36×36"
+    ],
+    "overlap": [],
+    "clipped": [],
+    "tiny": [],
+    "scrollWins": [],
+    "offscreen": [],
+    "hebrew": [],
+    "textOverlap": []
+   }
+  },
+  "metrics": {
+   "r3d": {
+    "ready": true,
+    "failed": false
+   },
+   "trade": {
+    "visBtn": true,
+    "tradeBtn": true
+   },
+   "skills": {
+    "buttons": [
+     {
+      "id": "quake",
+      "ready": true,
+      "w": 84
+     },
+     {
+      "id": "charge",
+      "ready": true,
+      "w": 66
+     },
+     {
+      "id": "whirl",
+      "ready": true,
+      "w": 66
+     }
+    ]
+   },
+   "lv20play": {
+    "sec": 60,
+    "coins": 181,
+    "kills": 52,
+    "newKinds": 8,
+    "coinsNow": 4398
+   },
+   "frameMs": {
+    "world-adv": 153.3
+   },
+   "moments": 75
+  },
+  "errors": [],
+  "fail": [],
+  "canvasHebrew": {}
+ }
+}
