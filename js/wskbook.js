@@ -79,11 +79,13 @@ const wsbLess=()=>typeof fxLess==='function'&&fxLess();
 function wsbHit(e,id,base,from,t){
   if(e.dead)return;damage(e,base,'skill',Math.atan2(e.y-from.y,e.x-from.x),t);
   S.sk.wHits=(S.sk.wHits||0)+1;wsbStat.hits[id]=(wsbStat.hits[id]||0)+1;
+  wrOnHit(e,id,base);   // רונה: שורשים או ברק שקופץ (wrunes.js)
 }
 // מי בתוך עיגול, וגם בטווח ההתקפה מהגיבור (כמו כל סקיל בעולם)
 const wsbIn=(x,y,r)=>enemies.filter(e=>!e.dead&&Math.hypot(e.x-x,e.y-y)-e.r<=r&&wskIn(e,P));
 function wsbCast(id,D,tg,base,col,vis,F){
-  const rk=(F?F.r:1)*vis,L=wsbFx(),o={id,k:D.kind,t:0,base,col,dt:D.dt,vis,r:D.r*rk};
+  D=wrPre(id,D);if(D.dt!==SKILLS.list[id].dt)col=dtCol(D.dt);   // רונה שמשנה את נתוני הסקיל, וגם את הצבע אם סוג הנזק השתנה (wrunes.js)
+  const rk=(F?F.r:1)*vis,L=wsbFx(),o={id,k:D.kind,t:0,base,col,dt:D.dt,vis,r:D.r*rk,D};
   wsbStat.casts[id]=(wsbStat.casts[id]||0)+1;
   switch(D.kind){
     case 'dash':{const a=Math.atan2(tg.y-P.y,tg.x-P.x),d=Math.min(D.dist*(F?1.3:1),Math.max(60,Math.hypot(tg.x-P.x,tg.y-P.y)+30));
@@ -101,13 +103,14 @@ function wsbCast(id,D,tg,base,col,vis,F){
   }
   if(!wsbLess())sparks(P.x,P.y-10,col,8,160);
   L.push(o);
+  wrPost(id,D,o,tg);   // מה שהרונה מוסיפה: שלוליות, פיצוצים, עוד מלכודת, רוח או מטאורים (wrunes.js)
 }
 
 /* ---- כל פריים בעולם (מ-wskUpdate) ---- */
 function wsbUpdate(dt){
   wsbSync();
   const L=S.wsb&&S.wsb.fx;if(!L||!L.length)return;
-  for(const o of L){const D=SKILLS.list[o.id];o.t+=dt;
+  for(const o of L){const D=o.D||SKILLS.list[o.id];o.t+=dt;wrTick(o,dt);
     switch(o.k){
       case 'dash':{const f=Math.min(1,o.t/o.dur);P.x=o.fx+(o.tx-o.fx)*f;P.y=o.fy+(o.ty-o.fy)*f;placeClamp(P);
         for(const e of wsbIn(P.x,P.y,o.r))if(!o.hit.has(e)){o.hit.add(e);wsbHit(e,o.id,o.base,P,o.dt)}
@@ -118,7 +121,7 @@ function wsbUpdate(dt){
           o.boom=1;o.dur=o.t+0.35;S.sk.fx.push({ring:1,x:o.x,y:o.y,r:o.r,t:0,max:0.4*themeK(),col:o.col});
           for(const e of wsbIn(o.x,o.y,o.r)){wsbHit(e,o.id,o.base,o,o.dt);if(!e.isBoss)e.frozen=Math.max(e.frozen||0,D.freeze)}
           sparks(o.x,o.y,o.col,wsbLess()?6:16,240);S.shake=Math.max(S.shake,3)}break;
-      case 'summon':{const a=o.t*1.6;o.x+=(P.x+Math.cos(a)*38-o.x)*Math.min(1,dt*6);o.y+=(P.y-46+Math.sin(a)*10-o.y)*Math.min(1,dt*6);
+      case 'summon':{const a=o.t*1.6+(o.ph||0);o.x+=(P.x+Math.cos(a)*38-o.x)*Math.min(1,dt*6);o.y+=(P.y-46+Math.sin(a)*10-o.y)*Math.min(1,dt*6);
         if((o.tick-=dt)<=0){const t=nearest(o.r);if(t&&wskIn(t,P)){o.tick=D.tick;skLine({x:o.x,y:o.y+6},t,o.col);wsbHit(t,o.id,o.base,o,o.dt)}}break}
       case 'storm':o.x=P.x;o.y=P.y-90;if((o.tick-=dt)<=0){o.tick=D.tick;const c=wsbIn(P.x,P.y,o.r);
           if(c.length){const t=c[Math.floor(Math.random()*c.length)];skLine({x:o.x+rand(-24,24),y:o.y+6},t,o.col);wsbHit(t,o.id,o.base,P,o.dt)}}break;
@@ -149,7 +152,7 @@ function wsbDraw(){
       case 'summon':ctx.globalAlpha=0.3;ctx.beginPath();ctx.arc(o.x,o.y,16*o.vis,0,7);ctx.fill();ctx.globalAlpha=0.95;ctx.beginPath();ctx.arc(o.x,o.y,8*o.vis,0,7);ctx.fill();break;
       case 'storm':ctx.globalAlpha=0.55*Math.min(1,(o.dur-o.t)*3);ctx.fillStyle='#3B3550';for(const [dx,r] of [[-26,22],[0,30],[26,22]]){ctx.beginPath();ctx.ellipse(o.x+dx,o.y,r,r*0.6,0,0,7);ctx.fill()}
         ctx.globalAlpha=0.12;ctx.fillStyle=o.col;ctx.beginPath();ctx.arc(P.x,P.y,o.r,0,7);ctx.fill();break;
-      case 'meteor':{const D=SKILLS.list.meteor;if(o.boom)break;const f=o.t/D.delay;
+      case 'meteor':{const D=o.D||SKILLS.list.meteor;if(o.boom)break;const f=o.t/D.delay;
         ctx.globalAlpha=0.6;ctx.lineWidth=3;ctx.beginPath();ctx.arc(o.x,o.y,o.r*(1-f*0.5),0,7);ctx.stroke();ctx.globalAlpha=0.15;ctx.fill();
         ctx.globalAlpha=1;ctx.beginPath();ctx.arc(o.x+(1-f)*120,o.y-(1-f)*320,14*o.vis,0,7);ctx.fill();break}
     }}
@@ -190,7 +193,7 @@ function wsbDrawUi(){
   const ids=wsbIds().filter(id=>id!==w).sort((a,b)=>wsbNeed(a)-wsbNeed(b));
   ov.firstChild.innerHTML='<div class="whd"><h2>📖 '+T('wsb.title')+'</h2><button class="wx" data-wsb="x" aria-label="'+T('q.close')+'">✕</button></div>'+
     '<div class="wsbcols"><div class="wsbslots">'+slot(w,0,true)+slot(L[0]&&wsbOpen(L[0])?L[0]:null,1)+slot(L[1]&&wsbOpen(L[1])?L[1]:null,2)+'<p class="dim">'+T('wsb.how')+'</p></div>'+
-    '<div class="wsbgrid">'+ids.map(id=>wsbCard(id,L.indexOf(id))).join('')+'</div></div>';
+    '<div class="wsbgrid">'+wrUi()+ids.map(id=>wsbCard(id,L.indexOf(id))).join('')+'</div></div>';
 }
 // הכפתור בחלון הדמות (statsHtml ב-stats.js)
 const wsbBtn=()=>'<button class="vbtn ghost wsbopen" data-wsbopen="1">📖 '+T('wsb.open')+'</button>';
