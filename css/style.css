@@ -1491,3 +1491,15 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbkd{color:var(--dim);font:500 var(--t1) var(--body);margin:6px 0}
 .mbbtns{display:flex;gap:10px;justify-content:flex-end;align-items:center}
 .mbbtns .go{padding:12px 22px}
+
+/* רונות בספר הסקילים (js/wrunes.js): שורה בראש רשימת הסקילים, שתי רונות לכל סקיל שבחרת */
+.wrbox{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:stretch;padding-bottom:4px;border-bottom:1px solid #3A4566}
+.wrh{flex:0 0 100%;font-size:13px;color:var(--gold)}
+.wrrow{flex:1 1 260px;display:flex;align-items:center;gap:6px;border-inline-start:3px solid var(--dt);padding-inline-start:6px}
+.wrn{flex:0 0 auto;font-size:12px;opacity:.9;max-width:70px;line-height:1.15}
+.wrchips{flex:1;display:flex;gap:4px}
+.wrc{appearance:none;flex:1;display:flex;flex-direction:column;align-items:flex-start;text-align:start;min-height:40px;font:inherit;color:var(--chalk);background:#141A2Acc;border:2px solid #3A4566;border-radius:10px;padding:3px 6px;cursor:pointer}
+.wrc b{font-size:12px}.wrc small{font-size:10px;opacity:.85;line-height:1.15}
+.wrc.on{border-color:var(--dt);box-shadow:inset 0 0 0 1px var(--dt)}
+.wrc.on b{color:var(--gold)}
+.wrc.lock{opacity:.5;cursor:default}
