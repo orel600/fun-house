@@ -644,6 +644,55 @@ function worldBot(m,L,god){
   check(vs2.send&&vs2.once&&vs2.closed,'ביקור: מתנה '+(vs2.send?'נשלחה ויצאה מהתרמיל':'לא נשלחה'+(vs2.err?' ('+vs2.err+')':''))+', '+(vs2.once?'ופעם אחת ביום':'ונשלחה שוב'));
   check(vs2.rls&&vs2.got,'ביקור: החבר '+(vs2.got?'מקבל את המתנה פעם אחת':'לא קיבל')+', '+(vs2.rls?'ואי אפשר לשלוח בשם מישהו אחר':'ומישהו שלח בשם אחר'));
   check(vs2.noTable,'ביקור: בלי הטבלאות בענן '+(vs2.noTable?'הכפתור מוסבר והמשחק ממשיך':'משהו נשבר'));
+  // מסחר עם חבר (trade.js), על השרת המדומה: הצעה נועלת את מה שנותנים, ביטול מחזיר, החבר מקבל או דוחה, השולח אוסף פעם אחת, ובלי הטבלה הכפתור לא מופיע
+  const td=await page.evaluate(async()=>{const r={},F=CLOUD.fake=cloudFakeServer();const bak=JSON.stringify(SAVE);
+    CLOUD.session=null;try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}VISIT.ready=null;VISIT.last='';TRADE.ready=null;
+    await cloudSync();F.google.u1='Nir';F.google.u2='Orel';CLOUD.session.name='Nir';const nir=Object.assign({},CLOUD.session);
+    const orel=Object.assign({},nir,{uid:'u2',access:'au2',name:'Orel'}),as=x=>{CLOUD.session=Object.assign({},x,{exp:Date.now()/1000+3600})};
+    F.profiles.u2={user_id:'u2',name:'Orel',level:5,data:{village:{center:2},bag:{stone:30,iron:4}}};
+    await tradeVillage(true);r.ready=TRADE.ready===true;
+    bagAdd('wood',20);const w0=SAVE.bag.wood,s0=SAVE.bag.stone||0;await visitOpen();
+    document.querySelector('#visitWin [data-act="trade"]').click();
+    r.open=!$('ovTrade').hidden&&$('ovVisit').hidden&&TRADE.mode==='make'&&!!document.querySelector('#tradeWin [data-act="want"][data-r="stone"]')&&
+      document.querySelectorAll('#tradeWin [data-act="want"]').length===2;
+    TRADE.give='wood';TRADE.gn=5;TRADE.want='stone';TRADE.wn=5;tradeDraw();
+    window.__trSt=$('ovStart').hidden;$('ovStart').hidden=true;
+    return Object.assign(r,{bak,w0,s0,nir,orel})}).catch(e=>({err:String(e)}));
+  await shot('trade');
+  const td2=await page.evaluate(async T0=>{const r={},F=CLOUD.fake,as=x=>{CLOUD.session=Object.assign({},x,{exp:Date.now()/1000+3600})};$('ovStart').hidden=window.__trSt;
+    const wait=async f=>{for(let i=0;i<3000&&!f();i++)await Promise.resolve()};
+    document.querySelector('#tradeWin [data-act="send"]').click();await wait(()=>F.trades.length&&!TRADE.busy);
+    const t=F.trades[0];r.lock=!!t&&t.status==='open'&&t.give_res==='wood'&&t.give_n===5&&t.want_res==='stone'&&t.want_n===5&&SAVE.bag.wood===T0.w0-5;
+    // ביטול מחזיר
+    TRADE.gn=1;TRADE.wn=1;await tradeSend();const c=F.trades[1];const back=c&&await tradeCancel(c.id);
+    r.cancel=!!back&&F.trades.length===1&&SAVE.bag.wood===T0.w0-5;
+    // עוד הצעה, שתידחה. ועד 3 פתוחות
+    TRADE.gn=1;TRADE.want='iron';await tradeSend();await tradeSend();const full=await tradeSend()===false&&F.trades.length===3;
+    tradeClose();r.back=!$('ovVisit').hidden;visitClose();
+    let bad=false;try{await F.req('POST','/rest/v1/trades',{from_id:'u1',to_id:'u2',give_res:'wood',give_n:1,want_res:'stone',want_n:1},'au1')}catch(e){bad=true}r.rls=bad&&full;
+    // אוראל: מקבל את הראשונה, דוחה את השנייה. אוראל לא יכול לשנות כמויות
+    as(T0.orel);const keep=JSON.stringify(SAVE.bag);SAVE.bag={stone:10};await tradeVillage(true);r.inc=TRADE.inc.length===3;
+    tradeInbox();r.win=!$('ovTrade').hidden&&document.querySelectorAll('#tradeWin [data-act="yes"]').length===3&&!!document.querySelector('#tradeWin [data-act="yes"][disabled]');
+    let bad2=false;try{await F.req('PATCH','/rest/v1/trades?id=eq.'+F.trades[0].id,{status:'accepted',give_n:20},'au2')}catch(e){bad2=true}
+    const ids=F.trades.map(x=>x.id);
+    document.querySelector('#tradeWin [data-act="yes"][data-id="'+ids[0]+'"]').click();await wait(()=>!TRADE.busy&&TRADE.inc.length===2);
+    r.acc=SAVE.bag.stone===5&&SAVE.bag.wood===5&&F.trades[0].status==='accepted'&&bad2;
+    r.no=await tradeAnswer(ids[1],false)&&F.trades[1].status==='declined'&&await tradeAnswer(ids[1],true)===false;
+    tradeClose();r.closed=$('ovTrade').hidden;
+    // ניר אוסף: אבן מהעסקה, עץ שחזר מהדחייה, פעם אחת בלבד
+    SAVE.bag=JSON.parse(keep);as(T0.nir);const w1=SAVE.bag.wood,s1=SAVE.bag.stone||0;await tradeVillage(true);
+    r.got=SAVE.bag.stone===s1+5&&SAVE.bag.wood===w1+1&&F.trades.length===1&&TRADE.out.length===1;
+    await tradeVillage(true);r.once=SAVE.bag.stone===s1+5&&SAVE.bag.wood===w1+1;
+    // בלי הטבלה: הכפתור לא מופיע
+    F.noTrade=true;TRADE.ready=null;await tradeVillage(true);VISIT.sel={user_id:'u2',name:'Orel',level:1,data:{}};r.noTable=TRADE.ready===false&&tradeBtnHtml(VISIT.sel)===''&&tradeOpen(VISIT.sel)===false;
+    SAVE=JSON.parse(T0.bak);SAVE_STORE.write(SAVE,true);CLOUD.fake=cloudFakeServer();CLOUD.session=null;try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}
+    CLOUD.dirty=false;VISIT.ready=null;VISIT.last='';TRADE.ready=null;TRADE.inc=[];TRADE.out=[];VISIT.sel=null;return r},td).catch(e=>({err:String(e)}));
+  check(td.ready&&td.open,'מסחר: חלון ההצעה '+(td.open?'נפתח מהביקור, עם מה שיש לחבר':'לא נפתח'));
+  check(td2.lock&&td2.cancel&&td2.back,'מסחר: הצעה '+(td2.lock?'נשלחה ומה שנותנים נעול':'לא ננעלה'+(td2.err?' ('+td2.err+')':''))+', '+(td2.cancel?'וביטול מחזיר אותו':'וביטול לא החזיר'));
+  check(td2.rls,'מסחר: '+(td2.rls?'עד 3 הצעות פתוחות':'יותר מ-3 הצעות פתוחות'));
+  check(td2.inc&&td2.win&&td2.acc&&td2.no&&td2.closed,'מסחר: החבר '+(td2.acc?'מקבל הצעה ומשאבים עוברים':'לא הצליח לקבל')+', '+(td2.no?'דוחה הצעה פעם אחת':'דחייה לא עבדה'));
+  check(td2.got&&td2.once,'מסחר: השולח '+(td2.got?'אוסף את מה שביקש ואת מה שנדחה':'לא קיבל')+', '+(td2.once?'פעם אחת בלבד':'וקיבל פעמיים'));
+  check(td2.noTable,'מסחר: בלי הטבלה בענן '+(td2.noTable?'הכפתור לא מופיע':'משהו נשבר'));
   // שוק: מוכרים עץ, לא מצליחים לקנות בלי מספיק מטבעות, ואז קונים אבן. בסוף מנקים
   const mk=await page.evaluate(()=>{SAVE.village.market=1;bagAdd('wood',10);const sell=vTrade('sell','wood')&&SAVE.bag.coins===5&&SAVE.bag.wood===5;
     const poor=!vTrade('buy','stone');bagAdd('coins',20);const buy=vTrade('buy','stone')&&SAVE.bag.stone===5&&SAVE.bag.coins===10;
@@ -1739,13 +1788,24 @@ function worldBot(m,L,god){
     o.down=!!t('starterBoots')&&!!t('starterBoots').querySelector('.gmk.down');
     const coins=SAVE.bag.coins||0,l=gSellList();document.querySelector('#gActs [data-act="sell"]').click();
     o.ask=!!document.querySelector('#gDetail [data-act="sellYes"]')&&(SAVE.bag.starterBoots||0)>0;
+    // ניר 2.11: "המכירה נתקעת". הרשימה נגללת באצבע (לא touch-action:none), נגיעה בפריט שומרת אותו ומחזירה אותו, ואחרי המכירה יוצאים ממצב מכירה
+    const skq=k=>document.querySelector('#gDetail [data-sk="'+k+'"]'),sk0=document.querySelector('#gDetail [data-sk]'),skk=sk0&&sk0.dataset.sk;
+    o.scroll=!!sk0&&getComputedStyle(sk0).touchAction==='pan-y'&&getComputedStyle(document.querySelector('#gDetail .gsell')).overflowY==='auto';
+    if(skk){skq(skk).click();o.keep=skq(skk).getAttribute('aria-pressed')==='false'&&!gSellPick()[skk];skq(skk).click();o.keep=o.keep&&skq(skk).getAttribute('aria-pressed')==='true'&&!!gSellPick()[skk]}
     document.querySelector('#gDetail [data-act="sellYes"]').click();
+    o.out=!GUI.sell&&!document.querySelector('#gDetail [data-act="sellYes"]')&&!$('ovGear').hidden;
+    // חפץ מסתובב (gOrbFacts): בפרטים רואים מה הוא נותן, וההשוואה מראה ▲ ולא "בלי שינוי"
+    SAVE.gear.orbit=SAVE.gear.orbit.map(()=>null);bagAdd('cloverOrb');document.querySelector('#gTabs [data-tab="items"]').click();
+    const ob=document.querySelector('#gItems [data-id="cloverOrb"]');if(ob)ob.click();const ot=$('gDetail').innerText;
+    o.orb=!!ob&&/▲/.test(ot)&&!ot.includes(T('gear.same'))&&ot.includes(T('orb.f.crit'))&&ot.includes(T('orb.f.loot'));o.orbTxt=ot.replace(/\s+/g,' ').slice(0,90);
     o.sold=!SAVE.bag.starterBoots&&SAVE.bag.wardenBoots===1&&!!SAVE.bag.swiftBoots===false&&(SAVE.bag.coins||0)>coins;o.got=(SAVE.bag.coins||0)-coins;o.list=Object.keys(l).join(',');
     gearClose();const g1=gearStats(),k=JSON.parse(keep);SAVE.bag=k.bag;SAVE.gear=k.gear;SAVE.gseen=k.seen||undefined;gearLive(g1);celebrate=c0;saveNow();return o});
-  check(!bg.bad.length&&bg.chips&&bg.sorted&&bg.up&&bg.new&&bg.seen&&bg.filter&&bg.best&&bg.down&&bg.ask&&bg.sold,
+  check(!bg.bad.length&&bg.chips&&bg.sorted&&bg.up&&bg.new&&bg.seen&&bg.filter&&bg.best&&bg.down&&bg.ask&&bg.sold&&bg.scroll&&bg.keep&&bg.out&&bg.orb,
     'ציוד ותרמיל: '+(bg.bad.length?'פריט נדיר חלש מדי: '+bg.bad.join(', '):'כל נדירות חזקה מזו שמתחת')+(bg.chips?', מסננים':', אין מסננים')+(bg.sorted?', ממוין':', לא ממוין')+
     (bg.up&&bg.down?', ▲/▼':', חסר ▲/▼')+(bg.new&&bg.seen?', נקודה לחדש':', הנקודה לא עובדת')+(bg.filter?'':', המסנן לא מסנן')+(bg.best?', ללבוש הכי טוב':', "הכי טוב" לא עבד')+
-    (bg.ask?', אישור בחלון':', בלי אישור')+(bg.sold?', נמכרו ('+bg.list+', +'+bg.got+')':', המכירה לא עבדה ('+bg.list+')'));
+    (bg.ask?', אישור בחלון':', בלי אישור')+(bg.sold?', נמכרו ('+bg.list+', +'+bg.got+')':', המכירה לא עבדה ('+bg.list+')')+
+    (bg.scroll?', הרשימה נגללת':', הרשימה לא נגללת באצבע')+(bg.keep?', נגיעה שומרת פריט':', נגיעה בפריט לא עובדת')+(bg.out?', יוצאים ממצב מכירה':', נתקע במצב מכירה')+
+    (bg.orb?', חפץ מסתובב מראה מה הוא נותן':', חפץ מסתובב בלי סטטים ("'+bg.orbTxt+'")'));
   // שומרים חוזרים (story.js, STORY.rematch): כפתור 🔔 ליד פנס דולק רק אחרי הסוף ובדרגה אמיץ ומעלה. השומר יוצא חזק יותר, נופל שלל, ופעם ביום לכל שומר
   const rm=await page.evaluate(()=>{
     const o={},st0=JSON.stringify(SAVE.story),ti0=JSON.stringify(SAVE.tier||null),L=STORY.lanterns.earth,vis=()=>{worldUpdate(0.016);return !$('wardBtn').hidden};

@@ -827,6 +827,24 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .visnotes{flex-wrap:nowrap;align-items:stretch}.visnote{flex:1;min-height:48px;text-align:start}.visnote i{font-style:normal;color:var(--gold)}
 .visnotes .vbtn{flex:1;min-height:48px;margin:0}
 @media (orientation:portrait){.viswin .visbody{flex-direction:column}}
+/* מסחר עם חבר (js/trade.js): שני טורים, נותן ומבקש, וחץ ביניהם. מתחת: ההצעות שמחכות וכפתור "להציע" */
+.trdbody{display:flex;gap:10px;align-items:stretch;min-height:0;flex:1}
+.trdcol{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.trdcol h3{margin:2px 0 0;color:var(--gold);font:900 16px var(--body)}
+.trdres{max-height:112px;overflow-y:auto}
+.trdarrow{align-self:center;font:900 24px var(--body);color:var(--gold)}
+.trdfoot{display:flex;flex-direction:column;gap:6px}
+.trdinc{overflow-y:auto;flex:1;min-height:0}
+.trdd{display:inline-flex;align-items:center;gap:2px;vertical-align:middle}.trdd .ri{width:24px;height:24px}.trdd b{font:800 13px var(--body)}
+.trdrow{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:12px;background:rgba(255,255,255,.06)}
+.trdrow.mine small{flex:1;opacity:.8;font-size:12px}
+.trdwho{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.trdwho small{font:700 13px var(--body)}
+.trdlack{color:#ff9a8a}
+.trdrow .vbtn{margin:0;min-height:48px;flex:0 0 auto}.trdrow .visn{min-height:48px}
+.trdsend{margin:0;min-height:48px}.trdsend:disabled{opacity:.45}
+.trdhint{font-size:12px;margin:0}
+.trdgo{margin:6px 0 0;min-height:48px}
+@media (orientation:portrait){.trdbody{flex-direction:column}.trdarrow{transform:rotate(90deg)}}
 /* אתגר יומי (challenge.js): הסימן בפס העליון בעולם */
 .chtag{font-size:12px;font-weight:800;color:var(--tide,#7FD6E8);background:rgba(10,12,20,.7);border-radius:10px;padding:2px 8px;white-space:nowrap}
 .chtag[hidden]{display:none}
@@ -1255,3 +1273,35 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 /* המטרה הבאה (guide.js) והמעקב: אותה גלולה כהה עם קו פליז */
 .guide button{background:linear-gradient(#262E46eb,#161B2Aeb);border-color:var(--brass);box-shadow:inset 0 1px 0 #ffffff14,0 3px 6px #0009}
 .guide button:active{scale:.96}
+
+/* ===== חלונות שלא נחתכים (ניר 2.11.2026, טלפון שוכב באנגלית: ארבעה צילומים) =====
+   חלון הציוד נבנה מחדש בסשן אחר, ולכן כאן רק מה שהמכירה צריכה. מכירה: רשימה שנגללת באצבע ונגיעה שומרת פריט.
+   עץ הסקילים: נגיעה בסקיל פותחת את התיאור המלא, ודהייה בתחתית מראה שיש עוד. שירות של תושב: בטור השני, ברוחב שלו */
+.gorb{margin:0;font-size:13px;line-height:1.3}
+/* אזורים שנגללים: האצבע גוללת גם כשהיא מתחילה על משבצת (בגוף המשחק touch-action:none) */
+.gsidep .gdetail,.trcols,.gsell,.npcdlg .rserve{touch-action:pan-y;overscroll-behavior:contain}
+.gsidep .gdetail.selling{overflow:hidden}
+.gsellhint{margin:0;font-size:11px}
+.gsell{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;overflow-y:auto;min-height:0;flex:1 1 auto;align-content:start;padding:2px}
+#ovGear .gsell .gtile{touch-action:pan-y;min-width:0;font-size:22px;position:relative}
+#ovGear .gsell .gtile[aria-pressed="true"]{outline:0}
+#ovGear .gsell .gtile[aria-pressed="true"]::after{content:'✓';position:absolute;top:1px;inset-inline-start:3px;font:900 12px/1 var(--body);color:#5BD46B;text-shadow:0 0 2px #000,0 0 2px #000}
+#ovGear .gsell .gtile[aria-pressed="false"]{opacity:.35;filter:grayscale(1)}
+/* עץ הסקילים */
+.trcols{padding-bottom:22px;-webkit-mask-image:linear-gradient(#000 calc(100% - 22px),transparent);mask-image:linear-gradient(#000 calc(100% - 22px),transparent)}
+.trn{cursor:pointer}
+.trn.open{opacity:1;align-items:flex-start;padding-block:4px}
+.trn.open .stn small{white-space:normal;overflow:visible;text-overflow:clip;display:block;-webkit-line-clamp:unset;font-size:12px;line-height:1.3;color:var(--chalk)}
+/* שירות של תושב שעבר מהעולם (residents.js): בטור השני, איפה שהקווסטים, ושורה אחת לכל שירות */
+@media (orientation:landscape){
+  .npcdlg.win>.fcook.rserve.rserve{grid-column:2;grid-row:auto;display:flex;flex-direction:column;gap:6px;margin-top:0;max-height:none;overflow:visible}
+  .npcdlg.win:has(.rserve)>.npcsay{grid-row:2/span 4;font-size:inherit}
+  .npcdlg.win:has(.rserve) .npcpic{width:84px;height:84px}
+}
+.rserve>b{font-size:15px}
+.npcdlg .rserve .fmeal .fmt{font-size:14px;min-width:0}
+.npcdlg .rserve .fmeal .fmt>span{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.npcdlg .rserve .fmeal .vbtn{flex:none;min-width:80px;min-height:44px}
+/* תיאור של סקיל בעץ: שתי שורות במקום שורה עם "...", ונגיעה בסקיל פותחת את כולו */
+#ovGear .trn .stn small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:clip;line-height:1.2}
+#ovGear .trn.open .stn small{display:block;-webkit-line-clamp:unset;overflow:visible}
