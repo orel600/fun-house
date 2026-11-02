@@ -1395,7 +1395,7 @@ function worldBot(m,L,god){
       ', שלד בדקה 2 נופל ב-×'+asc.ttk.toFixed(2)+' מהזמן של חדש, מכה של 10 → '+(asc.hit*10).toFixed(1)+', שורה "'+asc.line+'"'+(asc.world?', בעולם ×1':', בעולם משתנה!')));
   // הממשק של הזירה (אוראל, 2.11): תג המכפיל ליד הרמה רק לשחקן חזק, טיפ בשתי הריצות הראשונות בלבד,
   // והכישוף והאולטימייט בפינה: מחוץ לשליש האמצעי של המסך, לא אחד על השני ולא על הסקילים
-  const ahud=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},er=window.eliteRoll;window.eliteRoll=()=>{};const $b=()=>document.getElementById('ascB');
+  const ahud=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},er=window.eliteRoll,rnd=Math.random;window.eliteRoll=()=>{};let sd=11;Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;   // מזל משלה, כדי שהבדיקות שאחריה יקבלו בדיוק את אותו מזל כמו בלעדיהconst $b=()=>document.getElementById('ascB');
     try{SAVE=saveBlank();SAVE.gearGift=true;SAVE.hero.start='warrior';SAVE.gear.weapon='oakSword';
       try{localStorage.removeItem(ARENA_SCALE.tip.key)}catch(e){}
       const run=strong=>{startRun();S.mode='play';if(strong){P.sw.dmg*=4;P.maxHp*=3;P.hp=P.maxHp}floats=[];runUpdate();drawRunBar();
@@ -1409,7 +1409,7 @@ function worldBot(m,L,god){
       o.vis=sp.width>0&&ul.width>0;o.mid=[mid(sp)?'כישוף':'',mid(ul)?'אולטימייט':''].filter(Boolean);o.ovl=ovl(sp,ul);
       o.onSk=[...document.querySelectorAll('#skills .skb')].filter(k=>circ(k.getBoundingClientRect(),sp)||circ(k.getBoundingClientRect(),ul)).length;
       o.box='כישוף '+Math.round(sp.left)+'-'+Math.round(sp.right)+', אולטימייט '+Math.round(ul.left)+'-'+Math.round(ul.right)+' (אמצע '+Math.round(W/3)+'-'+Math.round(W*2/3)+')'}catch(err){o.err=String(err&&err.stack||err)}
-    window.eliteRoll=er;enemies=[];floats=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+    window.eliteRoll=er;enemies=[];floats=[];SAVE=JSON.parse(bak);reset();Math.random=rnd;S.mode=mode;return o});
   check(!ahud.err&&ahud.tip1&&!ahud.tip3&&!ahud.newBadge&&ahud.strong&&ahud.vis&&!ahud.mid.length&&!ahud.ovl&&!ahud.onSk,
     'ממשק הזירה: '+(ahud.err||'טיפ בריצה 1 '+(ahud.tip1?'כן':'לא!')+', בריצה 3 '+(ahud.tip3?'כן!':'לא')+', תג מכפיל לחדש '+(ahud.newBadge?'יש!':'אין')+', לחזק '+(ahud.strong?'"'+ahud.txt+'"':'חסר!')+
       ', '+ahud.box+(ahud.mid.length?', באמצע המסך: '+ahud.mid.join('+'):'')+(ahud.ovl?', הכישוף על האולטימייט!':'')+(ahud.onSk?', על סקיל!':'')));
