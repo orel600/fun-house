@@ -2256,6 +2256,7 @@ function worldBot(m,L,god){
     mobaOpen();o.pick=document.querySelectorAll('#mbWin [data-kit]').length;if(en&&heb($('mbWin').innerText))o.he=$('mbWin').innerText.slice(0,60);
     document.querySelector('#mbWin [data-kit="tank"]').click();o.on=!!S.mb&&document.body.classList.contains('mb');
     if(en&&!o.he&&heb($('mbHud').innerText))o.he=$('mbHud').innerText.slice(0,60);
+    mbPress('ult');o.lock=$('banner').textContent!==T('mb.locked')&&document.querySelector('#mbSk [data-sk="ult"]').classList.contains('shake');   // סקיל-על נעול: הכפתור רועד, בלי הודעה באמצע
     for(let i=0;i<30;i++)mobaUpdate(1/30);render();o.m3=typeof M3!=='undefined'?M3.map.size:-1;o.r3=R3D.on;   // תלת-ממד: מגדלים ובסיסים כמודלים (moba3d.js)
     // פקודות לבוטים החברים (mbOrder): נסיגה, ואז התקפה. הכפתור מסומן, והפקודה נגמרת לבד
     for(let i=0;i<30*25;i++)mobaUpdate(1/30);
@@ -2534,6 +2535,7 @@ function worldBot(m,L,god){
   if(!mb.err){
     check(mb.over,'משחקי השאול: משחק של בוטים '+(mb.over?'נגמר':'לא נגמר')+' אחרי '+t(mb.t)+' · '+mb.towers+' מגדלים נפלו'+(mb.base?', בסיס נהרס':', נגמר בזמן')+' · הריגות '+mb.score+' · רמה עד '+mb.lv);
     if(CFG.gfx==='3d')check(!mb.r3||mb.m3===6,'משחקי השאול בתלת-ממד: '+(mb.r3?mb.m3+' מבנים כמודלים (צריך 6)':'התלת-ממד כבוי'));
+    check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));
     check(mb.fixed&&!mb.fixed.length,'משחקי השאול: כל 12 הסקילים (4 ערכות) הוטלו בתרחיש קבוע'+(mb.fixed&&mb.fixed.length?' · לא הוטלו: '+mb.fixed.join(', '):'')+' · במשחק הבוטים ('+mb.kits+'): '+(mb.miss.length?'לא הגיעו ל: '+mb.miss.join(', '):'כולם'));
     const cb=mb.combo||{};check(cb.shock>0&&Math.abs(cb.k-cb.want)<0.01&&cb.freeze>0&&cb.frozen,'משחקי השאול: קומבו בתרחיש קבוע: חשמול '+(cb.shock?'✓ נזק ×'+cb.k:'לא קרה')+', קפוא '+(cb.freeze&&cb.frozen?'✓ הקפאה ארוכה':'לא קרה'));
