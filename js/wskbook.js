@@ -197,7 +197,7 @@ function wsbDrawUi(){
   const ids=wsbIds().filter(id=>id!==w).sort((a,b)=>wsbNeed(a)-wsbNeed(b));
   ov.firstChild.innerHTML='<div class="whd"><h2>📖 '+T('wsb.title')+'</h2><button class="wx" data-wsb="x" aria-label="'+T('q.close')+'">✕</button></div>'+
     '<div class="wsbcols"><div class="wsbslots">'+slot(w,0,true)+slot(L[0]&&wsbOpen(L[0])?L[0]:null,1)+slot(L[1]&&wsbOpen(L[1])?L[1]:null,2)+'<p class="dim">'+T('wsb.how')+'</p></div>'+
-    '<div class="wsbgrid">'+wrUi()+ids.map(id=>wsbCard(id,L.indexOf(id))).join('')+'</div></div>';
+    '<div class="wsbgrid">'+(typeof sigBook==='function'?sigBook():'')+wrUi()+ids.map(id=>wsbCard(id,L.indexOf(id))).join('')+'</div></div>';
 }
 // הכפתור בחלון הדמות (statsHtml ב-stats.js)
 const wsbBtn=()=>'<button class="vbtn wsbopen'+(typeof skgNew==='function'&&skgNew()?' sknew':'')+'" data-wsbopen="1">📖 '+T('wsb.open')+'</button>';   // sknew: נקודה אדומה (skguide.js)
