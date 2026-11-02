@@ -338,7 +338,8 @@ function villageBot(m,L){
     if(m.age===2&&!m.fuse){
       const U=L.fuse={},press=roll=>{const r=Math.random;Math.random=()=>roll;try{const b=q('#fDetail [data-act="fuse"]');U.btn=!!b&&!b.disabled;if(b)b.click()}finally{Math.random=r}};
       bagAdd('emberOrb');bagAdd('frostOrb');bagAdd('cloverOrb');bagAdd('star',3);bagAdd('coins',300);
-      q('#fTabs [data-tab="fuse"]').click();U.tab=AUI.tab==='fuse';
+      const bar=()=>[...document.querySelectorAll('#fRes [data-tip]')].map(e=>e.dataset.tip).join();U.barAge=bar();U.barAgeOk=U.barAge===(resShown('forge')||[]).join();
+      q('#fTabs [data-tab="fuse"]').click();U.tab=AUI.tab==='fuse';U.bar=bar();   // הפס העליון בהתכה: רק 🌟, 💎 ומטבעות (fuse.js, fuseRes)
       U.same=fuseOut('emberOrb','steamOrb').why==='same'&&fuseOut('trinityOrb','cloverOrb').why==='big';
       q('#fItems [data-id="emberOrb"]').click();q('#fItems [data-id="frostOrb"]').click();
       U.odds=(q('#fDetail .odds')||{}).innerText;U.out=(q('#fDetail h3')||{}).innerText;
@@ -1360,6 +1361,12 @@ function worldBot(m,L,god){
     window.eliteRoll=er;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(Math.abs(ease.d0-0.45)<0.01&&ease.d1===1&&ease.inv0>ease.inv1&&Math.abs(ease.inv1-0.6)<0.01,
     'התחלה רכה בזירה: נזק אויב בהתחלה x'+ease.d0.toFixed(2)+', אחרי הזמן x'+ease.d1+', חסינות אחרי מכה '+ease.inv0.toFixed(2)+'→'+ease.inv1.toFixed(2)+' שניות');
+  // הרמה הראשונה בזירה (run.js, RUN.ease.horde): שחקן שעומד במקום, מזל קבוע. הגוש הראשון מגיע מהר, אז רמה ראשונה לפני 15 שניות של משחק (המבקר, 2.11: היה עד 25)
+  const flv=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,rnd=Math.random,er=window.eliteRoll;let sd=7,t=null;
+    Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;window.eliteRoll=()=>{};
+    try{startRun();for(let i=0;i<60*30&&t==null;i++){P.hp=P.maxHp;joy=null;S.mode='play';update(1/60);if(P.level>1)t=S.t}}
+    finally{Math.random=rnd;window.eliteRoll=er;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode}return{t,k:S.kills}});
+  check(flv.t!=null&&flv.t<15,'רמה ראשונה בזירה: '+(flv.t!=null?'אחרי '+flv.t.toFixed(1)+' שניות של משחק':'לא הגיעה תוך 30 שניות'));
   // זירת גלים (arenas.js): נכנסים מהכפתור בכרטיס של שער בעולם, ומשחקים עד הסוף (האויבים נופלים ביד, כדי שיהיה מהר). גלים לפי הסדר, הפסקה בלי אויבים, המונה, כל גל חזק יותר עם אויבים משלו, ובוס בגל האחרון שמנצח
   const wav=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},rw=window.runWon,rnd=Math.random;let won=0,sd=99;window.runWon=()=>{won++};
     Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;   // מזל משלה, כדי לא להזיז את המזל של הבדיקות שאחריה (אותו seed = אותה ריצה)
@@ -2357,6 +2364,7 @@ function worldBot(m,L,god){
   const U=L.fuse||{};
   check(U.tab&&U.same&&U.ok&&U.cost&&U.out3==='cometOrb'&&U.fail&&U.saved,'התכה: '+(U.tab?'הלשונית נפתחה, '+(U.odds||'בלי סיכוי')+' '+(U.out||'?'):'הלשונית לא נפתחה')+(U.same?'':', חסימה לא עובדת')+
     (U.ok?', הצליחה':', לא הצליחה')+(U.cost?', שולם':', מחיר שגוי')+(U.fail?', כישלון לקח משאב וחפץ':', כישלון לא עבד')+(U.saved?', נשמר':', לא נשמר'));
+  check(U.bar==='star,gem,coins'&&U.barAgeOk,'הפס העליון בהתכה: '+(U.bar||'ריק')+(U.barAgeOk?', ובשדרוג כמו קודם ('+(U.barAge||'ריק')+')':', בשדרוג השתנה ('+U.barAge+')'));
   const G=L.glow||{};
   check(G.hand&&G.trail>1&&G.parts>0,'זוהר Aging ב-+10: '+(G.hand?'שובל '+G.trail+' נקודות, '+G.parts+' חלקיקים':'לא נמצא הנשק'));
   check(L.gearW==='gun'&&L.gearDmg===gx,'ציוד בריצה: מתחיל עם '+(L.gearW==='gun'?'קשת':L.gearW)+', נזק קשת x'+L.gearDmg+' (צפוי x'+gx+')');
