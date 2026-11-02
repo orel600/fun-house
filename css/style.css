@@ -1257,12 +1257,9 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 .guide button:active{scale:.96}
 
 /* ===== חלונות שלא נחתכים (ניר 2.11.2026, טלפון שוכב באנגלית: ארבעה צילומים) =====
-   פרטי פריט: השם ליד האייקון, ושורת הנדירות מתחתם ברוחב המלא. מכירה: רשימה שנגללת באצבע ונגיעה שומרת פריט.
+   חלון הציוד נבנה מחדש בסשן אחר, ולכן כאן רק מה שהמכירה צריכה. מכירה: רשימה שנגללת באצבע ונגיעה שומרת פריט.
    עץ הסקילים: נגיעה בסקיל פותחת את התיאור המלא, ודהייה בתחתית מראה שיש עוד. שירות של תושב: בטור השני, ברוחב שלו */
-.gdhead h3{min-width:0;overflow-wrap:anywhere}
-.gdmeta{display:block;color:var(--dim);font-weight:700;font-size:12px;line-height:1.25}
 .gorb{margin:0;font-size:13px;line-height:1.3}
-@media (orientation:landscape) and (max-height:500px){.gdicon{width:44px;height:44px;font-size:24px}.gdicon .ri{width:34px;height:34px}}
 /* אזורים שנגללים: האצבע גוללת גם כשהיא מתחילה על משבצת (בגוף המשחק touch-action:none) */
 .gsidep .gdetail,.trcols,.gsell,.npcdlg .rserve{touch-action:pan-y;overscroll-behavior:contain}
 .gsidep .gdetail.selling{overflow:hidden}
@@ -1287,9 +1284,6 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 .npcdlg .rserve .fmeal .fmt{font-size:14px;min-width:0}
 .npcdlg .rserve .fmeal .fmt>span{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
 .npcdlg .rserve .fmeal .vbtn{flex:none;min-width:80px;min-height:44px}
-@media (orientation:landscape) and (max-height:500px){
-  .gdetail.selling h3{font-size:15px}
-}
 /* תיאור של סקיל בעץ: שתי שורות במקום שורה עם "...", ונגיעה בסקיל פותחת את כולו */
 #ovGear .trn .stn small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:clip;line-height:1.2}
 #ovGear .trn.open .stn small{display:block;-webkit-line-clamp:unset;overflow:visible}

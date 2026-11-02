@@ -378,9 +378,8 @@ function gDetailHtml(){
   if(!k||!n){const t=gearStats();   // בלי פריט: מה כל הציוד שלבוש נותן יחד, והסבר קצר. הנקודות בדף "דמות"
     return '<h3>'+T('gear.total')+'</h3><ul class="gstats">'+(Object.keys(t).filter(x=>GEAR.stats[x]&&t[x]).map(x=>'<li>'+gSign(x,t[x])+'</li>').join('')||'<li class="dim">—</li>')+'</ul><p class="dim ghint">'+T('gear.hint')+'</p>'}
   const it=gItem(k),col=gRarCol(k);
-  // השם ליד האייקון, והשורה של נדירות, חומר ומשבצת מתחת לשניהם, ברוחב המלא (ניר 2.11: בטור צר היא נשברה למילה בשורה)
-  let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3></div>'+
-    '<small class="gdmeta">'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small>';
+  let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
+    '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
   if(it&&gPlus(k))d+='<p class="gage">'+T('gear.aged',gPlus(k))+'</p>';
   const orbOld=it&&sel.id&&it.slot==='orbit'?gItem(gGet('orbit',gTarget(it))):null;
   if(it)d+=gStatsHtml(k,!!sel.id&&it.slot==='orbit'&&(!orbOld||orbOld.type!==it.type))+powLine(k)+setHtml(k);   // הכוח בזהב (powers.js)   // סט: מה הוא נותן וכמה חלקים לבושים (sets.js)
