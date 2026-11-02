@@ -34,6 +34,7 @@ function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
   if(e.hp<=0&&!e.dead){if(e.node)nodeDown(e);else kill(e)}
 }
 function kill(e){
+  if(S.wd&&!S.room)wcKill(e);   // בעולם: בוער מדליק את השכנים, ומסומן מקצר קירורים (wcombo.js)
   e.dead=true;S.kills++;sfx('death');heroCount('kills');if(e.isBoss)heroCount('bosses');
   lootKill(e);bookKill(e);juiceKill(e);   // juiceKill: עשן ועצירה בעולם (juice.js)   // שלל לכפר (loot.js), וספר ההרפתקאות (book.js)
   statKillXp(e);statOnKill(e);affixOnKill(e);   // XP לדמות בעולם הפתוח, וזעם (stats.js)
