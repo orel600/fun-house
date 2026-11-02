@@ -19,9 +19,12 @@ const ARMOR={
     hunter: {stat:'speed',icon:{head:'🧢',body:'🧥'},cape:'#4D6B34',head:'hood',body:'leather',native:[]},
     mage:   {stat:'regen',icon:{head:'🎩',body:'👘'},cape:'#5B3F98',head:'hat', body:'robe',native:['Hat']}
   },
-  icon:{head:'🪖',body:'🧥'},   // לשונית בתרמיל וצללית במשבצת ריקה
+  icon:{head:'🪖',body:'🧥',shield:'🛡️'},   // לשונית בתרמיל וצללית במשבצת ריקה
+  /* מגן (המתאם, 2.11.2026: משבצת אמיתית במקום המגן שנגזר מהתכשיט). לא לפי מחלקה: מגן אחד לכל שכבה, 'shield0' עד 'shield4'.
+     נראה ביד השנייה רק עם נשק של יד אחת (חרב, גרזן), כמו קודם (gear3dLook ב-render3d.js). gift: מגן עץ לכל אחד, פעם אחת */
+  shield:{def:[4,6,8,11,15],hp:[10,14,20,26,35],gift:'shield0'},
   // שלל בעולם (lootRoll): slot נוסף ל-LOOT.gear.slot. mine: איזה חלק מהשריון שנופל הוא של המחלקה שלך
-  loot:{slot:{head:0.12,body:0.12},mine:0.7},
+  loot:{slot:{head:0.12,body:0.12,shield:0.08},mine:0.7},
   /* המראה. tint: כמה הצבע של השכבה נכנס לחלקים של המודל. glow: זוהר לפי שכבה (כמו GEAR3D.glow).
      החלקים שנבנים בקוד: מיקום (pos) ביחידות של המודל, יחסית לעצם (bone). col 'tier' = הצבע של השכבה, 'cape' = הצבע של המחלקה */
   look:{tint:0.55,cape:0.35,glow:[0.05,0.1,0.22,0.38,0.55],
@@ -39,10 +42,10 @@ const ARMOR={
 const armorSlot=s=>s[0].toUpperCase()+s.slice(1);
 // בונה את הפריטים לתוך GEAR.items ואת השמות לתוך TEXT, פעם אחת בטעינה
 (function armorItems(){
-  for(const s of ARMOR.slots){GEAR.slots[s]=1;GEAR.filter[s]=ARMOR.icon[s]}
-  // הבובה: ראש מעל הנשק, גוף מתחתיו. הלשוניות בתרמיל אחרי הנשק
-  GEAR.doll.start=['head','weapon','body'];
-  const f=GEAR.filter,order=['weapon','head','body','boots','acc','orbit'];GEAR.filter={};for(const k of order)if(f[k])GEAR.filter[k]=f[k];
+  for(const s of [...ARMOR.slots,'shield']){GEAR.slots[s]=1;GEAR.filter[s]=ARMOR.icon[s]}
+  // הבובה: ראש למעלה, הנשק והמגן, וגוף למטה. הלשוניות בתרמיל אחרי הנשק
+  GEAR.doll.start=['head','weapon','shield','body'];
+  const f=GEAR.filter,order=['weapon','shield','head','body','boots','acc','orbit'];GEAR.filter={};for(const k of order)if(f[k])GEAR.filter[k]=f[k];
   for(const c in ARMOR.cls){const C_=ARMOR.cls[c],w=GEAR.stats[C_.stat].w;
     for(const s of ARMOR.slots)ARMOR.def[s].forEach((d,t)=>{
       let v=ARMOR.extra[s][t]/w;v=C_.stat==='regen'?Math.round(v*10)/10:Math.round(v);
@@ -50,7 +53,11 @@ const armorSlot=s=>s[0].toUpperCase()+s.slice(1);
       GEAR.items[id]={slot:s,tier:t,cls:c,icon:C_.icon[s],stats:{def:d,[C_.stat]:v},look:t>=3?{glow:GEAR.tiers[t].col}:undefined};
       const N=TEXT['arm.name'];TEXT['it.'+id]={he:N.he(c,s,t),en:N.en(c,s,t)};
     })}
+  const SH=ARMOR.shield;SH.def.forEach((d,t)=>{GEAR.items['shield'+t]={slot:'shield',tier:t,icon:'🛡️',stats:{def:d,hp:SH.hp[t]},look:t>=3?{glow:GEAR.tiers[t].col}:undefined};
+    const N=TEXT['arm.shield'];TEXT['it.shield'+t]={he:N.he(t),en:N.en(t)}});
 })();
+// מגן עץ לכל אחד, פעם אחת (נקרא מ-gearReset), כדי שמי שהיה לו מגן מהתכשיט לא יישאר בלי
+function armorGift(){if(!SAVE.shieldGift){SAVE.shieldGift=true;bagAdd(ARMOR.shield.gift)}}
 
 /* ---- שלל: נקרא מ-lootRoll (loot.js) כשהמשבצת שהוגרלה היא שריון. מחזיר פילטר: שריון של המחלקה שלך, או לפעמים של אחרת ---- */
 function armorPick(slot){

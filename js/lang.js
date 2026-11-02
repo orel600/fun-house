@@ -1032,7 +1032,9 @@ const TEXT={
   'gear.slot.orbit':{he:'חפצים מסתובבים',en:'Orbiting items'},
   'gear.slot.head':{he:'ראש',en:'Head'},
   'gear.slot.body':{he:'גוף',en:'Body'},
+  'gear.slot.shield':{he:'מגן',en:'Shield'},
   // שריון לפי מחלקה (armor.js): השם מורכב מהחלק ומהחומר של השכבה. he: "קסדת ברזל", en: "Iron Helm"
+  'arm.shield':{he:t=>'מגן '+['עץ','ברזל','כסף','זהב','אגדי'][t],en:t=>['Wooden','Iron','Silver','Gold','Legendary'][t]+' Shield'},
   'arm.name':{
     he:(c,s,t)=>({warrior:{head:'קסדת',body:'שריון'},hunter:{head:'ברדס',body:'אפודת'},mage:{head:'כובע',body:'גלימת'}})[c][s]+' '+
       ({warrior:['עור','ברזל','כסף','זהב','דרקון'],hunter:['בד','עור','זאב','נשר','סערה'],mage:['פשתן','ירח','כוכבים','שמש','אגדה']})[c][t],
