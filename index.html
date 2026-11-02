@@ -41,7 +41,7 @@
 <!-- אולטימייט (js/ult.js): משמאל לקשת של הסקילים, מתמלא מהריגות -->
 <button class="ult" id="ult" type="button" data-ta="ult.name" hidden><svg class="dti" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.2 6.3L21 9l-5.2 4.3L17.5 21 12 17.3 6.5 21l1.7-7.7L3 9l6.8-.7z"/></svg><i></i></button>
 <!-- כישוף מיוחד (js/spell.js): כפתור קטן ליד הסקילים, ובתחילת ריצה שלושה סמלים לבחירה מעליו -->
-<button class="spellb" id="spell" type="button" hidden></button><div class="spellpick" id="spellPick" role="group" data-ta="sp.pick" hidden></div>
+<button class="spellb" id="spell" type="button" hidden></button>
 
 <button class="mute" id="muteBtn" data-ta="mute"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg></button>
 <!-- הכפר: פס עליון בשורה אחת (המשאבים החשובים, השאר בתרמיל), והפאנל של המבנה שלידו (js/village.js) -->
@@ -70,7 +70,7 @@
 <button class="mute menubtn" id="menuBtn" data-ta="menu.btn"><span aria-hidden="true">☰</span><b hidden></b></button>
 <div class="menubg" id="menuBg"></div>
 <nav class="mrail" id="menuRail" role="tablist" data-ta="menu.btn">
-  <button class="mtab" id="gearBtn" role="tab"><span class="ni" aria-hidden="true">🎒</span><span data-t="menu.hero"></span><b id="gBadge" hidden></b></button>
+  <button class="mtab" id="gearBtn" role="tab"><span class="ni" aria-hidden="true">🎒</span><span data-t="menu.hero"></span><b id="gBadge" hidden></b><i class="mdot" id="skDot" hidden></i></button>
   <button class="mtab" id="qBtn" role="tab"><span class="ni" aria-hidden="true">📜</span><span data-t="q.log"></span><b id="qBadge" hidden></b></button>
   <button class="mtab" id="bookBtn" role="tab"><span class="ni" aria-hidden="true">📖</span><span data-t="book.btn"></span><b id="bBadge" hidden></b></button>
   <button class="mtab" id="wMapBtn" role="tab"><span class="ni" aria-hidden="true">🗺️</span><span data-t="wm.title"></span></button>
@@ -94,6 +94,7 @@
   <div class="mbme"><b class="mblv" id="mbLv">1</b><div class="mbbars"><div class="mbhp"><i id="mbHp"></i></div><div class="mbxp"><i id="mbXp"></i></div></div></div>
   <p class="mbresp" id="mbResp" hidden></p>
   <button class="wx mbexit" id="mbExit" data-ta="mb.exit">✕</button>
+  <div class="mbping" id="mbPing" role="group" data-ta="mb.ping"><button data-o="attack"><b aria-hidden="true">⚔️</b><span data-t="mb.o.attack"></span></button><button data-o="back"><b aria-hidden="true">🛡️</b><span data-t="mb.o.back"></span></button></div>
 </div>
 <div class="skills mbsk" id="mbSk" role="group" data-ta="sk.group" hidden></div>
 <div class="ov gearov" id="ovMoba" hidden><div class="panel win mbwin" id="mbWin"></div></div>
@@ -315,9 +316,13 @@
 <script src="js/nodes.js"></script>
 <script src="js/village.js"></script>
 <script src="js/world.js"></script>
+<script src="js/wcombo.js"></script>   <!-- שילובים בעולם: ניפוץ, ננעץ, אדים, ומצב שורשים (docs/plan-skills.md) -->
 <script src="js/wskill.js"></script>
 <script src="js/wskbook.js"></script>   <!-- ספר הסקילים: עוד סקילים אקטיביים בעולם, ובוחרים מה על הכפתורים -->
+<script src="js/wrunes.js"></script>   <!-- רונות: שתיים לכל סקיל מהספר, שמשנות איך הוא עובד (docs/plan-skills.md) -->
 <script src="js/skillreveal.js"></script>   <!-- סקיל חדש: רגע גילוי, ומראה לפי הדרגה בעץ (docs/plan-progression.md עמוד 3) -->
+<script src="js/skguide.js"></script>   <!-- איך מוצאים את הסקילים: נגיעה ארוכה פותחת את הספר, נקודה אדומה, וכרטיס אחרי רגע הגילוי -->
+<script src="js/skpractice.js"></script>   <!-- אימון סקיל: 20 שניות על בובות אחרי סקיל חדש, אופציונלי -->
 <script src="js/drops.js"></script>
 <script src="js/quests.js"></script>
 <script src="js/npc.js"></script>
@@ -371,6 +376,7 @@
 <script src="js/models3d.js"></script>
 <script src="js/render3d.js"></script>
 <script src="js/props3d.js"></script>   <!-- הפנסים, המקדשים, מגדלי התצפית והתיבות בתלת-ממד -->
+<script src="js/moba3d.js"></script>   <!-- משחקי השאול: מגדלים ובסיסים בתלת-ממד (משתמש בעזרים של props3d.js) -->
 <script src="js/camera.js"></script>
 <script src="js/look-hd.js"></script>   <!-- מראה הכפר והעולם: שלב 1 לכולם, ?look=classic מכבה, ?look=hd מוסיף ניסויים (docs/visual-plan.md) -->
 <script src="js/ground.js"></script>   <!-- הקרקע בעולם: מפה מצוירת לכל אזור, שבילים, חוף וצל מגע (docs/plan-ground.md) -->

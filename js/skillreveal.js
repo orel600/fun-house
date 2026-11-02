@@ -45,7 +45,7 @@ function skrStart(id){
   sfx('levelup');banner(T('skr.new',T('sk.'+id)),col);
   // האייקון שעף: מתחיל על הגיבור (באמצע המסך) ונוחת על הכפתור שלו
   const el=document.createElement('div');el.className='skrfly';el.style.setProperty('--dt',col);el.style.setProperty('--s',K.icon+'px');
-  el.innerHTML=dtSvg(skDef(id).dt);document.body.appendChild(el);SKR.el=el;
+  el.innerHTML=(typeof wsbImg==='function'&&wsbImg(id))||dtSvg(skDef(id).dt);document.body.appendChild(el);SKR.el=el;   // אייקון מצויר לסקילים של הספר (wskbook.js)
   skrBtn(id,true);
 }
 const skrBtn=(id,hide)=>{const b=document.querySelector('#skills [data-sk="'+id+'"]');if(b)b.classList.toggle('skrwait',hide);return b};
@@ -54,6 +54,7 @@ function skrEnd(skip){
   if(SKR.el){SKR.el.remove();const b=skrBtn(id,false);if(b){b.classList.remove('ping');void b.offsetWidth;b.classList.add('ping')}}
   if(skip){skrStat.skips++;S.hitstop=0}
   skrStat.ends++;SKR=null;P.skrCast=0;
+  if(typeof skgOffer==='function')skgOffer(id);   // כרטיס "לספר" ו"לנסות" (skguide.js)
 }
 // נגיעה בכל מקום מדלגת
 addEventListener('pointerdown',()=>{if(SKR&&skrNow()-SKR.t0>0.15)skrEnd(true)},true);

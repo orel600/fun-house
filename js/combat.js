@@ -34,6 +34,7 @@ function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
   if(e.hp<=0&&!e.dead){if(e.node)nodeDown(e);else kill(e)}
 }
 function kill(e){
+  if(S.wd&&!S.room)wcKill(e);   // בעולם: בוער מדליק את השכנים, ומסומן מקצר קירורים (wcombo.js)
   e.dead=true;S.kills++;sfx('death');heroCount('kills');if(e.isBoss)heroCount('bosses');
   lootKill(e);bookKill(e);juiceKill(e);   // juiceKill: עשן ועצירה בעולם (juice.js)   // שלל לכפר (loot.js), וספר ההרפתקאות (book.js)
   statKillXp(e);statOnKill(e);affixOnKill(e);   // XP לדמות בעולם הפתוח, וזעם (stats.js)
@@ -50,7 +51,7 @@ function hurt(d){
   if(orbitShield())return;   // חפץ הגנה בולע את המכה (orbit.js)
   if(statDodge())return;   // רוח (stats.js)
   d*=1-Math.min(STATS.cap.def,(P.def||0)+statDefFx())/100;   // נקודות הגנה ועץ הסקילים (stats.js)
-  P.hp-=d;P.inv=0.6;statOnHurt();sfx('hurt');questEvent('hurt');S.shake=Math.max(S.shake,7);S.hurt=0.3;
+  P.hp-=d;P.inv=0.6/easeK();statOnHurt();sfx('hurt');questEvent('hurt');S.shake=Math.max(S.shake,7);S.hurt=0.3;
   floatText(P.x,P.y-36,'-'+Math.round(d),C.blood,17);
   if(P.hp<=0){P.hp=0;gameOver()}
 }
