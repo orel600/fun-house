@@ -335,13 +335,15 @@ function villageBot(m,L){
       if(S.vil.open!=='stash'&&!enter('stash'))return steer(St.x,St.y,false,0,L)}
     m.stash=1;const q=s=>document.querySelector('#vPanel '+s),up=q('[data-act="up"]');
     if(up&&!up.disabled)up.click();L.stashLv=vLv('stash');
-    const w0=SAVE.bag.wood||0,mv=(d,r)=>{const b=q('[data-act="stash"][data-dir="'+d+'"][data-r="'+r+'"]');if(b)b.click();return!!b};
+    // נגיעה מעבירה BWIN.move, ולחיצה ארוכה הכל (bwin.js מסמן אותה ב-data-n="all")
+    const w0=SAVE.bag.wood||0,mv=(d,r,all)=>{const b=q('[data-act="stash"][data-dir="'+d+'"][data-r="'+r+'"]');if(b){if(all)b.dataset.n='all';b.click()}return!!b};
     const s0=SAVE.bag.oakSword||0;   // כמה חרבות עץ בתרמיל: הלוחם מקבל אחת בבחירה ועוד אחת במתנה
     const swIn=mv('in','oakSword')&&SAVE.stash.oakSword===1&&(SAVE.bag.oakSword||0)===s0-1;   // פריט עובר אחד-אחד
-    const wIn=mv('in','wood')&&SAVE.stash.wood===w0&&!SAVE.bag.wood;
+    const w1=Math.min(BWIN.move,w0),wTap=mv('in','wood')&&SAVE.stash.wood===w1&&(SAVE.bag.wood||0)===w0-w1;
+    const wIn=wTap&&(SAVE.bag.wood?mv('in','wood',true):true)&&SAVE.stash.wood===w0&&!SAVE.bag.wood;
     const swOut=mv('out','oakSword')&&SAVE.bag.oakSword===s0&&!SAVE.stash.oakSword;
     const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key));
-    L.stash={swIn,wIn,swOut,saved:sv.stash.wood===w0&&!sv.stash.oakSword&&sv.bag.oakSword===s0,cap:stashCap(),used:stashUsed()};
+    L.stash={move:BWIN.move,swIn,wTap,wIn,swOut,saved:sv.stash.wood===w0&&!sv.stash.oakSword&&sv.bag.oakSword===s0,cap:stashCap(),used:stashUsed()};
     return L}
   if(m.npc!==3){   // תושבים: הולכים לנפח, לוחצים "לדבר", מקבלים ממנו קווסט, ורואים אותו ביומן. בודקים שהם לא חוסמים, ושהוא מריע לשדרוג
     const n=npcAt('smith'),dlg=document.getElementById('npcDlg'),tb=document.getElementById('talkBtn');
@@ -1258,9 +1260,10 @@ function worldBot(m,L,god){
       k=/\bwin\b/.test(c)?'window':/\bres\b/.test(c)?'pill':/\bhp\b/.test(c)?'bar':e.tagName==='BUTTON'?'button':'';const p=r.height/H*100;
       if(k&&p>LIM[k])big.push((e.id||c.split(' ')[0])+' '+p.toFixed(1)+'%>'+LIM[k])}
     const o={...o0,n:els.length,bad,off,panel:!!pn,big,more:!!document.querySelector('#'+(place==='world'?'w':'v')+'Bag .resmore'),cards:0,wins:{}};
-    if(place!=='world'){const tb=document.querySelector('#vPanel [data-act="trade"]');if(tb)tb.click();const ss=[...document.querySelectorAll('#vPanel .tcols>section')].map(vis);
+    if(place!=='world'){const ss=[...document.querySelectorAll('#vPanel .bwcols>section')].map(vis);   // השוק נפתח על לשונית המסחר (bwin.js)
       o.cards=document.querySelectorAll('#vPanel .tcard').length;o.cols=ss.length===2&&ss[0]&&ss[1]?(Math.abs(ss[0].top-ss[1].top)<2?2:1):0;
-      const x=document.querySelector('#vPanel [data-act="close"]');if(x)x.click();o.tradeBack=!!document.querySelector('#vPanel [data-act="trade"]')&&!$('vPanel').hidden}
+      const tab=t=>{const b=document.querySelector('#vPanel [data-act="tab"][data-tab="'+t+'"]');if(b)b.click();return!!b};
+      o.tradeBack=tab('up')&&!!document.querySelector('#vPanel .bwup')&&!document.querySelector('#vPanel .tcard')&&tab('main')&&document.querySelectorAll('#vPanel .tcard').length===o.cards}
     o.wins[place==='world'?'gate':'market']=win(()=>{},pid,'#'+pid+' [data-act="close"]');
     o.wins.gear=win(gearOpen,'ovGear','#gearClose');
     o.wins.quests=win(()=>questLogOpen(true),'qLog','#qLog [data-act="close"]');
@@ -1280,7 +1283,7 @@ function worldBot(m,L,god){
     const m={},mb=vis($('menuBtn'));m.btn=!!mb&&mb.width>=44&&mb.height>=44&&mb.right<=W&&mb.top>=0;
     $('menuBtn').click();await tick();m.open=on()&&!!MENU.cur;
     const tabs=[...document.querySelectorAll('#menuRail .mtab')].map(e=>({n:e.id,r:vis(e)})).filter(x=>x.r);
-    m.tabs=tabs.length;m.want=place==='world'?5:4;m.small=tabs.filter(x=>x.r.width<48||x.r.height<48).map(x=>x.n);
+    m.tabs=tabs.length;m.want=place==='world'?6:5;m.small=tabs.filter(x=>x.r.width<48||x.r.height<48).map(x=>x.n);
     m.out=tabs.filter(x=>x.r.left<0||x.r.right>W+0.5||x.r.top<0||x.r.bottom>H+0.5).map(x=>x.n);
     const seen=[];for(const t of MENU.tabs){const b=$(t.id);if(!vis(b))continue;if(MENU.cur!==t.id)b.click();await tick();
       const xr=vis(document.querySelector('#'+t.win+' .wx'));
@@ -1586,14 +1589,34 @@ function worldBot(m,L,god){
     enterWorld('home');o.gone=!wnpcState().cutter&&!!wnpcState().fisher;
     npcTalk(null);enterVillage();o.here=npcHere('vcutter')&&!!npcAt('vcutter')&&!npcHere('vfisher');o.arrived=RSS().cutter===2;
     o.free=Object.values(RESID.list).every(R=>npcFree(R.house.x,R.house.y+RESID.front));
-    SAVE.bag.stone=(SAVE.bag.stone||0)+10;const st=SAVE.bag.stone,ir=SAVE.bag.iron||0;npcTalk('vcutter');o.line=!/^npc\./.test(S.vil.dlgLine);
+    SAVE.bag.stone=(SAVE.bag.stone||0)+10;const st=SAVE.bag.stone,ir=SAVE.bag.iron||0;npcTalk('vcutter');o.line=!/^npc\./.test(S.vil.dlgLine);const svc=()=>{const t=document.querySelector('#npcDlg [data-act="tab"][data-tab="serve"]');if(t)t.click()};svc();
     const b=document.querySelector('#npcDlg [data-act="res"]');o.btn=!!b&&!b.disabled;if(b)b.click();o.swap=SAVE.bag.stone===st-10&&SAVE.bag.iron===ir+2;
-    Q.done.wCatch=1;bagAdd('perch',1);const c0=SAVE.bag.coins||0;npcTalk('vfisher');const f=document.querySelector('#npcDlg [data-act="res"][data-k="perch"]');if(f)f.click();
+    Q.done.wCatch=1;bagAdd('perch',1);const c0=SAVE.bag.coins||0;npcTalk('vfisher');svc();const f=document.querySelector('#npcDlg [data-act="res"][data-k="perch"]');if(f)f.click();
     o.fish=SAVE.bag.coins===c0+RES.list.perch.sell*RESID.list.fisher.mult;
     npcTalk(null);Object.assign(Q.done,d0);for(const k of ['wGolems','wCatch'])if(!d0[k])delete Q.done[k];SAVE.resid=r0;enterVillage();return o});
   check(rsd.away&&rsd.inWorld&&rsd.bye&&rsd.gone&&rsd.here&&rsd.arrived&&rsd.free&&rsd.line&&rsd.btn&&rsd.swap&&rsd.fish,'הכפר מתמלא: '+(rsd.away&&rsd.inWorld?'החוצבת באחו':'החוצבת לא במקום')+(rsd.bye?', נפרדת אחרי הקווסט האחרון':', לא נפרדת')+
     (rsd.gone?', נעלמת מהאחו':', נשארת באחו')+(rsd.here&&rsd.arrived?', גרה בכפר עם חגיגה':', לא הגיעה לכפר')+(rsd.free?'':', בית במקום אסור')+(rsd.line?'':', אין לה משפט')+
     (rsd.btn&&rsd.swap?', אבנים לברזל':', ההחלפה לא עובדת')+(rsd.fish?', והדייג קונה דגים':', הדייג לא קונה'));
+  // חלונות המבנים בתבנית אחת (bwin.js, ניר 2.11: "כל החנויות לא נוחות"): כל מבנה נפתח עם שם, שורה של מה עושים בו, גוף ו-✕,
+  // ושום כפתור לא יוצא מהחלון. בלשונית השדרוג יש מחיר. במחסן "הכל למחסן" ו"הכל לתרמיל", ובשוק קונים אבן. על עותק של השמירה
+  const bw=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={bad:[],n:0,all:Object.keys(VILLAGE.b).length};
+    try{npcTalk(null);enterVillage();for(const k in VILLAGE.b)SAVE.village[k]=Math.max(2,vLv(k));SAVE.village.stash=VILLAGE.max;SAVE.stash={};bagAdd('coins',500);bagAdd('wood',40);
+      for(const k in VILLAGE.b){S.vil.ui='';if(!vOpen(k)){o.bad.push(k+' לא נפתח');continue}const pn=$('vPanel'),r=pn.getBoundingClientRect();
+        const ok=pn.classList.contains('bw')&&!!pn.querySelector('.bwhd h3')&&!!pn.querySelector('.bwhd .bwt p')&&!!pn.querySelector('.bwbody')&&!!pn.querySelector('.bwhd [data-act="close"]');
+        const out=[...pn.querySelectorAll('button')].filter(b=>{const q=b.getBoundingClientRect();return q.width&&(q.left<r.left-1||q.right>r.right+1||q.top<r.top-1)}).length;
+        if(!ok||out)o.bad.push(k+(ok?'':' בלי תבנית')+(out?' '+out+' כפתורים בחוץ':''));
+        const up=pn.querySelector('[data-act="tab"][data-tab="up"]');if(up){up.click();if(!pn.querySelector('.bwup')||!pn.querySelector('.bwprice .bwpc'))o.bad.push(k+': שדרוג בלי מחיר')}
+        o.n++;S.vil.tab={}}
+      const q=s=>document.querySelector('#vPanel '+s);S.vil.ui='';vOpen('stash');const w0=SAVE.bag.wood;
+      q('[data-act="stashAll"][data-dir="in"]').click();o.allIn=SAVE.stash.wood===w0&&!SAVE.bag.wood&&!SAVE.stash.coins;
+      q('[data-act="stashAll"][data-dir="out"]').click();o.allOut=SAVE.bag.wood===w0&&!SAVE.stash.wood;
+      S.vil.ui='';vOpen('market');const c0=SAVE.bag.coins,s0=SAVE.bag.stone||0,b=q('.tcard[data-act="buy"][data-r="stone"]');o.buyBtn=!!b&&!b.disabled;
+      if(o.buyBtn)b.click();o.buy=SAVE.bag.stone===s0+vLot('stone')&&SAVE.bag.coins===c0-vPrice('stone','buy')*vLot('stone');
+      vShut();o.closed=$('vPanel').hidden;
+    }finally{const d=JSON.parse(bak);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,d);saveNow();if(S.vil){S.vil.tab={};S.vil.ui='';villageHud()}}
+    return o});
+  check(!bw.bad.length&&bw.n===bw.all&&bw.allIn&&bw.allOut&&bw.buy&&bw.closed,'חלונות המבנים: '+bw.n+'/'+bw.all+' בתבנית אחת (שם, מה עושים, לשוניות, ✕)'+(bw.bad.length?', בעיות: '+bw.bad.join(' | '):'')+
+    (bw.allIn?', "הכל למחסן" עובד':', "הכל למחסן" לא עובד')+(bw.allOut?', "הכל לתרמיל" עובד':', "הכל לתרמיל" לא עובד')+(bw.buy?', קנייה בשוק עובדת':bw.buyBtn?', הקנייה לא עברה':', אין כפתור קנייה')+(bw.closed?'':', לא נסגר'));
   // קפיצה בין פנסים (travel.js): בשער בכפר "לאן?" עם הפנסים הדולקים, קפיצה לאגם ליד פנס המים, "חזרה לכפר" ליד הפנס (לא באמצע קרב), וקפיצה ממפת העולם
   const lj=await page.evaluate(()=>{const o={};SAVE.story.water=true;P.inv=99;npcTalk(null);enterVillage();$('ovDaily').hidden=true;
     S.vil.gate=true;S.vil.open='gate';S.vil.ui='';villageHud();o.list=document.querySelectorAll('#vPanel [data-act="jump"]').length;o.lit=travelLit().length;
@@ -1973,12 +1996,30 @@ function worldBot(m,L,god){
     // בלי מים: אין כפתור. הקווסט של הדייג סופר דגים. בישול אצל הפונדקאית: לוקח את הדגים ונותן ארוחה, והחיזוק חל בעולם ונגמר בזמן
     SAVE.quests.active.wCatch={p:[0]};questEvent('fish','minnow',3);out.quest=qReady(QBY.wCatch);delete SAVE.quests.active.wCatch;
     bagAdd('minnow',2);bagAdd('perch',1);const n0=(SAVE.bag.minnow||0)+(SAVE.bag.perch||0);
-    enterVillage();npcTalk('inn');const cb=document.querySelector('#npcDlg [data-act="cook"][data-m="stew"]');out.cookBtn=!!cb&&!cb.disabled;if(cb)cb.click();
+    enterVillage();npcTalk('inn');document.querySelector('#npcDlg [data-act="tab"][data-tab="cook"]').click();const cb=document.querySelector('#npcDlg [data-act="cook"][data-m="stew"]');out.cookBtn=!!cb&&!cb.disabled;if(cb)cb.click();
     out.taken=n0-((SAVE.bag.minnow||0)+(SAVE.bag.perch||0))===3;out.meal=(FS().meal||{}).id;npcTalk(null);
     enterWorld('home');const hp0=P.maxHp;out.on=S.wd.meal==='stew';
     P.x=9999;P.y=9999;out.noBtn=(fishBtn(true),document.getElementById('fishBtn').hidden);
     FS().meal.t=0.01;fishUpdate(0.1);out.off=!S.wd.meal&&!FS().meal&&P.maxHp===hp0-FISH.meals.stew.buff.hp;
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return out});
+  // משחקי השאול (moba.js, docs/moba.md): משחק שלם, מואץ, שבו כל ששת הגיבורים בוטים. נגמר, כל הסקילים הוטלו, יש שליטה בקהל וקומבו
+  const mb=await page.evaluate(en=>{const o={};try{
+    const heb=x=>/[֐-׿]/.test(x);
+    mobaOpen();o.pick=document.querySelectorAll('#mbWin [data-kit]').length;if(en&&heb($('mbWin').innerText))o.he=$('mbWin').innerText.slice(0,60);
+    document.querySelector('#mbWin [data-kit="tank"]').click();o.on=!!S.mb&&document.body.classList.contains('mb');
+    if(en&&!o.he&&heb($('mbHud').innerText))o.he=$('mbHud').innerText.slice(0,60);
+    MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
+    mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
+    mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
+    mbWord=function(u,w){cmb[w]=(cmb[w]||0)+1;return f.word(u,w)};
+    let n=0;while(!MB.over&&n<MOBA.maxT*30+60){mobaUpdate(1/30);n++}
+    mbCast=f.cast;mbCC=f.cc;mbWord=f.word;
+    const kits=[...new Set(MB.u.filter(u=>u.k==='hero').map(u=>u.kit))];
+    o.kits=kits.join(',');o.miss=kits.flatMap(k=>MB_SLOTS.map(s=>MBKIT[k][s].id)).filter(id=>!casts[id]);o.mage=kits.includes('mage');
+    o.t=Math.round(MB.t);o.over=MB.over;o.towers=MB.u.filter(u=>u.k==='tower'&&u.dead).length;o.base=MB.u.some(u=>u.k==='base'&&u.dead);
+    o.cc=cc;o.cmb=cmb;o.lv=Math.max(...MB.u.filter(u=>u.k==='hero').map(u=>u.lvl));o.score=MB.score.join(':');
+    mobaExit();o.out=!S.mb&&!document.body.classList.contains('mb');
+  }catch(e){o.err=String(e)}return o},CFG.lang==='en');
   // שלל לפי דמות (LOOT.gear ב-loot.js): לכל דמות רוב הנשקים בעולם שלה, יש לה נשק בכל שכבה, ה"מזל" מבטיח נשק שלה, וברמה 20 השכבה גבוהה יותר
   const clsL=await page.evaluate(()=>{const bak=JSON.stringify(SAVE.hero),cp=SAVE.clsPity,out={};
     try{for(const c in HEROES.list){const A=HEROES.list[c].arms;SAVE.hero.start=c;let w=0,m=0,t1=0,t20=0;
@@ -2042,7 +2083,7 @@ function worldBot(m,L,god){
   check(L.gearW==='gun'&&L.gearDmg===gx,'ציוד בריצה: מתחיל עם '+(L.gearW==='gun'?'קשת':L.gearW)+', נזק קשת x'+L.gearDmg+' (צפוי x'+gx+')');
   check(L.won==null||!!L.gearLoot,'שלל ציוד: '+(L.gearLoot||'לא נפל')+(L.won!=null?' (בוס = פריט בטוח)':''));
   const st=L.stash||{};
-  check(L.stashLv===1&&st.swIn&&st.wIn&&st.swOut&&st.saved,'מחסן: '+(L.stashLv===1?'נבנה':'לא נבנה')+(st.swIn?', חרב נכנסה':', חרב לא נכנסה')+(st.wIn?', עץ נכנס':', עץ לא נכנס')+
+  check(L.stashLv===1&&st.swIn&&st.wTap&&st.wIn&&st.swOut&&st.saved,'מחסן: '+(L.stashLv===1?'נבנה':'לא נבנה')+(st.swIn?', חרב נכנסה':', חרב לא נכנסה')+(st.wTap?', נגיעה העבירה '+st.move+' עץ':', נגיעה לא העבירה')+(st.wIn?', לחיצה ארוכה את כל העץ':', עץ לא נכנס')+
     (st.swOut?', חרב חזרה לתרמיל':', חרב לא חזרה')+(st.saved?', נשמר':', לא נשמר')+' ('+st.used+' מתוך '+st.cap+')');
   check(L.rgOpen&&L.rgPaused&&L.rgHp===rgHp&&L.rgSaved&&L.rgClosed,'ציוד באמצע ריצה: '+(L.rgOpen?'נפתח':'לא נפתח')+(L.rgPaused?', המשחק עצר':', המשחק לא עצר')+
     ', חיים +'+L.rgHp+' (צפוי +'+rgHp+')'+(L.rgSaved?', נשמר':', לא נשמר')+(L.rgClosed?', ממשיכים לשחק':', לא נסגר'));
@@ -2196,6 +2237,13 @@ function worldBot(m,L,god){
   check(Object.keys(setT).length&&!setBad.length,'סטים של ציוד: '+Object.keys(setT).length+' סטים, 2 ו-4 חלקים נותנים בונוס'+(setBad.length?' · בעיה: '+setBad.join(', '):''));
   check(pt.evo==='1→2→3'&&pt.evoSaved&&pt.evoFx&&pt.fxOk,'פיוחו מתפתחת: '+(pt.evo||'לא נבדק')+(pt.evoSaved?', נשמר':', לא נשמר')+(pt.evoFx?', עם חגיגה':', בלי חגיגה')+(pt.fxOk?'':', להבה בשלב 3 לא מצאה את הזנב'));
   if(CFG.gfx==='3d')check(pt.r3&&pt.clips==='ok','פיוחו בתלת-ממד: '+(pt.r3?'נראית':'לא נראתה')+(pt.clips==='ok'?', כל 7 האנימציות נטענו':', חסרות: '+pt.clips));
+  check(!mb.err&&mb.pick===4&&mb.on&&mb.out,'משחקי השאול: '+(mb.err||'חלון בחירה עם '+mb.pick+' דמויות'+(mb.on?', המשחק נפתח':', לא נפתח')+(mb.out?', יציאה עובדת':', היציאה לא עובדת')));
+  if(!mb.err){
+    check(mb.over,'משחקי השאול: משחק של בוטים '+(mb.over?'נגמר':'לא נגמר')+' אחרי '+t(mb.t)+' · '+mb.towers+' מגדלים נפלו'+(mb.base?', בסיס נהרס':', נגמר בזמן')+' · הריגות '+mb.score+' · רמה עד '+mb.lv);
+    check(!mb.miss.length,'משחקי השאול: סקילים ('+mb.kits+') '+(mb.miss.length?'לא הוטלו: '+mb.miss.join(', '):'כולם הוטלו, כולל סקיל-העל'));
+    check(mb.cc.stun>0&&mb.cc.taunt>0&&(!mb.mage||(mb.cmb.shock||0)+(mb.cmb.freeze||0)>0),'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
+    if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');
+  }
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
 
   console.log('ריצה: seed '+CFG.seed+', '+t(L.t)+' זמן משחק'+(CFG.god?', עם חסינות':'')+(CFG.lang==='en'?', באנגלית':'')+(CFG.gfx==='2d'?', בדו-ממד':', בתלת-ממד')+(CFG.shots?', צילומים ב-'+CFG.shots:''));

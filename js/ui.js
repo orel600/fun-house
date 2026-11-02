@@ -14,6 +14,7 @@ const WINS=[
   {id:'ovDaily',close:()=>dailyClose(),backdrop:true},
   {id:'ovTrade',close:()=>tradeClose(),backdrop:true},   // מסחר עם חבר (trade.js), נפתח מעל הביקור
   {id:'ovVisit',close:()=>visitClose(),backdrop:true},
+  {id:'ovMoba',close:()=>mobaPickClose(),backdrop:true},   // משחקי השאול: בחירת דמות וסוף (moba.js)
   {id:'ovEnd',close:()=>storyEndClose(),backdrop:true},   // "תודה ששיחקת" בסוף העלילה (story.js)
   {id:'npcDlg',close:()=>S.wd?wnpcTalk(null):npcTalk(null),outside:true},
   {id:'qLog',close:()=>questLogOpen(false),outside:true},
