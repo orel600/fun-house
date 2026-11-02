@@ -74,6 +74,7 @@
   <button class="mtab" id="qBtn" role="tab"><span class="ni" aria-hidden="true">📜</span><span data-t="q.log"></span><b id="qBadge" hidden></b></button>
   <button class="mtab" id="bookBtn" role="tab"><span class="ni" aria-hidden="true">📖</span><span data-t="book.btn"></span><b id="bBadge" hidden></b></button>
   <button class="mtab" id="wMapBtn" role="tab"><span class="ni" aria-hidden="true">🗺️</span><span data-t="wm.title"></span></button>
+  <button class="mtab" id="mbTab" role="tab"><span class="ni" aria-hidden="true">⚔️</span><span data-t="mb.title"></span></button>
   <button class="mtab" id="setBtn" role="tab"><span class="ni" aria-hidden="true">⚙️</span><span data-t="set.title"></span></button>
 </nav>
 <!-- מתנה יומית שעוד לא נלקחה: כפתור עגול קטן בפינה העליונה, מתחת להשתקה. לא בסרגל, כדי שלא ידחוף כפתורים החוצה (js/daily.js) -->
@@ -86,6 +87,16 @@
 <div class="qlog npcdlg win" id="npcDlg" hidden></div>
 <!-- ספר ההרפתקאות: יצורים, פריטים ומשאבים שנמצאו, ופרס כל כמה רשומות (js/book.js) -->
 <div class="qlog win bookwin" id="bookWin" hidden></div>
+
+<!-- משחקי השאול (js/moba.js): הניקוד והשעון למעלה, הרמה והחיים בפינה, 3 סקילים בפינה הימנית, וחלון לבחירת דמות ולסוף -->
+<div class="mbhud" id="mbHud" hidden>
+  <div class="mbtop"><b class="mbs0" id="mbS0">0</b><span id="mbClock">0:00</span><b class="mbs1" id="mbS1">0</b></div>
+  <div class="mbme"><b class="mblv" id="mbLv">1</b><div class="mbbars"><div class="mbhp"><i id="mbHp"></i></div><div class="mbxp"><i id="mbXp"></i></div></div></div>
+  <p class="mbresp" id="mbResp" hidden></p>
+  <button class="wx mbexit" id="mbExit" data-ta="mb.exit">✕</button>
+</div>
+<div class="skills mbsk" id="mbSk" role="group" data-ta="sk.group" hidden></div>
+<div class="ov gearov" id="ovMoba" hidden><div class="panel win mbwin" id="mbWin"></div></div>
 
 <div class="banner" id="banner"></div>
 <!-- אפליקציה מותקנת שמוחזקת לאורך: בקשה לסובב (js/pwa.js) -->
@@ -137,6 +148,7 @@
         <button class="lang" data-lang="en" lang="en">English</button>
       </div>
       <button class="lang" id="helpBtn" data-t="help.btn"></button>
+      <button class="lang mbbtn" id="mbBtn" data-t="mb.btn"></button>
     </div>
     <div class="smid">
       <h1 data-t="title"></h1>
@@ -365,6 +377,9 @@
 <script src="js/wisps.js"></script>   <!-- אורות מרחפים במקום החפצים המסתובבים, בעולם ובכפר (docs/plan-fx.md) -->
 <script src="js/render.js"></script>
 <script src="js/feed.js"></script>   <!-- פיד הודעות בצד, בעולם ובכפר (docs/plan-hud.md פרק 6) -->
+<script src="js/moba-kits.js"></script>   <!-- משחקי השאול: מובה 3 על 3 עם בוטים (docs/moba.md) -->
+<script src="js/moba.js"></script>
+<script src="js/moba-bot.js"></script>
 <script src="js/input.js"></script>
 <script src="js/main.js"></script>
 <script src="js/perf.js"></script>
