@@ -117,7 +117,7 @@ function botStep({god,en}){
   for(const f of floats)if(/^\+\d+$/.test(f.txt))L.gainMax=Math.max(L.gainMax||0,+f.txt.slice(1));
   // החלפה רק בין נשקים שלבושים. עם נשק אחד הכפתור מוסתר, ובודקים את זה
   const useWeapon=w=>{if(P.weapon!==w&&wHeld().length>1){swapWeapon();L.swaps++;m.swapAt=S.t}};
-  L.swapBtn=document.getElementById('swap').hidden===(wHeld().length<2);L.nHeld=wHeld().length;
+  L.swapBtn=document.getElementById('swap').hidden===(wHeld().length<2);L.nHeld=Math.max(L.nHeld||0,wHeld().length);   // הכי הרבה נשקים ביד בריצה: בדרך הבוט יכול למכור או ללבוש את הנשק השני, וההחלפות שכבר נספרו נשארות
   // הנשק שסוג הנזק שלו הכי טוב נגד האויב
   const best=e=>(e.mult[P.dt.sword]??1)>=(e.mult[P.dt.gun]??1)?'sword':'gun';
   L.hits={...S.hits};L.dt=P.dt.sword+'/'+P.dt.gun;
@@ -1048,6 +1048,25 @@ function worldBot(m,L,god){
       drawOrbits();r.orbDraw=W.draws>d0&&W.lights>=5;r.orbFlash=W.flashes>f0;
       e3.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // רגע גילוי של סקיל חדש בעולם (skillreveal.js): מתחיל אחרי SKREVEAL.delay, עוצר את הזמן ומקרב, האייקון עף ונגמר לבד, פעם אחת לכל סקיל.
+  // ההטלה הראשונה גדולה, נגיעה מדלגת, ודרגה גבוהה בעץ מגדילה ומחליפה צבע. אחר כך המשחק ממשיך
+  const skr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=[];SAVE.hero.tree={};enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}},s0={...skrStat},id=S.sk.ids[0];r.id=id;
+      run(SKREVEAL.delay*0.5);r.wait=!SKR;run(SKREVEAL.delay*0.6+0.05);hud();
+      r.start=!!SKR&&skrStat.starts===s0.starts+1&&S.hitstop>0&&SAVE.hero.skSeen.includes(id);
+      SKR.t0-=SKREVEAL.zin+0.05;r.zoom=skrZoom()>1;r.fly=!!document.querySelector('.skrfly');
+      SKR.t0-=SKREVEAL.dur+0.4;render();camZoom();   // השעון בבדיקה עומד: מזיזים את ההתחלה אחורה
+      r.end=!SKR&&!document.querySelector('.skrfly')&&skrStat.ends===s0.ends+1&&skrZoom()===1&&S.mode==='play';
+      run(1);r.once=skrStat.starts===s0.starts+1;
+      const e=addEnemy('grunt',P.x+150,P.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;S.sk.cd[0]=0;S.hitstop=0;
+      const b0=skrStat.big;r.big=wskUse(id)&&skrStat.big===b0+1;run(0.6);r.on=e.hp<e.max;
+      SAVE.hero.skSeen=[];run(0.02);r.skipStart=!!SKR;if(SKR)SKR.t0-=0.3;
+      dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));r.skip=!SKR&&skrStat.skips===s0.skips+1&&!(S.hitstop>0);
+      const g0=skSize(id),c0=skCol(id);SAVE.hero.tree={[SKREVEAL.branch[id]]:['w1','x','y','z','u','v']};
+      r.grade=skrGrade(id)===SKREVEAL.grade.max&&skSize(id)>g0&&skCol(id)!==c0&&c0===dtCol(skDef(id).dt);
+      e.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
+    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // פיד הודעות (feed.js): בעולם שלל שנאסף נכנס לפיד בצד ולא על הדמות, אותו משאב מתאחד, ציוד בצבע הדרגה, עד 3 שורות, נעלם אחרי FEED.life, ובזירה לא פועל
   const feed=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{enterWorld('home');enemies=[];FL.length=0;const f0=floats.length,st=FEED.stat,d0=st.drawn;
@@ -1796,25 +1815,34 @@ function worldBot(m,L,god){
     document.querySelector('#gTabs [data-tab="boots"]').click();o.filter=[...document.querySelectorAll('#gItems [data-id]')].every(e=>gItem(e.dataset.id).slot==='boots');
     document.querySelector('#gActs [data-act="best"]').click();o.best=SAVE.gear.boots[0]==='swiftBoots';
     o.down=!!t('starterBoots')&&!!t('starterBoots').querySelector('.gmk.down');
-    const coins=SAVE.bag.coins||0,l=gSellList();document.querySelector('#gActs [data-act="sell"]').click();
-    o.ask=!!document.querySelector('#gDetail [data-act="sellYes"]')&&(SAVE.bag.starterBoots||0)>0;
-    // ניר 2.11: "המכירה נתקעת". הרשימה נגללת באצבע (לא touch-action:none), נגיעה בפריט שומרת אותו ומחזירה אותו, ואחרי המכירה יוצאים ממצב מכירה
-    const skq=k=>document.querySelector('#gDetail [data-sk="'+k+'"]'),sk0=document.querySelector('#gDetail [data-sk]'),skk=sk0&&sk0.dataset.sk;
-    o.scroll=!!sk0&&getComputedStyle(sk0).touchAction==='pan-y'&&getComputedStyle(document.querySelector('#gDetail .gsell')).overflowY==='auto';
-    if(skk){skq(skk).click();o.keep=skq(skk).getAttribute('aria-pressed')==='false'&&!gSellPick()[skk];skq(skk).click();o.keep=o.keep&&skq(skk).getAttribute('aria-pressed')==='true'&&!!gSellPick()[skk]}
-    document.querySelector('#gDetail [data-act="sellYes"]').click();
-    o.out=!GUI.sell&&!document.querySelector('#gDetail [data-act="sellYes"]')&&!$('ovGear').hidden;
+    // מכירה (ניר 2.11: "לא ברור איך משתמשים... מכרתי משהו שלא התכוונתי, ואין אפשרות למכור הכל"): מצב בחירה, ✓ בנגיעה, בחר חלשים, אישור ליקר, נעילה והחזר
+    bagAdd('ironSword');bagAdd('stormBow');document.querySelector('#gTabs [data-tab="items"]').click();
+    t('ironSword').click();document.querySelector('#gDetail [data-act="lock"]').click();o.lock=gLocked('ironSword');
+    const coins=SAVE.bag.coins||0,b0=Object.assign({},SAVE.bag),dq=s=>document.querySelector('#gDetail '+s);
+    document.querySelector('#gActs [data-act="sell"]').click();
+    o.ask=GUI.sell&&!!dq('[data-act="sellYes"]')&&dq('[data-act="sellYes"]').disabled&&(SAVE.bag.starterBoots||0)>0;   // נכנסים למצב בחירה, ולא מוכרים כלום
+    dq('[data-act="sellWeak"]').click();const pk=gSellPick();o.list=Object.keys(pk).join(',');
+    o.weak=pk.starterBoots===b0.starterBoots&&!pk.stormBow&&!pk.ironSword&&pk.wardenBoots===b0.wardenBoots-1;   // לא יקר, לא נעול, ומסט נשאר עותק
+    o.scroll=getComputedStyle(t('starterBoots')).touchAction==='pan-y'&&getComputedStyle(dq('.gsell')).overflowY==='auto';
+    t('starterBoots').click();o.keep=t('starterBoots').getAttribute('aria-pressed')==='false'&&!gSellPick().starterBoots;
+    t('starterBoots').click();o.keep=o.keep&&t('starterBoots').getAttribute('aria-pressed')==='true'&&gSellPick().starterBoots===b0.starterBoots&&t('ironSword').disabled;
+    t('stormBow').click();dq('[data-act="sellYes"]').click();o.rare=!!dq('[data-act="sellSure"]')&&SAVE.bag.stormBow===b0.stormBow;   // יקר: אישור קודם
+    dq('[data-act="sellBack"]').click();t('stormBow').click();dq('[data-act="sellYes"]').click();
+    o.out=!GUI.sell&&!dq('[data-act="sellYes"]')&&!$('ovGear').hidden;
+    o.sold=!SAVE.bag.starterBoots&&SAVE.bag.wardenBoots===1&&SAVE.bag.stormBow===b0.stormBow&&SAVE.bag.ironSword===b0.ironSword&&(SAVE.bag.coins||0)>coins;o.got=(SAVE.bag.coins||0)-coins;
+    document.querySelector('#gActs [data-act="undo"]').click();
+    o.undo=SAVE.bag.starterBoots===b0.starterBoots&&SAVE.bag.wardenBoots===b0.wardenBoots&&(SAVE.bag.coins||0)===coins&&!document.querySelector('#gActs [data-act="undo"]');
     // חפץ מסתובב (gOrbFacts): בפרטים רואים מה הוא נותן, וההשוואה מראה ▲ ולא "בלי שינוי"
     SAVE.gear.orbit=SAVE.gear.orbit.map(()=>null);bagAdd('cloverOrb');document.querySelector('#gTabs [data-tab="items"]').click();
     const ob=document.querySelector('#gItems [data-id="cloverOrb"]');if(ob)ob.click();const ot=$('gDetail').innerText;
     o.orb=!!ob&&/▲/.test(ot)&&!ot.includes(T('gear.same'))&&ot.includes(T('orb.f.crit'))&&ot.includes(T('orb.f.loot'));o.orbTxt=ot.replace(/\s+/g,' ').slice(0,90);
-    o.sold=!SAVE.bag.starterBoots&&SAVE.bag.wardenBoots===1&&!!SAVE.bag.swiftBoots===false&&(SAVE.bag.coins||0)>coins;o.got=(SAVE.bag.coins||0)-coins;o.list=Object.keys(l).join(',');
     gearClose();const g1=gearStats(),k=JSON.parse(keep);SAVE.bag=k.bag;SAVE.gear=k.gear;SAVE.gseen=k.seen||undefined;gearLive(g1);celebrate=c0;saveNow();return o});
-  check(!bg.bad.length&&bg.chips&&bg.sorted&&bg.up&&bg.new&&bg.seen&&bg.filter&&bg.best&&bg.down&&bg.ask&&bg.sold&&bg.scroll&&bg.keep&&bg.out&&bg.orb,
+  check(!bg.bad.length&&bg.chips&&bg.sorted&&bg.up&&bg.new&&bg.seen&&bg.filter&&bg.best&&bg.down&&bg.ask&&bg.sold&&bg.scroll&&bg.keep&&bg.out&&bg.orb&&bg.lock&&bg.weak&&bg.rare&&bg.undo,
     'ציוד ותרמיל: '+(bg.bad.length?'פריט נדיר חלש מדי: '+bg.bad.join(', '):'כל נדירות חזקה מזו שמתחת')+(bg.chips?', מסננים':', אין מסננים')+(bg.sorted?', ממוין':', לא ממוין')+
     (bg.up&&bg.down?', ▲/▼':', חסר ▲/▼')+(bg.new&&bg.seen?', נקודה לחדש':', הנקודה לא עובדת')+(bg.filter?'':', המסנן לא מסנן')+(bg.best?', ללבוש הכי טוב':', "הכי טוב" לא עבד')+
-    (bg.ask?', אישור בחלון':', בלי אישור')+(bg.sold?', נמכרו ('+bg.list+', +'+bg.got+')':', המכירה לא עבדה ('+bg.list+')')+
-    (bg.scroll?', הרשימה נגללת':', הרשימה לא נגללת באצבע')+(bg.keep?', נגיעה שומרת פריט':', נגיעה בפריט לא עובדת')+(bg.out?', יוצאים ממצב מכירה':', נתקע במצב מכירה')+
+    (bg.ask?', מצב בחירה':', אין מצב בחירה')+(bg.weak?', בחר חלשים ('+bg.list+')':', "בחר חלשים" בחר לא נכון ('+bg.list+')')+(bg.lock?', נעילה':', הנעילה לא עובדת')+
+    (bg.rare?', אישור ליקר':', יקר בלי אישור')+(bg.sold?', נמכרו (+'+bg.got+')':', המכירה לא עבדה')+(bg.undo?', החזר':', "החזר" לא החזיר')+
+    (bg.scroll?', נגלל':', לא נגלל באצבע')+(bg.keep?', נגיעה מסמנת':', נגיעה בפריט לא מסמנת')+(bg.out?', יוצאים ממצב מכירה':', נתקע במצב מכירה')+
     (bg.orb?', חפץ מסתובב מראה מה הוא נותן':', חפץ מסתובב בלי סטטים ("'+bg.orbTxt+'")'));
   // שומרים חוזרים (story.js, STORY.rematch): כפתור 🔔 ליד פנס דולק רק אחרי הסוף ובדרגה אמיץ ומעלה. השומר יוצא חזק יותר, נופל שלל, ופעם ביום לכל שומר
   const rm=await page.evaluate(()=>{
@@ -1868,6 +1896,16 @@ function worldBot(m,L,god){
     SAVE.gear.weapon='oakBow';R3D._hl=null;L=heroLook();o.noBow=!L.props.shield;
     SAVE.gear=JSON.parse(g0);SAVE.bag=JSON.parse(b0);R3D._hl=null;return o});
   check(gv.shield&&gv.head&&gv.in3d&&gv.glow&&gv.noBow,'ציוד שרואים: '+(gv.shield?'מגן זהב עם להב כסף':'אין מגן')+(gv.head?', קסדה זוהרת מקמע זהב':', קסדה בלי זוהר')+(gv.in3d?'':', המגן לא נראה בתלת-ממד')+(gv.glow?', הנשק זוהר':', הנשק לא זוהר')+(gv.noBow?', ועם קשת אין מגן':', מגן גם עם קשת'));
+  // צללים (look-hd.js, HD.shadow): בתלת-ממד בעולם השמש מטילה צל, הגיבור מטיל ועצים לא, והמתג בהגדרות מכבה ומדליק
+  if(CFG.gfx==='3d'){const sd=await page.evaluate(()=>{
+    if(!R3D.on||!R3D.ready)return {skip:true};
+    const o={},sun=R3D.scene.children.find(x=>x.isDirectionalLight),u=HD.sh.user,de=R3D.drawEvery,casts=x=>{let c=false;x.traverse(m=>{if(m.isMesh&&m.castShadow)c=true});return c};
+    const draw=()=>{try{render3d(W/2-P.x,H/2-P.y)}catch(e){o.err=String(e)}};
+    enterWorld('home');R3D.drawEvery=0;draw();
+    o.on=sun.castShadow;o.hero=casts(R3D.player.root);o.trees=Object.values(R3D.wld.nodes).filter(casts).length;
+    setShadow(false);draw();o.off=!sun.castShadow;setShadow(true);draw();o.back=sun.castShadow;
+    HD.sh.user=u;try{if(u)localStorage.setItem(HD.shadow.key,u);else localStorage.removeItem(HD.shadow.key)}catch(e){}R3D.drawEvery=de;return o});
+    check(sd.skip||(sd.on&&sd.hero&&!sd.trees&&sd.off&&sd.back&&!sd.err),'צללים: '+(sd.skip?'אין תלת-ממד':(sd.on?'דלוקים בעולם':'לא דלוקים')+(sd.hero?', הגיבור מטיל צל':', הגיבור בלי צל')+(sd.trees?', '+sd.trees+' מקורות מטילים צל (רק דמויות ומבנים)':', עצים וסלעים בלי')+(sd.off&&sd.back?', המתג מכבה ומדליק':', המתג לא עובד')+(sd.err?', שגיאה: '+sd.err:'')))}
   // מסלול רמות (levelpath.js): מה נפתח בכל רמה נגזר מהטבלאות, "הבא" בחלון הדמות, ובעליית רמה הבזק וכרטיס עם מה שנפתח ומה הבא
   const lp=await page.evaluate(()=>{
     enterWorld('home');const o={};
@@ -1919,6 +1957,15 @@ function worldBot(m,L,god){
     P.x=9999;P.y=9999;out.noBtn=(fishBtn(true),document.getElementById('fishBtn').hidden);
     FS().meal.t=0.01;fishUpdate(0.1);out.off=!S.wd.meal&&!FS().meal&&P.maxHp===hp0-FISH.meals.stew.buff.hp;
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return out});
+  // שלל לפי דמות (LOOT.gear ב-loot.js): לכל דמות רוב הנשקים בעולם שלה, יש לה נשק בכל שכבה, ה"מזל" מבטיח נשק שלה, וברמה 20 השכבה גבוהה יותר
+  const clsL=await page.evaluate(()=>{const bak=JSON.stringify(SAVE.hero),cp=SAVE.clsPity,out={};
+    try{for(const c in HEROES.list){const A=HEROES.list[c].arms;SAVE.hero.start=c;let w=0,m=0,t1=0,t20=0;
+      const tiers=new Set(Object.keys(GEAR.items).filter(id=>A.includes(GEAR.items[id].w)).map(id=>GEAR.items[id].tier));
+      SAVE.hero.level=1;for(let i=0;i<600;i++){const it=gItem(lootRoll());t1+=it.tier;if(it.slot==='weapon'){w++;if(A.includes(it.w))m++}}
+      SAVE.hero.level=20;for(let i=0;i<600;i++)t20+=gItem(lootRoll()).tier;
+      SAVE.clsPity=LOOT.gear.cls.pity;const p=gItem(lootRoll());
+      out[c]={share:Math.round(m/Math.max(1,w)*100),all:tiers.size===GEAR.tiers.length,pity:A.includes(p.w)&&SAVE.clsPity===0,up:t20>t1*1.5}}}catch(e){out.err=e.message}
+    SAVE.hero=JSON.parse(bak);SAVE.clsPity=cp;return out});
   await browser.close();
 
   const t=s=>s==null?'-':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
@@ -2046,6 +2093,10 @@ function worldBot(m,L,god){
     fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
+  check(!skr.err&&skr.wait&&skr.start&&skr.zoom&&skr.fly&&skr.end&&skr.once&&skr.big&&skr.on&&skr.skipStart&&skr.skip&&skr.grade,
+    'סקיל חדש בעולם ('+skr.id+'): '+(skr.err||[skr.wait&&skr.start?'רגע גילוי מתחיל':'לא התחיל',skr.zoom&&skr.fly?'מצלמה מתקרבת ואייקון עף':'בלי מצלמה או אייקון',
+    skr.end?'נגמר והמשחק ממשיך':'לא נגמר',skr.once?'פעם אחת':'חוזר',skr.big&&skr.on?'הטלה ראשונה גדולה':'הטלה ראשונה רגילה',
+    skr.skipStart&&skr.skip?'נגיעה מדלגת':'אי אפשר לדלג',skr.grade?'דרגה בעץ משנה מראה':'דרגה לא משנה'].join(', ')));
   check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw&&wsk.orbFlash,
     'סקילים בעולם ('+wsk.id+'): '+(wsk.err||[wsk.btn?'כפתור':'אין כפתור',wsk.place?'למטה מימין, מעל הסרגל':'הכפתור לא במקום',wsk.tap&&wsk.tapHit?'נגיעה יורה ופוגעת':'נגיעה לא פגעה',
     wsk.cd&&wsk.sec&&wsk.again?'קירור עם מספר':'אין קירור',wsk.drag&&wsk.dragHit?'גרירה מכוונת ופוגעת':'גרירה לא פגעה',wsk.aimDraw?'כוונת מצוירת':'אין כוונת',wsk.finger?'אצבע על הכפתור יורה':'אצבע לא ירתה',
@@ -2103,6 +2154,7 @@ function worldBot(m,L,god){
     (edge.left?', '+edge.left+' לא נאספו':', הכל נאסף')+' (הוחזרו פנימה: '+edge.kept+')');
   check(edge.gid&&edge.gBag&&edge.gSaved&&edge.gGround&&!(L.gearDrops>0),'ציוד מאויב: '+(edge.gid||'לא נפל')+(edge.gBag?' בתרמיל':' לא בתרמיל')+(edge.gSaved?', נשמר':', לא נשמר')+
     ' · בזירה לא נופל מאויבים (של אוראל): '+(L.gearDrops||0));
+  check(!clsL.err&&Object.values(clsL).every(o=>o.share>=50&&o.all&&o.pity&&o.up),'שלל לפי דמות: '+(clsL.err||Object.keys(clsL).map(c=>c+' '+clsL[c].share+'% מהנשקים'+(clsL[c].all?'':', חסרה שכבה')+(clsL[c].pity?'':', מזל שבור')+(clsL[c].up?'':', רמה 20 לא משפרת')).join(' · ')));
   if(CFG.gfx==='3d')check(g3.on&&L.actorsMax>0,g3.on?'תלת-ממד: פעיל, עד '+L.actorsMax+' דמויות במסך, עד '+L.callsMax+' ציורים בפריים':'תלת-ממד: לא עלה'+(g3.failed?' (נפל לדו-ממד)':''));
   else check(!g3.on,'דו-ממד: פעיל לפי הבחירה');
   if(CFG.lang==='en')check(!startLeak&&!L.heLeak,startLeak||L.heLeak?'שפה: נשאר טקסט בעברית: '+(startLeak||L.heLeak):'שפה: כל המסכים באנגלית, משמאל לימין');

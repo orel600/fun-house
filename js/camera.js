@@ -6,7 +6,7 @@ const CAM={steps:{near:1.2,mid:1,far:0.85},def:'mid',cur:'mid'};
 try{const v=localStorage.getItem('zm-cam');if(CAM.steps[v])CAM.cur=v}catch(e){}
 
 const camPlace=()=>S&&S.vil?'village':S&&S.wd?'world':'arena';
-function camZoom(){const p=camPlace();return p==='arena'?1:VIEW.zoom[p]*CAM.steps[CAM.cur]}
+function camZoom(){const p=camPlace(),k=typeof skrZoom==='function'?skrZoom():1;return p==='arena'?1:VIEW.zoom[p]*CAM.steps[CAM.cur]*k}   // skrZoom: רגע גילוי של סקיל (skillreveal.js)
 function camTilt(){return (VIEW.tilt[typeof S!=='undefined'?camPlace():'arena']||VIEW.tilt.arena)*Math.PI/180}
 // כמה רחוק קצה המסך מהמרכז בכיוון a (רדיאנים), ביחידות של המשחק. לאויבים שצריכים להופיע ממש מחוץ למסך (pacing.js)
 function camEdge(a){const c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a));return Math.min(c>1e-3?W/2/c:1e9,s>1e-3?H/2/s:1e9)}
