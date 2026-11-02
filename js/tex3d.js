@@ -20,7 +20,10 @@ const TEX3D={
   colors:{'#7a5532':2,'#5a3d24':2,'#b9bfc9':1,'#868d99':1,'#b24a32':3},   // חפצים בלי תמונה (PROPS3D.col): צבע -> סוג
   size:[0,56,30,30,64,38,20,24],   // כמה פיקסלים של העולם אריח אחד מכסה, לכל סוג. גדול יותר = אבנים/קרשים גדולים יותר
   strength:[0,0.85,0.7,0.7,0.75,0.6,0.35,0.6],   // כמה חזקה הדוגמה לכל סוג (0: בלי, 1: מלא)
-  aoK:{h:0.28,k:0.34},   // הצל בתחתית: עד איזה גובה (חלק מגובה המבנה), וכמה כהה בתחתית
+  aoK:{h:0.28,k:0.34},
+  // רוח בעצים (שלב 3 ב-docs/visual-plan.md): הצמרת זזה קלות, הבסיס במקום. הכל בשיידר, בלי עבודה במעבד.
+  // amp: כמה רחוק הקצה זז (חלק מגובה העץ). speed: כמה מהר. trees: מי מתנועע
+  wind:{amp:0.035,speed:1.5,trees:['n_tree','n_pine','n_acacia','n_bare','n_dead','n_bush','v_treeA','v_treeB']},   // הצל בתחתית: עד איזה גובה (חלק מגובה המבנה), וכמה כהה בתחתית
   src:null   // תמונה (data:) במקום הציור בקנבס: [A,B,C], כל אחת עם שלוש דוגמאות בערוצי R,G,B (ראו pack למטה)
 };
 
@@ -70,7 +73,7 @@ const TEX3D={
   const src=TEX3D.src||[];
   const TX=[tex(src[0]||pack(stone(),wood(),roof())),tex(src[1]||pack(rock(),leaf(),cloth())),tex(src[2]||pack(bark()))];
   const kindsOf=(set,over)=>{const k=new Array(32).fill(0),c=Object.assign({},set?TEX3D.cellsN:TEX3D.cells,over||{});for(const q in c){const [x,y]=q.split(',').map(Number);k[y*8+x]=c[q]}return k};
-  const txOn={value:0};   // 1 רק בכפר ובעולם. בזירה ובשאול הדוגמה כבויה גם בחומרים המסומנים
+  const txOn={value:0},txTime={value:0};   // 1 רק בכפר ובעולם. בזירה ובשאול הדוגמה כבויה גם בחומרים המסומנים
   TEX3D.uOn=txOn;
 
   // השיידר: רק לחומר Lambert שמסומן ב-userData.tx. מועתק לכל עותק (clone מעתיק userData), כולל מבנה שזוהר וצבוע
@@ -78,11 +81,14 @@ const TEX3D={
   PR.customProgramCacheKey=function(){return (this.userData&&this.userData.tx?'tx3d|':'')+key.call(this)};
   PR.onBeforeCompile=function(sh,r){
     obc.call(this,sh,r);const u=this.userData;if(!(u&&u.tx))return;
-    sh.uniforms.txA={value:TX[0]};sh.uniforms.txB={value:TX[1]};sh.uniforms.txC={value:TX[2]};sh.uniforms.txOn=txOn;
+    sh.uniforms.txA={value:TX[0]};sh.uniforms.txB={value:TX[1]};sh.uniforms.txC={value:TX[2]};sh.uniforms.txOn=txOn;sh.uniforms.txTime=txTime;sh.uniforms.txWind={value:u.txWind||0};sh.uniforms.txWY0={value:u.txWY0||0};sh.uniforms.txWH={value:u.txWH||1};
     sh.uniforms.txKind={value:u.txKind||kindsOf(0)};sh.uniforms.txK={value:u.txK||0};
     sh.uniforms.txH={value:u.txH||1};sh.uniforms.txAo={value:u.txAo||0};sh.uniforms.txY0={value:u.txY0||0};
     sh.uniforms.txSize={value:TEX3D.size.map(x=>1/(x||1))};sh.uniforms.txStr={value:TEX3D.strength};
-    sh.vertexShader='varying vec3 vTxP;varying vec3 vTxW;varying vec3 vTxN;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvTxP=position;vTxW=position*length(modelMatrix[0].xyz);vTxN=normal;');
+    sh.vertexShader='varying vec3 vTxP;varying vec3 vTxW;varying vec3 vTxN;uniform float txOn,txTime,txWind,txWY0,txWH;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvTxP=position;vTxW=position*length(modelMatrix[0].xyz);vTxN=normal;'+
+      // רוח: לפי הגובה בריבוע (הגזע כמעט לא זז), ושלב לפי המקום בעולם כדי שהעצים לא יזוזו יחד
+      'if(txOn>0.5&&txWind>0.0){float wh=clamp((position.y-txWY0)/txWH,0.0,1.5);wh*=wh;vec3 wq=modelMatrix[3].xyz;float wt=txTime*'+TEX3D.wind.speed.toFixed(2)+'+wq.x*0.013+wq.z*0.017;'+
+      'transformed.x+=(sin(wt)+0.35*sin(wt*2.3))*wh*txWind;transformed.z+=cos(wt*0.8)*wh*txWind*0.6;}');
     const A=TEX3D.aoK;
     sh.fragmentShader='varying vec3 vTxP;varying vec3 vTxW;varying vec3 vTxN;uniform sampler2D txA,txB,txC;uniform float txKind[32];uniform float txSize[8];uniform float txStr[8];uniform float txK,txH,txY0,txAo,txOn;\n'+
       sh.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\nif(txOn>0.5){'+
@@ -106,6 +112,8 @@ const TEX3D={
       t.traverse(o=>{if(!o.isMesh||!o.material.isMeshLambertMaterial)return;const m=o.material,u=m.userData;
         if(!m.map){const c='#'+m.color.getHexString();if(!TEX3D.colors[c])return;u.txK=TEX3D.colors[c]}   // בנוי בקוד (קקטוס, קני סוף): רק לפי הצבע
         u.tx=1;u.txKind=kinds;
+        if(TEX3D.wind.trees.includes(k)){o.geometry.computeBoundingBox();const b=o.geometry.boundingBox,w=b.clone().applyMatrix4(o.matrixWorld),r=(b.max.y-b.min.y||1)/(w.max.y-w.min.y||1);
+          u.txWY0=b.min.y-(w.min.y-all.min.y)*r;u.txWH=H*r;u.txWind=TEX3D.wind.amp*H*r}   // הגובה והבסיס של כל העץ, ביחידות של החלק
         if(ao){o.geometry.computeBoundingBox();const b=o.geometry.boundingBox,w=b.clone().applyMatrix4(o.matrixWorld);
           // צל בתחתית רק לחלק שנוגע בקרקע (לא לכנפי הטחנה). הגובה: של כל המבנה, ביחידות של החלק
           u.txAo=w.min.y-all.min.y<H*0.1?1:0;u.txY0=b.min.y;u.txH=H*(b.max.y-b.min.y||1)/(w.max.y-w.min.y||1)}
@@ -117,7 +125,7 @@ const TEX3D={
   const base=window.render3d;
   window.render3d=function(...a){
     if(!done&&R3D.ready&&R3D.props){done=true;mark()}
-    txOn.value=S&&(S.vil||S.wd)&&!S.room?1:0;
+    txOn.value=S&&(S.vil||S.wd)&&!S.room?1:0;txTime.value=performance.now()/1000%1000;
     return base.apply(this,a);
   };
 })();
