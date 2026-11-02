@@ -283,7 +283,7 @@ async function small(browser){
   fs.writeFileSync(path.join(OUT,'metrics.json'),JSON.stringify(report,null,1));
   for(const k in report){const R=report[k];if(!R||!R.stops)continue;console.log('\n=== '+k+' ===');
     for(const s in R.stops){const m=R.stops[s];console.log(s.padEnd(15),'ממשק',String(m.uiPct).padStart(3)+'%','| כפתורים',String(m.buttons).padStart(2),'| קטנים',m.small.length,'| חופפים',m.overlap.length,
-      '| חתוך',m.clipped.length,'| גולל',m.scrollWins.length,'| זעיר',m.tiny.length,'| טקסט על טקסט',m.textOverlap.length)}
-    console.log('מדדים:',JSON.stringify(R.metrics));if(R.fail.length)console.log('לא הצליח:',R.fail);if(R.errors.length)console.log('שגיאות:',[...new Set(R.errors)].slice(0,5))}
+      '| חתוך',m.clipped.length,'| גולל',m.scrollWins.length,'| זעיר',m.tiny.length,'| טקסט על טקסט',m.textOverlap.length,'| עברית',(m.hebrew||[]).length)}
+    console.log('מדדים:',JSON.stringify(R.metrics));if(R.fail.length)console.log('לא הצליח:',R.fail);if(R.canvasHebrew&&Object.keys(R.canvasHebrew).length)console.log('עברית על הקנבס:',Object.keys(R.canvasHebrew).slice(0,10));if(R.errors.length)console.log('שגיאות:',[...new Set(R.errors)].slice(0,5))}
   console.log('\nהפלט: '+OUT);
 })();
