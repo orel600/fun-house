@@ -7,34 +7,56 @@
    נקודות החיבור: wsbCast, wsbUpdate ו-wsbHit ב-wskbook.js, wskUse/wskUpdate/drawWSkill ב-wskill.js, lpAt ו-lpLevelUp ב-levelpath.js.
    השמות ב-lang.js: 'wr.<סקיל>.<רונה>' ו-'wr.d.<סקיל>.<רונה>' */
 const WRUNES={
-  at:[2,5],   // הרונה הראשונה נפתחת 2 רמות אחרי הסקיל, השנייה 5
+  at:[2,5],   // הרונה הראשונה נפתחת 2 רמות אחרי הסקיל, השנייה 5. השלישית (loot:1) לא לפי רמה: נופלת ממגן יסודות שנשבר (wcBreak ב-wcombo.js)
   list:{
     charge:{trail:{pool:{n:3,r:44,t:2.5,tick:0.4,k:0.35,dt:'fire'}},           // שובל אש: שלוליות אש לאורך הדרך
-            twice:{again:0.5}},                                               // פעמיים: אפשר להסתער שוב מיד, ואז הקירור המלא
+            twice:{again:0.5},                                               // פעמיים: אפשר להסתער שוב מיד, ואז הקירור המלא
+            quake:{loot:1,blast:{end:1,rk:2.2,k:1.2,dt:'earth',follow:1}}},  // רעידה: בסוף ההסתערות, מכת אדמה (קפוא + אדמה = הלם)                                               // פעמיים: אפשר להסתער שוב מיד, ואז הקירור המלא
     whirl: {pull:{pull:150},                                                  // שואבת: מושכת את מי שבתוכה פנימה (פיקסלים לשנייה)
-            nova:{blast:{end:1,rk:1.4,k:3,dt:'fire',follow:1}}},              // פיצוץ בסוף: הלהבות מתפוצצות כשהמערבולת נגמרת
+            nova:{blast:{end:1,rk:1.4,k:3,dt:'fire',follow:1}},               // פיצוץ בסוף: הלהבות מתפוצצות כשהמערבולת נגמרת
+            frost:{loot:1,mod:{dt:'ice'}}},                                   // מערבולת כפור: קרח במקום אש
     shield:{nova:{blast:{end:1,rk:1.1,k:1.5,dt:'ice',freeze:1.5,follow:1}},  // גל קור: כשהשריון נגמר, עוד פיצוץ שמקפיא שוב
-            thorns:{pool:{follow:1,r:75,tick:0.3,k:0.5,dt:'ice'}}},           // קוצי קרח: כל זמן שהשריון פועל, פוגע במי שקרוב
+            thorns:{pool:{follow:1,r:75,tick:0.3,k:0.5,dt:'ice'}},            // קוצי קרח: כל זמן שהשריון פועל, פוגע במי שקרוב
+            flame:{loot:1,mod:{dt:'fire',freeze:0}}},                         // שריון להבה: שורף במקום להקפיא
     volley:{pin:{mod:{root:0.8}},                                             // חצים נועצים: מי שנפגע נתקע בשורשים (ננעץ)
-            fire:{mod:{dt:'fire'}}},                                          // חצי אש: אש במקום פיזי (בוער, אדים, נמס)
+            fire:{mod:{dt:'fire'}},                                           // חצי אש: אש במקום פיזי (בוער, אדים, נמס)
+            storm:{loot:1,mod:{dt:'lightning'}}},                             // חצי ברק: על רטובים, חשמול
     trap:  {two:{copy:{dx:85}},                                               // זוג: שתי מלכודות זו ליד זו
-            roots:{mod:{dt:'earth',freeze:0,root:2.5}}},                      // מלכודת שורשים: תוקעת במקום להקפיא
+            roots:{mod:{dt:'earth',freeze:0,root:2.5}},                       // מלכודת שורשים: תוקעת במקום להקפיא
+            fire:{loot:1,mod:{dt:'fire',freeze:0}}},                          // מלכודת אש: מדליקה, ובוער שמת מדליק את השכנים
     vines: {slam:{blast:{delay:0.4,rk:0.55,k:1.8,dt:'earth',follow:1}},       // הטחה: אחרי המשיכה, מכת אדמה סביבך
-            far:{mod:{pull:0,r:300,root:3}}},                                 // רשת: בלי משיכה, תוקע את כולם רחוק יותר ולזמן ארוך יותר
+            far:{mod:{pull:0,r:300,root:3}},                                  // רשת: בלי משיכה, תוקע את כולם רחוק יותר ולזמן ארוך יותר
+            thorns:{loot:1,pool:{follow:1,r:110,t:3,tick:0.4,k:0.35,dt:'earth'}}},   // קוצים: אחרי המשיכה, קוצים סביבך 3 שניות
     spirit:{ice:{mod:{dt:'ice'}},                                             // רוח כפור: יורה קרח (מאט, ועל רטובים: קפוא)
-            twin:{twin:1}},                                                   // תאומות: שתי רוחות
+            twin:{twin:1},                                                    // תאומות: שתי רוחות
+            storm:{loot:1,mod:{dt:'lightning'}}},                             // רוח ברק: יורה ברקים
     storm: {rain:{wet:{every:0.5,t:3}},                                       // סופה: הענן גם מרטיב, אז הברקים מחשמלים
-            chain:{mod:{chain:2}}},                                           // שרשרת: כל ברק קופץ לעוד 2
+            chain:{mod:{chain:2}},                                            // שרשרת: כל ברק קופץ לעוד 2
+            hail:{loot:1,mod:{dt:'ice'}}},                                    // ברד: קרח במקום ברק
     meteor:{three:{mini:{n:2,dx:85,k:0.5,rk:0.6,gap:0.25}},                   // מטר: עוד שני מטאורים קטנים אחרי הגדול
-            lava:{pool:{boom:1,rk:0.8,t:3,tick:0.4,k:0.3,dt:'fire'}}}         // לבה: הפיצוץ משאיר שלולית אש
+            lava:{pool:{boom:1,rk:0.8,t:3,tick:0.4,k:0.3,dt:'fire'}},          // לבה: הפיצוץ משאיר שלולית אש
+            comet:{loot:1,mod:{dt:'ice'}}}                                    // שביט קרח: קרח במקום אש
   }
 };
 const wrStat={};   // כמה פעמים כל רונה עשתה את שלה (בשביל הבוט)
 const wrMark=(id,k)=>{const n=id+':'+k;wrStat[n]=(wrStat[n]||0)+1};
 const wrSave=()=>{const h=SAVE.hero;if(!h.skRune||typeof h.skRune!=='object')h.skRune={};return h.skRune};
 const wrKeys=id=>Object.keys(WRUNES.list[id]||{});
-const wrNeed=(id,k)=>wsbNeed(id)+WRUNES.at[wrKeys(id).indexOf(k)];
-const wrOpen=(id,k)=>heroLv()>=wrNeed(id,k);
+const wrLoot=(id,k)=>!!(WRUNES.list[id]&&WRUNES.list[id][k]&&WRUNES.list[id][k].loot);
+const wrNeed=(id,k)=>wrLoot(id,k)?Infinity:wsbNeed(id)+WRUNES.at[wrKeys(id).indexOf(k)];
+const wrGot=()=>{const h=SAVE.hero;if(!Array.isArray(h.skRuneGot))h.skRuneGot=[];return h.skRuneGot};   // רונות שלישיות שנמצאו: ['charge:quake']
+const wrOpen=(id,k)=>wrLoot(id,k)?wrGot().includes(id+':'+k):heroLv()>=wrNeed(id,k);
+// רונה שלישית מהשלל: אחת שעוד אין, קודם של הדמות שלך. מחזיר את המזהה, או null אם כבר יש את כולן
+function wrGrant(x,y){
+  const me=typeof heroId==='function'&&heroId(),all=[];
+  for(const id in WRUNES.list)for(const k of wrKeys(id))if(wrLoot(id,k)&&!wrGot().includes(id+':'+k))all.push([id,k]);
+  if(!all.length)return null;
+  const mine=all.filter(([id])=>WSKBOOK.list[id]&&WSKBOOK.list[id].cls===me),pool=mine.length?mine:all,[id,k]=pool[Math.floor(Math.random()*pool.length)];
+  wrGot().push(id+':'+k);saveNow();
+  if(typeof banner==='function')banner(T('wr.found',T('sk.'+id),T('wr.'+id+'.'+k)),C.gold);
+  if(typeof celebrate==='function')celebrate(x??P.x,y??P.y,'loot4');
+  return id+':'+k;
+}
 // הרונה הפעילה של סקיל: רק אם נבחרה וכבר פתוחה
 function wrOf(id){const k=wrSave()[id];return k&&WRUNES.list[id]&&WRUNES.list[id][k]&&wrOpen(id,k)?k:null}
 const wrDef=id=>{const k=wrOf(id);return k?WRUNES.list[id][k]:null};
@@ -49,7 +71,7 @@ function wrPost(id,D,o,tg){
   if(R.mod)wrMark(id,k);
   if(R.pool){const p=R.pool;
     if(p.n){for(let i=0;i<p.n;i++){const f=(i+0.5)/p.n;F.push({k:'pool',id,x:o.fx+(o.tx-o.fx)*f,y:o.fy+(o.ty-o.fy)*f,r:p.r,t:0,wait:o.dur*f,dur:o.dur*f+p.t,tick:p.tick,ti:0,dt:p.dt,base:o.base*p.k,col:dtCol(p.dt)})}wrMark(id,k)}
-    else if(p.follow)F.push({k:'pool',id,x:P.x,y:P.y,follow:1,r:p.r*o.vis,t:0,wait:0,dur:o.dur,tick:p.tick,ti:0,dt:p.dt,base:o.base*p.k,col:dtCol(p.dt),mark:k});
+    else if(p.follow)F.push({k:'pool',id,x:P.x,y:P.y,follow:1,r:p.r*o.vis,t:0,wait:0,dur:p.t||o.dur,tick:p.tick,ti:0,dt:p.dt,base:o.base*p.k,col:dtCol(p.dt),mark:k});
     else if(p.boom)F.push({k:'pool',id,x:o.x,y:o.y,r:o.r*p.rk,t:0,wait:D.delay,dur:D.delay+p.t,tick:p.tick,ti:0,dt:p.dt,base:o.base*p.k,col:dtCol(p.dt),mark:k})}
   if(R.blast){const b=R.blast,delay=b.end?o.dur:b.delay;
     F.push({k:'blast',id,x:P.x,y:P.y,follow:b.follow,r:(D.r||100)*b.rk*o.vis,t:0,wait:delay,dur:delay+0.35,dt:b.dt,base:o.base*b.k,col:dtCol(b.dt),freeze:b.freeze,mark:k})}
@@ -113,7 +135,7 @@ function wrUi(){
   return '<div class="wrbox"><b class="wrh">💠 '+T('wr.title')+'</b>'+ids.map(id=>{const on=wrOf(id);
     return '<div class="wrrow" style="--dt:'+dtCol(SKILLS.list[id].dt)+'"><span class="wrn">'+T('sk.'+id)+'</span><div class="wrchips">'+
       wrKeys(id).map(k=>{const op=wrOpen(id,k);return '<button class="wrc'+(on===k?' on':'')+(op?'':' lock')+'" data-wrune="'+id+':'+k+'"'+(op?'':' aria-disabled="true"')+'>'+
-        (op?'<b>'+T('wr.'+id+'.'+k)+'</b><small>'+T('wr.d.'+id+'.'+k)+'</small>':'<b>🔒 '+T('wsb.need',wrNeed(id,k))+'</b>')+'</button>'}).join('')+'</div></div>'}).join('')+'</div>';
+        (op?'<b>'+(wrLoot(id,k)?'💎 ':'')+T('wr.'+id+'.'+k)+'</b><small>'+T('wr.d.'+id+'.'+k)+'</small>':wrLoot(id,k)?'<b>💎 ?</b><small>'+T('wr.lootHint')+'</small>':'<b>🔒 '+T('wsb.need',wrNeed(id,k))+'</b>')+'</button>'}).join('')+'</div></div>'}).join('')+'</div>';
 }
 // נגיעה ברונה: בוחרת אותה, ונגיעה נוספת מורידה
 function wrPick(id,k){
