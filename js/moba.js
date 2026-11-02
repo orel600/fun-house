@@ -6,20 +6,21 @@
    הבוטים ב-moba-bot.js */
 const MOBA={
   lane:{len:1500,half:250},   // הנתיב: x מ--len עד len, y מ--half עד half
-  base:{x:1360,hp:2600,r:58,range:270,dmg:70,cd:1.1,heal:0.2,healR:240},   // heal: חלק מהחיים בשנייה לגיבורים ליד הבסיס שלהם
+  base:{x:1360,hp:1800,r:58,range:270,dmg:70,cd:1.1,heal:0.2,healR:240},   // heal: חלק מהחיים בשנייה לגיבורים ליד הבסיס שלהם
   towers:[560,1000],          // המגדל הקרוב למרכז קודם. אי אפשר לפגוע במגדל הרחוק לפני שהקרוב נפל, ובבסיס לפני שניהם
-  tower:{hp:1500,r:30,range:290,dmg:55,cd:1.2,hero:1.5,shot:620},   // hero: מכפיל נזק מול גיבור
-  minion:{every:26,first:3,count:3,gap:0.8,hp:240,dmg:15,cd:1,range:36,aggro:180,speed:80,r:12,xp:22,
-    ranged:{hp:170,dmg:18,range:190}},   // החייל האחרון בכל גל יורה מרחוק
+  tower:{hp:1000,r:30,range:290,dmg:45,cd:1.2,hero:1.5,shot:620},   // hero: מכפיל נזק מול גיבור
+  minion:{every:22,first:3,count:4,gap:0.8,hp:260,dmg:18,cd:1,range:36,aggro:180,speed:80,r:12,xp:22,
+    ranged:{hp:180,dmg:22,range:190},build:1.6,
+    grow:0.07,push:0.35},   // grow: כל דקה החיילים חזקים ב-7%. push: כל מגדל של האויב שנפל, החיילים שלנו חזקים ב-35%   // החייל האחרון בכל גל יורה מרחוק
   xp:{need:[0,80,190,320,470,640],kill:150,share:560,assist:0.5,tower:60},   // need: XP מצטבר לרמה הבאה. share: מי שקרוב מקבל XP מחייל שמת
   ultAt:6,
   grow:0.09,                  // כל רמה: 9% יותר חיים ונזק
-  respawn:{base:4,lvl:2},     // שניות עד שגיבור חוזר: 4 ועוד 2 לכל רמה
+  respawn:{base:4,lvl:2,min:1.5},   // שניות עד שגיבור חוזר: 4, ועוד 2 לכל רמה, ועוד 1.5 לכל דקה במשחק (סוף משחק מכריע)
   ccImmune:1,                 // אחרי הלם או הכרחה: שנייה של חסינות לשליטה נוספת (אוראל: 3 שניות זה הרבה)
   combo:{shock:1.6,freeze:1.5},   // רטוב + ברק: נזק ×1.6. רטוב + קרח: הקפאה ארוכה ×1.5
   team:['#4C8DFF','#FF5A5A'],
   shot:650,
-  maxT:1200,                  // אחרי 20 דקות מנצח מי שנשאר לו יותר מהמבנים
+  maxT:900,                   // אחרי 15 דקות מנצח מי שנשאר לו יותר מהמבנים
 };
 let MB=null;
 
@@ -73,13 +74,13 @@ function mbPush(o,ang,d){if(o.k==='tower'||o.k==='base')return;mbStep(o,Math.cos
 function mbXp(h,v){
   if(h.dead||h.lvl>=MOBA.ultAt)return;h.xp+=v;const N=MOBA.xp.need;
   while(h.lvl<MOBA.ultAt&&h.xp>=N[h.lvl]){h.lvl++;const old=h.max;h.max=Math.round(MBKIT[h.kit].hp*mbK(h));h.hp+=h.max-old;
-    if(h.me){celebrate(h.x,h.y,'upgrade');banner(h.lvl>=MOBA.ultAt?T('mb.ultReady'):T('mb.lvup',h.lvl),C.gold)}}
+    if(h.me){celebrate(h.x,h.y,'gear');banner(h.lvl>=MOBA.ultAt?T('mb.ultReady'):T('mb.lvup',h.lvl),C.gold)}}
 }
 function mbDie(t,src){
   t.hp=0;t.dead=true;const foe=1-t.team;
   if(t.k==='minion'){for(const h of mbHeroes(foe))if(mbDist(h,t)<MOBA.xp.share)mbXp(h,MOBA.minion.xp)}
   else if(t.k==='hero'){
-    t.deaths++;t.resp=MOBA.respawn.base+MOBA.respawn.lvl*t.lvl;MB.score[foe]++;
+    t.deaths++;t.resp=MOBA.respawn.base+MOBA.respawn.lvl*t.lvl+MOBA.respawn.min*MB.t/60;MB.score[foe]++;
     const killer=src&&src.k==='hero'?src:t.st.burnBy&&t.st.burnBy.k==='hero'?t.st.burnBy:null;
     if(killer){killer.kills++;mbXp(killer,MOBA.xp.kill)}
     for(const [h,at] of t.hitBy)if(h!==killer&&MB.t-at<8)mbXp(h,MOBA.xp.kill*MOBA.xp.assist);
@@ -119,7 +120,7 @@ function mbAttack(u,dt,t,A){
   u.aim=Math.atan2(t.y-u.y,t.x-u.x);if(!u.moving)u.face=u.aim;
   if(u.atkT>0)return true;
   u.atkT=A.cd*(u.st.rage>0?u.st.rageCd:1);
-  const d=A.dmg*(u.k==='hero'?mbK(u):1);
+  const d=A.dmg*(u.k==='hero'?mbK(u):1)*(u.k==='minion'&&(t.k==='tower'||t.k==='base')?MOBA.minion.build:1);   // build: חיילים מכים חזק במבנים
   if(A.shot)MB.shots.push({kind:'home',x:u.x,y:u.y-14,tgt:t,team:u.team,src:u,dmg:d,dt:A.dt,sp:MOBA.shot});
   else{mbDmg(u,t,d,A.dt);if(A.slow)mbSlow(t,A.slow.k,A.slow.t)}
   if(u.me){if(A.shot){P.gn.t=0.3;sfx('shoot')}else{P.sw.anim=0.2;P.sw.ang=u.aim;sfx('hit')}}
@@ -174,15 +175,15 @@ function mobaUpdate(dt){
   const M=MB;if(!M||M.over)return;
   M.t+=dt;S.t=M.t;S.shake=Math.max(0,S.shake-dt*30);
   // גלי חיילים
-  M.waveT-=dt;if(M.waveT<=0){M.waveT=MOBA.minion.every;for(const tm of [0,1])for(let i=0;i<MOBA.minion.count;i++)M.queue.push({team:tm,ranged:i===MOBA.minion.count-1,at:M.t+i*MOBA.minion.gap})}
+  M.waveT-=dt;if(M.waveT<=0){M.waveT=MOBA.minion.every;for(const tm of [0,1])for(let i=0;i<MOBA.minion.count;i++)M.queue.push({team:tm,ranged:i===MOBA.minion.count-1,at:M.t+i*MOBA.minion.gap,k:1+MOBA.minion.grow*M.t/60+MOBA.minion.push*M.u.filter(o=>o.k==='tower'&&o.team!==tm&&o.dead).length})}
   for(const q of M.queue)if(q.at<=M.t){q.done=true;const N=MOBA.minion,R=q.ranged?N.ranged:N;
-    M.u.push(mbUnit({k:'minion',team:q.team,ranged:q.ranged,type:'mb_m'+q.team,x:(q.team?1:-1)*(MOBA.base.x-70),y:rand(-25,25),lane:rand(-70,70),r:N.r,hp:R.hp,max:R.hp,speed:N.speed,face:q.team?Math.PI:0}))}
+    M.u.push(mbUnit({k:'minion',team:q.team,ranged:q.ranged,type:'mb_m'+q.team,x:(q.team?1:-1)*(MOBA.base.x-70),y:rand(-25,25),lane:rand(-70,70),r:N.r,hp:R.hp*q.k,max:R.hp*q.k,pow:q.k,speed:N.speed,face:q.team?Math.PI:0}))}
   M.queue=M.queue.filter(q=>!q.done);
   for(const u of M.u){
     if(u.dead){if(u.k==='hero'){u.resp-=dt;if(u.resp<=0){u.dead=false;u.hp=u.max;u.x=u.home.x;u.y=u.home.y;u.cd.s1=u.cd.s2=0}}continue}
     mbTick(u,dt);if(u.dead)continue;
     if(u.st.dash){const D=u.st.dash,s=Math.min(D.left,D.sp*dt);mbStep(u,D.vx*s,D.vy*s);D.left-=s;u.moving=true;if(D.left<=0.5){u.st.dash=null;D.end()}continue}
-    if(u.k==='hero'){for(const k of MB_SLOTS)if(u.cd[k]>0)u.cd[k]-=dt;u.atkT-=dt;u.aggro-=dt;u.me?mbPlayer(u,dt):mbBot(u,dt)}
+    if(u.k==='hero'){for(const k of MB_SLOTS)if(u.cd[k]>0)u.cd[k]-=dt;u.atkT-=dt;u.aggro-=dt;u.me&&!u.bot?mbPlayer(u,dt):mbBot(u,dt)}
     else if(u.k==='minion'){u.atkT-=dt;mbMinion(u,dt)}
     else mbTower(u,dt);
   }
@@ -243,7 +244,7 @@ function mbPress(slot){
 }
 function mbMinion(m,dt){
   if(m.st.stun>0){m.moving=false;return}
-  const N=MOBA.minion,A={dmg:m.ranged?N.ranged.dmg:N.dmg,range:m.ranged?N.ranged.range:N.range,cd:N.cd,dt:'physical',shot:m.ranged};
+  const N=MOBA.minion,A={dmg:(m.ranged?N.ranged.dmg:N.dmg)*(m.pow||1),range:m.ranged?N.ranged.range:N.range,cd:N.cd,dt:'physical',shot:m.ranged};
   let t=m.st.taunt>0?m.st.tBy:m.tgt;
   if(!(m.st.taunt>0)){m.retT=(m.retT||0)-dt;
     if(!t||t.dead||!mbHittable(t)||mbDist(m,t)>N.aggro+120||m.retT<=0){m.retT=0.5;t=null;let bd=1e9;
@@ -280,7 +281,7 @@ function mbShots(dt){
 function mbEnd(won){
   if(MB.over)return;MB.over=true;S.mode='over';S.won=won;
   sfx(won?'celebrate':'hurt');if(won)celebrate(P.x,P.y,'rank');
-  setTimeout(()=>{if(S.mb===MB)mbEndShow(won)},1400);
+  const m=MB;setTimeout(()=>{if(S.mb===m)mbEndShow(won)},1400);
 }
 function mobaExit(){
   $('ovMoba').hidden=true;mbUi(false);MB=null;

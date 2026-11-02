@@ -52,7 +52,11 @@ function mbThink(u){
   const mine=MB.u.filter(b=>(b.k==='tower'||b.k==='base')&&b.team===u.team&&!b.dead);
   const threat=foeH.find(o=>mine.some(b=>mbDist(o,b)<MOBA.tower.range+60));
   if(threat&&mbDist(threat,u)<MBBOT.defend){B.mode='defend';B.focus=threat;B.goal={x:threat.x,y:threat.y};B.stop=A.range*0.8;return}
-  // 6. דוחפים: מאחורי החייל הכי קדמי שלנו. בלי חיילים מחכים ליד המגדל הקדמי
+  // 6. מצור: מגדל של האויב מכה בחייל שלנו, ואין גיבורי אויב קרובים: תוקפים את המגדל
+  const eT=MB.u.filter(b=>(b.k==='tower'||b.k==='base')&&b.team!==u.team&&mbHittable(b)).sort((a,b)=>mbDist(a,u)-mbDist(b,u))[0];
+  if(eT&&!fh.length&&mbDist(eT,u)<900&&eT.tgt&&eT.tgt.k==='minion'&&eT.tgt.team===u.team){
+    B.mode='siege';B.focus=eT;const a=Math.atan2(u.y-eT.y,u.x-eT.x),r=A.range*0.8+eT.r+u.r;B.goal={x:eT.x+Math.cos(a)*r,y:eT.y+Math.sin(a)*r};return}
+  // 7. דוחפים: מאחורי החייל הכי קדמי שלנו. בלי חיילים מחכים ליד המגדל הקדמי
   B.mode='push';
   const mins=MB.u.filter(o=>o.k==='minion'&&o.team===u.team&&!o.dead);
   if(mins.length){const front=mins.reduce((a,b)=>(b.x-a.x)*dir>0?b:a),gap=K.front?20:A.shot?150:60;

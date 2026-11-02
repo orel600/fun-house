@@ -914,14 +914,14 @@ body.menu #nav,body.menu .menubtn,body.menu .dgift{display:none!important}
 /* החלון של הלשונית: כל המסך חוץ מהלשוניות */
 body.menu .qlog.win:not(.npcdlg){top:max(8px,env(safe-area-inset-top,0px));bottom:max(8px,env(safe-area-inset-bottom,0px));
   inset-inline-start:max(12px,env(safe-area-inset-left,0px),env(safe-area-inset-right,0px));inset-inline-end:calc(var(--rail) + 8px);width:auto;max-width:none;margin:0}
-body.menu #ovGear,body.menu #ovSound{padding-inline-end:var(--rail);background:none;backdrop-filter:none}
+body.menu #ovGear,body.menu #ovSound,body.menu #ovMoba{padding-inline-end:var(--rail);background:none;backdrop-filter:none}
 body.menu #ovGear .gearpanel{height:100%}
 @media (orientation:portrait){
   .mrail{top:auto;inset-inline:0;bottom:0;width:auto;height:var(--railh);flex-direction:row;padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px));
     border-inline-start:0;border-top:2px solid #3A4566;background:linear-gradient(#1D2438,#141A2B)}
   .mtab{flex:1 1 0;max-height:none;min-width:0}
   body.menu .qlog.win:not(.npcdlg){inset-inline-end:max(12px,env(safe-area-inset-right,0px));bottom:calc(var(--railh) + 8px)}
-  body.menu #ovGear,body.menu #ovSound{padding-inline-end:16px;padding-bottom:var(--railh)}
+  body.menu #ovGear,body.menu #ovSound,body.menu #ovMoba{padding-inline-end:16px;padding-bottom:var(--railh)}
 }
 /* המטרה הבאה (js/guide.js): שורה אחת באמצע למעלה, מתחת לפס העליון. לא בפינות (השתקה, מפה, מתנה) ולא למטה (הסרגל והסקילים) */
 .guide{position:fixed;z-index:3;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 50px);max-width:min(60vw,560px);
@@ -1365,7 +1365,7 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 #ovGear .trn .stn small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:clip;line-height:1.2}
 #ovGear .trn.open .stn small{display:block;-webkit-line-clamp:unset;overflow:visible}
 /* ---- משחקי השאול: מובה 3 על 3 (js/moba.js). ממשק הזירה מוסתר (body.mb) ---- */
-.mb .hud,.mb .swap,.mb #skills,.mb .divine,.mb #muteBtn{display:none!important}
+.mb .hud,.mb .swap,.mb #skills,.mb .divine,.mb #muteBtn,.mb #ult,.mb #spell,.mb #spellPick{display:none!important}
 body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbhud{position:fixed;inset:0;z-index:3;pointer-events:none}
 .mbtop{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;
@@ -1384,7 +1384,7 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbski{font-size:30px;line-height:1}
 .mbskb:first-child .mbski{font-size:36px}
 .mblock{position:absolute;inset:0;display:grid;place-items:center;font:800 24px var(--body);color:var(--chalk);z-index:1}
-.mbwin{width:min(780px,94vw);max-height:92vh;overflow:auto}
+.mbwin{width:min(780px,94%);max-height:92vh;overflow:auto}
 .mbgoal{margin:6px 0 10px;color:var(--dim);font:600 var(--t1) var(--body)}
 .mbkits{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media (max-width:620px){.mbkits{grid-template-columns:repeat(2,1fr)}}
