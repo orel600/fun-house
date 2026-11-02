@@ -856,6 +856,14 @@ function worldBot(m,L,god){
       divineUpdate(DIVINE.dur+1);r.ended=!divineOn();orbitUpdate(0);r.back=S.orb.types.length===0;divineElite();r.once=!S.dv.ready;
       e.dead=true;enemies=enemies.filter(x=>!x.dead)}catch(err){r.err=String(err)}
     S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.dv=bak.dv;S.orb=bak.o;SAVE.gear.orbit=bak.orb;S.t=bak.t;return r});
+  // זירה נקייה (arenaui.js): מכות רצופות באותו אויב מתמזגות למספר אחד, פס חיים רק למי שנפגע או לאויב-על, חץ לאויב-על מחוץ למסך, והפס העליון שקט בקרב
+  const aui=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode},r={};S.vil=S.wd=S.room=null;S.mode='play';
+    try{const a=addEnemy('grunt',P.x+80,P.y),b=addEnemy('grunt',P.x-80,P.y),el=addEnemy('grunt',P.x+3000,P.y);a.hp=a.max=b.hp=b.max=el.hp=el.max=1e9;el.elite=true;
+      const n0=floats.length;for(let i=0;i<4;i++)dmgFloat(a,10,C.chalk,15,false);r.merge=floats.filter(f=>f.e===a).length===1&&floats.find(f=>f.e===a).n===40;
+      r.bars=hpBarOn(a)&&!hpBarOn(b)&&hpBarOn(el);try{ctx.save();arenaArrows(0,0);ctx.restore();r.arrow=true}catch(err){r.arrow=String(err)}
+      arenaQuiet();r.quiet=document.documentElement.classList.contains('fight');
+      for(const e of [a,b,el])e.dead=true;enemies=enemies.filter(e=>!e.dead)}catch(err){r.err=String(err)}
+    S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;arenaQuiet();return r});
   // פיוחו מצילה (rescue.js): מתחת ל-30% חיים בזירה, עם סיכוי, מופיעה עצם. הרמה מעלימה אויבים רגילים בקרבת מקום, בוס רק נפגע, ופעם אחת בריצה
   const rsr=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,rs:S.rs,hp:P.hp,rnd:Math.random,kills:S.kills},r={};
     S.vil=S.wd=S.room=null;S.mode='play';S.rs=null;
@@ -1880,6 +1888,7 @@ function worldBot(m,L,god){
     wsk.cd&&wsk.sec&&wsk.again?'קירור עם מספר':'אין קירור',wsk.drag&&wsk.dragHit?'גרירה מכוונת ופוגעת':'גרירה לא פגעה',wsk.aimDraw?'כוונת מצוירת':'אין כוונת',wsk.finger?'אצבע על הכפתור יורה':'אצבע לא ירתה',
     'חפצים מסתובבים: '+wsk.orbs,wsk.orbHit?'פוגעים':'לא פוגעים',wsk.orbDraw?'מצוירים כאורות':'לא מצוירים',wsk.orbFlash?'מבזיקים בפגיעה':'לא מבזיקים'].join(', ')));
   check(!prs.err&&prs.sneak&&prs.flee&&prs.grab&&prs.give&&prs.draw===true&&prs.name&&prs.rescue===true,'הפרעוש: '+(prs.err||[prs.sneak?'מתגנב':'לא התגנב',prs.grab?'חוטף':'לא חטף',prs.flee&&prs.give?'מביא שלל לשחקן':'לא הביא שלל',prs.draw===true?'מצויר':'ציור: '+prs.draw,prs.name?'עם שם וטקסט משלו':'בלי טקסט משלו',prs.rescue===true?'ומציל עם שק שלל':'הצלה: '+prs.rescue].join(', ')));
+  check(!aui.err&&aui.merge&&aui.bars&&aui.arrow===true&&aui.quiet,'זירה נקייה: '+(aui.err||[aui.merge?'מכות מתמזגות למספר אחד':'המכות לא התמזגו',aui.bars?'פס חיים רק למי שנפגע ולאויב-על':'פסי חיים לא נכונים',aui.arrow===true?'חץ לאויב-על':'חץ: '+aui.arrow,aui.quiet?'פס עליון שקט':'הפס העליון לא נרגע'].join(', ')));
   check(!rsr.err&&!rsr.early&&rsr.missNo&&rsr.once&&rsr.item&&rsr.draw===true&&rsr.draw2===true&&rsr.took&&rsr.gone&&rsr.far&&rsr.boss,'פיוחו מצילה: '+(rsr.err||[rsr.early?'הופיעה מוקדם':'לא לפני סכנה',rsr.missNo?'הגרלה שנכשלה לא חוזרת':'הגרלה לא נכשלה',rsr.once?'פעם אחת':'שוב',rsr.item?'עצם':'אין עצם',rsr.draw===true&&rsr.draw2===true?'מצויר':'ציור נכשל',rsr.took&&rsr.gone?'אויב קרוב נעלם':'אויב לא נעלם',rsr.far?'רחוק נשאר':'רחוק נעלם',rsr.boss?'בוס רק נפגע':'בוס לא נפגע'].join(', ')));
   check(!dvr.err&&!dvr.early&&dvr.ready&&dvr.btn&&dvr.used&&dvr.five&&dvr.hit&&dvr.draw===true&&dvr.ended&&dvr.back&&dvr.once,'ברק אלוהי: '+(dvr.err||[dvr.early?'התעורר מוקדם':'מחכה לשני אויבי-על',dvr.ready?'מוכן':'לא מוכן',dvr.btn?'כפתור':'אין כפתור',dvr.five?'חמשת החפצים':'לא חמישה',dvr.hit?'ברק פגע':'ברק לא פגע',dvr.draw===true?'מצויר':'ציור נכשל: '+dvr.draw,dvr.ended&&dvr.back?'נגמר אחרי 5 שניות':'לא נגמר',dvr.once?'פעם אחת בריצה':'שוב'].join(', ')));
   check(spk.on&&spk.off&&spk.slow&&spk.noFlute&&spk.draw===true,'הנודד עם הניצוץ: '+[spk.on?'נדלק':'לא נדלק',spk.noFlute?'בלי חליל':'החליל נדלק אצלו',spk.draw===true?'להבונים וגצים מצוירים':'ציור: '+spk.draw,spk.off?'וכבה':'לא כבה'].join(', '));
