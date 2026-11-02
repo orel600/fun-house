@@ -89,6 +89,11 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
 .skb.ready{box-shadow:0 0 12px var(--dt)}
 .skb.ping{animation:skping .45s ease-out}   /* נטען: טבעת אחת קצרה שיוצאת מהכפתור */
 @keyframes skping{from{box-shadow:0 0 0 0 var(--dt)}to{box-shadow:0 0 0 14px transparent}}
+/* סקיל חדש (js/skillreveal.js): הכפתור מחכה לאייקון שעף אליו, והאייקון עצמו */
+.skb.skrwait{opacity:0}
+.skrfly{position:fixed;left:0;top:0;z-index:40;width:var(--s);height:var(--s);border-radius:50%;border:3px solid var(--dt);
+  background:rgba(18,22,36,.85);box-shadow:0 0 24px var(--dt);display:grid;place-items:center;pointer-events:none;will-change:transform}
+.skrfly .dti{width:60%;height:60%}
 .skb:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
 /* ברק אלוהי (js/divine.js): באלכסון, מחוץ לקשת של הסקילים, כדי שבמסך נמוך הוא לא יעלה עד פס החיים */
 .divine{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 154px);right:calc(env(safe-area-inset-right,0px) + 146px);
@@ -640,6 +645,8 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .sndpanel #sndMute{grid-column:2;grid-row:3}
   .sndpanel .gfx{grid-column:2;grid-row:2}
   .sndpanel .cam{grid-column:2;grid-row:4}
+  .sndpanel .fxl{grid-column:2;grid-row:5}
+  .sndpanel .shd{grid-column:1;grid-row:5}   /* צללים (look-hd.js) */
 }
 .panel.win>.whd{margin-top:8px}
 
@@ -1364,6 +1371,61 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 /* תיאור של סקיל בעץ: שתי שורות במקום שורה עם "...", ונגיעה בסקיל פותחת את כולו */
 #ovGear .trn .stn small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:clip;line-height:1.2}
 #ovGear .trn.open .stn small{display:block;-webkit-line-clamp:unset;overflow:visible}
+
+/* ===== חלון הציוד בטלפון קטן (ניר 2.11.2026: צילום מ-Android, כ-760×350). שום דבר לא נחתך מ-760×350 עד 932×430 =====
+   הגדלים לפי גובה המסך (vh), לא קבועים. תג הסט בשורה משלו מעל הדמות (gear.js), והמסננים נגללים הצידה עם דהייה בסוף */
+#ovGear .gdoll{grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:"t t t" "s f e" "u u u"}
+#ovGear .gsets{grid-area:t;position:static;inset:auto;flex-wrap:nowrap;min-width:0}
+#ovGear .gsets:empty{display:none}
+#ovGear .gsetb{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:16px}
+#ovGear #gTabs{-webkit-mask-image:linear-gradient(to var(--fade-end,right),#000 calc(100% - 18px),transparent);mask-image:linear-gradient(to var(--fade-end,right),#000 calc(100% - 18px),transparent);padding-inline-end:14px}
+html[dir="rtl"] #ovGear #gTabs{--fade-end:left}   /* הדהייה בסוף השורה, לפי כיוון השפה */
+#ovGear .gsidep{overflow-y:auto;overscroll-behavior:contain}
+.gsrows .gsn{overflow:hidden;text-overflow:ellipsis}   /* שם ארוך לא עולה על המספר */
+@media (orientation:landscape) and (max-height:500px){
+  #ovGear{padding-block:4px}
+  #ovGear .gearpanel.win{border-width:14px;border-image-width:14px;padding:0 4px 2px;gap:6px}
+  #ovGear .ghead.whd{min-height:44px;margin-top:0;gap:6px}
+  #ovGear .gpages button{min-height:34px;padding:2px 10px;font-size:13px}
+  #ovGear #gearClose{width:44px;height:44px;min-width:44px;min-height:44px;flex:none}
+  #ovGear .gbody,body.menu #ovGear .gbody{gap:6px;grid-template-columns:minmax(190px,3.2fr) minmax(0,3.6fr) minmax(158px,2.9fr)}
+  #ovGear .gdoll{padding:4px;gap:4px}
+  #ovGear .gdoll .gtile,#ovGear .gd-start .gtile{width:clamp(38px,12vh,50px);height:clamp(38px,12vh,50px);font-size:clamp(19px,6vh,24px)}
+  #ovGear .gd-start .grow,#ovGear .gd-end .grow{gap:4px}
+  #ovGear .gd-under .gtile{flex:0 1 clamp(32px,10vh,40px);width:clamp(32px,10vh,40px);height:clamp(32px,10vh,40px);min-width:0;font-size:clamp(16px,5vh,19px)}
+  #ovGear .gbag{padding:5px;gap:5px}
+  #ovGear #gTabs button{min-height:34px;padding:2px 9px}
+  #ovGear #gTabs button.gf{min-width:34px;padding:2px 6px;font-size:16px}
+  #ovGear .ggrid,body.menu #ovGear .ggrid{grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:5px}
+  #ovGear .gacts .vbtn{min-height:34px;font-size:12px}
+  #ovGear .gacts .vbtn:not(.ghost){border-width:0 10px;border-image-width:0 10px}
+  #ovGear .gdetail.gstatp{padding:5px 8px;gap:2px}
+  .gstatp h3{font-size:14px!important}
+  .gstatp h4{margin-top:2px;font-size:11px}
+  .gsrows li{font-size:12px;line-height:clamp(16px,5.2vh,21px)}
+  .gsrows b{font-size:13px}
+  .gres{gap:3px}
+  .gres li{font:800 11px/clamp(17px,5.4vh,22px) var(--body);gap:2px}
+  .gres svg{width:11px;height:11px}
+}
+/* מכירה (gear.js): בתרמיל נגיעה מסמנת ✓, נעול 🔒 לא לחיץ. "החזר" ו-🔒 בפרטים: כפתורים צרים */
+.gtile .gpk{position:absolute;top:2px;inset-inline-start:3px;font:900 13px/1 var(--body);font-style:normal;color:#5BD46B;text-shadow:0 0 2px #000,0 0 2px #000}
+.gtile .glk{position:absolute;top:1px;inset-inline-end:2px;font-size:11px;font-style:normal;line-height:1}
+#ovGear .gselling .gtile.gpick[aria-pressed="false"]{opacity:.6}
+#ovGear .gselling .gtile.gpick[aria-pressed="true"]{outline:3px solid #5BD46B;outline-offset:-1px;opacity:1}
+#ovGear .gselling .gtile:disabled{opacity:.3;filter:grayscale(1)}
+#ovGear .gacts .gundo{flex:0 0 auto;padding-inline:8px}
+#ovGear .gdetail .gbtns .vbtn.glock{flex:0 0 44px;font-size:18px;padding:0}
+#ovGear .gdetail.selling{display:flex;flex-direction:column;gap:5px;padding:8px 10px}
+#ovGear .gdetail.selling h3{margin:0;font-size:15px}
+#ovGear .gdetail.selling .gsell{grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:5px}
+#ovGear .gdetail.selling .gsell .gtile{font-size:19px}
+#ovGear .gdetail.selling .gbtns+.gbtns{margin-top:0}
+@media (orientation:landscape) and (max-height:500px){
+  #ovGear .gdetail.selling{padding:5px 7px;gap:4px}
+  #ovGear .gdetail.selling .gbtns .vbtn{min-height:36px;font-size:13px}
+  .gsellhint{font-size:10px;line-height:1.25}
+}
 /* ---- משחקי השאול: מובה 3 על 3 (js/moba.js). ממשק הזירה מוסתר (body.mb) ---- */
 .mb .hud,.mb .swap,.mb #skills,.mb .divine,.mb #muteBtn,.mb #ult,.mb #spell,.mb #spellPick{display:none!important}
 body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}

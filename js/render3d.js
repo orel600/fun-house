@@ -452,6 +452,7 @@ function syncPlayer(dt){
     // פגיעה (combat.js מדליק P.inv=0.6): הגוף נרתע, אם הוא לא באמצע תקיפה
     const hurt=P.inv>st.inv+0.3&&P.inv<=0.7;st.inv=P.inv;
     if(hurt&&!swing&&!shot&&!(a.one&&a.one.isRunning()))once(a,L.anim.hit+'@up',0.3);
+    if(P.skrCast&&st.cast!==P.skrCast){st.cast=P.skrCast;once(a,(R3D.clips[SKREVEAL.anim+'@up']?SKREVEAL.anim:L.anim.win)+'@up',SKREVEAL.cast)}   // סקיל חדש: הגיבור מטיל (skillreveal.js)
     const busy=a.one&&a.one.isRunning(),idle=!sword&&L.anim.gunIdle||L.anim.idle;   // עם קשת ביד: עמידה עם קשת
     loop(a,(P.moving?L.anim.run:idle)+(busy?'@low':''),P.moving?Math.min(1.6,P.speed/165):1);
   }
