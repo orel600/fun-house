@@ -895,6 +895,15 @@ function worldBot(m,L,god){
     try{const w0=WISPS.stat.draws;drawOrbits();r.draw=WISPS.stat.draws===w0?true:'האורות (wisps.js) מצוירים בזירה'}catch(err){r.draw=String(err)}   // בזירה הציור הישן, לא האורות
     e1.dead=e2.dead=true;enemies=enemies.filter(e=>!e.dead);eb=eb.filter(b=>b.life>0);
     SAVE.gear.orbit=bak.orb;SAVE.hero.level=bak.lv;S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.orb=bak.o;P.hp=bak.hp;P.inv=bak.inv;S.t=bak.t;HITFX.crit=c;return r});
+  // חפץ משולב (orbit.js, ORBIT.combo): אדים = אש + כפור במשבצת אחת. שני חלקים צמודים, כל אחד בחלק מהכוח, והמשולב נופל מבוס
+  const ocb=await page.evaluate(()=>{const bak={orb:SAVE.gear.orbit.slice(),lv:SAVE.hero.level,vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,o:S.orb,t:S.t,m:Math.random},r={};
+    S.vil=S.wd=S.room=null;S.mode='play';SAVE.hero.level=99;SAVE.gear.orbit=['steamOrb'];orbitReset();orbitUpdate(0);
+    r.parts=S.orb.types.join(',');r.k=S.orb.ks.join(',');r.close=Math.hypot(S.orb.pos[0].x-S.orb.pos[1].x,S.orb.pos[0].y-S.orb.pos[1].y)<60;
+    const p=S.orb.pos[0],e=addEnemy('grunt',p.x,p.y);e.mult={};e.hp=e.max=1e9;orbitUpdate(0);r.hit=e.hp<e.max;e.dead=true;enemies=enemies.filter(x=>!x.dead);
+    r.facts=orbitFacts('steamOrb').map(f=>f.k+':'+f.v).join(',');r.txt=gStatsHtml('trinityOrb').length>20&&gCompare('steamOrb',null).length>20;
+    Math.random=()=>0;r.drop=!!GEAR.items[orbitComboRoll()];Math.random=bak.m;
+    let pool=0;for(let i=0;i<300;i++)if(gItem(gRoll()).types)pool++;r.pool=pool;
+    SAVE.gear.orbit=bak.orb;SAVE.hero.level=bak.lv;S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.orb=bak.o;S.t=bak.t;return r});
   // ברק אלוהי (divine.js): אחרי שני אויבי-על מוכן, הכפתור מפעיל 5 שניות: כל החמישה מסתובבים, ברק פוגע באויב קרוב, ובסוף הכל חוזר
   const dvr=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,dv:S.dv,o:S.orb,orb:SAVE.gear.orbit.slice(),t:S.t},r={};
     S.vil=S.wd=S.room=null;S.mode='play';SAVE.gear.orbit=[];divineReset();orbitReset();
@@ -1143,7 +1152,7 @@ function worldBot(m,L,god){
     for(let t=0;t<secs;t+=dt){P.hp=P.maxHp;const a=t*0.12;joy={id:-1,ox:-999,oy:-999,dx:-Math.sin(a),dy:Math.cos(a)};
       if(S.mode!=='play')S.mode='play';worldUpdate(dt);maxE=Math.max(maxE,enemies.length);if(first==null&&S.wd.pace&&S.wd.pace.packs)first=Math.round(t)}
     // עומס: מנסים להכניס הרבה להקות ועוד 20 שניות של עולם (קבוצות שחוזרות, פיצולים, אירועים). המגבלה נשמרת תמיד
-    for(let i=0;i<40;i++)paceSpawn(8);for(let t=0;t<20;t+=dt){P.hp=P.maxHp;worldUpdate(dt);maxE=Math.max(maxE,paceAlive())}
+    for(let i=0;i<60;i++)paceSpawn(8);for(let t=0;t<20;t+=dt){P.hp=P.maxHp;worldUpdate(dt);maxE=Math.max(maxE,paceAlive())}
     // בונוס להקה, ישירות: להקה של 3 ליד השחקן, כולן מופלות, והבונוס ניתן פעם אחת
     enemies=[];const b0=S.wd.pace.bonus,pk=paceSpawn(3,{x:P.x+60,y:P.y}),pkN=pk?enemies.filter(e=>e.pack===pk).length:0;
     for(const e of enemies.filter(e=>e.pack===pk)){e.affix=null;kill(e)}paceUpdate(0.01);const pkBonus=S.wd.pace.bonus-b0;paceUpdate(0.01);
@@ -2096,6 +2105,7 @@ function worldBot(m,L,god){
   const hits=L.hits||{},nTypes=Object.keys(hits).filter(k=>hits[k]>0).length;
   check(cb.shock&&cb.frozen&&cb.stun&&cb.melt>=1.9&&cb.bossStun&&cb.plainIce,'קומבו: '+[cb.shock?'רטוב+ברק קפץ לרטוב רחוק':'חשמול לא קפץ',cb.frozen?'רטוב+קרח קפא ולא זז':'לא קפא',
     cb.stun?'קפוא+אדמה = הלם':'אין הלם','אש+קרח x'+cb.melt+(cb.melt>=1.9?'':' (צריך x2)'),cb.bossStun?'בוס בהלם פעם אחת ואז חסין':'הלם בבוס לא עבד',cb.plainIce?'קרח לבד לא מקפיא':'קרח לבד הקפיא'].join(', '));
+  check(ocb.parts==='attack,control'&&ocb.k==='0.6,0.6'&&ocb.close&&ocb.hit&&ocb.txt&&ocb.drop&&ocb.pool===0,'חפץ משולב: '+(ocb.parts==='attack,control'?'שני חלקים ב-60% כל אחד':'חלקים שגויים '+ocb.parts+' '+ocb.k)+', '+(ocb.close?'צמודים':'רחוקים')+', '+(ocb.hit?'פגע':'לא פגע')+', '+(ocb.drop?'נופל מבוס':'לא נופל')+', '+(ocb.pool===0?'לא בשלל הרגיל':'נפל בשלל הרגיל')+(ocb.txt?'':', תצוגה ריקה')+' ['+ocb.facts+']');
   check(ob.fire&&ob.slow&&ob.block&&ob.shield&&ob.shieldOnce&&ob.heal&&ob.crit>0&&ob.luck>1&&ob.draw===true,'חפצים מסתובבים ('+ob.types+'): '+[ob.fire?'אש שורפת':'אש לא פגעה',ob.slow?'כפור מאט':'כפור לא האט',
     ob.block?'אבן עצרה ירייה':'ירייה עברה',ob.shield?(ob.shieldOnce?'מגן בלע מכה אחת':'מגן בלע יותר ממכה'):'מגן לא בלע',ob.heal?'עלה ריפא':'אין ריפוי',
     'תלתן: קריטי +'+ob.crit+', שלל x'+ob.luck,ob.draw===true?'מצויר':'ציור נכשל: '+ob.draw].join(', '));

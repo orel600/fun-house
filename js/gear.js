@@ -57,7 +57,12 @@ const GEAR={
     stoneOrb:   {slot:'orbit',tier:0,type:'defense'},
     frostOrb:   {slot:'orbit',tier:0,type:'control'},
     leafOrb:    {slot:'orbit',tier:0,type:'support'},
-    cloverOrb:  {slot:'orbit',tier:0,type:'luck'}
+    cloverOrb:  {slot:'orbit',tier:0,type:'luck'},
+    // חפצים משולבים (orbit.js, ORBIT.combo): לא נופלים מהשלל הרגיל, רק מבוסים. types: החלקים, type: הראשי (לצבע)
+    steamOrb:   {slot:'orbit',tier:2,type:'attack',types:['attack','control'],icon:'🔥❄️'},
+    wardenOrb:  {slot:'orbit',tier:2,type:'defense',types:['defense','support'],icon:'🛡️💚'},
+    gambleOrb:  {slot:'orbit',tier:2,type:'attack',types:['attack','luck'],icon:'🔥🍀'},
+    trinityOrb: {slot:'orbit',tier:3,type:'attack',types:['attack','defense','support'],icon:'🔥🛡️💚'}
   },
   gift:['oakSword','oakBow','boneCharm'],   // פעם אחת, בביקור הראשון בכפר
   /* יצירה בנפחייה: מה עולה כל פריט. המתכת של השכבה, וחומרים מיצורים, מבוסים ואבנים, כדי שלכל משאב יהיה שימוש.
@@ -213,7 +218,7 @@ function forgeHtml(){
 /* ---- שלל בסוף ריצה ---- */
 // מגריל פריט לפי כמה כל שכבה נפוצה. n: כמה הגרלות, והשכבה הגבוהה מביניהן נבחרת (שלל מהמבוקש ומהבוס, LOOT.gear ב-loot.js)
 function gRoll(n=1){
-  const pool=Object.keys(GEAR.items).filter(id=>GEAR.loot.slots.includes(GEAR.items[id].slot));
+  const pool=Object.keys(GEAR.items).filter(id=>GEAR.loot.slots.includes(GEAR.items[id].slot)&&!GEAR.items[id].types);   // משולבים רק מבוסים (orbit.js)
   const one=()=>{let r=Math.random()*pool.reduce((n,id)=>n+GEAR.tiers[GEAR.items[id].tier].w,0);
     for(const id of pool){r-=GEAR.tiers[GEAR.items[id].tier].w;if(r<0)return id}return pool[0]};
   let best=one();for(let i=1;i<n;i++){const id=one();if(GEAR.items[id].tier>GEAR.items[best].tier)best=id}
@@ -223,6 +228,7 @@ function gearLoot(){
   if(S.gearLoot)return S.gearLoot;
   const got=S.gearLoot=[],rolls=[GEAR.loot.run];for(let i=0;i<S.bossCount;i++)rolls.push(GEAR.loot.boss);
   for(const ch of rolls)if(Math.random()<ch){const id=gRoll();bagAdd(id);got.push(id)}
+  for(let i=0;i<S.bossCount;i++){const id=orbitComboRoll();if(id){bagAdd(id);got.push(id)}}   // חפץ משולב מבוס (orbit.js)
   if(got.length){saveNow();const el=$('sLoot');el.innerHTML=(el.textContent===T('vil.noLoot')?'':el.innerHTML)+got.map(gChip).join('')}
   return got;
 }
@@ -246,20 +252,20 @@ const gRarCol=k=>RES.rarity[Math.min(gRar(k),RES.rarity.length-1)].col;
 const gSign=(k,v)=>'<bdi dir="ltr">'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T(GEAR.stats[k].t||'st.'+k);
 /* ---- חפץ מסתובב: מה הוא נותן, מהמספרים של ORBIT.types (orbit.js, של אוראל). רק תצוגה: לא משנה איך הוא עובד בזירה.
    כל שורה: k (המפתח, להשוואה), v (המספר), ו-b לשורה בלי מספר (עוצר יריות). הטקסט ב-lang.js תחת 'orb.f.<k>' ---- */
-function gOrbFacts(type){
-  const D=ORBIT.types[type]||{},out=[],pc=x=>Math.round(x*100);
+function gOrbFacts(type,k=1){
+  const D=ORBIT.types[type]||{},out=[],pc=x=>Math.round(x*100*k);
   if(D.dmg)out.push({k:D.dt,v:pc(D.dmg)});   // אחוז מהנזק של הנשק, בסוג הנזק שלו
   if(D.block)out.push({k:'block',v:1,b:1});
-  if(D.shield)out.push({k:'shield',v:1,b:1});
+  if(D.shield)out.push({k:'shield',v:1,b:1,n:Math.round(D.shield.every/k)});
   if(D.heal)out.push({k:'heal',v:pc(D.heal.k)});
   if(D.crit)out.push({k:'crit',v:pc(D.crit)});
   if(D.loot)out.push({k:'loot',v:pc(D.loot)});
   return out;
 }
-const gOrbLine=(f,v)=>f.b?T('orb.f.'+f.k):'<bdi dir="ltr">'+(v>0?'+':'')+v+'%</bdi> '+T('orb.f.'+f.k);
+const gOrbLine=(f,v)=>f.b?T('orb.f.'+f.k,f.n):'<bdi dir="ltr">'+(v>0?'+':'')+v+'%</bdi> '+T('orb.f.'+f.k);
 // lite: חפץ מסתובב מהתרמיל, כשההשוואה שמתחת כבר מראה את כל מה שהוא נותן (▲), כדי שהכל ייכנס בטור בלי גלילה
 function gStatsHtml(id,lite){const it=gItem(id),s=gStats(id);
-  if(it.slot==='orbit')return '<p class="gorb">'+T('orb.'+it.type)+' · '+T('orb.do.'+it.type)+'</p>'+(lite?'':'<ul class="gstats">'+gOrbFacts(it.type).map(f=>'<li>'+gOrbLine(f,f.v)+'</li>').join('')+'</ul>');
+  if(it.slot==='orbit')return '<p class="gorb">'+(it.types?it.types.map(t=>T('orb.'+t)).join(' + ')+' · '+T('orb.combo.do',Math.round(ORBIT.combo.share[it.types.length]*100)):T('orb.'+it.type)+' · '+T('orb.do.'+it.type))+'</p>'+(lite?'':'<ul class="gstats">'+orbitFacts(id).map(f=>'<li>'+gOrbLine(f,f.v)+'</li>').join('')+'</ul>');
   return '<ul class="gstats">'+(it.w?'<li class="gdmg">'+wRangeTxt(wItemAvg(id),it.w)+'</li>':'')+Object.keys(s).map(k=>'<li>'+gSign(k,s[k])+'</li>').join('')+'</ul>'}
 // מה ישתנה אם לובשים: לכל סטט, ההפרש מול מה שיוצא מהמשבצת, עם חץ למעלה או למטה
 function gCompare(id,old){
@@ -272,7 +278,7 @@ function gCompare(id,old){
 }
 // חפץ מסתובב מול מה שיוצא מהמשבצת (או משבצת ריקה): מה מתווסף ▲ ומה הולך ▼
 function gOrbCompare(id,old){
-  const a=gOrbFacts(gItem(id).type),b=old&&gItem(old)?gOrbFacts(gItem(old).type):[],ks=[...new Set([...a,...b].map(f=>f.k))];
+  const a=orbitFacts(id),b=old&&gItem(old)?orbitFacts(old):[],ks=[...new Set([...a,...b].map(f=>f.k))];
   const v=(l,k)=>(l.find(f=>f.k===k)||{v:0}).v,ds=ks.map(k=>({f:[...a,...b].find(f=>f.k===k),d:v(a,k)-v(b,k)})).filter(x=>x.d);
   if(!ds.length)return '<p class="dim">'+T('gear.same')+'</p>';
   return '<p class="cmp">'+ds.map(x=>'<span class="'+(x.d>0?'up':'down')+'">'+(x.d>0?'▲':'▼')+' '+gOrbLine(x.f,x.d)+'</span>').join('')+'</p>';
