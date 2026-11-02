@@ -37,7 +37,8 @@ function visitProfile(){
   const H=SAVE.hero||{},V={};for(const k in VILLAGE.b)V[k]=SAVE.village[k]||0;
   return{name:String(CLOUD.session.name).slice(0,40),level:Math.max(1,H.level||1),
     data:{village:V,start:H.start||null,skin:H.skin||null,pet:(SAVE.pet&&SAVE.pet.kind)||PET.default,petStage:(SAVE.pet&&SAVE.pet.stage)||0,
-      bag:typeof tradeBagPub==='function'?tradeBagPub():undefined}};   // bag: מה יש לי, כדי שהחבר ידע מה לבקש במסחר (trade.js)
+      bag:typeof tradeBagPub==='function'?tradeBagPub():undefined,
+      deco:typeof decoPub==='function'?decoPub():undefined}};   // deco: הקישוטים שעומדים בכפר (deco.js)   // bag: מה יש לי, כדי שהחבר ידע מה לבקש במסחר (trade.js)
 }
 // 404 = הטבלה עוד לא קיימת ב-Supabase: מסמנים, ולא מנסים שוב עד הפעלה הבאה
 function visitErr(e){if(/cloud 404/.test(e&&e.message))VISIT.ready=false;visitBtn();return null}
@@ -129,7 +130,7 @@ function visitVillageHtml(f){
   let s='<div class="visgrid">';
   for(const k in VILLAGE.b){const L=Math.max(0,Math.min(VILLAGE.max,V[k]|0));
     s+='<div class="visb'+(L?'':' none')+'"><span>'+(VISIT.icon[k]||'🏠')+'</span><b>'+T('vil.'+k)+'</b><small>'+(L?'★'.repeat(L)+'☆'.repeat(VILLAGE.max-L):T('vil.notBuilt'))+'</small></div>'}
-  return s+'</div>';
+  return s+'</div>'+(typeof decoVisitHtml==='function'?decoVisitHtml(d.deco):'');   // הקישוטים שלו (deco.js)
 }
 function visitGiftHtml(f){
   if(visitSentToday(f.user_id)>=VISIT.perDay)return'<p class="visdone">'+T('visit.sentToday')+'</p>';

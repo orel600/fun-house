@@ -233,7 +233,7 @@ function villageHud(){
   const k=S.vil.near,L=k?vLv(k):0,cur=S.vil.open;
   vEnterBtn();
   // בונים מחדש רק כשמשהו השתנה: מבנה אחר, פאנל שנפתח או נסגר, לשונית, רמות, תרמיל, מחסן או שפה
-  const key=LANG+'|'+k+'|'+cur+'|'+JSON.stringify(S.vil.tab||{})+'|'+(k?vStock(k):0)+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
+  const key=LANG+'|'+k+'|'+cur+'|'+JSON.stringify(S.vil.tab||{})+'|'+(k?vStock(k):0)+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash)+'|'+JSON.stringify(SAVE.deco||0)+JSON.stringify(typeof DECO!=='undefined'?DECO.sel:0);
   if(key===S.vil.ui)return;S.vil.ui=key;
   $('vBag').innerHTML=cornerRes(resShown(k));   // עד 2 משאבים ליד ☰, מה שרלוונטי ליד המבנה הזה (RES.show), והשאר ב-"+N" (minimap.js)
   // כל מבנה: חלון גדול בתבנית אחת, עם לשוניות "מה עושים כאן" ו"שדרוג" (bwin.js). השער: חלון קטן משלו
@@ -251,6 +251,7 @@ $('vPanel').addEventListener('click',e=>{
   if(a==='close'){vShut();return}
   if(a==='tab'){(S.vil.tab||(S.vil.tab={}))[S.vil.near]=b.dataset.tab;sfx('ui');villageHud();return}   // לשונית בחלון המבנה (bwin.js)
   if(a==='jump'){travelGo(b.dataset.k);return}   // קפיצה לפנס דולק (travel.js)
+  if(a&&a.startsWith('deco')){decoAct(a,b.dataset);villageHud();return}   // חנות הקישוטים בשוק (deco.js)
   if(!S.vil.near)return;
   if(a==='forge'){forgeOpen();return}
   if(a==='collect'){if(vCollect(S.vil.near))sfx('coin');villageHud();return}
@@ -324,6 +325,7 @@ function drawVillage(){
     else if(d.k==='crate'||d.k==='barrel'){ctx.fillStyle=d.k==='crate'?'#9A6B3C':'#7A4E2A';ctx.fillRect(d.x-7,d.y-12,14,12)}
     else{ctx.fillStyle=d.k==='bush'?'#2F5A36':'#24452F';ctx.beginPath();ctx.arc(d.x,d.y,d.k==='bush'?13:22,0,7);ctx.fill()}
   }
+  if(typeof decoDraw2d==='function')decoDraw2d();   // קישוטים שנקנו (deco.js)
   // השער: קשת, כמו דלת הזהב
   ctx.strokeStyle=C.chalk;ctx.lineWidth=4;ctx.fillStyle='rgba(236,231,220,0.12)';
   ctx.beginPath();ctx.moveTo(g.x-26,g.y+14);ctx.lineTo(g.x-26,g.y-14);ctx.arc(g.x,g.y-14,26,Math.PI,0);ctx.lineTo(g.x+26,g.y+14);ctx.closePath();ctx.fill();ctx.stroke();

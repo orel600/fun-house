@@ -738,6 +738,23 @@ function worldBot(m,L,god){
     const poor=!vTrade('buy','stone');bagAdd('coins',20);const buy=vTrade('buy','stone')&&SAVE.bag.stone===5&&SAVE.bag.coins===10;
     localStorage.removeItem(SAVE_STORE.key);saveLoad();return{sell,poor,buy}});
   check(mk.sell&&mk.poor&&mk.buy,'שוק: '+(mk.sell?'מכירה עובדת':'מכירה נכשלה')+', '+(mk.poor?'בלי מטבעות אי אפשר לקנות':'קנה בלי כסף')+', '+(mk.buy?'קנייה עובדת':'קנייה נכשלה'));
+  // חנות קישוטים (deco.js): קונים דגל, הוא עומד במקום פנוי (לא על מבנה), השני יקר יותר, בלי מטבעות אי אפשר, מזיזים ומורידים למחסן, והחבר רואה בפרופיל. בסוף מנקים
+  const dc=await page.evaluate(()=>{const r={};try{SAVE.village.market=1;SAVE.bag.coins=0;bagAdd('coins',DECO.items.flag.price);
+    const sl=decoSlots();r.slots=sl.length;r.clear=sl.every(s=>Object.values(VILLAGE.b).every(B=>Math.hypot(s.x-B.x,s.y-B.y)>B.r+20));
+    const p1=decoPrice('flag');r.buy=decoBuy('flag')===''&&!SAVE.bag.coins&&SAVE.deco.put.length===1&&SAVE.deco.put[0].k==='flag'&&decoAt(0)===0;
+    r.dearer=decoPrice('flag')>p1&&decoBuy('flag')==='coins'&&SAVE.deco.put.length===1;
+    const box=document.createElement('div');box.innerHTML=decoHtml();r.html=box.querySelectorAll('.dslot').length===sl.length&&box.querySelectorAll('.dslot.has').length===1&&!!box.querySelector('[data-act="decoBuy"][data-k="flag"][disabled]');
+    decoAct('decoSlot',{i:'0'});decoAct('decoSlot',{i:'3'});r.move=decoAt(3)===0&&decoAt(0)<0;
+    decoAct('decoSlot',{i:'3'});decoAct('decoStore',{});r.store=!SAVE.deco.put.length&&SAVE.deco.own.flag===1;
+    decoAct('decoOwn',{k:'flag'});decoAct('decoSlot',{i:'1'});r.back=decoAt(1)===0&&!SAVE.deco.own.flag;
+    const pub=decoPub();r.pub=pub.length===1&&pub[0][0]==='flag'&&box.innerHTML!==''&&/visdeco/.test(decoVisitHtml(pub));
+    r.save=JSON.parse(localStorage.getItem(SAVE_STORE.key)).deco.put.length===1;
+  }catch(e){r.err=String(e)}
+    localStorage.removeItem(SAVE_STORE.key);saveLoad();DECO.sel=null;return r});
+  check(dc.slots>=12&&dc.clear,'קישוטים: '+dc.slots+' מקומות פנויים בכפר'+(dc.clear?', אף אחד לא על מבנה':', ויש מקום על מבנה')+(dc.err?' ('+dc.err+')':''));
+  check(dc.buy&&dc.dearer&&dc.html,'קישוטים: דגל '+(dc.buy?'נקנה ועומד בכפר':'לא נקנה')+', '+(dc.dearer?'השני יקר יותר ובלי מטבעות אי אפשר':'המחיר לא עולה או שנקנה בלי כסף')+', '+(dc.html?'והמפה בשוק מראה אותו':'והמפה לא מראה'));
+  check(dc.move&&dc.store&&dc.back&&dc.save,'קישוטים: '+(dc.move?'מזיזים במפה':'הזזה לא עבדה')+', '+(dc.store?'מורידים למחסן':'לא ירד למחסן')+', '+(dc.back?'ומציבים שוב':'ולא הוצב שוב')+(dc.save?'':', ולא נשמר'));
+  check(dc.pub,'קישוטים: החבר '+(dc.pub?'רואה אותם בביקור':'לא רואה אותם'));
   // מתנה יומית: יום ראשון נותן, אותו יום לא נותן שוב, יום חדש מתקדם. יום 7 נותן תיבה, ואחריו הלוח מתחיל מחדש. בסוף מנקים
   const dg=await page.evaluate(()=>{const r1=dailyClaim('t1'),c=SAVE.bag.coins||0,r2=dailyClaim('t1'),again=r2===null&&(SAVE.bag.coins||0)===c,r3=dailyClaim('t2');
     const first=!!r1&&r1.i===0&&r1.got.coins===DAILY.days[0].coins,next=!!r3&&r3.i===1;
