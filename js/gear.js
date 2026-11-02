@@ -62,7 +62,24 @@ const GEAR={
     steamOrb:   {slot:'orbit',tier:2,type:'attack',types:['attack','control'],icon:'🔥❄️'},
     wardenOrb:  {slot:'orbit',tier:2,type:'defense',types:['defense','support'],icon:'🛡️💚'},
     gambleOrb:  {slot:'orbit',tier:2,type:'attack',types:['attack','luck'],icon:'🔥🍀'},
-    trinityOrb: {slot:'orbit',tier:3,type:'attack',types:['attack','defense','support'],icon:'🔥🛡️💚'}
+    trinityOrb: {slot:'orbit',tier:3,type:'attack',types:['attack','defense','support'],icon:'🔥🛡️💚'},
+    // רק מהתכה בנפחייה (fuse.js), לא מבוסים (fuse:true). כל שילוב של 2 או 3 חלקים קיים, כדי שכל התכה תיתן משהו
+    bastionOrb:  {slot:'orbit',tier:2,type:'attack',types:['attack','defense'],icon:'🔥🛡️',fuse:true},
+    phoenixOrb:  {slot:'orbit',tier:2,type:'attack',types:['attack','support'],icon:'🔥💚',fuse:true},
+    glacierOrb:  {slot:'orbit',tier:2,type:'control',types:['control','defense'],icon:'❄️🛡️',fuse:true},
+    dewOrb:      {slot:'orbit',tier:2,type:'control',types:['control','support'],icon:'❄️💚',fuse:true},
+    snowflakeOrb:{slot:'orbit',tier:2,type:'control',types:['control','luck'],icon:'❄️🍀',fuse:true},
+    talismanOrb: {slot:'orbit',tier:2,type:'defense',types:['defense','luck'],icon:'🛡️🍀',fuse:true},
+    bloomOrb:    {slot:'orbit',tier:2,type:'support',types:['support','luck'],icon:'💚🍀',fuse:true},
+    tempestOrb:  {slot:'orbit',tier:3,type:'attack',types:['attack','control','defense'],icon:'🔥❄️🛡️',fuse:true},
+    auroraOrb:   {slot:'orbit',tier:3,type:'attack',types:['attack','control','support'],icon:'🔥❄️💚',fuse:true},
+    cometOrb:    {slot:'orbit',tier:3,type:'attack',types:['attack','control','luck'],icon:'🔥❄️🍀',fuse:true},
+    dragonOrb:   {slot:'orbit',tier:3,type:'attack',types:['attack','defense','luck'],icon:'🔥🛡️🍀',fuse:true},
+    sunOrb:      {slot:'orbit',tier:3,type:'attack',types:['attack','support','luck'],icon:'🔥💚🍀',fuse:true},
+    frostwallOrb:{slot:'orbit',tier:3,type:'control',types:['control','defense','support'],icon:'❄️🛡️💚',fuse:true},
+    moonOrb:     {slot:'orbit',tier:3,type:'control',types:['control','defense','luck'],icon:'❄️🛡️🍀',fuse:true},
+    springOrb:   {slot:'orbit',tier:3,type:'control',types:['control','support','luck'],icon:'❄️💚🍀',fuse:true},
+    sanctumOrb:  {slot:'orbit',tier:3,type:'defense',types:['defense','support','luck'],icon:'🛡️💚🍀',fuse:true}
   },
   gift:['oakSword','oakBow','boneCharm'],   // פעם אחת, בביקור הראשון בכפר
   /* יצירה בנפחייה: מה עולה כל פריט. המתכת של השכבה, וחומרים מיצורים, מבוסים ואבנים, כדי שלכל משאב יהיה שימוש.
