@@ -166,11 +166,11 @@ function gear3dParts(a,L){
 }
 /* קהל: כשיש הרבה אויבים על המסך, רק הקרובים לשחקן מקבלים דמות מונפשת. כל השאר מצוירים יחד בתנוחת ריצה קפואה
    שמתחלפת בין שני צעדים: כמה ציורים בפריים במקום מאות. בטלפון זה ההבדל בין משחק שזורם למשחק שנתקע.
-   full: כמה דמויות מונפשות לכל היותר. poses: באיזה רגע של אנימציית הריצה מצלמים כל צעד. dying: כמה אנימציות מוות יחד. max: כמה בקהל */
+   full: כמה דמויות מונפשות לכל היותר. world: כך בעולם הפתוח, שם האויבים פזורים והמצלמה רואה רחוק (מבקר 2: 20 דמויות מונפשות היו רוב זמן הציור). poses: באיזה רגע של אנימציית הריצה מצלמים כל צעד. dying: כמה אנימציות מוות יחד. max: כמה בקהל */
 /* קהל: מעבר ל-full האויבים הקרובים, השאר מצוירים כצורה קבועה בכמה תנוחות, ציור אחד לכל סוג. types: נאפים בהתחלה.
    כל סוג אחר נאפה בפעם הראשונה שצריך אותו (crowdOf). קודם רק שלושת אלה היו בקהל, וכל אויב מסוג אחר צויר לבד: בשלבים מאוחרים
    (מומיות, טובעים, אבירי כפור) זה עשה עשרות ציורים בכל פריים (סקירת הזירה, 1.11.2026) */
-const CROWD={full:30,poses:[0.25,0.75],dying:16,max:320,types:['grunt','shield','wisp']};
+const CROWD={full:30,world:8,poses:[0.25,0.75],dying:16,max:320,types:['grunt','shield','wisp']};
 const PILOT3D=/[?&]hero=pilot/.test(location.search);
 /* הכפר: המיקומים והמראה לפי רמה ב-VILLAGE (js/village.js). כאן רק איזה קובץ מודל לכל שם, ובאיזה רוחב על המסך בפיקסלים.
    models: המבנים (השמות ב-look). site: פיגום, למבנה שעוד לא נבנה או שבונים אותו עכשיו. deco: קישוטים סביב מבנה.
@@ -621,6 +621,7 @@ function syncNpcs(dt){
     const L=LOOK3D['npc_'+id],n=all[id];let a=A[id];
     if(!npcHere(id)||!L){if(a){freeActor(a);delete A[id]}continue}
     if(!a){a=A[id]=makeActor(L);a.npcSt=null}
+    if(!(a.root.visible=onScreen(n.x+R3D.ox,n.y+R3D.oy)))continue;   // מחוץ למסך: לא מציירים ולא מנפישים (מבקר 2: מהירות)
     if(a.own)a.own.visible=L.own!==false;
     if(a.npcSt!==n.st){a.npcSt=n.st;if(n.st==='wave'||n.st==='cheer')once(a,L.anim[n.st],n.st==='wave'?NPC.waveT:NPC.cheerT);else a.one=null}
     const busy=a.one&&a.one.isRunning();
@@ -657,7 +658,7 @@ function r3dScratch(){if(!R3D._mx){R3D._mx=new THREE.Matrix4();R3D._p=new THREE.
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
 function render3d(ox,oy){
   if(!R3D.on||!P)return;
-  r3dScratch();
+  r3dScratch();R3D.ox=ox;R3D.oy=oy;   // ההזזה של המסך, לבדיקה מי על המסך (worldnpc.js)
   // drawEvery: הבדיקה האוטומטית מציירת רק חלק מהפריימים, כי שם התלת-ממד רץ על המעבד בלי כרטיס גרפי. בשאר הפריימים לא עושים כלום
   R3D.frame=(R3D.frame||0)+1;const skip=R3D.drawEvery&&R3D.frame%R3D.drawEvery!==0;if(skip&&!S.vil)return;   // בכפר ממשיכים לעדכן, כי שם נבנים המבנים
   const r=R3D.r,c=R3D.cam,now=performance.now(),dt=Math.min(0.05*(R3D.drawEvery||1),R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;
@@ -681,8 +682,10 @@ function render3d(ox,oy){
     if(S.wd){syncWorld();syncWnpcs(dt)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)
     // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
     const vis=enemies.filter(e=>!e.dead&&(e.isBoss||onScreen(e.x+ox,e.y+oy)));
-    if(vis.length>CROWD.full){const pr=e=>e.isBoss||e.wanted||e.elite?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}
-    vis.forEach((e,i)=>i<CROWD.full||e.isBoss||!crowdOf(e.type)?syncEnemy(e,dt):crowdAdd(e));
+    // בעולם: רק world הקרובים מונפשים, והשאר בקהל (דמות מונפשת היא רוב הזמן של הציור בעולם, מבקר 2)
+    const full=S.wd?CROWD.world:CROWD.full;
+    if(vis.length>full){const pr=e=>e.isBoss||e.wanted||e.elite?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}
+    vis.forEach((e,i)=>i<full||e.isBoss||!crowdOf(e.type)?syncEnemy(e,dt):crowdAdd(e));
     R3D.nDying=0;for(const a of R3D.actors.values())if(a.dieT>0.05)R3D.nDying++;
     for(const [e,a] of R3D.actors)if(a.seen!==R3D.frame||e.dead)retire(e,a,dt);
   }else{ // בחדר הבונוס אין אויבים, רק השחקן
