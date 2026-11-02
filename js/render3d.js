@@ -157,7 +157,7 @@ function gear3dLook(L,wid){
 // צובע את החלקים של הדמות לפי L.g3. פעם אחת לכל דמות ולכל שינוי בציוד
 function gear3dParts(a,L){
   const g=L.g3;if(!g||a.g3===L.ck)return;a.g3=L.ck;
-  a.rk=null;rankArmor3d(a);   // מתחילים נקי: השריון של הדרגה כמו שהוא, והחלקים של הציוד בלי צבע
+  a.rk=0;rankArmor3d(a);   // מתחילים נקי: השריון של הדרגה כמו שהוא, והחלקים של הציוד בלי צבע
   a.root.traverse(o=>{if(!o.isMesh)return;const p=armorPart(o,GEAR3D.keep.concat(ARMOR3D));if(!p)return;
     let col=null,k=0;if(GEAR3D.keep.includes(p)){if(a.pulse)a.pulse=a.pulse.filter(m=>m!==o.material);o.material.color.set(0xffffff);o.material.emissive.set(0);o.material.userData.em=o.material.emissive.clone()}
     if(/^Leg/.test(p)&&g.boots){o.material.color.set(0xffffff).lerp(new THREE.Color(g.boots),GEAR3D.boots.tint);col=g.boots;k=g.bk}

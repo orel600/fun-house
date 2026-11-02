@@ -84,7 +84,7 @@ function armor3d(a){
   // מתחילים נקי: מורידים את מה שנבנה, מחזירים את החלקים של המודל, ונותנים לדרגה ולציוד לצבוע מחדש
   for(const m of a.arG||[])if(m.parent)m.parent.remove(m);a.arG=[];
   a.root.traverse(o=>{if(o.isMesh&&armorPart(o,ARMOR_NATIVE)){o.visible=true;o.material.color.set(0xffffff)}});
-  a.rk=null;if(GEAR3D.on&&a.L&&a.L.g3){a.g3=null;gear3dParts(a,a.L)}else rankArmor3d(a);
+  a.rk=0;if(GEAR3D.on&&a.L&&a.L.g3){a.g3=null;gear3dParts(a,a.L)}else rankArmor3d(a);   // 0 ולא null: בלי דרגה rankId() הוא null, ו-rankArmor3d היה מדלג
   a.ar=key;
   const LK=ARMOR.look,parts={};a.root.traverse(o=>{if(o.isMesh){const p=armorPart(o,ARMOR_NATIVE);if(p)(parts[p]||(parts[p]=[])).push(o)}});
   const paint=(o,col,k,t)=>{o.visible=true;o.material.color.set(0xffffff).lerp(new THREE.Color(col),k);const em=new THREE.Color(col).multiplyScalar(LK.glow[t]);o.material.emissive.copy(em);o.material.userData.em=em};
