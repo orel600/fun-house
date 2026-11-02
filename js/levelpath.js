@@ -21,6 +21,7 @@ function lpAt(lv){
   if(lv>1&&(lv-1)%TREE.every===0)out.push({k:'tree',icon:'🌳',txt:T('lp.tree')});
   if(lv%RANKS.every===0)out.push({k:'rank',icon:'🎖️',txt:T('lp.rank')});
   for(const x of LEVELPATH.extra[lv]||[])out.push({k:'extra',icon:x.icon,txt:T(x.t)});
+  if(typeof wsbAt==='function')out.push(...wsbAt(lv));   // סקיל חדש בספר הסקילים (wskbook.js)
   if(typeof cuAt==='function')out.push(...cuAt(lv));   // סוד חדש שנפתח ברמה: "משהו חדש באחו" (curiosity.js)
   return out;
 }
@@ -43,6 +44,7 @@ function lpTitle(){const lv=heroLv(),n=lpNext(lv),b=lpNext(lv,true);if(!n)return
 
 /* ---- הרגע הגדול: הבזק, הגיבור מריע, וכרטיס של מה שנפתח ומה הבא ---- */
 function lpLevelUp(from,lv){
+  if(typeof wsbLevelUp==='function')wsbLevelUp(from,lv);   // סקיל שנפתח נכנס למשבצת פנויה (wskbook.js)
   const got=[{icon:'⭐',txt:T('lp.pts',(lv-from)*STATS.perLevel)}];
   for(let l=from+1;l<=lv;l++)got.push(...lpAt(l));
   lpFlash();
