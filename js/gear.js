@@ -426,6 +426,7 @@ function gearDraw(){
   if(st)$('gStash').innerHTML='<span class="k">'+T('gear.stash',stashUsed(),stashCap())+'</span><div class="ggrid">'+
     (sk.length?sk.map(k=>gCell(k,SAVE.stash[k],'data-sid="'+k+'"'+(sel&&sel.sid===k?' aria-pressed="true"':''))).join(''):'<p class="dim">'+T('stash.empty')+'</p>')+'</div>';
   $('gDetail').innerHTML=gDetailHtml();$('gDetail').classList.toggle('selling',!!GUI.sell);$('gDetail').classList.toggle('gstatp',!$('gDetail').querySelector('.gdhead,.gsell'));   // gstatp: טור הסטטים (gearui.js)
+  gTipSync();   // פריט נבחר: הפרטים בבועה ליד הפריט, והסטטים נשארים בטור (gearui.js, itemtip.js)
   // הדפים: ציוד, או דמות (הנקודות, stats.js). עץ הסקילים נפתח מדף הדמות ומחליף אותו
   const ch=GUI.page==='char',tv=ch&&GUI.view==='tree',pts=stFree()+trFree();
   $('gPages').innerHTML=['gear','char'].map(pg=>'<button data-page="'+pg+'"'+(GUI.page===pg?' aria-pressed="true"':'')+'>'+T('gear.pg.'+pg)+(pg==='char'&&pts?'<i class="gdot">'+pts+'</i>':'')+'</button>').join('');
@@ -554,7 +555,9 @@ $('ovGear').addEventListener('click',e=>{
   if(e.target.closest('.gfig')){GUI.sel=null;GUI.page='char';GUI.view=null;gRedraw();return}   // נגיעה בדמות: הדף שלה (נקודות)
   const tn=e.target.closest('.trn');   // עץ הסקילים: נגיעה בסקיל פותחת את התיאור המלא שלו (ניר 2.11: "לא רואים מה הסקילים עושים")
   if(tn&&!e.target.closest('button')){GUI.trOpen=GUI.trOpen===tn.dataset.tr?null:tn.dataset.tr;sfx('tap');gRedraw();return}
-  const b=e.target.closest('button');if(!b||b.disabled)return;
+  const b=e.target.closest('button');
+  if(!b){if(GUI.sel&&!e.target.closest('#gDetail')){GUI.sel=null;gRedraw()}return}   // נגיעה מחוץ לבועה: נסגרת
+  if(b.disabled)return;
   if(b.id==='gearClose'){gearClose();return}
   if(b.dataset.act==='stat'){statAdd(b.dataset.k);statBadge();gRedraw();return}
   if(b.dataset.act==='build'){statBuild(+b.dataset.i);statBadge();gRedraw();return}   // שתי בניות שמורות (stats.js)
@@ -576,9 +579,9 @@ $('ovGear').addEventListener('click',e=>{
   else if(a==='undo'){if(!gUndoSell()){sfx('tap');return}}
   else if(a==='lock'){const k=sel&&(sel.id||gGet(sel.slot,sel.i));if(k){gLockToggle(k);sfx('tap')}}
   else if(a==='desel')GUI.sel=null;   // ✕ בפרטים: חוזרים לסטטים
-  else if(b.dataset.id){GUI.sel={id:b.dataset.id};if(gIsNew(b.dataset.id)){gSeen()[b.dataset.id]=1;saveNow()}}
-  else if(b.dataset.sid)GUI.sel={sid:b.dataset.sid};
-  else if(b.dataset.slot)GUI.sel=gGet(b.dataset.slot,+b.dataset.i)?{slot:b.dataset.slot,i:+b.dataset.i}:null;
+  else if(b.dataset.id){GUI.sel=gTipAgain(b)?null:{id:b.dataset.id};if(gIsNew(b.dataset.id)){gSeen()[b.dataset.id]=1;saveNow()}}   // נגיעה שנייה באותו פריט: הבועה נסגרת
+  else if(b.dataset.sid)GUI.sel=gTipAgain(b)?null:{sid:b.dataset.sid};
+  else if(b.dataset.slot)GUI.sel=gGet(b.dataset.slot,+b.dataset.i)&&!gTipAgain(b)?{slot:b.dataset.slot,i:+b.dataset.i}:null;
   else if(a==='equip')gDoEquip(sel.id);
   else if(a==='unequip')gDoUnequip(sel.slot,sel.i);
   else if(a==='store'){if(!gDoStash('in',sel.id)){gShake($('gStash'));return}}
