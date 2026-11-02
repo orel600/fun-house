@@ -1156,11 +1156,12 @@ function worldBot(m,L,god){
   // שלב 4 בסקילים: מגן יסודות (affix.js + wcombo.js) חוטף רבע נזק עד שילוב, שילוב שובר אותו, והשבירה הראשונה נותנת רונה שלישית (wrunes.js)
   const wsh=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{if(SKR)skrEnd(false);SAVE.hero.skSeen=wsbIds().slice();SAVE.hero.level=99;SAVE.hero.skRuneGot=[];enterWorld('home');enemies=[];
-      const e=addEnemy('grunt',P.x+80,P.y);e.home=0;e.mult={};e.hp=e.max=1e7;e.speed=0;e.dmg=0;affixSet(e,'shell');
-      const hit=(t)=>{const h=e.hp;damage(e,1000,'skill',0,t);return h-e.hp};
-      const d0=hit('physical');r.weak=d0>0&&d0<400;
-      e.wet=3;const b0=wcStat.shellBreak||0;hit('fire');r.broke=e.shellOff===1&&(wcStat.shellBreak||0)>b0;
-      const d1=hit('physical');r.full=d1>=900;
+      const mk=()=>{const e=addEnemy('grunt',P.x+80,P.y);e.home=0;e.mult={};e.hp=e.max=1e7;e.speed=0;e.dmg=0;return e};
+      const c=mk(),e=mk();affixSet(e,'shell');const cr=HITFX.crit,pc=P.crit;HITFX.crit=-9;P.crit=0;   // בלי מכות קריטיות, כדי שההשוואה תהיה מדויקת
+      const hit=(x,t)=>{const h=x.hp;damage(x,1000,'skill',0,t);return h-x.hp};
+      const dc=hit(c,'physical'),d0=hit(e,'physical');r.weak=d0>0&&Math.abs(d0/dc-WCOMBO.shell.k)<0.02;   // המגן: רבע ממכה רגילה
+      e.wet=3;const b0=wcStat.shellBreak||0;hit(e,'fire');r.broke=e.shellOff===1&&(wcStat.shellBreak||0)>b0;
+      const d1=hit(e,'physical');r.full=Math.abs(d1/dc-1)<0.02;HITFX.crit=cr;P.crit=pc;c.dead=true;
       r.rune=wrGot().length===1&&wrOpen(...wrGot()[0].split(':'));
       e.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
