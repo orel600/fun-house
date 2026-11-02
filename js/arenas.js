@@ -54,8 +54,8 @@ const arenaOwnSpawn=()=>!!(S.wv&&ARENA().list);
 // כל פריים בזירה (runUpdate). מחזיר true כשהזירה מנהלת את הריצה בעצמה, ואז אין תחנות של classic
 function arenaRun(){
   const A=ARENA(),w=S.wv;if(!A.list||!w)return false;
-  if(w.phase==='break'){if(S.t>=w.until)waveStart(w.i+1)}
-  else{
+  if(w.phase==='break'&&S.t>=w.until)waveStart(w.i+1);
+  if(w.phase==='fight'){
     while(w.q.length&&S.t>=w.q[0].at&&enemies.length<HORDE.cap)waveClump(w.q.shift());   // מעל המגבלה הגוש מחכה
     const left=enemies.filter(e=>!e.dead&&e.wv===w.i).length;w.left=left+w.q.reduce((s,c)=>s+c.n,0);
     if(!w.q.length&&!left&&w.i<A.list.length-1){   // הגל נוקה: הפסקה, ואז הגל הבא
