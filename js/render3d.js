@@ -655,13 +655,19 @@ function npcs3dOff(){if(!R3D.npcs)return;for(const id in R3D.npcs)freeActor(R3D.
 // מטריצה ווקטורים לשימוש חוזר, בלי זבל בכל פריים. נוצרים בפעם הראשונה שמישהו צריך אותם, גם לפני הציור הראשון (syncPlayer מהבדיקה)
 function r3dScratch(){if(!R3D._mx){R3D._mx=new THREE.Matrix4();R3D._p=new THREE.Vector3();R3D._q=new THREE.Quaternion();R3D._s=new THREE.Vector3();R3D._up=new THREE.Vector3(0,1,0)}}
 
+// הכפר: מכינים מראש את כל ה-shaders של מה שבכפר, גם של מה שעוד לא על המסך. אחרת בפעם הראשונה שמבנה, קישוט או תושב נכנס למסך
+// הציור נעצר להכנה שלו, והדמות "קופצת" באמצע ההליכה (ניר, 2.11: "התנועה מקוטעת"). רץ שוב רק כשנוסף משהו לכפר
+function vilWarm(r,c){
+  const n=R3D.vil.g.children.length+Object.keys(R3D.npcs||{}).length+(R3D.pet?1:0);if(R3D.vilWarm===n)return;R3D.vilWarm=n;
+  try{if(r.compileAsync)r.compileAsync(R3D.scene,c).catch(()=>{});else r.compile(R3D.scene,c)}catch(e){}
+}
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
 function render3d(ox,oy){
   if(!R3D.on||!P)return;
   r3dScratch();R3D.ox=ox;R3D.oy=oy;   // ההזזה של המסך, לבדיקה מי על המסך (worldnpc.js)
   // drawEvery: הבדיקה האוטומטית מציירת רק חלק מהפריימים, כי שם התלת-ממד רץ על המעבד בלי כרטיס גרפי. בשאר הפריימים לא עושים כלום
   R3D.frame=(R3D.frame||0)+1;const skip=R3D.drawEvery&&R3D.frame%R3D.drawEvery!==0;if(skip&&!S.vil)return;   // בכפר ממשיכים לעדכן, כי שם נבנים המבנים
-  const r=R3D.r,c=R3D.cam,now=performance.now(),dt=Math.min(0.05*(R3D.drawEvery||1),R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;
+  const r=R3D.r,c=R3D.cam,now=typeof FRAME_T==='number'&&FRAME_T>(R3D.last||0)?FRAME_T:performance.now(),dt=Math.min(0.05*(R3D.drawEvery||1),R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;
   const pr=Math.min(DPR,1.5);if(r.getPixelRatio()!==pr)r.setPixelRatio(pr);
   if(R3D.w!==W||R3D.h!==H){R3D.w=W;R3D.h=H;r.setSize(innerWidth,innerHeight,false);c.left=-W/2;c.right=W/2;c.top=H/2;c.bottom=-H/2;c.updateProjectionMatrix()}
   // המצלמה מסתכלת על אותה נקודה שבמרכז הקנבס
@@ -676,7 +682,7 @@ function render3d(ox,oy){
   if(R3D.vil)R3D.vil.g.visible=false;
   for(const k in R3D.wlds||{})R3D.wlds[k].g.visible=false;
   if(!S.room&&!S.mb)syncPet(dt);else if(R3D.pet)R3D.pet.root.visible=false;   // חיית המחמד (pet.js), בכל מקום חוץ מחדר הבונוס
-  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil);if(typeof deco3d==='function')deco3d(R3D.vil)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
+  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil);if(typeof deco3d==='function')deco3d(R3D.vil);vilWarm(r,c)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
     if(S.wd){syncWorld();syncWnpcs(dt)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)
