@@ -1,7 +1,8 @@
 /* לולאת המשחק והפעלה */
-let last=performance.now();
+let last=performance.now(),FRAME_T=last;
+// dt עד 0.05: בטלפון שרץ ב-20-30 פריימים בשנייה (הכפר בתלת-ממד) פריים איטי לא "מאבד" זמן, אז הדמות לא מאטה ונתקעת (ניר, 2.11: "מקוטעת")
 function frame(now){
-  let dt=Math.min(0.033,(now-last)/1000);last=now;
+  let dt=Math.min(0.05,(now-last)/1000);last=now;FRAME_T=now;   // FRAME_T: אותו שעון לתלת-ממד (render3d.js), בלי קפיצות בין שני שעונים
   if(typeof pwaHeld==='function'&&pwaHeld())dt=0;   // אפליקציה מותקנת שמוחזקת לאורך: המשחק עוצר עד שמסובבים (pwa.js)
   if(S&&S.mode==='play'){
     if(S.mb)mobaUpdate(dt);   // משחקי השאול (moba.js)
