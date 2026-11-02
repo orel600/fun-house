@@ -54,6 +54,7 @@ function skrEnd(skip){
   if(SKR.el){SKR.el.remove();const b=skrBtn(id,false);if(b){b.classList.remove('ping');void b.offsetWidth;b.classList.add('ping')}}
   if(skip){skrStat.skips++;S.hitstop=0}
   skrStat.ends++;SKR=null;P.skrCast=0;
+  if(typeof skgOffer==='function')skgOffer(id);   // כרטיס "לספר" ו"לנסות" (skguide.js)
 }
 // נגיעה בכל מקום מדלגת
 addEventListener('pointerdown',()=>{if(SKR&&skrNow()-SKR.t0>0.15)skrEnd(true)},true);
