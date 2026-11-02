@@ -50,6 +50,11 @@ function botStep({god,en}){
   // שדרוגים: מול הבוס, סוג הנזק שהוא חלש אליו. אחרת סוג נזק לנשק שעוד אין לו, ושונה מהנשק השני, כדי שהריצה תפגע בכמה סוגים
   // בטלפון שוכב, הכפתורים של עליית רמה, הבוס ומסך הסוף בתוך המסך, בלי לגלול (בדיקת הזירה, 1.11.2026)
   const fitChk=(k,els)=>{L.fit=L.fit||{};if(L.fit[k])return;const out=els.filter(e=>{const r=e.getBoundingClientRect();return r.bottom>innerHeight+1||r.top<-1||r.right>innerWidth+1||r.left<-1});L.fit[k]=out.length?'בחוץ':'בפנים'};
+  // הודעות בזירה (2.11.2026): פס קטן למעלה מתחת ל-HUD, לא על הגיבור באמצע ולא על פס הריצה או פס הבוס. נמדד פעם בתחילת הריצה ופעם מול הבוס
+  const banChk=k=>{if(L[k])return;banner('check ✓',C.gold);const b=document.getElementById('banner').getBoundingClientRect(),
+    bars=['runbar','bossbar'].map(id=>document.getElementById(id)).filter(e=>e&&e.offsetParent).map(e=>e.getBoundingClientRect());
+    L[k]={top:Math.round(b.top),bot:Math.round(b.bottom),H:innerHeight,hit:bars.some(r=>r.bottom>b.top&&r.top<b.bottom&&r.right>b.left&&r.left<b.right)}};
+  if(S.mode==='play'&&!['vil','world','mb'].some(c=>document.body.classList.contains(c))){banChk('banA');if(vis('bossbar'))banChk('banB')}
   if(vis('ovLevel'))fitChk('level',[...document.querySelectorAll('#cards .card')]);
   if(vis('ovBoss'))fitChk('boss',[document.getElementById('fightBtn')]);
   if(vis('ovOver'))fitChk('over',[document.getElementById('againBtn')]);
@@ -1464,6 +1469,8 @@ function worldBot(m,L,god){
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
+  {const bs=[['banA','תחילת ריצה'],['banB','מול הבוס']].map(([k,n])=>[n,L[k]]),ok=b=>b&&b.top<=b.H*.3&&b.bot<=b.H*.4&&!b.hit;
+    check(bs.every(([,b])=>ok(b)),'הודעות בזירה למעלה, לא על הגיבור ולא על הפסים: '+bs.map(([n,b])=>n+' '+(b?b.top+'-'+b.bot+'/'+b.H+(b.hit?', על פס':''):'לא נמדד')).join(', '))}
   {const f=L.fit||{},ks=['level','boss','over'];check(ks.every(k=>f[k]==='בפנים'),'חלונות הזירה בטלפון שוכב, בלי גלילה: '+ks.map(k=>({level:'עליית רמה',boss:'הבוס',over:'מסך הסוף'})[k]+' '+(f[k]||'לא הופיע')).join(', '))}
   check(L.v1&&!L.welFirst&&!L.dailyPop,'ביקור ראשון בכפר: '+(L.welFirst?'"בזמן שלא היית" קפץ, אבל השחקן עוד לא היה כאן':'בלי "בזמן שלא היית"')+(L.dailyPop?', אבל הלוח של 7 ימים קפץ':', והלוח של 7 ימים לא קפץ'));
   check(L.v1&&L.v1.daily&&L.v1.n===1&&L.v1.btn&&L.v1.coins>=L.v1.want,'ביקור ראשון בכפר: '+(L.v1?(L.v1.daily&&L.v1.n===1?'המתנה של היום הראשון נכנסה לתרמיל':'המתנה של היום הראשון לא נלקחה')+(L.v1.btn?', הכפתור 🎁 מוסתר':', הכפתור 🎁 נשאר')+', '+L.v1.coins+' מטבעות':'לא הגענו לכפר'));
