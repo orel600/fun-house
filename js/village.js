@@ -5,46 +5,68 @@
    המשחק לרוחב (ניר, 30.10.2026): הכפר פרוש לרוחב, התרמיל למעלה, הפאנל בצד, והפינה הימנית למטה נשארת פנויה לכפתורי כישורים */
 
 const VILLAGE={
-  radius:410,                     // גבול הכפר: עד כאן אפשר ללכת. השער יושב על הגבול, למטה. הכל קרוב, בלי הליכה ריקה (ניר: "אתה הולך הרבה")
-  spawn:{x:0,y:50},              // איפה עומדים כשנכנסים בפעם הראשונה. חוזרים מהזירה ליד השער
+  radius:700,                     // גבול הכפר: עד כאן אפשר ללכת. השער יושב על הגבול, למטה. גדל מ-410 (ניר, 2.11: "צריך להגדיל את הכפר, הכל צפוף ועולה אחד על השני")
+  spawn:{x:0,y:330},             // איפה עומדים כשנכנסים בפעם הראשונה: על הדרך, בין השער לכיכר. חוזרים מהעולם ליד השער
   near:55,                        // כמה פיקסלים מקצה מבנה נחשב "לידו": מופיע כפתור "להיכנס" בסרגל (הפאנל נפתח רק בנגיעה)
   tap:{move:14,ms:400},           // נגיעה במבנה פותחת את הפאנל שלו: עד כמה פיקסלים זזה האצבע ועד כמה אלפיות שנייה, כדי שזה לא ייחשב תזוזה
   max:5,                          // הרמה הכי גבוהה. מבנה לא עולה מעל מרכז הכפר
   gift:{coins:25,wood:20,stone:12},   // מתנת פתיחה, פעם אחת: מספיק לבנות מנסרה ומכרה
-  gate:{x:0,y:410,r:44},
+  gate:{x:0,y:700,r:44},
   /* איך מבנה נראה לפי רמה, כדי שכל שדרוג ייראה (ניר: "שידרגתי בניין בכפר גם צריך להיות אפקט").
      look: רצועות רמה. at: מאיזו רמה. model: איזה מודל (השמות ב-VIL3D.models). scale: גודל. deco: קישוטים סביב (VIL3D.deco). glow: זוהר.
      בתוך רצועה המבנה גדל עוד grow בכל רמה, ובכל שדרוג יש חגיגה (celebrate ב-fx.js) */
   grow:0.05,
   // cost[L]: מה עולה להגיע לרמה L. make: ייצור בשעה לפי רמה. cap: כמה נאגר לכל משאב עד שאוספים. המשאבים עצמם ב-RES (resources.js)
   // ברמות גבוהות מבנים צריכים מתכות טובות יותר וחומרים מיצורים, כדי שלכל משאב יהיה שימוש
+  /* הרובעים (ניר, 2.11): מרכז למעלה (ראש הכפר ועמודי הפנסים, הכיכר מתחתיו), מלאכה במערב (נפחייה, מנסרה, מכרה),
+     מסחר במזרח (שוק, מחסן), ומגורים בדרום משני צידי הדרך לשער (האוהלים של התושבים, residents.js, והפונדק, npc.js).
+     מבנה חדש: מקום פנוי ברובע שלו, לפחות 200 פיקסלים ממבנה אחר, ולא על הדרך מהשער לכיכר (x בין -60 ל-60) */
   b:{
-    center:{x:0,y:-162,r:92,
+    center:{x:0,y:-330,r:92,
       look:[{at:1,model:'castle',scale:0.85,deco:[]},{at:3,model:'castle',scale:1,deco:['flag','flag']},{at:5,model:'castle',scale:1.1,deco:['flag','flag','flag','flag'],glow:C.gold}],
       cost:[null,null,{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50,copper:10,cloth:5},{coins:180,wood:120,stone:100,iron:20,cloth:15},{coins:350,wood:220,stone:200,silver:15,gold:5,horn:1,star:1}]},
-    forge:{x:-255,y:-26,r:66,     // נפחייה: כל רמה פותחת עוד שכבת ציוד ליצירה (GEAR.recipes ב-gear.js), ו-Aging לציוד (aging.js) עד ה-+ של הרמה
+    forge:{x:-450,y:-230,r:66,     // נפחייה: כל רמה פותחת עוד שכבת ציוד ליצירה (GEAR.recipes ב-gear.js), ו-Aging לציוד (aging.js) עד ה-+ של הרמה
       look:[{at:1,model:'tent',scale:1,deco:['barrel']},{at:3,model:'forge',scale:1,deco:['crate','barrel']},{at:5,model:'forge',scale:1.12,deco:['flag','flag','crate','barrel'],glow:C.ember}],
       cost:[null,{coins:20,wood:15,stone:10},{coins:50,wood:35,stone:25,copper:8},{coins:110,wood:70,stone:60,iron:15,bone:10},{coins:220,wood:140,stone:120,silver:12,hide:15},{coins:400,wood:250,stone:220,gold:10,essence:15,rubyF:1}]},
-    mill:{x:255,y:-26,r:66,
+    mill:{x:-560,y:80,r:66,
       look:[{at:1,model:'mill',scale:0.85,deco:[]},{at:3,model:'mill',scale:1,deco:['crate']},{at:5,model:'mill',scale:1.12,deco:['flag','flag','crate'],glow:C.gold}],
       cost:[null,{coins:10,stone:5},{coins:30,wood:15,stone:20},{coins:70,wood:30,stone:50,copper:5},{coins:140,wood:60,stone:100,iron:10},{coins:260,wood:120,stone:180,silver:8,aquaF:1}],
       make:{wood:[0,30,50,80,120,180],cloth:[0,0,0,4,8,12]},cap:[0,60,120,200,320,500]},   // מרמה 3 גם אורגת בד
-    mine:{x:-255,y:162,r:66,
+    mine:{x:-380,y:350,r:66,
       look:[{at:1,model:'mine',scale:0.85,deco:[]},{at:3,model:'mine',scale:1,deco:['barrel']},{at:5,model:'mine',scale:1.12,deco:['flag','flag','barrel'],glow:C.gold}],
       cost:[null,{coins:10,wood:10},{coins:30,wood:25,stone:10},{coins:70,wood:55,stone:25,copper:8},{coins:140,wood:110,stone:50,iron:12},{coins:260,wood:200,stone:90,silver:10,amber:1}],
       // מכרה עמוק יותר, מתכת טובה יותר: נחושת מההתחלה, ברזל מרמה 2, כסף מ-4, זהב ב-5
       make:{stone:[0,20,35,55,80,120],copper:[0,4,6,8,10,12],iron:[0,0,3,6,9,12],silver:[0,0,0,0,2,4],gold:[0,0,0,0,0,1.5]},cap:[0,40,80,140,220,350]},
-    market:{x:255,y:162,r:66,     // המחירים והכמות בכל לחיצה ב-RES (resources.js). כל רמה נוספת: bonus יותר טוב, ועוד נדירות שאפשר לקנות
+    market:{x:450,y:-230,r:66,     // המחירים והכמות בכל לחיצה ב-RES (resources.js). כל רמה נוספת: bonus יותר טוב, ועוד נדירות שאפשר לקנות
       cost:[null,{coins:15,wood:15},{coins:40,wood:30,stone:20,cloth:4},{coins:90,wood:60,stone:50,cloth:10,copper:6},{coins:180,wood:120,stone:100,iron:15,venom:6},{coins:320,wood:220,stone:180,silver:10,essence:10,sapphireF:1}],
       bonus:0.2,
       look:[{at:1,model:'tent',scale:1,deco:['crate','crate']},{at:3,model:'market',scale:1,deco:['crate','barrel']},{at:5,model:'market',scale:1.1,deco:['flag','flag','crate','barrel'],glow:C.gold}]},
-    stash:{x:-145,y:280,r:60,     // מחסן: המקום הבטוח לשלל (stash.js). cap[L]: כמה יחידות הוא מחזיק ברמה L
+    stash:{x:540,y:80,r:60,     // מחסן: המקום הבטוח לשלל (stash.js). cap[L]: כמה יחידות הוא מחזיק ברמה L
       cost:[null,{coins:15,wood:10},{coins:40,wood:30,stone:15,cloth:6},{coins:90,wood:60,stone:45,copper:10,hide:8},{coins:180,wood:120,stone:90,iron:15,bone:15},{coins:320,wood:220,stone:160,silver:10,venom:8,boltF:1}],
       cap:[0,150,400,900,2000,5000],
       look:[{at:1,model:'tent',scale:0.9,deco:['crate']},{at:3,model:'market',scale:0.95,deco:['crate','crate','barrel']},{at:5,model:'market',scale:1.05,deco:['flag','flag','crate','barrel'],glow:C.tide}]}
   },
   settleEvery:2,                  // כל כמה שניות מתעדכן המלאי שהצטבר במנסרה ובמכרה (המספר מעל המבנה ובפאנל)
-  winDelay:2.5                    // שניות אחרי שהבוס נופל, עד שחוזרים הביתה
+  winDelay:2.5,                   // שניות אחרי שהבוס נופל, עד שחוזרים הביתה
+  /* קישוטים בתוך הכפר, כדי שהמרחב לא ירגיש ריק. לא חוסמים, ולא עומדים על השבילים (ground.js) או על מבנים.
+     k: tree/pine/bush (עצים), lamp (פנס רחוב), fence (גדר מ-x,y עד x2,y2), crate/barrel. בתלת-ממד: props3dVillage ב-props3d.js */
+  props:[
+    {k:'lamp',x:-80,y:180},{k:'lamp',x:80,y:180},{k:'lamp',x:-80,y:480},{k:'lamp',x:80,y:480},{k:'lamp',x:-130,y:-40},{k:'lamp',x:130,y:-40},
+    {k:'lamp',x:-300,y:-120},{k:'lamp',x:300,y:-120},{k:'lamp',x:-330,y:170},{k:'lamp',x:330,y:170},
+    {k:'tree',x:-190,y:-470},{k:'pine',x:-120,y:-540},{k:'tree',x:200,y:-470},{k:'pine',x:130,y:-545},{k:'bush',x:250,y:-520},
+    {k:'pine',x:-640,y:-140},{k:'tree',x:-610,y:-260},{k:'pine',x:640,y:-140},{k:'tree',x:610,y:-260},
+    {k:'tree',x:-170,y:640},{k:'bush',x:-110,y:600},{k:'tree',x:170,y:640},{k:'bush',x:110,y:600},
+    {k:'tree',x:-560,y:330},{k:'bush',x:-600,y:250},{k:'tree',x:600,y:300},{k:'pine',x:410,y:560},
+    {k:'bush',x:-200,y:80},{k:'bush',x:220,y:60},
+    {k:'fence',x:-560,y:-360,x2:-420,y2:-400},{k:'fence',x:560,y:-360,x2:420,y2:-400},
+    {k:'fence',x:-650,y:-20,x2:-640,y2:150},{k:'fence',x:650,y:-20,x2:640,y2:150},
+    {k:'fence',x:-80,y:650,x2:-230,y2:590},{k:'fence',x:80,y:650,x2:230,y2:590},
+    {k:'crate',x:380,y:-90},{k:'barrel',x:405,y:-80},{k:'crate',x:-470,y:-110},{k:'barrel',x:-500,y:-100}
+  ],
+  /* השלטים על המבנים (ניר, 2.11: השלטים "נדחסים זה על זה ועל הממשק העליון").
+     near: שם של מבנה מופיע רק כשמתקרבים אליו עד כאן (פיקסלים במשחק). תג "יש לאסוף/לשדרג" מופיע מכל מרחק שעל המסך.
+     שלט שחופף לשלט חשוב ממנו זז קצת למטה או למעלה (nudge), ואם אין מקום הוא לא מצויר. avoid: הממשק שהשלטים לא נכנסים מתחתיו */
+  signs:{near:330,nudge:[0,24,-24,48],pad:4,avoid:'#vBag,#who,#menuBtn,#nav,.dgift,#updBtn,#vEnter'}
 };
 
 const vLv=k=>SAVE.village[k]||0;
@@ -270,9 +292,9 @@ function vTapAt(cx,cy){
 function villageDecor(){
   if(villageDecor.list)return villageDecor.list;
   const out=[],R=VILLAGE.radius;
-  for(let i=0;i<54;i++){const a=i/54*Math.PI*2;if(Math.abs(angDiff(a,Math.PI/2))<0.2)continue;
+  for(let i=0;i<84;i++){const a=i/84*Math.PI*2;if(Math.abs(angDiff(a,Math.PI/2))<0.13)continue;
     const r=R+50+hash(i,1)*90;out.push({kind:hash(i,2)<0.18?'rock':'tree',x:Math.cos(a)*r,y:Math.sin(a)*r,v:hash(i,3)})}
-  for(let i=0;i<18;i++){const a=(i+0.5)/18*Math.PI*2;if(Math.abs(angDiff(a,Math.PI/2))<0.25)continue;
+  for(let i=0;i<26;i++){const a=(i+0.5)/26*Math.PI*2;if(Math.abs(angDiff(a,Math.PI/2))<0.17)continue;
     const r=R+250+hash(i,4)*60;out.push({kind:'hills',x:Math.cos(a)*r,y:Math.sin(a)*r,v:hash(i,5)})}
   return villageDecor.list=out;
 }
@@ -289,6 +311,12 @@ function drawVillage(){
     if(d.kind==='tree'){ctx.fillStyle='#24452F';ctx.beginPath();ctx.arc(d.x,d.y,20+d.v*10,0,7);ctx.fill()}
     else if(d.kind==='rock'){ctx.fillStyle='#4A5064';ctx.beginPath();ctx.arc(d.x,d.y,12,0,7);ctx.fill()}
     else{ctx.fillStyle='#1E3526';ctx.beginPath();ctx.arc(d.x,d.y,70,0,7);ctx.fill()}
+  }
+  for(const d of VILLAGE.props){   // הקישוטים בתוך הכפר
+    if(d.k==='fence'){ctx.strokeStyle='#7A5532';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x2,d.y2);ctx.stroke()}
+    else if(d.k==='lamp'){ctx.fillStyle='#4A3A2A';ctx.fillRect(d.x-2,d.y-34,4,36);ctx.fillStyle=C.gold;ctx.beginPath();ctx.arc(d.x,d.y-38,5,0,7);ctx.fill()}
+    else if(d.k==='crate'||d.k==='barrel'){ctx.fillStyle=d.k==='crate'?'#9A6B3C':'#7A4E2A';ctx.fillRect(d.x-7,d.y-12,14,12)}
+    else{ctx.fillStyle=d.k==='bush'?'#2F5A36':'#24452F';ctx.beginPath();ctx.arc(d.x,d.y,d.k==='bush'?13:22,0,7);ctx.fill()}
   }
   // השער: קשת, כמו דלת הזהב
   ctx.strokeStyle=C.chalk;ctx.lineWidth=4;ctx.fillStyle='rgba(236,231,220,0.12)';
@@ -308,19 +336,38 @@ function drawVillage(){
       else{ctx.fillStyle=d==='crate'?'#9A6B3C':'#7A4E2A';ctx.fillRect(px-7,py-12,14,12)}});
   }
 }
-// שלטים מתחת למבנים, התוצרת שמחכה, וחץ לשער. מעל הכל, בשני המצבים
+// שלטים מתחת למבנים והתוצרת שמחכה. מעל הכל, בשני המצבים. כל שלט נכנס לתור (vSign), ו-vSignsFlush מסדר אותם בלי חפיפה
 function drawVillageScreen(ox,oy){
   if(!S.vil)return;
-  ctx.textAlign='center';ctx.direction=DIR;
-  const sign=(x,y,txt,col)=>{ctx.font='800 13px Heebo, system-ui, sans-serif';const w=ctx.measureText(txt).width+16;
-    ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(x-w/2,y-11,w,22,11);ctx.fill();ctx.fillStyle=col;ctx.fillText(txt,x,y+5)};
+  const near=VILLAGE.signs.near;
   for(const k in VILLAGE.b){
-    const B=VILLAGE.b[k],L=vLv(k),x=B.x+ox,y=B.y+B.r*0.62+oy,here=S.vil.here===k&&!S.vil.open;
-    sign(x,y,(here?'👆 ':'')+T('vil.'+k)+(L?' · '+L:''),here?C.gold:L?C.chalk:C.dim);   // המבנה שלידו: 👆 וזהב, אפשר לגעת
-    // תג מעליו: מה מחכה שם. תוצרת לאסוף קודמת לשדרוג אפשרי
+    const B=VILLAGE.b[k],L=vLv(k),x=B.x+ox,y=B.y+B.r*0.62+oy,here=S.vil.here===k&&!S.vil.open,d=Math.hypot(P.x-B.x,P.y-B.y)-B.r;
+    // השם: רק כשקרובים. המבנה שלידו: 👆 וזהב, אפשר לגעת
+    if(here||d<near)vSign(x,y,(here?'👆 ':'')+T('vil.'+k)+(L?' · '+L:''),here?C.gold:L?C.chalk:C.dim,here?100:40-d/20);
+    // תג מעליו: מה מחכה שם, מכל מרחק. תוצרת לאסוף קודמת לשדרוג אפשרי
     const n=vStock(k);
-    if(n>0){const r=Object.keys(VILLAGE.b[k].make)[0];sign(x,y-B.r*1.6,'✓ '+resIcon(r)+' '+n,C.gold)}
-    else if(!vBlock(k))sign(x,y-B.r*1.6,'⬆ '+T(L?'vil.tagUp':'vil.tagBuild'),C.gold);
+    if(n>0){const r=Object.keys(VILLAGE.b[k].make)[0];vSign(x,y-B.r*1.6,'✓ '+resIcon(r)+' '+n,C.gold,60)}
+    else if(!vBlock(k))vSign(x,y-B.r*1.6,'⬆ '+T(L?'vil.tagUp':'vil.tagBuild'),C.gold,55);
   }
-  const g=VILLAGE.gate;sign(g.x+ox,g.y+oy+40,T('vil.gate'),C.chalk);   // החץ לשער: רק כשהמטרה בעולם (guide.js)
+  const g=VILLAGE.gate,dg=Math.hypot(P.x-g.x,P.y-g.y);if(dg<near*1.4)vSign(g.x+ox,g.y+oy+40,T('vil.gate'),C.chalk,45-dg/20);
+}
+/* ---- השלטים: בלי חפיפה, ולא מתחת לממשק ----
+   vSign(x,y,טקסט,צבע,חשיבות): במסך, ביחידות של המשחק. נקרא מהכפר, מהתושבים (npc.js) ומהבתים (residents.js).
+   vSignsFlush (render.js, אחרי כולם): מהחשוב לפחות חשוב, כל שלט במקום הראשון מתוך nudge שלא חופף לשלט אחר או לממשק */
+const VSIGN={list:[],avoid:[],t:0};
+function vSign(x,y,txt,col,prio){VSIGN.list.push({x,y,txt,col,prio})}
+// המלבנים של הממשק (פס המשאבים, ☰, הדמות, הסרגל), ביחידות של המשחק. נמדד מחדש פעם ב-30 פריימים
+function vAvoid(){
+  if(VSIGN.t-->0)return VSIGN.avoid;VSIGN.t=30;
+  return VSIGN.avoid=[...document.querySelectorAll(VILLAGE.signs.avoid)].filter(e=>!e.hidden&&e.offsetParent!==null).map(e=>{const r=e.getBoundingClientRect();return{x:r.left/ZOOM,y:r.top/ZOOM,w:r.width/ZOOM,h:r.height/ZOOM}}).filter(r=>r.w>0&&r.h>0);
+}
+function vSignsFlush(){
+  const list=VSIGN.list;VSIGN.list=[];VSIGN.shown=[];if(!S||!S.vil||!list.length)return;
+  const G=VILLAGE.signs,used=vAvoid().slice(),hit=r=>used.some(o=>r.x<o.x+o.w&&o.x<r.x+r.w&&r.y<o.y+o.h&&o.y<r.y+r.h);
+  ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 13px Heebo, system-ui, sans-serif';
+  list.sort((a,b)=>b.prio-a.prio);
+  for(const s of list){const w=ctx.measureText(s.txt).width+16;
+    for(const dy of G.nudge){const y=s.y+dy,r={x:s.x-w/2-G.pad,y:y-11-G.pad,w:w+G.pad*2,h:22+G.pad*2};
+      if(r.x<0||r.y<0||r.x+r.w>W||r.y+r.h>H||hit(r))continue;
+      used.push(r);VSIGN.shown.push(s.txt);ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(s.x-w/2,y-11,w,22,11);ctx.fill();ctx.fillStyle=s.col;ctx.fillText(s.txt,s.x,y+5);break}}
 }

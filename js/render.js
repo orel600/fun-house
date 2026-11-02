@@ -212,7 +212,7 @@ function render(){
   drawWantedScreen(ox,oy);arenaArrows(ox,oy);   // חץ לאויב-על מחוץ למסך (arenaui.js)
   drawVillageScreen(ox,oy);
   drawWorldScreen(ox,oy);
-  drawNpcScreen(ox,oy);
+  drawNpcScreen(ox,oy);vSignsFlush();   // שלטי הכפר בלי חפיפה (village.js)
   drawQuestMarks(ox,oy);statDraw(ox,oy);guideDraw(ox,oy);streakDraw();   // streakDraw: רצף הריגות (streak.js)   // guideDraw: המטרה הבאה, שובל וחץ (guide.js)   // סימן מעל הדמות כשסקיל פעיל (stats.js)
   if(joy){ctx.strokeStyle='rgba(236,231,220,0.22)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(joy.ox,joy.oy,55,0,7);ctx.stroke();
     ctx.fillStyle='rgba(236,231,220,0.3)';ctx.beginPath();ctx.arc(joy.ox+joy.dx*55,joy.oy+joy.dy*55,22,0,7);ctx.fill()}
