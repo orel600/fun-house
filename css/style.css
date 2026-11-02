@@ -123,6 +123,24 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
 .ult:active{transform:scale(.92)}
 .swap:not([hidden])~.ult{right:calc(env(safe-area-inset-right,0px) + 230px)}
 .vil .skills,.vil .divine,.vil .ult,.world .ult{display:none}
+/* סקיל חתימה (js/sigskill.js): בעולם ובכפר, במקום של האולטימייט (שקיים רק בזירה). גדול וזוהר בצבע סוג הנזק, הצללת המתנה ומספר */
+.sig{display:none}
+.world .sig:not([hidden]),.vil .sig:not([hidden]){position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 36px);right:calc(env(safe-area-inset-right,0px) + 216px);
+  width:78px;height:78px;border-radius:50%;border:3px solid var(--dt,var(--gold));display:grid;place-items:center;padding:0;
+  touch-action:none;cursor:pointer;overflow:hidden;background:radial-gradient(circle at 50% 35%,#3A2F1Ee6,#161208e6 72%);
+  box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--gold),0 4px 10px #000a;transition:transform .08s}
+.swap:not([hidden])~.sig{right:calc(env(safe-area-inset-right,0px) + 230px)}
+.sig .sigi{font-size:38px;line-height:1;filter:drop-shadow(0 2px 2px #000a);transition:opacity .15s}
+.sig:not(.ready) .sigi{opacity:.45}
+.sig i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
+.sig.ready{box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--gold),0 0 18px var(--dt);animation:sigglow 1.6s ease-in-out infinite alternate}
+@keyframes sigglow{to{box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--gold),0 0 28px var(--dt)}}
+.sig.ping{animation:ultping .45s ease-out}
+.sig:active{transform:scale(.92)}
+.sig[data-sec]:not([data-sec=""])::after{content:attr(data-sec);position:absolute;inset:0;display:grid;place-items:center;z-index:1;font:900 24px/1 var(--body);color:#fff;text-shadow:0 0 4px #000,0 2px 0 #000;pointer-events:none}
+.sig:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
+.sigc{border-color:var(--gold)}
+.sigc .wsbi{font-size:24px;display:grid;place-items:center}
 /* כישוף מיוחד (js/spell.js): כפתור קטן מעל השורה התחתונה, משמאל לקשת. צבע קלף, כי כישוף הוא לא סוג נזק. בחירה בתחילת ריצה: נגיעה מחליפה, והשם מתחתיו */
 .spellb{position:fixed;z-index:3;width:56px;height:56px;right:calc(env(safe-area-inset-right,0px) + 226px);bottom:calc(env(safe-area-inset-bottom,0px) + 130px);
   border-radius:50%;border:3px solid #E9D8A6;color:#E9D8A6;display:grid;place-items:center;padding:0;overflow:hidden;touch-action:none;cursor:pointer;
@@ -1381,15 +1399,16 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 .wsbcols{display:flex;gap:12px;min-height:0;flex:1}
 .wsbslots{flex:0 0 170px;display:flex;flex-direction:column;gap:8px}
 .wsbslots p{font-size:12px;margin:2px 0 0;line-height:1.3}
-.wsbs,.wsbc{appearance:none;position:relative;display:flex;align-items:center;gap:8px;text-align:start;color:var(--chalk);font:inherit;
+.wsbs,.wsbc,.sigc{appearance:none;position:relative;display:flex;align-items:center;gap:8px;text-align:start;color:var(--chalk);font:inherit;
   background:#141A2Acc;border:2px solid #3A4566;border-radius:12px;padding:6px 8px;min-height:48px;cursor:pointer}
 .wsbs{border-color:var(--dt,#3A4566)}
 .wsbs.sel{box-shadow:0 0 0 3px var(--gold)}
 .wsbs[disabled]{cursor:default;opacity:.85}
 .wsbs small{position:absolute;bottom:2px;inset-inline-end:8px;font-size:10px;color:var(--gold)}
 .wsbgrid{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;overflow-y:auto;align-content:start}
-.wsbc.on{border-color:var(--dt);box-shadow:inset 0 0 0 1px var(--dt)}
-.wsbc.lock{opacity:.5;cursor:default}
+.wsbc.on,.sigc.on{border-color:var(--dt);box-shadow:inset 0 0 0 1px var(--dt)}
+.wsbc.lock,.sigc.lock{opacity:.5;cursor:default}
+.sigc{grid-column:1/-1}
 .wsbi{position:relative;flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#0006;box-shadow:0 0 0 2px var(--dt)}
 .wsbi .dti{width:22px;height:22px}
 .wsbi.pic{overflow:hidden}.wsbi .wsbp,.skrfly .wsbp{width:100%;height:100%;border-radius:50%;display:block}
