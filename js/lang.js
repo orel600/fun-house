@@ -78,6 +78,7 @@ const TEXT={
   'upd.ver':{he:'גרסה',en:'Version'},
   'menu.btn':{he:'תפריט',en:'Menu'},
   'menu.hero':{he:'דמות',en:'Hero'},
+  'menu.mb':{he:'משחקי השאול',en:'Underworld'},   // הלשונית בסרגל: קצר, כדי שייכנס לכפתור (המבקר, 2.11.2026)
   arena:{he:'זירת המשחק',en:'Game arena'},
   swapWeapon:{he:'החלף נשק',en:'Switch weapon'},
   mute:{he:'צלילים',en:'Sound'},

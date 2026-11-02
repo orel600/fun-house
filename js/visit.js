@@ -110,11 +110,14 @@ function visitClose(){$('ovVisit').hidden=true;if(S&&S.mode==='visit')S.mode=vis
 const vEsc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 function visitDraw(){
   const F=VISIT.friends,f=VISIT.sel;
-  let s=winHead(T('visit.title'),f?visitWho(f):'','h2')+'<div class="visbody"><div class="vislist">';
+  let s=winHead(T('visit.title'),f?visitWho(f):'','h2')+'<div class="visbody"><div class="viscol"><div class="vislist">';
   if(F==null)s+='<p class="dim">'+T('visit.loading')+'</p>';
   else if(!F.length)s+='<p class="dim">'+T('visit.none')+'</p>';
   else for(const x of F)s+='<button class="visf'+(f&&f.user_id===x.user_id?' on':'')+'" data-act="pick" data-id="'+vEsc(x.user_id)+'"><b>'+vEsc(x.name)+'</b><small>'+T('visit.lv',x.level|0)+'</small></button>';
-  s+='</div><div class="visside">'+(f?visitVillageHtml(f)+visitGiftHtml(f)+(typeof tradeBtnHtml==='function'?tradeBtnHtml(f):''):'<p class="dim">'+T(F&&F.length?'visit.pick':'visit.how')+'</p>')+'</div></div>';
+  // "להשאיר" ו"מסחר" בטור של החברים, מתחת לרשימה, כדי שתמיד ייראו גם בגובה 350 (המבקר, 2.11.2026)
+  const side=f?visitVillageHtml(f)+visitGiftHtml(f):'<p class="dim">'+T(F&&F.length?'visit.pick':'visit.how')+'</p>',   // קודם: בוחר את המשאב שנשלח
+    acts=f?visitSendHtml(f)+(typeof tradeBtnHtml==='function'?tradeBtnHtml(f):''):'';
+  s+='</div>'+(acts?'<div class="visacts">'+acts+'</div>':'')+'</div><div class="visside">'+side+'</div></div>';
   $('visitWin').innerHTML=s;
 }
 // מי החבר, בכותרת: שם, דמות, רמה וחיה
@@ -137,9 +140,13 @@ function visitGiftHtml(f){
   for(const r of have)s+='<button class="visr'+(r===VISIT.res?' on':'')+'" data-act="res" data-r="'+r+'" aria-label="'+T('res.'+r)+'">'+resPic(r)+'<small>'+shortN(SAVE.bag[r])+'</small></button>';
   s+='</div><div class="visamt">';
   for(const n of VISIT.giftSteps)s+='<button class="visn'+(n===VISIT.amt?' on':'')+'" data-act="amt" data-n="'+n+'"'+(bagHas(VISIT.res,n)?'':' disabled')+'>×'+n+'</button>';
-  // הפתק: כפתור אחד שמחליף לפתק הבא בכל נגיעה, ולידו "להשאיר"
+  return s+'</div></div>';
+}
+// הפתק: כפתור אחד שמחליף לפתק הבא בכל נגיעה, ומתחתיו "להשאיר". רק כשיש מה להשאיר היום (visitGiftHtml בחר את המשאב)
+function visitSendHtml(f){
+  if(visitSentToday(f.user_id)>=VISIT.perDay||!VISIT.res||!bagHas(VISIT.res))return'';
   const ok=bagHas(VISIT.res,VISIT.amt);
-  return s+'</div></div><div class="visnotes"><button class="visnote on" data-act="note">✉ '+T('visit.note.'+VISIT.note)+' <i>›</i></button>'+
+  return '<div class="visnotes"><button class="visnote on" data-act="note">✉ '+T('visit.note.'+VISIT.note)+' <i>›</i></button>'+
     '<button class="vbtn" data-act="send"'+(ok?'':' disabled')+'>'+T('visit.send',VISIT.amt,T('res.'+VISIT.res))+'</button></div>';
 }
 
