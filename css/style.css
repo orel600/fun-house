@@ -667,6 +667,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .sndpanel .ang{grid-column:2;grid-row:5}   /* זווית המצלמה (camera.js) */
   .sndpanel .fxl{grid-column:2;grid-row:6}
   .sndpanel .shd{grid-column:1;grid-row:5}   /* צללים (look-hd.js) */
+  .sndpanel .fzm{grid-column:1;grid-row:6}   /* זום בקרב (camera.js) */
 }
 .panel.win>.whd{margin-top:8px}
 

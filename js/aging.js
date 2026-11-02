@@ -120,7 +120,7 @@ function forgeItemsHtml(slots){
 }
 function forgeDraw(){
   $('fLevel').textContent=AUI.tab==='age'?T('age.cap',ageCap()):'';
-  $('fRes').innerHTML=bagLine(SAVE.bag,resShown('forge'));   // מתכות ואבנים שיש (RES.show)
+  $('fRes').innerHTML=bagLine(SAVE.bag,AUI.tab==='fuse'?fuseRes():resShown('forge'));   // מתכות ואבנים שיש (RES.show). בהתכה: רק מה שהיא צריכה (fuse.js)
   $('fTabs').innerHTML=['age','pow','fuse'].map(t=>'<button data-tab="'+t+'"'+(AUI.tab===t?' aria-pressed="true"':'')+'>'+T('forge.tab.'+t)+'</button>').join('');
   itemTip($('fDetail'));   // הבועה (itemtip.js) רק בלשונית השדרוג
   if(AUI.tab==='pow'){powDraw();return}   // כוחות: powers.js
