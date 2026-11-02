@@ -85,7 +85,7 @@
 | ✅ #234 | המבקר: דוח שני | אחרי יום של יותר מ-20 שינויים, ממצאים חדשים ב-docs/critic/2026-11-02 | | docs |
 | ✅ #238 | מבקר 2: למצוא את הסקילים | ספר הסקילים מעל חלון הדמות, נגיעה ארוכה, נקודה אדומה, אימון, Feed לא על הסקילים | | skguide, skpractice |
 | 🔨 2.11 #240 | מבקר 2: חלונות בגובה 350 | windows-short-height, trade-cramped, visit-send-hidden, rail-label-cut, quests-one-column, small-buttons-settings. css/short.css | | css, visit, quests (עטיפה) |
-| 🔨 2.11 #237 | מבקר 2: הדקות הראשונות | daily-challenge-newbie, first-quest-bounce, too-many-quests-start, welcome-banner-over-dialog, lv20-return-welcome | | quests, daily, welcome |
+| ✅ 2.11 #237 | מבקר 2: הדקות הראשונות | daily-challenge-newbie, first-quest-bounce, too-many-quests-start, welcome-banner-over-dialog, lv20-return-welcome | | quests, daily, welcome |
 | ⬜ | חנות קישוטים (מבקר 2: coins-too-fast + idea-coin-sink-cosmetics) | ברמה 20 המטבעות נערמים בלי שימוש. חנות קישוטים לכפר ולבית שרואים בביקור אצל חבר. אחרי #240 (אותם חלונות) | #240 | bwin, village, visit |
 | ⬜ | מבקר 2: קרב ומהירות | world-fights-no-tension (אויבים מתים תוך פחות משתי שניות), world-perf (הכפר והעולם כבדים פי 4 מהזירה). docs/critic/2026-11-02 | | world, render3d |
 | ✅ #104 | ביחד: ביקור ומתנות | "מה יחזיר אותנו אחרי חודש" (1.11): ביקור בכפר של השני ומתנות, דרך Supabase | | save, village |
@@ -145,7 +145,7 @@
 ## העברה לסשן מתאם חדש (2.11, 12:40 UTC)
 
 הסשן המתאם של 2.11 (session_01ABMDoL7iUQqd34JEAeWZg1) נסגר לבקשת ניר. מה נשאר פתוח:
-- **#240** (חלונות בגובה 350) ו-**#237** (הדקות הראשונות): הסשנים שבנו אותם ממזגים בעצמם כשירוק ומעודכן מ-main, ובודקים שגם main ירוק אחרי.
+- **#240** (חלונות בגובה 350) ו-**#237** (הדקות הראשונות, ✅ נכנס): הסשנים שבנו אותם ממזגים בעצמם כשירוק ומעודכן מ-main, ובודקים שגם main ירוק אחרי.
 - **#209** (מחקר טקסטורות, טיוטה): לא למזג. ההמלצה הייתה צללים קודם (✅ #213), והטקסטורות אחר כך.
 - **⏸ ניר: SQL של המסחר** (`supabase/migrations/20261102_trade.sql`) עוד לא הורץ. דרך ה-MCP של Supabase זה דורש אישור של ניר מהמחשב (מהטלפון הבקשה פגה). עד אז כפתור המסחר לא מופיע.
 - **הבא:** חנות קישוטים, ואחריה קרב ומהירות (שתי השורות ⬜ למעלה, מהמבקר).
