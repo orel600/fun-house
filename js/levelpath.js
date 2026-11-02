@@ -21,6 +21,7 @@ function lpAt(lv){
   if(lv>1&&(lv-1)%TREE.every===0)out.push({k:'tree',icon:'🌳',txt:T('lp.tree')});
   if(lv%RANKS.every===0)out.push({k:'rank',icon:'🎖️',txt:T('lp.rank')});
   for(const x of LEVELPATH.extra[lv]||[])out.push({k:'extra',icon:x.icon,txt:T(x.t)});
+  if(typeof cuAt==='function')out.push(...cuAt(lv));   // סוד חדש שנפתח ברמה: "משהו חדש באחו" (curiosity.js)
   return out;
 }
 // הרמה הבאה אחרי lv שבה נפתח משהו. big: רק יעד גדול

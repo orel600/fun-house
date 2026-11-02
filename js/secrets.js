@@ -28,43 +28,54 @@ const SECRETS={
       {id:'m_chest2',kind:'chest',x:990,y:-40,hide:'bush'},          // מאחורי המחצבה
       {id:'m_shrine',kind:'shrine',x:430,y:590,bless:'speed'},       // בדרום, בין השדות לזירה
       {id:'m_look',kind:'lookout',x:420,y:-540},                     // בשולי המחצבה, רואים ממנה את הכל
-      {id:'m_carve',kind:'carving',x:-470,y:520,to:{x:-90,y:610}}    // עץ בודד בדרום-מערב
+      {id:'m_carve',kind:'carving',x:-470,y:520,to:{x:-90,y:610}},   // עץ בודד בדרום-מערב
+      // נפתחים לפי רמה (lv, curiosity.js)
+      {id:'m_lv10',kind:'chest',x:700,y:640,hide:'rock',lv:10},      // דרום-מזרח, מתחת לזירה
+      {id:'m_lv20',kind:'shrine',x:-980,y:260,bless:'loot',lv:20},   // בקצה המערבי, מעל שער החורשה
+      {id:'m_lv30',kind:'chest',x:980,y:-610,hide:'bush',lv:30}      // בפינה הצפון-מזרחית, מעל הנחושת
     ],
     lake:[
       {id:'l_chest',kind:'chest',x:960,y:580,hide:'bush'},           // בפינה הדרום-מזרחית
       {id:'l_shrine',kind:'shrine',x:520,y:620,bless:'loot'},        // בדרום, מתחת לבריכה המזרחית
       {id:'l_look',kind:'lookout',x:-930,y:-620},                    // צפון-מערב
-      {id:'l_carve',kind:'carving',x:40,y:430,to:{x:-520,y:620}}     // בין הבריכות, ומצביע אל הדרום
+      {id:'l_carve',kind:'carving',x:40,y:430,to:{x:-520,y:620}},    // בין הבריכות, ומצביע אל הדרום
+      {id:'l_lv10',kind:'chest',x:-990,y:160,hide:'bush',lv:10}      // בקצה המערבי, מעל הפנס
     ],
     ridge:[
       {id:'r_chest',kind:'chest',x:-960,y:-560,hide:'rock'},         // בפינה הצפון-מערבית, מאחורי סלע מושלג
       {id:'r_shrine',kind:'shrine',x:-900,y:560,bless:'speed'},      // דרום-מערב
       {id:'r_look',kind:'lookout',x:930,y:-120},                     // על השפה המזרחית של הרכס
-      {id:'r_carve',kind:'carving',x:380,y:600,to:{x:-60,y:640}}     // אורן בודד בדרום, מצביע מערבה
+      {id:'r_carve',kind:'carving',x:380,y:600,to:{x:-60,y:640}},    // אורן בודד בדרום, מצביע מערבה
+      {id:'r_lv20',kind:'chest',x:980,y:560,hide:'rock',lv:20}       // בפינה הדרום-מזרחית, מאחורי הפנס
     ],
     desert:[
       {id:'d_chest',kind:'chest',x:960,y:-560,hide:'rock'},          // בפינה הצפון-מזרחית, מאחורי סלע חרוך
       {id:'d_shrine',kind:'shrine',x:920,y:600,bless:'loot'},        // דרום-מזרח, רחוק מהלבה
       {id:'d_look',kind:'lookout',x:-940,y:-620},                    // צפון-מערב, על דיונה גבוהה
-      {id:'d_carve',kind:'carving',x:300,y:620,to:{x:-380,y:630}}    // קקטוס בודד בדרום, מצביע מערבה
+      {id:'d_carve',kind:'carving',x:300,y:620,to:{x:-380,y:630}},   // קקטוס בודד בדרום, מצביע מערבה
+      {id:'d_lv20',kind:'chest',x:-980,y:560,hide:'rock',lv:20}      // בפינה הדרום-מערבית, מאחורי הפנס
     ],
     storm:[
       {id:'t_chest',kind:'chest',x:-960,y:-560,hide:'rock'},          // בפינה הצפון-מערבית, מאחורי אבן שנפלה ממגדל
       {id:'t_shrine',kind:'shrine',x:940,y:-560,bless:'speed'},       // צפון-מזרח, מקדש שהברק לא נגע בו
       {id:'t_look',kind:'lookout',x:-940,y:580},                      // דרום-מערב, על שרידי חומה
-      {id:'t_carve',kind:'carving',x:220,y:620,to:{x:-180,y:640}}     // עץ שרוף בדרום, מצביע מערבה
+      {id:'t_carve',kind:'carving',x:220,y:620,to:{x:-180,y:640}},    // עץ שרוף בדרום, מצביע מערבה
+      {id:'t_lv30',kind:'chest',x:980,y:560,hide:'rock',lv:30}        // בפינה הדרום-מזרחית, מאחורי הפנס
     ],
     shadow:[
       {id:'h_chest',kind:'chest',x:-960,y:-560,hide:'bush'},          // בפינה הצפון-מערבית, בתוך שיח צל
       {id:'h_shrine',kind:'shrine',x:940,y:-540,bless:'loot'},        // צפון-מזרח, מקדש שהחושך לא נגע בו
       {id:'h_look',kind:'lookout',x:940,y:600},                       // דרום-מזרח, על סלע גבוה מעל החושך
-      {id:'h_carve',kind:'carving',x:-420,y:620,to:{x:-560,y:560}}    // עץ צל בדרום-מערב, מצביע מערבה
+      {id:'h_carve',kind:'carving',x:-420,y:620,to:{x:-560,y:560}},   // עץ צל בדרום-מערב, מצביע מערבה
+      {id:'h_lv30',kind:'shrine',x:-980,y:250,bless:'speed',lv:30}    // בקצה המערבי, מעל בור החושך
     ]
   }
 };
 
 const SC=()=>SAVE.secrets||(SAVE.secrets={found:{},read:{}});
-const scList=()=>S&&S.wd&&SECRETS.regions[S.wd.reg]||[];
+// lv: סוד שנפתח רק מהרמה הזו (curiosity.js, עמוד 4ב). עד אז הוא לא קיים: לא נחשף, לא נספר ולא נמצא
+const scOpen=s=>!s.lv||heroLv()>=s.lv;
+const scList=()=>(S&&S.wd&&SECRETS.regions[S.wd.reg]||[]).filter(scOpen);
 const scFound=id=>!!SC().found[id];
 const scCount=reg=>(SECRETS.regions[reg]||[]).filter(s=>scFound(s.id)).length;
 // המצב הרגעי באזור: ברכה, תצפית, חפירה, המתנות. חדש בכל כניסה לעולם
