@@ -69,7 +69,7 @@ function statsHtml(){
     return '<div class="strow" title="'+what+'"><span class="sti">'+skPic(k,S_.icon)+'</span><span class="stn"><b>'+name+' <bdi>'+n+'</bdi></b><small>'+(n?'<bdi>'+val+'</bdi>':what)+'</small></span>'+
       '<button class="stplus" data-act="stat" data-k="'+k+'"'+(free?'':' disabled')+' aria-label="+ '+name+'">+</button></div>'}).join('')+'</div>';
   h+='<div class="stfoot"><div class="stbuilds">'+[0,1].map(i=>'<button class="vbtn ghost" data-act="build" data-i="'+i+'"'+((SAVE.hero.build||0)===i?' aria-pressed="true"':'')+(S.vil?'':' disabled')+'>'+T('st.slot',i+1)+'</button>').join('')+'</div>'+   // שתי בניות שמורות
-    '<button class="vbtn sttree" data-act="tree">'+skPic('wRoot','🌳')+' '+T('tr.open')+(trFree()?' ('+trFree()+')':'')+'</button></div>';
+    '<button class="vbtn sttree" data-act="tree">'+skPic('wRoot','🌳')+' '+T('tr.open')+(trFree()?' ('+trFree()+')':'')+'</button>'+(typeof wsbBtn==='function'?wsbBtn():'')+'</div>';   // ספר הסקילים (wskbook.js)
   if(stSpent()||trSpent())h+='<p class="dim stwhere">'+T('st.respecWhere',T('npc.'+STATS.respec.npc)[0])+'</p>';
   return h;
 }
