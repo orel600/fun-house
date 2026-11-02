@@ -7,23 +7,28 @@
    נקודות החיבור: onHit ב-dmg.js (wcHit), wskUpdate (wcUpdate) ו-drawWSkill (wcDraw) ב-wskill.js.
    שלב 3: התפשטות (אויב שמת כשהוא בוער מדליק את השכנים, wcKill מ-kill ב-combat.js), וסימון טרף (סקילי הצייד מסמנים,
    מסומן חוטף יותר מהכל, והריגה שלו מקצרת את הקירור). כל נזק נוסף של שילוב גדל לפי הסטט combo (P.combo, מהעץ ומכוחות על ציוד).
-   המילים ב-lang.js: 'combo.shatter', 'combo.pinned', 'combo.steam', 'combo.wildfire', 'combo.mark' */
+   שלב 4: מגן יסודות (תכונה של אויב בעולם, affix.js): חוטף רבע נזק עד ששילוב כלשהו פוגע בו, ואז המגן נשבר.
+   שבירה ראשונה נותנת תמיד רונה שלישית (wrGrant ב-wrunes.js), ואחר כך בסיכוי shell.rune.
+   המילים ב-lang.js: 'combo.shatter', 'combo.pinned', 'combo.steam', 'combo.wildfire', 'combo.mark', 'combo.shell' */
 const WCOMBO={
   shatter:{k:1.5,r:90,shard:0.4,col:'#BFF4FF'},   // עוד פי 1.5 מהמכה, ורסיסים ב-40% מהנזק עד r
   pinned:{k:0.5,col:'#9BD15A'},                    // עוד 50% מכל מכה פיזית באויב תקוע
   steam:{k:0.5,r:110,slow:1.5,col:'#E8E8F0'},      // 50% מהנזק לכל מי שעד r, ומאט אותם
   wildfire:{r:110,t:2.5,k:0.6,col:'#FF8A3D'},      // בוער שמת: כל מי שעד r בוער 2.5 שניות, ב-60% מהשריפה שהייתה עליו (לפחות כמו מכה רגילה)
   mark:{t:4,k:0.2,cd:1,col:'#FFD84D'},             // סימון טרף: 4 שניות, עוד 20% מכל מכה, והריגה מורידה שנייה מכל הקירורים
+  shell:{k:0.25,rune:0.35,col:'#9FE7FF'},          // מגן יסודות: 25% מהנזק עובר, ושבירה נותנת רונה שלישית בסיכוי 35% (הראשונה תמיד)
   gap:0.35                                         // אותה מילה לא קופצת פעמיים בפחות מזה
 };
 const wcK=()=>1+Math.max(0,P.combo||0)/100;   // הסטט combo: כמה יותר נזק לשילובים
+const wcN=()=>{let n=0;if(S.sk)for(const k in S.sk.combos)n+=S.sk.combos[k];return n};   // כל השילובים עד עכשיו (גם של אוראל)
 const wcStat={};   // כמה פעמים כל שילוב קרה (בשביל הבוט)
 let wcLast={};
 
 // נקרא מ-onHit (dmg.js) אחרי השילובים של אוראל, ורק בעולם. chained: מכה שנוצרה משילוב, לא מתחילה עוד אחד
-function wcHit(e,d,base,w,t,ang,chained){
-  if(chained||e.dead)return;
-  const K=WCOMBO;
+function wcHit(e,d,base,w,t,ang,chained,c0){
+  const K=WCOMBO,sh=e.affix==='shell'&&!e.shellOff;
+  if(sh&&!e.dead){e.hp+=d*(1-K.shell.k);if(!e.shellTold){e.shellTold=1;floatText(e.x,e.y-e.r-26,T('combo.shellHint'),K.shell.col,13)}}   // המגן: מחזירים את רוב הנזק
+  if(chained||e.dead){if(sh&&c0!=null&&wcN()>c0)wcBreak(e);return}
   if(t==='physical'&&e.frozen>0){
     e.frozen=0;const extra=d*K.shatter.k*wcK();e.hp-=extra;floatText(e.x+rand(-8,8),e.y-e.r-8,big(extra),K.shatter.col,18,true);
     for(const o of enemies)if(o!==e&&!o.dead&&Math.hypot(o.x-e.x,o.y-e.y)<K.shatter.r)damage(o,base*K.shatter.shard,w,Math.atan2(o.y-e.y,o.x-e.x),'ice',true);
@@ -38,6 +43,7 @@ function wcHit(e,d,base,w,t,ang,chained){
     wcShow(e,'steam',K.steam.r);
   }
   if(e.wmark>0)e.hp-=d*K.mark.k;   // מסומן: עוד 20% מכל מכה
+  if(sh&&!e.shellOff&&c0!=null&&wcN()>c0)wcBreak(e);   // שילוב פגע (שלנו או של אוראל): המגן נשבר
 }
 // המילה מעל האויב וטבעת קטנה בצבע השילוב. נספר גם ב-S.sk.combos, כמו השילובים של אוראל
 function wcShow(e,kind,r){
@@ -48,6 +54,12 @@ function wcShow(e,kind,r){
   if(r&&S.sk)S.sk.fx.push({ring:1,x:e.x,y:e.y,r,t:0,max:0.3*themeK(),col});
   if(!(typeof fxLess==='function'&&fxLess()))sparks(e.x,e.y,col,10,200);
   S.shake=Math.max(S.shake,3);
+}
+// מגן היסודות נשבר: מילה, טבעת, ואולי רונה שלישית
+function wcBreak(e){
+  if(e.shellOff)return;e.shellOff=1;wcShow(e,'shell',e.r+40);wcStat.shellBreak=(wcStat.shellBreak||0)+1;
+  const first=!(SAVE.hero.skRuneGot&&SAVE.hero.skRuneGot.length);
+  if(first||Math.random()<WCOMBO.shell.rune)wrGrant(e.x,e.y);
 }
 // סימון טרף: סקיל של הצייד שפוגע מסמן (נקרא מ-wrOnHit ב-wrunes.js, לכל סקיל מהספר)
 function wcMark(e,id){
