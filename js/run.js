@@ -15,7 +15,7 @@ const RUN={
 };
 
 // פי כמה האויבים חזקים עכשיו, ופי כמה השחקן
-const runK=()=>Math.pow(RUN.hpGrowth,S.t/60)*(1+S.bossCount*0.5);
+const runK=()=>Math.pow(RUN.hpGrowth,Math.min(S.t,RUN.bossAt)/60)*(1+S.bossCount*0.5);   // מהרגע שהבוס מגיע האויבים מפסיקים לגדול: קרב ארוך בבוס לא מתנפח (בדיקת הזירה, 2.11)
 const dmgK=()=>Math.pow(RUN.lvlDmg,P.level-1);
 const easeK=()=>S.wd||S.mb||S.vil?1:Math.min(1,RUN.ease.from+(1-RUN.ease.from)*S.t/RUN.ease.secs);   // רק בזירה (addEnemy ו-hurt משמשים גם בעולם)
 
