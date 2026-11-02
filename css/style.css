@@ -812,6 +812,8 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 /* ביקור אצל חבר (js/visit.js): כפתור עגול מתחת למתנה היומית, וחלון בשני טורים: חברים, והכפר שלו עם המתנה */
 .visbtn{top:calc(env(safe-area-inset-top,0px) + 122px);animation:none}
 .visbtn.off{opacity:.45;filter:grayscale(.8)}
+/* "אסוף הכל" (js/welcome.js): קטן ושקט, מתחת לביקור. ניר, 2.11: "כפתור קטן בצד" */
+.welbtn{top:calc(env(safe-area-inset-top,0px) + 182px);width:48px;height:48px;font-size:24px;animation:none}
 .viswin .visbody{display:flex;gap:14px;min-height:0;flex:1}
 .vislist{flex:.8;display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-width:0}
 .visf{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:52px;padding:6px 12px;border-radius:12px;border:2px solid var(--line,#2A3249);background:rgba(255,255,255,.05);color:var(--chalk);font:800 16px var(--body);text-align:start}
@@ -1088,7 +1090,7 @@ body.menu .minimap{display:none!important}
 .stfoot{display:flex;gap:6px;align-items:stretch}
 .stfoot .stbuilds{flex:1.2;margin:0}
 #ovGear .stfoot .vbtn{min-height:40px;padding:6px 2px;font-size:var(--t1);border-width:0 18px;border-image-width:0 18px;white-space:nowrap}
-.stfoot .sttree{flex:1;width:auto;max-width:none;margin:0}
+.stfoot .sttree{flex:0.8;width:auto;max-width:none;margin:0;font-size:13px}
 .sttree .ski{width:20px;height:20px;vertical-align:middle}
 .stwhere{margin:0;font-size:11px}
 @media (orientation:landscape) and (max-height:500px){.stwhere,.stfree.stnone{display:none}}   /* בטלפון שוכב: בלי שורות עזר, הן ב-title */
@@ -1211,6 +1213,7 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 .gchar .stxp{height:14px}.gchar .stxp bdi{font-size:11px;line-height:14px}
 .gchar .stfoot{margin-top:auto}
 #ovGear .gchar .stfoot .vbtn{min-height:44px;font-size:15px}
+#ovGear .gchar .stfoot .wsbopen{font-size:17px}#ovGear .gchar .stfoot .sttree{font-size:13px}   /* ספר הסקילים בולט, הכישרונות משניים */
 @media (orientation:landscape) and (max-height:500px){.gchar{padding:8px 10px;gap:6px}.gchar .stwhere,.gchar .stfree.stnone{display:block}}
 @media (orientation:portrait){#ovGear .gchar .strows{grid-template-columns:repeat(2,minmax(0,1fr))}.gchar{overflow:visible;flex:none}}
 .gchar .stn small{white-space:normal;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-overflow:clip}
@@ -1398,7 +1401,7 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 .wsbn{display:flex;flex-direction:column;min-width:0}
 .wsbn b{font-size:14px}.wsbn small{font-size:11px;opacity:.85;line-height:1.2}
 .wsbk{position:absolute;top:-6px;inset-inline-start:-6px;width:20px;height:20px;border-radius:50%;background:var(--gold);color:#1A2033;font-size:12px;font-weight:800;display:grid;place-items:center}
-.stfoot .wsbopen{flex:0.8;width:auto;max-width:none;margin:0}
+.stfoot .wsbopen{flex:1.3;width:auto;max-width:none;margin:0;font-size:17px;font-weight:700}   /* ספר הסקילים: הכפתור הראשי, הכישרונות לידו קטנים (ניר, 2.11) */
 @media (max-height:430px){.wsbslots{flex-basis:150px}.wsbgrid{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}}
 /* ===== חלון הציוד בטלפון קטן (ניר 2.11.2026: צילום מ-Android, כ-760×350). שום דבר לא נחתך מ-760×350 עד 932×430 =====
    הגדלים לפי גובה המסך (vh), לא קבועים. תג הסט בשורה משלו מעל הדמות (gear.js), והמסננים נגללים הצידה עם דהייה בסוף */
