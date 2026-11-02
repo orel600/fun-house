@@ -1600,6 +1600,22 @@ function worldBot(m,L,god){
   await page.setViewportSize(CFG.phone);await page.clock.runFor(100);
   check(Object.values(wml).every(o=>o.n===o.show&&o.n>=6&&o.bad===0&&o.here===0&&o.in),
     'מפת העולם, כל האזורים פתוחים: '+Object.entries(wml).map(([k,o])=>k+'px: '+o.n+'/'+o.show+' תוויות, '+(o.bad||o.here?'חפיפות: '+o.bad+' בעולם, '+o.here+' בשערים':'בלי חפיפות')+(o.in?'':', יוצאות מהמפה')).join(' · '));
+  // החיה מריחה ומובילה (petscent.js): מרחרחת, רצה למקום ומחכה עם חץ, תיבה נותנת שלל כשמגיעים, אויב מיוחד נותן שלל כשנופל, ומי שלא בא היא מוותרת
+  const ps=await page.evaluate(()=>{
+    const o={};enterWorld('home');const p=S.pet||petMake();p.st='idle';const pk=SCENT.pick;
+    SCENT.pick={secret:0,chest:1,elite:0};S.wd.scentT=0;petUpdate(0.02);const s=S.wd.scent;o.start=!!s&&s.st==='sniff'&&s.kind==='chest';
+    for(let i=0;i<200&&s.st!=='wait';i++)petUpdate(0.05);o.wait=s.st==='wait'&&Math.hypot(p.x-s.x,p.y-s.y)<12;
+    o.far=Math.hypot(s.x-P.x,s.y-P.y)>=120;
+    const c0=dropStats().spawned;P.x=s.x;P.y=s.y;petUpdate(0.02);o.chest=dropStats().spawned>c0&&!S.wd.scent&&S.wd.scentT>0;
+    SCENT.pick={secret:0,chest:0,elite:1};S.wd.scentT=0;p.st='idle';petUpdate(0.02);const e=S.wd.scent;o.elite=!!e&&!!e.foe&&!!e.foe.affix;
+    P.x=e.foe.x+20;P.y=e.foe.y;petUpdate(0.02);o.fight=e.st==='fight';const c1=dropStats().spawned;damage(e.foe,e.foe.hp*10,'sword',0,'physical');petUpdate(0.02);
+    o.eliteLoot=dropStats().spawned>c1&&!S.wd.scent;
+    SCENT.pick={secret:0,chest:1,elite:0};S.wd.scentT=0;p.st='idle';petUpdate(0.02);const g=S.wd.scent;g.st='wait';g.t=SCENT.wait+1;P.x=g.x+400;P.y=g.y;petUpdate(0.02);o.giveUp=!S.wd.scent;
+    SCENT.pick=pk;return o});
+  await page.evaluate(()=>enterVillage());
+  check(ps.start&&ps.wait&&ps.far&&ps.chest&&ps.elite&&ps.fight&&ps.eliteLoot&&ps.giveUp,
+    'החיה מריחה ומובילה: '+(ps.start?'מרחרחת':'לא מתחילה')+(ps.wait?', רצה ומחכה במקום':', לא הגיעה')+(ps.far?'':', קרוב מדי')+(ps.chest?', תיבה נותנת שלל':', תיבה בלי שלל')+
+    (ps.elite?', אויב מיוחד הופיע':', אין אויב מיוחד')+(ps.fight?', קרב':', בלי קרב')+(ps.eliteLoot?', שלל כשנפל':', בלי שלל מהאויב')+(ps.giveUp?', מוותרת אחרי המתנה':', לא מוותרת'));
   // דרגות עולם (tiers.js): סגור עד סוף הסיפור, נבחר במפה, מחזק אויבים בעולם (גם את מי שכבר שם), שלל נוסף, ודרגה 3 נפתחת אחרי הריגות
   const tr=await page.evaluate(()=>{
     const o={},st0=JSON.stringify(SAVE.story);SAVE.tier=null;SAVE.story=Object.assign({},SAVE.story,{end:false});
