@@ -88,7 +88,7 @@ function bookGroups(){
 }
 const bookGrpName=r=>r==='arena'?T('book.arena'):T('w.region.'+r);
 /* החלון: הכותרת, שלוש לשוניות, ובשני טורים: הרשת (רק היא גוללת) | הפרטים והפרס */
-const bookName=(t,k)=>t==='f'?T('book.f.'+k):t==='i'?gName(k):resName(k);
+const bookName=(t,k)=>t==='f'?(flName(k)||T('book.f.'+k)):t==='i'?gName(k):resName(k);
 const bookPic=(t,k)=>t==='f'?BOOK.icon[k]||'❔':t==='i'?gPic(k):resPic(k);
 function bookCard(t,k){
   const has=bookHas(t,k),cnt=t==='f'&&has?'<small>'+shortN(BK().f[k])+'</small>':'';
@@ -100,7 +100,7 @@ function bookDetail(t,k){
   const has=bookHas(t,k);let h='<div class="bkdet"><span class="bpic big'+(has?'':' unk')+'">'+bookPic(t,k)+'</span><b>'+(has?bookName(t,k):'???')+'</b>';
   if(t==='f'){
     if(!has)h+='<p>'+T('book.notMet')+'</p>';
-    else{const n=BK().f[k],w=bookWeak(k);h+='<p>'+T('book.kills',shortN(n))+'</p>';
+    else{const n=BK().f[k],w=bookWeak(k);if(flLine(k))h+='<p class="bklore">'+flLine(k)+'</p>';h+='<p>'+T('book.kills',shortN(n))+'</p>';   // משפט האופי (foelore.js)
       h+='<p>'+(n<BOOK.weakAt?T('book.weakIn',n,BOOK.weakAt):w==='learns'?T('book.learns'):w?T('book.weak')+' '+dtSvg(w)+' '+T('dt.'+w):T('book.noWeak'))+'</p>'}
   }else if(t==='i'){const it=gItem(k);h+='<p>'+T('tier')[it.tier]+'</p>';if(!has)h+='<p>'+T('book.hintItem')+'</p>'}
   else{const R=resOf(k),w=resWhere(k);h+='<p>'+T('tier')[R.rar]+'</p>';if(w.src.length)h+='<p>'+T('tip.from',w.src.slice(0,3).join(', '))+'</p>'}

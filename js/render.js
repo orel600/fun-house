@@ -174,6 +174,7 @@ function render(){
   drawAgeFx();   // זוהר, שובל וחלקיקים על נשק משודרג (aging.js)
   drawSkills(ox,oy);   // טבעות וברקים של סקילים, וסימני רטוב/קפוא/הלם (skills.js)
   drawOrbits();drawDivine();   // החפצים המסתובבים (orbit.js)
+  sigDraw();   // סקיל החתימה, בעולם ובכפר (sigskill.js)
   drawWSkill();   // בעולם: כדורי הסקילים בדרך, והכוונת בגרירה (wskill.js)
   // חצים: מוט, נוצות וחוד. קסם: כדור זוהר עם שובל (weapons.js)
   const gw=juiceOn()?wGrow():1,sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r*gw,th=heroTheme();ctx.lineWidth=2;   // gw: נשק משודרג יורה חץ/קסם גדול יותר, בעולם ובכפר (weapons.js)
