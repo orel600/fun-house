@@ -1860,6 +1860,23 @@ function worldBot(m,L,god){
     c.classList.remove('on');return o});
   check(lp.orbit&&lp.rank&&lp.tree&&lp.next&&lp.up&&lp.card&&lp.cardNext&&lp.flash&&lp.win,
     'מסלול רמות: '+(lp.orbit&&lp.rank&&lp.tree?'משבצת, דרגה ונקודת סקיל נמצאו':'חסר משהו בטבלה')+(lp.next?', יש "הבא"':', אין "הבא"')+(lp.card?', כרטיס בעליית רמה':', אין כרטיס')+(lp.cardNext?' עם הבא':'')+(lp.flash?', הבזק':', בלי הבזק')+(lp.win?', ובחלון הדמות':', לא בחלון הדמות'));
+  // סקרנות וחקירה (curiosity.js): שלט "רמה מומלצת" ומכשול בדרך הסגורה, שומרים בכניסה, המכשול נעלם ברמה. סוד לפי רמה נעול לפני ופתוח אחרי, ובמסלול הרמות ובמפה
+  const cu=await page.evaluate(()=>{
+    const o={},lv0=SAVE.hero.level,sc0=JSON.stringify(SAVE.secrets||{found:{},read:{}}),cu0=JSON.stringify(CU()),st0=JSON.stringify(SAVE.story);
+    SAVE.secrets={found:{},read:{}};SAVE.curio={clear:{}};SAVE.story=Object.assign({},SAVE.story,{earth:false});
+    const rec=CURIO.paths.lake.lv;SAVE.hero.level=rec-1;enterWorld('home');for(const e of enemies)e.dead=true;
+    let g=cuSigns().find(x=>x.k==='lake');o.sign=!!g&&!g.open&&g.ob==='log';o.guards=WORLD.foes.some(G=>G.guard==='lake'&&G.tough>1);
+    curioUpdate();o.stay=!CU().clear.lake;
+    SAVE.hero.level=rec;curioUpdate();g=cuSigns().find(x=>x.k==='lake');o.clear=!!CU().clear.lake&&!!g&&!g.ob;o.stillShut=!wPathOpen(WORLD.paths.lake);
+    const s=SECRETS.regions.meadow.find(q=>q.lv);SAVE.hero.level=s.lv-1;enterWorld('home');for(const e of enemies)e.dead=true;
+    o.locked=!scList().includes(s);P.x=s.x;P.y=s.y;secretsUpdate(0.05);o.noFind=!scFound(s.id);o.noMark=!cuNew('meadow');
+    SAVE.hero.level=s.lv;o.lp=lpAt(s.lv).some(x=>x.k==='secret'&&x.txt===T('cu.new',T('cu.in.meadow')));o.mark=cuNew('meadow');
+    o.open=scList().includes(s);P.x=s.x+SECRETS.reveal-10;P.y=s.y;secretsUpdate(0.05);P.x=s.x;P.y=s.y;secretsUpdate(0.05);o.found=scFound(s.id);o.markGone=!cuNew('meadow');
+    o.each=Object.keys(SECRETS.regions).every(r=>SECRETS.regions[r].some(q=>q.lv));o.lvs=[...new Set(Object.values(SECRETS.regions).flat().filter(q=>q.lv).map(q=>q.lv))].sort((a,b)=>a-b).join(',');
+    SAVE.hero.level=lv0;SAVE.secrets=JSON.parse(sc0);SAVE.curio=JSON.parse(cu0);SAVE.story=JSON.parse(st0);saveNow();enterVillage();return o});
+  check(cu.sign&&cu.guards&&cu.stay&&cu.clear&&cu.stillShut&&cu.locked&&cu.noFind&&cu.noMark&&cu.lp&&cu.mark&&cu.open&&cu.found&&cu.markGone&&cu.each,
+    'סקרנות: '+(cu.sign?'שלט ומכשול בדרך לאגם':'אין שלט או מכשול')+(cu.guards?', שומרים בכניסה':', בלי שומרים')+(cu.stay&&cu.clear?', המכשול נעלם ברמה':', המכשול לא נעלם בזמן')+(cu.stillShut?' והדרך עדיין לפי הפנס':', הדרך נפתחה בלי פנס!')+
+    (cu.locked&&cu.noFind?', סוד ברמה נעול לפני':', סוד ברמה פתוח מוקדם')+(cu.open&&cu.found?' ונמצא אחרי':' ולא נמצא אחרי')+(cu.lp?', "משהו חדש" במסלול הרמות':', לא במסלול הרמות')+(cu.noMark&&cu.mark&&cu.markGone?', ? במפה':', הסימן במפה לא עובד')+(cu.each?', בכל אזור (רמות '+cu.lvs+')':', חסר אזור'));
   const edge=await page.evaluate(()=>{
     enterWorld('home');const B=placeBox(),n0=drops().length,out=o=>o.x<B.x0||o.x>B.x1||o.y<B.y0||o.y>B.y1;
     wantedAppear(0);const e=S.wn.e;e.x=B.x1+300;e.y=B.y0-200;wantedMove(e,0.05);const wIn=!out(e);
