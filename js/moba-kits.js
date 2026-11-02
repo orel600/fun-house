@@ -5,26 +5,27 @@
    הנזק עולה עם הרמה (mbK ב-moba.js). השליטה בקהל (הלם, הכרחה) עוברת דרך mbCC, עם חסינות קצרה אחריה */
 const MBKIT={
   // הנפח: הטנק. כל סקיל שולט בקהל: הלם, הכרחה לתקוף אותו, וחסימה (אוראל: "טנק צריך crowd control")
-  tank:{icon:'🔨',dt:'earth',hp:980,speed:148,front:true,
+  tank:{icon:'🔨',dt:'earth',hp:1050,speed:148,front:true,def:0.15,   // def: פחות נזק אליו תמיד, כי הוא נלחם מקרוב
+   
     atk:{dmg:30,range:46,cd:1.0,dt:'earth',slow:{k:0.2,t:1}},           // כל מכה בפטיש מאטה 20% לשנייה
-    s1:{id:'anvil',kind:'point',cd:10,range:300,r:85,delay:0.7,dmg:70,stun:1.5,dt:'earth'},   // סדן נופל: מסומן על הרצפה, מהמם
+    s1:{id:'anvil',kind:'point',cd:10,range:300,r:85,delay:0.7,dmg:80,stun:1.5,dt:'earth'},   // סדן נופל: מסומן על הרצפה, מהמם
     s2:{id:'taunt',kind:'self',cd:13,r:170,t:2,armor:0.5,armorT:2.6,burn:16,dt:'fire'},       // קריאת קרב: כולם תוקפים רק אותו, הוא סופג, ומי שמכה בו נשרף
     ult:{id:'wall',kind:'point',cd:55,range:170,t:4,stun:1,push:110,dt:'earth'}},             // חומת ברזל: הדף והלם, ואז חוסמת את הנתיב
-  warrior:{icon:'⚔️',dt:'physical',hp:760,speed:165,front:true,
-    atk:{dmg:44,range:50,cd:0.85,dt:'physical'},
-    s1:{id:'charge',kind:'unit',cd:7,range:260,dmg:60,push:120,dt:'physical'},    // הסתערות: דוהר אל האויב והודף
-    s2:{id:'spin',kind:'self',cd:8,r:120,dmg:95,dt:'physical'},                   // סיבוב חרב: כל מי שסביבו
-    ult:{id:'rage',kind:'self',cd:55,t:5,speed:1.35,dmg:1.6,atkCd:0.7}},          // זעם: מהירות ונזק
+  warrior:{icon:'⚔️',dt:'physical',hp:820,speed:165,front:true,def:0.1,
+    atk:{dmg:50,range:50,cd:0.85,dt:'physical',leech:0.2},   // leech: 20% מהנזק חוזר אליו כחיים
+    s1:{id:'charge',kind:'unit',cd:7,range:320,dmg:75,push:120,dt:'physical'},    // הסתערות: דוהר אל האויב והודף
+    s2:{id:'spin',kind:'self',cd:8,r:120,dmg:105,dt:'physical'},                   // סיבוב חרב: כל מי שסביבו
+    ult:{id:'rage',kind:'self',cd:55,t:5,speed:1.35,dmg:1.6,atkCd:0.7,def:0.25}},  // זעם: מהירות ונזק, ו-25% פחות נזק אליו
   hunter:{icon:'🏹',dt:'lightning',hp:540,speed:160,
-    atk:{dmg:40,range:300,cd:0.9,dt:'physical',shot:true},
-    s1:{id:'pierce',kind:'line',cd:7,range:640,w:26,dmg:110,speed:950,dt:'lightning'},   // חץ ברק שעובר דרך כולם. על רטוב: חשמול
+    atk:{dmg:36,range:300,cd:0.9,dt:'physical',shot:true},
+    s1:{id:'pierce',kind:'line',cd:8,range:640,w:26,dmg:90,speed:950,dt:'lightning'},   // חץ ברק שעובר דרך כולם. על רטוב: חשמול
     s2:{id:'leap',kind:'away',cd:9,dist:230},                                           // קפיצה אחורה
-    ult:{id:'rain',kind:'point',cd:55,range:440,r:150,delay:0.5,t:3,dps:75,slow:0.3,dt:'physical'}},   // גשם חצים
+    ult:{id:'rain',kind:'point',cd:55,range:440,r:150,delay:0.5,t:3,dps:65,slow:0.3,dt:'physical'}},   // גשם חצים
   mage:{icon:'🔮',dt:'water',hp:560,speed:155,
     atk:{dmg:34,range:270,cd:1.0,dt:'water',shot:true},
-    s1:{id:'wave',kind:'line',cd:8,range:440,w:70,dmg:70,speed:620,wet:3,slow:0.4,slowT:2,dt:'water'},   // גל מים: מרטיב ומאט
-    s2:{id:'heal',kind:'self',cd:12,r:260,amt:160},                                                      // ריפוי לחברים קרובים
-    ult:{id:'blizzard',kind:'point',cd:55,range:420,r:170,delay:0.6,dmg:90,freeze:1.5,dt:'ice'}},       // סופת קרח: מקפיאה. על רטוב: יותר זמן
+    s1:{id:'wave',kind:'line',cd:8,range:440,w:70,dmg:70,speed:620,wet:3,slow:0.3,slowT:2,dt:'water'},   // גל מים: מרטיב ומאט
+    s2:{id:'heal',kind:'self',cd:14,r:260,amt:110},                                                      // ריפוי לחברים קרובים
+    ult:{id:'blizzard',kind:'point',cd:55,range:420,r:170,delay:0.6,dmg:80,freeze:1.5,dt:'ice'}},       // סופת קרח: מקפיאה. על רטוב: יותר זמן
 };
 const MB_SLOTS=['s1','s2','ult'];
 
@@ -44,8 +45,8 @@ function mbCast(u,slot,aim){
     case 'wall':{const p=pt();mbWall(u,p.x,s);break}
     case 'charge':{const t=aim&&aim.k?aim:null,d=Math.max(40,Math.min(s.range,dist-(t?t.r+u.r:0)));
       u.st.dash={vx:Math.cos(ang),vy:Math.sin(ang),sp:900,left:d,end:()=>{for(const o of foesIn(u.x,u.y,70)){mbDmg(u,o,s.dmg*k,s.dt);mbPush(o,ang,s.push)}mbBoom(u.x,u.y,70,s.dt)}};break}
-    case 'spin':{for(const o of foesIn(u.x,u.y,s.r))mbDmg(u,o,s.dmg*k,s.dt);mbBoom(u.x,u.y,s.r,s.dt);break}
-    case 'rage':{u.st.rage=s.t;u.st.rageK=s.dmg;u.st.rageSp=s.speed;u.st.rageCd=s.atkCd;mbWord(u,'rage');break}
+    case 'spin':{for(const o of foesIn(u.x,u.y,s.r)){const d=mbDmg(u,o,s.dmg*k,s.dt);u.hp=Math.min(u.max,u.hp+d*(K.atk.leech||0))}mbBoom(u.x,u.y,s.r,s.dt);break}
+    case 'rage':{u.st.rage=s.t;u.st.rageK=s.dmg;u.st.rageSp=s.speed;u.st.rageCd=s.atkCd;u.st.rageDef=s.def;mbWord(u,'rage');break}
     case 'pierce':case 'wave':{
       MB.shots.push({kind:'line',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,
         on:o=>{mbDmg(u,o,s.dmg*k,s.dt);if(s.wet){o.st.wet=Math.max(o.st.wet,s.wet);mbSlow(o,s.slow,s.slowT)}}});break}
