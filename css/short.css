@@ -4,7 +4,8 @@
 
 /* ---- בכל גובה ---- */
 /* סרגל התפריט: תווית ארוכה ("Underworld Games") נשברת לשתי שורות בתוך הכפתור, ולא יוצאת ממנו */
-.mtab>span:not(.ni){white-space:normal;text-align:center;line-height:1.05;max-width:100%;overflow-wrap:break-word}
+.mtab{padding-inline:0}
+.mtab>span:not(.ni){white-space:normal;text-align:center;line-height:1.05;max-width:100%;overflow-wrap:break-word;letter-spacing:-.3px}
 /* הגדרות: כל בורר (3D/2D, מצלמה, צללים, אפקטים, בדיקת עדכון) בגובה 44 לפחות */
 .sndpanel .lang{min-height:44px;padding:6px 14px}
 /* יומן הקווסטים: שני טורים (.qcol ב-questLog). בטלפון עומד הם אחד מתחת לשני */
