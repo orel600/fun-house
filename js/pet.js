@@ -83,6 +83,7 @@ function petUpdate(dt){
   petFeedBtn(p,dP);
   if(dP>f.jump){Object.assign(p,petMake(),{digs:p.digs,dug:p.dug,sand:p.sand,hearts:p.hearts,bitesAll:p.bitesAll,dealt:p.dealt,returns:p.returns});return}   // רחוק מדי (שער, מעבר מקום): מופיעה לידו
   // חפירה: בעולם, ובזירה לעתים רחוקות יותר. לא בכפר
+  if(scentUpdate(p,dt,dP))return;   // מריחה ומובילה (petscent.js)
   if(p.st==='hunt'||p.st==='back'){petHunt(p,dt,dP);return}   // תקיפה: רצה לאויב ונושכת, או חוזרת לשחקן
   if(p.st==='sneak'||p.st==='flee'){paroshSteal(p,dt,dP);return}   // פרעוש גונב (parosh.js)
   if(!S.vil&&p.st!=='dig'&&p.st!=='go'&&p.st!=='jump'){p.digT-=dt*(sv.buff>0?PET.feed.dig:1)/(S.wd?1:PET.dig.arena);if(p.digT<=0){if(!petKind().steal)petDigStart(p);else if(paroshStart(p))return}}   // steal: במקום לחפור, גונב מאויב (parosh.js)

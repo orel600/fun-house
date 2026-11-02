@@ -32,6 +32,8 @@ const TEXT={
   'pwa.install':{he:'📲 התקנה כאפליקציה',en:'📲 Install app'},
   'pwa.ios':{he:'📲 להתקנה: שיתוף ← הוספה למסך הבית',en:'📲 To install: Share → Add to Home Screen'},
   'pwa.turn':{he:'סובבו את הטלפון לרוחב',en:'Turn your phone sideways'},
+  // רצף הריגות (streak.js): מילים משלנו לכל מדרגה
+  'st.0':{he:'רצף!',en:'Streak!'},'st.1':{he:'מערבולת!',en:'Whirlwind!'},'st.2':{he:'מפולת!',en:'Avalanche!'},'st.3':{he:'סערה!',en:'Tempest!'},
   'cloud.off':{he:'☁ לא מחובר: שמור בטלפון',en:'☁ Offline: saved on this phone'},
   'cloud.sync':{he:'☁ מסנכרן…',en:'☁ Syncing…'},
   'cloud.ok':{he:'☁ שמור בענן',en:'☁ Saved to the cloud'},
@@ -870,6 +872,12 @@ const TEXT={
   'rs.saved':{he:'פיוחו הצילה!',en:'Pyocho to the rescue!'},
   'pet.up':{he:(n,s)=>n+' גדלה! שלב '+s,en:(n,s)=>n+' grew up! Stage '+s},
   'pet.found':{he:n=>n+' מצאה משהו!',en:n=>n+' found something!'},
+  // ---- מריחה ומובילה (petscent.js) ----
+  'scent.go':{he:n=>n+' הריחה משהו! בוא אחריה',en:n=>n+' smells something! Follow her'},
+  'scent.go.parosh':{he:n=>n+' הריח משהו! בוא אחריו',en:n=>n+' smells something! Follow him'},
+  'scent.chest':{he:'תיבה קבורה!',en:'A buried chest!'},
+  'scent.elite':{he:'אויב מיוחד! זה מה שהיא הריחה',en:'A special foe! That’s what the nose found'},
+  'scent.secret':{he:'יש כאן משהו מוסתר...',en:'Something is hidden here...'},
   'pet.feed':{he:n=>'🥕 תן ל'+n+' גזר קסום',en:n=>'🥕 Give '+n+' a Magical Carrot'},
   'pet.yum':{he:'יאמי! חזקה יותר לדקה',en:'Yum! Stronger for a minute'},
   // פרעוש, החיה של אוראל (parosh.js). זכר, אז המשפטים של פיוחו מקבלים גרסה משלו

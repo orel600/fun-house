@@ -393,7 +393,7 @@ function drawWorld(){
   affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
   strikeDraw();   // קשת אדומה של מכה שמתכוננת (strike.js)
   foeAiDraw();   // הסתערות, ירייה וקפיצה שמסומנות על הרצפה (foeai.js)
-  eventsDraw();   // אירועים (events.js)
+  eventsDraw();scentDraw();   // אירועים (events.js), החיה מובילה (petscent.js)
   secretsDraw();   // סודות (secrets.js)
   if(WR().fog)wFog();
   if(WR().snow)wSnow();   // הרכס הקפוא
@@ -512,6 +512,6 @@ function drawWorldScreen(ox,oy){
   storyScreen(ox,oy);   // story.js
   affixScreen(ox,oy);   // affix.js
   foeAiScreen(ox,oy);   // "!" מעל קורא שבורח (foeai.js)
-  eventsScreen(ox,oy);   // events.js
+  eventsScreen(ox,oy);scentScreen(ox,oy);   // events.js, petscent.js
   secretsScreen(ox,oy);secretsHud();   // secrets.js
 }
