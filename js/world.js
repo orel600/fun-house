@@ -201,7 +201,7 @@ function enterWorld(at,reg){
   const seen=SAVE.regSeen||(SAVE.regSeen={});if(!seen[reg]){seen[reg]=1;saveNow();feedTitle(T(R.enter||'w.enter'),C.gold)}
   worldUi(true);
   fishMealOn();   // ארוחה מהפונדקאית: חיזוק בעולם (fishing.js)
-  challengeEnter();   // אתגר יומי (challenge.js)
+  challengeEnter();huntEnter();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js)
   wmapVisit(reg);     // מפת העולם: ביקרת כאן (worldmap.js)
   if(reg!=='meadow')questEvent('story',reg);   // קווסט עלילה "להגיע לאגם" (quests.js)
 }
@@ -510,7 +510,7 @@ function drawWorldScreen(ox,oy){
   drawWnpcScreen(ox,oy);   // worldnpc.js
   fishScreen(ox,oy);   // "!" והפס של הדיג (fishing.js)
   storyScreen(ox,oy);   // story.js
-  affixScreen(ox,oy);   // affix.js
+  affixScreen(ox,oy);huntScreen(ox,oy);   // affix.js, hunt.js
   foeAiScreen(ox,oy);   // "!" מעל קורא שבורח (foeai.js)
   eventsScreen(ox,oy);scentScreen(ox,oy);   // events.js, petscent.js
   secretsScreen(ox,oy);secretsHud();   // secrets.js

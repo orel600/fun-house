@@ -1640,6 +1640,22 @@ function worldBot(m,L,god){
   await page.setViewportSize(CFG.phone);await page.clock.runFor(100);
   check(Object.values(wml).every(o=>o.n===o.show&&o.n>=6&&o.bad===0&&o.here===0&&o.in),
     'מפת העולם, כל האזורים פתוחים: '+Object.entries(wml).map(([k,o])=>k+'px: '+o.n+'/'+o.show+' תוויות, '+(o.bad||o.here?'חפיפות: '+o.bad+' בעולם, '+o.here+' בשערים':'בלי חפיפות')+(o.in?'':', יוצאות מהמפה')).join(' · '));
+  // מבוקש היום (hunt.js): אותו מבוקש לאותו תאריך, רק באזור שהתגלה, מופיע בכניסה עם שם, כרטיס ביומן, שלל כשנופל, פעם ביום
+  const hu=await page.evaluate(()=>{
+    const o={},h0=JSON.stringify(SAVE.hunt||null);SAVE.hunt=null;
+    const a=huntToday('2030-1-1'),b=huntToday('2030-1-1');o.same=a.reg===b.reg&&a.name===b.name&&a.g.i===b.g.i;
+    o.seen=Array.from({length:20},(_,i)=>huntToday('2030-1-'+(i+1)).reg).every(r=>wmSeen(r));
+    const real=huntToday;huntToday=()=>Object.assign(real(),{reg:'meadow',g:real('x').reg==='meadow'?real('x').g:WORLD.foes.map((G,i)=>({G,i})).find(o=>ETYPES[o.G.type]&&!o.G.creature)});
+    enterWorld('home');const e=S.wd.hunt;o.spawn=!!e&&e.hunt&&e.max>ETYPES[e.type].hp*2;
+    questLogOpen(true);o.card=!!document.querySelector('#qLog')&&$('qLog').innerHTML.includes(T('hunt.title'));questLogOpen(false);
+    const c0=dropStats().spawned;damage(e,e.hp*10,'sword',0,'physical');o.loot=dropStats().spawned>c0;o.done=huntDone()&&!S.wd.hunt;
+    o.saved=(JSON.parse(localStorage.getItem(SAVE_STORE.key)).hunt||{}).got===huntDay();
+    enterVillage();enterWorld('home');o.once=!S.wd.hunt;
+    huntToday=real;SAVE.hunt=JSON.parse(h0);return o});
+  await page.evaluate(()=>enterVillage());
+  check(hu.same&&hu.seen&&hu.spawn&&hu.card&&hu.loot&&hu.done&&hu.saved&&hu.once,
+    'מבוקש היום: '+(hu.same?'אותו מבוקש לאותו יום':'משתנה באותו יום')+(hu.seen?', רק באזורים שהתגלו':', באזור סגור')+(hu.spawn?', הופיע חזק עם שם':', לא הופיע')+(hu.card?', כרטיס ביומן':', אין כרטיס')+
+    (hu.loot?', שלל':', בלי שלל')+(hu.done?', הופל':', לא נרשם')+(hu.saved?', נשמר':', לא נשמר')+(hu.once?', פעם ביום':', חוזר באותו יום'));
   // החיה מריחה ומובילה (petscent.js): מרחרחת, רצה למקום ומחכה עם חץ, תיבה נותנת שלל כשמגיעים, אויב מיוחד נותן שלל כשנופל, ומי שלא בא היא מוותרת
   const ps=await page.evaluate(()=>{
     const o={};enterWorld('home');const p=S.pet||petMake();p.st='idle';const pk=SCENT.pick;
