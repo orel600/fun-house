@@ -95,8 +95,9 @@ function lootGear(e,force){
    לפעמים עם כוח (powRoll ב-powers.js), כמו gRoll */
 function lootRoll(n=1,mine){
   const G=LOOT.gear,h=heroId(),arms=h&&HEROES.list[h].arms,pick=o=>{let r=Math.random()*Object.values(o).reduce((a,b)=>a+b,0);for(const k in o){r-=o[k];if(r<0)return k}return Object.keys(o)[0]};
-  let slot=pick(Object.assign({},G.slot,ARMOR.loot.slot));const arm=armorPick(slot);   // שריון: מוטה למחלקה שלך (armor.js)
+  let slot=pick(Object.assign({},G.slot,ARMOR.loot.slot));
   if(arms){if(mine||(SAVE.clsPity||0)>=G.cls.pity){slot='weapon';mine=true}else mine=slot==='weapon'&&Math.random()<G.cls.share}
+  const arm=armorPick(slot);   // שריון: מוטה למחלקה שלך (armor.js). אחרי המזל, שכבר יכול היה להפוך את המשבצת לנשק
   const lv=heroLv(),W=G.tier.filter(b=>b.lv<=lv).pop().w;let t=0;
   for(let i=0;i<n;i++)t=Math.max(t,+pick(Object.assign({},W)));
   const ok=id=>{const it=GEAR.items[id];return it.slot===slot&&!it.types&&arm(it)&&(slot!=='weapon'||!arms||arms.includes(it.w)===!!mine)};
