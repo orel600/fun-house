@@ -148,10 +148,10 @@ function fishCook(id){
 // בשיחה עם הפונדקאית (npcDialog ב-npc.js): מה אפשר לבשל, ומה הארוחה שעכשיו
 function fishCookHtml(){
   const m=FS().meal;
-  let h='<div class="fcook"><b>'+T('fish.cookT')+'</b>';
+  let h='<div class="fcook">';   // הכותרת והסבר: בלשונית הבישול (npcSvcs ב-bwin.js)
   if(m&&FISH.meals[m.id])h+='<p class="next">'+T('fish.mealNow',FISH.meals[m.id].icon+' '+T('meal.'+m.id)[0],Math.ceil(m.t/60))+'</p>';
   for(const id in FISH.meals){const M=FISH.meals[id],[name,desc]=T('meal.'+id);
-    const need=Object.keys(M.need).map(r=>'<span class="res'+(bagHas(r,M.need[r])?'':' short')+'">'+resIcon(r)+' '+(SAVE.bag[r]||0)+'/'+M.need[r]+'</span>').join('');
+    const need=Object.keys(M.need).map(r=>'<span class="res'+(bagHas(r,M.need[r])?'':' short')+'" data-tip="'+r+'">'+resPic(r)+' '+resName(r)+' <bdi>'+(SAVE.bag[r]||0)+'/'+M.need[r]+'</bdi></span>').join('');
     h+='<div class="fmeal"><span class="fmi">'+M.icon+'</span><span class="fmt"><b>'+name+'</b><small>'+desc+'</small><span>'+need+'</span></span>'+
       '<button class="vbtn" data-act="cook" data-m="'+id+'"'+(fishCanCook(id)?'':' disabled')+'>'+T('fish.cook')+'</button></div>'}
   return h+'</div>';
