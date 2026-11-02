@@ -26,7 +26,7 @@ const wnpcMet=id=>!!WNPC.list[id]&&!!SAVE.met[id];
 // המצב החי, רק בעולם. נוצר מחדש בכל כניסה לעולם
 function wnpcState(){
   const W=S.wd;if(!W)return null;
-  if(!W.npc){W.npc={};if(!WR().noNpc)for(const id in WNPC.list){const A=WNPC.list[id].at;W.npc[id]={id,x:A.x,y:A.y,face:Math.PI/2,st:'idle',t:0,waved:false}}}
+  if(!W.npc){W.npc={};if(!WR().noNpc)for(const id in WNPC.list){if(resGone(id))continue;const A=WNPC.list[id].at;W.npc[id]={id,x:A.x,y:A.y,face:Math.PI/2,st:'idle',t:0,waved:false}}}
   return W.npc;
 }
 // הסימן מעל כל דמות שנמצאה: ✓ פרס מחכה, ! קווסט חדש. גם החצים בקצה המסך הולכים לפיו
@@ -84,6 +84,7 @@ $('npcDlg').addEventListener('click',e=>{
   if(b.dataset.act==='pg'){npcPg(+b.dataset.d);wnpcDialog();return}   // ‹ › (npc.js)
   if(b.dataset.q)NPCPG.q=b.dataset.q;
   questAct(b.dataset.act,b.dataset.q);   // quests.js
+  resLeave(S.wd.dlg);   // הקווסט האחרון: עוברת לגור בכפר (residents.js)
   wnpcDialog();
 });
 // יציאה מהעולם: סוגרים את השיחה ומורידים את הדמויות בתלת-ממד
@@ -93,10 +94,10 @@ function wnpcOff(){npcHide();if(R3D.wnpcs){for(const id in R3D.wnpcs)freeActor(R
 // דו-ממד: האגם, וגוף פשוט בצבע שלה. בתלת-ממד הגוף מצויר בשכבה שמתחת (syncWnpcs), והאגם שקוף יותר
 function drawWnpcs(){
   const all=wnpcState();if(!all)return;
-  for(const id in all){const N=WNPC.list[id],n=all[id],p=N.pond;
-    if(p){ctx.fillStyle=R3D.on?'rgba(63,123,245,0.45)':'#2D5FB8';ctx.beginPath();ctx.ellipse(n.x+p.dx,n.y+p.dy,p.rx,p.ry,0,0,7);ctx.fill();
+  for(const id in WNPC.list){const N=WNPC.list[id],n=all[id]||N.at,p=N.pond;   // הבריכה נשארת גם כשהדייג עבר לכפר
+    if(p&&!WR().noNpc){ctx.fillStyle=R3D.on?'rgba(63,123,245,0.45)':'#2D5FB8';ctx.beginPath();ctx.ellipse(n.x+p.dx,n.y+p.dy,p.rx,p.ry,0,0,7);ctx.fill();
       ctx.strokeStyle='rgba(236,231,220,0.35)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(n.x+p.dx,n.y+p.dy,p.rx*0.6,p.ry*0.5,0,0.3,2.4);ctx.stroke()}
-    if(R3D.on)continue;
+    if(R3D.on||!all[id])continue;
     const bob=n.st==='wave'?Math.abs(Math.sin(fxNow()*12))*5:0;
     ctx.fillStyle='rgba(5,7,13,0.4)';ctx.beginPath();ctx.ellipse(n.x,n.y+WNPC.r,WNPC.r,WNPC.r*0.4,0,0,7);ctx.fill();
     ctx.fillStyle=N.col;ctx.beginPath();ctx.roundRect(n.x-10,n.y-18-bob,20,30,8);ctx.fill();

@@ -83,6 +83,10 @@ const LOOK3D={
   npc_fisher:{model:'ranger',h:58,foot:13,tint:'#3F7BF5',own:false,anim:{...NPC_ANIM,idle:'Idle_B'}},
   npc_cutter:{model:'barbarian',h:62,foot:14,tint:'#A8784A',own:false,props:{hammer:{prop:'w_hammer_A',...HAND_R}},anim:NPC_ANIM},
   npc_herbal:{model:'mage',h:60,foot:13,tint:'#5FA35A',anim:NPC_ANIM},
+  // אותן דמויות אחרי שעברו לגור בכפר (RESID ב-residents.js)
+  npc_vfisher:{model:'ranger',h:58,foot:13,tint:'#3F7BF5',own:false,anim:{...NPC_ANIM,idle:'Idle_B'}},
+  npc_vcutter:{model:'barbarian',h:62,foot:14,tint:'#A8784A',own:false,props:{hammer:{prop:'w_hammer_A',...HAND_R}},anim:{...NPC_ANIM,work:'Hammering'}},
+  npc_vherbal:{model:'mage',h:60,foot:13,tint:'#5FA35A',anim:NPC_ANIM},
   // תושבים שחוזרים כשפנס נדלק (HOME ב-homecoming.js)
   npc_gardener:{model:'barbarian',h:56,foot:13,tint:'#8BC34A',own:false,anim:{...NPC_ANIM,idle:'Idle_B'}},
   npc_washer:{model:'rogue',h:58,foot:13,tint:'#3F7BF5',own:false,anim:NPC_ANIM},
@@ -555,6 +559,7 @@ function syncWorld(){
 // תושבי הכפר: דמות לכל תושב שנמצא בכפר, והקישוטים בפינה של מי שאין לו מבנה. המצב (הולך, עובד, מנופף) מגיע מ-npc.js
 function syncNpcs(dt){
   const all=npcState(),A=R3D.npcs||(R3D.npcs={}),V=R3D.vil;
+  resSync3d();   // הבתים של מי שעברה מהעולם (residents.js)
   if(!V.npcDeco){V.npcDeco=1;for(const id in NPC.list){const sp=NPC.list[id].spot;if(sp)sp.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length];vPut(VIL3D.deco[d].model,sp.x+dx*40,sp.y+dy*40,VIL3D.deco[d].w)})}}
   for(const id in NPC.list){
     const L=LOOK3D['npc_'+id],n=all[id];let a=A[id];
