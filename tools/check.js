@@ -2148,6 +2148,29 @@ function worldBot(m,L,god){
     (bg.rare?', אישור ליקר':', יקר בלי אישור')+(bg.sold?', נמכרו (+'+bg.got+')':', המכירה לא עבדה')+(bg.undo?', החזר':', "החזר" לא החזיר')+
     (bg.scroll?', נגלל':', לא נגלל באצבע')+(bg.keep?', נגיעה מסמנת':', נגיעה בפריט לא מסמנת')+(bg.out?', יוצאים ממצב מכירה':', נתקע במצב מכירה')+
     (bg.orb?', חפץ מסתובב מראה מה הוא נותן':', חפץ מסתובב בלי סטטים ("'+bg.orbTxt+'")'));
+  // שריון לפי מחלקה (armor.js): קסדה וגוף של המחלקה נלבשים במשבצות ראש וגוף, ההגנה עולה, השריון נראה על הדמות ובחלון, והשלל בעולם מוטה למחלקה
+  const ar=await page.evaluate(()=>{
+    const o={},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,pity:SAVE.clsPity}),c0=celebrate;celebrate=()=>{};
+    const h=ARMOR.cls[heroId()]?heroId():'warrior',hd=h+'Head2',bd=h+'Body2',d0=P.def||0;
+    o.items=ARMOR.slots.every(s=>Object.keys(ARMOR.cls).every(c=>[0,1,2,3,4].every(t=>{const it=gItem(c+armorSlot(s)+t);return it&&it.slot===s&&it.stats.def>0&&T('it.'+c+armorSlot(s)+t)!=='it.'+c+armorSlot(s)+t})));
+    o.items=o.items&&[0,1,2,3,4].every(t=>gItem('shield'+t)&&gItem('shield'+t).slot==='shield');
+    bagAdd(hd);bagAdd(bd);bagAdd('shield2');S.mode='play';gearOpen();
+    o.slots=!!document.querySelector('#gSlots [data-slot="head"]')&&!!document.querySelector('#gSlots [data-slot="body"]')&&!!document.querySelector('#gSlots [data-slot="shield"]');
+    gDoEquip(hd);gDoEquip(bd);gDoEquip('shield2');gRedraw();
+    o.worn=gGet('head',0)===hd&&gGet('body',0)===bd&&gearWorn().includes(hd)&&gearWorn().includes(bd);
+    o.def=Math.round(((P.def||0)-d0)*10)/10;o.defOk=o.def===gItem(hd).stats.def+gItem(bd).stats.def+gItem('shield2').stats.def;
+    o.tile=!!document.querySelector('#gSlots [data-slot="head"] img, #gSlots [data-slot="head"]')&&document.querySelector('#gSlots [data-slot="head"]').textContent.includes(gItem(hd).icon);
+    if(R3D.on&&R3D.ready){syncPlayer(0.016);o.r3=(R3D.player.arG||[]).length>0;o.doll=!R3D.doll||!R3D.doll.a||(R3D.doll.a.arG||[]).length>0}else o.r3=o.doll=true;
+    gearClose();
+    // השלל בעולם: מתוך 400 הגרלות, שריון נופל, ורובו של המחלקה
+    let mine=0,other=0;for(let i=0;i<400;i++){const it=gItem(lootRoll(1));if(it&&it.cls){if(it.cls===h)mine++;else other++}}
+    o.loot=mine+'/'+other;o.lootOk=mine>other&&other>0;
+    const g1=gearStats(),k=JSON.parse(keep);SAVE.bag=k.bag;SAVE.gear=k.gear;SAVE.clsPity=k.pity;gearLive(g1);celebrate=c0;saveNow();
+    o.back=(P.def||0)===d0;return o});
+  check(ar.items&&ar.slots&&ar.worn&&ar.defOk&&ar.tile&&ar.r3&&ar.doll&&ar.lootOk&&ar.back,
+    'שריון לפי מחלקה: '+(ar.items?'30 חלקים ו-5 מגנים':'חסרים חלקים או שמות')+(ar.slots?', משבצות ראש, גוף ומגן':', אין משבצות')+(ar.worn?', נלבש':', לא נלבש')+
+    (ar.defOk?', הגנה +'+ar.def+'%':', ההגנה לא עלתה ('+ar.def+')')+(ar.tile?'':', לא מופיע במשבצת')+(ar.r3?'':', לא נראה על הדמות')+(ar.doll?'':', לא נראה בחלון')+
+    (ar.lootOk?', שלל מוטה למחלקה ('+ar.loot+')':', השלל לא מוטה ('+ar.loot+')')+(ar.back?'':', לא חזר אחרי הבדיקה'));
   // שומרים חוזרים (story.js, STORY.rematch): כפתור 🔔 ליד פנס דולק רק אחרי הסוף ובדרגה אמיץ ומעלה. השומר יוצא חזק יותר, נופל שלל, ופעם ביום לכל שומר
   const rm=await page.evaluate(()=>{
     const o={},st0=JSON.stringify(SAVE.story),ti0=JSON.stringify(SAVE.tier||null),L=STORY.lanterns.earth,vis=()=>{worldUpdate(0.016);return !$('wardBtn').hidden};
@@ -2193,13 +2216,13 @@ function worldBot(m,L,god){
   const gv=await page.evaluate(()=>{
     enterWorld('home');const o={},g0=JSON.stringify(SAVE.gear),b0=JSON.stringify(SAVE.bag);
     for(const id of ['silverBlade','oakBow','goldAmulet','swiftBoots'])bagAdd(id,1);
-    SAVE.gear.weapon='silverBlade';SAVE.gear.acc=['goldAmulet'];SAVE.gear.boots=['swiftBoots'];R3D._hl=null;
-    let L=heroLook();o.shield=!!L.props.shield&&L.props.shield.prop==='w_shield_C';o.head=!!L.g3&&!!L.g3.head;
+    SAVE.gear.weapon='silverBlade';SAVE.gear.acc=['goldAmulet'];SAVE.gear.boots=['swiftBoots'];SAVE.gear.shield=[];R3D._hl=null;
+    let L=heroLook();o.noShield=!L.props.shield;SAVE.gear.shield=['shield3'];R3D._hl=null;L=heroLook();o.shield=!!L.props.shield&&L.props.shield.prop==='w_shield_C';o.head=!!L.g3&&!!L.g3.head;
     if(R3D.on&&R3D.ready){P.weapon='sword';syncPlayer(0);const a=R3D.player;o.in3d=!!a.props.shield&&a.props.shield.visible;
       let g=false;a.props.sword.traverse(m=>{if(m.isMesh&&m.material.emissive.getHex())g=true});o.glow=g}else{o.in3d=true;o.glow=true}
     SAVE.gear.weapon='oakBow';R3D._hl=null;L=heroLook();o.noBow=!L.props.shield;
     SAVE.gear=JSON.parse(g0);SAVE.bag=JSON.parse(b0);R3D._hl=null;return o});
-  check(gv.shield&&gv.head&&gv.in3d&&gv.glow&&gv.noBow,'ציוד שרואים: '+(gv.shield?'מגן זהב עם להב כסף':'אין מגן')+(gv.head?', קסדה זוהרת מקמע זהב':', קסדה בלי זוהר')+(gv.in3d?'':', המגן לא נראה בתלת-ממד')+(gv.glow?', הנשק זוהר':', הנשק לא זוהר')+(gv.noBow?', ועם קשת אין מגן':', מגן גם עם קשת'));
+  check(gv.shield&&gv.noShield&&gv.head&&gv.in3d&&gv.glow&&gv.noBow,'ציוד שרואים: '+(gv.shield?'מגן זהב מהמשבצת':'אין מגן')+(gv.noShield?'':', מגן בלי משבצת')+(gv.head?', קסדה זוהרת מקמע זהב':', קסדה בלי זוהר')+(gv.in3d?'':', המגן לא נראה בתלת-ממד')+(gv.glow?', הנשק זוהר':', הנשק לא זוהר')+(gv.noBow?', ועם קשת אין מגן':', מגן גם עם קשת'));
   // צללים (look-hd.js, HD.shadow): בתלת-ממד בעולם השמש מטילה צל, הגיבור מטיל ועצים לא, והמתג בהגדרות מכבה ומדליק
   if(CFG.gfx==='3d'){const sd=await page.evaluate(()=>{
     if(!R3D.on||!R3D.ready)return {skip:true};

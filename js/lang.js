@@ -1049,6 +1049,16 @@ const TEXT={
   'gear.slot.acc':{he:'אקססוריז',en:'Accessories'},
   'gear.slot.boots':{he:'נעליים',en:'Boots'},
   'gear.slot.orbit':{he:'חפצים מסתובבים',en:'Orbiting items'},
+  'gear.slot.head':{he:'ראש',en:'Head'},
+  'gear.slot.body':{he:'גוף',en:'Body'},
+  'gear.slot.shield':{he:'מגן',en:'Shield'},
+  // שריון לפי מחלקה (armor.js): השם מורכב מהחלק ומהחומר של השכבה. he: "קסדת ברזל", en: "Iron Helm"
+  'arm.shield':{he:t=>'מגן '+['עץ','ברזל','כסף','זהב','אגדי'][t],en:t=>['Wooden','Iron','Silver','Gold','Legendary'][t]+' Shield'},
+  'arm.name':{
+    he:(c,s,t)=>({warrior:{head:'קסדת',body:'שריון'},hunter:{head:'ברדס',body:'אפודת'},mage:{head:'כובע',body:'גלימת'}})[c][s]+' '+
+      ({warrior:['עור','ברזל','כסף','זהב','דרקון'],hunter:['בד','עור','זאב','נשר','סערה'],mage:['פשתן','ירח','כוכבים','שמש','אגדה']})[c][t],
+    en:(c,s,t)=>({warrior:['Leather','Iron','Silver','Gold','Dragon'],hunter:['Cloth','Leather','Wolf','Eagle','Storm'],mage:['Linen','Moon','Star','Sun','Mythic']})[c][t]+' '+
+      ({warrior:{head:'Helm',body:'Armor'},hunter:{head:'Hood',body:'Vest'},mage:{head:'Hat',body:'Robe'}})[c][s]},
   'gear.locked':{he:n=>'נפתח ברמת דמות '+n,en:n=>'Unlocks at hero level '+n},
   'gear.hint':{he:'גוררים פריט מהתרמיל למשבצת כדי ללבוש, ובחזרה כדי להוריד. לחיצה על פריט מראה מה הוא נותן',en:'Drag an item from the bag onto a slot to equip it, and back to take it off. Tap an item to see what it gives'},
   'gear.tab.items':{he:'פריטים',en:'Items'},
