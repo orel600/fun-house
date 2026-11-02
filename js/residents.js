@@ -48,16 +48,19 @@ function resVillage(){
 /* ---- השירות, בשיחה איתה בכפר (npcDialog ב-npc.js) ---- */
 const resPrice=(id,f)=>RES.list[f].sell*RESID.list[id].mult;
 const resCan=id=>{const R=RESID.list[id];return Object.keys(R.give).every(r=>bagHas(r,R.give[r]))};
-const resChips=(o,have)=>Object.keys(o).map(r=>'<span class="res'+(have&&!bagHas(r,o[r])?' short':'')+'">'+resIcon(r)+' '+(have?(SAVE.bag[r]||0)+'/':'')+o[r]+'</span>').join('');
+// משאבים עם שם: "🪨 אבן 326/10". have: כמה יש לך מול כמה צריך, באדום כשחסר
+const resChips=(o,have)=>Object.keys(o).map(r=>'<span class="res'+(have&&!bagHas(r,o[r])?' short':'')+'" data-tip="'+r+'">'+resPic(r)+' '+resName(r)+' <bdi>'+(have?(SAVE.bag[r]||0)+'/':'')+o[r]+'</bdi></span>').join('');
+// השירות בלשונית משלו (npcSvcs ב-bwin.js): מה היא עושה, ומה נותנים ומקבלים, עם כפתור אחד
 function resHtml(vid){
   const id=NPC.list[vid].serve,R=RESID.list[id];
-  let h='<div class="fcook rserve"><b>'+R.sign+' '+T('rsd.'+id+'.t')+'</b>';
+  let h='<div class="fcook rserve">';
   if(R.serve==='fish'){
     const fish=fishList().filter(f=>SAVE.bag[f]>0);   // fishing.js
     if(!fish.length)h+='<p class="next">'+T('rsd.noFish')+'</p>';
-    for(const f of fish)h+='<div class="fmeal"><span class="fmi">'+resIcon(f)+'</span><span class="fmt"><b>'+resName(f)+' ×'+SAVE.bag[f]+'</b><small>'+T('rsd.each',resPrice(id,f),RES.list[f].sell)+'</small></span>'+
+    for(const f of fish)h+='<div class="fmeal"><span class="fmi">'+resPic(f)+'</span><span class="fmt"><b>'+resName(f)+' ×'+SAVE.bag[f]+'</b><small>'+T('rsd.each',resPrice(id,f),RES.list[f].sell)+'</small></span>'+
       '<button class="vbtn" data-act="res" data-k="'+f+'">'+T('rsd.sell',resPrice(id,f))+'</button></div>';
-  }else h+='<div class="fmeal"><span class="fmi">'+R.sign+'</span><span class="fmt"><small>'+T('rsd.'+id+'.d')+'</small><span>'+resChips(R.give,true)+' → '+resChips(R.get)+'</span></span>'+
+  }else h+='<p class="bwlead">'+T('rsd.'+id+'.d')+'</p><div class="fmeal rswap"><span class="fmt"><small>'+T('bw.give')+'</small><span>'+resChips(R.give,true)+'</span></span><span class="bwarr" aria-hidden="true">➜</span>'+
+    '<span class="fmt"><small>'+T('bw.get')+'</small><span>'+resChips(R.get)+'</span></span>'+
     '<button class="vbtn" data-act="res"'+(resCan(id)?'':' disabled')+'>'+T('rsd.swap')+'</button></div>';
   return h+'</div>';
 }

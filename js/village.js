@@ -213,8 +213,6 @@ const topLine=(bag,list)=>{const ks=list||Object.keys(RES.list).filter(r=>bag[r]
 const bagFams=(bag,only)=>Object.keys(RES.fams).filter(f=>!only||only==='all'||f===only).map(f=>{const rs=resFam(f).filter(r=>bag[r]>0);
   return rs.length?'<div class="fam"><span class="sk">'+T('fam.'+f)+'</span><div class="bag">'+bagLine(bag,rs)+'</div></div>':''}).join('');
 function costLine(c){return Object.keys(c).map(r=>resChip(r,c[r],bagHas(r,c[r])?'':' miss')).join('')}
-// מה חסר כדי לשלם: רק המשאבים שאין מספיק מהם, וכמה חסר מכל אחד ("חסר: 🪵 20")
-const vMissing=c=>Object.keys(c).filter(r=>!bagHas(r,c[r])).map(r=>resChip(r,c[r]-(SAVE.bag[r]||0),' miss')).join('');
 // מה מבנה מייצר בשעה ברמה L, למשל '30🪵 4🧵'
 const makeLine=(B,L)=>Object.keys(B.make).filter(r=>B.make[r][L]>0).map(r=>'<bdi>'+B.make[r][L]+resIcon(r)+'</bdi>').join(' ');
 function vInfo(k,L){
@@ -228,66 +226,34 @@ function vInfo(k,L){
 function villageHud(){
   const k=S.vil.near,L=k?vLv(k):0,cur=S.vil.open;
   vEnterBtn();
-  // בונים מחדש רק כשמשהו השתנה: מבנה אחר, פאנל שנפתח או נסגר, רמות, תרמיל, מחסן או שפה
-  if(cur!=='market')S.vil.trade=false;   // חלון המסחר הגדול: רק מהפאנל של השוק
-  const key=LANG+'|'+k+'|'+cur+'|'+S.vil.trade+'|'+(k?vStock(k):0)+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
+  // בונים מחדש רק כשמשהו השתנה: מבנה אחר, פאנל שנפתח או נסגר, לשונית, רמות, תרמיל, מחסן או שפה
+  const key=LANG+'|'+k+'|'+cur+'|'+JSON.stringify(S.vil.tab||{})+'|'+(k?vStock(k):0)+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
   if(key===S.vil.ui)return;S.vil.ui=key;
   $('vBag').innerHTML=cornerRes(resShown(k));   // עד 2 משאבים ליד ☰, מה שרלוונטי ליד המבנה הזה (RES.show), והשאר ב-"+N" (minimap.js)
-  // נפחייה ומחסן: הרבה תוכן, אז חלון גדול בשני טורים (ניר: "רואים רק קצת")
-  const wide=cur!=='gate'&&(k==='forge'||k==='stash')&&L>0;
-  const pn=$('vPanel');pn.hidden=!cur;pn.classList.toggle('big',!!S.vil.trade||wide);document.body.classList.toggle('vpan',!pn.hidden);if(pn.hidden)return;
-  if(S.vil.trade){pn.innerHTML=winHead(T('vil.market'),T('level',L))+tradeHtml(L);return}
+  // כל מבנה: חלון גדול בתבנית אחת, עם לשוניות "מה עושים כאן" ו"שדרוג" (bwin.js). השער: חלון קטן משלו
+  const pn=$('vPanel'),bw=!!cur&&cur!=='gate';
+  pn.hidden=!cur;pn.classList.toggle('big',bw);pn.classList.toggle('bw',bw);document.body.classList.toggle('vpan',!pn.hidden);if(pn.hidden)return;
   if(cur==='gate'){pn.innerHTML=travelGateHtml()||winHead(T('vil.out'))+'<p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
-  const why=vBlock(k),c=vCost(k),B=VILLAGE.b[k],n=B.make&&L>0?vStock(k):0;
-  // הפעולה העיקרית גדולה ובולטת: לאסוף, אחרת לבנות או לשדרג, אחרת להיכנס לנפחייה או לשוק.
-  // כפתור שאי אפשר ללחוץ עליו לא מוצג אפור: במקומו שורה שאומרת למה (בדיקת החוויה, 1.11)
-  const main=n?'collect':!why?'up':L>0&&k==='forge'?'forge':L>0&&k==='market'?'trade':'',
-    btn=(act,txt,cls)=>'<button class="vbtn'+(cls?' '+cls:'')+(act===main?' vmain':'')+'" data-act="'+act+'">'+txt+'</button>',
-    whyLine=t=>'<p class="vwhy">'+t+'</p>';
-  let h='<p>'+vInfo(k,L)+'</p>';
-  // מנסרה ומכרה: כמה מחכה לאיסוף, וכפתור לאסוף
-  if(B.make&&L>0){const p=vProd(k),rs=Object.keys(B.make).filter(r=>B.make[r][L]>0);
-    h+='<div class="cost">'+rs.map(r=>'<span class="res">'+resPic(r)+' '+Math.floor(p.have[r]||0)+'/'+B.cap[L]+'</span>').join('')+'</div>';
-    h+=n?btn('collect',T('vil.collect',n)):whyLine(T('vil.nothing'))}
-  if(why!=='max')h+='<p class="next">'+T('vil.next',vInfo(k,L+1))+'</p><div class="cost">'+costLine(c)+'</div>';
-  h+=!why?btn('up',L?T('vil.up',L+1):T('vil.build')):whyLine(why==='max'?T('vil.max'):why==='center'?T('vil.needCenter'):T('vil.need',vMissing(c)));
-  if(k==='forge'&&L>0)h+=btn('forge','⚒️ '+T('age.open'),'ghost');
-  if(k==='market'&&L>0)h+=btn('trade','🛒 '+T('vil.trade'));
-  const more=k==='forge'&&L>0?forgeHtml():k==='stash'&&L>0?stashHtml():'';   // gear.js, stash.js
-  const head=winHead(T('vil.'+k),L?T('level',L):'');
-  pn.innerHTML=wide?head+'<div class="tcols"><section>'+h+'</section><section>'+more+'</section></div>':head+h+more;
-}
-// חלון המסחר: מסך כמעט מלא, מוכרים בטור אחד וקונים בטור השני (לרוחב), ורק הרשתות גוללות.
-// מוכרים כל מה שיש בתרמיל, וקונים כל מה שהרמה של השוק מרשה. כרטיס שאי אפשר ללחוץ עליו אומר למה
-function tradeHtml(L){
-  let h='';{
-    const rs=Object.keys(RES.list),card=(kind,r,why,p)=>'<button class="tcard" data-act="'+kind+'" data-r="'+r+'"'+(why?' disabled':'')+' aria-label="'+T('vil.'+kind)+' '+resName(r)+'" style="--rar:'+RES.rarity[resOf(r).rar||0].col+'">'+
-      '<span class="ti">'+resPic(r)+'<small>×'+vLot(r)+'</small></span><span class="tp"><bdi>'+p+'</bdi>'+resPic('coins')+'</span>'+(why?'<span class="tw">'+why+'</span>':'')+'</button>';
-    const sell=rs.filter(r=>vCanTrade('sell',r)&&bagHas(r)),buy=rs.filter(r=>resOf(r).buy);
-    h+='<section><span class="sk">'+T('vil.sell')+'</span>'+(sell.length?'<div class="trade">'+sell.map(r=>card('sell',r,bagHas(r,vLot(r))?'':T('vil.needN',vLot(r)),'+'+vPrice(r,'sell')*vLot(r))).join('')+'</div>':'<p class="next">'+T('stash.empty')+'</p>')+'</section>';
-    h+='<section><span class="sk">'+T('vil.buy')+'</span><div class="trade">'+buy.map(r=>{const p=vPrice(r,'buy')*vLot(r);
-      return card('buy',r,!vCanTrade('buy',r)?'🔒 '+T('vil.mkLv',RES.rarity[resOf(r).rar].market):bagHas('coins',p)?'':T('vil.noCoins'),p)}).join('')+'</div></section>';
-  }
-  return '<div class="tcols">'+h+'</div>';
+  const keep=pn.querySelector('.bwbody')&&pn.dataset.k===k?[...pn.querySelectorAll('.bwbody,.bwgrid')].map(e=>e.scrollTop):null;
+  pn.innerHTML=bwBuilding(k);pn.dataset.k=k;
+  if(keep)[...pn.querySelectorAll('.bwbody,.bwgrid')].forEach((e,i)=>{if(keep[i])e.scrollTop=keep[i]});   // נגיעה בכרטיס לא קופצת לראש הרשימה
 }
 $('vPanel').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||b.disabled||!S.vil)return;
   const a=b.dataset.act;
   if(a==='go'){leaveVillage();return}
   if(a==='close'){vShut();return}
-  if(a==='trade'){S.vil.trade=true;villageHud();return}
+  if(a==='tab'){(S.vil.tab||(S.vil.tab={}))[S.vil.near]=b.dataset.tab;sfx('ui');villageHud();return}   // לשונית בחלון המבנה (bwin.js)
   if(a==='jump'){travelGo(b.dataset.k);return}   // קפיצה לפנס דולק (travel.js)
   if(!S.vil.near)return;
   if(a==='forge'){forgeOpen();return}
-  if(a==='bag'){gearOpen();return}   // מהמחסן: מסך הציוד, שם גוררים בין התרמיל למחסן (gear.js)
   if(a==='collect'){if(vCollect(S.vil.near))sfx('coin');villageHud();return}
-  if(a==='up')vUpgrade(S.vil.near);else if(a==='stash')stashMove(b.dataset.dir,b.dataset.r);else if(a==='craft')gearCraft(b.dataset.r);else vTrade(a,b.dataset.r);
+  if(a==='up')vUpgrade(S.vil.near);else if(a==='stash'){if(stashMove(b.dataset.dir,b.dataset.r,b.dataset.n==='all'?0:BWIN.move))sfx('coin')}else if(a==='stashAll'){if(stashAll(b.dataset.dir))sfx('coin')}else if(a==='craft')gearCraft(b.dataset.r);else vTrade(a,b.dataset.r);
   villageHud();
 });
 
 // ✕ בפאנל: נסגר. נפתח שוב רק בנגיעה במבנה או בכפתור "להיכנס"
-function vShut(){if(!S.vil)return;if(S.vil.trade){S.vil.trade=false;villageHud();return}   // מחלון המסחר חוזרים לפאנל של השוק
-  S.vil.open=null;villageHud()}
+function vShut(){if(!S.vil)return;S.vil.open=null;villageHud()}
 
 /* ---- פתיחת פאנל: בנגיעה, לא במעבר ---- */
 // k: מבנה או 'gate'. לא נפתח מעל "בזמן שלא היית" (תור הקפיצות, welcome.js). שיחה פתוחה נסגרת: חלון אחד בכל רגע, והשחקן ביקש את המבנה
@@ -296,7 +262,7 @@ function vOpen(k){
   if(!$('npcDlg').hidden)npcTalk(null);
   // שער בלי פנס דולק: אין מה לבחור, אז הכפתור יוצא ישר לעולם
   if(k==='gate'&&!travelLit().length){leaveVillage();return true}
-  S.vil.open=k;if(k!=='gate')S.vil.near=k;S.vil.trade=false;sfx('ui');villageHud();return true;
+  S.vil.open=k;if(k!=='gate')S.vil.near=k;sfx('ui');villageHud();return true;
 }
 // הכפתור הקבוע של המקום בסרגל: "להיכנס: מנסרה" ליד מבנה, "לעולם" ליד השער. נעלם כשהפאנל של המקום הזה פתוח
 const vEnterEl=(()=>{const b=document.createElement('button');b.id='vEnter';b.className='nbtn talkbtn venter';b.hidden=true;
