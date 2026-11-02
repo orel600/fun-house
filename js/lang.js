@@ -882,6 +882,18 @@ const TEXT={
   'rs.saved':{he:'פיוחו הצילה!',en:'Pyocho to the rescue!'},
   'pet.up':{he:(n,s)=>n+' גדלה! שלב '+s,en:(n,s)=>n+' grew up! Stage '+s},
   'pet.found':{he:n=>n+' מצאה משהו!',en:n=>n+' found something!'},
+  // ---- מבוקש היום (hunt.js) ----
+  'hunt.title':{he:'מבוקש היום',en:'Wanted today'},
+  'hunt.say':{he:'מסתובב שם היום. מי שמפיל אותו לוקח שלל שאין בשום מקום אחר',en:'Roaming there today. Take him down for loot you won’t find anywhere else'},
+  'hunt.gotToday':{he:'הופל! מחר יש מבוקש חדש',en:'Taken down! A new one tomorrow'},
+  'hunt.here':{he:n=>n+' כאן! עקוב אחרי החץ האדום',en:n=>n+' is here! Follow the red arrow'},
+  'hunt.down':{he:n=>n+' הופל! שלל נדיר',en:n=>n+' is down! Rare loot'},
+  'hunt.n0':{he:'גרום הזועם',en:'Grum the Furious'},
+  'hunt.n1':{he:'שבר-עצם',en:'Bonesnap'},
+  'hunt.n2':{he:'מגה-בוגי',en:'Mega Bogey'},
+  'hunt.n3':{he:'הגברת רקב',en:'Lady Rot'},
+  'hunt.n4':{he:'קפטן שפם',en:'Captain Whiskers'},
+  'hunt.n5':{he:'הדוד הכועס',en:'The Grumpy Uncle'},
   // ---- מריחה ומובילה (petscent.js) ----
   'scent.go':{he:n=>n+' הריחה משהו! בוא אחריה',en:n=>n+' smells something! Follow her'},
   'scent.go.parosh':{he:n=>n+' הריח משהו! בוא אחריו',en:n=>n+' smells something! Follow him'},
