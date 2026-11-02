@@ -124,8 +124,8 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
 .spellb:active{transform:scale(.92)}
 .spellb[data-sec]:not([data-sec=""])::after{content:attr(data-sec);position:absolute;inset:0;display:grid;place-items:center;z-index:1;font:900 20px/1 var(--body);color:#fff;text-shadow:0 0 4px #000,0 2px 0 #000;pointer-events:none}
 .spellb[hidden],.spellpick[hidden]{display:none}
-.spellpick{position:fixed;z-index:3;display:flex;gap:8px;direction:ltr;right:calc(env(safe-area-inset-right,0px) + 196px);bottom:calc(env(safe-area-inset-bottom,0px) + 196px)}
-.swap:not([hidden])~.spellpick{right:calc(env(safe-area-inset-right,0px) + 210px)}
+.spellpick{position:fixed;z-index:3;display:flex;gap:8px;direction:ltr;right:calc(env(safe-area-inset-right,0px) + 292px);bottom:calc(env(safe-area-inset-bottom,0px) + 136px)}
+.swap:not([hidden])~.spellpick{right:calc(env(safe-area-inset-right,0px) + 306px)}
 .spellpick button{width:44px;height:44px;border-radius:50%;border:2px solid #E9D8A688;background:#141A2Ae6;color:#E9D8A6;display:grid;place-items:center;padding:0;touch-action:none}
 .spellpick button.on{border-color:#E9D8A6;box-shadow:0 0 10px #E9D8A688}
 .spellpick .dti{width:22px;height:22px}
