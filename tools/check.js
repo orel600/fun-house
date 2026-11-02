@@ -333,6 +333,23 @@ function villageBot(m,L){
       W.saved=/#hunt$/.test(JSON.parse(localStorage.getItem(SAVE_STORE.key)).gear.weapon);
       if(LANG==='en'&&/[֐-׿]/.test(q('#ovForge').innerText))L.heLeak=q('#ovForge').innerText.trim().slice(0,80);
       m.pow=1;L.powOpen=1;return L}   // המסך נשאר פתוח לצעד אחד, בשביל הצילום
+    // התכה (fuse.js): גחלים + כפור = אדים (הצלחה), ואז אדים + תלתן = שביט (שלושה חלקים) שנכשל: הולכים המשאבים והתלתן, והאדים נשארים
+    if(m.age===2&&!m.fuse){
+      const U=L.fuse={},press=roll=>{const r=Math.random;Math.random=()=>roll;try{const b=q('#fDetail [data-act="fuse"]');U.btn=!!b&&!b.disabled;if(b)b.click()}finally{Math.random=r}};
+      bagAdd('emberOrb');bagAdd('frostOrb');bagAdd('cloverOrb');bagAdd('star',3);bagAdd('coins',300);
+      q('#fTabs [data-tab="fuse"]').click();U.tab=AUI.tab==='fuse';
+      U.same=fuseOut('emberOrb','steamOrb').why==='same'&&fuseOut('trinityOrb','cloverOrb').why==='big';
+      q('#fItems [data-id="emberOrb"]').click();q('#fItems [data-id="frostOrb"]').click();
+      U.odds=(q('#fDetail .odds')||{}).innerText;U.out=(q('#fDetail h3')||{}).innerText;
+      const st0=SAVE.bag.star||0,c0=SAVE.bag.coins||0;FX.length=0;press(0);
+      U.ok=!!SAVE.bag.steamOrb&&!SAVE.bag.emberOrb&&!SAVE.bag.frostOrb&&FX.some(f=>f.K===CELEBRATE.aging);
+      U.cost=st0-(SAVE.bag.star||0)===FUSE.cost[2].star&&c0-(SAVE.bag.coins||0)===FUSE.cost[2].coins;
+      q('#fItems [data-id="cloverOrb"]').click();U.out3=fuseOut('steamOrb','cloverOrb').id;
+      const st1=SAVE.bag.star||0;FX.length=0;press(0.9999);
+      U.fail=!!SAVE.bag.steamOrb&&!SAVE.bag.cloverOrb&&!SAVE.bag.cometOrb&&st1-(SAVE.bag.star||0)===FUSE.cost[3].star&&FX.some(f=>f.K===CELEBRATE.agingFail);
+      const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key)).bag;U.saved=!!sv.steamOrb&&!sv.cloverOrb&&!sv.emberOrb;
+      if(LANG==='en'&&/[֐-׿]/.test(q('#ovForge').innerText))L.heLeak=q('#ovForge').innerText.trim().slice(0,80);
+      m.fuse=1;L.fuseOpen=1;return L}   // המסך נשאר פתוח לצעד אחד, בשביל הצילום
     if(m.age===2){q('#forgeClose').click();L.ageClosed=S.mode==='play';m.age=3;return L}
     // הזוהר: לרגע הקשת היא +10, ובודקים שיש שובל וחלקיקים על הנשק
     if(m.age===3){m.age=4;SAVE.gear.weapon='oakBow+10';P.weapon='gun';L.glowOn=1;return L}
@@ -1337,7 +1354,7 @@ function worldBot(m,L,god){
     // התקדמות ל-stderr (לא נכנס לדוח): אם הבדיקה נתקעת ב-GitHub, רואים איפה
     if(guard%300===1)console.error('…',await page.evaluate(()=>[Math.round(S.t),S.mode,S.vil?'village':S.wd?'world':S.room?'room':'arena',enemies.length,S.nd?S.nd.list.length:0].join(' ')));
     L=await page.evaluate(botStep,{god:CFG.god,en:CFG.lang==='en'});
-    for(const k of ['welOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','fishDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='welOpen'?'welcome':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='fishDone'?'fishing':k==='wDeathTxt'?'world-death':k)}
+    for(const k of ['welOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','fuseOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','fishDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='welOpen'?'welcome':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='fishDone'?'fishing':k==='wDeathTxt'?'world-death':k)}
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
@@ -2258,6 +2275,9 @@ function worldBot(m,L,god){
   const W=L.pow||{};
   check(W.tab&&W.roll&&W.line&&W.out&&W.in&&W.saved,'כוחות: '+(W.tab?'הלשונית נפתחה':'הלשונית לא נפתחה')+(W.roll?', שלל עם כוח':', שלל בלי כוח')+(W.out?', הוצאה':', לא הוצא')+
     (W.in?', הוטבע (נזק מרחוק '+W.dmg+')':', לא הוטבע ('+(W.dmg||'')+')')+(W.saved?', נשמר':', לא נשמר'));
+  const U=L.fuse||{};
+  check(U.tab&&U.same&&U.ok&&U.cost&&U.out3==='cometOrb'&&U.fail&&U.saved,'התכה: '+(U.tab?'הלשונית נפתחה, '+(U.odds||'בלי סיכוי')+' '+(U.out||'?'):'הלשונית לא נפתחה')+(U.same?'':', חסימה לא עובדת')+
+    (U.ok?', הצליחה':', לא הצליחה')+(U.cost?', שולם':', מחיר שגוי')+(U.fail?', כישלון לקח משאב וחפץ':', כישלון לא עבד')+(U.saved?', נשמר':', לא נשמר'));
   const G=L.glow||{};
   check(G.hand&&G.trail>1&&G.parts>0,'זוהר Aging ב-+10: '+(G.hand?'שובל '+G.trail+' נקודות, '+G.parts+' חלקיקים':'לא נמצא הנשק'));
   check(L.gearW==='gun'&&L.gearDmg===gx,'ציוד בריצה: מתחיל עם '+(L.gearW==='gun'?'קשת':L.gearW)+', נזק קשת x'+L.gearDmg+' (צפוי x'+gx+')');
