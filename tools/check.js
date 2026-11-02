@@ -171,13 +171,21 @@ function botStep({god,en}){
   }
   return steer(tx,ty,flee,stop,L);
 }
-// הגוף פונה לאן שהולכים (P.face, update.js). אחרי צעד שלם של הליכה (P.walk התקדם כל הצעד, והג'ויסטיק לא השתנה בו),
-// הזווית צריכה להיות בדיוק כיוון הג'ויסטיק, גם בזירה כשיש אויב קרוב. בכפר בודקים גם את הדמות בתלת-ממד
+// הגוף פונה לאן שהולכים (P.face, update.js): כשהגוף כבר הספיק להסתובב אל כיוון הג'ויסטיק, הזווית צריכה להיות בדיוק כיוון הג'ויסטיק,
+// גם בזירה כשיש אויב קרוב. בכפר בודקים גם את הדמות בתלת-ממד.
+// כמה זמן הגוף הסתובב סופרים בתוך movePlayer עצמו (עטיפה), ולא לפי המרחק שהלך: עצירה קצרה (hitstop), האטה או מהירות שהשתנתה באמצע הצעד
+// הפרידו בין המרחק לזמן הסיבוב, וגרמו לכשל אקראי אחד מתוך כ-1700 (main, 2.11.2026)
 function faceStep(m,L){
-  const F=L.face||(L.face={n:0,bad:0,max:0,arena:0,n3:0,bad3:0}),dw=P.walk-(m.fw??P.walk);m.fw=P.walk;
-  if(!joy||!P.moving||S.mode!=='play'||P.power>0||dw<P.speed*0.07*0.19)return;
+  const F=L.face||(L.face={n:0,bad:0,max:0,arena:0,n3:0,bad3:0});
+  if(!m.fwrap){m.fwrap=1;const mp=movePlayer;
+    movePlayer=function(dt){const f0=P.face,r=mp.apply(this,arguments),a=P.moving&&joy?Math.atan2(joy.dy,joy.dx):null;
+      if(a===null||a!==m.fa||P!==m.fp){m.fa=a;m.fp=P;m.ft=0;m.fd=a===null?0:Math.abs(angDiff(a,f0))}   // כיוון חדש: כמה צריך להסתובב
+      m.ft+=dt;return r}}
+  // רק אחרי לפחות חצי צעד של הליכה באותו כיוון, ורק כשהיה מספיק זמן להסתובב (MOVE.turn רדיאנים בשנייה)
+  if(!joy||!P.moving||S.mode!=='play'||P.power>0||P!==m.fp||m.fa!==Math.atan2(joy.dy,joy.dx)||m.ft<0.1||m.ft*MOVE.turn<m.fd+0.05)return;
   const d=Math.abs(angDiff(P.face,Math.atan2(joy.dy,joy.dx)));
-  F.n++;if(!S.vil&&!S.wd&&!S.room&&nearest(440))F.arena++;F.max=Math.max(F.max,Math.round(d*100)/100);if(d>0.1)F.bad++;   // 0.1 רדיאנים: כ-6 מעלות, לא רואים בעין;
+  F.n++;if(!S.vil&&!S.wd&&!S.room&&nearest(440))F.arena++;F.max=Math.max(F.max,Math.round(d*100)/100);
+  if(d>0.1){F.bad++;F.where=(S.vil?'כפר':S.wd?'עולם':S.room?'חדר':'זירה')+' '+Math.round(d*100)/100}   // 0.1 רדיאנים: כ-6 מעלות, לא רואים בעין
   if(R3D.on&&S.vil&&R3D.player){F.n3++;if(Math.abs(angDiff(R3D.player.root.rotation.y,yawOf(Math.cos(P.face),Math.sin(P.face))))>0.15)F.bad3++}
 }
 /* חיית המחמד (pet.js): כמה פעמים היא קרובה לשחקן, באילו מצבים נראתה, ושהחפירה מוציאה שלל לרצפה.
@@ -2123,7 +2131,7 @@ function worldBot(m,L,god){
     ', בזירה '+(L.qProg??0)+(L.qReadyAt!=null?', הושלם '+t(L.qReadyAt):', לא הושלם')+(L.qTrack?' · מעקב: '+L.qTrack:'')+
     (L.qClaimed?', פרס נלקח '+L.qReward+(L.qPaid?' והגיע לתרמיל':' אבל לא הגיע לתרמיל')+(L.qSaved?', נשמר':', לא נשמר')+(L.qFx?', חגיגה':', בלי חגיגה'):', הפרס לא נלקח'));
   const F=L.face||{};
-  check(F.n>20&&!F.bad&&F.arena>0&&!F.bad3,'כיוון הגוף: '+F.n+' בדיקות בהליכה ('+F.arena+' בזירה עם אויב קרוב), '+(F.bad?F.bad+' לא פנו לכיוון ההליכה (עד '+F.max+' רדיאנים)':'תמיד פונה לאן שהולכים')+
+  check(F.n>20&&!F.bad&&F.arena>0&&!F.bad3,'כיוון הגוף: '+F.n+' בדיקות בהליכה ('+F.arena+' בזירה עם אויב קרוב), '+(F.bad?F.bad+' לא פנו לכיוון ההליכה (עד '+F.max+' רדיאנים, האחרון: '+F.where+')':'תמיד פונה לאן שהולכים')+
     (F.n3?', בתלת-ממד '+(F.bad3?F.bad3+' מתוך '+F.n3+' לא פנו':F.n3+' בדיקות תקינות'):''));
   const Bt=L.boots||{};
   check(L.bootsAcc&&Bt.claimed&&Bt.worn&&Bt.saved&&Math.abs(Bt.k-Bt.want)<0.002,'נעליים: '+(L.bootsAcc?'קווסט התקבל מראש הכפר':'הקווסט לא התקבל')+', עץ בעולם '+(L.bootsProg??0)+'/5'+
