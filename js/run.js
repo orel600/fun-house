@@ -23,6 +23,7 @@ const easeK=()=>S.wd||S.mb||S.vil?1:Math.min(1,RUN.ease.from+(1-RUN.ease.from)*S
 
 function runReset(){S.run={next:0,log:[],elites:0,won:0};S.hordeT=RUN.ease.horde;arenaReset()}   // סוג הזירה חוזר ל-classic (arenas.js)
 function runUpdate(){
+  arenaScaleStart();   // קושי לפי הכוח שלך, נמדד פעם אחת בתחילת הריצה (arena-scale.js)
   if(arenaRun())return;   // זירה עם ריצה משלה, למשל גלים (arenas.js)
   const r=S.run,st=RUN.stations[r.next];
   if(st&&S.t>=st.t){r.next++;r.log.push({kind:st.kind,t:S.t});st.kind==='swarm'?swarm():elite()}
