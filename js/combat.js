@@ -26,7 +26,7 @@ function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
   e.hp-=d;e.flash=0.09;sfx('hit',jSnd(m,crit));heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
   if(!e.isBoss&&!e.node){const kb=(w==='sword'?150:55)*(m>1?1.4:1)/(e.big||1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   const col=m>1?dtCol(t):m<1?C.dim:C.chalk,J=juiceHit(e,d,m,crit,t,ang);   // אפקטים של קרב בעולם (juice.js)
-  if(!J)floatText(e.x+rand(-8,8),e.y-e.r-8,big(d)+(crit?'!':''),col,(m>1?21:m<1?12:15)*(crit?1.45:1),true,crit);
+  if(!J)dmgFloat(e,d,col,(m>1?21:m<1?12:15)*(crit?1.45:1),crit);   // מכות רצופות מתמזגות למספר אחד (arenaui.js)
   if(m<1&&!e.told&&!J){e.told=true;floatText(e.x,e.y-e.r-26,T('immune'),C.dim,13)}   // בעולם ובכפר המספר עצמו אומר "עמיד" (juice.js)
   if(!J)sparks(e.x,e.y,col,m>1?8:3);
   if(m>1&&w==='sword'&&!J)S.hitstop=Math.max(S.hitstop,0.03);   // בעולם העצירה ב-juice.js

@@ -22,6 +22,9 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:
   padding:calc(env(safe-area-inset-top,0px) + 10px) calc(env(safe-area-inset-right,0px) + 14px) 0 calc(env(safe-area-inset-left,0px) + 14px)}
 .xpbar{position:relative;height:12px;background:var(--line);border-radius:6px;overflow:hidden}
 .xpfill{height:100%;width:0;background:var(--gold);transition:width .15s}
+/* בקרב בזירה (arenaui.js): הפס העליון שקט, ורק החיים בולטים (docs/ui-guide.md: "השאר שקוף ב-60–70%") */
+.hud .xpbar,.hud .clock,.hud .lvl,.hud .runbar{transition:opacity .4s}
+html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .hud .runbar{opacity:.6}
 .row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px}
 .hp{position:relative;flex:0 1 38%;height:16px;background:var(--line);border-radius:8px;overflow:hidden}
 .hpfill{height:100%;width:100%;background:var(--blood);transition:width .12s}
