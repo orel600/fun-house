@@ -3,7 +3,7 @@
    העלייה עצמה היא קווסט בטבלה QUESTS (quests.js, kind:'rank', הפרס rank:<שלב>), ולא באמצע קרב. כשלוקחים את הפרס: הדרגה נשמרת ב-SAVE.hero,
    הבונוס הקבוע שלה חל מעכשיו בכל ריצה (rankReset, מ-heroReset), ו-celebrate (fx.js) הוא הטקס.
    כאן גם רמת הדמות הקבועה: SAVE.hero.xp הוא כל ה-XP שנאסף אי פעם (פרסי קווסטים וחלק מה-XP של כל ריצה), והרמה נגזרת ממנו.
-   השמות ב-lang.js תחת 'rank.<id>'. שלב 2: look (חלקי שריון וצבע, rankArmor3d ב-render3d.js) כבר פעיל. skill (סקיל חתימה ב-skills.js) עוד לא בשימוש */
+   השמות ב-lang.js תחת 'rank.<id>'. שלב 2: look (חלקי שריון וצבע, rankArmor3d ב-render3d.js) כבר פעיל. skill: סקיל החתימה של הדרגה (sigskill.js), כפתור משלו בעולם ובכפר */
 
 const RANKS={
   every:20,                 // כל כמה רמות דמות נפתחת עלייה בדרגה
@@ -14,12 +14,12 @@ const RANKS={
      דרגה הבאה = שורה חדשה עם עוד חלקים או זוהר חזק יותר */
   bare:['Cape','HelmetVisor'],
   /* tier: באיזה שלב (1 = רמה 20, 2 = רמה 40). when: איזה סגנון פותח אותה (rankStyle). bonus: סטטים כמו של ציוד (GEAR.stats), בכל ריצה.
-     icon, col: בממשק ובטקס, ו-col גם הזוהר של השריון. look: ראו bare למעלה. skill: לשלב 2 */
+     icon, col: בממשק ובטקס, ו-col גם הזוהר של השריון. look: ראו bare למעלה. skill: סקיל החתימה (SIGSKILL.list ב-sigskill.js) */
   list:{
-    guardian:{tier:1,when:s=>s.guard>=RANKS.pick.guard,bonus:{hp:50,regen:0.5},icon:'🛡️',col:'#7FB2FF',look:{show:['Cape','HelmetVisor'],glow:0.4},skill:null},
-    knight:  {tier:1,when:s=>s.sword>=1-RANKS.pick.mix,bonus:{hp:20,sdmg:15},icon:'⚔️',col:'#D9DEE6',look:{show:['Cape','HelmetVisor'],glow:0.3},skill:null},
-    ranger:  {tier:1,when:s=>s.sword<=RANKS.pick.mix,bonus:{gdmg:15,speed:5},icon:'🏹',col:'#A8D08D',look:{show:['Cape'],glow:0.35},skill:null},
-    hybrid:  {tier:1,when:()=>true,bonus:{sdmg:10,gdmg:10},icon:'🗡️',col:'#F4C74F',look:{show:['Cape','HelmetVisor'],glow:0.3},skill:null}
+    guardian:{tier:1,when:s=>s.guard>=RANKS.pick.guard,bonus:{hp:50,regen:0.5},icon:'🛡️',col:'#7FB2FF',look:{show:['Cape','HelmetVisor'],glow:0.4},skill:'bastion'},
+    knight:  {tier:1,when:s=>s.sword>=1-RANKS.pick.mix,bonus:{hp:20,sdmg:15},icon:'⚔️',col:'#D9DEE6',look:{show:['Cape','HelmetVisor'],glow:0.3},skill:'dawnblade'},
+    ranger:  {tier:1,when:s=>s.sword<=RANKS.pick.mix,bonus:{gdmg:15,speed:5},icon:'🏹',col:'#A8D08D',look:{show:['Cape'],glow:0.35},skill:'starfall'},
+    hybrid:  {tier:1,when:()=>true,bonus:{sdmg:10,gdmg:10},icon:'🗡️',col:'#F4C74F',look:{show:['Cape','HelmetVisor'],glow:0.3},skill:'emberstorm'}
   }
 };
 

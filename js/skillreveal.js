@@ -34,7 +34,7 @@ const skrStat={starts:0,ends:0,skips:0,big:0};   // בשביל הבוט
 function skrCheck(dt){
   if(SKR||!S.wd||S.room||S.mode!=='play'||!S.sk)return;
   S.skrT=(S.skrT||0)+dt;if(S.skrT<SKREVEAL.delay)return;
-  const id=S.sk.ids.find(i=>!skrSeen().includes(i));if(id)skrStart(id);
+  const id=S.sk.ids.find(i=>!skrSeen().includes(i))||(typeof sigReveal==='function'&&sigReveal());if(id)skrStart(id);   // גם סקיל החתימה של הדרגה (sigskill.js)
 }
 function skrStart(id){
   const K=SKREVEAL,col=skCol(id);
@@ -48,13 +48,13 @@ function skrStart(id){
   el.innerHTML=(typeof wsbImg==='function'&&wsbImg(id))||dtSvg(skDef(id).dt);document.body.appendChild(el);SKR.el=el;   // אייקון מצויר לסקילים של הספר (wskbook.js)
   skrBtn(id,true);
 }
-const skrBtn=(id,hide)=>{const b=document.querySelector('#skills [data-sk="'+id+'"]');if(b)b.classList.toggle('skrwait',hide);return b};
+const skrBtn=(id,hide)=>{const b=document.querySelector('#skills [data-sk="'+id+'"],#sig[data-sk="'+id+'"]');if(b)b.classList.toggle('skrwait',hide);return b};
 function skrEnd(skip){
   if(!SKR)return;const id=SKR.id;
   if(SKR.el){SKR.el.remove();const b=skrBtn(id,false);if(b){b.classList.remove('ping');void b.offsetWidth;b.classList.add('ping')}}
   if(skip){skrStat.skips++;S.hitstop=0}
   skrStat.ends++;SKR=null;P.skrCast=0;
-  if(typeof skgOffer==='function')skgOffer(id);   // כרטיס "לספר" ו"לנסות" (skguide.js)
+  if(typeof skgOffer==='function'&&!(typeof sigOf==='function'&&sigOf(id)))skgOffer(id);   // כרטיס "לספר" ו"לנסות" (skguide.js)
 }
 // נגיעה בכל מקום מדלגת
 addEventListener('pointerdown',()=>{if(SKR&&skrNow()-SKR.t0>0.15)skrEnd(true)},true);
@@ -80,7 +80,7 @@ function skrDraw(){
   ctx.restore();
   // האייקון: מעל הגיבור, ואז עף בקשת לכפתור
   const el=SKR.el;if(!el)return;
-  const b=document.querySelector('#skills [data-sk="'+SKR.id+'"]'),q=b&&b.getBoundingClientRect();
+  const b=document.querySelector('#skills [data-sk="'+SKR.id+'"],#sig[data-sk="'+SKR.id+'"]'),q=b&&b.getBoundingClientRect();
   const x0=innerWidth/2,y0=innerHeight/2-90,x1=q&&q.width?q.left+q.width/2:innerWidth-60,y1=q&&q.width?q.top+q.height/2:innerHeight-60;
   const f=Math.max(0,Math.min(1,(t-K.fly[0])/(K.fly[1]-K.fly[0]))),e=f*f*(3-2*f);
   const pop=Math.min(1,t/0.25),sc=(0.3+0.7*pop)*(1-0.45*e);
