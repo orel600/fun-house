@@ -1255,3 +1255,62 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 /* המטרה הבאה (guide.js) והמעקב: אותה גלולה כהה עם קו פליז */
 .guide button{background:linear-gradient(#262E46eb,#161B2Aeb);border-color:var(--brass);box-shadow:inset 0 1px 0 #ffffff14,0 3px 6px #0009}
 .guide button:active{scale:.96}
+
+/* ===== חלון הציוד כמו מסך ציוד של RPG קלאסי (ניר, 2.11.2026: צילום של Titan Quest. המבנה, לא הגרפיקה) =====
+   שלושה טורים: הדמות עם המשבצות סביבה, התרמיל ברשת (רק הוא גולל), וטור סטטים עם עמידויות (gearui.js).
+   לחיצה על פריט מחליפה את טור הסטטים בפרטים, עם ✕ שחוזר. הכפתורים תמיד בתחתית הטור, והטקסט גולל מעליהם */
+#ovGear .gbody{gap:8px}
+#ovGear .gdoll{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:minmax(0,1fr) auto;grid-template-areas:"s f e" "u u u";
+  gap:6px;align-content:stretch;align-items:center;padding:6px;border-radius:12px;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 40%,rgba(244,199,79,.10),transparent 65%),rgba(18,22,36,.6);border:2px solid var(--line)}
+#ovGear .gd-start,#ovGear .gd-end{display:flex;flex-direction:column;justify-content:center;gap:6px}
+#ovGear .gd-start .grow,#ovGear .gd-end .grow{display:flex;flex-direction:column;flex-wrap:nowrap;gap:6px}
+#ovGear .gdoll .gslot{gap:0}
+#ovGear .gdoll .gtile,#ovGear .gd-start .gtile{width:52px;min-width:0;font-size:26px}
+#ovGear .gd-under .grow{justify-content:center;gap:4px;flex-wrap:nowrap;min-width:0}
+#ovGear .gd-under .gtile{flex:0 1 40px;width:40px;min-width:28px;font-size:20px}   /* חמש משבצות נכנסות גם כשהטור צר (בתפריט) */
+#ovGear .gfig{min-height:0;height:100%;align-self:stretch}
+#ovGear .gfig::before{width:min(86%,150px)}
+/* משבצת ריקה: צללית חלשה של מה שנכנס אליה */
+#ovGear .gtile .gsil{font-style:normal;opacity:.28;filter:grayscale(1)}
+/* סט פעיל: תג בצבע הסט מעל הדמות */
+.gsets{position:absolute;top:2px;inset-inline:2px;display:flex;flex-wrap:wrap;justify-content:center;gap:3px;pointer-events:none;z-index:1}
+.gsetb{font-style:normal;font:800 11px/14px var(--body);color:var(--set);background:#000a;border:1px solid var(--set);border-radius:8px;padding:1px 6px;text-align:center;max-width:100%;box-shadow:0 0 8px color-mix(in srgb,var(--set) 45%,transparent)}
+/* התרמיל: המסננים בשורה אחת שגוללת הצידה, הרשת גוללת, והכפתורים תמיד למטה */
+#ovGear #gTabs{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:4px;flex:none;scrollbar-width:none}
+#ovGear #gTabs button{flex:none}
+/* טור הסטטים */
+#ovGear .gdetail.gstatp{gap:3px;padding:8px 10px;overflow:hidden}
+.gstatp h3{font-size:15px!important;margin:0}
+.gstatp h4{margin:4px 0 0;font:800 12px var(--body);color:var(--dim);text-transform:uppercase;letter-spacing:.04em}
+.gsrows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.gsrows li{display:flex;align-items:center;gap:6px;font-size:13px;line-height:21px;border-bottom:1px solid #ffffff10;white-space:nowrap}
+.gsrows .gsi{width:18px;text-align:center;font-size:13px;flex:none}
+.gsrows .gsn{flex:1;min-width:0;color:var(--dim);font-weight:700}
+.gsrows b{font:800 14px var(--body);color:var(--chalk)}
+.gres{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.gres li{display:flex;align-items:center;justify-content:center;gap:4px;font:800 13px/22px var(--body);color:var(--chalk);border:1px solid var(--dt);border-radius:8px;
+  background:color-mix(in srgb,var(--dt) 14%,transparent);white-space:nowrap}
+.gres svg{width:13px;height:13px;color:var(--dt);flex:none}
+/* פרטי פריט: הכותרת עם ✕, טקסט שגולל, והכפתורים בשורה בתחתית */
+#ovGear .gsidep .gdetail:not(.gstatp){overflow:hidden;padding:8px 10px;gap:6px}
+.gdbody{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.gdbody>*{flex:none}
+.gdhead .gdx{order:3;margin-inline-start:auto;flex:none;align-self:flex-start;appearance:none;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);
+  background:#0006;color:var(--chalk);font:800 15px/1 var(--body);cursor:pointer}
+.gdhead>div{min-width:0}
+.gdhead h3{overflow-wrap:break-word}
+#ovGear .gdetail .gbtns{flex:none;flex-direction:row;gap:6px;max-width:none;width:100%}
+#ovGear .gdetail .gbtns .vbtn{flex:1 1 0;min-width:0;max-width:none;margin:0;white-space:nowrap}
+@media (orientation:landscape){
+  #ovGear .gbody{grid-template-columns:minmax(0,2.9fr) minmax(0,4fr) minmax(0,2.7fr)}
+  body.menu #ovGear .gbody{grid-template-columns:minmax(0,2.6fr) minmax(0,3.8fr) minmax(0,2.8fr)}
+  body.menu #ovGear .ggrid{grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px}   /* גם בתפריט: תא של 48 לפחות (ui-guide פרק 2) */
+}
+@media (orientation:landscape) and (max-height:500px){
+  #ovGear .gdoll .gtile,#ovGear .gd-start .gtile{width:48px;font-size:24px}
+  #ovGear .gd-under .gtile{flex-basis:38px;width:38px;font-size:18px}
+  #ovGear .gdicon{width:44px;height:44px;font-size:24px}
+  #ovGear .gdicon .ri{width:34px;height:34px}
+  #ovGear .gdetail .gbtns .vbtn{min-height:40px;padding:6px 2px;font-size:14px;border-width:0 18px;border-image-width:0 18px}
+}

@@ -306,9 +306,10 @@ function gSlotHtml(s){
   const n=s==='weapon'?1:s==='orbit'?GEAR.slots.orbit.length:GEAR.slots[s],sel=GUI.sel;let h='';
   for(let i=0;i<n;i++){
     if(i>=gOpen(s)){h+='<button class="gtile locked" disabled aria-label="'+T('gear.locked',GEAR.slots.orbit[i])+'">🔒<small>'+GEAR.slots.orbit[i]+'</small></button>';continue}
-    h+=gTile(gGet(s,i),'data-slot="'+s+'" data-i="'+i+'"'+(sel&&sel.slot===s&&sel.i===i?' aria-pressed="true"':''),'');
+    const id=gGet(s,i);
+    h+=gTile(id,'data-slot="'+s+'" data-i="'+i+'"'+(gItem(id)?'':' aria-label="'+T('gear.slot.'+s)+'"')+(sel&&sel.slot===s&&sel.i===i?' aria-pressed="true"':''),gItem(id)?'':'<i class="gsil" aria-hidden="true">'+GEARUI.empty[s]+'</i>');   // ריקה: צללית (gearui.js)
   }
-  return '<div class="gslot '+s+'"><span class="k">'+T('gear.slot.'+s)+'</span><div class="grow">'+h+'</div></div>';
+  return '<div class="gslot '+s+'"><div class="grow">'+h+'</div></div>';
 }
 function gearDraw(){
   const D=GEAR.doll,hero=HEROES.list[heroId()]||{},sel=GUI.sel;
@@ -316,7 +317,7 @@ function gearDraw(){
   $('gCoins').innerHTML=resChip('coins',SAVE.bag.coins||0);
   // הבובה: הדמות באמצע, והמשבצות בשני הצדדים ומתחתיה
   const side=k=>'<div class="gd-'+k+'">'+D[k].map(gSlotHtml).join('')+'</div>';
-  $('gSlots').innerHTML=side('start')+'<div class="gfig" style="--hero:'+(hero.col||'#ECE7DC')+'"><span>🧍</span>'+(hero.icon?'<b>'+hero.icon+'</b>':'')+'</div>'+side('end')+side('under');
+  $('gSlots').innerHTML=side('start')+'<div class="gfig" style="--hero:'+(hero.col||'#ECE7DC')+'"><span>🧍</span>'+(hero.icon?'<b>'+hero.icon+'</b>':'')+'<div class="gsets">'+gSetBadge()+'</div></div>'+side('end')+side('under');
   dollShow();   // הדמות בתלת-ממד במקום האימוג'י, עם מה שלבוש (doll3d.js)
   // התרמיל: לשוניות ורשת
   const tabs=gTabs();if(!tabs.includes(GUI.tab))GUI.tab='items';
@@ -333,7 +334,7 @@ function gearDraw(){
   $('gStash').hidden=!st;
   if(st)$('gStash').innerHTML='<span class="k">'+T('gear.stash',stashUsed(),stashCap())+'</span><div class="ggrid">'+
     (sk.length?sk.map(k=>gCell(k,SAVE.stash[k],'data-sid="'+k+'"'+(sel&&sel.sid===k?' aria-pressed="true"':''))).join(''):'<p class="dim">'+T('stash.empty')+'</p>')+'</div>';
-  $('gDetail').innerHTML=gDetailHtml();
+  $('gDetail').innerHTML=gDetailHtml();$('gDetail').classList.toggle('gstatp',!$('gDetail').querySelector('.gdhead,.gsell'));
   // הדפים: ציוד, או דמות (הנקודות, stats.js). עץ הסקילים נפתח מדף הדמות ומחליף אותו
   const ch=GUI.page==='char',tv=ch&&GUI.view==='tree',pts=stFree()+trFree();
   $('gPages').innerHTML=['gear','char'].map(pg=>'<button data-page="'+pg+'"'+(GUI.page===pg?' aria-pressed="true"':'')+'>'+T('gear.pg.'+pg)+(pg==='char'&&pts?'<i class="gdot">'+pts+'</i>':'')+'</button>').join('');
@@ -348,10 +349,9 @@ function gDetailHtml(){
       '<div class="gbtns"><button class="vbtn" data-act="sellYes">'+T('gear.sellYes')+'</button><button class="vbtn ghost" data-act="sellNo">'+T('gear.sellNo')+'</button></div>';
     GUI.sell=false}
   const sel=GUI.sel,k=sel&&(sel.id||sel.sid||gGet(sel.slot,sel.i)),n=!sel?0:sel.id?SAVE.bag[k]:sel.sid?SAVE.stash[k]:1;
-  if(!k||!n){const t=gearStats();   // בלי פריט: מה כל הציוד שלבוש נותן יחד, והסבר קצר. הנקודות בדף "דמות"
-    return '<h3>'+T('gear.total')+'</h3><ul class="gstats">'+(Object.keys(t).filter(x=>GEAR.stats[x]&&t[x]).map(x=>'<li>'+gSign(x,t[x])+'</li>').join('')||'<li class="dim">—</li>')+'</ul><p class="dim ghint">'+T('gear.hint')+'</p>'}
+  if(!k||!n)return gStatPanel();   // בלי פריט: הסטטים של הגיבור והעמידויות (gearui.js)
   const it=gItem(k),col=gRarCol(k);
-  let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
+  let d='<div class="gdhead" style="--rar:'+col+'"><button class="gdx" data-act="desel" aria-label="'+T('gear.close')+'">✕</button><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
     '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
   if(it&&gPlus(k))d+='<p class="gage">'+T('gear.aged',gPlus(k))+'</p>';
   if(it)d+=gStatsHtml(k)+powLine(k)+setHtml(k);   // הכוח בזהב (powers.js)   // סט: מה הוא נותן וכמה חלקים לבושים (sets.js)
@@ -364,7 +364,7 @@ function gDetailHtml(){
   if(sel.slot)b+=btn('unequip',T('gear.unequip'),1);
   if(sel.id&&gStashOn())b+=btn('store',T('gear.store'),1);
   if(sel.sid)b+=btn('take',T('gear.take'));
-  return d+(b?'<div class="gbtns">'+b+'</div>':'');
+  return '<div class="gdbody">'+d+'</div>'+(b?'<div class="gbtns">'+b+'</div>':'');
 }
 
 /* ---- פעולות: הגרירה והכפתורים עוברים שניהם דרך כאן ---- */
@@ -468,6 +468,7 @@ $('ovGear').addEventListener('click',e=>{
   else if(a==='sell'){GUI.sell=true;GUI.sel=null}
   else if(a==='sellYes'){gDoSell();GUI.sell=false}
   else if(a==='sellNo'){}
+  else if(a==='desel')GUI.sel=null;   // ✕ בפרטים: חוזרים לסטטים
   else if(b.dataset.id){GUI.sel={id:b.dataset.id};if(gIsNew(b.dataset.id)){gSeen()[b.dataset.id]=1;saveNow()}}
   else if(b.dataset.sid)GUI.sel={sid:b.dataset.sid};
   else if(b.dataset.slot)GUI.sel=gGet(b.dataset.slot,+b.dataset.i)?{slot:b.dataset.slot,i:+b.dataset.i}:null;
