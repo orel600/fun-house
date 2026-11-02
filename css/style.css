@@ -1378,9 +1378,9 @@ html[dir="rtl"] #ovGear #gTabs{--fade-end:left}   /* הדהייה בסוף הש�
 @media (orientation:landscape) and (max-height:500px){
   #ovGear{padding-block:4px}
   #ovGear .gearpanel.win{border-width:14px;border-image-width:14px;padding:0 4px 2px;gap:6px}
-  #ovGear .ghead.whd{min-height:40px;margin-top:0;gap:6px}
+  #ovGear .ghead.whd{min-height:44px;margin-top:0;gap:6px}
   #ovGear .gpages button{min-height:34px;padding:2px 10px;font-size:13px}
-  #ovGear #gearClose{width:40px;height:40px}
+  #ovGear #gearClose{width:44px;height:44px;min-width:44px;min-height:44px;flex:none}
   #ovGear .gbody,body.menu #ovGear .gbody{gap:6px;grid-template-columns:minmax(190px,3.2fr) minmax(0,3.6fr) minmax(158px,2.9fr)}
   #ovGear .gdoll{padding:4px;gap:4px}
   #ovGear .gdoll .gtile,#ovGear .gd-start .gtile{width:clamp(38px,12vh,50px);height:clamp(38px,12vh,50px);font-size:clamp(19px,6vh,24px)}
