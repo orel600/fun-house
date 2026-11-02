@@ -15,10 +15,10 @@ const WSKBOOK={
   list:{
     charge:{ic:'💨',dt:'physical', cls:'warrior',lv:2,cd:6, dmg:1.6, kind:'dash',  dist:200,t:0.2,r:46,inv:0.35},   // מקף: הגיבור מזנק ופוגע בכל מי שבדרך
     whirl: {ic:'🌀',dt:'fire',     cls:'warrior',lv:4,cd:10,dmg:0.4, kind:'aura',  r:100,t:3,tick:0.3,self:1},       // מערבולת להבות סביב הגיבור, זזה איתו
-    shield:{ic:'🛡️',dt:'ice',      cls:'warrior',lv:6,cd:12,dmg:0.5, kind:'guard', r:130,inv:2.5,push:520,self:1},   // שריון קרח: חסין לרגע, והודף ומאט את מי שקרוב
+    shield:{ic:'🛡️',dt:'ice',      cls:'warrior',lv:6,cd:12,dmg:0.5, kind:'guard', r:130,inv:2.5,push:520,freeze:1.2,self:1},   // שריון קרח: חסין לרגע, הודף ומקפיא את מי שקרוב (ואז הסתערות = ניפוץ, wcombo.js)
     volley:{ic:'🏹',dt:'physical', cls:'hunter', lv:2,cd:8, dmg:0.45,kind:'zone',  r:105,t:2.4,tick:0.3},            // גשם חצים על אזור
     trap:  {ic:'🪤',dt:'ice',      cls:'hunter', lv:4,cd:7, dmg:2.2, kind:'trap',  r:95,arm:0.4,life:14,trig:30,freeze:2},   // מלכודת על הקרקע: הראשון שדורך מפעיל, וכולם קופאים
-    vines: {ic:'🌿',dt:'earth',    cls:'hunter', lv:6,cd:9, dmg:0.8, kind:'pull',  r:240,pull:640,self:1},           // שורשים מושכים את כולם אל הגיבור
+    vines: {ic:'🌿',dt:'earth',    cls:'hunter', lv:6,cd:9, dmg:0.8, kind:'pull',  r:240,pull:640,root:2,self:1},    // שורשים מושכים את כולם אל הגיבור ותוקעים אותם (ואז פיזי = ננעץ, wcombo.js)
     spirit:{ic:'🫧',dt:'water',    cls:'mage',   lv:2,cd:12,dmg:0.6, kind:'summon',r:240,t:7,tick:0.6,self:1},       // רוח מים שמרחפת ליד הגיבור ויורה (רטוב + ברק/קרח = קומבו)
     storm: {ic:'⛈️',dt:'lightning',cls:'mage',   lv:4,cd:11,dmg:0.8, kind:'storm', r:240,t:4,tick:0.45,self:1},      // ענן שהולך עם הגיבור ומכה באויב אקראי
     meteor:{ic:'☄️',dt:'fire',     cls:'mage',   lv:6,cd:9, dmg:3.5, kind:'meteor',r:125,delay:0.9}                  // מטאור: סימון על הקרקע, ואחרי רגע פיצוץ ענק
@@ -90,11 +90,11 @@ function wsbCast(id,D,tg,base,col,vis,F){
       Object.assign(o,{fx:P.x,fy:P.y,tx:P.x+Math.cos(a)*d,ty:P.y+Math.sin(a)*d,dur:D.t,hit:new Set()});P.inv=Math.max(P.inv,D.inv);break}
     case 'aura':case 'storm':case 'summon':Object.assign(o,{dur:D.t,tick:0,x:P.x,y:P.y});break;
     case 'guard':{o.dur=D.inv;P.inv=Math.max(P.inv,D.inv);
-      for(const e of wsbIn(P.x,P.y,o.r)){const a=Math.atan2(e.y-P.y,e.x-P.x),k=e.isBoss?0.25:1;e.kx+=Math.cos(a)*D.push*k;e.ky+=Math.sin(a)*D.push*k;wsbHit(e,id,base,P,D.dt)}
+      for(const e of wsbIn(P.x,P.y,o.r)){const a=Math.atan2(e.y-P.y,e.x-P.x),k=e.isBoss?0.25:1;e.kx+=Math.cos(a)*D.push*k;e.ky+=Math.sin(a)*D.push*k;wsbHit(e,id,base,P,D.dt);if(!e.isBoss&&!e.dead)e.frozen=Math.max(e.frozen||0,D.freeze)}
       S.sk.fx.push({ring:1,x:P.x,y:P.y,r:o.r,t:0,max:0.4*themeK(),col});break}
     case 'pull':{o.dur=0.35;o.ties=[];
       for(const e of wsbIn(P.x,P.y,o.r)){const a=Math.atan2(P.y-e.y,P.x-e.x),d=Math.hypot(P.x-e.x,P.y-e.y),k=(e.isBoss?0.2:1)*Math.min(1,d/o.r+0.3);
-        e.kx+=Math.cos(a)*D.pull*k;e.ky+=Math.sin(a)*D.pull*k;o.ties.push(e);wsbHit(e,id,base,P,D.dt)}break}
+        e.kx+=Math.cos(a)*D.pull*k;e.ky+=Math.sin(a)*D.pull*k;o.ties.push(e);wsbHit(e,id,base,P,D.dt);wcRoot(e,D.root)}break}
     case 'zone':Object.assign(o,{x:tg.x,y:tg.y,dur:D.t,tick:0});break;
     case 'trap':Object.assign(o,{x:tg.x,y:tg.y,dur:D.life});break;
     case 'meteor':Object.assign(o,{x:tg.x,y:tg.y,dur:D.delay+0.45});break;
