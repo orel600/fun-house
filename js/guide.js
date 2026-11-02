@@ -14,6 +14,7 @@ const GUIDE={
   every:0.25,          // כל כמה שניות מחשבים מחדש את המטרה ומעדכנים את השורה
   m:20,                // כמה פיקסלים במשחק הם "מטר" במרחק שבשורה
   near:70,             // קרוב מזה למטרה: בלי שובל וחץ, רק "כאן"
+  boss:700,            // שומר או בוס חי במרחק כזה מהשחקן ומהמטרה: המטרה היא הוא עצמו
   col:'#FFD36B',       // הצבע של החץ והשובל. זהב, כמו כל מה שמוביל להתקדמות
   arrow:1.6,           // גודל החץ בקצה המסך (edgeArrow ב-render.js)
   dots:6,gap:34,       // השובל על הרצפה: כמה נקודות, ובאיזה מרווח
@@ -102,7 +103,10 @@ function guideStep(place){
 function guideTarget(G){
   if(!G||!G.place)return null;
   const s=guideStep(G.place);if(s)return s;
-  return G.x!=null&&G.place===gHere()?{x:G.x,y:G.y}:null;
+  if(G.x==null||G.place!==gHere())return null;
+  // שומר או בוס שנראה ליד המטרה: המרחק אליו, לא לפנס (ניר, 1.11: "50 מ'" כשעמד ליד השומר)
+  const b=P&&typeof enemies!=='undefined'&&enemies.find(e=>!e.dead&&(e.warden||e.isBoss)&&Math.hypot(e.x-P.x,e.y-P.y)<GUIDE.boss&&Math.hypot(e.x-G.x,e.y-G.y)<GUIDE.boss);
+  return b?{x:b.x,y:b.y}:{x:G.x,y:G.y};
 }
 
 /* ---- השורה למעלה ---- */
@@ -118,7 +122,7 @@ function guideUi(){
   const key=[LANG,min,G.icon,G.text,via,dist,jump].join('|');if(key===guideKey)return;guideKey=key;
   jb.hidden=!jump;jb.dataset.to=jump||'';jb.textContent='✨ '+T('g.jump');
   el.classList.toggle('min',min);
-  $('guideTxt').textContent=min?'':G.text+(via?' · '+via:'');
+  const w=G.text.split(' ');$('guideTxt').textContent=min?w.slice(0,3).join(' ')+(w.length>3?'…':''):G.text+(via?' · '+via:'');   // מכווצת: אייקון, 2-3 מילים של המטרה והמרחק
   $('guideIco').textContent=G.icon;$('guideDist').textContent=dist;
   $('guideMin').textContent=min?'▾':'▴';$('guideMin').setAttribute('aria-label',T(min?'g.open':'g.min'));
 }

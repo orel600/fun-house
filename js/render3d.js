@@ -93,7 +93,10 @@ const LOOK3D={
   /* חיית המחמד (pet.js): pet_<חיה><שלב>. הגובה על המסך מ-PET (stages[].h), כי גם הדו-ממד משתמש בו. anim: מה מנגנים בכל מצב של החיה */
   pet_piocho1:{model:'piocho1',foot:2,anim:DOG_ANIM},
   pet_piocho2:{model:'piocho2',foot:2,anim:DOG_ANIM},
-  pet_piocho3:{model:'piocho3',foot:2,anim:DOG_ANIM,glow:'#FF8A3D'}   // glow: הסימנים על הגוף זוהרים ופועמים (PET.fx)
+  pet_piocho3:{model:'piocho3',foot:2,anim:DOG_ANIM,glow:'#FF8A3D'},   // glow: הסימנים על הגוף זוהרים ופועמים (PET.fx)
+  pet_parosh1:{model:'parosh1',foot:2,anim:DOG_ANIM},   // הפרעוש של אוראל (parosh.js): אותו מודל לשלושת השלבים
+  pet_parosh2:{model:'parosh1',foot:2,anim:DOG_ANIM},
+  pet_parosh3:{model:'parosh1',foot:2,anim:DOG_ANIM}
 };
 /* הנשק ביד השחקן: המודל מ-look.model של הפריט בציוד (GEAR.items ב-gear.js), והחומר לפי ה-tier שלו (טקסטורה wtex_<חומר>, build3d.js).
    כל משפחת נשקים יושבת ביד אחרת ותוקפת באנימציה אחרת. of: לאיזו משפחה שייך מודל, לפי השם.
@@ -109,6 +112,9 @@ const GRIP3D={
 /* קהל: כשיש הרבה אויבים על המסך, רק הקרובים לשחקן מקבלים דמות מונפשת. כל השאר מצוירים יחד בתנוחת ריצה קפואה
    שמתחלפת בין שני צעדים: כמה ציורים בפריים במקום מאות. בטלפון זה ההבדל בין משחק שזורם למשחק שנתקע.
    full: כמה דמויות מונפשות לכל היותר. poses: באיזה רגע של אנימציית הריצה מצלמים כל צעד. dying: כמה אנימציות מוות יחד. max: כמה בקהל */
+/* קהל: מעבר ל-full האויבים הקרובים, השאר מצוירים כצורה קבועה בכמה תנוחות, ציור אחד לכל סוג. types: נאפים בהתחלה.
+   כל סוג אחר נאפה בפעם הראשונה שצריך אותו (crowdOf). קודם רק שלושת אלה היו בקהל, וכל אויב מסוג אחר צויר לבד: בשלבים מאוחרים
+   (מומיות, טובעים, אבירי כפור) זה עשה עשרות ציורים בכל פריים (סקירת הזירה, 1.11.2026) */
 const CROWD={full:30,poses:[0.25,0.75],dying:16,max:320,types:['grunt','shield','wisp']};
 const PILOT3D=/[?&]hero=pilot/.test(location.search);
 /* הכפר: המיקומים והמראה לפי רמה ב-VILLAGE (js/village.js). כאן רק איזה קובץ מודל לכל שם, ובאיזה רוחב על המסך בפיקסלים.
@@ -125,7 +131,25 @@ const VIL3D={
    glow: צבע לעורק מתכת. הקישוטים והשערים כמו בכפר (VIL3D.decor, VIL3D.gate) */
 const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',w:42,glow:'#5FA35A'},chest:{model:'v_crate',w:48,glow:'#F4C74F'},rock:{model:'v_rock',w:62},vein:{model:'v_rock',w:62,glow:'#C87533'},
   reed:{model:'v_treeB',w:34,glow:'#3FA7A0'},crystal:{model:'v_rock',w:62,glow:'#4FB4FF'}},   // w: רוחב המודל
+  /* קישוטים לכל אזור, מסביב לגבול (worldDecor ב-world.js): במקום עצי האחו בכל מקום. אזור שלא כתוב כאן: VIL3D.decor, כמו בכפר.
+     model: מפתח ב-MODELS3D (n_ מ-KayKit Forest Nature, v_ מהכפר), או n_cactus/n_reeds שנבנים בקוד (natureProp). pick: כמה אפשרויות, לפי המקום.
+     h: גובה (לעצים צרים וגבוהים) או w: רוחב. tint: צבע שמוכפל בצבעים של המודל (חול, צל). snow: כמה להלבין (שלג). רק במראה החדש, ?look=classic מחזיר את עצי האחו */
+  decor:{
+    meadow:{hills:{pick:[{model:'n_tree',h:150,tint:'#cfe6bf'},{model:'n_pine',h:160},{model:'v_treeA',w:120}]}},   // האחו: יער גבוה בשוליים במקום אריחי המשושה (שנראו כמו לוח משחק). העצים והסלעים הקטנים כמו בכפר
+    lake:  {tree:{pick:[{model:'n_tree',h:100,tint:'#a9d2bf'},{model:'v_treeB',w:55,tint:'#bfe0d0'},{model:'n_reeds',h:55}]},rock:{model:'n_round',w:55,tint:'#a9bcb8'},hills:{model:'v_hills',w:260,tint:'#bfd8cc'}},
+    ridge: {tree:{pick:[{model:'n_pine',h:125,snow:0.35},{model:'n_pine',h:95,snow:0.5}]},rock:{model:'n_crag',w:62,tint:'#eef4fa'},hills:{pick:[{model:'n_pine',h:175,snow:0.45},{model:'n_crag',w:120,tint:'#e2ecf4'},{model:'n_pine',h:150,snow:0.55}]}},
+    desert:{tree:{pick:[{model:'n_acacia',h:85,tint:'#d8c27a'},{model:'n_cactus',h:70},{model:'n_dead',h:105,tint:'#e0b58a'}]},rock:{model:'n_crag',w:62,tint:'#e7b47a'},hills:{pick:[{model:'n_crag',w:115,tint:'#d9a05e'},{model:'n_dead',h:160,tint:'#e0b58a'},{model:'n_acacia',h:140,tint:'#d8c27a'}]}},
+    storm: {tree:{pick:[{model:'n_dead',h:115,tint:'#8f86aa'},{model:'n_bare',h:90,tint:'#7d7598'}]},rock:{model:'n_block',w:60,tint:'#9a96b4'},hills:{pick:[{model:'n_block',w:105,tint:'#8a86a4'},{model:'n_dead',h:165,tint:'#8f86aa'},{model:'n_bare',h:130,tint:'#7d7598'}]}},
+    // hills: בשוליים, יער גבוה וסלעים בגודל סביר במקום גוש סלע ענק אחד שנראה כמו קופסה (ניר, 1.11: "דברים מוזרים")
+    shadow:{tree:{pick:[{model:'n_bare',h:95,tint:'#6e5a98'},{model:'n_dead',h:115,tint:'#5a4a80'}]},rock:{model:'n_round',w:58,tint:'#5d4a86'},hills:{pick:[{model:'n_bare',h:150,tint:'#5a4a80'},{model:'n_round',w:110,tint:'#4a3a70'},{model:'n_dead',h:165,tint:'#4e3f78'}]}}
+  },
+  // מקורות משאבים לפי הסוג (kind ב-nodes.js), במראה החדש: אורן מושלג, קקטוס, עץ מת. כל השאר לפי הצורה (nodes למעלה)
+  kinds:{pine:{model:'n_pine',h:115,snow:0.3},cactus:{model:'n_cactus',h:62,glow:'#5FA35A'},deadTree:{model:'n_dead',h:115,tint:'#8c8494'},
+    shadeTree:{model:'n_bare',h:95,tint:'#6a5aa0'},reeds:{model:'n_reeds',h:55,glow:'#2a6f6a'}},
   // צבע לכל אזור (WORLD.regions ב-world.js): bg הרקע, line הקרקע, pond המים. אזור שלא כתוב כאן: VIEW.world
+  // water/glow: המים במראה החדש (look-hd.js, בלי ?look=classic), עם שוליים רכים. glow: זוהר, ו-pulse: כמה הוא פועם (לבה). החוף סביבם: GROUND ב-ground.js
+  water:{meadow:{col:'#3f8fb4'},lake:{col:'#3c8aa0'},ridge:{col:'#8fd0ee',glow:'#3a86b8',g:0.3},desert:{col:'#f0561a',glow:'#ff4a08',g:0.9,pulse:0.25},
+    storm:{col:'#3a3060',glow:'#6e5fa6',g:0.25},shadow:{col:'#1a0f2c',glow:'#5b3f8c',g:0.3}},
   regions:{lake:{bg:'#1d3238',line:'#4f7a78',pond:'#2a6d8f'},
     ridge:{bg:'#2b3644',line:'#9fb3c4',pond:'#26384a'},   // הרכס הקפוא (פרק 3): שלג
     desert:{bg:'#4a3522',line:'#d9a865',pond:'#6b2a14'},   // המדבר הבוער (פרק 4): חול, ובורות לבה
@@ -178,7 +202,7 @@ function mergeSkinned(root,keep){
   for(const p of parts)p.parent.remove(p);
 }
 // חומר פשוט יותר מהמקורי: נראה אותו דבר בסגנון הזה, ומהיר יותר בטלפון
-function lambert(root){root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap});o.frustumCulled=false}})}
+function lambert(root){root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap,side:m.side});o.frustumCulled=false}})}
 function bone(root,name){let b=null;root.traverse(o=>{if(!b&&o.isBone&&o.name===name)b=o});return b}
 
 async function init3d(){
@@ -211,7 +235,7 @@ async function init3d(){
     R3D.wtex={};for(const k in MODELS3D)if(k.startsWith('wtex_')){
       const img=new Image();img.src='data:image/png;base64,'+MODELS3D[k];await img.decode();
       const t=new THREE.Texture(img);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;R3D.wtex[k.slice(5)]=t}
-    for(const k in MODELS3D)if(k.startsWith('v_')){const g=await parseGLB(k);lambert(g.scene);g.scene.traverse(o=>{o.frustumCulled=true});R3D.props[k]=g.scene}   // מבני הכפר
+    for(const k in MODELS3D)if(k.startsWith('v_')||k.startsWith('n_')){const g=await parseGLB(k);lambert(g.scene);g.scene.traverse(o=>{o.frustumCulled=true});R3D.props[k]=g.scene}   // מבני הכפר
     const heroModels=new Set(Object.keys(LOOK3D).filter(k=>k==='player'||k.startsWith('hero_')).map(k=>LOOK3D[k].model));
     for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t,heroModels.has(k)&&ARMOR3D);lambert(t);t.updateMatrixWorld(true);
       // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
@@ -249,10 +273,14 @@ function mark(kind,x,z,r){const M=R3D.marks[kind];if(M.count>=M.instanceMatrix.c
 
 /* ---- קהל ---- */
 // מצלמים כל סוג אויב בכמה תנוחות ריצה, והופכים כל תנוחה לצורה קבועה שאפשר לצייר מאות פעמים בציור אחד
-function bakeCrowd(){
-  R3D.crowd={};const v=new THREE.Vector3();
-  for(const k of CROWD.types){
-    const L=LOOK3D[k],a=makeActor(L),clip=R3D.clips[L.anim.run];a.mixer.clipAction(clip).play();
+function bakeCrowd(){R3D.crowd={};for(const k of CROWD.types)crowdOf(k)}
+// הקהל של סוג אחד: נאפה בפעם הראשונה (כמה מילישניות), ואחר כך מהזיכרון. null: לסוג הזה אין מודל עם ריצה, והוא מצויר לבד
+function crowdOf(k){
+  if(k in R3D.crowd)return R3D.crowd[k];
+  const L=LOOK3D[k],clip=L&&L.model&&L.anim&&R3D.clips[L.anim.run];if(!clip||!R3D.tmpl[L.model])return R3D.crowd[k]=null;
+  const v=new THREE.Vector3();
+  {
+    const a=makeActor(L);a.mixer.clipAction(clip).play();
     R3D.crowd[k]=CROWD.poses.map(f=>{
       a.mixer.setTime(f*clip.duration);a.root.position.set(0,0,0);a.root.rotation.set(0,0,0);a.root.updateMatrixWorld(true);
       const parts=[];
@@ -265,6 +293,7 @@ function bakeCrowd(){
       return parts});
     freeActor(a);
   }
+  return R3D.crowd[k];
 }
 function crowdAdd(e){
   const L=lookOf(e),k=e.big||1,lift=L.float?L.float+Math.sin(e.ph*0.6)*3:0,M=R3D._mx;
@@ -289,7 +318,7 @@ function heroLook(){
     L.props[w]=Object.assign({prop:model,tier:mine?GEAR.tiers[it.tier].id:'wood'},g);
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
-  if(fluteOn())fluteGrip(L);   // הנודד עם החליל: חליל ביד במקום הנשק (flute.js)
+  {const th=heroTheme();if(th&&th.grip)th.grip(L)}   // דמות אישית: חפץ ביד במקום הנשק. החליל ביד במקום הנשק (flute.js)
   return R3D._hl=L;
 }
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
@@ -384,6 +413,9 @@ function syncPlayer(dt){
   a.mixer.update(dt);
   // איפה הנשק על המסך, בשביל הזוהר של Aging שמצויר בקנבס (aging.js). מהעולם חזרה לקואורדינטות המשחק
   const w=a.props[sword?'sword':'gun'];if(w){const v=w.getWorldPosition(R3D._v||(R3D._v=new THREE.Vector3()));AGE_FX.hand={x:v.x,y:v.z*SIN()-v.y*COS()}}
+  // קצה הלהב (הברק של הסקיל יוצא ממנו, skills.js): הלהב לאורך y המקומי של הנשק, עד הגובה של הצורה שלו
+  if(w&&sword){const len=w.userData.tip??(w.userData.tip=(()=>{let m=0;w.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();m=Math.max(m,o.geometry.boundingBox.max.y)}});return m})());
+    const t=w.localToWorld((R3D._v2||(R3D._v2=new THREE.Vector3())).set(0,len,0));AGE_FX.tip={x:t.x,y:t.z*SIN()-t.y*COS()}}else AGE_FX.tip=null;
   mark('shadow',a.root.position.x,a.root.position.z,16);
 }
 function syncEnemy(e,dt){
@@ -460,20 +492,60 @@ function syncVillage(){
   }
   for(const k in V.stock)V.stock[k].visible=vStock(k)>0;
 }
+// קקטוס וקני סוף: נבנים בקוד (אין בחבילות החינמיות), גיאומטריה אחת לכל אחד כדי שיהיו ציור אחד
+function natureProp(k){
+  if(R3D.props[k])return R3D.props[k];
+  const parts=[],C=(r,h,x,y,z,rz=0)=>{const g=new THREE.CylinderGeometry(r*0.85,r,h,7);g.translate(0,h/2,0);if(rz)g.rotateZ(rz);g.translate(x,y,z);parts.push(g)};
+  let col;
+  if(k==='n_cactus'){col='#5c9a45';C(0.17,1,0,0,0);C(0.11,0.28,0,0,0,Math.PI/2);parts[1].translate(0.03,0.42,0);C(0.1,0.32,0.3,0.42,0);
+    C(0.1,0.22,0,0,0,-Math.PI/2);parts[3].translate(-0.02,0.58,0);C(0.09,0.26,-0.26,0.58,0)}
+  else{col='#5f7f3a';for(let i=0;i<9;i++){const a=i*2.4,r=0.05+0.17*Math.sqrt(i/9),h=0.6+((i*37)%10)/22;const g=new THREE.ConeGeometry(0.035,h,4);g.translate(Math.cos(a)*r,h/2,Math.sin(a)*r);parts.push(g)}}
+  const geo=THREE.mergeGeometries(parts.map(g=>g.toNonIndexed()));geo.computeVertexNormals();
+  const root=new THREE.Group();root.add(new THREE.Mesh(geo,new THREE.MeshLambertMaterial({color:col,flatShading:true})));
+  return R3D.props[k]=root;
+}
+// קישוט או מקור לפי המפרט ב-W3D (decor, kinds): צבע (tint) בעותק של התבנית, וגודל לפי גובה (h) או רוחב (w)
+function wPut(D,x,y,v,mul,g){
+  const sp=D.pick?D.pick[Math.floor(v*D.pick.length)%D.pick.length]:D,md=Array.isArray(sp.model)?sp.model[v<0.5?0:1]:sp.model,key=md+(sp.tint||'')+(sp.snow||'');
+  if(md==='n_cactus'||md==='n_reeds')natureProp(md);
+  if((sp.tint||sp.snow)&&!R3D.props[key]){const t=R3D.props[md].clone(true),c=new THREE.Color(sp.tint||'#fff'),w=new THREE.Color('#f2f8fc');
+    t.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.color.multiply(c);if(sp.snow)o.material.emissive.copy(w).multiplyScalar(sp.snow)}});R3D.props[key]=t}   // שלג: אור לבן מבפנים (הצבע עצמו מגיע מטקסטורה)
+  const t=R3D.props[key],bb=t.userData.bb||(t.userData.bb=new THREE.Box3().setFromObject(t));
+  const w=sp.h?sp.h*Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z,1e-3)/Math.max(bb.max.y-bb.min.y,1e-3):sp.w;
+  const m=vPut(key,x,y,w*mul,v*6.28,g);
+  if(sp.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(sp.glow).multiplyScalar(0.5)}});
+  return m;
+}
+// מים במראה החדש: עיגול עם שוליים רכים (שקיפות שיורדת בקצה), והחוף של ground.js נראה מתחתיו. קרח מבריק, לבה זוהרת
+function pondMat(Wt){
+  const A=pondMat.a||(pondMat.a=(()=>{const T=128,c=document.createElement('canvas');c.width=c.height=T;const g=c.getContext('2d'),gr=g.createRadialGradient(T/2,T/2,0,T/2,T/2,T/2);
+    gr.addColorStop(0,'#fff');gr.addColorStop(0.8,'#fff');gr.addColorStop(1,'#000');g.fillStyle=gr;g.fillRect(0,0,T,T);return new THREE.CanvasTexture(c)})());
+  const m=new THREE.MeshLambertMaterial({color:Wt.col,alphaMap:A,transparent:true,opacity:0.95,depthWrite:false});
+  if(Wt.glow){m.emissive.set(Wt.glow);m.emissiveIntensity=Wt.g}
+  return m;
+}
 // העולם הפתוח: קישוטים, שערים, מים ומקורות משאבים נבנים פעם אחת לכל אזור (המקומות קבועים). מקור שנשבר נעלם עד שהוא צומח.
 // דרך שהעלילה עוד לא פתחה (WORLD.paths) מוסתרת
 function syncWorld(){
   const A=R3D.wlds||(R3D.wlds={}),reg=S.wd.reg||'meadow',RG=WR(),W=W3D.regions[reg]||{};let G=A[reg];
   if(!G){G=A[reg]={g:new THREE.Group(),nodes:{},paths:{}};R3D.scene.add(G.g);
-    for(const d of worldDecor()){const D=VIL3D.decor[d.kind],md=Array.isArray(D.model)?D.model[d.v<0.5?0:1]:D.model;vPut(md,d.x,d.y,D.w*(0.8+d.v*0.4),d.v*6.28,G.g)}
+    const hd=typeof HD!=='undefined'&&HD.on,DEC=hd&&W3D.decor[reg];G.kinds=hd;   // קישוטים לפי אזור (W3D.decor), במראה החדש
+    for(const d of worldDecor()){const D=DEC&&DEC[d.kind];if(D){wPut(D,d.x,d.y,d.v,0.8+d.v*0.4,G.g);continue}
+      const V=VIL3D.decor[d.kind],md=Array.isArray(V.model)?V.model[d.v<0.5?0:1]:V.model;vPut(md,d.x,d.y,V.w*(0.8+d.v*0.4),d.v*6.28,G.g)}
     const gs=wGates(true);for(const k in gs){const m=vPut(VIL3D.gate.model,gs[k].x,gs[k].y,VIL3D.gate.w,0,G.g);if(wIsPath(k))G.paths[k]=m}
-    for(const p of RG.ponds||[]){const m=new THREE.Mesh(new THREE.CircleGeometry(p.r,40),new THREE.MeshLambertMaterial({color:W.pond||'#2a6d8f',transparent:true,opacity:0.9}));
-      m.rotation.x=-Math.PI/2;m.scale.set(1,1/SIN(),1);m.position.set(p.x,0.6,p.y/SIN());G.g.add(m)}
-    secrets3D(reg,(md,x,y,w,r)=>vPut(md,x,y,w,r,G.g))}   // סודות (secrets.js)
+    const Wt=hd&&(W3D.water[reg]||W3D.water.meadow);
+    for(const p of RG.ponds||[]){const m=new THREE.Mesh(new THREE.CircleGeometry(p.r,40),Wt?pondMat(Wt):new THREE.MeshLambertMaterial({color:W.pond||'#2a6d8f',transparent:true,opacity:0.9}));
+      m.rotation.x=-Math.PI/2;m.scale.set(1,1/SIN(),1);m.position.set(p.x,0.6,p.y/SIN());G.g.add(m);if(Wt&&Wt.pulse)(G.pulse||(G.pulse=[])).push([m.material,Wt])}
+    secrets3D(reg,(md,x,y,w,r)=>vPut(md,x,y,w,r,G.g));   // סודות (secrets.js)
+    if(typeof props3dWorld==='function')props3dWorld(G,reg)}   // הפנס, המקדש, מגדל התצפית והתיבה (props3d.js)
   R3D.wld=G;G.g.visible=true;
+  if(typeof props3dWorldTick==='function')props3dWorldTick(G);
+  if(G.pulse){const t=performance.now()/1000;for(const [m,Wt] of G.pulse)m.emissiveIntensity=Wt.g*(1+Wt.pulse*Math.sin(t*1.7+Math.sin(t*0.6)*2))}   // לבה שנושמת
   for(const k in G.paths)G.paths[k].visible=wPathOpen(RG.paths[k]);
   for(const n of S.nd.list){
     let m=G.nodes[n.id];
+    const K=G.kinds&&W3D.kinds[n.kind];if(!m&&K)m=G.nodes[n.id]=wPut(K,n.x,n.y,hash(n.x,n.y),0.85+hash(n.x,n.y)*0.3,G.g);   // אורן, קקטוס, עץ מת (W3D.kinds)
+    if(!m&&typeof props3dNode==='function'&&(m=props3dNode(n,G.g)))G.nodes[n.id]=m;   // עורקים, גבישים ותיבות (props3d.js)
     if(!m){const D=W3D.nodes[wKind(n.kind).shape],v=hash(n.x,n.y),md=Array.isArray(D.model)?D.model[v<0.5?0:1]:D.model;
       m=G.nodes[n.id]=vPut(md,n.x,n.y,D.w*(0.85+v*0.3),v*6.28,G.g);
       if(D.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(D.glow).multiplyScalar(0.5)}})}
@@ -507,7 +579,7 @@ function syncPet(dt){
   if(a.st!==p.st&&p.st==='jump')once(a,L.anim.jump,0.9);
   if(p.barkAt!=null&&p.barkAt!==a.bark){a.bark=p.barkAt;once(a,L.anim.bark,0.6)}
   a.st=p.st;
-  const moving=p.st==='follow'||p.st==='go'||p.st==='back'||(p.st==='hunt'&&p.run),busy=a.one&&a.one.isRunning();
+  const moving=p.st==='follow'||p.st==='go'||p.st==='back'||((p.st==='hunt'||p.st==='sneak'||p.st==='flee')&&p.run),busy=a.one&&a.one.isRunning();
   if(!busy||moving)loop(a,moving?(p.run?L.anim.run:L.anim.walk):p.st==='dig'?L.anim.dig:p.st==='sit'?L.anim.sit:L.anim.idle,moving&&!p.run?1.4:1);
   place(a,p.x,p.y,L.foot,null);a.root.rotation.y=yawOf(Math.cos(p.face),Math.sin(p.face));
   if(L.glow)for(const m of a.mats)if(m.emissiveMap){m.emissive.set(L.glow);m.emissiveIntensity=0.4+0.35*Math.sin(p.fxT*PET.fx.pulse*6.28)}
@@ -536,19 +608,19 @@ function render3d(ox,oy){
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
   R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?(W3D.regions[S.wd.reg]||{}).bg||VIEW.world:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?(W3D.regions[S.wd.reg]||{}).line||VIEW.worldLine:VIEW.groundLine);
   for(const k in R3D.marks)R3D.marks[k].count=0;
-  for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)m.count=0;
+  for(const k in R3D.crowd)if(R3D.crowd[k])for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
   for(const k in R3D.wlds||{})R3D.wlds[k].g.visible=false;
   if(!S.room)syncPet(dt);else if(R3D.pet)R3D.pet.root.visible=false;   // חיית המחמד (pet.js), בכל מקום חוץ מחדר הבונוס
-  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt)}   // בכפר: השחקן, המבנים והתושבים
+  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
     if(S.wd){syncWorld();syncWnpcs(dt)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)
     // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
     const vis=enemies.filter(e=>!e.dead&&(e.isBoss||onScreen(e.x+ox,e.y+oy)));
     if(vis.length>CROWD.full){const pr=e=>e.isBoss||e.wanted||e.elite?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}
-    vis.forEach((e,i)=>i<CROWD.full||!R3D.crowd[e.type]?syncEnemy(e,dt):crowdAdd(e));
+    vis.forEach((e,i)=>i<CROWD.full||e.isBoss||!crowdOf(e.type)?syncEnemy(e,dt):crowdAdd(e));
     R3D.nDying=0;for(const a of R3D.actors.values())if(a.dieT>0.05)R3D.nDying++;
     for(const [e,a] of R3D.actors)if(a.seen!==R3D.frame||e.dead)retire(e,a,dt);
   }else{ // בחדר הבונוס אין אויבים, רק השחקן
@@ -557,7 +629,7 @@ function render3d(ox,oy){
   // שולחים לכרטיס הגרפי רק את החלק שבשימוש: שליחה של הכל בכל פריים תוקעת את הציור
   const up=m=>{if(!m.count)return;const b=m.instanceMatrix;b.clearUpdateRanges();b.addUpdateRange(0,m.count*16);b.needsUpdate=true};
   for(const k in R3D.marks)up(R3D.marks[k]);
-  for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)up(m);
+  for(const k in R3D.crowd)if(R3D.crowd[k])for(const p of R3D.crowd[k])for(const m of p){up(m);m.visible=m.count>0}   // ריק: בלי ציור בכלל
   if(!skip){r.render(R3D.scene,c);gfxMeasure(now)}
   const i=r.info.render;R3D.stats={calls:i.calls,tris:i.triangles,actors:R3D.actors.size+1,crowd:R3D.nCrowd};
 }

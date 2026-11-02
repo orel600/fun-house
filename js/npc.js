@@ -77,7 +77,7 @@ function npcUpdate(dt){
   S.vil.npcNear=near;
   if(D&&!S.vil.dlgStay&&(!npcHere(D)||Math.hypot(P.x-all[D].x,P.y-all[D].y)>NPC.leave))npcTalk(null);   // dlgStay: ההקדמה של העלילה נשארת עד שסוגרים (story.js)
   const btn=$('talkBtn'),show=!!near&&D!==near;
-  if(btn.hidden===show||btn.dataset.id!==(near||'')){btn.hidden=!show;btn.dataset.id=near||'';if(near)btn.textContent='💬 '+T('npc.talk',T('npc.'+near)[0])}
+  if(btn.hidden===show||btn.dataset.id!==(near||'')){btn.hidden=!show;btn.dataset.id=near||'';if(near){btn.innerHTML='<span class="ni" aria-hidden="true">💬</span>'+T('ctx.talk');btn.setAttribute('aria-label',T('npc.talk',T('npc.'+near)[0]))}}
 }
 
 /* ---- שיחה ---- */
@@ -89,6 +89,22 @@ function npcLine(id){
   const k=mine.some(q=>Q.active[q.id]&&qReady(q))?'ready':mine.some(qOpen)?'new':mine.some(q=>Q.active[q.id])?'busy':vLv('center')>=NPC.high?'high':'low';
   return T('npc.'+id+'.'+k);
 }
+// קווסט אחד בשיחה (המבקר, 1.11: "אבנר מציג שש משימות, ולא ברור איזו חשובה"): פרס שמחכה (עלילה קודם), אחרת העלילה ⭐,
+// אחרת הקרוב לסיום, ואחרת החדש הראשון. השאר ביומן הקווסטים, ושורה אחת אומרת כמה. גם בעולם (worldnpc.js).
+// זוכר איזה קווסט מוצג, כדי שאחרי "לקבל" נשארים עליו ולא קופצים לאחר
+const NPCPG={id:'',q:null,list:[]};
+const npcDone=q=>{const a=QS().active[q.id];return a?q.obj.reduce((s,o,i)=>s+qProg(q,i)/o.n,0)/q.obj.length:0};
+function npcCards(id,ready,open,on){
+  const L=[...ready.map(q=>[q,'claim']),...open.map(q=>[q,'accept']),...on.map(q=>[q,'track'])];if(!L.length)return '';
+  if(NPCPG.id!==id){NPCPG.id=id;NPCPG.q=null}
+  const st=c=>c[0].kind==='story';
+  const pick=L.find(c=>c[1]==='claim'&&st(c))||L.find(c=>c[1]==='claim')||(!ready.length&&L.find(c=>c[0].id===NPCPG.q))||L.find(st)||
+    on.slice().sort((a,b)=>npcDone(b)-npcDone(a)).map(q=>[q,'track'])[0]||L[0];
+  NPCPG.q=pick[0].id;NPCPG.list=[pick[0].id];
+  return qCard(pick[0],pick[1])+(L.length>1?'<p class="next">'+T('npc.more',L.length-1)+'</p>':'');
+}
+// ‹ ›: הקווסט הקודם או הבא ברשימה של מי שמדברים איתו
+function npcPg(d){const L=NPCPG.list,n=L.length;if(n)NPCPG.q=L[((L.indexOf(NPCPG.q)+d)%n+n)%n];sfx('ui')}
 function npcDialog(){
   const id=S.vil&&S.vil.dlg,el=$('npcDlg');if(!id){el.hidden=true;return}
   const Q=QS(),[name,role]=T('npc.'+id);
@@ -96,7 +112,7 @@ function npcDialog(){
   const ready=mine.filter(q=>Q.active[q.id]&&qReady(q)),open=mine.filter(qOpen),on=mine.filter(q=>Q.active[q.id]&&!qReady(q));
   let h=winHead(name,role);   // ui.js
   h+='<p class="npcsay">'+npcPic(id)+S.vil.dlgLine+'</p>';
-  h+=ready.map(q=>qCard(q,'claim')).join('')+open.map(q=>qCard(q,'accept')).join('')+on.map(q=>qCard(q,'track')).join('');
+  h+=npcCards(id,ready,open,on);   // קווסט אחד בכל פעם
   if(!ready.length&&!open.length&&!on.length)h+='<p class="next">'+T('npc.noQuest')+'</p>';
   if(id===STATS.respec.npc)h+=statRespecHtml();   // איפוס נקודות הדמות (stats.js)
   if(id===FISH.cookAt)h+=fishCookHtml();   // בישול דגים (fishing.js)
@@ -108,7 +124,7 @@ const npcPic=id=>NPC_PIC[id]?'<img class="npcpic" src="icons/ui/npc/'+id+'.png" 
 // פותח שיחה עם id, או סוגר עם null
 function npcTalk(id){
   if(!S.vil)return;
-  S.vil.dlg=id;S.vil.dlgStay=false;if(id){$('qLog').hidden=true;S.vil.dlgLine=npcLine(id);sfx('ui')}
+  S.vil.dlg=id;S.vil.dlgStay=false;if(id){NPCPG.id='';$('qLog').hidden=true;S.vil.dlgLine=npcLine(id);sfx('ui')}
   npcDialog();
 }
 $('talkBtn').addEventListener('click',()=>{const id=$('talkBtn').dataset.id;if(id&&S.vil)npcTalk(id)});
@@ -117,6 +133,8 @@ $('npcDlg').addEventListener('click',e=>{
   if(b.dataset.act==='close'){npcTalk(null);return}
   if(b.dataset.act==='respec'){statRespec();statBadge();npcDialog();return}
   if(b.dataset.act==='cook'){fishCook(b.dataset.m);npcDialog();return}   // fishing.js
+  if(b.dataset.act==='pg'){npcPg(+b.dataset.d);npcDialog();return}   // ‹ ›
+  if(b.dataset.q)NPCPG.q=b.dataset.q;
   questAct(b.dataset.act,b.dataset.q);   // quests.js
   npcDialog();
 });

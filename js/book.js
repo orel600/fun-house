@@ -43,7 +43,7 @@ function bookMark(k){
 }
 function bookNew(){
   const p=bookPending();
-  if(typeof P!=='undefined'&&P&&S&&S.mode==='play')floatText(P.x,P.y-40,T('book.new'),C.gold,15);
+  if(typeof P!=='undefined'&&P&&S&&S.mode==='play'){if(feedOn())feedAdd('',T('book.new'),C.gold,'book');else floatText(P.x,P.y-40,T('book.new'),C.gold,15)}   // בעולם ובכפר: בפיד (feed.js)
   if(p&&S&&S.mode==='play')sfx('coin');
   saveNow();bookBadge();
 }
@@ -73,6 +73,20 @@ function bookClaim(quiet){   // quiet: בלי חגיגה והודעה (welcome.j
 }
 function bookBadge(){const el=$('bBadge');if(!el)return;const n=bookPending(),t=n?String(n):'';if(el.textContent!==t){el.textContent=t;el.hidden=!n}}
 
+/* היצורים מקובצים לפי האזור שבו פוגשים אותם ("באחו: 3 מ-8"), כדי שיהיה ברור לאן ללכת (המבקר, book-question-grid).
+   האזור של סוג: הראשון ב-WORLD (האחו) וב-WORLD.regions שיש בו קבוצה ממנו. השומר באחו, הבוס בזירה, ומי שלא נמצא באף אזור: "בזירה" */
+function bookRegion(k){
+  if(k==='boss')return 'arena';if(k==='warden'||k==='wanted')return 'meadow';
+  const R=[['meadow',WORLD],...Object.entries(WORLD.regions||{})];
+  for(const [id,r] of R)if((r.foes||[]).some(G=>G.type===k))return id;
+  return 'arena';
+}
+function bookGroups(){
+  const order=['meadow',...Object.keys(WORLD.regions||{}),'arena'],g={};
+  for(const k of bookList('f'))(g[bookRegion(k)]||(g[bookRegion(k)]=[])).push(k);
+  return order.filter(r=>g[r]).map(r=>({r,ks:g[r]}));
+}
+const bookGrpName=r=>r==='arena'?T('book.arena'):T('w.region.'+r);
 /* החלון: הכותרת, שלוש לשוניות, ובשני טורים: הרשת (רק היא גוללת) | הפרטים והפרס */
 const bookName=(t,k)=>t==='f'?T('book.f.'+k):t==='i'?gName(k):resName(k);
 const bookPic=(t,k)=>t==='f'?BOOK.icon[k]||'❔':t==='i'?gPic(k):resPic(k);
@@ -96,7 +110,9 @@ function bookDraw(){
   const t=BKU.tab,tot=bookTotal(),pend=bookPending(),next=BOOK.every-tot%BOOK.every;
   let h=winHead(T('book.title'),tot+'/'+bookMax());
   h+='<div class="ffilter bktabs">'+BOOK.tabs.map(x=>'<button aria-pressed="'+(x===t)+'" data-act="tab" data-tab="'+x+'">'+T('book.tab.'+x)+' <small>'+bookCount(x)+'/'+bookList(x).length+'</small></button>').join('')+'</div>';
-  h+='<div class="bkcols"><section class="bkgrid">'+bookList(t).map(k=>bookCard(t,k)).join('')+'</section><section class="bkside">'+bookDetail(t,BKU.sel);
+  const grid=t==='f'?bookGroups().map(G=>'<h4 class="bkgrp">'+bookGrpName(G.r)+'<small>'+T('book.grpN',G.ks.filter(k=>bookHas('f',k)).length,G.ks.length)+'</small></h4>'+G.ks.map(k=>bookCard(t,k)).join('')).join('')
+    :bookList(t).map(k=>bookCard(t,k)).join('');
+  h+='<div class="bkcols"><section class="bkgrid">'+grid+'</section><section class="bkside">'+bookDetail(t,BKU.sel);
   h+='<div class="bkrew'+(pend?' ready':'')+'">';
   if(pend){const r=bookReward(BK().paid+1);h+='<p>'+T('book.ready')+' '+Object.keys(r).map(x=>resPic(x)+r[x]).join(' ')+'</p><button class="bkclaim" data-act="claim">'+T('book.claim')+(pend>1?' ×'+pend:'')+'</button>'}
   else h+='<p>'+T('book.next',next)+'</p><div class="bkbar"><i style="width:'+((tot%BOOK.every)/BOOK.every*100)+'%"></i></div>';

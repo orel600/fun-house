@@ -156,7 +156,7 @@ function villageUpdate(dt){
   parts=parts.filter(p=>p.life>0);
   for(const f of floats){f.y+=f.vy*dt;f.life-=dt}
   floats=floats.filter(f=>f.life>0);
-  villageHud();
+  villageHud();cornerHud();   // הפינות העליונות (minimap.js)
 }
 
 /* ---- שלל מהזירה ---- */
@@ -209,7 +209,7 @@ function villageHud(){
   if(cur!=='market')S.vil.trade=false;   // חלון המסחר הגדול: רק מהפאנל של השוק
   const key=LANG+'|'+k+'|'+cur+'|'+S.vil.trade+'|'+(k?vStock(k):0)+'|'+JSON.stringify(SAVE.village)+'|'+JSON.stringify(SAVE.bag)+'|'+JSON.stringify(SAVE.stash);
   if(key===S.vil.ui)return;S.vil.ui=key;
-  $('vBag').innerHTML=topLine(SAVE.bag,resShown(k));   // רק מה שרלוונטי ליד המבנה הזה (RES.show)
+  $('vBag').innerHTML=cornerRes(resShown(k));   // עד 2 משאבים ליד ☰, מה שרלוונטי ליד המבנה הזה (RES.show), והשאר ב-"+N" (minimap.js)
   // נפחייה ומחסן: הרבה תוכן, אז חלון גדול בשני טורים (ניר: "רואים רק קצת")
   const wide=cur!=='gate'&&(k==='forge'||k==='stash')&&L>0;
   const pn=$('vPanel');pn.hidden=!cur;pn.classList.toggle('big',!!S.vil.trade||wide);document.body.classList.toggle('vpan',!pn.hidden);if(pn.hidden)return;
@@ -281,7 +281,7 @@ const vEnterEl=(()=>{const b=document.createElement('button');b.id='vEnter';b.cl
 function vEnterBtn(){
   const V=S.vil,k=V&&V.here,show=!!k&&V.open!==k&&S.mode==='play',key=show?LANG+k:'';
   if(vEnterEl.dataset.key===key)return;vEnterEl.dataset.key=key;vEnterEl.hidden=!show;vEnterEl.dataset.k=k||'';
-  if(show)vEnterEl.textContent=k==='gate'?'🚪 '+T('vil.gate'):'🏠 '+T('vil.enter',T('vil.'+k));
+  if(show){const g=k==='gate';vEnterEl.innerHTML='<span class="ni" aria-hidden="true">'+(g?'🚪':'🏠')+'</span>'+T(g?'ctx.out':'ctx.enter');vEnterEl.setAttribute('aria-label',g?T('vil.gate'):T('vil.enter',T('vil.'+k)))}
 }
 // נגיעה קצרה בקנבס, בלי לגרור: איזה מבנה (או השער) נמצא שם. האזור כולל את הגג ואת השלט שמתחת
 function vTapAt(cx,cy){

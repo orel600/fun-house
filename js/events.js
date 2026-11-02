@@ -8,8 +8,8 @@
 const EVENTS={
   first:45,every:[80,130],            // השני הראשון אחרי כמה שניות בעולם, ואחר כך כל כמה שניות (בין-לבין)
   dist:[300,480],                     // כמה רחוק מהשחקן האירוע קורה
-  wave:{type:'grunt',n:6,r:90,dur:60,loot:{coins:[20,35],iron:[2,4]}},
-  cart:{dur:50,reach:60,loot:{coins:[25,50],wood:[6,10],stone:[6,10],cloth:[2,4]}},
+  wave:{type:'grunt',n:6,r:90,dur:60,loot:{coins:[10,18],iron:[2,4]}},
+  cart:{dur:50,reach:60,loot:{coins:[12,24],wood:[6,10],stone:[6,10],cloth:[2,4]}},
   rain:{dur:10,every:0.8,r:220,pool:['stone','copper','iron','silver']},
   col:{wave:'#EF4E57',cart:'#F4C74F',rain:'#C7A6FF'}
 };
@@ -71,7 +71,8 @@ function eventsScreen(ox,oy){
 // אויבי הגל: רודפים אחרי השחקן, בלי בית (wFoes ב-world.js)
 function evFoeMove(e,dt){
   const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;
-  if(d<600){e.x+=dx/d*e.speed*slowK(e)*dt;e.y+=dy/d*e.speed*slowK(e)*dt}
+  if(foeAi(e,dt,d)){foeAiTail(e,dt);return}   // מקיפים מכל הצדדים (foeai.js)
+  const busy=strikeTick(e,dt,d);   // מכה עם הכנה, כמו שאר האויבים בעולם (strike.js), ולא נזק במגע
+  if(d<600&&!busy){e.x+=dx/d*e.speed*slowK(e)*dt;e.y+=dy/d*e.speed*slowK(e)*dt}
   e.x+=e.kx*dt;e.y+=e.ky*dt;const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
-  if(d<e.r+P.r-3)hurt(e.dmg);
 }

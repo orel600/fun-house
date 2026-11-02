@@ -16,6 +16,9 @@ const GEAR={
   // חפצים מסתובבים: הסוג והאייקון במסך הציוד. מה כל סוג עושה בזירה: ORBIT ב-orbit.js
   orbit:{attack:'🔥',defense:'🛡️',control:'❄️',support:'💚',luck:'🍀'},
   /* הפריטים. slot: weapon / acc / boots / orbit. נעליים נותנות מהירות (speed). tier: מספר ב-tiers. w: סוג הנשק ב-WEAPONS (weapons.js): איך הוא תוקף. איתו מתחילים את הריצה.
+     חוק הנדירות (ניר, 1.11.2026: "נעליים נדירות גרועות מרגילות"): בכל משבצת, כל פריט בשכבה מסוימת שווה (gScore) לפחות פי ladder
+     מהפריט הכי חזק בשכבה שמתחתיו (בערך +25–35% לסטט הראשי, או סטט שני ששווה יותר). מתקנים את המספרים כאן, לא בקוד.
+     gLadder מוצא הפרות, tools/gear-audit.js מדפיס את כולם, ו-check.js נכשל כשיש הפרה. חפצים מסתובבים מחוץ לחוק: כל סוג עושה משהו אחר
      look: איך הפריט נראה, כדי שכל שדרוג ייראה. tint צבע, glow זוהר, model המודל בתלת-ממד (w_<שם> מ-Fantasy Weapons, והחומר לפי tier) */
   items:{
     oakSword:   {slot:'weapon',tier:0,w:'sword',icon:'🗡️',stats:{sdmg:10},look:{model:'w_sword_A'}},
@@ -26,20 +29,20 @@ const GEAR={
     goldBow:    {slot:'weapon',tier:3,w:'bow',icon:'🏹',stats:{gdmg:60,magnet:20},look:{model:'w_bow_B_withString',glow:C.gold}},
     oakStaff:   {slot:'weapon',tier:0,w:'staff',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'w_staff_B'}},   // הנשק של הקוסם: קסם שמתביית
     boneCharm:  {slot:'acc',tier:0,icon:'🦴',stats:{hp:15}},
-    ironRing:   {slot:'acc',tier:1,icon:'💍',stats:{regen:0.5}},
-    starterBoots:{slot:'boots',tier:0,type:'boots',icon:'👟',stats:{speed:10}},   // הפרס של הקווסט הראשון של ראש הכפר (quests.js)
-    swiftBoots: {slot:'boots',tier:2,type:'boots',icon:'👢',stats:{speed:8}},
+    ironRing:   {slot:'acc',tier:1,icon:'💍',stats:{regen:1}},
+    starterBoots:{slot:'boots',tier:0,type:'boots',icon:'👟',stats:{speed:8}},   // הפרס של הקווסט הראשון של ראש הכפר (quests.js)
+    swiftBoots: {slot:'boots',tier:2,type:'boots',icon:'👢',stats:{speed:13}},
     goldAmulet: {slot:'acc',tier:3,icon:'📿',stats:{hp:30,magnet:30},look:{glow:C.gold}},
     crown:      {slot:'acc',tier:4,icon:'👑',stats:{hp:40,sdmg:15,gdmg:15},look:{glow:'#FF6FB5'}},
     // סטים (sets.js): שניים או ארבעה חלקים מאותו סט נותנים בונוס. השומר האבן: מקרוב ועמיד. צייד הסערה: מרחוק ומהיר
     wardenHammer:{slot:'weapon',tier:1,w:'hammer',set:'warden',icon:'🔨',stats:{sdmg:22},look:{model:'w_hammer_B'}},
-    wardenRing: {slot:'acc',tier:1,set:'warden',icon:'💍',stats:{hp:15}},
-    wardenCharm:{slot:'acc',tier:1,set:'warden',icon:'🪨',stats:{hp:10,regen:0.3}},
-    wardenBoots:{slot:'boots',tier:1,type:'boots',set:'warden',icon:'🥾',stats:{speed:5,hp:10}},
+    wardenRing: {slot:'acc',tier:1,set:'warden',icon:'💍',stats:{hp:20}},
+    wardenCharm:{slot:'acc',tier:1,set:'warden',icon:'🪨',stats:{hp:12,regen:0.4}},
+    wardenBoots:{slot:'boots',tier:1,type:'boots',set:'warden',icon:'🥾',stats:{speed:7,hp:12}},
     stormBow:   {slot:'weapon',tier:2,w:'bow',set:'storm',icon:'🏹',stats:{gdmg:35},look:{model:'w_bow_B_withString',glow:'#C7A6FF'}},
-    stormRing:  {slot:'acc',tier:2,set:'storm',icon:'💍',stats:{gdmg:8}},
+    stormRing:  {slot:'acc',tier:2,set:'storm',icon:'💍',stats:{gdmg:11}},
     stormFeather:{slot:'acc',tier:2,set:'storm',icon:'🪶',stats:{speed:4,magnet:15}},
-    stormBoots: {slot:'boots',tier:2,type:'boots',set:'storm',icon:'👢',stats:{speed:10}},
+    stormBoots: {slot:'boots',tier:2,type:'boots',set:'storm',icon:'👢',stats:{speed:13}},
     emberOrb:   {slot:'orbit',tier:0,type:'attack'},
     stoneOrb:   {slot:'orbit',tier:0,type:'defense'},
     frostOrb:   {slot:'orbit',tier:0,type:'control'},
@@ -84,6 +87,11 @@ const GEAR={
      משבצת חדשה (למשל מגפיים) נכנסת לאחת הרשימות. drag: כמה פיקסלים זזים לפני שלחיצה הופכת לגרירה.
      hold: באצבע, בתוך התרמיל שנגלל: כמה מילישניות מחזיקים לפני שגוררים. תזוזה לפני כן היא גלילה, והפריט לא קופץ (אוראל, 1.11.2026) */
   doll:{start:['weapon'],end:['acc','boots'],under:['orbit']},
+  ladder:1.25,
+  /* התרמיל (ניר, 1.11.2026: "הכל מרגיש בלגן"): מסננים לפי משבצת בראש התרמיל, באותו סדר שבו הפריטים ממוינים (ואחר כך נדירות וחוזק).
+     sell: כמה מטבעות מקבלים על פריט חלש ב"למכור חלשים", לפי שכבה. רק שכבות שכתובות כאן נמכרות (רגיל ולא שכיח) */
+  filter:{weapon:'⚔️',boots:'👢',acc:'💍',orbit:'✨'},
+  sell:{0:6,1:15},
   drag:8,hold:220
 };
 
@@ -105,6 +113,16 @@ const GEAR_PIC={oakSword:1,ironSword:1,silverBlade:1,oakBow:1,ironBow:1,goldBow:
 const gPic=id=>GEAR_PIC[gBase(id)]?'<img class="ri" src="icons/ui/gear/'+gBase(id)+'.png" alt="">':gIcon(id);
 // כמה הפריט שווה, כדי לדעת אם החלפה היא שיפור. חומר טוב יותר שובר שוויון
 function gScore(id){const it=gItem(id);if(!it)return 0;let n=it.tier*0.01;const s=gStats(id);for(const k in s)n+=s[k]*GEAR.stats[k].w;return n}
+// חוק הנדירות (GEAR.ladder): בכל משבצת, הפריט הכי חלש בכל שכבה מול הכי חזק בשכבה הקודמת שיש בה פריטים. מחזיר רק הפרות
+function gLadder(){
+  const by={},bad=[];
+  for(const id in GEAR.items){const it=GEAR.items[id];if(it.slot==='orbit')continue;((by[it.slot]=by[it.slot]||{})[it.tier]=by[it.slot][it.tier]||[]).push(id)}
+  for(const slot in by){const ts=Object.keys(by[slot]).map(Number).sort((a,b)=>a-b);
+    for(let i=1;i<ts.length;i++){const lo=by[slot][ts[i-1]],hi=by[slot][ts[i]],sc=id=>gScore(id)-GEAR.items[id].tier*0.01;
+      const top=lo.reduce((a,b)=>sc(b)>sc(a)?b:a),weak=hi.reduce((a,b)=>sc(b)<sc(a)?b:a),k=sc(weak)/Math.max(1e-9,sc(top));
+      if(k<GEAR.ladder)bad.push({slot,weak,top,k:Math.round(k*100)/100})}}
+  return bad;
+}
 const heroLv=()=>SAVE.hero.level||1;
 const gOrbOpen=()=>GEAR.slots.orbit.filter(l=>heroLv()>=l).length;
 const gOpen=slot=>slot==='weapon'?1:slot==='orbit'?gOrbOpen():GEAR.slots[slot];
@@ -193,9 +211,11 @@ const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gPic(id)+
 /* ---- המסך: התרמיל בצד אחד, הבובה עם המשבצות באמצע, והפרטים בצד השני. נפתח מכפתור 🎒 בכפר ובזירה.
    גוררים פריט מהתרמיל למשבצת כדי ללבוש, ממשבצת לתרמיל כדי להוריד, ובין התרמיל למחסן כשעומדים ליד המחסן.
    לחיצה בוחרת ומראה פרטים והשוואה, עם כפתור: הדרך החלופית לגרירה ---- */
-const GUI={sel:null,tab:'items'};   // sel: מה נבחר: {id} מהתרמיל, {slot,i} ממשבצת, או {sid} מהמחסן. tab: הלשונית בתרמיל
+/* שני דפים בחלון (ניר, 1.11.2026: "עדיין בלגן", ומחקר של Diablo Immortal, Archero 2, Torchlight Infinite ו-Genshin):
+   page 'gear': הבובה עם המשבצות, התרמיל הרחב והפרטים. page 'char': הנקודות, הבניות ועץ הסקילים, ברוחב מלא */
+const GUI={sel:null,tab:'items',page:'gear'};   // sel: מה נבחר: {id} מהתרמיל, {slot,i} ממשבצת, או {sid} מהמחסן. tab: הלשונית בתרמיל
 // נפתח מכל מקום: מהכפר ומהזירה. בזירה הריצה עוצרת, כמו במסך השדרוג
-function gearOpen(){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;GUI.view=null;$('ovGear').hidden=false;gearDraw()}
+function gearOpen(page){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;GUI.view=null;GUI.sell=false;GUI.page=page==='char'?'char':'gear';$('ovGear').hidden=false;gearDraw()}
 function gearClose(){gDragEnd();$('ovGear').hidden=true;if(S.mode==='gear')S.mode='play'}
 // המחסן פתוח במסך רק כשעומדים לידו בכפר, והוא בנוי
 const gStashOn=()=>!!(S.vil&&S.vil.near==='stash'&&vLv('stash')>0);
@@ -222,17 +242,65 @@ function gTile(id,attrs,extra){
   const glow=(it.look||{}).glow;
   return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gPic(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+(gPow(id)?'<b class="gpw">✦</b>':'')+extra+'</button>';
 }
+// תא בתרמיל: ▲/▼ מול מה שלבוש, ונקודה לחדש
+function gBagTile(k,n,attrs){
+  const m=gMark(k),x=(m?'<i class="gmk '+(m>0?'up':'down')+'" aria-hidden="true">'+(m>0?'▲':'▼')+'</i>':'')+(gIsNew(k)?'<i class="gnew" aria-hidden="true"></i>':'');
+  return gTile(k,attrs,(n>1?'<small>×'+shortN(n)+'</small>':'')+x);
+}
 // תא של משאב: אייקון, כמה יש, ומסגרת בצבע הנדירות
 const gResTile=(r,n,attrs)=>'<button class="gtile res" '+attrs+' style="--rar:'+gRarCol(r)+'" aria-label="'+resName(r)+' '+n+'">'+resPic(r)+'<small>×'+shortN(n)+'</small></button>';
 const gCell=(k,n,attrs)=>gItem(k)?gTile(k,attrs,n>1?'<small>×'+shortN(n)+'</small>':''):gResTile(k,n,attrs);
 // מה בתרמיל בלשונית הנוכחית: items לפריטים, או משפחת משאבים (RES.fams)
+// items: כל הפריטים. weapon/boots/acc/orbit: רק משבצת אחת (GEAR.filter). ממוין לפי משבצת, נדירות מלמעלה, ואז חוזק
+const gIsItemTab=tab=>tab==='items'||!!GEAR.filter[tab];
 function gBagKeys(tab){
-  if(tab==='items'){const order=['weapon','acc','boots','orbit'];return Object.keys(SAVE.bag).filter(gItem)
-    .sort((a,b)=>order.indexOf(gItem(a).slot)-order.indexOf(gItem(b).slot)||gItem(b).tier-gItem(a).tier)}
+  if(gIsItemTab(tab)){const order=Object.keys(GEAR.filter);return Object.keys(SAVE.bag).filter(k=>gItem(k)&&SAVE.bag[k]>0&&(tab==='items'||gItem(k).slot===tab))
+    .sort((a,b)=>order.indexOf(gItem(a).slot)-order.indexOf(gItem(b).slot)||gItem(b).tier-gItem(a).tier||gScore(b)-gScore(a))}
   return resFam(tab).filter(r=>SAVE.bag[r]>0);
 }
-// הלשוניות: פריטים תמיד, וכל משפחת משאבים שיש בה משהו. המטבעות למעלה, ליד הכותרת
-const gTabs=()=>['items',...Object.keys(RES.fams).filter(f=>f!=='coins'&&resFam(f).some(r=>SAVE.bag[r]>0))];
+// הלשוניות: "הכל" ומסנן לכל משבצת, וכל משפחת משאבים שיש בה משהו. המטבעות למעלה, ליד הכותרת
+const gTabs=()=>['items',...Object.keys(GEAR.filter),...Object.keys(RES.fams).filter(f=>f!=='coins'&&resFam(f).some(r=>SAVE.bag[r]>0))];
+const gTabLabel=f=>f==='items'?T('gear.tab.all'):GEAR.filter[f]||T('fam.'+f);
+/* ---- סימנים על פריט בתרמיל: ▲ ירוק אם הוא חזק ממה שלבוש במשבצת שלו, ▼ אדום אם חלש, ונקודה לפריט שעוד לא פתחו ---- */
+// מה שלבוש במשבצת שהפריט ייכנס אליה (הכי חלש מבין המשבצות), כדי להשוות
+const gVsWorn=it=>gGet(it.slot,gTarget(it));
+function gMark(k){const it=gItem(k);if(!it||it.slot==='orbit')return 0;const o=gVsWorn(it);if(!o)return 1;const d=gScore(k)-gScore(o);return Math.abs(d)<0.05?0:d>0?1:-1}
+// פריטים שכבר ראו: SAVE.gseen. בפעם הראשונה כל מה שכבר בתרמיל נחשב ראוי, כדי ששמירה ישנה לא תתמלא נקודות
+function gSeen(){if(!SAVE.gseen){SAVE.gseen={};for(const k in SAVE.bag)if(gItem(k))SAVE.gseen[k]=1}return SAVE.gseen}
+const gIsNew=k=>!!gItem(k)&&!gSeen()[k];
+/* ---- ללבוש הכי טוב: לכל משבצת (בלי חפצים מסתובבים), הפריט הכי חזק מהתרמיל, אם הוא חזק ממה שלבוש.
+   נשק: רק מאותו צד (מקרוב או מרחוק) כמו מה שביד, כדי שלוחם לא יקבל פתאום קשת ---- */
+function gBestPlan(){
+  const out=[],bag=Object.assign({},SAVE.bag),worn={weapon:[SAVE.gear.weapon],acc:[...SAVE.gear.acc],boots:[...SAVE.gear.boots]};
+  for(const slot of ['weapon','boots','acc']){const n=gOpen(slot),cur=worn[slot],use=slot==='weapon'&&gItem(cur[0])&&gItem(cur[0]).w?wUse(cur[0]):null;
+    for(;;){const ks=Object.keys(bag).filter(k=>bag[k]>0&&gItem(k)&&gItem(k).slot===slot&&(!use||wUse(k)===use));if(!ks.length)break;
+      const k=ks.reduce((a,b)=>gScore(b)>gScore(a)?b:a);let i=-1;
+      for(let j=0;j<n;j++){if(!gItem(cur[j])){i=j;break}if(i<0||gScore(cur[j])<gScore(cur[i]))i=j}
+      if(i<0||gItem(cur[i])&&gScore(k)<=gScore(cur[i])+0.05)break;
+      bag[k]--;if(gItem(cur[i]))bag[cur[i]]=(bag[cur[i]]||0)+1;cur[i]=k;out.push({id:k,slot,i})}}
+  return out;
+}
+function gDoBest(){
+  const plan=gBestPlan();if(!plan.length)return 0;
+  const before=gearStats(),worn=gearWorn();for(const p of plan)gearEquip(p.id,p.slot,p.i);
+  gearLive(before);dollWantCheer=true;const p=plan[plan.length-1];GUI.sel={slot:p.slot,i:p.i};GUI.pop=p;
+  if(!setCheck(worn))celebrate(P.x,P.y-20,'gear',gIcon(p.id));
+  return plan.length;
+}
+/* ---- למכור חלשים: רק פריטים רגילים ולא שכיחים (GEAR.sell) שחלשים ממה שלבוש (▼), בלי שדרוג ובלי כוח.
+   מסט נשאר עותק אחד, בשביל הבונוס. אישור בתוך החלון, לא confirm() ---- */
+function gSellList(){
+  const o={};
+  for(const k in SAVE.bag){const it=gItem(k),n=SAVE.bag[k];if(!it||!(n>0)||GEAR.sell[it.tier]==null||k!==gBase(k)||gMark(k)!==-1)continue;
+    const m=it.set?n-1:n;if(m>0)o[k]=m}
+  return o;
+}
+const gSellCoins=l=>Object.keys(l).reduce((t,k)=>t+GEAR.sell[gItem(k).tier]*l[k],0);
+function gDoSell(){
+  const l=gSellList(),c=gSellCoins(l);if(!c)return 0;
+  for(const k in l)bagTake(k,l[k]);bagAdd('coins',c);saveNow();sfx('coin');banner(T('gear.sold',c),C.gold);
+  return c;
+}
 
 function gSlotHtml(s){
   const n=s==='weapon'?1:s==='orbit'?GEAR.slots.orbit.length:GEAR.slots[s],sel=GUI.sel;let h='';
@@ -252,23 +320,36 @@ function gearDraw(){
   dollShow();   // הדמות בתלת-ממד במקום האימוג'י, עם מה שלבוש (doll3d.js)
   // התרמיל: לשוניות ורשת
   const tabs=gTabs();if(!tabs.includes(GUI.tab))GUI.tab='items';
-  $('gTabs').innerHTML=tabs.map(f=>'<button data-tab="'+f+'"'+(GUI.tab===f?' aria-pressed="true"':'')+'>'+T(f==='items'?'gear.tab.items':'fam.'+f)+'</button>').join('');
-  const ks=gBagKeys(GUI.tab);
-  $('gItems').innerHTML=ks.length?ks.map(k=>gCell(k,SAVE.bag[k],'data-id="'+k+'"'+(sel&&sel.id===k?' aria-pressed="true"':''))).join('')
-    :'<p class="dim">'+T(GUI.tab==='items'?'gear.noItems':'gear.noRes')+'</p>';
+  $('gTabs').innerHTML=tabs.map(f=>'<button data-tab="'+f+'"'+(GEAR.filter[f]?' class="gf" aria-label="'+T('gear.slot.'+f)+'"':'')+(GUI.tab===f?' aria-pressed="true"':'')+'>'+gTabLabel(f)+'</button>').join('');
+  const ks=gBagKeys(GUI.tab),itm=gIsItemTab(GUI.tab);
+  $('gItems').innerHTML=ks.length?ks.map(k=>(itm?gBagTile:gCell)(k,SAVE.bag[k],'data-id="'+k+'"'+(sel&&sel.id===k?' aria-pressed="true"':''))).join('')
+    :'<p class="dim">'+T(itm?'gear.noItems':'gear.noRes')+'</p>';
+  // ללבוש הכי טוב ולמכור חלשים: מתחת לרשת, רק בפריטים
+  const best=gBestPlan().length,sc=gSellCoins(gSellList());
+  $('gActs').hidden=!itm;
+  $('gActs').innerHTML='<button class="vbtn" data-act="best" title="'+T('gear.bestT')+'"'+(best?'':' disabled')+'>'+T('gear.best')+'</button><button class="vbtn ghost" data-act="sell" title="'+T('gear.sellT')+'"'+(sc?'':' disabled')+'>'+T('gear.sellWeak')+'</button>';
   // המחסן: רק כשעומדים לידו
   const st=gStashOn(),sk=Object.keys(SAVE.stash).filter(k=>SAVE.stash[k]>0&&stashIcon(k));
   $('gStash').hidden=!st;
   if(st)$('gStash').innerHTML='<span class="k">'+T('gear.stash',stashUsed(),stashCap())+'</span><div class="ggrid">'+
     (sk.length?sk.map(k=>gCell(k,SAVE.stash[k],'data-sid="'+k+'"'+(sel&&sel.sid===k?' aria-pressed="true"':''))).join(''):'<p class="dim">'+T('stash.empty')+'</p>')+'</div>';
   $('gDetail').innerHTML=gDetailHtml();
-  const tv=GUI.view==='tree';$('ovGear').querySelector('.gbody').hidden=tv;$('gTree').hidden=!tv;if(tv)$('gTree').innerHTML=treeHtml();   // עץ הסקילים (stats.js)
-  $('ovGear').classList.toggle('stv',!!$('gDetail').querySelector('.strows'));   // מסך הנקודות פתוח (stats.js)
+  // הדפים: ציוד, או דמות (הנקודות, stats.js). עץ הסקילים נפתח מדף הדמות ומחליף אותו
+  const ch=GUI.page==='char',tv=ch&&GUI.view==='tree',pts=stFree()+trFree();
+  $('gPages').innerHTML=['gear','char'].map(pg=>'<button data-page="'+pg+'"'+(GUI.page===pg?' aria-pressed="true"':'')+'>'+T('gear.pg.'+pg)+(pg==='char'&&pts?'<i class="gdot">'+pts+'</i>':'')+'</button>').join('');
+  $('ovGear').querySelector('.gbody').hidden=ch;$('gChar').hidden=!ch||tv;$('gTree').hidden=!tv;
+  if(ch&&!tv)$('gChar').innerHTML=statsHtml();if(tv)$('gTree').innerHTML=treeHtml();   // עץ הסקילים (stats.js)
+  $('ovGear').classList.toggle('stv',ch);
 }
 // הפרטים: שם בצבע הנדירות, נדירות וחומר, רמת Aging, סטטים, השוואה למה שלבוש, וכפתורים
 function gDetailHtml(){
+  if(GUI.sell){const l=gSellList(),ks=Object.keys(l);   // אישור למכירה, בתוך החלון: מה יימכר וכמה מקבלים
+    if(ks.length)return '<h3>'+T('gear.sellAsk',gSellCoins(l))+'</h3><div class="gsell">'+ks.map(k=>gCell(k,l[k],'disabled')).join('')+'</div>'+
+      '<div class="gbtns"><button class="vbtn" data-act="sellYes">'+T('gear.sellYes')+'</button><button class="vbtn ghost" data-act="sellNo">'+T('gear.sellNo')+'</button></div>';
+    GUI.sell=false}
   const sel=GUI.sel,k=sel&&(sel.id||sel.sid||gGet(sel.slot,sel.i)),n=!sel?0:sel.id?SAVE.bag[k]:sel.sid?SAVE.stash[k]:1;
-  if(!k||!n)return statsHtml()+'<p class="dim">'+T('gear.hint')+'</p>';   // בלי פריט: הרמה והנקודות (stats.js)
+  if(!k||!n){const t=gearStats();   // בלי פריט: מה כל הציוד שלבוש נותן יחד, והסבר קצר. הנקודות בדף "דמות"
+    return '<h3>'+T('gear.total')+'</h3><ul class="gstats">'+(Object.keys(t).filter(x=>GEAR.stats[x]&&t[x]).map(x=>'<li>'+gSign(x,t[x])+'</li>').join('')||'<li class="dim">—</li>')+'</ul><p class="dim ghint">'+T('gear.hint')+'</p>'}
   const it=gItem(k),col=gRarCol(k);
   let d='<div class="gdhead" style="--rar:'+col+'"><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
     '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
@@ -290,6 +371,7 @@ function gDetailHtml(){
 // לובשים, ואם זה שיפור: חגיגה על הדמות (עם הצליל שלה) והמשבצת קופצת
 function gDoEquip(id,slot,i){
   const before=gearStats(),worn=gearWorn(),r=gearEquip(id,slot,i);if(!r)return null;
+  gSeen()[id]=1;   // לבשו אותו: כבר לא חדש
   gearLive(before,id);GUI.sel={slot:r.slot,i:r.i};
   dollWantCheer=true;   // הדמות בחלון מריעה (doll3d.js)
   if(setCheck(worn))GUI.pop=r;   // מדרגה חדשה של סט (sets.js)
@@ -371,16 +453,22 @@ addEventListener('pointerup',e=>{
 addEventListener('pointercancel',e=>{if(GDRAG.src&&e.pointerId===GDRAG.pid)gDragEnd()});
 
 $('ovGear').addEventListener('click',e=>{
-  if(e.target.closest('.gfig')){GUI.sel=null;gRedraw();return}   // נגיעה בדמות: הנקודות שלה
+  if(e.target.closest('.gfig')){GUI.sel=null;GUI.page='char';GUI.view=null;gRedraw();return}   // נגיעה בדמות: הדף שלה (נקודות)
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.id==='gearClose'){gearClose();return}
   if(b.dataset.act==='stat'){statAdd(b.dataset.k);statBadge();gRedraw();return}
   if(b.dataset.act==='build'){statBuild(+b.dataset.i);statBadge();gRedraw();return}   // שתי בניות שמורות (stats.js)
+  if(b.dataset.page){GUI.page=b.dataset.page;GUI.view=null;GUI.sel=null;GUI.sell=false;gRedraw();return}
   if(b.dataset.act==='tree'||b.dataset.act==='back'){GUI.view=b.dataset.act==='tree'?'tree':null;GUI.sel=null;gRedraw();return}
   if(b.dataset.act==='learn'){treeLearn(b.dataset.b,b.dataset.id);statBadge();gRedraw();return}
   const a=b.dataset.act,sel=GUI.sel;
+  if(a!=='sellYes')GUI.sell=false;
   if(b.dataset.tab){GUI.tab=b.dataset.tab;GUI.sel=null}
-  else if(b.dataset.id)GUI.sel={id:b.dataset.id};
+  else if(a==='best'){if(!gDoBest())sfx('tap')}
+  else if(a==='sell'){GUI.sell=true;GUI.sel=null}
+  else if(a==='sellYes'){gDoSell();GUI.sell=false}
+  else if(a==='sellNo'){}
+  else if(b.dataset.id){GUI.sel={id:b.dataset.id};if(gIsNew(b.dataset.id)){gSeen()[b.dataset.id]=1;saveNow()}}
   else if(b.dataset.sid)GUI.sel={sid:b.dataset.sid};
   else if(b.dataset.slot)GUI.sel=gGet(b.dataset.slot,+b.dataset.i)?{slot:b.dataset.slot,i:+b.dataset.i}:null;
   else if(a==='equip')gDoEquip(sel.id);

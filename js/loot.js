@@ -11,6 +11,8 @@ const LOOT={
   elite:{chance:0.05,from:20,hp:3,r:1.3,xp:3,dmg:1.3,col:C.gold},
   // פיצוץ שלל: רגע נדיר בהריגה של אויב רגיל
   jackpot:{chance:0.004,orbs:30,table:{coins:[1,60],gold:[1,3],ruby:[0.4,1],sapphire:[0.4,1],bolt:[0.4,1],aqua:[0.4,1],amber:[0.4,1],star:[0.2,1]}},
+  // מטבעות בעולם הפתוח: פי כמה הסיכוי למטבעות בטבלת השלל של אויב רגיל (בזירה לא משתנה. שלל בטוח, סיכוי 1, כמו מבוקש, שומר ותיבה, לא משתנה). יעד: כ-300 בעשר הדקות הראשונות (המבקר, 1.11)
+  worldCoins:0.25,
   // הריגה ראשונה של כל סוג אויב היום: בונוס קטן ואבן שבורה
   firstKill:{coins:[1,10],rubyC:[0.25,1],sapphireC:[0.25,1],boltC:[0.25,1],aquaC:[0.25,1],amberC:[0.25,1]},
   // מזל עם הגנה: משלל בדרגה from ומעלה. כל החטאה מוסיפה step לסיכוי (כפול), עד max. נופל = מתאפס
@@ -42,7 +44,7 @@ function runGive(D,x,y){
   for(const r in D){
     const [ch,n,from]=D[r];if(from&&S.t<from)continue;
     const t=lootTier(r);if(t>=pf)hasRare=true;
-    if(Math.random()>=ch*(t>=pf?boost:1)*orbitLuck()*statLoot())continue;   // orbitLuck: חפץ מזל (orbit.js)
+    if(Math.random()>=ch*(t>=pf?boost:1)*orbitLuck()*statLoot()*(r==='coins'&&S.wd&&ch<1?LOOT.worldCoins:1))continue;   // orbitLuck: חפץ מזל (orbit.js)
     // נופל לרצפה ונאסף כשעוברים לידו (drops.js). בחדר הבונוס נכנס ישר לשלל
     if(S.room)runLoot()[r]=(runLoot()[r]||0)+n;else dropSpawn(r,n,x,y);got.push(r);top=Math.max(top,t);
     (S.drops||(S.drops=[0,0,0,0,0]))[t]+=n;
@@ -59,7 +61,7 @@ function lootKill(e){
   if(e.elite||e.champ){runGive(D,e.x,e.y);runGive(ETYPES[e.type].elite,e.x,e.y)}
   const key=e.isBoss?'boss':e.wanted?'wanted':e.type,dl=SAVE.daily;(S.killsBy||(S.killsBy={}))[key]=(S.killsBy[key]||0)+1;
   if(dl.day!==lootDay()){dl.day=lootDay();dl.first={}}
-  if(!dl.first[key]){dl.first[key]=1;S.firstKills=(S.firstKills||0)+1;floatText(e.x,y-60,T('loot.first',T('foe.'+key)),C.gold,14);runGive(LOOT.firstKill,e.x,e.y)}
+  if(!dl.first[key]){dl.first[key]=1;S.firstKills=(S.firstKills||0)+1;if(feedOn())feedAdd('☀️',T('loot.first',T('foe.'+key)),C.gold,'first:'+key);else floatText(e.x,y-60,T('loot.first',T('foe.'+key)),C.gold,14);runGive(LOOT.firstKill,e.x,e.y)}
   lootGear(e);homeKill(e);   // חפץ ביסוד של פנס שדולק (homecoming.js)
   const J=LOOT.jackpot;
   if(!e.isBoss&&!e.wanted&&Math.random()<J.chance){
@@ -76,7 +78,7 @@ function lootGear(e,force){
   const ch=R.chance*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck()*statLoot();
   if(!force&&Math.random()>=ch){SAVE.gearPity=(SAVE.gearPity||0)+1;return null}
   SAVE.gearPity=0;const id=gRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;
-  dropSpawn(id,1,e.x,e.y);banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id),dropTier(id).col);
+  dropSpawn(id,1,e.x,e.y);if(feedOn())feedGear(id);else banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id),dropTier(id).col);   // בעולם ובכפר: בפיד (feed.js)
   celebrate(e.x,e.y,'loot'+Math.max(2,dropRar(id)),gIcon(id));
   return id;
 }

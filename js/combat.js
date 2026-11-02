@@ -1,5 +1,5 @@
 /* קרב: פגיעה, נזק, החלפת נשק. סוגי הנזק ומה שהם עושים ב-dmg.js, וסוגי הנשק (חרב, קשת, מטה) ב-weapons.js */
-const HITFX={floats:70,parts:450,crit:0.12,critMul:2.5};   // תקרה לטקסט צף ולניצוצות בשביל הטלפון, וסיכוי ועוצמה של מכה קריטית
+const HITFX={floats:70,parts:450,crit:0.12,critMul:2.5,hudFade:26};   // hudFade: בזירה, טקסט צף נעלם בהדרגה ב-26 הפיקסלים שמתחת לממשק העליון, כדי לא לכסות רמה, שעון ופס (render.js)   // תקרה לטקסט צף ולניצוצות בשביל הטלפון, וסיכוי ועוצמה של מכה קריטית
 function nearest(maxD){let b=null,bd=maxD;for(const e of enemies){if(e.dead)continue;const d=Math.hypot(e.x-P.x,e.y-P.y)-e.r;if(d<bd){bd=d;b=e}}return b}
 // במה ההתקפה האוטומטית מכוונת: האויב הקרוב, או מקור משאבים (nodes.js) כשעומדים לידו והוא קרוב יותר
 // בעולם הפתוח (ניר, 31.10.2026): קודם המבוקש, אחריו בוס, אחריו כל אויב, ורק כשאין אויב בטווח מקורות משאבים. בזירה כמו קודם (התחום של אוראל)
@@ -23,11 +23,11 @@ function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
   const m=e.mult[t]??1;const crit=Math.random()<HITFX.crit+orbitCrit()+Math.min(STATS.cap.crit,P.crit||0)/100;   // ונקודות מזל (stats.js)   // חפץ מזל מוסיף (orbit.js)
   const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?HITFX.critMul:1)*statDmgFx(w,e);   // עץ הסקילים (stats.js)
   statOnDamage(d);
-  e.hp-=d;e.flash=0.09;sfx('hit');heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
+  e.hp-=d;e.flash=0.09;sfx('hit',jSnd(m,crit));heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
   if(!e.isBoss&&!e.node){const kb=(w==='sword'?150:55)*(m>1?1.4:1)/(e.big||1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   const col=m>1?dtCol(t):m<1?C.dim:C.chalk,J=juiceHit(e,d,m,crit,t,ang);   // אפקטים של קרב בעולם (juice.js)
-  if(!J)floatText(e.x+rand(-8,8),e.y-e.r-8,big(d)+(crit?'!':''),col,(m>1?21:m<1?12:15)*(crit?1.45:1),true,crit);
-  if(m<1&&!e.told){e.told=true;floatText(e.x,e.y-e.r-26,T('immune'),C.dim,13)}
+  if(!J)dmgFloat(e,d,col,(m>1?21:m<1?12:15)*(crit?1.45:1),crit);   // מכות רצופות מתמזגות למספר אחד (arenaui.js)
+  if(m<1&&!e.told&&!J){e.told=true;floatText(e.x,e.y-e.r-26,T('immune'),C.dim,13)}   // בעולם ובכפר המספר עצמו אומר "עמיד" (juice.js)
   if(!J)sparks(e.x,e.y,col,m>1?8:3);
   if(m>1&&w==='sword'&&!J)S.hitstop=Math.max(S.hitstop,0.03);   // בעולם העצירה ב-juice.js
   onHit(e,d,base,w,t,ang,chained);
@@ -37,7 +37,7 @@ function kill(e){
   e.dead=true;S.kills++;sfx('death');heroCount('kills');if(e.isBoss)heroCount('bosses');
   lootKill(e);bookKill(e);juiceKill(e);   // juiceKill: עשן ועצירה בעולם (juice.js)   // שלל לכפר (loot.js), וספר ההרפתקאות (book.js)
   statKillXp(e);statOnKill(e);affixOnKill(e);   // XP לדמות בעולם הפתוח, וזעם (stats.js)
-  challengeKill(e);tierKill(e);   // אתגר יומי (challenge.js), דרגת עולם (tiers.js)
+  challengeKill(e);tierKill(e);huntKill(e);streakKill();ultKill(e);shopKill(e);   // רצף הריגות (streak.js), אולטימייט (ult.js), זהב לחנות הריצה (shop.js)   // אתגר יומי (challenge.js), דרגת עולם (tiers.js)
   questEvent('kill',e.isBoss?'boss':e.wanted?'wanted':e.warden?'warden':e.type);
   if(e.isBoss){bossDown(e);return}
   if(e.wanted){wantedDown(e);return}
@@ -82,10 +82,11 @@ function attack(dt){
     }
   }
 }
-// מחליפים רק בין נשקים שבאמת לבושים (wHeld ב-weapons.js). עם נשק אחד אין מה להחליף, והכפתור מוסתר
+// לובשים את הנשק הכי חזק בתרמיל מהצד השני (wHeld ב-weapons.js), והקודם חוזר לתרמיל. כמו בחלון הציוד: הסטטים מתחלפים מיד (gearLive).
+// אין בתרמיל נשק מהצד השני: הכפתור מוסתר
 function swapWeapon(){
   const held=wHeld();if(S.mode!=='play'||held.length<2)return;
-  wEquip(held[(held.indexOf(P.wid)+1)%held.length]);
+  const before=gearStats();if(!gearEquip(held[1],'weapon'))return;gearLive(before);
   if(P.swapLvl>0)P.swapBuff=1.5;
   sparks(P.x,P.y-8,dtCol(P.dt[P.weapon]),10,140);
 }
@@ -94,5 +95,8 @@ const ICON={sword:'<path d="M20 4 9.5 14.5M20 4h-4M20 4v4M7 12l5 5M8.5 15.5 4 20
   gun:'<path d="M5 9Q16 8 15 19"/><path d="M5 9 15 19" stroke-width="1.2"/><path d="M7 17 20 4M20 4h-5M20 4v5M7 17H4M7 17v3"/>',
   staff:'<path d="M5 20 15 9"/><circle cx="17.5" cy="6.5" r="3"/>'};
 // הכפתור בצבע של סוג הנזק של הנשק שביד
+// כל פריים (render.js): נשק חדש נכנס לתרמיל או יצא ממנו, אז הכפתור מופיע או נעלם. בודקים רק כשהתרמיל השתנה
+let swapBag='';
+function swapCheck(){if(!P||!SAVE)return;const k=SAVE.gear.weapon+'|'+wHeld().join(',');if(k!==swapBag){swapBag=k;updateSwapBtn()}}
 function updateSwapBtn(){const w=P?P.weapon:'sword',t=P?P.dt[w]:'physical';const b=$('swap');b.hidden=!P||wHeld().length<2;
   b.classList.toggle('gun',w==='gun');b.style.setProperty('--dt',dtCol(t));$('ico').innerHTML=ICON[P&&P.wt]||ICON[w];$('swaplbl').textContent=P?wLabel(w):T('w.'+w)}

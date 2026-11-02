@@ -12,7 +12,11 @@ const WMAP={
   island:0.3,        // גודל אי, ביחס למרחק בין איים
   pad:0.62,          // שוליים סביב כל האיים, ביחס למרחק בין איים
   dot:{player:7,node:2.4,gate:7,npc:5,lantern:7},   // גדלים במפה של האזור, בפיקסלים
-  fog:'#0E1220'      // הצבע של אזור שעוד לא ביקרו בו
+  fog:'#0E1220',     // הצבע של אזור שעוד לא ביקרו בו
+  stretch:2.4,
+  turn:1.4,          // אם סיבוב של רבע (שרשרת האיים לרוחב) מגדיל את המפה פי turn לפחות, מסובבים. בטלפון לרוחב החלון נמוך, והשרשרת עולה למעלה       // כמה מותר למתוח את המפה לרוחב (או לגובה) כדי למלא את החלון, כשהאיים בטור צר
+  // תוויות (שם האזור ומונה הסודות): מחפשים מקום פנוי מתחת, מעל, בצדדים ובאלכסון, ואם אין, רחוק יותר עם קו קצר. בלי מקום בכלל: גופן קטן יותר
+  label:{name:13,count:12,min:10,gap:5,far:1.9,pad:3}
 };
 
 const WMS=()=>SAVE.wmap||(SAVE.wmap={seen:{}});
@@ -38,6 +42,7 @@ function wmGraph(){
   // מה מוצג: אזורים שביקרת בהם, ושכנים שהדרך אליהם כבר נפתחה (wPathOpen ב-world.js) כצללית
   const seen=all.filter(r=>pos[r]&&wmSeen(r)),show=new Set(seen);
   for(const e of edges)if(pos[e.a]&&pos[e.b]&&(seen.includes(e.a)&&seen.includes(e.b)||seen.includes(e.a)&&wPathOpen(e.p))){show.add(e.a);show.add(e.b)}
+  for(const r of all)if(pos[r])show.add(r);   // כל האזורים: מה שעוד לא התגלה בצללית עם ?, כדי שתהיה תחושה שיש עוד לגלות (המבקר, worldmap-locked-tiers)
   // כל שביל פעם אחת, גם כשיש דרך בשני הכיוונים
   const one=[],key=e=>[e.a,e.b].sort().join('|');
   for(const e of edges)if(show.has(e.a)&&show.has(e.b)&&!one.some(f=>key(f)===key(e)))one.push(e);
@@ -54,13 +59,58 @@ function wmCanvas(id){
   const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,w,h);x.direction=DIR;x.textAlign='center';x.textBaseline='middle';
   return{x,w,h};
 }
-function wmText(x,s,px,py,size,col){x.font='800 '+size+'px Heebo, system-ui, sans-serif';x.lineWidth=3;x.strokeStyle='#000a';x.strokeText(s,px,py);x.fillStyle=col;x.fillText(s,px,py)}
+function wmText(x,s,px,py,size,col){x.font='800 '+size+'px Heebo, system-ui, sans-serif';x.lineWidth=3;x.lineJoin='round';   // round: בלי קוצים שחורים מעל M ו-W
+  x.strokeStyle='#000a';x.strokeText(s,px,py);x.fillStyle=col;x.fillText(s,px,py)}
+const wmFont=size=>'800 '+size+'px Heebo, system-ui, sans-serif';
+/* מסדר תוויות בלי שיעלו זו על זו. items: {x,y,r (רדיוס של מה שמסומן), lines:[[טקסט,גודל,צבע]...]}. avoid: עיגולים {x,y,r} שאסור לכסות.
+   לכל תווית מנסים מקומות סביב הנקודה, ובוחרים את הראשון בלי חפיפה (או עם הכי מעט). מחזיר את המלבנים, ומונה כמה חפיפות נשארו */
+function wmLabels(x,items,avoid,w,h){
+  const L=WMAP.label,out=[],box=(cx,cy,bw,bh)=>({x0:cx-bw/2,y0:cy-bh/2,x1:cx+bw/2,y1:cy+bh/2}),
+    ov=(a,b)=>Math.max(0,Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0))*Math.max(0,Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0)),
+    ovC=(a,c)=>{const nx=Math.max(a.x0,Math.min(c.x,a.x1)),ny=Math.max(a.y0,Math.min(c.y,a.y1)),d=c.r-Math.hypot(c.x-nx,c.y-ny);return d>0?d*d:0},
+    outB=a=>Math.max(0,-a.x0)*(a.y1-a.y0)+Math.max(0,a.x1-w)*(a.y1-a.y0)+Math.max(0,-a.y0)*(a.x1-a.x0)+Math.max(0,a.y1-h)*(a.x1-a.x0);
+  let bad=0;
+  for(const it of items){
+    let best=null;
+    // ניסיונות לפי הסדר: גודל מלא, שורה אחת (שם · מונה), שם קצר (short), ואז גופן קטן יותר
+    const one=ls=>ls.length>1?[[ls.map(l=>l[0]).join(' · '),ls[0][1],ls[0][2]]]:ls,sh=it.short?[[it.short,it.lines[0][1],it.lines[0][2]]].concat(it.lines.slice(1)):null;
+    const tries=[[it.lines,0],[one(it.lines),0]].concat(sh?[[sh,0],[one(sh),0]]:[],[[it.lines,1],[one(it.lines),1]],sh?[[sh,1],[one(sh),1],[one(sh),2],[one(sh),3]]:[[one(it.lines),2],[one(it.lines),3]]);
+    for(let ti=0;ti<tries.length;ti++){const [src,shrink]=tries[ti],pen=ti*60;
+      const lines=src.map(([t,sz,c])=>[t,Math.max(L.min,sz-shrink),c]);
+      let bw=0,bh=0;for(const [t,sz] of lines){x.font=wmFont(sz);bw=Math.max(bw,x.measureText(t).width);bh+=sz+3}
+      bw+=L.pad*2;bh+=L.pad;
+      const g=L.gap,rx=it.r+g+bw/2,ry=it.r*0.85+g+bh/2,dg=0.72;
+      const spots=[[0,ry],[0,-ry],[rx,0],[-rx,0],[it.r*dg+bw/2,it.r*dg+bh/2],[-(it.r*dg+bw/2),it.r*dg+bh/2],[it.r*dg+bw/2,-(it.r*dg+bh/2)],[-(it.r*dg+bw/2),-(it.r*dg+bh/2)]];
+      for(const far of [1,L.far])for(const [dx,dy] of spots){
+        const cx=Math.max(bw/2+1,Math.min(w-bw/2-1,it.x+dx*far)),cy=Math.max(bh/2+1,Math.min(h-bh/2-1,it.y+dy*far)),b=box(cx,cy,bw,bh);
+        let sc=outB(b)*5;for(const o of out)sc+=ov(b,o)*4;for(const c of avoid)sc+=ovC(b,c);
+        if(sc>1)sc+=5000;   // כל חפיפה גרועה מכל פשרה (שם קצר, גופן קטן, קו)
+        sc+=(far>1?40:0)+pen;   // קרוב ובגודל מלא עדיף
+        if(!best||sc<best.sc)best={sc,b,lines,far,cx,cy};
+      }
+      if(best&&best.sc<=(best.far>1?40:0)+pen)break;   // נמצא מקום פנוי
+    }
+    const B=best.b;B.it=it;out.push(B);
+    let clash=0;for(const o of out)if(o!==B&&ov(B,o)>1)clash++;for(const c of avoid)if(ovC(B,c)>2)clash++;bad+=clash;
+    const ex=Math.max(B.x0,Math.min(it.x,B.x1)),ey=Math.max(B.y0,Math.min(it.y,B.y1));
+    if(Math.hypot(ex-it.x,ey-it.y)>it.r+L.gap*2.5){   // לא צמוד לנקודה: קו קצר אליה, כדי שיהיה ברור של מי התווית
+      const a=Math.atan2(ey-it.y,ex-it.x);
+      x.save();x.strokeStyle='#E8D3A0aa';x.lineWidth=1.5;x.beginPath();x.moveTo(it.x+Math.cos(a)*it.r*0.9,it.y+Math.sin(a)*it.r*0.9);x.lineTo(ex,ey);x.stroke();x.restore()}
+    let ty=B.y0+L.pad;for(const [t,sz,c] of best.lines){wmText(x,t,(B.x0+B.x1)/2,ty+sz/2+1,sz,c);ty+=sz+3}
+  }
+  return{rects:out,bad};
+}
 
 function wmDrawWorld(){
   const {x,w,h}=wmCanvas('wmWorld'),G=wmGraph(),cur=S.wd&&S.wd.reg;
-  const ps=G.show.map(r=>G.pos[r]),x0=Math.min(...ps.map(p=>p.x))-WMAP.pad,x1=Math.max(...ps.map(p=>p.x))+WMAP.pad,
+  // סיבוב: בוחרים בין בלי סיבוב לרבע סיבוב, לפי מה שנותן מפה גדולה יותר בחלון הזה
+  const fit=f=>{const q=G.show.map(r=>f(G.pos[r]));return Math.min(w/(Math.max(...q.map(p=>p.x))-Math.min(...q.map(p=>p.x))+WMAP.pad*2),h/(Math.max(...q.map(p=>p.y))-Math.min(...q.map(p=>p.y))+WMAP.pad*2.35))};
+  const rot=fit(p=>({x:-p.y,y:p.x}))>fit(p=>p)*WMAP.turn?(p=>({x:-p.y,y:p.x})):(p=>p),pos={};for(const r of G.show)pos[r]=rot(G.pos[r]);
+  const ps=G.show.map(r=>pos[r]),x0=Math.min(...ps.map(p=>p.x))-WMAP.pad,x1=Math.max(...ps.map(p=>p.x))+WMAP.pad,
     y0=Math.min(...ps.map(p=>p.y))-WMAP.pad,y1=Math.max(...ps.map(p=>p.y))+WMAP.pad*1.35;   // מתחת לאי: השם ומונה הסודות
-  const k=Math.min(w/(x1-x0),h/(y1-y0)),ox=(w-(x1-x0)*k)/2-x0*k,oy=(h-(y1-y0)*k)/2-y0*k,at=r=>({x:G.pos[r].x*k+ox,y:G.pos[r].y*k+oy}),rad=Math.min(64,WMAP.island*k);
+  // קנה מידה לכל ציר בנפרד: כשהאיים בטור צר והחלון רחב, המפה נמתחת לרוחב (עד stretch), כדי שיהיה מקום לשמות
+  let kx=w/(x1-x0),ky=h/(y1-y0);const k=Math.min(kx,ky);kx=Math.min(kx,k*WMAP.stretch);ky=Math.min(ky,k*WMAP.stretch);
+  const ox=(w-(x1-x0)*kx)/2-x0*kx,oy=(h-(y1-y0)*ky)/2-y0*ky,at=r=>({x:pos[r].x*kx+ox,y:pos[r].y*ky+oy}),rad=Math.min(64,WMAP.island*k);
   // הים מסביב
   x.fillStyle='#10233A';x.fillRect(0,0,w,h);
   // השבילים: מלא בין שני אזורים שביקרת בהם, מקווקו לאזור שעוד לא
@@ -73,13 +123,16 @@ function wmDrawWorld(){
     x.closePath();x.fillStyle=seen?R.ground:WMAP.fog;x.fill();x.lineWidth=3;x.strokeStyle=seen?'#D9C690':'#3A4566';x.stroke();
     if(!seen){wmText(x,'?',p.x,p.y,Math.round(rad*0.8),C.dim);continue}
     if(r===cur){x.save();x.lineWidth=4;x.strokeStyle=C.gold;x.shadowColor=C.gold;x.shadowBlur=12;x.stroke();x.restore()}
-    wmText(x,T('w.region.'+r),p.x,p.y+rad*0.82+12,13,r===cur?C.gold:C.chalk);
     const ln=wmLantern(r);
     if(ln){x.beginPath();x.arc(p.x,p.y-rad*0.3,9,0,Math.PI*2);x.fillStyle=ln.lit?ln.L.glow:'#2A2F3E';
       if(ln.lit){x.save();x.shadowColor=ln.L.glow;x.shadowBlur=14;x.fill();x.restore()}else x.fill();x.lineWidth=2;x.strokeStyle='#000a';x.stroke()}
-    const sc=wmSecrets(r);if(sc)wmText(x,'🔍 '+sc,p.x,p.y+rad*0.82+29,12,C.chalk);
     if(r===cur)wmText(x,'★',p.x,p.y+rad*0.25,20,C.gold);
   }
+  // השמות ומוני הסודות, אחרי כל האיים, כדי שאף אי לא יכסה תווית. האזור הנוכחי בוחר מקום ראשון
+  const L=WMAP.label,seen=G.show.filter(wmSeen).sort((a,b)=>(b===cur)-(a===cur));
+  const lab=wmLabels(x,seen.map(r=>{const p=at(r),sc=wmSecrets(r);return{reg:r,x:p.x,y:p.y,r:rad,short:T('wm.short.'+r),
+    lines:[[T('w.region.'+r),L.name,r===cur?C.gold:C.chalk]].concat(sc?[['🔍 '+sc,L.count,C.chalk]]:[])}}),G.show.map(r=>Object.assign({r:rad*0.95},at(r))),w,h);
+  WMAP.rects=lab.rects;WMAP.bad=lab.bad;   // לבדיקה (check.js): כמה חפיפות נשארו
   travelMapSpots(G.show.map(r=>Object.assign({r},at(r))),rad);   // נגיעה באי עם פנס דולק: קפיצה (travel.js)
 }
 
@@ -100,9 +153,10 @@ function wmDrawHere(){
   if(!R.noNpc)for(const id in WNPC.list)if(wnpcMet(id)){const A=WNPC.list[id].at,c=at(A.x,A.y);
     x.beginPath();x.arc(c.x,c.y,WMAP.dot.npc,0,Math.PI*2);x.fillStyle=WNPC.list[id].col;x.fill();x.lineWidth=2;x.strokeStyle='#fff';x.stroke()}
   // השערים: לכפר, לזירה, ולאזורים אחרים, עם השם
-  const gs=wGates();
+  const gs=wGates(),gl=[];
   for(const id in gs){const g=gs[id],c=at(g.x,g.y);x.beginPath();x.arc(c.x,c.y,WMAP.dot.gate,0,Math.PI*2);x.fillStyle=wGateCol(id);x.fill();x.lineWidth=2;x.strokeStyle='#000a';x.stroke();
-    wmText(x,wGateName(id),Math.max(50,Math.min(w-50,c.x)),c.y+(c.y<h/2?16:-16),11,wGateCol(id))}
+    gl.push({x:c.x,y:c.y,r:WMAP.dot.gate,lines:[[wGateName(id),11,wGateCol(id)]]})}
+  const me0=at(P.x,P.y),hl=wmLabels(x,gl,gl.map(g=>({x:g.x,y:g.y,r:g.r})).concat([{x:me0.x,y:me0.y,r:WMAP.dot.player*1.8}]),w,h);WMAP.hereRects=hl.rects;WMAP.hereBad=hl.bad;   // שמות השערים: בלי לחתוך בקצה ובלי לעלות זה על זה
   // אתה: נקודה זהובה עם חץ לכיוון ההליכה
   const me=at(P.x,P.y),a=P.face||0,r=WMAP.dot.player;
   x.save();x.shadowColor=C.gold;x.shadowBlur=10;x.beginPath();x.moveTo(me.x+Math.cos(a)*r*1.8,me.y+Math.sin(a)*r*1.8);
@@ -114,7 +168,8 @@ function wmDraw(){
   $('wMap').innerHTML=winHead('🗺️ '+T('wm.title'))+
     '<div class="wmcols"><section><h4>'+T('wm.world')+'</h4><div class="wmbox"><canvas id="wmWorld"></canvas></div></section>'+
     '<section><h4>'+T('w.region.'+S.wd.reg)+' <small>★ '+T('wm.here')+'</small></h4><div class="wmbox"><canvas id="wmHere"></canvas></div></section></div>'+
-    tierRow()+travelMapRow()+'<p class="wmkey">'+T('wm.key')+'</p>';   // דרגת העולם (tiers.js)
+    (SAVE.story&&SAVE.story.end?tierRow():'')+travelMapRow()+   // בחירת הדרגה רק אחרי סוף הסיפור (tiers.js). לפני, שלוש דרגות נעולות רק מסיחות
+    '<p class="wmkey">'+[$('wSec').textContent,$('chTag').hidden?'':$('chTag').textContent].filter(Boolean).map(s=>'<b>'+s+'</b>').join(' ')+' '+T('wm.key')+'</p>';   // 🔍 ו-🌀 עברו מהפס העליון לכאן (docs/plan-hud.md)   // דרגת העולם (tiers.js)
   wmDrawWorld();wmDrawHere();
 }
 

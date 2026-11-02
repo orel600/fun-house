@@ -55,19 +55,22 @@ const SK_PIC={w5:'def',h3:'agi',h5:'hunt',hMark:'h1'};   // צמתים שחול�
 const skPic=(k,emoji)=>SK_PIC[k]?'<img class="ski" src="icons/ui/skills/'+SK_PIC[k]+'.png" alt="">':emoji;
 
 /* ---- המסך: בחלון הציוד, כשלא נבחר פריט ---- */
+// בלי גלילה גם בטלפון שוכב (docs/plan-hud.md פרק 5, ניר 1.11): כותרת בשורה אחת עם הנקודות, הסטטים ברשת של שורות קצרות
+// (אייקון, שם ומספר, שורה קטנה אחת, +), והבניות ועץ הסקילים בשורה אחת למטה. ההסבר המלא של סטט ב-title ובשורה הקטנה
 function statsHtml(){
   const x=heroXpNow(),free=stFree(),p=stPts(),g=statsGive();
   const bn=buildName();
-  let h='<div class="sthead"><b>'+T('gear.hero',heroLv())+(bn?' · '+T('st.build')+' <span class="bname">'+bn+'</span>':'')+'</b><span class="stxp"><i style="width:'+Math.round(x.have/x.need*100)+'%"></i><bdi>'+Math.floor(x.have)+' / '+x.need+' XP</bdi></span></div>';
-  h+='<div class="stbuilds">'+[0,1].map(i=>'<button class="vbtn ghost" data-act="build" data-i="'+i+'"'+((SAVE.hero.build||0)===i?' aria-pressed="true"':'')+(S.vil?'':' disabled')+'>'+T('st.slot',i+1)+'</button>').join('')+'</div>';   // שתי בניות שמורות
+  let h='<div class="sthead"><b>'+T('gear.hero',heroLv())+(bn?' · <span class="bname">'+bn+'</span>':'')+'</b>'+(free?'<span class="stfree on">'+T('st.freeS',free)+'</span>':'')+'</div>'+
+    '<span class="stxp"'+lpTitle()+'><i style="width:'+Math.round(x.have/x.need*100)+'%"></i><bdi>'+Math.floor(x.have)+' / '+x.need+' XP'+lpHtml()+'</bdi></span>';   // lpHtml: מה נפתח ברמה הבאה (levelpath.js)
   h+='<p class="stdmg">'+T('wt.'+P.wt)+' · '+wRangeTxt(wAvgNow(),P.wt)+'</p>';   // טווח הנזק של הנשק שביד, עם כל השדרוגים (weapons.js)
-  h+='<p class="stfree'+(free?' on':'')+'">'+(free?T('st.free',free):T('st.none'))+'</p>';
+  if(!free)h+='<p class="stfree stnone">'+T('st.none')+'</p>';
   h+='<div class="strows">'+Object.keys(STATS.list).map(k=>{const S_=STATS.list[k],[name,what]=T('st.'+k),n=p[k]||0;
     const val=[...new Set(Object.keys(S_.give).map(s=>'+'+(Math.round((g[s]||0)*10)/10)+(s==='hp'?'':'%')))].join(' / ');
-    return '<div class="strow"><span class="sti">'+skPic(k,S_.icon)+'</span><span class="stn"><b>'+name+' <bdi>'+n+'</bdi></b><small>'+what+(n?' · <bdi>'+val+'</bdi>':'')+'</small></span>'+
+    return '<div class="strow" title="'+what+'"><span class="sti">'+skPic(k,S_.icon)+'</span><span class="stn"><b>'+name+' <bdi>'+n+'</bdi></b><small>'+(n?'<bdi>'+val+'</bdi>':what)+'</small></span>'+
       '<button class="stplus" data-act="stat" data-k="'+k+'"'+(free?'':' disabled')+' aria-label="+ '+name+'">+</button></div>'}).join('')+'</div>';
-  h+='<button class="vbtn" data-act="tree">'+skPic('wRoot','🌳')+' '+T('tr.open')+(trFree()?' ('+trFree()+')':'')+'</button>';
-  if(stSpent()||trSpent())h+='<p class="dim">'+T('st.respecWhere',T('npc.'+STATS.respec.npc)[0])+'</p>';
+  h+='<div class="stfoot"><div class="stbuilds">'+[0,1].map(i=>'<button class="vbtn ghost" data-act="build" data-i="'+i+'"'+((SAVE.hero.build||0)===i?' aria-pressed="true"':'')+(S.vil?'':' disabled')+'>'+T('st.slot',i+1)+'</button>').join('')+'</div>'+   // שתי בניות שמורות
+    '<button class="vbtn sttree" data-act="tree">'+skPic('wRoot','🌳')+' '+T('tr.open')+(trFree()?' ('+trFree()+')':'')+'</button></div>';
+  if(stSpent()||trSpent())h+='<p class="dim stwhere">'+T('st.respecWhere',T('npc.'+STATS.respec.npc)[0])+'</p>';
   return h;
 }
 // אצל הכוהנת: כפתור איפוס (npc.js)

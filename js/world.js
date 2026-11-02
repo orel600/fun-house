@@ -13,7 +13,7 @@ const WORLD={
   home:{x:0,y:-600,r:44},                // השער חזרה לכפר. יוצאים מהכפר ומגיעים לכאן
   gates:{grove:{x:-840,y:450,r:44},pit:{x:840,y:450,r:44}},   // שערים לזירה. השמות ב-lang.js ('w.gate.<id>')
   arrive:130,                            // כמה פיקסלים מתחת לשער עומדים כשמגיעים אליו
-  near:55,                               // כמה פיקסלים מקצה שער נחשב "לידו": נפתח הפאנל עם הכפתור
+  near:55,                               // כמה פיקסלים מקצה שער נחשב "לידו": בועה מעליו וכפתור עגול. הכרטיס נפתח רק בלחיצה
   /* מקורות משאבים בשדות: kind (מ-NODES.kinds ב-nodes.js), כמה, מרכז ורדיוס. המקומות קבועים, כך שהיער תמיד באותו מקום.
      ההתקפה האוטומטית מכה בהם כמו בזירה (aimTarget ב-combat.js), והשלל בדרגות כמו בזירה (runGive ב-loot.js) */
   fields:[{kind:'tree',n:14,x:-610,y:-210,r:260},{kind:'tree',n:5,x:145,y:210,r:170},{kind:'bush',n:5,x:-335,y:65,r:130},
@@ -35,8 +35,10 @@ const WORLD={
   far:260,                               // קבוצה שנוקתה חוזרת רק כשהשחקן רחוק ממנה לפחות כך, כדי שלא תצוץ מול העיניים. ולפחות חצי אלכסון המסך, כי המצלמה רואה רחוק (camera.js)
   /* כמה קשה, לפי המרחק של בית הקבוצה מהשער לכפר: ככל שמתרחקים, קשה יותר. to: עד איזה מרחק. hp, dmg, speed: פי כמה מהרגיל (ETYPES).
      leash: כמה רחוק מהבית האויב מוכן לרדוף לפני שהוא חוזר. back: שניות עד שקבוצה שנוקתה חוזרת */
+  foeHp:2.2,                             // אויבים בעולם: פי כמה חיים (docs/plan-combat.md שינוי 3). גם בלהקות (pacing.js). המכה עם הכנה: STRIKE ב-strike.js
+  foeMin:70,                             // ולפחות כך הרבה חיים (כפול ה-hp של האזור): גרנט חלש לחרב לוקח 2-3 מכות ולא נעלם במכה אחת. אויב חזק לא מושפע. אחרי שדרוגים שוב מכה אחת, וזה ה"וואו, התחזקתי"
   zones:[
-    {id:'start',to:360, hp:0.35,dmg:0.25,speed:0.6, leash:240,back:12},
+    {id:'start',to:360, hp:0.35,dmg:0.25,speed:0.6, leash:240,back:12,min:80,wind:0.65},   // min: רצפת חיים משלו, כדי שגם ליד השער אויב לוקח 2-3 מכות (ולא foeMin×0.35). wind: הכנה איטית יותר למכה, קל להתחמק
     {id:'near', to:800, hp:0.7, dmg:0.6, speed:0.85,leash:360,back:22},
     {id:'far',  to:1e9, hp:1,   dmg:1,   speed:1,   leash:480,back:30}
   ],
@@ -183,7 +185,7 @@ const wGateCol=k=>k==='home'?C.chalk:wIsPath(k)?C.tide:C.lilac;
 let wRet=null;   // השער שממנו נכנסו לזירה: בסוף הריצה חוזרים אליו (againBtn ב-input.js)
 
 /* ---- מעבר בין מקומות ---- */
-function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden=!on;$('chTag').hidden=!on;if(!on){$('wPanel').hidden=true;wnpcOff();fishOff();wmapOpen(false);travelOff()}}   // wnpcOff: הדמויות בעולם (worldnpc.js)   // fishOff: הדיג (fishing.js)   // wmapOpen: המפה (worldmap.js)
+function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden=!on;$('chTag').hidden=!on;if(!on){$('wPanel').hidden=true;const g=$('wGo');if(g)g.hidden=true;wnpcOff();fishOff();wmapOpen(false);travelOff()}}   // wnpcOff: הדמויות בעולם (worldnpc.js)   // fishOff: הדיג (fishing.js)   // wmapOpen: המפה (worldmap.js)
 // at: 'home' (מהכפר, או מהאזור הקודם), id של שער (חזרה מהזירה) או של דרך (חזרה מאזור אחר). reg: איזה אזור, ברירת המחדל האחו
 function enterWorld(at,reg){
   wRet=null;reset();S.mode='play';
@@ -195,10 +197,11 @@ function enterWorld(at,reg){
   P.x=g.x;P.y=g.y+WORLD.arrive;P.aim=P.face=Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
   ['ovStart','ovOver','ovLevel','ovBoss','ovWDeath'].forEach(id=>$(id).hidden=true);
   R.foes.forEach((G,i)=>wSpawn(G,i));
-  banner(at==='home'?T(R.enter||'w.enter'):wGateName(at),C.gold);
+  // שם האזור: פעם אחת בכניסה הראשונה לכל אזור, כותרת קטנה למעלה במרכז (feedTitle ב-feed.js, docs/plan-hud.md פרק 6). האזהרה על התרמיל בכרטיס השער (vil.outInfo)
+  const seen=SAVE.regSeen||(SAVE.regSeen={});if(!seen[reg]){seen[reg]=1;saveNow();feedTitle(T(R.enter||'w.enter'),C.gold)}
   worldUi(true);
   fishMealOn();   // ארוחה מהפונדקאית: חיזוק בעולם (fishing.js)
-  challengeEnter();   // אתגר יומי (challenge.js)
+  challengeEnter();huntEnter();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js)
   wmapVisit(reg);     // מפת העולם: ביקרת כאן (worldmap.js)
   if(reg!=='meadow')questEvent('story',reg);   // קווסט עלילה "להגיע לאגם" (quests.js)
 }
@@ -227,9 +230,11 @@ function wLootIn(){
 /* ---- אויבים: קבוצה לכל שורה ב-WORLD.foes ---- */
 // האזור של קבוצה, לפי המרחק של הבית שלה מהשער לכפר
 const wZone=G=>{const R=WR();return R.zones.find(z=>Math.hypot(G.x-R.home.x,G.y-R.home.y)<z.to)};
+// רצפה לחיים של אויב בעולם (WORLD.foeMin), לפני תכונה מיוחדת (affix.js)
+function wTough(e,Z){const m=Z.min??WORLD.foeMin*Z.hp;if(e.max<m){e.hp=e.max=m}if(Z.wind)e.wind=Z.wind}   // Z.min ו-Z.wind: אזור שמגדיר בעצמו (start)
 function wSpawn(G,i){
   if(!ETYPES[G.type])return;const Z=wZone(G);
-  for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp);
+  for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp*WORLD.foeHp);wTough(e,Z);
     e.dmg*=Z.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);   // affixRoll: אולי אויב מיוחד (affix.js). storySafe: אחרי שפנס האדמה נדלק (story.js)
     e.xp=0;e.home=i;e.creature=!!G.creature;
     challengeSpawn(e);tierSpawn(e)}   // דרגת העולם (tiers.js)
@@ -242,18 +247,21 @@ function wFoes(dt){
     if(e.wanted){wantedMove(e,dt);continue}
     if(e.warden){storyWardenMove(e,dt);continue}
     if(e.evt){evFoeMove(e,dt);continue}
-    if(e.pack){paceFoeMove(e,dt);continue}   // להקה שמגיעה מקצה המסך (pacing.js)   // גל של אירוע (events.js)   // השומר האבן (story.js)
+    if(e.pack){if(foeAi(e,dt,Math.hypot(P.x-e.x,P.y-e.y)))foeAiTail(e,dt);else paceFoeMove(e,dt);continue}   // התנהגות לפי סוג (foeai.js)   // להקה שמגיעה מקצה המסך (pacing.js)   // גל של אירוע (events.js)   // השומר האבן (story.js)
     alive[e.home]++;
     const G=FO[e.home]||FO[0],dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;
     let mx=0,my=0,sp=e.speed;
-    if(d<WORLD.aggro&&Math.hypot(P.x-G.x,P.y-G.y)<wZone(G).leash){   // רודף, אבל לא רחוק מהבית. אחרת חוזר להסתובב שםmx=dx/d;my=dy/d;
+    if(e.alert>0)e.alert-=dt;   // קורא תקע בקרן (foeai.js): רודף גם מרחוק, ורחוק יותר מהבית
+    if((d<WORLD.aggro||e.alert>0)&&Math.hypot(P.x-G.x,P.y-G.y)<wZone(G).leash*(e.alert>0?1.6:1)){   // רודף, אבל לא רחוק מהבית. אחרת חוזר להסתובב שם
+      if(foeAi(e,dt,d)){foeAiTail(e,dt);continue}   // התנהגות לפי סוג: מקיף, מסתער, יורה מרחוק, קופץ (foeai.js)
+      mx=dx/d;my=dy/d;   // הייתה בסוף שורת ההערה מעל ונבלעה בה (#114), ולכן קבוצות לא רדפו
       if(e.type==='wisp'){if(d<170){mx=-mx;my=-my}e.shoot-=dt;if(e.shoot<=0){e.shoot=rand(1.8,2.8);shootE(e.x,e.y,Math.atan2(dy,dx),175,6,8)}}}
     else{   // מסתובב ליד הבית
       if(e.wx==null||Math.hypot(e.wx-e.x,e.wy-e.y)<12){const a=rand(0,6.28),r=rand(0,G.r);e.wx=G.x+Math.cos(a)*r;e.wy=G.y+Math.sin(a)*r}
       const wx=e.wx-e.x,wy=e.wy-e.y,wd=Math.hypot(wx,wy)||1;mx=wx/wd;my=wy/wd;sp*=WORLD.wander}
+    if(strikeTick(e,dt,d)){mx=my=0}   // מכה עם הכנה במקום נזק במגע. בזמן ההכנה עומד (strike.js)
     e.x+=mx*sp*dt+e.kx*dt;e.y+=my*sp*dt+e.ky*dt;
     const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*sp*0.08;e.flash-=dt;
-    if(d<e.r+P.r-3)hurt(e.dmg);
   }
   // קבוצה שנוקתה חוזרת אחרי זמן, כשהשחקן רחוק ממנה
   FO.forEach((G,i)=>{const g=S.wd.groups[i];if(alive[i]||!ETYPES[G.type])return;
@@ -283,7 +291,7 @@ function worldUpdate(dt){
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
-  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
+  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
   dropsUpdate(dt);secretsUpdate(dt);wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
@@ -291,9 +299,9 @@ function worldUpdate(dt){
   parts=parts.filter(p=>p.life>0);
   for(const f of floats){f.y+=f.vy*dt;f.life-=dt}
   floats=floats.filter(f=>f.life>0);
-  // ליד שער נפתח פאנל עם כפתור. נכנסים רק בלחיצה
+  // ליד שער: בועה מעליו וכפתור עגול (wGoBtn). הכרטיס נפתח רק בלחיצה, ונכנסים רק מהכרטיס (docs/plan-hud.md, פרק 5)
   w.near=null;const gs=wGates();for(const k in gs){const g=gs[k];if(Math.hypot(P.x-g.x,P.y-g.y)<g.r+P.r+WORLD.near)w.near=k}
-  worldHud();
+  worldHud();cornerHud();   // הפינות העליונות והמפה הקטנה (minimap.js)
   wnpcUpdate(dt);   // דמויות שמגלים בעולם, וכפתור "לדבר" (worldnpc.js)
   fishUpdate(dt);   // דיג ליד מים, וכפתור "לדוג" (fishing.js)
   travelUpdate();   // ליד פנס דולק: "חזרה לכפר" (travel.js)
@@ -313,12 +321,13 @@ $('wRespawn').onclick=()=>{$('ovWDeath').hidden=true;wHome()};
 
 /* ---- ממשק: שם האזור והתרמיל למעלה, ופאנל ליד שער ---- */
 function worldHud(){
-  const w=S.wd;if(w.shut&&w.shut!==w.near)w.shut=null;   // ✕ סוגר את הפאנל עד שמתרחקים מהשער
-  const shut=!!w.near&&w.shut===w.near,key=LANG+'|'+w.near+'|'+shut+'|'+JSON.stringify(SAVE.bag);
+  const w=S.wd;if(w.open&&w.open!==w.near)w.open=null;   // מתרחקים מהשער: הכרטיס נסגר
+  const open=!!w.near&&w.open===w.near,key=LANG+'|'+w.near+'|'+open+'|'+S.mode+'|'+JSON.stringify(SAVE.bag);
   if(key===w.ui)return;w.ui=key;
   $('wName').textContent=T('w.region.'+WR().region);
-  $('wBag').innerHTML=topLine(SAVE.bag,resShown('world'));   // שורה אחת, והשאר בתרמיל (village.js)
-  const pn=$('wPanel'),k=w.near;pn.hidden=!k||shut;if(pn.hidden)return;
+  $('wBag').innerHTML=cornerRes(resShown('world'));   // עד 2 משאבים ליד ☰, והשאר ב-"+N" (minimap.js)
+  wGoBtn(w);
+  const pn=$('wPanel'),k=w.near;pn.hidden=!open;if(pn.hidden)return;
   const back=k==='home'&&WR().back,to=back||(wIsPath(k)&&k);
   pn.innerHTML=to?winHead(wGateName(k))+'<p>'+T('w.pathInfo.'+to)+'</p><button class="vbtn" data-act="path" data-g="'+to+'">'+T('w.goPath')+'</button>'
     :k==='home'?winHead(T('w.home'))+'<p>'+T('w.homeInfo')+'</p><button class="vbtn" data-act="home">'+T('w.goHome')+'</button>'
@@ -329,7 +338,15 @@ $('wPanel').addEventListener('click',e=>{
   if(b.dataset.act==='close')wShut();else if(b.dataset.act==='home')wHome();else if(b.dataset.act==='arena')wArena(b.dataset.g);else if(b.dataset.act==='path')wGo(b.dataset.g);
 });
 
-function wShut(){if(!S.wd)return;S.wd.shut=S.wd.near;worldHud()}
+function wShut(){if(!S.wd)return;S.wd.open=null;worldHud()}
+// הכפתור העגול ליד שער (בסרגל ההקשר, מעל הסקילים): פותח את הכרטיס. נעלם כשהכרטיס פתוח
+const wGoEl=(()=>{const b=document.createElement('button');b.id='wGo';b.className='nbtn talkbtn wgo';b.hidden=true;
+  $('talkBtn').before(b);b.addEventListener('click',()=>{const w=S.wd;if(!w||!w.near||S.mode!=='play')return;w.open=w.near;sfx('ui');worldHud()});return b})();
+const wGoIco=k=>k==='home'&&!WR().back?['🏠','ctx.home']:k==='home'||wIsPath(k)?['🧭','ctx.go']:['⚔️','ctx.arena'];
+function wGoBtn(w){
+  const k=w.near,show=!!k&&w.open!==k&&S.mode==='play';wGoEl.hidden=!show;if(!show)return;
+  const [i,t]=wGoIco(k);wGoEl.innerHTML='<span class="ni" aria-hidden="true">'+i+'</span>'+T(t);wGoEl.setAttribute('aria-label',wGateName(k));
+}
 
 /* ---- ציור ---- */
 // קישוטים מחוץ לגבול: עצים וגבעות. תמיד באותם מקומות, ופתוח מול השער לכפר
@@ -374,7 +391,9 @@ function drawWorld(){
   fishDraw();   // החכה והמצוף (fishing.js)
   storyDraw();   // הפנס והשומר (story.js)
   affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
-  eventsDraw();   // אירועים (events.js)
+  strikeDraw();   // קשת אדומה של מכה שמתכוננת (strike.js)
+  foeAiDraw();   // הסתערות, ירייה וקפיצה שמסומנות על הרצפה (foeai.js)
+  eventsDraw();scentDraw();   // אירועים (events.js), החיה מובילה (petscent.js)
   secretsDraw();   // סודות (secrets.js)
   if(WR().fog)wFog();
   if(WR().snow)wSnow();   // הרכס הקפוא
@@ -429,7 +448,7 @@ function wHeat(){
 const STORM={rain:80,spread:560,fall:620,slant:0.32,len:18,alpha:0.45,dark:0.12,flash:{every:5.5,len:0.18,alpha:0.35}};
 function wStorm(){
   const t=fxNow(),F=STORM,W=F.spread*2;ctx.save();
-  for(const tw of WR().towers||[])wTower(tw);
+  if(!R3D.on)for(const tw of WR().towers||[])wTower(tw);   // בתלת-ממד: מגדל אבן אמיתי (props3d.js)
   ctx.fillStyle='rgba(20,16,50,'+F.dark+')';ctx.fillRect(P.x-F.spread*2,P.y-F.spread*2,W*2,W*2);
   ctx.strokeStyle='#B9C4F0';ctx.lineWidth=1.4;
   for(let i=0;i<F.rain;i++){   // טיפות: קווים קצרים שנופלים באלכסון
@@ -474,13 +493,25 @@ function drawWorldScreen(ox,oy){
   if(!S.wd)return;
   ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 13px Heebo, system-ui, sans-serif';
   const gs=wGates();
+  const nk=S.wd.near&&S.wd.open!==S.wd.near?S.wd.near:null;
   for(const k in gs){const g=gs[k],col=wGateCol(k),txt=wGateName(k),x=g.x+ox,y=g.y+oy+40,tw=ctx.measureText(txt).width+16;
+    if(k===nk){edgeArrow(g.x+ox,g.y+oy,col);continue}   // השער שלידו: הבועה למטה במקום השלט
     ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(x-tw/2,y-11,tw,22,11);ctx.fill();ctx.fillStyle=col;ctx.fillText(txt,x,y+5);
     edgeArrow(g.x+ox,g.y+oy,col)}
+  // בועה במקום השלט של השער שלידו עומדים, כל עוד הכרטיס סגור: אייקון ושם, בזהב, בגודל קבוע על המסך (13px) שלא מתכווץ עם המצלמה.
+  // מתחת לשער ולא מעליו, כי למעלה יושבים הפס העליון ושורת הקווסט
+  const g=nk&&gs[nk];
+  if(g){const txt=wGoIco(nk)[0]+' '+wGateName(nk),b=Math.sin(fxNow()*4)*2;
+    ctx.save();ctx.translate(g.x+ox,g.y+oy+40);ctx.scale(1/ZOOM,1/ZOOM);const tw=ctx.measureText(txt).width+20;
+    ctx.fillStyle='rgba(18,22,36,0.92)';ctx.strokeStyle=C.gold;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(-6,-13+b);ctx.lineTo(0,-20+b);ctx.lineTo(6,-13+b);ctx.closePath();ctx.fill();
+    ctx.beginPath();ctx.roundRect(-tw/2,-13+b,tw,26,13);ctx.fill();ctx.stroke();
+    ctx.fillStyle=C.gold;ctx.fillText(txt,0,5+b);ctx.restore()}
   drawWnpcScreen(ox,oy);   // worldnpc.js
   fishScreen(ox,oy);   // "!" והפס של הדיג (fishing.js)
   storyScreen(ox,oy);   // story.js
-  affixScreen(ox,oy);   // affix.js
-  eventsScreen(ox,oy);   // events.js
+  affixScreen(ox,oy);huntScreen(ox,oy);   // affix.js, hunt.js
+  foeAiScreen(ox,oy);   // "!" מעל קורא שבורח (foeai.js)
+  eventsScreen(ox,oy);scentScreen(ox,oy);   // events.js, petscent.js
   secretsScreen(ox,oy);secretsHud();   // secrets.js
 }
