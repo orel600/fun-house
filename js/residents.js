@@ -10,7 +10,7 @@ const RESID={
   /* last: הקווסט האחרון שלה בעולם (QUESTS.list). house: איפה הבית בכפר, במקום פנוי (לא מבנה, לא דרך, לא תושב אחר).
      sign: האייקון בשלט. serve: 'fish' קונה דגים במחיר השוק כפול mult, 'trade' מחליפה give ב-get */
   list:{
-    fisher:{last:'wCatch',  house:{x:-150,y:300},col:'#3F7BF5',sign:'🐟',serve:'fish',mult:2},
+    fisher:{last:'wCatch',  house:{x:150,y:-300},col:'#3F7BF5',sign:'🐟',serve:'fish',mult:2},
     cutter:{last:'wGolems', house:{x:-330,y:-200},col:'#A8784A',sign:'🪨',serve:'trade',give:{stone:10},get:{iron:2},work:true},
     herbal:{last:'wSprites',house:{x:360,y:40},col:'#5FA35A',sign:'🌿',serve:'trade',give:{herb:4},get:{essence:1}}
   },
