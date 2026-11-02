@@ -117,7 +117,7 @@ function botStep({god,en}){
   for(const f of floats)if(/^\+\d+$/.test(f.txt))L.gainMax=Math.max(L.gainMax||0,+f.txt.slice(1));
   // החלפה רק בין נשקים שלבושים. עם נשק אחד הכפתור מוסתר, ובודקים את זה
   const useWeapon=w=>{if(P.weapon!==w&&wHeld().length>1){swapWeapon();L.swaps++;m.swapAt=S.t}};
-  L.swapBtn=document.getElementById('swap').hidden===(wHeld().length<2);L.nHeld=wHeld().length;
+  L.swapBtn=document.getElementById('swap').hidden===(wHeld().length<2);L.nHeld=Math.max(L.nHeld||0,wHeld().length);   // הכי הרבה נשקים ביד בריצה: בדרך הבוט יכול למכור או ללבוש את הנשק השני, וההחלפות שכבר נספרו נשארות
   // הנשק שסוג הנזק שלו הכי טוב נגד האויב
   const best=e=>(e.mult[P.dt.sword]??1)>=(e.mult[P.dt.gun]??1)?'sword':'gun';
   L.hits={...S.hits};L.dt=P.dt.sword+'/'+P.dt.gun;
