@@ -1,5 +1,5 @@
 /* המבקר (ניר, 1.11.2026: "מבקר שתפקידו לעבור על המשחק ולתת ביקורת"). לא חלק מהמשחק, לא נטען ב-index.html.
-   משחק כמו שחקן חדש וכמו שחקן מתקדם, בתלת-ממד, בטלפון של ניר (1280×590) ובאייפון שוכב (844×390), באנגלית ובעברית:
+   משחק כמו שחקן חדש וכמו שחקן ברמה 20, בתלת-ממד, בטלפון של ניר (760×350) ובאייפון שוכב (844×390), באנגלית ובעברית:
    פתיחה ← כפר ← עולם (אחו, קרב, שלל, השומר) ← חלונות (ציוד, קווסטים, מפה, ספר, הגדרות, שיחה עם תושב) ← זירה (רק מסתכל).
    בכל עצירה: צילום, וכמה אחוז מהמסך הממשק תופס, טקסט חתוך, אלמנטים חופפים, חלונות שגוללים, שגיאות בקונסול.
    ובכל ריצה: זמן לפריים (יחסי, אין כרטיס גרפי), זמן להרוג ולמות, הכי הרבה שניות בלי "החלטה מעניינת",
@@ -16,7 +16,7 @@ const opt=k=>{const i=args.indexOf('--'+k);return i<0?null:args[i+1]};
 const DAY=new Date().toISOString().slice(0,10);
 const OUT=path.resolve(opt('out')||path.join(__dirname,'out',DAY));
 const GFX=opt('gfx')||'3d';
-const VIEWS={n:{width:1280,height:590},s:{width:844,height:390}};   // n: הטלפון של ניר. s: אייפון שוכב
+const VIEWS={n:{width:760,height:350},s:{width:844,height:390}};   // n: הטלפון של ניר (Android לרוחב, 2.11.2026). s: אייפון שוכב
 const LANGS=['en','he'];
 // השחקן המלא (חדש + מתקדם + זירה) רץ בשילוב הראשי. בשאר: סיור חלונות של שחקן מתקדם, כדי לראות פריסה ושפה
 const MAIN='n-en';
@@ -48,6 +48,10 @@ function measure(){
     const hid=/(hidden|clip)/.test(s.overflowX+s.overflowY)||s.textOverflow==='ellipsis';
     if(hid&&(e.scrollWidth>e.clientWidth+2||e.scrollHeight>e.clientHeight+3))out.clipped.push(t);
     else if(r.right>vw+2||r.left<-2)out.clipped.push(t+' (יוצא מהמסך)')}
+  // טקסט בעברית כשהמשחק באנגלית (כל טקסט שנראה, כולל title ו-aria-label של כפתורים)
+  out.hebrew=[];if(typeof LANG!=='undefined'&&LANG==='en'){
+    for(const e of tl){const t=[...e.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(' ').trim();if(/[\u0590-\u05FF]/.test(t))out.hebrew.push(t.slice(0,40))}
+    for(const e of clk){const t=(e.getAttribute('aria-label')||'')+' '+(e.title||'');if(/[\u0590-\u05FF]/.test(t))out.hebrew.push('['+name(e).slice(0,14)+'] '+t.trim().slice(0,30))}}
   out.textOverlap=[];
   for(let i=0;i<tl.length&&out.textOverlap.length<10;i++)for(let j=i+1;j<tl.length;j++){const A=tl[i],B=tl[j];if(A.contains(B)||B.contains(A))continue;
     const a=A.getBoundingClientRect(),b=B.getBoundingClientRect(),ix=Math.min(a.right,b.right)-Math.max(a.left,b.left),iy=Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top);
@@ -58,6 +62,7 @@ function measure(){
 
 /* ---- יומן "רגעים": כל דבר שנותן לשחקן החלטה או חדשות. מזה מחשבים כמה זמן עבר בלי כלום ---- */
 function watchMoments(){
+  window.__heb={};{const ft=CanvasRenderingContext2D.prototype.fillText;CanvasRenderingContext2D.prototype.fillText=function(t){try{if(typeof LANG!=='undefined'&&LANG==='en'&&/[\u0590-\u05FF]/.test(t)){const k=String(t).slice(0,40);window.__heb[k]=(window.__heb[k]||0)+1}}catch(e){}return ft.apply(this,arguments)}}
   window.__m=[];const add=(k,d)=>window.__m.push({t:Date.now(),k,d:String(d||'').slice(0,40)});
   const wrap=(f,fn)=>{const o=window[f];if(typeof o!=='function')return;window[f]=function(...a){try{fn(...a)}catch(e){}return o.apply(this,a)}};
   addEventListener('load',()=>{
@@ -170,39 +175,78 @@ async function combo(browser,vk,lang,report){
     await ev(()=>{try{localStorage.removeItem(SAVE_STORE.key)}catch(e){}});await page.reload();await run(400);
     if(GFX==='3d'){await ev(()=>{R3D.drawEvery=60});for(let i=0;i<200;i++){if(await ev(()=>R3D.ready||R3D.failed))break;await page.waitForTimeout(50);await run(50)}}
     await ev(()=>{
-      SAVE.hero.start='warrior';SAVE.gift=true;Object.assign(SAVE.village,{center:3,forge:2,mill:2,mine:2,market:2,stash:1});
-      for(const [r,k] of [['coins',900],['wood',300],['stone',200],['copper',40],['iron',20],['cloth',10],['bone',12],['hide',8],['gem',2]])bagAdd(r,k);
-      for(const it of ['oakBow','boneCharm','oakSword'])if(GEAR.items[it])bagAdd(it);
+      // שחקן ברמה 20: פרקים 1-2 גמורים, הכפר ברמה 4, הרבה משאבים, כמה פריטים, ושני סקילים מהספר במשבצות
+      SAVE.hero.start='warrior';SAVE.gift=true;SAVE.hero.xp=3800;SAVE.hero.level=20;
+      Object.assign(SAVE.village,{center:4,forge:4,mill:3,mine:3,market:3,stash:3});
+      for(const [r,k] of [['coins',4200],['wood',900],['stone',700],['copper',160],['iron',90],['cloth',40],['bone',60],['hide',35],['gem',6]])bagAdd(r,k);
+      for(const it of Object.keys(GEAR.items).slice(0,14))bagAdd(it);
       SAVE.story=SAVE.story||{};SAVE.story.intro=true;SAVE.met={fisher:1,cutter:1,herbal:1};
-      const Q=QS();for(const id of ['s1Lanterns','s1Shard','s1Path'])if(QUESTS.list.find(q=>q.id===id)){Q.done[id]=1;delete Q.active[id]}
-      const w=QUESTS.list.find(q=>q.id==='s1Warden');if(w)qStart(w);
+      const Q=QS();for(const id of ['s1Lanterns','s1Bones','s1Shard','s1Path','s1Warden','s2Mist','s2Glow','s2Warden'])if(QUESTS.list.find(q=>q.id===id)){Q.done[id]=1;delete Q.active[id]}
+      const w=QUESTS.list.find(q=>q.id==='s3Climb');if(w)qStart(w);
+      SAVE.hero.skLoad=['charge','whirl'];
       saveNow()});
     await tap('#startBtn');await run(400);if(await vis('ovHero'))await ev(()=>{const c=document.querySelector('#heroCards [data-hero="warrior"]');if(c)c.click()});
-    await run(1200);await closeAll();await run(200);
-    await safe('village',async()=>{await tp(0,50);await run(400);await shot('village','הכפר באמצע המשחק')});
-    await safe('forge',async()=>{await ev(()=>{const B=VILLAGE.b.forge;P.x=B.x;P.y=B.y+B.r+20;S.cam.x=P.x;S.cam.y=P.y});await run(500);await tap('#vEnter');await shot('panel-forge','פאנל הנפחייה')});
-    await closeAll();
+    await run(1200);
+    // מה קופץ לבד לשחקן חוזר
+    for(const id of ['ovDaily','ovWelcome','npcDlg'])if(await vis(id))await shot('lv20-auto-'+id,'נפתח לבד לשחקן ברמה 20');
+    await closeAll();await run(200);
+    await safe('village',async()=>{await tp(0,50);await run(400);await shot('village','הכפר, שחקן ברמה 20')});
+    // כל מבנה בתבנית bwin: הלשונית הראשונה, ואז "שדרוג"
+    for(const k of ['forge','market','stash','mine','center'])await safe('b-'+k,async()=>{if(!(await ev(k=>!!VILLAGE.b[k],k)))return;
+      await ev(k=>{const B=VILLAGE.b[k];P.x=B.x;P.y=B.y+B.r+20;S.cam.x=P.x;S.cam.y=P.y;joy=null},k);await run(500);
+      if(!await vis('vEnter'))return R.fail.push('אין כפתור כניסה ליד '+k);
+      await tap('#vEnter');await shot('b-'+k,'חלון '+k);
+      const tabs=await ev(()=>[...document.querySelectorAll('#vPanel [data-tab]')].map(e=>e.dataset.tab));
+      for(const t of tabs.slice(1,3)){await ev(t=>{const e=document.querySelector('#vPanel [data-tab="'+t+'"]');if(e)e.click()},t);await run(250);await shot('b-'+k+'-'+t,'חלון '+k+' לשונית '+t)}
+      await closeAll()});
     await safe('menu',async()=>{await tp(0,50);await run(200);await tap('#menuBtn');await run(300);await shot('menu','☰: התפריט נפתח');await closeAll()});
     for(const [t,name,note] of [['gearBtn','gear','ציוד ותרמיל'],['qBtn','quests','יומן קווסטים'],['bookBtn','book','ספר ההרפתקאות'],['setBtn','settings','הגדרות']])
       await safe(name,async()=>{await tp(0,50);await run(200);await ev(id=>menuShow(id),t);await run(250);await shot(name,note);
-        if(name==='gear'){await ev(()=>{const e=document.querySelector('#gItems [data-id]');if(e)e.click()});await shot('gear-item','ציוד: פריט נבחר')}
+        if(name==='gear'){
+          await ev(()=>{const e=document.querySelector('#gItems [data-id]');if(e)e.click()});await shot('gear-item','ציוד: פריט נבחר');
+          await ev(()=>{const e=document.querySelector('#gItems [data-id].on,#gItems [data-id]');if(e)e.click()});await run(150);
+          await ev(()=>{const b=document.querySelector('#gActs [data-act="sell"]');if(b)b.click()});await run(200);await shot('gear-sell','ציוד: מכירה');
+          await ev(()=>{const b=document.querySelector('[data-act="sellBack"]');if(b)b.click();GUI.sell=false;if(typeof gearDraw==='function')gearDraw()});
+          // הדמות: סטטים וכפתור ספר הסקילים
+          await ev(()=>{const t=document.querySelector('#ovGear [data-page="char"],#ovGear [data-gpage="char"]');if(t)t.click();else if(typeof gearClose==='function'){gearClose();gearOpen('char')}});await run(250);await shot('gear-char','ציוד: הדמות והסטטים');
+          await ev(()=>wsbOpenUi());await run(250);await shot('skillbook','ספר הסקילים והרונות');
+          await ev(()=>wsbClose())}
         await closeAll()});
     await safe('npc',async()=>{const a=await ev(()=>NPC.list.head.at);await tp(a.x+30,a.y);await run(500);if(await vis('talkBtn')){await tap('#talkBtn');await shot('npc-head','שיחה עם ראש הכפר')}await closeAll()});
-    // העולם: מפה, שומר האבן
-    await safe('world',async()=>{await ev(()=>{villageUi(false);enterWorld('home')});await run(800);await closeAll();await shot('world','העולם, שחקן מתקדם');
+    // ביקור ומסחר, על שרת מדומה (כמו ב-check.js)
+    await safe('trade',async()=>{const ok=await ev(async()=>{const F=CLOUD.fake=cloudFakeServer();CLOUD.session=null;VISIT.ready=null;VISIT.last='';await cloudSync();
+        F.google.u1='Nir';CLOUD.session.name='Nir';await visitPublish();
+        F.google.u2='Orel';F.profiles.u2={user_id:'u2',name:'Orel',level:18,data:{village:{center:4,forge:3,mill:2},start:'hunter',pet:'piocho',bag:{wood:300,iron:40,gem:2}}};
+        visitBtn();return !document.getElementById('visBtn').hidden});
+      await shot('visit-btn','כפתור הביקור בכפר');
+      await ev(async()=>{await visitOpen();for(let i=0;i<200;i++)await Promise.resolve()});await run(400);await shot('visit','ביקור אצל חבר');
+      const tb=await ev(async()=>{if(typeof tradeLoad==='function')await tradeLoad();if(typeof visitDraw==='function')visitDraw();const b=document.querySelector('[data-act="trade"]');if(b){b.click();return true}return false});
+      await run(400);for(let i=0;i<30;i++)await ev(()=>Promise.resolve());
+      R.metrics.trade={visBtn:ok,tradeBtn:tb};await shot('trade','מסחר');
+      await ev(()=>{const b=document.querySelector('#ovTrade [data-act="give"],[data-act="give"]');if(b)b.click()});await run(200);
+      await ev(()=>{const b=document.querySelector('[data-act="want"]');if(b)b.click()});await run(200);await shot('trade-pick','מסחר: בחירה');
+      await ev(()=>{try{tradeClose()}catch(e){}try{visitClose()}catch(e){}CLOUD.session=null});await closeAll()});
+    // העולם: מפה, סקילים, פרק 3
+    await safe('world',async()=>{await ev(()=>{villageUi(false);enterWorld('home')});await run(800);await closeAll();await shot('world','העולם, שחקן ברמה 20');
       await ev(()=>menuShow('wMapBtn'));await run(300);await shot('worldmap','מפת העולם');await closeAll();
-      // אל הפנס של האדמה: השומר קם
-      const L=await ev(()=>({x:STORY.lanterns.earth.x,y:STORY.lanterns.earth.y}));await tp(L.x-200,L.y+260);
-      let up=false;for(let i=0;i<40&&!up;i++){await run(100);up=await ev(()=>!!(S.wd&&S.wd.warden))}
-      R.metrics.warden={rose:up};
-      if(up){await run(800);await shot('warden','השומר האבן קם');const t0=await now();let dead=false,low=P=>P;let minHp=1;
-        for(let i=0;i<1200&&!dead;i++){const r=await ev(()=>{const e=S.wd.warden;if(!e)return{dead:true};const d=Math.hypot(e.x-P.x,e.y-P.y)||1;
-            joy=d>70?{id:-1,ox:-999,oy:-999,dx:(e.x-P.x)/d,dy:(e.y-P.y)/d}:d<50?{id:-1,ox:-999,oy:-999,dx:-(e.x-P.x)/d,dy:-(e.y-P.y)/d}:null;
-            const hp=P.hp/P.maxHp;if(P.hp<P.maxHp*0.3)P.hp=P.maxHp;return{dead:!!e.dead,hp,whp:e.hp/(e.max||1)}});
-          if(r.hp<minHp)minHp=r.hp;dead=r.dead;if(i===150)await shot('warden-fight','קרב בשומר');
-          if(await vis('ovLevel'))await ev(()=>{const c=document.querySelector('#cards .card');if(c)c.click()});await run(100)}
-        await ev(()=>{joy=null});R.metrics.warden={rose:true,killed:dead,sec:Math.round((await now()-t0)/100)/10,lowestHpPct:Math.round(minHp*100)};
-        if(dead){await run(800);await shot('warden-down','השומר נפל')}}});
+      // סקילים: נוגעים בכל כפתור ליד קבוצת אויבים
+      const e=await ev(()=>{const e=enemies.filter(e=>!e.dead&&!e.critter&&!e.node)[0];return e?{x:e.x,y:e.y}:null});
+      if(e){await tp(e.x+120,e.y);await run(300);
+        const sk=await ev(()=>[...document.querySelectorAll('.skb')].filter(b=>b.offsetParent).map(b=>({id:b.dataset.sk,ready:b.classList.contains('ready'),w:Math.round(b.getBoundingClientRect().width)})));
+        R.metrics.skills={buttons:sk};await shot('world-skills','כפתורי הסקילים בעולם');
+        for(let i=0;i<sk.length;i++){await ev(i=>{const b=[...document.querySelectorAll('.skb')].filter(b=>b.offsetParent)[i];if(b){b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:7}));b.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:7}))}},i);await run(500);
+          if(i===0)await shot('world-skill-cast','סקיל באוויר');for(let j=0;j<6;j++){if(await ev(()=>S.mode==='play'))break;await run(400)}}
+        await run(1500);await shot('world-after-skills','אחרי הסקילים')}
+      // חופשי 60 שניות ברמה 20: כמה מטבעות ושלל
+      const c0=await ev(()=>SAVE.bag.coins||0),b0=await ev(()=>Object.keys(SAVE.bag).length),k0=await ev(()=>S.kills||0);
+      for(let i=0;i<600;i++){await ev(()=>{P.hp=Math.max(P.hp,P.maxHp*0.5);if(S.mode!=='play')return;
+          const t=enemies.filter(e=>!e.dead).sort((a,b)=>Math.hypot(a.x-P.x,a.y-P.y)-Math.hypot(b.x-P.x,b.y-P.y))[0];
+          if(t){const d=Math.hypot(t.x-P.x,t.y-P.y)||1;joy=d>40?{id:-1,ox:-999,oy:-999,dx:(t.x-P.x)/d,dy:(t.y-P.y)/d}:null}else{const a=S.t*0.3;joy={id:-1,ox:-999,oy:-999,dx:Math.cos(a),dy:Math.sin(a)}}});
+        if(await vis('ovWDeath'))await ev(()=>{const b=document.getElementById('wRespawn');if(b)b.click()});
+        if(i===300)await shot('world-lv20-play','רמה 20: אחרי חצי דקה בעולם');await run(100)}
+      await ev(()=>{joy=null});
+      R.metrics.lv20play={sec:60,coins:await ev(c=>(SAVE.bag.coins||0)-c,c0),kills:await ev(k=>(S.kills||0)-k,k0),newKinds:await ev(b=>Object.keys(SAVE.bag).length-b,b0),coinsNow:await ev(()=>SAVE.bag.coins)};
+    });
     await frame('world-adv');
     // הזירה: רק להסתכל ולדווח (של אוראל)
     if(full)await safe('arena',async()=>{await closeAll();await ev(()=>{const G=WR().gates,k=Object.keys(G)[0];wArena(k)});await run(1500);await shot('arena','הזירה (של אוראל)');
@@ -213,7 +257,7 @@ async function combo(browser,vk,lang,report){
       const pops=await ev(t=>window.__m.filter(m=>m.t>=t&&(m.k==='banner'||m.k==='choice')).length,t0);R.metrics.arena.popsPerMin=pops;
       await ev(()=>{joy=null})});
   });
-  R.metrics.moments=await ev(()=>window.__m.length);
+  R.metrics.moments=await ev(()=>window.__m.length);R.canvasHebrew=await ev(()=>window.__heb);
   await ctx.close();
 }
 
