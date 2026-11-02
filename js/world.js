@@ -22,9 +22,10 @@ const WORLD={
   /* אויבים: קבוצות שמסתובבות ליד הבית שלהן. type: מ-ETYPES. creature: יצור משאב (data.js), ליד המקור שלו.
      ראשונות: מפלצות קלות ממש מחוץ לשער, הדבר הראשון ששחקן חדש פוגש. מהן לומדים איך נראים קרב, מספרי נזק ושלל (ניר) */
   foes:[
-    {type:'grunt',n:2,x:-185,y:-450,r:95},{type:'grunt',n:2,x:190,y:-430,r:95},{type:'grunt',n:3,x:0,y:-320,r:100},
-    {type:'grunt',n:3,x:-100,y:-180,r:140},{type:'grunt',n:3,x:305,y:225,r:140},
-    {type:'grunt',n:3,x:-420,y:-560,r:110},   // על הדרך מהבית לאגם (1.11.2026: "העולם ריק")
+    // ליד השער: פחות אויבים, וכל אחד חזק יותר (zones.start). קרב אחד שמרגישים, ולא עשרה שנעלמים (מבקר 2, 2.11.2026). wtension.js
+    {type:'grunt',n:1,x:-185,y:-450,r:95},{type:'grunt',n:1,x:190,y:-430,r:95},{type:'grunt',n:2,x:0,y:-320,r:100},
+    {type:'grunt',n:2,x:-100,y:-180,r:140},{type:'grunt',n:3,x:305,y:225,r:140},
+    {type:'grunt',n:2,x:-420,y:-560,r:110},   // על הדרך מהבית לאגם (1.11.2026: "העולם ריק")
     {type:'wisp',n:2,x:-510,y:95,r:150},{type:'shield',n:2,x:450,y:50,r:130},
     {type:'treant',creature:true,n:2,x:-690,y:-305,r:170},{type:'golem',creature:true,n:2,x:655,y:-210,r:150},
     {type:'crawler',creature:true,n:2,x:785,y:-385,r:105},{type:'sprite',creature:true,n:2,x:-335,y:65,r:115}
@@ -38,7 +39,7 @@ const WORLD={
   foeHp:2.2,                             // אויבים בעולם: פי כמה חיים (docs/plan-combat.md שינוי 3). גם בלהקות (pacing.js). המכה עם הכנה: STRIKE ב-strike.js
   foeMin:70,                             // ולפחות כך הרבה חיים (כפול ה-hp של האזור): גרנט חלש לחרב לוקח 2-3 מכות ולא נעלם במכה אחת. אויב חזק לא מושפע. אחרי שדרוגים שוב מכה אחת, וזה ה"וואו, התחזקתי"
   zones:[
-    {id:'start',to:360, hp:0.35,dmg:0.25,speed:0.6, leash:240,back:12,min:80,wind:0.65},   // min: רצפת חיים משלו, כדי שגם ליד השער אויב לוקח 2-3 מכות (ולא foeMin×0.35). wind: הכנה איטית יותר למכה, קל להתחמק
+    {id:'start',to:360, hp:0.5, dmg:0.35,speed:0.65,leash:240,back:12,min:125,wind:0.65},   // min: רצפת חיים משלו, כדי שגם ליד השער אויב לוקח 3-4 מכות (ולא foeMin×0.35). wind: הכנה איטית יותר למכה, קל להתחמק
     {id:'near', to:800, hp:0.7, dmg:0.6, speed:0.85,leash:360,back:22},
     {id:'far',  to:1e9, hp:1,   dmg:1,   speed:1,   leash:480,back:30}
   ],
@@ -238,11 +239,12 @@ function wSpawn(G,i){
     e.dmg*=Z.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);   // affixRoll: אולי אויב מיוחד (affix.js). storySafe: אחרי שפנס האדמה נדלק (story.js)
     e.xp=0;e.home=i;e.creature=!!G.creature;
     if(G.tough){e.hp*=G.tough;e.max*=G.tough;e.dmg*=G.tough}   // שומרים בכניסה לדרך (curiosity.js)
-    challengeSpawn(e);tierSpawn(e)}   // דרגת העולם (tiers.js)
+    challengeSpawn(e);tierSpawn(e);wtSpawn(e)}   // wtSpawn: שחקן שעבר את האזור (wtension.js)   // דרגת העולם (tiers.js)
    // החוק של היום (challenge.js)   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
 }
 function wFoes(dt){
   const FO=WR().foes,alive=FO.map(()=>0);
+  wtGroups();   // מכים אחד, והקבוצה שלו מתעוררת (wtension.js)
   for(const e of enemies){
     if(e.dead)continue;
     if(e.wanted){wantedMove(e,dt);continue}

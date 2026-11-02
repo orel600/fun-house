@@ -1999,6 +1999,18 @@ function worldBot(m,L,god){
   check(tr.lock&&tr.btn&&tr.on&&tr.lock3&&tr.live&&tr.coins&&tr.k===1&&tr.open3&&tr.saved&&tr.back,
     'דרגות עולם: '+(tr.lock?'סגור לפני הסוף':'פתוח לפני הסוף')+(tr.btn?', נפתח אחרי הסוף':', לא נפתח')+(tr.on?', אמיץ נבחר במפה':', הבחירה לא עבדה')+(tr.lock3?', אגדי נעול':', אגדי פתוח מוקדם')+
     (tr.live?', אויב קיים התחזק':', אויב קיים לא השתנה')+(tr.coins?', שלל נוסף':', בלי שלל נוסף')+', נספרו '+tr.k+(tr.open3?', אגדי נפתח':', אגדי לא נפתח')+(tr.saved?', נשמר':', לא נשמר')+(tr.back?'':', לא חוזר לרגיל בלי סוף'));
+  // מתח בקרב בעולם (wtension.js): מכים אחד והקבוצה שלו רודפת, ושחקן שעבר את האחו פוגש אויבים חזקים יותר (שחקן חדש לא)
+  const wt=await page.evaluate(()=>{
+    const o={},lv0=SAVE.hero.level;enterWorld('home');
+    const g=WORLD.foes.findIndex(G=>G.type==='grunt'&&!G.creature),mk=()=>{const e=addEnemy('grunt',P.x+400,P.y,1);e.home=g;return e};
+    const a=mk(),b=mk(),c=addEnemy('grunt',P.x+420,P.y,1);c.home=g+1;
+    damage(a,1,'sword',0,'physical');wtGroups();o.group=b.alert>0&&!(c.alert>0);
+    SAVE.hero.level=1;o.newK=wtOverK();o.cap=wtCap();
+    SAVE.hero.level=20;o.hiK=wtOverK();const e=mk(),h=e.max;wtSpawn(e);o.hp=Math.round(e.max/h*100)/100;
+    SAVE.hero.level=lv0;return o});
+  await page.evaluate(()=>enterVillage());
+  check(wt.group&&wt.newK===1&&wt.hiK>1&&wt.hiK<=2.4&&wt.hp===Math.round(wt.hiK*100)/100,
+    'מתח בעולם: '+(wt.group?'מכה באחד מעירה את הקבוצה שלו (ולא אחרת)':'הקבוצה לא התעוררה')+', האחו מתאים עד רמה '+wt.cap+', ברמה 1 ×'+wt.newK+', ברמה 20 ×'+wt.hiK+' (חיים ×'+wt.hp+')');
   // מכות עם הכנה (story.js, STORY.tele, docs/plan-combat.md שינוי 1): כל שומר מכה לפחות מכה אחת, ולפני כל מכה יש סימן של 0.6 שניות לפחות.
   // לשומר האבן: רקיעה והסתערות. ברקיעה: מי שנשאר בעיגול נפגע, מי שזז לא
   const tl=await page.evaluate(()=>{const out={};const hp0=P.hp,mx0=P.maxHp;
