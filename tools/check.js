@@ -1271,6 +1271,8 @@ function worldBot(m,L,god){
   await page.clock.runFor(5000);
   Object.assign(wl,await page.evaluate(()=>{const o={},$=id=>document.getElementById(id);
     o.closed=$('ovWelcome').hidden&&S.mode==='play';o.noPop=['ovDaily','ovVisit','qLog','ovGear'].every(id=>$(id).hidden);
+    o.left=welcomeRows().map(w=>w.kind+':'+w.key).join(',');   // מה שנשאר. קווסט יומי שהאיסוף עצמו השלים (למשל "הבא עץ") הוא פרס חדש ולא שארית: לוקחים אותו כאן
+    for(const id in QS().active)if(QBY[id]&&qReady(QBY[id])&&!qKind(QBY[id]).talk)questClaim(id,true);
     enterVillage();return o}));
   await page.clock.runFor(1500);
   Object.assign(wl,await page.evaluate(()=>{const o={empty:document.getElementById('ovWelcome').hidden};WELCOME.auto=false;return o}));   // מכאן הבדיקות האחרות נכנסות לכפר בלי החלון
@@ -1278,7 +1280,7 @@ function worldBot(m,L,god){
   check(wl.maxWin<=1&&wl.bans<=2,'כניסה לכפר: '+(wl.maxWin<=1?'לכל היותר חלון אחד בכל רגע':wl.maxWin+' חלונות יחד')+', '+wl.bans+' הודעות ב-3 שניות (לכל היותר 2)');
   check(wl.prod&&wl.daily&&wl.quest&&wl.fx===1&&wl.fly&&wl.next,'בזמן שלא היית: "אסוף הכל" '+(wl.prod?'אסף '+wl.wood+' עץ':'לא אסף את הייצור')+(wl.daily?', מתנה יומית':', בלי המתנה היומית')+(wl.quest?', קווסט':', הקווסט לא נלקח')+
     ', '+wl.fx+' חגיגות (צפוי 1)'+(wl.fly?', מספרים עפים':', בלי מספרים עפים')+(wl.next?', ושורה מה עכשיו':', בלי שורה מה עכשיו'));
-  check(wl.closed&&wl.noPop&&wl.empty,'בזמן שלא היית: '+(wl.closed?'נסגר לבד אחרי האיסוף':'לא נסגר')+(wl.noPop?', שום חלון לא קפץ אחריו':', קפץ עוד חלון')+(wl.empty?', ובלי כלום שמחכה הוא לא מופיע':', והופיע גם בלי כלום שמחכה'));
+  check(wl.closed&&wl.noPop&&wl.empty,'בזמן שלא היית: '+(wl.closed?'נסגר לבד אחרי האיסוף':'לא נסגר')+(wl.noPop?', שום חלון לא קפץ אחריו':', קפץ עוד חלון')+(wl.empty?', ובלי כלום שמחכה הוא לא מופיע':', והופיע גם בלי כלום שמחכה ('+wl.left+')'));
   // צלילים: כמה פעמים כל צליל התבקש, אם הקבצים נטענו מ-file://, ואם כפתור ההשתקה עובד ונשמר
   // הכפתור פותח את חלון הצלילים: השתקה בתוכו, ועוצמה לכל ערוץ שנשמרת בטלפון
   const au=await page.evaluate(()=>{const $=id=>document.getElementById(id);$('muteBtn').click();const open=!$('ovSound').hidden;
