@@ -85,7 +85,7 @@ function lootGear(e,force){
   if(e.node||!R||S.room||(!S.wd&&!force))return null;   // רק בעולם הפתוח, לא בזירה
   const ch=R.chance*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck()*statLoot();
   if(!force&&Math.random()>=ch){SAVE.gearPity=(SAVE.gearPity||0)+1;return null}
-  SAVE.gearPity=0;const id=(e.isBoss&&orbitComboRoll())||lootRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;   // בוס: לפעמים חפץ משולב (orbit.js)
+  SAVE.gearPity=0;const id=lootRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;
   dropSpawn(id,1,e.x,e.y);if(feedOn())feedGear(id);else banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id),dropTier(id).col);   // בעולם ובכפר: בפיד (feed.js)
   celebrate(e.x,e.y,'loot'+Math.max(2,dropRar(id)),gIcon(id));
   return id;

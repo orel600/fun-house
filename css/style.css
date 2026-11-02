@@ -1389,6 +1389,8 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 .wsbc.lock{opacity:.5;cursor:default}
 .wsbi{position:relative;flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#0006;box-shadow:0 0 0 2px var(--dt)}
 .wsbi .dti{width:22px;height:22px}
+.wsbi.pic{overflow:hidden}.wsbi .wsbp,.skrfly .wsbp{width:100%;height:100%;border-radius:50%;display:block}
+.wsbp{width:1.3em;height:1.3em;object-fit:contain;vertical-align:-.3em}
 .wsbi em{position:absolute;bottom:-4px;inset-inline-end:-6px;font-style:normal;font-size:15px}
 .wsbn{display:flex;flex-direction:column;min-width:0}
 .wsbn b{font-size:14px}.wsbn small{font-size:11px;opacity:.85;line-height:1.2}
@@ -1491,3 +1493,15 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbkd{color:var(--dim);font:500 var(--t1) var(--body);margin:6px 0}
 .mbbtns{display:flex;gap:10px;justify-content:flex-end;align-items:center}
 .mbbtns .go{padding:12px 22px}
+
+/* רונות בספר הסקילים (js/wrunes.js): שורה בראש רשימת הסקילים, שתי רונות לכל סקיל שבחרת */
+.wrbox{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:stretch;padding-bottom:4px;border-bottom:1px solid #3A4566}
+.wrh{flex:0 0 100%;font-size:13px;color:var(--gold)}
+.wrrow{flex:1 1 260px;display:flex;align-items:center;gap:6px;border-inline-start:3px solid var(--dt);padding-inline-start:6px}
+.wrn{flex:0 0 auto;font-size:12px;opacity:.9;max-width:70px;line-height:1.15}
+.wrchips{flex:1;display:flex;gap:4px}
+.wrc{appearance:none;flex:1;display:flex;flex-direction:column;align-items:flex-start;text-align:start;min-height:40px;font:inherit;color:var(--chalk);background:#141A2Acc;border:2px solid #3A4566;border-radius:10px;padding:3px 6px;cursor:pointer}
+.wrc b{font-size:12px}.wrc small{font-size:10px;opacity:.85;line-height:1.15}
+.wrc.on{border-color:var(--dt);box-shadow:inset 0 0 0 1px var(--dt)}
+.wrc.on b{color:var(--gold)}
+.wrc.lock{opacity:.5;cursor:default}

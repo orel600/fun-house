@@ -22,6 +22,7 @@ function lpAt(lv){
   if(lv%RANKS.every===0)out.push({k:'rank',icon:'🎖️',txt:T('lp.rank')});
   for(const x of LEVELPATH.extra[lv]||[])out.push({k:'extra',icon:x.icon,txt:T(x.t)});
   if(typeof wsbAt==='function')out.push(...wsbAt(lv));   // סקיל חדש בספר הסקילים (wskbook.js)
+  if(typeof wrAt==='function')out.push(...wrAt(lv));   // רונה חדשה לסקיל (wrunes.js)
   if(typeof cuAt==='function')out.push(...cuAt(lv));   // סוד חדש שנפתח ברמה: "משהו חדש באחו" (curiosity.js)
   return out;
 }
@@ -36,7 +37,7 @@ const lpLine=n=>T('lp.at',n.lv)+' '+n.items.map(x=>x.icon+' '+x.txt).join(' · '
 // ההסבר המלא במילים ב-title של הפס (lpTitle)
 function lpHtml(){
   const lv=heroLv(),n=lpNext(lv);if(!n)return '';
-  const b=lpNext(lv,true),far=b&&b.lv!==n.lv,ic=x=>x.items.map(i=>i.icon).join('');
+  const b=lpNext(lv,true),far=b&&b.lv!==n.lv,ic=x=>x.items.map(i=>i.pic||i.icon).join('');
   return ' · <span class="lpnext"><b>'+T('lp.next')+'</b> '+T('lp.at',n.lv)+' '+ic(n)+(far?' <span class="lpbig">· '+T('lp.at',b.lv)+' '+ic(b)+'</span>':'')+'</span>';
 }
 function lpTitle(){const lv=heroLv(),n=lpNext(lv),b=lpNext(lv,true);if(!n)return '';
@@ -45,6 +46,7 @@ function lpTitle(){const lv=heroLv(),n=lpNext(lv),b=lpNext(lv,true);if(!n)return
 /* ---- הרגע הגדול: הבזק, הגיבור מריע, וכרטיס של מה שנפתח ומה הבא ---- */
 function lpLevelUp(from,lv){
   if(typeof wsbLevelUp==='function')wsbLevelUp(from,lv);   // סקיל שנפתח נכנס למשבצת פנויה (wskbook.js)
+  if(typeof wrLevelUp==='function')wrLevelUp(from,lv);   // רונה שנפתחה נכנסת לבד (wrunes.js)
   const got=[{icon:'⭐',txt:T('lp.pts',(lv-from)*STATS.perLevel)}];
   for(let l=from+1;l<=lv;l++)got.push(...lpAt(l));
   lpFlash();
@@ -53,7 +55,7 @@ function lpLevelUp(from,lv){
   let c=$('lpCard');
   if(!c){c=document.createElement('div');c.id='lpCard';c.className='lpcard';c.setAttribute('role','status');c.onclick=()=>{c.classList.remove('on')};document.body.appendChild(c)}
   const n=lpNext(lv);
-  c.innerHTML='<h3>'+T('lp.up',lv)+'</h3><ul>'+got.map(x=>'<li><span>'+x.icon+'</span><bdi>'+x.txt+'</bdi></li>').join('')+'</ul>'+(n?'<p><b>'+T('lp.next')+'</b> <bdi>'+lpLine(n)+'</bdi></p>':'');
+  c.innerHTML='<h3>'+T('lp.up',lv)+'</h3><ul>'+got.map(x=>'<li><span>'+(x.pic||x.icon)+'</span><bdi>'+x.txt+'</bdi></li>').join('')+'</ul>'+(n?'<p><b>'+T('lp.next')+'</b> <bdi>'+lpLine(n)+'</bdi></p>':'');
   c.classList.add('on');clearTimeout(lpLevelUp.t);lpLevelUp.t=setTimeout(()=>c.classList.remove('on'),LEVELPATH.card.t*1000);
 }
 function lpFlash(){
