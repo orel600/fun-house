@@ -1320,6 +1320,7 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 .gdhead h3{overflow-wrap:break-word}
 #ovGear .gdetail .gbtns{flex:none;flex-direction:row;gap:6px;max-width:none;width:100%}
 #ovGear .gdetail .gbtns .vbtn{flex:1 1 0;min-width:0;max-width:none;margin:0;white-space:nowrap}
+#ovGear .gdetail .gbtns .vbtn.ghost{border:1px solid var(--line);border-radius:10px;border-image:none;background:var(--panel)}   /* ביטול/להוריד: מסגרת שנראית על הרקע הכהה */
 @media (orientation:landscape){
   #ovGear .gbody{grid-template-columns:minmax(0,2.9fr) minmax(0,4fr) minmax(0,2.7fr)}
   body.menu #ovGear .gbody{grid-template-columns:minmax(0,2.6fr) minmax(0,3.8fr) minmax(0,2.8fr)}
@@ -1332,3 +1333,34 @@ body:not(.vil):not(.world) .dgift{display:none!important}
   #ovGear .gdicon .ri{width:34px;height:34px}
   #ovGear .gdetail .gbtns .vbtn{min-height:40px;padding:6px 2px;font-size:14px;border-width:0 18px;border-image-width:0 18px}
 }
+/* ===== חלונות שלא נחתכים (ניר 2.11.2026, טלפון שוכב באנגלית: ארבעה צילומים) =====
+   חלון הציוד נבנה מחדש בסשן אחר, ולכן כאן רק מה שהמכירה צריכה. מכירה: רשימה שנגללת באצבע ונגיעה שומרת פריט.
+   עץ הסקילים: נגיעה בסקיל פותחת את התיאור המלא, ודהייה בתחתית מראה שיש עוד. שירות של תושב: בטור השני, ברוחב שלו */
+.gorb{margin:0;font-size:13px;line-height:1.3}
+/* אזורים שנגללים: האצבע גוללת גם כשהיא מתחילה על משבצת (בגוף המשחק touch-action:none) */
+.gsidep .gdetail,.trcols,.gsell,.npcdlg .rserve{touch-action:pan-y;overscroll-behavior:contain}
+.gsidep .gdetail.selling{overflow:hidden}
+.gsellhint{margin:0;font-size:11px}
+.gsell{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;overflow-y:auto;min-height:0;flex:1 1 auto;align-content:start;padding:2px}
+#ovGear .gsell .gtile{touch-action:pan-y;min-width:0;font-size:22px;position:relative}
+#ovGear .gsell .gtile[aria-pressed="true"]{outline:0}
+#ovGear .gsell .gtile[aria-pressed="true"]::after{content:'✓';position:absolute;top:1px;inset-inline-start:3px;font:900 12px/1 var(--body);color:#5BD46B;text-shadow:0 0 2px #000,0 0 2px #000}
+#ovGear .gsell .gtile[aria-pressed="false"]{opacity:.35;filter:grayscale(1)}
+/* עץ הסקילים */
+.trcols{padding-bottom:22px;-webkit-mask-image:linear-gradient(#000 calc(100% - 22px),transparent);mask-image:linear-gradient(#000 calc(100% - 22px),transparent)}
+.trn{cursor:pointer}
+.trn.open{opacity:1;align-items:flex-start;padding-block:4px}
+.trn.open .stn small{white-space:normal;overflow:visible;text-overflow:clip;display:block;-webkit-line-clamp:unset;font-size:12px;line-height:1.3;color:var(--chalk)}
+/* שירות של תושב שעבר מהעולם (residents.js): בטור השני, איפה שהקווסטים, ושורה אחת לכל שירות */
+@media (orientation:landscape){
+  .npcdlg.win>.fcook.rserve.rserve{grid-column:2;grid-row:auto;display:flex;flex-direction:column;gap:6px;margin-top:0;max-height:none;overflow:visible}
+  .npcdlg.win:has(.rserve)>.npcsay{grid-row:2/span 4;font-size:inherit}
+  .npcdlg.win:has(.rserve) .npcpic{width:84px;height:84px}
+}
+.rserve>b{font-size:15px}
+.npcdlg .rserve .fmeal .fmt{font-size:14px;min-width:0}
+.npcdlg .rserve .fmeal .fmt>span{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.npcdlg .rserve .fmeal .vbtn{flex:none;min-width:80px;min-height:44px}
+/* תיאור של סקיל בעץ: שתי שורות במקום שורה עם "...", ונגיעה בסקיל פותחת את כולו */
+#ovGear .trn .stn small{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-overflow:clip;line-height:1.2}
+#ovGear .trn.open .stn small{display:block;-webkit-line-clamp:unset;overflow:visible}

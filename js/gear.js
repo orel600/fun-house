@@ -223,17 +223,39 @@ const gStashOn=()=>!!(S.vil&&S.vil.near==='stash'&&vLv('stash')>0);
 const gRar=k=>gItem(k)?gItem(k).tier:(resOf(k)||{}).rar||0;
 const gRarCol=k=>RES.rarity[Math.min(gRar(k),RES.rarity.length-1)].col;
 
-const gSign=(k,v)=>'<bdi>'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T(GEAR.stats[k].t||'st.'+k);
-function gStatsHtml(id){const it=gItem(id),s=gStats(id);
-  if(it.slot==='orbit')return '<p>'+T('orb.'+it.type)+' · '+T('orb.do.'+it.type)+'</p>';
+const gSign=(k,v)=>'<bdi dir="ltr">'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T(GEAR.stats[k].t||'st.'+k);
+/* ---- חפץ מסתובב: מה הוא נותן, מהמספרים של ORBIT.types (orbit.js, של אוראל). רק תצוגה: לא משנה איך הוא עובד בזירה.
+   כל שורה: k (המפתח, להשוואה), v (המספר), ו-b לשורה בלי מספר (עוצר יריות). הטקסט ב-lang.js תחת 'orb.f.<k>' ---- */
+function gOrbFacts(type){
+  const D=ORBIT.types[type]||{},out=[],pc=x=>Math.round(x*100);
+  if(D.dmg)out.push({k:D.dt,v:pc(D.dmg)});   // אחוז מהנזק של הנשק, בסוג הנזק שלו
+  if(D.block)out.push({k:'block',v:1,b:1});
+  if(D.shield)out.push({k:'shield',v:1,b:1});
+  if(D.heal)out.push({k:'heal',v:pc(D.heal.k)});
+  if(D.crit)out.push({k:'crit',v:pc(D.crit)});
+  if(D.loot)out.push({k:'loot',v:pc(D.loot)});
+  return out;
+}
+const gOrbLine=(f,v)=>f.b?T('orb.f.'+f.k):'<bdi dir="ltr">'+(v>0?'+':'')+v+'%</bdi> '+T('orb.f.'+f.k);
+// lite: חפץ מסתובב מהתרמיל, כשההשוואה שמתחת כבר מראה את כל מה שהוא נותן (▲), כדי שהכל ייכנס בטור בלי גלילה
+function gStatsHtml(id,lite){const it=gItem(id),s=gStats(id);
+  if(it.slot==='orbit')return '<p class="gorb">'+T('orb.'+it.type)+' · '+T('orb.do.'+it.type)+'</p>'+(lite?'':'<ul class="gstats">'+gOrbFacts(it.type).map(f=>'<li>'+gOrbLine(f,f.v)+'</li>').join('')+'</ul>');
   return '<ul class="gstats">'+(it.w?'<li class="gdmg">'+wRangeTxt(wItemAvg(id),it.w)+'</li>':'')+Object.keys(s).map(k=>'<li>'+gSign(k,s[k])+'</li>').join('')+'</ul>'}
 // מה ישתנה אם לובשים: לכל סטט, ההפרש מול מה שיוצא מהמשבצת, עם חץ למעלה או למטה
 function gCompare(id,old){
+  if(gItem(id)&&gItem(id).slot==='orbit')return gOrbCompare(id,old);
   const a=gearStats([id]),b=gearStats(old?[old]:[]),ks=[...new Set([...Object.keys(a),...Object.keys(b)])].filter(k=>(a[k]||0)!==(b[k]||0));
   // נשק: הטווח החדש, עם חץ לפי הממוצע מול הנשק שיוצא
   const it=gItem(id),da=it&&it.w?wItemAvg(id)-wItemAvg(old):0,dmg=it&&it.w&&Math.abs(da)>0.05?'<span class="'+(da>0?'up':'down')+'">'+(da>0?'▲':'▼')+' '+wRangeTxt(wItemAvg(id),it.w)+'</span>':'';
   if(!ks.length&&!dmg)return '<p class="dim">'+T('gear.same')+'</p>';
   return '<p class="cmp">'+dmg+ks.map(k=>{const d=(a[k]||0)-(b[k]||0);return '<span class="'+(d>0?'up':'down')+'">'+(d>0?'▲':'▼')+' '+gSign(k,d)+'</span>'}).join('')+'</p>';
+}
+// חפץ מסתובב מול מה שיוצא מהמשבצת (או משבצת ריקה): מה מתווסף ▲ ומה הולך ▼
+function gOrbCompare(id,old){
+  const a=gOrbFacts(gItem(id).type),b=old&&gItem(old)?gOrbFacts(gItem(old).type):[],ks=[...new Set([...a,...b].map(f=>f.k))];
+  const v=(l,k)=>(l.find(f=>f.k===k)||{v:0}).v,ds=ks.map(k=>({f:[...a,...b].find(f=>f.k===k),d:v(a,k)-v(b,k)})).filter(x=>x.d);
+  if(!ds.length)return '<p class="dim">'+T('gear.same')+'</p>';
+  return '<p class="cmp">'+ds.map(x=>'<span class="'+(x.d>0?'up':'down')+'">'+(x.d>0?'▲':'▼')+' '+gOrbLine(x.f,x.d)+'</span>').join('')+'</p>';
 }
 // משבצת או תא בתרמיל: מסגרת בצבע הנדירות, ופס בצבע סוג הנזק לנשק
 function gTile(id,attrs,extra){
@@ -289,6 +311,8 @@ function gDoBest(){
 }
 /* ---- למכור חלשים: רק פריטים רגילים ולא שכיחים (GEAR.sell) שחלשים ממה שלבוש (▼), בלי שדרוג ובלי כוח.
    מסט נשאר עותק אחד, בשביל הבונוס. אישור בתוך החלון, לא confirm() ---- */
+// במצב מכירה אפשר להוריד פריט מהרשימה בנגיעה (GUI.sellOff), כדי לשמור אותו. מה שנשאר ברשימה נמכר
+const gSellPick=()=>{const l=gSellList(),o={};for(const k in l)if(!(GUI.sellOff||{})[k])o[k]=l[k];return o};
 function gSellList(){
   const o={};
   for(const k in SAVE.bag){const it=gItem(k),n=SAVE.bag[k];if(!it||!(n>0)||GEAR.sell[it.tier]==null||k!==gBase(k)||gMark(k)!==-1)continue;
@@ -296,8 +320,8 @@ function gSellList(){
   return o;
 }
 const gSellCoins=l=>Object.keys(l).reduce((t,k)=>t+GEAR.sell[gItem(k).tier]*l[k],0);
-function gDoSell(){
-  const l=gSellList(),c=gSellCoins(l);if(!c)return 0;
+function gDoSell(l=gSellList()){
+  const c=gSellCoins(l);if(!c)return 0;
   for(const k in l)bagTake(k,l[k]);bagAdd('coins',c);saveNow();sfx('coin');banner(T('gear.sold',c),C.gold);
   return c;
 }
@@ -334,19 +358,22 @@ function gearDraw(){
   $('gStash').hidden=!st;
   if(st)$('gStash').innerHTML='<span class="k">'+T('gear.stash',stashUsed(),stashCap())+'</span><div class="ggrid">'+
     (sk.length?sk.map(k=>gCell(k,SAVE.stash[k],'data-sid="'+k+'"'+(sel&&sel.sid===k?' aria-pressed="true"':''))).join(''):'<p class="dim">'+T('stash.empty')+'</p>')+'</div>';
-  $('gDetail').innerHTML=gDetailHtml();$('gDetail').classList.toggle('gstatp',!$('gDetail').querySelector('.gdhead,.gsell'));
+  $('gDetail').innerHTML=gDetailHtml();$('gDetail').classList.toggle('selling',!!GUI.sell);$('gDetail').classList.toggle('gstatp',!$('gDetail').querySelector('.gdhead,.gsell'));   // gstatp: טור הסטטים (gearui.js)
   // הדפים: ציוד, או דמות (הנקודות, stats.js). עץ הסקילים נפתח מדף הדמות ומחליף אותו
   const ch=GUI.page==='char',tv=ch&&GUI.view==='tree',pts=stFree()+trFree();
   $('gPages').innerHTML=['gear','char'].map(pg=>'<button data-page="'+pg+'"'+(GUI.page===pg?' aria-pressed="true"':'')+'>'+T('gear.pg.'+pg)+(pg==='char'&&pts?'<i class="gdot">'+pts+'</i>':'')+'</button>').join('');
   $('ovGear').querySelector('.gbody').hidden=ch;$('gChar').hidden=!ch||tv;$('gTree').hidden=!tv;
-  if(ch&&!tv)$('gChar').innerHTML=statsHtml();if(tv)$('gTree').innerHTML=treeHtml();   // עץ הסקילים (stats.js)
+  const tcol=$('gTree').querySelector('.trcols'),tsc=tcol?tcol.scrollTop:0;   // הציור מחדש לא קופץ לראש העץ
+  if(ch&&!tv)$('gChar').innerHTML=statsHtml();if(tv){$('gTree').innerHTML=treeHtml();const c=$('gTree').querySelector('.trcols');if(c)c.scrollTop=tsc}   // עץ הסקילים (stats.js)
   $('ovGear').classList.toggle('stv',ch);
 }
 // הפרטים: שם בצבע הנדירות, נדירות וחומר, רמת Aging, סטטים, השוואה למה שלבוש, וכפתורים
 function gDetailHtml(){
-  if(GUI.sell){const l=gSellList(),ks=Object.keys(l);   // אישור למכירה, בתוך החלון: מה יימכר וכמה מקבלים
-    if(ks.length)return '<h3>'+T('gear.sellAsk',gSellCoins(l))+'</h3><div class="gsell">'+ks.map(k=>gCell(k,l[k],'disabled')).join('')+'</div>'+
-      '<div class="gbtns"><button class="vbtn" data-act="sellYes">'+T('gear.sellYes')+'</button><button class="vbtn ghost" data-act="sellNo">'+T('gear.sellNo')+'</button></div>';
+  if(GUI.sell){const l=gSellList(),ks=Object.keys(l),c=gSellCoins(gSellPick()),off=GUI.sellOff||{};   // אישור למכירה, בתוך החלון: מה יימכר וכמה מקבלים
+    // ניר 2.11: "המכירה נתקעת". הרשימה לא נגללה באצבע (touch-action של המשבצות) ולא הגיבה לנגיעה. עכשיו היא נגללת, ונגיעה בפריט שומרת אותו
+    if(ks.length)return '<h3>'+T('gear.sellAsk',c)+'</h3><p class="dim gsellhint">'+T('gear.sellPick')+'</p><div class="gsell">'+
+      ks.map(k=>gCell(k,l[k],'data-sk="'+k+'" aria-pressed="'+!off[k]+'"')).join('')+'</div>'+
+      '<div class="gbtns"><button class="vbtn" data-act="sellYes"'+(c?'':' disabled')+'>'+T('gear.sellYes')+'</button><button class="vbtn ghost" data-act="sellNo">'+T('gear.sellNo')+'</button></div>';
     GUI.sell=false}
   const sel=GUI.sel,k=sel&&(sel.id||sel.sid||gGet(sel.slot,sel.i)),n=!sel?0:sel.id?SAVE.bag[k]:sel.sid?SAVE.stash[k]:1;
   if(!k||!n)return gStatPanel();   // בלי פריט: הסטטים של הגיבור והעמידויות (gearui.js)
@@ -354,7 +381,8 @@ function gDetailHtml(){
   let d='<div class="gdhead" style="--rar:'+col+'"><button class="gdx" data-act="desel" aria-label="'+T('gear.close')+'">✕</button><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
     '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
   if(it&&gPlus(k))d+='<p class="gage">'+T('gear.aged',gPlus(k))+'</p>';
-  if(it)d+=gStatsHtml(k)+powLine(k)+setHtml(k);   // הכוח בזהב (powers.js)   // סט: מה הוא נותן וכמה חלקים לבושים (sets.js)
+  const orbOld=it&&sel.id&&it.slot==='orbit'?gItem(gGet('orbit',gTarget(it))):null;
+  if(it)d+=gStatsHtml(k,!!sel.id&&it.slot==='orbit'&&(!orbOld||orbOld.type!==it.type))+powLine(k)+setHtml(k);   // הכוח בזהב (powers.js)   // סט: מה הוא נותן וכמה חלקים לבושים (sets.js)
   else{const w=resWhere(k),cut=a=>a.slice(0,RES.tip.max).join(', ')+(a.length>RES.tip.max?'…':'');   // משאב: מאיפה ובשביל מה (resources.js)
     if(w.src.length)d+='<p class="dim">'+T('tip.from',cut(w.src))+'</p>';if(w.use.length)d+='<p class="dim">'+T('tip.for',cut(w.use))+'</p>'}
   const btn=(act,txt,ghost)=>'<button class="vbtn'+(ghost?' ghost':'')+'" data-act="'+act+'">'+txt+'</button>';
@@ -454,6 +482,8 @@ addEventListener('pointercancel',e=>{if(GDRAG.src&&e.pointerId===GDRAG.pid)gDrag
 
 $('ovGear').addEventListener('click',e=>{
   if(e.target.closest('.gfig')){GUI.sel=null;GUI.page='char';GUI.view=null;gRedraw();return}   // נגיעה בדמות: הדף שלה (נקודות)
+  const tn=e.target.closest('.trn');   // עץ הסקילים: נגיעה בסקיל פותחת את התיאור המלא שלו (ניר 2.11: "לא רואים מה הסקילים עושים")
+  if(tn&&!e.target.closest('button')){GUI.trOpen=GUI.trOpen===tn.dataset.tr?null:tn.dataset.tr;sfx('tap');gRedraw();return}
   const b=e.target.closest('button');if(!b||b.disabled)return;
   if(b.id==='gearClose'){gearClose();return}
   if(b.dataset.act==='stat'){statAdd(b.dataset.k);statBadge();gRedraw();return}
@@ -461,12 +491,13 @@ $('ovGear').addEventListener('click',e=>{
   if(b.dataset.page){GUI.page=b.dataset.page;GUI.view=null;GUI.sel=null;GUI.sell=false;gRedraw();return}
   if(b.dataset.act==='tree'||b.dataset.act==='back'){GUI.view=b.dataset.act==='tree'?'tree':null;GUI.sel=null;gRedraw();return}
   if(b.dataset.act==='learn'){treeLearn(b.dataset.b,b.dataset.id);statBadge();gRedraw();return}
+  if(b.dataset.sk){const o=GUI.sellOff||(GUI.sellOff={});o[b.dataset.sk]=!o[b.dataset.sk];sfx('tap');gRedraw();return}   // מכירה: נגיעה שומרת פריט או מחזירה אותו לרשימה
   const a=b.dataset.act,sel=GUI.sel;
   if(a!=='sellYes')GUI.sell=false;
   if(b.dataset.tab){GUI.tab=b.dataset.tab;GUI.sel=null}
   else if(a==='best'){if(!gDoBest())sfx('tap')}
-  else if(a==='sell'){GUI.sell=true;GUI.sel=null}
-  else if(a==='sellYes'){gDoSell();GUI.sell=false}
+  else if(a==='sell'){GUI.sell=true;GUI.sellOff={};GUI.sel=null}
+  else if(a==='sellYes'){gDoSell(gSellPick());GUI.sell=false}
   else if(a==='sellNo'){}
   else if(a==='desel')GUI.sel=null;   // ✕ בפרטים: חוזרים לסטטים
   else if(b.dataset.id){GUI.sel={id:b.dataset.id};if(gIsNew(b.dataset.id)){gSeen()[b.dataset.id]=1;saveNow()}}
