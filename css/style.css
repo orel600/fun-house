@@ -89,6 +89,11 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
 .skb.ready{box-shadow:0 0 12px var(--dt)}
 .skb.ping{animation:skping .45s ease-out}   /* נטען: טבעת אחת קצרה שיוצאת מהכפתור */
 @keyframes skping{from{box-shadow:0 0 0 0 var(--dt)}to{box-shadow:0 0 0 14px transparent}}
+/* סקיל חדש (js/skillreveal.js): הכפתור מחכה לאייקון שעף אליו, והאייקון עצמו */
+.skb.skrwait{opacity:0}
+.skrfly{position:fixed;left:0;top:0;z-index:40;width:var(--s);height:var(--s);border-radius:50%;border:3px solid var(--dt);
+  background:rgba(18,22,36,.85);box-shadow:0 0 24px var(--dt);display:grid;place-items:center;pointer-events:none;will-change:transform}
+.skrfly .dti{width:60%;height:60%}
 .skb:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
 /* ברק אלוהי (js/divine.js): באלכסון, מחוץ לקשת של הסקילים, כדי שבמסך נמוך הוא לא יעלה עד פס החיים */
 .divine{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 154px);right:calc(env(safe-area-inset-right,0px) + 146px);
