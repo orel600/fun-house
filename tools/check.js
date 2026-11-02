@@ -1877,6 +1877,16 @@ function worldBot(m,L,god){
     SAVE.gear.weapon='oakBow';R3D._hl=null;L=heroLook();o.noBow=!L.props.shield;
     SAVE.gear=JSON.parse(g0);SAVE.bag=JSON.parse(b0);R3D._hl=null;return o});
   check(gv.shield&&gv.head&&gv.in3d&&gv.glow&&gv.noBow,'ציוד שרואים: '+(gv.shield?'מגן זהב עם להב כסף':'אין מגן')+(gv.head?', קסדה זוהרת מקמע זהב':', קסדה בלי זוהר')+(gv.in3d?'':', המגן לא נראה בתלת-ממד')+(gv.glow?', הנשק זוהר':', הנשק לא זוהר')+(gv.noBow?', ועם קשת אין מגן':', מגן גם עם קשת'));
+  // צללים (look-hd.js, HD.shadow): בתלת-ממד בעולם השמש מטילה צל, הגיבור מטיל ועצים לא, והמתג בהגדרות מכבה ומדליק
+  if(CFG.gfx==='3d'){const sd=await page.evaluate(()=>{
+    if(!R3D.on||!R3D.ready)return {skip:true};
+    const o={},sun=R3D.scene.children.find(x=>x.isDirectionalLight),u=HD.sh.user,de=R3D.drawEvery,casts=x=>{let c=false;x.traverse(m=>{if(m.isMesh&&m.castShadow)c=true});return c};
+    const draw=()=>{try{render3d(W/2-P.x,H/2-P.y)}catch(e){o.err=String(e)}};
+    enterWorld('home');R3D.drawEvery=0;draw();
+    o.on=sun.castShadow;o.hero=casts(R3D.player.root);o.trees=Object.values(R3D.wld.nodes).filter(casts).length;
+    setShadow(false);draw();o.off=!sun.castShadow;setShadow(true);draw();o.back=sun.castShadow;
+    HD.sh.user=u;try{if(u)localStorage.setItem(HD.shadow.key,u);else localStorage.removeItem(HD.shadow.key)}catch(e){}R3D.drawEvery=de;return o});
+    check(sd.skip||(sd.on&&sd.hero&&!sd.trees&&sd.off&&sd.back&&!sd.err),'צללים: '+(sd.skip?'אין תלת-ממד':(sd.on?'דלוקים בעולם':'לא דלוקים')+(sd.hero?', הגיבור מטיל צל':', הגיבור בלי צל')+(sd.trees?', '+sd.trees+' מקורות מטילים צל (רק דמויות ומבנים)':', עצים וסלעים בלי')+(sd.off&&sd.back?', המתג מכבה ומדליק':', המתג לא עובד')+(sd.err?', שגיאה: '+sd.err:'')))}
   // מסלול רמות (levelpath.js): מה נפתח בכל רמה נגזר מהטבלאות, "הבא" בחלון הדמות, ובעליית רמה הבזק וכרטיס עם מה שנפתח ומה הבא
   const lp=await page.evaluate(()=>{
     enterWorld('home');const o={};
