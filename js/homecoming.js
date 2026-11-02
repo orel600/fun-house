@@ -10,16 +10,16 @@
 const HOME={
   /* res: התושב שחוזר. at ו-area כמו ב-NPC.list. item: החפץ שנופל אחרי שהפנס דולק. chance: סיכוי לכל אויב שנופל בעולם */
   list:{
-    earth:{res:'gardener',at:{x:-110,y:120},area:35,col:'#8BC34A',item:'stoneOrb',chance:0.012},
-    water:{res:'washer',  at:{x:110,y:30},  area:35,col:'#3F7BF5',item:'leafOrb', chance:0.012},
-    ice:  {res:'singer',  at:{x:200,y:-140},area:30,col:'#7FD4FF',item:'frostOrb',chance:0.012},
-    fire: {res:'baker',   at:{x:-200,y:-130},area:30,col:C.ember, item:'emberOrb',chance:0.012},
-    bolt: {res:'bellringer',at:{x:140,y:270},area:30,col:'#C7A6FF',item:'cloverOrb',chance:0.012},   // פרק 5: הפעמונאי. תלתן: מזל, כמו ברק שפוגע פעמיים
-    light:{res:'lamplighter',at:{x:-320,y:60},area:30,col:'#FFFFFF'}   // פרק 6, האחרונה: מדליקת הפנסים. בלי חפץ: המתנה של הפנס הלבן היא הסוף עצמו
+    earth:{res:'gardener',at:{x:-190,y:150},area:35,col:'#8BC34A',item:'stoneOrb',chance:0.012},
+    water:{res:'washer',  at:{x:200,y:150},  area:35,col:'#3F7BF5',item:'leafOrb', chance:0.012},
+    ice:  {res:'singer',  at:{x:250,y:-40},area:30,col:'#7FD4FF',item:'frostOrb',chance:0.012},
+    fire: {res:'baker',   at:{x:-250,y:-40},area:30,col:C.ember, item:'emberOrb',chance:0.012},
+    bolt: {res:'bellringer',at:{x:150,y:400},area:30,col:'#C7A6FF',item:'cloverOrb',chance:0.012},   // פרק 5: הפעמונאי. תלתן: מזל, כמו ברק שפוגע פעמיים
+    light:{res:'lamplighter',at:{x:-150,y:400},area:30,col:'#FFFFFF'}   // פרק 6, האחרונה: מדליקת הפנסים. בלי חפץ: המתנה של הפנס הלבן היא הסוף עצמו
   },
   // שישה עמודים בקשת מול מרכז הכפר, לפי סדר הפרקים. לכל אחד זווית סביב מרכז הכפר (לא על הדרך לשער). col: לפנס שעוד אין ב-STORY.lanterns
   posts:[{k:'earth',a:59},{k:'water',a:121},{k:'ice',a:42},{k:'fire',a:138,col:'#FF8A3D'},{k:'bolt',a:25,col:'#C7A6FF'},{k:'light',a:155,col:'#FFFFFF'}],
-  postR:125,          // כמה רחוק מאמצע מרכז הכפר
+  postR:150,          // כמה רחוק מאמצע מרכז הכפר
   taleDelay:1.6       // שניות אחרי הכניסה לכפר עד שראש הכפר מספר
 };
 // התושבים נכנסים לרשימת התושבים, ומופיעים רק כשחזרו (npcHere ב-npc.js)

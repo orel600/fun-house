@@ -22,11 +22,11 @@ const NPC={
      at: איפה הוא עומד. area: כמה רחוק הוא מסתובב משם. work: עובד בזמן העמידה (פטיש, תפילה) במקום לעמוד סתם.
      col: הצבע שלו בדו-ממד ובסימנים */
   list:{
-    head:    {home:'center',at:{x:106,y:-89},area:45,col:C.gold},
-    smith:   {home:'forge', at:{x:-180,y:30},area:35,work:true,col:C.ember},
-    merchant:{home:'market',at:{x:174,y:115},area:40,col:C.gold},
-    inn:     {home:null,spot:{x:149,y:285,deco:['barrel','crate','barrel']},at:{x:119,y:255},area:35,col:'#C08A52'},
-    priest:  {home:null,spot:{x:-149,y:-281,deco:['flag','flag']},at:{x:-119,y:-247},area:35,work:true,col:C.lilac}
+    head:    {home:'center',at:{x:190,y:-300},area:45,col:C.gold},
+    smith:   {home:'forge', at:{x:-360,y:-120},area:35,work:true,col:C.ember},
+    merchant:{home:'market',at:{x:360,y:-120},area:40,col:C.gold},
+    inn:     {home:null,spot:{x:300,y:300,deco:['barrel','crate','barrel']},at:{x:270,y:270},area:35,col:'#C08A52'},
+    priest:  {home:null,spot:{x:-290,y:-500,deco:['flag','flag']},at:{x:-260,y:-466},area:35,work:true,col:C.lilac}
   }
 };
 
@@ -163,9 +163,8 @@ function drawNpcScreen(ox,oy){
   const all=npcState();if(!all)return;
   resScreen(ox,oy);   // residents.js
   ctx.textAlign='center';ctx.direction=DIR;
-  for(const id in NPC.list){const sp=NPC.list[id].spot;if(!sp)continue;
-    ctx.font='800 13px Heebo, system-ui, sans-serif';const txt=T('npc.'+id+'.spot'),w=ctx.measureText(txt).width+16,x=sp.x+ox,y=sp.y+oy+40;
-    ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(x-w/2,y-11,w,22,11);ctx.fill();ctx.fillStyle=C.chalk;ctx.fillText(txt,x,y+5)}
+  for(const id in NPC.list){const sp=NPC.list[id].spot;if(!sp)continue;const d=Math.hypot(P.x-sp.x,P.y-sp.y);   // רק כשמתקרבים, בלי חפיפה (vSign ב-village.js)
+    if(d<VILLAGE.signs.near)vSign(sp.x+ox,sp.y+oy+40,T('npc.'+id+'.spot'),C.chalk,30-d/20)}
   for(const id in all){if(!npcHere(id))continue;const n=all[id],x=n.x+ox,y=n.y+oy;
     if(n.emote){ctx.font='26px system-ui, sans-serif';ctx.fillText(n.emote,x,y-NPC.markUp-14+Math.sin(fxNow()*8)*3)}
     if(S.vil.npcNear===id||S.vil.dlg===id){ctx.font='800 14px Heebo, system-ui, sans-serif';ctx.fillStyle='#0009';ctx.fillText(T('npc.'+id)[0],x+1,y+33);ctx.fillStyle=NPC.list[id].col;ctx.fillText(T('npc.'+id)[0],x,y+32)}}
