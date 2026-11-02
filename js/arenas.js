@@ -17,6 +17,9 @@ const ARENAS={
     clump:10,                        // כמה אויבים לכל היותר בגוש אחד
     spread:55,                       // כמה הגוש צפוף
     bossDelay:3,                     // כמה שניות אחרי תחילת הגל האחרון הבוס מגיע
+    /* סוף הגל: כשנשארו n אויבים או פחות (ואין עוד גושים בדרך), חץ בקצה המסך לכל אחד, והם מפסיקים לשמור מרחק ובאים אליך
+       (מכשפים נשארו רחוק והגל לא נגמר). secs: אם אף אחד לא נפל כל כך הרבה שניות, הם רצים אליך מהר פי rush */
+    lastCall:{n:5,secs:20,rush:1.8,col:'#FF6B5E',arrow:1.2},
     /* הגלים. t: כמה חזקים האויבים, כמו בשנייה הזו של ריצה רגילה (runK ב-run.js). g: [סוג מ-ETYPES, כמה, חיים יחסית לרגיל].
        sup: אויב-על אחד (גדול, כמו בתחנות של הזירה הרגילה, RUN.elite ב-run.js) שמגיע באמצע הגל.
        לכל גל אופי וחומרים משלו (tags ב-data.js), כדי שיהיה שווה להחליף סוג נזק. סך החיים בכל גל כמו קודם, בערך:
@@ -61,6 +64,7 @@ function arenaRun(){
   if(w.phase==='fight'){
     while(w.q.length&&S.t>=w.q[0].at&&enemies.length<HORDE.cap)waveClump(w.q.shift());   // מעל המגבלה הגוש מחכה
     const left=enemies.filter(e=>!e.dead&&e.wv===w.i).length;w.left=left+w.q.reduce((s,c)=>s+c.n,0);
+    waveLastCall(w,A,left);
     if(!w.q.length&&!left&&w.i<A.list.length-1){   // הגל נוקה: הפסקה, ואז הגל הבא
       w.phase='break';w.until=S.t+A.breakSecs;w.log.push({i:w.i,end:S.t});
       banner(T('wave.clear',w.i+1),C.gold);sfx('ui');
@@ -69,7 +73,7 @@ function arenaRun(){
   arenaHud();return true;
 }
 function waveStart(i){
-  const A=ARENA(),w=S.wv,W=A.list[i];w.i=i;w.phase='fight';w.start=S.t;
+  const A=ARENA(),w=S.wv,W=A.list[i];w.i=i;w.phase='fight';w.start=S.t;w.call=w.rush=false;w.lk=null;
   // כל קבוצה מתחלקת לגושים, והגושים מתפזרים לאורך spawnSecs, מסוגים מתחלפים
   const parts=W.g.map(([type,n,hp])=>{const out=[];for(let k=n;k>0;k-=A.clump)out.push({type,n:Math.min(A.clump,k),hp});return out});
   const q=[];for(let k=0;parts.some(p=>p.length);k++)for(const p of parts)if(p.length)q.push(p.shift());
@@ -84,6 +88,21 @@ function waveClump(c){
   const p=spawnPos(),n=Math.min(c.n,HORDE.cap-enemies.length),A=ARENA();
   for(let i=0;i<n;i++){const a=rand(0,6.28),d=Math.sqrt(Math.random())*A.spread*(1+n/20);const e=addEnemy(c.type,p.x+Math.cos(a)*d,p.y+Math.sin(a)*d,c.hp);e.wv=S.wv.i}
   if(n<c.n)S.wv.q.unshift({...c,n:c.n-n,at:S.t+0.5});   // מה שלא נכנס בגלל המגבלה מגיע אחר כך
+}
+
+// סוף הגל (lastCall): האחרונים מסומנים e.left (update.js: מכשף לא בורח), ואחרי secs בלי הפלה גם e.rush (מהירות)
+function waveLastCall(w,A,left){
+  const L=A.lastCall;if(!L)return;
+  if(w.q.length||!left||left>L.n){w.call=w.rush=false;w.lk=null;return}
+  if(w.lk==null||left<w.lkN){w.lk=S.t;w.lkN=left}   // מתי נפל האחרון (או מתי התחיל סוף הגל)
+  w.call=true;w.rush=S.t-w.lk>=L.secs;
+  for(const e of enemies)if(!e.dead&&e.wv===w.i){e.left=true;if(w.rush)e.rush=L.rush}
+}
+// חץ בקצה המסך לכל אחד מהאחרונים שמחוץ למסך (נקרא מ-render.js). כשהם רצים, החץ פועם
+function waveArrows(ox,oy){
+  const w=S.wv,L=ARENA().lastCall;if(!w||!w.call||!L||S.mode!=='play')return;
+  const s=L.arrow*(w.rush?1+Math.sin(fxNow()*8)*0.12:1);
+  for(const e of enemies)if(!e.dead&&e.left&&e.wv===w.i)edgeArrow(e.x+ox,e.y+oy,L.col,s);
 }
 
 // אויב-על בגל: אותם מספרים כמו בתחנה של הזירה הרגילה (RUN.elite), בלי ליווי, כי הגל עצמו הוא הליווי

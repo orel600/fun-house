@@ -210,7 +210,7 @@ function render(){
     if(sx<-20||sx>W+20||sy<-20||sy>H+20){const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(110,Math.min(H-40,H/2+Math.sin(a)*H));
       ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.fillStyle=C.lilac;ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(-8,-10);ctx.lineTo(-8,10);ctx.fill();ctx.restore()}}
   drawBonusScreen(ox,oy);
-  drawWantedScreen(ox,oy);arenaArrows(ox,oy);   // חץ לאויב-על מחוץ למסך (arenaui.js)
+  drawWantedScreen(ox,oy);arenaArrows(ox,oy);waveArrows(ox,oy);   // חץ לאויב-על מחוץ למסך (arenaui.js), ולאחרונים בגל (arenas.js)
   drawVillageScreen(ox,oy);
   drawWorldScreen(ox,oy);
   drawNpcScreen(ox,oy);vSignsFlush();   // שלטי הכפר בלי חפיפה (village.js)
