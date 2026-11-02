@@ -52,6 +52,7 @@ function wskUse(id,aim){
 // הכדורים שבדרך. כשנוחת: טבעת (מצוירת ב-drawSkills) ונזק לכל מי שבתוכה ובטווח
 function wskUpdate(dt){
   skrCheck(dt);   // סקיל שעוד לא ראינו: רגע גילוי (skillreveal.js)
+  wcUpdate(dt);   // השורשים נגמרים (wcombo.js)
   wsbUpdate(dt);   // הכפתורים לפי ספר הסקילים, והסקילים שלו שעוד פועלים (wskbook.js)
   const W=S.wsk;if(!W||!W.shots.length)return;
   for(const s of W.shots){const dx=s.tx-s.x,dy=s.ty-s.y,d=Math.hypot(dx,dy),step=WSKILL.speed*dt;
@@ -75,6 +76,7 @@ function drawWSkill(){
   if(!S.wd)return;
   skrDraw();   // רגע הגילוי (skillreveal.js)
   wsbDraw();   // ספר הסקילים (wskbook.js)
+  wcDraw();   // שורשים לרגליים של מי שתקוע (wcombo.js)
   const W=S.wsk;
   if(W)for(const s of W.shots){ctx.globalAlpha=0.35;ctx.fillStyle=s.col;ctx.beginPath();ctx.arc(s.x,s.y,15*s.vis,0,7);ctx.fill();ctx.globalAlpha=1;dtIcon(s.x,s.y,s.dt,18*s.vis)}
   const a=wskAim;if(!a||!a.len||a.len<WSKILL.drag||wskReady(a.id)<0)return;
