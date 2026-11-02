@@ -1478,6 +1478,22 @@ function worldBot(m,L,god){
     SAVE.home.back={...b0,...SAVE.home.back};npcTalk(null);enterVillage();return o});
   check(hm.away&&hm.k&&hm.here&&hm.free&&hm.posts>=1&&hm.line&&hm.saved&&hm.next&&hm.three&&hm.fire&&hm.bolt&&hm.light&&hm.gift,'פנס משנה את הכפר: '+(hm.away&&hm.here?'הגנן חוזר בכניסה לכפר':'הגנן לא חזר')+(hm.k?' (פנס אחד בכל כניסה)':', כמה פנסים בבת אחת')+
     (hm.saved?', נשמר':', לא נשמר')+', '+hm.posts+' עמודים דולקים'+(hm.next&&hm.three?', המים והקרח בכניסות הבאות':', המים והקרח לא חזרו')+(hm.free?'':', תושב עומד במקום אסור')+(hm.line?'':', אין לו משפט')+(hm.gift?', וחפץ ביסוד נופל בעולם':', החפץ לא נפל'));
+  // הכפר מתמלא (residents.js): הקווסט האחרון של דמות בעולם, היא נפרדת, נעלמת מהאחו, ובכפר יש לה בית, חגיגה ושירות
+  const rsd=await page.evaluate(()=>{
+    const o={},Q=QS(),d0={...Q.done},r0={...(SAVE.resid||{})};delete Q.done.wGolems;delete Q.done.wCatch;SAVE.resid={};
+    o.away=!npcHere('vcutter');enterWorld('home');o.inWorld=!!wnpcState().cutter;
+    Q.done.wGolems=1;S.wd.dlg='cutter';resLeave('cutter');o.bye=RSS().cutter===1&&!/^rsd\./.test(S.wd.dlgLine);
+    enterWorld('home');o.gone=!wnpcState().cutter&&!!wnpcState().fisher;
+    npcTalk(null);enterVillage();o.here=npcHere('vcutter')&&!!npcAt('vcutter')&&!npcHere('vfisher');o.arrived=RSS().cutter===2;
+    o.free=Object.values(RESID.list).every(R=>npcFree(R.house.x,R.house.y+RESID.front));
+    SAVE.bag.stone=(SAVE.bag.stone||0)+10;const st=SAVE.bag.stone,ir=SAVE.bag.iron||0;npcTalk('vcutter');o.line=!/^npc\./.test(S.vil.dlgLine);
+    const b=document.querySelector('#npcDlg [data-act="res"]');o.btn=!!b&&!b.disabled;if(b)b.click();o.swap=SAVE.bag.stone===st-10&&SAVE.bag.iron===ir+2;
+    Q.done.wCatch=1;bagAdd('perch',1);const c0=SAVE.bag.coins||0;npcTalk('vfisher');const f=document.querySelector('#npcDlg [data-act="res"][data-k="perch"]');if(f)f.click();
+    o.fish=SAVE.bag.coins===c0+RES.list.perch.sell*RESID.list.fisher.mult;
+    npcTalk(null);Object.assign(Q.done,d0);for(const k of ['wGolems','wCatch'])if(!d0[k])delete Q.done[k];SAVE.resid=r0;enterVillage();return o});
+  check(rsd.away&&rsd.inWorld&&rsd.bye&&rsd.gone&&rsd.here&&rsd.arrived&&rsd.free&&rsd.line&&rsd.btn&&rsd.swap&&rsd.fish,'הכפר מתמלא: '+(rsd.away&&rsd.inWorld?'החוצבת באחו':'החוצבת לא במקום')+(rsd.bye?', נפרדת אחרי הקווסט האחרון':', לא נפרדת')+
+    (rsd.gone?', נעלמת מהאחו':', נשארת באחו')+(rsd.here&&rsd.arrived?', גרה בכפר עם חגיגה':', לא הגיעה לכפר')+(rsd.free?'':', בית במקום אסור')+(rsd.line?'':', אין לה משפט')+
+    (rsd.btn&&rsd.swap?', אבנים לברזל':', ההחלפה לא עובדת')+(rsd.fish?', והדייג קונה דגים':', הדייג לא קונה'));
   // קפיצה בין פנסים (travel.js): בשער בכפר "לאן?" עם הפנסים הדולקים, קפיצה לאגם ליד פנס המים, "חזרה לכפר" ליד הפנס (לא באמצע קרב), וקפיצה ממפת העולם
   const lj=await page.evaluate(()=>{const o={};SAVE.story.water=true;P.inv=99;npcTalk(null);enterVillage();$('ovDaily').hidden=true;
     S.vil.gate=true;S.vil.open='gate';S.vil.ui='';villageHud();o.list=document.querySelectorAll('#vPanel [data-act="jump"]').length;o.lit=travelLit().length;
