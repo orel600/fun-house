@@ -1382,25 +1382,34 @@ function worldBot(m,L,god){
     try{enterWorld('home');const w=S.wd;w.near=w.open='grove';w.ui='';worldHud();
       const b=document.querySelector('#wPanel [data-a="waves"]');o.btn=b?b.innerText:null;if(b)b.click();else{worldUi(false);startRun('waves')}
       o.arena=S.arena;o.floor=arenaFloor('d2');o.bar=getComputedStyle(document.getElementById('runbar')).display==='none';
-      const N=ARENAS.waves.list.length,dt=1/30,k={},tag={},types={};o.N=N;o.breaks=0;o.breakSpawn=0;let ph='';o.bossAt=null;
+      const N=ARENAS.waves.list.length,dt=1/30,k={},tag={},types={},sups=[];o.N=N;o.wanted=0;
+      // המונה לא נוגע בשכנים בשורה העליונה ולא בחיה (שמצוירת בקנבס: הקופסה שלה סביב המקום שלה על המסך, כשהיא ליד השחקן)
+      const tagOverlap=()=>{const el=document.getElementById('waveTag'),r=el.getBoundingClientRect(),out=[];
+        const hit=(b,nm)=>{if(Math.min(r.right,b.right)-Math.max(r.left,b.left)>1&&Math.min(r.bottom,b.bottom)-Math.max(r.top,b.top)>1)out.push(nm)};
+        for(const id of ['hp','lvl','gearBtnRun','shopBtn','clock']){const e=document.getElementById(id);if(e&&e.offsetParent&&e!==el)hit(e.getBoundingClientRect(),'#'+id)}
+        if(S.pet){const p=S.pet;p.x=P.x-30;p.y=P.y-40;const z=innerWidth/W,sx=(p.x+W/2-S.cam.x)*z,sy=(p.y+H/2-S.cam.y)*z,h=petStage().h*z;hit({left:sx-h*0.6,right:sx+h*0.6,top:sy-h,bottom:sy},'pet')}
+        return out};o.breaks=0;o.breakSpawn=0;let ph='';o.bossAt=null;
       for(let t=0;t<900&&!won;t+=dt){
         P.hp=P.maxHp;if(S.mode!=='play'){for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;S.mode='play';S.pendingLv=0}
         update(dt);hud();const v=S.wv;if(!v)break;
         if(v.phase==='break'){if(ph!=='break'){o.breaks++;tag.br??=document.getElementById('waveTag').textContent}if(enemies.some(e=>!e.dead&&e.wv>v.i))o.breakSpawn++}
         ph=v.phase;
-        if(v.phase==='fight'&&k[v.i]==null){k[v.i]=runK();tag[v.i]=document.getElementById('waveTag').textContent}
-        for(const e of enemies)if(!e.dead&&e.wv!=null){(types[e.wv]=types[e.wv]||new Set()).add(e.type);if(e.wv===v.i&&Math.random()<0.06)kill(e)}
+        if(v.phase==='fight'&&k[v.i]==null){k[v.i]=runK();tag[v.i]=document.getElementById('waveTag').textContent;if(v.i===2)o.ovl=tagOverlap()}
+        if(S.wn&&(S.wn.rumor||S.wn.e))o.wanted=(o.wanted||0)+1;
+        for(const e of enemies)if(!e.dead&&e.wv!=null){(types[e.wv]=types[e.wv]||new Set()).add(e.type);if(e.elite&&!sups.includes(e.type+(e.wv+1)))sups.push(e.type+(e.wv+1));if(e.wv===v.i&&Math.random()<0.06)kill(e)}
         if(S.boss&&!S.boss.dead){o.bossAt??=v.i;if(Math.random()<0.03)kill(S.boss)}
       }
       const ks=Object.keys(k).map(Number).sort((a,b)=>a-b).map(i=>k[i]);
       o.waves=ks.length;o.grow=ks.every((x,i)=>!i||x>ks[i-1]);o.k1=Math.round(ks[0]*10)/10;o.kN=Math.round(ks[ks.length-1]);
       o.tag3=tag[2]||'';o.tagBr=tag.br||'';o.tagN=tag[N-1]||'';o.sets=new Set(Object.values(types).map(s=>[...s].sort().join('+'))).size;
+      const NEW=['slime','mushnub','goleling','ghost'];o.news=NEW.filter(t=>Object.values(types).some(s=>s.has(t)));o.sups=sups;
       o.won=won;o.bossCount=S.bossCount;o.runWon=S.run.won>0;o.stations=S.run.next;o.t=Math.round(S.t)}catch(err){o.err=String(err&&err.stack||err)}
     window.runWon=rw;Math.random=rnd;enemies=[];wRet=null;for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;document.getElementById('banner').textContent='';
     SAVE=JSON.parse(bak);reset();S.mode=mode;o.after=S.arena==='classic'&&!document.documentElement.classList.contains('waves');return o});
   check(!wav.err&&!!wav.btn&&wav.arena==='waves'&&!!wav.floor&&wav.bar&&wav.waves===wav.N&&wav.grow&&wav.breaks>=wav.N-1&&wav.breakSpawn===0&&wav.tag3.includes('3/'+wav.N)&&!!wav.tagBr&&wav.sets>=4
-    &&wav.bossAt===wav.N-1&&wav.won===1&&wav.bossCount===1&&wav.runWon&&wav.stations===0&&wav.after,
-    'זירת גלים: '+(wav.err||'כפתור "'+wav.btn+'", '+wav.waves+'/'+wav.N+' גלים ב-'+wav.t+' שניות, '+wav.breaks+' הפסקות (אויבים בהפסקה: '+wav.breakSpawn+'), מונה "'+wav.tag3+'", בהפסקה "'+wav.tagBr+'", אחרון "'+wav.tagN+'", חוזק x'+wav.k1+'→x'+wav.kN+(wav.grow?' (עולה)':' (לא עולה!)')+', '+wav.sets+' הרכבי אויבים, בוס בגל '+(wav.bossAt==null?'-':wav.bossAt+1)+', ניצחון: '+(wav.won===1&&wav.runWon?'כן':'לא')+', תחנות רגילות: '+wav.stations+', אחרי: '+(wav.after?'זירה רגילה':'נשאר גלים!')));
+    &&wav.bossAt===wav.N-1&&wav.won===1&&wav.bossCount===1&&wav.runWon&&wav.stations===0&&wav.after
+    &&wav.news.length===4&&wav.sups.some(x=>x.startsWith('yeti'))&&wav.sups.some(x=>x.startsWith('demon'))&&wav.wanted===0&&wav.ovl&&!wav.ovl.length,
+    'זירת גלים: '+(wav.err||'כפתור "'+wav.btn+'", '+wav.waves+'/'+wav.N+' גלים ב-'+wav.t+' שניות, '+wav.breaks+' הפסקות (אויבים בהפסקה: '+wav.breakSpawn+'), מונה "'+wav.tag3+'", בהפסקה "'+wav.tagBr+'", אחרון "'+wav.tagN+'", חוזק x'+wav.k1+'→x'+wav.kN+(wav.grow?' (עולה)':' (לא עולה!)')+', '+wav.sets+' הרכבי אויבים, בוס בגל '+(wav.bossAt==null?'-':wav.bossAt+1)+', ניצחון: '+(wav.won===1&&wav.runWon?'כן':'לא')+', תחנות רגילות: '+wav.stations+', אחרי: '+(wav.after?'זירה רגילה':'נשאר גלים!')+', מפלצות חדשות: '+(wav.news||[]).join('+')+', אויבי-על: '+(wav.sups||[]).join(' ')+', מבוקש: '+(wav.wanted?'הופיע!':'לא')+', המונה נוגע ב: '+(wav.ovl?wav.ovl.join(',')||'כלום':'-')));
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
