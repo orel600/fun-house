@@ -11,7 +11,8 @@ const RUN={
   ease:{from:0.45,secs:120},     // התחלה רכה בזירה: אויב שמופיע בהתחלה פוגע ב-45% מהכוח, והחסינות אחרי מכה ארוכה פי 2.2 (hurt ב-combat.js). עד 120 שניות זה חוזר לרגיל. שחקן חדש לא נופל בדקה הראשונה
   bossHits:110,                  // חיי הבוס: כמה מכות של הנשק החזק שלך הוא סופג. הוא נמדד מולך כשהוא מגיע, אז הקרב תמיד באותו אורך בערך
   swarmN:56, swarmR:0.58,        // גל ענק: כמה אויבים, ובאיזה מרחק מסביב (חלק מהצלע הארוכה של המסך, כדי שיתחיל מחוץ לתמונה)
-  elite:{hp:40,size:1.9,dmg:2,xp:30,speed:0.75,escort:16}    // אויב-על: פי כמה חיים, גודל, נזק ומהירות, כמה XP, וכמה מלווים
+  elite:{hp:40,size:1.9,dmg:2,xp:30,speed:0.75,escort:16,    // אויב-על: פי כמה חיים, גודל, נזק ומהירות, כמה XP, וכמה מלווים
+    types:['yeti','demon']}                                 // מי אויב-העל בכל תחנה, לפי הסדר: ייתי (חלש לאש) ואז שד (חלש למים), כדי שיהיה שווה להחזיק יותר מסוג נזק אחד
 };
 
 // פי כמה האויבים חזקים עכשיו, ופי כמה השחקן
@@ -33,9 +34,9 @@ function swarm(){
   for(let i=0;i<n;i++){const a=o+i/n*Math.PI*2,d=RUN.swarmR*Math.max(W,H)+rand(-25,25);addEnemy('grunt',P.x+Math.cos(a)*d,P.y+Math.sin(a)*d,HORDE.weak)}
   banner(T('st.swarm'),C.chalk);S.shake=Math.max(S.shake,5);
 }
-// אויב-על: מתחלף בין אביר בשריון (חלש לאש) למכשף מרחף (חלש לקרח), כדי שיהיה שווה להחזיק יותר מסוג נזק אחד
+// אויב-על: לפי התור ב-RUN.elite.types, ואם יש יותר תחנות מסוגים מתחילים מההתחלה
 function elite(){
-  const E=RUN.elite,type=S.run.log.filter(s=>s.kind==='elite').length%2?'shield':'wisp',p=spawnPos();
+  const E=RUN.elite,type=E.types[(S.run.log.filter(s=>s.kind==='elite').length-1)%E.types.length],p=spawnPos();
   // הליווי לא עובר את המגבלה (spawn.js). אויב-העל עצמו תמיד מגיע
   for(let i=0,n=Math.min(E.escort,HORDE.cap-enemies.length-1);i<n;i++){const a=rand(0,6.28),d=rand(40,110);addEnemy('grunt',p.x+Math.cos(a)*d,p.y+Math.sin(a)*d,HORDE.weak)}
   const e=addEnemy(type,p.x,p.y);

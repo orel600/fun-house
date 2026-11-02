@@ -7,8 +7,23 @@ const HORDE={
   spread:60,                     // כמה הגוש צפוף
   weak:0.5,                      // החיים של אויב בגוש, יחסית לאויב רגיל
   mixFrom:40,                    // מאיזו שנייה מגיעים גם גושים של מגינים ומכשפים, ולא רק שלדים
-  cap:260                        // הכי הרבה אויבים בזירה יחד, בשביל הטלפון
+  cap:260,                       // הכי הרבה אויבים בזירה יחד, בשביל הטלפון
+  /* מפלצות (Quaternius, ETYPES ב-data.js) שמצטרפות לשלדים במהלך הריצה. from: מאיזו שנייה. w: הסיכוי שאויב בודד יהיה מהסוג הזה.
+     horde: הסיכוי שגוש יהיה מהסוג הזה (אחרי mixFrom). מרחפים מגיעים בגוש קטן יותר, כמו המכשפים. אויבי-העל בתחנות: RUN.elite.types ב-run.js */
+  monsters:[
+    {type:'slime',from:45,w:0.14,horde:0.2},
+    {type:'mushnub',from:90,w:0.12,horde:0.15},
+    {type:'goleling',from:140,w:0.1,horde:0.1,fly:true},
+    {type:'ghost',from:200,w:0.12,horde:0.12,fly:true},
+    {type:'yeti',from:260,w:0.03},
+    {type:'demon',from:300,w:0.03}
+  ]
 };
+// מפלצת אקראית שכבר הגיע הזמן שלה, לפי המשקל key (w לבודד, horde לגוש). null: הפעם שלד רגיל
+function monsterRoll(key){
+  for(const m of HORDE.monsters)if(m[key]&&S.t>=m.from&&Math.random()<m[key])return m;
+  return null;
+}
 // מחוץ למסך, גם בפינות: המרחק לפי הצלע הארוכה, כך שזה עובד לרוחב ולאורך
 function spawnPos(){const a=rand(0,Math.PI*2),d=Math.max(W,H)*0.62+40;return{x:P.x+Math.cos(a)*d,y:P.y+Math.sin(a)*d}}
 function addEnemy(type,x,y,hpMul=1){
@@ -27,6 +42,7 @@ function spawner(dt){
     S.spawnT=lerp(HORDE.trickle)*(S.boss?2.2:1);
     const p=spawnPos();let type='grunt';const r=Math.random();
     if(S.t>15&&r<0.28)type='shield';else if(S.t>28&&r<0.56)type='wisp';
+    const m=monsterRoll('w');if(m)type=m.type;
     addEnemy(type,p.x,p.y);
   }
   if(S.hordeT<=0&&!S.boss){S.hordeT=lerp(HORDE.every);horde(Math.round(lerp(HORDE.size)))}
@@ -34,7 +50,8 @@ function spawner(dt){
 // גוש מכיוון אחד. מכשפים יורים, אז גוש שלהם קטן יותר
 function horde(n){
   const c=spawnPos(),r=Math.random();
-  const type=S.t<HORDE.mixFrom||r<0.5?'grunt':r<0.75?'shield':'wisp';if(type==='wisp')n=Math.ceil(n/2);
+  const m=S.t>=HORDE.mixFrom&&monsterRoll('horde');
+  const type=m?m.type:S.t<HORDE.mixFrom||r<0.5?'grunt':r<0.75?'shield':'wisp';if(type==='wisp'||m&&m.fly)n=Math.ceil(n/2);
   n=Math.min(n,HORDE.cap-enemies.length);S.hordeMax=Math.max(S.hordeMax||0,n);   // לבדיקה: הגוש הכי גדול
   for(let i=0;i<n;i++){const a=rand(0,6.28),d=Math.sqrt(Math.random())*HORDE.spread*(1+n/30);addEnemy(type,c.x+Math.cos(a)*d,c.y+Math.sin(a)*d,HORDE.weak)}
 }

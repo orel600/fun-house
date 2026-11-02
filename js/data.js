@@ -23,6 +23,19 @@ const ETYPES={
     drop:{herb:[0.7,2],mushroom:[0.3,1],flower:[0.25,1],essence:[0.3,1]},elite:{flower:[1,2],mushroom:[1,2],aquaC:[0.15,1]}},
   mummy:{hp:50,r:14,speed:56,xp:3,dmg:12,tags:['cloth','bone'],     // תחבושות על עצמות: אש ופיזי
     drop:{cloth:[0.9,3],hide:[0.4,2],bone:[0.3,1],dust:[0.15,1]},elite:{cloth:[1,6],shadow:[0.3,1]}},
+  // מפלצות הזירה (Quaternius Ultimate Monsters): מצטרפות לשלדים לאורך הריצה (spawn.js). ייתי ושד: אויבי-על בתחנות (run.js)
+  slime:{hp:26,r:12,speed:82,xp:1,dmg:9,tags:['water'],             // גוש ג'לי קופץ: ברק ×1.5, אש חלשה
+    drop:{coins:[0.5,1],venom:[0.2,1],essence:[0.08,1]},elite:{venom:[1,3],aquaC:[0.12,1]}},
+  mushnub:{hp:40,r:13,speed:64,xp:2,dmg:11,tags:['plant'],          // פטריה מהלכת: אש וקרח ×1.5, מים ואדמה חלשים
+    drop:{coins:[0.6,1],mushroom:[0.35,1],herb:[0.2,1]},elite:{mushroom:[1,3],rubyC:[0.1,1]}},
+  goleling:{hp:30,r:12,speed:92,xp:2,dmg:10,tags:['stone','flying'], // גולם קטן מעופף: מים וקרח ×1.5, ברק לא עובד, פיזי ואדמה חלשים
+    drop:{coins:[0.6,1],stone:[0.4,2],amberC:[0.06,1]},elite:{stone:[1,4],amberC:[0.5,1]}},
+  ghost:{hp:24,r:12,speed:104,xp:2,dmg:9,tags:['bone','flying'],    // רוח-גולגולת: פיזי, קרח וברק ×1.5, אדמה חלשה
+    drop:{coins:[0.6,1],bone:[0.3,1],essence:[0.2,1],shadow:[0.03,1]},elite:{shadow:[0.5,1],bone:[1,3]}},
+  yeti:{hp:72,r:18,speed:54,xp:4,dmg:15,tags:['ice'],               // ייתי: אש ×1.5. אויב-על בתחנות, ולפעמים בודד בסוף הריצה
+    drop:{coins:[0.8,3],hide:[0.6,2],sapphireC:[0.12,1]},elite:{hide:[1,4],sapphireC:[1,2],sapphire:[0.1,1]}},
+  demon:{hp:76,r:18,speed:58,xp:4,dmg:16,tags:['fire','magic'],     // שד: מים ×1.5, קרח חלש
+    drop:{coins:[0.8,3],essence:[0.5,2],rubyC:[0.12,1]},elite:{rubyC:[1,2],essence:[1,4],ruby:[0.1,1]}},
   // אגם הערפל (פרק 2, story.js): אויבים רטובים. ברק חזק נגדם (DMG.chart), ואש כמעט לא עובדת. רק בעולם, לא בזירה
   drowned:{hp:60,r:15,speed:62,xp:3,dmg:13,tags:['water','metal'],  // אביר חלוד שטבע: ברק ×2.25, פיזי חלש
     drop:{coins:[0.8,2],iron:[0.3,1],plate:[0.15,1],aquaC:[0.08,1]},elite:{aquaC:[1,2],plate:[1,2],aqua:[0.1,1]}},
