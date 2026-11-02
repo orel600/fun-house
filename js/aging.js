@@ -121,8 +121,9 @@ function forgeItemsHtml(slots){
 function forgeDraw(){
   $('fLevel').textContent=AUI.tab==='age'?T('age.cap',ageCap()):'';
   $('fRes').innerHTML=bagLine(SAVE.bag,resShown('forge'));   // מתכות ואבנים שיש (RES.show)
-  $('fTabs').innerHTML=['age','pow'].map(t=>'<button data-tab="'+t+'"'+(AUI.tab===t?' aria-pressed="true"':'')+'>'+T('forge.tab.'+t)+'</button>').join('');
+  $('fTabs').innerHTML=['age','pow','fuse'].map(t=>'<button data-tab="'+t+'"'+(AUI.tab===t?' aria-pressed="true"':'')+'>'+T('forge.tab.'+t)+'</button>').join('');
   if(AUI.tab==='pow'){powDraw();return}   // כוחות: powers.js
+  if(AUI.tab==='fuse'){fuseDraw();return}   // התכה: fuse.js
   $('fItems').innerHTML=forgeItemsHtml(AGING.slots)||'<p class="dim">'+T('age.noItems')+'</p>';
   // הפרטים: מה ישתנה, הסיכוי, המחיר, ומה קורה בכישלון
   const id=aSelId();let d='<p class="dim">'+T('age.hint')+'</p>';
@@ -152,6 +153,7 @@ $('ovForge').addEventListener('click',e=>{
   if(b.id==='forgeClose'){forgeClose();return}
   if(b.dataset.tab){AUI.tab=b.dataset.tab;AUI.sel=null}
   else if(AUI.tab==='pow'&&powClick(b));   // כוחות (powers.js)
+  else if(AUI.tab==='fuse'&&fuseClick(b));   // התכה (fuse.js)
   else if(b.dataset.id)AUI.sel={id:b.dataset.id};
   else if(b.dataset.slot)AUI.sel={slot:b.dataset.slot,i:+b.dataset.i};
   else if(b.dataset.act==='gem')AUI.gem=!AUI.gem;
