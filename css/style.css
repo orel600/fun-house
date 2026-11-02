@@ -1401,3 +1401,21 @@ html[dir="rtl"] #ovGear #gTabs{--fade-end:left}   /* הדהייה בסוף הש�
   .gres li{font:800 11px/clamp(17px,5.4vh,22px) var(--body);gap:2px}
   .gres svg{width:11px;height:11px}
 }
+/* מכירה (gear.js): בתרמיל נגיעה מסמנת ✓, נעול 🔒 לא לחיץ. "החזר" ו-🔒 בפרטים: כפתורים צרים */
+.gtile .gpk{position:absolute;top:2px;inset-inline-start:3px;font:900 13px/1 var(--body);font-style:normal;color:#5BD46B;text-shadow:0 0 2px #000,0 0 2px #000}
+.gtile .glk{position:absolute;top:1px;inset-inline-end:2px;font-size:11px;font-style:normal;line-height:1}
+#ovGear .gselling .gtile.gpick[aria-pressed="false"]{opacity:.6}
+#ovGear .gselling .gtile.gpick[aria-pressed="true"]{outline:3px solid #5BD46B;outline-offset:-1px;opacity:1}
+#ovGear .gselling .gtile:disabled{opacity:.3;filter:grayscale(1)}
+#ovGear .gacts .gundo{flex:0 0 auto;padding-inline:8px}
+#ovGear .gdetail .gbtns .vbtn.glock{flex:0 0 44px;font-size:18px;padding:0}
+#ovGear .gdetail.selling{display:flex;flex-direction:column;gap:5px;padding:8px 10px}
+#ovGear .gdetail.selling h3{margin:0;font-size:15px}
+#ovGear .gdetail.selling .gsell{grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:5px}
+#ovGear .gdetail.selling .gsell .gtile{font-size:19px}
+#ovGear .gdetail.selling .gbtns+.gbtns{margin-top:0}
+@media (orientation:landscape) and (max-height:500px){
+  #ovGear .gdetail.selling{padding:5px 7px;gap:4px}
+  #ovGear .gdetail.selling .gbtns .vbtn{min-height:36px;font-size:13px}
+  .gsellhint{font-size:10px;line-height:1.25}
+}

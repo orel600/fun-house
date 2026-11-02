@@ -89,9 +89,10 @@ const GEAR={
   doll:{start:['weapon'],end:['acc','boots'],under:['orbit']},
   ladder:1.25,
   /* התרמיל (ניר, 1.11.2026: "הכל מרגיש בלגן"): מסננים לפי משבצת בראש התרמיל, באותו סדר שבו הפריטים ממוינים (ואחר כך נדירות וחוזק).
-     sell: כמה מטבעות מקבלים על פריט חלש ב"למכור חלשים", לפי שכבה. רק שכבות שכתובות כאן נמכרות (רגיל ולא שכיח) */
+     sell: כמה מטבעות מקבלים על פריט במכירה, לפי שכבה. sellPlus: כמה מוסיפה כל רמת Aging למחיר (0.2 = ‎+20%).
+     sellRare: מאיזו שכבה פריט "יקר" (נדיר ומעלה): לא נבחר ב"בחר חלשים", ומכירה שלו מבקשת אישור */
   filter:{weapon:'⚔️',boots:'👢',acc:'💍',orbit:'✨'},
-  sell:{0:6,1:15},
+  sell:{0:6,1:15,2:40,3:90,4:200},sellPlus:0.2,sellRare:2,
   drag:8,hold:220
 };
 
@@ -215,8 +216,8 @@ const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gPic(id)+
    page 'gear': הבובה עם המשבצות, התרמיל הרחב והפרטים. page 'char': הנקודות, הבניות ועץ הסקילים, ברוחב מלא */
 const GUI={sel:null,tab:'items',page:'gear'};   // sel: מה נבחר: {id} מהתרמיל, {slot,i} ממשבצת, או {sid} מהמחסן. tab: הלשונית בתרמיל
 // נפתח מכל מקום: מהכפר ומהזירה. בזירה הריצה עוצרת, כמו במסך השדרוג
-function gearOpen(page){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;GUI.view=null;GUI.sell=false;GUI.page=page==='char'?'char':'gear';$('ovGear').hidden=false;gearDraw()}
-function gearClose(){gDragEnd();$('ovGear').hidden=true;if(S.mode==='gear')S.mode='play'}
+function gearOpen(page){if(S.mode!=='play')return;S.mode='gear';joy=null;GUI.sel=null;GUI.view=null;GUI.sell=false;GUI.pick={};GUI.ask=false;GUI.undo=null;GUI.page=page==='char'?'char':'gear';$('ovGear').hidden=false;gearDraw()}
+function gearClose(){gDragEnd();GUI.undo=null;GUI.sell=false;$('ovGear').hidden=true;if(S.mode==='gear')S.mode='play'}
 // המחסן פתוח במסך רק כשעומדים לידו בכפר, והוא בנוי
 const gStashOn=()=>!!(S.vil&&S.vil.near==='stash'&&vLv('stash')>0);
 // הנדירות של פריט היא השכבה שלו (עץ = רגיל ... אגדי), ושל משאב היא rar שלו. כך הצבעים זהים לשלל שנופל
@@ -266,7 +267,8 @@ function gTile(id,attrs,extra){
 }
 // תא בתרמיל: ▲/▼ מול מה שלבוש, ונקודה לחדש
 function gBagTile(k,n,attrs){
-  const m=gMark(k),x=(m?'<i class="gmk '+(m>0?'up':'down')+'" aria-hidden="true">'+(m>0?'▲':'▼')+'</i>':'')+(gIsNew(k)?'<i class="gnew" aria-hidden="true"></i>':'');
+  const m=gMark(k),pk=GUI.sell&&(GUI.pick||{})[k],x=(m?'<i class="gmk '+(m>0?'up':'down')+'" aria-hidden="true">'+(m>0?'▲':'▼')+'</i>':'')+(gIsNew(k)?'<i class="gnew" aria-hidden="true"></i>':'')+
+    (gLocked(k)?'<i class="glk" aria-hidden="true">🔒</i>':'')+(pk?'<i class="gpk" aria-hidden="true">✓</i>':'');   // מכירה: ✓ על מה שנבחר
   return gTile(k,attrs,(n>1?'<small>×'+shortN(n)+'</small>':'')+x);
 }
 // תא של משאב: אייקון, כמה יש, ומסגרת בצבע הנדירות
@@ -309,21 +311,37 @@ function gDoBest(){
   if(!setCheck(worn))celebrate(P.x,P.y-20,'gear',gIcon(p.id));
   return plan.length;
 }
-/* ---- למכור חלשים: רק פריטים רגילים ולא שכיחים (GEAR.sell) שחלשים ממה שלבוש (▼), בלי שדרוג ובלי כוח.
-   מסט נשאר עותק אחד, בשביל הבונוס. אישור בתוך החלון, לא confirm() ---- */
-// במצב מכירה אפשר להוריד פריט מהרשימה בנגיעה (GUI.sellOff), כדי לשמור אותו. מה שנשאר ברשימה נמכר
-const gSellPick=()=>{const l=gSellList(),o={};for(const k in l)if(!(GUI.sellOff||{})[k])o[k]=l[k];return o};
+/* ---- מכירה (ניר 2.11: "לא ברור איך משתמשים, נראה לי מכרתי משהו שלא התכוונתי, ואין לי אפשרות למכור הכל").
+   🪙 למכור נכנס למצב בחירה: נגיעה בפריט בתרמיל מסמנת אותו (✓) ולא מוכרת. כפתור אחד מוכר את הנבחרים, עם אישור רק כשיש ביניהם פריט יקר.
+   "בחר חלשים": כל מה שחלש ממה שלבוש (▼) והעותקים הכפולים, בלי יקרים ובלי נעולים. מסט נשאר עותק אחד, בשביל הבונוס.
+   לעולם לא נמכר: מה שלבוש (הוא לא בתרמיל) ופריט נעול (🔒, SAVE.glock). "החזר" קונה בחזרה את המכירה האחרונה, עד שסוגרים את החלון ---- */
+const gLocks=()=>SAVE.glock||(SAVE.glock={});
+const gLocked=k=>!!gLocks()[k];
+function gLockToggle(k){const l=gLocks();if(l[k])delete l[k];else l[k]=1;if(GUI.pick)delete GUI.pick[k];saveNow()}
+const gPrice=k=>{const it=gItem(k);return it&&GEAR.sell[it.tier]!=null?Math.round(GEAR.sell[it.tier]*(1+GEAR.sellPlus*gPlus(k))):0};
+const gPrecious=k=>gRar(k)>=GEAR.sellRare||!!gPlus(k)||!!gPow(k);   // נדיר ומעלה, משודרג או עם כוח
+const gCanSell=k=>!!gItem(k)&&SAVE.bag[k]>0&&!gLocked(k)&&gPrice(k)>0;
+// החלשים: ▼ (כל העותקים), וכפולים של כל השאר (חוץ מאחד). בלי יקרים ובלי נעולים
 function gSellList(){
   const o={};
-  for(const k in SAVE.bag){const it=gItem(k),n=SAVE.bag[k];if(!it||!(n>0)||GEAR.sell[it.tier]==null||k!==gBase(k)||gMark(k)!==-1)continue;
-    const m=it.set?n-1:n;if(m>0)o[k]=m}
+  for(const k in SAVE.bag){if(!gCanSell(k)||gPrecious(k))continue;const it=gItem(k),n=SAVE.bag[k];
+    const m=gMark(k)===-1&&!it.set?n:n-1;if(m>0)o[k]=m}
   return o;
 }
-const gSellCoins=l=>Object.keys(l).reduce((t,k)=>t+GEAR.sell[gItem(k).tier]*l[k],0);
-function gDoSell(l=gSellList()){
-  const c=gSellCoins(l);if(!c)return 0;
-  for(const k in l)bagTake(k,l[k]);bagAdd('coins',c);saveNow();sfx('coin');banner(T('gear.sold',c),C.gold);
-  return c;
+const gSellPick=()=>{const o={},p=GUI.pick||{};for(const k in p){const n=Math.min(p[k],gCanSell(k)?SAVE.bag[k]:0);if(n>0)o[k]=n}return o};
+const gSellCoins=l=>Object.keys(l).reduce((t,k)=>t+gPrice(k)*l[k],0);
+const gSellN=l=>Object.keys(l).reduce((t,k)=>t+l[k],0);
+function gPickToggle(k){const p=GUI.pick||(GUI.pick={});if(!gCanSell(k))return false;if(p[k])delete p[k];else p[k]=SAVE.bag[k];return true}
+function gDoSell(l=gSellPick()){
+  const c=gSellCoins(l);if(!c)return 0;const got={};
+  for(const k in l)if(bagTake(k,l[k]))got[k]=l[k];
+  const cc=gSellCoins(got);bagAdd('coins',cc);GUI.undo={items:got,coins:cc};GUI.pick={};saveNow();sfx('coin');banner(T('gear.sold',cc),C.gold);
+  return cc;
+}
+// החזר: מחזיר את מה שנמכר אחרון תמורת אותו מחיר
+function gUndoSell(){
+  const u=GUI.undo;if(!u||!bagHas('coins',u.coins))return false;
+  bagTake('coins',u.coins);for(const k in u.items)bagAdd(k,u.items[k]);GUI.undo=null;saveNow();sfx('tap');banner(T('gear.unsold'),C.gold);return true;
 }
 
 function gSlotHtml(s){
@@ -346,13 +364,17 @@ function gearDraw(){
   // התרמיל: לשוניות ורשת
   const tabs=gTabs();if(!tabs.includes(GUI.tab))GUI.tab='items';
   $('gTabs').innerHTML=tabs.map(f=>'<button data-tab="'+f+'"'+(GEAR.filter[f]?' class="gf" aria-label="'+T('gear.slot.'+f)+'"':f!=='items'?' class="gf" aria-label="'+T('fam.'+f)+'" title="'+T('fam.'+f)+'"':'')+(GUI.tab===f?' aria-pressed="true"':'')+'>'+gTabLabel(f)+'</button>').join('');
-  const ks=gBagKeys(GUI.tab),itm=gIsItemTab(GUI.tab);
-  $('gItems').innerHTML=ks.length?ks.map(k=>(itm?gBagTile:gCell)(k,SAVE.bag[k],'data-id="'+k+'"'+(sel&&sel.id===k?' aria-pressed="true"':''))).join('')
+  if(GUI.sell&&!gIsItemTab(GUI.tab))GUI.tab='items';   // במצב מכירה: רק פריטים
+  const ks=gBagKeys(GUI.tab),itm=gIsItemTab(GUI.tab),pk=GUI.pick||{};
+  const tA=k=>GUI.sell?(gCanSell(k)?' aria-pressed="'+!!pk[k]+'" class="gpick"':' disabled'):(sel&&sel.id===k?' aria-pressed="true"':'');   // מכירה: נגיעה מסמנת. נעול: לא לחיץ
+  $('gItems').classList.toggle('gselling',!!GUI.sell);
+  $('gItems').innerHTML=ks.length?ks.map(k=>(itm?gBagTile:gCell)(k,SAVE.bag[k],'data-id="'+k+'"'+tA(k))).join('')
     :'<p class="dim">'+T(itm?'gear.noItems':'gear.noRes')+'</p>';
-  // ללבוש הכי טוב ולמכור חלשים: מתחת לרשת, רק בפריטים
-  const best=gBestPlan().length,sc=gSellCoins(gSellList());
-  $('gActs').hidden=!itm;
-  $('gActs').innerHTML='<button class="vbtn" data-act="best" title="'+T('gear.bestT')+'"'+(best?'':' disabled')+'>'+T('gear.best')+'</button><button class="vbtn ghost" data-act="sell" title="'+T('gear.sellT')+'"'+(sc?'':' disabled')+'>'+T('gear.sellWeak')+'</button>';
+  // ללבוש הכי טוב ולמכור: מתחת לרשת, רק בפריטים. אחרי מכירה: ↩ החזר. במצב מכירה הכפתורים בטור הפרטים
+  const best=gBestPlan().length,sc=Object.keys(SAVE.bag).some(gCanSell);
+  $('gActs').hidden=!itm||!!GUI.sell;
+  $('gActs').innerHTML='<button class="vbtn" data-act="best" title="'+T('gear.bestT')+'"'+(best?'':' disabled')+'>'+T('gear.best')+'</button><button class="vbtn ghost" data-act="sell" title="'+T('gear.sellT')+'"'+(sc?'':' disabled')+'>'+T('gear.sellWeak')+'</button>'+
+    (GUI.undo?'<button class="vbtn ghost gundo" data-act="undo" title="'+T('gear.undoT',GUI.undo.coins)+'" aria-label="'+T('gear.undoT',GUI.undo.coins)+'">'+T('gear.undo')+'</button>':'');
   // המחסן: רק כשעומדים לידו
   const st=gStashOn(),sk=Object.keys(SAVE.stash).filter(k=>SAVE.stash[k]>0&&stashIcon(k));
   $('gStash').hidden=!st;
@@ -369,12 +391,14 @@ function gearDraw(){
 }
 // הפרטים: שם בצבע הנדירות, נדירות וחומר, רמת Aging, סטטים, השוואה למה שלבוש, וכפתורים
 function gDetailHtml(){
-  if(GUI.sell){const l=gSellList(),ks=Object.keys(l),c=gSellCoins(gSellPick()),off=GUI.sellOff||{};   // אישור למכירה, בתוך החלון: מה יימכר וכמה מקבלים
-    // ניר 2.11: "המכירה נתקעת". הרשימה לא נגללה באצבע (touch-action של המשבצות) ולא הגיבה לנגיעה. עכשיו היא נגללת, ונגיעה בפריט שומרת אותו
-    if(ks.length)return '<h3>'+T('gear.sellAsk',c)+'</h3><p class="dim gsellhint">'+T('gear.sellPick')+'</p><div class="gsell">'+
-      ks.map(k=>gCell(k,l[k],'data-sk="'+k+'" aria-pressed="'+!off[k]+'"')).join('')+'</div>'+
-      '<div class="gbtns"><button class="vbtn" data-act="sellYes"'+(c?'':' disabled')+'>'+T('gear.sellYes')+'</button><button class="vbtn ghost" data-act="sellNo">'+T('gear.sellNo')+'</button></div>';
-    GUI.sell=false}
+  if(GUI.sell){const l=gSellPick(),ks=Object.keys(l),n=gSellN(l),c=gSellCoins(l),rare=ks.filter(gPrecious);   // מצב מכירה: מה נבחר, כמה מקבלים, וכפתור אחד
+    if(GUI.ask&&rare.length)return '<h3>'+T('gear.sellRare')+'</h3><div class="gsell">'+rare.map(k=>gCell(k,l[k],'data-sk="'+k+'" aria-pressed="true"')).join('')+'</div>'+
+      '<div class="gbtns"><button class="vbtn" data-act="sellSure">'+T('gear.sellGo',n,c)+'</button></div><div class="gbtns"><button class="vbtn ghost" data-act="sellBack">'+T('gear.back')+'</button></div>';
+    GUI.ask=false;
+    return '<h3>'+T('gear.sellHead')+'</h3><p class="dim gsellhint">'+T('gear.sellPick')+'</p><div class="gsell">'+
+      (ks.length?ks.map(k=>gCell(k,l[k],'data-sk="'+k+'" aria-pressed="true"')).join(''):'<p class="dim">'+T('gear.sellNone')+'</p>')+'</div>'+
+      '<div class="gbtns"><button class="vbtn" data-act="sellYes"'+(n?'':' disabled')+'>'+T('gear.sellGo',n,c)+'</button></div>'+
+      '<div class="gbtns"><button class="vbtn ghost" data-act="sellWeak"'+(gSellN(gSellList())?'':' disabled')+'>'+T('gear.sellAllWeak')+'</button><button class="vbtn ghost" data-act="sellNo">'+T('gear.sellNo')+'</button></div>'}
   const sel=GUI.sel,k=sel&&(sel.id||sel.sid||gGet(sel.slot,sel.i)),n=!sel?0:sel.id?SAVE.bag[k]:sel.sid?SAVE.stash[k]:1;
   if(!k||!n)return gStatPanel();   // בלי פריט: הסטטים של הגיבור והעמידויות (gearui.js)
   const it=gItem(k),col=gRarCol(k);
@@ -389,6 +413,7 @@ function gDetailHtml(){
   let b='';
   if(sel.id&&it){const old=gGet(it.slot,gTarget(it));
     d+=(old?'<p class="dim">'+T('gear.vs',gIcon(old)+' '+gName(old))+'</p>':'')+gCompare(k,old);b+=btn('equip',T('gear.equip'))}
+  if(it&&(sel.id||sel.slot))b+='<button class="vbtn ghost glock" data-act="lock" aria-pressed="'+gLocked(k)+'" aria-label="'+T(gLocked(k)?'gear.unlock':'gear.lock')+'" title="'+T(gLocked(k)?'gear.unlock':'gear.lock')+'">'+(gLocked(k)?'🔒':'🔓')+'</button>';   // נעול: לא נמכר
   if(sel.slot)b+=btn('unequip',T('gear.unequip'),1);
   if(sel.id&&gStashOn())b+=btn('store',T('gear.store'),1);
   if(sel.sid)b+=btn('take',T('gear.take'));
@@ -491,14 +516,20 @@ $('ovGear').addEventListener('click',e=>{
   if(b.dataset.page){GUI.page=b.dataset.page;GUI.view=null;GUI.sel=null;GUI.sell=false;gRedraw();return}
   if(b.dataset.act==='tree'||b.dataset.act==='back'){GUI.view=b.dataset.act==='tree'?'tree':null;GUI.sel=null;gRedraw();return}
   if(b.dataset.act==='learn'){treeLearn(b.dataset.b,b.dataset.id);statBadge();gRedraw();return}
-  if(b.dataset.sk){const o=GUI.sellOff||(GUI.sellOff={});o[b.dataset.sk]=!o[b.dataset.sk];sfx('tap');gRedraw();return}   // מכירה: נגיעה שומרת פריט או מחזירה אותו לרשימה
+  // מצב מכירה: נגיעה בפריט (בתרמיל או ברשימת הנבחרים) מסמנת או מבטלת, ולא מוכרת
+  if(GUI.sell&&(b.dataset.sk||b.dataset.id)){gPickToggle(b.dataset.sk||b.dataset.id);GUI.ask=false;sfx('tap');gRedraw();return}
   const a=b.dataset.act,sel=GUI.sel;
-  if(a!=='sellYes')GUI.sell=false;
+  if(GUI.sell&&!b.dataset.tab&&!/^sell/.test(a||''))GUI.sell=false;   // לשונית לא יוצאת ממצב מכירה
   if(b.dataset.tab){GUI.tab=b.dataset.tab;GUI.sel=null}
   else if(a==='best'){if(!gDoBest())sfx('tap')}
-  else if(a==='sell'){GUI.sell=true;GUI.sellOff={};GUI.sel=null}
-  else if(a==='sellYes'){gDoSell(gSellPick());GUI.sell=false}
-  else if(a==='sellNo'){}
+  else if(a==='sell'){GUI.sell=true;GUI.pick={};GUI.ask=false;GUI.sel=null}
+  else if(a==='sellWeak'){GUI.pick=Object.assign({},GUI.pick,gSellList());sfx('tap')}   // בחר חלשים: מוסיף לבחירה, ואפשר להוריד לפני המכירה
+  else if(a==='sellYes'){const l=gSellPick();if(Object.keys(l).some(gPrecious))GUI.ask=true;else{gDoSell(l);GUI.sell=false}}   // יש יקר: אישור קצר קודם
+  else if(a==='sellSure'){gDoSell(gSellPick());GUI.sell=false;GUI.ask=false}
+  else if(a==='sellBack')GUI.ask=false;
+  else if(a==='sellNo'){GUI.sell=false;GUI.pick={};GUI.ask=false}
+  else if(a==='undo'){if(!gUndoSell()){sfx('tap');return}}
+  else if(a==='lock'){const k=sel&&(sel.id||gGet(sel.slot,sel.i));if(k){gLockToggle(k);sfx('tap')}}
   else if(a==='desel')GUI.sel=null;   // ✕ בפרטים: חוזרים לסטטים
   else if(b.dataset.id){GUI.sel={id:b.dataset.id};if(gIsNew(b.dataset.id)){gSeen()[b.dataset.id]=1;saveNow()}}
   else if(b.dataset.sid)GUI.sel={sid:b.dataset.sid};
