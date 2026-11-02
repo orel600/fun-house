@@ -140,7 +140,8 @@ function botStep({god,en}){
     L.nodeInLoot=S.nd.got.length>0&&S.nd.got.every(r=>(S.loot||{})[r]>0||drops().some(d=>!d.got&&d.r===r));   // או שעוד שוכב על הרצפה (drops.js), ונאסף בסוף לבד
     L.gearDrops=S.gearDrops||0;
     L.drops=(S.drops||[0,0,0,0,0]).join('/');L.elites=S.elites||0;L.jackpots=S.jackpots||0;L.firstKills=S.firstKills||0;
-    L.chests=S.nd.got.length?S.nd.chests||0:0;L.creatures=Object.entries(S.killsBy||{}).filter(([k])=>ETYPES[k]&&!['grunt','shield','wisp'].includes(k)).map(([k,n])=>k+' '+n).join(', ');
+    L.chests=S.nd.got.length?S.nd.chests||0:0;L.creatures=Object.entries(S.killsBy||{}).filter(([k])=>ETYPES[k]&&!['grunt','shield','wisp'].includes(k)&&!HORDE.monsters.some(m=>m.type===k)&&!RUN.elite.types.includes(k)).map(([k,n])=>k+' '+n).join(', ');
+    L.monsters=Object.entries(S.killsBy||{}).filter(([k])=>HORDE.monsters.some(m=>m.type===k)||RUN.elite.types.includes(k)).map(([k,n])=>k+' '+n).join(', ');
     const w=S.wn;
     if(w.rumor)L.wRumor??=at;
     if(w.e)L.wanted??=at;else if(L.wanted!=null)L.wEnd??=at;
@@ -333,6 +334,23 @@ function villageBot(m,L){
       W.saved=/#hunt$/.test(JSON.parse(localStorage.getItem(SAVE_STORE.key)).gear.weapon);
       if(LANG==='en'&&/[֐-׿]/.test(q('#ovForge').innerText))L.heLeak=q('#ovForge').innerText.trim().slice(0,80);
       m.pow=1;L.powOpen=1;return L}   // המסך נשאר פתוח לצעד אחד, בשביל הצילום
+    // התכה (fuse.js): גחלים + כפור = אדים (הצלחה), ואז אדים + תלתן = שביט (שלושה חלקים) שנכשל: הולכים המשאבים והתלתן, והאדים נשארים
+    if(m.age===2&&!m.fuse){
+      const U=L.fuse={},press=roll=>{const r=Math.random;Math.random=()=>roll;try{const b=q('#fDetail [data-act="fuse"]');U.btn=!!b&&!b.disabled;if(b)b.click()}finally{Math.random=r}};
+      bagAdd('emberOrb');bagAdd('frostOrb');bagAdd('cloverOrb');bagAdd('star',3);bagAdd('coins',300);
+      q('#fTabs [data-tab="fuse"]').click();U.tab=AUI.tab==='fuse';
+      U.same=fuseOut('emberOrb','steamOrb').why==='same'&&fuseOut('trinityOrb','cloverOrb').why==='big';
+      q('#fItems [data-id="emberOrb"]').click();q('#fItems [data-id="frostOrb"]').click();
+      U.odds=(q('#fDetail .odds')||{}).innerText;U.out=(q('#fDetail h3')||{}).innerText;
+      const st0=SAVE.bag.star||0,c0=SAVE.bag.coins||0;FX.length=0;press(0);
+      U.ok=!!SAVE.bag.steamOrb&&!SAVE.bag.emberOrb&&!SAVE.bag.frostOrb&&FX.some(f=>f.K===CELEBRATE.aging);
+      U.cost=st0-(SAVE.bag.star||0)===FUSE.cost[2].star&&c0-(SAVE.bag.coins||0)===FUSE.cost[2].coins;
+      q('#fItems [data-id="cloverOrb"]').click();U.out3=fuseOut('steamOrb','cloverOrb').id;
+      const st1=SAVE.bag.star||0;FX.length=0;press(0.9999);
+      U.fail=!!SAVE.bag.steamOrb&&!SAVE.bag.cloverOrb&&!SAVE.bag.cometOrb&&st1-(SAVE.bag.star||0)===FUSE.cost[3].star&&FX.some(f=>f.K===CELEBRATE.agingFail);
+      const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key)).bag;U.saved=!!sv.steamOrb&&!sv.cloverOrb&&!sv.emberOrb;
+      if(LANG==='en'&&/[֐-׿]/.test(q('#ovForge').innerText))L.heLeak=q('#ovForge').innerText.trim().slice(0,80);
+      m.fuse=1;L.fuseOpen=1;return L}   // המסך נשאר פתוח לצעד אחד, בשביל הצילום
     if(m.age===2){q('#forgeClose').click();L.ageClosed=S.mode==='play';m.age=3;return L}
     // הזוהר: לרגע הקשת היא +10, ובודקים שיש שובל וחלקיקים על הנשק
     if(m.age===3){m.age=4;SAVE.gear.weapon='oakBow+10';P.weapon='gun';L.glowOn=1;return L}
@@ -720,6 +738,23 @@ function worldBot(m,L,god){
     const poor=!vTrade('buy','stone');bagAdd('coins',20);const buy=vTrade('buy','stone')&&SAVE.bag.stone===5&&SAVE.bag.coins===10;
     localStorage.removeItem(SAVE_STORE.key);saveLoad();return{sell,poor,buy}});
   check(mk.sell&&mk.poor&&mk.buy,'שוק: '+(mk.sell?'מכירה עובדת':'מכירה נכשלה')+', '+(mk.poor?'בלי מטבעות אי אפשר לקנות':'קנה בלי כסף')+', '+(mk.buy?'קנייה עובדת':'קנייה נכשלה'));
+  // חנות קישוטים (deco.js): קונים דגל, הוא עומד במקום פנוי (לא על מבנה), השני יקר יותר, בלי מטבעות אי אפשר, מזיזים ומורידים למחסן, והחבר רואה בפרופיל. בסוף מנקים
+  const dc=await page.evaluate(()=>{const r={};try{SAVE.village.market=1;SAVE.bag.coins=0;bagAdd('coins',DECO.items.flag.price);
+    const sl=decoSlots();r.slots=sl.length;r.clear=sl.every(s=>Object.values(VILLAGE.b).every(B=>Math.hypot(s.x-B.x,s.y-B.y)>B.r+20));
+    const p1=decoPrice('flag');r.buy=decoBuy('flag')===''&&!SAVE.bag.coins&&SAVE.deco.put.length===1&&SAVE.deco.put[0].k==='flag'&&decoAt(0)===0;
+    r.dearer=decoPrice('flag')>p1&&decoBuy('flag')==='coins'&&SAVE.deco.put.length===1;
+    const box=document.createElement('div');box.innerHTML=decoHtml();r.html=box.querySelectorAll('.dslot').length===sl.length&&box.querySelectorAll('.dslot.has').length===1&&!!box.querySelector('[data-act="decoBuy"][data-k="flag"][disabled]');
+    decoAct('decoSlot',{i:'0'});decoAct('decoSlot',{i:'3'});r.move=decoAt(3)===0&&decoAt(0)<0;
+    decoAct('decoSlot',{i:'3'});decoAct('decoStore',{});r.store=!SAVE.deco.put.length&&SAVE.deco.own.flag===1;
+    decoAct('decoOwn',{k:'flag'});decoAct('decoSlot',{i:'1'});r.back=decoAt(1)===0&&!SAVE.deco.own.flag;
+    const pub=decoPub();r.pub=pub.length===1&&pub[0][0]==='flag'&&box.innerHTML!==''&&/visdeco/.test(decoVisitHtml(pub));
+    r.save=JSON.parse(localStorage.getItem(SAVE_STORE.key)).deco.put.length===1;
+  }catch(e){r.err=String(e)}
+    localStorage.removeItem(SAVE_STORE.key);saveLoad();DECO.sel=null;return r});
+  check(dc.slots>=12&&dc.clear,'קישוטים: '+dc.slots+' מקומות פנויים בכפר'+(dc.clear?', אף אחד לא על מבנה':', ויש מקום על מבנה')+(dc.err?' ('+dc.err+')':''));
+  check(dc.buy&&dc.dearer&&dc.html,'קישוטים: דגל '+(dc.buy?'נקנה ועומד בכפר':'לא נקנה')+', '+(dc.dearer?'השני יקר יותר ובלי מטבעות אי אפשר':'המחיר לא עולה או שנקנה בלי כסף')+', '+(dc.html?'והמפה בשוק מראה אותו':'והמפה לא מראה'));
+  check(dc.move&&dc.store&&dc.back&&dc.save,'קישוטים: '+(dc.move?'מזיזים במפה':'הזזה לא עבדה')+', '+(dc.store?'מורידים למחסן':'לא ירד למחסן')+', '+(dc.back?'ומציבים שוב':'ולא הוצב שוב')+(dc.save?'':', ולא נשמר'));
+  check(dc.pub,'קישוטים: החבר '+(dc.pub?'רואה אותם בביקור':'לא רואה אותם'));
   // מתנה יומית: יום ראשון נותן, אותו יום לא נותן שוב, יום חדש מתקדם. יום 7 נותן תיבה, ואחריו הלוח מתחיל מחדש. בסוף מנקים
   const dg=await page.evaluate(()=>{const r1=dailyClaim('t1'),c=SAVE.bag.coins||0,r2=dailyClaim('t1'),again=r2===null&&(SAVE.bag.coins||0)===c,r3=dailyClaim('t2');
     const first=!!r1&&r1.i===0&&r1.got.coins===DAILY.days[0].coins,next=!!r3&&r3.i===1;
@@ -739,7 +774,8 @@ function worldBot(m,L,god){
     add(src,LOOT.firstKill,'first');add(src,LOOT.jackpot.table,'jackpot');
     // יצורי משאבים לא באים מה-spawner: כל אחד חייב מקור ששומר עליו, ושורה ב-LOOK3D
     const guards=new Set(Object.values(NODES.kinds).map(k=>k.guard&&k.guard.type).filter(Boolean)),lost=[];
-    for(const t in ETYPES)if(!['grunt','shield','wisp'].includes(t)&&!ETYPES[t].warden&&(!guards.has(t)||!LOOK3D[t]||!(ETYPES[t].tags||[]).length))lost.push(t);
+    const arenaMon=new Set([...HORDE.monsters.map(m=>m.type),...RUN.elite.types]);   // מפלצות הזירה (spawn.js) באות מה-spawner, לא ממקור
+    for(const t in ETYPES)if(!['grunt','shield','wisp'].includes(t)&&!arenaMon.has(t)&&!ETYPES[t].warden&&(!guards.has(t)||!LOOK3D[t]||!(ETYPES[t].tags||[]).length))lost.push(t);
     for(const b in BOSSES)add(src,BOSSES[b].drop,'boss:'+b);
     add(src,WANTED.drop,'wanted');WANTED.loot.forEach(l=>add(src,l.res,'wanted:'+l.key));
     add(src,BONUS.roomRes,'room');
@@ -1298,6 +1334,25 @@ function worldBot(m,L,god){
     enemies=[];orbs=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(crowd.n<=crowd.cap&&typeof crowd.elite==='number'&&crowd.elite<=crowd.lim&&(crowd.far==='נעלם'||crowd.far<=crowd.lim)&&crowd.orbs<=150&&crowd.xp===400,
     'עומס בזירה: '+crowd.n+' אויבים (מגבלה '+crowd.cap+'), אויב רחוק: '+crowd.far+', אויב-על רחוק קפץ ל-'+crowd.elite+' (עד '+crowd.lim+'), כדורי XP: 400→'+crowd.orbs+' ששווים '+crowd.xp+' XP');
+  // מפלצות הזירה (Quaternius, HORDE.monsters ב-spawn.js, RUN.elite.types ב-run.js): לכל אחת חומרים, שם, צבע בדו-ממד ומודל עם ריצה ומוות,
+  // הן לא מופיעות לפני הזמן שלהן ומופיעות אחריו, ואויבי-העל בתחנות הם לפי התור
+  const mons=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={bad:[],early:0,seen:{},elites:[],want:RUN.elite.types},er=window.eliteRoll;window.eliteRoll=()=>{};startRun();enemies=[];
+    const all=[...new Set([...HORDE.monsters.map(m=>m.type),...RUN.elite.types])];o.n=all.length;
+    for(const t of all){const d=ETYPES[t],L=LOOK3D[t],miss=[];
+      if(!d||!(d.tags||[]).length)miss.push('tags');if(!MATCOL[((d&&d.tags)||[])[0]])miss.push('צבע בדו-ממד');
+      for(const k of ['foe.','book.f.'])if(T(k+t)===k+t)miss.push(k+t);
+      if(!L||!MODELS3D[L.model]||!MODELS3D['anim_'+L.model]||!L.anim||!L.anim.run||!L.anim.die)miss.push('מודל');
+      else if(R3D.ready&&(!R3D.tmpl[L.model]||!R3D.clips[L.anim.run]||!R3D.clips[L.anim.die]))miss.push('אנימציה בתלת-ממד');
+      if(miss.length)o.bad.push(t+': '+miss.join(', '))}
+    const roll=t=>{S.t=t;const c={};for(let i=0;i<1500;i++){enemies=[];S.spawnT=0;S.hordeT=99;spawner(0);for(const e of enemies)c[e.type]=(c[e.type]||0)+1}return c};
+    const first=Math.min(...HORDE.monsters.map(m=>m.from)),c0=roll(first-1);o.early=all.reduce((n,t)=>n+(c0[t]||0),0);
+    o.seen=roll(RUN.bossAt-10);o.missing=HORDE.monsters.map(m=>m.type).filter(t=>!o.seen[t]);
+    enemies=[];S.run.log=[];for(const t of RUN.elite.types){S.run.log.push({kind:'elite',t:0});elite();o.elites.push((enemies.find(e=>e.elite)||{}).type);enemies=[]}
+    window.eliteRoll=er;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!mons.bad.length&&!mons.early&&!mons.missing.length&&mons.elites.join()===mons.want.join(),
+    'מפלצות בזירה: '+mons.n+' סוגים'+(mons.bad.length?' · חסר: '+mons.bad.join(' | '):', לכל אחת מודל, שם וצבע')+', לפני הזמן '+mons.early+
+    ', בסוף הריצה '+Object.entries(mons.seen).filter(([k])=>!['grunt','shield','wisp'].includes(k)).map(([k,n])=>k+' '+n).join(', ')+(mons.missing.length?' · לא הופיעו: '+mons.missing.join(', '):'')+
+    ', אויבי-על בתחנות: '+mons.elites.join(', '));
   // התחלה רכה בזירה (run.js, RUN.ease): אויב מההתחלה פוגע פחות והחסינות אחרי מכה ארוכה יותר, ואחרי ease.secs הכל רגיל. בעולם תמיד רגיל
   const ease=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},er=window.eliteRoll;window.eliteRoll=()=>{};startRun();enemies=[];   // בלי אויב עלית אקראי, שפוגע חזק יותר
     S.t=0;const a=addEnemy('grunt',500,0);a.elite=false;o.d0=a.dmg/ETYPES.grunt.dmg;P.inv=0;P.hp=P.maxHp;hurt(1);o.inv0=P.inv;
@@ -1305,6 +1360,31 @@ function worldBot(m,L,god){
     window.eliteRoll=er;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(Math.abs(ease.d0-0.45)<0.01&&ease.d1===1&&ease.inv0>ease.inv1&&Math.abs(ease.inv1-0.6)<0.01,
     'התחלה רכה בזירה: נזק אויב בהתחלה x'+ease.d0.toFixed(2)+', אחרי הזמן x'+ease.d1+', חסינות אחרי מכה '+ease.inv0.toFixed(2)+'→'+ease.inv1.toFixed(2)+' שניות');
+  // זירת גלים (arenas.js): נכנסים מהכפתור בכרטיס של שער בעולם, ומשחקים עד הסוף (האויבים נופלים ביד, כדי שיהיה מהר). גלים לפי הסדר, הפסקה בלי אויבים, המונה, כל גל חזק יותר עם אויבים משלו, ובוס בגל האחרון שמנצח
+  const wav=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},rw=window.runWon,rnd=Math.random;let won=0,sd=99;window.runWon=()=>{won++};
+    Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;   // מזל משלה, כדי לא להזיז את המזל של הבדיקות שאחריה (אותו seed = אותה ריצה)
+    try{enterWorld('home');const w=S.wd;w.near=w.open='grove';w.ui='';worldHud();
+      const b=document.querySelector('#wPanel [data-a="waves"]');o.btn=b?b.innerText:null;if(b)b.click();else{worldUi(false);startRun('waves')}
+      o.arena=S.arena;o.floor=arenaFloor('d2');o.bar=getComputedStyle(document.getElementById('runbar')).display==='none';
+      const N=ARENAS.waves.list.length,dt=1/30,k={},tag={},types={};o.N=N;o.breaks=0;o.breakSpawn=0;let ph='';o.bossAt=null;
+      for(let t=0;t<900&&!won;t+=dt){
+        P.hp=P.maxHp;if(S.mode!=='play'){for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;S.mode='play';S.pendingLv=0}
+        update(dt);hud();const v=S.wv;if(!v)break;
+        if(v.phase==='break'){if(ph!=='break'){o.breaks++;tag.br??=document.getElementById('waveTag').textContent}if(enemies.some(e=>!e.dead&&e.wv>v.i))o.breakSpawn++}
+        ph=v.phase;
+        if(v.phase==='fight'&&k[v.i]==null){k[v.i]=runK();tag[v.i]=document.getElementById('waveTag').textContent}
+        for(const e of enemies)if(!e.dead&&e.wv!=null){(types[e.wv]=types[e.wv]||new Set()).add(e.type);if(e.wv===v.i&&Math.random()<0.06)kill(e)}
+        if(S.boss&&!S.boss.dead){o.bossAt??=v.i;if(Math.random()<0.03)kill(S.boss)}
+      }
+      const ks=Object.keys(k).map(Number).sort((a,b)=>a-b).map(i=>k[i]);
+      o.waves=ks.length;o.grow=ks.every((x,i)=>!i||x>ks[i-1]);o.k1=Math.round(ks[0]*10)/10;o.kN=Math.round(ks[ks.length-1]);
+      o.tag3=tag[2]||'';o.tagBr=tag.br||'';o.tagN=tag[N-1]||'';o.sets=new Set(Object.values(types).map(s=>[...s].sort().join('+'))).size;
+      o.won=won;o.bossCount=S.bossCount;o.runWon=S.run.won>0;o.stations=S.run.next;o.t=Math.round(S.t)}catch(err){o.err=String(err&&err.stack||err)}
+    window.runWon=rw;Math.random=rnd;enemies=[];wRet=null;for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;document.getElementById('banner').textContent='';
+    SAVE=JSON.parse(bak);reset();S.mode=mode;o.after=S.arena==='classic'&&!document.documentElement.classList.contains('waves');return o});
+  check(!wav.err&&!!wav.btn&&wav.arena==='waves'&&!!wav.floor&&wav.bar&&wav.waves===wav.N&&wav.grow&&wav.breaks>=wav.N-1&&wav.breakSpawn===0&&wav.tag3.includes('3/'+wav.N)&&!!wav.tagBr&&wav.sets>=4
+    &&wav.bossAt===wav.N-1&&wav.won===1&&wav.bossCount===1&&wav.runWon&&wav.stations===0&&wav.after,
+    'זירת גלים: '+(wav.err||'כפתור "'+wav.btn+'", '+wav.waves+'/'+wav.N+' גלים ב-'+wav.t+' שניות, '+wav.breaks+' הפסקות (אויבים בהפסקה: '+wav.breakSpawn+'), מונה "'+wav.tag3+'", בהפסקה "'+wav.tagBr+'", אחרון "'+wav.tagN+'", חוזק x'+wav.k1+'→x'+wav.kN+(wav.grow?' (עולה)':' (לא עולה!)')+', '+wav.sets+' הרכבי אויבים, בוס בגל '+(wav.bossAt==null?'-':wav.bossAt+1)+', ניצחון: '+(wav.won===1&&wav.runWon?'כן':'לא')+', תחנות רגילות: '+wav.stations+', אחרי: '+(wav.after?'זירה רגילה':'נשאר גלים!')));
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
@@ -1312,7 +1392,7 @@ function worldBot(m,L,god){
     // התקדמות ל-stderr (לא נכנס לדוח): אם הבדיקה נתקעת ב-GitHub, רואים איפה
     if(guard%300===1)console.error('…',await page.evaluate(()=>[Math.round(S.t),S.mode,S.vil?'village':S.wd?'world':S.room?'room':'arena',enemies.length,S.nd?S.nd.list.length:0].join(' ')));
     L=await page.evaluate(botStep,{god:CFG.god,en:CFG.lang==='en'});
-    for(const k of ['welOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','fishDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='welOpen'?'welcome':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='fishDone'?'fishing':k==='wDeathTxt'?'world-death':k)}
+    for(const k of ['welOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','fuseOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','fishDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='welOpen'?'welcome':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='fishDone'?'fishing':k==='wDeathTxt'?'world-death':k)}
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
@@ -2156,9 +2236,15 @@ function worldBot(m,L,god){
      Object.assign(e.st,{wet:0,imm:0,stun:0,taunt:0,armor:0,rage:0});e.dead=false;e.hp=e.max=1e6;
      const dry=mbDmg(null,e,100,'lightning');e.st.wet=3;const wetD=mbDmg(null,e,100,'lightning');
      const mg=mbHero('mage',0,false,1);mg.lvl=MOBA.ultAt;mg.x=e.x-200;mg.y=e.y;MB.u.push(mg);e.st.wet=3;e.st.imm=0;
-     mbCast(mg,'ult',e);for(let i=0;i<30;i++)mobaUpdate(1/30);
+     mbCast(mg,'ult',e);const z=MB.zones.pop();z.fire(z);   // הסופה נוחתת מיד, בלי שהבוטים זזים או מרטיבים/מייבשים בינתיים
      o.combo={shock:w0.shock||0,k:Math.round(wetD/dry*100)/100,freeze:w0.freeze||0,frozen:e.st.stun>MBKIT.mage.ult.freeze*0.9,want:MOBA.combo.shock};
      mbWord=ow;MB.u.splice(MB.u.indexOf(mg),1);e.hp=e.max=MBKIT[e.kit].hp}
+    // כל סקיל של כל ערכה, בתרחיש קבוע: גיבור ברמה 6 מטיל את שלושת הסקילים על אויב קרוב (לא תלוי באורך משחק הבוטים)
+    {const e=mbHeroes(1)[0];e.hp=e.max=1e6;o.fixed=[];
+     for(const k of Object.keys(MBKIT)){const h=mbHero(k,0,false,1);h.lvl=MOBA.ultAt;h.x=e.x-150;h.y=e.y;MB.u.push(h);
+       for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);for(let i=0;i<20;i++)mobaUpdate(1/30)}
+       MB.u.splice(MB.u.indexOf(h),1)}
+     e.hp=e.max=MBKIT[e.kit].hp}
     MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
     mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
     mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
@@ -2215,7 +2301,7 @@ function worldBot(m,L,god){
     ', נפל: '+(L.nodeGot||'כלום')+(L.nodeInLoot?', בשלל של הריצה':', לא הגיע לשלל'));
   const dr=(L.drops||'0/0/0/0/0').split('/').map(Number);
   check(dr[0]>0&&L.firstKills>0,'שלל לפי דרגה: '+['רגיל','לא שכיח','נדיר','אפי','אגדי'].map((n,i)=>n+' '+dr[i]).join(', ')+
-    ' · עלית '+L.elites+', פיצוץ שלל '+L.jackpots+', הריגה ראשונה '+L.firstKills+', תיבות '+(L.chests||0)+', יצורי משאבים: '+(L.creatures||'לא הופלו'));
+    ' · עלית '+L.elites+', פיצוץ שלל '+L.jackpots+', הריגה ראשונה '+L.firstKills+', תיבות '+(L.chests||0)+', יצורי משאבים: '+(L.creatures||'לא הופלו')+', מפלצות: '+(L.monsters||'לא הופלו'));
   check(L.built===1&&L.builtSaved&&L.fx,'בנייה: '+(L.panel||'הפאנל לא נפתח')+', '+(L.built===1?'נבנתה, שולם '+L.paid:'לא נבנתה')+(L.builtSaved?', נשמר':', לא נשמר')+(L.fx?', חגיגה עם פיגום':', בלי חגיגה'));
   {const Tu=L.tour||{seen:[],sign:[]};
     check(Tu.seen.length===6&&Tu.sign.length===6,'כפר גדול: ביקור בכל המבנים, '+Tu.seen.length+'/6 הגיעו'+(Tu.stuck?' (נתקע בדרך ל-'+Tu.stuck+')':'')+', שלט על המסך ליד '+Tu.sign.length+'/6'+(Tu.sec!=null?', '+Tu.sec+' שניות':''))}
@@ -2233,6 +2319,9 @@ function worldBot(m,L,god){
   const W=L.pow||{};
   check(W.tab&&W.roll&&W.line&&W.out&&W.in&&W.saved,'כוחות: '+(W.tab?'הלשונית נפתחה':'הלשונית לא נפתחה')+(W.roll?', שלל עם כוח':', שלל בלי כוח')+(W.out?', הוצאה':', לא הוצא')+
     (W.in?', הוטבע (נזק מרחוק '+W.dmg+')':', לא הוטבע ('+(W.dmg||'')+')')+(W.saved?', נשמר':', לא נשמר'));
+  const U=L.fuse||{};
+  check(U.tab&&U.same&&U.ok&&U.cost&&U.out3==='cometOrb'&&U.fail&&U.saved,'התכה: '+(U.tab?'הלשונית נפתחה, '+(U.odds||'בלי סיכוי')+' '+(U.out||'?'):'הלשונית לא נפתחה')+(U.same?'':', חסימה לא עובדת')+
+    (U.ok?', הצליחה':', לא הצליחה')+(U.cost?', שולם':', מחיר שגוי')+(U.fail?', כישלון לקח משאב וחפץ':', כישלון לא עבד')+(U.saved?', נשמר':', לא נשמר'));
   const G=L.glow||{};
   check(G.hand&&G.trail>1&&G.parts>0,'זוהר Aging ב-+10: '+(G.hand?'שובל '+G.trail+' נקודות, '+G.parts+' חלקיקים':'לא נמצא הנשק'));
   check(L.gearW==='gun'&&L.gearDmg===gx,'ציוד בריצה: מתחיל עם '+(L.gearW==='gun'?'קשת':L.gearW)+', נזק קשת x'+L.gearDmg+' (צפוי x'+gx+')');
@@ -2411,7 +2500,7 @@ function worldBot(m,L,god){
     check(mb.over,'משחקי השאול: משחק של בוטים '+(mb.over?'נגמר':'לא נגמר')+' אחרי '+t(mb.t)+' · '+mb.towers+' מגדלים נפלו'+(mb.base?', בסיס נהרס':', נגמר בזמן')+' · הריגות '+mb.score+' · רמה עד '+mb.lv);
     if(CFG.gfx==='3d')check(!mb.r3||mb.m3===6,'משחקי השאול בתלת-ממד: '+(mb.r3?mb.m3+' מבנים כמודלים (צריך 6)':'התלת-ממד כבוי'));
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));
-    check(!mb.miss.length,'משחקי השאול: סקילים ('+mb.kits+') '+(mb.miss.length?'לא הוטלו: '+mb.miss.join(', '):'כולם הוטלו, כולל סקיל-העל'));
+    check(mb.fixed&&!mb.fixed.length,'משחקי השאול: כל 12 הסקילים (4 ערכות) הוטלו בתרחיש קבוע'+(mb.fixed&&mb.fixed.length?' · לא הוטלו: '+mb.fixed.join(', '):'')+' · במשחק הבוטים ('+mb.kits+'): '+(mb.miss.length?'לא הגיעו ל: '+mb.miss.join(', '):'כולם'));
     const cb=mb.combo||{};check(cb.shock>0&&Math.abs(cb.k-cb.want)<0.01&&cb.freeze>0&&cb.frozen,'משחקי השאול: קומבו בתרחיש קבוע: חשמול '+(cb.shock?'✓ נזק ×'+cb.k:'לא קרה')+', קפוא '+(cb.freeze&&cb.frozen?'✓ הקפאה ארוכה':'לא קרה'));
     check(mb.cc.stun>0&&mb.cc.taunt>0,'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
     if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');

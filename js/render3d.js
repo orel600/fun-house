@@ -71,6 +71,14 @@ const LOOK3D={
   // לב הצל (פרק 6): צללים כהים של אבירים ורוחות, והצל עצמו: ברבריאן ענק כמעט שחור עם מטה
   shadeknight:{model:'warrior',h:64,foot:14,tint:'#3A2A5C',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   shadewisp:{model:'skelMage',h:44,foot:11,float:14,tint:'#5B3F8C',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  /* מפלצות בזירה (Quaternius Ultimate Monsters, build3d.js MONSTERS): מודל ואנימציות משלהן, בשמות mon_<שם>_<אנימציה>.
+     גושים ומרחפים מצטרפים לגושים ולטפטוף ב-spawn.js. ייתי ושד: אויבי-על בתחנות (run.js) */
+  slime:{model:'mon_slime',h:34,foot:10,anim:{run:'mon_slime_Walk',die:'mon_slime_Death'}},
+  mushnub:{model:'mon_mushnub',h:40,foot:11,anim:{run:'mon_mushnub_Walk',die:'mon_mushnub_Death'}},
+  goleling:{model:'mon_goleling',h:38,foot:12,float:10,anim:{run:'mon_goleling_Fast_Flying',die:'mon_goleling_Death'}},
+  ghost:{model:'mon_ghost',h:50,foot:12,float:12,anim:{run:'mon_ghost_Fast_Flying',die:'mon_ghost_Death'}},
+  yeti:{model:'mon_yeti',h:70,foot:15,anim:{run:'mon_yeti_Walk',die:'mon_yeti_Death'}},
+  demon:{model:'mon_demon',h:70,foot:15,anim:{run:'mon_demon_Walk',die:'mon_demon_Death'}},
   shade:{model:'barbarian',h:100,foot:20,tint:'#4B2A7A',props:{staff:{prop:'staff',...HAND_R,tint:'#9C6BFF'}},anim:{run:'Running_B',die:'Death_A'}},
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle_A',charge:'Melee_2H_Attack_Spin',cast:'Melee_2H_Attack_Chop',taunt:'Taunt',die:'Death_A'}},
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. בלי קסדה הוא נמוך יותר, אז h קטן כדי שהגוף יהיה בגודל של האביר.
@@ -271,9 +279,10 @@ async function init3d(){
       // משאירים רק מה שמזיז את הגוף בפועל: סיבוב של עצמות הגוף והידיים, ותזוזה של האגן והרגליים.
       // עצמות העזר (IK, control) וקנה המידה לא משנים כלום במשחק, ומכפילים פי ארבעה את העבודה בכל פריים
       // חיות (dog_): כל הסיבובים חוץ מעצמות העזר של הכפות, ו-Body זז (קפיצה, ישיבה)
-      const dog=a0.name.startsWith('dog_');
+      // מפלצות (mon_, Quaternius): כל הסיבובים והתזוזות. הגוש קופץ בתזוזה של Body, והרגליים של הגדולות הן עצמות נפרדות שזזות לבד
+      const dog=a0.name.startsWith('dog_'),mon=a0.name.startsWith('mon_');
       const a=new THREE.AnimationClip(a0.name,a0.duration,a0.tracks.filter(t=>{const [n,pr]=t.name.split('.');
-        return dog?(pr==='quaternion'&&!/^(IK|FF|Pole)/.test(n)||n==='Body'&&pr==='position'):!/IK|control/.test(n)&&(pr==='quaternion'||pr==='position'&&/^(root|hips|upperleg)/.test(n))}));
+        return mon?pr==='quaternion'||pr==='position':dog?(pr==='quaternion'&&!/^(IK|FF|Pole)/.test(n)||n==='Body'&&pr==='position'):!/IK|control/.test(n)&&(pr==='quaternion'||pr==='position'&&/^(root|hips|upperleg)/.test(n))}));
       R3D.clips[a.name]=a;
       R3D.clips[a.name+'@up']=new THREE.AnimationClip(a.name+'@up',a.duration,a.tracks.filter(t=>UPPER.test(t.name)));
       R3D.clips[a.name+'@low']=new THREE.AnimationClip(a.name+'@low',a.duration,a.tracks.filter(t=>!UPPER.test(t.name)))}
@@ -658,14 +667,14 @@ function render3d(ox,oy){
   const S_=SIN(),cx=W/2-ox,cz=(H/2-oy)/S_;
   c.position.set(cx,2000*S_,cz+2000*COS());c.lookAt(cx,0,cz);
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
-  R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?(W3D.regions[S.wd.reg]||{}).bg||VIEW.world:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?(W3D.regions[S.wd.reg]||{}).line||VIEW.worldLine:VIEW.groundLine);
+  R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?(W3D.regions[S.wd.reg]||{}).bg||VIEW.world:arenaFloor('d3')||VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?(W3D.regions[S.wd.reg]||{}).line||VIEW.worldLine:arenaFloor('line')||VIEW.groundLine);
   for(const k in R3D.marks)R3D.marks[k].count=0;
   for(const k in R3D.crowd)if(R3D.crowd[k])for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
   for(const k in R3D.wlds||{})R3D.wlds[k].g.visible=false;
   if(!S.room&&!S.mb)syncPet(dt);else if(R3D.pet)R3D.pet.root.visible=false;   // חיית המחמד (pet.js), בכל מקום חוץ מחדר הבונוס
-  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
+  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil);if(typeof deco3d==='function')deco3d(R3D.vil)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
     if(S.wd){syncWorld();syncWnpcs(dt)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)
