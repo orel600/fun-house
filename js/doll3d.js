@@ -38,7 +38,8 @@ function dollBuild(D){
   const set=Object.keys(setCounts(gearWorn())).find(s=>setTiers(gearWorn()).some(t=>t.startsWith(s))),
         glow=set?SETS[set].col:(gearWorn().map(id=>(gItem(id).look||{}).glow).find(Boolean));
   if(!GEAR3D.on)for(const m of a.mats){m.emissive.set(glow||0).multiplyScalar(glow?DOLL3D.glow:0);m.userData.em=m.emissive.clone()}
-  else{a.g3=null;gear3dParts(a,L)}   // פיילוט ?gear3d=1: הזוהר לפי נדירות ולכל חלק בנפרד, כמו בעולם
+  else{a.g3=null;gear3dParts(a,L)}
+  a.ar=null;armor3d(a);   // שריון לפי מחלקה (armor.js)   // פיילוט ?gear3d=1: הזוהר לפי נדירות ולכל חלק בנפרד, כמו בעולם
   // מסגרת: לפי הגודל של הדמות בתנוחת עמידה
   loop(a,DOLL3D.idle);a.mixer.update(0.01);a.root.updateMatrixWorld(true);
   const bb=new THREE.Box3().setFromObject(a.root),h=bb.max.y-bb.min.y,c=bb.getCenter(new THREE.Vector3());

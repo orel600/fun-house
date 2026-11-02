@@ -5,6 +5,8 @@ const fs=require('fs'),vm=require('vm'),path=require('path');
 const ctx={$:()=>({addEventListener(){}}),addEventListener(){},C:{gold:'#F4C74F'},ageMult:()=>1,powGive:()=>({}),console};
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/gear.js'),'utf8'),ctx);
+ctx.TEXT={'arm.name':{he:()=>'',en:()=>''}};   // השריון (armor.js) מוסיף פריטים ל-GEAR.items
+vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/armor.js'),'utf8'),ctx);
 const out=vm.runInContext(`(()=>{
   const rar=['רגיל','לא שכיח','נדיר','אפי','אגדי'],rows=[];
   for(const id in GEAR.items){const it=GEAR.items[id];

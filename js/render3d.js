@@ -443,6 +443,7 @@ function syncPlayer(dt){
   let a=R3D.player;if(!a||a.key!==lookKey(L)){if(a)freeActor(a);a=R3D.player=makeActor(L)}   // דמות או נשק חדשים: מודל חדש
   rankArmor3d(a);   // אחרי עלייה בדרגה: החלקים מופיעים מיד
   if(GEAR3D.on)gear3dParts(a,L);
+  armor3d(a);   // שריון לפי מחלקה (armor.js)
   const sword=P.weapon==='sword';
   for(const k in a.props)a.props[k].visible=k==='shield'?sword:(k==='sword')===sword;
   const st=a.st||(a.st={anim:0,gt:0,inv:0,mode:''});

@@ -168,8 +168,8 @@ function gLadder(){
 const heroLv=()=>SAVE.hero.level||1;
 const gOrbOpen=()=>GEAR.slots.orbit.filter(l=>heroLv()>=l).length;
 const gOpen=slot=>slot==='weapon'?1:slot==='orbit'?gOrbOpen():GEAR.slots[slot];
-const gGet=(slot,i)=>slot==='weapon'?SAVE.gear.weapon:SAVE.gear[slot][i]||null;
-function gSet(slot,i,id){if(slot==='weapon')SAVE.gear.weapon=id;else SAVE.gear[slot][i]=id}
+const gGet=(slot,i)=>slot==='weapon'?SAVE.gear.weapon:(SAVE.gear[slot]||[])[i]||null;   // שמירה ישנה: אין עדיין head/body (armor.js)
+function gSet(slot,i,id){if(slot==='weapon')SAVE.gear.weapon=id;else (SAVE.gear[slot]||(SAVE.gear[slot]=[]))[i]=id}
 // לאיזו משבצת ייכנס פריט: הראשונה הריקה, ואם הכל מלא, זו עם הפריט הכי חלש
 function gTarget(it){
   const n=gOpen(it.slot);let best=0;
@@ -177,7 +177,8 @@ function gTarget(it){
   return best;
 }
 // כל מה שלבוש עכשיו, בלי משבצות נעולות
-function gearWorn(){const out=[];for(const s of ['weapon','acc','boots','orbit'])for(let i=0;i<gOpen(s);i++){const id=gGet(s,i);if(gItem(id))out.push(id)}return out}
+const GEAR_WEAR=['weapon','head','body','acc','boots','orbit'];   // head, body: שריון (armor.js)
+function gearWorn(){const out=[];for(const s of GEAR_WEAR)for(let i=0;i<gOpen(s);i++){const id=gGet(s,i);if(gItem(id))out.push(id)}return out}
 // כולל את הבונוס של סטים (sets.js), כדי שכל מי שמלביש ומוריד ציוד יקבל גם אותו
 function gearStats(ids=gearWorn()){const t={};for(const id of ids){const s=gStats(id);for(const k in s)t[k]=(t[k]||0)+s[k]}const b=setStats(ids);for(const k in b)t[k]=(t[k]||0)+b[k];return t}
 
@@ -338,8 +339,8 @@ const gIsNew=k=>!!gItem(k)&&!gSeen()[k];
 /* ---- ללבוש הכי טוב: לכל משבצת (בלי חפצים מסתובבים), הפריט הכי חזק מהתרמיל, אם הוא חזק ממה שלבוש.
    נשק: רק מאותו צד (מקרוב או מרחוק) כמו מה שביד, כדי שלוחם לא יקבל פתאום קשת ---- */
 function gBestPlan(){
-  const out=[],bag=Object.assign({},SAVE.bag),worn={weapon:[SAVE.gear.weapon],acc:[...SAVE.gear.acc],boots:[...SAVE.gear.boots]};
-  for(const slot of ['weapon','boots','acc']){const n=gOpen(slot),cur=worn[slot],use=slot==='weapon'&&gItem(cur[0])&&gItem(cur[0]).w?wUse(cur[0]):null;
+  const out=[],bag=Object.assign({},SAVE.bag),worn={weapon:[SAVE.gear.weapon],head:[...SAVE.gear.head||[]],body:[...SAVE.gear.body||[]],acc:[...SAVE.gear.acc],boots:[...SAVE.gear.boots]};
+  for(const slot of ['weapon','head','body','boots','acc']){const n=gOpen(slot),cur=worn[slot],use=slot==='weapon'&&gItem(cur[0])&&gItem(cur[0]).w?wUse(cur[0]):null;
     for(;;){const ks=Object.keys(bag).filter(k=>bag[k]>0&&gItem(k)&&gItem(k).slot===slot&&(!use||wUse(k)===use));if(!ks.length)break;
       const k=ks.reduce((a,b)=>gScore(b)>gScore(a)?b:a);let i=-1;
       for(let j=0;j<n;j++){if(!gItem(cur[j])){i=j;break}if(i<0||gScore(cur[j])<gScore(cur[i]))i=j}
