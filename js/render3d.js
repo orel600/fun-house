@@ -93,7 +93,10 @@ const LOOK3D={
   /* חיית המחמד (pet.js): pet_<חיה><שלב>. הגובה על המסך מ-PET (stages[].h), כי גם הדו-ממד משתמש בו. anim: מה מנגנים בכל מצב של החיה */
   pet_piocho1:{model:'piocho1',foot:2,anim:DOG_ANIM},
   pet_piocho2:{model:'piocho2',foot:2,anim:DOG_ANIM},
-  pet_piocho3:{model:'piocho3',foot:2,anim:DOG_ANIM,glow:'#FF8A3D'}   // glow: הסימנים על הגוף זוהרים ופועמים (PET.fx)
+  pet_piocho3:{model:'piocho3',foot:2,anim:DOG_ANIM,glow:'#FF8A3D'},   // glow: הסימנים על הגוף זוהרים ופועמים (PET.fx)
+  pet_parosh1:{model:'parosh1',foot:2,anim:DOG_ANIM},   // הפרעוש של אוראל (parosh.js): אותו מודל לשלושת השלבים
+  pet_parosh2:{model:'parosh1',foot:2,anim:DOG_ANIM},
+  pet_parosh3:{model:'parosh1',foot:2,anim:DOG_ANIM}
 };
 /* הנשק ביד השחקן: המודל מ-look.model של הפריט בציוד (GEAR.items ב-gear.js), והחומר לפי ה-tier שלו (טקסטורה wtex_<חומר>, build3d.js).
    כל משפחת נשקים יושבת ביד אחרת ותוקפת באנימציה אחרת. of: לאיזו משפחה שייך מודל, לפי השם.
@@ -109,6 +112,9 @@ const GRIP3D={
 /* קהל: כשיש הרבה אויבים על המסך, רק הקרובים לשחקן מקבלים דמות מונפשת. כל השאר מצוירים יחד בתנוחת ריצה קפואה
    שמתחלפת בין שני צעדים: כמה ציורים בפריים במקום מאות. בטלפון זה ההבדל בין משחק שזורם למשחק שנתקע.
    full: כמה דמויות מונפשות לכל היותר. poses: באיזה רגע של אנימציית הריצה מצלמים כל צעד. dying: כמה אנימציות מוות יחד. max: כמה בקהל */
+/* קהל: מעבר ל-full האויבים הקרובים, השאר מצוירים כצורה קבועה בכמה תנוחות, ציור אחד לכל סוג. types: נאפים בהתחלה.
+   כל סוג אחר נאפה בפעם הראשונה שצריך אותו (crowdOf). קודם רק שלושת אלה היו בקהל, וכל אויב מסוג אחר צויר לבד: בשלבים מאוחרים
+   (מומיות, טובעים, אבירי כפור) זה עשה עשרות ציורים בכל פריים (סקירת הזירה, 1.11.2026) */
 const CROWD={full:30,poses:[0.25,0.75],dying:16,max:320,types:['grunt','shield','wisp']};
 const PILOT3D=/[?&]hero=pilot/.test(location.search);
 /* הכפר: המיקומים והמראה לפי רמה ב-VILLAGE (js/village.js). כאן רק איזה קובץ מודל לכל שם, ובאיזה רוחב על המסך בפיקסלים.
@@ -196,7 +202,7 @@ function mergeSkinned(root,keep){
   for(const p of parts)p.parent.remove(p);
 }
 // חומר פשוט יותר מהמקורי: נראה אותו דבר בסגנון הזה, ומהיר יותר בטלפון
-function lambert(root){root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap});o.frustumCulled=false}})}
+function lambert(root){root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap,side:m.side});o.frustumCulled=false}})}
 function bone(root,name){let b=null;root.traverse(o=>{if(!b&&o.isBone&&o.name===name)b=o});return b}
 
 async function init3d(){
@@ -267,10 +273,14 @@ function mark(kind,x,z,r){const M=R3D.marks[kind];if(M.count>=M.instanceMatrix.c
 
 /* ---- קהל ---- */
 // מצלמים כל סוג אויב בכמה תנוחות ריצה, והופכים כל תנוחה לצורה קבועה שאפשר לצייר מאות פעמים בציור אחד
-function bakeCrowd(){
-  R3D.crowd={};const v=new THREE.Vector3();
-  for(const k of CROWD.types){
-    const L=LOOK3D[k],a=makeActor(L),clip=R3D.clips[L.anim.run];a.mixer.clipAction(clip).play();
+function bakeCrowd(){R3D.crowd={};for(const k of CROWD.types)crowdOf(k)}
+// הקהל של סוג אחד: נאפה בפעם הראשונה (כמה מילישניות), ואחר כך מהזיכרון. null: לסוג הזה אין מודל עם ריצה, והוא מצויר לבד
+function crowdOf(k){
+  if(k in R3D.crowd)return R3D.crowd[k];
+  const L=LOOK3D[k],clip=L&&L.model&&L.anim&&R3D.clips[L.anim.run];if(!clip||!R3D.tmpl[L.model])return R3D.crowd[k]=null;
+  const v=new THREE.Vector3();
+  {
+    const a=makeActor(L);a.mixer.clipAction(clip).play();
     R3D.crowd[k]=CROWD.poses.map(f=>{
       a.mixer.setTime(f*clip.duration);a.root.position.set(0,0,0);a.root.rotation.set(0,0,0);a.root.updateMatrixWorld(true);
       const parts=[];
@@ -283,6 +293,7 @@ function bakeCrowd(){
       return parts});
     freeActor(a);
   }
+  return R3D.crowd[k];
 }
 function crowdAdd(e){
   const L=lookOf(e),k=e.big||1,lift=L.float?L.float+Math.sin(e.ph*0.6)*3:0,M=R3D._mx;
@@ -307,7 +318,7 @@ function heroLook(){
     L.props[w]=Object.assign({prop:model,tier:mine?GEAR.tiers[it.tier].id:'wood'},g);
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
-  if(fluteOn())fluteGrip(L);   // הנודד עם החליל: חליל ביד במקום הנשק (flute.js)
+  {const th=heroTheme();if(th&&th.grip)th.grip(L)}   // דמות אישית: חפץ ביד במקום הנשק. החליל ביד במקום הנשק (flute.js)
   return R3D._hl=L;
 }
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
@@ -402,6 +413,9 @@ function syncPlayer(dt){
   a.mixer.update(dt);
   // איפה הנשק על המסך, בשביל הזוהר של Aging שמצויר בקנבס (aging.js). מהעולם חזרה לקואורדינטות המשחק
   const w=a.props[sword?'sword':'gun'];if(w){const v=w.getWorldPosition(R3D._v||(R3D._v=new THREE.Vector3()));AGE_FX.hand={x:v.x,y:v.z*SIN()-v.y*COS()}}
+  // קצה הלהב (הברק של הסקיל יוצא ממנו, skills.js): הלהב לאורך y המקומי של הנשק, עד הגובה של הצורה שלו
+  if(w&&sword){const len=w.userData.tip??(w.userData.tip=(()=>{let m=0;w.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();m=Math.max(m,o.geometry.boundingBox.max.y)}});return m})());
+    const t=w.localToWorld((R3D._v2||(R3D._v2=new THREE.Vector3())).set(0,len,0));AGE_FX.tip={x:t.x,y:t.z*SIN()-t.y*COS()}}else AGE_FX.tip=null;
   mark('shadow',a.root.position.x,a.root.position.z,16);
 }
 function syncEnemy(e,dt){
@@ -565,7 +579,7 @@ function syncPet(dt){
   if(a.st!==p.st&&p.st==='jump')once(a,L.anim.jump,0.9);
   if(p.barkAt!=null&&p.barkAt!==a.bark){a.bark=p.barkAt;once(a,L.anim.bark,0.6)}
   a.st=p.st;
-  const moving=p.st==='follow'||p.st==='go'||p.st==='back'||(p.st==='hunt'&&p.run),busy=a.one&&a.one.isRunning();
+  const moving=p.st==='follow'||p.st==='go'||p.st==='back'||((p.st==='hunt'||p.st==='sneak'||p.st==='flee')&&p.run),busy=a.one&&a.one.isRunning();
   if(!busy||moving)loop(a,moving?(p.run?L.anim.run:L.anim.walk):p.st==='dig'?L.anim.dig:p.st==='sit'?L.anim.sit:L.anim.idle,moving&&!p.run?1.4:1);
   place(a,p.x,p.y,L.foot,null);a.root.rotation.y=yawOf(Math.cos(p.face),Math.sin(p.face));
   if(L.glow)for(const m of a.mats)if(m.emissiveMap){m.emissive.set(L.glow);m.emissiveIntensity=0.4+0.35*Math.sin(p.fxT*PET.fx.pulse*6.28)}
@@ -594,7 +608,7 @@ function render3d(ox,oy){
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
   R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?(W3D.regions[S.wd.reg]||{}).bg||VIEW.world:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?(W3D.regions[S.wd.reg]||{}).line||VIEW.worldLine:VIEW.groundLine);
   for(const k in R3D.marks)R3D.marks[k].count=0;
-  for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)m.count=0;
+  for(const k in R3D.crowd)if(R3D.crowd[k])for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
   for(const k in R3D.wlds||{})R3D.wlds[k].g.visible=false;
@@ -606,7 +620,7 @@ function render3d(ox,oy){
     // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
     const vis=enemies.filter(e=>!e.dead&&(e.isBoss||onScreen(e.x+ox,e.y+oy)));
     if(vis.length>CROWD.full){const pr=e=>e.isBoss||e.wanted||e.elite?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}
-    vis.forEach((e,i)=>i<CROWD.full||!R3D.crowd[e.type]?syncEnemy(e,dt):crowdAdd(e));
+    vis.forEach((e,i)=>i<CROWD.full||e.isBoss||!crowdOf(e.type)?syncEnemy(e,dt):crowdAdd(e));
     R3D.nDying=0;for(const a of R3D.actors.values())if(a.dieT>0.05)R3D.nDying++;
     for(const [e,a] of R3D.actors)if(a.seen!==R3D.frame||e.dead)retire(e,a,dt);
   }else{ // בחדר הבונוס אין אויבים, רק השחקן
@@ -615,7 +629,7 @@ function render3d(ox,oy){
   // שולחים לכרטיס הגרפי רק את החלק שבשימוש: שליחה של הכל בכל פריים תוקעת את הציור
   const up=m=>{if(!m.count)return;const b=m.instanceMatrix;b.clearUpdateRanges();b.addUpdateRange(0,m.count*16);b.needsUpdate=true};
   for(const k in R3D.marks)up(R3D.marks[k]);
-  for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)up(m);
+  for(const k in R3D.crowd)if(R3D.crowd[k])for(const p of R3D.crowd[k])for(const m of p){up(m);m.visible=m.count>0}   // ריק: בלי ציור בכלל
   if(!skip){r.render(R3D.scene,c);gfxMeasure(now)}
   const i=r.info.render;R3D.stats={calls:i.calls,tris:i.triangles,actors:R3D.actors.size+1,crowd:R3D.nCrowd};
 }

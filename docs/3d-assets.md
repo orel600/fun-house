@@ -141,6 +141,8 @@ If I write "monster:" followed by a description, draw the creature in the same s
 ```
 
 **שיפור מהפיילוט:** להוסיף להוראות "flat colors, no shading, no baked lighting", כי הצבע של הדמות נלקח ישר מהציור, ואור וצל בציור הופכים אותה לכהה ורכה מ-KayKit.
+
+**יצור עגול או סימטרי (אוראל, הפרעוש, 1.11.2026):** ג'מיני מצייר לו פרצוף גם במבט מאחור, או שניים במבט מהצד, כי אין לו רמז איפה האחור. מוסיפים לפרומפט: "It has exactly ONE face, on the front only. The BACK view shows no face, no eyes, no mouth. The SIDE view shows the face in profile at the right edge only". עוד עוזר: פרט שמסמן את האחור, כמו קשר של בנדנה. ליצור בלי ידיים: "neutral standing pose" במקום תנוחת T. הפרומפט המלא בהיסטוריה של `art/pets/parosh-sheet.jpg` (ה-PR של הפרעוש). את הדף הופכים לתלת-ממד עם `tools/pet3d` (יצור על ארבע), ומכניסים למשחק בלי לבנות את כל השאר: `node tools/build3d.js C:/kk --only <שם>`.
 משתמשים בו כך: שורה אחת לכל דמות ("a young warrior in light leather and steel armor..."), ושולחים את התמונה ל-Claude עם המילים "פיילוט דמות". את ה-Gem אפשר לשתף עם אוראל.
 
 ### מה ניר עושה מהטלפון
@@ -204,6 +206,15 @@ If I write "monster:" followed by a description, draw the creature in the same s
 - **חומרים:** חמש טקסטורות של 64 פיקסלים (`wtex_wood` עד `wtex_legend`), עותקים של הפלטה שבהם משבצות המתכת צבועות מחדש. 8KB כל אחת.
 - **אנימציות (28):** בשימוש כבר עכשיו: עמידה, ריצה, חרב, ירי בקשת ועמידה עם קשת, כישוף, פגיעה, עידוד, מוות, ושתי התקפות הבוס. מוכנות למשימות הבאות: התחמקות לארבעה כיוונים, חסימה, זימון, הטלת כישוף ארוכה, נפנוף, הליכה, ישיבה על כיסא ועל הרצפה, פטיש וחפירה (ל-NPC בכפר). להוסיף עוד: שורה ב-`ANIMS` ב-`build3d.js`.
 - **משקל:** `js/models3d.js` עלה מ-6,210KB ל-8,741KB. מה הוסיף: הנשקים (כל 31, וחמשת החומרים) 1,120KB אחרי כיווץ המיקומים (`quantize`). הצייד והקוסמת 1,080KB, והאביר החדש 70KB יותר מהישן. האנימציות 1,170KB במקום 790KB. הקשת-יד והחרב הישנות יצאו (120KB).
+
+## TRELLIS מ-Hugging Face: מודל צבוע מתמונה אחת (אוראל, 1.11.2026)
+
+הדמות של אוראל והפרעוש הוחלפו במודלים של TRELLIS (`trellis-community/TRELLIS`, חינם). הוא נותן צורה **וגם צבע** מתמונה אחת מלפנים, בלי הצביעה מהדף שהשאירה כתמים במקומות נסתרים.
+- **איפה זה רץ:** ב-GitHub, לא בסשן (לסשנים של Claude אין גישה ל-huggingface.co). `.github/workflows/trellis.yml` רץ בענף `feature/hf-trellis` כשמשנים את `tools/trellis/go.txt`, ושומר `out/<שם>.glb` ו-`.mp4` בחזרה בענף. התמונות ב-`tools/trellis/in/<שם>-front.png`.
+- **מפתח:** סוד `HF_TOKEN` בהגדרות הריפו (אוראל הוסיף, Read). בלי מפתח המכסה היומית נגמרת אחרי ניסיון אחד.
+- **שלד:** `python tools/trellis/reskin.py <ישן.glb> <חדש.glb> <יוצא.glb> 0 [--color]` מעתיק את השלד והמשקלים מהמודל הקודם שכבר עבד, לפי הנקודה הקרובה, ולכן כל האנימציות עובדות בלי KayKit. הוא גם מותח לקופסה של הישן (TRELLIS שיטח את הפרעוש מהצד), ו-`--color` מבהיר טקסטורה כהה (הפרעוש יצא פי 2 כהה). אחר כך `node tools/build3d.js x --only orelHero` (או `parosh1`).
+- **לקחים:** החומר צריך `doubleSided`: המצלמה מלמעלה רואה לתוך הברדס, ובלי זה רואים דרכו את הדשא (`lambert` ב-render3d.js שומר עכשיו את `side`). ליצור עגול הכיוון לא נקבע לפי צבע, אז נותנים 0 (TRELLIS תמיד מוציא פנים קדימה).
+- **המקור הישן נשאר:** `art/heroes/OrelHero.glb` ו-`art/pets/Parosh1.glb`. החדשים: `OrelHeroHF.glb` ו-`ParoshHF.glb`.
 
 ## הערות טכניות ל-Claude הבא
 

@@ -32,9 +32,9 @@ const HEROES={
      dx,up: איפה ליד הדמות (פיקסלים לצד, וחלק מהגובה). bob: כמה הוא עולה ויורד, ובאיזו מהירות. r: גודל. lag: כמה מהר הוא מדביק את הדמות */
   skins:{
     // ניר: "הנודד עם הניצוץ", מ-art/heroes/nir-sheet.jpg. הניצוץ קישוט בינתיים, ומיועד להיות החפץ המסתובב הראשון שלו (המשימה של אוראל, orbit)
-    nir:{look:'nirHero',spark:{dx:24,up:0.62,bob:3,speed:2.2,r:5,lag:6}},
+    nir:{look:'nirHero',theme:'spark',spark:{dx:24,up:0.62,bob:3,speed:2.2,r:5,lag:6}},   // theme: המתקפות כלהבונים וגצים (spark.js, אוראל 1.11.2026)
     // אוראל: "הנודד עם החליל", מ-art/heroes/orel-sheet.jpg. theme: ערכת מראה לנשק, ליריות ולסקילים (flute.js)
-    orel:{look:'orelHero',theme:'flute'}
+    orel:{look:'orelHero',theme:'flute',pet:'parosh'}   // pet: חיית המחמד של הסקין (parosh.js), כל עוד לא נבחרה אחרת
   }
 };
 
@@ -42,8 +42,12 @@ const heroId=()=>HEROES.list[SAVE.hero.start]?SAVE.hero.start:null;
 // המראה האישי. ?hero=<שם> בכתובת בוחר אותו ונשמר, כדי שבטלפון מספיק לפתוח את הקישור פעם אחת
 function heroSkin(){
   const q=/[?&]hero=(\w+)/.exec(location.search),k=q&&q[1];
-  if(k&&!heroSkin.url){heroSkin.url=1;if(HEROES.skins[k])SAVE.hero.skin=k;else if(k==='none')SAVE.hero.skin=null}
+  if(k&&!heroSkin.url){heroSkin.url=1;if(HEROES.skins[k]){SAVE.hero.skin=k;heroSkinPet()}else if(k==='none')SAVE.hero.skin=null}
   return HEROES.skins[SAVE.hero.skin]?SAVE.hero.skin:null;
+}
+// נבחר סקין (בכתובת או בכפתור): אם יש לו חיה (pet) ובשמירה עוד לא נבחרה חיה, היא שלו. רק בבחירה, לא בכל קריאה, כדי שבדיקה שמציצה בסקין לא תחליף חיה
+function heroSkinPet(){
+  const sk=HEROES.skins[SAVE.hero.skin];if(sk&&sk.pet&&!SAVE.pet.kind&&typeof PET!=='undefined'&&PET.kinds[sk.pet])SAVE.pet.kind=sk.pet;
 }
 
 /* ---- בתחילת כל ריצה (ובכפר): הפסיבית של הדמות ---- */
@@ -74,5 +78,5 @@ function heroPick(id){
 // "הדמות שלי": כל לחיצה עוברת למראה האישי הבא (ניר, אוראל), ואחרי האחרון חוזרת לדמות הרגילה
 function heroSkinBtn(){$('heroSkin').setAttribute('aria-pressed',String(!!heroSkin()))}
 $('ovHero').addEventListener('click',e=>{
-  if(e.target.closest('#heroSkin')){const ks=Object.keys(HEROES.skins);SAVE.hero.skin=ks[ks.indexOf(heroSkin())+1]||null;heroSkinBtn();return}
+  if(e.target.closest('#heroSkin')){const ks=Object.keys(HEROES.skins);SAVE.hero.skin=ks[ks.indexOf(heroSkin())+1]||null;heroSkinPet();heroSkinBtn();return}
   const b=e.target.closest('[data-hero]');if(b)heroPick(b.dataset.hero)});
