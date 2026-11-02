@@ -216,6 +216,15 @@ If I write "monster:" followed by a description, draw the creature in the same s
 - **לקחים:** החומר צריך `doubleSided`: המצלמה מלמעלה רואה לתוך הברדס, ובלי זה רואים דרכו את הדשא (`lambert` ב-render3d.js שומר עכשיו את `side`). ליצור עגול הכיוון לא נקבע לפי צבע, אז נותנים 0 (TRELLIS תמיד מוציא פנים קדימה).
 - **המקור הישן נשאר:** `art/heroes/OrelHero.glb` ו-`art/pets/Parosh1.glb`. החדשים: `OrelHeroHF.glb` ו-`ParoshHF.glb`.
 
+## מפלצות הזירה: Quaternius Ultimate Monsters (2.11.2026)
+
+✔ נכנסו שש: גוש ג'לי (`GreenBlob`), פטריון (`Mushnub`), גולמון מעופף (`Goleling`), רוח-גולגולת (`Ghost_Skull`), ייתי ושד (`Yeti`, `Demon`, אויבי-העל בתחנות).
+- **מאיפה:** האתר של Quaternius, poly.pizza ו-itch.io חסומים לסשנים של Claude. החבילה המלאה (Big, Blob, Flying, עם הרישיון) נמצאה ב-GitHub: `github.com/mlflabs/brain`, בתיקייה `assets/Ultimate Monsters`. מורידים רק את הקבצים שצריך: `git clone --depth 1 --filter=blob:none --no-checkout`, ואז `git checkout HEAD -- "<נתיב>"`. מוצאים עותקים כאלה עם `gh api -X GET search/code -f q='filename:Orc.gltf Atlas'`.
+- **הבנייה:** הטבלה `MONSTERS` ב-`tools/build3d.js`, ו-`node tools/build3d.js C:/kk --only monsters` מוסיף רק אותן לקובץ הקיים.
+- **מה שונה מ-KayKit:** לכל משפחה (Big, Blob, Flying) שלד משלה, אז האנימציות נכנסות לכל מפלצת בנפרד (`anim_mon_<שם>`) ובשם עם קידומת (`mon_slime_Walk`). הצבע בטקסטורת פלטה ולא בקודקודים, אז לא היה צריך לשנות את הציור. ב-`render3d.js` אנימציות `mon_` שומרות גם תזוזות: הגוש קופץ בתזוזה של `Body`, והרגליים של הגדולות הן עצמות נפרדות.
+- **גודל:** בערך 1.1MB למודלים (1.45MB בקובץ). רק אנימציות תנועה ומוות, והגוש הקוצני (4,900 משולשים) הוחלף בגוש החלק (1,500).
+- **מה עוד יש בחבילה, למשימות הבאות:** 15 גדולות (אורק, נינג'ה, מלך הפטריות, דינו...), 19 גושים ו-16 מעופפות, חלק עם גרסה "Evolved", שמתאימה לבוס או לשלב. לגדולות יש גם `Punch`, `Weapon`, `Jump` ו-`Wave`.
+
 ## הערות טכניות ל-Claude הבא
 
 - ההורדה מ-itch.io עובדת גם בלי דפדפן: POST ל-`<page>/download_url` עם `csrf_token` מהדף, ואז POST ל-`<page>/file/<upload_id>?source=view_game&as_props=1&after_download_lightbox=true`, שמחזיר קישור ישיר.

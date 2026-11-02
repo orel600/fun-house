@@ -22,7 +22,7 @@
 
    כל הדמויות בחבילות האלה בנויות על אותו שלד: 23 עצמות באותם שמות (בגרסאות 1.0 יש עוד 18 עצמות עזר, שהמשחק מתעלם מהן).
    לכן כל אנימציה עובדת על כל דמות.
-   מה נכנס: הטבלאות CHARS, PROPS, WEAPONS, WTIERS, ANIMS ו-BUILDS למטה. דמות או אנימציה חדשה = שורה כאן ושורה ב-js/render3d.js */
+   מה נכנס: הטבלאות CHARS, PROPS, WEAPONS, WTIERS, ANIMS, BUILDS, NATURE ו-MONSTERS למטה. דמות או אנימציה חדשה = שורה כאן ושורה ב-js/render3d.js */
 const path=require('path'),fs=require('fs');
 const {NodeIO}=require('@gltf-transform/core');
 const {ALL_EXTENSIONS}=require('@gltf-transform/extensions');
@@ -125,6 +125,29 @@ const NATURE={
   n_round:{src:forest('Rock_3_A')},        // סלע עגול (אגם, לב הצל)
   n_bush: {src:forest('Bush_1_A')}         // שיח
 };
+/* מפלצות (Quaternius Ultimate Monsters, CC0): לכל מפלצת שלד ואנימציות משלה, לא השלד של KayKit.
+   המודל נכנס כ-mon_<שם>, והאנימציות שלו כ-anim_mon_<שם>, בשמות mon_<שם>_<אנימציה> (למשל mon_slime_Walk), כדי ש-Walk של אחת לא ידרוס את של השנייה.
+   מי משתמש באיזו אנימציה: LOOK3D ב-js/render3d.js. האויבים עצמם: ETYPES ב-js/data.js.
+   מאיפה: quaternius.com/packs/ultimatemonsters.html (Google Drive), או עותק CC0 ב-GitHub (github.com/mlflabs/brain, "assets/Ultimate Monsters").
+   התיקייה "Ultimate Monsters" -> C:/kk/monsters. tex: הטקסטורה היא פלטת צבעים (32 בקטנות, 1024 בגדולות), אז מספיק קטן */
+const mon=(cat,name)=>path.join(KK,'monsters',cat,'glTF',name+'.gltf');
+const MONSTERS={   // anims: רק מה שאויב מנגן (תנועה ומוות). כל אנימציה של מפלצת גדולה היא בערך 25KB
+  slime:  {src:mon('Blob','GreenBlob'),anims:['Walk','Death'],tex:32},
+  mushnub:{src:mon('Blob','Mushnub'),anims:['Walk','Death'],tex:32},
+  goleling:{src:mon('Flying','Goleling'),anims:['Fast_Flying','Death'],tex:32},
+  ghost:  {src:mon('Flying','Ghost_Skull'),anims:['Fast_Flying','Death'],tex:32},
+  yeti:   {src:mon('Big','Yeti'),anims:['Walk','Death'],tex:128},
+  demon:  {src:mon('Big','Demon'),anims:['Walk','Death'],tex:128}
+};
+async function addMonsters(add){
+  for(const [k,c] of Object.entries(MONSTERS)){
+    add('mon_'+k,await slim(await io.read(c.src),{tex:c.tex}));
+    const doc=await io.read(c.src),all=doc.getRoot().listAnimations(),miss=c.anims.filter(n=>!all.some(a=>a.getName()===n));
+    if(miss.length)throw new Error('אנימציה חסרה ב-'+k+': '+miss.join(', '));
+    for(const a of all)a.setName('mon_'+k+'_'+a.getName());
+    add('anim_mon_'+k,await slim(doc,{keepMeshes:null,keepAnims:c.anims.map(n=>'mon_'+k+'_'+n)}));
+  }
+}
 const TEX=256;   // גודל הטקסטורה. החבילות משתמשות בפלטת צבעים, אז 256 נראה כמו 1024
 
 const io=new NodeIO().registerExtensions(ALL_EXTENSIONS);
@@ -165,6 +188,17 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
     fs.writeFileSync(f,src.slice(0,i).replace('Fantasy Weapons Bits ו-Medieval Hexagon מאת','Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת')+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
   }
+  // node tools/build3d.js C:/kk --only monsters: מוסיף רק את MONSTERS לקובץ הקיים
+  if(ONLY==='monsters'){
+    const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
+    const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
+    Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
+    for(const k in out)if(k.startsWith('mon_')||k.startsWith('anim_mon_'))delete out[k];
+    await addMonsters(add);
+    let head=src.slice(0,i);if(!head.includes('Quaternius'))head=head.replace(' רישיון CC0.',' רישיון CC0.\n   מפלצות: Ultimate Monsters מאת Quaternius (quaternius.com), רישיון CC0.');
+    fs.writeFileSync(f,head+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
+  }
   const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
   for(const [k,c] of Object.entries(CHARS))add(k,await slim(await io.read(c.src),{keepMeshes:c.keep,tex:c.tex,fmt:c.fmt}));
   for(const [k,c] of Object.entries(PROPS))add(k,await slim(await io.read(c.src),{}));
@@ -182,12 +216,13 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
   }
   for(const [k,c] of Object.entries(BUILDS))add(k,await slim(await io.read(c.src),{}));
   for(const [k,c] of Object.entries(NATURE))add(k,await slim(await io.read(c.src),{q:true}));
+  await addMonsters(add);
   for(const [k,c] of Object.entries(ANIMS)){
     const doc=await io.read(c.src),miss=c.keep.filter(n=>!doc.getRoot().listAnimations().some(a=>a.getName()===n));
     if(miss.length)throw new Error('אנימציה חסרה ב-'+k+': '+miss.join(', '));
     add('anim_'+k,await slim(doc,{keepMeshes:null,keepAnims:c.keep}));
   }
-  const head='/* נוצר אוטומטית ע"י tools/build3d.js. לא עורכים ביד.\n   דמויות, אנימציות, נשקים ומבנים: KayKit Adventurers, Skeletons, Character Animations, Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת Kay Lousberg (www.kaylousberg.com), רישיון CC0.\n   מוטמעות כאן כטקסט ולא כקבצים, כי המשחק נפתח גם מ-file:// ושם הדפדפן לא טוען קבצים לבד */\n';
+  const head='/* נוצר אוטומטית ע"י tools/build3d.js. לא עורכים ביד.\n   דמויות, אנימציות, נשקים ומבנים: KayKit Adventurers, Skeletons, Character Animations, Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת Kay Lousberg (www.kaylousberg.com), רישיון CC0.\n   מפלצות: Ultimate Monsters מאת Quaternius (quaternius.com), רישיון CC0.\n   מוטמעות כאן כטקסט ולא כקבצים, כי המשחק נפתח גם מ-file:// ושם הדפדפן לא טוען קבצים לבד */\n';
   fs.writeFileSync(path.join(ROOT,'js/models3d.js'),head+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
 
   // three.js בלי import: חבילה אחת שמגדירה את THREE גלובלי
