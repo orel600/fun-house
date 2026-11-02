@@ -75,7 +75,7 @@ const LOOK3D={
      גושים ומרחפים מצטרפים לגושים ולטפטוף ב-spawn.js. ייתי ושד: אויבי-על בתחנות (run.js) */
   slime:{model:'mon_slime',h:34,foot:10,anim:{run:'mon_slime_Walk',die:'mon_slime_Death'}},
   mushnub:{model:'mon_mushnub',h:40,foot:11,anim:{run:'mon_mushnub_Walk',die:'mon_mushnub_Death'}},
-  goleling:{model:'mon_goleling',h:46,foot:12,float:10,anim:{run:'mon_goleling_Fast_Flying',die:'mon_goleling_Death'}},
+  goleling:{model:'mon_goleling',h:38,foot:12,float:10,anim:{run:'mon_goleling_Fast_Flying',die:'mon_goleling_Death'}},
   ghost:{model:'mon_ghost',h:50,foot:12,float:12,anim:{run:'mon_ghost_Fast_Flying',die:'mon_ghost_Death'}},
   yeti:{model:'mon_yeti',h:70,foot:15,anim:{run:'mon_yeti_Walk',die:'mon_yeti_Death'}},
   demon:{model:'mon_demon',h:70,foot:15,anim:{run:'mon_demon_Walk',die:'mon_demon_Death'}},
