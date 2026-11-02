@@ -15,28 +15,28 @@ const VFX={
   // לכל מקום: sun צבע השמש ו-sunK כמה חזקה, sky/gnd צבע השמיים והקרקע באור הסביבה ו-hemiK, fog צבע האובך ו-fogK כמה ממנו, exp חשיפה,
   // vig צבע הפינות ו-vigA כמה חשוכות. מקום שלא כתוב: meadow
   mood:{
-    village:{sun:0xffd9a8,sunK:1.0,sky:0xd8e4ff,gnd:0x7a6046,hemiK:1.0,fog:0xf2dcb8,fogK:0.25,exp:1.0,vig:'40,24,10',vigA:0.22},   // חמים, ביתי
-    meadow: {sun:0xfff0c8,sunK:1.0,sky:0xcfe6ff,gnd:0x5f6a3a,hemiK:1.0,fog:0xd8ecd0,fogK:0.2,exp:1.0,vig:'14,30,12',vigA:0.18},    // שמש רכה, ירוק
-    lake:   {sun:0xd8f0f0,sunK:0.82,sky:0xbfe8e6,gnd:0x2e4a48,hemiK:1.05,fog:0xa8d0cc,fogK:0.55,exp:0.98,vig:'8,30,34',vigA:0.3},  // ערפל ירקרק, אור מפוזר
-    ridge:  {sun:0xf0f6ff,sunK:1.08,sky:0xe6f2ff,gnd:0x8a9cb4,hemiK:1.08,fog:0xe8f2ff,fogK:0.5,exp:1.04,vig:'30,46,70',vigA:0.24},  // קר ובוהק, שלג
-    desert: {sun:0xffb070,sunK:1.12,sky:0xffd8a8,gnd:0x9a5a2a,hemiK:0.95,fog:0xffc890,fogK:0.5,exp:1.03,vig:'70,24,0',vigA:0.3},    // חום כתום, אוויר רועד
-    storm:  {sun:0xb8a8e8,sunK:0.7,sky:0xa8a0d0,gnd:0x3a3250,hemiK:0.9,fog:0x6e6890,fogK:0.55,exp:0.92,vig:'20,10,40',vigA:0.4},    // סגול כהה, לפני ברק
-    shadow: {sun:0x9a80d0,sunK:0.6,sky:0x8070b0,gnd:0x201830,hemiK:0.85,fog:0x3a2a58,fogK:0.6,exp:0.9,vig:'12,4,24',vigA:0.5}       // כמעט לילה תמידי
+    village:{sun:0xffd9a8,sunK:1.0,sky:0xd8e4ff,gnd:0x7a6046,hemiK:1.0,fog:0xf2dcb8,fogK:0.25,exp:1.0,vig:'40,24,10',vigA:0.33},   // חמים, ביתי
+    meadow: {sun:0xfff0c8,sunK:1.0,sky:0xcfe6ff,gnd:0x5f6a3a,hemiK:1.0,fog:0xd8ecd0,fogK:0.2,exp:1.0,vig:'14,30,12',vigA:0.27},    // שמש רכה, ירוק
+    lake:   {sun:0xd8f0f0,sunK:0.82,sky:0xbfe8e6,gnd:0x2e4a48,hemiK:1.05,fog:0xa8d0cc,fogK:0.55,exp:0.98,vig:'8,30,34',vigA:0.45},  // ערפל ירקרק, אור מפוזר
+    ridge:  {sun:0xf0f6ff,sunK:1.08,sky:0xe6f2ff,gnd:0x8a9cb4,hemiK:1.08,fog:0xe8f2ff,fogK:0.5,exp:1.04,vig:'30,46,70',vigA:0.36},  // קר ובוהק, שלג
+    desert: {sun:0xffb070,sunK:1.12,sky:0xffd8a8,gnd:0x9a5a2a,hemiK:0.95,fog:0xffc890,fogK:0.5,exp:1.03,vig:'70,24,0',vigA:0.45},    // חום כתום, אוויר רועד
+    storm:  {sun:0xb8a8e8,sunK:0.7,sky:0xa8a0d0,gnd:0x3a3250,hemiK:0.9,fog:0x6e6890,fogK:0.55,exp:0.92,vig:'20,10,40',vigA:0.60},    // סגול כהה, לפני ברק
+    shadow: {sun:0x9a80d0,sunK:0.6,sky:0x8070b0,gnd:0x201830,hemiK:0.85,fog:0x3a2a58,fogK:0.6,exp:0.9,vig:'12,4,24',vigA:0.60}       // כמעט לילה תמידי
   },
   // שעה ביום: נקודות על השעון (0 עד 24), וביניהן מעבר רך. tint נצבע על השמש והשמיים, k על החוזק, exp על החשיפה, lamp כמה האור של הגיבור חזק, vig כמה הפינות חשוכות
   tod:[
     {h:0,   tint:0x8ea8ff,k:0.55,exp:0.86,lamp:1,  vig:1.7},   // לילה: כחול, אבל רואים הכל
     {h:5,   tint:0x8ea8ff,k:0.55,exp:0.86,lamp:1,  vig:1.7},
     {h:6.5, tint:0xffc0b0,k:0.82,exp:0.95,lamp:0.5,vig:1.25},  // שחר ורדרד
-    {h:8.5, tint:0xffffff,k:1,   exp:1,   lamp:0.22,vig:1},    // יום
-    {h:16,  tint:0xffffff,k:1,   exp:1,   lamp:0.22,vig:1},
+    {h:8.5, tint:0xffffff,k:1,   exp:1,   lamp:0.45,vig:1},    // יום
+    {h:16,  tint:0xffffff,k:1,   exp:1,   lamp:0.45,vig:1},
     {h:18.3,tint:0xffb468,k:0.9, exp:0.98,lamp:0.5,vig:1.3},   // שקיעה זהובה
     {h:20,  tint:0xb090e0,k:0.68,exp:0.9, lamp:0.85,vig:1.55}, // בין ערביים סגול
     {h:21.5,tint:0x8ea8ff,k:0.55,exp:0.86,lamp:1,  vig:1.7},
     {h:24,  tint:0x8ea8ff,k:0.55,exp:0.86,lamp:1,  vig:1.7}],
   fixed:{night:1,dawn:6.6,day:12,dusk:18.3},   // ?tod=<שם>: שעה קבועה
-  lamp:{r:150,col:'255,214,150',a:0.42},       // r: רדיוס הכתם (פיקסלים של המשחק). a: שקיפות בשיא (בלילה). חיבורי (additive), כך שהוא מאיר ולא צובע
-  rim:{col:0xffe2a8,k:0.75,pow:2.4}            // צבע הקו, חוזק, וכמה הוא דק (גבוה = דק יותר)
+  lamp:{r:170,col:'255,206,130',a:0.6},       // r: רדיוס הכתם (פיקסלים של המשחק). a: שקיפות בשיא (בלילה). חיבורי (additive), כך שהוא מאיר ולא צובע
+  rim:{col:0xffe2a8,k:1.2,pow:2.0}            // צבע הקו, חוזק, וכמה הוא דק (גבוה = דק יותר)
 };
 VFX.parts=(()=>{const m=location.search.match(/[?&]vfx=([\w,]+)/);return new Set(m&&m[1]!=='off'?m[1].split(',').filter(p=>VFX.parts.includes(p)):VFX.parts)})();
 VFX.has=p=>VFX.on&&VFX.parts.has(p);
@@ -78,15 +78,15 @@ VFX.hour=()=>{const m=location.search.match(/[?&]tod=(\w+)/);if(m&&VFX.fixed[m[1
       set=null;base=null;if(lamp)lamp.visible=false;if(vig)vig.hidden=true;return}
     grab(rr);
     const M=VFX.has('mood')?VFX.mood[at]:null,D=VFX.has('tod')?todNow():null,tk=D?D.k:1,tint=D?D.tint:cT.set(0xffffff);
-    cA.setHex(base.sun);if(M)cA.lerp(cB.set(M.sun),0.6);cA.multiply(tint);sun.color.copy(cA);sun.intensity=base.sunI*(M?M.sunK:1)*tk;
-    cA.setHex(base.sky);if(M)cA.lerp(cB.set(M.sky),0.5);cA.multiply(tint);hemi.color.copy(cA);
-    cA.setHex(base.gnd);if(M)cA.lerp(cB.set(M.gnd),0.4);hemi.groundColor.copy(cA);hemi.intensity=base.hemiI*(M?M.hemiK:1)*(0.35+0.65*tk);
+    cA.setHex(base.sun);if(M)cA.lerp(cB.set(M.sun),0.85);cA.multiply(tint);sun.color.copy(cA);sun.intensity=base.sunI*(M?M.sunK:1)*tk;
+    cA.setHex(base.sky);if(M)cA.lerp(cB.set(M.sky),0.7);cA.multiply(tint);hemi.color.copy(cA);
+    cA.setHex(base.gnd);if(M)cA.lerp(cB.set(M.gnd),0.6);hemi.groundColor.copy(cA);hemi.intensity=base.hemiI*(M?M.hemiK:1)*(0.35+0.65*tk);
     rr.toneMappingExposure=base.exp*(M?M.exp:1)*(D?D.exp:1);
     if(sc.fog&&M)sc.fog.color.lerp(cB.set(M.fog),M.fogK).multiply(tint);else if(sc.fog&&D)sc.fog.color.multiply(tint);
     if(sc.background&&sc.background.isColor&&D)sc.background.multiply(tint);
     set={sun:sun.color.getHex(),sunI:sun.intensity,sky:hemi.color.getHex(),gnd:hemi.groundColor.getHex(),hemiI:hemi.intensity,exp:rr.toneMappingExposure};
     // אור הגיבור
-    if(VFX.has('lamp')){if(!lamp)lamp=makeLamp();const k=D?D.lamp:0.3,r=VFX.lamp.r,s=SIN();
+    if(VFX.has('lamp')){if(!lamp)lamp=makeLamp();const k=D?D.lamp:0.45,r=VFX.lamp.r,s=SIN();
       lamp.visible=true;lamp.position.set(P.x,0.8,P.y/s);lamp.scale.set(r,r/s,1);lamp.material.opacity=VFX.lamp.a*k}
     // פינות בצבע המקום
     if(M&&vig){vig.hidden=false;const a=Math.min(0.7,M.vigA*(D?D.vig:1));vig.style.background='radial-gradient(ellipse at 50% 55%,transparent 55%,rgba('+M.vig+','+a.toFixed(3)+') 100%)'}
