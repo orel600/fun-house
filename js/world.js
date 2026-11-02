@@ -294,7 +294,7 @@ function worldUpdate(dt){
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
-  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
+  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
   dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
@@ -513,7 +513,7 @@ function drawWorldScreen(ox,oy){
   drawWnpcScreen(ox,oy);   // worldnpc.js
   fishScreen(ox,oy);   // "!" והפס של הדיג (fishing.js)
   storyScreen(ox,oy);   // story.js
-  affixScreen(ox,oy);huntScreen(ox,oy);   // affix.js, hunt.js
+  foeLoreScreen(ox,oy);affixScreen(ox,oy);huntScreen(ox,oy);   // שמות ובועות (foelore.js), affix.js, hunt.js
   foeAiScreen(ox,oy);   // "!" מעל קורא שבורח (foeai.js)
   eventsScreen(ox,oy);scentScreen(ox,oy);   // events.js, petscent.js
   secretsScreen(ox,oy);secretsHud();curioScreen(ox,oy);   // secrets.js, השלט "רמה מומלצת" (curiosity.js)
