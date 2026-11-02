@@ -302,7 +302,7 @@ function worldUpdate(dt){
   parts=parts.filter(p=>p.life>0);
   for(const f of floats){f.y+=f.vy*dt;f.life-=dt}
   floats=floats.filter(f=>f.life>0);
-  // ליד שער: בועה מעליו וכפתור עגול (wGoBtn). הכרטיס נפתח רק בלחיצה, ונכנסים רק מהכרטיס (docs/plan-hud.md, פרק 5)
+  // ליד שער: בועה מעליו וכפתור עגול (wGoBtn). הביתה ושבילים: העיגול נכנס מיד. שער לזירה: העיגול פותח כרטיס עם שתי האפשרויות
   w.near=null;const gs=wGates();for(const k in gs){const g=gs[k];if(Math.hypot(P.x-g.x,P.y-g.y)<g.r+P.r+WORLD.near)w.near=k}
   worldHud();cornerHud();   // הפינות העליונות והמפה הקטנה (minimap.js)
   wnpcUpdate(dt);   // דמויות שמגלים בעולם, וכפתור "לדבר" (worldnpc.js)
@@ -344,7 +344,10 @@ $('wPanel').addEventListener('click',e=>{
 function wShut(){if(!S.wd)return;S.wd.open=null;worldHud()}
 // הכפתור העגול ליד שער (בסרגל ההקשר, מעל הסקילים): פותח את הכרטיס. נעלם כשהכרטיס פתוח
 const wGoEl=(()=>{const b=document.createElement('button');b.id='wGo';b.className='nbtn talkbtn wgo';b.hidden=true;
-  $('talkBtn').before(b);b.addEventListener('click',()=>{const w=S.wd;if(!w||!w.near||S.mode!=='play')return;w.open=w.near;sfx('ui');worldHud()});return b})();
+  $('talkBtn').before(b);b.addEventListener('click',()=>{const w=S.wd;if(!w||!w.near||S.mode!=='play')return;sfx('ui');
+    // הביתה ושביל לאזור אחר: נכנסים מיד, בלי כרטיס (ניר, 2.11: "זה עדיין מקפיץ עוד הודעה. מיותר, הכפתור מספיק"). שער לזירה: כרטיס, כי יש שתי אפשרויות
+    const k=w.near,to=k==='home'&&WR().back||wIsPath(k)&&k;if(to){wGo(to);return}if(k==='home'){wHome();return}
+    w.open=k;worldHud()});return b})();
 const wGoIco=k=>k==='home'&&!WR().back?['🏠','ctx.home']:k==='home'||wIsPath(k)?['🧭','ctx.go']:['⚔️','ctx.arena'];
 function wGoBtn(w){
   const k=w.near,show=!!k&&w.open!==k&&S.mode==='play';wGoEl.hidden=!show;if(!show)return;
