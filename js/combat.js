@@ -51,7 +51,7 @@ function hurt(d){
   if(orbitShield())return;   // חפץ הגנה בולע את המכה (orbit.js)
   if(statDodge())return;   // רוח (stats.js)
   d*=1-Math.min(STATS.cap.def,(P.def||0)+statDefFx())/100;   // נקודות הגנה ועץ הסקילים (stats.js)
-  P.hp-=d;P.inv=0.6;statOnHurt();sfx('hurt');questEvent('hurt');S.shake=Math.max(S.shake,7);S.hurt=0.3;
+  P.hp-=d;P.inv=0.6/easeK();statOnHurt();sfx('hurt');questEvent('hurt');S.shake=Math.max(S.shake,7);S.hurt=0.3;
   floatText(P.x,P.y-36,'-'+Math.round(d),C.blood,17);
   if(P.hp<=0){P.hp=0;gameOver()}
 }
