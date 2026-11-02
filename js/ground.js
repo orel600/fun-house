@@ -24,6 +24,10 @@ const GROUND={
   edge:{from:-40,to:90},       // הקצה הכהה: מתחיל 40 לפני הגבול ונגמר 90 אחריו
   shadow:{dark:0.28,size:1.05,dx:0.18,dy:-0.1,decor:{tree:30,rock:24},tower:1.1,gate:34},   // צל מגע: כמה כהה, פי כמה מהרדיוס, וקצת לכיוון שהשמש מטילה
   grain:{tile:240,lo:0.72,hi:0.42},   // גרגר עדין מעל המפה (קווי עשב ונקודות), כדי שמקרוב היא לא תיראה חלקה
+  /* דוגמה לכל אזור מעל הגרגר (ניר, 2.11: "טקסטורה... בכללי", באותו סגנון כמו המבנים ב-tex3d.js): grass עשב, sand אדוות חול,
+     snow קרום שלג, stone סלע סדוק. אזור שלא כתוב כאן: grass. ובשבילי העפר: חלוקי אבן (pebble: גודל התא, כמה מהתאים, כמה חזק) */
+  motif:{meadow:'grass',lake:'grass',village:'grass',ridge:'snow',desert:'sand',storm:'stone',shadow:'stone'},
+  pebble:{cell:16,n:0.35,k:0.38},
   maxSeg:24,maxPond:10,
   /* הכפר (ניר, 1.11.2026, משימה 5 ב-plan-ground.md): שבילים מהשער לכיכר ומהכיכר לכל מבנה שנבנה, כיכר עפר מול הטירה, צל מגע מתחת למבנים,
      ועשב ופרחים רק בשוליים. הכפר גדל לפי הרמה של מרכז הכפר (vLv('center')): השבילים והכיכר מתרחבים, ומרמה paveAt הם מרוצפים באבן.
@@ -115,11 +119,11 @@ const GROUND={
       cBase:{value:v3()},cLush:{value:v3()},cDry:{value:v3()},cPath:{value:v3()},cShore:{value:v3()},cOut:{value:v3()},cRim:{value:v3()},
       seg:{value:Array.from({length:GROUND.maxSeg},()=>new THREE.Vector4())},pond:{value:Array.from({length:GROUND.maxPond},()=>new THREE.Vector3())},
       big:{value:0},small:{value:0},pathW:{value:0},shoreW:{value:0},shoreA:{value:0},rimW:{value:0},rimA:{value:0},eFrom:{value:0},eTo:{value:0},
-      round:{value:0},paved:{value:0},cPave:{value:v3()},plaza:{value:v3()}};
+      round:{value:0},paved:{value:0},pebC:{value:13},pebN:{value:0.3},pebK:{value:0.2},cPave:{value:v3()},plaza:{value:v3()}};
     baseMat=new THREE.ShaderMaterial({uniforms:U,depthTest:false,depthWrite:false,
       vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}',
       fragmentShader:`precision highp float;varying vec2 vUv;uniform vec4 box;uniform vec2 size;uniform vec3 cBase,cLush,cDry,cPath,cShore,cOut,cRim;
-        uniform vec4 seg[${GROUND.maxSeg}];uniform vec3 pond[${GROUND.maxPond}];uniform float big,small,pathW,shoreW,shoreA,rimW,rimA,eFrom,eTo,round,paved;uniform vec3 cPave,plaza;${NOISE}
+        uniform vec4 seg[${GROUND.maxSeg}];uniform vec3 pond[${GROUND.maxPond}];uniform float pebC,pebN,pebK,big,small,pathW,shoreW,shoreA,rimW,rimA,eFrom,eTo,round,paved;uniform vec3 cPave,plaza;${NOISE}
         void main(){
           vec2 p=box.xy+vUv*box.zw;float nb=gF(p/big),ns=gF(p/small+vec2(3.1,7.7));
           vec3 c=mix(cLush,cBase,smoothstep(0.32,0.58,nb));
@@ -133,6 +137,10 @@ const GROUND={
           // ריצוף: אבנים בשורות מוזזות, עם תפר כהה ביניהן
           vec2 bq=vec2(p.x/18.0+0.5*floor(p.y/12.0),p.y/12.0),bf=fract(bq);float mort=min(min(bf.x,1.0-bf.x)*18.0,min(bf.y,1.0-bf.y)*12.0);
           vec3 pv=cPave*(0.88+0.2*gH(floor(bq)))*mix(0.75,1.0,smoothstep(0.6,1.8,mort));
+          // חלוקים בשביל העפר: עיגול קטן בהיר עם צל כהה מתחתיו, בחלק מהתאים
+          vec2 pq=p/pebC;vec2 pf=fract(pq)-0.5+(vec2(gH(floor(pq)+3.7),gH(floor(pq)+8.1))-0.5)*0.35;float ph=gH(floor(pq));
+          float peb=step(1.0-pebN,ph)*(1.0-smoothstep(0.22,0.3,length(pf)));float pebS=step(1.0-pebN,ph)*(1.0-smoothstep(0.22,0.32,length(pf+vec2(0.0,0.12))));
+          pc=pc*(1.0-pebS*pebK)*(1.0+peb*pebK*1.3);
           c=mix(c,mix(pc,pv,paved),pm);
           float ds=1e5;for(int i=0;i<${GROUND.maxPond};i++)ds=min(ds,length(p-pond[i].xy)-pond[i].z);
           float dn=ds+(gN(p/30.0)-0.5)*20.0;
@@ -161,6 +169,7 @@ const GROUND={
     for(const k of ['base','lush','dry','path','shore','out'])u['c'+k[0].toUpperCase()+k.slice(1)].value.copy(rgb(P_[k]));
     u.cRim.value.copy(rgb(P_.rim||P_.shore));u.rimA.value=P_.rim?GROUND.rimA:0;
     for(const k of ['big','small','shoreW','shoreA','rimW'])u[k].value=GROUND[k];u.eFrom.value=GROUND.edge.from;u.eTo.value=GROUND.edge.to;
+    u.pebC.value=GROUND.pebble.cell;u.pebN.value=GROUND.pebble.n;u.pebK.value=GROUND.pebble.k;
     u.pathW.value=pl.pathW;u.round.value=pl.round;u.paved.value=pl.paved;u.cPave.value.copy(rgb(P_.pave||P_.path));
     if(pl.plaza)u.plaza.value.set(pl.plaza.x,pl.plaza.y,pl.plaza.r);else u.plaza.value.set(9e4,9e4,1);
     const sg=pl.segs();u.seg.value.forEach((v,i)=>sg[i]?v.set(...sg[i]):v.set(9e4,9e4,9e4,9e4));
@@ -173,15 +182,32 @@ const GROUND={
     GROUND.bakeMs=Math.round(performance.now()-t0);
   }
   // הקרקע עצמה: קוראת את התמונה האפויה לפי המקום בעולם (לא לפי המשטח שזז עם המצלמה), ומוסיפה גרגר עדין
-  function grainTex(){
+  const grains={};
+  function grainTex(kind){
+    if(grains[kind])return grains[kind];
     const T=256,c=document.createElement('canvas');c.width=c.height=T;const g=c.getContext('2d');let s=5;const rnd=()=>(s=(s*16807)%2147483647)/2147483647;
+    const wrap=f=>{for(const dx of [-T,0,T])for(const dy of [-T,0,T]){g.save();g.translate(dx,dy);f();g.restore()}};
     g.fillStyle='rgb(220,220,220)';g.fillRect(0,0,T,T);
-    for(let i=0;i<1300;i++){const x=rnd()*T,y=rnd()*T,l=2+rnd()*5,a=-1.2+rnd()*0.5,v=rnd()<0.55?245:175+rnd()*25;
-      for(const dx of [-T,0,T])for(const dy of [-T,0,T]){g.strokeStyle='rgba('+v+','+v+','+v+',0.6)';g.lineWidth=1;g.beginPath();g.moveTo(x+dx,y+dy);g.lineTo(x+dx+Math.cos(a)*l,y+dy+Math.sin(a)*l);g.stroke()}}
-    const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;return t;
+    if(kind==='sand'){   // אדוות: גלים רכים, קו בהיר ומתחתיו קו כהה
+      for(let i=0;i<14;i++){const y0=i*T/14+rnd()*6,ph=rnd()*6.28;wrap(()=>{for(const [o,v,w] of [[0,250,3],[4,170,3]]){g.strokeStyle='rgba('+v+','+v+','+v+',0.5)';g.lineWidth=w;g.beginPath();
+        for(let x=-4;x<=T+4;x+=8)g.lineTo(x,y0+o+Math.sin(x/T*6.28*2+ph)*6);g.stroke()}})}
+      for(let i=0;i<400;i++){const v=rnd()<0.5?250:170;g.fillStyle='rgba('+v+','+v+','+v+',0.6)';g.fillRect(rnd()*T,rnd()*T,1.5,1.5)}}
+    else if(kind==='snow'){   // שלג: גבעות רכות של צל ונקודות נוצצות
+      for(let i=0;i<30;i++){const x=rnd()*T,y=rnd()*T,r=20+rnd()*30;wrap(()=>{const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,'rgba(255,255,255,0.7)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2);
+        g.strokeStyle='rgba(170,170,170,0.5)';g.lineWidth=2;g.beginPath();g.arc(x,y+r*0.2,r*0.7,0.3,2.8);g.stroke()})}
+      for(let i=0;i<160;i++){g.fillStyle='rgba(255,255,255,0.95)';g.fillRect(rnd()*T,rnd()*T,2,2)}}
+    else if(kind==='stone'){   // סלע סדוק: לוחות לא סדירים עם סדקים כהים
+      for(let i=0;i<40;i++){const x=rnd()*T,y=rnd()*T,r=14+rnd()*24,v=Math.round(190+rnd()*60);wrap(()=>{g.fillStyle='rgba('+v+','+v+','+v+',0.6)';g.beginPath();for(let j=0;j<6;j++){const a=j/6*6.28+rnd()*0.4,d=r*(0.7+rnd()*0.4);g.lineTo(x+Math.cos(a)*d,y+Math.sin(a)*d)}g.closePath();g.fill()})}
+      for(let i=0;i<12;i++){let x=rnd()*T,y=rnd()*T,a=rnd()*6.28;const pts=[[x,y]];for(let j=0;j<7;j++){a+=rnd()-0.5;x+=Math.cos(a)*16;y+=Math.sin(a)*16;pts.push([x,y])}
+        wrap(()=>{g.strokeStyle='rgba(90,90,90,0.8)';g.lineWidth=2.5;g.beginPath();pts.forEach(p=>g.lineTo(p[0],p[1]));g.stroke()})}}
+    else{   // עשב: קווים קצרים בהירים וכהים, ועוד גושים קטנים
+      for(let i=0;i<1300;i++){const x=rnd()*T,y=rnd()*T,l=2+rnd()*5,a=-1.2+rnd()*0.5,v=rnd()<0.55?245:175+rnd()*25;
+        wrap(()=>{g.strokeStyle='rgba('+v+','+v+','+v+',0.6)';g.lineWidth=1;g.beginPath();g.moveTo(x,y);g.lineTo(x+Math.cos(a)*l,y+Math.sin(a)*l);g.stroke()})}
+      for(let i=0;i<40;i++){const x=rnd()*T,y=rnd()*T;wrap(()=>{for(let k=0;k<6;k++){const a=-1.9+k*0.25;g.strokeStyle='rgba(150,150,150,0.55)';g.lineWidth=1.5;g.beginPath();g.moveTo(x,y);g.lineTo(x+Math.cos(a)*9,y+Math.sin(a)*9);g.stroke()}})}}
+    const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;return grains[kind]=t;
   }
   function makeMat(){
-    const m=new THREE.MeshLambertMaterial({map:grainTex(),color:0xffffff}),G=GROUND.grain;
+    const m=new THREE.MeshLambertMaterial({map:grainTex('grass'),color:0xffffff}),G=GROUND.grain;
     const U=m.userData.u={gSin:{value:1},gBake:{value:null},gBox:{value:new THREE.Vector4(0,0,1,1)},gTile:{value:G.tile},gLo:{value:G.lo},gHi:{value:G.hi}};
     m.onBeforeCompile=sh=>{Object.assign(sh.uniforms,U);
       sh.vertexShader='varying vec2 vGp;uniform float gSin;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec4 gW=modelMatrix*vec4(transformed,1.0);vGp=vec2(gW.x,gW.z*gSin);');
@@ -196,6 +222,7 @@ const GROUND={
     // מקור שנשבר או צמח, דרך שנפתחה, או מבנה שעלה רמה בכפר: אופים שוב (1-2ms)
     try{if(pl.key!==key){key=pl.key;bake(pl)}}catch(e){GROUND.failed=e.message;console.warn('ground',e);return null}   // תקלה: נשארת הקרקע של שלב 1
     if(!mat)mat=makeMat();
+    mat.map=grainTex(GROUND.motif[pl.reg]||'grass');   // הדוגמה של האזור (אותו שיידר, רק תמונה אחרת)
     const u=mat.userData.u;u.gBake.value=bk.texture;u.gBox.value.copy(box);u.gSin.value=SIN();
     return mat;
   };
