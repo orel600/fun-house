@@ -1,6 +1,6 @@
 /* המבקר (ניר, 1.11.2026: "מבקר שתפקידו לעבור על המשחק ולתת ביקורת"). לא חלק מהמשחק, לא נטען ב-index.html.
    משחק כמו שחקן חדש וכמו שחקן ברמה 20, בתלת-ממד, בטלפון של ניר (760×350) ובאייפון שוכב (844×390), באנגלית ובעברית:
-   פתיחה ← כפר ← עולם (אחו, קרב, שלל, השומר) ← חלונות (ציוד, קווסטים, מפה, ספר, הגדרות, שיחה עם תושב) ← זירה (רק מסתכל).
+   שחקן חדש: פתיחה ← כפר ← עולם (אחו, קרב, שלל, מוות) ← זירה (רק מסתכל). שחקן ברמה 20: כל חלונות הכפר ← ציוד, מכירה, דמות, ספר סקילים ← ביקור ומסחר ← עולם (סקילים, דקה משחק).
    בכל עצירה: צילום, וכמה אחוז מהמסך הממשק תופס, טקסט חתוך, אלמנטים חופפים, חלונות שגוללים, שגיאות בקונסול.
    ובכל ריצה: זמן לפריים (יחסי, אין כרטיס גרפי), זמן להרוג ולמות, הכי הרבה שניות בלי "החלטה מעניינת",
    ותוך כמה זמן השחקן החדש יודע מה המטרה הבאה.
@@ -169,7 +169,7 @@ async function combo(browser,vk,lang,report){
     R.metrics.newPlayer.worldSec=Math.round((await now()-tw)/1000);
   });
 
-  /* ===== שחקן מתקדם: שמירה של אמצע המשחק, סיור בכל החלונות, השומר, והזירה ===== */
+  /* ===== שחקן ברמה 20: סיור בכל החלונות, ביקור ומסחר, סקילים ודקה בעולם, והזירה ===== */
   await safe('adv',async()=>{
     // דף חדש עם שמירה ריקה, ובה מכינים שחקן של אמצע המשחק לפני "יאללה"
     await ev(()=>{try{localStorage.removeItem(SAVE_STORE.key)}catch(e){}});await page.reload();await run(400);
@@ -210,6 +210,8 @@ async function combo(browser,vk,lang,report){
           // הדמות: סטטים וכפתור ספר הסקילים
           await ev(()=>{const t=document.querySelector('#ovGear [data-page="char"],#ovGear [data-gpage="char"]');if(t)t.click();else if(typeof gearClose==='function'){gearClose();gearOpen('char')}});await run(250);await shot('gear-char','ציוד: הדמות והסטטים');
           await ev(()=>wsbOpenUi());await run(250);await shot('skillbook','ספר הסקילים והרונות');
+          // הספר באמת למעלה? (2.11: נפתח מתחת לחלון הציוד)
+          R.metrics.skillbookOnTop=await ev(()=>{const b=document.querySelector('#ovBook .wsbwin');if(!b)return null;const r=b.getBoundingClientRect(),e=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2);return!!e&&!!e.closest('#ovBook')});
           await ev(()=>wsbClose())}
         await closeAll()});
     await safe('npc',async()=>{const a=await ev(()=>NPC.list.head.at);await tp(a.x+30,a.y);await run(500);if(await vis('talkBtn')){await tap('#talkBtn');await shot('npc-head','שיחה עם ראש הכפר')}await closeAll()});
