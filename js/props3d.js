@@ -141,8 +141,35 @@ function props3dWorldTick(G){
   for(const m of G.tow||[]){const w=m.userData.win;w.material.color.set(Math.sin(t*3+m.position.x)>0.6?PROPS3D.tower.glow:'#2a2638')}   // החלון מהבהב כמו בדו-ממד
   for(const m of G.look||[]){const f=m.userData.flag;f.rotation.y=Math.sin(t*3+m.position.x)*0.25}
 }
+/* הכפר הגדול (2.11): הקישוטים מ-VILLAGE.props (village.js). עצים מהמודלים, ופנס רחוב וגדר מצורות פשוטות.
+   tree/pine/bush: מודל ורוחב. lamp: גובה העמוד וצבע האור. fence: כל כמה פיקסלים עמוד, וגובה */
+PROPS3D.vprops={tree:{model:'v_treeA',w:62},pine:{model:'n_pine',w:46},bush:{model:'v_treeB',w:38},crate:{model:'v_crate',w:30},barrel:{model:'v_barrel',w:28},
+  lamp:{h:58,col:'#ffcf7a',halo:46},fence:{step:34,h:16}};
+function p3StreetLamp(x,y,g){
+  const C=PROPS3D.col,L=PROPS3D.vprops.lamp,grp=new THREE.Group();
+  p3Mesh(p3Cyl(2.4,3,L.h,6),p3Mat(C.woodDark),0,L.h/2,0,grp);
+  p3Mesh(p3Box(9,10,9),new THREE.MeshBasicMaterial({color:L.col,toneMapped:false}),0,L.h+5,0,grp);
+  p3Mesh(new THREE.ConeGeometry(8,6,4),p3Mat(C.iron),0,L.h+13,0,grp).rotation.y=Math.PI/4;
+  p3Halo(L.col,L.halo,L.h+5,grp);
+  return p3At(grp,x,y,g);
+}
+function p3Fence(d,g){
+  const F=PROPS3D.vprops.fence,w=p3Mat(PROPS3D.col.wood),grp=new THREE.Group(),dx=d.x2-d.x,dz=(d.y2-d.y)/SIN(),len=Math.hypot(dx,dz),n=Math.max(1,Math.round(len/F.step));
+  for(let i=0;i<=n;i++)p3Mesh(p3Box(4,F.h+4,4),w,i/n*len-len/2,(F.h+4)/2,0,grp);
+  for(const h of [F.h*0.45,F.h*0.9])p3Mesh(p3Box(len,2.6,2),w,0,h,0,grp);
+  grp.rotation.y=-Math.atan2(dz,dx);grp.position.set((d.x+d.x2)/2,0,(d.y+d.y2)/2/SIN());g.add(grp);return grp;
+}
+function p3VillageProps(V){
+  if(V.props)return;V.props=1;const T=PROPS3D.vprops;
+  for(const d of VILLAGE.props){
+    if(d.k==='lamp')p3StreetLamp(d.x,d.y,V.g);
+    else if(d.k==='fence')p3Fence(d,V.g);
+    else{const M=T[d.k];if(M&&R3D.props[M.model])vPut(M.model,d.x,d.y,M.w*(0.85+hash(d.x,d.y)*0.3),hash(d.y,d.x)*6.28)}
+  }
+}
 // הכפר: שישה עמודים קטנים (HOME.posts), באותו עיצוב. נדלקים כשהתושב חוזר (homeBack)
 function props3dVillage(V){
+  p3VillageProps(V);
   if(typeof HOME==='undefined')return;
   if(!V.lan){V.lan={};for(const p of HOME.posts){const {x,y}=homePost(p);V.lan[p.k]=p3At(p3Lantern(homeCol(p.k),PROPS3D.lantern.village),x,y,V.g)}}
   const t=(performance.now()-P3.t0)/1000,dt=Math.min(0.1,t-(P3.lastV||t));P3.lastV=t;

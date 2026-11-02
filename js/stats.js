@@ -92,21 +92,21 @@ const TREE={
     war: {icon:'⚔️',col:'#FF8A3D',steps:[   // "הסלע שלא זז": עומד, סופג ומחזיר
       {id:'w1',icon:'🪨',give:{hpPct:10}},
       {pick:[{id:'wRoot',icon:'🌳',fx:'rooted'},{id:'wCounter',icon:'🔁',fx:'counter'}]},
-      {id:'w3',icon:'🗡️',give:{sdmg:15}},
+      {id:'w3',icon:'🗡️',give:{sdmg:15,combo:10}},
       {pick:[{id:'wBlood',icon:'🩸',fx:'blood'},{id:'wQuake',icon:'💥',fx:'quake'}]},
       {id:'w5',icon:'🛡️',fx:'lockArmor'},
       {key:true,cost:2,pick:[{id:'wMountain',icon:'⛰️',give:{hpPct:50,sdmg:40,speed:-35}},{id:'wBerserk',icon:'😡',fx:'berserk'}]}]},
     hunt:{icon:'🏹',col:'#A8D08D',steps:[   // "תמיד בתנועה": זז, מסמן ופוגע ראשון
       {id:'h1',icon:'🎯',give:{gdmg:10}},
       {pick:[{id:'hMomentum',icon:'🏃',fx:'momentum'},{id:'hFirst',icon:'🥇',fx:'first'}]},
-      {id:'h3',icon:'👟',give:{speed:8}},
+      {id:'h3',icon:'👟',give:{speed:8,combo:10}},
       {pick:[{id:'hMark',icon:'🎯',fx:'mark'},{id:'hHop',icon:'🦘',fx:'hop'}]},
       {id:'h5',icon:'🏹',give:{multi:1}},
       {key:true,cost:2,pick:[{id:'hSniper',icon:'🔭',give:{gdmg:120,pierce:3,aspd:-45}},{id:'hWind',icon:'🌪️',fx:'wind',give:{hpPct:-40}}]}]},
     mage:{icon:'🪄',col:'#C7A6FF',steps:[   // "אדון היסודות": מערבב יסודות ומפיץ מצבים
       {id:'m1',icon:'✨',give:{gdmg:8,magnet:15}},
       {pick:[{id:'mRotate',icon:'🌈',fx:'rotate'},{id:'mFocus',icon:'🔍',fx:'focus'}]},
-      {id:'m3',icon:'💚',give:{regen:0.6}},
+      {id:'m3',icon:'💚',give:{regen:0.6,combo:15}},
       {pick:[{id:'mSpread',icon:'💫',fx:'spread'},{id:'mCircle',icon:'⭕',fx:'circle'}]},
       {id:'m5',icon:'🌟',give:{gdmg:15}},
       {key:true,cost:2,pick:[{id:'mStorm',icon:'⛈️',fx:'storm',give:{gdmg:-40}},{id:'mGlass',icon:'💎',give:{gdmg:60,crit:15,hpPct:-35}}]}]}

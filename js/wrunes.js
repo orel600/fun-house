@@ -72,6 +72,7 @@ function wrTick(o,dt){
 }
 // אחרי כל פגיעה של סקיל מהספר (wsbHit): שורשים וקפיצה של ברק
 function wrOnHit(e,id,base){
+  wcMark(e,id);   // סקיל של הצייד מסמן טרף (wcombo.js)
   const R=wrDef(id);if(!R||!R.mod||e.dead)return;const M=R.mod;
   if(M.root&&id!=='vines')wcRoot(e,M.root);
   if(M.chain){let from=e;const near=enemies.filter(o=>o!==e&&!o.dead&&wskIn(o,P)&&Math.hypot(o.x-e.x,o.y-e.y)<200).sort((a,b)=>Math.hypot(a.x-e.x,a.y-e.y)-Math.hypot(b.x-e.x,b.y-e.y)).slice(0,M.chain);

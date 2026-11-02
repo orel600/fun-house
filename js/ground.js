@@ -29,7 +29,7 @@ const GROUND={
      ועשב ופרחים רק בשוליים. הכפר גדל לפי הרמה של מרכז הכפר (vLv('center')): השבילים והכיכר מתרחבים, ומרמה paveAt הם מרוצפים באבן.
      pathW: [רוחב, כמה מוסיפים בכל רמה]. plaza: מרכז הכיכר, [רדיוס, תוספת לרמה]. door: איפה הדלת של מבנה, ביחס לרדיוס שלו. grass: מאיזה מרחק מהמרכז יש עשב */
   village:{pal:{base:'#5f8a42',lush:'#4a7536',dry:'#8fa055',path:'#b09468',pave:'#9c978a',shore:'#6d6a3a',out:'#33502c'},
-    pathW:[20,2],plaza:{x:0,y:-28,r:[52,5]},paveAt:4,door:0.6,grass:235,shadow:1.05},
+    pathW:[22,2],plaza:{x:0,y:-80,r:[62,6]},paveAt:4,door:0.6,grass:420,shadow:1.05},   // הכפר הגדול (2.11): הכיכר מתחת לטירה, והעשב מתחיל רחוק יותר
   /* פיזור (שלב 3, ניר: "בינוני"): גושי עשב ופרחים שזזים ברוח, ואבנים קטנות. רק בחלון סביב השחקן, על הכתמים העשירים ולא על השבילים, במים או על מקורות.
      שלושה ציורים בסך הכל. נכבה לבד בטלפון חלש (minFps, לפי המדידה של GFX_AUTO ב-render3d.js), ועם ?scatter=0.
      cell: כל כמה פיקסלים בודקים אם לשים משהו. win: גודל החלון סביב השחקן. step: כמה לזוז עד שבונים את החלון מחדש.
@@ -70,6 +70,7 @@ const GROUND={
     curve(g,pz,1);let k=2;
     for(const id in VILLAGE.b){if(id==='center'||!vLv(id))continue;const B=VILLAGE.b[id];curve(pz,{x:B.x,y:B.y+B.r*V.door},k++)}
     for(const id in NPC.list){const sp=NPC.list[id].spot;if(sp&&npcHere(id))curve(pz,sp,k++)}
+    if(typeof RESID!=='undefined')for(const id in RESID.list)if(resMoved(id)){const h=RESID.list[id].house;curve(pz,{x:h.x,y:h.y+30},k++)}   // רובע המגורים: שביל לכל בית (residents.js)
     return out.slice(0,GROUND.maxSeg);
   }
   function vShadows(){
