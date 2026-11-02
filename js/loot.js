@@ -24,7 +24,15 @@ const LOOT={
   gear:{
     foe:{chance:0.03,rolls:1}, champ:{chance:0.1,rolls:2}, elite:{chance:0.25,rolls:2},   // בעולם: בערך פריט אחד כל 25-30 מפלצות
     wanted:{chance:0.6,rolls:3}, boss:{chance:0.5,rolls:3},
-    pity:{step:0.06,max:3}
+    pity:{step:0.06,max:3},
+    /* מה נופל ובאיזו שכבה (ניר, 2.11.2026: "הגעתי לרמה 20 ולא נפל לי אף נשק שמתאים לקלאס שלי"). רק בעולם, דרך lootRoll. בזירה gRoll כמו קודם.
+       slot: כמה נפוצה כל משבצת. cls.share: איזה חלק מהנשקים הם של הדמות (arms ב-HEROES), והשאר מהדמויות האחרות, כי כל דמות יכולה להחזיק כל נשק.
+       cls.pity: אחרי כמה פריטים ברצף בלי נשק של הדמות, הבא הוא בטוח נשק שלה (SAVE.clsPity).
+       tier: המשקל של כל שכבה (עץ, ברזל, כסף, זהב, אגדי) לפי רמת הדמות. חל המדרג האחרון שה-lv שלו קטן או שווה לרמה.
+       אין פריט בשכבה שנבחרה (למשל מגפי זהב): השכבה הקרובה מתחת, ואם אין, מעל */
+    slot:{weapon:0.4,acc:0.25,boots:0.15,orbit:0.2},
+    cls:{share:0.6,pity:3},
+    tier:[{lv:1,w:[60,30,9,1,0]},{lv:5,w:[35,40,20,5,0]},{lv:10,w:[15,35,35,13,2]},{lv:15,w:[6,25,40,24,5]},{lv:20,w:[2,15,38,35,10]}]
   },
   beam:90                          // גובה עמוד האור של שלל נדיר על הרצפה, כפול beam של הדרגה חלקי 100 (drops.js)
 };
@@ -77,10 +85,25 @@ function lootGear(e,force){
   if(e.node||!R||S.room||(!S.wd&&!force))return null;   // רק בעולם הפתוח, לא בזירה
   const ch=R.chance*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck()*statLoot();
   if(!force&&Math.random()>=ch){SAVE.gearPity=(SAVE.gearPity||0)+1;return null}
-  SAVE.gearPity=0;const id=gRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;
+  SAVE.gearPity=0;const id=lootRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;
   dropSpawn(id,1,e.x,e.y);if(feedOn())feedGear(id);else banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id),dropTier(id).col);   // בעולם ובכפר: בפיד (feed.js)
   celebrate(e.x,e.y,'loot'+Math.max(2,dropRar(id)),gIcon(id));
   return id;
+}
+
+/* איזה פריט נופל בעולם (LOOT.gear: slot, cls, tier). n: כמה הגרלות של שכבה, והגבוהה נבחרת. mine: לבדיקה, true מכריח נשק של הדמות.
+   לפעמים עם כוח (powRoll ב-powers.js), כמו gRoll */
+function lootRoll(n=1,mine){
+  const G=LOOT.gear,h=heroId(),arms=h&&HEROES.list[h].arms,pick=o=>{let r=Math.random()*Object.values(o).reduce((a,b)=>a+b,0);for(const k in o){r-=o[k];if(r<0)return k}return Object.keys(o)[0]};
+  let slot=pick(G.slot);
+  if(arms){if(mine||(SAVE.clsPity||0)>=G.cls.pity){slot='weapon';mine=true}else mine=slot==='weapon'&&Math.random()<G.cls.share}
+  const lv=heroLv(),W=G.tier.filter(b=>b.lv<=lv).pop().w;let t=0;
+  for(let i=0;i<n;i++)t=Math.max(t,+pick(Object.assign({},W)));
+  const ok=id=>{const it=GEAR.items[id];return it.slot===slot&&(slot!=='weapon'||!arms||arms.includes(it.w)===!!mine)};
+  const pool=Object.keys(GEAR.items).filter(ok),near=pool.length?Math.min(...pool.map(id=>{const d=GEAR.items[id].tier-t;return d<=0?-d:d+10})):0,
+    at=pool.filter(id=>{const d=GEAR.items[id].tier-t;return (d<=0?-d:d+10)===near}),id=at[Math.floor(Math.random()*at.length)]||gRoll(n);
+  if(arms){const it=GEAR.items[gBase(id)];SAVE.clsPity=it.slot==='weapon'&&arms.includes(it.w)?0:(SAVE.clsPity||0)+1}
+  return GEAR.items[id]?powRoll(id):id;
 }
 
 // נקרא מ-addEnemy: לפעמים אויב רגיל הוא אויב עלית (e.champ). אויב-העל של התחנות (run.js, e.elite) מפיל את אותו שלל עלית

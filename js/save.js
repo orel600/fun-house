@@ -17,6 +17,7 @@ function saveBlank(){return{
   gearGift:false,                                   // הציוד הראשון (GEAR.gift ב-gear.js) כבר ניתן
   pity:0,                                           // כמה פעמים ברצף שלל נדיר לא נפל (LOOT.pity ב-loot.js)
   gearPity:0,                                       // כמה אויבים ברצף לא הפילו ציוד (LOOT.gear ב-loot.js)
+  clsPity:0,                                        // כמה פריטים ברצף נפלו בעולם בלי נשק של הדמות (LOOT.gear.cls ב-loot.js)
   daily:{day:'',first:{}},                          // איזה סוג אויב כבר הופל היום, לבונוס ההריגה הראשונה (loot.js)
   met:{},                                           // דמויות בעולם שכבר נמצאו: {fisher:1} (worldnpc.js)
   home:{back:{}},                                   // אחרי איזה פנס התושב כבר חזר לכפר: {earth:1} (homecoming.js)
