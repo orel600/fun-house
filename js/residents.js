@@ -51,7 +51,7 @@ const resCan=id=>{const R=RESID.list[id];return Object.keys(R.give).every(r=>bag
 const resChips=(o,have)=>Object.keys(o).map(r=>'<span class="res'+(have&&!bagHas(r,o[r])?' short':'')+'">'+resIcon(r)+' '+(have?(SAVE.bag[r]||0)+'/':'')+o[r]+'</span>').join('');
 function resHtml(vid){
   const id=NPC.list[vid].serve,R=RESID.list[id];
-  let h='<div class="fcook"><b>'+R.sign+' '+T('rsd.'+id+'.t')+'</b>';
+  let h='<div class="fcook rserve"><b>'+R.sign+' '+T('rsd.'+id+'.t')+'</b>';
   if(R.serve==='fish'){
     const fish=fishList().filter(f=>SAVE.bag[f]>0);   // fishing.js
     if(!fish.length)h+='<p class="next">'+T('rsd.noFish')+'</p>';

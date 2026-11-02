@@ -221,7 +221,7 @@ function treeHtml(){
       if(st.key)h+='<p class="trkey">'+T('tr.key')+'</p>';
       os.forEach((n,k)=>{const [name,what]=T('tr.'+n.id),got=have[i]===n.id,gone=i<have.length&&!got,next=i===have.length,why=next?trWhy(b,n.id):'order',c=trCost(st);
         if(k)h+='<p class="tror">'+T('tr.or')+'</p>';
-        h+='<div class="trn '+(got?'got':next&&why!=='key'?'next':'lock')+(gone?' gone':'')+'"><span class="sti">'+skPic(n.id,n.icon)+'</span><span class="stn"><b>'+name+'</b><small>'+what+'</small></span>'+
+        h+='<div class="trn '+(got?'got':next&&why!=='key'?'next':'lock')+(gone?' gone':'')+(GUI.trOpen===n.id?' open':'')+'" data-tr="'+n.id+'"><span class="sti">'+skPic(n.id,n.icon)+'</span><span class="stn"><b>'+name+'</b><small>'+what+'</small></span>'+
           (got?'<span class="trok">✓</span>':next&&why!=='key'?'<button class="stplus" data-act="learn" data-b="'+b+'" data-id="'+n.id+'"'+(why?' disabled':'')+'>'+(c>1?c:'+')+'</button>':'<span class="trok">'+(gone?'✗':'🔒')+'</span>')+'</div>'});
     });
     h+='</section>'}
