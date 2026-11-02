@@ -241,13 +241,14 @@ function questLog(){
   // כל סוג מכווץ, חוץ מפרסים שמחכים: בראש היומן "עכשיו" אחד (guideCard ב-guide.js), ולא רשימה ארוכה (docs/ux-audit.md)
   const sec=(k,cards)=>cards.length?'<details class="qsec"'+(k==='ready'?' open':'')+'><summary><h4>'+T('q.sec.'+k)+' · '+cards.length+'</h4></summary>'+cards.join('')+'</details>':'';
   let h=winHead(T('q.log'));   // ui.js
-  h+=guideCard();
-  h+=challengeCard()+huntCard();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js)
+  // שני טורים לרוחב (.qcol, המבקר 2.11.2026): הסיפור והמשימה הנוכחית, ולידם היומיים וההישגים. בטלפון עומד אחד מתחת לשני
+  h+='<div class="qcol">'+guideCard();
   h+=sec('ready',act.filter(q=>qReady(q)&&!qKind(q).talk).map(q=>qCard(q,'claim')));
   h+=sec('active',act.filter(q=>(!qReady(q)||qKind(q).talk)&&!qKind(q).auto).map(q=>qCard(q,'track')));   // talk: הפרס אצל מי שנתן
   h+=sec('new',L.filter(q=>qOpen(q)&&!qKind(q).talk).map(q=>qCard(q,'accept')));
+  h+='</div><div class="qcol">'+challengeCard()+huntCard();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js)
   h+=sec('daily',Q.daily.map(id=>QBY[id]).filter(q=>q&&!(Q.active[q.id]&&qReady(q))).map(q=>qCard(q,Q.active[q.id]?'track':'done')));
-  h+=sec('ach',act.filter(q=>!qReady(q)&&qKind(q).achievement).map(q=>qCard(q,'')));
+  h+=sec('ach',act.filter(q=>!qReady(q)&&qKind(q).achievement).map(q=>qCard(q,'')))+'</div>';
   $('qLog').innerHTML=h;
 }
 function questLogOpen(on){$('qLog').hidden=!on;if(on){npcTalk(null);questLog()}}

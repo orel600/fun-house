@@ -668,14 +668,14 @@ function render3d(ox,oy){
   const S_=SIN(),cx=W/2-ox,cz=(H/2-oy)/S_;
   c.position.set(cx,2000*S_,cz+2000*COS());c.lookAt(cx,0,cz);
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
-  R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?(W3D.regions[S.wd.reg]||{}).bg||VIEW.world:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?(W3D.regions[S.wd.reg]||{}).line||VIEW.worldLine:VIEW.groundLine);
+  R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?(W3D.regions[S.wd.reg]||{}).bg||VIEW.world:arenaFloor('d3')||VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?(W3D.regions[S.wd.reg]||{}).line||VIEW.worldLine:arenaFloor('line')||VIEW.groundLine);
   for(const k in R3D.marks)R3D.marks[k].count=0;
   for(const k in R3D.crowd)if(R3D.crowd[k])for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
   for(const k in R3D.wlds||{})R3D.wlds[k].g.visible=false;
   if(!S.room&&!S.mb)syncPet(dt);else if(R3D.pet)R3D.pet.root.visible=false;   // חיית המחמד (pet.js), בכל מקום חוץ מחדר הבונוס
-  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
+  if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil);if(typeof deco3d==='function')deco3d(R3D.vil)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
     if(S.wd){syncWorld();syncWnpcs(dt)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)

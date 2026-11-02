@@ -208,7 +208,7 @@ function enterWorld(at,reg){
 }
 // דרך לאזור אחר. חוזרים לאזור הקודם ליד הדרך שממנה יצאו
 function wGo(to){const from=S.wd.reg;worldUi(false);enterWorld(WR().back===to?from:'home',to)}
-function wArena(id){wRet=id;worldUi(false);startRun();questEvent('reach','arena')}
+function wArena(id,a){wRet=id;worldUi(false);startRun(a);questEvent('reach','arena')}
 function wHome(){worldUi(false);enterVillage()}
 
 /* ---- מקורות משאבים: אותם מקורות כמו ב-nodes.js, במקומות קבועים. שבור צומח מחדש אחרי regrow (nodeDown) ---- */
@@ -334,11 +334,11 @@ function worldHud(){
   const back=k==='home'&&WR().back,to=back||(wIsPath(k)&&k);
   pn.innerHTML=to?winHead(wGateName(k))+'<p>'+T('w.pathInfo.'+to)+'</p><button class="vbtn" data-act="path" data-g="'+to+'">'+T('w.goPath')+'</button>'
     :k==='home'?winHead(T('w.home'))+'<p>'+T('w.homeInfo')+'</p><button class="vbtn" data-act="home">'+T('w.goHome')+'</button>'
-    :winHead(T('w.gate.'+k))+'<p>'+T('w.arenaInfo')+'</p><button class="vbtn" data-act="arena" data-g="'+k+'">'+T('w.enterArena')+'</button>';
+    :winHead(T('w.gate.'+k))+'<p>'+T('w.arenaInfo')+'</p><button class="vbtn" data-act="arena" data-g="'+k+'">'+T('w.enterArena')+'</button><button class="vbtn" data-act="arena" data-g="'+k+'" data-a="waves">'+T('w.enterWaves')+'</button>';   // זירת גלים (arenas.js)
 }
 $('wPanel').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||!S.wd||S.mode!=='play')return;
-  if(b.dataset.act==='close')wShut();else if(b.dataset.act==='home')wHome();else if(b.dataset.act==='arena')wArena(b.dataset.g);else if(b.dataset.act==='path')wGo(b.dataset.g);
+  if(b.dataset.act==='close')wShut();else if(b.dataset.act==='home')wHome();else if(b.dataset.act==='arena')wArena(b.dataset.g,b.dataset.a);else if(b.dataset.act==='path')wGo(b.dataset.g);
 });
 
 function wShut(){if(!S.wd)return;S.wd.open=null;worldHud()}

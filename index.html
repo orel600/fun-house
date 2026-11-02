@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&family=Secular+One&display=swap">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/bwin.css">
+<link rel="stylesheet" href="css/deco.css">
+<link rel="stylesheet" href="css/short.css">
 
 <!-- הטקסטים לא כתובים כאן: data-t ו-data-ta מתמלאים מהטבלה ב-js/lang.js, לפי השפה -->
 <canvas id="c" data-ta="arena"></canvas>
@@ -74,7 +76,7 @@
   <button class="mtab" id="qBtn" role="tab"><span class="ni" aria-hidden="true">📜</span><span data-t="q.log"></span><b id="qBadge" hidden></b></button>
   <button class="mtab" id="bookBtn" role="tab"><span class="ni" aria-hidden="true">📖</span><span data-t="book.btn"></span><b id="bBadge" hidden></b></button>
   <button class="mtab" id="wMapBtn" role="tab"><span class="ni" aria-hidden="true">🗺️</span><span data-t="wm.title"></span></button>
-  <button class="mtab" id="mbTab" role="tab"><span class="ni" aria-hidden="true">⚔️</span><span data-t="mb.title"></span></button>
+  <button class="mtab" id="mbTab" role="tab"><span class="ni" aria-hidden="true">⚔️</span><span data-t="menu.mb"></span></button>
   <button class="mtab" id="setBtn" role="tab"><span class="ni" aria-hidden="true">⚙️</span><span data-t="set.title"></span></button>
 </nav>
 <!-- מתנה יומית שעוד לא נלקחה: כפתור עגול קטן בפינה העליונה, מתחת להשתקה. לא בסרגל, כדי שלא ידחוף כפתורים החוצה (js/daily.js) -->
@@ -296,6 +298,7 @@
 <script src="js/run.js"></script>
 <script src="js/state.js"></script>
 <script src="js/spawn.js"></script>
+<script src="js/arenas.js"></script>
 <script src="js/arena-load.js"></script>
 <script src="js/combat.js"></script>
 <script src="js/skills.js"></script>
@@ -363,6 +366,7 @@
 <script src="js/parosh.js"></script>
 <script src="js/daily.js"></script>
 <script src="js/visit.js"></script>
+<script src="js/deco.js"></script>   <!-- חנות קישוטים: לשונית בשוק, ומה שהחבר רואה בביקור -->
 <script src="js/trade.js"></script>
 <script src="js/book.js"></script>
 <script src="js/guide.js"></script>
