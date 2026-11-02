@@ -28,7 +28,6 @@ const TEXT={
   start:{he:'יאללה',en:'Let’s go'},
   'help.btn':{he:'📖 איך משחקים',en:'📖 How to play'},
   'help.title':{he:'איך משחקים',en:'How to play'},
-  best:{he:t=>'השיא שלך: '+t,en:t=>'Your best: '+t},
   'pwa.install':{he:'📲 התקנה כאפליקציה',en:'📲 Install app'},
   'pwa.ios':{he:'📲 להתקנה: שיתוף ← הוספה למסך הבית',en:'📲 To install: Share → Add to Home Screen'},
   'pwa.turn':{he:'סובבו את הטלפון לרוחב',en:'Turn your phone sideways'},
