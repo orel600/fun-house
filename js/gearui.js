@@ -15,7 +15,7 @@ const GEARUI={
     {id:'loot',icon:'🍀',v:()=>P.loot>0?gPct(P.loot):null,opt:1}
   ],
   // צללית במשבצת ריקה: מה נכנס אליה
-  empty:{weapon:'⚔️',acc:'💍',boots:'👢',orbit:'✨'}
+  empty:{weapon:'⚔️',shield:'🛡️',head:'🪖',body:'🧥',acc:'💍',boots:'👢',orbit:'✨'}
 };
 const gPct=n=>(n>0?'+':'')+Math.round(n)+'%';
 // עמידות לסוג נזק: ההגנה הכללית חלה על כל מכה, ועמידות לסוג מסוים (P.res, כשתהיה) נוספת לה. עד התקרה של STATS.cap.def

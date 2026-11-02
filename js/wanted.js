@@ -45,7 +45,8 @@ function wantedAppear(a){
   const e={type:'wanted',wanted:true,x:P.x+Math.cos(aa)*d,y:P.y+Math.sin(aa)*d,hp:WANTED.hp*k,max:WANTED.hp*k,r:13,speed:WANTED.speed,
     mult:{},xp:0,dmg:0,flash:0,kx:0,ky:0,ph:0,told:false,life:WANTED.life,turn:0,side:1};
   placeClamp(e);enemies.push(e);S.wn.e=e;S.wn.seen++;
-  sparks(e.x,e.y,C.gold,16,220);banner(T('wanted.here'),C.gold);
+  if(S.wd)e.pname=flPersonal(Math.floor(Math.random()*1e6),'thief');   // בעולם: אחד מגנבי הרסיסים, עם שם (foelore.js). בזירה בלי
+  sparks(e.x,e.y,C.gold,16,220);banner(e.pname?T('fl.wanted.here',e.pname):T('wanted.here'),C.gold);
 }
 /* בורח כשמתקרבים אליו, אבל לא מתרחק יותר מדי, כדי שאפשר יהיה לרדוף. מחליף צד בלי התראה, כדי שלא יהיה צפוי */
 function wantedMove(e,dt){

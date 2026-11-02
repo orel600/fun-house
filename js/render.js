@@ -137,7 +137,7 @@ function render(){
   // בתלת-ממד הקנבס שקוף: הקרקע והדמויות מצוירות בשכבה שמתחתיו (render3d.js)
   if(R3D.on)ctx.clearRect(0,0,W,H);else{ctx.fillStyle=S&&S.room?'#262114':arenaFloor('d2')||C.ink;ctx.fillRect(0,0,W,H)}
   if(!P)return;
-  const sh=RM?0:S.shake,ox=Math.round(W/2-S.cam.x+rand(-sh,sh)),oy=Math.round(H/2-S.cam.y+rand(-sh,sh));
+  const sh=RM?0:S.shake,px=DPR*ZOOM,ox=Math.round((W/2-S.cam.x+rand(-sh,sh))*px)/px,oy=Math.round((H/2-S.cam.y+rand(-sh,sh))*px)/px;   // מעוגל לפיקסל של המסך ולא ליחידת משחק: אחרת הגלילה קופצת 2-3 פיקסלים לסירוגין (תנועה מקוטעת)
   if(S.mb){render3d(ox,oy);ctx.translate(ox,oy);mobaDraw(ox,oy);return}   // משחקי השאול: ציור משלו (moba.js)
   render3d(ox,oy);
   ctx.translate(ox,oy);
@@ -174,6 +174,7 @@ function render(){
   drawAgeFx();   // זוהר, שובל וחלקיקים על נשק משודרג (aging.js)
   drawSkills(ox,oy);   // טבעות וברקים של סקילים, וסימני רטוב/קפוא/הלם (skills.js)
   drawOrbits();drawDivine();   // החפצים המסתובבים (orbit.js)
+  sigDraw();   // סקיל החתימה, בעולם ובכפר (sigskill.js)
   drawWSkill();   // בעולם: כדורי הסקילים בדרך, והכוונת בגרירה (wskill.js)
   // חצים: מוט, נוצות וחוד. קסם: כדור זוהר עם שובל (weapons.js)
   const gw=juiceOn()?wGrow():1,sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r*gw,th=heroTheme();ctx.lineWidth=2;   // gw: נשק משודרג יורה חץ/קסם גדול יותר, בעולם ובכפר (weapons.js)

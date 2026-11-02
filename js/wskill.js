@@ -55,6 +55,7 @@ function wskUpdate(dt){
   wcUpdate(dt);   // השורשים נגמרים (wcombo.js)
   wrUpdate(dt);   // שלוליות ופיצוצים של רונות (wrunes.js)
   skpUpdate(dt);   // אימון סקיל: בובות (skpractice.js)
+  sigUpdate(dt);   // סקיל החתימה של הדרגה (sigskill.js)
   wsbUpdate(dt);   // הכפתורים לפי ספר הסקילים, והסקילים שלו שעוד פועלים (wskbook.js)
   const W=S.wsk;if(!W||!W.shots.length)return;
   for(const s of W.shots){const dx=s.tx-s.x,dy=s.ty-s.y,d=Math.hypot(dx,dy),step=WSKILL.speed*dt;
