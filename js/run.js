@@ -7,7 +7,8 @@ const RUN={
   stations:[                     // תחנות בדרך. swarm: גל ענק שמקיף אותך מכל הכיוונים. elite: אויב-על עם ליווי
     {t:60,kind:'swarm'},{t:120,kind:'elite'},{t:180,kind:'swarm'},{t:240,kind:'elite'},{t:300,kind:'swarm'}],
   hpGrowth:4.5,                   // חיי האויבים גדלים פי כך בכל דקה
-  lvlDmg:1.35,                   // נזק השחקן גדל פי כך בכל רמה
+  lvlDmg:1.31,                   // נזק השחקן גדל פי כך בכל רמה. כ-6 רמות בדקה, אז קרוב ל-hpGrowth: מכה מורידה לשלד 90%-200% לאורך כל הריצה (בדיקת הזירה, 2.11: ב-1.35 זה הגיע ל-530%, וכל אויב נפל ממכה)
+  ease:{from:0.45,secs:120},     // התחלה רכה בזירה: אויב שמופיע בהתחלה פוגע ב-45% מהכוח, והחסינות אחרי מכה ארוכה פי 2.2 (hurt ב-combat.js). עד 120 שניות זה חוזר לרגיל. שחקן חדש לא נופל בדקה הראשונה
   bossHits:110,                  // חיי הבוס: כמה מכות של הנשק החזק שלך הוא סופג. הוא נמדד מולך כשהוא מגיע, אז הקרב תמיד באותו אורך בערך
   swarmN:56, swarmR:0.58,        // גל ענק: כמה אויבים, ובאיזה מרחק מסביב (חלק מהצלע הארוכה של המסך, כדי שיתחיל מחוץ לתמונה)
   elite:{hp:40,size:1.9,dmg:2,xp:30,speed:0.75,escort:16}    // אויב-על: פי כמה חיים, גודל, נזק ומהירות, כמה XP, וכמה מלווים
@@ -16,6 +17,7 @@ const RUN={
 // פי כמה האויבים חזקים עכשיו, ופי כמה השחקן
 const runK=()=>Math.pow(RUN.hpGrowth,S.t/60)*(1+S.bossCount*0.5);
 const dmgK=()=>Math.pow(RUN.lvlDmg,P.level-1);
+const easeK=()=>S.wd||S.mb||S.vil?1:Math.min(1,RUN.ease.from+(1-RUN.ease.from)*S.t/RUN.ease.secs);   // רק בזירה (addEnemy ו-hurt משמשים גם בעולם)
 
 function runReset(){S.run={next:0,log:[],elites:0,won:0}}
 function runUpdate(){
