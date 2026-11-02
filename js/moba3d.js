@@ -10,7 +10,17 @@ const MB3D={
   spin:1.3,     // כמה מהר הגביש מסתובב
   dim:0.35,     // כמה צבע נשאר בגביש של מבנה מוגן
 };
-const M3={g:null,map:new Map(),mb:null};
+const M3={g:null,map:new Map(),mb:null,floor:null};
+// הרצפה של משחקי השאול (moba-look.js מצייר אותה פעם אחת לקנבס): אבן מוארת, ומעליה הלבה כשכבה זוהרת שפועמת. מתחת: תהום כהה עד האופק, במקום הרצפה הכללית של הזירה
+function mb3dFloor(){
+  const F=MBLOOK.floor,fl=mbFloorCanvas(),sn=SIN(),w=F.x1-F.x0,d=(F.y1-F.y0)/sn,g=new THREE.Group();
+  const tex=c=>{const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t};
+  const plane=(mat,y)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),mat);m.rotation.x=-Math.PI/2;m.position.set((F.x0+F.x1)/2,y,(F.y0+F.y1)/2/sn);g.add(m);return m};
+  const abyss=new THREE.Mesh(new THREE.PlaneGeometry(9000,9000),new THREE.MeshBasicMaterial({color:F.abyss}));abyss.rotation.x=-Math.PI/2;abyss.position.y=-1;g.add(abyss);
+  plane(new THREE.MeshLambertMaterial({map:tex(fl.stone)}),0);
+  const glow=plane(new THREE.MeshBasicMaterial({map:tex(fl.glow),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}),0.3);
+  g.userData={glow,sn};R3D.scene.add(g);return g;
+}
 const mb3dOn=()=>typeof R3D!=='undefined'&&R3D.on&&R3D.ready&&typeof THREE!=='undefined'&&typeof p3Mesh==='function';
 function mb3dBuild(b){
   const g=new THREE.Group(),isBase=b.k==='base',T=isBase?MB3D.base:MB3D.tower,k=1/COS(),c=MB3D.col,team=MOBA.team[b.team],H=T.h*k,parts=new THREE.Group();g.add(parts);
@@ -34,13 +44,17 @@ function mb3dBuild(b){
 }
 function mb3dSync(){
   const on=mb3dOn()&&S&&S.mb;
-  if(!on){if(M3.g)M3.g.visible=false;return}
+  if(R3D.ground)R3D.ground.visible=!on;   // הרצפה הכללית של הזירה: רק מחוץ למשחקי השאול
+  if(!on){if(M3.g)M3.g.visible=false;if(M3.floor)M3.floor.visible=false;return}
+  if(!M3.floor||M3.floor.userData.sn!==SIN()){if(M3.floor)R3D.scene.remove(M3.floor);M3.floor=mb3dFloor()}   // זווית מצלמה אחרת: בונים מחדש
+  M3.floor.visible=true;M3.floor.userData.glow.material.opacity=mbPulse();
   if(!M3.g){M3.g=new THREE.Group();R3D.scene.add(M3.g)}
   if(M3.mb!==S.mb){for(const g of M3.map.values())M3.g.remove(g);M3.map.clear();M3.mb=S.mb}   // משחק חדש: בונים מחדש
   M3.g.visible=true;const t=performance.now()/1000;
   for(const b of S.mb.u){if(b.k!=='tower'&&b.k!=='base')continue;
     let g=M3.map.get(b);if(!g){g=mb3dBuild(b);M3.map.set(b,g)}
     const u=g.userData;u.parts.visible=!b.dead;u.cry.visible=u.halo.visible=!b.dead;u.rubble.visible=b.dead;if(b.dead)continue;
+    u.parts.position.x=b.flash>0?Math.sin(t*90)*2.5:0;   // פגיעה: המבנה רועד לרגע
     u.cry.rotation.y=t*MB3D.spin;u.cry.material.color.copy(b.flash>0?u.white:mbHittable(b)?u.team:u.dark);u.halo.visible=mbHittable(b);
   }
 }
