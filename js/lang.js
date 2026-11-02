@@ -843,6 +843,18 @@ const TEXT={
   'gear.vs':{he:s=>'במקום '+s,en:s=>'Replaces '+s},
   'gear.dmg':{he:r=>'נזק '+r,en:r=>'Damage '+r},
   'gear.same':{he:'בלי שינוי',en:'No change'},
+  // טור הסטטים בחלון הציוד (gearui.js)
+  'gui.stats':{he:'סטטים',en:'Stats'},
+  'gui.res':{he:'עמידות לנזק',en:'Resistances'},
+  'gui.hp':{he:'חיים',en:'Health'},
+  'gui.dmg':{he:'נזק',en:'Damage'},
+  'gui.aspd':{he:'מהירות התקפה',en:'Attack speed'},
+  'gui.speed':{he:'מהירות',en:'Move speed'},
+  'gui.crit':{he:'קריטי',en:'Critical'},
+  'gui.def':{he:'הגנה',en:'Defense'},
+  'gui.regen':{he:'ריפוי',en:'Healing'},
+  'gui.loot':{he:'שלל',en:'Loot'},
+  'gui.ps':{he:n=>n+' בשנ׳',en:n=>n+'/s'},   // לשנייה
   'st.sdmg':{he:'נזק מקרוב',en:'melee damage'},
   'st.gdmg':{he:'נזק מרחוק',en:'ranged damage'},
   'st.hp':{he:'חיים',en:'health'},
