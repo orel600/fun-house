@@ -1089,6 +1089,23 @@ function worldBot(m,L,god){
         catch(err){r.bad.push(id+':'+String(err))}}
       for(const x of enemies)x.dead=true;enemies=[];run(8);r.clean=!(S.wsb&&S.wsb.fx.length)}catch(err){r.err=String(err&&err.stack||err)}
     const o=$('ovBook');if(o)o.hidden=true;if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // שילובים בעולם (wcombo.js): לכל דמות שני סקילים מהספר בסדר הנכון יוצרים שילוב. לוחם: שריון קרח ואז הסתערות = ניפוץ.
+  // צייד: שורשים ואז גשם חצים = ננעץ. קוסם: רוח מים ואז מטאור = אדים, וענן סערה על רטוב = חשמול. אחר כך הכל חוזר
+  const wcb=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:{},bad:[]};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
+      const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;return e};
+      const cast=id=>{const i=S.sk.ids.indexOf(id);if(i<0)return false;S.sk.cd[i]=0;return wskUse(id)};
+      const tries=[['warrior','shield','charge','shatter',0.15],['hunter','vines','volley','pinned',0.1],['mage','spirit','meteor','steam',1.2],['mage','spirit','storm','shock',1.2]];
+      for(const [cls,a,b,kind,wait] of tries){
+        try{SAVE.hero.skLoad=[a,b];run(0.05);for(const x of enemies)x.dead=true;enemies=[];run(0.05);
+          const e=mk(70,0),n0=S.sk.combos[kind]||0;
+          if(!cast(a)){r.bad.push(cls+':'+a+' לא ירה');continue}run(wait);
+          if(!cast(b)){r.bad.push(cls+':'+b+' לא ירה');continue}run(2.5);
+          if((S.sk.combos[kind]||0)>n0)r.ok[kind]=cls;else r.bad.push(cls+':'+kind+' לא קרה')}
+        catch(err){r.bad.push(cls+':'+String(err))}}
+      for(const x of enemies)x.dead=true;enemies=[];run(3);r.root=!enemies.some(e=>e.root>0)}catch(err){r.err=String(err&&err.stack||err)}
+    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // פיד הודעות (feed.js): בעולם שלל שנאסף נכנס לפיד בצד ולא על הדמות, אותו משאב מתאחד, ציוד בצבע הדרגה, עד 3 שורות, נעלם אחרי FEED.life, ובזירה לא פועל
   const feed=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{enterWorld('home');enemies=[];FL.length=0;const f0=floats.length,st=FEED.stat,d0=st.drawn;
@@ -2118,6 +2135,8 @@ function worldBot(m,L,god){
   check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean,
     'ספר הסקילים: '+(wsb.err||[wsb.one&&wsb.lock?'נעול בהתחלה':'לא נעול',wsb.lp?'במסלול הרמות':'לא במסלול',wsb.fill&&wsb.btns?'רמה ממלאת משבצות':'רמה לא מילאה',
     wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn?'הספר מחליף כפתור':'הספר לא החליף','עובדים: '+wsb.ok.join(', '),wsb.bad.length?'נכשלו: '+wsb.bad.join(', '):'',wsb.clean?'נגמרים':'לא נגמרו'].filter(Boolean).join(' · ')));
+  check(!wcb.err&&!wcb.bad.length&&wcb.ok.shatter&&wcb.ok.pinned&&wcb.ok.steam&&wcb.ok.shock,'שילובים בעולם: '+(wcb.err||[
+    Object.entries(wcb.ok).map(([k,c])=>c+' '+k).join(', '),wcb.bad.length?'נכשלו: '+wcb.bad.join(', '):''].filter(Boolean).join(' · ')));
   check(!skr.err&&skr.wait&&skr.start&&skr.zoom&&skr.fly&&skr.end&&skr.once&&skr.big&&skr.on&&skr.skipStart&&skr.skip&&skr.grade,
     'סקיל חדש בעולם ('+skr.id+'): '+(skr.err||[skr.wait&&skr.start?'רגע גילוי מתחיל':'לא התחיל',skr.zoom&&skr.fly?'מצלמה מתקרבת ואייקון עף':'בלי מצלמה או אייקון',
     skr.end?'נגמר והמשחק ממשיך':'לא נגמר',skr.once?'פעם אחת':'חוזר',skr.big&&skr.on?'הטלה ראשונה גדולה':'הטלה ראשונה רגילה',
