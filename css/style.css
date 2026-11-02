@@ -928,7 +928,7 @@ button.res{min-height:48px;min-width:48px}
   bottom:calc(env(safe-area-inset-bottom,0px) + 120px);padding:0;gap:12px;border:0;border-radius:0;background:none;box-shadow:none;
   flex-direction:row-reverse;align-items:flex-end;direction:ltr;pointer-events:none}
 .vil .bnav{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}   /* בכפר אין סקילים: הפינה עצמה */
-.world .swap:not([hidden])~.bnav{bottom:calc(env(safe-area-inset-bottom,0px) + 224px)}
+.world .swap{display:none}   /* ההחלפה המהירה רק בזירה (wHeld ב-weapons.js), אז בעולם כפתורי ההקשר נשארים במקום ולא עולים למפה הקטנה */
 .vil .nbtn.talkbtn,.world .nbtn.talkbtn{pointer-events:auto;flex-direction:column;gap:3px;min-width:var(--b2);max-width:calc(var(--b2) + 28px);height:auto;padding:0;
   border:0;background:none;box-shadow:none;animation:none;overflow:visible;font:800 var(--t1)/1.1 var(--body);text-shadow:0 1px 2px #000,0 0 3px #000;white-space:nowrap}
 .vil .nbtn.talkbtn .ni,.world .nbtn.talkbtn .ni{width:var(--b2);height:var(--b2);border-radius:50%;display:grid;place-items:center;font-size:calc(var(--b2)*.46);line-height:1;

@@ -896,6 +896,13 @@ function worldBot(m,L,god){
       e.dead=true;enemies=enemies.filter(x=>!x.dead)}catch(err){r.err=String(err)}
     SAVE.pet.kind=bak.kind;S.pet=bak.pet;S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;return r});
   // הנודד עם החליל (flute.js): המראה האישי של אוראל. חליל ביד בתלת-ממד, וכל הציורים (ירייה, חץ, חמשה, טבעת, ברק) רצים בלי שגיאה. אחר כך חוזר
+  // החלפה מהירה (combat.js): הכפתור לובש את הנשק הכי חזק בתרמיל מהצד השני, והקודם חוזר לתרמיל. אחר כך הכל חוזר כמו שהיה
+  const qsw=await page.evaluate(()=>{const r={},bak={w:SAVE.gear.weapon,bag:JSON.stringify(SAVE.bag),mode:S.mode};
+    try{const ws=Object.keys(GEAR.items).filter(id=>GEAR.items[id].slot==='weapon'),by=u=>ws.filter(id=>wUse(id)===u).sort((a,b)=>gScore(a)-gScore(b));
+      const sw=by('sword'),bw=by('gun');const before=gearStats();SAVE.gear.weapon=sw[0];for(const id of [sw[sw.length-1],bw[0],bw[bw.length-1]])bagAdd(id);gearLive(before);S.mode='play';
+      swapCheck();r.btn=!$('swap').hidden;swapWeapon();r.bow=SAVE.gear.weapon===bw[bw.length-1]&&P.weapon==='gun'&&bagHas(sw[0]);
+      swapWeapon();r.sword=SAVE.gear.weapon===sw[sw.length-1]&&P.weapon==='sword'}catch(e){r.err=e.message}
+    const b2=gearStats();SAVE.gear.weapon=bak.w;SAVE.bag=JSON.parse(bak.bag);gearLive(b2);S.mode=bak.mode;swapCheck();return r});
   // הנודד עם הניצוץ (spark.js): ערכת המראה של ניר. היריות, מכת החרב, הטבעת והברק מצוירים כלהבונים וגצים בלי שגיאה, והחליל לא נדלק אצלו
   const spk=await page.evaluate(()=>{const sk=SAVE.hero.skin,r={};SAVE.hero.skin='nir';
     try{const th=heroTheme();r.on=th===THEMES.spark;r.slow=themeK()===SPARK.slow;r.noFlute=!fluteOn();
@@ -1006,7 +1013,7 @@ function worldBot(m,L,god){
       const e=addEnemy('grunt',P.x+60,P.y);e.hp=e.max=1e9;let swings=0,homed=false;const shots=new Set();
       for(let i=0;i<120;i++){const a=P.sw.anim;P.hp=P.maxHp;update(1/60);if(P.sw.anim>a)swings++;
         for(const b of pb){shots.add(b.shot);if(b.home)homed=true}}
-      out[id]={wt:P.wt,swings,shots:[...shots].join('+')||'-',homed,hit:e.hp<e.max,swapHidden:document.getElementById('swap').hidden,
+      out[id]={wt:P.wt,swings,shots:[...shots].join('+')||'-',homed,hit:e.hp<e.max,swapHidden:document.getElementById('swap').hidden===!wBestOther(),
         anim:R3D.on?heroLook().anim[P.weapon]:null,want3d:W3[P.wt]};
     }
     // הקוסם גם בעולם הפתוח: מכה במקור משאבים ובאויב, שתיהן בקסם ולא בחצים
@@ -1872,7 +1879,7 @@ function worldBot(m,L,god){
     ', '+MW.ft+' '+(MW.foe==='bolt'?'בקסם':'ב-'+MW.foe)+(MW.foeHit?' ונפגע':' ולא נפגע'));
   for(const id in heroes){const h=heroes[id],want={warrior:'swing',hunter:'arrow',mage:'bolt'}[id],got=h.swings&&h.shots==='-'?'swing':h.shots;
     check(got===want&&h.hit&&h.swapHidden&&(!h.homed===(want!=='bolt'))&&(h.anim==null||h.anim===h.want3d),'דמות '+id+': '+T_(h.wt)+', '+
-      (got==='swing'?h.swings+' הנפות':got==='arrow'?'יורה חצים':got==='bolt'?'יורה קסם':'יורה '+got)+(h.homed?' שמתביית':'')+(h.hit?', פוגע':', לא פוגע')+(h.swapHidden?'':', כפתור החלפה מוצג')+
+      (got==='swing'?h.swings+' הנפות':got==='arrow'?'יורה חצים':got==='bolt'?'יורה קסם':'יורה '+got)+(h.homed?' שמתביית':'')+(h.hit?', פוגע':', לא פוגע')+(h.swapHidden?'':', כפתור ההחלפה לא תואם לתרמיל')+
       (h.anim!=null?', הנפשה '+h.anim+(h.anim===h.want3d?'':' (צפוי '+h.want3d+')'):'')+(got===want?'':' (צפוי '+want+')'))}
   check(wk.weakDmg>wk.plain*1.2,'חולשה: מכה של '+wk.weak+' על מגן עשתה '+wk.weakDmg+', ואותה מכה בלי חולשה '+wk.plain);
   check(wk.stone.lightning===0&&wk.stone.water===15&&wk.stone.fire===5,'טבלת יעילות: מכה של 10 על אבן · מים '+wk.stone.water+' (צריך 15), ברק '+wk.stone.lightning+' (צריך 0), אש '+wk.stone.fire+' (צריך 5)');
@@ -1897,6 +1904,7 @@ function worldBot(m,L,god){
   check(!aui.err&&aui.merge&&aui.bars&&aui.arrow===true&&aui.quiet,'זירה נקייה: '+(aui.err||[aui.merge?'מכות מתמזגות למספר אחד':'המכות לא התמזגו',aui.bars?'פס חיים רק למי שנפגע ולאויב-על':'פסי חיים לא נכונים',aui.arrow===true?'חץ לאויב-על':'חץ: '+aui.arrow,aui.quiet?'פס עליון שקט':'הפס העליון לא נרגע'].join(', ')));
   check(!rsr.err&&!rsr.early&&rsr.missNo&&rsr.once&&rsr.item&&rsr.draw===true&&rsr.draw2===true&&rsr.took&&rsr.gone&&rsr.far&&rsr.boss,'פיוחו מצילה: '+(rsr.err||[rsr.early?'הופיעה מוקדם':'לא לפני סכנה',rsr.missNo?'הגרלה שנכשלה לא חוזרת':'הגרלה לא נכשלה',rsr.once?'פעם אחת':'שוב',rsr.item?'עצם':'אין עצם',rsr.draw===true&&rsr.draw2===true?'מצויר':'ציור נכשל',rsr.took&&rsr.gone?'אויב קרוב נעלם':'אויב לא נעלם',rsr.far?'רחוק נשאר':'רחוק נעלם',rsr.boss?'בוס רק נפגע':'בוס לא נפגע'].join(', ')));
   check(!dvr.err&&!dvr.early&&dvr.ready&&dvr.btn&&dvr.used&&dvr.five&&dvr.hit&&dvr.draw===true&&dvr.ended&&dvr.back&&dvr.once,'ברק אלוהי: '+(dvr.err||[dvr.early?'התעורר מוקדם':'מחכה לשני אויבי-על',dvr.ready?'מוכן':'לא מוכן',dvr.btn?'כפתור':'אין כפתור',dvr.five?'חמשת החפצים':'לא חמישה',dvr.hit?'ברק פגע':'ברק לא פגע',dvr.draw===true?'מצויר':'ציור נכשל: '+dvr.draw,dvr.ended&&dvr.back?'נגמר אחרי 5 שניות':'לא נגמר',dvr.once?'פעם אחת בריצה':'שוב'].join(', ')));
+  check(!qsw.err&&qsw.btn&&qsw.bow&&qsw.sword,'החלפה מהירה: '+(qsw.err||[qsw.btn?'הכפתור מופיע':'אין כפתור',qsw.bow?'לקשת הכי חזקה':'לא עבר לקשת הכי חזקה',qsw.sword?'ובחזרה לחרב הכי חזקה':'לא חזר לחרב הכי חזקה'].join(', ')));
   check(spk.on&&spk.off&&spk.slow&&spk.noFlute&&spk.draw===true,'הנודד עם הניצוץ: '+[spk.on?'נדלק':'לא נדלק',spk.noFlute?'בלי חליל':'החליל נדלק אצלו',spk.draw===true?'להבונים וגצים מצוירים':'ציור: '+spk.draw,spk.off?'וכבה':'לא כבה'].join(', '));
   check(fl.on&&fl.off&&fl.slow&&fl.prop&&fl.draw===true,'הנודד עם החליל: '+[fl.on?'נדלק':'לא נדלק',fl.prop?'חליל ביד':'אין חליל ביד',fl.slow?'אפקט סקיל ארוך יותר':'אפקט סקיל באורך רגיל',
     fl.draw===true?'תווים וחלילים מצוירים':'ציור נכשל: '+fl.draw,fl.off?'כבה בחזרה':'נשאר דלוק'].join(', '));

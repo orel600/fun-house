@@ -82,10 +82,11 @@ function attack(dt){
     }
   }
 }
-// מחליפים רק בין נשקים שבאמת לבושים (wHeld ב-weapons.js). עם נשק אחד אין מה להחליף, והכפתור מוסתר
+// לובשים את הנשק הכי חזק בתרמיל מהצד השני (wHeld ב-weapons.js), והקודם חוזר לתרמיל. כמו בחלון הציוד: הסטטים מתחלפים מיד (gearLive).
+// אין בתרמיל נשק מהצד השני: הכפתור מוסתר
 function swapWeapon(){
   const held=wHeld();if(S.mode!=='play'||held.length<2)return;
-  wEquip(held[(held.indexOf(P.wid)+1)%held.length]);
+  const before=gearStats();if(!gearEquip(held[1],'weapon'))return;gearLive(before);
   if(P.swapLvl>0)P.swapBuff=1.5;
   sparks(P.x,P.y-8,dtCol(P.dt[P.weapon]),10,140);
 }
@@ -94,5 +95,8 @@ const ICON={sword:'<path d="M20 4 9.5 14.5M20 4h-4M20 4v4M7 12l5 5M8.5 15.5 4 20
   gun:'<path d="M5 9Q16 8 15 19"/><path d="M5 9 15 19" stroke-width="1.2"/><path d="M7 17 20 4M20 4h-5M20 4v5M7 17H4M7 17v3"/>',
   staff:'<path d="M5 20 15 9"/><circle cx="17.5" cy="6.5" r="3"/>'};
 // הכפתור בצבע של סוג הנזק של הנשק שביד
+// כל פריים (render.js): נשק חדש נכנס לתרמיל או יצא ממנו, אז הכפתור מופיע או נעלם. בודקים רק כשהתרמיל השתנה
+let swapBag='';
+function swapCheck(){if(!P||!SAVE)return;const k=SAVE.gear.weapon+'|'+wHeld().join(',');if(k!==swapBag){swapBag=k;updateSwapBtn()}}
 function updateSwapBtn(){const w=P?P.weapon:'sword',t=P?P.dt[w]:'physical';const b=$('swap');b.hidden=!P||wHeld().length<2;
   b.classList.toggle('gun',w==='gun');b.style.setProperty('--dt',dtCol(t));$('ico').innerHTML=ICON[P&&P.wt]||ICON[w];$('swaplbl').textContent=P?wLabel(w):T('w.'+w)}
