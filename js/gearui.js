@@ -34,3 +34,13 @@ function gSetBadge(){
   const c=setCounts(gearWorn());
   return Object.keys(c).filter(s=>c[s]>=2).map(s=>'<i class="gsetb" style="--set:'+SETS[s].col+'">'+T('set.'+s)+' <bdi>'+c[s]+'/'+setItems(s).length+'</bdi></i>').join('');
 }
+
+// בועת הפריט (itemtip.js): כשנבחר פריט, הפרטים צפים ליד המשבצת שלו, והטור מציג בינתיים את הסטטים. לא במצב מכירה
+const gTipTile=()=>GUI.sell?null:document.querySelector('#gItems [data-id][aria-pressed="true"],#gSlots [data-slot][aria-pressed="true"],#gStash [data-sid][aria-pressed="true"]');
+const gTipAgain=b=>b.getAttribute('aria-pressed')==='true'&&!GUI.sell;   // נגיעה בפריט שכבר פתוח
+function gTipSync(){
+  const d=$('gDetail'),a=d.querySelector('.gdhead')&&gTipTile();
+  let s=$('gStatAlt');if(!s){s=document.createElement('div');s.id='gStatAlt';s.className='gdetail gstatp';d.after(s)}
+  s.hidden=!a;if(a)s.innerHTML=gStatPanel();
+  itemTip(d,a);
+}
