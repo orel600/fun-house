@@ -11,6 +11,7 @@ const WELCOME={
   flyMax:6,         // כמה מספרים לכל היותר עפים
   icon:{prod:'🏭',daily:'🎁',gift:'💌',quest:'📜',book:'📖'},
   bIcon:{mill:'🪵',mine:'⛏️'},
+  rows:3,          // יותר שורות מזה: הייצור של כל המבנים בשורה אחת, וכל הקווסטים בשורה אחת (המבקר, 2.11: "רשימה שגוללת וחתוכה" ב-760×350)
   auto:true,        // נפתח לבד בכניסה לכפר. הבדיקה מכבה אחרי שבדקה, כדי שלא יפריע לבדיקות אחרות
   // מצב
   timer:0,gifts:[],rows:null,done:null
@@ -29,7 +30,18 @@ function welcomeRows(){
   const bp=bookPending();if(bp){const got={};for(let i=1;i<=bp;i++){const r=bookReward(BK().paid+i);for(const k in r)got[k]=(got[k]||0)+r[k]}rows.push({kind:'book',key:bp,got})}
   return rows;
 }
-const wTitle=w=>w.kind==='prod'?T('vil.'+w.key):w.kind==='daily'?T('daily.title')+' · '+T('daily.day',w.key+1):w.kind==='gift'?T('wel.gift',vEsc(w.key)):
+// לתצוגה בלבד: שורות מאותו סוג (ייצור, קווסטים) מתאחדות לשורה אחת עם הסכום, כשיש יותר מ-WELCOME.rows. האיסוף עובר על השורות המקוריות
+function welcomeFold(rows){
+  if(rows.length<=WELCOME.rows)return rows;
+  const out=[],by={};
+  for(const w of rows){
+    if(w.kind!=='prod'&&w.kind!=='quest'){out.push(w);continue}
+    const f=by[w.kind];if(!f){by[w.kind]={...w,got:{...w.got},n:1};out.push(by[w.kind]);continue}
+    f.n++;for(const k in w.got){const v=w.got[k];if(typeof v==='number')f.got[k]=(f.got[k]||0)+v;else if(!(k in f.got))f.got[k]=v}
+  }
+  return out;
+}
+const wTitle=w=>w.n>1?T('wel.'+w.kind+'All',w.n):w.kind==='prod'?T('vil.'+w.key):w.kind==='daily'?T('daily.title')+' · '+T('daily.day',w.key+1):w.kind==='gift'?T('wel.gift',vEsc(w.key)):
   w.kind==='quest'?T('q.'+w.key)[0]:T('book.title');
 const wIcon=w=>w.kind==='prod'?(WELCOME.bIcon[w.key]||WELCOME.icon.prod):WELCOME.icon[w.kind];
 // פרס אחד כתג: משאב, פריט, XP, סיפור או דרגה
@@ -47,7 +59,7 @@ function welcomeDraw(){
   const D=WELCOME.done;
   let s=winHead(T('wel.title'),'','h2')+'<div class="welbody">';
   if(!D){
-    s+='<ul class="wellist">'+WELCOME.rows.map(w=>'<li class="welrow '+w.kind+'"><span class="welic">'+wIcon(w)+'</span><b>'+wTitle(w)+'</b><span class="welgot">'+wGot(w)+'</span></li>').join('')+'</ul>';
+    s+='<ul class="wellist">'+welcomeFold(WELCOME.rows).map(w=>'<li class="welrow '+w.kind+'"><span class="welic">'+wIcon(w)+'</span><b>'+wTitle(w)+'</b><span class="welgot">'+wGot(w)+'</span></li>').join('')+'</ul>';
     s+='<button class="vbtn welgo" data-act="all">'+T('wel.all')+'</button>';
   }else{
     s+='<p class="weldone">'+T('wel.done')+'</p><div class="welsum">'+Object.keys(D.got).map(k=>wChip(k,D.got[k])).join('')+'</div>';
