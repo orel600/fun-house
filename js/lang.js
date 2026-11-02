@@ -161,6 +161,7 @@ const TEXT={
   'sk.splash':{he:'גל מים',en:'Splash'},
   'sk.frost':{he:'פיצוץ קרח',en:'Frost Nova'},
   'sk.zap':{he:'פגיעת ברק',en:'Zap'},
+  'skr.new':{he:n=>'✨ סקיל חדש: '+n,en:n=>'✨ New skill: '+n},
   'sk.quake':{he:'רקיעת אדמה',en:'Quake'},
   'sk.flame':{he:'פרץ להבה',en:'Flame Burst'},
   'dv.name':{he:'ברק אלוהי',en:'Divine Lightning'},
