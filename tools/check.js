@@ -1395,7 +1395,8 @@ function worldBot(m,L,god){
       ', שלד בדקה 2 נופל ב-×'+asc.ttk.toFixed(2)+' מהזמן של חדש, מכה של 10 → '+(asc.hit*10).toFixed(1)+', שורה "'+asc.line+'"'+(asc.world?', בעולם ×1':', בעולם משתנה!')));
   // הממשק של הזירה (אוראל, 2.11): תג המכפיל ליד הרמה רק לשחקן חזק, טיפ בשתי הריצות הראשונות בלבד,
   // והכישוף והאולטימייט בפינה: מחוץ לשליש האמצעי של המסך, לא אחד על השני ולא על הסקילים
-  const ahud=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},er=window.eliteRoll,rnd=Math.random;window.eliteRoll=()=>{};let sd=11;Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;   // מזל משלה, כדי שהבדיקות שאחריה יקבלו בדיוק את אותו מזל כמו בלעדיהconst $b=()=>document.getElementById('ascB');
+  // עם מזל משלה (Math.random מוחזר בסוף), כדי שהבדיקות שאחריה יקבלו בדיוק את אותו מזל כמו בלעדיה
+  const ahud=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},er=window.eliteRoll,rnd=Math.random;window.eliteRoll=()=>{};let sd=11;Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;const $b=()=>document.getElementById('ascB');
     try{SAVE=saveBlank();SAVE.gearGift=true;SAVE.hero.start='warrior';SAVE.gear.weapon='oakSword';
       try{localStorage.removeItem(ARENA_SCALE.tip.key)}catch(e){}
       const run=strong=>{startRun();S.mode='play';if(strong){P.sw.dmg*=4;P.maxHp*=3;P.hp=P.maxHp}floats=[];runUpdate();drawRunBar();
