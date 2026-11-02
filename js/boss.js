@@ -18,7 +18,7 @@ function makeBoss(){
     for(const k of c){r-=w[k];if(r<=0){ch=k;break}}pats.push(ch);
   }
   const p2=pick(ks.filter(k=>!pats.includes(k)));
-  const hp=RUN.bossHits*Math.max(P.sw.dmg,P.gn.dmg)*dmgK(),p=spawnPos();
+  const hp=RUN.bossHits*Math.max(P.sw.dmg,P.gn.dmg)*dmgK()*ascBoss(),p=spawnPos();
   return{isBoss:true,type:'boss',name:pick(T('syl1'))+pick(T('syl2')),title:T('bossTitle.'+res),
     x:p.x,y:p.y,r:34,hp,max:hp,speed:62,mult:{[res]:DMG.boss.resist,[weak]:DMG.boss.weak},res,weak,role,used:{...t.types},pats,p2,phase:1,patT:2.4,
     flash:0,kx:0,ky:0,ph:0,dmg:20,learned,spin:0,charge:null,spiral:0,spA:0,spT:0,rage:0,flee:0,rageMsg:0,rageShot:0};

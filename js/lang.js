@@ -128,6 +128,7 @@ const TEXT={
   'dt.earth':{he:'אדמה',en:'Earth'},
   weakTo:{he:t=>'חלש ל'+t,en:t=>'Weak to '+t},
   immune:{he:'חסין',en:'Immune'},
+  ascale:{he:k=>'הזירה מתאימה את עצמה אליך: ×'+k,en:k=>'The arena adapts to you: ×'+k},   // arena-scale.js
 
   // עליית רמה ושדרוגים: [שם, תיאור]
   pickUpgrade:{he:'בחר שדרוג אחד',en:'Pick one upgrade'},
