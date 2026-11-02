@@ -72,10 +72,11 @@ function bwMain(k,L){
 function bwBuilding(k){
   const L=vLv(k),main=bwMain(k,L),tabs=[];
   if(main)tabs.push({id:'main',label:main.label,dot:main.dot});
+  if(k==='market'&&L&&typeof decoTab==='function')tabs.push(decoTab());   // חנות קישוטים (deco.js)
   if(!main||vBlock(k)!=='max')tabs.push({id:'up',label:L?'⬆️ '+T('bw.tab.up'):'🔨 '+T('bw.tab.build'),dot:!!main&&!vBlock(k)});
   const TB=S.vil.tab||(S.vil.tab={});let cur=TB[k];if(!tabs.some(t=>t.id===cur))cur=tabs[0].id;
   return bwHead(T('vil.'+k)+(L?' <small>'+T('level',L)+'</small>':''),T(k==='stash'&&L?'bw.why':'bw.do.'+k),tabs,cur,k==='market'||k==='forge'?bwCoins():'')+
-    '<div class="bwbody bw-'+k+' bw-'+cur+'">'+(cur==='main'?main.html():bwUpgrade(k,L))+'</div>';
+    '<div class="bwbody bw-'+k+' bw-'+cur+'">'+(cur==='main'?main.html():cur==='up'?bwUpgrade(k,L):tabs.find(t=>t.id===cur).html())+'</div>';
 }
 
 /* ---- תושבים עם שירות: הפונדקאית מבשלת, ומי שעברה מהעולם קונה או מחליפה ---- */
