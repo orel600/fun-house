@@ -1223,10 +1223,10 @@ function worldBot(m,L,god){
   check(crowd.n<=crowd.cap&&typeof crowd.elite==='number'&&crowd.elite<=crowd.lim&&(crowd.far==='נעלם'||crowd.far<=crowd.lim)&&crowd.orbs<=150&&crowd.xp===400,
     'עומס בזירה: '+crowd.n+' אויבים (מגבלה '+crowd.cap+'), אויב רחוק: '+crowd.far+', אויב-על רחוק קפץ ל-'+crowd.elite+' (עד '+crowd.lim+'), כדורי XP: 400→'+crowd.orbs+' ששווים '+crowd.xp+' XP');
   // התחלה רכה בזירה (run.js, RUN.ease): אויב מההתחלה פוגע פחות והחסינות אחרי מכה ארוכה יותר, ואחרי ease.secs הכל רגיל. בעולם תמיד רגיל
-  const ease=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={};startRun();enemies=[];
+  const ease=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},ch=LOOT.elite.chance;LOOT.elite.chance=0;startRun();enemies=[];   // בלי אויב עלית אקראי (eliteRoll ב-loot.js), שמכפיל את הנזק
     S.t=0;const a=addEnemy('grunt',500,0);a.elite=false;o.d0=a.dmg/ETYPES.grunt.dmg;P.inv=0;P.hp=P.maxHp;hurt(1);o.inv0=P.inv;
     S.t=RUN.ease.secs+5;const b=addEnemy('grunt',500,0);o.d1=b.dmg/ETYPES.grunt.dmg;P.inv=0;hurt(1);o.inv1=P.inv;
-    enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+    enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;LOOT.elite.chance=ch;return o});
   check(Math.abs(ease.d0-0.45)<0.01&&ease.d1===1&&ease.inv0>ease.inv1&&Math.abs(ease.inv1-0.6)<0.01,
     'התחלה רכה בזירה: נזק אויב בהתחלה x'+ease.d0.toFixed(2)+', אחרי הזמן x'+ease.d1+', חסינות אחרי מכה '+ease.inv0.toFixed(2)+'→'+ease.inv1.toFixed(2)+' שניות');
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
@@ -2069,6 +2069,14 @@ function worldBot(m,L,god){
     mbOrder('attack');for(let i=0;i<30;i++)mobaUpdate(1/30);mobaHud();
     o.att=al.some(h=>!h.dead&&h.bot.mode==='order'&&h.bot.focus);o.btn=document.querySelector('#mbPing [data-o="attack"]').classList.contains('on');
     for(let i=0;i<30*9;i++)mobaUpdate(1/30);o.end=!MB.order;
+    // קומבו בתרחיש קבוע, לא לפי המזל של המשחק: רטוב + ברק = חשמול (נזק ×MOBA.combo.shock), ורטוב + סופת קרח = הקפאה ארוכה (×MOBA.combo.freeze)
+    {const e=mbHeroes(1)[0],w0={},ow=mbWord;mbWord=function(u,w){w0[w]=(w0[w]||0)+1;return ow(u,w)};
+     Object.assign(e.st,{wet:0,imm:0,stun:0,taunt:0,armor:0,rage:0});e.dead=false;e.hp=e.max=1e6;
+     const dry=mbDmg(null,e,100,'lightning');e.st.wet=3;const wetD=mbDmg(null,e,100,'lightning');
+     const mg=mbHero('mage',0,false,1);mg.lvl=MOBA.ultAt;mg.x=e.x-200;mg.y=e.y;MB.u.push(mg);e.st.wet=3;e.st.imm=0;
+     mbCast(mg,'ult',e);for(let i=0;i<30;i++)mobaUpdate(1/30);
+     o.combo={shock:w0.shock||0,k:Math.round(wetD/dry*100)/100,freeze:w0.freeze||0,frozen:e.st.stun>MBKIT.mage.ult.freeze*0.9,want:MOBA.combo.shock};
+     mbWord=ow;MB.u.splice(MB.u.indexOf(mg),1);e.hp=e.max=MBKIT[e.kit].hp}
     MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
     mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
     mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
@@ -2311,7 +2319,8 @@ function worldBot(m,L,god){
     if(CFG.gfx==='3d')check(!mb.r3||mb.m3===6,'משחקי השאול בתלת-ממד: '+(mb.r3?mb.m3+' מבנים כמודלים (צריך 6)':'התלת-ממד כבוי'));
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));
     check(!mb.miss.length,'משחקי השאול: סקילים ('+mb.kits+') '+(mb.miss.length?'לא הוטלו: '+mb.miss.join(', '):'כולם הוטלו, כולל סקיל-העל'));
-    check(mb.cc.stun>0&&mb.cc.taunt>0&&(!mb.mage||(mb.cmb.shock||0)+(mb.cmb.freeze||0)>0),'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
+    const cb=mb.combo||{};check(cb.shock>0&&Math.abs(cb.k-cb.want)<0.01&&cb.freeze>0&&cb.frozen,'משחקי השאול: קומבו בתרחיש קבוע: חשמול '+(cb.shock?'✓ נזק ×'+cb.k:'לא קרה')+', קפוא '+(cb.freeze&&cb.frozen?'✓ הקפאה ארוכה':'לא קרה'));
+    check(mb.cc.stun>0&&mb.cc.taunt>0,'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
     if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');
   }
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
