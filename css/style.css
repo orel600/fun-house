@@ -827,6 +827,24 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .visnotes{flex-wrap:nowrap;align-items:stretch}.visnote{flex:1;min-height:48px;text-align:start}.visnote i{font-style:normal;color:var(--gold)}
 .visnotes .vbtn{flex:1;min-height:48px;margin:0}
 @media (orientation:portrait){.viswin .visbody{flex-direction:column}}
+/* מסחר עם חבר (js/trade.js): שני טורים, נותן ומבקש, וחץ ביניהם. מתחת: ההצעות שמחכות וכפתור "להציע" */
+.trdbody{display:flex;gap:10px;align-items:stretch;min-height:0;flex:1}
+.trdcol{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.trdcol h3{margin:2px 0 0;color:var(--gold);font:900 16px var(--body)}
+.trdres{max-height:112px;overflow-y:auto}
+.trdarrow{align-self:center;font:900 24px var(--body);color:var(--gold)}
+.trdfoot{display:flex;flex-direction:column;gap:6px}
+.trdinc{overflow-y:auto;flex:1;min-height:0}
+.trdd{display:inline-flex;align-items:center;gap:2px;vertical-align:middle}.trdd .ri{width:24px;height:24px}.trdd b{font:800 13px var(--body)}
+.trdrow{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:12px;background:rgba(255,255,255,.06)}
+.trdrow.mine small{flex:1;opacity:.8;font-size:12px}
+.trdwho{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.trdwho small{font:700 13px var(--body)}
+.trdlack{color:#ff9a8a}
+.trdrow .vbtn{margin:0;min-height:48px;flex:0 0 auto}.trdrow .visn{min-height:48px}
+.trdsend{margin:0;min-height:48px}.trdsend:disabled{opacity:.45}
+.trdhint{font-size:12px;margin:0}
+.trdgo{margin:6px 0 0;min-height:48px}
+@media (orientation:portrait){.trdbody{flex-direction:column}.trdarrow{transform:rotate(90deg)}}
 /* אתגר יומי (challenge.js): הסימן בפס העליון בעולם */
 .chtag{font-size:12px;font-weight:800;color:var(--tide,#7FD6E8);background:rgba(10,12,20,.7);border-radius:10px;padding:2px 8px;white-space:nowrap}
 .chtag[hidden]{display:none}

@@ -644,6 +644,55 @@ function worldBot(m,L,god){
   check(vs2.send&&vs2.once&&vs2.closed,'ביקור: מתנה '+(vs2.send?'נשלחה ויצאה מהתרמיל':'לא נשלחה'+(vs2.err?' ('+vs2.err+')':''))+', '+(vs2.once?'ופעם אחת ביום':'ונשלחה שוב'));
   check(vs2.rls&&vs2.got,'ביקור: החבר '+(vs2.got?'מקבל את המתנה פעם אחת':'לא קיבל')+', '+(vs2.rls?'ואי אפשר לשלוח בשם מישהו אחר':'ומישהו שלח בשם אחר'));
   check(vs2.noTable,'ביקור: בלי הטבלאות בענן '+(vs2.noTable?'הכפתור מוסבר והמשחק ממשיך':'משהו נשבר'));
+  // מסחר עם חבר (trade.js), על השרת המדומה: הצעה נועלת את מה שנותנים, ביטול מחזיר, החבר מקבל או דוחה, השולח אוסף פעם אחת, ובלי הטבלה הכפתור לא מופיע
+  const td=await page.evaluate(async()=>{const r={},F=CLOUD.fake=cloudFakeServer();const bak=JSON.stringify(SAVE);
+    CLOUD.session=null;try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}VISIT.ready=null;VISIT.last='';TRADE.ready=null;
+    await cloudSync();F.google.u1='Nir';F.google.u2='Orel';CLOUD.session.name='Nir';const nir=Object.assign({},CLOUD.session);
+    const orel=Object.assign({},nir,{uid:'u2',access:'au2',name:'Orel'}),as=x=>{CLOUD.session=Object.assign({},x,{exp:Date.now()/1000+3600})};
+    F.profiles.u2={user_id:'u2',name:'Orel',level:5,data:{village:{center:2},bag:{stone:30,iron:4}}};
+    await tradeVillage(true);r.ready=TRADE.ready===true;
+    bagAdd('wood',20);const w0=SAVE.bag.wood,s0=SAVE.bag.stone||0;await visitOpen();
+    document.querySelector('#visitWin [data-act="trade"]').click();
+    r.open=!$('ovTrade').hidden&&$('ovVisit').hidden&&TRADE.mode==='make'&&!!document.querySelector('#tradeWin [data-act="want"][data-r="stone"]')&&
+      document.querySelectorAll('#tradeWin [data-act="want"]').length===2;
+    TRADE.give='wood';TRADE.gn=5;TRADE.want='stone';TRADE.wn=5;tradeDraw();
+    window.__trSt=$('ovStart').hidden;$('ovStart').hidden=true;
+    return Object.assign(r,{bak,w0,s0,nir,orel})}).catch(e=>({err:String(e)}));
+  await shot('trade');
+  const td2=await page.evaluate(async T0=>{const r={},F=CLOUD.fake,as=x=>{CLOUD.session=Object.assign({},x,{exp:Date.now()/1000+3600})};$('ovStart').hidden=window.__trSt;
+    const wait=async f=>{for(let i=0;i<3000&&!f();i++)await Promise.resolve()};
+    document.querySelector('#tradeWin [data-act="send"]').click();await wait(()=>F.trades.length&&!TRADE.busy);
+    const t=F.trades[0];r.lock=!!t&&t.status==='open'&&t.give_res==='wood'&&t.give_n===5&&t.want_res==='stone'&&t.want_n===5&&SAVE.bag.wood===T0.w0-5;
+    // ביטול מחזיר
+    TRADE.gn=1;TRADE.wn=1;await tradeSend();const c=F.trades[1];const back=c&&await tradeCancel(c.id);
+    r.cancel=!!back&&F.trades.length===1&&SAVE.bag.wood===T0.w0-5;
+    // עוד הצעה, שתידחה. ועד 3 פתוחות
+    TRADE.gn=1;TRADE.want='iron';await tradeSend();await tradeSend();const full=await tradeSend()===false&&F.trades.length===3;
+    tradeClose();r.back=!$('ovVisit').hidden;visitClose();
+    let bad=false;try{await F.req('POST','/rest/v1/trades',{from_id:'u1',to_id:'u2',give_res:'wood',give_n:1,want_res:'stone',want_n:1},'au1')}catch(e){bad=true}r.rls=bad&&full;
+    // אוראל: מקבל את הראשונה, דוחה את השנייה. אוראל לא יכול לשנות כמויות
+    as(T0.orel);const keep=JSON.stringify(SAVE.bag);SAVE.bag={stone:10};await tradeVillage(true);r.inc=TRADE.inc.length===3;
+    tradeInbox();r.win=!$('ovTrade').hidden&&document.querySelectorAll('#tradeWin [data-act="yes"]').length===3&&!!document.querySelector('#tradeWin [data-act="yes"][disabled]');
+    let bad2=false;try{await F.req('PATCH','/rest/v1/trades?id=eq.'+F.trades[0].id,{status:'accepted',give_n:20},'au2')}catch(e){bad2=true}
+    const ids=F.trades.map(x=>x.id);
+    document.querySelector('#tradeWin [data-act="yes"][data-id="'+ids[0]+'"]').click();await wait(()=>!TRADE.busy&&TRADE.inc.length===2);
+    r.acc=SAVE.bag.stone===5&&SAVE.bag.wood===5&&F.trades[0].status==='accepted'&&bad2;
+    r.no=await tradeAnswer(ids[1],false)&&F.trades[1].status==='declined'&&await tradeAnswer(ids[1],true)===false;
+    tradeClose();r.closed=$('ovTrade').hidden;
+    // ניר אוסף: אבן מהעסקה, עץ שחזר מהדחייה, פעם אחת בלבד
+    SAVE.bag=JSON.parse(keep);as(T0.nir);const w1=SAVE.bag.wood,s1=SAVE.bag.stone||0;await tradeVillage(true);
+    r.got=SAVE.bag.stone===s1+5&&SAVE.bag.wood===w1+1&&F.trades.length===1&&TRADE.out.length===1;
+    await tradeVillage(true);r.once=SAVE.bag.stone===s1+5&&SAVE.bag.wood===w1+1;
+    // בלי הטבלה: הכפתור לא מופיע
+    F.noTrade=true;TRADE.ready=null;await tradeVillage(true);VISIT.sel={user_id:'u2',name:'Orel',level:1,data:{}};r.noTable=TRADE.ready===false&&tradeBtnHtml(VISIT.sel)===''&&tradeOpen(VISIT.sel)===false;
+    SAVE=JSON.parse(T0.bak);SAVE_STORE.write(SAVE,true);CLOUD.fake=cloudFakeServer();CLOUD.session=null;try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}
+    CLOUD.dirty=false;VISIT.ready=null;VISIT.last='';TRADE.ready=null;TRADE.inc=[];TRADE.out=[];VISIT.sel=null;return r},td).catch(e=>({err:String(e)}));
+  check(td.ready&&td.open,'מסחר: חלון ההצעה '+(td.open?'נפתח מהביקור, עם מה שיש לחבר':'לא נפתח'));
+  check(td2.lock&&td2.cancel&&td2.back,'מסחר: הצעה '+(td2.lock?'נשלחה ומה שנותנים נעול':'לא ננעלה'+(td2.err?' ('+td2.err+')':''))+', '+(td2.cancel?'וביטול מחזיר אותו':'וביטול לא החזיר'));
+  check(td2.rls,'מסחר: '+(td2.rls?'עד 3 הצעות פתוחות':'יותר מ-3 הצעות פתוחות'));
+  check(td2.inc&&td2.win&&td2.acc&&td2.no&&td2.closed,'מסחר: החבר '+(td2.acc?'מקבל הצעה ומשאבים עוברים':'לא הצליח לקבל')+', '+(td2.no?'דוחה הצעה פעם אחת':'דחייה לא עבדה'));
+  check(td2.got&&td2.once,'מסחר: השולח '+(td2.got?'אוסף את מה שביקש ואת מה שנדחה':'לא קיבל')+', '+(td2.once?'פעם אחת בלבד':'וקיבל פעמיים'));
+  check(td2.noTable,'מסחר: בלי הטבלה בענן '+(td2.noTable?'הכפתור לא מופיע':'משהו נשבר'));
   // שוק: מוכרים עץ, לא מצליחים לקנות בלי מספיק מטבעות, ואז קונים אבן. בסוף מנקים
   const mk=await page.evaluate(()=>{SAVE.village.market=1;bagAdd('wood',10);const sell=vTrade('sell','wood')&&SAVE.bag.coins===5&&SAVE.bag.wood===5;
     const poor=!vTrade('buy','stone');bagAdd('coins',20);const buy=vTrade('buy','stone')&&SAVE.bag.stone===5&&SAVE.bag.coins===10;
