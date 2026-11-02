@@ -85,7 +85,7 @@ function lootGear(e,force){
   if(e.node||!R||S.room||(!S.wd&&!force))return null;   // רק בעולם הפתוח, לא בזירה
   const ch=R.chance*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck()*statLoot();
   if(!force&&Math.random()>=ch){SAVE.gearPity=(SAVE.gearPity||0)+1;return null}
-  SAVE.gearPity=0;const id=lootRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;
+  SAVE.gearPity=0;const id=(e.isBoss&&orbitComboRoll())||lootRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;   // בוס: לפעמים חפץ משולב (orbit.js)
   dropSpawn(id,1,e.x,e.y);if(feedOn())feedGear(id);else banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id),dropTier(id).col);   // בעולם ובכפר: בפיד (feed.js)
   celebrate(e.x,e.y,'loot'+Math.max(2,dropRar(id)),gIcon(id));
   return id;
@@ -99,7 +99,7 @@ function lootRoll(n=1,mine){
   if(arms){if(mine||(SAVE.clsPity||0)>=G.cls.pity){slot='weapon';mine=true}else mine=slot==='weapon'&&Math.random()<G.cls.share}
   const lv=heroLv(),W=G.tier.filter(b=>b.lv<=lv).pop().w;let t=0;
   for(let i=0;i<n;i++)t=Math.max(t,+pick(Object.assign({},W)));
-  const ok=id=>{const it=GEAR.items[id];return it.slot===slot&&(slot!=='weapon'||!arms||arms.includes(it.w)===!!mine)};
+  const ok=id=>{const it=GEAR.items[id];return it.slot===slot&&!it.types&&(slot!=='weapon'||!arms||arms.includes(it.w)===!!mine)};
   const pool=Object.keys(GEAR.items).filter(ok),near=pool.length?Math.min(...pool.map(id=>{const d=GEAR.items[id].tier-t;return d<=0?-d:d+10})):0,
     at=pool.filter(id=>{const d=GEAR.items[id].tier-t;return (d<=0?-d:d+10)===near}),id=at[Math.floor(Math.random()*at.length)]||gRoll(n);
   if(arms){const it=GEAR.items[gBase(id)];SAVE.clsPity=it.slot==='weapon'&&arms.includes(it.w)?0:(SAVE.clsPity||0)+1}
