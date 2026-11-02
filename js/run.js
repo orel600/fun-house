@@ -15,12 +15,13 @@ const RUN={
 };
 
 // פי כמה האויבים חזקים עכשיו, ופי כמה השחקן
-const runK=()=>Math.pow(RUN.hpGrowth,Math.min(S.t,RUN.bossAt)/60)*(1+S.bossCount*0.5);   // מהרגע שהבוס מגיע האויבים מפסיקים לגדול: קרב ארוך בבוס לא מתנפח (בדיקת הזירה, 2.11)
+const runK=()=>Math.pow(RUN.hpGrowth,Math.min(arenaT(),RUN.bossAt)/60)*(1+S.bossCount*0.5);   // מהרגע שהבוס מגיע האויבים מפסיקים לגדול: קרב ארוך בבוס לא מתנפח (בדיקת הזירה, 2.11)
 const dmgK=()=>Math.pow(RUN.lvlDmg,P.level-1);
 const easeK=()=>S.wd||S.mb||S.vil?1:Math.min(1,RUN.ease.from+(1-RUN.ease.from)*S.t/RUN.ease.secs);   // רק בזירה (addEnemy ו-hurt משמשים גם בעולם)
 
-function runReset(){S.run={next:0,log:[],elites:0,won:0}}
+function runReset(){S.run={next:0,log:[],elites:0,won:0};arenaReset()}   // סוג הזירה חוזר ל-classic (arenas.js)
 function runUpdate(){
+  if(arenaRun())return;   // זירה עם ריצה משלה, למשל גלים (arenas.js)
   const r=S.run,st=RUN.stations[r.next];
   if(st&&S.t>=st.t){r.next++;r.log.push({kind:st.kind,t:S.t});st.kind==='swarm'?swarm():elite()}
 }

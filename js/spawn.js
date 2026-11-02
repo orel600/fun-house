@@ -20,6 +20,7 @@ function addEnemy(type,x,y,hpMul=1){
 const runP=()=>Math.min(1,S.t/RUN.bossAt);
 const lerp=([a,b])=>a+(b-a)*runP();
 function spawner(dt){
+  if(arenaOwnSpawn())return;   // זירת גלים מביאה אויבים בעצמה (arenas.js)
   S.spawnT-=dt;S.hordeT-=dt;
   if(enemies.length>=HORDE.cap)return;
   if(S.spawnT<=0){
