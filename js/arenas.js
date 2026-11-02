@@ -18,18 +18,21 @@ const ARENAS={
     spread:55,                       // כמה הגוש צפוף
     bossDelay:3,                     // כמה שניות אחרי תחילת הגל האחרון הבוס מגיע
     /* הגלים. t: כמה חזקים האויבים, כמו בשנייה הזו של ריצה רגילה (runK ב-run.js). g: [סוג מ-ETYPES, כמה, חיים יחסית לרגיל].
-       כל גל עם חומרים אחרים, כדי שיהיה שווה להחליף סוג נזק: עצם (פיזי), מתכת (אש, ברק, אדמה), צמח (אש, קרח), אבן (מים), קסם (קרח, ברק) */
+       sup: אויב-על אחד (גדול, כמו בתחנות של הזירה הרגילה, RUN.elite ב-run.js) שמגיע באמצע הגל.
+       לכל גל אופי וחומרים משלו (tags ב-data.js), כדי שיהיה שווה להחליף סוג נזק. סך החיים בכל גל כמו קודם, בערך:
+       1 עצמות וג'לי (פיזי, ברק) · 2 שריון ורוחות (אש, קרח) · 3 ביצה (ברק, מים) · 4 יער (אש, קרח) · 5 קור ומתכת, וייתי (אש)
+       6 רוחות (קרח, ברק) · 7 אבנים (מים) · 8 קברים, ושד (אש, מים) · 9 הכל מעורבב לפני הבוס, וייתי · 10 הבוס */
     list:[
-      {t:0,  g:[['grunt',20,0.5]]},
-      {t:30, g:[['grunt',22,0.5],['shield',4,1]]},
-      {t:60, g:[['grunt',20,0.5],['wisp',8,1]]},
-      {t:95, g:[['treant',7,1],['sprite',8,1]]},
-      {t:130,g:[['shield',12,1],['crawler',6,1]]},
-      {t:165,g:[['grunt',36,0.5],['wisp',10,1]]},
-      {t:200,g:[['golem',7,1],['shield',10,1]]},
-      {t:240,g:[['mummy',14,1],['grunt',26,0.5]]},
-      {t:280,g:[['crawler',9,1],['wisp',10,1],['treant',7,1]]},
-      {t:320,g:[['grunt',24,0.5],['shield',8,1]],boss:true}
+      {t:0,  g:[['grunt',14,0.5],['slime',4,1]]},
+      {t:30, g:[['ghost',10,1],['shield',4,1],['grunt',8,0.5]]},
+      {t:60, g:[['slime',10,1],['wisp',8,1],['goleling',3,1]]},
+      {t:95, g:[['treant',5,1],['sprite',8,1],['mushnub',3,1]]},
+      {t:130,g:[['shield',8,1],['crawler',4,1]],sup:'yeti'},
+      {t:165,g:[['grunt',24,0.5],['ghost',8,1],['wisp',10,1]]},
+      {t:200,g:[['golem',5,1],['goleling',10,1],['shield',7,1]]},
+      {t:240,g:[['mummy',12,1],['grunt',16,0.5]],sup:'demon'},
+      {t:280,g:[['crawler',6,1],['mushnub',6,1],['slime',8,1],['ghost',6,1]],sup:'yeti'},
+      {t:320,g:[['grunt',20,0.5],['shield',6,1],['slime',6,1]],boss:true}
     ]
   }
 };
@@ -70,14 +73,24 @@ function waveStart(i){
   // כל קבוצה מתחלקת לגושים, והגושים מתפזרים לאורך spawnSecs, מסוגים מתחלפים
   const parts=W.g.map(([type,n,hp])=>{const out=[];for(let k=n;k>0;k-=A.clump)out.push({type,n:Math.min(A.clump,k),hp});return out});
   const q=[];for(let k=0;parts.some(p=>p.length);k++)for(const p of parts)if(p.length)q.push(p.shift());
-  q.forEach((c,k)=>{c.at=S.t+k*A.spawnSecs/q.length});w.q=q;
+  q.forEach((c,k)=>{c.at=S.t+k*A.spawnSecs/q.length});
+  if(W.sup)q.splice(q.length>>1,0,{type:W.sup,n:1,hp:1,sup:true,at:q[q.length>>1]?q[q.length>>1].at:S.t});   // אויב-העל באמצע הגל
+  w.q=q;
   if(W.boss){S.nextBoss=S.t+A.bossDelay;w.boss=true}   // update.js מביא את הבוס (makeBoss) כשמגיע הזמן
   banner(W.boss?T('wave.last'):T('wave.start',i+1,A.list.length),W.boss?C.lilac:C.chalk);S.shake=Math.max(S.shake,4);
 }
 function waveClump(c){
+  if(c.sup)return waveSuper(c.type);
   const p=spawnPos(),n=Math.min(c.n,HORDE.cap-enemies.length),A=ARENA();
   for(let i=0;i<n;i++){const a=rand(0,6.28),d=Math.sqrt(Math.random())*A.spread*(1+n/20);const e=addEnemy(c.type,p.x+Math.cos(a)*d,p.y+Math.sin(a)*d,c.hp);e.wv=S.wv.i}
   if(n<c.n)S.wv.q.unshift({...c,n:c.n-n,at:S.t+0.5});   // מה שלא נכנס בגלל המגבלה מגיע אחר כך
+}
+
+// אויב-על בגל: אותם מספרים כמו בתחנה של הזירה הרגילה (RUN.elite), בלי ליווי, כי הגל עצמו הוא הליווי
+function waveSuper(type){
+  const E=RUN.elite,p=spawnPos(),e=addEnemy(type,p.x,p.y);e.wv=S.wv.i;
+  e.elite=true;e.big=E.size;e.r*=E.size;e.hp*=E.hp;e.max=e.hp;e.dmg*=E.dmg;e.xp=E.xp;e.speed*=E.speed;
+  banner(T('st.elite',T('elite.'+type)),dtCol(e.weak));S.shake=Math.max(S.shake,6);
 }
 
 /* ---- המונה למעלה: "גל 3/10", או "הגל הבא בעוד 4" בהפסקה. יושב בשעון (index.html .clock), ו-css מסתיר שם את התחנות של classic ---- */
