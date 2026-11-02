@@ -156,7 +156,7 @@
 | 🔨 1.11 | ליטוש מסך מהמבקר | dialog-under-hud, guide-over-windows, gift-btn-arena, book-question-grid, worldmap-locked-tiers, forge-recipe-chips | | css, ui, menu, book, worldmap, נפחייה |
 | ✅ #164 | (בקרב) | world-fights-no-tension, too-many-celebrations (#154, #156) | | |
 | 🔨 | (בקרב) | warden-long-flat: "קרב 1: שומרים עם התקפות שרואים", gear-cramped-iphone: "תרמיל מסודר" | | |
-| ⬜ | פיוחו מריחה ומובילה | idea-pet-detours: פעם בכ-3 דקות פיוחו רצה לכיוון, ושם תיבה, סוד או אויב עלית | | pet.js |
+| ✅ | פיוחו מריחה ומובילה | idea-pet-detours: פעם בכ-3 דקות פיוחו רצה לכיוון, ושם תיבה, סוד או אויב עלית | | pet.js |
 | ⬜ | מבוקש היום | idea-daily-hunt: לוח בכפר עם אויב עלית בעל שם, מקום על המפה ושלל ייחודי | | wanted.js, quests |
 | ⬜ | הכפר מתמלא | idea-living-village: דמות שעזרת לה בעולם עוברת לגור בכפר עם בית ושירות | | worldnpc, village (גדול) |
 | ❌ 1.11 | גלגול התחמקות | בוטל: ניר ואוראל החליטו בלי התחמקות (1.11.2026) | | |
