@@ -1378,6 +1378,21 @@ function worldBot(m,L,god){
     window.eliteRoll=er;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(Math.abs(ease.d0-0.45)<0.01&&ease.d1===1&&ease.inv0>ease.inv1&&Math.abs(ease.inv1-0.6)<0.01,
     'התחלה רכה בזירה: נזק אויב בהתחלה x'+ease.d0.toFixed(2)+', אחרי הזמן x'+ease.d1+', חסינות אחרי מכה '+ease.inv0.toFixed(2)+'→'+ease.inv1.toFixed(2)+' שניות');
+  // קושי לפי הכוח שלך (arena-scale.js): שחקן חדש ×1, שחקן חזק פי 4 בנזק ופי 3 בחיים מקבל אויבים עם פי 4 חיים ויותר נזק, ושלד בדקה 2 נופל באותו זמן בערך. בעולם תמיד ×1
+  const asc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},er=window.eliteRoll;window.eliteRoll=()=>{};
+    try{SAVE=saveBlank();SAVE.gearGift=true;SAVE.hero.start='warrior';SAVE.gear.weapon='oakSword';   // שחקן חדש: לוחם עם חרב עץ, בלי כלום
+      
+      startRun();S.mode='play';floats=[];runUpdate();const pw=arenaPower(),B=ARENA_SCALE.base;o.raw=pw.dps/B.dps;o.rawH=pw.ehp/B.ehp;o.new=S.run.sc.hp===1&&S.run.sc.dmg===1&&S.run.sc.boss===1;o.line0=floats.length;
+      S.t=120;const a=addEnemy('grunt',500,0),ttkA=a.max/pw.dps;
+      const big=arenaScaleCalc({dps:B.dps*4,ehp:B.ehp*3,wdmg:B.wdmg});o.hp=big.hp;o.dmg=big.dmg;
+      startRun();S.mode='play';P.sw.dmg*=4;P.maxHp*=3;P.hp=P.maxHp;floats=[];runUpdate();o.line=(floats.find(f=>f.txt.includes('×'))||{}).txt||'';o.sHp=S.run.sc.hp;o.sDmg=S.run.sc.dmg;
+      S.t=120;const b=addEnemy('grunt',500,0),ttkB=b.max/arenaPower().dps;o.ttk=ttkB/ttkA;
+      P.inv=0;const h=P.hp;hurt(10);o.hit=(h-P.hp)/10;
+      enterWorld('home');o.world=ascHp()===1&&ascDmg()===1;worldUi(false)}catch(err){o.err=String(err&&err.stack||err)}
+    window.eliteRoll=er;enemies=[];floats=[];document.getElementById('banner').textContent='';SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!asc.err&&asc.new&&asc.line0===0&&Math.abs(asc.raw-1)<0.1&&Math.abs(asc.rawH-1)<0.1&&Math.abs(asc.hp-4)<0.01&&asc.dmg>1.5&&Math.abs(asc.sHp-4)<0.05&&asc.ttk>0.7&&asc.ttk<1.3&&asc.hit>1.5&&!!asc.line&&asc.world,
+    'קושי לפי הכוח שלך: '+(asc.err||'שחקן חדש '+(asc.new?'×1':'משתנה!')+' (מדידה '+asc.raw.toFixed(2)+'/'+asc.rawH.toFixed(2)+'), פי 4 נזק ופי 3 חיים → חיי אויב ×'+asc.hp.toFixed(1)+', נזק ×'+asc.dmg.toFixed(2)+
+      ', שלד בדקה 2 נופל ב-×'+asc.ttk.toFixed(2)+' מהזמן של חדש, מכה של 10 → '+(asc.hit*10).toFixed(1)+', שורה "'+asc.line+'"'+(asc.world?', בעולם ×1':', בעולם משתנה!')));
   // הרמה הראשונה בזירה (run.js, RUN.ease.horde): שחקן שעומד במקום, מזל קבוע. הגוש הראשון מגיע מהר, אז רמה ראשונה לפני 15 שניות של משחק (המבקר, 2.11: היה עד 25)
   const flv=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,rnd=Math.random,er=window.eliteRoll;let sd=7,t=null;
     Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;window.eliteRoll=()=>{};
