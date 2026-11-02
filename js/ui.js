@@ -8,6 +8,7 @@ const WINS=[
   {id:'ovSound',close:()=>soundClose()},   // נגיעה בחוץ: audio.js
   {id:'ovHelp',close:()=>helpOpen(false),backdrop:true},
   {id:'ovGear',close:()=>gearClose(),backdrop:true},
+  {id:'ovShop',close:()=>shopClose(),backdrop:true},   // חנות הריצה (shop.js)
   {id:'ovForge',close:()=>forgeClose(),backdrop:true},
   {id:'ovWelcome',close:()=>welcomeClose(),backdrop:true},   // "בזמן שלא היית" (welcome.js)
   {id:'ovDaily',close:()=>dailyClose(),backdrop:true},

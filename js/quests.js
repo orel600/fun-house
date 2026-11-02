@@ -119,8 +119,13 @@ const qRun=()=>S.q||(S.q={bossHit:0});   // מה שקרה בריצה הזו, ל�
 /* ---- מצב ---- */
 function qProg(q,i){
   const o=q.obj[i];if(o.type==='upgrade')return Math.min(o.n,vLv(o.what));
-  const a=QS().active[q.id];return Math.min(o.n,a?a.p[i]||0:0);
+  const a=QS().active[q.id],p=a?a.p[i]||0:0;
+  if(a&&qHand(q,o))return Math.min(o.n,Math.max(p,Math.floor(SAVE.bag[o.what]||0)));   // "תביא לי": מה שכבר בתרמיל נחשב
+  return Math.min(o.n,p);
 }
+// קווסט "תביא לי" (collect שלא יומי ולא מטבעות): נספר ממה שבתרמיל, ובקבלת הפרס הכמות נמסרת לנותן.
+// באג (ניר, 1.11): "הנפח רוצה 10 עצמות ויש עליי מאות" — קודם נספר רק מה שנאסף אחרי שקיבלת את הקווסט, ובעולם לא בכלל
+const qHand=(q,o)=>o.type==='collect'&&o.what&&o.what!=='coins'&&o.what!=='any'&&!qKind(q).daily;
 const qReady=q=>!!QS().active[q.id]&&q.obj.every((o,i)=>qProg(q,i)>=o.n);
 function qReq(q){
   const r=q.req||{};
@@ -158,7 +163,7 @@ function questEvent(type,what,n=1){
   for(const id in Q.active){
     const q=QBY[id],a=Q.active[id];if(!q)continue;
     q.obj.forEach((o,i)=>{
-      if(o.type!==type||type==='upgrade'||a.p[i]>=o.n)return;
+      if((o.type!==type&&!(o.type==='collect'&&type==='gather'))||type==='upgrade'||a.p[i]>=o.n)return;   // מה שנאסף בעולם נספר גם ל"להביא"
       if(o.what&&o.what!=='any'&&o.what!==what)return;
       if(type==='win'&&(o.noHit&&qRun().bossHit||o.under&&S.t>o.under))return;
       a.p[i]=Math.min(o.n,(a.p[i]||0)+n);moved=true;
@@ -181,6 +186,7 @@ function qGive(id){
 }
 function questClaim(id,quiet){   // quiet: בלי חגיגה והודעה משלו (האיסוף ב-welcome.js חוגג פעם אחת)
   const q=QBY[id],Q=QS();if(!q||!qReady(q))return false;
+  q.obj.forEach(o=>{if(qHand(q,o))SAVE.bag[o.what]=Math.max(0,(SAVE.bag[o.what]||0)-o.n)});   // מוסרים לנותן את מה שביקש
   for(const k in q.reward){const v=q.reward[k];if(k==='xp')SAVE.hero.xp+=v;else if(k==='item')qGive(v);else if(k==='story')storyReward(v);else if(k!=='rank')bagAdd(k,v)}
   rankSync();   // רמת הדמות מה-XP (ranks.js)
   delete Q.active[id];Q.done[id]=(Q.done[id]||0)+1;
@@ -227,7 +233,7 @@ function questLog(){
   const sec=(k,cards)=>cards.length?'<details class="qsec"'+(k==='ready'?' open':'')+'><summary><h4>'+T('q.sec.'+k)+' · '+cards.length+'</h4></summary>'+cards.join('')+'</details>':'';
   let h=winHead(T('q.log'));   // ui.js
   h+=guideCard();
-  h+=challengeCard();   // אתגר יומי (challenge.js)
+  h+=challengeCard()+huntCard();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js)
   h+=sec('ready',act.filter(q=>qReady(q)&&!qKind(q).talk).map(q=>qCard(q,'claim')));
   h+=sec('active',act.filter(q=>(!qReady(q)||qKind(q).talk)&&!qKind(q).auto).map(q=>qCard(q,'track')));   // talk: הפרס אצל מי שנתן
   h+=sec('new',L.filter(q=>qOpen(q)&&!qKind(q).talk).map(q=>qCard(q,'accept')));

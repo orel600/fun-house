@@ -42,6 +42,7 @@ function wmGraph(){
   // מה מוצג: אזורים שביקרת בהם, ושכנים שהדרך אליהם כבר נפתחה (wPathOpen ב-world.js) כצללית
   const seen=all.filter(r=>pos[r]&&wmSeen(r)),show=new Set(seen);
   for(const e of edges)if(pos[e.a]&&pos[e.b]&&(seen.includes(e.a)&&seen.includes(e.b)||seen.includes(e.a)&&wPathOpen(e.p))){show.add(e.a);show.add(e.b)}
+  for(const r of all)if(pos[r])show.add(r);   // כל האזורים: מה שעוד לא התגלה בצללית עם ?, כדי שתהיה תחושה שיש עוד לגלות (המבקר, worldmap-locked-tiers)
   // כל שביל פעם אחת, גם כשיש דרך בשני הכיוונים
   const one=[],key=e=>[e.a,e.b].sort().join('|');
   for(const e of edges)if(show.has(e.a)&&show.has(e.b)&&!one.some(f=>key(f)===key(e)))one.push(e);
@@ -167,7 +168,8 @@ function wmDraw(){
   $('wMap').innerHTML=winHead('🗺️ '+T('wm.title'))+
     '<div class="wmcols"><section><h4>'+T('wm.world')+'</h4><div class="wmbox"><canvas id="wmWorld"></canvas></div></section>'+
     '<section><h4>'+T('w.region.'+S.wd.reg)+' <small>★ '+T('wm.here')+'</small></h4><div class="wmbox"><canvas id="wmHere"></canvas></div></section></div>'+
-    tierRow()+travelMapRow()+'<p class="wmkey">'+[$('wSec').textContent,$('chTag').hidden?'':$('chTag').textContent].filter(Boolean).map(s=>'<b>'+s+'</b>').join(' ')+' '+T('wm.key')+'</p>';   // 🔍 ו-🌀 עברו מהפס העליון לכאן (docs/plan-hud.md)   // דרגת העולם (tiers.js)
+    (SAVE.story&&SAVE.story.end?tierRow():'')+travelMapRow()+   // בחירת הדרגה רק אחרי סוף הסיפור (tiers.js). לפני, שלוש דרגות נעולות רק מסיחות
+    '<p class="wmkey">'+[$('wSec').textContent,$('chTag').hidden?'':$('chTag').textContent].filter(Boolean).map(s=>'<b>'+s+'</b>').join(' ')+' '+T('wm.key')+'</p>';   // 🔍 ו-🌀 עברו מהפס העליון לכאן (docs/plan-hud.md)   // דרגת העולם (tiers.js)
   wmDrawWorld();wmDrawHere();
 }
 

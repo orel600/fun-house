@@ -3,8 +3,8 @@
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#121624">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="זירת המקל">
-<title>זירת המקל</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="שישה פנסים">
+<title>שישה פנסים · Six Lanterns</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&family=Secular+One&display=swap">
 <link rel="stylesheet" href="css/style.css">
@@ -19,6 +19,7 @@
     <div class="clock"><span id="clock">0:00</span><small id="bossin"></small></div>
     <div class="lvl" id="lvl"></div>
     <button class="gearbtn" id="gearBtnRun" data-ta="gear.btn">🎒</button>
+    <button class="gearbtn shopbtn" id="shopBtn" data-ta="shop.title" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 8v8M9.5 10h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><b>0</b></button>
   </div>
   <div class="runbar" id="runbar"><div class="runfill" id="runfill"></div></div>
   <div class="bossbar" id="bossbar" hidden>
@@ -36,6 +37,10 @@
 <!-- הסקילים: עד 3 כפתורים בצד ימין למטה, בזירה ובעולם (js/skills.js, ובעולם גם js/wskill.js) -->
 <button class="divine" id="divine" type="button" hidden></button>
 <div class="skills" id="skills" role="group" data-ta="sk.group" hidden></div>
+<!-- אולטימייט (js/ult.js): משמאל לקשת של הסקילים, מתמלא מהריגות -->
+<button class="ult" id="ult" type="button" data-ta="ult.name" hidden><svg class="dti" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.2 6.3L21 9l-5.2 4.3L17.5 21 12 17.3 6.5 21l1.7-7.7L3 9l6.8-.7z"/></svg><i></i></button>
+<!-- כישוף מיוחד (js/spell.js): כפתור קטן ליד הסקילים, ובתחילת ריצה שלושה סמלים לבחירה מעליו -->
+<button class="spellb" id="spell" type="button" hidden></button><div class="spellpick" id="spellPick" role="group" data-ta="sp.pick" hidden></div>
 
 <button class="mute" id="muteBtn" data-ta="mute"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg></button>
 <!-- הכפר: פס עליון בשורה אחת (המשאבים החשובים, השאר בתרמיל), והפאנל של המבנה שלידו (js/village.js) -->
@@ -86,14 +91,17 @@
 <div class="pwa-turn" id="pwaTurn"><b aria-hidden="true">📱↻</b><p data-t="pwa.turn"></p></div>
 
 <!-- מסך הציוד והתרמיל: התרמיל, הבובה עם המשבצות, והפרטים. גוררים או לוחצים (js/gear.js) -->
+<!-- חנות הריצה (js/shop.js): ציוד לריצה הזו בלבד, בזהב מהריגות -->
+<div class="ov" id="ovShop" hidden><div class="win shopwin" role="dialog"></div></div>
 <div class="ov gearov" id="ovGear" hidden>
   <div class="panel gearpanel win">
-    <div class="ghead whd"><h2 data-t="gear.title"></h2><span id="gHero"></span><span class="bag" id="gCoins"></span><button class="gclose wx" id="gearClose" data-ta="gear.close">✕</button></div>
+    <div class="ghead whd"><h2 data-t="gear.title"></h2><div class="gpages" id="gPages"></div><span id="gHero"></span><span class="bag" id="gCoins"></span><button class="gclose wx" id="gearClose" data-ta="gear.close">✕</button></div>
     <div class="gbody">
-      <section class="gbag" id="gBag"><div class="ffilter" id="gTabs"></div><div class="ggrid" id="gItems"></div></section>
+      <section class="gbag" id="gBag"><div class="ffilter" id="gTabs"></div><div class="ggrid" id="gItems"></div><div class="gacts" id="gActs"></div></section>
       <section class="gdoll" id="gSlots"></section>
       <section class="gsidep"><div class="gdetail" id="gDetail"></div><div class="gstash" id="gStash" hidden></div></section>
     </div>
+    <div class="gchar" id="gChar" hidden></div>
     <div class="gtree" id="gTree" hidden></div>
   </div>
 </div>
@@ -271,11 +279,18 @@
 <script src="js/run.js"></script>
 <script src="js/state.js"></script>
 <script src="js/spawn.js"></script>
+<script src="js/arena-load.js"></script>
 <script src="js/combat.js"></script>
 <script src="js/skills.js"></script>
+<script src="js/ult.js"></script>
+<script src="js/spell.js"></script>
+<script src="js/shop.js"></script>
+<script src="js/streak.js"></script>
+<script src="js/arenaui.js"></script>
 <script src="js/orbit.js"></script>
 <script src="js/divine.js"></script>
 <script src="js/flute.js"></script>
+<script src="js/spark.js"></script>
 <script src="js/boss.js"></script>
 <script src="js/progression.js"></script>
 <script src="js/bonus.js"></script>
@@ -296,11 +311,13 @@
 <script src="js/strike.js"></script>
 <script src="js/events.js"></script>
 <script src="js/pacing.js"></script>
+<script src="js/foeai.js"></script>
 <script src="js/secrets.js"></script>
 <script src="js/worldmap.js"></script>
 <script src="js/travel.js"></script>
 <script src="js/challenge.js"></script>
 <script src="js/tiers.js"></script>
+<script src="js/hunt.js"></script>
 <script src="js/gear.js"></script>
 <script src="js/sets.js"></script>
 <script src="js/doll3d.js"></script>
@@ -310,8 +327,11 @@
 <script src="js/heroes.js"></script>
 <script src="js/ranks.js"></script>
 <script src="js/stats.js"></script>
+<script src="js/levelpath.js"></script>
 <script src="js/pet.js"></script>
+<script src="js/petscent.js"></script>
 <script src="js/rescue.js"></script>
+<script src="js/parosh.js"></script>
 <script src="js/daily.js"></script>
 <script src="js/visit.js"></script>
 <script src="js/book.js"></script>
@@ -327,6 +347,7 @@
 <script src="js/vendor/three-bundle.js"></script>
 <script src="js/models3d.js"></script>
 <script src="js/render3d.js"></script>
+<script src="js/props3d.js"></script>   <!-- הפנסים, המקדשים, מגדלי התצפית והתיבות בתלת-ממד -->
 <script src="js/camera.js"></script>
 <script src="js/look-hd.js"></script>   <!-- מראה הכפר והעולם: שלב 1 לכולם, ?look=classic מכבה, ?look=hd מוסיף ניסויים (docs/visual-plan.md) -->
 <script src="js/ground.js"></script>   <!-- הקרקע בעולם: מפה מצוירת לכל אזור, שבילים, חוף וצל מגע (docs/plan-ground.md) -->

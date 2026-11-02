@@ -26,7 +26,7 @@ function drawPlayer(){
   const p=pose(P.x,P.y,P.walk,P.moving,a,sword?10:11-P.gn.recoil*4,P.face),o={skin:LOOK.player,col:(HEROES.list[heroId()]||{}).col||C.chalk,lw:3};
   drawRig(p,o);
   const hand=p.armF[1],hx=hand.x,hy=hand.y;
-  AGE_FX.hand={x:hx+Math.cos(a)*14,y:hy+Math.sin(a)*14};   // הזוהר של Aging יושב על הנשק (aging.js)
+  AGE_FX.hand={x:hx+Math.cos(a)*14,y:hy+Math.sin(a)*14};AGE_FX.tip=sword?{x:hx+Math.cos(a)*24,y:hy+Math.sin(a)*24}:null;   // tip: קצה הלהב, ממנו יוצא הברק (skills.js)   // הזוהר של Aging יושב על הנשק (aging.js)
   if(!drawRigWeapon(p,o,P.weapon,a)){
     if(sword){
       ctx.strokeStyle=dtCol(P.dt.sword);ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx+Math.cos(a)*24,hy+Math.sin(a)*24);ctx.stroke();
@@ -45,7 +45,8 @@ function drawPlayer(){
       if(k>0.3){ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(hx+cx*10,hy+cy*10);ctx.stroke()}
     }
   }}
-  if(sword&&s.anim>0&&fluteOn())fluteSwing(s,s.anim/0.2,dtCol(P.dt.sword));   // הנודד עם החליל: חמשה ותווים (flute.js)
+  if(sword&&s.anim>0&&heroTheme())heroTheme().swing(s,s.anim/0.2,dtCol(P.dt.sword));   // דמות אישית: חמשה ותווים (flute.js) או גצים (spark.js)
+  else if(sword&&s.anim>0&&jSwing(s,s.anim/0.2,dtCol(P.dt.sword))){}   // בעולם ובכפר: שובל חרמש (juice.js)
   else if(sword&&s.anim>0){
     const k=s.anim/0.2,start=s.ang-s.arc/2,end=start+s.arc*(1-k);
     ctx.globalAlpha=0.55*k+0.15;ctx.strokeStyle=dtCol(P.dt.sword);ctx.lineWidth=12*k+2;
@@ -71,7 +72,7 @@ function drawEnemy(e){
   {const L=R3D.on&&lookOf(e);weakRing(e,L?e.y+(L.foot-L.h)*(e.big||1)-6:e.y-(e.isBoss?60:44))}
   // בתלת-ממד הגוף מצויר בשכבה שמתחת. כאן נשארים רק הסימונים: פס חיים, טבעת הזמן של המבוקש, וההתראות של הבוס
   if(R3D.on&&lookOf(e)){if(e.isBoss)drawBoss(e);else if(e.wanted)drawWanted(e);
-    if(!e.isBoss&&e.hp<e.max){const L=lookOf(e),k=e.big||1,w=24*k,y=e.y+(L.foot-L.h)*k-6;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,y,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,y,w*Math.max(0,e.hp/e.max),3)}
+    if(!e.isBoss&&e.hp<e.max&&hpBarOn(e)){const L=lookOf(e),k=e.big||1,w=24*k,y=e.y+(L.foot-L.h)*k-6;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,y,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,y,w*Math.max(0,e.hp/e.max),3)}
     return}
   if(e.type==='grunt'){
     const h=drawEnemyRig(e).head;
@@ -96,7 +97,7 @@ function drawEnemy(e){
     ctx.beginPath();ctx.roundRect(e.x-r,y-r,r*2,r*1.8,r*0.5);ctx.fill();ctx.stroke();
     ctx.fillStyle=C.ink;ctx.beginPath();ctx.arc(e.x-r*0.35,y-r*0.2,2.5,0,7);ctx.arc(e.x+r*0.35,y-r*0.2,2.5,0,7);ctx.fill();
   }
-  if(!e.isBoss&&e.hp<e.max){const w=24;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,e.y-40,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,e.y-40,w*Math.max(0,e.hp/e.max),3)}
+  if(!e.isBoss&&e.hp<e.max&&hpBarOn(e)){const w=24;ctx.fillStyle=C.line;ctx.fillRect(e.x-w/2,e.y-40,w,3);ctx.fillStyle=C.blood;ctx.fillRect(e.x-w/2,e.y-40,w*Math.max(0,e.hp/e.max),3)}
 }
 function drawBoss(b){
   const fl=b.flash>0,glow=dtCol(b.weak);
@@ -127,6 +128,9 @@ function edgeArrow(sx,sy,col,s=1,strong){
   const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(110,Math.min(H-40,H/2+Math.sin(a)*H));
   ctx.save();if(soft)ctx.globalAlpha=0.45;ctx.translate(ex,ey);ctx.rotate(a);ctx.scale(s,s);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-8);ctx.lineTo(-7,8);ctx.fill();ctx.restore();
 }
+// התחתית של הממשק העליון בזירה, בפיקסלים של המסך. נמדד פעם בחצי שנייה, כי מדידה של הדף בכל פריים יקרה
+let floatTopV=0,floatTopT=0;
+function floatTop(){const n=performance.now();if(n-floatTopT>500){floatTopT=n;const h=document.querySelector('.hud');floatTopV=h&&getComputedStyle(h).display!=='none'?h.getBoundingClientRect().bottom:0}return floatTopV}
 function render(){
   setZoom(camZoom());   // כמה רחוק המצלמה בכל מקום (camera.js, VIEW ב-render3d.js)
   ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);
@@ -171,14 +175,14 @@ function render(){
   drawOrbits();drawDivine();   // החפצים המסתובבים (orbit.js)
   drawWSkill();   // בעולם: כדורי הסקילים בדרך, והכוונת בגרירה (wskill.js)
   // חצים: מוט, נוצות וחוד. קסם: כדור זוהר עם שובל (weapons.js)
-  const sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r,fl=fluteOn();ctx.lineWidth=2;
+  const gw=juiceOn()?wGrow():1,sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r*gw,th=heroTheme();ctx.lineWidth=2;   // gw: נשק משודרג יורה חץ/קסם גדול יותר, בעולם ובכפר (weapons.js)
   for(const b of pb){
-    if(fl){fluteShot(b,sc);continue}   // הנודד עם החליל: חלילים ותווים עפים (flute.js)
+    if(th){th.shot(b,sc);continue}   // דמות אישית: חלילים ותווים (flute.js) או להבונים (spark.js)
     if(b.shot==='bolt'){ctx.fillStyle=sc;
       for(let i=3;i>0;i--){ctx.globalAlpha=0.12*(4-i);ctx.beginPath();ctx.arc(b.x-b.vx*0.018*i,b.y-b.vy*0.018*i,br*(1-i*0.18),0,7);ctx.fill()}
       ctx.globalAlpha=0.3;ctx.beginPath();ctx.arc(b.x,b.y,br*1.9,0,7);ctx.fill();
       ctx.globalAlpha=1;ctx.beginPath();ctx.arc(b.x,b.y,br,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(b.x,b.y,br*0.4,0,7);ctx.fill();continue}
-    ctx.strokeStyle=ctx.fillStyle=sc;ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));
+    ctx.strokeStyle=ctx.fillStyle=sc;ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));ctx.scale(gw,gw);
     ctx.beginPath();ctx.moveTo(-20,0);ctx.lineTo(0,0);ctx.moveTo(-17,0);ctx.lineTo(-22,-3.5);ctx.moveTo(-17,0);ctx.lineTo(-22,3.5);ctx.stroke();
     ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(-2,-3.5);ctx.lineTo(-2,3.5);ctx.closePath();ctx.fill();ctx.restore();
   }
@@ -190,9 +194,11 @@ function render(){
   ctx.textAlign='center';
   // מספר עם סימן (+12, -16) נכתב משמאל לימין בכל שפה, אחרת הסימן קופץ לצד הלא נכון
   // מכה קריטית קופצת לרגע ומקבלת מסגרת לבנה
-  for(const f of floats){ctx.direction=f.ltr||/^[+\-]\d/.test(f.txt)?'ltr':DIR;ctx.globalAlpha=Math.min(1,f.life*2);
+  // בזירה הטקסט הצף לא עולה על הממשק העליון (בדיקת הזירה, 1.11.2026): מעל הקו שלו הוא שקוף, ומתחתיו מתגלה בהדרגה
+  const hudY=S.wd||S.vil?-1e9:floatTop(),fadeK=y=>{const sy=(y+oy)*ZOOM-hudY;return sy>=HITFX.hudFade?1:Math.max(0,sy/HITFX.hudFade)};
+  for(const f of floats){const fk=fadeK(f.y);if(fk<=0)continue;ctx.direction=f.ltr||/^[+\-]\d/.test(f.txt)?'ltr':DIR;ctx.globalAlpha=Math.min(1,f.life*2)*fk;
     const sz=f.crit?f.size*(1+Math.max(0,f.life-0.8)*4):f.size;ctx.font='800 '+sz+'px Heebo, system-ui, sans-serif';
-    if(f.crit){ctx.lineWidth=4;ctx.strokeStyle='#fff';ctx.lineJoin='round';ctx.strokeText(f.txt,f.x,f.y)}
+    if(f.crit){ctx.lineWidth=4;ctx.strokeStyle=C.gold;ctx.lineJoin='round';ctx.strokeText(f.txt,f.x,f.y)}
     else{ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1)}
     ctx.fillStyle=f.crit?C.ink:f.col;ctx.fillText(f.txt,f.x,f.y);if(f.crit){ctx.lineWidth=1.5;ctx.strokeStyle=f.col;ctx.strokeText(f.txt,f.x,f.y)}}
   ctx.globalAlpha=1;ctx.direction=DIR;
@@ -202,11 +208,11 @@ function render(){
     if(sx<-20||sx>W+20||sy<-20||sy>H+20){const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(110,Math.min(H-40,H/2+Math.sin(a)*H));
       ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.fillStyle=C.lilac;ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(-8,-10);ctx.lineTo(-8,10);ctx.fill();ctx.restore()}}
   drawBonusScreen(ox,oy);
-  drawWantedScreen(ox,oy);
+  drawWantedScreen(ox,oy);arenaArrows(ox,oy);   // חץ לאויב-על מחוץ למסך (arenaui.js)
   drawVillageScreen(ox,oy);
   drawWorldScreen(ox,oy);
   drawNpcScreen(ox,oy);
-  drawQuestMarks(ox,oy);statDraw(ox,oy);guideDraw(ox,oy);   // guideDraw: המטרה הבאה, שובל וחץ (guide.js)   // סימן מעל הדמות כשסקיל פעיל (stats.js)
+  drawQuestMarks(ox,oy);statDraw(ox,oy);guideDraw(ox,oy);streakDraw();   // streakDraw: רצף הריגות (streak.js)   // guideDraw: המטרה הבאה, שובל וחץ (guide.js)   // סימן מעל הדמות כשסקיל פעיל (stats.js)
   if(joy){ctx.strokeStyle='rgba(236,231,220,0.22)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(joy.ox,joy.oy,55,0,7);ctx.stroke();
     ctx.fillStyle='rgba(236,231,220,0.3)';ctx.beginPath();ctx.arc(joy.ox+joy.dx*55,joy.oy+joy.dy*55,22,0,7);ctx.fill()}
   if(S.hurt>0){const gr=ctx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.3,W/2,H/2,Math.max(W,H)*0.75);gr.addColorStop(0,'rgba(239,78,87,0)');gr.addColorStop(1,'rgba(239,78,87,'+(S.hurt*1.2)+')');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H)}
@@ -230,7 +236,7 @@ function hud(){
   const nx=nextStation(),key=LANG+'|'+fmt(S.t)+'|'+P.level+'|'+(S.boss?1:S.run.won?2:nx.kind+fmt(nx.t-S.t));
   if(key!==lastHud){lastHud=key;$('clock').textContent=fmt(S.t);$('lvl').textContent=T('level',P.level);
     $('bossin').textContent=S.boss?T('bossHere'):S.run.won?T('bossBeaten'):T(nx.kind==='boss'?'bossIn':'next.'+nx.kind,fmt(nx.t-S.t))}
-  drawRunBar();skillsHud();divineHud();
+  drawRunBar();skillsHud();divineHud();ultHud();spellHud();shopHud();arenaQuiet();swapCheck();
   const bb=$('bossbar');
   if(S.boss){bb.hidden=false;$('bossnm').textContent=S.boss.name+' · '+S.boss.title;
     const wk=$('bossweak');if(wk.dataset.k!==LANG+S.boss.weak){wk.dataset.k=LANG+S.boss.weak;wk.innerHTML=dtSvg(S.boss.weak)+T('weakTo',T('dt.'+S.boss.weak));wk.style.color=dtCol(S.boss.weak)}
