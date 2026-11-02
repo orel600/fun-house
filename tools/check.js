@@ -1029,6 +1029,18 @@ function worldBot(m,L,god){
     'קצב העולם: '+pace.packs+' להקות ב-'+pace.secs+' שניות (לפחות '+pace.want+'), הראשונה אחרי '+pace.first+' שניות, '+pace.min+' עד '+pace.max+' מפלצות בלהקה, '+
     pace.peaks+' שיאים, '+pace.rests+' רגעי שקט, '+pace.bonus+' בונוסי להקה בסיבוב, להקה של '+pace.pkN+' שהופלה נתנה '+pace.pkBonus+' בונוס'+(pace.pkTwice===1?'':' (ניתן שוב!)')+', הכי הרבה אויבים יחד '+pace.maxE+' גם בעומס (מגבלה '+pace.cap+')'+(pace.hush?', בכניסה הודעה אחת':', בכניסה כמה הודעות יחד'));
 
+  // עומס בזירה (arena-load.js): מעל המגבלה הרחוקים נעלמים, אויב רחוק ואויב-על רחוק קופצים קרוב, וכדורי XP מתאחדים בלי לאבד XP
+  const crowd=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={};startRun();P.x=P.y=0;enemies=[];orbs=[];
+    for(let i=0;i<HORDE.cap+40;i++)addEnemy('grunt',rand(-300,300),rand(-200,200)).elite=false;
+    const far=addEnemy('grunt',6000,0),el=addEnemy('shield',0,-6000);far.elite=false;el.elite=true;
+    for(let i=0;i<400;i++)orbs.push({x:rand(-2000,2000),y:rand(-2000,2000),v:1});
+    S.aloadT=0;arenaLoad(0.01);enemies=enemies.filter(e=>!e.dead);
+    const lim=ALOAD.far*Math.max(W,H),d=e=>Math.hypot(e.x-P.x,e.y-P.y);
+    o.n=enemies.length;o.cap=HORDE.cap;o.far=enemies.includes(far)?Math.round(d(far)):'נעלם';o.elite=enemies.includes(el)?Math.round(d(el)):'נעלם';o.lim=Math.round(lim);
+    o.orbs=orbs.length;o.xp=orbs.reduce((a,b)=>a+b.v,0);
+    enemies=[];orbs=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(crowd.n<=crowd.cap&&typeof crowd.elite==='number'&&crowd.elite<=crowd.lim&&(crowd.far==='נעלם'||crowd.far<=crowd.lim)&&crowd.orbs<=150&&crowd.xp===400,
+    'עומס בזירה: '+crowd.n+' אויבים (מגבלה '+crowd.cap+'), אויב רחוק: '+crowd.far+', אויב-על רחוק קפץ ל-'+crowd.elite+' (עד '+crowd.lim+'), כדורי XP: 400→'+crowd.orbs+' ששווים '+crowd.xp+' XP');
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
@@ -1593,6 +1605,23 @@ function worldBot(m,L,god){
   await page.setViewportSize(CFG.phone);await page.clock.runFor(100);
   check(Object.values(wml).every(o=>o.n===o.show&&o.n>=6&&o.bad===0&&o.here===0&&o.in),
     'מפת העולם, כל האזורים פתוחים: '+Object.entries(wml).map(([k,o])=>k+'px: '+o.n+'/'+o.show+' תוויות, '+(o.bad||o.here?'חפיפות: '+o.bad+' בעולם, '+o.here+' בשערים':'בלי חפיפות')+(o.in?'':', יוצאות מהמפה')).join(' · '));
+  // החיה מריחה ומובילה (petscent.js): מרחרחת, רצה למקום ומחכה עם חץ, תיבה נותנת שלל כשמגיעים, אויב מיוחד נותן שלל כשנופל, ומי שלא בא היא מוותרת
+  const ps=await page.evaluate(()=>{
+    const o={};enterWorld('home');const p=S.pet||petMake();p.st='idle';const pk=SCENT.pick;
+    SCENT.pick={secret:0,chest:1,elite:0};S.wd.scentT=0;petUpdate(0.02);const s=S.wd.scent;o.start=!!s&&s.st==='sniff'&&s.kind==='chest';
+    for(let i=0;i<200&&s.st!=='wait';i++)petUpdate(0.05);o.wait=s.st==='wait'&&Math.hypot(p.x-s.x,p.y-s.y)<12;
+    o.far=Math.hypot(s.x-P.x,s.y-P.y)>=120;
+    const c0=dropStats().spawned;P.x=s.x;P.y=s.y;petUpdate(0.02);o.chest=dropStats().spawned>c0&&!S.wd.scent&&S.wd.scentT>0;
+    SCENT.pick={secret:0,chest:0,elite:1};S.wd.scentT=0;p.st='idle';petUpdate(0.02);const e=S.wd.scent;o.elite=!!e&&!!e.foe&&!!e.foe.affix;
+    P.x=e.foe.x+20;P.y=e.foe.y;petUpdate(0.02);o.fight=e.st==='fight';const c1=dropStats().spawned;damage(e.foe,e.foe.hp*10,'sword',0,'physical');petUpdate(0.02);
+    o.eliteLoot=dropStats().spawned>c1&&!S.wd.scent;
+    SCENT.pick={secret:0,chest:1,elite:0};S.wd.scentT=0;p.st='idle';petUpdate(0.02);const g=S.wd.scent;g.st='wait';g.t=SCENT.wait+1;p.x=g.x;p.y=g.y;P.x=g.x+300;P.y=g.y;petUpdate(0.02);o.giveUp=!S.wd.scent;
+    S.wd.scentT=0;p.st='idle';petUpdate(0.02);const j=S.wd.scent;j.st='wait';p.x=j.x;p.y=j.y;P.x=j.x+900;P.y=j.y;petUpdate(0.02);petUpdate(0.02);o.giveUp=o.giveUp&&!S.wd.scent;
+    SCENT.pick=pk;return o});
+  await page.evaluate(()=>enterVillage());
+  check(ps.start&&ps.wait&&ps.far&&ps.chest&&ps.elite&&ps.fight&&ps.eliteLoot&&ps.giveUp,
+    'החיה מריחה ומובילה: '+(ps.start?'מרחרחת':'לא מתחילה')+(ps.wait?', רצה ומחכה במקום':', לא הגיעה')+(ps.far?'':', קרוב מדי')+(ps.chest?', תיבה נותנת שלל':', תיבה בלי שלל')+
+    (ps.elite?', אויב מיוחד הופיע':', אין אויב מיוחד')+(ps.fight?', קרב':', בלי קרב')+(ps.eliteLoot?', שלל כשנפל':', בלי שלל מהאויב')+(ps.giveUp?', מוותרת אחרי המתנה':', לא מוותרת'));
   // דרגות עולם (tiers.js): סגור עד סוף הסיפור, נבחר במפה, מחזק אויבים בעולם (גם את מי שכבר שם), שלל נוסף, ודרגה 3 נפתחת אחרי הריגות
   const tr=await page.evaluate(()=>{
     const o={},st0=JSON.stringify(SAVE.story);SAVE.tier=null;SAVE.story=Object.assign({},SAVE.story,{end:false});
