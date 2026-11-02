@@ -1,0 +1,69 @@
+/* מסך נמוך: הטלפון של ניר לרוחב (בערך 760×350) ועד אייפון גדול (932×430). המבקר, 2.11.2026: חלונות הכפר הראו שורה אחת,
+   הכפתור הראשי נחתך, המסחר והביקור הסתירו כפתורים, והיומן השתמש בחצי מסך. נטען אחרון, אחרי style.css ו-bwin.css,
+   ולכן גובר עליהם בלי לשנות אותם. כלל: הכפתור הראשי תמיד נראה, ורק רשימה או רשת גוללות (docs/ui-guide.md, פרק 4) */
+
+/* ---- בכל גובה ---- */
+/* סרגל התפריט: תווית ארוכה ("Underworld Games") נשברת לשתי שורות בתוך הכפתור, ולא יוצאת ממנו */
+.mtab>span:not(.ni){white-space:normal;text-align:center;line-height:1.05;max-width:100%;overflow-wrap:break-word}
+/* הגדרות: כל בורר (3D/2D, מצלמה, צללים, אפקטים, בדיקת עדכון) בגובה 44 לפחות */
+.sndpanel .lang{min-height:44px;padding:6px 14px}
+/* יומן הקווסטים: שני טורים (.qcol ב-questLog). בטלפון עומד הם אחד מתחת לשני */
+.qcol{display:flex;flex-direction:column;gap:8px;min-width:0}
+/* ביקור: "להשאיר" ו"מסחר" בטור של החברים, מתחת לרשימה, ותמיד נראים */
+.viscol{flex:.8;display:flex;flex-direction:column;gap:8px;min-width:0;min-height:0}
+.viscol>.vislist{flex:1 1 auto;min-height:0}
+.visacts{display:flex;flex-direction:column;gap:6px;flex:none}
+.visacts .visnotes{flex-direction:column}
+.visacts .visnote,.visacts .vbtn{flex:none;margin:0;min-height:46px}
+/* מסחר: כל טור בגובה מלא. רשת המשאבים גוללת, ושורת ×1 ×5 ×10 מתחתיה, בלי לחתוך אותה */
+.trdcol{min-height:0}
+.trdcol>.trdres{flex:1 1 auto;min-height:52px;max-height:none;align-content:flex-start;padding:2px}
+.trdcol>.visamt{flex:none}
+.visn{min-width:44px}
+
+/* ---- לרוחב ונמוך (עד 440): פחות מסגרת וכותרת, יותר תוכן ---- */
+@media (orientation:landscape) and (max-height:440px){
+  /* חלונות המבנים (bwin): עולים מעל הפס העליון (הכסף כבר בכותרת בשוק ובנפחייה), מסגרת דקה */
+  #vPanel.bw{top:max(6px,env(safe-area-inset-top,0px));bottom:max(8px,env(safe-area-inset-bottom,0px));border-width:12px;border-image-width:12px;gap:4px}
+  #npcDlg.bw{border-width:12px;border-image-width:12px}
+  body.vpan:has(#vPanel.bw:not([hidden])) :is(#menuBtn,.dgift,.vhud){visibility:hidden}   /* החלון מכסה את הפינה: ☰ לא יושב על ה-✕ */
+  #vPanel.bw>.bwhd,#npcDlg.bw>.bwhd{padding:0 2px 2px 6px}
+  /* השם, הרמה ומה עושים כאן בשורה אחת. תיאור ארוך נקטע ב-… */
+  .bwhd .bwt{display:flex;align-items:baseline;gap:10px}
+  .bwhd h3{font-size:19px;white-space:nowrap;flex:none}
+  .bwhd .bwt p{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}
+  .bwch{min-height:30px}
+  .bwbody{gap:6px}
+  /* הכפתור הראשי (לשדרג, לאסוף) נדבק לתחתית הגוף: נראה גם כשיש מה לגלול */
+  .bwbody>.vbtn.vmain{position:sticky;bottom:0;z-index:1;min-height:46px}
+  /* שדרוג בשני טורים: עכשיו ← אחרי משמאל, המחיר והכפתור מימין */
+  .bwbody.bw-up:has(>.bwcmp){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"t t" "c p" "c b";column-gap:14px;row-gap:6px;align-content:start}
+  .bw-up>.bwup{grid-area:t}
+  .bw-up>.bwcmp{grid-area:c;flex-direction:column;gap:2px;align-self:start}
+  .bw-up>.bwcmp .bwarr{transform:rotate(90deg);line-height:1}
+  .bw-up>.bwpay{grid-area:p;align-items:flex-start}
+  .bw-up>.bwpay>.sk{padding-top:12px}
+  .bw-up>.vbtn,.bw-up>.bwbad{grid-area:b;align-self:start;position:static;max-width:none}
+  /* נפחייה: כרטיס יצירה נמוך יותר, האייקון ליד השם */
+  #vPanel.bw .craft>button{flex-direction:row;justify-content:center;min-height:44px;gap:6px}
+  #vPanel.bw .craft>button .ri,#vPanel.bw .craft>button img{width:28px;height:28px}
+
+  /* ביקור ומסחר: החלון בכל הגובה, מסגרת דקה */
+  .viswin.dailywin{height:calc(100dvh - 16px);max-height:none;border-width:14px;border-image-width:14px;padding:4px 10px 6px;gap:6px}
+  .viswin>.whd{min-height:44px;padding-block:0 2px}
+  .viswin>.whd h2{font-size:24px}
+  body:has(:is(#ovVisit,#ovTrade):not([hidden])) :is(#menuBtn,.dgift,.vhud){visibility:hidden}   /* ☰ לא יושב על ה-✕ */
+  .visr{width:44px;height:44px}.visr .ri{width:30px;height:30px}   /* 8 משאבים בשורה אחת, והכמות (×1 ×5 ×10) נראית בלי לגלול */
+  .trdcol h3{margin:0;font-size:15px}
+  .trdhint{font-size:11px}
+  .trdsend{min-height:46px}
+  .visf{min-height:46px}
+  .visacts .visnote,.visacts .vbtn{min-height:44px}
+
+  /* ציוד: לשוניות, מסננים ו"הכי טוב"/"מכירה" בגובה 44 (ui-guide פרק 2) */
+  #ovGear .gpages button{min-height:44px}
+  #ovGear #gTabs button{min-height:44px}
+  #ovGear #gTabs button.gf{min-width:44px}
+  #ovGear .gacts .vbtn{min-height:44px}
+  #ovGear .stplus{min-width:44px;min-height:44px}
+}
