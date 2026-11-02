@@ -86,13 +86,13 @@ const GROUND={
     if(!S||S.room)return null;
     if(S.vil){const V=GROUND.village,L=vLv('center'),r=VILLAGE.radius,lv=Object.keys(VILLAGE.b).map(vLv).join('');
       const blocks=Object.keys(VILLAGE.b).filter(vLv).map(id=>{const B=VILLAGE.b[id];return{x:B.x,y:B.y,r:B.r+18}});
-      const vk='vil:'+lv+':'+Object.keys(NPC.list).filter(npcHere).length;
+      const vk='vil:'+lv+':'+Object.keys(NPC.list).filter(npcHere).length+':'+CAM.ang;   // CAM.ang: הפיזור תלוי בזווית (camera.js)
       return{reg:'village',key:vk,sk:vk,pal:V.pal,size:{w:r*2,h:r*2},round:1,ponds:[],
         pathW:V.pathW[0]+V.pathW[1]*L,paved:L>=V.paveAt?1:0,plaza:{x:V.plaza.x,y:V.plaza.y,r:V.plaza.r[0]+V.plaza.r[1]*L},inner:V.grass,
         segs:()=>vSegs(L),shadows:vShadows,blocks}}
     if(!S.wd)return null;
     const reg=S.wd.reg||'meadow',R=WR(),alive=S.nd.list.filter(n=>!n.dead);
-    return{reg,key:reg+':'+alive.length+':'+Object.keys(wGates()).length,sk:reg+':'+S.nd.list.length,   // sk: הפיזור נבנה מחדש רק כשהמקורות עצמם מתחלפים, לא כשאחד נשבר
+    return{reg,key:reg+':'+alive.length+':'+Object.keys(wGates()).length,sk:reg+':'+S.nd.list.length+':'+CAM.ang,   // sk: הפיזור נבנה מחדש רק כשהמקורות עצמם מתחלפים, לא כשאחד נשבר
       pal:GROUND.pal[reg]||GROUND.pal.meadow,size:R.size,round:0,ponds:R.ponds||[],
       pathW:GROUND.pathW,paved:0,plaza:null,inner:0,segs:()=>segs(R),shadows:()=>shadows(R),
       blocks:(R.ponds||[]).concat(R.towers||[]).map(p=>({x:p.x,y:p.y,r:p.r+16})).concat(S.nd.list.map(n=>({x:n.x,y:n.y,r:n.r+12,sq:1})))};
