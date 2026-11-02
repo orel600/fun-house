@@ -74,7 +74,7 @@ function ageLook(n){
   return band&&{...band,k:1+AGING.grow*(n-band.at)};
 }
 // איפה הנשק על המסך, בקואורדינטות המשחק. render.js (דו-ממד) ו-render3d.js (תלת-ממד) מעדכנים כל פריים
-const AGE_FX={hand:null,trail:[],parts:[],t:0,spr:{}};
+const AGE_FX={hand:null,tip:null,trail:[],parts:[],t:0,spr:{}};
 // עיגול זוהר מוכן מראש לכל צבע, כדי שכל פריים יהיה רק drawImage אחד
 function ageSprite(col){
   if(AGE_FX.spr[col])return AGE_FX.spr[col];

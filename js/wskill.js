@@ -53,7 +53,7 @@ function wskUpdate(dt){
   for(const s of W.shots){const dx=s.tx-s.x,dy=s.ty-s.y,d=Math.hypot(dx,dy),step=WSKILL.speed*dt;
     if(d>step){s.x+=dx/d*step;s.y+=dy/d*step;continue}
     s.x=s.tx;s.y=s.ty;s.done=true;
-    S.sk.fx.push({ring:1,x:s.x,y:s.y,r:s.r,t:0,max:0.35*fluteK(),col:s.col});sparks(s.x,s.y,s.col,10,220);
+    S.sk.fx.push({ring:1,x:s.x,y:s.y,r:s.r,t:0,max:0.35*themeK(),col:s.col});sparks(s.x,s.y,s.col,10,220);
     for(const e of enemies){if(!wskIn(e,{x:s.fx,y:s.fy})||Math.hypot(e.x-s.x,e.y-s.y)-e.r>s.r)continue;
       damage(e,s.base,'skill',Math.atan2(e.y-s.y,e.x-s.x),s.dt);S.sk.wHits=(S.sk.wHits||0)+1}}
   W.shots=W.shots.filter(s=>!s.done);

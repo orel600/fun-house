@@ -36,7 +36,8 @@ function visitWhy(){
 function visitProfile(){
   const H=SAVE.hero||{},V={};for(const k in VILLAGE.b)V[k]=SAVE.village[k]||0;
   return{name:String(CLOUD.session.name).slice(0,40),level:Math.max(1,H.level||1),
-    data:{village:V,start:H.start||null,skin:H.skin||null,pet:(SAVE.pet&&SAVE.pet.kind)||PET.default,petStage:(SAVE.pet&&SAVE.pet.stage)||0}};
+    data:{village:V,start:H.start||null,skin:H.skin||null,pet:(SAVE.pet&&SAVE.pet.kind)||PET.default,petStage:(SAVE.pet&&SAVE.pet.stage)||0,
+      bag:typeof tradeBagPub==='function'?tradeBagPub():undefined}};   // bag: מה יש לי, כדי שהחבר ידע מה לבקש במסחר (trade.js)
 }
 // 404 = הטבלה עוד לא קיימת ב-Supabase: מסמנים, ולא מנסים שוב עד הפעלה הבאה
 function visitErr(e){if(/cloud 404/.test(e&&e.message))VISIT.ready=false;visitBtn();return null}
@@ -113,7 +114,7 @@ function visitDraw(){
   if(F==null)s+='<p class="dim">'+T('visit.loading')+'</p>';
   else if(!F.length)s+='<p class="dim">'+T('visit.none')+'</p>';
   else for(const x of F)s+='<button class="visf'+(f&&f.user_id===x.user_id?' on':'')+'" data-act="pick" data-id="'+vEsc(x.user_id)+'"><b>'+vEsc(x.name)+'</b><small>'+T('visit.lv',x.level|0)+'</small></button>';
-  s+='</div><div class="visside">'+(f?visitVillageHtml(f)+visitGiftHtml(f):'<p class="dim">'+T(F&&F.length?'visit.pick':'visit.how')+'</p>')+'</div></div>';
+  s+='</div><div class="visside">'+(f?visitVillageHtml(f)+visitGiftHtml(f)+(typeof tradeBtnHtml==='function'?tradeBtnHtml(f):''):'<p class="dim">'+T(F&&F.length?'visit.pick':'visit.how')+'</p>')+'</div></div>';
   $('visitWin').innerHTML=s;
 }
 // מי החבר, בכותרת: שם, דמות, רמה וחיה
@@ -145,6 +146,7 @@ function visitGiftHtml(f){
 $('visitWin').addEventListener('click',async e=>{
   const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const a=b.dataset.act;sfx('ui');
   if(a==='close')return visitClose();
+  if(a==='trade')return tradeOpen(VISIT.sel);   // מסחר (trade.js)
   if(a==='pick')VISIT.sel=(VISIT.friends||[]).find(x=>x.user_id===b.dataset.id)||null;
   if(a==='res'){VISIT.res=b.dataset.r;if(!bagHas(VISIT.res,VISIT.amt))VISIT.amt=1}
   if(a==='amt')VISIT.amt=+b.dataset.n;
@@ -161,6 +163,7 @@ function visitVillage(){
   if(visitWhy())return;
   visitPublish();
   setTimeout(()=>{if(S&&S.vil)visitInbox()},VISIT.inboxDelay*1000);
+  if(typeof tradeVillage==='function')tradeVillage();   // הצעות מסחר (trade.js)
 }
 function visitCloud(){visitBtn();if(!visitWhy())visitPublish()}
 

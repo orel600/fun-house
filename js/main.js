@@ -15,7 +15,7 @@ function frame(now){
   render();hud();if(S&&S.mb)mobaHud();requestAnimationFrame(frame);
 }
 // כל הטקסט שעל המסך מחדש, בשפה הנוכחית: בהפעלה ובכל החלפת שפה
-function showLang(){applyLang();showGfx();updateSwapBtn();$('bestLine').textContent=best>0?T('best',fmt(best)):'';$('verLine').textContent='v'+VERSION;if(typeof updShow==='function')updShow()}
+function showLang(){applyLang();showGfx();updateSwapBtn();$('verLine').textContent='v'+VERSION;if(typeof updShow==='function')updShow()}
 function boot(){
   reset();
   showLang();

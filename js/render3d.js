@@ -90,6 +90,10 @@ const LOOK3D={
   npc_fisher:{model:'ranger',h:58,foot:13,tint:'#3F7BF5',own:false,anim:{...NPC_ANIM,idle:'Idle_B'}},
   npc_cutter:{model:'barbarian',h:62,foot:14,tint:'#A8784A',own:false,props:{hammer:{prop:'w_hammer_A',...HAND_R}},anim:NPC_ANIM},
   npc_herbal:{model:'mage',h:60,foot:13,tint:'#5FA35A',anim:NPC_ANIM},
+  // אותן דמויות אחרי שעברו לגור בכפר (RESID ב-residents.js)
+  npc_vfisher:{model:'ranger',h:58,foot:13,tint:'#3F7BF5',own:false,anim:{...NPC_ANIM,idle:'Idle_B'}},
+  npc_vcutter:{model:'barbarian',h:62,foot:14,tint:'#A8784A',own:false,props:{hammer:{prop:'w_hammer_A',...HAND_R}},anim:{...NPC_ANIM,work:'Hammering'}},
+  npc_vherbal:{model:'mage',h:60,foot:13,tint:'#5FA35A',anim:NPC_ANIM},
   // תושבים שחוזרים כשפנס נדלק (HOME ב-homecoming.js)
   npc_gardener:{model:'barbarian',h:56,foot:13,tint:'#8BC34A',own:false,anim:{...NPC_ANIM,idle:'Idle_B'}},
   npc_washer:{model:'rogue',h:58,foot:13,tint:'#3F7BF5',own:false,anim:NPC_ANIM},
@@ -116,9 +120,48 @@ const GRIP3D={
   of:m=>/^w_bow/.test(m)?'bow':/^w_(staff|wand)/.test(m)?'magic':/^w_(axe|hammer)/.test(m)?'chop':'blade',
   spare:{sword:'w_sword_A',gun:'w_bow_A_withString'}   // רק כשלפריט אין מודל
 };
+/* ציוד שרואים על הגיבור בעולם, בכפר ובבובה (docs/plan-progression.md בענף research/progression, PR #168). דלוק לכולם. ?gear3d=0 מכבה.
+   ההחלטות של ניר (1.11): זוהר עדין (רק נדיר ומעלה זוהר, ורק אגדי פועם), נשק ומגן קצת יותר גדולים מהמציאות, וכל פריט משנה את המראה בעדינות.
+   glow: כמה חזק הנשק, המגן והחלקים זוהרים בצבע הדרגה (GEAR.tiers), לפי tier 0 עד 4. pulse: כמה אגדי פועם, ו-rate כמה מהר.
+   wscale: גודל הנשק ביד ביחס למודל המקורי.
+   shield: מגן ביד השנייה כשהנשק מקרוב ביד אחת (חרב, גרזן, פטיש). אין עדיין משבצת מגן ב-gear.js, אז בפיילוט המגן לוקח את הנדירות
+     של התכשיט הכי טוב שלבוש. המודל לפי הנדירות (Fantasy Weapons Bits), והחומר wtex כמו בנשק.
+   boots: הרגליים בצבע הנדירות של הנעליים (tint: כמה). head: הקסדה או הכובע זוהרים מנדירות 2 (נדיר) של התכשיט הכי טוב.
+   set: סט פעיל (sets.js) צובע את כל החלקים בצבע הסט, מראה אחיד. keep: החלקים שנשארים נפרדים במודל כדי לצבוע אותם */
+const GEAR3D={on:!/[?&]gear3d=0/.test(location.search),
+  glow:[0,0,0.22,0.38,0.55],pulse:0.45,rate:3,wscale:1.2,
+  shield:{model:['w_shield_A','w_shield_A','w_shield_B','w_shield_C','w_shield_C'],bone:'handslotl',pos:[0,0.02,0.05],rot:[0,0,0,1],s:0.78,metal:['wood','iron','silver','gold','legend']},
+  boots:{tint:0.45},head:{from:2},set:0.28,
+  keep:['LegLeft','LegRight','Helmet','Hat','Quiver']
+};
+const g3Rar=t=>GEAR.tiers[Math.min(t,GEAR.tiers.length-1)].col;   // הצבע של המתכת (עץ, ברזל, כסף, זהב, אגדי), כדי שהזוהר יתאים לחומר
+// מוסיף ל-L (heroLook) את מה שהציוד מצייר: זוהר לנשק, מגן, וצבעים לחלקים (gear3dParts)
+function gear3dLook(L,wid){
+  const it=gItem(wid),worn=gearWorn().map(gItem),best=s=>Math.max(-1,...worn.filter(x=>x.slot===s).map(x=>x.tier));
+  for(const w of ['sword','gun']){const p=L.props[w];p.s=GEAR3D.wscale;if(it&&wUse(wid)===w&&GEAR3D.glow[it.tier]>0){p.glow=g3Rar(it.tier);p.gk=GEAR3D.glow[it.tier];p.pulse=it.tier>=4}}
+  const fam=it&&wUse(wid)==='sword'&&GRIP3D.of(L.props.sword.prop);
+  if(fam==='blade'||fam==='chop'){const t=Math.max(0,best('acc')),G=GEAR3D.shield;
+    L.props.shield={prop:G.model[t],tier:G.metal[t],bone:G.bone,pos:G.pos,rot:G.rot,s:G.s,glow:GEAR3D.glow[t]>0?g3Rar(t):null,gk:GEAR3D.glow[t],pulse:t>=4}}
+  const b=best('boots'),h=best('acc'),set=Object.keys(SETS).find(s=>setTiers(gearWorn()).some(x=>x.startsWith(s)));
+  L.g3={boots:b>=0?g3Rar(b):null,bk:b>=0?GEAR3D.glow[b]:0,head:h>=GEAR3D.head.from?g3Rar(h):null,hk:h>=0?GEAR3D.glow[h]*0.7:0,hp:h>=4,set:set?SETS[set].col:null};
+}
+// צובע את החלקים של הדמות לפי L.g3. פעם אחת לכל דמות ולכל שינוי בציוד
+function gear3dParts(a,L){
+  const g=L.g3;if(!g||a.g3===L.ck)return;a.g3=L.ck;
+  a.rk=null;rankArmor3d(a);   // מתחילים נקי: השריון של הדרגה כמו שהוא, והחלקים של הציוד בלי צבע
+  a.root.traverse(o=>{if(!o.isMesh)return;const p=armorPart(o,GEAR3D.keep.concat(ARMOR3D));if(!p)return;
+    let col=null,k=0;if(GEAR3D.keep.includes(p)){if(a.pulse)a.pulse=a.pulse.filter(m=>m!==o.material);o.material.color.set(0xffffff);o.material.emissive.set(0);o.material.userData.em=o.material.emissive.clone()}
+    if(/^Leg/.test(p)&&g.boots){o.material.color.set(0xffffff).lerp(new THREE.Color(g.boots),GEAR3D.boots.tint);col=g.boots;k=g.bk}
+    if(/^(Helmet|Hat)$/.test(p)&&g.head){col=g.head;k=g.hk;if(g.hp&&!(a.pulse||[]).includes(o.material))(a.pulse||(a.pulse=[])).push(o.material)}
+    if(g.set){col=g.set;k=GEAR3D.set}
+    if(col){const em=new THREE.Color(col).multiplyScalar(k);o.material.emissive.copy(em);o.material.userData.em=em}});
+}
 /* קהל: כשיש הרבה אויבים על המסך, רק הקרובים לשחקן מקבלים דמות מונפשת. כל השאר מצוירים יחד בתנוחת ריצה קפואה
    שמתחלפת בין שני צעדים: כמה ציורים בפריים במקום מאות. בטלפון זה ההבדל בין משחק שזורם למשחק שנתקע.
    full: כמה דמויות מונפשות לכל היותר. poses: באיזה רגע של אנימציית הריצה מצלמים כל צעד. dying: כמה אנימציות מוות יחד. max: כמה בקהל */
+/* קהל: מעבר ל-full האויבים הקרובים, השאר מצוירים כצורה קבועה בכמה תנוחות, ציור אחד לכל סוג. types: נאפים בהתחלה.
+   כל סוג אחר נאפה בפעם הראשונה שצריך אותו (crowdOf). קודם רק שלושת אלה היו בקהל, וכל אויב מסוג אחר צויר לבד: בשלבים מאוחרים
+   (מומיות, טובעים, אבירי כפור) זה עשה עשרות ציורים בכל פריים (סקירת הזירה, 1.11.2026) */
 const CROWD={full:30,poses:[0.25,0.75],dying:16,max:320,types:['grunt','shield','wisp']};
 const PILOT3D=/[?&]hero=pilot/.test(location.search);
 /* הכפר: המיקומים והמראה לפי רמה ב-VILLAGE (js/village.js). כאן רק איזה קובץ מודל לכל שם, ובאיזה רוחב על המסך בפיקסלים.
@@ -241,7 +284,7 @@ async function init3d(){
       const t=new THREE.Texture(img);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;R3D.wtex[k.slice(5)]=t}
     for(const k in MODELS3D)if(k.startsWith('v_')||k.startsWith('n_')){const g=await parseGLB(k);lambert(g.scene);g.scene.traverse(o=>{o.frustumCulled=true});R3D.props[k]=g.scene}   // מבני הכפר
     const heroModels=new Set(Object.keys(LOOK3D).filter(k=>k==='player'||k.startsWith('hero_')).map(k=>LOOK3D[k].model));
-    for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t,heroModels.has(k)&&ARMOR3D);lambert(t);t.updateMatrixWorld(true);
+    for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t,heroModels.has(k)&&(GEAR3D.on?ARMOR3D.concat(GEAR3D.keep):ARMOR3D));lambert(t);t.updateMatrixWorld(true);
       // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
       const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=bb.max.y-bb.min.y||2}
     bakeCrowd();
@@ -277,10 +320,14 @@ function mark(kind,x,z,r){const M=R3D.marks[kind];if(M.count>=M.instanceMatrix.c
 
 /* ---- קהל ---- */
 // מצלמים כל סוג אויב בכמה תנוחות ריצה, והופכים כל תנוחה לצורה קבועה שאפשר לצייר מאות פעמים בציור אחד
-function bakeCrowd(){
-  R3D.crowd={};const v=new THREE.Vector3();
-  for(const k of CROWD.types){
-    const L=LOOK3D[k],a=makeActor(L),clip=R3D.clips[L.anim.run];a.mixer.clipAction(clip).play();
+function bakeCrowd(){R3D.crowd={};for(const k of CROWD.types)crowdOf(k)}
+// הקהל של סוג אחד: נאפה בפעם הראשונה (כמה מילישניות), ואחר כך מהזיכרון. null: לסוג הזה אין מודל עם ריצה, והוא מצויר לבד
+function crowdOf(k){
+  if(k in R3D.crowd)return R3D.crowd[k];
+  const L=LOOK3D[k],clip=L&&L.model&&L.anim&&R3D.clips[L.anim.run];if(!clip||!R3D.tmpl[L.model])return R3D.crowd[k]=null;
+  const v=new THREE.Vector3();
+  {
+    const a=makeActor(L);a.mixer.clipAction(clip).play();
     R3D.crowd[k]=CROWD.poses.map(f=>{
       a.mixer.setTime(f*clip.duration);a.root.position.set(0,0,0);a.root.rotation.set(0,0,0);a.root.updateMatrixWorld(true);
       const parts=[];
@@ -293,6 +340,7 @@ function bakeCrowd(){
       return parts});
     freeActor(a);
   }
+  return R3D.crowd[k];
 }
 function crowdAdd(e){
   const L=lookOf(e),k=e.big||1,lift=L.float?L.float+Math.sin(e.ph*0.6)*3:0,M=R3D._mx;
@@ -309,7 +357,7 @@ const SIN=()=>Math.sin(camTilt()),COS=()=>Math.cos(camTilt());   // הזווית
 const COSB=()=>Math.cos(VIEW.baseTilt*Math.PI/180);   // לגודל הדמויות: קבוע בכל מקום, כדי שדמות שנבנתה בכפר תתאים גם בעולם
 // השחקן: הדמות שנבחרה, ובידיים הנשק שלבוש (GRIP3D). נבנה מחדש רק כשהדמות או הנשק מתחלפים
 function heroLook(){
-  const wid=SAVE.gear.weapon,sk=heroSkin(),ck=heroId()+'|'+wid+'|'+PILOT3D+'|'+sk;if(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
+  const wid=SAVE.gear.weapon,sk=heroSkin(),ck=heroId()+'|'+wid+'|'+PILOT3D+'|'+sk+(GEAR3D.on?'|'+gearWorn().join():'');if(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
   const L=Object.assign({},LOOK3D.player,sk?LOOK3D[HEROES.skins[sk].look]:PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()]),it=gItem(wid);
   L.props={};L.anim=Object.assign({},L.anim);L.ck=ck;
   for(const w of ['sword','gun']){
@@ -317,12 +365,13 @@ function heroLook(){
     L.props[w]=Object.assign({prop:model,tier:mine?GEAR.tiers[it.tier].id:'wood'},g);
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
-  if(fluteOn())fluteGrip(L);   // הנודד עם החליל: חליל ביד במקום הנשק (flute.js)
+  if(GEAR3D.on)gear3dLook(L,wid);
+  {const th=heroTheme();if(th&&th.grip){delete L.props.shield;th.grip(L)}}   // דמות אישית: חפץ ביד במקום הנשק, ובלי מגן ביד השנייה (החליל ב-flute.js)
   return R3D._hl=L;
 }
 function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
 // מפתח למאגר: רק דמות זהה (מודל, חפצים, צבע, גודל, נשק מוסתר) חוזרת לשימוש. יצורי משאבים הם מודל קיים בצבע ובגודל אחר
-const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')).join()+(L.tint?'|'+L.tint:'')+'|'+L.h+(L.own===false?'|x':'');
+const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')+(p.glow||'')).join()+(L.tint?'|'+L.tint:'')+'|'+L.h+(L.own===false?'|x':'');
 const TINT={ember:C.ember,tide:C.tide,gold:C.gold,...Object.fromEntries(Object.keys(DMG.types).map(k=>[k,DMG.types[k].col])),lilac:C.lilac};   // צבע לכל סוג נזק, ושמות הצבעים של המשחק
 const tintOf=t=>TINT[t]||t;   // שם מ-TINT, או צבע ישיר ('#8A8F9C')
 function makeActor(L){
@@ -332,16 +381,16 @@ function makeActor(L){
   root.scale.setScalar(s);
   const mats=[];
   root.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(L.tint)o.material.emissive.set(tintOf(L.tint)).multiplyScalar(L.tint[0]==='#'?0.45:0.18);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
-  const props={};
+  const props={};let a_pulse=null;   // a_pulse: חלקים של פריט אגדי, שפועמים (GEAR3D)
   for(const [k,p] of Object.entries(L.props||{})){
     const b=bone(root,p.bone);if(!b)continue;
-    const m=R3D.props[p.prop].clone(true);m.position.fromArray(p.pos);m.quaternion.fromArray(p.rot);
-    m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(p.tier&&R3D.wtex[p.tier])o.material.map=R3D.wtex[p.tier];if(p.tint)o.material.emissive.set(TINT[p.tint]).multiplyScalar(0.55);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
+    const m=R3D.props[p.prop].clone(true);m.position.fromArray(p.pos);m.quaternion.fromArray(p.rot);if(p.s)m.scale.setScalar(p.s);
+    m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(p.tier&&R3D.wtex[p.tier])o.material.map=R3D.wtex[p.tier];if(p.tint)o.material.emissive.set(TINT[p.tint]).multiplyScalar(0.55);if(p.glow)o.material.emissive.set(p.glow).multiplyScalar(p.gk);if(p.pulse)(a_pulse||(a_pulse=[])).push(o.material);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
     b.add(m);props[k]=m;
   }
   // נשקים שהדמות מחזיקה בקובץ המקורי: גרזן לבוס, סכין למבוקש
   let own=null;root.traverse(o=>{if(o.isMesh&&!o.isSkinnedMesh&&/^(1H|2H)_|Knife/.test(o.name))own=own||o});
-  const a={root,mats,props,own,mixer:new THREE.AnimationMixer(root),L,key:lookKey(L),base:null,one:null,flash:0,dieT:0};
+  const a={root,mats,props,own,mixer:new THREE.AnimationMixer(root),L,key:lookKey(L),base:null,one:null,flash:0,dieT:0,pulse:a_pulse};
   R3D.scene.add(root);return a;
 }
 function freeActor(a){a.root.visible=false;a.mixer.stopAllAction();const p=R3D.pool;(p[a.key]||(p[a.key]=[])).push(a)}
@@ -384,8 +433,9 @@ function syncPlayer(dt){
   const L=heroLook();
   let a=R3D.player;if(!a||a.key!==lookKey(L)){if(a)freeActor(a);a=R3D.player=makeActor(L)}   // דמות או נשק חדשים: מודל חדש
   rankArmor3d(a);   // אחרי עלייה בדרגה: החלקים מופיעים מיד
+  if(GEAR3D.on)gear3dParts(a,L);
   const sword=P.weapon==='sword';
-  for(const k in a.props)a.props[k].visible=(k==='sword')===sword;
+  for(const k in a.props)a.props[k].visible=k==='shield'?sword:(k==='sword')===sword;
   const st=a.st||(a.st={anim:0,gt:0,inv:0,mode:''});
   if(S.mode==='over'){if(st.mode!=='over'){st.mode='over';a.base=null;a.mixer.stopAllAction();once(a,S.won?L.anim.win:L.anim.die,1.2,true)}}
   else{
@@ -409,9 +459,13 @@ function syncPlayer(dt){
   place(a,P.x,P.y,L.foot,null);a.root.rotation.y=yawOf(Math.cos(P.face),Math.sin(P.face));
   a.root.visible=!(P.inv>0&&Math.floor(P.inv*20)%2===0)||RM;
   setFlash(a,P.inv>0.45?0.5:P.swapBuff>0?0.25:0,P.inv>0.45?C.blood:C.gold);
+  if(a.pulse&&!(P.inv>0.45||P.swapBuff>0)){const k=1+GEAR3D.pulse*Math.sin(performance.now()/1000*GEAR3D.rate);for(const m of a.pulse)m.emissive.copy(m.userData.em).multiplyScalar(k)}   // אגדי פועם (GEAR3D)
   a.mixer.update(dt);
   // איפה הנשק על המסך, בשביל הזוהר של Aging שמצויר בקנבס (aging.js). מהעולם חזרה לקואורדינטות המשחק
   const w=a.props[sword?'sword':'gun'];if(w){const v=w.getWorldPosition(R3D._v||(R3D._v=new THREE.Vector3()));AGE_FX.hand={x:v.x,y:v.z*SIN()-v.y*COS()}}
+  // קצה הלהב (הברק של הסקיל יוצא ממנו, skills.js): הלהב לאורך y המקומי של הנשק, עד הגובה של הצורה שלו
+  if(w&&sword){const len=w.userData.tip??(w.userData.tip=(()=>{let m=0;w.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();m=Math.max(m,o.geometry.boundingBox.max.y)}});return m})());
+    const t=w.localToWorld((R3D._v2||(R3D._v2=new THREE.Vector3())).set(0,len,0));AGE_FX.tip={x:t.x,y:t.z*SIN()-t.y*COS()}}else AGE_FX.tip=null;
   mark('shadow',a.root.position.x,a.root.position.z,16);
 }
 function syncEnemy(e,dt){
@@ -551,6 +605,7 @@ function syncWorld(){
 // תושבי הכפר: דמות לכל תושב שנמצא בכפר, והקישוטים בפינה של מי שאין לו מבנה. המצב (הולך, עובד, מנופף) מגיע מ-npc.js
 function syncNpcs(dt){
   const all=npcState(),A=R3D.npcs||(R3D.npcs={}),V=R3D.vil;
+  resSync3d();   // הבתים של מי שעברה מהעולם (residents.js)
   if(!V.npcDeco){V.npcDeco=1;for(const id in NPC.list){const sp=NPC.list[id].spot;if(sp)sp.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length];vPut(VIL3D.deco[d].model,sp.x+dx*40,sp.y+dy*40,VIL3D.deco[d].w)})}}
   for(const id in NPC.list){
     const L=LOOK3D['npc_'+id],n=all[id];let a=A[id];
@@ -604,7 +659,7 @@ function render3d(ox,oy){
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
   R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?(W3D.regions[S.wd.reg]||{}).bg||VIEW.world:VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?(W3D.regions[S.wd.reg]||{}).line||VIEW.worldLine:VIEW.groundLine);
   for(const k in R3D.marks)R3D.marks[k].count=0;
-  for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)m.count=0;
+  for(const k in R3D.crowd)if(R3D.crowd[k])for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;
   if(R3D.vil)R3D.vil.g.visible=false;
   for(const k in R3D.wlds||{})R3D.wlds[k].g.visible=false;
@@ -616,7 +671,7 @@ function render3d(ox,oy){
     // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
     const vis=enemies.filter(e=>!e.dead&&(e.isBoss||onScreen(e.x+ox,e.y+oy)));
     if(vis.length>CROWD.full){const pr=e=>e.isBoss||e.wanted||e.elite?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}
-    vis.forEach((e,i)=>i<CROWD.full||!R3D.crowd[e.type]?syncEnemy(e,dt):crowdAdd(e));
+    vis.forEach((e,i)=>i<CROWD.full||e.isBoss||!crowdOf(e.type)?syncEnemy(e,dt):crowdAdd(e));
     R3D.nDying=0;for(const a of R3D.actors.values())if(a.dieT>0.05)R3D.nDying++;
     for(const [e,a] of R3D.actors)if(a.seen!==R3D.frame||e.dead)retire(e,a,dt);
   }else{ // בחדר הבונוס אין אויבים, רק השחקן
@@ -625,7 +680,7 @@ function render3d(ox,oy){
   // שולחים לכרטיס הגרפי רק את החלק שבשימוש: שליחה של הכל בכל פריים תוקעת את הציור
   const up=m=>{if(!m.count)return;const b=m.instanceMatrix;b.clearUpdateRanges();b.addUpdateRange(0,m.count*16);b.needsUpdate=true};
   for(const k in R3D.marks)up(R3D.marks[k]);
-  for(const k in R3D.crowd)for(const p of R3D.crowd[k])for(const m of p)up(m);
+  for(const k in R3D.crowd)if(R3D.crowd[k])for(const p of R3D.crowd[k])for(const m of p){up(m);m.visible=m.count>0}   // ריק: בלי ציור בכלל
   if(!skip){r.render(R3D.scene,c);gfxMeasure(now)}
   const i=r.info.render;R3D.stats={calls:i.calls,tris:i.triangles,actors:R3D.actors.size+1,crowd:R3D.nCrowd};
 }
