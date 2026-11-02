@@ -1,6 +1,6 @@
 /* מראה: שיפור ויזואלי בכפר ובעולם (ניר, 1.11.2026, "עולם חי בשלבים"). התוכנית, השלבים והצילומים ב-docs/visual-plan.md.
    שלב 1 דלוק לכולם: תאורה, קרקע מצוירת ואובך (STAGE). רק בכפר ובעולם הפתוח, ורק בתלת-ממד.
-   בזירה (של אוראל) ובחדר הבונוס הכל חוזר למקור. אוראל רוצה גם בזירה? מרחיבים את התנאי want בסוף הקובץ.
+   בזירה (של אוראל) גם: התאורה והאובך מכאן, והרצפה מ-arena-look.js (אוראל, 2.11.2026). בחדר הבונוס הכל חוזר למקור.
    לא נוגע ב-render3d.js: עוטף את render3d ואת makeActor/vPut מבחוץ, כמו perf.js.
    בכתובת: ?look=classic מכבה הכל (כמו לפני). ?look=hd מוסיף את מה שעוד בניסוי (צללים). ?hd=light,ground בוחר בדיוק מה דולק.
    - light:  תאורה חמה של שמש ושמיים, ומיפוי צבעים של קולנוע (tone mapping). כמעט חינם
@@ -138,9 +138,9 @@ showShadow();
   }
   const base=window.render3d;
   window.render3d=function(...a){
-    if(R3D.on&&R3D.ready){if(!ready)setup();const want=!!(S&&(S.vil||S.wd)&&!S.room);if(want!==here)apply(want);if(vig)vig.hidden=!here;
-      if(here&&groundMat)R3D.ground.material=(typeof GROUND!=='undefined'&&GROUND.mat())||groundMat;   // בעולם: המפה המצוירת (ground.js). בכפר: הקרקע של שלב 1
-      if(here&&HD.has('shadow')){shade(HD.shadowOn());if(sun.castShadow)measure(performance.now())}}   // צללים: לפי ההגדרה, ומדידה אחת בפתיחה
+    if(R3D.on&&R3D.ready){if(!ready)setup();const want=!!(S&&(S.vil||S.wd||(typeof aLookHere==='function'&&aLookHere()))&&!S.room);if(want!==here)apply(want);if(vig)vig.hidden=!here;   // aLookHere: הזירה (arena-look.js)
+      if(here&&groundMat)R3D.ground.material=(typeof aLookMat==='function'&&aLookMat())||(typeof GROUND!=='undefined'&&GROUND.mat())||groundMat;   // בעולם: המפה המצוירת (ground.js). בכפר: הקרקע של שלב 1
+      if(here&&HD.has('shadow')){shade(HD.shadowOn()&&(typeof aLookShadow!=='function'||aLookShadow()));if(sun.castShadow)measure(performance.now())}}   // צללים: לפי ההגדרה, ומדידה אחת בפתיחה
     else if(vig)vig.hidden=true;
     return base.apply(this,a);
   };

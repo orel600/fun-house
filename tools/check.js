@@ -2176,6 +2176,29 @@ function worldBot(m,L,god){
     setShadow(false);draw();o.off=!sun.castShadow;setShadow(true);draw();o.back=sun.castShadow;
     HD.sh.user=u;try{if(u)localStorage.setItem(HD.shadow.key,u);else localStorage.removeItem(HD.shadow.key)}catch(e){}R3D.drawEvery=de;return o});
     check(sd.skip||(sd.on&&sd.hero&&!sd.trees&&sd.off&&sd.back&&!sd.err),'צללים: '+(sd.skip?'אין תלת-ממד':(sd.on?'דלוקים בעולם':'לא דלוקים')+(sd.hero?', הגיבור מטיל צל':', הגיבור בלי צל')+(sd.trees?', '+sd.trees+' מקורות מטילים צל (רק דמויות ומבנים)':', עצים וסלעים בלי')+(sd.off&&sd.back?', המתג מכבה ומדליק':', המתג לא עובד')+(sd.err?', שגיאה: '+sd.err:'')))}
+  // מראה הזירה (arena-look.js): בתלת-ממד הזירה מקבלת את הרצפה, התאורה והאובך של העולם, החותמות והרונות מגיבות, והציור לא כבד בהרבה מהמראה הישן
+  if(CFG.gfx==='3d'){
+    const al=await page.evaluate(()=>{
+      if(!R3D.on||!R3D.ready||typeof ALOOK==='undefined')return {skip:true};
+      const o={},de=R3D.drawEvery;R3D.drawEvery=0;reset();S.mode='play';enemies.length=0;
+      const draw=()=>{S.cam.x=P.x;S.cam.y=P.y;render()};
+      try{draw();draw();o.here=aLookHere();o.mat=R3D.ground.material===ALOOK.mat;o.fog=!!R3D.scene.fog;
+        S.hits={fire:50,ice:5};for(let i=0;i<20;i++){S.t+=0.1;draw()}o.sig=ALOOK.lit.fire>ALOOK.lit.ice+0.3;
+        S.run.log.push({kind:'swarm',t:S.t});S.t+=0.05;draw();o.pulse=ALOOK.pulse>0.9;
+        const b=makeBoss();b.x=P.x+150;b.y=P.y;S.boss=b;enemies.push(b);for(let i=0;i<8;i++){S.t+=0.1;draw()}o.beam=ALOOK.beam.visible;
+        S.boss=null;enemies.length=0;for(let i=0;i<150;i++){const a=i*2.4,d=60+(i*37)%400;addEnemy('grunt',P.x+Math.cos(a)*d,P.y+Math.sin(a)*d*0.6)}draw();
+        o.noShadow=!R3D.scene.children.find(x=>x.isDirectionalLight).castShadow;
+        S.room=true;o.room=!aLookHere();S.room=null;window.__alDraw=draw}catch(e){o.err=String(e)}
+      R3D.drawEvery=de;return o});
+    // זמן לציור עם 150 אויבים: המראה החדש מול הישן (ARENA_LOOK.on=false), יחסי, כי אין כרטיס גרפי
+    if(!al.skip&&!al.err){const t={};
+      for(const on of [false,true,false,true]){await page.evaluate(on=>{ARENA_LOOK.on=on;R3D.drawEvery=0;__alDraw();__alDraw()},on);
+        const t0=Date.now();await page.evaluate(()=>{for(let i=0;i<8;i++){__alDraw();R3D.r.getContext().finish()}});t[on]=Math.min(t[on]??1e9,(Date.now()-t0)/8)}
+      await page.evaluate(()=>{ARENA_LOOK.on=true;R3D.drawEvery=60;enemies.length=0});al.ms=t;al.ratio=t[true]/Math.max(0.5,t[false])}
+    check(al.skip||(al.here&&al.mat&&al.fog&&al.sig&&al.pulse&&al.beam&&al.noShadow&&al.room&&!al.err&&al.ratio<2),'מראה הזירה: '+(al.skip?'אין תלת-ממד':al.err?'שגיאה: '+al.err:
+      (al.here&&al.mat?'רצפת אבן':'הרצפה הישנה')+(al.fog?', אובך':', בלי אובך')+(al.sig?', חותמת האש דולקת':', החותמות לא מגיבות')+(al.pulse?', רונות פועמות בגל ענק':', בלי פעימה')+(al.beam?', עמוד אור לבוס':', בלי עמוד אור')+
+      (al.noShadow?'':', צללים עם 150 אויבים')+(al.room?'':', דולק בחדר הבונוס')+', ציור עם 150 אויבים '+al.ms[false].toFixed(1)+'→'+al.ms[true].toFixed(1)+'ms (פי '+al.ratio.toFixed(2)+')'));
+  }
   // מסלול רמות (levelpath.js): מה נפתח בכל רמה נגזר מהטבלאות, "הבא" בחלון הדמות, ובעליית רמה הבזק וכרטיס עם מה שנפתח ומה הבא
   const lp=await page.evaluate(()=>{
     enterWorld('home');const o={};
