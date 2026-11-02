@@ -122,6 +122,7 @@ function forgeDraw(){
   $('fLevel').textContent=AUI.tab==='age'?T('age.cap',ageCap()):'';
   $('fRes').innerHTML=bagLine(SAVE.bag,AUI.tab==='fuse'?fuseRes():resShown('forge'));   // מתכות ואבנים שיש (RES.show). בהתכה: רק מה שהיא צריכה (fuse.js)
   $('fTabs').innerHTML=['age','pow','fuse'].map(t=>'<button data-tab="'+t+'"'+(AUI.tab===t?' aria-pressed="true"':'')+'>'+T('forge.tab.'+t)+'</button>').join('');
+  itemTip($('fDetail'));   // הבועה (itemtip.js) רק בלשונית השדרוג
   if(AUI.tab==='pow'){powDraw();return}   // כוחות: powers.js
   if(AUI.tab==='fuse'){fuseDraw();return}   // התכה: fuse.js
   $('fItems').innerHTML=forgeItemsHtml(AGING.slots)||'<p class="dim">'+T('age.noItems')+'</p>';
@@ -129,19 +130,20 @@ function forgeDraw(){
   const id=aSelId();let d='<p class="dim">'+T('age.hint')+'</p>';
   if(gItem(id)){
     const n=gPlus(id),why=ageBlock(id),gems=SAVE.bag[AGING.gem]||0;
-    d='<h3 style="color:'+gTint(id)+'">'+gIcon(id)+' '+gName(id)+'</h3>';
-    if(why==='max')d+='<p>'+T('age.max')+'</p>';
+    d='<div class="gdbody"><h3 style="color:'+gTint(id)+'">'+gIcon(id)+' '+gName(id)+'</h3>';
+    if(why==='max')d+='<p>'+T('age.max')+'</p></div>';
     else{
       const o=ageOdds(n),nx=ageId(id,n+1);
       d+='<p class="dim">'+T('age.to',gName(nx))+'</p>'+gCompare(nx,id);
       d+='<p class="odds">'+T('age.odds',aPct(o.total))+'</p><p class="dim">'+T('age.oddsWhy',aPct(o.base),aPct(o.forge),aPct(o.luck))+'</p>';
       d+='<div class="cost">'+costLine(ageCost(id))+'</div>';
       d+='<p class="dim">'+(n===0?T('age.failZero'):AUI.gem&&gems?T('age.failSafe'):T('age.fail',gName(ageId(id,n-AGING.drop))))+'</p>';
-      if(n>0)d+='<button class="vbtn ghost" data-act="gem" aria-pressed="'+(AUI.gem&&gems>0)+'"'+(gems?'':' disabled')+'>'+T('age.gem',gems)+'</button>';
-      d+='<button class="vbtn" data-act="age"'+(why?' disabled':'')+'>'+(why==='forge'?T('age.needForge'):why==='cost'?T('age.needCost'):T('age.go',n+1))+'</button>';
+      const gb='<button class="vbtn ghost" data-act="gem" aria-pressed="'+(AUI.gem&&gems>0)+'"'+(gems?'':' disabled')+'>'+T('age.gem',gems)+'</button>';
+      d+='</div><div class="gbtns">'+(n>0?gb:'')+'<button class="vbtn" data-act="age"'+(why?' disabled':'')+'>'+(why==='forge'?T('age.needForge'):why==='cost'?T('age.needCost'):T('age.go',n+1))+'</button></div>';
     }
   }
   $('fDetail').innerHTML=d;
+  itemTip($('fDetail'),gItem(id)&&$('fItems').querySelector('[aria-pressed="true"]'));   // הפרטים בבועה ליד הפריט (itemtip.js)
 }
 // הצלחה: חגיגה גדולה על הדמות. כישלון: אפקט עצוב משלו, רעידה קטנה, והפריט יורד (או נשמר באבן חן)
 function forgeResult(r){
@@ -149,13 +151,14 @@ function forgeResult(r){
   else{celebrate(P.x,P.y-20,'agingFail',r.saved?'💎':'-'+AGING.drop);S.shake=Math.max(S.shake,5);banner(r.saved?T('age.saved'):T('age.failed',gName(r.id)),C.dim)}
 }
 $('ovForge').addEventListener('click',e=>{
-  const b=e.target.closest('button');if(!b||b.disabled)return;
+  const b=e.target.closest('button');
+  if(!b){if(AUI.tab==='age'&&AUI.sel&&!e.target.closest('#fDetail')){AUI.sel=null;forgeDraw()}return}   // נגיעה מחוץ לבועה: נסגרת
+  if(b.disabled)return;
   if(b.id==='forgeClose'){forgeClose();return}
   if(b.dataset.tab){AUI.tab=b.dataset.tab;AUI.sel=null}
   else if(AUI.tab==='pow'&&powClick(b));   // כוחות (powers.js)
   else if(AUI.tab==='fuse'&&fuseClick(b));   // התכה (fuse.js)
-  else if(b.dataset.id)AUI.sel={id:b.dataset.id};
-  else if(b.dataset.slot)AUI.sel={slot:b.dataset.slot,i:+b.dataset.i};
+  else if(b.dataset.id||b.dataset.slot)AUI.sel=b.getAttribute('aria-pressed')==='true'?null:b.dataset.id?{id:b.dataset.id}:{slot:b.dataset.slot,i:+b.dataset.i};   // נגיעה שנייה: הבועה נסגרת
   else if(b.dataset.act==='gem')AUI.gem=!AUI.gem;
   else if(b.dataset.act==='age'){
     const r=ageTry(AUI.sel,AUI.gem&&gPlus(aSelId())>0);

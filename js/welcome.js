@@ -1,4 +1,7 @@
-/* "בזמן שלא היית" (ניר, 1.11.2026): בחזרה לכפר, ובפתיחת המשחק, חלון אחד שמסכם כל מה שמחכה, ולחיצה אחת אוספת הכל.
+/* "בזמן שלא היית" (ניר, 1.11.2026): כל מה שמחכה בכפר, ולחיצה אחת אוספת הכל.
+   ניר, 2.11: "לבטל את איסוף המשאבים כשחוזרים לכפר, זה מעצבן. אולי פשוט כפתור קטן בצד שלוחצים וזה אוסף, וזהו."
+   לכן בכניסה לכפר לא קופץ חלון: כפתור קטן 📦 בצד (#welBtn) מופיע רק כשיש מה לאסוף, ונגיעה אחת אוספת הכל בלי חלון (welcomeQuick).
+   החלון עצמו (welcomeOpen) נשאר לבדיקת הגדלים, ואפשר להחזיר אותו ב-WELCOME.auto.
    במקום כמה חלונות קופצים בזה אחר זה: הייצור של כל מבנה, המתנה היומית (daily.js, הלוח של 7 ימים נשאר מאחורי כפתור 🎁),
    מתנות מחברים (visit.js, כבר בתרמיל, כאן רק מראים ממי), קווסטים שמוכנים לאיסוף (quests.js, בלי דרגה ופנס, שיש להם טקס משלהם) ופרס מספר ההרפתקאות (book.js).
    "אסוף הכל": חגיגה אחת, המספרים עפים לפס העליון, ושורה אחת עם מה כדאי לעשות עכשיו. אין כלום? החלון לא מופיע.
@@ -12,7 +15,8 @@ const WELCOME={
   icon:{prod:'🏭',daily:'🎁',gift:'💌',quest:'📜',book:'📖'},
   bIcon:{mill:'🪵',mine:'⛏️'},
   rows:3,          // יותר שורות מזה: הייצור של כל המבנים בשורה אחת, וכל הקווסטים בשורה אחת (המבקר, 2.11: "רשימה שגוללת וחתוכה" ב-760×350)
-  auto:true,        // נפתח לבד בכניסה לכפר. הבדיקה מכבה אחרי שבדקה, כדי שלא יפריע לבדיקות אחרות
+  auto:false,       // true: החלון נפתח לבד בכניסה לכפר (היה כך עד 2.11). false: רק הכפתור 📦
+  btnEvery:2,       // שניות בין בדיקות אם יש מה לאסוף (הייצור מצטבר בזמן)
   // מצב
   timer:0,gifts:[],rows:null,done:null
 };
@@ -82,7 +86,7 @@ function welcomeClose(){
 }
 
 /* ---- אסוף הכל ---- */
-function welcomeCollect(){
+function welcomeCollect(quick){
   const rows=WELCOME.rows||[],got={},add=(k,v)=>{if(typeof v==='number')got[k]=(got[k]||0)+v};
   let big=false;
   for(const w of rows){
@@ -95,16 +99,17 @@ function welcomeCollect(){
   }
   WELCOME.gifts=[];saveNow();
   celebrate(P.x,P.y,big?'rank':'quest','✓');   // חגיגה אחת לכל האיסוף
-  welcomeFly(got);
+  welcomeFly(got,quick);
   const G=typeof guideGoal==='function'?guideGoal():null,q=qTracked();   // המטרה הבאה, כמו בשורה למעלה (guide.js)
   WELCOME.done={got,next:G?T('g.now')+' '+G.icon+' '+G.text:q?T('wel.next',T('q.'+q.id)[0]):T('wel.nextGate')};
+  if(quick){WELCOME.done=null;WELCOME.rows=null;dailyBtn();bookBadge();welcomeBtn();return got}
   welcomeDraw();dailyBtn();bookBadge();
   WELCOME.timer=setTimeout(()=>{if(!$('ovWelcome').hidden)welcomeClose()},WELCOME.closeAfter*1000);
   return got;
 }
 // המספרים עפים מהכפתור אל הפס העליון. רק קישוט: אם אין אנימציה בדפדפן, פשוט לא רואים
-function welcomeFly(got){
-  const from=$('welWin').querySelector('.welgo'),to=$('vBag');if(!from||!to||!from.animate)return;
+function welcomeFly(got,quick){
+  const from=quick?$('welBtn'):$('welWin').querySelector('.welgo'),to=$('vBag');if(!from||!to||!from.animate)return;
   const a=from.getBoundingClientRect(),b=to.getBoundingClientRect();
   Object.keys(got).filter(k=>resOf(k)).slice(0,WELCOME.flyMax).forEach((k,i)=>{
     const el=document.createElement('div');el.className='welfly';el.innerHTML=resPic(k)+'+'+shortN(got[k]);
@@ -121,8 +126,9 @@ function welcomeFly(got){
 // הביקור הראשון (המבקר, 1.11: "בזמן שלא היית" לשחקן שעוד לא היה כאן): רק ראש הכפר מדבר. המתנה של היום הראשון נכנסת לתרמיל עם חגיגה קטנה
 const welcomeFirst=()=>!(SAVE.story&&SAVE.story.intro);
 function welcomeVillage(){
-  clearTimeout(WELCOME.timer);if(!WELCOME.auto)return;
-  if(welcomeFirst()){const r=dailyClaim();if(r){celebrate(P.x,P.y-20,'loot2','🎁');dailyBtn()}return}
+  clearTimeout(WELCOME.timer);
+  if(welcomeFirst()){const r=dailyClaim();if(r){celebrate(P.x,P.y-20,'loot2','🎁');dailyBtn()}welcomeBtn();return}
+  welcomeBtn();if(!WELCOME.auto)return;
   const go=()=>{WELCOME.timer=0;if(!S||!S.vil||!$('ovWelcome').hidden)return;
     if(S.mode!=='play'||document.body.classList.contains('menu')||!$('npcDlg').hidden||!$('qLog').hidden||!$('ovGear').hidden||!$('vPanel').hidden){WELCOME.timer=setTimeout(go,WELCOME.retry*1000);return}
     welcomeOpen()};
@@ -142,6 +148,23 @@ $('welWin').addEventListener('click',e=>{
   if(b.dataset.act==='close'){welcomeClose();sfx('ui');return}
   if(b.dataset.act==='all'&&!WELCOME.done)welcomeCollect();
 });
+
+/* ---- הכפתור הקטן 📦 בצד (ניר, 2.11): רק בכפר, ורק כשיש מה לאסוף. נגיעה אחת: הכל לתרמיל, בלי חלון ---- */
+function welcomeBtn(){
+  const b=$('welBtn');if(!b)return false;
+  const on=!!(S&&S.vil&&S.mode==='play'&&!welcomeFirst()&&welcomeRows().length);
+  b.hidden=!on;return on;
+}
+function welcomeQuick(){
+  if(!S||!S.vil||S.mode!=='play')return null;
+  WELCOME.rows=welcomeRows();if(!WELCOME.rows.length){welcomeBtn();return null}
+  sfx('coin');const got=welcomeCollect(true);
+  const line=Object.keys(got).filter(k=>resOf(k)).slice(0,4).map(k=>'+'+shortN(got[k])+' '+resIcon(k)).join(' ');
+  if(line)banner(line,C.gold);
+  return got;
+}
+$('welBtn').addEventListener('click',()=>welcomeQuick());
+setInterval(welcomeBtn,WELCOME.btnEvery*1000);   // גם מסתיר כשיוצאים מהכפר
 
 /* ---- תור קפיצות (בדיקת החוויה, 1.11: "מטח בכניסה לכפר") ----
    חלון אחד בכל פעם: "בזמן שלא היית" מחכה לשיחה פתוחה, ושיחת העלילה (storySay ב-story.js) מחכה לחלון הזה.
