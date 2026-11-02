@@ -1135,6 +1135,23 @@ function worldBot(m,L,god){
       ov.querySelector('[data-wsb="x"]').click();
       for(const x of enemies)x.dead=true;enemies=[];run(6);r.clean=!(S.wr&&S.wr.fx.length)&&!(S.wsb&&S.wsb.fx.length)}catch(err){r.err=String(err&&err.stack||err)}
     const o=$('ovBook');if(o)o.hidden=true;if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // שלב 3 בסקילים (wcombo.js): בוער שמת מדליק את השכן (התפשטות), סקיל של הצייד מסמן טרף והריגה של מסומן מקצרת קירור,
+  // והסטט "נזק שילובים" מגיע מכוח על ציוד ומהעץ. אחר כך הכל חוזר
+  const wst=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.skSeen=wsbIds().slice();SAVE.hero.level=99;SAVE.hero.skRune={};enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
+      const mk=(dx,dy,hp)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=hp||1e9;e.speed=0;e.dmg=0;return e};
+      const a=mk(80,0,50),b=mk(130,0),f0=S.sk.combos.wildfire||0;a.burn={dps:20,t:2,tick:0.5,acc:0};damage(a,1e6,'skill',0,'physical');
+      r.fire=TF('spread')||(a.dead&&!!b.burn&&(S.sk.combos.wildfire||0)>f0);
+      for(const x of enemies)x.dead=true;enemies=[];
+      SAVE.hero.skLoad=['volley',null];run(0.05);const i=S.sk.ids.indexOf('volley'),c=mk(80,0),m0=S.sk.combos.mark||0;
+      if(i>=0){S.sk.cd[i]=0;wskUse('volley');run(1);r.mark=c.wmark>0&&(S.sk.combos.mark||0)>m0;
+        const h0=c.hp;damage(c,100,'skill',0,'physical');r.bonus=h0-c.hp>100;   // מסומן חוטף יותר
+        S.sk.cd[0]=5;c.hp=1;damage(c,10,'skill',0,'physical');r.cd=c.dead&&S.sk.cd[0]<=4.01}
+      const c0=P.combo||0,k0=wcK();gApply(powGive('surge'),1);r.stat=P.combo-c0===POWERS.list.surge.give.combo&&wcK()>k0;gApply(powGive('surge'),-1);
+      r.tree=['w3','h3','m3'].every(id=>Object.values(TREE.branches).some(B=>B.steps.some(st=>st.id===id&&st.give.combo>0)));
+      for(const x of enemies)x.dead=true;enemies=[];run(1)}catch(err){r.err=String(err&&err.stack||err)}
+    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // פיד הודעות (feed.js): בעולם שלל שנאסף נכנס לפיד בצד ולא על הדמות, אותו משאב מתאחד, ציוד בצבע הדרגה, עד 3 שורות, נעלם אחרי FEED.life, ובזירה לא פועל
   const feed=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{enterWorld('home');enemies=[];FL.length=0;const f0=floats.length,st=FEED.stat,d0=st.drawn;
@@ -1225,7 +1242,7 @@ function worldBot(m,L,god){
   // התחלה רכה בזירה (run.js, RUN.ease): אויב מההתחלה פוגע פחות והחסינות אחרי מכה ארוכה יותר, ואחרי ease.secs הכל רגיל. בעולם תמיד רגיל
   const ease=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={};startRun();enemies=[];
     S.t=0;const a=addEnemy('grunt',500,0);a.elite=false;o.d0=a.dmg/ETYPES.grunt.dmg;P.inv=0;P.hp=P.maxHp;hurt(1);o.inv0=P.inv;
-    S.t=RUN.ease.secs+5;const b=addEnemy('grunt',500,0);o.d1=b.dmg/ETYPES.grunt.dmg;P.inv=0;hurt(1);o.inv1=P.inv;
+    S.t=RUN.ease.secs+5;const ec=LOOT.elite.chance;LOOT.elite.chance=0;const b=addEnemy('grunt',500,0);LOOT.elite.chance=ec;o.d1=b.dmg/ETYPES.grunt.dmg;P.inv=0;hurt(1);o.inv1=P.inv;
     enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(Math.abs(ease.d0-0.45)<0.01&&ease.d1===1&&ease.inv0>ease.inv1&&Math.abs(ease.inv1-0.6)<0.01,
     'התחלה רכה בזירה: נזק אויב בהתחלה x'+ease.d0.toFixed(2)+', אחרי הזמן x'+ease.d1+', חסינות אחרי מכה '+ease.inv0.toFixed(2)+'→'+ease.inv1.toFixed(2)+' שניות');
@@ -2225,6 +2242,9 @@ function worldBot(m,L,god){
   check(!wrn.err&&wrn.lock&&wrn.lp&&wrn.auto&&wrn.ui&&wrn.pick&&wrn.unpick&&!wrn.bad.length&&wrn.ok.length===wrn.n&&wrn.clean,'רונות: '+(wrn.err||[wrn.lock?'נעולות בהתחלה':'לא נעולות',
     wrn.lp?'במסלול הרמות':'לא במסלול',wrn.auto?'רמה מכניסה רונה':'רמה לא הכניסה',wrn.ui&&wrn.pick&&wrn.unpick?'הספר מחליף רונה':'הספר לא החליף',
     'עובדות '+wrn.ok.length+'/'+wrn.n,wrn.bad.length?'נכשלו: '+wrn.bad.join(', '):'',wrn.clean?'נגמרות':'לא נגמרו'].filter(Boolean).join(' · ')));
+  check(!wst.err&&wst.fire&&wst.mark&&wst.bonus&&wst.cd&&wst.stat&&wst.tree,'סקילים שלב 3: '+(wst.err||[wst.fire?'בוער מדליק שכן':'אין התפשטות',
+    wst.mark?'צייד מסמן':'לא מסמן',wst.bonus?'מסומן חוטף יותר':'בלי תוספת',wst.cd?'הריגה מקצרת קירור':'הקירור לא התקצר',
+    wst.stat?'כוח על ציוד נותן נזק שילובים':'הכוח לא נתן',wst.tree?'גם בעץ':'לא בעץ'].join(' · ')));
   check(!wcb.err&&!wcb.bad.length&&wcb.ok.shatter&&wcb.ok.pinned&&wcb.ok.steam&&wcb.ok.shock,'שילובים בעולם: '+(wcb.err||[
     Object.entries(wcb.ok).map(([k,c])=>c+' '+k).join(', '),wcb.bad.length?'נכשלו: '+wcb.bad.join(', '):''].filter(Boolean).join(' · ')));
   check(!skr.err&&skr.wait&&skr.start&&skr.zoom&&skr.fly&&skr.end&&skr.once&&skr.big&&skr.on&&skr.skipStart&&skr.skip&&skr.grade,
