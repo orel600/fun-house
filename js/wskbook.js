@@ -200,5 +200,5 @@ function wsbDrawUi(){
     '<div class="wsbgrid">'+wrUi()+ids.map(id=>wsbCard(id,L.indexOf(id))).join('')+'</div></div>';
 }
 // הכפתור בחלון הדמות (statsHtml ב-stats.js)
-const wsbBtn=()=>'<button class="vbtn ghost wsbopen'+(typeof skgNew==='function'&&skgNew()?' sknew':'')+'" data-wsbopen="1">📖 '+T('wsb.open')+'</button>';   // sknew: נקודה אדומה (skguide.js)
+const wsbBtn=()=>'<button class="vbtn wsbopen'+(typeof skgNew==='function'&&skgNew()?' sknew':'')+'" data-wsbopen="1">📖 '+T('wsb.open')+'</button>';   // sknew: נקודה אדומה (skguide.js)
 addEventListener('click',e=>{if(e.target.closest&&e.target.closest('[data-wsbopen]')){e.stopPropagation();sfx('tap');wsbOpenUi()}},true);
