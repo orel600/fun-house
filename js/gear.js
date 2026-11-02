@@ -282,7 +282,7 @@ function gBagKeys(tab){
 }
 // הלשוניות: "הכל" ומסנן לכל משבצת, וכל משפחת משאבים שיש בה משהו. המטבעות למעלה, ליד הכותרת
 const gTabs=()=>['items',...Object.keys(GEAR.filter),...Object.keys(RES.fams).filter(f=>f!=='coins'&&resFam(f).some(r=>SAVE.bag[r]>0))];
-const gTabLabel=f=>f==='items'?T('gear.tab.all'):GEAR.filter[f]||T('fam.'+f);
+const gTabLabel=f=>f==='items'?T('gear.tab.all'):GEAR.filter[f]||(RES.list[resFam(f)[0]]||{}).icon||T('fam.'+f);   // משפחת משאבים: האייקון של המשאב הראשון בה, והשם ב-aria-label
 /* ---- סימנים על פריט בתרמיל: ▲ ירוק אם הוא חזק ממה שלבוש במשבצת שלו, ▼ אדום אם חלש, ונקודה לפריט שעוד לא פתחו ---- */
 // מה שלבוש במשבצת שהפריט ייכנס אליה (הכי חלש מבין המשבצות), כדי להשוות
 const gVsWorn=it=>gGet(it.slot,gTarget(it));
@@ -341,11 +341,11 @@ function gearDraw(){
   $('gCoins').innerHTML=resChip('coins',SAVE.bag.coins||0);
   // הבובה: הדמות באמצע, והמשבצות בשני הצדדים ומתחתיה
   const side=k=>'<div class="gd-'+k+'">'+D[k].map(gSlotHtml).join('')+'</div>';
-  $('gSlots').innerHTML=side('start')+'<div class="gfig" style="--hero:'+(hero.col||'#ECE7DC')+'"><span>🧍</span>'+(hero.icon?'<b>'+hero.icon+'</b>':'')+'<div class="gsets">'+gSetBadge()+'</div></div>'+side('end')+side('under');
+  $('gSlots').innerHTML='<div class="gsets">'+gSetBadge()+'</div>'+side('start')+'<div class="gfig" style="--hero:'+(hero.col||'#ECE7DC')+'"><span>🧍</span>'+(hero.icon?'<b>'+hero.icon+'</b>':'')+'</div>'+side('end')+side('under');   // תג הסט בשורה משלו מעל הדמות, לא עליה
   dollShow();   // הדמות בתלת-ממד במקום האימוג'י, עם מה שלבוש (doll3d.js)
   // התרמיל: לשוניות ורשת
   const tabs=gTabs();if(!tabs.includes(GUI.tab))GUI.tab='items';
-  $('gTabs').innerHTML=tabs.map(f=>'<button data-tab="'+f+'"'+(GEAR.filter[f]?' class="gf" aria-label="'+T('gear.slot.'+f)+'"':'')+(GUI.tab===f?' aria-pressed="true"':'')+'>'+gTabLabel(f)+'</button>').join('');
+  $('gTabs').innerHTML=tabs.map(f=>'<button data-tab="'+f+'"'+(GEAR.filter[f]?' class="gf" aria-label="'+T('gear.slot.'+f)+'"':f!=='items'?' class="gf" aria-label="'+T('fam.'+f)+'" title="'+T('fam.'+f)+'"':'')+(GUI.tab===f?' aria-pressed="true"':'')+'>'+gTabLabel(f)+'</button>').join('');
   const ks=gBagKeys(GUI.tab),itm=gIsItemTab(GUI.tab);
   $('gItems').innerHTML=ks.length?ks.map(k=>(itm?gBagTile:gCell)(k,SAVE.bag[k],'data-id="'+k+'"'+(sel&&sel.id===k?' aria-pressed="true"':''))).join('')
     :'<p class="dim">'+T(itm?'gear.noItems':'gear.noRes')+'</p>';
