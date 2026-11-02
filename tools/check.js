@@ -1270,10 +1270,10 @@ function worldBot(m,L,god){
   check(crowd.n<=crowd.cap&&typeof crowd.elite==='number'&&crowd.elite<=crowd.lim&&(crowd.far==='נעלם'||crowd.far<=crowd.lim)&&crowd.orbs<=150&&crowd.xp===400,
     'עומס בזירה: '+crowd.n+' אויבים (מגבלה '+crowd.cap+'), אויב רחוק: '+crowd.far+', אויב-על רחוק קפץ ל-'+crowd.elite+' (עד '+crowd.lim+'), כדורי XP: 400→'+crowd.orbs+' ששווים '+crowd.xp+' XP');
   // התחלה רכה בזירה (run.js, RUN.ease): אויב מההתחלה פוגע פחות והחסינות אחרי מכה ארוכה יותר, ואחרי ease.secs הכל רגיל. בעולם תמיד רגיל
-  const ease=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={};startRun();enemies=[];
+  const ease=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},er=window.eliteRoll;window.eliteRoll=()=>{};startRun();enemies=[];   // בלי אויב עלית אקראי, שפוגע חזק יותר
     S.t=0;const a=addEnemy('grunt',500,0);a.elite=false;o.d0=a.dmg/ETYPES.grunt.dmg;P.inv=0;P.hp=P.maxHp;hurt(1);o.inv0=P.inv;
     S.t=RUN.ease.secs+5;const ec=LOOT.elite.chance;LOOT.elite.chance=0;const b=addEnemy('grunt',500,0);LOOT.elite.chance=ec;o.d1=b.dmg/ETYPES.grunt.dmg;P.inv=0;hurt(1);o.inv1=P.inv;
-    enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+    window.eliteRoll=er;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(Math.abs(ease.d0-0.45)<0.01&&ease.d1===1&&ease.inv0>ease.inv1&&Math.abs(ease.inv1-0.6)<0.01,
     'התחלה רכה בזירה: נזק אויב בהתחלה x'+ease.d0.toFixed(2)+', אחרי הזמן x'+ease.d1+', חסינות אחרי מכה '+ease.inv0.toFixed(2)+'→'+ease.inv1.toFixed(2)+' שניות');
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
