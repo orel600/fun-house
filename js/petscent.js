@@ -43,7 +43,7 @@ function scentUpdate(p,dt,dP){
     if(s.t%1.5<dt)floatText(p.x,p.y-36,'!',SCENT.col,18)}   // נובחת
   // הגיע השחקן
   if(s.kind!=='elite'&&Math.hypot(P.x-s.x,P.y-s.y)<SCENT.reach){scentFound(s);return false}
-  if(s.st==='wait'&&s.t>SCENT.wait){scentEnd(false);return false}
+  if(s.st==='wait'&&(s.t>SCENT.wait||Math.hypot(p.x-s.x,p.y-s.y)>40)){scentEnd(false);return false}   // מוותרת: נמאס לחכות, או שקפצה חזרה לשחקן (PET.follow.jump)
   return true;
 }
 // בוחר מה מחכה ואיפה

@@ -1610,7 +1610,8 @@ function worldBot(m,L,god){
     SCENT.pick={secret:0,chest:0,elite:1};S.wd.scentT=0;p.st='idle';petUpdate(0.02);const e=S.wd.scent;o.elite=!!e&&!!e.foe&&!!e.foe.affix;
     P.x=e.foe.x+20;P.y=e.foe.y;petUpdate(0.02);o.fight=e.st==='fight';const c1=dropStats().spawned;damage(e.foe,e.foe.hp*10,'sword',0,'physical');petUpdate(0.02);
     o.eliteLoot=dropStats().spawned>c1&&!S.wd.scent;
-    SCENT.pick={secret:0,chest:1,elite:0};S.wd.scentT=0;p.st='idle';petUpdate(0.02);const g=S.wd.scent;g.st='wait';g.t=SCENT.wait+1;P.x=g.x+400;P.y=g.y;petUpdate(0.02);o.giveUp=!S.wd.scent;
+    SCENT.pick={secret:0,chest:1,elite:0};S.wd.scentT=0;p.st='idle';petUpdate(0.02);const g=S.wd.scent;g.st='wait';g.t=SCENT.wait+1;p.x=g.x;p.y=g.y;P.x=g.x+300;P.y=g.y;petUpdate(0.02);o.giveUp=!S.wd.scent;
+    S.wd.scentT=0;p.st='idle';petUpdate(0.02);const j=S.wd.scent;j.st='wait';p.x=j.x;p.y=j.y;P.x=j.x+900;P.y=j.y;petUpdate(0.02);petUpdate(0.02);o.giveUp=o.giveUp&&!S.wd.scent;
     SCENT.pick=pk;return o});
   await page.evaluate(()=>enterVillage());
   check(ps.start&&ps.wait&&ps.far&&ps.chest&&ps.elite&&ps.fight&&ps.eliteLoot&&ps.giveUp,
