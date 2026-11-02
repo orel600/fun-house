@@ -7,12 +7,12 @@
    הטקסטים ב-lang.js תחת 'npc.v<id>' ו-'rsd.'. דמות חדשה שעוברת לכפר = שורה ב-list, שורה ב-LOOK3D ומשפטים ב-lang.js */
 
 const RESID={
-  /* last: הקווסט האחרון שלה בעולם (QUESTS.list). house: איפה הבית בכפר, במקום פנוי (לא מבנה, לא דרך, לא תושב אחר).
+  /* last: הקווסט האחרון שלה בעולם (QUESTS.list). house: איפה הבית בכפר, ברובע המגורים בדרום (VILLAGE ב-village.js), במקום פנוי (לא מבנה, לא דרך, לא תושב אחר).
      sign: האייקון בשלט. serve: 'fish' קונה דגים במחיר השוק כפול mult, 'trade' מחליפה give ב-get */
   list:{
-    fisher:{last:'wCatch',  house:{x:150,y:-300},col:'#3F7BF5',sign:'🐟',serve:'fish',mult:2},
-    cutter:{last:'wGolems', house:{x:-330,y:-200},col:'#A8784A',sign:'🪨',serve:'trade',give:{stone:10},get:{iron:2},work:true},
-    herbal:{last:'wSprites',house:{x:360,y:40},col:'#5FA35A',sign:'🌿',serve:'trade',give:{herb:4},get:{essence:1}}
+    fisher:{last:'wCatch',  house:{x:260,y:520},col:'#3F7BF5',sign:'🐟',serve:'fish',mult:2},
+    cutter:{last:'wGolems', house:{x:-260,y:520},col:'#A8784A',sign:'🪨',serve:'trade',give:{stone:10},get:{iron:2},work:true},
+    herbal:{last:'wSprites',house:{x:480,y:400},col:'#5FA35A',sign:'🌿',serve:'trade',give:{herb:4},get:{essence:1}}
   },
   front:52,         // כמה לפני הבית היא עומדת
   area:30,          // כמה רחוק היא מסתובבת
@@ -85,12 +85,11 @@ function resDraw(){
     ctx.fillStyle='#6B3F22';ctx.beginPath();ctx.moveTo(x-38,y-32);ctx.lineTo(x,y-62);ctx.lineTo(x+38,y-32);ctx.fill();
     ctx.fillStyle='#3A2414';ctx.fillRect(x-8,y-16,16,22)}
 }
-// מעל הכל: שלט מתחת לבית, עם מה שהיא עושה
+// מעל הכל: שלט מתחת לבית, עם מה שהיא עושה. רק כשמתקרבים, ובלי לחפוף לשלטים אחרים (vSign ב-village.js)
 function resScreen(ox,oy){
   if(!S.vil)return;
-  ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 13px Heebo, system-ui, sans-serif';
-  for(const id in RESID.list){if(!resMoved(id))continue;const R=RESID.list[id],txt=R.sign+' '+T('rsd.'+id+'.t'),w=ctx.measureText(txt).width+16,x=R.house.x+ox,y=R.house.y+oy+22;
-    ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(x-w/2,y-11,w,22,11);ctx.fill();ctx.fillStyle=C.chalk;ctx.fillText(txt,x,y+5)}
+  for(const id in RESID.list){if(!resMoved(id))continue;const R=RESID.list[id],d=Math.hypot(P.x-R.house.x,P.y-R.house.y);
+    if(d<VILLAGE.signs.near)vSign(R.house.x+ox,R.house.y+oy+22,R.sign+' '+T('rsd.'+id+'.t'),C.chalk,30-d/20)}
 }
 // תלת-ממד: אוהל וחבית לכל מי שעברה. נקרא מ-syncNpcs ב-render3d.js
 function resSync3d(){
