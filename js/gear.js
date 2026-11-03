@@ -151,7 +151,9 @@ function gStats(id){const s=(gItem(id)||{}).stats||{},k=ageMult(gPlus(id)),o={};
 const gTint=id=>(gItem(id).look||{}).tint||GEAR.tiers[gItem(id).tier].col;
 const gIcon=id=>{const it=gItem(id);return it.icon||GEAR.orbit[it.type]};
 /* תמונה לפריט בממשק (HTML), מ-Creative Claw (icons/ui/gear, נחתך עם tools/slice-icons.py). בלי תמונה: האימוג'י. על הקנבס תמיד האימוג'י (gIcon) */
-const GEAR_PIC={oakSword:1,ironSword:1,silverBlade:1,oakBow:1,ironBow:1,goldBow:1,oakStaff:1,boneCharm:1,ironRing:1,starterBoots:1,swiftBoots:1,goldAmulet:1,crown:1,wardenHammer:1,wardenRing:1,wardenCharm:1,wardenBoots:1,stormBow:1,stormRing:1,stormFeather:1,stormBoots:1};
+const GEAR_PIC={oakSword:1,ironSword:1,silverBlade:1,oakBow:1,ironBow:1,goldBow:1,oakStaff:1,boneCharm:1,ironRing:1,starterBoots:1,swiftBoots:1,goldAmulet:1,crown:1,wardenHammer:1,wardenRing:1,wardenCharm:1,wardenBoots:1,stormBow:1,stormRing:1,stormFeather:1,stormBoots:1,
+  // 3.11.2026 (Creative Claw, tools/slice-objects.py): שריון לפי מחלקה ושכבה, מגנים, ושמונה נשקים שהיו אימוג'י. הדרגה נראית בתמונה עצמה: עץ, ברזל, כסף, זהב, אגדי
+  warriorHead0:1,warriorHead1:1,warriorHead2:1,warriorHead3:1,warriorHead4:1,warriorBody0:1,warriorBody1:1,warriorBody2:1,warriorBody3:1,warriorBody4:1,hunterHead0:1,hunterHead1:1,hunterHead2:1,hunterHead3:1,hunterHead4:1,hunterBody0:1,hunterBody1:1,hunterBody2:1,hunterBody3:1,hunterBody4:1,mageHead0:1,mageHead1:1,mageHead2:1,mageHead3:1,mageHead4:1,mageBody0:1,mageBody1:1,mageBody2:1,mageBody3:1,mageBody4:1,shield0:1,shield1:1,shield2:1,shield3:1,shield4:1,ironStaff:1,silverWand:1,goldStaff:1,starStaff:1,ironAxe:1,goldAxe:1,dragonBlade:1,skyBow:1};
 const gPic=id=>GEAR_PIC[gBase(id)]?'<img class="ri" src="icons/ui/gear/'+gBase(id)+'.png" alt="">':gIcon(id);
 // כמה הפריט שווה, כדי לדעת אם החלפה היא שיפור. חומר טוב יותר שובר שוויון
 function gScore(id){const it=gItem(id);if(!it)return 0;let n=it.tier*0.01;const s=gStats(id);for(const k in s)n+=s[k]*GEAR.stats[k].w;return n}
