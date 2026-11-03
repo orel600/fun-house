@@ -2450,6 +2450,10 @@ function worldBot(m,L,god){
     // הולכים ישר אל מגדל שלנו באמצע הנתיב: מחליקים מסביב, לא נתקעים (אוראל, 3.11: "המוד תקוע לגמרי")
     {const me=MB.me,tw=MB.u.find(b=>b.k==='tower'&&b.team===0&&Math.abs(b.x)===MOBA.towers[1]);const hx=me.x,hy=me.y;me.x=tw.x-tw.r-me.r-4;me.y=tw.y;
       joy={id:-7,ox:150,oy:280,dx:1,dy:0};for(let i=0;i<75;i++)mobaUpdate(1/30);o.slide={pass:me.x>tw.x+tw.r,dx:Math.round(me.x-tw.x)};joy=null;me.x=hx;me.y=hy}
+    // שמירה עם קשת וחרב (הדוח של אוראל מהאייפון, 3.11): ה-HUD חיפש את המכפילים של "האויב הקרוב", מצא גיבור מובה, ונפל בכל פריים, אז כל המשחק קפא
+    {const g=SAVE.gear.weapon,bag=JSON.stringify(SAVE.bag),ws=Object.keys(GEAR.items).filter(id=>GEAR.items[id].slot==='weapon');
+      SAVE.gear.weapon=ws.find(id=>wUse(id)==='gun');SAVE.bag[ws.find(id=>wUse(id)==='sword')]=1;const me=MB.me,f=MB.u.find(u=>u.k==='hero'&&u.team===1),fx=f.x,fy=f.y;f.x=me.x+60;f.y=me.y;
+      o.two={held:wHeld().length};try{hud();o.two.ok=true}catch(e){o.two.err=e.message}f.x=fx;f.y=fy;SAVE.gear.weapon=g;SAVE.bag=JSON.parse(bag)}
     for(let i=0;i<30;i++)mobaUpdate(1/30);render();o.m3=typeof M3!=='undefined'?M3.map.size:-1;o.r3=R3D.on;   // תלת-ממד: מגדלים ובסיסים כמודלים (moba3d.js)
     // המראה (moba-look.js): כפתורי הסקילים והפקודות כאייקוני SVG בלי אימוג'י, והרצפה של המוד (בתלת-ממד: במקום הרצפה של הזירה)
     o.look={svg:document.querySelectorAll('#mbSk svg').length+document.querySelectorAll('#mbPing svg').length,emoji:/\p{Extended_Pictographic}/u.test($('mbSk').textContent+$('mbPing').textContent),
@@ -2740,6 +2744,7 @@ function worldBot(m,L,god){
     check(mb.over,'משחקי השאול: משחק של בוטים '+(mb.over?'נגמר':'לא נגמר')+' אחרי '+t(mb.t)+' · '+mb.towers+' מגדלים נפלו'+(mb.base?', בסיס נהרס':', נגמר בזמן')+' · הריגות '+mb.score+' · רמה עד '+mb.lv);
     if(CFG.gfx==='3d')check(!mb.r3||mb.m3===6,'משחקי השאול בתלת-ממד: '+(mb.r3?mb.m3+' מבנים כמודלים (צריך 6)':'התלת-ממד כבוי'));
     {const k=mb.look||{};check(k.svg===5&&!k.emoji&&k.floor,'משחקי השאול: מראה: '+k.svg+' אייקונים (צריך 5)'+(k.emoji?', נשאר אימוג\'י בכפתורים':'')+(k.floor?', רצפה משלו':', בלי רצפה משלו'))}
+    check(mb.two&&mb.two.held===2&&mb.two.ok,'משחקי השאול עם קשת וחרב: '+(mb.two?(mb.two.ok?'ה-HUD עובד':'ה-HUD נופל: '+mb.two.err):'לא נבדק'));
     check(mb.slide&&mb.slide.pass,'משחקי השאול: הולכים ישר אל מגדל ומחליקים מסביבו '+(mb.slide?(mb.slide.pass?'✓':'נתקע ('+mb.slide.dx+' מהמגדל)'):'לא נבדק'));
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));

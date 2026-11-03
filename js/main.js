@@ -1,7 +1,9 @@
 /* לולאת המשחק והפעלה */
 let last=performance.now(),FRAME_T=last;
 // dt עד 0.05: בטלפון שרץ ב-20-30 פריימים בשנייה (הכפר בתלת-ממד) פריים איטי לא "מאבד" זמן, אז הדמות לא מאטה ונתקעת (ניר, 2.11: "מקוטעת")
-function frame(now){
+// שגיאה בפריים לא עוצרת את המשחק: הפריים הבא תמיד מתוזמן (אוראל, 3.11: באייפון שגיאה ב-hud הקפיאה את משחקי השאול לגמרי)
+function frame(now){requestAnimationFrame(frame);try{frameStep(now)}catch(e){console.error(e)}}
+function frameStep(now){
   let dt=Math.min(0.05,(now-last)/1000);last=now;FRAME_T=now;   // FRAME_T: אותו שעון לתלת-ממד (render3d.js), בלי קפיצות בין שני שעונים
   if(typeof pwaHeld==='function'&&pwaHeld())dt=0;   // אפליקציה מותקנת שמוחזקת לאורך: המשחק עוצר עד שמסובבים (pwa.js)
   if(S&&S.mode==='play'){
@@ -13,7 +15,7 @@ function frame(now){
   if(S&&!(S.hitstop>0)&&!S.mb){petUpdate(dt);statTick(dt);storyTick(dt)}   // storyTick: זמן המשחק, לסיכום בסוף העלילה (story.js)   // ועץ הסקילים (stats.js)   // חיית המחמד הולכת אחרי השחקן בכל מקום (pet.js)
   if(S&&S.mode==='play'){const k=Math.min(1,dt*8);S.cam.x+=(P.x-S.cam.x)*k;S.cam.y+=(P.y-S.cam.y)*k}
   if(R3D.note&&S&&S.mode==='play'){R3D.note=false;banner(T('gfx.auto'))}   // מעבר אוטומטי לדו-ממד: הודעה אחת (render3d.js, GFX_AUTO)
-  render();hud();if(S&&S.mb)mobaHud();requestAnimationFrame(frame);
+  render();hud();if(S&&S.mb)mobaHud();
 }
 // כל הטקסט שעל המסך מחדש, בשפה הנוכחית: בהפעלה ובכל החלפת שפה
 function showLang(){applyLang();showGfx();updateSwapBtn();$('verLine').textContent='v'+VERSION;if(typeof updShow==='function')updShow()}
