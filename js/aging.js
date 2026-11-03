@@ -105,7 +105,7 @@ const AUI={sel:null,gem:false,tab:'age',pw:null};   // sel: {id} מהתרמיל,
 function forgeOpen(){
   if(!S.vil||S.mode!=='play'||!vLv('forge'))return;
   wEquip(SAVE.gear.weapon);   // הדמות מחזיקה את הנשק שלבוש, כדי שהזוהר החדש ייראה עליו
-  S.mode='forge';joy=null;AUI.sel=null;AUI.tab='age';$('vPanel').hidden=true;document.body.classList.remove('vpan');$('ovForge').hidden=false;forgeDraw();
+  S.mode='forge';joy=null;AUI.sel=null;AUI.tab='age';AUI.allRes=false;$('vPanel').hidden=true;document.body.classList.remove('vpan');$('ovForge').hidden=false;forgeDraw();
 }
 function forgeClose(){$('ovForge').hidden=true;if(S.mode==='forge')S.mode='play';if(S.vil)S.vil.ui=''}   // הפאנל של הנפחייה חוזר
 const aSelId=()=>AUI.sel&&(AUI.sel.id||gGet(AUI.sel.slot,AUI.sel.i));
@@ -118,9 +118,19 @@ function forgeItemsHtml(slots){
   const ids=Object.keys(SAVE.bag).filter(id=>gItem(id)&&slots.includes(gItem(id).slot)).sort((a,b)=>gPlus(b)-gPlus(a)||gItem(b).tier-gItem(a).tier);
   return h+ids.map(id=>gTile(id,'data-id="'+id+'"'+(sel&&sel.id===id?' aria-pressed="true"':''),SAVE.bag[id]>1?'<small>'+SAVE.bag[id]+'</small>':'')).join('');
 }
+/* הפס העליון: שורה אחת. קודם מה שהפעולה צריכה (בשדרוג: המחיר של הפריט שנבחר, 💎 ומטבעות. בהתכה: fuseRes ב-fuse.js),
+   ומשלימים עד FORGE_BAR.max ממה שיש (RES.show). השאר מאחורי "+N", שפותח את כל השורה (היא גוללת לצד). ניר, 3.11.2026: "רואים רק את המשאבים" */
+const FORGE_BAR={max:5};
+function forgeBar(){
+  const all=AUI.tab==='fuse'?[]:resShown('forge')||Object.keys(RES.list).filter(r=>SAVE.bag[r]>0);
+  const c=AUI.tab==='age'&&gItem(aSelId())&&ageCost(aSelId())||{};
+  const main=AUI.tab==='fuse'?fuseRes():AUI.tab==='age'?[...Object.keys(c).filter(k=>k!=='coins'),AGING.gem,'coins']:['coins'];
+  const ks=[...new Set([...main,...all])],sh=AUI.allRes?ks:ks.slice(0,Math.max(main.length,FORGE_BAR.max));
+  return bagLine(SAVE.bag,sh)+(ks.length>sh.length?'<button class="resmore" data-act="allres" aria-label="'+T('ui.more')+'">+'+(ks.length-sh.length)+'</button>':'');
+}
 function forgeDraw(){
   $('fLevel').textContent=AUI.tab==='age'?T('age.cap',ageCap()):'';
-  $('fRes').innerHTML=bagLine(SAVE.bag,AUI.tab==='fuse'?fuseRes():resShown('forge'));   // מתכות ואבנים שיש (RES.show). בהתכה: רק מה שהיא צריכה (fuse.js)
+  $('fRes').innerHTML=forgeBar();
   $('fTabs').innerHTML=['age','pow','fuse'].map(t=>'<button data-tab="'+t+'"'+(AUI.tab===t?' aria-pressed="true"':'')+'>'+T('forge.tab.'+t)+'</button>').join('');
   itemTip($('fDetail'));   // הבועה (itemtip.js) רק בלשונית השדרוג
   if(AUI.tab==='pow'){powDraw();return}   // כוחות: powers.js
@@ -155,7 +165,8 @@ $('ovForge').addEventListener('click',e=>{
   if(!b){if(AUI.tab==='age'&&AUI.sel&&!e.target.closest('#fDetail')){AUI.sel=null;forgeDraw()}return}   // נגיעה מחוץ לבועה: נסגרת
   if(b.disabled)return;
   if(b.id==='forgeClose'){forgeClose();return}
-  if(b.dataset.tab){AUI.tab=b.dataset.tab;AUI.sel=null}
+  if(b.dataset.act==='allres')AUI.allRes=true;   // "+N" בפס העליון: כל המשאבים
+  else if(b.dataset.tab){AUI.tab=b.dataset.tab;AUI.sel=null;AUI.allRes=false}
   else if(AUI.tab==='pow'&&powClick(b));   // כוחות (powers.js)
   else if(AUI.tab==='fuse'&&fuseClick(b));   // התכה (fuse.js)
   else if(b.dataset.id||b.dataset.slot)AUI.sel=b.getAttribute('aria-pressed')==='true'?null:b.dataset.id?{id:b.dataset.id}:{slot:b.dataset.slot,i:+b.dataset.i};   // נגיעה שנייה: הבועה נסגרת
