@@ -100,8 +100,9 @@
 <!-- משחקי השאול (js/moba.js): הניקוד והשעון למעלה, הרמה והחיים בפינה, 3 סקילים בפינה הימנית, וחלון לבחירת דמות ולסוף -->
 <div class="mbhud" id="mbHud" hidden>
   <div class="mbtop"><b class="mbs0" id="mbS0">0</b><span id="mbClock">0:00</span><b class="mbs1" id="mbS1">0</b></div>
-  <div class="mbme"><b class="mblv" id="mbLv">1</b><div class="mbbars"><div class="mbhp"><i id="mbHp"></i></div><div class="mbxp"><i id="mbXp"></i></div></div></div>
-  <p class="mbresp" id="mbResp" hidden></p>
+  <div class="mbme"><span class="mbpor" id="mbPor"></span><b class="mblv" id="mbLv">1</b><div class="mbbars"><div class="mbhp" id="mbHpBar"><i id="mbHp"></i><span id="mbHpN"></span></div><div class="mbxp"><i id="mbXp"></i></div></div></div>
+  <div class="mbfeed" id="mbFeed"></div>
+  <div class="mbresp" id="mbResp" hidden><span data-t="mb.respL"></span><b id="mbRespN"></b><i><i id="mbRespBar"></i></i></div>
   <button class="wx mbexit" id="mbExit" data-ta="mb.exit">✕</button>
   <div class="mbping" id="mbPing" role="group" data-ta="mb.ping"><button data-o="attack"><b aria-hidden="true">⚔️</b><span data-t="mb.o.attack"></span></button><button data-o="back"><b aria-hidden="true">🛡️</b><span data-t="mb.o.back"></span></button></div>
 </div>
@@ -432,6 +433,10 @@
 <script src="js/skfx3d-charge.js"></script>   <!-- הסתערות: רוחות של הגיבור, רוח ואבק, ופיצוץ אבק בסוף -->
 <script src="js/skfx3d-whirl.js"></script>   <!-- סופה: מערבולת להבות סביב הגיבור, גחלים וטבעת חרוכה -->
 <script src="js/skfx3d-shield.js"></script>   <!-- מגן: כיפת קרח, גל כפור, גבישים על קפואים וניפוץ בסוף -->
+<script src="js/skfx3d-spirit.js"></script>   <!-- רוח המים: ישות מרחפת שיורה קליעי מים -->
+<script src="js/skfx3d-storm.js"></script>   <!-- ענן הסערה: ענן כהה, גשם וברקים מתפצלים -->
+<script src="js/skfx3d-pools.js"></script>   <!-- שלוליות של רונות: לבה אמיתית אחרי המטאור, ומים, קרח, אדמה וברק -->
+<script src="js/petfx3d.js"></script>   <!-- האש של פיוחו בשלב 3: זנב בוער, גחלים ושלהבת בנשיכה -->
 <script src="js/render.js"></script>
 <script src="js/feed.js"></script>   <!-- פיד הודעות בצד, בעולם ובכפר (docs/plan-hud.md פרק 6) -->
 <script src="js/moba-kits.js"></script>   <!-- משחקי השאול: מובה 3 על 3 עם בוטים (docs/moba.md) -->
@@ -440,6 +445,7 @@
 <script src="js/moba.js"></script>
 <script src="js/moba-aim.js"></script>   <!-- משחקי השאול: כיוון וביטול סקילים בגרירה -->
 <script src="js/moba-bot.js"></script>
+<script src="js/moba-move.js"></script>   <!-- משחקי השאול: תנועה, סיבוב והפרדה בין יחידות (אחרי render3d.js, שאותו הוא עוטף) -->
 <script src="js/input.js"></script>
 <script src="js/main.js"></script>
 <script src="js/perf.js"></script>
