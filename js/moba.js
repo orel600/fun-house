@@ -51,19 +51,19 @@ function mbHittable(b){
   if(b.k==='base')return !MB.u.some(o=>o.k==='tower'&&o.team===b.team&&!o.dead);
   return true;
 }
-const mbSpeed=u=>u.speed*(u.st.slow>0?1-u.st.slowK:1)*(u.st.rage>0?u.st.rageSp:1);
+const mbSpeed=u=>u.speed*(1+mbIb(u).spd)*(u.st.slow>0?1-u.st.slowK:1)*(u.st.rage>0?u.st.rageSp:1);   // spd: מגפיים (moba-items.js)
 
 /* ---- נזק, שליטה בקהל ומוות ---- */
 function mbDmg(src,t,d,dt,o={}){
   if(!t||t.dead||!mbHittable(t))return 0;
   if(src&&src.k==='hero'&&src.st.rage>0)d*=src.st.rageK;
   if(t.st.wet>0&&dt==='lightning'){d*=MOBA.combo.shock;t.st.wet=0;mbWord(t,'shock')}   // קומבו: רטוב + ברק
-  if(t.k==='hero')d*=1-(MBKIT[t.kit].def||0);   // הנפח והלוחם נלחמים מקרוב, וסופגים קצת פחות
+  if(t.k==='hero')d*=1-Math.min(MBITEM.cap.def,(MBKIT[t.kit].def||0)+mbIb(t).def);   // הנפח והלוחם נלחמים מקרוב, וסופגים קצת פחות. ועוד הגנה מחפצים (moba-items.js)
   if(t.st.rage>0)d*=1-(t.st.rageDef||0);   // זעם של הלוחם: סופג פחות
   if(t.st.armor>0){d*=1-t.st.armorK;   // קריאת קרב: הנפח סופג, ומי שמכה בו מקרוב נשרף
     if(src&&src.k!=='tower'&&src.k!=='base'&&mbDist(src,t)<140){src.st.burn=2;src.st.burnD=t.st.burnBack;src.st.burnBy=t}}
   if(t.st.shield>0&&t.st.shieldEnd>MB.t){const a=Math.min(d,t.st.shield);t.st.shield-=a;d-=a}   // מגן (mbShield ב-moba-kits.js) סופג קודם
-  t.hp-=d;t.flash=0.12;
+  t.hp-=d;t.flash=0.12;mbItHit(src,t,d);   // קוצים, מגן בחיים נמוכים, האטה (moba-items.js)
   if(!o.quiet&&(t.k==='hero'||t.k==='tower'||t.k==='base'||src&&src.me))(o.big||o.crit?mbfxNum:mbFloat)(t.x+rand(-8,8),t.y-t.r-18,Math.round(d),t.me?C.blood:dtCol(dt),o,src,t);   // מכה חזקה: מספר גדול (moba-fx.js)
   if(src&&src.k==='hero'&&t.k==='hero'){src.aggro=2;t.hitBy.set(src,MB.t)}   // מגדל מכה במי שתוקף גיבור מתחתיו
   if(t.hp<=0)mbDie(t,src);
@@ -81,11 +81,11 @@ function mbSlow(t,k,dur){if(t.dead||t.k==='tower'||t.k==='base')return;t.st.slow
 function mbPush(o,ang,d){if(o.k==='tower'||o.k==='base')return;mbStep(o,Math.cos(ang)*d,Math.sin(ang)*d)}
 function mbXp(h,v){
   if(h.dead||h.lvl>=MOBA.ultAt)return;h.xp+=v;const N=MOBA.xp.need;
-  while(h.lvl<MOBA.ultAt&&h.xp>=N[h.lvl]){h.lvl++;const old=h.max;h.max=Math.round(MBKIT[h.kit].hp*mbK(h));h.hp+=h.max-old;
+  while(h.lvl<MOBA.ultAt&&h.xp>=N[h.lvl]){h.lvl++;const old=h.max;h.max=mbMaxHp(h);h.hp+=h.max-old;
     if(h.me){celebrate(h.x,h.y,'gear');mbBanner(h.lvl>=MOBA.ultAt?T('mb.ultReady'):T('mb.lvup',h.lvl),C.gold)}}
 }
 function mbDie(t,src){
-  t.hp=0;t.dead=true;const foe=1-t.team;
+  if(t.dead)return;t.hp=0;t.dead=true;const foe=1-t.team;mbItDie(t,src);   // זהב (moba-items.js)
   if(t.k==='minion'){for(const h of mbHeroes(foe))if(mbDist(h,t)<MOBA.xp.share)mbXp(h,MOBA.minion.xp)}
   else if(t.k==='hero'){
     t.deaths++;t.resp=MOBA.respawn.base+MOBA.respawn.lvl*t.lvl+MOBA.respawn.min*MB.t/60;MB.score[foe]++;
@@ -132,11 +132,11 @@ function mbAttack(u,dt,t,A){
   if(mbDist(u,t)-t.r-u.r>A.range)return mbLunge(u,t,A);   // טנק ולוחם מזנקים אל מטרה שקצת רחוקה (moba-kits.js)
   u.aim=Math.atan2(t.y-u.y,t.x-u.x);if(!u.moving)u.face=u.aim;
   if(u.atkT>0)return true;
-  u.atkT=A.cd*(u.st.rage>0?u.st.rageCd:1);
-  let d=A.dmg*(u.k==='hero'?mbK(u):1)*(u.k==='minion'&&(t.k==='tower'||t.k==='base')?MOBA.minion.build*(t.k==='base'?MOBA.base.minK:1):1);   // build: חיילים מכים חזק במבנים. בבסיס פחות (minK)
+  const ib=mbIb(u);u.atkT=A.cd*(u.st.rage>0?u.st.rageCd:1)/(1+ib.aspd);   // חפצים: מהירות תקיפה, נזק וחיים מהנזק (moba-items.js)
+  let d=A.dmg*(u.k==='hero'?mbK(u)*(1+ib.atk):1)*(u.k==='minion'&&(t.k==='tower'||t.k==='base')?MOBA.minion.build*(t.k==='base'?MOBA.base.minK:1):1);   // build: חיילים מכים חזק במבנים. בבסיס פחות (minK)
   const crit=!!(A.crit&&Math.random()<A.crit.p);if(crit)d*=A.crit.k;   // מכה קריטית (הצייד): מספר גדול
   if(A.shot)MB.shots.push({kind:'home',x:u.x,y:u.y-14,tgt:t,team:u.team,src:u,dmg:d,dt:A.dt,sp:MOBA.shot,crit});
-  else{const got=mbDmg(u,t,d,A.dt,{crit});if(A.leech)u.hp=Math.min(u.max,u.hp+got*A.leech);if(A.slow)mbSlow(t,A.slow.k,A.slow.t)}
+  else{const got=mbDmg(u,t,d,A.dt,{crit});const lc=(A.leech||0)+ib.leech;if(lc)u.hp=Math.min(u.max,u.hp+got*lc);if(A.slow)mbSlow(t,A.slow.k,A.slow.t)}
   if(u.me){if(A.shot){P.gn.t=0.3;sfx('shoot')}else{P.sw.anim=0.2;P.sw.ang=u.aim;sfx('hit')}}
   return true;
 }
@@ -215,7 +215,7 @@ function mobaUpdate(dt){
     else if(u.k==='minion'){u.atkT-=dt;mbMinion(u,dt)}
     else mbTower(u,dt);
   }
-  mbFeel(M,dt);   // גיבורים וחיילים לא עומדים אחד בתוך השני, וסיבוב ואנימציה רכים (moba-move.js)
+  mbFeel(M,dt);mbItTick(M,dt);   // זהב עם הזמן, והבוטים קונים (moba-items.js)   // גיבורים וחיילים לא עומדים אחד בתוך השני, וסיבוב ואנימציה רכים (moba-move.js)
   mbShots(dt);
   for(const z of M.zones){
     if(z.delay>0){z.delay-=dt;if(z.delay<=0&&z.fire)z.fire(z)}
@@ -318,7 +318,7 @@ function mbEnd(won){
   const m=MB;setTimeout(()=>{if(S.mb===m)mbEndShow(won)},1400);
 }
 function mobaExit(){
-  $('ovMoba').hidden=true;mbUi(false);MB=null;
+  $('ovMoba').hidden=true;$('ovMbShop').hidden=true;mbUi(false);MB=null;
   if(typeof heroId==='function'&&heroId())enterVillage();
   else{reset();$('ovStart').hidden=false}
 }
@@ -354,6 +354,7 @@ function mobaHud(){
   const ok=M.order?M.order.kind:'';if(mbOrdKey!==ok){mbOrdKey=ok;for(const b of document.querySelectorAll('#mbPing [data-o]'))b.classList.toggle('on',b.dataset.o===ok)}
   for(const b of $('mbSk').querySelectorAll('[data-sk]')){const k=b.dataset.sk,s=MBKIT[u.kit][k],lock=k==='ult'&&u.lvl<MOBA.ultAt;
     b.style.setProperty('--cd',lock?1:Math.max(0,u.cd[k])/s.cd);const l=b.querySelector('.mblock');if(l.hidden===lock)l.hidden=!lock}
+  mbItHud();   // זהב, קנייה מהירה וחפצים (moba-items.js)
 }
 // חלון הבחירה: ארבע הערכות, בשני טורים לרוחב
 function mobaOpen(){

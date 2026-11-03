@@ -101,12 +101,15 @@
 <div class="mbhud" id="mbHud" hidden>
   <div class="mbtop"><b class="mbs0" id="mbS0">0</b><span id="mbClock">0:00</span><b class="mbs1" id="mbS1">0</b></div>
   <div class="mbme"><span class="mbpor" id="mbPor"></span><b class="mblv" id="mbLv">1</b><div class="mbbars"><div class="mbhp" id="mbHpBar"><i id="mbHp"></i><span id="mbHpN"></span></div><div class="mbxp"><i id="mbXp"></i></div></div></div>
+  <div class="mbinv" id="mbInv"></div>
+  <div class="mbshopbar"><span class="mbgold" id="mbGold">0</span><button class="mbquick" id="mbQuick" hidden></button><button class="mbshopb" id="mbShopB" data-ta="mb.shop"><b aria-hidden="true">🛒</b></button></div>
   <div class="mbfeed" id="mbFeed"></div>
   <div class="mbresp" id="mbResp" hidden><span data-t="mb.respL"></span><b id="mbRespN"></b><i><i id="mbRespBar"></i></i></div>
   <button class="wx mbexit" id="mbExit" data-ta="mb.exit">✕</button>
   <div class="mbping" id="mbPing" role="group" data-ta="mb.ping"><button data-o="attack"><b aria-hidden="true">⚔️</b><span data-t="mb.o.attack"></span></button><button data-o="back"><b aria-hidden="true">🛡️</b><span data-t="mb.o.back"></span></button></div>
 </div>
 <div class="skills mbsk" id="mbSk" role="group" data-ta="sk.group" hidden></div>
+<div class="ov" id="ovMbShop" hidden><div class="panel win mbshop" id="mbShop"></div></div>   <!-- חנות החפצים (js/moba-items.js) -->
 <div class="ov gearov" id="ovMoba" hidden><div class="panel win mbwin" id="mbWin"></div></div>
 
 <div class="banner" id="banner"></div>
@@ -442,6 +445,7 @@
 <script src="js/moba-kits.js"></script>   <!-- משחקי השאול: מובה 3 על 3 עם בוטים (docs/moba.md) -->
 <script src="js/moba-fx.js"></script>   <!-- משחקי השאול: חלקיקים, הבזק, עצירת פריים ורגע הסקיל-על -->
 <script src="js/moba-look.js"></script>   <!-- משחקי השאול: אייקונים, רצפה ומפה קטנה -->
+<script src="js/moba-items.js"></script>   <!-- משחקי השאול: זהב וחנות חפצים -->
 <script src="js/moba.js"></script>
 <script src="js/moba-aim.js"></script>   <!-- משחקי השאול: כיוון וביטול סקילים בגרירה -->
 <script src="js/moba-bot.js"></script>
