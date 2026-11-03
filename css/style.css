@@ -1507,6 +1507,14 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbresp{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);margin:0;font:800 var(--t4) var(--body);color:var(--chalk);background:rgba(18,22,36,.75);padding:8px 18px;border-radius:12px}
 .mb .banner{top:calc(env(safe-area-inset-top,0px) + 88px);font-size:20px}   /* הודעות במובה למעלה, מתחת למפה הקטנה, ולא על הקרב */
 .mbskb.shake{animation:mbshake .35s}
+/* כיוון בגרירה (js/moba-aim.js): הכפתור שמכוון גדל קצת, ואזור "ביטול" עם ✕ מעל הכפתורים. בטעינה: השניות באמצע והאייקון דהוי */
+.mbskb{transition:transform .12s}
+.mbskb.aiming,.mbskb.aiming:active{transform:scale(1.14);box-shadow:0 0 0 3px var(--dt),0 0 18px var(--dt)}
+.mbskb[data-sec]:not([data-sec=""]) .mbski{opacity:.4}
+.mbcancel{position:absolute;width:64px;height:64px;right:12px;bottom:206px;border-radius:50%;border:2px dashed rgba(236,231,220,.6);background:rgba(18,22,36,.78);
+  color:var(--chalk);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;pointer-events:none;font:700 var(--t1) var(--body);transition:transform .1s}
+.mbcancel b{font-size:22px;line-height:1}
+.mbcancel.hot{border:2px solid var(--blood);background:rgba(239,78,87,.85);transform:scale(1.15)}
 @keyframes mbshake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
 .mbping{position:absolute;top:calc(env(safe-area-inset-top,0px) + 64px);inset-inline-end:calc(env(safe-area-inset-right,0px) + 12px);display:flex;flex-direction:column;gap:8px;pointer-events:auto}
 .mbping button{width:58px;height:58px;border-radius:50%;border:2px solid var(--line);background:rgba(18,22,36,.82);color:var(--chalk);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;font:700 var(--t1) var(--body);touch-action:none;cursor:pointer}
