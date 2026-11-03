@@ -7,12 +7,12 @@ const PETFX3D={
   tail:{every:0.04,size:14,size2:3,spd:16,up:34,life:[0.2,0.36],glow:0.1,halo:22},   // הלהבה בקצה הזנב: כל כמה שניות חלקיק, וזוהר רך סביבו
   ember:{every:0.45},
   paw:{every:0.08,size:9,up:26},                      // להבונים ליד הכפות, רק כשהיא רצה
-  mark:{r:32,a:0.2},                                 // ההילה החמה על הקרקע מתחתיה
+  mark:{r:32,a:0.22,every:0.22,life:0.34},            // ההילה החמה על הקרקע מתחתיה: סימן קצר שמתחדש, כך שהיא לא מחזיקה מדבקה לנצח
   bite:{fire:13,spark:12,ember:5,flash:20,light:6,lightT:0.24,spd:300,up:120,mouth:0.42,high:0.6},
   pal:{core:'#FFE8A8',glow:'#FF8A3D',deep:'#C92A06'},
   stat:{flame:0,bite:0}   // לבדיקה (check.js): כמה פעמים יצאה להבה מהזנב ומהפה
 };
-const PETFX={t:0,halo:null,tail:0,emb:0,paw:0};   // המצב הרגעי של האפקט (לא נשמר)
+const PETFX={t:0,halo:0,tail:0,emb:0,paw:0};   // המצב הרגעי של האפקט (לא נשמר)
 // מתי האש בתלת-ממד: שלב 3, תלת-ממד דלוק, ובמקום שהערכה פעילה בו (העולם הפתוח)
 const petFx3dOn=()=>!!(typeof VFX3D!=='undefined'&&VFX3D.on()&&petStage().fx);
 // איפה קצה הזנב בעולם התלת-ממדי (העצם של המודל). בלי מודל: הערכה מאחורי הגוף
@@ -24,7 +24,7 @@ function petFx3dTail(p,h){
 /* נקרא מ-drawPet בכל פריים. מחזיר true כשהאש מצוירת בתלת-ממד, ואז הציור בקנבס מדולג */
 function petFx3d(p,h){
   const F=PETFX3D,X=PETFX,Pl=F.pal;
-  if(!petFx3dOn()){if(X.halo&&X.halo.on){VFX3D.free(X.halo);X.halo=null}return false}
+  if(!petFx3dOn())return false;
   const dt=Math.max(0,Math.min(0.1,p.fxT-(X.t||p.fxT)));X.t=p.fxT;
   const q=VFX3D.quality()==='hi'?1:2.2;
   const t=petFx3dTail(p,h);
@@ -36,9 +36,8 @@ function petFx3d(p,h){
   // כפות: להבונים קטנים כשהיא רצה
   if(p.run&&(X.paw-=dt)<=0){X.paw=F.paw.every*q;const c=Math.cos(p.face),s=Math.sin(p.face),f=Math.random()<0.5?0.22:-0.22,g=Math.random()<0.5?0.1:-0.1;
     VFX3D.emit('fire',p.x+c*h*f-s*h*g,p.y+s*h*f+c*h*g,h*0.12,{n:1,col:Pl.core,col2:Pl.glow,size:F.paw.size,size2:2,spd:10,up:F.paw.up,life:[0.14,0.26]})}
-  // הילה חמה על הקרקע מתחתיה, זזה איתה
-  if(!X.halo||!X.halo.on)X.halo=VFX3D.decal('glow',p.x,p.y,F.mark.r,{life:Infinity,col:Pl.glow,a:F.mark.a,hdr:1.3});
-  if(X.halo){X.halo.x=p.x;X.halo.y=p.y}
+  // הילה חמה על הקרקע מתחתיה: מדבקה קצרה שמתחדשת, כך שנשאר גם שובל אור רך אחריה, ושום ידית לא נתקעת כשהיא עוזבת את העולם
+  if((X.halo-=dt)<=0){X.halo=F.mark.every*q;VFX3D.decal('glow',p.x,p.y,F.mark.r,{life:F.mark.life,col:Pl.glow,a:F.mark.a,hdr:1.3,fade:0.7})}
   return true;
 }
 /* נשיכה (petBite ב-pet.js): שלהבת מהפה לכיוון האויב */
