@@ -1621,6 +1621,9 @@ html.fight.waves .hud .clock{opacity:1}
   #ovOver .arwin .sub{font-size:12px}
   .arwin .go{padding:10px 4px;min-height:48px;font-size:18px}
   #ovBoss .arwin>.go{align-self:end}
+  /* בוס שלמד הרבה (הרבה שורות, ובאנגלית ארוכות יותר) דחף את הכפתור מחוץ למסך. החלון לא גבוה מהמסך, והטורים של הטקסט נגללים בתוכם */
+  #ovBoss .panel{max-height:calc(100dvh - 10px);grid-template-rows:auto auto minmax(0,1fr) auto}
+  #ovBoss .learned{min-height:0;overflow:auto;font-size:12.5px}
 }
 
 /* הודעות בזירה (banner ב-progression.js): פס קטן למעלה, מתחת לפסי החיים והבוס, ולא על הגיבור באמצע.
