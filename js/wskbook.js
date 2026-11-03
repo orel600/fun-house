@@ -21,7 +21,7 @@ const WSKBOOK={
     vines: {ic:'🌿',dt:'earth',    cls:'hunter', lv:6,cd:9, dmg:0.8, kind:'pull',  r:240,pull:640,root:2,self:1},    // שורשים מושכים את כולם אל הגיבור ותוקעים אותם (ואז פיזי = ננעץ, wcombo.js)
     spirit:{ic:'🫧',dt:'water',    cls:'mage',   lv:2,cd:12,dmg:0.6, kind:'summon',r:240,t:7,tick:0.6,self:1},       // רוח מים שמרחפת ליד הגיבור ויורה (רטוב + ברק/קרח = קומבו)
     storm: {ic:'⛈️',dt:'lightning',cls:'mage',   lv:4,cd:11,dmg:0.8, kind:'storm', r:240,t:4,tick:0.45,self:1},      // ענן שהולך עם הגיבור ומכה באויב אקראי
-    meteor:{ic:'☄️',dt:'fire',     cls:'mage',   lv:6,cd:9, dmg:3.5, kind:'meteor',r:125,delay:0.9}                  // מטאור: סימון על הקרקע, ואחרי רגע פיצוץ ענק
+    meteor:{ic:'☄️',dt:'fire',     cls:'mage',   lv:6,cd:9, dmg:3.5, kind:'meteor',r:125,delay:0.9,push:260,stop:0.07}   // מטאור: סימון על הקרקע, ואחרי רגע פיצוץ ענק. push: הדיפה, stop: עצירה קצרה בפגיעה
   }
 };
 // נרשמים ליד הסקילים של הזירה, כדי שהכפתורים (skillsHud), רגע הגילוי והכוונת יכירו אותם. בזירה אף אחד לא מוסיף אותם
@@ -127,8 +127,8 @@ function wsbUpdate(dt){
           if(c.length){const t=c[Math.floor(Math.random()*c.length)];skLine({x:o.x+rand(-24,24),y:o.y+6},t,o.col);wsbHit(t,o.id,o.base,P,o.dt)}}break;
       case 'meteor':if(o.t>=D.delay&&!o.boom){o.boom=1;
           S.sk.fx.push({ring:1,x:o.x,y:o.y,r:o.r,t:0,max:0.45*themeK(),col:o.col});if(!wsbLess())S.sk.fx.push({ring:1,x:o.x,y:o.y,r:o.r*1.3,t:0,max:0.6*themeK(),col:o.col});
-          for(const e of wsbIn(o.x,o.y,o.r))wsbHit(e,o.id,o.base,o,o.dt);
-          sparks(o.x,o.y,o.col,wsbLess()?8:24,300);S.shake=Math.max(S.shake,wsbLess()?3:7);sfx('hit')}break;
+          for(const e of wsbIn(o.x,o.y,o.r)){wsbHit(e,o.id,o.base,o,o.dt);const a=Math.atan2(e.y-o.y,e.x-o.x),p=(D.push||0)*(e.isBoss?0.2:1);e.kx+=Math.cos(a)*p;e.ky+=Math.sin(a)*p}
+          if(!(typeof VFX3D!=='undefined'&&VFX3D.on()))sparks(o.x,o.y,o.col,wsbLess()?8:24,300);S.shake=Math.max(S.shake,wsbLess()?3:8);if(D.stop&&typeof jStop==='function')jStop(D.stop,true);sfx('hit')}break;   // בתלת-ממד הניצוצות מ-skfx3d-meteor.js
     }}
   S.wsb.fx=L.filter(o=>o.t<o.dur);
 }
@@ -137,7 +137,8 @@ function wsbUpdate(dt){
 function wsbDraw(){
   const L=S.wsb&&S.wsb.fx;if(!L||!L.length)return;
   const less=wsbLess();ctx.save();
-  for(const o of L){const k=Math.min(1,o.t/o.dur);ctx.strokeStyle=ctx.fillStyle=o.col;
+  for(const o of L){if(typeof SKFX3D!=='undefined'&&SKFX3D.owns(o))continue;   // יש לסקיל מתכון בתלת-ממד (skfx3d.js): הוא מצייר במקום
+    const k=Math.min(1,o.t/o.dur);ctx.strokeStyle=ctx.fillStyle=o.col;
     switch(o.k){
       case 'dash':ctx.globalAlpha=0.5*(1-k);ctx.lineWidth=18*o.vis;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(o.fx,o.fy);ctx.lineTo(P.x,P.y);ctx.stroke();break;
       case 'aura':{const n=less?2:4;ctx.lineWidth=5*o.vis;for(let i=0;i<n;i++){const a=o.t*7+i*Math.PI*2/n;ctx.globalAlpha=0.75;ctx.beginPath();ctx.arc(P.x,P.y,o.r*0.85,a,a+0.9);ctx.stroke()}

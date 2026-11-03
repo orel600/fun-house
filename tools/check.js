@@ -1196,6 +1196,17 @@ function worldBot(m,L,god){
         catch(err){r.bad.push(id+':'+String(err))}}
       for(const x of enemies)x.dead=true;enemies=[];run(8);r.clean=!(S.wsb&&S.wsb.fx.length);r.noPic=Object.keys(WSKBOOK.list).filter(id=>wsbPicOk[id]!==true)}catch(err){r.err=String(err&&err.stack||err)}
     const o=$('ovBook');if(o)o.hidden=true;if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // אפקטים בתלת-ממד (vfx3d.js, skfx3d-meteor.js): המטאור מוטל, בנפילה יש חלקיקים ומתכון פעיל (והציור הדו-ממדי מדלג), בפגיעה פיצוץ, ובסוף הכל משתחרר
+  const vfx=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();SAVE.hero.skLoad=['meteor',null];enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60);VFX3D.step(1/60)}};
+      run(0.05);if(SKR)skrEnd(false);r.d3=VFX3D.on();
+      const e=addEnemy('grunt',P.x+80,P.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;
+      const i=S.sk.ids.indexOf('meteor');if(i>=0)S.sk.cd[i]=0;r.cast=wskUse('meteor');if(SKR)skrEnd(false);
+      run(0.5);r.fall=VFX3D.parts()>0&&SKFX3D.n()>0;r.skip2d=!!S.wsb&&S.wsb.fx.some(o=>SKFX3D.owns(o));r.p1=VFX3D.parts();
+      run(0.6);r.boom=VFX3D.parts()>0;r.p2=VFX3D.parts();r.hit=e.hp<e.max;
+      for(const x of enemies)x.dead=true;enemies=[];run(6);r.end=VFX3D.n()===0&&SKFX3D.n()===0}catch(err){r.err=String(err&&err.stack||err)}
+    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // סקיל חתימה (sigskill.js): לכל דרגה סקיל משלה. בלי דרגה אין כפתור, עם דרגה הכפתור בעולם, רגע גילוי, והטלה שפוגעת. בזירה אין כפתור
   const sig=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:[],bad:[],n:Object.keys(RANKS.list).length};
     try{if(SKR)skrEnd(false);SAVE.hero.skSeen=wsbIds().slice();SAVE.hero.rankId=null;enterWorld('home');enemies=[];
@@ -2658,6 +2669,8 @@ function worldBot(m,L,god){
   check(!sig.err&&sig.noRank&&sig.all&&sig.reveal&&sig.btn&&!sig.bad.length&&sig.ok.length===sig.n&&sig.clean&&sig.arena,'סקיל חתימה: '+(sig.err||[sig.noRank?'בלי דרגה אין כפתור':'יש כפתור בלי דרגה',
     sig.all?'לכל דרגה סקיל':'יש דרגה בלי סקיל',sig.reveal?'רגע גילוי':'אין רגע גילוי',sig.btn?'כפתור בעולם':'אין כפתור בעולם','עובדים: '+sig.ok.join(', '),
     sig.bad.length?'נכשלו: '+sig.bad.join(', '):'',sig.clean?'נגמרים':'לא נגמרו',sig.arena?'':'כפתור בזירה'].filter(Boolean).join(' · ')));
+  check(!vfx.err&&vfx.cast&&vfx.hit&&(!vfx.d3||vfx.fall&&vfx.skip2d&&vfx.boom&&vfx.end),'אפקטים בתלת-ממד: '+(vfx.err||(!vfx.d3?'דו-ממד, המטאור בציור הישן'+(vfx.cast&&vfx.hit?' ופוגע':' לא פגע'):
+    [vfx.fall?'נופל עם '+vfx.p1+' חלקיקים':'אין חלקיקים בנפילה',vfx.skip2d?'הציור הישן מדלג':'הציור הישן לא מדלג',vfx.boom?'פיצוץ עם '+vfx.p2+' חלקיקים':'אין פיצוץ',vfx.hit?'פוגע':'לא פגע',vfx.end?'נגמר ומשחרר':'לא השתחרר'].join(' · '))));
   check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean&&!wsb.noPic.length,
     'ספר הסקילים: '+(wsb.err||[wsb.one&&wsb.lock?'נעול בהתחלה':'לא נעול',wsb.lp?'במסלול הרמות':'לא במסלול',wsb.fill&&wsb.btns?'רמה ממלאת משבצות':'רמה לא מילאה',
     wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn?'הספר מחליף כפתור':'הספר לא החליף','עובדים: '+wsb.ok.join(', '),wsb.bad.length?'נכשלו: '+wsb.bad.join(', '):'',wsb.clean?'נגמרים':'לא נגמרו',wsb.noPic.length?'אייקונים שלא נטענו: '+wsb.noPic.join(', '):''+wsb.n+' אייקונים נטענו'].filter(Boolean).join(' · ')));
