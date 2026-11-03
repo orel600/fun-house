@@ -1512,8 +1512,12 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbping button[data-o=back].on{border-color:#4C8DFF;box-shadow:0 0 0 3px rgba(76,141,255,.3)}
 .mbping button:active{transform:scale(.92)}
 .mbexit{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);inset-inline-end:calc(env(safe-area-inset-right,0px) + 12px);pointer-events:auto}
-.mbski{font-size:30px;line-height:1}
-.mbskb:first-child .mbski{font-size:36px}
+.mbski{width:34px;height:34px;color:var(--dt);filter:drop-shadow(0 2px 1px #000a);position:relative}   /* אייקוני SVG (moba-look.js), בצבע סוג הנזק */
+.mbskb:first-child .mbski{width:42px;height:42px}
+.mbping button b{display:grid;place-items:center}
+.mbpi{width:24px;height:24px}
+.mbping button[data-o=attack] .mbpi{color:var(--ember)}.mbping button[data-o=back] .mbpi{color:#4C8DFF}
+.mbli{width:18px;height:18px;color:var(--dt);vertical-align:-4px;flex:none}
 .mblock{position:absolute;inset:0;display:grid;place-items:center;font:800 24px var(--body);color:var(--chalk);z-index:1}
 .mbwin{width:min(780px,94%);max-height:92vh;overflow:auto}
 .mbgoal{margin:6px 0 10px;color:var(--dim);font:600 var(--t1) var(--body)}
@@ -1521,7 +1525,7 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 @media (max-width:620px){.mbkits{grid-template-columns:repeat(2,1fr)}}
 .mbkit{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px;border-radius:14px;border:2px solid var(--dt);background:rgba(18,22,36,.85);color:var(--chalk);cursor:pointer;font:inherit}
 .mbkit:active{transform:scale(.96)}
-.mbki{font-size:34px;line-height:1.1}
+.mbki{width:40px;height:40px;color:var(--dt);filter:drop-shadow(0 2px 1px #000a)}
 .mbkn{font:800 var(--t3) var(--body)}
 .mbkit small{color:var(--dt);font:700 var(--t1) var(--body);text-align:center}
 .mbkit ul{list-style:none;margin:4px 0 0;padding:0;font:500 var(--t1) var(--body);display:flex;flex-direction:column;gap:3px;align-self:stretch;text-align:start}
