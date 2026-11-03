@@ -1198,6 +1198,46 @@ function worldBot(m,L,god){
       run(0.6);r.boom=VFX3D.parts()>0;r.p2=VFX3D.parts();r.hit=e.hp<e.max;
       for(const x of enemies)x.dead=true;enemies=[];run(6);r.end=VFX3D.n()===0&&SKFX3D.n()===0}catch(err){r.err=String(err&&err.stack||err)}
     if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  /* אפקטים בתלת-ממד לסקילי הקוסם ולפיוחו (skfx3d-spirit.js, skfx3d-storm.js, petfx3d.js):
+     רוח מים יורה ומתיז, ענן הסערה מוריד ברקים, האש של פיוחו יוצאת מהזנב ומהפה בנשיכה, והתנועה שלה חלקה (בלי עצירות פתאום) */
+  const vfx2=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();SAVE.hero.skLoad=['spirit','storm'];enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60);petUpdate(1/60);drawPet();VFX3D.step(1/60)}};
+      /* תנועה חלקה (ניר, 3.11.2026: "התנועה של פיוחו לא חלקה"): מזיזים את השחקן על מסלול קבוע (ישר, פנייה, עצירה, עיגול, זיגזג),
+         ומודדים כמה המהירות שלה קופצת בין פריימים, כמה פעמים היא נעצרת פתאום באמצע ריצה, וכמה פעמים האנימציה מתחלפת */
+      r.move=(()=>{const sm=[];let t=0,SP=185;P.x=0;P.y=0;P.face=0;S.pet=null;petUpdate(1/60);
+        for(const [k,sec] of [['r',1.2],['u',1.2],['s',0.6],['c',2],['z',1.2]])for(let i=0;i<sec*60;i++){let vx=0,vy=0;
+          if(k==='r')vx=SP;else if(k==='u')vy=-SP;else if(k==='c'){const a=t*1.4;vx=Math.cos(a)*SP;vy=Math.sin(a)*SP}else if(k==='z')vx=(Math.floor(t*4)%2?1:-1)*SP;
+          P.x+=vx/60;P.y+=vy/60;P.moving=!!(vx||vy);P.speed=SP;if(P.moving)P.face=Math.atan2(vy,vx);
+          if(S.wd)S.wd.scentT=999;if(S.pet)S.pet.digT=999;petUpdate(1/60);t+=1/60;sm.push([S.pet.x,S.pet.y,!!S.pet.run])}
+        let jerk=0,stops=0,flips=0,n=0,pv=null;
+        for(let i=1;i<sm.length;i++){const vx=(sm[i][0]-sm[i-1][0])*60,vy=(sm[i][1]-sm[i-1][1])*60;
+          if(pv){jerk+=Math.hypot(vx-pv[0],vy-pv[1]);n++;if(Math.hypot(pv[0],pv[1])>40&&Math.hypot(vx,vy)<6)stops++}
+          pv=[vx,vy];if(sm[i][2]!==sm[i-1][2])flips++}
+        return {jerk:Math.round(jerk/Math.max(1,n)),stops,flips}})();
+      run(0.05);if(SKR)skrEnd(false);r.d3=VFX3D.on();
+      const e=addEnemy('grunt',P.x+90,P.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;
+      // רוח מים: מתכון פעיל (הציור הדו-ממדי מדלג), קליעים שיוצאים ומתיזים, ובסוף הכל משתחרר
+      SPR3D.stat.shots=SPR3D.stat.splash=0;
+      let i=S.sk.ids.indexOf('spirit');if(i>=0)S.sk.cd[i]=0;r.castS=wskUse('spirit');if(SKR)skrEnd(false);
+      run(0.4);r.sOwn=(S.wsb.fx||[]).some(o=>o.id==='spirit'&&SKFX3D.owns(o));r.sPart=VFX3D.parts();
+      run(2.2);r.sShot=SPR3D.stat.shots;r.sSplash=SPR3D.stat.splash;
+      run(6);r.sEnd=!(S.wsb.fx||[]).some(o=>o.id==='spirit');
+      // ענן סערה: ברקים שיורדים על האויב
+      STM3D.stat.strikes=STM3D.stat.bolts=0;
+      i=S.sk.ids.indexOf('storm');if(i>=0)S.sk.cd[i]=0;r.castT=wskUse('storm');if(SKR)skrEnd(false);
+      run(0.4);r.tOwn=(S.wsb.fx||[]).some(o=>o.id==='storm'&&SKFX3D.owns(o));r.tPart=VFX3D.parts();
+      run(1.6);r.tStrike=STM3D.stat.strikes;r.tBolt=STM3D.stat.bolts;
+      run(4);r.tEnd=!(S.wsb.fx||[]).some(o=>o.id==='storm');
+      // האש של פיוחו בשלב 3: להבה מהזנב, ושלהבת בנשיכה
+      SAVE.pet.xp=petKind().stages[2].xp;SAVE.pet.stage=2;PETFX3D.stat.flame=PETFX3D.stat.bite=0;
+      const p=S.pet;if(p){p.x=P.x+40;p.y=P.y+20;p.st='follow'}
+      run(0.6);r.pFlame=PETFX3D.stat.flame;r.pOn=petFx3dOn();
+      if(p){p.st='hunt';p.foe=e;p.bites=0;p.biteT=0;p.t=0}
+      run(1.2);r.pBite=PETFX3D.stat.bite;
+      for(const x of enemies)x.dead=true;enemies=[];
+    }catch(err){r.err=String(err&&err.stack||err)}
+    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // סקיל חתימה (sigskill.js): לכל דרגה סקיל משלה. בלי דרגה אין כפתור, עם דרגה הכפתור בעולם, רגע גילוי, והטלה שפוגעת. בזירה אין כפתור
   const sig=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:[],bad:[],n:Object.keys(RANKS.list).length};
     try{if(SKR)skrEnd(false);SAVE.hero.skSeen=wsbIds().slice();SAVE.hero.rankId=null;enterWorld('home');enemies=[];
@@ -2660,6 +2700,14 @@ function worldBot(m,L,god){
   check(!sig.err&&sig.noRank&&sig.all&&sig.reveal&&sig.btn&&!sig.bad.length&&sig.ok.length===sig.n&&sig.clean&&sig.arena,'סקיל חתימה: '+(sig.err||[sig.noRank?'בלי דרגה אין כפתור':'יש כפתור בלי דרגה',
     sig.all?'לכל דרגה סקיל':'יש דרגה בלי סקיל',sig.reveal?'רגע גילוי':'אין רגע גילוי',sig.btn?'כפתור בעולם':'אין כפתור בעולם','עובדים: '+sig.ok.join(', '),
     sig.bad.length?'נכשלו: '+sig.bad.join(', '):'',sig.clean?'נגמרים':'לא נגמרו',sig.arena?'':'כפתור בזירה'].filter(Boolean).join(' · ')));
+  {const v=vfx2,m=v.move||{};
+    check(!v.err&&m.stops===0&&m.jerk<9&&m.flips<=6,'פיוחו זזה חלק: '+(v.err||'קפיצות מהירות '+m.jerk+' (עד 9), עצירות פתאום '+m.stops+' (צריך 0), חילופי הליכה/ריצה '+m.flips+' (עד 6)'));
+    check(!v.err&&v.castS&&v.castT&&(!v.d3||v.sOwn&&v.sShot>0&&v.sSplash>0&&v.sEnd&&v.tOwn&&v.tStrike>0&&v.tBolt>0&&v.tEnd),
+      'אפקטים לסקילי הקוסם: '+(v.err||(!v.d3?'דו-ממד, הציור הישן':
+      ['רוח מים: '+(v.sOwn?'מתכון תלת-ממד':'בלי מתכון')+', '+v.sShot+' קליעים, '+v.sSplash+' התזות'+(v.sEnd?', נגמר':', לא נגמר'),
+       'סערה: '+(v.tOwn?'מתכון תלת-ממד':'בלי מתכון')+', '+v.tStrike+' ברקים ('+v.tBolt+' קווים)'+(v.tEnd?', נגמר':', לא נגמר')].join(' · '))));
+    check(!v.err&&(!v.d3||v.pOn&&v.pFlame>0&&v.pBite>0),'האש של פיוחו בתלת-ממד: '+(v.err||(!v.d3?'דו-ממד, הלהבות בקנבס':
+      (v.pOn?'דולקת':'לא דולקת')+', '+v.pFlame+' להבות מהזנב, '+v.pBite+' שלהבות בנשיכה')));}
   check(!vfx.err&&vfx.cast&&vfx.hit&&(!vfx.d3||vfx.fall&&vfx.skip2d&&vfx.boom&&vfx.end),'אפקטים בתלת-ממד: '+(vfx.err||(!vfx.d3?'דו-ממד, המטאור בציור הישן'+(vfx.cast&&vfx.hit?' ופוגע':' לא פגע'):
     [vfx.fall?'נופל עם '+vfx.p1+' חלקיקים':'אין חלקיקים בנפילה',vfx.skip2d?'הציור הישן מדלג':'הציור הישן לא מדלג',vfx.boom?'פיצוץ עם '+vfx.p2+' חלקיקים':'אין פיצוץ',vfx.hit?'פוגע':'לא פגע',vfx.end?'נגמר ומשחרר':'לא השתחרר'].join(' · '))));
   check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean&&!wsb.noPic.length,
