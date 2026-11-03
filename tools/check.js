@@ -2509,6 +2509,17 @@ function worldBot(m,L,god){
     document.querySelector('#mbWin [data-kit="tank"]').click();o.on=!!S.mb&&document.body.classList.contains('mb');
     if(en&&!o.he&&heb($('mbHud').innerText))o.he=$('mbHud').innerText.slice(0,60);
     mbPress('ult');o.lock=$('banner').textContent!==T('mb.locked')&&document.querySelector('#mbSk [data-sk="ult"]').classList.contains('shake');   // סקיל-על נעול: הכפתור רועד, בלי הודעה באמצע
+    // כיוון וביטול בגרירה (moba-aim.js): גוררים מהכפתור, משחררים על ✕ = בוטל ובלי טעינה. גוררים שמאלה עד הסוף = הסדן נוחת בקצה הטווח משמאל
+    {const me=MB.me,b=document.querySelector('#mbSk [data-sk="s1"]'),r=b.getBoundingClientRect(),cx=r.x+r.width/2,cy=r.y+r.height/2,z0=MB.zones.length,R=MBKIT.tank.s1.range;
+      const ev=(el,t,x,y)=>el.dispatchEvent(new PointerEvent(t,{pointerId:9,clientX:x,clientY:y,bubbles:true,cancelable:true}));
+      me.cd.s1=0;me.st.stun=0;ev(b,'pointerdown',cx,cy);ev(document.body,'pointermove',cx-60,cy);
+      const on=!!mbAim&&mbAim.on&&!$('mbCancel').hidden&&b.classList.contains('aiming');render();
+      const c=$('mbCancel').getBoundingClientRect();ev(document.body,'pointermove',c.x+c.width/2,c.y+c.height/2);const hot=$('mbCancel').classList.contains('hot');ev(document.body,'pointerup',c.x+c.width/2,c.y+c.height/2);
+      const cancel=me.cd.s1===0&&MB.zones.length===z0&&$('mbCancel').hidden&&!mbAim;
+      ev(b,'pointerdown',cx,cy);ev(document.body,'pointermove',cx-MBAIM.pull-20,cy);ev(document.body,'pointerup',cx-MBAIM.pull-20,cy);
+      const z=MB.zones[MB.zones.length-1],cast=me.cd.s1>0&&MB.zones.length===z0+1&&Math.abs(z.x-(me.x-R))<5&&Math.abs(z.y-me.y)<5;
+      mbAimSecs();const sec=b.dataset.sec===String(Math.ceil(me.cd.s1));
+      o.aim={on,hot,cancel,cast,sec};if(MB.zones.length>z0)MB.zones.pop();me.cd.s1=0;mbAimSecs()}
     // הולכים ישר אל מגדל שלנו באמצע הנתיב: מחליקים מסביב, לא נתקעים (אוראל, 3.11: "המוד תקוע לגמרי")
     {const me=MB.me,tw=MB.u.find(b=>b.k==='tower'&&b.team===0&&Math.abs(b.x)===MOBA.towers[1]);const hx=me.x,hy=me.y;me.x=tw.x-tw.r-me.r-4;me.y=tw.y;
       joy={id:-7,ox:150,oy:280,dx:1,dy:0};for(let i=0;i<75;i++)mobaUpdate(1/30);o.slide={pass:me.x>tw.x+tw.r,dx:Math.round(me.x-tw.x)};joy=null;me.x=hx;me.y=hy}
@@ -2815,6 +2826,7 @@ function worldBot(m,L,god){
     check(mb.two&&mb.two.held===2&&mb.two.ok,'משחקי השאול עם קשת וחרב: '+(mb.two?(mb.two.ok?'ה-HUD עובד':'ה-HUD נופל: '+mb.two.err):'לא נבדק'));
     check(mb.slide&&mb.slide.pass,'משחקי השאול: הולכים ישר אל מגדל ומחליקים מסביבו '+(mb.slide?(mb.slide.pass?'✓':'נתקע ('+mb.slide.dx+' מהמגדל)'):'לא נבדק'));
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
+    {const A=mb.aim||{};check(A.on&&A.hot&&A.cancel&&A.cast&&A.sec,'משחקי השאול: כיוון בגרירה '+(A.on?'✓':'לא הופיע')+(A.hot?', ✕ נדלק':', ✕ לא נדלק')+(A.cancel?', ביטול בלי טעינה':', הביטול לא עבד')+(A.cast?', שחרור מטיל לנקודה':', השחרור לא הטיל לנקודה')+(A.sec?', שניות על הכפתור':', אין שניות'))}
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));
     check(mb.fixed&&!mb.fixed.length,'משחקי השאול: כל 12 הסקילים (4 ערכות) הוטלו בתרחיש קבוע'+(mb.fixed&&mb.fixed.length?' · לא הוטלו: '+mb.fixed.join(', '):'')+' · במשחק הבוטים ('+mb.kits+'): '+(mb.miss.length?'לא הגיעו ל: '+mb.miss.join(', '):'כולם'));
     const cb=mb.combo||{};check(cb.shock>0&&Math.abs(cb.k-cb.want)<0.01&&cb.freeze>0&&cb.frozen,'משחקי השאול: קומבו בתרחיש קבוע: חשמול '+(cb.shock?'✓ נזק ×'+cb.k:'לא קרה')+', קפוא '+(cb.freeze&&cb.frozen?'✓ הקפאה ארוכה':'לא קרה'));
