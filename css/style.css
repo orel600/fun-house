@@ -1525,6 +1525,12 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbexit{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);inset-inline-end:calc(env(safe-area-inset-right,0px) + 12px);pointer-events:auto}
 .mbski{width:34px;height:34px;color:var(--dt);filter:drop-shadow(0 2px 1px #000a);position:relative}   /* אייקוני SVG (moba-look.js), בצבע סוג הנזק */
 .mbskb:first-child .mbski{width:42px;height:42px}
+/* אייקון מצויר (js/moba-icons.js): ממלא את הכפתור כמו בעולם (.world .skb::before), וה-SVG שאחריו מוסתר. בטעינה: דהוי */
+.mbpic~svg{display:none}
+.mbskb .mbpic{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);border-radius:50%;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
+.mbskb[data-sec]:not([data-sec=""]) .mbpic{opacity:.45}
+.mbpic.mbki{width:46px;height:46px;object-fit:contain;filter:drop-shadow(0 2px 2px #000a)}
+.mbpic.mbli{width:20px;height:20px;object-fit:contain;vertical-align:-5px}
 .mbping button b{display:grid;place-items:center}
 .mbpi{width:24px;height:24px}
 .mbping button[data-o=attack] .mbpi{color:var(--ember)}.mbping button[data-o=back] .mbpi{color:#4C8DFF}
