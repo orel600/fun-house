@@ -1233,6 +1233,7 @@ function worldBot(m,L,god){
       run(2.2);r.sShot=SPR3D.stat.shots;r.sSplash=SPR3D.stat.splash;
       run(6);r.sEnd=!(S.wsb.fx||[]).some(o=>o.id==='spirit');
       // ענן סערה: ברקים שיורדים על האויב
+      const near=()=>{e.x=P.x+90;e.y=P.y;e.kx=e.ky=0};near();   // רוח המים דוחפת אותו, ואז הוא יוצא מטווח ההתקפה (260) והסערה לא מכה אף אחד
       STM3D.stat.strikes=STM3D.stat.bolts=0;
       i=S.sk.ids.indexOf('storm');if(i>=0)S.sk.cd[i]=0;r.castT=wskUse('storm');if(SKR)skrEnd(false);
       run(0.4);r.tOwn=(S.wsb.fx||[]).some(o=>o.id==='storm'&&SKFX3D.owns(o));r.tPart=VFX3D.parts();
@@ -1247,7 +1248,7 @@ function worldBot(m,L,god){
       SAVE.pet.xp=petKind().stages[2].xp;SAVE.pet.stage=2;PETFX3D.stat.flame=PETFX3D.stat.bite=0;
       const p=S.pet;if(p){p.x=P.x+40;p.y=P.y+20;p.st='follow'}
       run(0.6);r.pFlame=PETFX3D.stat.flame;r.pOn=petFx3dOn();
-      if(p){p.st='hunt';p.foe=e;p.bites=0;p.biteT=0;p.t=0}
+      near();if(p){p.st='hunt';p.foe=e;p.bites=0;p.biteT=0;p.t=0}
       run(1.2);r.pBite=PETFX3D.stat.bite;
       for(const x of enemies)x.dead=true;enemies=[];
     }catch(err){r.err=String(err&&err.stack||err)}
