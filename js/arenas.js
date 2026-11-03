@@ -86,7 +86,7 @@ function arenaRun(){
 // כל פריים: רק המונה למעלה ("בוס 2/3", או "הבא בעוד 4" בהפסקה)
 function bossArenaRun(){
   const A=ARENA(),d=S.bd,N=A.hp.length;
-  arenaTag(S.boss?T('bossar.count',d.i+1,N):S.t<d.until?T('bossar.next',d.i+1,N,Math.max(1,Math.ceil(d.until-S.t))):'');
+  arenaTag(S.t<d.until&&!S.boss?T('bossar.next',d.i+1,N,Math.max(1,Math.ceil(d.until-S.t))):T('bossar.count',d.i+1,N));
   return true;
 }
 // הבוס נולד (update.js): החיים לפי הבוס הנוכחי
