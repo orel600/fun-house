@@ -6,7 +6,7 @@
    הבוטים ב-moba-bot.js */
 const MOBA={
   lane:{len:1500,half:250},   // הנתיב: x מ--len עד len, y מ--half עד half
-  base:{x:1360,hp:1500,r:58,range:270,dmg:70,cd:1.1,heal:0.2,healR:240},   // heal: חלק מהחיים בשנייה לגיבורים ליד הבסיס שלהם
+  base:{x:1360,hp:1500,r:58,range:270,dmg:70,cd:1.1,heal:0.2,healR:240,minK:0.3},   // minK: חיילים מכים בבסיס רק 30% (הבודק, 3.11: בלי זה הבסיס נמס בפחות מ-7 שניות)   // heal: חלק מהחיים בשנייה לגיבורים ליד הבסיס שלהם
   towers:[560,1000],          // המגדל הקרוב למרכז קודם. אי אפשר לפגוע במגדל הרחוק לפני שהקרוב נפל, ובבסיס לפני שניהם
   tower:{hp:700,r:30,range:290,dmg:45,cd:1.2,hero:1.5,shot:620},   // hero: מכפיל נזק מול גיבור
   minion:{every:22,first:3,count:4,gap:0.8,hp:260,dmg:18,cd:1,range:36,aggro:180,speed:80,r:12,xp:22,
@@ -129,7 +129,7 @@ function mbAttack(u,dt,t,A){
   u.aim=Math.atan2(t.y-u.y,t.x-u.x);if(!u.moving)u.face=u.aim;
   if(u.atkT>0)return true;
   u.atkT=A.cd*(u.st.rage>0?u.st.rageCd:1);
-  const d=A.dmg*(u.k==='hero'?mbK(u):1)*(u.k==='minion'&&(t.k==='tower'||t.k==='base')?MOBA.minion.build:1);   // build: חיילים מכים חזק במבנים
+  const d=A.dmg*(u.k==='hero'?mbK(u):1)*(u.k==='minion'&&(t.k==='tower'||t.k==='base')?MOBA.minion.build*(t.k==='base'?MOBA.base.minK:1):1);   // build: חיילים מכים חזק במבנים. בבסיס פחות (minK)
   if(A.shot)MB.shots.push({kind:'home',x:u.x,y:u.y-14,tgt:t,team:u.team,src:u,dmg:d,dt:A.dt,sp:MOBA.shot});
   else{const got=mbDmg(u,t,d,A.dt);if(A.leech)u.hp=Math.min(u.max,u.hp+got*A.leech);if(A.slow)mbSlow(t,A.slow.k,A.slow.t)}
   if(u.me){if(A.shot){P.gn.t=0.3;sfx('shoot')}else{P.sw.anim=0.2;P.sw.ang=u.aim;sfx('hit')}}
