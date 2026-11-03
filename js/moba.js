@@ -23,7 +23,9 @@ const MOBA={
   combo:{shock:1.35,freeze:1.25},   // רטוב + ברק: נזק ×1.35. רטוב + קרח: הקפאה ארוכה ×1.25 (באיזון: ×1.6 נתן להרכב צייד+קוסמת+נפח 94% ניצחונות)
   team:['#4C8DFF','#FF5A5A'],
   shot:650,
-  maxT:720,                   // אחרי 12 דקות מנצח מי שנשאר לו יותר מהמבנים
+  maxT:720,
+  msgMin:1.2,                 // הודעה למעלה מוצגת לפחות 1.2 שניות לפני שהבאה מחליפה אותה (הבודק, 3.11: שתי הודעות נערמו)
+  feed:{max:3,t:4,src:['tower','base','minion']},   // הודעות הריגה: עד 3 שורות, 4 שניות כל אחת (ה-CSS מעלים אותן ב-3.6)                   // אחרי 12 דקות מנצח מי שנשאר לו יותר מהמבנים
 };
 let MB=null;
 
@@ -92,7 +94,7 @@ function mbDie(t,src){
     t.hitBy.clear();Object.assign(t.st,{stun:0,taunt:0,slow:0,wet:0,armor:0,burn:0,rage:0,imm:0,ice:0,dash:null});
     if(t.me){mbBanner(T('mb.died'),C.blood);sfx('hurt')}
     else if(killer&&killer.me){mbBanner(T('mb.kill'),C.gold);sfx('bossDown')}
-    else if(t.team===0)mbBanner(T('mb.ally'),C.dim);
+    mbKillFeed(killer||src,t);   // "X הפיל את Y" מתחת לדמות שלי (במקום ההודעה "חבר נפל")
     mbBoom(t.x,t.y,60,t.team?'red':'blue');
   }else{
     sfx('bossDown');S.shake=Math.max(S.shake,8);mbBoom(t.x,t.y,120,'fire');
@@ -120,7 +122,8 @@ function mbStep(u,mx,my){
 function mbMove(u,tx,ty,dt,stop=4){
   if(u.st.stun>0){u.moving=false;return}
   const dx=tx-u.x,dy=ty-u.y,d=Math.hypot(dx,dy);if(d<stop){u.moving=false;return}
-  const k=Math.min(1,mbSpeed(u)*dt/d);mbStep(u,dx*k,dy*k);u.moving=true;u.face=Math.atan2(dy,dx);u.ph+=dt*u.speed*0.07;
+  // מאטים לקראת היעד במקום לעצור בבת אחת: בוט שהולך אחרי החיילים (איטיים ממנו פי 2) רץ-עוצר-רץ בלי זה (MBMOVE.arrive ב-moba-move.js)
+  const v=Math.min(mbSpeed(u),d/MBMOVE.arrive),k=Math.min(1,v*dt/d);mbStep(u,dx*k,dy*k);u.moving=v>MBMOVE.creep;u.face=Math.atan2(dy,dx);
 }
 // תקיפה אוטומטית: A הוא atk של הערכה, או של החייל
 function mbAttack(u,dt,t,A){
@@ -155,7 +158,13 @@ function mbWall(u,x,s){
   mbBoom(x,0,90,'earth');S.shake=Math.max(S.shake,6);
 }
 // הודעה של המובה: למעלה (CSS תחת .mb), ואותה הודעה לא חוזרת תוך שנייה וחצי
-function mbBanner(txt,col){const now=performance.now();if(mbBanner.t===txt&&now-mbBanner.at<1500)return;mbBanner.t=txt;mbBanner.at=now;banner(txt,col)}
+// הודעה חדשה לא קוטעת את הקודמת לפני MOBA.msgMin שניות: מחכה בתור (עד 2), ואז מחליפה אותה
+function mbBanner(txt,col){const now=performance.now(),Q=mbBanner.q||(mbBanner.q=[]);if(mbBanner.t===txt&&now-mbBanner.at<1500||Q.some(m=>m.txt===txt))return;
+  const wait=mbBanner.at?mbBanner.at+MOBA.msgMin*1000-now:0;
+  if(wait<=0&&!Q.length){mbBanner.t=txt;mbBanner.at=now;banner(txt,col);return}
+  Q.push({txt,col});if(Q.length>2)Q.shift();if(!mbBanner.tm)mbBanner.tm=setTimeout(mbBannerNext,Math.max(0,wait))}
+function mbBannerNext(){mbBanner.tm=null;const m=(mbBanner.q||[]).shift();if(!m||!S.mb)return(mbBanner.q=[]);mbBanner.t=m.txt;mbBanner.at=performance.now();banner(m.txt,m.col);
+  if(mbBanner.q.length)mbBanner.tm=setTimeout(mbBannerNext,MOBA.msgMin*1000)}
 function mbShake(slot){const b=document.querySelector('#mbSk [data-sk="'+slot+'"]');if(!b)return;b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');sfx('tap')}
 const mbFloat=(x,y,txt,col)=>{if(MB.floats.length<60)MB.floats.push({x,y,txt:String(txt),col,life:0.9})};
 function mbWord(u,w){mbFloat(u.x,u.y-u.r-34,T('mb.w.'+w),w==='shock'?'#D46BFF':w==='freeze'?C.tide:w==='taunt'?C.ember:C.blood)}
@@ -177,7 +186,7 @@ function mobaStart(kit){
   const blue=team(kit),red=team(null);
   blue.forEach((k,i)=>MB.u.push(mbHero(k,0,i===0,i)));
   red.forEach((k,i)=>MB.u.push(mbHero(k,1,false,i)));
-  MB.me=MB.u[0];
+  MB.me=MB.u[0];$('mbFeed').innerHTML='';
   for(const tm of [0,1]){for(const x of MOBA.towers)MB.u.push(mbBuild(tm,'tower',x));MB.u.push(mbBuild(tm,'base',MOBA.base.x))}
   const me=MB.me;P.weapon=MBKIT[me.kit].atk.shot?'gun':'sword';P.x=me.x;P.y=me.y;P.face=P.aim=0;S.cam.x=P.x;S.cam.y=P.y;
   ['ovStart','ovOver','ovLevel','ovBoss'].forEach(id=>{const e=$(id);if(e)e.hidden=true});
@@ -195,17 +204,14 @@ function mobaUpdate(dt){
     M.u.push(mbUnit({k:'minion',team:q.team,ranged:q.ranged,type:'mb_m'+q.team,x:(q.team?1:-1)*(MOBA.base.x-70),y:rand(-25,25),lane:rand(-70,70),r:N.r,hp:R.hp*q.k,max:R.hp*q.k,pow:q.k,speed:N.speed,face:q.team?Math.PI:0}))}
   M.queue=M.queue.filter(q=>!q.done);
   for(const u of M.u){
-    if(u.dead){if(u.k==='hero'){u.resp-=dt;if(u.resp<=0){u.dead=false;u.hp=u.max;u.x=u.home.x;u.y=u.home.y;u.cd.s1=u.cd.s2=0}}continue}
+    if(u.dead){if(u.k==='hero'){u.resp-=dt;if(u.resp<=0){u.dead=false;u.hp=u.max;u.x=u.home.x;u.y=u.home.y;u.cd.s1=u.cd.s2=0;mbFeelReset(u)}}continue}
     mbTick(u,dt);if(u.dead)continue;
     if(u.st.dash){const D=u.st.dash,s=Math.min(D.left,D.sp*dt);mbStep(u,D.vx*s,D.vy*s);D.left-=s;u.moving=true;if(D.left<=0.5){u.st.dash=null;D.end()}continue}
     if(u.k==='hero'){for(const k of MB_SLOTS)if(u.cd[k]>0)u.cd[k]-=dt;u.atkT-=dt;u.aggro-=dt;u.me&&!u.bot?mbPlayer(u,dt):mbBot(u,dt)}
     else if(u.k==='minion'){u.atkT-=dt;mbMinion(u,dt)}
     else mbTower(u,dt);
   }
-  // גיבורים וחיילים לא עומדים אחד בתוך השני
-  const mob=M.u.filter(o=>!o.dead&&(o.k==='hero'||o.k==='minion'));
-  for(let i=0;i<mob.length;i++)for(let j=i+1;j<mob.length;j++){const a=mob[i],b=mob[j],dx=b.x-a.x,dy=b.y-a.y,rr=a.r+b.r;
-    if(Math.abs(dx)>rr||Math.abs(dy)>rr)continue;const d=Math.hypot(dx,dy)||0.01;if(d<rr){const p=(rr-d)/2,ux=dx/d,uy=dy/d;mbStep(a,-ux*p,-uy*p);mbStep(b,ux*p,uy*p)}}
+  mbFeel(M,dt);   // גיבורים וחיילים לא עומדים אחד בתוך השני, וסיבוב ואנימציה רכים (moba-move.js)
   mbShots(dt);
   for(const z of M.zones){
     if(z.delay>0){z.delay-=dt;if(z.delay<=0&&z.fire)z.fire(z)}
@@ -218,8 +224,8 @@ function mobaUpdate(dt){
   M.u=M.u.filter(u=>!(u.dead&&u.k==='minion'));
   enemies=M.u.filter(u=>!u.me&&(u.k==='hero'||u.k==='minion'));   // רק בשביל התלת-ממד
   // השחקן P עוקב אחרי הגיבור שלו, בשביל המצלמה והמודל בתלת-ממד
-  const me=M.me;P.x=me.x;P.y=me.y;P.hp=me.hp;P.maxHp=me.max;P.moving=me.moving&&!me.dead;P.face=me.face;P.aim=me.aim;
-  if(P.moving)P.walk+=dt*me.speed*0.07;P.sw.anim=Math.max(0,P.sw.anim-dt);P.gn.t=Math.max(0,P.gn.t-dt);P.inv=me.dead?1:0;
+  const me=M.me;P.x=me.x;P.y=me.y;P.hp=me.hp;P.maxHp=me.max;P.moving=mbMoving(me);P.face=mbRot(me);P.aim=me.aim;
+  if(P.moving)P.walk+=dt*(me.vs||0)*0.07;P.sw.anim=Math.max(0,P.sw.anim-dt);P.gn.t=Math.max(0,P.gn.t-dt);P.inv=me.dead?1:0;
   if(M.t>=MOBA.maxT){const left=tm=>M.u.filter(o=>o.team===tm&&(o.k==='tower'||o.k==='base')).reduce((s,o)=>s+o.hp/o.max,0);mbEnd(left(0)>=left(1))}
 }
 function mbTick(u,dt){
@@ -237,7 +243,7 @@ function mbPlayer(u,dt){
   const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m}
   if(u.st.taunt>0&&u.st.tBy)mbMove(u,u.st.tBy.x,u.st.tBy.y,dt,u.r+u.st.tBy.r);
   else if(u.st.stun>0)u.moving=false;
-  else if(m>0.12){const sp=mbSpeed(u)*dt;mbStep(u,ix*sp,iy*sp);u.moving=true;u.face=Math.atan2(iy,ix);u.ph+=dt*u.speed*0.07}
+  else if(m>0.12){const sp=mbSpeed(u)*dt;mbStep(u,ix*sp,iy*sp);u.moving=true;u.face=Math.atan2(iy,ix)}
   else u.moving=false;
   const A=MBKIT[u.kit].atk;mbAttack(u,dt,mbAutoTarget(u,A.range),A);
   // מקלדת: 1/2/3 או Q/E/R
@@ -321,14 +327,26 @@ function mbUi(on){
     for(const b of document.querySelectorAll('#mbPing [data-o] b'))b.innerHTML=mbSvg(b.parentNode.dataset.o,'mbpi');   // פקודות: אייקונים במקום אימוג'י
     mbAimInit($('mbSk'))}   // נגיעה, גרירה לכיוון וביטול (moba-aim.js)
 }
-let mbHudKey='',mbOrdKey=null;
+// הודעת הריגה: מי הפיל את מי, בצבעי הקבוצות. עד MOBA.feed.max שורות, וכל אחת נעלמת אחרי MOBA.feed.t שניות
+function mbKillFeed(by,t){
+  const f=$('mbFeed');if(!f||!t)return;
+  const who=(u,team)=>u&&u.k==='hero'?'<span class="mbfh t'+u.team+'">'+mbSvg('k_'+u.kit)+'<em>'+(u.me?T('mb.you'):T('mb.k.'+u.kit))+'</em></span>'
+    :'<span class="mbfh t'+team+'"><em>'+T('mb.f.'+(u&&MOBA.feed.src.includes(u.k)?u.k:'minion'))+'</em></span>';
+  const row=document.createElement('p');row.className='mbfr'+(t.me||by&&by.me?' mine':'');row.innerHTML=who(by,1-t.team)+mbSvg('k_warrior','mbfx')+who(t,t.team).replace('mbfh','mbfh v');
+  f.appendChild(row);while(f.children.length>MOBA.feed.max)f.firstChild.remove();
+  setTimeout(()=>row.remove(),MOBA.feed.t*1000);
+}
+let mbHudKey='',mbOrdKey=null,mbRespT=0;
 function mobaHud(){
   const M=MB,u=M&&M.me;if(!u)return;
-  $('mbHp').style.width=(100*Math.max(0,u.hp)/u.max)+'%';
+  const hp=Math.max(0,u.hp)/u.max;$('mbHp').style.width=(100*hp)+'%';
   const N=MOBA.xp.need,lo=N[u.lvl-1]||0,hi=N[u.lvl];$('mbXp').style.width=(u.lvl>=MOBA.ultAt?100:100*(u.xp-lo)/(hi-lo))+'%';
-  const key=LANG+'|'+u.lvl+'|'+M.score+'|'+fmt(M.t)+'|'+(u.dead?Math.ceil(u.resp):'');
+  if(u.dead){mbRespT=Math.max(mbRespT,u.resp);$('mbRespBar').style.width=(100*Math.max(0,u.resp)/(mbRespT||1))+'%'}else mbRespT=0;   // הפס מתרוקן עד שחוזרים
+  const key=LANG+'|'+u.kit+'|'+u.lvl+'|'+M.score+'|'+fmt(M.t)+'|'+(u.dead?Math.ceil(u.resp):'')+'|'+Math.ceil(u.hp);
   if(key!==mbHudKey){mbHudKey=key;$('mbLv').textContent=u.lvl;$('mbS0').textContent=M.score[0];$('mbS1').textContent=M.score[1];$('mbClock').textContent=fmt(M.t);
-    const r=$('mbResp');r.hidden=!u.dead;if(u.dead)r.textContent=T('mb.resp',Math.ceil(u.resp))}
+    $('mbHpN').textContent=Math.ceil(Math.max(0,u.hp))+' / '+u.max;$('mbHpBar').classList.toggle('low',hp<0.3);
+    const p=$('mbPor');if(p.dataset.kit!==u.kit){p.dataset.kit=u.kit;p.innerHTML=mbSvg('k_'+u.kit)}   // הדמות שלי: האייקון של הערכה
+    const r=$('mbResp');r.hidden=!u.dead;if(u.dead)$('mbRespN').textContent=Math.ceil(u.resp)}
   const ok=M.order?M.order.kind:'';if(mbOrdKey!==ok){mbOrdKey=ok;for(const b of document.querySelectorAll('#mbPing [data-o]'))b.classList.toggle('on',b.dataset.o===ok)}
   for(const b of $('mbSk').querySelectorAll('[data-sk]')){const k=b.dataset.sk,s=MBKIT[u.kit][k],lock=k==='ult'&&u.lvl<MOBA.ultAt;
     b.style.setProperty('--cd',lock?1:Math.max(0,u.cd[k])/s.cd);const l=b.querySelector('.mblock');if(l.hidden===lock)l.hidden=!lock}
@@ -337,15 +355,15 @@ function mobaHud(){
 function mobaOpen(){
   const w=$('mbWin');
   w.innerHTML=winHead(T('mb.title'),T('mb.sub'))+'<p class="mbgoal">'+T('mb.goal')+'</p><div class="mbkits">'+
-    Object.keys(MBKIT).map(k=>{const K=MBKIT[k];return '<button class="mbkit" data-kit="'+k+'" style="--dt:'+dtCol(K.dt)+'">'+mbSvg('k_'+k,'mbki')+'<span class="mbkn">'+T('mb.k.'+k)+'</span><small>'+T('mb.r.'+k)+'</small>'+
-      '<ul>'+MB_SLOTS.map(s=>'<li style="--dt:'+dtCol(K[s].dt||K.dt)+'">'+mbSvg(K[s].id,'mbli')+' '+T('mb.s.'+K[s].id)+(s==='ult'?' <em>('+T('mb.ult')+')</em>':'')+'</li>').join('')+'</ul></button>'}).join('')+'</div>';
+    Object.keys(MBKIT).map(k=>{const K=MBKIT[k];return '<button class="mbkit" data-kit="'+k+'" style="--dt:'+dtCol(K.dt)+'"><span class="mbmed">'+mbSvg('k_'+k,'mbki')+'</span><span class="mbkn">'+T('mb.k.'+k)+'</span><small>'+T('mb.r.'+k)+'</small>'+
+      '<ul>'+MB_SLOTS.map(s=>'<li style="--dt:'+dtCol(K[s].dt||K.dt)+'">'+mbSvg(K[s].id,'mbli')+'<span>'+T('mb.s.'+K[s].id)+(s==='ult'?' <em>'+T('mb.ult')+'</em>':'')+'</span></li>').join('')+'</ul></button>'}).join('')+'</div>';
   w.dataset.from=$('ovStart').hidden?'':'start';$('ovStart').hidden=true;   // ממסך הפתיחה: חוזרים אליו בסגירה
   $('ovMoba').hidden=false;w.dataset.mode='pick';
 }
 function mbEndShow(won){
   const w=$('mbWin'),row=u=>'<li class="'+(u.me?'me':'')+'" style="--dt:'+dtCol(MBKIT[u.kit].dt)+'">'+mbSvg('k_'+u.kit,'mbli')+' '+T('mb.k.'+u.kit)+' <small>'+(u.me?T('mb.you'):T('mb.bot'))+'</small><span dir="ltr">'+u.kills+' / '+u.deaths+'</span><span>'+T('mb.lvl',u.lvl)+'</span></li>';
-  w.innerHTML=winHead(T(won?'mb.win':'mb.lose'),fmt(MB.t))+'<div class="mbend"><section><h4 style="color:'+MOBA.team[0]+'">'+T('mb.blue')+' · '+MB.score[0]+'</h4><ul>'+mbHeroes(0).map(row).join('')+'</ul></section>'+
-    '<section><h4 style="color:'+MOBA.team[1]+'">'+T('mb.red')+' · '+MB.score[1]+'</h4><ul>'+mbHeroes(1).map(row).join('')+'</ul></section></div>'+
+  w.innerHTML=winHead(T(won?'mb.win':'mb.lose'),fmt(MB.t))+'<div class="mbend"><section class="t0"><h4>'+T('mb.blue')+'<b>'+MB.score[0]+'</b></h4><ul>'+mbHeroes(0).map(row).join('')+'</ul></section>'+
+    '<section class="t1"><h4>'+T('mb.red')+'<b>'+MB.score[1]+'</b></h4><ul>'+mbHeroes(1).map(row).join('')+'</ul></section></div>'+
     '<p class="mbkd">'+T('mb.kdH')+'</p><div class="mbbtns"><button class="go" data-act="again">'+T('mb.again')+'</button><button class="lang" data-act="home">'+T('mb.home')+'</button></div>';
   $('ovMoba').hidden=false;w.dataset.mode='end';
 }
@@ -386,7 +404,7 @@ function mobaDraw(ox,oy){
     if(u.k==='tower'||u.k==='base'){mbDrawBuild(u,col);continue}
     ctx.strokeStyle=col;ctx.lineWidth=u.k==='hero'?3:2;ctx.globalAlpha=0.9;ctx.beginPath();ctx.ellipse(u.x,u.y+2,u.r+4,(u.r+4)*0.45,0,0,7);ctx.stroke();ctx.globalAlpha=1;
     if(u.me){ctx.strokeStyle=C.gold;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(u.x,u.y+2,u.r+9,(u.r+9)*0.45,0,0,7);ctx.stroke()}
-    if(!R3D.on||u.me&&!R3D.player){const p=pose(u.x,u.y,u.ph,u.moving,u.aim,10,u.face);drawRig(p,{skin:LOOK.player,col:u.flash>0?'#fff':u.k==='hero'?col:col+'AA',lw:u.k==='hero'?3:2})}
+    if(!R3D.on||u.me&&!R3D.player){const p=pose(u.x,u.y,u.ph,mbMoving(u),u.aim,10,mbRot(u));drawRig(p,{skin:LOOK.player,col:u.flash>0?'#fff':u.k==='hero'?col:col+'AA',lw:u.k==='hero'?3:2})}
     const s=u.st,top=u.y-(u.k==='hero'?78:52);
     if(s.armor>0){ctx.strokeStyle=C.ember;ctx.lineWidth=3;ctx.globalAlpha=0.6;ctx.beginPath();ctx.arc(u.x,u.y-24,30,0,7);ctx.stroke();ctx.globalAlpha=1}
     if(s.rage>0){ctx.fillStyle='rgba(239,78,87,0.18)';ctx.beginPath();ctx.arc(u.x,u.y-24,28,0,7);ctx.fill()}
