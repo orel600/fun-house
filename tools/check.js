@@ -939,6 +939,15 @@ function worldBot(m,L,god){
     const one=setStats(it.slice(0,1)),two=setStats(it.slice(0,2)),four=gearStats(it);
     r[s]={n:it.length,one:Object.keys(one).length===0,two:JSON.stringify(two)===JSON.stringify(b[2]),
       four:Object.keys(b[4]).every(k=>four[k]>=(b[4][k]+(b[2][k]||0))),named:it.every(k=>!/^it\./.test(T('it.'+k))&&GEAR.recipes[k])}}return r});
+  // אופי לחפצים (ניר, 3.11.2026): לכל חפץ של ניר (לא המסתובבים, של אוראל) שם ומשפט אופי בעברית ובאנגלית, והמסגרת מקבלת class לפי השכבה (css/rarity.css)
+  const chr=await page.evaluate(()=>{const miss=[],cls=[],ids=Object.keys(GEAR.items).filter(id=>GEAR.items[id].slot!=='orbit');
+    const ok=e=>e&&typeof e.he==='string'&&typeof e.en==='string'&&e.he.trim()&&e.en.trim()&&/[\u0590-\u05FF]/.test(e.he)&&!/[\u0590-\u05FF]/.test(e.en);
+    for(const id of ids){if(!ok(TEXT['it.'+id]))miss.push('it.'+id);if(!ok(TEXT['itf.'+id]))miss.push('itf.'+id);
+      const t=GEAR.tiers[GEAR.items[id].tier].id;if(!gTile(id,'','').includes('rar-'+t)||!gFlavHtml(id).includes('gflav'))cls.push(id)}
+    const css=[...document.styleSheets].some(x=>/rarity\.css/.test(x.href||''));
+    return{n:ids.length,miss,cls,css,tiers:GEAR.tiers.map(t=>t.id).join('/')}});
+  check(chr.n>=60&&!chr.miss.length&&!chr.cls.length&&chr.css,'אופי לחפצים: '+chr.n+' חפצים עם שם ומשפט אופי בשתי השפות, ומסגרת לפי השכבה ('+chr.tiers+')'+
+    (chr.miss.length?' · חסר: '+chr.miss.slice(0,8).join(', '):'')+(chr.cls.length?' · בלי class של שכבה: '+chr.cls.slice(0,8).join(', '):'')+(chr.css?'':' · css/rarity.css לא נטען'));
   // כמה קשת העץ אמורה להוסיף, לפי GEAR. בנפחייה היא עולה ל-+1 (AGING.scale)
   const gx=await page.evaluate(()=>Math.round((1+GEAR.items.oakBow.stats.gdmg*(1+AGING.scale)/100)*100)/100);
   await page.click('#startBtn');
