@@ -100,8 +100,9 @@
 <!-- משחקי השאול (js/moba.js): הניקוד והשעון למעלה, הרמה והחיים בפינה, 3 סקילים בפינה הימנית, וחלון לבחירת דמות ולסוף -->
 <div class="mbhud" id="mbHud" hidden>
   <div class="mbtop"><b class="mbs0" id="mbS0">0</b><span id="mbClock">0:00</span><b class="mbs1" id="mbS1">0</b></div>
-  <div class="mbme"><b class="mblv" id="mbLv">1</b><div class="mbbars"><div class="mbhp"><i id="mbHp"></i></div><div class="mbxp"><i id="mbXp"></i></div></div></div>
-  <p class="mbresp" id="mbResp" hidden></p>
+  <div class="mbme"><span class="mbpor" id="mbPor"></span><b class="mblv" id="mbLv">1</b><div class="mbbars"><div class="mbhp" id="mbHpBar"><i id="mbHp"></i><span id="mbHpN"></span></div><div class="mbxp"><i id="mbXp"></i></div></div></div>
+  <div class="mbfeed" id="mbFeed"></div>
+  <div class="mbresp" id="mbResp" hidden><span data-t="mb.respL"></span><b id="mbRespN"></b><i><i id="mbRespBar"></i></i></div>
   <button class="wx mbexit" id="mbExit" data-ta="mb.exit">✕</button>
   <div class="mbping" id="mbPing" role="group" data-ta="mb.ping"><button data-o="attack"><b aria-hidden="true">⚔️</b><span data-t="mb.o.attack"></span></button><button data-o="back"><b aria-hidden="true">🛡️</b><span data-t="mb.o.back"></span></button></div>
 </div>
@@ -444,6 +445,7 @@
 <script src="js/moba.js"></script>
 <script src="js/moba-aim.js"></script>   <!-- משחקי השאול: כיוון וביטול סקילים בגרירה -->
 <script src="js/moba-bot.js"></script>
+<script src="js/moba-move.js"></script>   <!-- משחקי השאול: תנועה, סיבוב והפרדה בין יחידות (אחרי render3d.js, שאותו הוא עוטף) -->
 <script src="js/input.js"></script>
 <script src="js/main.js"></script>
 <script src="js/perf.js"></script>
