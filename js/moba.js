@@ -24,6 +24,7 @@ const MOBA={
   team:['#4C8DFF','#FF5A5A'],
   shot:650,
   maxT:720,
+  msgMin:1.2,                 // הודעה למעלה מוצגת לפחות 1.2 שניות לפני שהבאה מחליפה אותה (הבודק, 3.11: שתי הודעות נערמו)
   feed:{max:3,t:4,src:['tower','base','minion']},   // הודעות הריגה: עד 3 שורות, 4 שניות כל אחת (ה-CSS מעלים אותן ב-3.6)                   // אחרי 12 דקות מנצח מי שנשאר לו יותר מהמבנים
 };
 let MB=null;
@@ -157,7 +158,13 @@ function mbWall(u,x,s){
   mbBoom(x,0,90,'earth');S.shake=Math.max(S.shake,6);
 }
 // הודעה של המובה: למעלה (CSS תחת .mb), ואותה הודעה לא חוזרת תוך שנייה וחצי
-function mbBanner(txt,col){const now=performance.now();if(mbBanner.t===txt&&now-mbBanner.at<1500)return;mbBanner.t=txt;mbBanner.at=now;banner(txt,col)}
+// הודעה חדשה לא קוטעת את הקודמת לפני MOBA.msgMin שניות: מחכה בתור (עד 2), ואז מחליפה אותה
+function mbBanner(txt,col){const now=performance.now(),Q=mbBanner.q||(mbBanner.q=[]);if(mbBanner.t===txt&&now-mbBanner.at<1500||Q.some(m=>m.txt===txt))return;
+  const wait=mbBanner.at?mbBanner.at+MOBA.msgMin*1000-now:0;
+  if(wait<=0&&!Q.length){mbBanner.t=txt;mbBanner.at=now;banner(txt,col);return}
+  Q.push({txt,col});if(Q.length>2)Q.shift();if(!mbBanner.tm)mbBanner.tm=setTimeout(mbBannerNext,Math.max(0,wait))}
+function mbBannerNext(){mbBanner.tm=null;const m=(mbBanner.q||[]).shift();if(!m||!S.mb)return(mbBanner.q=[]);mbBanner.t=m.txt;mbBanner.at=performance.now();banner(m.txt,m.col);
+  if(mbBanner.q.length)mbBanner.tm=setTimeout(mbBannerNext,MOBA.msgMin*1000)}
 function mbShake(slot){const b=document.querySelector('#mbSk [data-sk="'+slot+'"]');if(!b)return;b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');sfx('tap')}
 const mbFloat=(x,y,txt,col)=>{if(MB.floats.length<60)MB.floats.push({x,y,txt:String(txt),col,life:0.9})};
 function mbWord(u,w){mbFloat(u.x,u.y-u.r-34,T('mb.w.'+w),w==='shock'?'#D46BFF':w==='freeze'?C.tide:w==='taunt'?C.ember:C.blood)}
