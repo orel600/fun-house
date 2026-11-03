@@ -148,6 +148,13 @@ const gName=id=>T('it.'+gBase(id))+(gPlus(id)?' \u2066+'+gPlus(id)+'\u2069':'');
 // הסטטים של הפריט, כולל השדרוג בנפחייה והכוח שעליו (powers.js)
 function gStats(id){const s=(gItem(id)||{}).stats||{},k=ageMult(gPlus(id)),o={};for(const x in s)o[x]=Math.round(s[x]*k*10)/10;
   const p=powGive(gPow(id));for(const x in p)o[x]=(o[x]||0)+p[x];return o}
+/* שפת הנדירות (ניר, 3.11.2026: "שיהיה ברור וקל להבדיל... שהעיצוב עצמו ידבר"): כל מקום שמציג חפץ מוסיף את gRarCls, והמראה כולו ב-css/rarity.css:
+   עץ פשוט, ברזל עם מסמרות, כסף עם ברק, זהב עבה עם אבנים ומעבר אור, ואגדי עם זוהר נע וניצוצות. התמונה (gPic) נכנסת לתוך המסגרת כמו שהיא */
+const gRarId=id=>gItem(id)?GEAR.tiers[gItem(id).tier].id:'';
+const gRarCls=id=>gItem(id)?' rar rar-'+gRarId(id):'';
+// משפט האופי של החפץ ('itf.<id>' ב-lang.js), או ריק לחפץ בלי משפט (החפצים המסתובבים)
+const gFlav=id=>TEXT['itf.'+gBase(id)]?T('itf.'+gBase(id)):'';
+const gFlavHtml=id=>gFlav(id)?'<p class="gflav">'+gFlav(id)+'</p>':'';
 const gTint=id=>(gItem(id).look||{}).tint||GEAR.tiers[gItem(id).tier].col;
 const gIcon=id=>{const it=gItem(id);return it.icon||GEAR.orbit[it.type]};
 /* תמונה לפריט בממשק (HTML), מ-Creative Claw (icons/ui/gear, נחתך עם tools/slice-icons.py). בלי תמונה: האימוג'י. על הקנבס תמיד האימוג'י (gIcon) */
@@ -236,7 +243,7 @@ function gearCraft(id){
 function forgeHtml(){
   const ids=Object.keys(GEAR.recipes).filter(gCanCraft);
   return '<span class="sk">'+T('forge.craft')+'</span>'+ids.map(id=>{const c=GEAR.recipes[id],ok=Object.keys(c).every(r=>bagHas(r,c[r]));
-    return '<div class="craft"><button class="res item" data-act="craft" data-r="'+id+'" style="--tint:'+gTint(id)+'"'+(ok?'':' disabled')+'>'+gPic(id)+' '+T('it.'+id)+'</button><div class="cost">'+costLine(c)+'</div></div>'}).join('');
+    return '<div class="craft'+gRarCls(id)+'" style="--rar:'+gRarCol(id)+'"><button class="res item" data-act="craft" data-r="'+id+'" style="--tint:'+gTint(id)+'"'+(ok?'':' disabled')+'><span class="rpic'+gRarCls(id)+'">'+gPic(id)+'</span><b class="rname">'+T('it.'+id)+'</b></button><div class="cost">'+costLine(c)+'</div></div>'}).join('');
 }
 
 /* ---- שלל בסוף ריצה ---- */
@@ -256,7 +263,7 @@ function gearLoot(){
   if(got.length){saveNow();const el=$('sLoot');el.innerHTML=(el.textContent===T('vil.noLoot')?'':el.innerHTML)+got.map(gChip).join('')}
   return got;
 }
-const gChip=id=>'<span class="res item" style="--tint:'+gTint(id)+'">'+gPic(id)+' '+gName(id)+'</span>';
+const gChip=id=>'<span class="res item'+gRarCls(id)+'" style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+'">'+gPic(id)+' '+gName(id)+'</span>';
 
 /* ---- המסך: התרמיל בצד אחד, הבובה עם המשבצות באמצע, והפרטים בצד השני. נפתח מכפתור 🎒 בכפר ובזירה.
    גוררים פריט מהתרמיל למשבצת כדי ללבוש, ממשבצת לתרמיל כדי להוריד, ובין התרמיל למחסן כשעומדים ליד המחסן.
@@ -271,7 +278,8 @@ function gearClose(){gDragEnd();GUI.undo=null;GUI.sell=false;$('ovGear').hidden=
 const gStashOn=()=>!!(S.vil&&S.vil.near==='stash'&&vLv('stash')>0);
 // הנדירות של פריט היא השכבה שלו (עץ = רגיל ... אגדי), ושל משאב היא rar שלו. כך הצבעים זהים לשלל שנופל
 const gRar=k=>gItem(k)?gItem(k).tier:(resOf(k)||{}).rar||0;
-const gRarCol=k=>RES.rarity[Math.min(gRar(k),RES.rarity.length-1)].col;
+// הצבע של הדרגה: חפץ לפי החומר של השכבה (GEAR.tiers, כמו המסגרת והתמונה, ניר 3.11.2026), משאב לפי RES.rarity
+const gRarCol=k=>gItem(k)?GEAR.tiers[gItem(k).tier].col:RES.rarity[Math.min(gRar(k),RES.rarity.length-1)].col;
 
 const gSign=(k,v)=>'<bdi dir="ltr">'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T(GEAR.stats[k].t||'st.'+k);
 /* ---- חפץ מסתובב: מה הוא נותן, מהמספרים של ORBIT.types (orbit.js, של אוראל). רק תצוגה: לא משנה איך הוא עובד בזירה.
@@ -309,7 +317,7 @@ function gOrbCompare(id,old){
 }
 // משבצת או תא בתרמיל: מסגרת בצבע הנדירות, ופס בצבע סוג הנזק לנשק
 function gTile(id,attrs,extra){
-  const it=gItem(id),cls='gtile'+(it&&it.w?' '+WEAPONS[it.w].use:'');
+  const it=gItem(id),cls='gtile'+(it&&it.w?' '+WEAPONS[it.w].use:'')+gRarCls(id);
   if(!it)return '<button class="'+cls+' empty" '+attrs+'>'+extra+'</button>';
   const glow=(it.look||{}).glow;
   return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gPic(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+(gPow(id)?'<b class="gpw">✦</b>':'')+extra+'</button>';
@@ -452,8 +460,9 @@ function gDetailHtml(){
   const sel=GUI.sel,k=sel&&(sel.id||sel.sid||gGet(sel.slot,sel.i)),n=!sel?0:sel.id?SAVE.bag[k]:sel.sid?SAVE.stash[k]:1;
   if(!k||!n)return gStatPanel();   // בלי פריט: הסטטים של הגיבור והעמידויות (gearui.js)
   const it=gItem(k),col=gRarCol(k);
-  let d='<div class="gdhead" style="--rar:'+col+'"><button class="gdx" data-act="desel" aria-label="'+T('gear.close')+'">✕</button><span class="gdicon">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
-    '<small>'+T('tier')[gRar(k)]+' · '+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
+  let d='<div class="gdhead'+gRarCls(k)+'" style="--rar:'+col+'"><button class="gdx" data-act="desel" aria-label="'+T('gear.close')+'">✕</button><span class="gdicon'+gRarCls(k)+'">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
+    '<small>'+(it?'<b class="rbadge">'+T('tier')[gRar(k)]+'</b> ':T('tier')[gRar(k)]+' · ')+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
+  if(it)d+=gFlavHtml(k);   // משפט האופי, באיטליק מתחת לשם
   if(it&&gPlus(k))d+='<p class="gage">'+T('gear.aged',gPlus(k))+'</p>';
   const orbOld=it&&sel.id&&it.slot==='orbit'?gItem(gGet('orbit',gTarget(it))):null;
   if(it)d+=gStatsHtml(k,!!sel.id&&it.slot==='orbit'&&(!orbOld||orbOld.type!==it.type))+powLine(k)+setHtml(k);   // הכוח בזהב (powers.js)   // סט: מה הוא נותן וכמה חלקים לבושים (sets.js)

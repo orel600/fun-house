@@ -26,3 +26,5 @@
   .gdetail.itip h3{font-size:19px!important}
   .gdetail.itip .gbtns .vbtn,.gdetail.itip>.vbtn{min-height:44px;font-size:15px}
 }
+/* ההשוואה (gCompare): ".down" של חלון הקישוטים (css/deco.css) הפך כל ▼ לקופסה של 44px וההשוואה נשברה. כאן זה רק טקסט */
+.cmp .down,.cmp .up{position:static;width:auto;height:auto;border:0;border-radius:0;background:none;font-size:inherit}
