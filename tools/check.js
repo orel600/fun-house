@@ -358,12 +358,12 @@ function villageBot(m,L){
       if(LANG==='en'&&/[֐-׿]/.test(q('#ovForge').innerText))L.heLeak=q('#ovForge').innerText.trim().slice(0,80);
       q('#fTabs [data-tab="age"]').click();U.barAge=bar();U.barAgeOk=/^gem,coins/.test(U.barAge)&&U.barAge.split(',').length<=FORGE_BAR.max;   // בשדרוג בלי פריט: 💎, מטבעות, ועד FORGE_BAR.max
       // הרבה משאבים (ניר, 3.11: "רואים רק את המשאבים"): הפס בשורה אחת, והפריטים וכפתור השדרוג בתוך המסך. אחר כך התרמיל חוזר כמו שהיה
-      const keep={...SAVE.bag},inV=e=>{if(!e)return false;const r=e.getBoundingClientRect();return r.height>0&&r.top>=0&&r.bottom<=innerHeight+1&&r.left>=0&&r.right<=innerWidth+1};
+      const keep={...SAVE.bag},keepBk=JSON.stringify(BK()),inV=e=>{if(!e)return false;const r=e.getBoundingClientRect();return r.height>0&&r.top>=0&&r.bottom<=innerHeight+1&&r.left>=0&&r.right<=innerWidth+1};
       for(const k in RES.list)bagAdd(k,50);forgeDraw();q('#fItems [data-slot="weapon"]').click();
       const C=U.crowd={tile:inV(q('#fItems [data-slot="weapon"]')),go:inV(q('#fDetail [data-act="age"]')),h:Math.round(q('#fRes').getBoundingClientRect().height),more:!!q('#fRes .resmore')};
       C.need=Object.keys(ageCost(SAVE.gear.weapon)||{}).every(r=>bar().split(',').includes(r));   // מה שהשדרוג צריך תמיד בפס
       if(C.more){q('#fRes .resmore').click();C.all=!q('#fRes .resmore')&&bar().split(',').length>FORGE_BAR.max}
-      for(const k of Object.keys(SAVE.bag))delete SAVE.bag[k];Object.assign(SAVE.bag,keep);AUI.sel=null;
+      for(const k of Object.keys(SAVE.bag))delete SAVE.bag[k];Object.assign(SAVE.bag,keep);SAVE.book=JSON.parse(keepBk);AUI.sel=null;   // גם ספר ההרפתקאות: המשאבים לא נרשמים בו
       q('#fTabs [data-tab="fuse"]').click();
       m.fuse=1;L.fuseOpen=1;return L}   // המסך נשאר פתוח לצעד אחד, בשביל הצילום
     if(m.age===2){q('#forgeClose').click();L.ageClosed=S.mode==='play';m.age=3;return L}
