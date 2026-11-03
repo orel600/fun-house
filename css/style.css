@@ -37,6 +37,12 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
 .clock{text-align:center;font-family:var(--display);font-size:22px;line-height:1;font-variant-numeric:tabular-nums}
 .clock small{display:block;font-family:var(--body);font-size:11px;color:var(--dim);margin-top:3px;font-weight:700}
 .lvl{flex:0 1 38%;text-align:end;font-weight:800;font-size:14px;letter-spacing:.02em}
+/* מכפיל הקושי של הזירה (arena-scale.js) ליד הרמה: רק כשהוא מעל 1 */
+.ascb{flex:none;font:800 12px var(--body);color:var(--gold);border:1.5px solid var(--gold);border-radius:9px;padding:1px 6px;direction:ltr;pointer-events:auto}
+.ascb[hidden]{display:none}
+.world .ascb{display:none}
+/* מה הפס העליון: ניסיון לרמה הבאה (כדי שלא יתבלבל עם התחנות של פס הדרך לבוס שמתחתיו) */
+.xptag{position:absolute;inset-block:0;inset-inline-start:6px;display:flex;align-items:center;font:800 10px var(--body);color:var(--gold);text-shadow:0 0 2px #000,0 0 2px #000,0 0 3px #000;z-index:1}
 /* פס ההתקדמות של הריצה: יהלום לכל תחנה, עיגול לבוס בסוף. מתמלא מתחילת השורה, בכל שפה */
 .runbar{position:relative;height:6px;margin:10px 6px 0;background:var(--line);border-radius:3px}
 .runfill{position:absolute;inset-block:0;inset-inline-start:0;width:0;background:var(--chalk);opacity:.5;border-radius:3px}
@@ -108,20 +114,22 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
 .divine i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
 .divine.ready{box-shadow:0 0 12px var(--gold)}
 .divine:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
-/* אולטימייט (js/ult.js): משמאל לקשת של הסקילים, בשורה התחתונה. המילוי הכהה (--cd) מתרוקן ככל שהורגים, ומלא: זוהר וטבעת קצרה */
-.ult{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 36px);right:calc(env(safe-area-inset-right,0px) + 216px);
-  width:76px;height:76px;border-radius:50%;border:3px solid var(--dt,var(--gold));display:grid;place-items:center;padding:0;color:var(--dt,var(--gold));
+/* אולטימייט וכישוף: קשת חיצונית סביב הפינה של הסקילים (אוראל, 2.11: "הכפתורים תופסים חצי מסך"). המרכז של הפינה 66 מימין ו-74 מלמטה.
+   האולטימייט בקשת החיצונית משמאל ומעט למעלה, הכישוף מעל ומעט שמאלה, והברק האלוהי באלכסון ביניהם. כולם מחוץ לשליש האמצעי של המסך גם ב-760 רוחב.
+   אולטימייט (js/ult.js): המילוי הכהה (--cd) מתרוקן ככל שהורגים, ומלא: זוהר וטבעת קצרה */
+.ult{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 95px);right:calc(env(safe-area-inset-right,0px) + 187px);
+  width:58px;height:58px;border-radius:50%;border:3px solid var(--dt,var(--gold));display:grid;place-items:center;padding:0;color:var(--dt,var(--gold));
   touch-action:none;cursor:pointer;overflow:hidden;background:radial-gradient(circle at 50% 35%,#2E3854e6,#141A2Ae6 72%);
   box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 4px 10px #000a;transition:transform .08s}
 .ult[hidden]{display:none}
-.ult .dti{width:40px;height:40px;transition:opacity .15s}
+.ult .dti{width:30px;height:30px;transition:opacity .15s}
 .ult:not(.ready) .dti{opacity:.45}
 .ult i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,1)*360deg),transparent 0)}
 .ult.ready{box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 0 16px var(--dt)}
 .ult.ping{animation:ultping .45s ease-out}
 @keyframes ultping{from{box-shadow:0 0 0 0 var(--dt)}to{box-shadow:0 0 0 16px transparent}}
 .ult:active{transform:scale(.92)}
-.swap:not([hidden])~.ult{right:calc(env(safe-area-inset-right,0px) + 230px)}
+.swap:not([hidden])~.ult{right:calc(env(safe-area-inset-right,0px) + 195px);bottom:calc(env(safe-area-inset-bottom,0px) + 109px)}
 .vil .skills,.vil .divine,.vil .ult,.world .ult{display:none}
 /* סקיל חתימה (js/sigskill.js): בעולם ובכפר, במקום של האולטימייט (שקיים רק בזירה). גדול וזוהר בצבע סוג הנזק, הצללת המתנה ומספר */
 .sig{display:none}
@@ -142,20 +150,20 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
 .sigc{border-color:var(--gold)}
 .sigc .wsbi{font-size:24px;display:grid;place-items:center}
 /* כישוף מיוחד (js/spell.js): כפתור קטן מעל השורה התחתונה, משמאל לקשת. צבע קלף, כי כישוף הוא לא סוג נזק. בחירה בתחילת ריצה: נגיעה מחליפה, והשם מתחתיו */
-.spellb{position:fixed;z-index:3;width:56px;height:56px;right:calc(env(safe-area-inset-right,0px) + 226px);bottom:calc(env(safe-area-inset-bottom,0px) + 130px);
+.spellb{position:fixed;z-index:3;width:50px;height:50px;right:calc(env(safe-area-inset-right,0px) + 91px);bottom:calc(env(safe-area-inset-bottom,0px) + 199px);
   border-radius:50%;border:3px solid #E9D8A6;color:#E9D8A6;display:grid;place-items:center;padding:0;overflow:hidden;touch-action:none;cursor:pointer;
   background:radial-gradient(circle at 50% 35%,#2E3854e6,#141A2Ae6 72%);box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 4px 10px #000a}
-.swap:not([hidden])~.spellb{right:calc(env(safe-area-inset-right,0px) + 240px)}
-.spellb .dti{width:26px;height:26px}
+.swap:not([hidden])~.spellb{right:calc(env(safe-area-inset-right,0px) + 97px);bottom:calc(env(safe-area-inset-bottom,0px) + 209px)}
+.spellb .dti{width:22px;height:22px}
 .spellb:not(.ready) .dti{opacity:.45}
 .spellb i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
 .spellb.ready{box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 0 10px #E9D8A688}
 .spellb:active{transform:scale(.92)}
-.spellb[data-sec]:not([data-sec=""])::after{content:attr(data-sec);position:absolute;inset:0;display:grid;place-items:center;z-index:1;font:900 20px/1 var(--body);color:#fff;text-shadow:0 0 4px #000,0 2px 0 #000;pointer-events:none}
+.spellb[data-sec]:not([data-sec=""])::after{content:attr(data-sec);position:absolute;inset:0;display:grid;place-items:center;z-index:1;font:900 17px/1 var(--body);color:#fff;text-shadow:0 0 4px #000,0 2px 0 #000;pointer-events:none}
 .spellb[hidden]{display:none}
-/* בתחילת ריצה, כל נגיעה מחליפה כישוף (spell.js): השם מתחת לכפתור וטבעת מקווקוות */
+/* בתחילת ריצה, כל נגיעה מחליפה כישוף (spell.js): השם מעל הכפתור (מתחתיו יש סקיל) וטבעת מקווקוות */
 .spellb.pick{overflow:visible;outline:2px dashed #E9D8A6aa;outline-offset:4px}
-.spellb.pick::before{content:attr(data-name);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap;font:700 12px/1 var(--body);color:#E9D8A6;text-shadow:0 1px 2px #000;pointer-events:none}
+.spellb.pick::before{content:attr(data-name);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);white-space:nowrap;font:700 12px/1 var(--body);color:#E9D8A6;text-shadow:0 1px 2px #000;pointer-events:none}
 /* חנות הריצה (js/shop.js): כפתור זהב בפס העליון עם הסכום, וחלון של חמישה פריטים. זהב = השלל של הריצה */
 .hud .shopbtn{display:inline-flex;align-items:center;gap:4px;color:var(--gold)}
 .hud .shopbtn[hidden]{display:none}

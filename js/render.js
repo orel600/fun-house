@@ -228,6 +228,7 @@ function drawRunBar(){
   $('runfill').style.width=(100*Math.min(1,S.t/RUN.bossAt))+'%';
   const ms=bar.querySelectorAll('.mk'),done=S.run.next+(S.boss||S.run.won?1:0);
   if(bar.dataset.done!==String(done)){bar.dataset.done=done;ms.forEach((m,i)=>m.classList.toggle('done',i<done))}
+  ascHud();   // מכפיל הקושי ליד הרמה (arena-scale.js)
 }
 function hud(){
   if(!P)return;
