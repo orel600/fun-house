@@ -132,6 +132,10 @@ const TEXT={
   weakTo:{he:t=>'חלש ל'+t,en:t=>'Weak to '+t},
   immune:{he:'חסין',en:'Immune'},
   ascale:{he:k=>'הזירה מתאימה את עצמה אליך: ×'+k,en:k=>'The arena adapts to you: ×'+k},   // arena-scale.js
+  'ascale.tip':{he:'הזירה מתאימה את עצמה לכוח שלך',en:'The arena adjusts to your power'},   // arena-scale.js: התג ליד הרמה
+  'arena.tip':{he:'זוז עם האגודל השמאלי כדי להתחמק',en:'Move with your left thumb to dodge'},   // arena-scale.js: טיפ בשתי הריצות הראשונות
+  'xp.tag':{he:'ניסיון',en:'XP'},   // index.html: הפס העליון בזירה
+  'runbar.tip':{he:'הדרך לבוס: תחנות וגלים ענקיים',en:'Road to the boss: stops and big waves'},   // index.html: פס הדרך בזירה
 
   // עליית רמה ושדרוגים: [שם, תיאור]
   pickUpgrade:{he:'בחר שדרוג אחד',en:'Pick one upgrade'},

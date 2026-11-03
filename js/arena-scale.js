@@ -11,7 +11,8 @@ const ARENA_SCALE={
   multi:0.5,                     // כל חץ נוסף בקשת שווה חצי חץ (לא כולם פוגעים)
   max:{hp:20,dmg:8},             // תקרה
   free:1.1,                      // עד כאן לא משנים כלום, שלא יופיע "×1.0" על שינוי קטן
-  show:3                         // כמה שניות השורה "הזירה מתאימה את עצמה" נשארת
+  show:3,                        // כמה שניות השורה "הזירה מתאימה את עצמה" נשארת
+  tip:{runs:2,key:'fh-arena-tip',show:4}   // טיפ לשחקן חדש: בכמה ריצות ראשונות, איפה נספר, וכמה שניות
 };
 
 const ascOn=()=>!!(S&&S.run&&!S.wd&&!S.mb&&!S.vil&&ARENA_SCALE.arenas.includes(S.arena||'classic'));
@@ -36,6 +37,21 @@ function arenaScaleStart(){
   r.sc=ascOn()?arenaScaleCalc():{hp:1,dmg:1,boss:1};
   const m=Math.max(r.sc.hp,r.sc.dmg);
   if(m>1){floatText(P.x,P.y-58,T('ascale',m.toFixed(1)),C.gold,14,false);const f=floats[floats.length-1];if(f){f.life=ARENA_SCALE.show;f.vy=-10}}
+  arenaTip();
+}
+// טיפ בשתי הריצות הראשונות בזירה: מתחת לגיבור, כדי לא להתנגש בבאנר של הגל או בשורת הקושי שמעליו
+function arenaTip(){
+  const A=ARENA_SCALE.tip;if(!ascOn())return;
+  let n=0;try{n=+localStorage.getItem(A.key)||0}catch(e){}
+  S.run.tip=n<A.runs;try{localStorage.setItem(A.key,n+1)}catch(e){}
+  if(!S.run.tip)return;
+  floatText(P.x,P.y+46,T('arena.tip'),C.chalk,13,false);const f=floats[floats.length-1];if(f){f.life=A.show;f.vy=-4}
+}
+// התג ליד הרמה (render.js, drawRunBar): המכפיל, רק כשהוא מעל 1
+function ascHud(){
+  const b=$('ascB'),s=ascOn()&&S.run.sc,m=s?Math.max(s.hp,s.dmg):1,on=m>1;
+  if(b.hidden===on)b.hidden=!on;if(!on)return;
+  const v='×'+m.toFixed(1)+LANG;if(b.dataset.v!==v){b.dataset.v=v;b.textContent='×'+m.toFixed(1);b.title=T('ascale.tip');b.setAttribute('aria-label',T('ascale.tip')+': ×'+m.toFixed(1))}
 }
 const asc=()=>{if(!ascOn())return null;if(!S.run.sc)arenaScaleStart();return S.run.sc};
 const ascHp=()=>{const s=asc();return s?s.hp:1};
