@@ -17,15 +17,16 @@
 <canvas id="c" data-ta="arena"></canvas>
 
 <div class="hud">
-  <div class="xpbar"><div class="xpfill" id="xp"></div><span class="bartxt" id="xpTxt"></span></div>
+  <div class="xpbar"><div class="xpfill" id="xp"></div><small class="xptag" data-t="xp.tag"></small><span class="bartxt" id="xpTxt"></span></div>
   <div class="row">
     <div class="hp"><div class="hpfill" id="hp"></div><span class="bartxt" id="hpTxt"></span></div>
     <div class="clock"><span id="clock">0:00</span><small id="bossin"></small></div>
     <div class="lvl" id="lvl"></div>
+    <b class="ascb" id="ascB" data-ta="ascale.tip" hidden></b>
     <button class="gearbtn" id="gearBtnRun" data-ta="gear.btn">🎒</button>
     <button class="gearbtn shopbtn" id="shopBtn" data-ta="shop.title" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 8v8M9.5 10h4a1.5 1.5 0 0 1 0 3h-3a1.5 1.5 0 0 0 0 3h4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><b>0</b></button>
   </div>
-  <div class="runbar" id="runbar"><div class="runfill" id="runfill"></div></div>
+  <div class="runbar" id="runbar" data-ta="runbar.tip"><div class="runfill" id="runfill"></div></div>
   <div class="bossbar" id="bossbar" hidden>
     <div class="bossname"><span id="bossnm"></span><em id="bossweak"></em></div>
     <div class="bosstrack"><div class="bossfill" id="bossfill"></div></div>
