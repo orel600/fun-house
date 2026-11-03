@@ -949,6 +949,18 @@ function worldBot(m,L,god){
     const r={shock:b.hp<b0,frozen,stun:f.stun>=SKILLS.combo.stun.t-0.01&&!(f.frozen>0),melt:Math.round(10*(m0-m.hp)/(1e9-p.hp))/10,bossStun:bs1&&!(B.stun>0),
       plainIce:!(p.frozen>0)};
     for(const e of [a,b,f,m,p,B])e.dead=true;enemies=enemies.filter(e=>!e.dead);HITFX.crit=c;P.track=tr;S.hits=hits;S.sk.combos={};return r});
+  // מראה הסקילים בזירה (skill-fx.js): כל חמשת הסקילים ושני קומבו מצוירים בלי שגיאה ובתקרת החלקיקים. "פחות אפקטים" = בלי חלקיקים, ובעולם הציור הישן
+  const sfx=await page.evaluate(()=>{const r={},bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,ids:S.sk.ids,cd:S.sk.cd,fx:S.sk.fx,fl:SAVE.fxLess,last:S.sk.last,combos:{...S.sk.combos},sh:S.shake,used:S.sk.used,tr:P.track,hits:S.hits};P.track=newTrack();S.hits={};
+    try{S.vil=null;S.wd=null;S.room=null;S.mode='play';SAVE.fxLess=false;S.sk.fx=[];S.sk.last={};
+      const ens=[];for(let i=0;i<6;i++){const e=addEnemy('grunt',P.x+60+i*30,P.y+20);e.hp=e.max=1e9;e.speed=0;e.mult={};ens.push(e)}
+      ens[0].wet=3;ens[1].frozen=2;ens[2].stun=2;
+      const ids=['quake','splash','frost','flame','zap'];S.sk.ids=ids;S.sk.cd=ids.map(()=>0);r.cast=ids.filter(id=>skillUse(id)).length;
+      comboShow(ens[0],'shock');comboShow(ens[1],'melt');r.combo=S.sk.fx.some(f=>f.combo);
+      const d0=SKFXS.drawn,o0=SKFXS.old;SKFXS.peak=0;ctx.save();for(let i=0;i<20;i++){skillsUpdate(1/60);drawSkills(0,0)}r.drawn=SKFXS.drawn-d0===20&&SKFXS.old===o0;r.peak=SKFXS.peak;r.max=SKFX.maxParts;
+      SAVE.fxLess=true;drawSkills(0,0);r.less=SKFXS.parts===0;SAVE.fxLess=false;
+      S.wd=bak.wd||{};const o1=SKFXS.old;drawSkills(0,0);r.world=SKFXS.old===o1+1;S.wd=null;ctx.restore();
+      for(const e of ens)e.dead=true;enemies=enemies.filter(e=>!e.dead)}catch(err){r.err=String(err&&err.stack||err)}
+    S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.sk.ids=bak.ids;S.sk.cd=bak.cd;S.sk.fx=bak.fx;SAVE.fxLess=bak.fl;S.sk.last=bak.last;S.sk.combos=bak.combos;S.shake=bak.sh;S.sk.used=bak.used;P.track=bak.tr;S.hits=bak.hits;return r});
   // חפצים מסתובבים (orbit.js): כל החמישה לבושים, ואויב, יריית אויב ומכה מגיעים אליהם. רק בזירה, אז הכפר מושהה לרגע. אחר כך הכל חוזר
   const ob=await page.evaluate(()=>{const bak={orb:SAVE.gear.orbit.slice(),lv:SAVE.hero.level,vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,o:S.orb,hp:P.hp,inv:P.inv,t:S.t},c=HITFX.crit;
     HITFX.crit=0;S.vil=S.wd=S.room=null;S.mode='play';SAVE.hero.level=99;SAVE.gear.orbit=['emberOrb','frostOrb','stoneOrb','leafOrb','cloverOrb'];
@@ -2576,6 +2588,8 @@ function worldBot(m,L,god){
   check(wk.weakDmg>wk.plain*1.2,'חולשה: מכה של '+wk.weak+' על מגן עשתה '+wk.weakDmg+', ואותה מכה בלי חולשה '+wk.plain);
   check(wk.stone.lightning===0&&wk.stone.water===15&&wk.stone.fire===5,'טבלת יעילות: מכה של 10 על אבן · מים '+wk.stone.water+' (צריך 15), ברק '+wk.stone.lightning+' (צריך 0), אש '+wk.stone.fire+' (צריך 5)');
   const hits=L.hits||{},nTypes=Object.keys(hits).filter(k=>hits[k]>0).length;
+  check(!sfx.err&&sfx.cast===5&&sfx.combo&&sfx.drawn&&sfx.peak>0&&sfx.peak<=sfx.max&&sfx.less&&sfx.world,'מראה הסקילים בזירה: '+(sfx.err||[sfx.cast+'/5 סקילים',sfx.combo?'הבזק קומבו':'בלי הבזק קומבו',sfx.drawn?'מצויר':'לא מצויר',
+    'עד '+sfx.peak+' חלקיקים בפריים (תקרה '+sfx.max+')',sfx.less?'"פחות אפקטים" בלי חלקיקים':'חלקיקים גם ב"פחות אפקטים"',sfx.world?'בעולם הציור הישן':'בעולם הציור החדש'].join(', ')));
   check(cb.shock&&cb.frozen&&cb.stun&&cb.melt>=1.9&&cb.bossStun&&cb.plainIce,'קומבו: '+[cb.shock?'רטוב+ברק קפץ לרטוב רחוק':'חשמול לא קפץ',cb.frozen?'רטוב+קרח קפא ולא זז':'לא קפא',
     cb.stun?'קפוא+אדמה = הלם':'אין הלם','אש+קרח x'+cb.melt+(cb.melt>=1.9?'':' (צריך x2)'),cb.bossStun?'בוס בהלם פעם אחת ואז חסין':'הלם בבוס לא עבד',cb.plainIce?'קרח לבד לא מקפיא':'קרח לבד הקפיא'].join(', '));
   check(ocb.parts==='attack,control'&&ocb.k==='0.6,0.6'&&ocb.close&&ocb.hit&&ocb.txt&&ocb.drop&&ocb.pool===0,'חפץ משולב: '+(ocb.parts==='attack,control'?'שני חלקים ב-60% כל אחד':'חלקים שגויים '+ocb.parts+' '+ocb.k)+', '+(ocb.close?'צמודים':'רחוקים')+', '+(ocb.hit?'פגע':'לא פגע')+', '+(ocb.drop?'נופל מבוס':'לא נופל')+', '+(ocb.pool===0?'לא בשלל הרגיל':'נפל בשלל הרגיל')+(ocb.txt?'':', תצוגה ריקה')+' ['+ocb.facts+']');
