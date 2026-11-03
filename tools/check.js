@@ -1207,6 +1207,27 @@ function worldBot(m,L,god){
       run(0.6);r.boom=VFX3D.parts()>0;r.p2=VFX3D.parts();r.hit=e.hp<e.max;
       for(const x of enemies)x.dead=true;enemies=[];run(6);r.end=VFX3D.n()===0&&SKFX3D.n()===0}catch(err){r.err=String(err&&err.stack||err)}
     if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // מתכוני הצייד בתלת-ממד (skfx3d-volley.js, skfx3d-trap.js, skfx3d-vines.js): לכל סקיל יש מתכון שתופס את הציור,
+  // יוצא ממנו חלקיקים, ובסוף הכל משתחרר (גם מה שממשיך אחרי שהסקיל נגמר: חצים נעוצים, גבישי קרח, שורשים)
+  // מספרים אקראיים משלה: הבדיקה לא מזיזה את הרצף של הבוט, וכך שאר הריצה זהה לריצה בלעדיה (אותו seed = אותו משחק)
+  const vfxh=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:[],bad:[]},rnd=Math.random;let sd=97;Math.random=()=>(sd=sd*16807%2147483647)/2147483647;
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60);VFX3D.step(1/60)}};
+      run(0.05);r.d3=VFX3D.on();
+      if(r.d3)for(const id of ['volley','trap','vines']){   // בדו-ממד אין מתכונים: הציור הישן, ואין מה לבדוק כאן
+        try{for(const x of enemies)x.dead=true;enemies=[];SAVE.hero.skLoad=[id,null];run(0.05);if(SKR)skrEnd(false);
+          const e=addEnemy('grunt',P.x+70,P.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;
+          const i=S.sk.ids.indexOf(id);if(i<0){r.bad.push(id+':לא על כפתור');continue}S.sk.cd[i]=0;
+          if(!wskUse(id)){r.bad.push(id+':לא ירה');continue}
+          if(SKR)skrEnd(false);run(0.25);
+          const own=!!S.wsb&&S.wsb.fx.some(o=>o.id===id&&SKFX3D.owns(o)),fx=SKFX3D.n()>0,p=VFX3D.parts()>0;
+          run((WSKBOOK.list[id].t||0.5)+0.6);for(const x of enemies)x.dead=true;enemies=[];run(6);
+          const end=VFX3D.n()===0&&SKFX3D.n()===0;
+          if(own&&fx&&p&&end)r.ok.push(id);
+          else r.bad.push(id+':'+[own?'':'הציור הישן לא מדלג',fx?'':'אין מתכון',p?'':'אין חלקיקים',end?'':'לא השתחרר'].filter(Boolean).join('+'))}
+        catch(err){r.bad.push(id+':'+String(err))}}}
+    catch(err){r.err=String(err&&err.stack||err)}
+    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}Math.random=rnd;return r});
   // אפקטים בתלת-ממד לסקילי הלוחם (skfx3d-charge/whirl/shield.js): לכל סקיל יש מתכון שמצייר אותו, חלקיקים בזמן הסקיל, והכל משתחרר בסוף
   const vfxw=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:[],bad:[]};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();enterWorld('home');enemies=[];
@@ -2692,6 +2713,8 @@ function worldBot(m,L,god){
     sig.bad.length?'נכשלו: '+sig.bad.join(', '):'',sig.clean?'נגמרים':'לא נגמרו',sig.arena?'':'כפתור בזירה'].filter(Boolean).join(' · ')));
   check(!vfx.err&&vfx.cast&&vfx.hit&&(!vfx.d3||vfx.fall&&vfx.skip2d&&vfx.boom&&vfx.end),'אפקטים בתלת-ממד: '+(vfx.err||(!vfx.d3?'דו-ממד, המטאור בציור הישן'+(vfx.cast&&vfx.hit?' ופוגע':' לא פגע'):
     [vfx.fall?'נופל עם '+vfx.p1+' חלקיקים':'אין חלקיקים בנפילה',vfx.skip2d?'הציור הישן מדלג':'הציור הישן לא מדלג',vfx.boom?'פיצוץ עם '+vfx.p2+' חלקיקים':'אין פיצוץ',vfx.hit?'פוגע':'לא פגע',vfx.end?'נגמר ומשחרר':'לא השתחרר'].join(' · '))));
+  check(!vfxh.err&&!vfxh.bad.length&&(!vfxh.d3||vfxh.ok.length===3),'אפקטים לסקילי הצייד: '+(vfxh.err||(!vfxh.d3?'דו-ממד, הציור הישן':
+    ['עובדים: '+vfxh.ok.join(', '),vfxh.bad.length?'נכשלו: '+vfxh.bad.join(', '):''].filter(Boolean).join(' · '))));
   check(!vfxw.err&&!vfxw.bad.length,'אפקטים לסקילי הלוחם: '+(vfxw.err||(!vfxw.d3?'דו-ממד, הציור הישן':vfxw.ok.join(' · ')))+(vfxw.bad.length?' ✗ '+vfxw.bad.join(' · '):''));
   check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean&&!wsb.noPic.length,
     'ספר הסקילים: '+(wsb.err||[wsb.one&&wsb.lock?'נעול בהתחלה':'לא נעול',wsb.lp?'במסלול הרמות':'לא במסלול',wsb.fill&&wsb.btns?'רמה ממלאת משבצות':'רמה לא מילאה',
