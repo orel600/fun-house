@@ -12,12 +12,12 @@
    "פחות אפקטים" בהגדרות, או "הפחתת תנועה" בטלפון: בלי חלקיקים, בלי הבהוב ובלי הבזק. כל המספרים ב-SKFX */
 const SKFX={
   on:true,
-  lineLife:1.4,              // ברק מהסקיל: פי כך יותר, כדי שההבהוב ייראה
-  life:1.4,                  // טבעת חיה פי כך יותר מהציור הישן (0.35 שניות), כדי שיהיה זמן לראות סדקים ואבנים
+  lineLife:1.2,              // ברק מהסקיל: פי כך יותר, כדי שההבהוב ייראה
+  life:1.25,                 // טבעת חיה פי כך יותר מהציור הישן (0.35 שניות), כדי שיהיה זמן לראות סדקים ואבנים
   maxParts:60,               // כמה חלקיקים לכל היותר בפריים אחד, מכל הסקילים יחד
   parts:{quake:12,splash:14,flame:12,frost:12,zap:5},   // כמה חלקיקים לכל הטלה
   shade:'rgba(12,10,18,0.55)',   // הקו הכהה מתחת לכל ציור
-  quake:{cracks:7,seg:4,jit:0.35,len:0.95,up:70,dust:4},   // סדקים: כמה, כמה חלקים, כמה עקום, אורך ביחס לטבעת. up: כמה גבוה האבנים עפות
+  quake:{cracks:7,seg:4,jit:0.35,len:0.95,up:70,dust:3},   // סדקים: כמה, כמה חלקים, כמה עקום, אורך ביחס לטבעת. up: כמה גבוה האבנים עפות
   splash:{crest:'#DDF0FF',up:55},
   flame:{tongues:12,h:46,w:13,core:'#FFD84D',tip:'#FFF3C4'},
   frost:{shards:10,len:30,w:7,light:'#E8FBFF'},
@@ -92,13 +92,13 @@ function skfxQuake(f,k,parts){
     for(let j=1;j<=Q.seg;j++){const d=L*j/Q.seg,b=an+(skRnd(s,c*9+j)-0.5)*Q.jit*2;ctx.lineTo(f.x+Math.cos(b)*d,f.y+Math.sin(b)*d*0.85)}}
   ctx.globalAlpha=Math.min(1,a*1.6);ctx.strokeStyle='#1E140C';ctx.lineWidth=2+2.5*a;ctx.stroke();
   ctx.globalAlpha=a*0.8;ctx.strokeStyle='#D9B48A';ctx.lineWidth=1.2;ctx.stroke();
-  skWave(f,rr,a,3+4*a,0.18);skCircle(f.x,f.y,rr*0.82);ctx.globalAlpha=a*0.5;ctx.strokeStyle='#D9B48A';ctx.lineWidth=1.5;ctx.stroke();
+  skWave(f,rr,a,3+4*a,0.18);ctx.globalAlpha=a;ctx.strokeStyle='#E8C79A';ctx.lineWidth=1.3;ctx.stroke();   // קצה בהיר על הגל
   if(!parts)return;
   const nd=skTake(Q.dust);ctx.beginPath();
   for(let i=0;i<nd;i++){const an=skRnd(s,i+90)*6.283,d=rr*(0.85+0.2*skRnd(s,i+91));skDot(f.x+Math.cos(an)*d,f.y+Math.sin(an)*d*0.85,10+22*k)}
   ctx.globalAlpha=a*0.22;ctx.fillStyle='#C9AE8C';ctx.fill();
   const n=skTake(SKFX.parts.quake-Q.dust);ctx.beginPath();
-  for(let i=0;i<n;i++){const an=skRnd(s,i+60)*6.283,sp=0.45+0.55*skRnd(s,i+61),d=R*sp*skEase(k),h=Q.up*sp*Math.sin(Math.PI*Math.min(1,k*1.2)),z=2.5+3.5*skRnd(s,i+62);
+  for(let i=0;i<n;i++){const an=skRnd(s,i+60)*6.283,sp=0.45+0.55*skRnd(s,i+61),d=R*sp*skEase(k),h=Q.up*sp*Math.sin(Math.PI*Math.min(1,k*1.2)),z=3.5+4*skRnd(s,i+62);
     skPoly(f.x+Math.cos(an)*d,f.y+Math.sin(an)*d*0.85-h,ROCK.map(([u,v])=>[u*z,v*z]),an+k*8*(skRnd(s,i+63)-0.5))}
   ctx.globalAlpha=Math.min(1,a*1.8);ctx.fillStyle=f.col;ctx.fill();ctx.strokeStyle=SKFX.shade;ctx.lineWidth=1.5;ctx.stroke();
 }
@@ -109,7 +109,7 @@ function skfxSplash(f,k,parts){
   skWave(f,rr,a,4+5*a,0.2);
   ctx.beginPath();for(let i=0;i<8;i++){const b=(i+skRnd(s,i)*0.5)/8*6.283;ctx.moveTo(f.x+Math.cos(b)*rr,f.y+Math.sin(b)*rr);ctx.arc(f.x,f.y,rr,b,b+0.35)}
   ctx.strokeStyle=Z.crest;ctx.lineWidth=2;ctx.globalAlpha=a*0.9;ctx.stroke();
-  for(const lag of [0.18,0.36]){const q=Math.max(0,k-lag)/(1-lag);if(q<=0)continue;skCircle(f.x,f.y,R*0.75*skEase(q));ctx.strokeStyle=f.col;ctx.lineWidth=1.5;ctx.globalAlpha=(1-q)*0.55;ctx.stroke()}
+  for(const lag of [0.25]){const q=Math.max(0,k-lag)/(1-lag);if(q<=0)continue;skCircle(f.x,f.y,R*0.75*skEase(q));ctx.strokeStyle=f.col;ctx.lineWidth=1.5;ctx.globalAlpha=(1-q)*0.55;ctx.stroke()}
   if(!parts)return;
   const n=skTake(SKFX.parts.splash),hl=[];ctx.beginPath();
   for(let i=0;i<n;i++){const an=skRnd(s,i+30)*6.283,sp=0.55+0.6*skRnd(s,i+31),d=R*sp*skEase(k),h=Z.up*sp*Math.sin(Math.PI*k),
