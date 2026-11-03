@@ -109,8 +109,12 @@ function mbStep(u,mx,my){
     if(w.team===u.team)continue;const side=Math.sign(ox-w.x)||1;
     if(Math.sign(u.x-w.x)!==side||Math.abs(u.x-w.x)<u.r)u.x=w.x+side*u.r;
   }
-  for(const b of MB.u){if(b.dead||(b.k!=='tower'&&b.k!=='base'))continue;   // לא עוברים דרך מבנים
-    const dx=u.x-b.x,dy=u.y-b.y,d=Math.hypot(dx,dy)||0.01,rr=b.r+u.r;if(d<rr){u.x=b.x+dx/d*rr;u.y=b.y+dy/d*rr}}
+  for(const b of MB.u){if(b.dead||(b.k!=='tower'&&b.k!=='base'))continue;   // לא עוברים דרך מבנים, אלא מחליקים מסביב להם
+    const dx=u.x-b.x,dy=u.y-b.y,d=Math.hypot(dx,dy)||0.01,rr=b.r+u.r;if(d>=rr)continue;
+    const nx=dx/d,ny=dy/d,m=Math.hypot(mx,my);u.x=b.x+nx*rr;u.y=b.y+ny*rr;
+    // מי שהולך ישר אל המבנה (המגדלים באמצע הנתיב) נדחף בדיוק למקום שממנו בא ונתקע (אוראל, 3.11: "המוד תקוע לגמרי"). לכן ממשיכים לאורך הדופן
+    if(m>0.01){const tx=-ny,ty=nx,dot=(mx*tx+my*ty)/m,sd=Math.abs(dot)>0.05?Math.sign(dot):Math.sign(u.y-b.y||1)*Math.sign(nx||1),k=m*Math.max(0.6,Math.abs(dot));
+      u.x+=tx*sd*k;u.y+=ty*sd*k;const ex=u.x-b.x,ey=u.y-b.y,e=Math.hypot(ex,ey)||0.01;if(e<rr){u.x=b.x+ex/e*rr;u.y=b.y+ey/e*rr}}}
   const L=MOBA.lane;u.x=Math.max(-L.len,Math.min(L.len,u.x));u.y=Math.max(-L.half,Math.min(L.half,u.y));
 }
 function mbMove(u,tx,ty,dt,stop=4){
