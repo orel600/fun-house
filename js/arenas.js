@@ -4,7 +4,7 @@
    waves: גלים ממוספרים עם הפסקה קצרה ביניהם, מונה "גל 3/10" למעלה, כל גל קצת חזק יותר עם אויבים משלו, ובגל האחרון בוס.
    הניצחון, השלל ומסך הסוף כמו בריצה רגילה: הבוס שמופל קורא ל-runWon (boss.js, village.js).
    חיבורים: startRun(a) ב-input.js, runReset/runUpdate/runK ב-run.js, spawner ב-spawn.js, צבע הרצפה ב-render.js וב-render3d.js,
-   והכפתור "זירת גלים" בכרטיס של שער בעולם (world.js). מבוך וזירת בוס עוד לא נבנו: כל אחד יהיה עוד שורה כאן */
+   והכפתור "זירת גלים" בכרטיס של שער בעולם (world.js). boss: זירת בוסים, שלושה בוסים ברצף בלי אויבים אחרים. מבוך עוד לא נבנה: יהיה עוד שורה כאן */
 
 const ARENAS={
   classic:{win:'boss',floor:null},   // floor:null = הצבעים הרגילים (C.ink בדו-ממד, VIEW.ground בתלת-ממד)
@@ -37,6 +37,14 @@ const ARENAS={
       {t:280,g:[['crawler',6,1],['mushnub',6,1],['slime',8,1],['ghost',6,1]],sup:'yeti'},
       {t:320,g:[['grunt',20,0.5],['shield',6,1],['slime',6,1]],boss:true}
     ]
+  },
+  /* זירת בוסים: דו-קרב בלי ליווי. שלושה בוסים ברצף, וכל אחד לומד אותך מחדש (makeBoss), כולל מה שעשית בבוס הקודם.
+     hp: חיי כל בוס יחסית לבוס רגיל. בין בוס לבוס הפסקה והחיים מתמלאים חלקית (heal). אחרי האחרון הריצה נגמרת בניצחון */
+  boss:{
+    win:'boss',
+    floor:{d2:'#2E1A22',d3:'#432A35',line:'#6E4452'},   // רצפה בורדו כהה, כדי שיהיה ברור שזו זירה אחרת
+    firstGap:3,breakSecs:7,heal:0.35,
+    hp:[0.6,0.8,1.05]
   }
 };
 const ARENA=()=>ARENAS[S&&S.arena]||ARENAS.classic;
@@ -44,21 +52,23 @@ const ARENA=()=>ARENAS[S&&S.arena]||ARENAS.classic;
 // מתחילים ריצה בזירה מסוג a. נקרא מ-startRun אחרי reset()
 function arenaStart(a){
   S.arena=ARENAS[a]?a:'classic';const A=ARENA();
-  document.documentElement.classList.toggle('waves',!!A.list);
+  document.documentElement.classList.toggle('waves',!!(A.list||A.hp));
+  if(A.hp){S.nextBoss=S.t+A.firstGap;S.bd={i:0,until:S.t+A.firstGap};return}   // בוס ראשון בעוד רגע. bd: איזה בוס עכשיו, ועד מתי ההפסקה
   if(!A.list)return;
   S.nextBoss=Infinity;   // הבוס מגיע רק בגל האחרון
   S.wv={i:-1,phase:'break',until:S.t+A.firstGap,q:[],log:[],boss:false};
 }
 // ניקוי בכל reset (גם בכפר ובעולם): חוזרים לזירה הרגילה
-function arenaReset(){S.arena='classic';S.wv=null;document.documentElement.classList.remove('waves');arenaTag('')}
+function arenaReset(){S.arena='classic';S.wv=S.bd=null;document.documentElement.classList.remove('waves');arenaTag('')}
 
 // כמה זמן "ריצה רגילה" שווה הרגע הזה, בשביל חוזק האויבים (runK)
 const arenaT=()=>S.wv?ARENA().list[Math.max(0,S.wv.i)].t:S.t;
 // זירה עם מקור אויבים משלה: spawn.js לא שולח בודדים וגושים
-const arenaOwnSpawn=()=>!!(S.wv&&ARENA().list);
+const arenaOwnSpawn=()=>!!(S.wv&&ARENA().list||S.bd);
 
 // כל פריים בזירה (runUpdate). מחזיר true כשהזירה מנהלת את הריצה בעצמה, ואז אין תחנות של classic
 function arenaRun(){
+  if(S.bd)return bossArenaRun();
   const A=ARENA(),w=S.wv;if(!A.list||!w)return false;
   if(w.phase==='break'&&S.t>=w.until)waveStart(w.i+1);
   if(w.phase==='fight'){
@@ -71,6 +81,25 @@ function arenaRun(){
     }
   }
   arenaHud();return true;
+}
+/* ---- זירת בוסים ---- */
+// כל פריים: רק המונה למעלה ("בוס 2/3", או "הבא בעוד 4" בהפסקה)
+function bossArenaRun(){
+  const A=ARENA(),d=S.bd,N=A.hp.length;
+  arenaTag(S.boss?T('bossar.count',d.i+1,N):S.t<d.until?T('bossar.next',d.i+1,N,Math.max(1,Math.ceil(d.until-S.t))):'');
+  return true;
+}
+// הבוס נולד (update.js): החיים לפי הבוס הנוכחי
+function arenaBoss(b){
+  if(!S.bd)return;const A=ARENA();b.hp=b.max=b.hp*A.hp[S.bd.i];
+}
+// הבוס נפל (bossDown). true = יש עוד בוס, אז לא מסיימים את הריצה
+function arenaBossDown(){
+  const d=S.bd;if(!d)return false;const A=ARENA();
+  if(++d.i>=A.hp.length)return false;
+  d.until=S.nextBoss=S.t+A.breakSecs;
+  P.hp=Math.min(P.maxHp,P.hp+P.maxHp*A.heal);floatText(P.x,P.y-46,'+'+Math.round(P.maxHp*A.heal),'#7BE38F',18,true);
+  return true;
 }
 function waveStart(i){
   const A=ARENA(),w=S.wv,W=A.list[i];w.i=i;w.phase='fight';w.start=S.t;w.call=w.rush=false;w.lk=null;

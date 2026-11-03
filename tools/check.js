@@ -1503,6 +1503,26 @@ function worldBot(m,L,god){
     SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(!wlc.err&&wlc.called===0&&wlc.arrows>0&&(wlc.end!=null||wlc.near!=null),
     'סוף גל: '+(wlc.err||'3 מכשפים רחוק, '+(wlc.called===0?'מסומנים מיד':'לא סומנו!')+', '+wlc.arrows+' חצים, '+(wlc.end!=null?'הגל נגמר אחרי '+wlc.end+' שניות':wlc.near!=null?'הגיעו לטווח אחרי '+wlc.near+' שניות':'תקוע! נשארו '+wlc.left+', הכי קרוב '+Math.round(wlc.minD))+(wlc.rush!=null?', רצו אחרי '+wlc.rush:'')));
+  // זירת בוסים (arenas.js, ARENAS.boss): נכנסים מהכרטיס של השער, שלושה בוסים ברצף בלי אויבים אחרים, הפסקה עם ריפוי ביניהם, ורק אחרי השלישי הריצה נגמרת בניצחון
+  const bar=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={bosses:0,minions:0,heal:0},rw=window.runWon,rnd=Math.random;let won=0,sd=5;window.runWon=()=>{won++};
+    Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;
+    try{enterWorld('home');const w=S.wd;w.near=w.open='grove';w.ui='';worldHud();
+      const b=document.querySelector('#wPanel [data-a="boss"]');o.btn=b?b.innerText:null;if(b)b.click();else{worldUi(false);startRun('boss')}
+      o.arena=S.arena;o.floor=arenaFloor('d2');const N=ARENAS.boss.hp.length,dt=1/30,hps=[],tags=[];o.N=N;o.wanted=0;
+      for(let t=0,seen=0;t<200&&won===0;t+=dt){
+        P.hp=Math.max(P.hp,P.maxHp*0.5);if(S.mode!=='play'){for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;S.mode='play';S.pendingLv=0}
+        update(dt);if(S.wn&&S.wn.e)o.wanted++;
+        const live=enemies.filter(e=>!e.dead);o.minions=Math.max(o.minions,live.filter(e=>!e.isBoss).length);
+        if(S.boss&&S.boss!==seen){seen=S.boss;hps.push(Math.round(S.boss.max));tags.push(document.getElementById('waveTag').textContent);o.bosses++;
+          if(o.bosses===2)o.hp1=P.hp}   // החיים ברגע שהבוס השני נולד: אחרי הפסקה עם ריפוי
+        if(S.boss){S.boss.hp=0;S.boss.dead=true;bossDown(S.boss);enemies=enemies.filter(e=>!e.dead)}   // הבוס נופל ביד
+        o.t=Math.round(t)}
+      o.hps=hps;o.tags=tags;o.won=won;o.cleared=!S.bd||S.bd.i;
+    }catch(err){o.err=String(err&&err.stack||err)}
+    Math.random=rnd;window.runWon=rw;enemies=[];wRet=null;for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;
+    SAVE=JSON.parse(bak);reset();S.mode=mode;o.after=S.arena==='classic'&&!document.documentElement.classList.contains('waves');return o});
+  check(!bar.err&&!!bar.btn&&bar.arena==='boss'&&!!bar.floor&&bar.bosses===bar.N&&bar.won===1&&bar.minions===0&&bar.wanted===0&&bar.hps[0]<bar.hps[1]&&bar.hps[1]<bar.hps[2]&&bar.tags.every(x=>/\d\/\d|\d$/.test(x))&&bar.after,
+    'זירת בוסים: '+(bar.err||'כפתור "'+bar.btn+'", '+bar.bosses+'/'+bar.N+' בוסים, חיים '+(bar.hps||[]).join('<'+'')+', אויבים נוספים: '+bar.minions+', ניצחון: '+bar.won+', מבוקש: '+bar.wanted+', חזרה לרגיל: '+bar.after));
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){

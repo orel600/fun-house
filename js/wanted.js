@@ -22,7 +22,7 @@ function wantedReset(){
 }
 
 function wantedUpdate(dt){
-  if(S.arena==='waves')return;   // בזירת הגלים אין מבוקש: הגלים הם האירוע, ובאנר באמצע המסך רק מפריע (arenas.js)
+  if(S.arena==='waves'||S.bd)return;   // בזירת הגלים אין מבוקש: הגלים הם האירוע, ובאנר באמצע המסך רק מפריע (arenas.js)
   const wn=S.wn;
   if(wn.e){
     const e=wn.e;
