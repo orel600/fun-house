@@ -44,7 +44,8 @@ const NODES={
     main:{first:3,every:[6,10],max:5,dist:[170,330],far:1100,
       spawn:[{kind:'tree',w:5,from:0},{kind:'rock',w:4,from:0},{kind:'bush',w:3,from:0},{kind:'copper',w:3,from:0},{kind:'iron',w:2.5,from:45},
              {kind:'silver',w:1.5,from:90},{kind:'gold',w:1,from:150},{kind:'mythril',w:0.5,from:220},
-             {kind:'chestWood',w:1,from:10},{kind:'chestIron',w:0.6,from:60},{kind:'chestGold',w:0.12,from:120}]}
+             {kind:'chestWood',w:1,from:10},{kind:'chestIron',w:0.6,from:60},{kind:'chestGold',w:0.12,from:120}]},
+    boss:{first:1e9,every:[1e9,1e9],max:0,dist:[170,330],far:1100,spawn:[]}   // זירת בוסים (arenas.js): דו-קרב, בלי מקורות משאבים ובלי שומרים שלהם
   }
 };
 

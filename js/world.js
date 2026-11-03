@@ -334,7 +334,7 @@ function worldHud(){
   const back=k==='home'&&WR().back,to=back||(wIsPath(k)&&k);
   pn.innerHTML=to?winHead(wGateName(k))+'<p>'+T('w.pathInfo.'+to)+'</p><button class="vbtn" data-act="path" data-g="'+to+'">'+T('w.goPath')+'</button>'
     :k==='home'?winHead(T('w.home'))+'<p>'+T('w.homeInfo')+'</p><button class="vbtn" data-act="home">'+T('w.goHome')+'</button>'
-    :winHead(T('w.gate.'+k))+'<p>'+T('w.arenaInfo')+'</p><button class="vbtn" data-act="arena" data-g="'+k+'">'+T('w.enterArena')+'</button><button class="vbtn" data-act="arena" data-g="'+k+'" data-a="waves">'+T('w.enterWaves')+'</button>';   // זירת גלים (arenas.js)
+    :winHead(T('w.gate.'+k))+'<p>'+T('w.arenaInfo')+'</p><button class="vbtn" data-act="arena" data-g="'+k+'">'+T('w.enterArena')+'</button><button class="vbtn" data-act="arena" data-g="'+k+'" data-a="waves">'+T('w.enterWaves')+'</button><button class="vbtn" data-act="arena" data-g="'+k+'" data-a="boss">'+T('w.enterBoss')+'</button>';   // זירת גלים (arenas.js)
 }
 $('wPanel').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||!S.wd||S.mode!=='play')return;

@@ -538,6 +538,9 @@ const TEXT={
   'w.gate.pit':{he:'זירת הבור',en:'Quarry Pit Arena'},
   'w.arenaInfo':{he:'ריצה עד הבוס. השלל מהזירה נכנס לתרמיל גם אם נופלים, ובסוף חוזרים לשער הזה.',en:'A run until the boss. Arena loot goes in your bag even if you fall, and you come back to this gate.'},
   'w.enterArena':{he:'כניסה לזירה',en:'Enter the arena'},
+  'w.enterBoss':{he:'זירת בוסים: שלושה בוסים ברצף',en:'Boss arena: three bosses in a row'},
+  'bossar.count':{he:(i,n)=>'בוס '+i+'/'+n,en:(i,n)=>'Boss '+i+'/'+n},
+  'bossar.next':{he:(i,n,s)=>'בוס '+i+'/'+n+' בעוד '+s,en:(i,n,s)=>'Boss '+i+'/'+n+' in '+s},
   'w.enterWaves':{he:'זירת גלים: 10 גלים ובוס',en:'Wave arena: 10 waves and a boss'},
   // זירת גלים (arenas.js)
   'wave.start':{he:(i,n)=>'גל '+i+'/'+n,en:(i,n)=>'Wave '+i+'/'+n},
