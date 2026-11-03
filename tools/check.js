@@ -1084,7 +1084,17 @@ function worldBot(m,L,god){
       {const w0=P.wid;P.wid='oakSword+9';r.grow=wSteps()===3&&wGrow()>1&&wGrow()<=WEAPONS.grow.max+1e-9;P.wid=w0;
         J.st=0;J.stT=-9;J.stPop=0;for(let i=0;i<10;i++)juiceKill({x:e.x,y:e.y,r:10,weak:'fire'});r.streak=J.st===10&&J.stPop>0}
       try{ctx.save();juiceDraw();r.swing=jSwing({ang:0,arc:2,range:60},0.6,'#fff');ctx.restore();r.draw=true}catch(err){r.draw=String(err)}
-      JUICE.where.arena=false;const n0=J.n.length;damage(e,10,'sword',0,'fire');r.arenaOff=J.n.length===n0;
+      // בזירה (arena-juice.js): juice.js כבוי (בלי המספרים שלו), ומכה של הנשק מקבלת הבזק וניצוצות קטנים. חיית מחמד וברק שקפץ לא.
+      // 250 אויבים: לא יותר מ-perFrame אפקטים בפריים, ניצוצות והבזקים מתחת לתקרה, בלי עצירה. פוף רק לאלוף. "פחות אפקטים" מכבה
+      JUICE.where.arena=false;const A=JUICE.arena,a0=A.on,fl0=SAVE.fxLess;A.on=true;SAVE.fxLess=false;
+      const n0=J.n.length;J.fl=[];J.p=[];J.poofs=[];AJ.f=-1;e.flash=0;damage(e,10,'sword',0,'fire');r.arenaOff=J.n.length===n0;r.arOn=J.fl.length===1&&e.flash>=JUICE.flash-1e-6&&J.p.length>0;
+      AJ.f=-1;const fx0=AJ.stat.fx;damage(e,10,'pet',0,'fire');damage(e,10,'sword',0,'fire',true);r.arSrc=AJ.stat.fx===fx0;
+      const many=[];for(let i=0;i<250;i++){const o=addEnemy('grunt',P.x+rand(-300,300),P.y+rand(-150,150));o.hp=o.max=1e9;o.elite=false;many.push(o)}
+      AJ.f=-1;S.hitstop=0;const fx1=AJ.stat.fx;HITFX.crit=1;for(const o of many)damage(o,1,'gun',0,'fire');HITFX.crit=0;r.arN=AJ.stat.fx-fx1;r.arMax=A.perFrame;
+      r.arCap=r.arN>0&&r.arN<=A.perFrame&&J.p.length<=A.parts.max&&J.fl.length<=A.impact.max;r.arStop=!(S.hitstop>0);
+      const p0=J.poofs.length;juiceKill(many[0]);r.arPoof=J.poofs.length===p0;many[1].champ=true;juiceKill(many[1]);r.arPoof=r.arPoof&&J.poofs.length===p0+1;
+      for(const o of many)o.dead=true;
+      SAVE.fxLess=true;AJ.f=-1;const fx2=AJ.stat.fx;damage(e,10,'sword',0,'fire');r.arLess=AJ.stat.fx===fx2;SAVE.fxLess=fl0;A.on=a0;
       e.dead=true;enemies=enemies.filter(x=>!x.dead)}catch(err){r.err=String(err)}
     S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.hitstop=bak.hs;S.shake=bak.sh;S.jc=bak.jc;JUICE.where.arena=bak.ar;P.track=bak.tr;S.hits=bak.hits;HITFX.crit=c;return r});
 
@@ -2595,8 +2605,8 @@ function worldBot(m,L,god){
     fl.draw===true?'תווים וחלילים מצוירים':'ציור נכשל: '+fl.draw,fl.off?'כבה בחזרה':'נשאר דלוק'].join(', '));
   check(jc.swStart&&jc.swEarly&&jc.swHit&&jc.swDodge,'אויבים שנלחמים בחזרה (strike.js): '+(jc.swStart?'נעצר ומתכונן':'לא מתכונן')+', '+(jc.swEarly?'לא פוגע באמצע ההכנה':'פוגע לפני הזמן')+', '+(jc.swHit?'מכה בסוף':'אין מכה')+', '+(jc.swDodge?'התרחקות = התחמקות':'פוגע גם כשהתרחקת'));
   check(jc.resist&&jc.tip&&jc.tipOnce,'עמיד במכה: '+(jc.resist?'"🛡 חסין" באפור עם סמל הסוג':'עדיין מספר')+', '+(jc.tip?'טיפ בפיד עם סוג טוב יותר':'אין טיפ')+(jc.tipOnce?', פעם אחת':', חוזר'));
-  check(!jc.err&&jc.grow&&jc.streak&&jc.stop&&jc.stopGap&&jc.fl&&jc.swing&&jc.flash&&jc.kb&&jc.parts&&jc.num&&jc.squash&&jc.crit&&jc.shake&&jc.poof&&jc.cap&&jc.draw===true&&jc.arenaOff,'אפקטים של קרב: '+(jc.err||[jc.grow?'נשק שגדל':'נשק לא גדל',jc.streak?'רצף הריגות':'בלי רצף',jc.stop?'עצירה קטנה במכה':'בלי עצירה במכה',jc.stopGap?'לא עוצר ברצף':'עוצר בכל מכה ברצף',jc.fl?'הבזק פגיעה':'בלי הבזק פגיעה',jc.swing?'שובל הנפה':'בלי שובל הנפה',jc.flash?'הבזק':'בלי הבזק',jc.kb?'הדיפה':'בלי הדיפה',jc.parts?'ניצוצות':'בלי ניצוצות',jc.num?'מספר עם סמל חולשה':'אין מספר',jc.squash?'מעיכה':'בלי מעיכה',
-    jc.crit?'קריטי צהוב':'קריטי רגיל',jc.shake?'רעידה':'בלי רעידה',jc.poof?'פוף בהריגה':'בלי פוף',jc.cap?'בתקרה':'מעל התקרה',jc.draw===true?'מצויר':'ציור נכשל: '+jc.draw,jc.arenaOff?'כבוי בזירה':'דלוק בזירה'].join(', ')));
+  check(!jc.err&&jc.grow&&jc.streak&&jc.stop&&jc.stopGap&&jc.fl&&jc.swing&&jc.flash&&jc.kb&&jc.parts&&jc.num&&jc.squash&&jc.crit&&jc.shake&&jc.poof&&jc.cap&&jc.draw===true&&jc.arenaOff&&jc.arOn&&jc.arSrc&&jc.arCap&&jc.arStop&&jc.arPoof&&jc.arLess,'אפקטים של קרב: '+(jc.err||[jc.grow?'נשק שגדל':'נשק לא גדל',jc.streak?'רצף הריגות':'בלי רצף',jc.stop?'עצירה קטנה במכה':'בלי עצירה במכה',jc.stopGap?'לא עוצר ברצף':'עוצר בכל מכה ברצף',jc.fl?'הבזק פגיעה':'בלי הבזק פגיעה',jc.swing?'שובל הנפה':'בלי שובל הנפה',jc.flash?'הבזק':'בלי הבזק',jc.kb?'הדיפה':'בלי הדיפה',jc.parts?'ניצוצות':'בלי ניצוצות',jc.num?'מספר עם סמל חולשה':'אין מספר',jc.squash?'מעיכה':'בלי מעיכה',
+    jc.crit?'קריטי צהוב':'קריטי רגיל',jc.shake?'רעידה':'בלי רעידה',jc.poof?'פוף בהריגה':'בלי פוף',jc.cap?'בתקרה':'מעל התקרה',jc.draw===true?'מצויר':'ציור נכשל: '+jc.draw,'בזירה: '+(jc.arenaOff&&jc.arOn?'גרסה קלה דולקת':'לא כמו שצריך')+(jc.arSrc?'':', גם מחיית מחמד או מברק שקפץ')+(jc.arCap?', עם 250 אויבים '+jc.arN+' אפקטים בפריים (עד '+jc.arMax+')':', מעל התקרה ('+jc.arN+')')+(jc.arStop?'':', עוצר בגל גדול')+(jc.arPoof?', פוף רק לאלוף':', פוף לא נכון')+(jc.arLess?'':', דולק גם ב"פחות אפקטים"')].join(', ')));
   const cmb=Object.entries(L.combos||{}).map(([k,v])=>k+' '+v).join(', ');
   check(L.skBtns>0&&L.skUsed>0,'סקילים: '+(L.skBtns||0)+' כפתורים ('+(L.skIds||'-')+'), '+(L.skUsed||0)+' שימושים בריצה · קומבו בריצה: '+(cmb||'אף אחד'));
   check(nTypes>=2,'פגיעות לפי סוג נזק: '+(Object.entries(hits).map(([k,v])=>k+' '+v).join(', ')||'אין')+' · בסוף: חרב/קשת '+L.dt);
