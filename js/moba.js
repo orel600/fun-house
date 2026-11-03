@@ -256,12 +256,12 @@ function mbAimFor(u,s){
   const range=(s.range||200)*1.15;
   return mbNearest(u,foes.filter(o=>o.k==='hero'),range)||mbNearest(u,foes,range)||null;
 }
-function mbPress(slot){
+function mbPress(slot,pt){   // pt: נקודה או יחידה מהכיוון בגרירה (moba-aim.js). בלי pt: כיוון אוטומטי
   const u=mbMe();if(!u||u.dead||MB.over)return;
   const s=MBKIT[u.kit][slot];
   if(slot==='ult'&&u.lvl<MOBA.ultAt){mbShake(slot);return}   // נעול: הכפתור רועד, בלי הודעה באמצע המסך (הבודק, 2.11)
   if(u.cd[slot]>0)return;
-  const aim=s.kind==='self'||s.kind==='away'?null:mbAimFor(u,s)||(s.kind==='point'?{x:u.x+Math.cos(u.face)*(s.range||200)*0.6,y:u.y+Math.sin(u.face)*(s.range||200)*0.6}:null);
+  const aim=pt!==undefined?pt:s.kind==='self'||s.kind==='away'?null:mbAimFor(u,s)||(s.kind==='point'?{x:u.x+Math.cos(u.face)*(s.range||200)*0.6,y:u.y+Math.sin(u.face)*(s.range||200)*0.6}:null);
   mbCast(u,slot,aim);
 }
 // פקודה לשני הבוטים החברים (אוראל, docs/moba.md שלב 4): "התקפה" אל המקום שלך, או "נסיגה" אל המגדל. נמשכת MOBA.order שניות
@@ -325,7 +325,7 @@ function mbUi(on){
   if(on){const u=mbMe();$('mbSk').innerHTML=MB_SLOTS.map(k=>{const s=MBKIT[u.kit][k],col=dtCol(s.dt||MBKIT[u.kit].dt);
     return '<button class="skb mbskb" data-sk="'+k+'" style="--dt:'+col+'" aria-label="'+T('mb.s.'+s.id)+'">'+mbSvg(s.id)+'<i></i><b class="mblock" hidden>'+MOBA.ultAt+'</b></button>'}).join('');
     for(const b of document.querySelectorAll('#mbPing [data-o] b'))b.innerHTML=mbSvg(b.parentNode.dataset.o,'mbpi');   // פקודות: אייקונים במקום אימוג'י
-    for(const b of $('mbSk').querySelectorAll('[data-sk]'))b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();mbPress(b.dataset.sk)})}
+    mbAimInit($('mbSk'))}   // נגיעה, גרירה לכיוון וביטול (moba-aim.js)
 }
 // הודעת הריגה: מי הפיל את מי, בצבעי הקבוצות. עד MOBA.feed.max שורות, וכל אחת נעלמת אחרי MOBA.feed.t שניות
 function mbKillFeed(by,t){
@@ -395,6 +395,7 @@ function mobaDraw(ox,oy){
       ctx.globalAlpha=0.28;ctx.fillStyle=col;ctx.beginPath();ctx.arc(z.x,z.y,z.r*k,0,7);ctx.fill();ctx.globalAlpha=1}
     else{ctx.globalAlpha=0.22;ctx.fillStyle=col;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.fill();ctx.globalAlpha=0.8;ctx.strokeStyle=C.chalk;ctx.lineWidth=2;ctx.beginPath();
       for(let i=0;i<8;i++){const a=hash(i,Math.floor(M.t*6))*7,d=hash(Math.floor(M.t*6),i)*z.r,x=z.x+Math.cos(a)*d,y=z.y+Math.sin(a)*d;ctx.moveTo(x,y-14);ctx.lineTo(x,y)}ctx.stroke();ctx.globalAlpha=1}}
+  mbAimDraw();   // סימון הכיוון של סקיל בגרירה (moba-aim.js)
   for(const w of M.walls){ctx.fillStyle='#5A5F6E';ctx.fillRect(w.x-10,-L.half,20,L.half*2);ctx.fillStyle=MOBA.team[w.team];ctx.fillRect(w.x-10,-L.half,4,L.half*2);ctx.fillRect(w.x+6,-L.half,4,L.half*2)}
   // יחידות לפי עומק
   const list=M.u.filter(u=>!u.dead&&onScreen(u.x+ox,u.y+oy)).sort((a,b)=>a.y-b.y);

@@ -1207,6 +1207,27 @@ function worldBot(m,L,god){
       run(0.6);r.boom=VFX3D.parts()>0;r.p2=VFX3D.parts();r.hit=e.hp<e.max;
       for(const x of enemies)x.dead=true;enemies=[];run(6);r.end=VFX3D.n()===0&&SKFX3D.n()===0}catch(err){r.err=String(err&&err.stack||err)}
     if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // מתכוני הצייד בתלת-ממד (skfx3d-volley.js, skfx3d-trap.js, skfx3d-vines.js): לכל סקיל יש מתכון שתופס את הציור,
+  // יוצא ממנו חלקיקים, ובסוף הכל משתחרר (גם מה שממשיך אחרי שהסקיל נגמר: חצים נעוצים, גבישי קרח, שורשים)
+  // מספרים אקראיים משלה: הבדיקה לא מזיזה את הרצף של הבוט, וכך שאר הריצה זהה לריצה בלעדיה (אותו seed = אותו משחק)
+  const vfxh=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:[],bad:[]},rnd=Math.random;let sd=97;Math.random=()=>(sd=sd*16807%2147483647)/2147483647;
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60);VFX3D.step(1/60)}};
+      run(0.05);r.d3=VFX3D.on();
+      if(r.d3)for(const id of ['volley','trap','vines']){   // בדו-ממד אין מתכונים: הציור הישן, ואין מה לבדוק כאן
+        try{for(const x of enemies)x.dead=true;enemies=[];SAVE.hero.skLoad=[id,null];run(0.05);if(SKR)skrEnd(false);
+          const e=addEnemy('grunt',P.x+70,P.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;
+          const i=S.sk.ids.indexOf(id);if(i<0){r.bad.push(id+':לא על כפתור');continue}S.sk.cd[i]=0;
+          if(!wskUse(id)){r.bad.push(id+':לא ירה');continue}
+          if(SKR)skrEnd(false);run(0.25);
+          const own=!!S.wsb&&S.wsb.fx.some(o=>o.id===id&&SKFX3D.owns(o)),fx=SKFX3D.n()>0,p=VFX3D.parts()>0;
+          run((WSKBOOK.list[id].t||0.5)+0.6);for(const x of enemies)x.dead=true;enemies=[];run(6);
+          const end=VFX3D.n()===0&&SKFX3D.n()===0;
+          if(own&&fx&&p&&end)r.ok.push(id);
+          else r.bad.push(id+':'+[own?'':'הציור הישן לא מדלג',fx?'':'אין מתכון',p?'':'אין חלקיקים',end?'':'לא השתחרר'].filter(Boolean).join('+'))}
+        catch(err){r.bad.push(id+':'+String(err))}}}
+    catch(err){r.err=String(err&&err.stack||err)}
+    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}Math.random=rnd;return r});
   // אפקטים בתלת-ממד לסקילי הלוחם (skfx3d-charge/whirl/shield.js): לכל סקיל יש מתכון שמצייר אותו, חלקיקים בזמן הסקיל, והכל משתחרר בסוף
   const vfxw=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:[],bad:[]};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();enterWorld('home');enemies=[];
@@ -2495,6 +2516,17 @@ function worldBot(m,L,god){
      const x0=me.x;for(let i=0;i<30;i++)mobaUpdate(1/30);const run=x0-me.x;MB.u.splice(MB.u.indexOf(m),1);joy=null;me.x=hx;me.y=hy;mbFeelReset(me);
      const n0=$('mbFeed').children.length,f=mbHeroes(1)[0];mbKillFeed(f,me);
      o.feel={soft:r1>0.05&&r1<3,turned:r10>3,run:Math.round(run),want:Math.round(mbSpeed(me)),feed:$('mbFeed').children.length===n0+1};$('mbFeed').innerHTML=''}
+    // כיוון וביטול בגרירה (moba-aim.js): גוררים מהכפתור, משחררים על ✕ = בוטל ובלי טעינה. גוררים שמאלה עד הסוף = הסדן נוחת בקצה הטווח משמאל
+    {const me=MB.me,b=document.querySelector('#mbSk [data-sk="s1"]'),r=b.getBoundingClientRect(),cx=r.x+r.width/2,cy=r.y+r.height/2,z0=MB.zones.length,R=MBKIT.tank.s1.range;
+      const ev=(el,t,x,y)=>el.dispatchEvent(new PointerEvent(t,{pointerId:9,clientX:x,clientY:y,bubbles:true,cancelable:true}));
+      me.cd.s1=0;me.st.stun=0;ev(b,'pointerdown',cx,cy);ev(document.body,'pointermove',cx-60,cy);
+      const on=!!mbAim&&mbAim.on&&!$('mbCancel').hidden&&b.classList.contains('aiming');render();
+      const c=$('mbCancel').getBoundingClientRect();ev(document.body,'pointermove',c.x+c.width/2,c.y+c.height/2);const hot=$('mbCancel').classList.contains('hot');ev(document.body,'pointerup',c.x+c.width/2,c.y+c.height/2);
+      const cancel=me.cd.s1===0&&MB.zones.length===z0&&$('mbCancel').hidden&&!mbAim;
+      ev(b,'pointerdown',cx,cy);ev(document.body,'pointermove',cx-MBAIM.pull-20,cy);ev(document.body,'pointerup',cx-MBAIM.pull-20,cy);
+      const z=MB.zones[MB.zones.length-1],cast=me.cd.s1>0&&MB.zones.length===z0+1&&Math.abs(z.x-(me.x-R))<5&&Math.abs(z.y-me.y)<5;
+      mbAimSecs();const sec=b.dataset.sec===String(Math.ceil(me.cd.s1));
+      o.aim={on,hot,cancel,cast,sec};if(MB.zones.length>z0)MB.zones.pop();me.cd.s1=0;mbAimSecs()}
     // הולכים ישר אל מגדל שלנו באמצע הנתיב: מחליקים מסביב, לא נתקעים (אוראל, 3.11: "המוד תקוע לגמרי")
     {const me=MB.me,tw=MB.u.find(b=>b.k==='tower'&&b.team===0&&Math.abs(b.x)===MOBA.towers[1]);const hx=me.x,hy=me.y;me.x=tw.x-tw.r-me.r-4;me.y=tw.y;
       joy={id:-7,ox:150,oy:280,dx:1,dy:0};for(let i=0;i<75;i++)mobaUpdate(1/30);o.slide={pass:me.x>tw.x+tw.r,dx:Math.round(me.x-tw.x)};joy=null;me.x=hx;me.y=hy}
@@ -2699,6 +2731,8 @@ function worldBot(m,L,god){
     sig.bad.length?'נכשלו: '+sig.bad.join(', '):'',sig.clean?'נגמרים':'לא נגמרו',sig.arena?'':'כפתור בזירה'].filter(Boolean).join(' · ')));
   check(!vfx.err&&vfx.cast&&vfx.hit&&(!vfx.d3||vfx.fall&&vfx.skip2d&&vfx.boom&&vfx.end),'אפקטים בתלת-ממד: '+(vfx.err||(!vfx.d3?'דו-ממד, המטאור בציור הישן'+(vfx.cast&&vfx.hit?' ופוגע':' לא פגע'):
     [vfx.fall?'נופל עם '+vfx.p1+' חלקיקים':'אין חלקיקים בנפילה',vfx.skip2d?'הציור הישן מדלג':'הציור הישן לא מדלג',vfx.boom?'פיצוץ עם '+vfx.p2+' חלקיקים':'אין פיצוץ',vfx.hit?'פוגע':'לא פגע',vfx.end?'נגמר ומשחרר':'לא השתחרר'].join(' · '))));
+  check(!vfxh.err&&!vfxh.bad.length&&(!vfxh.d3||vfxh.ok.length===3),'אפקטים לסקילי הצייד: '+(vfxh.err||(!vfxh.d3?'דו-ממד, הציור הישן':
+    ['עובדים: '+vfxh.ok.join(', '),vfxh.bad.length?'נכשלו: '+vfxh.bad.join(', '):''].filter(Boolean).join(' · '))));
   check(!vfxw.err&&!vfxw.bad.length,'אפקטים לסקילי הלוחם: '+(vfxw.err||(!vfxw.d3?'דו-ממד, הציור הישן':vfxw.ok.join(' · ')))+(vfxw.bad.length?' ✗ '+vfxw.bad.join(' · '):''));
   check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean&&!wsb.noPic.length,
     'ספר הסקילים: '+(wsb.err||[wsb.one&&wsb.lock?'נעול בהתחלה':'לא נעול',wsb.lp?'במסלול הרמות':'לא במסלול',wsb.fill&&wsb.btns?'רמה ממלאת משבצות':'רמה לא מילאה',
@@ -2800,6 +2834,7 @@ function worldBot(m,L,god){
     check(mb.slide&&mb.slide.pass,'משחקי השאול: הולכים ישר אל מגדל ומחליקים מסביבו '+(mb.slide?(mb.slide.pass?'✓':'נתקע ('+mb.slide.dx+' מהמגדל)'):'לא נבדק'));
     {const f=mb.feel||{};check(f.soft&&f.turned&&f.run>=f.want*0.9&&f.feed,'משחקי השאול: תנועה: סיבוב '+(f.soft&&f.turned?'רך ✓':'בבת אחת או תקוע')+', דרך חייל '+f.run+'/'+f.want+' פיקסלים בשנייה'+(f.feed?', הודעת הריגה ✓':', בלי הודעת הריגה'))}
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
+    {const A=mb.aim||{};check(A.on&&A.hot&&A.cancel&&A.cast&&A.sec,'משחקי השאול: כיוון בגרירה '+(A.on?'✓':'לא הופיע')+(A.hot?', ✕ נדלק':', ✕ לא נדלק')+(A.cancel?', ביטול בלי טעינה':', הביטול לא עבד')+(A.cast?', שחרור מטיל לנקודה':', השחרור לא הטיל לנקודה')+(A.sec?', שניות על הכפתור':', אין שניות'))}
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));
     check(mb.fixed&&!mb.fixed.length,'משחקי השאול: כל 12 הסקילים (4 ערכות) הוטלו בתרחיש קבוע'+(mb.fixed&&mb.fixed.length?' · לא הוטלו: '+mb.fixed.join(', '):'')+' · במשחק הבוטים ('+mb.kits+'): '+(mb.miss.length?'לא הגיעו ל: '+mb.miss.join(', '):'כולם'));
     const cb=mb.combo||{};check(cb.shock>0&&Math.abs(cb.k-cb.want)<0.01&&cb.freeze>0&&cb.frozen,'משחקי השאול: קומבו בתרחיש קבוע: חשמול '+(cb.shock?'✓ נזק ×'+cb.k:'לא קרה')+', קפוא '+(cb.freeze&&cb.frozen?'✓ הקפאה ארוכה':'לא קרה'));

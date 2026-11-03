@@ -214,6 +214,7 @@ const TEXT={
   'mb.tower0':{he:'מגדל שלנו נהרס',en:'We lost a tower'},
   'mb.tower1':{he:'הרסת מגדל!',en:'Tower destroyed!'},
   'mb.ultReady':{he:'סקיל-העל מוכן!',en:'Ultimate ready!'},
+  'mb.cancel':{he:'ביטול',en:'Cancel'},
   'mb.locked':{he:'נפתח ברמה 6',en:'Unlocks at level 6'},
   'mb.tip':{he:'הישארו מאחורי החיילים: מגדל של האויב מכה חזק',en:'Stay behind your minions: enemy towers hit hard'},
   'mb.ping':{he:'פקודה לחברים',en:'Order your team'},

@@ -1493,6 +1493,14 @@ html[dir="rtl"] #ovGear #gTabs{--fade-end:left}   /* הדהייה בסוף הש�
 .mb .hud,.mb .swap,.mb #skills,.mb .divine,.mb #muteBtn,.mb #ult,.mb #spell{display:none!important}
 body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbskb.shake{animation:mbshake .35s}
+/* כיוון בגרירה (js/moba-aim.js): הכפתור שמכוון גדל קצת, ואזור "ביטול" עם ✕ מעל הכפתורים. בטעינה: השניות באמצע והאייקון דהוי */
+.mbskb{transition:transform .12s}
+.mbskb.aiming,.mbskb.aiming:active{transform:scale(1.14);box-shadow:0 0 0 3px var(--dt),0 0 18px var(--dt)}
+.mbskb[data-sec]:not([data-sec=""]) .mbski{opacity:.4}
+.mbcancel{position:absolute;width:64px;height:64px;right:12px;bottom:206px;border-radius:50%;border:2px dashed rgba(236,231,220,.6);background:rgba(18,22,36,.78);
+  color:var(--chalk);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;pointer-events:none;font:700 var(--t1) var(--body);transition:transform .1s}
+.mbcancel b{font-size:22px;line-height:1}
+.mbcancel.hot{border:2px solid var(--blood);background:rgba(239,78,87,.85);transform:scale(1.15)}
 @keyframes mbshake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
 .mbski{width:34px;height:34px;color:var(--dt);filter:drop-shadow(0 2px 1px #000a);position:relative}   /* אייקוני SVG (moba-look.js), בצבע סוג הנזק */
 .mbskb:first-child .mbski{width:42px;height:42px}
