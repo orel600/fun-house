@@ -1492,58 +1492,110 @@ html[dir="rtl"] #ovGear #gTabs{--fade-end:left}   /* הדהייה בסוף הש�
 /* ---- משחקי השאול: מובה 3 על 3 (js/moba.js). ממשק הזירה מוסתר (body.mb) ---- */
 .mb .hud,.mb .swap,.mb #skills,.mb .divine,.mb #muteBtn,.mb #ult,.mb #spell{display:none!important}
 body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
-.mbhud{position:fixed;inset:0;z-index:3;pointer-events:none}
-.mbtop{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;
-  background:rgba(18,22,36,.82);border-radius:12px;padding:3px 16px;font:800 var(--t3) var(--body);color:var(--chalk);direction:ltr}
-.mbtop span{font-size:var(--t2);color:var(--dim)}
-.mbs0{color:#4C8DFF}.mbs1{color:#FF5A5A}
-.mbme{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);inset-inline-start:calc(env(safe-area-inset-left,0px) + 12px);display:flex;gap:8px;align-items:center}
-.mblv{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:rgba(18,22,36,.85);border:2px solid var(--gold);color:var(--gold);font:800 17px var(--body)}
-.mbbars{width:min(150px,22vw);display:flex;flex-direction:column;gap:4px}
-.mbhp,.mbxp{height:10px;border-radius:5px;background:rgba(18,22,36,.85);overflow:hidden}
-.mbxp{height:6px}
-.mbhp i,.mbxp i{display:block;height:100%;width:0;background:#7BD88F}
-.mbxp i{background:var(--gold)}
-.mbresp{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);margin:0;font:800 var(--t4) var(--body);color:var(--chalk);background:rgba(18,22,36,.75);padding:8px 18px;border-radius:12px}
-.mb .banner{top:calc(env(safe-area-inset-top,0px) + 88px);font-size:20px}   /* הודעות במובה למעלה, מתחת למפה הקטנה, ולא על הקרב */
 .mbskb.shake{animation:mbshake .35s}
 @keyframes mbshake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
-.mbping{position:absolute;top:calc(env(safe-area-inset-top,0px) + 64px);inset-inline-end:calc(env(safe-area-inset-right,0px) + 12px);display:flex;flex-direction:column;gap:8px;pointer-events:auto}
-.mbping button{width:58px;height:58px;border-radius:50%;border:2px solid var(--line);background:rgba(18,22,36,.82);color:var(--chalk);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0;font:700 var(--t1) var(--body);touch-action:none;cursor:pointer}
-.mbping button b{font-size:20px;line-height:1}
-.mbping button[data-o=attack].on{border-color:var(--blood);box-shadow:0 0 0 3px rgba(239,78,87,.3)}
-.mbping button[data-o=back].on{border-color:#4C8DFF;box-shadow:0 0 0 3px rgba(76,141,255,.3)}
-.mbping button:active{transform:scale(.92)}
-.mbexit{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);inset-inline-end:calc(env(safe-area-inset-right,0px) + 12px);pointer-events:auto}
 .mbski{width:34px;height:34px;color:var(--dt);filter:drop-shadow(0 2px 1px #000a);position:relative}   /* אייקוני SVG (moba-look.js), בצבע סוג הנזק */
 .mbskb:first-child .mbski{width:42px;height:42px}
-.mbping button b{display:grid;place-items:center}
-.mbpi{width:24px;height:24px}
-.mbping button[data-o=attack] .mbpi{color:var(--ember)}.mbping button[data-o=back] .mbpi{color:#4C8DFF}
-.mbli{width:18px;height:18px;color:var(--dt);vertical-align:-4px;flex:none}
 .mblock{position:absolute;inset:0;display:grid;place-items:center;font:800 24px var(--body);color:var(--chalk);z-index:1}
-.mbwin{width:min(780px,94%);max-height:92vh;overflow:auto}
-.mbgoal{margin:6px 0 10px;color:var(--dim);font:600 var(--t1) var(--body)}
+/* ---- משחקי השאול: ה-HUD וחלונות הבחירה והסוף בעץ וזהב, כמו הזירה (#279), עם צבעי הקבוצות (משימה 4, 3.11.2026) ----
+   המיקומים פיזיים ולא לפי כיוון הטקסט, כמו במשחקי טלפון: הדמות שלי למעלה משמאל, הניקוד במרכז, ✕ והפקודות למעלה מימין (מחוץ לאזור הג'ויסטיק), והסקילים למטה מימין.
+   הניקוד נשאר נמוך (עד 38px), כי המפה הקטנה (moba-look.js) מתחילה מתחתיו */
+.mbhud,#mbWin{--mb0:#4C8DFF;--mb0d:#1C3C80;--mb1:#FF5A5A;--mb1d:#7E2026}
+.mbhud{position:fixed;inset:0;z-index:3;pointer-events:none}
+.mbtop{position:absolute;top:calc(env(safe-area-inset-top,0px) + 4px);left:50%;transform:translateX(-50%);display:flex;align-items:stretch;height:30px;direction:ltr;
+  border-radius:8px;box-shadow:var(--bevel),0 0 0 2px var(--wood),0 0 0 3px var(--brass-lo),0 4px 10px #000a;background:linear-gradient(#3A2716,#22160C);overflow:hidden}
+.mbtop b{min-width:44px;display:grid;place-items:center;font:900 19px var(--body);color:#fff;text-shadow:0 2px 0 #0008}
+.mbs0{background:linear-gradient(var(--mb0),var(--mb0d))}.mbs1{background:linear-gradient(var(--mb1),var(--mb1d))}
+.mbtop span{display:grid;place-items:center;padding:0 12px;font:800 15px var(--body);color:var(--brass-hi);font-variant-numeric:tabular-nums;letter-spacing:.5px;
+  border-inline:2px solid var(--brass-lo);text-shadow:0 2px 0 var(--wood)}
+.mbme{position:absolute;top:calc(env(safe-area-inset-top,0px) + 6px);left:calc(env(safe-area-inset-left,0px) + 10px);display:flex;align-items:center;direction:ltr}
+.mbpor{position:relative;z-index:1;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:radial-gradient(circle at 50% 35%,var(--mb0),var(--mb0d) 75%);box-shadow:var(--bevel),0 0 0 3px var(--brass),0 0 0 5px var(--wood),0 4px 10px #000a}
+.mbpor svg{width:28px;height:28px;filter:drop-shadow(0 2px 1px #000a)}
+.mblv{position:absolute;z-index:2;left:30px;top:30px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:900 13px var(--body);color:var(--wood);
+  background:linear-gradient(var(--brass-hi),var(--brass));box-shadow:0 0 0 2px var(--wood)}
+.mbbars{width:min(170px,22vw);display:flex;flex-direction:column;gap:3px;margin-left:-6px;padding:5px 8px 5px 14px;border-radius:0 8px 8px 0;
+  background:linear-gradient(#3A2716e6,#22160Ce6);box-shadow:var(--bevel),0 0 0 2px var(--wood),0 0 0 3px var(--brass-lo)}
+.mbhp,.mbxp{position:relative;height:13px;border-radius:4px;background:#0B0E18;overflow:hidden;box-shadow:inset 0 1px 2px #000}
+.mbxp{height:5px}
+.mbhp i,.mbxp i{display:block;height:100%;width:0;background:linear-gradient(#9BEFA8,#3FAE5A);transition:width .15s}
+.mbhp.low i{background:linear-gradient(#FF8A8A,#C8323A)}
+.mbxp i{background:linear-gradient(var(--brass-hi),var(--brass))}
+.mbhp span{position:absolute;inset:0;display:grid;place-items:center;font:800 10px var(--body);color:#fff;text-shadow:0 1px 1px #000;font-variant-numeric:tabular-nums}
+/* הודעות הריגה: מתחת לדמות שלי, עד 3, ונעלמות לבד */
+.mbfeed{position:absolute;top:calc(env(safe-area-inset-top,0px) + 62px);left:calc(env(safe-area-inset-left,0px) + 8px);display:flex;flex-direction:column;gap:4px;direction:ltr}
+.mbfr{margin:0;display:flex;align-items:center;gap:6px;padding:3px 8px 3px 4px;border-radius:7px;background:linear-gradient(90deg,#22160Ce0,#22160C90);box-shadow:0 0 0 1px var(--brass-lo);
+  font:800 12px var(--body);color:var(--chalk);animation:mbfin .25s ease-out,mbfout .4s ease-in 3.6s forwards}
+.mbfr.mine{box-shadow:0 0 0 2px var(--brass)}
+.mbfh{display:flex;align-items:center;gap:4px}
+.mbfh svg{width:20px;height:20px;padding:2px;border-radius:50%;color:#fff;box-shadow:0 0 0 1.5px var(--wood)}
+.mbfh.t0 svg{background:var(--mb0d)}.mbfh.t1 svg{background:var(--mb1d)}
+.mbfh.t0 em{color:var(--mb0)}.mbfh.t1 em{color:var(--mb1)}.mbfh em{font-style:normal}
+.mbfh.v svg{filter:grayscale(.7);opacity:.7}.mbfh.v em{opacity:.85}
+.mbfx{width:14px;height:14px;color:var(--brass-hi)}
+@keyframes mbfin{from{opacity:0;transform:translateX(-14px)}}
+@keyframes mbfout{to{opacity:0;transform:translateY(-6px)}}
+/* חוזרים לחיים: כרטיס במרכז עם הספירה ופס שמתרוקן */
+.mbresp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 26px 10px;border-radius:12px;
+  background:linear-gradient(#3A2716ee,#1A1009ee);box-shadow:var(--bevel),0 0 0 2px var(--wood),0 0 0 4px var(--brass-lo),0 8px 20px #000c}
+.mbresp span{font:700 var(--t1) var(--body);color:var(--dim)}
+.mbresp b{font:900 34px/1 var(--body);color:var(--brass-hi);text-shadow:0 3px 0 var(--wood);font-variant-numeric:tabular-nums}
+.mbresp>i{display:block;width:110px;height:5px;border-radius:3px;background:#0B0E18;overflow:hidden;margin-top:4px}
+.mbresp>i i{display:block;height:100%;background:linear-gradient(90deg,var(--brass),var(--brass-hi))}
+.mb .banner{top:calc(env(safe-area-inset-top,0px) + 88px);font-size:20px}   /* הודעות במובה למעלה, מתחת למפה הקטנה, ולא על הקרב */
+/* ✕ ושתי הפקודות: למעלה מימין, בשורה, מחוץ לאזור הג'ויסטיק ורחוק מהסקילים */
+.mbexit{position:absolute;top:calc(env(safe-area-inset-top,0px) + 6px);right:calc(env(safe-area-inset-right,0px) + 10px);pointer-events:auto}
+.mbping{position:absolute;top:calc(env(safe-area-inset-top,0px) + 4px);right:calc(env(safe-area-inset-right,0px) + 64px);display:flex;gap:8px;pointer-events:auto}
+.mbping button{width:48px;height:48px;border-radius:50%;border:0;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;cursor:pointer;touch-action:none;
+  background:radial-gradient(circle at 50% 35%,var(--slate-hi),var(--slate) 75%);color:var(--brass-hi);font:800 9px var(--body);text-shadow:0 1px 0 var(--wood);
+  box-shadow:var(--bevel),0 0 0 2px var(--brass-lo),0 0 0 4px var(--wood),0 3px 8px #000a;transition:transform .08s}
+.mbping button b{display:grid;place-items:center;font-size:18px;line-height:1}
+.mbpi{width:22px;height:22px}
+.mbping button[data-o=attack] .mbpi{color:var(--ember)}.mbping button[data-o=back] .mbpi{color:var(--mb0)}
+.mbping button[data-o=attack].on{box-shadow:var(--bevel),0 0 0 2px var(--brass-hi),0 0 0 4px var(--wood),0 0 16px var(--mb1)}
+.mbping button[data-o=back].on{box-shadow:var(--bevel),0 0 0 2px var(--brass-hi),0 0 0 4px var(--wood),0 0 16px var(--mb0)}
+.mbping button:active{transform:translateY(2px) scale(.94)}
+.mbli{width:18px;height:18px;color:var(--dt);vertical-align:-4px;flex:none}
+/* חלון בחירת הגיבור והסוף: מלא כמעט את המסך, ארבעה כרטיסים לרוחב */
+#ovMoba{place-items:center;background:radial-gradient(ellipse at 50% 30%,#2A1420e6,#0A0C14f2 70%);z-index:6}
+body:has(#ovMoba:not([hidden])) #muteBtn{display:none}
+.mbwin{width:min(820px,96vw);max-height:94vh;overflow:auto;display:flex;flex-direction:column}
+.mbwin .whd h3{color:var(--brass-hi);text-shadow:0 2px 0 var(--wood),0 0 10px #F4C74F55;letter-spacing:.5px}
+.mbwin .whd small{color:var(--dim);font-weight:700}
+.mbgoal{margin:-4px 0 8px;color:var(--dim);font:600 11px/1.3 var(--body);text-align:center}
 .mbkits{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 @media (max-width:620px){.mbkits{grid-template-columns:repeat(2,1fr)}}
-.mbkit{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 8px;border-radius:14px;border:2px solid var(--dt);background:rgba(18,22,36,.85);color:var(--chalk);cursor:pointer;font:inherit}
-.mbkit:active{transform:scale(.96)}
-.mbki{width:40px;height:40px;color:var(--dt);filter:drop-shadow(0 2px 1px #000a)}
-.mbkn{font:800 var(--t3) var(--body)}
-.mbkit small{color:var(--dt);font:700 var(--t1) var(--body);text-align:center}
-.mbkit ul{list-style:none;margin:4px 0 0;padding:0;font:500 var(--t1) var(--body);display:flex;flex-direction:column;gap:3px;align-self:stretch;text-align:start}
-.mbkit em{color:var(--gold);font-style:normal}
+.mbkit{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 8px 8px;border-radius:12px;border:0;cursor:pointer;font:inherit;color:var(--chalk);overflow:hidden;
+  background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--dt) 34%,transparent),transparent 62%),linear-gradient(var(--slate-hi),var(--slate));
+  box-shadow:var(--bevel),0 0 0 2px var(--brass-lo),0 0 0 4px var(--wood),0 5px 12px #000a;transition:transform .1s,box-shadow .1s}
+.mbkit:hover,.mbkit:focus-visible{transform:translateY(-3px);box-shadow:var(--bevel),0 0 0 2px var(--brass-hi),0 0 0 4px var(--wood),0 0 18px color-mix(in srgb,var(--dt) 60%,transparent);outline:0}
+.mbkit:active{transform:translateY(1px) scale(.97)}
+.mbmed{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;margin-bottom:2px;
+  background:radial-gradient(circle at 50% 35%,#2B2F44,#0E1220 75%);box-shadow:var(--bevel),0 0 0 3px var(--brass),0 0 0 5px var(--wood),0 0 14px color-mix(in srgb,var(--dt) 55%,transparent)}
+.mbki{width:28px;height:28px;color:var(--dt);filter:drop-shadow(0 2px 1px #000a)}
+.mbkn{font:900 var(--t3) var(--body);color:var(--brass-hi);text-shadow:0 2px 0 var(--wood)}
+.mbkit small{padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--dt) 22%,#0B0E18);color:var(--dt);font:800 10px/1.4 var(--body);text-align:center}
+.mbkit ul{list-style:none;margin:5px 0 0;padding:5px 0 0;border-top:1px solid #ffffff14;font:600 11px/1.3 var(--body);display:flex;flex-direction:column;gap:4px;align-self:stretch;text-align:start}
+.mbkit li{display:flex;gap:5px;align-items:flex-start}
+.mbkit li .mbli{width:16px;height:16px;margin-top:-1px}
+.mbkit em{display:inline-block;padding:0 5px;border-radius:999px;background:#F4C74F22;color:var(--gold);font:800 10px/1.5 var(--body);font-style:normal;white-space:nowrap}
+/* מסך הסוף */
+.mbwin[data-mode=end] .whd h3{font-size:26px}
 .mbend{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.mbend h4{margin:4px 0;font:800 var(--t2) var(--body)}
-.mbend ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
-.mbend li{display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.05);border-radius:8px;padding:4px 8px;font:600 var(--t1) var(--body)}
-.mbend li.me{outline:2px solid var(--gold)}
+.mbend section{border-radius:10px;overflow:hidden;background:#0B0E1880;box-shadow:0 0 0 2px var(--wood),0 0 0 3px var(--brass-lo)}
+.mbend h4{margin:0;padding:5px 10px;font:900 var(--t2) var(--body);color:#fff;text-shadow:0 2px 0 #0008;display:flex;justify-content:space-between}
+.mbend section.t0 h4{background:linear-gradient(90deg,var(--mb0d),var(--mb0))}.mbend section.t1 h4{background:linear-gradient(90deg,var(--mb1d),var(--mb1))}
+.mbend ul{list-style:none;padding:6px;margin:0;display:flex;flex-direction:column;gap:4px}
+.mbend li{display:flex;gap:8px;align-items:center;background:linear-gradient(var(--slate-hi),var(--slate));border-radius:7px;padding:4px 8px;font:700 var(--t1) var(--body);box-shadow:var(--bevel)}
+.mbend li.me{box-shadow:var(--bevel),0 0 0 2px var(--brass-hi),0 0 10px #F4C74F44}
+.mbend li .mbli{width:22px;height:22px;padding:3px;border-radius:50%;background:#0E1220;box-shadow:0 0 0 2px var(--brass-lo)}
 .mbend li small{color:var(--dim)}
-.mbend li span{margin-inline-start:auto}
-.mbend li span+span{margin-inline-start:8px;color:var(--dim)}
+.mbend li span{margin-inline-start:auto;color:var(--brass-hi);font-weight:900;font-variant-numeric:tabular-nums}
+.mbend li span+span{margin-inline-start:10px;color:var(--dim);font-weight:700}
 .mbkd{color:var(--dim);font:500 var(--t1) var(--body);margin:6px 0}
-.mbbtns{display:flex;gap:10px;justify-content:flex-end;align-items:center}
-.mbbtns .go{padding:12px 22px}
+.mbbtns{display:flex;gap:10px;justify-content:flex-end;align-items:center;margin-top:auto}
+.mbbtns .go{padding:11px 26px;background:linear-gradient(var(--brass-hi),var(--brass));color:var(--wood);box-shadow:var(--bevel),0 3px 0 var(--wood),0 6px 14px #000a;text-shadow:0 1px 0 #fff6}
+.mbbtns .go:active{transform:translateY(2px);box-shadow:var(--bevel),0 1px 0 var(--wood)}
 
 /* רונות בספר הסקילים (js/wrunes.js): שורה בראש רשימת הסקילים, שתי רונות לכל סקיל שבחרת */
 .wrbox{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:stretch;padding-bottom:4px;border-bottom:1px solid #3A4566}

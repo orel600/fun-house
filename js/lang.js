@@ -206,6 +206,8 @@ const TEXT={
   'mb.lvl':{he:n=>'רמה '+n,en:n=>'Lv '+n},
   'mb.lvup':{he:n=>'רמה '+n+'!',en:n=>'Level '+n+'!'},
   'mb.resp':{he:s=>'חוזר בעוד '+s,en:s=>'Back in '+s},
+  'mb.respL':{he:'חוזר לקרב בעוד',en:'Back in the fight in'},
+  'mb.f.tower':{he:'מגדל',en:'Tower'},'mb.f.base':{he:'בסיס',en:'Base'},'mb.f.minion':{he:'חיילים',en:'Minions'},
   'mb.died':{he:'נפלת!',en:'You fell!'},
   'mb.kill':{he:'הפלת גיבור!',en:'Hero down!'},
   'mb.ally':{he:'חבר נפל',en:'Ally down'},

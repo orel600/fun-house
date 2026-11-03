@@ -2488,6 +2488,13 @@ function worldBot(m,L,god){
     document.querySelector('#mbWin [data-kit="tank"]').click();o.on=!!S.mb&&document.body.classList.contains('mb');
     if(en&&!o.he&&heb($('mbHud').innerText))o.he=$('mbHud').innerText.slice(0,60);
     mbPress('ult');o.lock=$('banner').textContent!==T('mb.locked')&&document.querySelector('#mbSk [data-sk="ult"]').classList.contains('shake');   // סקיל-על נעול: הכפתור רועד, בלי הודעה באמצע
+    // תנועה (moba-move.js, אוראל 3.11: "התנועתיות מוזרה"): סיבוב רך ולא בבת אחת, גיבור עובר דרך חייל בלי להאט, והודעת הריגה
+    {const me=MB.me,hx=me.x,hy=me.y;me.x=-700;me.y=150;me.face=me.rot=0;
+     joy={id:-7,ox:150,oy:280,dx:-1,dy:0};mobaUpdate(1/30);const r1=Math.abs(mbAng(me.rot));for(let i=0;i<9;i++)mobaUpdate(1/30);const r10=Math.abs(mbAng(me.rot));
+     const m=mbUnit({k:'minion',team:0,type:'mb_m0',x:me.x-40,y:me.y,r:MOBA.minion.r,hp:1e6,max:1e6,speed:0,lane:0,face:0});MB.u.push(m);
+     const x0=me.x;for(let i=0;i<30;i++)mobaUpdate(1/30);const run=x0-me.x;MB.u.splice(MB.u.indexOf(m),1);joy=null;me.x=hx;me.y=hy;mbFeelReset(me);
+     const n0=$('mbFeed').children.length,f=mbHeroes(1)[0];mbKillFeed(f,me);
+     o.feel={soft:r1>0.05&&r1<3,turned:r10>3,run:Math.round(run),want:Math.round(mbSpeed(me)),feed:$('mbFeed').children.length===n0+1};$('mbFeed').innerHTML=''}
     // הולכים ישר אל מגדל שלנו באמצע הנתיב: מחליקים מסביב, לא נתקעים (אוראל, 3.11: "המוד תקוע לגמרי")
     {const me=MB.me,tw=MB.u.find(b=>b.k==='tower'&&b.team===0&&Math.abs(b.x)===MOBA.towers[1]);const hx=me.x,hy=me.y;me.x=tw.x-tw.r-me.r-4;me.y=tw.y;
       joy={id:-7,ox:150,oy:280,dx:1,dy:0};for(let i=0;i<75;i++)mobaUpdate(1/30);o.slide={pass:me.x>tw.x+tw.r,dx:Math.round(me.x-tw.x)};joy=null;me.x=hx;me.y=hy}
@@ -2791,6 +2798,7 @@ function worldBot(m,L,god){
     {const k=mb.look||{};check(k.svg===5&&!k.emoji&&k.floor,'משחקי השאול: מראה: '+k.svg+' אייקונים (צריך 5)'+(k.emoji?', נשאר אימוג\'י בכפתורים':'')+(k.floor?', רצפה משלו':', בלי רצפה משלו'))}
     check(mb.two&&mb.two.held===2&&mb.two.ok,'משחקי השאול עם קשת וחרב: '+(mb.two?(mb.two.ok?'ה-HUD עובד':'ה-HUD נופל: '+mb.two.err):'לא נבדק'));
     check(mb.slide&&mb.slide.pass,'משחקי השאול: הולכים ישר אל מגדל ומחליקים מסביבו '+(mb.slide?(mb.slide.pass?'✓':'נתקע ('+mb.slide.dx+' מהמגדל)'):'לא נבדק'));
+    {const f=mb.feel||{};check(f.soft&&f.turned&&f.run>=f.want*0.9&&f.feed,'משחקי השאול: תנועה: סיבוב '+(f.soft&&f.turned?'רך ✓':'בבת אחת או תקוע')+', דרך חייל '+f.run+'/'+f.want+' פיקסלים בשנייה'+(f.feed?', הודעת הריגה ✓':', בלי הודעת הריגה'))}
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));
     check(mb.fixed&&!mb.fixed.length,'משחקי השאול: כל 12 הסקילים (4 ערכות) הוטלו בתרחיש קבוע'+(mb.fixed&&mb.fixed.length?' · לא הוטלו: '+mb.fixed.join(', '):'')+' · במשחק הבוטים ('+mb.kits+'): '+(mb.miss.length?'לא הגיעו ל: '+mb.miss.join(', '):'כולם'));
