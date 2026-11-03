@@ -2515,11 +2515,11 @@ function worldBot(m,L,god){
       me.cd.s1=0;me.st.stun=0;ev(b,'pointerdown',cx,cy);ev(document.body,'pointermove',cx-60,cy);
       const on=!!mbAim&&mbAim.on&&!$('mbCancel').hidden&&b.classList.contains('aiming');render();
       const c=$('mbCancel').getBoundingClientRect();ev(document.body,'pointermove',c.x+c.width/2,c.y+c.height/2);const hot=$('mbCancel').classList.contains('hot');ev(document.body,'pointerup',c.x+c.width/2,c.y+c.height/2);
-      const cancel=me.cd.s1===0&&MB.zones.length===z0&&$('mbCancel').hidden&&!mbAim;
+      const cancel=me.cd.s1===0&&MB.zones.length===z0&&!me.st.dash&&$('mbCancel').hidden&&!mbAim;
       ev(b,'pointerdown',cx,cy);ev(document.body,'pointermove',cx-MBAIM.pull-20,cy);ev(document.body,'pointerup',cx-MBAIM.pull-20,cy);
-      const z=MB.zones[MB.zones.length-1],cast=me.cd.s1>0&&MB.zones.length===z0+1&&Math.abs(z.x-(me.x-R))<5&&Math.abs(z.y-me.y)<5;
+      const z=MB.zones[MB.zones.length-1],D=me.st.dash,cast=me.cd.s1>0&&(MB.zones.length===z0+1&&Math.abs(z.x-(me.x-R))<5&&Math.abs(z.y-me.y)<5||!!D&&D.vx<-0.999&&Math.abs(D.left-R)<5);   // הסדן קופץ (moba-kits.js): נוחת בקצה הטווח משמאל
       mbAimSecs();const sec=b.dataset.sec===String(Math.ceil(me.cd.s1));
-      o.aim={on,hot,cancel,cast,sec};if(MB.zones.length>z0)MB.zones.pop();me.cd.s1=0;mbAimSecs()}
+      o.aim={on,hot,cancel,cast,sec};if(MB.zones.length>z0)MB.zones.pop();me.st.dash=null;me.cd.s1=0;mbAimSecs()}
     // הולכים ישר אל מגדל שלנו באמצע הנתיב: מחליקים מסביב, לא נתקעים (אוראל, 3.11: "המוד תקוע לגמרי")
     {const me=MB.me,tw=MB.u.find(b=>b.k==='tower'&&b.team===0&&Math.abs(b.x)===MOBA.towers[1]);const hx=me.x,hy=me.y;me.x=tw.x-tw.r-me.r-4;me.y=tw.y;
       joy={id:-7,ox:150,oy:280,dx:1,dy:0};for(let i=0;i<75;i++)mobaUpdate(1/30);o.slide={pass:me.x>tw.x+tw.r,dx:Math.round(me.x-tw.x)};joy=null;me.x=hx;me.y=hy}
