@@ -2464,6 +2464,7 @@ function worldBot(m,L,god){
     document.querySelector('#mbPing [data-o="back"]').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));
     for(let i=0;i<30*2;i++)mobaUpdate(1/30);
     o.back=al.every(h=>h.dead||h.bot.mode==='order'||h.bot.mode==='retreat'||h.bot.mode==='dodge');
+    for(const h of al){h.dead=false;h.hp=h.max;h.st.stun=h.st.taunt=0;h.bot.mode='push'}   // החברים חיים ובריאים: בודקים את הפקודה, לא את המזל של הקרב (נכשל לפעמים כששניהם מתו)
     mbOrder('attack');for(let i=0;i<30;i++)mobaUpdate(1/30);mobaHud();
     o.att=al.some(h=>!h.dead&&h.bot.mode==='order'&&h.bot.focus);o.btn=document.querySelector('#mbPing [data-o="attack"]').classList.contains('on');
     for(let i=0;i<30*9;i++)mobaUpdate(1/30);o.end=!MB.order;
