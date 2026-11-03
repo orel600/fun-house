@@ -51,9 +51,10 @@ function botStep({god,en}){
   // בטלפון שוכב, הכפתורים של עליית רמה, הבוס ומסך הסוף בתוך המסך, בלי לגלול (בדיקת הזירה, 1.11.2026)
   const fitChk=(k,els)=>{L.fit=L.fit||{};if(L.fit[k])return;const out=els.filter(e=>{const r=e.getBoundingClientRect();return r.bottom>innerHeight+1||r.top<-1||r.right>innerWidth+1||r.left<-1});L.fit[k]=out.length?'בחוץ':'בפנים'};
   // הודעות בזירה (2.11.2026): פס קטן למעלה מתחת ל-HUD, לא על הגיבור באמצע ולא על פס הריצה או פס הבוס. נמדד פעם בתחילת הריצה ופעם מול הבוס
-  const banChk=k=>{if(L[k])return;banner('check ✓',C.gold);const b=document.getElementById('banner').getBoundingClientRect(),
+  const banChk=k=>{if(L[k])return;banner('check ✓',C.gold);const be=document.getElementById('banner'),b={top:be.offsetTop,bottom:be.offsetTop+be.offsetHeight,left:be.offsetLeft,right:be.offsetLeft+be.offsetWidth},   // המקום הסופי, בלי ההחלקה של הכניסה (translateY)
     bars=['runbar','bossbar'].map(id=>document.getElementById(id)).filter(e=>e&&e.offsetParent).map(e=>e.getBoundingClientRect());
-    L[k]={top:Math.round(b.top),bot:Math.round(b.bottom),H:innerHeight,hit:bars.some(r=>r.bottom>b.top&&r.top<b.bottom&&r.right>b.left&&r.left<b.right)}};
+    const hud=document.querySelector('.hud'),hb=hud?Math.round(hud.getBoundingClientRect().bottom):0;
+    L[k]={top:Math.round(b.top),bot:Math.round(b.bottom),H:innerHeight,hud:hb,hit:bars.some(r=>r.bottom>b.top&&r.top<b.bottom&&r.right>b.left&&r.left<b.right)}};
   if(S.mode==='play'&&!['vil','world','mb'].some(c=>document.body.classList.contains(c))){banChk('banA');if(vis('bossbar'))banChk('banB')}
   if(vis('ovLevel'))fitChk('level',[...document.querySelectorAll('#cards .card')]);
   if(vis('ovBoss'))fitChk('boss',[document.getElementById('fightBtn')]);
@@ -1500,8 +1501,8 @@ function worldBot(m,L,god){
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
-  {const bs=[['banA','תחילת ריצה'],['banB','מול הבוס']].map(([k,n])=>[n,L[k]]),ok=b=>b&&b.top<=b.H*.3&&b.bot<=b.H*.4&&!b.hit;
-    check(bs.every(([,b])=>ok(b)),'הודעות בזירה למעלה, לא על הגיבור ולא על הפסים: '+bs.map(([n,b])=>n+' '+(b?b.top+'-'+b.bot+'/'+b.H+(b.hit?', על פס':''):'לא נמדד')).join(', '))}
+  {const bs=[['banA','תחילת ריצה'],['banB','מול הבוס']].map(([k,n])=>[n,L[k]]),ok=b=>b&&b.top<=Math.max(b.H*.3,b.hud+12)&&b.bot<=b.H*.45&&!b.hit;   // למעלה, או מיד מתחת ל-HUD כשהוא גבוה (באנגלית השורה נשברת), ולא עד הגיבור באמצע
+    check(bs.every(([,b])=>ok(b)),'הודעות בזירה למעלה, לא על הגיבור ולא על הפסים: '+bs.map(([n,b])=>n+' '+(b?b.top+'-'+b.bot+'/'+b.H+' (HUD '+b.hud+')'+(b.hit?', על פס':''):'לא נמדד')).join(', '))}
   {const f=L.fit||{},ks=['level','boss','over'];check(ks.every(k=>f[k]==='בפנים'),'חלונות הזירה בטלפון שוכב, בלי גלילה: '+ks.map(k=>({level:'עליית רמה',boss:'הבוס',over:'מסך הסוף'})[k]+' '+(f[k]||'לא הופיע')).join(', '))}
   check(L.v1&&!L.welFirst&&!L.dailyPop,'ביקור ראשון בכפר: '+(L.welFirst?'"בזמן שלא היית" קפץ, אבל השחקן עוד לא היה כאן':'בלי "בזמן שלא היית"')+(L.dailyPop?', אבל הלוח של 7 ימים קפץ':', והלוח של 7 ימים לא קפץ'));
   check(L.v1&&L.v1.daily&&L.v1.n===1&&L.v1.btn&&L.v1.coins>=L.v1.want,'ביקור ראשון בכפר: '+(L.v1?(L.v1.daily&&L.v1.n===1?'המתנה של היום הראשון נכנסה לתרמיל':'המתנה של היום הראשון לא נלקחה')+(L.v1.btn?', הכפתור 🎁 מוסתר':', הכפתור 🎁 נשאר')+', '+L.v1.coins+' מטבעות':'לא הגענו לכפר'));
@@ -2405,6 +2406,9 @@ function worldBot(m,L,god){
     if(en&&!o.he&&heb($('mbHud').innerText))o.he=$('mbHud').innerText.slice(0,60);
     mbPress('ult');o.lock=$('banner').textContent!==T('mb.locked')&&document.querySelector('#mbSk [data-sk="ult"]').classList.contains('shake');   // סקיל-על נעול: הכפתור רועד, בלי הודעה באמצע
     for(let i=0;i<30;i++)mobaUpdate(1/30);render();o.m3=typeof M3!=='undefined'?M3.map.size:-1;o.r3=R3D.on;   // תלת-ממד: מגדלים ובסיסים כמודלים (moba3d.js)
+    // המראה (moba-look.js): כפתורי הסקילים והפקודות כאייקוני SVG בלי אימוג'י, והרצפה של המוד (בתלת-ממד: במקום הרצפה של הזירה)
+    o.look={svg:document.querySelectorAll('#mbSk svg').length+document.querySelectorAll('#mbPing svg').length,emoji:/\p{Extended_Pictographic}/u.test($('mbSk').textContent+$('mbPing').textContent),
+      floor:R3D.on&&R3D.ready?!!(M3.floor&&M3.floor.visible)&&!R3D.ground.visible:!!MB_FLOOR};
     // פקודות לבוטים החברים (mbOrder): נסיגה, ואז התקפה. הכפתור מסומן, והפקודה נגמרת לבד
     for(let i=0;i<30*25;i++)mobaUpdate(1/30);
     const al=mbHeroes(0).filter(h=>!h.me);
@@ -2686,6 +2690,7 @@ function worldBot(m,L,god){
   if(!mb.err){
     check(mb.over,'משחקי השאול: משחק של בוטים '+(mb.over?'נגמר':'לא נגמר')+' אחרי '+t(mb.t)+' · '+mb.towers+' מגדלים נפלו'+(mb.base?', בסיס נהרס':', נגמר בזמן')+' · הריגות '+mb.score+' · רמה עד '+mb.lv);
     if(CFG.gfx==='3d')check(!mb.r3||mb.m3===6,'משחקי השאול בתלת-ממד: '+(mb.r3?mb.m3+' מבנים כמודלים (צריך 6)':'התלת-ממד כבוי'));
+    {const k=mb.look||{};check(k.svg===5&&!k.emoji&&k.floor,'משחקי השאול: מראה: '+k.svg+' אייקונים (צריך 5)'+(k.emoji?', נשאר אימוג\'י בכפתורים':'')+(k.floor?', רצפה משלו':', בלי רצפה משלו'))}
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));
     check(mb.fixed&&!mb.fixed.length,'משחקי השאול: כל 12 הסקילים (4 ערכות) הוטלו בתרחיש קבוע'+(mb.fixed&&mb.fixed.length?' · לא הוטלו: '+mb.fixed.join(', '):'')+' · במשחק הבוטים ('+mb.kits+'): '+(mb.miss.length?'לא הגיעו ל: '+mb.miss.join(', '):'כולם'));
