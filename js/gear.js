@@ -274,7 +274,8 @@ function gearClose(){gDragEnd();GUI.undo=null;GUI.sell=false;$('ovGear').hidden=
 const gStashOn=()=>!!(S.vil&&S.vil.near==='stash'&&vLv('stash')>0);
 // הנדירות של פריט היא השכבה שלו (עץ = רגיל ... אגדי), ושל משאב היא rar שלו. כך הצבעים זהים לשלל שנופל
 const gRar=k=>gItem(k)?gItem(k).tier:(resOf(k)||{}).rar||0;
-const gRarCol=k=>RES.rarity[Math.min(gRar(k),RES.rarity.length-1)].col;
+// הצבע של הדרגה: חפץ לפי החומר של השכבה (GEAR.tiers, כמו המסגרת והתמונה, ניר 3.11.2026), משאב לפי RES.rarity
+const gRarCol=k=>gItem(k)?GEAR.tiers[gItem(k).tier].col:RES.rarity[Math.min(gRar(k),RES.rarity.length-1)].col;
 
 const gSign=(k,v)=>'<bdi dir="ltr">'+(v>0?'+':'')+Math.round(v*10)/10+GEAR.stats[k].unit+'</bdi> '+T(GEAR.stats[k].t||'st.'+k);
 /* ---- חפץ מסתובב: מה הוא נותן, מהמספרים של ORBIT.types (orbit.js, של אוראל). רק תצוגה: לא משנה איך הוא עובד בזירה.

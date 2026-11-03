@@ -92,7 +92,7 @@ const bookName=(t,k)=>t==='f'?(flName(k)||T('book.f.'+k)):t==='i'?gName(k):resNa
 const bookPic=(t,k)=>t==='f'?BOOK.icon[k]||'❔':t==='i'?gPic(k):resPic(k);
 function bookCard(t,k){
   const has=bookHas(t,k),cnt=t==='f'&&has?'<small>'+shortN(BK().f[k])+'</small>':'';
-  return '<button class="bkc'+(has?(t==='i'?gRarCls(k):''):' unk')+(BKU.sel===k?' on':'')+'" data-act="sel" data-k="'+k+'"'+(t!=='f'?' style="--rar:'+RES.rarity[Math.min(4,gRar(k))].col+'"':'')+
+  return '<button class="bkc'+(has?(t==='i'?gRarCls(k):''):' unk')+(BKU.sel===k?' on':'')+'" data-act="sel" data-k="'+k+'"'+(t!=='f'?' style="--rar:'+gRarCol(k)+'"':'')+
     ' aria-label="'+(has?bookName(t,k):'?')+'"><span class="bpic">'+bookPic(t,k)+'</span>'+(has?'':'<b>?</b>')+cnt+'</button>';
 }
 function bookDetail(t,k){
