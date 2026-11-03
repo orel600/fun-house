@@ -2499,6 +2499,9 @@ function worldBot(m,L,god){
     // המראה (moba-look.js): כפתורי הסקילים והפקודות כאייקוני SVG בלי אימוג'י, והרצפה של המוד (בתלת-ממד: במקום הרצפה של הזירה)
     o.look={svg:document.querySelectorAll('#mbSk svg').length+document.querySelectorAll('#mbPing svg').length,emoji:/\p{Extended_Pictographic}/u.test($('mbSk').textContent+$('mbPing').textContent),
       floor:R3D.on&&R3D.ready?!!(M3.floor&&M3.floor.visible)&&!R3D.ground.visible:!!MB_FLOOR};
+    // מצלמה ומפה (moba-look.js, 3.11): המצלמה רחוקה (רואים לרוחב לפחות פי 1.5), יש שיחים ואבנים, והמפה הקטנה בתוך המסך
+    {const b=mbMiniBox(W/2-MB.me.x,H/2-MB.me.y);o.cam={z:ZOOM,wide:Math.round(100/ZOOM)/100,bush:mbDecor().filter(d=>d.k==='bush').length,rock:mbDecor().filter(d=>d.k==='rock').length,
+      mini:b.x0>=0&&b.x0+b.mw<=innerWidth,fires:R3D.on&&R3D.ready?(M3.floor&&M3.floor.userData.fires||[]).length:-1}}
     // פקודות לבוטים החברים (mbOrder): נסיגה, ואז התקפה. הכפתור מסומן, והפקודה נגמרת לבד
     for(let i=0;i<30*25;i++)mobaUpdate(1/30);
     const al=mbHeroes(0).filter(h=>!h.me);
@@ -2533,7 +2536,7 @@ function worldBot(m,L,god){
     o.kits=kits.join(',');o.miss=kits.flatMap(k=>MB_SLOTS.map(s=>MBKIT[k][s].id)).filter(id=>!casts[id]);o.mage=kits.includes('mage');
     o.t=Math.round(MB.t);o.over=MB.over;o.towers=MB.u.filter(u=>u.k==='tower'&&u.dead).length;o.base=MB.u.some(u=>u.k==='base'&&u.dead);
     o.cc=cc;o.cmb=cmb;o.lv=Math.max(...MB.u.filter(u=>u.k==='hero').map(u=>u.lvl));o.score=MB.score.join(':');
-    mobaExit();o.out=!S.mb&&!document.body.classList.contains('mb');
+    mobaExit();o.out=!S.mb&&!document.body.classList.contains('mb');if(o.cam)o.cam.back=camZoom()!==MBLOOK.cam.zoom;   // מחוץ למוד: המצלמה הרגילה
   }catch(e){o.err=String(e)}return o},CFG.lang==='en');
   // שלל לפי דמות (LOOT.gear ב-loot.js): לכל דמות רוב הנשקים בעולם שלה, יש לה נשק בכל שכבה, ה"מזל" מבטיח נשק שלה, וברמה 20 השכבה גבוהה יותר
   const clsL=await page.evaluate(()=>{const bak=JSON.stringify(SAVE.hero),cp=SAVE.clsPity,out={};
@@ -2789,6 +2792,7 @@ function worldBot(m,L,god){
     check(mb.over,'משחקי השאול: משחק של בוטים '+(mb.over?'נגמר':'לא נגמר')+' אחרי '+t(mb.t)+' · '+mb.towers+' מגדלים נפלו'+(mb.base?', בסיס נהרס':', נגמר בזמן')+' · הריגות '+mb.score+' · רמה עד '+mb.lv);
     if(CFG.gfx==='3d')check(!mb.r3||mb.m3===6,'משחקי השאול בתלת-ממד: '+(mb.r3?mb.m3+' מבנים כמודלים (צריך 6)':'התלת-ממד כבוי'));
     {const k=mb.look||{};check(k.svg===5&&!k.emoji&&k.floor,'משחקי השאול: מראה: '+k.svg+' אייקונים (צריך 5)'+(k.emoji?', נשאר אימוג\'י בכפתורים':'')+(k.floor?', רצפה משלו':', בלי רצפה משלו'))}
+    {const c=mb.cam||{};check(c.wide>=1.5&&c.bush>0&&c.rock>0&&c.mini&&c.back&&c.fires!==0,'משחקי השאול: מצלמה ומפה: רואים פי '+c.wide+' לרוחב (צריך 1.5), '+c.bush+' שיחים, '+c.rock+' אבנים'+(c.mini?'':', המפה הקטנה יוצאת מהמסך')+(c.back?'':', המצלמה לא חזרה אחרי היציאה')+(c.fires===0?', בלי לפידים בתלת-ממד':''))}
     check(mb.two&&mb.two.held===2&&mb.two.ok,'משחקי השאול עם קשת וחרב: '+(mb.two?(mb.two.ok?'ה-HUD עובד':'ה-HUD נופל: '+mb.two.err):'לא נבדק'));
     check(mb.slide&&mb.slide.pass,'משחקי השאול: הולכים ישר אל מגדל ומחליקים מסביבו '+(mb.slide?(mb.slide.pass?'✓':'נתקע ('+mb.slide.dx+' מהמגדל)'):'לא נבדק'));
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
