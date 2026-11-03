@@ -2545,15 +2545,16 @@ function worldBot(m,L,god){
        MB.u.splice(MB.u.indexOf(h),1)}
      e.hp=e.max=MBKIT[e.kit].hp}
     // טנק ולוחם יעילים, ואפקטים (moba-kits.js, moba-fx.js), בתרחיש קבוע: זינוק של תקיפה רגילה אל מטרה קצת מחוץ לטווח, מגן שסופג,
-    // חלקיקים מוגבלים, עצירת פריים במכה קריטית של השחקן, ורגע הסקיל-על (הילוך איטי ושם הסקיל)
-    {const e=mbHeroes(1)[0],r={};Object.assign(e.st,{stun:9,taunt:0,imm:0,shield:0,armor:0,rage:0});e.dead=false;e.hp=e.max=1e6;
+    // חלקיקים מוגבלים, עצירת פריים במכה קריטית של השחקן, ורגע הסקיל-על (הילוך איטי ושם הסקיל). gap: הכי קרוב שהגיע, כי אחרי המכה הבוט יכול ללכת
+    {const e=mbHeroes(1)[0],r={},ex=e.x,ey=e.y;Object.assign(e.st,{stun:9,taunt:0,imm:0,shield:0,armor:0,rage:0,slow:0,dash:null});e.dead=false;e.hp=e.max=1e6;
+     MB.walls.length=0;e.x=0;e.y=-MOBA.lane.half+40;   // מקום ריק: באמצע הנתיב (בין המגדלים), בלי חומות שנשארו מהקרב
      for(const k of ['tank','warrior']){const h=mbHero(k,0,false,1),A=MBKIT[k].atk;h.x=e.x-(e.r+h.r+A.range+A.lunge*0.6);h.y=e.y;MB.u.push(h);const hp0=e.hp;
-       r[k]=mbAutoTarget(h,A.range)!==null&&mbAttack(h,0,e,A)&&!!h.st.dash;for(let i=0;i<20;i++)mobaUpdate(1/30);r[k]=r[k]&&e.hp<hp0&&mbDist(h,e)-e.r-h.r<=A.range;MB.u.splice(MB.u.indexOf(h),1)}
+       r[k]=mbAutoTarget(h,A.range)!==null&&mbAttack(h,0,e,A)&&!!h.st.dash;let gap=1e9;for(let i=0;i<20;i++){mobaUpdate(1/30);gap=Math.min(gap,mbDist(h,e)-e.r-h.r)}r[k]=r[k]&&e.hp<hp0&&gap<=A.range;MB.u.splice(MB.u.indexOf(h),1)}
      const h0=e.hp;mbShield(e,100,3);mbDmg(null,e,60,'physical');r.shield=e.hp===h0&&e.st.shield>0;
      const F=mbfxS(),me=MB.me,bot=me.bot;me.bot=null;for(let i=0;i<40;i++)mbBoom(e.x,e.y,200,'fire');r.cap=F.p.length>0&&F.p.length<=MBFX.max;
      F.stopCd=0;mbfxNum(e.x,e.y,150,C.gold,{crit:true},me,e);const t0=MB.t;mobaUpdate(1/30);r.stop=F.stop>=0&&MB.t===t0&&F.n.length>0;F.stop=0;
      Object.assign(me,{dead:false,lvl:MOBA.ultAt,hp:me.max});me.cd.ult=0;Object.assign(me.st,{stun:0,taunt:0,dash:null});r.ult=mbCast(me,'ult',e)&&F.slow>0&&!!F.ult&&F.ult.txt.length>0;
-     F.slow=0;F.ult=null;me.bot=bot;Object.assign(e.st,{stun:0,shield:0});e.hp=e.max=MBKIT[e.kit].hp;o.fx=r}
+     F.slow=0;F.ult=null;me.bot=bot;Object.assign(e.st,{stun:0,shield:0});e.hp=e.max=MBKIT[e.kit].hp;e.x=ex;e.y=ey;o.fx=r}
     MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
     mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
     mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
