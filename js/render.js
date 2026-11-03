@@ -248,7 +248,7 @@ function hud(){
   else bb.hidden=true;
   let hint=false;
   // הכפתור פועם כשהאויב הקרוב עמיד לסוג הנזק שביד, והנשק השני עדיף נגדו. רק כשיש נשק שני לבוש
-  if(S.mode==='play'&&wHeld().length>1){const n=nearest(260),o=P.weapon==='sword'?'gun':'sword';if(n&&(n.mult[P.dt[P.weapon]]??1)<(n.mult[P.dt[o]]??1)&&(n.mult[P.dt[P.weapon]]??1)<=1)hint=true}
+  if(S.mode==='play'&&!S.mb&&wHeld().length>1){const n=nearest(260),o=P.weapon==='sword'?'gun':'sword';if(n&&n.mult&&(n.mult[P.dt[P.weapon]]??1)<(n.mult[P.dt[o]]??1)&&(n.mult[P.dt[P.weapon]]??1)<=1)hint=true}
   $('swap').classList.toggle('hint',hint);
   if($('banner').classList.contains('on'))banTop();   // הודעה בזירה מתחת לפס הבוס, אחרי שהוא הופיע (progression.js)
 }
