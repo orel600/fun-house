@@ -14,8 +14,9 @@ function itemTip(box,anchor){
   if(!box)return;
   const on=!!(anchor&&anchor.offsetParent);
   box.classList.toggle('itip',on);box.setAttribute('role',on?'dialog':'region');
-  if(!on){if(itipNow&&itipNow.box===box)itipNow=null;['left','top','width','maxHeight'].forEach(k=>box.style[k]='');box.style.removeProperty('--rar');return}
+  if(!on){if(itipNow&&itipNow.box===box)itipNow=null;['left','top','width','maxHeight'].forEach(k=>box.style[k]='');box.style.removeProperty('--rar');delete box.dataset.rar;return}
   box.style.setProperty('--rar',getComputedStyle(anchor).getPropertyValue('--rar').trim()||'var(--gold)');   // מסגרת בצבע הדרגה של החפץ
+  const rr=/\brar-(\w+)/.exec(anchor.className);if(rr)box.dataset.rar=rr[1];else delete box.dataset.rar;   // והמסגרת לפי השכבה (css/rarity.css): זהב עבה, אגדי זוהר
   itipNow={box,anchor};itipPlace();
 }
 function itipPlace(){
