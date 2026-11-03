@@ -1229,6 +1229,11 @@ function worldBot(m,L,god){
       run(0.4);r.tOwn=(S.wsb.fx||[]).some(o=>o.id==='storm'&&SKFX3D.owns(o));r.tPart=VFX3D.parts();
       run(1.6);r.tStrike=STM3D.stat.strikes;r.tBolt=STM3D.stat.bolts;
       run(4);r.tEnd=!(S.wsb.fx||[]).some(o=>o.id==='storm');
+      // שלוליות של רונות (skfx3d-pools.js): לבה ומים מקבלים משטח, ובסוף המשטח משתחרר ונשאר סימן על הקרקע
+      POOL3D.stat.start=POOL3D.stat.end=POOL3D.stat.after=0;
+      for(const [dt,dx] of [['fire',70],['water',-70]])wrFx().push({k:'pool',id:'meteor',x:P.x+dx,y:P.y+40,r:80,t:0,wait:0,dur:1.2,tick:0.4,ti:0,dt,base:1,col:dtCol(dt)});
+      run(0.5);r.lOn=POOL3D.stat.start;r.lMesh=POOL3D.n();r.lOwn=POOL3D.owns();
+      run(1.2);r.lEnd=POOL3D.stat.end;r.lAfter=POOL3D.stat.after;r.lFree=POOL3D.n()===0;
       // האש של פיוחו בשלב 3: להבה מהזנב, ושלהבת בנשיכה
       SAVE.pet.xp=petKind().stages[2].xp;SAVE.pet.stage=2;PETFX3D.stat.flame=PETFX3D.stat.bite=0;
       const p=S.pet;if(p){p.x=P.x+40;p.y=P.y+20;p.st='follow'}
@@ -2706,6 +2711,8 @@ function worldBot(m,L,god){
       'אפקטים לסקילי הקוסם: '+(v.err||(!v.d3?'דו-ממד, הציור הישן':
       ['רוח מים: '+(v.sOwn?'מתכון תלת-ממד':'בלי מתכון')+', '+v.sShot+' קליעים, '+v.sSplash+' התזות'+(v.sEnd?', נגמר':', לא נגמר'),
        'סערה: '+(v.tOwn?'מתכון תלת-ממד':'בלי מתכון')+', '+v.tStrike+' ברקים ('+v.tBolt+' קווים)'+(v.tEnd?', נגמר':', לא נגמר')].join(' · '))));
+    check(!v.err&&(!v.d3||v.lOn>=2&&v.lMesh>=2&&v.lOwn&&v.lEnd>=2&&v.lAfter>=2&&v.lFree),'לבה ושלוליות של רונות: '+(v.err||(!v.d3?'דו-ממד, הציור הישן':
+      v.lOn+' שלוליות עם משטח ('+v.lMesh+' משטחים), '+(v.lOwn?'הציור הישן מדלג':'הציור הישן לא מדלג')+', '+v.lEnd+' נגמרו, '+v.lAfter+' השאירו סימן'+(v.lFree?', הכל השתחרר':', משטח נשאר תקוע'))));
     check(!v.err&&(!v.d3||v.pOn&&v.pFlame>0&&v.pBite>0),'האש של פיוחו בתלת-ממד: '+(v.err||(!v.d3?'דו-ממד, הלהבות בקנבס':
       (v.pOn?'דולקת':'לא דולקת')+', '+v.pFlame+' להבות מהזנב, '+v.pBite+' שלהבות בנשיכה')));}
   check(!vfx.err&&vfx.cast&&vfx.hit&&(!vfx.d3||vfx.fall&&vfx.skip2d&&vfx.boom&&vfx.end),'אפקטים בתלת-ממד: '+(vfx.err||(!vfx.d3?'דו-ממד, המטאור בציור הישן'+(vfx.cast&&vfx.hit?' ופוגע':' לא פגע'):
