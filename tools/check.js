@@ -2511,7 +2511,7 @@ function worldBot(m,L,god){
     for(let i=0;i<30*9;i++)mobaUpdate(1/30);o.end=!MB.order;
     // קומבו בתרחיש קבוע, לא לפי המזל של המשחק: רטוב + ברק = חשמול (נזק ×MOBA.combo.shock), ורטוב + סופת קרח = הקפאה ארוכה (×MOBA.combo.freeze)
     {const e=mbHeroes(1)[0],w0={},ow=mbWord;mbWord=function(u,w){w0[w]=(w0[w]||0)+1;return ow(u,w)};
-     Object.assign(e.st,{wet:0,imm:0,stun:0,taunt:0,armor:0,rage:0});e.dead=false;e.hp=e.max=1e6;
+     Object.assign(e.st,{wet:0,imm:0,stun:0,taunt:0,armor:0,rage:0,shield:0});   // shield: מגן שנשאר מהקרב (mbShield) בולע את המכה הראשונהe.dead=false;e.hp=e.max=1e6;
      const dry=mbDmg(null,e,100,'lightning');e.st.wet=3;const wetD=mbDmg(null,e,100,'lightning');
      const mg=mbHero('mage',0,false,1);mg.lvl=MOBA.ultAt;mg.x=e.x-200;mg.y=e.y;MB.u.push(mg);e.st.wet=3;e.st.imm=0;
      mbCast(mg,'ult',e);const z=MB.zones.pop();z.fire(z);   // הסופה נוחתת מיד, בלי שהבוטים זזים או מרטיבים/מייבשים בינתיים
