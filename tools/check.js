@@ -356,7 +356,15 @@ function villageBot(m,L){
       U.fail=!!SAVE.bag.steamOrb&&!SAVE.bag.cloverOrb&&!SAVE.bag.cometOrb&&st1-(SAVE.bag.star||0)===FUSE.cost[3].star&&FX.some(f=>f.K===CELEBRATE.agingFail);
       const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key)).bag;U.saved=!!sv.steamOrb&&!sv.cloverOrb&&!sv.emberOrb;
       if(LANG==='en'&&/[֐-׿]/.test(q('#ovForge').innerText))L.heLeak=q('#ovForge').innerText.trim().slice(0,80);
-      q('#fTabs [data-tab="age"]').click();U.barAge=bar();U.barAgeOk=U.barAge===(resShown('forge')||[]).join();q('#fTabs [data-tab="fuse"]').click();   // בשדרוג: הפס כמו קודם
+      q('#fTabs [data-tab="age"]').click();U.barAge=bar();U.barAgeOk=/^gem,coins/.test(U.barAge)&&U.barAge.split(',').length<=FORGE_BAR.max;   // בשדרוג בלי פריט: 💎, מטבעות, ועד FORGE_BAR.max
+      // הרבה משאבים (ניר, 3.11: "רואים רק את המשאבים"): הפס בשורה אחת, והפריטים וכפתור השדרוג בתוך המסך. אחר כך התרמיל חוזר כמו שהיה
+      const keep={...SAVE.bag},inV=e=>{if(!e)return false;const r=e.getBoundingClientRect();return r.height>0&&r.top>=0&&r.bottom<=innerHeight+1&&r.left>=0&&r.right<=innerWidth+1};
+      for(const k in RES.list)bagAdd(k,50);forgeDraw();q('#fItems [data-slot="weapon"]').click();
+      const C=U.crowd={tile:inV(q('#fItems [data-slot="weapon"]')),go:inV(q('#fDetail [data-act="age"]')),h:Math.round(q('#fRes').getBoundingClientRect().height),more:!!q('#fRes .resmore')};
+      C.need=Object.keys(ageCost(SAVE.gear.weapon)||{}).every(r=>bar().split(',').includes(r));   // מה שהשדרוג צריך תמיד בפס
+      if(C.more){q('#fRes .resmore').click();C.all=!q('#fRes .resmore')&&bar().split(',').length>FORGE_BAR.max}
+      for(const k of Object.keys(SAVE.bag))delete SAVE.bag[k];Object.assign(SAVE.bag,keep);AUI.sel=null;
+      q('#fTabs [data-tab="fuse"]').click();
       m.fuse=1;L.fuseOpen=1;return L}   // המסך נשאר פתוח לצעד אחד, בשביל הצילום
     if(m.age===2){q('#forgeClose').click();L.ageClosed=S.mode==='play';m.age=3;return L}
     // הזוהר: לרגע הקשת היא +10, ובודקים שיש שובל וחלקיקים על הנשק
@@ -2521,7 +2529,9 @@ function worldBot(m,L,god){
   const U=L.fuse||{};
   check(U.tab&&U.same&&U.ok&&U.cost&&U.out3==='cometOrb'&&U.fail&&U.saved,'התכה: '+(U.tab?'הלשונית נפתחה, '+(U.odds||'בלי סיכוי')+' '+(U.out||'?'):'הלשונית לא נפתחה')+(U.same?'':', חסימה לא עובדת')+
     (U.ok?', הצליחה':', לא הצליחה')+(U.cost?', שולם':', מחיר שגוי')+(U.fail?', כישלון לקח משאב וחפץ':', כישלון לא עבד')+(U.saved?', נשמר':', לא נשמר'));
-  check(U.bar==='star,gem,coins'&&U.barAgeOk,'הפס העליון בהתכה: '+(U.bar||'ריק')+(U.barAgeOk?', ובשדרוג כמו קודם ('+(U.barAge||'ריק')+')':', בשדרוג השתנה ('+U.barAge+')'));
+  check(U.bar==='star,gem,coins'&&U.barAgeOk,'הפס העליון בהתכה: '+(U.bar||'ריק')+(U.barAgeOk?', ובשדרוג קצר ('+(U.barAge||'ריק')+')':', בשדרוג לא קצר ('+U.barAge+')'));
+  const FC=U.crowd||{};
+  check(FC.tile&&FC.go&&FC.h<60&&FC.more&&FC.need&&FC.all,'נפחייה עם הרבה משאבים: '+(FC.tile&&FC.go?'הפריטים וכפתור השדרוג בתוך המסך':'פריט '+(FC.tile?'נראה':'מחוץ למסך')+', כפתור '+(FC.go?'נראה':'מחוץ למסך'))+', הפס בגובה '+FC.h+'px'+(FC.more?'':', בלי +N')+(FC.need?'':', חסר מחיר בפס')+(FC.all?'':', +N לא פתח הכל'));
   const G=L.glow||{};
   check(G.hand&&G.trail>1&&G.parts>0,'זוהר Aging ב-+10: '+(G.hand?'שובל '+G.trail+' נקודות, '+G.parts+' חלקיקים':'לא נמצא הנשק'));
   check(L.gearW==='gun'&&L.gearDmg===gx,'ציוד בריצה: מתחיל עם '+(L.gearW==='gun'?'קשת':L.gearW)+', נזק קשת x'+L.gearDmg+' (צפוי x'+gx+')');

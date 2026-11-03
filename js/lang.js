@@ -655,7 +655,7 @@ const TEXT={
   'res.gem':{he:'אבן מגן',en:'Ward gem'},
   // Aging בנפחייה (aging.js)
   'age.open':{he:'לשדרג ציוד',en:'Upgrade gear'},
-  'age.title':{he:'נפחייה · Aging',en:'Forge · Aging'},
+  'age.title':{he:'נפחייה · שדרוג',en:'Forge · Upgrade'},
   'age.cap':{he:n=>'עד \u2066+'+n+'\u2069',en:n=>'Up to +'+n},
   'age.hint':{he:'בוחרים פריט כדי לראות את הסיכוי והמחיר',en:'Pick an item to see the odds and the price'},
   'age.noItems':{he:'אין ציוד לשדרג. נשק ואקססוריז נופלים בזירה',en:'No gear to upgrade. Weapons and accessories drop in the arena'},
@@ -673,7 +673,7 @@ const TEXT={
   'age.saved':{he:'נכשל, אבל אבן החן הגנה',en:'Failed, but the gem protected it'},
   'age.failed':{he:s=>'נכשל: '+s,en:s=>'Failed: '+s},
   // כוחות על ציוד (powers.js)
-  'forge.tab.age':{he:'⚒️ Aging',en:'⚒️ Aging'},
+  'forge.tab.age':{he:'⚒️ שדרוג',en:'⚒️ Upgrade'},
   'forge.tab.pow':{he:'✦ כוחות',en:'✦ Powers'},
   'pw.fury':{he:'זעם',en:'Fury'},
   'pw.hunt':{he:'צייד',en:'Hunter'},
