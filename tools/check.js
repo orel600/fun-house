@@ -1512,7 +1512,7 @@ function worldBot(m,L,god){
       for(let t=0,seen=0;t<200&&won===0;t+=dt){
         P.hp=Math.max(P.hp,P.maxHp*0.5);if(S.mode!=='play'){for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;S.mode='play';S.pendingLv=0}
         update(dt);if(S.wn&&S.wn.e)o.wanted++;
-        const live=enemies.filter(e=>!e.dead);if(!S.boss)o.minions=Math.max(o.minions,live.length);   // בין הבוסים אין אף אויב (רוחות הן של הבוס עצמו)
+        const live=enemies.filter(e=>!e.dead);if(!S.boss)o.minions=Math.max(o.minions,live.filter(e=>e.type!=='wisp').length);   // בין הבוסים אין אף אויב (רוחות שנשארו הן של הבוס שנפל)
         
         if(S.boss&&S.boss!==seen){seen=S.boss;hps.push(Math.round(S.boss.max));tags.push(document.getElementById('waveTag').textContent);o.bosses++;
           if(o.bosses===2)o.hp1=P.hp}   // החיים ברגע שהבוס השני נולד: אחרי הפסקה עם ריפוי
