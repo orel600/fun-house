@@ -21,7 +21,7 @@ const VFX3D_CFG={
   lo:0.4,less:0.5,           // כמה חלקיקים באיכות נמוכה, וב"פחות אפקטים"
   hdr:5,                   // כמה בהיר חלקיק זוהר (מעל 1 = זוהר ב-bloom)
   y:0.8,                     // גובה המדבקות מעל הקרקע
-  bloom:{th:2.2,knee:0.5,str:0.75,wide:1.0,res:4},   // th: רק מה שבהיר מזה זוהר. str: כמה זוהר. wide: הזוהר הרחב (חצי רזולוציה נוספת)
+  bloom:{th:1.0,knee:0.15,str:0.65,wide:1.0,res:4},   // th: רק מה שבהיר מזה זוהר. str: כמה זוהר. wide: הזוהר הרחב (חצי רזולוציה נוספת)
   auto:{minFps:40,warm:3,secs:5,key:'zm-vfxq-slow'},     // ברירת מחדל: מודדים כמה שניות בעולם, ומתחת ל-minFps עוברים לאיכות נמוכה
   // סוגי חלקיקים. col/col2: צבע בהתחלה ובסוף. size/size2: גודל (פיקסלים של המשחק). life: [מינימום,מקסימום]. spd: מהירות לצדדים, up: למעלה
   // grav: כוח משיכה (שלילי = נופל), drag: האטה בשנייה. glow: זוהר (חיבור אור). smoke: עשן (רגיל)
@@ -213,7 +213,7 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
     if(kind==='ring'){VFX3D.decal('ring',x,y,r,{life:o.life||E.ring,grow:[r*0.15,r],col:c,w:o.w||0.28,fade:0.6});return}
     if(kind==='flash'){VFX3D.decal('glow',x,y,r,{life:o.life||E.flash,col:core,fade:0.9,a:1.2});return}
     if(kind==='explode'){
-      VFX3D.decal('glow',x,y,r*1.3,{life:E.flash,col:core,fade:0.9,a:0.45});
+      VFX3D.decal('glow',x,y,r*1.3,{life:E.flash,col:core,fade:0.9,a:0.3});
       VFX3D.decal('ring',x,y,r*1.25,{life:E.ring,grow:[r*0.2,r*1.25],col:c,w:0.22,fade:0.7,a:0.7});
       if(hi())VFX3D.decal('ring',x,y,r*1.6,{life:E.ring2,grow:[r*0.3,r*1.6],col:c,w:0.4,fade:0.8,a:0.7});
       VFX3D.emit('glow',x,y,24,{n:E.glow,col:core,col2:c,size:r*0.5,size2:r*0.8,a:0.6});
@@ -248,8 +248,11 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
     if(BL.ok!=null)return BL.ok;
     try{
       const hf=r.extensions.has('EXT_color_buffer_float')||r.extensions.has('EXT_color_buffer_half_float');
-      BL.hdr=hf;const type=hf?THREE.HalfFloatType:THREE.UnsignedByteType,o={type,depthBuffer:false};
-      BL.rt=new THREE.WebGLRenderTarget(1,1,{type,samples:DPR<2?4:0});BL.a=new THREE.WebGLRenderTarget(1,1,o);BL.b=new THREE.WebGLRenderTarget(1,1,o);
+      if(!hf)throw new Error('אין תמונה בטווח גבוה (EXT_color_buffer_float)');   // בלי זה אי אפשר להבדיל בין בהיר לבהיר מאוד, אז בלי זוהר
+      const type=THREE.HalfFloatType,o={type,depthBuffer:false};
+      // התמונה של הסצנה מצוירת בדיוק כמו למסך (tone mapping ו-sRGB, וחיבור אור באותו מרחב), אבל בטווח גבוה: רק מה שמעל 1 (חלקיקים זוהרים) נשאר בהיר מ-1.
+      // isXRRenderTarget הוא הדרך של three.js להחיל tone mapping וצבעי מסך גם כשמציירים לתמונה
+      BL.rt=new THREE.WebGLRenderTarget(1,1,{type,samples:DPR<2?4:0});BL.rt.isXRRenderTarget=true;BL.rt.texture.colorSpace=THREE.SRGBColorSpace;BL.a=new THREE.WebGLRenderTarget(1,1,o);BL.b=new THREE.WebGLRenderTarget(1,1,o);
       BL.c=new THREE.WebGLRenderTarget(1,1,o);BL.d=new THREE.WebGLRenderTarget(1,1,o);
       BL.cam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);BL.q=new THREE.Mesh(new THREE.PlaneGeometry(2,2));BL.q.frustumCulled=false;BL.sc=new THREE.Scene();BL.sc.add(BL.q);
       const U=o=>Object.fromEntries(Object.entries(o).map(([k,v])=>[k,{value:v}]));
@@ -260,12 +263,9 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
       BL.blur=new THREE.ShaderMaterial({uniforms:U({t:null,dir:new THREE.Vector2()}),vertexShader:QV,depthTest:false,depthWrite:false,
         fragmentShader:`varying vec2 vUv;uniform sampler2D t;uniform vec2 dir;
           void main(){vec3 c=texture2D(t,vUv).rgb*.227;c+=(texture2D(t,vUv+dir*1.385).rgb+texture2D(t,vUv-dir*1.385).rgb)*.316;c+=(texture2D(t,vUv+dir*3.231).rgb+texture2D(t,vUv-dir*3.231).rgb)*.07;gl_FragColor=vec4(c,1.);}`});
-      BL.comp=new THREE.ShaderMaterial({uniforms:U({t:null,b1:null,b2:null,str:1,wide:1}),vertexShader:QV,depthTest:false,depthWrite:false,
+      BL.comp=new THREE.ShaderMaterial({uniforms:U({t:null,b1:null,b2:null,str:1,wide:1}),vertexShader:QV,depthTest:false,depthWrite:false,toneMapped:false,
         fragmentShader:`varying vec2 vUv;uniform sampler2D t,b1,b2;uniform float str,wide;
-          void main(){vec3 c=texture2D(t,vUv).rgb+(texture2D(b1,vUv).rgb+texture2D(b2,vUv).rgb*wide)*str;gl_FragColor=vec4(c,1.);
-          #include <tonemapping_fragment>
-          #include <colorspace_fragment>
-          }`});
+          void main(){vec3 c=texture2D(t,vUv).rgb+(texture2D(b1,vUv).rgb+texture2D(b2,vUv).rgb*wide)*str;gl_FragColor=vec4(c,1.);}`});
       BL.ok=true;
     }catch(e){console.warn('bloom לא זמין:',e&&e.message);BL.ok=false}
     return BL.ok;
@@ -280,7 +280,7 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
     if(BL.w!==w||BL.h!==h){BL.w=w;BL.h=h;BL.rt.setSize(w,h);BL.a.setSize(w4,h4);BL.b.setSize(w4,h4);BL.c.setSize(w8,h8);BL.d.setSize(w8,h8)}
     const prev=r.getRenderTarget();
     r.setRenderTarget(BL.rt);r.render(sc,cam);
-    const th=BL.hdr?R.th:Math.min(R.th,0.9);BL.bright.uniforms.th.value=th;BL.bright.uniforms.kn.value=R.knee;BL.bright.uniforms.px.value.set(1/w,1/h);
+    BL.bright.uniforms.th.value=R.th;BL.bright.uniforms.kn.value=R.knee;BL.bright.uniforms.px.value.set(1/w,1/h);
     pass(r,BL.bright,BL.rt,BL.a);
     BL.blur.uniforms.dir.value.set(1/w4,0);pass(r,BL.blur,BL.a,BL.b);BL.blur.uniforms.dir.value.set(0,1/h4);pass(r,BL.blur,BL.b,BL.a);
     BL.blur.uniforms.dir.value.set(2/w4,0);pass(r,BL.blur,BL.a,BL.d);BL.blur.uniforms.dir.value.set(0,1/h8);pass(r,BL.blur,BL.d,BL.c);
@@ -288,6 +288,7 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
     r.setRenderTarget(prev);r.render(BL.sc,BL.cam);
     VFX3D.stat.bloomFrames++;return true;
   };
+  VFX3D._bl=BL;   // לבדיקות
   VFX3D.bloomOn=()=>!!(bloomWant()&&BL.ok);
   // נקרא מ-render3d בכל פריים (גם כשהבדיקה מדלגת על הציור): זמן לפי השעון של המשחק, ועוצר ב-hit-stop ובהפסקה
   let last=0;
