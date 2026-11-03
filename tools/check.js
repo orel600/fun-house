@@ -51,7 +51,8 @@ function botStep({god,en}){
   // בטלפון שוכב, הכפתורים של עליית רמה, הבוס ומסך הסוף בתוך המסך, בלי לגלול (בדיקת הזירה, 1.11.2026)
   const fitChk=(k,els)=>{L.fit=L.fit||{};if(L.fit[k])return;const out=els.filter(e=>{const r=e.getBoundingClientRect();return r.bottom>innerHeight+1||r.top<-1||r.right>innerWidth+1||r.left<-1});L.fit[k]=out.length?'בחוץ':'בפנים'};
   // הודעות בזירה (2.11.2026): פס קטן למעלה מתחת ל-HUD, לא על הגיבור באמצע ולא על פס הריצה או פס הבוס. נמדד פעם בתחילת הריצה ופעם מול הבוס
-  const banChk=k=>{if(L[k])return;banner('check ✓',C.gold);const be=document.getElementById('banner'),b={top:be.offsetTop,bottom:be.offsetTop+be.offsetHeight,left:be.offsetLeft,right:be.offsetLeft+be.offsetWidth},   // המקום הסופי, בלי ההחלקה של הכניסה (translateY)
+  // תור ההודעות (welcome.js) מתרוקן קודם, כדי שהודעת הבדיקה תוצג עכשיו ולא נמדוד הודעה ישנה
+  const banChk=k=>{if(L[k])return;if(typeof BANNER!=='undefined'){clearTimeout(BANNER.t);BANNER.t=0;BANNER.q.length=0;BANNER.last=-1e9}banner('check ✓',C.gold);const be=document.getElementById('banner'),b={top:be.offsetTop,bottom:be.offsetTop+be.offsetHeight,left:be.offsetLeft,right:be.offsetLeft+be.offsetWidth},   // המקום הסופי, בלי ההחלקה של הכניסה (translateY)
     bars=['runbar','bossbar'].map(id=>document.getElementById(id)).filter(e=>e&&e.offsetParent).map(e=>e.getBoundingClientRect());
     const hud=document.querySelector('.hud'),hb=hud?Math.round(hud.getBoundingClientRect().bottom):0;
     L[k]={top:Math.round(b.top),bot:Math.round(b.bottom),H:innerHeight,hud:hb,hit:bars.some(r=>r.bottom>b.top&&r.top<b.bottom&&r.right>b.left&&r.left<b.right)}};
