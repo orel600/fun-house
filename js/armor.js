@@ -2,7 +2,7 @@
    שתי משבצות חדשות בבובה: ראש וגוף. לכל דמות התחלה (HEROES) סט משלה בכל שכבה: לוחם קסדה ושריון, צייד ברדס ואפודה, קוסם כובע וגלימה.
    כל חלק נותן הגנה (def, אחוז פחות נזק, combat.js) ועוד סטט לפי המחלקה: לוחם חיים, צייד מהירות, קוסם התחדשות.
    לא נועל כלום: כל דמות יכולה ללבוש כל שריון, והשלל בעולם רק מוטה לשריון של המחלקה שלך (armorPick, נקרא מ-lootRoll ב-loot.js).
-   הפריטים נבנים כאן לתוך GEAR.items (armorItems), עם id כמו 'warriorHead2'. השמות מורכבים מחלקים ב-lang.js ('arm.*').
+   הפריטים נבנים כאן לתוך GEAR.items (armorItems), עם id כמו 'warriorHead2'. השם והמשפט ב-lang.js ('it.warriorHead2', 'itf.warriorHead2'), ובלי שם מורכב מחלקים ('arm.*').
    המראה בתלת-ממד (armor3d, נקרא מ-render3d.js ומ-doll3d.js): חלקים שכבר יש במודלים של KayKit (Knight_Helmet, Mage_Hat, Cape) נדלקים
    ונצבעים בצבע השכבה, ומה שאין במודל (ברדס, כתפיות, אבן חן) נבנה בקוד ומחובר לעצם. רק בכפר ובעולם: הזירה של אוראל לא מפילה שריון */
 
@@ -51,10 +51,10 @@ const armorSlot=s=>s[0].toUpperCase()+s.slice(1);
       let v=ARMOR.extra[s][t]/w;v=C_.stat==='regen'?Math.round(v*10)/10:Math.round(v);
       const id=c+armorSlot(s)+t;
       GEAR.items[id]={slot:s,tier:t,cls:c,icon:C_.icon[s],stats:{def:d,[C_.stat]:v},look:t>=3?{glow:GEAR.tiers[t].col}:undefined};
-      const N=TEXT['arm.name'];TEXT['it.'+id]={he:N.he(c,s,t),en:N.en(c,s,t)};
+      const N=TEXT['arm.name'];if(!TEXT['it.'+id])TEXT['it.'+id]={he:N.he(c,s,t),en:N.en(c,s,t)};   // שם עם אופי ב-lang.js ('it.warriorHead2'). בלי: מורכב מהחלקים
     })}
   const SH=ARMOR.shield;SH.def.forEach((d,t)=>{GEAR.items['shield'+t]={slot:'shield',tier:t,icon:'🛡️',stats:{def:d,hp:SH.hp[t]},look:t>=3?{glow:GEAR.tiers[t].col}:undefined};
-    const N=TEXT['arm.shield'];TEXT['it.shield'+t]={he:N.he(t),en:N.en(t)}});
+    const N=TEXT['arm.shield'];if(!TEXT['it.shield'+t])TEXT['it.shield'+t]={he:N.he(t),en:N.en(t)}});
 })();
 // מגן עץ לכל אחד, פעם אחת (נקרא מ-gearReset), כדי שמי שהיה לו מגן מהתכשיט לא יישאר בלי
 function armorGift(){if(!SAVE.shieldGift){SAVE.shieldGift=true;bagAdd(ARMOR.shield.gift)}}

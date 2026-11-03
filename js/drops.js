@@ -24,9 +24,10 @@ const DROPS={
     icon:13, iconGear:15, bob:1.6}           // גודל האייקון (ציוד קצת יותר), וכמה הוא מתנדנד
 };
 // הדרגה של שלל (צבע ועמוד אור), או null לרגיל
-// פריט ציוד (gear.js) מקבל תמיד צבע ועמוד, לפי השכבה שלו ועוד אחת: גם חרב עץ שנפלה מאויב היא רגע מיוחד
+// פריט ציוד (gear.js) מקבל את הצבע של השכבה שלו, כמו המסגרת בתרמיל (css/rarity.css), כדי שזהב על הרצפה ייראה זהב גם בתרמיל.
+// לפחות "לא שכיח": גם חרב עץ שנפלה מאויב היא רגע מיוחד, עם אור. העמוד מכסף ומעלה (DROPS.look.beamFrom), והוא גבוה יותר לזהב ולאגדי
 const dropGear=r=>!!gItem(r);
-const dropRar=r=>dropGear(r)?Math.min(RES.rarity.length-1,gItem(r).tier+1):(resOf(r)||{rar:0}).rar;
+const dropRar=r=>dropGear(r)?Math.max(1,Math.min(RES.rarity.length-1,gItem(r).tier)):(resOf(r)||{rar:0}).rar;
 const dropTier=r=>{const t=dropRar(r);return t?RES.rarity[t]:null};
 const dropIcon=r=>dropGear(r)?gIcon(r):resIcon(r);
 
