@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFilter
 import numpy as np
 from scipy import ndimage
 src, cols, rows, out = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), sys.argv[4]
-names = sys.argv[5:]; SIZE=int(os.environ.get('SIZE',128)); TOL=40
+names = sys.argv[5:]; SIZE=int(os.environ.get('SIZE',128)); TOL=40; HOLE=int(os.environ.get('HOLE',1500))
 im = Image.open(src).convert('RGBA'); W,H = im.size
 a = np.array(im).astype(int)
 white = (a[:,:,:3].min(axis=2) > 255-TOL)
@@ -27,10 +27,15 @@ for g in range(1, gn+1):
     cells.setdefault(r*cols+c, []).append(g)
 for i, nm in enumerate(names):
     nm, holes = nm.split(':')[0], nm.endswith(':holes')
-    gs = cells.get(i)
+    gs = cells.get(i); c0, r0 = i % cols, i // cols
     if not gs: print('EMPTY', nm); continue
     mask = np.isin(glab, gs) & fg
-    if holes: mask &= ~white
+    if holes:   # רק חורים לבנים גדולים וסגורים (בין קשת למיתר, בתוך טבעת). פרטים לבנים קטנים (נוצה, ברק) נשארים
+        hl, hn = ndimage.label(white & np.isin(glab, gs) | (white & ~bg))
+        cell_mask = np.zeros_like(white); cell_mask[int(r0*ch):int((r0+1)*ch), int(c0*cw):int((c0+1)*cw)] = True
+        for h in range(1, hn+1):
+            m = (hl==h) & cell_mask
+            if m.sum() > HOLE: mask &= ~m
     ys, xs = np.where(mask)
     x0,x1,y0,y1 = xs.min(), xs.max()+1, ys.min(), ys.max()+1
     rgba = a.copy(); rgba[:,:,3] = np.where(mask, rgba[:,:,3], 0)
