@@ -59,7 +59,7 @@ function mbCast(u,slot,aim){
       MB.shots.push({kind:'line',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,
         on:o=>{mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});if(s.wet){o.st.wet=Math.max(o.st.wet,s.wet);mbSlow(o,s.slow,s.slowT)}}});break}
     case 'leap':{const f=mbNearest(u,MB.u.filter(o=>o.team!==u.team&&!o.dead&&o.k==='hero'),400);
-      const a=f?Math.atan2(u.y-f.y,u.x-f.x):Math.atan2(u.home.y-u.y,u.home.x-u.x);
+      const a=aim&&!aim.k?ang:f?Math.atan2(u.y-f.y,u.x-f.x):Math.atan2(u.home.y-u.y,u.home.x-u.x);   // כיוון ידני (moba-aim.js), אחרת הרחק מהאויב
       for(const o of foesIn(u.x,u.y,s.r))mbSlow(o,s.slow,s.slowT);mbBoom(u.x,u.y,s.r,'earth');   // הדוקרנים במקום שממנו קפץ
       u.st.dash={vx:Math.cos(a),vy:Math.sin(a),sp:1100,left:s.dist,jump:true,end:()=>{}};break}
     case 'rain':{const p=pt();mbZone(u,p.x,p.y,s.r,s.delay,null,'rain',{t:s.t,tick:(z,dt)=>{for(const o of foesIn(z.x,z.y,z.r)){mbDmg(u,o,s.dps*k*dt,s.dt,{quiet:true});mbSlow(o,s.slow,0.3)}
