@@ -1,7 +1,8 @@
 /* משחקי השאול: הבוטים (moba.js). אותו מוח לשני החברים של השחקן ולשלושת האויבים.
    כל בוט מחליט פעם ב-think שניות מה עושים, לפי הסדר: נסוג להתרפא, יוצא מאזור מסומן, מתרחק ממגדל שמכה בו,
    נלחם בגיבור (רק כשיש יתרון או שהאויב חלש), מגן על מגדל, ואחרת דוחף מאחורי החיילים ולוקח XP.
-   הסקילים רק כשהם יפגעו. הצייד מחכה רגע לגל המים של הקוסמת, בשביל חשמול. הנפח מהמם רק מי שלא חסין */
+   הסקילים רק כשהם יפגעו. הצייד מחכה רגע לגל המים של הקוסמת, בשביל חשמול. הנפח מהמם רק מי שלא חסין,
+   קופץ להציל חבר חלש, ומטיל את חומת הברזל איפה שיש הכי הרבה אויבים. הלוחם משתמש בזעם גם כדי לצאת מצרה */
 const MBBOT={
   think:0.25,     // שניות בין החלטות
   retreat:0.35,   // פחות מזה מהחיים: חוזר לבסיס
@@ -90,15 +91,21 @@ function mbBotSkills(u){
   const held=t=>t.st.stun>0||t.st.slow>0;
   const fight=B.mode==='fight'||B.mode==='defend'||B.mode==='order'&&MB.order&&MB.order.kind==='attack';
   switch(u.kit){
-    case 'tank':
-      if(ready('s1')&&inR('s1')&&!(tgt.st.imm>0)&&B.mode!=='retreat'){mbCast(u,'s1',tgt);return}
+    case 'tank':{
+      // סדן: קופץ פנימה כשנלחמים, או כדי להציל חבר חלש מגיבור שרודף אחריו
+      const peel=foeH.find(o=>!(o.st.imm>0)&&mbDist(o,u)<=K.s1.range&&allies.some(a=>a!==u&&a.hp<a.max*0.4&&mbDist(a,o)<180));
+      const jump=peel||(fight&&inR('s1')&&!(tgt.st.imm>0)&&u.hp>u.max*0.35?tgt:null);
+      if(ready('s1')&&jump&&B.mode!=='retreat'){mbCast(u,'s1',jump);return}
       if(ready('s2')&&near(foeH,K.s2.r).length&&(fight||allyLow)){mbCast(u,'s2');return}
-      if(ready('ult')&&tgt&&mbDist(u,tgt)<K.ult.range+60&&(allyLow||near(foeH,260).length>=2||B.mode==='retreat')){mbCast(u,'ult',{x:(u.x+tgt.x)/2,y:(u.y+tgt.y)/2});return}
-      break;
+      // חומת ברזל: הנקודה עם הכי הרבה גיבורי אויב בתוך הרדיוס. שניים ומעלה, או אחד כשחבר בצרה
+      if(ready('ult')){let best=null,bn=0;for(const o of foeH){if(mbDist(u,o)>K.ult.range+K.ult.r*0.5)continue;const n=near(foeH,K.ult.r,o).length;if(n>bn){bn=n;best=o}}
+        if(best&&(bn>=2||allyLow||fight&&held(best))){mbCast(u,'ult',best);return}}
+      break}
     case 'warrior':
-      if(ready('s1')&&inR('s1')&&fight&&u.hp>u.max*0.45){mbCast(u,'s1',tgt);return}
+      if(ready('s1')&&inR('s1')&&fight&&u.hp>u.max*0.4){mbCast(u,'s1',tgt);return}
       if(ready('s2')&&(near(foeH,K.s2.r).length||near(foes,K.s2.r).length>=3)){mbCast(u,'s2');return}
-      if(ready('ult')&&fight&&tgt&&mbDist(u,tgt)<220){mbCast(u,'ult');return}
+      // זעם: כשנלחמים קרוב, או כדי לצאת מצרה (אי אפשר להמם אותו בזמן הזעם)
+      if(ready('ult')&&(fight&&tgt&&mbDist(u,tgt)<220||u.hp<u.max*0.45&&near(foeH,K.ult.r).length)){mbCast(u,'ult');return}
       break;
     case 'hunter':
       if(ready('s2')&&(near(foeH,130).length&&u.hp<u.max*0.7||B.mode==='retreat'&&near(foeH,220).length)){mbCast(u,'s2');return}
@@ -109,7 +116,8 @@ function mbBotSkills(u){
       if(ready('ult')&&inR('ult')&&(held(tgt)||near(foeH,K.ult.r,tgt).length>=2)){mbCast(u,'ult',tgt);return}
       break;
     case 'mage':
-      if(ready('s2')&&allies.some(o=>o.hp<o.max*0.55&&mbDist(o,u)<K.s2.r)){mbCast(u,'s2');return}
+      // ריפוי ומגן: חבר חלש קרוב, או חבר קרוב שגיבור אויב צמוד אליו
+      if(ready('s2')&&allies.some(o=>mbDist(o,u)<K.s2.r&&(o.hp<o.max*0.55||o.hp<o.max*0.85&&foeH.some(f=>mbDist(f,o)<120)))){mbCast(u,'s2');return}
       if(ready('s1')&&(inR('s1')||!tgt&&near(foes,K.s1.range*0.8).length>=3)){mbCast(u,'s1',tgt||mbNearest(u,foes,K.s1.range));return}
       if(ready('ult')&&inR('ult')&&(held(tgt)||tgt.st.wet>0||near(foeH,K.ult.r,tgt).length>=2)&&!(tgt.st.imm>0)){mbCast(u,'ult',tgt);return}
       break;
