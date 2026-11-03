@@ -1209,7 +1209,8 @@ function worldBot(m,L,god){
     if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // מתכוני הצייד בתלת-ממד (skfx3d-volley.js, skfx3d-trap.js, skfx3d-vines.js): לכל סקיל יש מתכון שתופס את הציור,
   // יוצא ממנו חלקיקים, ובסוף הכל משתחרר (גם מה שממשיך אחרי שהסקיל נגמר: חצים נעוצים, גבישי קרח, שורשים)
-  const vfxh=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:[],bad:[]};
+  // מספרים אקראיים משלה: הבדיקה לא מזיזה את הרצף של הבוט, וכך שאר הריצה זהה לריצה בלעדיה (אותו seed = אותו משחק)
+  const vfxh=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:[],bad:[]},rnd=Math.random;let sd=97;Math.random=()=>(sd=sd*16807%2147483647)/2147483647;
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();enterWorld('home');enemies=[];
       const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60);VFX3D.step(1/60)}};
       run(0.05);r.d3=VFX3D.on();
@@ -1226,7 +1227,7 @@ function worldBot(m,L,god){
           else r.bad.push(id+':'+[own?'':'הציור הישן לא מדלג',fx?'':'אין מתכון',p?'':'אין חלקיקים',end?'':'לא השתחרר'].filter(Boolean).join('+'))}
         catch(err){r.bad.push(id+':'+String(err))}}}
     catch(err){r.err=String(err&&err.stack||err)}
-    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}Math.random=rnd;return r});
   // אפקטים בתלת-ממד לסקילי הלוחם (skfx3d-charge/whirl/shield.js): לכל סקיל יש מתכון שמצייר אותו, חלקיקים בזמן הסקיל, והכל משתחרר בסוף
   const vfxw=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={ok:[],bad:[]};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();enterWorld('home');enemies=[];
