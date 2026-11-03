@@ -2489,7 +2489,7 @@ function worldBot(m,L,god){
     if(en&&!o.he&&heb($('mbHud').innerText))o.he=$('mbHud').innerText.slice(0,60);
     mbPress('ult');o.lock=$('banner').textContent!==T('mb.locked')&&document.querySelector('#mbSk [data-sk="ult"]').classList.contains('shake');   // סקיל-על נעול: הכפתור רועד, בלי הודעה באמצע
     // תנועה (moba-move.js, אוראל 3.11: "התנועתיות מוזרה"): סיבוב רך ולא בבת אחת, גיבור עובר דרך חייל בלי להאט, והודעת הריגה
-    {const me=MB.me,hx=me.x,hy=me.y;me.x=-700;me.y=150;me.face=me.rot=0;
+    {const me=MB.me,hx=me.x,hy=me.y;me.x=-700;me.y=150;me.face=0;mbFeelReset(me);
      joy={id:-7,ox:150,oy:280,dx:-1,dy:0};mobaUpdate(1/30);const r1=Math.abs(mbAng(me.rot));for(let i=0;i<9;i++)mobaUpdate(1/30);const r10=Math.abs(mbAng(me.rot));
      const m=mbUnit({k:'minion',team:0,type:'mb_m0',x:me.x-40,y:me.y,r:MOBA.minion.r,hp:1e6,max:1e6,speed:0,lane:0,face:0});MB.u.push(m);
      const x0=me.x;for(let i=0;i<30;i++)mobaUpdate(1/30);const run=x0-me.x;MB.u.splice(MB.u.indexOf(m),1);joy=null;me.x=hx;me.y=hy;mbFeelReset(me);
