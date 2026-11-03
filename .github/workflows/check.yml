@@ -19,7 +19,7 @@ jobs:
           - {seed: 123, flags: "--gfx 2d"}
           - {seed: 2026, flags: "--lang en"}
     name: seed ${{ matrix.seed }} ${{ matrix.flags }}
-    timeout-minutes: 25
+    timeout-minutes: 40   # 3.11.2026: ריצת האנגלית לוקחת כ-22 דקות, ובעומס עברה את 25 ונחתכה (cancelled)
     defaults:
       run:
         shell: bash
