@@ -1512,7 +1512,7 @@ function worldBot(m,L,god){
       for(let t=0,seen=0;t<200&&won===0;t+=dt){
         P.hp=Math.max(P.hp,P.maxHp*0.5);if(S.mode!=='play'){for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;S.mode='play';S.pendingLv=0}
         update(dt);if(S.wn&&S.wn.e)o.wanted++;
-        const live=enemies.filter(e=>!e.dead);if(!S.boss)o.minions=Math.max(o.minions,live.filter(e=>e.type!=='wisp').length);   // בין הבוסים אין אף אויב (רוחות שנשארו הן של הבוס שנפל)
+        const live=enemies.filter(e=>!e.dead);if(!S.boss){const m=live.filter(e=>e.type!=='wisp');o.minions=Math.max(o.minions,m.length);if(m.length)o.mt=m.map(e=>e.type+'@'+Math.round(t)).join(',')}   // בין הבוסים אין אף אויב (רוחות שנשארו הן של הבוס שנפל)
         
         if(S.boss&&S.boss!==seen){seen=S.boss;hps.push(Math.round(S.boss.max));tags.push(document.getElementById('waveTag').textContent);o.bosses++;
           if(o.bosses===2)o.hp1=P.hp}   // החיים ברגע שהבוס השני נולד: אחרי הפסקה עם ריפוי
@@ -1523,7 +1523,7 @@ function worldBot(m,L,god){
     Math.random=rnd;window.runWon=rw;enemies=[];wRet=null;for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;
     SAVE=JSON.parse(bak);reset();S.mode=mode;o.after=S.arena==='classic'&&!document.documentElement.classList.contains('waves');return o});
   check(!bar.err&&!!bar.btn&&bar.arena==='boss'&&!!bar.floor&&bar.bosses===bar.N&&bar.won===1&&bar.minions===0&&bar.wanted===0&&bar.hps[0]<bar.hps[1]&&bar.hps[1]<bar.hps[2]&&bar.tags.every(x=>/\d\/\d|\d$/.test(x))&&bar.after,
-    'זירת בוסים: '+(bar.err||'כפתור "'+bar.btn+'", '+bar.bosses+'/'+bar.N+' בוסים, חיים '+(bar.hps||[]).join('<'+'')+', אויבים בהפסקות: '+bar.minions+', ניצחון: '+bar.won+', מבוקש: '+bar.wanted+', חזרה לרגיל: '+bar.after));
+    'זירת בוסים: '+(bar.err||'כפתור "'+bar.btn+'", '+bar.bosses+'/'+bar.N+' בוסים, חיים '+(bar.hps||[]).join('<'+'')+', אויבים בהפסקות: '+bar.minions+(bar.mt?' ('+bar.mt+')':'')+', ניצחון: '+bar.won+', מבוקש: '+bar.wanted+', חזרה לרגיל: '+bar.after));
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
