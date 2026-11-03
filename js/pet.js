@@ -39,6 +39,11 @@ const PET={
      speed: מהירות ריצה. gap: שניות בין נשיכות. bites: כמה נשיכות ואז חוזרת. rest: שניות מנוחה ליד השחקן לפני ההתקפה הבאה.
      fire: בשלב 3, איזה חלק מהנשיכה מגיע גם כאש (שורף). home: מאיזה מרחק מהשחקן היא "חזרה" */
   attack:{leash:240,reach:12,speed:400,gap:0.5,bites:3,rest:2.2,fire:0.4,home:70},
+  /* תנועה חלקה (ניר, 3.11.2026: "התנועה של פיוחו לא חלקה"). accel/brake: כמה מהר המהירות מתיישרת עם הרצויה (1 לשנייה).
+     turn/look: רדיאנים בשנייה לסיבוב הגוף בהליכה ובעמידה. far: מעבר למרחק הזה מהשחקן היא לא נעצרת ומזדרזת אליו.
+     stop/go: אזור מתים עם זיכרון (נעצרת מתחת ל-stop, מתחילה מעל go). near: האטה רכה כשמתקרבים ליעד (מהירות = מרחק × near).
+     runIn/runOut: מתי האנימציה עוברת לריצה וחזרה להליכה. moveV/faceV/stopV: מהירויות קטנות שמתחתן היא נחשבת עומדת */
+  move:{accel:11,brake:9,turn:7,look:3,far:76,stop:9,go:24,near:6,runIn:200,runOut:165,moveV:14,faceV:12,stopV:6},
   fx:{pulse:1.8,ember:'#FF8A3D',core:'#FFE08A'}   // שלב 3: קצב הפעימה וצבעי הלהבה
 };
 
@@ -62,7 +67,8 @@ function petXP(n){
 function petMake(){
   const f=PET.follow,b=P.face+Math.PI;
   return S.pet={x:P.x+Math.cos(b)*f.trail,y:P.y+Math.sin(b)*f.trail,face:P.face,st:'idle',t:0,still:0,digT:petStage().dig.every*0.5,
-    spot:null,sand:[],hearts:[],kills:S.kills||0,fxT:0,digs:0,dug:[],atkCd:PET.attack.rest,foe:null,bites:0,bitesAll:0,dealt:0,returns:0,feedCd:0}}
+    spot:null,sand:[],hearts:[],kills:S.kills||0,fxT:0,digs:0,dug:[],atkCd:PET.attack.rest,foe:null,bites:0,bitesAll:0,dealt:0,returns:0,feedCd:0,
+    vx:0,vy:0,hold:false}}   // vx,vy: המהירות עכשיו, hold: עומדת ליד השחקן (petMove)
 
 /* ---- כל פריים, בכל מקום (main.js) ---- */
 function petUpdate(dt){
@@ -89,22 +95,46 @@ function petUpdate(dt){
   if(!S.vil&&p.st!=='dig'&&p.st!=='go'&&p.st!=='jump'){p.digT-=dt*(sv.buff>0?PET.feed.dig:1)/(S.wd?1:PET.dig.arena);if(p.digT<=0){if(!petKind().steal)petDigStart(p);else if(paroshStart(p))return}}   // steal: במקום לחפור, גונב מאויב (parosh.js)
   if(p.st==='jump'){if(p.t>0.9){p.st='idle';p.t=0}return}
   if(p.st==='go'){const s=p.spot,dx=s.x-p.x,dy=s.y-p.y,d=Math.hypot(dx,dy);
-    if(d<8||dP>f.run*1.6){if(d<8){p.st='dig';p.t=0}else{p.st='follow';p.spot=null}}   // השחקן התרחק מאוד: עוזבת ורצה אחריו
-    else{const sp=Math.min(d/dt,f.run);p.x+=dx/d*sp*dt;p.y+=dy/d*sp*dt;p.face=Math.atan2(dy,dx);p.run=true}
+    if(d<8||dP>f.run*1.6){if(d<8){p.st='dig';p.t=0;p.vx=p.vy=0}else{p.st='follow';p.spot=null}}   // השחקן התרחק מאוד: עוזבת ורצה אחריו
+    else{petMove(p,dx,dy,d,Math.min(f.run,d*PET.move.near+60),dt);p.run=true}
     return}
   if(p.st==='dig'){
     if(Math.random()<dt*24)for(let i=0;i<PET.dig.grains;i++)p.sand.push({x:p.x+Math.cos(p.face)*10,y:p.y+Math.sin(p.face)*10,vx:-Math.cos(p.face)*rand(40,140)+rand(-40,40),vy:-rand(80,190),life:rand(0.35,0.6)});
     if(p.t>=PET.dig.dur)petDigEnd(p);
     return}
   // הליכה אחרי השחקן: נקודה מאחוריו וקצת לצד, כדי שלא תסתיר אותו
-  const b=P.face+Math.PI,tx=P.x+Math.cos(b)*f.trail+Math.cos(b+1.57)*f.side,ty=P.y+Math.sin(b)*f.trail+Math.sin(b+1.57)*f.side;
+  const M=PET.move,b=P.face+Math.PI,tx=P.x+Math.cos(b)*f.trail+Math.cos(b+1.57)*f.side,ty=P.y+Math.sin(b)*f.trail+Math.sin(b+1.57)*f.side;
   const dx=tx-p.x,dy=ty-p.y,d=Math.hypot(dx,dy);
   p.still=P.moving?0:p.still+dt;
-  if(d>10){const sp=Math.min(d/dt,dP>f.runFrom?f.run:Math.max(f.walk,P.moving?P.speed:0));p.x+=dx/d*sp*dt;p.y+=dy/d*sp*dt;p.face=Math.atan2(dy,dx);p.run=sp>f.walk*1.2;p.st='follow'}
-  else{p.run=false;p.st=p.still>f.sitAfter?'sit':'idle';if(!P.moving)p.face+=angDiff(Math.atan2(P.y-p.y,P.x-p.x),p.face)*Math.min(1,dt*3)}
+  // אזור מתים עם זיכרון: נעצרת רק כשהיא באמת במקומה (ליד היעד וליד השחקן), וחוזרת לזוז מעל go. בלי זה היא רועדת סביב היעד
+  if(p.hold){if(d>M.go||dP>M.far)p.hold=false}else if(d<M.stop&&dP<M.far)p.hold=true;
+  // כמה למהר: לפי המרחק מהיעד (האטה רכה בכניסה אליו), ואם נשארה מאחור גם לפי המרחק מהשחקן,
+  // כדי שלא תאט בדיוק כשהנקודה שמאחוריו מקיפה אותו והוא מתרחק (ניר, 3.11: "התנועה לא חלקה")
+  const sp=p.hold?0:Math.min(dP>f.runFrom?f.run:Math.max(f.walk,P.moving?P.speed:0),Math.max(d,dP-M.far)*M.near);
+  const v=petMove(p,dx,dy,d,sp,dt);
+  if(v>M.moveV)p.st='follow';
+  else{p.st=p.still>f.sitAfter?'sit':'idle';if(!P.moving&&v<1)petFace(p,Math.atan2(P.y-p.y,P.x-p.x),dt,M.look)}
   // אויב ליד השחקן: יוצאת לתקוף. רק בעולם הפתוח, לא בזירה (הזירה של אוראל, ניר 31.10.2026)
   p.atkCd-=dt;if(p.atkCd<=0&&S.wd){const e=petFoe();if(e){p.st='hunt';p.foe=e;p.bites=0;p.biteT=0;p.t=0}}
 }
+/* ---- תנועה ---- */
+/* צעד אחד לכיוון (dx,dy) במהירות הרצויה want (ניר, 3.11.2026: "התנועה של פיוחו לא חלקה").
+   המהירות והכיוון מתיישרים בהדרגה ולא קופצים בכל פריים, ו-k=1-exp(-dt*accel) מחזיק את אותו קצב גם ב-30 וגם ב-60 פריימים בשנייה,
+   כך שבטלפון איטי היא לא נעה בקפיצות. מחזיר את המהירות עכשיו */
+function petMove(p,dx,dy,d,want,dt){
+  const M=PET.move,u=d>0.01?want/d:0;
+  const k=1-Math.exp(-dt*(want>0?M.accel:M.brake));
+  p.vx=(p.vx||0)+(dx*u-(p.vx||0))*k;p.vy=(p.vy||0)+(dy*u-(p.vy||0))*k;
+  let v=Math.hypot(p.vx,p.vy);
+  if(v<M.stopV&&!want){p.vx=p.vy=0;v=0}
+  p.x+=p.vx*dt;p.y+=p.vy*dt;
+  if(v>M.faceV)petFace(p,Math.atan2(p.vy,p.vx),dt,M.turn);
+  p.run=p.run?v>M.runOut:v>M.runIn;   // זיכרון, אחרת האנימציה מתחלפת בין הליכה לריצה כל פריים
+  return v;
+}
+// סיבוב הגוף בקצב מוגבל (רדיאנים בשנייה), ולא קפיצה לכיוון החדש
+function petFace(p,a,dt,sp){p.face+=Math.max(-sp*dt,Math.min(sp*dt,angDiff(a,p.face)))}
+
 /* ---- תקיפה ---- */
 // האויב הכי קרוב לשחקן בתוך הרצועה (לא מקורות משאבים, לא מת)
 function petFoe(){
@@ -115,13 +145,13 @@ function petHunt(p,dt,dP){
   const A=PET.attack;
   if(p.st==='hunt'){const e=p.foe;
     if(!e||e.dead||p.bites>=A.bites||Math.hypot(e.x-P.x,e.y-P.y)>A.leash*1.25||dP>A.leash*1.4){p.st='back';p.foe=null;p.atkCd=A.rest;return}
-    const dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy)||1,gap=d-e.r-A.reach;p.face=Math.atan2(dy,dx);
-    if(gap>0){const sp=Math.min(gap/dt+1,A.speed);p.x+=dx/d*sp*dt;p.y+=dy/d*sp*dt;p.run=true}
-    else{p.run=false;p.biteT-=dt;if(p.biteT<=0){p.biteT=A.gap;petBite(p,e)}}
+    const dx=e.x-p.x,dy=e.y-p.y,d=Math.hypot(dx,dy)||1,gap=d-e.r-A.reach;petFace(p,Math.atan2(dy,dx),dt,PET.move.turn*1.6);
+    if(gap>0){petMove(p,dx,dy,d,Math.min(A.speed,gap*PET.move.near+80),dt);p.run=true}
+    else{p.vx=p.vy=0;p.run=false;p.biteT-=dt;if(p.biteT<=0){p.biteT=A.gap;petBite(p,e)}}
     p.far=Math.max(p.far||0,Math.hypot(P.x-p.x,P.y-p.y))}   // far: הכי רחוק מהשחקן בזמן תקיפה (לבדיקה)
   else{const dx=P.x-p.x,dy=P.y-p.y,d=Math.hypot(dx,dy)||1;
     if(d<A.home){p.st='follow';p.run=false;p.returns++;return}
-    const sp=Math.min(d/dt,A.speed);p.x+=dx/d*sp*dt;p.y+=dy/d*sp*dt;p.face=Math.atan2(dy,dx);p.run=true}
+    petMove(p,dx,dy,d,Math.min(A.speed,d*PET.move.near+40),dt);p.run=true}
   if(S.wd){const B=WORLD.size,mx=B.w/2-20,my=B.h/2-20;p.x=Math.max(-mx,Math.min(mx,p.x));p.y=Math.max(-my,Math.min(my,p.y))}   // לא יוצאת מגבולות העולם
 }
 // נשיכה: דרך damage() הרגיל של השחקן, כך שחולשות, קומבו והבוס שלומד רואים אותה. בשלב 3 גם קצת אש, כמו הלהבות שלה
@@ -130,6 +160,7 @@ function petBite(p,e){
   p.barkAt=p.t;p.bites++;p.bitesAll++;
   damage(e,n,'pet',p.face,'physical');
   if(st.fx&&!e.dead)damage(e,n*PET.attack.fire,'pet',p.face,'fire',true);
+  if(st.fx&&typeof petFx3dBite==='function')petFx3dBite(p,e);   // אש בתלת-ממד: שלהבת מהפה (petfx3d.js). בדו-ממד הלהבות בקנבס
   p.dealt+=Math.max(0,h0-Math.max(0,e.hp));
 }
 /* ---- גזר ---- */
@@ -189,7 +220,7 @@ function drawPet(){
   // חול שעף מהחפירה
   ctx.fillStyle=PET.dig.sand;for(const g of p.sand){ctx.globalAlpha=Math.min(1,g.life*3);ctx.fillRect(g.x-1.5,g.y-1.5,3,3)}ctx.globalAlpha=1;
   if(p.st==='dig'){ctx.fillStyle='rgba(120,90,50,0.45)';ctx.beginPath();ctx.ellipse(p.x+Math.cos(p.face)*12,p.y+Math.sin(p.face)*12+2,10,4,0,0,7);ctx.fill()}
-  if(stg.fx)petFlames(p,h);
+  if(stg.fx&&!(typeof petFx3d==='function'&&petFx3d(p,h)))petFlames(p,h);   // בתלת-ממד האש היא חלקיקים (petfx3d.js), ואז הציור בקנבס מדולג
   // לבבות מהגזר
   ctx.fillStyle=PET.feed.heart;for(const g of p.hearts){ctx.globalAlpha=Math.min(1,g.life*2);const r=g.s;
     ctx.beginPath();ctx.moveTo(g.x,g.y+r);ctx.bezierCurveTo(g.x-r*1.6,g.y-r*0.2,g.x-r*0.6,g.y-r*1.4,g.x,g.y-r*0.5);ctx.bezierCurveTo(g.x+r*0.6,g.y-r*1.4,g.x+r*1.6,g.y-r*0.2,g.x,g.y+r);ctx.fill()}
