@@ -2303,7 +2303,7 @@ function worldBot(m,L,god){
     gDoEquip(hd);gDoEquip(bd);gDoEquip('shield2');gRedraw();
     o.worn=gGet('head',0)===hd&&gGet('body',0)===bd&&gearWorn().includes(hd)&&gearWorn().includes(bd);
     o.def=Math.round(((P.def||0)-d0)*10)/10;o.defOk=o.def===gItem(hd).stats.def+gItem(bd).stats.def+gItem('shield2').stats.def;
-    o.tile=!!document.querySelector('#gSlots [data-slot="head"] img, #gSlots [data-slot="head"]')&&document.querySelector('#gSlots [data-slot="head"]').textContent.includes(gItem(hd).icon);
+    {const t=document.querySelector('#gSlots [data-slot="head"]');o.tile=!!t&&(t.textContent.includes(gItem(hd).icon)||!!t.querySelector('img[src*="/'+gBase(hd)+'.png"]'))}   // אימוג'י, או התמונה של הפריט (icons/ui/gear)
     if(R3D.on&&R3D.ready){syncPlayer(0.016);o.r3=(R3D.player.arG||[]).length>0;o.doll=!R3D.doll||!R3D.doll.a||(R3D.doll.a.arG||[]).length>0}else o.r3=o.doll=true;
     gearClose();
     // השלל בעולם: מתוך 400 הגרלות, שריון נופל, ורובו של המחלקה
