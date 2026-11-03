@@ -6,7 +6,7 @@
    הבוטים ב-moba-bot.js */
 const MOBA={
   lane:{len:1500,half:250},   // הנתיב: x מ--len עד len, y מ--half עד half
-  base:{x:1360,hp:1500,r:58,range:270,dmg:70,cd:1.1,heal:0.2,healR:240},   // heal: חלק מהחיים בשנייה לגיבורים ליד הבסיס שלהם
+  base:{x:1360,hp:1500,r:58,range:270,dmg:70,cd:1.1,heal:0.2,healR:240,minK:0.3},   // minK: חיילים מכים בבסיס רק 30% (הבודק, 3.11: בלי זה הבסיס נמס בפחות מ-7 שניות)   // heal: חלק מהחיים בשנייה לגיבורים ליד הבסיס שלהם
   towers:[560,1000],          // המגדל הקרוב למרכז קודם. אי אפשר לפגוע במגדל הרחוק לפני שהקרוב נפל, ובבסיס לפני שניהם
   tower:{hp:700,r:30,range:290,dmg:45,cd:1.2,hero:1.5,shot:620},   // hero: מכפיל נזק מול גיבור
   minion:{every:22,first:3,count:4,gap:0.8,hp:260,dmg:18,cd:1,range:36,aggro:180,speed:80,r:12,xp:22,
@@ -109,8 +109,12 @@ function mbStep(u,mx,my){
     if(w.team===u.team)continue;const side=Math.sign(ox-w.x)||1;
     if(Math.sign(u.x-w.x)!==side||Math.abs(u.x-w.x)<u.r)u.x=w.x+side*u.r;
   }
-  for(const b of MB.u){if(b.dead||(b.k!=='tower'&&b.k!=='base'))continue;   // לא עוברים דרך מבנים
-    const dx=u.x-b.x,dy=u.y-b.y,d=Math.hypot(dx,dy)||0.01,rr=b.r+u.r;if(d<rr){u.x=b.x+dx/d*rr;u.y=b.y+dy/d*rr}}
+  for(const b of MB.u){if(b.dead||(b.k!=='tower'&&b.k!=='base'))continue;   // לא עוברים דרך מבנים, אלא מחליקים מסביב להם
+    const dx=u.x-b.x,dy=u.y-b.y,d=Math.hypot(dx,dy)||0.01,rr=b.r+u.r;if(d>=rr)continue;
+    const nx=dx/d,ny=dy/d,m=Math.hypot(mx,my);u.x=b.x+nx*rr;u.y=b.y+ny*rr;
+    // מי שהולך ישר אל המבנה (המגדלים באמצע הנתיב) נדחף בדיוק למקום שממנו בא ונתקע (אוראל, 3.11: "המוד תקוע לגמרי"). לכן ממשיכים לאורך הדופן
+    if(m>0.01){const tx=-ny,ty=nx,dot=(mx*tx+my*ty)/m,sd=Math.abs(dot)>0.05?Math.sign(dot):Math.sign(u.y-b.y||1)*Math.sign(nx||1),k=m*Math.max(0.6,Math.abs(dot));
+      u.x+=tx*sd*k;u.y+=ty*sd*k;const ex=u.x-b.x,ey=u.y-b.y,e=Math.hypot(ex,ey)||0.01;if(e<rr){u.x=b.x+ex/e*rr;u.y=b.y+ey/e*rr}}}
   const L=MOBA.lane;u.x=Math.max(-L.len,Math.min(L.len,u.x));u.y=Math.max(-L.half,Math.min(L.half,u.y));
 }
 function mbMove(u,tx,ty,dt,stop=4){
@@ -125,7 +129,7 @@ function mbAttack(u,dt,t,A){
   u.aim=Math.atan2(t.y-u.y,t.x-u.x);if(!u.moving)u.face=u.aim;
   if(u.atkT>0)return true;
   u.atkT=A.cd*(u.st.rage>0?u.st.rageCd:1);
-  const d=A.dmg*(u.k==='hero'?mbK(u):1)*(u.k==='minion'&&(t.k==='tower'||t.k==='base')?MOBA.minion.build:1);   // build: חיילים מכים חזק במבנים
+  const d=A.dmg*(u.k==='hero'?mbK(u):1)*(u.k==='minion'&&(t.k==='tower'||t.k==='base')?MOBA.minion.build*(t.k==='base'?MOBA.base.minK:1):1);   // build: חיילים מכים חזק במבנים. בבסיס פחות (minK)
   if(A.shot)MB.shots.push({kind:'home',x:u.x,y:u.y-14,tgt:t,team:u.team,src:u,dmg:d,dt:A.dt,sp:MOBA.shot});
   else{const got=mbDmg(u,t,d,A.dt);if(A.leech)u.hp=Math.min(u.max,u.hp+got*A.leech);if(A.slow)mbSlow(t,A.slow.k,A.slow.t)}
   if(u.me){if(A.shot){P.gn.t=0.3;sfx('shoot')}else{P.sw.anim=0.2;P.sw.ang=u.aim;sfx('hit')}}
