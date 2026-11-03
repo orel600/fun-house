@@ -1204,7 +1204,7 @@ function worldBot(m,L,god){
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();enterWorld('home');enemies=[];
       const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60);VFX3D.step(1/60)}};
       run(0.05);r.d3=VFX3D.on();
-      for(const id of ['volley','trap','vines']){
+      if(r.d3)for(const id of ['volley','trap','vines']){   // בדו-ממד אין מתכונים: הציור הישן, ואין מה לבדוק כאן
         try{for(const x of enemies)x.dead=true;enemies=[];SAVE.hero.skLoad=[id,null];run(0.05);if(SKR)skrEnd(false);
           const e=addEnemy('grunt',P.x+70,P.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;
           const i=S.sk.ids.indexOf(id);if(i<0){r.bad.push(id+':לא על כפתור');continue}S.sk.cd[i]=0;
