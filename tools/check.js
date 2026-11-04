@@ -2646,9 +2646,13 @@ function worldBot(m,L,god){
     {const t=document.querySelector('#gSlots [data-slot="head"]');o.tile=!!t&&(t.textContent.includes(gItem(hd).icon)||!!t.querySelector('img[src*="/'+gBase(hd)+'.png"]'))}   // אימוג'י, או התמונה של הפריט (icons/ui/gear)
     if(R3D.on&&R3D.ready){syncPlayer(0.016);o.r3=(R3D.player.arG||[]).length>0;o.doll=!R3D.doll||!R3D.doll.a||(R3D.doll.a.arG||[]).length>0}else o.r3=o.doll=true;
     gearClose();
-    // השלל בעולם: מתוך 400 הגרלות, שריון נופל, ורובו של המחלקה
-    let mine=0,other=0;for(let i=0;i<400;i++){const it=gItem(lootRoll(1));if(it&&it.cls){if(it.cls===h)mine++;else other++}}
-    o.loot=mine+'/'+other;o.lootOk=mine>other&&other>0;
+    // השלל בעולם: לכל אחת משלוש המחלקות (לא רק זו שהבוט בחר, ובלי מחלקה אין הטיה בכלל), 3000 הגרלות עם מזל משלה,
+    // כדי שהבדיקה לא תזיז את המזל של הבוט ולא תיפול על מזל. בכל מחלקה נופלים כ-500 שריונות, ו-ARMOR.loot.mine (0.7) מהם של המחלקה: בודקים טווח של ±0.12
+    const hs=SAVE.hero.start,rnd=Math.random;let sd=4242;Math.random=()=>(sd=sd*16807%2147483647)/2147483647;o.loot=[];o.lootOk=true;
+    try{for(const c of Object.keys(ARMOR.cls)){SAVE.hero.start=c;let mine=0,other=0;
+      for(let i=0;i<3000;i++){const it=gItem(lootRoll(1));if(it&&it.cls){if(it.cls===c)mine++;else other++}}
+      const r=mine/Math.max(1,mine+other);o.loot.push(c+' '+mine+'/'+other);if(mine+other<200||Math.abs(r-ARMOR.loot.mine)>0.12)o.lootOk=false}}
+    finally{Math.random=rnd;SAVE.hero.start=hs}o.loot=o.loot.join(', ');
     const g1=gearStats(),k=JSON.parse(keep);SAVE.bag=k.bag;SAVE.gear=k.gear;SAVE.clsPity=k.pity;gearLive(g1);celebrate=c0;saveNow();
     o.back=(P.def||0)===d0;return o});
   check(ar.items&&ar.slots&&ar.worn&&ar.defOk&&ar.tile&&ar.r3&&ar.doll&&ar.lootOk&&ar.back,
