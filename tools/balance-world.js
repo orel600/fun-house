@@ -2,7 +2,7 @@
    בכל פרק: מטפס לרמה המומלצת של הדרך הבאה (CURIO.paths), ואז הולך לפנס ומפיל את השומר. בדרך לובש את מה שנופל (אם עומד בדרישות),
    שם נקודות, מחליף סקילים בספר כדי למדוד את כולם, ובכל חזרה לכפר משדרג סקילים אצל הכוהנת כשיש לו במה.
    בלי חסינות: הוא יכול למות, וקם בכפר כמו שחקן. מודד: זמן לכל פרק, מוות, נזק לכל סקיל (ולהטלה), ומה תקע אותו.
-   הרצה: node tools/balance-world.js [--cls warrior,hunter,mage] [--seed 7] [--cap 900] [--json out.json]
+   הרצה: node tools/balance-world.js [--cls warrior,hunter,mage] [--seed 7] [--cap 900] [--json out.json] [--set "<js>"]
    --cap: כמה שניות משחק לכל היותר לפרק (טיפוס + שומר). פרק שלא נגמר בזמן נרשם "תקוע", והבוט ממשיך לפרק הבא כדי למדוד אותו.
    לא רץ ב-GitHub. דו-ממד בלבד. הזמן מואץ בשעון מזויף, ושלוש המחלקות רצות במקביל */
 const {chromium}=require('playwright');
@@ -113,6 +113,7 @@ async function runCls(browser,cls){
   await page.addInitScript(()=>{try{localStorage.setItem('zm-gfx','2d')}catch(e){}});
   await page.goto('file://'+path.resolve(__dirname,'..','index.html'));
   await page.waitForTimeout(500);
+  if(opt('set'))await page.evaluate(js=>{(0,eval)(js)},opt('set'));   // לנסות מספרים בלי לשנות קבצים: --set "HEROES.list.mage.passive.hp=30"
   await page.evaluate(c=>{$('ovStart').hidden=true;heroPick(c)},cls);
   await page.waitForTimeout(300);
   await page.evaluate(install,BAL);
