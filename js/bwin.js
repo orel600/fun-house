@@ -8,7 +8,8 @@
 
 const BWIN={
   move:10,     // נגיעה בכרטיס במחסן מעבירה כך הרבה לצד השני
-  hold:450     // לחיצה ארוכה (אלפיות שנייה) מעבירה הכל
+  hold:450,    // לחיצה ארוכה (אלפיות שנייה) מעבירה הכל
+  sel:{}       // מה נבחר בכל חלון קנייה (forge: איזה חפץ). לא נשמר: בכל כניסה בוחרים מחדש את הכי משתלם, אם הקודם כבר לא שם
 };
 
 const bwRar=k=>{const R=resOf(k),c=R?RES.rarity[R.rar||0].col:gItem(k)?gTint(k):'';return c?' style="--rar:'+c+'"':''};
@@ -59,12 +60,27 @@ function bwTrade(L){
     '<section><div class="bwch"><b>'+T('bw.sellT')+'</b></div>'+(sell.length?'<div class="bwgrid trade">'+sell.map(r=>card('sell',r,bagHas(r,vLot(r))?'':T('vil.needN',vLot(r)),'+'+vPrice(r,'sell')*vLot(r))).join('')+'</div>':'<p class="next">'+T('bw.sellNone')+'</p>')+'</section>'+
     '<section><div class="bwch"><b>'+T('bw.buyT')+'</b></div><div class="bwgrid trade">'+buy.map(([r,p,why])=>card('buy',r,why,p)).join('')+'</div></section></div>';
 }
+// הנפחייה (ניר, 3.11.2026: "בחירת נשק לקנייה לא ברורה"): רשימה של אריחים קטנים בטור אחד, והכרטיס הגדול של מה שנבחר בטור השני (itemcard.js).
+// בלי בחירה: הכי משתלם שאפשר ליצור עכשיו. היצירה עצמה: gearCraft ב-gear.js (data-act="craft", דרך village.js)
+function bwForge(){
+  const ids=Object.keys(GEAR.recipes).filter(gCanCraft),ok=id=>!Object.keys(icMiss(GEAR.recipes[id])).length;
+  let sel=BWIN.sel.forge;
+  if(!ids.includes(sel))sel=BWIN.sel.forge=ids.filter(ok).sort((a,b)=>icDelta(b)-icDelta(a))[0]||ids[0];
+  const top='<div class="bwch"><b>'+T('forge.craft')+'</b><button class="vbtn bwall" data-act="forge">✨ '+T('age.open')+'</button></div>';
+  if(!ids.length)return top+'<p class="next">'+T('ic.none')+'</p>';
+  return '<div class="bwcols icols"><section>'+top+'<div class="bwgrid ictiles">'+ids.map(id=>itemTile(id,{on:id===sel,cost:GEAR.recipes[id]})).join('')+'</div></section>'+
+    '<section class="icside">'+itemCard(sel,{cost:GEAR.recipes[sel],act:'craft'})+'</section></div>';
+}
+// נגיעה באריח (data-act="pick"): בוחרים אותו ומציירים מחדש. נתפס לפני village.js, שלא מכיר את הפעולה
+$('vPanel').addEventListener('click',e=>{const b=e.target.closest('button[data-act="pick"]');if(!b||!S.vil)return;
+  e.stopImmediatePropagation();BWIN.sel[S.vil.near]=b.dataset.id;S.vil.ui='';sfx('ui');villageHud()},true);   // ui='': villageHud בונה מחדש רק כשמשהו נשמר השתנה
+
 // לכל מבנה: הלשונית הראשונה (שם וגוף), או null כשאין בו מה לעשות חוץ משדרוג (מרכז הכפר, ומבנה שעוד לא נבנה)
 function bwMain(k,L){
   if(L<1)return null;
   if(k==='stash')return{label:'📦 '+T('bw.tab.stash'),html:()=>stashHtml()};   // stash.js
   if(k==='market')return{label:'🛒 '+T('vil.trade'),html:()=>bwTrade(L)};
-  if(k==='forge')return{label:'⚒️ '+T('bw.tab.craft'),html:()=>'<div class="bwch"><b>'+T('forge.craft')+'</b><button class="vbtn bwall" data-act="forge">✨ '+T('age.open')+'</button></div><div class="bwcraft">'+forgeHtml()+'</div>'};   // gear.js
+  if(k==='forge')return{label:'⚒️ '+T('bw.tab.craft'),html:bwForge};
   if(VILLAGE.b[k].make)return{label:'📦 '+T('bw.tab.collect'),html:()=>bwProd(k,L),dot:vStock(k)>0};
   return null;
 }
