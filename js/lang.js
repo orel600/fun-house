@@ -1171,6 +1171,7 @@ const TEXT={
   'tip1.q':{he:(a,r,v)=>'איכות: <b>'+a+'</b> מטווח <bdi dir="ltr">'+r+'</bdi>. '+v,en:(a,r,v)=>'Quality: <b>'+a+'</b> of <bdi dir="ltr">'+r+'</bdi>. '+v},
   'tip1.q.good':{he:'גלגול גבוה.',en:'High roll.'},'tip1.q.mid':{he:'גלגול ממוצע.',en:'Average roll.'},'tip1.q.bad':{he:'גלגול נמוך.',en:'Low roll.'},
   'tip1.sklv':{he:n=>'שדרוג סקיל זמין: '+n+' הכוהנת, לשונית <b>סקילים</b>.',en:n=>'Skill upgrade available: '+n+' the Priestess, <b>Skills</b> tab.'},
+  'tip1.inn':{he:'משימה מהפונדק מוכנה. הקיצור פותח את דודה פלפל.',en:'An inn job is done. The shortcut opens Auntie Pepper.'},
   'tip1.mut':{he:'חוק יומי פעיל: XP ושלל מוגדלים. האייקון מציג אותו שוב.',en:'Daily rule active: bonus XP and loot. Tap the icon to review it.'},
   'tip1.depths':{he:'נפתח: <b>עומק הצל</b>. קומות בלי סוף, שלל משתפר, מוות בלי הפסד.',en:'Unlocked: <b>Shadow Depths</b>. Endless floors, rising loot, no death penalty.'},
   'tip1.nem':{he:n=>'נמסיס: <b>'+n+'</b>. מחכה באזור, חזק יותר בכל ניצחון שלו. שלל מיוחד כשנופל.',en:n=>'Nemesis: <b>'+n+'</b>. Waits in this zone, stronger with each win. Drops special loot.'},

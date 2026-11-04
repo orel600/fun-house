@@ -145,7 +145,7 @@ function innGear(id){if(S.wd&&typeof gQ==='function'&&gQ(id)>INN.qual)questEvent
 const INNV={t:0};
 function innTick(dt){if((INNV.t-=dt)>0)return;INNV.t=1;innRoll();innDot()}
 // הקיצור מופיע רק כשיש פרס שמחכה בפונדק (כמו 📦 האיסוף), כדי לא להעמיס את השורה העליונה
-function innDot(){const b=$('innBtn'),d=b&&b.querySelector('.innd');if(!d)return;const on=innReady();if(d.hidden===on){d.hidden=!on;b.hidden=!on}}
+function innDot(){const b=$('innBtn'),d=b&&b.querySelector('.innd');if(!d)return;const on=innReady();if(d.hidden===on){d.hidden=!on;b.hidden=!on;if(on&&typeof tipOnce==='function')tipOnce('inn',[],'#innBtn')}}   // טיפ ראשון (firsttips.js)
 
 (function(){const st=document.createElement('style');st.textContent=
   '.innbtn{position:relative}.innbtn .innd{position:absolute;top:2px;inset-inline-end:2px;width:10px;height:10px;border-radius:50%;background:var(--blood,#D8443A);box-shadow:0 0 0 2px #0008}.innbtn .innd[hidden]{display:none}'+
