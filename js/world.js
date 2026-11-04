@@ -202,7 +202,7 @@ function enterWorld(at,reg){
   const seen=SAVE.regSeen||(SAVE.regSeen={});if(!seen[reg]){seen[reg]=1;saveNow();feedTitle(T(R.enter||'w.enter'),C.gold)}
   worldUi(true);
   fishMealOn();   // ארוחה מהפונדקאית: חיזוק בעולם (fishing.js)
-  challengeEnter();huntEnter();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js)
+  challengeEnter();huntEnter();nemEnter();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js), נמסיס שמחכה באזור (nemesis.js)
   wmapVisit(reg);     // מפת העולם: ביקרת כאן (worldmap.js)
   if(reg!=='meadow')questEvent('story',reg);   // קווסט עלילה "להגיע לאגם" (quests.js)
 }
@@ -294,7 +294,7 @@ function worldUpdate(dt){
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
-  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
+  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);nemUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
   dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
@@ -312,6 +312,7 @@ function worldUpdate(dt){
 
 /* ---- מוות בעולם: חצי מכל משאב בתרמיל הולך, הפריטים והמחסן נשארים. נקרא מ-gameOver ---- */
 function worldDeath(){
+  nemOnDeath();   // מי שהפיל אותך נהיה נמסיס (nemesis.js)
   S.mode='over';joy=null;
   const lost={},k=RES.deathLoss.resources;   // resources.js
   for(const r in SAVE.bag){if(!resOf(r))continue;const n=Math.floor(SAVE.bag[r]*k);if(n>0){bagTake(r,n);lost[r]=n}}
