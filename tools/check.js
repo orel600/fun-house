@@ -1397,7 +1397,7 @@ function worldBot(m,L,god){
         r.cd=Math.abs(S.sk.cd[i]-WSKBOOK.list.meteor.cd0*WSKLVL.cd[5])<0.05;skillsHud();wslBadges();const sb=document.querySelector('#skills .skb[data-sk="meteor"] .wslb');r.btn=sb?sb.textContent:'';
         wsbOpenUi();wslBadges();const kb=document.querySelector('#ovBook .wsbc[data-wsbid="meteor"] .wslb');r.book=kb?kb.textContent:'';wsbClose()}
       for(const x of enemies)x.dead=true;enemies=[];run(2)}catch(err){r.err=String(err&&err.stack||err)}
-    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+    if(SKR)skrEnd(false);worldUi(false);if(!vil)villageUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // שלב 3 בסקילים (wcombo.js): בוער שמת מדליק את השכן (התפשטות), סקיל של הצייד מסמן טרף והריגה של מסומן מקצרת קירור,
   // והסטט "נזק שילובים" מגיע מכוח על ציוד ומהעץ. אחר כך הכל חוזר
   const wst=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
