@@ -19,7 +19,7 @@ const DECO={
   grow:0.5,          // כל עותק שכבר יש מעלה את המחיר של הבא ב-50% מהמחיר הראשון
   // המקומות: רשת כל step פיקסלים בתוך הכפר. gap: מרחק ממבנים, path: משבילים, near: מתושבים, פנסים וקישוטים קבועים. max: כמה מקומות לכל היותר
   slot:{step:85,edge:70,gap:50,path:44,near:52,plaza:110,max:36},
-  mapIcon:{center:'🏰',forge:'⚒️',mill:'🪵',mine:'⛏️',market:'⚖️',stash:'📦'},
+  mapIcon:{center:'🏰',forge:'⚒️',mill:'🪵',mine:'⛏️',market:'⚖️',stash:'📦',inn:'🍲'},
   visitShow:12,      // כמה סוגים לכל היותר בשורה בחלון הביקור
   sel:null           // מה נבחר במפה: {put:i} קישוט שעומד, או {own:k} קישוט מהמחסן
 };

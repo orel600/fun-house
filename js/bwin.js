@@ -81,6 +81,7 @@ function bwMain(k,L){
   if(k==='stash')return{label:'📦 '+T('bw.tab.stash'),html:()=>stashHtml()};   // stash.js
   if(k==='market')return{label:'🛒 '+T('vil.trade'),html:()=>bwTrade(L)};
   if(k==='forge')return{label:'⚒️ '+T('bw.tab.craft'),html:bwForge};
+  if(k==='inn'){const s=innSvcs('inn')[0];return{label:s.label,html:s.html,dot:s.dot}}   // הלוח בפונדק (inn.js)
   if(VILLAGE.b[k].make)return{label:'📦 '+T('bw.tab.collect'),html:()=>bwProd(k,L),dot:vStock(k)>0};
   return null;
 }
@@ -89,6 +90,7 @@ function bwBuilding(k){
   const L=vLv(k),main=bwMain(k,L),tabs=[];
   if(main)tabs.push({id:'main',label:main.label,dot:main.dot});
   if(k==='market'&&L&&typeof decoTab==='function')tabs.push(decoTab());   // חנות קישוטים (deco.js)
+  if(k==='inn'&&L)tabs.push(innSvcs('inn')[1]);   // מנוחה (inn.js)
   if(!main||vBlock(k)!=='max')tabs.push({id:'up',label:L?'⬆️ '+T('bw.tab.up'):'🔨 '+T('bw.tab.build'),dot:!!main&&!vBlock(k)});
   const TB=S.vil.tab||(S.vil.tab={});let cur=TB[k];if(!tabs.some(t=>t.id===cur))cur=tabs[0].id;
   return bwHead(T('vil.'+k)+(L?' <small>'+T('level',L)+'</small>':''),T(k==='stash'&&L?'bw.why':'bw.do.'+k),tabs,cur,k==='market'||k==='forge'?bwCoins():'')+
@@ -98,7 +100,7 @@ function bwBuilding(k){
 /* ---- תושבים עם שירות: הפונדקאית מבשלת, ומי שעברה מהעולם קונה או מחליפה ---- */
 // השירותים של תושב, כלשוניות ליד "שיחה". השיחה והקווסטים נשארים בלשונית הראשונה, כדי שהשירות לא יתערבב בהם
 function npcSvcs(id){
-  const s=[];
+  const s=innSvcs(id);   // הפונדקאית: הלוח והמנוחה (inn.js)
   if(id===FISH.cookAt)s.push({id:'cook',label:'🍳 '+T('bw.cook'),html:()=>'<p class="bwlead">'+T('bw.cookWhy')+'</p>'+fishCookHtml()});   // fishing.js
   const R=NPC.list[id]&&NPC.list[id].serve&&RESID.list[NPC.list[id].serve];
   if(R)s.push({id:'serve',label:R.sign+' '+T('rsd.'+NPC.list[id].serve+'.t'),html:()=>resHtml(id)});   // residents.js

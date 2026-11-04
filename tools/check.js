@@ -2252,6 +2252,29 @@ function worldBot(m,L,god){
   check(bw.fTiles>1&&bw.fPick&&bw.fBuy&&bw.fPoor&&bw.fReq,'חלון הנפחייה (itemcard.js): '+bw.fTiles+' חפצים ברשימה'+(bw.fPick?', נגיעה מציגה כרטיס עם מספר כוח':', הבחירה לא עובדת')+(bw.fBuy?', קנייה מהכרטיס עובדת':', הקנייה לא עברה')+(bw.fPoor?', בלי מספיק הכפתור אפור':', הכפתור לא אפור כשחסר')+(bw.fReq?', דרישות באדום':', הדרישות לא מוצגות'));
   check(!bw.bad.length&&bw.n===bw.all&&bw.allIn&&bw.allOut&&bw.buy&&bw.closed,'חלונות המבנים: '+bw.n+'/'+bw.all+' בתבנית אחת (שם, מה עושים, לשוניות, ✕)'+(bw.bad.length?', בעיות: '+bw.bad.join(' | '):'')+
     (bw.allIn?', "הכל למחסן" עובד':', "הכל למחסן" לא עובד')+(bw.allOut?', "הכל לתרמיל" עובד':', "הכל לתרמיל" לא עובד')+(bw.buy?', קנייה בשוק עובדת':bw.buyBtn?', הקנייה לא עברה':', אין כפתור קנייה')+(bw.closed?'':', לא נסגר'));
+  // הפונדק (inn.js): הקיצור 🍲 פותח את דודה פלפל, לוח עם 3 משימות, לוקחים אחת, מסיימים, נקודה אדומה, אוספים פרס, ומנוחה שנותנת XP בכניסה לעולם
+  const inn=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={},$d=()=>document.querySelector('#innBtn .innd');
+    try{SAVE.story.earth=true;SAVE.inn={};npcTalk(null);enterVillage();$('ovDaily').hidden=true;
+      const b=$('innBtn');o.btn=!!b&&!!b.getBoundingClientRect().width;if(b)b.click();const dlg=$('npcDlg');o.open=!dlg.hidden&&S.vil.dlg==='inn';
+      o.n=dlg.querySelectorAll('.innboard .qc').length;o.rum=!!dlg.querySelector('.innrum');
+      if(LANG==='en'&&/[֐-׿]/.test(dlg.innerText))o.leak=dlg.innerText.trim().slice(0,80);
+      const acc=dlg.querySelector('[data-act="innaccept"]'),id=acc&&acc.dataset.q,q=QBY[id];o.id=id;if(acc)acc.click();o.on=!!(id&&QS().active[id]);
+      innTick(1);o.dot0=$d().hidden;
+      if(q)q.obj.forEach(ob=>questEvent(ob.type,ob.what||null,ob.n));   // מסיימים: מדווחים בדיוק את מה שהמטרה מבקשת
+      innTick(1);o.dot=!$d().hidden;
+      const c0=SAVE.bag.coins||0;npcDialog();const cl=dlg.querySelector('[data-act="innclaim"]');o.claim=!!cl;if(cl)cl.click();
+      o.paid=!!q&&(SAVE.bag.coins||0)===c0+q.reward.coins;o.gone=!!q&&!QS().active[id]&&!qOpen(q);innTick(1);o.dotOff=$d().hidden;
+      S.vil.dlgTab='rest';npcDialog();const r=dlg.querySelector('[data-act="innRest"]');o.restBtn=!!r;if(r)r.click();o.armed=!!SAVE.inn.arm;
+      npcTalk(null);enterWorld('home');for(const e of enemies)e.dead=true;innUpdate(0.1);innUpdate(1.1);
+      o.xp=innXpK()>1;o.chip=!!$('innChip')&&!$('innChip').hidden;
+      const e=addEnemy('grunt',P.x+300,P.y,1),w=QBY.iWeak;QS().active.iWeak={p:[0]};e.lt=w.obj[0].what;innKill(e);o.weak=QS().active.iWeak.p[0]===1;delete QS().active.iWeak;e.dead=true;
+      enterVillage()}
+    finally{const d=JSON.parse(bak);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,d);saveNow();if(S.vil){S.vil.ui='';villageHud()}}
+    return o});
+  check(inn.btn&&inn.open&&inn.n===3&&inn.rum&&inn.on&&inn.dot0&&inn.dot&&inn.claim&&inn.paid&&inn.gone&&inn.dotOff&&inn.restBtn&&inn.armed&&inn.xp&&inn.chip&&inn.weak&&!inn.leak,
+    'הפונדק (inn.js): '+(inn.btn&&inn.open?'הקיצור 🍲 פותח את דודה פלפל':'הקיצור לא פותח את הפונדק')+', '+inn.n+' משימות על הלוח'+(inn.rum?' ושמועה':', בלי שמועה')+
+    (inn.on?', לקחתי את '+inn.id:', הלקיחה נכשלה')+(inn.dot0&&inn.dot?', נקודה אדומה כשהיא מוכנה':', הנקודה האדומה לא עובדת')+(inn.claim&&inn.paid&&inn.gone?', הפרס נאסף והמשימה ירדה מהלוח':', האיסוף נכשל')+
+    (inn.dotOff?'':', הנקודה נשארה')+(inn.restBtn&&inn.armed&&inn.xp&&inn.chip?', מנוחה: +XP ושבב בעולם':', המנוחה לא עובדת')+(inn.weak?', הריגה בסוג הנזק נספרת':', הריגה בסוג הנזק לא נספרת')+(inn.leak?', עברית באנגלית: '+inn.leak:''));
   // קפיצה בין פנסים (travel.js): בשער בכפר "לאן?" עם הפנסים הדולקים, קפיצה לאגם ליד פנס המים, "חזרה לכפר" ליד הפנס (לא באמצע קרב), וקפיצה ממפת העולם
   const lj=await page.evaluate(()=>{const o={};SAVE.story.water=true;P.inv=99;npcTalk(null);enterVillage();$('ovDaily').hidden=true;
     S.vil.gate=true;S.vil.open='gate';S.vil.ui='';villageHud();o.list=document.querySelectorAll('#vPanel [data-act="jump"]').length;o.lit=travelLit().length;
