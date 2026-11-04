@@ -21,7 +21,11 @@ const WSKBOOK={
     vines: {ic:'🌿',dt:'earth',    cls:'hunter', lv:6,cd:9, dmg:0.8, kind:'pull',  r:240,pull:640,root:2,self:1},    // שורשים מושכים את כולם אל הגיבור ותוקעים אותם (ואז פיזי = ננעץ, wcombo.js)
     spirit:{ic:'🫧',dt:'water',    cls:'mage',   lv:2,cd:12,dmg:0.6, kind:'summon',r:240,t:7,tick:0.6,self:1},       // רוח מים שמרחפת ליד הגיבור ויורה (רטוב + ברק/קרח = קומבו)
     storm: {ic:'⛈️',dt:'lightning',cls:'mage',   lv:4,cd:11,dmg:0.8, kind:'storm', r:240,t:4,tick:0.45,self:1},      // ענן שהולך עם הגיבור ומכה באויב אקראי
-    meteor:{ic:'☄️',dt:'fire',     cls:'mage',   lv:6,cd:9, dmg:3.5, kind:'meteor',r:125,delay:0.9,push:260,stop:0.07}   // מטאור: סימון על הקרקע, ואחרי רגע פיצוץ ענק. push: הדיפה, stop: עצירה קצרה בפגיעה
+    meteor:{ic:'☄️',dt:'fire',     cls:'mage',   lv:6,cd:9, dmg:3.5, kind:'meteor',r:125,delay:0.9,push:260,stop:0.07},   // מטאור: סימון על הקרקע, ואחרי רגע פיצוץ ענק. push: הדיפה, stop: עצירה קצרה בפגיעה
+    // סבב שני (4.11): סקיל רביעי לכל דמות. מה כל kind עושה: js/wskx.js
+    petrify:{ic:'🗿',dt:'earth',    cls:'warrior',lv:9,cd:13,dmg:0.7, kind:'petrify',r:150,stone:3,self:1},        // קללת הגרניט: מי שקרוב הופך לאבן ל-stone שניות (הבוס רק מואט). ואז פיזי = ניפוץ אבן (wcombo.js)
+    chain: {ic:'🔗',dt:'lightning',cls:'hunter', lv:9,cd:8, dmg:1.1, kind:'chain',  r:30,jumps:3,jump:170,wetJump:280,wetK:1.4},   // שרשרת ברק: קופץ בין jumps אויבים עד jump. רטוב: עד wetJump, פי wetK, ועוד קפיצה
+    vortex:{ic:'🌪️',dt:'water',    cls:'mage',   lv:9,cd:12,dmg:0.3, kind:'vortex', r:160,t:3,tick:0.5,pull:300}   // מערבולת: שואבת למרכז במהירות pull ומרטיבה (ואז ברק = חשמול, קרח = קפוא)
   }
 };
 // נרשמים ליד הסקילים של הזירה, כדי שהכפתורים (skillsHud), רגע הגילוי והכוונת יכירו אותם. בזירה אף אחד לא מוסיף אותם
@@ -101,6 +105,7 @@ function wsbCast(id,D,tg,base,col,vis,F){
     case 'zone':Object.assign(o,{x:tg.x,y:tg.y,dur:D.t,tick:0});break;
     case 'trap':Object.assign(o,{x:tg.x,y:tg.y,dur:D.life});break;
     case 'meteor':Object.assign(o,{x:tg.x,y:tg.y,dur:D.delay+0.45});break;
+    default:if(typeof WSBX!=='undefined'&&WSBX[D.kind])WSBX[D.kind].cast(o,D,tg,id);   // הסבב השני (wskx.js)
   }
   if(!wsbLess())sparks(P.x,P.y-10,col,8,160);
   L.push(o);
@@ -130,6 +135,7 @@ function wsbUpdate(dt){
           S.sk.fx.push({ring:1,x:o.x,y:o.y,r:o.r,t:0,max:0.45*themeK(),col:o.col});if(!wsbLess())S.sk.fx.push({ring:1,x:o.x,y:o.y,r:o.r*1.3,t:0,max:0.6*themeK(),col:o.col});
           for(const e of wsbIn(o.x,o.y,o.r)){wsbHit(e,o.id,o.base,o,o.dt);const a=Math.atan2(e.y-o.y,e.x-o.x),p=(D.push||0)*(e.isBoss?0.2:1);e.kx+=Math.cos(a)*p;e.ky+=Math.sin(a)*p}
           if(!(typeof VFX3D!=='undefined'&&VFX3D.on()))sparks(o.x,o.y,o.col,wsbLess()?8:24,300);S.shake=Math.max(S.shake,wsbLess()?3:8);if(D.stop&&typeof jStop==='function')jStop(D.stop,true);sfx('hit')}break;   // בתלת-ממד הניצוצות מ-skfx3d-meteor.js
+      default:if(typeof WSBX!=='undefined'&&WSBX[o.k])WSBX[o.k].tick(o,D,dt);   // הסבב השני (wskx.js)
     }}
   S.wsb.fx=L.filter(o=>o.t<o.dur);
 }
@@ -157,6 +163,7 @@ function wsbDraw(){
       case 'meteor':{const D=o.D||SKILLS.list.meteor;if(o.boom)break;const f=o.t/D.delay;
         ctx.globalAlpha=0.6;ctx.lineWidth=3;ctx.beginPath();ctx.arc(o.x,o.y,o.r*(1-f*0.5),0,7);ctx.stroke();ctx.globalAlpha=0.15;ctx.fill();
         ctx.globalAlpha=1;ctx.beginPath();ctx.arc(o.x+(1-f)*120,o.y-(1-f)*320,14*o.vis,0,7);ctx.fill();break}
+      default:if(typeof WSBX!=='undefined'&&WSBX[o.k])WSBX[o.k].draw(o,k,less);   // הסבב השני (wskx.js)
     }}
   ctx.restore();
 }

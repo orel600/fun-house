@@ -1250,6 +1250,42 @@ function worldBot(m,L,god){
         catch(err){r.bad.push(id+':'+String(err))}}
       for(const x of enemies)x.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // הסבב השני בספר (wskx.js): קללת הגרניט מאבנת ואז מכה פיזית מנפצת לנזק כפול (והבוס רק מואט), שרשרת הברק קופצת בין 3,
+  // ובאויבים רטובים רחוק יותר ועוד קפיצה, והמערבולת שואבת ומרטיבה. בתלת-ממד: לכל אחד מתכון, חלקיקים, גם באיכות נמוכה, והכל משתחרר
+  const wskx=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={bad:[],d3:[]},rnd=Math.random;let sd=31;Math.random=()=>(sd=sd*16807%2147483647)/2147483647;
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();enterWorld('home');enemies=[];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60);VFX3D.step(1/60)}};
+      const mk=(dx,dy,boss)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=boss?60:0;e.dmg=0;if(boss)e.isBoss=true;return e};
+      const clear=()=>{for(const x of enemies)x.dead=true;enemies=[];run(0.05)};
+      const cast=id=>{SAVE.hero.skLoad=[id,null];run(0.05);if(SKR)skrEnd(false);const i=S.sk.ids.indexOf(id);if(i<0)return false;S.sk.cd[i]=0;const ok=wskUse(id);if(SKR)skrEnd(false);return ok};
+      run(0.05);const d3=VFX3D.on();
+      // קללת הגרניט
+      clear();let a=mk(60,0),b=mk(-60,0,true);
+      r.pCast=cast('petrify');run(0.1);r.stone=a.stone>0&&!(b.stone>0);r.bossSlow=b.slow>0;
+      const ax=a.x;a.speed=120;run(0.3);r.still=Math.abs(a.x-ax)<4;r.moved=Math.round(a.x-ax);
+      r.pOwn=d3?S.wsb.fx.some(o=>o.id==='petrify'&&SKFX3D.owns(o))&&VFX3D.parts()>0:true;
+      const rr=Math.random;Math.random=()=>0.99;   // בלי מכה קריטית
+      const c0=wcStat.crush||0,h0=a.max-a.hp;damage(a,100,'skill',0,'physical');const h1=a.max-a.hp-h0;damage(a,100,'skill',0,'physical');const h2=a.max-a.hp-h0-h1;Math.random=rr;
+      r.crush=(wcStat.crush||0)>c0&&!(a.stone>0)&&h1>=h2*1.9;r.crushDmg=Math.round(h1)+'/'+Math.round(h2);
+      // שרשרת ברק: חמישה יבשים צפופים: 3 קפיצות. חמישה רטובים: 4. ושניים במרחק 230 (מעבר לקפיצה רגילה): יבשים פעם אחת, רטובים פעמיים
+      const pack=wt=>[[50,0],[80,30],[80,-30],[110,0],[60,50]].map(([x,y])=>{const e=mk(x,y);if(wt)e.wet=9;return e});
+      const hops=(wt,make)=>{clear();const L=make(wt),h=wskxStat.hops;r.cCast=cast('chain')&&r.cCast!==false;run(1);return [wskxStat.hops-h,L.filter(e=>e.hp<e.max).length]};
+      const s0=SKFX3D.stat.start;[r.dryHops,r.dryHit]=hops(false,pack);r.cOwn=d3?SKFX3D.stat.start>s0:true;
+      const w0=wskxStat.wetHops;[r.wetHops]=hops(true,pack);r.wetPlus=wskxStat.wetHops>w0;
+      const far=wt=>[mk(60,0),mk(60,0)].map((e,i)=>{if(i){e.x=P.x-220;e.y=P.y}else e.x=P.x+60;if(wt)e.wet=9;return e});
+      const fd=hops(false,far)[0],fw=hops(true,far)[0];r.far=fd===1&&fw===2;r.farN=fd+'/'+fw;
+      // מערבולת
+      clear();const v=[mk(60,0),mk(0,70),mk(-50,-40)];
+      r.vCast=cast('vortex');run(0.2);const o=S.wsb.fx.find(x=>x.id==='vortex');
+      r.vOwn=d3?!!o&&SKFX3D.owns(o)&&VFX3D.parts()>=0:true;
+      if(o){const dd0=v.map(e=>Math.hypot(e.x-o.x,e.y-o.y));run(1.2);const dd1=v.map(e=>Math.hypot(e.x-o.x,e.y-o.y));
+        r.pull=dd1.every((d,i)=>d<dd0[i]||d<20);r.wet=v.every(e=>e.wet>0)}
+      run(3);clear();run(6);r.end=!S.wsb.fx.length&&(!d3||(VFX3D.n()===0&&SKFX3D.n()===0));
+      // איכות נמוכה: אותם סקילים בלי שגיאה ובלי אור, ופחות חלקיקים
+      if(d3){const q=SAVE.vfxQ;SAVE.vfxQ='lo';for(const id of ['petrify','chain','vortex']){clear();mk(60,0);mk(200,0);const ok=cast(id);run(0.4);r.d3.push(id+':'+VFX3D.parts());if(!ok)r.bad.push(id+':לא הוטל באיכות נמוכה')}
+        clear();run(6);r.loEnd=VFX3D.n()===0&&SKFX3D.n()===0;SAVE.vfxQ=q}else r.loEnd=true;
+      r.is3d=d3}catch(err){r.err=String(err&&err.stack||err)}
+    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}Math.random=rnd;return r});
   /* אפקטים בתלת-ממד לסקילי הקוסם ולפיוחו (skfx3d-spirit.js, skfx3d-storm.js, petfx3d.js):
      רוח מים יורה ומתיז, ענן הסערה מוריד ברקים, האש של פיוחו יוצאת מהזנב ומהפה בנשיכה, והתנועה שלה חלקה (בלי עצירות פתאום) */
   const vfx2=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
@@ -2895,6 +2931,10 @@ function worldBot(m,L,god){
     [vfx.fall?'נופל עם '+vfx.p1+' חלקיקים':'אין חלקיקים בנפילה',vfx.skip2d?'הציור הישן מדלג':'הציור הישן לא מדלג',vfx.boom?'פיצוץ עם '+vfx.p2+' חלקיקים':'אין פיצוץ',vfx.hit?'פוגע':'לא פגע',vfx.end?'נגמר ומשחרר':'לא השתחרר'].join(' · '))));
   check(!vfxh.err&&!vfxh.bad.length&&(!vfxh.d3||vfxh.ok.length===3),'אפקטים לסקילי הצייד: '+(vfxh.err||(!vfxh.d3?'דו-ממד, הציור הישן':
     ['עובדים: '+vfxh.ok.join(', '),vfxh.bad.length?'נכשלו: '+vfxh.bad.join(', '):''].filter(Boolean).join(' · '))));
+  check(!wskx.err&&!wskx.bad.length&&wskx.pCast&&wskx.stone&&wskx.bossSlow&&wskx.still&&wskx.crush&&wskx.pOwn&&wskx.cCast&&wskx.dryHops===3&&wskx.dryHit>=3&&wskx.cOwn&&wskx.wetHops===4&&wskx.wetPlus&&wskx.far&&wskx.vCast&&wskx.vOwn&&wskx.pull&&wskx.wet&&wskx.end&&wskx.loEnd,
+    'סבב שני בספר: '+(wskx.err||[wskx.stone&&wskx.still?'גרניט מאבן':'גרניט לא מאבן ('+(wskx.stone?'':'אין אבן ')+'זז '+wskx.moved+')',wskx.bossSlow?'הבוס מואט':'הבוס לא מואט',wskx.crush?'ניפוץ אבן '+wskx.crushDmg:'אין ניפוץ אבן',
+      'ברק: '+wskx.dryHops+' קפיצות, ברטובים '+wskx.wetHops+', רחוק '+wskx.farN,wskx.pull&&wskx.wet?'מערבולת שואבת ומרטיבה':'מערבולת לא שואבת/מרטיבה',
+      wskx.is3d?(wskx.pOwn&&wskx.cOwn&&wskx.vOwn?'מתכונים בתלת-ממד':'חסר מתכון')+' · נמוכה '+wskx.d3.join(' '):'דו-ממד',wskx.end&&wskx.loEnd?'נגמרים':'לא נגמרו'].join(' · '))+(wskx.bad.length?' ✗ '+wskx.bad.join(' · '):'')+(()=>{const no=['pCast','stone','bossSlow','still','crush','pOwn','cCast','cOwn','wetPlus','far','vCast','vOwn','pull','wet','end','loEnd'].filter(k=>!wskx[k]);return no.length?' ✗ '+no.join(','):''})());
   check(!vfxw.err&&!vfxw.bad.length,'אפקטים לסקילי הלוחם: '+(vfxw.err||(!vfxw.d3?'דו-ממד, הציור הישן':vfxw.ok.join(' · ')))+(vfxw.bad.length?' ✗ '+vfxw.bad.join(' · '):''));
   {const v=vfx2,m=v.move||{};
     check(!v.err&&m.stops===0&&m.jerk<9&&m.flips<=6,'פיוחו זזה חלק: '+(v.err||'קפיצות מהירות '+m.jerk+' (עד 9), עצירות פתאום '+m.stops+' (צריך 0), חילופי הליכה/ריצה '+m.flips+' (עד 6)'));
