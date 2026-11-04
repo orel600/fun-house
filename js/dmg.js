@@ -79,7 +79,7 @@ function dmgUpdate(dt){
   const F=DMG.types.fire;
   for(const e of enemies){
     if(e.dead)continue;
-    if(e.slow>0)e.slow-=dt;if(e.wet>0)e.wet-=dt;if(e.stun>0)e.stun-=dt;if(e.frozen>0)e.frozen-=dt;
+    if(e.slow>0)e.slow-=dt;if(e.wet>0)e.wet-=dt;if(e.stun>0&&!e.warden)e.stun-=dt;if(e.frozen>0)e.frozen-=dt;
     const b=e.burn;if(!b)continue;
     const d=Math.min(b.dps*dt,b.dps*b.t);e.hp-=d;b.acc+=d;b.t-=dt;b.tick-=dt;P.track.types.fire+=d;
     if(b.tick<=0&&b.acc>=1){b.tick=0.5;floatText(e.x+rand(-6,6),e.y-e.r-4,big(b.acc),F.col,11,true);b.acc=0}

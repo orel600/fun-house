@@ -2130,6 +2130,27 @@ function worldBot(m,L,god){
     (ch6.warden?', הצל קם':', הצל לא קם')+(ch6.learn&&ch6.learnAll?' ולמד (עמיד לאש בכל השלבים)':', לא למד')+', שלבים: '+(ch6.phases||'-')+(ch6.shoot&&ch6.ring&&ch6.marks?' עם ההתקפות של השומרים':', התקפה של שלב חסרה')+(ch6.ready?', הופל':', לא הופל')+
     (ch6.back?', חזרה למגדלים':', החזרה למגדלים שבורה')+(ch6.lit?', הפנס הלבן נדלק':', הפנס הלבן לא נדלק')+', '+(ch6.cheer||0)+' תושבים מריעים'+(ch6.head?', ראש הכפר מדבר':', ראש הכפר שותק')+
     (ch6.end?', "תודה ששיחקת" ('+ch6.rows+' שורות: '+(ch6.sum?ch6.sum.time+' · '+ch6.sum.kills+' · '+ch6.sum.secrets+' · '+ch6.sum.fish:'')+')':', בלי מסך סיום')+(ch6.saved?'':', לא נשמר')+(ch6.goOn?' וממשיכים לשחק':', אי אפשר להמשיך'));
+  // עומק הצל (depths.js): אחרי הסוף נפתח שביל בלב הצל. קומה אחרי קומה, קשה יותר ושלל טוב יותר, בוס כל 5, יציאה בכל רגע, מוות בלי הפסד, ושיא שנשמר
+  const dp=await page.evaluate(()=>{
+    const o={},st0=JSON.stringify(SAVE.story),best0=SAVE.depths&&SAVE.depths.best,kill=()=>{for(let r=0;r<5;r++){for(const e of enemies.slice())if(!e.dead&&!e.pack&&!e.evt)damage(e,e.max*10,'sword',0,'water');for(let i=0;i<4;i++)worldUpdate(0.016)}};   // כמה סבבים: חוק יומי שמפצל אויבים (mutation.js)
+    SAVE.story.end=false;enterWorld('home','shadow');o.closed=!wGates().depths;SAVE.story.end=true;enterWorld('home','shadow');o.open=!!wGates().depths;
+    SAVE.depths.best=0;P.inv=999;wGo('depths');o.f1=S.wd.dp===1&&/^dp_/.test(S.wd.reg);worldHud();o.hud=$('wName').textContent.includes('1');
+    const ty=new Set(enemies.filter(e=>!e.dead&&e.home!=null).map(e=>e.type));o.foes=enemies.filter(e=>!e.dead&&e.home!=null).length;o.types=ty.size;
+    const hp1=WR().zones[0].hp;o.shut=!wGates().deeper;
+    kill();o.clear=!!S.wd.dpClear&&!!wGates().deeper;o.got=(S.wd.dpGot||[]).length;o.q=(S.wd.dpGot||[]).every(id=>gQ(id)>=DEPTHS.loot.q.min);
+    wGo('deeper');o.f2=S.wd.dp===2&&WR().zones[0].hp>hp1&&SAVE.depths.best===2;
+    depthsEnter(5);const w=S.wd.warden;o.boss=!!w&&w.type==='shade'&&w.dpBoss;
+    if(w)damage(w,w.max*10,'sword',0,'water');kill();o.bossWin=!!S.wd.dpClear&&(S.wd.reGot||[]).length>0;
+    depthsEnter(30);kill();o.legend=(S.wd.dpGot||[]).some(id=>(gItem(id)||{}).tier===4);o.f30=WR().zones[0].hp/hp1;
+    SAVE.bag.wood=(SAVE.bag.wood||0)+10;const wood=SAVE.bag.wood;P.hp=0;gameOver();o.keep=SAVE.bag.wood===wood&&$('wLost').textContent.includes('30');
+    $('wRespawn').click();o.home=!!S.vil;
+    depthsEnter(3);S.wd.near='home';$('wGo').click();o.exit=!!S.vil;
+    o.saved=JSON.parse(localStorage.getItem(SAVE_STORE.key)).depths.best===30;
+    SAVE.story=JSON.parse(st0);SAVE.depths.best=best0||0;saveNow();return o});
+  check(dp.closed&&dp.open&&dp.f1&&dp.hud&&dp.foes>0&&dp.types>1&&dp.shut&&dp.clear&&dp.got>0&&dp.q&&dp.f2&&dp.boss&&dp.bossWin&&dp.legend&&dp.f30>3&&dp.keep&&dp.home&&dp.exit&&dp.saved,
+    'עומק הצל: '+(dp.closed&&dp.open?'השביל נפתח רק אחרי הסוף':'השביל לא תלוי בסוף')+(dp.f1&&dp.hud?', קומה 1':', לא נכנס לקומה 1')+', '+dp.foes+' אויבים מ-'+dp.types+' סוגים'+(dp.shut&&dp.clear?', השער למטה נפתח אחרי ניקוי':', השער למטה שבור')+
+    ', '+dp.got+' חפצים בתיבה'+(dp.q?'':' (איכות נמוכה!)')+(dp.f2?', קומה 2 קשה יותר':', קומה 2 לא קשה יותר')+(dp.boss&&dp.bossWin?', בוס בקומה 5 והופל':', הבוס בקומה 5 חסר')+(dp.legend?', אגדי בקומה 30':', בלי אגדי בעומק')+' (חיים פי '+(Math.round((dp.f30||0)*10)/10)+')'+
+    (dp.keep?', מוות בלי הפסד':', מוות מאבד שלל!')+(dp.home?' וחזרה לכפר':'')+(dp.exit?', יציאה בשער':', היציאה שבורה')+(dp.saved?', השיא נשמר':', השיא לא נשמר'));
   // כל פנס שנדלק משנה את הכפר (homecoming.js): בכניסה הבאה לכפר התושב חוזר, העמוד שלו דולק, ראש הכפר מספר, ובעולם נופל חפץ ביסוד של הפנס
   const hm=await page.evaluate(()=>{
     const o={},b0=SAVE.home.back;SAVE.home.back={};
@@ -2298,6 +2319,41 @@ function worldBot(m,L,god){
   check(chl.same&&chl.many>=3&&chl.tag&&chl.rule&&chl.n===chl.goal&&chl.coins&&chl.noWorld&&chl.got>=chl.want&&chl.once&&chl.saved&&chl.owed&&chl.tag2,
     'אתגר יומי: '+chl.many+' חוקים שונים ב-8 ימים, '+(chl.tag?'סימן בפס העליון':'אין סימן בעולם')+', '+(chl.rule?'החוק נכנס לאויב':'החוק לא נכנס לאויב')+', '+chl.n+'/'+chl.goal+' הריגות'+
     (chl.noWorld?', לא נאסף בעולם':', נאסף בעולם')+', בכפר +'+chl.got+' מטבעות'+(chl.once?' פעם אחת':' יותר מפעם')+(chl.saved?', נשמר':', לא נשמר')+(chl.owed?', פרס מאתמול מחכה':', פרס מאתמול אבד')+(chl.coins?'':', אין מטבעות מהחוק')+(chl.tag2?'':', הסימן נשאר בכפר')+(chl.same?'':', החוק לא קבוע לתאריך'));
+  // מוטציה יומית (mutation.js): אותו חוק לאותו תאריך, כל חוק נכנס לעולם ועובד, פרס מוגדל, פס בכניסה, סגור לפני פנס האדמה ומחוץ לעולם
+  const mut=await page.evaluate(()=>{
+    const o={},e0=SAVE.story.earth,days=Array.from({length:30},(_,i)=>'2026-12-'+(i+1));
+    o.same=mutRule('2026-11-4')===mutRule('2026-11-4');o.many=new Set(days.map(d=>mutRule(d))).size;
+    SAVE.story.earth=true;o.noDup=days.every(d=>MUTATION.rules[mutRule(d)].dup!==chRule(d));
+    SAVE.story.earth=false;MUT.force='giants';enterWorld('home');o.shut=!mutNow()&&!enemies.some(x=>x.mut);SAVE.story.earth=true;
+    const R={},cnt=()=>enemies.filter(x=>!x.dead&&!x.creature&&x.home!=null&&!x.wanted&&!x.hunt).length;
+    MUT.force='thirst';enterWorld('home');const base=cnt();R.thirst=mutK('regen')<1;
+    for(const id in MUTATION.rules){MUT.force=id;enterWorld('home');
+      const e=enemies.find(x=>!x.dead&&x.mut&&!x.creature),et=e&&ETYPES[e.type];let ok=!!e;
+      if(id==='giants')ok=ok&&cnt()<base&&e.r>et.r*1.2;
+      if(id==='swarm')ok=ok&&cnt()>base;
+      if(id==='fire'||id==='frost'){const t=id==='fire'?'fire':'ice',C_=CHALLENGE.rules[chRule()],ck=C_.type?(t===C_.type?C_.boost:C_.cut):1;ok=ok&&e.mult[t]>=(et.mult[t]??1)*ck*1.45}   // ck: גם האתגר היומי משנה מכפילים
+      if(id==='rain'){e.wet=0;e.mw=0;mutUpdate(1/60);ok=ok&&e.wet>0;e.wet=0.5;for(let i=0;i<60;i++)dmgUpdate(1/60);ok=ok&&!(e.wet>0)}   // רטוב שוב, ורטיבות נגמרת בעולם (dmgUpdate)
+      if(id==='fire'){e.hp=e.max=1e6;damage(e,1,'sword',0,'physical');mutUpdate(1/60);ok=ok&&!!e.burn;const h=e.hp;for(let i=0;i<60;i++)dmgUpdate(1/60);ok=ok&&e.hp<h}
+      if(id==='gold')ok=ok&&e.speed>0;
+      if(id==='wanted'){S.wn.e=null;S.wn.rumor=null;S.wn.t=100;mutUpdate(1);ok=ok&&S.wn.t<=98.5}
+      if(id==='fog'){try{mutDraw()}catch(err){ok=false}}
+      if(id==='split'){const n0=enemies.filter(x=>!x.dead&&x.mutKid).length;kill(e);const kids=enemies.filter(x=>!x.dead&&x.mutKid);ok=ok&&kids.length===n0+MUTATION.rules.split.split.n&&kids.every(k=>k.max<e.max);
+        const k=kids[0];if(k){const n1=enemies.length;kill(k);ok=ok&&enemies.length===n1}}   // קטן לא מתפצל שוב
+      R[id]=ok}
+    o.rules=R;o.allOk=Object.keys(MUTATION.rules).every(k=>R[k]);
+    MUT.force='split';enterWorld('home');const x0=SAVE.hero.xp||0;MUT.xpAcc=0;const g=addEnemy('grunt',P.x+60,P.y,1);g.home=0;g.xp=0;kill(g);
+    o.xp=(SAVE.hero.xp||0)-x0;o.xpBase=STATS.xp.kill;
+    o.line=mutLine().includes(mutName('split'));
+    enterVillage();o.village=!mutNow();SAVE.story.earth=e0;return o});
+  await page.evaluate(()=>{SAVE.story.earth=true;MUT.force='fog';enterWorld('home');for(const e of enemies)e.dmg=0;P.inv=99});await page.clock.runFor(1200);
+  mut.bar=await page.evaluate(()=>{const el=$('mutBar');return !!el&&!el.hidden&&el.classList.contains('on')&&el.textContent.includes(mutName('fog'))});
+  if(CFG.shots)await shot('mutation');
+  await page.clock.runFor(6000);mut.barGone=await page.evaluate(()=>!$('mutBar').classList.contains('on'));
+  await page.evaluate(()=>{MUT.force=null;enemies=[];enterVillage()});
+  check(mut.same&&mut.many>=5&&mut.noDup&&mut.shut&&mut.allOk&&mut.xp>mut.xpBase&&mut.line&&mut.village&&mut.bar&&mut.barGone,
+    'מוטציה יומית: '+mut.many+' חוקים שונים ב-30 יום'+(mut.noDup?'':', חוזר על האתגר!')+(mut.shut?', סגור לפני פנס האדמה':', פתוח לפני פנס האדמה!')+
+    ', עובדים: '+Object.keys(mut.rules).filter(k=>mut.rules[k]).join(',')+(mut.allOk?'':' (לא עובדים: '+Object.keys(mut.rules).filter(k=>!mut.rules[k]).join(',')+')')+
+    ', XP בהריגה +'+mut.xp+' (רגיל '+mut.xpBase+')'+(mut.bar?', פס בכניסה':', אין פס!')+(mut.barGone?' שנעלם':' שלא נעלם')+(mut.line?', שורה בחלון בכפר':', אין שורה בכפר')+(mut.village?'':', פועל בכפר!')+(mut.same?'':', לא קבוע לתאריך'));
   // ספר ההרפתקאות (book.js): הריגה נרשמת, פריט ומשאב מהתרמיל נרשמים, פרס מגיע כל BOOK.every רשומות, והחלון נפתח, מראה צללית ונסגר
   const bk=await page.evaluate(()=>{
     enterWorld('home');const o={},b=BK();
