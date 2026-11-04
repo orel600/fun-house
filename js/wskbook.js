@@ -88,6 +88,7 @@ function wsbHit(e,id,base,from,t){
 // מי בתוך עיגול, וגם בטווח ההתקפה מהגיבור (כמו כל סקיל בעולם)
 const wsbIn=(x,y,r)=>enemies.filter(e=>!e.dead&&Math.hypot(e.x-x,e.y-y)-e.r<=r&&wskIn(e,P));
 function wsbCast(id,D,tg,base,col,vis,F){
+  base*=wslK(id);   // רמת השדרוג אצל הכוהנת: יותר נזק, וזמן הטעינה דרך D.cd (wsklvl.js)
   D=wrPre(id,D);if(D.dt!==SKILLS.list[id].dt)col=dtCol(D.dt);   // רונה שמשנה את נתוני הסקיל, וגם את הצבע אם סוג הנזק השתנה (wrunes.js)
   const rk=(F?F.r:1)*vis,L=wsbFx(),o={id,k:D.kind,t:0,base,col,dt:D.dt,vis,r:D.r*rk,D};
   wsbStat.casts[id]=(wsbStat.casts[id]||0)+1;
