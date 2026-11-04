@@ -25,7 +25,7 @@ const NPC={
     head:    {home:'center',at:{x:190,y:-300},area:45,col:C.gold},
     smith:   {home:'forge', at:{x:-360,y:-120},area:35,work:true,col:C.ember},
     merchant:{home:'market',at:{x:360,y:-120},area:40,col:C.gold},
-    inn:     {home:null,spot:{x:300,y:300,deco:['barrel','crate','barrel']},at:{x:270,y:270},area:35,col:'#C08A52'},
+    inn:     {home:'inn',here:()=>true,at:{x:200,y:360},area:35,col:'#C08A52'},   // הפונדק (inn.js). here: היא בכפר גם לפני שהפונדק נבנה, כי היא נותנת את היומיים
     priest:  {home:null,spot:{x:-290,y:-500,deco:['flag','flag']},at:{x:-260,y:-466},area:35,work:true,col:C.lilac}
   }
 };
@@ -74,7 +74,7 @@ function npcUpdate(dt){
       else{const s=Math.min(l,NPC.speed*dt);n.x+=dx/l*s;n.y+=dy/l*s;n.face=Math.atan2(dy,dx)}
     }else if(D!==id&&(n.t-=dt)<=0){const p=npcPick(n);n.tx=p.x;n.ty=p.y;n.st='walk'}
   }
-  S.vil.npcNear=near;
+  S.vil.npcNear=near;innTick(dt);   // הלוח בפונדק והנקודה על הקיצור (inn.js)
   if(D&&!S.vil.dlgStay&&(!npcHere(D)||Math.hypot(P.x-all[D].x,P.y-all[D].y)>NPC.leave))npcTalk(null);   // dlgStay: ההקדמה של העלילה נשארת עד שסוגרים (story.js)
   const btn=$('talkBtn'),show=!!near&&D!==near;
   if(btn.hidden===show||btn.dataset.id!==(near||'')){btn.hidden=!show;btn.dataset.id=near||'';if(near){btn.innerHTML='<span class="ni" aria-hidden="true">💬</span>'+T('ctx.talk');btn.setAttribute('aria-label',T('npc.talk',T('npc.'+near)[0]))}}

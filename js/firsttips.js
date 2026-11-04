@@ -11,7 +11,7 @@ const TIPS={
   winDur:5,         // טיפ בתוך חלון
   tick:0.25,        // כל כמה שניות בודקים
   // האייקון של כל טיפ
-  list:{req:'🔒',q:'⭐',sklv:'📈',mut:'🎲',depths:'🌀',nem:'💀',giant:'🗿',skill:'📖'},
+  list:{req:'🔒',q:'⭐',sklv:'📈',mut:'🎲',depths:'🌀',nem:'💀',giant:'🗿',skill:'📖',inn:'🍲'},
   // טיפ במשחק: מתי הוא נכנס לתור (כל רבע שנייה), ולאיזה כפתור הוא מצביע אם יש. משתמש רק במה שקיים (typeof)
   watch:{
     mut:{when:()=>S.wd&&typeof mutNow==='function'&&mutNow()&&TIP1.wt>(typeof MUTATION!=='undefined'?MUTATION.bar.delay+MUTATION.bar.dur:4),at:'#mutChip'},   // אחרי הפס של החוק

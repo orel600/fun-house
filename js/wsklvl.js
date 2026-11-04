@@ -45,7 +45,7 @@ const wslStat={ups:0};   // בשביל הבוט
 function wslUp(id){
   if(!wslCan(id))return false;
   const c=wslCost(id);for(const r in c)bagTake(r,c[r]);
-  const lv=wslLv(id)+1;wslSave()[id]=lv;wslStat.ups++;saveNow();
+  const lv=wslLv(id)+1;wslSave()[id]=lv;wslStat.ups++;questEvent('sklv');saveNow();   // הלוח בפונדק (inn.js)
   celebrate(P.x,P.y-20,'upgrade','+'+lv);sfx('ui');wslBadges();return true;
 }
 

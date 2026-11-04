@@ -39,7 +39,7 @@ function kill(e){
   lootKill(e);bookKill(e);juiceKill(e);   // juiceKill: עשן ועצירה בעולם (juice.js)   // שלל לכפר (loot.js), וספר ההרפתקאות (book.js)
   statKillXp(e);statOnKill(e);affixOnKill(e);   // XP לדמות בעולם הפתוח, וזעם (stats.js)
   challengeKill(e);mutKill(e);tierKill(e);huntKill(e);streakKill();ultKill(e);shopKill(e);   // רצף הריגות (streak.js), אולטימייט (ult.js), זהב לחנות הריצה (shop.js)   // אתגר יומי (challenge.js), דרגת עולם (tiers.js)
-  questEvent('kill',e.isBoss?'boss':e.wanted?'wanted':e.warden?'warden':e.type);
+  questEvent('kill',e.isBoss?'boss':e.wanted?'wanted':e.warden?'warden':e.type);innKill(e);   // סוג הנזק של המכה האחרונה, ללוח בפונדק (inn.js)
   if(e.isBoss){bossDown(e);return}
   if(e.wanted){wantedDown(e);return}
   if(e.elite)eliteDown(e);

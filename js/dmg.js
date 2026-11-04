@@ -55,6 +55,7 @@ const dtSvg=t=>'<svg class="dti" viewBox="0 0 24 24" aria-hidden="true"><path fi
 
 // אחרי כל פגיעה: ספירה (בשביל הבוס שלומד), ומה שהסוג עושה
 function onHit(e,d,base,w,t,ang,chained){
+  e.lt=t;   // סוג הנזק של המכה האחרונה (innKill ב-inn.js)
   P.track.types[t]=(P.track.types[t]||0)+d;S.hits[t]=(S.hits[t]||0)+1;storyUse(t,d);   // storyUse: גם בעולם, בשביל הצל (story.js)
   const c0=S.wd&&!S.room?wcN():0;   // כמה שילובים היו לפני המכה הזו (מגן היסודות, wcombo.js)
   comboHit(e,d,base,w,t,ang,chained);   // קומבו עם מה שכבר על האויב (skills.js)
