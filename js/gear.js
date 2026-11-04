@@ -19,23 +19,24 @@ const GEAR={
      חוק הנדירות (ניר, 1.11.2026: "נעליים נדירות גרועות מרגילות"): בכל משבצת, כל פריט בשכבה מסוימת שווה (gScore) לפחות פי ladder
      מהפריט הכי חזק בשכבה שמתחתיו (בערך +25–35% לסטט הראשי, או סטט שני ששווה יותר). מתקנים את המספרים כאן, לא בקוד.
      gLadder מוצא הפרות, tools/gear-audit.js מדפיס את כולם, ו-check.js נכשל כשיש הפרה. חפצים מסתובבים מחוץ לחוק: כל סוג עושה משהו אחר
-     look: איך הפריט נראה, כדי שכל שדרוג ייראה. tint צבע, glow זוהר, model המודל בתלת-ממד (w_<שם> מ-Fantasy Weapons, והחומר לפי tier) */
+     look: איך הפריט נראה, כדי שכל שדרוג ייראה. tint צבע, glow זוהר, model המודל בתלת-ממד (w_<שם> מ-Fantasy Weapons, והחומר לפי tier).
+     model: הכי קרוב לתמונה של הפריט (icons/ui/gear). הטבלה, וכמה כל אחד דומה: docs/concept-item-models.md (ניר, 4.11.2026) */
   items:{
     oakSword:   {slot:'weapon',tier:0,w:'sword',icon:'🗡️',stats:{sdmg:10},look:{model:'w_sword_A'}},
     ironSword:  {slot:'weapon',tier:1,w:'sword',icon:'🗡️',stats:{sdmg:25},look:{model:'w_sword_B'}},
-    silverBlade:{slot:'weapon',tier:2,w:'sword',icon:'⚔️',stats:{sdmg:40,speed:5},look:{model:'w_sword_D',glow:'#DCE3EA'}},
+    silverBlade:{slot:'weapon',tier:2,w:'sword',icon:'⚔️',stats:{sdmg:40,speed:5},look:{model:'w_sword_C',glow:'#DCE3EA'}},
     oakBow:     {slot:'weapon',tier:0,w:'bow',icon:'🏹',stats:{gdmg:10},look:{model:'w_bow_A_withString'}},
-    ironBow:    {slot:'weapon',tier:1,w:'bow',icon:'🏹',stats:{gdmg:25},look:{model:'w_bow_A_withString'}},
+    ironBow:    {slot:'weapon',tier:1,w:'bow',icon:'🏹',stats:{gdmg:25},look:{model:'w_bow_B_withString'}},
     goldBow:    {slot:'weapon',tier:3,w:'bow',icon:'🏹',stats:{gdmg:60,magnet:20},look:{model:'w_bow_B_withString',glow:C.gold}},
-    oakStaff:   {slot:'weapon',tier:0,w:'staff',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'w_staff_B'}},   // הנשק של הקוסם: קסם שמתביית
+    oakStaff:   {slot:'weapon',tier:0,w:'staff',icon:'🪄',stats:{gdmg:5,magnet:15},look:{model:'w_staff_A'}},   // הנשק של הקוסם: קסם שמתביית
     /* נשקים לכל דמות בכל שכבה (ניר, 2.11.2026: "הגעתי לרמה 20 ולא נפל לי אף נשק שמתאים לקלאס שלי"). לקוסם היה רק מטה עץ,
        ולכל דמות יש עכשיו נשק בכל שכבה עד אגדי. איזה נשק שייך לאיזו דמות: arms ב-HEROES (heroes.js), וההטיה בשלל: LOOT.gear.cls */
-    ironStaff:  {slot:'weapon',tier:1,w:'staff',icon:'🪄',stats:{gdmg:20,magnet:15},look:{model:'w_staff_A'}},
+    ironStaff:  {slot:'weapon',tier:1,w:'staff',icon:'🪄',stats:{gdmg:20,magnet:15},look:{model:'w_staff_B'}},
     silverWand: {slot:'weapon',tier:2,w:'wand',icon:'🪄',stats:{gdmg:38,speed:4},look:{model:'w_wand_A',glow:'#DCE3EA'}},
-    goldStaff:  {slot:'weapon',tier:3,w:'staff',icon:'🪄',stats:{gdmg:60,regen:0.6},look:{model:'w_staff_A',glow:C.gold}},
+    goldStaff:  {slot:'weapon',tier:3,w:'staff',icon:'🪄',stats:{gdmg:60,regen:0.6},look:{model:'w_staff_B',glow:C.gold}},
     starStaff:  {slot:'weapon',tier:4,w:'staff',icon:'🌟',stats:{gdmg:85,magnet:25,regen:0.6},look:{model:'w_staff_B',glow:'#FF6FB5'}},
     ironAxe:    {slot:'weapon',tier:1,w:'axe',icon:'🪓',stats:{sdmg:24},look:{model:'w_axe_A'}},
-    goldAxe:    {slot:'weapon',tier:3,w:'axe',icon:'🪓',stats:{sdmg:60,hp:15},look:{model:'w_axe_C',glow:C.gold}},
+    goldAxe:    {slot:'weapon',tier:3,w:'axe',icon:'🪓',stats:{sdmg:60,hp:15},look:{model:'w_axe_B',glow:C.gold}},
     dragonBlade:{slot:'weapon',tier:4,w:'sword',icon:'⚔️',stats:{sdmg:85,speed:6},look:{model:'w_sword_E',glow:'#FF6FB5'}},
     skyBow:     {slot:'weapon',tier:4,w:'bow',icon:'🏹',stats:{gdmg:85,speed:6},look:{model:'w_bow_B_withString',glow:'#FF6FB5'}},
     boneCharm:  {slot:'acc',tier:0,icon:'🦴',stats:{hp:15}},
@@ -45,7 +46,7 @@ const GEAR={
     goldAmulet: {slot:'acc',tier:3,icon:'📿',stats:{hp:30,magnet:30},look:{glow:C.gold}},
     crown:      {slot:'acc',tier:4,icon:'👑',stats:{hp:40,sdmg:15,gdmg:15},look:{glow:'#FF6FB5'}},
     // סטים (sets.js): שניים או ארבעה חלקים מאותו סט נותנים בונוס. השומר האבן: מקרוב ועמיד. צייד הסערה: מרחוק ומהיר
-    wardenHammer:{slot:'weapon',tier:1,w:'hammer',set:'warden',icon:'🔨',stats:{sdmg:22},look:{model:'w_hammer_B'}},
+    wardenHammer:{slot:'weapon',tier:1,w:'hammer',set:'warden',icon:'🔨',stats:{sdmg:22},look:{model:'w_hammer_A'}},
     wardenRing: {slot:'acc',tier:1,set:'warden',icon:'💍',stats:{hp:20}},
     wardenCharm:{slot:'acc',tier:1,set:'warden',icon:'🪨',stats:{hp:12,regen:0.4}},
     wardenBoots:{slot:'boots',tier:1,type:'boots',set:'warden',icon:'🥾',stats:{speed:7,hp:12}},
