@@ -58,7 +58,7 @@ const gUpHere=()=>!!(S.vil&&vLv('forge')>0);
 function gCardHtml(k,sel,n){
   const it=gItem(k),btn=(act,txt,cls,off)=>'<button class="vbtn'+(cls?' '+cls:'')+'" data-act="'+act+'"'+(off?' disabled':'')+'>'+txt+'</button>';
   const orb=it.slot==='orbit'&&sel.id?gOrbCompare(k,gGet('orbit',gTarget(it))):'';   // חפץ מסתובב: מה מתווסף ומה הולך (gear.js)
-  const pre=orb+(gPlus(k)?'<p class="gage">'+T('gear.aged',gPlus(k))+'</p>':'')+gQLine(k)+irClsHtml(k)+irReqHtml(k)+powLine(k);
+  const pre=orb+(gPlus(k)?'<p class="gage">'+T('gear.aged',gPlus(k))+'</p>':'')+gQLine(k)+powLine(k);   // הדרישות ובונוס המחלקה: בכרטיס עצמו (itemcard.js)
   let b='';
   if(sel.id)b+=irCanWear(k)?btn('equip',T('gear.equip'),'gcequip'):btn('equip',T('ir.cant'),'gcequip',1);
   if(sel.slot)b+=btn('unequip',T('gear.unequip'),'ghost');
