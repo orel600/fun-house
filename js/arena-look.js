@@ -17,6 +17,7 @@ const ARENA_LOOK={
   pal:{
     classic:{stone:'#aaa395',stone2:'#948d7f',dark:'#5f5a52',mortar:'#5a554c',crack:'#2a2622',rune:'#e8d9a8',ember:'#ff7a2a',out:'#2a2733',bg:'#3c3a44',fog:'#6e6a66'},
     waves:{stone:'#8a7fa6',stone2:'#746a92',dark:'#4a4066',mortar:'#3f3658',crack:'#221a33',rune:'#c9b6ff',ember:'#b06bff',out:'#1c1628',bg:'#33284D',fog:'#5a4f78'},   // זירת הגלים (arenas.js): אבן סגולה, כמו הרצפה שלה
+    maze:{stone:'#7E9A9C',stone2:'#688588',dark:'#3A5558',mortar:'#304648',crack:'#142226',rune:'#B8F0E6',ember:'#4FD6C0',out:'#101C1F',bg:'#23424A',fog:'#47727A'},   // זירת המבוך: אבן כחולה-ירקרקה
     boss:{stone:'#a07c88',stone2:'#8a6874',dark:'#5e3f4a',mortar:'#4d3039',crack:'#2a141c',rune:'#ffb3a0',ember:'#ff6a4a',out:'#241218',bg:'#432A35',fog:'#6e4452'}   // זירת הבוסים: אבן בורדו
   },
   stone:{w:58,h:40,mortar:1.6,tint:0.12},   // גודל האבנים (פיקסלים של המשחק), עובי התפר, וכמה כל אבן שונה מהשכנה
