@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="css/deco.css">
 <link rel="stylesheet" href="css/itemtip.css">
 <link rel="stylesheet" href="css/rarity.css">
+<link rel="stylesheet" href="css/itemcard.css">
 <link rel="stylesheet" href="css/short.css">
 
 <!-- הטקסטים לא כתובים כאן: data-t ו-data-ta מתמלאים מהטבלה ב-js/lang.js, לפי השפה -->
@@ -74,7 +75,7 @@
   <button class="nbtn talkbtn trbtn" id="trBtn" hidden></button>
 </nav>
 <!-- התפריט הראשי (js/menu.js): ☰ בפינה העליונה, בכפר ובעולם, ומסך מלא עם לשוניות בצד. כל לשונית מציגה חלון קיים -->
-<button class="mute menubtn" id="menuBtn" data-ta="menu.btn"><span aria-hidden="true">☰</span><b hidden></b></button>
+<button class="mute menubtn" id="menuBtn" data-ta="set.title"><span aria-hidden="true">☰</span><b hidden></b></button>
 <div class="menubg" id="menuBg"></div>
 <nav class="mrail" id="menuRail" role="tablist" data-ta="menu.btn">
   <button class="mtab" id="gearBtn" role="tab"><span class="ni" aria-hidden="true">🎒</span><span data-t="menu.hero"></span><b id="gBadge" hidden></b><i class="mdot" id="skDot" hidden></i></button>
@@ -83,6 +84,13 @@
   <button class="mtab" id="wMapBtn" role="tab"><span class="ni" aria-hidden="true">🗺️</span><span data-t="wm.title"></span></button>
   <button class="mtab" id="mbTab" role="tab"><span class="ni" aria-hidden="true">⚔️</span><span data-t="menu.mb"></span></button>
   <button class="mtab" id="setBtn" role="tab"><span class="ni" aria-hidden="true">⚙️</span><span data-t="set.title"></span></button>
+</nav>
+<!-- טור הקיצורים (js/menu.js, ניר 2.11.2026): אייקונים קטנים עם תווית בצד, בכפר ובעולם. כל אחד פותח לשונית בתפריט. נקודה אדומה = יש מה לעשות -->
+<nav class="qrail" id="qRail" data-ta="rail.group">
+  <button class="qr" data-tab="gearBtn"><span class="ni" aria-hidden="true">🎒</span><span data-t="menu.hero"></span><i class="qrdot" hidden></i></button>
+  <button class="qr" data-tab="qBtn"><span class="ni" aria-hidden="true">📜</span><span data-t="q.log"></span><i class="qrdot" hidden></i></button>
+  <button class="qr" data-tab="bookBtn"><span class="ni" aria-hidden="true">📖</span><span data-t="book.btn"></span><i class="qrdot" hidden></i></button>
+  <button class="qr wonly" data-tab="wMapBtn"><span class="ni" aria-hidden="true">🗺️</span><span data-t="wm.title"></span><i class="qrdot" hidden></i></button>
 </nav>
 <!-- מתנה יומית שעוד לא נלקחה: כפתור עגול קטן בפינה העליונה, מתחת להשתקה. לא בסרגל, כדי שלא ידחוף כפתורים החוצה (js/daily.js) -->
 <!-- ביקור אצל חבר: כפתור עגול מתחת למתנה, רק בכפר. דהוי בלי Google (js/visit.js) -->
@@ -353,7 +361,9 @@
 <script src="js/wcombo.js"></script>   <!-- שילובים בעולם: ניפוץ, ננעץ, אדים, ומצב שורשים (docs/plan-skills.md) -->
 <script src="js/wskill.js"></script>
 <script src="js/wskbook.js"></script>   <!-- ספר הסקילים: עוד סקילים אקטיביים בעולם, ובוחרים מה על הכפתורים -->
+<script src="js/wskx.js"></script>   <!-- סבב שני בספר: קללת הגרניט, שרשרת ברק ומערבולת -->
 <script src="js/wrunes.js"></script>   <!-- רונות: שתיים לכל סקיל מהספר, שמשנות איך הוא עובד (docs/plan-skills.md) -->
+<script src="js/wsklvl.js"></script>   <!-- שדרוג סקילים אצל הכוהנת: +0 עד +5, יותר נזק ופחות טעינה -->
 <script src="js/skillreveal.js"></script>   <!-- סקיל חדש: רגע גילוי, ומראה לפי הדרגה בעץ (docs/plan-progression.md עמוד 3) -->
 <script src="js/sigskill.js"></script>   <!-- סקיל חתימה: סקיל-על לכל דרגה, כפתור משלו בעולם ובכפר -->
 <script src="js/skguide.js"></script>   <!-- איך מוצאים את הסקילים: נגיעה ארוכה פותחת את הספר, נקודה אדומה, וכרטיס אחרי רגע הגילוי -->
@@ -381,6 +391,7 @@
 <script src="js/hunt.js"></script>
 <script src="js/foelore.js"></script>   <!-- שמות ואופי לאויבים בעולם: שם מעל הראש, כרטיס בפגישה ראשונה, בועות -->
 <script src="js/gear.js"></script>
+<script src="js/itemroll.js"></script>   <!-- חפצים: דרישות, איכות אקראית ובונוס מחלקה -->
 <script src="js/sets.js"></script>
 <script src="js/doll3d.js"></script>
 <script src="js/itemtip.js"></script>
@@ -390,6 +401,7 @@
 <script src="js/powers.js"></script>
 <script src="js/fuse.js"></script>     <!-- התכת חפצים מסתובבים: לשונית בנפחייה -->
 <script src="js/stash.js"></script>
+<script src="js/itemcard.js"></script>   <!-- כרטיס חפץ: אריח ברשימה וכרטיס גדול, לחלונות הקנייה ולציוד -->
 <script src="js/bwin.js"></script>   <!-- חלונות המבנים והשירותים בכפר: תבנית אחת -->
 <script src="js/heroes.js"></script>
 <script src="js/ranks.js"></script>
@@ -440,6 +452,9 @@
 <script src="js/skfx3d-spirit.js"></script>   <!-- רוח המים: ישות מרחפת שיורה קליעי מים -->
 <script src="js/skfx3d-storm.js"></script>   <!-- ענן הסערה: ענן כהה, גשם וברקים מתפצלים -->
 <script src="js/skfx3d-pools.js"></script>   <!-- שלוליות של רונות: לבה אמיתית אחרי המטאור, ומים, קרח, אדמה וברק -->
+<script src="js/skfx3d-petrify.js"></script>   <!-- קללת הגרניט: גל אדמה, ואבן סביב כל מאובן -->
+<script src="js/skfx3d-chain.js"></script>   <!-- שרשרת ברק: קשתות ברק זוהרות בין האויבים -->
+<script src="js/skfx3d-vortex.js"></script>   <!-- מערבולת: משפך מים מסתובב שבולע טיפות -->
 <script src="js/petfx3d.js"></script>   <!-- האש של פיוחו בשלב 3: זנב בוער, גחלים ושלהבת בנשיכה -->
 <script src="js/render.js"></script>
 <script src="js/feed.js"></script>   <!-- פיד הודעות בצד, בעולם ובכפר (docs/plan-hud.md פרק 6) -->

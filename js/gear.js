@@ -139,14 +139,14 @@ const GEAR={
 
 // פריט ששודרג בנפחייה נשמר עם הרמה שלו: 'oakBow+3' (aging.js), ועם כוח אחריה: 'oakBow+3#keen' (powers.js).
 // gBase: בלי הרמה והכוח, gPlus: הרמה, gPow: הכוח
-const gBase=id=>String(id).split(/[+#]/)[0];
+const gBase=id=>String(id).split(/[+#~]/)[0];   // ~104: האיכות של חפץ שנפל בעולם (itemroll.js)
 const gPlus=id=>{const m=/\+(\d+)/.exec(id||'');return m?+m[1]:0};
 const gPow=id=>{const m=/#(\w+)/.exec(id||'');return m?m[1]:null};
 const gItem=id=>id&&GEAR.items[gBase(id)]||null;
 // ה-+3 נכתב משמאל לימין גם בעברית (\u2066...\u2069), אחרת הסימן קופץ לצד השני
 const gName=id=>T('it.'+gBase(id))+(gPlus(id)?' \u2066+'+gPlus(id)+'\u2069':'');
-// הסטטים של הפריט, כולל השדרוג בנפחייה והכוח שעליו (powers.js)
-function gStats(id){const s=(gItem(id)||{}).stats||{},k=ageMult(gPlus(id)),o={};for(const x in s)o[x]=Math.round(s[x]*k*10)/10;
+// הסטטים של הפריט, כולל השדרוג בנפחייה, האיכות, הכוח שעליו (powers.js) ובונוס המחלקה (itemroll.js). pure: בלי בונוס המחלקה, לשורות בחלון
+function gStats(id,pure){const s=(gItem(id)||{}).stats||{},k=ageMult(gPlus(id))*gQ(id)/100,c=!pure&&irClsOn(id)?1+ITEMROLL.cls.bonus:1,o={};for(const x in s)o[x]=Math.round(s[x]*k*c*10)/10;
   const p=powGive(gPow(id));for(const x in p)o[x]=(o[x]||0)+p[x];return o}
 /* שפת הנדירות (ניר, 3.11.2026: "שיהיה ברור וקל להבדיל... שהעיצוב עצמו ידבר"): כל מקום שמציג חפץ מוסיף את gRarCls, והמראה כולו ב-css/rarity.css:
    עץ פשוט, ברזל עם מסמרות, כסף עם ברק, זהב עבה עם אבנים ומעבר אור, ואגדי עם זוהר נע וניצוצות. התמונה (gPic) נכנסת לתוך המסגרת כמו שהיא */
@@ -165,7 +165,7 @@ const GEAR_PIC={oakSword:1,ironSword:1,silverBlade:1,oakBow:1,ironBow:1,goldBow:
   emberOrb:1,stoneOrb:1,frostOrb:1,leafOrb:1,cloverOrb:1,steamOrb:1,wardenOrb:1,gambleOrb:1,bastionOrb:1,phoenixOrb:1,glacierOrb:1,dewOrb:1,snowflakeOrb:1,talismanOrb:1,bloomOrb:1,trinityOrb:1,tempestOrb:1,auroraOrb:1,cometOrb:1,dragonOrb:1,sunOrb:1,frostwallOrb:1,moonOrb:1,springOrb:1,sanctumOrb:1};
 const gPic=id=>GEAR_PIC[gBase(id)]?'<img class="ri" src="icons/ui/gear/'+gBase(id)+'.png" alt="">':gIcon(id);
 // כמה הפריט שווה, כדי לדעת אם החלפה היא שיפור. חומר טוב יותר שובר שוויון
-function gScore(id){const it=gItem(id);if(!it)return 0;let n=it.tier*0.01;const s=gStats(id);for(const k in s)n+=s[k]*GEAR.stats[k].w;return n}
+function gScore(id,pure){const it=gItem(id);if(!it)return 0;let n=it.tier*0.01;const s=gStats(id,pure);for(const k in s)n+=s[k]*GEAR.stats[k].w;return n}
 // חוק הנדירות (GEAR.ladder): בכל משבצת, הפריט הכי חלש בכל שכבה מול הכי חזק בשכבה הקודמת שיש בה פריטים. מחזיר רק הפרות
 function gLadder(){
   const by={},bad=[];
@@ -197,6 +197,7 @@ function gearStats(ids=gearWorn()){const t={};for(const id of ids){const s=gStat
 // i: לאיזו משבצת (בגרירה). בלי i: המשבצת שמתאימה הכי (gTarget). משבצת מסוג אחר או נעולה: לא לובשים
 function gearEquip(id,slot,i){
   const it=gItem(id);if(!it||slot&&slot!==it.slot)return null;
+  if(!irCanWear(id))return null;   // דרישות: רמה ותכונה (itemroll.js)
   if(i==null)i=gTarget(it);if(i>=gOpen(it.slot)||!bagTake(id))return null;
   const old=gGet(it.slot,i);
   gSet(it.slot,i,id);if(old)bagAdd(old);
@@ -296,9 +297,9 @@ function gOrbFacts(type,k=1){
 }
 const gOrbLine=(f,v)=>f.b?T('orb.f.'+f.k,f.n):'<bdi dir="ltr">'+(v>0?'+':'')+v+'%</bdi> '+T('orb.f.'+f.k);
 // lite: חפץ מסתובב מהתרמיל, כשההשוואה שמתחת כבר מראה את כל מה שהוא נותן (▲), כדי שהכל ייכנס בטור בלי גלילה
-function gStatsHtml(id,lite){const it=gItem(id),s=gStats(id);
+function gStatsHtml(id,lite){const it=gItem(id),s=gStats(id,true);
   if(it.slot==='orbit')return '<p class="gorb">'+(it.types?it.types.map(t=>T('orb.'+t)).join(' + ')+' · '+T('orb.combo.do',Math.round(ORBIT.combo.share[it.types.length]*100)):T('orb.'+it.type)+' · '+T('orb.do.'+it.type))+'</p>'+(lite?'':'<ul class="gstats">'+orbitFacts(id).map(f=>'<li>'+gOrbLine(f,f.v)+'</li>').join('')+'</ul>');
-  return '<ul class="gstats">'+(it.w?'<li class="gdmg">'+wRangeTxt(wItemAvg(id),it.w)+'</li>':'')+Object.keys(s).map(k=>'<li>'+gSign(k,s[k])+'</li>').join('')+'</ul>'}
+  return '<ul class="gstats">'+(it.w?'<li class="gdmg">'+wRangeTxt(wItemAvg(id),it.w)+'</li>':'')+Object.keys(s).map(k=>'<li>'+gSign(k,s[k])+irRange(id,k)+'</li>').join('')+'</ul>'+irQHtml(id)+irClsHtml(id)+irReqHtml(id)}   // איכות, בונוס מחלקה ודרישות (itemroll.js)
 // מה ישתנה אם לובשים: לכל סטט, ההפרש מול מה שיוצא מהמשבצת, עם חץ למעלה או למטה
 function gCompare(id,old){
   if(gItem(id)&&gItem(id).slot==='orbit')return gOrbCompare(id,old);
@@ -345,7 +346,7 @@ const gTabLabel=f=>f==='items'?T('gear.tab.all'):GEAR.filter[f]||(RES.list[resFa
 /* ---- סימנים על פריט בתרמיל: ▲ ירוק אם הוא חזק ממה שלבוש במשבצת שלו, ▼ אדום אם חלש, ונקודה לפריט שעוד לא פתחו ---- */
 // מה שלבוש במשבצת שהפריט ייכנס אליה (הכי חלש מבין המשבצות), כדי להשוות
 const gVsWorn=it=>gGet(it.slot,gTarget(it));
-function gMark(k){const it=gItem(k);if(!it||it.slot==='orbit')return 0;const o=gVsWorn(it);if(!o)return 1;const d=gScore(k)-gScore(o);return Math.abs(d)<0.05?0:d>0?1:-1}
+function gMark(k){const it=gItem(k);if(!it||it.slot==='orbit')return 0;if(!irCanWear(k))return -1;const o=gVsWorn(it);if(!o)return 1;const d=gScore(k)-gScore(o);return Math.abs(d)<0.05?0:d>0?1:-1}
 // פריטים שכבר ראו: SAVE.gseen. בפעם הראשונה כל מה שכבר בתרמיל נחשב ראוי, כדי ששמירה ישנה לא תתמלא נקודות
 function gSeen(){if(!SAVE.gseen){SAVE.gseen={};for(const k in SAVE.bag)if(gItem(k))SAVE.gseen[k]=1}return SAVE.gseen}
 const gIsNew=k=>!!gItem(k)&&!gSeen()[k];
@@ -354,7 +355,7 @@ const gIsNew=k=>!!gItem(k)&&!gSeen()[k];
 function gBestPlan(){
   const out=[],bag=Object.assign({},SAVE.bag),worn={weapon:[SAVE.gear.weapon],shield:[...SAVE.gear.shield||[]],head:[...SAVE.gear.head||[]],body:[...SAVE.gear.body||[]],acc:[...SAVE.gear.acc],boots:[...SAVE.gear.boots]};
   for(const slot of ['weapon','shield','head','body','boots','acc']){const n=gOpen(slot),cur=worn[slot],use=slot==='weapon'&&gItem(cur[0])&&gItem(cur[0]).w?wUse(cur[0]):null;
-    for(;;){const ks=Object.keys(bag).filter(k=>bag[k]>0&&gItem(k)&&gItem(k).slot===slot&&(!use||wUse(k)===use));if(!ks.length)break;
+    for(;;){const ks=Object.keys(bag).filter(k=>bag[k]>0&&gItem(k)&&gItem(k).slot===slot&&(!use||wUse(k)===use)&&irCanWear(k));if(!ks.length)break;
       const k=ks.reduce((a,b)=>gScore(b)>gScore(a)?b:a);let i=-1;
       for(let j=0;j<n;j++){if(!gItem(cur[j])){i=j;break}if(i<0||gScore(cur[j])<gScore(cur[i]))i=j}
       if(i<0||gItem(cur[i])&&gScore(k)<=gScore(cur[i])+0.05)break;
@@ -471,7 +472,7 @@ function gDetailHtml(){
   const btn=(act,txt,ghost)=>'<button class="vbtn'+(ghost?' ghost':'')+'" data-act="'+act+'">'+txt+'</button>';
   let b='';
   if(sel.id&&it){const old=gGet(it.slot,gTarget(it));
-    d+=(old?'<p class="dim">'+T('gear.vs',gIcon(old)+' '+gName(old))+'</p>':'')+gCompare(k,old);b+=btn('equip',T('gear.equip'))}
+    d+=(old?'<p class="dim">'+T('gear.vs',gIcon(old)+' '+gName(old))+'</p>':'')+gCompare(k,old);b+=irCanWear(k)?btn('equip',T('gear.equip')):'<button class="vbtn" disabled>'+T('ir.cant')+'</button>'}
   if(it&&(sel.id||sel.slot))b+='<button class="vbtn ghost glock" data-act="lock" aria-pressed="'+gLocked(k)+'" aria-label="'+T(gLocked(k)?'gear.unlock':'gear.lock')+'" title="'+T(gLocked(k)?'gear.unlock':'gear.lock')+'">'+(gLocked(k)?'🔒':'🔓')+'</button>';   // נעול: לא נמכר
   if(sel.slot)b+=btn('unequip',T('gear.unequip'),1);
   if(sel.id&&gStashOn())b+=btn('store',T('gear.store'),1);

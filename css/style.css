@@ -483,6 +483,11 @@ h1{font-size:46px} h2{font-size:30px}
 .gstats{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;font-size:14px;font-weight:700}
 .gstats .gdmg{color:var(--chalk);font-size:15px}
 .gage{color:var(--gold);font-weight:800}
+/* חפצים (itemroll.js): הטווח של האיכות, בונוס מחלקה בסגול (פעיל) או אפור, ודרישה שלא עומדים בה באדום */
+.irng{color:var(--dim);font-weight:600;font-size:12px}
+.iq{margin:2px 0 0;color:var(--dim);font-size:13px;font-weight:700}
+.icls{margin:2px 0 0;color:var(--dim);font-size:13px;font-weight:700}.icls.on{color:var(--lilac)}
+.ireq{margin:2px 0 0;color:var(--dim);font-size:13px;font-weight:700}.ireq .bad,.ireq.no{color:var(--blood)}.ireq.no span:not(.bad){color:var(--dim)}
 /* הכפתורים נשארים גלויים גם כשהפרטים גוללים */
 .gbtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;position:sticky;bottom:-10px;padding:6px 0 2px;background:var(--panel)}
 .gbtns .vbtn{flex:1;min-height:44px;margin:0}
@@ -964,6 +969,26 @@ body.menu #ovGear .gearpanel{height:100%}
   body.menu .qlog.win:not(.npcdlg){inset-inline-end:max(12px,env(safe-area-inset-right,0px));bottom:calc(var(--railh) + 8px)}
   body.menu #ovGear,body.menu #ovSound,body.menu #ovMoba{padding-inline-end:16px;padding-bottom:var(--railh)}
 }
+/* ===== טור הקיצורים (#qRail, js/menu.js, ניר 2.11.2026: "האייקונים קטנים אבל ברורים מסביב, וככה מפנים הרבה מקום") =====
+   טור צר של אייקונים קטנים עם תווית, בכפר ובעולם, כמו הטור בצד של משחקי RPG בטלפון. תמיד בצד השמאלי של המסך (left ולא inline-start,
+   בכוונה): הצד הימני למטה שמור לסקילים בכל שפה (ui-guide פרק 1). למעלה בצד: ☰, מתנה, ביקור או המפה הקטנה, ולכן הטור מתחיל מתחתם.
+   --qrt: איפה הטור מתחיל, --qrs: גודל כל קיצור (48 לפחות, ui-guide פרק 2) */
+:root{--qrs:48px;--qrt:calc(var(--ctop,8px) + 124px)}
+.qrail{display:none;position:fixed;z-index:3;left:calc(env(safe-area-inset-left,0px) + 14px);top:var(--qrt);flex-direction:column;gap:5px;
+  padding:4px;border-radius:14px;background:rgba(14,18,30,.42);pointer-events:none}
+.vil .qrail,.world .qrail{display:flex}
+.world .qrail{--qrt:calc(var(--ctop,8px) + 64px + var(--mmap,60px))}   /* מתחת למפה הקטנה, שגדלה בטלפון עומד */
+[dir=rtl] .vil:has(#visBtn:not([hidden])) .qrail{--qrt:calc(var(--ctop,8px) + 172px)}   /* בעברית כפתור הביקור באותו צד, מתחת למתנה */
+.vil .qr.wonly{display:none}
+.qr{appearance:none;position:relative;width:var(--qrs);height:var(--qrs);border-radius:12px;border:2px solid #3A4566;padding:0;pointer-events:auto;
+  background:linear-gradient(#2C3654,#1D2438);color:var(--chalk);font:800 9px/1 var(--body);cursor:pointer;box-shadow:0 2px 0 #0B0E18;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;white-space:nowrap;touch-action:manipulation}
+.qr .ni{font-size:20px;line-height:1}
+.qr:active{transform:scale(.92)}
+.qr:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
+.qrdot{position:absolute;top:-4px;inset-inline-end:-4px;width:13px;height:13px;border-radius:50%;border:2px solid var(--ink);background:var(--blood);box-shadow:0 1px 3px #000a;pointer-events:none}
+.qrdot[hidden]{display:none}
+body.menu .qrail{display:none!important}
 /* המטרה הבאה (js/guide.js): שורה אחת באמצע למעלה, מתחת לפס העליון. לא בפינות (השתקה, מפה, מתנה) ולא למטה (הסרגל והסקילים) */
 .guide{position:fixed;z-index:3;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 50px);max-width:min(60vw,560px);
   display:flex;align-items:stretch;gap:2px;pointer-events:auto}
@@ -1183,7 +1208,7 @@ body.menu .minimap{display:none!important}
 /* ===== ממצאי המבקר על המסך (docs/critic/2026-11-01, ניר אישר 1.11.2026) ===== */
 /* dialog-under-hud + guide-over-windows: כשחלון פתוח בכפר ובעולם, הכפתורים העליונים, המשאבים, שורת המטרה והמפה הקטנה נעלמים.
    כך ה-✕ של החלון לא יושב מתחת ל-☰, ושורת המטרה לא עולה על הכותרת שלו */
-body:is(.vil,.world):has(:is(#npcDlg,#qLog,#bookWin,#wMap,#ovGear,#ovForge,#ovSound,#ovDaily):not([hidden])) :is(#menuBtn,.dgift,.vhud,.whud,#guide,.minimap,.qtrack){visibility:hidden!important}
+body:is(.vil,.world):has(:is(#npcDlg,#qLog,#bookWin,#wMap,#ovGear,#ovForge,#ovSound,#ovDaily):not([hidden])) :is(#menuBtn,.dgift,.vhud,.whud,#guide,.minimap,.qtrack,#qRail){visibility:hidden!important}
 /* gift-btn-arena: 🎁 (ו-🏡) רק בכפר ובעולם, לא בזירה */
 body:not(.vil):not(.world) .dgift{display:none!important}
 /* book-question-grid: צללית ברורה של היצור, ? קטן בפינה, בלי חפיפה באייפון, וכותרת לכל אזור (book.js) */
