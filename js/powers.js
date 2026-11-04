@@ -30,7 +30,7 @@ const powBox=()=>SAVE.powers||(SAVE.powers={});
 const powSlots=()=>[...new Set(Object.values(POWERS.list).map(p=>p.slot))];
 const powFor=slot=>Object.keys(POWERS.list).filter(p=>POWERS.list[p].slot===slot);
 // אותו פריט, עם כוח אחר (או בלי, p=null). הרמה מה-Aging נשמרת
-const powId=(id,p)=>gBase(id)+(gPlus(id)?'+'+gPlus(id):'')+(p?'#'+p:'');
+const powId=(id,p)=>gBase(id)+(gPlus(id)?'+'+gPlus(id):'')+(p?'#'+p:'')+gQtag(id);   // האיכות נשארת (itemroll.js)
 // "+5% מכה קריטית": מה הכוח נותן, בשורה אחת
 const powDesc=p=>Object.keys(powGive(p)).map(k=>gSign(k,powGive(p)[k])).join(' · ');
 const powName=p=>POWERS.list[p].icon+' '+T('pw.'+p);
