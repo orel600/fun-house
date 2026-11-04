@@ -2288,6 +2288,41 @@ function worldBot(m,L,god){
   check(chl.same&&chl.many>=3&&chl.tag&&chl.rule&&chl.n===chl.goal&&chl.coins&&chl.noWorld&&chl.got>=chl.want&&chl.once&&chl.saved&&chl.owed&&chl.tag2,
     'אתגר יומי: '+chl.many+' חוקים שונים ב-8 ימים, '+(chl.tag?'סימן בפס העליון':'אין סימן בעולם')+', '+(chl.rule?'החוק נכנס לאויב':'החוק לא נכנס לאויב')+', '+chl.n+'/'+chl.goal+' הריגות'+
     (chl.noWorld?', לא נאסף בעולם':', נאסף בעולם')+', בכפר +'+chl.got+' מטבעות'+(chl.once?' פעם אחת':' יותר מפעם')+(chl.saved?', נשמר':', לא נשמר')+(chl.owed?', פרס מאתמול מחכה':', פרס מאתמול אבד')+(chl.coins?'':', אין מטבעות מהחוק')+(chl.tag2?'':', הסימן נשאר בכפר')+(chl.same?'':', החוק לא קבוע לתאריך'));
+  // מוטציה יומית (mutation.js): אותו חוק לאותו תאריך, כל חוק נכנס לעולם ועובד, פרס מוגדל, פס בכניסה, סגור לפני פנס האדמה ומחוץ לעולם
+  const mut=await page.evaluate(()=>{
+    const o={},e0=SAVE.story.earth,days=Array.from({length:30},(_,i)=>'2026-12-'+(i+1));
+    o.same=mutRule('2026-11-4')===mutRule('2026-11-4');o.many=new Set(days.map(d=>mutRule(d))).size;
+    SAVE.story.earth=true;o.noDup=days.every(d=>MUTATION.rules[mutRule(d)].dup!==chRule(d));
+    SAVE.story.earth=false;MUT.force='giants';enterWorld('home');o.shut=!mutNow()&&!enemies.some(x=>x.mut);SAVE.story.earth=true;
+    const R={},cnt=()=>enemies.filter(x=>!x.dead&&!x.creature&&x.home!=null&&!x.wanted&&!x.hunt).length;
+    MUT.force='thirst';enterWorld('home');const base=cnt();R.thirst=mutK('regen')<1;
+    for(const id in MUTATION.rules){MUT.force=id;enterWorld('home');
+      const e=enemies.find(x=>!x.dead&&x.mut&&!x.creature),et=e&&ETYPES[e.type];let ok=!!e;
+      if(id==='giants')ok=ok&&cnt()<base&&e.r>et.r*1.2;
+      if(id==='swarm')ok=ok&&cnt()>base;
+      if(id==='fire'||id==='frost'){const t=id==='fire'?'fire':'ice',C_=CHALLENGE.rules[chRule()],ck=C_.type?(t===C_.type?C_.boost:C_.cut):1;ok=ok&&e.mult[t]>=(et.mult[t]??1)*ck*1.45}   // ck: גם האתגר היומי משנה מכפילים
+      if(id==='rain'){e.wet=0;e.mw=0;mutUpdate(1/60);ok=ok&&e.wet>0;e.wet=0.5;for(let i=0;i<60;i++)dmgUpdate(1/60);ok=ok&&!(e.wet>0)}   // רטוב שוב, ורטיבות נגמרת בעולם (dmgUpdate)
+      if(id==='fire'){e.hp=e.max=1e6;damage(e,1,'sword',0,'physical');mutUpdate(1/60);ok=ok&&!!e.burn;const h=e.hp;for(let i=0;i<60;i++)dmgUpdate(1/60);ok=ok&&e.hp<h}
+      if(id==='gold')ok=ok&&e.speed>0;
+      if(id==='wanted'){S.wn.e=null;S.wn.rumor=null;S.wn.t=100;mutUpdate(1);ok=ok&&S.wn.t<=98.5}
+      if(id==='fog'){try{mutDraw()}catch(err){ok=false}}
+      if(id==='split'){const n0=enemies.filter(x=>!x.dead&&x.mutKid).length;kill(e);const kids=enemies.filter(x=>!x.dead&&x.mutKid);ok=ok&&kids.length===n0+MUTATION.rules.split.split.n&&kids.every(k=>k.max<e.max);
+        const k=kids[0];if(k){const n1=enemies.length;kill(k);ok=ok&&enemies.length===n1}}   // קטן לא מתפצל שוב
+      R[id]=ok}
+    o.rules=R;o.allOk=Object.keys(MUTATION.rules).every(k=>R[k]);
+    MUT.force='split';enterWorld('home');const x0=SAVE.hero.xp||0;MUT.xpAcc=0;const g=addEnemy('grunt',P.x+60,P.y,1);g.home=0;g.xp=0;kill(g);
+    o.xp=(SAVE.hero.xp||0)-x0;o.xpBase=STATS.xp.kill;
+    o.line=mutLine().includes(mutName('split'));
+    enterVillage();o.village=!mutNow();SAVE.story.earth=e0;return o});
+  await page.evaluate(()=>{SAVE.story.earth=true;MUT.force='fog';enterWorld('home');for(const e of enemies)e.dmg=0;P.inv=99});await page.clock.runFor(1200);
+  mut.bar=await page.evaluate(()=>{const el=$('mutBar');return !!el&&!el.hidden&&el.classList.contains('on')&&el.textContent.includes(mutName('fog'))});
+  if(CFG.shots)await shot('mutation');
+  await page.clock.runFor(6000);mut.barGone=await page.evaluate(()=>!$('mutBar').classList.contains('on'));
+  await page.evaluate(()=>{MUT.force=null;enemies=[];enterVillage()});
+  check(mut.same&&mut.many>=5&&mut.noDup&&mut.shut&&mut.allOk&&mut.xp>mut.xpBase&&mut.line&&mut.village&&mut.bar&&mut.barGone,
+    'מוטציה יומית: '+mut.many+' חוקים שונים ב-30 יום'+(mut.noDup?'':', חוזר על האתגר!')+(mut.shut?', סגור לפני פנס האדמה':', פתוח לפני פנס האדמה!')+
+    ', עובדים: '+Object.keys(mut.rules).filter(k=>mut.rules[k]).join(',')+(mut.allOk?'':' (לא עובדים: '+Object.keys(mut.rules).filter(k=>!mut.rules[k]).join(',')+')')+
+    ', XP בהריגה +'+mut.xp+' (רגיל '+mut.xpBase+')'+(mut.bar?', פס בכניסה':', אין פס!')+(mut.barGone?' שנעלם':' שלא נעלם')+(mut.line?', שורה בחלון בכפר':', אין שורה בכפר')+(mut.village?'':', פועל בכפר!')+(mut.same?'':', לא קבוע לתאריך'));
   // ספר ההרפתקאות (book.js): הריגה נרשמת, פריט ומשאב מהתרמיל נרשמים, פרס מגיע כל BOOK.every רשומות, והחלון נפתח, מראה צללית ונסגר
   const bk=await page.evaluate(()=>{
     enterWorld('home');const o={},b=BK();
