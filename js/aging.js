@@ -50,7 +50,7 @@ function ageBlock(id){
   const c=ageCost(id);for(const r in c)if(!bagHas(r,c[r]))return 'cost';
   return null;
 }
-const ageId=(id,n)=>gBase(id)+(n>0?'+'+n:'')+(gPow(id)?'#'+gPow(id):'');   // הכוח נשאר על הפריט (powers.js)
+const ageId=(id,n)=>gBase(id)+(n>0?'+'+n:'')+(gPow(id)?'#'+gPow(id):'')+gQtag(id);   // הכוח נשאר על הפריט (powers.js)
 
 /* ניסיון אחד. ref: {id} פריט בתרמיל, או {slot,i} משבצת. gem: להשתמש באבן חן.
    roll: מספר בין 0 ל-1 (ברירת מחדל: אקראי). מחזיר {ok,from,to,id,saved} או null אם אי אפשר */

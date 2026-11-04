@@ -483,6 +483,11 @@ h1{font-size:46px} h2{font-size:30px}
 .gstats{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:2px;font-size:14px;font-weight:700}
 .gstats .gdmg{color:var(--chalk);font-size:15px}
 .gage{color:var(--gold);font-weight:800}
+/* חפצים (itemroll.js): הטווח של האיכות, בונוס מחלקה בסגול (פעיל) או אפור, ודרישה שלא עומדים בה באדום */
+.irng{color:var(--dim);font-weight:600;font-size:12px}
+.iq{margin:2px 0 0;color:var(--dim);font-size:13px;font-weight:700}
+.icls{margin:2px 0 0;color:var(--dim);font-size:13px;font-weight:700}.icls.on{color:var(--lilac)}
+.ireq{margin:2px 0 0;color:var(--dim);font-size:13px;font-weight:700}.ireq .bad,.ireq.no{color:var(--blood)}.ireq.no span:not(.bad){color:var(--dim)}
 /* הכפתורים נשארים גלויים גם כשהפרטים גוללים */
 .gbtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;position:sticky;bottom:-10px;padding:6px 0 2px;background:var(--panel)}
 .gbtns .vbtn{flex:1;min-height:44px;margin:0}
