@@ -417,7 +417,7 @@ function villageBot(m,L){
       n.seenL=vLv('forge')-1;m.npc=2;return steer(null,null,false,0,L)}   // כאילו הנפחייה עלתה רמה עכשיו
     N.cheer=n.st==='cheer';N.n=Object.keys(npcState()).filter(npcHere).length;m.npc=3;return steer(null,null,false,0,L)}
   if(!m.tour){   // הכפר הגדול (2.11): הולכים לכל מבנה. בכל אחד מופיע "להיכנס", והשלט שלו על המסך (בלי חפיפה, vSignsFlush)
-    const Tu=L.tour||(L.tour={seen:[],sign:[],t0:S.t});m.tq=m.tq||Object.keys(VILLAGE.b);
+    const Tu=L.tour||(L.tour={seen:[],sign:[],t0:S.t,n:Object.keys(VILLAGE.b).length});m.tq=m.tq||Object.keys(VILLAGE.b);
     const k=m.tq[0];if(!k){m.tour=1;Tu.sec=Math.round(S.t-Tu.t0);return steer(null,null,false,0,L)}
     if(S.vil.here===k){m.tw=(m.tw||0)+1;if(m.tw>3){m.tw=0;Tu.seen.push(k);if((VSIGN.shown||[]).some(t=>t.includes(T('vil.'+k))))Tu.sign.push(k);m.tq.shift()}return steer(null,null,false,0,L)}
     if(S.t-Tu.t0>90){m.tour=1;Tu.stuck=k;return L}
@@ -1868,7 +1868,7 @@ function worldBot(m,L,god){
       m.feedTop=fb.parentNode.id==='vTop';ids.forEach((i,k)=>$(i).hidden=h0[k]);fb.innerHTML=f0}
     else{m.topBad=[];m.feedTop=$('feedBtn').parentNode.id==='nav'}   // בעולם ההאכלה בסרגל של המקום
     // היררכיה (hudrank.js): הסידור לפי העדיפות, והחשוב הכי קרוב לפינה הימנית התחתונה. לחיצות מוסיפות מעט, ולא מזיזות כפתור למקום אחר
-    {const L=hudLayout(),want=place==='village'?{qRail:'gearBtnQ,qBtnQ,bookBtnQ',vTop:'welBtn,feedBtn,dBtn,visBtn'}:{qRail:'gearBtnQ,qBtnQ,bookBtnQ,wMapBtnQ'};
+    {const L=hudLayout(),want=place==='village'?{qRail:'gearBtnQ,qBtnQ,bookBtnQ',vTop:'welBtn,feedBtn,dBtn,visBtn,innBtn'}:{qRail:'gearBtnQ,qBtnQ,bookBtnQ,wMapBtnQ'};
       m.rankBad=Object.keys(want).filter(k=>(L[k]||[]).join(',')!==want[k]).map(k=>k+'='+(L[k]||[]).join('/'));
       const rr=[...document.querySelectorAll('#qRail .qr')].map(e=>({id:e.id,r:vis(e)})).filter(x=>x.r),g=rr.find(x=>x.id==='gearBtnQ');
       if(g&&rr.some(x=>x!==g&&(place==='village'?x.r.bottom>g.r.bottom:x.r.right>g.r.right)))m.rankBad.push('דמות לא הכי קרובה לפינה');
@@ -2252,6 +2252,29 @@ function worldBot(m,L,god){
   check(bw.fTiles>1&&bw.fPick&&bw.fBuy&&bw.fPoor&&bw.fReq,'חלון הנפחייה (itemcard.js): '+bw.fTiles+' חפצים ברשימה'+(bw.fPick?', נגיעה מציגה כרטיס עם מספר כוח':', הבחירה לא עובדת')+(bw.fBuy?', קנייה מהכרטיס עובדת':', הקנייה לא עברה')+(bw.fPoor?', בלי מספיק הכפתור אפור':', הכפתור לא אפור כשחסר')+(bw.fReq?', דרישות באדום':', הדרישות לא מוצגות'));
   check(!bw.bad.length&&bw.n===bw.all&&bw.allIn&&bw.allOut&&bw.buy&&bw.closed,'חלונות המבנים: '+bw.n+'/'+bw.all+' בתבנית אחת (שם, מה עושים, לשוניות, ✕)'+(bw.bad.length?', בעיות: '+bw.bad.join(' | '):'')+
     (bw.allIn?', "הכל למחסן" עובד':', "הכל למחסן" לא עובד')+(bw.allOut?', "הכל לתרמיל" עובד':', "הכל לתרמיל" לא עובד')+(bw.buy?', קנייה בשוק עובדת':bw.buyBtn?', הקנייה לא עברה':', אין כפתור קנייה')+(bw.closed?'':', לא נסגר'));
+  // הפונדק (inn.js): הקיצור 🍲 פותח את דודה פלפל, לוח עם 3 משימות, לוקחים אחת, מסיימים, נקודה אדומה, אוספים פרס, ומנוחה שנותנת XP בכניסה לעולם
+  const inn=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={},$d=()=>document.querySelector('#innBtn .innd');
+    try{SAVE.story.earth=true;SAVE.inn={};for(const id in QS().active)if(QBY[id]&&QBY[id].giver==='inn')delete QS().active[id];npcTalk(null);enterVillage();$('ovDaily').hidden=true;
+      const b=$('innBtn');o.btn=!!b;if(b)b.click();const dlg=$('npcDlg');o.open=!dlg.hidden&&S.vil.dlg==='inn';
+      o.n=dlg.querySelectorAll('.innboard .qc').length;o.rum=!!dlg.querySelector('.innrum');
+      if(LANG==='en'&&/[֐-׿]/.test(dlg.innerText))o.leak=dlg.innerText.trim().slice(0,80);
+      const acc=dlg.querySelector('[data-act="innaccept"]'),id=acc&&acc.dataset.q,q=QBY[id];o.id=id;if(acc)acc.click();o.on=!!(id&&QS().active[id]);
+      innTick(1);o.dot0=$d().hidden;
+      if(q)q.obj.forEach(ob=>questEvent(ob.type,ob.what||null,ob.n));   // מסיימים: מדווחים בדיוק את מה שהמטרה מבקשת
+      innTick(1);o.dot=!$d().hidden&&!b.hidden;o.dotW=Math.round(b.getBoundingClientRect().width);
+      const c0=SAVE.bag.coins||0;npcDialog();const cl=dlg.querySelector('[data-act="innclaim"]');o.claim=!!cl;if(cl)cl.click();
+      o.paid=!!q&&(SAVE.bag.coins||0)===c0+q.reward.coins;o.gone=!!q&&!QS().active[id]&&!qOpen(q);innTick(1);o.dotOff=$d().hidden&&b.hidden;
+      S.vil.dlgTab='rest';npcDialog();const r=dlg.querySelector('[data-act="innRest"]');o.restBtn=!!r;if(r)r.click();o.armed=!!SAVE.inn.arm;
+      npcTalk(null);enterWorld('home');for(const e of enemies)e.dead=true;innUpdate(0.1);innUpdate(1.1);
+      o.xp=innXpK()>1;o.chip=!!$('innChip')&&!$('innChip').hidden;
+      const e=addEnemy('grunt',P.x+300,P.y,1),w=QBY.iWeak;QS().active.iWeak={p:[0]};e.lt=w.obj[0].what;innKill(e);o.weak=QS().active.iWeak.p[0]===1;delete QS().active.iWeak;e.dead=true;
+      enterVillage()}
+    finally{const d=JSON.parse(bak);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,d);saveNow();if(S.vil){S.vil.ui='';villageHud()}}
+    return o});
+  check(inn.btn&&inn.open&&inn.n===3&&inn.rum&&inn.on&&inn.dot0&&inn.dot&&inn.claim&&inn.paid&&inn.gone&&inn.dotOff&&inn.restBtn&&inn.armed&&inn.xp&&inn.chip&&inn.weak&&!inn.leak,
+    'הפונדק (inn.js): '+(inn.btn&&inn.open?'הקיצור 🍲 פותח את דודה פלפל':'הקיצור לא פותח את הפונדק')+', '+inn.n+' משימות על הלוח'+(inn.rum?' ושמועה':', בלי שמועה')+
+    (inn.on?', לקחתי את '+inn.id:', הלקיחה נכשלה')+(inn.dot0&&inn.dot?', נקודה אדומה כשהיא מוכנה':', הנקודה האדומה לא עובדת ('+[inn.dot0,inn.dot,inn.dotW]+')')+(inn.claim&&inn.paid&&inn.gone?', הפרס נאסף והמשימה ירדה מהלוח':', האיסוף נכשל')+
+    (inn.dotOff?'':', הנקודה נשארה')+(inn.restBtn&&inn.armed&&inn.xp&&inn.chip?', מנוחה: +XP ושבב בעולם':', המנוחה לא עובדת')+(inn.weak?', הריגה בסוג הנזק נספרת':', הריגה בסוג הנזק לא נספרת')+(inn.leak?', עברית באנגלית: '+inn.leak:''));
   // קפיצה בין פנסים (travel.js): בשער בכפר "לאן?" עם הפנסים הדולקים, קפיצה לאגם ליד פנס המים, "חזרה לכפר" ליד הפנס (לא באמצע קרב), וקפיצה ממפת העולם
   const lj=await page.evaluate(()=>{const o={};SAVE.story.water=true;P.inv=99;npcTalk(null);enterVillage();$('ovDaily').hidden=true;
     S.vil.gate=true;S.vil.open='gate';S.vil.ui='';villageHud();o.list=document.querySelectorAll('#vPanel [data-act="jump"]').length;o.lit=travelLit().length;
@@ -3013,7 +3036,7 @@ function worldBot(m,L,god){
     ' · עלית '+L.elites+', פיצוץ שלל '+L.jackpots+', הריגה ראשונה '+L.firstKills+', תיבות '+(L.chests||0)+', יצורי משאבים: '+(L.creatures||'לא הופלו')+', מפלצות: '+(L.monsters||'לא הופלו'));
   check(L.built===1&&L.builtSaved&&L.fx,'בנייה: '+(L.panel||'הפאנל לא נפתח')+', '+(L.built===1?'נבנתה, שולם '+L.paid:'לא נבנתה')+(L.builtSaved?', נשמר':', לא נשמר')+(L.fx?', חגיגה עם פיגום':', בלי חגיגה'));
   {const Tu=L.tour||{seen:[],sign:[]};
-    check(Tu.seen.length===6&&Tu.sign.length===6,'כפר גדול: ביקור בכל המבנים, '+Tu.seen.length+'/6 הגיעו'+(Tu.stuck?' (נתקע בדרך ל-'+Tu.stuck+')':'')+', שלט על המסך ליד '+Tu.sign.length+'/6'+(Tu.sec!=null?', '+Tu.sec+' שניות':''))}
+    const nB=Tu.n||6;check(Tu.seen.length===nB&&Tu.sign.length===nB,'כפר גדול: ביקור בכל המבנים, '+Tu.seen.length+'/'+nB+' הגיעו'+(Tu.stuck?' (נתקע בדרך ל-'+Tu.stuck+')':'')+', שלט על המסך ליד '+Tu.sign.length+'/'+nB+(Tu.sec!=null?', '+Tu.sec+' שניות':''))}
   check(L.passNoPanel===true&&!!L.enterBtn&&L.tapOpen===true,'מבנים בנגיעה: '+(L.passNoPanel?'עוברים ליד מבנה בלי שנפתח חלון':'הפאנל נפתח לבד')+', '+
     (L.enterBtn?'"'+L.enterBtn+'" בסרגל פותח את הפאנל':'אין כפתור "להיכנס"')+', '+(L.tapOpen?'נגיעה במחסן פותחת אותו':'נגיעה במבנה לא פתחה'));
   check(L.collected>0&&L.collected===L.expect,'ייצור: אחרי שעתיים בלי לשחק נאספו '+L.collected+' עץ (צפוי '+L.expect+')');

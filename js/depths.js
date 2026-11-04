@@ -59,6 +59,7 @@ function depthsEnter(f){
   if(S.wd)worldUi(false);enterWorld('home',reg);
   const w=S.wd;w.dp=f;w.dpClear=false;
   const nb=f>depthsBest();if(nb){DP().best=f;saveNow()}
+  questEvent('depth',null,f);   // הלוח בפונדק (inn.js)
   if(dpIsBoss(f)){const BS=DEPTHS.boss,e=storyWarden('light',BS.y),Z=WR().zones[0];e.hp=e.max=e.max*Z.hp*BS.hp;e.dmg*=Z.dmg*BS.dmg;e.rematch=1+Math.min(2,Math.floor(f/10));e.dpBoss=true}   // rematch: שלל של קרב חוזר בניצחון (storyReWin)
   banner(T(dpIsBoss(f)?'dp.boss':'dp.floor',f,depthsBest()),dpIsBoss(f)?C.lilac:C.gold);
   if(nb&&f>1)feedTitle(T('dp.best',f),C.gold);
