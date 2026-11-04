@@ -2533,6 +2533,34 @@ function worldBot(m,L,god){
     enterWorld('home');o.gone=!S.wd.nemE;
     enemies=[];enterVillage();SAVE.nem=JSON.parse(n0);return o});
   check(Object.values(nm).every(Boolean),'בוס-נמסיס: '+Object.entries(nm).map(([k,v])=>(v?'':'✗')+k).join(', '));
+  // טיפ ראשון (firsttips.js): נמסיס ובוס ענק יחד: מוצג אחד, השני בתור. מחכה מתחת לחלון ולפס אחר, לא חוזר, נשמר. דרישה של חפץ: טיפ בתוך החלון שנעלם עם השורה. כבוי: כלום
+  const tp=await page.evaluate(()=>{
+    const o={},t0=JSON.stringify(SAVE.tips||null),off0=!!SAVE.tipsOff,n0=JSON.stringify(SAVE.nem||null),lo0=JSON.stringify(SAVE.lore||null);
+    enterWorld('home');enemies=[];S.mode='play';FLC.q=[];flCardNext();nemCardOff();MUT.bar=null;skgOfferClose();tipClose();TIP1.q=[];TIP1.pendWin=null;
+    SAVE.tipsOff=false;SAVE.tips={mut:1,skill:1,sklv:1,depths:1,req:1,q:1};SAVE.nem=null;
+    const N={id:'ntip',reg:'meadow',type:WORLD.foes.find(G=>ETYPES[G.type]&&!G.creature).type,n:77,rank:1,wins:1,esc:null,cause:'near'};NS().list.push(N);
+    const w0=S.wd.warden;S.wd.warden={wboss:'earth',dead:false};
+    tipTick(0.25);
+    o.first=!!TIP1.on&&TIP1.on.k==='nem'&&tipShownN()===1&&$('tip1').textContent.includes(nemName(N));
+    o.queue=TIP1.q.length===1&&TIP1.q[0].k==='giant';
+    const ov=document.querySelector('.ov[hidden]');ov.hidden=false;const t1=TIP1.t;for(let i=0;i<8;i++)tipTick(0.25);
+    o.underOv=$('tip1').hidden&&TIP1.t===t1&&TIP1.on.k==='nem';ov.hidden=true;tipTick(0.01);o.backOv=!$('tip1').hidden;
+    for(let i=0;i<30&&TIP1.on&&TIP1.on.k==='nem';i++)tipTick(0.25);
+    tipTick(0.25);   // הבא בתור עולה בבדיקה שאחרי
+    o.next=!!TIP1.on&&TIP1.on.k==='giant'&&tipShownN()===1;
+    FLC.q=['grunt'];flCardNext();tipTick(0.25);o.band=flCardOn()&&!$('flCard').hidden&&$('tip1').hidden;FLC.q=[];flCardNext();
+    for(let i=0;i<30&&TIP1.on;i++)tipTick(0.25);
+    for(let i=0;i<8;i++)tipTick(0.25);o.once=!TIP1.on&&!TIP1.q.length;
+    o.saved=!!(JSON.parse(localStorage.getItem(SAVE_STORE.key)).tips||{}).nem;
+    // בתוך חלון: חפץ שנעול בדרישה
+    delete SAVE.tips.req;const id=Object.keys(GEAR.items).find(k=>GEAR.items[k].tier===3&&GEAR.items[k].slot!=='orbit'),lv0=ITEMROLL.req.lv[3],sk0=ITEMROLL.skip;ITEMROLL.req.lv[3]=99;ITEMROLL.skip=false;
+    const d=document.createElement('div');d.innerHTML=itemCard(id);document.body.appendChild(d);tipTick(0.25);
+    o.req=!!TIP1.on&&TIP1.on.k==='req'&&TIP1.on.win&&$('tip1').textContent.includes('99');
+    d.remove();tipTick(0.25);o.reqGone=!TIP1.on;ITEMROLL.req.lv[3]=lv0;ITEMROLL.skip=sk0;
+    SAVE.tipsOff=true;o.off=!tipOnce('depths');
+    S.wd.warden=w0;SAVE.nem=JSON.parse(n0);SAVE.lore=JSON.parse(lo0);SAVE.tips=JSON.parse(t0);SAVE.tipsOff=off0;tipClose();TIP1.q=[];
+    enemies=[];enterVillage();return o});
+  check(Object.values(tp).every(Boolean),'טיפ ראשון: '+Object.entries(tp).map(([k,v])=>(v?'':'✗')+k).join(', '));
   // החיה מריחה ומובילה (petscent.js): מרחרחת, רצה למקום ומחכה עם חץ, תיבה נותנת שלל כשמגיעים, אויב מיוחד נותן שלל כשנופל, ומי שלא בא היא מוותרת
   const ps=await page.evaluate(()=>{
     const o={};enterWorld('home');const p=S.pet||petMake();p.st='idle';const pk=SCENT.pick;
