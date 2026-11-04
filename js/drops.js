@@ -48,7 +48,7 @@ function dropSpawn(r,n,x,y){
 function dropTake(d,auto){
   d.got=true;const st=dropStats();
   // פריט ציוד נכנס ישר לתרמיל ונשמר, בכל מקום: הוא לא הולך לאיבוד במוות בעולם
-  if(dropGear(d.r)){bagAdd(d.r,d.n);saveNow();st.gear.push(d.r);if(!auto)sfx('coin');
+  if(dropGear(d.r)){bagAdd(d.r,d.n);innGear(d.r);saveNow();st.gear.push(d.r);if(!auto)sfx('coin');
     if(feedOn())feedGear(d.r);else floatText(P.x,P.y-40,gIcon(d.r)+' '+gName(d.r),dropTier(d.r).col,16);const all=drops(),i=all.indexOf(d);if(i>=0)all.splice(i,1);return}
   const L=runLoot();L[d.r]=(L[d.r]||0)+d.n;
   if(auto)st.auto+=d.n;else{st.picked+=d.n;sfx('coin');if(feedOn())feedRes(d.r,d.n);else floatText(P.x,P.y-40,'+'+d.n+' '+resIcon(d.r),(dropTier(d.r)||{}).col||C.gold,16)}   // בעולם ובכפר: בפיד בצד (feed.js), לא על הדמות

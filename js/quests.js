@@ -141,7 +141,7 @@ function qReq(q){
   return true;
 }
 // אפשר לקבל עכשיו מהיומן
-const qOpen=q=>{const K=qKind(q);return !K.auto&&!QS().active[q.id]&&(K.repeat||!QS().done[q.id])&&qReq(q)};
+const qOpen=q=>{const K=qKind(q);return !K.auto&&!QS().active[q.id]&&(K.repeat||!QS().done[q.id])&&qReq(q)&&(!K.board||innOpen(q))};   // board: הלוח בפונדק (inn.js)
 function qStart(q){QS().active[q.id]={p:q.obj.map(()=>0)};if(!qKind(q).auto)QS().track=q.id}
 
 // בכל כניסה לכפר: יום חדש מביא קווסטים יומיים חדשים, והישגים שנפתחו מתחילים לבד
@@ -171,7 +171,7 @@ function questEvent(type,what,n=1){
       if((o.type!==type&&!(o.type==='collect'&&type==='gather'))||type==='upgrade'||a.p[i]>=o.n)return;   // מה שנאסף בעולם נספר גם ל"להביא"
       if(o.what&&o.what!=='any'&&o.what!==what)return;
       if(type==='win'&&(o.noHit&&qRun().bossHit||o.under&&S.t>o.under))return;
-      a.p[i]=Math.min(o.n,(a.p[i]||0)+n);moved=true;
+      a.p[i]=Math.min(o.n,o.max?Math.max(a.p[i]||0,n):(a.p[i]||0)+n);moved=true;   // max: השיא נספר, לא הסכום (קומה בעומק הצל, inn.js)
     });
     if(!a.r&&qReady(q)){a.r=true;moved=true;if(q.spot)spot.push(id);else banner(T('q.ready',T('q.'+id)[0]),C.gold)}
   }
@@ -203,7 +203,7 @@ function questClaim(id,quiet){   // quiet: בלי חגיגה והודעה משל
 }
 
 /* ---- ממשק: היומן בכפר, וקו מעקב בזירה ---- */
-const qWhat=o=>o.type==='story'?o.what:o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?resName(o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
+const qWhat=o=>o.type==='story'?o.what:o.type==='weak'?T('dt.'+o.what):o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?resName(o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
 const qObjTxt=(q,i)=>{const o=q.obj[i];return T('qo.'+o.type,qWhat(o),o.n)+(o.noHit?T('qo.noHit'):'')+(o.under?T('qo.under',fmt(o.under)):'')};
 const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='story'?'🏮 '+T('story.'+r[k]+'.reward'):k==='rank'?QUESTS.icon.rank+' '+(rankFor(r[k])?rankName(rankFor(r[k])):''):k==='item'?(gItem(r[k])?gIcon(r[k])+' '+gName(r[k]):QUESTS.icon.item+' '+T('item.'+r[k])):(resIcon(k)||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
 // הקווסט שמוצג בזירה: זה שבחרת לעקוב אחריו, ואם אין, הראשון שעוד לא הושלם

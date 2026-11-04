@@ -44,7 +44,10 @@ const VILLAGE={
     stash:{x:540,y:80,r:60,     // מחסן: המקום הבטוח לשלל (stash.js). cap[L]: כמה יחידות הוא מחזיק ברמה L
       cost:[null,{coins:15,wood:10},{coins:40,wood:30,stone:15,cloth:6},{coins:90,wood:60,stone:45,copper:10,hide:8},{coins:180,wood:120,stone:90,iron:15,bone:15},{coins:320,wood:220,stone:160,silver:10,venom:8,boltF:1}],
       cap:[0,150,400,900,2000,5000],
-      look:[{at:1,model:'tent',scale:0.9,deco:['crate']},{at:3,model:'market',scale:0.95,deco:['crate','crate','barrel']},{at:5,model:'market',scale:1.05,deco:['flag','flag','crate','barrel'],glow:C.tide}]}
+      look:[{at:1,model:'tent',scale:0.9,deco:['crate']},{at:3,model:'market',scale:0.95,deco:['crate','crate','barrel']},{at:5,model:'market',scale:1.05,deco:['flag','flag','crate','barrel'],glow:C.tide}]},
+    inn:{x:300,y:300,r:62,     // הפונדק של דודה פלפל (inn.js): לוח משימות, שמועות ומנוחה. כל רמה: מנוחה שנותנת יותר XP (INN.rest)
+      cost:[null,{coins:15,wood:15},{coins:40,wood:30,stone:15,cloth:4},{coins:90,wood:60,stone:45,copper:8,herb:6},{coins:180,wood:120,stone:90,iron:12,hide:10},{coins:320,wood:220,stone:160,silver:10,mushroom:10,amberF:1}],
+      look:[{at:1,model:'tent',scale:1,deco:['barrel','crate','barrel']},{at:3,model:'market',scale:0.95,deco:['barrel','barrel','crate']},{at:5,model:'market',scale:1.08,deco:['flag','flag','barrel','barrel'],glow:'#C08A52'}]}
   },
   settleEvery:2,                  // כל כמה שניות מתעדכן המלאי שהצטבר במנסרה ובמכרה (המספר מעל המבנה ובפאנל)
   winDelay:2.5,                   // שניות אחרי שהבוס נופל, עד שחוזרים הביתה
@@ -229,6 +232,7 @@ function vInfo(k,L){
   if(B.make)return T('vil.info.make',makeLine(B,L),B.cap[L]);
   if(k==='market')return T('vil.info.market',Math.round(B.bonus*(L-1)*100));
   if(k==='stash')return T('vil.info.stash',B.cap[L]);
+  if(k==='inn')return T('vil.info.inn',Math.round((INN.rest.xp+INN.rest.perLv*(L-1))*100));
 }
 function villageHud(){
   const k=S.vil.near,L=k?vLv(k):0,cur=S.vil.open;
@@ -308,7 +312,7 @@ function villageDecor(){
 }
 // איפה עומדים הקישוטים סביב מבנה, ביחס לרדיוס שלו (ראשונים: פינות קדמיות). משותף לדו-ממד ולתלת-ממד
 const VDECO=[[-0.9,0.6],[0.9,0.6],[-1.05,-0.2],[-0.75,-0.8]];
-const VCOL={center:C.lilac,forge:C.ember,mill:'#C08A52',mine:C.dim,market:C.gold,stash:C.tide};
+const VCOL={center:C.lilac,forge:C.ember,mill:'#C08A52',mine:C.dim,market:C.gold,stash:C.tide,inn:'#D9925A'};
 // דו-ממד: צורות פשוטות. בתלת-ממד המבנים מצוירים בשכבה שמתחת (render3d.js)
 function drawVillage(){
   if(!S.vil||R3D.on)return;
