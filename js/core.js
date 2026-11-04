@@ -5,7 +5,8 @@ const C={ink:'#121624',line:'#2A3249',chalk:'#ECE7DC',dim:'#8D94A8',ember:'#FF8A
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FONT="800 15px Heebo, system-ui, sans-serif";
 let W=0,H=0,DPR=1,ZOOM=1;   // W,H: כמה מהעולם רואים, ביחידות של המשחק. ZOOM מתחת ל-1: המצלמה גבוהה יותר ורואים יותר (VIEW.zoom ב-render3d.js)
-function resize(){DPR=Math.min(2,window.devicePixelRatio||1);W=window.innerWidth/ZOOM;H=window.innerHeight/ZOOM;cvs.width=Math.round(window.innerWidth*DPR);cvs.height=Math.round(window.innerHeight*DPR)}
+// הקנבס מוקצה מחדש רק כשהגודל באמת השתנה: שינוי זום (למשל בקרב בענק, giant.js) משנה רק את W,H. השמה של אותו רוחב מוחקת ובונה את הקנבס מחדש בכל פריים (ביצועים, 4.11)
+function resize(){DPR=Math.min(2,window.devicePixelRatio||1);W=window.innerWidth/ZOOM;H=window.innerHeight/ZOOM;const w=Math.round(window.innerWidth*DPR),h=Math.round(window.innerHeight*DPR);if(cvs.width!==w)cvs.width=w;if(cvs.height!==h)cvs.height=h}
 function setZoom(z){if(z!==ZOOM){ZOOM=z;resize()}}
 addEventListener('resize',resize);resize();
 /* גובה המסך האמיתי (אוראל, 2.11.2026: באייפון, לפעמים מסך הפתיחה נחתך ונשאר פס כהה למטה). בפתיחה הסרגלים של הדפדפן עוד זזים,

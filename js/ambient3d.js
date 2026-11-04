@@ -8,6 +8,7 @@ const AMBIENT={
   on:!/[?&]amb=0\b/.test(location.search),
   box:{w:1500,h:1100},   // גודל הקופסה סביב השחקן (פיקסלים של המשחק). גדולה מהמסך בזום הרחוק
   fade:0.12,             // קצה הקופסה: הנקודות נעלמות בהדרגה, בלי לקפוץ
+  lo:0.5,                // באיכות אפקטים נמוכה (vfx3d.js): איזה חלק מהנקודות מצויר
   reg:{
     meadow: {n:90,col:['#fff6b0','#ffe66b','#ffffff'],size:9,h:[6,60],v:[6,3,-4],sway:14,tw:0.6,glow:1,a:0.85},
     village:{n:70,col:['#fff6b0','#ffe66b','#ffffff'],size:8,h:[6,55],v:[5,2,-3],sway:12,tw:0.6,glow:1,a:0.8},
@@ -58,6 +59,7 @@ const AMBIENT={
     if(cur&&cur!==k){clouds[cur].p.visible=false;cur=null}
     if(!k||!AMBIENT.reg[k])return;
     const C=clouds[k]||build(k);cur=k;C.p.visible=true;
+    C.p.geometry.setDrawRange(0,typeof VFX3D!=='undefined'&&VFX3D.quality()==='lo'?Math.ceil(AMBIENT.reg[k].n*AMBIENT.lo):Infinity);   // איכות אפקטים נמוכה: פחות נקודות
     const U=C.U,c=R3D.cam,hpx=R3D.r.getContext().drawingBufferHeight;
     U.uT.value=performance.now()/1000%3600;U.uC.value.set(P.x,P.y);U.uBox.value.set(AMBIENT.box.w,AMBIENT.box.h);
     U.uSin.value=SIN();U.uCos.value=COS();
