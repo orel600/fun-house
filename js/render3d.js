@@ -148,9 +148,9 @@ function gear3dLook(L,wid){
   const it=gItem(wid),worn=gearWorn().map(gItem),best=s=>Math.max(-1,...worn.filter(x=>x.slot===s).map(x=>x.tier));
   for(const w of ['sword','gun']){const p=L.props[w];p.s=GEAR3D.wscale;if(it&&wUse(wid)===w&&GEAR3D.glow[it.tier]>0){p.glow=g3Rar(it.tier);p.gk=GEAR3D.glow[it.tier];p.pulse=it.tier>=4}}
   const fam=it&&wUse(wid)==='sword'&&GRIP3D.of(L.props.sword.prop);
-  const t=best('shield');   // המגן מהמשבצת (armor.js). בלי מגן: יד ריקה
-  if((fam==='blade'||fam==='chop')&&t>=0){const G=GEAR3D.shield;
-    L.props.shield={prop:G.model[t],tier:G.metal[t],bone:G.bone,pos:G.pos,rot:G.rot,s:G.s,glow:GEAR3D.glow[t]>0?g3Rar(t):null,gk:GEAR3D.glow[t],pulse:t>=4}}
+  const t=best('shield'),sh=worn.find(x=>x.slot==='shield'&&x.tier===t);   // המגן מהמשבצת (armor.js). בלי מגן: יד ריקה
+  if((fam==='blade'||fam==='chop')&&t>=0){const G=GEAR3D.shield,sm=sh&&sh.look&&sh.look.model;
+    L.props.shield={prop:sm&&R3D.props[sm]?sm:G.model[t],tier:G.metal[t],bone:G.bone,pos:G.pos,rot:G.rot,s:G.s,glow:GEAR3D.glow[t]>0?g3Rar(t):null,gk:GEAR3D.glow[t],pulse:t>=4}}
   const b=best('boots'),h=best('acc'),set=Object.keys(SETS).find(s=>setTiers(gearWorn()).some(x=>x.startsWith(s)));
   L.g3={boots:b>=0?g3Rar(b):null,bk:b>=0?GEAR3D.glow[b]:0,head:h>=GEAR3D.head.from?g3Rar(h):null,hk:h>=0?GEAR3D.glow[h]*0.7:0,hp:h>=4,set:set?SETS[set].col:null};
 }
