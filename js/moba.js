@@ -327,7 +327,7 @@ function mobaExit(){
 function mbUi(on){
   document.body.classList.toggle('mb',on);$('mbHud').hidden=!on;$('mbSk').hidden=!on;
   if(on){const u=mbMe();$('mbSk').innerHTML=MB_SLOTS.map(k=>{const s=MBKIT[u.kit][k],col=dtCol(s.dt||MBKIT[u.kit].dt);
-    return '<button class="skb mbskb" data-sk="'+k+'" style="--dt:'+col+'" aria-label="'+T('mb.s.'+s.id)+'">'+mbSvg(s.id)+'<i></i><b class="mblock" hidden>'+MOBA.ultAt+'</b></button>'}).join('');
+    return '<button class="skb mbskb" data-sk="'+k+'" style="--dt:'+col+'" aria-label="'+T('mb.s.'+s.id)+'">'+mbPic(s.id)+'<i></i><b class="mblock" hidden>'+MOBA.ultAt+'</b></button>'}).join('');
     for(const b of document.querySelectorAll('#mbPing [data-o] b'))b.innerHTML=mbSvg(b.parentNode.dataset.o,'mbpi');   // פקודות: אייקונים במקום אימוג'י
     mbAimInit($('mbSk'))}   // נגיעה, גרירה לכיוון וביטול (moba-aim.js)
 }
@@ -359,13 +359,13 @@ function mobaHud(){
 function mobaOpen(){
   const w=$('mbWin');
   w.innerHTML=winHead(T('mb.title'),T('mb.sub'))+'<p class="mbgoal">'+T('mb.goal')+'</p><div class="mbkits">'+
-    Object.keys(MBKIT).map(k=>{const K=MBKIT[k];return '<button class="mbkit" data-kit="'+k+'" style="--dt:'+dtCol(K.dt)+'"><span class="mbmed">'+mbSvg('k_'+k,'mbki')+'</span><span class="mbkn">'+T('mb.k.'+k)+'</span><small>'+T('mb.r.'+k)+'</small>'+
-      '<ul>'+MB_SLOTS.map(s=>'<li style="--dt:'+dtCol(K[s].dt||K.dt)+'">'+mbSvg(K[s].id,'mbli')+'<span>'+T('mb.s.'+K[s].id)+(s==='ult'?' <em>'+T('mb.ult')+'</em>':'')+'</span></li>').join('')+'</ul></button>'}).join('')+'</div>';
+    Object.keys(MBKIT).map(k=>{const K=MBKIT[k];return '<button class="mbkit" data-kit="'+k+'" style="--dt:'+dtCol(K.dt)+'"><span class="mbmed">'+mbPic('k_'+k,'mbki')+'</span><span class="mbkn">'+T('mb.k.'+k)+'</span><small>'+T('mb.r.'+k)+'</small>'+
+      '<ul>'+MB_SLOTS.map(s=>'<li style="--dt:'+dtCol(K[s].dt||K.dt)+'">'+mbPic(K[s].id,'mbli')+'<span>'+T('mb.s.'+K[s].id)+(s==='ult'?' <em>'+T('mb.ult')+'</em>':'')+'</span></li>').join('')+'</ul></button>'}).join('')+'</div>';
   w.dataset.from=$('ovStart').hidden?'':'start';$('ovStart').hidden=true;   // ממסך הפתיחה: חוזרים אליו בסגירה
   $('ovMoba').hidden=false;w.dataset.mode='pick';
 }
 function mbEndShow(won){
-  const w=$('mbWin'),row=u=>'<li class="'+(u.me?'me':'')+'" style="--dt:'+dtCol(MBKIT[u.kit].dt)+'">'+mbSvg('k_'+u.kit,'mbli')+' '+T('mb.k.'+u.kit)+' <small>'+(u.me?T('mb.you'):T('mb.bot'))+'</small><span dir="ltr">'+u.kills+' / '+u.deaths+'</span><span>'+T('mb.lvl',u.lvl)+'</span></li>';
+  const w=$('mbWin'),row=u=>'<li class="'+(u.me?'me':'')+'" style="--dt:'+dtCol(MBKIT[u.kit].dt)+'">'+mbPic('k_'+u.kit,'mbli')+' '+T('mb.k.'+u.kit)+' <small>'+(u.me?T('mb.you'):T('mb.bot'))+'</small><span dir="ltr">'+u.kills+' / '+u.deaths+'</span><span>'+T('mb.lvl',u.lvl)+'</span></li>';
   w.innerHTML=winHead(T(won?'mb.win':'mb.lose'),fmt(MB.t))+'<div class="mbend"><section class="t0"><h4>'+T('mb.blue')+'<b>'+MB.score[0]+'</b></h4><ul>'+mbHeroes(0).map(row).join('')+'</ul></section>'+
     '<section class="t1"><h4>'+T('mb.red')+'<b>'+MB.score[1]+'</b></h4><ul>'+mbHeroes(1).map(row).join('')+'</ul></section></div>'+
     '<p class="mbkd">'+T('mb.kdH')+'</p><div class="mbbtns"><button class="go" data-act="again">'+T('mb.again')+'</button><button class="lang" data-act="home">'+T('mb.home')+'</button></div>';

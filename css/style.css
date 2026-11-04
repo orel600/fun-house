@@ -1504,6 +1504,12 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 @keyframes mbshake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
 .mbski{width:34px;height:34px;color:var(--dt);filter:drop-shadow(0 2px 1px #000a);position:relative}   /* אייקוני SVG (moba-look.js), בצבע סוג הנזק */
 .mbskb:first-child .mbski{width:42px;height:42px}
+/* אייקון מצויר (js/moba-icons.js): ממלא את הכפתור כמו בעולם (.world .skb::before), וה-SVG שאחריו מוסתר. בטעינה: דהוי */
+.mbpic~svg{display:none}
+.mbskb .mbpic{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);border-radius:50%;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
+.mbskb[data-sec]:not([data-sec=""]) .mbpic{opacity:.45}
+.mbpic.mbki{width:40px;height:40px;object-fit:contain;filter:drop-shadow(0 2px 2px #000a)}
+.mbpic.mbli{width:20px;height:20px;object-fit:contain;vertical-align:-5px}
 .mblock{position:absolute;inset:0;display:grid;place-items:center;font:800 24px var(--body);color:var(--chalk);z-index:1}
 /* ---- משחקי השאול: ה-HUD וחלונות הבחירה והסוף בעץ וזהב, כמו הזירה (#279), עם צבעי הקבוצות (משימה 4, 3.11.2026) ----
    המיקומים פיזיים ולא לפי כיוון הטקסט, כמו במשחקי טלפון: הדמות שלי למעלה משמאל, הניקוד במרכז, ✕ והפקודות למעלה מימין (מחוץ לאזור הג'ויסטיק), והסקילים למטה מימין.
