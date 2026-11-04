@@ -9,7 +9,8 @@
    מסומן חוטף יותר מהכל, והריגה שלו מקצרת את הקירור). כל נזק נוסף של שילוב גדל לפי הסטט combo (P.combo, מהעץ ומכוחות על ציוד).
    שלב 4: מגן יסודות (תכונה של אויב בעולם, affix.js): חוטף רבע נזק עד ששילוב כלשהו פוגע בו, ואז המגן נשבר.
    שבירה ראשונה נותנת תמיד רונה שלישית (wrGrant ב-wrunes.js), ואחר כך בסיכוי shell.rune.
-   המילים ב-lang.js: 'combo.shatter', 'combo.pinned', 'combo.steam', 'combo.wildfire', 'combo.mark', 'combo.shell' */
+   סבב שני (wskx.js): אבן + פיזי = ניפוץ אבן. קללת הגרניט מאבנת (e.stone, לא זזים, slowK ב-dmg.js), ומכה פיזית מנפצת לנזק כפול.
+   המילים ב-lang.js: 'combo.crush', 'combo.shatter', 'combo.pinned', 'combo.steam', 'combo.wildfire', 'combo.mark', 'combo.shell' */
 const WCOMBO={
   shatter:{k:1.5,r:90,shard:0.4,col:'#BFF4FF'},   // עוד פי 1.5 מהמכה, ורסיסים ב-40% מהנזק עד r
   pinned:{k:0.5,col:'#9BD15A'},                    // עוד 50% מכל מכה פיזית באויב תקוע
@@ -17,6 +18,7 @@ const WCOMBO={
   wildfire:{r:110,t:2.5,k:0.6,col:'#FF8A3D'},      // בוער שמת: כל מי שעד r בוער 2.5 שניות, ב-60% מהשריפה שהייתה עליו (לפחות כמו מכה רגילה)
   mark:{t:4,k:0.2,cd:1,col:'#FFD84D'},             // סימון טרף: 4 שניות, עוד 20% מכל מכה, והריגה מורידה שנייה מכל הקירורים
   shell:{k:0.25,rune:0.35,col:'#9FE7FF'},          // מגן יסודות: 25% מהנזק עובר, ושבירה נותנת רונה שלישית בסיכוי 35% (הראשונה תמיד)
+  crush:{k:1,r:70,shard:0.3,col:'#C9A26B'},        // ניפוץ אבן: עוד פי 1 מהמכה (סה"כ כפול), ורסיסי אבן ב-30% מהנזק עד r
   gap:0.35                                         // אותה מילה לא קופצת פעמיים בפחות מזה
 };
 const wcK=()=>1+Math.max(0,P.combo||0)/100;   // הסטט combo: כמה יותר נזק לשילובים
@@ -29,7 +31,11 @@ function wcHit(e,d,base,w,t,ang,chained,c0){
   const K=WCOMBO,sh=e.affix==='shell'&&!e.shellOff;
   if(sh&&!e.dead){e.hp+=d*(1-K.shell.k);if(!e.shellTold){e.shellTold=1;floatText(e.x,e.y-e.r-26,T('combo.shellHint'),K.shell.col,13)}}   // המגן: מחזירים את רוב הנזק
   if(chained||e.dead){if(sh&&c0!=null&&wcN()>c0)wcBreak(e);return}
-  if(t==='physical'&&e.frozen>0){
+  if(t==='physical'&&e.stone>0){
+    e.stone=0;const extra=d*K.crush.k*wcK();e.hp-=extra;floatText(e.x+rand(-8,8),e.y-e.r-8,big(extra),K.crush.col,18,true);
+    for(const o of enemies)if(o!==e&&!o.dead&&Math.hypot(o.x-e.x,o.y-e.y)<K.crush.r)damage(o,base*K.crush.shard,w,Math.atan2(o.y-e.y,o.x-e.x),'earth',true);
+    wcShow(e,'crush',K.crush.r);
+  }else if(t==='physical'&&e.frozen>0){
     e.frozen=0;const extra=d*K.shatter.k*wcK();e.hp-=extra;floatText(e.x+rand(-8,8),e.y-e.r-8,big(extra),K.shatter.col,18,true);
     for(const o of enemies)if(o!==e&&!o.dead&&Math.hypot(o.x-e.x,o.y-e.y)<K.shatter.r)damage(o,base*K.shatter.shard,w,Math.atan2(o.y-e.y,o.x-e.x),'ice',true);
     wcShow(e,'shatter',K.shatter.r);
@@ -77,16 +83,22 @@ function wcKill(e){
   if(n)wcShow(e,'wildfire',K.wildfire.r);
 }
 // תקוע בשורשים. נקרא מהשורשים (wskbook.js)
+// מאובן (קללת הגרניט, wskx.js). הבוס לא מתאבן
+function wcStone(e,t){if(e.isBoss||e.dead)return;e.stone=Math.max(e.stone||0,t);e.kx=e.ky=0}   // אבן לא נהדפת
 function wcRoot(e,t){if(e.isBoss||e.dead)return;e.root=Math.max(e.root||0,t);e.pinShown=0}
 // כל פריים בעולם: השורשים נגמרים
-function wcUpdate(dt){for(const e of enemies){if(e.root>0)e.root-=dt;if(e.wmark>0)e.wmark-=dt}}
+function wcUpdate(dt){for(const e of enemies){if(e.root>0)e.root-=dt;if(e.wmark>0)e.wmark-=dt;if(e.stone>0){e.stone-=dt;e.kx=e.ky=0}}}
 // שורשים ירוקים לרגליים של מי שתקוע (המצבים האחרים מצוירים ב-drawSkills)
 function wcDraw(){
   ctx.save();ctx.strokeStyle=WCOMBO.pinned.col;ctx.lineWidth=3;ctx.lineCap='round';
   for(const e of enemies){if(e.dead||!(e.wmark>0))continue;const r=e.r+9,y=e.y-2;   // סימון טרף: כוונת זהב סביב האויב
     ctx.strokeStyle=WCOMBO.mark.col;ctx.globalAlpha=Math.min(1,e.wmark*2);ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(e.x,y,r,0,7);ctx.stroke();
     for(let i=0;i<4;i++){const a=i*Math.PI/2;ctx.beginPath();ctx.moveTo(e.x+Math.cos(a)*(r-5),y+Math.sin(a)*(r-5));ctx.lineTo(e.x+Math.cos(a)*(r+6),y+Math.sin(a)*(r+6));ctx.stroke()}}
-  ctx.strokeStyle=WCOMBO.pinned.col;
+  for(const e of enemies){if(e.dead||!(e.stone>0))continue;const a=Math.min(1,e.stone*3);   // מאובן: מעטה אבן אפור עם סדקים (גם בתלת-ממד, מעל הדמות)
+    ctx.globalAlpha=0.55*a;ctx.fillStyle='#8A8378';ctx.beginPath();ctx.arc(e.x,e.y-e.r*0.3,e.r*1.05,0,7);ctx.fill();
+    ctx.globalAlpha=0.9*a;ctx.strokeStyle='#4A4238';ctx.lineWidth=2;ctx.beginPath();
+    for(let i=0;i<3;i++){const b=i*2.1+e.r;ctx.moveTo(e.x,e.y-e.r*0.3);ctx.lineTo(e.x+Math.cos(b)*e.r*0.5,e.y-e.r*0.3+Math.sin(b)*e.r*0.5);ctx.lineTo(e.x+Math.cos(b+0.4)*e.r,e.y-e.r*0.3+Math.sin(b+0.4)*e.r)}ctx.stroke()}
+  ctx.lineWidth=3;ctx.strokeStyle=WCOMBO.pinned.col;
   for(const e of enemies){if(e.dead||!(e.root>0))continue;ctx.globalAlpha=Math.min(1,e.root*2);
     for(let i=0;i<4;i++){const a=i*Math.PI/2+0.4,x=e.x+Math.cos(a)*e.r*0.9,y=e.y+e.r*0.6+Math.sin(a)*4;
       ctx.beginPath();ctx.moveTo(x,y+4);ctx.quadraticCurveTo(x+Math.cos(a)*8,y-10,e.x+Math.cos(a)*e.r*0.4,y-e.r*0.5);ctx.stroke()}}

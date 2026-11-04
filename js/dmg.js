@@ -88,4 +88,4 @@ function dmgUpdate(dt){
   }
 }
 // מהירות אויב: נעצר מאדמה, מהלם, מקיפאון (skills.js) ומשורשים (wcombo.js), מאט מקרח
-const slowK=e=>e.stun>0||e.frozen>0||e.root>0?0:e.slow>0?DMG.types.ice.slow.k:1;
+const slowK=e=>e.stun>0||e.frozen>0||e.root>0||e.stone>0?0:e.slow>0?DMG.types.ice.slow.k:1;
