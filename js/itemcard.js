@@ -24,7 +24,18 @@ function itemTile(id,o={}){
   const d=icDelta(id),poor=Object.keys(icMiss(o.cost)).length>0;
   return '<button class="ictile'+gRarCls(id)+(poor?' poor':'')+'" data-act="'+(o.act||'pick')+'" data-id="'+id+'" aria-pressed="'+!!o.on+'" style="--rar:'+gRarCol(id)+'" aria-label="'+gName(id)+'">'+
     '<span class="icp rpic'+gRarCls(id)+'">'+gPic(id)+'</span><span class="icn">'+gName(id)+'</span>'+
-    (d>0?'<i class="icup" aria-hidden="true">▲</i>':'')+'</button>';
+    (d>0?'<i class="icup" aria-hidden="true">▲</i>':'')+(icReqOk(id)?'':'<i class="iclock" aria-hidden="true">🔒</i>')+'</button>';
+}
+
+/* ---- דרישות ובונוס מחלקה (itemroll.js, של סשן אחר: רק קוראים משם) ---- */
+const icReqOk=id=>typeof irCanWear!=='function'||irCanWear(id);
+// הדרישות, באדום כשלא עומדים בהן. חפץ בלי דרישה: כלום
+const icReq=id=>typeof irReqHtml==='function'?irReqHtml(id):'';
+// בונוס מחלקה: חפץ עם איכות (שנפל בעולם) מקבל את השורה של itemroll.js. חפץ מהחנות (בלי איכות, ולכן בלי בונוס): למי הוא מתאים, בסגול כשזו המחלקה שלך
+function icCls(id){
+  if(typeof irClsOf!=='function')return '';
+  if(gQtag(id))return irClsHtml(id);
+  const c=irClsOf(id);return c?'<p class="icls'+(c===heroId()?' on':'')+'">'+T('ic.for',T('hero.'+c))+'</p>':'';
 }
 
 // השורות של החפץ: טווח הנזק לנשק, וכל סטט שאינו 0. לכל שורה ▲/▼ מול מה שלבוש
@@ -34,8 +45,8 @@ function icLines(id,old){
   const s=gStats(id),b=old?gearStats([old]):{},arr=d=>d>0.05?'<i class="up">▲</i>':d<-0.05?'<i class="down">▼</i>':'';
   let h='';
   if(it.w)h+='<li class="icdmg">'+arr(wItemAvg(id)-wItemAvg(old))+wRangeTxt(wItemAvg(id),it.w)+'</li>';   // weapons.js
-  for(const k in s)if(Math.abs(s[k])>=0.05)h+='<li>'+arr(s[k]-(b[k]||0))+gSign(k,s[k])+'</li>';
-  return h?'<ul class="iclines">'+h+'</ul>':'';
+  for(const k in s)if(Math.abs(s[k])>=0.05)h+='<li>'+arr(s[k]-(b[k]||0))+gSign(k,s[k])+(typeof irRange==='function'?irRange(id,k):'')+'</li>';   // הטווח האפשרי לחפץ עם איכות
+  return (h?'<ul class="iclines">'+h+'</ul>':'')+(typeof irQHtml==='function'?irQHtml(id):'');
 }
 
 // המחיר: כל משאב עם כמה צריך, ירוק אם יש ואדום אם חסר
@@ -52,7 +63,7 @@ function itemCard(id,o={}){
       '<h4 style="color:'+col+'">'+gName(id)+'</h4><small><b class="rbadge">'+T('tier')[it.tier]+'</b> '+T('gear.slot.'+it.slot)+'</small>'+
       '<div class="icpow"><b><bdi>'+icPow(id)+'</bdi></b><span>'+T('ic.pow')+'</span>'+cmp+'</div>'+
       (old?'<small class="icvs">'+T('gear.vs',gName(old))+' · <bdi>'+icPow(old)+'</bdi></small>':'')+'</div></div>';
-  h+='<div class="icbody">'+icLines(id,old)+(typeof setHtml==='function'&&it.set?setHtml(id):'')+gFlavHtml(id)+(o.extra||'')+'</div>';
+  h+='<div class="icbody">'+icReq(id)+icLines(id,old)+icCls(id)+(typeof setHtml==='function'&&it.set?setHtml(id):'')+gFlavHtml(id)+(o.extra||'')+'</div>';
   if(o.act){
     const lack=Object.keys(miss).map(r=>'<bdi>'+shortN(miss[r])+'</bdi>'+resPic(r)).join(' ');
     h+='<div class="icfoot">'+(o.cost?icCost(o.cost):'')+

@@ -1325,6 +1325,7 @@ const TEXT={
   'ic.pow':{he:'כוח',en:'Power'},
   'ic.new':{he:'משבצת ריקה!',en:'Empty slot!'},
   'ic.buy':{he:'קנה',en:'Buy'},
+  'ic.for':{he:c=>'מתאים ל'+c,en:c=>'Made for the '+c},
   'ic.lack':{he:'חסר:',en:'Need:'},
   'ic.none':{he:'עוד אין מה ליצור. משדרגים את הנפחייה כדי לפתוח חפצים',en:'Nothing to make yet. Upgrade the forge to unlock items'},
   'bw.sellNone':{he:'אין בתרמיל משהו שהשוק קונה',en:'Nothing in your bag the market buys'},

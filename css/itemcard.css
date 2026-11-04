@@ -21,6 +21,7 @@
 .ictile.poor .icp{opacity:.45;filter:saturate(.5)}
 .ictile.poor .icn{opacity:.6}
 .ictile:active{transform:scale(.95)}
+.iclock{position:absolute;top:2px;inset-inline-start:3px;font-size:11px;font-style:normal}
 .icup{position:absolute;top:2px;inset-inline-end:3px;font:900 12px var(--body);font-style:normal;color:#5EE07A;text-shadow:0 1px 0 #000}
 
 /* ---- הכרטיס הגדול ---- */
@@ -56,3 +57,4 @@
 #vPanel.bw .icfoot .vbtn.icbuy{flex:none;width:auto;min-width:120px;max-width:55%;min-height:48px;font-size:18px;margin:0}
 .icbuy .ri{width:18px;height:18px;vertical-align:middle}
 #vPanel.bw .icfoot .vbtn.icbuy:disabled{font-size:13px}
+.icbody .ireq,.icbody .icls,.icbody .iq{margin:0;font-size:12.5px}
