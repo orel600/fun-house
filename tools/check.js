@@ -2437,10 +2437,13 @@ function worldBot(m,L,god){
     for(let i=0;i<70;i++)foeLoreUpdate(0.1);o.closed=!flCardOn()&&$('flCard').hidden;
     const e2=addEnemy('grunt',P.x+80,P.y,1);e2.home=0;foeLoreUpdate(0.01);o.once=!flCardOn();
     o.saved=!!((JSON.parse(localStorage.getItem(SAVE_STORE.key)).lore||{}).met||{}).grunt;
+    // חלון פתוח: הפס לא מופיע מעליו ולא נגמר מתחתיו, וחוזר כשהחלון נסגר
+    const ov=document.querySelector('.ov[hidden]');ov.hidden=false;flMeet('shield');for(let i=0;i<70;i++)foeLoreUpdate(0.1);
+    o.ovHide=flCardOn()&&$('flCard').hidden;ov.hidden=true;foeLoreUpdate(0.01);o.ovBack=flCardOn()&&!$('flCard').hidden;FLC.q=[];flCardNext();
     enemies=[];enterVillage();SAVE.lore=JSON.parse(m0);return o});
-  check(!flo.missing.length&&flo.eliteOk&&flo.pname&&flo.card&&flo.met&&flo.say&&flo.closed&&flo.once&&flo.saved,
+  check(!flo.missing.length&&flo.eliteOk&&flo.pname&&flo.card&&flo.met&&flo.say&&flo.closed&&flo.once&&flo.saved&&flo.ovHide&&flo.ovBack,
     'שמות לאויבים: '+(flo.missing.length?'חסר שם ל-'+flo.missing.join(','):'לכל סוג בעולם יש שם')+', עלית: "'+flo.elite+'"'+(flo.pname?'':' (לא קיבל שם)')+(flo.card?', פס פגישה ראשונה':', אין פס')+
-    (flo.closed?' שנסגר לבד':' שלא נסגר')+(flo.once?', פעם אחת':', חוזר')+(flo.saved?', נשמר':', לא נשמר')+(flo.say?', בועה':', בלי בועה'));
+    (flo.closed?' שנסגר לבד':' שלא נסגר')+(flo.once?', פעם אחת':', חוזר')+(flo.saved?', נשמר':', לא נשמר')+(flo.say?', בועה':', בלי בועה')+(flo.ovHide?(flo.ovBack?', מחכה מתחת לחלון':', לא חוזר אחרי חלון'):', מופיע מעל חלון'));
   // החיה מריחה ומובילה (petscent.js): מרחרחת, רצה למקום ומחכה עם חץ, תיבה נותנת שלל כשמגיעים, אויב מיוחד נותן שלל כשנופל, ומי שלא בא היא מוותרת
   const ps=await page.evaluate(()=>{
     const o={};enterWorld('home');const p=S.pet||petMake();p.st='idle';const pk=SCENT.pick;
