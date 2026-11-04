@@ -2261,7 +2261,7 @@ function worldBot(m,L,god){
       const acc=dlg.querySelector('[data-act="innaccept"]'),id=acc&&acc.dataset.q,q=QBY[id];o.id=id;if(acc)acc.click();o.on=!!(id&&QS().active[id]);
       innTick(1);o.dot0=$d().hidden;
       if(q)q.obj.forEach(ob=>questEvent(ob.type,ob.what||null,ob.n));   // מסיימים: מדווחים בדיוק את מה שהמטרה מבקשת
-      innTick(1);o.dot=!$d().hidden&&!b.hidden&&!!b.getBoundingClientRect().width;
+      innTick(1);o.dot=!$d().hidden&&!b.hidden;o.dotW=Math.round(b.getBoundingClientRect().width);
       const c0=SAVE.bag.coins||0;npcDialog();const cl=dlg.querySelector('[data-act="innclaim"]');o.claim=!!cl;if(cl)cl.click();
       o.paid=!!q&&(SAVE.bag.coins||0)===c0+q.reward.coins;o.gone=!!q&&!QS().active[id]&&!qOpen(q);innTick(1);o.dotOff=$d().hidden&&b.hidden;
       S.vil.dlgTab='rest';npcDialog();const r=dlg.querySelector('[data-act="innRest"]');o.restBtn=!!r;if(r)r.click();o.armed=!!SAVE.inn.arm;
@@ -2273,7 +2273,7 @@ function worldBot(m,L,god){
     return o});
   check(inn.btn&&inn.open&&inn.n===3&&inn.rum&&inn.on&&inn.dot0&&inn.dot&&inn.claim&&inn.paid&&inn.gone&&inn.dotOff&&inn.restBtn&&inn.armed&&inn.xp&&inn.chip&&inn.weak&&!inn.leak,
     'הפונדק (inn.js): '+(inn.btn&&inn.open?'הקיצור 🍲 פותח את דודה פלפל':'הקיצור לא פותח את הפונדק')+', '+inn.n+' משימות על הלוח'+(inn.rum?' ושמועה':', בלי שמועה')+
-    (inn.on?', לקחתי את '+inn.id:', הלקיחה נכשלה')+(inn.dot0&&inn.dot?', נקודה אדומה כשהיא מוכנה':', הנקודה האדומה לא עובדת')+(inn.claim&&inn.paid&&inn.gone?', הפרס נאסף והמשימה ירדה מהלוח':', האיסוף נכשל')+
+    (inn.on?', לקחתי את '+inn.id:', הלקיחה נכשלה')+(inn.dot0&&inn.dot?', נקודה אדומה כשהיא מוכנה':', הנקודה האדומה לא עובדת ('+[inn.dot0,inn.dot,inn.dotW]+')')+(inn.claim&&inn.paid&&inn.gone?', הפרס נאסף והמשימה ירדה מהלוח':', האיסוף נכשל')+
     (inn.dotOff?'':', הנקודה נשארה')+(inn.restBtn&&inn.armed&&inn.xp&&inn.chip?', מנוחה: +XP ושבב בעולם':', המנוחה לא עובדת')+(inn.weak?', הריגה בסוג הנזק נספרת':', הריגה בסוג הנזק לא נספרת')+(inn.leak?', עברית באנגלית: '+inn.leak:''));
   // קפיצה בין פנסים (travel.js): בשער בכפר "לאן?" עם הפנסים הדולקים, קפיצה לאגם ליד פנס המים, "חזרה לכפר" ליד הפנס (לא באמצע קרב), וקפיצה ממפת העולם
   const lj=await page.evaluate(()=>{const o={};SAVE.story.water=true;P.inv=99;npcTalk(null);enterVillage();$('ovDaily').hidden=true;
