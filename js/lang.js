@@ -1377,7 +1377,7 @@ const TEXT={
     en:['Echo Knight','The shadow of a knight you already beat. It remembers how you won, and it learned.','I remember you.','This time ends differently.']},
   'fl.shadewisp':{he:['אפלולית','בולעת אור כמו שאחרים אוכלים עוגיות. לא משאירה פירורים.','אור... טעים...','כבה. כבה. כבה.'],
     en:['Gloomwisp','Eats light the way others eat cookies. Leaves no crumbs.','Light... yummy...','Out. Out. Out.']},
-  'fl.new':{he:'פגשת יצור חדש',en:'New creature'},
+  'fl.new':{he:'חדש:',en:'New:'},
   // שמות אישיים לעלית ולמבוקש היום (flPersonal): שם + כינוי. אותו אורך בשתי השפות, כדי שאותו מספר ייתן אותו שם
   'fl.first':{he:['גרוק','ברזלה','טוטו','זגזג','מורגו','פיפקה','קרנץ','שלומפר','בומבה','צ׳יקי','דרדק','גוליבר'],
     en:['Grok','Brizla','Toto','Zigzag','Murgo','Pipka','Krantz','Schlumper','Bomba','Chikki','Dardak','Gulliver']},
