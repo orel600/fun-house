@@ -2594,6 +2594,7 @@ function worldBot(m,L,god){
     for(let i=0;i<30;i++)mobaUpdate(1/30);render();o.m3=typeof M3!=='undefined'?M3.map.size:-1;o.r3=R3D.on;   // תלת-ממד: מגדלים ובסיסים כמודלים (moba3d.js)
     // המראה (moba-look.js): כפתורי הסקילים והפקודות כאייקוני SVG בלי אימוג'י, והרצפה של המוד (בתלת-ממד: במקום הרצפה של הזירה)
     o.look={svg:document.querySelectorAll('#mbSk svg').length+document.querySelectorAll('#mbPing svg').length,emoji:/\p{Extended_Pictographic}/u.test($('mbSk').textContent+$('mbPing').textContent),
+      pic:[...document.querySelectorAll('#mbSk [data-sk]')].map(b=>{const im=b.querySelector('img.mbpic');return im?im.getAttribute('src'):''}),   // האייקונים המצוירים של העולם (moba-icons.js)
       floor:R3D.on&&R3D.ready?!!(M3.floor&&M3.floor.visible)&&!R3D.ground.visible:!!MB_FLOOR};
     // מצלמה ומפה (moba-look.js, 3.11): המצלמה רחוקה (רואים לרוחב לפחות פי 1.5), יש שיחים ואבנים, והמפה הקטנה בתוך המסך
     {const b=mbMiniBox(W/2-MB.me.x,H/2-MB.me.y);o.cam={z:ZOOM,wide:Math.round(100/ZOOM)/100,bush:mbDecor().filter(d=>d.k==='bush').length,rock:mbDecor().filter(d=>d.k==='rock').length,
@@ -2912,6 +2913,7 @@ function worldBot(m,L,god){
   if(!mb.err){
     check(mb.over,'משחקי השאול: משחק של בוטים '+(mb.over?'נגמר':'לא נגמר')+' אחרי '+t(mb.t)+' · '+mb.towers+' מגדלים נפלו'+(mb.base?', בסיס נהרס':', נגמר בזמן')+' · הריגות '+mb.score+' · רמה עד '+mb.lv);
     if(CFG.gfx==='3d')check(!mb.r3||mb.m3===6,'משחקי השאול בתלת-ממד: '+(mb.r3?mb.m3+' מבנים כמודלים (צריך 6)':'התלת-ממד כבוי'));
+    {const p=(mb.look||{}).pic||[],ok=p.filter(f=>f&&fs.existsSync(path.resolve(__dirname,'..',f)));check(p.length===3&&ok.length===3,'משחקי השאול: כפתורי הסקילים עם האייקונים המצוירים של העולם: '+ok.length+' מתוך '+p.length+(ok.length<p.length?' (חסר: '+p.filter(f=>!ok.includes(f)).join(', ')+')':''))}
     {const k=mb.look||{};check(k.svg===5&&!k.emoji&&k.floor,'משחקי השאול: מראה: '+k.svg+' אייקונים (צריך 5)'+(k.emoji?', נשאר אימוג\'י בכפתורים':'')+(k.floor?', רצפה משלו':', בלי רצפה משלו'))}
     {const c=mb.cam||{};check(c.wide>=1.5&&c.bush>0&&c.rock>0&&c.mini&&c.back&&c.fires!==0,'משחקי השאול: מצלמה ומפה: רואים פי '+c.wide+' לרוחב (צריך 1.5), '+c.bush+' שיחים, '+c.rock+' אבנים'+(c.mini?'':', המפה הקטנה יוצאת מהמסך')+(c.back?'':', המצלמה לא חזרה אחרי היציאה')+(c.fires===0?', בלי לפידים בתלת-ממד':''))}
     check(mb.two&&mb.two.held===2&&mb.two.ok,'משחקי השאול עם קשת וחרב: '+(mb.two?(mb.two.ok?'ה-HUD עובד':'ה-HUD נופל: '+mb.two.err):'לא נבדק'));
