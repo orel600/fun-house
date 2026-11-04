@@ -160,6 +160,7 @@ function treeLearn(b,id){
 const TF=k=>!!(P&&P.tfx&&P.tfx[k]);
 function statTick(dt){
   if(!P||!S||S.mode!=='play')return;
+  heroWorld();   // תוספת לדמות רק בכפר ובעולם (heroes.js)
   const F=TREE.fx;
   P.stillT=P.moving?0:(P.stillT||0)+dt;
   P.rooted=TF('rooted')&&P.stillT>=F.rooted.after&&!S.vil;
