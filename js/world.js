@@ -177,7 +177,7 @@ const wKind=k=>NODES.kinds[k];
 function placeBox(){if(!S.wd)return null;const {w,h}=WR().size,m=WORLD.edge;return{x0:-w/2+m,x1:w/2-m,y0:-h/2+m,y1:h/2-m}}
 function placeClamp(o){const B=placeBox();if(!B)return o;o.x=Math.max(B.x0,Math.min(B.x1,o.x));o.y=Math.max(B.y0,Math.min(B.y1,o.y));return o}
 // השערים של האזור: הבית, שערי הזירה, והדרכים שהעלילה כבר פתחה (storyOpen ב-story.js)
-const wPathOpen=p=>!p.need||[].concat(p.need).every(storyOpen);   // need יכול להיות רשימה: כל הפנסים בה דולקים (לב הצל)
+const wPathOpen=p=>p.open?p.open():!p.need||[].concat(p.need).every(storyOpen);   // need יכול להיות רשימה: כל הפנסים בה דולקים (לב הצל)
 function wGates(all){const R=WR(),o=Object.assign({home:R.home},R.gates);for(const k in R.paths)if(all||wPathOpen(R.paths[k]))o[k]=R.paths[k];return o}
 const wIsPath=k=>k!=='home'&&!!WR().paths[k];
 // השם של שער: לכפר, לאזור אחר, או זירה
@@ -207,7 +207,7 @@ function enterWorld(at,reg){
   if(reg!=='meadow')questEvent('story',reg);   // קווסט עלילה "להגיע לאגם" (quests.js)
 }
 // דרך לאזור אחר. חוזרים לאזור הקודם ליד הדרך שממנה יצאו
-function wGo(to){const from=S.wd.reg;worldUi(false);enterWorld(WR().back===to?from:'home',to)}
+function wGo(to){if(depthsGo(to))return;const from=S.wd.reg;worldUi(false);enterWorld(WR().back===to?from:'home',to)}
 function wArena(id,a){wRet=id;worldUi(false);startRun(a);questEvent('reach','arena')}
 function wHome(){worldUi(false);enterVillage()}
 
@@ -294,7 +294,7 @@ function worldUpdate(dt){
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
-  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
+  wantedUpdate(dt);storyUpdate(dt);depthsUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
   dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
   enemies=enemies.filter(e=>!e.dead);
@@ -313,11 +313,11 @@ function worldUpdate(dt){
 /* ---- מוות בעולם: חצי מכל משאב בתרמיל הולך, הפריטים והמחסן נשארים. נקרא מ-gameOver ---- */
 function worldDeath(){
   S.mode='over';joy=null;
-  const lost={},k=RES.deathLoss.resources;   // resources.js
+  const lost={},k=S.wd.dp?0:RES.deathLoss.resources;   // עומק הצל: לא מאבדים כלום (depths.js)   // resources.js
   for(const r in SAVE.bag){if(!resOf(r))continue;const n=Math.floor(SAVE.bag[r]*k);if(n>0){bagTake(r,n);lost[r]=n}}
   S.wd.lost=lost;saveNow();
   $('wPanel').hidden=true;
-  $('wLost').innerHTML=bagLine(lost)||T('w.lostNone');
+  $('wLost').innerHTML=bagLine(lost)||T('w.lostNone');if(S.wd.dp)depthsDied();
   setTimeout(()=>{if(S.wd)$('ovWDeath').hidden=false},700);
 }
 $('wRespawn').onclick=()=>{$('ovWDeath').hidden=true;wHome()};
@@ -327,7 +327,7 @@ function worldHud(){
   const w=S.wd;if(w.open&&w.open!==w.near)w.open=null;   // מתרחקים מהשער: הכרטיס נסגר
   const open=!!w.near&&w.open===w.near,key=LANG+'|'+w.near+'|'+open+'|'+S.mode+'|'+JSON.stringify(SAVE.bag);
   if(key===w.ui)return;w.ui=key;
-  $('wName').textContent=T('w.region.'+WR().region);
+  $('wName').textContent=depthsName()||T('w.region.'+WR().region);
   $('wBag').innerHTML=cornerRes(resShown('world'));   // עד 2 משאבים ליד ☰, והשאר ב-"+N" (minimap.js)
   wGoBtn(w);
   const pn=$('wPanel'),k=w.near;pn.hidden=!open;if(pn.hidden)return;

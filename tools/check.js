@@ -2110,6 +2110,27 @@ function worldBot(m,L,god){
     (ch6.warden?', הצל קם':', הצל לא קם')+(ch6.learn&&ch6.learnAll?' ולמד (עמיד לאש בכל השלבים)':', לא למד')+', שלבים: '+(ch6.phases||'-')+(ch6.shoot&&ch6.ring&&ch6.marks?' עם ההתקפות של השומרים':', התקפה של שלב חסרה')+(ch6.ready?', הופל':', לא הופל')+
     (ch6.back?', חזרה למגדלים':', החזרה למגדלים שבורה')+(ch6.lit?', הפנס הלבן נדלק':', הפנס הלבן לא נדלק')+', '+(ch6.cheer||0)+' תושבים מריעים'+(ch6.head?', ראש הכפר מדבר':', ראש הכפר שותק')+
     (ch6.end?', "תודה ששיחקת" ('+ch6.rows+' שורות: '+(ch6.sum?ch6.sum.time+' · '+ch6.sum.kills+' · '+ch6.sum.secrets+' · '+ch6.sum.fish:'')+')':', בלי מסך סיום')+(ch6.saved?'':', לא נשמר')+(ch6.goOn?' וממשיכים לשחק':', אי אפשר להמשיך'));
+  // עומק הצל (depths.js): אחרי הסוף נפתח שביל בלב הצל. קומה אחרי קומה, קשה יותר ושלל טוב יותר, בוס כל 5, יציאה בכל רגע, מוות בלי הפסד, ושיא שנשמר
+  const dp=await page.evaluate(()=>{
+    const o={},st0=JSON.stringify(SAVE.story),best0=SAVE.depths&&SAVE.depths.best,kill=()=>{for(const e of enemies)if(!e.dead&&!e.pack&&!e.evt)damage(e,e.max*10,'sword',0,'water');for(let i=0;i<4;i++)worldUpdate(0.016)};
+    SAVE.story.end=false;enterWorld('home','shadow');o.closed=!wGates().depths;SAVE.story.end=true;enterWorld('home','shadow');o.open=!!wGates().depths;
+    SAVE.depths.best=0;P.inv=999;wGo('depths');o.f1=S.wd.dp===1&&/^dp_/.test(S.wd.reg);worldHud();o.hud=$('wName').textContent.includes('1');
+    const ty=new Set(enemies.filter(e=>!e.dead&&e.home!=null).map(e=>e.type));o.foes=enemies.filter(e=>!e.dead&&e.home!=null).length;o.types=ty.size;
+    const hp1=WR().zones[0].hp;o.shut=!wGates().deeper;
+    kill();o.clear=!!S.wd.dpClear&&!!wGates().deeper;o.got=(S.wd.dpGot||[]).length;o.q=(S.wd.dpGot||[]).every(id=>gQ(id)>=DEPTHS.loot.q.min);
+    wGo('deeper');o.f2=S.wd.dp===2&&WR().zones[0].hp>hp1&&SAVE.depths.best===2;
+    depthsEnter(5);const w=S.wd.warden;o.boss=!!w&&w.type==='shade'&&w.dpBoss;
+    if(w)damage(w,w.max*10,'sword',0,'water');kill();o.bossWin=!!S.wd.dpClear&&(S.wd.reGot||[]).length>0;
+    depthsEnter(30);kill();o.legend=(S.wd.dpGot||[]).some(id=>(gItem(id)||{}).tier===4);o.f30=WR().zones[0].hp/hp1;
+    SAVE.bag.wood=(SAVE.bag.wood||0)+10;const wood=SAVE.bag.wood;P.hp=0;gameOver();o.keep=SAVE.bag.wood===wood&&$('wLost').textContent.includes('30');
+    $('wRespawn').click();o.home=!!S.vil;
+    depthsEnter(3);S.wd.near='home';$('wGo').click();o.exit=!!S.vil;
+    o.saved=JSON.parse(localStorage.getItem(SAVE_STORE.key)).depths.best===30;
+    SAVE.story=JSON.parse(st0);SAVE.depths.best=best0||0;saveNow();return o});
+  check(dp.closed&&dp.open&&dp.f1&&dp.hud&&dp.foes>0&&dp.types>1&&dp.shut&&dp.clear&&dp.got>0&&dp.q&&dp.f2&&dp.boss&&dp.bossWin&&dp.legend&&dp.f30>3&&dp.keep&&dp.home&&dp.exit&&dp.saved,
+    'עומק הצל: '+(dp.closed&&dp.open?'השביל נפתח רק אחרי הסוף':'השביל לא תלוי בסוף')+(dp.f1&&dp.hud?', קומה 1':', לא נכנס לקומה 1')+', '+dp.foes+' אויבים מ-'+dp.types+' סוגים'+(dp.shut&&dp.clear?', השער למטה נפתח אחרי ניקוי':', השער למטה שבור')+
+    ', '+dp.got+' חפצים בתיבה'+(dp.q?'':' (איכות נמוכה!)')+(dp.f2?', קומה 2 קשה יותר':', קומה 2 לא קשה יותר')+(dp.boss&&dp.bossWin?', בוס בקומה 5 והופל':', הבוס בקומה 5 חסר')+(dp.legend?', אגדי בקומה 30':', בלי אגדי בעומק')+' (חיים פי '+(Math.round((dp.f30||0)*10)/10)+')'+
+    (dp.keep?', מוות בלי הפסד':', מוות מאבד שלל!')+(dp.home?' וחזרה לכפר':'')+(dp.exit?', יציאה בשער':', היציאה שבורה')+(dp.saved?', השיא נשמר':', השיא לא נשמר'));
   // כל פנס שנדלק משנה את הכפר (homecoming.js): בכניסה הבאה לכפר התושב חוזר, העמוד שלו דולק, ראש הכפר מספר, ובעולם נופל חפץ ביסוד של הפנס
   const hm=await page.evaluate(()=>{
     const o={},b0=SAVE.home.back;SAVE.home.back={};
