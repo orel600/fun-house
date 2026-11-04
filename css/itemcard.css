@@ -1,0 +1,58 @@
+/* כרטיס חפץ (js/itemcard.js): אריחים קטנים ברשימה, וכרטיס גדול של מה שנבחר. בנפחייה (bwin.js), ובהמשך גם בציוד.
+   הדוגמה: docs/refs/xphero/item-card.jpg. המסגרת והצבע לפי הנדירות (--rar, --rf, css/rarity.css).
+   בטלפון שוכב: הרשימה בטור אחד והכרטיס בשני, בלי גלילה של הכרטיס. רק הרשימה גוללת */
+
+/* ---- שני הטורים: הרשימה צרה יותר, הכרטיס רחב ---- */
+#vPanel.bw .bwcols.icols{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}
+.icols>section:first-child{gap:4px}
+.icols .bwch{flex:none}
+.icols .icside{justify-content:stretch}
+
+/* ---- אריח ברשימה ---- */
+#vPanel.bw .bwgrid.ictiles{grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px}
+.ictile{appearance:none;position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:44px;padding:4px 3px 3px;
+  border:2px solid color-mix(in srgb,var(--rf,var(--line)) 70%,transparent);border-radius:12px;background:#0E1220;color:var(--chalk);cursor:pointer;font:inherit}
+.ictile>*{flex:none}
+#vPanel.bw .ictile{height:auto;min-height:72px}
+.ictile .icp{display:grid;place-items:center;width:52px;height:52px;border-radius:10px;font-size:30px;line-height:1}
+.ictile .icp .ri{width:44px;height:44px;object-fit:contain}
+.ictile .icn{font:700 10.5px/1.15 var(--body);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--rar)}
+.ictile[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold),0 0 12px #F4C74F66;background:#1D1A12}
+.ictile.poor .icp{opacity:.45;filter:saturate(.5)}
+.ictile.poor .icn{opacity:.6}
+.ictile:active{transform:scale(.95)}
+.icup{position:absolute;top:2px;inset-inline-end:3px;font:900 12px var(--body);font-style:normal;color:#5EE07A;text-shadow:0 1px 0 #000}
+
+/* ---- הכרטיס הגדול ---- */
+.icard{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:6px;padding:8px 10px;border-radius:14px;
+  border:2px solid var(--rf,var(--rar));background:radial-gradient(circle at 25% 0%,color-mix(in srgb,var(--rar) 18%,#151A28),#0D101A 75%)}
+.ichead{display:flex;gap:10px;align-items:center;flex:none}
+.icbig{flex:none;display:grid;place-items:center;width:92px;height:92px;border-radius:14px;font-size:54px;line-height:1}
+.icbig .ri{width:80px;height:80px;object-fit:contain;filter:drop-shadow(0 3px 4px #0009)}
+.ictitle{min-width:0;display:flex;flex-direction:column;gap:1px}
+.ictitle h4{margin:0;font:800 18px/1.15 var(--title,var(--body));text-shadow:0 1px 0 #000}
+.ictitle small{font:700 11.5px var(--body);color:var(--dim)}
+.icpow{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.icpow b{font:900 34px/1 var(--title,var(--body));color:#FFF;text-shadow:0 2px 0 #000,0 0 14px color-mix(in srgb,var(--rar) 50%,transparent)}
+.icpow>span{font:800 12px var(--body);color:var(--dim)}
+.icd{font:900 15px var(--body);color:var(--dim)}
+.icd.up{color:#5EE07A}.icd.down{color:#FF6B6B}.icd.new{color:var(--gold);font-size:12px}
+.icvs{font-size:11px!important}
+
+.icbody{flex:1 1 auto;min-height:0;overflow-y:auto;scrollbar-width:thin;display:flex;flex-direction:column;gap:4px}
+.iclines{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 10px}
+.iclines li{font:700 13px/1.3 var(--body);color:var(--chalk);display:flex;gap:4px;align-items:baseline}
+.iclines li.icdmg{grid-column:1/-1;font-size:14px;color:#FFE7A8}
+.iclines i{font-style:normal;font-size:11px}
+.iclines .up{color:#5EE07A}.iclines .down{color:#FF6B6B}
+.icbody .gflav{margin:0;font-size:12px}
+
+/* ---- המחיר והכפתור ---- */
+.icfoot{flex:none;display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:6px}
+.iccost{display:flex;flex-wrap:wrap;gap:4px;flex:1 1 auto;min-width:0}
+.icc{display:inline-flex;align-items:center;gap:3px;padding:2px 7px 2px 4px;border-radius:10px;background:#0008;border:1px solid #5EE07A88;font:800 13px var(--body)}
+.icc.miss{border-color:#FF6B6B;color:#FF9A9A}
+.icc .ri{width:20px;height:20px;object-fit:contain}
+#vPanel.bw .icfoot .vbtn.icbuy{flex:none;width:auto;min-width:120px;max-width:55%;min-height:48px;font-size:18px;margin:0}
+.icbuy .ri{width:18px;height:18px;vertical-align:middle}
+#vPanel.bw .icfoot .vbtn.icbuy:disabled{font-size:13px}
