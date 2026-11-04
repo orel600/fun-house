@@ -560,6 +560,7 @@ const TEXT={
   'w.gate.pit':{he:'זירת הבור',en:'Quarry Pit Arena'},
   'w.arenaInfo':{he:'ריצה עד הבוס. השלל מהזירה נכנס לתרמיל גם אם נופלים, ובסוף חוזרים לשער הזה.',en:'A run until the boss. Arena loot goes in your bag even if you fall, and you come back to this gate.'},
   'w.enterArena':{he:'כניסה לזירה',en:'Enter the arena'},
+  'w.enterMaze':{he:'זירת מבוך: קירות שמשתנים',en:'Maze arena: shifting walls'},
   'w.enterBoss':{he:'זירת בוסים: שלושה בוסים ברצף',en:'Boss arena: three bosses in a row'},
   'bossar.count':{he:(i,n)=>'בוס '+i+'/'+n,en:(i,n)=>'Boss '+i+'/'+n},
   'bossar.next':{he:(i,n,s)=>'בוס '+i+'/'+n+' בעוד '+s,en:(i,n,s)=>'Boss '+i+'/'+n+' in '+s},
@@ -1374,7 +1375,7 @@ const TEXT={
     en:['Echo Knight','The shadow of a knight you already beat. It remembers how you won, and it learned.','I remember you.','This time ends differently.']},
   'fl.shadewisp':{he:['אפלולית','בולעת אור כמו שאחרים אוכלים עוגיות. לא משאירה פירורים.','אור... טעים...','כבה. כבה. כבה.'],
     en:['Gloomwisp','Eats light the way others eat cookies. Leaves no crumbs.','Light... yummy...','Out. Out. Out.']},
-  'fl.new':{he:'פגשת יצור חדש',en:'New creature'},
+  'fl.new':{he:'חדש:',en:'New:'},
   // שמות אישיים לעלית ולמבוקש היום (flPersonal): שם + כינוי. אותו אורך בשתי השפות, כדי שאותו מספר ייתן אותו שם
   'fl.first':{he:['גרוק','ברזלה','טוטו','זגזג','מורגו','פיפקה','קרנץ','שלומפר','בומבה','צ׳יקי','דרדק','גוליבר'],
     en:['Grok','Brizla','Toto','Zigzag','Murgo','Pipka','Krantz','Schlumper','Bomba','Chikki','Dardak','Gulliver']},
