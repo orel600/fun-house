@@ -136,12 +136,20 @@ const MONSTERS={   // anims: רק מה שאויב מנגן (תנועה ומוו�
   mushnub:{src:mon('Blob','Mushnub'),anims:['Walk','Death'],tex:32},
   goleling:{src:mon('Flying','Goleling'),anims:['Fast_Flying','Death'],tex:32},
   ghost:  {src:mon('Flying','Ghost_Skull'),anims:['Fast_Flying','Death'],tex:32},
-  yeti:   {src:mon('Big','Yeti'),anims:['Walk','Death'],tex:128},
-  demon:  {src:mon('Big','Demon'),anims:['Walk','Death'],tex:128}
+  // ייתי ושד: גם הבוסים הענקיים של הרכס ושל לב הצל (giant.js), אז גם עמידה ומכה
+  yeti:   {src:mon('Big','Yeti'),anims:['Walk','Death','Idle','Punch'],tex:128},
+  demon:  {src:mon('Big','Demon'),anims:['Walk','Death','Idle','Punch'],tex:128},
+  // הבוסים הענקיים בעולם (giant.js, LOOK3D.wb_*): ענק אבן לאחו, איש-דג לאגם, דרקון למדבר ויצור סערה למגדלים. כל אחד עד 7,500 משולשים
+  stoneGiant:{src:mon('Big','BlueDemon'),anims:['Walk','Death','Idle','Punch'],tex:128,stone:'#B8A68A'},   // stone: הטקסטורה נצבעת לגוון אחד (אבן), והבהירות נשארת
+  fishGiant: {src:mon('Big','Fish'),anims:['Walk','Death','Idle','Punch'],tex:128},
+  dragon:    {src:mon('Flying','Dragon_Evolved'),anims:['Fast_Flying','Death','Flying_Idle','Punch'],tex:128},
+  hywirl:    {src:mon('Flying','Hywirl'),anims:['Fast_Flying','Death','Flying_Idle','Punch'],tex:128}
 };
 async function addMonsters(add){
   for(const [k,c] of Object.entries(MONSTERS)){
-    add('mon_'+k,await slim(await io.read(c.src),{tex:c.tex}));
+    const md=await io.read(c.src);
+    if(c.stone)for(const t of md.getRoot().listTextures())t.setImage(await sharp(Buffer.from(t.getImage())).tint(c.stone).png().toBuffer()).setMimeType('image/png');
+    add('mon_'+k,await slim(md,{tex:c.tex}));
     const doc=await io.read(c.src),all=doc.getRoot().listAnimations(),miss=c.anims.filter(n=>!all.some(a=>a.getName()===n));
     if(miss.length)throw new Error('אנימציה חסרה ב-'+k+': '+miss.join(', '));
     for(const a of all)a.setName('mon_'+k+'_'+a.getName());
