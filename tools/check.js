@@ -2150,9 +2150,19 @@ function worldBot(m,L,god){
       q('[data-act="stashAll"][data-dir="out"]').click();o.allOut=SAVE.bag.wood===w0&&!SAVE.stash.wood;
       S.vil.ui='';vOpen('market');const c0=SAVE.bag.coins,s0=SAVE.bag.stone||0,b=q('.tcard[data-act="buy"][data-r="stone"]');o.buyBtn=!!b&&!b.disabled;
       if(o.buyBtn)b.click();o.buy=SAVE.bag.stone===s0+vLot('stone')&&SAVE.bag.coins===c0-vPrice('stone','buy')*vLot('stone');
+      // הנפחייה (itemcard.js): אריחים, נגיעה בוחרת, הכרטיס עם מספר כוח, קנייה מהכרטיס, וכפתור אפור כשחסר
+      S.vil.ui='';SAVE.village.forge=Math.max(2,vLv('forge'));vOpen('forge');const ts=document.querySelectorAll('#vPanel .ictile');o.fTiles=ts.length;
+      const t2=ts[1],fid=t2&&t2.dataset.id;
+      if(t2){t2.click();o.fPick=BWIN.sel.forge===fid&&!!q('.icard .icpow b')&&!!q('.icbuy')&&q('.icbuy').dataset.r===fid;
+        const c=GEAR.recipes[fid];for(const r in c)bagAdd(r,c[r]);villageHud();const n0=SAVE.bag[fid]||0;q('.icbuy').click();o.fBuy=(SAVE.bag[fid]||0)===n0+1;
+        for(const r in c)SAVE.bag[r]=0;villageHud();o.fPoor=!!q('.icbuy')&&q('.icbuy').disabled;
+        // דרישות (itemroll.js): חפץ שדורש רמה מראה אותה בכרטיס, באדום כשהגיבור לא עומד בה
+        const rq=[...document.querySelectorAll('#vPanel .ictile')].find(b=>irReq(b.dataset.id)),lv0=SAVE.hero.level;
+        if(rq){ITEMROLL.skip=false;SAVE.hero.level=1;rq.click();o.fReq=!!q('.icard .ireq.no')&&!!q('.ictile[aria-pressed="true"] .iclock');ITEMROLL.skip=true;SAVE.hero.level=lv0}else o.fReq=true}
       vShut();o.closed=$('vPanel').hidden;
     }finally{const d=JSON.parse(bak);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,d);saveNow();if(S.vil){S.vil.tab={};S.vil.ui='';villageHud()}}
     return o});
+  check(bw.fTiles>1&&bw.fPick&&bw.fBuy&&bw.fPoor&&bw.fReq,'חלון הנפחייה (itemcard.js): '+bw.fTiles+' חפצים ברשימה'+(bw.fPick?', נגיעה מציגה כרטיס עם מספר כוח':', הבחירה לא עובדת')+(bw.fBuy?', קנייה מהכרטיס עובדת':', הקנייה לא עברה')+(bw.fPoor?', בלי מספיק הכפתור אפור':', הכפתור לא אפור כשחסר')+(bw.fReq?', דרישות באדום':', הדרישות לא מוצגות'));
   check(!bw.bad.length&&bw.n===bw.all&&bw.allIn&&bw.allOut&&bw.buy&&bw.closed,'חלונות המבנים: '+bw.n+'/'+bw.all+' בתבנית אחת (שם, מה עושים, לשוניות, ✕)'+(bw.bad.length?', בעיות: '+bw.bad.join(' | '):'')+
     (bw.allIn?', "הכל למחסן" עובד':', "הכל למחסן" לא עובד')+(bw.allOut?', "הכל לתרמיל" עובד':', "הכל לתרמיל" לא עובד')+(bw.buy?', קנייה בשוק עובדת':bw.buyBtn?', הקנייה לא עברה':', אין כפתור קנייה')+(bw.closed?'':', לא נסגר'));
   // קפיצה בין פנסים (travel.js): בשער בכפר "לאן?" עם הפנסים הדולקים, קפיצה לאגם ליד פנס המים, "חזרה לכפר" ליד הפנס (לא באמצע קרב), וקפיצה ממפת העולם
