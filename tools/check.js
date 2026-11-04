@@ -1382,6 +1382,23 @@ function worldBot(m,L,god){
       ov.querySelector('[data-wsb="x"]').click();
       for(const x of enemies)x.dead=true;enemies=[];run(6);r.clean=!(S.wr&&S.wr.fx.length)&&!(S.wsb&&S.wsb.fx.length)}catch(err){r.err=String(err&&err.stack||err)}
     const o=$('ovBook');if(o)o.hidden=true;if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // שדרוג סקילים אצל הכוהנת (wsklvl.js): שמירה ישנה בלי sklv עובדת, הלשונית אצל הכוהנת משדרגת ולוקחת מחיר, +5 נותן יותר נזק ופחות טעינה,
+  // כל סקיל בספר (גם חדש) משתדרג, ו-+N מופיע על הכפתור ובספר. אחר כך הכל חוזר
+  const wsl=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);delete SAVE.sklv;SAVE.hero.skSeen=wsbIds().slice();SAVE.hero.level=99;SAVE.hero.skRune={};
+      r.old=wslLv('meteor')===0&&wslK('meteor')===1;
+      enterVillage();for(const k of ['coins','bone','essence','dust','hide','plate','rubyC','ruby','gem'])bagAdd(k,5000);const c0=SAVE.bag.coins;
+      npcTalk(WSKLVL.npc);S.vil.dlgTab='sklv';npcDialog();const dlg=$('npcDlg');r.tab=!!dlg.querySelector('[data-tab="sklv"]');
+      r.rows=dlg.querySelectorAll('.wslr').length;const b=dlg.querySelector('[data-act="sklv"][data-id="meteor"]');if(b)b.click();
+      r.up=wslLv('meteor')===1&&c0-SAVE.bag.coins===WSKLVL.coins[0]&&wslStat.ups>0;npcTalk(null);
+      r.all=Object.keys(WSKBOOK.list).every(id=>{const D=WSKBOOK.list[id];SAVE.sklv[id]=3;const ok=wslK(id)>1&&D.cd<D.cd0;SAVE.sklv[id]=0;return ok});
+      enterWorld('home');enemies=[];const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
+      SAVE.hero.skLoad=['meteor',null];run(0.05);const i=S.sk.ids.indexOf('meteor'),cast=()=>{S.sk.cd[i]=0;S.wsb&&(S.wsb.fx=[]);wskUse('meteor');const o=S.wsb.fx.find(o=>o.id==='meteor');return o?o.base:0};
+      if(i>=0){SAVE.sklv.meteor=0;const b0=cast();SAVE.sklv.meteor=5;const b5=cast();r.dmg=b0>0?Math.round(b5/b0*100)/100:0;
+        r.cd=Math.abs(S.sk.cd[i]-WSKBOOK.list.meteor.cd0*WSKLVL.cd[5])<0.05;skillsHud();wslBadges();const sb=document.querySelector('#skills .skb[data-sk="meteor"] .wslb');r.btn=sb?sb.textContent:'';
+        wsbOpenUi();wslBadges();const kb=document.querySelector('#ovBook .wsbc[data-wsbid="meteor"] .wslb');r.book=kb?kb.textContent:'';wsbClose()}
+      for(const x of enemies)x.dead=true;enemies=[];run(2)}catch(err){r.err=String(err&&err.stack||err)}
+    if(SKR)skrEnd(false);worldUi(false);if(!vil)villageUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // שלב 3 בסקילים (wcombo.js): בוער שמת מדליק את השכן (התפשטות), סקיל של הצייד מסמן טרף והריגה של מסומן מקצרת קירור,
   // והסטט "נזק שילובים" מגיע מכוח על ציוד ומהעץ. אחר כך הכל חוזר
   const wst=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
@@ -2876,6 +2893,9 @@ function worldBot(m,L,god){
   check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean&&!wsb.noPic.length,
     'ספר הסקילים: '+(wsb.err||[wsb.one&&wsb.lock?'נעול בהתחלה':'לא נעול',wsb.lp?'במסלול הרמות':'לא במסלול',wsb.fill&&wsb.btns?'רמה ממלאת משבצות':'רמה לא מילאה',
     wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn?'הספר מחליף כפתור':'הספר לא החליף','עובדים: '+wsb.ok.join(', '),wsb.bad.length?'נכשלו: '+wsb.bad.join(', '):'',wsb.clean?'נגמרים':'לא נגמרו',wsb.noPic.length?'אייקונים שלא נטענו: '+wsb.noPic.join(', '):''+wsb.n+' אייקונים נטענו'].filter(Boolean).join(' · ')));
+  check(!wsl.err&&wsl.old&&wsl.tab&&wsl.rows>0&&wsl.up&&wsl.all&&wsl.dmg>=1.55&&wsl.cd&&wsl.btn==='+5'&&wsl.book==='+5','שדרוג סקילים אצל הכוהנת: '+(wsl.err||[wsl.old?'שמירה ישנה עובדת':'שמירה ישנה נשברה',
+    wsl.tab?'לשונית עם '+wsl.rows+' סקילים':'אין לשונית',wsl.up?'שדרוג לקח מחיר':'השדרוג לא עבד',wsl.all?'כל סקילי הספר משתדרגים':'יש סקיל שלא משתדרג',
+    '+5: נזק x'+wsl.dmg,wsl.cd?'טעינה קצרה יותר':'הטעינה לא התקצרה','כפתור '+(wsl.btn||'בלי +N'),'ספר '+(wsl.book||'בלי +N')].join(' · ')));
   check(!wrn.err&&wrn.lootLock&&wrn.lock&&wrn.lp&&wrn.auto&&wrn.ui&&wrn.pick&&wrn.unpick&&!wrn.bad.length&&wrn.ok.length===wrn.n&&wrn.clean,'רונות: '+(wrn.err||[wrn.lock?'נעולות בהתחלה':'לא נעולות',
     wrn.lp?'במסלול הרמות':'לא במסלול',wrn.auto?'רמה מכניסה רונה':'רמה לא הכניסה',wrn.ui&&wrn.pick&&wrn.unpick?'הספר מחליף רונה':'הספר לא החליף',
     'עובדות '+wrn.ok.length+'/'+wrn.n,wrn.bad.length?'נכשלו: '+wrn.bad.join(', '):'',wrn.clean?'נגמרות':'לא נגמרו'].filter(Boolean).join(' · ')));
