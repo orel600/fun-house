@@ -1268,7 +1268,7 @@ function worldBot(m,L,god){
       r.crush=(wcStat.crush||0)>c0&&!(a.stone>0)&&h1>=h2*1.9;r.crushDmg=Math.round(h1)+'/'+Math.round(h2);
       // שרשרת ברק: חמישה יבשים צפופים: 3 קפיצות. חמישה רטובים: 4. ושניים במרחק 230 (מעבר לקפיצה רגילה): יבשים פעם אחת, רטובים פעמיים
       const pack=wt=>[[50,0],[80,30],[80,-30],[110,0],[60,50]].map(([x,y])=>{const e=mk(x,y);if(wt)e.wet=9;return e});
-      const hops=(wt,make)=>{clear();const L=make(wt),h=wskxStat.hops;cast('chain');run(1);return [wskxStat.hops-h,L.filter(e=>e.hp<e.max).length]};
+      const hops=(wt,make)=>{clear();const L=make(wt),h=wskxStat.hops;r.cCast=cast('chain')&&r.cCast!==false;run(1);return [wskxStat.hops-h,L.filter(e=>e.hp<e.max).length]};
       const s0=SKFX3D.stat.start;[r.dryHops,r.dryHit]=hops(false,pack);r.cOwn=d3?SKFX3D.stat.start>s0:true;
       const w0=wskxStat.wetHops;[r.wetHops]=hops(true,pack);r.wetPlus=wskxStat.wetHops>w0;
       const far=wt=>[mk(60,0),mk(60,0)].map((e,i)=>{if(i){e.x=P.x-220;e.y=P.y}else e.x=P.x+60;if(wt)e.wet=9;return e});
