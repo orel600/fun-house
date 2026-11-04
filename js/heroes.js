@@ -83,6 +83,16 @@ function heroPick(id){
 }
 // "הדמות שלי": כל לחיצה עוברת למראה האישי הבא (ניר, אוראל), ואחרי האחרון חוזרת לדמות הרגילה
 function heroSkinBtn(){$('heroSkin').setAttribute('aria-pressed',String(!!heroSkin()))}
+/* ---- "המראה שלי" בכל זמן (ניר, 4.11.2026: "אני רוצה חזרה את המודל של הדמות שלי"): שורת כפתורים בהגדרות ⚙️ ובחלון הציוד.
+   רגיל + כפתור לכל סקין ב-HEROES.skins. רק המראה מתחלף: המחלקה, הנשק והכוח נשארים. התלת-ממד מתעדכן לבד (הסקין במפתח של ה-cache ב-render3d.js) */
+function heroSkinRow(){const cur=heroSkin()||'none';
+  return '<div class="sub hskin"><span data-t="hero.look">'+T('hero.look')+'</span><div class="langs" role="group" data-ta="hero.look" aria-label="'+T('hero.look')+'">'+
+    ['none',...Object.keys(HEROES.skins)].map(k=>'<button class="lang" data-skin="'+k+'" data-t="hero.look.'+k+'" aria-pressed="'+(k===cur)+'">'+T('hero.look.'+k)+'</button>').join('')+'</div></div>'}
+function heroSkinSet(k){SAVE.hero.skin=HEROES.skins[k]?k:null;heroSkinPet();saveNow();
+  for(const b of document.querySelectorAll('[data-skin]'))b.setAttribute('aria-pressed',String(b.dataset.skin===(heroSkin()||'none')));
+  if($('heroSkin'))heroSkinBtn()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-skin]');if(b){e.stopPropagation();heroSkinSet(b.dataset.skin)}});
+{const box=$('setSkin');if(box)box.outerHTML=heroSkinRow()}   // בהגדרות: נבנה פעם אחת, והכפתורים מתעדכנים בלחיצה
 $('ovHero').addEventListener('click',e=>{
   if(e.target.closest('#heroSkin')){const ks=Object.keys(HEROES.skins);SAVE.hero.skin=ks[ks.indexOf(heroSkin())+1]||null;heroSkinPet();heroSkinBtn();return}
   const b=e.target.closest('[data-hero]');if(b)heroPick(b.dataset.hero)});

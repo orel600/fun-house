@@ -748,6 +748,10 @@ const TEXT={
   'hero.mage':{he:'קוסם',en:'Mage'},
   'hero.mage.line':{he:'קסם שמרפא תוך כדי קרב',en:'Magic that heals mid-fight'},
   'hero.skin':{he:'✨ הדמות שלי',en:'✨ My character'},
+  'hero.look':{he:'✨ המראה שלי',en:'✨ My look'},
+  'hero.look.none':{he:'רגיל',en:'Classic'},
+  'hero.look.nir':{he:'ניר',en:'Nir'},
+  'hero.look.orel':{he:'אוראל',en:'Orel'},
 
   // קווסטים (js/quests.js). כל קווסט: [שם, משפט של מי שנותן]. מותרות בדיחות פנימיות
   'q.log':{he:'קווסטים',en:'Quests'},
