@@ -455,13 +455,14 @@ function wHeat(){
 }
 /* ---- מגדלי הסערה (פרק 5): מגדלים שבורים, גשם באלכסון, והבזקי ברק. כמו השלג: הכל מחושב מהזמן, בלי מערך חי ----
    flash: כל every שניות (בערך) ברק רחוק מאיר את המסך ל-len שניות. bolt: ברק אמיתי נראה בשמיים, רחוק מהשחקן */
-const STORM={rain:80,spread:560,fall:620,slant:0.32,len:18,alpha:0.45,dark:0.12,flash:{every:5.5,len:0.18,alpha:0.35}};
+const STORM={rain:80,lo:0.5,spread:560,fall:620,slant:0.32,len:18,alpha:0.45,dark:0.12,flash:{every:5.5,len:0.18,alpha:0.35}};
 function wStorm(){
   const t=fxNow(),F=STORM,W=F.spread*2;ctx.save();
   if(!R3D.on)for(const tw of WR().towers||[])wTower(tw);   // בתלת-ממד: מגדל אבן אמיתי (props3d.js)
   ctx.fillStyle='rgba(20,16,50,'+F.dark+')';ctx.fillRect(P.x-F.spread*2,P.y-F.spread*2,W*2,W*2);
   ctx.strokeStyle='#B9C4F0';ctx.lineWidth=1.4;
-  for(let i=0;i<F.rain;i++){   // טיפות: קווים קצרים שנופלים באלכסון
+  const nR=typeof VFX3D!=='undefined'&&VFX3D.quality()==='lo'?Math.ceil(F.rain*F.lo):F.rain;   // איכות אפקטים נמוכה: פחות טיפות
+  for(let i=0;i<nR;i++){   // טיפות: קווים קצרים שנופלים באלכסון
     const sp=0.75+hash(i,41)*0.5,bx=hash(i,42)*W-t*F.fall*sp*F.slant,by=hash(i,43)*W+t*F.fall*sp;
     const x=P.x-F.spread+(((bx-P.x)%W)+W)%W,y=P.y-F.spread+(((by-P.y)%W)+W)%W;
     ctx.globalAlpha=F.alpha*(0.5+hash(i,44)*0.5);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-F.len*F.slant,y+F.len);ctx.stroke()}
