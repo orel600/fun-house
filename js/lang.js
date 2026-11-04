@@ -1164,6 +1164,18 @@ const TEXT={
   'gear.sold':{he:c=>'נמכר: ⁦+'+c+'⁩ 🪙',en:c=>'Sold: +'+c+' 🪙'},
   'gear.aged':{he:n=>'שודרג בנפחייה: ⁦+'+n+'⁩',en:n=>'Forged up: +'+n},
   // חפצים (itemroll.js): דרישות, איכות ובונוס מחלקה
+  // טיפ ראשון (js/firsttips.js): פעם אחת בלבד לכל דבר חדש
+  'tip1.group':{he:'טיפים',en:'Tips'},'tip1.on':{he:'פועל',en:'On'},'tip1.off':{he:'כבוי',en:'Off'},
+  'tip1.req':{he:(lv,st,n)=>'עוד לא אפשר ללבוש: צריך <b>רמה '+lv+'</b> ו<b>'+st+' '+n+'</b>. כשעולים רמה, שים נקודות ב'+st+'.',en:(lv,st,n)=>'Can’t wear it yet: needs <b>level '+lv+'</b> and <b>'+st+' '+n+'</b>. When you level up, put points into '+st+'.'},
+  'tip1.reqLv':{he:lv=>'עוד לא אפשר ללבוש: צריך <b>רמה '+lv+'</b>. עוד קצת ותוכל!',en:lv=>'Can’t wear it yet: needs <b>level '+lv+'</b>. Almost there!'},
+  'tip1.q':{he:(a,r,v)=>'כל חפץ שנופל יוצא קצת אחר: <b>'+a+'</b> מתוך <bdi dir="ltr">'+r+'</bdi>. '+v,en:(a,r,v)=>'Every drop rolls a little different: <b>'+a+'</b> out of <bdi dir="ltr">'+r+'</bdi>. '+v},
+  'tip1.q.good':{he:'יצא לך חזק!',en:'You got a strong one!'},'tip1.q.mid':{he:'יצא באמצע.',en:'Right in the middle.'},'tip1.q.bad':{he:'יצא חלש. הבא יהיה טוב יותר!',en:'A weak roll. The next one will be better!'},
+  'tip1.sklv':{he:n=>'יש לך מספיק לשדרג סקיל! לך ל'+n+' הכוהנת, ללשונית <b>סקילים</b>.',en:n=>'You can afford a skill upgrade! Visit '+n+' the Priestess, <b>Skills</b> tab.'},
+  'tip1.mut':{he:'היום יש חוק מיוחד בעולם, עם יותר XP ושלל. נגיעה באייקון מראה אותו שוב.',en:'Today the world has a special rule, with more XP and loot. Tap the icon to see it again.'},
+  'tip1.depths':{he:'נפתח שביל חדש: <b>עומק הצל</b>. קומה אחרי קומה, שלל טוב יותר, ומוות בלי הפסד.',en:'A new path opened: <b>the Shadow Depths</b>. Floor after floor, better loot, and no loss when you fall.'},
+  'tip1.nem':{he:n=>'<b>'+n+'</b> ניצח אותך ונהיה נמסיס. הוא יחכה לך כאן, חזק יותר. תנצח אותו בשביל שלל מיוחד!',en:n=>'<b>'+n+'</b> beat you and became your nemesis. It will wait here, stronger. Beat it for special loot!'},
+  'tip1.giant':{he:'בוס ענק! הוא חזק מאוד. כשהוא מתכונן למכה, זוז הצידה, ותקוף אחריה.',en:'A giant boss! It hits very hard. When it winds up, step aside, then strike back.'},
+  'tip1.skill':{he:'סקיל חדש בספר! לחיצה ארוכה על כפתור סקיל פותחת את הספר, ושם שמים אותו על כפתור.',en:'A new skill in your book! Long-press a skill button to open the book and put it on a button.'},
   'ir.req':{he:p=>'דרוש: '+p,en:p=>'Requires: '+p},'ir.lv':{he:n=>'רמה '+n,en:n=>'Level '+n},
   'ir.cant':{he:'עוד לא אפשר ללבוש',en:'Can\'t equip yet'},
   'ir.q':{he:q=>'איכות '+q,en:q=>'Quality '+q},
