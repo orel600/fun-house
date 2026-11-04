@@ -1092,6 +1092,16 @@ function worldBot(m,L,god){
       fluteSwing({ang:0,arc:2,range:80},0.5,'#fff');fluteRing({x:P.x,y:P.y,r:120,col:'#fff'},0.5);fluteLine({ax:P.x,ay:P.y,bx:P.x+200,by:P.y,col:'#fff'},0.5);ctx.restore();r.draw=true}
     catch(e){r.draw=e.message}
     SAVE.hero.skin=sk;r.off=!fluteOn();return r});
+  // המראה שלי בכל זמן (heroes.js, ניר 4.11.2026): כפתור בהגדרות מחליף את הדמות בתלת-ממד, נשמר, ונמצא גם בחלון הציוד
+  const hsk=await page.evaluate(()=>{const sk=SAVE.hero.skin,pk=SAVE.pet.kind,r={};
+    try{soundOpen();const lk=()=>R3D.on?heroLook().model:heroSkin();SAVE.hero.skin=null;const base=lk();
+      document.querySelector('#ovSound [data-skin="nir"]').click();
+      r.set=SAVE.hero.skin==='nir'&&JSON.parse(localStorage.getItem(SAVE_STORE.key)).hero.skin==='nir';
+      r.look=lk()!==base;r.pressed=document.querySelector('#ovSound [data-skin="nir"]').getAttribute('aria-pressed')==='true';
+      document.querySelector('#ovSound [data-skin="none"]').click();r.back=SAVE.hero.skin===null&&lk()===base;
+      r.gear=gStatPanel().includes('data-skin="orel"');soundClose()}
+    catch(e){r.err=e.message}
+    SAVE.hero.skin=sk;SAVE.pet.kind=pk;saveNow();return r});
   // אפקטים של קרב (juice.js): פגיעה מפעילה עצירה, הבזק, הדיפה, ניצוצות ומספר. קריטי צהוב עם רעידה, הריגה עם עשן, תקרה לטלפון, ובזירה כבוי.
   // הבדיקה רצה במקום ניטרלי עם המתג של אוראל (JUICE.where.arena), כדי לא לגעת בשמירה של העולם
   const jc=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,hs:S.hitstop,sh:S.shake,jc:S.jc,ar:JUICE.where.arena,tr:P.track,hits:S.hits},c=HITFX.crit,r={};
@@ -2110,6 +2120,27 @@ function worldBot(m,L,god){
     (ch6.warden?', הצל קם':', הצל לא קם')+(ch6.learn&&ch6.learnAll?' ולמד (עמיד לאש בכל השלבים)':', לא למד')+', שלבים: '+(ch6.phases||'-')+(ch6.shoot&&ch6.ring&&ch6.marks?' עם ההתקפות של השומרים':', התקפה של שלב חסרה')+(ch6.ready?', הופל':', לא הופל')+
     (ch6.back?', חזרה למגדלים':', החזרה למגדלים שבורה')+(ch6.lit?', הפנס הלבן נדלק':', הפנס הלבן לא נדלק')+', '+(ch6.cheer||0)+' תושבים מריעים'+(ch6.head?', ראש הכפר מדבר':', ראש הכפר שותק')+
     (ch6.end?', "תודה ששיחקת" ('+ch6.rows+' שורות: '+(ch6.sum?ch6.sum.time+' · '+ch6.sum.kills+' · '+ch6.sum.secrets+' · '+ch6.sum.fish:'')+')':', בלי מסך סיום')+(ch6.saved?'':', לא נשמר')+(ch6.goOn?' וממשיכים לשחק':', אי אפשר להמשיך'));
+  // עומק הצל (depths.js): אחרי הסוף נפתח שביל בלב הצל. קומה אחרי קומה, קשה יותר ושלל טוב יותר, בוס כל 5, יציאה בכל רגע, מוות בלי הפסד, ושיא שנשמר
+  const dp=await page.evaluate(()=>{
+    const o={},st0=JSON.stringify(SAVE.story),best0=SAVE.depths&&SAVE.depths.best,kill=()=>{for(let r=0;r<5;r++){for(const e of enemies.slice())if(!e.dead&&!e.pack&&!e.evt)damage(e,e.max*10,'sword',0,'water');for(let i=0;i<4;i++)worldUpdate(0.016)}};   // כמה סבבים: חוק יומי שמפצל אויבים (mutation.js)
+    SAVE.story.end=false;enterWorld('home','shadow');o.closed=!wGates().depths;SAVE.story.end=true;enterWorld('home','shadow');o.open=!!wGates().depths;
+    SAVE.depths.best=0;P.inv=999;wGo('depths');o.f1=S.wd.dp===1&&/^dp_/.test(S.wd.reg);worldHud();o.hud=$('wName').textContent.includes('1');
+    const ty=new Set(enemies.filter(e=>!e.dead&&e.home!=null).map(e=>e.type));o.foes=enemies.filter(e=>!e.dead&&e.home!=null).length;o.types=ty.size;
+    const hp1=WR().zones[0].hp;o.shut=!wGates().deeper;
+    kill();o.clear=!!S.wd.dpClear&&!!wGates().deeper;o.got=(S.wd.dpGot||[]).length;o.q=(S.wd.dpGot||[]).every(id=>gQ(id)>=DEPTHS.loot.q.min);
+    wGo('deeper');o.f2=S.wd.dp===2&&WR().zones[0].hp>hp1&&SAVE.depths.best===2;
+    depthsEnter(5);const w=S.wd.warden;o.boss=!!w&&w.type==='shade'&&w.dpBoss;
+    if(w)damage(w,w.max*10,'sword',0,'water');kill();o.bossWin=!!S.wd.dpClear&&(S.wd.reGot||[]).length>0;
+    depthsEnter(30);kill();o.legend=(S.wd.dpGot||[]).some(id=>(gItem(id)||{}).tier===4);o.f30=WR().zones[0].hp/hp1;
+    SAVE.bag.wood=(SAVE.bag.wood||0)+10;const wood=SAVE.bag.wood;P.hp=0;gameOver();o.keep=SAVE.bag.wood===wood&&$('wLost').textContent.includes('30');
+    $('wRespawn').click();o.home=!!S.vil;
+    depthsEnter(3);S.wd.near='home';$('wGo').click();o.exit=!!S.vil;
+    o.saved=JSON.parse(localStorage.getItem(SAVE_STORE.key)).depths.best===30;
+    SAVE.story=JSON.parse(st0);SAVE.depths.best=best0||0;saveNow();return o});
+  check(dp.closed&&dp.open&&dp.f1&&dp.hud&&dp.foes>0&&dp.types>1&&dp.shut&&dp.clear&&dp.got>0&&dp.q&&dp.f2&&dp.boss&&dp.bossWin&&dp.legend&&dp.f30>3&&dp.keep&&dp.home&&dp.exit&&dp.saved,
+    'עומק הצל: '+(dp.closed&&dp.open?'השביל נפתח רק אחרי הסוף':'השביל לא תלוי בסוף')+(dp.f1&&dp.hud?', קומה 1':', לא נכנס לקומה 1')+', '+dp.foes+' אויבים מ-'+dp.types+' סוגים'+(dp.shut&&dp.clear?', השער למטה נפתח אחרי ניקוי':', השער למטה שבור')+
+    ', '+dp.got+' חפצים בתיבה'+(dp.q?'':' (איכות נמוכה!)')+(dp.f2?', קומה 2 קשה יותר':', קומה 2 לא קשה יותר')+(dp.boss&&dp.bossWin?', בוס בקומה 5 והופל':', הבוס בקומה 5 חסר')+(dp.legend?', אגדי בקומה 30':', בלי אגדי בעומק')+' (חיים פי '+(Math.round((dp.f30||0)*10)/10)+')'+
+    (dp.keep?', מוות בלי הפסד':', מוות מאבד שלל!')+(dp.home?' וחזרה לכפר':'')+(dp.exit?', יציאה בשער':', היציאה שבורה')+(dp.saved?', השיא נשמר':', השיא לא נשמר'));
   // כל פנס שנדלק משנה את הכפר (homecoming.js): בכניסה הבאה לכפר התושב חוזר, העמוד שלו דולק, ראש הכפר מספר, ובעולם נופל חפץ ביסוד של הפנס
   const hm=await page.evaluate(()=>{
     const o={},b0=SAVE.home.back;SAVE.home.back={};
@@ -3022,6 +3053,7 @@ function worldBot(m,L,god){
   check(!rsr.err&&!rsr.early&&rsr.missNo&&rsr.once&&rsr.item&&rsr.draw===true&&rsr.draw2===true&&rsr.took&&rsr.gone&&rsr.far&&rsr.boss,'פיוחו מצילה: '+(rsr.err||[rsr.early?'הופיעה מוקדם':'לא לפני סכנה',rsr.missNo?'הגרלה שנכשלה לא חוזרת':'הגרלה לא נכשלה',rsr.once?'פעם אחת':'שוב',rsr.item?'עצם':'אין עצם',rsr.draw===true&&rsr.draw2===true?'מצויר':'ציור נכשל',rsr.took&&rsr.gone?'אויב קרוב נעלם':'אויב לא נעלם',rsr.far?'רחוק נשאר':'רחוק נעלם',rsr.boss?'בוס רק נפגע':'בוס לא נפגע'].join(', ')));
   check(!dvr.err&&!dvr.early&&dvr.ready&&dvr.btn&&dvr.used&&dvr.five&&dvr.hit&&dvr.draw===true&&dvr.ended&&dvr.back&&dvr.once,'ברק אלוהי: '+(dvr.err||[dvr.early?'התעורר מוקדם':'מחכה לשני אויבי-על',dvr.ready?'מוכן':'לא מוכן',dvr.btn?'כפתור':'אין כפתור',dvr.five?'חמשת החפצים':'לא חמישה',dvr.hit?'ברק פגע':'ברק לא פגע',dvr.draw===true?'מצויר':'ציור נכשל: '+dvr.draw,dvr.ended&&dvr.back?'נגמר אחרי 5 שניות':'לא נגמר',dvr.once?'פעם אחת בריצה':'שוב'].join(', ')));
   check(!qsw.err&&qsw.btn&&qsw.bow&&qsw.sword,'החלפה מהירה: '+(qsw.err||[qsw.btn?'הכפתור מופיע':'אין כפתור',qsw.bow?'לקשת הכי חזקה':'לא עבר לקשת הכי חזקה',qsw.sword?'ובחזרה לחרב הכי חזקה':'לא חזר לחרב הכי חזקה'].join(', ')));
+  check(hsk.set&&hsk.look&&hsk.pressed&&hsk.back&&hsk.gear&&!hsk.err,'המראה שלי: '+(hsk.err?'שגיאה: '+hsk.err:[hsk.set?'ההגדרות מחליפות ושומרות':'הבחירה לא נשמרה',hsk.look?'הדמות מתחלפת':'הדמות לא התחלפה',hsk.pressed?'הכפתור מסומן':'הכפתור לא מסומן',hsk.back?'וחוזרת לרגיל':'לא חזרה לרגיל',hsk.gear?'גם בחלון הציוד':'חסר בחלון הציוד'].join(', ')));
   check(spk.on&&spk.off&&spk.slow&&spk.noFlute&&spk.draw===true,'הנודד עם הניצוץ: '+[spk.on?'נדלק':'לא נדלק',spk.noFlute?'בלי חליל':'החליל נדלק אצלו',spk.draw===true?'להבונים וגצים מצוירים':'ציור: '+spk.draw,spk.off?'וכבה':'לא כבה'].join(', '));
   check(fl.on&&fl.off&&fl.slow&&fl.prop&&fl.draw===true,'הנודד עם החליל: '+[fl.on?'נדלק':'לא נדלק',fl.prop?'חליל ביד':'אין חליל ביד',fl.slow?'אפקט סקיל ארוך יותר':'אפקט סקיל באורך רגיל',
     fl.draw===true?'תווים וחלילים מצוירים':'ציור נכשל: '+fl.draw,fl.off?'כבה בחזרה':'נשאר דלוק'].join(', '));
