@@ -110,7 +110,7 @@ function bookDraw(){
   const t=BKU.tab,tot=bookTotal(),pend=bookPending(),next=BOOK.every-tot%BOOK.every;
   let h=winHead(T('book.title'),tot+'/'+bookMax());
   h+='<div class="ffilter bktabs">'+BOOK.tabs.map(x=>'<button aria-pressed="'+(x===t)+'" data-act="tab" data-tab="'+x+'">'+T('book.tab.'+x)+' <small>'+bookCount(x)+'/'+bookList(x).length+'</small></button>').join('')+'</div>';
-  const grid=t==='f'?bookGroups().map(G=>'<h4 class="bkgrp">'+bookGrpName(G.r)+'<small>'+T('book.grpN',G.ks.filter(k=>bookHas('f',k)).length,G.ks.length)+'</small></h4>'+G.ks.map(k=>bookCard(t,k)).join('')).join('')
+  const grid=t==='f'?bookGroups().map(G=>'<h4 class="bkgrp">'+bookGrpName(G.r)+'<small>'+T('book.grpN',G.ks.filter(k=>bookHas('f',k)).length,G.ks.length)+'</small></h4>'+G.ks.map(k=>bookCard(t,k)).join('')).join('')+nemBookHtml()   // הנמסיסים שלך (nemesis.js)
     :bookList(t).map(k=>bookCard(t,k)).join('');
   h+='<div class="bkcols"><section class="bkgrid">'+grid+'</section><section class="bkside">'+bookDetail(t,BKU.sel);
   h+='<div class="bkrew'+(pend?' ready':'')+'">';

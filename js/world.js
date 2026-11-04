@@ -202,7 +202,7 @@ function enterWorld(at,reg){
   const seen=SAVE.regSeen||(SAVE.regSeen={});if(!seen[reg]){seen[reg]=1;saveNow();feedTitle(T(R.enter||'w.enter'),C.gold)}
   worldUi(true);
   fishMealOn();   // ארוחה מהפונדקאית: חיזוק בעולם (fishing.js)
-  challengeEnter();huntEnter();mutEnter();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js), מוטציה יומית (mutation.js)
+  challengeEnter();huntEnter();mutEnter();nemEnter();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js), מוטציה יומית (mutation.js), נמסיס שמחכה באזור (nemesis.js)
   wmapVisit(reg);     // מפת העולם: ביקרת כאן (worldmap.js)
   if(reg!=='meadow')questEvent('story',reg);   // קווסט עלילה "להגיע לאגם" (quests.js)
 }
@@ -296,7 +296,7 @@ function worldUpdate(dt){
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
   dmgUpdate(dt);mutUpdate(dt);   // שריפה, רטיבות, האטה והלם נגמרים (dmg.js). לפני 4.11 לא רץ בעולם, ומצבים נשארו לתמיד. המוטציה היומית (mutation.js)
-  wantedUpdate(dt);storyUpdate(dt);depthsUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
+  wantedUpdate(dt);storyUpdate(dt);depthsUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);nemUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
   dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*mutK('regen')*dt);   // mutK: יום הצמא מרפא לאט (mutation.js)
   enemies=enemies.filter(e=>!e.dead);
@@ -314,6 +314,7 @@ function worldUpdate(dt){
 
 /* ---- מוות בעולם: חצי מכל משאב בתרמיל הולך, הפריטים והמחסן נשארים. נקרא מ-gameOver ---- */
 function worldDeath(){
+  nemOnDeath();   // מי שהפיל אותך נהיה נמסיס (nemesis.js)
   S.mode='over';joy=null;
   const lost={},k=S.wd.dp?0:RES.deathLoss.resources;   // עומק הצל: לא מאבדים כלום (depths.js)   // resources.js
   for(const r in SAVE.bag){if(!resOf(r))continue;const n=Math.floor(SAVE.bag[r]*k);if(n>0){bagTake(r,n);lost[r]=n}}
