@@ -104,7 +104,7 @@ function lootRoll(n=1,mine){
   const pool=Object.keys(GEAR.items).filter(ok),near=pool.length?Math.min(...pool.map(id=>{const d=GEAR.items[id].tier-t;return d<=0?-d:d+10})):0,
     at=pool.filter(id=>{const d=GEAR.items[id].tier-t;return (d<=0?-d:d+10)===near}),id=at[Math.floor(Math.random()*at.length)]||gRoll(n);
   if(arms){const it=GEAR.items[gBase(id)];SAVE.clsPity=it.slot==='weapon'&&arms.includes(it.w)?0:(SAVE.clsPity||0)+1}
-  return GEAR.items[id]?powRoll(id):id;
+  return GEAR.items[id]?irRoll(powRoll(id)):id;   // איכות אקראית (itemroll.js)
 }
 
 // נקרא מ-addEnemy: לפעמים אויב רגיל הוא אויב עלית (e.champ). אויב-העל של התחנות (run.js, e.elite) מפיל את אותו שלל עלית
