@@ -438,7 +438,7 @@ function gearDraw(){
   $('gStash').hidden=!st;
   if(st)$('gStash').innerHTML='<span class="k">'+T('gear.stash',stashUsed(),stashCap())+'</span><div class="ggrid">'+
     (sk.length?sk.map(k=>gCell(k,SAVE.stash[k],'data-sid="'+k+'"'+(sel&&sel.sid===k?' aria-pressed="true"':''))).join(''):'<p class="dim">'+T('stash.empty')+'</p>')+'</div>';
-  $('gDetail').innerHTML=gDetailHtml();$('gDetail').classList.toggle('selling',!!GUI.sell);$('gDetail').classList.toggle('gstatp',!$('gDetail').querySelector('.gdhead,.gsell'));   // gstatp: טור הסטטים (gearui.js)
+  $('gDetail').innerHTML=gDetailHtml();$('gDetail').classList.toggle('selling',!!GUI.sell);$('gDetail').classList.toggle('gstatp',!$('gDetail').querySelector('.gdhead,.gsell,.icard'));$('gDetail').classList.toggle('gcard',!!$('gDetail').querySelector('.icard'));   // gstatp: טור הסטטים (gearui.js)
   gTipSync();   // פריט נבחר: הפרטים בבועה ליד הפריט, והסטטים נשארים בטור (gearui.js, itemtip.js)
   // הדפים: ציוד, או דמות (הנקודות, stats.js). עץ הסקילים נפתח מדף הדמות ומחליף אותו
   const ch=GUI.page==='char',tv=ch&&GUI.view==='tree',pts=stFree()+trFree();
@@ -461,6 +461,7 @@ function gDetailHtml(){
   const sel=GUI.sel,k=sel&&(sel.id||sel.sid||gGet(sel.slot,sel.i)),n=!sel?0:sel.id?SAVE.bag[k]:sel.sid?SAVE.stash[k]:1;
   if(!k||!n)return gStatPanel();   // בלי פריט: הסטטים של הגיבור והעמידויות (gearui.js)
   const it=gItem(k),col=gRarCol(k);
+  if(it)return gCardHtml(k,sel,n);   // חפץ: הכרטיס הגדול (gearui.js). משאב: התצוגה למטה
   let d='<div class="gdhead'+gRarCls(k)+'" style="--rar:'+col+'"><button class="gdx" data-act="desel" aria-label="'+T('gear.close')+'">✕</button><span class="gdicon'+gRarCls(k)+'">'+(it?gPic(k):resPic(k))+'</span><div><h3 style="color:'+col+'">'+(it?gName(k):resName(k))+'</h3>'+
     '<small>'+(it?'<b class="rbadge">'+T('tier')[gRar(k)]+'</b> ':T('tier')[gRar(k)]+' · ')+(it?(it.tier<4?T('vil.tiers')[it.tier]+' · ':'')+T('gear.slot.'+it.slot):T('fam.'+resOf(k).fam))+(n>1?' · <bdi>×'+n+'</bdi>':'')+'</small></div></div>';
   if(it)d+=gFlavHtml(k);   // משפט האופי, באיטליק מתחת לשם
@@ -600,6 +601,7 @@ $('ovGear').addEventListener('click',e=>{
   else if(a==='unequip')gDoUnequip(sel.slot,sel.i);
   else if(a==='store'){if(!gDoStash('in',sel.id)){gShake($('gStash'));return}}
   else if(a==='take')gDoStash('out',sel.sid);
+  else if(a==='gup'){if(gUpgrade(sel))return;sfx('tap')}   // לשדרג: עוברים לנפחייה (gearui.js)
   gRedraw();
 });
 $('gearBtnRun').addEventListener('click',gearOpen);

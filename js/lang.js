@@ -1155,6 +1155,9 @@ const TEXT={
   'gear.same':{he:'בלי שינוי',en:'No change'},
   // טור הסטטים בחלון הציוד (gearui.js)
   'gui.stats':{he:'סטטים',en:'Stats'},
+  'gui.q':{he:(n,r)=>'איכות: '+n+' מתוך '+r,en:(n,r)=>'Quality: '+n+' of '+r},
+  'gui.up':{he:'לשדרג',en:'Upgrade'},
+  'gui.upVil':{he:'לשדרג בנפחייה בכפר',en:'Upgrade at the village forge'},
   'gui.res':{he:'עמידות לנזק',en:'Resistances'},
   'gui.hp':{he:'חיים',en:'Health'},
   'gui.dmg':{he:'נזק',en:'Damage'},

@@ -2511,6 +2511,22 @@ function worldBot(m,L,god){
     (bg.rare?', אישור ליקר':', יקר בלי אישור')+(bg.sold?', נמכרו (+'+bg.got+')':', המכירה לא עבדה')+(bg.undo?', החזר':', "החזר" לא החזיר')+
     (bg.scroll?', נגלל':', לא נגלל באצבע')+(bg.keep?', נגיעה מסמנת':', נגיעה בפריט לא מסמנת')+(bg.out?', יוצאים ממצב מכירה':', נתקע במצב מכירה')+
     (bg.orb?', חפץ מסתובב מראה מה הוא נותן':', חפץ מסתובב בלי סטטים ("'+bg.orbTxt+'")'));
+  // כרטיס החפץ בחלון הציוד (gCardHtml ב-gearui.js, itemCard ב-itemcard.js): מספר כוח, איכות "מתוך", בלי שורות 0%, ללבוש, ולשדרג שעובר לנפחייה עם החפץ בחור
+  const gc=await page.evaluate(()=>{
+    const o={},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,vf:SAVE.village.forge}),c0=celebrate;celebrate=()=>0;
+    try{enterVillage();SAVE.village.forge=Math.max(1,vLv('forge'));S.mode='play';const id='ironSword~104';bagAdd(id);gearOpen();
+      const q=s=>document.querySelector('#gDetail '+s),t=document.querySelector('#gItems [data-id="'+id+'"]');if(t)t.click();
+      o.card=!!q('.icard .icpow b')&&+q('.icpow b').textContent===icPow(id)&&!!q('.icard h4');
+      o.q=!!q('.iq')&&q('.iq').textContent.includes(String(icPow(id)));
+      o.zero=!!q('.iclines')&&!/(^|[^\d.])[+-]?0(\.0)?%/.test(q('.iclines').textContent);
+      o.btns=!!q('.gcbtns [data-act="equip"]')&&!!q('.gcbtns [data-act="gup"]');
+      if(q('[data-act="equip"]'))q('[data-act="equip"]').click();o.worn=SAVE.gear.weapon===id&&!!q('.gcbtns [data-act="unequip"]')&&!q('.icd');
+      if(q('[data-act="gup"]'))q('[data-act="gup"]').click();o.up=S.mode==='forge'&&$('ovGear').hidden&&!$('ovForge').hidden&&aSelId()===id;
+      forgeClose();
+    }finally{gearClose();forgeClose();const g1=gearStats(),k=JSON.parse(keep);SAVE.bag=k.bag;SAVE.gear=k.gear;SAVE.village.forge=k.vf;gearLive(g1);celebrate=c0;S.mode='play';saveNow()}
+    return o});
+  check(gc.card&&gc.q&&gc.zero&&gc.btns&&gc.worn&&gc.up,'כרטיס חפץ בציוד (gearui.js): '+(gc.card?'מספר כוח ושם':'אין כרטיס')+(gc.q?', איכות מתוך טווח':', בלי איכות')+(gc.zero?', בלי שורות 0%':', יש שורות 0%')+
+    (gc.btns?', ללבוש ולשדרג':', חסר כפתור')+(gc.worn?', לבוש: בלי השוואה, עם להוריד':', הלבישה מהכרטיס לא עבדה')+(gc.up?', לשדרג פותח את הנפחייה עם החפץ':', לשדרג לא פתח את הנפחייה'));
   // שריון לפי מחלקה (armor.js): קסדה וגוף של המחלקה נלבשים במשבצות ראש וגוף, ההגנה עולה, השריון נראה על הדמות ובחלון, והשלל בעולם מוטה למחלקה
   const ar=await page.evaluate(()=>{
     const o={},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,pity:SAVE.clsPity}),c0=celebrate;celebrate=()=>{};
