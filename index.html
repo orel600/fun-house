@@ -74,7 +74,7 @@
   <button class="nbtn talkbtn trbtn" id="trBtn" hidden></button>
 </nav>
 <!-- התפריט הראשי (js/menu.js): ☰ בפינה העליונה, בכפר ובעולם, ומסך מלא עם לשוניות בצד. כל לשונית מציגה חלון קיים -->
-<button class="mute menubtn" id="menuBtn" data-ta="menu.btn"><span aria-hidden="true">☰</span><b hidden></b></button>
+<button class="mute menubtn" id="menuBtn" data-ta="set.title"><span aria-hidden="true">☰</span><b hidden></b></button>
 <div class="menubg" id="menuBg"></div>
 <nav class="mrail" id="menuRail" role="tablist" data-ta="menu.btn">
   <button class="mtab" id="gearBtn" role="tab"><span class="ni" aria-hidden="true">🎒</span><span data-t="menu.hero"></span><b id="gBadge" hidden></b><i class="mdot" id="skDot" hidden></i></button>
@@ -83,6 +83,13 @@
   <button class="mtab" id="wMapBtn" role="tab"><span class="ni" aria-hidden="true">🗺️</span><span data-t="wm.title"></span></button>
   <button class="mtab" id="mbTab" role="tab"><span class="ni" aria-hidden="true">⚔️</span><span data-t="menu.mb"></span></button>
   <button class="mtab" id="setBtn" role="tab"><span class="ni" aria-hidden="true">⚙️</span><span data-t="set.title"></span></button>
+</nav>
+<!-- טור הקיצורים (js/menu.js, ניר 2.11.2026): אייקונים קטנים עם תווית בצד, בכפר ובעולם. כל אחד פותח לשונית בתפריט. נקודה אדומה = יש מה לעשות -->
+<nav class="qrail" id="qRail" data-ta="rail.group">
+  <button class="qr" data-tab="gearBtn"><span class="ni" aria-hidden="true">🎒</span><span data-t="menu.hero"></span><i class="qrdot" hidden></i></button>
+  <button class="qr" data-tab="qBtn"><span class="ni" aria-hidden="true">📜</span><span data-t="q.log"></span><i class="qrdot" hidden></i></button>
+  <button class="qr" data-tab="bookBtn"><span class="ni" aria-hidden="true">📖</span><span data-t="book.btn"></span><i class="qrdot" hidden></i></button>
+  <button class="qr wonly" data-tab="wMapBtn"><span class="ni" aria-hidden="true">🗺️</span><span data-t="wm.title"></span><i class="qrdot" hidden></i></button>
 </nav>
 <!-- מתנה יומית שעוד לא נלקחה: כפתור עגול קטן בפינה העליונה, מתחת להשתקה. לא בסרגל, כדי שלא ידחוף כפתורים החוצה (js/daily.js) -->
 <!-- ביקור אצל חבר: כפתור עגול מתחת למתנה, רק בכפר. דהוי בלי Google (js/visit.js) -->
