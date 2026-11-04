@@ -558,6 +558,7 @@ const TEXT={
   'wisp.tip.support':{he:n=>'אור העלה מרפא אותך כל '+n+' שניות',en:n=>'The leaf light heals you every '+n+' seconds'},
   'wisp.tip.luck':{he:'אור התלתן: יותר מכות קריטיות ויותר שלל',en:'The clover light: more critical hits and more loot'},
   'w.enter':{he:'האחו והמחצבה',en:'The Meadow & the Quarry'},
+  'fpsGroup':{he:'הצג FPS',en:'Show FPS'},   // perf.js
   'shadowGroup':{he:'צללים',en:'Shadows'},'shadow.on':{he:'דלוק',en:'On'},'shadow.off':{he:'כבוי',en:'Off'},   // look-hd.js
   'vfxqGroup':{he:'איכות אפקטים',en:'Effects quality'},'vfxq.hi':{he:'גבוהה',en:'High'},'vfxq.lo':{he:'נמוכה',en:'Low'},   // vfx3d.js
   'fxGroup':{he:'אפקטים',en:'Effects'},'fx.full':{he:'מלא',en:'Full'},'fx.less':{he:'פחות',en:'Fewer'},
@@ -1164,6 +1165,18 @@ const TEXT={
   'gear.sold':{he:c=>'נמכר: ⁦+'+c+'⁩ 🪙',en:c=>'Sold: +'+c+' 🪙'},
   'gear.aged':{he:n=>'שודרג בנפחייה: ⁦+'+n+'⁩',en:n=>'Forged up: +'+n},
   // חפצים (itemroll.js): דרישות, איכות ובונוס מחלקה
+  // טיפ ראשון (js/firsttips.js): פעם אחת בלבד לכל דבר חדש
+  'tip1.group':{he:'טיפים',en:'Tips'},'tip1.on':{he:'פועל',en:'On'},'tip1.off':{he:'כבוי',en:'Off'},
+  'tip1.req':{he:(lv,st,n)=>'דרוש: <b>רמה '+lv+'</b>, <b>'+st+' '+n+'</b>. נקודות תכונה מקבלים בכל רמה.',en:(lv,st,n)=>'Requires: <b>Level '+lv+'</b>, <b>'+st+' '+n+'</b>. Stat points come with each level.'},
+  'tip1.reqLv':{he:lv=>'דרוש: <b>רמה '+lv+'</b>.',en:lv=>'Requires: <b>Level '+lv+'</b>.'},
+  'tip1.q':{he:(a,r,v)=>'איכות: <b>'+a+'</b> מטווח <bdi dir="ltr">'+r+'</bdi>. '+v,en:(a,r,v)=>'Quality: <b>'+a+'</b> of <bdi dir="ltr">'+r+'</bdi>. '+v},
+  'tip1.q.good':{he:'גלגול גבוה.',en:'High roll.'},'tip1.q.mid':{he:'גלגול ממוצע.',en:'Average roll.'},'tip1.q.bad':{he:'גלגול נמוך.',en:'Low roll.'},
+  'tip1.sklv':{he:n=>'שדרוג סקיל זמין: '+n+' הכוהנת, לשונית <b>סקילים</b>.',en:n=>'Skill upgrade available: '+n+' the Priestess, <b>Skills</b> tab.'},
+  'tip1.mut':{he:'חוק יומי פעיל: XP ושלל מוגדלים. האייקון מציג אותו שוב.',en:'Daily rule active: bonus XP and loot. Tap the icon to review it.'},
+  'tip1.depths':{he:'נפתח: <b>עומק הצל</b>. קומות בלי סוף, שלל משתפר, מוות בלי הפסד.',en:'Unlocked: <b>Shadow Depths</b>. Endless floors, rising loot, no death penalty.'},
+  'tip1.nem':{he:n=>'נמסיס: <b>'+n+'</b>. מחכה באזור, חזק יותר בכל ניצחון שלו. שלל מיוחד כשנופל.',en:n=>'Nemesis: <b>'+n+'</b>. Waits in this zone, stronger with each win. Drops special loot.'},
+  'tip1.giant':{he:'בוס ענק. מכות כבדות עם הכנה: זוז הצידה ותקוף אחריהן.',en:'Giant boss. Heavy wind-up attacks: sidestep, then punish.'},
+  'tip1.skill':{he:'סקיל חדש בספר. לחיצה ארוכה על כפתור סקיל פותחת את הספר.',en:'New skill in the book. Long-press a skill button to open it.'},
   'ir.req':{he:p=>'דרוש: '+p,en:p=>'Requires: '+p},'ir.lv':{he:n=>'רמה '+n,en:n=>'Level '+n},
   'ir.cant':{he:'עוד לא אפשר ללבוש',en:'Can\'t equip yet'},
   'ir.q':{he:q=>'איכות '+q,en:q=>'Quality '+q},

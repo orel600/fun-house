@@ -57,6 +57,7 @@ const icCost=c=>'<span class="iccost">'+Object.keys(c).map(r=>{const ok=(SAVE.ba
 //   pre (HTML מיד אחרי השורות, ובמקום שורת האיכות), worn (החפץ כבר לבוש: בלי השוואה), n (כמה יש)}. pre, worn ו-n: חלון הציוד (gearui.js)
 function itemCard(id,o={}){
   const it=gItem(id);if(!it)return '';
+  if(typeof tipItem==='function')tipItem(id);   // טיפ ראשון: דרישה או איכות (firsttips.js)
   const col=gRarCol(id),old=o.worn?null:icWorn(id),d=icDelta(id),miss=icMiss(o.cost),poor=Object.keys(miss).length>0;
   const cmp=o.worn?'':!old?'<span class="icd new">'+T('ic.new')+'</span>':d>0?'<span class="icd up">▲ '+d+'</span>':d<0?'<span class="icd down">▼ '+(-d)+'</span>':'<span class="icd">'+T('gear.same')+'</span>';
   let h='<div class="icard'+gRarCls(id)+'" style="--rar:'+col+'">'+
