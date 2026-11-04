@@ -841,6 +841,13 @@ const TEXT={
   'story.ward.back':{he:'אני שומר על הפנס. תחזור כשתהיה מוכן!',en:'I guard the lantern. Come back when you are ready!'},
   'story.earth.rise':{he:'השומר האבן קם ליד הפנס!',en:'The Stone Warden rises by the lantern!'},
   'story.earth.name':{he:'השומר האבן',en:'Stone Warden'},
+  // התואר בפס הבוס של הענקים בעולם (giant.js)
+  'giant.t.earth':{he:'ענק המחצבה',en:'Giant of the Quarry'},
+  'giant.t.water':{he:'מעומק האגם',en:'From the Depths of the Lake'},
+  'giant.t.ice':{he:'ענק הרכס',en:'Giant of the Ridge'},
+  'giant.t.fire':{he:'הדרקון של המדבר',en:'Dragon of the Desert'},
+  'giant.t.bolt':{he:'רוח הסערה',en:'Spirit of the Storm'},
+  'giant.t.light':{he:'לב החושך',en:'Heart of Darkness'},
   'story.earth.lit':{he:'🏮 פנס האדמה דולק שוב! האחו בטוח יותר',en:'🏮 The Earth Lantern burns again! The meadow is safer'},
   'story.earth.reward':{he:'פנס האדמה נדלק',en:'The Earth Lantern is lit'},
   'story.litShort':{he:'הפנס דולק!',en:'Lantern lit!'},

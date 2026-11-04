@@ -80,6 +80,14 @@ const LOOK3D={
   yeti:{model:'mon_yeti',h:70,foot:15,anim:{run:'mon_yeti_Walk',die:'mon_yeti_Death'}},
   demon:{model:'mon_demon',h:70,foot:15,anim:{run:'mon_demon_Walk',die:'mon_demon_Death'}},
   shade:{model:'barbarian',h:100,foot:20,tint:'#4B2A7A',props:{staff:{prop:'staff',...HAND_R,tint:'#9C6BFF'}},anim:{run:'Running_B',die:'Death_A'}},
+  /* בוסים ענקיים בעולם (giant.js): מודל לכל פרק, פי 5 מהגיבור (h). הבוחר: e.wboss (הפנס), לא isBoss, כדי שהזירה ומשחקי השאול נשארים עם boss.
+     anim: run הליכה, idle עמידה (גם בזמן ההכנה למכה), hit המכה, die הקריסה. float: מרחף (נוחת מהשמיים בכניסה). paint: צבע שכופל את הטקסטורה (מכהה) */
+  wb_earth:{model:'mon_stoneGiant',h:300,foot:34,anim:{run:'mon_stoneGiant_Walk',idle:'mon_stoneGiant_Idle',hit:'mon_stoneGiant_Punch',die:'mon_stoneGiant_Death'}},
+  wb_water:{model:'mon_fishGiant',h:300,foot:34,anim:{run:'mon_fishGiant_Walk',idle:'mon_fishGiant_Idle',hit:'mon_fishGiant_Punch',die:'mon_fishGiant_Death'}},
+  wb_ice:{model:'mon_yeti',h:310,foot:34,anim:{run:'mon_yeti_Walk',idle:'mon_yeti_Idle',hit:'mon_yeti_Punch',die:'mon_yeti_Death'}},
+  wb_fire:{model:'mon_dragon',h:290,foot:34,float:50,anim:{run:'mon_dragon_Fast_Flying',idle:'mon_dragon_Flying_Idle',hit:'mon_dragon_Punch',die:'mon_dragon_Death'}},
+  wb_bolt:{model:'mon_hywirl',h:290,foot:34,float:40,anim:{run:'mon_hywirl_Fast_Flying',idle:'mon_hywirl_Flying_Idle',hit:'mon_hywirl_Punch',die:'mon_hywirl_Death'}},
+  wb_light:{model:'mon_demon',h:340,foot:36,paint:'#A08CD0',tint:'#5B2A9C',anim:{run:'mon_demon_Walk',idle:'mon_demon_Idle',hit:'mon_demon_Punch',die:'mon_demon_Death'}},
   boss:{model:'barbarian',h:140,foot:28,anim:{run:'Running_B',idle:'Idle_A',charge:'Melee_2H_Attack_Spin',cast:'Melee_2H_Attack_Chop',taunt:'Taunt',die:'Death_A'}},
   // פיילוט ג'מיני: הגיבור מהדף של ניר, על השלד של האביר. בלי קסדה הוא נמוך יותר, אז h קטן כדי שהגוף יהיה בגודל של האביר.
   // לבדיקה בלבד: עם ?hero=pilot בכתובת הוא נכנס במקום האביר של הלוחם (דמות ההתחלה הראשונה)
@@ -379,9 +387,9 @@ function heroLook(){
   {const th=heroTheme();if(th&&th.grip){delete L.props.shield;th.grip(L)}}   // דמות אישית: חפץ ביד במקום הנשק, ובלי מגן ביד השנייה (החליל ב-flute.js)
   return R3D._hl=L;
 }
-function lookOf(e){return e===P?heroLook():e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
+function lookOf(e){return e===P?heroLook():e.wboss&&LOOK3D['wb_'+e.wboss]?LOOK3D['wb_'+e.wboss]:e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
 // מפתח למאגר: רק דמות זהה (מודל, חפצים, צבע, גודל, נשק מוסתר) חוזרת לשימוש. יצורי משאבים הם מודל קיים בצבע ובגודל אחר
-const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')+(p.glow||'')).join()+(L.tint?'|'+L.tint:'')+'|'+L.h+(L.own===false?'|x':'');
+const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')+(p.glow||'')).join()+(L.tint?'|'+L.tint:'')+(L.paint?'|'+L.paint:'')+'|'+L.h+(L.own===false?'|x':'');
 const TINT={ember:C.ember,tide:C.tide,gold:C.gold,...Object.fromEntries(Object.keys(DMG.types).map(k=>[k,DMG.types[k].col])),lilac:C.lilac};   // צבע לכל סוג נזק, ושמות הצבעים של המשחק
 const tintOf=t=>TINT[t]||t;   // שם מ-TINT, או צבע ישיר ('#8A8F9C')
 function makeActor(L){
@@ -390,7 +398,7 @@ function makeActor(L){
   const t=R3D.tmpl[L.model],root=THREE.SkeletonUtils.clone(t),s=L.h/COSB()/t.userData.h;
   root.scale.setScalar(s);
   const mats=[];
-  root.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(L.tint)o.material.emissive.set(tintOf(L.tint)).multiplyScalar(L.tint[0]==='#'?0.45:0.18);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
+  root.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(L.paint)o.material.color.set(L.paint);if(L.tint)o.material.emissive.set(tintOf(L.tint)).multiplyScalar(L.tint[0]==='#'?0.45:0.18);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
   const props={};let a_pulse=null;   // a_pulse: חלקים של פריט אגדי, שפועמים (GEAR3D)
   for(const [k,p] of Object.entries(L.props||{})){
     const b=bone(root,p.bone);if(!b)continue;
@@ -483,9 +491,9 @@ function syncPlayer(dt){
 function syncEnemy(e,dt){
   let a=R3D.actors.get(e);const L=lookOf(e);if(!L)return;
   if(!a){a=makeActor(L);R3D.actors.set(e,a);
-    if(!e.isBoss){a.root.scale.setScalar(L.h/COSB()/R3D.tmpl[L.model].userData.h*(e.big||1));a.sc0=a.root.scale.x}
+    if(!e.isBoss){a.root.scale.setScalar(L.h/COSB()/R3D.tmpl[L.model].userData.h*(e.wboss?1:e.big||1));a.sc0=a.root.scale.x}   // ענק: h הוא כבר הגובה הסופי
     // קמים מהאדמה רק בפעם הראשונה, ולא בכל פעם שאויב חוזר למסך
-    if(L.anim.spawn&&!e.isBoss&&!R3D.shown.has(e)){once(a,L.anim.spawn,0.45)}
+    if(L.anim.spawn&&!e.isBoss&&!e.wboss&&!R3D.shown.has(e)){once(a,L.anim.spawn,0.45)}
     R3D.shown.add(e);
     a.prev={x:e.x,y:e.y,patT:e.patT||0,charge:null}}
   a.seen=R3D.frame;
@@ -500,32 +508,38 @@ function syncEnemy(e,dt){
     yaw=b.charge?yawOf(Math.cos(b.charge.a),Math.sin(b.charge.a)):yawOf(P.x-b.x,P.y-b.y);
     a.root.scale.setScalar(L.h/COSB()/R3D.tmpl[L.model].userData.h*(b.phase>1?1.12:1)*(b.r/34));
     loop(a,sp>15?L.anim.run:L.anim.idle,Math.max(0.7,Math.min(1.8,sp/90)));
+  }else if(e.wboss){
+    // ענק (giant.js): פונה אליך, עומד בזמן ההכנה למכה, ומכה כשהיא יוצאת. ההליכה איטית וכבדה
+    const st=a.prev;if(st.tel&&!e.tel||e.dash&&!st.dash)once(a,L.anim.hit,0.6);st.tel=!!e.tel;st.dash=!!e.dash;
+    yaw=e.dash?yawOf(Math.cos(e.dash.a),Math.sin(e.dash.a)):yawOf(P.x-e.x,P.y-e.y);
+    if(!(a.one&&a.one.isRunning()))loop(a,sp>15&&!e.tel?L.anim.run:L.anim.idle,Math.max(0.6,Math.min(1.4,sp/(e.speed||60))));
   }else{
     // לאן שהוא הולך. כשהוא נהדף אחורה (kx,ky) הוא ממשיך להסתכל עליך, ולא מסתובב עם המכה
     yaw=sp>5&&Math.hypot(e.kx||0,e.ky||0)<sp?yawOf(dx,dy):yawOf(P.x-e.x,P.y-e.y);
     if(e.type==='wisp'&&e.shoot<0.35&&L.anim.cast&&!(a.one&&a.one.isRunning()))once(a,L.anim.cast,0.5);
     if(!(a.one&&a.one.isRunning()&&a.one.getClip().name===L.anim.spawn))loop(a,L.anim.run,Math.max(0.6,Math.min(1.8,sp/(e.speed||80))));
   }
-  const lift=L.float?L.float+Math.sin(e.ph*0.6)*3:0;
-  place(a,e.x,e.y,L.foot*(e.big||1),yaw,lift);
+  const lift=(L.float?L.float+Math.sin(e.ph*0.6)*3:0)+(e.wboss?giantLift(e,L):0);   // ענק בכניסה: קם מהאדמה או נוחת מהשמיים
+  place(a,e.x,e.y,e.wboss?L.foot:L.foot*(e.big||1),yaw,lift);
   const rage=e.isBoss&&e.rage>0.05?e.rage:0;
   setFlash(a,e.flash>0?0.9:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,e.flash>0?0xffffff:C.blood);
   if(a.sc0){const q=juiceSquash(e);a.root.scale.set(a.sc0*(1+q),a.sc0*(1-q),a.sc0*(1+q))}   // מעיכה קטנה במכה (juice.js)
   // כשיש הרבה אויבים, כל אחד מונפש רק בכל פריים שני (חצי מהם בכל פריים). בעין זה לא נראה, ובטלפון זה חוסך הרבה
   a.acc=(a.acc||0)+dt;
-  if(e.isBoss||R3D.actors.size<25||((a.id||(a.id=++R3D.nid))+R3D.frame)%2===0){a.mixer.update(a.acc);a.acc=0}
+  if(e.isBoss||e.wboss||R3D.actors.size<25||((a.id||(a.id=++R3D.nid))+R3D.frame)%2===0){a.mixer.update(a.acc);a.acc=0}
   a.prev.x=e.x;a.prev.y=e.y;
-  const z=a.root.position.z,x=a.root.position.x,rr=e.r*1.15;
+  const z=a.root.position.z,x=a.root.position.x,rr=e.r*1.15*(e.wboss?GIANT.shadow:1);   // ענק: צל גדול על הקרקע
   mark('shadow',x,z,rr);if(e.weak)mark(e.weak,x,z,rr*1.15);
 }
 // אויב שנעלם מהרשימה: אם הוא מת, מנגנים מוות ושוקע לאדמה. אם ברח (המבוקש), יצא מהמסך, עבר לקהל,
 // או שכבר יש יותר מדי מתים על המסך, הדמות חוזרת מיד למאגר
 function retire(e,a,dt){
   if(!a.dieT){const L=a.L;setFlash(a,0);
-    if(!(e.dead&&e.hp<=0&&L.anim.die&&R3D.nDying++<CROWD.dying)){R3D.actors.delete(e);freeActor(a);return}
-    a.dieT=1.1;a.base=null;once(a,L.anim.die,0.7,true)}
+    const big=e.wboss&&e.dead&&e.hp<=0;   // ענק: קריסה איטית (GIANT.die), גם כשיש הרבה מתים על המסך
+    if(!big&&!(e.dead&&e.hp<=0&&L.anim.die&&R3D.nDying++<CROWD.dying)){R3D.actors.delete(e);freeActor(a);return}
+    a.dieT=big?GIANT.die.t:1.1;a.sink=big?GIANT.die.sink:0.35;a.base=null;once(a,L.anim.die,big?GIANT.die.anim:0.7,true)}
   a.dieT-=dt;a.mixer.update(dt);
-  if(a.dieT<0.35)a.root.position.y-=dt*60;
+  if(a.dieT<a.sink)a.root.position.y-=dt*(a.sink>0.35?a.L.h*0.4/a.sink:60);
   if(a.dieT<=0){R3D.actors.delete(e);freeActor(a)}
 }
 
@@ -690,11 +704,11 @@ function render3d(ox,oy){
     syncPlayer(dt);
     if(S.wd){syncWorld();syncWnpcs(dt)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)
     // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
-    const vis=enemies.filter(e=>!e.dead&&(e.isBoss||onScreen(e.x+ox,e.y+oy)));
+    const vis=enemies.filter(e=>!e.dead&&(e.isBoss||e.wboss||onScreen(e.x+ox,e.y+oy)));
     // בעולם: רק world הקרובים מונפשים, והשאר בקהל (דמות מונפשת היא רוב הזמן של הציור בעולם, מבקר 2)
     const full=S.wd?CROWD.world:CROWD.full;
-    if(vis.length>full){const pr=e=>e.isBoss||e.wanted||e.elite?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}
-    vis.forEach((e,i)=>i<full||e.isBoss||!crowdOf(e.type)?syncEnemy(e,dt):crowdAdd(e));
+    if(vis.length>full){const pr=e=>e.isBoss||e.wboss||e.wanted||e.elite?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}
+    vis.forEach((e,i)=>i<full||e.isBoss||e.wboss||!crowdOf(e.type)?syncEnemy(e,dt):crowdAdd(e));
     R3D.nDying=0;for(const a of R3D.actors.values())if(a.dieT>0.05)R3D.nDying++;
     for(const [e,a] of R3D.actors)if(a.seen!==R3D.frame||e.dead)retire(e,a,dt);
   }else{ // בחדר הבונוס אין אויבים, רק השחקן
