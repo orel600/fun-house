@@ -2444,6 +2444,27 @@ function worldBot(m,L,god){
   check(!flo.missing.length&&flo.eliteOk&&flo.pname&&flo.card&&flo.met&&flo.say&&flo.closed&&flo.once&&flo.saved&&flo.ovHide&&flo.ovBack,
     'שמות לאויבים: '+(flo.missing.length?'חסר שם ל-'+flo.missing.join(','):'לכל סוג בעולם יש שם')+', עלית: "'+flo.elite+'"'+(flo.pname?'':' (לא קיבל שם)')+(flo.card?', פס פגישה ראשונה':', אין פס')+
     (flo.closed?' שנסגר לבד':' שלא נסגר')+(flo.once?', פעם אחת':', חוזר')+(flo.saved?', נשמר':', לא נשמר')+(flo.say?', בועה':', בלי בועה')+(flo.ovHide?(flo.ovBack?', מחכה מתחת לחלון':', לא חוזר אחרי חלון'):', מופיע מעל חלון'));
+  // בוס-נמסיס (nemesis.js): עלית שהפיל אותך נהיה נמסיס עם שם ונשמר, חוזר באותו אזור חזק יותר וזוכר אותך, עולה דרגה כשהוא מנצח שוב, אחד לאזור, וכשמנצחים אותו: שלל, חגיגה, ונעלם לספר
+  const nm=await page.evaluate(()=>{
+    const o={},n0=JSON.stringify(SAVE.nem||null);SAVE.nem=null;
+    const type=WORLD.foes.find(G=>ETYPES[G.type]&&!G.creature).type;
+    enterWorld('home');enemies=[];
+    const e=addEnemy(type,P.x+60,P.y,1);e.home=0;e.affix='burst';nemOnDeath();
+    const N=NS().list[0];o.born=!!N&&N.reg==='meadow'&&N.rank===1&&N.cause==='burst'&&/ /.test(nemName(N));
+    o.saved=((JSON.parse(localStorage.getItem(SAVE_STORE.key)).nem||{}).list||[]).length===1;
+    const e5=addEnemy(type,P.x+50,P.y,1);e5.home=0;e5.leader=1;nemOnDeath();o.one=NS().list.length===1;   // אחד לאזור
+    enterWorld('home');const a=S.wd.nemE;o.spawn=!!a&&a.nem===N.id&&a.pname===nemName(N)&&a.max>ETYPES[type].hp*2;
+    P.x=a.x+40;P.y=a.y;nemUpdate(0.05);o.say=!!S.wd.flSay&&S.wd.flSay.txt===T('nem.say.by',T('nem.cause.burst'))&&N.esc>0;
+    enemies=[a];nemOnDeath();o.rank=N.rank===2&&N.wins===2&&N.esc==null;
+    const m1=a.max;enterWorld('home');const b=S.wd.nemE;o.stronger=!!b&&b.max>m1;
+    nemCard(N);o.card=nemCardOn()&&!$('nemCard').hidden&&$('nemCard').textContent.includes(T('nem.say.wins',2));
+    for(let i=0;i<60;i++)nemCardTick(0.1);o.closed=!nemCardOn()&&$('nemCard').hidden;
+    const c0=dropStats().spawned,f0=FX.length;damage(b,b.hp*10,'sword',0,'physical');nemUpdate(0.01);
+    o.beat=!NS().list.length&&NS().won.length===1&&!S.wd.nemE;o.loot=dropStats().spawned>c0+1&&FX.length>f0;
+    o.book=nemBookHtml().includes(T('nem.wonIt'));
+    enterWorld('home');o.gone=!S.wd.nemE;
+    enemies=[];enterVillage();SAVE.nem=JSON.parse(n0);return o});
+  check(Object.values(nm).every(Boolean),'בוס-נמסיס: '+Object.entries(nm).map(([k,v])=>(v?'':'✗')+k).join(', '));
   // החיה מריחה ומובילה (petscent.js): מרחרחת, רצה למקום ומחכה עם חץ, תיבה נותנת שלל כשמגיעים, אויב מיוחד נותן שלל כשנופל, ומי שלא בא היא מוותרת
   const ps=await page.evaluate(()=>{
     const o={};enterWorld('home');const p=S.pet||petMake();p.st='idle';const pk=SCENT.pick;
