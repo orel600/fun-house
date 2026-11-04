@@ -2,13 +2,14 @@
    ברוחב טלפון שוכב, עם האטת מעבד פי 4 (CDP), כדי לדמות טלפון. גם זמן טעינה וגודל הקבצים.
    המצבים: כפר, עולם רגיל, עולם עם ערפל, עולם עם גשם, קרב בענק, עומק הצל קומה 10. בכל מצב השחקן הולך במעגל ולא מת.
    מודד לכל פריים את frameStep כולו, ובתוכו: update, render (קנבס), render3d, hud, mutDraw. ומספר הציורים (draw calls).
-   הרצה: node tools/perf.js [--q hi|lo] [--secs 5] [--cpu 4] [--json out.json] [--only village,fog] [--shadow 0|1] [--url bloom=0] [--prof]
+   הרצה: node tools/perf.js [--q hi|lo] [--secs 5] [--cpu 4] [--json out.json] [--only village,fog] [--shadow 0|1] [--url bloom=0] [--prof] [--vw 1386 --vh 636 --dsf 3]
+   הטלפון של ניר (OnePlus 15): --cpu 1 --vw 1386 --vh 636 --dsf 3
    לא רץ ב-GitHub. אין כרטיס גרפי: WebGL על המעבד (SwiftShader), אז המספרים להשוואה לפני/אחרי, לא ערך מוחלט של טלפון */
 const {chromium}=require('playwright');
 const path=require('path'),fs=require('fs');
 const args=process.argv.slice(2);
 const opt=k=>{const i=args.indexOf('--'+k);if(i<0)return null;const v=args[i+1];return v&&!v.startsWith('--')?v:true};
-const CFG={q:opt('q')||'hi',secs:+(opt('secs')||5),warm:1.5,cpu:+(opt('cpu')||4),phone:{width:844,height:390},
+const CFG={q:opt('q')||'hi',secs:+(opt('secs')||5),warm:1.5,cpu:+(opt('cpu')||4),phone:{width:+(opt('vw')||844),height:+(opt('vh')||390)},dsf:+(opt('dsf')||2),
   prof:!!opt('prof'),url:opt('url')||'',shadow:opt('shadow')||'1',only:opt('only')?String(opt('only')).split(','):null,json:opt('json')};
 
 const SCENES={
@@ -24,12 +25,12 @@ const SCENES={
   const sizes={};for(const f of fs.readdirSync(path.join(__dirname,'..','js')))sizes[f]=fs.statSync(path.join(__dirname,'..','js',f)).size;
   const total=Object.values(sizes).reduce((a,b)=>a+b,0);
   const browser=await chromium.launch({args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
-  const page=await browser.newPage({viewport:CFG.phone,deviceScaleFactor:2,isMobile:true,hasTouch:true});
+  const page=await browser.newPage({viewport:CFG.phone,deviceScaleFactor:CFG.dsf,isMobile:true,hasTouch:true});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
   await page.route(/^https?:/,r=>r.fulfill({status:200,contentType:'text/css',body:''}));
   await page.addInitScript(q=>{try{localStorage.setItem('zm-gfx','3d');localStorage.setItem('zm-shadow',q.sh)}catch(e){}window.__perfQ=q.q},{q:CFG.q,sh:CFG.shadow});
   const cdp=await page.context().newCDPSession(page);
-  await cdp.send('Emulation.setCPUThrottlingRate',{rate:CFG.cpu});
+  if(CFG.cpu>1)await cdp.send('Emulation.setCPUThrottlingRate',{rate:CFG.cpu});
   const t0=Date.now();
   await page.goto('file://'+path.resolve(__dirname,'..','index.html')+(CFG.url?'?'+CFG.url:''));
   const tDom=Date.now()-t0;
