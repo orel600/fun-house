@@ -11,7 +11,7 @@ const ITEMROLL={
   // הדרישות לפי שכבה (עץ, ברזל, כסף, זהב, אגדי): lv רמת דמות, pt נקודות בתכונה. עץ בלי דרישה. מתחת לרמה שבה השכבה מתחילה ליפול (LOOT.gear.tier)
   req:{lv:[0,3,7,12,17],pt:[0,1,3,6,9]},
   // איזו תכונה כל חפץ דורש: לפי סוג הנשק, המחלקה של השריון, או המשבצת. מה שלא כאן (תכשיטים) דורש רק רמה. חפצים מסתובבים: בלי דרישה
-  stat:{sword:'str',axe:'str',hammer:'str',bow:'agi',staff:'haste',wand:'haste',warrior:'str',hunter:'agi',mage:'haste',shield:'def',boots:'agi'},
+  stat:{sword:'str',axe:'str',hammer:'str',bow:'agi',staff:'haste',wand:'haste',warrior:'str',hunter:'agi',mage:'haste',shield:'def'},   // מגפיים: רק רמה (איזון 4.11: עם זריזות, לוחם וקוסם לא החליפו מגפיים כל המשחק)
   // בונוס מחלקה: כמה הסטטים עולים (0.08 = ‎+8%). shield: המגן שייך ללוחם
   cls:{bonus:0.08,shield:'warrior'},
   skip:false   // לבדיקה (tools/check.js): הבוט לובש חפצים בלי לצבור נקודות
