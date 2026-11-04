@@ -12,7 +12,7 @@ const HEROES={
   list:{
     warrior:{weapon:'oakSword',passive:{hp:25},arms:['sword','axe','hammer'],icon:'🛡️',col:'#D9DEE6'},
     hunter: {weapon:'oakBow',passive:{speed:10},arms:['bow'],icon:'🏹',col:'#A8D08D'},
-    mage:   {weapon:'oakStaff',passive:{regen:1,def:12,speed:10,gdmg:15},arms:['staff','wand'],icon:'🔮',col:'#C7A6FF'}
+    mage:   {weapon:'oakStaff',passive:{regen:1},arms:['staff','wand'],icon:'🔮',col:'#C7A6FF'}
   },
   /* סגנון המשחק, לקווסטי הדרגה. כל מונה נשמר ב-SAVE.hero.style.
      sec: כמה שניות בזירה התנאי היה נכון (heroTick, כל פריים). המפתח נשמר עם t_ לפניו.
