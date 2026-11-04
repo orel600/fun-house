@@ -47,6 +47,8 @@ const ARENAS={
     hp:[0.6,0.8,1.05]
   }
 };
+/* זירת מבוך (maze.js): זירת גלים קצרה יותר (6 גלים מתוך העשרה, האחרון עם הבוס) עם קירות שמשתנים. הקירות והמספרים שלהם ב-MAZE */
+ARENAS.maze={...ARENAS.waves,floor:{d2:'#172A2D',d3:'#23424A',line:'#3E6D74'},list:[0,1,2,4,6,9].map(i=>ARENAS.waves.list[i])};   // רצפה כחולה-ירקרקה כהה
 const ARENA=()=>ARENAS[S&&S.arena]||ARENAS.classic;
 
 // מתחילים ריצה בזירה מסוג a. נקרא מ-startRun אחרי reset()
@@ -68,6 +70,7 @@ const arenaOwnSpawn=()=>!!(S.wv&&ARENA().list||S.bd);
 
 // כל פריים בזירה (runUpdate). מחזיר true כשהזירה מנהלת את הריצה בעצמה, ואז אין תחנות של classic
 function arenaRun(){
+  mazeRun();   // קירות המבוך (maze.js), רק בזירת מבוך
   if(S.bd)return bossArenaRun();
   const A=ARENA(),w=S.wv;if(!A.list||!w)return false;
   if(w.phase==='break'&&S.t>=w.until)waveStart(w.i+1);

@@ -1676,6 +1676,22 @@ function worldBot(m,L,god){
     SAVE=JSON.parse(bak);reset();S.mode=mode;o.after=S.arena==='classic'&&!document.documentElement.classList.contains('waves');return o});
   check(!bar.err&&!!bar.btn&&bar.arena==='boss'&&!!bar.floor&&bar.bosses===bar.N&&bar.won===1&&bar.minions===0&&bar.wanted===0&&bar.hps[0]<bar.hps[1]&&bar.hps[1]<bar.hps[2]&&bar.tags.every(x=>/\d\/\d|\d$/.test(x))&&bar.after,
     'זירת בוסים: '+(bar.err||'כפתור "'+bar.btn+'", '+bar.bosses+'/'+bar.N+' בוסים, חיים '+(bar.hps||[]).join('<'+'')+', אויבים בהפסקות: '+bar.minions+(bar.mt?' ('+bar.mt+')':'')+', ניצחון: '+bar.won+', מבוקש: '+bar.wanted+', חזרה לרגיל: '+bar.after));
+  // זירת מבוך (maze.js, ARENAS.maze): נכנסים מהכרטיס של השער, קירות חוסמים אותך ואת האויבים כשהם מלאים, לא בזמן ההחלפה, מתחלפים כל מחזור, ולא באמצע הזירה
+  const mz=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={};
+    try{enterWorld('home');const w=S.wd;w.near=w.open='grove';w.ui='';worldHud();
+      const b=document.querySelector('#wPanel [data-a="maze"]');o.btn=b?b.innerText:null;if(b)b.click();else{worldUi(false);startRun('maze')}
+      o.arena=S.arena;o.waves=ARENAS.maze.list.length;o.last=!!ARENAS.maze.list[o.waves-1].boss;o.floor=arenaFloor('d2');
+      S.t=10;P.x=400;P.y=0;P.hp=P.maxHp;const ws=mazeWalls();o.n=ws.length;o.safe=ws.every(w=>Math.hypot(w.x+w.w/2,w.y+w.h/2)>=MAZE.safe);
+      const w0=ws[0],cx=w0.x+w0.w/2,cy=w0.y+w0.h/2;
+      P.x=cx;P.y=cy;S.t=10;mazeRun();o.out=!(P.x>w0.x&&P.x<w0.x+w0.w&&P.y>w0.y&&P.y<w0.y+w0.h)&&Math.hypot(P.x-cx,P.y-cy)>=P.r;   // המרכז בתוך הקיר: נדחף החוצה
+      const e=addEnemy('grunt',cx,cy);mazeRun();o.eOut=!(e.x>w0.x&&e.x<w0.x+w0.w&&e.y>w0.y&&e.y<w0.y+w0.h);
+      S.t=MAZE.shiftSecs*2+0.2;o.fade=mazeFade();const w1=mazeWalls()[0];P.x=w1.x+w1.w/2;P.y=w1.y+w1.h/2;const bx=P.x,by=P.y;mazeRun();o.soft=P.x===bx&&P.y===by&&o.fade<MAZE.solidAt;   // בזמן ההחלפה לא חוסמים
+      S.t=10;P.x=400;P.y=0;const k1=mazeWalls().map(w=>w.x+','+w.y).join();S.t=10+MAZE.shiftSecs;const k2=mazeWalls().map(w=>w.x+','+w.y).join();o.shift=k1!==k2;
+      S.t=10;mazeWalls();const cv=document.createElement('canvas');o.draw=(()=>{try{ctx.save();mazeDraw(0,0);ctx.restore();return true}catch(err){return String(err)}})();
+    }catch(err){o.err=String(err&&err.stack||err)}
+    enemies=[];wRet=null;SAVE=JSON.parse(bak);reset();S.mode=mode;o.after=S.arena==='classic';return o});
+  check(!mz.err&&!!mz.btn&&mz.arena==='maze'&&mz.waves===6&&mz.last&&!!mz.floor&&mz.n>0&&mz.safe&&mz.out&&mz.eOut&&mz.soft&&mz.shift&&mz.draw===true&&mz.after,
+    'זירת מבוך: '+(mz.err||'כפתור "'+mz.btn+'", '+mz.waves+' גלים, '+mz.n+' קירות, מרכז פנוי: '+mz.safe+', דוחף שחקן: '+mz.out+', דוחף אויב: '+mz.eOut+', לא חוסם בהחלפה: '+mz.soft+', מתחלף: '+mz.shift+', ציור: '+mz.draw+', חזרה לרגיל: '+mz.after));
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
