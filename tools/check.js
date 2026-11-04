@@ -1394,7 +1394,7 @@ function worldBot(m,L,god){
       enterWorld('home');enemies=[];const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
       SAVE.hero.skLoad=['meteor',null];run(0.05);const i=S.sk.ids.indexOf('meteor'),cast=()=>{S.sk.cd[i]=0;S.wsb&&(S.wsb.fx=[]);wskUse('meteor');const o=S.wsb.fx.find(o=>o.id==='meteor');return o?o.base:0};
       if(i>=0){SAVE.sklv.meteor=0;const b0=cast();SAVE.sklv.meteor=5;const b5=cast();r.dmg=b0>0?Math.round(b5/b0*100)/100:0;
-        r.cd=Math.abs(S.sk.cd[i]-WSKBOOK.list.meteor.cd0*WSKLVL.cd[5])<0.05;wslBadges();const sb=document.querySelector('#skills .skb[data-sk="meteor"] .wslb');r.btn=sb?sb.textContent:'';
+        r.cd=Math.abs(S.sk.cd[i]-WSKBOOK.list.meteor.cd0*WSKLVL.cd[5])<0.05;skillsHud();wslBadges();const sb=document.querySelector('#skills .skb[data-sk="meteor"] .wslb');r.btn=sb?sb.textContent:'';
         wsbOpenUi();wslBadges();const kb=document.querySelector('#ovBook .wsbc[data-wsbid="meteor"] .wslb');r.book=kb?kb.textContent:'';wsbClose()}
       for(const x of enemies)x.dead=true;enemies=[];run(2)}catch(err){r.err=String(err&&err.stack||err)}
     if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
