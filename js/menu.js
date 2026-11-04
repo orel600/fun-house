@@ -40,7 +40,7 @@ function menuEnd(){MENU.cur=null;document.body.classList.remove('menu');menuDraw
 // יש משהו חדש בלשונית: הנקודה (badge) או הסימן (dot) שהחלון שלה כבר מעדכן
 const menuNew=t=>!!(t&&(t.badge&&!$(t.badge).hidden||t.dot&&!$(t.dot).hidden));
 // הנקודות: על כל קיצור בטור, ועל ☰ רק כשיש משהו חדש בלשונית שאין לה קיצור
-function menuDot(){const rail=[...document.querySelectorAll('#qRail .qr')],has=new Set(rail.map(b=>b.dataset.tab));
+function menuDot(){const rail=[...document.querySelectorAll('.qr')],has=new Set(rail.map(b=>b.dataset.tab));
   for(const b of rail){const d=b.querySelector('.qrdot'),on=menuNew(menuTab(b.dataset.tab));if(d.hidden===on)d.hidden=!on}
   const on=MENU.tabs.some(t=>!has.has(t.id)&&menuNew(t)),d=$('menuBtn').querySelector('b');if(d.hidden===on)d.hidden=!on}
 
