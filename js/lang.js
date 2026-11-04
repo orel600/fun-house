@@ -1124,6 +1124,11 @@ const TEXT={
   'gear.unlock':{he:'לשחרר נעילה',en:'Unlock'},
   'gear.sold':{he:c=>'נמכר: ⁦+'+c+'⁩ 🪙',en:c=>'Sold: +'+c+' 🪙'},
   'gear.aged':{he:n=>'שודרג בנפחייה: ⁦+'+n+'⁩',en:n=>'Forged up: +'+n},
+  // חפצים (itemroll.js): דרישות, איכות ובונוס מחלקה
+  'ir.req':{he:p=>'דרוש: '+p,en:p=>'Requires: '+p},'ir.lv':{he:n=>'רמה '+n,en:n=>'Level '+n},
+  'ir.cant':{he:'עוד לא אפשר ללבוש',en:'Can\'t equip yet'},
+  'ir.q':{he:q=>'איכות '+q,en:q=>'Quality '+q},
+  'ir.cls':{he:(c,n)=>'בונוס ל'+c+': ⁦+'+n+'%⁩ לכל הסטטים',en:(c,n)=>c+' bonus: +'+n+'% to all stats'},
   'gear.stash':{he:(u,c)=>'מחסן '+u+'/'+c+': גוררים לכאן מהתרמיל',en:(u,c)=>'Stash '+u+'/'+c+': drag here from the bag'},
   'gear.store':{he:'למחסן',en:'To stash'},
   'gear.take':{he:'לתרמיל',en:'To bag'},
