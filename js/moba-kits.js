@@ -35,7 +35,7 @@ function mbCast(u,slot,aim){
   const K=MBKIT[u.kit],s=K[slot];
   if(!s||u.dead||u.cd[slot]>0||u.st.stun>0||u.st.dash)return false;
   if(slot==='ult'&&u.lvl<MOBA.ultAt)return false;
-  const k=mbK(u),ax=aim?aim.x:u.x+Math.cos(u.face)*100,ay=aim?aim.y:u.y+Math.sin(u.face)*100;
+  const k=mbK(u)*(1+mbIb(u).sk),ax=aim?aim.x:u.x+Math.cos(u.face)*100,ay=aim?aim.y:u.y+Math.sin(u.face)*100;
   const ang=Math.atan2(ay-u.y,ax-u.x),dist=Math.hypot(ax-u.x,ay-u.y);
   // נקודה בטווח: אם הכוונה רחוקה מדי, הסקיל נוחת בקצה הטווח
   const pt=()=>{const d=Math.min(dist,s.range||0);return{x:u.x+Math.cos(ang)*d,y:u.y+Math.sin(ang)*d}};
@@ -67,7 +67,7 @@ function mbCast(u,slot,aim){
     case 'heal':{for(const o of MB.u)if(o.team===u.team&&o.k==='hero'&&!o.dead&&Math.hypot(o.x-u.x,o.y-u.y)<s.r){const v=Math.min(o.max-o.hp,s.amt*k);o.hp+=v;mbShield(o,s.shield*k,s.shieldT);if(v>1)mbFloat(o.x,o.y-o.r-16,'+'+Math.round(v),'#7BD88F')}mbBoom(u.x,u.y,s.r,'heal');break}
     case 'blizzard':{const p=pt();mbZone(u,p.x,p.y,s.r,s.delay,z=>{for(const o of foesIn(z.x,z.y,z.r)){const wet=o.st.wet>0;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'stun',s.freeze*(wet?MOBA.combo.freeze:1),u)&&wet){o.st.wet=0;mbWord(o,'freeze')}if(o.st.stun>0)o.st.ice=1}mbBoom(z.x,z.y,s.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt))},'blizzard');break}
   }
-  u.cd[slot]=s.cd;u.face=ang;u.aim=ang;
+  u.cd[slot]=s.cd*(1-mbIb(u).cdr);u.face=ang;u.aim=ang;
   if(u.me)sfx(slot==='ult'?'levelup':'tap');
   if(slot==='ult')mbfxUlt(u,s);   // רגע דרמטי (moba-fx.js)
   return true;

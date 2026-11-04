@@ -1537,7 +1537,7 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbxp i{background:linear-gradient(var(--brass-hi),var(--brass))}
 .mbhp span{position:absolute;inset:0;display:grid;place-items:center;font:800 10px var(--body);color:#fff;text-shadow:0 1px 1px #000;font-variant-numeric:tabular-nums}
 /* הודעות הריגה: מתחת לדמות שלי, עד 3, ונעלמות לבד */
-.mbfeed{position:absolute;top:calc(env(safe-area-inset-top,0px) + 62px);left:calc(env(safe-area-inset-left,0px) + 8px);display:flex;flex-direction:column;gap:4px;direction:ltr}
+.mbfeed{position:absolute;top:calc(env(safe-area-inset-top,0px) + 86px);left:calc(env(safe-area-inset-left,0px) + 8px);display:flex;flex-direction:column;gap:4px;direction:ltr}
 .mbfr{margin:0;display:flex;align-items:center;gap:6px;padding:3px 8px 3px 4px;border-radius:7px;background:linear-gradient(90deg,#22160Ce0,#22160C90);box-shadow:0 0 0 1px var(--brass-lo);
   font:800 12px var(--body);color:var(--chalk);animation:mbfin .25s ease-out,mbfout .4s ease-in 3.6s forwards}
 .mbfr.mine{box-shadow:0 0 0 2px var(--brass)}
@@ -1556,7 +1556,7 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbresp b{font:900 34px/1 var(--body);color:var(--brass-hi);text-shadow:0 3px 0 var(--wood);font-variant-numeric:tabular-nums}
 .mbresp>i{display:block;width:110px;height:5px;border-radius:3px;background:#0B0E18;overflow:hidden;margin-top:4px}
 .mbresp>i i{display:block;height:100%;background:linear-gradient(90deg,var(--brass),var(--brass-hi))}
-.mb .banner{top:calc(env(safe-area-inset-top,0px) + 84px);font-size:18px;line-height:1.3;left:0;right:0;margin-inline:auto;width:max-content;max-width:min(520px,calc(100% - 140px));
+.mb .banner{top:calc(env(safe-area-inset-top,0px) + 96px);font-size:18px;line-height:1.3;left:0;right:0;margin-inline:auto;width:max-content;max-width:min(520px,calc(100% - 140px));
   padding:3px 18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:8px;background:linear-gradient(#3A2716f2,#1A1009f2);
   box-shadow:var(--bevel),0 0 0 2px var(--wood),0 0 0 3px var(--brass-lo),0 4px 10px #000a;text-shadow:0 2px 0 var(--wood)}   /* הודעות במובה: פס עץ למעלה, מתחת למפה הקטנה. עם רקע, כי בתחילת משחק הגיבורים עומדים מתחתיו והתג שלהם נראה דרך הטקסט (הבודק, 3.11) */
 /* ✕ ושתי הפקודות: למעלה מימין, בשורה, מחוץ לאזור הג'ויסטיק ורחוק מהסקילים */
@@ -1572,6 +1572,54 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbping button[data-o=back].on{box-shadow:var(--bevel),0 0 0 2px var(--brass-hi),0 0 0 4px var(--wood),0 0 16px var(--mb0)}
 .mbping button:active{transform:translateY(2px) scale(.94)}
 .mbli{width:18px;height:18px;color:var(--dt);vertical-align:-4px;flex:none}
+/* זהב וחנות (moba-items.js): מתחת לפקודות, למעלה מימין. קנייה מהירה = החפץ הבא, מתמלא בזהב עד שאפשר לקנות */
+.mbgold{display:inline-flex;align-items:center;gap:5px;font:900 15px var(--body);color:var(--brass-hi);text-shadow:0 2px 0 var(--wood);font-variant-numeric:tabular-nums}
+.mbgold::before{content:'';width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFF1B8,#F4C74F 45%,#A8741F);box-shadow:0 0 0 1.5px var(--wood)}
+.mbshopbar{position:absolute;top:calc(env(safe-area-inset-top,0px) + 62px);right:calc(env(safe-area-inset-right,0px) + 10px);display:flex;align-items:center;gap:8px;pointer-events:auto}
+.mbshopbar>.mbgold{padding:4px 10px 4px 7px;border-radius:999px;background:linear-gradient(#3A2716e6,#22160Ce6);box-shadow:var(--bevel),0 0 0 2px var(--wood),0 0 0 3px var(--brass-lo);min-width:62px}
+.mbquick,.mbshopb{position:relative;width:46px;height:46px;border-radius:10px;border:0;padding:0;cursor:pointer;touch-action:none;display:grid;place-items:center;overflow:hidden;
+  background:radial-gradient(circle at 50% 35%,var(--slate-hi),var(--slate) 75%);box-shadow:var(--bevel),0 0 0 2px var(--brass-lo),0 0 0 4px var(--wood),0 3px 8px #000a;transition:transform .08s}
+.mbquick img{width:36px;height:36px;object-fit:contain;filter:grayscale(.55) brightness(.75)}
+.mbquick::before{content:'';position:absolute;inset:auto 0 0;height:calc(var(--p,0)*100%);background:linear-gradient(#F4C74F00,#F4C74F55)}
+.mbquick span{position:absolute;bottom:1px;left:0;right:0;font:900 10px var(--body);color:var(--brass-hi);text-shadow:0 1px 1px #000,0 0 3px #000}
+.mbquick.ok{box-shadow:var(--bevel),0 0 0 2px var(--brass-hi),0 0 0 4px var(--wood),0 0 14px #F4C74F99;animation:mbqok 1.2s ease-in-out infinite alternate}
+.mbquick.ok img{filter:none}
+@keyframes mbqok{to{box-shadow:var(--bevel),0 0 0 2px var(--brass-hi),0 0 0 4px var(--wood),0 0 22px #F4C74FCC}}
+.mbquick.shake{animation:mbshake .35s}
+.mbshopb b{font-size:22px;line-height:1}
+.mbquick:active,.mbshopb:active{transform:translateY(2px) scale(.94)}
+.mbinv{position:absolute;top:calc(env(safe-area-inset-top,0px) + 60px);left:calc(env(safe-area-inset-left,0px) + 62px);display:flex;gap:3px}
+.mbinv img{width:20px;height:20px;object-fit:contain;padding:1px;border-radius:5px;background:#0B0E18cc;box-shadow:0 0 0 1.5px var(--brass-lo)}
+/* חלון החנות: שני טורים. מימין לשמאל: החפצים לפי קטגוריה, ולידם הפרטים, הכפתור והתרמיל */
+#ovMbShop{background:rgba(10,12,20,.72)}
+.mbshop{width:min(760px,94%);max-height:92vh;overflow:auto}
+.mbshop .whd h3{color:var(--brass-hi)}.mbshop .whd small{color:inherit}
+.mbshopin{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px}
+.mbcats{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;align-content:start}
+.mbcat h5{margin:0 0 3px;font:800 11px var(--body);color:var(--dim)}
+.mbcat>div{display:flex;gap:6px}
+.mbic{position:relative;width:54px;height:54px;flex:none;border-radius:10px;border:0;padding:0;cursor:pointer;display:grid;place-items:center;background:linear-gradient(var(--slate-hi),var(--slate));
+  box-shadow:var(--bevel),0 0 0 2px var(--brass-lo),0 0 0 3px var(--wood)}
+.mbic img{width:42px;height:42px;object-fit:contain;filter:grayscale(.45) brightness(.8)}
+.mbic.ok img,.mbic.own img{filter:none}
+.mbic span{position:absolute;bottom:1px;left:0;right:0;font:900 10px var(--body);color:var(--dim);text-shadow:0 1px 1px #000}
+.mbic.ok span{color:var(--brass-hi)}
+.mbic.sel{box-shadow:var(--bevel),0 0 0 2px var(--brass-hi),0 0 0 4px var(--wood),0 0 12px #F4C74F88}
+.mbic.own::after{content:'✓';position:absolute;top:1px;inset-inline-end:3px;font:900 12px var(--body);color:#7BD88F;text-shadow:0 1px 1px #000}
+.mbic.rec::before{content:'';position:absolute;top:3px;inset-inline-start:3px;width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px var(--gold)}
+.mbdet{display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:10px;background:#0B0E1880;box-shadow:0 0 0 2px var(--wood),0 0 0 3px var(--brass-lo)}
+.mbdh{display:flex;gap:8px;align-items:center}
+.mbdh img{width:52px;height:52px;object-fit:contain;padding:3px;border-radius:10px;background:radial-gradient(circle,#2B2F44,#0E1220);box-shadow:0 0 0 2px var(--brass)}
+.mbdh b{display:block;font:900 var(--t2) var(--body);color:var(--brass-hi)}.mbdh small{font:700 11px var(--body);color:var(--dim)}
+.mbdet ul{list-style:none;margin:0;padding:0;font:700 12px/1.35 var(--body);color:var(--chalk);display:flex;flex-direction:column;gap:2px}
+.mbdet li.mbpas{color:var(--tide);font-weight:600}
+.mbbuy,.mbsell{min-height:44px}
+.mbbuy{padding:10px;background:linear-gradient(var(--brass-hi),var(--brass));color:var(--wood);font-size:16px;box-shadow:var(--bevel),0 3px 0 var(--wood)}
+.mbbuy:disabled{background:linear-gradient(#4A4E60,#33374A);color:var(--dim);box-shadow:none;cursor:default;font-size:13px}
+.mbslots{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin-top:auto;max-width:270px}
+.mbslot{min-width:0;width:100%;aspect-ratio:1;border-radius:7px;border:0;padding:2px;background:#0B0E18;box-shadow:inset 0 1px 3px #000,0 0 0 1px var(--brass-lo);display:grid;place-items:center;cursor:pointer}
+span.mbslot{cursor:default}
+.mbslot img{width:100%;height:100%;min-width:0;object-fit:contain;display:block}
 /* חלון בחירת הגיבור והסוף: מלא כמעט את המסך, ארבעה כרטיסים לרוחב */
 #ovMoba{place-items:center;background:radial-gradient(ellipse at 50% 30%,#2A1420e6,#0A0C14f2 70%)}
 body:has(#ovMoba:not([hidden])) #muteBtn{display:none}
