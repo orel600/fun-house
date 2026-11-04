@@ -1860,11 +1860,18 @@ function worldBot(m,L,god){
       m.topBad=tr.filter((x,i)=>!x.r||x.r.width<44||x.r.top<0||x.r.left<0||x.r.right>W||x.r.bottom>H*0.3||others.some(q=>hit(q,x.r))||tr.some((y,j)=>j!==i&&y.r&&hit(y.r,x.r))).map(x=>x.n.replace('Btn',''));
       m.feedTop=fb.parentNode.id==='vTop';ids.forEach((i,k)=>$(i).hidden=h0[k]);fb.innerHTML=f0}
     else{m.topBad=[];m.feedTop=$('feedBtn').parentNode.id==='nav'}   // בעולם ההאכלה בסרגל של המקום
+    // היררכיה (hudrank.js): הסידור לפי העדיפות, והחשוב הכי קרוב לפינה הימנית התחתונה. לחיצות מוסיפות מעט, ולא מזיזות כפתור למקום אחר
+    {const L=hudLayout(),want=place==='village'?{qRail:'gearBtnQ,qBtnQ,bookBtnQ',vTop:'welBtn,feedBtn,dBtn,visBtn'}:{qRail:'gearBtnQ,qBtnQ,bookBtnQ,wMapBtnQ'};
+      m.rankBad=Object.keys(want).filter(k=>(L[k]||[]).join(',')!==want[k]).map(k=>k+'='+(L[k]||[]).join('/'));
+      const rr=[...document.querySelectorAll('#qRail .qr')].map(e=>({id:e.id,r:vis(e)})).filter(x=>x.r),g=rr.find(x=>x.id==='gearBtnQ');
+      if(g&&rr.some(x=>x!==g&&(place==='village'?x.r.bottom>g.r.bottom:x.r.right>g.r.right)))m.rankBad.push('דמות לא הכי קרובה לפינה');
+      const n=hudUses(),k0=n.visBtn;n.visBtn=1e6;m.useCap=hudScore('visBtn','village')<=HUDRANK.rank.visBtn.village+HUDRANK.use.max;
+      const L2=hudLayout();if(place==='village'&&(L2.vTop||[]).indexOf('visBtn')!==3)m.rankBad.push('שימוש הזיז את הביקור');if(k0==null)delete n.visBtn;else n.visBtn=k0;hudLayout()}
     m.railOpen=[];for(const x of rail){x.e.click();await tick();if(MENU.cur!==x.n||$(menuTab(x.n).win).hidden||!on())m.railOpen.push(x.n.replace('Btn',''));menuClose();await tick()}
     $('menuBtn').click();await tick();m.setOnly=MENU.cur==='setBtn';menuClose();await tick();
     const gb=$('gBadge'),h0=gb.hidden;gb.hidden=false;menuDot();m.dot=!document.querySelector('#qRail [data-tab="gearBtn"] .qrdot').hidden&&$('menuBtn').querySelector('b').hidden;gb.hidden=h0;menuDot();
     m.nav=[...document.querySelectorAll('#nav button')].every(b=>b.classList.contains('talkbtn'));   // בסרגל רק כפתורים של המקום
-    m.ok=m.btn&&m.open&&m.tabs===m.want&&!m.small.length&&!m.out.length&&m.allOk&&m.xClose&&m.esc&&m.bg&&m.dot&&m.nav&&m.rail===m.railWant&&!m.railBad.length&&!m.railOpen.length&&m.setOnly&&!m.topBad.length&&m.feedTop;return m};
+    m.ok=m.btn&&m.open&&m.tabs===m.want&&!m.small.length&&!m.out.length&&m.allOk&&m.xClose&&m.esc&&m.bg&&m.dot&&m.nav&&m.rail===m.railWant&&!m.railBad.length&&!m.railOpen.length&&m.setOnly&&!m.topBad.length&&m.feedTop&&!m.rankBad.length&&m.useCap;return m};
   const uiMenu={};
   for(const nm in UIV){
     await page.setViewportSize(UIV[nm]);
@@ -2935,7 +2942,7 @@ function worldBot(m,L,god){
     results.push((b.length?'⚠ ':'· ')+'גודל ממשק, '+(nm==='port'?'טלפון עומד':'לרוחב')+': '+(b.length?'גדול מהגבול: '+b.join(', '):'הכל בתוך הגבולות'))}
   for(const nm in uiMenu){const {vm,wm}=uiMenu[nm],d=(m,p)=>p+': '+(m.btn?'☰':'אין ☰')+(m.open?'':' לא נפתח')+', '+m.tabs+'/'+m.want+' לשוניות'+(m.small.length?' קטנות: '+m.small.join(','):'')+(m.out.length?' מחוץ למסך: '+m.out.join(','):'')+
       ' ['+m.seen+']'+(m.xClose?', ✕':', ✕ לא סוגר')+(m.esc?', Esc':', Esc לא סוגר')+(m.bg?', רקע':', רקע לא סוגר')+(m.dot?', נקודה בטור':', אין נקודה בטור (או שהיא על ☰)')+(m.nav?'':', בסרגל יש כפתור שלא שייך למקום')+
-      ', טור '+m.rail+'/'+m.railWant+(m.railBad.length?' (קטן, בחוץ או על כפתור: '+m.railBad.join(',')+')':'')+(m.railOpen.length?' (לא נפתח: '+m.railOpen.join(',')+')':'')+(m.setOnly?', ☰ = הגדרות':', ☰ לא פותח הגדרות')+(m.topBad.length?', שורה עליונה: '+m.topBad.join(','):'')+(m.feedTop?'':', ההאכלה לא במקום');
+      ', טור '+m.rail+'/'+m.railWant+(m.railBad.length?' (קטן, בחוץ או על כפתור: '+m.railBad.join(',')+')':'')+(m.railOpen.length?' (לא נפתח: '+m.railOpen.join(',')+')':'')+(m.setOnly?', ☰ = הגדרות':', ☰ לא פותח הגדרות')+(m.topBad.length?', שורה עליונה: '+m.topBad.join(','):'')+(m.feedTop?'':', ההאכלה לא במקום')+(m.rankBad.length?', היררכיה: '+m.rankBad.join(' · '):', היררכיה')+(m.useCap?'':', השימוש מזיז יותר מדי');
     check(vm.ok&&wm.ok,'תפריט ראשי, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+d(vm,'כפר')+' · '+d(wm,'עולם'))}
   check(gd.vil&&gd.vilGate&&gd.lantern&&gd.toWarden&&gd.lakeBack&&gd.jump==='earth'&&gd.claim&&gd.changed&&gd.min&&gd.log&&gd.arena,'מטרה ברורה: '+(gd.vil?'בכפר "'+gd.txt+'" '+gd.dist:'אין שורה בכפר')+(gd.vilGate?', החץ לשער':', החץ לא לשער')+
     (gd.lantern?', בעולם לפנס':', לא לפנס')+(gd.toWarden?', שומר ליד: המרחק אליו':', שומר ליד: עדיין לפנס')+(gd.lakeBack?', מהאגם לשער חזרה':', מהאגם לא לשער')+(gd.jump==='earth'?', ו"קפוץ" לפנס האדמה':', בלי "קפוץ" ('+gd.jump+')')+(gd.claim?', לפרס':', לא לפרס')+(gd.changed?', אחר כך: "'+gd.after+'"':', המטרה לא התחלפה')+

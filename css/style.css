@@ -981,6 +981,13 @@ body.menu #ovGear .gearpanel{height:100%}
 .vil .qrail{right:calc(env(safe-area-inset-right,0px) + 14px);top:calc(var(--ctop,8px) + 92px)}
 .world .qrail{flex-direction:row;inset-inline-start:calc(var(--cside,14px) - 4px);top:calc(var(--ctop,8px) + var(--b1,40px) + 52px)}
 .vil .qr.wonly{display:none}
+/* הסדר בתוך כל מקום (js/hudrank.js): order=0 הוא הכפתור החשוב, והוא הקרוב ביותר לפינה הימנית התחתונה, בכל שפה */
+.vil .qrail{flex-direction:column-reverse}
+.world .qrail,.vtop{flex-direction:row-reverse}
+[dir=rtl] .world .qrail,[dir=rtl] .vtop{flex-direction:row}
+/* כפתור שעבר מקום לפי השימוש מקבל את הצורה של המקום: עגול בשורה העליונה, מרובע עם תווית בטור */
+.vtop>.qr{border-radius:50%;font-size:0}.vtop>.qr .ni{font-size:24px}
+.qrail>.dgift{border-radius:12px}
 .qr{appearance:none;position:relative;width:var(--qrs);height:var(--qrs);border-radius:12px;border:2px solid #3A4566;padding:0;pointer-events:auto;
   background:linear-gradient(#2C3654,#1D2438);color:var(--chalk);font:800 9px/1 var(--body);cursor:pointer;box-shadow:0 2px 0 #0B0E18;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;white-space:nowrap;touch-action:manipulation}
