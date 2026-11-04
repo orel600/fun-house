@@ -905,10 +905,14 @@ function worldBot(m,L,god){
     if(R3D.on&&R3D.ready){
       const vis=all=>{syncPlayer(0);const v=new Set();R3D.player.root.traverse(o=>{const p=o.isMesh&&armorPart(o,ARMOR3D);if(p&&(all||o.visible))v.add(p)});return v};
       const look=RANKS.list.knight.look,has=vis(true),want=look.show.filter(p=>has.has(p));
-      SAVE.hero.rankId=null;const before=vis();SAVE.hero.rankId='knight';const after=vis();
-      let glow=false;R3D.player.root.traverse(o=>{if(o.isMesh&&o.visible&&armorPart(o,look.show)&&o.material.emissive.getHex())glow=true});
-      r.armor={model:R3D.player.L.model,want:want.join('+')||'-',before:[...before].join('+')||'-',after:[...after].join('+')||'-',glow,
-        ok:want.length>0&&want.every(p=>!before.has(p)&&after.has(p))&&glow};
+      // משבצת ריקה = בלי החלקים, גם עם דרגה (ניר, 4.11.2026). עם שריון לבוש, הדרגה זוהרת על החלקים שלה
+      const g0=JSON.stringify(SAVE.gear),wear=on=>{SAVE.gear.head=on?['warriorHead0']:[];SAVE.gear.body=on?['warriorBody0']:[];R3D._hl=null};
+      const em=()=>{let s=0;R3D.player.root.traverse(o=>{if(o.isMesh&&o.visible&&armorPart(o,look.show)){const c=o.material.emissive;s+=c.r+c.g+c.b}});return s};
+      wear(false);SAVE.hero.rankId='knight';const bare=vis();
+      wear(true);SAVE.hero.rankId=null;const before=vis(),e0=em();SAVE.hero.rankId='knight';const after=vis(),glow=em()>e0+0.01;
+      SAVE.gear=JSON.parse(g0);R3D._hl=null;
+      r.armor={model:R3D.player.L.model,want:want.join('+')||'-',before:'בלי שריון '+([...bare].join('+')||'-'),after:'עם שריון '+([...after].join('+')||'-'),glow,
+        ok:want.length>0&&!want.some(p=>bare.has(p))&&want.every(p=>before.has(p)&&after.has(p))&&glow};
     }
     questLogOpen(false);localStorage.removeItem(SAVE_STORE.key);saveLoad();reset();S.mode=mode;S.q=null;FX=[];
     $('qTrack').hidden=true;$('qTrack').textContent='';document.getElementById('banner').textContent='';

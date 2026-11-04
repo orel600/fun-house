@@ -90,7 +90,10 @@ function armor3d(a){
   a.rk=0;if(GEAR3D.on&&a.L&&a.L.g3){a.g3=null;gear3dParts(a,a.L)}else rankArmor3d(a);   // 0 ולא null: בלי דרגה rankId() הוא null, ו-rankArmor3d היה מדלג
   a.ar=key;
   const LK=ARMOR.look,parts={};a.root.traverse(o=>{if(o.isMesh){const p=armorPart(o,ARMOR_NATIVE);if(p)(parts[p]||(parts[p]=[])).push(o)}});
-  const paint=(o,col,k,t)=>{o.visible=true;o.material.color.set(0xffffff).lerp(new THREE.Color(col),k);const em=new THREE.Color(col).multiplyScalar(LK.glow[t]);o.material.emissive.copy(em);o.material.userData.em=em};
+  // הדרגה (RANKS.look) כבר לא מדליקה חלקים לבד: היא זוהרת בצבע שלה על החלקים שלה, כשהם לבושים
+  const R=RANKS.list[rankId()],rl=R&&R.look,rk=rl&&rl.glow?new THREE.Color(R.col).multiplyScalar(rl.glow):null;
+  const paint=(o,col,k,t)=>{o.visible=true;o.material.color.set(0xffffff).lerp(new THREE.Color(col),k);const em=new THREE.Color(col).multiplyScalar(LK.glow[t]);
+    if(rk&&rl.show.includes(armorPart(o,ARMOR_NATIVE)))em.add(rk);o.material.emissive.copy(em);o.material.userData.em=em};
   const build=(list,tcol,ccol,t)=>{for(const p of list){const b=bone(a.root,p.bone);if(!b)continue;
     const col=p.col==='tier'?tcol:ccol,m=armorMesh(p,col),em=new THREE.Color(col).multiplyScalar(p.glow||LK.glow[t]);
     m.material.emissive.copy(em);m.material.userData.em=em;b.add(m);a.arG.push(m);a.mats.push(m.material)}};
