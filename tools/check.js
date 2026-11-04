@@ -2344,11 +2344,12 @@ function worldBot(m,L,god){
   mut.bar=await page.evaluate(()=>{const el=$('mutBar');return !!el&&!el.hidden&&el.classList.contains('on')&&el.textContent.includes(mutName('fog'))});
   if(CFG.shots)await shot('mutation');
   await page.clock.runFor(6000);mut.barGone=await page.evaluate(()=>!$('mutBar').classList.contains('on'));
-  await page.evaluate(()=>{MUT.force=null;enemies=[];enterVillage()});
-  check(mut.same&&mut.many>=5&&mut.noDup&&mut.shut&&mut.allOk&&mut.xp>mut.xpBase&&mut.line&&mut.village&&mut.bar&&mut.barGone,
+  mut.chip=await page.evaluate(()=>{const c=$('mutChip');if(!c||c.hidden||!c.textContent.includes(MUTATION.rules.fog.icon))return false;c.click();return $('mutBar').classList.contains('on')});   // השבב בפס העליון: נגיעה מחזירה את הפס
+  await page.evaluate(()=>{MUT.force=null;enemies=[];wHome()});mut.chipOff=await page.evaluate(()=>$('whud').hidden||$('mutChip').hidden);   // חוזרים לכפר כמו שחקן (wHome מסתיר את הפס העליון של העולם)
+  check(mut.same&&mut.many>=5&&mut.noDup&&mut.shut&&mut.allOk&&mut.xp>mut.xpBase&&mut.line&&mut.village&&mut.bar&&mut.barGone&&mut.chip&&mut.chipOff,
     'מוטציה יומית: '+mut.many+' חוקים שונים ב-30 יום'+(mut.noDup?'':', חוזר על האתגר!')+(mut.shut?', סגור לפני פנס האדמה':', פתוח לפני פנס האדמה!')+
     ', עובדים: '+Object.keys(mut.rules).filter(k=>mut.rules[k]).join(',')+(mut.allOk?'':' (לא עובדים: '+Object.keys(mut.rules).filter(k=>!mut.rules[k]).join(',')+')')+
-    ', XP בהריגה +'+mut.xp+' (רגיל '+mut.xpBase+')'+(mut.bar?', פס בכניסה':', אין פס!')+(mut.barGone?' שנעלם':' שלא נעלם')+(mut.line?', שורה בחלון בכפר':', אין שורה בכפר')+(mut.village?'':', פועל בכפר!')+(mut.same?'':', לא קבוע לתאריך'));
+    ', XP בהריגה +'+mut.xp+' (רגיל '+mut.xpBase+')'+(mut.bar?', פס בכניסה':', אין פס!')+(mut.barGone?' שנעלם':' שלא נעלם')+(mut.chip?', שבב בפס העליון שמחזיר אותו':', אין שבב בפס העליון!')+(mut.chipOff?'':', השבב נשאר בכפר!')+(mut.line?', שורה בחלון בכפר':', אין שורה בכפר')+(mut.village?'':', פועל בכפר!')+(mut.same?'':', לא קבוע לתאריך'));
   // ספר ההרפתקאות (book.js): הריגה נרשמת, פריט ומשאב מהתרמיל נרשמים, פרס מגיע כל BOOK.every רשומות, והחלון נפתח, מראה צללית ונסגר
   const bk=await page.evaluate(()=>{
     enterWorld('home');const o={},b=BK();

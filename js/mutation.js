@@ -5,13 +5,16 @@
    שונה מהאתגר היומי (challenge.js): האתגר הוא מטרה עם פרס ביומן, והמוטציה היא מזג האוויר של העולם. ביום שהאתגר כבר עושה
    את אותו דבר (dup), המוטציה עוברת לחוק הבא, כדי ששני החוקים לא יוכפלו.
    החיבורים: mutEnter ו-mutUpdate ב-worldUpdate/enterWorld, mutN ו-mutSpawn ב-wSpawn, mutK('regen') בריפוי, mutDraw ב-drawWorld (world.js),
-   mutKill ב-kill (combat.js), mutLine בחלון "בזמן שלא היית" (welcome.js). הטקסטים ב-lang.js תחת 'mut.' */
+   mutKill ב-kill (combat.js), mutLine בחלון "בזמן שלא היית" (welcome.js). שבב קבוע ליד המטבעות בפס העליון (#mutChip) מציג שוב את הפס בנגיעה.
+   הטקסטים ב-lang.js תחת 'mut.' */
 const MUTATION={
   after:'earth',            // נפתח עם האתגר היומי, אחרי פנס האדמה (SAVE.story). לפני זה העולם רגיל
   bar:{delay:0.8,dur:4.5},  // הפס בכניסה לעולם: אחרי כמה שניות, וכמה זמן הוא נשאר
   rewet:1.2,                // גשם: כמה שניות אחרי שהרטיבות נוצלה (חשמול, קיפאון) האויב רטוב שוב
   ignite:{k:0.05,t:2},      // יום אש: כל מכה מדליקה. 5% מהחיים של האויב לאורך 2 שניות
-  fog:{r:250,a:0.78,col:'200,212,224'},   // ערפל: רדיוס הראייה סביב הגיבור, וכמה אטום מעבר לו
+  // ערפל: שקוף עד clear מחצי האלכסון של המסך, ומשם מתעבה בעדינות עד a בקצה. אפרפר-כחלחל ולא לבן, כדי שאויבים ייראו מתוכו
+  // (ניר, 4.11: "כמו ערפל לבן במסך, לא ברור לי מה זה". היה רדיוס קבוע 250 ו-0.78 לבן, שכיסה כמעט את כל המסך בטלפון)
+  fog:{clear:0.32,a:0.45,col:'118,134,156'},
   /* החוקים. בכל חוק: icon, xp (פי כמה XP מכל הריגה), loot (הסיכוי להגרלה נוספת של השלל בכל הריגה).
      האויב כשהוא מופיע: hp, dmg, speed, r פי כמה. n: פי כמה אויבים בכל להקה. mult: {סוג נזק: פי כמה}.
      split: אויב שנופל מתפצל ל-n קטנים (hp ו-r שלהם ביחס אליו). wet: כולם רטובים. ignite: כל מכה מדליקה.
@@ -30,7 +33,7 @@ const MUTATION={
     frost: {icon:'❄️',mult:{ice:1.5},speed:0.85,xp:1.2,loot:0.2}
   }
 };
-const MUT={force:null,xpAcc:0,bar:null};   // force: חוק קבוע (לבוט). xpAcc: שברי XP שמצטברים. bar: החוק שהפס מציג עכשיו
+const MUT={force:null,xpAcc:0,bar:null,hide:0};   // force: חוק קבוע (לבוט). xpAcc: שברי XP שמצטברים. bar: החוק שהפס מציג עכשיו
 
 const mutDay=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
 const mutOpen=()=>!!(SAVE.story&&SAVE.story[MUTATION.after]);
@@ -85,8 +88,8 @@ function mutUpdate(dt){
 function mutDraw(){
   const R=mutNow();if(!R)return;
   if(R.wet&&!WR().storm&&typeof wStorm==='function')wStorm();   // אותו גשם של מגדלי הסערה
-  if(R.fog){const F=MUTATION.fog,big=3000,cx=P.x,cy=P.y-20;ctx.save();
-    const g=ctx.createRadialGradient(cx,cy,F.r*0.4,cx,cy,F.r);g.addColorStop(0,'rgba('+F.col+',0)');g.addColorStop(1,'rgba('+F.col+','+F.a+')');
+  if(R.fog){const F=MUTATION.fog,big=3000,cx=P.x,cy=P.y-20,hd=Math.hypot(W,H)/2;ctx.save();   // W,H: כמה מהעולם רואים (core.js), אז הערפל באותו גודל בכל מסך וזום
+    const g=ctx.createRadialGradient(cx,cy,hd*F.clear,cx,cy,hd);g.addColorStop(0,'rgba('+F.col+',0)');g.addColorStop(0.5,'rgba('+F.col+','+F.a*0.45+')');g.addColorStop(1,'rgba('+F.col+','+F.a+')');
     ctx.fillStyle=g;ctx.fillRect(cx-big,cy-big,big*2,big*2);ctx.restore()}
 }
 
@@ -94,14 +97,27 @@ function mutDraw(){
 const mutName=(id=mutRule())=>T('mut.r.'+id)[0];
 const mutText=(id=mutRule())=>{const R=MUTATION.rules[id];return R.icon+' '+mutName(id)+' · '+T('mut.r.'+id)[1]};
 function mutBarEl(){let el=$('mutBar');if(!el){el=document.createElement('div');el.id='mutBar';el.className='mutbar';el.hidden=true;document.body.appendChild(el)}return el}
+// הפס: שם החוק, מה הוא עושה והבונוס. בכניסה לעולם, ושוב בכל נגיעה בשבב (mutChip)
+function mutShowBar(){
+  if(!S.wd||!mutNow())return;
+  const id=mutRule(),R=MUTATION.rules[id],el=mutBarEl();clearTimeout(MUT.hide);
+  el.innerHTML='<span class="mpic">'+R.icon+'</span><div><b><small>'+T('mut.today')+'</small> '+mutName(id)+'</b><p>'+T('mut.r.'+id)[1]+' · '+T('mut.bonus',R.xp)+'</p></div>';
+  el.hidden=false;void el.offsetWidth;el.classList.add('on');MUT.bar=id;
+  MUT.hide=setTimeout(()=>{el.classList.remove('on');MUT.bar=null},MUTATION.bar.dur*1000);
+}
+/* השבב הקבוע בפס העליון של העולם, ליד המטבעות: אייקון החוק של היום. נגיעה מציגה שוב את הפס (ניר, 4.11: בלי זה לא ברור מה קורה) */
+function mutChipEl(){
+  let b=$('mutChip');if(b)return b;
+  b=document.createElement('button');b.id='mutChip';b.className='mutchip';b.hidden=true;
+  b.onclick=e=>{e.stopPropagation();mutShowBar();if(typeof sfx==='function')sfx('ui')};
+  const hud=$('whud'),bag=$('wBag');if(hud)hud.insertBefore(b,bag||null);return b;
+}
 function mutEnter(){
-  MUT.bar=null;const el=mutBarEl();el.classList.remove('on');el.hidden=true;
-  if(!mutNow())return;
-  const id=mutRule(),R=MUTATION.rules[id];
-  setTimeout(()=>{if(!S.wd||S.mode!=='play'||mutRule()!==id)return;
-    el.innerHTML='<span class="mpic">'+R.icon+'</span><div><b><small>'+T('mut.today')+'</small> '+mutName(id)+'</b><p>'+T('mut.r.'+id)[1]+' · '+T('mut.bonus',R.xp)+'</p></div>';
-    el.hidden=false;void el.offsetWidth;el.classList.add('on');MUT.bar=id;
-    setTimeout(()=>{el.classList.remove('on');MUT.bar=null},MUTATION.bar.dur*1000)},MUTATION.bar.delay*1000);
+  MUT.bar=null;clearTimeout(MUT.hide);const el=mutBarEl();el.classList.remove('on');el.hidden=true;
+  const R=mutNow(),b=mutChipEl();b.hidden=!R;
+  if(!R)return;
+  const id=mutRule();b.textContent=R.icon;b.setAttribute('aria-label',T('mut.today')+' '+mutName(id));
+  setTimeout(()=>{if(S.wd&&S.mode==='play'&&mutRule()===id)mutShowBar()},MUTATION.bar.delay*1000);
 }
 // שורה בחלון "בזמן שלא היית" (welcome.js): מה מחכה היום בעולם
 const mutLine=()=>mutOpen()?'<p class="welmut">'+T('mut.wel')+' '+mutText()+' · '+T('mut.bonus',MUTATION.rules[mutRule()].xp)+'</p>':'';
@@ -113,5 +129,8 @@ const mutLine=()=>mutOpen()?'<p class="welmut">'+T('mut.wel')+' '+mutText()+' ·
   '.mutbar.on{opacity:1;transform:translate(-50%,0)}.mutbar .mpic{font-size:20px;line-height:1;flex:none}.mutbar div{min-width:0}'+
   '.mutbar b{display:block;font-size:13px;color:#F4C74F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mutbar small{color:#C9A24A;font-weight:700;font-size:10px}'+
   '.mutbar p{margin:0;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
+  '.mutchip{pointer-events:auto;cursor:pointer;flex:none;width:30px;height:30px;padding:0;border-radius:50%;font-size:17px;line-height:1;'+
+  'background:linear-gradient(#4A3322,#2C1E14);border:1.5px solid #C9A24A;box-shadow:0 2px 5px #0008;display:flex;align-items:center;justify-content:center}'+
+  '.mutchip[hidden]{display:none}'+
   '.welmut{margin:6px 0 0;font-size:12px;color:#C9A24A;text-align:center}';
   document.head.appendChild(st)})();
