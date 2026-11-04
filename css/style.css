@@ -1550,7 +1550,7 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbresp b{font:900 34px/1 var(--body);color:var(--brass-hi);text-shadow:0 3px 0 var(--wood);font-variant-numeric:tabular-nums}
 .mbresp>i{display:block;width:110px;height:5px;border-radius:3px;background:#0B0E18;overflow:hidden;margin-top:4px}
 .mbresp>i i{display:block;height:100%;background:linear-gradient(90deg,var(--brass),var(--brass-hi))}
-.mb .banner{top:calc(env(safe-area-inset-top,0px) + 84px);font-size:18px;line-height:1.3;left:0;right:0;margin-inline:auto;width:max-content;max-width:min(520px,calc(100% - 140px));
+.mb .banner{top:calc(env(safe-area-inset-top,0px) + 96px);font-size:18px;line-height:1.3;left:0;right:0;margin-inline:auto;width:max-content;max-width:min(520px,calc(100% - 140px));
   padding:3px 18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:8px;background:linear-gradient(#3A2716f2,#1A1009f2);
   box-shadow:var(--bevel),0 0 0 2px var(--wood),0 0 0 3px var(--brass-lo),0 4px 10px #000a;text-shadow:0 2px 0 var(--wood)}   /* הודעות במובה: פס עץ למעלה, מתחת למפה הקטנה. עם רקע, כי בתחילת משחק הגיבורים עומדים מתחתיו והתג שלהם נראה דרך הטקסט (הבודק, 3.11) */
 /* ✕ ושתי הפקודות: למעלה מימין, בשורה, מחוץ לאזור הג'ויסטיק ורחוק מהסקילים */
