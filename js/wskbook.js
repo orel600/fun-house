@@ -197,7 +197,7 @@ function wsbCard(id,where){
   const D=SKILLS.list[id],open=wsbOpen(id),on=where>=0;
   return '<button class="wsbc'+(on?' on':'')+(open?'':' lock')+'" data-wsbid="'+id+'" style="--dt:'+dtCol(D.dt)+'" title="'+T('wsb.d.'+id)+'"'+(open?'':' aria-disabled="true"')+'>'+
     wsbIcon(id)+'<span class="wsbn"><b>'+T('sk.'+id)+'</b><small>'+
-    (open?T('wsb.d.'+id):'🔒 '+T('wsb.need',wsbNeed(id)))+'</small></span>'+(on?'<span class="wsbk">'+(where+1)+'</span>':'')+'</button>';
+    (open?T('wsb.d.'+id):'🔒 '+T('wsb.need',wsbNeed(id)))+'</small></span>'+(on?'<span class="wsbk">'+(where+2)+'</span>':'')+'</button>';
 }
 function wsbDrawUi(){
   const ov=$('ovBook');if(!ov||ov.hidden)return;
