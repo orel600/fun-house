@@ -66,7 +66,7 @@ const VILLAGE={
   /* השלטים על המבנים (ניר, 2.11: השלטים "נדחסים זה על זה ועל הממשק העליון").
      near: שם של מבנה מופיע רק כשמתקרבים אליו עד כאן (פיקסלים במשחק). תג "יש לאסוף/לשדרג" מופיע מכל מרחק שעל המסך.
      שלט שחופף לשלט חשוב ממנו זז קצת למטה או למעלה (nudge), ואם אין מקום הוא לא מצויר. avoid: הממשק שהשלטים לא נכנסים מתחתיו */
-  signs:{near:330,nudge:[0,24,-24,48],pad:4,avoid:'#vBag,#who,#menuBtn,#nav,.dgift,#updBtn,#vEnter'}
+  signs:{near:330,nudge:[0,24,-24,48],pad:4,avoid:'#vBag,#who,#menuBtn,#nav,.dgift,#vTop,#qRail,#updBtn,#vEnter'}
 };
 
 const vLv=k=>SAVE.village[k]||0;

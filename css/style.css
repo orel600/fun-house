@@ -835,7 +835,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .dside li{display:flex;align-items:center;gap:6px}.dside li .ri{width:26px;height:26px}
 .dside .dim{font-size:13px;opacity:.8;margin:2px 0}
 .dside .vbtn{margin-top:auto;min-height:48px}
-.dgift{position:fixed;z-index:4;top:calc(env(safe-area-inset-top,0px) + 62px);inset-inline-end:max(16px,env(safe-area-inset-right,0px));width:52px;height:52px;
+.dgift{position:relative;width:48px;height:48px;flex:none;
   border-radius:50%;border:2px solid var(--gold);background:linear-gradient(#3A3220,#241F14);font-size:28px;line-height:1;cursor:pointer;padding:0;
   box-shadow:0 3px 0 #0B0E18;animation:tpulse 1.2s ease-in-out infinite alternate}
 .dgift:active{transform:scale(.92)}
@@ -845,11 +845,11 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 @media (orientation:portrait){.dbody{flex-direction:column}}
 .stbuilds{display:flex;gap:6px;margin-top:4px}.stbuilds .vbtn{flex:1;min-height:36px;padding:6px 4px;font-size:13px}.stbuilds .vbtn[aria-pressed="true"]{border-image-source:url(../icons/ui/btn-gold.png);color:#FFF6E0}
 
-/* ביקור אצל חבר (js/visit.js): כפתור עגול מתחת למתנה היומית, וחלון בשני טורים: חברים, והכפר שלו עם המתנה */
-.visbtn{top:calc(env(safe-area-inset-top,0px) + 122px);animation:none}
+/* ביקור אצל חבר (js/visit.js): כפתור עגול בשורה העליונה, ליד המתנה היומית, וחלון בשני טורים: חברים, והכפר שלו עם המתנה */
+.visbtn{animation:none}
 .visbtn.off{opacity:.45;filter:grayscale(.8)}
-/* "אסוף הכל" (js/welcome.js): קטן ושקט, מתחת לביקור. ניר, 2.11: "כפתור קטן בצד" */
-.welbtn{top:calc(env(safe-area-inset-top,0px) + 182px);width:48px;height:48px;font-size:24px;animation:none}
+/* "אסוף הכל" (js/welcome.js): קטן ושקט, ליד הביקור בשורה העליונה */
+.welbtn{font-size:24px;animation:none}
 .viswin .visbody{display:flex;gap:14px;min-height:0;flex:1}
 .vislist{flex:.8;display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-width:0}
 .visf{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:52px;padding:6px 12px;border-radius:12px;border:2px solid var(--line,#2A3249);background:rgba(255,255,255,.05);color:var(--chalk);font:800 16px var(--body);text-align:start}
@@ -946,7 +946,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   flex-direction:column;justify-content:center;gap:6px;padding:8px max(8px,env(safe-area-inset-left,0px),env(safe-area-inset-right,0px));
   background:linear-gradient(90deg,#141A2B,#1D2438);border-inline-start:2px solid #3A4566;box-shadow:0 0 20px #0009}
 body.menu .menubg,body.menu .mrail{display:flex}
-body.menu #nav,body.menu .menubtn,body.menu .dgift{display:none!important}
+body.menu #nav,body.menu .menubtn,body.menu .dgift,body.menu .vtop{display:none!important}
 .mtab{appearance:none;position:relative;flex:0 1 60px;min-height:50px;max-height:64px;border-radius:14px;border:2px solid #3A4566;padding:2px;
   background:linear-gradient(#2C3654,#1D2438);color:var(--chalk);font:800 11px/1 var(--body);cursor:pointer;box-shadow:0 3px 0 #0B0E18;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;white-space:nowrap;touch-action:manipulation}
@@ -970,16 +970,24 @@ body.menu #ovGear .gearpanel{height:100%}
   body.menu #ovGear,body.menu #ovSound,body.menu #ovMoba{padding-inline-end:16px;padding-bottom:var(--railh)}
 }
 /* ===== טור הקיצורים (#qRail, js/menu.js, ניר 2.11.2026: "האייקונים קטנים אבל ברורים מסביב, וככה מפנים הרבה מקום") =====
-   טור צר של אייקונים קטנים עם תווית, בכפר ובעולם, כמו הטור בצד של משחקי RPG בטלפון. תמיד בצד השמאלי של המסך (left ולא inline-start,
-   בכוונה): הצד הימני למטה שמור לסקילים בכל שפה (ui-guide פרק 1). למעלה בצד: ☰, מתנה, ביקור או המפה הקטנה, ולכן הטור מתחיל מתחתם.
-   --qrt: איפה הטור מתחיל, --qrs: גודל כל קיצור (48 לפחות, ui-guide פרק 2) */
-:root{--qrs:48px;--qrt:calc(var(--ctop,8px) + 124px)}
-.qrail{display:none;position:fixed;z-index:3;left:calc(env(safe-area-inset-left,0px) + 14px);top:var(--qrt);flex-direction:column;gap:5px;
-  padding:4px;border-radius:14px;background:rgba(14,18,30,.42);pointer-events:none}
+   טור צר של אייקונים קטנים עם תווית. right/left ולא inline-start/end, בכוונה: האגודל השמאלי מזיז את הדמות והימני לוחץ, בכל שפה.
+   בכפר: בצד ימין, מתחת ל-☰ או לחיים (ניר, 4.11.2026: "במיקום של הביקור"), כך שהשמאל פנוי לג'ויסטיק. בכפר אין סקילים.
+   בעולם: הפינה הימנית התחתונה של הסקילים (עד כ-57% מהגובה), ואין מקום לטור מעליהם. לכן שורה אופקית למעלה, מתחת לשורת הקווסט,
+   בצד של הקווסט: רחוק מהג'ויסטיק ומהסקילים.
+   --qrs: גודל כל קיצור (48 לפחות, ui-guide פרק 2) */
+:root{--qrs:48px}
+.qrail{display:none;position:fixed;z-index:3;flex-direction:column;gap:5px;padding:4px;border-radius:14px;background:rgba(14,18,30,.42);pointer-events:none}
 .vil .qrail,.world .qrail{display:flex}
-.world .qrail{--qrt:calc(var(--ctop,8px) + 64px + var(--mmap,60px))}   /* מתחת למפה הקטנה, שגדלה בטלפון עומד */
-[dir=rtl] .vil:has(#visBtn:not([hidden])) .qrail{--qrt:calc(var(--ctop,8px) + 172px)}   /* בעברית כפתור הביקור באותו צד, מתחת למתנה */
+.vil .qrail{right:calc(env(safe-area-inset-right,0px) + 14px);top:calc(var(--ctop,8px) + 92px)}
+.world .qrail{flex-direction:row;inset-inline-start:calc(var(--cside,14px) - 4px);top:calc(var(--ctop,8px) + var(--b1,40px) + 52px)}
 .vil .qr.wonly{display:none}
+/* הסדר בתוך כל מקום (js/hudrank.js): order=0 הוא הכפתור החשוב, והוא הקרוב ביותר לפינה הימנית התחתונה, בכל שפה */
+.vil .qrail{flex-direction:column-reverse}
+.world .qrail,.vtop{flex-direction:row-reverse}
+[dir=rtl] .world .qrail,[dir=rtl] .vtop{flex-direction:row}
+/* כפתור שעבר מקום לפי השימוש מקבל את הצורה של המקום: עגול בשורה העליונה, מרובע עם תווית בטור */
+.vtop>.qr{border-radius:50%;font-size:0}.vtop>.qr .ni{font-size:24px}
+.qrail>.dgift{border-radius:12px}
 .qr{appearance:none;position:relative;width:var(--qrs);height:var(--qrs);border-radius:12px;border:2px solid #3A4566;padding:0;pointer-events:auto;
   background:linear-gradient(#2C3654,#1D2438);color:var(--chalk);font:800 9px/1 var(--body);cursor:pointer;box-shadow:0 2px 0 #0B0E18;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;white-space:nowrap;touch-action:manipulation}
@@ -988,6 +996,17 @@ body.menu #ovGear .gearpanel{height:100%}
 .qr:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
 .qrdot{position:absolute;top:-4px;inset-inline-end:-4px;width:13px;height:13px;border-radius:50%;border:2px solid var(--ink);background:var(--blood);box-shadow:0 1px 3px #000a;pointer-events:none}
 .qrdot[hidden]{display:none}
+/* השורה העליונה (#vTop): מתנה, ביקור, איסוף והאכלה, באמצע למעלה, באותו גודל וסגנון. בכפר בלבד (בעולם אין בה כפתורים) */
+.vtop{display:none;position:fixed;z-index:4;top:calc(var(--ctop,8px) + 2px);left:50%;transform:translateX(-50%);gap:8px;pointer-events:none}
+.vil .vtop{display:flex}
+.vtop>*{pointer-events:auto}
+.vtop>[hidden]{display:none!important}
+.vtop .nbtn.talkbtn.feedbtn{width:48px;height:48px;min-width:0;max-width:none;flex:none;padding:0;border-radius:50%;border:2px solid #FF9F43;font-size:0;gap:0;
+  background:radial-gradient(circle at 50% 30%,#4A3B1E,#241A0C 75%);box-shadow:0 3px 0 #0B0E18;display:grid;place-items:center}
+.vtop .nbtn.talkbtn.feedbtn .ni{width:auto;height:auto;border:0;background:none;box-shadow:none;font-size:24px}
+/* בטלפון עומד הפס העליון צר, והמשאבים יורדים לכמה שורות: הטור מתחת לקווסט, והכפתורים העגולים בטור מתחתיו, באותו צד ימין */
+@media (orientation:portrait){.vil .qrail{top:calc(var(--ctop,8px) + 104px)}
+  .vtop,[dir=rtl] .vtop{left:auto;right:calc(env(safe-area-inset-right,0px) + 18px);transform:none;top:calc(var(--ctop,8px) + 280px);flex-direction:column-reverse}}
 body.menu .qrail{display:none!important}
 /* המטרה הבאה (js/guide.js): שורה אחת באמצע למעלה, מתחת לפס העליון. לא בפינות (השתקה, מפה, מתנה) ולא למטה (הסרגל והסקילים) */
 .guide{position:fixed;z-index:3;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 50px);max-width:min(60vw,560px);
@@ -1208,7 +1227,7 @@ body.menu .minimap{display:none!important}
 /* ===== ממצאי המבקר על המסך (docs/critic/2026-11-01, ניר אישר 1.11.2026) ===== */
 /* dialog-under-hud + guide-over-windows: כשחלון פתוח בכפר ובעולם, הכפתורים העליונים, המשאבים, שורת המטרה והמפה הקטנה נעלמים.
    כך ה-✕ של החלון לא יושב מתחת ל-☰, ושורת המטרה לא עולה על הכותרת שלו */
-body:is(.vil,.world):has(:is(#npcDlg,#qLog,#bookWin,#wMap,#ovGear,#ovForge,#ovSound,#ovDaily):not([hidden])) :is(#menuBtn,.dgift,.vhud,.whud,#guide,.minimap,.qtrack,#qRail){visibility:hidden!important}
+body:is(.vil,.world):has(:is(#npcDlg,#qLog,#bookWin,#wMap,#ovGear,#ovForge,#ovSound,#ovDaily):not([hidden])) :is(#menuBtn,.dgift,.vhud,.whud,#guide,.minimap,.qtrack,#qRail,#vTop){visibility:hidden!important}
 /* gift-btn-arena: 🎁 (ו-🏡) רק בכפר ובעולם, לא בזירה */
 body:not(.vil):not(.world) .dgift{display:none!important}
 /* book-question-grid: צללית ברורה של היצור, ? קטן בפינה, בלי חפיפה באייפון, וכותרת לכל אזור (book.js) */

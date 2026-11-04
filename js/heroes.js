@@ -12,7 +12,9 @@ const HEROES={
   list:{
     warrior:{weapon:'oakSword',passive:{hp:25},arms:['sword','axe','hammer'],icon:'🛡️',col:'#D9DEE6'},
     hunter: {weapon:'oakBow',passive:{speed:10},arms:['bow'],icon:'🏹',col:'#A8D08D'},
-    mage:   {weapon:'oakStaff',passive:{regen:1},arms:['staff','wand'],icon:'🔮',col:'#C7A6FF'}
+    // worldPassive: כמו passive, אבל רק בכפר ובעולם (heroWorld). הזירה ומשחקי השאול לא משתנים. הקוסם (איזון 4.11, docs/balance-2026-11-04.md):
+    // אחרי #321 רטיבות והלם נגמרים גם בעולם, והקוסם מת שם פי 3 מהציידת
+    mage:   {weapon:'oakStaff',passive:{regen:1},worldPassive:{def:12,speed:10,gdmg:15},arms:['staff','wand'],icon:'🔮',col:'#C7A6FF'}
   },
   /* סגנון המשחק, לקווסטי הדרגה. כל מונה נשמר ב-SAVE.hero.style.
      sec: כמה שניות בזירה התנאי היה נכון (heroTick, כל פריים). המפתח נשמר עם t_ לפניו.
@@ -53,6 +55,9 @@ function heroSkinPet(){
 
 /* ---- בתחילת כל ריצה (ובכפר): הפסיבית של הדמות ---- */
 function heroReset(){const h=HEROES.list[heroId()];if(h)gApply(h.passive,1);rankReset();statsReset();statBadge();P.hp=P.maxHp}   // אותם סטטים כמו ציוד (gApply ב-gear.js), ואחריהם הבונוס של הדרגה (ranks.js)
+
+// בכפר ובעולם: worldPassive של הדמות, פעם אחת לכל שחקן (P נבנה מחדש בכל reset, ולכן בזירה הוא לא נשאר). נקרא מ-statTick ב-stats.js
+function heroWorld(){if(P.wpOn||!(S.vil||S.wd)||S.mb)return;P.wpOn=1;const w=(HEROES.list[heroId()]||{}).worldPassive;if(w)gApply(w,1)}
 
 /* ---- סגנון המשחק ---- */
 function heroCount(k,n=1){if(HEROES.style.on.includes(k))SAVE.hero.style[k]=(SAVE.hero.style[k]||0)+n}

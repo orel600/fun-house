@@ -11,7 +11,7 @@ const WSKLVL={
   dmg:0.12,       // כמה נזק כל רמה מוסיפה (0.12 = +12% לרמה, ×1.6 ב-+5)
   cd:{3:0.9,5:0.8},   // זמן הטעינה מהרמה הזו ומעלה: כפול כמה מהזמן הרגיל
   coins:[60,150,320,650,1200],   // מטבעות לרמה 1..5
-  matN:[6,12,20,30,45],          // כמה מהמשאב של סוג הנזק לרמה 1..5
+  matN:[4,8,14,22,32],           // כמה מהמשאב של סוג הנזק לרמה 1..5 (איזון 4.11: היה 6/12/20/30/45, ושדרוגים נתקעו על לוחות, אבק ועור)
   // המשאב לכל סוג נזק, ואבן החן לרמות הגבוהות (gemAt): [מאיזו רמה, איזו אבן, כמה]
   mat:{fire:'bone',ice:'essence',water:'essence',lightning:'dust',earth:'hide',physical:'plate'},
   gem:{fire:['rubyC','ruby'],ice:['sapphireC','sapphire'],water:['aquaC','aqua'],lightning:['boltC','bolt'],earth:['amberC','amber'],physical:['gem','gem']},
