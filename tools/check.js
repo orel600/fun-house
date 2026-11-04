@@ -905,10 +905,14 @@ function worldBot(m,L,god){
     if(R3D.on&&R3D.ready){
       const vis=all=>{syncPlayer(0);const v=new Set();R3D.player.root.traverse(o=>{const p=o.isMesh&&armorPart(o,ARMOR3D);if(p&&(all||o.visible))v.add(p)});return v};
       const look=RANKS.list.knight.look,has=vis(true),want=look.show.filter(p=>has.has(p));
-      SAVE.hero.rankId=null;const before=vis();SAVE.hero.rankId='knight';const after=vis();
-      let glow=false;R3D.player.root.traverse(o=>{if(o.isMesh&&o.visible&&armorPart(o,look.show)&&o.material.emissive.getHex())glow=true});
-      r.armor={model:R3D.player.L.model,want:want.join('+')||'-',before:[...before].join('+')||'-',after:[...after].join('+')||'-',glow,
-        ok:want.length>0&&want.every(p=>!before.has(p)&&after.has(p))&&glow};
+      // משבצת ריקה = בלי החלקים, גם עם דרגה (ניר, 4.11.2026). עם שריון לבוש, הדרגה זוהרת על החלקים שלה
+      const g0=JSON.stringify(SAVE.gear),wear=on=>{SAVE.gear.head=on?['warriorHead0']:[];SAVE.gear.body=on?['warriorBody0']:[];R3D._hl=null};
+      const em=()=>{let s=0;R3D.player.root.traverse(o=>{if(o.isMesh&&o.visible&&armorPart(o,look.show)){const c=o.material.emissive;s+=c.r+c.g+c.b}});return s};
+      wear(false);SAVE.hero.rankId='knight';const bare=vis();
+      wear(true);SAVE.hero.rankId=null;const before=vis(),e0=em();SAVE.hero.rankId='knight';const after=vis(),glow=em()>e0+0.01;
+      SAVE.gear=JSON.parse(g0);R3D._hl=null;
+      r.armor={model:R3D.player.L.model,want:want.join('+')||'-',before:'בלי שריון '+([...bare].join('+')||'-'),after:'עם שריון '+([...after].join('+')||'-'),glow,
+        ok:want.length>0&&!want.some(p=>bare.has(p))&&want.every(p=>before.has(p)&&after.has(p))&&glow};
     }
     questLogOpen(false);localStorage.removeItem(SAVE_STORE.key);saveLoad();reset();S.mode=mode;S.q=null;FX=[];
     $('qTrack').hidden=true;$('qTrack').textContent='';document.getElementById('banner').textContent='';
@@ -2631,6 +2635,20 @@ function worldBot(m,L,god){
     'שריון לפי מחלקה: '+(ar.items?'30 חלקים ו-5 מגנים':'חסרים חלקים או שמות')+(ar.slots?', משבצות ראש, גוף ומגן':', אין משבצות')+(ar.worn?', נלבש':', לא נלבש')+
     (ar.defOk?', הגנה +'+ar.def+'%':', ההגנה לא עלתה ('+ar.def+')')+(ar.tile?'':', לא מופיע במשבצת')+(ar.r3?'':', לא נראה על הדמות')+(ar.doll?'':', לא נראה בחלון')+
     (ar.lootOk?', שלל מוטה למחלקה ('+ar.loot+')':', השלל לא מוטה ('+ar.loot+')')+(ar.back?'':', לא חזר אחרי הבדיקה'));
+  // משבצת ריקה = בלי כובע (ניר, 4.11.2026): בלי ראש וגוף אין קסדה, כובע או גלימה דלוקים, ולבישת ראש משנה את מה שרואים. בכל המחלקות, בסקינים ובבובה
+  if(CFG.gfx==='3d'){const hv=await page.evaluate(()=>{
+    if(!R3D.on||!R3D.ready)return {skip:true};
+    const o={bad:[],same:[]},keep=JSON.stringify({gear:SAVE.gear,start:SAVE.hero.start,skin:SAVE.hero.skin});
+    const sig=a=>{const n=[];a.root.traverse(m=>{if(m.isMesh&&m.visible&&armorPart(m,ARMOR_NATIVE))n.push(armorPart(m,ARMOR_NATIVE))});return {nat:n,built:(a.arG||[]).length}};
+    const look=(h,sk,head,doll)=>{SAVE.hero.start=h;SAVE.hero.skin=sk;SAVE.gear.head=head?[h+'Head2']:[];SAVE.gear.body=[];R3D._hl=null;
+      if(doll){const D=R3D.doll||dollInit();D.key=null;dollBuild(D);return sig(D.a)}syncPlayer(0);return sig(R3D.player)};
+    try{for(const [h,sk,doll] of [['warrior',null],['hunter',null],['mage',null],['warrior','nir'],['warrior','orel'],['warrior',null,1]]){
+      const tag=h+(sk?'/'+sk:'')+(doll?'/בובה':''),off=look(h,sk,false,doll),on=look(h,sk,true,doll);
+      if(off.nat.length||off.built)o.bad.push(tag+': '+(off.nat.join('+')||'חלק'));
+      if(JSON.stringify(off)===JSON.stringify(on))o.same.push(tag)}
+    }finally{const k=JSON.parse(keep);SAVE.gear=k.gear;SAVE.hero.start=k.start;SAVE.hero.skin=k.skin;R3D._hl=null;syncPlayer(0);if(R3D.doll&&R3D.doll.a)R3D.doll.key=null}
+    return o});
+    if(!hv.skip)check(!hv.bad.length&&!hv.same.length,'משבצת ראש ריקה: '+(hv.bad.length?'חלק ראש דלוק בלי קסדה ('+hv.bad.join(', ')+')':'בלי כובע או קסדה ב-3 המחלקות, בסקינים ובבובה')+(hv.same.length?', הקסדה לא שינתה כלום ('+hv.same.join(', ')+')':', וקסדה משנה את המראה'))}
   // חפצים כמו ב-Priston Tale (itemroll.js): איכות אקראית בשלל בעולם שנשמרת במזהה, דרישות רמה ותכונה שחוסמות לבישה (ומה שלבוש נשאר), ובונוס מחלקה
   const ir=await page.evaluate(()=>{
     const o={},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,pity:SAVE.clsPity,pts:SAVE.hero.pts||{},lv:SAVE.hero.level,start:SAVE.hero.start}),v0=S.vil,g0=gearStats(),c0=celebrate;celebrate=()=>{};
@@ -2705,7 +2723,7 @@ function worldBot(m,L,god){
     enterWorld('home');const o={},g0=JSON.stringify(SAVE.gear),b0=JSON.stringify(SAVE.bag);
     for(const id of ['silverBlade','oakBow','goldAmulet','swiftBoots'])bagAdd(id,1);
     SAVE.gear.weapon='silverBlade';SAVE.gear.acc=['goldAmulet'];SAVE.gear.boots=['swiftBoots'];SAVE.gear.shield=[];R3D._hl=null;
-    let L=heroLook();o.noShield=!L.props.shield;SAVE.gear.shield=['shield3'];R3D._hl=null;L=heroLook();o.shield=!!L.props.shield&&L.props.shield.prop==='w_shield_C';o.head=!!L.g3&&!!L.g3.head;
+    let L=heroLook();o.noShield=!L.props.shield;SAVE.gear.shield=['shield3'];R3D._hl=null;L=heroLook();o.shield=!!L.props.shield&&L.props.shield.prop===gItem('shield3').look.model;o.head=!!L.g3&&!!L.g3.head;
     if(R3D.on&&R3D.ready){P.weapon='sword';syncPlayer(0);const a=R3D.player;o.in3d=!!a.props.shield&&a.props.shield.visible;
       let g=false;a.props.sword.traverse(m=>{if(m.isMesh&&m.material.emissive.getHex())g=true});o.glow=g}else{o.in3d=true;o.glow=true}
     SAVE.gear.weapon='oakBow';R3D._hl=null;L=heroLook();o.noBow=!L.props.shield;
