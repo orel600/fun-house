@@ -53,3 +53,6 @@ $('menuBg').addEventListener('click',()=>{menuClose();sfx('ui')});
   const c=MENU.cur&&menuTab(MENU.cur);if(c&&$(c.win).hidden)menuEnd();menuDot()});
   for(const t of MENU.tabs){mo.observe($(t.win),{attributes:true,attributeFilter:['hidden']});if(t.badge)mo.observe($(t.badge),{attributes:true,attributeFilter:['hidden']});if(t.dot)mo.observe($(t.dot),{attributes:true,attributeFilter:['hidden']})}}
 menuDraw();menuDot();
+// האכלת חיית המחמד: בכפר בשורה העליונה (#vTop) ליד הביקור והאיסוף (ניר, 4.11.2026), בעולם בסרגל של המקום (#nav). pet.js לא יודע איפה הכפתור
+{const fb=$('feedBtn'),home=fb.parentNode,mv=()=>{const p=document.body.classList.contains('vil')?$('vTop'):home;if(fb.parentNode!==p)p.appendChild(fb)};
+  new MutationObserver(mv).observe(document.body,{attributes:true,attributeFilter:['class']});mv()}

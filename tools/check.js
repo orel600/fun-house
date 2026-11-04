@@ -1796,7 +1796,7 @@ function worldBot(m,L,god){
   const uiMeasure=place=>{const o0={},vis=e=>{if(!e||e.closest('[hidden]'))return null;const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>0&&r.height>0&&cs.display!=='none'&&cs.visibility!=='hidden'?r:null};
     const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1,W=innerWidth,H=innerHeight;
     const box=sel=>[...document.querySelectorAll(sel)].map(e=>({n:e.id||(e.className.split(' ')[0]+(e.dataset.tip?':'+e.dataset.tip:'')),r:vis(e)})).filter(x=>x.r);
-    const els=box(place==='world'?'#menuBtn,#muteBtn,.hud .hp,#who,#miniMap,#wBag .res,#wBag .resmore,#nav .nbtn,#guide,#qRail .qr':'#menuBtn,#muteBtn,#who,.dgift,#vBag .res,#vBag .resmore,#nav .nbtn,#guide,#qRail .qr'),bad=[],off=[];
+    const els=box(place==='world'?'#menuBtn,#muteBtn,.hud .hp,#who,#miniMap,#wBag .res,#wBag .resmore,#nav .nbtn,#guide,#qRail .qr':'#menuBtn,#muteBtn,#who,.dgift,#vTop .nbtn,#vBag .res,#vBag .resmore,#nav .nbtn,#guide,#qRail .qr'),bad=[],off=[];
     els.forEach((a,i)=>els.slice(i+1).forEach(b=>{if(hit(a.r,b.r))bad.push(a.n+'×'+b.n)}));
     for(const x of els)if(x.r.left<-0.5||x.r.right>W+0.5||x.r.top<-0.5||x.r.bottom>H+0.5)off.push(x.n);
     o0.who=!!vis($('who'));o0.res=document.querySelectorAll('#'+(place==='world'?'w':'v')+'Bag .res').length;
@@ -1849,12 +1849,22 @@ function worldBot(m,L,god){
     // והנקודה האדומה של הלשונית מופיעה על הקיצור שלה (ולא על ☰)
     const rail=[...document.querySelectorAll('#qRail .qr')].map(e=>({n:e.dataset.tab,e,r:vis(e)})).filter(x=>x.r);m.rail=rail.length;m.railWant=place==='world'?4:3;
     const near=[...document.querySelectorAll('#menuBtn,.dgift,#miniMap,#guide,#who,#skills .skb,.qtrack,#nav .nbtn,#vBag .res,#wBag .res')].map(vis).filter(Boolean);
-    m.railBad=rail.filter(x=>x.r.width<48||x.r.height<48||x.r.left<0||x.r.right>W||x.r.top<0||x.r.bottom>H||near.some(q=>hit(q,x.r))).map(x=>x.n.replace('Btn',''));
+    // אזור הג'ויסטיק (פינה שמאלית תחתונה) ואזור הסקילים (פינה ימנית תחתונה, ui-guide פרק 1): אין שם קיצור
+    const joy={left:0,right:W*0.4,top:H-200,bottom:H},skz={left:W-260,right:W,top:H-230,bottom:H};
+    m.railBad=rail.filter(x=>x.r.width<48||x.r.height<48||x.r.left<0||x.r.right>W||x.r.top<0||x.r.bottom>H||near.some(q=>hit(q,x.r))||hit(joy,x.r)||place==='world'&&hit(skz,x.r)).map(x=>x.n.replace('Btn',''));
+    if(place==='village'&&rail.some(x=>x.r.left<W/2))m.railBad.push('בכפר הטור לא בצד ימין');   // ניר, 4.11: השמאל פנוי לאגודל שמזיז
+    // השורה העליונה (#vTop): בכפר מתנה, ביקור, איסוף והאכלה באמצע למעלה. כולם מוצגים לרגע: לא נוגעים זה בזה, בטור, בפס העליון או בקווסט
+    if(place==='village'){const ids=['dBtn','visBtn','welBtn','feedBtn'],h0=ids.map(i=>$(i).hidden),fb=$('feedBtn'),f0=fb.innerHTML;
+      if(!f0)fb.innerHTML='<span class="ni">🥕</span>';ids.forEach(i=>$(i).hidden=false);
+      const tr=ids.map(i=>({n:i,r:vis($(i))})),others=[...document.querySelectorAll('#menuBtn,#who,#guide,#vBag .res,#vBag .resmore,#qRail .qr,#nav .nbtn')].map(vis).filter(Boolean);
+      m.topBad=tr.filter((x,i)=>!x.r||x.r.width<44||x.r.top<0||x.r.left<0||x.r.right>W||x.r.bottom>H*0.3||others.some(q=>hit(q,x.r))||tr.some((y,j)=>j!==i&&y.r&&hit(y.r,x.r))).map(x=>x.n.replace('Btn',''));
+      m.feedTop=fb.parentNode.id==='vTop';ids.forEach((i,k)=>$(i).hidden=h0[k]);fb.innerHTML=f0}
+    else{m.topBad=[];m.feedTop=$('feedBtn').parentNode.id==='nav'}   // בעולם ההאכלה בסרגל של המקום
     m.railOpen=[];for(const x of rail){x.e.click();await tick();if(MENU.cur!==x.n||$(menuTab(x.n).win).hidden||!on())m.railOpen.push(x.n.replace('Btn',''));menuClose();await tick()}
     $('menuBtn').click();await tick();m.setOnly=MENU.cur==='setBtn';menuClose();await tick();
     const gb=$('gBadge'),h0=gb.hidden;gb.hidden=false;menuDot();m.dot=!document.querySelector('#qRail [data-tab="gearBtn"] .qrdot').hidden&&$('menuBtn').querySelector('b').hidden;gb.hidden=h0;menuDot();
     m.nav=[...document.querySelectorAll('#nav button')].every(b=>b.classList.contains('talkbtn'));   // בסרגל רק כפתורים של המקום
-    m.ok=m.btn&&m.open&&m.tabs===m.want&&!m.small.length&&!m.out.length&&m.allOk&&m.xClose&&m.esc&&m.bg&&m.dot&&m.nav&&m.rail===m.railWant&&!m.railBad.length&&!m.railOpen.length&&m.setOnly;return m};
+    m.ok=m.btn&&m.open&&m.tabs===m.want&&!m.small.length&&!m.out.length&&m.allOk&&m.xClose&&m.esc&&m.bg&&m.dot&&m.nav&&m.rail===m.railWant&&!m.railBad.length&&!m.railOpen.length&&m.setOnly&&!m.topBad.length&&m.feedTop;return m};
   const uiMenu={};
   for(const nm in UIV){
     await page.setViewportSize(UIV[nm]);
@@ -1919,7 +1929,7 @@ function worldBot(m,L,god){
       await page.evaluate(pl=>{questLogOpen(false);if(pl==='world'){leaveVillage();P.x=-300;P.y=-100}else{enterVillage();P.x=0;P.y=60}S.cam.x=P.x;S.cam.y=P.y;guideT=0},pl);
       await page.clock.runFor(200);if(nm==='land'&&pl==='world')await shot('guide-world');
       gdHit[nm+'-'+pl]=await page.evaluate(()=>{const g=$('guide');if(g.hidden)return 'מוסתרת';const r=g.getBoundingClientRect(),bad=[];
-        for(const e of document.querySelectorAll('#menuBtn,#muteBtn,.dgift,.hud .hp,#who,#miniMap,#vBag .res,#vBag .resmore,#wBag .res,#wBag .resmore,#nav .nbtn')){if(e.closest('[hidden]'))continue;const q=e.getBoundingClientRect();
+        for(const e of document.querySelectorAll('#menuBtn,#muteBtn,.dgift,.hud .hp,#who,#miniMap,#vBag .res,#vBag .resmore,#wBag .res,#wBag .resmore,#nav .nbtn,#vTop .nbtn,#qRail .qr')){if(e.closest('[hidden]'))continue;const q=e.getBoundingClientRect();
           if(q.width&&getComputedStyle(e).display!=='none'&&r.left<q.right-1&&q.left<r.right-1&&r.top<q.bottom-1&&q.top<r.bottom-1)bad.push(e.id||e.className.split(' ')[0])}
         return r.right>innerWidth||r.left<0?'מחוץ למסך':bad.join(',')})}}
   await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();npcTalk(null);const g=VILLAGE.gate;P.x=g.x;P.y=g.y-90;S.cam.x=P.x;S.cam.y=P.y});
@@ -2925,7 +2935,7 @@ function worldBot(m,L,god){
     results.push((b.length?'⚠ ':'· ')+'גודל ממשק, '+(nm==='port'?'טלפון עומד':'לרוחב')+': '+(b.length?'גדול מהגבול: '+b.join(', '):'הכל בתוך הגבולות'))}
   for(const nm in uiMenu){const {vm,wm}=uiMenu[nm],d=(m,p)=>p+': '+(m.btn?'☰':'אין ☰')+(m.open?'':' לא נפתח')+', '+m.tabs+'/'+m.want+' לשוניות'+(m.small.length?' קטנות: '+m.small.join(','):'')+(m.out.length?' מחוץ למסך: '+m.out.join(','):'')+
       ' ['+m.seen+']'+(m.xClose?', ✕':', ✕ לא סוגר')+(m.esc?', Esc':', Esc לא סוגר')+(m.bg?', רקע':', רקע לא סוגר')+(m.dot?', נקודה בטור':', אין נקודה בטור (או שהיא על ☰)')+(m.nav?'':', בסרגל יש כפתור שלא שייך למקום')+
-      ', טור '+m.rail+'/'+m.railWant+(m.railBad.length?' (קטן, בחוץ או על כפתור: '+m.railBad.join(',')+')':'')+(m.railOpen.length?' (לא נפתח: '+m.railOpen.join(',')+')':'')+(m.setOnly?', ☰ = הגדרות':', ☰ לא פותח הגדרות');
+      ', טור '+m.rail+'/'+m.railWant+(m.railBad.length?' (קטן, בחוץ או על כפתור: '+m.railBad.join(',')+')':'')+(m.railOpen.length?' (לא נפתח: '+m.railOpen.join(',')+')':'')+(m.setOnly?', ☰ = הגדרות':', ☰ לא פותח הגדרות')+(m.topBad.length?', שורה עליונה: '+m.topBad.join(','):'')+(m.feedTop?'':', ההאכלה לא במקום');
     check(vm.ok&&wm.ok,'תפריט ראשי, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+d(vm,'כפר')+' · '+d(wm,'עולם'))}
   check(gd.vil&&gd.vilGate&&gd.lantern&&gd.toWarden&&gd.lakeBack&&gd.jump==='earth'&&gd.claim&&gd.changed&&gd.min&&gd.log&&gd.arena,'מטרה ברורה: '+(gd.vil?'בכפר "'+gd.txt+'" '+gd.dist:'אין שורה בכפר')+(gd.vilGate?', החץ לשער':', החץ לא לשער')+
     (gd.lantern?', בעולם לפנס':', לא לפנס')+(gd.toWarden?', שומר ליד: המרחק אליו':', שומר ליד: עדיין לפנס')+(gd.lakeBack?', מהאגם לשער חזרה':', מהאגם לא לשער')+(gd.jump==='earth'?', ו"קפוץ" לפנס האדמה':', בלי "קפוץ" ('+gd.jump+')')+(gd.claim?', לפרס':', לא לפרס')+(gd.changed?', אחר כך: "'+gd.after+'"':', המטרה לא התחלפה')+
