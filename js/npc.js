@@ -112,7 +112,7 @@ function npcDialog(){
   const ready=mine.filter(q=>Q.active[q.id]&&qReady(q)),open=mine.filter(qOpen),on=mine.filter(q=>Q.active[q.id]&&!qReady(q));
   // תושב עם שירות (בישול, קנייה, החלפה): לשונית "שיחה" ולשונית לשירות, בתבנית של חלונות הכפר (bwin.js).
   // נפתח על השירות, אלא אם יש פרס לקחת או קווסט חדש: אז על השיחה
-  const svc=npcSvcs(id),tabs=svc.length?[{id:'talk',label:'💬 '+T('bw.talk'),dot:ready.length>0||open.length>0},...svc]:null;
+  const svc=npcSvcs(id).concat(wslSvc(id)),tabs=svc.length?[{id:'talk',label:'💬 '+T('bw.talk'),dot:ready.length>0||open.length>0},...svc]:null;
   let tab=S.vil.dlgTab;if(tabs&&!tabs.some(t=>t.id===tab))tab=S.vil.dlgTab=ready.length||open.length?'talk':svc[0].id;
   el.classList.toggle('bw',!!tabs);
   let h=tabs?bwHead(name+' <small>'+role+'</small>','',tabs,tab):winHead(name,role);   // ui.js
@@ -139,6 +139,7 @@ $('npcDlg').addEventListener('click',e=>{
   if(b.dataset.act==='tab'){S.vil.dlgTab=b.dataset.tab;sfx('ui');npcDialog();return}   // שיחה או שירות (bwin.js)
   if(b.dataset.act==='respec'){statRespec();statBadge();npcDialog();return}
   if(b.dataset.act==='cook'){fishCook(b.dataset.m);npcDialog();return}   // fishing.js
+  if(b.dataset.act==='sklv'){wslUp(b.dataset.id);npcDialog();return}   // שדרוג סקיל (wsklvl.js)
   if(b.dataset.act==='res'){resDo(S.vil.dlg,b.dataset.k);npcDialog();return}   // residents.js
   if(b.dataset.act==='pg'){npcPg(+b.dataset.d);npcDialog();return}   // ‹ ›
   if(b.dataset.q)NPCPG.q=b.dataset.q;
