@@ -41,7 +41,7 @@ const nemCause=(e,d)=>e.affix&&TEXT['nem.cause.'+e.affix]?e.affix:e.leader?'lead
 
 /* ---- מוות בעולם (worldDeath ב-world.js) ---- */
 function nemOnDeath(){
-  if(!S.wd)return;const k=nemKiller();if(!k)return;const e=k.e,reg=nemReg(),L=NS();
+  if(!S.wd||S.wd.dp)return;const k=nemKiller();if(!k)return;const e=k.e,reg=nemReg(),L=NS();
   let N=e.nem&&L.list.find(x=>x.id===e.nem);
   if(N){N.wins++;N.rank=Math.min(NEMESIS.rankMax,N.rank+1);N.esc=null;N.cause=nemCause(e,k.d)}
   else{
@@ -55,7 +55,8 @@ function nemOnDeath(){
 
 /* ---- כניסה לאזור (enterWorld): אם יש כאן נמסיס, הוא מחכה ליד הלהקה שלו ---- */
 function nemEnter(){
-  if(!S.wd)return;S.wd.nemE=null;const N=nemOf(nemReg());if(!N||!ETYPES[N.type])return;
+  if(!S.wd)return;S.wd.nemE=null;if(S.wd.dp)return;   // עומק הצל (depths.js) שייך לכללים משלו
+ const N=nemOf(nemReg());if(!N||!ETYPES[N.type])return;
   const FO=WR().foes||[];let i=FO.findIndex(G=>G.type===N.type&&!G.creature);
   if(i<0)i=FO.findIndex(G=>ETYPES[G.type]&&!G.creature);if(i<0)return;
   const G=FO[i],Z=typeof wZone==='function'&&wZone(G)||{hp:1,dmg:1,speed:1},F=NEMESIS,up=N.rank-1;
