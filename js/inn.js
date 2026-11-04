@@ -3,7 +3,7 @@
       כל משימה היא קווסט רגיל ב-QUESTS.list (quests.js) מהסוג 'inn': לוקחים ומקבלים פרס רק בפונדק. הדיווח דרך questEvent, כמו כל קווסט.
    2. שמועה: שורה שמתחלפת, שמכוונת לנמסיס שמחכה או למבוקש של היום (hunt.js).
    3. מנוחה: פעם ביום, ברכה לכניסה הבאה לעולם (יותר XP לכמה דקות), עם אייקון קטן בפס העליון בעולם.
-   ובכפר: קיצור 🍲 בשורה העליונה (hudrank.js), עם נקודה אדומה כשיש פרס שמחכה בפונדק.
+   ובכפר: קיצור 🍲 בשורה העליונה (hudrank.js), שמופיע עם נקודה אדומה כשיש פרס שמחכה בפונדק.
    החיבור: innSvcs ב-npcSvcs ו-bwMain (bwin.js), innUpdate ב-worldUpdate (world.js), innXpK ב-statKillXp (stats.js), innDot ב-npcUpdate (npc.js).
    הדיווחים: 'nemesis' (nemesis.js), 'depth' (depths.js), 'sklv' (wsklvl.js), 'qual' (drops.js), 'weak' (combat.js). נשמר ב-SAVE.inn. הטקסטים תחת 'inn.' ב-lang.js */
 
@@ -137,14 +137,15 @@ function innKill(e){if(S.wd&&!S.room&&e.lt)questEvent('weak',e.lt)}
 function innGear(id){if(S.wd&&typeof gQ==='function'&&gQ(id)>INN.qual)questEvent('qual')}
 
 /* ---- הקיצור בכפר: 🍲 פותח את הפונדק מכל מקום, ונקודה אדומה כשיש פרס שמחכה ---- */
-(function(){const top=$('vTop');if(!top)return;const b=document.createElement('button');b.id='innBtn';b.className='dgift innbtn';b.setAttribute('aria-label',T('vil.inn'));
+(function(){const top=$('vTop');if(!top)return;const b=document.createElement('button');b.id='innBtn';b.className='dgift innbtn';b.hidden=true;b.setAttribute('aria-label',T('vil.inn'));
   b.innerHTML='<span aria-hidden="true">'+INN.icon+'</span><i class="innd" hidden></i>';top.appendChild(b);
   b.addEventListener('click',()=>{if(!S.vil)return;npcTalk('inn');S.vil.dlgStay=true;S.vil.dlgTab='board';npcDialog()});
-  HUDRANK.rank.innBtn={village:45};b.addEventListener('click',()=>{const n=hudUses();n.innBtn=(n.innBtn||0)+1})})();
+  HUDRANK.rank.innBtn={village:5};b.addEventListener('click',()=>{const n=hudUses();n.innBtn=(n.innBtn||0)+1})})();
 // כל שנייה בכפר (npcUpdate): לוח חדש בחצות, והנקודה על הקיצור
 const INNV={t:0};
 function innTick(dt){if((INNV.t-=dt)>0)return;INNV.t=1;innRoll();innDot()}
-function innDot(){const d=document.querySelector('#innBtn .innd');if(!d)return;const on=innReady();if(d.hidden===on)d.hidden=!on}
+// הקיצור מופיע רק כשיש פרס שמחכה בפונדק (כמו 📦 האיסוף), כדי לא להעמיס את השורה העליונה
+function innDot(){const b=$('innBtn'),d=b&&b.querySelector('.innd');if(!d)return;const on=innReady();if(d.hidden===on){d.hidden=!on;b.hidden=!on}}
 
 (function(){const st=document.createElement('style');st.textContent=
   '.innbtn{position:relative}.innbtn .innd{position:absolute;top:2px;inset-inline-end:2px;width:10px;height:10px;border-radius:50%;background:var(--blood,#D8443A);box-shadow:0 0 0 2px #0008}.innbtn .innd[hidden]{display:none}'+

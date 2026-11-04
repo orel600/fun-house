@@ -1868,7 +1868,7 @@ function worldBot(m,L,god){
       m.feedTop=fb.parentNode.id==='vTop';ids.forEach((i,k)=>$(i).hidden=h0[k]);fb.innerHTML=f0}
     else{m.topBad=[];m.feedTop=$('feedBtn').parentNode.id==='nav'}   // בעולם ההאכלה בסרגל של המקום
     // היררכיה (hudrank.js): הסידור לפי העדיפות, והחשוב הכי קרוב לפינה הימנית התחתונה. לחיצות מוסיפות מעט, ולא מזיזות כפתור למקום אחר
-    {const L=hudLayout(),want=place==='village'?{qRail:'gearBtnQ,qBtnQ,bookBtnQ',vTop:'welBtn,feedBtn,dBtn,visBtn'}:{qRail:'gearBtnQ,qBtnQ,bookBtnQ,wMapBtnQ'};
+    {const L=hudLayout(),want=place==='village'?{qRail:'gearBtnQ,qBtnQ,bookBtnQ',vTop:'welBtn,feedBtn,dBtn,visBtn,innBtn'}:{qRail:'gearBtnQ,qBtnQ,bookBtnQ,wMapBtnQ'};
       m.rankBad=Object.keys(want).filter(k=>(L[k]||[]).join(',')!==want[k]).map(k=>k+'='+(L[k]||[]).join('/'));
       const rr=[...document.querySelectorAll('#qRail .qr')].map(e=>({id:e.id,r:vis(e)})).filter(x=>x.r),g=rr.find(x=>x.id==='gearBtnQ');
       if(g&&rr.some(x=>x!==g&&(place==='village'?x.r.bottom>g.r.bottom:x.r.right>g.r.right)))m.rankBad.push('דמות לא הכי קרובה לפינה');
@@ -2255,15 +2255,15 @@ function worldBot(m,L,god){
   // הפונדק (inn.js): הקיצור 🍲 פותח את דודה פלפל, לוח עם 3 משימות, לוקחים אחת, מסיימים, נקודה אדומה, אוספים פרס, ומנוחה שנותנת XP בכניסה לעולם
   const inn=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={},$d=()=>document.querySelector('#innBtn .innd');
     try{SAVE.story.earth=true;SAVE.inn={};npcTalk(null);enterVillage();$('ovDaily').hidden=true;
-      const b=$('innBtn');o.btn=!!b&&!!b.getBoundingClientRect().width;if(b)b.click();const dlg=$('npcDlg');o.open=!dlg.hidden&&S.vil.dlg==='inn';
+      const b=$('innBtn');o.btn=!!b;if(b)b.click();const dlg=$('npcDlg');o.open=!dlg.hidden&&S.vil.dlg==='inn';
       o.n=dlg.querySelectorAll('.innboard .qc').length;o.rum=!!dlg.querySelector('.innrum');
       if(LANG==='en'&&/[֐-׿]/.test(dlg.innerText))o.leak=dlg.innerText.trim().slice(0,80);
       const acc=dlg.querySelector('[data-act="innaccept"]'),id=acc&&acc.dataset.q,q=QBY[id];o.id=id;if(acc)acc.click();o.on=!!(id&&QS().active[id]);
       innTick(1);o.dot0=$d().hidden;
       if(q)q.obj.forEach(ob=>questEvent(ob.type,ob.what||null,ob.n));   // מסיימים: מדווחים בדיוק את מה שהמטרה מבקשת
-      innTick(1);o.dot=!$d().hidden;
+      innTick(1);o.dot=!$d().hidden&&!b.hidden&&!!b.getBoundingClientRect().width;
       const c0=SAVE.bag.coins||0;npcDialog();const cl=dlg.querySelector('[data-act="innclaim"]');o.claim=!!cl;if(cl)cl.click();
-      o.paid=!!q&&(SAVE.bag.coins||0)===c0+q.reward.coins;o.gone=!!q&&!QS().active[id]&&!qOpen(q);innTick(1);o.dotOff=$d().hidden;
+      o.paid=!!q&&(SAVE.bag.coins||0)===c0+q.reward.coins;o.gone=!!q&&!QS().active[id]&&!qOpen(q);innTick(1);o.dotOff=$d().hidden&&b.hidden;
       S.vil.dlgTab='rest';npcDialog();const r=dlg.querySelector('[data-act="innRest"]');o.restBtn=!!r;if(r)r.click();o.armed=!!SAVE.inn.arm;
       npcTalk(null);enterWorld('home');for(const e of enemies)e.dead=true;innUpdate(0.1);innUpdate(1.1);
       o.xp=innXpK()>1;o.chip=!!$('innChip')&&!$('innChip').hidden;
@@ -3004,7 +3004,7 @@ function worldBot(m,L,god){
     ' · עלית '+L.elites+', פיצוץ שלל '+L.jackpots+', הריגה ראשונה '+L.firstKills+', תיבות '+(L.chests||0)+', יצורי משאבים: '+(L.creatures||'לא הופלו')+', מפלצות: '+(L.monsters||'לא הופלו'));
   check(L.built===1&&L.builtSaved&&L.fx,'בנייה: '+(L.panel||'הפאנל לא נפתח')+', '+(L.built===1?'נבנתה, שולם '+L.paid:'לא נבנתה')+(L.builtSaved?', נשמר':', לא נשמר')+(L.fx?', חגיגה עם פיגום':', בלי חגיגה'));
   {const Tu=L.tour||{seen:[],sign:[]};
-    check(Tu.seen.length===6&&Tu.sign.length===6,'כפר גדול: ביקור בכל המבנים, '+Tu.seen.length+'/6 הגיעו'+(Tu.stuck?' (נתקע בדרך ל-'+Tu.stuck+')':'')+', שלט על המסך ליד '+Tu.sign.length+'/6'+(Tu.sec!=null?', '+Tu.sec+' שניות':''))}
+    const nB=await page.evaluate(()=>Object.keys(VILLAGE.b).length);check(Tu.seen.length===nB&&Tu.sign.length===nB,'כפר גדול: ביקור בכל המבנים, '+Tu.seen.length+'/'+nB+' הגיעו'+(Tu.stuck?' (נתקע בדרך ל-'+Tu.stuck+')':'')+', שלט על המסך ליד '+Tu.sign.length+'/'+nB+(Tu.sec!=null?', '+Tu.sec+' שניות':''))}
   check(L.passNoPanel===true&&!!L.enterBtn&&L.tapOpen===true,'מבנים בנגיעה: '+(L.passNoPanel?'עוברים ליד מבנה בלי שנפתח חלון':'הפאנל נפתח לבד')+', '+
     (L.enterBtn?'"'+L.enterBtn+'" בסרגל פותח את הפאנל':'אין כפתור "להיכנס"')+', '+(L.tapOpen?'נגיעה במחסן פותחת אותו':'נגיעה במבנה לא פתחה'));
   check(L.collected>0&&L.collected===L.expect,'ייצור: אחרי שעתיים בלי לשחק נאספו '+L.collected+' עץ (צפוי '+L.expect+')');
