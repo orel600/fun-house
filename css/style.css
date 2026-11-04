@@ -1004,7 +1004,9 @@ body.menu #ovGear .gearpanel{height:100%}
 .vtop .nbtn.talkbtn.feedbtn{width:48px;height:48px;min-width:0;max-width:none;flex:none;padding:0;border-radius:50%;border:2px solid #FF9F43;font-size:0;gap:0;
   background:radial-gradient(circle at 50% 30%,#4A3B1E,#241A0C 75%);box-shadow:0 3px 0 #0B0E18;display:grid;place-items:center}
 .vtop .nbtn.talkbtn.feedbtn .ni{width:auto;height:auto;border:0;background:none;box-shadow:none;font-size:24px}
-@media (orientation:portrait){.vtop,.vil .qrail{top:calc(var(--ctop,8px) + 104px)}}   /* בטלפון עומד הקווסט צר וגבוה יותר: מתחתיו */
+/* בטלפון עומד הפס העליון צר, והמשאבים יורדים לכמה שורות: הטור מתחת לקווסט, והכפתורים העגולים בטור מתחתיו, באותו צד ימין */
+@media (orientation:portrait){.vil .qrail{top:calc(var(--ctop,8px) + 104px)}
+  .vtop,[dir=rtl] .vtop{left:auto;right:calc(env(safe-area-inset-right,0px) + 18px);transform:none;top:calc(var(--ctop,8px) + 280px);flex-direction:column-reverse}}
 body.menu .qrail{display:none!important}
 /* המטרה הבאה (js/guide.js): שורה אחת באמצע למעלה, מתחת לפס העליון. לא בפינות (השתקה, מפה, מתנה) ולא למטה (הסרגל והסקילים) */
 .guide{position:fixed;z-index:3;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 50px);max-width:min(60vw,560px);

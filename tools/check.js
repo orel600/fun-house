@@ -1860,8 +1860,11 @@ function worldBot(m,L,god){
     // השורה העליונה (#vTop): בכפר מתנה, ביקור, איסוף והאכלה באמצע למעלה. כולם מוצגים לרגע: לא נוגעים זה בזה, בטור, בפס העליון או בקווסט
     if(place==='village'){const ids=['dBtn','visBtn','welBtn','feedBtn'],h0=ids.map(i=>$(i).hidden),fb=$('feedBtn'),f0=fb.innerHTML;
       if(!f0)fb.innerHTML='<span class="ni">🥕</span>';ids.forEach(i=>$(i).hidden=false);
-      const tr=ids.map(i=>({n:i,r:vis($(i))})),others=[...document.querySelectorAll('#menuBtn,#who,#guide,#vBag .res,#vBag .resmore,#qRail .qr,#nav .nbtn')].map(vis).filter(Boolean);
-      m.topBad=tr.filter((x,i)=>!x.r||x.r.width<44||x.r.top<0||x.r.left<0||x.r.right>W||x.r.bottom>H*0.3||others.some(q=>hit(q,x.r))||tr.some((y,j)=>j!==i&&y.r&&hit(y.r,x.r))).map(x=>x.n.replace('Btn',''));
+      const tr=ids.map(i=>({n:i,r:vis($(i))})),others=[...document.querySelectorAll('#menuBtn,#who,#guide,#vBag .res,#vBag .resmore,#qRail .qr,#nav .nbtn')].map(e=>({n:e.id||e.className.split(' ')[0],r:vis(e)})).filter(x=>x.r);
+      // מה לא בסדר בכל כפתור: מוסתר, קטן, מחוץ למסך, נמוך מדי (מחוץ לשליש העליון, או לחצי בטלפון עומד), או על מה הוא עולה
+      const why=(x,i)=>!x.r?'מוסתר':x.r.width<44?'קטן':x.r.top<0||x.r.left<0||x.r.right>W?'בחוץ':x.r.bottom>H*(H>W?0.6:0.3)?'נמוך':
+        (others.find(q=>hit(q.r,x.r))||{}).n||(tr.find((y,j)=>j!==i&&y.r&&hit(y.r,x.r))||{}).n||'';
+      m.topBad=tr.map((x,i)=>({x,w:why(x,i)})).filter(o=>o.w).map(o=>o.x.n.replace('Btn','')+'('+o.w+')');
       m.feedTop=fb.parentNode.id==='vTop';ids.forEach((i,k)=>$(i).hidden=h0[k]);fb.innerHTML=f0}
     else{m.topBad=[];m.feedTop=$('feedBtn').parentNode.id==='nav'}   // בעולם ההאכלה בסרגל של המקום
     // היררכיה (hudrank.js): הסידור לפי העדיפות, והחשוב הכי קרוב לפינה הימנית התחתונה. לחיצות מוסיפות מעט, ולא מזיזות כפתור למקום אחר
