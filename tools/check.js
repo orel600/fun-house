@@ -2254,7 +2254,7 @@ function worldBot(m,L,god){
     (bw.allIn?', "הכל למחסן" עובד':', "הכל למחסן" לא עובד')+(bw.allOut?', "הכל לתרמיל" עובד':', "הכל לתרמיל" לא עובד')+(bw.buy?', קנייה בשוק עובדת':bw.buyBtn?', הקנייה לא עברה':', אין כפתור קנייה')+(bw.closed?'':', לא נסגר'));
   // הפונדק (inn.js): הקיצור 🍲 פותח את דודה פלפל, לוח עם 3 משימות, לוקחים אחת, מסיימים, נקודה אדומה, אוספים פרס, ומנוחה שנותנת XP בכניסה לעולם
   const inn=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={},$d=()=>document.querySelector('#innBtn .innd');
-    try{SAVE.story.earth=true;SAVE.inn={};npcTalk(null);enterVillage();$('ovDaily').hidden=true;
+    try{SAVE.story.earth=true;SAVE.inn={};for(const id in QS().active)if(QBY[id]&&QBY[id].giver==='inn')delete QS().active[id];npcTalk(null);enterVillage();$('ovDaily').hidden=true;
       const b=$('innBtn');o.btn=!!b;if(b)b.click();const dlg=$('npcDlg');o.open=!dlg.hidden&&S.vil.dlg==='inn';
       o.n=dlg.querySelectorAll('.innboard .qc').length;o.rum=!!dlg.querySelector('.innrum');
       if(LANG==='en'&&/[֐-׿]/.test(dlg.innerText))o.leak=dlg.innerText.trim().slice(0,80);
