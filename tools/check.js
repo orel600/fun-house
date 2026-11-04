@@ -1092,6 +1092,16 @@ function worldBot(m,L,god){
       fluteSwing({ang:0,arc:2,range:80},0.5,'#fff');fluteRing({x:P.x,y:P.y,r:120,col:'#fff'},0.5);fluteLine({ax:P.x,ay:P.y,bx:P.x+200,by:P.y,col:'#fff'},0.5);ctx.restore();r.draw=true}
     catch(e){r.draw=e.message}
     SAVE.hero.skin=sk;r.off=!fluteOn();return r});
+  // המראה שלי בכל זמן (heroes.js, ניר 4.11.2026): כפתור בהגדרות מחליף את הדמות בתלת-ממד, נשמר, ונמצא גם בחלון הציוד
+  const hsk=await page.evaluate(()=>{const sk=SAVE.hero.skin,pk=SAVE.pet.kind,r={};
+    try{soundOpen();const lk=()=>R3D.on?heroLook().model:heroSkin();SAVE.hero.skin=null;const base=lk();
+      document.querySelector('#ovSound [data-skin="nir"]').click();
+      r.set=SAVE.hero.skin==='nir'&&JSON.parse(localStorage.getItem(SAVE_STORE.key)).hero.skin==='nir';
+      r.look=lk()!==base;r.pressed=document.querySelector('#ovSound [data-skin="nir"]').getAttribute('aria-pressed')==='true';
+      document.querySelector('#ovSound [data-skin="none"]').click();r.back=SAVE.hero.skin===null&&lk()===base;
+      r.gear=gStatPanel().includes('data-skin="orel"');soundClose()}
+    catch(e){r.err=e.message}
+    SAVE.hero.skin=sk;SAVE.pet.kind=pk;saveNow();return r});
   // אפקטים של קרב (juice.js): פגיעה מפעילה עצירה, הבזק, הדיפה, ניצוצות ומספר. קריטי צהוב עם רעידה, הריגה עם עשן, תקרה לטלפון, ובזירה כבוי.
   // הבדיקה רצה במקום ניטרלי עם המתג של אוראל (JUICE.where.arena), כדי לא לגעת בשמירה של העולם
   const jc=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,hs:S.hitstop,sh:S.shake,jc:S.jc,ar:JUICE.where.arena,tr:P.track,hits:S.hits},c=HITFX.crit,r={};
@@ -3048,6 +3058,7 @@ function worldBot(m,L,god){
   check(!rsr.err&&!rsr.early&&rsr.missNo&&rsr.once&&rsr.item&&rsr.draw===true&&rsr.draw2===true&&rsr.took&&rsr.gone&&rsr.far&&rsr.boss,'פיוחו מצילה: '+(rsr.err||[rsr.early?'הופיעה מוקדם':'לא לפני סכנה',rsr.missNo?'הגרלה שנכשלה לא חוזרת':'הגרלה לא נכשלה',rsr.once?'פעם אחת':'שוב',rsr.item?'עצם':'אין עצם',rsr.draw===true&&rsr.draw2===true?'מצויר':'ציור נכשל',rsr.took&&rsr.gone?'אויב קרוב נעלם':'אויב לא נעלם',rsr.far?'רחוק נשאר':'רחוק נעלם',rsr.boss?'בוס רק נפגע':'בוס לא נפגע'].join(', ')));
   check(!dvr.err&&!dvr.early&&dvr.ready&&dvr.btn&&dvr.used&&dvr.five&&dvr.hit&&dvr.draw===true&&dvr.ended&&dvr.back&&dvr.once,'ברק אלוהי: '+(dvr.err||[dvr.early?'התעורר מוקדם':'מחכה לשני אויבי-על',dvr.ready?'מוכן':'לא מוכן',dvr.btn?'כפתור':'אין כפתור',dvr.five?'חמשת החפצים':'לא חמישה',dvr.hit?'ברק פגע':'ברק לא פגע',dvr.draw===true?'מצויר':'ציור נכשל: '+dvr.draw,dvr.ended&&dvr.back?'נגמר אחרי 5 שניות':'לא נגמר',dvr.once?'פעם אחת בריצה':'שוב'].join(', ')));
   check(!qsw.err&&qsw.btn&&qsw.bow&&qsw.sword,'החלפה מהירה: '+(qsw.err||[qsw.btn?'הכפתור מופיע':'אין כפתור',qsw.bow?'לקשת הכי חזקה':'לא עבר לקשת הכי חזקה',qsw.sword?'ובחזרה לחרב הכי חזקה':'לא חזר לחרב הכי חזקה'].join(', ')));
+  check(hsk.set&&hsk.look&&hsk.pressed&&hsk.back&&hsk.gear&&!hsk.err,'המראה שלי: '+(hsk.err?'שגיאה: '+hsk.err:[hsk.set?'ההגדרות מחליפות ושומרות':'הבחירה לא נשמרה',hsk.look?'הדמות מתחלפת':'הדמות לא התחלפה',hsk.pressed?'הכפתור מסומן':'הכפתור לא מסומן',hsk.back?'וחוזרת לרגיל':'לא חזרה לרגיל',hsk.gear?'גם בחלון הציוד':'חסר בחלון הציוד'].join(', ')));
   check(spk.on&&spk.off&&spk.slow&&spk.noFlute&&spk.draw===true,'הנודד עם הניצוץ: '+[spk.on?'נדלק':'לא נדלק',spk.noFlute?'בלי חליל':'החליל נדלק אצלו',spk.draw===true?'להבונים וגצים מצוירים':'ציור: '+spk.draw,spk.off?'וכבה':'לא כבה'].join(', '));
   check(fl.on&&fl.off&&fl.slow&&fl.prop&&fl.draw===true,'הנודד עם החליל: '+[fl.on?'נדלק':'לא נדלק',fl.prop?'חליל ביד':'אין חליל ביד',fl.slow?'אפקט סקיל ארוך יותר':'אפקט סקיל באורך רגיל',
     fl.draw===true?'תווים וחלילים מצוירים':'ציור נכשל: '+fl.draw,fl.off?'כבה בחזרה':'נשאר דלוק'].join(', '));
