@@ -39,8 +39,39 @@ function gSetBadge(){
 const gTipTile=()=>GUI.sell?null:document.querySelector('#gItems [data-id][aria-pressed="true"],#gSlots [data-slot][aria-pressed="true"],#gStash [data-sid][aria-pressed="true"]');
 const gTipAgain=b=>b.getAttribute('aria-pressed')==='true'&&!GUI.sell;   // נגיעה בפריט שכבר פתוח
 function gTipSync(){
-  const d=$('gDetail'),a=d.querySelector('.gdhead')&&gTipTile();
+  const d=$('gDetail'),a=d.querySelector('.gdhead,.icard')&&gTipTile();
   let s=$('gStatAlt');if(!s){s=document.createElement('div');s.id='gStatAlt';s.className='gdetail gstatp';d.after(s)}
   s.hidden=!a;if(a)s.innerHTML=gStatPanel();
   itemTip(d,a);
+}
+
+/* ---- כרטיס החפץ שנבחר (ניר, 4.11.2026, בהשראת XP Hero: docs/refs/xphero/item-card.jpg) ----
+   אותו כרטיס של חלונות הקנייה (itemCard ב-itemcard.js): תמונה, שם בצבע הנדירות, מספר כוח ענק, ▲/▼ מול מה שלבוש,
+   ורק השורות שיש בהן משהו. מתחת: האיכות, בונוס המחלקה, הדרישות (באדום כשלא עומדים בהן), הכוח והסט.
+   ולמטה שני כפתורים גדולים: ללבוש (או להוריד) ולשדרג, שעובר לנפחייה (forgeOpen ב-aging.js). משאב נשאר בתצוגה הישנה (gDetailHtml) */
+// האיכות כמספר כוח: מה יצא, מתוך הטווח שיכול היה לצאת ("260 מתוך 225–275"). חפץ בלי איכות: כלום
+function gQLine(id){if(!gQtag(id))return '';const p=q=>icPow(id.replace(/~\d+/,'~'+q));
+  return '<p class="iq">'+T('gui.q','<bdi>'+icPow(id)+'</bdi>','<bdi dir="ltr">'+p(ITEMROLL.q.min)+'–'+p(ITEMROLL.q.max)+'</bdi>')+'</p>'}
+// אפשר לשדרג מכאן: בכפר עם נפחייה, וחפץ שאינו מסתובב (לאלה יש התכה). מהמחסן מוציאים קודם
+const gUpOk=(k,sel)=>!sel.sid&&gItem(k).slot!=='orbit';
+const gUpHere=()=>!!(S.vil&&vLv('forge')>0);
+function gCardHtml(k,sel,n){
+  const it=gItem(k),btn=(act,txt,cls,off)=>'<button class="vbtn'+(cls?' '+cls:'')+'" data-act="'+act+'"'+(off?' disabled':'')+'>'+txt+'</button>';
+  const orb=it.slot==='orbit'&&sel.id?gOrbCompare(k,gGet('orbit',gTarget(it))):'';   // חפץ מסתובב: מה מתווסף ומה הולך (gear.js)
+  const pre=orb+(gPlus(k)?'<p class="gage">'+T('gear.aged',gPlus(k))+'</p>':'')+gQLine(k)+powLine(k);   // הדרישות ובונוס המחלקה: בכרטיס עצמו (itemcard.js)
+  let b='';
+  if(sel.id)b+=irCanWear(k)?btn('equip',T('gear.equip'),'gcequip'):btn('equip',T('ir.cant'),'gcequip',1);
+  if(sel.slot)b+=btn('unequip',T('gear.unequip'),'ghost');
+  if(sel.sid)b+=btn('take',T('gear.take'),'gcequip');
+  if(gUpOk(k,sel))b+=gUpHere()?btn('gup','⬆️ '+T('gui.up'),'gcup'):btn('gup',T('gui.upVil'),'gcup',1);
+  b+='<button class="vbtn ghost glock" data-act="lock" aria-pressed="'+gLocked(k)+'" aria-label="'+T(gLocked(k)?'gear.unlock':'gear.lock')+'" title="'+T(gLocked(k)?'gear.unlock':'gear.lock')+'">'+(gLocked(k)?'🔒':'🔓')+'</button>';   // נעול: לא נמכר
+  if(sel.id&&gStashOn())b+='<button class="vbtn ghost glock" data-act="store" aria-label="'+T('gear.store')+'" title="'+T('gear.store')+'">📦</button>';
+  return '<button class="gdx" data-act="desel" aria-label="'+T('gear.close')+'">✕</button>'+itemCard(k,{worn:!!sel.slot,n,pre})+'<div class="gbtns gcbtns">'+b+'</div>';
+}
+// לשדרג: סוגרים את הציוד ופותחים את הנפחייה, עם החפץ כבר בחור
+function gUpgrade(sel){
+  if(!gUpHere())return false;
+  const pick=sel.id?{id:sel.id}:{slot:sel.slot,i:sel.i};
+  gearClose();forgeOpen();if(S.mode!=='forge')return false;
+  AUI.sel=pick;forgeDraw();sfx('ui');return true;
 }
