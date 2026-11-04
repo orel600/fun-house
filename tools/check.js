@@ -1194,6 +1194,11 @@ function worldBot(m,L,god){
       const n=Math.min(...Object.keys(WSKBOOK.list).map(wsbNeed));r.lp=lpAt(n).some(x=>x.k==='skill');
       SAVE.hero.level=99;wsbLevelUp(1,99);r.fill=wsbLoad().filter(Boolean).length===WSKBOOK.slots;run(0.05);r.btns=S.sk.ids.length===SKILLS.max;
       wsbOpenUi();const ov=$('ovBook');r.ui=!!ov&&!ov.hidden&&ov.querySelectorAll('.wsbc').length===wsbIds().filter(id=>id!==wsbWeapon()).length;
+      // הכרטיסים לא עולים זה על זה והתיאור לא גולש מהכרטיס (ניר, 4.11), והמספר על כרטיס נבחר הוא המספר של המשבצת שלו (2 או 3, כי 1 הנשק)
+      {const cs=[...ov.querySelectorAll('.wsbc')],R=cs.map(e=>e.getBoundingClientRect());let n=0;
+        for(let i=0;i<R.length;i++)for(let j=i+1;j<R.length;j++){const a=R[i],c=R[j];if(a.left<c.right-1&&c.left<a.right-1&&a.top<c.bottom-1&&c.top<a.bottom-1)n++}
+        r.cardOv=n;r.cardSpill=cs.filter(e=>e.scrollHeight>e.clientHeight+2).map(e=>e.dataset.wsbid);
+        r.cardNum=wsbLoad().every((id,i)=>{if(!id)return true;const k=ov.querySelector('.wsbc[data-wsbid="'+id+'"] .wsbk');return !!k&&k.textContent===String(i+2)})}
       const c0=ov.querySelector('.wsbc:not(.on):not(.lock)'),pid=c0&&c0.dataset.wsbid;
       if(pid){ov.querySelector('[data-wslot="1"]').click();ov.querySelector('[data-wsbid="'+pid+'"]').click();r.swap=wsbLoad()[1]===pid}
       ov.querySelector('[data-wsb="x"]').click();r.close=ov.hidden;run(0.05);r.swapBtn=!!pid&&S.sk.ids.includes(pid);hud();
@@ -3040,9 +3045,9 @@ function worldBot(m,L,god){
       v.lOn+' שלוליות עם משטח ('+v.lMesh+' משטחים), '+(v.lOwn?'הציור הישן מדלג':'הציור הישן לא מדלג')+', '+v.lEnd+' נגמרו, '+v.lAfter+' השאירו סימן'+(v.lFree?', הכל השתחרר':', משטח נשאר תקוע'))));
     check(!v.err&&(!v.d3||v.pOn&&v.pFlame>0&&v.pBite>0),'האש של פיוחו בתלת-ממד: '+(v.err||(!v.d3?'דו-ממד, הלהבות בקנבס':
       (v.pOn?'דולקת':'לא דולקת')+', '+v.pFlame+' להבות מהזנב, '+v.pBite+' שלהבות בנשיכה')));}
-  check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean&&!wsb.noPic.length,
+  check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.cardOv&&!wsb.cardSpill.length&&wsb.cardNum&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean&&!wsb.noPic.length,
     'ספר הסקילים: '+(wsb.err||[wsb.one&&wsb.lock?'נעול בהתחלה':'לא נעול',wsb.lp?'במסלול הרמות':'לא במסלול',wsb.fill&&wsb.btns?'רמה ממלאת משבצות':'רמה לא מילאה',
-    wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn?'הספר מחליף כפתור':'הספר לא החליף','עובדים: '+wsb.ok.join(', '),wsb.bad.length?'נכשלו: '+wsb.bad.join(', '):'',wsb.clean?'נגמרים':'לא נגמרו',wsb.noPic.length?'אייקונים שלא נטענו: '+wsb.noPic.join(', '):''+wsb.n+' אייקונים נטענו'].filter(Boolean).join(' · ')));
+    wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn?'הספר מחליף כפתור':'הספר לא החליף','עובדים: '+wsb.ok.join(', '),wsb.bad.length?'נכשלו: '+wsb.bad.join(', '):'',wsb.cardOv||wsb.cardSpill.length?'כרטיסים עולים זה על זה: '+wsb.cardOv+' '+wsb.cardSpill.join(','):'כרטיסים בלי חפיפה',wsb.cardNum?'':'המספר על הכרטיס לא כמו המשבצת',wsb.clean?'נגמרים':'לא נגמרו',wsb.noPic.length?'אייקונים שלא נטענו: '+wsb.noPic.join(', '):''+wsb.n+' אייקונים נטענו'].filter(Boolean).join(' · ')));
   check(!wsl.err&&wsl.old&&wsl.tab&&wsl.rows>0&&wsl.up&&wsl.all&&wsl.dmg>=1.55&&wsl.cd&&wsl.btn==='+5'&&wsl.book==='+5','שדרוג סקילים אצל הכוהנת: '+(wsl.err||[wsl.old?'שמירה ישנה עובדת':'שמירה ישנה נשברה',
     wsl.tab?'לשונית עם '+wsl.rows+' סקילים':'אין לשונית',wsl.up?'שדרוג לקח מחיר':'השדרוג לא עבד',wsl.all?'כל סקילי הספר משתדרגים':'יש סקיל שלא משתדרג',
     '+5: נזק x'+wsl.dmg,wsl.cd?'טעינה קצרה יותר':'הטעינה לא התקצרה','כפתור '+(wsl.btn||'בלי +N'),'ספר '+(wsl.book||'בלי +N')].join(' · ')));
