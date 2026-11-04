@@ -1446,7 +1446,8 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 .wsbs.sel{box-shadow:0 0 0 3px var(--gold)}
 .wsbs[disabled]{cursor:default;opacity:.85}
 .wsbs small{position:absolute;bottom:2px;inset-inline-end:8px;font-size:10px;color:var(--gold)}
-.wsbgrid{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px;overflow-y:auto;align-content:start}
+.wsbgrid{flex:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));grid-auto-rows:max-content;gap:6px;overflow-y:auto;align-content:start;min-height:0}
+.wsbgrid>*{height:auto;min-height:48px;flex-shrink:0}   /* כרטיס גדל לפי התיאור, ולא נכתב על הכרטיס שמתחתיו (ניר, 4.11: "הפירוט של הסקילים עולה אחד על השני") */
 .wsbc.on,.sigc.on{border-color:var(--dt);box-shadow:inset 0 0 0 1px var(--dt)}
 .wsbc.lock,.sigc.lock{opacity:.5;cursor:default}
 .sigc{grid-column:1/-1}
