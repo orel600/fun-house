@@ -16,16 +16,16 @@ const WSKBOOK={
     charge:{ic:'💨',dt:'physical', cls:'warrior',lv:2,cd:6, dmg:1.6, kind:'dash',  dist:200,t:0.2,r:46,inv:0.35},   // מקף: הגיבור מזנק ופוגע בכל מי שבדרך
     whirl: {ic:'🌀',dt:'fire',     cls:'warrior',lv:4,cd:10,dmg:0.4, kind:'aura',  r:100,t:3,tick:0.3,self:1},       // מערבולת להבות סביב הגיבור, זזה איתו
     shield:{ic:'🛡️',dt:'ice',      cls:'warrior',lv:6,cd:12,dmg:0.5, kind:'guard', r:130,inv:2.5,push:520,freeze:1.2,self:1},   // שריון קרח: חסין לרגע, הודף ומקפיא את מי שקרוב (ואז הסתערות = ניפוץ, wcombo.js)
-    volley:{ic:'🏹',dt:'physical', cls:'hunter', lv:2,cd:8, dmg:0.45,kind:'zone',  r:105,t:2.4,tick:0.3},            // גשם חצים על אזור
+    volley:{ic:'🏹',dt:'physical', cls:'hunter', lv:2,cd:8, dmg:0.55,kind:'zone',  r:105,t:2.4,tick:0.3},            // גשם חצים על אזור
     trap:  {ic:'🪤',dt:'ice',      cls:'hunter', lv:4,cd:7, dmg:2.2, kind:'trap',  r:95,arm:0.4,life:14,trig:30,freeze:2},   // מלכודת על הקרקע: הראשון שדורך מפעיל, וכולם קופאים
     vines: {ic:'🌿',dt:'earth',    cls:'hunter', lv:6,cd:9, dmg:0.8, kind:'pull',  r:240,pull:640,root:2,self:1},    // שורשים מושכים את כולם אל הגיבור ותוקעים אותם (ואז פיזי = ננעץ, wcombo.js)
-    spirit:{ic:'🫧',dt:'water',    cls:'mage',   lv:2,cd:12,dmg:0.6, kind:'summon',r:240,t:7,tick:0.6,self:1},       // רוח מים שמרחפת ליד הגיבור ויורה (רטוב + ברק/קרח = קומבו)
+    spirit:{ic:'🫧',dt:'water',    cls:'mage',   lv:2,cd:12,dmg:0.75,kind:'summon',r:240,t:7,tick:0.6,self:1},       // רוח מים שמרחפת ליד הגיבור ויורה (רטוב + ברק/קרח = קומבו)
     storm: {ic:'⛈️',dt:'lightning',cls:'mage',   lv:4,cd:11,dmg:0.8, kind:'storm', r:240,t:4,tick:0.45,self:1},      // ענן שהולך עם הגיבור ומכה באויב אקראי
     meteor:{ic:'☄️',dt:'fire',     cls:'mage',   lv:6,cd:9, dmg:3.5, kind:'meteor',r:125,delay:0.9,push:260,stop:0.07},   // מטאור: סימון על הקרקע, ואחרי רגע פיצוץ ענק. push: הדיפה, stop: עצירה קצרה בפגיעה
     // סבב שני (4.11): סקיל רביעי לכל דמות. מה כל kind עושה: js/wskx.js
-    petrify:{ic:'🗿',dt:'earth',    cls:'warrior',lv:9,cd:13,dmg:0.7, kind:'petrify',r:150,stone:3,self:1},        // קללת הגרניט: מי שקרוב הופך לאבן ל-stone שניות (הבוס רק מואט). ואז פיזי = ניפוץ אבן (wcombo.js)
-    chain: {ic:'🔗',dt:'lightning',cls:'hunter', lv:9,cd:8, dmg:1.1, kind:'chain',  r:30,jumps:3,jump:170,wetJump:280,wetK:1.4},   // שרשרת ברק: קופץ בין jumps אויבים עד jump. רטוב: עד wetJump, פי wetK, ועוד קפיצה
-    vortex:{ic:'🌪️',dt:'water',    cls:'mage',   lv:9,cd:12,dmg:0.3, kind:'vortex', r:160,t:3,tick:0.5,pull:300}   // מערבולת: שואבת למרכז במהירות pull ומרטיבה (ואז ברק = חשמול, קרח = קפוא)
+    petrify:{ic:'🗿',dt:'earth',    cls:'warrior',lv:9,cd:13,dmg:1.0, kind:'petrify',r:150,stone:3,self:1},        // קללת הגרניט: מי שקרוב הופך לאבן ל-stone שניות (הבוס רק מואט). ואז פיזי = ניפוץ אבן (wcombo.js)
+    chain: {ic:'🔗',dt:'lightning',cls:'hunter', lv:9,cd:7, dmg:1.6, kind:'chain',  r:30,jumps:3,jump:170,wetJump:280,wetK:1.4},   // שרשרת ברק: קופץ בין jumps אויבים עד jump. רטוב: עד wetJump, פי wetK, ועוד קפיצה
+    vortex:{ic:'🌪️',dt:'water',    cls:'mage',   lv:9,cd:12,dmg:0.4, kind:'vortex', r:160,t:3,tick:0.5,pull:300}   // מערבולת: שואבת למרכז במהירות pull ומרטיבה (ואז ברק = חשמול, קרח = קפוא)
   }
 };
 // נרשמים ליד הסקילים של הזירה, כדי שהכפתורים (skillsHud), רגע הגילוי והכוונת יכירו אותם. בזירה אף אחד לא מוסיף אותם

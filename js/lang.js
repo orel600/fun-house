@@ -1031,7 +1031,7 @@ const TEXT={
   // נקודות דמות (stats.js): [שם, מה זה נותן]
   'st.str':{he:['כוח','נזק מקרוב ומרחוק'],en:['Strength','Melee and ranged damage']},
   'st.vit':{he:['חיוניות','עוד חיים'],en:['Vitality','More health']},
-  'st.agi':{he:['זריזות','הולכים מהר יותר'],en:['Agility','Move faster']},
+  'st.agi':{he:['זריזות','הולכים מהר יותר, וקצת נזק מרחוק'],en:['Agility','Move faster, a bit more ranged damage']},
   'st.haste':{he:['קצב','תוקפים מהר יותר'],en:['Haste','Attack faster']},
   'st.def':{he:['הגנה','פחות נזק מכל מכה'],en:['Defense','Take less damage']},
   'st.luck':{he:['מזל','מכה קריטית ויותר שלל'],en:['Luck','Critical hits and more loot']},
