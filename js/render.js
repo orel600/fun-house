@@ -242,10 +242,11 @@ function hud(){
     $('bossin').textContent=S.boss?T('bossHere'):S.run.won?T('bossBeaten'):T(nx.kind==='boss'?'bossIn':'next.'+nx.kind,fmt(nx.t-S.t))}
   drawRunBar();skillsHud();divineHud();ultHud();spellHud();shopHud();arenaQuiet();swapCheck();
   const bb=$('bossbar');
-  if(S.boss){bb.hidden=false;$('bossnm').textContent=S.boss.name+' · '+S.boss.title;
-    const wk=$('bossweak');if(wk.dataset.k!==LANG+S.boss.weak){wk.dataset.k=LANG+S.boss.weak;wk.innerHTML=dtSvg(S.boss.weak)+T('weakTo',T('dt.'+S.boss.weak));wk.style.color=dtCol(S.boss.weak)}
-    $('bossfill').style.width=(100*Math.max(0,S.boss.hp)/S.boss.max)+'%';
-    $('ragetrack').hidden=S.boss.rage<0.02;$('ragefill').style.width=(100*S.boss.rage)+'%'}
+  const BS=S.boss||giantBar();   // בעולם: הענק של הפנס (giant.js)
+  if(BS){bb.hidden=false;$('bossnm').textContent=BS.name+' · '+BS.title;
+    const wk=$('bossweak');if(wk.dataset.k!==LANG+BS.weak){wk.dataset.k=LANG+BS.weak;wk.innerHTML=BS.weak?dtSvg(BS.weak)+T('weakTo',T('dt.'+BS.weak)):'';wk.style.color=BS.weak?dtCol(BS.weak):''}
+    $('bossfill').style.width=(100*Math.max(0,BS.hp)/BS.max)+'%';
+    $('ragetrack').hidden=BS.rage<0.02;$('ragefill').style.width=(100*BS.rage)+'%'}
   else bb.hidden=true;
   let hint=false;
   // הכפתור פועם כשהאויב הקרוב עמיד לסוג הנזק שביד, והנשק השני עדיף נגדו. רק כשיש נשק שני לבוש

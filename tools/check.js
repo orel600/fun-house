@@ -1956,7 +1956,7 @@ function worldBot(m,L,god){
       if(edge<CH.clear||dec<200)o.open.push(k+':'+Math.round(edge)+'/'+Math.round(dec))}
     const Q=QS(),was=Q.active.s1Warden;enemies.length=0;enterWorld('home','meadow');qStart(QBY.s1Warden);
     const L=STORY.lanterns.earth;P.x=L.x;P.y=L.y+200;P.inv=1e9;storyUpdate(0.1);const e=S.wd.warden;o.warden=!!e;
-    if(e){e.hp=e.max/2;const hp=e.hp,B=placeBox();
+    if(e){e.rise=0;e.hp=e.max/2;const hp=e.hp,B=placeBox();
       const run=(px,py,sec)=>{for(let t=0;t<sec;t+=0.05){P.x=px;P.y=py;storyWardenMove(e,0.05)}};
       const d0=Math.hypot(e.x-(L.x-600),e.y-(L.y+200));run(L.x-600,L.y+200,3);o.chase=!e.back&&Math.hypot(e.x-P.x,e.y-P.y)<d0-40;     // 600 מהפנס: עוד רודף
       run(L.x-1500,L.y+300,CH.giveUp+1);o.gaveUp=e.back&&e.say>0;                      // רחוק מספיק זמן: חוזר ואומר משהו
@@ -1968,6 +1968,26 @@ function worldBot(m,L,god){
   check(!wch.open.length&&wch.warden&&wch.chase&&wch.gaveUp&&wch.home&&!wch.heal&&wch.back&&wch.inside,'השומר לא בורח: '+
     (wch.chase?'רודף כשמתרחקים':'חוזר לפנס מיד כשמתרחקים')+(wch.gaveUp?', מוותר רק אחרי כמה שניות ואומר משהו':', לא מוותר או לא אומר כלום')+(wch.heal?', מתרפא!':', בלי ריפוי')+
     (wch.back?', הקרב ממשיך כשחוזרים':', לא חוזר לקרב')+(wch.inside?', נשאר בתוך האזור':', נדחף מחוץ לאזור')+(wch.open.length?', פנס ליד קצה או קישוט: '+wch.open.join(' '):', שטח פתוח סביב כל 6 הפנסים'));
+  // הבוסים הענקיים (giant.js, ניר 4.11): כל שומר בעולם הוא ענק עם מודל משלו לפרק, פי 4 עד 6 מהגיבור, ורדיוס לוגי ×GIANT.r.
+  // בכניסה הוא קם ולא תוקף, בקרב המכות של הגיבור פוגעות בו, הוא מובס וקורס לאט. בזירה הבוס נשאר LOOK3D.boss
+  const gnt=await page.evaluate(()=>{
+    const o={rows:[],bad:[],models:new Set()},hp0=P.hp,mx0=P.maxHp,H=lookOf(P).h;
+    for(const k in STORY.lanterns){const L=STORY.lanterns[k],W=L.warden;enterWorld('home',L.reg);for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);
+      P.x=L.x;P.y=L.y-160;P.maxHp=P.hp=1e9;const e=storyWarden(k,L.y+70),LK=lookOf(e),x=LK?LK.h/H:0,rOk=Math.abs(e.r/(ETYPES[W.type].r*W.r)-GIANT.r)<0.01;
+      let h3=null;if(R3D.on&&LK&&R3D.tmpl[LK.model]){syncEnemy(e,0.016);const a=R3D.actors.get(e);if(a){a.root.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(a.root);h3=(b.max.y-b.min.y)*COSB()/LK.h}}   // הגובה בתלת-ממד ביחס ל-h
+      // כניסה: שנייה ליד הגיבור, בלי מכה
+      const woke=e.rise>0;for(let i=0;i<40;i++){P.inv=1e9;worldUpdate(0.025)}const calm=!e.tel&&!e.dash&&!(S.wd.rings||[]).length&&!(S.wd.marks||[]).length;
+      // קרב קצר: הגיבור עומד ליד הקצה ותוקף לבד
+      for(let i=0;i<160;i++){P.inv=1e9;const a=Math.atan2(P.y-e.y,P.x-e.x);P.x=e.x+Math.cos(a)*(e.r+40);P.y=e.y+Math.sin(a)*(e.r+40);worldUpdate(0.025)}
+      const hit=e.hp<e.max;damage(e,e.hp*10,'sword',0,'physical');worldUpdate(0.025);
+      const down=e.dead&&!S.wd.warden&&e.fell;let die=null;if(R3D.on){const a=R3D.actors.get(e);if(a){retire(e,a,0.016);die=a.dieT>GIANT.die.t*0.8;retire(e,a,GIANT.die.t)}}
+      o.rows.push(k+' '+(LK?LK.model.replace('mon_',''):'-')+' x'+x.toFixed(1)+(h3!=null?' (3D x'+(h3*x).toFixed(1)+')':''));o.models.add(LK&&LK.model);
+      if(!e.wboss||!LK||LK===LOOK3D.boss||x<4||x>6||!rOk||(h3!=null&&Math.abs(h3-1)>0.25)||!woke||!calm||!hit||!down||die===false)
+        o.bad.push(k+':'+[!e.wboss&&'wboss',(!LK||LK===LOOK3D.boss)&&'look',(x<4||x>6)&&'size',!rOk&&'r',h3!=null&&Math.abs(h3-1)>0.25&&'3d',!woke&&'rise',!calm&&'attack in rise',!hit&&'no hit',!down&&'not down',die===false&&'no collapse'].filter(Boolean).join('/'))}
+    o.arena=lookOf({isBoss:true,type:'boss'})===LOOK3D.boss;o.n=o.models.size;delete o.models;
+    o.bar=!!giantBar()===false;P.maxHp=mx0;P.hp=hp0;P.inv=0;enterVillage();return o});
+  check(!gnt.bad.length&&gnt.n===6&&gnt.arena,'בוסים ענקיים בעולם: '+gnt.rows.join(', ')+(gnt.n===6?' · מודל שונה לכל פרק':' · רק '+gnt.n+' מודלים')+
+    (gnt.arena?' · בזירה הבוס הרגיל':' · הבוס בזירה השתנה!')+(gnt.bad.length?' · בעיות: '+gnt.bad.join(' '):' · קמים בלי לתקוף, נפגעים, מובסים וקורסים'));
   // העלילה, פרק 2 (story.js, WORLD.regions.lake): הדרך לאגם סגורה עד שפנס האדמה דולק, באגם יש אויבים רטובים (חלשים לברק),
   // והקווסטים מובילים לשומר המים, שמפיל את פנס המים
   const ch2=await page.evaluate(()=>{
@@ -2036,7 +2056,7 @@ function worldBot(m,L,god){
   const ch4b=await page.evaluate(()=>{
     const o={};qStart(QBY.s4Ember);questEvent('kill','cinderscorp',8);questEvent('gather','rubyC',3);o.ember=qReady(QBY.s4Ember);questClaim('s4Ember');
     qStart(QBY.s4Warden);const L=STORY.lanterns.fire;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='emberwarden';
-    if(w){w.ring=0;P.inv=0;const hp0=P.hp;storyWardenMove(w,0.016);for(let j=0;j<80&&w.tel;j++)storyWardenMove(w,0.016);o.ring=(S.wd.rings||[]).length>0;
+    if(w){w.rise=0;w.ring=0;P.inv=0;const hp0=P.hp;storyWardenMove(w,0.016);for(let j=0;j<80&&w.tel;j++)storyWardenMove(w,0.016);o.ring=(S.wd.rings||[]).length>0;
       const R=S.wd.rings&&S.wd.rings[0];if(R){R.gap=Math.atan2(P.y-R.y,P.x-R.x)+Math.PI;for(let i=0;i<120&&!R.hit;i++)storyRings(1/60);o.ringHit=R.hit&&P.hp<hp0}
       P.inv=99;damage(w,w.hp*10,'sword',0,'water');storyUpdate(0.1)}o.ready=qReady(QBY.s4Warden);
     wGo('ridge');const pd=WORLD.regions.ridge.paths.desert;o.back=S.wd.reg==='ridge'&&Math.hypot(P.x-pd.x,P.y-pd.y)<WORLD.arrive+10;
@@ -2066,7 +2086,7 @@ function worldBot(m,L,god){
   const ch5b=await page.evaluate(()=>{
     const o={};qStart(QBY.s5Spark);questEvent('kill','stormknight',8);questEvent('gather','boltC',3);o.spark=qReady(QBY.s5Spark);questClaim('s5Spark');
     qStart(QBY.s5Warden);const L=STORY.lanterns.bolt;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='stormwarden';
-    if(w){const mk=L.warden.marks;w.marks=0;P.inv=0;const hp0=P.hp;storyWardenMove(w,0.016);const M=S.wd.marks||[];o.marks=M.length===mk.n&&M.some(m=>Math.hypot(m.x-P.x,m.y-P.y)<1);
+    if(w){w.rise=0;const mk=L.warden.marks;w.marks=0;P.inv=0;const hp0=P.hp;storyWardenMove(w,0.016);const M=S.wd.marks||[];o.marks=M.length===mk.n&&M.some(m=>Math.hypot(m.x-P.x,m.y-P.y)<1);
       for(let i=0;i<90;i++)storyMarks(1/60);o.markHit=M.some(m=>m.hit)&&P.hp<hp0;
       S.wd.marks=[];w.marks=0;P.inv=0;storyWardenMove(w,0.016);const M2=S.wd.marks.slice();P.x+=mk.spread+mk.r*3;
       for(let i=0;i<90;i++)storyMarks(1/60);o.dodge=M2.length>0&&!M2.some(m=>m.hit)&&!S.wd.marks.length;
@@ -2098,7 +2118,7 @@ function worldBot(m,L,god){
   const ch6b=await page.evaluate(()=>{
     const o={};STO().use={fire:5000,water:10};   // "השתמשת" הכי הרבה באש
     qStart(QBY.s6Heart);const L=STORY.lanterns.light;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='shade';
-    if(w){P.inv=99;o.learn=w.res==='fire';const seen=[];let res=true;
+    if(w){w.rise=0;P.inv=99;o.learn=w.res==='fire';const seen=[];let res=true;
       for(const f of [0.9,0.7,0.5,0.3,0.1]){w.hp=w.max*f;storyWardenMove(w,0.016);seen.push(w.pk);res=res&&w.mult.fire<1}
       o.phases=seen.join(',');o.allPhases=o.phases===STORY.lanterns.light.warden.phases.join(',');o.learnAll=res;
       w.hp=w.max*0.7;storyWardenMove(w,0.016);w.shoot=0;const eb0=eb.length;storyWardenMove(w,0.016);for(let j=0;j<80&&w.tel;j++)storyWardenMove(w,0.016);o.shoot=eb.length>eb0;
@@ -2512,12 +2532,12 @@ function worldBot(m,L,god){
   // לשומר האבן: רקיעה והסתערות. ברקיעה: מי שנשאר בעיגול נפגע, מי שזז לא
   const tl=await page.evaluate(()=>{const out={};const hp0=P.hp,mx0=P.maxHp;
     for(const k in STORY.lanterns){const L=STORY.lanterns[k];enterWorld('home',L.reg);for(const e of enemies)e.dead=true;
-      P.x=L.x;P.y=L.y-150;P.hp=P.maxHp=1e9;const e=storyWarden(k,L.y+70);S.wd.telLog=[];let t=0;
+      P.x=L.x;P.y=L.y-150;P.hp=P.maxHp=1e9;const e=storyWarden(k,L.y+70);e.rise=0;S.wd.telLog=[];let t=0;
       for(let i=0;i<480;i++){const dd=Math.floor(t/3)%2?110:320,a=Math.atan2(P.y-e.y,P.x-e.x);P.x=e.x+Math.cos(a)*dd;P.y=e.y+Math.sin(a)*dd;P.inv=0;e.hp=e.max;worldUpdate(0.025);t+=0.025}
       const lg=S.wd.telLog;out[k]={n:lg.length,min:lg.length?Math.min(...lg.map(l=>l.warn)):0,kinds:[...new Set(lg.map(l=>l.kind))].join('+')};e.dead=true}
     // רקיעה: עומד בעיגול נפגע, זז החוצה לא
-    const L=STORY.lanterns.earth,slam=stay=>{enterWorld('home','meadow');for(const e of enemies)e.dead=true;P.maxHp=1e9;P.hp=1e9;const e=storyWarden('earth',L.y+70);
-      P.x=e.x+80;P.y=e.y;e.slamT=0;let h=0;for(let i=0;i<60;i++){P.inv=0;if(!stay&&e.tel)P.x=e.x+400;const b=P.hp;worldUpdate(0.025);if(e.tel&&e.tel.kind!=='slam')break;h+=b-P.hp;P.x=stay?e.x+80:P.x}
+    const L=STORY.lanterns.earth,slam=stay=>{enterWorld('home','meadow');for(const e of enemies)e.dead=true;P.maxHp=1e9;P.hp=1e9;const e=storyWarden('earth',L.y+70);e.rise=0;const gap=e.r+30;   // מחוץ לגוף של הענק, בתוך הרקיעה
+      P.x=e.x+gap;P.y=e.y;e.slamT=0;let h=0;for(let i=0;i<60;i++){P.inv=0;if(!stay&&e.tel)P.x=e.x+400;const b=P.hp;worldUpdate(0.025);if(e.tel&&e.tel.kind!=='slam')break;h+=b-P.hp;P.x=stay?e.x+gap:P.x}
       e.dead=true;return h};
     out.hitStay=slam(true)>0;out.hitMove=slam(false);P.maxHp=mx0;P.hp=hp0;enterVillage();return out});
   const tk=Object.keys(tl).filter(k=>!k.startsWith('hit'));

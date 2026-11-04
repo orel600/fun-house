@@ -37,8 +37,8 @@ const STORY={
     // נתקע בסלע או בקצה: stun שניות בלי לזוז, ומקבל פי vuln נזק (ניר, 1.11: "שק חבטות או מלכודת". docs/plan-combat.md, שינוי 1)
     earth:{reg:'meadow',x:650,y:-320,quest:'s1Warden',glow:'#FFD36B',col:C.ember,
       warden:{type:'golem',hp:12,dmg:1.6,r:1.7,speed:0.8,wake:520,
-        slam:{every:3.2,range:170,r:120,warn:0.8,dmg:22,col:'#FF4A3A'},
-        charge:{every:6.5,min:200,max:560,warn:1.0,len:560,w:44,speed:620,dmg:24,stun:2,vuln:2,col:'#FF4A3A'}}},
+        slam:{every:3.2,range:250,r:190,warn:0.8,dmg:22,col:'#FF4A3A'},
+        charge:{every:6.5,min:240,max:620,warn:1.0,len:600,w:96,speed:620,dmg:24,stun:2,vuln:2,col:'#FF4A3A'}}},
     // פנס המים: בפינה הדרום-מערבית של האגם. שומר המים גם יורה מים בשלושה כיוונים (shoot)
     // ev: מה מדווחים לקווסט כשהשומר נופל (questEvent('story',ev)). head: ראש הכפר אומר משפט אחרי שהפנס נדלק
     water:{reg:'lake',x:-740,y:370,quest:'s2Warden',glow:'#6FD3FF',col:'#3F7BF5',ev:'tide',head:true,
@@ -106,6 +106,7 @@ function storySay(key,delay,first){
 /* ---- בעולם, כל פריים (world.js) ---- */
 function storyUpdate(dt){
   const w=S.wd;if(!w)return;
+  giantUpdate(dt);   // הענק: כניסה, צעדים שמרעידים ונפילה (giant.js)
   // פיוחו מוצאת רסיס: החפירה הבאה שלה כשהקווסט פעיל
   const p=S.pet;
   if(p&&qOn('s1Shard')&&!STO().shard){if(w.digs0==null)w.digs0=p.digs;
@@ -124,6 +125,7 @@ function storyUpdate(dt){
 function storyWarden(k,y,t){
   const L=STORY.lanterns[k],W=L.warden,e=addEnemy(W.type,L.x,y,W.hp);
   e.warden=k;e.elite=false;e.dmg*=W.dmg;e.r*=W.r;e.speed*=W.speed;e.xp=0;e.big=W.r;e.shoot=W.shoot?W.shoot.every:0;e.ring=W.ring?W.ring.every*0.6:0;e.marks=W.marks?W.marks.every*0.5:0;e.slamT=W.slam?W.slam.every*0.5:0;e.chT=W.charge?W.charge.every*0.6:0;e.tel=null;S.wd.warden=e;
+  giantRise(e,k);   // ענק: מודל משלו, פי 2 ברדיוס, כניסה ורעידות (giant.js)
   if(t){const D=TIERS.list[t-1],RM=STORY.rematch;e.hp*=D.hp*RM.hp;e.max*=D.hp*RM.hp;e.dmg*=D.dmg*RM.dmg;e.rematch=t}
   S.shake=Math.max(S.shake,8);
   if(W.phases){e.base=e.speed;e.res=storyMost();e.phase=-1;storyShade(e)}   // הצל: לומד את השחקן ולובש את השלב הראשון
@@ -167,6 +169,7 @@ function storyReWin(e){
 }
 // השומר: רודף את השחקן, אבל לא מתרחק מהפנס (wFoes ב-world.js). שומר המים גם יורה
 function storyWardenMove(e,dt){
+  if(giantWaking(e))return;   // ענק שעוד קם מהאדמה: לא זז ולא תוקף
   if(e.phases)storyShade(e);
   const L=STORY.lanterns[e.warden]||STORY.lanterns.earth,W=e.pw||L.warden,K=e.pk||e.warden,CH=STORY.chase,dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1,pl=Math.hypot(P.x-L.x,P.y-L.y);
   e.away=pl>CH.leash?(e.away||0)+dt:0;   // כמה זמן השחקן רחוק מהפנס
@@ -350,14 +353,14 @@ function storyDraw(){
       ctx.beginPath();ctx.moveTo(e.x-r,e.y);for(let i=0;i<=8;i++){const a=Math.PI+i/8*Math.PI;ctx.lineTo(e.x+Math.cos(a)*r,y+Math.sin(a)*r*1.2+Math.sin(t*5+i)*3)}ctx.lineTo(e.x+r,e.y);ctx.closePath();ctx.fill();ctx.stroke();
       ctx.globalAlpha=1;ctx.fillStyle=O.glow;ctx.beginPath();ctx.arc(e.x-r*0.32,y-r*0.2,4,0,7);ctx.arc(e.x+r*0.32,y-r*0.2,4,0,7);ctx.fill()}
     ctx.restore()}
-  if(e&&!e.dead){const bw=90,x=e.x,y=e.y-e.r-48;
+  if(e&&!e.dead&&!e.wboss){const bw=90,x=e.x,y=e.y-e.r-48;
     ctx.fillStyle='rgba(5,7,13,0.7)';ctx.fillRect(x-bw/2,y,bw,7);ctx.fillStyle=L.col;ctx.fillRect(x-bw/2,y,bw*Math.max(0,e.hp/e.max),7)}
 }
 function storyScreen(ox,oy){
   const k=storyLantern();if(!k)return;const L=STORY.lanterns[k],e=S.wd.warden;
   // החץ לפנס כשהקווסט פעיל: guide.js
   // השם מעל השומר: גודל קבוע על המסך (14px, לא מתכווץ עם המצלמה) עם קו מתאר כהה, כדי שייקרא גם על דשא (ניר, 1.11)
-  if(e&&!e.dead){ctx.save();ctx.translate(e.x+ox,e.y+oy-e.r-56);ctx.scale(1/ZOOM,1/ZOOM);ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 14px Heebo, system-ui, sans-serif';
-    ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle='#000c';ctx.strokeText(T('story.'+k+'.name'),0,0);ctx.fillStyle=L.col;ctx.fillText(T('story.'+k+'.name'),0,0);ctx.restore();
+  if(e&&!e.dead){if(!e.wboss){ctx.save();ctx.translate(e.x+ox,e.y+oy-e.r-56);ctx.scale(1/ZOOM,1/ZOOM);ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 14px Heebo, system-ui, sans-serif';
+    ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle='#000c';ctx.strokeText(T('story.'+k+'.name'),0,0);ctx.fillStyle=L.col;ctx.fillText(T('story.'+k+'.name'),0,0);ctx.restore()}   // ענק: השם בפס הבוס למעלה (giantBar)
     if(e.say>0){ctx.globalAlpha=Math.min(1,e.say*2);ctx.fillStyle='#fff';ctx.font='700 13px Heebo, system-ui, sans-serif';ctx.fillText(T('story.ward.back'),e.x+ox,e.y+oy-e.r-76);ctx.globalAlpha=1}}
 }
