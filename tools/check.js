@@ -545,6 +545,7 @@ function worldBot(m,L,god){
   await page.clock.runFor(300);
   // הדמויות בתלת-ממד נטענות ברקע. מחכים להן לפני שמתחילים
   await page.evaluate(()=>{R3D.drawEvery=60});   // בבדיקה מציירים תלת-ממד פעם ב-60 פריימים, אחרת היא לוקחת שעה
+  await page.evaluate(()=>{ITEMROLL.skip=true});   // הבוט לובש חפצים בלי לצבור נקודות. הבדיקה של itemroll.js מדליקה את הדרישות לבד
   let g3={};for(let i=0;i<200;i++){g3=await page.evaluate(()=>({ready:R3D.ready,failed:R3D.failed,on:R3D.on}));if(g3.ready||g3.failed||CFG.gfx==='2d')break;await page.waitForTimeout(50);await page.clock.runFor(50)}
 
   const results=[];
@@ -2297,14 +2298,14 @@ function worldBot(m,L,god){
     o.elite=flPersonal(12345);o.eliteOk=/ /.test(o.elite)&&flPersonal(12345)===o.elite;
     enterWorld('home');enemies=[];
     const e=addEnemy('grunt',P.x+90,P.y,1);e.home=0;e.affix='fast';foeLoreUpdate(0.01);
-    o.pname=!!e.pname;o.card=flCardOn()&&!$('flCard').hidden&&$('flCard').textContent.includes(flName('grunt'));o.met=!!(SAVE.lore&&SAVE.lore.met.grunt);
+    o.pname=!!e.pname;o.card=flCardOn()&&!$('flCard').hidden&&$('flCard').textContent.includes(flName('grunt'))&&$('flCard').getBoundingClientRect().height<60;o.met=!!(SAVE.lore&&SAVE.lore.met.grunt);
     o.say=!!(S.wd.flSay&&S.wd.flSay.txt);
     for(let i=0;i<70;i++)foeLoreUpdate(0.1);o.closed=!flCardOn()&&$('flCard').hidden;
     const e2=addEnemy('grunt',P.x+80,P.y,1);e2.home=0;foeLoreUpdate(0.01);o.once=!flCardOn();
     o.saved=!!((JSON.parse(localStorage.getItem(SAVE_STORE.key)).lore||{}).met||{}).grunt;
     enemies=[];enterVillage();SAVE.lore=JSON.parse(m0);return o});
   check(!flo.missing.length&&flo.eliteOk&&flo.pname&&flo.card&&flo.met&&flo.say&&flo.closed&&flo.once&&flo.saved,
-    'שמות לאויבים: '+(flo.missing.length?'חסר שם ל-'+flo.missing.join(','):'לכל סוג בעולם יש שם')+', עלית: "'+flo.elite+'"'+(flo.pname?'':' (לא קיבל שם)')+(flo.card?', כרטיס פגישה ראשונה':', אין כרטיס')+
+    'שמות לאויבים: '+(flo.missing.length?'חסר שם ל-'+flo.missing.join(','):'לכל סוג בעולם יש שם')+', עלית: "'+flo.elite+'"'+(flo.pname?'':' (לא קיבל שם)')+(flo.card?', פס פגישה ראשונה':', אין פס')+
     (flo.closed?' שנסגר לבד':' שלא נסגר')+(flo.once?', פעם אחת':', חוזר')+(flo.saved?', נשמר':', לא נשמר')+(flo.say?', בועה':', בלי בועה'));
   // החיה מריחה ומובילה (petscent.js): מרחרחת, רצה למקום ומחכה עם חץ, תיבה נותנת שלל כשמגיעים, אויב מיוחד נותן שלל כשנופל, ומי שלא בא היא מוותרת
   const ps=await page.evaluate(()=>{
@@ -2435,6 +2436,34 @@ function worldBot(m,L,god){
     'שריון לפי מחלקה: '+(ar.items?'30 חלקים ו-5 מגנים':'חסרים חלקים או שמות')+(ar.slots?', משבצות ראש, גוף ומגן':', אין משבצות')+(ar.worn?', נלבש':', לא נלבש')+
     (ar.defOk?', הגנה +'+ar.def+'%':', ההגנה לא עלתה ('+ar.def+')')+(ar.tile?'':', לא מופיע במשבצת')+(ar.r3?'':', לא נראה על הדמות')+(ar.doll?'':', לא נראה בחלון')+
     (ar.lootOk?', שלל מוטה למחלקה ('+ar.loot+')':', השלל לא מוטה ('+ar.loot+')')+(ar.back?'':', לא חזר אחרי הבדיקה'));
+  // חפצים כמו ב-Priston Tale (itemroll.js): איכות אקראית בשלל בעולם שנשמרת במזהה, דרישות רמה ותכונה שחוסמות לבישה (ומה שלבוש נשאר), ובונוס מחלקה
+  const ir=await page.evaluate(()=>{
+    const o={},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,pity:SAVE.clsPity,pts:SAVE.hero.pts||{},lv:SAVE.hero.level,start:SAVE.hero.start}),v0=S.vil,g0=gearStats(),c0=celebrate;celebrate=()=>{};
+    try{ITEMROLL.skip=false;if(!S.vil&&!S.wd)S.vil={near:null,open:null,ui:'',raise:{}};
+      // איכות: כל ציוד שנופל בעולם מקבל ~, בטווח, ולא תמיד אותו מספר
+      const qs=[];for(let i=0;i<300;i++){const id=lootRoll(1);if(gItem(id)&&gItem(id).slot!=='orbit')qs.push(gQtag(id)?gQ(id):-1)}
+      o.q=qs.length>20&&qs.every(q=>q>=ITEMROLL.q.min&&q<=ITEMROLL.q.max)&&Math.min(...qs)<100&&Math.max(...qs)>100;o.qr=Math.min(...qs)+'–'+Math.max(...qs);
+      const x='ironSword+3#keen~104';
+      o.fmt=gBase(x)==='ironSword'&&gPlus(x)===3&&gPow(x)==='keen'&&gQ(x)===104&&gQ('ironSword')===100&&ageId(x,4)==='ironSword+4#keen~104'&&powId('ironSword~96','hunt')==='ironSword#hunt~96';
+      o.stat=gStats('ironSword~110',true).sdmg===27.5&&gStats('ironSword').sdmg===25&&gScore('ironSword~110',true)>gScore('ironSword~90',true)&&/\(22\.5–27\.5\)/.test(gStatsHtml('ironSword~100'));
+      // דרישות: רמה 1 בלי נקודות לא לובשת ברזל, עץ תמיד. עם הרמה והנקודות כן, ואחרי שהן יורדות הוא נשאר לבוש
+      SAVE.hero.start='warrior';SAVE.hero.level=1;SAVE.hero.pts={};const id='ironSword~100';bagAdd(id);
+      o.free=irReq('oakSword')==null&&irCanWear('oakSword');
+      o.block=!gearEquip(id)&&SAVE.bag[id]===1&&/class="ireq no"/.test(gStatsHtml(id))&&gMark(id)===-1&&!gBestPlan().some(p=>p.id===id);
+      const r=irReq(id);o.req=r.lv+' '+r.st+' '+r.n;SAVE.hero.level=r.lv;SAVE.hero.pts={[r.st]:r.n};
+      o.wear=!!gearEquip(id)&&SAVE.gear.weapon===id;SAVE.hero.level=1;SAVE.hero.pts={};o.kept=SAVE.gear.weapon===id&&gearWorn().includes(id);
+      o.arena=(()=>{const a=S.vil,b=S.wd;S.vil=S.wd=null;const k=irCanWear('goldAxe');S.vil=a;S.wd=b;return k})();   // בזירה אין דרישות
+      o.typ=irReq('ironBow').st==='agi'&&irReq('ironAxe').st==='str'&&irReq('silverWand').st==='haste'&&irReq('hunterHead2').st==='agi';
+      // בונוס מחלקה: חרב מהעולם אצל לוחם עולה, חרב בלי ~ לא, ואצל צייד לא
+      o.cls=gStats('ironSword~100').sdmg>gStats('ironSword~100',true).sdmg&&gStats('ironSword').sdmg===25&&/class="icls on"/.test(gStatsHtml('ironSword~100'));
+      SAVE.hero.start='hunter';o.cls=o.cls&&gStats('ironSword~100').sdmg===25&&gStats('ironBow~100').gdmg>25;
+    }catch(e){o.err=e.message}
+    const k=JSON.parse(keep);ITEMROLL.skip=true;S.vil=v0;SAVE.bag=k.bag;SAVE.gear=k.gear;SAVE.clsPity=k.pity;SAVE.hero.pts=k.pts;SAVE.hero.level=k.lv;SAVE.hero.start=k.start;gearLive(g0);celebrate=c0;saveNow();
+    o.back=JSON.stringify(gearStats())===JSON.stringify(g0);return o});
+  check(!ir.err&&ir.q&&ir.fmt&&ir.stat&&ir.free&&ir.block&&ir.wear&&ir.kept&&ir.arena&&ir.typ&&ir.cls&&ir.back,
+    'חפצים (itemroll.js): '+(ir.err?'שגיאה: '+ir.err:(ir.q?'איכות בשלל '+ir.qr+'%':'אין איכות בשלל ('+ir.qr+')')+(ir.fmt?'':', המזהה נשבר')+(ir.stat?'':', הסטטים לא לפי האיכות')+
+    (ir.block?', דרישה ('+ir.req+') חוסמת':', דרישה לא חוסמת')+(ir.free?'':', עץ עם דרישה')+(ir.wear?', נלבש כשעומדים בה':', לא נלבש')+(ir.kept?', לבוש נשאר':', לבוש נזרק')+
+    (ir.arena?'':', דרישות בזירה')+(ir.typ?'':', תכונה לא לפי סוג')+(ir.cls?', בונוס מחלקה':', בונוס מחלקה שבור')+(ir.back?'':', לא חזר אחרי הבדיקה')));
   // שומרים חוזרים (story.js, STORY.rematch): כפתור 🔔 ליד פנס דולק רק אחרי הסוף ובדרגה אמיץ ומעלה. השומר יוצא חזק יותר, נופל שלל, ופעם ביום לכל שומר
   const rm=await page.evaluate(()=>{
     const o={},st0=JSON.stringify(SAVE.story),ti0=JSON.stringify(SAVE.tier||null),L=STORY.lanterns.earth,vis=()=>{worldUpdate(0.016);return !$('wardBtn').hidden};

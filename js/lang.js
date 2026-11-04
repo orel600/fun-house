@@ -1118,6 +1118,11 @@ const TEXT={
   'gear.unlock':{he:'לשחרר נעילה',en:'Unlock'},
   'gear.sold':{he:c=>'נמכר: ⁦+'+c+'⁩ 🪙',en:c=>'Sold: +'+c+' 🪙'},
   'gear.aged':{he:n=>'שודרג בנפחייה: ⁦+'+n+'⁩',en:n=>'Forged up: +'+n},
+  // חפצים (itemroll.js): דרישות, איכות ובונוס מחלקה
+  'ir.req':{he:p=>'דרוש: '+p,en:p=>'Requires: '+p},'ir.lv':{he:n=>'רמה '+n,en:n=>'Level '+n},
+  'ir.cant':{he:'עוד לא אפשר ללבוש',en:'Can\'t equip yet'},
+  'ir.q':{he:q=>'איכות '+q,en:q=>'Quality '+q},
+  'ir.cls':{he:(c,n)=>'בונוס ל'+c+': ⁦+'+n+'%⁩ לכל הסטטים',en:(c,n)=>c+' bonus: +'+n+'% to all stats'},
   'gear.stash':{he:(u,c)=>'מחסן '+u+'/'+c+': גוררים לכאן מהתרמיל',en:(u,c)=>'Stash '+u+'/'+c+': drag here from the bag'},
   'gear.store':{he:'למחסן',en:'To stash'},
   'gear.take':{he:'לתרמיל',en:'To bag'},
@@ -1371,7 +1376,7 @@ const TEXT={
     en:['Echo Knight','The shadow of a knight you already beat. It remembers how you won, and it learned.','I remember you.','This time ends differently.']},
   'fl.shadewisp':{he:['אפלולית','בולעת אור כמו שאחרים אוכלים עוגיות. לא משאירה פירורים.','אור... טעים...','כבה. כבה. כבה.'],
     en:['Gloomwisp','Eats light the way others eat cookies. Leaves no crumbs.','Light... yummy...','Out. Out. Out.']},
-  'fl.new':{he:'פגשת יצור חדש',en:'New creature'},
+  'fl.new':{he:'חדש:',en:'New:'},
   // שמות אישיים לעלית ולמבוקש היום (flPersonal): שם + כינוי. אותו אורך בשתי השפות, כדי שאותו מספר ייתן אותו שם
   'fl.first':{he:['גרוק','ברזלה','טוטו','זגזג','מורגו','פיפקה','קרנץ','שלומפר','בומבה','צ׳יקי','דרדק','גוליבר'],
     en:['Grok','Brizla','Toto','Zigzag','Murgo','Pipka','Krantz','Schlumper','Bomba','Chikki','Dardak','Gulliver']},

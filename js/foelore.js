@@ -1,7 +1,7 @@
 /* שמות ואופי לאויבים בעולם (ניר, 2.11.2026: "צריך שמות מיוחדים לאויבים, והמשחק צריך יותר אופי ופחות גנרי").
    1. לכל סוג אויב בעולם שם ומשפט אופי (lang.js: 'fl.<סוג>' = [שם, משפט, מה הוא אומר כשהוא מזהה אותך...]).
       לאויב הקרוב שנלחם בך: השם מעל הראש. לעלית, למבוקש ולמבוקש היום: שם אישי מחולל (שם + כינוי, flPersonal).
-   2. פגישה ראשונה: כרטיס קטן למעלה (שם, משפט, החולשה) שנסגר לבד ולא עוצר את המשחק. נשמר ב-SAVE.lore.met, והמשפט מופיע גם בספר (book.js).
+   2. פגישה ראשונה: פס דק למעלה במרכז, מתחת ל-HUD (אייקון, שם, משפט בשורה אחת), שנסגר לבד, לא חוסם מגע ולא עוצר. החולשה והפרטים בספר. נשמר ב-SAVE.lore.met, והמשפט מופיע גם בספר (book.js).
    3. בועה מעל הראש, נדירה: כשאויב מזהה אותך, כשהוא כמעט נופל, ועלית או שומר כשהם מופיעים. אחת בכל פעם.
    רק בעולם. בזירה (של אוראל) לא משתנה כלום. החיבור: foeLoreUpdate ו-foeLoreScreen ב-world.js, flPersonal ב-hunt.js וב-wanted.js, flLine ב-book.js */
 const FOELORE={
@@ -9,7 +9,7 @@ const FOELORE={
   list:{grunt:'💀',shield:'🛡️',wisp:'👻',treant:'🌳',golem:'🗿',crawler:'🦂',sprite:'🧚',
     drowned:'⚓',mistling:'🌫️',rimeknight:'❄️',frostwraith:'🧣',cinderscorp:'🦂',flamewisp:'🔥',
     stormknight:'⚡',sparkwisp:'✨',shadeknight:'🌑',shadewisp:'🕯️'},
-  card:{dur:5},                          // שניות שהכרטיס של פגישה ראשונה נשאר. כמה חדשים יחד: אחד אחרי השני
+  card:{dur:3.5},                        // שניות שהפס של פגישה ראשונה נשאר (ניר, 3.11: הכרטיס הגדול הסתיר את המסך). כמה חדשים יחד: אחד אחרי השני
   say:{chance:0.3, cd:9, dur:2.6},       // בועה: הסיכוי כשאויב מזהה אותך, כמה שניות לפחות בין בועות, וכמה זמן היא נשארת
   lowAt:0.25,                            // מתחת לכמה חיים אויב אומר משהו של בורח
   near:220,                              // השם מעל הראש: רק לאויב הקרוב ביותר עד המרחק הזה
@@ -57,7 +57,7 @@ function flSay(e,txt,force){
   w.flSay={e,txt,t:F.dur};w.flCd=F.cd;
 }
 
-/* ---- פגישה ראשונה: כרטיס למעלה במרכז, מידע להצצה (docs/ui-guide.md). לא נלחץ ולא חוסם ---- */
+/* ---- פגישה ראשונה: פס דק למעלה במרכז, מידע להצצה (docs/ui-guide.md). לא נלחץ ולא חוסם ---- */
 const FLC={q:[],t:0,on:null};
 function flMeet(k){
   const L=flLore();if(L.met[k])return;L.met[k]=1;
@@ -73,9 +73,7 @@ function flCardNext(){
   const el=flCardEl(),k=FLC.q.shift();
   if(!k){FLC.on=null;el.hidden=true;el.classList.remove('on');return}
   FLC.on=k;FLC.t=FOELORE.card.dur;
-  const w=typeof bookWeak==='function'?bookWeak(k):null;
-  el.innerHTML='<span class="flpic">'+FOELORE.list[k]+'</span><div><small>'+T('fl.new')+'</small><b>'+flName(k)+'</b><p>'+flLine(k)+'</p>'+
-    (w&&w!=='learns'?'<p class="flweak">'+T('book.weak')+' '+dtSvg(w)+' '+T('dt.'+w)+'</p>':'')+'</div>';
+  el.innerHTML='<span class="flpic">'+FOELORE.list[k]+'</span><div><b><small>'+T('fl.new')+'</small> '+flName(k)+'</b><p>'+flLine(k)+'</p></div>';
   el.hidden=false;void el.offsetWidth;el.classList.add('on');
   if(typeof sfx==='function')sfx('ui');
 }
@@ -118,10 +116,11 @@ function flTag(t,x,y,col,fs){
 
 // העיצוב של הכרטיס, כאן ולא ב-CSS, כדי שהמכניקה תהיה בקובץ אחד
 (function(){const st=document.createElement('style');st.textContent=
-  '.flcard{position:fixed;top:58px;left:50%;transform:translate(-50%,-14px);opacity:0;transition:opacity .25s,transform .25s;z-index:40;pointer-events:none;'+
-  'display:flex;gap:10px;align-items:center;max-width:min(360px,80vw);padding:8px 14px;border-radius:14px;background:rgba(18,22,36,0.92);'+
-  'border:2px solid #C9A24A;box-shadow:0 6px 18px rgba(0,0,0,.45);color:#EDE8DA;font:400 13px Heebo,system-ui,sans-serif;text-align:start}'+
-  '.flcard.on{opacity:1;transform:translate(-50%,0)}.flcard .flpic{font-size:30px;line-height:1}'+
-  '.flcard small{display:block;color:#C9A24A;font-weight:700;font-size:11px}.flcard b{display:block;font-size:16px;color:#F4C74F}'+
-  '.flcard p{margin:2px 0 0}.flcard .flweak{font-size:12px;opacity:.9}.flcard svg{width:14px;height:14px;vertical-align:-2px}';
+  // פס דק בעץ וזהב: ברוחב שליש מסך במרכז, כדי לא לגעת בשורת הקווסט ובמפה שבצדדים, ובגובה שתי שורות קטנות
+  '.flcard{position:fixed;top:calc(env(safe-area-inset-top,0px) + 54px);left:50%;transform:translate(-50%,-10px);opacity:0;transition:opacity .25s,transform .25s;z-index:40;pointer-events:none;'+
+  'display:flex;gap:8px;align-items:center;width:max-content;max-width:min(300px,30vw);padding:3px 12px 3px 10px;border-radius:10px;'+
+  'background:linear-gradient(#4A3322e6,#2C1E14e6);border:1.5px solid #C9A24A;box-shadow:inset 0 1px 0 #ffffff1a,0 3px 8px #0008;color:#EDE8DA;font:400 11px Heebo,system-ui,sans-serif;text-align:start}'+
+  '.flcard.on{opacity:1;transform:translate(-50%,0)}.flcard .flpic{font-size:20px;line-height:1;flex:none}.flcard div{min-width:0}'+
+  '.flcard b{display:block;font-size:13px;color:#F4C74F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.flcard small{color:#C9A24A;font-weight:700;font-size:10px}'+
+  '.flcard p{margin:0;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}';
   document.head.appendChild(st)})();
