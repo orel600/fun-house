@@ -64,7 +64,7 @@ function welcomeDraw(){
   let s=winHead(T('wel.title'),'','h2')+'<div class="welbody">';
   if(!D){
     s+='<ul class="wellist">'+welcomeFold(WELCOME.rows).map(w=>'<li class="welrow '+w.kind+'"><span class="welic">'+wIcon(w)+'</span><b>'+wTitle(w)+'</b><span class="welgot">'+wGot(w)+'</span></li>').join('')+'</ul>';
-    s+='<button class="vbtn welgo" data-act="all">'+T('wel.all')+'</button>';
+    s+=mutLine()+'<button class="vbtn welgo" data-act="all">'+T('wel.all')+'</button>';   // מה החוק היום בעולם (mutation.js)
   }else{
     s+='<p class="weldone">'+T('wel.done')+'</p><div class="welsum">'+Object.keys(D.got).map(k=>wChip(k,D.got[k])).join('')+'</div>';
     s+='<p class="welnext">'+D.next+'</p><button class="vbtn ghost welgo" data-act="close">'+T('wel.go')+'</button>';

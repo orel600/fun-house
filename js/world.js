@@ -177,7 +177,7 @@ const wKind=k=>NODES.kinds[k];
 function placeBox(){if(!S.wd)return null;const {w,h}=WR().size,m=WORLD.edge;return{x0:-w/2+m,x1:w/2-m,y0:-h/2+m,y1:h/2-m}}
 function placeClamp(o){const B=placeBox();if(!B)return o;o.x=Math.max(B.x0,Math.min(B.x1,o.x));o.y=Math.max(B.y0,Math.min(B.y1,o.y));return o}
 // השערים של האזור: הבית, שערי הזירה, והדרכים שהעלילה כבר פתחה (storyOpen ב-story.js)
-const wPathOpen=p=>!p.need||[].concat(p.need).every(storyOpen);   // need יכול להיות רשימה: כל הפנסים בה דולקים (לב הצל)
+const wPathOpen=p=>p.open?p.open():!p.need||[].concat(p.need).every(storyOpen);   // need יכול להיות רשימה: כל הפנסים בה דולקים (לב הצל)
 function wGates(all){const R=WR(),o=Object.assign({home:R.home},R.gates);for(const k in R.paths)if(all||wPathOpen(R.paths[k]))o[k]=R.paths[k];return o}
 const wIsPath=k=>k!=='home'&&!!WR().paths[k];
 // השם של שער: לכפר, לאזור אחר, או זירה
@@ -202,12 +202,12 @@ function enterWorld(at,reg){
   const seen=SAVE.regSeen||(SAVE.regSeen={});if(!seen[reg]){seen[reg]=1;saveNow();feedTitle(T(R.enter||'w.enter'),C.gold)}
   worldUi(true);
   fishMealOn();   // ארוחה מהפונדקאית: חיזוק בעולם (fishing.js)
-  challengeEnter();huntEnter();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js)
+  challengeEnter();huntEnter();mutEnter();nemEnter();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js), מוטציה יומית (mutation.js), נמסיס שמחכה באזור (nemesis.js)
   wmapVisit(reg);     // מפת העולם: ביקרת כאן (worldmap.js)
   if(reg!=='meadow')questEvent('story',reg);   // קווסט עלילה "להגיע לאגם" (quests.js)
 }
 // דרך לאזור אחר. חוזרים לאזור הקודם ליד הדרך שממנה יצאו
-function wGo(to){const from=S.wd.reg;worldUi(false);enterWorld(WR().back===to?from:'home',to)}
+function wGo(to){if(depthsGo(to))return;const from=S.wd.reg;worldUi(false);enterWorld(WR().back===to?from:'home',to)}
 function wArena(id,a){wRet=id;worldUi(false);startRun(a);questEvent('reach','arena')}
 function wHome(){worldUi(false);enterVillage()}
 
@@ -235,11 +235,12 @@ const wZone=G=>{const R=WR();return R.zones.find(z=>Math.hypot(G.x-R.home.x,G.y-
 function wTough(e,Z){const m=Z.min??WORLD.foeMin*Z.hp;if(e.max<m){e.hp=e.max=m}if(Z.wind)e.wind=Z.wind}   // Z.min ו-Z.wind: אזור שמגדיר בעצמו (start)
 function wSpawn(G,i){
   if(!ETYPES[G.type])return;const Z=wZone(G);
-  for(let k=0;k<G.n;k++){const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp*WORLD.foeHp);wTough(e,Z);
+  for(let k=0,n=mutN(G.n);k<n;k++){   // mutN: יום הענקים או הנחיל (mutation.js)
+    const a=rand(0,6.28),r=rand(0,G.r),e=addEnemy(G.type,G.x+Math.cos(a)*r,G.y+Math.sin(a)*r,Z.hp*WORLD.foeHp);wTough(e,Z);
     e.dmg*=Z.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);   // affixRoll: אולי אויב מיוחד (affix.js). storySafe: אחרי שפנס האדמה נדלק (story.js)
     e.xp=0;e.home=i;e.creature=!!G.creature;
     if(G.tough){e.hp*=G.tough;e.max*=G.tough;e.dmg*=G.tough}   // שומרים בכניסה לדרך (curiosity.js)
-    challengeSpawn(e);tierSpawn(e);wtSpawn(e)}   // wtSpawn: שחקן שעבר את האזור (wtension.js)   // דרגת העולם (tiers.js)
+    challengeSpawn(e);mutSpawn(e);tierSpawn(e);wtSpawn(e)}   // mutSpawn: החוק של היום (mutation.js)   // wtSpawn: שחקן שעבר את האזור (wtension.js)   // דרגת העולם (tiers.js)
    // החוק של היום (challenge.js)   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
 }
 function wFoes(dt){
@@ -294,9 +295,10 @@ function worldUpdate(dt){
   for(const b of eb){b.x+=b.vx*dt;b.y+=b.vy*dt;b.life-=dt;if(Math.hypot(P.x-b.x,P.y-b.y)<P.r+b.r-3){hurt(b.dmg);b.life=0}}
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
-  wantedUpdate(dt);storyUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
+  dmgUpdate(dt);mutUpdate(dt);   // שריפה, רטיבות, האטה והלם נגמרים (dmg.js). לפני 4.11 לא רץ בעולם, ומצבים נשארו לתמיד. המוטציה היומית (mutation.js)
+  wantedUpdate(dt);storyUpdate(dt);depthsUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);nemUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
   dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
-  if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*dt);
+  if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*mutK('regen')*dt);   // mutK: יום הצמא מרפא לאט (mutation.js)
   enemies=enemies.filter(e=>!e.dead);
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}
   parts=parts.filter(p=>p.life>0);
@@ -312,12 +314,13 @@ function worldUpdate(dt){
 
 /* ---- מוות בעולם: חצי מכל משאב בתרמיל הולך, הפריטים והמחסן נשארים. נקרא מ-gameOver ---- */
 function worldDeath(){
+  nemOnDeath();   // מי שהפיל אותך נהיה נמסיס (nemesis.js)
   S.mode='over';joy=null;
-  const lost={},k=RES.deathLoss.resources;   // resources.js
+  const lost={},k=S.wd.dp?0:RES.deathLoss.resources;   // עומק הצל: לא מאבדים כלום (depths.js)   // resources.js
   for(const r in SAVE.bag){if(!resOf(r))continue;const n=Math.floor(SAVE.bag[r]*k);if(n>0){bagTake(r,n);lost[r]=n}}
   S.wd.lost=lost;saveNow();
   $('wPanel').hidden=true;
-  $('wLost').innerHTML=bagLine(lost)||T('w.lostNone');
+  $('wLost').innerHTML=bagLine(lost)||T('w.lostNone');if(S.wd.dp)depthsDied();
   setTimeout(()=>{if(S.wd)$('ovWDeath').hidden=false},700);
 }
 $('wRespawn').onclick=()=>{$('ovWDeath').hidden=true;wHome()};
@@ -327,7 +330,7 @@ function worldHud(){
   const w=S.wd;if(w.open&&w.open!==w.near)w.open=null;   // מתרחקים מהשער: הכרטיס נסגר
   const open=!!w.near&&w.open===w.near,key=LANG+'|'+w.near+'|'+open+'|'+S.mode+'|'+JSON.stringify(SAVE.bag);
   if(key===w.ui)return;w.ui=key;
-  $('wName').textContent=T('w.region.'+WR().region);
+  $('wName').textContent=depthsName()||T('w.region.'+WR().region);
   $('wBag').innerHTML=cornerRes(resShown('world'));   // עד 2 משאבים ליד ☰, והשאר ב-"+N" (minimap.js)
   wGoBtn(w);
   const pn=$('wPanel'),k=w.near;pn.hidden=!open;if(pn.hidden)return;
@@ -406,6 +409,7 @@ function drawWorld(){
   if(WR().heat)wHeat();   // המדבר הבוער
   if(WR().storm)wStorm();   // מגדלי הסערה
   if(WR().shadow)wShadow();   // לב הצל
+  mutDraw();   // גשם או ערפל של היום (mutation.js)
 }
 // מים שאי אפשר ללכת בהם: דוחפים החוצה, כמו מעץ
 function wPonds(o){for(const p of (WR().ponds||[]).concat(WR().towers||[])){const dx=o.x-p.x,dy=o.y-p.y,d=Math.hypot(dx,dy)||1,min=p.r+(o.r||12);if(d<min){o.x=p.x+dx/d*min;o.y=p.y+dy/d*min}}}
