@@ -17,17 +17,20 @@ const ARMOR={
   cls:{
     warrior:{stat:'hp',   icon:{head:'🪖',body:'🦺'},cape:'#9C3A34',head:'helm',body:'plate',native:['Helmet','HelmetVisor']},
     hunter: {stat:'speed',icon:{head:'🧢',body:'🧥'},cape:'#4D6B34',head:'hood',body:'leather',native:[]},
-    mage:   {stat:'regen',icon:{head:'🎩',body:'👘'},cape:'#5B3F98',head:'hat', body:'robe',native:['Hat']}
+    mage:   {stat:'regen',icon:{head:'🎩',body:'👘'},cape:'#5B3F98',head:'hat', body:'robe',native:['Hat'],paint:'cape'}   // paint: הכובע סגול בכל שכבה (כמו בתמונה), והשכבה רק באבן
   },
   icon:{head:'🪖',body:'🧥',shield:'🛡️'},   // לשונית בתרמיל וצללית במשבצת ריקה
   /* מגן (המתאם, 2.11.2026: משבצת אמיתית במקום המגן שנגזר מהתכשיט). לא לפי מחלקה: מגן אחד לכל שכבה, 'shield0' עד 'shield4'.
      נראה ביד השנייה רק עם נשק של יד אחת (חרב, גרזן), כמו קודם (gear3dLook ב-render3d.js). gift: מגן עץ לכל אחד, פעם אחת */
-  shield:{def:[4,6,8,11,15],hp:[10,14,20,26,35],gift:'shield0'},
+  shield:{def:[4,6,8,11,15],hp:[10,14,20,26,35],gift:'shield0',
+    /* המודל לכל שכבה, הכי קרוב לתמונה (icons/ui/gear/shield<t>.png): עגול מעץ, ומברזל ומעלה מגן משולש. החומר (wtex) לפי השכבה, ב-GEAR3D.shield.metal */
+    model:['w_shield_A','w_shield_B','w_shield_B','w_shield_B','w_shield_B']},
   // שלל בעולם (lootRoll): slot נוסף ל-LOOT.gear.slot. mine: איזה חלק מהשריון שנופל הוא של המחלקה שלך
   loot:{slot:{head:0.12,body:0.12,shield:0.08},mine:0.7},
   /* המראה. tint: כמה הצבע של השכבה נכנס לחלקים של המודל. glow: זוהר לפי שכבה (כמו GEAR3D.glow).
      החלקים שנבנים בקוד: מיקום (pos) ביחידות של המודל, יחסית לעצם (bone). col 'tier' = הצבע של השכבה, 'cape' = הצבע של המחלקה */
-  look:{tint:0.55,cape:0.35,glow:[0.05,0.1,0.22,0.38,0.55],
+  /* cloth: כמה צבע השכבה נכנס לבד של ברדס וכובע (שאר הזמן בצבע המחלקה). plume: הנוצה על הקסדה של הלוחם, כמו בתמונות: אין בעץ ובברזל, כחולה בכסף, אדומה בזהב, ורודה באגדי */
+  look:{tint:0.55,cape:0.35,glow:[0.05,0.1,0.22,0.38,0.55],plume:[null,null,'#3F6FD8','#D8402F','#FF6FB5'],cloth:[0,0,0.06,0.1,0.5],
     helm:   [{bone:'head',shape:'dome',r:0.64,pos:[0,0.5,0],col:'tier'},{bone:'head',shape:'box',size:[0.1,0.24,0.8],pos:[0,1.18,-0.02],col:'cape'}],
     crest:  [{bone:'head',shape:'box',size:[0.1,0.24,0.8],pos:[0,1.2,-0.02],col:'cape'}],          // על הקסדה של האביר
     hood:   [{bone:'head',shape:'hood',r:0.76,pos:[0,0.56,-0.02],col:'cape'},{bone:'head',shape:'cone',r:0.2,h:0.5,pos:[0,0.8,-0.72],rot:[-2.2,0,0],col:'cape'}],
@@ -53,7 +56,7 @@ const armorSlot=s=>s[0].toUpperCase()+s.slice(1);
       GEAR.items[id]={slot:s,tier:t,cls:c,icon:C_.icon[s],stats:{def:d,[C_.stat]:v},look:t>=3?{glow:GEAR.tiers[t].col}:undefined};
       const N=TEXT['arm.name'];if(!TEXT['it.'+id])TEXT['it.'+id]={he:N.he(c,s,t),en:N.en(c,s,t)};   // שם עם אופי ב-lang.js ('it.warriorHead2'). בלי: מורכב מהחלקים
     })}
-  const SH=ARMOR.shield;SH.def.forEach((d,t)=>{GEAR.items['shield'+t]={slot:'shield',tier:t,icon:'🛡️',stats:{def:d,hp:SH.hp[t]},look:t>=3?{glow:GEAR.tiers[t].col}:undefined};
+  const SH=ARMOR.shield;SH.def.forEach((d,t)=>{GEAR.items['shield'+t]={slot:'shield',tier:t,icon:'🛡️',stats:{def:d,hp:SH.hp[t]},look:Object.assign({model:SH.model[t]},t>=3?{glow:GEAR.tiers[t].col}:{})};
     const N=TEXT['arm.shield'];if(!TEXT['it.shield'+t])TEXT['it.shield'+t]={he:N.he(t),en:N.en(t)}});
 })();
 // מגן עץ לכל אחד, פעם אחת (נקרא מ-gearReset), כדי שמי שהיה לו מגן מהתכשיט לא יישאר בלי
@@ -83,20 +86,27 @@ function armor3d(a){
   const ids=ARMOR.slots.map(s=>gGet(s,0)),key=ids.join()+'|'+rankId()+'|'+(a.L&&a.L.ck);if(a.ar===key)return;
   // מתחילים נקי: מורידים את מה שנבנה, מחזירים את החלקים של המודל, ונותנים לדרגה ולציוד לצבוע מחדש
   for(const m of a.arG||[])if(m.parent)m.parent.remove(m);a.arG=[];
-  a.root.traverse(o=>{if(o.isMesh&&armorPart(o,ARMOR_NATIVE)){o.visible=true;o.material.color.set(0xffffff)}});
+  a.root.traverse(o=>{if(o.isMesh&&armorPart(o,ARMOR_NATIVE))o.material.color.set(0xffffff)});
   a.rk=0;if(GEAR3D.on&&a.L&&a.L.g3){a.g3=null;gear3dParts(a,a.L)}else rankArmor3d(a);   // 0 ולא null: בלי דרגה rankId() הוא null, ו-rankArmor3d היה מדלג
   a.ar=key;
   const LK=ARMOR.look,parts={};a.root.traverse(o=>{if(o.isMesh){const p=armorPart(o,ARMOR_NATIVE);if(p)(parts[p]||(parts[p]=[])).push(o)}});
-  const paint=(o,col,k,t)=>{o.visible=true;o.material.color.set(0xffffff).lerp(new THREE.Color(col),k);const em=new THREE.Color(col).multiplyScalar(LK.glow[t]);o.material.emissive.copy(em);o.material.userData.em=em};
+  // הדרגה (RANKS.look) כבר לא מדליקה חלקים לבד: היא זוהרת בצבע שלה על החלקים שלה, כשהם לבושים
+  const R=RANKS.list[rankId()],rl=R&&R.look,rk=rl&&rl.glow?new THREE.Color(R.col).multiplyScalar(rl.glow):null;
+  const paint=(o,col,k,t)=>{o.visible=true;o.material.color.set(0xffffff).lerp(new THREE.Color(col),k);const em=new THREE.Color(col).multiplyScalar(LK.glow[t]);
+    if(rk&&rl.show.includes(armorPart(o,ARMOR_NATIVE)))em.add(rk);o.material.emissive.copy(em);o.material.userData.em=em};
   const build=(list,tcol,ccol,t)=>{for(const p of list){const b=bone(a.root,p.bone);if(!b)continue;
     const col=p.col==='tier'?tcol:ccol,m=armorMesh(p,col),em=new THREE.Color(col).multiplyScalar(p.glow||LK.glow[t]);
     m.material.emissive.copy(em);m.material.userData.em=em;b.add(m);a.arG.push(m);a.mats.push(m.material)}};
+  /* משבצת ריקה = בלי החלק (ניר, 4.11.2026: "לדמות שלי יש כובע, למרות שבציוד אין לה קסדה"). הקסדה, הכובע והגלימה שבנויים במודל
+     נדלקים רק כשלובשים ראש או גוף, וגם הדרגה (rankArmor3d) לא מדליקה אותם. מה שאפוי לתוך הגוף (הברדס של הצייד, הדמויות האישיות) נשאר */
+  for(const k in parts)for(const o of parts[k])o.visible=false;
   // ראש
   const hd=gItem(ids[0]);
-  if(hd){const C_=ARMOR.cls[hd.cls],tcol=GEAR.tiers[hd.tier].col,nat=C_.native.filter(p=>parts[p]);
-    for(const p of ['Helmet','HelmetVisor','Hat'])for(const o of parts[p]||[])o.visible=nat.includes(p);   // הכובע של מחלקה אחרת יורד
-    if(nat.length){for(const p of nat)for(const o of parts[p])paint(o,tcol,LK.tint,hd.tier);build(LK[C_.head==='helm'?'crest':'hatGem'],tcol,C_.cape,hd.tier)}
-    else build(LK[C_.head],tcol,C_.cape,hd.tier)}
+  if(hd){const C_=ARMOR.cls[hd.cls],tcol=GEAR.tiers[hd.tier].col,nat=C_.native.filter(p=>parts[p]),
+      soft='#'+new THREE.Color(C_.cape).lerp(new THREE.Color(tcol),LK.cloth[hd.tier]).getHexString(),plume=LK.plume[hd.tier];   // בד בצבע המחלקה. רק האגדי נצבע ורוד, כמו בתמונה
+    if(nat.length){for(const p of nat)for(const o of parts[p])paint(o,C_.paint==='cape'?soft:tcol,C_.paint==='cape'?0.85:LK.tint,hd.tier);
+      if(C_.head==='helm'){if(plume)build(LK.crest,tcol,plume,hd.tier)}else build(LK.hatGem,tcol,soft,hd.tier)}
+    else build(C_.head==='helm'&&!plume?LK.helm.slice(0,1):LK[C_.head],tcol,C_.head==='helm'?plume:soft,hd.tier)}
   // גוף: הגלימה בצבע המחלקה, ועוד חלק לפי המחלקה
   const bd=gItem(ids[1]);
   if(bd){const C_=ARMOR.cls[bd.cls],tcol=GEAR.tiers[bd.tier].col,cape=new THREE.Color(C_.cape).lerp(new THREE.Color(tcol),LK.cape);

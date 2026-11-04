@@ -146,7 +146,8 @@ const GRIP3D={
    set: סט פעיל (sets.js) צובע את כל החלקים בצבע הסט, מראה אחיד. keep: החלקים שנשארים נפרדים במודל כדי לצבוע אותם */
 const GEAR3D={on:!/[?&]gear3d=0/.test(location.search),
   glow:[0,0,0.22,0.38,0.55],pulse:0.45,rate:3,wscale:1.2,
-  shield:{model:['w_shield_A','w_shield_A','w_shield_B','w_shield_C','w_shield_C'],bone:'handslotl',pos:[0,0.02,0.05],rot:[0,0,0,1],s:0.78,metal:['wood','iron','silver','gold','legend']},
+  shield:{model:['w_shield_A','w_shield_B','w_shield_B','w_shield_B','w_shield_B'],   // רק למגן בלי look.model. המודל של כל מגן: ARMOR.shield.model (armor.js)
+   bone:'handslotl',pos:[0,0.02,0.05],rot:[0,0,0,1],s:0.78,metal:['wood','iron','silver','gold','legend']},
   boots:{tint:0.45},head:{from:2},set:0.28,
   keep:['LegLeft','LegRight','Helmet','Hat','Quiver']
 };
@@ -156,9 +157,9 @@ function gear3dLook(L,wid){
   const it=gItem(wid),worn=gearWorn().map(gItem),best=s=>Math.max(-1,...worn.filter(x=>x.slot===s).map(x=>x.tier));
   for(const w of ['sword','gun']){const p=L.props[w];p.s=GEAR3D.wscale;if(it&&wUse(wid)===w&&GEAR3D.glow[it.tier]>0){p.glow=g3Rar(it.tier);p.gk=GEAR3D.glow[it.tier];p.pulse=it.tier>=4}}
   const fam=it&&wUse(wid)==='sword'&&GRIP3D.of(L.props.sword.prop);
-  const t=best('shield');   // המגן מהמשבצת (armor.js). בלי מגן: יד ריקה
-  if((fam==='blade'||fam==='chop')&&t>=0){const G=GEAR3D.shield;
-    L.props.shield={prop:G.model[t],tier:G.metal[t],bone:G.bone,pos:G.pos,rot:G.rot,s:G.s,glow:GEAR3D.glow[t]>0?g3Rar(t):null,gk:GEAR3D.glow[t],pulse:t>=4}}
+  const t=best('shield'),sh=worn.find(x=>x.slot==='shield'&&x.tier===t);   // המגן מהמשבצת (armor.js). בלי מגן: יד ריקה
+  if((fam==='blade'||fam==='chop')&&t>=0){const G=GEAR3D.shield,sm=sh&&sh.look&&sh.look.model;
+    L.props.shield={prop:sm||G.model[t],tier:G.metal[t],bone:G.bone,pos:G.pos,rot:G.rot,s:G.s,glow:GEAR3D.glow[t]>0?g3Rar(t):null,gk:GEAR3D.glow[t],pulse:t>=4}}
   const b=best('boots'),h=best('acc'),set=Object.keys(SETS).find(s=>setTiers(gearWorn()).some(x=>x.startsWith(s)));
   L.g3={boots:b>=0?g3Rar(b):null,bk:b>=0?GEAR3D.glow[b]:0,head:h>=GEAR3D.head.from?g3Rar(h):null,hk:h>=0?GEAR3D.glow[h]*0.7:0,hp:h>=4,set:set?SETS[set].col:null};
 }

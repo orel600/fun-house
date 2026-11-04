@@ -74,13 +74,21 @@ function flCardNext(){
   if(!k){FLC.on=null;el.hidden=true;el.classList.remove('on');return}
   FLC.on=k;FLC.t=FOELORE.card.dur;
   el.innerHTML='<span class="flpic">'+FOELORE.list[k]+'</span><div><b><small>'+T('fl.new')+'</small> '+flName(k)+'</b><p>'+flLine(k)+'</p></div>';
-  el.hidden=false;void el.offsetWidth;el.classList.add('on');
-  if(typeof sfx==='function')sfx('ui');
+  el.classList.remove('on');el.hidden=true;FLC.shown=0;flCardVis();
 }
-function flCardTick(dt){if(FLC.on&&(FLC.t-=dt)<=0)flCardNext()}
+// חלון פתוח (.ov, כמו ספר הסקילים): הפס לא מופיע מעליו, והזמן שלו לא רץ. כשהחלון נסגר הוא ממשיך מאיפה שעצר (ניר, 4.11)
+const flOvOpen=()=>[...document.querySelectorAll('.ov')].some(o=>!o.hidden);
+function flCardVis(){
+  const el=flCardEl(),show=!!FLC.on&&!flOvOpen();
+  if(show===!el.hidden)return show;
+  if(show){el.hidden=false;void el.offsetWidth;el.classList.add('on');if(!FLC.shown&&typeof sfx==='function')sfx('ui');FLC.shown=1}
+  else{el.classList.remove('on');el.hidden=true}
+  return show;
+}
+function flCardTick(dt){if(FLC.on&&flCardVis()&&(FLC.t-=dt)<=0)flCardNext()}
 const flCardOn=()=>!!FLC.on;
 // יציאה מהעולם (foeLoreScreen לא נקרא): לא משאירים כרטיס תקוע
-setInterval(()=>{if(FLC.on&&(!S||!S.wd)){FLC.q=[];flCardNext()}},1000);
+setInterval(()=>{if(!FLC.on)return;if(!S||!S.wd){FLC.q=[];flCardNext()}else flCardVis()},300);   // גם כשהעולם עוצר מתחת לחלון
 
 /* ---- ציור מעל הכל (world.js): שם מעל הראש, ובועה ---- */
 function foeLoreScreen(ox,oy){
