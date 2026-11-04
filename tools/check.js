@@ -2290,7 +2290,7 @@ function worldBot(m,L,god){
       const e=enemies.find(x=>!x.dead&&x.mut&&!x.creature),et=e&&ETYPES[e.type];let ok=!!e;
       if(id==='giants')ok=ok&&cnt()<base&&e.r>et.r*1.2;
       if(id==='swarm')ok=ok&&cnt()>base;
-      if(id==='fire'||id==='frost'){const t=id==='fire'?'fire':'ice';ok=ok&&e.mult[t]>=(et.mult[t]??1)*1.45}
+      if(id==='fire'||id==='frost'){const t=id==='fire'?'fire':'ice',C_=CHALLENGE.rules[chRule()],ck=C_.type?(t===C_.type?C_.boost:C_.cut):1;ok=ok&&e.mult[t]>=(et.mult[t]??1)*ck*1.45}   // ck: גם האתגר היומי משנה מכפילים
       if(id==='rain'){e.wet=0;e.mw=0;mutUpdate(1/60);ok=ok&&e.wet>0;e.wet=0.5;for(let i=0;i<60;i++)dmgUpdate(1/60);ok=ok&&!(e.wet>0)}   // רטוב שוב, ורטיבות נגמרת בעולם (dmgUpdate)
       if(id==='fire'){e.hp=e.max=1e6;damage(e,1,'sword',0,'physical');mutUpdate(1/60);ok=ok&&!!e.burn;const h=e.hp;for(let i=0;i<60;i++)dmgUpdate(1/60);ok=ok&&e.hp<h}
       if(id==='gold')ok=ok&&e.speed>0;
