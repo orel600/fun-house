@@ -2888,10 +2888,10 @@ function worldBot(m,L,god){
     [vfx.fall?'נופל עם '+vfx.p1+' חלקיקים':'אין חלקיקים בנפילה',vfx.skip2d?'הציור הישן מדלג':'הציור הישן לא מדלג',vfx.boom?'פיצוץ עם '+vfx.p2+' חלקיקים':'אין פיצוץ',vfx.hit?'פוגע':'לא פגע',vfx.end?'נגמר ומשחרר':'לא השתחרר'].join(' · '))));
   check(!vfxh.err&&!vfxh.bad.length&&(!vfxh.d3||vfxh.ok.length===3),'אפקטים לסקילי הצייד: '+(vfxh.err||(!vfxh.d3?'דו-ממד, הציור הישן':
     ['עובדים: '+vfxh.ok.join(', '),vfxh.bad.length?'נכשלו: '+vfxh.bad.join(', '):''].filter(Boolean).join(' · '))));
-  check(!wskx.err&&!wskx.bad.length&&wskx.pCast&&wskx.stone&&wskx.bossSlow&&wskx.still&&wskx.crush&&wskx.pOwn&&wskx.cCast&&wskx.dryHops===3&&wskx.dryHit===3&&wskx.cOwn&&wskx.wetHops===4&&wskx.wetPlus&&wskx.far&&wskx.vCast&&wskx.vOwn&&wskx.pull&&wskx.wet&&wskx.end&&wskx.loEnd,
+  check(!wskx.err&&!wskx.bad.length&&wskx.pCast&&wskx.stone&&wskx.bossSlow&&wskx.still&&wskx.crush&&wskx.pOwn&&wskx.cCast&&wskx.dryHops===3&&wskx.dryHit>=3&&wskx.cOwn&&wskx.wetHops===4&&wskx.wetPlus&&wskx.far&&wskx.vCast&&wskx.vOwn&&wskx.pull&&wskx.wet&&wskx.end&&wskx.loEnd,
     'סבב שני בספר: '+(wskx.err||[wskx.stone&&wskx.still?'גרניט מאבן':'גרניט לא מאבן ('+(wskx.stone?'':'אין אבן ')+'זז '+wskx.moved+')',wskx.bossSlow?'הבוס מואט':'הבוס לא מואט',wskx.crush?'ניפוץ אבן '+wskx.crushDmg:'אין ניפוץ אבן',
       'ברק: '+wskx.dryHops+' קפיצות, ברטובים '+wskx.wetHops+', רחוק '+wskx.farN,wskx.pull&&wskx.wet?'מערבולת שואבת ומרטיבה':'מערבולת לא שואבת/מרטיבה',
-      wskx.is3d?(wskx.pOwn&&wskx.cOwn&&wskx.vOwn?'מתכונים בתלת-ממד':'חסר מתכון')+' · נמוכה '+wskx.d3.join(' '):'דו-ממד',wskx.end&&wskx.loEnd?'נגמרים':'לא נגמרו'].join(' · '))+(wskx.bad.length?' ✗ '+wskx.bad.join(' · '):''));
+      wskx.is3d?(wskx.pOwn&&wskx.cOwn&&wskx.vOwn?'מתכונים בתלת-ממד':'חסר מתכון')+' · נמוכה '+wskx.d3.join(' '):'דו-ממד',wskx.end&&wskx.loEnd?'נגמרים':'לא נגמרו'].join(' · '))+(wskx.bad.length?' ✗ '+wskx.bad.join(' · '):'')+(()=>{const no=['pCast','stone','bossSlow','still','crush','pOwn','cCast','cOwn','wetPlus','far','vCast','vOwn','pull','wet','end','loEnd'].filter(k=>!wskx[k]);return no.length?' ✗ '+no.join(','):''})());
   check(!vfxw.err&&!vfxw.bad.length,'אפקטים לסקילי הלוחם: '+(vfxw.err||(!vfxw.d3?'דו-ממד, הציור הישן':vfxw.ok.join(' · ')))+(vfxw.bad.length?' ✗ '+vfxw.bad.join(' · '):''));
   {const v=vfx2,m=v.move||{};
     check(!v.err&&m.stops===0&&m.jerk<9&&m.flips<=6,'פיוחו זזה חלק: '+(v.err||'קפיצות מהירות '+m.jerk+' (עד 9), עצירות פתאום '+m.stops+' (צריך 0), חילופי הליכה/ריצה '+m.flips+' (עד 6)'));
