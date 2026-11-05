@@ -4,7 +4,7 @@
    החריץ בקרח מפריד את הצפון-מזרח (המפולות, מחנה הפסגה) מהדרום, ועליו גשר אחד (13). לשומר מגיעים דרך המעבר.
    בלי המכניקות החדשות (סבב אחר): המערות הן רק מקומות (כניסה ויציאה, בלי מעבר), האגם הקפוא ומדרון המפולות הם רק משטח, בלי החלקה ובלי מפולות.
    הקובץ רק מחליף נתונים ב-WORLD.regions.ridge (world.js), והמנוע הוא terrain.js. הפורמט של map כתוב ב-world.js, מעל המפה של האחו.
-   מקומות בשמות קבועים (לקווסטים): map.marks (id), map.dens, waystones. */
+   מקומות בשמות קבועים (לקווסטים, quests.js ו-questboard.js): map.marks (id), map.dens, waystones. */
 
 TERRAIN.pal.ridge={forest:'#2c4a3e',rock:'#8a929c',bank:'#5a6878',ridge:'#9aa6b2',cliff:'#5d616b'};   // הקרקע האפויה ברכס (ground.js)
 
@@ -71,8 +71,9 @@ Object.assign(WORLD.regions.ridge,{
     deeper:{x:-200,y:-1450},   // עומק הצל: בקומה שנבנית מהרכס, השער למטה קרוב לבית (depths.js)
     marks:[{id:'pass',kind:'feat',x:-220,y:-1050},{id:'tunnelIn',kind:'cave',x:-1670,y:-880},{id:'tunnelOut',kind:'cave',x:-940,y:650},{id:'crystal',kind:'ruin',x:-70,y:100},
       {id:'caveIn',kind:'cave',x:1950,y:-250},{id:'caveOut',kind:'cave',x:2160,y:950},{id:'bridge',kind:'feat',x:1530,y:430},{id:'slide',kind:'ruin',x:520,y:-1500},
-      {id:'abbey',kind:'temple',x:-240,y:1550},{id:'frozen',kind:'feat',x:-1260,y:1250},{id:'knights',kind:'camp',x:-1120,y:-1400},{id:'foot',kind:'camp',x:530,y:850},
-      {id:'hunter',kind:'camp',x:-2020,y:-250},{id:'summit',kind:'camp',x:1460,y:-1250}]   // 7-20
+      {id:'abbey',kind:'temple',x:-240,y:1550},{id:'frozen',kind:'feat',x:-1260,y:1250},{id:'knights',kind:'camp',x:-1120,y:-1400},{id:'camp',kind:'camp',x:530,y:850},
+      {id:'hunter',kind:'camp',x:-2020,y:-250},{id:'summit',kind:'camp',x:1460,y:-1250},   // 7-20
+      {id:'crevasse',kind:'feat',x:1900,y:330},{id:'pines',kind:'feat',x:-2300,y:-1350},{id:'cliff',kind:'feat',x:1900,y:-680}]   // לקווסטים הצדדיים (quests.js): שפת החריץ, האורנים, ושפת הצוק המזרחי
   }
 });
 /* כמה קשה: אותם מספרים כמו ב-world.js, רק המרחקים מהשער בקנה המידה של המפה הגדולה (כמו האחו והאגם) */
