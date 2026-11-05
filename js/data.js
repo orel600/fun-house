@@ -103,6 +103,9 @@ const UPS=[
   {id:'k_zap',w:'any',sk:'zap',f:()=>skillAdd('zap')},
   {id:'k_quake',w:'any',sk:'quake',f:()=>skillAdd('quake')},
   {id:'k_flame',w:'any',sk:'flame',f:()=>skillAdd('flame')},
+  {id:'k_comet',w:'any',sk:'comet',f:()=>skillAdd('comet')},   // סקילים נוספים: skills-more.js
+  {id:'k_lance',w:'any',sk:'lance',f:()=>skillAdd('lance')},
+  {id:'k_bloom',w:'any',sk:'bloom',f:()=>skillAdd('bloom')},
   {id:'hp',w:'any',f:()=>{P.maxHp+=25;P.hp=P.maxHp}},
   {id:'spd',w:'any',f:()=>P.speed*=1.12,max:3},
   {id:'mag',w:'any',f:()=>P.magnet*=1.6,max:2},
