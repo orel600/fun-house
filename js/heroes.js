@@ -14,7 +14,9 @@ const HEROES={
     hunter: {weapon:'oakBow',passive:{speed:10},arms:['bow'],icon:'🏹',col:'#A8D08D'},
     // worldPassive: כמו passive, אבל רק בכפר ובעולם (heroWorld). הזירה ומשחקי השאול לא משתנים. הקוסם (איזון 4.11, docs/balance-2026-11-04.md):
     // אחרי #321 רטיבות והלם נגמרים גם בעולם, והקוסם מת שם פי 3 מהציידת
-    mage:   {weapon:'oakStaff',passive:{regen:1},worldPassive:{def:12,speed:10,gdmg:15},arms:['staff','wand'],icon:'🔮',col:'#C7A6FF'}
+    // worldLate (5.11.2026, fix/mage-boss): עוד give מרמה lv, בעולם בלבד. בשתי מדידות של 10 קרבות ברמה המומלצת הקוסם היה איטי ב-26% מהממוצע בשומר האש
+    // וב-22% בצל (הסקילים שלו בעיקר אש וקרח), אבל מהיר ב-20-30% בשומר האדמה (רמה 6, המטה המתביית לא מחטיא). לכן התוספת רק מרמה 12
+    mage:   {weapon:'oakStaff',passive:{regen:1},worldPassive:{def:12,speed:10,gdmg:15},worldLate:{lv:12,give:{gdmg:10}},arms:['staff','wand'],icon:'🔮',col:'#C7A6FF'}
   },
   /* סגנון המשחק, לקווסטי הדרגה. כל מונה נשמר ב-SAVE.hero.style.
      sec: כמה שניות בזירה התנאי היה נכון (heroTick, כל פריים). המפתח נשמר עם t_ לפניו.
@@ -57,7 +59,7 @@ function heroSkinPet(){
 function heroReset(){const h=HEROES.list[heroId()];if(h)gApply(h.passive,1);rankReset();statsReset();statBadge();P.hp=P.maxHp}   // אותם סטטים כמו ציוד (gApply ב-gear.js), ואחריהם הבונוס של הדרגה (ranks.js)
 
 // בכפר ובעולם: worldPassive של הדמות, פעם אחת לכל שחקן (P נבנה מחדש בכל reset, ולכן בזירה הוא לא נשאר). נקרא מ-statTick ב-stats.js
-function heroWorld(){if(P.wpOn||!(S.vil||S.wd)||S.mb)return;P.wpOn=1;const w=(HEROES.list[heroId()]||{}).worldPassive;if(w)gApply(w,1)}
+function heroWorld(){if(P.wpOn||!(S.vil||S.wd)||S.mb)return;P.wpOn=1;const h=HEROES.list[heroId()]||{},w=h.worldPassive,L=h.worldLate;if(w)gApply(w,1);if(L&&heroLv()>=L.lv)gApply(L.give,1)}   // worldLate: נכנס בכניסה הבאה למקום אחרי שעברת את הרמה
 
 /* ---- סגנון המשחק ---- */
 function heroCount(k,n=1){if(HEROES.style.on.includes(k))SAVE.hero.style[k]=(SAVE.hero.style[k]||0)+n}
