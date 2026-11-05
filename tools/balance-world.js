@@ -22,7 +22,11 @@ const BAL={
   dodge:opt('nododge')?0:1,        // הבוט יוצא מעיגולי ברק ומעיגול רקיעה, כמו שחקן שרואה את הסימן (--nododge: עומד במקום)
   step:250,                        // כל כמה מילישניות משחק הבוט מחליט
   swapEvery:75,                    // כל כמה שניות מחליפים סקיל אחד בספר, כדי שכל הסקילים הפתוחים יימדדו
-  flee:0.3,                        // מתחת לחלק הזה מהחיים בורחים עד שמתרפאים
+  flee:0.3,
+  // --quests: "בעיקר קווסטים" (ניר, 5.11: הקווסטים הם הדרך היעילה והכיפית, וההריגה החלופה האיטית). הבוט לוקח קווסטים מהדמויות ומהלוח באזור,
+  // עושה אותם (הריגה, מקום, להגן, לפגוש, לאסוף ממקור) ומוסר. קווסט שלא נגמר תוך qGiveUp שניות נזנח. דיג ו"תביא לי" שאין בתרמיל: לא
+  quests:opt('quests')?1:0,
+  qGiveUp:600,                        // מתחת לחלק הזה מהחיים בורחים עד שמתרפאים
   // התוכנית לנקודות: לפי הסדר, שוב ושוב. התכונה הראשונה היא זו שהנשק של המחלקה דורש (ITEMROLL.stat)
   pts:{warrior:['str','vit','str','def'],hunter:['agi','str','agi','vit'],mage:['haste','str','haste','vit']},
   chapters:[{reg:'meadow',k:'earth',to:'lake'},{reg:'lake',k:'water',to:'ridge'},{reg:'ridge',k:'ice',to:'desert'},
@@ -53,7 +57,33 @@ function install(B){
   // הריגות בפרק (ל-kills של playtime.js)
   const k0=kill;kill=function(e){const r=k0.apply(this,arguments);if(S.wd&&!e.node)m.kc=(m.kc||0)+1;return r};
   function need(){const c=chap();return c.lv||(c.to?CURIO.paths[c.to].lv:0)}   // c.lv: רמת יעד לפרק (playtime.js, בדרגות 2-3)
-  function cRep(){return R.ch[m.ch]||(R.ch[m.ch]={reg:chap().reg,deaths:0,lv0:heroLv()})}
+  // XP מצטבר (לא מתאפס ברמה), ומה מתוכו מקווסטים: לדוח "בעיקר קווסטים" מול "בעיקר הריגה"
+  const cumXp=()=>{let s=SAVE.hero.xp||0;for(let l=1;l<heroLv();l++)s+=rankNeed(l);return s};
+  function cRep(){return R.ch[m.ch]||(R.ch[m.ch]={reg:chap().reg,deaths:0,lv0:heroLv(),xp0:cumXp(),qn:0,qxp:0})}
+  const qc0=questClaim;questClaim=function(id){const q=QBY[id],had=!!QS().active[id];const r=qc0.apply(this,arguments);
+    if(S.wd&&had&&!QS().active[id]&&q){const c=cRep();c.qn++;c.qxp+=q.reward.xp||0}return r};
+  /* "בעיקר קווסטים": מה הבוט עושה עכשיו. {at:{x,y},near:פעולה כשמגיעים} או {e:אויב או מקור} או null (טיפוס רגיל) */
+  m.qT={};m.qSkip={};
+  const QK=q=>q.kind==='world'||q.kind==='wboard';
+  const nodeFor=r=>enemies.filter(e=>e.node&&!e.dead&&(()=>{const K=NODES.kinds[e.kind]||{};return (K.drop&&K.drop[r])||(K.wdrop&&K.wdrop[r])})()).reduce((b,e)=>{const d=Math.hypot(e.x-P.x,e.y-P.y);return d<b.d?{e,d}:b},{e:null,d:1e9}).e;
+  const qDo=q=>q.obj.every(o=>['kill','visit','hold','meet','gather','collect'].includes(o.type)&&(o.type!=='collect'||(SAVE.bag[o.what]||0)>=o.n)&&(o.type!=='gather'||nodeFor(o.what)));
+  function qGoal(now){
+    const N=wnpcState()||{},Q=QS(),reg=S.wd.reg;
+    for(const id in Q.active){const q=QBY[id];if(q&&QK(q)&&N[q.giver]&&qReady(q))return{at:N[q.giver],near:()=>questAct('claim',id)}}
+    for(const id in N)if(!SAVE.met[id]&&!m.qSkip['met:'+id]){const k='met:'+id;if(m.qT[k]===undefined)m.qT[k]=now;if(now-m.qT[k]>120){m.qSkip[k]=1;continue}return{at:N[id],near:()=>{}}}   // דמות שעוד לא נמצאה: הולכים אליה (WNPC.find)
+    const act=Object.keys(Q.active).filter(id=>QBY[id]&&QK(QBY[id])&&N[QBY[id].giver]&&!m.qSkip[id]);
+    if(act.length<4)for(const q of QUESTS.list)if(QK(q)&&N[q.giver]&&!m.qSkip[q.id]&&qOpen(q)&&qDo(q))return{at:N[q.giver],near:()=>{questAct('accept',q.id);m.qT[q.id]=now}};
+    for(const id of act){const q=QBY[id];if(m.qT[id]===undefined)m.qT[id]=now;if(now-m.qT[id]>B.qGiveUp){m.qSkip[id]=1;R.qGiveUp=(R.qGiveUp||0)+1;continue}
+      for(let i=0;i<q.obj.length;i++){const o=q.obj[i];if(qProg(q,i)>=o.n)continue;
+        if(o.type==='visit'||o.type==='hold'){const p=sqPlace(o.what);if(p&&p.reg===reg)return{at:p,stay:1};break}
+        if(o.type==='meet'){if(N[o.what])return{at:N[o.what],near:()=>questEvent('meet',o.what)};break}
+        if(o.type==='gather'){const e=nodeFor(o.what);if(e)return{e};break}
+        if(o.type==='kill'){if(o.what==='any')return null;const F=foes().filter(e=>e.type===o.what);
+          const e=F.reduce((b,e)=>{const d=Math.hypot(e.x-P.x,e.y-P.y);return d<b.d?{e,d}:b},{e:null,d:1e9}).e;if(e)return{e};
+          const G=(WR().foes||[]).find(f=>f.type===o.what);if(G)return{at:G,stay:1};break}
+        break}}
+    return null;
+  }
   const foes=()=>enemies.filter(e=>!e.dead&&!e.node);
   function better(slot,id){let wi=-1,ws=1e9;for(let i=0;i<gOpen(slot);i++){const s=gScore(gGet(slot,i));if(s<ws){ws=s;wi=i}}return gScore(id)>ws+1e-9?wi:-1}
   // הציוד: כל מה שבתרמיל ועדיף על הגרוע שלבוש באותה משבצת. נשק רק של המחלקה. לא עומד בדרישות: נרשם
@@ -87,7 +117,7 @@ function install(B){
       else if(m.gt-k.t>8&&(dx||dy)){R.unstick=(R.unstick||0)+1;(R.stuckAt||(R.stuckAt=[])).push([Math.round(P.x),Math.round(P.y),flee?'flee':m.ph]);m.stk={x:P.x,y:P.y,t:m.gt};m.wig=m.gt+2;m.wa=Math.random()*6.283}
       if(m.wig>m.gt){dx=Math.cos(m.wa);dy=Math.sin(m.wa)}}
     joy={id:-1,ox:-999,oy:-999,dx,dy}}
-  function finish(ok,why){const c=cRep();c.t=Math.round(m.gt-m.chT);c.lv1=heroLv();c.ok=ok;if(why)c.why=why;c.coins=SAVE.bag.coins||0;
+  function finish(ok,why){const c=cRep();c.t=Math.round(m.gt-m.chT);c.lv1=heroLv();c.ok=ok;if(why)c.why=why;c.coins=SAVE.bag.coins||0;c.xp=Math.round(cumXp()-c.xp0);
     c.gear=[SAVE.gear.weapon].concat(SAVE.gear.acc||[],SAVE.gear.boots||[],SAVE.gear.body||[]).filter(Boolean).join(' ');
     c.sk=Object.entries(SAVE.sklv||{}).map(([k,v])=>k+'+'+v).join(' ');
     if(ok)STO()[chap().k]=true;saveNow();m.ch++;m.ph='grind';m.jumped=0;m.chT=m.gt;m.wT=0;m.kc=0;joy=null;
@@ -143,8 +173,12 @@ function install(B){
     else{m.hurt=0;
       // B.rares (playtime.js): אחרי השמועה, הולכים לנדירה, כמו שחקן ששמע עליה. אחרת היא נעלמת לפני שהבוט נתקל בה
       const rr=B.rares&&m.ph==='grind'&&w.rare&&!w.rare.done&&w.rare.rumor<=0&&w.rare.e&&!w.rare.e.dead&&(!near.e||near.d>200)?w.rare.e:null;
-      const tg=m.ph==='warden'?(w.warden&&!w.warden.dead?w.warden:null):rr||near.e;
-      if(m.ph==='warden'&&!tg)steer(L.x,L.y,false,20);else if(tg)steer(tg.x,tg.y,false,stop+(tg.r||0));else joy=null}
+      // --quests: יעד של קווסט. אויב קרוב (140) קודם, כמו שחקן שלא עובר דרך להקה
+      const qg=B.quests&&m.ph==='grind'&&!rr&&!(near.e&&near.d<140)?qGoal(now):null;
+      if(qg&&qg.at){const d=Math.hypot(P.x-qg.at.x,P.y-qg.at.y);if(d<80&&qg.near)qg.near();steer(qg.at.x,qg.at.y,false,qg.stay?20:40)}
+      else{
+      const tg=m.ph==='warden'?(w.warden&&!w.warden.dead?w.warden:null):qg&&qg.e||rr||near.e;
+      if(m.ph==='warden'&&!tg)steer(L.x,L.y,false,20);else if(tg)steer(tg.x,tg.y,false,stop+(tg.r||0));else joy=null}}
     if(near.e&&near.d<230&&S.sk)for(const id of S.sk.ids.slice())if(wskReady(id)>=0)wskUse(id);
     return{}
   }

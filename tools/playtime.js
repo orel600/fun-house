@@ -95,7 +95,7 @@ const f1=x=>x==null?'-':(Math.round(x*10)/10).toString();
   // לכל מחלקה ולכל פרק: שעות. חזרות לכפר: כל trip שניות בטיפוס, ועוד אחת בסוף כל פרק
   const A={};
   for(const c of PT.cls){const R=out[c];A[c]=R.ch.map((h,i)=>{const trips=Math.floor((h.t||0)/PT.trip)+1;
-    return{st:B.chapters[i].st,reg:h.reg,h:hrs(h.t||0,trips,h.deaths||0),lv:h.lv1,ok:h.ok,why:h.why,deaths:h.deaths,fight:h.fightT,gate:h.gate}})}
+    return{st:B.chapters[i].st,reg:h.reg,h:hrs(h.t||0,trips,h.deaths||0),qn:h.qn||0,qxp:h.qxp||0,xp:h.xp||0,lv:h.lv1,ok:h.ok,why:h.why,deaths:h.deaths,fight:h.fightT,gate:h.gate}})}
   const L=[];const p=s=>L.push(s);
   const date=new Date().toISOString().slice(0,10);
   p(`# כמה שעות לוקח המשחק: ${date}`);p('');
@@ -111,6 +111,12 @@ const f1=x=>x==null?'-':(Math.round(x*10)/10).toString();
   const goal=PT.goal.story+PT.goal.t2+PT.goal.t3;
   p(`| **סה"כ** | **${f1(tot)}** | **${goal}** | | |`);p('');
   p('הסוגריים: לכל מחלקה לפי הסדר '+PT.cls.join(', ')+'.');p('');
+  // קווסטים מול הריגה (ניר, 5.11): כמה XP לשעה מכל מקור. --quests: הבוט עושה קווסטים, ובלעדיו רק מטפס בהריגה
+  p('## קווסטים מול הריגה'+(B.quests?' (מצב "בעיקר קווסטים")':' (מצב "בעיקר הריגה")'));p('');
+  p('| שלב | קווסטים שנמסרו (למחלקה) | XP לשעה מקווסטים | XP לשעה מהריגה ושאר | חלק הקווסטים |');p('| --- | --- | --- | --- | --- |');
+  for(const [st,name] of STAGES){let h=0,qn=0,qxp=0,xp=0;for(const c of PT.cls)for(const x of A[c].filter(x=>x.st===st)){h+=x.h;qn+=x.qn;qxp+=x.qxp;xp+=x.xp}
+    p(`| ${name} | ${f1(qn/PT.cls.length)} | ${h?Math.round(qxp/h):'-'} | ${h?Math.round((xp-qxp)/h):'-'} | ${xp?Math.round(qxp/xp*100)+'%':'-'} |`)}
+  p('');
   // לכל פרק
   p('## לפי פרק (שעות, ממוצע מחלקות)');p('');p('| שלב | אזור | שעות | יעד לפרק | רמה בסוף | השומר (שניות קרב) | הערה |');p('| --- | --- | --- | --- | --- | --- | --- |');
   const walls=[],short=[];
@@ -139,7 +145,7 @@ const f1=x=>x==null?'-':(Math.round(x*10)/10).toString();
   p('- **קיר** (פרק שלוקח יותר מפי '+PT.wall+' מהחלק שלו ביעד, או שהבוט נתקע): '+(walls.length?walls.join(', '):'אין'));
   p('- **קצר מדי** (פחות מחצי מהחלק שלו ביעד): '+(short.length?short.join(', '):'אין'));p('');
   p('## בסוף');p('');
-  for(const c of PT.cls){const R=out[c];p(`- ${c}: רמה ${R.end.lv}, סטים: ${R.end.sets.join(', ')}, ${R.deaths} מוות, ${R.unstick||0} פעמים נתקע בשטח וזז לכיוון אקראי${R.stuckAt?' ('+R.stuckAt.slice(0,6).map(a=>a.join(' ')).join('; ')+')':''}, ${R.real} שניות אמיתיות${R.errors.length?', שגיאות: '+R.errors.join(' | '):''}`)}
+  for(const c of PT.cls){const R=out[c];p(`- ${c}: רמה ${R.end.lv}, סטים: ${R.end.sets.join(', ')}, ${R.deaths} מוות, ${R.unstick||0} פעמים נתקע בשטח וזז לכיוון אקראי${R.qGiveUp?', '+R.qGiveUp+' קווסטים נזנחו (לא נגמרו בזמן)':''}${R.stuckAt?' ('+R.stuckAt.slice(0,6).map(a=>a.join(' ')).join('; ')+')':''}, ${R.real} שניות אמיתיות${R.errors.length?', שגיאות: '+R.errors.join(' | '):''}`)}
   const txt=L.join('\n');console.log('\n'+txt);
   const o=opt('out');if(o)fs.writeFileSync(o,txt+'\n');
   const j=opt('json');if(j)fs.writeFileSync(j,JSON.stringify(out,null,1));
