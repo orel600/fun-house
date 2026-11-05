@@ -13,7 +13,8 @@ const BAL={
   cls:(opt('cls')||'warrior,hunter,mage').split(','),
   seed:+(opt('seed')||7),
   cap:+(opt('cap')||1200),          // שניות משחק לפרק
-  wardenCap:600,                   // מתוכן, לכל היותר לקרב בשומר
+  wardenCap:600,
+  travel:60,                       // שניות בשלב השומר בלי להגיע למאורה, ואז קופצים אליה (ראה למטה)                   // מתוכן, לכל היותר לקרב בשומר
   fights:+(opt('fights')||1),      // כמה פעמים להפיל כל שומר, כדי להוריד את הרעש (--fights 10). אחרי כל ניצחון: חיים מלאים, והשומר קם שוב
   dodge:opt('nododge')?0:1,        // הבוט יוצא מעיגולי ברק ומעיגול רקיעה, כמו שחקן שרואה את הסימן (--nododge: עומד במקום)
   step:250,                        // כל כמה מילישניות משחק הבוט מחליט
@@ -79,7 +80,7 @@ function install(B){
   function finish(ok,why){const c=cRep();c.t=Math.round(m.gt-m.chT);c.lv1=heroLv();c.ok=ok;if(why)c.why=why;c.coins=SAVE.bag.coins||0;
     c.gear=[SAVE.gear.weapon].concat(SAVE.gear.acc||[],SAVE.gear.boots||[],SAVE.gear.body||[]).filter(Boolean).join(' ');
     c.sk=Object.entries(SAVE.sklv||{}).map(([k,v])=>k+'+'+v).join(' ');
-    if(ok)STO()[chap().k]=true;saveNow();m.ch++;m.ph='grind';m.chT=m.gt;m.wT=0;joy=null;
+    if(ok)STO()[chap().k]=true;saveNow();m.ch++;m.ph='grind';m.jumped=0;m.chT=m.gt;m.wT=0;joy=null;
     if(S.wd){worldUi(false);enterVillage()}}
   function step(){
     if(m.ch>=B.chapters.length)return{done:true,R};
@@ -103,7 +104,10 @@ function install(B){
         if(f.length<B.fights){P.hp=P.maxHp;S.wd.marks=[];S.wd.rings=[];if(STO().bt)delete STO().bt[chap().k];P.x=L.x;P.y=L.y+GIANT.lair+700;return{}}   // שוב: מתרחקים, והשומר קם כשחוזרים
         c.wardenT=Math.round(now-m.wT);c.fightT=Math.round(f.reduce((a,b)=>a+b,0)/f.length*10)/10;c.wLv=heroLv();finish(true);return{}}
       // הענק קם לבד כשמתקרבים (giant.js). הטיימר מניצחון מקרי בזמן הטיפוס לא נספר: מאפסים אותו
-      if(m.wE&&m.wE.gone)m.wE=null;if(STO().bt)delete STO().bt[chap().k];
+      if(m.wE&&m.wE.gone)m.wE=null;
+      // המדידה היא של הקרב, לא של הדרך: מי שלא הגיע למאורה תוך travel שניות (באחו הגדול הבוט נתקע בלהקות ובורח) קופץ ליד המאורה
+      if(!w.warden&&now-m.wT>B.travel&&Math.hypot(P.x-L.x,P.y-L.y)>L.warden.wake&&!m.jumped){m.jumped=1;c.jump=1;const ly=L.y+(typeof GIANT!=='undefined'?GIANT.lair:70);
+        for(const [ox,oy] of [[0,320],[320,0],[-320,0],[0,-320],[230,230],[-230,230],[230,-230],[-230,-230]])if(typeof tBlocked!=='function'||!tBlocked(L.x+ox,ly+oy)){P.x=L.x+ox;P.y=ly+oy;break}}if(STO().bt)delete STO().bt[chap().k];
       if(!w.warden&&typeof giantReady!=='function'&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake)storyWarden(chap().k,L.y+70);   // גרסה ישנה (לפני הטיימר): קם רק עם קווסט, אז מקימים ביד
       if(w.warden&&!w.warden.dead&&m.wE!==w.warden){m.wE=w.warden;m.wS=now;c.tries=(c.tries||0)+1}}
     // קרב: לחיים נמוכים בורחים. אחרת אל האויב הקרוב (או השומר), עד הטווח של הנשק
