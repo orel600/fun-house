@@ -30,8 +30,8 @@ const WNPC={
     bard:    {reg:'ridge',at:{x:380,y:-560},col:'#A8E6FF',look:'ranger'},
     caravan: {reg:'desert',at:{x:-380,y:-560},col:'#E0B26A',look:'rogue'},
     glass:   {reg:'desert',at:{x:380,y:-560},col:'#FF9A5A',look:'barbarian'},
-    keeper:  {reg:'storm',at:{x:-380,y:-560},col:'#B48CFF',look:'knight'},
-    chaser:  {reg:'storm',at:{x:380,y:-560},col:'#8E7CC8',look:'ranger'},
+    keeper:  {reg:'storm',at:{x:120,y:-760},col:'#B48CFF',look:'knight'},       // שומר המגדלים, ליד גשר המגדל שנפל (הסערה הגדולה, map-storm.js)
+    chaser:  {reg:'storm',at:{x:-250,y:-1390},col:'#8E7CC8',look:'ranger'},     // החוקרת הרטובה, במחנה שלה (19)
     squire:  {reg:'shadow',at:{x:-380,y:-560},col:'#C7A6FF',look:'knight'},
     lamp:    {reg:'shadow',at:{x:380,y:-560},col:'#FFE08A',look:'mage'}
     // ולוח מודעות בכל אזור (board:true), נוסף מ-questboard.js

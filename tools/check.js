@@ -451,6 +451,7 @@ function worldBot(m,L,god){
       L.wLake={ms:TR.ms,bad:terrainBad(LR,'lake'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,lake:tBlocked(-600,700),isle:!tBlocked(LR.waystones[1].x,LR.waystones[1].y),swamp:tSlow(M.marks.find(m=>m.id==='boards').x,M.marks.find(m=>m.id==='boards').y)};terrainEnter(WORLD,'meadow')}
     if(TR&&WORLD.regions.storm.map){const SR=WORLD.regions.storm,M=SR.map,rc=terrainReach(SR,'storm'),mk=id=>M.marks.find(m=>m.id===id),a=SR.home,b=M.bridges[0];   // מגדלי הסערה הגדולים (js/map-storm.js): נבנה ונבדק כאן, ואז חוזרים למפה של האחו
       for(const m of M.marks)rc['mark.'+m.id]=!!tPath(a.x,a.y+WORLD.arrive,m.x,m.y);
+      if(typeof WNPC!=='undefined')for(const id in WNPC.list){const N=WNPC.list[id];if(N.reg==='storm')rc['npc.'+id]=!tBlocked(N.at.x,N.at.y)&&!!tPath(a.x,a.y+WORLD.arrive,N.at.x,N.at.y)}   // הדמויות והלוח (worldnpc.js, questboard.js)
       L.wStorm={ms:TR.ms,bad:terrainBad(SR,'storm'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,river:tBlocked(-210,-300),bridge:!tBlocked(b.x,b.y),stones:tSlow(mk('stones').x,mk('stones').y),
         wall:tBlocked(-1000,1072)&&tBlocked(700,987),gate:!tBlocked(mk('egate').x,mk('egate').y),tower:tBlocked(SR.towers[5].x,SR.towers[5].y),
         towerFree:!SR.foes.concat(SR.fields,M.marks,SR.waystones,M.dens).some(o=>SR.towers.some(t=>Math.hypot(o.x-t.x,o.y-t.y)<t.r+40))};terrainEnter(WORLD,'meadow')}
