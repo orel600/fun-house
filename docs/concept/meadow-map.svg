@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="900" viewBox="0 0 1000 900" font-family="DejaVu Sans, sans-serif">
+<rect width="1000" height="900" fill="#2b2a26"/>
+<polygon points="99.2,41.6 257.6,30.8 416,48.8 455.6,27.2 520.4,27.2 567.2,52.4 704,34.4 833.6,48.8 905.6,84.8 930.8,185.6 912.8,272 945.2,351.2 920,444.8 938,538.4 891.2,624.8 783.2,617.6 689.6,639.2 560,624.8 444.8,642.8 336.8,621.2 228.8,635.6 128,610.4 48.8,538.4 63.2,426.8 30.8,315.2 56,200 38,102.8" fill="#86b35a" stroke="#4a3a2a" stroke-width="7" stroke-linejoin="round"/>
+<polyline points="567.2,52.4 704,34.4 833.6,48.8 905.6,84.8 930.8,185.6 912.8,272 945.2,351.2" fill="none" stroke="#6b5440" stroke-width="12" stroke-dasharray="14 5" stroke-linejoin="round"/>
+<polyline points="920,444.8 938,538.4 891.2,624.8" fill="none" stroke="#6b5440" stroke-width="12" stroke-dasharray="14 5" stroke-linejoin="round"/>
+<polyline points="257.6,30.8 416,48.8 455.6,27.2" fill="none" stroke="#6b5440" stroke-width="12" stroke-dasharray="14 5" stroke-linejoin="round"/>
+<path d="M322.4,624.8 Q416,596 509.6,621.2 Q596,603.2 689.6,635.6 L689.6,646.4 L322.4,646.4 Z" fill="#4f8fc0" opacity="0.9"/>
+<ellipse cx="466.4" cy="603.2" rx="61.2" ry="19.8" fill="#6aa7c9" opacity="0.8"/>
+<polygon points="38,102.8 214.4,63.2 286.4,149.6 272,254 318.8,297.2 286.4,416 293.6,524 236,610.4 128,610.4 48.8,538.4 63.2,426.8 30.8,315.2 56,200" fill="#2f5d2a" stroke="#1e3d1b" stroke-width="2"/>
+<circle cx="63.2" cy="92" r="7" fill="#24491f"/>
+<circle cx="275.6" cy="442.6" r="7" fill="#24491f"/>
+<circle cx="76.4" cy="514.3" r="7" fill="#24491f"/>
+<circle cx="191.8" cy="389.5" r="7" fill="#24491f"/>
+<circle cx="149.3" cy="422.1" r="7" fill="#24491f"/>
+<circle cx="167.7" cy="269.9" r="7" fill="#24491f"/>
+<circle cx="207.5" cy="553.9" r="7" fill="#24491f"/>
+<circle cx="101.3" cy="340.9" r="7" fill="#24491f"/>
+<circle cx="139" cy="353.2" r="7" fill="#24491f"/>
+<circle cx="187.5" cy="131.9" r="7" fill="#24491f"/>
+<circle cx="252.4" cy="471.8" r="7" fill="#24491f"/>
+<circle cx="104.5" cy="346" r="7" fill="#24491f"/>
+<circle cx="251.2" cy="565.2" r="7" fill="#24491f"/>
+<circle cx="165" cy="158.2" r="7" fill="#24491f"/>
+<circle cx="276.8" cy="430.3" r="7" fill="#24491f"/>
+<circle cx="163.2" cy="272.7" r="7" fill="#24491f"/>
+<circle cx="211.6" cy="388.5" r="7" fill="#24491f"/>
+<circle cx="137.5" cy="211.2" r="7" fill="#24491f"/>
+<circle cx="238.4" cy="369.1" r="7" fill="#24491f"/>
+<circle cx="191.3" cy="279.4" r="7" fill="#24491f"/>
+<circle cx="215.5" cy="264.7" r="7" fill="#24491f"/>
+<circle cx="159.8" cy="106.4" r="7" fill="#24491f"/>
+<circle cx="94.5" cy="224.4" r="7" fill="#24491f"/>
+<circle cx="139.3" cy="212.4" r="7" fill="#24491f"/>
+<circle cx="177.3" cy="569.9" r="7" fill="#24491f"/>
+<circle cx="63.3" cy="336.4" r="7" fill="#24491f"/>
+<circle cx="100.5" cy="162.9" r="7" fill="#24491f"/>
+<circle cx="160" cy="230.5" r="7" fill="#24491f"/>
+<circle cx="229.9" cy="131.1" r="7" fill="#24491f"/>
+<circle cx="129" cy="515.1" r="7" fill="#24491f"/>
+<circle cx="159.5" cy="178.1" r="7" fill="#24491f"/>
+<circle cx="109.4" cy="499.3" r="7" fill="#24491f"/>
+<circle cx="195.9" cy="489.6" r="7" fill="#24491f"/>
+<circle cx="171.6" cy="510.9" r="7" fill="#24491f"/>
+<circle cx="240.2" cy="426" r="7" fill="#24491f"/>
+<circle cx="200.7" cy="202.6" r="7" fill="#24491f"/>
+<circle cx="167.6" cy="316" r="7" fill="#24491f"/>
+<circle cx="112.8" cy="465.7" r="7" fill="#24491f"/>
+<circle cx="223.3" cy="256.7" r="7" fill="#24491f"/>
+<circle cx="246.6" cy="492.5" r="7" fill="#24491f"/>
+<circle cx="128.4" cy="471.7" r="7" fill="#24491f"/>
+<circle cx="181.6" cy="538.6" r="7" fill="#24491f"/>
+<circle cx="96" cy="386.7" r="7" fill="#24491f"/>
+<circle cx="89.6" cy="478.6" r="7" fill="#24491f"/>
+<circle cx="132.8" cy="329.2" r="7" fill="#24491f"/>
+<circle cx="89.9" cy="272" r="7" fill="#24491f"/>
+<circle cx="250.3" cy="251.8" r="7" fill="#24491f"/>
+<circle cx="190.8" cy="263.8" r="7" fill="#24491f"/>
+<circle cx="156.4" cy="111.5" r="7" fill="#24491f"/>
+<circle cx="264.3" cy="352.4" r="7" fill="#24491f"/>
+<circle cx="172.6" cy="385.1" r="7" fill="#24491f"/>
+<circle cx="115" cy="568" r="7" fill="#24491f"/>
+<circle cx="134.5" cy="431.5" r="7" fill="#24491f"/>
+<circle cx="103.5" cy="238.9" r="7" fill="#24491f"/>
+<circle cx="102.3" cy="558.6" r="7" fill="#24491f"/>
+<circle cx="82.1" cy="376.1" r="7" fill="#24491f"/>
+<circle cx="250" cy="161.8" r="7" fill="#24491f"/>
+<circle cx="67" cy="385.9" r="7" fill="#24491f"/>
+<circle cx="83.5" cy="101.4" r="7" fill="#24491f"/>
+<circle cx="81.1" cy="570" r="7" fill="#24491f"/>
+<circle cx="200.9" cy="230.5" r="7" fill="#24491f"/>
+<circle cx="118.8" cy="145.2" r="7" fill="#24491f"/>
+<circle cx="152.6" cy="536.1" r="7" fill="#24491f"/>
+<circle cx="138.8" cy="292.7" r="7" fill="#24491f"/>
+<path d="M135.2,84.8 Q135.2,84.8 164,124.4 Q192.8,164 182,214.4 Q171.2,264.8 185.6,315.2 Q200,365.6 182,410.6 Q164,455.6 167.6,497 T171.2,538.4" fill="none" stroke="#d8bf86" stroke-width="7" stroke-linecap="round"/>
+<path d="M286.4,218 Q286.4,218 261.2,255.8 Q236,293.6 236,336.8 Q236,380 207.2,417.8 T178.4,455.6" fill="none" stroke="#e07a5f" stroke-width="5" stroke-dasharray="9 6"/>
+<path d="M257.6,318.8 Q257.6,318.8 304.4,333.2 Q351.2,347.6 398,340.4 Q444.8,333.2 484.4,336.8 Q524,340.4 574.4,354.8 Q624.8,369.2 668,365.6 Q711.2,362 761.6,349.4 Q812,336.8 849.8,344 Q887.6,351.2 919.1,354.8 T950.6,358.4" fill="none" stroke="#3d7fb8" stroke-width="43.2" stroke-linecap="round"/>
+<path d="M257.6,318.8 Q257.6,318.8 304.4,333.2 Q351.2,347.6 398,340.4 Q444.8,333.2 484.4,336.8 Q524,340.4 574.4,354.8 Q624.8,369.2 668,365.6 Q711.2,362 761.6,349.4 Q812,336.8 849.8,344 Q887.6,351.2 919.1,354.8 T950.6,358.4" fill="none" stroke="#7fc0e8" stroke-width="3" stroke-dasharray="6 10" opacity="0.8"/>
+<circle cx="257.6" cy="318.8" r="25.2" fill="#7fc0e8" stroke="#3d7fb8" stroke-width="3"/>
+<rect x="342.2" y="321.6" width="18" height="52" fill="#a0703c" stroke="#5a3a1a" stroke-width="2" transform="rotate(-12 351.2 347.6)"/>
+<rect x="709.4" y="336" width="18" height="52" fill="#a0703c" stroke="#5a3a1a" stroke-width="2" transform="rotate(-5 718.4 362)"/>
+<ellipse cx="527.6" cy="341.1" rx="32.4" ry="18" fill="#bfe3f2" stroke="#5aa0c8" stroke-width="2" stroke-dasharray="4 3"/>
+<circle cx="542" cy="488" r="93.6" fill="#a3b866" stroke="#7c8a45" stroke-width="1.5"/>
+<circle cx="542" cy="488" r="64.8" fill="#b8c873" stroke="#7c8a45" stroke-width="1.5"/>
+<circle cx="542" cy="488" r="36" fill="#cbd682" stroke="#7c8a45" stroke-width="1.5"/>
+<polygon points="660.8,135.2 812,106.4 862.4,185.6 833.6,272 711.2,279.2 657.2,218" fill="#a39a88" stroke="#6e6656" stroke-width="2"/>
+<path d="M840.8,596 Q869.6,538.4 905.6,588.8 Z" fill="#3a2a22" stroke="#1a120e" stroke-width="2"/>
+<circle cx="488" cy="77.6" r="158.4" fill="none" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="3 6" opacity="0.7"/>
+<path d="M488,84.8 Q488,84.8 493.4,129.8 Q498.8,174.8 482.6,210.8 Q466.4,246.8 497,281 Q527.6,315.2 527.6,336.8 Q527.6,358.4 529.4,394.4 Q531.2,430.4 536.6,455.6 Q542,480.8 590.6,493.4 Q639.2,506 700.4,522.2 Q761.6,538.4 804.8,549.2 T848,560" fill="none" stroke="#ffd34d" stroke-width="4" stroke-dasharray="2 8" stroke-linecap="round"/>
+<circle cx="488" cy="77.6" r="12" fill="#f4c74f" stroke="#222" stroke-width="2"/><text x="488" y="82.1" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">1</text>
+<circle cx="477.2" cy="182" r="12" fill="#ffffff" stroke="#222" stroke-width="2"/><text x="477.2" y="186.5" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">2</text>
+<circle cx="441.2" cy="304.4" r="12" fill="#ffffff" stroke="#222" stroke-width="2"/><text x="441.2" y="308.9" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">3</text>
+<circle cx="527.6" cy="341.1" r="12" fill="#bfe3f2" stroke="#222" stroke-width="2"/><text x="527.6" y="345.6" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">4</text>
+<circle cx="351.2" cy="347.6" r="12" fill="#a0703c" stroke="#222" stroke-width="2"/><text x="351.2" y="352.1" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">5</text>
+<circle cx="718.4" cy="362" r="12" fill="#a0703c" stroke="#222" stroke-width="2"/><text x="718.4" y="366.5" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">6</text>
+<circle cx="747.2" cy="192.8" r="12" fill="#d9d2c3" stroke="#222" stroke-width="2"/><text x="747.2" y="197.3" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">7</text>
+<circle cx="135.2" cy="84.8" r="12" fill="#d8bf86" stroke="#222" stroke-width="2"/><text x="135.2" y="89.3" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">8</text>
+<circle cx="236" cy="279.2" r="12" fill="#e07a5f" stroke="#222" stroke-width="2"/><text x="236" y="283.7" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">9</text>
+<circle cx="257.6" cy="318.8" r="12" fill="#7fc0e8" stroke="#222" stroke-width="2"/><text x="257.6" y="323.3" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">21</text>
+<circle cx="124.4" cy="408.8" r="12" fill="#ffffff" stroke="#222" stroke-width="2"/><text x="124.4" y="413.3" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">10</text>
+<circle cx="171.2" cy="538.4" r="12" fill="#c7a6ff" stroke="#222" stroke-width="2"/><text x="171.2" y="542.9" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">11</text>
+<circle cx="542" cy="488" r="12" fill="#fff3a0" stroke="#222" stroke-width="2"/><text x="542" y="492.5" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">12</text>
+<circle cx="423.2" cy="455.6" r="12" fill="#ffffff" stroke="#222" stroke-width="2"/><text x="423.2" y="460.1" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">13</text>
+<circle cx="747.2" cy="455.6" r="12" fill="#c7a6ff" stroke="#222" stroke-width="2"/><text x="747.2" y="460.1" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">14</text>
+<circle cx="869.6" cy="567.2" r="12" fill="#ff6b5a" stroke="#222" stroke-width="2"/><text x="869.6" y="571.7" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">15</text>
+<circle cx="336.8" cy="254" r="12" fill="#ffffff" stroke="#222" stroke-width="2"/><text x="336.8" y="258.5" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">16</text>
+<circle cx="639.2" cy="567.2" r="12" fill="#ffffff" stroke="#222" stroke-width="2"/><text x="639.2" y="571.7" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">17</text>
+<circle cx="344" cy="552.8" r="12" fill="#ffffff" stroke="#222" stroke-width="2"/><text x="344" y="557.3" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">18</text>
+<circle cx="876.8" cy="84.8" r="12" fill="#ffffff" stroke="#222" stroke-width="2"/><text x="876.8" y="89.3" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">19</text>
+<circle cx="876.8" cy="243.2" r="12" fill="#ffffff" stroke="#222" stroke-width="2"/><text x="876.8" y="247.7" font-size="12" font-weight="bold" text-anchor="middle" fill="#111">20</text>
+<text x="606.8" y="102.8" font-size="15" font-weight="bold" text-anchor="middle" fill="#ffffff" stroke="#000" stroke-width="3" paint-order="stroke" direction="rtl">קל</text>
+<text x="606.8" y="246.8" font-size="15" font-weight="bold" text-anchor="middle" fill="#ffe08a" stroke="#000" stroke-width="3" paint-order="stroke" direction="rtl">בינוני</text>
+<text x="624.8" y="426.8" font-size="15" font-weight="bold" text-anchor="middle" fill="#ffb08a" stroke="#000" stroke-width="3" paint-order="stroke" direction="rtl">קשה</text>
+<text x="164" y="185.6" font-size="13" font-weight="bold" text-anchor="middle" fill="#cfe8c0" stroke="#000" stroke-width="3" paint-order="stroke" direction="rtl">יער סבוך</text>
+<text x="912.8" y="135.2" font-size="13" font-weight="bold" text-anchor="middle" fill="#e8d8c0" stroke="#000" stroke-width="3" paint-order="stroke" direction="rtl">צוקים</text>
+<text x="506" y="635.6" font-size="13" font-weight="bold" text-anchor="middle" fill="#e0f0ff" stroke="#000" stroke-width="3" paint-order="stroke" direction="rtl">ביצה</text>
+<text x="398" y="380" font-size="12" font-weight="bold" text-anchor="middle" fill="#bfe3f2" stroke="#000" stroke-width="3" paint-order="stroke" direction="rtl">נהר</text>
+<text x="970" y="40" font-size="20" font-weight="bold" fill="#fff" text-anchor="middle">N</text><path d="M970,46 l-7,16 l7,-5 l7,5 z" fill="#fff"/>
+<line x1="40" y1="669.6" x2="373" y2="669.6" stroke="#fff" stroke-width="3"/><text x="206.5" y="685.6" font-size="12" fill="#fff" text-anchor="middle" direction="rtl">5 שניות הליכה</text>
+<rect x="10" y="691.6" width="980" height="198.39999999999998" fill="#1f1e1b" rx="8"/>
+<text x="970" y="715.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">1 שער לכפר</text>
+<text x="650" y="715.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">2 אחו פתוח, מחנה ראשון</text>
+<text x="330" y="715.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">3 הדייג על הגדה</text>
+<text x="970" y="737.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">4 מעבר רדוד (מאט)</text>
+<text x="650" y="737.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">5 גשר מערבי (בטוח)</text>
+<text x="330" y="737.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">6 גשר מזרחי (שמור)</text>
+<text x="970" y="759.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">7 המחצבה והחוצבת</text>
+<text x="650" y="759.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">8 הדרך לאגם (בול עץ)</text>
+<text x="330" y="759.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">9 קיצור ביער (מסוכן)</text>
+<text x="970" y="781.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">10 קרחת יער: מקדש רמה 20</text>
+<text x="650" y="781.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">11 שער החורשה (זירה)</text>
+<text x="330" y="781.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">12 גבעה ותצפית</text>
+<text x="970" y="803.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">13 חורבה (חדש)</text>
+<text x="650" y="803.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">14 שער הבור (זירה)</text>
+<text x="330" y="803.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">15 מאורת השומר והפנס</text>
+<text x="970" y="825.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">16 הלקטת והשיחים</text>
+<text x="650" y="825.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">17 מקדש מהירות</text>
+<text x="330" y="825.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">18 עץ חרוט, אוצר קבור</text>
+<text x="970" y="847.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">19 תיבה רמה 30 על הצוק</text>
+<text x="650" y="847.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">20 תיבה מאחורי המחצבה</text>
+<text x="330" y="847.6" font-size="15" fill="#f2eee4" text-anchor="start" direction="rtl">21 המעיין: הנהר מתחיל</text>
+<rect x="956" y="864.6" width="14" height="12" fill="#3d7fb8"/><text x="950" y="875.6" font-size="13" fill="#f2eee4" text-anchor="start" direction="rtl">נהר (חוסם)</text>
+<rect x="794" y="864.6" width="14" height="12" fill="#2f5d2a"/><text x="788" y="875.6" font-size="13" fill="#f2eee4" text-anchor="start" direction="rtl">יער סבוך (חוסם, מסתיר)</text>
+<rect x="632" y="864.6" width="14" height="12" fill="#6b5440"/><text x="626" y="875.6" font-size="13" fill="#f2eee4" text-anchor="start" direction="rtl">צוק (גבול)</text>
+<rect x="470" y="864.6" width="14" height="12" fill="#d8bf86"/><text x="464" y="875.6" font-size="13" fill="#f2eee4" text-anchor="start" direction="rtl">שביל</text>
+<rect x="308" y="864.6" width="14" height="12" fill="#e07a5f"/><text x="302" y="875.6" font-size="13" fill="#f2eee4" text-anchor="start" direction="rtl">קיצור</text>
+<rect x="146" y="864.6" width="14" height="12" fill="#ffd34d"/><text x="140" y="875.6" font-size="13" fill="#f2eee4" text-anchor="start" direction="rtl">המסלול הראשון</text>
+</svg>
