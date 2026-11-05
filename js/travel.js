@@ -50,10 +50,10 @@ function travelGo(to){   // to: 'home' (הכפר), 'meadow' (השער באחו) 
 
 /* ---- 1. בשער בכפר: "לאן?" ---- */
 function travelGateHtml(){
-  const lit=travelLit();if(!lit.length)return '';   // עוד אין פנס דולק: הכפתור הרגיל
+  const lit=travelLit(),ws=wsGateBtns();if(!lit.length&&!ws)return '';   // עוד אין פנס דולק ואין אבן מסע (waystones.js): הכפתור הרגיל
   return winHead(T('tr.where'))+'<p>'+T('vil.outInfo')+'</p><div class="trlist">'+
     '<button class="vbtn" data-act="go">🌿 '+T('w.region.meadow')+'</button>'+
-    lit.map(o=>'<button class="vbtn trgo" data-act="jump" data-k="'+o.k+'" style="--trc:'+o.L.glow+'">🏮 '+T('w.region.'+o.L.reg)+'</button>').join('')+'</div>';
+    lit.map(o=>'<button class="vbtn trgo" data-act="jump" data-k="'+o.k+'" style="--trc:'+o.L.glow+'">🏮 '+T('w.region.'+o.L.reg)+'</button>').join('')+ws+'</div>';
 }
 
 /* ---- 2. במפת העולם: נגיעה באי עם פנס דולק ---- */
