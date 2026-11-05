@@ -792,7 +792,7 @@ function worldBot(m,L,god){
     // יצורי משאבים לא באים מה-spawner: כל אחד חייב מקור ששומר עליו, ושורה ב-LOOK3D
     const guards=new Set(Object.values(NODES.kinds).map(k=>k.guard&&k.guard.type).filter(Boolean)),lost=[];
     const arenaMon=new Set([...HORDE.monsters.map(m=>m.type),...RUN.elite.types]);   // מפלצות הזירה (spawn.js) באות מה-spawner, לא ממקור
-    for(const t in ETYPES)if(!['grunt','shield','wisp'].includes(t)&&!arenaMon.has(t)&&!ETYPES[t].warden&&(!guards.has(t)||!LOOK3D[t]||!(ETYPES[t].tags||[]).length))lost.push(t);
+    for(const t in ETYPES)if(!['grunt','shield','wisp'].includes(t)&&!arenaMon.has(t)&&!ETYPES[t].warden&&!ETYPES[t].rare&&(!guards.has(t)||!LOOK3D[t]||!(ETYPES[t].tags||[]).length))lost.push(t);
     for(const b in BOSSES)add(src,BOSSES[b].drop,'boss:'+b);
     add(src,WANTED.drop,'wanted');WANTED.loot.forEach(l=>add(src,l.res,'wanted:'+l.key));
     add(src,BONUS.roomRes,'room');
@@ -885,7 +885,7 @@ function worldBot(m,L,god){
   const rk=await page.evaluate(()=>{const q=QUESTS.list.find(q=>q.kind==='rank'),mode=S.mode,r={every:RANKS.every};
     r.locked=!qOpen(q);
     SAVE.hero.xp=0;for(let l=1;l<RANKS.every;l++)SAVE.hero.xp+=rankNeed(l);rankSync();r.lv=SAVE.hero.level;
-    r.open=qOpen(q)&&q.giver==='priest';
+    r.open=qOpen(q)&&q.giver==='priest';r.call=[document.getElementById('banner').textContent,...(typeof BANNER!=='undefined'?BANNER.q.map(b=>b[0]):[])].includes(T('rank.call',T('npc.priest')[0]));   // הודעות בתור (welcome.js)   // הכוהנת קוראת לך (rankCall)
     const sty=st=>{SAVE.hero.style=st;return rankFor(1)};
     const picks={knight:sty({dmg_sword:900,dmg_gun:100,t_run:100}),ranger:sty({dmg_sword:50,dmg_gun:900,t_run:100}),
       hybrid:sty({dmg_sword:500,dmg_gun:500,t_run:100}),guardian:sty({dmg_sword:900,t_run:100,t_defense:80})};
@@ -894,7 +894,7 @@ function worldBot(m,L,god){
     questLogOpen(true);const acc=document.querySelector('#qLog [data-q="'+q.id+'"][data-act="accept"]');if(acc)acc.click();
     questLog();r.accepted=!!SAVE.quests.active[q.id];r.card=(document.querySelector('#qLog [data-q="'+q.id+'"]')||{closest:()=>null}).closest('.qc');
     r.card=r.card?r.card.textContent.includes(rankName('knight')):false;   // textContent: הסוג מכווץ ביומן (guide.js)
-    questEvent('collect','bone',30);S.q={bossHit:0};S.boss=null;questEvent('win');
+    questEvent('collect','bone',30);SAVE.rares={got:{mossback:1,glimmer:1,pearl:1},miss:0};questEvent('rare','pearl');   // 3 נדירות שונות (rares.js). הצייד האמיתי נבדק ב'מפלצות נדירות'
     questLog();const hp=P.maxHp,cl=document.querySelector('#qLog [data-q="'+q.id+'"][data-act="claim"]');if(cl)cl.click();
     r.claimed=!!cl&&SAVE.quests.done[q.id]===1;r.rank=SAVE.hero.rankId;r.hp=P.maxHp-hp;r.want=RANKS.list.knight.bonus.hp;
     r.fx=FX.some(f=>f.K===CELEBRATE.rank);
@@ -917,7 +917,7 @@ function worldBot(m,L,god){
     questLogOpen(false);localStorage.removeItem(SAVE_STORE.key);saveLoad();reset();S.mode=mode;S.q=null;FX=[];
     $('qTrack').hidden=true;$('qTrack').textContent='';document.getElementById('banner').textContent='';
     return r});
-  check(rk.locked&&rk.lv===rk.every&&rk.open&&rk.style,'דרגות: '+(rk.locked?'נעול לפני רמה '+rk.every:'פתוח מוקדם מדי')+', '+(rk.open?'ברמה '+rk.lv+' נפתח קווסט אצל הכוהנת':'לא נפתח ברמה '+rk.lv)+
+  check(rk.locked&&rk.lv===rk.every&&rk.open&&rk.call&&rk.style,'דרגות: '+(rk.locked?'נעול לפני רמה '+rk.every:'פתוח מוקדם מדי')+', '+(rk.open?'ברמה '+rk.lv+' נפתח קווסט אצל הכוהנת':'לא נפתח ברמה '+rk.lv)+(rk.call?', הכוהנת קוראת לך':', בלי הודעה שהכוהנת קוראת')+
     ' · לפי סגנון: '+rk.picks);
   check(rk.accepted&&rk.card&&rk.claimed&&rk.rank==='knight'&&rk.saved&&rk.fx&&rk.hp===rk.want&&rk.kept===rk.want,'קווסט דרגה: '+(rk.accepted?'התקבל':'לא התקבל')+(rk.card?', הכרטיס מראה "אביר"':', הכרטיס לא מראה את הדרגה')+
     (rk.claimed?', הושלם ונלקח':', הפרס לא נלקח')+', דרגה: '+(rk.label||'-')+(rk.saved?', נשמרה':', לא נשמרה')+(rk.fx?', טקס':', בלי טקס')+
@@ -2520,6 +2520,33 @@ function worldBot(m,L,god){
   check(hu.same&&hu.seen&&hu.spawn&&hu.card&&hu.loot&&hu.done&&hu.saved&&hu.once,
     'מבוקש היום: '+(hu.same?'אותו מבוקש לאותו יום':'משתנה באותו יום')+(hu.seen?', רק באזורים שהתגלו':', באזור סגור')+(hu.spawn?', הופיע חזק עם שם':', לא הופיע')+(hu.card?', כרטיס ביומן':', אין כרטיס')+
     (hu.loot?', שלל':', בלי שלל')+(hu.done?', הופל':', לא נרשם')+(hu.saved?', נשמר':', לא נשמר')+(hu.once?', פעם ביום':', חוזר באותו יום'));
+  // מפלצות נדירות (rares.js): מקומות נסתרים לכל אזור, סיכוי בכניסה, שמועה, פיוחו מריחה, נעלמת בזמן, נספרת בקווסט הדרגה, ונרשמת בספר
+  const rar=await page.evaluate(()=>{
+    const o={},r0=JSON.stringify(SAVE.rares||null),b0=JSON.stringify(SAVE.book||null),ch0=RARES.chance,pi0=RARES.pity,ids=Object.keys(RARES.list);
+    const regs=['meadow',...Object.keys(WORLD.regions)];
+    o.noRare=regs.filter(g=>!ids.some(id=>RARES.list[id].reg===g));
+    o.bad=ids.filter(id=>{const R=RARES.list[id],G=R.reg==='meadow'?WORLD:WORLD.regions[R.reg];if(!G)return true;const {w,h}=G.size;
+      return !ETYPES[id]||!ETYPES[id].rare||!LOOK3D[id]||/^fl\./.test(flName(id)||'fl.')||!flLine(id)||!bookList('f').includes(id)||R.spots.length<2||
+        R.spots.some(s=>Math.abs(s.x)>w/2-40||Math.abs(s.y)>h/2-40||(G.ponds||[]).some(p=>Math.hypot(p.x-s.x,p.y-s.y)<p.r+50)||/^rare\.at/.test(rareAt(s)))});
+    SAVE.rares={got:{},miss:0};RARES.chance=0;RARES.pity=0;enterWorld('home');o.none=!S.wd.rare&&RS().miss===1;
+    RARES.chance=ch0;RARES.pity=pi0;enemies=[];S.wd.rare=null;S.wd.scent=null;
+    const e=rareSpawn('mossback',0),sp=RARES.list.mossback.spots[0];
+    o.spawn=!!e&&e.type==='mossback'&&e.rare==='mossback'&&Math.hypot(e.x-sp.x,e.y-sp.y)<5&&e.max>ETYPES.golem.hp*2;
+    S.wd.t=PACE.hush+1;rareUpdate(RARES.rumorAt+0.1);const bq=()=>[document.getElementById('banner').textContent,...(typeof BANNER!=='undefined'?BANNER.q.map(b=>b[0]):[])];o.rumor=S.wd.rare.rumor<=0&&bq().some(t=>String(t).includes(T('rare.at.'+sp.at)));   // הודעות בתור (welcome.js)
+    rareDraw();rareMove(e,0.05);
+    const sc=scentStart(null);o.scent=!!sc&&sc.kind==='rare'&&sc.foe===e&&!rareScent();S.wd.scent=null;
+    QS().active.rank1={p:[0,0]};const q=QBY.rank1,ri=q.obj.findIndex(x=>x.type==='rare');
+    const hunt=id=>{const x=rareSpawn(id,1);damage(x,x.hp*20,'sword',0,'physical');rareUpdate(0.01);return x.dead};
+    damage(e,e.hp*20,'sword',0,'physical');rareUpdate(0.01);o.p1=qProg(q,ri);o.book=bookHas('f','mossback');
+    hunt('mossback');o.same=qProg(q,ri)===1&&RS().got.mossback===2;
+    hunt('glimmer');hunt('pearl');o.p3=qProg(q,ri);
+    const v=rareSpawn('hoarfrost',0);S.wd.rare.t=0;rareUpdate(0.01);o.vanish=v.dead&&!RS().got.hoarfrost&&S.wd.rare.done;
+    o.saved=((JSON.parse(localStorage.getItem(SAVE_STORE.key)).rares||{}).got||{}).pearl===1;
+    delete QS().active.rank1;SAVE.rares=JSON.parse(r0);SAVE.book=JSON.parse(b0);enemies=[];enterVillage();return o});
+  check(!rar.noRare.length&&!rar.bad.length&&rar.none&&rar.spawn&&rar.rumor&&rar.scent&&rar.p1===1&&rar.book&&rar.same&&rar.p3===3&&rar.vanish&&rar.saved,
+    'מפלצות נדירות: '+(rar.noRare.length?'אזור בלי נדירה: '+rar.noRare.join(','):'בכל אזור')+(rar.bad.length?', נתונים שבורים: '+rar.bad.join(','):', מקומות, שם, מראה וספר')+(rar.none?', בלי מזל אין':', מופיעה תמיד')+
+    (rar.spawn?', הופיעה חזקה במקום הנסתר':', לא הופיעה')+(rar.rumor?', שמועה':', בלי שמועה')+(rar.scent?', פיוחו מריחה':', פיוחו לא מריחה')+
+    ', קווסט הדרגה '+rar.p1+'→'+rar.p3+'/3'+(rar.same?'':' (אותה נדירה נספרה פעמיים!)')+(rar.book?', בספר':', לא בספר')+(rar.vanish?', נעלמת בזמן':', לא נעלמת')+(rar.saved?', נשמר':', לא נשמר'));
   // שמות ואופי לאויבים (foelore.js): לכל סוג בעולם שם, שם אישי לעלית, כרטיס בפגישה ראשונה שנסגר לבד ונשמר, בועה מעל הראש
   const flo=await page.evaluate(()=>{
     const o={},m0=JSON.stringify(SAVE.lore||null);SAVE.lore=null;FLC.q=[];flCardNext();   // כרטיסים שנשארו בתור מהמשחק של הבוט
@@ -2591,7 +2618,7 @@ function worldBot(m,L,god){
   check(Object.values(tp).every(Boolean),'טיפ ראשון: '+Object.entries(tp).map(([k,v])=>(v?'':'✗')+k).join(', '));
   // החיה מריחה ומובילה (petscent.js): מרחרחת, רצה למקום ומחכה עם חץ, תיבה נותנת שלל כשמגיעים, אויב מיוחד נותן שלל כשנופל, ומי שלא בא היא מוותרת
   const ps=await page.evaluate(()=>{
-    const o={};enterWorld('home');const p=S.pet||petMake();p.st='idle';const pk=SCENT.pick;
+    const o={};enterWorld('home');if(S.wd.rare){S.wd.rare.e.dead=true;S.wd.rare=null}const p=S.pet||petMake();p.st='idle';const pk=SCENT.pick;   // נדירה שהופיעה במקרה קודמת לכל ריח (rares.js), אז מוציאים אותה
     SCENT.pick={secret:0,chest:1,elite:0};S.wd.scentT=0;petUpdate(0.02);const s=S.wd.scent;o.start=!!s&&s.st==='sniff'&&s.kind==='chest';
     for(let i=0;i<200&&s.st!=='wait';i++)petUpdate(0.05);o.wait=s.st==='wait'&&Math.hypot(p.x-s.x,p.y-s.y)<12;
     o.far=Math.hypot(s.x-P.x,s.y-P.y)>=120;

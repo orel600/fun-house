@@ -33,7 +33,17 @@ function rankLevelOf(xp){let lv=1;while(xp>=rankNeed(lv)){xp-=rankNeed(lv);lv++}
 function rankSync(){
   const lv=rankLevelOf(SAVE.hero.xp||0);
   if(lv>SAVE.hero.level){const from=SAVE.hero.level;SAVE.hero.level=lv;lpLevelUp(from,lv);   // הרגע הגדול וכרטיס של מה שנפתח (levelpath.js)
-    statBadge();if(P&&S&&S.mode==='play')celebrate(P.x,P.y-20,'rank');if(lv%RANKS.every===0)banner(T('rank.open',lv),C.lilac)}
+    statBadge();if(P&&S&&S.mode==='play')celebrate(P.x,P.y-20,'rank');const E=RANKS.every;if(Math.floor(lv/E)>Math.floor(from/E))rankCall(Math.floor(lv/E)*E)}   // גם כשקפצת כמה רמות בבת אחת
+}
+/* רמה 20, 40...: הכוהנת קוראת לך (ניר, 5.11.2026: "לא ברור איפה לוקחים אותו ואם בכלל קיים").
+   הודעה גדולה וחגיגה, ובכפר: סימן ! גדול וסגול מעליה וחץ אליה (drawQuestMarks ב-quests.js). רק אם יש קווסט דרגה לשלב הזה */
+function rankCall(lv){
+  const q=QUESTS.list.find(q=>q.kind==='rank'&&q.reward.rank===lv/RANKS.every);
+  if(!q||QS().done[q.id])return false;
+  const txt=T('rank.call',T('npc.'+q.giver)[0]);
+  banner(txt,C.lilac);if(typeof feedTitle==='function')feedTitle(txt,C.lilac);
+  if(P)celebrate(P.x,P.y-20,'rank','🎖️');
+  return true;
 }
 // בסוף ריצה (runEnd ב-village.js): חלק מה-XP של הריצה נשאר
 function rankRunXp(){const v=Math.round((S.xpRun||0)*RANKS.xp.run);if(v>0){SAVE.hero.xp=(SAVE.hero.xp||0)+v;rankSync()}}
