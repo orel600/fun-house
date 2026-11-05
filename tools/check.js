@@ -2140,9 +2140,9 @@ function worldBot(m,L,god){
     const o={};qStart(QBY.s5Spark);questEvent('kill','stormknight',8);questEvent('gather','boltC',3);o.spark=qReady(QBY.s5Spark);questClaim('s5Spark');
     qStart(QBY.s5Warden);const L=STORY.lanterns.bolt;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='stormwarden';
     if(w){w.rise=0;const mk=L.warden.marks;w.marks=0;P.inv=0;const hp0=P.hp;storyWardenMove(w,0.016);const M=S.wd.marks||[];o.marks=M.length===mk.n&&M.some(m=>Math.hypot(m.x-P.x,m.y-P.y)<1);
-      for(let i=0;i<90;i++)storyMarks(1/60);o.markHit=M.some(m=>m.hit)&&P.hp<hp0;
+      for(let i=0;i<120;i++)storyMarks(1/60);o.markHit=M.some(m=>m.hit)&&P.hp<hp0;
       S.wd.marks=[];w.marks=0;P.inv=0;storyWardenMove(w,0.016);const M2=S.wd.marks.slice();P.x+=mk.spread+mk.r*3;
-      for(let i=0;i<90;i++)storyMarks(1/60);o.dodge=M2.length>0&&!M2.some(m=>m.hit)&&!S.wd.marks.length;
+      for(let i=0;i<120;i++)storyMarks(1/60);o.dodge=M2.length>0&&!M2.some(m=>m.hit)&&!S.wd.marks.length;
       P.inv=99;damage(w,w.hp*10,'sword',0,'earth');storyUpdate(0.1)}o.ready=qReady(QBY.s5Warden);
     wGo('desert');const pd=WORLD.regions.desert.paths.storm;o.back=S.wd.reg==='desert'&&Math.hypot(P.x-pd.x,P.y-pd.y)<WORLD.arrive+10;
     enterVillage();questClaim('s5Warden');o.lit=!!SAVE.story.bolt;
