@@ -23,16 +23,16 @@ const SECRETS={
   /* המקומות, לכל אזור (WORLD.regions ב-world.js. האחו הוא 'meadow', כולל המחצבה במזרח. האגם 'lake', הרכס הקפוא 'ridge', המדבר הבוער 'desert', מגדלי הסערה 'storm', לב הצל 'shadow').
      hide: מה מסתיר את התיבה (rock או bush). bless: איזו ברכה. to: איפה האוצר הקבור. כל מקום רחוק משערים, ממים ומהפנס */
   regions:{
-    meadow:[
-      {id:'m_chest',kind:'chest',x:-960,y:-60,hide:'rock'},          // בקצה היער המערבי
-      {id:'m_chest2',kind:'chest',x:990,y:-40,hide:'bush'},          // מאחורי המחצבה
-      {id:'m_shrine',kind:'shrine',x:430,y:590,bless:'speed'},       // בדרום, בין השדות לזירה
-      {id:'m_look',kind:'lookout',x:420,y:-540},                     // בשולי המחצבה, רואים ממנה את הכל
-      {id:'m_carve',kind:'carving',x:-470,y:520,to:{x:-90,y:610}},   // עץ בודד בדרום-מערב
+    meadow:[   // המספרים מהשרטוט של האחו הגדול (docs/concept-meadow.md)
+      {id:'m_chest',kind:'chest',x:-2390,y:-600,hide:'bush'},        // 27 על שביל היער
+      {id:'m_chest2',kind:'chest',x:2690,y:-1430,hide:'rock'},       // 28 מאחורי המחצבה
+      {id:'m_shrine',kind:'shrine',x:180,y:1640,bless:'speed'},      // 29 מקדש מהירות, בדרום ליד הביצה
+      {id:'m_look',kind:'lookout',x:-300,y:860},                     // 15 התצפית בקצה המערבי של הרכס: רואים ממנה את הכל
+      {id:'m_carve',kind:'carving',x:-370,y:1340,to:{x:-80,y:1560}}, // 30 עץ חרוט מתחת לרכס, מצביע לדרום-מזרח
       // נפתחים לפי רמה (lv, curiosity.js)
-      {id:'m_lv10',kind:'chest',x:700,y:640,hide:'rock',lv:10},      // דרום-מזרח, מתחת לזירה
-      {id:'m_lv20',kind:'shrine',x:-980,y:260,bless:'loot',lv:20},   // בקצה המערבי, מעל שער החורשה
-      {id:'m_lv30',kind:'chest',x:980,y:-610,hide:'bush',lv:30}      // בפינה הצפון-מזרחית, מעל הנחושת
+      {id:'m_lv10',kind:'chest',x:1040,y:1760,hide:'rock',lv:10},    // 31 בשולי הביצה
+      {id:'m_lv20',kind:'shrine',x:-2830,y:800,bless:'loot',lv:20},  // 32 ביער העמוק, בקרחת
+      {id:'m_lv30',kind:'chest',x:2750,y:-1830,hide:'bush',lv:30}    // 33 על מדף בצוק הצפון-מזרחי
     ],
     lake:[
       {id:'l_chest',kind:'chest',x:960,y:580,hide:'bush'},           // בפינה הדרום-מזרחית

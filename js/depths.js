@@ -11,7 +11,7 @@ const DEPTHS={
   deeper:{x:0,y:560,r:44},              // השער לקומה הבאה, בדרום. נפתח כשהקומה נוקתה
   bases:['meadow','lake','ridge','desert','storm','shadow'],   // מאיזה אזורים קומה נבנית
   // כמה קבוצות אויבים: groups ועוד grow לכל קומה, עד max. בכל קבוצה per, ועוד אחד כל perUp קומות. far: לא קרוב מזה לשער הבית
-  foes:{groups:3,grow:0.25,max:7,per:2,perUp:8,far:330},
+  foes:{groups:3,grow:0.25,max:7,per:2,perUp:8,far:330,mapNear:1500},   // mapNear: באזור עם מפה (האחו הגדול, terrain.js) רק קבוצות עד המרחק הזה מהשער, כדי שקומה לא תהיה הליכה של דקה
   // כמה קשה: פי base, כפול step בחזקת (קומה-1). קומה 10: חיים פי 3.1, נזק פי 1.6
   curve:{hp:{base:1.2,step:1.11},dmg:{base:0.85,step:1.07},speed:{base:1,step:1.006,max:1.3}},
   // הבוס: כל every קומות, בלב הצל, עם adds קבוצות לצידו. hp ו-dmg: על העקומה של הקומה
@@ -33,7 +33,7 @@ const dpBase=b=>b==='meadow'?WORLD:WORLD.regions[b];
 (function(){
   for(const b of DEPTHS.bases){const B=dpBase(b);if(!B)continue;
     Object.defineProperty(WORLD.regions,'dp_'+b,{enumerable:false,value:Object.assign({},WORLD,B,{regions:null,region:'depths',back:null,enter:'dp.enter',noNpc:true,gates:{},
-      paths:{deeper:Object.assign({open:()=>!!(S.wd&&S.wd.dpClear)},DEPTHS.deeper)},dpBase:b})})}
+      paths:{deeper:Object.assign({open:()=>!!(S.wd&&S.wd.dpClear)},DEPTHS.deeper,B.map&&B.map.deeper)},dpBase:b})})}   // B.map.deeper: באזור עם מפה (האחו הגדול) השער למטה קרוב לבית
   for(const T_ of DEPTHS.look())if(T_)for(const b of DEPTHS.bases)if(T_[b])T_['dp_'+b]=T_[b];
   // השביל לעומק בלב הצל, אחרי הסוף (storyOpen('end'))
   const SH=WORLD.regions.shadow;if(SH)SH.paths=Object.assign({},SH.paths,{depths:Object.assign({need:'end'},DEPTHS.gate)});
@@ -47,7 +47,7 @@ const dpPool=()=>dpPool.c||(dpPool.c=[...new Set([WORLD].concat(Object.values(WO
 // בונה את הקומה: האויבים במקומות של האויבים באזור הבסיס, בסוגים מעורבבים, והקושי לפי העקומה
 function dpBuild(f){
   const boss=dpIsBoss(f),b=boss?DEPTHS.boss.base:DEPTHS.bases[Math.floor(hash(f,91)*DEPTHS.bases.length)],R=WORLD.regions['dp_'+b],B=dpBase(b),F=DEPTHS.foes,pool=dpPool();
-  const spots=B.foes.filter(G=>!G.creature&&Math.hypot(G.x-R.home.x,G.y-R.home.y)>F.far).sort((p,q)=>hash(f*7+p.x,p.y)-hash(f*7+q.x,q.y));
+  const spots=B.foes.filter(G=>!G.creature&&Math.hypot(G.x-R.home.x,G.y-R.home.y)>F.far&&(!B.map||Math.hypot(G.x-R.home.x,G.y-R.home.y)<F.mapNear)).sort((p,q)=>hash(f*7+p.x,p.y)-hash(f*7+q.x,q.y));
   const n=Math.min(spots.length,boss?DEPTHS.boss.adds:Math.min(F.max,Math.floor(F.groups+F.grow*(f-1)))),per=F.per+Math.floor((f-1)/F.perUp);
   R.foes=spots.slice(0,n).map((G,i)=>({type:pool[Math.floor(hash(f*13+i,17)*pool.length)],n:per,x:G.x,y:G.y,r:G.r}));
   const C=DEPTHS.curve;R.zones=[{id:'far',to:1e9,hp:dpMul(C.hp,f),dmg:dpMul(C.dmg,f),speed:dpMul(C.speed,f),leash:DEPTHS.leash,back:1e9}];   // back: קבוצה שנוקתה לא חוזרת
