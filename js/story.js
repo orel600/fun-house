@@ -36,24 +36,24 @@ const STORY={
     // charge: הסתערות. כשהשחקן בין min ל-max: פס על הרצפה ורעד warn שניות, ואז ריצה בקו len פיקסלים במהירות speed.
     // נתקע בסלע או בקצה: stun שניות בלי לזוז, ומקבל פי vuln נזק (ניר, 1.11: "שק חבטות או מלכודת". docs/plan-combat.md, שינוי 1)
     earth:{reg:'meadow',x:650,y:-320,quest:'s1Warden',glow:'#FFD36B',col:C.ember,
-      warden:{type:'golem',hp:40,dmg:1.6,r:1.7,speed:0.8,wake:520,
+      warden:{type:'golem',hp:51,dmg:1.6,r:1.7,speed:0.8,wake:520,
         slam:{every:3.2,range:250,r:190,warn:0.8,dmg:22,col:'#FF4A3A'},
         charge:{every:6.5,min:240,max:620,warn:1.0,len:600,w:96,speed:620,dmg:24,stun:2,vuln:2,col:'#FF4A3A'}}},
     // פנס המים: בפינה הדרום-מערבית של האגם. שומר המים גם יורה מים בשלושה כיוונים (shoot)
     // ev: מה מדווחים לקווסט כשהשומר נופל (questEvent('story',ev)). head: ראש הכפר אומר משפט אחרי שהפנס נדלק
     water:{reg:'lake',x:-740,y:370,quest:'s2Warden',glow:'#6FD3FF',col:'#3F7BF5',ev:'tide',head:true,
-      warden:{type:'tidewarden',hp:105,dmg:1.3,r:1.6,speed:0.9,wake:520,shoot:{every:2.4,n:3,spread:0.32,speed:190,r:7,dmg:11}}},
+      warden:{type:'tidewarden',hp:114,dmg:1.3,r:1.6,speed:0.9,wake:520,shoot:{every:2.4,n:3,spread:0.32,speed:190,r:7,dmg:11}}},
     // פנס הקרח: בפינה הדרום-מזרחית של הרכס. שומר הקרח יורה מניפה רחבה של חמישה רסיסים, לאט יותר
     ice:{reg:'ridge',x:720,y:370,quest:'s3Warden',glow:'#CFF3FF',col:'#7FD4FF',ev:'frost',head:true,
-      warden:{type:'frostwarden',hp:286,dmg:1.35,r:1.65,speed:0.85,wake:520,shoot:{every:2.8,n:5,spread:0.24,speed:170,r:7,dmg:12}}},
+      warden:{type:'frostwarden',hp:193,dmg:1.35,r:1.65,speed:0.85,wake:520,shoot:{every:2.8,n:5,spread:0.24,speed:170,r:7,dmg:12}}},
     // פנס האש: בפינה הדרום-מערבית של המדבר. שומר האש שולח טבעת אש שמתרחבת ממנו (ring): speed פיקסלים לשנייה עד max,
     // w עובי הטבעת, gap רוחב הפתח (ברדיאנים) שבו עוברים בלי להיפגע. הטבעת פוגעת פעם אחת לכל היותר
     fire:{reg:'desert',x:-650,y:400,quest:'s4Warden',glow:'#FFB347',col:'#FF6A2A',ev:'blaze',head:true,
-      warden:{type:'emberwarden',hp:255,dmg:1.4,r:1.7,speed:0.85,wake:520,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}},
+      warden:{type:'emberwarden',hp:274,dmg:1.4,r:1.7,speed:0.85,wake:520,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}},
     // פנס הברק: בפינה הדרום-מזרחית של מגדלי הסערה. שומר הסערה מסמן n עיגולי ברק (marks): אחד מתחת לשחקן והשאר עד spread ממנו.
     // כל עיגול ברדיוס r מתפוצץ אחרי fuse שניות. מי שעוד בתוכו נפגע. מספיק לזוז
     bolt:{reg:'storm',x:720,y:390,quest:'s5Warden',glow:'#E2CCFF',col:'#B07CFF',ev:'thunder',head:true,
-      warden:{type:'stormwarden',hp:519,dmg:1.35,r:1.7,speed:0.85,wake:520,marks:{every:2.8,n:4,spread:170,r:50,fuse:1.2,dmg:16,flash:0.25}}},
+      warden:{type:'stormwarden',hp:417,dmg:1.35,r:1.7,speed:0.85,wake:520,marks:{every:2.8,n:4,spread:170,r:50,fuse:1.2,dmg:16,flash:0.25}}},
     // הפנס הלבן: באמצע הדרום של לב הצל. הצל עובר בשלבים לפי החיים שנשארו לו (phases, לפי הסדר): בכל שלב ההתקפה של השומר ההוא
     // (shoot, ring או marks מהשורה שלו כאן) והחולשה שלו. earth: אין לשומר האבן התקפה, אז הצל רץ מהר יותר (rush).
     // learn: המכפיל לסוג הנזק שהכי השתמשת בו בעולם, weak: המכפיל לחולשה של השלב. head:false: במקום משפט רגיל, הסוף (storyFinale)
@@ -161,7 +161,7 @@ function storyWardenMove(e,dt){
   e.x+=e.kx*dt;e.y+=e.ky*dt;
   const B=placeBox();if(B){e.x=Math.max(B.x0,Math.min(B.x1,e.x));e.y=Math.max(B.y0,Math.min(B.y1,e.y))}   // מכה לא דוחפת אותו אל מחוץ לאזור (על הגבעות)
   const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
-  if(d<e.r+P.r-3&&!e.dash)hurt(e.dmg*STORY.tele.touch);   // סתם מגע: מעט נזק. הנזק האמיתי מהמכות עם הסימן
+  if(d<e.r+P.r-3&&!e.dash)hurt(e.dmg*STORY.tele.touch*GIANT.hurt);   // סתם מגע: מעט נזק. הנזק האמיתי מהמכות עם הסימן
   if(busy)return;
   const sh=W.shoot,TL=STORY.tele;   // יריות: קווי כיוון warn שניות לפני, והכיוון ננעל כשהסימן מתחיל
   if(sh&&!far&&d<WORLD.attackRange+120&&(e.shoot-=dt)<=0){e.shoot=sh.every;e.tel={kind:'shoot',t:TL.shoot,dur:TL.shoot,a:Math.atan2(dy,dx)};return}
@@ -183,7 +183,7 @@ function storyTelLog(k,kind,warn){const l=S.wd.telLog||(S.wd.telLog=[]);l.push({
 function storyTele(e,dt,W,L,K,d,dx,dy,far){
   if(e.stun>0){e.stun-=dt;if(e.stun<=0&&e.vulnOn){e.mult=e.mult0;e.vulnOn=false}return true}   // תקוע בסלע: לא זז, ומקבל יותר נזק
   if(e.dash){const D=e.dash,st=Math.min(D.left,D.speed*dt);D.left-=st;e.x+=Math.cos(D.a)*st;e.y+=Math.sin(D.a)*st;
-    if(!D.hit&&Math.hypot(P.x-e.x,P.y-e.y)<e.r+P.r){D.hit=true;hurt(D.dmg*storySafe());S.shake=Math.max(S.shake,8)}
+    if(!D.hit&&Math.hypot(P.x-e.x,P.y-e.y)<e.r+P.r){D.hit=true;hurt(D.dmg*storyHit());S.shake=Math.max(S.shake,8)}
     const B=placeBox(),edge=B&&(e.x<=B.x0||e.x>=B.x1||e.y<=B.y0||e.y>=B.y1),rock=(S.nd.list||[]).find(n=>!n.dead&&/rock|vein|crystal/.test(wKind(n.kind).shape)&&Math.hypot(n.x-e.x,n.y-e.y)<n.r+e.r*0.8);
     if(rock||edge){const ch=D.ch;e.dash=null;e.stun=ch.stun;S.shake=Math.max(S.shake,10);sparks(e.x,e.y,'#C9A26B',16,260);sfx('shoot');   // נתקע: פי vuln נזק מכל סוג
       e.mult0=e.mult;e.vulnOn=true;const m={};for(const t in DMG.types)m[t]=((e.mult||{})[t]??1)*ch.vuln;e.mult=m;
@@ -192,10 +192,10 @@ function storyTele(e,dt,W,L,K,d,dx,dy,far){
   const t=e.tel;if(!t)return false;
   t.t-=dt;if(t.t>0){if(t.t<t.dur*0.3)e.flash=0.05;return true}   // רגע לפני: מהבהב לבן
   e.tel=null;storyTelLog(K,t.kind,t.dur);
-  if(t.kind==='shoot'){const sh=W.shoot;for(let i=0;i<sh.n;i++)shootE(e.x,e.y,t.a+(i-(sh.n-1)/2)*sh.spread,sh.speed,sh.r,sh.dmg*storySafe());sfx('shoot')}
+  if(t.kind==='shoot'){const sh=W.shoot;for(let i=0;i<sh.n;i++)shootE(e.x,e.y,t.a+(i-(sh.n-1)/2)*sh.spread,sh.speed,sh.r,sh.dmg*storyHit());sfx('shoot')}
   else if(t.kind==='ring'){(S.wd.rings||(S.wd.rings=[])).push({x:e.x,y:e.y,rad:e.r,gap:Math.random()*Math.PI*2,hit:false,k:K,rg:W.ring});sfx('shoot');S.shake=Math.max(S.shake,4)}
   else if(t.kind==='slam'){const sl=W.slam;S.shake=Math.max(S.shake,9);sparks(t.x,t.y,sl.col,20,300);sfx('shoot');
-    if(Math.hypot(P.x-t.x,P.y-t.y)<sl.r+P.r*0.5)hurt(sl.dmg*storySafe())}
+    if(Math.hypot(P.x-t.x,P.y-t.y)<sl.r+P.r*0.5)hurt(sl.dmg*storyHit())}
   else if(t.kind==='charge'){const ch=W.charge;e.dash={a:t.a,left:ch.len,speed:ch.speed,dmg:ch.dmg,ch,hit:false};sfx('shoot')}
   return true;
 }
@@ -239,7 +239,7 @@ function storyMarks(dt){
   const w=S.wd,list=w.marks;if(!list||!list.length)return;
   for(const M of list){const mk=M.mk||STORY.lanterns[M.k].warden.marks;   // mk: העיגול נושא את המספרים שלו (גם עיגולי קרח והמכה הגדולה, giant.js)
     if(M.t>0){M.t-=dt;if(M.t<=0){M.boom=mk.flash;S.shake=Math.max(S.shake,M.big?10:5);sparks(M.x,M.y,mk.col||STORY.lanterns[M.k].glow,M.big?26:8,M.big?320:220);
-      if(Math.hypot(P.x-M.x,P.y-M.y)<mk.r+P.r*0.5){M.hit=true;hurt(mk.dmg*storySafe())}}}
+      if(Math.hypot(P.x-M.x,P.y-M.y)<mk.r+P.r*0.5){M.hit=true;hurt(mk.dmg*storyHit())}}}
     else M.boom-=dt}
   w.marks=list.filter(M=>M.t>0||M.boom>0);
 }
@@ -263,7 +263,7 @@ function storyRings(dt){
     const d=Math.hypot(P.x-R.x,P.y-R.y);
     if(!R.hit&&Math.abs(d-R.rad)<rg.w+P.r*0.6){
       const a=Math.atan2(P.y-R.y,P.x-R.x),off=Math.abs(((a-R.gap)%(Math.PI*2)+Math.PI*3)%(Math.PI*2)-Math.PI);
-      if(off>rg.gap/2){R.hit=true;hurt(rg.dmg*storySafe())}}}
+      if(off>rg.gap/2){R.hit=true;hurt(rg.dmg*storyHit())}}}
   w.rings=list.filter(R=>R.rad<(R.rg||STORY.lanterns[R.k].warden.ring).max);
 }
 function storyRingsDraw(){
@@ -311,6 +311,8 @@ function storyEndClose(){$('ovEnd').hidden=true;if(S&&S.mode==='end')S.mode='pla
 $('endWin').addEventListener('click',e=>{const b=e.target.closest('[data-act="close"]');if(b)storyEndClose()});
 // האויבים פוגעים פחות אחרי שהפנס של האזור נדלק (wSpawn ב-world.js)
 const storySafe=()=>{const k=storyLantern();return k&&STO()[k]?STORY.lit.dmg:1};
+// מכה של שומר: גם פחות אחרי שהפנס דולק, וגם GIANT.hurt, כי הקרב ארוך (giant.js)
+const storyHit=()=>storySafe()*GIANT.hurt;
 
 /* ---- ציור: הפנס של האזור (דלוק או כבוי), ושם וחיים מעל השומר ---- */
 function storyDraw(){

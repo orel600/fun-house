@@ -25,13 +25,14 @@ const GIANT={
      שלב 2: התקפה חדשה מהערכה של השומרים (add, לפי הפנס, באותו פורמט כמו ב-STORY.lanterns). הצל כבר מחליף התקפות בעצמו (storyShade), אז אצלו בלי add.
      שלב 3: המכה הגדולה (big): עיגול גדול על הרצפה איפה שהשחקן עומד, fuse שניות של אזהרה (⚠️), ואז dmg×√(הסולם) למי שבתוכו. יוצאים ממנו.
      המעבר נראה: רעידה, באנר קצר, ניצוצות וטבעת בצבע השלב מתחת לענק (col) */
+  hurt:0.45,                             // פי כמה הנזק של כל מכה של שומר (storyHit ב-story.js). הקרב ארוך (t0), אז כל מכה קטנה יותר, כדי שגם הציידת והקוסם יעברו
   phase:{at:[0.66,0.33],shake:9,col:['#FFB347','#FF4A3A'],
     add:{earth:{shoot:{every:2.6,n:3,spread:0.3,speed:200,r:8,dmg:12}},
       water:{ring:{every:3.8,speed:160,max:320,w:14,gap:1.1,dmg:13}},
       ice:{marks:{every:3.4,n:3,spread:150,r:46,fuse:1.2,dmg:13,flash:0.25,icon:'ice'}},
       fire:{charge:{every:6,min:240,max:620,warn:1.0,len:560,w:90,speed:600,dmg:20,stun:1.6,vuln:1.6,col:'#FF4A3A'}},
       bolt:{ring:{every:3.8,speed:175,max:340,w:14,gap:1.0,dmg:15}}},
-    big:{every:7,first:1.5,r:120,fuse:1.1,dmg:28,flash:0.35,col:'#FF4A3A'}},
+    big:{every:7,first:1.5,r:120,fuse:1.1,dmg:50,flash:0.35,col:'#FF4A3A'}},
   lair:70,
   loot:{coins:40},
   lv:{step:5},
