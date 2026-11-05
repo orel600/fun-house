@@ -129,6 +129,7 @@ function storyWarden(k,y){
   giantRise(e,k);   // ענק: מודל משלו, פי 2 ברדיוס, כניסה ורעידות (giant.js)
   S.shake=Math.max(S.shake,8);
   if(W.phases){e.base=e.speed;e.res=storyMost();e.phase=-1;storyShade(e)}   // הצל: לומד את השחקן ולובש את השלב הראשון
+  tierSpawn(e);   // דרגת העולם: שומר מתחזק בדרגה 2 ו-3 (tiers.js)
   return e;
 }
 

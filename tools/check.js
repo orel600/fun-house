@@ -2642,13 +2642,29 @@ function worldBot(m,L,god){
     o.on=TS().t===2&&!!document.querySelector('#wMap .tierb.on[data-n="2"]');o.lock3=!!document.querySelector('#wMap [data-act="tier"][data-n="3"]:disabled');wmapOpen(false);
     o.live=Math.abs(a.max/h1-TIERS.list[1].hp)<0.01&&Math.abs(a.dmg/d1-TIERS.list[1].dmg)<0.01;
     const c0=dropStats().spawned;damage(a,a.hp*10,'sword',0,'physical');o.coins=dropStats().spawned>c0;o.k=TS().k;
-    TS().k=TIERS.open3;o.open3=tierSet(3)&&tierNow()===3;
+    TS().k=999;o.noKill=!tierOpen(3);   // הריגות כבר לא פותחות את אגדי (ת11)
+    // שומר בדרגה 2 חזק יותר משומר בדרגה 1, ופי big
+    tierSet(1);const w1=storyWarden('earth',P.y+400);const h1w=w1.max,d1w=w1.dmg;w1.dead=true;S.wd.warden=null;
+    tierSet(2);const w2=storyWarden('earth',P.y+400);o.warden=Math.abs(w2.max/h1w-TIERS.list[1].big.hp)<0.01&&Math.abs(w2.dmg/d1w-TIERS.list[1].big.dmg)<0.01;
+    const g0=S.gearDrops||0;damage(w2,w2.hp*10,'sword',0,'physical');o.bigGear=(S.gearDrops||0)>g0;S.wd.warden=null;
+    // אגדי לא נופל בדרגה 1, גם ברמה גבוהה. נבדק על ההגרלה עצמה (lootRoll), 300 פעם
+    const lv0=SAVE.hero.level;SAVE.hero.level=60;tierSet(1);o.noLegend=true;
+    for(let i=0;i<300;i++){const id=lootRoll(3);if(GEAR.items[gBase(id)]&&GEAR.items[gBase(id)].tier>=4){o.noLegend=false;break}}
+    SAVE.hero.level=lv0;tierSet(2);
+    o.open3=tierWin({warden:TIERS.boss,tierK:{t:2}})&&tierSet(3)&&tierNow()===3;   // שומר הצל באמיץ פותח את אגדי
     o.saved=(JSON.parse(localStorage.getItem(SAVE_STORE.key)).tier||{}).t===3;
     SAVE.story.end=false;o.back=tierNow()===1;SAVE.story=JSON.parse(st0);SAVE.tier=null;return o});
   await page.evaluate(()=>enterVillage());
-  check(tr.lock&&tr.btn&&tr.on&&tr.lock3&&tr.live&&tr.coins&&tr.k===1&&tr.open3&&tr.saved&&tr.back,
+  check(tr.lock&&tr.btn&&tr.on&&tr.lock3&&tr.live&&tr.coins&&tr.k===1&&tr.noKill&&tr.warden&&tr.bigGear&&tr.noLegend&&tr.open3&&tr.saved&&tr.back,
     'דרגות עולם: '+(tr.lock?'סגור לפני הסוף':'פתוח לפני הסוף')+(tr.btn?', נפתח אחרי הסוף':', לא נפתח')+(tr.on?', אמיץ נבחר במפה':', הבחירה לא עבדה')+(tr.lock3?', אגדי נעול':', אגדי פתוח מוקדם')+
-    (tr.live?', אויב קיים התחזק':', אויב קיים לא השתנה')+(tr.coins?', שלל נוסף':', בלי שלל נוסף')+', נספרו '+tr.k+(tr.open3?', אגדי נפתח':', אגדי לא נפתח')+(tr.saved?', נשמר':', לא נשמר')+(tr.back?'':', לא חוזר לרגיל בלי סוף'));
+    (tr.live?', אויב קיים התחזק':', אויב קיים לא השתנה')+(tr.coins?', שלל נוסף':', בלי שלל נוסף')+', נספרו '+tr.k+(tr.noKill?'':', הריגות פתחו את אגדי')+(tr.warden?', שומר מתחזק':', שומר לא התחזק')+(tr.bigGear?', חפץ בטוח משומר':', בלי חפץ משומר')+(tr.noLegend?', אין אגדי ברגיל':', אגדי נפל ברגיל')+(tr.open3?', הצל פתח את אגדי':', אגדי לא נפתח')+(tr.saved?', נשמר':', לא נשמר')+(tr.back?'':', לא חוזר לרגיל בלי סוף'));
+  // רמה מקסימלית ועקומה (ranks.js, ת11): לא עוברים את RANKS.xp.max, אחרי late.from כל רמה יקרה יותר, ושחקן קיים לא מאבד רמות במעבר
+  const rc=await page.evaluate(()=>{const h=SAVE.hero,b={xp:h.xp,level:h.level,xpv:h.xpv},X=RANKS.xp,o={};
+    o.cap=rankLevelOf(1e12)===X.max&&rankNeed(X.max)===Infinity;
+    o.late=rankNeed(X.late.from+10)-rankNeed(X.late.from+9)>rankNeed(X.late.from-9)-rankNeed(X.late.from-10);
+    h.level=60;h.xp=0;for(let l=1;l<60;l++)h.xp+=X.base+X.per*l;h.xpv=0;rankFix();o.keep=h.level===60&&rankLevelOf(h.xp)===60;   // XP של רמה 60 בעקומה הישנה
+    Object.assign(h,b);return o});
+  check(rc.cap&&rc.late&&rc.keep,'רמה עד '+100+': '+(rc.cap?'תקרה':'אין תקרה')+(rc.late?', הרמות הגבוהות יקרות יותר':', העקומה לא מואצת')+(rc.keep?', שחקן קיים שומר על הרמה':', שחקן קיים איבד רמות'));
   // מתח בקרב בעולם (wtension.js): מכים אחד והקבוצה שלו רודפת, ושחקן שעבר את האחו פוגש אויבים חזקים יותר (שחקן חדש לא)
   const wt=await page.evaluate(()=>{
     const o={},lv0=SAVE.hero.level;enterWorld('home');

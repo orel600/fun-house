@@ -202,6 +202,7 @@ function enterWorld(at,reg){
   const seen=SAVE.regSeen||(SAVE.regSeen={});if(!seen[reg]){seen[reg]=1;saveNow();feedTitle(T(R.enter||'w.enter'),C.gold)}
   worldUi(true);
   fishMealOn();   // ארוחה מהפונדקאית: חיזוק בעולם (fishing.js)
+  tierEnter();   // הדרגה הנוכחית, כשהיא מעל רגיל (tiers.js)
   huntEnter();rareEnter();mutEnter();nemEnter();   // מבוקש היום (hunt.js), החוק והמשימה של היום (mutation.js), נמסיס שמחכה באזור (nemesis.js)
   wmapVisit(reg);     // מפת העולם: ביקרת כאן (worldmap.js)
   if(reg!=='meadow')questEvent('story',reg);   // קווסט עלילה "להגיע לאגם" (quests.js)

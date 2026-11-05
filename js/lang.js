@@ -1757,10 +1757,12 @@ Object.assign(TEXT,{
   'tier.title':{he:'דרגת העולם',en:'World tier'},
   'tier.n1':{he:'רגיל',en:'Normal'},'tier.n2':{he:'אמיץ',en:'Brave'},'tier.n3':{he:'אגדי',en:'Legend'},
   'tier.lock2':{he:'נפתח אחרי סוף הסיפור',en:'Opens after the story ends'},
-  'tier.lock3':{he:n=>'אגדי נפתח אחרי עוד '+n+' הריגות באמיץ',en:n=>'Legend opens after '+n+' more kills on Brave'},
-  'tier.info':{he:'קשה יותר = שלל ומטבעות נוספים',en:'Harder = extra loot and coins'},
+  'tier.lockN':{he:(a,b)=>a+' נפתח כשמנצחים את שומר הצל ב'+b,en:(a,b)=>a+' opens when you beat the Shadow Warden on '+b},
+  'tier.info1':{he:'קשה יותר = שומרים חזקים, שלל ומטבעות נוספים',en:'Harder = stronger wardens, more loot and coins'},
+  'tier.info2':{he:'כאן חפצי זהב נפוצים, ושומרים ונדירות מפילים חפץ בטוח',en:'Gold gear drops often here, and wardens and rares always drop gear'},
+  'tier.info3':{he:'רק כאן נופלים חפצים אגדיים, ובקושי',en:'Only here do legendary items drop, and rarely'},
   'tier.set':{he:x=>'דרגת העולם: '+x+'. האויבים התחזקו, וגם השלל',en:x=>'World tier: '+x+'. Tougher foes, better loot'},
-  'tier.open3':{he:'דרגה אגדית נפתחה! במפת העולם',en:'Legend tier unlocked! Check the world map'},
+  'tier.openN':{he:x=>'דרגת '+x+' נפתחה! בחר אותה במפת העולם',en:x=>x+' tier unlocked! Pick it on the world map'},
   'wm.key':{he:'★ אתה · ● פנס (זוהר: דולק) · 🔍 סודות שמצאת · ? אזור שעוד לא ביקרת בו',en:'★ You · ● Lantern (glowing: lit) · 🔍 Secrets found · ? A place you haven’t been yet'}
 });
 
