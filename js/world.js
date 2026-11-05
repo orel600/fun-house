@@ -172,16 +172,7 @@ const WORLD={
     // והצל עצמו ליד הפנס הלבן, באמצע הדרום (STORY.lanterns.light). shadow: החושך בקנבס. ponds: בורות של חושך שאי אפשר לעבור
     shadow:{
       region:'shadow',back:'storm',enter:'w.enter.shadow',noNpc:true,shadow:true,ground:'#16101F',pondCol:['#07040D','#5B3F8C'],
-      home:{x:0,y:-600,r:44},gates:{},waystones:[{id:'gloom',x:0,y:-200},{id:'lair',x:-250,y:250}],paths:{},
-      ponds:[{x:-460,y:-40,r:115},{x:470,y:-60,r:105},{x:-760,y:420,r:80}],
-      fields:[{kind:'shadeTree',n:8,x:-560,y:-300,r:210},{kind:'shadeTree',n:6,x:560,y:-320,r:190},{kind:'shadeTree',n:4,x:-80,y:120,r:140},
-              {kind:'voidRock',n:5,x:700,y:240,r:160},{kind:'voidRock',n:4,x:-640,y:200,r:140},{kind:'rock',n:4,x:220,y:-220,r:120}],
-      foes:[
-        {type:'shadewisp',n:2,x:-190,y:-420,r:110},{type:'shadewisp',n:2,x:200,y:-420,r:110},
-        {type:'shadeknight',n:2,x:-420,y:-220,r:130},{type:'shadewisp',n:3,x:380,y:-200,r:140},{type:'shadeknight',n:3,x:700,y:240,r:150},
-        {type:'shadeknight',n:3,x:-640,y:200,r:150},{type:'shadewisp',n:3,x:-60,y:160,r:140},{type:'shadeknight',n:2,x:380,y:470,r:130},
-        {type:'shadeknight',creature:true,n:2,x:700,y:240,r:120},{type:'shadewisp',creature:true,n:2,x:-560,y:-300,r:130}
-      ],
+      // המפה, המקומות, המשאבים והאויבים: js/map-shadow.js (לב הצל הגדול)
       // הכי קשה: מי שהגיע לכאן כבר הדליק חמישה פנסים
       zones:[
         {id:'start',to:360, hp:1.1, dmg:0.8, speed:0.85,leash:260,back:16},
