@@ -3,6 +3,7 @@
    ומופיעים רק אזורים שביקרת בהם והשכנים שלהם, כדי שיישאר מה לגלות. לכל אזור שביקרת: הפנס (דולק או כבוי, STORY.lanterns ו-SAVE.story)
    ומונה הסודות 🔍 x/y (secrets.js). מימין: האזור הנוכחי, עם הדמות, השערים, המקורות, הפנס והדמויות שגילית (worldnpc.js).
    הסודות עצמם לא מסומנים, כדי שיישארו סודות.
+   במפת האזור גם ערפל על מה שעוד לא התגלה, מאורות הבוסים עם הטיימר ואבני המסע הפתוחות (waystones.js, wsMapFog ו-wsMapDraw).
    הכל מנתונים קיימים: אזור חדש ב-WORLD.regions עם דרך אליו מופיע לבד. המיקום של אי נקבע מהכיוון של הדרך אליו.
    נשמר ב-SAVE.wmap ({seen:{meadow:1}}). החיבורים: enterWorld ב-world.js (wmapVisit), WINS ב-ui.js, והכפתור ב-index.html */
 
@@ -140,7 +141,8 @@ function wmDrawWorld(){
 function wmDrawHere(){
   const {x,w,h}=wmCanvas('wmHere'),R=WR(),sz=R.size,k=Math.min((w-16)/sz.w,(h-16)/sz.h),ox=w/2,oy=h/2,at=(px,py)=>({x:ox+px*k,y:oy+py*k});
   x.fillStyle='#0B0E18';x.fillRect(0,0,w,h);
-  const tl=at(-sz.w/2,-sz.h/2);x.fillStyle=R.ground;x.fillRect(tl.x,tl.y,sz.w*k,sz.h*k);x.lineWidth=2;x.strokeStyle='#D9C69099';x.strokeRect(tl.x,tl.y,sz.w*k,sz.h*k);
+  const tl=at(-sz.w/2,-sz.h/2);if(TR&&TR.R===R){x.save();x.translate(ox,oy);x.scale(k,k);tDraw(x,TR,true);x.restore()}   // אזור עם מפה: נהר, יער, רכס וגבול (terrain.js)
+  else{x.fillStyle=R.ground;x.fillRect(tl.x,tl.y,sz.w*k,sz.h*k);x.lineWidth=2;x.strokeStyle='#D9C69099';x.strokeRect(tl.x,tl.y,sz.w*k,sz.h*k)}
   // מים, סדקים או לבה
   const pc=R.pondCol||['#1F4A66','#46D3E6'];
   for(const p of R.ponds||[]){const c=at(p.x,p.y);x.beginPath();x.arc(c.x,c.y,p.r*k,0,Math.PI*2);x.fillStyle=pc[0];x.fill();x.lineWidth=1.5;x.strokeStyle=pc[1]+'88';x.stroke()}
@@ -153,6 +155,7 @@ function wmDrawHere(){
   // הדמויות שגילית (רק באזורים שיש בהם)
   if(!R.noNpc)for(const id in WNPC.list)if(wnpcMet(id)){const A=WNPC.list[id].at,c=at(A.x,A.y);
     x.beginPath();x.arc(c.x,c.y,WMAP.dot.npc,0,Math.PI*2);x.fillStyle=WNPC.list[id].col;x.fill();x.lineWidth=2;x.strokeStyle='#fff';x.stroke()}
+  wsMapFog(x,at,k);wsMapDraw(x,at);   // ערפל, מאורות עם טיימר ואבני מסע (waystones.js)
   // השערים: לכפר, לזירה, ולאזורים אחרים, עם השם
   const gs=wGates(),gl=[];
   for(const id in gs){const g=gs[id],c=at(g.x,g.y);x.beginPath();x.arc(c.x,c.y,WMAP.dot.gate,0,Math.PI*2);x.fillStyle=wGateCol(id);x.fill();x.lineWidth=2;x.strokeStyle='#000a';x.stroke();
@@ -169,7 +172,7 @@ function wmDraw(){
   $('wMap').innerHTML=winHead('🗺️ '+T('wm.title'))+
     '<div class="wmcols"><section><h4>'+T('wm.world')+'</h4><div class="wmbox"><canvas id="wmWorld"></canvas></div></section>'+
     '<section><h4>'+T('w.region.'+S.wd.reg)+' <small>★ '+T('wm.here')+'</small></h4><div class="wmbox"><canvas id="wmHere"></canvas></div></section></div>'+
-    (SAVE.story&&SAVE.story.end?tierRow():'')+travelMapRow()+   // בחירת הדרגה רק אחרי סוף הסיפור (tiers.js). לפני, שלוש דרגות נעולות רק מסיחות
+    (SAVE.story&&SAVE.story.end?tierRow():'')+travelMapRow()+wsMapRow()+   // בחירת הדרגה רק אחרי סוף הסיפור (tiers.js). לפני, שלוש דרגות נעולות רק מסיחות
     '<p class="wmkey">'+[$('wSec').textContent,$('chTag').hidden?'':$('chTag').textContent].filter(Boolean).map(s=>'<b>'+s+'</b>').join(' ')+' '+T('wm.key')+'</p>';   // 🔍 ו-🌀 עברו מהפס העליון לכאן (docs/plan-hud.md)   // דרגת העולם (tiers.js)
   wmDrawWorld();wmDrawHere();
 }

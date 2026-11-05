@@ -208,7 +208,7 @@ function terrainBad(R,reg){
   for(const s of (typeof SECRETS!=='undefined'&&SECRETS.regions[reg])||[]){chk('secret.'+s.id,s);if(s.to)chk('secret.'+s.id+'.to',s.to)}
   if(!R.noNpc&&typeof WNPC!=='undefined')for(const id in WNPC.list)chk('npc.'+id,WNPC.list[id].at);
   if(typeof STORY!=='undefined')for(const k in STORY.lanterns){const L=STORY.lanterns[k];if(L.reg===reg)chk('lantern.'+k,L)}
-  for(const d of R.map.dens||[])chk('den.'+d.id,d);for(const w of R.map.waystones||[])chk('waystone.'+w.id,w);
+  for(const d of R.map.dens||[])chk('den.'+d.id,d);for(const w of R.waystones||[])chk('waystone.'+w.id,w);
   for(const l of R.map.marks||[])chk('mark.'+l.id,l);
   if(typeof RARES!=='undefined')for(const id in RARES.list){const Q=RARES.list[id];if(Q.reg===reg)Q.spots.forEach((p,i)=>chk('rare.'+id+i,p))}
   return out;
@@ -219,18 +219,23 @@ function terrainReach(R,reg){
   for(const k in R.gates)out['gate.'+k]=!!tPath(a.x,a.y,R.gates[k].x,R.gates[k].y+WORLD.arrive);
   for(const k in R.paths)out['path.'+k]=!!tPath(a.x,a.y,R.paths[k].x,R.paths[k].y+WORLD.arrive);
   for(const d of R.map.dens||[])out['den.'+d.id]=!!tPath(a.x,a.y,d.x,d.y);
-  for(const w of R.map.waystones||[])out['waystone.'+w.id]=!!tPath(a.x,a.y,w.x,w.y);
+  for(const w of R.waystones||[])out['waystone.'+w.id]=!!tPath(a.x,a.y,w.x,w.y);
   for(const s of (typeof SECRETS!=='undefined'&&SECRETS.regions[reg])||[])out['secret.'+s.id]=!!tPath(a.x,a.y,s.x,s.y);
   return out;
 }
 
 /* ---- דו-ממד: צורות פשוטות, מוכנות מראש (Path2D) ---- */
-function terrain2d(){
-  const T=TR;if(!T)return false;const M=T.map,Pa=GROUND.pal[T.reg]||GROUND.pal.meadow,Q=TERRAIN.pal[T.reg]||TERRAIN.pal.meadow;
-  const p2=T.p2||(T.p2=(()=>{const mk=(pts,close)=>{const p=new Path2D();pts.forEach((q,i)=>i?p.lineTo(q[0],q[1]):p.moveTo(q[0],q[1]));if(close)p.closePath();return p};
+// הצורות של המפה כ-Path2D, פעם אחת לאזור
+function tPaths(T){const M=T.map;return T.p2||(T.p2=(()=>{const mk=(pts,close)=>{const p=new Path2D();pts.forEach((q,i)=>i?p.lineTo(q[0],q[1]):p.moveTo(q[0],q[1]));if(close)p.closePath();return p};
     return{border:mk(M.border,1),water:(M.water||[]).map(w=>mk(w,1)),forest:(M.forests||[]).map(f=>mk(f,1)),rivers:(M.rivers||[]).map(r=>({p:mk(r.pts),w:r.w})),
-      trails:(M.trails||[]).map(t=>({p:mk(t.pts),w:t.w})),quarry:(M.rocky||[]).map(q=>mk(q,1)),ridge:M.ridge&&mk(M.ridge.poly,1),ramp:M.ridge&&M.ridge.ramp&&mk(M.ridge.ramp,1),shallow:(M.shallow||[]).map(s=>mk(s,1))}})());
-  const {w,h}=T.R.size;ctx.save();ctx.lineCap=ctx.lineJoin='round';
+      trails:(M.trails||[]).map(t=>({p:mk(t.pts),w:t.w})),quarry:(M.rocky||[]).map(q=>mk(q,1)),ridge:M.ridge&&mk(M.ridge.poly,1),ramp:M.ridge&&M.ridge.ramp&&mk(M.ridge.ramp,1),shallow:(M.shallow||[]).map(s=>mk(s,1))}})())}
+function terrain2d(){
+  if(!TR)return false;tDraw(ctx,TR,false);return true;
+}
+// הציור עצמו, על כל קנבס בקואורדינטות של המשחק: הקנבס של המשחק (דו-ממד) או המפה המלאה (worldmap.js, mini: בלי פרטים קטנים)
+function tDraw(ctx,T,mini){
+  const M=T.map,Pa=GROUND.pal[T.reg]||GROUND.pal.meadow,Q=TERRAIN.pal[T.reg]||TERRAIN.pal.meadow,p2=tPaths(T);
+  const {w,h}=T.R.size;ctx.save();ctx.lineCap=ctx.lineJoin='round';if(mini){ctx.beginPath();ctx.rect(-w/2,-h/2,w,h);ctx.clip()}   // במפה: רק בתוך המלבן של האזור
   ctx.fillStyle=Pa.out;ctx.fillRect(-w/2-400,-h/2-400,w+800,h+800);
   ctx.fillStyle=Pa.base;ctx.fill(p2.border);
   ctx.fillStyle=Q.rock;for(const q of p2.quarry)ctx.fill(q);
@@ -244,10 +249,10 @@ function terrain2d(){
   for(const t of p2.trails)if(t.w){ctx.strokeStyle=Pa.path;ctx.lineWidth=t.w*0.7;ctx.stroke(t.p)}
   for(const k of M.clearings||[]){ctx.fillStyle=Pa.lush;ctx.beginPath();ctx.arc(k.x,k.y,k.r,0,7);ctx.fill()}
   if(p2.ridge){ctx.fillStyle=Q.ridge;ctx.fill(p2.ridge);if(p2.ramp)ctx.fill(p2.ramp);ctx.strokeStyle=Q.cliff;ctx.lineWidth=TERRAIN.ridge.edge*0.6;ctx.stroke(p2.ridge)}
-  for(const b of M.bridges||[]){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.a);ctx.fillStyle=TERRAIN.bridge.wood;ctx.fillRect(-b.len/2,-b.w/2,b.len,b.w);
+  for(const b of M.bridges||[]){if(mini)break;ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.a);ctx.fillStyle=TERRAIN.bridge.wood;ctx.fillRect(-b.len/2,-b.w/2,b.len,b.w);
     ctx.strokeStyle=TERRAIN.bridge.dark;ctx.lineWidth=3;for(let x=-b.len/2;x<b.len/2;x+=TERRAIN.bridge.plank){ctx.beginPath();ctx.moveTo(x,-b.w/2);ctx.lineTo(x,b.w/2);ctx.stroke()}ctx.restore()}
   ctx.strokeStyle=Q.cliff;ctx.lineWidth=26;ctx.stroke(p2.border);
-  ctx.restore();return true;
+  ctx.restore();
 }
 
 /* ---- המסכה לקרקע האפויה (ground.js): R מים, G יער, B מחוץ לגבול, A סלעי (מחצבה, רכס) ---- */
