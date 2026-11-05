@@ -918,7 +918,7 @@ function worldBot(m,L,god){
   check(sq.board&&sq.swap&&sq.bReady&&sq.bPaid&&sq.day&&sq.dayNew,'לוח מודעות: '+(sq.board?'3 משימות עם פרס':'אין 3 משימות')+', '+(sq.swap?'מה שנלקח מתחלף בחדשה':'לא התחלף')+', '+(sq.bPaid?'פרס והלוח שוב מלא':'בלי פרס או לוח חסר')+', '+(sq.dayNew?'יום חדש מחדש':'יום חדש לא מחדש'));
   // ליווי דמות (escort.js): לכל קווסט ליווי יש דרך מהבית שלה ליעד. הנזיר יוצא לדרך כשאתה לידו והולך, אויב שמגיע אליו מפיל אותו: הקווסט נכשל,
   // הוא חוזר הביתה ולא יוצא שוב עד שמדברים איתו. בפעם השנייה הוא מגיע, היעד הושלם, והפרס אצלו. בסוף מחזירים את השמירה
-  const es=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+  const es=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={},ov=['ovStart','ovOver','ovLevel','ovBoss','ovWDeath'].map(id=>[id,$(id).hidden]);   // enterWorld מסתיר את מסך הפתיחה, והבדיקה באנגלית לוחצת עליו אחר כך
     try{const Q=QS(),E0=QUESTS.early.ids;QUESTS.early.ids=QUESTS.list.map(q=>q.id);r.paths={};
       for(const q of QUESTS.list){const i=q.obj.findIndex(o=>o.type==='escort');if(i<0)continue;const N=WNPC.list[q.giver],p=sqPlace(q.obj[i].what);
         enterWorld('home',N.reg||'meadow');r.paths[q.id]=!!tPath(N.at.x,N.at.y,p.x,p.y)}
@@ -935,7 +935,7 @@ function worldBot(m,L,god){
       const x1=SAVE.hero.xp;questAct('claim','sqHerm4');r.paid=SAVE.hero.xp>x1&&!!QS().done.sqHerm4;
       QUESTS.early.ids=E0;
     }catch(err){r.err=String(err&&err.stack||err).slice(0,300)}
-    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}for(const [id,h] of ov)$(id).hidden=h;return r});
   check(es.start&&es.walk&&es.fail&&es.noRestart&&es.again&&es.arrive&&es.paid&&Object.values(es.paths||{}).every(Boolean),'ליווי: '+Object.keys(es.paths||{}).filter(k=>es.paths[k]).length+'/'+Object.keys(es.paths||{}).length+' עם דרך'+
     ', '+(es.start&&es.walk?'יוצא לדרך והולך':'לא יצא לדרך')+', '+(es.fail&&es.noRestart?'נופל, הקווסט נכשל והוא חוזר הביתה':'נפילה לא עובדת')+', '+(es.again?'שיחה מנסה שוב':'לא מנסה שוב')+', '+
     (es.arrive?'מגיע ליעד':'לא הגיע')+', '+(es.paid?'ופרס':'בלי פרס')+(es.err?' ('+es.err+')':''));
