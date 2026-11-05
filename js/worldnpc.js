@@ -20,7 +20,21 @@ const WNPC={
     // river: הבריכה היא חלק מהנהר (terrain.js), ולכן לא מצוירת. הדיג עדיין לפי האליפסה (fishing.js)
     fisher:{at:{x:420,y:-170},col:'#3F7BF5',pond:{dx:0,dy:120,rx:110,ry:45,river:true}},   // הדייג, על הגדה הצפונית. הרוחות מפחידות לו את הדגים
     cutter:{at:{x:1690,y:-1090},col:'#A8784A'},                                 // החוצבת, בין הסלעים לעורקי הנחושת במחצבה
-    herbal:{at:{x:-970,y:-540},col:'#5FA35A'}                                   // הלקטת, ליד השיחים והגשר המערבי
+    herbal:{at:{x:-970,y:-540},col:'#5FA35A'},                                  // הלקטת, ליד השיחים והגשר המערבי
+    /* קווסטים צדדיים (ת15): שתי דמויות בכל אזור. reg: באיזה אזור היא עומדת (בלי reg: האחו). look: המודל והצבע בתלת-ממד (LOOK3D ב-questboard.js) */
+    scout:   {at:{x:700,y:-1420},col:'#D9A441',look:'ranger'},                 // הסיירת, ליד מחנה הציידים
+    hermit:  {at:{x:-800,y:1320},col:'#9C8BD0',look:'mage'},                   // הנזיר, ליד חורבת המגדל, מעבר לגשר המערבי
+    ferry:   {reg:'lake',at:{x:380,y:-560},col:'#4FB4FF',look:'rogue'},
+    mistsage:{reg:'lake',at:{x:-380,y:-560},col:'#7FC7C0',look:'mage'},
+    climber: {reg:'ridge',at:{x:-380,y:-560},col:'#C9D6E3',look:'barbarian'},
+    bard:    {reg:'ridge',at:{x:380,y:-560},col:'#A8E6FF',look:'ranger'},
+    caravan: {reg:'desert',at:{x:-380,y:-560},col:'#E0B26A',look:'rogue'},
+    glass:   {reg:'desert',at:{x:380,y:-560},col:'#FF9A5A',look:'barbarian'},
+    keeper:  {reg:'storm',at:{x:-380,y:-560},col:'#B48CFF',look:'knight'},
+    chaser:  {reg:'storm',at:{x:380,y:-560},col:'#8E7CC8',look:'ranger'},
+    squire:  {reg:'shadow',at:{x:-380,y:-560},col:'#C7A6FF',look:'knight'},
+    lamp:    {reg:'shadow',at:{x:380,y:-560},col:'#FFE08A',look:'mage'}
+    // ולוח מודעות בכל אזור (board:true), נוסף מ-questboard.js
   }
 };
 
@@ -28,7 +42,7 @@ const wnpcMet=id=>!!WNPC.list[id]&&!!SAVE.met[id];
 // המצב החי, רק בעולם. נוצר מחדש בכל כניסה לעולם
 function wnpcState(){
   const W=S.wd;if(!W)return null;
-  if(!W.npc){W.npc={};if(!WR().noNpc)for(const id in WNPC.list){if(resGone(id))continue;const A=WNPC.list[id].at;W.npc[id]={id,x:A.x,y:A.y,face:Math.PI/2,st:'idle',t:0,waved:false}}}
+  if(!W.npc){W.npc={};for(const id in WNPC.list){const N=WNPC.list[id];if((N.reg||'meadow')!==W.reg||!N.reg&&WR().noNpc||resGone(id))continue;const A=N.at;W.npc[id]={id,x:A.x,y:A.y,face:Math.PI/2,st:'idle',t:0,waved:false}}}   // reg: רק באזור שלה. בעומק הצל (dp_*) אף אחת
   return W.npc;
 }
 // הסימן מעל כל דמות שנמצאה: ✓ פרס מחכה, ! קווסט חדש. גם החצים בקצה המסך הולכים לפיו
@@ -54,6 +68,7 @@ function wnpcUpdate(dt){
   }
   W.npcNear=near;
   if(D&&Math.hypot(P.x-all[D].x,P.y-all[D].y)>WNPC.leave)wnpcTalk(null);
+  sqUpdate(dt);   // לחקור מקום ולהגן עליו, בקווסטים צדדיים (questboard.js)
   const btn=$('talkBtn'),show=!!near&&W.dlg!==near;
   if(btn.hidden===show||btn.dataset.id!==(near||'')){btn.hidden=!show;btn.dataset.id=near||'';if(near){btn.innerHTML='<span class="ni" aria-hidden="true">💬</span>'+T('ctx.talk');btn.setAttribute('aria-label',T('npc.talk',T('npc.'+near)[0]))}}
 }
@@ -66,6 +81,7 @@ function wnpcLine(id){
 }
 function wnpcDialog(){
   const id=S.wd&&S.wd.dlg,el=$('npcDlg');if(!id){el.hidden=true;return}
+  if(WNPC.list[id].board)qbSync(WNPC.list[id].reg);   // הלוח מתמלא: מה שלקחת יורד ובא חדש (questboard.js)
   const Q=QS(),[name,role]=T('npc.'+id),mine=QUESTS.list.filter(q=>q.giver===id);
   const ready=mine.filter(q=>Q.active[q.id]&&qReady(q)),open=mine.filter(qOpen),on=mine.filter(q=>Q.active[q.id]&&!qReady(q));
   let h=winHead(name,role);   // ui.js
@@ -76,7 +92,7 @@ function wnpcDialog(){
 }
 function wnpcTalk(id){
   if(!S.wd)return;
-  S.wd.dlg=id;if(id){S.wd.dlgLine=wnpcLine(id);sfx('ui')}
+  S.wd.dlg=id;if(id){questEvent('meet',id);S.wd.dlgLine=wnpcLine(id);sfx('ui')}   // meet: "תמסור לו הודעה" (quests.js)
   wnpcDialog();
 }
 $('talkBtn').addEventListener('click',()=>{const id=$('talkBtn').dataset.id;if(id&&S.wd&&WNPC.list[id])wnpcTalk(id)});
@@ -96,7 +112,10 @@ function wnpcOff(){npcHide();if(R3D.wnpcs){for(const id in R3D.wnpcs)freeActor(R
 // דו-ממד: האגם, וגוף פשוט בצבע שלה. בתלת-ממד הגוף מצויר בשכבה שמתחת (syncWnpcs), והאגם שקוף יותר
 function drawWnpcs(){
   const all=wnpcState();if(!all)return;
-  for(const id in WNPC.list){const N=WNPC.list[id],n=all[id]||N.at,p=N.pond;   // הבריכה נשארת גם כשהדייג עבר לכפר
+  sqDraw();   // המקומות של הקווסטים הפעילים (questboard.js)
+  for(const id in WNPC.list){const N=WNPC.list[id],n=all[id]||N.at,p=N.pond;
+    if(N.board){if(all[id])qbDrawBoard(n);continue}   // לוח המודעות: שלט מצויר, בשני המצבים
+    if((N.reg||'meadow')!==S.wd.reg)continue;   // הבריכה נשארת גם כשהדייג עבר לכפר
     if(p&&!p.river&&!WR().noNpc){ctx.fillStyle=R3D.on?'rgba(63,123,245,0.45)':'#2D5FB8';ctx.beginPath();ctx.ellipse(n.x+p.dx,n.y+p.dy,p.rx,p.ry,0,0,7);ctx.fill();
       ctx.strokeStyle='rgba(236,231,220,0.35)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(n.x+p.dx,n.y+p.dy,p.rx*0.6,p.ry*0.5,0,0.3,2.4);ctx.stroke()}
     if(R3D.on||!all[id])continue;
@@ -117,6 +136,7 @@ function drawWnpcScreen(ox,oy){
     ctx.direction='ltr';ctx.font='800 22px Heebo, system-ui, sans-serif';const my=y-WNPC.markUp+bob;
     ctx.fillStyle='rgba(18,22,36,0.85)';ctx.beginPath();ctx.arc(x,my-7,15,0,7);ctx.fill();ctx.fillStyle=C.gold;ctx.fillText(m,x,my+1);ctx.direction=DIR;
     edgeArrow(x,y,C.gold)}
+  sqScreen(ox,oy);   // שם המקום וחץ אליו (questboard.js)
 }
 // תלת-ממד: דמות KayKit לכל אחת (LOOK3D.npc_<id>), עומדת ומנופפת. נקרא מ-render3d בעולם
 function syncWnpcs(dt){
