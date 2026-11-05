@@ -82,7 +82,10 @@ function rareSpawn(id,si){
 
 /* ---- כל פריים בעולם ---- */
 function rareUpdate(dt){
-  const w=S.wd,r=w&&w.rare;if(!r||r.done)return;
+  const w=S.wd,r=w&&w.rare;
+  // דרגה 2 ומעלה (rareAgain ב-tiers.js): אחרי שהנדירה נפלה או נעלמה, עוד הגרלה כל כמה דקות באזור, ולא רק בכניסה
+  if(w&&(!r||r.done)){const a=typeof tierRareAgain==='function'?tierRareAgain():0;if(a&&(w.rareT=(w.rareT||0)+dt)>=a){w.rareT=0;rareEnter()}}
+  if(!r||r.done)return;
   if(r.rumor>0&&(r.rumor-=dt)<=0)banner(RARES.icon+' '+T('rare.rumor',rareAt(r.sp)),RARES.col);   // שמועה: איפה, לא מה ולא חץ
   if(r.e.dead){if(!r.gone)rareGot(r);r.done=true;return}
   const fight=r.e.hp<r.e.max&&Math.hypot(P.x-r.e.x,P.y-r.e.y)<WORLD.aggro*1.5;

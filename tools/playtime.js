@@ -31,6 +31,8 @@ const PT={
   walk:1.5, village:90, death:45,   // ההנחות למעלה
   // היעד בשעות לכל שלב (docs/plan-longevity.md)
   goal:{story:5,t2:10,t3:20},
+  // רגע טוב (המתאם, 5.11: לפחות כ-6 בשעה בכל שלב): שדרוג ציוד, נדירה, שומר, דרגת עולם, שכבת שלל חדשה, דרגת דמות
+  good:['equip','rare','warden','tier','layer','rank'],
   wall:2                            // פרק שלוקח פי כך מהחלק שלו ביעד = קיר. פחות מ-1/wall = קצר מדי
 };
 const STAGES=[['story','הסיפור (דרגה 1)'],['t2','דרגה 2'],['t3','דרגה 3']];
@@ -121,17 +123,17 @@ const f1=x=>x==null?'-':(Math.round(x*10)/10).toString();
   // דברים מעניינים: כמה דקות (של שחקן) בין אחד לבא, לכל שלב
   p('## כמה זמן בין "דבר מעניין" לבא');p('');
   p('דבר מעניין: שלל משכבה חדשה, משאב אגדי או אפי מסוג חדש, מפלצת נדירה, שומר, רמה שפותחת דרגת דמות (כל '+20+' רמות), ודרגת עולם. דקות של שחקן (זמן משחק ×'+PT.walk+').');p('');
-  p('| שלב | כמה | ממוצע (דק) | הכי ארוך (דק) | שדרוגי ציוד לשעה | מה היה |');p('| --- | --- | --- | --- | --- | --- |');
-  for(const [st,name] of STAGES){let n=0,gaps=[],kinds={},eq=0,hsum=0;
+  p('| שלב | כמה | ממוצע (דק) | הכי ארוך (דק) | שדרוגי ציוד לשעה | רגעים טובים לשעה | מה היה |');p('| --- | --- | --- | --- | --- | --- | --- |');
+  for(const [st,name] of STAGES){let n=0,gaps=[],kinds={},eq=0,hsum=0,good=0;
     for(const c of PT.cls){const R=out[c],idx=B.chapters.map((x,i)=>x.st===st?i:-1).filter(i=>i>=0);if(!idx.length||!R.ch[idx[0]])continue;
       // תחילת השלב וסופו בזמן משחק: סכום הפרקים שלפניו
       const start=R.ch.slice(0,idx[0]).reduce((a,h)=>a+(h.t||0),0),end=start+idx.reduce((a,i)=>a+((R.ch[i]||{}).t||0),0);
       // זמן המשחק של הבוט רץ ברצף (m.gt), אז האירועים כבר על אותו ציר
-      eq+=(R.ev||[]).filter(x=>idx.includes(x.ch)&&x.k==='equip').length;hsum+=(end-start)*PT.walk/3600;
+      eq+=(R.ev||[]).filter(x=>idx.includes(x.ch)&&x.k==='equip').length;good+=(R.ev||[]).filter(x=>idx.includes(x.ch)&&PT.good.includes(x.k)).length;hsum+=(end-start)*PT.walk/3600;
       const e=(R.ev||[]).filter(x=>idx.includes(x.ch)&&x.k!=='equip');n+=e.length;for(const x of e)kinds[x.k]=(kinds[x.k]||0)+1;
       let prev=start;for(const x of e){gaps.push(x.t-prev);prev=x.t}gaps.push(end-prev)}
     const g=gaps.map(x=>x*PT.walk/60),avg=g.length?g.reduce((a,b)=>a+b,0)/g.length:null;
-    p(`| ${name} | ${f1(n/PT.cls.length)} למחלקה | ${f1(avg)} | ${f1(g.length?Math.max(...g):null)} | ${hsum?f1(eq/hsum):'-'} | ${Object.entries(kinds).map(([k,v])=>k+' '+v).join(', ')} |`)}
+    p(`| ${name} | ${f1(n/PT.cls.length)} למחלקה | ${f1(avg)} | ${f1(g.length?Math.max(...g):null)} | ${hsum?f1(eq/hsum):'-'} | ${hsum?f1(good/hsum):'-'} | ${Object.entries(kinds).map(([k,v])=>k+' '+v).join(', ')} |`)}
   p('');
   p('## קירות וקצר מדי');p('');
   p('- **קיר** (פרק שלוקח יותר מפי '+PT.wall+' מהחלק שלו ביעד, או שהבוט נתקע): '+(walls.length?walls.join(', '):'אין'));

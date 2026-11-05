@@ -10,11 +10,13 @@
 const TIERS={
   /* לכל דרגה: hp, dmg פי כמה לאויב רגיל. big: פי כמה לשומר, נדירה, מבוקש ונמסיס. loot: סיכוי להגרלת שלל נוספת. coins: מטבעות נוספים בכל הריגה.
      gw: פי כמה המשקל של כל שכבת ציוד (עץ, ברזל, כסף, זהב, אגדי; GEAR.tiers) בציוד שנופל בעולם. 0 = לא נופל בדרגה הזאת.
-     bigLoot: מה ששומר, נדירה או מבוקש מפילים בנוסף בדרגה הזאת (בפורמט של runGive). gear: 1 = גם חפץ בטוח (בהגרלה של בוס, LOOT.gear.boss) */
+     bigLoot: מה ששומר, נדירה או מבוקש מפילים בנוסף בדרגה הזאת (בפורמט של runGive). gear: 1 = גם חפץ בטוח (בהגרלה של בוס, LOOT.gear.boss)
+     כוונון קצב (5.11, docs/playtime-2026-11-05.md): ה-XP איטי פי 3, אז בדרגות הגבוהות יש יותר "רגעים טובים" לשעה, ולא יותר חיים לאויבים:
+     gearK: פי כמה הסיכוי לציוד מאויב (lootGear ב-loot.js). rareAgain: כל כמה שניות באזור עוד הגרלה של מפלצת נדירה (rareUpdate ב-rares.js). 0 = רק בכניסה */
   list:[
-    {hp:1,  dmg:1,   big:{hp:1,  dmg:1},   loot:0,   coins:null, col:'#E8E2D0', gw:[1,1,1,0.35,0],      bigLoot:null,                                   gear:0},
-    {hp:1.9,dmg:1.45,big:{hp:2.4,dmg:1.5}, loot:0.45,coins:[2,5], col:'#F4C74F', gw:[0.6,1,1,1.3,0],    bigLoot:{coins:[1,80],star:[0.5,1],gem:[0.5,1]}, gear:1},
-    {hp:3.2,dmg:2,   big:{hp:4.5,dmg:2.1}, loot:1,   coins:[5,10],col:'#EF4E57', gw:[0.2,0.6,1,1.6,0.25],bigLoot:{coins:[1,160],star:[1,1],gem:[1,2],mythril:[0.6,1]},gear:1}
+    {hp:1,  dmg:1,   big:{hp:1,  dmg:1},   loot:0,   coins:null, col:'#E8E2D0', gw:[1,1,1,0.35,0],      bigLoot:null,                                   gear:0, gearK:1,  rareAgain:0},
+    {hp:1.9,dmg:1.45,big:{hp:2.4,dmg:1.5}, loot:0.45,coins:[2,5], col:'#F4C74F', gw:[0.6,1,1,1.3,0],    bigLoot:{coins:[1,80],star:[0.5,1],gem:[0.5,1]}, gear:1, gearK:1.5,rareAgain:360},
+    {hp:3.2,dmg:2,   big:{hp:4.5,dmg:2.1}, loot:1,   coins:[5,10],col:'#EF4E57', gw:[0.2,0.6,1,1.6,0.25],bigLoot:{coins:[1,160],star:[1,1],gem:[1,2],mythril:[0.6,1]},gear:1, gearK:2,  rareAgain:300}
   ],
   boss:'light',                                     // השומר שפותח את הדרגה הבאה: שומר הצל, האחרון
   legacyK:150                                       // מי שכבר פתח את דרגה 3 בשיטה הישנה (150 הריגות באמיץ) לא מאבד אותה
@@ -50,6 +52,9 @@ function tierEnter(){const t=tierNow();if(t<2||!S.wd)return;const txt='⚔️ '+
   if(typeof feedOn==='function'&&feedOn())feedAdd('⚔️',txt,TIERS.list[t-1].col,'tier');else banner(txt,TIERS.list[t-1].col)}
 // ציוד שנופל בעולם (lootRoll ב-loot.js): המשקלות של LOOT.gear.tier, כפול gw של הדרגה. בזירה ובעומק לא משתנה
 function tierGearW(W){if(!S.wd||S.wd.dp)return W;const g=TIERS.list[tierNow()-1].gw;return W.map((w,i)=>w*(g[i]==null?1:g[i]))}
+// פי כמה ציוד מאויבים (lootGear), וכל כמה שניות עוד הגרלה של נדירה באזור (rareUpdate). רק בעולם, לא בעומק
+const tierGearK=()=>!S.wd||S.wd.dp?1:TIERS.list[tierNow()-1].gearK||1;
+const tierRareAgain=()=>!S.wd||S.wd.dp?0:TIERS.list[tierNow()-1].rareAgain||0;
 // בוחרים דרגה (מחלון המפה). האויבים שכבר בעולם מתחזקים או נחלשים מיד
 function tierSet(n){
   if(!tierOpen(n)||TS().t===n)return false;TS().t=n;saveNow();
