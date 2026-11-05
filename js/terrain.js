@@ -209,6 +209,7 @@ function terrainBad(R,reg){
   if(typeof STORY!=='undefined')for(const k in STORY.lanterns){const L=STORY.lanterns[k];if(L.reg===reg)chk('lantern.'+k,L)}
   for(const d of R.map.dens||[])chk('den.'+d.id,d);for(const w of R.map.waystones||[])chk('waystone.'+w.id,w);
   for(const l of R.map.marks||[])chk('mark.'+l.id,l);
+  if(typeof RARES!=='undefined')for(const id in RARES.list){const Q=RARES.list[id];if(Q.reg===reg)Q.spots.forEach((p,i)=>chk('rare.'+id+i,p))}
   return out;
 }
 // כמה רחוק אפשר ללכת: מהשער לכל מקום, בדרך (לבדיקה ולמדידה)
