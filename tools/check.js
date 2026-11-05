@@ -2010,14 +2010,17 @@ function worldBot(m,L,god){
       const run=(px,py,sec)=>{for(let t=0;t<sec;t+=0.05){P.x=px;P.y=py;storyWardenMove(e,0.05)}};
       const d0=Math.hypot(e.x-(L.x-600),e.y-(L.y+200));run(L.x-600,L.y+200,3);o.chase=!e.back&&Math.hypot(e.x-P.x,e.y-P.y)<d0-40;     // 600 מהפנס: עוד רודף
       run(L.x-1500,L.y+300,CH.giveUp+1);o.gaveUp=e.back&&e.say>0;                      // רחוק מספיק זמן: חוזר ואומר משהו
-      run(L.x-1500,L.y+300,20);o.home=Math.hypot(e.x-L.x,e.y-L.y-70)<20;o.heal=e.hp!==hp; // חזר לפנס, בלי ריפוי
-      run(L.x,L.y+150,0.2);o.back=!e.back;                                             // חוזרים אליו: הקרב ממשיך
-      e.kx=9000;run(L.x,L.y+150,0.5);o.inside=e.x>=B.x0&&e.x<=B.x1&&e.y>=B.y0&&e.y<=B.y1;  // מכה חזקה לא מעיפה אותו אל הגבעות
-      e.dead=true;storyUpdate(0.1)}
+      run(L.x-300,L.y+150,0.2);o.back=!e.back;                                         // חוזרים אליו בדרך: הקרב ממשיך
+      run(L.x-1500,L.y+300,CH.giveUp+1);run(L.x-1500,L.y+300,60);o.dist=Math.round(Math.hypot(e.x-L.x,e.y-L.y-GIANT.lair));   // הדרך חזרה איטית (back מהמהירות)
+      o.home=Math.hypot(e.x-L.x,e.y-L.y-GIANT.lair)<20;o.heal=e.hp===e.max&&e.gone&&!S.wd.warden&&!enemies.includes(e);   // הגיע למאורה: מתרפא וחוזר לישון
+      P.x=L.x;P.y=L.y+150;storyUpdate(0.05);const e2=S.wd.warden;o.again=!!e2&&e2!==e&&e2.hp===e2.max;                  // מתקרבים: קם שוב
+      if(e2){e2.rise=0;e2.kx=9000;for(let t=0;t<0.5;t+=0.05){P.x=L.x;P.y=L.y+150;storyWardenMove(e2,0.05)}o.inside=e2.x>=B.x0&&e2.x<=B.x1&&e2.y>=B.y0&&e2.y<=B.y1;  // מכה חזקה לא מעיפה אותו אל הגבעות
+        e2.dead=true;storyUpdate(0.1)}}
+    delete STO().bt;
     if(!was)delete Q.active.s1Warden;P.inv=0;enterVillage();return o});
-  check(!wch.open.length&&wch.warden&&wch.chase&&wch.gaveUp&&wch.home&&!wch.heal&&wch.back&&wch.inside,'השומר לא בורח: '+
-    (wch.chase?'רודף כשמתרחקים':'חוזר לפנס מיד כשמתרחקים')+(wch.gaveUp?', מוותר רק אחרי כמה שניות ואומר משהו':', לא מוותר או לא אומר כלום')+(wch.heal?', מתרפא!':', בלי ריפוי')+
-    (wch.back?', הקרב ממשיך כשחוזרים':', לא חוזר לקרב')+(wch.inside?', נשאר בתוך האזור':', נדחף מחוץ לאזור')+(wch.open.length?', פנס ליד קצה או קישוט: '+wch.open.join(' '):', שטח פתוח סביב כל 6 הפנסים'));
+  check(!wch.open.length&&wch.warden&&wch.chase&&wch.gaveUp&&wch.home&&wch.heal&&wch.again&&wch.back&&wch.inside,'השומר לא בורח: '+
+    (wch.chase?'רודף כשמתרחקים':'חוזר לפנס מיד כשמתרחקים')+(wch.gaveUp?', מוותר רק אחרי כמה שניות ואומר משהו':', לא מוותר או לא אומר כלום')+
+    (wch.back?', הקרב ממשיך כשחוזרים בדרך':', לא חוזר לקרב')+(wch.home&&wch.heal?', במאורה מתרפא וישן':', לא חזר לישון במאורה ('+wch.dist+' ממנה)')+(wch.again?' וקם שוב':', לא קם שוב')+(wch.inside?', נשאר בתוך האזור':', נדחף מחוץ לאזור')+(wch.open.length?', פנס ליד קצה או קישוט: '+wch.open.join(' '):', שטח פתוח סביב כל 6 הפנסים'));
   // הבוסים הענקיים (giant.js, ניר 4.11): כל שומר בעולם הוא ענק עם מודל משלו לפרק, פי 4 עד 6 מהגיבור, ורדיוס לוגי ×GIANT.r.
   // בכניסה הוא קם ולא תוקף, בקרב המכות של הגיבור פוגעות בו, הוא מובס וקורס לאט. בזירה הבוס נשאר LOOK3D.boss
   const gnt=await page.evaluate(()=>{
@@ -2777,22 +2780,28 @@ function worldBot(m,L,god){
     'חפצים (itemroll.js): '+(ir.err?'שגיאה: '+ir.err:(ir.q?'איכות בשלל '+ir.qr+'%':'אין איכות בשלל ('+ir.qr+')')+(ir.fmt?'':', המזהה נשבר')+(ir.stat?'':', הסטטים לא לפי האיכות')+
     (ir.block?', דרישה ('+ir.req+') חוסמת':', דרישה לא חוסמת')+(ir.free?'':', עץ עם דרישה')+(ir.wear?', נלבש כשעומדים בה':', לא נלבש')+(ir.kept?', לבוש נשאר':', לבוש נזרק')+
     (ir.arena?'':', דרישות בזירה')+(ir.typ?'':', תכונה לא לפי סוג')+(ir.cls?', בונוס מחלקה':', בונוס מחלקה שבור')+(ir.back?'':', לא חזר אחרי הבדיקה')));
-  // שומרים חוזרים (story.js, STORY.rematch): כפתור 🔔 ליד פנס דולק רק אחרי הסוף ובדרגה אמיץ ומעלה. השומר יוצא חזק יותר, נופל שלל, ופעם ביום לכל שומר
-  const rm=await page.evaluate(()=>{
-    const o={},st0=JSON.stringify(SAVE.story),ti0=JSON.stringify(SAVE.tier||null),L=STORY.lanterns.earth,vis=()=>{worldUpdate(0.016);return !$('wardBtn').hidden};
-    Object.assign(STO(),{earth:true,end:false,re:{}});SAVE.tier={t:2,k:0};
-    enterWorld('home','meadow');for(const e of enemies)e.dead=true;P.x=L.x;P.y=L.y+60;P.hp=P.maxHp;
-    o.preEnd=vis();STO().end=true;SAVE.tier.t=1;o.tier1=vis();SAVE.tier.t=2;o.btn=vis();
-    const hp1=STORY.lanterns.earth.warden.hp;$('wardBtn').click();const e=S.wd.warden;
-    o.spawn=!!e&&e.rematch===2;o.hard=!!e&&e.max>addEnemy(L.warden.type,0,0,hp1).max*1.5;enemies.pop();
-    o.saved=(JSON.parse(localStorage.getItem(SAVE_STORE.key)).story.re||{}).earth===qDay();o.gone=!vis();
-    if(e){damage(e,e.hp*10,'sword',0,'physical');worldUpdate(0.016)}o.loot=(S.wd.reGot||[]).length>0&&drops().some(d=>dropGear(d.r));
-    o.feed=FL.some(f=>/🏆/.test(f.icon||''));o.today=!vis();STO().re.earth='2000-1-1';o.tomorrow=vis();
-    SAVE.story=JSON.parse(st0);SAVE.tier=JSON.parse(ti0);enterVillage();return o});
-  check(!rm.preEnd&&!rm.tier1&&rm.btn&&rm.spawn&&rm.hard&&rm.saved&&rm.gone&&rm.loot&&rm.today&&rm.tomorrow,
-    'שומרים חוזרים: '+(rm.preEnd?'כפתור לפני הסוף':'אין כפתור לפני הסוף')+(rm.tier1?', כפתור בדרגה רגילה':', אין בדרגה רגילה')+(rm.btn?', 🔔 באמיץ':', אין 🔔 באמיץ')+
-    (rm.spawn?', השומר יצא':', השומר לא יצא')+(rm.hard?' חזק יותר':' לא חזק יותר')+(rm.saved?', היום נשמר':', היום לא נשמר')+(rm.loot?', שלל נדיר נפל':', בלי שלל')+(rm.feed?' ובפיד':'')+
-    (rm.today?', אין קריאה שנייה היום':', קריאה שנייה היום')+(rm.tomorrow?', למחרת שוב':', למחרת לא'));
+  // בוסים תמיד, בטיימר (giant.js, GIANT.ladder, ניר 5.11): הענק במאורה גם בלי קווסט ועם שלט רמה מומלצת. ניצחון: טיימר בשעה אמיתית (נשמר),
+  // אבן עם שעון ולא קם, וכשהזמן עובר (מקדמים את השעון) קם שוב. ניצחון חוזר נותן שלל, והסולם: טיימר ושלל פי ratio מבוס לבוס
+  const gt=await page.evaluate(()=>{
+    const o={},st0=JSON.stringify(SAVE.story),L=STORY.lanterns.water,Q=QS(),qa=Q.active.s2Warden,qd=Q.done.s2Warden,now0=Date.now,lv0=SAVE.hero.level;
+    delete Q.active.s2Warden;STO().bt={};enterWorld('home','lake');for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);
+    P.x=L.x+700;P.y=L.y;worldUpdate(0.016);o.asleep=!S.wd.warden&&Math.hypot(P.x-L.x,P.y-L.y)>L.warden.wake;
+    SAVE.hero.level=1;const sh=[];const ft=ctx.fillText;ctx.fillText=function(t){sh.push(String(t));return ft.apply(this,arguments)};giantLairScreen('water',L,0,0);ctx.fillText=ft;
+    o.sign=sh.some(t=>t===T('cu.rec',giantLv('water')));SAVE.hero.level=lv0;
+    P.x=L.x;P.y=L.y+GIANT.lair+200;worldUpdate(0.016);const e=S.wd.warden;o.noQuest=!!e&&e.warden==='water'&&!e.first;
+    if(e){P.inv=1e9;damage(e,e.hp*10,'sword',0,'physical');worldUpdate(0.016)}
+    const bt=STO().bt.water,want=Math.round(GIANT.ladder.base*GIANT.ladder.ratio)*60000;
+    o.timer=!!bt&&Math.abs(bt-Date.now()-want)<5000;o.saved=(JSON.parse(localStorage.getItem(SAVE_STORE.key)).story.bt||{}).water===bt;
+    o.loot=(S.wd.reGot||[]).length>0&&drops().some(d=>d.r==='coins');
+    for(let i=0;i<5;i++)worldUpdate(0.016);o.wait=!S.wd.warden&&giantLeft('water')>0;
+    o.ladder=[0,1,2,3,4,5].map(i=>Math.round(giantWait(Object.keys(STORY.lanterns)[i])/60000)).join(',');
+    Date.now=()=>now0()+want+1000;worldUpdate(0.016);o.back=!!S.wd.warden;Date.now=now0;
+    if(S.wd.warden){S.wd.warden.dead=true;enemies=enemies.filter(e=>!e.dead);S.wd.warden=null}
+    SAVE.story=JSON.parse(st0);if(qa)Q.active.s2Warden=qa;if(qd)Q.done.s2Warden=qd;P.inv=0;saveNow();enterVillage();return o});
+  check(gt.asleep&&gt.sign&&gt.noQuest&&gt.timer&&gt.saved&&gt.loot&&gt.wait&&gt.back&&gt.ladder==='10,15,23,34,51,76',
+    'בוסים בטיימר: '+(gt.asleep?'ישן רחוק מהמאורה':'קם מרחוק')+(gt.sign?', שלט רמה מומלצת':', אין שלט')+(gt.noQuest?', קם גם בלי קווסט':', לא קם בלי קווסט')+
+    (gt.timer?', ניצחון מתחיל טיימר':', אין טיימר')+(gt.saved?' שנשמר':' שלא נשמר')+(gt.loot?', שלל':', בלי שלל')+(gt.wait?', מחכה':', קם מיד')+
+    (gt.back?', וחוזר כשהזמן עובר':', לא חוזר')+', דקות: '+gt.ladder);
   // נקודות דמות (stats.js): הריגה בעולם נותנת XP לדמות, רמה נותנת נקודה, נקודה מעלה נזק, נשמרת, ואיפוס אצל הכוהנת עולה מטבעות
   const stt=await page.evaluate(()=>{
     enterWorld('home');const o={};const xp0=SAVE.hero.xp||0,e={x:P.x+40,y:P.y,xp:3,type:'grunt',hp:0,r:10,mult:{}};
