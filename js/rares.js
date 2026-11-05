@@ -28,7 +28,7 @@ const RARES={
       spots:[{x:1240,y:-590,at:'bushes'},{x:-2000,y:1100,at:'copse'},{x:2850,y:250,at:'east'},{x:2240,y:1140,at:'east'},{x:-670,y:1830,at:'south'}],
       loot:{coins:[1,50],flower:[1,3],aquaF:[0.7,1],star:[0.3,1]}},
     pearl:{reg:'lake',base:'drowned',icon:'🦪',tags:['water','metal'],col:'#BDF4FF',
-      spots:[{x:-900,y:500,at:'reeds'},{x:930,y:-120,at:'tide'},{x:-40,y:600,at:'shore'}],
+      spots:[{x:-1350,y:1820,at:'reeds'},{x:2600,y:-1050,at:'creek'},{x:-450,y:1780,at:'shore'}],   // האגם הגדול: 25-27 בשרטוט (map.dens ב-js/map-lake.js)
       loot:{coins:[1,80],aquaF:[1,1],aqua:[0.6,1],star:[0.4,1]}},
     hoarfrost:{reg:'ridge',base:'rimeknight',icon:'🧊',tags:['ice','metal'],col:'#E6FBFF',
       spots:[{x:900,y:450,at:'crevasse'},{x:-920,y:-450,at:'pines'},{x:330,y:600,at:'drift'}],
