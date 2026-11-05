@@ -8,6 +8,10 @@
    ic: אימוג'י. לסקילים החדשים יש אייקון מצויר ב-icons/ui/skills/<id>.png (Creative Claw), והאימוג'י הוא הגיבוי אם התמונה לא נטענה. השמות ב-lang.js: 'sk.<id>' ו-'wsb.d.<id>' */
 const WSKBOOK={
   slots:2,      // כמה משבצות בוחרים (בנוסף לסקיל של הנשק)
+  /* ספר קדום (משימה ת3, 5.11): בוס בעולם יכול להפיל ספר שפותח את הסקיל הבא של הדמות שלך לפני הרמה שלו. סיבה לחזור לבוסים.
+     chance: הסיכוי לפי מי נפל (warden: שומר פנס בפעם הראשונה, rematch: קרב חוזר, nemesis: בוס-נמסיס).
+     הכל כבר פתוח: הספר נהיה שלל אחר (spare, בפורמט של runGive). נשמר ב-SAVE.hero.tome (המזהים שנפתחו בספר) */
+  tome:{chance:{warden:0.5,rematch:0.25,nemesis:0.4},icon:'📜',spare:{coins:[1,150],gold:[1,2]}},
   other:6,      // סקיל של דמות אחרת נפתח כמה רמות מאוחר יותר
   old:{quake:3,zap:3,splash:3,frost:5,flame:7},   // הסקילים של הזירה: באיזו רמה נפתחים בספר (הסקיל של הנשק תמיד פתוח)
   ic:{quake:'🪨',zap:'⚡',splash:'🌊',frost:'❄️',flame:'🔥'},
@@ -53,7 +57,8 @@ function wsbNeed(id){
   const D=WSKBOOK.list[id];if(!D)return WSKBOOK.old[id]||1;
   const me=typeof heroId==='function'&&heroId();return D.lv+(me&&me!==D.cls?WSKBOOK.other:0);
 }
-const wsbOpen=id=>id===wsbWeapon()||heroLv()>=wsbNeed(id);
+const wsbTomed=()=>{const h=SAVE.hero;return Array.isArray(h.tome)?h.tome:[]};
+const wsbOpen=id=>id===wsbWeapon()||heroLv()>=wsbNeed(id)||wsbTomed().includes(id);
 // מה על הכפתורים בעולם: הסקיל של הנשק, ואחריו מה שבחרו (רק מה שפתוח, בלי כפילות)
 function wsbWant(){
   const w=wsbWeapon(),out=w?[w]:[];
@@ -74,7 +79,22 @@ function wsbLevelUp(from,lv){
   if(got)saveNow();
 }
 // מסלול הרמות (lpAt ב-levelpath.js): אילו סקילים נפתחים ברמה הזו
-const wsbAt=lv=>lv<2?[]:wsbIds().filter(id=>id!==wsbWeapon()&&wsbNeed(id)===lv).map(id=>({k:'skill',icon:wsbIc(id),pic:wsbImg(id),txt:T('wsb.lp',T('sk.'+id))}));
+const wsbAt=lv=>lv<2?[]:wsbIds().filter(id=>id!==wsbWeapon()&&wsbNeed(id)===lv&&!wsbTomed().includes(id)).map(id=>({k:'skill',icon:wsbIc(id),pic:wsbImg(id),txt:T('wsb.lp',T('sk.'+id))}));
+
+/* ---- ספר קדום: נקרא כשבוס בעולם נופל (story.js, nemesis.js). kind: מפתח ב-WSKBOOK.tome.chance. force: בלי הגרלה (לבוט) ---- */
+const wsbTomeStat={drops:0,opened:[],spare:0};   // בשביל הבוט
+function wsbTome(kind,x,y,force){
+  const K=WSKBOOK.tome;if(!S.wd||!(force||Math.random()<(K.chance[kind]||0)))return null;
+  wsbTomeStat.drops++;
+  const me=typeof heroId==='function'&&heroId(),L=WSKBOOK.list;
+  const next=Object.keys(L).filter(id=>L[id].cls===me&&id!==wsbWeapon()&&!wsbOpen(id)).sort((a,b)=>L[a].lv-L[b].lv)[0];
+  if(!next){runGive(K.spare,x,y);wsbTomeStat.spare++;celebrate(x,y,'loot2',K.icon);banner(K.icon+' '+T('wsb.tome.spare'),C.gold);return 'spare'}
+  const h=SAVE.hero;if(!Array.isArray(h.tome))h.tome=[];h.tome.push(next);
+  const Ld=wsbLoad();for(let i=0;i<WSKBOOK.slots;i++)if(!Ld[i]||!SKILLS.list[Ld[i]]){Ld[i]=next;break}   // משבצת פנויה: נכנס לבד (ורגע הגילוי מציג אותו)
+  wsbTomeStat.opened.push(next);
+  celebrate(x,y,'loot4',K.icon);banner(K.icon+' '+T('wsb.tome',T('sk.'+next)),dtCol(L[next].dt));
+  saveNow();return next;
+}
 
 /* ---- הטלה: נקרא מ-wskUse אחרי שנבחרה מטרה. tg: הנקודה, base: הנזק, F: ההטלה הראשונה הגדולה (skillreveal.js) ---- */
 const wsbStat={casts:{},hits:{}};   // בשביל הבוט
