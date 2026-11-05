@@ -991,10 +991,10 @@ function worldBot(m,L,god){
       const far=addEnemy('grunt',P.x-300,P.y+200);far.hp=far.max=1e9;far.speed=0;far.mult={};
       const ids=['comet','lance','bloom'];S.sk.ids=ids;S.sk.cd=ids.map(()=>0);
       const h0=ens.map(e=>e.hp);r.cast=ids.filter(id=>skillUse(id)).length;r.pend=S.skm.pend.length===1;
-      P.hp=P.maxHp*0.5;const hp0=P.hp;
+      P.hp=P.maxHp*0.5;const hp0=P.hp;r.cd=S.sk.cd.every(c=>c>0);
       for(let i=0;i<90;i++){skillsUpdate(1/60);drawSkills(0,0)}
       r.comet=S.skm.hits>0;r.lance=ens.every((e,i)=>e.hp<h0[i]);r.farSafe=far.hp===far.max;r.heal=P.hp>hp0;r.wet=ens.some(e=>e.wet>0);
-      r.cd=S.sk.cd.every(c=>c>0);S.mode='pause';r.gate=!skillUse('comet');S.mode='play';S.wd={};S.sk.cd=ids.map(()=>0);r.world=!skillUse('lance');S.wd=null;
+      S.sk.ids=ids;S.sk.cd=ids.map(()=>0);S.mode='pause';r.gate=!skillUse('comet');S.mode='play';S.wd={};S.sk.cd=ids.map(()=>0);r.world=!skillUse('lance');S.wd=null;
       for(const e of ens.concat(far))e.dead=true;enemies=enemies.filter(e=>!e.dead)}catch(err){r.err=String(err&&err.stack||err)}
     S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.sk.ids=bak.ids;S.sk.cd=bak.cd;P.hp=bak.hp;S.skm=bak.skm;return r});
   check(!skm.err&&skm.cast===3&&skm.pend&&skm.comet&&skm.lance&&skm.farSafe&&skm.heal&&skm.wet&&skm.cd&&skm.gate&&skm.world,'סקילים נוספים: '+(skm.err||[skm.cast+'/3 הוטלו',skm.comet?'שביט פגע':'שביט לא פגע',skm.lance?'חנית עברה דרך כולם':'חנית פספסה',skm.farSafe?'מי שרחוק לא נפגע':'פגיעה ברחוק',skm.heal?'פריחה מרפאת':'פריחה לא מרפאת',skm.wet?'מרטיבה':'לא מרטיבה',skm.cd?'נטענים':'בלי טעינה',skm.gate&&skm.world?'לא בהפסקה ולא בעולם':'פועל במקום שלא צריך'].join(', ')));
