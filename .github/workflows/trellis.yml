@@ -19,19 +19,13 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: pip install gradio_client
-      - name: הפרעוש
-        continue-on-error: true
-        run: '[ -f tools/trellis/out/parosh.glb ] || python tools/trellis/run.py parosh'
-      - name: הדמות של אוראל
-        continue-on-error: true
-        run: '[ -f tools/trellis/out/orel.glb ] || python tools/trellis/run.py orel'
-      - name: תמונות מהסרטונים
+      - name: נשקים ומגנים (משימה נ)
         continue-on-error: true
         run: |
-          cd tools/trellis/out || exit 0
-          for v in *.mp4; do [ -f "$v" ] || continue
-            ffmpeg -loglevel error -y -i "$v" -vf "select='not(mod(n\,15))',scale=320:-1,tile=4x2" -frames:v 1 "${v%.mp4}-turn.png"; done
-          ls -la
+          for id in ironStaff goldStaff starStaff skyBow stormBow shield3 shield4; do
+            [ -f tools/trellis/out/weapons/$id.glb ] || python tools/trellis/weapons.py $id || echo "נכשל: $id"
+          done
+          ls -la tools/trellis/out/weapons || true
       - name: שמירה בענף
         run: |
           git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
