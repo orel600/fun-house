@@ -88,7 +88,7 @@ function install(B){
     if(vis('ovWDeath')){$('wRespawn').click();return{}}
     if(S.wd&&S.mode==='over'){if(!m.dead){m.dead=1;R.deaths++;c.deaths++;if(m.ph==='warden')c.wDeaths=(c.wDeaths||0)+1}return{}}
     m.dead=0;
-    if(now-m.chT>B.cap+(m.ph==='warden'?B.wardenCap*(B.fights-1):0)){finish(false,m.ph==='warden'?'שומר':'רמה '+heroLv()+'/'+need());return{}}
+    if(now-m.chT>B.cap+(m.ph==='warden'?B.wardenCap*(B.fights-1):0)){const L0=STORY.lanterns[chap().k];finish(false,m.ph==='warden'?'שומר (במרחק '+Math.round(Math.hypot(P.x-L0.x,P.y-L0.y))+' מהפנס'+(S.wd.warden?', ער':'')+')':'רמה '+heroLv()+'/'+need());return{}}
     for(const id of ['npcDlg','qLog','ovGear','ovDaily','ovWelcome','ovBook'])if($(id)&&!$(id).hidden)$(id).hidden=true;
     if(S.vil||!S.wd||S.wd.reg!==chap().reg){if(S.vil){equip();points();upgrade()}
       worldUi(false);enterWorld('home',chap().reg);return{}}
