@@ -55,12 +55,13 @@ const SECRETS={
       {id:'d_carve',kind:'carving',x:900,y:1260,to:{x:500,y:1400}},  // 23 קקטוס חרוט בים הדיונות, מצביע מערבה
       {id:'d_lv20',kind:'chest',x:-2680,y:640,hide:'rock',lv:20}     // 24 בפינה הדרום-מערבית, מתחת למסה
     ],
-    storm:[
-      {id:'t_chest',kind:'chest',x:-960,y:-560,hide:'rock'},          // בפינה הצפון-מערבית, מאחורי אבן שנפלה ממגדל
-      {id:'t_shrine',kind:'shrine',x:940,y:-560,bless:'speed'},       // צפון-מזרח, מקדש שהברק לא נגע בו
-      {id:'t_look',kind:'lookout',x:-940,y:580},                      // דרום-מערב, על שרידי חומה
-      {id:'t_carve',kind:'carving',x:220,y:620,to:{x:-180,y:640}},    // עץ שרוף בדרום, מצביע מערבה
-      {id:'t_lv30',kind:'chest',x:980,y:560,hide:'rock',lv:30}        // בפינה הדרום-מזרחית, מאחורי הפנס
+    storm:[   // המספרים מהשרטוט של הסערה הגדולה (docs/concept-regions.md, js/map-storm.js)
+      {id:'t_chest',kind:'chest',x:-2800,y:-1330,hide:'rock'},        // 20 תיבה מאחורי אבן שנפלה, בפינה הצפון-מערבית
+      {id:'t_shrine',kind:'shrine',x:2770,y:-1530,bless:'speed'},     // 21 מקדש מהירות בצפון-מזרח, מעבר לנהר
+      {id:'t_look',kind:'lookout',x:-2770,y:1720},                    // 22 תצפית על שרידי החומה, בדרום-מערב
+      {id:'t_carve',kind:'carving',x:630,y:1950,to:{x:-450,y:1800}},  // 23 עץ שרוף חרוט בעיר, מצביע מערבה אל המגדל הגדול
+      {id:'t_lv30',kind:'chest',x:2880,y:1810,hide:'rock',lv:30},     // 24 תיבה לרמה 30, בקצה הכף
+      {id:'t_isle',kind:'chest',x:-620,y:130,hide:'rock'}             // 31 תיבה על האי בנהר
     ],
     shadow:[   // המספרים מהשרטוט של לב הצל הגדול (docs/concept-regions.md, js/map-shadow.js)
       {id:'h_chest',kind:'chest',x:-2500,y:-1750,hide:'bush'},        // 19 תיבה בשיח צל, בפינה הצפון-מערבית

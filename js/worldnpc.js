@@ -30,8 +30,8 @@ const WNPC={
     bard:    {reg:'ridge',at:{x:-950,y:-1780},col:'#A8E6FF',look:'ranger'},      // הזמרת, ליד השער, בדרך למחנה האבירים
     caravan: {reg:'desert',at:{x:2120,y:880},col:'#E0B26A',look:'rogue'},    // סוחר השיירות, בנווה המדבר (המדבר הגדול, map-desert.js)
     glass:   {reg:'desert',at:{x:1150,y:300},col:'#FF9A5A',look:'barbarian'},  // הזגגת, בין סלעי הלהבה ומחנה הלבה
-    keeper:  {reg:'storm',at:{x:-380,y:-560},col:'#B48CFF',look:'knight'},
-    chaser:  {reg:'storm',at:{x:380,y:-560},col:'#8E7CC8',look:'ranger'},
+    keeper:  {reg:'storm',at:{x:120,y:-760},col:'#B48CFF',look:'knight'},       // שומר המגדלים, ליד גשר המגדל שנפל (הסערה הגדולה, map-storm.js)
+    chaser:  {reg:'storm',at:{x:-250,y:-1390},col:'#8E7CC8',look:'ranger'},     // החוקרת הרטובה, במחנה שלה (19)
     squire:  {reg:'shadow',at:{x:-450,y:-1650},col:'#C7A6FF',look:'knight'},
     lamp:    {reg:'shadow',at:{x:450,y:-1650},col:'#FFE08A',look:'mage'}
     // ולוח מודעות בכל אזור (board:true), נוסף מ-questboard.js
@@ -64,7 +64,7 @@ function wnpcUpdate(dt){
     if(d<WNPC.wave&&!n.waved){n.waved=true;n.st='wave';n.t=WNPC.waveT;n.emote='👋'}
     else if(d>WNPC.wave*1.4)n.waved=false;
     if(n.st==='wave'&&(n.t-=dt)<=0){n.st='idle';n.emote=null}
-    if(d<WNPC.wave)n.face=Math.atan2(P.y-n.y,P.x-n.x);   // מסתכלת עליך כשאתה קרוב
+    if(d<WNPC.wave&&!n.walk)n.face=Math.atan2(P.y-n.y,P.x-n.x);   // walk: בליווי היא מסתכלת לאן שהיא הולכת (escort.js)   // מסתכלת עליך כשאתה קרוב
   }
   W.npcNear=near;
   if(D&&Math.hypot(P.x-all[D].x,P.y-all[D].y)>WNPC.leave)wnpcTalk(null);
@@ -92,7 +92,7 @@ function wnpcDialog(){
 }
 function wnpcTalk(id){
   if(!S.wd)return;
-  S.wd.dlg=id;if(id){questEvent('meet',id);S.wd.dlgLine=wnpcLine(id);sfx('ui')}   // meet: "תמסור לו הודעה" (quests.js)
+  S.wd.dlg=id;if(id){questEvent('meet',id);escTalk(id);S.wd.dlgLine=wnpcLine(id);sfx('ui')}   // meet: "תמסור לו הודעה" (quests.js)
   wnpcDialog();
 }
 $('talkBtn').addEventListener('click',()=>{const id=$('talkBtn').dataset.id;if(id&&S.wd&&WNPC.list[id])wnpcTalk(id)});
@@ -148,7 +148,7 @@ function syncWnpcs(dt){
     a.root.visible=true;
     if(a.own)a.own.visible=L.own!==false;
     if(a.npcSt!==n.st){a.npcSt=n.st;if(n.st==='wave')once(a,L.anim.wave,WNPC.waveT);else a.one=null}
-    loop(a,L.anim.idle+(a.one&&a.one.isRunning()?'@low':''));
+    loop(a,n.walk&&L.anim.walk?L.anim.walk:L.anim.idle+(a.one&&a.one.isRunning()?'@low':''));   // walk: בליווי (escort.js)
     place(a,n.x,n.y,L.foot,yawOf(Math.cos(n.face),Math.sin(n.face)));
     a.mixer.update(dt);mark('shadow',a.root.position.x,a.root.position.z,15);
   }

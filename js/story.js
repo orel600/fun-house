@@ -38,7 +38,7 @@ const STORY={
     // האחו הגדול (ת9, 5.11.2026): הפנס והמאורה בנקודה 16 בשרטוט (docs/concept-meadow.md), במערה בצוק הדרום-מזרחי, הכי רחוק מהשער. השומר עומד ב-GIANT.lair מתחת לפנס
     earth:{reg:'meadow',x:2590,y:1640,quest:'s1Warden',glow:'#FFD36B',col:C.ember,
       warden:{type:'golem',hp:46,dmg:1.6,r:1.7,speed:0.8,wake:520,
-        slam:{every:3.2,range:250,r:190,warn:0.8,dmg:22,col:'#FF4A3A'},
+        slam:{every:4.2,range:250,r:190,warn:0.8,dmg:22,col:'#FF4A3A'},   // every 3.2←4.2 (5.11, fix/mage-boss): הלוחם היה איטי ב-33% מהממוצע, כי יצא מהעיגול כל 3 שניות
         charge:{every:6.5,min:240,max:620,warn:1.0,len:600,w:96,speed:620,dmg:24,stun:2,vuln:2,col:'#FF4A3A'}}},
     // פנס המים: על אי בלגונה בדרום-מערב של האגם (5 בשרטוט, js/map-lake.js). השומר במאורה מתחתיו (GIANT.lair). שומר המים גם יורה מים בשלושה כיוונים (shoot)
     // ev: מה מדווחים לקווסט כשהשומר נופל (questEvent('story',ev)). head: ראש הכפר אומר משפט אחרי שהפנס נדלק
@@ -54,7 +54,7 @@ const STORY={
       warden:{type:'emberwarden',hp:198,dmg:1.4,r:1.7,speed:0.85,wake:520,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}},
     // פנס הברק: בפינה הדרום-מזרחית של מגדלי הסערה. שומר הסערה מסמן n עיגולי ברק (marks): אחד מתחת לשחקן והשאר עד spread ממנו.
     // כל עיגול ברדיוס r מתפוצץ אחרי fuse שניות. מי שעוד בתוכו נפגע. מספיק לזוז
-    bolt:{reg:'storm',x:720,y:390,quest:'s5Warden',glow:'#E2CCFF',col:'#B07CFF',ev:'thunder',head:true,
+    bolt:{reg:'storm',x:2450,y:1330,quest:'s5Warden',glow:'#E2CCFF',col:'#B07CFF',ev:'thunder',head:true,
       warden:{type:'stormwarden',hp:536,dmg:1.35,r:1.7,speed:0.85,wake:520,marks:{every:2.8,n:4,spread:170,r:50,fuse:1.2,dmg:16,flash:0.25}}},
     // הפנס הלבן: באמצע הדרום של לב הצל. הצל עובר בשלבים לפי החיים שנשארו לו (phases, לפי הסדר): בכל שלב ההתקפה של השומר ההוא
     // (shoot, ring או marks מהשורה שלו כאן) והחולשה שלו. earth: אין לשומר האבן התקפה, אז הצל רץ מהר יותר (rush).

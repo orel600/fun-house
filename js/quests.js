@@ -13,6 +13,7 @@
      visit   לחקור מקום בעולם: what הוא '<אזור>:<מקום>' מ-SIDEQ.places (questboard.js). נספר כשמגיעים אליו
      hold    להגן על מקום n שניות: עומדים בתוכו, ולהקות מגיעות (questboard.js). מה שעברו נשמר גם כשיוצאים
      meet    למסור הודעה: לדבר עם הדמות what בעולם (worldnpc.js)
+     escort  ללוות את מי שנתן את הקווסט אל המקום what ('<אזור>:<מקום>'). היא הולכת, אויבים תוקפים אותה, ואם היא נופלת מתחילים מחדש (escort.js)
    reward: משאבים לתרמיל לפי השם, xp לדמות, rank: עלייה לשלב הזה בדרגה (ranks.js), item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>'). id של פריט ציוד מ-GEAR.items (gear.js) נכנס לתרמיל כציוד שאפשר ללבוש,
      ואם יש לו משבצת פנויה הוא נלבש מיד (השם שלו 'it.<id>').
    spot: הפרס ניתן במקום ברגע שהמטרה הושגה, בלי לחזור למי שנתן. then: id של קווסט שמתחיל לבד אחרי שהפרס נלקח.
@@ -99,6 +100,8 @@ const QUESTS={
     {id:'sqHerm1',giver:'hermit',kind:'world',obj:[{type:'visit',what:'meadow:tower',n:1}],reward:{xp:70,coins:25}},
     {id:'sqHerm2',giver:'hermit',kind:'world',obj:[{type:'visit',what:'meadow:temple',n:1},{type:'visit',what:'meadow:loggers',n:1}],reward:{xp:110,essence:2},req:{quest:'sqHerm1'}},
     {id:'sqHerm3',giver:'hermit',kind:'world',obj:[{type:'collect',what:'resin',n:5},{type:'hold',what:'meadow:lighthouse',n:30}],reward:{xp:140,gem:1,item:'sqLens'},req:{quest:'sqHerm2'}},
+    {id:'sqScout5',giver:'scout',kind:'world',obj:[{type:'escort',what:'meadow:bank',n:1}],reward:{xp:130,iron:6,coins:30},req:{quest:'sqScout4'}},
+    {id:'sqHerm4',giver:'hermit',kind:'world',obj:[{type:'escort',what:'meadow:temple',n:1}],reward:{xp:150,essence:3,gem:1},req:{quest:'sqHerm3'}},
     // אגם הערפל: נסה המעבורתנית והאח הולו
     {id:'sqFerry1',giver:'ferry',kind:'world',obj:[{type:'visit',what:'lake:boat',n:1},{type:'visit',what:'lake:willow',n:1}],reward:{xp:120,coins:40}},
     {id:'sqFerry2',giver:'ferry',kind:'world',obj:[{type:'kill',what:'drowned',n:10}],reward:{xp:140,aquaC:2},req:{quest:'sqFerry1'}},
@@ -107,6 +110,8 @@ const QUESTS={
     {id:'sqMist1',giver:'mistsage',kind:'world',obj:[{type:'gather',what:'aquaC',n:4}],reward:{xp:120,essence:2}},
     {id:'sqMist2',giver:'mistsage',kind:'world',obj:[{type:'kill',what:'mistling',n:12}],reward:{xp:140,coins:45},req:{quest:'sqMist1'}},
     {id:'sqMist3',giver:'mistsage',kind:'world',obj:[{type:'visit',what:'lake:bell',n:1},{type:'visit',what:'lake:drowned',n:1}],reward:{xp:160,gem:1,item:'sqBell'},req:{quest:'sqMist2'}},
+    {id:'sqFerry5',giver:'ferry',kind:'world',obj:[{type:'escort',what:'lake:boat',n:1}],reward:{xp:190,coins:70,aquaC:2},req:{quest:'sqFerry4'}},
+    {id:'sqMist4',giver:'mistsage',kind:'world',obj:[{type:'escort',what:'lake:bell',n:1}],reward:{xp:200,essence:4,gem:1},req:{quest:'sqMist3'}},
     // הרכס הקפוא: רֵאה המטפסת ופין הזמר
     {id:'sqClimb1',giver:'climber',kind:'world',obj:[{type:'visit',what:'ridge:crevasse',n:1}],reward:{xp:150,coins:50}},
     {id:'sqClimb2',giver:'climber',kind:'world',obj:[{type:'kill',what:'rimeknight',n:10}],reward:{xp:180,iron:8},req:{quest:'sqClimb1'}},
@@ -124,11 +129,11 @@ const QUESTS={
     {id:'sqGlass2',giver:'glass',kind:'world',obj:[{type:'visit',what:'desert:lava',n:1}],reward:{xp:200,coins:60},req:{quest:'sqGlass1'}},
     {id:'sqGlass3',giver:'glass',kind:'world',obj:[{type:'gather',what:'rubyC',n:5},{type:'meet',what:'caravan',n:1}],reward:{xp:260,gem:1},req:{quest:'sqGlass2'}},
     // מגדלי הסערה: מרן שומרת המגדלים ופיפ רודף הסערות
-    {id:'sqKeep1',giver:'keeper',kind:'world',obj:[{type:'visit',what:'storm:twrW',n:1},{type:'visit',what:'storm:twrS',n:1},{type:'visit',what:'storm:twrE',n:1}],reward:{xp:260,coins:80}},
+    {id:'sqKeep1',giver:'keeper',kind:'world',obj:[{type:'visit',what:'storm:knights',n:1},{type:'visit',what:'storm:spire',n:1},{type:'visit',what:'storm:watch',n:1}],reward:{xp:260,coins:80}},
     {id:'sqKeep2',giver:'keeper',kind:'world',obj:[{type:'kill',what:'stormknight',n:10}],reward:{xp:290,silver:4},req:{quest:'sqKeep1'}},
-    {id:'sqKeep3',giver:'keeper',kind:'world',obj:[{type:'hold',what:'storm:twrS',n:35}],reward:{xp:340,boltC:2,item:'sqLodestone'},req:{quest:'sqKeep2'}},
+    {id:'sqKeep3',giver:'keeper',kind:'world',obj:[{type:'hold',what:'storm:spire',n:35}],reward:{xp:340,boltC:2,item:'sqLodestone'},req:{quest:'sqKeep2'}},
     {id:'sqChase1',giver:'chaser',kind:'world',obj:[{type:'kill',what:'sparkwisp',n:12}],reward:{xp:270,boltC:2}},
-    {id:'sqChase2',giver:'chaser',kind:'world',obj:[{type:'visit',what:'storm:rocks',n:1},{type:'visit',what:'storm:dead',n:1}],reward:{xp:280,coins:80},req:{quest:'sqChase1'}},
+    {id:'sqChase2',giver:'chaser',kind:'world',obj:[{type:'visit',what:'storm:rods',n:1},{type:'visit',what:'storm:ash',n:1}],reward:{xp:280,coins:80},req:{quest:'sqChase1'}},
     {id:'sqChase3',giver:'chaser',kind:'world',obj:[{type:'gather',what:'boltC',n:5}],reward:{xp:300,gem:1},req:{quest:'sqChase2'}},
     {id:'sqChase4',giver:'chaser',kind:'world',obj:[{type:'collect',what:'dust',n:6},{type:'meet',what:'keeper',n:1}],reward:{xp:280,essence:4},req:{quest:'sqChase3'}},
     // לב הצל: נושא הכלים האבוד ולומי מדליקת הפנסים
@@ -260,7 +265,7 @@ function questClaim(id,quiet){   // quiet: בלי חגיגה והודעה משל
 }
 
 /* ---- ממשק: היומן בכפר, וקו מעקב בזירה ---- */
-const qWhat=o=>o.type==='visit'||o.type==='hold'?sqPlaceName(o.what):o.type==='meet'?T('npc.'+o.what)[0]:o.type==='fish'?(o.what&&o.what!=='any'?resName(o.what):''):o.type==='story'?o.what:o.type==='weak'?T('dt.'+o.what):o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?resName(o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
+const qWhat=o=>o.type==='visit'||o.type==='hold'||o.type==='escort'?sqPlaceName(o.what):o.type==='meet'?T('npc.'+o.what)[0]:o.type==='fish'?(o.what&&o.what!=='any'?resName(o.what):''):o.type==='story'?o.what:o.type==='weak'?T('dt.'+o.what):o.type==='kill'?T('foe.'+o.what):o.type==='collect'||o.type==='gather'?resName(o.what):o.type==='reach'?T('place.'+o.what):o.type==='upgrade'?T('vil.'+o.what):'';
 const qObjTxt=(q,i)=>{const o=q.obj[i];return T('qo.'+o.type,qWhat(o),o.n)+(o.noHit?T('qo.noHit'):'')+(o.under?T('qo.under',fmt(o.under)):'')};
 const qRewardLine=r=>Object.keys(r).map(k=>'<span class="res">'+(k==='story'?'🏮 '+T('story.'+r[k]+'.reward'):k==='rank'?QUESTS.icon.rank+' '+(rankFor(r[k])?rankName(rankFor(r[k])):''):k==='item'?(gItem(r[k])?gIcon(r[k])+' '+gName(r[k]):QUESTS.icon.item+' '+T('item.'+r[k])):(resIcon(k)||QUESTS.icon[k])+' '+r[k])+'</span>').join('');
 // הקווסט שמוצג בזירה: זה שבחרת לעקוב אחריו, ואם אין, הראשון שעוד לא הושלם
