@@ -95,6 +95,7 @@ function giantLv(k){
 // ניצחון: הטיימר מתחיל. בניצחון חוזר גם שלל, פי ratio^i
 function giantWin(e){
   const k=e.warden;giantBt()[k]=Date.now()+giantWait(k);saveNow();
+  tierWin(e);   // שומר הצל בדרגה הנוכחית פותח את הבאה (tiers.js)
   if(!e.first)giantLoot(e);
 }
 function giantLoot(e){

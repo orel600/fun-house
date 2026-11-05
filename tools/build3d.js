@@ -14,7 +14,7 @@
       ואחת מ-Poly Pizza, השלד והאנימציות של חיית המחמד: Husky של Quaternius (CC0), poly.pizza/m/wcWiuEqwzq
         curl -L -o C:/kk/dog/Husky.glb https://static.poly.pizza/611d25c7-430f-4bb5-ab2c-d8f5f3cb9712.glb
         python tools/pet3d/dogclips.py   (מוסיף ישיבה וחפירה, ויוצא C:/kk/dog/DogAnims.glb)
-   2. npm i --no-save three@0.186.1 esbuild @gltf-transform/core @gltf-transform/functions @gltf-transform/extensions sharp
+   2. npm i --no-save three@0.186.1 esbuild @gltf-transform/core @gltf-transform/functions @gltf-transform/extensions sharp meshoptimizer
    3. node tools/build3d.js C:/kk
 
    יוצא: js/vendor/three-bundle.js (three.js בלי import, כי המשחק נפתח גם מ-file://)
@@ -156,6 +156,30 @@ async function addMonsters(add){
     add('anim_mon_'+k,await slim(doc,{keepMeshes:null,keepAnims:c.anims.map(n=>'mon_'+k+'_'+n)}));
   }
 }
+/* חפצים עם מודל משלהם (מחולל תלת-ממד מתמונה, TRELLIS ב-Hugging Face; ההסבר ב-docs/refs/item-models/README.md).
+   המפתח במשחק: w_item_<id>, ו-look.model של הפריט ב-gear.js מצביע עליו. הטקסטורה שלהם היא הציור עצמו, ולכן render3d לא מחליף אותה בחומר (wtex).
+   הקובץ הגולמי ב-art/weapons/raw, ומה שנכנס למשחק מוקטן: tris משולשים וטקסטורה tex. כאן גם מסובבים ומגדילים כמו נשקי KayKit:
+   הלהב כלפי מעלה (y), הרוחב ב-x, הידית בראשית. len: האורך הכולל (חרב KayKit בערך 3.25), grip: איפה הידית, חלק מהאורך מלמטה, rotY: סיבוב במעלות */
+const ITEMS={
+  dragonBlade:{src:path.join(ROOT,'art/weapons/raw/dragonBlade.glb'),tris:4000,tex:512,len:2.4,grip:0.12,rotY:90}
+};
+async function addItems(add){
+  const {MeshoptSimplifier}=require('meshoptimizer');await MeshoptSimplifier.ready;
+  const {weld,simplify,transformPrimitive}=require('@gltf-transform/functions');
+  for(const [k,c] of Object.entries(ITEMS)){
+    const doc=await io.read(c.src),root=doc.getRoot(),prims=root.listMeshes().flatMap(m=>m.listPrimitives());
+    const n=prims.reduce((a,p)=>a+(p.getIndices()?p.getIndices().getCount():p.getAttribute('POSITION').getCount())/3,0);
+    await doc.transform(weld(),simplify({simplifier:MeshoptSimplifier,ratio:Math.min(1,c.tris/n),error:0.002}));
+    let lo=[1e9,1e9,1e9],hi=[-1e9,-1e9,-1e9];
+    for(const p of prims){const a=p.getAttribute('POSITION'),mn=a.getMin([]),mx=a.getMax([]);for(let i=0;i<3;i++){lo[i]=Math.min(lo[i],mn[i]);hi[i]=Math.max(hi[i],mx[i])}}
+    const s=c.len/(hi[1]-lo[1]),r=c.rotY*Math.PI/180,co=Math.cos(r),si=Math.sin(r),cx=(lo[0]+hi[0])/2,cz=(lo[2]+hi[2])/2,gy=lo[1]+(hi[1]-lo[1])*c.grip;
+    // מטריצה (לפי עמודות): מזיזים את הידית לראשית, מסובבים סביב y ומגדילים
+    const m=[s*co,0,-s*si,0, 0,s,0,0, s*si,0,s*co,0, -s*(co*cx+si*cz),-s*gy,-s*(-si*cx+co*cz),1];
+    for(const p of prims)transformPrimitive(p,m);
+    for(const nd of root.listNodes()){nd.setTranslation([0,0,0]).setRotation([0,0,0,1]).setScale([1,1,1])}
+    add('w_item_'+k,await slim(doc,{tex:c.tex,fmt:'jpeg'}));
+  }
+}
 const TEX=256;   // גודל הטקסטורה. החבילות משתמשות בפלטת צבעים, אז 256 נראה כמו 1024
 
 const io=new NodeIO().registerExtensions(ALL_EXTENSIONS);
@@ -196,6 +220,16 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
     fs.writeFileSync(f,src.slice(0,i).replace('Fantasy Weapons Bits ו-Medieval Hexagon מאת','Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת')+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
   }
+  // node tools/build3d.js - --only items: מוסיף רק את ITEMS לקובץ הקיים (לא צריך את חבילות KayKit, אז במקום התיקייה אפשר -)
+  if(ONLY==='items'){
+    const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
+    const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
+    Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
+    for(const k in out)if(k.startsWith('w_item_'))delete out[k];
+    await addItems(add);
+    fs.writeFileSync(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
+  }
   // node tools/build3d.js C:/kk --only monsters: מוסיף רק את MONSTERS לקובץ הקיים
   if(ONLY==='monsters'){
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
@@ -225,6 +259,7 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
   for(const [k,c] of Object.entries(BUILDS))add(k,await slim(await io.read(c.src),{}));
   for(const [k,c] of Object.entries(NATURE))add(k,await slim(await io.read(c.src),{q:true}));
   await addMonsters(add);
+  await addItems(add);
   for(const [k,c] of Object.entries(ANIMS)){
     const doc=await io.read(c.src),miss=c.keep.filter(n=>!doc.getRoot().listAnimations().some(a=>a.getName()===n));
     if(miss.length)throw new Error('אנימציה חסרה ב-'+k+': '+miss.join(', '));

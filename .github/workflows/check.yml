@@ -4,8 +4,10 @@ name: בדיקת המשחק
 
 on:
   pull_request:
+    paths-ignore: ['docs/**', '**/*.md']   # 5.11.2026: שינוי שהוא רק תיעוד (תוכניות, roadmap, יומן) לא מריץ את הבוט. חוסך 25 דקות המתנה
   push:
     branches: [main]
+    paths-ignore: ['docs/**', '**/*.md']
 
 jobs:
   check:
