@@ -117,6 +117,7 @@ function storyUpdate(dt){
   storyRings(dt);   // טבעות האש של שומר האש
   storyMarks(dt);   // עיגולי הברק של שומר הסערה
   if(w.warden&&w.warden.dead){const e=w.warden;w.warden=null;
+    if(typeof wsbTome==='function')wsbTome(e.rematch?'rematch':'warden',e.x,e.y+40);   // ספר קדום (wskbook.js)
     if(e.rematch){storyReWin(e);return}   // קרב חוזר: שלל, בלי קווסט
     const ev=(STORY.lanterns[e.warden]||{}).ev;if(ev)questEvent('story',ev)}   // שומר המים: 'tide' (s2Warden), שומר הקרח: 'frost' (s3Warden)
   storyReBtn();   // כפתור 🔔 ליד פנס דולק, אחרי הסוף

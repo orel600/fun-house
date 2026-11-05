@@ -1216,6 +1216,18 @@ function worldBot(m,L,god){
         catch(err){r.bad.push(id+':'+String(err))}}
       for(const x of enemies)x.dead=true;enemies=[];run(8);r.clean=!(S.wsb&&S.wsb.fx.length);r.noPic=Object.keys(WSKBOOK.list).filter(id=>wsbPicOk[id]!==true)}catch(err){r.err=String(err&&err.stack||err)}
     const o=$('ovBook');if(o)o.hidden=true;if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // ספר קדום (wskbook.js): בוס בעולם מפיל ספר שפותח את הסקיל הבא של הדמות לפני הרמה שלו. כשהכל פתוח, זהב במקום. שמירה ישנה (בלי tome) עובדת
+  const tome=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.start='hunter';SAVE.gear.weapon=HEROES.list.hunter.weapon;SAVE.hero.level=1;SAVE.hero.skLoad=[];delete SAVE.hero.tome;enterWorld('home');enemies=[];
+      r.oldSave=!wsbOpen('volley')&&wsbTomed().length===0;
+      const K=WSKBOOK.tome.chance;r.hooks=K.warden>0&&K.rematch>0&&K.nemesis>0&&String(storyUpdate).includes('wsbTome')&&String(nemBeat).includes('wsbTome');
+      const mine=Object.keys(WSKBOOK.list).filter(id=>WSKBOOK.list[id].cls==='hunter').sort((a,b)=>WSKBOOK.list[a].lv-WSKBOOK.list[b].lv);
+      const got=wsbTome('warden',P.x,P.y,true);
+      r.first=got===mine[0]&&wsbOpen(got)&&heroLv()===1&&wsbLoad().includes(got)&&!wsbAt(WSKBOOK.list[got].lv).some(x=>x.txt.includes(T('sk.'+got)));
+      for(let i=1;i<mine.length;i++)wsbTome('nemesis',P.x,P.y,true);
+      r.all=mine.every(wsbOpen);r.spare=wsbTome('rematch',P.x,P.y,true)==='spare';r.n=wsbTomeStat.opened.length;
+      r.saved=JSON.parse(JSON.stringify(SAVE)).hero.tome.length===mine.length}catch(err){r.err=String(err&&err.stack||err)}
+    if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // אפקטים בתלת-ממד (vfx3d.js, skfx3d-meteor.js): המטאור מוטל, בנפילה יש חלקיקים ומתכון פעיל (והציור הדו-ממדי מדלג), בפגיעה פיצוץ, ובסוף הכל משתחרר
   const vfx=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.hero.skSeen=wsbIds().slice();SAVE.hero.skLoad=['meteor',null];enterWorld('home');enemies=[];
@@ -3163,6 +3175,9 @@ function worldBot(m,L,god){
       v.lOn+' שלוליות עם משטח ('+v.lMesh+' משטחים), '+(v.lOwn?'הציור הישן מדלג':'הציור הישן לא מדלג')+', '+v.lEnd+' נגמרו, '+v.lAfter+' השאירו סימן'+(v.lFree?', הכל השתחרר':', משטח נשאר תקוע'))));
     check(!v.err&&(!v.d3||v.pOn&&v.pFlame>0&&v.pBite>0),'האש של פיוחו בתלת-ממד: '+(v.err||(!v.d3?'דו-ממד, הלהבות בקנבס':
       (v.pOn?'דולקת':'לא דולקת')+', '+v.pFlame+' להבות מהזנב, '+v.pBite+' שלהבות בנשיכה')));}
+  check(!tome.err&&tome.oldSave&&tome.hooks&&tome.first&&tome.all&&tome.spare&&tome.saved,
+    'ספר קדום: '+(tome.err||[tome.oldSave?'שמירה ישנה עובדת':'שמירה ישנה נשברה',tome.hooks?'מחובר לשומר ולנמסיס':'לא מחובר לבוסים',
+    tome.first?'פותח את הסקיל הבא לפני הרמה':'לא פתח סקיל',tome.all?'פותח את כולם':'לא פתח את כולם',tome.spare?'אחרי הכל: זהב':'אחרי הכל: לא נפל שלל',tome.saved?'נשמר':'לא נשמר'].join(' · ')));
   check(!wsb.err&&wsb.one&&wsb.lock&&wsb.lp&&wsb.fill&&wsb.btns&&wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn&&!wsb.cardOv&&!wsb.cardSpill.length&&wsb.cardNum&&!wsb.bad.length&&wsb.ok.length===wsb.n&&wsb.clean&&!wsb.noPic.length,
     'ספר הסקילים: '+(wsb.err||[wsb.one&&wsb.lock?'נעול בהתחלה':'לא נעול',wsb.lp?'במסלול הרמות':'לא במסלול',wsb.fill&&wsb.btns?'רמה ממלאת משבצות':'רמה לא מילאה',
     wsb.ui&&wsb.swap&&wsb.close&&wsb.swapBtn?'הספר מחליף כפתור':'הספר לא החליף','עובדים: '+wsb.ok.join(', '),wsb.bad.length?'נכשלו: '+wsb.bad.join(', '):'',wsb.cardOv||wsb.cardSpill.length?'כרטיסים עולים זה על זה: '+wsb.cardOv+' '+wsb.cardSpill.join(','):'כרטיסים בלי חפיפה',wsb.cardNum?'':'המספר על הכרטיס לא כמו המשבצת',wsb.clean?'נגמרים':'לא נגמרו',wsb.noPic.length?'אייקונים שלא נטענו: '+wsb.noPic.join(', '):''+wsb.n+' אייקונים נטענו'].filter(Boolean).join(' · ')));
