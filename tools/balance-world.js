@@ -14,7 +14,7 @@ const opt=k=>{const i=args.indexOf('--'+k);if(i<0)return null;const v=args[i+1];
 const BAL={
   cls:(opt('cls')||'warrior,hunter,mage').split(','),
   seed:+(opt('seed')||7),
-  cap:+(opt('cap')||1200),          // שניות משחק לפרק
+  cap:+(opt('cap')||2400),        // מאז רמה 100 (#356) הטיפוס לרמה המומלצת ארוך יותר. עם 1200 הבוט נלחם בשומרים 2-5 רמות מתחת          // שניות משחק לפרק
   wardenCap:600,
   only:+(opt('chapters')||0),      // רק הפרקים הראשונים (--chapters 1: רק האחו ושומר האדמה)
   travel:60,                       // שניות בשלב השומר בלי להגיע למאורה, ואז קופצים אליה (ראה למטה)                   // מתוכן, לכל היותר לקרב בשומר
@@ -81,7 +81,7 @@ function install(B){
     const L=wsbLoad(),mine=open.filter(id=>WSKBOOK.list[id].cls===heroId());const pool=mine.length>=2?mine:open;
     m.swI=(m.swI+1)%pool.length;const nx=pool[m.swI];if(L.includes(nx))return;L[m.swI%2]=nx;}
   function steer(tx,ty,flee,stop){let dx=0,dy=0;
-    if(!flee&&S.wd&&typeof TR!=='undefined'&&TR&&Math.hypot(tx-P.x,ty-P.y)>stop){const t=tDir(P,tx,ty);tx=t.x;ty=t.y;stop=0}   // אזור עם מפה (terrain.js, האחו הגדול): מסביב לנהר וליער, כמו check.js
+    if(!flee&&S.wd&&typeof TR!=='undefined'&&TR&&Math.hypot(tx-P.x,ty-P.y)>stop){const t=tDir(P,tx,ty);if(t.x!==tx||t.y!==ty){tx=t.x;ty=t.y;stop=0}}   // דרך פתוחה: נשארים בטווח של הנשק (קשת ומטה לא נכנסים לתוך השומר)   // אזור עם מפה (terrain.js, האחו הגדול): מסביב לנהר וליער, כמו check.js
     const d=Math.hypot(tx-P.x,ty-P.y)||1;if(flee||d>stop){dx=(tx-P.x)/d;dy=(ty-P.y)/d;if(flee){dx=-dx;dy=-dy}}
     // תקוע באחו הגדול (קצה של נהר או צוק, דרך שלא נמצאה): 8 שניות בלי לזוז 40 פיקסלים, אז 2 שניות לכיוון אקראי, כמו שחקן שמסתובב. נספר ב-R.unstick
     if(S.wd&&typeof TR!=='undefined'&&TR){const k=m.stk;if(!k||Math.hypot(P.x-k.x,P.y-k.y)>40)m.stk={x:P.x,y:P.y,t:m.gt};
