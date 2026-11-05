@@ -2084,7 +2084,7 @@ function worldBot(m,L,god){
     o.offer=qOpen(QBY.s2Mist)&&!qOpen(QBY.s2Glow);
     qStart(QBY.s2Mist);wGo('lake');o.reg=S.wd.reg;o.mist=qReady(QBY.s2Mist);questClaim('s2Mist');
     const wet=enemies.filter(e=>!e.dead&&(e.type==='drowned'||e.type==='mistling'));o.foes=wet.length;
-    o.weak=wet.some(e=>e.type==='drowned'&&e.weak==='lightning');o.noNpc=!Object.keys(wnpcState()).length;
+    o.weak=wet.some(e=>e.type==='drowned'&&e.weak==='lightning');o.noNpc=Object.keys(wnpcState()).every(k=>WNPC.list[k].reg===S.wd.reg);
     return o});
   await page.clock.runFor(400);await shot('world-lake');
   const ch2b=await page.evaluate(()=>{
@@ -2110,7 +2110,7 @@ function worldBot(m,L,god){
     o.offer=qOpen(QBY.s3Climb)&&!qOpen(QBY.s3Frost);
     qStart(QBY.s3Climb);wGo('ridge');o.reg=S.wd.reg;o.climb=qReady(QBY.s3Climb);questClaim('s3Climb');
     const cold=enemies.filter(e=>!e.dead&&(e.type==='rimeknight'||e.type==='frostwraith'));o.foes=cold.length;
-    o.weak=cold.length>0&&cold.every(e=>e.weak==='fire');o.noNpc=!Object.keys(wnpcState()).length;o.snow=!!WR().snow&&typeof wSnow==='function';
+    o.weak=cold.length>0&&cold.every(e=>e.weak==='fire');o.noNpc=Object.keys(wnpcState()).every(k=>WNPC.list[k].reg===S.wd.reg);o.snow=!!WR().snow&&typeof wSnow==='function';
     return o});
   await page.clock.runFor(400);await shot('world-ridge');
   const ch3b=await page.evaluate(()=>{
@@ -2136,7 +2136,7 @@ function worldBot(m,L,god){
     Q.done.s3Warden=Q.done.s3Warden||1;o.offer=qOpen(QBY.s4Sand)&&!qOpen(QBY.s4Ember);
     qStart(QBY.s4Sand);wGo('desert');o.reg=S.wd.reg;o.sand=qReady(QBY.s4Sand);questClaim('s4Sand');
     const hot=enemies.filter(e=>!e.dead&&(e.type==='cinderscorp'||e.type==='flamewisp'));o.foes=hot.length;
-    o.weak=hot.length>0&&hot.every(e=>e.weak==='water');o.noNpc=!Object.keys(wnpcState()).length;o.heat=!!WR().heat&&typeof wHeat==='function';
+    o.weak=hot.length>0&&hot.every(e=>e.weak==='water');o.noNpc=Object.keys(wnpcState()).every(k=>WNPC.list[k].reg===S.wd.reg);o.heat=!!WR().heat&&typeof wHeat==='function';
     return o});
   await page.clock.runFor(400);await shot('world-desert');
   const ch4b=await page.evaluate(()=>{
@@ -2164,7 +2164,7 @@ function worldBot(m,L,god){
     Q.done.s4Warden=Q.done.s4Warden||1;o.offer=qOpen(QBY.s5Climb)&&!qOpen(QBY.s5Spark);
     qStart(QBY.s5Climb);wGo('storm');o.reg=S.wd.reg;o.climb=qReady(QBY.s5Climb);questClaim('s5Climb');
     const zap=enemies.filter(e=>!e.dead&&(e.type==='stormknight'||e.type==='sparkwisp'));o.foes=zap.length;
-    o.weak=zap.length>0&&zap.every(e=>e.weak==='earth');o.noNpc=!Object.keys(wnpcState()).length;
+    o.weak=zap.length>0&&zap.every(e=>e.weak==='earth');o.noNpc=Object.keys(wnpcState()).every(k=>WNPC.list[k].reg===S.wd.reg);
     const tw=(WR().towers||[])[0];o.storm=!!WR().storm&&typeof wStorm==='function'&&!!tw;
     if(tw){P.x=tw.x+3;P.y=tw.y;wPonds(P);o.solid=Math.hypot(P.x-tw.x,P.y-tw.y)>=tw.r}
     return o});
@@ -2197,7 +2197,7 @@ function worldBot(m,L,god){
     qStart(QBY.s6Dark);wGo('shadow');o.reg=S.wd.reg;o.dark=qReady(QBY.s6Dark);questClaim('s6Dark');
     const sh=enemies.filter(e=>!e.dead&&(e.type==='shadeknight'||e.type==='shadewisp'));o.foes=sh.length;
     o.mixed=['shadeknight','shadewisp'].every(t=>(ETYPES[t].tags||[]).length>1);
-    o.noNpc=!Object.keys(wnpcState()).length;o.shadow=!!WR().shadow&&typeof wShadow==='function';
+    o.noNpc=Object.keys(wnpcState()).every(k=>WNPC.list[k].reg===S.wd.reg);o.shadow=!!WR().shadow&&typeof wShadow==='function';
     qStart(QBY.s6Echo);questEvent('kill','shadeknight',6);questEvent('kill','shadewisp',6);o.echo=qReady(QBY.s6Echo);questClaim('s6Echo');
     return o});
   await page.clock.runFor(400);await shot('world-shadow');
