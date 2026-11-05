@@ -518,6 +518,7 @@ function worldBot(m,L,god){
     const st=saved().hero.style;L.style={};for(const k in st)L.style[k]=Math.round(st[k]);   // סגנון המשחק, כפי שנשמר
     m.wp='die';return stay()}
   if(m.wp==='die'){   // נופלים בכוונה, עם משאבים ופריט בתרמיל ומשהו במחסן
+    if(SAVE.ways)SAVE.ways.open={};   // כאן בודקים קימה בכפר, בלי אבן מסע פתוחה. קימה באבן: בדיקת "אבני מסע" (waystones.js)
     bagAdd('wood',7);bagAdd('stone',5);bagAdd('coins',1);bagAdd('oakSword',1);SAVE.stash.stone=(SAVE.stash.stone||0)+3;saveNow();
     m.d0=bag();m.s0=JSON.stringify(SAVE.stash);P.inv=0;hurt(P.hp+999);
     const res=Object.keys(m.d0).filter(r=>resOf(r)),items=Object.keys(m.d0).filter(r=>!resOf(r));
