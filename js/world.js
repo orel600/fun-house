@@ -24,9 +24,9 @@ const WORLD={
      ראשונות: מפלצות קלות ממש מחוץ לשער, הדבר הראשון ששחקן חדש פוגש. מהן לומדים איך נראים קרב, מספרי נזק ושלל (ניר) */
   foes:[
     // ליד השער: פחות אויבים, וכל אחד חזק יותר (zones.start). קרב אחד שמרגישים, ולא עשרה שנעלמים (מבקר 2, 2.11.2026). wtension.js
-    {type:'grunt',n:1,x:-260,y:-1620,r:95},{type:'grunt',n:1,x:140,y:-1610,r:95},{type:'grunt',n:2,x:-70,y:-1460,r:100},
-    // האחו הפתוח מצפון לנהר (קל)
-    {type:'grunt',n:2,x:-420,y:-1240,r:140},{type:'grunt',n:3,x:380,y:-1180,r:140},{type:'wisp',n:2,x:-800,y:-1520,r:150},
+    {type:'grunt',n:1,x:-260,y:-1620,r:95},{type:'grunt',n:1,x:140,y:-1610,r:95},{type:'grunt',n:2,x:-250,y:-1470,r:100},
+    // האחו הפתוח מצפון לנהר (קל). הראשונה ממש מתחת לשער, בתחילת הדרך
+    {type:'grunt',n:2,x:-70,y:-1390,r:110},{type:'grunt',n:2,x:-460,y:-1180,r:140},{type:'grunt',n:3,x:380,y:-1180,r:140},{type:'wisp',n:2,x:-800,y:-1520,r:150},
     {type:'grunt',n:2,x:-1120,y:-1700,r:110},   // על הדרך מהשער לשביל היער ולאגם
     {type:'shield',n:3,x:-1070,y:-1290,r:150},{type:'grunt',n:2,x:-960,y:-1180,r:120},   // 20 מחנה כורתים נטוש
     {type:'wisp',n:2,x:940,y:-1140,r:140},{type:'shield',n:2,x:1040,y:-1060,r:120},    // 21 מחנה ציידים
@@ -333,6 +333,10 @@ function wFoes(dt){
     const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*sp*0.08;e.flash-=dt;
   }
   // קבוצה שנוקתה חוזרת אחרי זמן, כשהשחקן רחוק ממנה
+  if(TR&&!WR().dpBase)FO.forEach((G,i)=>{const g=S.wd.groups[i];   // האחו הגדול: קבוצה שהשחקן התרחק ממנה מאוד חוזרת לישון, כדי שלא יצטברו עשרות אויבים בכל המפה
+    if(!alive[i]||g.lazy||Math.hypot(P.x-G.x,P.y-G.y)<TERRAIN.forget)return;
+    for(const e of enemies)if(e.home===i&&!e.dead&&!e.wanted&&!e.warden&&!e.evt&&!e.pack&&!e.nem&&!e.hunt&&!(e.alert>0))e.dead=true;
+    g.lazy=1;alive[i]=0});
   FO.forEach((G,i)=>{const g=S.wd.groups[i];if(alive[i]||!ETYPES[G.type])return;
     if(g.lazy){if(Math.hypot(P.x-G.x,P.y-G.y)<TERRAIN.wake){g.lazy=0;wSpawn(G,i)}return}   // עוד לא נוצרה: רק כשמתקרבים
     if(g.t<=0)g.t=wZone(G).back;else if((g.t-=dt)<=0&&paceRoom(G.n)&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+Math.max(WORLD.far,Math.hypot(W,H)/2)){wSpawn(G,i);g.n=(g.n||0)+1}else g.t=Math.max(g.t,0.01)});
