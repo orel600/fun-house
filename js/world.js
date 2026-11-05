@@ -128,17 +128,7 @@ const WORLD={
     // snow: פתיתי שלג בקנבס (wSnow). ponds כאן הם סדקים בקרח שאי אפשר לעבור
     ridge:{
       region:'ridge',back:'lake',enter:'w.enter.ridge',noNpc:true,snow:true,ground:'#33404E',pondCol:['#1C2A3A','#9FD8F0'],
-      home:{x:0,y:-600,r:44},gates:{},waystones:[{id:'pass',x:-420,y:-110},{id:'lair',x:450,y:220}],
-      paths:{desert:{x:-860,y:-590,r:44,need:'ice'}},   // פרק 4: אחרי שפנס הקרח נדלק, מעבר בצפון-מערב שיורד למדבר הבוער
-      ponds:[{x:-120,y:40,r:150},{x:420,y:-160,r:90},{x:-560,y:300,r:110}],
-      fields:[{kind:'pine',n:10,x:-560,y:-260,r:230},{kind:'pine',n:6,x:250,y:280,r:180},{kind:'pine',n:4,x:-820,y:80,r:120},
-              {kind:'iceRock',n:6,x:620,y:-330,r:190},{kind:'iceRock',n:4,x:-300,y:480,r:140},{kind:'rock',n:4,x:180,y:-260,r:130}],
-      foes:[
-        {type:'frostwraith',n:2,x:-180,y:-430,r:110},{type:'frostwraith',n:2,x:210,y:-410,r:110},
-        {type:'rimeknight',n:2,x:-420,y:-200,r:130},{type:'frostwraith',n:3,x:330,y:-60,r:140},{type:'rimeknight',n:3,x:640,y:-280,r:150},
-        {type:'rimeknight',n:3,x:-700,y:200,r:150},{type:'frostwraith',n:3,x:120,y:360,r:140},{type:'rimeknight',n:3,x:620,y:300,r:150},
-        {type:'rimeknight',creature:true,n:2,x:620,y:-330,r:120},{type:'frostwraith',creature:true,n:2,x:-560,y:-260,r:130}
-      ],
+      // המפה, המקומות, המשאבים והאויבים: js/map-ridge.js (הרכס הגדול)
       // קשה מהאגם: מי שהגיע לכאן כבר הדליק שני פנסים
       zones:[
         {id:'start',to:360, hp:0.8,dmg:0.6,speed:0.8, leash:260,back:16},

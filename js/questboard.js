@@ -18,7 +18,7 @@ const SIDEQ={
   places:{
     meadow:{},
     lake:  {},   // האגם הגדול (map-lake.js): ציוני הדרך שלו נוספים לבד למטה
-    ridge: {crevasse:{x:-120,y:-160},camp:{x:620,y:300},pines:{x:-560,y:-260},cliff:{x:-300,y:520}},
+    ridge: {},   // הרכס הגדול (map-ridge.js): ציוני הדרך שלו נוספים לבד למטה (crevasse, camp, pines, cliff ועוד)
     desert:{bones:{x:-120,y:420},cacti:{x:-560,y:-300},nest:{x:700,y:460},lava:{x:140,y:-170}},
     storm: {},   // הסערה הגדולה (map-storm.js): ציוני הדרך שלה נוספים לבד למטה
     shadow:{hall:{x:-640,y:200},abyss:{x:-460,y:-200},groveW:{x:-560,y:-300},groveE:{x:560,y:-320},void:{x:700,y:240}}
@@ -26,7 +26,7 @@ const SIDEQ={
   // המראה בתלת-ממד לפי המודל (look ב-WNPC.list)
   looks:{knight:{h:64,foot:14},ranger:{h:58,foot:13,own:false},barbarian:{h:62,foot:14,own:false},mage:{h:60,foot:13},rogue:{h:58,foot:13}}
 };
-// אזור עם מפה גדולה (האחו, האגם): המקומות הם ציוני הדרך שלה (marks), בשמות קבועים
+// אזור עם מפה גדולה (האחו, האגם, הרכס): המקומות הם ציוני הדרך שלה (marks), בשמות קבועים
 for(const reg of ['meadow',...Object.keys(WORLD.regions)]){const R=reg==='meadow'?WORLD:WORLD.regions[reg],M=R&&R.map;
   if(M&&M.marks&&SIDEQ.places[reg])for(const m of M.marks)SIDEQ.places[reg][m.id]=SIDEQ.places[reg][m.id]||{x:m.x,y:m.y}}
 
@@ -36,7 +36,7 @@ const QBOARD={
   streak:5,          // כל כמה משימות מהלוח יש בונוס
   bonus:{gem:1,essence:3},
   // איפה הלוח: באחו ליד השער לכפר, ובשאר האזורים ליד השער שממנו נכנסים
-  at:{meadow:{x:110,y:-1740},lake:{x:150,y:-1690},storm:{x:150,y:-1690},other:{x:-90,y:-520}},
+  at:{meadow:{x:110,y:-1740},lake:{x:150,y:-1690},ridge:{x:-380,y:-1760},storm:{x:150,y:-1690},other:{x:-90,y:-520}},
   // מה האזור מציע: משאבים לאסוף (כמה בבסיס), ומשאב בפרס
   regs:{
     meadow:{res:{wood:15,stone:12,copper:5,herb:6},prize:'iron',fish:true},
