@@ -14,7 +14,8 @@ const HEROES={
     hunter: {weapon:'oakBow',passive:{speed:10},arms:['bow'],icon:'🏹',col:'#A8D08D'},
     // worldPassive: כמו passive, אבל רק בכפר ובעולם (heroWorld). הזירה ומשחקי השאול לא משתנים. הקוסם (איזון 4.11, docs/balance-2026-11-04.md):
     // אחרי #321 רטיבות והלם נגמרים גם בעולם, והקוסם מת שם פי 3 מהציידת
-    mage:   {weapon:'oakStaff',passive:{regen:1},worldPassive:{def:12,speed:10,gdmg:15},arms:['staff','wand'],icon:'🔮',col:'#C7A6FF'}
+    // 5.11.2026 (fix/mage-boss): gdmg 15←25. בשתי מדידות של 10 קרבות ברמה המומלצת הקוסם היה איטי ב-26% מהממוצע בשומר האש וב-22% בצל, כי הסקילים שלו בעיקר אש וקרח
+    mage:   {weapon:'oakStaff',passive:{regen:1},worldPassive:{def:12,speed:10,gdmg:25},arms:['staff','wand'],icon:'🔮',col:'#C7A6FF'}
   },
   /* סגנון המשחק, לקווסטי הדרגה. כל מונה נשמר ב-SAVE.hero.style.
      sec: כמה שניות בזירה התנאי היה נכון (heroTick, כל פריים). המפתח נשמר עם t_ לפניו.
