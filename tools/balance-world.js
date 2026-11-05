@@ -91,8 +91,11 @@ function install(B){
     if(m.ph==='grind'&&now-m.chT>=B.cap-B.wardenCap)m.ph='warden';   // לא הגיע לרמה בזמן: מנסה את השומר בכל זאת
     const L=STORY.lanterns[chap().k],w=S.wd;
     if(m.ph==='warden'){if(!m.wT)m.wT=now;
-      if(m.wE&&m.wE.dead&&m.wE.hp<=0){c.wardenT=Math.round(now-m.wT);c.wLv=heroLv();m.wE=null;finish(true);return{}}
-      if(!w.warden&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake){m.wE=storyWarden(chap().k,L.y+70);c.tries=(c.tries||0)+1}}
+      if(m.wE&&m.wE.dead&&m.wE.hp<=0){c.wardenT=Math.round(now-m.wT);c.fightT=Math.round((now-m.wS)*10)/10;c.wLv=heroLv();m.wE=null;finish(true);return{}}
+      // הענק קם לבד כשמתקרבים (giant.js). הטיימר מניצחון מקרי בזמן הטיפוס לא נספר: מאפסים אותו
+      if(m.wE&&m.wE.gone)m.wE=null;if(STO().bt)delete STO().bt[chap().k];
+      if(!w.warden&&typeof giantReady!=='function'&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake)storyWarden(chap().k,L.y+70);   // גרסה ישנה (לפני הטיימר): קם רק עם קווסט, אז מקימים ביד
+      if(w.warden&&!w.warden.dead&&m.wE!==w.warden){m.wE=w.warden;m.wS=now;c.tries=(c.tries||0)+1}}
     // קרב: לחיים נמוכים בורחים. אחרת אל האויב הקרוב (או השומר), עד הטווח של הנשק
     const F=foes(),near=F.reduce((b,e)=>{const d=Math.hypot(e.x-P.x,e.y-P.y);return d<b.d?{e,d}:b},{e:null,d:1e9});
     const melee=P.weapon==='sword',stop=melee?28:150;
@@ -131,10 +134,13 @@ async function runCls(browser,cls){
   // הדוח
   const row=(c,R)=>R.ch.map((h,i)=>{const d=R.dmg[i]||{},cs=R.casts[i]||{},tot=Object.values(d).reduce((a,b)=>a+b,0)||1;
     const sk=Object.keys(d).sort((a,b)=>d[b]-d[a]).map(k=>k+' '+Math.round(d[k]/tot*100)+'%'+(cs[k]?' ('+Math.round(d[k]/cs[k])+'/הטלה)':'')).join(', ');
-    return `  ${i+1}. ${h.reg}: ${h.ok?'✓':'✗ תקוע ('+h.why+')'} ${h.t}s, רמה ${h.lv0}→${h.lv1}, מוות ${h.deaths}${h.wardenT!=null?', שומר '+h.wardenT+'s ברמה '+h.wLv+' ('+h.tries+' ניסיונות)':''}, מטבעות ${h.coins}\n     נזק: ${sk}\n     ציוד: ${h.gear} · סקילים: ${h.sk||'-'}`}).join('\n');
+    return `  ${i+1}. ${h.reg}: ${h.ok?'✓':'✗ תקוע ('+h.why+')'} ${h.t}s, רמה ${h.lv0}→${h.lv1}, מוות ${h.deaths}${h.wardenT!=null?', שומר '+h.wardenT+'s (קרב '+h.fightT+'s) ברמה '+h.wLv+' ('+h.tries+' ניסיונות)':''}, מטבעות ${h.coins}\n     נזק: ${sk}\n     ציוד: ${h.gear} · סקילים: ${h.sk||'-'}`}).join('\n');
   for(const c of BAL.cls){const R=out[c];console.log(`\n${c} (${R.real}s אמיתיות, ${R.deaths} מוות)\n`+row(c,R));
     if(Object.keys(R.block).length)console.log('  נחסם בדרישות: '+Object.entries(R.block).map(([k,b])=>`${k} ×${b.n} (צריך רמה ${b.lv}, ${b.st} ${b.pt}; היה ${b.at.join(' ')})`).join('; '));
     if(Object.keys(R.noPay).length)console.log('  אין במה לשדרג: '+Object.entries(R.noPay).map(([k,v])=>`${k} בפרק ${v.ch+1}: ${v.miss}`).join('; '));
     if(R.errors.length)console.log('  שגיאות: '+R.errors.join(' | '))}
+  // סולם הבוסים (GIANT.ladder.ratio, ניר 5.11): כמה זמן לוקח להפיל כל שומר, בממוצע על המחלקות, ופי כמה מהקודם
+  const ft=BAL.chapters.map((_,i)=>{const v=BAL.cls.map(c=>(out[c].ch[i]||{}).fightT).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null});
+  console.log('\nזמן להפיל כל שומר (ממוצע, שניות): '+ft.map((t,i)=>BAL.chapters[i].k+' '+(t==null?'-':t.toFixed(1))+(i&&t&&ft[i-1]?' (×'+(t/ft[i-1]).toFixed(2)+')':'')).join(', '));
   const j=opt('json');if(j)fs.writeFileSync(j,JSON.stringify(out,null,1));
 })();
