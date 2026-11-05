@@ -135,9 +135,12 @@ const GRIP3D={
   chop: {...HAND_R,attack:'Melee_1H_Attack_Chop'},    // גרזן ופטיש: מכה מלמעלה
   bow:  {bone:'handslotl',pos:[0,0,0],rot:[0,-0.7071,0,0.7071],attack:'Ranged_Bow_Release',draw:'Ranged_Bow_Draw',idle:'Ranged_Bow_Idle'},   // מותחים לפני כל חץ, ומשחררים ביריה
   magic:{...HAND_R,attack:'Ranged_Magic_Shoot'},
-  of:m=>/^w_bow/.test(m)?'bow':/^w_(staff|wand)/.test(m)?'magic':/^w_(axe|hammer)/.test(m)?'chop':'blade',
+  of:m=>{const k=/^w_item_(.+)/.exec(m),w=k&&(GEAR.items[k[1]]||{}).w;if(w)m='w_'+w;   // מודל משלו: המשפחה לפי סוג הנשק של הפריט (w ב-gear.js)
+    return /^w_bow/.test(m)?'bow':/^w_(staff|wand)/.test(m)?'magic':/^w_(axe|hammer)/.test(m)?'chop':'blade'},
   spare:{sword:'w_sword_A',gun:'w_bow_A_withString'}   // רק כשלפריט אין מודל
 };
+// המודל של פריט: מודל משלו (w_item_<id>, ITEMS ב-build3d.js) ברגע שהוא נבנה, ועד אז look.model. כך חפץ חדש לא צריך שינוי ב-gear.js
+const itemModel=(id,it=GEAR.items[id])=>R3D.props['w_item_'+id]?'w_item_'+id:it&&it.look&&it.look.model;
 /* ציוד שרואים על הגיבור בעולם, בכפר ובבובה (docs/plan-progression.md בענף research/progression, PR #168). דלוק לכולם. ?gear3d=0 מכבה.
    ההחלטות של ניר (1.11): זוהר עדין (רק נדיר ומעלה זוהר, ורק אגדי פועם), נשק ומגן קצת יותר גדולים מהמציאות, וכל פריט משנה את המראה בעדינות.
    glow: כמה חזק הנשק, המגן והחלקים זוהרים בצבע הדרגה (GEAR.tiers), לפי tier 0 עד 4. pulse: כמה אגדי פועם, ו-rate כמה מהר.
@@ -160,8 +163,8 @@ function gear3dLook(L,wid){
   for(const w of ['sword','gun']){const p=L.props[w];p.s=GEAR3D.wscale;if(it&&wUse(wid)===w&&GEAR3D.glow[it.tier]>0){p.glow=g3Rar(it.tier);p.gk=GEAR3D.glow[it.tier];p.pulse=it.tier>=4}}
   const fam=it&&wUse(wid)==='sword'&&GRIP3D.of(L.props.sword.prop);
   const t=best('shield'),sh=worn.find(x=>x.slot==='shield'&&x.tier===t);   // המגן מהמשבצת (armor.js). בלי מגן: יד ריקה
-  if((fam==='blade'||fam==='chop')&&t>=0){const G=GEAR3D.shield,sm=sh&&sh.look&&sh.look.model;
-    L.props.shield={prop:sm||G.model[t],tier:G.metal[t],bone:G.bone,pos:G.pos,rot:G.rot,s:G.s,glow:GEAR3D.glow[t]>0?g3Rar(t):null,gk:GEAR3D.glow[t],pulse:t>=4}}
+  if((fam==='blade'||fam==='chop')&&t>=0){const G=GEAR3D.shield,sm=sh&&itemModel(Object.keys(GEAR.items).find(k=>GEAR.items[k]===sh),sh);
+    L.props.shield={prop:sm&&R3D.props[sm]?sm:G.model[t],tier:G.metal[t],bone:G.bone,pos:G.pos,rot:G.rot,s:G.s,glow:GEAR3D.glow[t]>0?g3Rar(t):null,gk:GEAR3D.glow[t],pulse:t>=4}}
   const b=best('boots'),h=best('acc'),set=Object.keys(SETS).find(s=>setTiers(gearWorn()).some(x=>x.startsWith(s)));
   L.g3={boots:b>=0?g3Rar(b):null,bk:b>=0?GEAR3D.glow[b]:0,head:h>=GEAR3D.head.from?g3Rar(h):null,hk:h>=0?GEAR3D.glow[h]*0.7:0,hp:h>=4,set:set?SETS[set].col:null};
 }
@@ -382,7 +385,7 @@ function heroLook(){
   const L=Object.assign({},LOOK3D.player,sk?LOOK3D[HEROES.skins[sk].look]:PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()]),it=gItem(wid);
   L.props={};L.anim=Object.assign({},L.anim);L.ck=ck;
   for(const w of ['sword','gun']){
-    const mine=it&&wUse(wid)===w&&it.look&&R3D.props[it.look.model],model=mine?it.look.model:GRIP3D.spare[w],g=GRIP3D[GRIP3D.of(model)];
+    const im=it&&itemModel(gBase(wid),it),mine=it&&wUse(wid)===w&&im&&R3D.props[im],model=mine?im:GRIP3D.spare[w],g=GRIP3D[GRIP3D.of(model)];
     L.props[w]=Object.assign({prop:model,tier:mine?GEAR.tiers[it.tier].id:'wood'},g);
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
