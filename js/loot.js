@@ -29,6 +29,7 @@ const LOOT={
        slot: כמה נפוצה כל משבצת. cls.share: איזה חלק מהנשקים הם של הדמות (arms ב-HEROES), והשאר מהדמויות האחרות, כי כל דמות יכולה להחזיק כל נשק.
        cls.pity: אחרי כמה פריטים ברצף בלי נשק של הדמות, הבא הוא בטוח נשק שלה (SAVE.clsPity).
        tier: המשקל של כל שכבה (עץ, ברזל, כסף, זהב, אגדי) לפי רמת הדמות. חל המדרג האחרון שה-lv שלו קטן או שווה לרמה.
+       דרגת העולם מכפילה את המשקלות (TIERS.list[*].gw ב-tiers.js): אגדי נופל בעולם רק בדרגה 3.
        אין פריט בשכבה שנבחרה (למשל מגפי זהב): השכבה הקרובה מתחת, ואם אין, מעל */
     slot:{weapon:0.4,acc:0.25,boots:0.15,orbit:0.2},
     cls:{share:0.6,pity:3},
@@ -98,7 +99,7 @@ function lootRoll(n=1,mine){
   let slot=pick(Object.assign({},G.slot,ARMOR.loot.slot));
   if(arms){if(mine||(SAVE.clsPity||0)>=G.cls.pity){slot='weapon';mine=true}else mine=slot==='weapon'&&Math.random()<G.cls.share}
   const arm=armorPick(slot);   // שריון: מוטה למחלקה שלך (armor.js). אחרי המזל, שכבר יכול היה להפוך את המשבצת לנשק
-  const lv=heroLv(),W=G.tier.filter(b=>b.lv<=lv).pop().w;let t=0;
+  const lv=heroLv(),W=tierGearW(G.tier.filter(b=>b.lv<=lv).pop().w);let t=0;   // tierGearW: דרגת העולם. זהב נפוץ רק מדרגה 2, אגדי רק בדרגה 3 (tiers.js)
   for(let i=0;i<n;i++)t=Math.max(t,+pick(Object.assign({},W)));
   const ok=id=>{const it=GEAR.items[id];return it.slot===slot&&!it.types&&arm(it)&&(slot!=='weapon'||!arms||arms.includes(it.w)===!!mine)};
   const pool=Object.keys(GEAR.items).filter(ok),near=pool.length?Math.min(...pool.map(id=>{const d=GEAR.items[id].tier-t;return d<=0?-d:d+10})):0,
