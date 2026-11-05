@@ -114,13 +114,14 @@ const sqPlaceName=w=>T('sq.pl.'+String(w).replace(':','.'));
 function sqTargets(){
   if(!S.wd)return[];const out=[],Q=QS();
   for(const id in Q.active){const q=QBY[id];if(!q)continue;
-    q.obj.forEach((o,i)=>{if(o.type!=='visit'&&o.type!=='hold')return;const p=sqPlace(o.what);if(p&&p.reg===S.wd.reg&&qProg(q,i)<o.n)out.push({q,i,o,p})})}
+    q.obj.forEach((o,i)=>{if(o.type!=='visit'&&o.type!=='hold'&&o.type!=='escort')return;const p=sqPlace(o.what);if(o.type==='escort'&&!(S.wd.esc&&S.wd.esc.qid===q.id))return;if(p&&p.reg===S.wd.reg&&qProg(q,i)<o.n)out.push({q,i,o,p})})}   // ליווי: היעד מסומן רק כשהיא כבר בדרך
   return out;
 }
 /* ---- כל פריים בעולם (מ-wnpcUpdate) ---- */
 function sqUpdate(dt){
   const W=S.wd;if(!W)return;
   if(QBOARD.regs[W.reg]&&((W.qbT=(W.qbT||0)-dt)<=0)){W.qbT=1;qbSync(W.reg)}   // פעם בשנייה: הלוח באזור מתמלא
+  escUpdate(dt);   // ליווי דמות (escort.js)
   const H=W.sqHold||(W.sqHold={acc:0,spawn:0,key:null});let inHold=null;
   for(const t of sqTargets()){const d=Math.hypot(P.x-t.p.x,P.y-t.p.y);
     if(t.o.type==='visit'&&d<SIDEQ.visitR){questEvent('visit',t.o.what);sparks(t.p.x,t.p.y,SIDEQ.col,18,200);sfx('ui')}
@@ -158,6 +159,7 @@ function sqScreen(ox,oy){
       ctx.fillStyle='#000a';ctx.fillText(s,x+1,y-157);ctx.fillStyle=SIDEQ.col;ctx.fillText(s,x,y-158)}
     edgeArrow(x,y,SIDEQ.col)}
   ctx.restore();
+  escScreen(ox,oy);   // פס החיים של מי שאתה מלווה (escort.js)
 }
 
 /* ---- לשלט "רמה מומלצת" (curiosity.js): כמה קווסטים פתוחים באזור, ואיפה הקרוב ---- */

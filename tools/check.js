@@ -921,6 +921,29 @@ function worldBot(m,L,god){
   check(sq.open&&sq.visit&&sq.paid&&sq.chain&&sq.hold&&sq.meet,'קווסט צדדי: '+(sq.open?'נפתח כשמוצאים את הסיירת':'לא נפתח')+', '+(sq.visit?'לחקור מקום נספר':'לחקור לא נספר')+', '+(sq.paid?'פרס XP ומטבעות':'בלי פרס')+', '+
     (sq.chain?'השרשרת ממשיכה':'השרשרת נתקעה')+', '+(sq.hold?'להגן נספר בשניות':'להגן לא נספר')+', '+(sq.meet?'הודעה נמסרת עם פרס במקום':'הודעה לא נמסרה'));
   check(sq.board&&sq.swap&&sq.bReady&&sq.bPaid&&sq.day&&sq.dayNew,'לוח מודעות: '+(sq.board?'3 משימות עם פרס':'אין 3 משימות')+', '+(sq.swap?'מה שנלקח מתחלף בחדשה':'לא התחלף')+', '+(sq.bPaid?'פרס והלוח שוב מלא':'בלי פרס או לוח חסר')+', '+(sq.dayNew?'יום חדש מחדש':'יום חדש לא מחדש'));
+  // ליווי דמות (escort.js): לכל קווסט ליווי יש דרך מהבית שלה ליעד. הנזיר יוצא לדרך כשאתה לידו והולך, אויב שמגיע אליו מפיל אותו: הקווסט נכשל,
+  // הוא חוזר הביתה ולא יוצא שוב עד שמדברים איתו. בפעם השנייה הוא מגיע, היעד הושלם, והפרס אצלו. בסוף מחזירים את השמירה
+  const es=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={},ov=['ovStart','ovOver','ovLevel','ovBoss','ovWDeath'].map(id=>[id,$(id).hidden]);   // enterWorld מסתיר את מסך הפתיחה, והבדיקה באנגלית לוחצת עליו אחר כך
+    try{const Q=QS(),E0=QUESTS.early.ids;QUESTS.early.ids=QUESTS.list.map(q=>q.id);r.paths={};
+      for(const q of QUESTS.list){const i=q.obj.findIndex(o=>o.type==='escort');if(i<0)continue;const N=WNPC.list[q.giver],p=sqPlace(q.obj[i].what);
+        enterWorld('home',N.reg||'meadow');r.paths[q.id]=!!tPath(N.at.x,N.at.y,p.x,p.y)}
+      SAVE.met.hermit=1;Q.done.sqHerm3=1;enterWorld('home','meadow');enemies=[];const W=S.wd,n=wnpcState().hermit,A=WNPC.list.hermit.at;
+      questAct('accept','sqHerm4');const near=()=>{P.x=n.x+40;P.y=n.y;P.hp=P.maxHp};
+      const step=t=>{for(let i=0;i<t*30;i++){near();escUpdate(1/30)}};
+      step(0.1);r.start=!!W.esc&&W.esc.id==='hermit';const x0=n.x;step(1);r.walk=Math.hypot(n.x-A.x,n.y-A.y)>40&&n.walk;
+      const e=addEnemy('grunt',n.x+15,n.y);e.esc=true;e.dmg=ESCORT.hp+10;step(0.3);
+      r.fail=!W.esc&&Math.hypot(n.x-A.x,n.y-A.y)<1&&!qReady(QBY.sqHerm4)&&!!QS().active.sqHerm4;
+      step(0.5);r.noRestart=!W.esc;e.dead=true;enemies=[];
+      escTalk('hermit');step(0.1);r.again=!!W.esc;
+      for(let k=0;k<200&&W.esc;k++)step(1);
+      r.arrive=!W.esc&&qReady(QBY.sqHerm4)&&Math.hypot(n.x-SIDEQ.places.meadow.temple.x,n.y-SIDEQ.places.meadow.temple.y)<ESCORT.arrive+5;
+      const x1=SAVE.hero.xp;questAct('claim','sqHerm4');r.paid=SAVE.hero.xp>x1&&!!QS().done.sqHerm4;
+      QUESTS.early.ids=E0;
+    }catch(err){r.err=String(err&&err.stack||err).slice(0,300)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}for(const [id,h] of ov)$(id).hidden=h;return r});
+  check(es.start&&es.walk&&es.fail&&es.noRestart&&es.again&&es.arrive&&es.paid&&Object.values(es.paths||{}).every(Boolean),'ליווי: '+Object.keys(es.paths||{}).filter(k=>es.paths[k]).length+'/'+Object.keys(es.paths||{}).length+' עם דרך'+
+    ', '+(es.start&&es.walk?'יוצא לדרך והולך':'לא יצא לדרך')+', '+(es.fail&&es.noRestart?'נופל, הקווסט נכשל והוא חוזר הביתה':'נפילה לא עובדת')+', '+(es.again?'שיחה מנסה שוב':'לא מנסה שוב')+', '+
+    (es.arrive?'מגיע ליעד':'לא הגיע')+', '+(es.paid?'ופרס':'בלי פרס')+(es.err?' ('+es.err+')':''));
   // דרגות (ranks.js): רמה 20 פותחת קווסט דרגה אצל הכוהנת, הסגנון קובע איזו דרגה, ולקיחת הפרס שומרת אותה, מפעילה טקס ומוסיפה בונוס קבוע. בסוף מנקים
   const rk=await page.evaluate(()=>{const q=QUESTS.list.find(q=>q.kind==='rank'),mode=S.mode,r={every:RANKS.every};
     r.locked=!qOpen(q);
