@@ -9,7 +9,7 @@
 TERRAIN.pal.storm={forest:'#3a3046',rock:'#6e6a86',bank:'#4a3f6e',ridge:'#5d5a6e',cliff:'#4f4b62',   // הקרקע האפויה בסערה (ground.js)
   water:{deep:'#6a48c8',dark:'#2b1a66',shallow:'#a48ce6',foam:'#f4ecff'},                          // נהר הברקים: סגול זוהר במקום כחול
   trees:[{model:'n_dead',h:150,tint:'#8f86aa'},{model:'n_bare',h:120,tint:'#7d7598'},{model:'n_dead',h:120,tint:'#6f6690'}],   // היער השרוף: עצים מתים
-  wall:'#7d7894'};                                                                                  // החומה
+  wall:'#d6d0ec'};                                                                                  // החומה
 
 Object.assign(WORLD.regions.storm,{
   size:{w:6300,h:4200},
