@@ -2363,29 +2363,27 @@ function worldBot(m,L,god){
     'אויבים עם התנהגות (foeai.js): '+(fai.chase?'קבוצה רודפת':'קבוצה לא רודפת!')+', מסתער '+(fai.cWind&&fai.cEarly?'מסמן קודם':'בלי סימון')+(fai.cHit?' ופוגע':' ולא פוגע')+(fai.cDodge?', צעד הצידה = התחמקות':', אי אפשר להתחמק')+
     ', יורה '+(fai.rAim&&fai.rWait?'עם קו':'בלי קו')+(fai.rShot?' ויורה':' ולא יורה')+', קופץ '+(fai.lCrouch?'עם עיגול':'בלי עיגול')+(fai.lHit?' ונוחת עליך':' ולא פוגע')+(fai.lDodge?', זזת = התחמקת':', אי אפשר להתחמק')+
     ', קורא '+(fai.flee?'בורח':'לא בורח')+(fai.called?' ומביא חברים':' ולא מביא')+(fai.calm?', ליד השער רגוע':', ליד השער לא רגוע')+(fai.leader?', מנהיג מגיע בשיא':', אין מנהיג')+(fai.once?'':' (יותר מאחד!)')+(fai.pile?' ומשאיר ערימה':' בלי ערימה'));
-  // אתגר יומי (challenge.js): אותו חוק לאותו תאריך, החוק נכנס לאויב בעולם, הריגות נספרות, הפרס נאסף רק בכפר ופעם אחת, ופספוס לא מעניש
+  // המשימה של היום (mutation.js, היה challenge.js): החוק נכנס לאויב בעולם, הריגות נספרות, הפרס נאסף רק בכפר ופעם אחת, ופספוס לא מעניש
   const chl=await page.evaluate(()=>{
-    const o={},ids=Object.keys(CHALLENGE.rules);o.same=chRule('2026-11-1')===chRule('2026-11-1');o.many=new Set(['2026-11-1','2026-11-2','2026-11-3','2026-11-4','2026-11-5','2026-11-6','2026-11-7','2026-11-8'].map(d=>chRule(d))).size;
-    SAVE.challenge=null;CHALLENGE.rules.test={hp:2,speed:1.5,type:'fire',boost:2,cut:0.5,coins:[3,3]};const real=chRule;chRule=()=>'test';
-    const e0=SAVE.story.earth;SAVE.story.earth=false;enterWorld('home');o.shut=$('chTag').hidden&&!enemies.some(x=>!x.dead&&x.ch);   // לפני פנס האדמה: עולם רגיל
+    const o={};SAVE.challenge=null;MUTATION.rules.test={icon:'🧪',hp:2,speed:1.5,mult:{fire:2},xp:1,loot:0};MUT.force='test';
+    const e0=SAVE.story.earth;SAVE.story.earth=false;enterWorld('home');o.shut=$('chTag').hidden&&!enemies.some(x=>!x.dead&&x.mut)&&challengeCard()==='';   // לפני פנס האדמה: עולם רגיל
     SAVE.story.earth=true;
-    enterWorld('home');o.tag=!$('chTag').hidden&&$('chTag').textContent.includes('/'+CHALLENGE.goal);
-    const e=enemies.find(x=>!x.dead&&x.ch&&!x.creature);o.rule=!!e&&e.mult!==ETYPES[e.type].mult&&e.mult.fire>=(ETYPES[e.type].mult.fire??1)*1.9&&e.mult.water<=(ETYPES[e.type].mult.water??1)*0.6;
-    const c0=dropStats().spawned;for(let i=0;i<CHALLENGE.goal;i++){const k=addEnemy('grunt',P.x+60,P.y,1);k.home=0;challengeSpawn(k);damage(k,k.hp*10,'sword',0,'fire')}
-    o.n=chSave().n;o.coins=dropStats().spawned-c0>=CHALLENGE.goal*3;o.noWorld=!challengeClaim();
+    enterWorld('home');o.tag=!$('chTag').hidden&&$('chTag').textContent.includes('/'+MUTATION.goal)&&$('mutChip').textContent.includes('/'+MUTATION.goal);   // ההתקדמות על השבב
+    const e=enemies.find(x=>!x.dead&&x.mut&&!x.creature);o.rule=!!e&&e.mult!==ETYPES[e.type].mult&&e.mult.fire>=(ETYPES[e.type].mult.fire??1)*1.9;
+    for(let i=0;i<MUTATION.goal;i++){const k=addEnemy('grunt',P.x+60,P.y,1);k.home=0;mutSpawn(k);damage(k,k.hp*10,'sword',0,'fire')}
+    o.n=chSave().n;o.chipDone=$('mutChip').textContent.includes('✓');o.noWorld=!challengeClaim();
     wHome();o.tag2=$('chTag').hidden;questLogOpen(true);const b=document.querySelector('#qLog [data-act="chClaim"]');const m=SAVE.bag.coins||0;if(b)b.click();o.got=(SAVE.bag.coins||0)-m;o.once=!challengeClaim();questLogOpen(false);
     o.saved=JSON.parse(localStorage.getItem(SAVE_STORE.key)).challenge.got===chDay();
-    SAVE.challenge={day:'1999-1-1',n:CHALLENGE.goal,got:'',owed:false};o.owed=chCan()&&chSave().n===0&&challengeClaim();
-    o.goal=CHALLENGE.goal;o.want=CHALLENGE.reward.coins;chRule=real;delete CHALLENGE.rules.test;SAVE.challenge=null;SAVE.story.earth=e0;return o});
-  check(chl.shut,'אתגר יומי: '+(chl.shut?'סגור לפני פנס האדמה, העולם רגיל':'פעיל לפני פנס האדמה'));
-  check(chl.same&&chl.many>=3&&chl.tag&&chl.rule&&chl.n===chl.goal&&chl.coins&&chl.noWorld&&chl.got>=chl.want&&chl.once&&chl.saved&&chl.owed&&chl.tag2,
-    'אתגר יומי: '+chl.many+' חוקים שונים ב-8 ימים, '+(chl.tag?'סימן בפס העליון':'אין סימן בעולם')+', '+(chl.rule?'החוק נכנס לאויב':'החוק לא נכנס לאויב')+', '+chl.n+'/'+chl.goal+' הריגות'+
-    (chl.noWorld?', לא נאסף בעולם':', נאסף בעולם')+', בכפר +'+chl.got+' מטבעות'+(chl.once?' פעם אחת':' יותר מפעם')+(chl.saved?', נשמר':', לא נשמר')+(chl.owed?', פרס מאתמול מחכה':', פרס מאתמול אבד')+(chl.coins?'':', אין מטבעות מהחוק')+(chl.tag2?'':', הסימן נשאר בכפר')+(chl.same?'':', החוק לא קבוע לתאריך'));
+    SAVE.challenge={day:'1999-1-1',n:MUTATION.goal,got:'',owed:false};o.owed=chCan()&&chSave().n===0&&challengeClaim();   // שמירה ישנה: פרס מאתמול מחכה
+    o.goal=MUTATION.goal;o.want=MUTATION.reward.coins;MUT.force=null;delete MUTATION.rules.test;SAVE.challenge=null;SAVE.story.earth=e0;return o});
+  check(chl.shut,'משימת היום: '+(chl.shut?'סגורה לפני פנס האדמה, העולם רגיל':'פעילה לפני פנס האדמה'));
+  check(chl.tag&&chl.rule&&chl.n===chl.goal&&chl.chipDone&&chl.noWorld&&chl.got>=chl.want&&chl.once&&chl.saved&&chl.owed&&chl.tag2,
+    'משימת היום: '+(chl.tag?'התקדמות על השבב':'אין התקדמות על השבב')+', '+(chl.rule?'החוק נכנס לאויב':'החוק לא נכנס לאויב')+', '+chl.n+'/'+chl.goal+' הריגות'+(chl.chipDone?' ✓':', בלי ✓')+
+    (chl.noWorld?', לא נאסף בעולם':', נאסף בעולם')+', בכפר +'+chl.got+' מטבעות'+(chl.once?' פעם אחת':' יותר מפעם')+(chl.saved?', נשמר':', לא נשמר')+(chl.owed?', פרס מאתמול מחכה':', פרס מאתמול אבד')+(chl.tag2?'':', הסימן נשאר בכפר'));
   // מוטציה יומית (mutation.js): אותו חוק לאותו תאריך, כל חוק נכנס לעולם ועובד, פרס מוגדל, פס בכניסה, סגור לפני פנס האדמה ומחוץ לעולם
   const mut=await page.evaluate(()=>{
     const o={},e0=SAVE.story.earth,days=Array.from({length:30},(_,i)=>'2026-12-'+(i+1));
     o.same=mutRule('2026-11-4')===mutRule('2026-11-4');o.many=new Set(days.map(d=>mutRule(d))).size;
-    SAVE.story.earth=true;o.noDup=days.every(d=>MUTATION.rules[mutRule(d)].dup!==chRule(d));
     SAVE.story.earth=false;MUT.force='giants';enterWorld('home');o.shut=!mutNow()&&!enemies.some(x=>x.mut);SAVE.story.earth=true;
     const R={},cnt=()=>enemies.filter(x=>!x.dead&&!x.creature&&x.home!=null&&!x.wanted&&!x.hunt).length;
     MUT.force='thirst';enterWorld('home');const base=cnt();R.thirst=mutK('regen')<1;
@@ -2393,10 +2391,11 @@ function worldBot(m,L,god){
       const e=enemies.find(x=>!x.dead&&x.mut&&!x.creature),et=e&&ETYPES[e.type];let ok=!!e;
       if(id==='giants')ok=ok&&cnt()<base&&e.r>et.r*1.2;
       if(id==='swarm')ok=ok&&cnt()>base;
-      if(id==='fire'||id==='frost'){const t=id==='fire'?'fire':'ice',C_=CHALLENGE.rules[chRule()],ck=C_.type?(t===C_.type?C_.boost:C_.cut):1;ok=ok&&e.mult[t]>=(et.mult[t]??1)*ck*1.45}   // ck: גם האתגר היומי משנה מכפילים
+      if(id==='fire'||id==='frost'){const t=id==='fire'?'fire':'ice';ok=ok&&e.mult[t]>=(et.mult[t]??1)*1.45}
       if(id==='rain'){e.wet=0;e.mw=0;mutUpdate(1/60);ok=ok&&e.wet>0;e.wet=0.5;for(let i=0;i<60;i++)dmgUpdate(1/60);ok=ok&&!(e.wet>0)}   // רטוב שוב, ורטיבות נגמרת בעולם (dmgUpdate)
       if(id==='fire'){e.hp=e.max=1e6;damage(e,1,'sword',0,'physical');mutUpdate(1/60);ok=ok&&!!e.burn;const h=e.hp;for(let i=0;i<60;i++)dmgUpdate(1/60);ok=ok&&e.hp<h}
       if(id==='gold')ok=ok&&e.speed>0;
+      if(id==='elite')ok=ok&&!!e.affix;
       if(id==='wanted'){S.wn.e=null;S.wn.rumor=null;S.wn.t=100;mutUpdate(1);ok=ok&&S.wn.t<=98.5}
       if(id==='fog'){try{mutDraw()}catch(err){ok=false}}
       if(id==='split'){const n0=enemies.filter(x=>!x.dead&&x.mutKid).length;kill(e);const kids=enemies.filter(x=>!x.dead&&x.mutKid);ok=ok&&kids.length===n0+MUTATION.rules.split.split.n&&kids.every(k=>k.max<e.max);
@@ -2413,8 +2412,8 @@ function worldBot(m,L,god){
   await page.clock.runFor(6000);mut.barGone=await page.evaluate(()=>!$('mutBar').classList.contains('on'));
   mut.chip=await page.evaluate(()=>{const c=$('mutChip');if(!c||c.hidden||!c.textContent.includes(MUTATION.rules.fog.icon))return false;c.click();return $('mutBar').classList.contains('on')});   // השבב בפס העליון: נגיעה מחזירה את הפס
   await page.evaluate(()=>{MUT.force=null;enemies=[];wHome()});mut.chipOff=await page.evaluate(()=>$('whud').hidden||$('mutChip').hidden);   // חוזרים לכפר כמו שחקן (wHome מסתיר את הפס העליון של העולם)
-  check(mut.same&&mut.many>=5&&mut.noDup&&mut.shut&&mut.allOk&&mut.xp>mut.xpBase&&mut.line&&mut.village&&mut.bar&&mut.barGone&&mut.chip&&mut.chipOff,
-    'מוטציה יומית: '+mut.many+' חוקים שונים ב-30 יום'+(mut.noDup?'':', חוזר על האתגר!')+(mut.shut?', סגור לפני פנס האדמה':', פתוח לפני פנס האדמה!')+
+  check(mut.same&&mut.many>=5&&mut.shut&&mut.allOk&&mut.xp>mut.xpBase&&mut.line&&mut.village&&mut.bar&&mut.barGone&&mut.chip&&mut.chipOff,
+    'מוטציה יומית: '+mut.many+' חוקים שונים ב-30 יום'+(mut.shut?', סגור לפני פנס האדמה':', פתוח לפני פנס האדמה!')+
     ', עובדים: '+Object.keys(mut.rules).filter(k=>mut.rules[k]).join(',')+(mut.allOk?'':' (לא עובדים: '+Object.keys(mut.rules).filter(k=>!mut.rules[k]).join(',')+')')+
     ', XP בהריגה +'+mut.xp+' (רגיל '+mut.xpBase+')'+(mut.bar?', פס בכניסה':', אין פס!')+(mut.barGone?' שנעלם':' שלא נעלם')+(mut.chip?', שבב בפס העליון שמחזיר אותו':', אין שבב בפס העליון!')+(mut.chipOff?'':', השבב נשאר בכפר!')+(mut.line?', שורה בחלון בכפר':', אין שורה בכפר')+(mut.village?'':', פועל בכפר!')+(mut.same?'':', לא קבוע לתאריך'));
   // ספר ההרפתקאות (book.js): הריגה נרשמת, פריט ומשאב מהתרמיל נרשמים, פרס מגיע כל BOOK.every רשומות, והחלון נפתח, מראה צללית ונסגר

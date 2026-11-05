@@ -202,7 +202,7 @@ function enterWorld(at,reg){
   const seen=SAVE.regSeen||(SAVE.regSeen={});if(!seen[reg]){seen[reg]=1;saveNow();feedTitle(T(R.enter||'w.enter'),C.gold)}
   worldUi(true);
   fishMealOn();   // ארוחה מהפונדקאית: חיזוק בעולם (fishing.js)
-  challengeEnter();huntEnter();mutEnter();nemEnter();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js), מוטציה יומית (mutation.js), נמסיס שמחכה באזור (nemesis.js)
+  huntEnter();mutEnter();nemEnter();   // מבוקש היום (hunt.js), החוק והמשימה של היום (mutation.js), נמסיס שמחכה באזור (nemesis.js)
   wmapVisit(reg);     // מפת העולם: ביקרת כאן (worldmap.js)
   if(reg!=='meadow')questEvent('story',reg);   // קווסט עלילה "להגיע לאגם" (quests.js)
 }
@@ -240,8 +240,8 @@ function wSpawn(G,i){
     e.dmg*=Z.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);   // affixRoll: אולי אויב מיוחד (affix.js). storySafe: אחרי שפנס האדמה נדלק (story.js)
     e.xp=0;e.home=i;e.creature=!!G.creature;
     if(G.tough){e.hp*=G.tough;e.max*=G.tough;e.dmg*=G.tough}   // שומרים בכניסה לדרך (curiosity.js)
-    challengeSpawn(e);mutSpawn(e);tierSpawn(e);wtSpawn(e)}   // mutSpawn: החוק של היום (mutation.js)   // wtSpawn: שחקן שעבר את האזור (wtension.js)   // דרגת העולם (tiers.js)
-   // החוק של היום (challenge.js)   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
+    mutSpawn(e);tierSpawn(e);wtSpawn(e)}   // mutSpawn: החוק של היום (mutation.js)   // wtSpawn: שחקן שעבר את האזור (wtension.js)   // דרגת העולם (tiers.js)
+   // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
 }
 function wFoes(dt){
   const FO=WR().foes,alive=FO.map(()=>0);
