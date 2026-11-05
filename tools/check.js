@@ -2829,6 +2829,20 @@ function worldBot(m,L,god){
     'בוסים בטיימר: '+(gt.asleep?'ישן רחוק מהמאורה':'קם מרחוק')+(gt.sign?', שלט רמה מומלצת':', אין שלט')+(gt.noQuest?', קם גם בלי קווסט':', לא קם בלי קווסט')+
     (gt.timer?', ניצחון מתחיל טיימר':', אין טיימר')+(gt.saved?' שנשמר':' שלא נשמר')+(gt.loot?', שלל':', בלי שלל')+(gt.wait?', מחכה':', קם מיד')+
     (gt.back?', וחוזר כשהזמן עובר':', לא חוזר')+', דקות: '+gt.ladder);
+  // שלבים בענקים (giant.js, GIANT.phase, ניר 5.11): מתחת ל-66% שלב 2 עם התקפה חדשה ורעידה, מתחת ל-33% שלב 3 עם מכה גדולה:
+  // עיגול ⚠️ מתחת לשחקן שמתפוצץ אחרי fuse, ואפשר לצאת ממנו. הצל שומר על חמשת השלבים שלו
+  const gph=await page.evaluate(()=>{
+    const o={},L=STORY.lanterns.earth,hp0=P.hp,mx0=P.maxHp;enterWorld('home','meadow');for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);
+    P.x=L.x;P.y=L.y-150;P.hp=P.maxHp=1e9;P.inv=1e9;const e=storyWarden('earth',L.y+GIANT.lair);e.rise=0;S.wd.marks=[];
+    storyWardenMove(e,0.016);o.p1=!e.gph;
+    S.shake=0;e.hp=e.max*0.6;storyWardenMove(e,0.016);o.p2=e.gph===1&&!!(e.pw&&e.pw.shoot)&&S.shake>=GIANT.phase.shake-0.01;
+    e.hp=e.max*0.3;for(let t=0;t<GIANT.phase.big.first+0.2;t+=0.05){e.tel=null;e.dash=null;e.stun=0;P.x=L.x;P.y=L.y-150;storyWardenMove(e,0.05)}
+    const B=(S.wd.marks||[]).find(m=>m.big);o.p3=e.gph===2&&!!B&&Math.hypot(B.x-P.x,B.y-P.y)<B.mk.r;
+    if(B){S.wd.marks=[B];P.inv=0;P.hp=P.maxHp=1000;P.x+=B.mk.r*3;for(let i=0;i<120;i++)storyMarks(1/60);o.dodge=!B.hit&&P.hp===1000}
+    const sh=storyWarden('light',L.y+GIANT.lair);sh.rise=0;sh.hp=sh.max*0.3;storyWardenMove(sh,0.016);o.shade=sh.gph===2&&sh.phases===true&&!!sh.pk;
+    for(const x of [e,sh])x.dead=true;enemies=enemies.filter(x=>!x.dead);S.wd.warden=null;S.wd.marks=[];P.inv=0;P.maxHp=mx0;P.hp=hp0;enterVillage();return o});
+  check(gph.p1&&gph.p2&&gph.p3&&gph.dodge&&gph.shade,'שלבים בענקים: '+(gph.p1?'מתחיל בשלב 1':'לא מתחיל בשלב 1')+(gph.p2?', שלב 2 עם התקפה חדשה ורעידה':', שלב 2 שבור')+
+    (gph.p3?', שלב 3 עם מכה גדולה מתחת לשחקן':', אין מכה גדולה')+(gph.dodge?' שאפשר לצאת ממנה':', אי אפשר לצאת ממנה')+(gph.shade?', הצל שומר על השלבים שלו':', השלבים של הצל נשברו'));
   // נקודות דמות (stats.js): הריגה בעולם נותנת XP לדמות, רמה נותנת נקודה, נקודה מעלה נזק, נשמרת, ואיפוס אצל הכוהנת עולה מטבעות
   const stt=await page.evaluate(()=>{
     enterWorld('home');const o={};const xp0=SAVE.hero.xp||0,e={x:P.x+40,y:P.y,xp:3,type:'grunt',hp:0,r:10,mult:{}};
