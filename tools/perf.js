@@ -18,7 +18,9 @@ const SCENES={
   fog:()=>{MUT.force='fog';enterWorld('home','meadow')},
   rain:()=>{MUT.force='rain';enterWorld('home','lake')},
   giant:()=>{MUT.force='split';enterWorld('home','meadow');const e=storyWarden('earth',P.y+260);e.rise=0},
-  depths10:()=>{MUT.force='split';depthsEnter(10)}
+  depths10:()=>{MUT.force='split';depthsEnter(10)},
+  desert:()=>{MUT.force='split';enterWorld('home','desert')},   // המדבר (ת17): ליד השער
+  canyon:()=>{MUT.force='split';enterWorld('home','desert');P.x=-1500;P.y=-250;P._tx=null}   // המדבר: בתוך הקניון, בין המסות והלבה
 };
 
 (async()=>{

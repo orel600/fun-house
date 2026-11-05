@@ -48,12 +48,12 @@ const SECRETS={
       {id:'r_carve',kind:'carving',x:680,y:1500,to:{x:300,y:1750}},  // 24 אורן חרוט בדרום, מצביע מערבה
       {id:'r_lv20',kind:'chest',x:2640,y:1650,hide:'rock',lv:20}     // 25 בפינה הדרום-מזרחית, מאחורי הפנס
     ],
-    desert:[
-      {id:'d_chest',kind:'chest',x:960,y:-560,hide:'rock'},          // בפינה הצפון-מזרחית, מאחורי סלע חרוך
-      {id:'d_shrine',kind:'shrine',x:920,y:600,bless:'loot'},        // דרום-מזרח, רחוק מהלבה
-      {id:'d_look',kind:'lookout',x:-940,y:-620},                    // צפון-מערב, על דיונה גבוהה
-      {id:'d_carve',kind:'carving',x:300,y:620,to:{x:-380,y:630}},   // קקטוס בודד בדרום, מצביע מערבה
-      {id:'d_lv20',kind:'chest',x:-980,y:560,hide:'rock',lv:20}      // בפינה הדרום-מערבית, מאחורי הפנס
+    desert:[   // המספרים מהשרטוט של המדבר הגדול (docs/concept-regions.md, map-desert.js)
+      {id:'d_chest',kind:'chest',x:2780,y:-350,hide:'rock'},         // 20 מאחורי סלע חרוך, בצפון-מזרח
+      {id:'d_shrine',kind:'shrine',x:2650,y:1420,bless:'loot'},      // 21 מקדש שלל, בקצה הדרום-מזרחי
+      {id:'d_look',kind:'lookout',x:-2700,y:-1440},                  // 22 תצפית על דיונה, בצפון-מערב
+      {id:'d_carve',kind:'carving',x:900,y:1260,to:{x:500,y:1400}},  // 23 קקטוס חרוט בים הדיונות, מצביע מערבה
+      {id:'d_lv20',kind:'chest',x:-2680,y:640,hide:'rock',lv:20}     // 24 בפינה הדרום-מערבית, מתחת למסה
     ],
     storm:[
       {id:'t_chest',kind:'chest',x:-960,y:-560,hide:'rock'},          // בפינה הצפון-מערבית, מאחורי אבן שנפלה ממגדל
