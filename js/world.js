@@ -174,25 +174,13 @@ const WORLD={
     // storm: גשם והבזקי ברק בקנבס (wStorm). towers: מגדלי אבן שבורים שאי אפשר לעבור דרכם (h גובה הציור). ponds: שלוליות עמוקות
     storm:{
       region:'storm',back:'desert',enter:'w.enter.storm',noNpc:true,storm:true,ground:'#2E2C3A',pondCol:['#1E1A30','#8E7CC8'],
-      home:{x:0,y:-600,r:44},gates:{},waystones:[{id:'ruin',x:-300,y:-120},{id:'lair',x:450,y:120}],
-      paths:{shadow:{x:-860,y:-590,r:44,need:['earth','water','ice','fire','bolt']}},   // פרק 6: רק כשכל חמשת הפנסים דולקים, שביל בצפון-מערב שיורד ללב הצל
-      ponds:[{x:-80,y:60,r:120},{x:520,y:-40,r:85}],
-      towers:[{x:-620,y:-330,r:46,h:150},{x:300,y:-330,r:40,h:110},{x:-380,y:330,r:44,h:170},{x:420,y:300,r:38,h:95},{x:-880,y:120,r:36,h:120}],
-      fields:[{kind:'deadTree',n:8,x:-560,y:-80,r:200},{kind:'deadTree',n:5,x:120,y:420,r:150},{kind:'deadTree',n:4,x:680,y:-380,r:130},
-              {kind:'stormRock',n:6,x:640,y:120,r:170},{kind:'stormRock',n:4,x:-250,y:-360,r:130},{kind:'rock',n:4,x:-700,y:420,r:120}],
-      foes:[
-        {type:'sparkwisp',n:2,x:-190,y:-420,r:110},{type:'sparkwisp',n:2,x:200,y:-420,r:110},
-        {type:'stormknight',n:2,x:-420,y:-200,r:130},{type:'sparkwisp',n:3,x:380,y:-200,r:140},{type:'stormknight',n:3,x:640,y:120,r:150},
-        {type:'stormknight',n:3,x:-640,y:200,r:150},{type:'sparkwisp',n:3,x:-60,y:330,r:140},{type:'stormknight',n:3,x:620,y:440,r:150},
-        {type:'stormknight',creature:true,n:2,x:640,y:120,r:120},{type:'sparkwisp',creature:true,n:2,x:-560,y:-80,r:130}
-      ],
+      // המפה, המקומות, המשאבים, המגדלים והאויבים: js/map-storm.js (הסערה הגדולה, ת18)
       // קשה מהמדבר: מי שהגיע לכאן כבר הדליק ארבעה פנסים
       zones:[
         {id:'start',to:360, hp:0.95,dmg:0.7,speed:0.8, leash:260,back:16},
         {id:'near', to:800, hp:1.7, dmg:1.25,speed:1,  leash:380,back:22},
         {id:'far',  to:1e9, hp:2.4, dmg:1.65,speed:1.12,leash:480,back:30}
       ],
-      decor:{trees:40,hills:20,rocks:0.6}
     },
     // ---- פרק 6 והאחרון: לב הצל (docs/story.md). חושך, ערפל סגול, ואור רק סביב הגיבור ופיוחו (wShadow). צללים של אויבים מכל האזורים,
     // והצל עצמו ליד הפנס הלבן, באמצע הדרום (STORY.lanterns.light). shadow: החושך בקנבס. ponds: בורות של חושך שאי אפשר לעבור
