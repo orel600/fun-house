@@ -55,7 +55,7 @@ function install(B){
   window.__balRun=n=>{let r={};for(let i=0;i<n&&!r.done;i++){last=performance.now()-50;frameStep(performance.now());if(S.wd)m.gt+=0.05;if(i%5===0)r=step()}return r};
   function chap(){return B.chapters[m.ch]}
   // הריגות בפרק (ל-kills של playtime.js)
-  const k0=kill;kill=function(e){const r=k0.apply(this,arguments);if(S.wd&&!e.node)m.kc=(m.kc||0)+1;return r};
+  const k0=kill;kill=function(e){const x0=S.wd&&!e.node&&m.ch<B.chapters.length?cumXp():null;const r=k0.apply(this,arguments);if(x0!==null){m.kc=(m.kc||0)+1;const c=cRep();c.kxp=(c.kxp||0)+cumXp()-x0}return r};
   function need(){const c=chap();return c.lv||(c.to?CURIO.paths[c.to].lv:0)}   // c.lv: רמת יעד לפרק (playtime.js, בדרגות 2-3)
   // XP מצטבר (לא מתאפס ברמה), ומה מתוכו מקווסטים: לדוח "בעיקר קווסטים" מול "בעיקר הריגה"
   const cumXp=()=>{let s=SAVE.hero.xp||0;for(let l=1;l<heroLv();l++)s+=rankNeed(l);return s};
