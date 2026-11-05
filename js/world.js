@@ -160,25 +160,9 @@ const WORLD={
     // פרק 4: המדבר הבוער (docs/story.md). חום, אויבים חמים (מים!), סלעי להבה עם אודם, ופנס האש בפינה הדרום-מערבית (STORY.lanterns.fire).
     // heat: אדי חום ורוח חול בקנבס (wHeat). ponds כאן הם בורות לבה שאי אפשר לעבור
     desert:{
-      region:'desert',back:'ridge',enter:'w.enter.desert',noNpc:true,heat:true,ground:'#5A4129',pondCol:['#7A2A10','#FF8A3D'],
-      home:{x:0,y:-600,r:44},gates:{},waystones:[{id:'dunes',x:420,y:-300},{id:'lair',x:-380,y:180}],
-      paths:{storm:{x:860,y:-590,r:44,need:'fire'}},   // פרק 5: אחרי שפנס האש נדלק, שביל בצפון-מזרח שעולה למגדלי הסערה
-      ponds:[{x:140,y:20,r:140},{x:-420,y:-140,r:95},{x:560,y:300,r:110}],
-      fields:[{kind:'cactus',n:8,x:-560,y:-300,r:220},{kind:'cactus',n:6,x:300,y:-320,r:170},{kind:'cactus',n:4,x:-120,y:420,r:140},
-              {kind:'emberRock',n:6,x:640,y:-120,r:180},{kind:'emberRock',n:4,x:-700,y:160,r:140},{kind:'rock',n:4,x:220,y:330,r:130}],
-      foes:[
-        {type:'flamewisp',n:2,x:-190,y:-420,r:110},{type:'flamewisp',n:2,x:200,y:-420,r:110},
-        {type:'cinderscorp',n:2,x:-420,y:-260,r:130},{type:'flamewisp',n:3,x:380,y:-180,r:140},{type:'cinderscorp',n:3,x:660,y:-120,r:150},
-        {type:'cinderscorp',n:3,x:-640,y:180,r:150},{type:'flamewisp',n:3,x:-60,y:330,r:140},{type:'cinderscorp',n:3,x:640,y:420,r:150},
-        {type:'cinderscorp',creature:true,n:2,x:640,y:-120,r:120},{type:'flamewisp',creature:true,n:2,x:-560,y:-300,r:130}
-      ],
-      // קשה מהרכס: מי שהגיע לכאן כבר הדליק שלושה פנסים
-      zones:[
-        {id:'start',to:360, hp:0.9,dmg:0.65,speed:0.8, leash:260,back:16},
-        {id:'near', to:800, hp:1.5,dmg:1.15,speed:1,  leash:380,back:22},
-        {id:'far',  to:1e9, hp:2.1,dmg:1.5, speed:1.1,leash:480,back:30}
-      ],
+      region:'desert',back:'ridge',enter:'w.enter.desert',noNpc:true,heat:true,ground:'#5A4129',pondCol:['#7A2A10','#FF8A3D'],gates:{},
       decor:{trees:30,hills:22,rocks:0.7}
+      // המפה הגדולה (ת17): הגבול, המסות, הדיונות, הלבה, השערים, אבני המסע, המקורות והאויבים ב-js/map-desert.js
     },
     // ---- פרק 5: מגדלי הסערה (docs/story.md). גשם, ברקים, מגדלים שבורים, אויבים מחושמלים (אדמה!), ופנס הברק בפינה הדרום-מזרחית (STORY.lanterns.bolt).
     // storm: גשם והבזקי ברק בקנבס (wStorm). towers: מגדלי אבן שבורים שאי אפשר לעבור דרכם (h גובה הציור). ponds: שלוליות עמוקות
