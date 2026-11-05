@@ -446,6 +446,7 @@ function worldBot(m,L,god){
   if(!m.hitHook){m.hitHook=1;const d0=damage;damage=function(e,b,w,a,t,ch){if(S.wd&&!ch&&w!=='pet'){const d=Math.hypot(e.x-P.x,e.y-P.y)-(e.r||0);L.wHitMax=Math.max(L.wHitMax||0,Math.round(d));L.wHits=(L.wHits||0)+1}return d0.apply(this,arguments)}}
   L.wRange=WORLD.attackRange;   // רק מכות של השחקן: נשיכות של פיוחו (w='pet') רצות רחוק יותר, עד PET.attack.leash
   if(!m.wp){m.wp='gather';L.wEnter=!S.vil&&S.mode==='play';L.wName=document.getElementById('wName').textContent;L.wHud=vis('whud')&&!vis('vhud');
+    if(TR){const rc=terrainReach(WORLD,'meadow');L.wTerr={ms:TR.ms,size:WORLD.size.w+'×'+WORLD.size.h,bad:terrainBad(WORLD,'meadow'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,lazy:W.groups.filter(g=>g.lazy).length,river:tBlocked(WORLD.map.rivers[0].pts[5][0],WORLD.map.rivers[0].pts[5][1]),bridge:!tBlocked(WORLD.map.bridges[0].x,WORLD.map.bridges[0].y),ford:tSlow(WORLD.map.fords[0].x,WORLD.map.fords[0].y)}}   // המפה של האחו (terrain.js)
     L.wNodes=S.nd.list.length;L.wFoes=enemies.length;L.wCreatures=enemies.filter(e=>e.creature).length;m.w0=SAVE.bag.wood||0;m.wt=W.t;
     // המפלצות הראשונות ליד השער: קלות. אחת נזרקת רחוק מהבית שלה (צריכה לחזור), וקבוצה אחת מופלת (צריכה לחזור אחרי זמן)
     const st=enemies.filter(e=>e.zone==='start'),gi=G=>WORLD.foes.indexOf(G),home=e=>WORLD.foes[e.home];
@@ -3110,6 +3111,7 @@ function worldBot(m,L,god){
     (Nn.got?', התקבל '+Nn.qid+(Nn.after?'':' (הכרטיס לא התעדכן)'):', לא התקבל קווסט')+(Nn.inLog?', מופיע ביומן':', לא ביומן')+(Nn.closed?'':', השיחה לא נסגרה')+
     (Nn.push===0?', לא חוסמים':', דוחפים '+Nn.push+'px')+(Nn.free?'':', מישהו על הדרך או בתוך מבנה')+(Nn.cheer?', מריע לשדרוג':', לא מריע לשדרוג'));
   check(L.gateNoRun&&L.gateBtn&&L.wEnter,'שער הכפר: '+(L.gateNoRun?'מעבר בשער לא מוציא מהכפר':'יצא בלי לחיצה')+', '+(L.wEnter?'לחיצה על "'+L.gateBtn+'" מוציאה לעולם':'לחיצה לא הוציאה לעולם'));
+  {const T=L.wTerr;check(!!T&&!T.bad.length&&!T.un.length&&T.river&&T.bridge&&T.ford<1,'מפת האחו: '+(T?T.size+', נבנתה ב-'+T.ms+'ms, '+(T.bad.length?'בתוך מים/יער: '+T.bad.join(', '):'אף מקום לא בתוך מים או יער')+', '+(T.un.length?'אין דרך אל: '+T.un.join(', '):'כל '+T.n+' המקומות נגישים מהשער')+(T.river?', הנהר חוסם':', הנהר לא חוסם!')+(T.bridge?', הגשר פתוח':', הגשר חסום!')+', המעבר הרדוד ×'+T.ford.toFixed(2)+', '+T.lazy+' קבוצות רחוקות ממתינות':'לא נבנתה'))}
   check(L.wEnter&&L.wHud&&!!L.wName&&L.wNodes>0&&L.wFoes>0,'עולם פתוח: '+(L.wName||'בלי שם אזור')+(L.wHud?', ממשק העולם מוצג':', ממשק העולם חסר')+', '+L.wNodes+' מקורות משאבים, '+L.wFoes+' אויבים'+(L.wCreatures?' ('+L.wCreatures+' יצורי משאבים)':' (יצורי משאבים יגיעו עם הכלכלה)'));
   check(L.wGather>0&&L.wGatherSaved,'איסוף בעולם: '+(L.wGather?'עץ +'+L.wGather+' נכנס לתרמיל אחרי '+L.wGatherT+' שניות'+(L.wGatherSaved?', נשמר':', לא נשמר'):'לא נאסף')+(L.wQuest?' · קווסט '+L.wQuest:''));
   check(!!L.wKill,'אויב בעולם: '+(L.wKill?'הופל '+L.wKill:'לא הופל'));

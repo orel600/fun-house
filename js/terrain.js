@@ -363,7 +363,23 @@ function terrain3d(G,reg){
   const Rd=TERRAIN.reeds;for(const L of M.reeds||[])walkLine(L,Rd.gap,(x,y,nx,ny)=>{const v=hash(x,y);list.push({sp:{model:Rd.model,h:Rd.h},x:x+nx*(10+v*40),y:y+ny*(10+v*40),v,mul:0.8+v*0.5})});
   if(TR&&M.ridge){const ramp=M.ridge.ramp;walkLine(M.ridge.poly.concat([M.ridge.poly[0]]),C.gap*0.8,(x,y,nx,ny)=>{if(ramp&&(inPoly(x+nx*30,y+ny*30,ramp)||inPoly(x,y,ramp)||polyDist(x,y,ramp)<50))return;const v=hash(x*1.1,y);
     list.push({sp:C.pick[Math.floor(v*C.pick.length)%C.pick.length],x:x+nx*12,y:y+ny*12,v,mul:0.45+v*0.2})})}
+  for(const m of M.marks||[])tMark(m,root);
   G.terr.chunks=tInst(list,root);G.terr.n=list.length;
+}
+/* ציוני דרך (map.marks): מחנה (אוהלים ומדורה), חורבה (עמודים שבורים), מקדש (טבעת עמודים), מגדלור (מגדל עם אור). צורות פשוטות, ציור אחד לכל חלק */
+const MARK3D={stone:'#9b9486',dark:'#6f685c',tent:['#b0874f','#8f5f3a','#c7a46a'],fire:'#ff9a3a',light:'#ffe9a0'};
+function tMark(m,root){
+  const S_=SIN(),g=new THREE.Group(),M_=MARK3D,mat=c=>new THREE.MeshLambertMaterial({color:c}),stone=mat(M_.stone),dark=mat(M_.dark);
+  const add=(geo,ma,x,y,z,ry=0)=>{const o=new THREE.Mesh(geo,ma);o.position.set(x,y,z);o.rotation.y=ry;g.add(o);return o};
+  const col=(r,h,ma,x,z)=>add(new THREE.CylinderGeometry(r*0.85,r,h,8),ma,x,h/2,z);
+  if(m.kind==='camp'){for(let i=0;i<3;i++){const a=i*2.1+0.4;add(new THREE.ConeGeometry(34,52,4),mat(M_.tent[i]),Math.cos(a)*70,26,Math.sin(a)*70,a)}
+    add(new THREE.CylinderGeometry(16,18,6,8),dark,0,3,0);const f=add(new THREE.ConeGeometry(9,20,6),new THREE.MeshLambertMaterial({color:M_.fire,emissive:M_.fire,emissiveIntensity:0.9}),0,14,0)}
+  else if(m.kind==='ruin'){for(let i=0;i<5;i++){const a=i*1.26,h=40+hash(i,m.x)*90;col(14,h,i%2?stone:dark,Math.cos(a)*70,Math.sin(a)*70)}add(new THREE.BoxGeometry(110,14,40),stone,20,7,-30,0.4)}
+  else if(m.kind==='temple'){add(new THREE.CylinderGeometry(110,118,10,16),dark,0,5,0);for(let i=0;i<6;i++){const a=i*1.047;col(11,i===2?45:85,stone,Math.cos(a)*88,Math.sin(a)*88)}}
+  else if(m.kind==='lighthouse'){col(30,40,dark,0,0);add(new THREE.CylinderGeometry(16,26,150,10),stone,0,110,0);
+    add(new THREE.SphereGeometry(16,10,8),new THREE.MeshLambertMaterial({color:M_.light,emissive:M_.light,emissiveIntensity:1}),0,195,0)}
+  else return;
+  g.position.set(m.x,hAt(m.x,m.y)/COS(),m.y/S_);g.scale.set(1,1,1/S_);root.add(g);
 }
 const lineDistAny=(x,y,M)=>{let m=1e9;for(const t of M.trails||[])if(t.cut)m=Math.min(m,lineDist(x,y,t.pts)-t.w/2);return m};
 // הולך לאורך קו כל gap פיקסלים, עם הנורמל כלפי חוץ (שמאלה מכיוון ההליכה, כמו שהגבול מצויר: עם כיוון השעון)

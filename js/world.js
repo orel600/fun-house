@@ -103,6 +103,7 @@ const WORLD={
     dens:[{id:'earth',x:2590,y:1710,boss:'earth'},   // 16 מאורת השומר והפנס, הכי רחוק מהשער (ת5)
       {id:'r1',x:-2600,y:-1300,in:'forest'},{id:'r2',x:2490,y:-1680,in:'quarry'},{id:'r3',x:1240,y:-590,in:'meadow'},{id:'r4',x:2850,y:250,in:'cliff'},{id:'r5',x:-2000,y:1100,in:'forest'},
       {id:'r6',x:-2730,y:1640,in:'forest'},{id:'r7',x:230,y:1140,in:'ridge'},{id:'r8',x:-670,y:1830,in:'reeds'},{id:'r9',x:2240,y:1140,in:'bay'}],   // מאורות נדירות (◆, ת8)
+    deeper:{x:420,y:-1250},   // עומק הצל: בקומה שנבנית מהאחו, השער למטה (depths.js)
     waystones:[{id:'ford',x:230,y:-410},{id:'quarry',x:1940,y:-1330},{id:'grove',x:-2290,y:150},{id:'lair',x:1690,y:1440}],   // 2-5 בשרטוט (ת10)
     marks:[{id:'spring',kind:'spring',x:-1290,y:-430},{id:'loggers',kind:'camp',x:-1070,y:-1290},{id:'hunters',kind:'camp',x:940,y:-1140},{id:'bank',kind:'camp',x:130,y:400},{id:'bay',kind:'camp',x:2450,y:-240},
       {id:'tower',kind:'ruin',x:-1130,y:1440},{id:'temple',kind:'temple',x:740,y:1240},{id:'lighthouse',kind:'lighthouse',x:-690,y:1930},{id:'lookout',kind:'look',x:-300,y:860}]   // 20-26
@@ -257,7 +258,7 @@ function enterWorld(at,reg){
   const g=wGates()[at]||R.home;
   P.x=g.x;P.y=g.y+WORLD.arrive;P._tx=null;tFree(P);P.aim=P.face=Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;   // tFree: שמירה ישנה או שער שזז, ונקודת ההגעה חסומה: לנקודה הפנויה הקרובה
   ['ovStart','ovOver','ovLevel','ovBoss','ovWDeath'].forEach(id=>$(id).hidden=true);
-  R.foes.forEach((G,i)=>{if(!TR||Math.hypot(G.x-P.x,G.y-P.y)<TERRAIN.wake)wSpawn(G,i);else S.wd.groups[i].lazy=1});   // באחו הגדול: קבוצה רחוקה נוצרת רק כשמתקרבים (wFoes)
+  R.foes.forEach((G,i)=>{if(!TR||R.dpBase||Math.hypot(G.x-P.x,G.y-P.y)<TERRAIN.wake)wSpawn(G,i);else S.wd.groups[i].lazy=1});   // באחו הגדול: קבוצה רחוקה נוצרת רק כשמתקרבים (wFoes)
   // שם האזור: פעם אחת בכניסה הראשונה לכל אזור, כותרת קטנה למעלה במרכז (feedTitle ב-feed.js, docs/plan-hud.md פרק 6). האזהרה על התרמיל בכרטיס השער (vil.outInfo)
   const seen=SAVE.regSeen||(SAVE.regSeen={});if(!seen[reg]){seen[reg]=1;saveNow();feedTitle(T(R.enter||'w.enter'),C.gold)}
   worldUi(true);
