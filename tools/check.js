@@ -984,6 +984,20 @@ function worldBot(m,L,god){
       S.wd=bak.wd||{};const o1=SKFXS.old;drawSkills(0,0);r.world=SKFXS.old===o1+1;S.wd=null;ctx.restore();
       for(const e of ens)e.dead=true;enemies=enemies.filter(e=>!e.dead)}catch(err){r.err=String(err&&err.stack||err)}
     S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.sk.ids=bak.ids;S.sk.cd=bak.cd;S.sk.fx=bak.fx;SAVE.fxLess=bak.fl;S.sk.last=bak.last;S.sk.combos=bak.combos;S.shake=bak.sh;S.sk.used=bak.used;P.track=bak.tr;S.hits=bak.hits;return r});
+  // סקילים נוספים (skills-more.js): שביט נופל אחרי השהיה ופוגע, חנית קרח עוברת דרך כולם בקו, פריחה מרפאת ומרטיבה. בזירה בלבד: בעולם הכפתור לא פועל
+  const skm=await page.evaluate(()=>{const r={},bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,ids:S.sk.ids,cd:S.sk.cd,hp:P.hp,skm:S.skm};
+    try{S.vil=null;S.wd=null;S.room=null;S.mode='play';S.skm={fx:[],pend:[],pools:[],cast:0,hits:0};
+      const ens=[];for(let i=0;i<4;i++){const e=addEnemy('grunt',P.x+120+i*40,P.y);e.hp=e.max=1e9;e.speed=0;e.mult={};ens.push(e)}
+      const far=addEnemy('grunt',P.x-300,P.y+200);far.hp=far.max=1e9;far.speed=0;far.mult={};
+      const ids=['comet','lance','bloom'];S.sk.ids=ids;S.sk.cd=ids.map(()=>0);
+      const h0=ens.map(e=>e.hp);r.cast=ids.filter(id=>skillUse(id)).length;r.pend=S.skm.pend.length===1;
+      P.hp=P.maxHp*0.5;const hp0=P.hp;r.cd=S.sk.cd.every(c=>c>0);
+      for(let i=0;i<90;i++){skillsUpdate(1/60);drawSkills(0,0)}
+      r.comet=S.skm.hits>0;r.lance=ens.every((e,i)=>e.hp<h0[i]);r.farSafe=far.hp===far.max;r.heal=P.hp>hp0;r.wet=ens.some(e=>e.wet>0);
+      S.sk.ids=ids;S.sk.cd=ids.map(()=>0);S.mode='pause';r.gate=!skillUse('comet');S.mode='play';S.wd={};S.sk.cd=ids.map(()=>0);r.world=!skillUse('lance');S.wd=null;
+      for(const e of ens.concat(far))e.dead=true;enemies=enemies.filter(e=>!e.dead)}catch(err){r.err=String(err&&err.stack||err)}
+    S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.sk.ids=bak.ids;S.sk.cd=bak.cd;P.hp=bak.hp;S.skm=bak.skm;return r});
+  check(!skm.err&&skm.cast===3&&skm.pend&&skm.comet&&skm.lance&&skm.farSafe&&skm.heal&&skm.wet&&skm.cd&&skm.gate&&skm.world,'סקילים נוספים: '+(skm.err||[skm.cast+'/3 הוטלו',skm.comet?'שביט פגע':'שביט לא פגע',skm.lance?'חנית עברה דרך כולם':'חנית פספסה',skm.farSafe?'מי שרחוק לא נפגע':'פגיעה ברחוק',skm.heal?'פריחה מרפאת':'פריחה לא מרפאת',skm.wet?'מרטיבה':'לא מרטיבה',skm.cd?'נטענים':'בלי טעינה',skm.gate&&skm.world?'לא בהפסקה ולא בעולם':'פועל במקום שלא צריך'].join(', ')));
   // חפצים מסתובבים (orbit.js): כל החמישה לבושים, ואויב, יריית אויב ומכה מגיעים אליהם. רק בזירה, אז הכפר מושהה לרגע. אחר כך הכל חוזר
   const ob=await page.evaluate(()=>{const bak={orb:SAVE.gear.orbit.slice(),lv:SAVE.hero.level,vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,o:S.orb,hp:P.hp,inv:P.inv,t:S.t},c=HITFX.crit;
     HITFX.crit=0;S.vil=S.wd=S.room=null;S.mode='play';SAVE.hero.level=99;SAVE.gear.orbit=['emberOrb','frostOrb','stoneOrb','leafOrb','cloverOrb'];
