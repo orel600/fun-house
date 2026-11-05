@@ -31,13 +31,16 @@ const ARMOR={
      החלקים שנבנים בקוד: מיקום (pos) ביחידות של המודל, יחסית לעצם (bone). col 'tier' = הצבע של השכבה, 'cape' = הצבע של המחלקה */
   /* cloth: כמה צבע השכבה נכנס לבד של ברדס וכובע (שאר הזמן בצבע המחלקה). plume: הנוצה על הקסדה של הלוחם, כמו בתמונות: אין בעץ ובברזל, כחולה בכסף, אדומה בזהב, ורודה באגדי */
   look:{tint:0.55,cape:0.35,glow:[0.05,0.1,0.22,0.38,0.55],plume:[null,null,'#3F6FD8','#D8402F','#FF6FB5'],cloth:[0,0,0.06,0.1,0.5],
-    helm:   [{bone:'head',shape:'dome',r:0.64,pos:[0,0.5,0],col:'tier'},{bone:'head',shape:'box',size:[0.1,0.24,0.8],pos:[0,1.18,-0.02],col:'cape'}],
-    crest:  [{bone:'head',shape:'box',size:[0.1,0.24,0.8],pos:[0,1.2,-0.02],col:'cape'}],          // על הקסדה של האביר
-    hood:   [{bone:'head',shape:'hood',r:0.76,pos:[0,0.56,-0.02],col:'cape'},{bone:'head',shape:'cone',r:0.2,h:0.5,pos:[0,0.8,-0.72],rot:[-2.2,0,0],col:'cape'}],
-    hat:    [{bone:'head',shape:'cone',r:0.46,h:0.95,pos:[0,1.4,0],col:'cape'},{bone:'head',shape:'disc',r:0.82,h:0.06,pos:[0,0.98,0],col:'cape'},{bone:'head',shape:'gem',r:0.11,pos:[0,1.1,0.42],col:'tier'}],
-    hatGem: [{bone:'head',shape:'gem',r:0.13,pos:[0,0.95,0.5],col:'tier'}],                       // על הכובע של הקוסם
-    plate:  [{bone:'chest',shape:'dome',r:0.27,pos:[0.5,0.1,0.02],sc:[1,0.8,1.1],col:'tier'},{bone:'chest',shape:'dome',r:0.27,pos:[-0.5,0.1,0.02],sc:[1,0.8,1.1],col:'tier'}],
-    leather:[{bone:'chest',shape:'dome',r:0.24,pos:[0.52,0.1,0.02],sc:[1,0.8,1.1],col:'cape'},{bone:'chest',shape:'box',size:[0.1,0.06,0.82],pos:[0.1,0.12,0],rot:[0,0,0.85],col:'tier'}],
+    /* fit: החלק מותאם לראש של המודל (armorHeadFit): pos ממרכז הראש, וגדלים, ביחידות של חצי רוחב הראש. כך ברדס וקסדה יושבים גם על
+       הראש הקטן של הדמויות האישיות (ניר ואוראל), ולא מרחפים מעליו ככדור (ניר, 5.11.2026: "המודל של הכובע נראה מזעזע על הדמות") */
+    helm:   [{bone:'head',fit:1,shape:'dome',r:1.18,pos:[0,-0.1,0],col:'tier'},{bone:'head',fit:1,shape:'box',size:[0.16,0.38,1.25],pos:[0,1.06,-0.02],col:'cape'}],
+    crest:  [{bone:'head',shape:'box',size:[0.1,0.24,0.8],pos:[0,1.2,-0.02],col:'cape'}],          // על הקסדה של האביר (במודל, לא מותאם)
+    hood:   [{bone:'head',fit:1,shape:'hood',r:1.2,pos:[0,0.02,0.12],col:'cape'},{bone:'head',fit:1,shape:'cone',r:0.3,h:0.75,pos:[0,0.5,-1.05],rot:[-2.2,0,0],col:'cape'}],
+    hat:    [{bone:'head',fit:1,shape:'cone',r:0.8,h:1.6,pos:[0,1.55,0],col:'cape'},{bone:'head',fit:1,shape:'disc',r:1.45,h:0.1,pos:[0,0.8,0],col:'cape'},{bone:'head',fit:1,shape:'gem',r:0.2,pos:[0,1.0,0.72],col:'tier'}],
+    hatGem: [{bone:'head',shape:'gem',r:0.13,pos:[0,0.95,0.5],col:'tier'}],                       // על הכובע של הקוסם (במודל)
+    // כתפיות: על הכתפיים (עצם הזרוע ב-±0.21 מהחזה). קודם ב-±0.5, ונראו כמו כנפיים ורודות באגדי (ניר, 5.11.2026)
+    plate:  [{bone:'chest',shape:'dome',r:0.17,pos:[0.27,0.16,0],sc:[1,0.75,1.15],col:'tier'},{bone:'chest',shape:'dome',r:0.17,pos:[-0.27,0.16,0],sc:[1,0.75,1.15],col:'tier'}],
+    leather:[{bone:'chest',shape:'dome',r:0.15,pos:[0.27,0.15,0],sc:[1,0.75,1.15],col:'cape'},{bone:'chest',shape:'box',size:[0.1,0.06,0.82],pos:[0.1,0.12,0],rot:[0,0,0.85],col:'tier'}],
     robe:   [{bone:'chest',shape:'gem',r:0.12,pos:[0,0.08,0.42],col:'tier',glow:0.6}]
   }
 };
@@ -73,7 +76,7 @@ const ARMOR_NATIVE=['Helmet','HelmetVisor','Hat','Cape'];
 function armorMesh(p,col){
   const L=ARMOR.look,mat=new THREE.MeshLambertMaterial({color:col,side:p.shape==='hood'?THREE.DoubleSide:THREE.FrontSide});let g;
   if(p.shape==='dome')g=new THREE.SphereGeometry(p.r,14,8,0,Math.PI*2,0,Math.PI/2);
-  else if(p.shape==='hood')g=new THREE.SphereGeometry(p.r,16,10,Math.PI/2+0.75,Math.PI*2-1.5,0,Math.PI*0.62);   // פתוח מקדימה, לפנים
+  else if(p.shape==='hood')g=new THREE.SphereGeometry(p.r,18,10,Math.PI/2+1.0,Math.PI*2-2.0,0,Math.PI*0.66);   // פתוח מקדימה, לפנים
   else if(p.shape==='cone')g=new THREE.ConeGeometry(p.r,p.h,12);
   else if(p.shape==='disc')g=new THREE.CylinderGeometry(p.r,p.r,p.h,18);
   else if(p.shape==='gem')g=new THREE.OctahedronGeometry(p.r);
@@ -81,6 +84,24 @@ function armorMesh(p,col){
   const m=new THREE.Mesh(g,mat);m.position.fromArray(p.pos);if(p.rot)m.rotation.fromArray(p.rot);if(p.sc)m.scale.fromArray(p.sc);
   return m;
 }
+/* הראש של המודל ביחידות של עצם הראש: מרכז (c) וחצי רוחב (u), מהקודקודים שזזים עם הראש (בלי הקסדה והכובע שבמודל).
+   נמדד פעם אחת לכל מודל. בלי מדידה: הראש של KayKit */
+const ARMOR_HEAD={kk:{c:[-0.02,0.45,-0.02],u:0.55},cache:new Map()};
+function armorHeadFit(a){
+  const hb=bone(a.root,'head'),ms=[];a.root.traverse(o=>{if(o.isSkinnedMesh&&!armorPart(o,ARMOR_NATIVE)&&o.skeleton.bones.includes(hb))ms.push(o)});
+  const key=ms.map(o=>o.geometry.uuid).join();if(!hb||!ms.length)return ARMOR_HEAD.kk;
+  if(ARMOR_HEAD.cache.has(key))return ARMOR_HEAD.cache.get(key);
+  let f=ARMOR_HEAD.kk;
+  try{a.root.updateMatrixWorld(true);const box=new THREE.Box3(),v=new THREE.Vector3();
+    for(const o of ms){const hi=o.skeleton.bones.indexOf(hb),si=o.geometry.attributes.skinIndex,sw=o.geometry.attributes.skinWeight;if(!si||!sw)continue;
+      for(let i=0;i<si.count;i++){let b=-1,bw=-1;for(let k=0;k<4;k++){const w=sw.getComponent(i,k);if(w>bw){bw=w;b=si.getComponent(i,k)}}
+        if(b!==hi)continue;o.getVertexPosition(i,v);o.applyBoneTransform(i,v);o.localToWorld(v);hb.worldToLocal(v);box.expandByPoint(v)}}
+    if(!box.isEmpty()){const c=box.getCenter(new THREE.Vector3()),z=box.getSize(new THREE.Vector3());f={c:c.toArray(),u:Math.max(z.x,z.z)/2}}}catch(e){}
+  ARMOR_HEAD.cache.set(key,f);return f;
+}
+// חלק עם fit: ממירים את המיקום והגדלים מיחידות של הראש ליחידות של העצם
+function armorFit(p,f){if(!p.fit)return p;const u=f.u,q=Object.assign({},p,{pos:p.pos.map((x,i)=>f.c[i]+x*u)});
+  for(const k of ['r','h'])if(p[k]!=null)q[k]=p[k]*u;if(p.size)q.size=p.size.map(x=>x*u);return q}
 function armor3d(a){
   if(!a||!window.THREE)return;
   const ids=ARMOR.slots.map(s=>gGet(s,0)),key=ids.join()+'|'+rankId()+'|'+(a.L&&a.L.ck);if(a.ar===key)return;
@@ -94,7 +115,7 @@ function armor3d(a){
   const R=RANKS.list[rankId()],rl=R&&R.look,rk=rl&&rl.glow?new THREE.Color(R.col).multiplyScalar(rl.glow):null;
   const paint=(o,col,k,t)=>{o.visible=true;o.material.color.set(0xffffff).lerp(new THREE.Color(col),k);const em=new THREE.Color(col).multiplyScalar(LK.glow[t]);
     if(rk&&rl.show.includes(armorPart(o,ARMOR_NATIVE)))em.add(rk);o.material.emissive.copy(em);o.material.userData.em=em};
-  const build=(list,tcol,ccol,t)=>{for(const p of list){const b=bone(a.root,p.bone);if(!b)continue;
+  let hf=null;const build=(list,tcol,ccol,t)=>{for(const p0 of list){const b=bone(a.root,p0.bone);if(!b)continue;const p=p0.fit?armorFit(p0,hf||(hf=armorHeadFit(a))):p0;
     const col=p.col==='tier'?tcol:ccol,m=armorMesh(p,col),em=new THREE.Color(col).multiplyScalar(p.glow||LK.glow[t]);
     m.material.emissive.copy(em);m.material.userData.em=em;b.add(m);a.arG.push(m);a.mats.push(m.material)}};
   /* משבצת ריקה = בלי החלק (ניר, 4.11.2026: "לדמות שלי יש כובע, למרות שבציוד אין לה קסדה"). הקסדה, הכובע והגלימה שבנויים במודל
