@@ -475,7 +475,7 @@ function worldBot(m,L,god){
     if(m.kt==null)m.k0=S.kills;m.kt=e.type+(e.creature?' (יצור)':'');return steer(e.x,e.y,false,P.weapon==='sword'?e.r+30:200,L)}
   if(m.wp==='wnpc'){   // דמות בעולם (worldnpc.js): הולכים לקרובה, היא נמצאת (נשמר, חגיגה, חץ), מדברים, מקבלים קווסט, משלימים ולוקחים פרס רק אצלה
     const N=L.wn||(L.wn={}),tb=document.getElementById('talkBtn'),dlg=document.getElementById('npcDlg'),btn=a=>dlg.querySelector('[data-act="'+a+'"]');
-    if(!m.wn){const id=Object.keys(WNPC.list).sort((a,b)=>far(WNPC.list[a].at,WNPC.list[b].at))[0];if(!window.__cel){window.__cel=0;const c=celebrate;window.celebrate=(...a)=>{window.__cel++;return c(...a)}}m.wn={id,step:0,fx:window.__cel};N.id=id;N.n=Object.keys(WNPC.list).length;N.metBefore=!!SAVE.met[id];N.markBefore=wnpcMarks()[id]||null}
+    if(!m.wn){const id=Object.keys(WNPC.list).filter(k=>!WNPC.list[k].reg&&!WNPC.list[k].look&&!WNPC.list[k].board).sort((a,b)=>far(WNPC.list[a].at,WNPC.list[b].at))[0];if(!window.__cel){window.__cel=0;const c=celebrate;window.celebrate=(...a)=>{window.__cel++;return c(...a)}}m.wn={id,step:0,fx:window.__cel};N.id=id;N.n=Object.keys(WNPC.list).length;N.metBefore=!!SAVE.met[id];N.markBefore=wnpcMarks()[id]||null}
     const M=m.wn,id=M.id,n=wnpcState()[id];
     if(M.step===0){
       if(!SAVE.met[id])return steer(n.x,n.y,false,0,L);
@@ -497,7 +497,7 @@ function worldBot(m,L,god){
       N.claimed=!SAVE.quests.active[M.q]&&!!SAVE.quests.done[M.q];N.paid=Object.keys(r).filter(k=>resOf(k)).every(k=>(SAVE.bag[k]||0)-(M.b0[k]||0)===r[k]);
       N.claimSaved=!!(saved().quests.done||{})[M.q];N.claimFx=window.__cel>M.fx2;btn('close').click();
       // דמות שעוד לא נמצאה: אין לה סימן ואין לה קווסט פתוח
-      const other=Object.keys(WNPC.list).find(k=>!SAVE.met[k]);N.hidden=!other||(!wnpcMarks()[other]&&!QUESTS.list.some(q=>q.giver===other&&qOpen(q)));
+      const other=Object.keys(WNPC.list).find(k=>!SAVE.met[k]&&!WNPC.list[k].reg);N.hidden=!other||(!wnpcMarks()[other]&&!QUESTS.list.some(q=>q.giver===other&&qOpen(q)));
       L.wnDone=1;m.wp='fish';return L}
   }
   if(m.wp==='fish'){   // דיג (fishing.js): הולכים לבריכה של הדייג, "לדוג", מחכים ל-!, ולוחצים כשהמחוג בירוק. הדג בתרמיל, בשמירה ובספר
@@ -889,6 +889,34 @@ function worldBot(m,L,god){
     return{daily,ach,day,noHit:hit&&clean,up,world}});
   check(qe.daily&&qe.ach&&qe.day&&qe.noHit&&qe.up&&qe.world,'מנוע קווסטים: '+(qe.daily?'4 יומיים':'יומיים לא נבחרו')+', '+(qe.day?'מתחלפים ביום חדש':'לא מתחלפים ביום חדש')+', '+
     (qe.ach?'הישגים פעילים':'הישגים לא פעילים')+', '+(qe.noHit?'ניצחון בלי פגיעה נבדק':'ניצחון בלי פגיעה שבור')+', '+(qe.up?'שדרוג מבנה נספר':'שדרוג מבנה לא נספר')+', '+(qe.world?'יציאה לעולם ואיסוף בו נספרים':'אירועי העולם לא נספרים'));
+  // קווסטים צדדיים ולוח מודעות (questboard.js, ת15): בכל אזור 6-10, מגוונים, וכל מקום ודמות קיימים. קווסט מתקבל, מושלם ונותן פרס, השרשרת ממשיכה,
+  // להגן נספר בשניות, "למסור הודעה" נותן פרס במקום, והלוח: 3 משימות, מה שנלקח מתחלף, ואחרי פרס הלוח שוב מלא. בסוף מנקים
+  const sq=await page.evaluate(()=>{const r={};try{const Q=QS(),E=QUESTS.early.ids;QUESTS.early.ids=QUESTS.list.map(q=>q.id);
+    const side=QUESTS.list.filter(q=>/^sq/.test(q.id)),per={};
+    for(const q of side){const g=WNPC.list[q.giver];const reg=g?(g.reg||'meadow'):'?';(per[reg]=per[reg]||{n:0,types:new Set()}).n++;q.obj.forEach(o=>per[reg].types.add(o.type))}
+    r.per=Object.keys(per).map(k=>k+':'+per[k].n+'/'+per[k].types.size).join(' ');
+    r.regions=Object.keys(QBOARD.regs).every(k=>per[k]&&per[k].n>=6&&per[k].n<=10&&per[k].types.size>=3);
+    r.bad=side.filter(q=>!WNPC.list[q.giver]||q.obj.some(o=>(o.type==='visit'||o.type==='hold')&&!sqPlace(o.what)||o.type==='meet'&&!WNPC.list[o.what])).map(q=>q.id);
+    r.text=side.filter(q=>!Array.isArray(T('q.'+q.id))).map(q=>q.id).concat(Object.keys(WNPC.list).filter(k=>!Array.isArray(T('npc.'+k))));
+    SAVE.met.scout=1;SAVE.met.hermit=1;const a=QBY.sqScout1,xp0=SAVE.hero.xp||0,c0=SAVE.bag.coins||0;
+    r.open=qOpen(a)&&!qOpen(QBY.sqScout2);questAct('accept','sqScout1');questEvent('visit','meadow:spring');const notYet=!qReady(a);questEvent('visit','meadow:lookout');
+    r.visit=notYet&&qReady(a);questAct('claim','sqScout1');r.paid=(SAVE.hero.xp||0)-xp0===a.reward.xp&&(SAVE.bag.coins||0)-c0===a.reward.coins&&!!Q.done.sqScout1;
+    r.chain=qOpen(QBY.sqScout2);questAct('accept','sqScout2');questEvent('hold','meadow:bank',24);const h1=!qReady(QBY.sqScout2);questEvent('hold','meadow:bank',1);r.hold=h1&&qReady(QBY.sqScout2);
+    questAct('claim','sqScout2');questAct('accept','sqScout3');questEvent('meet','hermit');r.meet=!!Q.done.sqScout3&&!Q.active.sqScout3;
+    // הלוח באחו
+    SAVE.met.qb_meadow=1;qbSync('meadow');const B=qbR('meadow'),first=B.offer.slice(),id=qbId('meadow',first[0]),q=QBY[id];
+    r.board=first.length===QBOARD.offers&&first.every(t=>qOpen(QBY[qbId('meadow',t)]))&&q.reward.xp>0&&q.obj.length>0;
+    questAct('accept',id);qbSync('meadow');r.swap=B.offer.length===QBOARD.offers&&!B.offer.includes(first[0])&&!qOpen(q);
+    for(const o of q.obj)questEvent(o.type,o.what,o.n);r.bReady=qReady(q);const x1=SAVE.hero.xp;questAct('claim',id);
+    r.bPaid=SAVE.hero.xp>x1&&QB().n===1&&B.offer.length===QBOARD.offers&&!Q.active[id];
+    B.day='1999-1-1';const before=B.offer.join();qbSync('meadow');r.day=B.offer.length===QBOARD.offers;r.dayNew=B.offer.join()!==before||Object.keys(QBOARD.tpl).length<=QBOARD.offers;
+    QUESTS.early.ids=E;
+  }catch(e){r.err=String(e&&e.stack||e).slice(0,200)}
+    localStorage.removeItem(SAVE_STORE.key);saveLoad();S.q=null;$('qTrack').hidden=true;$('qTrack').textContent='';return r});
+  check(sq.regions&&!sq.bad.length&&!sq.text.length,'קווסטים צדדיים: '+sq.per+' (אזור:קווסטים/סוגי יעדים)'+(sq.bad.length?', מקום או דמות חסרים: '+sq.bad.join(','):'')+(sq.text.length?', בלי טקסט: '+sq.text.join(','):'')+(sq.err?' ('+sq.err+')':''));
+  check(sq.open&&sq.visit&&sq.paid&&sq.chain&&sq.hold&&sq.meet,'קווסט צדדי: '+(sq.open?'נפתח כשמוצאים את הסיירת':'לא נפתח')+', '+(sq.visit?'לחקור מקום נספר':'לחקור לא נספר')+', '+(sq.paid?'פרס XP ומטבעות':'בלי פרס')+', '+
+    (sq.chain?'השרשרת ממשיכה':'השרשרת נתקעה')+', '+(sq.hold?'להגן נספר בשניות':'להגן לא נספר')+', '+(sq.meet?'הודעה נמסרת עם פרס במקום':'הודעה לא נמסרה'));
+  check(sq.board&&sq.swap&&sq.bReady&&sq.bPaid&&sq.day&&sq.dayNew,'לוח מודעות: '+(sq.board?'3 משימות עם פרס':'אין 3 משימות')+', '+(sq.swap?'מה שנלקח מתחלף בחדשה':'לא התחלף')+', '+(sq.bPaid?'פרס והלוח שוב מלא':'בלי פרס או לוח חסר')+', '+(sq.dayNew?'יום חדש מחדש':'יום חדש לא מחדש'));
   // דרגות (ranks.js): רמה 20 פותחת קווסט דרגה אצל הכוהנת, הסגנון קובע איזו דרגה, ולקיחת הפרס שומרת אותה, מפעילה טקס ומוסיפה בונוס קבוע. בסוף מנקים
   const rk=await page.evaluate(()=>{const q=QUESTS.list.find(q=>q.kind==='rank'),mode=S.mode,r={every:RANKS.every};
     r.locked=!qOpen(q);
@@ -2059,7 +2087,7 @@ function worldBot(m,L,god){
     o.offer=qOpen(QBY.s2Mist)&&!qOpen(QBY.s2Glow);
     qStart(QBY.s2Mist);wGo('lake');o.reg=S.wd.reg;o.mist=qReady(QBY.s2Mist);questClaim('s2Mist');
     const wet=enemies.filter(e=>!e.dead&&(e.type==='drowned'||e.type==='mistling'));o.foes=wet.length;
-    o.weak=wet.some(e=>e.type==='drowned'&&e.weak==='lightning');o.noNpc=!Object.keys(wnpcState()).length;
+    o.weak=wet.some(e=>e.type==='drowned'&&e.weak==='lightning');o.noNpc=Object.keys(wnpcState()).every(k=>WNPC.list[k].reg===S.wd.reg);
     return o});
   await page.clock.runFor(400);await shot('world-lake');
   const ch2b=await page.evaluate(()=>{
@@ -2085,7 +2113,7 @@ function worldBot(m,L,god){
     o.offer=qOpen(QBY.s3Climb)&&!qOpen(QBY.s3Frost);
     qStart(QBY.s3Climb);wGo('ridge');o.reg=S.wd.reg;o.climb=qReady(QBY.s3Climb);questClaim('s3Climb');
     const cold=enemies.filter(e=>!e.dead&&(e.type==='rimeknight'||e.type==='frostwraith'));o.foes=cold.length;
-    o.weak=cold.length>0&&cold.every(e=>e.weak==='fire');o.noNpc=!Object.keys(wnpcState()).length;o.snow=!!WR().snow&&typeof wSnow==='function';
+    o.weak=cold.length>0&&cold.every(e=>e.weak==='fire');o.noNpc=Object.keys(wnpcState()).every(k=>WNPC.list[k].reg===S.wd.reg);o.snow=!!WR().snow&&typeof wSnow==='function';
     return o});
   await page.clock.runFor(400);await shot('world-ridge');
   const ch3b=await page.evaluate(()=>{
@@ -2111,7 +2139,7 @@ function worldBot(m,L,god){
     Q.done.s3Warden=Q.done.s3Warden||1;o.offer=qOpen(QBY.s4Sand)&&!qOpen(QBY.s4Ember);
     qStart(QBY.s4Sand);wGo('desert');o.reg=S.wd.reg;o.sand=qReady(QBY.s4Sand);questClaim('s4Sand');
     const hot=enemies.filter(e=>!e.dead&&(e.type==='cinderscorp'||e.type==='flamewisp'));o.foes=hot.length;
-    o.weak=hot.length>0&&hot.every(e=>e.weak==='water');o.noNpc=!Object.keys(wnpcState()).length;o.heat=!!WR().heat&&typeof wHeat==='function';
+    o.weak=hot.length>0&&hot.every(e=>e.weak==='water');o.noNpc=Object.keys(wnpcState()).every(k=>WNPC.list[k].reg===S.wd.reg);o.heat=!!WR().heat&&typeof wHeat==='function';
     return o});
   await page.clock.runFor(400);await shot('world-desert');
   const ch4b=await page.evaluate(()=>{
@@ -2139,7 +2167,7 @@ function worldBot(m,L,god){
     Q.done.s4Warden=Q.done.s4Warden||1;o.offer=qOpen(QBY.s5Climb)&&!qOpen(QBY.s5Spark);
     qStart(QBY.s5Climb);wGo('storm');o.reg=S.wd.reg;o.climb=qReady(QBY.s5Climb);questClaim('s5Climb');
     const zap=enemies.filter(e=>!e.dead&&(e.type==='stormknight'||e.type==='sparkwisp'));o.foes=zap.length;
-    o.weak=zap.length>0&&zap.every(e=>e.weak==='earth');o.noNpc=!Object.keys(wnpcState()).length;
+    o.weak=zap.length>0&&zap.every(e=>e.weak==='earth');o.noNpc=Object.keys(wnpcState()).every(k=>WNPC.list[k].reg===S.wd.reg);
     const tw=(WR().towers||[])[0];o.storm=!!WR().storm&&typeof wStorm==='function'&&!!tw;
     if(tw){P.x=tw.x+3;P.y=tw.y;wPonds(P);o.solid=Math.hypot(P.x-tw.x,P.y-tw.y)>=tw.r}
     return o});
@@ -2172,7 +2200,7 @@ function worldBot(m,L,god){
     qStart(QBY.s6Dark);wGo('shadow');o.reg=S.wd.reg;o.dark=qReady(QBY.s6Dark);questClaim('s6Dark');
     const sh=enemies.filter(e=>!e.dead&&(e.type==='shadeknight'||e.type==='shadewisp'));o.foes=sh.length;
     o.mixed=['shadeknight','shadewisp'].every(t=>(ETYPES[t].tags||[]).length>1);
-    o.noNpc=!Object.keys(wnpcState()).length;o.shadow=!!WR().shadow&&typeof wShadow==='function';
+    o.noNpc=Object.keys(wnpcState()).every(k=>WNPC.list[k].reg===S.wd.reg);o.shadow=!!WR().shadow&&typeof wShadow==='function';
     qStart(QBY.s6Echo);questEvent('kill','shadeknight',6);questEvent('kill','shadewisp',6);o.echo=qReady(QBY.s6Echo);questClaim('s6Echo');
     return o});
   await page.clock.runFor(400);await shot('world-shadow');
