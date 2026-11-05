@@ -246,7 +246,7 @@ function questLog(){
   h+=sec('ready',act.filter(q=>qReady(q)&&!qKind(q).talk).map(q=>qCard(q,'claim')));
   h+=sec('active',act.filter(q=>(!qReady(q)||qKind(q).talk)&&!qKind(q).auto).map(q=>qCard(q,'track')));   // talk: הפרס אצל מי שנתן
   h+=sec('new',L.filter(q=>qOpen(q)&&!qKind(q).talk).map(q=>qCard(q,'accept')));
-  h+='</div><div class="qcol">'+challengeCard()+huntCard();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js)
+  h+='</div><div class="qcol">'+challengeCard()+huntCard();   // החוק והמשימה של היום (mutation.js), מבוקש היום (hunt.js)
   h+=sec('daily',Q.daily.map(id=>QBY[id]).filter(q=>q&&!(Q.active[q.id]&&qReady(q))).map(q=>qCard(q,Q.active[q.id]?'track':'done')));
   h+=sec('ach',act.filter(q=>!qReady(q)&&qKind(q).achievement).map(q=>qCard(q,'')))+'</div>';
   $('qLog').innerHTML=h;
