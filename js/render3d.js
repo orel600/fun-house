@@ -255,7 +255,8 @@ function showGfx(){for(const b of document.querySelectorAll('[data-gfx]'))b.setA
 
 /* ---- טעינה ---- */
 function b64buf(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer}
-function parseGLB(k){return new Promise((ok,bad)=>new THREE.GLTFLoader().parse(b64buf(MODELS3D[k]),'',ok,bad))}
+// המודלים דחוסים ב-meshopt (build3d.js, pack), ו-MeshoptDecoder פותח אותם. מודל לא דחוס נטען כרגיל
+function parseGLB(k){return new Promise((ok,bad)=>new THREE.GLTFLoader().setMeshoptDecoder(THREE.MeshoptDecoder).parse(b64buf(MODELS3D[k]),'',ok,bad))}
 // הדמויות מגיעות מחולקות לחלקים (ראש, גוף, ידיים...). מאחדים אותם לחלק אחד, כדי שהטלפון יצייר כל דמות במכה אחת
 // keep: חלקים שנשארים נפרדים כדי להדליק ולכבות אותם (שריון לפי דרגה, rankArmor3d)
 function mergeSkinned(root,keep){
@@ -310,7 +311,7 @@ async function init3d(){
     const heroModels=new Set(Object.keys(LOOK3D).filter(k=>k==='player'||k.startsWith('hero_')).map(k=>LOOK3D[k].model));
     for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t,heroModels.has(k)&&(GEAR3D.on?ARMOR3D.concat(GEAR3D.keep):ARMOR3D));lambert(t);t.updateMatrixWorld(true);
       // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
-      const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=bb.max.y-bb.min.y||2}
+      const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=t.userData.h0||bb.max.y-bb.min.y||2}   // h0: הגובה לפני הדחיסה (build3d.js, pack), כי quantize משנה את המיקומים הגולמיים
     bakeCrowd();
     R3D.ready=true;R3D.on=R3D.want;c.hidden=!R3D.on;
   }catch(e){
