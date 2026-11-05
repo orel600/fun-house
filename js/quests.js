@@ -8,6 +8,7 @@
      gather  לאסוף בעולם הפתוח n מ-what: משאב שנפל ממקור או מאויב בעולם (world.js). נספר כשהוא נכנס לתרמיל
      fish    לדוג n מ-what: דג (fishing.js), או any
      upgrade המבנה what ברמה n לפחות. נבדק לפי הכפר עצמו, אז מה שכבר בנית נספר
+     rare    לצוד n מפלצות נדירות שונות (rares.js). נספר מכל מה שכבר צדת, גם לפני שקיבלת
      win     לנצח בוס n פעמים. אפשר בתנאי: noHit (בלי לחטוף פגיעה כל עוד הבוס בזירה), under (לפני שעברו כך וכך שניות בריצה)
    reward: משאבים לתרמיל לפי השם, xp לדמות, rank: עלייה לשלב הזה בדרגה (ranks.js), item: פריט לתרמיל (השם ב-lang.js תחת 'item.<id>'). id של פריט ציוד מ-GEAR.items (gear.js) נכנס לתרמיל כציוד שאפשר ללבוש,
      ואם יש לו משבצת פנויה הוא נלבש מיד (השם שלו 'it.<id>').
@@ -85,8 +86,8 @@ const QUESTS={
     {id:'wGolems',giver:'cutter',kind:'world',obj:[{type:'kill',what:'golem',n:3}],reward:{iron:8,xp:30},req:{quest:'wQuarry'}},
     {id:'wHerbs',giver:'herbal',kind:'world',obj:[{type:'gather',what:'herb',n:6}],reward:{coins:20,resin:3}},
     {id:'wSprites',giver:'herbal',kind:'world',obj:[{type:'kill',what:'sprite',n:4}],reward:{coins:30,xp:30},req:{quest:'wHerbs'}},
-    // ---- דרגה: הכוהנת, כל RANKS.every רמות. "הבא 30 עצמות ונצח את השומר" (game-design.md) ----
-    {id:'rank1',giver:'priest',kind:'rank',obj:[{type:'collect',what:'bone',n:30},{type:'win',n:1}],reward:{rank:1,coins:50},req:{level:20}},
+    // ---- דרגה: הכוהנת, כל RANKS.every רמות. 30 עצמות ו-3 מפלצות נדירות שונות (ניר, 5.11.2026: "לצוד מפלצות נדירות שקשה למצוא", במקום ניצחון בזירה) ----
+    {id:'rank1',giver:'priest',kind:'rank',obj:[{type:'collect',what:'bone',n:30},{type:'rare',n:3}],reward:{rank:1,coins:50},req:{level:20}},
     // ---- ציד: אפשר לקחת שוב ושוב ----
     {id:'huntWanted',giver:'merchant',kind:'hunt',obj:[{type:'kill',what:'wanted',n:1}],reward:{coins:40}},
     {id:'huntFast',giver:'smith',kind:'hunt',obj:[{type:'win',n:1,under:240}],reward:{iron:10,xp:40},req:{quest:'firstBoss'}},
@@ -122,6 +123,7 @@ const qRun=()=>S.q||(S.q={bossHit:0});   // מה שקרה בריצה הזו, ל�
 /* ---- מצב ---- */
 function qProg(q,i){
   const o=q.obj[i];if(o.type==='upgrade')return Math.min(o.n,vLv(o.what));
+  if(o.type==='rare')return Math.min(o.n,rareKinds());   // נדירות שונות שצדת (rares.js)
   const a=QS().active[q.id],p=a?a.p[i]||0:0;
   if(a&&qHand(q,o))return Math.min(o.n,Math.max(p,Math.floor(SAVE.bag[o.what]||0)));   // "תביא לי": מה שכבר בתרמיל נחשב
   return Math.min(o.n,p);
@@ -246,7 +248,7 @@ function questLog(){
   h+=sec('ready',act.filter(q=>qReady(q)&&!qKind(q).talk).map(q=>qCard(q,'claim')));
   h+=sec('active',act.filter(q=>(!qReady(q)||qKind(q).talk)&&!qKind(q).auto).map(q=>qCard(q,'track')));   // talk: הפרס אצל מי שנתן
   h+=sec('new',L.filter(q=>qOpen(q)&&!qKind(q).talk).map(q=>qCard(q,'accept')));
-  h+='</div><div class="qcol">'+challengeCard()+huntCard();   // אתגר יומי (challenge.js), מבוקש היום (hunt.js)
+  h+='</div><div class="qcol">'+challengeCard()+huntCard();   // החוק והמשימה של היום (mutation.js), מבוקש היום (hunt.js)
   h+=sec('daily',Q.daily.map(id=>QBY[id]).filter(q=>q&&!(Q.active[q.id]&&qReady(q))).map(q=>qCard(q,Q.active[q.id]?'track':'done')));
   h+=sec('ach',act.filter(q=>!qReady(q)&&qKind(q).achievement).map(q=>qCard(q,'')))+'</div>';
   $('qLog').innerHTML=h;
@@ -274,12 +276,14 @@ function drawQuestMarks(ox,oy){
   for(const q of QUESTS.list){
     const ready=Q.active[q.id]&&qReady(q);if(ready&&!qKind(q).talk)n++;
     if(!q.giver||!npcHere(q.giver))continue;
-    if(ready)mark[q.giver]='✓';else if(!mark[q.giver]&&qOpen(q))mark[q.giver]='!';
+    if(ready)mark[q.giver]='✓';else if(qOpen(q)&&(q.kind==='rank'||!mark[q.giver]))mark[q.giver]=q.kind==='rank'?'!!':'!';   // דרגה: סימן גדול וסגול, שלא מתפספס (ניר, 5.11)
   }
   ctx.textAlign='center';ctx.direction='ltr';ctx.font='800 22px Heebo, system-ui, sans-serif';
   const bob=Math.sin(fxNow()*4)*4;
-  for(const k in mark){const N=npcAt(k);if(!N)continue;const x=N.x+ox,y=N.y-NPC.markUp+oy+bob;
-    ctx.fillStyle='rgba(18,22,36,0.85)';ctx.beginPath();ctx.arc(x,y-7,15,0,7);ctx.fill();ctx.fillStyle=C.gold;ctx.fillText(mark[k],x,y+1)}
+  for(const k in mark){const N=npcAt(k);if(!N)continue;const x=N.x+ox,y=N.y-NPC.markUp+oy+bob,rk=mark[k]==='!!',m=rk?'!':mark[k];
+    if(rk)edgeArrow(N.x+ox,N.y+oy,C.lilac,1.5,true);   // ומחוץ למסך: חץ אליה (render.js)
+    if(rk){ctx.fillStyle='rgba(199,166,255,'+(0.25+Math.sin(fxNow()*5)*0.12)+')';ctx.beginPath();ctx.arc(x,y-7,26,0,7);ctx.fill()}
+    ctx.fillStyle='rgba(18,22,36,0.85)';ctx.beginPath();ctx.arc(x,y-7,rk?19:15,0,7);ctx.fill();ctx.fillStyle=rk?C.lilac:C.gold;if(rk)ctx.font='800 28px Heebo, system-ui, sans-serif';ctx.fillText(m,x,y+(rk?3:1));if(rk)ctx.font='800 22px Heebo, system-ui, sans-serif'}
   ctx.direction=DIR;
   const t=n?String(n):'';if($('qBadge').textContent!==t){$('qBadge').textContent=t;$('qBadge').hidden=!n}
 }

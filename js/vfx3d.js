@@ -61,7 +61,12 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
   const many=n=>{const k=(hi()?1:CF.lo)*(typeof fxLess==='function'&&fxLess()?CF.less:1);return Math.max(n>0?1:0,Math.round(n*k))};
   VFX3D.many=many;
 
-  VFX3D.on=()=>!!(R3D.on&&R3D.ready&&window.THREE&&S&&S.wd&&!S.room&&!S.mb);
+  const base=()=>!!(R3D.on&&R3D.ready&&window.THREE&&S&&!S.room&&!S.mb);
+  VFX3D.on=()=>base()&&!!S.wd;
+  // האש של פיוחו (petfx3d.js) פעילה גם בכפר. רק היא: היא מדליקה את VFX3D.pet סביב הקריאות שלה, וכל שאר האפקטים נשארים בעולם בלבד
+  VFX3D.pet=false;
+  VFX3D.petOn=()=>base()&&!!(S.wd||S.vil);
+  const live=()=>VFX3D.on()||VFX3D.pet&&VFX3D.petOn();
 
   /* ---- בנייה ---- */
   const PV=`attribute float size;attribute vec4 rgba;uniform float uK;varying vec4 vC;
@@ -122,7 +127,7 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
 
   /* ---- חלקיקים ---- */
   VFX3D.emit=function(kind,x,y,h,o){
-    if(!VFX3D.on()||!build())return 0;o=o||{};const K=CF.kinds[kind]||CF.kinds.fire,P_=B[K.pool];
+    if(!live()||!build())return 0;o=o||{};const K=CF.kinds[kind]||CF.kinds.fire,P_=B[K.pool];
     const n=o.raw?o.n:many(o.n==null?1:o.n),cap=K.pool==='glow'?CF.pool.glow[hi()?'hi':'lo']:CF.pool.smoke[hi()?'hi':'lo'];
     const S_=sin(),z=y/S_,spd=o.spd!=null?o.spd:K.spd,up=o.up!=null?o.up:K.up,L=o.life||K.life,sp=o.spread||0;
     const c0=o.col||K.col,c1=o.col2||K.col2,a=o.a!=null?o.a:K.a!=null?K.a:1,hdr=K.pool==='glow'?(o.hdr||CF.hdr):1;
@@ -178,7 +183,7 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
   /* ---- מדבקות קרקע, כדורים ואורות ---- */
   function take(L){for(const d of L)if(!d.on){d.on=true;return d}return null}
   VFX3D.decal=function(kind,x,y,r,o){
-    if(!VFX3D.on()||!build())return null;o=o||{};const d=take(B.decals);if(!d)return null;
+    if(!live()||!build())return null;o=o||{};const d=take(B.decals);if(!d)return null;
     const u=d.m.material.uniforms;d.kind=kind;d.x=x;d.y=y;d.r=r;d.t=0;d.life=o.life==null?1:o.life;d.grow=o.grow||null;d.fade=o.fade==null?0.5:o.fade;d.a=o.a==null?1:o.a;d.fin=o.fin||0;d.p=o.p==null?null:o.p;
     const add=kind!=='scorch';d.m.material.blending=add?THREE.AdditiveBlending:THREE.NormalBlending;d.m.renderOrder=add?3:2;
     lin(o.col||'#ffffff');u.uC.value.setRGB(col.r*(add?(o.hdr||CF.hdr):1),col.g*(add?(o.hdr||CF.hdr):1),col.b*(add?(o.hdr||CF.hdr):1));
@@ -191,7 +196,7 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
     d.set=(x,y,h,s)=>{d.m.position.set(x,h,y/sin());if(s)d.m.scale.setScalar(s);d.m.rotation.x+=0.13;d.m.rotation.y+=0.21};return d;
   };
   VFX3D.light=function(x,y,h,c,i,life){
-    if(!VFX3D.on()||!build()||!hi())return null;const d=take(B.lights);if(!d)return null;
+    if(!live()||!build()||!hi())return null;const d=take(B.lights);if(!d)return null;
     d.l.color.set(c||'#ffffff');d.i0=i;d.l.intensity=i;d.t=0;d.life=life==null?Infinity:life;d.l.position.set(x,h,y/sin());
     d.set=(x,y,h,i)=>{d.l.position.set(x,h,y/sin());if(i!=null){d.i0=i;d.l.intensity=i}};return d;
   };
@@ -209,7 +214,7 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
 
   /* ---- מתכונים מוכנים ---- */
   VFX3D.burst=function(kind,x,y,o){
-    if(!VFX3D.on()||!build())return;o=o||{};const E=CF.explode,r=o.r||100,c=o.col||'#ff8a2a',c2=o.col2||'#ff3c0a',core=o.core||'#fff4d0';
+    if(!live()||!build())return;o=o||{};const E=CF.explode,r=o.r||100,c=o.col||'#ff8a2a',c2=o.col2||'#ff3c0a',core=o.core||'#fff4d0';
     if(kind==='ring'){VFX3D.decal('ring',x,y,r,{life:o.life||E.ring,grow:[r*0.15,r],col:c,w:o.w||0.28,fade:0.6});return}
     if(kind==='flash'){VFX3D.decal('glow',x,y,r,{life:o.life||E.flash,col:core,fade:0.9,a:1.2});return}
     if(kind==='explode'){
@@ -296,7 +301,7 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
     const now=typeof FRAME_T==='number'?FRAME_T:performance.now(),raw=last?Math.min(0.1,(now-last)/1000):0;last=now;
     const dt=S&&S.mode==='play'&&!(S.hitstop>0)?raw*(S.slow>0?0.35:1):0;VFX3D.stat.frames++;
     if(S&&S.wd&&dt>0)measure(raw);
-    if(!VFX3D.on()){if(B&&VFX3D.n())VFX3D.clear();return}
+    if(!VFX3D.petOn()){if(B&&VFX3D.n())VFX3D.clear();return}   // בכפר ממשיכים לקדם רק את מה שיש (האש של פיוחו)
     VFX3D.step(dt);
   };
 

@@ -71,7 +71,7 @@ function paceSpawn(n,at){
     const t=mix?types[Math.floor(Math.random()*types.length)]:type,a=rand(0,6.28),r=rand(0,PACE.spread);
     const e=addEnemy(t,s.x+Math.cos(a)*r,s.y+Math.sin(a)*r,Z.hp*PACE.weak.hp*WORLD.foeHp);wTough(e,{hp:Z.hp*PACE.weak.hp,min:Z.min&&Z.min*PACE.weak.hp,wind:Z.wind});   // foeHp ו-foeMin: אויבים בעולם חזקים יותר (world.js)
     e.dmg*=Z.dmg*PACE.weak.dmg*storySafe();e.speed*=Z.speed;e.zone=Z.id;affixRoll(e,Z.id);
-    e.xp=0;e.home=0;e.pack=pk;e.far=0;challengeSpawn(e);tierSpawn(e)}
+    e.xp=0;e.home=0;e.pack=pk;e.far=0;mutSpawn(e);tierSpawn(e)}
   w.pace.packs++;w.pace.sizes.push(n);
   return pk;
 }
