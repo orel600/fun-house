@@ -3,6 +3,7 @@
    ומופיעים רק אזורים שביקרת בהם והשכנים שלהם, כדי שיישאר מה לגלות. לכל אזור שביקרת: הפנס (דולק או כבוי, STORY.lanterns ו-SAVE.story)
    ומונה הסודות 🔍 x/y (secrets.js). מימין: האזור הנוכחי, עם הדמות, השערים, המקורות, הפנס והדמויות שגילית (worldnpc.js).
    הסודות עצמם לא מסומנים, כדי שיישארו סודות.
+   במפת האזור גם ערפל על מה שעוד לא התגלה, מאורות הבוסים עם הטיימר ואבני המסע הפתוחות (waystones.js, wsMapFog ו-wsMapDraw).
    הכל מנתונים קיימים: אזור חדש ב-WORLD.regions עם דרך אליו מופיע לבד. המיקום של אי נקבע מהכיוון של הדרך אליו.
    נשמר ב-SAVE.wmap ({seen:{meadow:1}}). החיבורים: enterWorld ב-world.js (wmapVisit), WINS ב-ui.js, והכפתור ב-index.html */
 
@@ -153,6 +154,7 @@ function wmDrawHere(){
   // הדמויות שגילית (רק באזורים שיש בהם)
   if(!R.noNpc)for(const id in WNPC.list)if(wnpcMet(id)){const A=WNPC.list[id].at,c=at(A.x,A.y);
     x.beginPath();x.arc(c.x,c.y,WMAP.dot.npc,0,Math.PI*2);x.fillStyle=WNPC.list[id].col;x.fill();x.lineWidth=2;x.strokeStyle='#fff';x.stroke()}
+  wsMapFog(x,at,k);wsMapDraw(x,at);   // ערפל, מאורות עם טיימר ואבני מסע (waystones.js)
   // השערים: לכפר, לזירה, ולאזורים אחרים, עם השם
   const gs=wGates(),gl=[];
   for(const id in gs){const g=gs[id],c=at(g.x,g.y);x.beginPath();x.arc(c.x,c.y,WMAP.dot.gate,0,Math.PI*2);x.fillStyle=wGateCol(id);x.fill();x.lineWidth=2;x.strokeStyle='#000a';x.stroke();
@@ -169,7 +171,7 @@ function wmDraw(){
   $('wMap').innerHTML=winHead('🗺️ '+T('wm.title'))+
     '<div class="wmcols"><section><h4>'+T('wm.world')+'</h4><div class="wmbox"><canvas id="wmWorld"></canvas></div></section>'+
     '<section><h4>'+T('w.region.'+S.wd.reg)+' <small>★ '+T('wm.here')+'</small></h4><div class="wmbox"><canvas id="wmHere"></canvas></div></section></div>'+
-    (SAVE.story&&SAVE.story.end?tierRow():'')+travelMapRow()+   // בחירת הדרגה רק אחרי סוף הסיפור (tiers.js). לפני, שלוש דרגות נעולות רק מסיחות
+    (SAVE.story&&SAVE.story.end?tierRow():'')+travelMapRow()+wsMapRow()+   // בחירת הדרגה רק אחרי סוף הסיפור (tiers.js). לפני, שלוש דרגות נעולות רק מסיחות
     '<p class="wmkey">'+[$('wSec').textContent,$('chTag').hidden?'':$('chTag').textContent].filter(Boolean).map(s=>'<b>'+s+'</b>').join(' ')+' '+T('wm.key')+'</p>';   // 🔍 ו-🌀 עברו מהפס העליון לכאן (docs/plan-hud.md)   // דרגת העולם (tiers.js)
   wmDrawWorld();wmDrawHere();
 }
