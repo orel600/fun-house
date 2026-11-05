@@ -75,6 +75,7 @@ Object.assign(WORLD.regions.desert,{
       {id:'lavaCamp',kind:'camp',x:900,y:650},{id:'bandits',kind:'camp',x:2550,y:330},
       {id:'arch',kind:'ruin',x:-600,y:-390},{id:'caravan',kind:'ruin',x:600,y:-820},{id:'bones',kind:'ruin',x:2280,y:-420},{id:'well',kind:'ruin',x:-1900,y:530},
       {id:'temple',kind:'temple',x:-350,y:760},
-      {id:'canyon',kind:'spot',x:-1050,y:-190},{id:'cut',kind:'spot',x:420,y:-160},{id:'oasis',kind:'spot',x:2150,y:870},{id:'dunes',kind:'spot',x:1100,y:950}]   // spot: מקום עם שם, בלי ציור
+      {id:'canyon',kind:'spot',x:-1050,y:-190},{id:'cut',kind:'spot',x:420,y:-160},{id:'oasis',kind:'spot',x:2150,y:870},{id:'dunes',kind:'spot',x:1100,y:950},
+      {id:'cacti',kind:'spot',x:-2420,y:-1340},{id:'nest',kind:'spot',x:-1450,y:-1250},{id:'lava',kind:'spot',x:2460,y:-130}]   // בשביל הקווסטים הצדדיים (questboard.js, SIDEQ): חורשת הקקטוסים, קן העקרבים (להגן), ושפת הלבה במזרח   // spot: מקום עם שם, בלי ציור
   }
 });

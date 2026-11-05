@@ -28,8 +28,8 @@ const WNPC={
     mistsage:{reg:'lake',at:{x:760,y:-1420},col:'#7FC7C0',look:'mage'},      // נזיר הערפל, ליד מחנה הערפל
     climber: {reg:'ridge',at:{x:-380,y:-560},col:'#C9D6E3',look:'barbarian'},
     bard:    {reg:'ridge',at:{x:380,y:-560},col:'#A8E6FF',look:'ranger'},
-    caravan: {reg:'desert',at:{x:-380,y:-560},col:'#E0B26A',look:'rogue'},
-    glass:   {reg:'desert',at:{x:380,y:-560},col:'#FF9A5A',look:'barbarian'},
+    caravan: {reg:'desert',at:{x:2120,y:880},col:'#E0B26A',look:'rogue'},    // סוחר השיירות, בנווה המדבר (המדבר הגדול, map-desert.js)
+    glass:   {reg:'desert',at:{x:1150,y:300},col:'#FF9A5A',look:'barbarian'},  // הזגגת, בין סלעי הלהבה ומחנה הלבה
     keeper:  {reg:'storm',at:{x:-380,y:-560},col:'#B48CFF',look:'knight'},
     chaser:  {reg:'storm',at:{x:380,y:-560},col:'#8E7CC8',look:'ranger'},
     squire:  {reg:'shadow',at:{x:-380,y:-560},col:'#C7A6FF',look:'knight'},
