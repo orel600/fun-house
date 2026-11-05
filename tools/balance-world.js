@@ -16,6 +16,8 @@ const BAL={
   seed:+(opt('seed')||7),
   cap:+(opt('cap')||900),          // שניות משחק לפרק
   wardenCap:300,                   // מתוכן, לכל היותר לקרב בשומר
+  fights:+(opt('fights')||1),      // כמה פעמים להפיל כל שומר, כדי להוריד את הרעש (--fights 10). אחרי כל ניצחון: חיים מלאים, והשומר קם שוב
+  dodge:opt('nododge')?0:1,        // הבוט יוצא מעיגולי ברק ומעיגול רקיעה, כמו שחקן שרואה את הסימן (--nododge: עומד במקום)
   step:250,                        // כל כמה מילישניות משחק הבוט מחליט
   swapEvery:75,                    // כל כמה שניות מחליפים סקיל אחד בספר, כדי שכל הסקילים הפתוחים יימדדו
   flee:0.3,                        // מתחת לחלק הזה מהחיים בורחים עד שמתרפאים
@@ -40,6 +42,7 @@ function install(B){
   // הזמן: הבוט מריץ את הפריימים בעצמו (frameStep ב-main.js), 0.05 שניות כל אחד, בלי השעון המזויף שמאט פי מאה.
   // זמן המשחק נספר רק בעולם, כדי שההמתנה אחרי מוות (setTimeout אמיתי) לא תיספר
   frame=function(){};
+  if(typeof giantLoot==='function')giantLoot=function(){};   // שלל של ניצחון חוזר: לא, כדי שהציוד לא ישתפר בין קרב לקרב
   window.__balRun=n=>{let r={};for(let i=0;i<n&&!r.done;i++){last=performance.now()-50;frameStep(performance.now());if(S.wd)m.gt+=0.05;if(i%5===0)r=step()}return r};
   function chap(){return B.chapters[m.ch]}
   // הריגות בפרק (ל-kills של playtime.js)
@@ -81,9 +84,9 @@ function install(B){
     if(m.ch>=B.chapters.length)return{done:true,R};
     const now=m.gt,c=cRep(),vis=id=>!$(id).hidden;
     if(vis('ovWDeath')){$('wRespawn').click();return{}}
-    if(S.wd&&S.mode==='over'){if(!m.dead){m.dead=1;R.deaths++;c.deaths++}return{}}
+    if(S.wd&&S.mode==='over'){if(!m.dead){m.dead=1;R.deaths++;c.deaths++;if(m.ph==='warden')c.wDeaths=(c.wDeaths||0)+1}return{}}
     m.dead=0;
-    if(now-m.chT>B.cap){finish(false,m.ph==='warden'?'שומר':'רמה '+heroLv()+'/'+need());return{}}
+    if(now-m.chT>B.cap+(m.ph==='warden'?B.wardenCap*(B.fights-1):0)){finish(false,m.ph==='warden'?'שומר':'רמה '+heroLv()+'/'+need());return{}}
     for(const id of ['npcDlg','qLog','ovGear','ovDaily','ovWelcome','ovBook'])if($(id)&&!$(id).hidden)$(id).hidden=true;
     if(S.vil||!S.wd||S.wd.reg!==chap().reg){if(S.vil){equip();points();upgrade()}
       worldUi(false);enterWorld('home',chap().reg);return{}}
@@ -100,7 +103,9 @@ function install(B){
     if(m.ph==='grind'&&now-m.chT>=B.cap-B.wardenCap)m.ph='warden';   // לא הגיע לרמה בזמן: מנסה את השומר בכל זאת
     const L=STORY.lanterns[chap().k],w=S.wd;
     if(m.ph==='warden'){if(!m.wT)m.wT=now;
-      if(m.wE&&m.wE.dead&&m.wE.hp<=0){c.wardenT=Math.round(now-m.wT);c.fightT=Math.round((now-m.wS)*10)/10;c.wLv=heroLv();m.wE=null;finish(true);return{}}
+      if(m.wE&&m.wE.dead&&m.wE.hp<=0){const f=c.fights||(c.fights=[]);f.push(Math.round((now-m.wS)*10)/10);m.wE=null;
+        if(f.length<B.fights){P.hp=P.maxHp;S.wd.marks=[];S.wd.rings=[];if(STO().bt)delete STO().bt[chap().k];P.x=L.x;P.y=L.y+GIANT.lair+700;return{}}   // שוב: מתרחקים, והשומר קם כשחוזרים
+        c.wardenT=Math.round(now-m.wT);c.fightT=Math.round(f.reduce((a,b)=>a+b,0)/f.length*10)/10;c.wLv=heroLv();finish(true);return{}}
       // הענק קם לבד כשמתקרבים (giant.js). הטיימר מניצחון מקרי בזמן הטיפוס לא נספר: מאפסים אותו
       if(m.wE&&m.wE.gone)m.wE=null;if(STO().bt)delete STO().bt[chap().k];
       if(!w.warden&&typeof giantReady!=='function'&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake)storyWarden(chap().k,L.y+70);   // גרסה ישנה (לפני הטיימר): קם רק עם קווסט, אז מקימים ביד
@@ -108,7 +113,10 @@ function install(B){
     // קרב: לחיים נמוכים בורחים. אחרת אל האויב הקרוב (או השומר), עד הטווח של הנשק
     const F=foes(),near=F.reduce((b,e)=>{const d=Math.hypot(e.x-P.x,e.y-P.y);return d<b.d?{e,d}:b},{e:null,d:1e9});
     const melee=P.weapon==='sword',stop=melee?28:150;
-    if(P.hp<P.maxHp*B.flee&&near.e&&near.d<320){steer(near.e.x,near.e.y,true,0);m.hurt=1}
+    const mk=B.dodge&&(w.marks||[]).find(M=>M.t>0&&Math.hypot(P.x-M.x,P.y-M.y)<STORY.lanterns[M.k].warden.marks.r+P.r+10),
+      sl=B.dodge&&w.warden&&w.warden.tel&&w.warden.tel.kind==='slam'&&Math.hypot(P.x-w.warden.tel.x,P.y-w.warden.tel.y)<(w.warden.pw||L.warden).slam.r+P.r+10?w.warden.tel:null;
+    if(mk||sl){const o=mk||sl;steer(o.x,o.y,true,0)}   // יוצאים מהסימן על הרצפה
+    else if(P.hp<P.maxHp*B.flee&&near.e&&near.d<320){steer(near.e.x,near.e.y,true,0);m.hurt=1}
     else if(m.hurt&&P.hp<P.maxHp*0.85&&near.d<320){steer(near.e.x,near.e.y,true,0)}
     else{m.hurt=0;const tg=m.ph==='warden'?(w.warden&&!w.warden.dead?w.warden:null):near.e;
       if(m.ph==='warden'&&!tg)steer(L.x,L.y,false,20);else if(tg)steer(tg.x,tg.y,false,stop+(tg.r||0));else joy=null}
@@ -151,6 +159,8 @@ if(require.main===module)(async()=>{
     if(R.errors.length)console.log('  שגיאות: '+R.errors.join(' | '))}
   // סולם הבוסים (GIANT.ladder.ratio, ניר 5.11): כמה זמן לוקח להפיל כל שומר, בממוצע על המחלקות, ופי כמה מהקודם
   const ft=BAL.chapters.map((_,i)=>{const v=BAL.cls.map(c=>(out[c].ch[i]||{}).fightT).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null});
+  console.log('\nלכל מחלקה (ממוצע '+BAL.fights+' קרבות, מוות בקרבות בשומר):');
+  for(const c of BAL.cls)console.log('  '+c+': '+out[c].ch.map((h,i)=>BAL.chapters[i].k+' '+(h.fightT??'-')+'s/'+(h.wDeaths||0)+'💀').join(', '));
   console.log('\nזמן להפיל כל שומר (ממוצע, שניות): '+ft.map((t,i)=>BAL.chapters[i].k+' '+(t==null?'-':t.toFixed(1))+(i&&t&&ft[i-1]?' (×'+(t/ft[i-1]).toFixed(2)+')':'')).join(', '));
   const j=opt('json');if(j)fs.writeFileSync(j,JSON.stringify(out,null,1));
 })();
