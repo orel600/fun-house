@@ -32,7 +32,7 @@ const TERRAIN={
   forest:{gap:74,jit:0.45,edge:90,pick:[{model:'n_tree',h:150,tint:'#cfe6bf'},{model:'n_pine',h:165},{model:'v_treeA',w:118},{model:'n_pine',h:135}]},
   cliff:{gap:62,out:[20,120],pick:[{model:'n_crag',w:150,tint:'#b8a890'},{model:'n_block',w:130,tint:'#a89c88'},{model:'n_crag',w:110,tint:'#c9bba2'}]},   // צוקים לאורך הגבול: סלע כל gap, ובין out[0] ל-out[1] מחוץ לקו
   reeds:{gap:46,model:'n_reeds',h:58},
-  crag:{gap:120,deep:300,mul:[0.9,2.2]},   // גושי צוקים (map.crags): סלע כל gap, ובעומק deep מהשפה הם בגודל mul[1]   // קני סוף לאורך הביצה
+  crag:{gap:170,deep:300,mul:[1.1,2]},   // גושי צוקים (map.crags): סלע כל gap, ובעומק deep מהשפה הם בגודל mul[1]   // קני סוף לאורך הביצה
   // מים בתלת-ממד: deep עמוק, shallow רדוד, foam קצף בנהר, flow מהירות הזרימה (פיקסלים לשנייה)
   water:{deep:'#2f7fa6',dark:'#1e5a80',shallow:'#6fb7c9',foam:'#d8f0ff',flow:70,alpha:0.92},
   bridge:{wood:'#8a5a32',dark:'#5e3b20',plank:16,rail:10},
