@@ -35,6 +35,8 @@ const QBOARD={
   maxActive:3,       // כמה משימות מלוח אחד אפשר להחזיק בבת אחת
   streak:5,          // כל כמה משימות מהלוח יש בונוס
   bonus:{gem:1,essence:3},
+  // חפץ בטוח כל every משימות מהלוח, הטוב מבין rolls הגרלות (lootRoll ב-loot.js). כיול קצב 5.11: רגעים טובים בדרגות 2-3 היו כ-3 לשעה, והיעד 6
+  gear:{every:3,rolls:3},
   // איפה הלוח: באחו ליד השער לכפר, ובשאר האזורים ליד השער שממנו נכנסים
   at:{meadow:{x:110,y:-1740},lake:{x:150,y:-1690},ridge:{x:-380,y:-1760},desert:{x:-120,y:-1140},storm:{x:150,y:-1690},shadow:{x:-140,y:-1700},other:{x:-90,y:-520}},
   // מה האזור מציע: משאבים לאסוף (כמה בבסיס), ומשאב בפרס
@@ -103,6 +105,7 @@ function qbSync(reg){
 // אחרי שלקחת פרס על משימה מהלוח: היא יורדת, וכל streak משימות בונוס
 function qbClaimed(q){
   const B=qbR(q.reg),S0=QB();delete B.p[q.tpl];B.last=q.tpl;S0.n++;
+  if(QBOARD.gear&&S0.n%QBOARD.gear.every===0&&S.wd){const id=lootRoll(QBOARD.gear.rolls);dropSpawn(id,1,P.x,P.y-30);if(typeof feedOn==='function'&&feedOn())feedGear(id);else banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id),dropTier(id).col)}
   if(S0.n%QBOARD.streak===0){for(const k in QBOARD.bonus)bagAdd(k,QBOARD.bonus[k]);banner(T('sq.streak',S0.n),C.gold);celebrate(P.x,P.y-10,'rank')}
   qbSync(q.reg);saveNow();
 }
