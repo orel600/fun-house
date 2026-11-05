@@ -12,7 +12,19 @@ const GIANT={
   zoom:{k:0.66,near:900,inT:1.2,outT:2.4,step:0.01},   // המצלמה מתרחקת (פי k) כשענק חי עד near מהגיבור, כדי לראות את כולו ואת הגיבור
   cam:{k:0.5,tall:4.4,max:0.3},           // והמרכז זז לכיוון האמצע של הגוף שלו (k מהדרך, גובה הגוף tall×r), עד max מהמסך, כדי שהגיבור נשאר בפנים
   die:{t:3.2,anim:2.2,sink:1.2,shake:14},// מוות: t שניות עד שנעלם, anim שניות של קריסה, ושוקע באדמה ב-sink האחרונות. רעד גדול כשנופל
-  shadow:1.35                            // הצל על הקרקע: פי כמה מהצל של אויב רגיל באותו רדיוס
+  shadow:1.35,                           // הצל על הקרקע: פי כמה מהצל של אויב רגיל באותו רדיוס
+  /* בוסים תמיד שם, וחוזרים אחרי טיימר (ניר, 5.11.2026: "בוסים צריכים להיות כל הזמן... בוס ראשון הכי קל, אחרון הכי קשה... משהו שמבוסס יחס").
+     docs/plan-world-terrain.md, שלב 1. כל ענק ישן במאורה שלו ליד הפנס (y+lair), וקם כשמתקרבים, גם לפני הקווסט.
+     אחרי כל ניצחון: אבן עם שעון במקומו. הטיימר בשעה אמיתית (SAVE.story.bt: {פנס: מתי חוזר, Date.now}), אז רץ גם כשהמשחק סגור.
+     ladder: הסולם של כל הבוסים. הבוס ה-i (לפי הסדר ב-STORY.lanterns, מ-0): טיימר base×ratio^i דקות (10, 15, 23, 34, 51, 76),
+     ושלל של ניצחון חוזר פי ratio^i. החוזק (חיים ונזק ב-STORY.lanterns[*].warden) מיושר לאותו יחס בעזרת tools/balance-world.js.
+     loot: ניצחון חוזר (לא הראשון, שנותן את הפנס דרך הקווסט): coins מטבעות, חפץ אחד מהטבלה של השומר (STORY.rematch.loot) ומשאבים ממנה, הכל ×ratio^i.
+     הרמה המומלצת על השלט: הרמה של הדרך לאזור הבא (CURIO.paths), ולאחרון עוד step */
+  ladder:{base:10,ratio:1.5},
+  lair:70,
+  loot:{coins:40},
+  lv:{step:5},
+  clock:{r:34,font:13}                   // האבן עם השעון: רדיוס האבן, וגודל הטקסט של הזמן שנשאר
 };
 // נקרא מ-storyWarden: השומר נהיה ענק. k: הפנס (earth, water, ice, fire, bolt, light)
 function giantRise(e,k){
@@ -53,3 +65,58 @@ function giantBar(){
   const e=S&&S.wd&&S.wd.warden;if(!e||!e.wboss||e.dead)return null;
   return{name:T('story.'+e.wboss+'.name'),title:T('giant.t.'+e.wboss),weak:e.weak,hp:e.hp,max:e.max,rage:0};
 }
+
+/* ---- בוסים תמיד, בטיימר (GIANT.ladder) ---- */
+const giantBt=()=>STO().bt||(STO().bt={});
+const giantIdx=k=>Math.max(0,Object.keys(STORY.lanterns).indexOf(k));
+const giantK=k=>Math.pow(GIANT.ladder.ratio,giantIdx(k));   // פי כמה מהבוס הראשון: טיימר ושלל
+const giantWait=k=>Math.round(GIANT.ladder.base*giantK(k))*60000;   // כמה מילישניות עד שחוזר
+// כמה מילישניות נשארו עד שהבוס של הפנס חוזר. 0: הוא במאורה
+function giantLeft(k){const t=giantBt()[k];return t?Math.max(0,t-Date.now()):0}
+// הבוס יכול לקום עכשיו: אין טיימר, או שהקווסט שלו פעיל (העלילה לא מחכה לשעון)
+const giantReady=k=>giantLeft(k)<=0||qOn(STORY.lanterns[k].quest);
+// הרמה המומלצת: הדרך לאזור של הפנס הבא (CURIO.paths), ולאחרון עוד lv.step
+function giantLv(k){
+  const ks=Object.keys(STORY.lanterns),i=ks.indexOf(k),nx=ks[i+1],c=nx&&CURIO.paths[STORY.lanterns[nx].reg];if(c)return c.lv;
+  const pv=CURIO.paths[STORY.lanterns[k].reg];return (pv?pv.lv:0)+GIANT.lv.step;
+}
+// ניצחון: הטיימר מתחיל. בניצחון חוזר גם שלל, פי ratio^i
+function giantWin(e){
+  const k=e.warden;giantBt()[k]=Date.now()+giantWait(k);saveNow();
+  if(!e.first)giantLoot(e);
+}
+function giantLoot(e){
+  const k=e.warden,L=STORY.lanterns[k],lt=STORY.rematch.loot[k]||STORY.rematch.loot.earth,m=giantK(k),got=[];
+  const g=lt.gear[Math.floor(Math.random()*lt.gear.length)];dropSpawn(g,1,e.x,e.y);got.push(g);
+  for(const r in lt.res)dropSpawn(r,Math.max(1,Math.round(lt.res[r]*m)),e.x+(Math.random()-0.5)*60,e.y+20);
+  dropSpawn('coins',Math.round(GIANT.loot.coins*m),e.x-30,e.y+10);
+  celebrate(e.x,e.y-30,'loot2','🏆');sfx('celebrate');
+  const txt=T('story.re.win',T('story.'+k+'.name'));if(feedOn())feedAdd('🏆',txt,L.glow,'rew:'+k);else banner(txt,L.glow);
+  S.wd.reGot=got;   // לבדיקה (check.js)
+}
+// השחקן ברח: הענק הגיע למאורה, מתרפא וחוזר לישון. קם שוב כשמתקרבים
+function giantSleep(e){
+  e.hp=e.max;e.gone=true;const w=S.wd;if(w&&w.warden===e)w.warden=null;
+  const i=enemies.indexOf(e);if(i>=0)enemies.splice(i,1);
+}
+// המאורה: גבעת אדמה כהה, ומעליה 💤 כשהבוס ישן, או אבן עם שעון כשהוא בטיימר (storyDraw)
+function giantLairDraw(k,L){
+  const x=L.x,y=L.y+GIANT.lair,e=S.wd.warden,t=fxNow();
+  ctx.save();ctx.globalAlpha=0.55;ctx.fillStyle='#2A2018';ctx.beginPath();ctx.ellipse(x,y+10,110,40,0,0,7);ctx.fill();
+  if(!e&&giantLeft(k)>0&&!giantReady(k)){const r=GIANT.clock.r;ctx.globalAlpha=1;   // האבן
+    ctx.fillStyle='#6B6F7A';ctx.strokeStyle='#3A3D45';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(x,y-r*0.6,r,r*1.15,0,0,7);ctx.fill();ctx.stroke();
+    ctx.strokeStyle=L.glow;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y-r*0.7,r*0.55,0,7);ctx.stroke();   // השעון על האבן
+    const a=-Math.PI/2+(1-giantLeft(k)/giantWait(k))*Math.PI*2;ctx.beginPath();ctx.moveTo(x,y-r*0.7);ctx.lineTo(x+Math.cos(a)*r*0.45,y-r*0.7+Math.sin(a)*r*0.45);ctx.stroke()}
+  else if(!e){ctx.globalAlpha=0.6+Math.sin(t*2)*0.25;ctx.font='800 26px Heebo, system-ui, sans-serif';ctx.textAlign='center';ctx.fillText('💤',x+Math.sin(t)*8,y-30-((t*12)%20))}
+  ctx.restore();
+}
+// מעל המאורה, בגודל קבוע על המסך: הזמן שנשאר על האבן, או שלט "רמה מומלצת" כשהבוס ישן (storyScreen)
+function giantLairScreen(k,L,ox,oy){
+  if(S.wd.warden)return;const left=giantReady(k)?0:giantLeft(k),x=L.x+ox,y=L.y+GIANT.lair+oy,Z=CURIO.sign,lv=giantLv(k);
+  ctx.save();ctx.translate(x,y-GIANT.clock.r*2.4);ctx.scale(1/ZOOM,1/ZOOM);ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 '+GIANT.clock.font+'px Heebo, system-ui, sans-serif';
+  const txt=left?'⏳ '+giantTime(left):T('cu.rec',lv),col=left?L.glow:heroLv()>=lv?Z.ok:Z.low,tw=ctx.measureText(txt).width+16;
+  ctx.fillStyle='rgba(30,22,14,0.9)';ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-tw/2,-12,tw,24,5);ctx.fill();ctx.stroke();
+  ctx.fillStyle=col;ctx.fillText(txt,0,5);ctx.restore();
+}
+// מילישניות לטקסט: 9:05, או 1:16:00 מעל שעה
+function giantTime(ms){const s=Math.ceil(ms/1000),h=Math.floor(s/3600),m=Math.floor(s/60)%60,ss=String(s%60).padStart(2,'0');return h?h+':'+String(m).padStart(2,'0')+':'+ss:m+':'+ss}

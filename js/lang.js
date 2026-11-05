@@ -852,11 +852,8 @@ const TEXT={
   'mut.r.glass':{he:['יום הזכוכית','האויבים נופלים מהר, אבל מכים חזק'],en:['Day of Glass','Enemies fall fast, but hit hard']},
   'fai.leader':{he:'מנהיג הלהקה',en:'Pack Leader'},'fai.leaderCome':{he:'👑 להקה עם מנהיג מתקרבת!',en:'👑 A pack leader approaches!'},'fai.leaderDown':{he:'👑 המנהיג הופל! ערימת שלל',en:'👑 Leader down! Loot pile'},
   'af.fast':{he:'מהיר',en:'Swift'},'af.tough':{he:'משוריין',en:'Armored'},'af.burst':{he:'מתפוצץ',en:'Volatile'},'af.split':{he:'מתפצל',en:'Splitting'},'af.regen':{he:'מתחדש',en:'Regenerating'},'af.shell':{he:'מגן יסודות',en:'Elemental Shield'},
-  // שומרים חוזרים (story.js, STORY.rematch)
+  // ניצחון חוזר בשומר (giant.js, giantLoot, ובעומק storyReWin)
   'story.ward.stuck':{he:'נתקע! עכשיו!',en:'Stuck! Now!'},
-  'story.re.btn':{he:'לשומר',en:'Warden'},
-  'story.re.call':{he:n=>'לקרוא ל'+n,en:n=>'Call '+n},
-  'story.re.rise':{he:(n,t)=>n+' חוזר לקרב ('+t+')',en:(n,t)=>n+' returns to fight ('+t+')'},
   'story.re.win':{he:n=>'ניצחת שוב את '+n+'!',en:n=>'You beat '+n+' again!'},
   'story.intro':{he:'הגעת! סוף סוף מישהו עם נשק. פעם דלקו כאן שישה פנסים, והצל לא העז להתקרב. לילה אחד כולם כבו, והשלדים קמו מהאדמה. בוא, נתחיל מקטן.',en:'You came! Finally someone with a weapon. Six lanterns once burned here, and the Shadow never dared come near. One night they all went dark, and the skeletons rose. Come, let’s start small.'},
   'story.shard':{he:'פיוחו מצאה רסיס זוהר!',en:'Piocho found a glowing shard!'},
