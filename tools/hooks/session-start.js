@@ -43,7 +43,11 @@ if(branch==='main'||branch==='master'){
   const track=git('for-each-ref','--format=%(upstream:track)','refs/heads/'+branch)||'';
   if(track.includes('gone'))todo.push('הענף '+branch+' כבר מוזג או נמחק ב-GitHub. אם אין בו שינויים שלא נשמרו, חזור ל-main (git switch main && git pull) והתחל ענף חדש.');
   const behind=count('HEAD..origin/main');
-  if(behind&&!dirty){
+  /* 5.11.2026: ענף שכבר נדחף (יש לו upstream) לא מתעדכן לבד. כל עדכון כזה הכריח דחיפה, והבדיקות של ה-PR רצו שוב (25 דקות) בכל פעם שסשן התעורר.
+     מתעדכנים מ-main רק כשצריך באמת: לפני מיזוג, אחרי PR אחר שנגע באותם קבצים, או כשהמתאם מבקש */
+  const pushed=!!git('rev-parse','--abbrev-ref','@{u}');
+  if(behind&&pushed)info.push('הענף מאחורי main ב-'+behind+' שינויים. לא מתעדכן לבד, כי זה מריץ מחדש את הבדיקות של ה-PR. git merge origin/main רק כשצריך.');
+  else if(behind&&!dirty){
     if(git('merge','--no-edit','--quiet','origin/main')!==null)info.push('הענף עודכן אוטומטית עם '+behind+' שינויים חדשים מ-main.');
     else{
       const conflict=git('rev-parse','-q','--verify','MERGE_HEAD')!==null;git('merge','--abort');
