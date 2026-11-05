@@ -159,7 +159,7 @@ async function addMonsters(add){
 /* חפצים עם מודל משלהם (מחולל תלת-ממד מתמונה, TRELLIS ב-Hugging Face; ההסבר ב-docs/refs/item-models/README.md).
    המפתח במשחק: w_item_<id>, ו-look.model של הפריט ב-gear.js מצביע עליו. הטקסטורה שלהם היא הציור עצמו, ולכן render3d לא מחליף אותה בחומר (wtex).
    הקובץ הגולמי ב-art/weapons/raw, ומה שנכנס למשחק מוקטן: tris משולשים וטקסטורה tex. כאן גם מסובבים ומגדילים כמו נשקי KayKit:
-   TRELLIS בונה מתמונה זקופה: האורך ב-y, הרוחב שבתמונה ב-z והעובי ב-x. len: האורך (y) אחרי ההגדלה, grip: איפה הידית, חלק מהאורך מלמטה (היא עוברת לראשית),
+   TRELLIS בונה מתמונה זקופה: האורך ב-y. הרוחב שבתמונה יוצא לפעמים ב-z (להב הדרקון, קשת הסערה) ולפעמים ב-x (קשת השמיים, המגנים), אז בודקים כל קובץ. len: האורך (y) אחרי ההגדלה, grip: איפה הידית, חלק מהאורך מלמטה (היא עוברת לראשית),
    rot: סיבוב במעלות סביב x, y ו-z, בסדר הזה, כדי שהחפץ ישב כמו המקביל שלו ב-KayKit:
      חרב ומטה: זקופים, הרוחב ב-x (rot [0,90,0]). חרב KayKit בערך 3.25 אורך והידית ב-13%, מטה 2.3 והידית ב-37%.
      קשת: שוכבת, האורך ב-x והקשת ב-z, הידית באמצע (rot [0,0,-90], grip 0.5). קשת KayKit בערך 2.4.
@@ -172,10 +172,10 @@ const ITEMS={
   ironStaff:{src:raw('ironStaff'),tris:4000,tex:512,len:2.3,grip:0.37,rot:[0,90,0]},
   goldStaff:{src:raw('goldStaff'),tris:4000,tex:512,len:2.3,grip:0.37,rot:[0,90,0]},
   starStaff:{src:raw('starStaff'),tris:4000,tex:512,len:2.3,grip:0.37,rot:[0,90,0]},
-  skyBow:   {src:raw('skyBow'),tris:4000,tex:512,len:2.4,grip:0.5,rot:[0,0,-90]},
+  skyBow:   {src:raw('skyBow'),tris:4000,tex:512,len:2.4,grip:0.5,rot:[0,90,-90]},   // יצא רחב ב-x ולא ב-z
   stormBow: {src:raw('stormBow'),tris:4000,tex:512,len:2.4,grip:0.5,rot:[0,0,-90]},
-  shield3:  {src:raw('shield3'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,90,0]},
-  shield4:  {src:raw('shield4'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,90,0]}
+  shield3:  {src:raw('shield3'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},   // יצא כבר כמו KayKit: הפנים ב-xy
+  shield4:  {src:raw('shield4'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]}
 };
 async function addItems(add){
   const {MeshoptSimplifier}=require('meshoptimizer');await MeshoptSimplifier.ready;

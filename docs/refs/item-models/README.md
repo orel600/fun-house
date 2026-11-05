@@ -43,3 +43,11 @@ GLTFLoader לא טוען GLB מ-`file://` (fetch חסום), לכן מודל צר
 - השורות שלהם כבר ב-`ITEMS` (build3d.js): ironStaff, goldStaff, starStaff, skyBow, stormBow, shield3 ו-shield4. חפץ בלי קובץ מדולג.
 - **כשמגיע קובץ:** שמים אותו ב-`art/weapons/raw/<id>.glb`, מריצים `node tools/build3d.js - --only items`, ובודקים בצילום מסך שהכיוון נכון (ובמידת הצורך מתקנים ב-rot). לא נוגעים ב-gear.js: `itemModel` ב-render3d.js בוחר `w_item_<id>` לבד ברגע שהוא קיים, ועד אז נשאר look.model.
 - המשפחה (קשת, מטה, גרזן) נקבעת לפי `w` של הפריט, כך שקשת עם מודל משלה נמתחת כמו קשת. מגן שהמודל שלו חסר חוזר למגן של KayKit, ולא קורס.
+
+## 6 חפצים נוספים (5.11.2026 אחר הצהריים)
+השוואה: [items-models.png](items-models.png). TRELLIS רץ ב-GitHub Actions (trellis.yml, הענף feature/hf-trellis), עם אותם פרמטרים כמו בלהב הדרקון.
+- **נכנסו:** ironStaff, goldStaff, stormBow, shield3 ו-shield4 (70 עד 136KB כל אחד). הכיוון והגודל תואמים את המודל של KayKit שהם מחליפים: בצילום, שניהם יחד באותה תמונה.
+- **לא נכנס:** skyBow. המודל יצא מקומט, נוצות מעוותות ובלי צורה של קשת. המשחק נשאר עם הקשת של KayKit. אפשר לנסות seed אחר.
+- **starStaff:** נכשל בריצה, והמתאם מריץ אותו שוב.
+- **לשים לב:** TRELLIS לא תמיד שם את הרוחב באותו ציר (z בלהב ובקשת הסערה, x בקשת השמיים ובמגנים), ולכן rot נקבע לכל חפץ אחרי בדיקה.
+- **משקל:** js/models3d.js גדל בכ-740KB (16.3MB). הקבצים הגולמיים ב-art/weapons/raw לא נטענים במשחק.
