@@ -19,7 +19,8 @@ const BAL={
   only:+(opt('chapters')||0),      // רק הפרקים הראשונים (--chapters 1: רק האחו ושומר האדמה)
   travel:60,                       // שניות בשלב השומר בלי להגיע למאורה, ואז קופצים אליה (ראה למטה)                   // מתוכן, לכל היותר לקרב בשומר
   fights:+(opt('fights')||1),      // כמה פעמים להפיל כל שומר, כדי להוריד את הרעש (--fights 10). אחרי כל ניצחון: חיים מלאים, והשומר קם שוב
-  dodge:opt('nododge')?0:1,        // הבוט יוצא מעיגולי ברק ומעיגול רקיעה, כמו שחקן שרואה את הסימן (--nododge: עומד במקום)
+  dodge:opt('nododge')?0:1,
+  smart:opt('blind')?0:1,          // מול שומר בוחרים את הסקילים שהוא חלש להם (--blind: סבב רגיל, כמו קודם)        // הבוט יוצא מעיגולי ברק ומעיגול רקיעה, כמו שחקן שרואה את הסימן (--nododge: עומד במקום)
   step:250,                        // כל כמה מילישניות משחק הבוט מחליט
   swapEvery:75,                    // כל כמה שניות מחליפים סקיל אחד בספר, כדי שכל הסקילים הפתוחים יימדדו
   flee:0.3,                        // מתחת לחלק הזה מהחיים בורחים עד שמתרפאים
@@ -109,7 +110,12 @@ function install(B){
     // חזרה לכפר כל B.trip שניות (playtime.js), כמו שחקן שחוזר למכור, לשדרג ולנוח. רק בזמן טיפוס
     if(B.trip&&m.ph==='grind'&&now-(m.lastTrip||0)>B.trip){m.lastTrip=now;R.trips=(R.trips||0)+1;worldUi(false);enterVillage();return{}}
     if(now-m.lastMg>5){m.lastMg=now;equip();points();if(!foes().some(e=>Math.hypot(e.x-P.x,e.y-P.y)<260))dropsCollectAll()}
-    if(now-m.lastSw>B.swapEvery){m.lastSw=now;swap()}
+    // מול שומר: הסקילים שהוא הכי חלש להם (הטבעת מתחת לשומר מראה את החולשה, ושחקן בוחר לפיה). אחרת מחליפים בסבב כדי למדוד את כולם
+    const bw=S.wd&&S.wd.warden&&!S.wd.warden.dead&&B.smart?S.wd.warden:null;
+    if(bw&&now-(m.lastBest||0)>4){m.lastBest=now;const mu=bw.mult||{},L=wsbLoad();
+      const open=wsbIds().filter(id=>id!==wsbWeapon()&&wsbOpen(id)&&WSKBOOK.list[id]),sc=id=>(mu[WSKBOOK.list[id].dt]??1)+(WSKBOOK.list[id].cls===heroId()?0.01:0);
+      open.sort((a,b)=>sc(b)-sc(a));if(open[0])L[0]=open[0];if(open[1])L[1]=open[1]}
+    else if(!bw&&now-m.lastSw>B.swapEvery){m.lastSw=now;swap()}
     // שלב: אחרי הרמה המומלצת, לפנס
     const ready=chap().kills?(m.kc||0)>=chap().kills&&!c.gate:heroLv()>=need();
     if(m.ph==='grind'&&ready&&now-m.chT<B.cap-30)m.ph='warden';
