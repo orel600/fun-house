@@ -2461,7 +2461,7 @@ function worldBot(m,L,god){
       R[id]=ok}
     o.rules=R;o.allOk=Object.keys(MUTATION.rules).every(k=>R[k]);
     MUT.force='split';enterWorld('home');const x0=SAVE.hero.xp||0;MUT.xpAcc=0;const g=addEnemy('grunt',P.x+60,P.y,1);g.home=0;g.xp=0;kill(g);
-    o.xp=(SAVE.hero.xp||0)-x0;o.xpBase=STATS.xp.kill;
+    o.xp=Math.round(((SAVE.hero.xp||0)-x0+MUT.xpAcc)*100)/100;o.xpBase=STATS.xp.kill;   // xpAcc: שבר הבונוס שעוד לא נכנס (עם XP קטן להריגה)
     o.line=mutLine().includes(mutName('split'));
     enterVillage();o.village=!mutNow();SAVE.story.earth=e0;return o});
   await page.evaluate(()=>{SAVE.story.earth=true;MUT.force='fog';enterWorld('home');for(const e of enemies)e.dmg=0;P.inv=99});await page.clock.runFor(1200);
