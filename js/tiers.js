@@ -15,8 +15,8 @@ const TIERS={
      gearK: פי כמה הסיכוי לציוד מאויב (lootGear ב-loot.js). rareAgain: כל כמה שניות באזור עוד הגרלה של מפלצת נדירה (rareUpdate ב-rares.js). 0 = רק בכניסה */
   list:[
     {hp:1,  dmg:1,   big:{hp:1,  dmg:1},   loot:0,   coins:null, col:'#E8E2D0', gw:[1,1,1,0.35,0],      bigLoot:null,                                   gear:0, gearK:1,  rareAgain:0},
-    {hp:1.9,dmg:1.45,big:{hp:2.4,dmg:1.5}, loot:0.45,coins:[2,5], col:'#F4C74F', gw:[0.6,1,1,1.3,0],    bigLoot:{coins:[1,80],star:[0.5,1],gem:[0.5,1]}, gear:1, gearK:1.5,rareAgain:360},
-    {hp:3.2,dmg:2,   big:{hp:4.5,dmg:2.1}, loot:1,   coins:[5,10],col:'#EF4E57', gw:[0.2,0.6,1,1.6,0.25],bigLoot:{coins:[1,160],star:[1,1],gem:[1,2],mythril:[0.6,1]},gear:1, gearK:2,  rareAgain:300}
+    {hp:1.9,dmg:1.45,big:{hp:2.4,dmg:1.5}, loot:0.45,coins:[2,5], col:'#F4C74F', gw:[0.6,1,1,1.3,0],    bigLoot:{coins:[1,80],star:[0.5,1],gem:[0.5,1]}, gear:1, gearK:1.5,rareAgain:240},
+    {hp:3.2,dmg:2,   big:{hp:4.5,dmg:2.1}, loot:1,   coins:[5,10],col:'#EF4E57', gw:[0.2,0.6,1,1.6,0.25],bigLoot:{coins:[1,160],star:[1,1],gem:[1,2],mythril:[0.6,1]},gear:1, gearK:2,  rareAgain:150}
   ],
   boss:'light',                                     // השומר שפותח את הדרגה הבאה: שומר הצל, האחרון
   legacyK:150                                       // מי שכבר פתח את דרגה 3 בשיטה הישנה (150 הריגות באמיץ) לא מאבד אותה
