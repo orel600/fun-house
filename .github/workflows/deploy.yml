@@ -95,7 +95,7 @@ jobs:
           # רק מה שהמשחק צריך. התיקייה נקראת fun-house, וזה גם שם הפרויקט ב-Vercel
           # אבטחה: קוד ה-PR רק מועתק ומועלה, אף סקריפט ממנו לא רץ עם הטוקן
           site="$RUNNER_TEMP/fun-house"; mkdir -p "$site"
-          cp index.html manifest.webmanifest sw.js "$site/"; cp -r css js icons "$site/"; for d in skins sounds; do [ -d "$d" ] && cp -r "$d" "$site/"; done; true
+          cp index.html manifest.webmanifest sw.js "$site/"; cp -r css js icons "$site/"; mkdir -p "$site/art/weapons" && cp -r art/weapons/src "$site/art/weapons/"; for d in skins sounds; do [ -d "$d" ] && cp -r "$d" "$site/"; done; true
           find "$site" -type l -delete   # קיצורי דרך (symlinks) לא מועלים: הם יכולים להצביע על קבצים מחוץ למשחק
           # מספר הגרסה: ראשי.שלב.עדכון.בנייה. בנייה = כמה שינויים ב-main. עדכון = כמה מהם מאז שהשלב התחיל (STAGE_FROM)
           eval "$(sed -n 's/^const MAJOR=\([0-9]*\), STAGE=\([0-9]*\), STAGE_FROM=\([0-9]*\);/major=\1 stage=\2 from=\3/p' js/version.js)"
