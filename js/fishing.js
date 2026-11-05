@@ -48,6 +48,7 @@ function fishSpot(){
     if(p){const cx=F.at.x+p.dx,cy=F.at.y+p.dy,d=Math.hypot((P.x-cx)/p.rx,(P.y-cy)/p.ry)||1e-3;try_('pond',cx,cy,Math.hypot(P.x-cx,P.y-cy)*(1-1/d))}}
   const pool=FISH.regions[S.wd.reg];
   if(pool)for(const p of R.ponds||[])try_(pool,p.x,p.y,Math.hypot(P.x-p.x,P.y-p.y)-p.r);
+  if(pool&&TR&&TR.R===R){const w=tWaterNear(P.x,P.y);if(w)try_(pool,w.x,w.y,w.e-TERRAIN.pad)}   // אזור עם מפה (האגם הגדול): כל המים במפה, וגם המפרץ
   return best&&best.e<FISH.near?best:null;
 }
 // דג אקראי מהמאגר, לפי המשקלים

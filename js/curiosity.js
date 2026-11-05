@@ -81,12 +81,16 @@ function cuObstacle(kind,x,y){
 
 /* ---- מעל הכל: השלט "רמה מומלצת N", עם 🔒 כשהדרך עוד סגורה בעלילה ---- */
 function curioScreen(ox,oy){
-  const Z=CURIO.sign,lv=heroLv();
+  const Z=CURIO.sign,lv=heroLv();let qn=null;
   ctx.save();ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 '+Z.font+'px Heebo, system-ui, sans-serif';
   for(const s of cuSigns()){const txt=(s.open?'':'🔒 ')+T('cu.rec',s.lv),x=s.x+ox,y=s.y+oy+Z.dy,tw=ctx.measureText(txt).width+16;
     ctx.fillStyle='#4A3A2A';ctx.fillRect(x-2,y+10,4,22);   // עמוד השלט
     ctx.fillStyle='rgba(30,22,14,0.9)';ctx.strokeStyle=lv>=s.lv?Z.ok:Z.low;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(x-tw/2,y-11,tw,22,5);ctx.fill();ctx.stroke();
-    ctx.fillStyle=lv>=s.lv?Z.ok:Z.low;ctx.fillText(txt,x,y+5)}
+    ctx.fillStyle=lv>=s.lv?Z.ok:Z.low;ctx.fillText(txt,x,y+5);
+    // חלש מדי לפרק הבא (ניר, 5.11: "הפתרון הוא הקווסטים"): כמה קווסטים פתוחים כאן, וחץ לקרוב (questboard.js)
+    if(lv<s.lv&&onScreen(x,y)){if(qn===null)qn=sqOpenCount();if(qn>0){const q=T('cu.quests',qn),qw=ctx.measureText(q).width+16;
+      ctx.fillStyle='rgba(30,22,14,0.9)';ctx.strokeStyle=Z.ok;ctx.beginPath();ctx.roundRect(x-qw/2,y-37,qw,22,5);ctx.fill();ctx.stroke();ctx.fillStyle=Z.ok;ctx.fillText(q,x,y-21);
+      const t=sqNearest();if(t)edgeArrow(t.x+ox,t.y+oy,Z.ok,1.3,true)}}}
   ctx.restore();
 }
 
