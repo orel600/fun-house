@@ -127,6 +127,7 @@ const LOOK3D={
   pet_parosh3:{model:'parosh1',foot:2,anim:DOG_ANIM}
 };
 /* הנשק ביד השחקן: המודל מ-look.model של הפריט בציוד (GEAR.items ב-gear.js), והחומר לפי ה-tier שלו (טקסטורה wtex_<חומר>, build3d.js).
+   חפץ עם מודל משלו (w_item_<id>, ITEMS ב-build3d.js) שומר על הטקסטורה שלו, בלי החומר ובלי זוהר: הזוהר צובע את הטקסטורה, והמראה האגדי כבר בציור.
    כל משפחת נשקים יושבת ביד אחרת ותוקפת באנימציה אחרת. of: לאיזו משפחה שייך מודל, לפי השם.
    spare: מה ביד כשלפריט אין מודל. עץ, הכי פשוט. איזה צד (sword או gun) מחליט סוג הנשק (WEAPONS ב-weapons.js) */
 const GRIP3D={
@@ -405,7 +406,8 @@ function makeActor(L){
   for(const [k,p] of Object.entries(L.props||{})){
     const b=bone(root,p.bone);if(!b)continue;
     const m=R3D.props[p.prop].clone(true);m.position.fromArray(p.pos);m.quaternion.fromArray(p.rot);if(p.s)m.scale.setScalar(p.s);
-    m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(p.tier&&R3D.wtex[p.tier])o.material.map=R3D.wtex[p.tier];if(p.tint)o.material.emissive.set(TINT[p.tint]).multiplyScalar(0.55);if(p.glow)o.material.emissive.set(p.glow).multiplyScalar(p.gk);if(p.pulse)(a_pulse||(a_pulse=[])).push(o.material);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
+    const own=/^w_item_/.test(p.prop);   // מודל משלו: הטקסטורה נשארת, ובלי זוהר
+    m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(p.tier&&R3D.wtex[p.tier]&&!own)o.material.map=R3D.wtex[p.tier];if(p.tint)o.material.emissive.set(TINT[p.tint]).multiplyScalar(0.55);if(p.glow&&!own)o.material.emissive.set(p.glow).multiplyScalar(p.gk);if(p.pulse&&!own)(a_pulse||(a_pulse=[])).push(o.material);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
     b.add(m);props[k]=m;
   }
   // נשקים שהדמות מחזיקה בקובץ המקורי: גרזן לבוס, סכין למבוקש
