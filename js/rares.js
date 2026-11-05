@@ -34,7 +34,7 @@ const RARES={
       spots:[{x:2510,y:950,at:'crevasse'},{x:-2560,y:-1250,at:'pines'},{x:1330,y:1700,at:'drift'}],   // הרכס הגדול: 26-28 בשרטוט (map.dens ב-js/map-ridge.js)
       loot:{coins:[1,90],sapphireF:[1,1],sapphire:[0.6,1],star:[0.4,1]}},
     ashmaw:{reg:'desert',base:'cinderscorp',icon:'🦂',tags:['fire','stone'],col:'#FFB347',
-      spots:[{x:-920,y:-460,at:'cacti'},{x:930,y:120,at:'embers'},{x:-300,y:600,at:'dunes'}],
+      spots:[{x:-2780,y:-1250,at:'cacti'},{x:2780,y:580,at:'embers'},{x:-950,y:990,at:'dunes'}],   // המדבר הגדול: המאורות ◆ בשרטוט (map.dens ב-map-desert.js)
       loot:{coins:[1,100],rubyF:[1,1],ruby:[0.6,1],star:[0.5,1]}},
     stormhide:{reg:'storm',base:'stormknight',icon:'⚡',tags:['lightning','metal'],col:'#D9C2FF',
       spots:[{x:2770,y:-1020,at:'spire'},{x:-470,y:1910,at:'ruins'},{x:-2820,y:-770,at:'deadwood'}],   // הסערה הגדולה: 25-27 בשרטוט (map.dens ב-js/map-storm.js)

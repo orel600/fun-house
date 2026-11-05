@@ -49,7 +49,8 @@ const STORY={
       warden:{type:'frostwarden',hp:272,dmg:1.35,r:1.65,speed:0.85,wake:520,shoot:{every:2.8,n:5,spread:0.24,speed:170,r:7,dmg:12}}},
     // פנס האש: בפינה הדרום-מערבית של המדבר. שומר האש שולח טבעת אש שמתרחבת ממנו (ring): speed פיקסלים לשנייה עד max,
     // w עובי הטבעת, gap רוחב הפתח (ברדיאנים) שבו עוברים בלי להיפגע. הטבעת פוגעת פעם אחת לכל היותר
-    fire:{reg:'desert',x:-650,y:400,quest:'s4Warden',glow:'#FFB347',col:'#FF6A2A',ev:'blaze',head:true,
+    // המדבר הגדול (ת17): הפנס בסוף הקניון הסגור (5 בשרטוט, docs/concept-regions.md). leash 900 משאיר את השומר בתוך הקניון
+    fire:{reg:'desert',x:-2550,y:-400,quest:'s4Warden',glow:'#FFB347',col:'#FF6A2A',ev:'blaze',head:true,
       warden:{type:'emberwarden',hp:198,dmg:1.4,r:1.7,speed:0.85,wake:520,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}},
     // פנס הברק: בפינה הדרום-מזרחית של מגדלי הסערה. שומר הסערה מסמן n עיגולי ברק (marks): אחד מתחת לשחקן והשאר עד spread ממנו.
     // כל עיגול ברדיוס r מתפוצץ אחרי fuse שניות. מי שעוד בתוכו נפגע. מספיק לזוז
