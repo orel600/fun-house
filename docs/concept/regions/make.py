@@ -45,6 +45,10 @@ MK = {'gate': ('#ffffff', 'שער'), 'way': ('#5fe0e0', 'אבן מסע'), 'den':
       'camp': ('#ff9d4d', 'מחנה אויבים'), 'ruin': ('#b9b2a6', 'חורבה / אירוע'), 'npc': ('#ff8fd0', 'דמות'),
       'feat': ('#e8e2d0', 'מקום בשטח'), 'depths': ('#9c6bff', 'עומק הצל')}
 
+def borders(R):
+    b = R['border']
+    return b if isinstance(b[0][0], (list, tuple)) else [b]
+
 def svg(R):
     o = []; A = o.append
     LH = 21; cols = 3; rows = math.ceil(len(R['pois']) / cols)
@@ -53,13 +57,17 @@ def svg(R):
     A('<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="%d" viewBox="0 0 1000 %d" font-family="DejaVu Sans, sans-serif">' % (total_h, total_h))
     A('<defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="8" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2"/></pattern></defs>')
     A('<rect width="1000" height="%d" fill="#2b2a26"/>' % total_h)
+    if R.get('bg'): A('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="18" fill="%s"/>' % (MX-14, MY-14, MW+28, H*SC+28, R['bg']))
+    A('<clipPath id="land">' + ''.join('<path d="%s"/>' % smooth([P(*p) for p in b]) for b in borders(R)) + '</clipPath>')
     A('<text x="960" y="32" font-size="20" font-weight="bold" fill="#f2eee4" text-anchor="start" direction="rtl">%s</text>' % R['title'])
     A('<text x="40" y="32" font-size="13" fill="#b9b2a6" text-anchor="end" direction="rtl">גודל 6300 על 4200, כ-%d שניות הליכה מקצה לקצה</text>' % round(W/SPEED))
     def poly(pts, fill, extra=''):
         A('<path d="%s" fill="%s" %s/>' % (smooth([P(*p) for p in pts]), fill, extra))
-    poly(R['border'], R['land'], 'stroke="#4a3a2a" stroke-width="5"')
-    for f in R['shapes']:
+    for b in borders(R): poly(b, R['land'], 'stroke="#4a3a2a" stroke-width="5"')
+    A('<g clip-path="url(#land)">')
+    for f in sorted(R['shapes'], key=lambda f: f[0] in ('bridge', 'cave')):
         k = f[0]
+        if k in ('bridge', 'cave') and not getattr(svg, 'out', False): A('</g>'); svg.out = True
         if k == 'slow':
             poly(f[1], f[2]); poly(f[1], 'url(#hatch)')
         elif k in ('water', 'block', 'island'):
@@ -83,6 +91,8 @@ def svg(R):
                 a = i*2.39996; r = f[3]*math.sqrt((i+0.5)/f[4])
                 x, y = P(f[1] + r*math.cos(a), f[2] + r*math.sin(a))
                 A('<circle cx="%.1f" cy="%.1f" r="3.2" fill="%s"/>' % (x, y, f[5]))
+    if not getattr(svg, 'out', False): A('</g>')
+    svg.out = False
     # המסלול הראשון
     d = 'M' + ' L'.join('%.1f,%.1f' % P(*p) for p in R['route'])
     A('<path d="%s" fill="none" stroke="#ffd34d" stroke-width="4" stroke-dasharray="10 6" stroke-linejoin="round"/>' % d)
@@ -123,12 +133,16 @@ def report(R):
     worst = (0, None); over = 0; tot = 0
     for gx in range(-3100, 3101, 100):
         for gy in range(-2050, 2051, 100):
-            if not inpoly(gx, gy, R['border']): continue
+            if not any(inpoly(gx, gy, b) for b in borders(R)): continue
             if any(inpoly(gx, gy, b) for b in blocks) and not any(inpoly(gx, gy, b) for b in islands): continue
             if any(segd(gx, gy, f[1][i], f[1][i+1]) < f[3]/2 for f in rivers for i in range(len(f[1])-1)): continue
             d = min(math.hypot(gx-x, gy-y) for x, y in pts); tot += 1
             if d > worst[0]: worst = (d, (gx, gy))
             if d > 1100: over += 1
+    for i, p in enumerate(R['pois']):
+        if not any(inpoly(p[1], p[2], b) for b in borders(R)): print('  ! %d מחוץ ליבשה: %s' % (i+1, p[3]))
+        elif any(inpoly(p[1], p[2], b) for b in blocks) and not any(inpoly(p[1], p[2], b) for b in islands) and p[0] not in ('feat',):
+            print('  ! %d בתוך מכשול: %s' % (i+1, p[3]))
     rl = sum(math.hypot(a[0]-b[0], a[1]-b[1]) for a, b in zip(R['route'], R['route'][1:]))
     print('%-7s pois=%d route=%.0fs  far=%.1fs at %s  >6s=%d%%' % (R['id'], len(R['pois']), rl/SPEED, worst[0]/SPEED, worst[1], 100*over//max(tot, 1)))
 
@@ -366,6 +380,76 @@ SHADOW = dict(id='shadow', title='פרק 6: לב הצל', land='#4a3d5c',
   ],
   route=[(0,-1820),(350,-1050),(0,-760),(-60,-200),(40,250),(0,680),(0,1250)],
   swatch=[('#07040d','תהום (חוסם)'),('#241e2d','יער מת (חוסם)'),('#a5784a','גשר צר')])
+
+# ------------------------------------------------------------------ צורה לכל אזור (ניר, 5.11: "לא מלבן מעוגל")
+def tf(R, f):
+    """מזיז את כל השרטוט של אזור דרך f(x,y). הגבול נכתב אחר כך, בקואורדינטות הסופיות."""
+    g = lambda p: f(*p)
+    out = []
+    for s in R['shapes']:
+        k = s[0]
+        if k in ('slow', 'water', 'block', 'island', 'river', 'bridge', 'trail', 'cave'):
+            out.append((k, [g(p) for p in s[1]]) + tuple(s[2:]))
+        else:   # tower / dots: נקודה ורדיוס
+            x, y = f(s[1], s[2]); out.append((k, x, y) + tuple(s[3:]))
+    R['shapes'] = out
+    R['pois'] = [(p[0],) + f(p[1], p[2]) + (p[3],) for p in R['pois']]
+    R['route'] = [g(p) for p in R['route']]
+    R['tags'] = [(t[0],) + f(t[1], t[2]) for t in R.get('tags', [])]
+
+def edge(a, b, n, amp, seed):
+    """קו שבור בין שתי נקודות: n חלקים, שן לסירוגין בגובה amp (קו צוקים)"""
+    (x1, y1), (x2, y2) = a, b; L = math.hypot(x2-x1, y2-y1); nx, ny = -(y2-y1)/L, (x2-x1)/L; out = []
+    for i in range(n):
+        t = i/n; k = amp*(1 if i % 2 else -0.4)*(0.7 + 0.3*math.sin(seed + i*1.9))
+        out.append((x1 + (x2-x1)*t + nx*k, y1 + (y2-y1)*t + ny*k))
+    return out
+
+# אגם: היבשה מקיפה מפרץ גדול שנפתח למזרח. האגם הגדול הוא קצה המפרץ
+LAKE['border'] = [(-2900,-1850),(-1800,-1950),(-900,-1800),(0,-1980),(900,-1850),(1800,-1950),(2600,-1900),(2950,-1500),(3000,-1000),
+                  (2300,-550),(1650,-300),(1300,60),(1550,480),(2300,750),(3050,1000),(2900,1600),(2300,1950),(1400,1850),(600,2000),(-300,1900),(-1100,2000),(-1900,1850),(-2700,1950),(-3050,1300),(-2850,600),(-3050,-200),(-2950,-1100)]
+LAKE['pois'] = [('rare',2550,-1050,'שפת הנחל') if p[3] == 'חוף המפרץ' else ('camp',2350,1300,'מחנה אבני הגאות') if p[3] == 'מחנה אבני הגאות' else ('ruin',1950,1650,'הכפר הטבוע') if p[3] == 'הכפר הטבוע' else p for p in LAKE['pois']]
+LAKE['shapes'] = [('slow', blob(2250,1350,520,380,8), '#8d9a8a') if s[0] == 'slow' and abs(s[1][0][0]-2970) < 5 else s for s in LAKE['shapes']]
+LAKE['tags'].append(('המפרץ',2500,250))
+LAKE['bg'] = '#3f78a8'   # מחוץ ליבשה: מים פתוחים
+
+# מדבר: ארוך וצר, ונוטה באלכסון
+tf(DESERT, lambda x, y: (x, 0.62*y + 0.13*x))
+DESERT['border'] = [(x, 0.13*x - 1420 + 90*math.sin(x/430)) for x in range(-2800, 3001, 400)] + [(3080, 520)] + \
+                   [(x, 0.13*x + 1420 + 110*math.sin(x/510 + 1)) for x in range(2800, -2801, -400)] + [(-3080, -520)]
+
+# רכס: נוטה לאורך קו צוקים אלכסוני, ושני הצדדים הם צוק שבור
+tf(RIDGE, lambda x, y: (0.78*x + 0.3*y, y))
+RIDGE['border'] = edge((-2950,-1950),(1800,-1950),8,90,1) + edge((1800,-1950),(3080,1980),12,170,2) + edge((3080,1980),(-1750,1980),8,90,3) + edge((-1750,1980),(-2950,-1950),12,170,4)
+
+# סערה: כף יבשה שבולטת לדרום-מזרח, והשומר בקצה שלה
+STORM['border'] = [(-2950,-1900),(-2000,-2000),(-1100,-1800),(-200,-2000),(700,-1850),(1600,-2050),(2500,-1850),(3000,-1400),(2800,-700),(3050,-100),(2600,250),
+                   (2050,350),(2450,850),(2950,1300),(3080,1750),(2700,2000),(2150,1750),(1600,1500),(1250,1700),(1000,2000),(100,1850),(-800,2050),(-1700,1850),(-2600,2000),(-3000,1400),(-2700,700),(-3050,-100),(-2800,-1000)]
+STORM['shapes'] = [('river', [(1500,800),(1950,700)], '#8a8296', 70) if s[0] == 'river' and s[1][-1] == (3100,500) else s for s in STORM['shapes']]
+STORM['pois'] = [('secret',2750,1750,'תיבה רמה 30, בקצה הכף') if p[3] == 'תיבה רמה 30' else ('den',2350,1300,'שומר הסערה והפנס, על הכף') if p[0] == 'den' else p for p in STORM['pois']]
+STORM['route'][-1] = (2350,1300)
+STORM['pois'] += [('ruin',-450,350,'פסל שבור של שומר (אירוע)'), ('camp',700,150,'מחנה על גדת הנהר'), ('ruin',-350,-750,'מזבח הברק: נוגעים, ונטענים'), ('secret',-1000,-250,'תיבה על אי בנהר')]
+STORM['tags'].append(('הכף',2550,1500))
+STORM['bg'] = '#1b1726'
+
+# צל: היבשה שבורה לארבעה חלקים סביב התהום, וגשרים ביניהם
+SHADOW['border'] = [
+  [(-1700,-1950),(-600,-1850),(300,-1980),(1500,-1850),(1650,-1300),(1300,-850),(500,-820),(0,-760),(-600,-860),(-1300,-900),(-1650,-1300)],   # צפון
+  [(-3000,-1950),(-2050,-1880),(-1950,-1100),(-1650,-300),(-1750,400),(-2250,560),(-3050,450),(-2850,-500)],                                      # מערב
+  [(1900,-1880),(2950,-1950),(3050,-1000),(2800,-200),(3050,600),(2850,1400),(2950,2000),(2150,1800),(1950,1000),(2150,200),(1800,-600),(1850,-1300)],   # מזרח
+  [(-3000,820),(-2000,760),(-1000,900),(-300,700),(300,680),(1000,820),(1600,1000),(1720,1600),(1100,2000),(500,1750),(0,1950),(-500,1700),(-1100,2000),(-2000,1800),(-2950,2000)]]   # דרום
+SHADOW['bg'] = '#07040d'
+SHADOW['shapes'] = [s for s in SHADOW['shapes'] if s[0] != 'trail'] + [
+  ('bridge', [(-1650,-1300),(-1960,-1250)]), ('bridge', [(1640,-1450),(1870,-1450)]), ('bridge', [(-2300,520),(-2300,790)]), ('bridge', [(1700,1350),(1990,1350)]),
+  ('trail', [(1100,-800),(1250,-300),(1400,50),(1300,400),(1150,780)]),
+  ('trail', [(-1950,-1250),(-2000,-700),(-1900,0),(-2300,520)]), ('trail', [(1870,-1450),(2100,-900),(2600,-500)])]
+SHADOW['pois'] = [('ruin',-2350,150,'מקדש השומרים ההרוס') if p[3] == 'מקדש השומרים ההרוס' else ('secret',-2700,1300,'מקדש רמה 30, ליד בור החושך') if p[0] == 'secret' and 'רמה 30' in p[3]
+                  else ('ruin',1350,1500,'הד המדבר') if p[3] == 'הד המדבר' else p for p in SHADOW['pois']]
+SHADOW['tags'] = [('התהום',-650,-150),('יער מת',-2400,-500),('יער מת',2450,250)]
+
+LAKE['pois'] = [('rare',-2650,1650,p[3]) if p[3] == 'קני הסוף בלגונה' else p for p in LAKE['pois']]
+DESERT['pois'] = [('rare',-2850,-1300,p[3]) if p[3] == 'בין הקקטוסים' else p for p in DESERT['pois']]
+SHADOW['pois'] = [('ruin',-2200,1100,p[3]) if p[3] == 'מקדש השומרים ההרוס' else p for p in SHADOW['pois']]
 
 if __name__ == '__main__':
     for R in (LAKE, RIDGE, DESERT, STORM, SHADOW):

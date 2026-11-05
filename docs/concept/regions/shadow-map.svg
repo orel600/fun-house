@@ -1,17 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1000" height="959" viewBox="0 0 1000 959" font-family="DejaVu Sans, sans-serif">
 <defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="8" stroke="#ffffff" stroke-opacity="0.35" stroke-width="2"/></pattern></defs>
 <rect width="1000" height="959" fill="#2b2a26"/>
+<rect x="26.0" y="38.0" width="948.0" height="641.3" rx="18" fill="#07040d"/>
+<clipPath id="land"><path d="M251.7,73.9 C277.3,60.5 363.7,89.2 412.4,88.5 C461.1,87.8 492.7,69.5 543.8,69.5 C594.9,69.5 686.2,72.0 719.0,88.5 C751.9,105.1 745.8,144.5 741.0,168.8 C736.1,193.2 717.8,222.9 689.8,234.5 C661.9,246.2 604.7,236.7 573.0,238.9 C541.4,241.1 526.8,248.7 500.0,247.7 C473.2,246.7 444.0,236.5 412.4,233.1 C380.7,229.7 335.7,237.9 310.2,227.2 C284.6,216.5 268.8,194.4 259.0,168.8 C249.3,143.3 226.2,87.3 251.7,73.9 Z"/><path d="M61.9,73.9 C81.4,40.3 175.1,63.4 200.6,84.1 C226.2,104.8 205.5,159.6 215.2,198.0 C225.0,236.5 254.2,278.3 259.0,314.9 C263.9,351.4 259.0,396.1 244.4,417.1 C229.8,438.0 203.1,439.2 171.4,440.4 C139.8,441.7 69.2,450.2 54.6,424.4 C40.0,398.6 82.6,344.1 83.8,285.7 C85.0,227.2 42.4,107.5 61.9,73.9 Z"/><path d="M777.5,84.1 C804.2,68.3 902.8,52.5 930.8,73.9 C958.8,95.3 949.0,170.0 945.4,212.6 C941.7,255.2 908.9,290.5 908.9,329.5 C908.9,368.4 944.2,407.3 945.4,446.3 C946.6,485.2 918.6,529.0 916.2,563.1 C913.8,597.2 947.8,641.0 930.8,650.7 C913.8,660.5 838.3,645.9 814.0,621.5 C789.6,597.2 784.8,543.6 784.8,504.7 C784.8,465.8 817.6,426.8 814.0,387.9 C810.3,348.9 770.2,307.6 762.9,271.0 C755.6,234.5 767.7,200.0 770.2,168.8 C772.6,137.7 750.7,99.9 777.5,84.1 Z"/><path d="M61.9,478.4 C85.0,448.2 159.3,467.7 207.9,469.7 C256.6,471.6 312.6,491.6 354.0,490.1 C395.3,488.6 424.6,466.2 456.2,460.9 C487.8,455.5 512.2,455.0 543.8,458.0 C575.4,460.9 614.4,470.6 646.0,478.4 C677.7,486.2 716.1,485.7 733.7,504.7 C751.2,523.7 763.3,568.0 751.2,592.3 C739.0,616.7 690.3,647.1 660.6,650.7 C630.9,654.4 599.8,615.4 573.0,614.2 C546.2,613.0 524.3,644.6 500.0,643.4 C475.7,642.2 453.8,605.7 427.0,606.9 C400.2,608.1 375.9,648.3 339.4,650.7 C302.9,653.2 253.0,621.5 207.9,621.5 C162.9,621.5 93.5,674.6 69.2,650.7 C44.9,626.9 38.8,508.6 61.9,478.4 Z"/></clipPath>
 <text x="960" y="32" font-size="20" font-weight="bold" fill="#f2eee4" text-anchor="start" direction="rtl">פרק 6: לב הצל</text>
 <text x="40" y="32" font-size="13" fill="#b9b2a6" text-anchor="end" direction="rtl">גודל 6300 על 4200, כ-34 שניות הליכה מקצה לקצה</text>
-<path d="M76.5,73.9 C104.5,58.1 176.3,89.7 222.5,88.5 C268.8,87.3 307.7,66.6 354.0,66.6 C400.2,66.6 451.3,88.5 500.0,88.5 C548.7,88.5 599.8,66.6 646.0,66.6 C692.3,66.6 730.0,87.3 777.5,88.5 C824.9,89.7 902.8,53.2 930.8,73.9 C958.8,94.6 949.0,170.0 945.4,212.6 C941.7,255.2 908.9,290.5 908.9,329.5 C908.9,368.4 944.2,407.3 945.4,446.3 C946.6,485.2 918.6,529.0 916.2,563.1 C913.8,597.2 951.5,641.0 930.8,650.7 C910.1,660.5 837.1,621.5 792.1,621.5 C747.0,621.5 697.1,653.2 660.6,650.7 C624.1,648.3 599.8,608.1 573.0,606.9 C546.2,605.7 524.3,643.4 500.0,643.4 C475.7,643.4 453.8,605.7 427.0,606.9 C400.2,608.1 375.9,648.3 339.4,650.7 C302.9,653.2 253.0,621.5 207.9,621.5 C162.9,621.5 89.9,665.3 69.2,650.7 C48.5,636.1 86.2,572.8 83.8,533.9 C81.4,495.0 53.4,456.0 54.6,417.1 C55.8,378.1 91.1,339.2 91.1,300.3 C91.1,261.3 57.0,221.2 54.6,183.4 C52.2,145.7 48.5,89.7 76.5,73.9 Z" fill="#4a3d5c" stroke="#4a3a2a" stroke-width="5"/>
+<path d="M251.7,73.9 C277.3,60.5 363.7,89.2 412.4,88.5 C461.1,87.8 492.7,69.5 543.8,69.5 C594.9,69.5 686.2,72.0 719.0,88.5 C751.9,105.1 745.8,144.5 741.0,168.8 C736.1,193.2 717.8,222.9 689.8,234.5 C661.9,246.2 604.7,236.7 573.0,238.9 C541.4,241.1 526.8,248.7 500.0,247.7 C473.2,246.7 444.0,236.5 412.4,233.1 C380.7,229.7 335.7,237.9 310.2,227.2 C284.6,216.5 268.8,194.4 259.0,168.8 C249.3,143.3 226.2,87.3 251.7,73.9 Z" fill="#4a3d5c" stroke="#4a3a2a" stroke-width="5"/>
+<path d="M61.9,73.9 C81.4,40.3 175.1,63.4 200.6,84.1 C226.2,104.8 205.5,159.6 215.2,198.0 C225.0,236.5 254.2,278.3 259.0,314.9 C263.9,351.4 259.0,396.1 244.4,417.1 C229.8,438.0 203.1,439.2 171.4,440.4 C139.8,441.7 69.2,450.2 54.6,424.4 C40.0,398.6 82.6,344.1 83.8,285.7 C85.0,227.2 42.4,107.5 61.9,73.9 Z" fill="#4a3d5c" stroke="#4a3a2a" stroke-width="5"/>
+<path d="M777.5,84.1 C804.2,68.3 902.8,52.5 930.8,73.9 C958.8,95.3 949.0,170.0 945.4,212.6 C941.7,255.2 908.9,290.5 908.9,329.5 C908.9,368.4 944.2,407.3 945.4,446.3 C946.6,485.2 918.6,529.0 916.2,563.1 C913.8,597.2 947.8,641.0 930.8,650.7 C913.8,660.5 838.3,645.9 814.0,621.5 C789.6,597.2 784.8,543.6 784.8,504.7 C784.8,465.8 817.6,426.8 814.0,387.9 C810.3,348.9 770.2,307.6 762.9,271.0 C755.6,234.5 767.7,200.0 770.2,168.8 C772.6,137.7 750.7,99.9 777.5,84.1 Z" fill="#4a3d5c" stroke="#4a3a2a" stroke-width="5"/>
+<path d="M61.9,478.4 C85.0,448.2 159.3,467.7 207.9,469.7 C256.6,471.6 312.6,491.6 354.0,490.1 C395.3,488.6 424.6,466.2 456.2,460.9 C487.8,455.5 512.2,455.0 543.8,458.0 C575.4,460.9 614.4,470.6 646.0,478.4 C677.7,486.2 716.1,485.7 733.7,504.7 C751.2,523.7 763.3,568.0 751.2,592.3 C739.0,616.7 690.3,647.1 660.6,650.7 C630.9,654.4 599.8,615.4 573.0,614.2 C546.2,613.0 524.3,644.6 500.0,643.4 C475.7,642.2 453.8,605.7 427.0,606.9 C400.2,608.1 375.9,648.3 339.4,650.7 C302.9,653.2 253.0,621.5 207.9,621.5 C162.9,621.5 93.5,674.6 69.2,650.7 C44.9,626.9 38.8,508.6 61.9,478.4 Z" fill="#4a3d5c" stroke="#4a3a2a" stroke-width="5"/>
+<g clip-path="url(#land)">
 <path d="M312.1,314.9 C309.6,337.8 281.8,356.7 272.1,378.4 C262.4,400.1 264.4,430.8 253.7,445.0 C243.0,459.1 224.0,454.5 208.1,463.4 C192.3,472.3 174.3,500.3 158.7,498.5 C143.1,496.7 126.2,471.0 114.5,452.4 C102.8,433.8 93.3,410.0 88.2,387.1 C83.2,364.1 83.1,338.0 84.4,314.9 C85.7,291.7 91.6,272.6 95.9,248.3 C100.2,224.0 99.2,185.5 110.1,168.9 C121.0,152.4 144.2,154.5 161.3,149.0 C178.4,143.4 199.1,126.2 212.7,135.7 C226.3,145.2 230.4,188.4 242.7,205.8 C255.1,223.3 275.3,222.3 286.8,240.4 C298.4,258.6 314.5,291.9 312.1,314.9 Z" fill="#241e2d" />
 <path d="M920.0,336.8 C915.5,352.4 903.2,362.3 897.5,377.8 C891.8,393.2 896.4,418.5 885.6,429.6 C874.8,440.6 850.8,439.0 832.7,443.9 C814.6,448.7 791.8,464.3 777.0,458.7 C762.2,453.2 756.4,423.0 743.9,410.6 C731.4,398.1 709.4,396.3 702.0,384.0 C694.7,371.7 702.2,353.6 699.8,336.8 C697.4,319.9 682.4,297.8 687.6,283.0 C692.8,268.2 715.5,256.5 731.1,247.9 C746.7,239.4 764.5,233.2 781.1,231.6 C797.6,230.0 815.1,234.0 830.6,238.3 C846.2,242.6 858.6,249.9 874.1,257.4 C889.7,265.0 916.5,270.5 924.1,283.7 C931.8,297.0 924.4,321.1 920.0,336.8 Z" fill="#241e2d" />
 <path d="M720.8,351.4 C723.0,363.2 732.6,378.2 721.2,387.9 C709.9,397.5 672.0,401.7 652.6,409.4 C633.2,417.1 624.1,427.2 605.1,433.9 C586.0,440.6 562.4,446.2 538.2,449.6 C514.0,453.0 485.9,455.4 459.9,454.4 C434.0,453.4 401.5,451.0 382.5,443.6 C363.6,436.2 360.8,419.6 346.4,409.8 C332.0,400.0 304.3,394.7 296.3,385.0 C288.2,375.2 302.8,363.4 298.0,351.4 C293.2,339.4 261.3,323.5 267.4,313.0 C273.5,302.5 314.8,297.0 334.5,288.4 C354.2,279.8 363.7,265.5 385.8,261.7 C407.8,257.9 441.2,267.1 466.6,265.6 C492.1,264.1 514.2,253.0 538.4,252.6 C562.6,252.3 588.6,258.3 612.1,263.3 C635.7,268.4 663.8,274.0 679.8,283.0 C695.8,291.9 701.3,305.6 708.1,317.0 C715.0,328.4 718.6,339.6 720.8,351.4 Z" fill="#07040d" stroke="#5b3f8c" stroke-width="3"/>
 <path d="M148.0,512.0 C148.5,516.0 149.7,521.4 147.2,524.7 C144.7,527.9 137.3,528.2 133.2,531.5 C129.1,534.8 127.4,542.7 122.6,544.3 C117.8,545.8 110.4,541.9 104.5,540.7 C98.6,539.5 90.8,539.8 87.2,536.9 C83.7,533.9 84.9,527.2 83.1,523.1 C81.4,518.9 77.5,516.0 76.7,512.0 C75.9,508.0 76.6,503.3 78.4,499.2 C80.2,495.1 83.3,490.4 87.6,487.5 C91.8,484.5 98.4,481.4 103.9,481.2 C109.4,481.1 115.1,485.4 120.5,486.8 C125.9,488.1 132.4,487.2 136.4,489.5 C140.3,491.7 142.3,496.7 144.2,500.4 C146.1,504.2 147.5,508.0 148.0,512.0 Z" fill="#07040d" stroke="#5b3f8c" stroke-width="2"/>
-<path d="M500.0,247.7 L491.2,329.5 L505.8,395.2 L500.0,458.0" fill="none" stroke="#a5784a" stroke-width="7"/>
-<path d="M660.6,263.7 L682.5,314.9 L704.4,366.0 L689.8,417.1 L667.9,460.9" fill="none" stroke="#f2eee4" stroke-opacity="0.7" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>
-<path d="M281.0,205.3 L207.9,256.4 L222.5,358.7 L164.1,446.3 L156.8,504.7" fill="none" stroke="#f2eee4" stroke-opacity="0.7" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>
-<path d="M719.0,183.4 L792.1,256.4 L879.7,285.7" fill="none" stroke="#f2eee4" stroke-opacity="0.7" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>
 <circle cx="694.6" cy="358.7" r="3.2" fill="#9c8fb0"/>
 <circle cx="667.2" cy="372.8" r="3.2" fill="#9c8fb0"/>
 <circle cx="684.9" cy="331.8" r="3.2" fill="#9c8fb0"/>
@@ -21,10 +23,19 @@
 <circle cx="671.3" cy="400.6" r="3.2" fill="#9c8fb0"/>
 <circle cx="661.0" cy="317.3" r="3.2" fill="#9c8fb0"/>
 <circle cx="729.2" cy="375.7" r="3.2" fill="#9c8fb0"/>
+<path d="M660.6,241.8 L682.5,314.9 L704.4,366.0 L689.8,417.1 L667.9,472.6" fill="none" stroke="#f2eee4" stroke-opacity="0.7" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>
+<path d="M215.2,176.1 L207.9,256.4 L222.5,358.7 L164.1,434.6" fill="none" stroke="#f2eee4" stroke-opacity="0.7" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>
+<path d="M773.1,146.9 L806.7,227.2 L879.7,285.7" fill="none" stroke="#f2eee4" stroke-opacity="0.7" stroke-width="3" stroke-dasharray="2 6" stroke-linecap="round"/>
+</g>
+<path d="M500.0,247.7 L491.2,329.5 L505.8,395.2 L500.0,458.0" fill="none" stroke="#a5784a" stroke-width="7"/>
+<path d="M259.0,168.8 L213.8,176.1" fill="none" stroke="#a5784a" stroke-width="7"/>
+<path d="M739.5,146.9 L773.1,146.9" fill="none" stroke="#a5784a" stroke-width="7"/>
+<path d="M164.1,434.6 L164.1,474.0" fill="none" stroke="#a5784a" stroke-width="7"/>
+<path d="M748.3,555.8 L790.6,555.8" fill="none" stroke="#a5784a" stroke-width="7"/>
 <path d="M500.0,92.9 L551.1,205.3 L500.0,247.7 L491.2,329.5 L505.8,395.2 L500.0,458.0 L500.0,541.2" fill="none" stroke="#ffd34d" stroke-width="4" stroke-dasharray="10 6" stroke-linejoin="round"/>
 <text x="405.1" y="336.8" font-size="15" font-style="italic" fill="#ffffff" fill-opacity="0.85" text-anchor="middle" direction="rtl" stroke="#000" stroke-opacity="0.35" stroke-width="3" paint-order="stroke">התהום</text>
-<text x="186.0" y="285.7" font-size="15" font-style="italic" fill="#ffffff" fill-opacity="0.85" text-anchor="middle" direction="rtl" stroke="#000" stroke-opacity="0.35" stroke-width="3" paint-order="stroke">יער מת</text>
-<text x="828.6" y="395.2" font-size="15" font-style="italic" fill="#ffffff" fill-opacity="0.85" text-anchor="middle" direction="rtl" stroke="#000" stroke-opacity="0.35" stroke-width="3" paint-order="stroke">יער מת</text>
+<text x="149.5" y="285.7" font-size="15" font-style="italic" fill="#ffffff" fill-opacity="0.85" text-anchor="middle" direction="rtl" stroke="#000" stroke-opacity="0.35" stroke-width="3" paint-order="stroke">יער מת</text>
+<text x="857.8" y="395.2" font-size="15" font-style="italic" fill="#ffffff" fill-opacity="0.85" text-anchor="middle" direction="rtl" stroke="#000" stroke-opacity="0.35" stroke-width="3" paint-order="stroke">יער מת</text>
 <circle cx="500.0" cy="92.9" r="10.5" fill="#ffffff" stroke="#222" stroke-width="1.5"/>
 <text x="500.0" y="96.9" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">1</text>
 <rect x="541.6" y="195.8" width="19" height="19" rx="3" fill="#5fe0e0" stroke="#222" stroke-width="1.5"/>
@@ -49,16 +60,16 @@
 <text x="719.0" y="150.9" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">11</text>
 <circle cx="222.5" cy="577.7" r="10.5" fill="#b9b2a6" stroke="#222" stroke-width="1.5"/>
 <text x="222.5" y="581.7" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">12</text>
-<circle cx="762.9" cy="570.4" r="10.5" fill="#b9b2a6" stroke="#222" stroke-width="1.5"/>
-<text x="762.9" y="574.4" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">13</text>
+<circle cx="697.1" cy="577.7" r="10.5" fill="#b9b2a6" stroke="#222" stroke-width="1.5"/>
+<text x="697.1" y="581.7" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">13</text>
 <circle cx="843.2" cy="468.2" r="10.5" fill="#b9b2a6" stroke="#222" stroke-width="1.5"/>
 <text x="843.2" y="472.2" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">14</text>
 <circle cx="368.6" cy="139.6" r="10.5" fill="#ff9d4d" stroke="#222" stroke-width="1.5"/>
 <text x="368.6" y="143.6" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">15</text>
 <circle cx="646.0" cy="541.2" r="10.5" fill="#ff9d4d" stroke="#222" stroke-width="1.5"/>
 <text x="646.0" y="545.2" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">16</text>
-<circle cx="288.3" cy="460.9" r="10.5" fill="#b9b2a6" stroke="#222" stroke-width="1.5"/>
-<text x="288.3" y="464.9" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">17</text>
+<circle cx="178.7" cy="519.3" r="10.5" fill="#b9b2a6" stroke="#222" stroke-width="1.5"/>
+<text x="178.7" y="523.3" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">17</text>
 <circle cx="448.9" cy="154.2" r="10.5" fill="#ff8fd0" stroke="#222" stroke-width="1.5"/>
 <text x="448.9" y="158.2" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">18</text>
 <circle cx="134.9" cy="103.1" r="10.5" fill="#fff3a0" stroke="#222" stroke-width="1.5"/>
@@ -69,8 +80,8 @@
 <text x="865.1" y="618.2" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">21</text>
 <circle cx="317.5" cy="621.5" r="10.5" fill="#fff3a0" stroke="#222" stroke-width="1.5"/>
 <text x="317.5" y="625.5" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">22</text>
-<circle cx="83.8" cy="453.6" r="10.5" fill="#fff3a0" stroke="#222" stroke-width="1.5"/>
-<text x="83.8" y="457.6" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">23</text>
+<circle cx="105.7" cy="548.5" r="10.5" fill="#fff3a0" stroke="#222" stroke-width="1.5"/>
+<text x="105.7" y="552.5" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">23</text>
 <path d="M901.6,538.5 l10,10 l-10,10 l-10,-10z" fill="#c07cff" stroke="#222" stroke-width="1.5"/>
 <text x="901.6" y="552.5" font-size="11" font-weight="bold" fill="#111" text-anchor="middle">24</text>
 <path d="M83.8,151.5 l10,10 l-10,10 l-10,-10z" fill="#c07cff" stroke="#222" stroke-width="1.5"/>
@@ -99,7 +110,7 @@
 <circle cx="649.3" cy="808.3" r="5" fill="#fff3a0"/><text x="639.3" y="813.3" font-size="13.5" fill="#f2eee4" text-anchor="start" direction="rtl">20 מקדש שלל</text>
 <circle cx="342.7" cy="808.3" r="5" fill="#fff3a0"/><text x="332.7" y="813.3" font-size="13.5" fill="#f2eee4" text-anchor="start" direction="rtl">21 תצפית על סלע גבוה</text>
 <circle cx="956.0" cy="829.3" r="5" fill="#fff3a0"/><text x="946.0" y="834.3" font-size="13.5" fill="#f2eee4" text-anchor="start" direction="rtl">22 עץ צל חרוט</text>
-<circle cx="649.3" cy="829.3" r="5" fill="#fff3a0"/><text x="639.3" y="834.3" font-size="13.5" fill="#f2eee4" text-anchor="start" direction="rtl">23 מקדש רמה 30, מעל בור החושך</text>
+<circle cx="649.3" cy="829.3" r="5" fill="#fff3a0"/><text x="639.3" y="834.3" font-size="13.5" fill="#f2eee4" text-anchor="start" direction="rtl">23 מקדש רמה 30, ליד בור החושך</text>
 <circle cx="342.7" cy="829.3" r="5" fill="#c07cff"/><text x="332.7" y="834.3" font-size="13.5" fill="#f2eee4" text-anchor="start" direction="rtl">24 הבור במזרח</text>
 <circle cx="956.0" cy="850.3" r="5" fill="#c07cff"/><text x="946.0" y="855.3" font-size="13.5" fill="#f2eee4" text-anchor="start" direction="rtl">25 חורשת הצל</text>
 <circle cx="649.3" cy="850.3" r="5" fill="#c07cff"/><text x="639.3" y="855.3" font-size="13.5" fill="#f2eee4" text-anchor="start" direction="rtl">26 שולי הריק</text>
