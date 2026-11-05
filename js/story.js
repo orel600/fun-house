@@ -27,7 +27,7 @@
       ועובר בחמישה שלבים, אחד לכל שומר, עם ההתקפה והחולשה שלו (phases, storyShade). נופל, והפרס בכפר: הפנס הלבן נדלק,
       כל התושבים מריעים, ראש הכפר מדבר, ומסך "תודה ששיחקת" עם סיכום (storyFinale). המשחק ממשיך.
    כל פנס הוא שורה ב-STORY.lanterns: באיזה אזור, איפה, איזה קווסט מעיר את השומר, והשומר עצמו.
-   מה נשמר: SAVE.story ({intro, shard, earth, water, ice, fire, bolt, light, use, time, end}). הטקסטים ב-lang.js תחת 'story.', 'end.' ו-'q.s1*' עד 'q.s6*' */
+   מה נשמר: SAVE.story ({intro, shard, earth, water, ice, fire, bolt, light, use, time, end, bt: טיימרים של הבוסים, giant.js}). הטקסטים ב-lang.js תחת 'story.', 'end.' ו-'q.s1*' עד 'q.s6*' */
 
 const STORY={
   lanterns:{
@@ -36,47 +36,46 @@ const STORY={
     // charge: הסתערות. כשהשחקן בין min ל-max: פס על הרצפה ורעד warn שניות, ואז ריצה בקו len פיקסלים במהירות speed.
     // נתקע בסלע או בקצה: stun שניות בלי לזוז, ומקבל פי vuln נזק (ניר, 1.11: "שק חבטות או מלכודת". docs/plan-combat.md, שינוי 1)
     earth:{reg:'meadow',x:650,y:-320,quest:'s1Warden',glow:'#FFD36B',col:C.ember,
-      warden:{type:'golem',hp:12,dmg:1.6,r:1.7,speed:0.8,wake:520,
+      warden:{type:'golem',hp:9,dmg:1.6,r:1.7,speed:0.8,wake:520,
         slam:{every:3.2,range:250,r:190,warn:0.8,dmg:22,col:'#FF4A3A'},
         charge:{every:6.5,min:240,max:620,warn:1.0,len:600,w:96,speed:620,dmg:24,stun:2,vuln:2,col:'#FF4A3A'}}},
     // פנס המים: בפינה הדרום-מערבית של האגם. שומר המים גם יורה מים בשלושה כיוונים (shoot)
     // ev: מה מדווחים לקווסט כשהשומר נופל (questEvent('story',ev)). head: ראש הכפר אומר משפט אחרי שהפנס נדלק
     water:{reg:'lake',x:-740,y:370,quest:'s2Warden',glow:'#6FD3FF',col:'#3F7BF5',ev:'tide',head:true,
-      warden:{type:'tidewarden',hp:26,dmg:1.3,r:1.6,speed:0.9,wake:520,shoot:{every:2.4,n:3,spread:0.32,speed:190,r:7,dmg:11}}},
+      warden:{type:'tidewarden',hp:30,dmg:1.3,r:1.6,speed:0.9,wake:520,shoot:{every:2.4,n:3,spread:0.32,speed:190,r:7,dmg:11}}},
     // פנס הקרח: בפינה הדרום-מזרחית של הרכס. שומר הקרח יורה מניפה רחבה של חמישה רסיסים, לאט יותר
     ice:{reg:'ridge',x:720,y:370,quest:'s3Warden',glow:'#CFF3FF',col:'#7FD4FF',ev:'frost',head:true,
-      warden:{type:'frostwarden',hp:28,dmg:1.35,r:1.65,speed:0.85,wake:520,shoot:{every:2.8,n:5,spread:0.24,speed:170,r:7,dmg:12}}},
+      warden:{type:'frostwarden',hp:105,dmg:1.35,r:1.65,speed:0.85,wake:520,shoot:{every:2.8,n:5,spread:0.24,speed:170,r:7,dmg:12}}},
     // פנס האש: בפינה הדרום-מערבית של המדבר. שומר האש שולח טבעת אש שמתרחבת ממנו (ring): speed פיקסלים לשנייה עד max,
     // w עובי הטבעת, gap רוחב הפתח (ברדיאנים) שבו עוברים בלי להיפגע. הטבעת פוגעת פעם אחת לכל היותר
     fire:{reg:'desert',x:-650,y:400,quest:'s4Warden',glow:'#FFB347',col:'#FF6A2A',ev:'blaze',head:true,
-      warden:{type:'emberwarden',hp:30,dmg:1.4,r:1.7,speed:0.85,wake:520,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}},
+      warden:{type:'emberwarden',hp:92,dmg:1.4,r:1.7,speed:0.85,wake:520,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}},
     // פנס הברק: בפינה הדרום-מזרחית של מגדלי הסערה. שומר הסערה מסמן n עיגולי ברק (marks): אחד מתחת לשחקן והשאר עד spread ממנו.
     // כל עיגול ברדיוס r מתפוצץ אחרי fuse שניות. מי שעוד בתוכו נפגע. מספיק לזוז
     bolt:{reg:'storm',x:720,y:390,quest:'s5Warden',glow:'#E2CCFF',col:'#B07CFF',ev:'thunder',head:true,
-      warden:{type:'stormwarden',hp:32,dmg:1.45,r:1.7,speed:0.85,wake:520,marks:{every:2.8,n:4,spread:170,r:50,fuse:1.0,dmg:16,flash:0.25}}},
+      warden:{type:'stormwarden',hp:300,dmg:1.35,r:1.7,speed:0.85,wake:520,marks:{every:2.8,n:4,spread:170,r:50,fuse:1.0,dmg:16,flash:0.25}}},
     // הפנס הלבן: באמצע הדרום של לב הצל. הצל עובר בשלבים לפי החיים שנשארו לו (phases, לפי הסדר): בכל שלב ההתקפה של השומר ההוא
     // (shoot, ring או marks מהשורה שלו כאן) והחולשה שלו. earth: אין לשומר האבן התקפה, אז הצל רץ מהר יותר (rush).
     // learn: המכפיל לסוג הנזק שהכי השתמשת בו בעולם, weak: המכפיל לחולשה של השלב. head:false: במקום משפט רגיל, הסוף (storyFinale)
     light:{reg:'shadow',x:0,y:370,quest:'s6Heart',glow:'#FFFFFF',col:'#9C6BFF',ev:'heart',head:false,
-      warden:{type:'shade',hp:40,dmg:1.5,r:1.8,speed:0.9,wake:540,phases:['earth','water','ice','fire','bolt'],rush:1.4,learn:0.4,weak:1.6}}
+      warden:{type:'shade',hp:292,dmg:1.5,r:1.8,speed:0.9,wake:540,phases:['earth','water','ice','fire','bolt'],rush:1.4,learn:0.4,weak:1.6}}
   },
   /* מכות עם הכנה (docs/plan-combat.md, שינוי 1): לפני כל התקפה של שומר יש סימן שאפשר לקרוא ולזוז ממנו, בצבע של השומר.
      warn: כמה שניות הסימן לפני היריות (shoot) ולפני טבעת האש (ring). לרקיעה ולהסתערות יש warn משלהן, ולעיגולי הברק fuse.
      touch: מגע בשומר בלי מכה (סתם נגיעה) פוגע רק כך, כדי שהסכנה תבוא מהמכות שרואים */
   tele:{shoot:0.65,ring:0.7,touch:0.35},
   // השומר לא בורח (ניר, 1.11.2026: "ברח לי"): הוא רודף כל עוד השחקן עד leash מהפנס. רק אחרי giveUp שניות רחוק יותר
-  // הוא חוזר לאט (back מהמהירות) לפנס, אומר משהו והפנס זוהר. בלי ריפוי: החיים נשארים, והקרב ממשיך מאיפה שעצר.
+  // הוא חוזר לאט (back מהמהירות) למאורה ואומר משהו. השחקן חוזר בדרך: הקרב ממשיך. הגיע למאורה: מתרפא וחוזר לישון (ניר, 5.11, giantSleep).
   // clear: הפנסים לפחות כך רחוק מקצה האזור, כדי שהשטח סביבם פתוח וקישוטי הקצה (גבעות, עצים) רחוקים
   chase:{leash:900,giveUp:5,back:0.45,say:2.6,clear:300},
   introDelay:0.9,                          // שניות אחרי הכניסה הראשונה לכפר עד שראש הכפר מדבר
   headDelay:1.4,                           // אחרי שפנס נדלק (הפרס נלקח בכפר): ראש הכפר אומר משפט
   lit:{dmg:0.75},                          // אחרי שהפנס של אזור נדלק: האויבים באזור פוגעים פחות
   end:{cheer:7,show:1.2},                  // הסוף: כמה שניות התושבים מריעים, וכמה אחרי שראש הכפר סיים מופיע מסך "תודה ששיחקת"
-  /* שומרים חוזרים (roadmap.md, "Claude מוביל", 1.11.2026): אחרי הסוף, בדרגת עולם "אמיץ" ומעלה (tiers.js), ליד כל פנס דולק יש כפתור 🔔.
-     השומר יוצא מהפנס לקרב חוזר, חזק יותר לפי הדרגה (TIERS.list: hp, dmg), פעם ביום לכל שומר (SAVE.story.re: {פנס: יום}).
-     near: מאיזה מרחק מהפנס מופיע הכפתור. hp, dmg: פי כמה, על הדרגה. loot: מה נופל בניצחון. gear: אחד מהם תמיד (חלק מסט, או ציוד של השומר),
-     res: משאבים נדירים [כמה], legend: סיכוי לכתר (הפריט האגדי) לפי הדרגה */
-  rematch:{near:150,minTier:2,hp:1,dmg:1,
+  /* שלל של ניצחון חוזר בשומר. בעולם: giantLoot ב-giant.js, פי GIANT.ladder.ratio מבוס לבוס (ניר, 5.11: הטיימר החליף את כפתור 🔔 "שומרים חוזרים").
+     בעומק (depths.js, e.rematch: הדרגה): storyReWin. gear: אחד מהם תמיד (חלק מסט, או ציוד של השומר), res: משאבים נדירים [כמה],
+     legend: סיכוי לכתר (הפריט האגדי) לפי הדרגה, בעומק בלבד */
+  rematch:{
     loot:{earth:{gear:['wardenHammer','wardenRing','wardenCharm','wardenBoots'],res:{amberF:1,gem:1}},
       water:{gear:['ironRing','swiftBoots'],res:{aqua:2,gem:1}},
       ice:{gear:['swiftBoots','silverBlade'],res:{sapphire:2,gem:1}},
@@ -112,53 +111,28 @@ function storyUpdate(dt){
   if(p&&qOn('s1Shard')&&!STO().shard){if(w.digs0==null)w.digs0=p.digs;
     if(p.digs>w.digs0){STO().shard=true;questEvent('story','shard');celebrate(p.x,p.y,'rank',T('story.shard'));sfx('celebrate');saveNow()}}
   // השומר קם כשמתקרבים לפנס של האזור, רק כשהקווסט שלו פעיל
-  const k=storyLantern(),L=k&&STORY.lanterns[k];
-  if(L&&qOn(L.quest)&&!w.warden&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake){storyWarden(k,L.y+70);banner(T('story.'+k+'.rise'),L.col)}
+  // הענק ישן במאורה ליד הפנס, וקם כשמתקרבים: גם לפני הקווסט, ואחרי ניצחון רק כשהטיימר נגמר (giantReady ב-giant.js)
+  const k=!w.dp&&storyLantern(),L=k&&STORY.lanterns[k];
+  if(L&&!w.warden&&giantReady(k)&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake){const e=storyWarden(k,L.y+GIANT.lair);e.first=qOn(L.quest);banner(T('story.'+k+'.rise'),L.col)}
   storyRings(dt);   // טבעות האש של שומר האש
   storyMarks(dt);   // עיגולי הברק של שומר הסערה
   if(w.warden&&w.warden.dead){const e=w.warden;w.warden=null;
     if(typeof wsbTome==='function')wsbTome(e.rematch?'rematch':'warden',e.x,e.y+40);   // ספר קדום (wskbook.js)
-    if(e.rematch){storyReWin(e);return}   // קרב חוזר: שלל, בלי קווסט
-    const ev=(STORY.lanterns[e.warden]||{}).ev;if(ev)questEvent('story',ev)}   // שומר המים: 'tide' (s2Warden), שומר הקרח: 'frost' (s3Warden)
-  storyReBtn();   // כפתור 🔔 ליד פנס דולק, אחרי הסוף
+    if(e.rematch){storyReWin(e);return}   // בוס העומק (depths.js): שלל, בלי קווסט ובלי טיימר
+    const ev=(STORY.lanterns[e.warden]||{}).ev;if(ev&&e.first)questEvent('story',ev);   // שומר המים: 'tide' (s2Warden), שומר הקרח: 'frost' (s3Warden)
+    giantWin(e)}   // הטיימר מתחיל, ובניצחון חוזר גם שלל (giant.js)
 }
-// השומר קם ליד הפנס. t: דרגת עולם לקרב חוזר (חזק יותר), או בלי בקרב הראשון
-function storyWarden(k,y,t){
+// השומר קם ליד הפנס (גם בוס העומק, depths.js)
+function storyWarden(k,y){
   const L=STORY.lanterns[k],W=L.warden,e=addEnemy(W.type,L.x,y,W.hp);
   e.warden=k;e.elite=false;e.dmg*=W.dmg;e.r*=W.r;e.speed*=W.speed;e.xp=0;e.big=W.r;e.shoot=W.shoot?W.shoot.every:0;e.ring=W.ring?W.ring.every*0.6:0;e.marks=W.marks?W.marks.every*0.5:0;e.slamT=W.slam?W.slam.every*0.5:0;e.chT=W.charge?W.charge.every*0.6:0;e.tel=null;S.wd.warden=e;
   giantRise(e,k);   // ענק: מודל משלו, פי 2 ברדיוס, כניסה ורעידות (giant.js)
-  if(t){const D=TIERS.list[t-1],RM=STORY.rematch;e.hp*=D.hp*RM.hp;e.max*=D.hp*RM.hp;e.dmg*=D.dmg*RM.dmg;e.rematch=t}
   S.shake=Math.max(S.shake,8);
   if(W.phases){e.base=e.speed;e.res=storyMost();e.phase=-1;storyShade(e)}   // הצל: לומד את השחקן ולובש את השלב הראשון
   return e;
 }
 
-/* ---- שומרים חוזרים (STORY.rematch): אחרי הסוף, בדרגה 2 ומעלה, פעם ביום לכל שומר ---- */
-const storyRe=()=>STO().re||(STO().re={});
-// אפשר לקרוא לשומר של הפנס הזה עכשיו? null אם לא, ואחרת הפנס
-function storyReCan(){
-  const w=S.wd,k=storyLantern();if(!w||!k||!STO().end||tierNow()<STORY.rematch.minTier||!STO()[k]||w.warden||storyRe()[k]===qDay())return null;
-  const L=STORY.lanterns[k];return Math.hypot(P.x-L.x,P.y-L.y)<STORY.rematch.near?k:null;
-}
-// הכפתור העגול בסרגל ההקשר (כמו wGo ב-world.js)
-const storyReEl=(()=>{const b=document.createElement('button');b.id='wardBtn';b.className='nbtn talkbtn';b.hidden=true;
-  $('talkBtn').before(b);b.addEventListener('click',()=>{if(S&&S.mode==='play')storyReCall()});return b})();
-function storyReBtn(){
-  const k=S.mode==='play'&&storyReCan(),show=!!k;if(storyReEl.hidden!==!show)storyReEl.hidden=!show;
-  if(show&&storyReEl.dataset.k!==k+LANG){storyReEl.dataset.k=k+LANG;storyReEl.innerHTML='<span class="ni" aria-hidden="true">🔔</span>'+T('story.re.btn');storyReEl.setAttribute('aria-label',T('story.re.call',T('story.'+k+'.name')))}
-}
-{const wu=worldUi;worldUi=function(on){wu(on);if(!on)storyReEl.hidden=true}}   // יוצאים מהעולם: הכפתור נעלם
-// לוחצים: השומר יוצא מהפנס, עם חגיגה קטנה. היום של השומר הזה נספר כבר עכשיו, גם אם בורחים או מתים
-function storyReCall(){
-  const k=storyReCan();if(!k)return false;const L=STORY.lanterns[k],t=tierNow();
-  storyRe()[k]=qDay();saveNow();storyReEl.hidden=true;
-  const e=storyWarden(k,L.y+20,t);e.kx=0;e.ky=260;   // יוצא מהפנס לכיוון השחקן
-  celebrate(L.x,L.y-60,'rank','🔔');sparks(L.x,L.y-80,L.glow,18,260);sfx('celebrate');
-  const txt=T('story.re.rise',T('story.'+k+'.name'),T('tier.n'+t));
-  if(feedOn())feedAdd('🔔',txt,L.col,'re:'+k);else banner(txt,L.col);
-  return true;
-}
-// ניצחון בקרב חוזר: ציוד מהטבלה של השומר, משאבים נדירים, וסיכוי לכתר לפי הדרגה. הכל נופל לרצפה ליד השומר
+// ניצחון בבוס העומק (depths.js, e.rematch: הדרגה): ציוד מהטבלה של השומר, משאבים נדירים, וסיכוי לכתר לפי הדרגה. הכל נופל לרצפה ליד השומר
 function storyReWin(e){
   const k=e.warden,L=STORY.lanterns[k],RM=STORY.rematch,lt=RM.loot[k]||RM.loot.earth,t=e.rematch,got=[];
   const g=lt.gear[Math.floor(Math.random()*lt.gear.length)];dropSpawn(g,1,e.x,e.y);got.push(g);
@@ -182,6 +156,7 @@ function storyWardenMove(e,dt){
   const busy=storyTele(e,dt,W,L,K,d,dx,dy,far);
   let tx=far?L.x-e.x:dx,ty=far?L.y+70-e.y:dy;const td=Math.hypot(tx,ty)||1;
   if(!busy&&td>6){e.x+=tx/td*e.speed*sp*slowK(e)*dt;e.y+=ty/td*e.speed*sp*slowK(e)*dt}
+  else if(far&&!busy&&!e.dpBoss&&e.say<=0){giantSleep(e);return}   // ברחו ממנו: הגיע למאורה, מתרפא וחוזר לישון (giant.js)
   e.x+=e.kx*dt;e.y+=e.ky*dt;
   const B=placeBox();if(B){e.x=Math.max(B.x0,Math.min(B.x1,e.x));e.y=Math.max(B.y0,Math.min(B.y1,e.y))}   // מכה לא דוחפת אותו אל מחוץ לאזור (על הגבעות)
   const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
@@ -342,6 +317,7 @@ function storyDraw(){
   const two=!R3D.on;   // בתלת-ממד הפנס עצמו מודל (props3d.js), וכאן רק טבעת השומר
   if(two){ctx.fillStyle='rgba(5,7,13,0.35)';ctx.beginPath();ctx.ellipse(L.x,L.y+6,22,8,0,0,7);ctx.fill();
   ctx.fillStyle='#4A3A2A';ctx.fillRect(L.x-4,L.y-70,8,76)}
+  if(!S.wd.dp)giantLairDraw(k,L);   // המאורה: 💤 או אבן עם שעון (giant.js)
   const ew=S.wd.warden;if(ew&&!ew.dead&&ew.back){ctx.save();ctx.globalAlpha=0.35+Math.sin(t*4)*0.15;ctx.strokeStyle=gl;ctx.lineWidth=6;   // השומר חזר לשמור: טבעת אור סביב הפנס
     ctx.beginPath();ctx.ellipse(L.x,L.y+6,120+Math.sin(t*3)*10,48,0,0,7);ctx.stroke();ctx.restore()}
   if(two){if(lit){const g=ctx.createRadialGradient(L.x,L.y-80,4,L.x,L.y-80,90+Math.sin(t*2)*8);g.addColorStop(0,gl+'8C');g.addColorStop(1,gl+'00');ctx.fillStyle=g;ctx.beginPath();ctx.arc(L.x,L.y-80,100,0,7);ctx.fill()}
@@ -359,6 +335,7 @@ function storyDraw(){
 }
 function storyScreen(ox,oy){
   const k=storyLantern();if(!k)return;const L=STORY.lanterns[k],e=S.wd.warden;
+  if(!S.wd.dp)giantLairScreen(k,L,ox,oy);   // שלט "רמה מומלצת" או הזמן שנשאר (giant.js)
   // החץ לפנס כשהקווסט פעיל: guide.js
   // השם מעל השומר: גודל קבוע על המסך (14px, לא מתכווץ עם המצלמה) עם קו מתאר כהה, כדי שייקרא גם על דשא (ניר, 1.11)
   if(e&&!e.dead){if(!e.wboss){ctx.save();ctx.translate(e.x+ox,e.y+oy-e.r-56);ctx.scale(1/ZOOM,1/ZOOM);ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 14px Heebo, system-ui, sans-serif';
