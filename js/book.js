@@ -77,6 +77,7 @@ function bookBadge(){const el=$('bBadge');if(!el)return;const n=bookPending(),t=
    האזור של סוג: הראשון ב-WORLD (האחו) וב-WORLD.regions שיש בו קבוצה ממנו. השומר באחו, הבוס בזירה, ומי שלא נמצא באף אזור: "בזירה" */
 function bookRegion(k){
   if(k==='boss')return 'arena';if(k==='warden'||k==='wanted')return 'meadow';
+  if(ETYPES[k]&&ETYPES[k].rare&&typeof RARES!=='undefined')return RARES.list[k].reg;   // מפלצת נדירה: באזור שלה (rares.js)
   const R=[['meadow',WORLD],...Object.entries(WORLD.regions||{})];
   for(const [id,r] of R)if((r.foes||[]).some(G=>G.type===k))return id;
   return 'arena';

@@ -202,7 +202,7 @@ function enterWorld(at,reg){
   const seen=SAVE.regSeen||(SAVE.regSeen={});if(!seen[reg]){seen[reg]=1;saveNow();feedTitle(T(R.enter||'w.enter'),C.gold)}
   worldUi(true);
   fishMealOn();   // ארוחה מהפונדקאית: חיזוק בעולם (fishing.js)
-  huntEnter();mutEnter();nemEnter();   // מבוקש היום (hunt.js), החוק והמשימה של היום (mutation.js), נמסיס שמחכה באזור (nemesis.js)
+  huntEnter();rareEnter();mutEnter();nemEnter();   // מבוקש היום (hunt.js), החוק והמשימה של היום (mutation.js), נמסיס שמחכה באזור (nemesis.js)
   wmapVisit(reg);     // מפת העולם: ביקרת כאן (worldmap.js)
   if(reg!=='meadow')questEvent('story',reg);   // קווסט עלילה "להגיע לאגם" (quests.js)
 }
@@ -251,6 +251,7 @@ function wFoes(dt){
     if(e.wanted){wantedMove(e,dt);continue}
     if(e.warden){storyWardenMove(e,dt);continue}
     if(e.evt){evFoeMove(e,dt);continue}
+    if(e.rare){rareMove(e,dt);continue}   // מפלצת נדירה: ליד המקום הנסתר שלה (rares.js)
     if(e.pack){if(foeAi(e,dt,Math.hypot(P.x-e.x,P.y-e.y)))foeAiTail(e,dt);else paceFoeMove(e,dt);continue}   // התנהגות לפי סוג (foeai.js)   // להקה שמגיעה מקצה המסך (pacing.js)   // גל של אירוע (events.js)   // השומר האבן (story.js)
     alive[e.home]++;
     const G=FO[e.home]||FO[0],dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;
@@ -296,7 +297,7 @@ function worldUpdate(dt){
   eb=eb.filter(b=>b.life>0);if(S.mode!=='play')return;
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
   dmgUpdate(dt);mutUpdate(dt);innUpdate(dt);   // שריפה, רטיבות, האטה והלם נגמרים (dmg.js). לפני 4.11 לא רץ בעולם, ומצבים נשארו לתמיד. המוטציה היומית (mutation.js)
-  wantedUpdate(dt);storyUpdate(dt);depthsUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);nemUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
+  wantedUpdate(dt);storyUpdate(dt);depthsUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);nemUpdate(dt);rareUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
   dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*mutK('regen')*dt);   // mutK: יום הצמא מרפא לאט (mutation.js)
   enemies=enemies.filter(e=>!e.dead);
@@ -402,7 +403,7 @@ function drawWorld(){
   affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
   strikeDraw();   // קשת אדומה של מכה שמתכוננת (strike.js)
   foeAiDraw();   // הסתערות, ירייה וקפיצה שמסומנות על הרצפה (foeai.js)
-  eventsDraw();scentDraw();   // אירועים (events.js), החיה מובילה (petscent.js)
+  eventsDraw();scentDraw();rareDraw();   // אירועים (events.js), החיה מובילה (petscent.js)
   secretsDraw();curioDraw();   // סודות (secrets.js), מכשול בדרך לאזור הבא (curiosity.js)
   if(WR().fog)wFog();
   if(WR().snow)wSnow();   // הרכס הקפוא

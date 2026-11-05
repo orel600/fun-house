@@ -971,7 +971,7 @@ const TEXT={
   'q.kind.daily':{he:'יומי',en:'Daily'},
   'q.kind.achievement':{he:'הישג',en:'Achievement'},
   'q.kind.rank':{he:'דרגה',en:'Rank'},
-  'q.rank1':{he:['עלייה בדרגה','עשרים רמות, וזה מראה. תביא שלושים עצמות ותנצח בוס, ואני אקרא לך בשם חדש.'],en:['Rank Up','Twenty levels, and it shows. Bring thirty bones and beat a boss, and I’ll call you by a new name.']},
+  'q.rank1':{he:['עלייה בדרגה','עשרים רמות, וזה מראה. תביא שלושים עצמות, וצוד שלוש מפלצות נדירות שונות. הן מסתתרות בעולם ולא נשארות הרבה: חפש ניצוצות על הקרקע, הקשב לשמועות, ותן לפיוחו להריח. אז אקרא לך בשם חדש.'],en:['Rank Up','Twenty levels, and it shows. Bring thirty bones, and hunt three different rare monsters. They hide out in the world and never stay long: look for sparkles on the ground, listen for rumors, and let your pet sniff. Then I’ll call you by a new name.']},
   'rank.guardian':{he:'שומר',en:'Guardian'},
   'rank.knight':{he:'אביר',en:'Knight'},
   'rank.ranger':{he:'סייר',en:'Ranger'},
@@ -1682,6 +1682,53 @@ const TEXT={
   'qo.fish':{he:'לדוג דגים',en:'Catch fish'},
   'q.wCatch':{he:['סוף סוף דגים','הרוחות הלכו והדגים חזרו! תדוג לי 3 מהבריכה. לחץ "לדוג", חכה ל-! ולחץ כשהמחוג בירוק.'],en:['Fish at Last','The wisps are gone and the fish are back! Catch me 3 from the pond. Tap "Fish", wait for the !, then tap when the needle is in the green.']}
 };
+
+// ======== מפלצות נדירות וקווסט הדרגה (rares.js, ranks.js) ========
+Object.assign(TEXT,{
+  'rank.call':{he:n=>'🎖️ '+n+' הכוהנת קוראת לך! עלייה בדרגה מחכה בכפר',en:n=>'🎖️ '+n+' the Priestess calls you! A rank-up awaits in the village'},
+  'qo.rare':{he:()=>'לצוד מפלצות נדירות שונות',en:()=>'Hunt different rare monsters'},
+  'rare.rumor':{he:p=>'שמועה: ראו משהו זוהר '+p,en:p=>'Rumor: something glowing was seen '+p},
+  'rare.first':{he:(n,k)=>'נדירה חדשה: '+n+'! ('+k+' שונות)',en:(n,k)=>'New rare: '+n+'! ('+k+' different)'},
+  'rare.down':{he:n=>'צדת שוב את '+n,en:n=>'You hunted '+n+' again'},
+  'scent.rare':{he:n=>n+' מצאה משהו נדיר! הנה זה',en:n=>n+' found something rare! There it is'},
+  'rare.at.quarry':{he:'ליד המחצבה',en:'by the quarry'},
+  'rare.at.grove':{he:'בפינת היער',en:'in the corner of the woods'},
+  'rare.at.south':{he:'בשולי האחו בדרום',en:'at the southern edge of the meadow'},
+  'rare.at.bushes':{he:'בין השיחים',en:'among the bushes'},
+  'rare.at.copse':{he:'בחורשה הקטנה',en:'in the little copse'},
+  'rare.at.east':{he:'בקצה המזרחי',en:'at the eastern edge'},
+  'rare.at.reeds':{he:'בין הקנים בדרום-מערב',en:'in the southwest reeds'},
+  'rare.at.tide':{he:'ליד אבני הגאות',en:'by the tide stones'},
+  'rare.at.shore':{he:'על החוף הדרומי',en:'on the southern shore'},
+  'rare.at.crevasse':{he:'ליד הסדק בדרום-מזרח',en:'by the southeast crevasse'},
+  'rare.at.pines':{he:'בין האורנים',en:'among the pines'},
+  'rare.at.drift':{he:'בערימות השלג בדרום',en:'in the southern snowdrifts'},
+  'rare.at.cacti':{he:'בין הקקטוסים',en:'among the cacti'},
+  'rare.at.embers':{he:'ליד סלעי הגחלים',en:'by the ember rocks'},
+  'rare.at.dunes':{he:'בדיונות בדרום',en:'in the southern dunes'},
+  'rare.at.spire':{he:'ליד הצריח השבור',en:'by the broken spire'},
+  'rare.at.ruins':{he:'בחורבות בדרום',en:'in the southern ruins'},
+  'rare.at.deadwood':{he:'בעצים המתים',en:'in the dead trees'},
+  'rare.at.pit':{he:'ליד הבור החשוך',en:'by the dark pit'},
+  'rare.at.shadegrove':{he:'בחורשת הצללים',en:'in the shade grove'},
+  'rare.at.void':{he:'על שפת הריק',en:'at the edge of the void'},
+  'fl.mossback':{he:['גב-טחב','גולם עתיק שישן כל כך הרבה זמן שצמח עליו יער. נדיר.','...מי העיר אותי?','שלוש מאות שנה. תן לי עוד חמש דקות.'],
+    en:['Mossback','An ancient golem that slept so long a forest grew on it. Rare.','...who woke me?','Three hundred years. Five more minutes.']},
+  'fl.glimmer':{he:['ניצנצת','פיה שקורנת כמו שמש קטנה. מי שראה אותה לא מאמין לעצמו. נדירה.','לא ראית אותי!','תפוס אותי, תפוס!'],
+    en:['Glimmerwing','A sprite that shines like a tiny sun. Nobody believes they saw her. Rare.','You didn’t see me!','Catch me, catch me!']},
+  'fl.pearl':{he:['אביר הפנינה','טבע לפני מאה שנה עם תיבת פנינים, ולא הסכים לשחרר. נדיר.','הפנינים שלי!','המים שומרים סודות. גם אני.'],
+    en:['Pearl Knight','Drowned a century ago holding a chest of pearls, and never let go. Rare.','My pearls!','The water keeps secrets. So do I.']},
+  'fl.hoarfrost':{he:['כפור-עד','אביר שקפא כל כך עמוק שהשריון שלו שר ברוח. נדיר.','קר... לך.','השלג זוכר כל צעד.'],
+    en:['Hoarfrost','A knight frozen so deep his armor sings in the wind. Rare.','Cold... for you.','The snow remembers every step.']},
+  'fl.ashmaw':{he:['לוע-אפר','עקרב שאכל גחלת של הפנס, ומאז הוא זוהר. נדיר.','חם לך? לי לא.','ששש... החול שומע.'],
+    en:['Ashmaw','A scorpion that swallowed an ember of the lantern, and has glowed ever since. Rare.','Hot? Not me.','Shh... the sand is listening.']},
+  'fl.stormhide':{he:['עור-סערה','ברק פגע בו שבע פעמים. הוא אומר שזה היה כיף. נדיר.','עוד! עוד ברק!','השמיים בצד שלי.'],
+    en:['Stormhide','Lightning struck him seven times. He says it was fun. Rare.','More! More lightning!','The sky is on my side.']},
+  'fl.hollow':{he:['הנר החלול','צל שמחזיק בתוכו להבה קטנה, ולא יודע למה. נדיר.','אל תכבה אותי...','האור שלך יפה. תן.'],
+    en:['The Hollow Candle','A shadow holding a small flame inside, and it doesn’t know why. Rare.','Don’t snuff me out...','Your light is pretty. Give.']},
+  'foe.mossback':{he:'גב-טחב',en:'Mossback'},'foe.glimmer':{he:'ניצנצת',en:'Glimmerwing'},'foe.pearl':{he:'אביר הפנינה',en:'Pearl Knight'},
+  'foe.hoarfrost':{he:'כפור-עד',en:'Hoarfrost'},'foe.ashmaw':{he:'לוע-אפר',en:'Ashmaw'},'foe.stormhide':{he:'עור-סערה',en:'Stormhide'},'foe.hollow':{he:'הנר החלול',en:'The Hollow Candle'}
+});
 
 // ======== המטרה הבאה (guide.js) ========
 Object.assign(TEXT,{
