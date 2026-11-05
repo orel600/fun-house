@@ -40,9 +40,9 @@ const STORY={
       warden:{type:'golem',hp:46,dmg:1.6,r:1.7,speed:0.8,wake:520,
         slam:{every:3.2,range:250,r:190,warn:0.8,dmg:22,col:'#FF4A3A'},
         charge:{every:6.5,min:240,max:620,warn:1.0,len:600,w:96,speed:620,dmg:24,stun:2,vuln:2,col:'#FF4A3A'}}},
-    // פנס המים: בפינה הדרום-מערבית של האגם. שומר המים גם יורה מים בשלושה כיוונים (shoot)
+    // פנס המים: על אי בלגונה בדרום-מערב של האגם (5 בשרטוט, js/map-lake.js). השומר במאורה מתחתיו (GIANT.lair). שומר המים גם יורה מים בשלושה כיוונים (shoot)
     // ev: מה מדווחים לקווסט כשהשומר נופל (questEvent('story',ev)). head: ראש הכפר אומר משפט אחרי שהפנס נדלק
-    water:{reg:'lake',x:-740,y:370,quest:'s2Warden',glow:'#6FD3FF',col:'#3F7BF5',ev:'tide',head:true,
+    water:{reg:'lake',x:-2300,y:1230,quest:'s2Warden',glow:'#6FD3FF',col:'#3F7BF5',ev:'tide',head:true,
       warden:{type:'tidewarden',hp:116,dmg:1.3,r:1.6,speed:0.9,wake:520,shoot:{every:2.4,n:3,spread:0.32,speed:190,r:7,dmg:11}}},
     // פנס הקרח: בפינה הדרום-מזרחית של הרכס. שומר הקרח יורה מניפה רחבה של חמישה רסיסים, לאט יותר
     ice:{reg:'ridge',x:720,y:370,quest:'s3Warden',glow:'#CFF3FF',col:'#7FD4FF',ev:'frost',head:true,

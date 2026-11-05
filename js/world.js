@@ -115,17 +115,7 @@ const WORLD={
     // פרק 2: אגם הערפל (docs/story.md). אויבים רטובים (ברק!), אבני גאות עם מים זוהרים, ופנס המים בפינה הדרום-מערבית (STORY.lanterns.water)
     lake:{
       region:'lake',back:'meadow',enter:'w.enter.lake',noNpc:true,fog:true,ground:'#16252C',
-      home:{x:0,y:-600,r:44},gates:{},waystones:[{id:'shore',x:520,y:-120},{id:'lair',x:-450,y:200}],
-      paths:{ridge:{x:860,y:-590,r:44,need:'water'}},   // פרק 3: אחרי שפנס המים נדלק, שביל בצפון-מזרח שעולה לרכס הקפוא
-      ponds:[{x:60,y:60,r:230},{x:-480,y:-120,r:120},{x:560,y:330,r:140},{x:-260,y:420,r:80}],
-      fields:[{kind:'reeds',n:8,x:-220,y:-180,r:200},{kind:'reeds',n:6,x:330,y:-90,r:170},{kind:'reeds',n:5,x:-640,y:240,r:150},
-              {kind:'tideRock',n:6,x:640,y:-330,r:190},{kind:'tideRock',n:4,x:-760,y:-330,r:150},{kind:'tree',n:5,x:820,y:120,r:160},{kind:'rock',n:3,x:250,y:500,r:120}],
-      foes:[
-        {type:'mistling',n:2,x:-160,y:-420,r:110},{type:'mistling',n:2,x:200,y:-400,r:110},
-        {type:'drowned',n:2,x:-380,y:-250,r:130},{type:'mistling',n:3,x:330,y:-150,r:140},{type:'drowned',n:3,x:640,y:-300,r:150},
-        {type:'drowned',n:3,x:-650,y:180,r:150},{type:'mistling',n:3,x:-130,y:330,r:140},{type:'drowned',n:2,x:820,y:160,r:140},
-        {type:'drowned',creature:true,n:2,x:-760,y:-330,r:120},{type:'mistling',creature:true,n:2,x:-220,y:-180,r:120}
-      ],
+      // המפה, המקומות, המשאבים והאויבים: js/map-lake.js (האגם הגדול, ת16)
       // קשה מהאחו: מי שהגיע לכאן כבר הדליק פנס אחד
       zones:[
         {id:'start',to:360, hp:0.6,dmg:0.5,speed:0.75,leash:260,back:16},
