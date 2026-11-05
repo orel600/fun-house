@@ -41,12 +41,12 @@ const SECRETS={
       {id:'l_carve',kind:'carving',x:-100,y:1250,to:{x:300,y:1700}}, // 23 עץ חרוט על החוף הדרומי, מצביע לדרום
       {id:'l_lv10',kind:'chest',x:-2760,y:450,hide:'bush',lv:10}     // 24 בקצה המערבי
     ],
-    ridge:[
-      {id:'r_chest',kind:'chest',x:-960,y:-560,hide:'rock'},         // בפינה הצפון-מערבית, מאחורי סלע מושלג
-      {id:'r_shrine',kind:'shrine',x:-900,y:560,bless:'speed'},      // דרום-מערב
-      {id:'r_look',kind:'lookout',x:930,y:-120},                     // על השפה המזרחית של הרכס
-      {id:'r_carve',kind:'carving',x:380,y:600,to:{x:-60,y:640}},    // אורן בודד בדרום, מצביע מערבה
-      {id:'r_lv20',kind:'chest',x:980,y:560,hide:'rock',lv:20}       // בפינה הדרום-מזרחית, מאחורי הפנס
+    ridge:[   // המספרים מהשרטוט של הרכס הגדול (docs/concept-regions.md, js/map-ridge.js)
+      {id:'r_chest',kind:'chest',x:-1820,y:-1650,hide:'rock'},       // 21 תיבה מאחורי סלע מושלג, בצפון-מערב
+      {id:'r_shrine',kind:'shrine',x:-1610,y:1650,bless:'speed'},    // 22 מקדש מהירות, ליד האגם הקפוא
+      {id:'r_look',kind:'lookout',x:2010,y:-450},                    // 23 תצפית על השפה המזרחית
+      {id:'r_carve',kind:'carving',x:680,y:1500,to:{x:300,y:1750}},  // 24 אורן חרוט בדרום, מצביע מערבה
+      {id:'r_lv20',kind:'chest',x:2640,y:1650,hide:'rock',lv:20}     // 25 בפינה הדרום-מזרחית, מאחורי הפנס
     ],
     desert:[
       {id:'d_chest',kind:'chest',x:960,y:-560,hide:'rock'},          // בפינה הצפון-מזרחית, מאחורי סלע חרוך
