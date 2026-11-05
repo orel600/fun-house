@@ -131,7 +131,7 @@ const f1=x=>x==null?'-':(Math.round(x*10)/10).toString();
   p('- **קיר** (פרק שלוקח יותר מפי '+PT.wall+' מהחלק שלו ביעד, או שהבוט נתקע): '+(walls.length?walls.join(', '):'אין'));
   p('- **קצר מדי** (פחות מחצי מהחלק שלו ביעד): '+(short.length?short.join(', '):'אין'));p('');
   p('## בסוף');p('');
-  for(const c of PT.cls){const R=out[c];p(`- ${c}: רמה ${R.end.lv}, סטים: ${R.end.sets.join(', ')}, ${R.deaths} מוות, ${R.real} שניות אמיתיות${R.errors.length?', שגיאות: '+R.errors.join(' | '):''}`)}
+  for(const c of PT.cls){const R=out[c];p(`- ${c}: רמה ${R.end.lv}, סטים: ${R.end.sets.join(', ')}, ${R.deaths} מוות, ${R.unstick||0} פעמים נתקע בשטח וזז לכיוון אקראי, ${R.real} שניות אמיתיות${R.errors.length?', שגיאות: '+R.errors.join(' | '):''}`)}
   const txt=L.join('\n');console.log('\n'+txt);
   const o=opt('out');if(o)fs.writeFileSync(o,txt+'\n');
   const j=opt('json');if(j)fs.writeFileSync(j,JSON.stringify(out,null,1));
