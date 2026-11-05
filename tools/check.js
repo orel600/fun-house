@@ -450,7 +450,7 @@ function worldBot(m,L,god){
     if(TR&&WORLD.regions.lake.map){const LR=WORLD.regions.lake,M=LR.map,rc=terrainReach(LR,'lake');   // אגם הערפל הגדול (js/map-lake.js): נבנה ונבדק כאן, ואז חוזרים למפה של האחו
       L.wLake={ms:TR.ms,bad:terrainBad(LR,'lake'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,lake:tBlocked(-600,700),isle:!tBlocked(LR.waystones[1].x,LR.waystones[1].y),swamp:tSlow(M.marks.find(m=>m.id==='boards').x,M.marks.find(m=>m.id==='boards').y)};terrainEnter(WORLD,'meadow')}
     if(TR&&WORLD.regions.ridge.map){const RR=WORLD.regions.ridge,M=RR.map,rc=terrainReach(RR,'ridge');   // הרכס הקפוא הגדול (js/map-ridge.js)
-      L.wRidge={ms:TR.ms,bad:terrainBad(RR,'ridge'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,crag:tBlocked(-1100,-200),gap:tBlocked(1500,410)&&!tBlocked(M.bridges[0].x,M.bridges[0].y)};terrainEnter(WORLD,'meadow')}
+      L.wRidge={ms:TR.ms,bad:terrainBad(RR,'ridge'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,crag:tBlocked(-1100,-200),gap:tBlocked(2180,520)&&!tBlocked(M.bridges[0].x,M.bridges[0].y)};terrainEnter(WORLD,'meadow')}
     L.wNodes=S.nd.list.length;L.wFoes=enemies.length;L.wCreatures=enemies.filter(e=>e.creature).length;m.w0=SAVE.bag.wood||0;m.wt=W.t;
     // המפלצות הראשונות ליד השער: קלות. אחת נזרקת רחוק מהבית שלה (צריכה לחזור), וקבוצה אחת מופלת (צריכה לחזור אחרי זמן)
     const st=enemies.filter(e=>e.zone==='start'),gi=G=>WORLD.foes.indexOf(G),home=e=>WORLD.foes[e.home];
