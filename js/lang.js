@@ -854,6 +854,7 @@ const TEXT={
   'af.fast':{he:'מהיר',en:'Swift'},'af.tough':{he:'משוריין',en:'Armored'},'af.burst':{he:'מתפוצץ',en:'Volatile'},'af.split':{he:'מתפצל',en:'Splitting'},'af.regen':{he:'מתחדש',en:'Regenerating'},'af.shell':{he:'מגן יסודות',en:'Elemental Shield'},
   // ניצחון חוזר בשומר (giant.js, giantLoot, ובעומק storyReWin)
   'story.ward.stuck':{he:'נתקע! עכשיו!',en:'Stuck! Now!'},
+  'giant.phase':{he:(n,i)=>n+' משתנה! שלב '+i,en:(n,i)=>n+' changes! Phase '+i},
   'story.re.win':{he:n=>'ניצחת שוב את '+n+'!',en:n=>'You beat '+n+' again!'},
   'story.intro':{he:'הגעת! סוף סוף מישהו עם נשק. פעם דלקו כאן שישה פנסים, והצל לא העז להתקרב. לילה אחד כולם כבו, והשלדים קמו מהאדמה. בוא, נתחיל מקטן.',en:'You came! Finally someone with a weapon. Six lanterns once burned here, and the Shadow never dared come near. One night they all went dark, and the skeletons rose. Come, let’s start small.'},
   'story.shard':{he:'פיוחו מצאה רסיס זוהר!',en:'Piocho found a glowing shard!'},

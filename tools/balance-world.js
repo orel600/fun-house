@@ -12,8 +12,8 @@ const opt=k=>{const i=args.indexOf('--'+k);if(i<0)return null;const v=args[i+1];
 const BAL={
   cls:(opt('cls')||'warrior,hunter,mage').split(','),
   seed:+(opt('seed')||7),
-  cap:+(opt('cap')||900),          // שניות משחק לפרק
-  wardenCap:300,                   // מתוכן, לכל היותר לקרב בשומר
+  cap:+(opt('cap')||1200),          // שניות משחק לפרק
+  wardenCap:600,                   // מתוכן, לכל היותר לקרב בשומר
   fights:+(opt('fights')||1),      // כמה פעמים להפיל כל שומר, כדי להוריד את הרעש (--fights 10). אחרי כל ניצחון: חיים מלאים, והשומר קם שוב
   dodge:opt('nododge')?0:1,        // הבוט יוצא מעיגולי ברק ומעיגול רקיעה, כמו שחקן שרואה את הסימן (--nododge: עומד במקום)
   step:250,                        // כל כמה מילישניות משחק הבוט מחליט
@@ -104,7 +104,7 @@ function install(B){
     // קרב: לחיים נמוכים בורחים. אחרת אל האויב הקרוב (או השומר), עד הטווח של הנשק
     const F=foes(),near=F.reduce((b,e)=>{const d=Math.hypot(e.x-P.x,e.y-P.y);return d<b.d?{e,d}:b},{e:null,d:1e9});
     const melee=P.weapon==='sword',stop=melee?28:150;
-    const mk=B.dodge&&(w.marks||[]).find(M=>M.t>0&&Math.hypot(P.x-M.x,P.y-M.y)<STORY.lanterns[M.k].warden.marks.r+P.r+10),
+    const mk=B.dodge&&(w.marks||[]).find(M=>M.t>0&&Math.hypot(P.x-M.x,P.y-M.y)<(M.mk||STORY.lanterns[M.k].warden.marks).r+P.r+10),
       sl=B.dodge&&w.warden&&w.warden.tel&&w.warden.tel.kind==='slam'&&Math.hypot(P.x-w.warden.tel.x,P.y-w.warden.tel.y)<(w.warden.pw||L.warden).slam.r+P.r+10?w.warden.tel:null;
     if(mk||sl){const o=mk||sl;steer(o.x,o.y,true,0)}   // יוצאים מהסימן על הרצפה
     else if(P.hp<P.maxHp*B.flee&&near.e&&near.d<320){steer(near.e.x,near.e.y,true,0);m.hurt=1}
@@ -131,6 +131,7 @@ async function runCls(browser,cls){
   const t0=Date.now();let r={},n=0;
   while(!r.done){r=await page.evaluate(()=>__balRun(40));
     if(++n%150===0){const s=await page.evaluate(()=>({ch:__bal.ch,lv:heroLv(),ph:__bal.ph,gt:Math.round(__bal.gt)}));console.log(cls,'פרק',s.ch+1,'רמה',s.lv,s.ph,s.gt+'s משחק',Math.round((Date.now()-t0)/1000)+'s')}}
+  r.R.ladder=await page.evaluate(()=>typeof GIANT!=='undefined'&&GIANT.ladder||null);
   r.R.errors=[...new Set(errors)].slice(0,8);r.R.real=Math.round((Date.now()-t0)/1000);
   await page.close();return r.R;
 }
@@ -153,4 +154,7 @@ async function runCls(browser,cls){
   for(const c of BAL.cls)console.log('  '+c+': '+out[c].ch.map((h,i)=>BAL.chapters[i].k+' '+(h.fightT??'-')+'s/'+(h.wDeaths||0)+'💀').join(', '));
   console.log('\nזמן להפיל כל שומר (ממוצע, שניות): '+ft.map((t,i)=>BAL.chapters[i].k+' '+(t==null?'-':t.toFixed(1))+(i&&t&&ft[i-1]?' (×'+(t/ft[i-1]).toFixed(2)+')':'')).join(', '));
   const j=opt('json');if(j)fs.writeFileSync(j,JSON.stringify(out,null,1));
+  // היעד (GIANT.ladder.t0, time): כמה שניות לכל שומר, ופי כמה המדידה ממנו
+  const LD=out[BAL.cls[0]].ladder;if(LD&&LD.t0)console.log('יעד: '+ft.map((t,i)=>{const g=LD.t0*Math.pow(LD.time,i);return BAL.chapters[i].k+' '+Math.round(g)+(t?' ('+(t/g).toFixed(2)+')':'')}).join(', '));
+  const bad=BAL.cls.filter(c=>out[c].ch.some(h=>(h.wDeaths||0)>2||!h.ok));if(bad.length)console.log('⚠️ נתקע או מת יותר מפעמיים בשומר: '+bad.join(', '));
 })();
