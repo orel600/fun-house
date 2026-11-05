@@ -324,7 +324,7 @@ function makeGround(){
   g.fillStyle='#fff';g.fillRect(0,0,T,T);
   for(let i=0;i<4;i++)for(let j=0;j<4;j++){const v=225+Math.floor(hash(i,j)*30);g.fillStyle='rgb('+v+','+v+','+v+')';g.fillRect(i*64+2,j*64+2,60,60)}
   const tex=new THREE.CanvasTexture(c);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=4;
-  const size=6000,tile=180;tex.repeat.set(size/tile,size/tile);
+  const size=16000,tile=180;tex.repeat.set(size/tile,size/tile);   // 16000: גם האחו הגדול (6300×4200, ובעומק פי 1/sin) מכוסה כשהמצלמה רחוקה
   const m=new THREE.Mesh(new THREE.PlaneGeometry(size,size),new THREE.MeshLambertMaterial({map:tex,color:VIEW.groundLine}));
   m.rotation.x=-Math.PI/2;m.userData.tile=tile;R3D.ground=m;R3D.scene.add(m);
 }
