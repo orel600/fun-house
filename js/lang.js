@@ -1957,7 +1957,7 @@ Object.assign(TEXT,{
 // ======== אבני מסע (waystones.js) ========
 Object.assign(TEXT,{
   'ws.ford':{he:'אבן המעבר',en:'Ford Stone'},'ws.quarry':{he:'אבן המחצבה',en:'Quarry Stone'},'ws.glade':{he:'אבן הקרחת',en:'Glade Stone'},
-  'ws.lair':{he:'אבן המאורה',en:'Lair Stone'},'ws.shore':{he:'אבן החוף',en:'Shore Stone'},'ws.isle':{he:'אבן האי',en:'Isle Stone'},'ws.pass':{he:'אבן המעבר ההררי',en:'Pass Stone'},
+  'ws.lair':{he:'אבן המאורה',en:'Lair Stone'},'ws.shore':{he:'אבן החוף',en:'Shore Stone'},'ws.isle':{he:'אבן האי',en:'Isle Stone'},'ws.abbey':{he:'אבן המנזר',en:'Abbey Stone'},'ws.pass':{he:'אבן המעבר ההררי',en:'Pass Stone'},
   'ws.dunes':{he:'אבן הדיונות',en:'Dune Stone'},'ws.ruin':{he:'אבן החורבה',en:'Ruin Stone'},'ws.gloom':{he:'אבן האפלה',en:'Gloom Stone'},
   'ws.found':{he:n=>'🗿 '+n+' התעוררה! מעכשיו אפשר לקפוץ לכאן',en:n=>'🗿 '+n+' awakened! You can travel here now'},
   'ws.at':{he:n=>'🗿 '+n,en:n=>'🗿 '+n},
