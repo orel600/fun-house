@@ -54,7 +54,7 @@ const STORY={
       warden:{type:'emberwarden',hp:198,dmg:1.4,r:1.7,speed:0.85,wake:520,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}},
     // פנס הברק: בפינה הדרום-מזרחית של מגדלי הסערה. שומר הסערה מסמן n עיגולי ברק (marks): אחד מתחת לשחקן והשאר עד spread ממנו.
     // כל עיגול ברדיוס r מתפוצץ אחרי fuse שניות. מי שעוד בתוכו נפגע. מספיק לזוז
-    bolt:{reg:'storm',x:720,y:390,quest:'s5Warden',glow:'#E2CCFF',col:'#B07CFF',ev:'thunder',head:true,
+    bolt:{reg:'storm',x:2450,y:1330,quest:'s5Warden',glow:'#E2CCFF',col:'#B07CFF',ev:'thunder',head:true,
       warden:{type:'stormwarden',hp:536,dmg:1.35,r:1.7,speed:0.85,wake:520,marks:{every:2.8,n:4,spread:170,r:50,fuse:1.2,dmg:16,flash:0.25}}},
     // הפנס הלבן: באמצע הדרום של לב הצל. הצל עובר בשלבים לפי החיים שנשארו לו (phases, לפי הסדר): בכל שלב ההתקפה של השומר ההוא
     // (shoot, ring או marks מהשורה שלו כאן) והחולשה שלו. earth: אין לשומר האבן התקפה, אז הצל רץ מהר יותר (rush).

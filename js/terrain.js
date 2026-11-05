@@ -43,7 +43,8 @@ const TERRAIN={
       cliffPick:[{model:'n_crag',w:150,tint:'#d29a62'},{model:'n_block',w:130,tint:'#b9784a'},{model:'n_crag',w:110,tint:'#e0ac72'}]}},
   mesa:{h:34,gap:58,inner:150},   // רמת סלע בתלת-ממד: גובה הגג (נמוך, כדי שלא תסתיר את הדמות מהמצלמה), סלע כל gap לאורך השפה, ופיזור סלעים בגג כל inner
   mask:10,                 // כמה פיקסלים של המשחק לכל נקודה במסכה של הקרקע
-  seaPad:2500              // אזור עם sea (האגם): כמה רחוק מהמלבן של האזור הים ממשיך בתלת-ממד
+  seaPad:2500,             // אזור עם sea (האגם): כמה רחוק מהמלבן של האזור הים ממשיך בתלת-ממד
+  wall:{gap:44,skip:0.12,pick:[{model:'n_block',w:66},{model:'n_block',w:56},{model:'n_block',w:74}]}   // חומה (walls, הסערה): אבן כל gap, ו-skip מהאבנים חסרות (חומה שבורה). הצבע: TERRAIN.pal.<אזור>.wall
 };
 
 let TR=null;               // המפה של האזור הנוכחי (או null: מלבן רגיל)
@@ -69,6 +70,8 @@ function terrainEnter(R,reg){
   for(const F of M.forests||[]){poly(F);g.fill();g.stroke()}
   for(const F of M.crags||[]){poly(F);g.fill();g.stroke()}   // גושי צוקים: חוסמים כמו יער
   for(const r of M.rivers||[]){line(r.pts);g.lineWidth=r.w+pad*2;g.stroke()}
+  for(const L of M.walls||[]){line(L.pts);g.lineWidth=L.w+pad*2;g.stroke()}   // חומה (הסערה)
+  for(const t of R.towers||[]){g.beginPath();g.arc(t.x,t.y,t.r+pad,0,7);g.fill()}   // מגדלים הרוסים (הסערה): חוסמים גם בחיפוש הדרך
   for(const s of M.springs||[]){g.beginPath();g.arc(s.x,s.y,s.r+pad,0,7);g.fill()}
   if(M.ridge){poly(M.ridge.poly);g.lineWidth=TERRAIN.ridge.edge+pad*2;g.stroke()}
   for(const Q of M.mesas||[]){poly(Q);g.lineWidth=pad*2;g.fill();g.stroke()}   // רמות סלע (המדבר): חוסמות כמו צוק
@@ -277,6 +280,7 @@ function tDraw(ctx,T,mini){
   if(p2.ridge){ctx.fillStyle=Q.ridge;ctx.fill(p2.ridge);if(p2.ramp)ctx.fill(p2.ramp);ctx.strokeStyle=Q.cliff;ctx.lineWidth=TERRAIN.ridge.edge*0.6;ctx.stroke(p2.ridge)}
   for(const b of M.bridges||[]){if(mini)break;ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.a);ctx.fillStyle=TERRAIN.bridge.wood;ctx.fillRect(-b.len/2,-b.w/2,b.len,b.w);
     ctx.strokeStyle=TERRAIN.bridge.dark;ctx.lineWidth=3;for(let x=-b.len/2;x<b.len/2;x+=TERRAIN.bridge.plank){ctx.beginPath();ctx.moveTo(x,-b.w/2);ctx.lineTo(x,b.w/2);ctx.stroke()}ctx.restore()}
+  for(const L of M.walls||[]){ctx.strokeStyle=Q.wall||Q.cliff;ctx.lineWidth=L.w;ctx.beginPath();L.pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke()}   // חומה (הסערה)
   ctx.strokeStyle=Q.cliff;ctx.lineWidth=26;ctx.stroke(p2.border);
   ctx.restore();
 }
@@ -292,7 +296,7 @@ function terrainMask(R,bw,bh){
   const fo=one(g=>{for(const f of M.forests||[]){poly(g,f);g.fill()}g.globalCompositeOperation='destination-out';
     for(const t of M.trails||[])if(t.cut){line(g,t.pts);g.lineWidth=t.w*1.2;g.stroke()}for(const c of M.clearings||[]){g.beginPath();g.arc(c.x,c.y,c.r,0,7);g.fill()}},3);
   const ou=one(g=>{g.fillRect(-bw,-bh,bw*2,bh*2);g.globalCompositeOperation='destination-out';for(const B of tB(M)){poly(g,B);g.fill()}},2);
-  const ro=one(g=>{for(const q of (M.rocky||[]).concat(M.crags||[],M.mesas||[])){poly(g,q);g.fill()}if(M.ridge){poly(g,M.ridge.poly);g.lineWidth=TERRAIN.ridge.edge*2;g.stroke()}},3);
+  const ro=one(g=>{for(const q of (M.rocky||[]).concat(M.crags||[],M.mesas||[])){poly(g,q);g.fill()}for(const L of M.walls||[]){line(g,L.pts);g.lineWidth=L.w+60;g.stroke()}if(M.ridge){poly(g,M.ridge.poly);g.lineWidth=TERRAIN.ridge.edge*2;g.stroke()}},3);
   const out=new Uint8Array(mw*mh*4);for(let i=0;i<mw*mh;i++){out[i*4]=wat[i*4+3];out[i*4+1]=fo[i*4+3];out[i*4+2]=ou[i*4+3];out[i*4+3]=ro[i*4+3]}
   return{data:out,w:mw,h:mh};
 }
@@ -375,6 +379,7 @@ function tLift(o){if(!o||o.userData.lift!=null||!TR)return;const S_=SIN(),h=hAt(
 function terrain3d(G,reg){
   const T=TR;if(!T||T.reg!==reg)return;const M=T.map,S_=SIN(),root=new THREE.Group();G.g.add(root);G.terr={root,chunks:[],water:[]};
   // נהרות, מעיינות, מעברים, ים וביצה
+  const Qp=TERRAIN.pal[T.reg]||{};
   for(const r of M.rivers||[]){const m=new THREE.Mesh(tRibbon(r.pts,r.w+18,0.8),tWaterMat(true,M));m.renderOrder=2;root.add(m);G.terr.water.push(m.material)}
   const still=tWaterMat(false,M);G.terr.water.push(still);
   for(const w of M.water||[]){const m=new THREE.Mesh(tFlat(w,0.6,(M.islands||[]).filter(I=>inPoly(I[0][0],I[0][1],w))),still);m.renderOrder=2;root.add(m)}   // איים: חורים במים
@@ -404,6 +409,8 @@ function terrain3d(G,reg){
   const Rd=TERRAIN.reeds;for(const L of M.reeds||[])walkLine(L,Rd.gap,(x,y,nx,ny)=>{const v=hash(x,y);list.push({sp:{model:Rd.model,h:Rd.h},x:x+nx*(10+v*40),y:y+ny*(10+v*40),v,mul:0.8+v*0.5})});
   if(TR&&M.ridge){const ramp=M.ridge.ramp;walkLine(M.ridge.poly.concat([M.ridge.poly[0]]),C.gap*0.8,(x,y,nx,ny)=>{if(ramp&&(inPoly(x+nx*30,y+ny*30,ramp)||inPoly(x,y,ramp)||polyDist(x,y,ramp)<50))return;const v=hash(x*1.1,y);
     list.push({sp:C.pick[Math.floor(v*C.pick.length)%C.pick.length],x:x+nx*12,y:y+ny*12,v,mul:0.45+v*0.2})})}
+  const Wl=TERRAIN.wall;for(const L of M.walls||[])walkLine(L.pts,Wl.gap,(x,y,nx,ny,i)=>{const v=hash(x*0.9,y*1.7);if(v<Wl.skip||!tB(M).some(B=>inPoly(x,y,B)))return;   // חומה: אבנים לאורך הקו, וחלק חסרות
+    const sp=Wl.pick[i%Wl.pick.length];list.push({sp:Object.assign({tint:Qp.wall},sp),x:x+nx*(v-0.5)*10,y,v,mul:0.8+v*0.5})});
   for(const m of M.marks||[])tMark(m,root);
   G.terr.chunks=tInst(list,root);G.terr.n=list.length;
 }

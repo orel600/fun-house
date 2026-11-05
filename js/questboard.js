@@ -20,7 +20,7 @@ const SIDEQ={
     lake:  {},   // האגם הגדול (map-lake.js): ציוני הדרך שלו נוספים לבד למטה
     ridge: {},   // הרכס הגדול (map-ridge.js): ציוני הדרך שלו נוספים לבד למטה (crevasse, camp, pines, cliff ועוד)
     desert:{},   // המדבר הגדול (map-desert.js): ציוני הדרך שלו נוספים לבד למטה (bones, cacti, nest, lava ועוד)
-    storm: {twrW:{x:-620,y:-230},twrS:{x:-380,y:430},twrE:{x:300,y:-230},rocks:{x:640,y:120},dead:{x:-560,y:-80}},
+    storm: {},   // הסערה הגדולה (map-storm.js): ציוני הדרך שלה נוספים לבד למטה
     shadow:{}   // לב הצל הגדול (map-shadow.js): ציוני הדרך שלו נוספים לבד למטה (hall, abyss, groveW, groveE, void ועוד)
   },
   // המראה בתלת-ממד לפי המודל (look ב-WNPC.list)
@@ -36,7 +36,7 @@ const QBOARD={
   streak:5,          // כל כמה משימות מהלוח יש בונוס
   bonus:{gem:1,essence:3},
   // איפה הלוח: באחו ליד השער לכפר, ובשאר האזורים ליד השער שממנו נכנסים
-  at:{meadow:{x:110,y:-1740},lake:{x:150,y:-1690},ridge:{x:-380,y:-1760},desert:{x:-120,y:-1140},shadow:{x:-140,y:-1700},other:{x:-90,y:-520}},
+  at:{meadow:{x:110,y:-1740},lake:{x:150,y:-1690},ridge:{x:-380,y:-1760},desert:{x:-120,y:-1140},storm:{x:150,y:-1690},shadow:{x:-140,y:-1700},other:{x:-90,y:-520}},
   // מה האזור מציע: משאבים לאסוף (כמה בבסיס), ומשאב בפרס
   regs:{
     meadow:{res:{wood:15,stone:12,copper:5,herb:6},prize:'iron',fish:true},

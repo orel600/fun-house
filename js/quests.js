@@ -129,11 +129,11 @@ const QUESTS={
     {id:'sqGlass2',giver:'glass',kind:'world',obj:[{type:'visit',what:'desert:lava',n:1}],reward:{xp:200,coins:60},req:{quest:'sqGlass1'}},
     {id:'sqGlass3',giver:'glass',kind:'world',obj:[{type:'gather',what:'rubyC',n:5},{type:'meet',what:'caravan',n:1}],reward:{xp:260,gem:1},req:{quest:'sqGlass2'}},
     // מגדלי הסערה: מרן שומרת המגדלים ופיפ רודף הסערות
-    {id:'sqKeep1',giver:'keeper',kind:'world',obj:[{type:'visit',what:'storm:twrW',n:1},{type:'visit',what:'storm:twrS',n:1},{type:'visit',what:'storm:twrE',n:1}],reward:{xp:260,coins:80}},
+    {id:'sqKeep1',giver:'keeper',kind:'world',obj:[{type:'visit',what:'storm:knights',n:1},{type:'visit',what:'storm:spire',n:1},{type:'visit',what:'storm:watch',n:1}],reward:{xp:260,coins:80}},
     {id:'sqKeep2',giver:'keeper',kind:'world',obj:[{type:'kill',what:'stormknight',n:10}],reward:{xp:290,silver:4},req:{quest:'sqKeep1'}},
-    {id:'sqKeep3',giver:'keeper',kind:'world',obj:[{type:'hold',what:'storm:twrS',n:35}],reward:{xp:340,boltC:2,item:'sqLodestone'},req:{quest:'sqKeep2'}},
+    {id:'sqKeep3',giver:'keeper',kind:'world',obj:[{type:'hold',what:'storm:spire',n:35}],reward:{xp:340,boltC:2,item:'sqLodestone'},req:{quest:'sqKeep2'}},
     {id:'sqChase1',giver:'chaser',kind:'world',obj:[{type:'kill',what:'sparkwisp',n:12}],reward:{xp:270,boltC:2}},
-    {id:'sqChase2',giver:'chaser',kind:'world',obj:[{type:'visit',what:'storm:rocks',n:1},{type:'visit',what:'storm:dead',n:1}],reward:{xp:280,coins:80},req:{quest:'sqChase1'}},
+    {id:'sqChase2',giver:'chaser',kind:'world',obj:[{type:'visit',what:'storm:rods',n:1},{type:'visit',what:'storm:ash',n:1}],reward:{xp:280,coins:80},req:{quest:'sqChase1'}},
     {id:'sqChase3',giver:'chaser',kind:'world',obj:[{type:'gather',what:'boltC',n:5}],reward:{xp:300,gem:1},req:{quest:'sqChase2'}},
     {id:'sqChase4',giver:'chaser',kind:'world',obj:[{type:'collect',what:'dust',n:6},{type:'meet',what:'keeper',n:1}],reward:{xp:280,essence:4},req:{quest:'sqChase3'}},
     // לב הצל: נושא הכלים האבוד ולומי מדליקת הפנסים
