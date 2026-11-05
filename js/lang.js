@@ -824,21 +824,13 @@ const TEXT={
   'ev.cart':{he:'🛒 עגלת סוחר התהפכה בדרך!',en:'🛒 A merchant cart overturned nearby!'},'ev.cartDone':{he:'מה שנפל מהעגלה שלך',en:'The spilled goods are yours'},
   'ev.rain':{he:'✨ מטר רסיסים!',en:'✨ A shower of shards!'},'ev.rainDone':{he:'המטר נגמר',en:'The shower is over'},
   // אויבים מיוחדים בעולם (affix.js)
-  // ---- אתגר יומי (challenge.js). ch.r.<id>: [שם, יתרון וחיסרון] ----
+  // ---- המשימה של היום (mutation.js, היה challenge.js). שמות החוקים תחת mut.r ----
   'ch.title':{he:'אתגר יומי',en:'Daily challenge'},
   'ch.sub':{he:'חוק מיוחד בעולם, עד חצות',en:'A special rule in the world, until midnight'},
   'ch.goal':{he:n=>'להפיל '+n+' אויבים בעולם',en:n=>'Defeat '+n+' enemies in the world'},
-  'ch.intro':{he:'נפתח: אתגר יומי! כל יום חוק אחר בעולם, ופרס ביומן',en:'Unlocked: daily challenge! A new rule in the world each day, and a reward in the log'},
   'ch.done':{he:'האתגר היומי הושלם! הפרס מחכה ביומן בכפר',en:'Daily challenge complete! Your reward waits in the village log'},
   'ch.claimed':{he:'פרס האתגר היומי!',en:'Daily challenge reward!'},
   'ch.home':{he:'לאסוף בכפר',en:'Collect in the village'},
-  'ch.r.swift':{he:['יום הרוח','כל האויבים מהירים, אבל השלל כפול'],en:['Day of Wind','All enemies are fast, but loot is doubled']},
-  'ch.r.elite':{he:['יום הגיבורים','אויבים מיוחדים בכל מקום, וכל אחד מפיל מטבעות'],en:['Day of Champions','Special enemies everywhere, and each drops coins']},
-  'ch.r.fire':{he:['יום האש','רק אש פוגעת חזק. כל השאר חלש'],en:['Day of Fire','Only fire hits hard. Everything else is weak']},
-  'ch.r.storm':{he:['יום הסערה','רק ברק פוגע חזק. כל השאר חלש'],en:['Day of Storms','Only lightning hits hard. Everything else is weak']},
-  'ch.r.giants':{he:['יום הענקים','האויבים ענקיים וחזקים, ומפילים הרבה מטבעות'],en:['Day of Giants','Enemies are huge and tough, and drop lots of coins']},
-  'ch.r.glass':{he:['יום הזכוכית','האויבים נופלים מהר, אבל מכים חזק'],en:['Day of Glass','Enemies fall fast, but hit hard']},
-  'ch.r.gold':{he:['בהלה לזהב','כל אויב מפיל מטבעות, אבל הם מכים חזק יותר'],en:['Gold Rush','Every enemy drops coins, but they hit harder']},
   // מוטציה יומית (mutation.js): [שם, מה קורה היום]. הפס בכניסה לעולם, ובחלון "בזמן שלא היית"
   'mut.today':{he:'היום בעולם:',en:'Today:'},
   'mut.wel':{he:'היום בעולם:',en:'Today in the world:'},
@@ -853,6 +845,9 @@ const TEXT={
   'mut.r.thirst':{he:['יום הצמא','החיים חוזרים לאט'],en:['Day of Thirst','Health comes back slowly']},
   'mut.r.swarm':{he:['יום הנחיל','הרבה אויבים קטנים וחלשים'],en:['Day of the Swarm','Lots of small, weak enemies']},
   'mut.r.frost':{he:['יום הכפור','קרח חזק יותר, והאויבים איטיים'],en:['Day of Frost','Ice hits harder, and enemies are slow']},
+  'mut.r.swift':{he:['יום הרוח','כל האויבים מהירים, אבל יש יותר שלל'],en:['Day of Wind','All enemies are fast, but there is more loot']},
+  'mut.r.elite':{he:['יום הגיבורים','אויבים מיוחדים בכל מקום'],en:['Day of Champions','Special enemies everywhere']},
+  'mut.r.glass':{he:['יום הזכוכית','האויבים נופלים מהר, אבל מכים חזק'],en:['Day of Glass','Enemies fall fast, but hit hard']},
   'fai.leader':{he:'מנהיג הלהקה',en:'Pack Leader'},'fai.leaderCome':{he:'👑 להקה עם מנהיג מתקרבת!',en:'👑 A pack leader approaches!'},'fai.leaderDown':{he:'👑 המנהיג הופל! ערימת שלל',en:'👑 Leader down! Loot pile'},
   'af.fast':{he:'מהיר',en:'Swift'},'af.tough':{he:'משוריין',en:'Armored'},'af.burst':{he:'מתפוצץ',en:'Volatile'},'af.split':{he:'מתפצל',en:'Splitting'},'af.regen':{he:'מתחדש',en:'Regenerating'},'af.shell':{he:'מגן יסודות',en:'Elemental Shield'},
   // שומרים חוזרים (story.js, STORY.rematch)

@@ -2,13 +2,18 @@
    החוק נבחר לפי התאריך, ולכן ניר ואוראל מקבלים אותו חוק באותו יום. היום קשה יותר, ולכן גם משלם יותר: XP ושלל.
    כל חוק הוא שורה ב-MUTATION.rules, ומשתמש במה שכבר יש: מצבים מ-dmg.js (רטוב, בוער), שילובים (skills.js, wcombo.js), המבוקש (wanted.js).
    חוקים "רעים" רק בגרסה רכה. רק בעולם הפתוח: בכפר ובזירה כלום לא משתנה.
-   שונה מהאתגר היומי (challenge.js): האתגר הוא מטרה עם פרס ביומן, והמוטציה היא מזג האוויר של העולם. ביום שהאתגר כבר עושה
-   את אותו דבר (dup), המוטציה עוברת לחוק הבא, כדי ששני החוקים לא יוכפלו.
+   איחוד (ניר, 5.11: "תאחד אותם"): כאן גם האתגר היומי, שהיה פעם challenge.js. דבר יומי אחד: החוק של היום ומשימה אחת שלו
+   (להפיל MUTATION.goal אויבים בעולם תחת החוק), באותו שבב ובאותו פס, עם פרס אחד שנאסף בכפר ביומן הקווסטים.
+   לא מענישים על פספוס: מי שהשלים ולא אסף, הפרס מחכה לו גם מחר. נשמר ב-SAVE.challenge (אותו מפתח כמו פעם, אז שמירה ישנה ממשיכה):
+   {day, n:כמה הריגות היום, got:היום שבו נאסף הפרס, owed:פרס מיום קודם שמחכה}.
+   השמות chOpen, chDay, chSave, chDone, chCan, challengeCard ו-challengeClaim נשארו, כי guide.js, quests.js ו-hunt.js קוראים להם.
    החיבורים: mutEnter ו-mutUpdate ב-worldUpdate/enterWorld, mutN ו-mutSpawn ב-wSpawn, mutK('regen') בריפוי, mutDraw ב-drawWorld (world.js),
-   mutKill ב-kill (combat.js), mutLine בחלון "בזמן שלא היית" (welcome.js). שבב קבוע ליד המטבעות בפס העליון (#mutChip) מציג שוב את הפס בנגיעה.
-   הטקסטים ב-lang.js תחת 'mut.' */
+   mutKill ב-kill (combat.js), mutSpawn גם באירועים (pacing.js), challengeCard ביומן (quests.js), mutLine בחלון "בזמן שלא היית" (welcome.js). שבב קבוע ליד המטבעות בפס העליון (#mutChip) מציג שוב את הפס בנגיעה.
+   הטקסטים ב-lang.js תחת 'mut.', והמשימה תחת 'ch.' */
 const MUTATION={
-  after:'earth',            // נפתח עם האתגר היומי, אחרי פנס האדמה (SAVE.story). לפני זה העולם רגיל
+  after:'earth',            // נפתח אחרי פנס האדמה (SAVE.story). לפני זה העולם רגיל (המבקר, 2.11: "שחקן ברמה 1 רואה רק אויבים מיוחדים")
+  goal:30,                  // המשימה של היום: כמה הריגות בעולם תחת החוק
+  reward:{coins:60,iron:4,essence:2},   // הפרס האחד של היום, למשאבים ב-RES. נאסף בכפר
   bar:{delay:0.8,dur:4.5},  // הפס בכניסה לעולם: אחרי כמה שניות, וכמה זמן הוא נשאר
   rewet:1.2,                // גשם: כמה שניות אחרי שהרטיבות נוצלה (חשמול, קיפאון) האויב רטוב שוב
   ignite:{k:0.05,t:2},      // יום אש: כל מכה מדליקה. 5% מהחיים של האויב לאורך 2 שניות
@@ -19,32 +24,71 @@ const MUTATION={
      האויב כשהוא מופיע: hp, dmg, speed, r פי כמה. n: פי כמה אויבים בכל להקה. mult: {סוג נזק: פי כמה}.
      split: אויב שנופל מתפצל ל-n קטנים (hp ו-r שלהם ביחס אליו). wet: כולם רטובים. ignite: כל מכה מדליקה.
      coins: מטבעות כפולים (עוד הגרלה של המטבעות בלבד). fog: רואים פחות רחוק. wanted: המבוקש מגיע פי כמה מהר. regen: פי כמה ריפוי.
-     dup: החוק של האתגר היומי שעושה אותו דבר */
+     affix: כל אויב מקבל תכונה מיוחדת (affix.js) */
   rules:{
     split: {icon:'🧬',split:{n:2,hp:0.3,r:0.7},xp:1.5,loot:0.3},
-    fire:  {icon:'🔥',mult:{fire:1.5},ignite:true,xp:1.3,loot:0.3,dup:'fire'},
-    rain:  {icon:'🌧️',wet:true,mult:{lightning:1.3},xp:1.3,loot:0.3,dup:'storm'},
-    giants:{icon:'🗿',n:0.6,hp:1.8,r:1.35,xp:1.6,loot:0.5,dup:'giants'},
-    gold:  {icon:'💰',coins:true,speed:1.2,xp:1.3,loot:0.2,dup:'gold'},
+    fire:  {icon:'🔥',mult:{fire:1.5},ignite:true,xp:1.3,loot:0.3},
+    rain:  {icon:'🌧️',wet:true,mult:{lightning:1.3},xp:1.3,loot:0.3},
+    giants:{icon:'🗿',n:0.6,hp:1.8,r:1.35,xp:1.6,loot:0.5},
+    gold:  {icon:'💰',coins:true,speed:1.2,xp:1.3,loot:0.2},
     fog:   {icon:'🌫️',fog:true,xp:1.4,loot:0.4},
     wanted:{icon:'🎯',wanted:3,xp:1.3,loot:0.3},
     thirst:{icon:'🩸',regen:0.4,xp:1.5,loot:0.4},     // "אין ריפוי" בגרסה רכה: הריפוי בעולם איטי יותר, לא נעלם
     swarm: {icon:'🐜',n:1.5,hp:0.55,r:0.8,xp:1.3,loot:0.3},
-    frost: {icon:'❄️',mult:{ice:1.5},speed:0.85,xp:1.2,loot:0.2}
+    frost: {icon:'❄️',mult:{ice:1.5},speed:0.85,xp:1.2,loot:0.2},
+    swift: {icon:'💨',speed:1.4,xp:1.3,loot:0.6},       // מהאתגר היומי: כולם מהירים, ושלל רב
+    elite: {icon:'👑',affix:true,xp:1.4,loot:0.4},      // מהאתגר היומי: אויבים מיוחדים בכל מקום
+    glass: {icon:'🔮',hp:0.5,dmg:1.8,xp:1.2,loot:0.3}   // מהאתגר היומי: נופלים מהר, אבל מכים חזק
   }
 };
 const MUT={force:null,xpAcc:0,bar:null,hide:0};   // force: חוק קבוע (לבוט). xpAcc: שברי XP שמצטברים. bar: החוק שהפס מציג עכשיו
 
 const mutDay=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
 const mutOpen=()=>!!(SAVE.story&&SAVE.story[MUTATION.after]);
-// החוק של התאריך: אותו חוק לכולם. day: לבדיקה בבוט. ביום שהאתגר עושה אותו דבר, החוק הבא ברשימה
+// החוק של התאריך: אותו חוק לכולם. day: לבדיקה בבוט
 function mutRule(day=mutDay()){
   if(MUT.force)return MUT.force;
   let h=0x9e37;for(const c of day)h=(h*37+c.charCodeAt(0))>>>0;
-  const ids=Object.keys(MUTATION.rules);let i=h%ids.length;
-  const ch=typeof chRule==='function'&&typeof chOpen==='function'&&chOpen()?chRule(day):null;
-  if(ch&&MUTATION.rules[ids[i]].dup===ch)i=(i+1)%ids.length;
-  return ids[i];
+  const ids=Object.keys(MUTATION.rules);return ids[h%ids.length];
+}
+
+/* ---- המשימה של היום (היה challenge.js) ---- */
+const chOpen=mutOpen,chDay=mutDay;
+// השמירה. יום חדש מאפס את ההתקדמות, ופרס שהושלם ולא נאסף נשמר כ-owed
+function chSave(day=mutDay()){
+  const c=SAVE.challenge||(SAVE.challenge={day,n:0,got:'',owed:false});
+  if(c.day!==day){if(c.n>=MUTATION.goal&&c.got!==c.day)c.owed=true;c.day=day;c.n=0}
+  return c;
+}
+const chDone=()=>!mutOpen()||chSave().n>=MUTATION.goal;   // סגור או הושלם: אין מה להציע (guide.js)
+const chCan=()=>{if(!mutOpen())return false;const c=chSave();return c.owed||c.n>=MUTATION.goal&&c.got!==c.day};
+// לוקחים את הפרס (בכפר). מחזיר true אם נאסף
+function challengeClaim(){
+  if(!S.vil||!chCan())return false;
+  const c=chSave();
+  if(c.owed)c.owed=false;else c.got=c.day;
+  for(const r in MUTATION.reward)bagAdd(r,MUTATION.reward[r]);
+  saveNow();celebrate(P.x,P.y-10,'quest',MUTATION.rules[mutRule()].icon);
+  banner(T('ch.claimed'),C.gold);return true;
+}
+// הכרטיס ביומן הקווסטים (questLog ב-quests.js): החוק, המשימה והפרס
+function challengeCard(){
+  if(!mutOpen())return'';
+  const c=chSave(),id=mutRule(),R=MUTATION.rules[id],[name,say]=T('mut.r.'+id),can=chCan();
+  let h='<h4>'+R.icon+' '+T('ch.title')+'</h4><div class="qc chc'+(can?' ready':'')+'"><b>'+name+'</b><small>'+T('ch.sub')+'</small><p class="say">'+say+' · '+T('mut.bonus',R.xp)+'</p>';
+  h+='<ul><li>'+T('ch.goal',MUTATION.goal)+' <em>'+Math.min(c.n,MUTATION.goal)+'/'+MUTATION.goal+'</em></li></ul>';
+  h+='<div class="qrow"><div class="cost">'+qRewardLine(MUTATION.reward)+'</div>';
+  if(can)h+=S.vil?'<button class="vbtn" data-act="chClaim">'+T('q.claim')+'</button>':'<p class="next">'+T('ch.home')+'</p>';
+  else if(c.got===c.day)h+='<p class="next">'+T('q.doneToday')+'</p>';
+  return h+'</div></div>';
+}
+$('qLog').addEventListener('click',e=>{const b=e.target.closest('[data-act="chClaim"]');if(b&&challengeClaim())questLog()});
+// ההתקדמות: מספר קטן על השבב, וטקסט ב-#chTag (מוסתר בפס העליון, ומוצג במפה ב-worldmap.js)
+const mutProg=()=>{const c=chSave();return c.n>=MUTATION.goal?'✓':Math.min(c.n,MUTATION.goal)+'/'+MUTATION.goal};
+function mutHud(){
+  const R=mutNow(),tag=$('chTag'),b=$('mutChip');
+  if(tag){tag.hidden=!R;if(R)tag.textContent=R.icon+' '+mutProg()}
+  if(b&&R){const p=b.querySelector('.mprog');if(p)p.textContent=mutProg()}
 }
 // החוק שפועל עכשיו, או null: רק בעולם, לא בחדר בונוס, ורק אחרי שנפתח
 const mutNow=()=>S&&S.wd&&!S.room&&mutOpen()?MUTATION.rules[mutRule()]:null;
@@ -60,11 +104,13 @@ function mutSpawn(e){
   if(R.speed)e.speed*=R.speed;
   if(R.r)e.r*=R.r;
   if(R.dmg)e.dmg*=R.dmg;
+  if(R.affix&&!e.affix){const ids=Object.keys(AFFIX.list);affixSet(e,ids[Math.floor(Math.random()*ids.length)])}
   if(R.mult){const m=Object.assign({},e.mult);for(const t in R.mult)m[t]=(m[t]??1)*R.mult[t];e.mult=m}   // עותק: המכפילים של הסוג משותפים לכל האויבים מהסוג
 }
-// אויב שנפל (kill ב-combat.js): פרס מוגדל, ומתפצלים
+// אויב שנפל (kill ב-combat.js): נספר למשימה, פרס מוגדל, ומתפצלים
 function mutKill(e){
   const R=mutNow();if(!R||e.node||e.isBoss||e.dummy)return;
+  if(e.mut&&!e.mutKid){const c=chSave();if(c.n<MUTATION.goal){c.n++;if(c.n===MUTATION.goal){banner(T('ch.done'),C.gold);celebrate(P.x,P.y-10,'quest',R.icon);saveNow()}mutHud()}}
   if(R.xp>1&&SAVE.hero){MUT.xpAcc+=(e.xp||1)*STATS.xp.kill*(R.xp-1);const n=Math.floor(MUT.xpAcc);if(n>0){MUT.xpAcc-=n;SAVE.hero.xp=(SAVE.hero.xp||0)+n;rankSync()}}
   if(R.loot&&Math.random()<R.loot)runGive(dropTable(e),e.x,e.y);
   if(R.coins){const D=dropTable(e);if(D&&D.coins)runGive({coins:D.coins},e.x,e.y)}
@@ -101,7 +147,7 @@ function mutBarEl(){let el=$('mutBar');if(!el){el=document.createElement('div');
 function mutShowBar(){
   if(!S.wd||!mutNow())return;
   const id=mutRule(),R=MUTATION.rules[id],el=mutBarEl();clearTimeout(MUT.hide);
-  el.innerHTML='<span class="mpic">'+R.icon+'</span><div><b><small>'+T('mut.today')+'</small> '+mutName(id)+'</b><p>'+T('mut.r.'+id)[1]+' · '+T('mut.bonus',R.xp)+'</p></div>';
+  el.innerHTML='<span class="mpic">'+R.icon+'</span><div><b><small>'+T('mut.today')+'</small> '+mutName(id)+' · 🎯 '+mutProg()+'</b><p>'+T('mut.r.'+id)[1]+' · '+T('mut.bonus',R.xp)+'</p></div>';
   el.hidden=false;void el.offsetWidth;el.classList.add('on');MUT.bar=id;
   MUT.hide=setTimeout(()=>{el.classList.remove('on');MUT.bar=null},MUTATION.bar.dur*1000);
 }
@@ -115,8 +161,8 @@ function mutChipEl(){
 function mutEnter(){
   MUT.bar=null;clearTimeout(MUT.hide);const el=mutBarEl();el.classList.remove('on');el.hidden=true;
   const R=mutNow(),b=mutChipEl();b.hidden=!R;
-  if(!R)return;
-  const id=mutRule();b.textContent=R.icon;b.setAttribute('aria-label',T('mut.today')+' '+mutName(id));
+  if(!R){mutHud();return}
+  const id=mutRule();b.innerHTML=R.icon+'<span class="mprog"></span>';mutHud();b.setAttribute('aria-label',T('mut.today')+' '+mutName(id));
   setTimeout(()=>{if(S.wd&&S.mode==='play'&&mutRule()===id)mutShowBar()},MUTATION.bar.delay*1000);
 }
 // שורה בחלון "בזמן שלא היית" (welcome.js): מה מחכה היום בעולם
@@ -130,7 +176,8 @@ const mutLine=()=>mutOpen()?'<p class="welmut">'+T('mut.wel')+' '+mutText()+' ·
   '.mutbar b{display:block;font-size:13px;color:#F4C74F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mutbar small{color:#C9A24A;font-weight:700;font-size:10px}'+
   '.mutbar p{margin:0;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'+
   '.mutchip{pointer-events:auto;cursor:pointer;flex:none;width:30px;height:30px;padding:0;border-radius:50%;font-size:17px;line-height:1;'+
-  'background:linear-gradient(#4A3322,#2C1E14);border:1.5px solid #C9A24A;box-shadow:0 2px 5px #0008;display:flex;align-items:center;justify-content:center}'+
+  'background:linear-gradient(#4A3322,#2C1E14);border:1.5px solid #C9A24A;box-shadow:0 2px 5px #0008;display:flex;align-items:center;justify-content:center;position:relative}'+
+  '.mutchip .mprog{position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);padding:0 3px;border-radius:6px;background:#2C1E14;border:1px solid #C9A24A;color:#F4C74F;font:700 8px Heebo,system-ui,sans-serif;line-height:11px;white-space:nowrap}'+
   '.mutchip[hidden]{display:none}'+
   '.welmut{margin:6px 0 0;font-size:12px;color:#C9A24A;text-align:center}';
   document.head.appendChild(st)})();
