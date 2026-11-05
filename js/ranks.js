@@ -7,7 +7,9 @@
 
 const RANKS={
   every:20,                 // כל כמה רמות דמות נפתחת עלייה בדרגה
-  xp:{base:50,per:15,run:0.5},   // XP לרמה הבאה: base+per*רמה. run: איזה חלק מה-XP של ריצה בזירה נשאר לדמות
+  /* XP לרמה הבאה: base+per*רמה, ומרמה late.from עוד late.k*(רמה-from)^late.pow, כדי שהרמות הגבוהות ייקחו זמן (ת11, docs/plan-longevity.md).
+     max: הרמה הכי גבוהה. run: איזה חלק מה-XP של ריצה בזירה נשאר לדמות */
+  xp:{base:50,per:15,run:0.5,max:100,late:{from:40,k:1,pow:2}},   // סך הכל: כ-14 אלף XP עד רמה 40, וכ-150 אלף עד 100. ת12 (tools/playtime.js) מכוונן
   pick:{mix:0.35,guard:0.5},     // mix: מאיזה חלק מהנזק הנשק השני נחשב ערבוב. guard: מאיזה חלק מזמן הריצות עם חפץ הגנה זה שומר
   /* מראה בתלת-ממד: חלקים שכבר יש במודלים של KayKit (Knight_Cape, Mage_Hat...), לפי הסוף של השם. חלק שאין במודל (למשל בדמות של ניר) פשוט לא נוגעים בו.
      bare: מה מוסתר לפני הדרגה הראשונה. look.show: מה נדלק בדרגה. look.glow: זוהר בצבע הדרגה על החלקים האלה (0 עד 1).
@@ -27,11 +29,15 @@ const rankId=()=>RANKS.list[SAVE.hero.rankId]?SAVE.hero.rankId:null;
 const rankName=id=>T('rank.'+id);
 
 /* ---- רמת הדמות ---- */
-const rankNeed=lv=>RANKS.xp.base+RANKS.xp.per*lv;   // כמה XP מרמה lv לרמה הבאה
+// כמה XP מרמה lv לרמה הבאה. ברמה המקסימלית: אין רמה הבאה (Infinity, וגם הלולאות כאן וב-stats.js נעצרות שם)
+function rankNeed(lv){const X=RANKS.xp,L=X.late;if(lv>=X.max)return Infinity;
+  return X.base+X.per*lv+(lv>L.from?Math.round(L.k*Math.pow(lv-L.from,L.pow)):0)}
+// כמה XP בסך הכל צריך כדי להגיע לרמה lv
+function rankXpAt(lv){let x=0;for(let l=1;l<lv;l++)x+=rankNeed(l);return x}
 function rankLevelOf(xp){let lv=1;while(xp>=rankNeed(lv)){xp-=rankNeed(lv);lv++}return lv}
 // אחרי כל שינוי ב-SAVE.hero.xp: הרמה מתעדכנת, ועלייה מקבלת באנר
 function rankSync(){
-  const lv=rankLevelOf(SAVE.hero.xp||0);
+  rankFix();const lv=rankLevelOf(SAVE.hero.xp||0);
   if(lv>SAVE.hero.level){const from=SAVE.hero.level;SAVE.hero.level=lv;lpLevelUp(from,lv);   // הרגע הגדול וכרטיס של מה שנפתח (levelpath.js)
     statBadge();if(P&&S&&S.mode==='play')celebrate(P.x,P.y-20,'rank');const E=RANKS.every;if(Math.floor(lv/E)>Math.floor(from/E))rankCall(Math.floor(lv/E)*E)}   // גם כשקפצת כמה רמות בבת אחת
 }
@@ -45,6 +51,9 @@ function rankCall(lv){
   if(P)celebrate(P.x,P.y-20,'rank','🎖️');
   return true;
 }
+// שחקן קיים לא מאבד רמות כשהעקומה משתנה: ה-XP שלו עולה לתחילת הרמה שכבר יש לו, והעקומה החדשה חלה מכאן. מ-rankSync ו-rankReset, פעם אחת
+function rankFix(){const h=SAVE.hero;if(!h||h.xpv>=2)return;h.xpv=2;   // xpv: פעם אחת, במעבר לעקומה של ת11
+  if(rankLevelOf(h.xp||0)<(h.level||1)){h.level=Math.min(h.level,RANKS.xp.max);h.xp=Math.max(h.xp||0,rankXpAt(h.level))}}
 // בסוף ריצה (runEnd ב-village.js): חלק מה-XP של הריצה נשאר
 function rankRunXp(){const v=Math.round((S.xpRun||0)*RANKS.xp.run);if(v>0){SAVE.hero.xp=(SAVE.hero.xp||0)+v;rankSync()}}
 
@@ -68,7 +77,7 @@ function rankUp(tier){
   return id;
 }
 // בתחילת כל ריצה (ובכפר): הבונוס של הדרגה. נקרא מ-heroReset
-function rankReset(){const R=RANKS.list[rankId()];if(R)gApply(R.bonus,1)}
+function rankReset(){rankFix();const R=RANKS.list[rankId()];if(R)gApply(R.bonus,1)}
 
 // בממשק: הדרגה הנוכחית, למשל "⚔️ אביר"
 const rankLabel=()=>{const id=rankId();return id?RANKS.list[id].icon+' '+rankName(id):''};
