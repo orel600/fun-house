@@ -304,6 +304,8 @@ const TEXT={
   'skp.h.melt':{he:'קרח ואש יחד: נמס',en:'Ice and fire together: Melt'},
   'skp.h.any':{he:'נסה אותו על הבובות',en:'Try it on the dummies'},
   'wsb.lp':{he:n=>'סקיל: '+n,en:n=>'Skill: '+n},
+  'wsb.tome':{he:n=>'ספר קדום! נפתח סקיל: '+n,en:n=>'Ancient Tome! Skill unlocked: '+n},
+  'wsb.tome.spare':{he:'ספר קדום: כל הסקילים שלך כבר פתוחים, אז הוא נהיה זהב',en:'Ancient Tome: all your skills are open, so it turns to gold'},
   // רונות (wrunes.js)
   'wr.title':{he:'רונות',en:'Runes'},
   'wr.lp':{he:(s,r)=>'רונה ל'+s+': '+r,en:(s,r)=>s+' rune: '+r},
