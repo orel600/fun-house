@@ -2887,7 +2887,7 @@ function worldBot(m,L,god){
     enterWorld('home');const o={},g0=JSON.stringify(SAVE.gear),b0=JSON.stringify(SAVE.bag);
     for(const id of ['silverBlade','oakBow','goldAmulet','swiftBoots'])bagAdd(id,1);
     SAVE.gear.weapon='silverBlade';SAVE.gear.acc=['goldAmulet'];SAVE.gear.boots=['swiftBoots'];SAVE.gear.shield=[];R3D._hl=null;
-    let L=heroLook();o.noShield=!L.props.shield;SAVE.gear.shield=['shield3'];R3D._hl=null;L=heroLook();o.shield=!!L.props.shield&&L.props.shield.prop===gItem('shield3').look.model;o.head=!!L.g3&&!!L.g3.head;
+    let L=heroLook();o.noShield=!L.props.shield;SAVE.gear.shield=['shield3'];R3D._hl=null;L=heroLook();o.shield=!!L.props.shield&&L.props.shield.prop===itemModel('shield3');o.head=!!L.g3&&!!L.g3.head;
     if(R3D.on&&R3D.ready){P.weapon='sword';syncPlayer(0);const a=R3D.player;o.in3d=!!a.props.shield&&a.props.shield.visible;
       let g=false;a.props.sword.traverse(m=>{if(m.isMesh&&m.material.emissive.getHex())g=true});o.glow=g}else{o.in3d=true;o.glow=true}
     SAVE.gear.weapon='oakBow';R3D._hl=null;L=heroLook();o.noBow=!L.props.shield;

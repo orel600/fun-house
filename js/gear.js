@@ -37,7 +37,7 @@ const GEAR={
     starStaff:  {slot:'weapon',tier:4,w:'staff',icon:'🌟',stats:{gdmg:85,magnet:25,regen:0.6},look:{model:'w_staff_B',glow:'#FF6FB5'}},
     ironAxe:    {slot:'weapon',tier:1,w:'axe',icon:'🪓',stats:{sdmg:24},look:{model:'w_axe_A'}},
     goldAxe:    {slot:'weapon',tier:3,w:'axe',icon:'🪓',stats:{sdmg:60,hp:15},look:{model:'w_axe_B',glow:C.gold}},
-    dragonBlade:{slot:'weapon',tier:4,w:'sword',icon:'⚔️',stats:{sdmg:85,speed:6},look:{model:'w_item_dragonBlade',glow:'#FF6FB5'}},
+    dragonBlade:{slot:'weapon',tier:4,w:'sword',icon:'⚔️',stats:{sdmg:85,speed:6},look:{model:'w_sword_E',glow:'#FF6FB5'}},
     skyBow:     {slot:'weapon',tier:4,w:'bow',icon:'🏹',stats:{gdmg:85,speed:6},look:{model:'w_bow_B_withString',glow:'#FF6FB5'}},
     boneCharm:  {slot:'acc',tier:0,icon:'🦴',stats:{hp:15}},
     ironRing:   {slot:'acc',tier:1,icon:'💍',stats:{regen:1}},
