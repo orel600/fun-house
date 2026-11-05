@@ -339,7 +339,7 @@ function wFoes(dt){
     for(const e of enemies)if(e.home===i&&!e.dead&&!e.wanted&&!e.warden&&!e.evt&&!e.pack&&!e.nem&&!e.hunt&&!(e.alert>0))e.dead=true;
     g.lazy=1;alive[i]=0});
   FO.forEach((G,i)=>{const g=S.wd.groups[i];if(alive[i]||!ETYPES[G.type])return;
-    if(g.lazy){if(Math.hypot(P.x-G.x,P.y-G.y)<TERRAIN.wake&&paceRoom(G.n)){g.lazy=0;wSpawn(G,i)}return}   // paceRoom: לא עוברים את מגבלת האויבים (PACE.cap)   // עוד לא נוצרה: רק כשמתקרבים
+    if(g.lazy){if(Math.hypot(P.x-G.x,P.y-G.y)<TERRAIN.wake&&paceRoom(G.n+TERRAIN.room)){g.lazy=0;wSpawn(G,i)}return}   // paceRoom: לא עוברים את מגבלת האויבים (PACE.cap)   // עוד לא נוצרה: רק כשמתקרבים
     if(g.t<=0)g.t=wZone(G).back;else if((g.t-=dt)<=0&&paceRoom(G.n)&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+Math.max(WORLD.far,Math.hypot(W,H)/2)){wSpawn(G,i);g.n=(g.n||0)+1}else g.t=Math.max(g.t,0.01)});
 }
 
