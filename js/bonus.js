@@ -35,7 +35,7 @@ function bonusUpdate(dt){
   }
   // פריטים במקומות קשים
   bn.pickT-=dt;
-  if(bn.pickT<=0&&bn.picks.length<2){bn.pickT=rand(...BONUS.pickEvery);spawnPick()}
+  if(bn.pickT<=0&&bn.picks.length<2&&!S.bd){bn.pickT=rand(...BONUS.pickEvery);spawnPick()}   // לא בזירת בוסים (S.bd): שם דו-קרב בלי ליווי, והשומרים של הפריט הופיעו בהפסקה בין בוסים
   for(const k of bn.picks){
     k.life-=dt;k.ph+=dt;
     const d=Math.hypot(P.x-k.x,P.y-k.y);
