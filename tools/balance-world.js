@@ -14,8 +14,10 @@ const opt=k=>{const i=args.indexOf('--'+k);if(i<0)return null;const v=args[i+1];
 const BAL={
   cls:(opt('cls')||'warrior,hunter,mage').split(','),
   seed:+(opt('seed')||7),
-  cap:+(opt('cap')||900),          // שניות משחק לפרק
-  wardenCap:300,                   // מתוכן, לכל היותר לקרב בשומר
+  cap:+(opt('cap')||1200),          // שניות משחק לפרק
+  wardenCap:600,
+  only:+(opt('chapters')||0),      // רק הפרקים הראשונים (--chapters 1: רק האחו ושומר האדמה)
+  travel:60,                       // שניות בשלב השומר בלי להגיע למאורה, ואז קופצים אליה (ראה למטה)                   // מתוכן, לכל היותר לקרב בשומר
   fights:+(opt('fights')||1),      // כמה פעמים להפיל כל שומר, כדי להוריד את הרעש (--fights 10). אחרי כל ניצחון: חיים מלאים, והשומר קם שוב
   dodge:opt('nododge')?0:1,        // הבוט יוצא מעיגולי ברק ומעיגול רקיעה, כמו שחקן שרואה את הסימן (--nododge: עומד במקום)
   step:250,                        // כל כמה מילישניות משחק הבוט מחליט
@@ -30,7 +32,7 @@ const BAL={
 
 /* ---- הבוט, בתוך הדף ---- */
 function install(B){
-  const m=window.__bal={B,ch:0,ph:'grind',gt:0,chT:0,wT:0,rep:{ch:[],dmg:{},casts:{},block:{},noPay:{},deaths:0,errors:[]},lastMg:0,lastSw:0,swI:0,dead:0};
+  const m=window.__bal={B,ch:0,ph:'grind',gt:0,chT:0,wT:0,rep:{ch:[],hurtBy:{},dmg:{},casts:{},block:{},noPay:{},deaths:0,errors:[]},lastMg:0,lastSw:0,swI:0,dead:0};
   const R=m.rep;
   // נזק: כל מכה נמדדת לפי מקור. סקיל מהספר דרך wsbHit, סקיל של הזירה לפי סוג הנזק, והשאר לפי הנשק
   const OLD={earth:'quake',lightning:'zap',water:'splash',ice:'frost',fire:'flame'};
@@ -42,6 +44,9 @@ function install(B){
   // הזמן: הבוט מריץ את הפריימים בעצמו (frameStep ב-main.js), 0.05 שניות כל אחד, בלי השעון המזויף שמאט פי מאה.
   // זמן המשחק נספר רק בעולם, כדי שההמתנה אחרי מוות (setTimeout אמיתי) לא תיספר
   frame=function(){};
+  // מה פוגע בשחקן בקרב בשומר: לפי הפונקציה שקראה ל-hurt (יריות, טבעות, עיגולים, רקיעה, מגע)
+  const hu=hurt;hurt=function(d){const h0=P.hp,r=hu.apply(this,arguments);if(m.ph==='warden'&&S.wd){const ln=(new Error().stack.split('\n')[2]||''),fn=(ln.match(/at (\w+)/)||[])[1]||'?';
+    const c=R.hurtBy[m.ch]||(R.hurtBy[m.ch]={});c[fn]=(c[fn]||0)+Math.max(0,h0-P.hp)}return r};
   if(typeof giantLoot==='function')giantLoot=function(){};   // שלל של ניצחון חוזר: לא, כדי שהציוד לא ישתפר בין קרב לקרב
   window.__balRun=n=>{let r={};for(let i=0;i<n&&!r.done;i++){last=performance.now()-50;frameStep(performance.now());if(S.wd)m.gt+=0.05;if(i%5===0)r=step()}return r};
   function chap(){return B.chapters[m.ch]}
@@ -85,10 +90,10 @@ function install(B){
   function finish(ok,why){const c=cRep();c.t=Math.round(m.gt-m.chT);c.lv1=heroLv();c.ok=ok;if(why)c.why=why;c.coins=SAVE.bag.coins||0;
     c.gear=[SAVE.gear.weapon].concat(SAVE.gear.acc||[],SAVE.gear.boots||[],SAVE.gear.body||[]).filter(Boolean).join(' ');
     c.sk=Object.entries(SAVE.sklv||{}).map(([k,v])=>k+'+'+v).join(' ');
-    if(ok)STO()[chap().k]=true;saveNow();m.ch++;m.ph='grind';m.chT=m.gt;m.wT=0;m.kc=0;joy=null;
+    if(ok)STO()[chap().k]=true;saveNow();m.ch++;m.ph='grind';m.jumped=0;m.chT=m.gt;m.wT=0;m.kc=0;joy=null;
     if(S.wd){worldUi(false);enterVillage()}}
   function step(){
-    if(m.ch>=B.chapters.length)return{done:true,R};
+    if(m.ch>=B.chapters.length||B.only&&m.ch>=B.only)return{done:true,R};   // --chapters N: רק N הפרקים הראשונים (בדיקה מהירה)
     const now=m.gt,c=cRep(),vis=id=>!$(id).hidden;
     if(vis('ovWDeath')){$('wRespawn').click();return{}}
     if(S.wd&&S.mode==='over'){if(!m.dead){m.dead=1;R.deaths++;c.deaths++;if(m.ph==='warden')c.wDeaths=(c.wDeaths||0)+1}return{}}
@@ -114,15 +119,25 @@ function install(B){
         if(f.length<B.fights){P.hp=P.maxHp;S.wd.marks=[];S.wd.rings=[];if(STO().bt)delete STO().bt[chap().k];P.x=L.x;P.y=L.y+GIANT.lair+700;return{}}   // שוב: מתרחקים, והשומר קם כשחוזרים
         c.wardenT=Math.round(now-m.wT);c.fightT=Math.round(f.reduce((a,b)=>a+b,0)/f.length*10)/10;c.wLv=heroLv();finish(true);return{}}
       // הענק קם לבד כשמתקרבים (giant.js). הטיימר מניצחון מקרי בזמן הטיפוס לא נספר: מאפסים אותו
-      if(m.wE&&m.wE.gone)m.wE=null;if(STO().bt)delete STO().bt[chap().k];
+      if(m.wE&&m.wE.gone)m.wE=null;
+      // המדידה היא של הקרב, לא של הדרך: מי שלא הגיע למאורה תוך travel שניות (באחו הגדול הבוט נתקע בלהקות ובורח) קופץ ליד המאורה
+      if(!w.warden&&now-m.wT>B.travel&&Math.hypot(P.x-L.x,P.y-L.y)>L.warden.wake&&!m.jumped){m.jumped=1;c.jump=1;const ly=L.y+(typeof GIANT!=='undefined'?GIANT.lair:70);
+        for(const [ox,oy] of [[0,320],[320,0],[-320,0],[0,-320],[230,230],[-230,230],[230,-230],[-230,-230]])if(typeof tBlocked!=='function'||!tBlocked(L.x+ox,ly+oy)){P.x=L.x+ox;P.y=ly+oy;break}}if(STO().bt)delete STO().bt[chap().k];
       if(!w.warden&&typeof giantReady!=='function'&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake)storyWarden(chap().k,L.y+70);   // גרסה ישנה (לפני הטיימר): קם רק עם קווסט, אז מקימים ביד
       if(w.warden&&!w.warden.dead&&m.wE!==w.warden){m.wE=w.warden;m.wS=now;c.tries=(c.tries||0)+1}}
     // קרב: לחיים נמוכים בורחים. אחרת אל האויב הקרוב (או השומר), עד הטווח של הנשק
     const F=foes(),near=F.reduce((b,e)=>{const d=Math.hypot(e.x-P.x,e.y-P.y);return d<b.d?{e,d}:b},{e:null,d:1e9});
     const melee=P.weapon==='sword',stop=melee?28:150;
-    const mk=B.dodge&&(w.marks||[]).find(M=>M.t>0&&Math.hypot(P.x-M.x,P.y-M.y)<STORY.lanterns[M.k].warden.marks.r+P.r+10),
+    const mk=B.dodge&&(w.marks||[]).find(M=>M.t>0&&Math.hypot(P.x-M.x,P.y-M.y)<(M.mk||STORY.lanterns[M.k].warden.marks).r+P.r+10),
       sl=B.dodge&&w.warden&&w.warden.tel&&w.warden.tel.kind==='slam'&&Math.hypot(P.x-w.warden.tel.x,P.y-w.warden.tel.y)<(w.warden.pw||L.warden).slam.r+P.r+10?w.warden.tel:null;
-    if(mk||sl){const o=mk||sl;steer(o.x,o.y,true,0)}   // יוצאים מהסימן על הרצפה
+    // עיגול שמתקרב מכמה כיוונים: בורחים מכולם יחד (סכום הכיוונים), לא מאחד אל תוך אחר
+    let vx=0,vy=0;if(B.dodge)for(const M of (w.marks||[])){if(M.t<=0)continue;const r=(M.mk||STORY.lanterns[M.k].warden.marks).r+P.r+30,dx=P.x-M.x,dy=P.y-M.y,d=Math.hypot(dx,dy)||1;
+      if(d<r){const k=(r-d)/r+0.3;vx+=dx/d*k;vy+=dy/d*k}}
+    // טבעת אש שמתקרבת: הולכים אל הפתח שלה, באותו מרחק מהמרכז
+    const rg=B.dodge&&(w.rings||[]).find(R=>{const d=Math.hypot(P.x-R.x,P.y-R.y),rr=R.rg||STORY.lanterns[R.k].warden.ring;return !R.hit&&d>R.rad&&d-R.rad<90&&d<rr.max+20});
+    if(vx||vy)steer(P.x+vx*100,P.y+vy*100,false,0);
+    else if(sl)steer(sl.x,sl.y,true,0);   // יוצאים מעיגול הרקיעה
+    else if(rg){const d=Math.hypot(P.x-rg.x,P.y-rg.y);steer(rg.x+Math.cos(rg.gap)*d,rg.y+Math.sin(rg.gap)*d,false,4)}
     else if(P.hp<P.maxHp*B.flee&&near.e&&near.d<320){steer(near.e.x,near.e.y,true,0);m.hurt=1}
     else if(m.hurt&&P.hp<P.maxHp*0.85&&near.d<320){steer(near.e.x,near.e.y,true,0)}
     else{m.hurt=0;const tg=m.ph==='warden'?(w.warden&&!w.warden.dead?w.warden:null):near.e;
@@ -147,6 +162,7 @@ async function runCls(browser,cls){
   const t0=Date.now();let r={},n=0;
   while(!r.done){r=await page.evaluate(()=>__balRun(40));
     if(++n%150===0){const s=await page.evaluate(()=>({ch:__bal.ch,lv:heroLv(),ph:__bal.ph,gt:Math.round(__bal.gt)}));console.log(cls,'פרק',s.ch+1,'רמה',s.lv,s.ph,s.gt+'s משחק',Math.round((Date.now()-t0)/1000)+'s')}}
+  r.R.ladder=await page.evaluate(()=>typeof GIANT!=='undefined'&&GIANT.ladder||null);
   r.R.errors=[...new Set(errors)].slice(0,8);r.R.real=Math.round((Date.now()-t0)/1000);
   await page.close();return r.R;
 }
@@ -166,8 +182,12 @@ if(require.main===module)(async()=>{
     if(R.errors.length)console.log('  שגיאות: '+R.errors.join(' | '))}
   // סולם הבוסים (GIANT.ladder.ratio, ניר 5.11): כמה זמן לוקח להפיל כל שומר, בממוצע על המחלקות, ופי כמה מהקודם
   const ft=BAL.chapters.map((_,i)=>{const v=BAL.cls.map(c=>(out[c].ch[i]||{}).fightT).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null});
+  for(const c of BAL.cls){const hb=out[c].hurtBy||{};console.log('  נזק לשחקן בקרב בשומר, '+c+': '+Object.keys(hb).map(i=>BAL.chapters[i].k+' '+Object.entries(hb[i]).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>k+' '+Math.round(v)).join('/')).join(' | '))}
   console.log('\nלכל מחלקה (ממוצע '+BAL.fights+' קרבות, מוות בקרבות בשומר):');
   for(const c of BAL.cls)console.log('  '+c+': '+out[c].ch.map((h,i)=>BAL.chapters[i].k+' '+(h.fightT??'-')+'s/'+(h.wDeaths||0)+'💀').join(', '));
   console.log('\nזמן להפיל כל שומר (ממוצע, שניות): '+ft.map((t,i)=>BAL.chapters[i].k+' '+(t==null?'-':t.toFixed(1))+(i&&t&&ft[i-1]?' (×'+(t/ft[i-1]).toFixed(2)+')':'')).join(', '));
   const j=opt('json');if(j)fs.writeFileSync(j,JSON.stringify(out,null,1));
+  // היעד (GIANT.ladder.t0, time): כמה שניות לכל שומר, ופי כמה המדידה ממנו
+  const LD=out[BAL.cls[0]].ladder;if(LD&&LD.t0)console.log('יעד: '+ft.map((t,i)=>{const g=LD.t0*Math.pow(LD.time,i);return BAL.chapters[i].k+' '+Math.round(g)+(t?' ('+(t/g).toFixed(2)+')':'')}).join(', '));
+  const bad=BAL.cls.filter(c=>out[c].ch.some(h=>(h.wDeaths||0)>2||!h.ok));if(bad.length)console.log('⚠️ נתקע או מת יותר מפעמיים בשומר: '+bad.join(', '));
 })();

@@ -20,7 +20,19 @@ const GIANT={
      ושלל של ניצחון חוזר פי ratio^i. החוזק (חיים ונזק ב-STORY.lanterns[*].warden) מיושר לאותו יחס בעזרת tools/balance-world.js.
      loot: ניצחון חוזר (לא הראשון, שנותן את הפנס דרך הקווסט): coins מטבעות, חפץ אחד מהטבלה של השומר (STORY.rematch.loot) ומשאבים ממנה, הכל ×ratio^i.
      הרמה המומלצת על השלט: הרמה של הדרך לאזור הבא (CURIO.paths), ולאחרון עוד step */
-  ladder:{base:10,ratio:1.5},
+  ladder:{base:10,ratio:1.5,t0:90,time:1.3},   // t0, time: זמן ההפלה ברמה המומלצת (ניר, 5.11: "20 שניות מרגיש קצר"): הראשון כ-t0 שניות, וכל אחד פי time מהקודם. יעד למדידה ב-balance-world.js, החיים ב-STORY.lanterns מכוונים אליו
+  /* שלבים (ניר, 5.11): לכל ענק שלושה שלבים לפי החיים שנשארו (at: מתחת לחלק הזה מתחילים שלב 2, ואז 3).
+     שלב 2: התקפה חדשה מהערכה של השומרים (add, לפי הפנס, באותו פורמט כמו ב-STORY.lanterns). הצל כבר מחליף התקפות בעצמו (storyShade), אז אצלו בלי add.
+     שלב 3: המכה הגדולה (big): עיגול גדול על הרצפה איפה שהשחקן עומד, fuse שניות של אזהרה (⚠️), ואז dmg×(הסולם)^grow למי שבתוכו (0.25: בצל פי 1.6 מבאדמה, כדי שהציידת לא תמות בכל קרב). יוצאים ממנו.
+     המעבר נראה: רעידה, באנר קצר, ניצוצות וטבעת בצבע השלב מתחת לענק (col) */
+  hurt:0.45,                             // פי כמה הנזק של כל מכה של שומר (storyHit ב-story.js). הקרב ארוך (t0), אז כל מכה קטנה יותר, כדי שגם הציידת והקוסם יעברו
+  phase:{at:[0.66,0.33],shake:9,col:['#FFB347','#FF4A3A'],
+    add:{earth:{shoot:{every:2.6,n:3,spread:0.3,speed:200,r:8,dmg:12}},
+      water:{ring:{every:3.8,speed:160,max:320,w:14,gap:1.1,dmg:13}},
+      ice:{marks:{every:3.4,n:3,spread:150,r:46,fuse:1.2,dmg:13,flash:0.25,icon:'ice'}},
+      fire:{charge:{every:6,min:240,max:620,warn:1.0,len:560,w:90,speed:600,dmg:20,stun:1.6,vuln:1.6,col:'#FF4A3A'}},
+      bolt:{ring:{every:3.8,speed:175,max:340,w:14,gap:1.0,dmg:15}}},
+    big:{every:7,first:1.5,r:120,fuse:1.1,dmg:50,grow:0.25,flash:0.35,col:'#FF4A3A'}},
   lair:70,
   loot:{coins:40},
   lv:{step:5},
@@ -121,3 +133,24 @@ function giantLairScreen(k,L,ox,oy){
 }
 // מילישניות לטקסט: 9:05, או 1:16:00 מעל שעה
 function giantTime(ms){const s=Math.ceil(ms/1000),h=Math.floor(s/3600),m=Math.floor(s/60)%60,ss=String(s%60).padStart(2,'0');return h?h+':'+String(m).padStart(2,'0')+':'+ss:m+':'+ss}
+
+/* ---- שלבים (GIANT.phase): נקרא מ-storyWardenMove כל פריים ---- */
+function giantPhase(e,dt){
+  const G=GIANT.phase,f=Math.max(0,e.hp)/e.max;let i=0;for(const a of G.at)if(f<a)i++;
+  if(i>(e.gph||0)){e.gph=i;const col=G.col[i-1];   // מעבר שלב
+    S.shake=Math.max(S.shake,G.shake);sparks(e.x,e.y,col,24,300);sfx('shoot');e.flash=0.15;
+    const txt=T('giant.phase',T('story.'+e.warden+'.name'),i+1);if(typeof feedOn==='function'&&feedOn())feedAdd('⚡',txt,col,'gph:'+e.warden);else banner(txt,col);
+    const add=!e.phases&&G.add[e.warden];
+    if(add&&i===1){e.pw=Object.assign({},e.pw||STORY.lanterns[e.warden].warden,add);   // ההתקפה החדשה, עם טיימר משלה
+      if(add.shoot)e.shoot=add.shoot.every*0.5;if(add.ring)e.ring=add.ring.every*0.5;if(add.marks)e.marks=add.marks.every*0.5;if(add.charge)e.chT=add.charge.every*0.4;if(add.slam)e.slamT=add.slam.every*0.5}
+    if(i>=G.at.length)e.bigT=G.big.first}
+  if(e.gph>=G.at.length&&!e.back&&!e.tel&&!e.dash&&(e.bigT-=dt)<=0){const B=G.big;e.bigT=B.every;   // המכה הגדולה
+    (S.wd.marks||(S.wd.marks=[])).push({x:P.x,y:P.y,t:B.fuse,boom:0,k:e.warden,big:true,mk:{r:B.r,fuse:B.fuse,dmg:Math.round(B.dmg*Math.pow(giantK(e.warden),B.grow)),flash:B.flash,col:B.col}});
+    S.shake=Math.max(S.shake,4);sfx('ui');storyTelLog(e.warden,'big',B.fuse)}
+}
+// טבעת בצבע השלב מתחת לענק (storyDraw)
+function giantPhaseDraw(e){
+  if(!e||e.dead||!e.wboss||!e.gph)return;const col=GIANT.phase.col[e.gph-1],t=fxNow();
+  ctx.save();ctx.globalAlpha=0.45+Math.sin(t*(4+e.gph*2))*0.2;ctx.strokeStyle=col;ctx.lineWidth=4+e.gph*2;
+  ctx.beginPath();ctx.ellipse(e.x,e.y+4,e.r*1.35,e.r*0.6,0,0,7);ctx.stroke();ctx.restore();
+}
