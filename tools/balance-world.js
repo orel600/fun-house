@@ -32,13 +32,14 @@ const BAL={
 
 /* ---- הבוט, בתוך הדף ---- */
 function install(B){
-  const m=window.__bal={B,ch:0,ph:'grind',gt:0,chT:0,wT:0,rep:{ch:[],hurtBy:{},dmg:{},casts:{},block:{},noPay:{},deaths:0,errors:[]},lastMg:0,lastSw:0,swI:0,dead:0};
+  const m=window.__bal={B,ch:0,ph:'grind',gt:0,chT:0,wT:0,rep:{ch:[],boss:{},hurtBy:{},dmg:{},casts:{},block:{},noPay:{},deaths:0,errors:[]},lastMg:0,lastSw:0,swI:0,dead:0};
   const R=m.rep;
   // נזק: כל מכה נמדדת לפי מקור. סקיל מהספר דרך wsbHit, סקיל של הזירה לפי סוג הנזק, והשאר לפי הנשק
   const OLD={earth:'quake',lightning:'zap',water:'splash',ice:'frost',fire:'flame'};
   const d0=damage;damage=function(e,base,w,ang,t){const h=e.hp;const r=d0.apply(this,arguments);
     if(S.wd&&!e.node){const got=Math.max(0,h-Math.max(0,e.hp)),src=window.__src||(w==='skill'?OLD[t]||'skill':w);
-      const c=R.dmg[m.ch]||(R.dmg[m.ch]={});c[src]=(c[src]||0)+got}return r};
+      const c=R.dmg[m.ch]||(R.dmg[m.ch]={});c[src]=(c[src]||0)+got;
+      if(e.warden&&!e.dpBoss){const b=R.boss[m.ch]||(R.boss[m.ch]={}),k=src+':'+(t||'physical')+'×'+(((e.mult||{})[t||'physical'])??1);b[k]=(b[k]||0)+got}}return r};   // נזק לשומר: לפי מקור, סוג ומכפיל
   const h0=wsbHit;wsbHit=function(e,id){window.__src=id;try{return h0.apply(this,arguments)}finally{window.__src=null}};
   const u0=wskUse;wskUse=function(id){const ok=u0.apply(this,arguments);if(ok){const c=R.casts[m.ch]||(R.casts[m.ch]={});c[id]=(c[id]||0)+1}return ok};
   // הזמן: הבוט מריץ את הפריימים בעצמו (frameStep ב-main.js), 0.05 שניות כל אחד, בלי השעון המזויף שמאט פי מאה.
@@ -183,6 +184,8 @@ if(require.main===module)(async()=>{
   // סולם הבוסים (GIANT.ladder.ratio, ניר 5.11): כמה זמן לוקח להפיל כל שומר, בממוצע על המחלקות, ופי כמה מהקודם
   const ft=BAL.chapters.map((_,i)=>{const v=BAL.cls.map(c=>(out[c].ch[i]||{}).fightT).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null});
   for(const c of BAL.cls){const hb=out[c].hurtBy||{};console.log('  נזק לשחקן בקרב בשומר, '+c+': '+Object.keys(hb).map(i=>BAL.chapters[i].k+' '+Object.entries(hb[i]).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>k+' '+Math.round(v)).join('/')).join(' | '))}
+  for(const c of BAL.cls){const bb=out[c].boss||{};console.log('  נזק לשומר, '+c+': '+Object.keys(bb).map(i=>{const t=Object.values(bb[i]).reduce((a,b)=>a+b,0)||1;
+    return BAL.chapters[i].k+' '+Object.entries(bb[i]).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>k+' '+Math.round(v/t*100)+'%').join('/')}).join(' | '))}
   console.log('\nלכל מחלקה (ממוצע '+BAL.fights+' קרבות, מוות בקרבות בשומר):');
   for(const c of BAL.cls)console.log('  '+c+': '+out[c].ch.map((h,i)=>BAL.chapters[i].k+' '+(h.fightT??'-')+'s/'+(h.wDeaths||0)+'💀').join(', '));
   console.log('\nזמן להפיל כל שומר (ממוצע, שניות): '+ft.map((t,i)=>BAL.chapters[i].k+' '+(t==null?'-':t.toFixed(1))+(i&&t&&ft[i-1]?' (×'+(t/ft[i-1]).toFixed(2)+')':'')).join(', '));
