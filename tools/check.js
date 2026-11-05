@@ -545,7 +545,8 @@ function worldBot(m,L,god){
   await page.clock.install({time:0});
   await page.clock.pauseAt(1000);
   await page.addInitScript(g=>{try{localStorage.setItem('zm-gfx',g)}catch(e){}},CFG.gfx);
-  await page.goto('file://'+path.resolve(__dirname,'..','index.html'));
+  // 5.11.2026: models3d.js כבר כ-16MB, ובמכונות של GitHub הטעינה עברה את 30 השניות של ברירת המחדל. הבדיקה לא בודקת זמן טעינה
+  await page.goto('file://'+path.resolve(__dirname,'..','index.html'),{timeout:120000});
   await page.clock.runFor(300);
   // הדמויות בתלת-ממד נטענות ברקע. מחכים להן לפני שמתחילים
   await page.evaluate(()=>{R3D.drawEvery=60});   // בבדיקה מציירים תלת-ממד פעם ב-60 פריימים, אחרת היא לוקחת שעה
