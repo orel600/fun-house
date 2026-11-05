@@ -545,7 +545,8 @@ function worldBot(m,L,god){
   await page.clock.install({time:0});
   await page.clock.pauseAt(1000);
   await page.addInitScript(g=>{try{localStorage.setItem('zm-gfx',g)}catch(e){}},CFG.gfx);
-  await page.goto('file://'+path.resolve(__dirname,'..','index.html'));
+  // 5.11.2026: models3d.js כבר כ-16MB, ובמכונות של GitHub הטעינה עברה את 30 השניות של ברירת המחדל. הבדיקה לא בודקת זמן טעינה
+  await page.goto('file://'+path.resolve(__dirname,'..','index.html'),{timeout:120000});
   await page.clock.runFor(300);
   // הדמויות בתלת-ממד נטענות ברקע. מחכים להן לפני שמתחילים
   await page.evaluate(()=>{R3D.drawEvery=60});   // בבדיקה מציירים תלת-ממד פעם ב-60 פריימים, אחרת היא לוקחת שעה
@@ -2595,6 +2596,18 @@ function worldBot(m,L,god){
   check(!flo.missing.length&&flo.eliteOk&&flo.pname&&flo.card&&flo.met&&flo.say&&flo.closed&&flo.once&&flo.saved&&flo.ovHide&&flo.ovBack,
     'שמות לאויבים: '+(flo.missing.length?'חסר שם ל-'+flo.missing.join(','):'לכל סוג בעולם יש שם')+', עלית: "'+flo.elite+'"'+(flo.pname?'':' (לא קיבל שם)')+(flo.card?', פס פגישה ראשונה':', אין פס')+
     (flo.closed?' שנסגר לבד':' שלא נסגר')+(flo.once?', פעם אחת':', חוזר')+(flo.saved?', נשמר':', לא נשמר')+(flo.say?', בועה':', בלי בועה')+(flo.ovHide?(flo.ovBack?', מחכה מתחת לחלון':', לא חוזר אחרי חלון'):', מופיע מעל חלון'));
+  // סימן קריאה מעל אויב של קווסט (questmark.js): אויב של יעד kill פעיל מסומן, אחר לא, 'any' ונדירה לא, ואחרי שהיעד הושלם הסימן נעלם
+  const qmk=await page.evaluate(()=>{
+    const o={},a0=JSON.stringify(QS().active);enterWorld('home');enemies=[];
+    for(const id in QS().active)delete QS().active[id];
+    QS().active.grunts={p:[0]};QS().active.dAny={p:[0]};
+    const g=addEnemy('grunt',P.x+90,P.y,1),s=addEnemy('shield',P.x-90,P.y,1),r=addEnemy('grunt',P.x,P.y+90,1);r.rare='x';
+    QM.f=0;qmScreen(0,0);o.on=qmMarked(g);o.other=!qmMarked(s);o.rare=!qmMarked(r);
+    QS().active.grunts.p[0]=QBY.grunts.obj[0].n;QM.f=0;qmScreen(0,0);o.off=!qmMarked(g);
+    QS().active.grunts.p[0]=0;enemies=[];enterVillage();enemies=[g];qmScreen(0,0);o.arena=!QM.list.length;enemies=[];const A=JSON.parse(a0);for(const id in QS().active)delete QS().active[id];Object.assign(QS().active,A);return o});
+  check(qmk.on&&qmk.other&&qmk.rare&&qmk.off&&qmk.arena,
+    'סימן קווסט: '+(qmk.on?'אויב של קווסט מסומן':'אויב של קווסט לא מסומן')+(qmk.other?', אחר לא':', גם אחר מסומן')+(qmk.rare?', נדירה לא':', נדירה מסומנת')+
+    (qmk.off?', נעלם כשהיעד הושלם':', נשאר אחרי שהושלם')+(qmk.arena?', רק בעולם':', גם מחוץ לעולם'));
   // בוס-נמסיס (nemesis.js): עלית שהפיל אותך נהיה נמסיס עם שם ונשמר, חוזר באותו אזור חזק יותר וזוכר אותך, עולה דרגה כשהוא מנצח שוב, אחד לאזור, וכשמנצחים אותו: שלל, חגיגה, ונעלם לספר
   const nm=await page.evaluate(()=>{
     const o={},n0=JSON.stringify(SAVE.nem||null);SAVE.nem=null;
@@ -2917,7 +2930,7 @@ function worldBot(m,L,god){
     enterWorld('home');const o={},g0=JSON.stringify(SAVE.gear),b0=JSON.stringify(SAVE.bag);
     for(const id of ['silverBlade','oakBow','goldAmulet','swiftBoots'])bagAdd(id,1);
     SAVE.gear.weapon='silverBlade';SAVE.gear.acc=['goldAmulet'];SAVE.gear.boots=['swiftBoots'];SAVE.gear.shield=[];R3D._hl=null;
-    let L=heroLook();o.noShield=!L.props.shield;SAVE.gear.shield=['shield3'];R3D._hl=null;L=heroLook();o.shield=!!L.props.shield&&L.props.shield.prop===gItem('shield3').look.model;o.head=!!L.g3&&!!L.g3.head;
+    let L=heroLook();o.noShield=!L.props.shield;SAVE.gear.shield=['shield3'];R3D._hl=null;L=heroLook();o.shield=!!L.props.shield&&L.props.shield.prop===itemModel('shield3');o.head=!!L.g3&&!!L.g3.head;
     if(R3D.on&&R3D.ready){P.weapon='sword';syncPlayer(0);const a=R3D.player;o.in3d=!!a.props.shield&&a.props.shield.visible;
       let g=false;a.props.sword.traverse(m=>{if(m.isMesh&&m.material.emissive.getHex())g=true});o.glow=g}else{o.in3d=true;o.glow=true}
     SAVE.gear.weapon='oakBow';R3D._hl=null;L=heroLook();o.noBow=!L.props.shield;

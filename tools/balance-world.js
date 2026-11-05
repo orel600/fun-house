@@ -4,7 +4,9 @@
    בלי חסינות: הוא יכול למות, וקם בכפר כמו שחקן. מודד: זמן לכל פרק, מוות, נזק לכל סקיל (ולהטלה), ומה תקע אותו.
    הרצה: node tools/balance-world.js [--cls warrior,hunter,mage] [--seed 7] [--cap 900] [--json out.json] [--set "<js>"]
    --cap: כמה שניות משחק לכל היותר לפרק (טיפוס + שומר). פרק שלא נגמר בזמן נרשם "תקוע", והבוט ממשיך לפרק הבא כדי למדוד אותו.
-   לא רץ ב-GitHub. דו-ממד בלבד. הזמן מואץ בשעון מזויף, ושלוש המחלקות רצות במקביל */
+   לא רץ ב-GitHub. דו-ממד בלבד. הזמן מואץ בשעון מזויף, ושלוש המחלקות רצות במקביל
+   tools/playtime.js משתמש בבוט הזה (install), עם שלוש תוספות שכבויות כברירת מחדל: פרק עם tier (דרגת עולם) ו-kills
+   (כמה הריגות באזור לפני השומר, במקום הרמה המומלצת), ו-B.trip (חזרה לכפר כל כך שניות, כמו שחקן אמיתי) */
 const {chromium}=require('playwright');
 const path=require('path'),fs=require('fs');
 const args=process.argv.slice(2);
@@ -14,6 +16,7 @@ const BAL={
   seed:+(opt('seed')||7),
   cap:+(opt('cap')||1200),          // שניות משחק לפרק
   wardenCap:600,
+  only:+(opt('chapters')||0),      // רק הפרקים הראשונים (--chapters 1: רק האחו ושומר האדמה)
   travel:60,                       // שניות בשלב השומר בלי להגיע למאורה, ואז קופצים אליה (ראה למטה)                   // מתוכן, לכל היותר לקרב בשומר
   fights:+(opt('fights')||1),      // כמה פעמים להפיל כל שומר, כדי להוריד את הרעש (--fights 10). אחרי כל ניצחון: חיים מלאים, והשומר קם שוב
   dodge:opt('nododge')?0:1,        // הבוט יוצא מעיגולי ברק ומעיגול רקיעה, כמו שחקן שרואה את הסימן (--nododge: עומד במקום)
@@ -47,6 +50,8 @@ function install(B){
   if(typeof giantLoot==='function')giantLoot=function(){};   // שלל של ניצחון חוזר: לא, כדי שהציוד לא ישתפר בין קרב לקרב
   window.__balRun=n=>{let r={};for(let i=0;i<n&&!r.done;i++){last=performance.now()-50;frameStep(performance.now());if(S.wd)m.gt+=0.05;if(i%5===0)r=step()}return r};
   function chap(){return B.chapters[m.ch]}
+  // הריגות בפרק (ל-kills של playtime.js)
+  const k0=kill;kill=function(e){const r=k0.apply(this,arguments);if(S.wd&&!e.node)m.kc=(m.kc||0)+1;return r};
   function need(){const c=chap();return c.to?CURIO.paths[c.to].lv:0}
   function cRep(){return R.ch[m.ch]||(R.ch[m.ch]={reg:chap().reg,deaths:0,lv0:heroLv()})}
   const foes=()=>enemies.filter(e=>!e.dead&&!e.node);
@@ -74,29 +79,39 @@ function install(B){
   function swap(){const open=wsbIds().filter(id=>id!==wsbWeapon()&&wsbOpen(id)&&WSKBOOK.list[id]);if(!open.length)return;
     const L=wsbLoad(),mine=open.filter(id=>WSKBOOK.list[id].cls===heroId());const pool=mine.length>=2?mine:open;
     m.swI=(m.swI+1)%pool.length;const nx=pool[m.swI];if(L.includes(nx))return;L[m.swI%2]=nx;}
-  function steer(tx,ty,flee,stop){let dx=0,dy=0;const d=Math.hypot(tx-P.x,ty-P.y)||1;
-    if(flee||d>stop){let gx=tx,gy=ty;if(!flee&&typeof tDir==='function'){const q=tDir(P,tx,ty);gx=q.x;gy=q.y}   // מפה עם נהר וצוקים (terrain.js): הולכים בדרך, לא בקו ישר
-      const g=Math.hypot(gx-P.x,gy-P.y)||1;dx=(gx-P.x)/g;dy=(gy-P.y)/g;if(flee){dx=-dx;dy=-dy}}joy={id:-1,ox:-999,oy:-999,dx,dy}}
+  function steer(tx,ty,flee,stop){let dx=0,dy=0;
+    if(!flee&&S.wd&&typeof TR!=='undefined'&&TR&&Math.hypot(tx-P.x,ty-P.y)>stop){const t=tDir(P,tx,ty);tx=t.x;ty=t.y;stop=0}   // אזור עם מפה (terrain.js, האחו הגדול): מסביב לנהר וליער, כמו check.js
+    const d=Math.hypot(tx-P.x,ty-P.y)||1;if(flee||d>stop){dx=(tx-P.x)/d;dy=(ty-P.y)/d;if(flee){dx=-dx;dy=-dy}}
+    // תקוע באחו הגדול (קצה של נהר או צוק, דרך שלא נמצאה): 8 שניות בלי לזוז 40 פיקסלים, אז 2 שניות לכיוון אקראי, כמו שחקן שמסתובב. נספר ב-R.unstick
+    if(S.wd&&typeof TR!=='undefined'&&TR){const k=m.stk;if(!k||Math.hypot(P.x-k.x,P.y-k.y)>40)m.stk={x:P.x,y:P.y,t:m.gt};
+      else if(m.gt-k.t>8&&(dx||dy)){R.unstick=(R.unstick||0)+1;m.stk={x:P.x,y:P.y,t:m.gt};m.wig=m.gt+2;m.wa=Math.random()*6.283}
+      if(m.wig>m.gt){dx=Math.cos(m.wa);dy=Math.sin(m.wa)}}
+    joy={id:-1,ox:-999,oy:-999,dx,dy}}
   function finish(ok,why){const c=cRep();c.t=Math.round(m.gt-m.chT);c.lv1=heroLv();c.ok=ok;if(why)c.why=why;c.coins=SAVE.bag.coins||0;
     c.gear=[SAVE.gear.weapon].concat(SAVE.gear.acc||[],SAVE.gear.boots||[],SAVE.gear.body||[]).filter(Boolean).join(' ');
     c.sk=Object.entries(SAVE.sklv||{}).map(([k,v])=>k+'+'+v).join(' ');
-    if(ok)STO()[chap().k]=true;saveNow();m.ch++;m.ph='grind';m.jumped=0;m.chT=m.gt;m.wT=0;joy=null;
+    if(ok)STO()[chap().k]=true;saveNow();m.ch++;m.ph='grind';m.jumped=0;m.chT=m.gt;m.wT=0;m.kc=0;joy=null;
     if(S.wd){worldUi(false);enterVillage()}}
   function step(){
-    if(m.ch>=B.chapters.length)return{done:true,R};
+    if(m.ch>=B.chapters.length||B.only&&m.ch>=B.only)return{done:true,R};   // --chapters N: רק N הפרקים הראשונים (בדיקה מהירה)
     const now=m.gt,c=cRep(),vis=id=>!$(id).hidden;
     if(vis('ovWDeath')){$('wRespawn').click();return{}}
     if(S.wd&&S.mode==='over'){if(!m.dead){m.dead=1;R.deaths++;c.deaths++;if(m.ph==='warden')c.wDeaths=(c.wDeaths||0)+1}return{}}
     m.dead=0;
-    if(now-m.chT>B.cap+(m.ph==='warden'?B.wardenCap*(B.fights-1):0)){finish(false,m.ph==='warden'?'שומר':'רמה '+heroLv()+'/'+need());return{}}
+    if(now-m.chT>B.cap+(m.ph==='warden'?B.wardenCap*(B.fights-1):0)){const L0=STORY.lanterns[chap().k];finish(false,m.ph==='warden'?'שומר (במרחק '+Math.round(Math.hypot(P.x-L0.x,P.y-L0.y))+' מהפנס'+(S.wd.warden?', ער':'')+')':'רמה '+heroLv()+'/'+need());return{}}
     for(const id of ['npcDlg','qLog','ovGear','ovDaily','ovWelcome','ovBook'])if($(id)&&!$(id).hidden)$(id).hidden=true;
     if(S.vil||!S.wd||S.wd.reg!==chap().reg){if(S.vil){equip();points();upgrade()}
       worldUi(false);enterWorld('home',chap().reg);return{}}
     if(S.mode!=='play')return{};
+    // דרגת עולם (playtime.js): עוברים לדרגה של הפרק כשהיא פתוחה. סגורה (דרגה 3 מחכה להריגות בדרגה 2): ממשיכים בדרגה הקודמת
+    if(chap().tier&&typeof tierSet==='function'){if(!STO().end)STO().end=true;if(tierNow()!==chap().tier&&tierOpen(chap().tier))tierSet(chap().tier);c.gate=tierNow()!==chap().tier}
+    // חזרה לכפר כל B.trip שניות (playtime.js), כמו שחקן שחוזר למכור, לשדרג ולנוח. רק בזמן טיפוס
+    if(B.trip&&m.ph==='grind'&&now-(m.lastTrip||0)>B.trip){m.lastTrip=now;R.trips=(R.trips||0)+1;worldUi(false);enterVillage();return{}}
     if(now-m.lastMg>5){m.lastMg=now;equip();points();if(!foes().some(e=>Math.hypot(e.x-P.x,e.y-P.y)<260))dropsCollectAll()}
     if(now-m.lastSw>B.swapEvery){m.lastSw=now;swap()}
     // שלב: אחרי הרמה המומלצת, לפנס
-    if(m.ph==='grind'&&heroLv()>=need()&&now-m.chT<B.cap-30)m.ph='warden';
+    const ready=chap().kills?(m.kc||0)>=chap().kills&&!c.gate:heroLv()>=need();
+    if(m.ph==='grind'&&ready&&now-m.chT<B.cap-30)m.ph='warden';
     if(m.ph==='grind'&&now-m.chT>=B.cap-B.wardenCap)m.ph='warden';   // לא הגיע לרמה בזמן: מנסה את השומר בכל זאת
     const L=STORY.lanterns[chap().k],w=S.wd;
     if(m.ph==='warden'){if(!m.wT)m.wT=now;
@@ -152,7 +167,8 @@ async function runCls(browser,cls){
   await page.close();return r.R;
 }
 
-(async()=>{
+module.exports={BAL,install};
+if(require.main===module)(async()=>{
   const browser=await chromium.launch();
   const out={};await Promise.all(BAL.cls.map(async c=>{out[c]=await runCls(browser,c)}));
   await browser.close();

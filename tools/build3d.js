@@ -159,22 +159,40 @@ async function addMonsters(add){
 /* חפצים עם מודל משלהם (מחולל תלת-ממד מתמונה, TRELLIS ב-Hugging Face; ההסבר ב-docs/refs/item-models/README.md).
    המפתח במשחק: w_item_<id>, ו-look.model של הפריט ב-gear.js מצביע עליו. הטקסטורה שלהם היא הציור עצמו, ולכן render3d לא מחליף אותה בחומר (wtex).
    הקובץ הגולמי ב-art/weapons/raw, ומה שנכנס למשחק מוקטן: tris משולשים וטקסטורה tex. כאן גם מסובבים ומגדילים כמו נשקי KayKit:
-   הלהב כלפי מעלה (y), הרוחב ב-x, הידית בראשית. len: האורך הכולל (חרב KayKit בערך 3.25), grip: איפה הידית, חלק מהאורך מלמטה, rotY: סיבוב במעלות */
+   TRELLIS בונה מתמונה זקופה: האורך ב-y. הרוחב שבתמונה יוצא לפעמים ב-z (להב הדרקון, קשת הסערה) ולפעמים ב-x (קשת השמיים, המגנים), אז בודקים כל קובץ. len: האורך (y) אחרי ההגדלה, grip: איפה הידית, חלק מהאורך מלמטה (היא עוברת לראשית),
+   rot: סיבוב במעלות סביב x, y ו-z, בסדר הזה, כדי שהחפץ ישב כמו המקביל שלו ב-KayKit:
+     חרב ומטה: זקופים, הרוחב ב-x (rot [0,90,0]). חרב KayKit בערך 3.25 אורך והידית ב-13%, מטה 2.3 והידית ב-37%.
+     קשת: שוכבת, האורך ב-x והקשת ב-z, הידית באמצע (rot [0,0,-90], grip 0.5). קשת KayKit בערך 2.4.
+     מגן: הפנים במישור xy, דק ב-z (rot [0,90,0]). מגן KayKit בערך 1.35 גובה, הידית מעט מתחת לאמצע.
+   הכיוון של חפץ חדש (איזה צד פונה החוצה) נבדק בצילום מסך, ומתקנים ב-rot. עד שהמודל נבנה, המשחק משתמש ב-look.model (itemModel ב-render3d.js) */
+const raw=id=>path.join(ROOT,'art/weapons/raw',id+'.glb');
 const ITEMS={
-  dragonBlade:{src:path.join(ROOT,'art/weapons/raw/dragonBlade.glb'),tris:4000,tex:512,len:2.4,grip:0.12,rotY:90}
+  dragonBlade:{src:raw('dragonBlade'),tris:4000,tex:512,len:2.4,grip:0.12,rot:[0,90,0]},
+  // מחכים לקבצים מ-TRELLIS (תמונות המקור ב-art/weapons/src). חפץ בלי קובץ מדולג, והמשחק נשאר עם look.model
+  ironStaff:{src:raw('ironStaff'),tris:4000,tex:512,len:2.3,grip:0.37,rot:[0,90,0]},
+  goldStaff:{src:raw('goldStaff'),tris:4000,tex:512,len:2.3,grip:0.37,rot:[0,90,0]},
+  starStaff:{src:raw('starStaff'),tris:4000,tex:512,len:2.3,grip:0.37,rot:[0,90,0]},
+  skyBow:   {src:raw('skyBow'),tris:4000,tex:512,len:2.4,grip:0.5,rot:[0,90,-90]},   // יצא רחב ב-x ולא ב-z
+  stormBow: {src:raw('stormBow'),tris:4000,tex:512,len:2.4,grip:0.5,rot:[0,0,-90]},
+  shield3:  {src:raw('shield3'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},   // יצא כבר כמו KayKit: הפנים ב-xy
+  shield4:  {src:raw('shield4'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]}
 };
 async function addItems(add){
   const {MeshoptSimplifier}=require('meshoptimizer');await MeshoptSimplifier.ready;
   const {weld,simplify,transformPrimitive}=require('@gltf-transform/functions');
   for(const [k,c] of Object.entries(ITEMS)){
+    if(!fs.existsSync(c.src)){console.log('אין עדיין קובץ ל-'+k+', מדלגים');continue}
     const doc=await io.read(c.src),root=doc.getRoot(),prims=root.listMeshes().flatMap(m=>m.listPrimitives());
     const n=prims.reduce((a,p)=>a+(p.getIndices()?p.getIndices().getCount():p.getAttribute('POSITION').getCount())/3,0);
     await doc.transform(weld(),simplify({simplifier:MeshoptSimplifier,ratio:Math.min(1,c.tris/n),error:0.002}));
     let lo=[1e9,1e9,1e9],hi=[-1e9,-1e9,-1e9];
     for(const p of prims){const a=p.getAttribute('POSITION'),mn=a.getMin([]),mx=a.getMax([]);for(let i=0;i<3;i++){lo[i]=Math.min(lo[i],mn[i]);hi[i]=Math.max(hi[i],mx[i])}}
-    const s=c.len/(hi[1]-lo[1]),r=c.rotY*Math.PI/180,co=Math.cos(r),si=Math.sin(r),cx=(lo[0]+hi[0])/2,cz=(lo[2]+hi[2])/2,gy=lo[1]+(hi[1]-lo[1])*c.grip;
-    // מטריצה (לפי עמודות): מזיזים את הידית לראשית, מסובבים סביב y ומגדילים
-    const m=[s*co,0,-s*si,0, 0,s,0,0, s*si,0,s*co,0, -s*(co*cx+si*cz),-s*gy,-s*(-si*cx+co*cz),1];
+    const s=c.len/(hi[1]-lo[1]),g=[(lo[0]+hi[0])/2,lo[1]+(hi[1]-lo[1])*c.grip,(lo[2]+hi[2])/2];
+    // R=Rz*Ry*Rx (קודם x, אחר כך y ואז z), והמטריצה (לפי עמודות): מזיזים את הידית לראשית, מסובבים ומגדילים
+    const [a,b,e]=c.rot.map(d=>d*Math.PI/180),ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b),ce=Math.cos(e),se=Math.sin(e);
+    const R=[[ce*cb,ce*sb*sa-se*ca,ce*sb*ca+se*sa],[se*cb,se*sb*sa+ce*ca,se*sb*ca-ce*sa],[-sb,cb*sa,cb*ca]];
+    const t=R.map(row=>-s*(row[0]*g[0]+row[1]*g[1]+row[2]*g[2]));
+    const m=[s*R[0][0],s*R[1][0],s*R[2][0],0, s*R[0][1],s*R[1][1],s*R[2][1],0, s*R[0][2],s*R[1][2],s*R[2][2],0, t[0],t[1],t[2],1];
     for(const p of prims)transformPrimitive(p,m);
     for(const nd of root.listNodes()){nd.setTranslation([0,0,0]).setRotation([0,0,0,1]).setScale([1,1,1])}
     add('w_item_'+k,await slim(doc,{tex:c.tex,fmt:'jpeg'}));
