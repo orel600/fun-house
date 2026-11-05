@@ -518,6 +518,7 @@ function worldBot(m,L,god){
     const st=saved().hero.style;L.style={};for(const k in st)L.style[k]=Math.round(st[k]);   // סגנון המשחק, כפי שנשמר
     m.wp='die';return stay()}
   if(m.wp==='die'){   // נופלים בכוונה, עם משאבים ופריט בתרמיל ומשהו במחסן
+    if(SAVE.ways)SAVE.ways.open={};   // כאן בודקים קימה בכפר, בלי אבן מסע פתוחה. קימה באבן: בדיקת "אבני מסע" (waystones.js)
     bagAdd('wood',7);bagAdd('stone',5);bagAdd('coins',1);bagAdd('oakSword',1);SAVE.stash.stone=(SAVE.stash.stone||0)+3;saveNow();
     m.d0=bag();m.s0=JSON.stringify(SAVE.stash);P.inv=0;hurt(P.hp+999);
     const res=Object.keys(m.d0).filter(r=>resOf(r)),items=Object.keys(m.d0).filter(r=>!resOf(r));
@@ -2322,6 +2323,30 @@ function worldBot(m,L,god){
   check(lj.list===lj.lit&&lj.lit>=2&&lj.reg==='lake'&&lj.at&&lj.btn&&lj.fight&&lj.stay&&lj.home&&lj.mapBtn&&lj.ridge,'קפיצה בין פנסים: '+(lj.list===lj.lit?lj.list+' פנסים דולקים בשער':'השער מציג '+lj.list+' מתוך '+lj.lit+' פנסים')+
     (lj.reg==='lake'&&lj.at?', קפיצה לפנס המים':', הקפיצה לאגם נכשלה ('+lj.reg+')')+(lj.btn?', "חזרה לכפר" ליד הפנס':', אין כפתור ליד הפנס')+(lj.fight&&lj.stay?' (לא באמצע קרב)':', קופצים באמצע קרב!')+
     (lj.home?', חזרה לכפר':', החזרה לכפר נכשלה')+(lj.mapBtn&&lj.ridge?', וקפיצה ממפת העולם לרכס':', הקפיצה מהמפה נכשלה'));
+  // אבני מסע (waystones.js): אבן נפתחת כשמגיעים, ערפל המפה נפתח, קפיצה מהכפר ומאבן לאבן (לא באמצע קרב), וקימה באבן אחרי מוות
+  const wayst=await page.evaluate(()=>{const o={},bak=JSON.stringify(SAVE);window.__wsBak=bak;SAVE.ways={open:{},fog:{}};P.inv=99;
+    enterWorld('home');for(const e of enemies)e.dead=true;const A=WORLD.waystones[0],B=WORLD.waystones[1];
+    o.closed=!wsIsOpen('meadow',A);P.x=A.x;P.y=A.y+20;wsUpdate(0.016);o.open=wsIsOpen('meadow',A);o.btn=!$('wsBtn').hidden;
+    o.fog=(SAVE.ways.fog.meadow||{s:''}).s.split('1').length-1;
+    P.x=B.x;P.y=B.y+20;wsUpdate(0.016);o.two=wsOpenAll().length===2;
+    wmapOpen(true);o.row=document.querySelectorAll('#wMap [data-act="wsjump"]').length===1;
+    const e=addEnemy('grunt',P.x+30,P.y,1);o.fight=wsBlock()==='fight'&&!wsGo('meadow.'+A.id);e.dead=true;enemies=enemies.filter(x=>!x.dead);
+    const b=document.querySelector('#wMap [data-act="wsjump"]');if(b)b.click();return o});
+  await page.clock.runFor(1200);
+  Object.assign(wayst,await page.evaluate(()=>{const o={},A=WORLD.waystones[0];P.inv=99;
+    o.jump=!!S.wd&&Math.hypot(P.x-A.x,P.y-A.y)<WAYSTONES.arrive+30&&$('wMap').hidden;
+    enterVillage();$('ovDaily').hidden=true;S.vil.gate=true;S.vil.open='gate';S.vil.ui='';villageHud();
+    const b=document.querySelector('#vPanel [data-act="wsjump"][data-k="meadow.'+WORLD.waystones[1].id+'"]');o.gate=!!b;if(b)b.click();return o}));
+  await page.clock.runFor(1200);
+  Object.assign(wayst,await page.evaluate(()=>{const o={},B=WORLD.waystones[1];
+    o.fromVil=!!S.wd&&!S.vil&&Math.hypot(P.x-B.x,P.y-B.y)<WAYSTONES.arrive+30;
+    for(const e of enemies)e.dead=true;P.x=B.x+250;P.y=B.y+250;worldDeath();o.label=$('wRespawn').textContent===T('ws.respawn');$('wRespawn').click();
+    o.woke=!!S.wd&&S.mode==='play'&&Math.hypot(P.x-B.x,P.y-B.y)<WAYSTONES.arrive+30;
+    const d=JSON.parse(window.__wsBak);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,d);saveNow();P.inv=0;enterVillage();return o}));
+  check(wayst.closed&&wayst.open&&wayst.btn&&wayst.fog>0&&wayst.two&&wayst.row&&wayst.fight&&wayst.jump&&wayst.gate&&wayst.fromVil&&wayst.label&&wayst.woke,
+    'אבני מסע: '+(wayst.closed&&wayst.open?'אבן נפתחת כשמגיעים':'האבן לא נפתחה')+(wayst.btn?' וכפתור 🗿 לידה':', אין כפתור')+(wayst.fog>0?', הערפל נפתח ('+wayst.fog+' משבצות)':', הערפל לא נפתח')+
+    (wayst.row?', במפה כפתור לאבן השנייה':', אין כפתור קפיצה במפה')+(wayst.fight?' (לא באמצע קרב)':', קופצים באמצע קרב!')+(wayst.jump?', קפיצה מאבן לאבן':', הקפיצה מהמפה נכשלה')+
+    (wayst.gate&&wayst.fromVil?', קפיצה מהשער בכפר':', הקפיצה מהכפר נכשלה')+(wayst.label&&wayst.woke?', וקמים באבן אחרי מוות':', הקימה באבן נכשלה'));
   // אירועים בעולם (events.js): גל שנגמר בתיבה, עגלה שנותנת שלל כשמגיעים, ומטר שמפיל מתכות
   const evt=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=()=>drops().length;
