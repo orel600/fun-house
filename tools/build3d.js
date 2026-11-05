@@ -203,7 +203,7 @@ const TEX=256;   // גודל הטקסטורה. החבילות משתמשות ב�
 
 const io=new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({'meshopt.encoder':MeshoptEncoder,'meshopt.decoder':MeshoptDecoder});
 /* דחיסה (perf/meshopt, 5.11.2026): כל מודל נשמר עם EXT_meshopt_compression, והמשחק פותח אותו עם MeshoptDecoder (three-bundle).
-   quantize רק למיקום, לנורמל ול-UV (PACK). אנימציות, שלד ומשקלים לא נוגעים בהם, כדי שלא יהיה רעד, והטקסטורות נשארות כמו שהן.
+   quantize רק למיקום, לנורמל ול-UV (PACK), ורק בדמויות עם שלד. אנימציות, שלד ומשקלים לא נוגעים בהם, כדי שלא יהיה רעד, והטקסטורות נשארות כמו שהן.
    method QUANTIZE: הדחיסה עצמה בלי אובדן, בלי הפילטרים של meshopt. ?nopack מכבה רק בבנייה: node tools/build3d.js ... --nopack */
 const PACK={pattern:/^(POSITION|NORMAL|TEXCOORD_0)$/,quantizePosition:14,quantizeNormal:12,quantizeTexcoord:14,quantizationVolume:'scene'};   // scene: כל החלקים של דמות על אותו סולם, אחרת כל חלק מקבל שלד משלו ו-mergeSkinned מעוות אותם
 const NOPACK=process.argv.includes('--nopack'),LOSSLESS=process.argv.includes('--lossless');
@@ -213,7 +213,12 @@ async function pack(doc){
   const sc=doc.getRoot().getDefaultScene()||doc.getRoot().listScenes()[0],hasMesh=n=>!!n.getMesh()||n.listChildren().some(hasMesh);
   const inScene=sc&&sc.listChildren().some(hasMesh),all=doc.getRoot().listNodes().filter(n=>n.getMesh()).length,seen=[];
   if(sc)sc.traverse(n=>{if(n.getMesh())seen.push(n)});
-  if(!LOSSLESS&&inScene&&seen.length===all)await doc.transform(quantize(PACK));
+  // quantize רק לדמויות עם שלד, שם רוב המשקל. חפצים בלי שלד נדחסים בלי אובדן: יש קוד שמודד את המיקומים הגולמיים שלהם (קצה הנשק, עצים ב-tex3d).
+  // בדמות, quantize מכניס את קנה המידה לשלד, אז הגובה הגולמי משתנה. שומרים את הגובה המקורי ב-extras.h0, ו-render3d משתמש בו (userData.h)
+  if(!LOSSLESS&&inScene&&seen.length===all&&doc.getRoot().listSkins().length){
+    let lo=Infinity,hi=-Infinity;for(const m of doc.getRoot().listMeshes())for(const pr of m.listPrimitives()){const a=pr.getAttribute('POSITION');lo=Math.min(lo,a.getMin([])[1]);hi=Math.max(hi,a.getMax([])[1])}
+    sc.setExtras(Object.assign({},sc.getExtras(),{h0:hi-lo}));
+    await doc.transform(quantize(PACK))}
   doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({method:EXTMeshoptCompression.EncoderMethod.QUANTIZE});
 }
 async function slim(doc,{keepMeshes,keepAnims,tex=TEX,fmt='png',q=false}){

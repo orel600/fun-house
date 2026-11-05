@@ -311,7 +311,7 @@ async function init3d(){
     const heroModels=new Set(Object.keys(LOOK3D).filter(k=>k==='player'||k.startsWith('hero_')).map(k=>LOOK3D[k].model));
     for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t,heroModels.has(k)&&(GEAR3D.on?ARMOR3D.concat(GEAR3D.keep):ARMOR3D));lambert(t);t.updateMatrixWorld(true);
       // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
-      const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=bb.max.y-bb.min.y||2}
+      const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=t.userData.h0||bb.max.y-bb.min.y||2}   // h0: הגובה לפני הדחיסה (build3d.js, pack), כי quantize משנה את המיקומים הגולמיים
     bakeCrowd();
     R3D.ready=true;R3D.on=R3D.want;c.hidden=!R3D.on;
   }catch(e){
