@@ -2615,7 +2615,7 @@ function worldBot(m,L,god){
   check(Object.values(tp).every(Boolean),'טיפ ראשון: '+Object.entries(tp).map(([k,v])=>(v?'':'✗')+k).join(', '));
   // החיה מריחה ומובילה (petscent.js): מרחרחת, רצה למקום ומחכה עם חץ, תיבה נותנת שלל כשמגיעים, אויב מיוחד נותן שלל כשנופל, ומי שלא בא היא מוותרת
   const ps=await page.evaluate(()=>{
-    const o={};enterWorld('home');const p=S.pet||petMake();p.st='idle';const pk=SCENT.pick;
+    const o={};enterWorld('home');if(S.wd.rare){S.wd.rare.e.dead=true;S.wd.rare=null}const p=S.pet||petMake();p.st='idle';const pk=SCENT.pick;   // נדירה שהופיעה במקרה קודמת לכל ריח (rares.js), אז מוציאים אותה
     SCENT.pick={secret:0,chest:1,elite:0};S.wd.scentT=0;petUpdate(0.02);const s=S.wd.scent;o.start=!!s&&s.st==='sniff'&&s.kind==='chest';
     for(let i=0;i<200&&s.st!=='wait';i++)petUpdate(0.05);o.wait=s.st==='wait'&&Math.hypot(p.x-s.x,p.y-s.y)<12;
     o.far=Math.hypot(s.x-P.x,s.y-P.y)>=120;
