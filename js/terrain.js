@@ -23,7 +23,7 @@ const TERRAIN={
   path:{every:0.9,look:7,max:20000},   // דרך לבוט ולמי שהולך ליעד: מחשבים מחדש כל every שניות, look נקודות קדימה, ולכל היותר max משבצות בחיפוש
   wake:1500,               // קבוצת אויבים רחוקה נוצרת רק כשהשחקן מתקרב עד כאן (world.js)
   sleep:1900,              // אויב רחוק מזה מהשחקן לא חושב ולא זז
-  forget:2600,             // קבוצה רחוקה מזה מהשחקן נעלמת וחוזרת לישון (נוצרת שוב כשמתקרבים), כדי שבמפה גדולה לא יצטברו אויבים
+  forget:2200,             // קבוצה רחוקה מזה מהשחקן נעלמת וחוזרת לישון (נוצרת שוב כשמתקרבים), כדי שבמפה גדולה לא יצטברו אויבים
   ridge:{h:24,edge:30,soft:40},   // הרכס: גובה הציור בפיקסלים של המסך (פחות מחצי דמות), רוחב השפה החוסמת, ורוחב השיפוע בקצה
   cull:1800,               // בתלת-ממד: חפצים רחוקים מהמצלמה יותר מזה לא מצוירים
   chunk:1100,              // גודל אריח של עצים וסלעים במופע אחד: כל אריח נחתך לבד כשהוא מחוץ למסך
@@ -104,7 +104,7 @@ function lineDist(x,y,pts){let m=1e9;for(let i=1;i<pts.length;i++)m=Math.min(m,s
 
 /* ---- שאלות ---- */
 const tCell=(x,y)=>{const T=TR,i=Math.floor((x-T.x0)/T.c),j=Math.floor((y-T.y0)/T.c);return i<0||j<0||i>=T.gw||j>=T.gh?-1:j*T.gw+i};
-function tBlocked(x,y){if(!TR)return false;const i=tCell(x,y);return i<0||TR.blk[i]===1}
+function tBlocked(x,y){if(!TR||!S.wd)return false;const i=tCell(x,y);return i<0||TR.blk[i]===1}
 function tSlow(x,y){if(!TR)return 1;const i=tCell(x,y);return i<0?1:TR.slw[i]/255}
 function hAt(x,y){
   const T=TR;if(!T||!T.map.ridge)return 0;
@@ -125,7 +125,7 @@ function tFree(o){
 }
 /* צעד: מה שזז מאז הפעם הקודמת. האטה במקום רדוד, וגלישה לאורך הקצה כשנכנסים למקום חסום (קודם ציר אחד, אחר כך השני) */
 function tStep(o){
-  if(!TR||!o)return o;
+  if(!TR||!o||!S.wd)return o;   // רק בעולם: בזירה ובכפר אין מפה
   const lx=o._tx,ly=o._ty;
   if(lx==null||Math.abs(o.x-lx)+Math.abs(o.y-ly)>TERRAIN.teleport){tFree(o);o._tx=o.x;o._ty=o.y;return o}
   if(o.x===lx&&o.y===ly)return o;

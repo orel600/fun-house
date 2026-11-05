@@ -247,7 +247,7 @@ const wGateCol=k=>k==='home'?C.chalk:wIsPath(k)?C.tide:C.lilac;
 let wRet=null;   // השער שממנו נכנסו לזירה: בסוף הריצה חוזרים אליו (againBtn ב-input.js)
 
 /* ---- מעבר בין מקומות ---- */
-function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden=!on;$('chTag').hidden=!on;if(!on){$('wPanel').hidden=true;const g=$('wGo');if(g)g.hidden=true;wnpcOff();fishOff();wmapOpen(false);travelOff()}}   // wnpcOff: הדמויות בעולם (worldnpc.js)   // fishOff: הדיג (fishing.js)   // wmapOpen: המפה (worldmap.js)
+function worldUi(on){if(!on)TR=null;document.body.classList.toggle('world',on);$('whud').hidden=!on;$('chTag').hidden=!on;if(!on){$('wPanel').hidden=true;const g=$('wGo');if(g)g.hidden=true;wnpcOff();fishOff();wmapOpen(false);travelOff()}}   // wnpcOff: הדמויות בעולם (worldnpc.js)   // fishOff: הדיג (fishing.js)   // wmapOpen: המפה (worldmap.js)
 // at: 'home' (מהכפר, או מהאזור הקודם), id של שער (חזרה מהזירה) או של דרך (חזרה מאזור אחר). reg: איזה אזור, ברירת המחדל האחו
 function enterWorld(at,reg){
   wRet=null;reset();S.mode='play';
@@ -339,7 +339,7 @@ function wFoes(dt){
     for(const e of enemies)if(e.home===i&&!e.dead&&!e.wanted&&!e.warden&&!e.evt&&!e.pack&&!e.nem&&!e.hunt&&!(e.alert>0))e.dead=true;
     g.lazy=1;alive[i]=0});
   FO.forEach((G,i)=>{const g=S.wd.groups[i];if(alive[i]||!ETYPES[G.type])return;
-    if(g.lazy){if(Math.hypot(P.x-G.x,P.y-G.y)<TERRAIN.wake){g.lazy=0;wSpawn(G,i)}return}   // עוד לא נוצרה: רק כשמתקרבים
+    if(g.lazy){if(Math.hypot(P.x-G.x,P.y-G.y)<TERRAIN.wake&&paceRoom(G.n)){g.lazy=0;wSpawn(G,i)}return}   // paceRoom: לא עוברים את מגבלת האויבים (PACE.cap)   // עוד לא נוצרה: רק כשמתקרבים
     if(g.t<=0)g.t=wZone(G).back;else if((g.t-=dt)<=0&&paceRoom(G.n)&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+Math.max(WORLD.far,Math.hypot(W,H)/2)){wSpawn(G,i);g.n=(g.n||0)+1}else g.t=Math.max(g.t,0.01)});
 }
 
