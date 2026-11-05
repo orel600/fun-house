@@ -25,7 +25,8 @@
    מה נכנס: הטבלאות CHARS, PROPS, WEAPONS, WTIERS, ANIMS, BUILDS, NATURE ו-MONSTERS למטה. דמות או אנימציה חדשה = שורה כאן ושורה ב-js/render3d.js */
 const path=require('path'),fs=require('fs');
 const {NodeIO}=require('@gltf-transform/core');
-const {ALL_EXTENSIONS}=require('@gltf-transform/extensions');
+const {ALL_EXTENSIONS,EXTMeshoptCompression}=require('@gltf-transform/extensions');
+const {MeshoptEncoder,MeshoptDecoder}=require('meshoptimizer');
 const {prune,dedup,resample,textureCompress,quantize}=require('@gltf-transform/functions');
 const sharp=require('sharp');
 
@@ -200,7 +201,21 @@ async function addItems(add){
 }
 const TEX=256;   // גודל הטקסטורה. החבילות משתמשות בפלטת צבעים, אז 256 נראה כמו 1024
 
-const io=new NodeIO().registerExtensions(ALL_EXTENSIONS);
+const io=new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({'meshopt.encoder':MeshoptEncoder,'meshopt.decoder':MeshoptDecoder});
+/* דחיסה (perf/meshopt, 5.11.2026): כל מודל נשמר עם EXT_meshopt_compression, והמשחק פותח אותו עם MeshoptDecoder (three-bundle).
+   quantize רק למיקום, לנורמל ול-UV (PACK). אנימציות, שלד ומשקלים לא נוגעים בהם, כדי שלא יהיה רעד, והטקסטורות נשארות כמו שהן.
+   method QUANTIZE: הדחיסה עצמה בלי אובדן, בלי הפילטרים של meshopt. ?nopack מכבה רק בבנייה: node tools/build3d.js ... --nopack */
+const PACK={pattern:/^(POSITION|NORMAL|TEXCOORD_0)$/,quantizePosition:14,quantizeNormal:12,quantizeTexcoord:14,quantizationVolume:'scene'};   // scene: כל החלקים של דמות על אותו סולם, אחרת כל חלק מקבל שלד משלו ו-mergeSkinned מעוות אותם
+const NOPACK=process.argv.includes('--nopack'),LOSSLESS=process.argv.includes('--lossless');
+async function pack(doc){
+  if(NOPACK)return;await MeshoptEncoder.ready;
+  // רק כשיש בסצנה משהו לצייר. קבצי אנימציה בלי גוף, או גוף שלא תלוי בסצנה, נדחסים בלי quantize
+  const sc=doc.getRoot().getDefaultScene()||doc.getRoot().listScenes()[0],hasMesh=n=>!!n.getMesh()||n.listChildren().some(hasMesh);
+  const inScene=sc&&sc.listChildren().some(hasMesh),all=doc.getRoot().listNodes().filter(n=>n.getMesh()).length,seen=[];
+  if(sc)sc.traverse(n=>{if(n.getMesh())seen.push(n)});
+  if(!LOSSLESS&&inScene&&seen.length===all)await doc.transform(quantize(PACK));
+  doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({method:EXTMeshoptCompression.EncoderMethod.QUANTIZE});
+}
 async function slim(doc,{keepMeshes,keepAnims,tex=TEX,fmt='png',q=false}){
   const root=doc.getRoot();
   for(const a of root.listAnimations())if(!keepAnims||!keepAnims.includes(a.getName())){a.listChannels().forEach(c=>c.dispose());a.listSamplers().forEach(x=>x.dispose());a.dispose()}
@@ -214,9 +229,30 @@ n.getMesh().dispose();n.dispose()}
   for(const a of root.listAccessors())if(a.listParents().every(p=>p===root||p.isDisposed?.()))a.dispose();
   await doc.transform(prune({keepLeaves:true,keepAttributes:false}),dedup(),resample({tolerance:0.004}),
     textureCompress({encoder:sharp,targetFormat:fmt,resize:[tex,tex]}),...(q?[quantize()]:[]));   // q: מיקומים במספרים שלמים קטנים, חצי משקל. רק לחפצים בלי שלד
+  await pack(doc);
   return io.writeBinary(doc);
 }
 
+async function bundle(){
+  // three.js בלי import: חבילה אחת שמגדירה את THREE גלובלי
+  const entry=path.join(__dirname,'.three-entry.js');
+  fs.writeFileSync(entry,"import * as T from 'three';import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';import {MeshoptDecoder} from 'three/examples/jsm/libs/meshopt_decoder.module.js';window.THREE=Object.assign({},T,{GLTFLoader,SkeletonUtils,mergeGeometries,MeshoptDecoder});");
+  fs.mkdirSync(path.join(ROOT,'js/vendor'),{recursive:true});
+  await require('esbuild').build({entryPoints:[entry],bundle:true,minify:true,format:'iife',outfile:path.join(ROOT,'js/vendor/three-bundle.js'),nodePaths:(process.env.NODE_PATH||'').split(path.delimiter).filter(Boolean),
+    banner:{js:'/* three.js r'+require("three").REVISION+' (MIT, three.js authors) + GLTFLoader, SkeletonUtils, mergeGeometries, MeshoptDecoder. נוצר ע"י tools/build3d.js */'},logLevel:'warning'});
+  fs.unlinkSync(entry);
+}
+
+// node tools/build3d.js - --only compress: דוחס את כל המודלים שכבר בקובץ (pack), בלי החבילות של KayKit. מודל שכבר דחוס נשאר כמו שהוא
+async function compressAll(){
+  const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D='),out=JSON.parse(src.slice(i+15).replace(/;\s*$/,''));
+  let a=0,b=0;
+  for(const k in out){if(k.startsWith('wtex_'))continue;   // טקסטורות החומר הן PNG, לא מודל
+    const doc=await io.readBinary(Buffer.from(out[k],'base64'));if(doc.getRoot().listExtensionsUsed().some(e=>e.extensionName==='EXT_meshopt_compression'))continue;
+    const before=out[k].length;await pack(doc);out[k]=Buffer.from(await io.writeBinary(doc)).toString('base64');a+=before;b+=out[k].length}
+  fs.writeFileSync(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+  console.log('נדחס: '+Math.round(a/1024)+'KB → '+Math.round(b/1024)+'KB');console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');
+}
 // node tools/build3d.js C:/kk --only nature: מוסיף רק את NATURE לקובץ הקיים, בלי שאר החבילות ובלי לבנות מחדש את three.js
 const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
 (async()=>{
@@ -239,6 +275,8 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
     console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
   }
   // node tools/build3d.js - --only items: מוסיף רק את ITEMS לקובץ הקיים (לא צריך את חבילות KayKit, אז במקום התיקייה אפשר -)
+  if(ONLY==='bundle'){await bundle();console.log('js/vendor/three-bundle.js',Math.round(fs.statSync(path.join(ROOT,'js/vendor/three-bundle.js')).size/1024)+'KB');return}
+  if(ONLY==='compress'){await compressAll();return}
   if(ONLY==='items'){
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
     const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
@@ -286,13 +324,7 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
   const head='/* נוצר אוטומטית ע"י tools/build3d.js. לא עורכים ביד.\n   דמויות, אנימציות, נשקים ומבנים: KayKit Adventurers, Skeletons, Character Animations, Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת Kay Lousberg (www.kaylousberg.com), רישיון CC0.\n   מפלצות: Ultimate Monsters מאת Quaternius (quaternius.com), רישיון CC0.\n   מוטמעות כאן כטקסט ולא כקבצים, כי המשחק נפתח גם מ-file:// ושם הדפדפן לא טוען קבצים לבד */\n';
   fs.writeFileSync(path.join(ROOT,'js/models3d.js'),head+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
 
-  // three.js בלי import: חבילה אחת שמגדירה את THREE גלובלי
-  const entry=path.join(__dirname,'.three-entry.js');
-  fs.writeFileSync(entry,"import * as T from 'three';import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';window.THREE=Object.assign({},T,{GLTFLoader,SkeletonUtils,mergeGeometries});");
-  fs.mkdirSync(path.join(ROOT,'js/vendor'),{recursive:true});
-  await require('esbuild').build({entryPoints:[entry],bundle:true,minify:true,format:'iife',outfile:path.join(ROOT,'js/vendor/three-bundle.js'),nodePaths:(process.env.NODE_PATH||'').split(path.delimiter).filter(Boolean),
-    banner:{js:'/* three.js r'+require("three").REVISION+' (MIT, three.js authors) + GLTFLoader, SkeletonUtils, mergeGeometries. נוצר ע"י tools/build3d.js */'},logLevel:'warning'});
-  fs.unlinkSync(entry);
+  await bundle();
   console.log(sizes.join('\n'));
   for(const f of ['js/models3d.js','js/vendor/three-bundle.js'])console.log(f,Math.round(fs.statSync(path.join(ROOT,f)).size/1024)+'KB');
 })().catch(e=>{console.error(e);process.exit(1)});
