@@ -1834,6 +1834,16 @@ const TEXT={
   'item.sqPick':{he:'מכוש הקרח של ראה',en:'Rhea’s Ice Pick'},'item.sqCompass':{he:'מצפן השיירה',en:'Caravan Compass'},
   'item.sqLodestone':{he:'אבן המגנט',en:'Storm Lodestone'},'item.sqBanner':{he:'דגל האביר',en:'The Knight’s Banner'},
   'item.sqLantern':{he:'הפנס של לומי',en:'Lumi’s Lamp'},
+  // ---- ליווי דמות (escort.js) ----
+  'qo.escort':{he:w=>'ללוות אל '+w,en:w=>'Escort to '+w},
+  'esc.go':{he:(n,w)=>'🛡️ '+n+' יוצאת אל '+w+'. תשמור עליה!',en:(n,w)=>'🛡️ '+n+' sets off for '+w+'. Keep them safe!'},
+  'esc.done':{he:n=>n+' הגיעו בשלום!',en:n=>n+' made it safely!'},
+  'esc.fail':{he:n=>n+' נפלו. דבר איתם כדי לנסות שוב',en:n=>n+' went down. Talk to them to try again'},
+  'esc.wait':{he:'מחכה לך…',en:'Waiting for you…'},
+  'q.sqScout5':{he:['ליווי לגדה','אני צריכה לבדוק את מחנה הגדה מקרוב. תלווה אותי? אני רואה טוב, אבל רצה לאט.'],en:['Escort to the Bank','I need a closer look at the riverbank camp. Walk me there? I see well, but I run slow.']},
+  'q.sqHerm4':{he:['עלייה למקדש','רגליים זקנות, מקדש רחוק, ומפלצות בדרך. תלווה אותי ואספר לך מה כתוב על האבנים.'],en:['To the Temple','Old legs, a far temple, and monsters on the way. Walk me there and I’ll tell you what the stones say.']},
+  'q.sqFerry5':{he:['בחזרה לסירה','הסירה הטרופה הייתה שלי. אני הולכת לראות אותה פעם אחרונה. אל תיתן לטבועים לקחת גם אותי.'],en:['Back to the Boat','That wrecked boat was mine. I’m going to see it one last time. Don’t let the drowned take me too.']},
+  'q.sqMist4':{he:['אל הפעמון','הפעמון קורא לי. אני הולך, אתה שומר. הערפליים לא אוהבים שמקשיבים.'],en:['To the Bell','The bell is calling me. I walk, you guard. The mistlings hate listeners.']},
 };
 
 // ======== מפלצות נדירות וקווסט הדרגה (rares.js, ranks.js) ========
@@ -1957,8 +1967,8 @@ Object.assign(TEXT,{
 // ======== אבני מסע (waystones.js) ========
 Object.assign(TEXT,{
   'ws.ford':{he:'אבן המעבר',en:'Ford Stone'},'ws.quarry':{he:'אבן המחצבה',en:'Quarry Stone'},'ws.glade':{he:'אבן הקרחת',en:'Glade Stone'},
-  'ws.lair':{he:'אבן המאורה',en:'Lair Stone'},'ws.shore':{he:'אבן החוף',en:'Shore Stone'},'ws.isle':{he:'אבן האי',en:'Isle Stone'},'ws.pass':{he:'אבן המעבר ההררי',en:'Pass Stone'},
-  'ws.dunes':{he:'אבן הדיונות',en:'Dune Stone'},'ws.ruin':{he:'אבן החורבה',en:'Ruin Stone'},'ws.gloom':{he:'אבן האפלה',en:'Gloom Stone'},
+  'ws.lair':{he:'אבן המאורה',en:'Lair Stone'},'ws.shore':{he:'אבן החוף',en:'Shore Stone'},'ws.isle':{he:'אבן האי',en:'Isle Stone'},'ws.abbey':{he:'אבן המנזר',en:'Abbey Stone'},'ws.pass':{he:'אבן המעבר ההררי',en:'Pass Stone'},
+  'ws.dunes':{he:'אבן הדיונות',en:'Dune Stone'},'ws.oasis':{he:'אבן נווה המדבר',en:'Oasis Stone'},'ws.ruin':{he:'אבן החורבה',en:'Ruin Stone'},'ws.wall':{he:'אבן החומה',en:'Wall Stone'},'ws.deadwood':{he:'אבן היער המת',en:'Deadwood Stone'},'ws.gloom':{he:'אבן האפלה',en:'Gloom Stone'},
   'ws.found':{he:n=>'🗿 '+n+' התעוררה! מעכשיו אפשר לקפוץ לכאן',en:n=>'🗿 '+n+' awakened! You can travel here now'},
   'ws.at':{he:n=>'🗿 '+n,en:n=>'🗿 '+n},
   'ws.woke':{he:n=>'🗿 קמת ליד '+n,en:n=>'🗿 You woke at the '+n},

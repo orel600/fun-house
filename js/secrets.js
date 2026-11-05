@@ -41,33 +41,34 @@ const SECRETS={
       {id:'l_carve',kind:'carving',x:-100,y:1250,to:{x:300,y:1700}}, // 23 עץ חרוט על החוף הדרומי, מצביע לדרום
       {id:'l_lv10',kind:'chest',x:-2760,y:450,hide:'bush',lv:10}     // 24 בקצה המערבי
     ],
-    ridge:[
-      {id:'r_chest',kind:'chest',x:-960,y:-560,hide:'rock'},         // בפינה הצפון-מערבית, מאחורי סלע מושלג
-      {id:'r_shrine',kind:'shrine',x:-900,y:560,bless:'speed'},      // דרום-מערב
-      {id:'r_look',kind:'lookout',x:930,y:-120},                     // על השפה המזרחית של הרכס
-      {id:'r_carve',kind:'carving',x:380,y:600,to:{x:-60,y:640}},    // אורן בודד בדרום, מצביע מערבה
-      {id:'r_lv20',kind:'chest',x:980,y:560,hide:'rock',lv:20}       // בפינה הדרום-מזרחית, מאחורי הפנס
+    ridge:[   // המספרים מהשרטוט של הרכס הגדול (docs/concept-regions.md, js/map-ridge.js)
+      {id:'r_chest',kind:'chest',x:-1820,y:-1650,hide:'rock'},       // 21 תיבה מאחורי סלע מושלג, בצפון-מערב
+      {id:'r_shrine',kind:'shrine',x:-1610,y:1650,bless:'speed'},    // 22 מקדש מהירות, ליד האגם הקפוא
+      {id:'r_look',kind:'lookout',x:2010,y:-450},                    // 23 תצפית על השפה המזרחית
+      {id:'r_carve',kind:'carving',x:680,y:1500,to:{x:300,y:1750}},  // 24 אורן חרוט בדרום, מצביע מערבה
+      {id:'r_lv20',kind:'chest',x:2640,y:1650,hide:'rock',lv:20}     // 25 בפינה הדרום-מזרחית, מאחורי הפנס
     ],
-    desert:[
-      {id:'d_chest',kind:'chest',x:960,y:-560,hide:'rock'},          // בפינה הצפון-מזרחית, מאחורי סלע חרוך
-      {id:'d_shrine',kind:'shrine',x:920,y:600,bless:'loot'},        // דרום-מזרח, רחוק מהלבה
-      {id:'d_look',kind:'lookout',x:-940,y:-620},                    // צפון-מערב, על דיונה גבוהה
-      {id:'d_carve',kind:'carving',x:300,y:620,to:{x:-380,y:630}},   // קקטוס בודד בדרום, מצביע מערבה
-      {id:'d_lv20',kind:'chest',x:-980,y:560,hide:'rock',lv:20}      // בפינה הדרום-מערבית, מאחורי הפנס
+    desert:[   // המספרים מהשרטוט של המדבר הגדול (docs/concept-regions.md, map-desert.js)
+      {id:'d_chest',kind:'chest',x:2780,y:-350,hide:'rock'},         // 20 מאחורי סלע חרוך, בצפון-מזרח
+      {id:'d_shrine',kind:'shrine',x:2650,y:1420,bless:'loot'},      // 21 מקדש שלל, בקצה הדרום-מזרחי
+      {id:'d_look',kind:'lookout',x:-2700,y:-1440},                  // 22 תצפית על דיונה, בצפון-מערב
+      {id:'d_carve',kind:'carving',x:900,y:1260,to:{x:500,y:1400}},  // 23 קקטוס חרוט בים הדיונות, מצביע מערבה
+      {id:'d_lv20',kind:'chest',x:-2680,y:640,hide:'rock',lv:20}     // 24 בפינה הדרום-מערבית, מתחת למסה
     ],
-    storm:[
-      {id:'t_chest',kind:'chest',x:-960,y:-560,hide:'rock'},          // בפינה הצפון-מערבית, מאחורי אבן שנפלה ממגדל
-      {id:'t_shrine',kind:'shrine',x:940,y:-560,bless:'speed'},       // צפון-מזרח, מקדש שהברק לא נגע בו
-      {id:'t_look',kind:'lookout',x:-940,y:580},                      // דרום-מערב, על שרידי חומה
-      {id:'t_carve',kind:'carving',x:220,y:620,to:{x:-180,y:640}},    // עץ שרוף בדרום, מצביע מערבה
-      {id:'t_lv30',kind:'chest',x:980,y:560,hide:'rock',lv:30}        // בפינה הדרום-מזרחית, מאחורי הפנס
+    storm:[   // המספרים מהשרטוט של הסערה הגדולה (docs/concept-regions.md, js/map-storm.js)
+      {id:'t_chest',kind:'chest',x:-2800,y:-1330,hide:'rock'},        // 20 תיבה מאחורי אבן שנפלה, בפינה הצפון-מערבית
+      {id:'t_shrine',kind:'shrine',x:2770,y:-1530,bless:'speed'},     // 21 מקדש מהירות בצפון-מזרח, מעבר לנהר
+      {id:'t_look',kind:'lookout',x:-2770,y:1720},                    // 22 תצפית על שרידי החומה, בדרום-מערב
+      {id:'t_carve',kind:'carving',x:630,y:1950,to:{x:-450,y:1800}},  // 23 עץ שרוף חרוט בעיר, מצביע מערבה אל המגדל הגדול
+      {id:'t_lv30',kind:'chest',x:2880,y:1810,hide:'rock',lv:30},     // 24 תיבה לרמה 30, בקצה הכף
+      {id:'t_isle',kind:'chest',x:-620,y:130,hide:'rock'}             // 31 תיבה על האי בנהר
     ],
-    shadow:[
-      {id:'h_chest',kind:'chest',x:-960,y:-560,hide:'bush'},          // בפינה הצפון-מערבית, בתוך שיח צל
-      {id:'h_shrine',kind:'shrine',x:940,y:-540,bless:'loot'},        // צפון-מזרח, מקדש שהחושך לא נגע בו
-      {id:'h_look',kind:'lookout',x:940,y:600},                       // דרום-מזרח, על סלע גבוה מעל החושך
-      {id:'h_carve',kind:'carving',x:-420,y:620,to:{x:-560,y:560}},   // עץ צל בדרום-מערב, מצביע מערבה
-      {id:'h_lv30',kind:'shrine',x:-980,y:250,bless:'speed',lv:30}    // בקצה המערבי, מעל בור החושך
+    shadow:[   // המספרים מהשרטוט של לב הצל הגדול (docs/concept-regions.md, js/map-shadow.js)
+      {id:'h_chest',kind:'chest',x:-2500,y:-1750,hide:'bush'},        // 19 תיבה בשיח צל, בפינה הצפון-מערבית
+      {id:'h_shrine',kind:'shrine',x:2750,y:-1600,bless:'loot'},      // 20 מקדש שלל, בצפון-מזרח
+      {id:'h_look',kind:'lookout',x:2500,y:1750},                     // 21 תצפית על סלע גבוה, בדרום-מזרח
+      {id:'h_carve',kind:'carving',x:-1250,y:1800,to:{x:-700,y:1500}},// 22 עץ צל חרוט בדרום, מצביע מזרחה
+      {id:'h_lv30',kind:'shrine',x:-2700,y:1350,bless:'speed',lv:30}  // 23 ליד בור החושך
     ]
   }
 };

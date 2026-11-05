@@ -449,6 +449,17 @@ function worldBot(m,L,god){
     if(TR){const rc=terrainReach(WORLD,'meadow');L.wTerr={ms:TR.ms,size:WORLD.size.w+'×'+WORLD.size.h,bad:terrainBad(WORLD,'meadow'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,lazy:W.groups.filter(g=>g.lazy).length,river:tBlocked(WORLD.map.rivers[0].pts[5][0],WORLD.map.rivers[0].pts[5][1]),bridge:!tBlocked(WORLD.map.bridges[0].x,WORLD.map.bridges[0].y),ford:tSlow(WORLD.map.fords[0].x,WORLD.map.fords[0].y)}}   // המפה של האחו (terrain.js)
     if(TR&&WORLD.regions.lake.map){const LR=WORLD.regions.lake,M=LR.map,rc=terrainReach(LR,'lake');   // אגם הערפל הגדול (js/map-lake.js): נבנה ונבדק כאן, ואז חוזרים למפה של האחו
       L.wLake={ms:TR.ms,bad:terrainBad(LR,'lake'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,lake:tBlocked(-600,700),isle:!tBlocked(LR.waystones[1].x,LR.waystones[1].y),swamp:tSlow(M.marks.find(m=>m.id==='boards').x,M.marks.find(m=>m.id==='boards').y)};terrainEnter(WORLD,'meadow')}
+    if(TR&&WORLD.regions.ridge.map){const RR=WORLD.regions.ridge,M=RR.map,rc=terrainReach(RR,'ridge');   // הרכס הקפוא הגדול (js/map-ridge.js)
+      L.wRidge={ms:TR.ms,bad:terrainBad(RR,'ridge'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,crag:tBlocked(-1100,-200),gap:tBlocked(2180,520)&&!tBlocked(M.bridges[0].x,M.bridges[0].y)};terrainEnter(WORLD,'meadow')}
+    if(TR&&WORLD.regions.shadow.map){const SR=WORLD.regions.shadow,rc=terrainReach(SR,'shadow');   // לב הצל הגדול (js/map-shadow.js): ארבעה חלקים סביב התהום
+      L.wShadow={ms:TR.ms,bad:terrainBad(SR,'shadow'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,abyss:tBlocked(-700,0),bone:!tBlocked(-10,25),rocks:!!tPath(1100,-700,1150,950),wood:tBlocked(-2400,-400)};terrainEnter(WORLD,'meadow')}
+    if(TR){const D=WORLD.regions.desert,M=D.map,rc=terrainReach(D,'desert'),T=TRC.desert;L.dTerr={ms:T.ms,bad:terrainBad(D,'desert'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,mesa:tBlocked(-1500,-800),lava:tBlocked(D.ponds[1].x,D.ponds[1].y),canyon:!tBlocked(-1600,-260),cut:!!tPath(400,-700,600,300),dune:tSlow(1100,950)};terrainEnter(WORLD,'meadow')}   // המדבר הגדול (ת17, map-desert.js). terrainEnter: חוזרים למפת האחו
+    if(TR&&WORLD.regions.storm.map){const SR=WORLD.regions.storm,M=SR.map,rc=terrainReach(SR,'storm'),mk=id=>M.marks.find(m=>m.id===id),a=SR.home,b=M.bridges[0];   // מגדלי הסערה הגדולים (js/map-storm.js): נבנה ונבדק כאן, ואז חוזרים למפה של האחו
+      for(const m of M.marks)rc['mark.'+m.id]=!!tPath(a.x,a.y+WORLD.arrive,m.x,m.y);
+      if(typeof WNPC!=='undefined')for(const id in WNPC.list){const N=WNPC.list[id];if(N.reg==='storm')rc['npc.'+id]=!tBlocked(N.at.x,N.at.y)&&!!tPath(a.x,a.y+WORLD.arrive,N.at.x,N.at.y)}   // הדמויות והלוח (worldnpc.js, questboard.js)
+      L.wStorm={ms:TR.ms,bad:terrainBad(SR,'storm'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,river:tBlocked(-210,-300),bridge:!tBlocked(b.x,b.y),stones:tSlow(mk('stones').x,mk('stones').y),
+        wall:tBlocked(-1000,1072)&&tBlocked(700,987),gate:!tBlocked(mk('egate').x,mk('egate').y),tower:tBlocked(SR.towers[5].x,SR.towers[5].y),
+        towerFree:!SR.foes.concat(SR.fields,M.marks,SR.waystones,M.dens).some(o=>SR.towers.some(t=>Math.hypot(o.x-t.x,o.y-t.y)<t.r+40))};terrainEnter(WORLD,'meadow')}
     L.wNodes=S.nd.list.length;L.wFoes=enemies.length;L.wCreatures=enemies.filter(e=>e.creature).length;m.w0=SAVE.bag.wood||0;m.wt=W.t;
     // המפלצות הראשונות ליד השער: קלות. אחת נזרקת רחוק מהבית שלה (צריכה לחזור), וקבוצה אחת מופלת (צריכה לחזור אחרי זמן)
     const st=enemies.filter(e=>e.zone==='start'),gi=G=>WORLD.foes.indexOf(G),home=e=>WORLD.foes[e.home];
@@ -916,6 +927,29 @@ function worldBot(m,L,god){
   check(sq.open&&sq.visit&&sq.paid&&sq.chain&&sq.hold&&sq.meet,'קווסט צדדי: '+(sq.open?'נפתח כשמוצאים את הסיירת':'לא נפתח')+', '+(sq.visit?'לחקור מקום נספר':'לחקור לא נספר')+', '+(sq.paid?'פרס XP ומטבעות':'בלי פרס')+', '+
     (sq.chain?'השרשרת ממשיכה':'השרשרת נתקעה')+', '+(sq.hold?'להגן נספר בשניות':'להגן לא נספר')+', '+(sq.meet?'הודעה נמסרת עם פרס במקום':'הודעה לא נמסרה'));
   check(sq.board&&sq.swap&&sq.bReady&&sq.bPaid&&sq.day&&sq.dayNew,'לוח מודעות: '+(sq.board?'3 משימות עם פרס':'אין 3 משימות')+', '+(sq.swap?'מה שנלקח מתחלף בחדשה':'לא התחלף')+', '+(sq.bPaid?'פרס והלוח שוב מלא':'בלי פרס או לוח חסר')+', '+(sq.dayNew?'יום חדש מחדש':'יום חדש לא מחדש'));
+  // ליווי דמות (escort.js): לכל קווסט ליווי יש דרך מהבית שלה ליעד. הנזיר יוצא לדרך כשאתה לידו והולך, אויב שמגיע אליו מפיל אותו: הקווסט נכשל,
+  // הוא חוזר הביתה ולא יוצא שוב עד שמדברים איתו. בפעם השנייה הוא מגיע, היעד הושלם, והפרס אצלו. בסוף מחזירים את השמירה
+  const es=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={},ov=['ovStart','ovOver','ovLevel','ovBoss','ovWDeath'].map(id=>[id,$(id).hidden]);   // enterWorld מסתיר את מסך הפתיחה, והבדיקה באנגלית לוחצת עליו אחר כך
+    try{const Q=QS(),E0=QUESTS.early.ids;QUESTS.early.ids=QUESTS.list.map(q=>q.id);r.paths={};
+      for(const q of QUESTS.list){const i=q.obj.findIndex(o=>o.type==='escort');if(i<0)continue;const N=WNPC.list[q.giver],p=sqPlace(q.obj[i].what);
+        enterWorld('home',N.reg||'meadow');r.paths[q.id]=!!tPath(N.at.x,N.at.y,p.x,p.y)}
+      SAVE.met.hermit=1;Q.done.sqHerm3=1;enterWorld('home','meadow');enemies=[];const W=S.wd,n=wnpcState().hermit,A=WNPC.list.hermit.at;
+      questAct('accept','sqHerm4');const near=()=>{P.x=n.x+40;P.y=n.y;P.hp=P.maxHp};
+      const step=t=>{for(let i=0;i<t*30;i++){near();escUpdate(1/30)}};
+      step(0.1);r.start=!!W.esc&&W.esc.id==='hermit';const x0=n.x;step(1);r.walk=Math.hypot(n.x-A.x,n.y-A.y)>40&&n.walk;
+      const e=addEnemy('grunt',n.x+15,n.y);e.esc=true;e.dmg=ESCORT.hp+10;step(0.3);
+      r.fail=!W.esc&&Math.hypot(n.x-A.x,n.y-A.y)<1&&!qReady(QBY.sqHerm4)&&!!QS().active.sqHerm4;
+      step(0.5);r.noRestart=!W.esc;e.dead=true;enemies=[];
+      escTalk('hermit');step(0.1);r.again=!!W.esc;
+      for(let k=0;k<200&&W.esc;k++)step(1);
+      r.arrive=!W.esc&&qReady(QBY.sqHerm4)&&Math.hypot(n.x-SIDEQ.places.meadow.temple.x,n.y-SIDEQ.places.meadow.temple.y)<ESCORT.arrive+5;
+      const x1=SAVE.hero.xp;questAct('claim','sqHerm4');r.paid=SAVE.hero.xp>x1&&!!QS().done.sqHerm4;
+      QUESTS.early.ids=E0;
+    }catch(err){r.err=String(err&&err.stack||err).slice(0,300)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}for(const [id,h] of ov)$(id).hidden=h;return r});
+  check(es.start&&es.walk&&es.fail&&es.noRestart&&es.again&&es.arrive&&es.paid&&Object.values(es.paths||{}).every(Boolean),'ליווי: '+Object.keys(es.paths||{}).filter(k=>es.paths[k]).length+'/'+Object.keys(es.paths||{}).length+' עם דרך'+
+    ', '+(es.start&&es.walk?'יוצא לדרך והולך':'לא יצא לדרך')+', '+(es.fail&&es.noRestart?'נופל, הקווסט נכשל והוא חוזר הביתה':'נפילה לא עובדת')+', '+(es.again?'שיחה מנסה שוב':'לא מנסה שוב')+', '+
+    (es.arrive?'מגיע ליעד':'לא הגיע')+', '+(es.paid?'ופרס':'בלי פרס')+(es.err?' ('+es.err+')':''));
   // דרגות (ranks.js): רמה 20 פותחת קווסט דרגה אצל הכוהנת, הסגנון קובע איזו דרגה, ולקיחת הפרס שומרת אותה, מפעילה טקס ומוסיפה בונוס קבוע. בסוף מנקים
   const rk=await page.evaluate(()=>{const q=QUESTS.list.find(q=>q.kind==='rank'),mode=S.mode,r={every:RANKS.every};
     r.locked=!qOpen(q);
@@ -3246,7 +3280,11 @@ function worldBot(m,L,god){
     (Nn.push===0?', לא חוסמים':', דוחפים '+Nn.push+'px')+(Nn.free?'':', מישהו על הדרך או בתוך מבנה')+(Nn.cheer?', מריע לשדרוג':', לא מריע לשדרוג'));
   check(L.gateNoRun&&L.gateBtn&&L.wEnter,'שער הכפר: '+(L.gateNoRun?'מעבר בשער לא מוציא מהכפר':'יצא בלי לחיצה')+', '+(L.wEnter?'לחיצה על "'+L.gateBtn+'" מוציאה לעולם':'לחיצה לא הוציאה לעולם'));
   {const T=L.wTerr;check(!!T&&!T.bad.length&&!T.un.length&&T.river&&T.bridge&&T.ford<1,'מפת האחו: '+(T?T.size+', נבנתה ב-'+T.ms+'ms, '+(T.bad.length?'בתוך מים/יער: '+T.bad.join(', '):'אף מקום לא בתוך מים או יער')+', '+(T.un.length?'אין דרך אל: '+T.un.join(', '):'כל '+T.n+' המקומות נגישים מהשער')+(T.river?', הנהר חוסם':', הנהר לא חוסם!')+(T.bridge?', הגשר פתוח':', הגשר חסום!')+', המעבר הרדוד ×'+T.ford.toFixed(2)+', '+T.lazy+' קבוצות רחוקות ממתינות':'לא נבנתה'))}
+  {const T=L.wStorm;check(!!T&&!T.bad.length&&!T.un.length&&T.river&&T.bridge&&T.stones<1&&T.wall&&T.gate&&T.tower&&T.towerFree,'מפת הסערה: '+(T?'נבנתה ב-'+T.ms+'ms, '+(T.bad.length?'בתוך חסימה: '+T.bad.join(', '):'אף מקום לא בתוך חסימה')+', '+(T.un.length?'אין דרך אל: '+T.un.join(', '):'כל '+T.n+' המקומות נגישים מהשער')+(T.river?', הנהר חוסם':', הנהר לא חוסם!')+(T.bridge?', הגשר פתוח':', הגשר חסום!')+', מעבר האבנים ×'+T.stones.toFixed(2)+(T.wall?', החומה חוסמת':', החומה לא חוסמת!')+(T.gate?', השער פתוח':', השער חסום!')+(T.tower?', המגדלים חוסמים':', המגדל לא חוסם!')+(T.towerFree?'':', משהו נופל על מגדל!'):'לא נבדקה'))}
   {const T=L.wLake;check(!!T&&!T.bad.length&&!T.un.length&&T.lake&&T.isle&&T.swamp<1,'מפת האגם: '+(T?'נבנתה ב-'+T.ms+'ms, '+(T.bad.length?'בתוך מים: '+T.bad.join(', '):'אף מקום לא בתוך מים')+', '+(T.un.length?'אין דרך אל: '+T.un.join(', '):'כל '+T.n+' המקומות נגישים מהשער')+(T.lake?', האגם חוסם':', האגם לא חוסם!')+(T.isle?', האי פתוח':', האי חסום!')+', הביצה ×'+T.swamp.toFixed(2):'לא נבדקה'))}
+  {const T=L.wRidge;check(!!T&&!T.bad.length&&!T.un.length&&T.crag&&T.gap,'מפת הרכס: '+(T?'נבנתה ב-'+T.ms+'ms, '+(T.bad.length?'בתוך צוק/סדק: '+T.bad.join(', '):'אף מקום לא בתוך צוק או סדק')+', '+(T.un.length?'אין דרך אל: '+T.un.join(', '):'כל '+T.n+' המקומות נגישים מהשער')+(T.crag?', הגוש חוסם':', הגוש לא חוסם!')+(T.gap?', החריץ חוסם והגשר פתוח':', החריץ או הגשר לא תקינים!'):'לא נבדקה'))}
+  {const T=L.wShadow;check(!!T&&!T.bad.length&&!T.un.length&&T.abyss&&T.bone&&T.rocks&&T.wood,'מפת הצל: '+(T?'נבנתה ב-'+T.ms+'ms, '+(T.bad.length?'בתוך תהום/יער: '+T.bad.join(', '):'אף מקום לא בתוך התהום או היער')+', '+(T.un.length?'אין דרך אל: '+T.un.join(', '):'כל '+T.n+' המקומות נגישים מהשער (גם השער לעומק)')+(T.abyss?', התהום חוסמת':', התהום לא חוסמת!')+(T.bone?', גשר העצם פתוח':', גשר העצם חסום!')+(T.rocks?', יש דרך על הסלעים המרחפים':', אין דרך על הסלעים!')+(T.wood?', היער חוסם':', היער לא חוסם!'):'לא נבדקה'))}
+  {const T=L.dTerr;check(!!T&&!T.bad.length&&!T.un.length&&T.mesa&&T.lava&&T.canyon&&T.cut&&T.dune<1,'מפת המדבר: '+(T?'נבנתה ב-'+T.ms+'ms, '+(T.bad.length?'בתוך מסה/לבה: '+T.bad.join(', '):'אף מקום לא בתוך מסה או לבה')+', '+(T.un.length?'אין דרך אל: '+T.un.join(', '):'כל '+T.n+' המקומות נגישים מהשער')+(T.mesa?', המסה חוסמת':', המסה לא חוסמת!')+(T.lava?', הלבה חוסמת':', הלבה לא חוסמת!')+(T.canyon?', הקניון פתוח':', הקניון חסום!')+(T.cut?', יש דרך בנקיק':', הנקיק חסום!')+', הדיונות ×'+T.dune.toFixed(2):'לא נבנתה'))}
   check(L.wEnter&&L.wHud&&!!L.wName&&L.wNodes>0&&L.wFoes>0,'עולם פתוח: '+(L.wName||'בלי שם אזור')+(L.wHud?', ממשק העולם מוצג':', ממשק העולם חסר')+', '+L.wNodes+' מקורות משאבים, '+L.wFoes+' אויבים'+(L.wCreatures?' ('+L.wCreatures+' יצורי משאבים)':' (יצורי משאבים יגיעו עם הכלכלה)'));
   check(L.wGather>0&&L.wGatherSaved,'איסוף בעולם: '+(L.wGather?'עץ +'+L.wGather+' נכנס לתרמיל אחרי '+L.wGatherT+' שניות'+(L.wGatherSaved?', נשמר':', לא נשמר'):'לא נאסף')+(L.wQuest?' · קווסט '+L.wQuest:''));
   check(!!L.wKill,'אויב בעולם: '+(L.wKill?'הופל '+L.wKill:'לא הופל'));

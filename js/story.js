@@ -38,27 +38,29 @@ const STORY={
     // האחו הגדול (ת9, 5.11.2026): הפנס והמאורה בנקודה 16 בשרטוט (docs/concept-meadow.md), במערה בצוק הדרום-מזרחי, הכי רחוק מהשער. השומר עומד ב-GIANT.lair מתחת לפנס
     earth:{reg:'meadow',x:2590,y:1640,quest:'s1Warden',glow:'#FFD36B',col:C.ember,
       warden:{type:'golem',hp:46,dmg:1.6,r:1.7,speed:0.8,wake:520,
-        slam:{every:3.2,range:250,r:190,warn:0.8,dmg:22,col:'#FF4A3A'},
+        slam:{every:4.2,range:250,r:190,warn:0.8,dmg:22,col:'#FF4A3A'},   // every 3.2←4.2 (5.11, fix/mage-boss): הלוחם היה איטי ב-33% מהממוצע, כי יצא מהעיגול כל 3 שניות
         charge:{every:6.5,min:240,max:620,warn:1.0,len:600,w:96,speed:620,dmg:24,stun:2,vuln:2,col:'#FF4A3A'}}},
     // פנס המים: על אי בלגונה בדרום-מערב של האגם (5 בשרטוט, js/map-lake.js). השומר במאורה מתחתיו (GIANT.lair). שומר המים גם יורה מים בשלושה כיוונים (shoot)
     // ev: מה מדווחים לקווסט כשהשומר נופל (questEvent('story',ev)). head: ראש הכפר אומר משפט אחרי שהפנס נדלק
     water:{reg:'lake',x:-2300,y:1230,quest:'s2Warden',glow:'#6FD3FF',col:'#3F7BF5',ev:'tide',head:true,
       warden:{type:'tidewarden',hp:116,dmg:1.3,r:1.6,speed:0.9,wake:520,shoot:{every:2.4,n:3,spread:0.32,speed:190,r:7,dmg:11}}},
-    // פנס הקרח: בפינה הדרום-מזרחית של הרכס. שומר הקרח יורה מניפה רחבה של חמישה רסיסים, לאט יותר
-    ice:{reg:'ridge',x:720,y:370,quest:'s3Warden',glow:'#CFF3FF',col:'#7FD4FF',ev:'frost',head:true,
+    // פנס הקרח: בדרום-מזרח של הרכס, מתחת לחריץ (5 בשרטוט, js/map-ridge.js). שומר הקרח יורה מניפה רחבה של חמישה רסיסים, לאט יותר
+    ice:{reg:'ridge',x:2210,y:1330,quest:'s3Warden',glow:'#CFF3FF',col:'#7FD4FF',ev:'frost',head:true,
       warden:{type:'frostwarden',hp:272,dmg:1.35,r:1.65,speed:0.85,wake:520,shoot:{every:2.8,n:5,spread:0.24,speed:170,r:7,dmg:12}}},
     // פנס האש: בפינה הדרום-מערבית של המדבר. שומר האש שולח טבעת אש שמתרחבת ממנו (ring): speed פיקסלים לשנייה עד max,
     // w עובי הטבעת, gap רוחב הפתח (ברדיאנים) שבו עוברים בלי להיפגע. הטבעת פוגעת פעם אחת לכל היותר
-    fire:{reg:'desert',x:-650,y:400,quest:'s4Warden',glow:'#FFB347',col:'#FF6A2A',ev:'blaze',head:true,
+    // המדבר הגדול (ת17): הפנס בסוף הקניון הסגור (5 בשרטוט, docs/concept-regions.md). leash 900 משאיר את השומר בתוך הקניון
+    fire:{reg:'desert',x:-2550,y:-400,quest:'s4Warden',glow:'#FFB347',col:'#FF6A2A',ev:'blaze',head:true,
       warden:{type:'emberwarden',hp:198,dmg:1.4,r:1.7,speed:0.85,wake:520,ring:{every:3.4,speed:165,max:340,w:14,gap:1.0,dmg:15}}},
     // פנס הברק: בפינה הדרום-מזרחית של מגדלי הסערה. שומר הסערה מסמן n עיגולי ברק (marks): אחד מתחת לשחקן והשאר עד spread ממנו.
     // כל עיגול ברדיוס r מתפוצץ אחרי fuse שניות. מי שעוד בתוכו נפגע. מספיק לזוז
-    bolt:{reg:'storm',x:720,y:390,quest:'s5Warden',glow:'#E2CCFF',col:'#B07CFF',ev:'thunder',head:true,
+    bolt:{reg:'storm',x:2450,y:1330,quest:'s5Warden',glow:'#E2CCFF',col:'#B07CFF',ev:'thunder',head:true,
       warden:{type:'stormwarden',hp:536,dmg:1.35,r:1.7,speed:0.85,wake:520,marks:{every:2.8,n:4,spread:170,r:50,fuse:1.2,dmg:16,flash:0.25}}},
     // הפנס הלבן: באמצע הדרום של לב הצל. הצל עובר בשלבים לפי החיים שנשארו לו (phases, לפי הסדר): בכל שלב ההתקפה של השומר ההוא
     // (shoot, ring או marks מהשורה שלו כאן) והחולשה שלו. earth: אין לשומר האבן התקפה, אז הצל רץ מהר יותר (rush).
     // learn: המכפיל לסוג הנזק שהכי השתמשת בו בעולם, weak: המכפיל לחולשה של השלב. head:false: במקום משפט רגיל, הסוף (storyFinale)
-    light:{reg:'shadow',x:0,y:370,quest:'s6Heart',glow:'#FFFFFF',col:'#9C6BFF',ev:'heart',head:false,
+    light:{reg:'shadow',x:0,y:1180,   // לב הצל הגדול: 5 בשרטוט, בדרום, מול גשר העצם (js/map-shadow.js)
+          quest:'s6Heart',glow:'#FFFFFF',col:'#9C6BFF',ev:'heart',head:false,
       warden:{type:'shade',hp:545,dmg:1.5,r:1.8,speed:0.9,wake:540,phases:['earth','water','ice','fire','bolt'],rush:1.4,learn:0.4,weak:1.6}}
   },
   /* מכות עם הכנה (docs/plan-combat.md, שינוי 1): לפני כל התקפה של שומר יש סימן שאפשר לקרוא ולזוז ממנו, בצבע של השומר.

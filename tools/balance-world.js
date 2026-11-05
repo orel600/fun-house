@@ -14,12 +14,13 @@ const opt=k=>{const i=args.indexOf('--'+k);if(i<0)return null;const v=args[i+1];
 const BAL={
   cls:(opt('cls')||'warrior,hunter,mage').split(','),
   seed:+(opt('seed')||7),
-  cap:+(opt('cap')||1200),          // שניות משחק לפרק
+  cap:+(opt('cap')||2400),        // מאז רמה 100 (#356) הטיפוס לרמה המומלצת ארוך יותר. עם 1200 הבוט נלחם בשומרים 2-5 רמות מתחת          // שניות משחק לפרק
   wardenCap:600,
   only:+(opt('chapters')||0),      // רק הפרקים הראשונים (--chapters 1: רק האחו ושומר האדמה)
   travel:60,                       // שניות בשלב השומר בלי להגיע למאורה, ואז קופצים אליה (ראה למטה)                   // מתוכן, לכל היותר לקרב בשומר
   fights:+(opt('fights')||1),      // כמה פעמים להפיל כל שומר, כדי להוריד את הרעש (--fights 10). אחרי כל ניצחון: חיים מלאים, והשומר קם שוב
-  dodge:opt('nododge')?0:1,        // הבוט יוצא מעיגולי ברק ומעיגול רקיעה, כמו שחקן שרואה את הסימן (--nododge: עומד במקום)
+  dodge:opt('nododge')?0:1,
+  smart:opt('blind')?0:1,          // מול שומר בוחרים את הסקילים שהוא חלש להם (--blind: סבב רגיל, כמו קודם)        // הבוט יוצא מעיגולי ברק ומעיגול רקיעה, כמו שחקן שרואה את הסימן (--nododge: עומד במקום)
   step:250,                        // כל כמה מילישניות משחק הבוט מחליט
   swapEvery:75,                    // כל כמה שניות מחליפים סקיל אחד בספר, כדי שכל הסקילים הפתוחים יימדדו
   flee:0.3,
@@ -36,13 +37,14 @@ const BAL={
 
 /* ---- הבוט, בתוך הדף ---- */
 function install(B){
-  const m=window.__bal={B,ch:0,ph:'grind',gt:0,chT:0,wT:0,rep:{ch:[],hurtBy:{},dmg:{},casts:{},block:{},noPay:{},deaths:0,errors:[]},lastMg:0,lastSw:0,swI:0,dead:0};
+  const m=window.__bal={B,ch:0,ph:'grind',gt:0,chT:0,wT:0,rep:{ch:[],boss:{},hurtBy:{},dmg:{},casts:{},block:{},noPay:{},deaths:0,errors:[]},lastMg:0,lastSw:0,swI:0,dead:0};
   const R=m.rep;
   // נזק: כל מכה נמדדת לפי מקור. סקיל מהספר דרך wsbHit, סקיל של הזירה לפי סוג הנזק, והשאר לפי הנשק
   const OLD={earth:'quake',lightning:'zap',water:'splash',ice:'frost',fire:'flame'};
   const d0=damage;damage=function(e,base,w,ang,t){const h=e.hp;const r=d0.apply(this,arguments);
     if(S.wd&&!e.node){const got=Math.max(0,h-Math.max(0,e.hp)),src=window.__src||(w==='skill'?OLD[t]||'skill':w);
-      const c=R.dmg[m.ch]||(R.dmg[m.ch]={});c[src]=(c[src]||0)+got}return r};
+      const c=R.dmg[m.ch]||(R.dmg[m.ch]={});c[src]=(c[src]||0)+got;
+      if(e.warden&&!e.dpBoss){const b=R.boss[m.ch]||(R.boss[m.ch]={}),k=src+':'+(t||'physical')+'×'+(((e.mult||{})[t||'physical'])??1);b[k]=(b[k]||0)+got}}return r};   // נזק לשומר: לפי מקור, סוג ומכפיל
   const h0=wsbHit;wsbHit=function(e,id){window.__src=id;try{return h0.apply(this,arguments)}finally{window.__src=null}};
   const u0=wskUse;wskUse=function(id){const ok=u0.apply(this,arguments);if(ok){const c=R.casts[m.ch]||(R.casts[m.ch]={});c[id]=(c[id]||0)+1}return ok};
   // הזמן: הבוט מריץ את הפריימים בעצמו (frameStep ב-main.js), 0.05 שניות כל אחד, בלי השעון המזויף שמאט פי מאה.
@@ -110,7 +112,7 @@ function install(B){
     const L=wsbLoad(),mine=open.filter(id=>WSKBOOK.list[id].cls===heroId());const pool=mine.length>=2?mine:open;
     m.swI=(m.swI+1)%pool.length;const nx=pool[m.swI];if(L.includes(nx))return;L[m.swI%2]=nx;}
   function steer(tx,ty,flee,stop){let dx=0,dy=0;
-    if(!flee&&S.wd&&typeof TR!=='undefined'&&TR&&Math.hypot(tx-P.x,ty-P.y)>stop){const t=tDir(P,tx,ty);tx=t.x;ty=t.y;stop=0}   // אזור עם מפה (terrain.js, האחו הגדול): מסביב לנהר וליער, כמו check.js
+    if(!flee&&S.wd&&typeof TR!=='undefined'&&TR&&Math.hypot(tx-P.x,ty-P.y)>stop){const t=tDir(P,tx,ty);if(t.x!==tx||t.y!==ty){tx=t.x;ty=t.y;stop=0}}   // דרך פתוחה: נשארים בטווח של הנשק (קשת ומטה לא נכנסים לתוך השומר)   // אזור עם מפה (terrain.js, האחו הגדול): מסביב לנהר וליער, כמו check.js
     const d=Math.hypot(tx-P.x,ty-P.y)||1;if(flee||d>stop){dx=(tx-P.x)/d;dy=(ty-P.y)/d;if(flee){dx=-dx;dy=-dy}}
     // תקוע באחו הגדול (קצה של נהר או צוק, דרך שלא נמצאה): 8 שניות בלי לזוז 40 פיקסלים, אז 2 שניות לכיוון אקראי, כמו שחקן שמסתובב. נספר ב-R.unstick
     if(S.wd&&typeof TR!=='undefined'&&TR){const k=m.stk;if(!k||Math.hypot(P.x-k.x,P.y-k.y)>40)m.stk={x:P.x,y:P.y,t:m.gt};
@@ -138,7 +140,12 @@ function install(B){
     // חזרה לכפר כל B.trip שניות (playtime.js), כמו שחקן שחוזר למכור, לשדרג ולנוח. רק בזמן טיפוס
     if(B.trip&&m.ph==='grind'&&now-(m.lastTrip||0)>B.trip){m.lastTrip=now;R.trips=(R.trips||0)+1;worldUi(false);enterVillage();return{}}
     if(now-m.lastMg>5){m.lastMg=now;equip();points();if(!foes().some(e=>Math.hypot(e.x-P.x,e.y-P.y)<260))dropsCollectAll()}
-    if(now-m.lastSw>B.swapEvery){m.lastSw=now;swap()}
+    // מול שומר: הסקילים שהוא הכי חלש להם (הטבעת מתחת לשומר מראה את החולשה, ושחקן בוחר לפיה). אחרת מחליפים בסבב כדי למדוד את כולם
+    const bw=S.wd&&S.wd.warden&&!S.wd.warden.dead&&B.smart?S.wd.warden:null;
+    if(bw&&now-(m.lastBest||0)>4){m.lastBest=now;const mu=bw.mult||{},L=wsbLoad();
+      const open=wsbIds().filter(id=>id!==wsbWeapon()&&wsbOpen(id)&&WSKBOOK.list[id]),sc=id=>(mu[WSKBOOK.list[id].dt]??1)+(WSKBOOK.list[id].cls===heroId()?0.01:0);
+      open.sort((a,b)=>sc(b)-sc(a));if(open[0])L[0]=open[0];if(open[1])L[1]=open[1]}
+    else if(!bw&&now-m.lastSw>B.swapEvery){m.lastSw=now;swap()}
     // שלב: אחרי הרמה המומלצת, לפנס
     const ready=chap().kills?(m.kc||0)>=chap().kills&&!c.gate&&heroLv()>=need():heroLv()>=need();
     if(m.ph==='grind'&&ready&&now-m.chT<B.cap-30)m.ph='warden';
@@ -220,6 +227,8 @@ if(require.main===module)(async()=>{
   // סולם הבוסים (GIANT.ladder.ratio, ניר 5.11): כמה זמן לוקח להפיל כל שומר, בממוצע על המחלקות, ופי כמה מהקודם
   const ft=BAL.chapters.map((_,i)=>{const v=BAL.cls.map(c=>(out[c].ch[i]||{}).fightT).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null});
   for(const c of BAL.cls){const hb=out[c].hurtBy||{};console.log('  נזק לשחקן בקרב בשומר, '+c+': '+Object.keys(hb).map(i=>BAL.chapters[i].k+' '+Object.entries(hb[i]).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>k+' '+Math.round(v)).join('/')).join(' | '))}
+  for(const c of BAL.cls){const bb=out[c].boss||{};console.log('  נזק לשומר, '+c+': '+Object.keys(bb).map(i=>{const t=Object.values(bb[i]).reduce((a,b)=>a+b,0)||1;
+    return BAL.chapters[i].k+' '+Object.entries(bb[i]).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>k+' '+Math.round(v/t*100)+'%').join('/')}).join(' | '))}
   console.log('\nלכל מחלקה (ממוצע '+BAL.fights+' קרבות, מוות בקרבות בשומר):');
   for(const c of BAL.cls)console.log('  '+c+': '+out[c].ch.map((h,i)=>BAL.chapters[i].k+' '+(h.fightT??'-')+'s/'+(h.wDeaths||0)+'💀').join(', '));
   console.log('\nזמן להפיל כל שומר (ממוצע, שניות): '+ft.map((t,i)=>BAL.chapters[i].k+' '+(t==null?'-':t.toFixed(1))+(i&&t&&ft[i-1]?' (×'+(t/ft[i-1]).toFixed(2)+')':'')).join(', '));

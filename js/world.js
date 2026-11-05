@@ -128,17 +128,7 @@ const WORLD={
     // snow: פתיתי שלג בקנבס (wSnow). ponds כאן הם סדקים בקרח שאי אפשר לעבור
     ridge:{
       region:'ridge',back:'lake',enter:'w.enter.ridge',noNpc:true,snow:true,ground:'#33404E',pondCol:['#1C2A3A','#9FD8F0'],
-      home:{x:0,y:-600,r:44},gates:{},waystones:[{id:'pass',x:-420,y:-110},{id:'lair',x:450,y:220}],
-      paths:{desert:{x:-860,y:-590,r:44,need:'ice'}},   // פרק 4: אחרי שפנס הקרח נדלק, מעבר בצפון-מערב שיורד למדבר הבוער
-      ponds:[{x:-120,y:40,r:150},{x:420,y:-160,r:90},{x:-560,y:300,r:110}],
-      fields:[{kind:'pine',n:10,x:-560,y:-260,r:230},{kind:'pine',n:6,x:250,y:280,r:180},{kind:'pine',n:4,x:-820,y:80,r:120},
-              {kind:'iceRock',n:6,x:620,y:-330,r:190},{kind:'iceRock',n:4,x:-300,y:480,r:140},{kind:'rock',n:4,x:180,y:-260,r:130}],
-      foes:[
-        {type:'frostwraith',n:2,x:-180,y:-430,r:110},{type:'frostwraith',n:2,x:210,y:-410,r:110},
-        {type:'rimeknight',n:2,x:-420,y:-200,r:130},{type:'frostwraith',n:3,x:330,y:-60,r:140},{type:'rimeknight',n:3,x:640,y:-280,r:150},
-        {type:'rimeknight',n:3,x:-700,y:200,r:150},{type:'frostwraith',n:3,x:120,y:360,r:140},{type:'rimeknight',n:3,x:620,y:300,r:150},
-        {type:'rimeknight',creature:true,n:2,x:620,y:-330,r:120},{type:'frostwraith',creature:true,n:2,x:-560,y:-260,r:130}
-      ],
+      // המפה, המקומות, המשאבים והאויבים: js/map-ridge.js (הרכס הגדול)
       // קשה מהאגם: מי שהגיע לכאן כבר הדליק שני פנסים
       zones:[
         {id:'start',to:360, hp:0.8,dmg:0.6,speed:0.8, leash:260,back:16},
@@ -150,64 +140,27 @@ const WORLD={
     // פרק 4: המדבר הבוער (docs/story.md). חום, אויבים חמים (מים!), סלעי להבה עם אודם, ופנס האש בפינה הדרום-מערבית (STORY.lanterns.fire).
     // heat: אדי חום ורוח חול בקנבס (wHeat). ponds כאן הם בורות לבה שאי אפשר לעבור
     desert:{
-      region:'desert',back:'ridge',enter:'w.enter.desert',noNpc:true,heat:true,ground:'#5A4129',pondCol:['#7A2A10','#FF8A3D'],
-      home:{x:0,y:-600,r:44},gates:{},waystones:[{id:'dunes',x:420,y:-300},{id:'lair',x:-380,y:180}],
-      paths:{storm:{x:860,y:-590,r:44,need:'fire'}},   // פרק 5: אחרי שפנס האש נדלק, שביל בצפון-מזרח שעולה למגדלי הסערה
-      ponds:[{x:140,y:20,r:140},{x:-420,y:-140,r:95},{x:560,y:300,r:110}],
-      fields:[{kind:'cactus',n:8,x:-560,y:-300,r:220},{kind:'cactus',n:6,x:300,y:-320,r:170},{kind:'cactus',n:4,x:-120,y:420,r:140},
-              {kind:'emberRock',n:6,x:640,y:-120,r:180},{kind:'emberRock',n:4,x:-700,y:160,r:140},{kind:'rock',n:4,x:220,y:330,r:130}],
-      foes:[
-        {type:'flamewisp',n:2,x:-190,y:-420,r:110},{type:'flamewisp',n:2,x:200,y:-420,r:110},
-        {type:'cinderscorp',n:2,x:-420,y:-260,r:130},{type:'flamewisp',n:3,x:380,y:-180,r:140},{type:'cinderscorp',n:3,x:660,y:-120,r:150},
-        {type:'cinderscorp',n:3,x:-640,y:180,r:150},{type:'flamewisp',n:3,x:-60,y:330,r:140},{type:'cinderscorp',n:3,x:640,y:420,r:150},
-        {type:'cinderscorp',creature:true,n:2,x:640,y:-120,r:120},{type:'flamewisp',creature:true,n:2,x:-560,y:-300,r:130}
-      ],
-      // קשה מהרכס: מי שהגיע לכאן כבר הדליק שלושה פנסים
-      zones:[
-        {id:'start',to:360, hp:0.9,dmg:0.65,speed:0.8, leash:260,back:16},
-        {id:'near', to:800, hp:1.5,dmg:1.15,speed:1,  leash:380,back:22},
-        {id:'far',  to:1e9, hp:2.1,dmg:1.5, speed:1.1,leash:480,back:30}
-      ],
+      region:'desert',back:'ridge',enter:'w.enter.desert',noNpc:true,heat:true,ground:'#5A4129',pondCol:['#7A2A10','#FF8A3D'],gates:{},
       decor:{trees:30,hills:22,rocks:0.7}
+      // המפה הגדולה (ת17): הגבול, המסות, הדיונות, הלבה, השערים, אבני המסע, המקורות והאויבים ב-js/map-desert.js
     },
     // ---- פרק 5: מגדלי הסערה (docs/story.md). גשם, ברקים, מגדלים שבורים, אויבים מחושמלים (אדמה!), ופנס הברק בפינה הדרום-מזרחית (STORY.lanterns.bolt).
     // storm: גשם והבזקי ברק בקנבס (wStorm). towers: מגדלי אבן שבורים שאי אפשר לעבור דרכם (h גובה הציור). ponds: שלוליות עמוקות
     storm:{
       region:'storm',back:'desert',enter:'w.enter.storm',noNpc:true,storm:true,ground:'#2E2C3A',pondCol:['#1E1A30','#8E7CC8'],
-      home:{x:0,y:-600,r:44},gates:{},waystones:[{id:'ruin',x:-300,y:-120},{id:'lair',x:450,y:120}],
-      paths:{shadow:{x:-860,y:-590,r:44,need:['earth','water','ice','fire','bolt']}},   // פרק 6: רק כשכל חמשת הפנסים דולקים, שביל בצפון-מערב שיורד ללב הצל
-      ponds:[{x:-80,y:60,r:120},{x:520,y:-40,r:85}],
-      towers:[{x:-620,y:-330,r:46,h:150},{x:300,y:-330,r:40,h:110},{x:-380,y:330,r:44,h:170},{x:420,y:300,r:38,h:95},{x:-880,y:120,r:36,h:120}],
-      fields:[{kind:'deadTree',n:8,x:-560,y:-80,r:200},{kind:'deadTree',n:5,x:120,y:420,r:150},{kind:'deadTree',n:4,x:680,y:-380,r:130},
-              {kind:'stormRock',n:6,x:640,y:120,r:170},{kind:'stormRock',n:4,x:-250,y:-360,r:130},{kind:'rock',n:4,x:-700,y:420,r:120}],
-      foes:[
-        {type:'sparkwisp',n:2,x:-190,y:-420,r:110},{type:'sparkwisp',n:2,x:200,y:-420,r:110},
-        {type:'stormknight',n:2,x:-420,y:-200,r:130},{type:'sparkwisp',n:3,x:380,y:-200,r:140},{type:'stormknight',n:3,x:640,y:120,r:150},
-        {type:'stormknight',n:3,x:-640,y:200,r:150},{type:'sparkwisp',n:3,x:-60,y:330,r:140},{type:'stormknight',n:3,x:620,y:440,r:150},
-        {type:'stormknight',creature:true,n:2,x:640,y:120,r:120},{type:'sparkwisp',creature:true,n:2,x:-560,y:-80,r:130}
-      ],
+      // המפה, המקומות, המשאבים, המגדלים והאויבים: js/map-storm.js (הסערה הגדולה, ת18)
       // קשה מהמדבר: מי שהגיע לכאן כבר הדליק ארבעה פנסים
       zones:[
         {id:'start',to:360, hp:0.95,dmg:0.7,speed:0.8, leash:260,back:16},
         {id:'near', to:800, hp:1.7, dmg:1.25,speed:1,  leash:380,back:22},
         {id:'far',  to:1e9, hp:2.4, dmg:1.65,speed:1.12,leash:480,back:30}
       ],
-      decor:{trees:40,hills:20,rocks:0.6}
     },
     // ---- פרק 6 והאחרון: לב הצל (docs/story.md). חושך, ערפל סגול, ואור רק סביב הגיבור ופיוחו (wShadow). צללים של אויבים מכל האזורים,
     // והצל עצמו ליד הפנס הלבן, באמצע הדרום (STORY.lanterns.light). shadow: החושך בקנבס. ponds: בורות של חושך שאי אפשר לעבור
     shadow:{
       region:'shadow',back:'storm',enter:'w.enter.shadow',noNpc:true,shadow:true,ground:'#16101F',pondCol:['#07040D','#5B3F8C'],
-      home:{x:0,y:-600,r:44},gates:{},waystones:[{id:'gloom',x:0,y:-200},{id:'lair',x:-250,y:250}],paths:{},
-      ponds:[{x:-460,y:-40,r:115},{x:470,y:-60,r:105},{x:-760,y:420,r:80}],
-      fields:[{kind:'shadeTree',n:8,x:-560,y:-300,r:210},{kind:'shadeTree',n:6,x:560,y:-320,r:190},{kind:'shadeTree',n:4,x:-80,y:120,r:140},
-              {kind:'voidRock',n:5,x:700,y:240,r:160},{kind:'voidRock',n:4,x:-640,y:200,r:140},{kind:'rock',n:4,x:220,y:-220,r:120}],
-      foes:[
-        {type:'shadewisp',n:2,x:-190,y:-420,r:110},{type:'shadewisp',n:2,x:200,y:-420,r:110},
-        {type:'shadeknight',n:2,x:-420,y:-220,r:130},{type:'shadewisp',n:3,x:380,y:-200,r:140},{type:'shadeknight',n:3,x:700,y:240,r:150},
-        {type:'shadeknight',n:3,x:-640,y:200,r:150},{type:'shadewisp',n:3,x:-60,y:160,r:140},{type:'shadeknight',n:2,x:380,y:470,r:130},
-        {type:'shadeknight',creature:true,n:2,x:700,y:240,r:120},{type:'shadewisp',creature:true,n:2,x:-560,y:-300,r:130}
-      ],
+      // המפה, המקומות, המשאבים והאויבים: js/map-shadow.js (לב הצל הגדול)
       // הכי קשה: מי שהגיע לכאן כבר הדליק חמישה פנסים
       zones:[
         {id:'start',to:360, hp:1.1, dmg:0.8, speed:0.85,leash:260,back:16},
