@@ -35,16 +35,17 @@ const STAGES=[['story','הסיפור (דרגה 1)'],['t2','דרגה 2'],['t3','�
 // מה נרשם כ"דבר מעניין". רץ בדף, אחרי install
 function track(){
   const m=window.__bal,ev=m.rep.ev=[],add=(k,d)=>ev.push({t:Math.round(m.gt),ch:m.ch,k,d});
-  let top=0;for(const s in SAVE.gear){const g=[].concat(SAVE.gear[s]||[]);for(const id of g){const it=id&&gItem(id);if(it&&it.tier>top)top=it.tier}}
+  let top=0;const seen={},won={};for(const s in SAVE.gear){const g=[].concat(SAVE.gear[s]||[]);for(const id of g){const it=id&&gItem(id);if(it&&it.tier>top)top=it.tier}}
   const b0=bagAdd;bagAdd=function(k,n){const r=b0.apply(this,arguments);if(!S.wd)return r;
     const it=dropGear(k)&&gItem(k);
     if(it){if(it.tier>top){top=it.tier;add('layer','שכבה '+top)}}
-    else if(resOf(k)&&dropRar(k)>=3)add('epic',k);
+    // משאב: אגדי תמיד, אפי רק בפעם הראשונה מכל סוג (אחרי זה הוא שגרה ולא אירוע)
+    else if(resOf(k)&&(dropRar(k)>=4||dropRar(k)===3&&!seen[k])){seen[k]=1;add(dropRar(k)>=4?'legend':'epic',k)}
     return r};
   let lv=heroLv();
   const k0=kill;kill=function(e){const r=k0.apply(this,arguments);if(!S.wd)return r;
     if(typeof RARES!=='undefined'&&RARES.list[e.type])add('rare',e.type);
-    if(e.warden)add('warden',e.warden);
+    if(e.warden&&!won[m.ch+e.warden]){won[m.ch+e.warden]=1;add('warden',e.warden)}   // פעם אחת לשומר בכל פרק
     const L=heroLv();if(Math.floor(L/RANKS.every)>Math.floor(lv/RANKS.every))add('rank','רמה '+L);lv=L;
     return r};
   const t0=tierSet;tierSet=function(n){const r=t0.apply(this,arguments);if(r)add('tier','דרגה '+n);return r};
@@ -114,7 +115,7 @@ const f1=x=>x==null?'-':(Math.round(x*10)/10).toString();
   p('');
   // דברים מעניינים: כמה דקות (של שחקן) בין אחד לבא, לכל שלב
   p('## כמה זמן בין "דבר מעניין" לבא');p('');
-  p('דבר מעניין: שלל משכבה חדשה, משאב אפי או אגדי, מפלצת נדירה, שומר, רמה שפותחת דרגת דמות (כל '+20+' רמות), ודרגת עולם. דקות של שחקן (זמן משחק ×'+PT.walk+').');p('');
+  p('דבר מעניין: שלל משכבה חדשה, משאב אגדי או אפי מסוג חדש, מפלצת נדירה, שומר, רמה שפותחת דרגת דמות (כל '+20+' רמות), ודרגת עולם. דקות של שחקן (זמן משחק ×'+PT.walk+').');p('');
   p('| שלב | כמה | ממוצע (דק) | הכי ארוך (דק) | מה היה |');p('| --- | --- | --- | --- | --- |');
   for(const [st,name] of STAGES){let n=0,gaps=[],kinds={};
     for(const c of PT.cls){const R=out[c],idx=B.chapters.map((x,i)=>x.st===st?i:-1).filter(i=>i>=0);if(!idx.length||!R.ch[idx[0]])continue;
