@@ -2010,7 +2010,7 @@ function worldBot(m,L,god){
       const run=(px,py,sec)=>{for(let t=0;t<sec;t+=0.05){P.x=px;P.y=py;storyWardenMove(e,0.05)}};
       const d0=Math.hypot(e.x-(L.x-600),e.y-(L.y+200));run(L.x-600,L.y+200,3);o.chase=!e.back&&Math.hypot(e.x-P.x,e.y-P.y)<d0-40;     // 600 מהפנס: עוד רודף
       run(L.x-1500,L.y+300,CH.giveUp+1);o.gaveUp=e.back&&e.say>0;                      // רחוק מספיק זמן: חוזר ואומר משהו
-      run(L.x-500,L.y+150,0.2);o.back=!e.back;                                         // חוזרים אליו בדרך: הקרב ממשיך
+      run(L.x-300,L.y+150,0.2);o.back=!e.back;                                         // חוזרים אליו בדרך: הקרב ממשיך
       run(L.x-1500,L.y+300,CH.giveUp+1);run(L.x-1500,L.y+300,25);
       o.home=Math.hypot(e.x-L.x,e.y-L.y-GIANT.lair)<20;o.heal=e.hp===e.max&&e.gone&&!S.wd.warden&&!enemies.includes(e);   // הגיע למאורה: מתרפא וחוזר לישון
       P.x=L.x;P.y=L.y+150;storyUpdate(0.05);const e2=S.wd.warden;o.again=!!e2&&e2!==e&&e2.hp===e2.max;                  // מתקרבים: קם שוב
@@ -2785,7 +2785,7 @@ function worldBot(m,L,god){
   const gt=await page.evaluate(()=>{
     const o={},st0=JSON.stringify(SAVE.story),L=STORY.lanterns.water,Q=QS(),qa=Q.active.s2Warden,qd=Q.done.s2Warden,now0=Date.now,lv0=SAVE.hero.level;
     delete Q.active.s2Warden;STO().bt={};enterWorld('home','lake');for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);
-    P.x=L.x;P.y=L.y+GIANT.lair+900;worldUpdate(0.016);o.asleep=!S.wd.warden;
+    P.x=L.x+700;P.y=L.y;worldUpdate(0.016);o.asleep=!S.wd.warden&&Math.hypot(P.x-L.x,P.y-L.y)>L.warden.wake;
     SAVE.hero.level=1;const sh=[];const ft=ctx.fillText;ctx.fillText=function(t){sh.push(String(t));return ft.apply(this,arguments)};giantLairScreen('water',L,0,0);ctx.fillText=ft;
     o.sign=sh.some(t=>t===T('cu.rec',giantLv('water')));SAVE.hero.level=lv0;
     P.x=L.x;P.y=L.y+GIANT.lair+200;worldUpdate(0.016);const e=S.wd.warden;o.noQuest=!!e&&e.warden==='water'&&!e.first;
