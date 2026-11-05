@@ -4,7 +4,9 @@
    בלי חסינות: הוא יכול למות, וקם בכפר כמו שחקן. מודד: זמן לכל פרק, מוות, נזק לכל סקיל (ולהטלה), ומה תקע אותו.
    הרצה: node tools/balance-world.js [--cls warrior,hunter,mage] [--seed 7] [--cap 900] [--json out.json] [--set "<js>"]
    --cap: כמה שניות משחק לכל היותר לפרק (טיפוס + שומר). פרק שלא נגמר בזמן נרשם "תקוע", והבוט ממשיך לפרק הבא כדי למדוד אותו.
-   לא רץ ב-GitHub. דו-ממד בלבד. הזמן מואץ בשעון מזויף, ושלוש המחלקות רצות במקביל */
+   לא רץ ב-GitHub. דו-ממד בלבד. הזמן מואץ בשעון מזויף, ושלוש המחלקות רצות במקביל
+   tools/playtime.js משתמש בבוט הזה (install), עם שלוש תוספות שכבויות כברירת מחדל: פרק עם tier (דרגת עולם) ו-kills
+   (כמה הריגות באזור לפני השומר, במקום הרמה המומלצת), ו-B.trip (חזרה לכפר כל כך שניות, כמו שחקן אמיתי) */
 const {chromium}=require('playwright');
 const path=require('path'),fs=require('fs');
 const args=process.argv.slice(2);
@@ -40,6 +42,8 @@ function install(B){
   frame=function(){};
   window.__balRun=n=>{let r={};for(let i=0;i<n&&!r.done;i++){last=performance.now()-50;frameStep(performance.now());if(S.wd)m.gt+=0.05;if(i%5===0)r=step()}return r};
   function chap(){return B.chapters[m.ch]}
+  // הריגות בפרק (ל-kills של playtime.js)
+  const k0=kill;kill=function(e){const r=k0.apply(this,arguments);if(S.wd&&!e.node)m.kc=(m.kc||0)+1;return r};
   function need(){const c=chap();return c.to?CURIO.paths[c.to].lv:0}
   function cRep(){return R.ch[m.ch]||(R.ch[m.ch]={reg:chap().reg,deaths:0,lv0:heroLv()})}
   const foes=()=>enemies.filter(e=>!e.dead&&!e.node);
@@ -71,7 +75,7 @@ function install(B){
   function finish(ok,why){const c=cRep();c.t=Math.round(m.gt-m.chT);c.lv1=heroLv();c.ok=ok;if(why)c.why=why;c.coins=SAVE.bag.coins||0;
     c.gear=[SAVE.gear.weapon].concat(SAVE.gear.acc||[],SAVE.gear.boots||[],SAVE.gear.body||[]).filter(Boolean).join(' ');
     c.sk=Object.entries(SAVE.sklv||{}).map(([k,v])=>k+'+'+v).join(' ');
-    if(ok)STO()[chap().k]=true;saveNow();m.ch++;m.ph='grind';m.chT=m.gt;m.wT=0;joy=null;
+    if(ok)STO()[chap().k]=true;saveNow();m.ch++;m.ph='grind';m.chT=m.gt;m.wT=0;m.kc=0;joy=null;
     if(S.wd){worldUi(false);enterVillage()}}
   function step(){
     if(m.ch>=B.chapters.length)return{done:true,R};
@@ -84,10 +88,15 @@ function install(B){
     if(S.vil||!S.wd||S.wd.reg!==chap().reg){if(S.vil){equip();points();upgrade()}
       worldUi(false);enterWorld('home',chap().reg);return{}}
     if(S.mode!=='play')return{};
+    // דרגת עולם (playtime.js): עוברים לדרגה של הפרק כשהיא פתוחה. סגורה (דרגה 3 מחכה להריגות בדרגה 2): ממשיכים בדרגה הקודמת
+    if(chap().tier&&typeof tierSet==='function'){if(!STO().end)STO().end=true;if(tierNow()!==chap().tier&&tierOpen(chap().tier))tierSet(chap().tier);c.gate=tierNow()!==chap().tier}
+    // חזרה לכפר כל B.trip שניות (playtime.js), כמו שחקן שחוזר למכור, לשדרג ולנוח. רק בזמן טיפוס
+    if(B.trip&&m.ph==='grind'&&now-(m.lastTrip||0)>B.trip){m.lastTrip=now;R.trips=(R.trips||0)+1;worldUi(false);enterVillage();return{}}
     if(now-m.lastMg>5){m.lastMg=now;equip();points();if(!foes().some(e=>Math.hypot(e.x-P.x,e.y-P.y)<260))dropsCollectAll()}
     if(now-m.lastSw>B.swapEvery){m.lastSw=now;swap()}
     // שלב: אחרי הרמה המומלצת, לפנס
-    if(m.ph==='grind'&&heroLv()>=need()&&now-m.chT<B.cap-30)m.ph='warden';
+    const ready=chap().kills?(m.kc||0)>=chap().kills&&!c.gate:heroLv()>=need();
+    if(m.ph==='grind'&&ready&&now-m.chT<B.cap-30)m.ph='warden';
     if(m.ph==='grind'&&now-m.chT>=B.cap-B.wardenCap)m.ph='warden';   // לא הגיע לרמה בזמן: מנסה את השומר בכל זאת
     const L=STORY.lanterns[chap().k],w=S.wd;
     if(m.ph==='warden'){if(!m.wT)m.wT=now;
@@ -127,7 +136,8 @@ async function runCls(browser,cls){
   await page.close();return r.R;
 }
 
-(async()=>{
+module.exports={BAL,install};
+if(require.main===module)(async()=>{
   const browser=await chromium.launch();
   const out={};await Promise.all(BAL.cls.map(async c=>{out[c]=await runCls(browser,c)}));
   await browser.close();
