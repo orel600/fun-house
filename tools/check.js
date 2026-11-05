@@ -2596,6 +2596,18 @@ function worldBot(m,L,god){
   check(!flo.missing.length&&flo.eliteOk&&flo.pname&&flo.card&&flo.met&&flo.say&&flo.closed&&flo.once&&flo.saved&&flo.ovHide&&flo.ovBack,
     'שמות לאויבים: '+(flo.missing.length?'חסר שם ל-'+flo.missing.join(','):'לכל סוג בעולם יש שם')+', עלית: "'+flo.elite+'"'+(flo.pname?'':' (לא קיבל שם)')+(flo.card?', פס פגישה ראשונה':', אין פס')+
     (flo.closed?' שנסגר לבד':' שלא נסגר')+(flo.once?', פעם אחת':', חוזר')+(flo.saved?', נשמר':', לא נשמר')+(flo.say?', בועה':', בלי בועה')+(flo.ovHide?(flo.ovBack?', מחכה מתחת לחלון':', לא חוזר אחרי חלון'):', מופיע מעל חלון'));
+  // סימן קריאה מעל אויב של קווסט (questmark.js): אויב של יעד kill פעיל מסומן, אחר לא, 'any' ונדירה לא, ואחרי שהיעד הושלם הסימן נעלם
+  const qmk=await page.evaluate(()=>{
+    const o={},a0=JSON.stringify(QS().active);enterWorld('home');enemies=[];
+    for(const id in QS().active)delete QS().active[id];
+    QS().active.grunts={p:[0]};QS().active.dAny={p:[0]};
+    const g=addEnemy('grunt',P.x+90,P.y,1),s=addEnemy('shield',P.x-90,P.y,1),r=addEnemy('grunt',P.x,P.y+90,1);r.rare='x';
+    QM.f=0;qmScreen(0,0);o.on=qmMarked(g);o.other=!qmMarked(s);o.rare=!qmMarked(r);
+    QS().active.grunts.p[0]=QBY.grunts.obj[0].n;QM.f=0;qmScreen(0,0);o.off=!qmMarked(g);
+    QS().active.grunts.p[0]=0;enemies=[];enterVillage();enemies=[g];qmScreen(0,0);o.arena=!QM.list.length;enemies=[];const A=JSON.parse(a0);for(const id in QS().active)delete QS().active[id];Object.assign(QS().active,A);return o});
+  check(qmk.on&&qmk.other&&qmk.rare&&qmk.off&&qmk.arena,
+    'סימן קווסט: '+(qmk.on?'אויב של קווסט מסומן':'אויב של קווסט לא מסומן')+(qmk.other?', אחר לא':', גם אחר מסומן')+(qmk.rare?', נדירה לא':', נדירה מסומנת')+
+    (qmk.off?', נעלם כשהיעד הושלם':', נשאר אחרי שהושלם')+(qmk.arena?', רק בעולם':', גם מחוץ לעולם'));
   // בוס-נמסיס (nemesis.js): עלית שהפיל אותך נהיה נמסיס עם שם ונשמר, חוזר באותו אזור חזק יותר וזוכר אותך, עולה דרגה כשהוא מנצח שוב, אחד לאזור, וכשמנצחים אותו: שלל, חגיגה, ונעלם לספר
   const nm=await page.evaluate(()=>{
     const o={},n0=JSON.stringify(SAVE.nem||null);SAVE.nem=null;
