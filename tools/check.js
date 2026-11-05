@@ -233,7 +233,9 @@ function petBot(m,L){
 // מזיז את השחקן לכיוון (tx,ty), או הרחק ממנו (flee), עד מרחק stop. בלי יעד: הולך במעגל
 function steer(tx,ty,flee,stop,L){
   let dx=0,dy=0;
-  if(tx!=null){const d=Math.hypot(tx-P.x,ty-P.y)||1;if(flee||d>stop){dx=(tx-P.x)/d;dy=(ty-P.y)/d;if(flee){dx=-dx;dy=-dy}}}
+  if(tx!=null){const d=Math.hypot(tx-P.x,ty-P.y)||1;if(flee||d>stop){
+    let gx=tx,gy=ty;if(S.wd&&!flee&&typeof TR!=='undefined'&&TR){const t=tDir(P,tx,ty);gx=t.x;gy=t.y}   // בעולם עם מפה: מסביב לנהר וליער (A* ב-terrain.js)
+    const g=Math.hypot(gx-P.x,gy-P.y)||1;dx=(gx-P.x)/g;dy=(gy-P.y)/g;if(flee){dx=-dx;dy=-dy}}}
   else{const a=S.t*0.6;dx=Math.cos(a);dy=Math.sin(a)}
   joy={id:-1,ox:-999,oy:-999,dx,dy};
   return L;

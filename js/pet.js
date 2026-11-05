@@ -122,6 +122,7 @@ function petUpdate(dt){
    המהירות והכיוון מתיישרים בהדרגה ולא קופצים בכל פריים, ו-k=1-exp(-dt*accel) מחזיק את אותו קצב גם ב-30 וגם ב-60 פריימים בשנייה,
    כך שבטלפון איטי היא לא נעה בקפיצות. מחזיר את המהירות עכשיו */
 function petMove(p,dx,dy,d,want,dt){
+  if(TR&&S.wd&&d>1){const t=tDir(p,p.x+dx,p.y+dy),k=d/(Math.hypot(t.x-p.x,t.y-p.y)||1);dx=(t.x-p.x)*k;dy=(t.y-p.y)*k}   // באחו הגדול: מסביב לנהר וליער, לא דרכם (terrain.js)
   const M=PET.move,u=d>0.01?want/d:0;
   const k=1-Math.exp(-dt*(want>0?M.accel:M.brake));
   p.vx=(p.vx||0)+(dx*u-(p.vx||0))*k;p.vy=(p.vy||0)+(dy*u-(p.vy||0))*k;
