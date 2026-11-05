@@ -74,7 +74,9 @@ function install(B){
   function swap(){const open=wsbIds().filter(id=>id!==wsbWeapon()&&wsbOpen(id)&&WSKBOOK.list[id]);if(!open.length)return;
     const L=wsbLoad(),mine=open.filter(id=>WSKBOOK.list[id].cls===heroId());const pool=mine.length>=2?mine:open;
     m.swI=(m.swI+1)%pool.length;const nx=pool[m.swI];if(L.includes(nx))return;L[m.swI%2]=nx;}
-  function steer(tx,ty,flee,stop){let dx=0,dy=0;const d=Math.hypot(tx-P.x,ty-P.y)||1;if(flee||d>stop){dx=(tx-P.x)/d;dy=(ty-P.y)/d;if(flee){dx=-dx;dy=-dy}}joy={id:-1,ox:-999,oy:-999,dx,dy}}
+  function steer(tx,ty,flee,stop){let dx=0,dy=0;
+    if(!flee&&S.wd&&typeof TR!=='undefined'&&TR&&Math.hypot(tx-P.x,ty-P.y)>stop){const t=tDir(P,tx,ty);tx=t.x;ty=t.y;stop=0}   // אזור עם מפה (terrain.js, האחו הגדול): מסביב לנהר וליער, כמו check.js
+    const d=Math.hypot(tx-P.x,ty-P.y)||1;if(flee||d>stop){dx=(tx-P.x)/d;dy=(ty-P.y)/d;if(flee){dx=-dx;dy=-dy}}joy={id:-1,ox:-999,oy:-999,dx,dy}}
   function finish(ok,why){const c=cRep();c.t=Math.round(m.gt-m.chT);c.lv1=heroLv();c.ok=ok;if(why)c.why=why;c.coins=SAVE.bag.coins||0;
     c.gear=[SAVE.gear.weapon].concat(SAVE.gear.acc||[],SAVE.gear.boots||[],SAVE.gear.body||[]).filter(Boolean).join(' ');
     c.sk=Object.entries(SAVE.sklv||{}).map(([k,v])=>k+'+'+v).join(' ');
