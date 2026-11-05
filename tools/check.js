@@ -2011,7 +2011,7 @@ function worldBot(m,L,god){
       const d0=Math.hypot(e.x-(L.x-600),e.y-(L.y+200));run(L.x-600,L.y+200,3);o.chase=!e.back&&Math.hypot(e.x-P.x,e.y-P.y)<d0-40;     // 600 מהפנס: עוד רודף
       run(L.x-1500,L.y+300,CH.giveUp+1);o.gaveUp=e.back&&e.say>0;                      // רחוק מספיק זמן: חוזר ואומר משהו
       run(L.x-300,L.y+150,0.2);o.back=!e.back;                                         // חוזרים אליו בדרך: הקרב ממשיך
-      run(L.x-1500,L.y+300,CH.giveUp+1);run(L.x-1500,L.y+300,25);
+      run(L.x-1500,L.y+300,CH.giveUp+1);run(L.x-1500,L.y+300,60);o.dist=Math.round(Math.hypot(e.x-L.x,e.y-L.y-GIANT.lair));   // הדרך חזרה איטית (back מהמהירות)
       o.home=Math.hypot(e.x-L.x,e.y-L.y-GIANT.lair)<20;o.heal=e.hp===e.max&&e.gone&&!S.wd.warden&&!enemies.includes(e);   // הגיע למאורה: מתרפא וחוזר לישון
       P.x=L.x;P.y=L.y+150;storyUpdate(0.05);const e2=S.wd.warden;o.again=!!e2&&e2!==e&&e2.hp===e2.max;                  // מתקרבים: קם שוב
       if(e2){e2.rise=0;e2.kx=9000;for(let t=0;t<0.5;t+=0.05){P.x=L.x;P.y=L.y+150;storyWardenMove(e2,0.05)}o.inside=e2.x>=B.x0&&e2.x<=B.x1&&e2.y>=B.y0&&e2.y<=B.y1;  // מכה חזקה לא מעיפה אותו אל הגבעות
@@ -2020,7 +2020,7 @@ function worldBot(m,L,god){
     if(!was)delete Q.active.s1Warden;P.inv=0;enterVillage();return o});
   check(!wch.open.length&&wch.warden&&wch.chase&&wch.gaveUp&&wch.home&&wch.heal&&wch.again&&wch.back&&wch.inside,'השומר לא בורח: '+
     (wch.chase?'רודף כשמתרחקים':'חוזר לפנס מיד כשמתרחקים')+(wch.gaveUp?', מוותר רק אחרי כמה שניות ואומר משהו':', לא מוותר או לא אומר כלום')+
-    (wch.back?', הקרב ממשיך כשחוזרים בדרך':', לא חוזר לקרב')+(wch.home&&wch.heal?', במאורה מתרפא וישן':', לא חזר לישון במאורה')+(wch.again?' וקם שוב':', לא קם שוב')+(wch.inside?', נשאר בתוך האזור':', נדחף מחוץ לאזור')+(wch.open.length?', פנס ליד קצה או קישוט: '+wch.open.join(' '):', שטח פתוח סביב כל 6 הפנסים'));
+    (wch.back?', הקרב ממשיך כשחוזרים בדרך':', לא חוזר לקרב')+(wch.home&&wch.heal?', במאורה מתרפא וישן':', לא חזר לישון במאורה ('+wch.dist+' ממנה)')+(wch.again?' וקם שוב':', לא קם שוב')+(wch.inside?', נשאר בתוך האזור':', נדחף מחוץ לאזור')+(wch.open.length?', פנס ליד קצה או קישוט: '+wch.open.join(' '):', שטח פתוח סביב כל 6 הפנסים'));
   // הבוסים הענקיים (giant.js, ניר 4.11): כל שומר בעולם הוא ענק עם מודל משלו לפרק, פי 4 עד 6 מהגיבור, ורדיוס לוגי ×GIANT.r.
   // בכניסה הוא קם ולא תוקף, בקרב המכות של הגיבור פוגעות בו, הוא מובס וקורס לאט. בזירה הבוס נשאר LOOK3D.boss
   const gnt=await page.evaluate(()=>{
