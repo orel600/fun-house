@@ -16,6 +16,7 @@ const GROUND={
     shadow:{base:'#2a2140',lush:'#1b1430',dry:'#3c2f5a',path:'#4b3a70',shore:'#5b3f8c',out:'#0f0a18'}
   },
   res:2.5,                      // כמה פיקסלים של המשחק לכל נקודה בתמונה האפויה. פחות = חד יותר וכבד יותר
+  resMap:3,maxTex:4096,         // אזור עם מפה (האחו הגדול): קצת פחות חד, כדי שהתמונה תהיה כ-2700×1900 ולא תעבור את maxTex
   margin:{w:1800,h:1600},      // כמה מעבר לגבול האזור אופים (שם הקצה הכהה). מעבר לזה: הצבע של out
   big:720,small:170,           // גודל הכתמים: הגדולים (עשיר מול בסיס) והקטנים (יבש)
   pathW:34,                    // רוחב השביל
@@ -28,7 +29,7 @@ const GROUND={
      snow קרום שלג, stone סלע סדוק. אזור שלא כתוב כאן: grass. ובשבילי העפר: חלוקי אבן (pebble: גודל התא, כמה מהתאים, כמה חזק) */
   motif:{meadow:'grass',lake:'grass',village:'grass',ridge:'snow',desert:'sand',storm:'stone',shadow:'stone'},
   pebble:{cell:16,n:0.35,k:0.38},
-  maxSeg:24,maxPond:10,
+  maxSeg:64,maxPond:10,         // maxSeg: עד 64 קטעי שביל (המפה של האחו הגדול, terrain.js)
   /* הכפר (ניר, 1.11.2026, משימה 5 ב-plan-ground.md): שבילים מהשער לכיכר ומהכיכר לכל מבנה שנבנה, כיכר עפר מול הטירה, צל מגע מתחת למבנים,
      ועשב ופרחים רק בשוליים. הכפר גדל לפי הרמה של מרכז הכפר (vLv('center')): השבילים והכיכר מתרחבים, ומרמה paveAt הם מרוצפים באבן.
      pathW: [רוחב, כמה מוסיפים בכל רמה]. plaza: מרכז הכיכר, [רדיוס, תוספת לרמה]. door: איפה הדלת של מבנה, ביחס לרדיוס שלו. grass: מאיזה מרחק מהמרכז יש עשב */
@@ -96,9 +97,9 @@ const GROUND={
         segs:()=>vSegs(L),shadows:vShadows,blocks}}
     if(!S.wd)return null;
     const reg=S.wd.reg||'meadow',R=WR(),alive=S.nd.list.filter(n=>!n.dead);
-    return{reg,key:reg+':'+alive.length+':'+Object.keys(wGates()).length,sk:reg+':'+S.nd.list.length+':'+CAM.ang,   // sk: הפיזור נבנה מחדש רק כשהמקורות עצמם מתחלפים, לא כשאחד נשבר
+    return{reg,key:reg+':'+alive.length+':'+Object.keys(wGates()).length,map:R.map&&R,sk:reg+':'+S.nd.list.length+':'+CAM.ang,   // sk: הפיזור נבנה מחדש רק כשהמקורות עצמם מתחלפים, לא כשאחד נשבר
       pal:GROUND.pal[reg]||GROUND.pal.meadow,size:R.size,round:0,ponds:R.ponds||[],
-      pathW:GROUND.pathW,paved:0,plaza:null,inner:0,segs:()=>segs(R),shadows:()=>shadows(R),
+      pathW:GROUND.pathW,paved:0,plaza:null,inner:0,segs:()=>R.map?terrainSegs(R):segs(R),shadows:()=>shadows(R),
       blocks:(R.ponds||[]).concat(R.towers||[]).map(p=>({x:p.x,y:p.y,r:p.r+16})).concat(S.nd.list.map(n=>({x:n.x,y:n.y,r:n.r+12,sq:1})))};
   }
   // צל מגע: מקורות, קישוטים מסביב, מגדלים ושערים
@@ -119,15 +120,20 @@ const GROUND={
       cBase:{value:v3()},cLush:{value:v3()},cDry:{value:v3()},cPath:{value:v3()},cShore:{value:v3()},cOut:{value:v3()},cRim:{value:v3()},
       seg:{value:Array.from({length:GROUND.maxSeg},()=>new THREE.Vector4())},pond:{value:Array.from({length:GROUND.maxPond},()=>new THREE.Vector3())},
       big:{value:0},small:{value:0},pathW:{value:0},shoreW:{value:0},shoreA:{value:0},rimW:{value:0},rimA:{value:0},eFrom:{value:0},eTo:{value:0},
-      round:{value:0},paved:{value:0},pebC:{value:13},pebN:{value:0.3},pebK:{value:0.2},cPave:{value:v3()},plaza:{value:v3()}};
+      round:{value:0},paved:{value:0},pebC:{value:13},pebN:{value:0.3},pebK:{value:0.2},cPave:{value:v3()},plaza:{value:v3()},
+      tMask:{value:null},tOn:{value:0},cForest:{value:v3()},cRock:{value:v3()},cBank:{value:v3()}};   // tMask: המסכה של המפה (terrainMask ב-terrain.js)
     baseMat=new THREE.ShaderMaterial({uniforms:U,depthTest:false,depthWrite:false,
       vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}',
       fragmentShader:`precision highp float;varying vec2 vUv;uniform vec4 box;uniform vec2 size;uniform vec3 cBase,cLush,cDry,cPath,cShore,cOut,cRim;
-        uniform vec4 seg[${GROUND.maxSeg}];uniform vec3 pond[${GROUND.maxPond}];uniform float pebC,pebN,pebK,big,small,pathW,shoreW,shoreA,rimW,rimA,eFrom,eTo,round,paved;uniform vec3 cPave,plaza;${NOISE}
+        uniform vec4 seg[${GROUND.maxSeg}];uniform vec3 pond[${GROUND.maxPond}];uniform float pebC,pebN,pebK,big,small,pathW,shoreW,shoreA,rimW,rimA,eFrom,eTo,round,paved;uniform vec3 cPave,plaza;uniform sampler2D tMask;uniform float tOn;uniform vec3 cForest,cRock,cBank;${NOISE}
         void main(){
           vec2 p=box.xy+vUv*box.zw;float nb=gF(p/big),ns=gF(p/small+vec2(3.1,7.7));
           vec3 c=mix(cLush,cBase,smoothstep(0.32,0.58,nb));
           c=mix(c,cDry,smoothstep(0.6,0.82,ns)*0.5);
+          vec4 tm=tOn>0.5?texture2D(tMask,vUv):vec4(0.0);float tw=(gN(p/46.0)-0.5)*0.3;   // המפה: סלע, קרקעית יער, וגדה כהה סביב המים
+          c=mix(c,cRock*(0.85+0.3*gN(p/22.0)),smoothstep(0.3,0.6,tm.a+tw)*0.85);
+          c=mix(c,cForest*(0.8+0.4*gN(p/30.0)),smoothstep(0.3,0.6,tm.g+tw));
+          c=mix(c,cBank,smoothstep(0.08,0.45,tm.r+tw*0.6)*0.9);
           float dp=1e5;for(int i=0;i<${GROUND.maxSeg};i++){vec2 a=seg[i].xy,b=seg[i].zw-a;float t=clamp(dot(p-a,b)/max(dot(b,b),1.0),0.0,1.0);dp=min(dp,length(p-a-b*t));}
           dp=min(dp,max(length(p-plaza.xy)-plaza.z,0.0));   // הכיכר בכפר: עיגול של שביל
           dp+=(gN(p/38.0)-0.5)*26.0*(1.0-paved*0.6);
@@ -147,7 +153,7 @@ const GROUND={
           c=mix(c,cShore,(1.0-smoothstep(0.0,shoreW,dn))*shoreA);
           c=mix(c,cRim,(1.0-smoothstep(0.0,rimW,ds+(gN(p/14.0)-0.5)*6.0))*rimA);
           vec2 q=abs(p)-size*0.5;float de=mix(max(q.x,q.y),length(p)-size.x*0.5,round)+(gN(p/60.0)-0.5)*60.0;   // round: גבול עגול (הכפר)
-          c=mix(c,cOut,smoothstep(eFrom,eTo,de));
+          c=mix(c,cOut,tOn>0.5?smoothstep(0.35,0.75,tm.b+tw):smoothstep(eFrom,eTo,de));   // עם מפה: הקצה הוא קו הגבול, לא מלבן
           gl_FragColor=vec4(c,1.0);}`});
     const q=new THREE.Mesh(new THREE.PlaneGeometry(2,2),baseMat);q.frustumCulled=false;bakeScene.add(q);
   }
@@ -164,7 +170,10 @@ const GROUND={
   function bake(pl){
     const t0=performance.now(),P_=pl.pal;
     if(!bakeScene)bakeSetup();
-    const u=baseMat.uniforms,bw=pl.size.w+GROUND.margin.w,bh=pl.size.h+GROUND.margin.h,cw=Math.ceil(bw/GROUND.res),ch=Math.ceil(bh/GROUND.res);
+    const u=baseMat.uniforms,bw=pl.size.w+GROUND.margin.w,bh=pl.size.h+GROUND.margin.h,res=Math.max(pl.map?GROUND.resMap:GROUND.res,bw/GROUND.maxTex,bh/GROUND.maxTex),cw=Math.ceil(bw/res),ch=Math.ceil(bh/res);   // maxTex: תמונה אחת לא גדולה מזה
+    if(u.tMask.value){u.tMask.value.dispose();u.tMask.value=null}u.tOn.value=0;
+    if(pl.map){const mk=terrainMask(pl.map,bw,bh),tx=new THREE.DataTexture(mk.data,mk.w,mk.h,THREE.RGBAFormat);tx.magFilter=tx.minFilter=THREE.LinearFilter;tx.needsUpdate=true;
+      u.tMask.value=tx;u.tOn.value=1;const Q=TERRAIN.pal[pl.reg]||TERRAIN.pal.meadow;u.cForest.value.copy(rgb(Q.forest));u.cRock.value.copy(rgb(Q.rock));u.cBank.value.copy(rgb(Q.bank))}
     box=new THREE.Vector4(-bw/2,-bh/2,bw,bh);u.box.value.copy(box);u.size.value.set(pl.size.w,pl.size.h);
     for(const k of ['base','lush','dry','path','shore','out'])u['c'+k[0].toUpperCase()+k.slice(1)].value.copy(rgb(P_[k]));
     u.cRim.value.copy(rgb(P_.rim||P_.shore));u.rimA.value=P_.rim?GROUND.rimA:0;
@@ -267,6 +276,7 @@ const GROUND={
       const want=k==='pebble'?0.15+0.4*nb:k==='flower'?(cl>0.6?0.9:0.01):0.15+1.1*(1-nb)*(cl>0.42?1:0.45);
       if(hh(i+3,j+7)>want)continue;
       let ok=!pz||Math.hypot(x-pz.x,y-pz.y)>pz.r+pw;for(const s_ of sg)if(ok&&dSeg(x,y,s_)<pw){ok=false;break}
+      if(ok&&TR&&tBlocked(x,y))ok=false;   // לא בנהר, ביער או מחוץ לגבול (terrain.js)
       if(ok)for(const b of blocks)if(b.sq?Math.abs(x-b.x)<b.r&&Math.abs(y-b.y)<b.r:Math.hypot(x-b.x,y-b.y)<b.r){ok=false;break}
       if(!ok)continue;
       const sz=F.size[k],z=sz[0]+(sz[1]-sz[0])*hh(i+1,j+2),wd=k==='tuft'?1.2:1;

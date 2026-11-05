@@ -325,7 +325,7 @@ function makeGround(){
   g.fillStyle='#fff';g.fillRect(0,0,T,T);
   for(let i=0;i<4;i++)for(let j=0;j<4;j++){const v=225+Math.floor(hash(i,j)*30);g.fillStyle='rgb('+v+','+v+','+v+')';g.fillRect(i*64+2,j*64+2,60,60)}
   const tex=new THREE.CanvasTexture(c);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=4;
-  const size=6000,tile=180;tex.repeat.set(size/tile,size/tile);
+  const size=16000,tile=180;tex.repeat.set(size/tile,size/tile);   // 16000: גם האחו הגדול (6300×4200, ובעומק פי 1/sin) מכוסה כשהמצלמה רחוקה
   const m=new THREE.Mesh(new THREE.PlaneGeometry(size,size),new THREE.MeshLambertMaterial({map:tex,color:VIEW.groundLine}));
   m.rotation.x=-Math.PI/2;m.userData.tile=tile;R3D.ground=m;R3D.scene.add(m);
 }
@@ -432,7 +432,7 @@ function once(a,name,dur,hold=false){
   x.reset().setLoop(THREE.LoopOnce,1);x.clampWhenFinished=hold;x.timeScale=dur?x.getClip().duration/dur:1;x.fadeIn(0.06).play();a.one=x;
 }
 function place(a,x,y,foot,yaw,lift=0){
-  const S_=SIN();a.root.position.set(x,lift/COS(),(y+foot)/S_);
+  const S_=SIN();a.root.position.set(x,(lift+(TR&&S.wd?hAt(x,y):0))/COS(),(y+foot)/S_);   // hAt: על הרכס הדמות עומדת גבוה יותר (terrain.js)
   if(yaw!=null){let d=yaw-a.root.rotation.y;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;a.root.rotation.y+=d*0.35}
 }
 // כיוון במשחק (זווית על המסך) לסיבוב סביב ציר y בעולם
@@ -617,9 +617,11 @@ function syncWorld(){
     for(const p of RG.ponds||[]){const m=new THREE.Mesh(new THREE.CircleGeometry(p.r,40),Wt?pondMat(Wt):new THREE.MeshLambertMaterial({color:W.pond||'#2a6d8f',transparent:true,opacity:0.9}));
       m.rotation.x=-Math.PI/2;m.scale.set(1,1/SIN(),1);m.position.set(p.x,0.6,p.y/SIN());G.g.add(m);if(Wt&&Wt.pulse)(G.pulse||(G.pulse=[])).push([m.material,Wt])}
     secrets3D(reg,(md,x,y,w,r)=>vPut(md,x,y,w,r,G.g));   // סודות (secrets.js)
-    if(typeof props3dWorld==='function')props3dWorld(G,reg)}   // הפנס, המקדש, מגדל התצפית והתיבה (props3d.js)
+    if(typeof props3dWorld==='function')props3dWorld(G,reg);   // הפנס, המקדש, מגדל התצפית והתיבה (props3d.js)
+    if(TR&&TR.reg===reg){for(const o of G.g.children)tLift(o);terrain3d(G,reg)}}   // המפה: מים זורמים, גשרים, יער, צוקים ורכס (terrain.js). tLift: מה שעומד על הרכס עולה איתו
   R3D.wld=G;G.g.visible=true;
   if(typeof props3dWorldTick==='function')props3dWorldTick(G);
+  terrain3dTick(G);   // זרימת המים, ואריחי יער רחוקים מוסתרים
   if(G.pulse){const t=performance.now()/1000;for(const [m,Wt] of G.pulse)m.emissiveIntensity=Wt.g*(1+Wt.pulse*Math.sin(t*1.7+Math.sin(t*0.6)*2))}   // לבה שנושמת
   for(const k in G.paths)G.paths[k].visible=wPathOpen(RG.paths[k]);
   for(const n of S.nd.list){
@@ -629,7 +631,8 @@ function syncWorld(){
     if(!m){const D=W3D.nodes[wKind(n.kind).shape],v=hash(n.x,n.y),md=Array.isArray(D.model)?D.model[v<0.5?0:1]:D.model;
       m=G.nodes[n.id]=vPut(md,n.x,n.y,D.w*(0.85+v*0.3),v*6.28,G.g);
       if(D.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(D.glow).multiplyScalar(0.5)}})}
-    m.visible=!n.dead;
+    if(m.userData.lift==null)tLift(m);
+    m.visible=!n.dead&&(!TR||Math.abs(n.x-S.cam.x)+Math.abs(n.y-S.cam.y)<TERRAIN.cull*1.4);   // באחו הגדול: מקור רחוק לא מצויר
   }
 }
 // תושבי הכפר: דמות לכל תושב שנמצא בכפר, והקישוטים בפינה של מי שאין לו מבנה. המצב (הולך, עובד, מנופף) מגיע מ-npc.js

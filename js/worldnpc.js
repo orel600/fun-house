@@ -16,9 +16,11 @@ const WNPC={
   /* at: איפה היא עומדת באחו (WORLD ב-world.js). col: הצבע שלה בדו-ממד ובחץ.
      pond: אגם קטן לידה (מצויר בקנבס), dx/dy ממנה ורדיוס */
   list:{
-    fisher:{at:{x:-110,y:520},col:'#3F7BF5',pond:{dx:95,dy:20,rx:80,ry:38}},   // הדייג, ליד אגם בדרום. הרוחות מפחידות לו את הדגים
-    cutter:{at:{x:430,y:-330},col:'#A8784A'},                                  // החוצבת, בין הסלעים לעורקי הנחושת במחצבה
-    herbal:{at:{x:-470,y:205},col:'#5FA35A'}                                   // הלקטת, ליד השיחים במערב
+    // המקומות באחו הגדול (docs/concept-meadow.md): 17 הדייג על גדת הנהר, 18 הלקטת ליד הגשר המערבי, 19 החוצבת במחצבה.
+    // river: הבריכה היא חלק מהנהר (terrain.js), ולכן לא מצוירת. הדיג עדיין לפי האליפסה (fishing.js)
+    fisher:{at:{x:420,y:-170},col:'#3F7BF5',pond:{dx:0,dy:120,rx:110,ry:45,river:true}},   // הדייג, על הגדה הצפונית. הרוחות מפחידות לו את הדגים
+    cutter:{at:{x:1690,y:-1090},col:'#A8784A'},                                 // החוצבת, בין הסלעים לעורקי הנחושת במחצבה
+    herbal:{at:{x:-970,y:-540},col:'#5FA35A'}                                   // הלקטת, ליד השיחים והגשר המערבי
   }
 };
 
@@ -95,7 +97,7 @@ function wnpcOff(){npcHide();if(R3D.wnpcs){for(const id in R3D.wnpcs)freeActor(R
 function drawWnpcs(){
   const all=wnpcState();if(!all)return;
   for(const id in WNPC.list){const N=WNPC.list[id],n=all[id]||N.at,p=N.pond;   // הבריכה נשארת גם כשהדייג עבר לכפר
-    if(p&&!WR().noNpc){ctx.fillStyle=R3D.on?'rgba(63,123,245,0.45)':'#2D5FB8';ctx.beginPath();ctx.ellipse(n.x+p.dx,n.y+p.dy,p.rx,p.ry,0,0,7);ctx.fill();
+    if(p&&!p.river&&!WR().noNpc){ctx.fillStyle=R3D.on?'rgba(63,123,245,0.45)':'#2D5FB8';ctx.beginPath();ctx.ellipse(n.x+p.dx,n.y+p.dy,p.rx,p.ry,0,0,7);ctx.fill();
       ctx.strokeStyle='rgba(236,231,220,0.35)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(n.x+p.dx,n.y+p.dy,p.rx*0.6,p.ry*0.5,0,0.3,2.4);ctx.stroke()}
     if(R3D.on||!all[id])continue;
     const bob=n.st==='wave'?Math.abs(Math.sin(fxNow()*12))*5:0;

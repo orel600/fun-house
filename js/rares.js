@@ -22,10 +22,10 @@ const RARES={
      col: הזוהר בתלת-ממד. spots: המקומות הנסתרים, at: השם שלהם בשמועה ('rare.at.<at>'). loot: בפורמט של טבלאות השלל (runGive) */
   list:{
     mossback:{reg:'meadow',base:'golem',icon:'🪨',tags:['stone','plant'],col:'#8FE36B',
-      spots:[{x:930,y:-60,at:'quarry'},{x:-930,y:-450,at:'grove'},{x:-120,y:580,at:'south'}],
+      spots:[{x:2490,y:-1680,at:'quarry'},{x:-2600,y:-1300,at:'grove'},{x:230,y:1140,at:'south'},{x:-2730,y:1640,at:'grove'}],   // האחו הגדול: המאורות ◆ בשרטוט (WORLD.map.dens, docs/concept-meadow.md)
       loot:{coins:[1,60],amberF:[1,1],amber:[0.6,1],star:[0.3,1]}},
     glimmer:{reg:'meadow',base:'sprite',icon:'🧚',tags:['plant','magic','flying'],col:'#FFE680',
-      spots:[{x:-470,y:20,at:'bushes'},{x:150,y:330,at:'copse'},{x:960,y:560,at:'east'}],
+      spots:[{x:1240,y:-590,at:'bushes'},{x:-2000,y:1100,at:'copse'},{x:2850,y:250,at:'east'},{x:2240,y:1140,at:'east'},{x:-670,y:1830,at:'south'}],
       loot:{coins:[1,50],flower:[1,3],aquaF:[0.7,1],star:[0.3,1]}},
     pearl:{reg:'lake',base:'drowned',icon:'🦪',tags:['water','metal'],col:'#BDF4FF',
       spots:[{x:-900,y:500,at:'reeds'},{x:930,y:-120,at:'tide'},{x:-40,y:600,at:'shore'}],

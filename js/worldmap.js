@@ -141,7 +141,8 @@ function wmDrawWorld(){
 function wmDrawHere(){
   const {x,w,h}=wmCanvas('wmHere'),R=WR(),sz=R.size,k=Math.min((w-16)/sz.w,(h-16)/sz.h),ox=w/2,oy=h/2,at=(px,py)=>({x:ox+px*k,y:oy+py*k});
   x.fillStyle='#0B0E18';x.fillRect(0,0,w,h);
-  const tl=at(-sz.w/2,-sz.h/2);x.fillStyle=R.ground;x.fillRect(tl.x,tl.y,sz.w*k,sz.h*k);x.lineWidth=2;x.strokeStyle='#D9C69099';x.strokeRect(tl.x,tl.y,sz.w*k,sz.h*k);
+  const tl=at(-sz.w/2,-sz.h/2);if(TR&&TR.R===R){x.save();x.translate(ox,oy);x.scale(k,k);tDraw(x,TR,true);x.restore()}   // אזור עם מפה: נהר, יער, רכס וגבול (terrain.js)
+  else{x.fillStyle=R.ground;x.fillRect(tl.x,tl.y,sz.w*k,sz.h*k);x.lineWidth=2;x.strokeStyle='#D9C69099';x.strokeRect(tl.x,tl.y,sz.w*k,sz.h*k)}
   // מים, סדקים או לבה
   const pc=R.pondCol||['#1F4A66','#46D3E6'];
   for(const p of R.ponds||[]){const c=at(p.x,p.y);x.beginPath();x.arc(c.x,c.y,p.r*k,0,Math.PI*2);x.fillStyle=pc[0];x.fill();x.lineWidth=1.5;x.strokeStyle=pc[1]+'88';x.stroke()}

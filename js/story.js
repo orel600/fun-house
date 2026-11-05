@@ -35,7 +35,8 @@ const STORY={
     // slam: רקיעה. כשהשחקן עד range ממנו: עיגול אדום ברדיוס r מתמלא warn שניות, ואז נזק למי שבתוכו.
     // charge: הסתערות. כשהשחקן בין min ל-max: פס על הרצפה ורעד warn שניות, ואז ריצה בקו len פיקסלים במהירות speed.
     // נתקע בסלע או בקצה: stun שניות בלי לזוז, ומקבל פי vuln נזק (ניר, 1.11: "שק חבטות או מלכודת". docs/plan-combat.md, שינוי 1)
-    earth:{reg:'meadow',x:650,y:-320,quest:'s1Warden',glow:'#FFD36B',col:C.ember,
+    // האחו הגדול (ת9, 5.11.2026): הפנס והמאורה בנקודה 16 בשרטוט (docs/concept-meadow.md), במערה בצוק הדרום-מזרחי, הכי רחוק מהשער. השומר עומד ב-GIANT.lair מתחת לפנס
+    earth:{reg:'meadow',x:2590,y:1640,quest:'s1Warden',glow:'#FFD36B',col:C.ember,
       warden:{type:'golem',hp:9,dmg:1.6,r:1.7,speed:0.8,wake:520,
         slam:{every:3.2,range:250,r:190,warn:0.8,dmg:22,col:'#FF4A3A'},
         charge:{every:6.5,min:240,max:620,warn:1.0,len:600,w:96,speed:620,dmg:24,stun:2,vuln:2,col:'#FF4A3A'}}},
