@@ -109,7 +109,14 @@ function install(B){
     const melee=P.weapon==='sword',stop=melee?28:150;
     const mk=B.dodge&&(w.marks||[]).find(M=>M.t>0&&Math.hypot(P.x-M.x,P.y-M.y)<(M.mk||STORY.lanterns[M.k].warden.marks).r+P.r+10),
       sl=B.dodge&&w.warden&&w.warden.tel&&w.warden.tel.kind==='slam'&&Math.hypot(P.x-w.warden.tel.x,P.y-w.warden.tel.y)<(w.warden.pw||L.warden).slam.r+P.r+10?w.warden.tel:null;
-    if(mk||sl){const o=mk||sl;steer(o.x,o.y,true,0)}   // יוצאים מהסימן על הרצפה
+    // עיגול שמתקרב מכמה כיוונים: בורחים מכולם יחד (סכום הכיוונים), לא מאחד אל תוך אחר
+    let vx=0,vy=0;if(B.dodge)for(const M of (w.marks||[])){if(M.t<=0)continue;const r=(M.mk||STORY.lanterns[M.k].warden.marks).r+P.r+30,dx=P.x-M.x,dy=P.y-M.y,d=Math.hypot(dx,dy)||1;
+      if(d<r){const k=(r-d)/r+0.3;vx+=dx/d*k;vy+=dy/d*k}}
+    // טבעת אש שמתקרבת: הולכים אל הפתח שלה, באותו מרחק מהמרכז
+    const rg=B.dodge&&(w.rings||[]).find(R=>{const d=Math.hypot(P.x-R.x,P.y-R.y),rr=R.rg||STORY.lanterns[R.k].warden.ring;return !R.hit&&d>R.rad&&d-R.rad<90&&d<rr.max+20});
+    if(vx||vy)steer(P.x+vx*100,P.y+vy*100,false,0);
+    else if(sl)steer(sl.x,sl.y,true,0);   // יוצאים מעיגול הרקיעה
+    else if(rg){const d=Math.hypot(P.x-rg.x,P.y-rg.y);steer(rg.x+Math.cos(rg.gap)*d,rg.y+Math.sin(rg.gap)*d,false,4)}
     else if(P.hp<P.maxHp*B.flee&&near.e&&near.d<320){steer(near.e.x,near.e.y,true,0);m.hurt=1}
     else if(m.hurt&&P.hp<P.maxHp*0.85&&near.d<320){steer(near.e.x,near.e.y,true,0)}
     else{m.hurt=0;const tg=m.ph==='warden'?(w.warden&&!w.warden.dead?w.warden:null):near.e;
