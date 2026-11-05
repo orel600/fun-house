@@ -2,7 +2,7 @@
    הבוט בוחר דמות התחלה, מתחיל בכפר (מקבל קווסט, בונה, אוסף תוצרת, יוצא בשער), יוצא לעולם הפתוח (כורת עץ, מפיל אויב, נכנס לזירה בשער),
    משחק בזירה עד אחרי הבוס, חוזר לאותו שער עם השלל, נופל בעולם ובודק שאבד חצי מהמשאבים, קם בכפר ולוקח את פרס הקווסט.
    הרצה: node tools/check.js
-   אפשרויות: --time 480   כמה שניות משחק לשחק, לכל היותר (הריצה נגמרת כשהבוס בסוף מובס)
+   אפשרויות: --time 560   כמה שניות משחק לשחק, לכל היותר (הריצה נגמרת כשהבוס בסוף מובס)
              --seed 7     אותו מספר = אותה ריצה בדיוק, כדי לשחזר באג או להשוות לפני ואחרי שינוי
              --real       בלי חסינות: הבוט יכול למות, כדי לבדוק קושי ולא רק קריסות
              --shots      צילומי מסך לתיקייה tools/shots
@@ -16,7 +16,7 @@ const path=require('path'),fs=require('fs');
 const args=process.argv.slice(2);
 const opt=k=>{const i=args.indexOf('--'+k);if(i<0)return null;const v=args[i+1];return v&&!v.startsWith('--')?v:true};
 const CFG={
-  time:+(opt('time')||480),
+  time:+(opt('time')||560),   // 560 (היה 480): באחו הגדול ההליכה לשער הזירה ארוכה בכ-40 שניות
   seed:+(opt('seed')||Math.floor(Math.random()*1e6)),
   god:!opt('real'),
   shots:opt('shots')?path.join(__dirname,'shots'):null,
@@ -233,7 +233,9 @@ function petBot(m,L){
 // מזיז את השחקן לכיוון (tx,ty), או הרחק ממנו (flee), עד מרחק stop. בלי יעד: הולך במעגל
 function steer(tx,ty,flee,stop,L){
   let dx=0,dy=0;
-  if(tx!=null){const d=Math.hypot(tx-P.x,ty-P.y)||1;if(flee||d>stop){dx=(tx-P.x)/d;dy=(ty-P.y)/d;if(flee){dx=-dx;dy=-dy}}}
+  if(tx!=null){const d=Math.hypot(tx-P.x,ty-P.y)||1;if(flee||d>stop){
+    let gx=tx,gy=ty;if(S.wd&&!flee&&typeof TR!=='undefined'&&TR){const t=tDir(P,tx,ty);gx=t.x;gy=t.y}   // בעולם עם מפה: מסביב לנהר וליער (A* ב-terrain.js)
+    const g=Math.hypot(gx-P.x,gy-P.y)||1;dx=(gx-P.x)/g;dy=(gy-P.y)/g;if(flee){dx=-dx;dy=-dy}}}
   else{const a=S.t*0.6;dx=Math.cos(a);dy=Math.sin(a)}
   joy={id:-1,ox:-999,oy:-999,dx,dy};
   return L;
@@ -444,6 +446,7 @@ function worldBot(m,L,god){
   if(!m.hitHook){m.hitHook=1;const d0=damage;damage=function(e,b,w,a,t,ch){if(S.wd&&!ch&&w!=='pet'){const d=Math.hypot(e.x-P.x,e.y-P.y)-(e.r||0);L.wHitMax=Math.max(L.wHitMax||0,Math.round(d));L.wHits=(L.wHits||0)+1}return d0.apply(this,arguments)}}
   L.wRange=WORLD.attackRange;   // רק מכות של השחקן: נשיכות של פיוחו (w='pet') רצות רחוק יותר, עד PET.attack.leash
   if(!m.wp){m.wp='gather';L.wEnter=!S.vil&&S.mode==='play';L.wName=document.getElementById('wName').textContent;L.wHud=vis('whud')&&!vis('vhud');
+    if(TR){const rc=terrainReach(WORLD,'meadow');L.wTerr={ms:TR.ms,size:WORLD.size.w+'×'+WORLD.size.h,bad:terrainBad(WORLD,'meadow'),un:Object.keys(rc).filter(k=>!rc[k]),n:Object.keys(rc).length,lazy:W.groups.filter(g=>g.lazy).length,river:tBlocked(WORLD.map.rivers[0].pts[5][0],WORLD.map.rivers[0].pts[5][1]),bridge:!tBlocked(WORLD.map.bridges[0].x,WORLD.map.bridges[0].y),ford:tSlow(WORLD.map.fords[0].x,WORLD.map.fords[0].y)}}   // המפה של האחו (terrain.js)
     L.wNodes=S.nd.list.length;L.wFoes=enemies.length;L.wCreatures=enemies.filter(e=>e.creature).length;m.w0=SAVE.bag.wood||0;m.wt=W.t;
     // המפלצות הראשונות ליד השער: קלות. אחת נזרקת רחוק מהבית שלה (צריכה לחזור), וקבוצה אחת מופלת (צריכה לחזור אחרי זמן)
     const st=enemies.filter(e=>e.zone==='start'),gi=G=>WORLD.foes.indexOf(G),home=e=>WORLD.foes[e.home];
@@ -2971,7 +2974,7 @@ function worldBot(m,L,god){
     enterWorld('home');const B=placeBox(),n0=drops().length,out=o=>o.x<B.x0||o.x>B.x1||o.y<B.y0||o.y>B.y1;
     wantedAppear(0);const e=S.wn.e;e.x=B.x1+300;e.y=B.y0-200;wantedMove(e,0.05);const wIn=!out(e);
     e.x=B.x1+120;e.y=B.y1+120;lootKill(e);wantedDown(e);e.dead=true;S.wn.e=null;
-    const ds=drops().slice(n0);P.x=B.x1-10;P.y=B.y1-10;P.inv=99;enemies.length=0;
+    const ds=drops().slice(n0);P.x=B.x1-10;P.y=B.y1-10;P._tx=null;placeClamp(P);P.inv=99;   // placeClamp: באחו הגדול הפינה היא מפרץ, אז לנקודה הפנויה הקרובהenemies.length=0;
     for(let i=0;i<120;i++)dropsUpdate(1/30);
     const left=ds.filter(d=>!d.got),gid=lootGear({x:P.x+60,y:P.y-60},true),g0=SAVE.bag[gid]||0;
     for(let i=0;i<120;i++)dropsUpdate(1/30);
@@ -3183,6 +3186,7 @@ function worldBot(m,L,god){
     (Nn.got?', התקבל '+Nn.qid+(Nn.after?'':' (הכרטיס לא התעדכן)'):', לא התקבל קווסט')+(Nn.inLog?', מופיע ביומן':', לא ביומן')+(Nn.closed?'':', השיחה לא נסגרה')+
     (Nn.push===0?', לא חוסמים':', דוחפים '+Nn.push+'px')+(Nn.free?'':', מישהו על הדרך או בתוך מבנה')+(Nn.cheer?', מריע לשדרוג':', לא מריע לשדרוג'));
   check(L.gateNoRun&&L.gateBtn&&L.wEnter,'שער הכפר: '+(L.gateNoRun?'מעבר בשער לא מוציא מהכפר':'יצא בלי לחיצה')+', '+(L.wEnter?'לחיצה על "'+L.gateBtn+'" מוציאה לעולם':'לחיצה לא הוציאה לעולם'));
+  {const T=L.wTerr;check(!!T&&!T.bad.length&&!T.un.length&&T.river&&T.bridge&&T.ford<1,'מפת האחו: '+(T?T.size+', נבנתה ב-'+T.ms+'ms, '+(T.bad.length?'בתוך מים/יער: '+T.bad.join(', '):'אף מקום לא בתוך מים או יער')+', '+(T.un.length?'אין דרך אל: '+T.un.join(', '):'כל '+T.n+' המקומות נגישים מהשער')+(T.river?', הנהר חוסם':', הנהר לא חוסם!')+(T.bridge?', הגשר פתוח':', הגשר חסום!')+', המעבר הרדוד ×'+T.ford.toFixed(2)+', '+T.lazy+' קבוצות רחוקות ממתינות':'לא נבנתה'))}
   check(L.wEnter&&L.wHud&&!!L.wName&&L.wNodes>0&&L.wFoes>0,'עולם פתוח: '+(L.wName||'בלי שם אזור')+(L.wHud?', ממשק העולם מוצג':', ממשק העולם חסר')+', '+L.wNodes+' מקורות משאבים, '+L.wFoes+' אויבים'+(L.wCreatures?' ('+L.wCreatures+' יצורי משאבים)':' (יצורי משאבים יגיעו עם הכלכלה)'));
   check(L.wGather>0&&L.wGatherSaved,'איסוף בעולם: '+(L.wGather?'עץ +'+L.wGather+' נכנס לתרמיל אחרי '+L.wGatherT+' שניות'+(L.wGatherSaved?', נשמר':', לא נשמר'):'לא נאסף')+(L.wQuest?' · קווסט '+L.wQuest:''));
   check(!!L.wKill,'אויב בעולם: '+(L.wKill?'הופל '+L.wKill:'לא הופל'));
@@ -3207,9 +3211,10 @@ function worldBot(m,L,god){
   const Bt=L.boots||{};
   check(L.bootsAcc&&Bt.claimed&&Bt.worn&&Bt.saved&&Math.abs(Bt.k-Bt.want)<0.002,'נעליים: '+(L.bootsAcc?'קווסט התקבל מראש הכפר':'הקווסט לא התקבל')+', עץ בעולם '+(L.bootsProg??0)+'/5'+
     (Bt.claimed?', פרס נלקח':', הפרס לא נלקח')+(Bt.worn?', נלבשו מיד':', לא נלבשו')+(Bt.saved?', נשמר':', לא נשמר')+', מהירות x'+Bt.k+' (צפוי x'+Bt.want+')');
-  // לפני השינוי (ניר, משחק ראשון בטלפון): 2007 פיקסלים במהירות 165, כלומר 12.2 שניות של הליכה רק כדי להגיע לזירה
+  // לפני השינוי (ניר, משחק ראשון בטלפון): 2007 פיקסלים במהירות 165, כלומר 12.2 שניות של הליכה רק כדי להגיע לזירה.
+  // האחו הגדול (ניר, 5.11.2026: "משהו שלוקח זמן להגיע מקצה לקצה"): שערי הזירה בעומק המפה, אז הגבול עכשיו 20 שניות בקו ישר. אבני המסע (ת10) יקצרו
   const ws=L.walkPx/L.walkSp,wb=Bt.sp?L.walkPx/Bt.sp:null;
-  check(ws<12.2,'הליכה מהכפר לשער הזירה: '+L.walkPx+' פיקסלים, '+ws.toFixed(1)+' שניות'+(wb?', עם נעליים '+wb.toFixed(1):'')+' (לפני: 2007 פיקסלים, 12.2 שניות)');
+  check(ws<20,'הליכה מהכפר לשער הזירה: '+L.walkPx+' פיקסלים, '+ws.toFixed(1)+' שניות'+(wb?', עם נעליים '+wb.toFixed(1):'')+' (גבול: 20 שניות. במפה הקטנה: 2007 פיקסלים, 12.2 שניות)');
   check(L.levels>0,'עליית רמה ובחירת שדרוג: '+L.levels+' פעמים, הגיע לרמה '+L.level);
   check(L.swapBtn&&(L.nHeld>1?L.swaps>0:L.swaps===0),'כפתור החלפת נשק: '+(L.nHeld>1?L.swaps+' החלפות בין '+L.nHeld+' נשקים':(L.swapBtn?'מוסתר, כי יש נשק אחד ביד':'מוצג עם נשק אחד')));
   // כל דמות עם הנשק שלה: לוחם מניף, צייד יורה חצים, קוסם יורה קסם (WEAPONS ב-weapons.js)
