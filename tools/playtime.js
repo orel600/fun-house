@@ -22,7 +22,10 @@ const opt=k=>{const i=args.indexOf('--'+k);if(i<0)return null;const v=args[i+1];
 const PT={
   cls:(opt('cls')||'warrior,hunter,mage').split(','),
   seed:+(opt('seed')||7),
-  kills:+(opt('kills')||60),        // הריגות בכל אזור בדרגה 2 ו-3 לפני השומר
+  kills:+(opt('kills')||60),        // הריגות בכל אזור בדרגה 2 ו-3 לפני השומר (לכל הפחות)
+  // רמת היעד בסוף כל שלב (המתאם, 5.11: סיפור כ-30, דרגה 2 כ-50, דרגה 3 כ-70). בדרגות 2-3 הבוט מטפס באזור עד החלק שלו (6 אזורים, עולה בשווה)
+  // לפני השומר, כמו שחקן שמשחק עד שהוא מרגיש חזק מספיק. בסיפור הרמה באה מהשלטים (CURIO.paths). --lv 0 מבטל
+  lv:(opt('lv')||'30,50,70').split(',').map(Number),
   cap:+(opt('cap')||2400),          // שניות משחק לכל היותר לפרק. לא נגמר: "תקוע" (קיר)
   trip:+(opt('trip')||600),         // כל כמה שניות משחק חוזרים לכפר
   walk:1.5, village:90, death:45,   // ההנחות למעלה
@@ -48,6 +51,8 @@ function track(){
     if(e.warden&&!won[m.ch+e.warden]){won[m.ch+e.warden]=1;add('warden',e.warden)}   // פעם אחת לשומר בכל פרק
     const L=heroLv();if(Math.floor(L/RANKS.every)>Math.floor(lv/RANKS.every))add('rank','רמה '+L);lv=L;
     return r};
+  // שדרוג ציוד: הבוט לבש משהו טוב יותר (לא "מעניין", אבל מראה אם יש התקדמות בזמן הטיפוס)
+  const g0=gearEquip;gearEquip=function(){const r=g0.apply(this,arguments);if(S.wd)add('equip','');return r};
   const t0=tierSet;tierSet=function(n){const r=t0.apply(this,arguments);if(r)add('tier','דרגה '+n);return r};
 }
 
@@ -79,8 +84,8 @@ const f1=x=>x==null?'-':(Math.round(x*10)/10).toString();
 
 (async()=>{
   const story=BAL.chapters.map(c=>Object.assign({},c,{st:'story'}));
-  const tier=n=>BAL.chapters.map(c=>Object.assign({},c,{st:'t'+n,tier:n,kills:PT.kills}));
-  const B=Object.assign({},BAL,{cap:PT.cap,wardenCap:Math.min(600,PT.cap/2),trip:PT.trip,chapters:story.concat(tier(2),tier(3))});
+  const tier=n=>BAL.chapters.map((c,i)=>{const a=PT.lv[n-2],b=PT.lv[n-1];return Object.assign({},c,{st:'t'+n,tier:n,kills:PT.kills},b?{lv:Math.round(a+(b-a)*(i+1)/6)}:{})});
+  const B=Object.assign({},BAL,{rares:true,cap:PT.cap,wardenCap:Math.min(600,PT.cap/2),trip:PT.trip,chapters:story.concat(tier(2),tier(3))});
   const browser=await chromium.launch();
   const out={};await Promise.all(PT.cls.map(async c=>{out[c]=await runCls(browser,c,B)}));
   await browser.close();
@@ -116,22 +121,23 @@ const f1=x=>x==null?'-':(Math.round(x*10)/10).toString();
   // דברים מעניינים: כמה דקות (של שחקן) בין אחד לבא, לכל שלב
   p('## כמה זמן בין "דבר מעניין" לבא');p('');
   p('דבר מעניין: שלל משכבה חדשה, משאב אגדי או אפי מסוג חדש, מפלצת נדירה, שומר, רמה שפותחת דרגת דמות (כל '+20+' רמות), ודרגת עולם. דקות של שחקן (זמן משחק ×'+PT.walk+').');p('');
-  p('| שלב | כמה | ממוצע (דק) | הכי ארוך (דק) | מה היה |');p('| --- | --- | --- | --- | --- |');
-  for(const [st,name] of STAGES){let n=0,gaps=[],kinds={};
+  p('| שלב | כמה | ממוצע (דק) | הכי ארוך (דק) | שדרוגי ציוד לשעה | מה היה |');p('| --- | --- | --- | --- | --- | --- |');
+  for(const [st,name] of STAGES){let n=0,gaps=[],kinds={},eq=0,hsum=0;
     for(const c of PT.cls){const R=out[c],idx=B.chapters.map((x,i)=>x.st===st?i:-1).filter(i=>i>=0);if(!idx.length||!R.ch[idx[0]])continue;
       // תחילת השלב וסופו בזמן משחק: סכום הפרקים שלפניו
       const start=R.ch.slice(0,idx[0]).reduce((a,h)=>a+(h.t||0),0),end=start+idx.reduce((a,i)=>a+((R.ch[i]||{}).t||0),0);
       // זמן המשחק של הבוט רץ ברצף (m.gt), אז האירועים כבר על אותו ציר
-      const e=(R.ev||[]).filter(x=>idx.includes(x.ch));n+=e.length;for(const x of e)kinds[x.k]=(kinds[x.k]||0)+1;
+      eq+=(R.ev||[]).filter(x=>idx.includes(x.ch)&&x.k==='equip').length;hsum+=(end-start)*PT.walk/3600;
+      const e=(R.ev||[]).filter(x=>idx.includes(x.ch)&&x.k!=='equip');n+=e.length;for(const x of e)kinds[x.k]=(kinds[x.k]||0)+1;
       let prev=start;for(const x of e){gaps.push(x.t-prev);prev=x.t}gaps.push(end-prev)}
     const g=gaps.map(x=>x*PT.walk/60),avg=g.length?g.reduce((a,b)=>a+b,0)/g.length:null;
-    p(`| ${name} | ${f1(n/PT.cls.length)} למחלקה | ${f1(avg)} | ${f1(g.length?Math.max(...g):null)} | ${Object.entries(kinds).map(([k,v])=>k+' '+v).join(', ')} |`)}
+    p(`| ${name} | ${f1(n/PT.cls.length)} למחלקה | ${f1(avg)} | ${f1(g.length?Math.max(...g):null)} | ${hsum?f1(eq/hsum):'-'} | ${Object.entries(kinds).map(([k,v])=>k+' '+v).join(', ')} |`)}
   p('');
   p('## קירות וקצר מדי');p('');
   p('- **קיר** (פרק שלוקח יותר מפי '+PT.wall+' מהחלק שלו ביעד, או שהבוט נתקע): '+(walls.length?walls.join(', '):'אין'));
   p('- **קצר מדי** (פחות מחצי מהחלק שלו ביעד): '+(short.length?short.join(', '):'אין'));p('');
   p('## בסוף');p('');
-  for(const c of PT.cls){const R=out[c];p(`- ${c}: רמה ${R.end.lv}, סטים: ${R.end.sets.join(', ')}, ${R.deaths} מוות, ${R.unstick||0} פעמים נתקע בשטח וזז לכיוון אקראי, ${R.real} שניות אמיתיות${R.errors.length?', שגיאות: '+R.errors.join(' | '):''}`)}
+  for(const c of PT.cls){const R=out[c];p(`- ${c}: רמה ${R.end.lv}, סטים: ${R.end.sets.join(', ')}, ${R.deaths} מוות, ${R.unstick||0} פעמים נתקע בשטח וזז לכיוון אקראי${R.stuckAt?' ('+R.stuckAt.slice(0,6).map(a=>a.join(' ')).join('; ')+')':''}, ${R.real} שניות אמיתיות${R.errors.length?', שגיאות: '+R.errors.join(' | '):''}`)}
   const txt=L.join('\n');console.log('\n'+txt);
   const o=opt('out');if(o)fs.writeFileSync(o,txt+'\n');
   const j=opt('json');if(j)fs.writeFileSync(j,JSON.stringify(out,null,1));

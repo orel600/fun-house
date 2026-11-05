@@ -47,7 +47,7 @@ function install(B){
   function chap(){return B.chapters[m.ch]}
   // הריגות בפרק (ל-kills של playtime.js)
   const k0=kill;kill=function(e){const r=k0.apply(this,arguments);if(S.wd&&!e.node)m.kc=(m.kc||0)+1;return r};
-  function need(){const c=chap();return c.to?CURIO.paths[c.to].lv:0}
+  function need(){const c=chap();return c.lv||(c.to?CURIO.paths[c.to].lv:0)}   // c.lv: רמת יעד לפרק (playtime.js, בדרגות 2-3)
   function cRep(){return R.ch[m.ch]||(R.ch[m.ch]={reg:chap().reg,deaths:0,lv0:heroLv()})}
   const foes=()=>enemies.filter(e=>!e.dead&&!e.node);
   function better(slot,id){let wi=-1,ws=1e9;for(let i=0;i<gOpen(slot);i++){const s=gScore(gGet(slot,i));if(s<ws){ws=s;wi=i}}return gScore(id)>ws+1e-9?wi:-1}
@@ -79,7 +79,7 @@ function install(B){
     const d=Math.hypot(tx-P.x,ty-P.y)||1;if(flee||d>stop){dx=(tx-P.x)/d;dy=(ty-P.y)/d;if(flee){dx=-dx;dy=-dy}}
     // תקוע באחו הגדול (קצה של נהר או צוק, דרך שלא נמצאה): 8 שניות בלי לזוז 40 פיקסלים, אז 2 שניות לכיוון אקראי, כמו שחקן שמסתובב. נספר ב-R.unstick
     if(S.wd&&typeof TR!=='undefined'&&TR){const k=m.stk;if(!k||Math.hypot(P.x-k.x,P.y-k.y)>40)m.stk={x:P.x,y:P.y,t:m.gt};
-      else if(m.gt-k.t>8&&(dx||dy)){R.unstick=(R.unstick||0)+1;m.stk={x:P.x,y:P.y,t:m.gt};m.wig=m.gt+2;m.wa=Math.random()*6.283}
+      else if(m.gt-k.t>8&&(dx||dy)){R.unstick=(R.unstick||0)+1;(R.stuckAt||(R.stuckAt=[])).push([Math.round(P.x),Math.round(P.y),flee?'flee':m.ph]);m.stk={x:P.x,y:P.y,t:m.gt};m.wig=m.gt+2;m.wa=Math.random()*6.283}
       if(m.wig>m.gt){dx=Math.cos(m.wa);dy=Math.sin(m.wa)}}
     joy={id:-1,ox:-999,oy:-999,dx,dy}}
   function finish(ok,why){const c=cRep();c.t=Math.round(m.gt-m.chT);c.lv1=heroLv();c.ok=ok;if(why)c.why=why;c.coins=SAVE.bag.coins||0;
@@ -105,7 +105,7 @@ function install(B){
     if(now-m.lastMg>5){m.lastMg=now;equip();points();if(!foes().some(e=>Math.hypot(e.x-P.x,e.y-P.y)<260))dropsCollectAll()}
     if(now-m.lastSw>B.swapEvery){m.lastSw=now;swap()}
     // שלב: אחרי הרמה המומלצת, לפנס
-    const ready=chap().kills?(m.kc||0)>=chap().kills&&!c.gate:heroLv()>=need();
+    const ready=chap().kills?(m.kc||0)>=chap().kills&&!c.gate&&heroLv()>=need():heroLv()>=need();
     if(m.ph==='grind'&&ready&&now-m.chT<B.cap-30)m.ph='warden';
     if(m.ph==='grind'&&now-m.chT>=B.cap-B.wardenCap)m.ph='warden';   // לא הגיע לרמה בזמן: מנסה את השומר בכל זאת
     const L=STORY.lanterns[chap().k],w=S.wd;
@@ -125,7 +125,10 @@ function install(B){
     if(mk||sl){const o=mk||sl;steer(o.x,o.y,true,0)}   // יוצאים מהסימן על הרצפה
     else if(P.hp<P.maxHp*B.flee&&near.e&&near.d<320){steer(near.e.x,near.e.y,true,0);m.hurt=1}
     else if(m.hurt&&P.hp<P.maxHp*0.85&&near.d<320){steer(near.e.x,near.e.y,true,0)}
-    else{m.hurt=0;const tg=m.ph==='warden'?(w.warden&&!w.warden.dead?w.warden:null):near.e;
+    else{m.hurt=0;
+      // B.rares (playtime.js): אחרי השמועה, הולכים לנדירה, כמו שחקן ששמע עליה. אחרת היא נעלמת לפני שהבוט נתקל בה
+      const rr=B.rares&&m.ph==='grind'&&w.rare&&!w.rare.done&&w.rare.rumor<=0&&w.rare.e&&!w.rare.e.dead&&(!near.e||near.d>200)?w.rare.e:null;
+      const tg=m.ph==='warden'?(w.warden&&!w.warden.dead?w.warden:null):rr||near.e;
       if(m.ph==='warden'&&!tg)steer(L.x,L.y,false,20);else if(tg)steer(tg.x,tg.y,false,stop+(tg.r||0));else joy=null}
     if(near.e&&near.d<230&&S.sk)for(const id of S.sk.ids.slice())if(wskReady(id)>=0)wskUse(id);
     return{}
