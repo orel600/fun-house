@@ -28,7 +28,7 @@ const BAL={
 
 /* ---- הבוט, בתוך הדף ---- */
 function install(B){
-  const m=window.__bal={B,ch:0,ph:'grind',gt:0,chT:0,wT:0,rep:{ch:[],dmg:{},casts:{},block:{},noPay:{},deaths:0,errors:[]},lastMg:0,lastSw:0,swI:0,dead:0};
+  const m=window.__bal={B,ch:0,ph:'grind',gt:0,chT:0,wT:0,rep:{ch:[],hurtBy:{},dmg:{},casts:{},block:{},noPay:{},deaths:0,errors:[]},lastMg:0,lastSw:0,swI:0,dead:0};
   const R=m.rep;
   // נזק: כל מכה נמדדת לפי מקור. סקיל מהספר דרך wsbHit, סקיל של הזירה לפי סוג הנזק, והשאר לפי הנשק
   const OLD={earth:'quake',lightning:'zap',water:'splash',ice:'frost',fire:'flame'};
@@ -40,6 +40,9 @@ function install(B){
   // הזמן: הבוט מריץ את הפריימים בעצמו (frameStep ב-main.js), 0.05 שניות כל אחד, בלי השעון המזויף שמאט פי מאה.
   // זמן המשחק נספר רק בעולם, כדי שההמתנה אחרי מוות (setTimeout אמיתי) לא תיספר
   frame=function(){};
+  // מה פוגע בשחקן בקרב בשומר: לפי הפונקציה שקראה ל-hurt (יריות, טבעות, עיגולים, רקיעה, מגע)
+  const hu=hurt;hurt=function(d){const h0=P.hp,r=hu.apply(this,arguments);if(m.ph==='warden'&&S.wd){const ln=(new Error().stack.split('\n')[2]||''),fn=(ln.match(/at (\w+)/)||[])[1]||'?';
+    const c=R.hurtBy[m.ch]||(R.hurtBy[m.ch]={});c[fn]=(c[fn]||0)+Math.max(0,h0-P.hp)}return r};
   if(typeof giantLoot==='function')giantLoot=function(){};   // שלל של ניצחון חוזר: לא, כדי שהציוד לא ישתפר בין קרב לקרב
   window.__balRun=n=>{let r={};for(let i=0;i<n&&!r.done;i++){last=performance.now()-50;frameStep(performance.now());if(S.wd)m.gt+=0.05;if(i%5===0)r=step()}return r};
   function chap(){return B.chapters[m.ch]}
@@ -150,6 +153,7 @@ async function runCls(browser,cls){
     if(R.errors.length)console.log('  שגיאות: '+R.errors.join(' | '))}
   // סולם הבוסים (GIANT.ladder.ratio, ניר 5.11): כמה זמן לוקח להפיל כל שומר, בממוצע על המחלקות, ופי כמה מהקודם
   const ft=BAL.chapters.map((_,i)=>{const v=BAL.cls.map(c=>(out[c].ch[i]||{}).fightT).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null});
+  for(const c of BAL.cls){const hb=out[c].hurtBy||{};console.log('  נזק לשחקן בקרב בשומר, '+c+': '+Object.keys(hb).map(i=>BAL.chapters[i].k+' '+Object.entries(hb[i]).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>k+' '+Math.round(v)).join('/')).join(' | '))}
   console.log('\nלכל מחלקה (ממוצע '+BAL.fights+' קרבות, מוות בקרבות בשומר):');
   for(const c of BAL.cls)console.log('  '+c+': '+out[c].ch.map((h,i)=>BAL.chapters[i].k+' '+(h.fightT??'-')+'s/'+(h.wDeaths||0)+'💀').join(', '));
   console.log('\nזמן להפיל כל שומר (ממוצע, שניות): '+ft.map((t,i)=>BAL.chapters[i].k+' '+(t==null?'-':t.toFixed(1))+(i&&t&&ft[i-1]?' (×'+(t/ft[i-1]).toFixed(2)+')':'')).join(', '));
