@@ -17,7 +17,7 @@ const SIDEQ={
   // המקומות. באחו: כל ציוני הדרך מהשרטוט (נוספים לבד למטה), ועוד כמה
   places:{
     meadow:{},
-    lake:  {reeds:{x:-220,y:-200},pier:{x:-650,y:180},tide:{x:640,y:-330},south:{x:-60,y:560}},
+    lake:  {},   // האגם הגדול (map-lake.js): ציוני הדרך שלו נוספים לבד למטה
     ridge: {crevasse:{x:-120,y:-160},camp:{x:620,y:300},pines:{x:-560,y:-260},cliff:{x:-300,y:520}},
     desert:{bones:{x:-120,y:420},cacti:{x:-560,y:-300},nest:{x:700,y:460},lava:{x:140,y:-170}},
     storm: {twrW:{x:-620,y:-230},twrS:{x:-380,y:430},twrE:{x:300,y:-230},rocks:{x:640,y:120},dead:{x:-560,y:-80}},
@@ -26,7 +26,9 @@ const SIDEQ={
   // המראה בתלת-ממד לפי המודל (look ב-WNPC.list)
   looks:{knight:{h:64,foot:14},ranger:{h:58,foot:13,own:false},barbarian:{h:62,foot:14,own:false},mage:{h:60,foot:13},rogue:{h:58,foot:13}}
 };
-for(const m of WORLD.map.marks)SIDEQ.places.meadow[m.id]={x:m.x,y:m.y};
+// אזור עם מפה גדולה (האחו, האגם): המקומות הם ציוני הדרך שלה (marks), בשמות קבועים
+for(const reg of ['meadow',...Object.keys(WORLD.regions)]){const R=reg==='meadow'?WORLD:WORLD.regions[reg],M=R&&R.map;
+  if(M&&M.marks&&SIDEQ.places[reg])for(const m of M.marks)SIDEQ.places[reg][m.id]=SIDEQ.places[reg][m.id]||{x:m.x,y:m.y}}
 
 const QBOARD={
   offers:3,          // כמה משימות על כל לוח
@@ -34,7 +36,7 @@ const QBOARD={
   streak:5,          // כל כמה משימות מהלוח יש בונוס
   bonus:{gem:1,essence:3},
   // איפה הלוח: באחו ליד השער לכפר, ובשאר האזורים ליד השער שממנו נכנסים
-  at:{meadow:{x:110,y:-1740},other:{x:-90,y:-520}},
+  at:{meadow:{x:110,y:-1740},lake:{x:150,y:-1690},other:{x:-90,y:-520}},
   // מה האזור מציע: משאבים לאסוף (כמה בבסיס), ומשאב בפרס
   regs:{
     meadow:{res:{wood:15,stone:12,copper:5,herb:6},prize:'iron',fish:true},
@@ -56,7 +58,7 @@ const QBOARD={
 };
 
 /* ---- הדמויות: מראה בתלת-ממד, והלוחות כדמויות בלי גוף ---- */
-for(const reg in QBOARD.regs)WNPC.list['qb_'+reg]={reg,at:reg==='meadow'?QBOARD.at.meadow:QBOARD.at.other,col:'#C9A26B',board:true};
+for(const reg in QBOARD.regs)WNPC.list['qb_'+reg]={reg,at:QBOARD.at[reg]||QBOARD.at.other,col:'#C9A26B',board:true};
 (function(){if(typeof LOOK3D==='undefined')return;
   for(const id in WNPC.list){const N=WNPC.list[id],B=SIDEQ.looks[N.look];if(!B||LOOK3D['npc_'+id])continue;
     LOOK3D['npc_'+id]=Object.assign({model:N.look,tint:N.col,anim:{...NPC_ANIM,idle:N.look==='knight'||N.look==='ranger'?'Idle_B':'Idle_A'}},B)}})();

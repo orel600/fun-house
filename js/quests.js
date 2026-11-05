@@ -100,13 +100,13 @@ const QUESTS={
     {id:'sqHerm2',giver:'hermit',kind:'world',obj:[{type:'visit',what:'meadow:temple',n:1},{type:'visit',what:'meadow:loggers',n:1}],reward:{xp:110,essence:2},req:{quest:'sqHerm1'}},
     {id:'sqHerm3',giver:'hermit',kind:'world',obj:[{type:'collect',what:'resin',n:5},{type:'hold',what:'meadow:lighthouse',n:30}],reward:{xp:140,gem:1,item:'sqLens'},req:{quest:'sqHerm2'}},
     // אגם הערפל: נסה המעבורתנית והאח הולו
-    {id:'sqFerry1',giver:'ferry',kind:'world',obj:[{type:'visit',what:'lake:reeds',n:1},{type:'visit',what:'lake:pier',n:1}],reward:{xp:120,coins:40}},
+    {id:'sqFerry1',giver:'ferry',kind:'world',obj:[{type:'visit',what:'lake:boat',n:1},{type:'visit',what:'lake:willow',n:1}],reward:{xp:120,coins:40}},
     {id:'sqFerry2',giver:'ferry',kind:'world',obj:[{type:'kill',what:'drowned',n:10}],reward:{xp:140,aquaC:2},req:{quest:'sqFerry1'}},
     {id:'sqFerry3',giver:'ferry',kind:'world',obj:[{type:'fish',what:'eel',n:1}],reward:{xp:130,coins:60},req:{quest:'sqFerry2'}},
     {id:'sqFerry4',giver:'ferry',kind:'world',obj:[{type:'hold',what:'lake:pier',n:30}],reward:{xp:170,iron:6,item:'sqOar'},req:{quest:'sqFerry3'}},
     {id:'sqMist1',giver:'mistsage',kind:'world',obj:[{type:'gather',what:'aquaC',n:4}],reward:{xp:120,essence:2}},
     {id:'sqMist2',giver:'mistsage',kind:'world',obj:[{type:'kill',what:'mistling',n:12}],reward:{xp:140,coins:45},req:{quest:'sqMist1'}},
-    {id:'sqMist3',giver:'mistsage',kind:'world',obj:[{type:'visit',what:'lake:tide',n:1},{type:'visit',what:'lake:south',n:1}],reward:{xp:160,gem:1,item:'sqBell'},req:{quest:'sqMist2'}},
+    {id:'sqMist3',giver:'mistsage',kind:'world',obj:[{type:'visit',what:'lake:bell',n:1},{type:'visit',what:'lake:drowned',n:1}],reward:{xp:160,gem:1,item:'sqBell'},req:{quest:'sqMist2'}},
     // הרכס הקפוא: רֵאה המטפסת ופין הזמר
     {id:'sqClimb1',giver:'climber',kind:'world',obj:[{type:'visit',what:'ridge:crevasse',n:1}],reward:{xp:150,coins:50}},
     {id:'sqClimb2',giver:'climber',kind:'world',obj:[{type:'kill',what:'rimeknight',n:10}],reward:{xp:180,iron:8},req:{quest:'sqClimb1'}},
