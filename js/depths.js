@@ -7,7 +7,7 @@
    כל קומה היא אזור 'dp_<בסיס>' ב-WORLD.regions, שנבנה כאן ומקבל את המראה של הבסיס (look). החיבורים: wGo, wPathOpen, worldUpdate, worldDeath ו-worldHud ב-world.js.
    לבדיקה: depthsEnter(n) נכנס ישר לקומה n, בלי העלילה. הטקסטים ב-lang.js ('dp.*') */
 const DEPTHS={
-  gate:{x:880,y:-200,r:44},             // השביל בלב הצל (בקצה המזרחי), אחרי הסוף
+  gate:{x:2600,y:-500,r:44},            // השביל בלב הצל, בקרחת ביער המת המזרחי (6 בשרטוט, js/map-shadow.js), אחרי הסוף
   deeper:{x:0,y:560,r:44},              // השער לקומה הבאה, בדרום. נפתח כשהקומה נוקתה
   bases:['meadow','lake','ridge','desert','storm','shadow'],   // מאיזה אזורים קומה נבנית
   // כמה קבוצות אויבים: groups ועוד grow לכל קומה, עד max. בכל קבוצה per, ועוד אחד כל perUp קומות. far: לא קרוב מזה לשער הבית
@@ -15,7 +15,8 @@ const DEPTHS={
   // כמה קשה: פי base, כפול step בחזקת (קומה-1). קומה 10: חיים פי 3.1, נזק פי 1.6
   curve:{hp:{base:1.2,step:1.11},dmg:{base:0.85,step:1.07},speed:{base:1,step:1.006,max:1.3}},
   // הבוס: כל every קומות, בלב הצל, עם adds קבוצות לצידו. hp ו-dmg: על העקומה של הקומה
-  boss:{every:5,base:'shadow',y:430,adds:2,hp:0.6,dmg:0.8},
+  boss:{every:5,base:'shadow',y:-1250,adds:2,   // y: בחלק הצפוני של לב הצל הגדול, קרוב לשער ולא מעל התהום
+        hp:0.6,dmg:0.8},
   /* התיבה בסוף קומה: n חפצים (ועוד אחד כל nUp קומות, ועוד אחד בבוס). tier: מאיזו קומה כל שכבה (עץ, ברזל, כסף, זהב, אגדי).
      legend: מקומה from, סיכוי per לכל קומה (עד max) שחפץ יהיה אגדי. q: איכות (itemroll.js), עולה ב-per לכל קומה, עד cap. res: משאבים [כמה, ועוד אחד כל כמה קומות] */
   loot:{n:1,nUp:10,tier:[0,2,6,12,20],legend:{from:12,per:0.04,max:0.5},q:{min:95,max:112,per:1,cap:140},res:{gem:[1,5]}},
