@@ -1795,6 +1795,20 @@ Object.assign(TEXT,{
   'tr.no.warden':{he:'אי אפשר לקפוץ כשהשומר ער',en:'Can’t jump while the guardian is awake'}
 });
 
+// ======== אבני מסע (waystones.js) ========
+Object.assign(TEXT,{
+  'ws.ford':{he:'אבן המעבר',en:'Ford Stone'},'ws.quarry':{he:'אבן המחצבה',en:'Quarry Stone'},'ws.glade':{he:'אבן הקרחת',en:'Glade Stone'},
+  'ws.lair':{he:'אבן המאורה',en:'Lair Stone'},'ws.shore':{he:'אבן החוף',en:'Shore Stone'},'ws.pass':{he:'אבן המעבר ההררי',en:'Pass Stone'},
+  'ws.dunes':{he:'אבן הדיונות',en:'Dune Stone'},'ws.ruin':{he:'אבן החורבה',en:'Ruin Stone'},'ws.gloom':{he:'אבן האפלה',en:'Gloom Stone'},
+  'ws.found':{he:n=>'🗿 '+n+' התעוררה! מעכשיו אפשר לקפוץ לכאן',en:n=>'🗿 '+n+' awakened! You can travel here now'},
+  'ws.at':{he:n=>'🗿 '+n,en:n=>'🗿 '+n},
+  'ws.woke':{he:n=>'🗿 קמת ליד '+n,en:n=>'🗿 You woke at the '+n},
+  'ws.respawn':{he:'לקום באבן המסע',en:'Wake up at the waystone'},
+  'ws.btn':{he:'מסע',en:'Travel'},'ws.btnAria':{he:'קפיצה לאבן מסע אחרת',en:'Travel to another waystone'},
+  'ws.hint':{he:'עמדו ליד אבן מסע כדי לקפוץ',en:'Stand by a waystone to travel'},
+  'ws.only':{he:'זו אבן המסע היחידה שמצאת. מצאו עוד כדי לקפוץ',en:'This is the only waystone you found. Find more to travel'}
+});
+
 // ======== סודות בעולם (secrets.js) ========
 Object.assign(TEXT,{
   'sc.found':{he:(n,of)=>'🔍 גילית סוד! '+n+'/'+of+' באזור',en:(n,of)=>'🔍 Secret found! '+n+'/'+of+' here'},
