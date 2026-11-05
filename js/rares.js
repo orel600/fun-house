@@ -28,19 +28,19 @@ const RARES={
       spots:[{x:1240,y:-590,at:'bushes'},{x:-2000,y:1100,at:'copse'},{x:2850,y:250,at:'east'},{x:2240,y:1140,at:'east'},{x:-670,y:1830,at:'south'}],
       loot:{coins:[1,50],flower:[1,3],aquaF:[0.7,1],star:[0.3,1]}},
     pearl:{reg:'lake',base:'drowned',icon:'🦪',tags:['water','metal'],col:'#BDF4FF',
-      spots:[{x:-900,y:500,at:'reeds'},{x:930,y:-120,at:'tide'},{x:-40,y:600,at:'shore'}],
+      spots:[{x:-1350,y:1820,at:'reeds'},{x:2600,y:-1050,at:'creek'},{x:-450,y:1780,at:'shore'}],   // האגם הגדול: 25-27 בשרטוט (map.dens ב-js/map-lake.js)
       loot:{coins:[1,80],aquaF:[1,1],aqua:[0.6,1],star:[0.4,1]}},
     hoarfrost:{reg:'ridge',base:'rimeknight',icon:'🧊',tags:['ice','metal'],col:'#E6FBFF',
-      spots:[{x:900,y:450,at:'crevasse'},{x:-920,y:-450,at:'pines'},{x:330,y:600,at:'drift'}],
+      spots:[{x:2510,y:950,at:'crevasse'},{x:-2560,y:-1250,at:'pines'},{x:1330,y:1700,at:'drift'}],   // הרכס הגדול: 26-28 בשרטוט (map.dens ב-js/map-ridge.js)
       loot:{coins:[1,90],sapphireF:[1,1],sapphire:[0.6,1],star:[0.4,1]}},
     ashmaw:{reg:'desert',base:'cinderscorp',icon:'🦂',tags:['fire','stone'],col:'#FFB347',
-      spots:[{x:-920,y:-460,at:'cacti'},{x:930,y:120,at:'embers'},{x:-300,y:600,at:'dunes'}],
+      spots:[{x:-2780,y:-1250,at:'cacti'},{x:2780,y:580,at:'embers'},{x:-950,y:990,at:'dunes'}],   // המדבר הגדול: המאורות ◆ בשרטוט (map.dens ב-map-desert.js)
       loot:{coins:[1,100],rubyF:[1,1],ruby:[0.6,1],star:[0.5,1]}},
     stormhide:{reg:'storm',base:'stormknight',icon:'⚡',tags:['lightning','metal'],col:'#D9C2FF',
       spots:[{x:920,y:-460,at:'spire'},{x:-150,y:600,at:'ruins'},{x:-920,y:-480,at:'deadwood'}],
       loot:{coins:[1,110],boltF:[1,1],bolt:[0.6,1],star:[0.5,1]}},
     hollow:{reg:'shadow',base:'shadewisp',icon:'🕯️',tags:['flying','fire'],col:'#B69CFF',
-      spots:[{x:920,y:520,at:'pit'},{x:-950,y:-450,at:'shadegrove'},{x:260,y:600,at:'void'}],
+      spots:[{x:2750,y:1300,at:'pit'},{x:-2850,y:-1350,at:'shadegrove'},{x:650,y:1750,at:'void'}],   // לב הצל הגדול: 24-26 בשרטוט (map.dens ב-js/map-shadow.js)
       loot:{coins:[1,120],mythril:[1,1],star:[1,1]}}
   }
 };
