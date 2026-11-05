@@ -29,7 +29,7 @@ const WSKBOOK={
     // סבב שני (4.11): סקיל רביעי לכל דמות. מה כל kind עושה: js/wskx.js
     petrify:{ic:'🗿',dt:'earth',    cls:'warrior',lv:9,cd:13,dmg:1.0, kind:'petrify',r:150,stone:3,self:1},        // קללת הגרניט: מי שקרוב הופך לאבן ל-stone שניות (הבוס רק מואט). ואז פיזי = ניפוץ אבן (wcombo.js)
     chain: {ic:'🔗',dt:'lightning',cls:'hunter', lv:9,cd:7, dmg:1.6, kind:'chain',  r:30,jumps:3,jump:170,wetJump:280,wetK:1.4},   // שרשרת ברק: קופץ בין jumps אויבים עד jump. רטוב: עד wetJump, פי wetK, ועוד קפיצה
-    vortex:{ic:'🌪️',dt:'water',    cls:'mage',   lv:9,cd:12,dmg:0.4, kind:'vortex', r:160,t:3,tick:0.5,pull:300}   // מערבולת: שואבת למרכז במהירות pull ומרטיבה (ואז ברק = חשמול, קרח = קפוא)
+    vortex:{ic:'🌪️',dt:'water',    cls:'mage',   lv:9,cd:12,dmg:0.6, kind:'vortex', r:160,t:3,tick:0.5,pull:300}   // מערבולת: שואבת למרכז במהירות pull ומרטיבה (ואז ברק = חשמול, קרח = קפוא)   // dmg 0.4←0.6 (5.11, fix/mage-boss): המים הם התשובה של הקוסם לשומר האש, והיו חלשים מדי
   }
 };
 // נרשמים ליד הסקילים של הזירה, כדי שהכפתורים (skillsHud), רגע הגילוי והכוונת יכירו אותם. בזירה אף אחד לא מוסיף אותם
