@@ -59,7 +59,8 @@ const STORY={
     // הפנס הלבן: באמצע הדרום של לב הצל. הצל עובר בשלבים לפי החיים שנשארו לו (phases, לפי הסדר): בכל שלב ההתקפה של השומר ההוא
     // (shoot, ring או marks מהשורה שלו כאן) והחולשה שלו. earth: אין לשומר האבן התקפה, אז הצל רץ מהר יותר (rush).
     // learn: המכפיל לסוג הנזק שהכי השתמשת בו בעולם, weak: המכפיל לחולשה של השלב. head:false: במקום משפט רגיל, הסוף (storyFinale)
-    light:{reg:'shadow',x:0,y:370,quest:'s6Heart',glow:'#FFFFFF',col:'#9C6BFF',ev:'heart',head:false,
+    light:{reg:'shadow',x:0,y:1180,   // לב הצל הגדול: 5 בשרטוט, בדרום, מול גשר העצם (js/map-shadow.js)
+          quest:'s6Heart',glow:'#FFFFFF',col:'#9C6BFF',ev:'heart',head:false,
       warden:{type:'shade',hp:545,dmg:1.5,r:1.8,speed:0.9,wake:540,phases:['earth','water','ice','fire','bolt'],rush:1.4,learn:0.4,weak:1.6}}
   },
   /* מכות עם הכנה (docs/plan-combat.md, שינוי 1): לפני כל התקפה של שומר יש סימן שאפשר לקרוא ולזוז ממנו, בצבע של השומר.

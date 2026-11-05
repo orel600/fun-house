@@ -40,7 +40,7 @@ const RARES={
       spots:[{x:2770,y:-1020,at:'spire'},{x:-470,y:1910,at:'ruins'},{x:-2820,y:-770,at:'deadwood'}],   // הסערה הגדולה: 25-27 בשרטוט (map.dens ב-js/map-storm.js)
       loot:{coins:[1,110],boltF:[1,1],bolt:[0.6,1],star:[0.5,1]}},
     hollow:{reg:'shadow',base:'shadewisp',icon:'🕯️',tags:['flying','fire'],col:'#B69CFF',
-      spots:[{x:920,y:520,at:'pit'},{x:-950,y:-450,at:'shadegrove'},{x:260,y:600,at:'void'}],
+      spots:[{x:2750,y:1300,at:'pit'},{x:-2850,y:-1350,at:'shadegrove'},{x:650,y:1750,at:'void'}],   // לב הצל הגדול: 24-26 בשרטוט (map.dens ב-js/map-shadow.js)
       loot:{coins:[1,120],mythril:[1,1],star:[1,1]}}
   }
 };

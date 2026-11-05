@@ -63,12 +63,12 @@ const SECRETS={
       {id:'t_lv30',kind:'chest',x:2880,y:1810,hide:'rock',lv:30},     // 24 תיבה לרמה 30, בקצה הכף
       {id:'t_isle',kind:'chest',x:-620,y:130,hide:'rock'}             // 31 תיבה על האי בנהר
     ],
-    shadow:[
-      {id:'h_chest',kind:'chest',x:-960,y:-560,hide:'bush'},          // בפינה הצפון-מערבית, בתוך שיח צל
-      {id:'h_shrine',kind:'shrine',x:940,y:-540,bless:'loot'},        // צפון-מזרח, מקדש שהחושך לא נגע בו
-      {id:'h_look',kind:'lookout',x:940,y:600},                       // דרום-מזרח, על סלע גבוה מעל החושך
-      {id:'h_carve',kind:'carving',x:-420,y:620,to:{x:-560,y:560}},   // עץ צל בדרום-מערב, מצביע מערבה
-      {id:'h_lv30',kind:'shrine',x:-980,y:250,bless:'speed',lv:30}    // בקצה המערבי, מעל בור החושך
+    shadow:[   // המספרים מהשרטוט של לב הצל הגדול (docs/concept-regions.md, js/map-shadow.js)
+      {id:'h_chest',kind:'chest',x:-2500,y:-1750,hide:'bush'},        // 19 תיבה בשיח צל, בפינה הצפון-מערבית
+      {id:'h_shrine',kind:'shrine',x:2750,y:-1600,bless:'loot'},      // 20 מקדש שלל, בצפון-מזרח
+      {id:'h_look',kind:'lookout',x:2500,y:1750},                     // 21 תצפית על סלע גבוה, בדרום-מזרח
+      {id:'h_carve',kind:'carving',x:-1250,y:1800,to:{x:-700,y:1500}},// 22 עץ צל חרוט בדרום, מצביע מזרחה
+      {id:'h_lv30',kind:'shrine',x:-2700,y:1350,bless:'speed',lv:30}  // 23 ליד בור החושך
     ]
   }
 };
