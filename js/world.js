@@ -8,27 +8,40 @@
 
 const WORLD={
   region:'meadow',                       // השם ב-lang.js: 'w.region.meadow'
-  size:{w:2100,h:1400},                  // גבולות האזור, סביב (0,0). צפוף, כדי שלא ילכו הרבה בשביל כלום (ניר, משחק ראשון בטלפון)
+  size:{w:6300,h:4200},                  // גבולות האזור, סביב (0,0). האחו הגדול (ניר, 5.11.2026: "משהו שלוקח זמן להגיע מקצה לקצה"). הצורה עצמה: map למטה
   edge:20,                               // כמה מהקצה השחקן, המבוקש והשלל עוצרים (placeBox)
-  home:{x:0,y:-600,r:44},                // השער חזרה לכפר. יוצאים מהכפר ומגיעים לכאן
-  gates:{grove:{x:-840,y:450,r:44},pit:{x:840,y:450,r:44}},   // שערים לזירה. השמות ב-lang.js ('w.gate.<id>')
+  home:{x:-70,y:-1850,r:44},             // 1 בשרטוט: השער חזרה לכפר, בשקע בין הצוקים בצפון. יוצאים מהכפר ומגיעים לכאן
+  gates:{grove:{x:-2270,y:1480,r:44},pit:{x:1440,y:890,r:44}},   // 13 ו-14: שערים לזירה, בסוף שביל היער ומתחת לעלייה לרכס. השמות ב-lang.js ('w.gate.<id>')
   arrive:130,                            // כמה פיקסלים מתחת לשער עומדים כשמגיעים אליו
   near:55,                               // כמה פיקסלים מקצה שער נחשב "לידו": בועה מעליו וכפתור עגול. הכרטיס נפתח רק בלחיצה
-  /* מקורות משאבים בשדות: kind (מ-NODES.kinds ב-nodes.js), כמה, מרכז ורדיוס. המקומות קבועים, כך שהיער תמיד באותו מקום.
+  /* מקורות משאבים בשדות: kind (מ-NODES.kinds ב-nodes.js), כמה, מרכז ורדיוס. המקומות קבועים, כך שהיער תמיד באותו מקום. מקור שנופל במים או ביער מדולג (terrain.js).
      ההתקפה האוטומטית מכה בהם כמו בזירה (aimTarget ב-combat.js), והשלל בדרגות כמו בזירה (runGive ב-loot.js) */
-  fields:[{kind:'tree',n:14,x:-610,y:-210,r:260},{kind:'tree',n:5,x:145,y:210,r:170},{kind:'bush',n:5,x:-335,y:65,r:130},
-          {kind:'rock',n:9,x:610,y:-190,r:230},{kind:'copper',n:4,x:785,y:-400,r:135},{kind:'iron',n:2,x:880,y:-240,r:75},{kind:'rock',n:3,x:-210,y:240,r:125}],
+  fields:[{kind:'tree',n:14,x:-1080,y:-1040,r:320},{kind:'tree',n:7,x:-680,y:-1480,r:220},{kind:'tree',n:6,x:1950,y:-250,r:220},{kind:'tree',n:6,x:-1300,y:700,r:240},{kind:'tree',n:5,x:520,y:1380,r:200},
+          {kind:'bush',n:6,x:-700,y:-660,r:160},{kind:'bush',n:4,x:-220,y:1580,r:150},
+          {kind:'rock',n:10,x:1800,y:-1280,r:330},{kind:'copper',n:5,x:2300,y:-1520,r:160},{kind:'iron',n:3,x:2450,y:-1150,r:110},{kind:'rock',n:4,x:600,y:1520,r:170},{kind:'rock',n:3,x:-1000,y:1180,r:150}],
   regrow:45,                             // שניות עד שמקור שנשבר צומח מחדש
   /* אויבים: קבוצות שמסתובבות ליד הבית שלהן. type: מ-ETYPES. creature: יצור משאב (data.js), ליד המקור שלו.
      ראשונות: מפלצות קלות ממש מחוץ לשער, הדבר הראשון ששחקן חדש פוגש. מהן לומדים איך נראים קרב, מספרי נזק ושלל (ניר) */
   foes:[
     // ליד השער: פחות אויבים, וכל אחד חזק יותר (zones.start). קרב אחד שמרגישים, ולא עשרה שנעלמים (מבקר 2, 2.11.2026). wtension.js
-    {type:'grunt',n:1,x:-185,y:-450,r:95},{type:'grunt',n:1,x:190,y:-430,r:95},{type:'grunt',n:2,x:0,y:-320,r:100},
-    {type:'grunt',n:2,x:-100,y:-180,r:140},{type:'grunt',n:3,x:305,y:225,r:140},
-    {type:'grunt',n:2,x:-420,y:-560,r:110},   // על הדרך מהבית לאגם (1.11.2026: "העולם ריק")
-    {type:'wisp',n:2,x:-510,y:95,r:150},{type:'shield',n:2,x:450,y:50,r:130},
-    {type:'treant',creature:true,n:2,x:-690,y:-305,r:170},{type:'golem',creature:true,n:2,x:655,y:-210,r:150},
-    {type:'crawler',creature:true,n:2,x:785,y:-385,r:105},{type:'sprite',creature:true,n:2,x:-335,y:65,r:115}
+    {type:'grunt',n:1,x:-260,y:-1620,r:95},{type:'grunt',n:1,x:140,y:-1610,r:95},{type:'grunt',n:2,x:-250,y:-1470,r:100},
+    // האחו הפתוח מצפון לנהר (קל). הראשונה ממש מתחת לשער, בתחילת הדרך
+    {type:'grunt',n:2,x:-70,y:-1390,r:110},{type:'grunt',n:2,x:-460,y:-1180,r:140},{type:'grunt',n:3,x:380,y:-1180,r:140},{type:'wisp',n:2,x:-800,y:-1520,r:150},
+    {type:'grunt',n:2,x:-1120,y:-1700,r:110},   // על הדרך מהשער לשביל היער ולאגם
+    {type:'shield',n:3,x:-1070,y:-1290,r:150},{type:'grunt',n:2,x:-960,y:-1180,r:120},   // 20 מחנה כורתים נטוש
+    {type:'wisp',n:2,x:940,y:-1140,r:140},{type:'shield',n:2,x:1040,y:-1060,r:120},    // 21 מחנה ציידים
+    {type:'shield',n:2,x:1480,y:-1500,r:130},{type:'grunt',n:2,x:720,y:-520,r:140},{type:'grunt',n:3,x:1950,y:-480,r:150},
+    {type:'shield',n:3,x:2450,y:-240,r:150},{type:'wisp',n:2,x:2350,y:-380,r:120},     // 23 מחנה המפרץ
+    {type:'treant',n:2,x:-1840,y:-640,r:120},{type:'wisp',n:2,x:-2030,y:250,r:120},{type:'grunt',n:2,x:-2400,y:-1000,r:100},   // 12 הקיצור ביער ושביל היער: עצים מהלכים ורוחות
+    // מעבר לנהר (קשה): מחנה הגדה, הרכס, המקדש, הדרך למאורה, והדרום-מערב
+    {type:'shield',n:3,x:130,y:400,r:150},{type:'grunt',n:3,x:260,y:300,r:130},   // 22 מחנה הגדה
+    {type:'wisp',n:2,x:300,y:740,r:150},{type:'shield',n:3,x:740,y:1240,r:150},{type:'grunt',n:3,x:1440,y:1080,r:150},
+    {type:'shield',n:3,x:1900,y:1500,r:150},{type:'grunt',n:3,x:2250,y:1300,r:150},
+    {type:'shield',n:3,x:-1130,y:1440,r:150},{type:'grunt',n:3,x:-800,y:780,r:150},{type:'wisp',n:3,x:-1250,y:250,r:150},
+    {type:'wisp',n:2,x:-690,y:1780,r:90},{type:'grunt',n:3,x:400,y:1700,r:150},{type:'shield',n:2,x:1300,y:1650,r:130},{type:'treant',n:2,x:-2300,y:1150,r:110},
+    // יצורי משאבים, ליד המקור שלהם
+    {type:'treant',creature:true,n:2,x:-1150,y:-950,r:170},{type:'golem',creature:true,n:2,x:1840,y:-1180,r:150},
+    {type:'crawler',creature:true,n:2,x:2300,y:-1500,r:105},{type:'sprite',creature:true,n:2,x:-700,y:-660,r:115},{type:'golem',creature:true,n:2,x:600,y:1500,r:130}
   ],
   aggro:240,                             // מאיזה מרחק אויב רודף
   attackRange:260,                       // ההתקפה האוטומטית בוחרת רק מטרות עד המרחק הזה, וחץ או קסם לא פוגעים במה שרחוק ממנו (ניר, 31.10.2026: "בעולם הפתוח טווח ההתקפה צריך להיות מוגבל יותר"). בזירה הטווח של הנשק עצמו (אוראל)
@@ -38,18 +51,64 @@ const WORLD={
      leash: כמה רחוק מהבית האויב מוכן לרדוף לפני שהוא חוזר. back: שניות עד שקבוצה שנוקתה חוזרת */
   foeHp:2.2,                             // אויבים בעולם: פי כמה חיים (docs/plan-combat.md שינוי 3). גם בלהקות (pacing.js). המכה עם הכנה: STRIKE ב-strike.js
   foeMin:70,                             // ולפחות כך הרבה חיים (כפול ה-hp של האזור): גרנט חלש לחרב לוקח 2-3 מכות ולא נעלם במכה אחת. אויב חזק לא מושפע. אחרי שדרוגים שוב מכה אחת, וזה ה"וואו, התחזקתי"
+  /* האחו הגדול: לפי המרחק מהשער, בקנה המידה של המפה (docs/concept-meadow.md "קושי"): קל עד 1100, בינוני עד 2000 (בערך הנהר),
+     קשה עד 3200 והכי קשה מעבר. id: מה שמערכות אחרות שואלות (affix.js, foeai.js). אותו id יכול לחזור, רק המספרים משתנים */
   zones:[
-    {id:'start',to:360, hp:0.5, dmg:0.35,speed:0.65,leash:240,back:12,min:125,wind:0.65},   // min: רצפת חיים משלו, כדי שגם ליד השער אויב לוקח 3-4 מכות (ולא foeMin×0.35). wind: הכנה איטית יותר למכה, קל להתחמק
-    {id:'near', to:800, hp:0.7, dmg:0.6, speed:0.85,leash:360,back:22},
-    {id:'far',  to:1e9, hp:1,   dmg:1,   speed:1,   leash:480,back:30}
+    {id:'start',to:450, hp:0.5, dmg:0.35,speed:0.65,leash:240,back:12,min:125,wind:0.65},   // min: רצפת חיים משלו, כדי שגם ליד השער אויב לוקח 3-4 מכות (ולא foeMin×0.35). wind: הכנה איטית יותר למכה, קל להתחמק
+    {id:'near', to:1100,hp:0.7, dmg:0.6, speed:0.85,leash:360,back:22},
+    {id:'far',  to:2000,hp:1,   dmg:1,   speed:1,   leash:480,back:30},
+    {id:'far',  to:3200,hp:1.3, dmg:1.2, speed:1.05,leash:520,back:34},
+    {id:'far',  to:1e9, hp:1.65,dmg:1.4, speed:1.1, leash:560,back:40}
   ],
   regen:4,                               // חיים לשנייה כשאין אויב קרוב
   decor:{trees:74,hills:14,rocks:0.15},  // קישוטים מחוץ לגבול. rocks: איזה חלק מהם סלעים
   ground:'#1B2A1E',                      // צבע הקרקע בדו-ממד. בתלת-ממד: W3D.regions ב-render3d.js
   /* דרכים לאזורים אחרים: שער שמופיע רק כשהעלילה פותחת אותו (need: מה ב-SAVE.story, story.js). המפתח הוא שם האזור שאליו הדרך מובילה */
-  /* אבני מסע (waystones.js): {id,x,y}. השם ב-lang.js ('ws.<id>'). מקומות זמניים באחו הנוכחי, עד המפה החדשה (ת9) */
-  waystones:[{id:'ford',x:-60,y:40},{id:'quarry',x:420,y:-420},{id:'glade',x:-450,y:-380},{id:'lair',x:780,y:150}],
-  paths:{lake:{x:-760,y:-590,r:44,need:'earth'}},   // פרק 2: אחרי שפנס האדמה נדלק, דרך ביער בצפון-מערב לאגם הערפל
+  /* אבני מסע (waystones.js): {id,x,y}. השם ב-lang.js ('ws.<id>'). המקומות מהשרטוט של האחו הגדול: 2 ליד המעבר, 3 במחצבה, 4 בקרחת היער, 5 ליד המאורה */
+  waystones:[{id:'ford',x:230,y:-410},{id:'quarry',x:1940,y:-1330},{id:'glade',x:-2290,y:150},{id:'lair',x:1690,y:1440}],
+  paths:{lake:{x:-2530,y:-1780,r:44,need:'earth'}},   // 11 בשרטוט. פרק 2: אחרי שפנס האדמה נדלק, דרך בראש שביל היער לאגם הערפל
+  /* הצורה של האחו (terrain.js, השרטוט ב-docs/concept-meadow.md). המספרים בשרטוט מופיעים בהערות.
+     border: קו הגבול, עם כיוון השעון. מחוץ לו חסום. cliffs: איפה הגבול הוא צוק (סלעים בתלת-ממד). reeds: קני סוף לאורך המים.
+     rivers: נהר כקו עם רוחב, שחוסם. springs: המעיין שבו הנהר מתחיל. bridges: גשרים (a הכיוון שבו חוצים, len אורך, w רוחב). fords: מעבר רדוד שמאט.
+     water: מים עמוקים (המפרץ והביצה). shallow: שולי הביצה, מאטים. forests: יער סבוך שחוסם. trails: שבילים (cut: חותך ביער, draw:false לא מצויר בקרקע).
+     clearings: קרחות ביער. rocky: קרקע סלעית (המחצבה). ridge: הרכס, עם שפה חוסמת ועלייה אחת (ramp, ו-up מלמטה למעלה).
+     dens: מאורות (השומר, ובשביל ת8 המפלצות הנדירות). waystones: אבני המסע (ת10). marks: ציוני דרך (מחנות, חורבות) */
+  map:{
+    border:[[-3140,-1860],[-2410,-1960],[-1880,-1940],[-1270,-1880],[-600,-1960],[-400,-1980],[-270,-2060],[130,-2060],[250,-1990],[600,-1980],[1140,-2010],[1680,-1970],[2210,-1970],[2650,-1970],[2850,-1890],[2950,-1700],[2980,-1200],[2950,-740],[3000,-280],[2980,180],[2930,400],
+            [2650,510],[2400,710],[2490,940],[2780,1060],[2990,1120],[3030,1570],[3000,1910],[2810,1940],[2610,1900],[2350,1890],[2040,1900],[1270,1870],[600,1860],[70,1880],[-370,1900],[-500,1980],[-620,2070],[-750,2070],[-860,1980],[-950,1900],
+            [-1410,1900],[-1780,1910],[-2080,1970],[-2610,2000],[-3010,1850],[-3140,1440],[-3150,380],[-3150,-940]],
+    cliffs:[[[-1270,-1880],[-600,-1960],[-400,-1980],[-270,-2060],[130,-2060],[250,-1990],[600,-1980],[1140,-2010],[1680,-1970],[2210,-1970],[2650,-1970],[2850,-1890],[2950,-1700],[2980,-1200],[2950,-740],[3000,-280],[2980,180],[2930,400]],
+            [[2990,1120],[3030,1570],[3000,1910]]],
+    reeds:[[[2040,1900],[1270,1870],[600,1860],[70,1880],[-370,1900],[-500,1980],[-620,2070],[-750,2070],[-860,1980],[-950,1900],[-1410,1900],[-1780,1910]],
+           [[2930,400],[2650,510],[2400,710],[2490,940],[2780,1060],[2990,1120]]],
+    rivers:[{w:130,pts:[[-1780,-300],[-1510,-260],[-1210,-200],[-970,-160],[-740,-210],[-540,-260],[-270,-240],[0,-160],[230,-60],[600,20],[940,90],[1270,200],[1640,330],[1940,480],[2210,630],[2560,830]]}],
+    springs:[{x:-1780,y:-300,r:140}],                                   // 9 המעיין, בתוך היער
+    bridges:[{x:-970,y:-160,a:1.571,len:250,w:96},{x:1640,y:330,a:1.967,len:250,w:96}],   // 7 גשר מערבי (בטוח, ארוך), 8 גשר מזרחי (קרוב למאורה, שמור)
+    fords:[{x:230,y:-60,r:135,a:1.86}],                                // 6 מעבר רדוד: הדרך הישרה, בחצי מהירות
+    water:[[[2930,400],[2650,510],[2400,710],[2490,940],[2780,1060],[2990,1120],[3030,1570],[3000,1910],[2810,1940],[2610,1900],[2350,1890],[2040,1900],[2040,2400],[3900,2400],[3900,0],[3020,0]],   // המפרץ
+           [[2040,1900],[1270,1870],[600,1860],[70,1880],[-370,1900],[-500,1980],[-620,2070],[-750,2070],[-860,1980],[-950,1900],[-1410,1900],[-1780,1910],[-2080,1970],[-2080,2500],[2080,2500]]],   // הביצה
+    shallow:[[[-1740,1790],[-870,1820],[-740,1910],[-500,1910],[-370,1830],[600,1790],[2010,1820],[2040,1950],[-1740,1950]]],
+    forests:[[[-3260,-2000],[-2410,-1990],[-1880,-1910],[-1620,-1660],[-1490,-1330],[-1410,-940],[-1430,-610],[-1370,-400],[-1410,-130],[-1470,130],[-1510,450],[-1610,780],[-1720,1110],[-1850,1440],[-2010,1770],[-2180,2030],[-2610,2160],[-3260,2160]]],
+    trails:[
+      {w:110,cut:true,pts:[[-2530,-1780],[-2480,-1560],[-2410,-1270],[-2360,-940],[-2390,-540],[-2430,-150],[-2450,180],[-2410,510],[-2380,910],[-2330,1240],[-2270,1500],[-2200,1700],[-1950,1720],[-1700,1680]]},   // שביל היער: מהדרך לאגם (11) ועד שער החורשה (13)
+      {w:110,cut:true,pts:[[-1380,-1650],[-1740,-1720],[-2080,-1740],[-2410,-1720],[-2530,-1780]]},   // הכניסה הצפונית לשביל
+      {w:96,cut:true,pts:[[-1350,-1100],[-1660,-880],[-1840,-640],[-1990,-380],[-2040,-80],[-2040,250],[-2070,550],[-2130,790],[-2360,1010]]},   // 12 הקיצור (מסוכן)
+      {w:84,cut:true,draw:false,pts:[[-2410,-1270],[-2600,-1300]]},{w:84,cut:true,draw:false,pts:[[-2400,800],[-2830,800]]},
+      {w:84,cut:true,draw:false,pts:[[-2200,900],[-2000,1100]]},{w:84,cut:true,draw:false,pts:[[-2290,1560],[-2730,1640]]},
+      {w:70,pts:[[-70,-1800],[70,-1270],[170,-740],[230,-410],[230,-60],[190,280],[340,450],[870,480],[1060,560],[1310,580],[1440,840],[1570,1170],[1710,1440],[2080,1600],[2550,1700]]},   // המסלול הראשון
+      {w:60,pts:[[-970,-160],[-970,-540],[-700,-900],[-300,-1500],[-70,-1800]]},{w:60,pts:[[-970,-160],[-1000,300],[-1130,900],[-1130,1440]]},   // אל הגשר המערבי ומעבר לו
+      {w:60,pts:[[1640,330],[1300,-200],[1700,-800],[1840,-1140]]},{w:60,pts:[[1640,330],[1700,800],[1440,890]]}],   // הגשר המזרחי: למחצבה ולשער הבור
+    clearings:[{x:-2290,y:150,r:220},{x:-2830,y:800,r:160},{x:-2600,y:-1300,r:130},{x:-2000,y:1100,r:140},{x:-2730,y:1640,r:130}],
+    rocky:[[[1210,-1600],[1410,-1760],[1940,-1850],[2410,-1810],[2650,-1600],[2690,-1270],[2610,-940],[2280,-790],[1810,-780],[1410,-900],[1240,-1170]]],   // 10 המחצבה
+    ridge:{poly:[[-470,900],[-370,790],[-70,690],[340,590],[740,510],[1010,460],[1090,510],[1070,680],[870,780],[540,880],[130,960],[-200,1000],[-400,990]],
+      ramp:[[1060,460],[1310,420],[1330,700],[1070,730]],up:[[1320,580],[1065,595]]},   // הרכס. עולים רק מהקצה המזרחי, והתצפית (15) בקצה המערבי
+    dens:[{id:'earth',x:2590,y:1710,boss:'earth'},   // 16 מאורת השומר והפנס, הכי רחוק מהשער (ת5)
+      {id:'r1',x:-2600,y:-1300,in:'forest'},{id:'r2',x:2490,y:-1680,in:'quarry'},{id:'r3',x:1240,y:-590,in:'meadow'},{id:'r4',x:2850,y:250,in:'cliff'},{id:'r5',x:-2000,y:1100,in:'forest'},
+      {id:'r6',x:-2730,y:1640,in:'forest'},{id:'r7',x:230,y:1140,in:'ridge'},{id:'r8',x:-670,y:1830,in:'reeds'},{id:'r9',x:2240,y:1140,in:'bay'}],   // מאורות נדירות (◆, ת8)
+    deeper:{x:420,y:-1250},   // עומק הצל: בקומה שנבנית מהאחו, השער למטה (depths.js)
+    marks:[{id:'spring',kind:'spring',x:-1290,y:-430},{id:'loggers',kind:'camp',x:-1070,y:-1290},{id:'hunters',kind:'camp',x:940,y:-1140},{id:'bank',kind:'camp',x:130,y:400},{id:'bay',kind:'camp',x:2450,y:-240},
+      {id:'tower',kind:'ruin',x:-1130,y:1440},{id:'temple',kind:'temple',x:740,y:1240},{id:'lighthouse',kind:'lighthouse',x:-690,y:1930},{id:'lookout',kind:'look',x:-300,y:860}]   // 20-26
+  },
   /* אזורים נוספים. כל אזור כותב רק מה ששונה מהאחו, והשאר נלקח מ-WORLD. האחו הוא WORLD עצמו.
      back: לאן השער 'home' של האזור מוביל (באחו: לכפר). ponds: מים שאי אפשר ללכת בהם. fog: ערפל בקנבס. noNpc: בלי הדמויות של האחו (worldnpc.js) */
   regions:{
@@ -169,7 +228,8 @@ const WORLD={
     }
   }
 };
-for(const k in WORLD.regions)WORLD.regions[k]=Object.assign({},WORLD,{regions:null},WORLD.regions[k]);
+// אזור שלא כותב size או map מקבל את המלבן הישן, ולא את המפה של האחו
+for(const k in WORLD.regions)WORLD.regions[k]=Object.assign({},WORLD,{regions:null,map:null,size:{w:2100,h:1400}},WORLD.regions[k]);
 // האזור שבו נמצאים עכשיו: WORLD (האחו) או אחד מ-WORLD.regions
 const WR=()=>S&&S.wd&&WORLD.regions[S.wd.reg]||WORLD;
 
@@ -177,7 +237,7 @@ const wKind=k=>NODES.kinds[k];
 /* הגבולות של המקום הנוכחי, שאפשר ללכת בהם: {x0,x1,y0,y1}, או null כשאין גבול (הזירה פתוחה לכל הכיוונים).
    השחקן, המבוקש והשלל על הרצפה נשארים בתוכם, כדי ששלל תמיד ינחת איפה שאפשר להגיע (ניר: "הרגתי את המבוקש מחוץ לגבולות, והשלל לא נאסף") */
 function placeBox(){if(!S.wd)return null;const {w,h}=WR().size,m=WORLD.edge;return{x0:-w/2+m,x1:w/2-m,y0:-h/2+m,y1:h/2-m}}
-function placeClamp(o){const B=placeBox();if(!B)return o;o.x=Math.max(B.x0,Math.min(B.x1,o.x));o.y=Math.max(B.y0,Math.min(B.y1,o.y));return o}
+function placeClamp(o){const B=placeBox();if(!B)return o;o.x=Math.max(B.x0,Math.min(B.x1,o.x));o.y=Math.max(B.y0,Math.min(B.y1,o.y));return tStep(o)}   // tStep: לא בתוך נהר, יער או צוק (terrain.js)
 // השערים של האזור: הבית, שערי הזירה, והדרכים שהעלילה כבר פתחה (storyOpen ב-story.js)
 const wPathOpen=p=>p.open?p.open():!p.need||[].concat(p.need).every(storyOpen);   // need יכול להיות רשימה: כל הפנסים בה דולקים (לב הצל)
 function wGates(all){const R=WR(),o=Object.assign({home:R.home},R.gates);for(const k in R.paths)if(all||wPathOpen(R.paths[k]))o[k]=R.paths[k];return o}
@@ -188,18 +248,18 @@ const wGateCol=k=>k==='home'?C.chalk:wIsPath(k)?C.tide:C.lilac;
 let wRet=null;   // השער שממנו נכנסו לזירה: בסוף הריצה חוזרים אליו (againBtn ב-input.js)
 
 /* ---- מעבר בין מקומות ---- */
-function worldUi(on){document.body.classList.toggle('world',on);$('whud').hidden=!on;$('chTag').hidden=!on;if(!on){$('wPanel').hidden=true;const g=$('wGo');if(g)g.hidden=true;wnpcOff();fishOff();wmapOpen(false);travelOff();wsOff()}}   // wnpcOff: הדמויות בעולם (worldnpc.js)   // fishOff: הדיג (fishing.js)   // wmapOpen: המפה (worldmap.js)
+function worldUi(on){if(!on)TR=null;document.body.classList.toggle('world',on);$('whud').hidden=!on;$('chTag').hidden=!on;if(!on){$('wPanel').hidden=true;const g=$('wGo');if(g)g.hidden=true;wnpcOff();fishOff();wmapOpen(false);travelOff();wsOff()}}   // wnpcOff: הדמויות בעולם (worldnpc.js)   // fishOff: הדיג (fishing.js)   // wmapOpen: המפה (worldmap.js)
 // at: 'home' (מהכפר, או מהאזור הקודם), id של שער (חזרה מהזירה) או של דרך (חזרה מאזור אחר). reg: איזה אזור, ברירת המחדל האחו
 function enterWorld(at,reg){
   wRet=null;reset();S.mode='play';
   reg=WORLD.regions[reg]?reg:'meadow';
   S.wd={reg,t:0,gt:0,near:null,ui:'',groups:WR().foes.map(()=>({t:0})),got:{}};
-  const R=WR();
+  const R=WR();terrainEnter(R,reg);   // המפה של האזור: מה חסום ומה מאט (terrain.js). אזור בלי map: null, ומלבן כמו קודם
   S.nd={list:wNodes(),broken:0,got:[]};
   const g=wGates()[at]||R.home;
-  P.x=g.x;P.y=g.y+WORLD.arrive;P.aim=P.face=Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
+  P.x=g.x;P.y=g.y+WORLD.arrive;P._tx=null;tFree(P);P.aim=P.face=Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;   // tFree: שמירה ישנה או שער שזז, ונקודת ההגעה חסומה: לנקודה הפנויה הקרובה
   ['ovStart','ovOver','ovLevel','ovBoss','ovWDeath'].forEach(id=>$(id).hidden=true);
-  R.foes.forEach((G,i)=>wSpawn(G,i));
+  R.foes.forEach((G,i)=>{if(!TR||R.dpBase||Math.hypot(G.x-P.x,G.y-P.y)<TERRAIN.wake)wSpawn(G,i);else S.wd.groups[i].lazy=1});   // באחו הגדול: קבוצה רחוקה נוצרת רק כשמתקרבים (wFoes)
   // שם האזור: פעם אחת בכניסה הראשונה לכל אזור, כותרת קטנה למעלה במרכז (feedTitle ב-feed.js, docs/plan-hud.md פרק 6). האזהרה על התרמיל בכרטיס השער (vil.outInfo)
   const seen=SAVE.regSeen||(SAVE.regSeen={});if(!seen[reg]){seen[reg]=1;saveNow();feedTitle(T(R.enter||'w.enter'),C.gold)}
   worldUi(true);
@@ -219,7 +279,7 @@ function wNodes(){
   R.fields.forEach((F,fi)=>{const K=wKind(F.kind);
     for(let i=0,tries=0;i<F.n&&tries<F.n*12;tries++){
       const a=hash(fi*31+tries,7)*Math.PI*2,r=Math.sqrt(hash(tries,fi*17+3))*F.r,x=F.x+Math.cos(a)*r,y=F.y+Math.sin(a)*r;
-      if(out.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||block.some(g=>Math.hypot(g.x-x,g.y-y)<g.r+WORLD.arrive)||wet.some(p=>Math.hypot(p.x-x,p.y-y)<p.r+K.r))continue;
+      if(tBlocked(x,y)||tBlocked(x+K.r,y)||tBlocked(x-K.r,y)||out.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||block.some(g=>Math.hypot(g.x-x,g.y-y)<g.r+WORLD.arrive)||wet.some(p=>Math.hypot(p.x-x,p.y-y)<p.r+K.r))continue;
       out.push({node:true,id:fi+'_'+i,kind:F.kind,x,y,r:K.r,hp:K.hp,max:K.hp,mult:multOf(K.tags),flash:0,back:0,regrow:WORLD.regrow});i++}});
   return out;
 }
@@ -256,22 +316,31 @@ function wFoes(dt){
     if(e.rare){rareMove(e,dt);continue}   // מפלצת נדירה: ליד המקום הנסתר שלה (rares.js)
     if(e.pack){if(foeAi(e,dt,Math.hypot(P.x-e.x,P.y-e.y)))foeAiTail(e,dt);else paceFoeMove(e,dt);continue}   // התנהגות לפי סוג (foeai.js)   // להקה שמגיעה מקצה המסך (pacing.js)   // גל של אירוע (events.js)   // השומר האבן (story.js)
     alive[e.home]++;
-    const G=FO[e.home]||FO[0],dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;
+    const G=FO[e.home]||FO[0];let dx=P.x-e.x,dy=P.y-e.y;const d=Math.hypot(dx,dy)||1;
+    if(TR&&d>TERRAIN.sleep)continue;   // רחוק מאוד מהשחקן: לא חושב ולא זז (האחו הגדול)
     let mx=0,my=0,sp=e.speed*slowK(e);   // קפוא, תקוע או מאובן לא זזים (slowK ב-dmg.js)
     if(e.alert>0)e.alert-=dt;   // קורא תקע בקרן (foeai.js): רודף גם מרחוק, ורחוק יותר מהבית
     if((d<WORLD.aggro||e.alert>0)&&Math.hypot(P.x-G.x,P.y-G.y)<wZone(G).leash*(e.alert>0?1.6:1)){   // רודף, אבל לא רחוק מהבית. אחרת חוזר להסתובב שם
       if(foeAi(e,dt,d)){foeAiTail(e,dt);continue}   // התנהגות לפי סוג: מקיף, מסתער, יורה מרחוק, קופץ (foeai.js)
-      mx=dx/d;my=dy/d;   // הייתה בסוף שורת ההערה מעל ונבלעה בה (#114), ולכן קבוצות לא רדפו
+      if(TR){const t=tDir(e,P.x,P.y);dx=t.x-e.x;dy=t.y-e.y}const dd=Math.hypot(dx,dy)||1;   // בלי קו ראייה (נהר, יער): מסביב, במורד מפת המרחקים (terrain.js)
+      mx=dx/dd;my=dy/dd;   // הייתה בסוף שורת ההערה מעל ונבלעה בה (#114), ולכן קבוצות לא רדפו
       if(e.type==='wisp'){if(d<170){mx=-mx;my=-my}e.shoot-=dt;if(e.shoot<=0){e.shoot=rand(1.8,2.8);shootE(e.x,e.y,Math.atan2(dy,dx),175,6,8)}}}
     else{   // מסתובב ליד הבית
-      if(e.wx==null||Math.hypot(e.wx-e.x,e.wy-e.y)<12){const a=rand(0,6.28),r=rand(0,G.r);e.wx=G.x+Math.cos(a)*r;e.wy=G.y+Math.sin(a)*r}
+      if(e.wx==null||Math.hypot(e.wx-e.x,e.wy-e.y)<12||e.wt>4){const a=rand(0,6.28),r=rand(0,G.r);e.wx=G.x+Math.cos(a)*r;e.wy=G.y+Math.sin(a)*r;e.wt=0;
+        if(TR&&!tLOS(e.x,e.y,e.wx,e.wy)){const t=tDir(e,G.x,G.y);e.wx=t.x;e.wy=t.y}}   // לא מנסים להסתובב אל מעבר לנהר: חוזרים הביתה מסביב
+      e.wt=(e.wt||0)+dt;
       const wx=e.wx-e.x,wy=e.wy-e.y,wd=Math.hypot(wx,wy)||1;mx=wx/wd;my=wy/wd;sp*=WORLD.wander}
     if(strikeTick(e,dt,d)){mx=my=0}   // מכה עם הכנה במקום נזק במגע. בזמן ההכנה עומד (strike.js)
     e.x+=mx*sp*dt+e.kx*dt;e.y+=my*sp*dt+e.ky*dt;
     const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*sp*0.08;e.flash-=dt;
   }
   // קבוצה שנוקתה חוזרת אחרי זמן, כשהשחקן רחוק ממנה
+  if(TR&&!WR().dpBase)FO.forEach((G,i)=>{const g=S.wd.groups[i];   // האחו הגדול: קבוצה שהשחקן התרחק ממנה מאוד חוזרת לישון, כדי שלא יצטברו עשרות אויבים בכל המפה
+    if(!alive[i]||g.lazy||Math.hypot(P.x-G.x,P.y-G.y)<TERRAIN.forget)return;
+    for(const e of enemies)if(e.home===i&&!e.dead&&!e.wanted&&!e.warden&&!e.evt&&!e.pack&&!e.nem&&!e.hunt&&!(e.alert>0))e.dead=true;
+    g.lazy=1;alive[i]=0});
   FO.forEach((G,i)=>{const g=S.wd.groups[i];if(alive[i]||!ETYPES[G.type])return;
+    if(g.lazy){if(Math.hypot(P.x-G.x,P.y-G.y)<TERRAIN.wake&&paceRoom(G.n+TERRAIN.room)){g.lazy=0;wSpawn(G,i)}return}   // paceRoom: לא עוברים את מגבלת האויבים (PACE.cap)   // עוד לא נוצרה: רק כשמתקרבים
     if(g.t<=0)g.t=wZone(G).back;else if((g.t-=dt)<=0&&paceRoom(G.n)&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+Math.max(WORLD.far,Math.hypot(W,H)/2)){wSpawn(G,i);g.n=(g.n||0)+1}else g.t=Math.max(g.t,0.01)});
 }
 
@@ -300,6 +369,7 @@ function worldUpdate(dt){
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
   dmgUpdate(dt);mutUpdate(dt);innUpdate(dt);   // שריפה, רטיבות, האטה והלם נגמרים (dmg.js). לפני 4.11 לא רץ בעולם, ומצבים נשארו לתמיד. המוטציה היומית (mutation.js)
   wantedUpdate(dt);storyUpdate(dt);depthsUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);nemUpdate(dt);rareUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
+  terrainTick();   // אויבים ופיוחו: לא בתוך מים, יער או צוק, ולאט במעבר הרדוד (terrain.js)
   dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*mutK('regen')*dt);   // mutK: יום הצמא מרפא לאט (mutation.js)
   enemies=enemies.filter(e=>!e.dead);
@@ -365,6 +435,7 @@ function wGoBtn(w){
 // קישוטים מחוץ לגבול: עצים וגבעות. תמיד באותם מקומות, ופתוח מול השער לכפר
 function worldDecor(){
   const R=WR(),C_=worldDecor.c||(worldDecor.c={});if(C_[R.region])return C_[R.region];
+  if(R.map)return C_[R.region]=[];   // אזור עם מפה: היער והצוקים בקצה מצוירים ב-terrain.js
   const out=[],{w,h}=R.size,D=R.decor,per=2*(w+h);
   const edge=(t,off)=>{let s=t*per;if(s<w)return[-w/2+s,-h/2-off];s-=w;if(s<h)return[w/2+off,-h/2+s];s-=h;if(s<w)return[w/2-s,h/2+off];s-=w;return[-w/2-off,h/2-s]};
   for(let i=0;i<D.trees;i++){const [x,y]=edge((i+hash(i,8)*0.5)/D.trees,40+hash(i,1)*90);if(Math.abs(x-R.home.x)<130&&y<0)continue;
@@ -380,7 +451,7 @@ function wArch(g,col){
 function drawWorld(){
   if(!S.wd)return;
   if(!R3D.on){
-    const R=WR(),{w,h}=R.size;ctx.fillStyle=R.ground;ctx.fillRect(-w/2,-h/2,w,h);
+    const R=WR(),{w,h}=R.size;if(!terrain2d()){ctx.fillStyle=R.ground;ctx.fillRect(-w/2,-h/2,w,h)}   // terrain2d: נהר, יער, רכס וגבול (terrain.js)
     const pc=R.pondCol||['#1E4A63','#3F7BA0'];for(const p of R.ponds||[]){ctx.fillStyle=pc[0];ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();ctx.strokeStyle=pc[1];ctx.lineWidth=4;ctx.stroke()}
     for(const d of worldDecor()){
       if(d.kind==='tree'){ctx.fillStyle='#24452F';ctx.beginPath();ctx.arc(d.x,d.y,20+d.v*10,0,7);ctx.fill()}
@@ -417,7 +488,7 @@ function drawWorld(){
   mutDraw();   // גשם או ערפל של היום (mutation.js)
 }
 // מים שאי אפשר ללכת בהם: דוחפים החוצה, כמו מעץ
-function wPonds(o){for(const p of (WR().ponds||[]).concat(WR().towers||[])){const dx=o.x-p.x,dy=o.y-p.y,d=Math.hypot(dx,dy)||1,min=p.r+(o.r||12);if(d<min){o.x=p.x+dx/d*min;o.y=p.y+dy/d*min}}}
+function wPonds(o){tStep(o);for(const p of (WR().ponds||[]).concat(WR().towers||[])){const dx=o.x-p.x,dy=o.y-p.y,d=Math.hypot(dx,dy)||1,min=p.r+(o.r||12);if(d<min){o.x=p.x+dx/d*min;o.y=p.y+dy/d*min}}}
 /* ערפל עדין: כמה כתמים לבנים שקופים שנעים לאט סביב השחקן. ציור אחד מוכן מראש לכל כתם, כדי שיהיה קל לטלפון */
 const FOG={n:7,size:360,alpha:0.16,drift:9,spread:520};
 function wFog(){
