@@ -214,7 +214,8 @@ function terrainBad(R,reg){
   chk('arrive.home',{x:R.home.x,y:R.home.y+WORLD.arrive});for(const k in R.gates)chk('arrive.'+k,{x:R.gates[k].x,y:R.gates[k].y+WORLD.arrive});
   R.fields.forEach((f,i)=>chk('field'+i+'.'+f.kind,f));R.foes.forEach((f,i)=>chk('foe'+i+'.'+f.type,f));
   for(const s of (typeof SECRETS!=='undefined'&&SECRETS.regions[reg])||[]){chk('secret.'+s.id,s);if(s.to)chk('secret.'+s.id+'.to',s.to)}
-  if(!R.noNpc&&typeof WNPC!=='undefined')for(const id in WNPC.list)chk('npc.'+id,WNPC.list[id].at);
+  if(typeof WNPC!=='undefined')for(const id in WNPC.list)if((WNPC.list[id].reg||'meadow')===reg)chk('npc.'+id,WNPC.list[id].at);   // reg: הדמויות של הקווסטים הצדדיים
+  if(typeof SIDEQ!=='undefined')for(const k in SIDEQ.places[reg]||{})chk('place.'+k,SIDEQ.places[reg][k]);   // מקומות לחקור ולהגן (questboard.js)
   if(typeof STORY!=='undefined')for(const k in STORY.lanterns){const L=STORY.lanterns[k];if(L.reg===reg)chk('lantern.'+k,L)}
   for(const d of R.map.dens||[])chk('den.'+d.id,d);for(const w of R.waystones||[])chk('waystone.'+w.id,w);
   for(const l of R.map.marks||[])chk('mark.'+l.id,l);
