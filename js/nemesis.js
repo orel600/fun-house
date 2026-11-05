@@ -98,6 +98,7 @@ function nemBeat(e,N){
   if(id){id=String(id).replace(/~\d+/,'~'+F.gear.q);dropSpawn(id,1,e.x+rand(-16,16),e.y+rand(-16,16))}
   celebrate(e.x,e.y,'loot4',F.icon);
   banner(F.icon+' '+T('nem.down',nemName(N)),C.gold);
+  if(typeof wsbTome==='function')setTimeout(()=>wsbTome('nemesis',e.x,e.y),900);   // ספר קדום (wskbook.js)
   nemCardOff();questEvent('nemesis');saveNow();   // הלוח בפונדק (inn.js)
 }
 
