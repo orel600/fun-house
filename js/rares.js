@@ -31,7 +31,7 @@ const RARES={
       spots:[{x:-1350,y:1820,at:'reeds'},{x:2600,y:-1050,at:'creek'},{x:-450,y:1780,at:'shore'}],   // האגם הגדול: 25-27 בשרטוט (map.dens ב-js/map-lake.js)
       loot:{coins:[1,80],aquaF:[1,1],aqua:[0.6,1],star:[0.4,1]}},
     hoarfrost:{reg:'ridge',base:'rimeknight',icon:'🧊',tags:['ice','metal'],col:'#E6FBFF',
-      spots:[{x:900,y:450,at:'crevasse'},{x:-920,y:-450,at:'pines'},{x:330,y:600,at:'drift'}],
+      spots:[{x:2510,y:950,at:'crevasse'},{x:-2560,y:-1250,at:'pines'},{x:1330,y:1700,at:'drift'}],   // הרכס הגדול: 26-28 בשרטוט (map.dens ב-js/map-ridge.js)
       loot:{coins:[1,90],sapphireF:[1,1],sapphire:[0.6,1],star:[0.4,1]}},
     ashmaw:{reg:'desert',base:'cinderscorp',icon:'🦂',tags:['fire','stone'],col:'#FFB347',
       spots:[{x:-2780,y:-1250,at:'cacti'},{x:2780,y:580,at:'embers'},{x:-950,y:990,at:'dunes'}],   // המדבר הגדול: המאורות ◆ בשרטוט (map.dens ב-map-desert.js)

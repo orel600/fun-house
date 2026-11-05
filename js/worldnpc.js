@@ -26,8 +26,8 @@ const WNPC={
     hermit:  {at:{x:-800,y:1320},col:'#9C8BD0',look:'mage'},                   // הנזיר, ליד חורבת המגדל, מעבר לגשר המערבי
     ferry:   {reg:'lake',at:{x:-230,y:-860},col:'#4FB4FF',look:'rogue'},      // המעבורתנית, ליד המזח (האגם הגדול, map-lake.js)
     mistsage:{reg:'lake',at:{x:760,y:-1420},col:'#7FC7C0',look:'mage'},      // נזיר הערפל, ליד מחנה הערפל
-    climber: {reg:'ridge',at:{x:-380,y:-560},col:'#C9D6E3',look:'barbarian'},
-    bard:    {reg:'ridge',at:{x:380,y:-560},col:'#A8E6FF',look:'ranger'},
+    climber: {reg:'ridge',at:{x:-150,y:-1750},col:'#C9D6E3',look:'barbarian'},   // המטפס, ליד השער (הרכס הגדול, map-ridge.js)
+    bard:    {reg:'ridge',at:{x:-950,y:-1780},col:'#A8E6FF',look:'ranger'},      // הזמרת, ליד השער, בדרך למחנה האבירים
     caravan: {reg:'desert',at:{x:2120,y:880},col:'#E0B26A',look:'rogue'},    // סוחר השיירות, בנווה המדבר (המדבר הגדול, map-desert.js)
     glass:   {reg:'desert',at:{x:1150,y:300},col:'#FF9A5A',look:'barbarian'},  // הזגגת, בין סלעי הלהבה ומחנה הלבה
     keeper:  {reg:'storm',at:{x:-380,y:-560},col:'#B48CFF',look:'knight'},
