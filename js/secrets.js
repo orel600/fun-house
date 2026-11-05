@@ -34,12 +34,12 @@ const SECRETS={
       {id:'m_lv20',kind:'shrine',x:-2830,y:800,bless:'loot',lv:20},  // 32 ביער העמוק, בקרחת
       {id:'m_lv30',kind:'chest',x:2750,y:-1830,hide:'bush',lv:30}    // 33 על מדף בצוק הצפון-מזרחי
     ],
-    lake:[
-      {id:'l_chest',kind:'chest',x:960,y:580,hide:'bush'},           // בפינה הדרום-מזרחית
-      {id:'l_shrine',kind:'shrine',x:520,y:620,bless:'loot'},        // בדרום, מתחת לבריכה המזרחית
-      {id:'l_look',kind:'lookout',x:-930,y:-620},                    // צפון-מערב
-      {id:'l_carve',kind:'carving',x:40,y:430,to:{x:-520,y:620}},    // בין הבריכות, ומצביע אל הדרום
-      {id:'l_lv10',kind:'chest',x:-990,y:160,hide:'bush',lv:10}      // בקצה המערבי, מעל הפנס
+    lake:[   // המספרים מהשרטוט של האגם הגדול (docs/concept-regions.md, js/map-lake.js)
+      {id:'l_chest',kind:'chest',x:2750,y:1640,hide:'bush'},         // 20 תיבה בפינה הדרום-מזרחית
+      {id:'l_shrine',kind:'shrine',x:1650,y:1700,bless:'loot'},      // 21 מקדש שלל, ליד הכפר הטבוע
+      {id:'l_look',kind:'lookout',x:-2700,y:-1650},                  // 22 תצפית בפינה הצפון-מערבית
+      {id:'l_carve',kind:'carving',x:-100,y:1250,to:{x:300,y:1700}}, // 23 עץ חרוט על החוף הדרומי, מצביע לדרום
+      {id:'l_lv10',kind:'chest',x:-2760,y:450,hide:'bush',lv:10}     // 24 בקצה המערבי
     ],
     ridge:[
       {id:'r_chest',kind:'chest',x:-960,y:-560,hide:'rock'},         // בפינה הצפון-מערבית, מאחורי סלע מושלג
