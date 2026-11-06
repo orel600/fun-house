@@ -100,7 +100,7 @@ function petUpdate(dt){
     return}
   if(p.st==='dig'){
     if(Math.random()<dt*24)for(let i=0;i<PET.dig.grains;i++)p.sand.push({x:p.x+Math.cos(p.face)*10,y:p.y+Math.sin(p.face)*10,vx:-Math.cos(p.face)*rand(40,140)+rand(-40,40),vy:-rand(80,190),life:rand(0.35,0.6)});
-    if(p.t>=PET.dig.dur)petDigEnd(p);
+    if(p.t>=(p.dur||PET.dig.dur))petDigEnd(p);   // dur: חפירה ארוכה יותר (הבאר במדבר, desertwell.js)
     return}
   // הליכה אחרי השחקן: נקודה מאחוריו וקצת לצד, כדי שלא תסתיר אותו
   const M=PET.move,b=P.face+Math.PI,tx=P.x+Math.cos(b)*f.trail+Math.cos(b+1.57)*f.side,ty=P.y+Math.sin(b)*f.trail+Math.sin(b+1.57)*f.side;
@@ -191,6 +191,7 @@ function petDigStart(p){
   return false}
 // סוף החפירה: הטבלה של השלב, דרך runGive של הכלכלה (דרגות, עמוד אור, חגיגה לנדיר). נופל לרצפה ונאסף כמו כל שלל
 function petDigEnd(p){
+  if(wellDig(p))return;   // הבאר היבשה במדבר (desertwell.js)
   const x=p.x+Math.cos(p.face)*12,y=p.y+Math.sin(p.face)*12-20,n0=drops().length;
   const L=Object.assign({},petStage().dig.loot);if(!S.wd)for(const r of PET.dig.world)delete L[r];   // בזירה בלי שלל חדש
   let got=runGive(L,x,y);
