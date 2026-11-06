@@ -23,7 +23,8 @@ function saveBlank(){return{
   home:{back:{}},                                   // אחרי איזה פנס התושב כבר חזר לכפר: {earth:1} (homecoming.js)
   agePity:0,                                        // כמה כישלונות ברצף ב-Aging, למזל הרך (aging.js)
   pet:{kind:null,stage:0,xp:0,fed:0,buff:0},                     // חיית המחמד (pet.js). kind: איזו חיה מ-PET.kinds (null: PET.default, פיוחו של ניר). stage: 0-2. fed: כמה גזרים אכלה, buff: כמה שניות נשארו לחיזוק מהגזר
-  depths:{best:0},                                  // עומק הצל: הקומה הכי עמוקה שהגעת אליה (depths.js)
+  depths:{best:0},
+  showHat:true,                                     // "הצג כובע" בהגדרות: כבוי = הכובע לא נראה על הדמות, וההגנה נשארת (armor.js)                                  // עומק הצל: הקומה הכי עמוקה שהגעת אליה (depths.js)
   ts:0}}
 
 let SAVE=saveBlank();

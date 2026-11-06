@@ -178,6 +178,51 @@ const ITEMS={
   shield3:  {src:raw('shield3'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},   // יצא כבר כמו KayKit: הפנים ב-xy
   shield4:  {src:raw('shield4'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]}
 };
+/* כובעים (ניר, 6.11.2026: "הגרפיקה של הכובע חייבת שיפור"). הכובעים האמיתיים של KayKit, כחלק נפרד בלי שלד, במרחב של עצם הראש,
+   כדי שאפשר לחבר כל כובע לכל דמות (armor3d ב-js/armor.js). השם במשחק: hat_<שם>.
+   node: החלק בקובץ. חלק סטטי על עצם הראש נשאר במקום שלו יחסית לעצם. חלק עם שלד (הראש עם הברדס) עובר למרחב של העצם לפי ה-inverse bind שלו.
+   parts: מחלקים את הכובע לחלקים לפי הצבע בטקסטורה, כדי לצבוע רק חלק אחד בצבע הדרגה. הסדר קובע: המשולש הולך לחלק הראשון שמתאים לו.
+     rim: המשולשים של הבד שנוגעים בפנים (השוליים של הברדס), ו-rings טבעות סביבם. cut: מוחקים משולשים שיורדים מתחת לגובה הזה (הפרווה שתלויה מאחורי הגב) */
+const HATS={
+  helm:{src:adv('Characters/gltf/Knight.glb'),node:'Knight_Helmet',parts:{metal:()=>true}},
+  mage:{src:adv('Characters/gltf/Mage.glb'),node:'Mage_Hat',parts:{cloth:(r,g,b)=>b>r&&b>g-5,band:()=>true}},
+  fur: {src:adv('Characters/gltf/Barbarian.glb'),node:'Barbarian_Hat',cut:-0.35,parts:{fur:()=>true}},
+  hood:{src:adv('Characters/gltf/Rogue_Hooded.glb'),node:'Rogue_Head_Hooded',parts:{cloth:(r,g,b)=>g>r+10&&g>b,face:()=>true},rim:['cloth','face'],rings:3}
+};
+async function addHats(add){
+  const {transformPrimitive}=require('@gltf-transform/functions');
+  for(const [k,c] of Object.entries(HATS)){
+    const doc=await io.read(c.src),root=doc.getRoot(),N=root.listNodes().find(n=>n.getName()===c.node);
+    if(!N||!N.getMesh())throw new Error('אין '+c.node+' ב-'+c.src);
+    let M=N.getMatrix();const sk=N.getSkin();
+    if(sk){const j=sk.listJoints().findIndex(n=>n.getName()==='head');M=Array.from(sk.getInverseBindMatrices().getElement(j,[]))}
+    const src=N.getMesh().listPrimitives()[0];transformPrimitive(src,M);
+    for(const a of ['JOINTS_0','WEIGHTS_0'])src.setAttribute(a,null);
+    // הצבע של כל משולש: הפיקסל בטקסטורה במרכז ה-UV שלו
+    const img=src.getMaterial().getBaseColorTexture(),{data,info}=await sharp(Buffer.from(img.getImage())).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+    const P=src.getAttribute('POSITION'),U=src.getAttribute('TEXCOORD_0'),I=src.getIndices(),n=I?I.getCount()/3:P.getCount()/3,vi=i=>I?I.getScalar(i):i;
+    const groups={},names=Object.keys(c.parts);for(const g of names)groups[g]=[];
+    const tri=[];for(let t=0;t<n;t++){const v=[vi(t*3),vi(t*3+1),vi(t*3+2)];
+      if(c.cut!=null&&Math.min(...v.map(i=>P.getElement(i,[])[1]))<c.cut)continue;
+      let u=0,w=0;for(const i of v){const e=U.getElement(i,[]);u+=e[0]/3;w+=e[1]/3}
+      const x=Math.min(info.width-1,Math.max(0,Math.floor(u*info.width))),y=Math.min(info.height-1,Math.max(0,Math.floor(w*info.height))),o=(y*info.width+x)*4;
+      const g=names.find(g=>c.parts[g](data[o],data[o+1],data[o+2]));groups[g].push(...v);tri.push([g,v])}
+    // השוליים: משולשי בד שנוגעים בפנים, ועוד rings-1 טבעות של בד סביבם, כדי שהפס ייראה גם מרחוק
+    if(c.rim){const [cl,fc]=c.rim,key=i=>P.getElement(i,[]).map(x=>x.toFixed(4)).join(),at=new Set(),rim=new Set();
+      for(const [g,v] of tri)if(g===fc)for(const i of v)at.add(key(i));
+      for(let r=0;r<(c.rings||1);r++){const add=[];for(const T of tri)if(T[0]===cl&&!rim.has(T)&&T[1].some(i=>at.has(key(i))))add.push(T);for(const T of add){rim.add(T);for(const i of T[1])at.add(key(i))}}
+      groups.rim=[];groups[cl]=[];for(const T of tri)if(T[0]===cl)(rim.has(T)?groups.rim:groups[cl]).push(...T[1])}
+    const sc=doc.createScene(k),top=doc.createNode('hat_'+k);sc.addChild(top);
+    for(const g in groups){if(!groups[g].length)continue;const p=src.clone().setIndices(doc.createAccessor().setType('SCALAR').setArray(new Uint32Array(groups[g])).setBuffer(root.listBuffers()[0]));
+      top.addChild(doc.createNode(g).setMesh(doc.createMesh(g).addPrimitive(p)))}
+    // כל השאר (הדמות, השלד, הנשקים, האנימציות) יוצא, ונשאר רק הכובע
+    const mine=new Set([top,...top.listChildren()]);
+    for(const s of root.listScenes())if(s!==sc)s.dispose();root.setDefaultScene(sc);
+    for(const s of root.listSkins())s.dispose();   // האנימציות יוצאות ב-slim
+    for(const nd of root.listNodes())if(!mine.has(nd)){const m=nd.getMesh();nd.dispose();if(m&&!m.listParents().some(p=>p!==root))m.dispose()}
+    add('hat_'+k,await slim(doc,{}));
+  }
+}
 async function addItems(add){
   const {MeshoptSimplifier}=require('meshoptimizer');await MeshoptSimplifier.ready;
   const {weld,simplify,transformPrimitive}=require('@gltf-transform/functions');
@@ -282,6 +327,16 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
   // node tools/build3d.js - --only items: מוסיף רק את ITEMS לקובץ הקיים (לא צריך את חבילות KayKit, אז במקום התיקייה אפשר -)
   if(ONLY==='bundle'){await bundle();console.log('js/vendor/three-bundle.js',Math.round(fs.statSync(path.join(ROOT,'js/vendor/three-bundle.js')).size/1024)+'KB');return}
   if(ONLY==='compress'){await compressAll();return}
+  // node tools/build3d.js C:/kk --only hats: מוסיף רק את הכובעים (HATS) לקובץ הקיים. צריך רק את adv
+  if(ONLY==='hats'){
+    const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
+    const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
+    Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
+    for(const k in out)if(k.startsWith('hat_'))delete out[k];
+    await addHats(add);
+    fs.writeFileSync(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
+  }
   if(ONLY==='items'){
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
     const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
@@ -321,12 +376,13 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
   for(const [k,c] of Object.entries(NATURE))add(k,await slim(await io.read(c.src),{q:true}));
   await addMonsters(add);
   await addItems(add);
+  await addHats(add);
   for(const [k,c] of Object.entries(ANIMS)){
     const doc=await io.read(c.src),miss=c.keep.filter(n=>!doc.getRoot().listAnimations().some(a=>a.getName()===n));
     if(miss.length)throw new Error('אנימציה חסרה ב-'+k+': '+miss.join(', '));
     add('anim_'+k,await slim(doc,{keepMeshes:null,keepAnims:c.keep}));
   }
-  const head='/* נוצר אוטומטית ע"י tools/build3d.js. לא עורכים ביד.\n   דמויות, אנימציות, נשקים ומבנים: KayKit Adventurers, Skeletons, Character Animations, Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת Kay Lousberg (www.kaylousberg.com), רישיון CC0.\n   מפלצות: Ultimate Monsters מאת Quaternius (quaternius.com), רישיון CC0.\n   מוטמעות כאן כטקסט ולא כקבצים, כי המשחק נפתח גם מ-file:// ושם הדפדפן לא טוען קבצים לבד */\n';
+  const head='/* נוצר אוטומטית ע"י tools/build3d.js. לא עורכים ביד.\n   דמויות, כובעים, אנימציות, נשקים ומבנים: KayKit Adventurers, Skeletons, Character Animations, Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת Kay Lousberg (www.kaylousberg.com), רישיון CC0.\n   מפלצות: Ultimate Monsters מאת Quaternius (quaternius.com), רישיון CC0.\n   מוטמעות כאן כטקסט ולא כקבצים, כי המשחק נפתח גם מ-file:// ושם הדפדפן לא טוען קבצים לבד */\n';
   fs.writeFileSync(path.join(ROOT,'js/models3d.js'),head+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
 
   await bundle();
