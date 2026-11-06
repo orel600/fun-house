@@ -688,7 +688,7 @@ function worldBot(m,L,god){
   check(sf.wait&&sf.go,'ענן: "יאללה" '+(sf.wait&&sf.go?'מחכה לסנכרון ואז ממשיך':'לא מחכה לסנכרון'));
   // 2: שמירה פגומה לא נדרסת: עותק בצד (fh-save-bad), שחזור מהגיבוי המתגלגל (fh-save-bak2), והודעה לשחקן. בלי גיבוי: משחק חדש, והעותק נשאר
   const bad=await page.evaluate(()=>{const r={},K=SAVE_STORE.key,bak=JSON.stringify(SAVE),ls=k=>localStorage.getItem(K+k);
-    localStorage.removeItem(K+'-bak');SAVE.village.forge=4;SAVE_STORE.lastBak=0;saveNow();SAVE_STORE.lastBak=0;SAVE.village.forge=5;saveNow();
+    localStorage.removeItem(K+'-bak');SAVE.village.forge=4;SAVE_STORE.lastBak=-1e15;saveNow();SAVE_STORE.lastBak=-1e15;SAVE.village.forge=5;saveNow();   // -1e15: השעון של הבדיקה מתחיל קרוב ל-0
     const cut=ls('').slice(0,-40);localStorage.setItem(K,cut);SAVE_STORE.note=null;saveLoad();saveWarnShow();
     r.restored=SAVE.village.forge===4&&SAVE_STORE.note==='save.restored'&&ls('-bad')===cut&&!$('saveWarn').hidden&&$('saveWarn').textContent===T('save.restored');
     saveNow();r.kept=ls('-bad')===cut&&JSON.parse(ls('')).village.forge===4&&JSON.parse(ls('-bak2')).village.forge===4;

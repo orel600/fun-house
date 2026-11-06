@@ -36,7 +36,7 @@ let SAVE=saveBlank();
 const SAVE_STORE={
   key:'fh-save',
   bakEvery:120000,     // כל כמה מילישניות לכל היותר מתעדכן הגיבוי המתגלגל
-  lastBak:0,note:null,failed:false,lock:false,
+  lastBak:-1e15,note:null,failed:false,lock:false,
   load(){let raw=null;try{raw=localStorage.getItem(this.key)}catch(e){return null}
     if(raw==null)return null;
     const ok=t=>{try{const d=JSON.parse(t);return isObj(d)?d:null}catch(e){return null}};
