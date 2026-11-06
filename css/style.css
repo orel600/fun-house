@@ -206,6 +206,7 @@ h1{font-size:46px} h2{font-size:30px}
 .lang:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .gfx .langs{justify-content:flex-start}
 .cloudbtns{justify-content:center}
+.savewarn{color:var(--ember);font-weight:700}   /* שמירה פגומה או כתיבה שנכשלה (save.js) */
 #c3{z-index:0}
 #c{z-index:1}
 .rules{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;font-size:15px;line-height:1.45}
@@ -1890,3 +1891,14 @@ body:not(.world):not(.vil) .hud .gearbtn{border:2px solid var(--brass);backgroun
   box-shadow:var(--bevel),0 0 0 2px var(--wood),0 3px 8px #0009;transition:transform .08s}
 body:not(.world):not(.vil) .hud .shopbtn{border-color:var(--brass-hi);color:#FFE08A;text-shadow:0 1px 0 #3A2208}
 body:not(.world):not(.vil) .hud .gearbtn:active{transform:scale(.92)}
+/* חלון הקפיצה (travel.js) הוא חלון משימה קטנה (ui-guide פרק 4): כמעט כל הגובה ומעל הסרגלים, כי המשחק עוצר בזמן הבחירה (ביקורת 6.11.2026: 260px חתכו אבנים).
+   ב-#trWin כדי לגבור על הכללים הכלליים של .qlog.win. היעדים ברשת שמתמלאת לרוחב, וכשעדיין יש עוד למטה: הצללה וחץ (.more, travelMore) */
+#trWin.qlog.win{z-index:7;display:block;top:calc(env(safe-area-inset-top,0px) + 10px);bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+  left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));max-width:min(720px,92vw);margin-inline:auto}
+#trWin .trgroups{grid-template-columns:1fr}
+#trWin .trlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+#trWin .trgo{margin:0;min-height:44px}
+.scrmore{position:sticky;bottom:-6px;display:none;grid-column:1/-1;margin:4px -6px -6px;padding:16px 0 4px;text-align:center;color:var(--gold);font-weight:800;pointer-events:none;
+  background:linear-gradient(transparent,#1A2033 55%)}   /* "יש עוד למטה" בחלון שגולל (scrollMore ב-travel.js) */
+.more>.scrmore{display:block}
+.sndpanel>.scrmore{bottom:-16px;margin:4px -16px -16px}   /* ההגדרות עם ריפוד 16 */

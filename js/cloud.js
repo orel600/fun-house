@@ -15,7 +15,8 @@ const CLOUD={
   fake:null,            // בבדיקה: שרת מדומה בזיכרון במקום הרשת
   nav:u=>location.assign(u),   // מעבר לדף הכניסה של Google. בבדיקה מוחלף, כדי לא לעזוב את הדף
   // מה קורה עכשיו, בשביל הסמל במסך הפתיחה: off (לא מחובר, שמור בטלפון), sync (מסנכרן), ok (שמור בענן)
-  status:'off',session:null,dirty:false,lastPush:0,timer:null,busy:null,pushes:0,pulls:0
+  startWait:6000,       // "יאללה" בזמן סנכרון: מחכים לו עד כך (מילישניות), כדי ששמירה ישנה לא תתחיל לרוץ מעל חדשה. חלון השאלה מחכה תמיד
+  status:'off',session:null,dirty:false,hold:false,lastPush:0,timer:null,busy:null,pushes:0,pulls:0
 };
 
 // הסמל במסך הפתיחה, וכפתורי הכניסה: "כניסה עם Google" רק מכתובת אמיתית (לא מ-file://), ו"התנתקות" רק כשמחוברים
@@ -64,21 +65,29 @@ function cloudWas(v){const k=CLOUD.lsKey+'-was';try{if(v===undefined)return loca
 // בקשה אחת בכל פעם, כדי ששני רענונים של טוקן לא יתנגשו
 function cloudOnce(fn){const p=(CLOUD.busy||Promise.resolve()).then(fn,fn);CLOUD.busy=p.catch(()=>{});return p}
 
+// לעולם לא דורסים שמירה חדשה יותר בענן בישנה (ביקורת 6.11.2026): אם הענן חדש יותר והמשחק כבר התחיל, לא דוחפים בכלל (hold),
+// ורושמים את זה בטלפון (fh-cloud-hold). בפתיחה הבאה, במסך הפתיחה, שתי השמירות שונות: שואלים את השחקן איזו לשמור
 function cloudPull(){return cloudOnce(async()=>{
   const s=await cloudAuth();
   const d=await cloudRow(s);
   CLOUD.pulls++;
-  const ov=document.getElementById('ovStart'),onStart=!ov||!ov.hidden;
-  // לוקחים מהענן רק שמירה חדשה יותר, ורק לפני שהמשחק התחיל. אחרת השמירה בטלפון מנצחת ונדחפת מעליה
-  if(isObj(d)&&(d.ts||0)>(SAVE.ts||0)&&onStart){cloudTake(d);return'took'}
+  const ov=document.getElementById('ovStart'),onStart=!ov||!ov.hidden,held=cloudHeld();
+  if(isObj(d)&&held&&onStart){cloudHeld(false);   // שיחקת על השמירה הישנה בזמן שבענן הייתה חדשה יותר: השחקן בוחר
+    if(await cloudAsk(SAVE,d,'cloud.askS2')==='cloud'){cloudTake(d);return'took'}return'kept'}
+  if(isObj(d)&&(d.ts||0)>(SAVE.ts||0)){if(onStart&&!held){cloudTake(d);return'took'}cloudHeld(true);return'newer'}
+  if(!isObj(d)&&held)cloudHeld(false);   // אין שורה בענן: אין מה לדרוס
   return d?'kept':'none';
 })}
+// הענן חדש יותר מהטלפון, ולכן לא דוחפים. בלי ערך: קורא
+function cloudHeld(v){const k=CLOUD.lsKey+'-hold';if(v!==undefined){CLOUD.hold=!!v;try{v?localStorage.setItem(k,'1'):localStorage.removeItem(k)}catch(e){}}
+  else if(!CLOUD.hold)try{CLOUD.hold=!!localStorage.getItem(k)}catch(e){}return CLOUD.hold}
 function cloudRow(s){return cloudReq('GET','/rest/v1/saves?select=data,updated_at&user_id=eq.'+s.uid,null,s.access).then(r=>r.json&&r.json[0]&&r.json[0].data)}
 // לוקחים שמירה מהענן במקום זו שבטלפון. העותק הישן נשאר בצד (fh-save-bak), ליתר ביטחון
-function cloudTake(d){try{localStorage.setItem(SAVE_STORE.key+'-bak',JSON.stringify(SAVE))}catch(e){}
+function cloudTake(d){cloudHeld(false);try{localStorage.setItem(SAVE_STORE.key+'-bak',JSON.stringify(SAVE))}catch(e){}
   SAVE=saveMerge(saveBlank(),d);resMigrate(SAVE);SAVE.v=SAVE_VER;SAVE_STORE.write(SAVE,true)}
 
 function cloudPush(opt){return cloudOnce(async()=>{
+  if(cloudHeld())return;   // הענן חדש יותר: לא דורסים (cloudPull)
   const s=await cloudAuth();CLOUD.dirty=false;CLOUD.lastPush=Date.now();
   await cloudReq('POST','/rest/v1/saves?on_conflict=user_id',{user_id:s.uid,data:SAVE,updated_at:new Date(SAVE.ts||Date.now()).toISOString()},s.access,
     {keepalive:opt&&opt.keepalive,headers:{Prefer:'resolution=merge-duplicates,return=minimal'}});
@@ -95,7 +104,8 @@ function cloudMark(){
 // סנכרון: בהפעלה מושכים ואז דוחפים, ובזמן משחק רק דוחפים. כל תקלה = "לא מחובר", בשקט
 async function cloudSync(pushOnly){
   cloudShow('sync');
-  try{let r='pushed';if(!pushOnly)r=await cloudPull();if(r!=='took'||CLOUD.dirty)await cloudPush();cloudShow('ok');if(typeof visitCloud==='function')visitCloud();return r}
+  try{let r='pushed';if(!pushOnly)r=await cloudPull();if(cloudHeld()){cloudShow('hold');return r==='pushed'?'hold':r}
+    if(r!=='took'||CLOUD.dirty)await cloudPush();cloudShow('ok');if(typeof visitCloud==='function')visitCloud();return r}
   catch(e){cloudShow('off');return'offline'}
 }
 
@@ -158,9 +168,10 @@ async function cloudMergeIn(){
   return pick;
 }
 // חלון שאלה: איזו שמירה לשמור. מחזיר 'phone' או 'cloud'
-function cloudAsk(a,b){return new Promise(done=>{
-  const ov=document.getElementById('ovCloud'),lv=o=>(o.hero&&o.hero.level)||1;
-  if(!ov)return done((b.ts||0)>(a.ts||0)?'cloud':'phone');
+function cloudAsk(a,b,sub){return new Promise(done=>{
+  const ov=document.getElementById('ovCloud'),lv=o=>(o.hero&&o.hero.level)||1,xp=o=>(o&&o.hero&&o.hero.xp)||0;
+  if(!ov)return done(xp(b)>xp(a)?'cloud':'phone');
+  const ss=document.getElementById('cloudAskS');if(ss){ss.dataset.t=sub||'cloud.askS';ss.textContent=T(ss.dataset.t)}
   document.getElementById('cloudPhone').textContent=T('cloud.keepPhone',lv(a));
   document.getElementById('cloudAcct').textContent=T('cloud.keepCloud',lv(b));
   const end=v=>{ov.hidden=true;done(v)};
@@ -192,6 +203,16 @@ function cloudFakeServer(){const F={users:0,rows:{},down:false,google:{},noLink:
     if(body.user_id!==uid)return no(new Error('cloud 403'));   // כמו RLS: רק השורה שלך
     F.rows[uid]={data:JSON.parse(JSON.stringify(body.data)),updated_at:body.updated_at};ok({status:201,json:null});
   })}};return F}
+
+// כפתור "יאללה": אם הסנכרון של הפתיחה עוד רץ, מחכים לו (עד startWait), ואם נפתחה שאלה איזו שמירה לשמור, מחכים לתשובה
+function cloudReady(go){
+  const busy=()=>CLOUD.status==='sync'||!document.getElementById('ovCloud').hidden;
+  if(!busy())return go();
+  const b=document.getElementById('startBtn'),t0=Date.now();if(b){b.disabled=true;b.textContent=T('cloud.wait')}
+  const tick=()=>{const ask=!document.getElementById('ovCloud').hidden;
+    if(busy()&&(ask||Date.now()-t0<CLOUD.startWait))return setTimeout(tick,100);
+    if(b){b.disabled=false;b.textContent=T('start')}go()};
+  setTimeout(tick,100)}
 
 SAVE_STORE.onWrite=cloudMark;
 // הטלפון עובר לרקע (סגרו את האפליקציה): דוחפים מיד מה שעוד לא נשלח
