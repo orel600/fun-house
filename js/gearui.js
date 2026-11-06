@@ -22,12 +22,14 @@ const gPct=n=>(n>0?'+':'')+Math.round(n)+'%';
 const gResist=t=>Math.round(Math.min(STATS.cap.def,(P.def||0)+((P.res||{})[t]||0)));
 const gDtPic=t=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+DMG.types[t].icon+'" fill="currentColor"/></svg>';
 
-// הטור כשלא נבחר פריט: הסטטים, ואחריהם העמידויות. בלי גלילה ב-844×390
+// ערך שהוא 0 ("0%", "+0%", "0"): השורה לא מוצגת (ניר, 2.11: "טבלה עם הרבה 0%")
+const gZero=v=>v==null||/^[+-]?0(\.0)?%?$/.test(String(v));
+// הטור כשלא נבחר פריט: מספר הכוח של הגיבור (power.js), הסטטים בלי שורות 0, ואחריהם העמידויות שאינן 0. בלי גלילה ב-844×390
 function gStatPanel(){
-  const rows=GEARUI.rows.map(r=>{const v=r.v();if(r.opt&&v==null)return '';
+  const rows=GEARUI.rows.map(r=>{const v=r.v();if(gZero(v))return '';
     return '<li><span class="gsi" aria-hidden="true">'+r.icon+'</span><span class="gsn">'+T('gui.'+r.id)+'</span><b'+(r.col?' style="color:'+r.col()+'"':'')+'><bdi>'+v+'</bdi></b></li>'}).join('');
-  const res=Object.keys(DMG.types).map(t=>'<li style="--dt:'+dtCol(t)+'" title="'+T('dt.'+t)+'" aria-label="'+T('dt.'+t)+'">'+gDtPic(t)+'<bdi>'+gResist(t)+'%</bdi></li>').join('');
-  return '<h3>'+T('gui.stats')+'</h3><ul class="gsrows">'+rows+'</ul><h4>'+T('gui.res')+'</h4><ul class="gres">'+res+'</ul>'+heroSkinRow();
+  const res=Object.keys(DMG.types).filter(t=>gResist(t)>0).map(t=>'<li style="--dt:'+dtCol(t)+'" title="'+T('dt.'+t)+'" aria-label="'+T('dt.'+t)+'">'+gDtPic(t)+'<bdi>'+gResist(t)+'%</bdi></li>').join('');
+  return powHeroHtml()+'<h3>'+T('gui.stats')+'</h3><ul class="gsrows">'+rows+'</ul>'+(res?'<h4>'+T('gui.res')+'</h4><ul class="gres">'+res+'</ul>':'')+heroSkinRow();
 }
 // מעל הדמות: סט פעיל, בצבע שלו, עם כמה חלקים לבושים
 function gSetBadge(){
