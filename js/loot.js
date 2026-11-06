@@ -84,7 +84,7 @@ function lootKill(e){
 function lootGear(e,force){
   const G=LOOT.gear,k=e.isBoss?'boss':e.wanted?'wanted':e.elite?'elite':e.champ?'champ':'foe',R=G[k];
   if(e.node||!R||S.room||(!S.wd&&!force))return null;   // רק בעולם הפתוח, לא בזירה
-  const ch=R.chance*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck()*statLoot();
+  const ch=R.chance*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck()*statLoot()*(typeof tierGearK==='function'?tierGearK():1);   // דרגת עולם (tiers.js)
   if(!force&&Math.random()>=ch){SAVE.gearPity=(SAVE.gearPity||0)+1;return null}
   SAVE.gearPity=0;const id=lootRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;
   dropSpawn(id,1,e.x,e.y);if(feedOn())feedGear(id);else banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id),dropTier(id).col);   // בעולם ובכפר: בפיד (feed.js)

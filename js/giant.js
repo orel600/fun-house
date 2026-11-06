@@ -14,7 +14,7 @@ const GIANT={
   die:{t:3.2,anim:2.2,sink:1.2,shake:14},// מוות: t שניות עד שנעלם, anim שניות של קריסה, ושוקע באדמה ב-sink האחרונות. רעד גדול כשנופל
   shadow:1.35,                           // הצל על הקרקע: פי כמה מהצל של אויב רגיל באותו רדיוס
   /* בוסים תמיד שם, וחוזרים אחרי טיימר (ניר, 5.11.2026: "בוסים צריכים להיות כל הזמן... בוס ראשון הכי קל, אחרון הכי קשה... משהו שמבוסס יחס").
-     docs/plan-world-terrain.md, שלב 1. כל ענק ישן במאורה שלו ליד הפנס (y+lair), וקם כשמתקרבים, גם לפני הקווסט.
+     docs/plan-world-terrain.md, שלב 1. כל ענק ישן במאורה שלו ליד הפנס (lair), וקם כשמתקרבים, גם לפני הקווסט.
      אחרי כל ניצחון: אבן עם שעון במקומו. הטיימר בשעה אמיתית (SAVE.story.bt: {פנס: מתי חוזר, Date.now}), אז רץ גם כשהמשחק סגור.
      ladder: הסולם של כל הבוסים. הבוס ה-i (לפי הסדר ב-STORY.lanterns, מ-0): טיימר base×ratio^i דקות (10, 15, 23, 34, 51, 76),
      ושלל של ניצחון חוזר פי ratio^i. החוזק (חיים ונזק ב-STORY.lanterns[*].warden) מיושר לאותו יחס בעזרת tools/balance-world.js.
@@ -33,7 +33,11 @@ const GIANT={
       fire:{charge:{every:6,min:240,max:620,warn:1.0,len:560,w:90,speed:600,dmg:20,stun:1.6,vuln:1.6,col:'#FF4A3A'}},
       bolt:{ring:{every:3.8,speed:175,max:340,w:14,gap:1.0,dmg:15}}},
     big:{every:7,first:1.5,r:120,fuse:1.1,dmg:50,grow:0.25,flash:0.35,col:'#FF4A3A'}},
-  lair:70,
+  /* המאורה (ניר, 6.11: "אם אתה משתגר לפנס, הבוס ישר מופיע עליך"): at: איפה ביחס לפנס, [dx,dy]. רחוקה מהפנס, כדי שקפיצה לפנס
+     (travel.js, TRAVEL.arrive מתחת לפנס) או לאבן מסע (waystones.js) לא נוחתת עליו. wake: הענק קם כשהשחקן עד wake מהמאורה.
+     לפני שהפנס דולק הוא קם גם כשמתקרבים לפנס (L.warden.wake ב-story.js), כדי שהקרב של הקווסט לא ייפספס. אליו אי אפשר לקפוץ עד שהוא דולק.
+     safe: כמה רחוק לפחות כל נקודת נחיתה מהמאורה (הבדיקה ב-check.js). המקומות נבחרו כך שהם על הדרך, לא במכשול (tBlocked), ועד STORY.chase.leash מהפנס */
+  lair:{wake:340,safe:520,at:{earth:[0,-560],water:[0,-600],ice:[0,-560],fire:[560,0],bolt:[-396,-396],light:[396,-396]}},
   loot:{coins:40},
   lv:{step:5},
   clock:{r:34,font:13}                   // האבן עם השעון: רדיוס האבן, וגודל הטקסט של הזמן שנשאר
@@ -112,9 +116,13 @@ function giantSleep(e){
   e.hp=e.max;e.gone=true;const w=S.wd;if(w&&w.warden===e)w.warden=null;
   const i=enemies.indexOf(e);if(i>=0)enemies.splice(i,1);
 }
+// איפה המאורה של הפנס k: {x,y}
+function giantLair(k){const L=STORY.lanterns[k],a=GIANT.lair.at[k]||[0,70];return{x:L.x+a[0],y:L.y+a[1]}}
+// הענק קם: השחקן ליד המאורה, או ליד הפנס כשהוא עוד לא דולק (הקרב של הקווסט)
+const giantNear=k=>{const L=STORY.lanterns[k],m=giantLair(k);return Math.hypot(P.x-m.x,P.y-m.y)<GIANT.lair.wake||!STO()[k]&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake};
 // המאורה: גבעת אדמה כהה, ומעליה 💤 כשהבוס ישן, או אבן עם שעון כשהוא בטיימר (storyDraw)
 function giantLairDraw(k,L){
-  const x=L.x,y=L.y+GIANT.lair,e=S.wd.warden,t=fxNow();
+  const m=giantLair(k),x=m.x,y=m.y,e=S.wd.warden,t=fxNow();
   ctx.save();ctx.globalAlpha=0.55;ctx.fillStyle='#2A2018';ctx.beginPath();ctx.ellipse(x,y+10,110,40,0,0,7);ctx.fill();
   if(!e&&giantLeft(k)>0&&!giantReady(k)){const r=GIANT.clock.r;ctx.globalAlpha=1;   // האבן
     ctx.fillStyle='#6B6F7A';ctx.strokeStyle='#3A3D45';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(x,y-r*0.6,r,r*1.15,0,0,7);ctx.fill();ctx.stroke();
@@ -125,7 +133,7 @@ function giantLairDraw(k,L){
 }
 // מעל המאורה, בגודל קבוע על המסך: הזמן שנשאר על האבן, או שלט "רמה מומלצת" כשהבוס ישן (storyScreen)
 function giantLairScreen(k,L,ox,oy){
-  if(S.wd.warden)return;const left=giantReady(k)?0:giantLeft(k),x=L.x+ox,y=L.y+GIANT.lair+oy,Z=CURIO.sign,lv=giantLv(k);
+  if(S.wd.warden)return;const left=giantReady(k)?0:giantLeft(k),m=giantLair(k),x=m.x+ox,y=m.y+oy,Z=CURIO.sign,lv=giantLv(k);
   ctx.save();ctx.translate(x,y-GIANT.clock.r*2.4);ctx.scale(1/ZOOM,1/ZOOM);ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 '+GIANT.clock.font+'px Heebo, system-ui, sans-serif';
   const txt=left?'⏳ '+giantTime(left):T('cu.rec',lv),col=left?L.glow:heroLv()>=lv?Z.ok:Z.low,tw=ctx.measureText(txt).width+16;
   ctx.fillStyle='rgba(30,22,14,0.9)';ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-tw/2,-12,tw,24,5);ctx.fill();ctx.stroke();
