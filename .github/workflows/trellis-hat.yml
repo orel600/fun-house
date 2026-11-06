@@ -1,0 +1,24 @@
+# כלי מחקר זמני (6.11.2026): קסדה מתמונה ב-TRELLIS, להשוואה מול Blender. רץ רק בענף research/own-models. לא נוגע במשחק.
+name: TRELLIS קסדה (מחקר)
+on:
+  push:
+    branches: [research/own-models]
+    paths: ['tools/trellis-hat/go.txt']
+permissions:
+  contents: write
+jobs:
+  hat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install gradio_client
+      - run: python tools/trellis-hat/hat.py horned
+      - name: שמירה בענף
+        run: |
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tools/trellis-hat/out && git commit -m "TRELLIS: קסדת קרניים (מחקר)" && git push
