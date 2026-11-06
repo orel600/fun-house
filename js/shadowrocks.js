@@ -104,7 +104,8 @@ function srGlow(){
     ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);
     if(l.on){ctx.strokeStyle='rgba('+C_.link+','+(0.1+0.06*pl)+')';ctx.lineWidth=SROCKS.link.w;ctx.stroke();ctx.strokeStyle='rgba('+C_.link+','+(0.4+0.25*pl)+')';ctx.lineWidth=3;ctx.stroke()}
     else{ctx.setLineDash([10,16]);ctx.strokeStyle='rgba('+C_.off+',0.25)';ctx.lineWidth=3;ctx.stroke();ctx.setLineDash([])}}
-  if(!R3D.on)SR.nodes.forEach((n,i)=>{if(n.fixed&&!n.isle)return;   // בתלת-ממד הגג עצמו זוהר (sr3d)const on=(SR.links[i-1]||{}).on||(SR.links[i]||{}).on;
+  // בתלת-ממד הסלע עצמו זוהר (sr3d), אז השפה רק בדו-ממד
+  if(!R3D.on)SR.nodes.forEach((n,i)=>{if(n.fixed&&!n.isle)return;const on=(SR.links[i-1]||{}).on||(SR.links[i]||{}).on;
     ctx.strokeStyle='rgba('+C_.rim+','+(on?0.6+0.25*pl:0.25)+')';ctx.lineWidth=on?5:3;
     if(n.isle){ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,7)}else srShape(n,n.x,n.y-up(n),n.r);ctx.stroke()});
   ctx.restore();
