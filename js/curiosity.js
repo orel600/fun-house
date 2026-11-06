@@ -10,12 +10,12 @@
 const CURIO={
   // לכל דרך: רמה מומלצת, ומה חוסם אותה עד הרמה. המפתח הוא האזור שאליו הדרך מובילה (כמו ב-WORLD.paths)
   paths:{
-    lake:  {lv:5, ob:'log'},
-    // איזון 4.11 (docs/balance-2026-11-04.md): היו 12/20/28/36, ושחקן הגיע לרמה 17 בסוף העלילה. עכשיו בערך מה ששחקן מגיע אליו בכ-10 דקות לפרק
-    ridge: {lv:10,ob:'rock'},
-    desert:{lv:15,ob:'bridge'},
-    storm: {lv:20,ob:'rock'},
-    shadow:{lv:25,ob:'bridge'}
+    lake:  {lv:6, ob:'log'},
+    // איזון 4.11 (docs/balance-2026-11-04.md): היו 12/20/28/36. כוונון קצב 5.11: היו 5/10/15/20/25, ועכשיו כל 6 רמות, כדי שהסיפור ייגמר בערך ברמה 30
+    ridge: {lv:12,ob:'rock'},
+    desert:{lv:18,ob:'bridge'},
+    storm: {lv:24,ob:'rock'},
+    shadow:{lv:30,ob:'bridge'}
   },
   icon:{log:'🪵',rock:'🪨',bridge:'🌉'},
   ob:{r:46},                      // גודל המכשול
