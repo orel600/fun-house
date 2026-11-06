@@ -2462,7 +2462,7 @@ function worldBot(m,L,god){
     try{
       const g=addEnemy('grunt',P.x+150,P.y,1);g.home=3;g.zone='near';const d0=Math.hypot(P.x-g.x,P.y-g.y);for(let i=0;i<10;i++)wFoes(0.05);o.chase=Math.hypot(P.x-g.x,P.y-g.y)<d0-15;enemies=[];
       const run=(e,t)=>{for(let i=0;i<t/0.02;i++)foeAi(e,0.02,Math.hypot(P.x-e.x,P.y-e.y))};
-      const mk=(type,ai,dx)=>{const e=addEnemy(type,P.x+dx,P.y,1);e.zone='far';foeAiInit(e);e.ai=ai;e.acd=0;e.caller=0;return e};
+      const mk=(type,ai,dx)=>{enemies.length=0;const e=addEnemy(type,P.x+dx,P.y,1);e.zone='far';foeAiInit(e);e.ai=ai;e.acd=0;e.caller=0;return e};
       // הסתערות: נשארים = נפגעים. זזים הצידה בזמן ההכנה = התחמקות
       let e=mk('shield','charge',200);hits=0;foeAi(e,0.02,200);o.cWind=e.act==='wind';run(e,0.3);o.cEarly=hits===0;run(e,1.5);o.cHit=hits===1;
       e=mk('shield','charge',200);hits=0;foeAi(e,0.02,200);P.y+=120;run(e,2);P.y-=120;o.cDodge=hits===0&&e.dodged>=1;
@@ -2485,6 +2485,23 @@ function worldBot(m,L,god){
     'אויבים עם התנהגות (foeai.js): '+(fai.chase?'קבוצה רודפת':'קבוצה לא רודפת!')+', מסתער '+(fai.cWind&&fai.cEarly?'מסמן קודם':'בלי סימון')+(fai.cHit?' ופוגע':' ולא פוגע')+(fai.cDodge?', צעד הצידה = התחמקות':', אי אפשר להתחמק')+
     ', יורה '+(fai.rAim&&fai.rWait?'עם קו':'בלי קו')+(fai.rShot?' ויורה':' ולא יורה')+', קופץ '+(fai.lCrouch?'עם עיגול':'בלי עיגול')+(fai.lHit?' ונוחת עליך':' ולא פוגע')+(fai.lDodge?', זזת = התחמקת':', אי אפשר להתחמק')+
     ', קורא '+(fai.flee?'בורח':'לא בורח')+(fai.called?' ומביא חברים':' ולא מביא')+(fai.calm?', ליד השער רגוע':', ליד השער לא רגוע')+(fai.leader?', מנהיג מגיע בשיא':', אין מנהיג')+(fai.once?'':' (יותר מאחד!)')+(fai.pile?' ומשאיר ערימה':' בלי ערימה'));
+  // מפלצות שנלחמות (6.11, foeai.js): לכל סוג אויב בעולם תפקיד, ובקבוצה של 5 לכל היותר 3 תוקפות בו זמנית, והשאר מקיפות ומתחלפות
+  const trn=await page.evaluate(()=>{
+    const o={},types=new Set();for(const R of [WORLD,...Object.values(WORLD.regions)])for(const G of R.foes||[])if(!G.creature)types.add(G.type);
+    o.types=types.size;o.noRole=[...types].filter(t=>!FOEAI.kinds[t]);
+    enterWorld('home');enemies=[];eb=[];const h0=hurt;hurt=()=>{};
+    try{
+      const g0=WR().foes.findIndex(G=>G.type==='grunt'&&!G.creature),G=WR().foes[g0];P.x=G.x;P.y=G.y;
+      for(let i=0;i<5;i++){const a=i/5*6.28,e=addEnemy('grunt',P.x+Math.cos(a)*120,P.y+Math.sin(a)*120,1);e.home=g0;e.zone='far';e.alert=99;e.hp=e.max=1e6;foeAiInit(e);e.ai='flank';e.caller=0}
+      const busy=e=>e.sw>0||['wind','dash','aim','crouch','jump'].includes(e.act);let maxA=0,maxT=0,moved=0;const held=new Set(),p0=enemies.map(e=>[e.x,e.y]);
+      for(let i=0;i<400;i++){S.wd.t+=0.05;wFoes(0.05);const live=enemies.filter(e=>!e.dead);
+        maxA=Math.max(maxA,live.filter(busy).length);maxT=Math.max(maxT,live.filter(e=>e.tok>0).length);live.forEach(e=>{if(e.tok>0)held.add(e)})}
+      enemies.forEach((e,i)=>{if(Math.hypot(e.x-p0[i][0],e.y-p0[i][1])>40)moved++});
+      Object.assign(o,{maxA,maxT,held:held.size,moved,n:enemies.filter(e=>!e.dead).length});
+    }finally{hurt=h0}
+    enemies=[];eb=[];enterVillage();return o});
+  check(!trn.noRole.length&&trn.n===5&&trn.maxA<=3&&trn.maxT<=3&&trn.held>=4&&trn.moved===5,
+    'מפלצות שנלחמות (תורות): '+trn.types+' סוגים בעולם'+(trn.noRole.length?', בלי תפקיד: '+trn.noRole.join(','):', לכולם תפקיד')+', בקבוצה של '+trn.n+': עד '+trn.maxA+' תוקפות ו-'+trn.maxT+' בתור בו זמנית, '+trn.held+' היו בתור (מתחלפות), '+trn.moved+' זזו');
   // מתקפה שרואים (6.11): אויב בעולם שמתכונן למכה מנגן אנימציית מכה ומאדים בתלת-ממד, ומרחף שמכוון מטיל. בדו-ממד: רק ה-"!" והסימון
   const fat=await page.evaluate(()=>{
     enterWorld('home');enemies=[];const o={on:R3D.on};

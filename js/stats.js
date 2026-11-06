@@ -42,7 +42,7 @@ function statRespec(){
   saveNow();celebrate(P.x,P.y-20,'quest');return true;
 }
 // XP לדמות מאויב שנפל בעולם הפתוח
-function statKillXp(e){if(!S.wd||e.node)return;SAVE.hero.xp=(SAVE.hero.xp||0)+(e.xp||1)*STATS.xp.kill*innXpK();rankSync()}
+function statKillXp(e){if(!S.wd||e.node)return;SAVE.hero.xp=(SAVE.hero.xp||0)+(e.xp||1)*STATS.xp.kill*innXpK()*lootFoeK(e);rankSync()}
 // כמה XP יש בתוך הרמה הנוכחית, ממה שצריך לבאה (לפס)
 function heroXpNow(){let xp=SAVE.hero.xp||0,lv=1;while(xp>=rankNeed(lv)){xp-=rankNeed(lv);lv++}return{have:xp,need:rankNeed(lv)}}
 // כמה מזל הנקודות נותנות לשלל (loot.js)

@@ -53,7 +53,7 @@ function runGive(D,x,y){
   for(const r in D){
     const [ch,n,from]=D[r];if(from&&S.t<from)continue;
     const t=lootTier(r);if(t>=pf)hasRare=true;
-    if(Math.random()>=ch*(t>=pf?boost:1)*orbitLuck()*statLoot()*(r==='coins'&&S.wd&&ch<1?LOOT.worldCoins:1))continue;   // orbitLuck: חפץ מזל (orbit.js)
+    if(Math.random()>=ch*(t>=pf?boost:1)*orbitLuck()*statLoot()*(r==='coins'&&S.wd&&ch<1?LOOT.worldCoins:1)*lootK)continue;   // orbitLuck: חפץ מזל (orbit.js). lootK: אויב עם יותר חיים (lootFoeK)
     // נופל לרצפה ונאסף כשעוברים לידו (drops.js). בחדר הבונוס נכנס ישר לשלל
     if(S.room)runLoot()[r]=(runLoot()[r]||0)+n;else dropSpawn(r,n,x,y);got.push(r);top=Math.max(top,t);
     (S.drops||(S.drops=[0,0,0,0,0]))[t]+=n;
@@ -63,11 +63,15 @@ function runGive(D,x,y){
   return got;
 }
 
+// פי כמה XP ושלל לאויב רגיל בעולם: יש לו יותר חיים (WORLD.foeReward, 6.11). שומרים, נדירות, מבוקש, נמסיס וציד: כרגיל
+function lootFoeK(e){return S.wd&&!e.node&&!e.isBoss&&!e.wanted&&!e.warden&&!e.rare&&!e.nem&&!e.hunt?(WORLD.foeReward||1):1}
+let lootK=1;   // בזמן lootKill: מכפיל את הסיכויים ב-runGive
 // נקרא מ-kill בכל אויב שנופל: הטבלה שלו, עלית, הריגה ראשונה היום ופיצוץ שלל
 function lootKill(e){
   const D=dropTable(e),y=e.y-e.r;
-  runGive(D,e.x,e.y);
-  if(e.elite||e.champ){runGive(D,e.x,e.y);runGive(ETYPES[e.type].elite,e.x,e.y)}
+  lootK=lootFoeK(e);
+  try{runGive(D,e.x,e.y);
+  if(e.elite||e.champ){runGive(D,e.x,e.y);runGive(ETYPES[e.type].elite,e.x,e.y)}}finally{lootK=1}
   const key=e.isBoss?'boss':e.wanted?'wanted':e.type,dl=SAVE.daily;(S.killsBy||(S.killsBy={}))[key]=(S.killsBy[key]||0)+1;
   if(dl.day!==lootDay()){dl.day=lootDay();dl.first={}}
   if(!dl.first[key]){dl.first[key]=1;S.firstKills=(S.firstKills||0)+1;if(feedOn())feedAdd('☀️',T('loot.first',T('foe.'+key)),C.gold,'first:'+key);else floatText(e.x,y-60,T('loot.first',T('foe.'+key)),C.gold,14);runGive(LOOT.firstKill,e.x,e.y)}
@@ -84,7 +88,7 @@ function lootKill(e){
 function lootGear(e,force){
   const G=LOOT.gear,k=e.isBoss?'boss':e.wanted?'wanted':e.elite?'elite':e.champ?'champ':'foe',R=G[k];
   if(e.node||!R||S.room||(!S.wd&&!force))return null;   // רק בעולם הפתוח, לא בזירה
-  const ch=R.chance*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck()*statLoot()*(typeof tierGearK==='function'?tierGearK():1);   // דרגת עולם (tiers.js)
+  const ch=R.chance*lootFoeK(e)*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck()*statLoot()*(typeof tierGearK==='function'?tierGearK():1);   // דרגת עולם (tiers.js)
   if(!force&&Math.random()>=ch){SAVE.gearPity=(SAVE.gearPity||0)+1;return null}
   SAVE.gearPity=0;const id=lootRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;
   dropSpawn(id,1,e.x,e.y);if(feedOn())feedGear(id);else banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id),dropTier(id).col);   // בעולם ובכפר: בפיד (feed.js)
