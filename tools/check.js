@@ -2485,6 +2485,20 @@ function worldBot(m,L,god){
     'אויבים עם התנהגות (foeai.js): '+(fai.chase?'קבוצה רודפת':'קבוצה לא רודפת!')+', מסתער '+(fai.cWind&&fai.cEarly?'מסמן קודם':'בלי סימון')+(fai.cHit?' ופוגע':' ולא פוגע')+(fai.cDodge?', צעד הצידה = התחמקות':', אי אפשר להתחמק')+
     ', יורה '+(fai.rAim&&fai.rWait?'עם קו':'בלי קו')+(fai.rShot?' ויורה':' ולא יורה')+', קופץ '+(fai.lCrouch?'עם עיגול':'בלי עיגול')+(fai.lHit?' ונוחת עליך':' ולא פוגע')+(fai.lDodge?', זזת = התחמקת':', אי אפשר להתחמק')+
     ', קורא '+(fai.flee?'בורח':'לא בורח')+(fai.called?' ומביא חברים':' ולא מביא')+(fai.calm?', ליד השער רגוע':', ליד השער לא רגוע')+(fai.leader?', מנהיג מגיע בשיא':', אין מנהיג')+(fai.once?'':' (יותר מאחד!)')+(fai.pile?' ומשאיר ערימה':' בלי ערימה'));
+  // מתקפה שרואים (6.11): אויב בעולם שמתכונן למכה מנגן אנימציית מכה ומאדים בתלת-ממד, ומרחף שמכוון מטיל. בדו-ממד: רק ה-"!" והסימון
+  const fat=await page.evaluate(()=>{
+    enterWorld('home');enemies=[];const o={on:R3D.on};
+    try{
+      const g=addEnemy('grunt',P.x+30,P.y,1);g.zone='far';g.sw=null;strikeTick(g,0.01,30);g.scd=0;strikeTick(g,0.01,30);o.tele=foeTele(g)>=0;
+      if(R3D.on){syncEnemy(g,0.016);strikeTick(g,STRIKE.wind*0.5,30);syncEnemy(g,0.016);const a=R3D.actors.get(g),L=lookOf(g),c={...FOEATK3D.def,...FOEATK3D.clip[L.model]};
+        o.clip=a&&a.one?a.one.getClip().name:'-';o.want=c.hit;o.has=!!R3D.clips[c.hit];o.mid=a&&a.one?a.one.time>0:false;
+        o.red=a?a.mats.some(m=>m.emissive.r>0.1&&m.emissive.r>m.emissive.g*2):false;
+        const w=addEnemy('wisp',P.x+200,P.y,1);w.zone='far';foeAiInit(w);w.ai='ranged';w.acd=0;w.caller=0;foeAi(w,0.02,200);syncEnemy(w,0.016);
+        const b=R3D.actors.get(w),cw={...FOEATK3D.def,...FOEATK3D.clip[lookOf(w).model]};o.cast=b&&b.one?b.one.getClip().name===cw.cast:false}
+    }finally{enemies=[]}
+    enterVillage();return o});
+  check(fat.tele&&(!fat.on||(fat.has&&fat.clip===fat.want&&fat.mid&&fat.red&&fat.cast)),'מתקפה שרואים (render3d.js FOEATK3D): '+(fat.tele?'הכנה מסומנת':'אין סימון!')+
+    (fat.on?', מנגן '+fat.clip+(fat.clip===fat.want?'':' (ציפיתי ל-'+fat.want+(fat.has?'':', אין קליפ כזה')+')')+(fat.mid?' עד חצי':' בלי תנועה')+(fat.red?', מאדים':', לא מאדים')+(fat.cast?', מרחף מטיל':', מרחף לא מטיל'):', דו-ממד'));
   // המשימה של היום (mutation.js, היה challenge.js): החוק נכנס לאויב בעולם, הריגות נספרות, הפרס נאסף רק בכפר ופעם אחת, ופספוס לא מעניש
   const chl=await page.evaluate(()=>{
     const o={};SAVE.challenge=null;MUTATION.rules.test={icon:'🧪',hp:2,speed:1.5,mult:{fire:2},xp:1,loot:0};MUT.force='test';

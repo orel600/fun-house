@@ -7,14 +7,16 @@
    הזירה לא משתנה: היא לא קוראת לקובץ הזה */
 
 const STRIKE={
-  wind:0.42,          // כמה שניות ההכנה (המחקר: כ-0.4)
+  wind:0.5,           // כמה שניות ההכנה (המחקר: כ-0.4). 0.5 מ-6.11: שיהיה זמן לראות את האויב מרים את הנשק (ניר: "לא רואים את המתקפות")
   reach:16,           // טווח המכה מעבר למגע (פיקסלים במשחק). מחוץ לזה בסוף ההכנה: התחמקת
   start:6,            // מתחיל להתכונן כשהשחקן קרוב מזה מעבר למגע
   cd:[0.9,1.4],       // הפסקה אחרי מכה (או החטאה), בשניות. אקראי, כדי שקבוצה לא תכה ביחד
   dmg:1.1,            // כמה פעמים e.dmg במכה אחת. במגע היה e.dmg כל 0.6 שניות (P.inv), כאן מכה אחת בכ-1.6 שניות
   lunge:120,          // קפיצה קטנה קדימה במכה
   arc:0.9,            // רוחב הקשת על הרצפה (רדיאנים)
-  col:'#FF4D4D'       // צבע ההכנה
+  col:'#FF4D4D',      // צבע ההכנה
+  show:1.3,           // הסימון על הרצפה גדול פי כך מהטווח האמיתי, כדי שיראו אותו במצלמה הרחוקה של העולם. גדול יותר = בטוח: מי שיצא ממנו תמיד התחמק
+  slash:0.22          // כמה שניות רואים את קו המכה על הרצפה אחרי שהיא יוצאת
 };
 
 // כל פריים, לאויב בעולם שרודף. d: המרחק לשחקן. מחזיר true כשהאויב עסוק בהכנה (לא זז)
@@ -29,22 +31,29 @@ function strikeTick(e,dt,d){
       e.kx+=Math.cos(e.sa)*K.lunge;e.ky+=Math.sin(e.sa)*K.lunge;
       // פוגע רק אם השחקן עדיין בטווח ובכיוון של הקשת
       const da=Math.abs(((Math.atan2(dy,dx)-e.sa+Math.PI*3)%(Math.PI*2))-Math.PI);
-      if(dd<touch+K.reach&&da<K.arc)hurt(e.dmg*K.dmg);else e.dodged=(e.dodged||0)+1;
+      e.slT=fxNow();   // קו המכה (strikeDraw)
+      if(dd<touch+K.reach&&da<K.arc){hurt(e.dmg*K.dmg);sparks(P.x,P.y,K.col,10,240)}else e.dodged=(e.dodged||0)+1;
     }
     return true;
   }
   if((e.scd-=dt)<=0&&d<touch+K.start){e.sw=e.wind||K.wind;e.sa=Math.atan2(P.y-e.y,P.x-e.x)}   // e.wind: אזור עם הכנה איטית יותר (WORLD.zones, start)
   return false;
 }
-// ציור (בעולם, לפני הדמויות): קשת אדומה על הרצפה שמתמלאת עד המכה
+// ציור (בעולם, לפני הדמויות): קשת אדומה על הרצפה שמתמלאת עד המכה, וקו לבן-אדום כשהמכה יוצאת.
+// הקשת גדולה מהטווח האמיתי (show) ועם קצה עבה שפועם, כדי שיראו אותה גם מרחוק (6.11)
 function strikeDraw(){
-  const K=STRIKE;
-  for(const e of enemies){if(e.dead||!(e.sw>0))continue;
-    const k=1-e.sw/(e.wind||K.wind),R=e.r+P.r+K.reach;
-    ctx.save();ctx.translate(e.x,e.y);
-    ctx.globalAlpha=0.18;ctx.fillStyle=K.col;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,e.sa-K.arc,e.sa+K.arc);ctx.closePath();ctx.fill();
-    ctx.globalAlpha=0.45+0.4*k;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R*k,e.sa-K.arc,e.sa+K.arc);ctx.closePath();ctx.fill();
-    ctx.globalAlpha=0.9;ctx.strokeStyle=K.col;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,R,e.sa-K.arc,e.sa+K.arc);ctx.stroke();
+  const K=STRIKE,t=fxNow(),z=ZOOM;
+  for(const e of enemies){if(e.dead)continue;
+    const q=e.slT?1-(t-e.slT)/K.slash:0;
+    if(q>0){const R=(e.r+P.r+K.reach)*K.show;   // המכה עצמה: קשת בהירה שנמוגה
+      ctx.save();ctx.translate(e.x,e.y);ctx.globalAlpha=0.9*q;ctx.strokeStyle='#FFE0E0';ctx.lineWidth=(4+5*q)/z;ctx.lineCap='round';
+      ctx.beginPath();ctx.arc(0,0,R*0.85,e.sa-K.arc,e.sa+K.arc);ctx.stroke();ctx.restore()}
+    if(!(e.sw>0))continue;
+    const k=1-e.sw/(e.wind||K.wind),R=(e.r+P.r+K.reach)*K.show,a0=e.sa-K.arc,a1=e.sa+K.arc,p=0.5+0.5*Math.sin(t*18);
+    ctx.save();ctx.translate(e.x,e.y);ctx.fillStyle=K.col;ctx.strokeStyle=K.col;
+    ctx.globalAlpha=0.25;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,a0,a1);ctx.closePath();ctx.fill();
+    ctx.globalAlpha=0.5+0.4*k;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R*k,a0,a1);ctx.closePath();ctx.fill();
+    ctx.globalAlpha=0.7+0.3*p;ctx.lineWidth=(2.5+2*k)/z;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,a0,a1);ctx.closePath();ctx.stroke();
     ctx.restore()}
   ctx.globalAlpha=1;
 }
