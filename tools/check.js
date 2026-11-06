@@ -3288,9 +3288,9 @@ function worldBot(m,L,god){
     {const me=MB.me,hx=me.x,hy=me.y;me.x=-700;me.y=150;me.face=0;mbFeelReset(me);
      joy={id:-7,ox:150,oy:280,dx:-1,dy:0};mobaUpdate(1/30);const r1=Math.abs(mbAng(me.rot));for(let i=0;i<9;i++)mobaUpdate(1/30);const r10=Math.abs(mbAng(me.rot));
      const m=mbUnit({k:'minion',team:0,type:'mb_m0',x:me.x-40,y:me.y,r:MOBA.minion.r,hp:1e6,max:1e6,speed:0,lane:0,face:0});MB.u.push(m);
-     const x0=me.x;for(let i=0;i<30;i++)mobaUpdate(1/30);const run=x0-me.x;MB.u.splice(MB.u.indexOf(m),1);joy=null;me.x=hx;me.y=hy;mbFeelReset(me);
+     const x0=me.x;for(let i=0;i<30;i++)mobaUpdate(1/30);const run=x0-me.x,want=mbSpeed(me);MB.u.splice(MB.u.indexOf(m),1);joy=null;me.x=hx;me.y=hy;mbFeelReset(me);
      const n0=$('mbFeed').children.length,f=mbHeroes(1)[0];mbKillFeed(f,me);
-     o.feel={soft:r1>0.05&&r1<3,turned:r10>3,run:Math.round(run),want:Math.round(mbSpeed(me)),feed:$('mbFeed').children.length===n0+1};$('mbFeed').innerHTML=''}
+     o.feel={soft:r1>0.05&&r1<3,turned:r10>3,run:Math.round(run),want:Math.round(want),feed:$('mbFeed').children.length===n0+1};$('mbFeed').innerHTML=''}
     // זהב וחפצים (moba-items.js, אוראל 3.11: "אין חפצים"): זהב מצטבר, קנייה מהירה, הסטטים משתנים, מכירה, חלון החנות, ובוט שקונה לבד
     {const me=MB.me,I={};me.gold=0;me.it=[];mbItCalc(me);mbItTick({u:[me]},10);I.tick=me.gold>=MBITEM.gold.tick*9;
      const m=mbUnit({k:'minion',team:1,x:me.x+30,y:me.y,r:12,hp:1,max:1}),g0=me.gold;mbItDie(m,me);I.minion=me.gold-g0===MBITEM.gold.minion;
