@@ -15,7 +15,9 @@ const SOUNDS={
   bossIn:   {file:'bossIn.mp3',   vol:0.7,  pitch:0,    max:1, gap:1,    grp:'fx'},     // הבוס מגיע
   bossDown: {file:'bossDown.mp3', vol:0.7,  pitch:0,    max:1, gap:1,    grp:'fx'},     // הבוס הובס
   tap:      {file:'tap.mp3',      vol:0.35, pitch:0,    max:1, gap:0.08, grp:'fx'},     // לחיצה על כפתור
-  celebrate:{file:'celebrate.mp3',vol:0.6,  pitch:0,    max:2, gap:0.3,  grp:'fx'}      // שדרוג, שלל נדיר, כל רגע של "יש!"
+  celebrate:{file:'celebrate.mp3',vol:0.6,  pitch:0,    max:2, gap:0.3,  grp:'fx'},     // שדרוג, שלל נדיר, כל רגע של "יש!"
+  bell:     {file:'bell.mp3',     vol:0.6,  pitch:0,    max:1, gap:1,    grp:'fx'},     // פעמון הערפל באגם (lake-bell.js)
+  creak:    {file:'creak.mp3',    vol:0.2,  pitch:0.2,  max:1, gap:0.5,  grp:'fight'}   // גשר צף חורק כשדורכים עליו (lake-bell.js)
 };
 /* הערוצים והמחוונים בחלון הצלילים (נפתח מכפתור הרמקול). def: העוצמה ההתחלתית. gap: לכל הערוץ יחד, כדי שפגיעה, ירייה ומטבע באותו רגע לא יישמעו כרעש אחד.
    duck: כשצליל fx מתנגן, צלילי הקרב יורדים לחלק הזה לכמה שניות (duckT), כדי שרגע גדול יישמע. העוצמות נשמרות בטלפון (key) */

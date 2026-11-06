@@ -18,5 +18,7 @@ https://creativecommons.org/publicdomain/zero/1.0/
 | hurt.mp3 | השחקן נפגע | Impact Sounds | impactPunch_heavy_002 |
 | tap.mp3 | לחיצה על כפתור | Interface Sounds | click_002 |
 | celebrate.mp3 | שדרוג, שלל נדיר | Interface Sounds | confirmation_002 |
+| bell.mp3 | פעמון הערפל באגם (lake-bell.js) | נוצר בקוד (סינתזה), לא Kenney | - |
+| creak.mp3 | חריקה של גשר צף באגם | נוצר בקוד (סינתזה), לא Kenney | - |
 
 צליל חדש: קובץ קצר כאן, שורה ב-`SOUNDS` בראש `js/audio.js`, ואז `node tools/build-sounds.js`, שבונה מחדש את `js/sounds-data.js`.
