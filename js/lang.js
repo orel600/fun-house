@@ -851,6 +851,7 @@ const TEXT={
   'mut.r.swift':{he:['יום הרוח','כל האויבים מהירים, אבל יש יותר שלל'],en:['Day of Wind','All enemies are fast, but there is more loot']},
   'mut.r.elite':{he:['יום הגיבורים','אויבים מיוחדים בכל מקום'],en:['Day of Champions','Special enemies everywhere']},
   'mut.r.glass':{he:['יום הזכוכית','האויבים נופלים מהר, אבל מכים חזק'],en:['Day of Glass','Enemies fall fast, but hit hard']},
+  'rfx.slide':{he:'⚠️ מדרון מפולות! היזהר מהפסים האדומים',en:'⚠️ Avalanche slope! Watch the red lanes'},'rfx.slip':{he:'🧊 חלקלק!',en:'🧊 Slippery!'},
   'fai.leader':{he:'מנהיג הלהקה',en:'Pack Leader'},'fai.leaderCome':{he:'👑 להקה עם מנהיג מתקרבת!',en:'👑 A pack leader approaches!'},'fai.leaderDown':{he:'👑 המנהיג הופל! ערימת שלל',en:'👑 Leader down! Loot pile'},
   'af.fast':{he:'מהיר',en:'Swift'},'af.tough':{he:'משוריין',en:'Armored'},'af.burst':{he:'מתפוצץ',en:'Volatile'},'af.split':{he:'מתפצל',en:'Splitting'},'af.regen':{he:'מתחדש',en:'Regenerating'},'af.shell':{he:'מגן יסודות',en:'Elemental Shield'},
   // ניצחון חוזר בשומר (giant.js, giantLoot, ובעומק storyReWin)
