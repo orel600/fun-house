@@ -2521,10 +2521,10 @@ function worldBot(m,L,god){
     try{
       const g0=WR().foes.findIndex(G=>G.type==='grunt'&&!G.creature),G=WR().foes[g0];P.x=G.x;P.y=G.y;
       for(let i=0;i<5;i++){const a=i/5*6.28,e=addEnemy('grunt',P.x+Math.cos(a)*120,P.y+Math.sin(a)*120,1);e.home=g0;e.zone='far';e.alert=99;e.hp=e.max=1e6;foeAiInit(e);e.ai='flank';e.caller=0}
-      const busy=e=>e.sw>0||['wind','dash','aim','crouch','jump'].includes(e.act);let maxA=0,maxT=0,moved=0;const held=new Set(),p0=enemies.map(e=>[e.x,e.y]);
+      const busy=e=>e.sw>0||['wind','dash','aim','crouch','jump'].includes(e.act);let maxA=0,maxT=0,moved=0;const held=new Set(),last=enemies.map(e=>[e.x,e.y]),path=enemies.map(()=>0);   // דרך שעברו, לא מרחק מההתחלה: מי שמקיף חוזר לפעמים קרוב לנקודת ההתחלה (#381 נכשל לסירוגין)
       for(let i=0;i<400;i++){S.wd.t+=0.05;wFoes(0.05);const live=enemies.filter(e=>!e.dead);
-        maxA=Math.max(maxA,live.filter(busy).length);maxT=Math.max(maxT,live.filter(e=>e.tok>0).length);live.forEach(e=>{if(e.tok>0)held.add(e)})}
-      enemies.forEach((e,i)=>{if(Math.hypot(e.x-p0[i][0],e.y-p0[i][1])>40)moved++});
+        maxA=Math.max(maxA,live.filter(busy).length);maxT=Math.max(maxT,live.filter(e=>e.tok>0).length);live.forEach(e=>{if(e.tok>0)held.add(e)});enemies.forEach((e,j)=>{path[j]+=Math.hypot(e.x-last[j][0],e.y-last[j][1]);last[j]=[e.x,e.y]})}
+      moved=path.filter(x=>x>300).length;   // 20 שניות: כל אחת זזה לפחות 300 (בפועל 1000-1200)
       Object.assign(o,{maxA,maxT,held:held.size,moved,n:enemies.filter(e=>!e.dead).length});
     }finally{hurt=h0}
     enemies=[];eb=[];enterVillage();return o});
