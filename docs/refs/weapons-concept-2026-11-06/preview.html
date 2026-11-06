@@ -1,0 +1,54 @@
+<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>Weapons concept</title>
+<!-- תצוגה של הקונספט במנוע של המשחק (three.js, אותה תאורה ואותו חומר Lambert). נטען מ-shoot.js עם המודלים כ-base64 -->
+<style>body{margin:0;background:#1b2130;color:#eef;font:600 15px system-ui;width:1500px}
+h2{margin:10px 16px 2px;font-size:20px}.row{display:flex;gap:8px;padding:6px 16px 12px}
+figure{margin:0;text-align:center}figcaption{font-size:13px;color:#b9c3dc;margin-top:3px}canvas{border-radius:8px;display:block}
+.k{outline:2px dashed #ff6fb5}.n{outline:2px solid #8fe3ff}</style></head><body>
+<div id="out"></div>
+<script src="../../../js/vendor/three-bundle.js"></script>
+<script src="../../../js/models3d.js"></script>
+<script>
+const b64buf=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
+const parse=buf=>new Promise((ok,bad)=>new THREE.GLTFLoader().setMeshoptDecoder(THREE.MeshoptDecoder).parse(buf,'',ok,bad));
+const lambert=root=>root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap,side:m.side})}});
+const R=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});R.outputColorSpace=THREE.SRGBColorSpace;R.setPixelRatio(1);
+function scene(bg){const s=new THREE.Scene();s.background=new THREE.Color(bg||'#2c4229');
+  s.add(new THREE.HemisphereLight(0xdfe6ff,0x2a2236,1.6*1.15));const l=new THREE.DirectionalLight(0xfff1dc,1.9*1.15);l.position.set(-0.5,1,0.6);s.add(l);return s}
+function shot(s,cam,w,h,cls,cap,row){R.setSize(w,h);R.render(s,cam);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(R.domElement,0,0);
+  if(cls)c.className=cls;const f=document.createElement('figure');f.append(c);const t=document.createElement('figcaption');t.textContent=cap;f.append(t);row.append(f)}
+function ortho(size,w,h){const a=w/h;return new THREE.OrthographicCamera(-size*a,size*a,size,-size,0.01,100)}
+async function main(){
+  const W=window.WEAP;const own={};for(const k in W){const g=await parse(b64buf(W[k]));lambert(g.scene);own[k]=g.scene}
+  const kk={};for(const k of ['w_bow_B_withString','w_staff_B']){const g=await parse(b64buf(MODELS3D[k]));lambert(g.scene);kk[k]=g.scene}
+  const img=new Image();img.src='data:image/png;base64,'+MODELS3D.wtex_legend;await img.decode();
+  const leg=new THREE.Texture(img);leg.flipY=false;leg.colorSpace=THREE.SRGBColorSpace;leg.needsUpdate=true;
+  const legend=m=>{m=m.clone(true);m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.map=leg;o.material.emissive.set('#FF6FB5').multiplyScalar(0.55)}});return m};
+  const clips={};for(const k of ['anim_general','anim_ranged']){const g=await parse(b64buf(MODELS3D[k]));for(const a of g.animations)clips[a.name]=new THREE.AnimationClip(a.name,a.duration,a.tracks.filter(t=>{const [n,p]=t.name.split('.');return !/IK|control/.test(n)&&(p==='quaternion'||p==='position'&&/^(root|hips|upperleg)/.test(n))}))}
+  const chars={};for(const k of ['ranger','mage']){const g=await parse(b64buf(MODELS3D[k]));lambert(g.scene);chars[k]=g.scene}
+  const out=document.getElementById('out');
+  const ROWS=[
+    {t:'קשת השמיים',mine:'skyBow',kk:'w_bow_B_withString',char:'ranger',grip:{bone:'handslotl',pos:[0,0,0],rot:[0,-0.7071,0,0.7071]},anim:'Ranged_Bow_Idle',at:0.3,face:-0.5,frame:[1.75,0,1.25],small:[1.4,0,1.2],
+     views:[['מהצד (הצורה)',[0,6,0.01],1.25],['שלושת-רבעי',[2.5,4.5,3.5],1.25],['מהקצה (המיתר והגביש)',[0,0.6,-6],1.25]]},
+    {t:'מטה הכוכבים',mine:'starStaff',kk:'w_staff_B',char:'mage',grip:{bone:'handslotr',pos:[0,0.033,0],rot:[0,-1,0,0]},anim:'Idle_A',at:0.5,face:-0.5,frame:[2.1,-0.35,1.0],small:[1.9,-0.3,1.0],
+     views:[['מקדימה',[0,0.4,6],1.55],['שלושת-רבעי',[4,2.2,3.5],1.55],['מהצד',[6,0.4,0],1.55]]}];
+  for(const r of ROWS){
+    const h=document.createElement('h2');h.textContent=r.t;out.append(h);const row=document.createElement('div');row.className='row';out.append(row);
+    for(const [cap,pos,sz] of r.views){const s=scene('#24304a');const m=own[r.mine].clone(true);const bb=new THREE.Box3().setFromObject(m);const c=bb.getCenter(new THREE.Vector3());s.add(m);
+      const cam=ortho(sz,230,300);cam.position.copy(c).add(new THREE.Vector3(...pos));cam.lookAt(c);shot(s,cam,230,300,'n',cap,row)}
+    for(const [which,label,cls] of [['mine','חדש, ביד (זווית המשחק 34°)','n'],['kk','KayKit היום, ביד','k']]){
+      const s=scene();const ch=THREE.SkeletonUtils.clone(chars[r.char]);ch.rotation.y=r.face;s.add(ch);
+      let bone=null;ch.traverse(o=>{if(!bone&&o.isBone&&o.name===r.grip.bone)bone=o});
+      const w=which==='mine'?own[r.mine].clone(true):legend(kk[r.kk]);w.position.fromArray(r.grip.pos);w.quaternion.fromArray(r.grip.rot);w.scale.setScalar(1.2);bone.add(w);
+      const mx=new THREE.AnimationMixer(ch);const a=mx.clipAction(clips[r.anim]);a.play();mx.update(r.at);ch.updateMatrixWorld(true);
+      const t=34*Math.PI/180,cam=ortho(r.frame[0],300,300),C=new THREE.Vector3(r.frame[1],r.frame[2],0);cam.position.copy(C).add(new THREE.Vector3(0,Math.sin(t),Math.cos(t)).multiplyScalar(10));cam.lookAt(C);
+      shot(s,cam,300,300,cls,label,row)}
+    // כמו בטלפון: קטן
+    const s=scene();const ch=THREE.SkeletonUtils.clone(chars[r.char]);ch.rotation.y=r.face;s.add(ch);let bone=null;ch.traverse(o=>{if(!bone&&o.isBone&&o.name===r.grip.bone)bone=o});
+    const w=own[r.mine].clone(true);w.position.fromArray(r.grip.pos);w.quaternion.fromArray(r.grip.rot);w.scale.setScalar(1.2);bone.add(w);
+    const mx=new THREE.AnimationMixer(ch);mx.clipAction(clips[r.anim]).play();mx.update(r.at);
+    const t=34*Math.PI/180,cam=ortho(r.small[0],90,90),C=new THREE.Vector3(r.small[1],r.small[2],0);cam.position.copy(C).add(new THREE.Vector3(0,Math.sin(t),Math.cos(t)).multiplyScalar(10));cam.lookAt(C);
+    shot(s,cam,90,90,'n','בגודל של הטלפון',row)}
+  document.title='ready';
+}
+main().catch(e=>{document.title='ERR '+e.message;console.error(e)});
+</script></body></html>
