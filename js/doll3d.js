@@ -10,7 +10,10 @@ const DOLL3D={
   /* תנוחת עמידה לפי משפחת הנשק (GRIP3D.of ב-render3d.js). ב-Idle_A הקשת שוכבת על החגורה ונחתכת, והמטה תלוי הפוך (ניר, 6.11.2026:
      זה החלון שבו מסתכלים על הנשקים האגדיים). קשת: מחזיקים אותה זקופה לפני הדמות. מטה: עמידת קרב, המטה זקוף */
   idleBy:{bow:'Ranged_Bow_Idle',magic:'Ranged_Magic_Spellcasting'},
-  yawBy:{bow:0.9},           // הקשת מוחזקת בכיוון המבט: מקדימה רואים רק את הקצה, אז הדמות פונה מעט הצידה (רדיאנים)
+  /* פנייה הצידה לפי משפחת הנשק (רדיאנים). קשת: מוחזקת בכיוון המבט, ומקדימה רואים רק את הקצה. מטה: ביד ימין, ופונים מעט שמאלה כדי שהוא יהיה בצד ולא מול הפנים */
+  yawBy:{bow:0.9,magic:-0.25},
+  swayBy:{magic:0.2},        // המטה מורם ליד הראש: נדנוד קטן, כדי שהוא לא יעבור מול הפנים
+  camXBy:{magic:-0.14},      // המטה בצד: המצלמה זזה מעט אליו (חלק מגובה הדמות), כדי שהכוכב לא ייחתך בקצה
   fitBy:{magic:1.42,bow:1.14},   // המטה מורם מעל הראש והקשת ארוכה מהדמות, ומסגרת לפי תנוחת הבסיס חותכת אותם
   glow:0.22,                 // כמה חזק הזוהר של סט או פריט זוהר
   /* חפצים מסתובבים: רדיוס (חלק מגובה הדמות), גודל, מהירות, וגובה. נמוך וקטן, סביב הרגליים: בגובה החזה כדור כתום גדול
@@ -39,7 +42,7 @@ function dollBuild(D){
   a.root.position.set(0,0,0);a.root.rotation.set(0,0,0);
   const wid=SAVE.gear.weapon,use=gItem(wid)?wUse(wid):null;
   for(const k in a.props)a.props[k].visible=k===use||k==='shield'&&use==='sword';   // רק הנשק שלבוש, ובלי נשק: ידיים ריקות
-  const wp=use&&L.props[use];const fam=wp&&GRIP3D.of(wp.prop);D.idle=DOLL3D.idleBy[fam]||DOLL3D.idle;D.yaw=DOLL3D.yawBy[fam]||0;D.fit=DOLL3D.fitBy[fam]||DOLL3D.fit;
+  const wp=use&&L.props[use];const fam=wp&&GRIP3D.of(wp.prop);D.idle=DOLL3D.idleBy[fam]||DOLL3D.idle;D.yaw=DOLL3D.yawBy[fam]||0;D.sway=DOLL3D.swayBy[fam]??DOLL3D.sway;D.fit=DOLL3D.fitBy[fam]||DOLL3D.fit;D.cx=DOLL3D.camXBy[fam]||0;
   if(a.own)a.own.visible=false;
   rankArmor3d(a);
   // זוהר: סט פעיל (הצבע של הסט), אחרת פריט לבוש שזוהר (כתר, קשת זהב)
@@ -53,7 +56,7 @@ function dollBuild(D){
   const bb=new THREE.Box3().setFromObject(a.root),h=bb.max.y-bb.min.y,c=bb.getCenter(new THREE.Vector3());
   D.h=h;D.cy=c.y;
   const dist=h*D.fit/2/Math.tan(DOLL3D.fov*Math.PI/360);
-  const cy=c.y+h*(D.fit-DOLL3D.fit)*0.3;D.cam.position.set(0,cy+h*0.08,dist);D.cam.lookAt(0,cy,0);
+  const cy=c.y+h*(D.fit-DOLL3D.fit)*0.3;D.cam.position.set(h*D.cx,cy+h*0.08,dist);D.cam.lookAt(h*D.cx,cy,0);
   // חפצים מסתובבים: כדור קטן בצבע הסוג (ORBIT.types ב-orbit.js) לכל חפץ לבוש
   D.orbs=new THREE.Group();D.scene.add(D.orbs);
   for(const id of gearWorn()){const it=gItem(id);if(it.slot!=='orbit')continue;
@@ -78,7 +81,7 @@ function dollFrame(){
   const w=D.cvs.clientWidth,h=D.cvs.clientHeight;
   if(w&&h&&(D.w!==w||D.hh!==h)){D.w=w;D.hh=h;D.r.setPixelRatio(Math.min(2,DPR||1));D.r.setSize(w,h,false);D.cam.aspect=w/h;D.cam.updateProjectionMatrix()}
   const a=D.a;a.mixer.update(dt);
-  a.root.rotation.y=(D.yaw||0)+Math.sin(D.t*DOLL3D.spin)*DOLL3D.sway;
+  a.root.rotation.y=(D.yaw||0)+Math.sin(D.t*DOLL3D.spin)*D.sway;
   if(a.one&&!a.one.isRunning()){a.one=null;loop(a,D.idle)}
   const n=D.orbs.children.length;D.orbs.children.forEach((m,i)=>{const t=D.t*DOLL3D.orb.spin+i*Math.PI*2/n,r=D.h*DOLL3D.orb.r;
     m.position.set(Math.cos(t)*r,D.cy+D.h*(DOLL3D.orb.y-0.5)+Math.sin(t*2)*D.h*0.04,Math.sin(t)*r)});
