@@ -119,6 +119,7 @@ function install(B){
     if(S.wd&&typeof TR!=='undefined'&&TR){const k=m.stk;if(!k||Math.hypot(P.x-k.x,P.y-k.y)>40)m.stk={x:P.x,y:P.y,t:m.gt};
       else if(m.gt-k.t>8&&(dx||dy)){R.unstick=(R.unstick||0)+1;(R.stuckAt||(R.stuckAt=[])).push([Math.round(P.x),Math.round(P.y),flee?'flee':m.ph]);m.stk={x:P.x,y:P.y,t:m.gt};m.wig=m.gt+2;m.wa=Math.random()*6.283}
       if(m.wig>m.gt){dx=Math.cos(m.wa);dy=Math.sin(m.wa)}}
+    if(typeof rzWait==='function'&&rzWait(P,dx,dy)){dx=0;dy=0}   // נהר הברקים: מחכים לפני מעבר האבנים או עיגול ברק, כמו שחקן שרואה את האזהרה (storm-river.js)
     joy={id:-1,ox:-999,oy:-999,dx,dy}}
   function finish(ok,why){const c=cRep();c.t=Math.round(m.gt-m.chT);c.lv1=heroLv();c.ok=ok;if(why)c.why=why;c.coins=SAVE.bag.coins||0;c.xp=Math.round(cumXp()-c.xp0);
     c.gear=[SAVE.gear.weapon].concat(SAVE.gear.acc||[],SAVE.gear.boots||[],SAVE.gear.body||[]).filter(Boolean).join(' ');

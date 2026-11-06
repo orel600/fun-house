@@ -2222,6 +2222,36 @@ function worldBot(m,L,god){
     (ch5.reg==='storm'&&ch5.climb?', הגעה למגדלים':', לא הגיע למגדלים')+(ch5.storm?' בסערה':', בלי סערה')+(ch5.solid?', מגדל חוסם':', עוברים דרך מגדל')+', '+ch5.foes+' אויבים מחושמלים'+(ch5.weak?' (חלשים לאדמה)':' (לא חלשים לאדמה!)')+(ch5.noNpc?'':', דמויות האחו במגדלים!')+
     (ch5.spark?', ברק גולמי':', קווסט הברק שבור')+(ch5.warden?', שומר הסערה קם':', שומר הסערה לא קם')+(ch5.marks?(ch5.markHit?', עיגול ברק פוגע':', עיגול ברק לא פוגע')+(ch5.dodge?' ומי שזז ניצל':', ואי אפשר להתחמק'):', בלי עיגולי ברק')+(ch5.ready?' והופל':', לא הופל')+
     (ch5.back?', חזרה למדבר ליד השביל':', החזרה למדבר שבורה')+(ch5.lit?', פנס הברק נדלק':', פנס הברק לא נדלק')+(ch5.safer?', המגדלים בטוחים יותר':''));
+  // נהר הברקים (storm-river.js): במעבר האבנים אזהרה לפני כל ברק, מי שנשאר נפגע ומי שמחכה לא, והמחזור חוזר. הגשר בטוח, נגיעה בנהר פוגעת ונהדפים, ברק במים נגמר, ואויב נפגע
+  const rz=await page.evaluate(()=>{
+    const o={};enterWorld('home','storm');S.mode='play';const keep=enemies.find(e=>!e.dead&&!e.isBoss);for(const e of enemies)if(e!==keep)e.dead=true;enemies=keep?[keep]:[];if(keep){keep.x=0;keep.y=-1700}
+    const M=TR.map,f=M.fords[0],b=M.bridges[0],F=RIVERZAP.ford,cyc=F.calm+F.warn+F.hit,st=rzState(),fs=st.ford[0],dt=1/60,full=()=>{P.hp=P.maxHp;P.inv=0};
+    // מעבר האבנים: עומדים באמצע
+    P.x=f.x;P.y=f.y;full();fs.ph=0;fs.struck=false;st.next=1e9;let tW=-1,tH=-1,back=false;
+    for(let i=0;i<cyc*2/dt;i++){riverUpdate(dt);st.next=1e9;const t=i*dt;if(tW<0&&fs.ph>F.calm&&!fs.struck)tW=t;if(tH<0&&P.hp<P.maxHp)tH=t;if(tH>=0&&!fs.struck&&fs.ph<F.calm)back=true}
+    o.zone=rzFordZone(f,f.x,f.y,12);o.warn=tW>=0&&tH>=0?+(tH-tW).toFixed(2):-1;o.fordHit=tH>=0;o.ends=back;
+    // מחכים על הגדה, לא נפגעים. והבוט מחכה בזמן אזהרה
+    P.x=-1400;P.y=0;full();fs.ph=0;fs.struck=false;let hit=false;for(let i=0;i<cyc/dt;i++){riverUpdate(dt);st.next=1e9;if(P.hp<P.maxHp)hit=true}o.wait=!hit;
+    const fe=tFree({x:f.x,y:f.y-118});fs.ph=F.calm+0.2;fs.struck=false;const ux=(f.x-fe.x)/Math.hypot(f.x-fe.x,f.y-fe.y),uy=(f.y-fe.y)/Math.hypot(f.x-fe.x,f.y-fe.y);
+    o.botWait=rzWait(fe,ux,uy);fs.ph=0.1;o.botGo=!rzWait(fe,ux,uy);
+    // הגשר בטוח, גם עם ברקים במים
+    P.x=b.x;P.y=b.y;full();st.next=0;hit=false;for(let i=0;i<6/dt;i++){riverUpdate(dt);fs.ph=0.1;if(P.hp<P.maxHp)hit=true}o.bridge=!hit;
+    // הגדה: הולכים אל הנהר. נפגעים, נהדפים, לא בכל פריים, ולא נתקעים
+    const s=rzSegs(M).find(q=>q.ax===500),mx=(s.ax+s.bx)/2,my=(s.ay+s.by)/2,nx=-(s.by-s.ay)/s.len,ny=(s.bx-s.ax)/s.len;
+    P.x=mx+nx*130;P.y=my+ny*130;P._tx=P.x;P._ty=P.y;full();let hits=0,last=P.hp;
+    for(let i=0;i<3/dt;i++){P.x-=nx*3;P.y-=ny*3;wPonds(P);riverUpdate(dt);st.next=1e9;if(P.hp<last-0.01)hits++;last=P.hp;P.inv=0}
+    o.bank=hits;o.free=!tBlocked(P.x,P.y);
+    // ברק במים ליד השחקן: נוצר, מכה ונגמר
+    st.bolts=[];st.next=0;riverUpdate(dt);o.bolt=st.bolts.length;for(let i=0;i<2/dt;i++){riverUpdate(dt);st.next=1e9}o.boltEnd=!st.bolts.length;
+    // אויב במעבר נפגע
+    if(keep){keep.x=f.x;keep.y=f.y;keep.hp=keep.max;P.x=-1400;P.y=0;fs.ph=F.calm+F.warn-0.01;fs.struck=false;riverUpdate(dt);riverUpdate(dt);o.foe=keep.hp<keep.max||keep.dead}
+    P.x=f.x;P.y=f.y-150;fs.ph=F.calm+F.warn*0.6;fs.struck=false;st.next=1e9;return o});
+  await page.clock.runFor(100);await shot('world-storm-river');
+  check(rz.zone&&rz.warn>=0.5&&rz.fordHit&&rz.ends&&rz.wait&&rz.botWait&&rz.botGo&&rz.bridge&&rz.bank>=1&&rz.bank<=4&&rz.free&&rz.bolt&&rz.boltEnd&&rz.foe,
+    'נהר הברקים: '+(rz.fordHit?'ברק מכה במעבר האבנים, '+(rz.warn>=0.5?rz.warn+' שניות אחרי האזהרה':'בלי אזהרה מספיקה ('+rz.warn+')'):'ברק לא פוגע במעבר')+(rz.ends?', והמחזור חוזר':', המחזור לא חוזר')+(rz.wait?', מי שמחכה על הגדה בטוח':', נפגעים גם על הגדה!')+
+    (rz.botWait&&rz.botGo?', הבוט מחכה לפני מכה ועובר אחריה':', הבוט לא מתזמן')+(rz.bridge?', הגשר בטוח':', נפגעים על הגשר!')+', נגיעה בנהר: '+rz.bank+' פגיעות ב-3 שניות'+(rz.free?' ולא נתקעים':' ונתקעים בנהר!')+
+    (rz.bolt&&rz.boltEnd?', ברק במים מכה ונגמר':', אין ברקים במים')+(rz.foe?', אויבים נפגעים':', אויבים לא נפגעים'));
+  await page.evaluate(()=>{P.inv=0;enterVillage()});
   // העלילה, פרק 6 והאחרון (story.js, WORLD.regions.shadow): השביל ללב הצל נפתח רק כשכל חמשת הפנסים דולקים, שם חושך וצללים עם חומרים מעורבבים.
   // הצל לומד את סוג הנזק שהכי השתמשת בו בעולם ועובר בחמישה שלבים (שומר אחרי שומר, עם ההתקפה שלו). אחרי הניצחון: הפנס הלבן, הריעות בכפר ו"תודה ששיחקת"
   const ch6=await page.evaluate(()=>{
