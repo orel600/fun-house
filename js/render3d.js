@@ -23,6 +23,20 @@ const VIEW={pr:1.5,prLo:1,   // pr: כמה פיקסלים לכל פיקסל של
 const HAND_R={bone:'handslotr',pos:[0,0.033,0],rot:[0,-1,0,0]};
 const NPC_ANIM={idle:'Idle_A',walk:'Walking_A',work:'Idle_A',wave:'Waving',cheer:'Cheering'};   // תושבי הכפר: מה מנגנים בכל מצב (npc.js). KayKit 2.0
 const DOG_ANIM={idle:'dog_Idle',walk:'dog_Walk',run:'dog_Gallop',sit:'dog_Sit',dig:'dog_Dig',bark:'dog_Attack',jump:'dog_Gallop_Jump'};   // השלד של ההאסקי (build3d.js)
+/* מתקפות של אויבים בעולם (strike.js, foeai.js), 6.11 (ניר: "לא רואים את המתקפות של המפלצות"). רק בעולם: הזירה לא מדליקה e.sw או e.act.
+   clip: מה כל מודל מנגן, לפי שם המודל ב-LOOK3D. hit מכה (גם קפיצה והסתערות), brace ההכנה להסתערות, cast ההכנה לירייה, shoot הירייה. def לכל מודל אחר.
+   אויב יכול לדרוס עם atk:{...} בשורה שלו ב-LOOK3D. מודל בלי הקליפ (מפלצות Quaternius): רק הזוהר והסימון.
+   בזמן ההכנה הקליפ נעצר בהדרגה עד up (הנשק למעלה), ובמכה השאר מתנגן מהר (fast) */
+const FOEATK3D={
+  clip:{minion:{hit:'1H_Melee_Attack_Chop'},warrior:{hit:'Melee_1H_Attack_Chop',brace:'Melee_Block'},barbarian:{hit:'Melee_2H_Attack_Chop',brace:'Melee_Block'},
+        skelMage:{cast:'Spellcasting',shoot:'Ranged_Magic_Shoot'},mage:{cast:'Ranged_Magic_Spellcasting',shoot:'Ranged_Magic_Shoot'},rogue:{hit:'Melee_1H_Attack_Slice_Horizontal'}},
+  def:{hit:'1H_Melee_Attack_Chop'},
+  up:0.5,             // עד איזה חלק של הקליפ מגיעים בסוף ההכנה
+  fast:0.22,          // כמה שניות שאר המכה
+  glow:'#FF4D4D',glowK:[0.2,0.75],   // זוהר אדום שמתחזק לאורך ההכנה (מ-glowK[0] עד glowK[1]), ופועם
+  squat:0.14,         // קפיצה: מתכווץ לפני
+  jump:46             // קפיצה: כמה גבוה באוויר (פיקסלים)
+};
 const LOOK3D={
   player:{model:'knight',h:66,foot:14,
     anim:{idle:'Idle_A',run:'Running_A',hit:'Hit_A',die:'Death_A',win:'Cheering'}},
@@ -419,7 +433,7 @@ function makeActor(L){
   const a={root,mats,props,own,mixer:new THREE.AnimationMixer(root),L,key:lookKey(L),base:null,one:null,flash:0,dieT:0,pulse:a_pulse};
   R3D.scene.add(root);return a;
 }
-function freeActor(a){a.root.visible=false;a.mixer.stopAllAction();const p=R3D.pool;(p[a.key]||(p[a.key]=[])).push(a)}
+function freeActor(a){a.root.visible=false;a.mixer.stopAllAction();a.atk=null;const p=R3D.pool;(p[a.key]||(p[a.key]=[])).push(a)}
 function act(a,name){const c=R3D.clips[name];return c?a.mixer.clipAction(c):null}
 // אנימציית בסיס בלולאה (ריצה, עמידה). מעבר רך בין אנימציות
 function loop(a,name,speed=1){
@@ -524,14 +538,20 @@ function syncEnemy(e,dt){
   }else{
     // לאן שהוא הולך. כשהוא נהדף אחורה (kx,ky) הוא ממשיך להסתכל עליך, ולא מסתובב עם המכה
     yaw=sp>5&&Math.hypot(e.kx||0,e.ky||0)<sp?yawOf(dx,dy):yawOf(P.x-e.x,P.y-e.y);
-    if(e.type==='wisp'&&e.shoot<0.35&&L.anim.cast&&!(a.one&&a.one.isRunning()))once(a,L.anim.cast,0.5);
-    if(!(a.one&&a.one.isRunning()&&a.one.getClip().name===L.anim.spawn))loop(a,L.anim.run,Math.max(0.6,Math.min(1.8,sp/(e.speed||80))));
+    if(e.sw>0)yaw=yawOf(Math.cos(e.sa),Math.sin(e.sa));else if(e.act&&e.act!=='flee'&&e.aa!=null)yaw=yawOf(Math.cos(e.aa),Math.sin(e.aa));   // מתקפה: פונה לאן שהיא תפגע
+    if(!foeAtk3d(e,a,L)){
+      if(e.type==='wisp'&&e.shoot<0.35&&L.anim.cast&&!(a.one&&a.one.isRunning()))once(a,L.anim.cast,0.5);
+      if(!(a.one&&a.one.isRunning()&&a.one.getClip().name===L.anim.spawn))loop(a,L.anim.run,Math.max(0.6,Math.min(1.8,sp/(e.speed||80))));
+    }
   }
-  const lift=(L.float?L.float+Math.sin(e.ph*0.6)*3:0)+(e.wboss?giantLift(e,L):0);   // ענק בכניסה: קם מהאדמה או נוחת מהשמיים
+  const lift=(L.float?L.float+Math.sin(e.ph*0.6)*3:0)+(e.wboss?giantLift(e,L):0)   // ענק בכניסה: קם מהאדמה או נוחת מהשמיים
+    +(e.act==='jump'&&e.am?Math.sin(Math.PI*Math.min(1,1-e.at/e.am))*FOEATK3D.jump:0);   // קפיצה (foeai.js): באוויר בדרך אליך
   place(a,e.x,e.y,e.wboss?L.foot:L.foot*(e.big||1),yaw,lift);
   const rage=e.isBoss&&e.rage>0.05?e.rage:0;
-  setFlash(a,e.flash>0?0.9:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,e.flash>0?0xffffff:C.blood);
-  if(a.sc0){const q=juiceSquash(e);a.root.scale.set(a.sc0*(1+q),a.sc0*(1-q),a.sc0*(1+q))}   // מעיכה קטנה במכה (juice.js)
+  const tk=e.isBoss||e.wboss?-1:foeTele(e),F=FOEATK3D;   // מתכונן למתקפה: מאדים (strike.js מדליק e.flash קטן בהכנה, בשביל הדו-ממד. מכה אמיתית היא 0.09)
+  if(tk>=0&&!(e.flash>0.06))setFlash(a,(F.glowK[0]+(F.glowK[1]-F.glowK[0])*tk)*(0.8+0.2*Math.sin(S.t*20)),F.glow);
+  else setFlash(a,e.flash>0?0.9:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,e.flash>0?0xffffff:C.blood);
+  if(a.sc0){const q=juiceSquash(e)+(e.act==='crouch'?F.squat*Math.max(0,tk):0);a.root.scale.set(a.sc0*(1+q),a.sc0*(1-q),a.sc0*(1+q))}   // מעיכה קטנה במכה (juice.js)
   // כשיש הרבה אויבים, כל אחד מונפש רק בכל פריים שני (חצי מהם בכל פריים). בעין זה לא נראה, ובטלפון זה חוסך הרבה
   a.acc=(a.acc||0)+dt;
   if(e.isBoss||e.wboss||R3D.actors.size<25||((a.id||(a.id=++R3D.nid))+R3D.frame)%2===0){a.mixer.update(a.acc);a.acc=0}
@@ -549,6 +569,24 @@ function retire(e,a,dt){
   a.dieT-=dt;a.mixer.update(dt);
   if(a.dieT<a.sink)a.root.position.y-=dt*(a.sink>0.35?a.L.h*0.4/a.sink:60);
   if(a.dieT<=0){R3D.actors.delete(e);freeActor(a)}
+}
+
+// אנימציית המתקפה של אויב רגיל בעולם (FOEATK3D). מחזיר true כשהיא מתנגנת, ואז לא מנגנים ריצה מעליה
+function foeAtk3d(e,a,L){
+  const F=FOEATK3D,c={...F.def,...F.clip[L.model],...L.atk},st=a.prev,ph=e.sw>0?'sw':e.act||'',tk=foeTele(e);
+  if(ph!==st.ph){
+    const was=st.ph;st.ph=ph;
+    const pick=ph==='sw'||ph==='crouch'?c.hit:ph==='wind'?c.brace||c.hit:ph==='aim'?c.cast||c.hit:null;
+    if(pick&&act(a,pick)){if(a.base){const b=act(a,a.base);if(b)b.fadeOut(0.12);a.base=null}   // מפסיקים לרוץ: עומד ומתכונן
+      once(a,pick,1,true);a.one.timeScale=0;a.atk=pick}
+    else if(a.atk&&(was==='sw'||FOE_TELE[was])){const x=act(a,a.atk),D=x.getClip().duration;   // ההכנה נגמרה: המתקפה יוצאת
+      if(was==='aim'&&c.shoot&&act(a,c.shoot)){once(a,c.shoot,0.3);a.atk=c.shoot}   // הירייה יוצאת
+      else if(was==='wind'&&c.brace&&c.hit!==a.atk){once(a,c.hit,Math.max(0.3,e.at||0.5));a.atk=c.hit}   // הסתערות: מכה עם המגן לאורך כל הריצה
+      else{x.clampWhenFinished=false;x.time=D*F.up;x.timeScale=D*(1-F.up)/(ph==='jump'&&e.am?e.am:F.fast)}}   // המכה עצמה (וגם הקפיצה): שאר הקליפ מהר
+  }
+  if(tk>=0&&a.atk&&a.one){const D=a.one.getClip().duration;a.one.time=D*F.up*tk}   // ההכנה: הנשק עולה עם ההתקדמות, וגם נעצר כשהאויב קפוא
+  if(a.atk&&!(a.one&&a.one.isRunning())&&tk<0){a.atk=null;return false}
+  return !!a.atk;
 }
 
 /* ---- הכפר ---- */
@@ -718,7 +756,7 @@ function render3d(ox,oy){
     const vis=enemies.filter(e=>!e.dead&&(e.isBoss||e.wboss||onScreen(e.x+ox,e.y+oy)));
     // בעולם: רק world הקרובים מונפשים, והשאר בקהל (דמות מונפשת היא רוב הזמן של הציור בעולם, מבקר 2)
     const full=S.wd?CROWD.world:CROWD.full;
-    if(vis.length>full){const pr=e=>e.isBoss||e.wboss||e.wanted||e.elite?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}
+    if(vis.length>full){const pr=e=>e.isBoss||e.wboss||e.wanted||e.elite||e.sw>0||e.act?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}   // מי שמתכונן למתקפה תמיד מונפש (FOEATK3D)
     vis.forEach((e,i)=>i<full||e.isBoss||e.wboss||!crowdOf(e.type)?syncEnemy(e,dt):crowdAdd(e));
     R3D.nDying=0;for(const a of R3D.actors.values())if(a.dieT>0.05)R3D.nDying++;
     for(const [e,a] of R3D.actors)if(a.seen!==R3D.frame||e.dead)retire(e,a,dt);

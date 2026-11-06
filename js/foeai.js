@@ -29,6 +29,13 @@ const FOEAI={
 };
 
 const aiCd=e=>e.acd=rand(...FOEAI[e.ai].cd);
+// כמה מההכנה למתקפה עברה (0 עד 1), או -1 כשהאויב לא מתכונן. לציור: האנימציה והזוהר בתלת-ממד (render3d.js) וה-"!" מעל הראש
+const FOE_TELE={wind:1,aim:1,crouch:1};
+function foeTele(e){
+  if(e.sw>0)return 1-e.sw/(e.wind||STRIKE.wind);
+  if(FOE_TELE[e.act]&&e.am)return 1-Math.max(0,e.at)/e.am;
+  return -1;
+}
 const aiWind=(e,t)=>t*(e.zone==='start'?FOEAI.startWind:1);
 // פעם אחת לכל אויב: מה התפקיד שלו
 function foeAiInit(e){
@@ -119,13 +126,13 @@ function foeAiDraw(){
     if(e.act==='wind'){const C=A.charge;ctx.translate(e.x,e.y);ctx.rotate(e.aa);
       ctx.globalAlpha=0.2;ctx.fillStyle=A.col;ctx.fillRect(0,-C.w,C.len,C.w*2);
       ctx.globalAlpha=0.5+0.35*k;ctx.fillRect(0,-C.w,C.len*k,C.w*2);
-      ctx.globalAlpha=0.9;ctx.strokeStyle=A.col;ctx.lineWidth=2;ctx.strokeRect(0,-C.w,C.len,C.w*2)}
+      ctx.globalAlpha=0.9;ctx.strokeStyle=A.col;ctx.lineWidth=(2.5+2*k)/ZOOM;ctx.strokeRect(0,-C.w,C.len,C.w*2)}
     else if(e.act==='aim'){const R=A.ranged;ctx.translate(e.x,e.y);ctx.rotate(e.aa);
-      ctx.globalAlpha=0.35+0.5*k;ctx.strokeStyle=A.col;ctx.lineWidth=2+3*k;ctx.setLineDash([12,8]);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(R.range,0);ctx.stroke();ctx.setLineDash([])}
+      ctx.globalAlpha=0.45+0.5*k;ctx.strokeStyle=A.col;ctx.lineWidth=(2.5+3*k)/ZOOM;ctx.setLineDash([12,8]);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(R.range,0);ctx.stroke();ctx.setLineDash([])}
     else if(e.act==='crouch'||e.act==='jump'){const L=A.leap,kk=e.act==='jump'?1:k;
       ctx.globalAlpha=0.2;ctx.fillStyle=A.col;ctx.beginPath();ctx.arc(e.tx,e.ty,L.r,0,7);ctx.fill();
       ctx.globalAlpha=0.45+0.4*kk;ctx.beginPath();ctx.arc(e.tx,e.ty,L.r*kk,0,7);ctx.fill();
-      ctx.globalAlpha=0.9;ctx.strokeStyle=A.col;ctx.lineWidth=2;ctx.beginPath();ctx.arc(e.tx,e.ty,L.r,0,7);ctx.stroke()}
+      ctx.globalAlpha=0.9;ctx.strokeStyle=A.col;ctx.lineWidth=(2.5+2*kk)/ZOOM;ctx.beginPath();ctx.arc(e.tx,e.ty,L.r,0,7);ctx.stroke()}
     else if(e.act==='flee'){const C=A.call,p=0.5+0.5*Math.sin(t*14);
       ctx.globalAlpha=0.25+0.3*p;ctx.strokeStyle=C.col;ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,e.r+10,0,7);ctx.stroke();
       ctx.globalAlpha=0.85;ctx.lineWidth=4;ctx.beginPath();ctx.arc(e.x,e.y,e.r+18,-Math.PI/2,-Math.PI/2+k*Math.PI*2);ctx.stroke()}
@@ -133,10 +140,13 @@ function foeAiDraw(){
     ctx.restore()}
   ctx.globalAlpha=1;
 }
-// מעל הראש (במסך): קורא שבורח מקבל "!" צהוב, כדי שיהיה ברור שהוא המטרה עכשיו. מנהיג: כתר ושם
+// מעל הראש (במסך): קורא שבורח מקבל "!" צהוב, כדי שיהיה ברור שהוא המטרה עכשיו. מנהיג: כתר ושם.
+// אויב שמתכונן למתקפה (מכה, הסתערות, ירייה, קפיצה): "!" אדום שגדל עד המכה (6.11, ניר: "לא רואים את המתקפות")
 function foeAiScreen(ox,oy){
   ctx.textAlign='center';ctx.direction=DIR;
   for(const e of enemies){if(e.dead)continue;const x=e.x+ox,y=e.y+oy-e.r-34;if(!onScreen(x,y))continue;
+    const tk=foeTele(e);
+    if(tk>=0&&e.act!=='flee'){ctx.font='900 '+((16+8*tk)/ZOOM)+'px Heebo, system-ui, sans-serif';ctx.fillStyle=FOEAI.col;ctx.globalAlpha=0.6+0.4*tk;ctx.fillText('!',x,y);ctx.globalAlpha=1;if(!e.leader)continue}
     if(e.act==='flee'){ctx.font='900 '+(20/ZOOM)+'px Heebo, system-ui, sans-serif';ctx.fillStyle=FOEAI.call.col;ctx.fillText('!',x,y)}
     else if(e.leader){const fs=13/ZOOM,t='👑 '+T('fai.leader');ctx.font='800 '+fs+'px Heebo, system-ui, sans-serif';const tw=ctx.measureText(t).width+10;
       ctx.fillStyle='rgba(10,12,20,0.75)';ctx.fillRect(x-tw/2,y-fs*0.92-8,tw,fs*1.25);ctx.fillStyle=FOEAI.leader.col;ctx.fillText(t,x,y-8)}}
