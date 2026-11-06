@@ -60,7 +60,7 @@ function install(B){
   const k0=kill;kill=function(e){const x0=S.wd&&!e.node&&m.ch<B.chapters.length?cumXp():null;const r=k0.apply(this,arguments);if(x0!==null){m.kc=(m.kc||0)+1;const c=cRep();c.kxp=(c.kxp||0)+cumXp()-x0}return r};
   function need(){const c=chap();return c.lv||(c.to?CURIO.paths[c.to].lv:0)}   // c.lv: רמת יעד לפרק (playtime.js, בדרגות 2-3)
   // XP מצטבר (לא מתאפס ברמה), ומה מתוכו מקווסטים: לדוח "בעיקר קווסטים" מול "בעיקר הריגה"
-  const cumXp=()=>{let s=SAVE.hero.xp||0;for(let l=1;l<heroLv();l++)s+=rankNeed(l);return s};
+  const cumXp=()=>SAVE.hero.xp||0;   // SAVE.hero.xp הוא כל ה-XP שנאסף אי פעם (ranks.js)
   function cRep(){return R.ch[m.ch]||(R.ch[m.ch]={reg:chap().reg,deaths:0,lv0:heroLv(),xp0:cumXp(),qn:0,qxp:0})}
   const qc0=questClaim;questClaim=function(id){const q=QBY[id],had=!!QS().active[id];const r=qc0.apply(this,arguments);
     if(S.wd&&had&&!QS().active[id]&&q){const c=cRep();c.qn++;c.qxp+=q.reward.xp||0}return r};
