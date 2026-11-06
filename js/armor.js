@@ -27,11 +27,12 @@ const ARMOR={
      head: הברדס מחליף את הראש, אז הראש של הדמות (Knight_Head...) נשאר חלק נפרד ומוסתר. noHead: מודל בלי ראש נפרד (ניר ואוראל) מקבל את הפרווה במקום.
      ref: הראש שכל כובע נבנה בשבילו (KayKit 1.0: אביר, קוסם, ברברי, נוכל), [מינימום, מקסימום] ביחידות של עצם הראש. הכובע עובר מהראש הזה לראש של הדמות.
      glowK: כמה חזק הזוהר בכובע הזה (הפרווה נצבעת כולה בזוהר מלא).
+     none: מודלים בלי כובע בכלל: לאוראל יש ברדס מובנה, וכל כובע עליו יצא כובע על ברדס (המתאם, 6.11.2026). ההגנה נשארת.
      fit: התאמה לכל מודל מעבר למדידת הראש (armorHeadFit): s גודל, y הרמה ביחידות של עצם הראש. הקוסם: השיער נמוך, והכובע ישב על העיניים */
   hat:{paint:{helm:{metal:1},hood:{cloth:0.3},mage:{band:1},fur:{fur:0.45}},
     tint:['#C8925A','#B4BCC6','#FFFFFF','#FFE27A','#FF8FC8'],glowFrom:{helm:0,hood:3,mage:0,fur:3},glowPart:{hood:['rim']},glowK:{fur:0.35},rim:3,
     ref:{helm:[[-0.543,-0.026,-0.485],[0.543,1.073,0.532]],mage:[[-0.543,-0.174,-0.748],[0.543,0.961,0.519]],fur:[[-0.543,-0.107,-0.46],[0.543,0.945,0.526]],hood:[[-0.543,-0.026,-0.482],[0.543,1.043,0.532]]},
-    head:'Head',noHead:{hood:'fur'},fit:{nirHero:{s:1.12},orelHero:{s:1.1},mage:{y:0.1}}},
+    head:'Head',noHead:{hood:'fur'},none:['orelHero'],fit:{nirHero:{s:1.12},orelHero:{s:1.1},mage:{y:0.1}}},
   icon:{head:'🪖',body:'🧥',shield:'🛡️'},   // לשונית בתרמיל וצללית במשבצת ריקה
   /* מגן (המתאם, 2.11.2026: משבצת אמיתית במקום המגן שנגזר מהתכשיט). לא לפי מחלקה: מגן אחד לכל שכבה, 'shield0' עד 'shield4'.
      נראה ביד השנייה רק עם נשק של יד אחת (חרב, גרזן), כמו קודם (gear3dLook ב-render3d.js). gift: מגן עץ לכל אחד, פעם אחת */
@@ -109,7 +110,7 @@ function armorHeadFit(a,model){
    גודל לפי הרוחב והעומק, באמצע הראש, והקודקוד על הקודקוד. נבנה מחדש עם השריון (armor3d) */
 function armorHat(a,hd,head){
   const H=ARMOR.hat,C_=ARMOR.cls[hd.cls],hb=bone(a.root,'head');let k=C_.head;
-  if(!hb||!R3D.hats)return;
+  if(!hb||!R3D.hats||H.none.includes(a.L&&a.L.model))return;
   if(k==='hood'&&!head.length)k=H.noHead.hood;   // בלי ראש נפרד אי אפשר להחליף ראש
   const src=R3D.hats[k];if(!src)return;
   const g=src.clone(),t=hd.tier,col=new THREE.Color(H.tint[t]),tier=new THREE.Color(GEAR.tiers[t].col),P=H.paint[k]||{},
