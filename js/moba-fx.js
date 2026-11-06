@@ -136,8 +136,8 @@ function mbfxMarks(){
 // הירייה של גל חרב (קשת לבנה-זהובה שמתרחבת) ושל רשת ציד (רשת פתוחה שמסתובבת)
 function mbfxShots(){
   for(const s of MB.shots){if(!s.fx)continue;const a=Math.atan2(s.vy,s.vx);ctx.save();ctx.translate(s.x,s.y-10);ctx.rotate(a);
-    if(s.fx==='cleave'){const w=s.w*0.75;ctx.globalCompositeOperation='lighter';
-      for(let i=0;i<3;i++){ctx.globalAlpha=0.55-i*0.15;ctx.strokeStyle=i?dtCol(s.dt):'#FFF4D8';ctx.lineWidth=9-i*3;ctx.beginPath();ctx.arc(-i*14-w*0.6,0,w,-0.95,0.95);ctx.stroke()}
+    if(s.fx==='cleave'){const w=s.w*0.95;ctx.globalCompositeOperation='lighter';
+      for(let i=0;i<3;i++){ctx.globalAlpha=0.55-i*0.15;ctx.strokeStyle=i?dtCol(s.dt):'#FFF4D8';ctx.lineWidth=13-i*4;ctx.beginPath();ctx.arc(-i*16-w*0.6,0,w,-1,1);ctx.stroke()}
       ctx.globalCompositeOperation='source-over'}
     else{const N=MBFX.net,r=Math.max(10,s.w*0.7),sp=MB.t*9;ctx.rotate(sp);ctx.globalAlpha=0.95;ctx.strokeStyle=N.col;ctx.lineWidth=2;
       ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.stroke();

@@ -27,7 +27,7 @@ const MBKIT={
   mage:{icon:'🔮',dt:'water',hp:560,speed:155,
     atk:{dmg:34,range:270,cd:1.0,dt:'water',shot:true},
     s1:{id:'wave',kind:'line',cd:8,range:440,w:70,dmg:70,speed:620,wet:3,slow:0.3,slowT:2,dt:'water'},   // גל מים: מרטיב ומאט
-    s2:{id:'bubble',kind:'point',cd:11,range:380,r:90,delay:0.4,lift:1,dmg:60,wet:3,dt:'water'},           // כלא מים: בועה שמרימה את האויבים (כמו הלם) ומרטיבה. אחריה ברק או קרח: קומבו
+    s2:{id:'bubble',kind:'point',cd:11,range:380,r:100,delay:0.4,lift:1.1,dmg:80,wet:3,dt:'water'},           // כלא מים: בועה שמרימה את האויבים (כמו הלם) ומרטיבה. אחריה ברק או קרח: קומבו
     ult:{id:'blizzard',kind:'point',cd:50,range:420,r:170,delay:0.6,dmg:80,freeze:1.5,dt:'ice'}},       // סופת קרח: מקפיאה. על רטוב: יותר זמן
 };
 const MB_SLOTS=['s1','s2','ult'];
