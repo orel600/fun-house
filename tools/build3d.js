@@ -172,8 +172,9 @@ const ITEMS={
   // מחכים לקבצים מ-TRELLIS (תמונות המקור ב-art/weapons/src). חפץ בלי קובץ מדולג, והמשחק נשאר עם look.model
   ironStaff:{src:raw('ironStaff'),tris:4000,tex:512,len:2.3,grip:0.37,rot:[0,90,0]},
   goldStaff:{src:raw('goldStaff'),tris:4000,tex:512,len:2.3,grip:0.37,rot:[0,90,0]},
-  starStaff:{src:raw('starStaff'),tris:4000,tex:512,len:2.3,grip:0.37,rot:[0,90,0]},
-  skyBow:   {src:raw('skyBow'),tris:4000,tex:512,len:2.4,grip:0.5,rot:[0,90,-90]},   // יצא רחב ב-x ולא ב-z
+  // ready: נבנה ב-Blender מקוד (tools/blender) כבר בצירים, בגודל ובאחיזה של KayKit, עם פלטה ו-emissive (זוהר שפועם, render3d.js). לא מקטינים, לא מזיזים ולא מסובבים
+  starStaff:{src:raw('starStaff'),ready:true,tex:128},
+  skyBow:   {src:raw('skyBow'),ready:true,tex:128},
   stormBow: {src:raw('stormBow'),tris:4000,tex:512,len:2.4,grip:0.5,rot:[0,0,-90]},
   shield3:  {src:raw('shield3'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},   // יצא כבר כמו KayKit: הפנים ב-xy
   shield4:  {src:raw('shield4'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]}
@@ -226,9 +227,13 @@ async function addHats(add){
 async function addItems(add){
   const {MeshoptSimplifier}=require('meshoptimizer');await MeshoptSimplifier.ready;
   const {weld,simplify,transformPrimitive}=require('@gltf-transform/functions');
+  const pick=(process.argv.find(a=>a.startsWith('--items='))||'').slice(8).split(',').filter(Boolean);   // --items=skyBow,starStaff: רק אלה, והשאר נשארים כמו שהם
   for(const [k,c] of Object.entries(ITEMS)){
+    if(pick.length&&!pick.includes(k))continue;
     if(!fs.existsSync(c.src)){console.log('אין עדיין קובץ ל-'+k+', מדלגים');continue}
     const doc=await io.read(c.src),root=doc.getRoot(),prims=root.listMeshes().flatMap(m=>m.listPrimitives());
+    if(c.ready){for(const nd of root.listNodes())if(nd.getMesh()){prims.forEach(p=>transformPrimitive(p,nd.getMatrix()));nd.setTranslation([0,0,0]).setRotation([0,0,0,1]).setScale([1,1,1])}
+      add('w_item_'+k,await slim(doc,{tex:c.tex,fmt:'png'}));continue}   // png: הפלטה נשארת חדה
     const n=prims.reduce((a,p)=>a+(p.getIndices()?p.getIndices().getCount():p.getAttribute('POSITION').getCount())/3,0);
     await doc.transform(weld(),simplify({simplifier:MeshoptSimplifier,ratio:Math.min(1,c.tris/n),error:0.002}));
     let lo=[1e9,1e9,1e9],hi=[-1e9,-1e9,-1e9];
@@ -324,7 +329,7 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
     fs.writeFileSync(f,src.slice(0,i).replace('Fantasy Weapons Bits ו-Medieval Hexagon מאת','Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת')+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
   }
-  // node tools/build3d.js - --only items: מוסיף רק את ITEMS לקובץ הקיים (לא צריך את חבילות KayKit, אז במקום התיקייה אפשר -)
+  // node tools/build3d.js - --only items: מוסיף רק את ITEMS לקובץ הקיים (לא צריך את חבילות KayKit, אז במקום התיקייה אפשר -). --items=skyBow,starStaff: רק אלה
   if(ONLY==='bundle'){await bundle();console.log('js/vendor/three-bundle.js',Math.round(fs.statSync(path.join(ROOT,'js/vendor/three-bundle.js')).size/1024)+'KB');return}
   if(ONLY==='compress'){await compressAll();return}
   // node tools/build3d.js C:/kk --only hats: מוסיף רק את הכובעים (HATS) לקובץ הקיים. צריך רק את adv
@@ -341,7 +346,8 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
     const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
     Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
-    for(const k in out)if(k.startsWith('w_item_'))delete out[k];
+    const pick=(process.argv.find(a=>a.startsWith('--items='))||'').slice(8).split(',').filter(Boolean);
+    for(const k in out)if(k.startsWith('w_item_')&&(!pick.length||pick.includes(k.slice(7))))delete out[k];
     await addItems(add);
     fs.writeFileSync(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
