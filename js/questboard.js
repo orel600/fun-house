@@ -48,14 +48,14 @@ const QBOARD={
     storm: {res:{boltC:4,dust:5},prize:'boltC'},
     shadow:{res:{dust:5,essence:4},prize:'essence'}
   },
-  /* התבניות. כל אחת בונה יעד לפי האזור (c) והרמה (lv). xp: איזה חלק מרמה שלמה (rankNeed ב-ranks.js)  (כוונון קצב 6.11: היו 0.35-0.55, ועם הרמות הארוכות יותר זה נתן 10 שעות למשחק כולו. עכשיו 0.13-0.2: קווסטים כ-27 שעות, מהר מהריגה) */
+  /* התבניות. כל אחת בונה יעד לפי האזור (c) והרמה (lv). xp: איזה חלק מרמה שלמה (rankNeed ב-ranks.js)  (כוונון קצב 6.11: היו 0.35-0.55, וזה נתן 10 שעות למשחק כולו. 0.13-0.2 נתן 17. עכשיו 0.055-0.085: בעיקר קווסטים כ-27 שעות. משימה מהלוח שווה בערך כמו הריגה באותו זמן, ועוד ההריגות שבדרך, ולכן קווסטים מהירים פי 1.7 מהריגה בלבד) */
   tpl:{
-    hunt: {xp:0.15,obj:(c,lv)=>[{type:'kill',what:pick(c.foes),n:Math.min(20,8+Math.floor(lv/4))}]},
-    cull: {xp:0.16,obj:(c,lv)=>[{type:'kill',what:'any',n:Math.min(60,25+lv)}]},
-    gather:{xp:0.13,obj:(c,lv)=>{const r=pick(Object.keys(c.res));return[{type:'gather',what:r,n:c.res[r]+Math.floor(lv/10)}]}},
-    scout:{xp:0.15,obj:c=>{const p=Object.keys(c.places).sort(()=>Math.random()-0.5);return p.slice(0,2).map(id=>({type:'visit',what:c.reg+':'+id,n:1}))}},
-    guard:{xp:0.2,obj:(c,lv)=>[{type:'hold',what:c.reg+':'+pick(Object.keys(c.places)),n:25+Math.min(15,Math.floor(lv/4))}]},
-    fish: {xp:0.13,only:'fish',obj:()=>[{type:'fish',what:'any',n:3}]}
+    hunt: {xp:0.065,obj:(c,lv)=>[{type:'kill',what:pick(c.foes),n:Math.min(20,8+Math.floor(lv/4))}]},
+    cull: {xp:0.07,obj:(c,lv)=>[{type:'kill',what:'any',n:Math.min(60,25+lv)}]},
+    gather:{xp:0.055,obj:(c,lv)=>{const r=pick(Object.keys(c.res));return[{type:'gather',what:r,n:c.res[r]+Math.floor(lv/10)}]}},
+    scout:{xp:0.065,obj:c=>{const p=Object.keys(c.places).sort(()=>Math.random()-0.5);return p.slice(0,2).map(id=>({type:'visit',what:c.reg+':'+id,n:1}))}},
+    guard:{xp:0.085,obj:(c,lv)=>[{type:'hold',what:c.reg+':'+pick(Object.keys(c.places)),n:25+Math.min(15,Math.floor(lv/4))}]},
+    fish: {xp:0.055,only:'fish',obj:()=>[{type:'fish',what:'any',n:3}]}
   }
 };
 
