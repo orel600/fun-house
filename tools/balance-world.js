@@ -154,13 +154,13 @@ function install(B){
     const L=STORY.lanterns[chap().k],w=S.wd;
     if(m.ph==='warden'){if(!m.wT)m.wT=now;
       if(m.wE&&m.wE.dead&&m.wE.hp<=0){const f=c.fights||(c.fights=[]);f.push(Math.round((now-m.wS)*10)/10);m.wE=null;
-        if(f.length<B.fights){P.hp=P.maxHp;S.wd.marks=[];S.wd.rings=[];if(STO().bt)delete STO().bt[chap().k];P.x=L.x;P.y=L.y+GIANT.lair+700;return{}}   // שוב: מתרחקים, והשומר קם כשחוזרים
+        if(f.length<B.fights){P.hp=P.maxHp;S.wd.marks=[];S.wd.rings=[];if(STO().bt)delete STO().bt[chap().k];const lp=typeof giantLair==='function'?giantLair(chap().k):{x:L.x,y:L.y+70};P.x=lp.x;P.y=lp.y+700;return{}}   // GIANT.lair הוא אובייקט: היה L.y+אובייקט = NaN (6.11)   // שוב: מתרחקים, והשומר קם כשחוזרים
         c.wardenT=Math.round(now-m.wT);c.fightT=Math.round(f.reduce((a,b)=>a+b,0)/f.length*10)/10;c.wLv=heroLv();finish(true);return{}}
       // הענק קם לבד כשמתקרבים (giant.js). הטיימר מניצחון מקרי בזמן הטיפוס לא נספר: מאפסים אותו
       if(m.wE&&m.wE.gone)m.wE=null;
       // המדידה היא של הקרב, לא של הדרך: מי שלא הגיע למאורה תוך travel שניות (באחו הגדול הבוט נתקע בלהקות ובורח) קופץ ליד המאורה
-      if(!w.warden&&now-m.wT>B.travel&&Math.hypot(P.x-L.x,P.y-L.y)>L.warden.wake&&!m.jumped){m.jumped=1;c.jump=1;const ly=L.y+(typeof GIANT!=='undefined'?GIANT.lair:70);
-        for(const [ox,oy] of [[0,320],[320,0],[-320,0],[0,-320],[230,230],[-230,230],[230,-230],[-230,-230]])if(typeof tBlocked!=='function'||!tBlocked(L.x+ox,ly+oy)){P.x=L.x+ox;P.y=ly+oy;break}}if(STO().bt)delete STO().bt[chap().k];
+      if(!w.warden&&now-m.wT>B.travel&&Math.hypot(P.x-L.x,P.y-L.y)>L.warden.wake&&!m.jumped){m.jumped=1;c.jump=1;const lp=typeof giantLair==='function'?giantLair(chap().k):{x:L.x,y:L.y+70},lx=lp.x,ly=lp.y;   // היה L.y+GIANT.lair (אובייקט) = NaN, והשחקן נעלם מהמפה (6.11)
+        for(const [ox,oy] of [[0,320],[320,0],[-320,0],[0,-320],[230,230],[-230,230],[230,-230],[-230,-230]])if(typeof tBlocked!=='function'||!tBlocked(lx+ox,ly+oy)){P.x=lx+ox;P.y=ly+oy;break}}if(STO().bt)delete STO().bt[chap().k];
       if(!w.warden&&typeof giantReady!=='function'&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake)storyWarden(chap().k,L.y+70);   // גרסה ישנה (לפני הטיימר): קם רק עם קווסט, אז מקימים ביד
       if(w.warden&&!w.warden.dead&&m.wE!==w.warden){m.wE=w.warden;m.wS=now;c.tries=(c.tries||0)+1}}
     // קרב: לחיים נמוכים בורחים. אחרת אל האויב הקרוב (או השומר), עד הטווח של הנשק
