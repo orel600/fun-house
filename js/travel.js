@@ -75,11 +75,14 @@ function travelHtml(){
   const gs=travelDests().map(g=>({r:g.r,items:g.items.filter(i=>i.k!==here)})).filter(g=>g.items.length);
   return winHead(T('tr.where'))+(why?'<p class="trwhy">'+T('tr.no.'+why)+'</p>':'')+'<div class="trgroups">'+gs.map(g=>
     '<div class="trgrp"><h4>'+(g.r==='village'?T('tr.village'):T('w.region.'+g.r))+'</h4><div class="trlist">'+g.items.map(i=>
-      '<button class="vbtn trgo" data-act="tjump" data-k="'+i.k+'" style="--trc:'+i.col+'"'+(why?' disabled':'')+'>'+i.ico+' '+i.name+'</button>').join('')+'</div></div>').join('')+'</div><div class="trmore">▼ '+T('tr.more')+'</div>';
+      '<button class="vbtn trgo" data-act="tjump" data-k="'+i.k+'" style="--trc:'+i.col+'"'+(why?' disabled':'')+'>'+i.ico+' '+i.name+'</button>').join('')+'</div></div>').join('')+'</div>';
 }
-// יש עוד יעדים מתחת לקפל: הצללה וחץ בתחתית (.trwin.more). נקרא בפתיחה ובגלילה
-function travelMore(){const w=trWin;w.classList.toggle('more',w.scrollHeight-w.scrollTop-w.clientHeight>6)}
-const trWin=(()=>{const w=document.createElement('div');w.id='trWin';w.className='qlog win trwin';w.hidden=true;$('wMap').after(w);w.addEventListener('scroll',()=>travelMore(),{passive:true});return w})();
+// חלון שגולל: כשיש עוד תוכן מתחת לקפל, הצללה וחץ "יש עוד למטה" בתחתית (.more ו-.scrmore ב-css). משמש את חלון הקפיצה ואת ההגדרות (audio.js)
+function scrollMore(w){if(!w)return;let m=w.querySelector(':scope>.scrmore');
+  if(!m){m=document.createElement('div');m.className='scrmore';w.appendChild(m);w.addEventListener('scroll',()=>scrollMore(w),{passive:true})}
+  m.textContent='▼ '+T('tr.more');w.classList.toggle('more',w.scrollHeight-w.scrollTop-w.clientHeight>6)}
+const travelMore=()=>scrollMore(trWin);
+const trWin=(()=>{const w=document.createElement('div');w.id='trWin';w.className='qlog win trwin';w.hidden=true;$('wMap').after(w);return w})();
 addEventListener('load',()=>WINS.unshift({id:'trWin',close:()=>travelWin(false)}));   // Esc סוגר (WINS ב-ui.js, שנטען אחרי הקובץ הזה)
 let trMode='';
 // פתיחה וסגירה. בעולם המשחק עוצר בזמן הבחירה, כמו במפה

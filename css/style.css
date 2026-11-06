@@ -1898,6 +1898,7 @@ body:not(.world):not(.vil) .hud .gearbtn:active{transform:scale(.92)}
 #trWin .trgroups{grid-template-columns:1fr}
 #trWin .trlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 #trWin .trgo{margin:0;min-height:44px}
-#trWin .trmore{position:sticky;bottom:-6px;display:none;margin:4px -6px -6px;padding:16px 0 4px;text-align:center;color:var(--gold);font-weight:800;pointer-events:none;
-  background:linear-gradient(transparent,#1A2033 55%)}
-#trWin.more .trmore{display:block}
+.scrmore{position:sticky;bottom:-6px;display:none;grid-column:1/-1;margin:4px -6px -6px;padding:16px 0 4px;text-align:center;color:var(--gold);font-weight:800;pointer-events:none;
+  background:linear-gradient(transparent,#1A2033 55%)}   /* "יש עוד למטה" בחלון שגולל (scrollMore ב-travel.js) */
+.more>.scrmore{display:block}
+.sndpanel>.scrmore{bottom:-16px;margin:4px -16px -16px}   /* ההגדרות עם ריפוד 16 */

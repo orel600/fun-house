@@ -2062,6 +2062,8 @@ function worldBot(m,L,god){
     for(const [k,open,id,close] of W){open();const p=$(id);if(p.hidden){o.open.push(k);continue}
       if(window.__rkScan)__rkScan();
       const pn=p.matches('.ov')?p.querySelector('.panel,.win')||p:p;o.wins[k]=ovl(pn);
+      {const cs=getComputedStyle(pn),hid=pn.scrollHeight>pn.clientHeight+4;   // תוכן חתוך: מתחת לקפל בלי גלילה, או גלילה בלי סימן "יש עוד למטה" (scrollMore, ביקורת 6.11)
+        if(hid&&(!/auto|scroll/.test(cs.overflowY)||!pn.classList.contains('more')))(o.cut=o.cut||[]).push(k)}
       flCardVis();const ce=flCardEl(),c=!ce.hidden&&ce.getBoundingClientRect(),r=pn.getBoundingClientRect();if(c&&c.left<r.right&&r.left<c.right&&c.top<r.bottom&&r.top<c.bottom)o.cover.push(k);   // הכרטיס והחלון נכנסים בהדרגה (opacity), אז בודקים רק שהם לא מוסתרים
       close()}
     FLC.q=[];flCardNext();if(S.mode!=='play'&&S.wd)S.mode='play';return o};
@@ -3813,8 +3815,8 @@ function worldBot(m,L,god){
   // מפתחות גולמיים על המסך, בכל מה שהבוט עבר (נסרק כל כמה צעדים, בכל צילום ובכל חלון של winOvl)
   {const rk=rawKeys;check(!rk.length,rk.length?'מפתח טקסט גולמי על המסך: '+rk.slice(0,8).join(', '):'אין מפתח טקסט גולמי על המסך (DOM וקנבס)')}
   if(winChk){const w=winChk,bad=Object.entries(w.wins).filter(([k,v])=>v.length);
-    check(!bad.length&&!w.cover.length&&!w.open.length,'חלונות לרוחב: '+Object.keys(w.wins).join(', ')+(bad.length?' · יושבים זה על זה: '+bad.map(([k,v])=>k+': '+v.slice(0,4).join(', ')).join(' | '):', שום דבר לא יושב על משהו אחר')+
-      (w.cover.length?' · כרטיס "חדש" מעל: '+w.cover.join(', '):', כרטיס "חדש" לא מכסה חלון')+(w.open.length?' · לא נפתחו: '+w.open.join(', '):''))}
+    check(!bad.length&&!w.cover.length&&!w.open.length&&!(w.cut||[]).length,'חלונות לרוחב: '+Object.keys(w.wins).join(', ')+(bad.length?' · יושבים זה על זה: '+bad.map(([k,v])=>k+': '+v.slice(0,4).join(', ')).join(' | '):', שום דבר לא יושב על משהו אחר')+
+      (w.cover.length?' · כרטיס "חדש" מעל: '+w.cover.join(', '):', כרטיס "חדש" לא מכסה חלון')+(w.open.length?' · לא נפתחו: '+w.open.join(', '):'')+((w.cut||[]).length?' · תוכן חתוך בלי סימן שיש עוד: '+w.cut.join(', '):', בלי תוכן חתוך'))}
   else check(false,'חלונות לרוחב: הבדיקה לא רצה');
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
 
