@@ -86,7 +86,7 @@ function mbGambleDraw(){
     ctx.fillStyle='#5E586C';ctx.fillRect(x-A.r-10,y-A.r*0.5-82,A.r*2+20,14);
     if(!open||done){ctx.strokeStyle='#2E2838';ctx.lineWidth=3;for(let i=1;i<6;i++){const bx=x-A.r+i*A.r/3;ctx.beginPath();ctx.moveTo(bx,y-A.r*0.5-68);ctx.lineTo(bx,y-A.r*0.5);ctx.stroke()}}
   }
-  mbIcon('dice',x,y-A.r*0.5-104,30,col);
+  mbIcon('dice',x,y,22,col);   // הקוביה על הרצפה במרכז הטבעת: מעל הקשת היא יצאה מעבר לכפתורים שלמעלה (הבודק, 6.11)
 }
 // מעל הכל: הגלגל שמסתובב מעל הגיבור בזמן ההטלה, והתוצאה ברגע האחרון
 function mbGambleTop(){

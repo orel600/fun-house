@@ -1609,6 +1609,9 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbfh.t0 svg{background:var(--mb0d)}.mbfh.t1 svg{background:var(--mb1d)}
 .mbfh.t0 em{color:var(--mb0)}.mbfh.t1 em{color:var(--mb1)}.mbfh em{font-style:normal}
 .mbfh.v svg{filter:grayscale(.7);opacity:.7}.mbfh.v em{opacity:.85}
+/* שורה ארוכה (חדר ההימור, שמות באנגלית) נשארת בתוך המסך: חצי רוחב לכל היותר, והטקסט נחתך ב-… */
+.mbfeed{max-width:calc(50vw - 16px)}.mbfr{max-width:100%;box-sizing:border-box;overflow:hidden}
+.mbfh{min-width:0}.mbfh svg{flex:none}.mbfh em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .mbfx{width:14px;height:14px;color:var(--brass-hi)}
 @keyframes mbfin{from{opacity:0;transform:translateX(-14px)}}
 @keyframes mbfout{to{opacity:0;transform:translateY(-6px)}}
