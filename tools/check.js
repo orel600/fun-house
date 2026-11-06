@@ -913,8 +913,12 @@ function worldBot(m,L,god){
   const qe=await page.evaluate(()=>{const Q=SAVE.quests,by=id=>QUESTS.list.find(q=>q.id===id);QUESTS.early.ids=QUESTS.list.map(q=>q.id);questsRefresh();
     const daily=Q.daily.length===QUESTS.daily&&Q.daily.every(id=>Q.active[id]);
     const ach=QUESTS.list.filter(q=>q.kind==='achievement').every(q=>Q.active[q.id]);
-    const old=Q.daily.slice();for(const id of old)Q.active[id].p[0]=1;Q.day='1999-1-1';questsRefresh();
-    const day=Q.daily.length===QUESTS.daily&&Q.daily.every(id=>Q.active[id]&&Q.active[id].p.every(v=>v===0))&&old.filter(id=>!Q.daily.includes(id)).every(id=>!Q.active[id]);
+    // יום חדש: יומי שלא נגמר יורד, ויומי שנגמר ומחכה לפרס נשאר עד שלוקחים (ביקורת 6.11, פריט 3). הראשון מוכן בכוונה
+    const old=Q.daily.slice();for(const id of old)Q.active[id].p[0]=1;Q.active[old[0]].p=QBY[old[0]].obj.map(o=>o.n);const rdy=old.filter(id=>qReady(QBY[id]));
+    Q.day='1999-1-1';questsRefresh();
+    const day=Q.daily.length===QUESTS.daily&&Q.daily.every(id=>Q.active[id]&&Q.active[id].p.every(v=>v===0))&&rdy.every(id=>Q.active[id]&&!Q.daily.includes(id))&&
+      old.filter(id=>!Q.daily.includes(id)&&!rdy.includes(id)).every(id=>!Q.active[id]);
+    for(const id of rdy)delete Q.active[id];
     S.boss={};questEvent('hurt');S.boss=null;questEvent('win');const hit=!qReady(by('aClean'));S.q.bossHit=0;questEvent('win');const clean=qReady(by('aClean'));
     qStart(by('firstMill'));SAVE.village.mill=1;questEvent('upgrade','mill');const up=qReady(by('firstMill'));
     qStart(by('wFirst'));questEvent('reach','world');questEvent('gather','wood',6);questEvent('collect','wood',9);const wHalf=!qReady(by('wFirst'));questEvent('gather','wood',4);const world=wHalf&&qReady(by('wFirst'));
