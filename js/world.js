@@ -55,7 +55,7 @@ const WORLD={
   /* האחו הגדול: לפי המרחק מהשער, בקנה המידה של המפה (docs/concept-meadow.md "קושי"): קל עד 1100, בינוני עד 2000 (בערך הנהר),
      קשה עד 3200 והכי קשה מעבר. id: מה שמערכות אחרות שואלות (affix.js, foeai.js). אותו id יכול לחזור, רק המספרים משתנים */
   zones:[
-    {id:'start',to:450, hp:0.5, dmg:0.35,speed:0.65,leash:240,back:12,min:175,wind:0.65},   // min: רצפת חיים משלו, כדי שגם ליד השער אויב לוקח 3-4 מכות (ולא foeMin×0.35). wind: הכנה איטית יותר למכה, קל להתחמק
+    {id:'start',to:450, hp:0.5, dmg:0.35,speed:0.65,leash:240,back:12,min:120,wind:0.65},   // min: רצפת חיים משלו, כדי שגם ליד השער אויב לוקח 2-3 מכות (ולא foeMin×0.5). הרצפה של כל אזור לא נמוכה מזו שלפניו (wFloor), אז מהשער החוצה היא רק עולה. 6.11: היה 175, גבוה מכל האחו עד 3200 (ביקורת, פריט 10). wind: הכנה איטית יותר למכה, קל להתחמק
     {id:'near', to:1100,hp:0.7, dmg:0.6, speed:0.85,leash:360,back:22},
     {id:'far',  to:2000,hp:1,   dmg:1,   speed:1,   leash:480,back:30},
     {id:'far',  to:3200,hp:1.3, dmg:1.2, speed:1.05,leash:520,back:34},
@@ -197,7 +197,7 @@ function worldUi(on){if(!on)TR=null;document.body.classList.toggle('world',on);$
 function enterWorld(at,reg){
   wRet=null;reset();S.mode='play';
   reg=WORLD.regions[reg]?reg:'meadow';
-  S.wd={reg,t:0,gt:0,near:null,ui:'',groups:WR().foes.map(()=>({t:0})),got:{}};
+  S.wd={reg,t:0,gt:0,near:null,ui:'',groups:[],got:{}};S.wd.groups=WR().foes.map(()=>({t:0}));   // קודם S.wd, ואז WR() יודע באיזה אזור אנחנו (לפני כן החזיר תמיד את האחו)
   const R=WR();terrainEnter(R,reg);   // המפה של האזור: מה חסום ומה מאט (terrain.js). אזור בלי map: null, ומלבן כמו קודם
   S.nd={list:wNodes(),broken:0,got:[]};
   const g=wGates()[at]||R.home;
@@ -237,9 +237,12 @@ function wLootIn(){
 
 /* ---- אויבים: קבוצה לכל שורה ב-WORLD.foes ---- */
 // האזור של קבוצה, לפי המרחק של הבית שלה מהשער לכפר
-const wZone=G=>{const R=WR();return R.zones.find(z=>Math.hypot(G.x-R.home.x,G.y-R.home.y)<z.to)};
+const wZone=G=>{const R=WR();wFloors(R.zones);return R.zones.find(z=>Math.hypot(G.x-R.home.x,G.y-R.home.y)<z.to)};
+// רצפת החיים של כל אזור (floor): min שלו או foeMin×hp, אבל לא פחות מהאזור שלפניו. כך מהשער החוצה האויב החלש רק מתחזק
+function wFloors(Z){if(Z._fl)return;let f=0;for(const z of Z){f=Math.max(f,z.min??WORLD.foeMin*z.hp);z.floor=f}Z._fl=1}
+const wFloor=Z=>Z.floor??Z.min??WORLD.foeMin*Z.hp;
 // רצפה לחיים של אויב בעולם (WORLD.foeMin), לפני תכונה מיוחדת (affix.js)
-function wTough(e,Z){const m=Z.min??WORLD.foeMin*Z.hp;if(e.max<m){e.hp=e.max=m}if(Z.wind)e.wind=Z.wind}   // Z.min ו-Z.wind: אזור שמגדיר בעצמו (start)
+function wTough(e,Z){const m=wFloor(Z);if(e.max<m){e.hp=e.max=m}if(Z.wind)e.wind=Z.wind}   // Z.min ו-Z.wind: אזור שמגדיר בעצמו (start)
 function wSpawn(G,i){
   if(!ETYPES[G.type])return;const Z=wZone(G);
   for(let k=0,n=mutN(G.n);k<n;k++){   // mutN: יום הענקים או הנחיל (mutation.js)
@@ -260,7 +263,7 @@ function wFoes(dt){
     if(e.evt){evFoeMove(e,dt);continue}
     if(e.rare){rareMove(e,dt);continue}   // מפלצת נדירה: ליד המקום הנסתר שלה (rares.js)
     if(e.pack){if(foeAi(e,dt,Math.hypot(P.x-e.x,P.y-e.y)))foeAiTail(e,dt);else paceFoeMove(e,dt);continue}   // התנהגות לפי סוג (foeai.js)   // להקה שמגיעה מקצה המסך (pacing.js)   // גל של אירוע (events.js)   // השומר האבן (story.js)
-    alive[e.home]++;
+    if(!e.nem&&!e.hunt)alive[e.home]++;   // נמסיס ומטרת ציד גרים ליד קבוצה אבל לא שייכים לה: בלי זה הלהקה שלהם לא התעוררה עד שמתו (nemesis.js, hunt.js)
     const G=FO[e.home]||FO[0];let dx=P.x-e.x,dy=P.y-e.y;const d=Math.hypot(dx,dy)||1;
     if(TR&&d>TERRAIN.sleep)continue;   // רחוק מאוד מהשחקן: לא חושב ולא זז (האחו הגדול)
     let mx=0,my=0,sp=e.speed*slowK(e);   // קפוא, תקוע או מאובן לא זזים (slowK ב-dmg.js)

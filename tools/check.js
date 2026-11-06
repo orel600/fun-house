@@ -557,6 +557,20 @@ function worldBot(m,L,god){
   await page.addInitScript(seed=>{let a=seed>>>0;Math.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}},CFG.seed);
   await page.clock.install({time:0});
   await page.clock.pauseAt(1000);
+  // מפתח טקסט גולמי על המסך (ביקורת 6.11, פריט 8: "sq.pl.storm.spire" ביומן): כל טקסט גלוי, וכל מה שנכתב על הקנבס, נבדק.
+  // מועמד = מילה עם נקודות (a.b.c), והחלק הראשון שלה הוא קידומת של מפתח ב-TEXT (lang.js). כך כתובת או מספר עשרוני לא נחשבים
+  await page.addInitScript(()=>{const RK=window.__rk={hits:[],seen:{}};let pre=null;
+    const pf=()=>pre||(typeof TEXT==='object'&&TEXT?(pre=new Set(Object.keys(TEXT).filter(k=>k.includes('.')).map(k=>k.split('.')[0]))):null);
+    const re=/(?<![\w\-\/.@#:])[a-z][a-zA-Z0-9]*(?:\.[a-zA-Z0-9_]+)+(?![\w\-\/])/g;
+    const test=(s,where)=>{if(typeof s!=='string'||s.indexOf('.')<0)return;const p=pf();if(!p)return;
+      for(const m of s.matchAll(re)){const k=m[0];if(p.has(k.split('.')[0])&&!RK.seen[k]){RK.seen[k]=1;RK.hits.push(k+' ('+where+')')}}};
+    const C=CanvasRenderingContext2D.prototype;for(const f of ['fillText','strokeText']){const o=C[f];C[f]=function(t,...a){test(t,'קנבס');return o.call(this,t,...a)}}
+    window.__rkScan=()=>{if(!document.body)return;const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
+      while((n=w.nextNode())){const s=n.nodeValue;if(s.indexOf('.')<0)continue;const el=n.parentElement;
+        if(!el||el.closest('[hidden],script,style')||!el.getClientRects().length)continue;
+        test(s,el.closest('[id]')?el.closest('[id]').id:el.tagName)}}});
+  {const rf=page.clock.runFor.bind(page.clock);let n=0;   // כל כמה צעדים של הבוט סורקים את המסך
+    page.clock.runFor=async ms=>{const r=await rf(ms);if(++n%6===0)await page.evaluate(()=>window.__rkScan&&__rkScan()).catch(()=>{});return r}}
   await page.addInitScript(g=>{try{localStorage.setItem('zm-gfx',g)}catch(e){}},CFG.gfx);
   // 5.11.2026: models3d.js כבר כ-16MB, ובמכונות של GitHub הטעינה עברה את 30 השניות של ברירת המחדל. הבדיקה לא בודקת זמן טעינה
   await page.goto('file://'+path.resolve(__dirname,'..','index.html'),{timeout:120000});
@@ -569,7 +583,8 @@ function worldBot(m,L,god){
   const results=[];
   const check=(ok,txt)=>results.push((ok?'✓ ':'✗ ')+txt);
   let shotN=0;
-  const shot=async name=>{if(!CFG.shots)return;fs.mkdirSync(CFG.shots,{recursive:true});
+  // כל מסך שמצטלם נסרק גם למפתחות גולמיים (__rkScan), גם בלי צילומים
+  const shot=async name=>{await page.evaluate(()=>window.__rkScan&&__rkScan()).catch(()=>{});if(!CFG.shots)return;fs.mkdirSync(CFG.shots,{recursive:true});
     // השעון בבדיקה עומד, ולכן אייקון "סקיל חדש" (skillreveal.js, 1.8 שניות במשחק) נשאר באמצע המסך מעל הגיבור, והכפתור בפינה ריק.
     // לפני צילום: האייקון נוחת על הכפתור שלו
     await page.evaluate(()=>{if(typeof SKR!=='undefined'&&SKR&&SKR.el){SKR.el.remove();SKR.el=null;skrBtn(SKR.id,false)}});
@@ -1025,6 +1040,19 @@ function worldBot(m,L,god){
     return{n:ids.length,miss,cls,css,tiers:GEAR.tiers.map(t=>t.id).join('/')}});
   check(chr.n>=60&&!chr.miss.length&&!chr.cls.length&&chr.css,'אופי לחפצים: '+chr.n+' חפצים עם שם ומשפט אופי בשתי השפות, ומסגרת לפי השכבה ('+chr.tiers+')'+
     (chr.miss.length?' · חסר: '+chr.miss.slice(0,8).join(', '):'')+(chr.cls.length?' · בלי class של שכבה: '+chr.cls.slice(0,8).join(', '):'')+(chr.css?'':' · css/rarity.css לא נטען'));
+  // שמות מקומות לקווסטים צדדיים (ביקורת 6.11, פריט 8): לכל מקום ב-SIDEQ.places (גם ציוני הדרך של המפות הגדולות) יש שם ב-lang.js
+  const sqNames=await page.evaluate(()=>{const miss=[];let n=0;for(const reg in SIDEQ.places)for(const id in SIDEQ.places[reg]){n++;const k='sq.pl.'+reg+'.'+id,e=TEXT[k];if(!e||!e.he||!e.en)miss.push(reg+'.'+id)}return{n,miss}});
+  check(sqNames.n>0&&!sqNames.miss.length,'שמות מקומות לקווסטים: '+sqNames.n+' מקומות'+(sqNames.miss.length?' · בלי שם ('+sqNames.miss.length+'): '+sqNames.miss.slice(0,10).join(', '):', לכולם שם בשתי השפות'));
+  // איזון לפי אזור (ביקורת 6.11, פריט 10): בכל אזור, האויב הממוצע ליד השער (start) לא חזק מזה שבאזור הבא (near). חיים אחרי הרצפה (wFloor), ונזק
+  const zoneBal=await page.evaluate(()=>{const out=[],bad=[];
+    for(const [reg,R] of [['meadow',WORLD],...Object.entries(WORLD.regions)]){if(!R||!R.zones||!R.foes||!R.home)continue;if(typeof wFloors==='function')wFloors(R.zones);
+      const acc={};for(const G of R.foes){const E=ETYPES[G.type];if(!E||G.creature)continue;const Z=R.zones.find(z=>Math.hypot(G.x-R.home.x,G.y-R.home.y)<z.to);if(!Z)continue;
+        const fl=typeof wFloor==='function'?wFloor(Z):(Z.min??WORLD.foeMin*Z.hp),a=acc[Z.id]||(acc[Z.id]={hp:0,dmg:0,n:0});
+        a.hp+=Math.max(E.hp*Z.hp*WORLD.foeHp,fl)*G.n;a.dmg+=E.dmg*Z.dmg*G.n;a.n+=G.n}
+      const st=acc.start,nr=acc.near;if(!st||!nr)continue;const f=x=>Math.round(x);
+      out.push(reg+' '+f(st.hp/st.n)+'/'+f(nr.hp/nr.n));if(st.hp/st.n>nr.hp/nr.n+0.5||st.dmg/st.n>nr.dmg/nr.n+0.05)bad.push(reg)}
+    return{out,bad}});
+  check(zoneBal.out.length&&!zoneBal.bad.length,'איזון לפי אזור: אויב ממוצע ליד השער לא חזק מהאזור הבא (חיים start/near): '+zoneBal.out.join(', ')+(zoneBal.bad.length?' · הפוך ב: '+zoneBal.bad.join(', '):''));
   // כמה קשת העץ אמורה להוסיף, לפי GEAR. בנפחייה היא עולה ל-+1 (AGING.scale)
   const gx=await page.evaluate(()=>Math.round((1+GEAR.items.oakBow.stats.gdmg*(1+AGING.scale)/100)*100)/100);
   await page.click('#startBtn');
@@ -1977,6 +2005,27 @@ function worldBot(m,L,god){
     const gb=$('gBadge'),h0=gb.hidden;gb.hidden=false;menuDot();m.dot=!document.querySelector('#qRail [data-tab="gearBtn"] .qrdot').hidden&&$('menuBtn').querySelector('b').hidden;gb.hidden=h0;menuDot();
     m.nav=[...document.querySelectorAll('#nav button')].every(b=>b.classList.contains('talkbtn'));   // בסרגל רק כפתורים של המקום
     m.ok=m.btn&&m.open&&m.tabs===m.want&&!m.small.length&&!m.out.length&&m.allOk&&m.xClose&&m.esc&&m.bg&&m.dot&&m.nav&&m.rail===m.railWant&&!m.railBad.length&&!m.railOpen.length&&m.setOnly&&!m.topBad.length&&m.feedTop&&!m.rankBad.length&&m.useCap;return m};
+  // חלונות לרוחב (ביקורת 6.11, פריטים 1 ו-9): בחלון פתוח אף שני כפתורים, כותרות או שדות לא יושבים זה על זה, וכרטיס "חדש" (foelore.js) לא מכסה חלון.
+  // חפיפה = יותר מ-4px בשני הכיוונים, ולפחות רבע מהשטח של הקטן מהשניים. אלמנט בתוך אלמנט לא נחשב
+  const winOvl=()=>{const $=id=>document.getElementById(id),o={wins:{},cover:[],open:[]};
+    const vis=e=>{if(!e||e.closest('[hidden]'))return null;const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>2&&r.height>2&&cs.display!=='none'&&cs.visibility!=='hidden'&&+cs.opacity>0.05?r:null};
+    const nm=e=>e.id||e.dataset.t||e.dataset.act&&(e.dataset.act+(e.dataset.q?':'+e.dataset.q:''))||(e.textContent||'').trim().slice(0,16)||e.tagName;
+    const ovl=root=>{const els=[...root.querySelectorAll('button,input,select,h2,h3,h4,label,.sub>span')].map(e=>({e,r:vis(e)})).filter(x=>x.r),bad=[];
+      for(let i=0;i<els.length;i++)for(let j=i+1;j<els.length;j++){const a=els[i],b=els[j];if(a.e.contains(b.e)||b.e.contains(a.e))continue;
+        const w=Math.min(a.r.right,b.r.right)-Math.max(a.r.left,b.r.left),h=Math.min(a.r.bottom,b.r.bottom)-Math.max(a.r.top,b.r.top);
+        if(w>4&&h>4&&w*h>0.25*Math.min(a.r.width*a.r.height,b.r.width*b.r.height))bad.push(nm(a.e)+'×'+nm(b.e))}
+      return bad};
+    FLC.q=[Object.keys(FOELORE.list)[0]];flCardNext();   // כרטיס "חדש" פתוח בזמן שכל חלון נפתח
+    const W=[['settings',()=>$('muteBtn').click(),'ovSound',()=>$('sndClose').click()],['gear',gearOpen,'ovGear',gearClose],
+      ['quests',()=>questLogOpen(true),'qLog',()=>questLogOpen(false)],['map',()=>wmapOpen(true),'wMap',()=>wmapOpen(false)],
+      ['jump',()=>travelWin(true),'trWin',()=>travelWin(false)]];
+    for(const [k,open,id,close] of W){open();const p=$(id);if(p.hidden){o.open.push(k);continue}
+      if(window.__rkScan)__rkScan();
+      const pn=p.matches('.ov')?p.querySelector('.panel,.win')||p:p;o.wins[k]=ovl(pn);
+      flCardVis();const ce=flCardEl(),c=!ce.hidden&&ce.getBoundingClientRect(),r=pn.getBoundingClientRect();if(c&&c.left<r.right&&r.left<c.right&&c.top<r.bottom&&r.top<c.bottom)o.cover.push(k);   // הכרטיס והחלון נכנסים בהדרגה (opacity), אז בודקים רק שהם לא מוסתרים
+      close()}
+    FLC.q=[];flCardNext();if(S.mode!=='play'&&S.wd)S.mode='play';return o};
+  let winChk=null;
   const uiMenu={};
   for(const nm in UIV){
     await page.setViewportSize(UIV[nm]);
@@ -1997,6 +2046,8 @@ function worldBot(m,L,god){
     await shot('ui-world-'+nm);
     const w=await page.evaluate(uiMeasure,'world');
     const wm=await page.evaluate(menuTest,'world');uiMenu[nm]={vm,wm};
+    if(nm==='land'){winChk=await page.evaluate(winOvl);if(CFG.shots){await page.evaluate(()=>{FLC.q=[Object.keys(FOELORE.list)[0]];flCardNext();$('muteBtn').click()});await shot('win-settings-land');
+      await page.evaluate(()=>{$('sndClose').click();wmapOpen(true);flCardVis()});await shot('win-map-card-land');await page.evaluate(()=>{wmapOpen(false);FLC.q=[];flCardNext()})}}
     if(CFG.shots){await page.evaluate(()=>{$('menuBtn').click();$('wMapBtn').click()});await shot('ui-menu-map-'+nm);await page.evaluate(()=>menuClose())}
     await page.evaluate(()=>wHome());await page.clock.runFor(100);   // חזרה הביתה כמו במשחק: worldUi(false) ואז הכפר. בלי זה נשארת על body גם world וכפתורי הכפר מוסתרים
     uiR[nm]={v,w};
@@ -3079,7 +3130,7 @@ function worldBot(m,L,god){
       // דרישות: רמה 1 בלי נקודות לא לובשת ברזל, עץ תמיד. עם הרמה והנקודות כן, ואחרי שהן יורדות הוא נשאר לבוש
       SAVE.hero.start='warrior';SAVE.hero.level=1;SAVE.hero.pts={};const id='ironSword~100';bagAdd(id);
       o.free=irReq('oakSword')==null&&irCanWear('oakSword');
-      o.block=!gearEquip(id)&&SAVE.bag[id]===1&&/class="ireq no"/.test(gStatsHtml(id))&&gMark(id)===-1&&!gBestPlan().some(p=>p.id===id);
+      o.block=!gearEquip(id)&&SAVE.bag[id]===1&&/class="ireq no"/.test(gStatsHtml(id))&&gMark(id)===-2&&!gBestPlan().some(p=>p.id===id);
       const r=irReq(id);o.req=r.lv+' '+r.st+' '+r.n;SAVE.hero.level=r.lv;SAVE.hero.pts={[r.st]:r.n};
       o.wear=!!gearEquip(id)&&SAVE.gear.weapon===id;SAVE.hero.level=1;SAVE.hero.pts={};o.kept=SAVE.gear.weapon===id&&gearWorn().includes(id);
       o.arena=(()=>{const a=S.vil,b=S.wd;S.vil=S.wd=null;const k=irCanWear('goldAxe');S.vil=a;S.wd=b;return k})();   // בזירה אין דרישות
@@ -3412,6 +3463,7 @@ function worldBot(m,L,god){
       SAVE.clsPity=LOOT.gear.cls.pity;const p=gItem(lootRoll());
       out[c]={share:Math.round(m/Math.max(1,w)*100),all:tiers.size===GEAR.tiers.length,pity:A.includes(p.w)&&SAVE.clsPity===0,up:t20>t1*1.5}}}catch(e){out.err=e.message}
     SAVE.hero=JSON.parse(bak);SAVE.clsPity=cp;return out});
+  await page.evaluate(()=>window.__rkScan&&__rkScan()).catch(()=>{});const rawKeys=await page.evaluate(()=>(window.__rk||{hits:[]}).hits).catch(()=>['(לא נקרא)']);   // מפתחות גולמיים: נבדק בסוף הדוח
   await browser.close();
 
   const t=s=>s==null?'-':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
@@ -3710,6 +3762,12 @@ function worldBot(m,L,god){
     check(mb.cc.stun>0&&mb.cc.taunt>0,'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
     if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');
   }
+  // מפתחות גולמיים על המסך, בכל מה שהבוט עבר (נסרק כל כמה צעדים, בכל צילום ובכל חלון של winOvl)
+  {const rk=rawKeys;check(!rk.length,rk.length?'מפתח טקסט גולמי על המסך: '+rk.slice(0,8).join(', '):'אין מפתח טקסט גולמי על המסך (DOM וקנבס)')}
+  if(winChk){const w=winChk,bad=Object.entries(w.wins).filter(([k,v])=>v.length);
+    check(!bad.length&&!w.cover.length&&!w.open.length,'חלונות לרוחב: '+Object.keys(w.wins).join(', ')+(bad.length?' · יושבים זה על זה: '+bad.map(([k,v])=>k+': '+v.slice(0,4).join(', ')).join(' | '):', שום דבר לא יושב על משהו אחר')+
+      (w.cover.length?' · כרטיס "חדש" מעל: '+w.cover.join(', '):', כרטיס "חדש" לא מכסה חלון')+(w.open.length?' · לא נפתחו: '+w.open.join(', '):''))}
+  else check(false,'חלונות לרוחב: הבדיקה לא רצה');
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
 
   console.log('ריצה: seed '+CFG.seed+', '+t(L.t)+' זמן משחק'+(CFG.god?', עם חסינות':'')+(CFG.lang==='en'?', באנגלית':'')+(CFG.gfx==='2d'?', בדו-ממד':', בתלת-ממד')+(CFG.shots?', צילומים ב-'+CFG.shots:''));
