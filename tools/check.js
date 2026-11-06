@@ -946,7 +946,7 @@ function worldBot(m,L,god){
     questAct('accept',id);qbSync('meadow');r.swap=B.offer.length===QBOARD.offers&&!B.offer.includes(first[0])&&!qOpen(q);
     for(const o of q.obj)questEvent(o.type,o.what,o.n);r.bReady=qReady(q);const x1=SAVE.hero.xp;questAct('claim',id);
     r.bPaid=SAVE.hero.xp>x1&&QB().n===1&&B.offer.length===QBOARD.offers&&!Q.active[id];
-    B.day='1999-1-1';const before=B.offer.join();qbSync('meadow');r.day=B.offer.length===QBOARD.offers;r.dayNew=B.offer.join()!==before||Object.keys(QBOARD.tpl).length<=QBOARD.offers;
+    B.day='1999-1-1';const before=B.offer.map(t=>B.p[t]);qbSync('meadow');r.day=B.offer.length===QBOARD.offers;r.dayNew=B.day===qDay()&&B.offer.every(t=>B.p[t]&&!before.includes(B.p[t]));   // כל משימה על הלוח נוצרה מחדש. לא משווים סדר: ההגרלה יכולה לצאת אותו דבר במקרה
     QUESTS.early.ids=E;
   }catch(e){r.err=String(e&&e.stack||e).slice(0,200)}
     localStorage.removeItem(SAVE_STORE.key);saveLoad();S.q=null;$('qTrack').hidden=true;$('qTrack').textContent='';return r});
