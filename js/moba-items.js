@@ -6,7 +6,10 @@
 const MBITEM={
   gold:{tick:2,minion:16,ranged:24,kill:160,assist:60,tower:120,share:560},   // tick: זהב לשנייה לכל אחד. share: מאיזה מרחק מקבלים זהב מחייל שמת
   sell:0.6,slots:6,                  // מכירה מחזירה 60%. עד 6 חפצים, ורק זוג מגפיים אחד
-  botEvery:6,                        // בוט בודק כל 6 שניות אם אפשר לקנות (ותמיד כשהוא בבסיס)
+  botEvery:6,                        // בוט בודק כל 6 שניות אם אפשר לקנות (ותמיד כשהוא בבסיס). בוטי האויב: כפול buy של רמת הקושי (moba-bot.js)
+  // זהב של חזרה (הבודק, 6.11: כל מוות של השחקן האכיל את האויב, והמשחק התגלגל). קבוצה "מאחור": פחות זהב ב-gap, או יותר מגדלים שנפלו.
+  // הריגה של גיבור מהקבוצה שמובילה, בידי מי שמאחור: פרס ×(1+bounty). הריגה בידי המובילים של מי שמאחור: ×feed. ומי שמאחור מקבל עוד tick זהב לשנייה
+  comeback:{gap:500,bounty:0.4,feed:0.7,tick:0.75},
   cap:{def:0.5,cdr:0.35},            // הגנה עד 50%, טעינה מהירה עד 35%
   cats:['atk','def','mag','move'],
   // הסטטים: atk נזק בתקיפה, aspd מהירות תקיפה, leech חיים מהנזק, hp חיים, def פחות נזק, sk כוח סקילים (נזק, ריפוי ומגן), cdr טעינה, spd מהירות. התמונות: icons/ui/gear
@@ -38,7 +41,7 @@ function mbItCalc(u){
   b.def=Math.min(MBITEM.cap.def,b.def);b.cdr=Math.min(MBITEM.cap.cdr,b.cdr);u.ib=b;
   const old=u.max;u.max=mbMaxHp(u);if(!u.dead)u.hp=Math.max(1,Math.min(u.max,u.hp+u.max-old));
 }
-function mbGold(u,v){if(!u||u.k!=='hero')return;u.gold=(u.gold||0)+v;if(u.me&&v>=10)mbFloat(u.x+14,u.y-u.r-40,'+'+Math.round(v),C.gold)}
+function mbGold(u,v){if(!u||u.k!=='hero')return;u.gold=(u.gold||0)+v;u.earn=(u.earn||0)+v;if(u.me&&v>=10)mbFloat(u.x+14,u.y-u.r-40,'+'+Math.round(v),C.gold)}
 // למה אי אפשר לקנות: null = אפשר
 function mbCant(u,id){
   const I=MBITEM.items[id],it=u.it||[];
@@ -62,18 +65,24 @@ function mbSell(u,id){
 function mbNext(u){for(const id of MBITEM.build[u.kit]){const c=mbCant(u,id);if(!c||c==='gold')return id}return null}
 
 /* ---- זהב במוות, ובוטים שקונים ---- */
+// קבוצה שמאחור: הרוויחה פחות זהב ב-gap, או שנפלו לה יותר מגדלים
+const mbTeamGold=tm=>mbHeroes(tm).reduce((s,h)=>s+(h.earn||0),0);
+const mbTowersLost=tm=>MB.u.filter(o=>o.k==='tower'&&o.team===tm&&o.dead).length;
+const mbBehind=tm=>mbTeamGold(1-tm)-mbTeamGold(tm)>=MBITEM.comeback.gap||mbTowersLost(tm)>mbTowersLost(1-tm);
 function mbItDie(t,src){
-  const G=MBITEM.gold,foe=1-t.team;
+  const G=MBITEM.gold,foe=1-t.team,C_=MBITEM.comeback;
   if(t.k==='minion'){for(const h of mbHeroes(foe))if(!h.dead&&mbDist(h,t)<G.share)mbGold(h,t.ranged?G.ranged:G.minion);return}
   if(t.k==='hero'){const killer=src&&src.k==='hero'?src:t.st.burnBy&&t.st.burnBy.k==='hero'?t.st.burnBy:null;
-    if(killer)mbGold(killer,G.kill);
-    for(const [h,at] of t.hitBy)if(h!==killer&&h.team!==t.team&&MB.t-at<8)mbGold(h,G.assist);return}
+    const k=mbBehind(foe)?1+C_.bounty:mbBehind(t.team)?C_.feed:1;   // פרס על מוביל, פחות על מי שכבר מאחור
+    if(killer)mbGold(killer,G.kill*k);
+    for(const [h,at] of t.hitBy)if(h!==killer&&h.team!==t.team&&MB.t-at<8)mbGold(h,G.assist*k);return}
   for(const h of mbHeroes(foe))mbGold(h,G.tower);   // מגדל או בסיס: כל הקבוצה
 }
 function mbItTick(M,dt){
-  for(const u of M.u){if(u.k!=='hero')continue;u.gold=(u.gold||0)+MBITEM.gold.tick*dt;
-    if(u.bot){u.buyT=(u.buyT??MBITEM.botEvery*Math.random())-dt;
-      if(u.buyT<=0||u.dead||mbDist(u,u.home)<300){if(u.buyT<=0)u.buyT=MBITEM.botEvery;const n=mbNext(u);if(n)mbBuy(u,n)}}}
+  const back=[mbBehind(0),mbBehind(1)];
+  for(const u of M.u){if(u.k!=='hero')continue;const g=(MBITEM.gold.tick+(back[u.team]?MBITEM.comeback.tick:0))*dt;u.gold=(u.gold||0)+g;u.earn=(u.earn||0)+g;
+    if(u.bot){const ev=MBITEM.botEvery*(u.team?mbFoe().buy:1);u.buyT=(u.buyT??ev*Math.random())-dt;
+      if(u.buyT<=0||(u.dead||mbDist(u,u.home)<300)&&!(u.team&&mbFoe().buy>1)){if(u.buyT<=0)u.buyT=ev;const n=mbNext(u);if(n)mbBuy(u,n)}}}
 }
 // אחרי פגיעה: קוצים (מי שמכה בך מקרוב), מגן בחיים נמוכים, והאטה מהפגיעות שלך
 function mbItHit(src,t,d){

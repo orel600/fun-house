@@ -1708,6 +1708,11 @@ body:has(#ovMoba:not([hidden])) #muteBtn{display:none}
 .mbwin .whd small{color:var(--dim);font-weight:700}
 .mbgoal{margin:-4px 0 8px;color:var(--dim);font:600 11px/1.3 var(--body);text-align:center}
 .mbkits{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+/* רמת קושי בחלון הבחירה (moba-bot.js, MBBOT.diff): שלושה כפתורים קטנים, הנבחר בזהב */
+.mbdiff{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 8px;font:800 11px var(--body);color:var(--dim)}
+.mbdiff button{min-width:64px;min-height:30px;padding:3px 12px;border-radius:999px;border:0;font:800 12px var(--body);color:var(--chalk);cursor:pointer;
+  background:linear-gradient(var(--slate-hi),var(--slate));box-shadow:var(--bevel),0 0 0 1.5px var(--brass-lo)}
+.mbdiff button.on{background:linear-gradient(var(--brass-hi),var(--brass));color:var(--wood);box-shadow:var(--bevel),0 0 0 1.5px var(--wood),0 0 10px #F4C74F55}
 @media (max-width:620px){.mbkits{grid-template-columns:repeat(2,1fr)}}
 .mbkit{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 8px 8px;border-radius:12px;border:0;cursor:pointer;font:inherit;color:var(--chalk);overflow:hidden;
   background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,var(--dt) 34%,transparent),transparent 62%),linear-gradient(var(--slate-hi),var(--slate));

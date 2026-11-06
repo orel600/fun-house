@@ -1,12 +1,12 @@
 /* משחקי השאול: בדיקת איזון (docs/moba.md, שלב 5). לא חלק מהמשחק ולא מהבדיקה ב-GitHub.
    משחק הרבה משחקים מואצים שבהם כל ששת הגיבורים בוטים, וסופר לכל ערכה כמה פעמים הקבוצה שלה ניצחה.
    ערכה מאוזנת מנצחת בערך 50% מהמשחקים שהיא בהם. גם: כמה זמן משחק, וכמה נגמרו בזמן ולא בבסיס.
-   הרצה: node tools/moba-balance.js [משחקים, ברירת מחדל 40]. צריך Playwright (npm run setup) */
+   הרצה: node tools/moba-balance.js [משחקים, ברירת מחדל 40] [קושי: easy/normal/hard, ברירת מחדל normal]. צריך Playwright (npm run setup) */
 const {chromium}=require('playwright');const path=require('path');
-const N=+process.argv[2]||40;
+const N=+process.argv[2]||40,DIFF=process.argv[3]||'normal';
 (async()=>{
   const b=await chromium.launch();const p=await b.newPage({viewport:{width:844,height:390}});
-  await p.addInitScript(()=>{try{localStorage.setItem('zm-gfx','2d')}catch(e){}});
+  await p.addInitScript(d=>{try{localStorage.setItem('zm-gfx','2d');localStorage.setItem('fh-mb-diff',d)}catch(e){}},DIFF);
   await p.goto('file://'+path.resolve(__dirname,'..','index.html'));await p.waitForTimeout(800);
   const res=[];
   for(let g=0;g<N;g++){

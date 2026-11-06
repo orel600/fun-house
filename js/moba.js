@@ -6,16 +6,18 @@
    הבוטים ב-moba-bot.js */
 const MOBA={
   lane:{len:2000,half:650},   // אוראל, 3.11: "המפה צרה". רחב כמו ב-Brawl של MLBB: הנתיב הראשי באמצע, ומשני צדיו שטח פתוח לתמרון ולעקיפה   // הנתיב: x מ--len עד len, y מ--half עד half. באמצע הנתיב הראשי, ומשני צדיו שבילי עקיפה מאחורי שיחים (המראה ב-MBLOOK.map)
-  base:{x:1840,hp:1500,r:58,range:270,dmg:70,cd:1.1,heal:0.2,healR:240,minK:0.3},   // minK: חיילים מכים בבסיס רק 30% (הבודק, 3.11: בלי זה הבסיס נמס בפחות מ-7 שניות)   // heal: חלק מהחיים בשנייה לגיבורים ליד הבסיס שלהם
+  base:{x:1840,hp:1500,r:58,range:270,dmg:70,cd:1.1,heal:0.2,healR:240,minK:0.45},   // minK: חיילים מכים בבסיס רק 45% (הבודק, 3.11: בלי זה הבסיס נמס בפחות מ-7 שניות. 6.11: ב-30% עם מגן המגדלים אף משחק לא נגמר בבסיס)   // heal: חלק מהחיים בשנייה לגיבורים ליד הבסיס שלהם
   towers:[720,1300],          // המגדל הקרוב למרכז קודם. אי אפשר לפגוע במגדל הרחוק לפני שהקרוב נפל, ובבסיס לפני שניהם
   tower:{hp:700,r:30,range:290,dmg:45,cd:1.2,hero:1.5,shot:620},   // hero: מכפיל נזק מול גיבור
   minion:{every:22,first:3,count:4,gap:0.8,hp:260,dmg:18,cd:1,range:36,aggro:180,speed:80,r:12,xp:22,
     ranged:{hp:180,dmg:22,range:190},build:1.8,
-    grow:0.1,push:0.5},   // grow: כל דקה החיילים חזקים ב-10%. push: כל מגדל של האויב שנפל, החיילים שלנו חזקים ב-50%   // החייל האחרון בכל גל יורה מרחוק
-  xp:{need:[0,80,190,320,470,640],kill:150,share:560,assist:0.5,tower:60},   // need: XP מצטבר לרמה הבאה. share: מי שקרוב מקבל XP מחייל שמת
+    grow:0.15,push:0.5},   // grow: כל דקה החיילים חזקים ב-15% (היה 10%: עם המגנים וזהב החזרה המשחקים נתקעו עד 12 דקות). push: כל מגדל של האויב שנפל, החיילים שלנו חזקים ב-50%   // החייל האחרון בכל גל יורה מרחוק
+  xp:{need:[0,80,190,320,470,640],kill:150,share:850,assist:0.5,tower:60,tick:1.2},   // need: XP מצטבר לרמה הבאה. share: מי שקרוב מקבל XP מחייל שמת (הבודק, 6.11: 560 השאיר מאחור מי שקצת בצד). tick: XP לשנייה לכל גיבור חי
   ultAt:6,
   grow:0.09,                  // כל רמה: 9% יותר חיים ונזק
-  respawn:{base:4,lvl:2,min:2.5},   // שניות עד שגיבור חוזר: 4, ועוד 2 לכל רמה, ועוד 2.5 לכל דקה במשחק (סוף משחק מכריע)
+  respawn:{base:3,lvl:0.6,min:3,after:3},   // שניות עד שגיבור חוזר: 3, ועוד 0.6×(רמה-1)² (ברמה 6: 15), ועוד 3 לכל דקה אחרי הדקה השלישית. קצר בהתחלה (הבודק, 6.11: 31%-39% מהמשחק מתים), וארוך מספיק בסוף כדי שמשחק ייגמר
+  shield:{t:180,k:0.5},       // מגן מגדלים (כמו ב-MLBB): 3 הדקות הראשונות, המגדלים הקדמיים סופגים חצי מהנזק (הבודק: המגדל נפל אחרי דקה וחצי)
+  haste:{k:1.6,r:700,hurt:3}, // ריצה מהבסיס: ×1.6 ליד הבסיס שלך (רדיוס r), עד שיוצאים או שנפגעים (ועוד hurt שניות אחרי פגיעה בלי)
   order:{attack:8,back:6},   // פקודה לבוטים החברים: כמה שניות היא נמשכת
   warnR:160,                  // מאיזה מרחק מטווח מגדל של האויב רואים את הטבעת האדומה שלו
   tips:3,                     // בכמה משחקים ראשונים מופיע הטיפ "הישארו מאחורי החיילים"
@@ -51,11 +53,17 @@ function mbHittable(b){
   if(b.k==='base')return !MB.u.some(o=>o.k==='tower'&&o.team===b.team&&!o.dead);
   return true;
 }
-const mbSpeed=u=>u.speed*(1+mbIb(u).spd)*(u.st.slow>0?1-u.st.slowK:1)*(u.st.rage>0?u.st.rageSp:1);   // spd: מגפיים (moba-items.js)
+const mbSpeed=u=>u.speed*(1+mbIb(u).spd)*(u.st.slow>0?1-u.st.slowK:1)*(u.st.rage>0?u.st.rageSp:1)*(mbHaste(u)?MOBA.haste.k:1);   // spd: מגפיים (moba-items.js)
 
 /* ---- נזק, שליטה בקהל ומוות ---- */
+// ריצה מהבסיס: גיבור ליד הבסיס שלו שלא נפגע לאחרונה
+const mbHaste=u=>u.k==='hero'&&!u.dead&&Math.hypot(u.x-(u.team?1:-1)*MOBA.base.x,u.y)<MOBA.haste.r&&!((u.hurtT||-99)>MB.t-MOBA.haste.hurt);
+// מגן מגדל: המגדלים הקדמיים בתחילת המשחק
+const mbShielded=b=>b.k==='tower'&&Math.abs(b.x)===MOBA.towers[0]&&MB.t<MOBA.shield.t;
 function mbDmg(src,t,d,dt,o={}){
   if(!t||t.dead||!mbHittable(t))return 0;
+  if(mbShielded(t))d*=1-MOBA.shield.k;
+  if(t.k==='hero'&&src&&src!==t)t.hurtT=MB.t;
   if(src&&src.k==='hero'&&src.st.rage>0)d*=src.st.rageK;
   if(t.st.wet>0&&dt==='lightning'){d*=MOBA.combo.shock;t.st.wet=0;mbWord(t,'shock')}   // קומבו: רטוב + ברק
   if(t.k==='hero')d*=1-Math.min(MBITEM.cap.def,(MBKIT[t.kit].def||0)+mbIb(t).def);   // הנפח והלוחם נלחמים מקרוב, וסופגים קצת פחות. ועוד הגנה מחפצים (moba-items.js)
@@ -84,11 +92,12 @@ function mbXp(h,v){
   while(h.lvl<MOBA.ultAt&&h.xp>=N[h.lvl]){h.lvl++;const old=h.max;h.max=mbMaxHp(h);h.hp+=h.max-old;
     if(h.me){celebrate(h.x,h.y,'gear');mbBanner(h.lvl>=MOBA.ultAt?T('mb.ultReady'):T('mb.lvup',h.lvl),C.gold)}}
 }
+const mbResp=t=>{const R=MOBA.respawn;return R.base+R.lvl*(t.lvl-1)**2+R.min*Math.max(0,MB.t/60-R.after)};   // רמה בריבוע: כמעט כלום בהתחלה, הרבה ברמה 6
 function mbDie(t,src){
   if(t.dead)return;t.hp=0;t.dead=true;const foe=1-t.team;mbItDie(t,src);   // זהב (moba-items.js)
   if(t.k==='minion'){for(const h of mbHeroes(foe))if(mbDist(h,t)<MOBA.xp.share)mbXp(h,MOBA.minion.xp)}
   else if(t.k==='hero'){
-    t.deaths++;t.resp=MOBA.respawn.base+MOBA.respawn.lvl*t.lvl+MOBA.respawn.min*MB.t/60;MB.score[foe]++;
+    t.deaths++;t.resp=mbResp(t);MB.score[foe]++;
     const killer=src&&src.k==='hero'?src:t.st.burnBy&&t.st.burnBy.k==='hero'?t.st.burnBy:null;
     if(killer){killer.kills++;mbXp(killer,MOBA.xp.kill)}
     for(const [h,at] of t.hitBy)if(h!==killer&&MB.t-at<8)mbXp(h,MOBA.xp.kill*MOBA.xp.assist);
@@ -179,7 +188,7 @@ function mobaStart(kit){
   $('ovMoba').hidden=true;
   if(typeof villageUi==='function')villageUi(false);if(typeof worldUi==='function')worldUi(false);
   reset();S.mode='play';
-  MB=S.mb={t:0,u:[],shots:[],zones:[],walls:[],fx:[],floats:[],queue:[],waveT:MOBA.minion.first,score:[0,0],over:false,keys:{},order:null};
+  MB=S.mb={t:0,u:[],shots:[],zones:[],walls:[],fx:[],floats:[],queue:[],waveT:MOBA.minion.first,score:[0,0],over:false,keys:{},order:null,diff:mbDiffGet()};   // diff: רמת הקושי (moba-bot.js)
   // הקבוצות: השחקן ושני בוטים מול שלושה. בכל קבוצה מישהו מקדימה (נפח או לוחם)
   const all=Object.keys(MBKIT),team=(first)=>{
     let t=first?[first]:[];const rest=all.filter(k=>!t.includes(k)).sort(()=>Math.random()-0.5);
@@ -211,7 +220,7 @@ function mobaUpdate(dt){
     if(u.dead){if(u.k==='hero'){u.resp-=dt;if(u.resp<=0){u.dead=false;u.hp=u.max;u.x=u.home.x;u.y=u.home.y;u.cd.s1=u.cd.s2=0;mbFeelReset(u)}}continue}
     mbTick(u,dt);if(u.dead)continue;
     if(u.st.dash){const D=u.st.dash,s=Math.min(D.left,D.sp*dt);mbStep(u,D.vx*s,D.vy*s);D.left-=s;u.moving=true;if(D.left<=0.5){u.st.dash=null;D.end()}continue}
-    if(u.k==='hero'){for(const k of MB_SLOTS)if(u.cd[k]>0)u.cd[k]-=dt;u.atkT-=dt;u.aggro-=dt;u.me&&!u.bot?mbPlayer(u,dt):mbBot(u,dt)}
+    if(u.k==='hero'){for(const k of MB_SLOTS)if(u.cd[k]>0)u.cd[k]-=dt;u.atkT-=dt;u.aggro-=dt;mbXp(u,MOBA.xp.tick*dt);u.me&&!u.bot?mbPlayer(u,dt):mbBot(u,dt)}
     else if(u.k==='minion'){u.atkT-=dt;mbMinion(u,dt)}
     else mbTower(u,dt);
   }
@@ -361,7 +370,9 @@ function mobaHud(){
 // חלון הבחירה: ארבע הערכות, בשני טורים לרוחב
 function mobaOpen(){
   const w=$('mbWin');
-  w.innerHTML=winHead(T('mb.title'),T('mb.sub'))+'<p class="mbgoal">'+T('mb.goal')+'</p><div class="mbkits">'+
+  const dd=mbDiffGet();   // רמת קושי: קל, רגיל, קשה (moba-bot.js). נשמרת בין משחקים
+  w.innerHTML=winHead(T('mb.title'),T('mb.sub'))+'<p class="mbgoal">'+T('mb.goal')+'</p>'+
+    '<div class="mbdiff" role="radiogroup" aria-label="'+T('mb.diff')+'"><span>'+T('mb.diff')+'</span>'+Object.keys(MBBOT.diff).map(d=>'<button role="radio" aria-checked="'+(d===dd)+'" class="'+(d===dd?'on':'')+'" data-diff="'+d+'">'+T('mb.d.'+d)+'</button>').join('')+'</div><div class="mbkits">'+
     Object.keys(MBKIT).map(k=>{const K=MBKIT[k];return '<button class="mbkit" data-kit="'+k+'" style="--dt:'+dtCol(K.dt)+'"><span class="mbmed">'+mbPic('k_'+k,'mbki')+'</span><span class="mbkn">'+T('mb.k.'+k)+'</span><small>'+T('mb.r.'+k)+'</small>'+
       '<ul>'+MB_SLOTS.map(s=>'<li style="--dt:'+dtCol(K[s].dt||K.dt)+'">'+mbPic(K[s].id,'mbli')+'<span>'+T('mb.s.'+K[s].id)+(s==='ult'?' <em>'+T('mb.ult')+'</em>':'')+'</span></li>').join('')+'</ul></button>'}).join('')+'</div>';
   w.dataset.from=$('ovStart').hidden?'':'start';$('ovStart').hidden=true;   // ממסך הפתיחה: חוזרים אליו בסגירה
@@ -376,7 +387,8 @@ function mbEndShow(won){
 }
 function mobaPickClose(){const w=$('mbWin');if(w.dataset.mode==='end'||S.mb)mobaExit();else{$('ovMoba').hidden=true;if(w.dataset.from==='start')$('ovStart').hidden=false}}
 $('mbWin').addEventListener('click',e=>{
-  const k=e.target.closest('[data-kit]'),a=e.target.closest('[data-act]');
+  const k=e.target.closest('[data-kit]'),a=e.target.closest('[data-act]'),df=e.target.closest('[data-diff]');
+  if(df){sfx('tap');mbDiffSet(df.dataset.diff);for(const b of $('mbWin').querySelectorAll('[data-diff]')){const on=b===df;b.classList.toggle('on',on);b.setAttribute('aria-checked',on)}return}
   if(k){sfx('tap');mobaStart(k.dataset.kit);return}
   if(!a)return;sfx('ui');
   if(a.dataset.act==='close')mobaPickClose();
@@ -454,6 +466,10 @@ function mbDrawBuild(b,col){
   ctx.fillStyle=b.flash>0?'#fff':'#4A4458';ctx.beginPath();ctx.moveTo(b.x-w*0.7,b.y);ctx.lineTo(b.x-w*0.45,b.y-h);ctx.lineTo(b.x+w*0.45,b.y-h);ctx.lineTo(b.x+w*0.7,b.y);ctx.fill();
   ctx.strokeStyle='#2A2436';ctx.lineWidth=2;ctx.stroke();
   ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(b.x,b.y-h-(base?34:24));ctx.lineTo(b.x+(base?14:9),b.y-h-6);ctx.lineTo(b.x,b.y-h+4);ctx.lineTo(b.x-(base?14:9),b.y-h-6);ctx.fill();}
+  if(mbShielded(b)){const k=0.55+0.25*Math.sin(MB.t*3),R=w+16;   // מגן מגדל בתחילת המשחק: בועה זוהרת, ופס שמתרוקן עד שהמגן נגמר
+    ctx.globalAlpha=0.16*k;ctx.fillStyle='#9FD8FF';ctx.beginPath();ctx.arc(b.x,b.y-h/2,R,0,7);ctx.fill();
+    ctx.globalAlpha=k;ctx.strokeStyle='#BFE6FF';ctx.lineWidth=3;ctx.beginPath();ctx.arc(b.x,b.y-h/2,R,0,7);ctx.stroke();
+    ctx.globalAlpha=1;ctx.strokeStyle=C.gold;ctx.lineWidth=3;ctx.beginPath();ctx.arc(b.x,b.y-h/2,R+5,-Math.PI/2,-Math.PI/2+6.283*(1-MB.t/MOBA.shield.t));ctx.stroke()}
   if(!open){ctx.strokeStyle=col+'88';ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.arc(b.x,b.y-h/2,w+8,0,7);ctx.stroke();ctx.setLineDash([])}   // מוגן: קודם המגדל שלפניו
   const B=base?MOBA.base:MOBA.tower;
   const me=MB.me,foe=me&&b.team!==me.team&&!me.dead,near=foe&&mbDist(me,b)<B.range+MOBA.warnR;   // מגדל של האויב: טבעת אדומה כשמתקרבים, מלאה כשהוא מכוון אליך (הבודק, 2.11)

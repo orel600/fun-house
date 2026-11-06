@@ -4,27 +4,37 @@
    הסקילים רק כשהם יפגעו. הצייד מחכה רגע לגל המים של הקוסמת, בשביל חשמול. הנפח מהמם רק מי שלא חסין,
    קופץ להציל חבר חלש, ומטיל את חומת הברזל איפה שיש הכי הרבה אויבים. הלוחם משתמש בזעם גם כדי לצאת מצרה */
 const MBBOT={
-  think:0.25,     // שניות בין החלטות
   retreat:0.35,   // פחות מזה מהחיים: חוזר לבסיס
   back:0.9,       // ומתרפא עד שיש לו את זה
   engage:520,     // מאיזה מרחק מסתכלים על גיבורי האויב
   defend:900,     // מאיזה מרחק באים להגן על מגדל
-  dodge:0.55,     // הסיכוי שבוט שם לב לאזור מסומן ויוצא ממנו
   wait:1.2,       // כמה שניות הצייד מחכה לגל המים של הקוסמת
-  // בוטי האויב מגיבים לאט יותר משחקן מחשב מושלם: אותם חיים ונזק (כוח שוויוני), רק רפלקסים אנושיים.
-  // הבודק (אוראל, 3.11): בלי זה שחקן רגיל הפסיד 4 מתוך 4 משחקים
-  foe:{think:0.6,skill:0.75,dodge:0.3},
+  brave:{hp:0.5,odds:0},   // החברים: נלחמים כשהם לפחות כמו האויבים ועם יותר מחצי חיים
+  // רמת קושי (אוראל, 6.11: "השחקן הפסיד 4/4"): משנה רק את המוח של בוטי האויב, לא חיים ונזק (כוח שוויוני).
+  // think: שניות בין החלטות. skill: כמה מהר מגיבים בסקיל. dodge: הסיכוי לצאת מאזור מסומן. hp ו-odds: נלחמים רק מעל hp מהחיים,
+  // ורק כשיש להם odds גיבורים יותר מאשר לנו (אגרסיביות). buy: פי כמה לאט הם קונים חפצים. קשה = כמו החברים שלך
+  diff:{
+    easy:  {think:0.9, skill:1.4, dodge:0.15,hp:0.65,odds:1,buy:1.5},   // שחקן ממוצע מנצח בערך 60% (השחקן ה"טיפש" של הבדיקה: כ-55%)
+    normal:{think:0.6, skill:0.75,dodge:0.3, hp:0.5, odds:0,buy:1},     // בערך 50%
+    hard:  {think:0.25,skill:0.15,dodge:0.55,hp:0.5, odds:0,buy:1},
+  },
+  def:'easy',key:'fh-mb-diff',
 };
+// המוח של בוט: האויבים לפי רמת הקושי של המשחק (MB.diff), החברים תמיד כמו "קשה"
+const mbFoe=()=>MBBOT.diff[MB&&MB.diff]||MBBOT.diff[MBBOT.def];
+const mbMind=u=>u.team?mbFoe():MBBOT.diff.hard;
+function mbDiffGet(){let d=null;try{d=localStorage.getItem(MBBOT.key)}catch(e){}return MBBOT.diff[d]?d:MBBOT.def}
+function mbDiffSet(d){if(!MBBOT.diff[d])return;try{localStorage.setItem(MBBOT.key,d)}catch(e){}}
 
 function mbBot(u,dt){
   const B=u.bot,A=MBKIT[u.kit].atk;B.t-=dt;
   if(u.st.taunt>0&&u.st.tBy){mbMove(u,u.st.tBy.x,u.st.tBy.y,dt,u.r+u.st.tBy.r);mbAttack(u,dt,u.st.tBy,A);return}   // הוכרח: רק אל הנפח
   if(mbRecallBot(u))return;   // חוזר לבסיס: עומד במקום (moba-recall.js)
-  if(B.t<=0){B.t=(u.team?MBBOT.foe.think:MBBOT.think)*rand(0.8,1.2);mbThink(u)}
+  if(B.t<=0){B.t=mbMind(u).think*rand(0.8,1.2);mbThink(u)}
   if(B.goal)mbMove(u,B.goal.x,B.goal.y,dt,B.stop||6);
   const f=B.focus,t=f&&!f.dead&&mbHittable(f)&&mbDist(u,f)-f.r-u.r<=A.range?f:mbAutoTarget(u,A.range);
   mbAttack(u,dt,t,A);
-  B.skT=(B.skT||0)-dt;if(B.skT<=0){B.skT=u.team?MBBOT.foe.skill*rand(0.7,1.3):0.15;mbBotSkills(u)}
+  B.skT=(B.skT||0)-dt;if(B.skT<=0){B.skT=mbMind(u).skill*(u.team?rand(0.7,1.3):1);mbBotSkills(u)}
 }
 
 function mbThink(u){
@@ -44,7 +54,7 @@ function mbThink(u){
     if(tgt){B.mode='order';B.focus=tgt;const a=Math.atan2(u.y-tgt.y,u.x-tgt.x),r=A.range*0.85+tgt.r+u.r;B.goal={x:tgt.x+Math.cos(a)*r,y:tgt.y+Math.sin(a)*r};return}}
   // 2. אזור מסומן של האויב: יוצאים ממנו (לא תמיד שמים לב)
   const z=MB.zones.find(z=>{if(z.team===u.team||z.delay<0.1&&!z.tick||Math.hypot(z.x-u.x,z.y-u.y)>z.r+u.r)return false;
-    const s=z.seen||(z.seen={});if(s[u.id]===undefined)s[u.id]=Math.random()<(u.team?MBBOT.foe.dodge:MBBOT.dodge);return s[u.id]});
+    const s=z.seen||(z.seen={});if(s[u.id]===undefined)s[u.id]=Math.random()<mbMind(u).dodge;return s[u.id]});
   if(z){const a=Math.atan2(u.y-z.y,u.x-z.x),d=z.r+u.r+24;B.mode='dodge';B.goal={x:z.x+Math.cos(a)*d,y:z.y+Math.sin(a)*d};return}
   // 3. מגדל של האויב מכה בי: מתרחקים מהטווח שלו
   const tw=MB.u.find(b=>(b.k==='tower'||b.k==='base')&&b.team!==u.team&&!b.dead&&b.tgt===u);
@@ -54,7 +64,7 @@ function mbThink(u){
   if(fh.length){
     const mine=near(allyH,MBBOT.engage).length+1,weak=fh.reduce((a,b)=>a.hp/a.max<=b.hp/b.max?a:b);
     const under=MB.u.some(b=>(b.k==='tower'||b.k==='base')&&b.team!==u.team&&!b.dead&&mbDist(b,weak)<MOBA.tower.range+20);
-    const brave=mine>=fh.length&&u.hp>u.max*0.5||weak.hp<weak.max*0.3&&u.hp>u.max*0.4;
+    const D=u.team?mbFoe():MBBOT.brave,brave=mine>=fh.length+D.odds&&u.hp>u.max*D.hp||weak.hp<weak.max*0.3&&u.hp>u.max*0.4;
     if(brave&&(!under||weak.hp<weak.max*0.2)){
       B.mode='fight';B.focus=weak;const a=Math.atan2(u.y-weak.y,u.x-weak.x),r=A.range*0.85+weak.r+u.r;
       B.goal={x:weak.x+Math.cos(a)*r,y:weak.y+Math.sin(a)*r};return}

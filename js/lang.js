@@ -177,6 +177,7 @@ const TEXT={
   // משחקי השאול: מובה 3 על 3 עם בוטים (moba.js, docs/moba.md)
   'mb.btn':{he:'⚔️ משחקי השאול',en:'⚔️ Underworld Games'},
   'mb.title':{he:'משחקי השאול',en:'Underworld Games'},
+  'mb.diff':{he:'קושי',en:'Difficulty'},'mb.d.easy':{he:'קל',en:'Easy'},'mb.d.normal':{he:'רגיל',en:'Normal'},'mb.d.hard':{he:'קשה',en:'Hard'},
   'mb.sub':{he:'3 על 3 · כוח שווה לכולם',en:'3 vs 3 · equal power for all'},
   'mb.goal':{he:'בחר דמות. הורסים את הבסיס האדום: קודם המגדל הקרוב, אחריו הרחוק, ואז הבסיס. האגודל השמאלי זז, התקיפה לבד, והסקילים בצד ימין.',en:'Pick a hero. Destroy the red base: near tower first, then the far one, then the base. Left thumb moves, attacks are automatic, skills on the right.'},
   'mb.k.tank':{he:'נפח',en:'Blacksmith'},'mb.k.warrior':{he:'לוחם',en:'Warrior'},'mb.k.hunter':{he:'צייד',en:'Hunter'},'mb.k.mage':{he:'קוסמת',en:'Mage'},
