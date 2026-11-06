@@ -294,6 +294,7 @@ function worldUpdate(dt){
   const w=S.wd;w.t+=dt;
   P.inv-=dt;P.swapBuff-=dt;S.hurt-=dt;S.shake=Math.max(0,S.shake-dt*30);
   const {ix,iy}=movePlayer(dt);if(P.moving&&!nearest(440))P.aim=Math.atan2(iy,ix);
+  ridgeSlip(dt);   // אגם קפוא: החלקה (ridge-hazards.js)
   placeClamp(P);
   srUpdate(dt);   // הסלעים המרחפים בלב הצל: זזים ולוקחים את השחקן איתם (shadowrocks.js)
   for(const n of S.nd.list){
@@ -315,6 +316,7 @@ function worldUpdate(dt){
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
   dmgUpdate(dt);mutUpdate(dt);innUpdate(dt);   // שריפה, רטיבות, האטה והלם נגמרים (dmg.js). לפני 4.11 לא רץ בעולם, ומצבים נשארו לתמיד. המוטציה היומית (mutation.js)
   wantedUpdate(dt);storyUpdate(dt);depthsUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);nemUpdate(dt);rareUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
+  ridgeUpdate(dt);   // מפולות במדרון (ridge-hazards.js)
   riverUpdate(dt);   // נהר הברקים במגדלי הסערה (storm-river.js)
   terrainTick();   // אויבים ופיוחו: לא בתוך מים, יער או צוק, ולאט במעבר הרדוד (terrain.js)
   dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
@@ -427,6 +429,7 @@ function drawWorld(){
   storyDraw();   // הפנס והשומר (story.js)
   affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
   strikeDraw();   // קשת אדומה של מכה שמתכוננת (strike.js)
+  ridgeDraw();   // מפולות: פס אזהרה וכדור שלג (ridge-hazards.js)
   foeAiDraw();   // הסתערות, ירייה וקפיצה שמסומנות על הרצפה (foeai.js)
   eventsDraw();scentDraw();rareDraw();   // אירועים (events.js), החיה מובילה (petscent.js)
   lakeBellDraw();   // גל הפעמון, אדוות ליד הגשרים והתיבה הטבועה (lake-bell.js)

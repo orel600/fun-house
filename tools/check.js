@@ -2162,6 +2162,25 @@ function worldBot(m,L,god){
     (ch3.reg==='ridge'&&ch3.climb?', הגעה לרכס':', לא הגיע לרכס')+(ch3.snow?' בשלג':', בלי שלג')+', '+ch3.foes+' אויבים קפואים'+(ch3.weak?' (חלשים לאש)':' (לא חלשים לאש!)')+(ch3.noNpc?'':', דמויות האחו ברכס!')+
     (ch3.frost?', ספיר':', קווסט הספיר שבור')+(ch3.warden?', שומר הקרח קם':', שומר הקרח לא קם')+(ch3.ready?' והופל':', לא הופל')+(ch3.back?', חזרה לאגם ליד השביל':', החזרה לאגם שבורה')+
     (ch3.lit?', פנס הקרח נדלק':', פנס הקרח לא נדלק')+(ch3.safer?', הרכס בטוח יותר':''));
+  // הרכס הקפוא (ridge-hazards.js): במדרון פס אדום מתמלא ואז כדור שלג מתגלגל, פוגע בשחקן ובאויב, צעד הצידה מתחמק, והוא נגמר בתחתית.
+  // באגם הקפוא מחליקים: ממשיכים לגלוש בלי אגודל, ועדיין חוצים אותו
+  const rfx=await page.evaluate(()=>{
+    const o={},step=(n,f)=>{for(let i=0;i<n;i++)f(1/60)},mk=id=>WR().map.marks.find(m=>m.id===id);
+    enterWorld('home','ridge');for(const e of enemies)e.dead=true;enemies=[];
+    const s=mk('slide');P.x=s.x;P.y=s.y;P.inv=0;P.hp=P.maxHp;const hp0=P.hp;
+    step(120,ridgeUpdate);const R=S.wd.rfx,b=R&&R.list[0];o.warn=!!b&&b.t>0;
+    if(b){R.cd=99;b.x=P.x;const e=addEnemy('rimeknight',b.x,P.y-150,1);e.hp=e.max;
+      step(240,ridgeUpdate);o.hit=P.hp<hp0&&R.hits===1;o.foe=R.foeHits>0;o.done=R.done>0&&!R.list.length;
+      R.cd=0;P.inv=0;step(5,ridgeUpdate);const b2=R.list[0];if(b2){R.cd=99;P.x=b2.x+RIDGEFX.slide.r*3+P.r;step(240,ridgeUpdate)}o.dodge=!!b2&&R.hits===1&&R.done===2;o.n=R.n}
+    for(const e of enemies)e.dead=true;P.inv=99;
+    const f=mk('frozen');P.x=f.x;P.y=f.y;joy={id:-1,ox:-999,oy:-999,dx:1,dy:0};step(40,worldUpdate);
+    joy=null;const x0=P.x;step(30,worldUpdate);o.glide=(S.wd.glide||0)>0&&P.x-x0>5;o.slips=S.wd.slips||0;
+    P.x=-1650;P.y=1150;joy={id:-1,ox:-999,oy:-999,dx:1,dy:0};let t=0;while(t<600&&P.x<-650){worldUpdate(1/60);t++}o.cross=P.x>=-650;o.crossT=(t/60).toFixed(1);
+    joy=null;P.inv=0;enterVillage();return o});
+  check(rfx.warn&&rfx.hit&&rfx.foe&&rfx.done&&rfx.dodge&&rfx.glide&&rfx.cross,
+    'הרכס, מפולות והחלקה: '+(rfx.warn?'פס אזהרה לפני המפולת':'אין פס אזהרה!')+(rfx.hit?', פוגעת בשחקן':', לא פוגעת בשחקן!')+(rfx.foe?' ובאויב':', לא פוגעת באויב!')+
+    (rfx.done?', נגמרת בתחתית':', לא נגמרת!')+(rfx.dodge?', צעד הצידה מתחמק':', אי אפשר להתחמק!')+' ('+rfx.n+' מפולות)'+
+    (rfx.glide?', באגם ממשיכים לגלוש':', באגם לא מחליקים!')+(rfx.cross?', חצייה ב-'+rfx.crossT+' שניות':', לא הצליח לחצות את האגם!'));
   // העלילה, פרק 4 (story.js, WORLD.regions.desert): המעבר מהרכס למדבר סגור עד שפנס הקרח דולק, במדבר חום ואויבים חמים (חלשים למים),
   // שומר האש שולח טבעות אש שמתרחבות (עם פתח), והקווסטים מובילים אליו ולפנס האש
   const ch4=await page.evaluate(()=>{
