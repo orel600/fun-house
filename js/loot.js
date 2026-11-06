@@ -91,7 +91,7 @@ function lootGear(e,force){
   const ch=R.chance*lootFoeK(e)*(1+Math.min(G.pity.max,(SAVE.gearPity||0)*G.pity.step))*orbitLuck()*statLoot()*(typeof tierGearK==='function'?tierGearK():1);   // דרגת עולם (tiers.js)
   if(!force&&Math.random()>=ch){SAVE.gearPity=(SAVE.gearPity||0)+1;return null}
   SAVE.gearPity=0;const id=lootRoll(R.rolls);S.gearDrops=(S.gearDrops||0)+1;
-  dropSpawn(id,1,e.x,e.y);if(feedOn())feedGear(id);else banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id),dropTier(id).col);   // בעולם ובכפר: בפיד (feed.js)
+  dropSpawn(id,1,e.x,e.y);if(feedOn())feedGear(id);else banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id)+powTag(id),dropTier(id).col);   // בעולם ובכפר: בפיד (feed.js)
   celebrate(e.x,e.y,'loot'+Math.max(2,dropRar(id)),gIcon(id));
   return id;
 }

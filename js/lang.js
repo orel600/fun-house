@@ -1192,6 +1192,7 @@ const TEXT={
   'gear.vs':{he:s=>'במקום '+s,en:s=>'Replaces '+s},
   'gear.dmg':{he:r=>'נזק '+r,en:r=>'Damage '+r},
   'gear.same':{he:'בלי שינוי',en:'No change'},
+  'pow.hero':{he:'כוח',en:'Power'},   // מספר הכוח של הגיבור, בראש טור הסטטים (power.js)
   // טור הסטטים בחלון הציוד (gearui.js)
   'gui.stats':{he:'סטטים',en:'Stats'},
   'gui.q':{he:(n,r)=>'איכות: '+n+' מתוך '+r,en:(n,r)=>'Quality: '+n+' of '+r},

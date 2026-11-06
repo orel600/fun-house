@@ -2895,6 +2895,25 @@ function worldBot(m,L,god){
     return o});
   check(gc.card&&gc.q&&gc.zero&&gc.btns&&gc.worn&&gc.up,'כרטיס חפץ בציוד (gearui.js): '+(gc.card?'מספר כוח ושם':'אין כרטיס')+(gc.q?', איכות מתוך טווח':', בלי איכות')+(gc.zero?', בלי שורות 0%':', יש שורות 0%')+
     (gc.btns?', ללבוש ולשדרג':', חסר כפתור')+(gc.worn?', לבוש: בלי השוואה, עם להוריד':', הלבישה מהכרטיס לא עבדה')+(gc.up?', לשדרג פותח את הנפחייה עם החפץ':', לשדרג לא פתח את הנפחייה'));
+  // מספר כוח (power.js): לכל חפץ יש מספר, ובכל מחלקה ובכל משבצת חפץ בשכבה גבוהה יותר חזק מכל חפץ בשכבה שמתחת. בחלון: מספר הגיבור בראש הטור, בלי שורות 0, ו-+N כשעולה
+  const pwn=await page.evaluate(()=>{
+    const o={none:[],inv:[]},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,hero:SAVE.hero.start,seen:SAVE.hero.powSeen}),c0=celebrate;let cel=0;celebrate=()=>{cel++;return 0};
+    try{for(const id in GEAR.items)if(GEAR.items[id].slot!=='orbit'&&!(powItem(id)>0))o.none.push(id);
+      for(const c of Object.keys(HEROES.list)){SAVE.hero.start=c;
+        for(const a in GEAR.items)for(const b in GEAR.items){const A=GEAR.items[a],B=GEAR.items[b];
+          if(A.slot!=='orbit'&&A.slot===B.slot&&B.tier===A.tier+1&&powItem(b)<=powItem(a))o.inv.push(c+':'+a+'>'+b)}}
+      SAVE.hero.start=JSON.parse(keep).hero;
+      enterVillage();S.mode='play';SAVE.gear.weapon='oakSword';bagAdd('ironSword');gearOpen();SAVE.hero.powSeen=powHero();gearDraw();
+      const q=s=>document.querySelector('#ovGear '+s);
+      o.hero=!!q('.gpow b')&&+q('.gpow b').textContent===powHero();
+      o.zero=!!q('.gsrows')&&!/(^|[^\d.])[+-]?0(\.0)?%/.test(q('.gsrows').textContent+(q('.gres')?q('.gres').textContent:''));
+      const t=q('#gItems [data-id="ironSword"] .gmk.up');o.tile=!!t&&t.textContent.includes(String(powVs('ironSword')));
+      const h0=powHero();gearEquip('ironSword');gearDraw();o.rise=powHero()>h0&&cel>0&&!!q('.gpow.gpup .gpowd');
+    }finally{gearClose();const g1=gearStats(),k=JSON.parse(keep);SAVE.bag=k.bag;SAVE.gear=k.gear;SAVE.hero.start=k.hero;SAVE.hero.powSeen=k.seen;gearLive(g1);celebrate=c0;S.mode='play';saveNow()}
+    return o});
+  check(!pwn.none.length&&!pwn.inv.length&&pwn.hero&&pwn.zero&&pwn.tile&&pwn.rise,'מספר כוח (power.js): '+(pwn.none.length?'בלי מספר: '+pwn.none.join(', '):'לכל חפץ מספר')+
+    (pwn.inv.length?', שכבה גבוהה חלשה: '+pwn.inv.slice(0,4).join(', '):', שכבה גבוהה תמיד חזקה')+(pwn.hero?', מספר הגיבור בטור':', אין מספר לגיבור')+
+    (pwn.zero?', בלי שורות 0':', יש שורות 0')+(pwn.tile?', ▲ עם הפרש בתרמיל':', אין הפרש בתרמיל')+(pwn.rise?', עולה עם חגיגה':', אין חגיגה כשעולה'));
   // שריון לפי מחלקה (armor.js): קסדה וגוף של המחלקה נלבשים במשבצות ראש וגוף, ההגנה עולה, השריון נראה על הדמות ובחלון, והשלל בעולם מוטה למחלקה
   const ar=await page.evaluate(()=>{
     const o={},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,pity:SAVE.clsPity}),c0=celebrate;celebrate=()=>{};

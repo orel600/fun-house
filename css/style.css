@@ -1404,6 +1404,17 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 .gres li{display:flex;align-items:center;justify-content:center;gap:4px;font:800 13px/22px var(--body);color:var(--chalk);border:1px solid var(--dt);border-radius:8px;
   background:color-mix(in srgb,var(--dt) 14%,transparent);white-space:nowrap}
 .gres svg{width:13px;height:13px;color:var(--dt);flex:none}
+/* מספר הכוח של הגיבור (power.js): גדול, בזהב, בראש הטור. עלה: קופץ, ו-+N עולה ונעלם */
+.gpow{position:relative;display:flex;align-items:baseline;gap:6px;padding:2px 8px 4px;border-radius:10px;flex:none;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--gold) 18%,transparent),transparent);border-inline-start:3px solid var(--gold)}
+.gpow .gpowi{color:var(--gold);font-size:18px;text-shadow:0 0 8px color-mix(in srgb,var(--gold) 70%,transparent)}
+.gpow b{font:900 30px/1 var(--title,var(--body));color:#FFF;text-shadow:0 2px 0 #000,0 0 12px color-mix(in srgb,var(--gold) 55%,transparent)}
+.gpow>span:last-of-type{font:800 12px var(--body);color:var(--gold)}
+.gpow.gpup b{animation:gpowPop .6s ease-out}
+.gpowd{position:absolute;inset-inline-end:8px;top:0;font:900 16px var(--body);font-style:normal;color:#5EE07A;text-shadow:0 1px 0 #000;animation:gpowRise 1.4s ease-out forwards}
+@keyframes gpowPop{0%{transform:scale(1)}35%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes gpowRise{0%{opacity:0;transform:translateY(6px)}20%{opacity:1}100%{opacity:0;transform:translateY(-16px)}}
+.gtile .gmk bdi{font-size:10px;margin-inline-start:1px}
 /* פרטי פריט: הכותרת עם ✕, טקסט שגולל, והכפתורים בשורה בתחתית */
 #ovGear .gsidep .gdetail:not(.gstatp){overflow:hidden;padding:8px 10px;gap:6px}
 .gdbody{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
@@ -1515,6 +1526,7 @@ html[dir="rtl"] #ovGear #gTabs{--fade-end:left}   /* הדהייה בסוף הש�
   #ovGear .gacts .vbtn:not(.ghost){border-width:0 10px;border-image-width:0 10px}
   #ovGear .gdetail.gstatp{padding:5px 8px;gap:2px}
   .gstatp h3{font-size:14px!important}
+  .gpow b{font-size:26px}
   .gstatp h4{margin-top:2px;font-size:11px}
   .gsrows li{font-size:12px;line-height:clamp(16px,5.2vh,21px)}
   .gsrows b{font-size:13px}
