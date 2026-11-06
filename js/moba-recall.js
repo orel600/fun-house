@@ -31,7 +31,7 @@ function mbRecallBot(u){
 }
 // הטבעת על הרצפה סביב מי שחוזר (גם בוטים, כדי לראות שהאויב בורח)
 function mbRecallDraw(){
-  for(const u of MB.u){const R=u.recall;if(!R||u.dead)continue;
+  for(const u of MB.u){const R=u.recall;if(!R||u.dead||!mbShow(u))continue;
     const k=1-R.t/MBRECALL.t,r=MBRECALL.ring.r+u.r,col=MOBA.team[u.team];
     ctx.save();ctx.translate(u.x,u.y+2);ctx.scale(1,0.45);ctx.lineWidth=MBRECALL.ring.w;
     ctx.strokeStyle='rgba(14,16,26,0.55)';ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.stroke();
