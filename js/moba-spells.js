@@ -14,7 +14,7 @@ const MBSPELL={
     barrier:{cd:75,t:3,k:0.2,col:'#8FD3FF',pic:'shield',sfx:'creak'},                                    // מגן של 20% מהחיים ל-3 שניות
     reveal: {cd:60,kind:'point',range:650,r:350,t:4,col:'#C9A8FF',pic:'mFocus',sfx:'bell',vol:0.4},      // חושף אזור (גם שיחים) ל-4 שניות. הראייה עצמה: mbVisReveal (moba-vision.js)
     exhaust:{cd:80,range:400,t:3,slow:0.4,dmg:0.3,col:'#B07AD9',pic:'petrify',sfx:'creak'},             // גיבור האויב הקרוב: איטי ב-40% ופוגע 30% פחות
-    cleanse:{cd:90,pure:1,col:'#FFFFFF',pic:'mCircle',sfx:'celebrate',vol:0.5},                          // מסיר הלם, הכרחה, האטה ולכידה, ושנייה של חסינות
+    cleanse:{cd:90,pure:1,col:'#FFFFFF',pic:'m1',sfx:'celebrate',vol:0.5},                          // מסיר הלם, הכרחה, האטה ולכידה, ושנייה של חסינות
   },
   def:'dash',key:'fh-mb-spell',hold:0.5,   // hold: לחיצה ארוכה על הכפתור (שניות) מראה הסבר, בלי להטיל
   bot:{tank:['barrier','haste'],warrior:['dash','exhaust'],hunter:['dash'],mage:['reveal','cleanse']},   // הבוטים בוחרים לפי תפקיד
@@ -66,6 +66,7 @@ function mbSpellCast(u,aim){
   mbSpellInit(u);const id=u.spell,L=MBSPELL.list[id],s=u.st;
   if(!L||u.dead||u.cd.spell>0||u.st.dash)return false;
   if(id!=='cleanse'&&(s.stun>0||s.taunt>0))return false;   // בהלם רק ניקוי עובד
+  if(id==='dash'&&s.root>0)return false;                    // לכוד ברשת: לא זז, כמו סקילים שמזיזים (MB_MOVES ב-moba-kits.js)
   switch(id){
     case 'dash':{let a=u.face;
       if(aim)a=Math.atan2(aim.y-u.y,aim.x-u.x);else if(u.me&&joy&&Math.hypot(joy.dx,joy.dy)>0.12)a=Math.atan2(joy.dy,joy.dx);
