@@ -1600,7 +1600,7 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbxp i{background:linear-gradient(var(--brass-hi),var(--brass))}
 .mbhp span{position:absolute;inset:0;display:grid;place-items:center;font:800 10px var(--body);color:#fff;text-shadow:0 1px 1px #000;font-variant-numeric:tabular-nums}
 /* הודעות הריגה: מתחת לדמות שלי, עד 3, ונעלמות לבד */
-.mbfeed{position:absolute;top:calc(env(safe-area-inset-top,0px) + 86px);left:calc(env(safe-area-inset-left,0px) + 8px);display:flex;flex-direction:column;gap:4px;direction:ltr}
+.mbfeed{position:absolute;top:var(--mbmini-b,calc(env(safe-area-inset-top,0px) + 86px));left:calc(env(safe-area-inset-left,0px) + 8px);display:flex;flex-direction:column;gap:4px;direction:ltr}
 .mbfr{margin:0;display:flex;align-items:center;gap:6px;padding:3px 8px 3px 4px;border-radius:7px;background:linear-gradient(90deg,#22160Ce0,#22160C90);box-shadow:0 0 0 1px var(--brass-lo);
   font:800 12px var(--body);color:var(--chalk);animation:mbfin .25s ease-out,mbfout .4s ease-in 3.6s forwards}
 .mbfr.mine{box-shadow:0 0 0 2px var(--brass)}
