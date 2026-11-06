@@ -328,6 +328,7 @@ function worldUpdate(dt){
   w.near=null;const gs=wGates();for(const k in gs){const g=gs[k];if(Math.hypot(P.x-g.x,P.y-g.y)<g.r+P.r+WORLD.near)w.near=k}
   worldHud();cornerHud();   // הפינות העליונות והמפה הקטנה (minimap.js)
   wnpcUpdate(dt);   // דמויות שמגלים בעולם, וכפתור "לדבר" (worldnpc.js)
+  wellUpdate(dt);   // הבאר היבשה במדבר (desertwell.js)
   fishUpdate(dt);   // דיג ליד מים, וכפתור "לדוג" (fishing.js)
   wsUpdate(dt);     // אבני מסע: פתיחה, ערפל המפה וכפתור 🗿 (waystones.js)
   travelUpdate();   // ליד פנס דולק: "חזרה לכפר" (travel.js)
@@ -421,6 +422,7 @@ function drawWorld(){
     if(n.hp<n.max){const bw=r*2;ctx.fillStyle='rgba(5,7,13,0.6)';ctx.fillRect(x-bw/2,y-r*2.2,bw,4);ctx.fillStyle=C.gold;ctx.fillRect(x-bw/2,y-r*2.2,bw*Math.max(0,n.hp/n.max),4)}
   }
   drawWnpcs();   // worldnpc.js
+  wellDraw();   // הבאר היבשה במדבר (desertwell.js)
   fishDraw();   // החכה והמצוף (fishing.js)
   storyDraw();   // הפנס והשומר (story.js)
   affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)

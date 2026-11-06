@@ -1447,6 +1447,9 @@ const TEXT={
   'rs.saved':{he:'פיוחו הצילה!',en:'Pyocho to the rescue!'},
   'pet.up':{he:(n,s)=>n+' גדלה! שלב '+s,en:(n,s)=>n+' grew up! Stage '+s},
   'pet.found':{he:n=>n+' מצאה משהו!',en:n=>n+' found something!'},
+  'well.hint':{he:'🐾 פיוחו יכולה לחפור כאן',en:'🐾 PioCho could dig here'},   // הבאר היבשה במדבר (desertwell.js)
+  'well.go':{he:n=>n+' מריחה משהו בבאר!',en:n=>n+' smells something in the well!'},
+  'well.found':{he:n=>'✨ '+n+' העלתה אוצר מהבאר!',en:n=>'✨ '+n+' dug treasure out of the well!'},
   // ---- מבוקש היום (hunt.js) ----
   'hunt.title':{he:'מבוקש היום',en:'Wanted today'},
   'hunt.say':{he:'מסתובב שם היום. מי שמפיל אותו לוקח שלל שאין בשום מקום אחר',en:'Roaming there today. Take him down for loot you won’t find anywhere else'},
