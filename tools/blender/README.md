@@ -10,4 +10,5 @@ Claude כותב סקריפט Python ש-Blender מריץ בלי ממשק: הפר�
    - **מעט פוליגונים:** עד כ-1,000 משולשים. הסקריפט מדפיס כמה יצאו.
 3. **בנייה:** `blender -b --python tools/blender/build_weapons.py -- tools/blender art/weapons/raw`
 4. **למשחק:** שורה ב-`ITEMS` (tools/build3d.js) עם `ready:true`, ואז `node tools/build3d.js - --only items --items=<id>`. החבילות מהשורה 17 שם מותקנות עם NODE_PATH. render3d.js מעדיף את `w_item_<id>` על `look.model`, אז לא צריך לשנות את gear.js. פריט אגדי פועם לבד, בחלקים הזוהרים.
-5. **צילום לבדיקה:** `node tools/blender/shoot.js art/weapons/raw <תמונה.png>`. מה מצולם נקבע ב-ROWS ב-`preview.html`: הפריט, אחיזה כמו `GRIP3D` ב-render3d.js, והשוואה ל-KayKit.
+5. **אייקון לחלון הציוד, מהמודל עצמו**, כדי שהוא תמיד יתאים: `node tools/blender/icon.js <id> <מאיפה> <למעלה> [זווית]`, למשל `skyBow 0,1,0.25 1,0,-1` או `starStaff 0.35,0.75,0.55 -1,1,0 40`. מנסים כמה כיווני "למעלה" עד שהפריט באלכסון והראש למעלה-ימינה, כמו שאר האייקונים. זווית (פרספקטיבה) מגדילה את הקצה הקרוב בפריט ארוך ודק. יוצא `icons/ui/gear/<id>.png`, שקוף, עם קו מתאר כהה, עד 128 פיקסלים. פריט חדש צריך גם שורה ב-`GEAR_PIC` (gear.js). NODE_PATH: החבילות של build3d.js וגם `npm root -g` (בשביל playwright).
+6. **צילום לבדיקה:** `node tools/blender/shoot.js art/weapons/raw <תמונה.png>`. מה מצולם נקבע ב-ROWS ב-`preview.html`: הפריט, אחיזה כמו `GRIP3D` ב-render3d.js, והשוואה ל-KayKit.
