@@ -2932,7 +2932,7 @@ function worldBot(m,L,god){
     try{for(const [h,sk,doll] of [['warrior',null],['hunter',null],['mage',null],['warrior','nir'],['warrior','orel'],['warrior',null,1]]){
       const tag=h+(sk?'/'+sk:'')+(doll?'/בובה':''),off=look(h,sk,false,doll),on=look(h,sk,true,doll);
       if(off.nat.length||off.built)o.bad.push(tag+': '+(off.nat.join('+')||'חלק'));
-      if(JSON.stringify(off)===JSON.stringify(on))o.same.push(tag)}
+      if(JSON.stringify(off)===JSON.stringify(on)&&!(sk&&ARMOR.hat.none.includes(HEROES.skins[sk].look)))o.same.push(tag)}   // אוראל: בלי כובע בכלל (ARMOR.hat.none)
     }finally{const k=JSON.parse(keep);SAVE.gear=k.gear;SAVE.hero.start=k.start;SAVE.hero.skin=k.skin;R3D._hl=null;syncPlayer(0);if(R3D.doll&&R3D.doll.a)R3D.doll.key=null}
     return o});
     if(!hv.skip)check(!hv.bad.length&&!hv.same.length,'משבצת ראש ריקה: '+(hv.bad.length?'חלק ראש דלוק בלי קסדה ('+hv.bad.join(', ')+')':'בלי כובע או קסדה ב-3 המחלקות, בסקינים ובבובה')+(hv.same.length?', הקסדה לא שינתה כלום ('+hv.same.join(', ')+')':', וקסדה משנה את המראה'))}

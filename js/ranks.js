@@ -14,14 +14,14 @@ const RANKS={
   /* מראה בתלת-ממד: חלקים שכבר יש במודלים של KayKit (Knight_Cape, Mage_Hat...), לפי הסוף של השם. חלק שאין במודל (למשל בדמות של ניר) פשוט לא נוגעים בו.
      bare: מה מוסתר לפני הדרגה הראשונה. look.show: מה נדלק בדרגה. look.glow: זוהר בצבע הדרגה על החלקים האלה (0 עד 1).
      דרגה הבאה = שורה חדשה עם עוד חלקים או זוהר חזק יותר */
-  bare:['Cape','HelmetVisor'],
+  bare:['Cape'],   // הקסדה כבר לא חלק של המודל אלא כובע אמיתי (ARMOR.hat ב-armor.js), אז הדרגה זוהרת רק על הגלימה
   /* tier: באיזה שלב (1 = רמה 20, 2 = רמה 40). when: איזה סגנון פותח אותה (rankStyle). bonus: סטטים כמו של ציוד (GEAR.stats), בכל ריצה.
      icon, col: בממשק ובטקס, ו-col גם הזוהר של השריון. look: ראו bare למעלה. skill: סקיל החתימה (SIGSKILL.list ב-sigskill.js) */
   list:{
-    guardian:{tier:1,when:s=>s.guard>=RANKS.pick.guard,bonus:{hp:50,regen:0.5},icon:'🛡️',col:'#7FB2FF',look:{show:['Cape','HelmetVisor'],glow:0.4},skill:'bastion'},
-    knight:  {tier:1,when:s=>s.sword>=1-RANKS.pick.mix,bonus:{hp:20,sdmg:15},icon:'⚔️',col:'#D9DEE6',look:{show:['Cape','HelmetVisor'],glow:0.3},skill:'dawnblade'},
+    guardian:{tier:1,when:s=>s.guard>=RANKS.pick.guard,bonus:{hp:50,regen:0.5},icon:'🛡️',col:'#7FB2FF',look:{show:['Cape'],glow:0.4},skill:'bastion'},
+    knight:  {tier:1,when:s=>s.sword>=1-RANKS.pick.mix,bonus:{hp:20,sdmg:15},icon:'⚔️',col:'#D9DEE6',look:{show:['Cape'],glow:0.3},skill:'dawnblade'},
     ranger:  {tier:1,when:s=>s.sword<=RANKS.pick.mix,bonus:{gdmg:15,speed:5},icon:'🏹',col:'#A8D08D',look:{show:['Cape'],glow:0.35},skill:'starfall'},
-    hybrid:  {tier:1,when:()=>true,bonus:{sdmg:10,gdmg:10},icon:'🗡️',col:'#F4C74F',look:{show:['Cape','HelmetVisor'],glow:0.3},skill:'emberstorm'}
+    hybrid:  {tier:1,when:()=>true,bonus:{sdmg:10,gdmg:10},icon:'🗡️',col:'#F4C74F',look:{show:['Cape'],glow:0.3},skill:'emberstorm'}
   }
 };
 

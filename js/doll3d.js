@@ -13,7 +13,7 @@ const DOLL3D={
   orb:{r:0.48,size:0.035,spin:1.4,y:0.12}
 };
 
-function dollKey(){return lookKey(heroLook())+'|'+gearWorn().join()+'|'+rankId()}
+function dollKey(){return lookKey(heroLook())+'|'+gearWorn().join()+'|'+rankId()+'|'+(SAVE.showHat!==false)}
 // בונים את הבמה פעם אחת: רנדרר שקוף, אור כמו במשחק ומצלמה
 function dollInit(){
   const D=R3D.doll={};
