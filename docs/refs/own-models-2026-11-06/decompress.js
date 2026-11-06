@@ -1,0 +1,3 @@
+const {NodeIO}=require('@gltf-transform/core');const {ALL_EXTENSIONS}=require('@gltf-transform/extensions');const {MeshoptDecoder}=require('meshoptimizer');const {dequantize}=require('@gltf-transform/functions');
+(async()=>{await MeshoptDecoder.ready;const io=new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({'meshopt.decoder':MeshoptDecoder});
+for(const f of process.argv.slice(2)){const d=await io.read(f);for(const e of d.getRoot().listExtensionsUsed())if(/meshopt|quantiz/.test(e.extensionName))e.dispose();await d.transform(dequantize());await io.write(f.replace('.glb','_raw.glb'),d);console.log('ok',f)}})();
