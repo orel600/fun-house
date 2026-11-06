@@ -277,6 +277,7 @@ const GROUND={
       if(hh(i+3,j+7)>want)continue;
       let ok=!pz||Math.hypot(x-pz.x,y-pz.y)>pz.r+pw;for(const s_ of sg)if(ok&&dSeg(x,y,s_)<pw){ok=false;break}
       if(ok&&TR&&tBlocked(x,y))ok=false;   // לא בנהר, ביער או מחוץ לגבול (terrain.js)
+      if(ok&&TR)for(const b of TR.map.bridges||[]){const dx=x-b.x,dy=y-b.y,ca=Math.cos(b.a),sa=Math.sin(b.a);if(Math.abs(dx*ca+dy*sa)<b.len/2+20&&Math.abs(-dx*sa+dy*ca)<b.w/2+20){ok=false;break}}   // ולא על הקרשים של גשר
       if(ok)for(const b of blocks)if(b.sq?Math.abs(x-b.x)<b.r&&Math.abs(y-b.y)<b.r:Math.hypot(x-b.x,y-b.y)<b.r){ok=false;break}
       if(!ok)continue;
       const sz=F.size[k],z=sz[0]+(sz[1]-sz[0])*hh(i+1,j+2),wd=k==='tuft'?1.2:1;
