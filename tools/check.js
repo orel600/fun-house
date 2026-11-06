@@ -3298,6 +3298,14 @@ function worldBot(m,L,god){
      uiCloseTop();I.close=$('ovMbShop').hidden&&S.mode==='play';
      const bt=mbHero('tank',1,false,0);bt.gold=1000;bt.buyT=0;MB.u.push(bt);mbItTick(MB,1/30);I.bot=bt.it&&bt.it[0]===MBITEM.build.tank[0];MB.u.splice(MB.u.indexOf(bt),1);
      me.gold=0;me.it=[];mbItCalc(me);me.hp=me.max;o.items=I}
+    // שומר אותך בחיים (moba-recall.js, הבודק 4.11): אזהרה בחיים נמוכים מופיעה ונעלמת, חזרה לבסיס עובדת, תזוזה ופגיעה מבטלות, וטבעת הזהב על הקנייה המהירה
+    {const me=MB.me,L={},hx=me.x,hy=me.y,tk=n=>{for(let i=0;i<n;i++)mbRecallTick({u:[me]},1/30)};
+     me.hp=me.max*0.2;me.lowWarn=false;mobaHud();L.lowOn=$('mbLow').classList.contains('on')&&($('banner').textContent===T('mb.low')||(mbBanner.q||[]).some(m=>m.txt===T('mb.low')));   /* ההודעה מוצגת או מחכה בתור */me.hp=me.max;mobaHud();L.lowOff=!$('mbLow').classList.contains('on');
+     me.x=me.home.x+(me.team?-1:1)*900;me.y=0;$('mbRecall').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));L.start=!!me.recall;tk(MBRECALL.t*30+3);L.home=!me.recall&&mbDist(me,me.home)<1;
+     me.x=me.home.x+(me.team?-1:1)*900;mbFeelReset(me);mbRecallStart(me);tk(10);me.x+=20;tk(1);L.move=!me.recall&&mbDist(me,me.home)>800;
+     mbRecallStart(me);tk(10);me.hp-=50;tk(1);L.hit=!me.recall&&mbDist(me,me.home)>800;me.hp=me.max;
+     const n=mbNext(me),c=MBITEM.items[n].cost,q=$('mbQuick'),p=()=>+q.style.getPropertyValue('--p');me.gold=c/2;mobaHud();L.half=Math.abs(p()-0.5)<0.02&&!q.classList.contains('ok')&&q.textContent.includes(String(c-Math.floor(c/2)));
+     me.gold=c;mobaHud();L.full=p()===1&&q.classList.contains('ok');me.gold=0;me.x=hx;me.y=hy;mbFeelReset(me);mobaHud();o.life=L}
     // כיוון וביטול בגרירה (moba-aim.js): גוררים מהכפתור, משחררים על ✕ = בוטל ובלי טעינה. גוררים שמאלה עד הסוף = הסדן נוחת בקצה הטווח משמאל
     {const me=MB.me,b=document.querySelector('#mbSk [data-sk="s1"]'),r=b.getBoundingClientRect(),cx=r.x+r.width/2,cy=r.y+r.height/2,z0=MB.zones.length,R=MBKIT.tank.s1.range;
       const ev=(el,t,x,y)=>el.dispatchEvent(new PointerEvent(t,{pointerId:9,clientX:x,clientY:y,bubbles:true,cancelable:true}));
@@ -3664,6 +3672,8 @@ function worldBot(m,L,god){
     check(mb.two&&mb.two.held===2&&mb.two.ok,'משחקי השאול עם קשת וחרב: '+(mb.two?(mb.two.ok?'ה-HUD עובד':'ה-HUD נופל: '+mb.two.err):'לא נבדק'));
     check(mb.slide&&mb.slide.pass,'משחקי השאול: הולכים ישר אל מגדל ומחליקים מסביבו '+(mb.slide?(mb.slide.pass?'✓':'נתקע ('+mb.slide.dx+' מהמגדל)'):'לא נבדק'));
     {const f=mb.feel||{};check(f.soft&&f.turned&&f.run>=f.want*0.9&&f.feed,'משחקי השאול: תנועה: סיבוב '+(f.soft&&f.turned?'רך ✓':'בבת אחת או תקוע')+', דרך חייל '+f.run+'/'+f.want+' פיקסלים בשנייה'+(f.feed?', הודעת הריגה ✓':', בלי הודעת הריגה'))}
+    {const L=mb.life||{},ks={lowOn:'אזהרה בחיים נמוכים',lowOff:'נעלמת',start:'כפתור חזרה',home:'מגיע לבסיס',move:'תזוזה מבטלת',hit:'פגיעה מבטלת',half:'טבעת זהב חצי',full:'מלאה ומוארת'};
+     check(Object.keys(ks).every(k=>L[k]),'משחקי השאול: שומר בחיים: '+Object.keys(ks).map(k=>ks[k]+(L[k]?' ✓':' ✗')).join(', '))}
     {const I=mb.items||{},ks={tick:'זהב עם הזמן',minion:'זהב מחייל',quick:'קנייה מהירה',stat:'סטטים',sell:'מכירה',win:'חלון החנות',buy:'קנייה בחלון',close:'סגירה',bot:'בוט קונה'};
      check(Object.keys(ks).every(k=>I[k]),'משחקי השאול: חפצים: '+Object.keys(ks).map(k=>ks[k]+(I[k]?' ✓':' ✗')).join(', '))}
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));

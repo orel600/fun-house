@@ -1643,7 +1643,11 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbquick,.mbshopb{position:relative;width:46px;height:46px;border-radius:10px;border:0;padding:0;cursor:pointer;touch-action:none;display:grid;place-items:center;overflow:hidden;
   background:radial-gradient(circle at 50% 35%,var(--slate-hi),var(--slate) 75%);box-shadow:var(--bevel),0 0 0 2px var(--brass-lo),0 0 0 4px var(--wood),0 3px 8px #000a;transition:transform .08s}
 .mbquick img{width:36px;height:36px;object-fit:contain;filter:grayscale(.55) brightness(.75)}
-.mbquick::before{content:'';position:absolute;inset:auto 0 0;height:calc(var(--p,0)*100%);background:linear-gradient(#F4C74F00,#F4C74F55)}
+.mbquick{overflow:visible}
+.mbquick::before{content:'';position:absolute;inset:-6px;border-radius:14px;padding:4px;pointer-events:none;   /* טבעת זהב שמתמלאת עם הזהב עד המחיר (הבודק, 4.11) */
+  background:conic-gradient(var(--brass-hi) calc(var(--p,0)*360deg),#0B0E18cc 0);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.mbquick img{border-radius:8px}
+.mbquick span{direction:ltr;unicode-bidi:isolate}.mbquick span.miss{color:#FFB3A8}
 .mbquick span{position:absolute;bottom:1px;left:0;right:0;font:900 10px var(--body);color:var(--brass-hi);text-shadow:0 1px 1px #000,0 0 3px #000}
 .mbquick.ok{box-shadow:var(--bevel),0 0 0 2px var(--brass-hi),0 0 0 4px var(--wood),0 0 14px #F4C74F99;animation:mbqok 1.2s ease-in-out infinite alternate}
 .mbquick.ok img{filter:none}
@@ -1651,6 +1655,19 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbquick.shake{animation:mbshake .35s}
 .mbshopb b{font-size:22px;line-height:1}
 .mbquick:active,.mbshopb:active{transform:translateY(2px) scale(.94)}
+.mblow{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;box-shadow:inset 0 0 70px 14px rgba(220,40,50,.55)}   /* חיים נמוכים: מסגרת אדומה רכה פועמת */
+.mblow.on{opacity:1;animation:mblow 1.1s ease-in-out infinite alternate}
+@keyframes mblow{from{box-shadow:inset 0 0 60px 14px rgba(230,40,50,.5)}to{box-shadow:inset 0 0 110px 34px rgba(230,40,50,.8)}}
+/* חזרה לבסיס: למטה באמצע, בין אזור הג'ויסטיק לסקילים. בזמן החזרה מתמלאת טבעת */
+.mbrecall{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);left:50%;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;border:0;padding:0;cursor:pointer;touch-action:none;pointer-events:auto;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;color:var(--brass-hi);font:800 9px var(--body);text-shadow:0 1px 0 var(--wood);
+  background:radial-gradient(circle at 50% 35%,var(--slate-hi),var(--slate) 75%);box-shadow:var(--bevel),0 0 0 2px var(--brass-lo),0 0 0 4px var(--wood),0 3px 8px #000a}
+.mbrecall svg{width:24px;height:24px;color:#8FB8FF}
+.mbrecall::before{content:'';position:absolute;inset:-7px;border-radius:50%;padding:4px;pointer-events:none;opacity:0;
+  background:conic-gradient(var(--brass-hi) calc(var(--rp,0)*360deg),#0B0E18aa 0);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.mbrecall.on::before{opacity:1}.mbrecall.on{box-shadow:var(--bevel),0 0 0 2px var(--brass-hi),0 0 0 4px var(--wood),0 0 14px #8FB8FF99}
+.mbrecall:disabled{opacity:.4}
+.mbrecall:active{transform:translateX(-50%) translateY(2px) scale(.94)}
 .mbinv{position:absolute;top:calc(env(safe-area-inset-top,0px) + 60px);left:calc(env(safe-area-inset-left,0px) + 62px);display:flex;gap:3px}
 .mbinv img{width:20px;height:20px;object-fit:contain;padding:1px;border-radius:5px;background:#0B0E18cc;box-shadow:0 0 0 1.5px var(--brass-lo)}
 /* חלון החנות: שני טורים. מימין לשמאל: החפצים לפי קטגוריה, ולידם הפרטים, הכפתור והתרמיל */
