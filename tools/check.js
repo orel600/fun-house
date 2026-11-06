@@ -2452,6 +2452,29 @@ function worldBot(m,L,god){
     'סודות בעולם: '+(sec.bad.length?'מחוץ לאזור או במים: '+sec.bad.join(','):'כל המקומות תקינים')+(sec.shown?', תיבה נחשפת':', התיבה לא נחשפה')+(sec.chest?' ונפתחת':' ולא נפתחת')+
     (sec.bless?', מקדש מברך':', המקדש לא מברך')+(sec.blessEnd?' והברכה נגמרת':' והברכה לא נגמרת!')+(sec.look?', תצפית חושפת':', התצפית לא עובדת')+
     (sec.read?', סימן בעץ':', הסימן לא נקרא')+(sec.sniff?', פיוחו רצה':'')+(sec.dug?' וחופרת אוצר':' ולא חפרה')+', '+sec.count+' באחו ("'+sec.hud+'"), נשמר '+sec.saved+', באגם '+sec.lake+', ברכס '+sec.ridge);
+  // פעמון הערפל והגשרים הצפים באגם (lake-bell.js): כפתור ליד הפעמון, צלצול, הערפל נחלש וחוזר, המתנה בין צלצולים, התיבה הטבועה, וגשר שחורק
+  const lbl=await page.evaluate(()=>{
+    const o={};SAVE.lakeBell={};LB.cd=0;LB.t=0;LB.k=0;enterWorld('home','lake');for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);
+    const bl=lbBell(),b=$('bellBtn'),tap=()=>b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true})),n=k=>AUDIO.count[k]||0;
+    o.bell=!!bl&&!tBlocked(bl.x,bl.y);P.x=bl.x+40;P.y=bl.y+20;lakeBellUpdate(0.05);o.btn=!b.hidden;
+    const f0=FOG.alpha,far0=typeof HD!=='undefined'?HD.air.far:0,s0=n('bell');tap();o.ring=LB.t>0&&n('bell')>s0;
+    for(let i=0;i<10;i++)lakeBellUpdate(0.5);o.clear=FOG.alpha<f0*0.5&&(typeof HD==='undefined'||HD.air.far>far0);o.fog=Math.round(f0*100)+'→'+Math.round(FOG.alpha*100);
+    const t1=LB.t;tap();o.block=LB.t<=t1;
+    const sc=lbSecret();o.scOk=!tBlocked(sc.x,sc.y);const d0=drops().length;P.x=sc.x;P.y=sc.y;lakeBellUpdate(0.05);o.found=!!LBS().found&&drops().length>d0;
+    for(let i=0;i<70;i++)lakeBellUpdate(1);o.end=LB.t===0&&LB.k===0&&Math.abs(FOG.alpha-f0)<1e-9&&(typeof HD==='undefined'||HD.air.far===far0);
+    P.x=bl.x+40;P.y=bl.y+20;lakeBellUpdate(0.05);o.wait=LB.cd>0&&!b.hidden&&/\d:\d\d/.test(b.textContent);
+    for(let i=0;i<120;i++)lakeBellUpdate(1);o.again=!(LB.cd>0)&&!/\d:\d\d/.test(b.textContent);
+    const br=WR().map.bridges[0],c0=n('creak');P.x=br.x;P.y=br.y;lakeBellUpdate(0.05);o.bridge=LB.onB===0&&n('creak')>c0&&!tBlocked(br.x,br.y);
+    P.moving=true;for(let i=0;i<5;i++)lakeBellUpdate(0.4);o.rip=LB.rip.length>0;P.moving=false;
+    o.saved=!!(JSON.parse(localStorage.getItem(SAVE_STORE.key)).lakeBell||{}).found;
+    P.x=bl.x+40;P.y=bl.y+60;LB.cd=0;tap();for(let i=0;i<6;i++)lakeBellUpdate(0.5);   // לצילום: הערפל למטה, ליד הפעמון
+    return o});
+  if(CFG.shots){await page.clock.runFor(300);await shot('world-lake-bell')}
+  await page.evaluate(()=>{LB.t=0;LB.k=0;LB.cd=0;enterVillage()});
+  check(lbl.bell&&lbl.btn&&lbl.ring&&lbl.clear&&lbl.block&&lbl.scOk&&lbl.found&&lbl.end&&lbl.wait&&lbl.again&&lbl.bridge&&lbl.rip&&lbl.saved,
+    'פעמון הערפל: '+(lbl.btn?'כפתור ליד הפעמון':'אין כפתור ליד הפעמון')+(lbl.ring?', מצלצל':', לא מצלצל')+(lbl.clear?', הערפל נחלש ('+lbl.fog+')':', הערפל לא נחלש')+
+    (lbl.block?', אי אפשר לצלצל שוב מיד':', אפשר לצלצל בלי סוף!')+(lbl.found?', התיבה הטבועה נמצאה':', התיבה הטבועה לא נמצאה')+(lbl.saved?' ונשמרה':'')+(lbl.end?', הערפל חוזר':', הערפל לא חוזר!')+
+    (lbl.wait?', שעון המתנה':', אין שעון המתנה')+(lbl.again?' ואחריו שוב מוכן':' והוא לא נגמר')+(lbl.bridge?', גשר צף חורק':', הגשר לא חורק')+(lbl.rip?' ועושה אדוות':''));
   // אויבים מיוחדים בעולם (affix.js): מתפצל נותן שניים, מתפוצץ פוגע אחרי רגע, מתחדש מרפא, ולכולם שם ושלל
   const afx=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=enemies.length,L=WORLD.foes[3],mk=id=>{const e=addEnemy('grunt',P.x+60,P.y,1);e.home=3;affixSet(e,id);return e};
