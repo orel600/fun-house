@@ -6,11 +6,11 @@ const MB_PIC={
   // הנפח
   anvil:'wQuake',taunt:'wCounter',wall:'wMountain',
   // הלוחם
-  charge:'charge',spin:'whirl',rage:'wBerserk',
+  cleave:'w3',spin:'whirl',rage:'wBerserk',
   // הצייד
-  pierce:'haste',leap:'hHop',rain:'volley',
+  pierce:'haste',net:'vines',rain:'volley',
   // הקוסמת
-  wave:'spirit',heal:'m3',blizzard:'mGlass',
+  wave:'spirit',bubble:'mCircle',blizzard:'mGlass',
   // הערכות (חלון הבחירה ומסך הסוף)
   k_tank:'def',k_warrior:'war',k_hunter:'hunt',k_mage:'mage',
 };

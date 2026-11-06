@@ -3,7 +3,7 @@
    מספרי נזק גדולים בקריטי ובסקילים, ורגע דרמטי בסקיל-על של השחקן (האטה, מסך כהה בקצוות ושם הסקיל).
    הכל בקנבס, מעל הדו-ממד וגם מעל התלת-ממד (VFX3D כבוי במובה בכוונה). המצב יושב ב-MB.fxs, ומתאפס עם כל משחק.
    מתחבר ל-moba.js בשורה בכל מקום: mbfxTime (עדכון), mbfxBoom (mbBoom), mbfxNum (mbDmg), mbfxDraw ו-mbfxScreen (ציור).
-   הסקילים (moba-kits.js) קוראים ל-mbfxSlam/Blast/Spin/Dust/Ult. ביצועים בטלפון: מספר החלקיקים והמספרים מוגבל */
+   הסקילים (moba-kits.js) קוראים ל-mbfxSlam/Blast/Spin/Dust/Ult/Cleave/Hit/Bubble. רשת וגל חרב מצוירים כאן (mbfxShots), וגם הסימנים של לכוד ומורם (mbfxMarks). ביצועים בטלפון: מספר החלקיקים והמספרים מוגבל */
 const MBFX={
   max:140,            // חלקיקים לכל היותר על המסך
   nums:18,            // מספרים גדולים לכל היותר
@@ -15,6 +15,9 @@ const MBFX={
   flash:{t:0.18,a:0.32},            // הבזק לבן-צבעוני על כל המסך
   shake:{hit:2.5,slam:6,ult:7,max:9},   // רעידה: מכה חזקה, נחיתה/פיצוץ, סקיל-על. max: לא יותר מזה אף פעם
   near:80,            // אפקטים של בוטים רועדים ומבזיקים רק כשהם על המסך (עם השוליים האלה)
+  // הסקילים שהחליפו זינוק וריפוי (6.11.2026): גל חרב, רשת ציד, כלא מים. הצבעים: סוג הנזק, והרשת חבל
+  net:{col:'#D9C39A',cells:4,close:0.25},   // רשת: צבע החבל, כמה משבצות, וכמה שניות היא נסגרת על מי שנתפס
+  bubble:{col:'#7FD3FF',r:30},              // בועת המים סביב מי שהורם
 };
 const mbfxS=()=>MB.fxs||(MB.fxs={p:[],n:[],stop:0,stopCd:0,slow:0,flash:0,fcol:'#fff',ult:null});
 const mbfxMe=()=>MB.me&&!MB.me.bot;   // שחקן אמיתי (בבדיקת האיזון וב-check.js גם השחקן בוט: בלי האטות)
@@ -57,6 +60,24 @@ function mbfxBlast(x,y,r,col){
 }
 // סיבוב חרב: ניצוצות שעפים בקשת מסביב
 function mbfxSpin(u,r){for(let i=0;i<12;i++){const a=i/12*6.283;mbfxPart(u.x+Math.cos(a)*r*0.7,u.y+Math.sin(a)*r*0.4,14,-Math.sin(a)*360,Math.cos(a)*200,80,'#FFF4D8',0.35,3.5,2,0.3)}}
+// גל חרב: הבזק של החרב, אבק לאורך הקו (הקשת עצמה היא ה-shot, מצוירת ב-mbfxShots)
+function mbfxCleave(u,ang,s){
+  const c=Math.cos(ang),n=Math.sin(ang);
+  for(let i=0;i<8;i++){const d=rand(20,s.range),o=rand(-s.w/2,s.w/2);mbfxPart(u.x+c*d-n*o,u.y+n*d+c*o,2,c*rand(60,160),n*rand(60,160),rand(80,200),'#B9AE9E',0.5,4,1.5)}
+  if(mbfxSeen(u.x,u.y))mbfxShake(MBFX.shake.hit);
+}
+// פגיעה של גל חרב או של רשת: ניצוצות על מי שנפגע
+function mbfxHit(o,kind){
+  if(kind==='net'){(MBFX_N(o).netT=MB.t);mbfxSpray(o.x,o.y,6,120,140,MBFX.net.col,0.45,3);if(mbfxSeen(o.x,o.y))mbfxShake(MBFX.shake.hit);return}
+  mbfxSpray(o.x,o.y-14,7,220,240,'#FFF4D8',0.4,3.5);
+}
+const MBFX_N=o=>o.fxs||(o.fxs={});
+// כלא מים: עמוד מים שפורץ מהרצפה, טיפות למעלה, הבזק כחול
+function mbfxBubble(x,y,r){
+  if(MB.fx.length<40)MB.fx.push({x,y,r:r*1.15,col:MBFX.bubble.col,life:0.5});
+  for(let i=0;i<14;i++){const a=i/14*6.283;mbfxPart(x+Math.cos(a)*r*0.8,y+Math.sin(a)*r*0.45,4,Math.cos(a)*40,Math.sin(a)*25,rand(380,620),i%2?'#BFE9FF':dtCol('water'),0.8,4.5,0.8,1)}
+  if(mbfxSeen(x,y)){mbfxShake(MBFX.shake.hit);mbfxFlash(dtCol('water'),0.5)}
+}
 // זינוק של תקיפה רגילה: ענן אבק קטן ברגליים
 function mbfxDust(u){mbfxSpray(u.x,u.y,5,90,60,'#B9AE9E',0.45,4)}
 // סקיל-על: לשחקן רגע דרמטי (הילוך איטי, הבזק, שם הסקיל), ולבוט שרואים רק הבזק ורעידה
@@ -85,6 +106,7 @@ function mbfxDraw(){
     const k=Math.max(0.25,u.st.shield/(u.st.shieldMax||u.st.shield)),col=MOBA.team[u.team];
     ctx.globalAlpha=0.16*k+0.06;ctx.fillStyle=col;ctx.beginPath();ctx.arc(u.x,u.y-22,u.r+16,0,7);ctx.fill();
     ctx.globalAlpha=0.5*k+0.2;ctx.strokeStyle='#E8F4FF';ctx.lineWidth=2;ctx.beginPath();ctx.arc(u.x,u.y-22,u.r+16,-2.6+MB.t*2,-0.6+MB.t*2);ctx.stroke()}
+  mbfxMarks();mbfxShots();
   ctx.globalCompositeOperation='lighter';
   for(const p of F.p){if(!mbVisPt(p.x,p.y))continue;const k=p.life/p.t0;ctx.globalAlpha=Math.min(1,k*1.6);ctx.fillStyle=p.col;const s=p.size*(0.4+0.6*k);ctx.fillRect(p.x-s/2,p.y-p.z-s/2,s,s)}
   ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
@@ -93,6 +115,36 @@ function mbfxDraw(){
     ctx.globalAlpha=Math.min(1,n.life*2.5);ctx.font='900 '+Math.round(sz)+'px Heebo, system-ui, sans-serif';
     ctx.lineWidth=4;ctx.strokeStyle='#0B0A12';ctx.strokeText(n.txt,n.x,n.y);ctx.fillStyle=n.col;ctx.fillText(n.txt,n.x,n.y)}
   ctx.globalAlpha=1;ctx.direction=DIR;
+}
+// סימנים על יחידות: רשת ושורשים ברגליים של מי שלכוד (st.root), ובועת מים סביב מי שהורם (st.bub). בקנבס, ולכן גם מעל התלת-ממד
+function mbfxMarks(){
+  const N=MBFX.net;
+  for(const u of MB.u){if(u.dead||!mbShow(u))continue;const s=u.st;   // בערפל: לא מצויר (moba-vision.js)
+    if(s.root>0){const k=Math.min(1,(MB.t-(MBFX_N(u).netT||0))/N.close),rx=(u.r+18)*(1.6-0.6*k),ry=rx*0.45;   // הרשת נסגרת מגדולה לצמודה
+      ctx.globalAlpha=Math.min(1,s.root*3);ctx.strokeStyle='#5C8A3A';ctx.lineWidth=3;   // שורשים קטנים שנאחזים בקרקע
+      for(let i=0;i<6;i++){const a=i/6*6.283+0.4;ctx.beginPath();ctx.moveTo(u.x+Math.cos(a)*rx*0.6,u.y+Math.sin(a)*ry*0.6);ctx.quadraticCurveTo(u.x+Math.cos(a+0.3)*rx*1.1,u.y+Math.sin(a+0.3)*ry*1.1-8,u.x+Math.cos(a)*rx*1.15,u.y+Math.sin(a)*ry*1.15);ctx.stroke()}
+      ctx.strokeStyle=N.col;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(u.x,u.y,rx,ry,0,0,7);ctx.stroke();   // הרשת: אליפסה עם חבלים לרוחב ולאורך, עולה על הרגליים
+      for(let i=1;i<N.cells;i++){const f=i/N.cells*2-1,h=Math.sqrt(1-f*f);ctx.beginPath();ctx.moveTo(u.x+f*rx,u.y-h*ry);ctx.lineTo(u.x+f*rx*0.7,u.y-34*k+h*ry);ctx.stroke()}
+      ctx.beginPath();ctx.ellipse(u.x,u.y-17*k,rx*0.8,ry*0.8,0,0,7);ctx.stroke();ctx.globalAlpha=1}
+    if(s.bub>0){const B=MBFX.bubble,k=Math.min(1,s.bub*4,(1-s.bub)*6+0.3),r=(u.r+B.r*0.6)*(0.7+0.3*k),cy=u.y-22-14*k;
+      ctx.globalAlpha=0.22*k;ctx.fillStyle=B.col;ctx.beginPath();ctx.arc(u.x,cy,r,0,7);ctx.fill();
+      ctx.globalAlpha=0.8*k;ctx.strokeStyle='#E8F8FF';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(u.x,cy,r,0,7);ctx.stroke();
+      ctx.lineWidth=3;ctx.beginPath();ctx.arc(u.x-r*0.3,cy-r*0.3,r*0.35,3.4,4.6);ctx.stroke();   // ברק על הבועה
+      ctx.fillStyle='#E8F8FF';for(let i=0;i<3;i++){const t=(MB.t*1.4+i/3)%1;ctx.globalAlpha=0.7*k*(1-t);ctx.beginPath();ctx.arc(u.x+Math.sin(i*2.1+MB.t*3)*r*0.5,cy+r*0.6-t*r*1.4,2.5,0,7);ctx.fill()}
+      ctx.globalAlpha=1}}
+}
+// הירייה של גל חרב (קשת לבנה-זהובה שמתרחבת) ושל רשת ציד (רשת פתוחה שמסתובבת)
+function mbfxShots(){
+  for(const s of MB.shots){if(!s.fx||!mbVisPt(s.x,s.y))continue;const a=Math.atan2(s.vy,s.vx);ctx.save();ctx.translate(s.x,s.y-10);ctx.rotate(a);
+    if(s.fx==='cleave'){const w=s.w*0.95;ctx.globalCompositeOperation='lighter';
+      for(let i=0;i<3;i++){ctx.globalAlpha=0.55-i*0.15;ctx.strokeStyle=i?dtCol(s.dt):'#FFF4D8';ctx.lineWidth=13-i*4;ctx.beginPath();ctx.arc(-i*16-w*0.6,0,w,-1,1);ctx.stroke()}
+      ctx.globalCompositeOperation='source-over'}
+    else{const N=MBFX.net,r=Math.max(10,s.w*0.7),sp=MB.t*9;ctx.rotate(sp);ctx.globalAlpha=0.95;ctx.strokeStyle=N.col;ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.stroke();
+      for(let i=0;i<N.cells;i++){const b=i/N.cells*Math.PI;ctx.beginPath();ctx.moveTo(Math.cos(b)*r,Math.sin(b)*r);ctx.lineTo(-Math.cos(b)*r,-Math.sin(b)*r);ctx.stroke()}
+      ctx.beginPath();ctx.arc(0,0,r*0.5,0,7);ctx.stroke();
+      ctx.fillStyle='#8A7F70';for(let i=0;i<4;i++){const b=i/4*6.283;ctx.beginPath();ctx.arc(Math.cos(b)*r,Math.sin(b)*r,3,0,7);ctx.fill()}}   // משקולות בקצוות
+    ctx.restore();ctx.globalAlpha=1}
 }
 // על כל המסך (אחרי setTransform): הבזק, ובסקיל-על של השחקן קצוות כהים ושם הסקיל
 function mbfxScreen(){
