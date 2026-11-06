@@ -150,12 +150,12 @@ function tFree(o){
 /* צעד: מה שזז מאז הפעם הקודמת. האטה במקום רדוד, וגלישה לאורך הקצה כשנכנסים למקום חסום (קודם ציר אחד, אחר כך השני) */
 function tStep(o){
   if(!TR||!o||!S.wd)return o;   // רק בעולם: בזירה ובכפר אין מפה
-  const lx=o._tx,ly=o._ty;
+  const lx=o._tx,ly=o._ty,bl=o===P&&TR.walk?(x,y)=>tBlocked(x,y)&&!TR.walk(x,y):tBlocked;   // TR.walk: רק השחקן עומד על הסלעים המרחפים (shadowrocks.js)
   if(lx==null||Math.abs(o.x-lx)+Math.abs(o.y-ly)>TERRAIN.teleport){tFree(o);o._tx=o.x;o._ty=o.y;return o}
   if(o.x===lx&&o.y===ly)return o;
   const k=tSlow(o.x,o.y);if(k<1){o.x=lx+(o.x-lx)*k;o.y=ly+(o.y-ly)*k}
-  if(tBlocked(o.x,o.y)){if(!tBlocked(o.x,ly))o.y=ly;else if(!tBlocked(lx,o.y))o.x=lx;else{o.x=lx;o.y=ly}
-    if(tBlocked(o.x,o.y))tFree(o)}
+  if(bl(o.x,o.y)){if(!bl(o.x,ly))o.y=ly;else if(!bl(lx,o.y))o.x=lx;else{o.x=lx;o.y=ly}
+    if(bl(o.x,o.y))tFree(o)}
   o._tx=o.x;o._ty=o.y;return o;
 }
 // קו ראייה: אין שום משבצת חסומה על הקו

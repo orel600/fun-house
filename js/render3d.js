@@ -666,6 +666,7 @@ function syncWorld(){
   R3D.wld=G;G.g.visible=true;
   if(typeof props3dWorldTick==='function')props3dWorldTick(G);
   terrain3dTick(G);   // זרימת המים, ואריחי יער רחוקים מוסתרים
+  sr3d(G,reg);   // הסלעים המרחפים בלב הצל (shadowrocks.js)
   if(G.pulse){const t=performance.now()/1000;for(const [m,Wt] of G.pulse)m.emissiveIntensity=Wt.g*(1+Wt.pulse*Math.sin(t*1.7+Math.sin(t*0.6)*2))}   // לבה שנושמת
   for(const k in G.paths)G.paths[k].visible=wPathOpen(RG.paths[k]);
   for(const n of S.nd.list){
