@@ -34,7 +34,7 @@ let MB=null;
 /* ---- יחידות ---- */
 let mbN=0;
 function mbUnit(o){return Object.assign({id:++mbN,x:0,y:0,r:16,hp:100,max:100,dead:false,flash:0,kx:0,ky:0,ph:0,speed:0,aim:0,face:0,moving:false,atkT:0,aggro:0,
-  st:{stun:0,taunt:0,tBy:null,slow:0,slowK:0,wet:0,armor:0,armorK:0,burnBack:0,burn:0,burnD:0,burnBy:null,rage:0,imm:0,ice:0,dash:null}},o)}
+  st:{stun:0,taunt:0,tBy:null,slow:0,slowK:0,wet:0,armor:0,armorK:0,burnBack:0,burn:0,burnD:0,burnBy:null,rage:0,imm:0,ice:0,root:0,bub:0,dash:null}},o)}
 function mbHero(kit,team,me,i){
   const K=MBKIT[kit],hx=(team?1:-1)*(MOBA.base.x-110),hy=(i-1)*70;
   return mbUnit({k:'hero',kit,team,me,bot:me?null:{t:0,mode:'push'},type:'mb_'+kit,x:hx,y:hy,home:{x:hx,y:hy},face:team?Math.PI:0,
@@ -82,6 +82,7 @@ function mbCC(t,kind,dur,by){
   if(!t||t.dead||t.k==='tower'||t.k==='base')return false;
   const s=t.st;if(s.imm>0)return false;
   if(kind==='stun'){s.stun=Math.max(s.stun,dur);s.taunt=0;s.dash=null}
+  else if(kind==='root'){s.root=Math.max(s.root,dur);s.dash=null}   // לכוד (רשת ציד): לא זז, אבל תוקף ומטיל סקילים שלא מזיזים אותו
   else if(!(s.stun>0)){s.taunt=Math.max(s.taunt,dur);s.tBy=by}
   return true;
 }
@@ -101,7 +102,7 @@ function mbDie(t,src){
     const killer=src&&src.k==='hero'?src:t.st.burnBy&&t.st.burnBy.k==='hero'?t.st.burnBy:null;
     if(killer){killer.kills++;mbXp(killer,MOBA.xp.kill)}
     for(const [h,at] of t.hitBy)if(h!==killer&&MB.t-at<8)mbXp(h,MOBA.xp.kill*MOBA.xp.assist);
-    t.hitBy.clear();Object.assign(t.st,{stun:0,taunt:0,slow:0,wet:0,armor:0,burn:0,rage:0,imm:0,ice:0,dash:null,shield:0});
+    t.hitBy.clear();Object.assign(t.st,{stun:0,taunt:0,slow:0,wet:0,armor:0,burn:0,rage:0,imm:0,ice:0,root:0,bub:0,dash:null,shield:0});
     if(t.me){mbBanner(T('mb.died'),C.blood);sfx('hurt')}
     else if(killer&&killer.me){mbBanner(T('mb.kill'),C.gold);sfx('bossDown')}
     mbKillFeed(killer||src,t);   // "X הפיל את Y" מתחת לדמות שלי (במקום ההודעה "חבר נפל")
@@ -130,7 +131,7 @@ function mbStep(u,mx,my){
   const L=MOBA.lane;u.x=Math.max(-L.len,Math.min(L.len,u.x));u.y=Math.max(-L.half,Math.min(L.half,u.y));
 }
 function mbMove(u,tx,ty,dt,stop=4){
-  if(u.st.stun>0){u.moving=false;return}
+  if(u.st.stun>0||u.st.root>0){u.moving=false;return}
   const dx=tx-u.x,dy=ty-u.y,d=Math.hypot(dx,dy);if(d<stop){u.moving=false;return}
   // מאטים לקראת היעד במקום לעצור בבת אחת: בוט שהולך אחרי החיילים (איטיים ממנו פי 2) רץ-עוצר-רץ בלי זה (MBMOVE.arrive ב-moba-move.js)
   const v=Math.min(mbSpeed(u),d/MBMOVE.arrive),k=Math.min(1,v*dt/d);mbStep(u,dx*k,dy*k);u.moving=v>MBMOVE.creep;u.face=Math.atan2(dy,dx);
@@ -179,7 +180,7 @@ function mbBannerNext(){mbBanner.tm=null;const m=(mbBanner.q||[]).shift();if(!m|
   if(mbBanner.q.length)mbBanner.tm=setTimeout(mbBannerNext,MOBA.msgMin*1000)}
 function mbShake(slot){const b=document.querySelector('#mbSk [data-sk="'+slot+'"]');if(!b)return;b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake');sfx('tap')}
 const mbFloat=(x,y,txt,col)=>{if(MB.floats.length<60)MB.floats.push({x,y,txt:String(txt),col,life:0.9})};
-function mbWord(u,w){mbFloat(u.x,u.y-u.r-34,T('mb.w.'+w),w==='shock'?'#D46BFF':w==='freeze'?C.tide:w==='taunt'?C.ember:C.blood)}
+function mbWord(u,w){mbFloat(u.x,u.y-u.r-34,T('mb.w.'+w),w==='shock'?'#D46BFF':w==='freeze'?C.tide:w==='taunt'?C.ember:w==='root'?'#D9C39A':C.blood)}
 function mbBoom(x,y,r,t){const col=t==='heal'?'#7BD88F':t==='blue'?MOBA.team[0]:t==='red'?MOBA.team[1]:dtCol(t);if(MB.fx.length<40)MB.fx.push({x,y,r,col,life:0.45});mbfxBoom(x,y,r,col)}   // חלקיקים (moba-fx.js)
 
 /* ---- המשחק ---- */
@@ -247,6 +248,8 @@ function mbTick(u,dt){
   if(s.stun>0){s.stun-=dt;if(s.stun<=0){s.ice=0;if(hero)s.imm=MOBA.ccImmune}}
   else if(s.taunt>0){s.taunt-=dt;if(s.taunt<=0||!s.tBy||s.tBy.dead){s.taunt=0;if(hero)s.imm=MOBA.ccImmune}}
   else if(s.imm>0)s.imm-=dt;
+  if(s.root>0){s.root-=dt;if(s.root<=0&&hero&&!(s.stun>0||s.taunt>0))s.imm=MOBA.ccImmune}   // אחרי רשת: אותה חסינות קצרה
+  if(s.bub>0)s.bub-=dt;
   for(const k of ['slow','wet','armor','rage'])if(s[k]>0)s[k]-=dt;
   if(s.burn>0){s.burn-=dt;u.hp-=s.burnD*dt;if(u.hp<=0)mbDie(u,s.burnBy)}
   u.flash-=dt;
@@ -256,7 +259,7 @@ function mbPlayer(u,dt){
   if(keys.KeyA||keys.ArrowLeft)ix-=1;if(keys.KeyD||keys.ArrowRight)ix+=1;if(keys.KeyW||keys.ArrowUp)iy-=1;if(keys.KeyS||keys.ArrowDown)iy+=1;
   const m=Math.hypot(ix,iy);if(m>1){ix/=m;iy/=m}
   if(u.st.taunt>0&&u.st.tBy)mbMove(u,u.st.tBy.x,u.st.tBy.y,dt,u.r+u.st.tBy.r);
-  else if(u.st.stun>0)u.moving=false;
+  else if(u.st.stun>0||u.st.root>0)u.moving=false;
   else if(m>0.12){const sp=mbSpeed(u)*dt;mbStep(u,ix*sp,iy*sp);u.moving=true;u.face=Math.atan2(iy,ix)}
   else u.moving=false;
   const A=MBKIT[u.kit].atk;mbAttack(u,dt,mbAutoTarget(u,A.range),A);
@@ -440,7 +443,7 @@ function mobaDraw(ox,oy){
     if(s.wet>0){ctx.fillStyle=dtCol('water');ctx.beginPath();ctx.arc(u.x+16,top-6,4,0,7);ctx.fill()}
     ctx.restore();
   }
-  for(const s of M.shots){if(!mbVisPt(s.x,s.y))continue;   // בערפל: לא מצויר
+  for(const s of M.shots){if(s.fx||!mbVisPt(s.x,s.y))continue;   // גל חרב ורשת: moba-fx.js מצייר אותם. בערפל: לא מצויר
     if(s.kind==='home'){const c=s.big?MOBA.team[s.team]:dtCol(s.dt);ctx.fillStyle=c;ctx.globalAlpha=0.35;ctx.beginPath();ctx.arc(s.x,s.y,s.big?11:7,0,7);ctx.fill();ctx.globalAlpha=1;ctx.beginPath();ctx.arc(s.x,s.y,s.big?6:3.5,0,7);ctx.fill()}
     else{const a=Math.atan2(s.vy,s.vx);ctx.save();ctx.translate(s.x,s.y);ctx.rotate(a);ctx.fillStyle=dtCol(s.dt);ctx.globalAlpha=0.75;
       if(s.dt==='water'){ctx.beginPath();ctx.ellipse(0,0,12,s.w/2,0,0,7);ctx.fill()}else{ctx.fillRect(-26,-3,34,6);ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(4,-7);ctx.lineTo(4,7);ctx.fill()}
