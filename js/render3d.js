@@ -317,13 +317,15 @@ async function init3d(){
       R3D.clips[a.name+'@up']=new THREE.AnimationClip(a.name+'@up',a.duration,a.tracks.filter(t=>UPPER.test(t.name)));
       R3D.clips[a.name+'@low']=new THREE.AnimationClip(a.name+'@low',a.duration,a.tracks.filter(t=>!UPPER.test(t.name)))}
     for(const k in MODELS3D)if(['blade','shield','staff'].includes(k)||k.startsWith('w_')){const g=await parseGLB(k);lambert(g.scene);R3D.props[k]=g.scene}   // נשקים
+    R3D.hats={};for(const k in MODELS3D)if(k.startsWith('hat_')){const g=await parseGLB(k);lambert(g.scene);R3D.hats[k.slice(4)]=g.scene}   // כובעים (ARMOR.hat ב-armor.js)
     // חומרי הנשקים: אותה פלטה בצבעים אחרים, שמחליפה את הטקסטורה של הנשק (makeActor)
     R3D.wtex={};for(const k in MODELS3D)if(k.startsWith('wtex_')){
       const img=new Image();img.src='data:image/png;base64,'+MODELS3D[k];await img.decode();
       const t=new THREE.Texture(img);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;R3D.wtex[k.slice(5)]=t}
     for(const k in MODELS3D)if(k.startsWith('v_')||k.startsWith('n_')){const g=await parseGLB(k);lambert(g.scene);g.scene.traverse(o=>{o.frustumCulled=true});R3D.props[k]=g.scene}   // מבני הכפר
     const heroModels=new Set(Object.keys(LOOK3D).filter(k=>k==='player'||k.startsWith('hero_')).map(k=>LOOK3D[k].model));
-    for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t,heroModels.has(k)&&(GEAR3D.on?ARMOR3D.concat(GEAR3D.keep):ARMOR3D));lambert(t);t.updateMatrixWorld(true);
+    for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t,heroModels.has(k)&&[...ARMOR3D,...(GEAR3D.on?GEAR3D.keep:[]),...ARMOR_NATIVE,ARMOR.hat.head]);   // הראש נפרד: הברדס מחליף אותו (armor.js)
+      lambert(t);t.updateMatrixWorld(true);
       // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
       const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=t.userData.h0||bb.max.y-bb.min.y||2}   // h0: הגובה לפני הדחיסה (build3d.js, pack), כי quantize משנה את המיקומים הגולמיים
     bakeCrowd();

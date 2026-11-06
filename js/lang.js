@@ -567,6 +567,7 @@ const TEXT={
   'wisp.tip.luck':{he:'אור התלתן: יותר מכות קריטיות ויותר שלל',en:'The clover light: more critical hits and more loot'},
   'w.enter':{he:'האחו והמחצבה',en:'The Meadow & the Quarry'},
   'fpsGroup':{he:'הצג FPS',en:'Show FPS'},   // perf.js
+  'hatGroup':{he:'הצג כובע',en:'Show hat'},   // armor.js
   'shadowGroup':{he:'צללים',en:'Shadows'},'shadow.on':{he:'דלוק',en:'On'},'shadow.off':{he:'כבוי',en:'Off'},   // look-hd.js
   'vfxqGroup':{he:'איכות אפקטים',en:'Effects quality'},'vfxq.hi':{he:'גבוהה',en:'High'},'vfxq.lo':{he:'נמוכה',en:'Low'},   // vfx3d.js
   'fxGroup':{he:'אפקטים',en:'Effects'},'fx.full':{he:'מלא',en:'Full'},'fx.less':{he:'פחות',en:'Fewer'},

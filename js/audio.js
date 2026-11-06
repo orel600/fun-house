@@ -100,6 +100,7 @@ function soundOpen(){
   if(S&&S.mode==='play'){sndPrev='play';S.mode='sound';joy=null}else sndPrev=null;
   for(const el of document.querySelectorAll('#ovSound input[data-ch]'))el.value=Math.round(AUDIO.vol[el.dataset.ch]*100);
   $('sndMute').textContent=T(AUDIO.muted?'snd.on':'snd.off');$('ovSound').hidden=false;
+  if(typeof hatShowBtns==='function')hatShowBtns();   // הצג כובע (armor.js): השמירה נטענת אחרי הסקריפטים
 }
 function soundClose(){$('ovSound').hidden=true;if(sndPrev&&S.mode==='sound')S.mode=sndPrev;sndPrev=null}
 $('muteBtn').addEventListener('click',e=>{e.stopPropagation();soundOpen()});
