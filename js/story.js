@@ -35,12 +35,12 @@ const STORY={
     // slam: רקיעה. כשהשחקן עד range ממנו: עיגול אדום ברדיוס r מתמלא warn שניות, ואז נזק למי שבתוכו.
     // charge: הסתערות. כשהשחקן בין min ל-max: פס על הרצפה ורעד warn שניות, ואז ריצה בקו len פיקסלים במהירות speed.
     // נתקע בסלע או בקצה: stun שניות בלי לזוז, ומקבל פי vuln נזק (ניר, 1.11: "שק חבטות או מלכודת". docs/plan-combat.md, שינוי 1)
-    // האחו הגדול (ת9, 5.11.2026): הפנס והמאורה בנקודה 16 בשרטוט (docs/concept-meadow.md), במערה בצוק הדרום-מזרחי, הכי רחוק מהשער. השומר עומד ב-GIANT.lair מתחת לפנס
+    // האחו הגדול (ת9, 5.11.2026): הפנס והמאורה בנקודה 16 בשרטוט (docs/concept-meadow.md), במערה בצוק הדרום-מזרחי, הכי רחוק מהשער. השומר ישן במאורה (GIANT.lair.at ב-giant.js)
     earth:{reg:'meadow',x:2590,y:1640,quest:'s1Warden',glow:'#FFD36B',col:C.ember,
       warden:{type:'golem',hp:46,dmg:1.6,r:1.7,speed:0.8,wake:520,
         slam:{every:4.2,range:250,r:190,warn:0.8,dmg:22,col:'#FF4A3A'},   // every 3.2←4.2 (5.11, fix/mage-boss): הלוחם היה איטי ב-33% מהממוצע, כי יצא מהעיגול כל 3 שניות
         charge:{every:6.5,min:240,max:620,warn:1.0,len:600,w:96,speed:620,dmg:24,stun:2,vuln:2,col:'#FF4A3A'}}},
-    // פנס המים: על אי בלגונה בדרום-מערב של האגם (5 בשרטוט, js/map-lake.js). השומר במאורה מתחתיו (GIANT.lair). שומר המים גם יורה מים בשלושה כיוונים (shoot)
+    // פנס המים: על אי בלגונה בדרום-מערב של האגם (5 בשרטוט, js/map-lake.js). השומר במאורה לידו (GIANT.lair.at). שומר המים גם יורה מים בשלושה כיוונים (shoot)
     // ev: מה מדווחים לקווסט כשהשומר נופל (questEvent('story',ev)). head: ראש הכפר אומר משפט אחרי שהפנס נדלק
     water:{reg:'lake',x:-2300,y:1230,quest:'s2Warden',glow:'#6FD3FF',col:'#3F7BF5',ev:'tide',head:true,
       warden:{type:'tidewarden',hp:116,dmg:1.3,r:1.6,speed:0.9,wake:520,shoot:{every:2.4,n:3,spread:0.32,speed:190,r:7,dmg:11}}},
@@ -116,7 +116,7 @@ function storyUpdate(dt){
   // השומר קם כשמתקרבים לפנס של האזור, רק כשהקווסט שלו פעיל
   // הענק ישן במאורה ליד הפנס, וקם כשמתקרבים: גם לפני הקווסט, ואחרי ניצחון רק כשהטיימר נגמר (giantReady ב-giant.js)
   const k=!w.dp&&storyLantern(),L=k&&STORY.lanterns[k];
-  if(L&&!w.warden&&giantReady(k)&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake){const e=storyWarden(k,L.y+GIANT.lair);e.first=qOn(L.quest);banner(T('story.'+k+'.rise'),L.col)}
+  if(L&&!w.warden&&giantReady(k)&&giantNear(k)){const m=giantLair(k),e=storyWarden(k,m.y,m.x);e.first=qOn(L.quest);banner(T('story.'+k+'.rise'),L.col)}
   storyRings(dt);   // טבעות האש של שומר האש
   storyMarks(dt);   // עיגולי הברק של שומר הסערה
   if(w.warden&&w.warden.dead){const e=w.warden;w.warden=null;
@@ -126,8 +126,8 @@ function storyUpdate(dt){
     giantWin(e)}   // הטיימר מתחיל, ובניצחון חוזר גם שלל (giant.js)
 }
 // השומר קם ליד הפנס (גם בוס העומק, depths.js)
-function storyWarden(k,y){
-  const L=STORY.lanterns[k],W=L.warden,e=addEnemy(W.type,L.x,y,W.hp);
+function storyWarden(k,y,x){
+  const L=STORY.lanterns[k],W=L.warden,e=addEnemy(W.type,x==null?L.x:x,y,W.hp);
   e.warden=k;e.elite=false;e.dmg*=W.dmg;e.r*=W.r;e.speed*=W.speed;e.xp=0;e.big=W.r;e.shoot=W.shoot?W.shoot.every:0;e.ring=W.ring?W.ring.every*0.6:0;e.marks=W.marks?W.marks.every*0.5:0;e.slamT=W.slam?W.slam.every*0.5:0;e.chT=W.charge?W.charge.every*0.6:0;e.tel=null;S.wd.warden=e;
   giantRise(e,k);   // ענק: מודל משלו, פי 2 ברדיוס, כניסה ורעידות (giant.js)
   S.shake=Math.max(S.shake,8);
@@ -159,7 +159,7 @@ function storyWardenMove(e,dt){
   const far=e.back,sp=far?CH.back:1;
   // מכה בהכנה, הסתערות או תקוע: הוא לא הולך. אחרת רודף (או חוזר לפנס)
   const busy=storyTele(e,dt,W,L,K,d,dx,dy,far);
-  let tx=far?L.x-e.x:dx,ty=far?L.y+70-e.y:dy;const td=Math.hypot(tx,ty)||1;
+  const hm=e.wboss&&!e.dpBoss?giantLair(e.warden):{x:L.x,y:L.y+70};let tx=far?hm.x-e.x:dx,ty=far?hm.y-e.y:dy;const td=Math.hypot(tx,ty)||1;
   if(!busy&&td>6){e.x+=tx/td*e.speed*sp*slowK(e)*dt;e.y+=ty/td*e.speed*sp*slowK(e)*dt}
   else if(far&&!busy&&!e.dpBoss&&e.say<=0){giantSleep(e);return}   // ברחו ממנו: הגיע למאורה, מתרפא וחוזר לישון (giant.js)
   e.x+=e.kx*dt;e.y+=e.ky*dt;
