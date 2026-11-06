@@ -330,6 +330,7 @@ function worldUpdate(dt){
   fishUpdate(dt);   // דיג ליד מים, וכפתור "לדוג" (fishing.js)
   wsUpdate(dt);     // אבני מסע: פתיחה, ערפל המפה וכפתור 🗿 (waystones.js)
   travelUpdate();   // ליד פנס דולק: "חזרה לכפר" (travel.js)
+  lakeBellUpdate(dt);   // פעמון הערפל והגשרים הצפים באגם (lake-bell.js)
 }
 
 /* ---- מוות בעולם: חצי מכל משאב בתרמיל הולך, הפריטים והמחסן נשארים. נקרא מ-gameOver ---- */
@@ -426,6 +427,7 @@ function drawWorld(){
   strikeDraw();   // קשת אדומה של מכה שמתכוננת (strike.js)
   foeAiDraw();   // הסתערות, ירייה וקפיצה שמסומנות על הרצפה (foeai.js)
   eventsDraw();scentDraw();rareDraw();   // אירועים (events.js), החיה מובילה (petscent.js)
+  lakeBellDraw();   // גל הפעמון, אדוות ליד הגשרים והתיבה הטבועה (lake-bell.js)
   secretsDraw();curioDraw();   // סודות (secrets.js), מכשול בדרך לאזור הבא (curiosity.js)
   if(WR().fog)wFog();
   if(WR().snow)wSnow();   // הרכס הקפוא
@@ -548,5 +550,6 @@ function drawWorldScreen(ox,oy){
   qmScreen(ox,oy);   // "!" מעל אויב שצריך להרוג לקווסט (questmark.js)
   foeAiScreen(ox,oy);   // "!" מעל קורא שבורח (foeai.js)
   eventsScreen(ox,oy);scentScreen(ox,oy);   // events.js, petscent.js
+  lakeBellScreen(ox,oy);   // חצים לאויבים רחוקים כשהערפל למטה (lake-bell.js)
   secretsScreen(ox,oy);secretsHud();curioScreen(ox,oy);   // secrets.js, השלט "רמה מומלצת" (curiosity.js)
 }
