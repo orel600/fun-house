@@ -910,6 +910,7 @@ const TEXT={
   'node.cactus':{he:'קקטוסים',en:'cacti'},'node.emberRock':{he:'סלעי להבה',en:'ember rocks'},
   // העלילה, פרק 5: פנס הברק, מגדלי הסערה (story.js, WORLD.regions.storm ב-world.js, docs/story.md)
   'w.region.storm':{he:'מגדלי הסערה',en:'The Storm Towers'},
+  'rz.hint':{he:'מעבר האבנים: עוברים בין ברק לברק',en:'Stepping stones: cross between strikes'},'rz.zap':{he:'הנהר מחשמל!',en:'The river shocks!'},   // נהר הברקים (storm-river.js)
   'w.enter.storm':{he:'מגדלי הסערה. גשם לא נגמר, והשמיים רועמים',en:'The Storm Towers. Endless rain, and the sky rumbles'},
   'w.path.storm':{he:'למגדלי הסערה',en:'To the Storm Towers'},
   'w.pathInfo.storm':{he:'שביל שעולה מהחול אל המגדלים השבורים, ונפתח כשפנס האש נדלק. רטוב ומחשמל שם. אדמה מארקת ברק.',en:'A trail up from the sand to the broken towers, opened when the Fire Lantern lit. It is wet and crackling up there. Earth grounds lightning.'},
@@ -1447,6 +1448,9 @@ const TEXT={
   'rs.saved':{he:'פיוחו הצילה!',en:'Pyocho to the rescue!'},
   'pet.up':{he:(n,s)=>n+' גדלה! שלב '+s,en:(n,s)=>n+' grew up! Stage '+s},
   'pet.found':{he:n=>n+' מצאה משהו!',en:n=>n+' found something!'},
+  'well.hint':{he:'🐾 פיוחו יכולה לחפור כאן',en:'🐾 PioCho could dig here'},   // הבאר היבשה במדבר (desertwell.js)
+  'well.go':{he:n=>n+' מריחה משהו בבאר!',en:n=>n+' smells something in the well!'},
+  'well.found':{he:n=>'✨ '+n+' העלתה אוצר מהבאר!',en:n=>'✨ '+n+' dug treasure out of the well!'},
   // ---- מבוקש היום (hunt.js) ----
   'hunt.title':{he:'מבוקש היום',en:'Wanted today'},
   'hunt.say':{he:'מסתובב שם היום. מי שמפיל אותו לוקח שלל שאין בשום מקום אחר',en:'Roaming there today. Take him down for loot you won’t find anywhere else'},

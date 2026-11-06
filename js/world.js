@@ -315,6 +315,7 @@ function worldUpdate(dt){
   orbs=[];   // XP רק בזירה (גם מהמבוקש)
   dmgUpdate(dt);mutUpdate(dt);innUpdate(dt);   // שריפה, רטיבות, האטה והלם נגמרים (dmg.js). לפני 4.11 לא רץ בעולם, ומצבים נשארו לתמיד. המוטציה היומית (mutation.js)
   wantedUpdate(dt);storyUpdate(dt);depthsUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);nemUpdate(dt);rareUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
+  riverUpdate(dt);   // נהר הברקים במגדלי הסערה (storm-river.js)
   terrainTick();   // אויבים ופיוחו: לא בתוך מים, יער או צוק, ולאט במעבר הרדוד (terrain.js)
   dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*mutK('regen')*dt);   // mutK: יום הצמא מרפא לאט (mutation.js)
@@ -327,6 +328,7 @@ function worldUpdate(dt){
   w.near=null;const gs=wGates();for(const k in gs){const g=gs[k];if(Math.hypot(P.x-g.x,P.y-g.y)<g.r+P.r+WORLD.near)w.near=k}
   worldHud();cornerHud();   // הפינות העליונות והמפה הקטנה (minimap.js)
   wnpcUpdate(dt);   // דמויות שמגלים בעולם, וכפתור "לדבר" (worldnpc.js)
+  wellUpdate(dt);   // הבאר היבשה במדבר (desertwell.js)
   fishUpdate(dt);   // דיג ליד מים, וכפתור "לדוג" (fishing.js)
   wsUpdate(dt);     // אבני מסע: פתיחה, ערפל המפה וכפתור 🗿 (waystones.js)
   travelUpdate();   // ליד פנס דולק: "חזרה לכפר" (travel.js)
@@ -420,6 +422,7 @@ function drawWorld(){
     if(n.hp<n.max){const bw=r*2;ctx.fillStyle='rgba(5,7,13,0.6)';ctx.fillRect(x-bw/2,y-r*2.2,bw,4);ctx.fillStyle=C.gold;ctx.fillRect(x-bw/2,y-r*2.2,bw*Math.max(0,n.hp/n.max),4)}
   }
   drawWnpcs();   // worldnpc.js
+  wellDraw();   // הבאר היבשה במדבר (desertwell.js)
   fishDraw();   // החכה והמצוף (fishing.js)
   storyDraw();   // הפנס והשומר (story.js)
   affixDraw();   // פיצוצים של אויבים מיוחדים (affix.js)
@@ -431,6 +434,7 @@ function drawWorld(){
   if(WR().fog)wFog();
   if(WR().snow)wSnow();   // הרכס הקפוא
   if(WR().heat)wHeat();   // המדבר הבוער
+  riverDraw();   // נהר הברקים (storm-river.js)
   if(WR().storm)wStorm();   // מגדלי הסערה
   srDraw();   // הסלעים המרחפים (shadowrocks.js)
   if(WR().shadow)wShadow();   // לב הצל
