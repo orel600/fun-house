@@ -2190,6 +2190,20 @@ function worldBot(m,L,god){
     (ch4.reg==='desert'&&ch4.sand?', הגעה למדבר':', לא הגיע למדבר')+(ch4.heat?' בחום':', בלי חום')+', '+ch4.foes+' אויבים חמים'+(ch4.weak?' (חלשים למים)':' (לא חלשים למים!)')+(ch4.noNpc?'':', דמויות האחו במדבר!')+
     (ch4.ember?', אודם':', קווסט האודם שבור')+(ch4.warden?', שומר האש קם':', שומר האש לא קם')+(ch4.ring?(ch4.ringHit?', טבעת אש פוגעת':', טבעת אש לא פוגעת'):', בלי טבעות אש')+(ch4.ready?' והופל':', לא הופל')+
     (ch4.back?', חזרה לרכס ליד המעבר':', החזרה לרכס שבורה')+(ch4.lit?', פנס האש נדלק':', פנס האש לא נדלק')+(ch4.safer?', המדבר בטוח יותר':''));
+  // הבאר היבשה במדבר (desertwell.js): ליד הבאר פיוחו רצה וחופרת, שלל עולה, הבאר יבשה לזמן אמיתי, ובלי חיה שחופרת יש הסבר
+  const well=await page.evaluate(()=>{
+    const o={},k0=SAVE.pet.kind;SAVE.pet.kind=null;SAVE.well={next:0,n:0};enterWorld('home','desert');P.inv=99;
+    const w=wellAt();o.mark=!!w;if(!w){enterVillage();return o}
+    P.x=w.x+60;P.y=w.y+40;S.pet=null;petUpdate(0.016);const p=S.pet;p.x=P.x+30;p.y=P.y;p.st='idle';const n0=drops().filter(d=>d.pet).length;
+    wellUpdate(0.016);o.went=p.well&&p.st==='go';
+    for(let i=0;i<60*12&&SAVE.well.n===0;i++){P.inv=99;petUpdate(1/60);wellUpdate(1/60);if(p.st==='dig')o.dig=true}
+    o.dug=SAVE.well.n===1;o.loot=drops().filter(d=>d.pet).length>n0;o.wait=wellLeft()>WELL.wait*0.9;
+    p.st='idle';wellUpdate(0.016);o.again=!p.well;
+    SAVE.well.next=0;SAVE.pet.kind='parosh';S.wd.well.tip=false;p.st='idle';p.well=false;wellUpdate(0.016);o.hint=S.wd.well.tip&&!p.well;
+    SAVE.pet.kind=k0;o.clock=wellClock(5400e3)==='1:30:00';SAVE.well={next:Date.now()+WELL.wait,n:1};enterVillage();return o});
+  check(well.mark&&well.went&&well.dig&&well.dug&&well.loot&&well.wait&&well.again&&well.hint&&well.clock,
+    'הבאר היבשה במדבר: '+(!well.mark?'אין באר במפה':(well.went?'פיוחו רצה לבאר':'פיוחו לא יצאה לבאר')+(well.dig?', חופרת':', לא חופרת')+(well.dug&&well.loot?', אוצר עלה':', בלי אוצר')+
+    (well.wait?', הבאר יבשה לשעתיים':', בלי זמן המתנה')+(well.again?'':', חופרת שוב מיד!')+(well.hint?', הסבר בלי חיה שחופרת':', בלי הסבר')+(well.clock?'':', השעון שבור')));
   // העלילה, פרק 5 (story.js, WORLD.regions.storm): השביל מהמדבר למגדלים סגור עד שפנס האש דולק, במגדלים גשם, ברקים ומגדלים שבורים שאי אפשר לעבור,
   // אויבים מחושמלים (חלשים לאדמה), ושומר הסערה מסמן עיגולי ברק שמתפוצצים אחרי שנייה: מי שנשאר נפגע, מי שזז לא
   const ch5=await page.evaluate(()=>{
