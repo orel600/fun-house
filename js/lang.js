@@ -50,6 +50,13 @@ const TEXT={
   'cloud.as':{he:n=>'☁ מחובר כ-'+n,en:n=>'☁ Signed in as '+n},
   'cloud.google':{he:'כניסה עם Google',en:'Sign in with Google'},
   'cloud.signout':{he:'התנתקות',en:'Sign out'},
+  'cloud.hold':{he:'☁ בענן יש שמירה חדשה יותר: לא נדרסת. בפתיחה הבאה תבחר איזו לשמור',en:'☁ The cloud has a newer save: not overwritten. You will choose which to keep next launch'},
+  'cloud.askS2':{he:'בטלפון הזה ובענן יש שתי שמירות שונות (שיחקת לפני שהסנכרון נגמר). השנייה תוחלף.',en:'This phone and the cloud have two different saves (you played before the sync finished). The other one will be replaced.'},
+  'cloud.wait':{he:'☁ רגע, מסנכרן…',en:'☁ One moment, syncing…'},
+  'save.restored':{he:'⚠ השמירה נפגמה ושוחזרה מגיבוי. עותק של הפגומה נשמר בצד',en:'⚠ Your save was damaged and was restored from a backup. A copy of the damaged one was kept'},
+  'save.lost':{he:'⚠ השמירה נפגמה ואין גיבוי. עותק שלה נשמר בצד (fh-save-bad), ומתחילים מחדש',en:'⚠ Your save was damaged and there is no backup. A copy was kept (fh-save-bad), starting fresh'},
+  'save.locked':{he:'⚠ השמירה נפגמה ואין מקום לשמור עותק. המשחק לא ישמור, כדי לא למחוק אותה',en:'⚠ Your save was damaged and there is no room for a copy. The game will not save, so it is not erased'},
+  'save.fail':{he:'⚠ השמירה בטלפון נכשלה (אין מקום?). ההתקדמות האחרונה עלולה לא להישמר',en:'⚠ Saving on this phone failed (out of space?). Recent progress may not be saved'},
   'cloud.askT':{he:'איזו שמירה לשמור?',en:'Which save do you want to keep?'},
   'cloud.askS':{he:'בטלפון הזה ובחשבון Google יש שתי שמירות שונות. השנייה תוחלף.',en:'This phone and your Google account have two different saves. The other one will be replaced.'},
   'cloud.keepPhone':{he:l=>'📱 השמירה בטלפון (רמה '+l+')',en:l=>'📱 This phone (level '+l+')'},
@@ -1985,6 +1992,7 @@ Object.assign(TEXT,{
 
 // ======== קפיצה בין פנסים (travel.js) ========
 Object.assign(TEXT,{
+  'tr.more':{he:'יש עוד למטה',en:'More below'},
   'tr.where':{he:'לאן?',en:'Where to?'},
   'tr.village':{he:'הכפר',en:'The village'},'tr.entry':{he:'הכניסה לאחו',en:'Meadow entrance'},'tr.lantern':{he:'הפנס',en:'The lantern'},
   'tr.at':{he:r=>'🏮 '+r,en:r=>'🏮 '+r},

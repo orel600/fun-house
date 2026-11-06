@@ -23,6 +23,7 @@ const STRIKE={
 function strikeTick(e,dt,d){
   const K=STRIKE,touch=e.r+P.r;
   if(e.sw==null){e.sw=0;e.scd=rand(0,K.cd[0])}
+  if(e.stun>0||e.frozen>0||e.stone>0)return true;   // קפוא, מסוחרר או מאובן: ההכנה נעצרת ואין מכה (כמו slowK ב-dmg.js). שורשים (root) לא עוצרים מכה במקום
   if(e.sw>0){
     e.sw-=dt;e.flash=Math.max(e.flash||0,0.05);   // מאדים בזמן ההכנה
     if(e.sw<=0){

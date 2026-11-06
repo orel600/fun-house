@@ -80,7 +80,7 @@ function mbSpellCast(u,aim){
     case 'exhaust':{const t=mbNearest(u,MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&(typeof mbSeen!=='function'||mbSeen(o,u.team))),L.range+20);
       if(!t)return false;
       t.st.exh=L.t;if(!(t.st.pure>0))mbSlow(t,L.slow,L.t);mbSpellFx(t,L.col,'down');mbBoom(t.x,t.y,50,'blue');break}
-    case 'cleanse':Object.assign(s,{stun:0,taunt:0,tBy:null,slow:0,slowK:0,root:0,ice:0,imm:L.pure,pure:L.pure});mbSpellFx(u,L.col,'up');break;
+    case 'cleanse':Object.assign(s,{stun:0,taunt:0,tBy:null,slow:0,slowK:0,root:0,bub:0,ice:0,imm:L.pure,pure:L.pure});mbSpellFx(u,L.col,'up');break;
   }
   u.cd.spell=L.cd;if(u.me)sfx(L.sfx,L.vol||1);MB.spellN=(MB.spellN||0)+1;
   return true;
@@ -92,7 +92,7 @@ function mbSpellTick(M,dt){
     for(const k of ['heal','spell'])if(u.cd[k]>0)u.cd[k]-=dt;
     if(u.dead){s.haste=s.exh=s.pure=0;continue}
     for(const k of ['haste','exh'])if(s[k]>0)s[k]-=dt;
-    if(s.pure>0){s.pure-=dt;s.slow=0;s.root=0}}   // אחרי ניקוי: שום האטה או לכידה לא תופסות
+    if(s.pure>0){s.pure-=dt;s.slow=0;s.root=0;s.bub=0}}   // אחרי ניקוי: שום האטה, לכידה או בועה לא תופסות
   if(M.spellZ){for(const z of M.spellZ)z.t-=dt;M.spellZ=M.spellZ.filter(z=>z.t>0)}
 }
 const mbSpellSpd=u=>u.st&&u.st.haste>0?1+MBSPELL.list.haste.k:1;                       // מהירות (mbSpeed ב-moba.js)
@@ -161,7 +161,7 @@ function mbSpellBot(u,dt){
   const f=B.focus&&B.focus.k==='hero'&&!B.focus.dead?B.focus:mbNearest(u,foes,500);
   const low=u.hp<u.max*0.4;
   switch(id){
-    case 'cleanse':if((s.stun>0.4||s.taunt>0.4||s.root>0.4||s.slow>0.8&&s.slowK>=0.3)&&near(500).length)mbSpellCast(u);break;
+    case 'cleanse':if((s.stun>0.4||s.taunt>0.4||s.root>0.4||s.bub>0.4||s.slow>0.8&&s.slowK>=0.3)&&near(500).length)mbSpellCast(u);break;
     case 'dash':
       if(B.mode==='retreat'&&low&&near(260).length)mbSpellCast(u,u.home);   // בורח הביתה
       else if(fight&&f&&f.hp<f.max*0.3&&u.hp>u.max*0.4){const g=mbDist(u,f)-f.r-u.r;if(g>A.range+40&&g<A.range+L.dash.range)mbSpellCast(u,f)}   // רודף אחרי מי שכמעט מת
