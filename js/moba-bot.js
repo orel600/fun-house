@@ -45,6 +45,7 @@ function mbThink(u){
   B.stop=6;B.focus=null;
   // 1. נסוג: חיים נמוכים, עד שהתרפא ליד הבסיס
   if(u.hp<u.max*MBBOT.retreat||B.mode==='retreat'&&u.hp<u.max*MBBOT.back){B.mode='retreat';B.goal=u.home;return}
+  if(mbGambleBot(u))return;   // זכאי לחדר ההימור והקבוצה מאחור: הולך לשם לפעמים (moba-gamble.js)
   // פקודה מהשחקן (mbOrder ב-moba.js): נסיגה אל המגדל הקדמי שלנו, או התקפה יחד איתו
   const O=u.team===0&&MB.order;
   if(O&&O.kind==='back'){const t=MB.u.filter(b=>b.k==='tower'&&b.team===u.team&&!b.dead).sort((a,b)=>Math.abs(a.x)-Math.abs(b.x))[0]||MB.u.find(b=>b.k==='base'&&b.team===u.team);

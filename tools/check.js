@@ -3380,10 +3380,10 @@ function worldBot(m,L,god){
      const tw=MB.u.find(b=>b.k==='tower'&&b.team===1&&Math.abs(b.x)===MOBA.towers[0]&&!b.dead),hp0=tw.hp;
      MB.t=10;const early=mbDmg(null,tw,100,'physical');MB.t=MOBA.shield.t+5;const late=mbDmg(null,tw,100,'physical');MB.t=t0;tw.hp=hp0;
      r.shield=Math.abs(early-100*(1-MOBA.shield.k))<0.01&&Math.abs(late-100)<0.01;
-     const bk=mbHeroes(1).map(x=>x.earn||0);mbHeroes(1).forEach(x=>x.earn=(x.earn||0)+MBITEM.comeback.gap*2);
+     const bk=mbHeroes(1).map(x=>x.gold||0);mbHeroes(1).forEach(x=>x.gold=(x.gold||0)+3000);   // בלי זהב קאמבק (moba-gamble.js מחליף אותו): הריגה של מוביל משלמת בדיוק כמו כל הריגה
      const victim=mbUnit({k:'hero',kit:red.kit,team:1,hp:10,max:10,lvl:1,hitBy:new Map(),deaths:0,home:red.home});const g0=blue.gold||0;
-     mbItDie(victim,blue);r.bounty=Math.round((blue.gold||0)-g0)===Math.round(MBITEM.gold.kill*(1+MBITEM.comeback.bounty))&&mbBehind(0);
-     mbHeroes(1).forEach((x,i)=>x.earn=bk[i]);
+     mbItDie(victim,blue);r.bounty=Math.abs((blue.gold||0)-g0-MBITEM.gold.kill)<0.01&&!MBITEM.comeback;
+     mbHeroes(1).forEach((x,i)=>x.gold=bk[i]);
      MB.t=30;r.resp=mbResp({lvl:1})===MOBA.respawn.base;r.late=mbResp({lvl:6})>mbResp({lvl:1})*4;MB.t=t0;
      const hx=blue.x,hy=blue.y,ht=blue.hurtT;blue.x=blue.home.x;blue.y=blue.home.y;blue.hurtT=-99;const fast=mbSpeed(blue);blue.hurtT=MB.t;const hurt=mbSpeed(blue);blue.hurtT=-99;
      blue.x=0;blue.y=0;const out=mbSpeed(blue);r.haste=Math.abs(fast/out-MOBA.haste.k)<0.01&&Math.abs(hurt-out)<0.01;blue.x=hx;blue.y=hy;blue.hurtT=ht;
@@ -3391,6 +3391,25 @@ function worldBot(m,L,god){
      if(typeof mbRecallStart==='function'){blue.x=0;blue.y=0;blue.hurtT=-99;Object.assign(blue.st,{stun:0,dash:null});const on0=mbHaste(blue);   // חזרה לבסיס (moba-recall.js) + ריצה מהבסיס: מי שחזר רץ מהר כשהוא יוצא
        r.recall=!on0&&mbRecallStart(blue)&&(mbRecallTick(MB,MBRECALL.t+0.1),mbHaste(blue));blue.recall=null;blue.x=hx;blue.y=hy;blue.hurtT=ht}else r.recall=true;
      blue.dead=bd;o.flow=r}
+    // חדר ההימור (moba-gamble.js): סגור לפני unlock, רק הזכאי נכנס ואחרים נדחפים, בשוויון אף אחד, ניצחון = בדיוק כמו העשיר, הפסד בלי זהב ו-XP לאויב, פעם לקבוצה
+    if(typeof MBGAMBLE==='object'){const r={},A=MBGAMBLE,c=A.at,t0=MB.t,G0=MB.gb,rnd=Math.random,sc=[...MB.score],hs=MB.u.filter(u=>u.k==='hero');
+     const bak=hs.map(h=>({h,v:{x:h.x,y:h.y,gold:h.gold,it:[...(h.it||[])],dead:h.dead,hp:h.hp,deaths:h.deaths,resp:h.resp,xp:h.xp,lvl:h.lvl,kills:h.kills,bot:h.bot&&{...h.bot}}}));
+     try{const B=mbHeroes(0),R=mbHeroes(1),set=(L,g)=>L.forEach((h,i)=>{h.gold=g[i];h.it=[];mbItCalc(h);h.dead=false;h.hp=h.max;h.x=-600-i*80;h.y=200}),
+       put=u=>{u.x=c.x;u.y=c.y;u.dead=false;u.hp=u.max},out=u=>Math.hypot(u.x-c.x,u.y-c.y)>=A.r,tk=s=>{for(let i=0;i<s*30;i++)mbGambleTick(MB,1/30)};
+      MB.gb=null;set(B,[100,200,300]);set(R,[500,600,700]);const low=B[0],mid=B[2];
+      MB.t=A.unlock-10;put(low);tk(0.1);r.closed=!MB.gb.roll&&out(low);
+      MB.t=A.unlock+1;put(mid);tk(0.1);r.push=!MB.gb.roll&&out(mid)&&MB.gb.open;
+      set(R,[100,200,300]);put(low);tk(0.1);r.tie=mbGbTeam()===null&&!MB.gb.roll&&out(low);set(R,[500,600,700]);
+      Math.random=()=>0;put(low);tk(0.05);r.enter=!!MB.gb.roll&&MB.gb.roll.u===low&&MB.gb.used[0]===1;Math.random=rnd;
+      put(mid);tk(0.1);r.busy=out(mid)&&MB.gb.roll&&MB.gb.roll.u===low;
+      const lx=low.x;low.x+=60;tk(0.2);r.lock=low.x===lx;tk(A.roll);
+      r.win=!MB.gb.roll&&Math.abs(mbWorth(low)-700)<0.01&&!low.dead;
+      const nxt=B.reduce((a,h)=>mbWorth(h)<mbWorth(a)?h:a);put(nxt);tk(0.1);r.once=!MB.gb.roll&&out(nxt);
+      set(R,[50,60,70]);const rl=R[0],bg=B.map(h=>h.gold),bx=B.map(h=>h.xp),bk=B.map(h=>h.kills),s0=MB.score.join();
+      Math.random=()=>0.99;put(rl);tk(0.05);Math.random=rnd;const started=!!MB.gb.roll&&MB.gb.roll.u===rl;tk(A.roll+0.1);
+      r.lose=started&&rl.dead&&rl.resp>0&&MB.score.join()===s0&&B.every((h,i)=>h.gold===bg[i]&&h.xp===bx[i]&&h.kills===bk[i]);
+     }catch(e){r.err=String(e)}
+     Math.random=rnd;MB.gb=G0;MB.t=t0;MB.score=sc;for(const {h,v} of bak){Object.assign(h,v);mbItCalc(h);h.hp=v.hp}o.gb=r}
     MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
     mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
     mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
@@ -3705,7 +3724,9 @@ function worldBot(m,L,god){
     {const r=mb.fx||{};check(r.tank&&r.warrior&&r.shield&&r.cap&&r.stop&&r.ult,'משחקי השאול: טנק ולוחם מזנקים אל מטרה קצת רחוקה: '+(r.tank?'נפח ✓':'נפח ✗')+(r.warrior?' לוחם ✓':' לוחם ✗')+(r.shield?', מגן סופג':', המגן לא סופג')+' · פיצוצי: '+(r.cap?'חלקיקים מוגבלים':'חלקיקים בלי גבול')+(r.stop?', עצירת פריים בקריטי':', בלי עצירת פריים')+(r.ult?', רגע סקיל-על':', בלי רגע סקיל-על'))}
     {const d=mb.diff||{},r=mb.flow||{};
      check(d.n===3&&d.one&&d.saved&&d.back&&d.game&&r.diff,'משחקי השאול: קושי: '+(d.n===3?'3 כפתורים':(d.n||0)+' כפתורים')+(d.one?', אחד מסומן':', הסימון שגוי')+(d.saved&&d.back?', נשמר':', לא נשמר')+(d.game?', המשחק לפי הבחירה':', המשחק לא לפי הבחירה')+(r.diff?', משנה רק את המוח של האויבים':', לא משנה את הבוטים'));
-     check(r.shield&&r.bounty&&r.resp&&r.late&&r.haste&&r.xp&&r.recall,'משחקי השאול: זרימה: '+[r.shield?'מגן מגדל בהתחלה ✓':'מגן מגדל ✗',r.bounty?'זהב חזרה ✓':'זהב חזרה ✗',r.resp&&r.late?'חזרה מהירה בהתחלה ✓':'זמן חזרה ✗',r.haste?'ריצה מהבסיס ✓':'ריצה מהבסיס ✗',r.recall?'גם אחרי חזרה לבסיס ✓':'אחרי חזרה לבסיס ✗',r.xp?'XP ברדיוס רחב ✓':'XP ✗'].join(', '))}
+     check(r.shield&&r.bounty&&r.resp&&r.late&&r.haste&&r.xp&&r.recall,'משחקי השאול: זרימה: '+[r.shield?'מגן מגדל בהתחלה ✓':'מגן מגדל ✗',r.bounty?'בלי זהב קאמבק ✓':'זהב קאמבק עוד קיים ✗',r.resp&&r.late?'חזרה מהירה בהתחלה ✓':'זמן חזרה ✗',r.haste?'ריצה מהבסיס ✓':'ריצה מהבסיס ✗',r.recall?'גם אחרי חזרה לבסיס ✓':'אחרי חזרה לבסיס ✗',r.xp?'XP ברדיוס רחב ✓':'XP ✗'].join(', '))}
+    {const g=mb.gb||{};check(g.closed&&g.push&&g.tie&&g.enter&&g.busy&&g.lock&&g.win&&g.once&&g.lose,'משחקי השאול: חדר ההימור: '+(g.err?'שגיאה '+g.err+' · ':'')+[g.closed?'סגור לפני הזמן ✓':'פתוח לפני הזמן ✗',g.push?'אחר נדחף ✓':'אחר נכנס ✗',g.tie?'בשוויון אף אחד ✓':'שוויון ✗',
+      g.enter?'הזכאי נכנס ✓':'הזכאי לא נכנס ✗',g.busy?'אחד בכל פעם ✓':'שניים יחד ✗',g.lock?'מקובע בהטלה ✓':'זז בהטלה ✗',g.win?'ניצחון = העשיר ביותר ✓':'ניצחון ✗',g.once?'פעם לקבוצה ✓':'יותר מפעם ✗',g.lose?'הפסד בלי פרס לאויב ✓':'הפסד ✗'].join(', '))}
     const cb=mb.combo||{};check(cb.shock>0&&Math.abs(cb.k-cb.want)<0.01&&cb.freeze>0&&cb.frozen,'משחקי השאול: קומבו בתרחיש קבוע: חשמול '+(cb.shock?'✓ נזק ×'+cb.k:'לא קרה')+', קפוא '+(cb.freeze&&cb.frozen?'✓ הקפאה ארוכה':'לא קרה'));
     check(mb.cc.stun>0&&mb.cc.taunt>0,'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
     if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');
