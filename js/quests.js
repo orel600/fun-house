@@ -211,8 +211,8 @@ function questsRefresh(){
   if(typeof qbApply==='function')qbApply();   // משימות מלוח המודעות: היעד והפרס שנקבעו כשנלקחו (questboard.js)
   const day=qDay();
   if(Q.day!==day||!Q.daily.length){   // אין יומיים היום (שחקן חדש לפני השומר): בודקים שוב בכל כניסה
-    for(const id of Q.daily)delete Q.active[id];
-    const pool=QUESTS.list.filter(q=>qKind(q).daily&&qReq(q)).sort(()=>Math.random()-0.5);
+    for(const id of Q.daily)if(!(Q.active[id]&&qReady(QBY[id])))delete Q.active[id];   // יומי של אתמול שנגמר ומחכה לפרס נשאר עד שלוקחים (ביקורת 6.11, פריט 3)
+    const pool=QUESTS.list.filter(q=>qKind(q).daily&&qReq(q)&&!Q.active[q.id]).sort(()=>Math.random()-0.5);   // לא בוחרים שוב יומי שעוד מחכה לפרס
     Q.daily=pool.slice(0,QUESTS.daily).map(q=>q.id);Q.day=day;
     for(const id of Q.daily)qStart(QBY[id]);
   }
