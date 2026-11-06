@@ -116,12 +116,12 @@ function sr3d(G,reg){
     for(const n of SR.nodes){if(n.fixed)continue;const g=new THREE.Group(),r=n.r,v=hash(n.k,7);
       if(R3D.props[M.name]){const m=wPut({model:M.name,w:r*M.w,tint:M.tint},0,0,v,1,g);m.rotation.x=Math.PI;const bb=new THREE.Box3().setFromObject(m);m.position.y-=bb.max.y}
       else{const b=new THREE.Mesh(new THREE.ConeGeometry(r,90,7),cap);b.rotation.x=Math.PI;b.position.y=-45;g.add(b)}
-      const cm=cap.clone();cm.emissive=new THREE.Color('rgb('+K.col.rim+')');const c=new THREE.Mesh(new THREE.CylinderGeometry(r*0.92,r*0.98,6,10),cm);c.position.y=-3;c.rotation.y=v*6;g.add(c);   // הגג: משטח שעומדים עליו
+      const cm=[],rim=new THREE.Color('rgb('+K.col.rim+')');g.traverse(o=>{if(o.isMesh&&o.material&&o.material.emissive){o.material=o.material.clone();o.material.emissive.copy(rim);o.material.emissiveIntensity=0;cm.push(o.material)}});   // מחובר: הסלע זוהר מבפנים
       const q=new THREE.Mesh(new THREE.OctahedronGeometry(12),glow);q.position.y=-r*1.1;g.add(q);   // גביש זוהר מתחת
       if(typeof p3Halo==='function'){const h=p3Halo('#9c6bff',r*2.4,-r*1.5,g);h.material.opacity=0.45}   // ההילה: הסלע מרחף מעל האור (props3d.js)
       g.scale.set(1,1,1/S_);G.g.add(g);G.sr.push([g,n,q,cm])}}
   const t=fxNow();
   for(const [g,n,q,cm] of G.sr){g.position.set(n.x,(K.lift+n.h)/COS(),n.y/S_);q.rotation.y=t*0.8+n.k;
-    const i=SR.nodes.indexOf(n),on=SR.links[i-1].on||SR.links[i].on;cm.emissiveIntensity=on?0.14+0.06*Math.sin(t*4):0;   // מחובר: הגג זוהר בעדינות
+    const i=SR.nodes.indexOf(n),on=SR.links[i-1].on||SR.links[i].on;for(const m of cm)m.emissiveIntensity=on?0.05+0.03*Math.sin(t*4):0;   // מחובר: הגג זוהר בעדינות
     g.visible=Math.abs(n.x-S.cam.x)+Math.abs(n.y-S.cam.y)<TERRAIN.cull*1.4}
 }
