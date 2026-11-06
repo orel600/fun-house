@@ -226,7 +226,7 @@ function mobaUpdate(dt){
     else if(u.k==='minion'){u.atkT-=dt;mbMinion(u,dt)}
     else mbTower(u,dt);
   }
-  mbFeel(M,dt);mbItTick(M,dt);mbRecallTick(M,dt);typeof mbSpellTick==='function'&&mbSpellTick(M,dt);   // חזרה לבסיס (moba-recall.js), ריפוי ולחשים (moba-spells.js)
+  mbFeel(M,dt);mbItTick(M,dt);mbRecallTick(M,dt);mbGambleTick(M,dt);typeof mbSpellTick==='function'&&mbSpellTick(M,dt);   // חזרה לבסיס (moba-recall.js), חדר ההימור (moba-gamble.js), ריפוי ולחשים (moba-spells.js)
     // זהב עם הזמן, והבוטים קונים (moba-items.js)   // גיבורים וחיילים לא עומדים אחד בתוך השני, וסיבוב ואנימציה רכים (moba-move.js)
   mbShots(dt);
   for(const z of M.zones){
@@ -421,6 +421,7 @@ function mobaDraw(ox,oy){
     else{ctx.globalAlpha=0.22;ctx.fillStyle=col;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.fill();ctx.globalAlpha=0.8;ctx.strokeStyle=C.chalk;ctx.lineWidth=2;ctx.beginPath();
       for(let i=0;i<8;i++){const a=hash(i,Math.floor(M.t*6))*7,d=hash(Math.floor(M.t*6),i)*z.r,x=z.x+Math.cos(a)*d,y=z.y+Math.sin(a)*d;ctx.moveTo(x,y-14);ctx.lineTo(x,y)}ctx.stroke();ctx.globalAlpha=1}}
   mbAimDraw();   // סימון הכיוון של סקיל בגרירה (moba-aim.js)
+  mbGambleDraw();   // חדר ההימור: הטבעת והקשת (moba-gamble.js)
   for(const w of M.walls){ctx.fillStyle='#5A5F6E';ctx.fillRect(w.x-10,-L.half,20,L.half*2);ctx.fillStyle=MOBA.team[w.team];ctx.fillRect(w.x-10,-L.half,4,L.half*2);ctx.fillRect(w.x+6,-L.half,4,L.half*2)}
   // יחידות לפי עומק
   const list=M.u.filter(u=>!u.dead&&mbShow(u)&&onScreen(u.x+ox,u.y+oy)).sort((a,b)=>a.y-b.y);
@@ -452,6 +453,7 @@ function mobaDraw(ox,oy){
   }
   for(const f of M.fx){if(!mbVisPt(f.x,f.y))continue;const k=f.life/0.45;ctx.strokeStyle=f.col;ctx.globalAlpha=k;ctx.lineWidth=6*k+1;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.1-k*0.4),0,7);ctx.stroke()}ctx.globalAlpha=1;
   mbRecallDraw();   // טבעת החזרה לבסיס (moba-recall.js)
+  mbGambleTop();   // הגלגל של חדר ההימור מעל הגיבור (moba-gamble.js)
   typeof mbSpellDraw==='function'&&mbSpellDraw();   // לחשים: מואץ, מותש, נקי, ואזור חשוף (moba-spells.js)
   mbfxDraw();   // חלקיקים, מגנים ומספרים גדולים (moba-fx.js)
   ctx.textAlign='center';ctx.font='800 '+Math.round(15*uk)+'px Heebo, system-ui, sans-serif';
