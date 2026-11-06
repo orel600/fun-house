@@ -7,7 +7,7 @@
    חיבור: ridgeSlip ו-ridgeUpdate מ-worldUpdate, ridgeDraw מהציור של העולם (world.js), ridge3d מ-syncWorld (render3d.js) */
 
 const RIDGEFX={
-  slide:{every:[3.2,4.8],first:1.2,near:420,warn:1.5,speed:520,r:26,grow:0.5,max:2,pad:60,over:160,aim:90,
+  slide:{every:[3.2,4.8],first:1.2,near:420,warn:1.5,speed:520,r:26,grow:0.5,max:2,pad:60,over:40,aim:90,
          hurt:0.13,foe:0.35,push:220,rock:0.3,col:'#FF4D4D',snow:'#F4FAFF',stone:'#8A929C'},   // hurt: חלק מהחיים של השחקן. foe: חלק מהחיים של אויב. rock: הסיכוי לסלע במקום כדור שלג
   slip:{accel:2.4,stop:0.9,top:1.3,trail:0.06}   // accel: כמה מהר מגיעים למהירות שרוצים (לשנייה). stop: כמה מהר עוצרים בלי אגודל. top: המהירות המקסימלית ביחס להליכה
 };
