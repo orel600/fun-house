@@ -265,7 +265,7 @@ function gfxAuto(){R3D.want=false;R3D.on=false;if(R3D.cvs)R3D.cvs.hidden=true;if
 function setGfx(g){R3D.want=g==='3d';R3D.user=true;try{localStorage.setItem('zm-gfx',g)}catch(e){}
   if(R3D.want&&!R3D.ready&&!R3D.failed)init3d();R3D.on=R3D.want&&R3D.ready;if(R3D.cvs)R3D.cvs.hidden=!R3D.on;showGfx()}
 function showGfx(){for(const b of document.querySelectorAll('[data-gfx]'))b.setAttribute('aria-pressed',String((b.dataset.gfx==='3d')===R3D.want));
-  const g=document.querySelector('.gfx');if(g)g.hidden=R3D.failed}
+  const g=document.querySelector('.gfx.g3d');if(g)g.hidden=R3D.failed}
 
 /* ---- טעינה ---- */
 function b64buf(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer}

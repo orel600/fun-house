@@ -77,7 +77,8 @@ function flCardNext(){
   el.classList.remove('on');el.hidden=true;FLC.shown=0;flCardVis();
 }
 // חלון פתוח (.ov, כמו ספר הסקילים): הפס לא מופיע מעליו, והזמן שלו לא רץ. כשהחלון נסגר הוא ממשיך מאיפה שעצר (ניר, 4.11)
-const flOvOpen=()=>[...document.querySelectorAll('.ov')].some(o=>!o.hidden);
+// גם חלון .win שאינו בתוך .ov (מפה, קפיצה, יומן, שיחה, שער): הכרטיס כיסה את הכותרת שלהם (ביקורת 6.11, פריט 9)
+const flOvOpen=()=>[...document.querySelectorAll('.ov,.win')].some(o=>!o.hidden&&!o.closest('[hidden]'));
 function flCardVis(){
   const el=flCardEl(),show=!!FLC.on&&!flOvOpen();
   if(show===!el.hidden)return show;
