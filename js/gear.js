@@ -185,7 +185,7 @@ function gSet(slot,i,id){if(slot==='weapon')SAVE.gear.weapon=id;else (SAVE.gear[
 // לאיזו משבצת ייכנס פריט: הראשונה הריקה, ואם הכל מלא, זו עם הפריט הכי חלש
 function gTarget(it){
   const n=gOpen(it.slot);let best=0;
-  for(let i=0;i<n;i++){if(!gGet(it.slot,i))return i;if(gScore(gGet(it.slot,i))<gScore(gGet(it.slot,best)))best=i}
+  for(let i=0;i<n;i++){if(!gGet(it.slot,i))return i;if(pScore(gGet(it.slot,i))<pScore(gGet(it.slot,best)))best=i}
   return best;
 }
 // כל מה שלבוש עכשיו, בלי משבצות נעולות
@@ -203,7 +203,7 @@ function gearEquip(id,slot,i){
   const old=gGet(it.slot,i);
   gSet(it.slot,i,id);if(old)bagAdd(old);
   saveNow();
-  return{slot:it.slot,i,old,better:gScore(id)>gScore(old)};
+  return{slot:it.slot,i,old,better:pScore(id)>pScore(old)};
 }
 // מחליף בין שתי משבצות מאותו סוג (גרירה ממשבצת למשבצת)
 function gearSwap(slot,a,b){if(a===b||b>=gOpen(slot))return false;const x=gGet(slot,a);gSet(slot,a,gGet(slot,b));gSet(slot,b,x);saveNow();return true}
@@ -324,9 +324,9 @@ function gTile(id,attrs,extra){
   const glow=(it.look||{}).glow;
   return '<button class="'+cls+'" '+attrs+' style="--tint:'+gTint(id)+';--rar:'+gRarCol(id)+(glow?';--glow:'+glow:'')+'" aria-label="'+gName(id)+'">'+gPic(id)+(gPlus(id)?'<b class="gplus">+'+gPlus(id)+'</b>':'')+(gPow(id)?'<b class="gpw">✦</b>':'')+extra+'</button>';
 }
-// תא בתרמיל: ▲/▼ מול מה שלבוש, ונקודה לחדש
+// תא בתרמיל: ▲/▼ מול מה שלבוש עם ההפרש במספר הכוח (power.js), ונקודה לחדש
 function gBagTile(k,n,attrs){
-  const m=gMark(k),pk=GUI.sell&&(GUI.pick||{})[k],x=(m?'<i class="gmk '+(m>0?'up':'down')+'" aria-hidden="true">'+(m>0?'▲':'▼')+'</i>':'')+(gIsNew(k)?'<i class="gnew" aria-hidden="true"></i>':'')+
+  const m=gMark(k),d=m&&powVs(k)*m>0?powVs(k):null,pk=GUI.sell&&(GUI.pick||{})[k],x=(m?'<i class="gmk '+(m>0?'up':'down')+'" aria-hidden="true">'+(m>0?'▲':'▼')+(d?'<bdi>'+Math.abs(d)+'</bdi>':'')+'</i>':'')+(gIsNew(k)?'<i class="gnew" aria-hidden="true"></i>':'')+
     (gLocked(k)?'<i class="glk" aria-hidden="true">🔒</i>':'')+(pk?'<i class="gpk" aria-hidden="true">✓</i>':'');   // מכירה: ✓ על מה שנבחר
   return gTile(k,attrs,(n>1?'<small>×'+shortN(n)+'</small>':'')+x);
 }
@@ -347,7 +347,7 @@ const gTabLabel=f=>f==='items'?T('gear.tab.all'):GEAR.filter[f]||(RES.list[resFa
 /* ---- סימנים על פריט בתרמיל: ▲ ירוק אם הוא חזק ממה שלבוש במשבצת שלו, ▼ אדום אם חלש, ונקודה לפריט שעוד לא פתחו ---- */
 // מה שלבוש במשבצת שהפריט ייכנס אליה (הכי חלש מבין המשבצות), כדי להשוות
 const gVsWorn=it=>gGet(it.slot,gTarget(it));
-function gMark(k){const it=gItem(k);if(!it||it.slot==='orbit')return 0;if(!irCanWear(k))return -1;const o=gVsWorn(it);if(!o)return 1;const d=gScore(k)-gScore(o);return Math.abs(d)<0.05?0:d>0?1:-1}
+function gMark(k){const it=gItem(k);if(!it||it.slot==='orbit')return 0;if(!irCanWear(k))return -1;const o=gVsWorn(it);if(!o)return 1;const d=pScore(k)-pScore(o);return Math.abs(d)<POWER.same?0:d>0?1:-1}
 // פריטים שכבר ראו: SAVE.gseen. בפעם הראשונה כל מה שכבר בתרמיל נחשב ראוי, כדי ששמירה ישנה לא תתמלא נקודות
 function gSeen(){if(!SAVE.gseen){SAVE.gseen={};for(const k in SAVE.bag)if(gItem(k))SAVE.gseen[k]=1}return SAVE.gseen}
 const gIsNew=k=>!!gItem(k)&&!gSeen()[k];
@@ -357,9 +357,9 @@ function gBestPlan(){
   const out=[],bag=Object.assign({},SAVE.bag),worn={weapon:[SAVE.gear.weapon],shield:[...SAVE.gear.shield||[]],head:[...SAVE.gear.head||[]],body:[...SAVE.gear.body||[]],acc:[...SAVE.gear.acc],boots:[...SAVE.gear.boots]};
   for(const slot of ['weapon','shield','head','body','boots','acc']){const n=gOpen(slot),cur=worn[slot],use=slot==='weapon'&&gItem(cur[0])&&gItem(cur[0]).w?wUse(cur[0]):null;
     for(;;){const ks=Object.keys(bag).filter(k=>bag[k]>0&&gItem(k)&&gItem(k).slot===slot&&(!use||wUse(k)===use)&&irCanWear(k));if(!ks.length)break;
-      const k=ks.reduce((a,b)=>gScore(b)>gScore(a)?b:a);let i=-1;
-      for(let j=0;j<n;j++){if(!gItem(cur[j])){i=j;break}if(i<0||gScore(cur[j])<gScore(cur[i]))i=j}
-      if(i<0||gItem(cur[i])&&gScore(k)<=gScore(cur[i])+0.05)break;
+      const k=ks.reduce((a,b)=>pScore(b)>pScore(a)?b:a);let i=-1;
+      for(let j=0;j<n;j++){if(!gItem(cur[j])){i=j;break}if(i<0||pScore(cur[j])<pScore(cur[i]))i=j}
+      if(i<0||gItem(cur[i])&&pScore(k)<=pScore(cur[i])+POWER.same)break;   // pScore: power.js, כמו המספר שעל הכרטיס
       bag[k]--;if(gItem(cur[i]))bag[cur[i]]=(bag[cur[i]]||0)+1;cur[i]=k;out.push({id:k,slot,i})}}
   return out;
 }
@@ -439,6 +439,7 @@ function gearDraw(){
   $('gStash').hidden=!st;
   if(st)$('gStash').innerHTML='<span class="k">'+T('gear.stash',stashUsed(),stashCap())+'</span><div class="ggrid">'+
     (sk.length?sk.map(k=>gCell(k,SAVE.stash[k],'data-sid="'+k+'"'+(sel&&sel.sid===k?' aria-pressed="true"':''))).join(''):'<p class="dim">'+T('stash.empty')+'</p>')+'</div>';
+  powSync();   // מספר הכוח של הגיבור עלה? חגיגה (power.js)
   $('gDetail').innerHTML=gDetailHtml();$('gDetail').classList.toggle('selling',!!GUI.sell);$('gDetail').classList.toggle('gstatp',!$('gDetail').querySelector('.gdhead,.gsell,.icard'));$('gDetail').classList.toggle('gcard',!!$('gDetail').querySelector('.icard'));   // gstatp: טור הסטטים (gearui.js)
   gTipSync();   // פריט נבחר: הפרטים בבועה ליד הפריט, והסטטים נשארים בטור (gearui.js, itemtip.js)
   // הדפים: ציוד, או דמות (הנקודות, stats.js). עץ הסקילים נפתח מדף הדמות ומחליף אותו
