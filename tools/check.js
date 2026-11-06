@@ -3302,6 +3302,14 @@ function worldBot(m,L,god){
      uiCloseTop();I.close=$('ovMbShop').hidden&&S.mode==='play';
      const bt=mbHero('tank',1,false,0);bt.gold=1000;bt.buyT=0;MB.u.push(bt);mbItTick(MB,1/30);I.bot=bt.it&&bt.it[0]===MBITEM.build.tank[0];MB.u.splice(MB.u.indexOf(bt),1);
      me.gold=0;me.it=[];mbItCalc(me);me.hp=me.max;o.items=I}
+    // שומר אותך בחיים (moba-recall.js, הבודק 4.11): אזהרה בחיים נמוכים מופיעה ונעלמת, חזרה לבסיס עובדת, תזוזה ופגיעה מבטלות, וטבעת הזהב על הקנייה המהירה
+    {const me=MB.me,L={},hx=me.x,hy=me.y,tk=n=>{for(let i=0;i<n;i++)mbRecallTick({u:[me]},1/30)};
+     me.hp=me.max*0.2;me.lowWarn=false;mobaHud();L.lowOn=$('mbLow').classList.contains('on')&&($('banner').textContent===T('mb.low')||(mbBanner.q||[]).some(m=>m.txt===T('mb.low')));   /* ההודעה מוצגת או מחכה בתור */me.hp=me.max;mobaHud();L.lowOff=!$('mbLow').classList.contains('on');
+     me.x=me.home.x+(me.team?-1:1)*900;me.y=0;$('mbRecall').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));L.start=!!me.recall;tk(MBRECALL.t*30+3);L.home=!me.recall&&mbDist(me,me.home)<1;
+     me.x=me.home.x+(me.team?-1:1)*900;mbFeelReset(me);mbRecallStart(me);tk(10);me.x+=20;tk(1);L.move=!me.recall&&mbDist(me,me.home)>800;
+     mbRecallStart(me);tk(10);me.hp-=50;tk(1);L.hit=!me.recall&&mbDist(me,me.home)>800;me.hp=me.max;
+     const n=mbNext(me),c=MBITEM.items[n].cost,q=$('mbQuick'),p=()=>+q.style.getPropertyValue('--p');me.gold=c/2;mobaHud();L.half=Math.abs(p()-0.5)<0.02&&!q.classList.contains('ok')&&q.textContent.includes(String(c-Math.floor(c/2)));
+     me.gold=c;mobaHud();L.full=p()===1&&q.classList.contains('ok');me.gold=0;me.x=hx;me.y=hy;mbFeelReset(me);mobaHud();o.life=L}
     // כיוון וביטול בגרירה (moba-aim.js): גוררים מהכפתור, משחררים על ✕ = בוטל ובלי טעינה. גוררים שמאלה עד הסוף = הסדן נוחת בקצה הטווח משמאל
     {const me=MB.me,b=document.querySelector('#mbSk [data-sk="s1"]'),r=b.getBoundingClientRect(),cx=r.x+r.width/2,cy=r.y+r.height/2,z0=MB.zones.length,R=MBKIT.tank.s1.range;
       const ev=(el,t,x,y)=>el.dispatchEvent(new PointerEvent(t,{pointerId:9,clientX:x,clientY:y,bubbles:true,cancelable:true}));
@@ -3379,8 +3387,10 @@ function worldBot(m,L,god){
      MB.t=30;r.resp=mbResp({lvl:1})===MOBA.respawn.base;r.late=mbResp({lvl:6})>mbResp({lvl:1})*4;MB.t=t0;
      const hx=blue.x,hy=blue.y,ht=blue.hurtT;blue.x=blue.home.x;blue.y=blue.home.y;blue.hurtT=-99;const fast=mbSpeed(blue);blue.hurtT=MB.t;const hurt=mbSpeed(blue);blue.hurtT=-99;
      blue.x=0;blue.y=0;const out=mbSpeed(blue);r.haste=Math.abs(fast/out-MOBA.haste.k)<0.01&&Math.abs(hurt-out)<0.01;blue.x=hx;blue.y=hy;blue.hurtT=ht;
-     const x0=blue.xp,l0=blue.lvl,mn=mbUnit({k:'minion',team:1,x:blue.x+MOBA.xp.share-40,y:blue.y,hp:1,max:1});MB.u.push(mn);const bd=blue.dead;blue.lvl=1;blue.dead=false;mbDie(mn,null);r.xp=blue.xp>x0;blue.lvl=l0;blue.dead=bd;
-     o.flow=r}
+     const x0=blue.xp,l0=blue.lvl,mn=mbUnit({k:'minion',team:1,x:blue.x+MOBA.xp.share-40,y:blue.y,hp:1,max:1});MB.u.push(mn);const bd=blue.dead;blue.lvl=1;blue.dead=false;mbDie(mn,null);r.xp=blue.xp>x0;blue.lvl=l0;
+     if(typeof mbRecallStart==='function'){blue.x=0;blue.y=0;blue.hurtT=-99;Object.assign(blue.st,{stun:0,dash:null});const on0=mbHaste(blue);   // חזרה לבסיס (moba-recall.js) + ריצה מהבסיס: מי שחזר רץ מהר כשהוא יוצא
+       r.recall=!on0&&mbRecallStart(blue)&&(mbRecallTick(MB,MBRECALL.t+0.1),mbHaste(blue));blue.recall=null;blue.x=hx;blue.y=hy;blue.hurtT=ht}else r.recall=true;
+     blue.dead=bd;o.flow=r}
     MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
     mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
     mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
@@ -3684,6 +3694,8 @@ function worldBot(m,L,god){
     check(mb.two&&mb.two.held===2&&mb.two.ok,'משחקי השאול עם קשת וחרב: '+(mb.two?(mb.two.ok?'ה-HUD עובד':'ה-HUD נופל: '+mb.two.err):'לא נבדק'));
     check(mb.slide&&mb.slide.pass,'משחקי השאול: הולכים ישר אל מגדל ומחליקים מסביבו '+(mb.slide?(mb.slide.pass?'✓':'נתקע ('+mb.slide.dx+' מהמגדל)'):'לא נבדק'));
     {const f=mb.feel||{};check(f.soft&&f.turned&&f.run>=f.want*0.9&&f.feed,'משחקי השאול: תנועה: סיבוב '+(f.soft&&f.turned?'רך ✓':'בבת אחת או תקוע')+', דרך חייל '+f.run+'/'+f.want+' פיקסלים בשנייה'+(f.feed?', הודעת הריגה ✓':', בלי הודעת הריגה'))}
+    {const L=mb.life||{},ks={lowOn:'אזהרה בחיים נמוכים',lowOff:'נעלמת',start:'כפתור חזרה',home:'מגיע לבסיס',move:'תזוזה מבטלת',hit:'פגיעה מבטלת',half:'טבעת זהב חצי',full:'מלאה ומוארת'};
+     check(Object.keys(ks).every(k=>L[k]),'משחקי השאול: שומר בחיים: '+Object.keys(ks).map(k=>ks[k]+(L[k]?' ✓':' ✗')).join(', '))}
     {const I=mb.items||{},ks={tick:'זהב עם הזמן',minion:'זהב מחייל',quick:'קנייה מהירה',stat:'סטטים',sell:'מכירה',win:'חלון החנות',buy:'קנייה בחלון',close:'סגירה',bot:'בוט קונה'};
      check(Object.keys(ks).every(k=>I[k]),'משחקי השאול: חפצים: '+Object.keys(ks).map(k=>ks[k]+(I[k]?' ✓':' ✗')).join(', '))}
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
@@ -3693,7 +3705,7 @@ function worldBot(m,L,god){
     {const r=mb.fx||{};check(r.tank&&r.warrior&&r.shield&&r.cap&&r.stop&&r.ult,'משחקי השאול: טנק ולוחם מזנקים אל מטרה קצת רחוקה: '+(r.tank?'נפח ✓':'נפח ✗')+(r.warrior?' לוחם ✓':' לוחם ✗')+(r.shield?', מגן סופג':', המגן לא סופג')+' · פיצוצי: '+(r.cap?'חלקיקים מוגבלים':'חלקיקים בלי גבול')+(r.stop?', עצירת פריים בקריטי':', בלי עצירת פריים')+(r.ult?', רגע סקיל-על':', בלי רגע סקיל-על'))}
     {const d=mb.diff||{},r=mb.flow||{};
      check(d.n===3&&d.one&&d.saved&&d.back&&d.game&&r.diff,'משחקי השאול: קושי: '+(d.n===3?'3 כפתורים':(d.n||0)+' כפתורים')+(d.one?', אחד מסומן':', הסימון שגוי')+(d.saved&&d.back?', נשמר':', לא נשמר')+(d.game?', המשחק לפי הבחירה':', המשחק לא לפי הבחירה')+(r.diff?', משנה רק את המוח של האויבים':', לא משנה את הבוטים'));
-     check(r.shield&&r.bounty&&r.resp&&r.late&&r.haste&&r.xp,'משחקי השאול: זרימה: '+[r.shield?'מגן מגדל בהתחלה ✓':'מגן מגדל ✗',r.bounty?'זהב חזרה ✓':'זהב חזרה ✗',r.resp&&r.late?'חזרה מהירה בהתחלה ✓':'זמן חזרה ✗',r.haste?'ריצה מהבסיס ✓':'ריצה מהבסיס ✗',r.xp?'XP ברדיוס רחב ✓':'XP ✗'].join(', '))}
+     check(r.shield&&r.bounty&&r.resp&&r.late&&r.haste&&r.xp&&r.recall,'משחקי השאול: זרימה: '+[r.shield?'מגן מגדל בהתחלה ✓':'מגן מגדל ✗',r.bounty?'זהב חזרה ✓':'זהב חזרה ✗',r.resp&&r.late?'חזרה מהירה בהתחלה ✓':'זמן חזרה ✗',r.haste?'ריצה מהבסיס ✓':'ריצה מהבסיס ✗',r.recall?'גם אחרי חזרה לבסיס ✓':'אחרי חזרה לבסיס ✗',r.xp?'XP ברדיוס רחב ✓':'XP ✗'].join(', '))}
     const cb=mb.combo||{};check(cb.shock>0&&Math.abs(cb.k-cb.want)<0.01&&cb.freeze>0&&cb.frozen,'משחקי השאול: קומבו בתרחיש קבוע: חשמול '+(cb.shock?'✓ נזק ×'+cb.k:'לא קרה')+', קפוא '+(cb.freeze&&cb.frozen?'✓ הקפאה ארוכה':'לא קרה'));
     check(mb.cc.stun>0&&mb.cc.taunt>0,'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
     if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');

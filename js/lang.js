@@ -209,6 +209,8 @@ const TEXT={
   'mb.lvup':{he:n=>'רמה '+n+'!',en:n=>'Level '+n+'!'},
   'mb.resp':{he:s=>'חוזר בעוד '+s,en:s=>'Back in '+s},
   'mb.shop':{he:'חנות',en:'Shop'},
+  'mb.low':{he:'⚠️ חיים נמוכים: לסגת!',en:'⚠️ Low health: fall back!'},
+  'mb.recall':{he:'חזרה',en:'Recall'},'mb.recallA':{he:'חזרה לבסיס (B)',en:'Recall to base (B)'},'mb.recallOff':{he:'החזרה בוטלה',en:'Recall cancelled'},
   'mb.quick':{he:(n,c)=>'קנייה מהירה: '+n+' ('+c+' זהב)',en:(n,c)=>'Quick buy: '+n+' ('+c+' gold)'},
   'mb.buy':{he:c=>'קנה · '+c,en:c=>'Buy · '+c},'mb.sell':{he:c=>'מכור · +'+c,en:c=>'Sell · +'+c},
   'mb.need':{he:c=>'חסרים '+c+' זהב',en:c=>c+' gold short'},'mb.rec':{he:'מומלץ לך',en:'Recommended'},

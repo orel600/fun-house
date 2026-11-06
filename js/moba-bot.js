@@ -29,6 +29,7 @@ function mbDiffSet(d){if(!MBBOT.diff[d])return;try{localStorage.setItem(MBBOT.ke
 function mbBot(u,dt){
   const B=u.bot,A=MBKIT[u.kit].atk;B.t-=dt;
   if(u.st.taunt>0&&u.st.tBy){mbMove(u,u.st.tBy.x,u.st.tBy.y,dt,u.r+u.st.tBy.r);mbAttack(u,dt,u.st.tBy,A);return}   // הוכרח: רק אל הנפח
+  if(mbRecallBot(u))return;   // חוזר לבסיס: עומד במקום (moba-recall.js)
   if(B.t<=0){B.t=mbMind(u).think*rand(0.8,1.2);mbThink(u)}
   if(B.goal)mbMove(u,B.goal.x,B.goal.y,dt,B.stop||6);
   const f=B.focus,t=f&&!f.dead&&mbHittable(f)&&mbDist(u,f)-f.r-u.r<=A.range?f:mbAutoTarget(u,A.range);

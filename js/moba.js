@@ -224,7 +224,8 @@ function mobaUpdate(dt){
     else if(u.k==='minion'){u.atkT-=dt;mbMinion(u,dt)}
     else mbTower(u,dt);
   }
-  mbFeel(M,dt);mbItTick(M,dt);   // זהב עם הזמן, והבוטים קונים (moba-items.js)   // גיבורים וחיילים לא עומדים אחד בתוך השני, וסיבוב ואנימציה רכים (moba-move.js)
+  mbFeel(M,dt);mbItTick(M,dt);mbRecallTick(M,dt);   // חזרה לבסיס (moba-recall.js)
+    // זהב עם הזמן, והבוטים קונים (moba-items.js)   // גיבורים וחיילים לא עומדים אחד בתוך השני, וסיבוב ואנימציה רכים (moba-move.js)
   mbShots(dt);
   for(const z of M.zones){
     if(z.delay>0){z.delay-=dt;if(z.delay<=0&&z.fire)z.fire(z)}
@@ -363,7 +364,8 @@ function mobaHud(){
   const ok=M.order?M.order.kind:'';if(mbOrdKey!==ok){mbOrdKey=ok;for(const b of document.querySelectorAll('#mbPing [data-o]'))b.classList.toggle('on',b.dataset.o===ok)}
   for(const b of $('mbSk').querySelectorAll('[data-sk]')){const k=b.dataset.sk,s=MBKIT[u.kit][k],lock=k==='ult'&&u.lvl<MOBA.ultAt;
     b.style.setProperty('--cd',lock?1:Math.max(0,u.cd[k])/s.cd);const l=b.querySelector('.mblock');if(l.hidden===lock)l.hidden=!lock}
-  mbItHud();   // זהב, קנייה מהירה וחפצים (moba-items.js)
+  mbItHud();mbRecallHud();   // אזהרה בחיים נמוכים וכפתור החזרה (moba-recall.js)
+    // זהב, קנייה מהירה וחפצים (moba-items.js)
 }
 // חלון הבחירה: ארבע הערכות, בשני טורים לרוחב
 function mobaOpen(){
@@ -444,6 +446,7 @@ function mobaDraw(ox,oy){
       ctx.restore();ctx.globalAlpha=1}
   }
   for(const f of M.fx){const k=f.life/0.45;ctx.strokeStyle=f.col;ctx.globalAlpha=k;ctx.lineWidth=6*k+1;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.1-k*0.4),0,7);ctx.stroke()}ctx.globalAlpha=1;
+  mbRecallDraw();   // טבעת החזרה לבסיס (moba-recall.js)
   mbfxDraw();   // חלקיקים, מגנים ומספרים גדולים (moba-fx.js)
   ctx.textAlign='center';ctx.font='800 '+Math.round(15*uk)+'px Heebo, system-ui, sans-serif';
   for(const f of M.floats){ctx.globalAlpha=Math.min(1,f.life*2);ctx.direction=/^[+\-]?\d/.test(f.txt)?'ltr':DIR;ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y)}
