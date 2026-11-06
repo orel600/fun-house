@@ -81,8 +81,8 @@ function rzWait(o,dx,dy){
 function rzBolt(x,y,seed,k){   // ברק מהשמיים אל (x,y)
   const pts=[[x+(hash(seed,1)-0.5)*90,y-560]];for(let j=1;j<8;j++)pts.push([x+(hash(seed,j+2)-0.5)*70*(1-j/9),y-560+j*70]);pts.push([x,y]);
   const line=()=>{ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke()};
-  ctx.lineCap=ctx.lineJoin='round';ctx.globalAlpha=0.45*k;ctx.strokeStyle=dtCol('bolt');ctx.lineWidth=12;line();
-  ctx.globalAlpha=k;ctx.strokeStyle='#FFFFFF';ctx.lineWidth=3.5;line();
+  ctx.lineCap=ctx.lineJoin='round';ctx.globalAlpha=0.45*k;ctx.strokeStyle=dtCol('bolt');ctx.lineWidth=18;line();
+  ctx.globalAlpha=k;ctx.strokeStyle='#FFFFFF';ctx.lineWidth=5;line();
   ctx.globalAlpha=0.55*k;ctx.fillStyle='#FFFFFF';ctx.beginPath();ctx.ellipse(x,y,46,30,0,0,7);ctx.fill()}
 function rzRing(x,y,r,k,col){   // טבעת שמתמלאת: כמה זמן נשאר עד המכה
   ctx.globalAlpha=0.9;ctx.strokeStyle='rgba(10,6,24,0.6)';ctx.lineWidth=7;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.stroke();
@@ -102,9 +102,9 @@ function riverDraw(){
     const warn=s.ph>F.calm&&!s.struck,hit=s.struck?Math.max(0,1-(s.ph-F.calm-F.warn)/F.hit):0,k=warn?(s.ph-F.calm)/F.warn:0;
     ctx.save();ctx.beginPath();ctx.ellipse(f.x,f.y,f.r,f.r*0.8,f.a||0,0,7);ctx.clip();   // האזור: האליפסה, רק מעל המים
     for(const r of M.rivers||[]){ctx.beginPath();r.pts.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.lineWidth=r.w+2*(TERRAIN.pad+F.band);
-      ctx.globalAlpha=warn?0.25+0.45*k*(0.75+0.25*Math.sin(t*30)):hit?0.8*hit:0.14;ctx.strokeStyle=hit?'#FFFFFF':col;ctx.stroke();
-      if(!warn&&!hit){ctx.globalAlpha=0.5;ctx.setLineDash([14,12]);ctx.lineWidth=2;ctx.strokeStyle=col;ctx.stroke();ctx.setLineDash([])}}
+      ctx.globalAlpha=warn?0.25+0.45*k*(0.75+0.25*Math.sin(t*30)):hit?0.8*hit:0.14;ctx.strokeStyle=hit?'#FFFFFF':col;ctx.stroke();}
     ctx.restore();
+    if(!warn&&!hit){ctx.globalAlpha=0.5;ctx.setLineDash([14,12]);ctx.lineWidth=2;ctx.strokeStyle=col;ctx.beginPath();ctx.ellipse(f.x,f.y,f.r,f.r*0.8,f.a||0,0,7);ctx.stroke();ctx.setLineDash([])}   // בשקט: רק קו מקווקו סביב המעבר
     const c=Math.cos(f.a||0),sn=Math.sin(f.a||0);   // האבנים: לאורך הציר הארוך של המעבר
     for(let j=0;j<F.stones;j++){const u=(j/(F.stones-1)-0.5)*f.r*1.5,x=f.x+c*u+(hash(j,77)-0.5)*14,y=f.y+sn*u;
       ctx.globalAlpha=1;ctx.fillStyle='rgba(10,6,24,0.45)';ctx.beginPath();ctx.ellipse(x+2,y+4,15,10,0,0,7);ctx.fill();
