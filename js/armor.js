@@ -33,10 +33,10 @@ const ARMOR={
   look:{tint:0.55,cape:0.35,glow:[0.05,0.1,0.22,0.38,0.55],plume:[null,null,'#3F6FD8','#D8402F','#FF6FB5'],cloth:[0,0,0.06,0.1,0.5],
     /* fit: החלק מותאם לראש של המודל (armorHeadFit): pos ממרכז הראש, וגדלים, ביחידות של חצי רוחב הראש. כך ברדס וקסדה יושבים גם על
        הראש הקטן של הדמויות האישיות (ניר ואוראל), ולא מרחפים מעליו ככדור (ניר, 5.11.2026: "המודל של הכובע נראה מזעזע על הדמות") */
-    helm:   [{bone:'head',fit:1,shape:'dome',r:1.18,pos:[0,-0.1,0],col:'tier'},{bone:'head',fit:1,shape:'box',size:[0.16,0.38,1.25],pos:[0,1.06,-0.02],col:'cape'}],
+    helm:   [{bone:'head',fit:1,shape:'dome',r:1.1,pos:[0,0.2,-0.04],sc:[1,1.15,1.06],col:'tier'},{bone:'head',fit:1,shape:'box',size:[0.16,0.38,1.15],pos:[0,1.4,-0.06],col:'cape'}],
     crest:  [{bone:'head',shape:'box',size:[0.1,0.24,0.8],pos:[0,1.2,-0.02],col:'cape'}],          // על הקסדה של האביר (במודל, לא מותאם)
-    hood:   [{bone:'head',fit:1,shape:'hood',r:1.2,pos:[0,0.02,0.12],col:'cape'},{bone:'head',fit:1,shape:'cone',r:0.3,h:0.75,pos:[0,0.5,-1.05],rot:[-2.2,0,0],col:'cape'}],
-    hat:    [{bone:'head',fit:1,shape:'cone',r:0.8,h:1.6,pos:[0,1.55,0],col:'cape'},{bone:'head',fit:1,shape:'disc',r:1.45,h:0.1,pos:[0,0.8,0],col:'cape'},{bone:'head',fit:1,shape:'gem',r:0.2,pos:[0,1.0,0.72],col:'tier'}],
+    hood:   [{bone:'head',fit:1,shape:'hood',r:1.1,pos:[0,0.1,-0.02],sc:[1,1.12,1],col:'cape'},{bone:'head',fit:1,shape:'cone',r:0.28,h:0.7,pos:[0,0.55,-1.0],rot:[-2.2,0,0],col:'cape'}],
+    hat:    [{bone:'head',fit:1,shape:'cone',r:0.82,h:1.6,pos:[0,1.45,-0.04],col:'cape'},{bone:'head',fit:1,shape:'disc',r:1.4,h:0.1,pos:[0,0.68,-0.04],col:'cape'},{bone:'head',fit:1,shape:'gem',r:0.2,pos:[0,0.9,0.72],col:'tier'}],
     hatGem: [{bone:'head',shape:'gem',r:0.13,pos:[0,0.95,0.5],col:'tier'}],                       // על הכובע של הקוסם (במודל)
     // כתפיות: על הכתפיים (עצם הזרוע ב-±0.21 מהחזה). קודם ב-±0.5, ונראו כמו כנפיים ורודות באגדי (ניר, 5.11.2026)
     plate:  [{bone:'chest',shape:'dome',r:0.17,pos:[0.27,0.16,0],sc:[1,0.75,1.15],col:'tier'},{bone:'chest',shape:'dome',r:0.17,pos:[-0.27,0.16,0],sc:[1,0.75,1.15],col:'tier'}],
@@ -85,19 +85,21 @@ function armorMesh(p,col){
   return m;
 }
 /* הראש של המודל ביחידות של עצם הראש: מרכז (c) וחצי רוחב (u), מהקודקודים שזזים עם הראש (בלי הקסדה והכובע שבמודל).
-   נמדד פעם אחת לכל מודל. בלי מדידה: הראש של KayKit */
+   נמדד פעם אחת לכל מודל. בלי מדידה: הראש של KayKit.
+   נמדד על התבנית של המודל (R3D.tmpl), שעומדת תמיד בתנוחת הבסיס, ולפי מה שמצויר (הקודקוד במיקום שלו בעולם, יחסית לעצם).
+   קודם המדידה עברה דרך חישוב השלד (applyBoneTransform), שיצא פי 3 רחוק מהעצם ופי 1.5 גדול ממה שמצויר, והכובע והברדס
+   ישבו ככדור ענק מעל הדמות (ניר, 6.11.2026: "הכובע על הדמות עדיין לא מופיע טוב") */
 const ARMOR_HEAD={kk:{c:[-0.02,0.45,-0.02],u:0.55},cache:new Map()};
 function armorHeadFit(a){
-  const hb=bone(a.root,'head'),ms=[];a.root.traverse(o=>{if(o.isSkinnedMesh&&!armorPart(o,ARMOR_NATIVE)&&o.skeleton.bones.includes(hb))ms.push(o)});
-  const key=ms.map(o=>o.geometry.uuid).join();if(!hb||!ms.length)return ARMOR_HEAD.kk;
-  if(ARMOR_HEAD.cache.has(key))return ARMOR_HEAD.cache.get(key);
+  const T=a.L&&R3D.tmpl[a.L.model]||a.root,key=a.L&&a.L.model;if(key&&ARMOR_HEAD.cache.has(key))return ARMOR_HEAD.cache.get(key);
+  const hb=bone(T,'head'),ms=[];T.traverse(o=>{if(o.isSkinnedMesh&&!armorPart(o,ARMOR_NATIVE)&&o.skeleton.bones.includes(hb))ms.push(o)});
   let f=ARMOR_HEAD.kk;
-  try{a.root.updateMatrixWorld(true);const box=new THREE.Box3(),v=new THREE.Vector3();
+  if(hb&&ms.length)try{T.updateMatrixWorld(true);const box=new THREE.Box3(),v=new THREE.Vector3(),inv=hb.matrixWorld.clone().invert();
     for(const o of ms){const hi=o.skeleton.bones.indexOf(hb),si=o.geometry.attributes.skinIndex,sw=o.geometry.attributes.skinWeight;if(!si||!sw)continue;
       for(let i=0;i<si.count;i++){let b=-1,bw=-1;for(let k=0;k<4;k++){const w=sw.getComponent(i,k);if(w>bw){bw=w;b=si.getComponent(i,k)}}
-        if(b!==hi)continue;o.getVertexPosition(i,v);o.applyBoneTransform(i,v);o.localToWorld(v);hb.worldToLocal(v);box.expandByPoint(v)}}
+        if(b!==hi)continue;o.getVertexPosition(i,v);v.applyMatrix4(o.matrixWorld).applyMatrix4(inv);box.expandByPoint(v)}}
     if(!box.isEmpty()){const c=box.getCenter(new THREE.Vector3()),z=box.getSize(new THREE.Vector3());f={c:c.toArray(),u:Math.max(z.x,z.z)/2}}}catch(e){}
-  ARMOR_HEAD.cache.set(key,f);return f;
+  if(key)ARMOR_HEAD.cache.set(key,f);return f;
 }
 // חלק עם fit: ממירים את המיקום והגדלים מיחידות של הראש ליחידות של העצם
 function armorFit(p,f){if(!p.fit)return p;const u=f.u,q=Object.assign({},p,{pos:p.pos.map((x,i)=>f.c[i]+x*u)});
