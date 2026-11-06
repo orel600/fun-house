@@ -52,12 +52,13 @@ function install(B){
   frame=function(){};
   // מה פוגע בשחקן בקרב בשומר: לפי הפונקציה שקראה ל-hurt (יריות, טבעות, עיגולים, רקיעה, מגע)
   const hu=hurt;hurt=function(d){const h0=P.hp,r=hu.apply(this,arguments);if(m.ph==='warden'&&S.wd){const ln=(new Error().stack.split('\n')[2]||''),fn=(ln.match(/at (\w+)/)||[])[1]||'?';
-    const c=R.hurtBy[m.ch]||(R.hurtBy[m.ch]={});c[fn]=(c[fn]||0)+Math.max(0,h0-P.hp)}return r};
+    const c=R.hurtBy[m.ch]||(R.hurtBy[m.ch]={});c[fn]=(c[fn]||0)+Math.max(0,h0-P.hp)}
+    else if(m.ph==='grind'&&S.wd&&m.ch<B.chapters.length){const c=cRep();c.hin=(c.hin||0)+Math.max(0,h0-P.hp)/P.maxHp}return r};   // נזק שנספג בטיפוס, בפסי חיים מלאים (איזון הקרב, 6.11)
   if(typeof giantLoot==='function')giantLoot=function(){};   // שלל של ניצחון חוזר: לא, כדי שהציוד לא ישתפר בין קרב לקרב
   window.__balRun=n=>{let r={};for(let i=0;i<n&&!r.done;i++){last=performance.now()-50;frameStep(performance.now());if(S.wd)m.gt+=0.05;if(i%5===0)r=step()}return r};
   function chap(){return B.chapters[m.ch]}
   // הריגות בפרק (ל-kills של playtime.js)
-  const k0=kill;kill=function(e){const x0=S.wd&&!e.node&&m.ch<B.chapters.length?cumXp():null;const r=k0.apply(this,arguments);if(x0!==null){m.kc=(m.kc||0)+1;const c=cRep();c.kxp=(c.kxp||0)+cumXp()-x0}return r};
+  const k0=kill;kill=function(e){const x0=S.wd&&!e.node&&m.ch<B.chapters.length?cumXp():null;const r=k0.apply(this,arguments);if(x0!==null){m.kc=(m.kc||0)+1;const c=cRep();c.kn=(c.kn||0)+1;c.kxp=(c.kxp||0)+cumXp()-x0}return r};
   function need(){const c=chap();return c.lv||(c.to?CURIO.paths[c.to].lv:0)}   // c.lv: רמת יעד לפרק (playtime.js, בדרגות 2-3)
   // XP מצטבר (לא מתאפס ברמה), ומה מתוכו מקווסטים: לדוח "בעיקר קווסטים" מול "בעיקר הריגה"
   const cumXp=()=>SAVE.hero.xp||0;   // SAVE.hero.xp הוא כל ה-XP שנאסף אי פעם (ranks.js)
@@ -153,13 +154,13 @@ function install(B){
     const L=STORY.lanterns[chap().k],w=S.wd;
     if(m.ph==='warden'){if(!m.wT)m.wT=now;
       if(m.wE&&m.wE.dead&&m.wE.hp<=0){const f=c.fights||(c.fights=[]);f.push(Math.round((now-m.wS)*10)/10);m.wE=null;
-        if(f.length<B.fights){P.hp=P.maxHp;S.wd.marks=[];S.wd.rings=[];if(STO().bt)delete STO().bt[chap().k];P.x=L.x;P.y=L.y+GIANT.lair+700;return{}}   // שוב: מתרחקים, והשומר קם כשחוזרים
+        if(f.length<B.fights){P.hp=P.maxHp;S.wd.marks=[];S.wd.rings=[];if(STO().bt)delete STO().bt[chap().k];const lp=typeof giantLair==='function'?giantLair(chap().k):{x:L.x,y:L.y+70};P.x=lp.x;P.y=lp.y+700;return{}}   // GIANT.lair הוא אובייקט: היה L.y+אובייקט = NaN (6.11)   // שוב: מתרחקים, והשומר קם כשחוזרים
         c.wardenT=Math.round(now-m.wT);c.fightT=Math.round(f.reduce((a,b)=>a+b,0)/f.length*10)/10;c.wLv=heroLv();finish(true);return{}}
       // הענק קם לבד כשמתקרבים (giant.js). הטיימר מניצחון מקרי בזמן הטיפוס לא נספר: מאפסים אותו
       if(m.wE&&m.wE.gone)m.wE=null;
       // המדידה היא של הקרב, לא של הדרך: מי שלא הגיע למאורה תוך travel שניות (באחו הגדול הבוט נתקע בלהקות ובורח) קופץ ליד המאורה
-      if(!w.warden&&now-m.wT>B.travel&&Math.hypot(P.x-L.x,P.y-L.y)>L.warden.wake&&!m.jumped){m.jumped=1;c.jump=1;const ly=L.y+(typeof GIANT!=='undefined'?GIANT.lair:70);
-        for(const [ox,oy] of [[0,320],[320,0],[-320,0],[0,-320],[230,230],[-230,230],[230,-230],[-230,-230]])if(typeof tBlocked!=='function'||!tBlocked(L.x+ox,ly+oy)){P.x=L.x+ox;P.y=ly+oy;break}}if(STO().bt)delete STO().bt[chap().k];
+      if(!w.warden&&now-m.wT>B.travel&&Math.hypot(P.x-L.x,P.y-L.y)>L.warden.wake&&!m.jumped){m.jumped=1;c.jump=1;const lp=typeof giantLair==='function'?giantLair(chap().k):{x:L.x,y:L.y+70},lx=lp.x,ly=lp.y;   // היה L.y+GIANT.lair (אובייקט) = NaN, והשחקן נעלם מהמפה (6.11)
+        for(const [ox,oy] of [[0,320],[320,0],[-320,0],[0,-320],[230,230],[-230,230],[230,-230],[-230,-230]])if(typeof tBlocked!=='function'||!tBlocked(lx+ox,ly+oy)){P.x=lx+ox;P.y=ly+oy;break}}if(STO().bt)delete STO().bt[chap().k];
       if(!w.warden&&typeof giantReady!=='function'&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake)storyWarden(chap().k,L.y+70);   // גרסה ישנה (לפני הטיימר): קם רק עם קווסט, אז מקימים ביד
       if(w.warden&&!w.warden.dead&&m.wE!==w.warden){m.wE=w.warden;m.wS=now;c.tries=(c.tries||0)+1}}
     // קרב: לחיים נמוכים בורחים. אחרת אל האויב הקרוב (או השומר), עד הטווח של הנשק
@@ -217,9 +218,10 @@ if(require.main===module)(async()=>{
   const out={};await Promise.all(BAL.cls.map(async c=>{out[c]=await runCls(browser,c)}));
   await browser.close();
   // הדוח
+  const m_kc=h=>h.kn??'-';
   const row=(c,R)=>R.ch.map((h,i)=>{const d=R.dmg[i]||{},cs=R.casts[i]||{},tot=Object.values(d).reduce((a,b)=>a+b,0)||1;
     const sk=Object.keys(d).sort((a,b)=>d[b]-d[a]).map(k=>k+' '+Math.round(d[k]/tot*100)+'%'+(cs[k]?' ('+Math.round(d[k]/cs[k])+'/הטלה)':'')).join(', ');
-    return `  ${i+1}. ${h.reg}: ${h.ok?'✓':'✗ תקוע ('+h.why+')'} ${h.t}s, רמה ${h.lv0}→${h.lv1}, מוות ${h.deaths}${h.wardenT!=null?', שומר '+h.wardenT+'s (קרב '+h.fightT+'s) ברמה '+h.wLv+' ('+h.tries+' ניסיונות)':''}, מטבעות ${h.coins}\n     נזק: ${sk}\n     ציוד: ${h.gear} · סקילים: ${h.sk||'-'}`}).join('\n');
+    return `  ${i+1}. ${h.reg}: ${h.ok?'✓':'✗ תקוע ('+h.why+')'} ${h.t}s, רמה ${h.lv0}→${h.lv1}, מוות ${h.deaths}, נספג ${(h.hin||0).toFixed(1)} פסי חיים (${((h.hin||0)/Math.max(1,h.t)*60).toFixed(2)} לדקה), הריגות ${m_kc(h)}${h.wardenT!=null?', שומר '+h.wardenT+'s (קרב '+h.fightT+'s) ברמה '+h.wLv+' ('+h.tries+' ניסיונות)':''}, מטבעות ${h.coins}\n     נזק: ${sk}\n     ציוד: ${h.gear} · סקילים: ${h.sk||'-'}`}).join('\n');
   for(const c of BAL.cls){const R=out[c];console.log(`\n${c} (${R.real}s אמיתיות, ${R.deaths} מוות)\n`+row(c,R));
     if(Object.keys(R.block).length)console.log('  נחסם בדרישות: '+Object.entries(R.block).map(([k,b])=>`${k} ×${b.n} (צריך רמה ${b.lv}, ${b.st} ${b.pt}; היה ${b.at.join(' ')})`).join('; '));
     if(Object.keys(R.noPay).length)console.log('  אין במה לשדרג: '+Object.entries(R.noPay).map(([k,v])=>`${k} בפרק ${v.ch+1}: ${v.miss}`).join('; '));

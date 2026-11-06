@@ -4,6 +4,7 @@
    - charge (אבירים ומגינים): נעצר, פס אדום על הרצפה לכיוון שלך מתמלא, ואז מסתער לאורכו. צעד הצידה = התחמקת. אחרי ההסתערות מסוחרר לרגע: זה הזמן להכות.
    - ranged (מרחפים): שומרים מרחק, קו אדום מראה לאן הירייה תטוס, ואז חץ קסם מהיר לאורכו.
    - leap (חלק מהשלדים הרחוקים, עקרבים): עיגול אדום על המקום שלך מתמלא, והאויב קופץ ונוחת עליו.
+   - תורות (turns): בקבוצה רק 2-3 תוקפים בכל רגע, והשאר מקיפים במרחק ומאיימים, ומתחלפים. כך זה נראה כמו קרב ולא כמו ערימה (ניר, 6.11).
    - caller (תכונה, לא סוג): כשנפצע, בורח ותוקע בקרן (טבעת צהובה מתמלאת). הפלת אותו לפני הסוף = אין תגבורת. לא הספקת: מגיעים חברים, וכל מי שקרוב מתעורר.
    - leader (מנהיג להקה, docs/plan-combat.md שינוי 7): בסוף כל שיא של להקות (PACE.beats ב-pacing.js) מגיעה להקה עם מנהיג: גדול, עם כתר ושם, מסתער,
      והלהקה שלו מהירה יותר כל עוד הוא חי. הפלת אותו: ערימת שלל אחת גדולה, ואז השקט.
@@ -12,8 +13,20 @@
    רק בעולם. הזירה לא קוראת לקובץ הזה. כל המספרים באובייקט FOEAI */
 
 const FOEAI={
-  kinds:{grunt:'flank',shield:'charge',drowned:'charge',rimeknight:'charge',stormknight:'charge',shadeknight:'charge',cinderscorp:'leap',
-         wisp:'ranged',mistling:'ranged',frostwraith:'ranged',flamewisp:'ranged',sparkwisp:'ranged',shadewisp:'ranged'},
+  /* תפקיד לכל סוג אויב בעולם (6.11, ניר: "המפלצות לא באמת מנסות להילחם בך"). רשימה = כל אויב מגריל אחד ממנה, כדי שבכל אזור יהיו כמה תפקידים.
+     כל אזור: אביר (מסתער, לפעמים מקיף או קופץ) ומרחף (יורה, לפעמים מקיף). סוג בלי שורה: flank. tools/check.js בודק שלכל סוג בעולם יש שורה */
+  kinds:{grunt:'flank',shield:'charge',wisp:'ranged',treant:'charge',golem:'charge',crawler:'leap',sprite:'ranged',
+         drowned:['charge','charge','flank'],mistling:['ranged','ranged','flank'],
+         rimeknight:['charge','flank','charge'],frostwraith:['ranged','leap','ranged'],
+         cinderscorp:['leap','leap','flank'],flamewisp:['ranged','flank','ranged'],
+         stormknight:['charge','leap','charge'],sparkwisp:['ranged','flank','ranged'],
+         shadeknight:['charge','flank','leap'],shadewisp:['ranged','ranged','leap'],
+         mummy:'flank',slime:'leap',mushnub:'flank',goleling:'ranged',ghost:'ranged',yeti:'charge',demon:'charge'},
+  /* התקפה בתורות: בכל רגע לכל היותר max אויבים "בתור" (מכה, הסתערות, ירייה, קפיצה). השאר מקיפים במרחק ring, זזים פנימה והחוצה (bob) ומאיימים.
+     מי שבתור מחזיק אותו hold שניות, ואז נותן לאחר ונח rest. כשאין מי שמחכה, ממשיך. engage: רחוק מזה אין תורות (עוד לא בקרב).
+     רק אויבים רגילים: נדירה, מנהיג, נמסיס וציד תמיד בתור (ונספרים) */
+  turns:{max:{start:2,near:3,far:3},hold:[3,5],rest:[1.5,3],engage:360,ring:150,bob:28,turn:0.5,spd:0.8},
+  hitK:1,                                   // נזק לכל מכה של אויב בעולם (כל המתקפות). נמדד (#381): עם התורות, 0.8 הוריד 22% מהנזק שנספג לדקה, ו-1 משאיר אותו כמו קודם
   leapChance:{start:0,near:0.25,far:0.4},   // שלד שקופץ במקום להקיף
   callChance:{start:0,near:0.1,far:0.16},   // הסיכוי שאויב הוא "קורא"
   startWind:1.5,                            // ליד השער: כל הכנה ארוכה פי כך
@@ -40,7 +53,9 @@ const aiWind=(e,t)=>t*(e.zone==='start'?FOEAI.startWind:1);
 // פעם אחת לכל אויב: מה התפקיד שלו
 function foeAiInit(e){
   const A=FOEAI,z=e.zone||'near';
-  e.ai=A.kinds[e.type]||'flank';
+  const kd=A.kinds[e.type]||'flank';e.ai=Array.isArray(kd)?kd[Math.floor(Math.random()*kd.length)]:kd;
+  if(!e.hitK){e.hitK=1;e.dmg*=A.hitK}   // פעם אחת: פחות נזק לכל מכה, כי יש יותר חיים (WORLD.foeHp)
+  e.ph0=rand(0,6.28);
   if(e.ai==='flank'&&Math.random()<(A.leapChance[z]||0))e.ai='leap';
   if(A[e.ai].cd)e.acd=rand(0.6,A[e.ai].cd[1]);
   e.fa=Math.atan2(e.y-P.y,e.x-P.x)+rand(-1.3,1.3);e.sd=Math.random()<0.5?1:-1;   // הצד שממנו הוא מקיף, ולאיזה כיוון הוא מסתובב
@@ -51,12 +66,14 @@ function foeAiInit(e){
 function foeAi(e,dt,d){
   if(e.creature||e.warden||e.wanted)return false;
   if(e.ai==null)foeAiInit(e);
+  if(S.wd)e.tokSeen=S.wd.t;   // בקרב עכשיו (התורות, aiTurn)
   const A=FOEAI,dx=P.x-e.x,dy=P.y-e.y,k=slowK(e);
   if(e.act){aiAct(e,dt*(k||0),d);return true}           // באמצע פעולה: קפוא = הכל עוצר
-  if(e.caller===1&&e.hp<e.max*A.call.at){e.caller=2;e.act='flee';e.at=aiWind(e,A.call.flee);e.am=e.at;return true}
+  if(e.caller===1&&e.hp<e.max*A.call.at){e.caller=2;e.tok=0;e.act='flee';e.at=aiWind(e,A.call.flee);e.am=e.at;return true}
   if(d>A.far||e.sw>0||!k)return false;
   if(e.acd>0)e.acd-=dt;
   const sp=e.speed*k;
+  if(!aiTurn(e,dt,d)){aiWait(e,dt,d,sp);return true}   // לא בתור: מקיף במרחק ומחכה
   if(e.ai==='charge'){const C=A.charge;if(e.acd<=0&&d>C.min&&d<C.max){aiStart(e,'wind',C.wind);return true}return false}
   if(e.ai==='leap'){const L=A.leap;if(e.acd<=0&&d>L.min&&d<L.max){aiStart(e,'crouch',L.wind);e.tx=P.x;e.ty=P.y;e.sx=e.x;e.sy=e.y;return true}}
   if(e.ai==='ranged'){const R=A.ranged;
@@ -70,6 +87,31 @@ function foeAi(e,dt,d){
     const tx=P.x+Math.cos(e.fa)*F.r-e.x,ty=P.y+Math.sin(e.fa)*F.r-e.y,td=Math.hypot(tx,ty)||1;
     e.x+=tx/td*sp*dt;e.y+=ty/td*sp*dt;return true}
   return false;
+}
+// התור: האם האויב רשאי לתקוף עכשיו (FOEAI.turns). e.tok: כמה זמן נשאר לו בתור. e.tokSeen: מתי נראה בקרב לאחרונה (שעון העולם),
+// כדי שאויב שהתרחק או נעלם לא יתפוס מקום. e.wantT: מתי חיכה לתור לאחרונה
+function aiTurn(e,dt,d){
+  const T=FOEAI.turns,now=S.wd?S.wd.t:0;
+  if(d>T.engage){e.tok=0;return true}
+  const vip=e.rare||e.leader||e.nem||e.hunt;
+  if(e.tok>0){e.tok-=dt;if(e.tok>0||e.sw>0||vip)return true;
+    if(!enemies.some(o=>o!==e&&!o.dead&&o.wantT!=null&&now-o.wantT<0.5&&!(o.rest>0))){e.tok=rand(...T.hold);return true}   // אין מי שמחכה: ממשיך
+    e.tok=0;e.rest=rand(...T.rest);e.wantT=now;return false}
+  const n=aiHolders(e,now);
+  if(e.rest>0){e.rest-=dt;if(n>0){e.wantT=now;return false}}
+  if(vip||n<(T.max[e.zone]||3)){e.tok=rand(...T.hold);e.rest=0;return true}
+  e.wantT=now;return false;
+}
+// כמה אויבים אחרים בתור עכשיו
+function aiHolders(e,now){let n=0;for(const o of enemies)if(o!==e&&!o.dead&&o.tok>0&&now-(o.tokSeen??-9)<0.5)n++;return n}
+// מחכה לתור: מקיף אותך במרחק, זז פנימה והחוצה כמו מאיים, ולא תוקף. מרחף שומר על המרחק שלו
+function aiWait(e,dt,d,sp){
+  const T=FOEAI.turns,t=S.wd?S.wd.t:0,R=(e.ai==='ranged'?FOEAI.ranged.keep:T.ring)+Math.sin(t*1.7+(e.ph0||0))*T.bob;
+  e.fa=(e.fa??Math.atan2(e.y-P.y,e.x-P.x))+T.turn*dt*(e.sd||1);
+  const cur=Math.atan2(e.y-P.y,e.x-P.x),da=((e.fa-cur+Math.PI*3)%(Math.PI*2))-Math.PI;
+  if(Math.abs(da)>1.2)e.fa=cur+Math.sign(da)*1.2;   // לא חוצה דרכך כדי להגיע לצד שלו
+  const tx=P.x+Math.cos(e.fa)*R-e.x,ty=P.y+Math.sin(e.fa)*R-e.y,td=Math.hypot(tx,ty)||1,v=Math.min(sp*T.spd,td/Math.max(dt,1e-3));
+  e.x+=tx/td*v*dt;e.y+=ty/td*v*dt;
 }
 // אחרי foeAi שטיפל בתנועה: הדיפה, אנימציה, הבזק ומים, כמו בתנועה הרגילה
 function foeAiTail(e,dt){e.x+=e.kx*dt;e.y+=e.ky*dt;const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;if(e.pack)e.far=0;wPonds(e)}
