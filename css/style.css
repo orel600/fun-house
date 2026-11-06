@@ -417,6 +417,12 @@ h1{font-size:46px} h2{font-size:30px}
 .vbtn.trgo{border-color:var(--trc);box-shadow:0 0 10px color-mix(in srgb,var(--trc) 45%,transparent)}
 .trrow{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0}
 .trrow .vbtn{width:auto;margin:0}
+/* חלון הקפיצה האחד (travel.js): היעדים מקובצים לפי אזור. לרוחב: שני טורים, ורק הרשימה גוללת */
+.qlog.win.trwin{z-index:6}
+.trgroups{display:grid;grid-template-columns:1fr;gap:10px;margin-top:6px}
+.trgrp h4{margin:0 0 4px}
+.trwhy{margin:6px 0 0;color:var(--blood,#E0564A);font-weight:700;text-align:center}
+@media (orientation:landscape){.qlog.win.trwin{max-width:min(640px,92vw)}.trgroups{grid-template-columns:1fr 1fr}}
 .trflash{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:0;background:radial-gradient(circle,#fff 0%,var(--trc,#FFD36B) 45%,transparent 100%);transition:opacity .28s ease-in}
 .trflash.on{opacity:.85}
 .trflash.out{opacity:0;transition:opacity .28s ease-out}

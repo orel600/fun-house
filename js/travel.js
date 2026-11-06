@@ -1,9 +1,10 @@
 /* קפיצה בין פנסים (ניר, 1.11.2026: "פנס דולק = נקודת קפיצה, כדי שלא צריך לחצות את כל האזורים כל פעם").
    רק לפנסים דולקים (STORY.lanterns ו-SAVE.story), כי המחקר אמר שמסע מהיר לכל נקודה מוריד מהחקירה: קופצים רק למה שכבר חקרת.
-   שלושה מקומות:
-   1. בשער בכפר: במקום כפתור אחד, "לאן?": האחו (תמיד) וכל פנס דולק (travelGateHtml, מ-villageHud ב-village.js).
-   2. במפת העולם (worldmap.js): נגיעה באי עם פנס דולק, וכפתור "קפוץ לכאן" מתחת למפה (travelMapRow).
-   3. ליד פנס דולק בעולם: כפתור "חזרה לכפר" בסרגל התחתון (#trBtn).
+   חלון קפיצה אחד (ניר, 6.11: "חלק מחזירים אותך רק הביתה, חלק נותנים לך אופציות וחלק רק אופציות ספציפיות"):
+   כל נקודת קפיצה פותחת את אותו חלון "לאן?" (travelWin), עם אותה רשימה: הכפר, הכניסה לאחו, וכל פנס דולק ואבן מסע פתוחה (waystones.js),
+   מקובצים לפי אזור. המקום שעומדים בו לא מופיע. נפתח מ: השער בכפר (vOpen ב-village.js), השער הביתה באחו (wGoEl ב-world.js),
+   כפתור 🏮 ליד פנס דולק (#trBtn), כפתור 🗿 ליד אבן פתוחה (#wsBtn), וכפתור במפת העולם (travelMapRow, מ-worldmap.js).
+   אין לאן לקפוץ חוץ מהיציאה הרגילה: הכפתור יוצא ישר, בלי חלון.
    הקפיצה: הבזק אור בצבע הפנס (celebrate ב-fx.js ושכבת אור על המסך), ומגיעים ליד הפנס. בלי מסך טעינה.
    אי אפשר לקפוץ מהעולם כשאויב קרוב, או כשהשומר של האזור קם ועוד חי. לא נשמר כלום משלו: הכל מ-SAVE.story */
 
@@ -48,36 +49,65 @@ function travelGo(to){   // to: 'home' (הכפר), 'meadow' (השער באחו) 
   return true;
 }
 
-/* ---- 1. בשער בכפר: "לאן?" ---- */
-function travelGateHtml(){
-  const lit=travelLit(),ws=wsGateBtns();if(!lit.length&&!ws)return '';   // עוד אין פנס דולק ואין אבן מסע (waystones.js): הכפתור הרגיל
-  return winHead(T('tr.where'))+'<p>'+T('vil.outInfo')+'</p><div class="trlist">'+
-    '<button class="vbtn" data-act="go">🌿 '+T('w.region.meadow')+'</button>'+
-    lit.map(o=>'<button class="vbtn trgo" data-act="jump" data-k="'+o.k+'" style="--trc:'+o.L.glow+'">🏮 '+T('w.region.'+o.L.reg)+'</button>').join('')+ws+'</div>';
+/* ---- החלון האחד: "לאן?" ---- */
+// היעדים, מקובצים לפי אזור: [{r,items:[{k,ico,name,col}]}]. k: 'home', 'meadow', מזהה פנס, או 'ws:<אזור>.<id>' (אבן מסע)
+function travelDests(){
+  const G=[{r:'village',items:[{k:'home',ico:'🏠',name:T('tr.village'),col:C.gold}]}],lit=travelLit(),ws=wsOpenAll();
+  for(const r of ['meadow',...Object.keys(WORLD.regions)]){
+    const it=r==='meadow'?[{k:'meadow',ico:'🌿',name:T('tr.entry'),col:'#9BD86A'}]:[];
+    for(const o of lit)if(o.L.reg===r)it.push({k:o.k,ico:'🏮',name:T('tr.lantern'),col:o.L.glow});
+    for(const o of ws)if(o.r===r)it.push({k:'ws:'+o.k,ico:'🗿',name:T('ws.'+o.s.id),col:WAYSTONES.col});
+    if(it.length)G.push({r,items:it});
+  }
+  return G;
 }
-
-/* ---- 2. במפת העולם: נגיעה באי עם פנס דולק ---- */
-let trSpots=[],trPick=null;
-function travelMapSpots(list,rad){trSpots=list.map(s=>Object.assign({rad},s))}   // מ-wmDrawWorld: איפה כל אי בקנבס
-function travelMapRow(){
-  const o=trPick&&travelOf(trPick);
-  if(!o)return travelLit().length?'<p class="wmkey trhint">🏮 '+T('tr.mapHint')+'</p>':'';
-  const why=travelBlock();
-  return '<div class="trrow"><button class="vbtn trgo" data-act="jump" data-k="'+o.k+'" style="--trc:'+o.L.glow+'"'+(why?' disabled':'')+'>✨ '+T('tr.jump',T('w.region.'+o.L.reg))+'</button>'+
-    (why?'<small>'+T('tr.no.'+why)+'</small>':'')+'</div>';
+// איפה עומדים עכשיו (לא מוצג ברשימה): הכפר, אבן או פנס שלידם, או השער הביתה באחו
+function travelHere(){
+  if(!S)return '';if(S.vil)return 'home';if(!S.wd)return '';
+  const s=wsHere();if(s)return 'ws:'+wsKey(S.wd.reg,s);
+  const o=travelOf(S.wd.reg);if(o&&Math.hypot(P.x-o.L.x,P.y-o.L.y)<TRAVEL.near+P.r)return o.k;
+  return S.wd.reg==='meadow'&&S.wd.near==='home'?'meadow':'';
 }
-function travelMapPick(r){trPick=travelOf(r)?r:null;wmDraw()}
-$('wMap').addEventListener('pointerup',e=>{
-  if(e.target.id!=='wmWorld')return;const b=e.target.getBoundingClientRect(),x=e.clientX-b.left,y=e.clientY-b.top;
-  const s=trSpots.find(s=>Math.hypot(s.x-x,s.y-y)<s.rad*1.1);if(s){travelMapPick(s.r);sfx('ui')}
-});
-$('wMap').addEventListener('click',e=>{const b=e.target.closest('[data-act="jump"]');if(b&&!b.disabled){trPick=null;if(travelGo(b.dataset.k))wmapOpen(false)}});
+// יש לאן לקפוץ חוץ מהיציאה הרגילה (הכפר לאחו, או האחו לכפר)? אם לא, השער יוצא ישר
+const travelAny=()=>travelLit().length>0||wsOpenAll().length>0;
+function travelHtml(){
+  const here=travelHere(),why=travelBlock();
+  const gs=travelDests().map(g=>({r:g.r,items:g.items.filter(i=>i.k!==here)})).filter(g=>g.items.length);
+  return winHead(T('tr.where'))+(why?'<p class="trwhy">'+T('tr.no.'+why)+'</p>':'')+'<div class="trgroups">'+gs.map(g=>
+    '<div class="trgrp"><h4>'+(g.r==='village'?T('tr.village'):T('w.region.'+g.r))+'</h4><div class="trlist">'+g.items.map(i=>
+      '<button class="vbtn trgo" data-act="tjump" data-k="'+i.k+'" style="--trc:'+i.col+'"'+(why?' disabled':'')+'>'+i.ico+' '+i.name+'</button>').join('')+'</div></div>').join('')+'</div>';
+}
+const trWin=(()=>{const w=document.createElement('div');w.id='trWin';w.className='qlog win trwin';w.hidden=true;$('wMap').after(w);return w})();
+WINS.unshift({id:'trWin',close:()=>travelWin(false)});   // Esc סוגר (ui.js)
+let trMode='';
+// פתיחה וסגירה. בעולם המשחק עוצר בזמן הבחירה, כמו במפה
+function travelWin(on){
+  if(on){if(!S||S.mode!=='play'&&S.mode!=='map')return false;if(!$('wMap').hidden)wmapOpen(false);if(S.vil&&S.vil.open)vShut();if(S.wd)wShut();
+    trMode=S.mode;S.mode='travel';joy=null;trWin.innerHTML=travelHtml();trWin.hidden=false;sfx('ui');return true}
+  if(trWin.hidden)return false;trWin.hidden=true;if(S&&S.mode==='travel')S.mode='play';return true;
+}
+// מנקודת קפיצה: אם יש לאן לבחור, החלון. אחרת היציאה הרגילה (go), אם יש
+function travelOpen(go){if(travelAny())return travelWin(true);if(go)go();return false}
+// קפיצה ליעד מהרשימה
+function travelJump(k){
+  const why=travelBlock();if(why){banner(T('tr.no.'+why),C.ember);sfx('ui');return false}
+  travelWin(false);
+  if(k==='meadow'&&S.vil){leaveVillage();return true}   // מהכפר לאחו: היציאה הרגילה, בלי הבזק
+  return k.startsWith('ws:')?wsGo(k.slice(3)):travelGo(k);
+}
+trWin.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;
+  if(b.dataset.act==='close'){travelWin(false);sfx('ui')}else if(b.dataset.act==='tjump')travelJump(b.dataset.k)});
 
-/* ---- 3. ליד פנס דולק בעולם: "חזרה לכפר" ---- */
+/* ---- במפת העולם (worldmap.js): כפתור אחד שפותח את החלון ---- */
+function travelMapSpots(){}   // פעם נגיעה באי קפצה לפנס. עכשיו הכל דרך החלון
+function travelMapRow(){return travelAny()?'<div class="trrow"><button class="vbtn trgo" data-act="trwin" style="--trc:'+C.gold+'">✨ '+T('tr.where')+'</button></div>':''}
+$('wMap').addEventListener('click',e=>{const b=e.target.closest('[data-act="trwin"]');if(b)travelWin(true)});
+
+/* ---- ליד פנס דולק בעולם: כפתור 🏮 שפותח את החלון ---- */
 function travelUpdate(){
-  const b=$('trBtn'),o=S.wd&&travelOf(S.wd.reg),on=!!o&&Math.hypot(P.x-o.L.x,P.y-o.L.y)<TRAVEL.near+P.r;
+  const b=$('trBtn'),o=S.wd&&travelOf(S.wd.reg),on=!!o&&Math.hypot(P.x-o.L.x,P.y-o.L.y)<TRAVEL.near+P.r&&S.mode==='play';
   if(b.hidden===!on&&b.dataset.lang===LANG)return;
-  b.hidden=!on;b.dataset.lang=LANG;if(on){b.style.setProperty('--trc',o.L.glow);b.innerHTML='<span class="ni" aria-hidden="true">🏮</span>'+T('ctx.home');b.setAttribute('aria-label',T('tr.homeBtn'))}
+  b.hidden=!on;b.dataset.lang=LANG;if(on){b.style.setProperty('--trc',o.L.glow);b.innerHTML='<span class="ni" aria-hidden="true">🏮</span>'+T('ws.btn');b.setAttribute('aria-label',T('tr.where'))}
 }
-function travelOff(){$('trBtn').hidden=true;trPick=null}
-$('trBtn').addEventListener('click',()=>{if(!S.wd)return;const why=travelBlock();if(why){banner(T('tr.no.'+why),C.ember);sfx('ui');return}travelGo('home')});
+function travelOff(){$('trBtn').hidden=true;travelWin(false)}
+$('trBtn').addEventListener('click',()=>{if(S.wd)travelWin(true)});
