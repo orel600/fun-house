@@ -570,6 +570,9 @@ function worldBot(m,L,god){
   const check=(ok,txt)=>results.push((ok?'✓ ':'✗ ')+txt);
   let shotN=0;
   const shot=async name=>{if(!CFG.shots)return;fs.mkdirSync(CFG.shots,{recursive:true});
+    // השעון בבדיקה עומד, ולכן אייקון "סקיל חדש" (skillreveal.js, 1.8 שניות במשחק) נשאר באמצע המסך מעל הגיבור, והכפתור בפינה ריק.
+    // לפני צילום: האייקון נוחת על הכפתור שלו
+    await page.evaluate(()=>{if(typeof SKR!=='undefined'&&SKR&&SKR.el){SKR.el.remove();SKR.el=null;skrBtn(SKR.id,false)}});
     await page.evaluate(()=>{R3D.drawEvery=0});await page.clock.runFor(34);await page.evaluate(()=>{R3D.drawEvery=60});
     await page.screenshot({path:path.join(CFG.shots,String(++shotN).padStart(2,'0')+'-'+name+'.png')})};
 
@@ -3260,6 +3263,15 @@ function worldBot(m,L,god){
     enterWorld('home');const hp0=P.maxHp;out.on=S.wd.meal==='stew';
     P.x=9999;P.y=9999;out.noBtn=(fishBtn(true),document.getElementById('fishBtn').hidden);
     FS().meal.t=0.01;fishUpdate(0.1);out.off=!S.wd.meal&&!FS().meal&&P.maxHp===hp0-FISH.meals.stew.buff.hp;
+    // דיג באגם הגדול (מפה, tWaterNear): עומדים ליד שפת המים, מטילים, מחכים לנשיכה ולוחצים כשהמחוג בירוק. דג מהמאגר של האגם בתרמיל
+    try{if(WORLD.regions.lake.map){enterWorld('home','lake');enemies=[];P.moving=false;
+      const st=WORLD.regions.lake.waystones[0];P.x=st.x;P.y=st.y;const w=tWaterNear(P.x,P.y),d=Math.hypot(P.x-w.x,P.y-w.y)||1,k=(TERRAIN.pad+20)/d;
+      P.x=w.x+(P.x-w.x)*k;P.y=w.y+(P.y-w.y)*k;S.wd.fishRest=0;fishBtn(true);
+      const sp=fishSpot();out.lakeSpot=!!sp&&sp.pool==='lake'&&!tBlocked(P.x,P.y);out.lakeBtn=!document.getElementById('fishBtn').hidden;
+      const pool=Object.keys(FISH.pools.lake),cnt=()=>pool.reduce((a,r)=>a+(SAVE.bag[r]||0),0),n1=cnt();
+      for(let tries=0;tries<6&&cnt()===n1;tries++){S.wd.fishRest=0;fishTap();
+        for(let i=0;i<600&&S.wd.fish&&cnt()===n1;i++){const f=S.wd.fish;if(f.st==='bite'||(f.st==='reel'&&fishNeedleIn()))fishTap();fishUpdate(1/60)}}
+      out.lakeFish=cnt()===n1+1}else out.lakeSpot=out.lakeBtn=out.lakeFish=true}catch(err){out.lakeErr=String(err).slice(0,120)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return out});
   // משחקי השאול (moba.js, docs/moba.md): משחק שלם, מואץ, שבו כל ששת הגיבורים בוטים. נגמר, כל הסקילים הוטלו, יש שליטה בקהל וקומבו
   const mb=await page.evaluate(en=>{const o={};try{
@@ -3448,6 +3460,7 @@ function worldBot(m,L,god){
   const FI=L.fish||{};
   check(FI.btn&&FI.bite&&FI.reel&&FI.caught&&FI.saved&&FI.book&&FI.count===1,'דיג: '+(FI.err?FI.err+' · ':'')+(FI.btn?'כפתור "'+FI.btn+'" ליד הבריכה':'אין כפתור ליד המים')+(FI.bite?', נשיכה (!)':', אין נשיכה')+(FI.reel?', פס עם מחוג':', בלי פס')+
     (FI.caught?', נתפס '+FI.caught+' אחרי '+FI.tries+' הטלות ו-'+FI.t+' שניות'+(FI.saved?', בתרמיל ונשמר':', לא נשמר')+(FI.book?', בספר':', לא בספר'):', לא נתפס דג'));
+  check(fc.lakeSpot&&fc.lakeBtn&&fc.lakeFish,'דיג באגם: '+(fc.lakeErr?fc.lakeErr+' · ':'')+(fc.lakeSpot?'מקום ליד שפת המים':'אין מקום לדוג ליד המים')+(fc.lakeBtn?', כפתור':', בלי כפתור')+(fc.lakeFish?', נתפס דג מהאגם':', לא נתפס דג'));
   check(fc.quest&&fc.cookBtn&&fc.taken&&fc.meal==='stew'&&fc.on&&fc.off&&fc.noBtn,'דיג: '+(fc.quest?'קווסט הדייג סופר דגים':'הקווסט לא סופר')+(fc.cookBtn?', הפונדקאית מבשלת':', אין כפתור בישול')+(fc.taken?' (הדגים נלקחו)':' (הדגים לא נלקחו)')+
     (fc.on?', החיזוק חל בעולם':', החיזוק לא חל')+(fc.off?' ונגמר בזמן':' ולא נגמר')+(fc.noBtn?', בלי מים אין כפתור':', הכפתור מופיע רחוק מהמים'));
   const Nn=L.npc||{};
