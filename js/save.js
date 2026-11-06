@@ -3,6 +3,7 @@
    איפה זה נשמר קובע SAVE_STORE בלבד: בטלפון, ועותק ברקע בענן (Supabase, js/cloud.js, דרך onWrite).
    שדה חדש נכנס ל-saveBlank עם ערך התחלתי, ושמירה ישנה מקבלת אותו לבד בטעינה. */
 const SAVE_VER=1;
+const isObj=o=>!!o&&typeof o==='object'&&!Array.isArray(o);
 
 function saveBlank(){return{
   v:SAVE_VER,
@@ -30,14 +31,34 @@ function saveBlank(){return{
 let SAVE=saveBlank();
 
 // המקום היחיד שיודע איפה השמירה יושבת. onWrite: מי שרוצה לדעת על כל שמירה (הענן, cloud.js). quiet: בלי להודיע
+// הגנה על ההתקדמות (ביקורת 6.11.2026): לפני כתיבה, פעם ב-bakEvery, העותק הקודם עובר ל-fh-save-bak2 (גיבוי מתגלגל).
+// שמירה פגומה לא נמחקת: היא עוברת ל-fh-save-bad, ובמקומה עולה הגיבוי. note: מה להגיד לשחקן (saveWarnShow). כתיבה שנכשלה: הודעה פעם אחת
 const SAVE_STORE={
   key:'fh-save',
-  load(){try{return JSON.parse(localStorage.getItem(this.key))}catch(e){return null}},
-  write(d,quiet){try{localStorage.setItem(this.key,JSON.stringify(d))}catch(e){}if(!quiet&&this.onWrite)this.onWrite()},
+  bakEvery:120000,     // כל כמה מילישניות לכל היותר מתעדכן הגיבוי המתגלגל
+  lastBak:0,note:null,failed:false,lock:false,
+  load(){let raw=null;try{raw=localStorage.getItem(this.key)}catch(e){return null}
+    if(raw==null)return null;
+    const ok=t=>{try{const d=JSON.parse(t);return isObj(d)?d:null}catch(e){return null}};
+    const d=ok(raw);if(d)return d;
+    this.lastBak=Date.now();   // הגיבוי התקין לא יידרס בעותק של השמירה הפגומה
+    try{localStorage.setItem(this.key+'-bad',raw)}catch(e){this.lock=true}   // אין מקום לעותק: לא כותבים מעל השמירה הפגומה
+    for(const k of['-bak2','-bak']){let b=null;try{b=ok(localStorage.getItem(this.key+k))}catch(e){}
+      if(b){this.note='save.restored';return b}}
+    this.note=this.lock?'save.locked':'save.lost';return null},
+  write(d,quiet){
+    if(!this.lock)try{
+      if(Date.now()-this.lastBak>this.bakEvery){const prev=localStorage.getItem(this.key);if(prev)localStorage.setItem(this.key+'-bak2',prev);this.lastBak=Date.now()}
+      localStorage.setItem(this.key,JSON.stringify(d));this.failed=false}
+    catch(e){if(!this.failed){this.failed=true;this.note='save.fail';if(typeof saveWarnShow==='function')saveWarnShow()}}
+    if(!quiet&&this.onWrite)this.onWrite()},
   onWrite:null
 };
+// ההודעה לשחקן: שורה במסך הפתיחה, ובמשחק גם באנר. הטקסטים ב-lang.js (save.*)
+function saveWarnShow(){const n=SAVE_STORE.note;if(!n)return;const e=document.getElementById('saveWarn');
+  if(e){e.dataset.t=n;e.textContent=T(n);e.hidden=false}
+  const st=document.getElementById('ovStart');if(st&&st.hidden&&typeof banner==='function')try{banner(T(n),C.ember)}catch(e){}}
 
-const isObj=o=>o&&typeof o==='object'&&!Array.isArray(o);
 // ממזג שמירה ישנה לתוך התבנית: שדות חדשים מקבלים ערך התחלתי, ומה שנשמר נשאר
 function saveMerge(base,d){
   for(const k in d){if(isObj(base[k])&&isObj(d[k]))saveMerge(base[k],d[k]);else base[k]=d[k]}
@@ -51,3 +72,4 @@ function bagAdd(k,n=1){SAVE.bag[k]=(SAVE.bag[k]||0)+n;if(typeof bookSee==='funct
 function bagTake(k,n=1){if(!bagHas(k,n))return false;SAVE.bag[k]-=n;if(!SAVE.bag[k])delete SAVE.bag[k];return true}
 
 saveLoad();
+setTimeout(saveWarnShow,0);   // אחרי שכל הקבצים נטענו (T, banner)
