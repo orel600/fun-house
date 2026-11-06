@@ -624,7 +624,12 @@ function worldBot(m,L,god){
     // עדכון לבד (js/update-check.js): מדמים גרסה חדשה ב-version.json. במסך הפתיחה: רענון אחד לבד ואז רק הכפתור (בלי לולאה). בזירה: רק כפתור, בלי רענון
     {let navs=0;pg.on('framenavigated',f=>{if(f===pg.mainFrame())navs++});
       await ctx.route(/\/version\.json/,r=>r.fulfill({status:200,contentType:'application/json',body:'{"v":"9.9.9.9"}'}));
-      await pg.evaluate(()=>{updCheck();return 1});await pg.waitForTimeout(6000);
+      // מחכים לרענון עצמו ולטעינה המלאה, ולא לזמן קבוע: במחשב עמוס 6 שניות לא הספיקו, והבדיקה קראה UPD באמצע הטעינה ("UPD is not defined")
+      await pg.evaluate(()=>{updCheck();return 1});
+      for(let t=0;t<300&&navs<1;t++)await pg.waitForTimeout(100);
+      await pg.waitForLoadState('load');await pg.waitForFunction(()=>typeof UPD==='object'&&typeof $==='function',null,{timeout:30000}).catch(()=>{});
+      await pg.waitForTimeout(2500);   // ועוד רגע: רענון שני כאן הוא לולאה, ו-upStart יראה אותו
+      await pg.waitForLoadState('load');
       pw.upStart=navs;pw.upBtn1=await pg.evaluate(()=>!$('updBtn').hidden&&UPD.next==='9.9.9.9');
       await pg.evaluate(()=>{sessionStorage.removeItem(UPD.key);startRun();window.__keep=1});navs=0;
       await pg.evaluate(()=>updCheck());await pg.waitForTimeout(2500);
