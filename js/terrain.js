@@ -131,6 +131,7 @@ const tCell=(x,y)=>{const T=TR,i=Math.floor((x-T.x0)/T.c),j=Math.floor((y-T.y0)/
 function tBlocked(x,y){if(!TR||!S.wd)return false;const i=tCell(x,y);return i<0||TR.blk[i]===1}
 function tSlow(x,y){if(!TR)return 1;const i=tCell(x,y);return i<0?1:TR.slw[i]/255}
 function hAt(x,y){
+  if(TR&&TR.lift){const l=TR.lift(x,y);if(l)return l}   // הסלעים המרחפים: מי שעומד עליהם גבוה יותר (shadowrocks.js)
   const T=TR;if(!T||!T.map.ridge)return 0;
   const fx=(x-T.x0)/T.c-0.5,fy=(y-T.y0)/T.c-0.5,i=Math.floor(fx),j=Math.floor(fy);if(i<0||j<0||i>=T.gw-1||j>=T.gh-1)return 0;
   const a=fx-i,b=fy-j,H=T.hgt,w=T.gw,p=j*w+i;return(H[p]*(1-a)+H[p+1]*a)*(1-b)+(H[p+w]*(1-a)+H[p+w+1]*a)*b;

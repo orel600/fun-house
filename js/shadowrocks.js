@@ -14,7 +14,9 @@ const SROCKS={
   isle:{x:1320,y:-80,r:120},    // האי באמצע: יבשה קבועה (הוא גם ב-border ב-map-shadow.js), מקום לנשום
   chains:[4,5],                 // כמה סלעים מהשפה הצפונית לאי, ומהאי לשפה הדרומית
   sway:{amp:100,per:8,step:Math.PI/2},   // תנועה מצד לצד, ניצב לשרשרת: כמה רחוק, כמה שניות לסיבוב, והפרש הפאזה בין סלע לסלע
-  bob:{amp:4,per:3.4,step:1.1,y:5},      // עולים ויורדים (רק במראה). סלע שעומדים עליו מתייצב
+  bob:{amp:4,per:3.4,step:1.1},         // עולים ויורדים (רק במראה). סלע שעומדים עליו מתייצב
+  lift:22,                      // בתלת-ממד: כמה גבוה הגג של סלע מעל התהום. הגיבור עומד עליו (hAt ב-terrain.js)
+  model:{name:'n_crag',w:2.3,tint:'#9a88c8'},   // סלע של KayKit, הפוך: הבסיס השטוח הוא הגג, והקצה המשונן תלוי מתחת
   link:{gap:60,w:56,hold:120},  // מחוברים כשבין הקצוות פחות מ-gap. רוחב גשר האור. מי שעומד על הגשר מחזיק אותו עד hold
   fall:{push:0.7,dmg:0.08,cone:0.9},     // כמה שניות דוחפים אל התהום עד שנופלים, איזה חלק מהחיים, וזווית לכיוון הסלע הבא שלא נחשבת דחיפה
   hint:420,                     // הרמז הראשון מופיע כשמתקרבים לשפה עד כאן
@@ -41,11 +43,16 @@ const srOnRock=(n,x,y,pad)=>!n.fixed&&Math.hypot(x-n.x,y-n.y)<n.r-pad;
 const srOnLink=(l,x,y)=>l.on&&segD(x,y,l.a.x,l.a.y,l.b.x,l.b.y)<SROCKS.link.w/2;
 // אפשר לעמוד כאן (רק השחקן, דרך tStep): על סלע, או על גשר אור דולק
 function srWalk(x,y){if(!SR.nodes)return false;for(const n of SR.nodes)if(srOnRock(n,x,y,SROCKS.inner))return true;for(const l of SR.links)if(srOnLink(l,x,y))return true;return false}
+// גובה הגג במקום הזה (בתלת-ממד): על סלע, או לאורך גשר אור בין שני גבהים
+function srLift(x,y){if(!SR.nodes||!srHere())return 0;const K=SROCKS,lv=n=>n.fixed?0:K.lift+n.h;
+  for(const n of SR.nodes)if(srOnRock(n,x,y,0))return lv(n);
+  for(const l of SR.links)if(srOnLink(l,x,y)){const a=l.a,b=l.b,q=Math.max(0,Math.min(1,((x-a.x)*(b.x-a.x)+(y-a.y)*(b.y-a.y))/((b.x-a.x)**2+(b.y-a.y)**2||1)));return lv(a)*(1-q)+lv(b)*q}
+  return 0}
 const srHere=()=>S.wd&&S.wd.reg===SROCKS.reg&&TR&&TR.reg===SROCKS.reg;
 
 /* כל פריים בעולם, אחרי שהשחקן זז (placeClamp ב-worldUpdate) */
 function srUpdate(dt){
-  if(!srHere())return;if(!SR.nodes)srBuild();TR.walk=srWalk;
+  if(!srHere())return;if(!SR.nodes)srBuild();TR.walk=srWalk;TR.lift=srLift;
   const K=SROCKS,old=SR.nodes.map(n=>[n.x,n.y]),i0=SR.nodes.findIndex(n=>srOnRock(n,P.x,P.y,0)),l0=i0<0?SR.links.findIndex(l=>srOnLink(l,P.x,P.y)):-1;
   SR.nodes.forEach((n,i)=>n.busy=i===i0);SR.links.forEach((l,i)=>l.hold=i===l0);
   srMove(dt);
@@ -90,27 +97,31 @@ function srDraw(){
 }
 // אחרי החושך (wShadow): הזוהר, כדי שרואים מרחוק איפה הסלעים ומתי הם מחוברים. גם בתלת-ממד, על הקנבס
 function srGlow(){
-  if(!srHere()||!SR.nodes)return;const C_=SROCKS.col,t=fxNow(),pl=0.5+0.5*Math.sin(t*4);
+  if(!srHere()||!SR.nodes)return;const C_=SROCKS.col,t=fxNow(),pl=0.5+0.5*Math.sin(t*4),up=n=>R3D.on&&!n.fixed?SROCKS.lift+n.h:n.h;   // בתלת-ממד הגג גבוה, והקנבס מצייר בגובה שלו
   ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
   for(const l of SR.links){const a=l.a,b=l.b,d=Math.hypot(b.x-a.x,b.y-a.y)||1,ux=(b.x-a.x)/d,uy=(b.y-a.y)/d,
-      x0=a.x+ux*a.r*0.8,y0=a.y+uy*a.r*0.8,x1=b.x-ux*b.r*0.8,y1=b.y-uy*b.r*0.8;
+      x0=a.x+ux*a.r*0.8,y0=a.y+uy*a.r*0.8-up(a),x1=b.x-ux*b.r*0.8,y1=b.y-uy*b.r*0.8-up(b);
     ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);
-    if(l.on){ctx.strokeStyle='rgba('+C_.link+','+(0.16+0.08*pl)+')';ctx.lineWidth=SROCKS.link.w;ctx.stroke();ctx.strokeStyle='rgba('+C_.link+','+(0.55+0.3*pl)+')';ctx.lineWidth=5;ctx.stroke()}
+    if(l.on){ctx.strokeStyle='rgba('+C_.link+','+(0.1+0.06*pl)+')';ctx.lineWidth=SROCKS.link.w;ctx.stroke();ctx.strokeStyle='rgba('+C_.link+','+(0.4+0.25*pl)+')';ctx.lineWidth=3;ctx.stroke()}
     else{ctx.setLineDash([10,16]);ctx.strokeStyle='rgba('+C_.off+',0.25)';ctx.lineWidth=3;ctx.stroke();ctx.setLineDash([])}}
-  SR.nodes.forEach((n,i)=>{if(n.fixed&&!n.isle)return;const on=(SR.links[i-1]||{}).on||(SR.links[i]||{}).on;
+  if(!R3D.on)SR.nodes.forEach((n,i)=>{if(n.fixed&&!n.isle)return;   // בתלת-ממד הגג עצמו זוהר (sr3d)const on=(SR.links[i-1]||{}).on||(SR.links[i]||{}).on;
     ctx.strokeStyle='rgba('+C_.rim+','+(on?0.6+0.25*pl:0.25)+')';ctx.lineWidth=on?5:3;
-    if(n.isle){ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,7)}else srShape(n,n.x,n.y-n.h,n.r);ctx.stroke()});
+    if(n.isle){ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,7)}else srShape(n,n.x,n.y-up(n),n.r);ctx.stroke()});
   ctx.restore();
 }
-// תלת-ממד: סלע עם גג שטוח ותחתית מחודדת שנעלמת בתהום. נבנה פעם אחת, וזז כל פריים
+// תלת-ממד: סלע של KayKit הפוך (גג שטוח, תחתית משוננת שתלויה מעל התהום), גביש קטן מתחתיו והילה סגולה שמראה שהוא מרחף. נבנה פעם אחת, וזז כל פריים
 function sr3d(G,reg){
-  if(reg!==SROCKS.reg||!SR.nodes)return;const S_=SIN(),K=SROCKS;
-  if(!G.sr){G.sr=[];const top=new THREE.MeshLambertMaterial({color:K.col.top,flatShading:true}),body=new THREE.MeshLambertMaterial({color:K.col.stone,flatShading:true}),
-      glow=new THREE.MeshBasicMaterial({color:'rgb('+K.col.rim+')',toneMapped:false,fog:false});
-    for(const n of SR.nodes){if(n.fixed)continue;const g=new THREE.Group(),r=n.r;
-      const rot=hash(n.k,7)*6.28,a=new THREE.Mesh(new THREE.CylinderGeometry(r,r*0.85,14,9),top);a.position.y=-7;a.rotation.y=rot;g.add(a);
-      const b=new THREE.Mesh(new THREE.ConeGeometry(r*0.85,90,7),body);b.rotation.set(Math.PI,rot,0);b.position.y=-59;g.add(b);
-      const c=new THREE.Mesh(new THREE.OctahedronGeometry(10),glow);c.position.y=-100;g.add(c);   // גביש קטן מתחת, זוהר
-      g.scale.set(1,1,1/S_);G.g.add(g);G.sr.push([g,n])}}
-  for(const [g,n] of G.sr){g.position.set(n.x,K.bob.y+n.h,n.y/S_);g.visible=Math.abs(n.x-S.cam.x)+Math.abs(n.y-S.cam.y)<TERRAIN.cull*1.4}
+  if(reg!==SROCKS.reg||!SR.nodes)return;const S_=SIN(),K=SROCKS,M=K.model;
+  if(!G.sr){G.sr=[];const glow=new THREE.MeshBasicMaterial({color:'rgb('+K.col.rim+')',toneMapped:false,fog:false}),cap=new THREE.MeshLambertMaterial({color:K.col.stone,flatShading:true});
+    for(const n of SR.nodes){if(n.fixed)continue;const g=new THREE.Group(),r=n.r,v=hash(n.k,7);
+      if(R3D.props[M.name]){const m=wPut({model:M.name,w:r*M.w,tint:M.tint},0,0,v,1,g);m.rotation.x=Math.PI;const bb=new THREE.Box3().setFromObject(m);m.position.y-=bb.max.y}
+      else{const b=new THREE.Mesh(new THREE.ConeGeometry(r,90,7),cap);b.rotation.x=Math.PI;b.position.y=-45;g.add(b)}
+      const cm=cap.clone();cm.emissive=new THREE.Color('rgb('+K.col.rim+')');const c=new THREE.Mesh(new THREE.CylinderGeometry(r*0.92,r*0.98,6,10),cm);c.position.y=-3;c.rotation.y=v*6;g.add(c);   // הגג: משטח שעומדים עליו
+      const q=new THREE.Mesh(new THREE.OctahedronGeometry(12),glow);q.position.y=-r*1.1;g.add(q);   // גביש זוהר מתחת
+      if(typeof p3Halo==='function'){const h=p3Halo('#9c6bff',r*2.4,-r*1.5,g);h.material.opacity=0.45}   // ההילה: הסלע מרחף מעל האור (props3d.js)
+      g.scale.set(1,1,1/S_);G.g.add(g);G.sr.push([g,n,q,cm])}}
+  const t=fxNow();
+  for(const [g,n,q,cm] of G.sr){g.position.set(n.x,(K.lift+n.h)/COS(),n.y/S_);q.rotation.y=t*0.8+n.k;
+    const i=SR.nodes.indexOf(n),on=SR.links[i-1].on||SR.links[i].on;cm.emissiveIntensity=on?0.14+0.06*Math.sin(t*4):0;   // מחובר: הגג זוהר בעדינות
+    g.visible=Math.abs(n.x-S.cam.x)+Math.abs(n.y-S.cam.y)<TERRAIN.cull*1.4}
 }
