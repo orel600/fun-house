@@ -57,8 +57,13 @@ function innApply(){
   const I=IN(),day=I.day||innDay();
   for(const id in INN.pool){const p=INN.pool[id],q=QBY[id];q.reward={...p.reward};
     if(innHash(day+id,23)%100<p.gem*100)q.reward.gem=INN.gemN;
-    for(const o of q.obj){if(o.type==='depth')o.n=I.dp||INN.dpMin;if(o.type==='weak')o.what=I.weak||'fire'}}
+    for(const o of q.obj){if(o.type==='depth')o.n=I.dp||INN.dpMin;if(o.type==='weak')o.what=I.weak||'fire'}
+    innFreeze(id)}
 }
+// משימה שנלקחה שומרת את היעד והפרס של היום שבו נלקחה (fz על הרשומה הפעילה), כדי שמחר היא לא תאבד אבן חן או תפסיק להיות מוכנה (ביקורת 6.11, פריט 3)
+function innFreeze(id){const a=QS().active[id],q=QBY[id];if(!a||!q)return;
+  if(!a.fz){a.fz={reward:{...q.reward},obj:q.obj.map(o=>({n:o.n,what:o.what}))};return}
+  q.reward={...a.fz.reward};a.fz.obj.forEach((o,i)=>{const t=q.obj[i];if(t){t.n=o.n;if(o.what!=null)t.what=o.what}})}
 // מותר לקחת מהלוח: על הלוח של היום, ועוד לא נלקח פרס עליה היום (qOpen ב-quests.js)
 const innOpen=q=>(IN().ids||[]).includes(q.id)&&!IN().got[q.id];
 const innReady=()=>Object.keys(INN.pool).some(id=>QS().active[id]&&qReady(QBY[id]))||QUESTS.list.some(q=>q.giver==='inn'&&QS().active[q.id]&&qReady(q));
@@ -110,7 +115,7 @@ const innSvcs=id=>id==='inn'?[{id:'board',label:'📋 '+T('inn.board'),dot:innRe
 for(const el of [$('vPanel'),$('npcDlg')])el.addEventListener('click',e=>{
   const b=e.target.closest('button[data-act^="inn"]');if(!b||!S.vil)return;
   e.stopImmediatePropagation();const a=b.dataset.act,id=b.dataset.q;
-  if(a==='innaccept'&&qOpen(QBY[id])){qStart(QBY[id]);saveNow();sfx('ui')}
+  if(a==='innaccept'&&qOpen(QBY[id])){qStart(QBY[id]);innFreeze(id);saveNow();sfx('ui')}
   else if(a==='innclaim'&&questClaim(id)){if(INN.pool[id])IN().got[id]=innDay();saveNow()}
   else if(a==='inntrack'){QS().track=QS().track===id?null:id;saveNow()}
   else if(a==='innRest')innRest();

@@ -207,7 +207,9 @@ function gearEquip(id,slot,i){
 }
 // מחליף בין שתי משבצות מאותו סוג (גרירה ממשבצת למשבצת)
 function gearSwap(slot,a,b){if(a===b||b>=gOpen(slot))return false;const x=gGet(slot,a);gSet(slot,a,gGet(slot,b));gSet(slot,b,x);saveNow();return true}
-function gearUnequip(slot,i){const id=gGet(slot,i);if(!id)return false;gSet(slot,i,null);bagAdd(id);saveNow();return true}
+// לא מורידים מה שאי אפשר ללבוש בחזרה (נלבש בזירה, שם אין דרישות): אחרת המשבצת ריקה עד שעולים רמה (ביקורת 6.11, פריט 5)
+const gCanOff=id=>!id||irCanWear(id);
+function gearUnequip(slot,i){const id=gGet(slot,i);if(!id)return false;if(!gCanOff(id)){banner(T('ir.cant'),C.blood);return false}gSet(slot,i,null);bagAdd(id);saveNow();return true}
 
 /* ---- בתחילת כל ריצה (ובכפר): מתנת פתיחה פעם אחת, והסטטים של הציוד חלים על השחקן ---- */
 function gearReset(){
@@ -326,7 +328,7 @@ function gTile(id,attrs,extra){
 }
 // תא בתרמיל: ▲/▼ מול מה שלבוש עם ההפרש במספר הכוח (power.js), ונקודה לחדש
 function gBagTile(k,n,attrs){
-  const m=gMark(k),d=m&&powVs(k)*m>0?powVs(k):null,pk=GUI.sell&&(GUI.pick||{})[k],x=(m?'<i class="gmk '+(m>0?'up':'down')+'" aria-hidden="true">'+(m>0?'▲':'▼')+(d?'<bdi>'+Math.abs(d)+'</bdi>':'')+'</i>':'')+(gIsNew(k)?'<i class="gnew" aria-hidden="true"></i>':'')+
+  const m=gMark(k),d=m&&m>-2&&powVs(k)*m>0?powVs(k):null,pk=GUI.sell&&(GUI.pick||{})[k],x=(m===-2?'<i class="gmk req" aria-hidden="true">🔒</i>':m?'<i class="gmk '+(m>0?'up':'down')+'" aria-hidden="true">'+(m>0?'▲':'▼')+(d?'<bdi>'+Math.abs(d)+'</bdi>':'')+'</i>':'')+(gIsNew(k)?'<i class="gnew" aria-hidden="true"></i>':'')+
     (gLocked(k)?'<i class="glk" aria-hidden="true">🔒</i>':'')+(pk?'<i class="gpk" aria-hidden="true">✓</i>':'');   // מכירה: ✓ על מה שנבחר
   return gTile(k,attrs,(n>1?'<small>×'+shortN(n)+'</small>':'')+x);
 }
@@ -347,7 +349,8 @@ const gTabLabel=f=>f==='items'?T('gear.tab.all'):GEAR.filter[f]||(RES.list[resFa
 /* ---- סימנים על פריט בתרמיל: ▲ ירוק אם הוא חזק ממה שלבוש במשבצת שלו, ▼ אדום אם חלש, ונקודה לפריט שעוד לא פתחו ---- */
 // מה שלבוש במשבצת שהפריט ייכנס אליה (הכי חלש מבין המשבצות), כדי להשוות
 const gVsWorn=it=>gGet(it.slot,gTarget(it));
-function gMark(k){const it=gItem(k);if(!it||it.slot==='orbit')return 0;if(!irCanWear(k))return -1;const o=gVsWorn(it);if(!o)return 1;const d=pScore(k)-pScore(o);return Math.abs(d)<POWER.same?0:d>0?1:-1}
+function gMark(k){const it=gItem(k);if(!it||it.slot==='orbit')return 0;if(!irCanWear(k))return -2;   // -2: עוד אי אפשר ללבוש (🔒, כמו itemTile). לא "חלש", כי לרוב הוא דווקא שדרוג שמחכה לרמה
+  const o=gVsWorn(it);if(!o)return 1;const d=pScore(k)-pScore(o);return Math.abs(d)<POWER.same?0:d>0?1:-1}
 // פריטים שכבר ראו: SAVE.gseen. בפעם הראשונה כל מה שכבר בתרמיל נחשב ראוי, כדי ששמירה ישנה לא תתמלא נקודות
 function gSeen(){if(!SAVE.gseen){SAVE.gseen={};for(const k in SAVE.bag)if(gItem(k))SAVE.gseen[k]=1}return SAVE.gseen}
 const gIsNew=k=>!!gItem(k)&&!gSeen()[k];
@@ -384,6 +387,7 @@ const gCanSell=k=>!!gItem(k)&&SAVE.bag[k]>0&&!gLocked(k)&&gPrice(k)>0;
 function gSellList(){
   const o={};
   for(const k in SAVE.bag){if(!gCanSell(k)||gPrecious(k))continue;const it=gItem(k),n=SAVE.bag[k];
+    if(!irCanWear(k))continue;   // עוד אי אפשר ללבוש: לא חלש, מחכה לרמה (ביקורת 6.11, פריט 4)
     const m=gMark(k)===-1&&!it.set?n:n-1;if(m>0)o[k]=m}
   return o;
 }
@@ -477,7 +481,7 @@ function gDetailHtml(){
   if(sel.id&&it){const old=gGet(it.slot,gTarget(it));
     d+=(old?'<p class="dim">'+T('gear.vs',gIcon(old)+' '+gName(old))+'</p>':'')+gCompare(k,old);b+=irCanWear(k)?btn('equip',T('gear.equip')):'<button class="vbtn" disabled>'+T('ir.cant')+'</button>'}
   if(it&&(sel.id||sel.slot))b+='<button class="vbtn ghost glock" data-act="lock" aria-pressed="'+gLocked(k)+'" aria-label="'+T(gLocked(k)?'gear.unlock':'gear.lock')+'" title="'+T(gLocked(k)?'gear.unlock':'gear.lock')+'">'+(gLocked(k)?'🔒':'🔓')+'</button>';   // נעול: לא נמכר
-  if(sel.slot)b+=btn('unequip',T('gear.unequip'),1);
+  if(sel.slot&&gCanOff(k))b+=btn('unequip',T('gear.unequip'),1);
   if(sel.id&&gStashOn())b+=btn('store',T('gear.store'),1);
   if(sel.sid)b+=btn('take',T('gear.take'));
   return '<div class="gdbody">'+d+'</div>'+(b?'<div class="gbtns">'+b+'</div>':'');

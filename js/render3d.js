@@ -265,7 +265,7 @@ function gfxAuto(){R3D.want=false;R3D.on=false;if(R3D.cvs)R3D.cvs.hidden=true;if
 function setGfx(g){R3D.want=g==='3d';R3D.user=true;try{localStorage.setItem('zm-gfx',g)}catch(e){}
   if(R3D.want&&!R3D.ready&&!R3D.failed)init3d();R3D.on=R3D.want&&R3D.ready;if(R3D.cvs)R3D.cvs.hidden=!R3D.on;showGfx()}
 function showGfx(){for(const b of document.querySelectorAll('[data-gfx]'))b.setAttribute('aria-pressed',String((b.dataset.gfx==='3d')===R3D.want));
-  const g=document.querySelector('.gfx');if(g)g.hidden=R3D.failed}
+  const g=document.querySelector('.gfx.g3d');if(g)g.hidden=R3D.failed}
 
 /* ---- טעינה ---- */
 function b64buf(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer}
@@ -426,8 +426,8 @@ function makeActor(L){
   for(const [k,p] of Object.entries(L.props||{})){
     const b=bone(root,p.bone);if(!b)continue;
     const m=R3D.props[p.prop].clone(true);m.position.fromArray(p.pos);m.quaternion.fromArray(p.rot);if(p.s)m.scale.setScalar(p.s);
-    const own=/^w_item_/.test(p.prop);   // מודל משלו: הטקסטורה נשארת, ובלי זוהר
-    m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(p.tier&&R3D.wtex[p.tier]&&!own)o.material.map=R3D.wtex[p.tier];if(p.tint)o.material.emissive.set(TINT[p.tint]).multiplyScalar(0.55);if(p.glow&&!own)o.material.emissive.set(p.glow).multiplyScalar(p.gk);if(p.pulse&&!own)(a_pulse||(a_pulse=[])).push(o.material);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
+    const own=/^w_item_/.test(p.prop);   // מודל משלו: הטקסטורה נשארת, ובלי זוהר. מודל מ-Blender עם emissiveMap (tools/blender) פועם בחלקים הזוהרים שלו
+    m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(p.tier&&R3D.wtex[p.tier]&&!own)o.material.map=R3D.wtex[p.tier];if(p.tint)o.material.emissive.set(TINT[p.tint]).multiplyScalar(0.55);if(p.glow&&!own)o.material.emissive.set(p.glow).multiplyScalar(p.gk);if(p.pulse&&(!own||o.material.emissiveMap))(a_pulse||(a_pulse=[])).push(o.material);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
     b.add(m);props[k]=m;
   }
   // נשקים שהדמות מחזיקה בקובץ המקורי: גרזן לבוס, סכין למבוקש

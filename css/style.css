@@ -684,7 +684,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .sndpanel{width:min(640px,100%);display:grid;grid-template-columns:1fr 1fr;column-gap:20px;row-gap:10px;align-items:end}
   .sndpanel .whd{grid-column:1/-1}
   .sndpanel #sndMute{grid-column:2;grid-row:3}
-  .sndpanel .gfx{grid-column:2;grid-row:2}
+  .sndpanel .g3d{grid-column:2;grid-row:2}   /* רק שורת תלת-ממד/דו-ממד. .gfx לבד תפס גם את איכות האפקטים ואת הטיפים, ושלושתם נחתו באותו תא (ביקורת 6.11, פריט 1). שורה בלי מקום כאן מסתדרת לבד בתא הפנוי הבא */
   .sndpanel .cam{grid-column:2;grid-row:4}
   .sndpanel .ang{grid-column:2;grid-row:5}   /* זווית המצלמה (camera.js) */
   .sndpanel .fxl{grid-column:2;grid-row:6}

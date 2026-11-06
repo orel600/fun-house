@@ -53,7 +53,7 @@ const TRC={};              // מפות שכבר נבנו, לפי אזור
 /* ---- בנייה: מציירים את המפה לרשת ---- */
 function terrainEnter(R,reg){
   TR=null;if(!R||!R.map)return null;
-  if(TRC[reg])return TR=TRC[reg];
+  if(TRC[reg]){const T=TRC[reg];T.fAt=-1;T.fT=-9;return TR=T}   // מפת המרחקים מהביקור הקודם לא תקפה: השעון של הביקור מתחיל מאפס, והשחקן במקום אחר (ביקורת 6.11, פריט 6)
   const t0=performance.now(),M=R.map,c=TERRAIN.cell,w=R.size.w,h=R.size.h,gw=Math.ceil(w/c),gh=Math.ceil(h/c);
   const T={reg,map:M,R,c,gw,gh,x0:-w/2,y0:-h/2,blk:new Uint8Array(gw*gh),slw:new Uint8Array(gw*gh),hgt:new Float32Array(gw*gh)};
   const cv=document.createElement('canvas');cv.width=gw;cv.height=gh;const g=cv.getContext('2d',{willReadFrequently:true});
