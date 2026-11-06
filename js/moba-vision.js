@@ -52,7 +52,7 @@ function mbVisSee(V,u,tm){
 function mbSeen(u,team){
   if(!MB||!u||u.team===team||u.k==='tower'||u.k==='base')return true;
   if(u.dead)return false;
-  mbVisNow();return !!(u.vis&&u.vis[team]);
+  mbVisNow(!u.vis);return !!(u.vis&&u.vis[team]);   // יחידה חדשה (עוד לא חושבה): מחשבים עכשיו
 }
 // הקבוצה team רואה את האזור (כולל שיחים) למשך t שניות. לחש החשיפה (moba-spells.js)
 function mbVisReveal(x,y,r,t,team){const V=mbVisNow();if(!V)return;V.rev.push({x,y,r,until:MB.t+t,team});mbVisNow(true)}

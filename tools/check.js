@@ -3365,7 +3365,7 @@ function worldBot(m,L,god){
     {const e=mbHeroes(1)[0],r={},ex=e.x,ey=e.y;Object.assign(e.st,{stun:9,taunt:0,imm:0,shield:0,armor:0,rage:0,slow:0,dash:null});e.dead=false;e.hp=e.max=1e6;
      MB.walls.length=0;e.x=0;e.y=-MOBA.lane.half+40;   // מקום ריק: באמצע הנתיב (בין המגדלים), בלי חומות שנשארו מהקרב
      const all=MB.u;   // רק התוקף והמטרה בעולם: בוט אחר (מגן של קוסמת, הלם) לא ישנה את התוצאה
-     for(const k of ['tank','warrior']){const h=mbHero(k,0,false,1),A=MBKIT[k].atk;h.x=e.x-(e.r+h.r+A.range+A.lunge*0.6);h.y=e.y;MB.u=[e,h];e.st.shield=0;const hp0=e.hp;
+     for(const k of ['tank','warrior']){const h=mbHero(k,0,false,1),A=MBKIT[k].atk;h.x=e.x-(e.r+h.r+A.range+A.lunge*0.6);h.y=e.y;MB.u=[e,h];if(typeof mbVisNow==='function')mbVisNow(true);e.st.shield=0;const hp0=e.hp;
        r[k]=mbAutoTarget(h,A.range)!==null&&mbAttack(h,0,e,A)&&!!h.st.dash;let gap=1e9;for(let i=0;i<20;i++){mobaUpdate(1/30);gap=Math.min(gap,mbDist(h,e)-e.r-h.r)}r[k]=r[k]&&e.hp<hp0&&gap<=A.range}
      MB.u=all;
      const h0=e.hp;mbShield(e,100,3);mbDmg(null,e,60,'physical');r.shield=e.hp===h0&&e.st.shield>0;
@@ -3391,6 +3391,19 @@ function worldBot(m,L,god){
      if(typeof mbRecallStart==='function'){blue.x=0;blue.y=0;blue.hurtT=-99;Object.assign(blue.st,{stun:0,dash:null});const on0=mbHaste(blue);   // חזרה לבסיס (moba-recall.js) + ריצה מהבסיס: מי שחזר רץ מהר כשהוא יוצא
        r.recall=!on0&&mbRecallStart(blue)&&(mbRecallTick(MB,MBRECALL.t+0.1),mbHaste(blue));blue.recall=null;blue.x=hx;blue.y=hy;blue.hurtT=ht}else r.recall=true;
      blue.dead=bd;o.flow=r}
+    // ראייה, ערפל ושיחים (moba-vision.js, אוראל 6.11): אויב מחוץ לראייה לא מצויר ולא מותקף, מופיע כשנכנס, ושיח מסתיר מהאויב בלבד
+    if(typeof mbSeen==='function'){const r={},me=MB.me,e=mbHeroes(1)[0],al=mbHeroes(0).find(h=>!h.me),hs=MB.u.filter(u=>u.k==='hero'),bak=hs.map(h=>[h,h.x,h.y,h.dead,h.actT,h.st.stun]);
+     for(const h of hs){h.x=h.home.x;h.y=h.home.y;h.dead=false;h.actT=-99}
+     const bz=mbBushes().list.find(b=>Math.abs(b.x)<300&&b.y<0)||mbBushes().list[0],see=()=>(mbVisNow(true),mbSeen(e,0)),put=(u,x,y)=>{u.x=x;u.y=y};
+     const shown=()=>{e.st.stun=me.st.stun=1;mobaUpdate(1/30);return enemies.includes(e)},aimed=()=>mbAutoTarget(me,2000)===e||mbAimFor(me,{range:2000})===e;
+     put(me,bz.x,-560);put(e,bz.x+650,-560);r.far=!see()&&!shown()&&!aimed();   // רחוק: לא רואים, לא מצויר בתלת-ממד, לא מכוונים אליו
+     put(e,me.x+250,me.y);r.near=see()&&shown();   // נכנס לטווח: מופיע
+     put(e,bz.x,bz.y);put(me,bz.x,bz.y+200);r.bush=mbInBush(e)>0&&!mbInBush(me)&&!see()&&!aimed();   // בשיח, והאויב קרוב אבל בחוץ: נסתר
+     put(al,bz.x,bz.y);mbVisNow(true);r.ally=mbSeen(al,0)&&mbSeen(e,1)&&mbVisFade(al)===MBVIS.allyFade;put(al,al.home.x,al.home.y);   // החברים רואים, שקוף למחצה
+     put(me,bz.x+4,bz.y);r.same=mbInBush(me)===mbInBush(e)&&see();put(me,bz.x,bz.y+200);   // אותו שיח: רואים
+     e.actT=MB.t;r.atk=see();e.actT=MB.t-MBVIS.bushReveal-0.1;r.atk=r.atk&&!see();   // תקף מהשיח: חשוף לשנייה, ואז שוב נסתר
+     mbVisReveal(bz.x,bz.y,150,2,0);r.rev=mbSeen(e,0);const t0=MB.t;MB.t+=2.5;r.rev=r.rev&&!see();MB.t=t0;   // חשיפה: רואים לתוך השיח, ונגמרת
+     for(const [h,x,y,d,a,st] of bak){h.x=x;h.y=y;h.dead=d;h.actT=a;h.st.stun=st}mbVisNow(true);o.vis=r}
     MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
     mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
     mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
@@ -3708,6 +3721,8 @@ function worldBot(m,L,god){
      check(r.shield&&r.bounty&&r.resp&&r.late&&r.haste&&r.xp&&r.recall,'משחקי השאול: זרימה: '+[r.shield?'מגן מגדל בהתחלה ✓':'מגן מגדל ✗',r.bounty?'זהב חזרה ✓':'זהב חזרה ✗',r.resp&&r.late?'חזרה מהירה בהתחלה ✓':'זמן חזרה ✗',r.haste?'ריצה מהבסיס ✓':'ריצה מהבסיס ✗',r.recall?'גם אחרי חזרה לבסיס ✓':'אחרי חזרה לבסיס ✗',r.xp?'XP ברדיוס רחב ✓':'XP ✗'].join(', '))}
     const cb=mb.combo||{};check(cb.shock>0&&Math.abs(cb.k-cb.want)<0.01&&cb.freeze>0&&cb.frozen,'משחקי השאול: קומבו בתרחיש קבוע: חשמול '+(cb.shock?'✓ נזק ×'+cb.k:'לא קרה')+', קפוא '+(cb.freeze&&cb.frozen?'✓ הקפאה ארוכה':'לא קרה'));
     check(mb.cc.stun>0&&mb.cc.taunt>0,'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
+    {const V=mb.vis||{},ks={far:'רחוק: לא מצויר ולא מכוונים',near:'נכנס לטווח: מופיע',bush:'בשיח: נסתר מהאויב',ally:'חבר בשיח: נראה, שקוף',same:'מאותו שיח: נראה',atk:'תקיפה חושפת לשנייה',rev:'חשיפת אזור'};
+     check(Object.keys(ks).every(k=>V[k]),'משחקי השאול: ראייה ושיחים: '+Object.keys(ks).map(k=>ks[k]+(V[k]?' ✓':' ✗')).join(', '))}
     if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');
   }
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
