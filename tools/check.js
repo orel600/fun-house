@@ -2177,7 +2177,7 @@ function worldBot(m,L,god){
   await page.clock.runFor(400);await shot('world-desert');
   const ch4b=await page.evaluate(()=>{
     const o={};qStart(QBY.s4Ember);questEvent('kill','cinderscorp',8);questEvent('gather','rubyC',3);o.ember=qReady(QBY.s4Ember);questClaim('s4Ember');
-    qStart(QBY.s4Warden);const L=STORY.lanterns.fire;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='emberwarden';
+    qStart(QBY.s4Warden);const L=STORY.lanterns.fire;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='emberwarden';if(w){w.x=L.x;w.y=L.y+70}   // קם במאורה (GIANT.lair), והבדיקה מקרבת אותו
     if(w){w.rise=0;w.ring=0;P.inv=0;const hp0=P.hp;storyWardenMove(w,0.016);for(let j=0;j<80&&w.tel;j++)storyWardenMove(w,0.016);o.ring=(S.wd.rings||[]).length>0;
       const R=S.wd.rings&&S.wd.rings[0];if(R){R.gap=Math.atan2(P.y-R.y,P.x-R.x)+Math.PI;for(let i=0;i<120&&!R.hit;i++)storyRings(1/60);o.ringHit=R.hit&&P.hp<hp0}
       P.inv=99;damage(w,w.hp*10,'sword',0,'water');storyUpdate(0.1)}o.ready=qReady(QBY.s4Warden);
@@ -2207,7 +2207,7 @@ function worldBot(m,L,god){
   await page.clock.runFor(400);await shot('world-storm');
   const ch5b=await page.evaluate(()=>{
     const o={};qStart(QBY.s5Spark);questEvent('kill','stormknight',8);questEvent('gather','boltC',3);o.spark=qReady(QBY.s5Spark);questClaim('s5Spark');
-    qStart(QBY.s5Warden);const L=STORY.lanterns.bolt;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='stormwarden';
+    qStart(QBY.s5Warden);const L=STORY.lanterns.bolt;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='stormwarden';if(w){w.x=L.x;w.y=L.y+70}   // קם במאורה (GIANT.lair), והבדיקה מקרבת אותו
     if(w){w.rise=0;const mk=L.warden.marks;w.marks=0;P.inv=0;const hp0=P.hp;storyWardenMove(w,0.016);const M=S.wd.marks||[];o.marks=M.length===mk.n&&M.some(m=>Math.hypot(m.x-P.x,m.y-P.y)<1);
       for(let i=0;i<120;i++)storyMarks(1/60);o.markHit=M.some(m=>m.hit)&&P.hp<hp0;
       S.wd.marks=[];w.marks=0;P.inv=0;storyWardenMove(w,0.016);const M2=S.wd.marks.slice();P.x+=mk.spread+mk.r*3;
@@ -2239,7 +2239,7 @@ function worldBot(m,L,god){
   await page.clock.runFor(400);await shot('world-shadow');
   const ch6b=await page.evaluate(()=>{
     const o={};STO().use={fire:5000,water:10};   // "השתמשת" הכי הרבה באש
-    qStart(QBY.s6Heart);const L=STORY.lanterns.light;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='shade';
+    qStart(QBY.s6Heart);const L=STORY.lanterns.light;P.x=L.x;P.y=L.y+200;storyUpdate(0.1);const w=S.wd.warden;o.warden=!!w&&w.type==='shade';if(w){w.x=L.x;w.y=L.y+70}   // קם במאורה (GIANT.lair), והבדיקה מקרבת אותו
     if(w){w.rise=0;P.inv=99;o.learn=w.res==='fire';const seen=[];let res=true;
       for(const f of [0.9,0.7,0.5,0.3,0.1]){w.hp=w.max*f;storyWardenMove(w,0.016);seen.push(w.pk);res=res&&w.mult.fire<1}
       o.phases=seen.join(',');o.allPhases=o.phases===STORY.lanterns.light.warden.phases.join(',');o.learnAll=res;
