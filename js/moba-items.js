@@ -92,7 +92,8 @@ function mbItHud(){
   $('mbGold').textContent=g;
   const q=$('mbQuick');q.hidden=!n;
   if(n){const c=MBITEM.items[n].cost;q.classList.toggle('ok',g>=c);q.style.setProperty('--p',Math.min(1,g/c));
-    if(q.dataset.id!==n){q.dataset.id=n;q.innerHTML=mbImg(n)+'<span>'+c+'</span>'}q.setAttribute('aria-label',T('mb.quick',T('mb.i.'+n),c))}
+    if(q.dataset.id!==n){q.dataset.id=n;q.innerHTML=mbImg(n)+'<span></span>'}
+    const sp=q.querySelector('span');sp.textContent=g>=c?c:'−'+(c-g);sp.classList.toggle('miss',g<c);   /* כמה זהב חסר (הבודק, 4.11) */q.setAttribute('aria-label',T('mb.quick',T('mb.i.'+n),c))}
   if($('mbInv').dataset.k!==inv){$('mbInv').dataset.k=inv;$('mbInv').innerHTML=(u.it||[]).map(mbImg).join('')}
   if(!$('ovMbShop').hidden)mbShopDraw();
 }
