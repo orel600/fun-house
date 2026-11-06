@@ -3466,7 +3466,7 @@ function worldBot(m,L,god){
   // המפה הקטנה במשחקי השאול (moba-look.js, אוראל 6.11): במגע אמיתי (CDP), שתי אצבעות. נגיעה מזיזה את המצלמה, גרירה עוקבת, המלבן לפי המצלמה,
   // אחרי שחרור המצלמה נשארת, נגיעה בגיבור שלי / 🎯 / C / ג'ויסטיק מחזירים, והג'ויסטיק עובד בזמן גרירה
   const mmap=await(async()=>{const o={};try{
-    const cdp=await page.context().newCDPSession(page),E=a=>page.evaluate(a);
+    const cdp=await page.context().newCDPSession(page),E=(f,a)=>page.evaluate(f,a);
     const touch=async(type,pts)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:pts.map(([id,x,y])=>({id,x,y}))});
     await E(()=>{mobaOpen();document.querySelector('#mbWin [data-kit="hunter"]').click();render()});
     const px=(x,y)=>E(([x,y])=>{const l=mbMiniLay();return [l.X(x),l.Y(y)]},[x,y]);
@@ -3491,7 +3491,7 @@ function worldBot(m,L,god){
     const [bx,by]=await px(400,-100);await touch('touchMove',[[8,bx,by],[9,140,300]]);
     o.two=await E(()=>{const me=MB.me,x0=me.x,j=!!joy&&joy.dx<-0.5,p=MBCAM.pid;for(let i=0;i<10;i++){mobaUpdate(1/30);const g=giantCam();S.cam.x+=(P.x+g.x-S.cam.x)*0.3;S.cam.y+=(P.y+g.y-S.cam.y)*0.3}
       return {j,p:p!==null,moved:me.x<x0-5,free:MBCAM.free,x:S.cam.x,y:S.cam.y}});o.two=o.two.j&&o.two.p&&o.two.moved&&o.two.free&&at(o.two,400,-100);
-    await touch('touchMove',[[9,140,300]]);   // משחררים רק את האצבע שעל המפה
+    await touch('touchEnd',[[8,bx,by]]);   // משחררים רק את האצבע שעל המפה (touchEnd עם האצבע הזאת בלבד. touchMove בלעדיה לא משחרר אותה בכרום הזה)
     o.lift=await E(()=>MBCAM.pid===null&&!!joy);o.liftBack=!(await st()).free;await touch('touchEnd',[]);
     await E(()=>{mobaExit()});await cdp.detach();
   }catch(e){o.err=String(e).slice(0,160)}return o})();

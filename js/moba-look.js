@@ -266,7 +266,7 @@ function mbMini(ox,oy){
 function mbCamBack(){MBCAM.free=false;MBCAM.pid=null}   // המצלמה חוזרת לגיבור (בהחלקה, דרך main.js)
 function mbCamTo(cx,cy){   // נקודה במסך על המפה ← המצלמה מסתכלת לשם, מיד
   const l=MB_MINI_L,L=MOBA.lane,cl=(v,m)=>Math.max(-m,Math.min(m,v));
-  MBCAM.free=true;MBCAM.x=cl((cx-l.x0)/l.k-L.len,L.len);MBCAM.y=cl((cy-l.y0)/l.k-L.half,L.half);S.cam.x=MBCAM.x;S.cam.y=MBCAM.y;
+  MBCAM.mb=MB;MBCAM.free=true;MBCAM.x=cl((cx-l.x0)/l.k-L.len,L.len);MBCAM.y=cl((cy-l.y0)/l.k-L.half,L.half);S.cam.x=MBCAM.x;S.cam.y=MBCAM.y;
 }
 function mbMiniHit(cx,cy){   // 'btn' (🎯), 'me' (הגיבור שלי), 'map', או null
   if(!S||!S.mb||S.mode!=='play'||!MB||!MB_MINI_L)return null;
