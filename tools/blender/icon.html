@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><title>icon</title><style>body{margin:0;background:transparent}</style></head><body>
+<!-- אייקון לפריט מ-Blender: רנדר של ה-GLB באלכסון על רקע שקוף. icon.js קורא לזה ומוסיף קו מתאר -->
+<script src="../../js/vendor/three-bundle.js"></script>
+<script>
+const b64buf=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
+(async()=>{const J=window.ICON;const g=await new Promise((ok,bad)=>new THREE.GLTFLoader().parse(b64buf(J.glb),'',ok,bad));
+  g.scene.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,emissive:m.emissive,emissiveMap:m.emissiveMap})}});
+  const R=new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true});R.outputColorSpace=THREE.SRGBColorSpace;R.setSize(J.size,J.size);R.setClearColor(0,0);document.body.append(R.domElement);
+  const s=new THREE.Scene();s.add(new THREE.HemisphereLight(0xffffff,0x3a3050,2.0));const l=new THREE.DirectionalLight(0xfff4e0,2.2);l.position.set(-1,1.5,2);s.add(l);
+  const m=g.scene;s.add(m);const bb=new THREE.Box3().setFromObject(m),c=bb.getCenter(new THREE.Vector3()),r=bb.getSize(new THREE.Vector3()).length()/2;
+  const cam=J.fov?new THREE.PerspectiveCamera(J.fov,1,0.01,100):new THREE.OrthographicCamera(-r,r,r,-r,0.01,100);
+  cam.position.copy(c).add(new THREE.Vector3(...J.from).normalize().multiplyScalar(J.fov?r/Math.sin(J.fov*Math.PI/360)*0.95:10));
+  cam.up.set(...J.up);cam.lookAt(c);R.render(s,cam);document.title='ready'})().catch(e=>document.title='ERR '+e.message);
+</script></body></html>
