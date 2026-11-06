@@ -77,13 +77,18 @@ function travelHtml(){
     '<div class="trgrp"><h4>'+(g.r==='village'?T('tr.village'):T('w.region.'+g.r))+'</h4><div class="trlist">'+g.items.map(i=>
       '<button class="vbtn trgo" data-act="tjump" data-k="'+i.k+'" style="--trc:'+i.col+'"'+(why?' disabled':'')+'>'+i.ico+' '+i.name+'</button>').join('')+'</div></div>').join('')+'</div>';
 }
+// חלון שגולל: כשיש עוד תוכן מתחת לקפל, הצללה וחץ "יש עוד למטה" בתחתית (.more ו-.scrmore ב-css). משמש את חלון הקפיצה ואת ההגדרות (audio.js)
+function scrollMore(w){if(!w)return;let m=w.querySelector(':scope>.scrmore');
+  if(!m){m=document.createElement('div');m.className='scrmore';w.appendChild(m);w.addEventListener('scroll',()=>scrollMore(w),{passive:true})}
+  m.textContent='▼ '+T('tr.more');w.classList.toggle('more',w.scrollHeight-w.scrollTop-w.clientHeight>6)}
+const travelMore=()=>scrollMore(trWin);
 const trWin=(()=>{const w=document.createElement('div');w.id='trWin';w.className='qlog win trwin';w.hidden=true;$('wMap').after(w);return w})();
 addEventListener('load',()=>WINS.unshift({id:'trWin',close:()=>travelWin(false)}));   // Esc סוגר (WINS ב-ui.js, שנטען אחרי הקובץ הזה)
 let trMode='';
 // פתיחה וסגירה. בעולם המשחק עוצר בזמן הבחירה, כמו במפה
 function travelWin(on){
   if(on){if(!S||S.mode!=='play'&&S.mode!=='map')return false;if(!$('wMap').hidden)wmapOpen(false);if(S.vil&&S.vil.open)vShut();if(S.wd)wShut();
-    trMode=S.mode;S.mode='travel';joy=null;trWin.innerHTML=travelHtml();trWin.hidden=false;sfx('ui');return true}
+    trMode=S.mode;S.mode='travel';joy=null;trWin.innerHTML=travelHtml();trWin.hidden=false;trWin.scrollTop=0;travelMore();sfx('ui');return true}
   if(trWin.hidden)return false;trWin.hidden=true;if(S&&S.mode==='travel')S.mode='play';return true;
 }
 // מנקודת קפיצה: אם יש לאן לבחור, החלון. אחרת היציאה הרגילה (go), אם יש

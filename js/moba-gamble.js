@@ -90,7 +90,7 @@ function mbGambleDraw(){
 }
 // מעל הכל: הגלגל שמסתובב מעל הגיבור בזמן ההטלה, והתוצאה ברגע האחרון
 function mbGambleTop(){
-  const R=MB.gb&&MB.gb.roll;if(!R)return;const u=R.u,A=MBGAMBLE,k=1-R.t/A.roll,x=u.x+(DIR==="rtl"?-78:78),y=u.y-50,r=26;   // לצד הגיבור: מעליו מסתתר מאחורי ההודעה
+  const R=MB.gb&&MB.gb.roll;if(!R)return;const u=R.u,A=MBGAMBLE,k=1-R.t/A.roll,hid=typeof mbShow==="function"&&!mbShow(u),bx=hid?A.at.x:u.x,by=hid?A.at.y:u.y,x=bx+(DIR==="rtl"?-78:78),y=by-50,r=26;   // גיבור בערפל: הגלגל ליד החדר (הוא מבנה וגלוי תמיד), לא ליד הגיבור   // לצד הגיבור: מעליו מסתתר מאחורי ההודעה
   const spin=(A.roll-R.t)*(14-10*k),last=R.t<0.35;   // מאט לקראת הסוף
   ctx.save();ctx.translate(x,y);
   ctx.fillStyle='rgba(14,16,26,0.85)';ctx.beginPath();ctx.arc(0,0,r+5,0,7);ctx.fill();

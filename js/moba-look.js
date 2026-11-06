@@ -220,7 +220,7 @@ function mbMini(ox,oy){
   {const vw=innerWidth/ZOOM,l=Math.max(x0,sx(S.cam.x-vw/2)),r=Math.min(x0+mw,sx(S.cam.x+vw/2));ctx.strokeStyle='rgba(236,231,220,0.6)';ctx.strokeRect(l,y0-2,Math.max(2,r-l),mh+4)}   // מה שרואים על המסך
   if(typeof mbGambleMini==='function')mbGambleMini(sx,sy);   // חדר ההימור (moba-gamble.js)
   if(M.order){ctx.strokeStyle=M.order.kind==='attack'?C.blood:MOBA.team[0];ctx.lineWidth=2;ctx.beginPath();ctx.arc(sx(M.order.x),sy(M.order.y),5+3*Math.sin(M.t*8),0,7);ctx.stroke()}
-  for(const u of M.u){if(u.dead)continue;const c=MOBA.team[u.team];ctx.fillStyle=c;
+  for(const u of M.u){if(u.dead||!mbShow(u))continue;const c=MOBA.team[u.team];ctx.fillStyle=c;   // בערפל: לא במפה (moba-vision.js)
     if(u.k==='tower'||u.k==='base'){const s=u.k==='base'?9:6;ctx.fillRect(sx(u.x)-s/2,sy(0)-s/2,s,s);ctx.strokeStyle='#0B0D14';ctx.lineWidth=1;ctx.strokeRect(sx(u.x)-s/2,sy(0)-s/2,s,s)}
     else if(u.k==='hero'){ctx.beginPath();ctx.arc(sx(u.x),sy(u.y),u.me?4.5:3.5,0,7);ctx.fill();ctx.strokeStyle=u.me?C.gold:'#0B0D14';ctx.lineWidth=u.me?1.5:1;ctx.stroke()}
     else ctx.fillRect(sx(u.x)-1,sy(u.y)-1,2,2)}
