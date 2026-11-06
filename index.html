@@ -187,6 +187,7 @@
     <div class="sbot">
       <div class="sside">
         <p class="sub cloud" id="cloudLine" data-t="cloud.off"></p>
+        <p class="sub savewarn" id="saveWarn" hidden></p>
         <div class="langs cloudbtns"><button class="lang" id="cloudIn" data-t="cloud.google" hidden></button><button class="lang" id="cloudOut" data-t="cloud.signout" hidden></button><button class="lang" id="pwaInstall" data-t="pwa.install" hidden></button></div>
         <p class="sub" id="pwaIos" data-t="pwa.ios" hidden></p>
       </div>
@@ -261,7 +262,7 @@
 <div class="ov" id="ovCloud" hidden>
   <div class="panel">
     <h2 data-t="cloud.askT"></h2>
-    <p class="sub" data-t="cloud.askS"></p>
+    <p class="sub" id="cloudAskS" data-t="cloud.askS"></p>
     <button class="go" id="cloudPhone"></button>
     <button class="go" id="cloudAcct"></button>
   </div>

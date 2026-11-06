@@ -671,6 +671,37 @@ function worldBot(m,L,god){
   check(cl.pull,'ענן: שמירה חדשה יותר בענן '+(cl.pull?'נמשכה ונשמרה בטלפון':'לא נמשכה'));
   check(cl.keep&&cl.users===1,'ענן: שמירה ישנה בענן '+(cl.keep?'לא דרסה, והחדשה נדחפה':'דרסה את החדשה')+(cl.users===1?'':', '+cl.users+' כניסות במקום אחת'));
   check(cl.down,'ענן: שרת נופל '+(cl.down?'בשקט, הסמל חוזר ל"לא מחובר"':'שבר משהו'));
+  // הגנה על ההתקדמות (ביקורת 6.11.2026). 1: "יאללה" לפני שהסנכרון נגמר, והענן חדש יותר: הענן לא נדרס, ובפתיחה הבאה השחקן בוחר. ו"יאללה" מחכה לסנכרון
+  const sf=await page.evaluate(async()=>{const r={},bak=JSON.stringify(SAVE),st=$('ovStart'),stH=st.hidden,F=CLOUD.fake=cloudFakeServer();CLOUD.session=null;try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}
+    st.hidden=false;SAVE.hero.xp=10;SAVE.village.forge=1;saveNow();await cloudSync();const u=CLOUD.session.uid;
+    const nd=JSON.parse(JSON.stringify(F.rows[u].data));nd.ts=SAVE.ts+60000;nd.hero.xp=99999;nd.village.forge=7;F.rows[u].data=nd;
+    st.hidden=true;r.early=await cloudSync();bagAdd('wood',1);saveNow();await cloudSync(true);await cloudPush();
+    r.safe=F.rows[u].data.hero.xp===99999&&F.rows[u].data.village.forge===7&&CLOUD.status==='hold';
+    st.hidden=false;const pr=cloudSync();for(let i=0;i<500&&$('ovCloud').hidden;i++)await Promise.resolve();
+    r.ask=!$('ovCloud').hidden&&$('cloudAskS').textContent===T('cloud.askS2');$('cloudAcct').click();
+    r.took=await pr==='took'&&SAVE.hero.xp===99999&&!cloudHeld()&&F.rows[u].data.hero.xp===99999;
+    CLOUD.status='sync';let went=0;cloudReady(()=>went=1);r.wait=went===0&&$('startBtn').disabled;CLOUD.status='off';window.__sfGo=()=>went;
+    SAVE=JSON.parse(bak);SAVE_STORE.write(SAVE,true);CLOUD.fake=cloudFakeServer();CLOUD.session=null;cloudHeld(false);CLOUD.dirty=false;st.hidden=stH;return r});
+  await page.clock.runFor(300);
+  sf.go=await page.evaluate(()=>window.__sfGo()===1&&!$('startBtn').disabled);
+  check(sf.safe&&sf.ask&&sf.took,'ענן: "יאללה" לפני סוף הסנכרון '+(sf.safe?'לא דורס שמירה חדשה יותר בענן':'דרס את הענן ('+sf.early+')')+', '+(sf.ask&&sf.took?'ובפתיחה הבאה השחקן בוחר, והענן נלקח':'ובפתיחה הבאה לא נשאל'));
+  check(sf.wait&&sf.go,'ענן: "יאללה" '+(sf.wait&&sf.go?'מחכה לסנכרון ואז ממשיך':'לא מחכה לסנכרון'));
+  // 2: שמירה פגומה לא נדרסת: עותק בצד (fh-save-bad), שחזור מהגיבוי המתגלגל (fh-save-bak2), והודעה לשחקן. בלי גיבוי: משחק חדש, והעותק נשאר
+  const bad=await page.evaluate(()=>{const r={},K=SAVE_STORE.key,bak=JSON.stringify(SAVE),ls=k=>localStorage.getItem(K+k);
+    localStorage.removeItem(K+'-bak');SAVE.village.forge=4;SAVE_STORE.lastBak=-1e15;saveNow();SAVE_STORE.lastBak=-1e15;SAVE.village.forge=5;saveNow();   // -1e15: השעון של הבדיקה מתחיל קרוב ל-0
+    const cut=ls('').slice(0,-40);localStorage.setItem(K,cut);SAVE_STORE.note=null;saveLoad();saveWarnShow();
+    r.restored=SAVE.village.forge===4&&SAVE_STORE.note==='save.restored'&&ls('-bad')===cut&&!$('saveWarn').hidden&&$('saveWarn').textContent===T('save.restored');
+    saveNow();r.kept=ls('-bad')===cut&&JSON.parse(ls('')).village.forge===4&&JSON.parse(ls('-bak2')).village.forge===4;
+    localStorage.removeItem(K+'-bak2');localStorage.setItem(K,'{"v":1,"hero":{"lev');SAVE_STORE.note=null;saveLoad();
+    r.lost=SAVE.village.forge===0&&SAVE_STORE.note==='save.lost';saveNow();r.lostKept=ls('-bad')==='{"v":1,"hero":{"lev';
+    for(const k of['-bad','-bak2'])localStorage.removeItem(K+k);SAVE_STORE.note=null;$('saveWarn').hidden=true;
+    SAVE=JSON.parse(bak);SAVE_STORE.lastBak=0;SAVE_STORE.write(SAVE,true);return r});
+  check(bad.restored&&bad.kept&&bad.lost&&bad.lostKept,'שמירה פגומה: '+(bad.restored?'שוחזרה מהגיבוי, עם הודעה':'לא שוחזרה מגיבוי')+', '+(bad.kept&&bad.lostKept?'והעותק הפגום נשמר בצד ולא נדרס':'והעותק הפגום נדרס')+(bad.lost?'':', ובלי גיבוי משהו נשבר'));
+  // 3: אויב קפוא, מסוחרר או מאובן לא מכה (strike.js), ואויב רגיל כן
+  const frz=await page.evaluate(()=>{const h0=window.hurt;let n=0;window.hurt=()=>{n++};const r={};
+    try{const run=k=>{n=0;const e={x:P.x+P.r+6,y:P.y,r:10,dmg:1,kx:0,ky:0};if(k)e[k]=30;for(let i=0;i<300;i++)strikeTick(e,1/60,6);return n};
+      r.free=run(null);r.frozen=run('frozen');r.stun=run('stun');r.stone=run('stone')}finally{window.hurt=h0}return r});
+  check(frz.free>0&&!frz.frozen&&!frz.stun&&!frz.stone,'אויב קפוא: '+(frz.free>0?'רגיל מכה ('+frz.free+' ב-5 שניות)':'גם רגיל לא מכה')+', '+(!frz.frozen&&!frz.stun&&!frz.stone?'קפוא, מסוחרר ומאובן לא מכים':'קפוא '+frz.frozen+', מסוחרר '+frz.stun+', מאובן '+frz.stone+' מכות'));
   // כניסה עם Google (שלב 2), על השרת המדומה: חיבור המשתמש הזמני, כניסה רגילה כשהחיבור נכשל, מיזוג (טלפון חדש לוקח, שמירות שונות מאוד = שאלה), והתנתקות
   const gl=await page.evaluate(async()=>{const r={},bak=JSON.stringify(SAVE),F=CLOUD.fake=cloudFakeServer();let went=null;CLOUD.nav=u=>{went=u};
     CLOUD.session=null;try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}
@@ -2031,6 +2062,8 @@ function worldBot(m,L,god){
     for(const [k,open,id,close] of W){open();const p=$(id);if(p.hidden){o.open.push(k);continue}
       if(window.__rkScan)__rkScan();
       const pn=p.matches('.ov')?p.querySelector('.panel,.win')||p:p;o.wins[k]=ovl(pn);
+      {const cs=getComputedStyle(pn),hid=pn.scrollHeight>pn.clientHeight+4;   // תוכן חתוך: מתחת לקפל בלי גלילה, או גלילה בלי סימן "יש עוד למטה" (scrollMore, ביקורת 6.11)
+        if(hid&&(!/auto|scroll/.test(cs.overflowY)||!pn.classList.contains('more')))(o.cut=o.cut||[]).push(k)}
       flCardVis();const ce=flCardEl(),c=!ce.hidden&&ce.getBoundingClientRect(),r=pn.getBoundingClientRect();if(c&&c.left<r.right&&r.left<c.right&&c.top<r.bottom&&r.top<c.bottom)o.cover.push(k);   // הכרטיס והחלון נכנסים בהדרגה (opacity), אז בודקים רק שהם לא מוסתרים
       close()}
     FLC.q=[];flCardNext();if(S.mode!=='play'&&S.wd)S.mode='play';return o};
@@ -2568,6 +2601,14 @@ function worldBot(m,L,god){
     (tw.fight?' (לא באמצע קרב)':', קופצים באמצע קרב!')+(tw.jump?', קפיצה לאבן':', הקפיצה לאבן נכשלה')+(tw.lantBtn&&tw.reg==='lake'&&tw.at?', קפיצה מהכפר לפנס המים':', הקפיצה לפנס נכשלה ('+tw.reg+')')+
     (tw.lbtn&&tw.noHere?', 🏮 ליד הפנס פותח את החלון בלי הפנס עצמו':', הכפתור ליד הפנס לא עובד')+(tw.home?', חזרה לכפר':', החזרה לכפר נכשלה')+(tw.fromVil?', קפיצה מהכפר לאבן':', הקפיצה מהכפר לאבן נכשלה')+
     (tw.label&&tw.woke?', וקמים באבן אחרי מוות':', הקימה באבן נכשלה'));
+  // 5: חלון הקפיצה לא חותך יעדים (ביקורת 6.11.2026): כל האבנים באחו פתוחות ופנס המים דולק. כל כפתור נראה בלי גלילה, או שיש סימן "יש עוד למטה"
+  const trv=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),r={};
+    try{enterWorld('home');for(const e of enemies)e.dead=true;enemies=enemies.filter(x=>!x.dead);SAVE.ways={open:{},fog:{}};for(const s of WORLD.waystones)SAVE.ways.open[wsKey('meadow',s)]=1;SAVE.story.water=true;
+      travelWin(true);const w=$('trWin'),wr=w.getBoundingClientRect(),bs=[...w.querySelectorAll('.trgo')];
+      r.n=bs.length;r.seen=bs.filter(b=>{const q=b.getBoundingClientRect();return q.top>=wr.top-1&&q.bottom<=wr.bottom+1}).length;r.more=w.classList.contains('more');r.h=Math.round(wr.height);
+      w.scrollTop=w.scrollHeight;r.last=!bs.length||bs[bs.length-1].getBoundingClientRect().bottom<=w.getBoundingClientRect().bottom+1;travelWin(false)}
+    finally{const d=JSON.parse(bak);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,d);saveNow();enterVillage()}return r});
+  check(trv.n>=5&&(trv.seen===trv.n||trv.more&&trv.last),'חלון הקפיצה: '+(trv.seen===trv.n?'כל '+trv.n+' היעדים נראים':trv.more?trv.seen+' מתוך '+trv.n+' נראים, עם "יש עוד למטה"':'רק '+trv.seen+' מתוך '+trv.n+' יעדים נראים, בלי סימן שיש עוד')+' (גובה '+trv.h+')');
   // אירועים בעולם (events.js): גל שנגמר בתיבה, עגלה שנותנת שלל כשמגיעים, ומטר שמפיל מתכות
   const evt=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=()=>drops().length;
@@ -3774,8 +3815,8 @@ function worldBot(m,L,god){
   // מפתחות גולמיים על המסך, בכל מה שהבוט עבר (נסרק כל כמה צעדים, בכל צילום ובכל חלון של winOvl)
   {const rk=rawKeys;check(!rk.length,rk.length?'מפתח טקסט גולמי על המסך: '+rk.slice(0,8).join(', '):'אין מפתח טקסט גולמי על המסך (DOM וקנבס)')}
   if(winChk){const w=winChk,bad=Object.entries(w.wins).filter(([k,v])=>v.length);
-    check(!bad.length&&!w.cover.length&&!w.open.length,'חלונות לרוחב: '+Object.keys(w.wins).join(', ')+(bad.length?' · יושבים זה על זה: '+bad.map(([k,v])=>k+': '+v.slice(0,4).join(', ')).join(' | '):', שום דבר לא יושב על משהו אחר')+
-      (w.cover.length?' · כרטיס "חדש" מעל: '+w.cover.join(', '):', כרטיס "חדש" לא מכסה חלון')+(w.open.length?' · לא נפתחו: '+w.open.join(', '):''))}
+    check(!bad.length&&!w.cover.length&&!w.open.length&&!(w.cut||[]).length,'חלונות לרוחב: '+Object.keys(w.wins).join(', ')+(bad.length?' · יושבים זה על זה: '+bad.map(([k,v])=>k+': '+v.slice(0,4).join(', ')).join(' | '):', שום דבר לא יושב על משהו אחר')+
+      (w.cover.length?' · כרטיס "חדש" מעל: '+w.cover.join(', '):', כרטיס "חדש" לא מכסה חלון')+(w.open.length?' · לא נפתחו: '+w.open.join(', '):'')+((w.cut||[]).length?' · תוכן חתוך בלי סימן שיש עוד: '+w.cut.join(', '):', בלי תוכן חתוך'))}
   else check(false,'חלונות לרוחב: הבדיקה לא רצה');
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
 
