@@ -2378,7 +2378,7 @@ function worldBot(m,L,god){
   const tw=await page.evaluate(()=>{const o={},bak=JSON.stringify(SAVE);window.__twBak=bak;P.inv=99;npcTalk(null);
     const keys=()=>[...document.querySelectorAll('#trWin [data-act="tjump"]')].map(b=>b.dataset.k);
     SAVE.ways={open:{},fog:{}};for(const k in STORY.lanterns)if(SAVE.story)SAVE.story[k]=false;
-    enterVillage();$('ovDaily').hidden=true;o.direct=vOpen('gate')&&!!S.wd&&$('trWin').hidden;   // אין לאן: יוצאים ישר
+    enterVillage();$('ovDaily').hidden=true;$('ovWelcome').hidden=true;o.any=travelAny();o.direct=vOpen('gate')&&!!S.wd&&$('trWin').hidden;   // אין לאן: יוצאים ישר
     enterWorld('home');for(const e of enemies)e.dead=true;const A=WORLD.waystones[0],B=WORLD.waystones[1];
     o.closed=!wsIsOpen('meadow',A);P.x=A.x;P.y=A.y+20;wsUpdate(0.016);o.open=wsIsOpen('meadow',A);o.btn=!$('wsBtn').hidden;
     o.fog=(SAVE.ways.fog.meadow||{s:''}).s.split('1').length-1;
@@ -2415,7 +2415,7 @@ function worldBot(m,L,god){
     o.woke=!!S.wd&&S.mode==='play'&&Math.hypot(P.x-B.x,P.y-B.y)<WAYSTONES.arrive+30;
     const d=JSON.parse(window.__twBak);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,d);saveNow();P.inv=0;enterVillage();return o}));
   check(tw.direct&&tw.closed&&tw.open&&tw.btn&&tw.fog>0&&tw.two&&tw.mapBtn&&tw.mapShut&&tw.same&&tw.fight&&tw.jump&&tw.lantBtn&&tw.reg==='lake'&&tw.at&&tw.lbtn&&tw.noHere&&tw.home&&tw.fromVil&&tw.label&&tw.woke,
-    'חלון קפיצה אחד: '+(tw.direct?'בלי יעדים השער יוצא ישר':'השער לא יצא ישר')+(tw.closed&&tw.open&&tw.btn?', אבן נפתחת כשמגיעים ו-🗿 לידה':', האבן לא נפתחה')+(tw.fog>0?', הערפל נפתח':', הערפל לא נפתח')+
+    'חלון קפיצה אחד: '+(tw.direct?'בלי יעדים השער יוצא ישר':'השער לא יצא ישר ('+(tw.any?'יש יעדים':'חלון חוסם')+')')+(tw.closed&&tw.open&&tw.btn?', אבן נפתחת כשמגיעים ו-🗿 לידה':', האבן לא נפתחה')+(tw.fog>0?', הערפל נפתח':', הערפל לא נפתח')+
     (tw.same?', אותה רשימה מהשער, מהשער הביתה, מהאבן ומהמפה ('+tw.all.split(',').length+' יעדים, בלי המקום הנוכחי)':', הרשימות שונות: '+JSON.stringify(tw.sets)+' מול '+tw.all)+(tw.mapShut?'':', המפה לא נסגרה')+
     (tw.fight?' (לא באמצע קרב)':', קופצים באמצע קרב!')+(tw.jump?', קפיצה לאבן':', הקפיצה לאבן נכשלה')+(tw.lantBtn&&tw.reg==='lake'&&tw.at?', קפיצה מהכפר לפנס המים':', הקפיצה לפנס נכשלה ('+tw.reg+')')+
     (tw.lbtn&&tw.noHere?', 🏮 ליד הפנס פותח את החלון בלי הפנס עצמו':', הכפתור ליד הפנס לא עובד')+(tw.home?', חזרה לכפר':', החזרה לכפר נכשלה')+(tw.fromVil?', קפיצה מהכפר לאבן':', הקפיצה מהכפר לאבן נכשלה')+

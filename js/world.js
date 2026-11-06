@@ -367,7 +367,7 @@ function wShut(){if(!S.wd)return;S.wd.open=null;worldHud()}
 const wGoEl=(()=>{const b=document.createElement('button');b.id='wGo';b.className='nbtn talkbtn wgo';b.hidden=true;
   $('talkBtn').before(b);b.addEventListener('click',()=>{const w=S.wd;if(!w||!w.near||S.mode!=='play')return;sfx('ui');
     // הביתה ושביל לאזור אחר: נכנסים מיד, בלי כרטיס (ניר, 2.11: "זה עדיין מקפיץ עוד הודעה. מיותר, הכפתור מספיק"). שער לזירה: כרטיס, כי יש שתי אפשרויות
-    const k=w.near,to=k==='home'&&WR().back||wIsPath(k)&&k;if(to){wGo(to);return}if(k==='home'){travelOpen(wHome);return}   // הביתה: חלון הקפיצה האחד (travel.js), או ישר לכפר כשאין לאן עוד
+    const k=w.near,to=k==='home'&&WR().back||wIsPath(k)&&k;if(to){wGo(to);return}if(k==='home'){if(S.wd.reg==='meadow')travelOpen(wHome);else wHome();return}   // הביתה מהאחו: חלון הקפיצה האחד (travel.js), או ישר לכפר כשאין לאן עוד. היציאה מעומק הצל (depths.js): ישר הביתה
     w.open=k;worldHud()});return b})();
 const wGoIco=k=>k==='home'&&!WR().back?['🏠','ctx.home']:k==='home'||wIsPath(k)?['🧭','ctx.go']:['⚔️','ctx.arena'];
 function wGoBtn(w){
