@@ -107,8 +107,8 @@ function wsMapFog(x,at,k){
 function wsMapDraw(x,at){
   const r=S.wd.reg;
   // מאורות בוסים: ☠️ כשהבוס בחוץ, ⏳ עם הזמן כשהוא עוד חוזר (giantLeft ו-giantTime ב-giant.js, GIANT.ladder)
-  for(const kk in STORY.lanterns){const L=STORY.lanterns[kk];if(L.reg!==r||!wsFogSeen(r,L.x,L.y))continue;
-    const left=giantLeft(kk),c=at(L.x,L.y);
+  for(const kk in STORY.lanterns){const L=STORY.lanterns[kk];if(L.reg!==r)continue;const m=giantLair(kk);if(!wsFogSeen(r,m.x,m.y))continue;   // במאורה, לא בפנס (giantLair ב-giant.js)
+    const left=giantLeft(kk),c=at(m.x,m.y);
     wmText(x,left>0?'⏳ '+giantTime(left):'☠️',c.x,c.y-WMAP.dot.lantern-10,12,left>0?C.chalk:C.ember)}
   for(const s of wsList(r))if(wsIsOpen(r,s)){const c=at(s.x,s.y),d=WAYSTONES.dot;
     x.save();x.shadowColor=WAYSTONES.col;x.shadowBlur=10;x.beginPath();x.moveTo(c.x,c.y-d*1.3);x.lineTo(c.x+d*0.7,c.y+d*0.7);x.lineTo(c.x-d*0.7,c.y+d*0.7);x.closePath();
