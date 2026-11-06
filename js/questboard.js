@@ -35,6 +35,8 @@ const QBOARD={
   maxActive:3,       // כמה משימות מלוח אחד אפשר להחזיק בבת אחת
   streak:5,          // כל כמה משימות מהלוח יש בונוס
   bonus:{gem:1,essence:3},
+  // חפץ בטוח כל every משימות מהלוח, הטוב מבין rolls הגרלות (lootRoll ב-loot.js). כיול קצב 5.11: רגעים טובים בדרגות 2-3 היו כ-3 לשעה, והיעד 6
+  gear:{every:2,rolls:3},
   // איפה הלוח: באחו ליד השער לכפר, ובשאר האזורים ליד השער שממנו נכנסים
   at:{meadow:{x:110,y:-1740},lake:{x:150,y:-1690},ridge:{x:-380,y:-1760},desert:{x:-120,y:-1140},storm:{x:150,y:-1690},shadow:{x:-140,y:-1700},other:{x:-90,y:-520}},
   // מה האזור מציע: משאבים לאסוף (כמה בבסיס), ומשאב בפרס
@@ -46,14 +48,14 @@ const QBOARD={
     storm: {res:{boltC:4,dust:5},prize:'boltC'},
     shadow:{res:{dust:5,essence:4},prize:'essence'}
   },
-  /* התבניות. כל אחת בונה יעד לפי האזור (c) והרמה (lv). xp: איזה חלק מרמה שלמה (rankNeed ב-ranks.js) */
+  /* התבניות. כל אחת בונה יעד לפי האזור (c) והרמה (lv). xp: איזה חלק מרמה שלמה (rankNeed ב-ranks.js)  (כוונון קצב 6.11: היו 0.35-0.55, וזה נתן 10 שעות למשחק כולו. 0.13-0.2 נתן 17. עכשיו 0.055-0.085: בעיקר קווסטים כ-27 שעות. משימה מהלוח שווה בערך כמו הריגה באותו זמן, ועוד ההריגות שבדרך, ולכן קווסטים מהירים פי 1.7 מהריגה בלבד) */
   tpl:{
-    hunt: {xp:0.4,obj:(c,lv)=>[{type:'kill',what:pick(c.foes),n:Math.min(20,8+Math.floor(lv/4))}]},
-    cull: {xp:0.45,obj:(c,lv)=>[{type:'kill',what:'any',n:Math.min(60,25+lv)}]},
-    gather:{xp:0.35,obj:(c,lv)=>{const r=pick(Object.keys(c.res));return[{type:'gather',what:r,n:c.res[r]+Math.floor(lv/10)}]}},
-    scout:{xp:0.4,obj:c=>{const p=Object.keys(c.places).sort(()=>Math.random()-0.5);return p.slice(0,2).map(id=>({type:'visit',what:c.reg+':'+id,n:1}))}},
-    guard:{xp:0.55,obj:(c,lv)=>[{type:'hold',what:c.reg+':'+pick(Object.keys(c.places)),n:25+Math.min(15,Math.floor(lv/4))}]},
-    fish: {xp:0.35,only:'fish',obj:()=>[{type:'fish',what:'any',n:3}]}
+    hunt: {xp:0.065,obj:(c,lv)=>[{type:'kill',what:pick(c.foes),n:Math.min(20,8+Math.floor(lv/4))}]},
+    cull: {xp:0.07,obj:(c,lv)=>[{type:'kill',what:'any',n:Math.min(60,25+lv)}]},
+    gather:{xp:0.055,obj:(c,lv)=>{const r=pick(Object.keys(c.res));return[{type:'gather',what:r,n:c.res[r]+Math.floor(lv/10)}]}},
+    scout:{xp:0.065,obj:c=>{const p=Object.keys(c.places).sort(()=>Math.random()-0.5);return p.slice(0,2).map(id=>({type:'visit',what:c.reg+':'+id,n:1}))}},
+    guard:{xp:0.085,obj:(c,lv)=>[{type:'hold',what:c.reg+':'+pick(Object.keys(c.places)),n:25+Math.min(15,Math.floor(lv/4))}]},
+    fish: {xp:0.055,only:'fish',obj:()=>[{type:'fish',what:'any',n:3}]}
   }
 };
 
@@ -103,6 +105,7 @@ function qbSync(reg){
 // אחרי שלקחת פרס על משימה מהלוח: היא יורדת, וכל streak משימות בונוס
 function qbClaimed(q){
   const B=qbR(q.reg),S0=QB();delete B.p[q.tpl];B.last=q.tpl;S0.n++;
+  if(QBOARD.gear&&S0.n%QBOARD.gear.every===0&&S.wd){const id=lootRoll(QBOARD.gear.rolls);dropSpawn(id,1,P.x,P.y-30);if(typeof feedOn==='function'&&feedOn())feedGear(id);else banner(T('loot.gear')+' '+gIcon(id)+' '+gName(id),dropTier(id).col)}
   if(S0.n%QBOARD.streak===0){for(const k in QBOARD.bonus)bagAdd(k,QBOARD.bonus[k]);banner(T('sq.streak',S0.n),C.gold);celebrate(P.x,P.y-10,'rank')}
   qbSync(q.reg);saveNow();
 }
