@@ -3341,7 +3341,14 @@ function worldBot(m,L,god){
     {const bs=[...document.querySelectorAll('#mbWin [data-diff]')],d0=mbDiffGet(),on=bs.filter(b=>b.classList.contains('on'));
       document.querySelector('#mbWin [data-diff="hard"]').click();const saved=mbDiffGet()==='hard'&&document.querySelector('#mbWin [data-diff="hard"]').classList.contains('on');
       document.querySelector('#mbWin [data-diff="easy"]').click();o.diff={n:bs.length,one:on.length===1&&on[0].dataset.diff===d0,saved,back:mbDiffGet()==='easy'}}
-    document.querySelector('#mbWin [data-kit="tank"]').click();o.on=!!S.mb&&document.body.classList.contains('mb');if(o.diff)o.diff.game=MB.diff==='easy';
+    document.querySelector('#mbWin [data-kit="tank"]').click();
+    // מסך הבנייה (moba-spells.js): אחרי הגיבור, בחירת לחש עם הסבר. ברירת המחדל זינוק, הבחירה נשמרת לכל גיבור ונטענת שוב
+    if(typeof MBSPELL!=='undefined'){const B={},q=x=>document.querySelector('#mbWin '+x);try{localStorage.removeItem(MBSPELL.key)}catch(e){}mbBuildOpen('tank');
+      B.step=$('mbWin').dataset.mode==='build';B.n=document.querySelectorAll('#mbWin [data-b]').length;B.def=mbSpellGet('tank')==='dash'&&!!q('[data-b="dash"].on');
+      q('[data-b="barrier"]').click();B.saved=mbSpellGet('tank')==='barrier'&&mbSpellGet('hunter')==='dash'&&!!q('[data-b="barrier"].on')&&$('mbWin').innerText.includes(T('mb.spD.barrier'));
+      q('[data-bact="back"]').click();B.back=$('mbWin').dataset.mode==='pick'&&!!q('[data-diff].on');q('[data-kit="tank"]').click();B.load=!!q('[data-b="barrier"].on');
+      if(en&&!o.he&&heb($('mbWin').innerText))o.he=$('mbWin').innerText.slice(0,60);q('[data-bact="go"]').click();o.build=B}
+    o.on=!!S.mb&&document.body.classList.contains('mb');if(o.build)o.build.game=MB.me.spell==='barrier'||(mobaUpdate(1/30),MB.me.spell==='barrier');if(o.diff)o.diff.game=MB.diff==='easy';
     if(en&&!o.he&&heb($('mbHud').innerText))o.he=$('mbHud').innerText.slice(0,60);
     mbPress('ult');o.lock=$('banner').textContent!==T('mb.locked')&&document.querySelector('#mbSk [data-sk="ult"]').classList.contains('shake');   // סקיל-על נעול: הכפתור רועד, בלי הודעה באמצע
     // תנועה (moba-move.js, אוראל 3.11: "התנועתיות מוזרה"): סיבוב רך ולא בבת אחת, גיבור עובר דרך חייל בלי להאט, והודעת הריגה
@@ -3390,8 +3397,8 @@ function worldBot(m,L,god){
       o.two={held:wHeld().length};try{hud();o.two.ok=true}catch(e){o.two.err=e.message}f.x=fx;f.y=fy;SAVE.gear.weapon=g;SAVE.bag=JSON.parse(bag)}
     for(let i=0;i<30;i++)mobaUpdate(1/30);render();o.m3=typeof M3!=='undefined'?M3.map.size:-1;o.r3=R3D.on;   // תלת-ממד: מגדלים ובסיסים כמודלים (moba3d.js)
     // המראה (moba-look.js): כפתורי הסקילים והפקודות כאייקוני SVG בלי אימוג'י, והרצפה של המוד (בתלת-ממד: במקום הרצפה של הזירה)
-    o.look={svg:document.querySelectorAll('#mbSk svg').length+document.querySelectorAll('#mbPing svg').length,emoji:/\p{Extended_Pictographic}/u.test($('mbSk').textContent+$('mbPing').textContent),
-      pic:[...document.querySelectorAll('#mbSk [data-sk]')].map(b=>{const im=b.querySelector('img.mbpic');return im?im.getAttribute('src'):''}),   // האייקונים המצוירים של העולם (moba-icons.js)
+    o.look={svg:document.querySelectorAll('#mbSk [data-sk]:not(.mbsp) svg').length+document.querySelectorAll('#mbPing svg').length,emoji:/\p{Extended_Pictographic}/u.test($('mbSk').textContent+$('mbPing').textContent),
+      pic:[...document.querySelectorAll('#mbSk [data-sk]:not(.mbsp)')].map(b=>{const im=b.querySelector('img.mbpic');return im?im.getAttribute('src'):''}),   // האייקונים המצוירים של העולם (moba-icons.js)
       floor:R3D.on&&R3D.ready?!!(M3.floor&&M3.floor.visible)&&!R3D.ground.visible:!!MB_FLOOR};
     // מצלמה ומפה (moba-look.js, 3.11): המצלמה רחוקה (רואים לרוחב לפחות פי 1.5), יש שיחים ואבנים, והמפה הקטנה בתוך המסך
     {const b=mbMiniBox(W/2-MB.me.x,H/2-MB.me.y);o.cam={z:ZOOM,wide:Math.round(100/ZOOM)/100,bush:mbDecor().filter(d=>d.k==='bush').length,rock:mbDecor().filter(d=>d.k==='rock').length,
@@ -3451,12 +3458,35 @@ function worldBot(m,L,god){
      if(typeof mbRecallStart==='function'){blue.x=0;blue.y=0;blue.hurtT=-99;Object.assign(blue.st,{stun:0,dash:null});const on0=mbHaste(blue);   // חזרה לבסיס (moba-recall.js) + ריצה מהבסיס: מי שחזר רץ מהר כשהוא יוצא
        r.recall=!on0&&mbRecallStart(blue)&&(mbRecallTick(MB,MBRECALL.t+0.1),mbHaste(blue));blue.recall=null;blue.x=hx;blue.y=hy;blue.hurtT=ht}else r.recall=true;
      blue.dead=bd;o.flow=r}
+    // ריפוי ולחשים (moba-spells.js) בתרחיש קבוע, באמצע המפה: כל אחד עובד, נכנס לטעינה, ויש לו הסבר. וכפתורים שלא מכסים את הסקילים
+    if(typeof MBSPELL!=='undefined'){const me=MB.me,r={},L=MBSPELL.list,hx=me.x,hy=me.y,e=mbHeroes(1).find(x=>!x.dead)||mbHeroes(1)[0],ex=e.x,ey=e.y,ed=e.dead;
+      const calm=u=>Object.assign(u.st,{stun:0,taunt:0,slow:0,slowK:0,imm:0,dash:null,haste:0,exh:0,pure:0,shield:0});
+      const away=mbHeroes(1).filter(x=>x!==e).map(x=>[x,x.x,x.y]);for(const [x] of away){x.x=MOBA.base.x;x.y=0}   // רק גיבור אויב אחד ליד
+      me.x=0;me.y=0;calm(me);me.dead=false;me.hp=me.max*0.5;me.cd.heal=0;const h0=me.hp;mbPress('heal');
+      r.heal=Math.abs(me.hp-h0-me.max*MBSPELL.heal.k)<1&&me.cd.heal===MBSPELL.heal.cd;const h1=me.hp;mbPress('heal');r.healCd=me.hp===h1;
+      const done=[],tip=[];for(const id in L){if(T('mb.spD.'+id)!=='mb.spD.'+id)tip.push(id);me.spell=id;me.cd.spell=0;calm(me);me.x=0;me.y=0;e.dead=false;e.hp=e.max;calm(e);e.x=600;e.y=0;let ok=false;
+        if(id==='dash'){ok=mbSpellCast(me,{x:500,y:0});for(let i=0;i<8&&me.st.dash;i++){const D=me.st.dash,st=Math.min(D.left,D.sp/30);mbStep(me,D.vx*st,D.vy*st);D.left-=st;if(D.left<=0.5){me.st.dash=null;D.end()}}ok=ok&&Math.abs(me.x-L.dash.range)<15}
+        else if(id==='haste'){const v0=mbSpeed(me);ok=mbSpellCast(me)&&Math.abs(mbSpeed(me)/v0-1-L.haste.k)<0.01}
+        else if(id==='barrier')ok=mbSpellCast(me)&&Math.abs(me.st.shield-me.max*L.barrier.k)<1;
+        else if(id==='reveal'){const n=(MB.spellZ||[]).length;ok=mbSpellCast(me,{x:300,y:0})&&MB.spellZ.length===n+1}
+        else if(id==='exhaust'){ok=!mbSpellCast(me)&&me.cd.spell===0;e.x=300;ok=ok&&mbSpellCast(me)&&e.st.exh>0&&e.st.slow>0&&Math.abs(mbSpellDmgK(e)-(1-L.exhaust.dmg))<0.01}
+        else if(id==='cleanse'){me.st.stun=2;me.st.slow=2;me.st.slowK=0.5;me.st.root=2;ok=mbSpellCast(me)&&!(me.st.stun>0)&&!(me.st.slow>0)&&!(me.st.root>0)&&!mbCC(me,'stun',1,e)}
+        if(ok&&me.cd.spell===L[id].cd&&!mbSpellCast(me,{x:300,y:0}))done.push(id)}
+      Object.assign(r,{done,tip,n:Object.keys(L).length});calm(me);calm(e);me.spell='barrier';me.cd.spell=0;me.x=hx;me.y=hy;me.hp=me.max;e.x=ex;e.y=ey;e.dead=ed;MB.spellZ=[];for(const [x,ax,ay] of away){x.x=ax;x.y=ay}
+      mobaHud();const sk=k=>{const b=document.querySelector('#mbSk [data-sk="'+k+'"]');return b&&b.getBoundingClientRect()},hit=(a,b)=>a&&b&&a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
+      const mine=['heal','spell'].map(sk),rc=$('mbRecall').getBoundingClientRect();const bad=[];['heal','spell'].forEach((n,i)=>{const m=mine[i];if(!m){bad.push(n+' חסר');return}for(const k of ['s1','s2','ult'])if(hit(m,sk(k)))bad.push(n+'/'+k);if(hit(m,rc))bad.push(n+'/חזרה');if(m.right>innerWidth||m.bottom>innerHeight||m.left<0||m.top<0)bad.push(n+' בחוץ '+[m.left,m.top,m.right,m.bottom].map(Math.round))});
+      if(hit(mine[0],mine[1]))bad.push('heal/spell');r.btn=!bad.length;r.bad=bad;
+      r.pic=[...document.querySelectorAll('#mbSk .mbsp img.mbpic')].map(i=>i.getAttribute('src'));o.spell=r}
+    const spl={heal:0,use:{},pick:{}};if(typeof MBSPELL!=='undefined'){const fs0={c:mbSpellCast,h:mbHealCast};spl.f=fs0;
+      mbSpellCast=function(u,a){const r=fs0.c(u,a);if(r&&u.bot)spl.use[u.spell]=(spl.use[u.spell]||0)+1;return r};
+      mbHealCast=function(u){const r=fs0.h(u);if(r&&u.bot)spl.heal++;return r}}
     MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
     mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
     mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
     mbWord=function(u,w){cmb[w]=(cmb[w]||0)+1;return f.word(u,w)};
     let n=0;while(!MB.over&&n<MOBA.maxT*30+60){mobaUpdate(1/30);n++}
     mbCast=f.cast;mbCC=f.cc;mbWord=f.word;
+    if(spl.f){mbSpellCast=spl.f.c;mbHealCast=spl.f.h;delete spl.f;for(const h of MB.u)if(h.k==='hero'&&!h.me)spl.pick[h.kit+':'+h.spell]=(MBSPELL.bot[h.kit]||[]).includes(h.spell);o.spl=spl}
     const kits=[...new Set(MB.u.filter(u=>u.k==='hero').map(u=>u.kit))];
     o.kits=kits.join(',');o.miss=kits.flatMap(k=>MB_SLOTS.map(s=>MBKIT[k][s].id)).filter(id=>!casts[id]);o.mage=kits.includes('mage');
     o.t=Math.round(MB.t);o.over=MB.over;o.towers=MB.u.filter(u=>u.k==='tower'&&u.dead).length;o.base=MB.u.some(u=>u.k==='base'&&u.dead);
@@ -3759,6 +3789,10 @@ function worldBot(m,L,god){
      check(Object.keys(ks).every(k=>L[k]),'משחקי השאול: שומר בחיים: '+Object.keys(ks).map(k=>ks[k]+(L[k]?' ✓':' ✗')).join(', '))}
     {const I=mb.items||{},ks={tick:'זהב עם הזמן',minion:'זהב מחייל',quick:'קנייה מהירה',stat:'סטטים',sell:'מכירה',win:'חלון החנות',buy:'קנייה בחלון',close:'סגירה',bot:'בוט קונה'};
      check(Object.keys(ks).every(k=>I[k]),'משחקי השאול: חפצים: '+Object.keys(ks).map(k=>ks[k]+(I[k]?' ✓':' ✗')).join(', '))}
+    if(mb.build||mb.spell){const B=mb.build||{},r=mb.spell||{},p=mb.spl||{pick:{},use:{}},pk=Object.entries(p.pick),bad=pk.filter(x=>!x[1]).map(x=>x[0]),pics=(r.pic||[]).filter(f=>fs.existsSync(path.resolve(__dirname,'..',f)));
+      check(B.step&&B.n===6&&B.def&&B.saved&&B.back&&B.load&&B.game,'משחקי השאול: מסך בנייה: '+(B.step?B.n+' לחשים':'לא נפתח אחרי הגיבור')+(B.def?', ברירת מחדל זינוק':', ברירת המחדל לא זינוק')+(B.saved?', בחירה נשמרת לגיבור עם הסבר':', הבחירה לא נשמרה')+(B.back?', חזרה לבחירת גיבור (והקושי שם)':', החזרה לא עובדת')+(B.load?', נטענת שוב':', לא נטענת')+(B.game?', ובמשחק':', לא עברה למשחק'));
+      check(r.heal&&r.healCd&&r.done&&r.done.length===r.n&&r.tip.length===r.n&&r.btn&&pics.length===2,'משחקי השאול: ריפוי '+(r.heal?'✓ 15%':'✗')+(r.healCd?' עם טעינה':' בלי טעינה')+' · לחשים שעובדים עם טעינה: '+(r.done||[]).join(', ')+' ('+(r.done||[]).length+'/'+r.n+')'+(r.tip&&r.tip.length===r.n?', לכולם הסבר':', חסר הסבר')+(r.btn?', הכפתורים לא מכסים סקילים או חזרה':', כפתור מכסה או מחוץ למסך: '+(r.bad||[]).join(', '))+', '+pics.length+'/2 אייקונים מצוירים');
+      check(!bad.length&&pk.length>0&&p.heal>0&&Object.keys(p.use).length>0,'משחקי השאול: בוטים: בחרו לפי תפקיד '+(bad.length?'✗ '+bad.join(', '):'✓ ('+pk.map(x=>x[0]).join(', ')+')')+', ריפוי '+(p.heal||0)+' פעמים, לחשים: '+(Object.entries(p.use).map(x=>x[0]+' '+x[1]).join(', ')||'אף אחד'))}
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
     {const A=mb.aim||{};check(A.on&&A.hot&&A.cancel&&A.cast&&A.sec,'משחקי השאול: כיוון בגרירה '+(A.on?'✓':'לא הופיע')+(A.hot?', ✕ נדלק':', ✕ לא נדלק')+(A.cancel?', ביטול בלי טעינה':', הביטול לא עבד')+(A.cast?', שחרור מטיל לנקודה':', השחרור לא הטיל לנקודה')+(A.sec?', שניות על הכפתור':', אין שניות'))}
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));

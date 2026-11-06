@@ -15,8 +15,11 @@ const MBAIM={
   lineW:26,        // קו בלי w
   cancelPad:16,    // אזור הביטול גדול מהכפתור שלו בכמה פיקסלים, כדי שקל לפגוע בו
   alpha:0.28,      // שקיפות המילוי של הסימון
+  tip:['heal','spell'],   // כפתורים שלחיצה ארוכה עליהם מראה הסבר (moba-spells.js, MBSPELL.hold) במקום להטיל
 };
-let mbAim=null;   // {slot,pid,b,sx,sy,a,len,on,cancel}
+let mbAim=null;
+// ההגדרה של הכפתור: סקיל מהערכה, או ריפוי ולחש (moba-spells.js)
+const mbAimS=(u,slot)=>MBKIT[u.kit][slot]||(typeof mbSpellS==='function'?mbSpellS(u,slot):{});   // {slot,pid,b,sx,sy,a,len,on,cancel}
 
 // כפתורי הסקילים (נקרא מ-mbUi אחרי שהם נבנו): לחיצה מתחילה כיוון, ואזור הביטול נכנס לאותה קופסה
 function mbAimInit(box){
@@ -27,14 +30,14 @@ function mbAimInit(box){
 }
 function mbAimDown(b,e){
   const u=mbMe(),slot=b.dataset.sk;if(!u||u.dead||MB.over||mbAim)return;
-  if(slot==='ult'&&u.lvl<MOBA.ultAt||u.cd[slot]>0){mbPress(slot);return}   // נעול או בטעינה: mbPress מרעיד או מתעלם, כמו קודם
-  mbAim={slot,pid:e.pointerId,b,sx:e.clientX,sy:e.clientY,a:u.face,len:0,on:false,cancel:false};
+  if(slot==='ult'&&u.lvl<MOBA.ultAt||u.cd[slot]>0&&!MBAIM.tip.includes(slot)){mbPress(slot);return}   // נעול או בטעינה: mbPress מרעיד או מתעלם, כמו קודם
+  mbAim={slot,pid:e.pointerId,b,sx:e.clientX,sy:e.clientY,a:u.face,len:0,on:false,cancel:false,t0:performance.now(),tip:false};
   try{b.setPointerCapture(e.pointerId)}catch(_){}
 }
 function mbAimMove(e){
   const A=mbAim;if(!A||e.pointerId!==A.pid)return;
   const dx=e.clientX-A.sx,dy=e.clientY-A.sy;A.len=Math.hypot(dx,dy);
-  if(A.len>=MBAIM.drag){A.a=Math.atan2(dy,dx);if(!A.on){A.on=true;mbAimShow(true)}}
+  if(A.len>=MBAIM.drag){A.a=Math.atan2(dy,dx);if(!A.on){A.on=true;mbAimShow(true);if(A.tip){A.tip=false;mbSpellTip(null)}}}   // גרירה אחרי הסבר: ההסבר נעלם ומכוונים
   if(A.on){const c=$('mbCancel').getBoundingClientRect(),p=MBAIM.cancelPad;
     const over=e.clientX>c.left-p&&e.clientX<c.right+p&&e.clientY>c.top-p&&e.clientY<c.bottom+p;
     if(over!==A.cancel){A.cancel=over;$('mbCancel').classList.toggle('hot',over);if(over)sfx('tap')}}
@@ -42,10 +45,11 @@ function mbAimMove(e){
 function mbAimUp(e){
   const A=mbAim;if(!A||e.pointerId!==A.pid)return;mbAimEnd();
   if(!S.mb||!MB||A.cancel)return;   // בוטל: בלי הטלה ובלי טעינה
+  if(A.tip)return;                   // לחיצה ארוכה הראתה הסבר (בלי גרירה): בלי הטלה
   if(!A.on){mbPress(A.slot);return}  // נגיעה קצרה: כיוון אוטומטי
   const u=mbMe();if(u)mbPress(A.slot,mbAimPick(u,A).aim);
 }
-function mbAimEnd(){if(!mbAim)return;mbAim=null;mbAimShow(false)}
+function mbAimEnd(){if(!mbAim)return;if(mbAim.tip&&typeof mbSpellTip==='function')mbSpellTip(null);mbAim=null;mbAimShow(false)}
 function mbAimShow(on){
   const c=$('mbCancel');if(c){c.hidden=!on;c.classList.remove('hot')}
   for(const b of document.querySelectorAll('#mbSk [data-sk]'))b.classList.toggle('aiming',on&&!!mbAim&&b===mbAim.b);
@@ -58,7 +62,7 @@ addEventListener('pointercancel',e=>{if(mbAim&&e.pointerId===mbAim.pid)mbAimEnd(
 function mbAimRange(s){return s.range||s.dist||s.r||MBAIM.defRange}
 function mbAimKind(s){const k=s.kind;if(k==='line'||k==='point'||k==='unit'||k==='self'||k==='away')return k;return s.r&&s.range?'point':s.range||s.dist?'line':'self'}
 function mbAimPick(u,A){
-  const s=MBKIT[u.kit][A.slot],kind=mbAimKind(s),R=mbAimRange(s),ca=Math.cos(A.a),sa=Math.sin(A.a);
+  const s=mbAimS(u,A.slot),kind=mbAimKind(s),R=mbAimRange(s),ca=Math.cos(A.a),sa=Math.sin(A.a);
   if(kind==='self')return{kind,aim:null};
   if(kind==='point'){const d=R*Math.max(MBAIM.minK,Math.min(1,A.len/MBAIM.pull));const p={x:u.x+ca*d,y:u.y+sa*d};return{kind,aim:p,x:p.x,y:p.y}}
   if(kind==='unit'){let best=null,bd=MBAIM.cone;
@@ -73,8 +77,9 @@ function mbAimDraw(){
   mbAimSecs();
   const A=mbAim,u=MB&&MB.me;if(!A)return;
   if(!u||u.dead||MB.over){mbAimEnd();return}
-  if(!A.on)return;
-  const s=MBKIT[u.kit][A.slot],R=mbAimRange(s),P0=mbAimPick(u,A),col=A.cancel?'#8A8F9E':dtCol(s.dt||MBKIT[u.kit].dt);
+  if(!A.on&&!A.tip&&MBAIM.tip.includes(A.slot)&&typeof mbSpellTip==='function'&&performance.now()-A.t0>MBSPELL.hold*1000){A.tip=true;mbSpellTip(A.slot,A.b)}   // לחיצה ארוכה: הסבר
+  if(!A.on||A.tip)return;
+  const s=mbAimS(u,A.slot),R=mbAimRange(s),P0=mbAimPick(u,A),col=A.cancel?'#8A8F9E':s.col||dtCol(s.dt||MBKIT[u.kit].dt);
   ctx.save();ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=2;
   // עיגול הטווח: תמיד
   ctx.globalAlpha=0.5;ctx.setLineDash([8,6]);ctx.beginPath();ctx.arc(u.x,u.y,P0.kind==='self'?(s.r||R):R,0,7);ctx.stroke();ctx.setLineDash([]);
