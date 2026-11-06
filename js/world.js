@@ -316,6 +316,7 @@ function worldUpdate(dt){
   dmgUpdate(dt);mutUpdate(dt);innUpdate(dt);   // שריפה, רטיבות, האטה והלם נגמרים (dmg.js). לפני 4.11 לא רץ בעולם, ומצבים נשארו לתמיד. המוטציה היומית (mutation.js)
   wantedUpdate(dt);storyUpdate(dt);depthsUpdate(dt);affixUpdate(dt);eventsUpdate(dt);paceUpdate(dt);foeLeaderTick();foeLoreUpdate(dt);nemUpdate(dt);rareUpdate(dt);   // העלילה (story.js), אויבים מיוחדים (affix.js), להקות וקצב (pacing.js)
   ridgeUpdate(dt);   // מפולות במדרון (ridge-hazards.js)
+  riverUpdate(dt);   // נהר הברקים במגדלי הסערה (storm-river.js)
   terrainTick();   // אויבים ופיוחו: לא בתוך מים, יער או צוק, ולאט במעבר הרדוד (terrain.js)
   dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*mutK('regen')*dt);   // mutK: יום הצמא מרפא לאט (mutation.js)
@@ -435,6 +436,7 @@ function drawWorld(){
   if(WR().fog)wFog();
   if(WR().snow)wSnow();   // הרכס הקפוא
   if(WR().heat)wHeat();   // המדבר הבוער
+  riverDraw();   // נהר הברקים (storm-river.js)
   if(WR().storm)wStorm();   // מגדלי הסערה
   if(WR().shadow)wShadow();   // לב הצל
   mutDraw();   // גשם או ערפל של היום (mutation.js)
