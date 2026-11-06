@@ -102,16 +102,16 @@ function mbfxNum(x,y,txt,col,o,src,t){
 // בעולם (אחרי ה-translate של המצלמה): מגנים, חלקיקים, ומספרים גדולים
 function mbfxDraw(){
   const F=mbfxS();
-  for(const u of MB.u)if(!u.dead&&u.st.shield>0&&u.st.shieldEnd>MB.t){   // מגן: בועה בצבע הקבוצה, דוהה ככל שנשאר פחות
+  for(const u of MB.u)if(!u.dead&&mbShow(u)&&u.st.shield>0&&u.st.shieldEnd>MB.t){   // מגן: בועה בצבע הקבוצה, דוהה ככל שנשאר פחות
     const k=Math.max(0.25,u.st.shield/(u.st.shieldMax||u.st.shield)),col=MOBA.team[u.team];
     ctx.globalAlpha=0.16*k+0.06;ctx.fillStyle=col;ctx.beginPath();ctx.arc(u.x,u.y-22,u.r+16,0,7);ctx.fill();
     ctx.globalAlpha=0.5*k+0.2;ctx.strokeStyle='#E8F4FF';ctx.lineWidth=2;ctx.beginPath();ctx.arc(u.x,u.y-22,u.r+16,-2.6+MB.t*2,-0.6+MB.t*2);ctx.stroke()}
   mbfxMarks();mbfxShots();
   ctx.globalCompositeOperation='lighter';
-  for(const p of F.p){const k=p.life/p.t0;ctx.globalAlpha=Math.min(1,k*1.6);ctx.fillStyle=p.col;const s=p.size*(0.4+0.6*k);ctx.fillRect(p.x-s/2,p.y-p.z-s/2,s,s)}
+  for(const p of F.p){if(!mbVisPt(p.x,p.y))continue;const k=p.life/p.t0;ctx.globalAlpha=Math.min(1,k*1.6);ctx.fillStyle=p.col;const s=p.size*(0.4+0.6*k);ctx.fillRect(p.x-s/2,p.y-p.z-s/2,s,s)}
   ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
   ctx.textAlign='center';ctx.direction='ltr';ctx.lineJoin='round';
-  for(const n of F.n){const age=1-n.life,pop=age<0.12?1+(0.12-age)*5:1,sz=(n.crit?28:22)*pop;
+  for(const n of F.n){if(!mbVisPt(n.x,n.y))continue;const age=1-n.life,pop=age<0.12?1+(0.12-age)*5:1,sz=(n.crit?28:22)*pop;
     ctx.globalAlpha=Math.min(1,n.life*2.5);ctx.font='900 '+Math.round(sz)+'px Heebo, system-ui, sans-serif';
     ctx.lineWidth=4;ctx.strokeStyle='#0B0A12';ctx.strokeText(n.txt,n.x,n.y);ctx.fillStyle=n.col;ctx.fillText(n.txt,n.x,n.y)}
   ctx.globalAlpha=1;ctx.direction=DIR;
@@ -119,7 +119,7 @@ function mbfxDraw(){
 // סימנים על יחידות: רשת ושורשים ברגליים של מי שלכוד (st.root), ובועת מים סביב מי שהורם (st.bub). בקנבס, ולכן גם מעל התלת-ממד
 function mbfxMarks(){
   const N=MBFX.net;
-  for(const u of MB.u){if(u.dead)continue;const s=u.st;
+  for(const u of MB.u){if(u.dead||!mbShow(u))continue;const s=u.st;   // בערפל: לא מצויר (moba-vision.js)
     if(s.root>0){const k=Math.min(1,(MB.t-(MBFX_N(u).netT||0))/N.close),rx=(u.r+18)*(1.6-0.6*k),ry=rx*0.45;   // הרשת נסגרת מגדולה לצמודה
       ctx.globalAlpha=Math.min(1,s.root*3);ctx.strokeStyle='#5C8A3A';ctx.lineWidth=3;   // שורשים קטנים שנאחזים בקרקע
       for(let i=0;i<6;i++){const a=i/6*6.283+0.4;ctx.beginPath();ctx.moveTo(u.x+Math.cos(a)*rx*0.6,u.y+Math.sin(a)*ry*0.6);ctx.quadraticCurveTo(u.x+Math.cos(a+0.3)*rx*1.1,u.y+Math.sin(a+0.3)*ry*1.1-8,u.x+Math.cos(a)*rx*1.15,u.y+Math.sin(a)*ry*1.15);ctx.stroke()}
@@ -135,7 +135,7 @@ function mbfxMarks(){
 }
 // הירייה של גל חרב (קשת לבנה-זהובה שמתרחבת) ושל רשת ציד (רשת פתוחה שמסתובבת)
 function mbfxShots(){
-  for(const s of MB.shots){if(!s.fx)continue;const a=Math.atan2(s.vy,s.vx);ctx.save();ctx.translate(s.x,s.y-10);ctx.rotate(a);
+  for(const s of MB.shots){if(!s.fx||!mbVisPt(s.x,s.y))continue;const a=Math.atan2(s.vy,s.vx);ctx.save();ctx.translate(s.x,s.y-10);ctx.rotate(a);
     if(s.fx==='cleave'){const w=s.w*0.95;ctx.globalCompositeOperation='lighter';
       for(let i=0;i<3;i++){ctx.globalAlpha=0.55-i*0.15;ctx.strokeStyle=i?dtCol(s.dt):'#FFF4D8';ctx.lineWidth=13-i*4;ctx.beginPath();ctx.arc(-i*16-w*0.6,0,w,-1,1);ctx.stroke()}
       ctx.globalCompositeOperation='source-over'}

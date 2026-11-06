@@ -32,14 +32,14 @@ function mbBot(u,dt){
   if(mbRecallBot(u))return;   // חוזר לבסיס: עומד במקום (moba-recall.js)
   if(B.t<=0){B.t=mbMind(u).think*rand(0.8,1.2);mbThink(u)}
   if(B.goal)mbMove(u,B.goal.x,B.goal.y,dt,B.stop||6);
-  const f=B.focus,t=f&&!f.dead&&mbHittable(f)&&mbDist(u,f)-f.r-u.r<=A.range?f:mbAutoTarget(u,A.range);
+  const f=B.focus,t=f&&!f.dead&&mbHittable(f)&&mbSeen(f,u.team)&&mbDist(u,f)-f.r-u.r<=A.range?f:mbAutoTarget(u,A.range);
   mbAttack(u,dt,t,A);
   B.skT=(B.skT||0)-dt;if(B.skT<=0){B.skT=mbMind(u).skill*(u.team?rand(0.7,1.3):1);mbBotSkills(u)}
 }
 
 function mbThink(u){
   const B=u.bot,K=MBKIT[u.kit],A=K.atk,dir=u.team?-1:1;   // dir: לכיוון הבסיס של האויב
-  const foeH=MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead);
+  const foeH=MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&mbSeen(o,u.team));   // רואים רק מה שהקבוצה רואה (moba-vision.js)
   const allyH=MB.u.filter(o=>o.k==='hero'&&o.team===u.team&&!o.dead&&o!==u);
   const near=(list,r)=>list.filter(o=>mbDist(o,u)<r);
   B.stop=6;B.focus=null;
@@ -49,7 +49,7 @@ function mbThink(u){
   const O=u.team===0&&MB.order;
   if(O&&O.kind==='back'){const t=MB.u.filter(b=>b.k==='tower'&&b.team===u.team&&!b.dead).sort((a,b)=>Math.abs(a.x)-Math.abs(b.x))[0]||MB.u.find(b=>b.k==='base'&&b.team===u.team);
     B.mode='order';B.goal={x:t.x-dir*90,y:u.home.y*0.6};return}
-  if(O&&O.kind==='attack'){const me=MB.me,near=MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&mbDist(o,me.dead?u:me)<MBBOT.engage);
+  if(O&&O.kind==='attack'){const me=MB.me,near=foeH.filter(o=>mbDist(o,me.dead?u:me)<MBBOT.engage);
     const tgt=near.length?near.reduce((a,b)=>a.hp/a.max<=b.hp/b.max?a:b):MB.u.filter(b=>(b.k==='tower'||b.k==='base')&&b.team!==u.team&&mbHittable(b)).sort((a,b)=>mbDist(a,u)-mbDist(b,u))[0];
     if(tgt){B.mode='order';B.focus=tgt;const a=Math.atan2(u.y-tgt.y,u.x-tgt.x),r=A.range*0.85+tgt.r+u.r;B.goal={x:tgt.x+Math.cos(a)*r,y:tgt.y+Math.sin(a)*r};return}}
   // 2. אזור מסומן של האויב: יוצאים ממנו (לא תמיד שמים לב)
@@ -70,6 +70,7 @@ function mbThink(u){
       B.goal={x:weak.x+Math.cos(a)*r,y:weak.y+Math.sin(a)*r};return}
     if(!brave&&fh.some(o=>mbDist(o,u)<MBKIT[o.kit].atk.range+90)){B.mode='kite';B.goal={x:u.x-dir*160,y:u.y*0.7};return}
   }
+  const ck=mbVisLost(u,foeH);if(ck){B.mode='check';B.goal=ck;return}   // איבדנו גיבור ליד שיח: בודקים אותו (moba-vision.js)
   // 5. גיבור אויב ליד מגדל שלנו: באים להגן
   const mine=MB.u.filter(b=>(b.k==='tower'||b.k==='base')&&b.team===u.team&&!b.dead);
   const threat=foeH.find(o=>mine.some(b=>mbDist(o,b)<MOBA.tower.range+60));
@@ -92,10 +93,10 @@ function mbThink(u){
 function mbBotSkills(u){
   if(u.st.stun>0||u.st.dash)return;
   const B=u.bot,K=MBKIT[u.kit],ready=s=>u.cd[s]<=0&&(s!=='ult'||u.lvl>=MOBA.ultAt);
-  const foeH=MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead);
-  const foes=MB.u.filter(o=>o.team!==u.team&&!o.dead&&(o.k==='hero'||o.k==='minion'));
+  const foeH=MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&mbSeen(o,u.team));
+  const foes=MB.u.filter(o=>o.team!==u.team&&!o.dead&&(o.k==='hero'||o.k==='minion')&&mbSeen(o,u.team));
   const near=(list,r,c=u)=>list.filter(o=>mbDist(o,c)<r+o.r);
-  const tgt=B.focus&&B.focus.k==='hero'&&!B.focus.dead?B.focus:mbNearest(u,foeH,650);
+  const tgt=B.focus&&B.focus.k==='hero'&&!B.focus.dead&&mbSeen(B.focus,u.team)?B.focus:mbNearest(u,foeH,650);
   const inR=s=>tgt&&mbDist(u,tgt)<=K[s].range;
   const allies=MB.u.filter(o=>o.k==='hero'&&o.team===u.team&&!o.dead);
   const allyLow=allies.some(o=>o.hp<o.max*0.4&&mbDist(o,u)<350);
