@@ -2074,15 +2074,15 @@ function worldBot(m,L,god){
       const edge=Math.min(w/2-Math.abs(L.x),h/2-Math.abs(L.y)),dec=Math.min(...worldDecor().map(d=>Math.hypot(d.x-L.x,d.y-L.y)-(d.kind==='hills'?130:0)));
       if(edge<CH.clear||dec<200)o.open.push(k+':'+Math.round(edge)+'/'+Math.round(dec))}
     const Q=QS(),was=Q.active.s1Warden;enemies.length=0;enterWorld('home','meadow');qStart(QBY.s1Warden);
-    const L=STORY.lanterns.earth;P.x=L.x;P.y=L.y+200;P.inv=1e9;storyUpdate(0.1);const e=S.wd.warden;o.warden=!!e;
+    const L=STORY.lanterns.earth,M=giantLair('earth');P.x=M.x;P.y=M.y+150;P.inv=1e9;storyUpdate(0.1);const e=S.wd.warden;o.warden=!!e;
     if(e){e.rise=0;e.hp=e.max/2;const hp=e.hp,B=placeBox();
       const run=(px,py,sec)=>{for(let t=0;t<sec;t+=0.05){P.x=px;P.y=py;storyWardenMove(e,0.05)}};
       const d0=Math.hypot(e.x-(L.x-600),e.y-(L.y+200));run(L.x-600,L.y+200,3);o.chase=!e.back&&Math.hypot(e.x-P.x,e.y-P.y)<d0-40;     // 600 מהפנס: עוד רודף
       run(L.x-1500,L.y+300,CH.giveUp+1);o.gaveUp=e.back&&e.say>0;                      // רחוק מספיק זמן: חוזר ואומר משהו
       run(L.x-300,L.y+150,0.2);o.back=!e.back;                                         // חוזרים אליו בדרך: הקרב ממשיך
-      run(L.x-1500,L.y+300,CH.giveUp+1);run(L.x-1500,L.y+300,60);o.dist=Math.round(Math.hypot(e.x-L.x,e.y-L.y-GIANT.lair));   // הדרך חזרה איטית (back מהמהירות)
-      o.home=Math.hypot(e.x-L.x,e.y-L.y-GIANT.lair)<20;o.heal=e.hp===e.max&&e.gone&&!S.wd.warden&&!enemies.includes(e);   // הגיע למאורה: מתרפא וחוזר לישון
-      P.x=L.x;P.y=L.y+150;storyUpdate(0.05);const e2=S.wd.warden;o.again=!!e2&&e2!==e&&e2.hp===e2.max;                  // מתקרבים: קם שוב
+      run(L.x-1500,L.y+300,CH.giveUp+1);run(L.x-1500,L.y+300,60);o.dist=Math.round(Math.hypot(e.x-M.x,e.y-M.y));   // הדרך חזרה איטית (back מהמהירות)
+      o.home=Math.hypot(e.x-M.x,e.y-M.y)<20;o.heal=e.hp===e.max&&e.gone&&!S.wd.warden&&!enemies.includes(e);   // הגיע למאורה: מתרפא וחוזר לישון
+      P.x=M.x;P.y=M.y+150;storyUpdate(0.05);const e2=S.wd.warden;o.again=!!e2&&e2!==e&&e2.hp===e2.max;                  // מתקרבים: קם שוב
       if(e2){e2.rise=0;e2.kx=9000;for(let t=0;t<0.5;t+=0.05){P.x=L.x;P.y=L.y+150;storyWardenMove(e2,0.05)}o.inside=e2.x>=B.x0&&e2.x<=B.x1&&e2.y>=B.y0&&e2.y<=B.y1;  // מכה חזקה לא מעיפה אותו אל הגבעות
         e2.dead=true;storyUpdate(0.1)}}
     delete STO().bt;
@@ -2936,7 +2936,7 @@ function worldBot(m,L,god){
     P.x=L.x+700;P.y=L.y;worldUpdate(0.016);o.asleep=!S.wd.warden&&Math.hypot(P.x-L.x,P.y-L.y)>L.warden.wake;
     SAVE.hero.level=1;const sh=[];const ft=ctx.fillText;ctx.fillText=function(t){sh.push(String(t));return ft.apply(this,arguments)};giantLairScreen('water',L,0,0);ctx.fillText=ft;
     o.sign=sh.some(t=>t===T('cu.rec',giantLv('water')));SAVE.hero.level=lv0;
-    P.x=L.x;P.y=L.y+GIANT.lair+200;worldUpdate(0.016);const e=S.wd.warden;o.noQuest=!!e&&e.warden==='water'&&!e.first;
+    {const m=giantLair('water');P.x=m.x;P.y=m.y+200}worldUpdate(0.016);const e=S.wd.warden;o.noQuest=!!e&&e.warden==='water'&&!e.first;
     if(e){P.inv=1e9;damage(e,e.hp*10,'sword',0,'physical');worldUpdate(0.016)}
     const bt=STO().bt.water,want=Math.round(GIANT.ladder.base*GIANT.ladder.ratio)*60000;
     o.timer=!!bt&&Math.abs(bt-Date.now()-want)<5000;o.saved=(JSON.parse(localStorage.getItem(SAVE_STORE.key)).story.bt||{}).water===bt;
@@ -2950,17 +2950,31 @@ function worldBot(m,L,god){
     'בוסים בטיימר: '+(gt.asleep?'ישן רחוק מהמאורה':'קם מרחוק')+(gt.sign?', שלט רמה מומלצת':', אין שלט')+(gt.noQuest?', קם גם בלי קווסט':', לא קם בלי קווסט')+
     (gt.timer?', ניצחון מתחיל טיימר':', אין טיימר')+(gt.saved?' שנשמר':' שלא נשמר')+(gt.loot?', שלל':', בלי שלל')+(gt.wait?', מחכה':', קם מיד')+
     (gt.back?', וחוזר כשהזמן עובר':', לא חוזר')+', דקות: '+gt.ladder);
+  // קפיצה לא נוחתת על הענק (ניר, 6.11: "אם אתה משתגר לפנס, הבוס ישר מופיע עליך"): בכל אזור, אחרי קפיצה לפנס הדולק (TRAVEL.arrive)
+  // ולכל אבן מסע (WAYSTONES.arrive), הענק לא קם, והמרחק מהמאורה לפחות GIANT.lair.safe. המאורה לא במכשול ועד leash מהפנס
+  const lj2=await page.evaluate(()=>{
+    const bad=[],st0=JSON.stringify(SAVE.story);let min=1e9;STO().bt={};
+    for(const k in STORY.lanterns){const L=STORY.lanterns[k],m=giantLair(k);STO()[k]=true;
+      enterWorld('home',L.reg);for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);
+      if(tBlocked(m.x,m.y))bad.push(k+': מאורה במכשול');if(Math.hypot(m.x-L.x,m.y-L.y)>STORY.chase.leash)bad.push(k+': מאורה רחוקה מהפנס');
+      const lands=[{n:'פנס',x:L.x,y:L.y+TRAVEL.arrive}].concat(wsList(L.reg).map(s=>({n:s.id,x:s.x,y:s.y+WAYSTONES.arrive})));
+      for(const l of lands){P.x=l.x;P.y=l.y;placeClamp(P);S.wd.warden=null;storyUpdate(0.016);
+        const d=Math.hypot(P.x-m.x,P.y-m.y);min=Math.min(min,Math.round(d));
+        if(S.wd.warden||d<GIANT.lair.safe)bad.push(k+'/'+l.n+': '+Math.round(d));
+        if(S.wd.warden){S.wd.warden.dead=true;enemies=enemies.filter(e=>!e.dead);S.wd.warden=null}}}
+    SAVE.story=JSON.parse(st0);saveNow();enterVillage();return{bad,min}});
+  check(!lj2.bad.length,'קפיצה ליד ענק: '+(lj2.bad.length?'נוחתים ליד המאורה ('+lj2.bad.join(', ')+')':'בכל 6 האזורים נוחתים רחוק מהמאורה (הכי קרוב '+lj2.min+'), והענק לא קם'));
   // שלבים בענקים (giant.js, GIANT.phase, ניר 5.11): מתחת ל-66% שלב 2 עם התקפה חדשה ורעידה, מתחת ל-33% שלב 3 עם מכה גדולה:
   // עיגול ⚠️ מתחת לשחקן שמתפוצץ אחרי fuse, ואפשר לצאת ממנו. הצל שומר על חמשת השלבים שלו
   const gph=await page.evaluate(()=>{
     const o={},L=STORY.lanterns.earth,hp0=P.hp,mx0=P.maxHp;enterWorld('home','meadow');for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);
-    P.x=L.x;P.y=L.y-150;P.hp=P.maxHp=1e9;P.inv=1e9;const e=storyWarden('earth',L.y+GIANT.lair);e.rise=0;S.wd.marks=[];
+    P.x=L.x;P.y=L.y-150;P.hp=P.maxHp=1e9;P.inv=1e9;const e=storyWarden('earth',L.y+70);e.rise=0;S.wd.marks=[];
     storyWardenMove(e,0.016);o.p1=!e.gph;
     S.shake=0;e.hp=e.max*0.6;storyWardenMove(e,0.016);o.p2=e.gph===1&&!!(e.pw&&e.pw.shoot)&&S.shake>=GIANT.phase.shake-0.01;
     e.hp=e.max*0.3;for(let t=0;t<GIANT.phase.big.first+0.2;t+=0.05){e.tel=null;e.dash=null;e.stun=0;P.x=L.x;P.y=L.y-150;storyWardenMove(e,0.05)}
     const B=(S.wd.marks||[]).find(m=>m.big);o.p3=e.gph===2&&!!B&&Math.hypot(B.x-P.x,B.y-P.y)<B.mk.r;
     if(B){S.wd.marks=[B];P.inv=0;P.hp=P.maxHp=1000;P.x+=B.mk.r*3;for(let i=0;i<120;i++)storyMarks(1/60);o.dodge=!B.hit&&P.hp===1000}
-    const sh=storyWarden('light',L.y+GIANT.lair);sh.rise=0;sh.hp=sh.max*0.3;storyWardenMove(sh,0.016);o.shade=sh.gph===2&&sh.phases===true&&!!sh.pk;
+    const sh=storyWarden('light',L.y+70);sh.rise=0;sh.hp=sh.max*0.3;storyWardenMove(sh,0.016);o.shade=sh.gph===2&&sh.phases===true&&!!sh.pk;
     for(const x of [e,sh])x.dead=true;enemies=enemies.filter(x=>!x.dead);S.wd.warden=null;S.wd.marks=[];P.inv=0;P.maxHp=mx0;P.hp=hp0;enterVillage();return o});
   check(gph.p1&&gph.p2&&gph.p3&&gph.dodge&&gph.shade,'שלבים בענקים: '+(gph.p1?'מתחיל בשלב 1':'לא מתחיל בשלב 1')+(gph.p2?', שלב 2 עם התקפה חדשה ורעידה':', שלב 2 שבור')+
     (gph.p3?', שלב 3 עם מכה גדולה מתחת לשחקן':', אין מכה גדולה')+(gph.dodge?' שאפשר לצאת ממנה':', אי אפשר לצאת ממנה')+(gph.shade?', הצל שומר על השלבים שלו':', השלבים של הצל נשברו'));
