@@ -78,7 +78,7 @@ function travelHtml(){
       '<button class="vbtn trgo" data-act="tjump" data-k="'+i.k+'" style="--trc:'+i.col+'"'+(why?' disabled':'')+'>'+i.ico+' '+i.name+'</button>').join('')+'</div></div>').join('')+'</div>';
 }
 const trWin=(()=>{const w=document.createElement('div');w.id='trWin';w.className='qlog win trwin';w.hidden=true;$('wMap').after(w);return w})();
-WINS.unshift({id:'trWin',close:()=>travelWin(false)});   // Esc סוגר (ui.js)
+addEventListener('load',()=>WINS.unshift({id:'trWin',close:()=>travelWin(false)}));   // Esc סוגר (WINS ב-ui.js, שנטען אחרי הקובץ הזה)
 let trMode='';
 // פתיחה וסגירה. בעולם המשחק עוצר בזמן הבחירה, כמו במפה
 function travelWin(on){
