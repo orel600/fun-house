@@ -2471,6 +2471,29 @@ function worldBot(m,L,god){
     'סודות בעולם: '+(sec.bad.length?'מחוץ לאזור או במים: '+sec.bad.join(','):'כל המקומות תקינים')+(sec.shown?', תיבה נחשפת':', התיבה לא נחשפה')+(sec.chest?' ונפתחת':' ולא נפתחת')+
     (sec.bless?', מקדש מברך':', המקדש לא מברך')+(sec.blessEnd?' והברכה נגמרת':' והברכה לא נגמרת!')+(sec.look?', תצפית חושפת':', התצפית לא עובדת')+
     (sec.read?', סימן בעץ':', הסימן לא נקרא')+(sec.sniff?', פיוחו רצה':'')+(sec.dug?' וחופרת אוצר':' ולא חפרה')+', '+sec.count+' באחו ("'+sec.hud+'"), נשמר '+sec.saved+', באגם '+sec.lake+', ברכס '+sec.ridge);
+  // פעמון הערפל והגשרים הצפים באגם (lake-bell.js): כפתור ליד הפעמון, צלצול, הערפל נחלש וחוזר, המתנה בין צלצולים, התיבה הטבועה, וגשר שחורק
+  const lbl=await page.evaluate(()=>{
+    const o={};SAVE.lakeBell={};LB.cd=0;LB.t=0;LB.k=0;enterWorld('home','lake');for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);
+    const bl=lbBell(),b=$('bellBtn'),tap=()=>b.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true})),n=k=>AUDIO.count[k]||0;
+    o.bell=!!bl&&!tBlocked(bl.x,bl.y);P.x=bl.x+40;P.y=bl.y+20;lakeBellUpdate(0.05);o.btn=!b.hidden;
+    const f0=FOG.alpha,far0=typeof HD!=='undefined'?HD.air.far:0,s0=n('bell');tap();o.ring=LB.t>0&&n('bell')>s0;
+    for(let i=0;i<10;i++)lakeBellUpdate(0.5);o.clear=FOG.alpha<f0*0.5&&(typeof HD==='undefined'||HD.air.far>far0);o.fog=Math.round(f0*100)+'→'+Math.round(FOG.alpha*100);
+    const t1=LB.t;tap();o.block=LB.t<=t1;
+    const sc=lbSecret();o.scOk=!tBlocked(sc.x,sc.y);const d0=drops().length;P.x=sc.x;P.y=sc.y;lakeBellUpdate(0.05);o.found=!!LBS().found&&drops().length>d0;
+    for(let i=0;i<70;i++)lakeBellUpdate(1);o.end=LB.t===0&&LB.k===0&&Math.abs(FOG.alpha-f0)<1e-9&&(typeof HD==='undefined'||HD.air.far===far0);
+    P.x=bl.x+40;P.y=bl.y+20;lakeBellUpdate(0.05);o.wait=LB.cd>0&&!b.hidden&&/\d:\d\d/.test(b.textContent);
+    for(let i=0;i<120;i++)lakeBellUpdate(1);o.again=!(LB.cd>0)&&!/\d:\d\d/.test(b.textContent);
+    const br=WR().map.bridges[0],c0=n('creak');P.x=br.x;P.y=br.y;lakeBellUpdate(0.05);o.bridge=LB.onB===0&&n('creak')>c0&&!tBlocked(br.x,br.y);
+    P.moving=true;for(let i=0;i<5;i++)lakeBellUpdate(0.4);o.rip=LB.rip.length>0;P.moving=false;
+    o.saved=!!(JSON.parse(localStorage.getItem(SAVE_STORE.key)).lakeBell||{}).found;
+    P.x=bl.x+40;P.y=bl.y+60;LB.cd=0;tap();for(let i=0;i<6;i++)lakeBellUpdate(0.5);   // לצילום: הערפל למטה, ליד הפעמון
+    return o});
+  if(CFG.shots){await page.clock.runFor(300);await shot('world-lake-bell')}
+  await page.evaluate(()=>{LB.t=0;LB.k=0;LB.cd=0;enterVillage()});
+  check(lbl.bell&&lbl.btn&&lbl.ring&&lbl.clear&&lbl.block&&lbl.scOk&&lbl.found&&lbl.end&&lbl.wait&&lbl.again&&lbl.bridge&&lbl.rip&&lbl.saved,
+    'פעמון הערפל: '+(lbl.btn?'כפתור ליד הפעמון':'אין כפתור ליד הפעמון')+(lbl.ring?', מצלצל':', לא מצלצל')+(lbl.clear?', הערפל נחלש ('+lbl.fog+')':', הערפל לא נחלש')+
+    (lbl.block?', אי אפשר לצלצל שוב מיד':', אפשר לצלצל בלי סוף!')+(lbl.found?', התיבה הטבועה נמצאה':', התיבה הטבועה לא נמצאה')+(lbl.saved?' ונשמרה':'')+(lbl.end?', הערפל חוזר':', הערפל לא חוזר!')+
+    (lbl.wait?', שעון המתנה':', אין שעון המתנה')+(lbl.again?' ואחריו שוב מוכן':' והוא לא נגמר')+(lbl.bridge?', גשר צף חורק':', הגשר לא חורק')+(lbl.rip?' ועושה אדוות':''));
   // אויבים מיוחדים בעולם (affix.js): מתפצל נותן שניים, מתפוצץ פוגע אחרי רגע, מתחדש מרפא, ולכולם שם ושלל
   const afx=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=enemies.length,L=WORLD.foes[3],mk=id=>{const e=addEnemy('grunt',P.x+60,P.y,1);e.home=3;affixSet(e,id);return e};
@@ -2517,10 +2540,10 @@ function worldBot(m,L,god){
     try{
       const g0=WR().foes.findIndex(G=>G.type==='grunt'&&!G.creature),G=WR().foes[g0];P.x=G.x;P.y=G.y;
       for(let i=0;i<5;i++){const a=i/5*6.28,e=addEnemy('grunt',P.x+Math.cos(a)*120,P.y+Math.sin(a)*120,1);e.home=g0;e.zone='far';e.alert=99;e.hp=e.max=1e6;foeAiInit(e);e.ai='flank';e.caller=0}
-      const busy=e=>e.sw>0||['wind','dash','aim','crouch','jump'].includes(e.act);let maxA=0,maxT=0,moved=0;const held=new Set(),p0=enemies.map(e=>[e.x,e.y]);
+      const busy=e=>e.sw>0||['wind','dash','aim','crouch','jump'].includes(e.act);let maxA=0,maxT=0,moved=0;const held=new Set(),last=enemies.map(e=>[e.x,e.y]),path=enemies.map(()=>0);   // דרך שעברו, לא מרחק מההתחלה: מי שמקיף חוזר לפעמים קרוב לנקודת ההתחלה (#381 נכשל לסירוגין)
       for(let i=0;i<400;i++){S.wd.t+=0.05;wFoes(0.05);const live=enemies.filter(e=>!e.dead);
-        maxA=Math.max(maxA,live.filter(busy).length);maxT=Math.max(maxT,live.filter(e=>e.tok>0).length);live.forEach(e=>{if(e.tok>0)held.add(e)})}
-      enemies.forEach((e,i)=>{if(Math.hypot(e.x-p0[i][0],e.y-p0[i][1])>40)moved++});
+        maxA=Math.max(maxA,live.filter(busy).length);maxT=Math.max(maxT,live.filter(e=>e.tok>0).length);live.forEach(e=>{if(e.tok>0)held.add(e)});enemies.forEach((e,j)=>{path[j]+=Math.hypot(e.x-last[j][0],e.y-last[j][1]);last[j]=[e.x,e.y]})}
+      moved=path.filter(x=>x>300).length;   // 20 שניות: כל אחת זזה לפחות 300 (בפועל 1000-1200)
       Object.assign(o,{maxA,maxT,held:held.size,moved,n:enemies.filter(e=>!e.dead).length});
     }finally{hurt=h0}
     enemies=[];eb=[];enterVillage();return o});
@@ -3521,7 +3544,7 @@ function worldBot(m,L,god){
     check(L.bossDown!=null,'בוס הובס: '+t(L.bossDown));
     check(L.won!=null,'ניצחון: הבוס בסוף הובס והריצה נגמרה '+t(L.won));
   }
-  const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null));
+  const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null)&&!['bell','creak'].includes(id));   // bell, creak: נבדקים בבדיקת פעמון הערפל, שרצה אחרי הצילום של הצלילים
   check(au.unlocked&&!quiet.length,'צלילים: '+au.ids.map(id=>id+' '+(au.count[id]||0)).join(', ')+(au.unlocked?'':' · לא נפתחו בנגיעה')+(quiet.length?' · לא נשמעו: '+quiet.join(', '):''));
   check(!au.errors.length&&au.loaded===au.ids.length,'קבצי צליל: נטענו '+au.loaded+' מתוך '+au.ids.length+(au.errors.length?' · שגיאות: '+[...new Set(au.errors)].join(', '):''));
   check(au.open&&au.mute&&au.vSaved&&au.closed,'חלון צלילים: '+(au.open?'נפתח מהרמקול':'לא נפתח')+(au.mute?', השתקה עובדת ונשמרת':', השתקה לא עובדת')+
