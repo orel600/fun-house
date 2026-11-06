@@ -3461,6 +3461,20 @@ function worldBot(m,L,god){
        for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);for(let i=0;i<20;i++)mobaUpdate(1/30)}
        MB.u.splice(MB.u.indexOf(h),1)}
      e.hp=e.max=MBKIT[e.kit].hp}
+    // הסקילים שהחליפו זינוק וריפוי (6.11, docs/moba-plan.md פרק 2), בתרחיש קבוע: אין יותר charge, leap ו-heal ב-MBKIT. רשת ציד לוכדת (st.root):
+    // לא זז, כן תוקף, ואחרי זה חסינות קצרה. כלא מים מרים ומרטיב, וברק אחריו = חשמול. גל חרב מהמם ומאט לאורך קו
+    {const e=mbHeroes(1)[0],R={},ow=mbWord,w0={},ex=e.x,ey=e.y,clr=()=>{Object.assign(e.st,{wet:0,imm:0,stun:0,taunt:0,root:0,bub:0,slow:0,armor:0,rage:0,shield:0,dash:null});e.dead=false;e.hp=e.max=1e6};
+     mbWord=function(u,w){w0[w]=(w0[w]||0)+1;return ow(u,w)};
+     const ids=Object.values(MBKIT).flatMap(K=>MB_SLOTS.map(sl=>K[sl].id));R.gone=['charge','leap','heal'].filter(i=>ids.includes(i));R.new=['cleave','net','bubble'].every(i=>ids.includes(i));
+     const add=k=>{const h=mbHero(k,0,false,1);h.x=e.x-200;h.y=e.y;MB.u.push(h);return h},del=h=>MB.u.splice(MB.u.indexOf(h),1),run=(n,f)=>{for(let i=0;i<n&&!f();i++)mbShots(1/30)};
+     clr();let h=add('hunter');mbCast(h,'s2',e);run(40,()=>e.st.root>0);R.root=e.st.root>0&&w0.root>0;
+     const x0=e.x,y0=e.y;mbMove(e,e.x+300,e.y,0.5);R.still=Math.hypot(e.x-x0,e.y-y0)<0.5&&!e.moving;
+     h.x=e.x-(e.r+h.r+5);h.y=e.y;e.atkT=0;R.atk=mbAttack(e,0,h,MBKIT[e.kit].atk)&&e.atkT>0;
+     for(let i=0;i<60;i++)mbTick(e,1/30);R.free=!(e.st.root>0)&&e.st.imm>0&&!mbCC(e,'root',1,h);del(h);
+     clr();h=add('mage');mbCast(h,'s2',e);const z=MB.zones.pop();z.fire(z);R.bub=e.st.bub>0&&e.st.stun>0&&e.st.wet>0;
+     const sh=w0.shock||0,d0=mbDmg(null,e,100,'lightning');R.shock=(w0.shock||0)>sh&&d0>100;del(h);
+     clr();h=add('warrior');mbCast(h,'s1',e);run(40,()=>e.st.stun>0);R.cleave=e.st.stun>0&&e.st.slow>0;del(h);
+     mbWord=ow;clr();e.hp=e.max=MBKIT[e.kit].hp;e.x=ex;e.y=ey;o.newSk=R}
     // טנק ולוחם יעילים, ואפקטים (moba-kits.js, moba-fx.js), בתרחיש קבוע: זינוק של תקיפה רגילה אל מטרה קצת מחוץ לטווח, מגן שסופג,
     // חלקיקים מוגבלים, עצירת פריים במכה קריטית של השחקן, ורגע הסקיל-על (הילוך איטי ושם הסקיל). gap: הכי קרוב שהגיע, כי אחרי המכה הבוט יכול ללכת
     {const e=mbHeroes(1)[0],r={},ex=e.x,ey=e.y;Object.assign(e.st,{stun:9,taunt:0,imm:0,shield:0,armor:0,rage:0,slow:0,dash:null});e.dead=false;e.hp=e.max=1e6;
@@ -3855,6 +3869,9 @@ function worldBot(m,L,god){
     {const d=mb.diff||{},r=mb.flow||{};
      check(d.n===3&&d.one&&d.saved&&d.back&&d.game&&r.diff,'משחקי השאול: קושי: '+(d.n===3?'3 כפתורים':(d.n||0)+' כפתורים')+(d.one?', אחד מסומן':', הסימון שגוי')+(d.saved&&d.back?', נשמר':', לא נשמר')+(d.game?', המשחק לפי הבחירה':', המשחק לא לפי הבחירה')+(r.diff?', משנה רק את המוח של האויבים':', לא משנה את הבוטים'));
      check(r.shield&&r.bounty&&r.resp&&r.late&&r.haste&&r.xp&&r.recall,'משחקי השאול: זרימה: '+[r.shield?'מגן מגדל בהתחלה ✓':'מגן מגדל ✗',r.bounty?'זהב חזרה ✓':'זהב חזרה ✗',r.resp&&r.late?'חזרה מהירה בהתחלה ✓':'זמן חזרה ✗',r.haste?'ריצה מהבסיס ✓':'ריצה מהבסיס ✗',r.recall?'גם אחרי חזרה לבסיס ✓':'אחרי חזרה לבסיס ✗',r.xp?'XP ברדיוס רחב ✓':'XP ✗'].join(', '))}
+    {const R=mb.newSk||{};check(R.gone&&!R.gone.length&&R.new,'משחקי השאול: אין יותר זינוק או ריפוי בסקילים (גל חרב, רשת ציד וכלא מים במקומם)'+(R.gone&&R.gone.length?' · עוד יש: '+R.gone.join(', '):''));
+     check(R.root&&R.still&&R.atk&&R.free,'משחקי השאול: רשת ציד: לכוד '+(R.root?'✓':'✗')+', לא זז '+(R.still?'✓':'✗')+', תוקף '+(R.atk?'✓':'✗')+', ואחרי זה חסין לרגע '+(R.free?'✓':'✗'));
+     check(R.bub&&R.shock&&R.cleave,'משחקי השאול: כלא מים מרים ומרטיב '+(R.bub?'✓':'✗')+', ברק אחריו = חשמול '+(R.shock?'✓':'✗')+' · גל חרב מהמם ומאט '+(R.cleave?'✓':'✗'))}
     const cb=mb.combo||{};check(cb.shock>0&&Math.abs(cb.k-cb.want)<0.01&&cb.freeze>0&&cb.frozen,'משחקי השאול: קומבו בתרחיש קבוע: חשמול '+(cb.shock?'✓ נזק ×'+cb.k:'לא קרה')+', קפוא '+(cb.freeze&&cb.frozen?'✓ הקפאה ארוכה':'לא קרה'));
     check(mb.cc.stun>0&&mb.cc.taunt>0,'משחקי השאול: שליטה בקהל על גיבורים: הלם '+mb.cc.stun+', הכרחה '+mb.cc.taunt+' · קומבו: חשמול '+(mb.cmb.shock||0)+', קפוא '+(mb.cmb.freeze||0));
     {const V=mb.vis||{},ks={far:'רחוק: לא מצויר ולא מכוונים',near:'נכנס לטווח: מופיע',bush:'בשיח: נסתר מהאויב',ally:'חבר בשיח: נראה, שקוף',same:'מאותו שיח: נראה',atk:'תקיפה חושפת לשנייה',rev:'חשיפת אזור'};

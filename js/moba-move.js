@@ -15,6 +15,7 @@ const MBMOVE={
   anim:{min:0.6,max:1.6},
   atk:{tank:'Melee_2H_Attack_Chop',warrior:'Melee_1H_Attack_Slice_Horizontal',hunter:'Ranged_Bow_Release',mage:'Ranged_Magic_Shoot'},   // תקיפה של בוט בתלת-ממד
   minIdle:'Idle_Combat',
+  lift:22,                  // כלא מים (bubble): כמה גבוה הבועה מרימה דמות בתלת-ממד
 };
 const mbAng=a=>Math.atan2(Math.sin(a),Math.cos(a));
 const mbRot=u=>u.rot??u.face;
@@ -27,6 +28,8 @@ function mbSeparate(mob,dt){
     if(Math.abs(dx)>rr||Math.abs(dy)>rr)continue;const d=Math.hypot(dx,dy);if(d>=rr)continue;
     const ux=d>0.01?dx/d:Math.cos(a.id),uy=d>0.01?dy/d:Math.sin(a.id),over=rr-d;
     if(hm&&MBMOVE.heroThroughMinion){const m=a.k==='minion'?a:b,s=m===a?-1:1,p=Math.min(over,C.yield*dt);mbStep(m,s*ux*p,s*uy*p);continue}
+    const ra=a.st.root>0,rb=b.st.root>0;   // לכוד ברשת (st.root) לא נדחף: רק השני זז
+    if(ra!==rb){const p=Math.min(over,C.rate*dt);if(ra)mbStep(b,ux*p,uy*p);else mbStep(a,-ux*p,-uy*p);continue}
     const p=Math.min(over/2,C.rate*dt);mbStep(a,-ux*p,-uy*p);mbStep(b,ux*p,uy*p)}
 }
 // אחרי שכולם זזו: סיבוב רך, ומהירות אמיתית בשביל האנימציה
@@ -61,7 +64,7 @@ function mb3dUnit(e,dt){
   if(!spawn){const mv=mbMoving(e),idle=e.k==='hero'?L.anim.idle:R3D.clips[MBMOVE.minIdle]?MBMOVE.minIdle:null,busy=a.one&&a.one.isRunning()&&!spawn;
     if(mv||!idle)loop(a,L.anim.run+(busy&&R3D.clips[L.anim.run+'@low']?'@low':''),mv?mbAnimK(e):MBMOVE.anim.min);
     else loop(a,idle+(busy&&R3D.clips[idle+'@low']?'@low':''),1)}
-  place(a,e.x,e.y,L.foot,null);const r=mbRot(e);a.root.rotation.y=yawOf(Math.cos(r),Math.sin(r));
+  place(a,e.x,e.y,L.foot,null,e.st.bub>0?MBMOVE.lift*Math.min(1,e.st.bub*4,(1-e.st.bub)*6+0.3):0);const r=mbRot(e);a.root.rotation.y=yawOf(Math.cos(r),Math.sin(r));   // lift: כלא מים מרים את הדמות
   setFlash(a,e.flash>0?0.9:0,0xffffff);
   if(a.sc0&&typeof juiceSquash==='function'){const q=juiceSquash(e);a.root.scale.set(a.sc0*(1+q),a.sc0*(1-q),a.sc0*(1+q))}
   a.mixer.update(dt);a.prev.x=e.x;a.prev.y=e.y;
