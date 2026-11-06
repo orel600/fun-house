@@ -1194,6 +1194,7 @@ const TEXT={
   'gear.vs':{he:s=>'במקום '+s,en:s=>'Replaces '+s},
   'gear.dmg':{he:r=>'נזק '+r,en:r=>'Damage '+r},
   'gear.same':{he:'בלי שינוי',en:'No change'},
+  'pow.hero':{he:'עוצמה',en:'Power'},   // מספר העוצמה של הגיבור, בראש טור הסטטים (power.js)
   // טור הסטטים בחלון הציוד (gearui.js)
   'gui.stats':{he:'סטטים',en:'Stats'},
   'gui.q':{he:(n,r)=>'איכות: '+n+' מתוך '+r,en:(n,r)=>'Quality: '+n+' of '+r},
@@ -1428,7 +1429,7 @@ const TEXT={
   'bw.sellT':{he:'למכור (מהתרמיל)',en:'Sell (from your bag)'},
   'bw.buyT':{he:'לקנות',en:'Buy'},
   'bw.have':{he:n=>'יש לך '+n,en:n=>'You have '+n},
-  'ic.pow':{he:'כוח',en:'Power'},
+  'ic.pow':{he:'עוצמה',en:'Power'},
   'ic.new':{he:'משבצת ריקה!',en:'Empty slot!'},
   'ic.buy':{he:'קנה',en:'Buy'},
   'ic.for':{he:c=>'מתאים ל'+c,en:c=>'Made for the '+c},

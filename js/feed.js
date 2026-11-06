@@ -41,7 +41,7 @@ function feedAdd(icon,txt,col,key,n,tint){
 function feedRes(r,n){feedAdd(resIcon(r),resName(r),(dropTier(r)||{}).col||C.gold,'r:'+r,n)}
 
 // ציוד: "ציוד! חרב עץ" בצבע הדרגה. כשנופל וכשנאסף זו אותה שורה
-function feedGear(id){feedAdd(gIcon(id),T('loot.gear')+' '+gName(id),dropTier(id).col,'g:'+id,0,true)}
+function feedGear(id){feedAdd(gIcon(id),T('loot.gear')+' '+gName(id)+powTag(id),dropTier(id).col,'g:'+id,0,true)}
 
 // הגבול התחתון: מעל הסקילים וכפתורי ההקשר שבחצי הימני של המסך
 function feedBottom(){
