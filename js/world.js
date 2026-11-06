@@ -296,6 +296,7 @@ function worldUpdate(dt){
   const {ix,iy}=movePlayer(dt);if(P.moving&&!nearest(440))P.aim=Math.atan2(iy,ix);
   ridgeSlip(dt);   // אגם קפוא: החלקה (ridge-hazards.js)
   placeClamp(P);
+  srUpdate(dt);   // הסלעים המרחפים בלב הצל: זזים ולוקחים את השחקן איתם (shadowrocks.js)
   for(const n of S.nd.list){
     if(n.dead){if((n.back-=dt)<=0){n.dead=false;n.hp=n.max}continue}
     const dx=P.x-n.x,dy=P.y-n.y,d=Math.hypot(dx,dy)||1,min=n.r+P.r;if(d<min){P.x=n.x+dx/d*min;P.y=n.y+dy/d*min}   // לא עוברים דרך עץ
@@ -438,7 +439,9 @@ function drawWorld(){
   if(WR().heat)wHeat();   // המדבר הבוער
   riverDraw();   // נהר הברקים (storm-river.js)
   if(WR().storm)wStorm();   // מגדלי הסערה
+  srDraw();   // הסלעים המרחפים (shadowrocks.js)
   if(WR().shadow)wShadow();   // לב הצל
+  srGlow();   // הזוהר של הסלעים המרחפים, מעל החושך
   mutDraw();   // גשם או ערפל של היום (mutation.js)
 }
 // מים שאי אפשר ללכת בהם: דוחפים החוצה, כמו מעץ

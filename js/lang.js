@@ -1016,6 +1016,7 @@ const TEXT={
   'tip.for':{he:s=>'בשביל: '+s,en:s=>'For: '+s},
   'tip.craft':{he:'יצירת ציוד',en:'crafting gear'},
   'tip.aging':{he:'שדרוג ציוד (Aging)',en:'gear upgrades (Aging)'},
+  'sr.hint':{he:'סלעים מרחפים: כשגשר האור דולק, אפשר לעבור',en:'Floating rocks: cross when the light bridge glows'},'sr.fall':{he:'נפלת לתהום! חזרה לשפה',en:'You fell into the abyss! Back to the edge'},
   'node.tree':{he:'עצים',en:'trees'},'node.rock':{he:'סלעים',en:'rocks'},'node.bush':{he:'שיחים',en:'bushes'},
   'node.copper':{he:'עורק נחושת',en:'copper veins'},'node.iron':{he:'עורק ברזל',en:'iron veins'},'node.silver':{he:'עורק כסף',en:'silver veins'},
   'node.gold':{he:'עורק זהב',en:'gold veins'},'node.mythril':{he:'עורק מיתריל',en:'mythril veins'},
