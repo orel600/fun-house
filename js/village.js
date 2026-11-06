@@ -244,7 +244,7 @@ function villageHud(){
   // כל מבנה: חלון גדול בתבנית אחת, עם לשוניות "מה עושים כאן" ו"שדרוג" (bwin.js). השער: חלון קטן משלו
   const pn=$('vPanel'),bw=!!cur&&cur!=='gate';
   pn.hidden=!cur;pn.classList.toggle('big',bw);pn.classList.toggle('bw',bw);document.body.classList.toggle('vpan',!pn.hidden);if(pn.hidden)return;
-  if(cur==='gate'){pn.innerHTML=travelGateHtml()||winHead(T('vil.out'))+'<p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
+  if(cur==='gate'){pn.innerHTML=winHead(T('vil.out'))+'<p>'+T('vil.outInfo')+'</p><button class="vbtn" data-act="go">'+T('vil.leave')+'</button>';return}
   const keep=pn.querySelector('.bwbody')&&pn.dataset.k===k?[...pn.querySelectorAll('.bwbody,.bwgrid')].map(e=>e.scrollTop):null;
   pn.innerHTML=bwBuilding(k);pn.dataset.k=k;
   if(keep)[...pn.querySelectorAll('.bwbody,.bwgrid')].forEach((e,i)=>{if(keep[i])e.scrollTop=keep[i]});   // נגיעה בכרטיס לא קופצת לראש הרשימה
@@ -255,7 +255,6 @@ $('vPanel').addEventListener('click',e=>{
   if(a==='go'){leaveVillage();return}
   if(a==='close'){vShut();return}
   if(a==='tab'){(S.vil.tab||(S.vil.tab={}))[S.vil.near]=b.dataset.tab;sfx('ui');villageHud();return}   // לשונית בחלון המבנה (bwin.js)
-  if(a==='jump'){travelGo(b.dataset.k);return}   // קפיצה לפנס דולק (travel.js)
   if(a&&a.startsWith('deco')){decoAct(a,b.dataset);villageHud();return}   // חנות הקישוטים בשוק (deco.js)
   if(!S.vil.near)return;
   if(a==='forge'){forgeOpen();return}
@@ -272,8 +271,8 @@ function vShut(){if(!S.vil)return;S.vil.open=null;villageHud()}
 function vOpen(k){
   if(!S.vil||S.mode!=='play'||!k||!$('ovWelcome').hidden)return false;
   if(!$('npcDlg').hidden)npcTalk(null);
-  // שער בלי פנס דולק: אין מה לבחור, אז הכפתור יוצא ישר לעולם
-  if(k==='gate'&&!travelLit().length){leaveVillage();return true}
+  // השער: חלון הקפיצה האחד (travel.js). בלי פנס דולק ובלי אבן מסע אין מה לבחור, אז הכפתור יוצא ישר לעולם
+  if(k==='gate'){travelOpen(leaveVillage);return true}
   S.vil.open=k;if(k!=='gate')S.vil.near=k;sfx('ui');villageHud();return true;
 }
 // הכפתור הקבוע של המקום בסרגל: "להיכנס: מנסרה" ליד מבנה, "לעולם" ליד השער. נעלם כשהפאנל של המקום הזה פתוח

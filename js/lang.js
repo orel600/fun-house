@@ -1936,11 +1936,9 @@ Object.assign(TEXT,{
 // ======== קפיצה בין פנסים (travel.js) ========
 Object.assign(TEXT,{
   'tr.where':{he:'לאן?',en:'Where to?'},
-  'tr.mapHint':{he:'נגע באי עם פנס דולק כדי לקפוץ אליו',en:'Tap an island with a lit lantern to jump there'},
-  'tr.jump':{he:r=>'קפוץ ל'+r,en:r=>'Jump to '+r},
+  'tr.village':{he:'הכפר',en:'The village'},'tr.entry':{he:'הכניסה לאחו',en:'Meadow entrance'},'tr.lantern':{he:'הפנס',en:'The lantern'},
   'tr.at':{he:r=>'🏮 '+r,en:r=>'🏮 '+r},
   'tr.home':{he:'🏮 חזרה לכפר',en:'🏮 Back home'},
-  'tr.homeBtn':{he:'חזרה לכפר',en:'Go home'},
   // כפתורי ההקשר העגולים (docs/plan-hud.md): מילה אחת מתחת לאייקון. המשפט המלא נשאר לקורא מסך (aria-label)
   'ctx.talk':{he:'לדבר',en:'Talk'},
   'ctx.feed':{he:'להאכיל',en:'Feed'},
@@ -1974,8 +1972,6 @@ Object.assign(TEXT,{
   'ws.woke':{he:n=>'🗿 קמת ליד '+n,en:n=>'🗿 You woke at the '+n},
   'ws.respawn':{he:'לקום באבן המסע',en:'Wake up at the waystone'},
   'ws.btn':{he:'מסע',en:'Travel'},'ws.btnAria':{he:'קפיצה לאבן מסע אחרת',en:'Travel to another waystone'},
-  'ws.hint':{he:'עמדו ליד אבן מסע כדי לקפוץ',en:'Stand by a waystone to travel'},
-  'ws.only':{he:'זו אבן המסע היחידה שמצאת. מצאו עוד כדי לקפוץ',en:'This is the only waystone you found. Find more to travel'}
 });
 
 // ======== סודות בעולם (secrets.js) ========

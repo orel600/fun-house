@@ -2373,48 +2373,53 @@ function worldBot(m,L,god){
     'הפונדק (inn.js): '+(inn.btn&&inn.open?'הקיצור 🍲 פותח את דודה פלפל':'הקיצור לא פותח את הפונדק')+', '+inn.n+' משימות על הלוח'+(inn.rum?' ושמועה':', בלי שמועה')+
     (inn.on?', לקחתי את '+inn.id:', הלקיחה נכשלה')+(inn.dot0&&inn.dot?', נקודה אדומה כשהיא מוכנה':', הנקודה האדומה לא עובדת ('+[inn.dot0,inn.dot,inn.dotW]+')')+(inn.claim&&inn.paid&&inn.gone?', הפרס נאסף והמשימה ירדה מהלוח':', האיסוף נכשל')+
     (inn.dotOff?'':', הנקודה נשארה')+(inn.restBtn&&inn.armed&&inn.xp&&inn.chip?', מנוחה: +XP ושבב בעולם':', המנוחה לא עובדת')+(inn.weak?', הריגה בסוג הנזק נספרת':', הריגה בסוג הנזק לא נספרת')+(inn.leak?', עברית באנגלית: '+inn.leak:''));
-  // קפיצה בין פנסים (travel.js): בשער בכפר "לאן?" עם הפנסים הדולקים, קפיצה לאגם ליד פנס המים, "חזרה לכפר" ליד הפנס (לא באמצע קרב), וקפיצה ממפת העולם
-  const lj=await page.evaluate(()=>{const o={};SAVE.story.water=true;P.inv=99;npcTalk(null);enterVillage();$('ovDaily').hidden=true;
-    S.vil.gate=true;S.vil.open='gate';S.vil.ui='';villageHud();o.list=document.querySelectorAll('#vPanel [data-act="jump"]').length;o.lit=travelLit().length;
-    const b=document.querySelector('#vPanel [data-act="jump"][data-k="water"]');if(b)b.click();return o});
-  await page.clock.runFor(1200);
-  Object.assign(lj,await page.evaluate(()=>{const o={},L=STORY.lanterns.water;P.inv=99;
-    o.reg=S.wd&&S.wd.reg;o.at=!!S.wd&&Math.hypot(P.x-L.x,P.y-L.y)<TRAVEL.arrive+30;
-    for(const e of enemies)e.dead=true;P.x=L.x;P.y=L.y+60;travelUpdate();o.btn=!$('trBtn').hidden;
-    const e=addEnemy('grunt',P.x+30,P.y,1);o.fight=travelBlock()==='fight';$('trBtn').click();o.stay=!!S.wd;e.dead=true;
-    $('trBtn').click();return o}));
-  await page.clock.runFor(1200);
-  Object.assign(lj,await page.evaluate(()=>{const o={};o.home=!!S.vil&&!S.wd;
-    enterWorld('home');for(const e of enemies)e.dead=true;wmapOpen(true);travelMapPick('ridge');const b=document.querySelector('#wMap [data-act="jump"]');o.mapBtn=!!b;if(b)b.click();return o}));
-  await page.clock.runFor(1200);
-  Object.assign(lj,await page.evaluate(()=>{const o={ridge:!!S.wd&&S.wd.reg==='ridge'&&$('wMap').hidden};P.inv=0;enterVillage();return o}));
-  check(lj.list===lj.lit&&lj.lit>=2&&lj.reg==='lake'&&lj.at&&lj.btn&&lj.fight&&lj.stay&&lj.home&&lj.mapBtn&&lj.ridge,'קפיצה בין פנסים: '+(lj.list===lj.lit?lj.list+' פנסים דולקים בשער':'השער מציג '+lj.list+' מתוך '+lj.lit+' פנסים')+
-    (lj.reg==='lake'&&lj.at?', קפיצה לפנס המים':', הקפיצה לאגם נכשלה ('+lj.reg+')')+(lj.btn?', "חזרה לכפר" ליד הפנס':', אין כפתור ליד הפנס')+(lj.fight&&lj.stay?' (לא באמצע קרב)':', קופצים באמצע קרב!')+
-    (lj.home?', חזרה לכפר':', החזרה לכפר נכשלה')+(lj.mapBtn&&lj.ridge?', וקפיצה ממפת העולם לרכס':', הקפיצה מהמפה נכשלה'));
-  // אבני מסע (waystones.js): אבן נפתחת כשמגיעים, ערפל המפה נפתח, קפיצה מהכפר ומאבן לאבן (לא באמצע קרב), וקימה באבן אחרי מוות
-  const wayst=await page.evaluate(()=>{const o={},bak=JSON.stringify(SAVE);window.__wsBak=bak;SAVE.ways={open:{},fog:{}};P.inv=99;
+  // חלון הקפיצה האחד (travel.js): כל נקודת קפיצה (השער בכפר, השער הביתה באחו, 🏮 ליד פנס, 🗿 ליד אבן, המפה) פותחת אותו חלון עם אותה רשימה,
+  // בלי המקום שעומדים בו. קפיצה לפנס, לאבן ולכפר עובדת, ולא באמצע קרב. בלי פנס ובלי אבן השער יוצא ישר. וקמים באבן אחרי מוות
+  const tw=await page.evaluate(()=>{const o={},bak=JSON.stringify(SAVE);window.__twBak=bak;P.inv=99;npcTalk(null);
+    const keys=()=>[...document.querySelectorAll('#trWin [data-act="tjump"]')].map(b=>b.dataset.k);
+    SAVE.ways={open:{},fog:{}};for(const k in STORY.lanterns)if(SAVE.story)SAVE.story[k]=false;
+    enterVillage();$('ovDaily').hidden=true;$('ovWelcome').hidden=true;o.any=travelAny();o.direct=vOpen('gate')&&!!S.wd&&$('trWin').hidden;   // אין לאן: יוצאים ישר
     enterWorld('home');for(const e of enemies)e.dead=true;const A=WORLD.waystones[0],B=WORLD.waystones[1];
     o.closed=!wsIsOpen('meadow',A);P.x=A.x;P.y=A.y+20;wsUpdate(0.016);o.open=wsIsOpen('meadow',A);o.btn=!$('wsBtn').hidden;
     o.fog=(SAVE.ways.fog.meadow||{s:''}).s.split('1').length-1;
     P.x=B.x;P.y=B.y+20;wsUpdate(0.016);o.two=wsOpenAll().length===2;
-    wmapOpen(true);o.row=document.querySelectorAll('#wMap [data-act="wsjump"]').length===1;
-    const e=addEnemy('grunt',P.x+30,P.y,1);o.fight=wsBlock()==='fight'&&!wsGo('meadow.'+A.id);e.dead=true;enemies=enemies.filter(x=>!x.dead);
-    const b=document.querySelector('#wMap [data-act="wsjump"]');if(b)b.click();return o});
+    SAVE.story.water=true;const all=travelDests().flatMap(g=>g.items.map(i=>i.k));o.all=all.join(',');
+    const sets={};
+    enterVillage();$('ovDaily').hidden=true;vOpen('gate');sets.gate=keys();travelWin(false);
+    enterWorld('home');for(const e of enemies)e.dead=true;
+    S.wd.near='home';$('wGo').hidden=false;$('wGo').click();sets.mgate=keys();travelWin(false);S.wd.near=null;
+    P.x=B.x;P.y=B.y+20;wsUpdate(0.016);$('wsBtn').click();sets.stone=keys();travelWin(false);
+    wmapOpen(true);const mb=document.querySelector('#wMap [data-act="trwin"]');o.mapBtn=!!mb;if(mb)mb.click();sets.map=keys();o.mapShut=$('wMap').hidden;travelWin(false);
+    o.sets=sets;o.same=Object.entries(sets).every(([w,ks])=>{const here=w==='gate'?'home':w==='mgate'?'meadow':w==='stone'?'ws:meadow.'+B.id:'ws:meadow.'+B.id;
+      return ks.length===all.length-1&&!ks.includes(here)&&all.filter(k=>k!==here).every(k=>ks.includes(k))});
+    const e=addEnemy('grunt',P.x+30,P.y,1);travelWin(true);const fb=document.querySelector('#trWin [data-act="tjump"]');o.fight=!!fb&&fb.disabled&&!travelJump('home')&&!!S.wd;
+    travelWin(false);e.dead=true;enemies=enemies.filter(x=>!x.dead);
+    travelWin(true);const b=document.querySelector('#trWin [data-k="ws:meadow.'+A.id+'"]');if(b)b.click();return o});
   await page.clock.runFor(1200);
-  Object.assign(wayst,await page.evaluate(()=>{const o={},A=WORLD.waystones[0];P.inv=99;
-    o.jump=!!S.wd&&Math.hypot(P.x-A.x,P.y-A.y)<WAYSTONES.arrive+30&&$('wMap').hidden;
-    enterVillage();$('ovDaily').hidden=true;S.vil.gate=true;S.vil.open='gate';S.vil.ui='';villageHud();
-    const b=document.querySelector('#vPanel [data-act="wsjump"][data-k="meadow.'+WORLD.waystones[1].id+'"]');o.gate=!!b;if(b)b.click();return o}));
+  Object.assign(tw,await page.evaluate(()=>{const o={},A=WORLD.waystones[0];P.inv=99;
+    o.jump=!!S.wd&&Math.hypot(P.x-A.x,P.y-A.y)<WAYSTONES.arrive+30&&$('trWin').hidden&&S.mode==='play';
+    enterVillage();$('ovDaily').hidden=true;vOpen('gate');const b=document.querySelector('#trWin [data-k="water"]');o.lantBtn=!!b;if(b)b.click();return o}));
   await page.clock.runFor(1200);
-  Object.assign(wayst,await page.evaluate(()=>{const o={},B=WORLD.waystones[1];
+  Object.assign(tw,await page.evaluate(()=>{const o={},L=STORY.lanterns.water;P.inv=99;
+    o.reg=S.wd&&S.wd.reg;o.at=!!S.wd&&Math.hypot(P.x-L.x,P.y-L.y)<TRAVEL.arrive+30;
+    for(const e of enemies)e.dead=true;P.x=L.x;P.y=L.y+60;travelUpdate();o.lbtn=!$('trBtn').hidden;$('trBtn').click();
+    const ks=[...document.querySelectorAll('#trWin [data-act="tjump"]')].map(b=>b.dataset.k);o.noHere=!ks.includes('water')&&ks.includes('home');
+    const h=document.querySelector('#trWin [data-k="home"]');if(h)h.click();return o}));
+  await page.clock.runFor(1200);
+  Object.assign(tw,await page.evaluate(()=>{const o={},B=WORLD.waystones[1];o.home=!!S.vil&&!S.wd;
+    vOpen('gate');const b=document.querySelector('#trWin [data-k="ws:meadow.'+B.id+'"]');if(b)b.click();return o}));
+  await page.clock.runFor(1200);
+  Object.assign(tw,await page.evaluate(()=>{const o={},B=WORLD.waystones[1];
     o.fromVil=!!S.wd&&!S.vil&&Math.hypot(P.x-B.x,P.y-B.y)<WAYSTONES.arrive+30;
     for(const e of enemies)e.dead=true;P.x=B.x+250;P.y=B.y+250;worldDeath();o.label=$('wRespawn').textContent===T('ws.respawn');$('wRespawn').click();
     o.woke=!!S.wd&&S.mode==='play'&&Math.hypot(P.x-B.x,P.y-B.y)<WAYSTONES.arrive+30;
-    const d=JSON.parse(window.__wsBak);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,d);saveNow();P.inv=0;enterVillage();return o}));
-  check(wayst.closed&&wayst.open&&wayst.btn&&wayst.fog>0&&wayst.two&&wayst.row&&wayst.fight&&wayst.jump&&wayst.gate&&wayst.fromVil&&wayst.label&&wayst.woke,
-    'אבני מסע: '+(wayst.closed&&wayst.open?'אבן נפתחת כשמגיעים':'האבן לא נפתחה')+(wayst.btn?' וכפתור 🗿 לידה':', אין כפתור')+(wayst.fog>0?', הערפל נפתח ('+wayst.fog+' משבצות)':', הערפל לא נפתח')+
-    (wayst.row?', במפה כפתור לאבן השנייה':', אין כפתור קפיצה במפה')+(wayst.fight?' (לא באמצע קרב)':', קופצים באמצע קרב!')+(wayst.jump?', קפיצה מאבן לאבן':', הקפיצה מהמפה נכשלה')+
-    (wayst.gate&&wayst.fromVil?', קפיצה מהשער בכפר':', הקפיצה מהכפר נכשלה')+(wayst.label&&wayst.woke?', וקמים באבן אחרי מוות':', הקימה באבן נכשלה'));
+    const d=JSON.parse(window.__twBak);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,d);saveNow();P.inv=0;enterVillage();return o}));
+  check(tw.direct&&tw.closed&&tw.open&&tw.btn&&tw.fog>0&&tw.two&&tw.mapBtn&&tw.mapShut&&tw.same&&tw.fight&&tw.jump&&tw.lantBtn&&tw.reg==='lake'&&tw.at&&tw.lbtn&&tw.noHere&&tw.home&&tw.fromVil&&tw.label&&tw.woke,
+    'חלון קפיצה אחד: '+(tw.direct?'בלי יעדים השער יוצא ישר':'השער לא יצא ישר ('+(tw.any?'יש יעדים':'חלון חוסם')+')')+(tw.closed&&tw.open&&tw.btn?', אבן נפתחת כשמגיעים ו-🗿 לידה':', האבן לא נפתחה')+(tw.fog>0?', הערפל נפתח':', הערפל לא נפתח')+
+    (tw.same?', אותה רשימה מהשער, מהשער הביתה, מהאבן ומהמפה ('+tw.all.split(',').length+' יעדים, בלי המקום הנוכחי)':', הרשימות שונות: '+JSON.stringify(tw.sets)+' מול '+tw.all)+(tw.mapShut?'':', המפה לא נסגרה')+
+    (tw.fight?' (לא באמצע קרב)':', קופצים באמצע קרב!')+(tw.jump?', קפיצה לאבן':', הקפיצה לאבן נכשלה')+(tw.lantBtn&&tw.reg==='lake'&&tw.at?', קפיצה מהכפר לפנס המים':', הקפיצה לפנס נכשלה ('+tw.reg+')')+
+    (tw.lbtn&&tw.noHere?', 🏮 ליד הפנס פותח את החלון בלי הפנס עצמו':', הכפתור ליד הפנס לא עובד')+(tw.home?', חזרה לכפר':', החזרה לכפר נכשלה')+(tw.fromVil?', קפיצה מהכפר לאבן':', הקפיצה מהכפר לאבן נכשלה')+
+    (tw.label&&tw.woke?', וקמים באבן אחרי מוות':', הקימה באבן נכשלה'));
   // אירועים בעולם (events.js): גל שנגמר בתיבה, עגלה שנותנת שלל כשמגיעים, ומטר שמפיל מתכות
   const evt=await page.evaluate(()=>{
     enterWorld('home');const o={},n0=()=>drops().length;
