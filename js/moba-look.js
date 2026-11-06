@@ -18,8 +18,8 @@ const MBLOOK={
     bushCol:['#2e5a5e','#3a5f7a','#2b4658'],bushLit:'#7FE0B8',rockCol:['#5b4c66','#4b3e57','#6a5a72']},
   pulse:{speed:1.6,lo:0.55,hi:1},   // הלבה פועמת: כמה מהר, ובין איזו בהירות לאיזו
   // המפה הקטנה (פיקסלים של המסך), בפינה השמאלית העליונה: x/top מהפינה (מתחת לחיים ולחפצים), w רוחב מקסימלי, vw חלק מרוחב המסך (הגובה לפי צורת המפה).
-  // gap: רווח ל-🎯 ולהודעות שמתחת. btn: גודל 🎯. pad: כמה מחוץ למפה עוד נחשב נגיעה. me: רדיוס הנגיעה בגיבור שלי. joy: כמה צריך להזיז את הג'ויסטיק כדי לחזור לגיבור. fade: שקיפות כשיש מתחתיה פס חיים
-  mini:{x:10,top:84,w:230,vw:0.27,gap:8,btn:34,pad:8,me:12,joy:0.25,fade:0.3},
+  // gap: רווח ל-🎯 ולהודעות שמתחת. btn: גודל 🎯. pad: כמה מחוץ למפה עוד נחשב נגיעה. me: רדיוס הנגיעה בגיבור שלי. joy: כמה צריך להזיז את הג'ויסטיק כדי לחזור לגיבור. fade: כמה היא אטומה כשיש מאחוריה פס חיים (לפחות 0.6, שתמיד תהיה ברורה)
+  mini:{x:10,top:84,w:230,vw:0.27,gap:8,btn:34,pad:8,me:12,joy:0.25,fade:0.6},
 };
 // המצלמה: רק במשחקי השאול. עוטף את camera.js מבחוץ, כך שהזירה, הכפר והעולם לא משתנים
 (function(){const z=camZoom,t=camTilt,on=()=>typeof S!=='undefined'&&S&&!!S.mb;
@@ -217,15 +217,16 @@ function mbMiniLay(){
   const el=document.querySelector('#mbHud .mbme'),r=el&&el.getBoundingClientRect(),ok=!!(r&&r.height);
   const mw=Math.round(Math.min(K.w,innerWidth*K.vw)),k=mw/(L.len*2),mh=Math.round(L.half*2*k),x0=(ok?r.left-10:0)+K.x,y0=(ok?r.top-6:0)+K.top;
   MB_MINI_L={key:ok?key:null,x0,y0,mw,mh,k,X:x=>x0+(x+L.len)*k,Y:y=>y0+(y+L.half)*k,bt:{x:x0+mw+K.gap,y:y0,s:K.btn}};MB_MINI_BG=null;
-  const hud=document.getElementById('mbHud');if(hud)hud.style.setProperty('--mbmini-b',Math.round(y0+mh+K.gap)+'px');   // הודעות ההריגה (.mbfeed) יורדות אל מתחת למפה
+  const R=document.documentElement.style;R.setProperty('--mbmini-b',Math.round(y0+mh+K.gap)+'px');R.setProperty('--mbmini-r',Math.round(x0+mw+K.gap*2+K.btn)+'px');   // הודעות ההריגה (.mbfeed) יורדות אל מתחת למפה, וההודעה למעלה (.mb .banner) מתחילה מימין ל-🎯
   return MB_MINI_L;
 }
 function mbMiniBox(ox,oy){
   const K=MBLOOK.mini,l=mbMiniLay(),{x0,y0,mw,mh}=l;
   // מה מצויר מתחת: הפס והתג של גיבור או של מבנה (בפיקסלים של המסך, אחרי הזום). בזמן נגיעה במפה היא לא שקופה
   let under=false;const z=ZOOM,k=mbUiK();
-  if(MBCAM.pid===null)for(const u of MB.u){if(u.dead||u.k==='minion')continue;const sx=(u.x+ox)*z,sy=(u.y+oy)*z,top=sy-(u.k==='hero'?78*z+30*k:u.k==='base'?150*z:120*z);
-    if(sx>x0-30&&sx<x0+mw+30&&top<y0+mh+6&&sy>y0-6){under=true;break}}
+  // רק כשהפס עצמו (רוחב כ-60, גובה כ-10) נמצא מאחורי המפה, ולא כשרק הגוף של היחידה שם
+  if(MBCAM.pid===null)for(const u of MB.u){if(u.dead||u.k==='minion'||(typeof mbShow==='function'&&!mbShow(u)))continue;const sx=(u.x+ox)*z,sy=(u.y+oy)*z,top=sy-(u.k==='hero'?78*z+30*k:u.k==='base'?150*z:120*z),hw=(u.k==='base'?42:30)*k;
+    if(sx+hw>x0-3&&sx-hw<x0+mw+3&&top+10>y0-3&&top-14<y0+mh+3){under=true;break}}
   return Object.assign({a:under?K.fade:1},l);
 }
 // הרקע הקבוע: אבן, צבע הקבוצות, הנתיב הראשי, שבילי העקיפה והשיחים (מ-mbDecor, אותם שיחים כמו על המפה)
