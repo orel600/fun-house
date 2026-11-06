@@ -1,7 +1,7 @@
 /* משחקי השאול: הבוטים (moba.js). אותו מוח לשני החברים של השחקן ולשלושת האויבים.
    כל בוט מחליט פעם ב-think שניות מה עושים, לפי הסדר: נסוג להתרפא, יוצא מאזור מסומן, מתרחק ממגדל שמכה בו,
    נלחם בגיבור (רק כשיש יתרון או שהאויב חלש), מגן על מגדל, ואחרת דוחף מאחורי החיילים ולוקח XP.
-   הסקילים רק כשהם יפגעו. הצייד מחכה רגע לגל המים של הקוסמת, בשביל חשמול. הנפח מהמם רק מי שלא חסין,
+   הסקילים רק כשהם יפגעו. הצייד מחכה רגע לגל המים או לכלא המים של הקוסמת, בשביל חשמול, וזורק רשת על מי שבורח. הנפח מהמם רק מי שלא חסין,
    קופץ להציל חבר חלש, ומטיל את חומת הברזל איפה שיש הכי הרבה אויבים. הלוחם משתמש בזעם גם כדי לצאת מצרה */
 const MBBOT={
   retreat:0.35,   // פחות מזה מהחיים: חוזר לבסיס
@@ -113,22 +113,28 @@ function mbBotSkills(u){
         if(best&&(bn>=2||allyLow||fight&&held(best))){mbCast(u,'ult',best);return}}
       break}
     case 'warrior':
-      if(ready('s1')&&inR('s1')&&fight&&u.hp>u.max*0.4){mbCast(u,'s1',tgt);return}
+      // גל חרב: גיבור בקו ובטווח, או שלושה חיילים ומעלה קרובים
+      if(ready('s1')&&(tgt&&mbDist(u,tgt)<=K.s1.range+tgt.r&&!(tgt.st.imm>0)&&(fight||tgt.hp<tgt.max*0.5)||!tgt&&near(foes,K.s1.range*0.7).length>=3)){mbCast(u,'s1',tgt||mbNearest(u,foes,K.s1.range));return}
       if(ready('s2')&&(near(foeH,K.s2.r).length||near(foes,K.s2.r).length>=3)){mbCast(u,'s2');return}
       // זעם: כשנלחמים קרוב, או כדי לצאת מצרה (אי אפשר להמם אותו בזמן הזעם)
       if(ready('ult')&&(fight&&tgt&&mbDist(u,tgt)<220||u.hp<u.max*0.45&&near(foeH,K.ult.r).length)){mbCast(u,'ult');return}
       break;
     case 'hunter':
-      if(ready('s2')&&(near(foeH,130).length&&u.hp<u.max*0.7||B.mode==='retreat'&&near(foeH,220).length)){mbCast(u,'s2');return}
+      // רשת ציד: על גיבור שבורח (חלש או מתרחק), או על מי שצמוד אלינו כשאנחנו בצרה. לא על חסין
+      {const run=tgt&&inR('s2')&&!(tgt.st.imm>0)&&!(tgt.st.stun>0)&&!(tgt.st.root>0)&&(tgt.hp<tgt.max*0.45||tgt.bot&&tgt.bot.mode==='retreat'||mbDist(u,tgt)>K.atk.range+40&&fight);
+       const peel=foeH.find(o=>!(o.st.imm>0)&&mbDist(o,u)<150)&&u.hp<u.max*0.7;
+       if(ready('s2')&&(run||peel)){mbCast(u,'s2',run?tgt:mbNearest(u,foeH,150));return}}
       if(ready('s1')&&inR('s1')){
         // קומבו: אם הקוסמת שלנו קרובה ועומדת להרטיב, מחכים לה רגע
-        const mage=allies.find(o=>o.kit==='mage'&&o!==u&&mbDist(o,tgt)<500&&o.cd.s1<1);
+        const mage=allies.find(o=>o.kit==='mage'&&o!==u&&mbDist(o,tgt)<500&&(o.cd.s1<1||o.cd.s2<1));   // גל מים או כלא מים
         if(tgt.st.wet>0||!mage||(B.wait=(B.wait||0)+0.15)>MBBOT.wait){B.wait=0;mbCast(u,'s1',tgt);return}}
       if(ready('ult')&&inR('ult')&&(held(tgt)||near(foeH,K.ult.r,tgt).length>=2)){mbCast(u,'ult',tgt);return}
       break;
     case 'mage':
-      // ריפוי ומגן: חבר חלש קרוב, או חבר קרוב שגיבור אויב צמוד אליו
-      if(ready('s2')&&allies.some(o=>mbDist(o,u)<K.s2.r&&(o.hp<o.max*0.55||o.hp<o.max*0.85&&foeH.some(f=>mbDist(f,o)<120)))){mbCast(u,'s2');return}
+      // כלא מים: כשנלחמים, כשהצייד שלנו מוכן לחץ ברק (קומבו), על שניים ביחד, או על מי שרודף חבר חלש
+      {const hunt=allies.some(o=>o.kit==='hunter'&&o!==u&&o.cd.s1<1&&tgt&&mbDist(o,tgt)<MBKIT.hunter.s1.range);
+       const chase=foeH.find(f=>!(f.st.imm>0)&&mbDist(f,u)<=K.s2.range&&allies.some(a=>a!==u&&a.hp<a.max*0.4&&mbDist(a,f)<160));
+       if(ready('s2')&&(chase||inR('s2')&&!(tgt.st.imm>0)&&!(tgt.st.stun>0)&&(fight||hunt||near(foeH,K.s2.r,tgt).length>=2))){mbCast(u,'s2',chase||tgt);return}}
       if(ready('s1')&&(inR('s1')||!tgt&&near(foes,K.s1.range*0.8).length>=3)){mbCast(u,'s1',tgt||mbNearest(u,foes,K.s1.range));return}
       if(ready('ult')&&inR('ult')&&(held(tgt)||tgt.st.wet>0||near(foeH,K.ult.r,tgt).length>=2)&&!(tgt.st.imm>0)){mbCast(u,'ult',tgt);return}
       break;
