@@ -149,6 +149,7 @@ function render(){
     if(h<0.5){ctx.moveTo(x-4,y);ctx.lineTo(x+4,y);ctx.moveTo(x,y-4);ctx.lineTo(x,y+4)}
     else if(h<0.72){ctx.moveTo(x+14,y+22);ctx.lineTo(x+26,y+18)}}
   ctx.stroke();if(typeof aLook2d==='function')aLook2d()}
+  if(!S.wd&&!S.vil)wxDraw('mid');   // מזג אוויר בדו-ממד בזירה: מיד אחרי הרצפה, לפני מוקשים, גלים, דמויות, אזהרות ואפקטים (weather.js)
   mazeDraw(ox,oy);   // קירות זירת המבוך (maze.js)   // טבעות עדינות בזירה (arena-look.js)
   if(typeof awxDraw==='function')awxDraw();   // weather in the arena and boss fights: drives weather.js, and in 2D draws it here, under every telegraph (arena-weather.js)
   // mines & waves
@@ -165,6 +166,7 @@ function render(){
   drawNodes();   // עצים, סלעים ועורקים (nodes.js)
   drawLoot();    // טבעות עלית ועמודי אור של שלל (loot.js)
   drawWorld();   // העולם הפתוח (world.js)
+  wxDraw('mid');   // מזג אוויר בדו-ממד בכפר ובעולם: אחרי הקרקע והמבנים (שמצוירים ב-drawVillage/drawWorld), לפני הדמויות, הסקילים, האזהרות והאפקטים (weather.js)
   drawNpcs();
   homeDraw();   // עמודי הפנסים בכפר (homecoming.js)
   skcDraw();   // עיגול רונות מתחת לגיבור כשמטיל סקיל, בדו-ממד (skillcast.js)
@@ -175,7 +177,6 @@ function render(){
   for(const a of actors){if(a.isPlayer)drawPlayer();
     else if(a.big&&!R3D.on){ctx.save();ctx.translate(a.x,a.y);ctx.scale(a.big,a.big);ctx.translate(-a.x,-a.y);drawEnemy(a);ctx.restore()}
     else drawEnemy(a)}
-  wxDraw('mid');   // מזג אוויר בדו-ממד: אחרי הדמויות, לפני הסקילים, האפקטים והמספרים (weather.js)
   drawAgeFx();   // זוהר, שובל וחלקיקים על נשק משודרג (aging.js)
   drawSkills(ox,oy);   // טבעות וברקים של סקילים, וסימני רטוב/קפוא/הלם (skills.js)
   drawOrbits();drawDivine();   // החפצים המסתובבים (orbit.js)
