@@ -1069,12 +1069,12 @@ function worldBot(m,L,god){
     finally{const o=JSON.parse(keep);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,o)}});
   // אפקטים בממשק (fxui.js, אוראל 7.11): קווסט, קנייה, דרגה, פתיחת חלון ומעבר מקום מפעילים אפקט, ואף אפקט לא חוסם נגיעה
   const fxuiT=await page.evaluate(async()=>{if(typeof FXUI==='undefined')return{miss:1};
-    const n=k=>FXUI.log[k]||0,b0={t:n('ui_toast'),b:n('ui_buy'),a:n('ui_ach'),w:n('win'),tr:n('trans')},r={};
+    const tick=()=>new Promise(f=>queueMicrotask(f)),n=k=>FXUI.log[k]||0,b0={t:n('ui_toast'),b:n('ui_buy'),a:n('ui_ach'),w:n('win'),tr:n('trans')},r={};
     r.wrapped=['questClaim','shopBuy','rankUp','gearCraft','dailyClaim'].filter(f=>!(window[f]&&window[f].fxui));
     FXUI.hooks.questClaim(true,['bones',false]);FXUI.hooks.shopBuy(true);FXUI.hooks.rankUp('x');
-    const d=$('ovDaily'),was=d.hidden;d.hidden=true;await new Promise(f=>setTimeout(f,0));d.hidden=false;await new Promise(f=>setTimeout(f,30));
+    const d=$('ovDaily'),was=d.hidden;d.hidden=true;await tick();d.hidden=false;await tick();
     r.anim=d.classList.contains('fxin');d.hidden=was;
-    const pl=FXUI.place;FXUI.place='fxtest';document.body.classList.toggle('fxtest');await new Promise(f=>setTimeout(f,30));document.body.classList.toggle('fxtest');
+    const pl=FXUI.place;FXUI.place='fxtest';document.body.classList.toggle('fxtest');await tick();document.body.classList.toggle('fxtest');
     r.toast=n('ui_toast')>b0.t;r.buy=n('ui_buy')>b0.b;r.ach=n('ui_ach')>b0.a;r.win=n('win')>b0.w;r.trans=n('trans')>b0.tr;r.place=pl;
     const els=[...document.querySelectorAll('.fxd,.fxlayer,#fxVeil')];r.n=els.length;
     r.block=els.filter(e=>getComputedStyle(e).pointerEvents!=='none').length;

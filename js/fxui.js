@@ -9,7 +9,7 @@
    שום דבר כאן לא חוסם נגיעה (pointer-events:none), ושום אפקט לא נשאר יותר מ-dur שלו. בלי קבצי fx/: מדלג בשקט.
    המראה ב-css/fxui.css. הבדיקה: FXUI.log (check.js קורא אותו). */
 const FXUI={
-  max:12,          // כמה אפקטים בבת אחת על המסך
+  max:16,          // כמה אפקטים בבת אחת על המסך
   trans:0.35,      // מעבר מקום, בשניות (לכל היותר 0.4)
   win:0.18,        // פתיחת חלון, בשניות
   hover:56,click:64,juice:110,
@@ -20,11 +20,13 @@ const FXUI={
   zone:'.win,.ov,#qRail,.bnav,#vTop,#menuRail,.qr,.gearbtn,.updbtn',
   // חלון שנפתח → אפקטים. at: 'win' = מרכז החלון, fit: גודל ביחס לחלון (במקום size)
   open:{
-    ovDaily:[['globe_frame',{fit:1.15,loop:true}],['stars',{fit:0.9,loop:true,add:true}]],   // המתנה היומית: מסגרת קסם
-    ovLevel:[['levelup',{size:300,add:true}]],                                              // עלית רמה בזירה
-    ovWelcome:[['ui_new',{size:200}]],                                                      // "בזמן שלא היית"
+    ovDaily:[['globe_frame',{fit:1.12,loop:true,behind:true}],['stars',{fit:1.25,loop:true,add:true,behind:true}]],   // המתנה היומית: מסגרת קסם מאחורי החלון
+    ovLevel:[['levelup',{fit:1.3,add:true,behind:true}]],                                              // עלית רמה בזירה
+    ovWelcome:[['ui_new',{fit:1.1,behind:true}]],                                                      // "בזמן שלא היית"
   },
   rare:{gold:'ui_epic',legend:'ui_legend'},   // שכבת נדירות (GEAR.tiers) → האפקט סביב התמונה
+  rareTiles:4,     // כמה אריחים ברשימה זוהרים בבת אחת
+  tiles:['.ictile','.gtile'],   // אריחי חפצים: בנפחייה ובשוק (itemcard.js), ובתרמיל (gear.js)
   log:{},          // כמה פעמים כל סוג אפקט רץ (לבדיקה ב-check.js)
   list:[],raf:0,ready:false,lastTap:null,
 };
@@ -42,7 +44,8 @@ function fxuiLayer(lo){
   return L;
 }
 /* אפקט מהספרייה ב-HTML, מעל החלונות. x,y בפיקסלים של המסך (CSS). o: size, loop, dur, add, alpha, fps,
-   anchor (אלמנט: האפקט נצמד אליו ונעלם כשהוא נסגר), fit (גודל ביחס ל-anchor), lo (מתחת להודעה, כדי לא לכסות טקסט) */
+   anchor (אלמנט: האפקט נצמד אליו ונעלם כשהוא נסגר), fit (גודל ביחס ל-anchor), lo (מתחת להודעה, כדי לא לכסות טקסט),
+   behind (מאחורי החלון של ה-anchor: מעל הרקע הכהה ומתחת לחלון, כדי לא לכסות טקסט או כפתור), clip (נעלם כשה-anchor גלל אל מחוץ לרשימה) */
 function fxDom(id,x,y,o={}){
   const D=typeof FXDATA!=='undefined'&&FXDATA[id];if(!D||typeof FXLIB!=='undefined'&&FXLIB.bad[id])return null;
   if(typeof fxImg==='function')fxImg(id);   // טוען, ומסמן אם הקובץ חסר
@@ -50,8 +53,10 @@ function fxDom(id,x,y,o={}){
   const el=document.createElement('i');el.className='fxd'+(o.add?' add':'');
   el.style.backgroundImage='url('+(typeof FXLIB!=='undefined'?FXLIB.base:'fx/')+id+'.webp)';
   if(o.alpha!=null)el.style.opacity=o.alpha;
-  const f={id,el,D,x,y,size:o.size||D.s,fit:o.fit||0,anchor:o.anchor||null,t0:performance.now()/1000,loop:!!o.loop,dur:o.dur||0,fps:o.fps||30,i:-1};
-  fxuiLayer(o.lo).appendChild(el);fxuiPlace(f);
+  const f={id,el,D,x,y,size:o.size||D.s,fit:o.fit||0,anchor:o.anchor||null,clip:o.clip||null,t0:performance.now()/1000,loop:!!o.loop,dur:o.dur||0,fps:o.fps||30,i:-1};
+  const ov=o.behind&&o.anchor&&o.anchor.closest('.ov');
+  if(ov)ov.insertBefore(el,ov.firstChild);else fxuiLayer(o.lo||o.behind).appendChild(el);   // .ov על כל המסך: אותן קואורדינטות
+  fxuiPlace(f);
   FXUI.list.push(f);if(FXUI.list.length>FXUI.max)fxuiEnd(FXUI.list.shift());
   if(!FXUI.raf)FXUI.raf=requestAnimationFrame(fxuiTick);
   return f;
@@ -59,7 +64,8 @@ function fxDom(id,x,y,o={}){
 const fxuiEnd=f=>{if(f&&f.el){f.el.remove();f.el=null}};
 function fxuiPlace(f){
   let x=f.x,y=f.y,s=f.size;
-  if(f.anchor){const a=fxuiAt(f.anchor);if(!a||!f.anchor.isConnected)return false;x=a.x;y=a.y;if(f.fit)s=Math.max(a.w,a.h)*f.fit}
+  if(f.anchor){const a=fxuiAt(f.anchor);if(!a||!f.anchor.isConnected)return false;x=a.x;y=a.y;if(f.fit)s=Math.max(a.w,a.h)*f.fit
+    if(f.clip){const c=f.clip.getBoundingClientRect(),out=y<c.top||y>c.bottom||x<c.left||x>c.right;if(out!==!!f.out){f.out=out;f.el.style.visibility=out?'hidden':''}}}
   if(f.s!==s){f.s=s;f.el.style.width=f.el.style.height=s+'px';f.el.style.backgroundSize=f.D.c*s+'px '+f.D.r*s+'px';f.i=-1}
   f.el.style.transform='translate('+(x-s/2)+'px,'+(y-s/2)+'px)';
   return true;
@@ -80,10 +86,10 @@ const fxuiAtEl=(id,el,o={})=>{const a=fxuiAt(el);return a?fxDom(id,a.x,a.y,o):nu
 
 /* ---- מה קורה במשחק → איזה אפקט. r: מה הפונקציה החזירה, a: הארגומנטים ---- */
 FXUI.hooks={
-  questClaim:(r,a)=>{if(!r||a[1])return;const b=fxuiBanner();fxDom('ui_toast',b.x,b.y,{size:260,lo:true});   // קווסט הושלם
+  questClaim:(r,a)=>{if(!r||a[1])return;const b=fxuiBanner();fxDom('ui_toast',b.x,b.y-80,{size:170,lo:true});   // מעל ההודעה, לא עליה   // קווסט הושלם
     const q=typeof QBY!=='undefined'&&QBY[a[0]];if(q&&q.reward&&q.reward.coins)setTimeout(()=>fxDom('ui_coin',b.x,b.y+40,{size:120}),250)},
-  qStart:()=>{if(!FXUI.ready)return;const b=fxuiBanner();fxDom('ui_new',b.x,b.y,{size:200,lo:true})},          // קווסט חדש
-  rankUp:r=>{if(!r)return;const m=fxuiMid();fxDom('halo_ach',m.x,m.y-70,{size:180,add:true});fxDom('ui_ach',m.x,m.y,{size:300,lo:true})},   // דרגה
+  qStart:()=>{if(!FXUI.ready)return;const b=fxuiBanner();fxDom('ui_new',b.x,b.y-70,{size:150,lo:true})},          // קווסט חדש
+  rankUp:r=>{if(!r)return;const b=fxuiBanner();fxDom('halo_ach',b.x,b.y-110,{size:120,add:true});fxDom('ui_ach',b.x,b.y-50,{size:200,lo:true,alpha:0.8})},   // דרגה
   bookClaim:(r,a)=>{if(r&&!a[0]){const b=fxuiBanner();fxDom('ui_ach',b.x,b.y,{size:240,lo:true})}},           // ספר ההרפתקאות
   challengeClaim:r=>{if(r){const b=fxuiBanner();fxDom('halo_ach',b.x,b.y-50,{size:140,add:true});fxDom('ui_ach',b.x,b.y,{size:240,lo:true})}},
   shopBuy:r=>{if(r){const t=fxuiTap();fxDom('ui_buy',t.x,t.y,{size:160})}},                                      // חנות הריצה
@@ -152,10 +158,20 @@ function fxuiButtons(){
 }
 
 /* ---- נדירות: זוהר חוזר סביב התמונה בכרטיס חפץ זהב או אגדי ---- */
+// וגם זוהר עדין על האריחים ברשימה (עד FXUI.rareTiles), שנעלם כשהאריח גולל החוצה
 function fxuiRare(){
-  for(const k in FXUI.rare)for(const el of document.querySelectorAll('.icard.rar-'+k+' .icbig')){
-    if(el.fxr&&el.fxr.el||el.closest('[hidden]'))continue;
-    el.fxr=fxDom(FXUI.rare[k],0,0,{anchor:el,fit:1.9,loop:true,add:true});
+  let tiles=0;
+  for(const k in FXUI.rare){
+    for(const el of document.querySelectorAll('.icard.rar-'+k+' .icbig')){
+      if(el.fxr&&el.fxr.el||el.closest('[hidden]'))continue;
+      el.fxr=fxDom(FXUI.rare[k],0,0,{anchor:el,fit:1.9,loop:true,add:true});
+    }
+    for(const el of document.querySelectorAll(FXUI.tiles.map(t=>t+'.rar-'+k).join(','))){
+      if(el.closest('[hidden]'))continue;
+      if(el.fxr&&el.fxr.el){tiles++;continue}
+      if(tiles>=FXUI.rareTiles)continue;tiles++;
+      el.fxr=fxDom(FXUI.rare[k],0,0,{anchor:el,fit:1.35,loop:true,add:true,alpha:0.55,clip:el.parentElement});
+    }
   }
 }
 

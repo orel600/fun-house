@@ -1,6 +1,7 @@
 /* אפקטים בממשק (js/fxui.js). שום דבר כאן לא חוסם נגיעה */
 .fxlayer{position:fixed;inset:0;z-index:45;pointer-events:none;overflow:hidden;contain:strict}
 .fxlayer.lo{z-index:2}   /* מתחת להודעה (.banner, z-index 3): האפקט מאחורי הטקסט ולא מכסה אותו */
+.ov>.fxd{z-index:-1}   /* behind: בתוך החלון הכהה, מאחורי החלון עצמו */
 .fxd{position:absolute;left:0;top:0;background-repeat:no-repeat;pointer-events:none;will-change:transform,background-position;image-rendering:auto}
 .fxd.add{mix-blend-mode:screen}
 /* פתיחת חלון: 0.18 שנ', מ-0.94 ל-1 (docs/ui-guide.md פרק 4). scale ולא transform, כדי לא לדרוס מיקום של חלון */
