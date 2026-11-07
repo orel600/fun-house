@@ -23,7 +23,7 @@ function camFightZoom(){const F=CAM.fight,now=performance.now()/1000,dt=Math.min
 function setFz(on){CAM.fight.on=on;try{localStorage.setItem('zm-fz',on?'1':'0')}catch(e){}showCam()}
 
 const camPlace=()=>S&&S.vil?'village':S&&S.wd?'world':'arena';
-function camZoom(){const p=camPlace(),k=typeof skrZoom==='function'?skrZoom():1;return p==='arena'?1:VIEW.zoom[p]*CAM.steps[CAM.cur]*k*camFightZoom()*giantZoom()}   // giantZoom: ענק בעולם, המצלמה מתרחקת (giant.js)   // skrZoom: רגע גילוי של סקיל (skillreveal.js)
+function camZoom(){const p=camPlace(),k=typeof skrZoom==='function'?skrZoom():1;return p==='arena'?1:VIEW.zoom[p]*CAM.steps[CAM.cur]*k*camFightZoom()*giantZoom()*(typeof skcZoom==='function'?skcZoom():1)}   // giantZoom: ענק בעולם, המצלמה מתרחקת (giant.js)   // skrZoom: רגע גילוי של סקיל (skillreveal.js)   // skcZoom: דחיפה קטנה בהטלת סקיל גדול (skillcast.js)
 function camTilt(){const p=typeof S!=='undefined'?camPlace():'arena';return ((VIEW.tilt[p]||VIEW.tilt.arena)+(p==='arena'?0:CAM.angs[CAM.ang]))*Math.PI/180}
 // כמה רחוק קצה המסך מהמרכז בכיוון a (רדיאנים), ביחידות של המשחק. לאויבים שצריכים להופיע ממש מחוץ למסך (pacing.js)
 function camEdge(a){const c=Math.abs(Math.cos(a)),s=Math.abs(Math.sin(a));return Math.min(c>1e-3?W/2/c:1e9,s>1e-3?H/2/s:1e9)}
