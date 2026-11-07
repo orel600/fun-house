@@ -13,10 +13,10 @@ const STATS={
     vit:  {icon:'❤️',give:{hp:8}},              // חיוניות: חיים
     agi:  {icon:'👟',give:{speed:1.5,gdmg:1.5}}, // זריזות: מהירות הליכה, וקצת נזק מרחוק (איזון 4.11: הקשת דורשת זריזות, ובלי נזק היא הייתה נקודה מבוזבזת)
     haste:{icon:'⚡',give:{aspd:2.5}},           // קצב: מהירות התקפה
-    def:  {icon:'🛡️',give:{def:1.5}},            // הגנה: פחות נזק מכל מכה
+    def:  {icon:'🛡️',give:{def:9}},              // הגנה: 9 נקודות הגנה (defense.js). היה 1.5%
     luck: {icon:'🍀',give:{crit:0.5,loot:2}}     // מזל: מכה קריטית ושלל
   },
-  cap:{def:60,crit:30},       // תקרה באחוזים, כדי שאי אפשר יהיה להיות חסין
+  cap:{def:60,crit:30},       // תקרה באחוזים, כדי שאי אפשר יהיה להיות חסין. def: רק בזירה (defOld). בעולם DEFENSE.cap
   respec:{npc:'priest',base:30,per:10},   // איפוס: מטבעות = base + per*רמה, אצל הכוהנת
   xp:{kill:1}                 // XP לדמות על כל אויב שנופל בעולם הפתוח, כפול ה-XP שלו. כוונון קצב 5.11 (docs/playtime-2026-11-05.md): היה 3, ושחקן צבר כ-4,300 XP לשעה. היעד (30/50/70 ב-5/15/35 שעות) הוא כ-1,400
 };
@@ -65,7 +65,7 @@ function statsHtml(){
   h+='<p class="stdmg">'+T('wt.'+P.wt)+' · '+wRangeTxt(wAvgNow(),P.wt)+'</p>';   // טווח הנזק של הנשק שביד, עם כל השדרוגים (weapons.js)
   if(!free)h+='<p class="stfree stnone">'+T('st.none')+'</p>';
   h+='<div class="strows">'+Object.keys(STATS.list).map(k=>{const S_=STATS.list[k],[name,what]=T('st.'+k),n=p[k]||0;
-    const val=[...new Set(Object.keys(S_.give).map(s=>'+'+(Math.round((g[s]||0)*10)/10)+(s==='hp'?'':'%')))].join(' / ');
+    const val=[...new Set(Object.keys(S_.give).map(s=>'+'+(Math.round((g[s]||0)*10)/10)+(s==='hp'||s==='def'?'':'%')))].join(' / ');
     return '<div class="strow" title="'+what+'"><span class="sti">'+skPic(k,S_.icon)+'</span><span class="stn"><b>'+name+' <bdi>'+n+'</bdi></b><small>'+(n?'<bdi>'+val+'</bdi>':what)+'</small></span>'+
       '<button class="stplus" data-act="stat" data-k="'+k+'"'+(free?'':' disabled')+' aria-label="+ '+name+'">+</button></div>'}).join('')+'</div>';
   h+='<div class="stfoot"><div class="stbuilds">'+[0,1].map(i=>'<button class="vbtn ghost" data-act="build" data-i="'+i+'"'+((SAVE.hero.build||0)===i?' aria-pressed="true"':'')+(S.vil?'':' disabled')+'>'+T('st.slot',i+1)+'</button>').join('')+'</div>'+   // שתי בניות שמורות

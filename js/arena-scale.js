@@ -21,7 +21,7 @@ function arenaPower(){
   const sw=P.weapon==='sword',s=sw?P.sw:P.gn,A=ARENA_SCALE;
   const crit=Math.min(1,HITFX.crit+Math.min(STATS.cap.crit,P.crit||0)/100);
   const dps=s.dmg*wK('dmg')/(s.cd*wK('cd'))*(1+crit*(HITFX.critMul-1))*(sw?1:1+(Math.max(1,P.gn.multi)-1)*A.multi);
-  const def=Math.min(STATS.cap.def,(P.def||0)+(typeof statDefFx==='function'?statDefFx():0));
+  const def=defNow();   // בזירה: בדיוק האחוז הישן (defense.js)
   return{dps,ehp:P.maxHp/(1-def/100),wdmg:Math.max(P.sw.dmg,P.gn.dmg)};
 }
 // המכפילים: נמדד פעם אחת בתחילת הריצה ונשמר ב-S.run.sc. שינוי באמצע הריצה (רמות, קלפים) הוא ההתקדמות של הריצה, ולא נספר

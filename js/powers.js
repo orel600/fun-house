@@ -20,7 +20,7 @@ const POWERS={
     fortune:{slot:'acc',   icon:'🍀',give:{loot:12},  cost:{coins:70,gold:1}},
     mend:   {slot:'acc',   icon:'💚',give:{regen:1},  cost:{coins:50,stone:10}},
     wind:   {slot:'boots', icon:'🌬️',give:{speed:8},  cost:{coins:50,wood:10}},
-    stone:  {slot:'boots', icon:'🛡️',give:{def:5},    cost:{coins:60,stone:15}}
+    stone:  {slot:'boots', icon:'🛡️',give:{def:30},    cost:{coins:60,stone:15}}
   }
 };
 

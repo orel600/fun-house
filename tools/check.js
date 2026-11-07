@@ -1330,7 +1330,7 @@ function worldBot(m,L,god){
       const e=addEnemy('grunt',P.x+150,P.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;
       const id=S.sk.ids[0],n0=P.skCast?P.skCast.n:0;S.sk.cd[0]=0;r.id=id;r.cast=wskUse(id);if(SKR)skrEnd(false);
       r.anim=!!P.skCast&&P.skCast.n===n0+1;r.clip=R3D.ready?skcClip(heroLook()):'Ranged_Magic_Shoot';r.clipOk=!R3D.ready||!!R3D.clips[r.clip+'@up'];
-      r.rune=!!skcRune;r.col=skcRune&&skcRune.col;const d=skcRune&&skcRune.d3;r.r3d=!!d;
+      r.rune=!!skcRune;r.col=skcRune&&skcRune.col;const d=skcRune&&skcRune.d3;r.r3d=!!d;r.band=!R3D.on||!!(skcRune&&skcRune.d3b);r.tier=skcRune&&skcRune.big?'big':'normal';
       run(SKCAST.rune.life+0.1);r.gone=!skcRune&&!(d&&d.on);
       worldUi(false);reset();const c0=skcStat.casts;skCast(id);r.arena=skcStat.casts===c0;   // זירה: כלום
       enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
@@ -3149,13 +3149,14 @@ function worldBot(m,L,god){
   // שריון לפי מחלקה (armor.js): קסדה וגוף של המחלקה נלבשים במשבצות ראש וגוף, ההגנה עולה, השריון נראה על הדמות ובחלון, והשלל בעולם מוטה למחלקה
   const ar=await page.evaluate(()=>{
     const o={},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,pity:SAVE.clsPity}),c0=celebrate;celebrate=()=>{};
-    const h=ARMOR.cls[heroId()]?heroId():'warrior',hd=h+'Head2',bd=h+'Body2',d0=P.def||0;
+    const h=ARMOR.cls[heroId()]?heroId():'warrior',hd=h+'Head2',bd=h+'Body2',d0=P.def||0,od0=defOld();
     o.items=ARMOR.slots.every(s=>Object.keys(ARMOR.cls).every(c=>[0,1,2,3,4].every(t=>{const it=gItem(c+armorSlot(s)+t);return it&&it.slot===s&&it.stats.def>0&&T('it.'+c+armorSlot(s)+t)!=='it.'+c+armorSlot(s)+t})));
     o.items=o.items&&[0,1,2,3,4].every(t=>gItem('shield'+t)&&gItem('shield'+t).slot==='shield');
     bagAdd(hd);bagAdd(bd);bagAdd('shield2');S.mode='play';gearOpen();
     o.slots=!!document.querySelector('#gSlots [data-slot="head"]')&&!!document.querySelector('#gSlots [data-slot="body"]')&&!!document.querySelector('#gSlots [data-slot="shield"]');
     gDoEquip(hd);gDoEquip(bd);gDoEquip('shield2');gRedraw();
     o.worn=gGet('head',0)===hd&&gGet('body',0)===bd&&gearWorn().includes(hd)&&gearWorn().includes(bd);
+    o.oldD=Math.round((defOld()-od0)*100)/100;   // בזירה: אותו אחוז כמו קודם, 5+9+8 (defense.js)
     o.def=Math.round(((P.def||0)-d0)*10)/10;o.defOk=o.def===gItem(hd).stats.def+gItem(bd).stats.def+gItem('shield2').stats.def;
     {const t=document.querySelector('#gSlots [data-slot="head"]');o.tile=!!t&&(t.textContent.includes(gItem(hd).icon)||!!t.querySelector('img[src*="/'+gBase(hd)+'.png"]'))}   // אימוג'י, או התמונה של הפריט (icons/ui/gear)
     if(R3D.on&&R3D.ready){syncPlayer(0.016);o.r3=(R3D.player.arG||[]).length>0;o.doll=!R3D.doll||!R3D.doll.a||(R3D.doll.a.arG||[]).length>0}else o.r3=o.doll=true;
@@ -3171,8 +3172,25 @@ function worldBot(m,L,god){
     o.back=(P.def||0)===d0;return o});
   check(ar.items&&ar.slots&&ar.worn&&ar.defOk&&ar.tile&&ar.r3&&ar.doll&&ar.lootOk&&ar.back,
     'שריון לפי מחלקה: '+(ar.items?'30 חלקים ו-5 מגנים':'חסרים חלקים או שמות')+(ar.slots?', משבצות ראש, גוף ומגן':', אין משבצות')+(ar.worn?', נלבש':', לא נלבש')+
-    (ar.defOk?', הגנה +'+ar.def+'%':', ההגנה לא עלתה ('+ar.def+')')+(ar.tile?'':', לא מופיע במשבצת')+(ar.r3?'':', לא נראה על הדמות')+(ar.doll?'':', לא נראה בחלון')+
+    (ar.defOk?', הגנה +'+ar.def:', ההגנה לא עלתה ('+ar.def+')')+(ar.tile?'':', לא מופיע במשבצת')+(ar.r3?'':', לא נראה על הדמות')+(ar.doll?'':', לא נראה בחלון')+
     (ar.lootOk?', שלל מוטה למחלקה ('+ar.loot+')':', השלל לא מוטה ('+ar.loot+')')+(ar.back?'':', לא חזר אחרי הבדיקה'));
+  // הגנה כדירוג (defense.js, ניר 7.11.2026): נקודות מול רמת התוקף, תשואה פוחתת, תקרה גבוהה, והזירה בדיוק כמו קודם
+  const dfr=await page.evaluate(()=>{
+    const o={},r1=v=>Math.round(v*10)/10;
+    o.pct=[defPct(36,1),defPct(110,12),defPct(210,22)].map(r1);   // עץ באחו, כסף ברכס, זהב במדבר: היו 12%, 22%, 30%
+    o.pctOk=Math.abs(o.pct[0]-12)<2&&Math.abs(o.pct[1]-22)<2&&Math.abs(o.pct[2]-30)<2;
+    o.dr=defPct(200,10)-defPct(100,10)<defPct(100,10)&&defPct(100,30)<defPct(100,1);   // כל נקודה שווה פחות, ומפלצת גבוהה בולעת פחות
+    o.cap=DEFENSE.cap>=80;
+    o.anchor=[1,12,30].every(L=>{const K=defK(L);return K>0&&defPct(0,L)===0&&defPct(-50,L)===0&&Math.abs(defPct(K,L)-50)<1e-9&&Math.abs(defPct(2*K,L)-200/3)<1e-9});   // עוגנים: 0 → 0%, K → 50%, 2K → 66.7%
+    const k={wd:S.wd,vil:S.vil,mb:S.mb},pd=P.def;
+    try{S.wd=null;S.vil=null;S.mb=null;P.def=9e4;o.arenaCap=defNow()===STATS.cap.def;   // בזירה: התקרה הישנה
+      P.def=pd;o.arena=Math.abs(defNow()-Math.min(STATS.cap.def,defOld()+defFx()))<1e-9;
+      S.vil=k.vil||{};P.def=9e4;o.worldCap=defNow()<=DEFENSE.cap&&defNow()>STATS.cap.def}
+    finally{S.wd=k.wd;S.vil=k.vil;S.mb=k.mb;P.def=pd}
+    return o});
+  check(dfr.pctOk&&dfr.anchor&&dfr.dr&&dfr.cap&&dfr.arenaCap&&dfr.arena&&dfr.worldCap&&Math.abs(ar.oldD-22)<0.01,
+    'הגנה כדירוג: '+dfr.pct.join('% / ')+'%'+(dfr.pctOk?' (כמו קודם באזור)':' (רחוק מהישן)')+(dfr.anchor?', עוגנים 0/50/67%':', עוגנים שגויים')+(dfr.dr?', תשואה פוחתת':', בלי תשואה פוחתת')+
+    (dfr.worldCap&&dfr.cap?', תקרה '+'85%':', תקרה שגויה')+(dfr.arenaCap&&dfr.arena&&Math.abs(ar.oldD-22)<0.01?', בזירה כמו קודם (+'+ar.oldD+'%)':', הזירה השתנתה (+'+ar.oldD+'%)'));
   // משבצת ריקה = בלי כובע (ניר, 4.11.2026): בלי ראש וגוף אין קסדה, כובע או גלימה דלוקים, ולבישת ראש משנה את מה שרואים. בכל המחלקות, בסקינים ובבובה
   if(CFG.gfx==='3d'){const hv=await page.evaluate(()=>{
     if(!R3D.on||!R3D.ready)return {skip:true};
@@ -3871,8 +3889,8 @@ function worldBot(m,L,god){
     'סקיל חדש בעולם ('+skr.id+'): '+(skr.err||[skr.wait&&skr.start?'רגע גילוי מתחיל':'לא התחיל',skr.zoom&&skr.fly?'מצלמה מתקרבת ואייקון עף':'בלי מצלמה או אייקון',
     skr.end?'נגמר והמשחק ממשיך':'לא נגמר',skr.once?'פעם אחת':'חוזר',skr.big&&skr.on?'הטלה ראשונה גדולה':'הטלה ראשונה רגילה',
     skr.skipStart&&skr.skip?'נגיעה מדלגת':'אי אפשר לדלג',skr.grade?'דרגה בעץ משנה מראה':'דרגה לא משנה'].join(', ')));
-  check(!skc.err&&skc.cast&&skc.anim&&skc.clipOk&&skc.rune&&skc.gone&&skc.arena,
-    'הטלת סקיל ('+skc.id+'): '+(skc.err||[skc.anim?'תנועה '+skc.clip:'אין תנועה',skc.rune?'עיגול רונות '+skc.col+(skc.r3d?' בתלת-ממד':''):'אין עיגול',skc.gone?'נעלם':'לא נעלם',skc.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
+  check(!skc.err&&skc.cast&&skc.anim&&skc.clipOk&&skc.rune&&skc.band&&skc.gone&&skc.arena,
+    'הטלת סקיל ('+skc.id+'): '+(skc.err||[skc.anim?'תנועה '+skc.clip:'אין תנועה',skc.rune?'עיגול רונות '+skc.col+' ('+skc.tier+')'+(skc.r3d?' בתלת-ממד':'')+(skc.band?'':' בלי טבעת חיצונית'):'אין עיגול',skc.gone?'נעלם':'לא נעלם',skc.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
   check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw&&wsk.orbFlash,
     'סקילים בעולם ('+wsk.id+'): '+(wsk.err||[wsk.btn?'כפתור':'אין כפתור',wsk.place?'למטה מימין, מעל הסרגל':'הכפתור לא במקום',wsk.tap&&wsk.tapHit?'נגיעה יורה ופוגעת':'נגיעה לא פגעה',
     wsk.cd&&wsk.sec&&wsk.again?'קירור עם מספר':'אין קירור',wsk.drag&&wsk.dragHit?'גרירה מכוונת ופוגעת':'גרירה לא פגעה',wsk.aimDraw?'כוונת מצוירת':'אין כוונת',wsk.finger?'אצבע על הכפתור יורה':'אצבע לא ירתה',
