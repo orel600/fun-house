@@ -135,3 +135,28 @@ fxPreload(['levelup','ko']);                                    // לטעון מ
 - **עומס:** עד `FXW.cap` (24) אפקטים של השכבה בבת אחת, מתוך `FXLIB.max`.
 
 אפקט חדש: מוסיפים שורה ב-`tools/fx-list.json` (שם החבילה והגיליון מתוך `public/fx/<חבילה>/<חבילה>/sprite_sheets/`), מריצים את `tools/fx-convert.py`, ומוסיפים אותו לרשימה כאן.
+
+## מזג אוויר לכל המשחק (js/weather.js, אוראל 7.11)
+
+שכבת אווירה אחת לכל המקומות: עולם, משחקי השאול, זירה, בוס, כפר ותפריט. כל המספרים ב-`WEATHER` בראש הקובץ.
+- **שימוש:**
+  ```js
+  setWeather('rain_light','auto',0.6);                  // שכבה על כל המסך. theme: temperate/tropical/arctic/dusk/night, או 'auto' לפי שעת המשחק
+  setWeather('fog_drift','night',1,{slot:'fog',kind:'low'}); // כמה שכבות: slot לכל אחת. kind: full / sky / low / top / one
+  setWeather(null);                                     // מוריד (בדעיכה). setWeather(null,0,0,{slot:'fog'}) לשכבה אחרת
+  wxPoint('rain_puddle',x,y,{size:90});                 // אפקט בנקודה בעולם: שלולית, פתית, ברק
+  wxFlash(0.3); wxBolt(x,y);                            // הבזק על כל המסך, ברק בנקודה (+ הבזק חלש)
+  ```
+- **איזה גיליון:** השם המלא הוא `wx_<variant>_<theme>` (למשל `wx_rain_light_night`). `wxRes` מחפש אותו ב-FXDATA, ואם הוא עוד לא הומר: אותו variant בנושא אחר, variant דומה (`WEATHER.near`), ובסוף גיליון ישן שכבר בריפו (`WEATHER.alias`: `rain`, `snow`, `wx_rainheavy`, `wx_fog` וכו'). לכן גיליון חדש ב-fx-list.json נכנס למשחק בלי לשנות קוד.
+- **תמיד מתחת לקרב:** בתלת-ממד מצויר מיד אחרי שכבת התלת-ממד ולפני כל מה שבקנבס (render.js, `wxDraw('base')`). בדו-ממד אחרי הדמויות ולפני הסקילים, האפקטים, המספרים והממשק (`wxDraw('mid')`). במשחקי השאול בדו-ממד אחרי הרצפה (עוטף את `mbDecor2d`). אפקט בנקודה מצויר באותה שכבה, ולא ב-`fxPlay`.
+- **מכונת מצבים לכל סצנה:** calm → build (`cloud_dark`, `fog_drift`) → storm (גשם, `storm_cloud`, הבזקים וברקים) → clear (`rainbow`, `sun_rays`). הסצנות ב-`WEATHER.scenes`. שכבה: `[variant, kind, שקיפות, מתי]`, ומתי: `day`, `night`, `morning`, `winter`, `exact` (רק אם הגיליון המדויק קיים, בלי חלופה ישנה).
+  - **כפר:** קרני שמש בבוקר, עלי כותרת ביום, שלג מצטבר בחורף (דצמבר עד פברואר). מדי פעם גשם קל עם שלוליות, ואחריו קשת.
+  - **עולם:** FXW (fxworld.js) מוסר את מזג האוויר של האזור (`wxWorld`) ואת הבזק הסערה (`wxFlash`), ו-weather.js מצייר. ליד יער טפטוף, באחו סערה אקראית עם ברקים, ברכס נושא arctic, במדבר dusk, בסערה night עם עננים, ובלב הצל ערפל עולה.
+  - **משחקי השאול:** night, שקוף (`k:0.6`). גשם קל בהתחלה, מתחזק לפי זמן המשחק ומגדלים שנפלו (`wxMobaP`), והבזק כשמגדל או בסיס נופלים (עוטף את `mbDie`).
+  - **בוס (זירה):** ערפל ועננים בקרב, סערה כשהוא כועס (`rage`) או בשלב 2, ברק על הבוס עם כל מתקפה גדולה (עוטף את `doPattern`, לכל היותר פעם ב-4 שניות), ואחרי הניצחון קשת.
+  - **תפריט:** ערפל עולה עדין בקנבס משלו בתוך מסך הפתיחה, מתחת לכפתורים.
+- **הנושא לפי השעה** (`VFX.hour`): temperate ביום, dusk מ-17:30, night מ-20:30 עד 5:30.
+- **טלפון קודם:** רק גיליונות. עד `WEATHER.max` שכבות (2 במסך קטן, 1 ב"פחות אפקטים"). כולן מצוירות לקנבס קטן (חצי רזולוציה, 0.4 במסך קטן) שמתעדכן רק כשפריים מתחלף (18 בשנייה, 12 במסך קטן), ומשם מתיחה אחת למסך. במסך קטן גם שקוף יותר. כשהלשונית מוסתרת השעון של מזג האוויר עוצר. הבזקים לא מופיעים כשביקשו פחות תנועה או "פחות אפקטים". בבדיקה מקומית: כ-0.1ms לפריים.
+- **גיליונות שעוד חסרים:** חבילת weather-fx-pack-vol1 המלאה לא בריפו. ברשימה הבאה הגיליונות ש-weather.js כבר יודע להשתמש בהם. כדי להוסיף אותם, מוסיפים את השורות ל-`tools/fx-list.json` ומריצים את `tools/fx-convert.py`, כמו כל אפקט:
+  `rain_light` (temperate, night, dusk), `rain_torrent_night`, `rain_puddle_temperate` (192), `snow_heavy_arctic`, `snow_settle_arctic`, `snow_flake_arctic` (192), `cloud_dark` (night, dusk), `fog_drift` (night, temperate), `mist_rise` (night, dusk), `storm_cloud_night`, `rainbow_temperate`, `lightning_bolt_dusk` (192), `wind_breeze_temperate`. כל השורות בצורה `"wx_rain_light_night": ["weather-fx-pack-vol1", "weather_rain_light_night", 256]`.
+  עד אז: עננים, קשת, שלוליות ושלג מצטבר לא מופיעים, וגשם קל וערפל עולה משתמשים ב-`rain` וב-`wx_fog`.

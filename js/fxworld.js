@@ -94,7 +94,9 @@ function fxwWant(){
   if(S.wd){
     // מזג אוויר: אריחים שעוקבים אחרי המצלמה
     const Gu=FXW.gust[fxwReg()],gu=Gu&&fxNowT()<FXW.gustEnd;
-    for(const [id0,a0,kind,when] of FXW.weather[fxwReg()]||[]){if(when==='night'&&!fxwNight())continue;const g=gu&&id0===Gu.from,id=g?Gu.to:id0,a=g?Gu.a:a0,add=g&&!!Gu.add;
+    // 7.11 (אוראל, weather.js): מזג האוויר עובר למערכת המשותפת, שמציירת אותו מתחת לאפקטים של הקרב ובוחרת גיליון לפי שעה ואזור. בלי weather.js: כמו קודם
+    if(typeof wxWorld==='function')wxWorld(fxwReg(),FXW.weather[fxwReg()],gu?Gu:null,fxwNight());else
+    for( [id0,a0,kind,when] of FXW.weather[fxwReg()]||[]){if(when==='night'&&!fxwNight())continue;const g=gu&&id0===Gu.from,id=g?Gu.to:id0,a=g?Gu.a:a0,add=g&&!!Gu.add;
       if(kind==='sky'){const s=cw/2;for(let i=0;i<2;i++)want.set('w:'+id+i,{id,o:cam,size:s,alpha:a,dx:(i-0.5)*s,dy:-ch/2+s*0.1,flip:i===1})}   // flip: החצי השני במראה, כדי שהתפר באמצע יתחבר
       else if(kind==='low'){const s=cw/2.2;for(let i=0;i<2;i++)want.set('w:'+id+i,{id,o:cam,size:s,alpha:a,dx:(i-0.5)*s*1.1,dy:ch*0.18})}
       else{const s=Math.max(cw/2,ch),c=Math.ceil(cw/s),r=Math.ceil(ch/s);for(let i=0;i<c;i++)for(let j=0;j<r;j++)want.set('w:'+id+i+'_'+j,{id,o:cam,size:s,alpha:a,add,dx:(i-(c-1)/2)*s,dy:(j-(r-1)/2)*s})}}
@@ -191,6 +193,7 @@ function fxwScene(reg){
   let w=L.reduce((a,e)=>a+e.w,0)*Math.random(),e=L[L.length-1];for(const x of L)if((w-=x.w)<0){e=x;break}
   // שכבת מזג האוויר: על כל המסך, עוקב אחרי המצלמה. עם השלג או הגשם זה עובר לקנבס הקטן, אז כמעט בחינם
   if(e.calm&&(RM||typeof fxLess==='function'&&fxLess()))return;
+  if(e.layer&&typeof wxFlash==='function'){wxFlash(e.a,e.id);return}   // 7.11: הבזק הברק דרך weather.js (מתחת לקרב, עם מרווח בין הבזקים)
   if(e.layer){if(FXW.wxl.has('gust')||FXW.n>=FXW.cap)return;const f=fxMake(e.id,0,0,{follow:FXW.cam,size:Math.max(W_(),H_())*1.15,alpha:e.a,add:!!e.add,fps:e.fps,loop:!!e.dur,dur:e.dur||0});if(!f)return;FXW.wxl.set('gust',f);return}
   const p=fxwAt(e);if(!p)return;
   const size=e.size<=3?e.size*W_():e.size,a=e.dawn?e.dawn[fxwDawn()?0:1]:e.a;

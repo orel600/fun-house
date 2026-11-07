@@ -138,9 +138,10 @@ function render(){
   if(R3D.on)ctx.clearRect(0,0,W,H);else{ctx.fillStyle=S&&S.room?'#262114':arenaFloor('d2')||C.ink;ctx.fillRect(0,0,W,H)}
   if(!P)return;
   const sh=RM?0:S.shake,px=DPR*ZOOM,ox=Math.round((W/2-S.cam.x+rand(-sh,sh))*px)/px,oy=Math.round((H/2-S.cam.y+rand(-sh,sh))*px)/px;   // מעוגל לפיקסל של המסך ולא ליחידת משחק: אחרת הגלילה קופצת 2-3 פיקסלים לסירוגין (תנועה מקוטעת)
-  if(S.mb){render3d(ox,oy);ctx.translate(ox,oy);mobaDraw(ox,oy);fxDraw();ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);fxDrawUi();return}   // משחקי השאול: ציור משלו (moba.js)
+  if(S.mb){render3d(ox,oy);ctx.translate(ox,oy);wxDraw('base');mobaDraw(ox,oy);fxDraw();ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);fxDrawUi();return}   // משחקי השאול: ציור משלו (moba.js)
   render3d(ox,oy);
   ctx.translate(ox,oy);
+  wxDraw('base');   // מזג אוויר בתלת-ממד: מעל הסצנה ומתחת לכל מה שבקנבס (weather.js)
   // ground
   if(!R3D.on){const g=90,x0=Math.floor(-ox/g)*g,y0=Math.floor(-oy/g)*g;
   ctx.strokeStyle='rgba(236,231,220,0.07)';ctx.lineWidth=1.5;ctx.beginPath();
@@ -173,6 +174,7 @@ function render(){
   for(const a of actors){if(a.isPlayer)drawPlayer();
     else if(a.big&&!R3D.on){ctx.save();ctx.translate(a.x,a.y);ctx.scale(a.big,a.big);ctx.translate(-a.x,-a.y);drawEnemy(a);ctx.restore()}
     else drawEnemy(a)}
+  wxDraw('mid');   // מזג אוויר בדו-ממד: אחרי הדמויות, לפני הסקילים, האפקטים והמספרים (weather.js)
   drawAgeFx();   // זוהר, שובל וחלקיקים על נשק משודרג (aging.js)
   drawSkills(ox,oy);   // טבעות וברקים של סקילים, וסימני רטוב/קפוא/הלם (skills.js)
   drawOrbits();drawDivine();   // החפצים המסתובבים (orbit.js)
