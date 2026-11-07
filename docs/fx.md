@@ -150,25 +150,28 @@ fxPreload(['levelup','ko']);                                    // לטעון מ
 
 ## מזג אוויר לכל המשחק (js/weather.js, אוראל 7.11)
 
-שכבת אווירה אחת לכל המקומות: עולם, משחקי השאול, זירה, בוס, כפר ותפריט. כל המספרים ב-`WEATHER` בראש הקובץ.
-- **שימוש:**
+הליבה: שכבת אווירה אחת לכל המקומות. כל המספרים ב-`WEATHER` בראש הקובץ. את המקומות (כפר ועולם, משחקי השאול, זירה ובוס) מחברים דרך ה-API, תמיד עם `typeof`, בלי לגעת ב-weather.js.
+- **ה-API (קבוע):**
   ```js
-  setWeather('rain_light','auto',0.6);                  // שכבה על כל המסך. theme: temperate/tropical/arctic/dusk/night, או 'auto' לפי שעת המשחק
-  setWeather('fog_drift','night',1,{slot:'fog',kind:'low'}); // כמה שכבות: slot לכל אחת. kind: full / sky / low / top / one
-  setWeather(null);                                     // מוריד (בדעיכה). setWeather(null,0,0,{slot:'fog'}) לשכבה אחרת
-  wxPoint('rain_puddle',x,y,{size:90});                 // אפקט בנקודה בעולם: שלולית, פתית, ברק
-  wxFlash(0.3); wxBolt(x,y);                            // הבזק על כל המסך, ברק בנקודה (+ הבזק חלש)
+  setWeather('rain_light','auto',0.6,{fade:2});        // שכבה על כל המסך. theme: temperate/tropical/arctic/dusk/night או 'auto' (לפי שעת המשחק). intensity 0..1
+  setWeather('fog_drift','night',1,{slot:'fog'});      // כמה שכבות: slot לכל אחת. kind: full / sky / low / top / one (ברירת מחדל לפי הסוג)
+  setWeather(null); setWeather(null,0,0,{slot:'fog'}); // מוריד, בדעיכה
+  weatherScene('village',{theme:'auto',auto:true,       // מכונת מצבים למקום. auto: מחזור לבד
+    calm:[['wind_petals',0.6],['sun_rays',0.6,{when:'morning'}]],
+    building:[['cloud_dark',0.6]], storm:[['rain_light',0.8]], clearing:[['rainbow',0.9,{when:'day'}]],
+    ev:{storm:{puddle:[0.8,1.8],flash:[8,16],bolt:[10,20]}}, times:{calm:[60,120]}, chance:0.5, k:1});
+  weatherState('storm');            // מעביר מצב: calm / building / storm / clearing. weatherState('storm','boss') לסצנה מסוימת
+  weatherBolt(x,y,{size:220});      // ברק בנקודה בעולם, והבזק חלש
+  weatherFlash(0.4);                // הבזק על כל המסך (לא כשביקשו פחות תנועה או "פחות אפקטים")
+  weatherClear(1.5);                // הכל דועך, והסצנה חוזרת ל-calm
+  wxPoint('rain_puddle',x,y,{size:90});   // אפקט בנקודה: שלולית, פתית, טיפה
   ```
-- **איזה גיליון:** השם המלא הוא `wx_<variant>_<theme>` (למשל `wx_rain_light_night`). `wxRes` מחפש אותו ב-FXDATA, ואם הוא עוד לא הומר: אותו variant בנושא אחר, variant דומה (`WEATHER.near`), ובסוף גיליון ישן שכבר בריפו (`WEATHER.alias`: `rain`, `snow`, `wx_rainheavy`, `wx_fog` וכו'). לכן גיליון חדש ב-fx-list.json נכנס למשחק בלי לשנות קוד.
-- **תמיד מתחת לקרב:** בתלת-ממד מצויר מיד אחרי שכבת התלת-ממד ולפני כל מה שבקנבס (render.js, `wxDraw('base')`). בדו-ממד אחרי הדמויות ולפני הסקילים, האפקטים, המספרים והממשק (`wxDraw('mid')`). במשחקי השאול בדו-ממד אחרי הרצפה (עוטף את `mbDecor2d`). אפקט בנקודה מצויר באותה שכבה, ולא ב-`fxPlay`.
-- **מכונת מצבים לכל סצנה:** calm → build (`cloud_dark`, `fog_drift`) → storm (גשם, `storm_cloud`, הבזקים וברקים) → clear (`rainbow`, `sun_rays`). הסצנות ב-`WEATHER.scenes`. שכבה: `[variant, kind, שקיפות, מתי]`, ומתי: `day`, `night`, `morning`, `winter`, `exact` (רק אם הגיליון המדויק קיים, בלי חלופה ישנה).
-  - **כפר:** קרני שמש בבוקר, עלי כותרת ביום, שלג מצטבר בחורף (דצמבר עד פברואר). מדי פעם גשם קל עם שלוליות, ואחריו קשת.
-  - **עולם:** FXW (fxworld.js) מוסר את מזג האוויר של האזור (`wxWorld`) ואת הבזק הסערה (`wxFlash`), ו-weather.js מצייר. ליד יער טפטוף, באחו סערה אקראית עם ברקים, ברכס נושא arctic, במדבר dusk, בסערה night עם עננים, ובלב הצל ערפל עולה.
-  - **משחקי השאול:** night, שקוף (`k:0.6`). גשם קל בהתחלה, מתחזק לפי זמן המשחק ומגדלים שנפלו (`wxMobaP`), והבזק כשמגדל או בסיס נופלים (עוטף את `mbDie`).
-  - **בוס (זירה):** ערפל ועננים בקרב, סערה כשהוא כועס (`rage`) או בשלב 2, ברק על הבוס עם כל מתקפה גדולה (עוטף את `doPattern`, לכל היותר פעם ב-4 שניות), ואחרי הניצחון קשת.
-  - **תפריט:** ערפל עולה עדין בקנבס משלו בתוך מסך הפתיחה, מתחת לכפתורים.
+- **שמות הסצנות:** הסצנה הפעילה נקבעת לפי המקום (`wxPlace`): `menu` (מסך הפתיחה, בחירת דמות, בחירת גיבור למשחקי השאול), `village`, `world`, `moba`, `boss` (בזירה כשיש בוס), `arena`. סצנה שנרשמה בשם הזה פעילה כשהשחקן שם, וכל סצנה זוכרת את המצב שלה. באזורים שונים בעולם: נרשמים שוב עם cfg אחר כשהאזור מתחלף, והמצב נשמר.
+- **פריט ברשימה:** `[variant, intensity, {kind, when, theme, exact}]`. `when`: `day`, `night`, `morning`, `winter` (דצמבר עד פברואר), גם כמה יחד. intensity 1 = שקיפות `WEATHER.alpha` (0.55), ו-`k` בסצנה מכפיל את כולה (משחקי השאול: 0.6, כדי שהקרב נקרא).
+- **איזה גיליון:** `wx_<variant>_<theme>`. נושא שחסר: temperate, ואחריו נושא אחר. variant שחסר: variant דומה (`WEATHER.near`), ובסוף גיליון ישן (`WEATHER.alias`: `rain`, `snow`, `wx_fog`...).
+- **תמיד מתחת לקרב:** בתלת-ממד מצויר מיד אחרי שכבת התלת-ממד ולפני כל מה שבקנבס (render.js, `wxDraw('base')`). בדו-ממד אחרי הדמויות ולפני הסקילים, האפקטים, המספרים והממשק (`wxDraw('mid')`). במשחקי השאול בדו-ממד אחרי הרצפה (עוטף את `mbDecor2d`). ברקים ושלוליות מצוירים באותה שכבה, לא ב-`fxPlay`, ובערפל של משחקי השאול לא מסגירים (`fxSeen`).
+- **תפריטים:** ערפל עולה עדין (`mist_rise`, `fog_drift`) בקנבס משלו בתוך החלון הפתוח, מתחת לתוכן שלו.
 - **הנושא לפי השעה** (`VFX.hour`): temperate ביום, dusk מ-17:30, night מ-20:30 עד 5:30.
-- **טלפון קודם:** רק גיליונות. עד `WEATHER.max` שכבות (2 במסך קטן, 1 ב"פחות אפקטים"). כולן מצוירות לקנבס קטן (חצי רזולוציה, 0.4 במסך קטן) שמתעדכן רק כשפריים מתחלף (18 בשנייה, 12 במסך קטן), ומשם מתיחה אחת למסך. במסך קטן גם שקוף יותר. כשהלשונית מוסתרת השעון של מזג האוויר עוצר. הבזקים לא מופיעים כשביקשו פחות תנועה או "פחות אפקטים". בבדיקה מקומית: כ-0.1ms לפריים.
-- **גיליונות שעוד חסרים:** חבילת weather-fx-pack-vol1 המלאה לא בריפו. ברשימה הבאה הגיליונות ש-weather.js כבר יודע להשתמש בהם. כדי להוסיף אותם, מוסיפים את השורות ל-`tools/fx-list.json` ומריצים את `tools/fx-convert.py`, כמו כל אפקט:
-  `rain_light` (temperate, night, dusk), `rain_torrent_night`, `rain_puddle_temperate` (192), `snow_heavy_arctic`, `snow_settle_arctic`, `snow_flake_arctic` (192), `cloud_dark` (night, dusk), `fog_drift` (night, temperate), `mist_rise` (night, dusk), `storm_cloud_night`, `rainbow_temperate`, `lightning_bolt_dusk` (192), `wind_breeze_temperate`. כל השורות בצורה `"wx_rain_light_night": ["weather-fx-pack-vol1", "weather_rain_light_night", 256]`.
-  עד אז: עננים, קשת, שלוליות ושלג מצטבר לא מופיעים, וגשם קל וערפל עולה משתמשים ב-`rain` וב-`wx_fog`.
+- **טלפון קודם** (לפי MDN, Optimizing canvas): רק גיליונות. עד `WEATHER.max` שכבות (2 במסך קטן, 1 ב"פחות אפקטים"), והבזק מעליהן. כולן מצוירות לקנבס קטן מחוץ למסך (חצי רזולוציה, 0.4 במסך קטן) שמצויר מחדש רק כשפריים מתחלף (18 בשנייה, 12 במסך קטן), ומשם `drawImage` אחד למסך. מיקומים שלמים, בלי `getImageData`. במסך קטן גם שקוף יותר. כשהלשונית מוסתרת השעון עוצר. בבדיקה מקומית: כ-0.1ms לפריים.
+- **גיליונות עם רקע:** `lightning_bolt` ו-`sun_rays` מקבלים שוליים רכים (`WEATHER.soft`), וכל ברק, קרני שמש וסופת שלג מצוירים כתוספת אור (`WEATHER.add`). `snow_flake` ו-`rain_drip` הם עצם אחד: רק ב-`wxPoint`.
+- **בדיקה:** שורת "מזג אוויר" ב-check.js: setWeather וחלופה לנושא חסר, מעברי מצבים ו-weatherState, weatherClear, מצויר לפני fxDraw, עוצר בלשונית מוסתרת, תקרה, ברק ונקודה.
