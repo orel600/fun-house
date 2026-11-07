@@ -1,7 +1,9 @@
 /* Service worker: המשחק עובד גם בלי רשת כשהוא מותקן כאפליקציה (js/pwa.js רושם אותו, רק מ-http/https).
    תמיד קודם מהרשת, בלי מטמון הדפדפן (cache:'no-cache': הדפדפן שואל את השרת אם הקובץ השתנה), ורק כשאין רשת בכלל,
    או שאין תשובה אחרי WAIT, מהעותק השמור. ככה כל עדכון שמתפרסם מגיע מיד. version.json לא נשמר: js/update-check.js בודק בו אם יש גרסה חדשה.
-   הגרסה מגיעה בכתובת (sw.js?v=<VERSION>): גרסה חדשה = service worker חדש, ששומר עותק חדש ומוחק את הישן. */
+   הגרסה מגיעה בכתובת (sw.js?v=<VERSION>): גרסה חדשה = service worker חדש, ששומר עותק חדש ומוחק את הישן.
+   בפרסום, כל סקריפט ועיצוב ב-index.html מקבל ?v=<VERSION> בכתובת (deploy.yml), והעותק נשמר לפי הכתובת המלאה: index.html חדש
+   מבקש כתובות שאין להן עותק שמור, ולכן מחכה לרשת ולא מקבל JS ישן. index.html ישן (כשהרשת איטית) מקבל את ה-JS הישן שלו, וזה עקבי. */
 const VER=new URL(self.location).searchParams.get('v')||'dev';
 const CACHE='fh-'+VER, WAIT=10000;   // כמה מילישניות מחכים לתשובה מהרשת לפני שעוברים לעותק השמור (אם יש). בלי רשת בכלל: מיד
 const EXTRA=['./','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'];
@@ -10,7 +12,7 @@ const EXTRA=['./','manifest.webmanifest','icons/icon-192.png','icons/icon-512.pn
 self.addEventListener('install',e=>e.waitUntil((async()=>{
   const c=await caches.open(CACHE);
   const html=await (await fetch('./',{cache:'no-cache'})).text();
-  const files=[...html.matchAll(/(?:src|href)="([^"#?:]+)"/g)].map(m=>m[1]).filter(f=>!f.startsWith('//'));
+  const files=[...html.matchAll(/(?:src|href)="([^"#:]+)"/g)].map(m=>m[1]).filter(f=>!f.startsWith('//'));
   await Promise.all([...new Set(EXTRA.concat(files))].map(f=>fetch(f,{cache:'no-cache'}).then(r=>r.ok&&c.put(f,r)).catch(()=>{})));
   await self.skipWaiting();
 })()));
