@@ -1700,9 +1700,9 @@ function worldBot(m,L,god){
         // שורה שנחתכה בתוך העמודה (overflow) לא נראית: נמדד רק החלק שבתוך העמודה
         const rows=[...document.querySelectorAll('#msgLane>*')].filter(vis).map(e=>{const r=R(e);return {left:r.left,right:r.right,top:Math.max(r.top,lr.top),bottom:Math.min(r.bottom,lr.bottom)}}).filter(r=>r.bottom-r.top>2)
           .concat([...document.querySelectorAll('#feedCol .frow')].filter(vis).map(R));
-        const keep=[...document.querySelectorAll('#skills>*,#nav>*,#qTrack,#miniMap,#menuBtn,#whud>*,#skOffer')].filter(vis).map(R),h=msgHero();
+        const keep=[...document.querySelectorAll('#skills>*,#nav>*,#qTrack,#miniMap,#menuBtn,#whud>*')].filter(vis).map(R),h=msgHero();
         return {n:rows.length,big:[...document.querySelectorAll('#msgLane .mrow.big')].filter(vis).length,hero:rows.some(r=>hit(r,h)),ui:rows.some(r=>keep.some(k=>hit(r,k))),
-          out:rows.some(r=>r.left<-1||r.top<-1||r.right>vw+1||r.bottom>vh+1),d:ln?[ln.style.top,ln.style.maxHeight,Math.round(h.top),ln.style.visibility||'-',ln.querySelectorAll('.cut').length,ln.children.length,Math.round(h.left)+'..'+Math.round(h.right)].join('/'):'-',feed:document.querySelectorAll('#feedCol .frow').length,sk:document.querySelectorAll('#skills>*').length,keep:keep.length}};
+          out:rows.some(r=>r.left<-1||r.top<-1||r.right>vw+1||r.bottom>vh+1),d:ln?[ln.style.top,ln.style.maxHeight,Math.round(h.top),ln.style.visibility||'-',ln.querySelectorAll('.cut').length,ln.children.length,Math.round(h.left)+'..'+Math.round(h.right),MSG.where||'-'].join('/'):'-',feed:document.querySelectorAll('#feedCol .frow').length,sk:document.querySelectorAll('#skills>*').length,keep:keep.length}};
       enterWorld('home');S.mode='play';enemies=[];FL.length=0;msgClear();__lbak.ov=[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden);for(const o of __lbak.ov)o.hidden=true;   // חלון פתוח מסתיר את העמודה (msgWinOpen), אז בבדיקה כמו במשחק: בלי חלון
       for(const k in MSG.stat)MSG.stat[k]=0;
       if(S.sk&&!S.sk.ids.length){S.sk.ids=Object.keys(SKILLS.list).slice(0,3);S.sk.cd=S.sk.ids.map(()=>0)}if(typeof skillsHud==='function')skillsHud();

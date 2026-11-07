@@ -70,10 +70,10 @@ function msgBlocks(){
   const add=(e,d)=>{if(!e||skip.has(e.id)||e.hidden||e.tagName==='SCRIPT'||e.tagName==='CANVAS'||e.tagName==='STYLE')return;
     const r=e.getBoundingClientRect();if(r.width<2||r.height<2||r.right<0||r.bottom<0||r.left>vw||r.top>vh)return;
     const cs=getComputedStyle(e);if(cs.display==='none'||cs.visibility==='hidden'||+cs.opacity<0.05)return;
-    if(r.width*r.height>vw*vh*0.4)return;   // חלון או שכבה על כל המסך: לא כפתור
+    if(r.width*r.height>vw*vh*0.4||(r.height>vh*0.6&&d>=3))return;   // חלון או שכבה על כל המסך (או עמוד גבוה): לא כפתור
     if((r.width>vw*0.5||r.height>vh*0.5)&&d<3){for(const k of e.children)add(k,d+1);return}
     if(cs.pointerEvents==='none'&&!e.closest('.whud,.vhud,.hud,#qTrack,.skills'))return;   // הודעות וכרטיסים שקופים למגע: לא חוסמים
-    out.push(r)};
+    out.push({left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height,el:e})};
   for(const e of document.body.children)add(e,0);
   return out;
 }
@@ -86,12 +86,15 @@ function msgPlace(){
   const el=$('msgLane');if(!el||!el.children.length)return;
   const vw=innerWidth,bl=msgBlocks(),h=Math.max(24,el.offsetHeight),pad=MSG.pad,hero=msgHero(),cx=hero?Math.min(vw*0.62,Math.max(vw*0.38,(hero.left+hero.right)/2)):vw/2;
   // מנסים גבהים מלמעלה למטה: בכל גובה, הפס הפנוי סביב מרכז המסך בין מה שתפוס משמאל ומימין
-  const tops=[pad,...bl.map(r=>r.bottom+pad)].filter(y=>y>=pad).sort((a,b)=>a-b);let best=null;
-  for(const y of tops){let L=pad,R=vw-pad;
-    for(const r of bl){if(r.bottom<=y||r.top>=y+h)continue;
-      if(r.right<=cx)L=Math.max(L,r.right+pad);else if(r.left>=cx)R=Math.min(R,r.left-pad);else{L=R;break}}
-    const w=R-L;if(w>=MSG.minW||(!best||w>best.w))best={y,L,R,w};if(w>=MSG.minW)break}
-  if(!best)return;
+  // רק גבהים מעל הגיבור (או בחצי העליון), והפס נבדק בגובה של שורה-שתיים: מה שלא נכנס מתחת מוסתר בכל מקרה
+  const lim=hero?hero.top-26:innerHeight*0.45,hb=Math.min(h,60);
+  const tops=[pad,...bl.map(r=>r.bottom+pad)].filter(y=>y>=pad&&y<=lim).sort((a,b)=>a-b);let best=null;
+  for(const y of tops){let L=pad,R=vw-pad,hit=null;
+    for(const r of bl){if(r.bottom<=y||r.top>=y+hb)continue;
+      if(r.right<=cx)L=Math.max(L,r.right+pad);else if(r.left>=cx)R=Math.min(R,r.left-pad);else{L=R;hit=r;break}}
+    const w=R-L;if(!best||w>best.w)best={y,L,R,w,hit};if(w>=MSG.minW){best={y,L,R,w};break}}
+  if(!best||best.w<60)best={y:pad,L:pad,R:vw-pad,w:vw-2*pad,hit:best&&best.hit};   // אין פס פנוי: למעלה במרכז, כמו פעם
+  MSG.where=best.hit?(best.hit.el.id||best.hit.el.className||best.hit.el.tagName):'';   // לבדיקה: מה חסם
   const w=Math.min(MSG.maxW,best.w),x=Math.max(best.L,Math.min(best.R-w,cx-w/2));
   el.style.top=Math.round(best.y)+'px';el.style.left=Math.round(x)+'px';el.style.width=Math.round(w)+'px';
   // לא יורדים על הגיבור: מה שלא נכנס מעליו מתקצר (הקטנות האחרונות נעלמות קודם)
