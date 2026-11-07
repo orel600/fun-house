@@ -102,11 +102,13 @@ function mbfxNum(x,y,txt,col,o,src,t){
 // בעולם (אחרי ה-translate של המצלמה): מגנים, חלקיקים, ומספרים גדולים
 function mbfxDraw(){
   const F=mbfxS();
+  mbfxUnits();   // טבעות קבוצה וסימני מצב (MBLIB)
   for(const u of MB.u)if(!u.dead&&mbShow(u)&&u.st.shield>0&&u.st.shieldEnd>MB.t){   // מגן: בועה בצבע הקבוצה, דוהה ככל שנשאר פחות
     const k=Math.max(0.25,u.st.shield/(u.st.shieldMax||u.st.shield)),col=MOBA.team[u.team];
     ctx.globalAlpha=0.16*k+0.06;ctx.fillStyle=col;ctx.beginPath();ctx.arc(u.x,u.y-22,u.r+16,0,7);ctx.fill();
     ctx.globalAlpha=0.5*k+0.2;ctx.strokeStyle='#E8F4FF';ctx.lineWidth=2;ctx.beginPath();ctx.arc(u.x,u.y-22,u.r+16,-2.6+MB.t*2,-0.6+MB.t*2);ctx.stroke()}
-  mbfxUnits();mbfxMarks();mbfxShots();
+  mbfxMarks();mbfxShots();
+  if(typeof fxDraw==='function')fxDraw();   // ספריית האפקטים (fxlib.js) כאן, בקואורדינטות העולם ומתחת למספרים. ב-render.js היא ציירה אחרי ש-mobaDraw כבר עבר לקואורדינטות המסך, ולכן מחוץ למסך
   ctx.globalCompositeOperation='lighter';
   for(const p of F.p){if(!mbVisPt(p.x,p.y))continue;const k=p.life/p.t0;ctx.globalAlpha=Math.min(1,k*1.6);ctx.fillStyle=p.col;const s=p.size*(0.4+0.6*k);ctx.fillRect(p.x-s/2,p.y-p.z-s/2,s,s)}
   ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;

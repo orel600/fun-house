@@ -469,7 +469,6 @@ function mobaDraw(ox,oy){
   mbRecallDraw();   // טבעת החזרה לבסיס (moba-recall.js)
   mbGambleTop();   // הגלגל של חדר ההימור מעל הגיבור (moba-gamble.js)
   typeof mbSpellDraw==='function'&&mbSpellDraw();   // לחשים: מואץ, מותש, נקי, ואזור חשוף (moba-spells.js)
-  fxDraw();   // ספריית האפקטים (fxlib.js). כאן ולא ב-render.js: בסוף mobaDraw הציור עובר לפיקסלים של המסך, והאפקטים נפלו מחוץ למסך
   mbfxDraw();   // חלקיקים, מגנים ומספרים גדולים (moba-fx.js)
   ctx.textAlign='center';ctx.lineJoin='round';ctx.strokeStyle='#0B0A12';   // מספרים גדולים, בניגוד גבוה עם קו מתאר כהה (אוראל, 7.11: "קטנים וחיוורים")
   for(const f of M.floats){if(!mbVisPt(f.x,f.y))continue;const age=0.9-f.life,pop=age<0.1?1+(0.1-age)*3:1,sz=Math.round(17*uk*f.sz*pop);
