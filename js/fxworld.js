@@ -124,7 +124,7 @@ function fxwUpdate(dt){
   FXW.cam.x=S.cam.x;FXW.cam.y=S.cam.y;
   if(typeof wxwUpdate==='function')wxwUpdate(dt);   // מצב מזג האוויר (wxworld.js, 7.11)
   FXW.once=FXW.once.filter(fxwAlive);{const now=fxNowT();for(const [k,f] of FXW.wxl)if(fxFrame(f,now)<0)FXW.wxl.delete(k)}FXW.n=FXW.once.length+FXW.live.size+FXW.wxl.size;
-  const reg=fxwReg();if(reg!==FXW.reg){FXW.reg=reg;fxwStopAll();FXW.lx=null;FXW.dead.clear();FXW.hp=null;if(S.wd)fxwPingNow();fxwPreload(reg)}   // אזור חדש: מנקים ומתחילים מחדש, טוענים מראש, ופינג במפה
+  const reg=fxwReg();if(reg!==FXW.reg){FXW.reg=reg;FXW.forest=false;fxwStopAll();FXW.lx=null;FXW.dead.clear();FXW.hp=null;if(S.wd)fxwPingNow();fxwPreload(reg)}   // אזור חדש: מנקים ומתחילים מחדש, טוענים מראש, ופינג במפה
   if((FXW.t-=dt)<=0){FXW.t=FXW.sync;fxwSoft();fxwSync();fxwNews();fxwSlow()}
   // צעדים לפי הקרקע
   if(FXW.lx===null){FXW.lx=P.x;FXW.ly=P.y}
@@ -184,7 +184,7 @@ function fxwAt(e){
     case 'scr':return{x:c.x,y:c.y};
     case 'pond':{const ps=(WR().ponds||[]).filter(p=>Math.abs(p.x-c.x)<cw/2&&Math.abs(p.y-c.y)<ch/2);if(!ps.length)return null;const p=ps[Math.floor(Math.random()*ps.length)];return{x:p.x+r(-p.r,p.r)*0.4,y:p.y-p.r*0.3}}
     case 'forest':{const M=TR.map;for(let i=0;i<4;i++){const x=c.x+r(-cw*0.42,cw*0.42),y=c.y+r(-ch*0.38,ch*0.38);
-      if(M.forests.some(F=>polyDist(x,y,F)<90))return{x,y}}return null}
+      if((M&&M.forests||[]).some(F=>polyDist(x,y,F)<90))return{x,y}}return null}   // 7.11: אזור בלי יערות (FXW.forest מהאזור הקודם, עד הסנכרון הבא)
     default:return{x:c.x+r(-cw*0.4,cw*0.4),y:c.y+r(-ch*0.35,ch*0.35)};
   }
 }
