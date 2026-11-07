@@ -9,6 +9,7 @@
    עומס: תקרה לפגיעות בפריים, ולא מוסיפים אפקט חד-פעמי כשספריית האפקטים קרובה לתקרה שלה (FXLIB.max) */
 const FXC={
   on:true,
+  cap:12,               // כמה פגיעות, מוות ורסיסים של השכבה בבת אחת (נמדד 7.11: בלי זה קרב צפוף הגיע ל-60 מתוך 70)
   room:10,              // לא מוסיפים פגיעה, מוות או נצנוץ כש-FXLIB.list קרובה מזה לתקרה (FXLIB.max). אזהרות תמיד: הן חשובות למשחק
   // אזהרות. fit: איזה חלק מהפריים הצורה תופסת (נמדד מהגיליונות), כדי שהגודל על הרצפה יהיה בדיוק אזור הפגיעה.
   // cone: h גובה המשולש, apex כמה הקודקוד רחוק מהמרכז (המשולש מצביע למטה בגיליון). line: אורך הפס (אנכי בגיליון)
@@ -28,10 +29,11 @@ const FXC={
     stone:110,gemSize:120,
     glint:{every:[1.4,2.8],near:380,size:44,a:0.65,max:2,up:0.6}},
   // מצב חי
-  pre:0,fr:0,hitFr:-1,hits:0,glT:1,glints:[],stat:{tg:{},hit:{},ko:{},mine:{},glint:0}
+  own:[],pre:0,fr:0,hitFr:-1,hits:0,glT:1,glints:[],stat:{tg:{},hit:{},ko:{},mine:{},glint:0}
 };
 const fxcOn=()=>FXC.on&&typeof fxPlay==='function'&&!!S&&!!S.wd&&!S.mb;
-const fxcRoom=()=>FXLIB.list.length<FXLIB.max-FXC.room;
+const fxcRoom=()=>{FXC.own=FXC.own.filter(h=>h.on&&FXLIB.list.includes(h));return FXC.own.length<FXC.cap&&FXLIB.list.length<FXLIB.max-FXC.room};
+const fxcOwn=h=>{if(h)FXC.own.push(h);return h};
 const fxcCount=(b,id)=>{b[id]=(b[id]||0)+1};
 
 /* ---- אזהרות ---- */
@@ -85,7 +87,7 @@ function fxcHit(e,t,crit,m,y){
   if(FXC.hits>=FXC.hit.perFrame||!fxcRoom())return true;    // הרבה פגיעות בפריים אחד: מספיק מה שכבר נוגן
   if(m<1&&!crit)return true;                                // עמיד: בלי פיצוץ, רק המספר האפור
   FXC.hits++;const K=FXC.hit;
-  fxPlay(id,e.x+rand(-4,4),y,{size:fxcSize(e,K)*(crit?K.crit:1),alpha:K.a,add:true,fps:K.fps,rot:rand(0,6.28)});fxcCount(FXC.stat.hit,id);
+  fxcOwn(fxPlay(id,e.x+rand(-4,4),y,{size:fxcSize(e,K)*(crit?K.crit:1),alpha:K.a,add:true,fps:K.fps,rot:rand(0,6.28)}));fxcCount(FXC.stat.hit,id);
   return true;
 }
 // מ-juiceKill. true = במקום ענן העשן
@@ -94,7 +96,7 @@ function fxcKill(e){
   const id='wko_'+fxcType(e.fxDt||'physical');if(!fxImg(id))return false;
   if(e.fxTg)fxcTgSet(e,null);
   if(!fxcRoom()&&!(e.isBoss||e.warden||e.elite))return true;
-  const K=FXC.ko;fxPlay(id,e.x,e.y-e.r*0.3,{size:fxcSize(e,K),alpha:K.a,fps:K.fps});fxcCount(FXC.stat.ko,id);
+  const K=FXC.ko;fxcOwn(fxPlay(id,e.x,e.y-e.r*0.3,{size:fxcSize(e,K),alpha:K.a,fps:K.fps}));fxcCount(FXC.stat.ko,id);
   return true;
 }
 
@@ -112,7 +114,7 @@ function fxcGlint(dt){
 function fxcMine(n){
   if(!fxcOn()||!n||!fxcMineKind(n.kind))return;
   const M=FXC.mine,c=M.gem[n.kind],id=c?'wmine_gem_'+c:'wmine_stone';
-  fxPlay(id,n.x,n.y-n.r*0.4,{size:c?M.gemSize:M.stone,add:!!c});fxcCount(FXC.stat.mine,id);
+  fxcOwn(fxPlay(id,n.x,n.y-n.r*0.4,{size:c?M.gemSize:M.stone,add:!!c}));fxcCount(FXC.stat.mine,id);
 }
 
 // כל פריים בעולם (worldUpdate)
