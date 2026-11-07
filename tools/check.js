@@ -1063,7 +1063,7 @@ function worldBot(m,L,god){
   {startLeak=await page.evaluate(()=>{const s=document.getElementById('ovStart').innerText;return /[֐-׿]/.test(s)||document.documentElement.dir!=='ltr'?s.slice(0,80):null});
     await shot('start-en');
     // English only (Nir, 7.11.2026): no language toggle on the start screen, LANG is en, and an old save that stored 'he' opens in English
-    const enOnly=await page.evaluate(()=>({toggle:document.querySelectorAll('[data-lang],.langs').length,lang:LANG,dir:document.documentElement.dir,stored:localStorage.getItem('zm-lang')}));
+    const enOnly=await page.evaluate(()=>({toggle:document.querySelectorAll('#ovStart [data-lang],.langs').length,lang:LANG,dir:document.documentElement.dir,stored:localStorage.getItem('zm-lang')}));
     // the page was loaded with zm-lang='he' (an old save, see addInitScript above), so stored==='en' means it migrated
     check(!enOnly.toggle&&enOnly.lang==='en'&&enOnly.dir==='ltr'&&enOnly.stored==='en',
       'English only: '+(enOnly.toggle?enOnly.toggle+' language buttons left on screen':'no language toggle')+', LANG '+enOnly.lang+', dir '+enOnly.dir+
