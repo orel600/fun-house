@@ -18,7 +18,7 @@ const SKCAST={
   shot:{bow:'Ranged_Bow_Release',other:'Ranged_Magic_Shoot'},
   fallback:'Ranged_Magic_Spellcasting',
   // עיגול הרונות: עדין, כי סקילים חוזרים הרבה. מדבקה אחת לכל היותר (משתמשים שוב באותה), אז מאגר המדבקות לא מתמלא
-  rune:{life:0.55,r:44,a:0.55,spin:2.2,fin:0.18,fade:0.45}
+  rune:{life:0.55,r:44,a:0.7,hdr:1.6,spin:2.2,fin:0.18,fade:0.45}   // hdr: כמה זוהר (מעל 1 נכנס ל-bloom). גבוה מזה הצבע נשרף ללבן-צהוב
 };
 const skcStat={casts:0,runes:0};   // בשביל הבוט
 let skcRune=null;                   // {t,col,id}: העיגול הנוכחי (גם לדו-ממד)
@@ -33,7 +33,7 @@ function skCast(id){
   if(typeof VFX3D==='undefined'||!R3D.on)return;
   // בכפר המדבקות כבויות (VFX3D.on רק בעולם). כמו האש של פיוחו (petfx3d.js), מדליקים לרגע את VFX3D.pet
   const was=VFX3D.pet;VFX3D.pet=true;
-  const d=skcRune.d3=VFX3D.decal('rune',P.x,P.y,R.r,{life:R.life,col,a:R.a,fin:R.fin,fade:R.fade});
+  const d=skcRune.d3=VFX3D.decal('rune',P.x,P.y,R.r,{life:R.life,col,a:R.a,fin:R.fin,fade:R.fade,hdr:R.hdr});
   VFX3D.pet=was;
   if(d)d.spin=R.spin;
 }
