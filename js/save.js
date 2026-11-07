@@ -47,11 +47,17 @@ const SAVE_STORE={
     for(const k of['-bak2','-bak']){let b=null;try{b=ok(localStorage.getItem(this.key+k))}catch(e){}
       if(b){this.note='save.restored';return b}}
     this.note=this.lock?'save.locked':'save.lost';return null},
+  // ביקורת 7.11.2026: הגיבוי בנפרד. אם הוא נכשל (מקום מלא) השמירה הראשית עדיין נכתבת.
+  // השמירה הראשית נכשלה: מפנים את הגיבוי המתגלגל (עותק ישן) ומנסים פעם אחת שוב. עדיין נכשל: השמירה הקודמת נשארת, והודעה פעם אחת
   write(d,quiet){
-    if(!this.lock)try{
-      if(Date.now()-this.lastBak>this.bakEvery){const prev=localStorage.getItem(this.key);if(prev)localStorage.setItem(this.key+'-bak2',prev);this.lastBak=Date.now()}
-      localStorage.setItem(this.key,JSON.stringify(d));this.failed=false}
-    catch(e){if(!this.failed){this.failed=true;this.note='save.fail';if(typeof saveWarnShow==='function')saveWarnShow()}}
+    if(!this.lock){
+      if(Date.now()-this.lastBak>this.bakEvery){this.lastBak=Date.now()
+        try{const prev=localStorage.getItem(this.key);if(prev)localStorage.setItem(this.key+'-bak2',prev)}catch(e){}}
+      const s=JSON.stringify(d);let ok=false
+      try{localStorage.setItem(this.key,s);ok=true}catch(e){
+        try{localStorage.removeItem(this.key+'-bak2');localStorage.setItem(this.key,s);ok=true}catch(e2){}}
+      if(ok)this.failed=false
+      else if(!this.failed){this.failed=true;this.note='save.fail';if(typeof saveWarnShow==='function')saveWarnShow()}}
     if(!quiet&&this.onWrite)this.onWrite()},
   onWrite:null
 };
