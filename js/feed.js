@@ -19,7 +19,9 @@ const FEED={
 let FTITLE=null;
 function feedTitle(txt,col){FTITLE={txt,col:col||C.gold,t:feedNow()};FEED.stat.titles++;if(typeof msgBig==='function'&&msgOn()){FTITLE.lane=1;msgBig(txt,col||C.gold)}}   // בעולם ובכפר: רגע גדול בעמודת ההודעות (msglane.js), לא כותרת בקנבס
 function drawFeedTitle(){
-  const T_=FEED.title,f=FTITLE;if(!f||f.lane)return;const age=feedNow()-f.t;if(age>T_.life){FTITLE=null;return}
+  const T_=FEED.title,f=FTITLE;if(!f||f.lane)return;
+  // כניסה לאזור: feedTitle נקרא לפני worldUi (world.js), כשעמודת ההודעות עוד לא פעילה. ברגע שהיא פעילה, הכותרת עוברת אליה ולא מצוירת בקנבס מעל השורות (הסרטון של ניר, 7.11)
+  if(typeof msgOn==='function'&&msgOn()){f.lane=1;msgBig(f.txt,f.col);return}const age=feedNow()-f.t;if(age>T_.life){FTITLE=null;return}
   const fs=Math.round(Math.max(T_.size[0],Math.min(T_.size[2],innerHeight*T_.size[1]))),a=Math.min(1,age/0.2,(T_.life-age)/0.4);
   ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.globalAlpha=a;ctx.direction=DIR;ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.font='800 '+fs+'px Heebo, system-ui, sans-serif';const x=innerWidth/2,y=Math.max(64,innerHeight*T_.y),w=ctx.measureText(f.txt).width+fs*1.6;
