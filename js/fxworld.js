@@ -33,7 +33,7 @@ const FXW={
   dim:{stars:0.4},              // שקיפות משלו (ברירת המחדל amb.alpha)
   // מזג אוויר לפי אזור: [אפקט, שקיפות, איפה]. full: אריחים על כל המסך, sky: פס למעלה, low: חלק תחתון. עובר מעל הקנבס הקיים
   weather:{
-    ridge:[['snow',0.45,'full'],['aurora',0.45,'sky']],
+    ridge:[['snow',0.45,'full'],['aurora',0.45,'sky','night']],   // זוהר צפוני רק בלילה: כל שכבה כאן היא כמעט מסך שלם לצייר (7.11)
     storm:[['wx_rainheavy',0.5,'full']],   // גשם כבד מהבאנדל (7.11) במקום rain
     desert:[['haze',0.4,'low']]
   },
@@ -51,22 +51,23 @@ const FXW={
     alpha:{physical:0.7},a:0.95,add:false,   // add (אור) עולה פי 2 בציור, והגיליון כבר זוהר בעצמו
     kind:{sword:'slash',axe:'axe',hammer:'smash'},   // P.wt → סוג השובל. פטיש יש רק ב-amber/crimson (smashCol)
     smashCol:{crimson:'crimson'},smashDef:'amber',
-    size:2,fps:48,dy:-12,   // גודל: פי size מטווח המכה (ציור: ~0.6ms בתוכנה בצפיפות 3, רבע מגשם הסערה של #430). fps 48: חצי שנייה, כמו ההנפה
+    size:1.7,fps:60,dy:-12,   // גודל: פי size מטווח המכה. fps 60: 0.4 שנ'. הציור עולה לפי השטח, ראו docs/fx.md. 
     rot:{slash:Math.PI,axe:Math.PI,smash:-Math.PI/2},   // לאן הגיליון פונה (שמאלה / למעלה), כדי לסובב לכיוון ההנפה
     spin:{whirl:1},spinSize:2.6},                       // סקילים מסתובבים (wskbook.js): tr_spin בצבע הסקיל כל זמן שהם פועלים
   /* אווירה לפי אזור: כל every שניות אפקט אחד מהרשימה (לפי w), עד max בבת אחת. רק במסך, ליד המצלמה.
      size: פיקסלים, או חלק מרוחב המסך (≤3). at: any במסך, sky למעלה, low למטה, scr כל המסך, pond ליד בור לבה, forest בשולי יער.
      when: day/night. dawn: [שקיפות בבוקר ובערב, שקיפות בשאר היום]. flash: הבזק מסך עם הברק (לא ב-RM ולא ב"פחות אפקטים") */
-  scene:{every:[2.2,4.5],max:2,dawn:[[5,9],[17,21]],
-    meadow:[{id:'wx_petals',w:3,size:0.5,a:0.75,dur:3,fps:20,when:'day'},{id:'pl_pollen',w:2,size:130,a:0.85,add:1,dur:2.4,fps:20,when:'day'},
-            {id:'wx_sunrays',w:1,size:0.55,a:0.3,add:1,at:'sky',dur:3.2,fps:12,when:'day'}],
-    desert:[{id:'wx_dust',w:4,size:0.45,a:0.7,at:'low',dur:2.6,fps:22},{id:'wx_devil',w:1,size:150,a:0.85,dur:2.2,fps:22,vx:60},
+  scene:{every:[3.5,7],max:1,   // אחד בבת אחת: כל אפקט כאן הוא שטח גדול לצייר
+    dawn:[[5,9],[17,21]],
+    meadow:[{id:'wx_petals',w:3,size:0.30,a:0.75,dur:3,fps:20,when:'day'},{id:'pl_pollen',w:2,size:130,a:0.85,add:1,dur:2.4,fps:20,when:'day'},
+            {id:'wx_sunrays',w:1,size:0.32,a:0.3,add:1,at:'sky',dur:3.2,fps:12,when:'day'}],
+    desert:[{id:'wx_dust',w:4,size:0.28,a:0.7,at:'low',dur:2.6,fps:22},{id:'wx_devil',w:1,size:150,a:0.85,dur:2.2,fps:22,vx:60},
             {id:'sf_embers',w:2,size:120,a:0.9,add:1,at:'pond',dur:2,fps:24}],
-    storm:[{id:'wx_bolt',w:1,size:0.42,a:0.8,add:1,at:'sky',fps:30,flash:0.32}],
-    ridge:[{id:'wx_blizzard',w:1,size:1,a:0.42,add:1,at:'scr',dur:2.6,fps:24}],
-    lake:[{id:'wx_fog',w:1,size:0.45,dawn:[0.5,0.24],at:'low',dur:4,fps:10,vx:18}],
-    shadow:[{id:'sf_fog',w:2,size:0.5,a:0.6,at:'low',dur:3.5,fps:14},{id:'lr_moon',w:1,size:0.4,a:0.35,add:1,at:'sky',dur:3,fps:12}],
-    forest:[{id:'lr_forest',w:2,size:0.45,a:0.35,add:1,at:'forest',dur:3,fps:12,when:'day'},{id:'pl_shroom',w:2,size:60,a:1,add:1,at:'forest',dur:3,fps:16,when:'night'}],
+    storm:[{id:'wx_bolt',w:1,size:0.29,a:0.8,add:1,at:'sky',fps:30,flash:0.32}],
+    ridge:[{id:'wx_blizzard',w:1,size:0.36,a:0.5,add:1,dur:2.6,fps:24}],
+    lake:[{id:'wx_fog',w:1,size:0.32,dawn:[0.5,0.24],at:'low',dur:4,fps:10,vx:18}],
+    shadow:[{id:'sf_fog',w:2,size:0.30,a:0.6,at:'low',dur:3.5,fps:14},{id:'lr_moon',w:1,size:0.26,a:0.35,add:1,at:'sky',dur:3,fps:12}],
+    forest:[{id:'lr_forest',w:2,size:0.30,a:0.35,add:1,at:'forest',dur:3,fps:12,when:'day'},{id:'pl_shroom',w:2,size:60,a:1,add:1,at:'forest',dur:3,fps:16,when:'night'}],
     forestNear:520},   // יער (TR.map.forests) במרחק הזה מהמצלמה: מוסיפים את רשימת forest לאזור
   // הגיבור במים: התזה (hit_water) כשהולכים במים רדודים, טיפות כשהולכים לאורך המים
   wet:{splash:'hit_water',splashSize:58,drop:'wt_droplet',dropSize:44,near:70},
@@ -76,7 +77,7 @@ const FXW={
   // מצבים על הגיבור: קטן וקצר, לכל היותר פעם ב-gap שניות לכל אחד
   status:{size:54,up:58,a:0.85,gap:3.5,heal:0.5},   // heal: כמה חיים צריך לעלות בין סנכרונים כדי שזה ייחשב ריפוי
   // ---- מצב חי ----
-  sceneT:1.5,waveT:2,jumpT:5,swA:0,stT:{},hp:null,dead:new Set(),forest:false,
+  sceneT:1.5,trailH:null,waveT:2,jumpT:5,swA:0,stT:{},hp:null,dead:new Set(),forest:false,
   live:new Map(),once:[],cam:{x:0,y:0},t:0,ambT:2,lavaT:1,pickT:0,lx:null,ly:null,shoreT:1,reg:'',pingT:0,seen:null,fed:null,marks:{v:null,w:null},n:0
 };
 const fxwOn=()=>FXW.on&&typeof fxPlay==='function'&&!!S&&!S.mb&&!!(S.vil||S.wd)&&!!P;
@@ -101,7 +102,7 @@ function fxwWant(){
     const T_=FXW.talk;if(near&&all[near]&&!marks[near]&&dlg!==near&&!want.has('s:'+near))want.set('t:'+near,{id:'npc_talk',o:all[near],size:T_.size,alpha:T_.alpha,dy:-T_.up,dx:T_.dx})}
   if(S.wd){
     // מזג אוויר: אריחים שעוקבים אחרי המצלמה
-    for(const [id,a,kind] of FXW.weather[fxwReg()]||[]){
+    for(const [id,a,kind,when] of FXW.weather[fxwReg()]||[]){if(when==='night'&&!fxwNight())continue;
       if(kind==='sky'){const s=cw/2;for(let i=0;i<2;i++)want.set('w:'+id+i,{id,o:cam,size:s,alpha:a,dx:(i-0.5)*s,dy:-ch/2+s*0.1,flip:i===1})}   // flip: החצי השני במראה, כדי שהתפר באמצע יתחבר
       else if(kind==='low'){const s=cw/2.2;for(let i=0;i<2;i++)want.set('w:'+id+i,{id,o:cam,size:s,alpha:a,dx:(i-0.5)*s*1.1,dy:ch*0.18})}
       else{const s=Math.max(cw/2,ch),c=Math.ceil(cw/s),r=Math.ceil(ch/s);for(let i=0;i<c;i++)for(let j=0;j<r;j++)want.set('w:'+id+i+'_'+j,{id,o:cam,size:s,alpha:a,dx:(i-(c-1)/2)*s,dy:(j-(r-1)/2)*s})}}
@@ -159,8 +160,10 @@ function fxwUpdate(dt){
 function fxwTrailId(kind,dt){const T=FXW.trail,c=T.col[dt]||T.col.physical;return kind==='smash'?'tr_smash_'+(T.smashCol[c]||T.smashDef):'tr_'+kind+'_'+c}
 function fxwSwing(){
   const T=FXW.trail,s=P.sw,kind=T.kind[P.wt]||'slash',dt=P.dt&&P.dt.sword||'physical';
-  const h=fxwPlay(fxwTrailId(kind,dt),P.x,P.y,{follow:P,dy:T.dy,rot:s.ang+T.rot[kind],size:s.range*T.size,alpha:T.alpha[dt]||T.a,fps:T.fps,add:T.add});
-  if(h)h.trail=1;return h;
+  const id=fxwTrailId(kind,dt),o={rot:s.ang+T.rot[kind],size:s.range*T.size,alpha:T.alpha[dt]||T.a},h=FXW.trailH;
+  // אחד לכל הגיבור: הנפה חדשה מתחילה מחדש את אותו שובל, כך שאף פעם אין שניים בבת אחת (רק שטח הציור עולה)
+  if(fxwAlive(h)&&FXDATA[id]){fxImg(id);Object.assign(h,o,{id,D:FXDATA[id],t0:fxNowT()});return h}
+  const n=fxwPlay(id,P.x,P.y,Object.assign({follow:P,dy:T.dy,fps:T.fps,add:T.add},o));if(n)n.trail=1;return FXW.trailH=n;
 }
 // הגיבור במים: התזה כשהולכים במים רדודים, טיפה כשהולכים לאורך המים
 function fxwWet(wet){
@@ -195,7 +198,7 @@ function fxwScene(reg){
   const size=e.size<=3?e.size*W_():e.size,a=e.dawn?e.dawn[fxwDawn()?0:1]:e.a;
   const h=fxwPlay(e.id,p.x,p.y,{size,alpha:a,add:!!e.add,dur:e.dur||0,loop:!!e.dur,fps:e.fps,vx:e.vx?e.vx*(Math.random()<0.5?-1:1):0});
   if(!h)return;h.scene=1;
-  if(e.flash&&!RM&&!(typeof fxLess==='function'&&fxLess())&&typeof fxUi==='function')fxUi('wx_flash',W_()/2,H_()/2,{size:Math.max(W_(),H_())*1.2,alpha:e.flash,add:true,fps:40});   // הבזק קצר עם הברק
+  if(e.flash&&!RM&&!(typeof fxLess==='function'&&fxLess())&&typeof fxUi==='function')fxUi('wx_flash',W_()/2,H_()/2,{size:Math.max(W_(),H_())*1.2,alpha:e.flash,add:true,fps:60});   // הבזק קצר עם הברק
 }
 // מצב על הגיבור: קטן, מעל הראש, לכל היותר פעם ב-gap
 function fxwStatus(id){const St=FXW.status,now=fxNowT();if(now-(FXW.stT[id]||-99)<St.gap)return;FXW.stT[id]=now;fxwPlay(id,P.x,P.y,{follow:P,dy:-St.up,size:St.size,alpha:St.a})}
