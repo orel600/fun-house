@@ -190,7 +190,8 @@ function fxwAt(e){
 }
 function fxwScene(reg){
   const Sc=FXW.scene,night=fxwNight();
-  let L=(Sc[reg]||[]).concat(FXW.forest?Sc.forest:[]).filter(e=>!e.when||(e.when==='night')===night);
+  const core=typeof wxwCore==='function'&&wxwCore();   // 7.11 (WXW): עם ליבת מזג האוויר, גיליונות wx_ (עלי כותרת, אבק, ערפל, הבזק) מגיעים ממנה, מתחת לקרב
+  let L=(Sc[reg]||[]).concat(FXW.forest?Sc.forest:[]).filter(e=>(!e.when||(e.when==='night')===night)&&!(core&&/^wx_/.test(e.id)));
   if(!L.length||FXW.once.filter(h=>h.scene).length>=Sc.max)return;
   let w=L.reduce((a,e)=>a+e.w,0)*Math.random(),e=L[L.length-1];for(const x of L)if((w-=x.w)<0){e=x;break}
   // שכבת מזג האוויר: על כל המסך, עוקב אחרי המצלמה. עם השלג או הגשם זה עובר לקנבס הקטן, אז כמעט בחינם
@@ -208,7 +209,8 @@ function fxwMore(dt,reg){
   const a=P.sw?P.sw.anim:0;if(P.weapon==='sword'&&a>FXW.swA+0.05&&S.mode==='play')fxwSwing();FXW.swA=a;
   if(!S.wd)return;
   if((FXW.sceneT-=dt)<=0){FXW.sceneT=rand(...FXW.scene.every);fxwScene(reg)}
-  const Gu=FXW.gust[reg];if(Gu&&(FXW.gustT-=dt)<=0){FXW.gustT=rand(...Gu.every)+Gu.dur;FXW.gustEnd=fxNowT()+Gu.dur;FXW.t=0}   // משב: הסנכרון הבא מחליף את האריחים, ואחרי dur הם חוזרים
+  // עם הליבה (7.11): סופת השלג היא מצב storm שלה, בלי משב של FXW
+  const Gu=!(typeof wxwCore==='function'&&wxwCore())&&FXW.gust[reg];if(Gu&&(FXW.gustT-=dt)<=0){FXW.gustT=rand(...Gu.every)+Gu.dur;FXW.gustEnd=fxNowT()+Gu.dur;FXW.t=0}   // משב: הסנכרון הבא מחליף את האריחים, ואחרי dur הם חוזרים
   if(FXW.gustEnd&&fxNowT()>FXW.gustEnd){FXW.gustEnd=0;FXW.t=0}
   const M=typeof TR!=='undefined'&&TR&&TR.map,cw=W_(),ch=H_();
   // גל על החוף: הנקודה הקרובה על שפת המים, אם היא במסך

@@ -2517,17 +2517,18 @@ function worldBot(m,L,god){
     o.trailOk=/^tr_(slash|axe|smash)_crimson$/.test(o.trail);   // אש = crimson, בכל סוג נשק קרוב
     o.scene={};for(const r of ['desert','storm','ridge','lake','shadow']){enterWorld('home',r);S.mode='play';P.inv=99;const want=FXW.scene[r].map(e=>e.id);
       for(let i=0;i<12;i++){FXW.sceneT=0;FXW.once.length=0;tick(1)}const wx=id=>[...FXW.wxl.values()].some(h=>h.id===id);if(FXW.gust[r]){FXW.gustT=0;tick(1);tick(1)}   // רכס: משב סופת שלג מחליף את אריחי השלג
-      o.scene[r]=want.some(id=>o.ids.has(id)||wx(id))||!!FXW.gust[r]&&wx(FXW.gust[r].to)}
+      o.scene[r]=want.some(id=>o.ids.has(id)||wx(id))||!!FXW.gust[r]&&wx(FXW.gust[r].to)||wxwCore()&&WXW.reg===r&&!!WEATHER.scenes.world}   // עם ליבת מזג האוויר: גיליונות wx_ ומשב השלג מגיעים ממנה
     o.sceneOk=Object.values(o.scene).every(Boolean);
     // 7.11 (WXW, wxworld.js): מזג האוויר הנכון לכל אזור, סערה שמתקדמת במצבים, כפר עם גשם קל, ומצויר מתחת לאפקטים ולמספרי הנזק
-    {const core=wxwCore(),r={},has=id=>[...FXW.wxl.values()].some(h=>h.id===id);
-      enterWorld('home','meadow');P.inv=99;tick(1);WXW.t=0;tick(1);r.cycle=WXW.st==='building';wxwSet('storm');tick(1);
-      r.meadow=core?/^(meadow|forest)\|/.test(WXW.key):has('wx_rainheavy');
-      enterWorld('home','ridge');P.inv=99;tick(1);const rc=wxwCfg('ridge');r.ridge=WXW.reg==='ridge'&&(rc.theme==='arctic'||rc.theme==='night')&&rc.storm[0][0]==='snow_blizzard';
+    {const core=wxwCore(),r={},has=id=>[...FXW.wxl.values()].some(h=>h.id===id),run=n=>core&&WX.run[n]&&WX.run[n].state,cfg=n=>core&&WEATHER.scenes[n]||{};
+      enterWorld('home','meadow');P.inv=99;tick(1);WXW.t=0;tick(1);r.cycle=WXW.st==='building'&&(!core||run('world')==='building');wxwSet('storm');tick(1);
+      r.meadow=core?run('world')==='storm'&&(cfg('world').storm||[]).some(v=>v[0]==='rain_heavy')&&!!cfg('world').ev:has('wx_rainheavy');
+      enterWorld('home','ridge');P.inv=99;tick(1);const rc=wxwCfg('ridge');r.ridge=WXW.reg==='ridge'&&(rc.theme==='arctic'||rc.theme==='night')&&rc.storm[0][0]==='snow_blizzard'&&(!core||cfg('world')[`storm`][0][0]==='snow_blizzard');
       enterWorld('home','desert');P.inv=99;tick(1);r.desert=wxwCfg('desert').theme!=='temperate'&&wxwCfg('desert').storm.some(v=>v[0]==='wind_tornado');
-      enterWorld('home','storm');P.inv=99;tick(1);r.storm=WXW.st==='storm';
-      enterVillage();tick(1);wxwSet('storm');tick(1);r.village=core?WXW.key.startsWith('village|'):has('rain');wxwSet('calm');tick(1);
-      r.under=String(juiceDraw).includes('fxwWxDraw')&&!String(fxDraw).includes('fxwWxDraw');
+      enterWorld('home','storm');P.inv=99;tick(1);r.storm=WXW.st==='storm'&&(!core||run('world')==='storm'&&!!cfg('world').ev.storm.bolt);
+      enterVillage();tick(1);wxwSet('storm');tick(1);r.village=core?run('village')==='storm'&&!!cfg('village').ev:has('rain');wxwSet('calm');tick(1);
+      // מתחת לקרב: עם הליבה, FXW לא מצייר מזג אוויר משלו (אין אריחי w: ואין משב או הבזק), והליבה מציירת לפני הסקילים (render.js)
+      enterWorld('home','storm');P.inv=99;FXW.t=0;tick(2);r.under=core?![...FXW.wxl.keys()].length&&!String(fxDraw).includes('fxwWxDraw'):String(juiceDraw).includes('fxwWxDraw')&&!String(fxDraw).includes('fxwWxDraw');
       o.wxw=r;o.wxwOk=Object.values(r).every(Boolean)}
     const wd=S.wd;S.wd=null;o.ids.clear();P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.arena=FXW.live.size===0&&FXW.wxl.size===0&&![...o.ids].some(i=>i.startsWith('tr_'));S.wd=wd;
     S.mode=md;P.weapon=wt;P.dt.sword=pdt;
@@ -2536,6 +2537,35 @@ function worldBot(m,L,god){
   check(fxw.party&&fxw.stepV&&fxw.weather&&fxw.steps&&fxw.shore&&fxw.stars&&fxw.arena&&fxw.trailOk&&fxw.sceneOk&&fxw.mine<=fxw.cap&&fxw.all<=fxw.max,
     'אפקטים בכפר ובעולם: '+(fxw.party?'קונפטי בחגיגה':'בלי קונפטי')+
     (fxw.stepV&&fxw.steps?', צעדים לפי הקרקע':', בלי צעדים')+(fxw.weather?', מזג אוויר לפי אזור':', מזג אוויר חסר')+(fxw.shore?', אדוות על קו המים באגם':', בלי אדוות באגם')+(fxw.stars?', כוכבים בלב הצל':', בלי כוכבים בצל')+(fxw.trailOk?', שובל אש על הנפה':', שובל חסר או בצבע לא נכון ('+fxw.trail+')')+(fxw.sceneOk?', אווירה לכל אזור':', אווירה חסרה ב-'+Object.keys(fxw.scene).filter(k=>!fxw.scene[k]).join('/'))+(fxw.arena?', כבוי בזירה':', פועל בזירה!')+', '+fxw.mine+'/'+fxw.cap+' אפקטים של השכבה ('+fxw.all+'/'+fxw.max+' בכל המשחק)');
+  // מזג אוויר לכל המשחק (weather.js, אוראל 7.11): setWeather, מכונת המצבים, מצויר מתחת לאפקטים, עוצר בלשונית מוסתרת, ותקרה של שכבות
+  const wx=await page.evaluate(()=>{if(typeof WX==='undefined')return{none:1};const o={};try{
+    const U0=new Map(WX.user);WX.user.clear();
+    const h=setWeather('rain_light','night',0.8,{fade:0.5});o.id=h&&h.id;o.set=!!h&&WX.layers.get('u:main')===h&&h.id==='wx_rain_light_night'&&h.fadeIn===0.5;
+    o.fall=(wxRes('rain_torrent','tropical')||'')+','+(wxRes('snow_heavy','night')||'');o.fallOk=/^wx_rain_torrent_/.test(o.fall)&&/,wx_snow_heavy_/.test(o.fall);   // חסר נושא: temperate או הקרוב
+    setWeather(null);o.unset=!WX.layers.has('u:main');
+    // מכונת המצבים: סצנה עם auto עוברת calm → building → storm → clearing → calm, ו-weatherState מעביר מבחוץ
+    weatherScene('wxtest',{auto:true,chance:1,calm:[['wind_breeze',0.5]],building:[['cloud_dark',0.6]],storm:[['rain_heavy',0.8],['storm_cloud',0.5]],clearing:[['rainbow',0.7]]});
+    const sc0=WX.scene;WX.scene='wxtest';WX.stat.states.length=0;
+    for(let i=0;i<5;i++)wxDrive('wxtest',WX.run.wxtest.t+0.01);o.cycle=WX.stat.states.join('>');o.cycleOk=o.cycle==='building>storm>clearing>calm>building';
+    weatherState('storm');o.st=WX.run.wxtest.state;wxSync();o.storm=[...WX.layers.keys()].join(',');o.stOk=o.st==='storm'&&WX.layers.has('s:rain_heavy');
+    weatherClear(0.2);o.clear=WX.layers.size===0&&WX.run.wxtest.state==='calm';
+    WX.scene=sc0;weatherScene('wxtest',null);
+    // תקרה: חמש שכבות מבוקשות, נשארות לכל היותר wxMax
+    const vs=['rain_light','snow_light','fog_drift','wind_petals','sun_rays'];for(const v of vs)setWeather(v,'auto',1,{slot:v});wxSync();o.n=WX.layers.size;o.max=wxMax();o.capOk=o.n<=o.max&&WX.layers.size+WX.dying.length<=o.max+1;
+    for(const v of vs)setWeather(null,0,0,{slot:v});
+    // ברק, הבזק ונקודה
+    WX.boltT=WX.flashT=-99;o.bolt=!!weatherBolt(P.x+200,P.y)&&WX.pts.some(p=>/lightning_bolt/.test(p.id));o.pt=!!wxPoint('rain_puddle',P.x,P.y,{size:60});
+    // סדר הציור: בפריים אחד, מזג האוויר מצויר לפני fxDraw (האפקטים של הסקילים)
+    setWeather('rain_light','auto',0.5);FRAME_T+=16;render();o.under=WX.drawn===FRAME_T&&WX.fxAfter===true;setWeather(null);
+    // לשונית מוסתרת: השעון של מזג האוויר עומד ושום דבר לא מצויר
+    Object.defineProperty(document,'hidden',{get:()=>true,configurable:true});const c0=WX.clk;FRAME_T+=16;const t1=wxTick();FRAME_T+=500;wxTick();o.pause=t1===false&&WX.clk===c0&&WX.paused;
+    delete document.hidden;FRAME_T+=16;wxTick();o.resume=!WX.paused;
+    for(const [k,v] of U0)WX.user.set(k,v);
+  }catch(e){o.err=e.message}return o});
+  check(wx.none||!wx.err&&wx.set&&wx.unset&&wx.fallOk&&wx.cycleOk&&wx.stOk&&wx.clear&&wx.capOk&&wx.bolt&&wx.pt&&wx.under&&wx.pause&&wx.resume,'מזג אוויר: '+(wx.none?'אין weather.js':wx.err?'שגיאה '+wx.err:
+    [wx.set&&wx.unset?'setWeather ✓':'setWeather ✗ ('+wx.id+')',wx.fallOk?'חלופה ✓':'חלופה ✗ '+wx.fall,'מצבים '+wx.cycle+(wx.cycleOk?' ✓':' ✗'),wx.stOk?'weatherState ✓':'weatherState ✗ '+wx.st+' '+wx.storm,
+     wx.clear?'weatherClear ✓':'weatherClear ✗',wx.under?'מתחת לאפקטים ✓':'מעל האפקטים ✗',wx.pause?'עוצר בלשונית מוסתרת ✓':'לא עוצר ✗',wx.capOk?'תקרה '+wx.n+'/'+wx.max+' ✓':'תקרה ✗ '+wx.n+'/'+wx.max,
+     wx.bolt?'ברק ✓':'ברק ✗',wx.pt?'נקודה ✓':'נקודה ✗'].join(' · ')));
   // סבב 2 (fxvil.js, skillcast.js): סימן אחד מעל כל דמות לפי המצב, טקס דרגה עם עמוד אור ומדליה, ומעגל קסם לפי סוג הנזק
   // התמונות נטענות בלי קשר לשעון של הבדיקה (שעומד), אז מחכים להן מבחוץ ולא ב-setTimeout בתוך הדף
   const fxvIds=await page.evaluate(()=>{const N=FXV.npc.ids,ids=[N.turnin,N.quest,N.shop,N.talk,'wrank_burst','wrank_badge',...Object.values(SKCAST.sprite.ids)];fxPreload(ids);return ids});
