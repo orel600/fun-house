@@ -291,6 +291,7 @@ function qCard(q,act){
   let h='<div class="qc'+(act==='claim'?' ready':'')+'"><b>'+name+'</b><small>'+(q.giver?T('npc.'+q.giver)[0]+' · ':'')+T('q.kind.'+q.kind)+'</small>';
   if(say)h+='<p class="say">'+say+'</p>';
   h+='<ul>'+q.obj.map((o,i)=>'<li>'+qObjTxt(q,i)+' <em>'+(on||o.type==='upgrade'?qProg(q,i):0)+'/'+o.n+'</em></li>').join('')+'</ul>';
+  if(q.obj.some(o=>o.type==='rare')&&typeof rareListHtml==='function')h+=rareListHtml();   // אילו נדירות יש ואיפה (rares.js)
   h+='<div class="qrow"><div class="cost">'+qRewardLine(q.reward)+'</div>';
   if(act==='claim')h+='<button class="vbtn" data-q="'+q.id+'" data-act="claim">'+T('q.claim')+'</button>';
   else if(act==='accept')h+='<button class="vbtn" data-q="'+q.id+'" data-act="accept">'+T('q.accept')+'</button>';

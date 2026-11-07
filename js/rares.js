@@ -1,6 +1,10 @@
 /* מפלצות נדירות (ניר, 5.11.2026: "הייתי שמח אם הדרישות זה לצוד מפלצות נדירות שקשה למצוא"). משימה ת8 ב-roadmap.md.
    לכל אזור בעולם 1-2 מפלצות נדירות: גרסה זוהרת של אויב קיים, עם שם, חומרים (tags) ושלל משלה.
-   בכל כניסה לאזור יש סיכוי נמוך שאחת מהן שם, באחד מ-2-3 מקומות נסתרים (spots), לזמן מוגבל. בלי חץ. הרמזים:
+   בכל כניסה לאזור יש סיכוי נמוך שאחת מהן שם, באחד מ-2-3 מקומות נסתרים (spots), לזמן מוגבל. ומי שנשאר באזור מקבל עוד הגרלה כל כמה דקות (again).
+   בלי חץ (ניר, 7.11: "טוב אם הן נסתרות, לא טוב אם הן לא קיימות", ושיהיה ברור שזו הנדירה). הרמזים:
+     שורת שמועה קבועה מתחת למפה הקטנה עם הזמן שנשאר (rareLineSync), ועיגול גס במפת העולם סביב האזור, לא הנקודה (rareMapDraw).
+     עליה עצמה: שם זהוב עם ✨ (foelore.js) ועמוד אור שרואים מרחוק (rareDraw).
+     בקווסט הדרגה: רשימה לפי אזור, צלליות עד שצדת (rareListHtml, מ-qCard ב-quests.js).
      ניצוצות על הקרקע סביב המקום, שמועה קצרה בכניסה ("ראו משהו זוהר ליד המחצבה"), ופיוחו יכולה להריח אותה (petscent.js).
    הריגה: שלל מיוחד, נרשמת בספר ההרפתקאות (כל נדירה היא סוג ב-ETYPES, אז book.js רושם אותה לבד) ובשם ובמשפט שלה (FOELORE, foelore.js).
    קווסט הדרגה (rank1 ב-quests.js) סופר כמה נדירות שונות כבר צדת (rareKinds).
@@ -10,7 +14,11 @@
 const RARES={
   chance:0.22,          // הסיכוי שנדירה מחכה באזור, בכל כניסה
   pity:0.08,            // ועוד כך בכל כניסה בלי נדירה, כדי שלא יעבור יותר מדי זמן (מתאפס כשאחת מופיעה)
-  life:150,             // כמה שניות היא נשארת לפני שהיא נעלמת (אלא אם כבר נלחמים בה)
+  life:240,             // כמה שניות היא נשארת לפני שהיא נעלמת (אלא אם כבר נלחמים בה)
+  again:200,            // בדרגה 1: כל כמה שניות באזור, אחרי שהנדירה האחרונה נפלה או נעלמה, עוד הגרלה (בדרגות 2-3: rareAgain ב-tiers.js)
+  againChance:0.5,      // הסיכוי בהגרלה הזאת (ועוד pity לכל החטאה)
+  mapR:520,             // רדיוס העיגול במפת העולם. המרכז זז עד חצי ממנו מהמקום האמיתי: אזור לחפש, לא נקודה
+  beam:{h:300,w:18},    // עמוד האור מעליה: גובה ורוחב בעולם (כמו הקרן של שלל, drops.js)
   roam:70,              // כמה רחוק מהמקום שלה היא מסתובבת
   leash:300,            // כמה רחוק מהמקום שלה היא רודפת
   hp:6, dmg:1.4, size:1.3,   // פי כמה מהאויב שהיא מבוססת עליו (גם hp של האזור)
@@ -59,12 +67,12 @@ function rareLooks(){if(typeof LOOK3D==='undefined')return;for(const id in RARES
   if(L&&!LOOK3D[id])LOOK3D[id]=Object.assign({},L,{tint:R.col,h:Math.round(L.h*RARES.size)})}}
 
 /* ---- כניסה לאזור: אולי נדירה מחכה באחד המקומות ---- */
-function rareEnter(force){
+function rareEnter(force,chance){
   const w=S.wd;if(!w)return null;rareLooks();
   const reg=w.reg||'meadow',ids=Object.keys(RARES.list).filter(id=>RARES.list[id].reg===reg&&ETYPES[id]);
   if(!ids.length)return null;
   const s=RS();
-  if(!force){if(Math.random()>=RARES.chance+(s.miss||0)*RARES.pity){s.miss=(s.miss||0)+1;return null}}
+  if(!force){if(Math.random()>=(chance!=null?chance:RARES.chance)+(s.miss||0)*RARES.pity){s.miss=(s.miss||0)+1;return null}}
   s.miss=0;
   const fresh=ids.filter(id=>!s.got[id]),pool=fresh.length?fresh:ids;   // קודם אלה שעוד לא צדת
   const id=typeof force==='string'&&RARES.list[force]?force:pool[Math.floor(Math.random()*pool.length)];
@@ -74,17 +82,19 @@ function rareSpawn(id,si){
   const w=S.wd,R=RARES.list[id];if(!w||!R)return null;
   const sp=R.spots[si!=null?si:Math.floor(Math.random()*R.spots.length)],Z=typeof wZone==='function'?wZone(sp):{hp:1,dmg:1};
   const e=addEnemy(id,sp.x,sp.y,RARES.hp*Z.hp*(WORLD.foeHp||1));
-  e.dmg*=RARES.dmg*(Z.dmg||1);e.xp=0;e.elite=false;e.rare=id;e.home=null;e.pname=R.icon+' '+rareName(id);
+  e.dmg*=RARES.dmg*(Z.dmg||1);e.xp=0;e.elite=false;e.rare=id;e.home=null;e.pname=RARES.icon+' '+rareName(id);   // שם זהוב עם ✨ (foeLoreScreen)
   if(typeof tierSpawn==='function')tierSpawn(e);
-  w.rare={id,e,sp,t:RARES.life,rumor:RARES.rumorAt};
+  const a=Math.random()*6.28,q=Math.random()*RARES.mapR*0.5;   // מרכז העיגול במפה: ליד המקום, לא עליו
+  w.rare={id,e,sp,t:RARES.life,rumor:RARES.rumorAt,mx:sp.x+Math.cos(a)*q,my:sp.y+Math.sin(a)*q};
+  w.rareT=0;
   return e;
 }
 
 /* ---- כל פריים בעולם ---- */
 function rareUpdate(dt){
   const w=S.wd,r=w&&w.rare;
-  // דרגה 2 ומעלה (rareAgain ב-tiers.js): אחרי שהנדירה נפלה או נעלמה, עוד הגרלה כל כמה דקות באזור, ולא רק בכניסה
-  if(w&&(!r||r.done)){const a=typeof tierRareAgain==='function'?tierRareAgain():0;if(a&&(w.rareT=(w.rareT||0)+dt)>=a){w.rareT=0;rareEnter()}}
+  // אחרי שהנדירה נפלה או נעלמה (או שלא הייתה), עוד הגרלה כל כמה דקות באזור, ולא רק בכניסה. בדרגה 1 RARES.again, ובדרגות 2-3 rareAgain (tiers.js)
+  if(w&&!w.dp&&(!r||r.done)){const a=(typeof tierRareAgain==='function'&&tierRareAgain())||RARES.again;if(a&&(w.rareT=(w.rareT||0)+dt)>=a){w.rareT=0;rareEnter(false,RARES.againChance)}}
   if(!r||r.done)return;
   if(r.rumor>0&&(r.rumor-=dt)<=0)banner(RARES.icon+' '+T('rare.rumor',rareAt(r.sp)),RARES.col);   // שמועה: איפה, לא מה ולא חץ
   if(r.e.dead){if(!r.gone)rareGot(r);r.done=true;return}
@@ -119,8 +129,34 @@ function rareDraw(){
   for(let i=0;i<K.n;i++){const a=i*2.4+sp.x*0.01,q=K.r*(0.35+((i*37)%60)/100),tw=Math.max(0,Math.sin(t*2.2+i*1.7));
     if(tw<0.15)continue;const x=sp.x+Math.cos(a)*q,y=sp.y+Math.sin(a)*q*0.7,s=1.5+tw*2.5;
     ctx.globalAlpha=tw*0.85;ctx.beginPath();ctx.moveTo(x,y-s*2);ctx.lineTo(x+s*0.6,y);ctx.lineTo(x,y+s*2);ctx.lineTo(x-s*0.6,y);ctx.closePath();ctx.fill()}
-  const e=r.e;if(!e.dead){ctx.globalAlpha=0.22+Math.sin(t*3)*0.08;ctx.beginPath();ctx.ellipse(e.x,e.y+e.r*0.6,e.r*1.9,e.r*0.9,0,0,7);ctx.fill()}
+  const e=r.e;if(!e.dead){ctx.globalAlpha=0.22+Math.sin(t*3)*0.08;ctx.beginPath();ctx.ellipse(e.x,e.y+e.r*0.6,e.r*1.9,e.r*0.9,0,0,7);ctx.fill();
+    const B=RARES.beam,gr=ctx.createLinearGradient(0,e.y-B.h,0,e.y);gr.addColorStop(0,RARES.col+'00');gr.addColorStop(1,RARES.col+'aa');   // עמוד אור: רואים מרחוק איפה היא (כמו הקרן של שלל, drops.js)
+    ctx.globalAlpha=0.6+0.15*Math.sin(t*4);ctx.fillStyle=gr;ctx.fillRect(e.x-B.w/2,e.y-B.h,B.w,B.h);ctx.fillStyle='#fff';ctx.globalAlpha*=0.6;ctx.fillRect(e.x-B.w/8,e.y-B.h*0.9,B.w/4,B.h*0.9)}
   ctx.restore();
 }
 // פיוחו (petscent.js): נדירה חיה באזור שעוד לא הריחה
 const rareScent=()=>{const r=S.wd&&S.wd.rare;return r&&!r.done&&!r.e.dead&&!r.sniffed?r:null};
+
+/* ---- הרמזים שנשארים (ניר, 7.11) ---- */
+// נדירה חיה שהשמועה עליה כבר נשמעה
+const rareHeard=()=>{const r=S&&S.wd&&S.wd.rare;return r&&!r.done&&!r.e.dead&&r.rumor<=0?r:null};
+const rareClock=t=>{t=Math.max(0,Math.ceil(t));return Math.floor(t/60)+':'+String(t%60).padStart(2,'0')};
+// שורת השמועה מתחת למפה הקטנה (guide.js קורא לזה כל רבע שנייה), עם הזמן שנשאר
+function rareLineSync(){
+  const el=typeof $==='function'&&$('rareLine');if(!el)return;const r=rareHeard();
+  const txt=r?RARES.icon+' '+T('rare.line',rareAt(r.sp),rareClock(r.t)):'';
+  if(el.textContent!==txt)el.textContent=txt;if(el.hidden!==!r)el.hidden=!r;
+}
+// במפת העולם (wmDrawHere ב-worldmap.js): עיגול גס סביב האזור, לא הנקודה. at: מעולם לקנבס, k: קנה מידה
+function rareMapDraw(x,at,k){
+  const r=rareHeard();if(!r)return;const c=at(r.mx,r.my),R=RARES.mapR*k;
+  x.save();x.setLineDash([6,5]);x.lineWidth=2;x.strokeStyle=RARES.col;x.fillStyle=RARES.col+'22';
+  x.beginPath();x.arc(c.x,c.y,R,0,Math.PI*2);x.fill();x.stroke();x.restore();
+  if(typeof wmText==='function')wmText(x,RARES.icon,c.x,c.y,14,RARES.col);
+}
+// בקווסט הדרגה (qCard ב-quests.js): אילו נדירות יש בכל אזור. צללית עד שצדת אותה (כמו בספר), ואזור שעוד לא ביקרת בו בלי שם (כמו במפה)
+function rareListHtml(){
+  const by={};for(const id in RARES.list)(by[RARES.list[id].reg]=by[RARES.list[id].reg]||[]).push(id);
+  return '<ul class="rlist">'+Object.keys(by).map(g=>'<li><small>'+(g==='meadow'||typeof WMS!=='function'||WMS().seen[g]?T('w.region.'+g):T('rare.far'))+'</small> '+by[g].map(id=>RS().got[id]?
+    '<span class="rgot">'+RARES.list[id].icon+' '+rareName(id)+'</span>':'<span class="runk" title="'+T('rare.unk')+'"><i>'+RARES.list[id].icon+'</i> ?</span>').join(' ')+'</li>').join('')+'</ul>';
+}

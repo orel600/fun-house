@@ -2894,12 +2894,20 @@ function worldBot(m,L,god){
     hunt('mossback');o.same=qProg(q,ri)===1&&RS().got.mossback===2;
     hunt('glimmer');hunt('pearl');o.p3=qProg(q,ri);
     const v=rareSpawn('hoarfrost',0);S.wd.rare.t=0;rareUpdate(0.01);o.vanish=v.dead&&!RS().got.hoarfrost&&S.wd.rare.done;
+    // ניר, 7.11: מי שנשאר באזור מקבל עוד הגרלה, שורת שמועה עם זמן, עיגול במפה, שם זהוב עם ✨, ורשימה בקווסט
+    const ac0=RARES.againChance;RARES.againChance=1;rareUpdate(30);o.wait=S.wd.rare.done;rareUpdate((tierRareAgain()||RARES.again));
+    const ag=S.wd.rare;RARES.againChance=ac0;o.again=!ag.done&&!ag.e.dead&&RARES.list[ag.id].reg===(S.wd.reg||'meadow');
+    o.label=ag.e.pname.startsWith(RARES.icon)&&ag.e.pname.includes(rareName(ag.id));
+    ag.rumor=0;rareLineSync();const rl=document.getElementById('rareLine');o.line=!rl.hidden&&rl.textContent.includes(rareAt(ag.sp))&&/\d:\d\d/.test(rl.textContent)&&Math.hypot(ag.mx-ag.sp.x,ag.my-ag.sp.y)<=RARES.mapR*0.5+1;
+    const lh=rareListHtml();o.list=(lh.match(/class="runk"/g)||[]).length===Object.keys(RARES.list).length-Object.keys(RS().got).length&&lh.includes(rareName('pearl'));
+    ag.gone=true;ag.e.dead=true;rareUpdate(0.01);rareLineSync();o.lineOff=rl.hidden;
     o.saved=((JSON.parse(localStorage.getItem(SAVE_STORE.key)).rares||{}).got||{}).pearl===1;
     delete QS().active.rank1;SAVE.rares=JSON.parse(r0);SAVE.book=JSON.parse(b0);enemies=[];enterVillage();return o});
-  check(!rar.noRare.length&&!rar.bad.length&&rar.none&&rar.spawn&&rar.rumor&&rar.scent&&rar.p1===1&&rar.book&&rar.same&&rar.p3===3&&rar.vanish&&rar.saved,
+  check(!rar.noRare.length&&!rar.bad.length&&rar.none&&rar.spawn&&rar.rumor&&rar.scent&&rar.p1===1&&rar.book&&rar.same&&rar.p3===3&&rar.vanish&&rar.saved&&rar.wait&&rar.again&&rar.label&&rar.line&&rar.list&&rar.lineOff,
     'מפלצות נדירות: '+(rar.noRare.length?'אזור בלי נדירה: '+rar.noRare.join(','):'בכל אזור')+(rar.bad.length?', נתונים שבורים: '+rar.bad.join(','):', מקומות, שם, מראה וספר')+(rar.none?', בלי מזל אין':', מופיעה תמיד')+
     (rar.spawn?', הופיעה חזקה במקום הנסתר':', לא הופיעה')+(rar.rumor?', שמועה':', בלי שמועה')+(rar.scent?', פיוחו מריחה':', פיוחו לא מריחה')+
-    ', קווסט הדרגה '+rar.p1+'→'+rar.p3+'/3'+(rar.same?'':' (אותה נדירה נספרה פעמיים!)')+(rar.book?', בספר':', לא בספר')+(rar.vanish?', נעלמת בזמן':', לא נעלמת')+(rar.saved?', נשמר':', לא נשמר'));
+    ', קווסט הדרגה '+rar.p1+'→'+rar.p3+'/3'+(rar.same?'':' (אותה נדירה נספרה פעמיים!)')+(rar.book?', בספר':', לא בספר')+(rar.vanish?', נעלמת בזמן':', לא נעלמת')+(rar.saved?', נשמר':', לא נשמר')+
+    (rar.wait?'':', הגרלה חוזרת מוקדם מדי')+(rar.again?', הגרלה חוזרת באזור':', אין הגרלה חוזרת')+(rar.label?', שם ✨':', בלי שם ✨')+(rar.line?', שורת שמועה עם זמן':', אין שורת שמועה')+(rar.lineOff?'':', השורה לא נעלמת')+(rar.list?', רשימה בקווסט':', אין רשימה בקווסט'));
   // שמות ואופי לאויבים (foelore.js): לכל סוג בעולם שם, שם אישי לעלית, כרטיס בפגישה ראשונה שנסגר לבד ונשמר, בועה מעל הראש
   const flo=await page.evaluate(()=>{
     const o={},m0=JSON.stringify(SAVE.lore||null);SAVE.lore=null;FLC.q=[];flCardNext();   // כרטיסים שנשארו בתור מהמשחק של הבוט
