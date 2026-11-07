@@ -94,6 +94,8 @@ function mbXp(h,v){
   while(h.lvl<MOBA.ultAt&&h.xp>=N[h.lvl]){h.lvl++;const old=h.max;h.max=mbMaxHp(h);h.hp+=h.max-old;
     if(h.me){celebrate(h.x,h.y,'gear');mbBanner(h.lvl>=MOBA.ultAt?T('mb.ultReady'):T('mb.lvup',h.lvl),C.gold)}}
 }
+// כל המצבים חוזרים לאפס: במוות (mbDie, חדר ההימור) ובחזרה לחיים. מצב חדר ב-st מקבל מקום כאן, ולא נשאר תקוע אצל מי שמת (הבודק, 7.11)
+function mbStReset(u){Object.assign(u.st,{stun:0,taunt:0,tBy:null,slow:0,slowK:0,wet:0,armor:0,burn:0,rage:0,imm:0,ice:0,root:0,bub:0,dash:null,shield:0,haste:0,exh:0,pure:0})}
 const mbResp=t=>{const R=MOBA.respawn;return R.base+R.lvl*(t.lvl-1)**2+R.min*Math.max(0,MB.t/60-R.after)};   // רמה בריבוע: כמעט כלום בהתחלה, הרבה ברמה 6
 function mbDie(t,src){
   if(t.dead)return;t.hp=0;t.dead=true;const foe=1-t.team;mbItDie(t,src);   // זהב (moba-items.js)
@@ -103,7 +105,7 @@ function mbDie(t,src){
     const killer=src&&src.k==='hero'?src:t.st.burnBy&&t.st.burnBy.k==='hero'?t.st.burnBy:null;
     if(killer){killer.kills++;mbXp(killer,MOBA.xp.kill)}
     for(const [h,at] of t.hitBy)if(h!==killer&&MB.t-at<8)mbXp(h,MOBA.xp.kill*MOBA.xp.assist);
-    t.hitBy.clear();Object.assign(t.st,{stun:0,taunt:0,slow:0,wet:0,armor:0,burn:0,rage:0,imm:0,ice:0,root:0,bub:0,dash:null,shield:0});
+    t.hitBy.clear();mbStReset(t);
     if(t.me){mbBanner(T('mb.died'),C.blood);sfx('hurt')}
     else if(killer&&killer.me){mbBanner(T('mb.kill'),C.gold);sfx('bossDown')}
     mbKillFeed(killer||src,t);   // "X הפיל את Y" מתחת לדמות שלי (במקום ההודעה "חבר נפל")
@@ -173,9 +175,11 @@ function mbWall(u,x,s){
 }
 // הודעה של המובה: למעלה (CSS תחת .mb), ואותה הודעה לא חוזרת תוך שנייה וחצי
 // הודעה חדשה לא קוטעת את הקודמת לפני MOBA.msgMin שניות: מחכה בתור (עד 2), ואז מחליפה אותה
-function mbBanner(txt,col){const now=performance.now(),Q=mbBanner.q||(mbBanner.q=[]);if(mbBanner.t===txt&&now-mbBanner.at<1500||Q.some(m=>m.txt===txt))return;
+// pri: הודעה שחייבת להגיע בזמן (חדר ההימור): קופצת לראש התור
+function mbBanner(txt,col,pri){const now=performance.now(),Q=mbBanner.q||(mbBanner.q=[]);if(mbBanner.t===txt&&now-mbBanner.at<1500||Q.some(m=>m.txt===txt))return;
   const wait=mbBanner.at?mbBanner.at+MOBA.msgMin*1000-now:0;
   if(wait<=0&&!Q.length){mbBanner.t=txt;mbBanner.at=now;banner(txt,col);return}
+  if(pri){Q.unshift({txt,col});if(Q.length>2)Q.pop();if(!mbBanner.tm)mbBanner.tm=setTimeout(mbBannerNext,Math.max(0,wait));return}
   Q.push({txt,col});if(Q.length>2)Q.shift();if(!mbBanner.tm)mbBanner.tm=setTimeout(mbBannerNext,Math.max(0,wait))}
 function mbBannerNext(){mbBanner.tm=null;const m=(mbBanner.q||[]).shift();if(!m||!S.mb)return(mbBanner.q=[]);mbBanner.t=m.txt;mbBanner.at=performance.now();banner(m.txt,m.col);
   if(mbBanner.q.length)mbBanner.tm=setTimeout(mbBannerNext,MOBA.msgMin*1000)}
@@ -219,7 +223,7 @@ function mobaUpdate(dt){
     M.u.push(mbUnit({k:'minion',team:q.team,ranged:q.ranged,type:'mb_m'+q.team,x:(q.team?1:-1)*(MOBA.base.x-70),y:rand(-25,25),lane:rand(-70,70),r:N.r,hp:R.hp*q.k,max:R.hp*q.k,pow:q.k,speed:N.speed,face:q.team?Math.PI:0}))}
   M.queue=M.queue.filter(q=>!q.done);
   for(const u of M.u){
-    if(u.dead){if(u.k==='hero'){u.resp-=dt;if(u.resp<=0){u.dead=false;u.hp=u.max;u.x=u.home.x;u.y=u.home.y;u.cd.s1=u.cd.s2=0;mbFeelReset(u)}}continue}
+    if(u.dead){if(u.k==='hero'){u.resp-=dt;if(u.resp<=0){u.dead=false;u.hp=u.max;u.x=u.home.x;u.y=u.home.y;u.cd.s1=u.cd.s2=0;mbStReset(u);mbFeelReset(u)}}continue}
     mbTick(u,dt);if(u.dead)continue;
     if(u.st.dash){const D=u.st.dash,s=Math.min(D.left,D.sp*dt);mbStep(u,D.vx*s,D.vy*s);D.left-=s;u.moving=true;if(D.left<=0.5){u.st.dash=null;D.end()}continue}
     if(u.k==='hero'){for(const k of MB_SLOTS)if(u.cd[k]>0)u.cd[k]-=dt;u.atkT-=dt;u.aggro-=dt;mbXp(u,MOBA.xp.tick*dt);u.me&&!u.bot?mbPlayer(u,dt):mbBot(u,dt)}
@@ -281,7 +285,7 @@ function mbPress(slot,pt){   // pt: נקודה או יחידה מהכיוון ב
   if(slot==='ult'&&u.lvl<MOBA.ultAt){mbShake(slot);return}   // נעול: הכפתור רועד, בלי הודעה באמצע המסך (הבודק, 2.11)
   if(u.cd[slot]>0)return;
   const aim=pt!==undefined?pt:s.kind==='self'||s.kind==='away'?null:mbAimFor(u,s)||(s.kind==='point'?{x:u.x+Math.cos(u.face)*(s.range||200)*0.6,y:u.y+Math.sin(u.face)*(s.range||200)*0.6}:null);
-  mbCast(u,slot,aim);
+  if(!mbCast(u,slot,aim)&&MB_MOVES[s.id]&&typeof mbGbBusy==='function'&&mbGbBusy(u))mbShake(slot);   // בהטלה בחדר ההימור: רועד, בלי טעינה
 }
 // פקודה לשני הבוטים החברים (אוראל, docs/moba.md שלב 4): "התקפה" אל המקום שלך, או "נסיגה" אל המגדל. נמשכת MOBA.order שניות
 function mbOrder(kind){
@@ -392,7 +396,7 @@ function mbEndShow(won){
 }
 function mobaPickClose(){const w=$('mbWin');if(w.dataset.mode==='end'||S.mb)mobaExit();else{$('ovMoba').hidden=true;if(w.dataset.from==='start')$('ovStart').hidden=false}}
 $('mbWin').addEventListener('click',e=>{
-  const k=e.target.closest('[data-kit]'),a=e.target.closest('[data-act]'),df=e.target.closest('[data-diff]');
+  const k=e.target.closest('#mbWin [data-kit]'),a=e.target.closest('[data-act]')   /* רק כרטיס בתוך החלון, לא החלון עצמו (הבודק, 7.11: "בית" פתח שוב את מסך הבנייה) */,df=e.target.closest('[data-diff]');
   if(df){sfx('tap');mbDiffSet(df.dataset.diff);for(const b of $('mbWin').querySelectorAll('[data-diff]')){const on=b===df;b.classList.toggle('on',on);b.setAttribute('aria-checked',on)}return}
   if(k){sfx('tap');typeof mbBuildOpen==='function'?mbBuildOpen(k.dataset.kit):mobaStart(k.dataset.kit);return}   // שלב הבנייה: לחש (moba-spells.js)
   if(!a)return;sfx('ui');
@@ -405,17 +409,20 @@ for(const b of document.querySelectorAll('#mbPing [data-o]'))b.addEventListener(
 $('mbBtn').onclick=()=>{sfx('ui');mobaOpen()};
 
 /* ---- ציור (בקנבס, מעל התלת-ממד). בתלת-ממד הגוף של הגיבורים והחיילים מצויר שם, וכאן רק טבעת, חיים וסימנים ---- */
+// אזור של האויב מצויר רק כשהוא בראייה של הקבוצה, אחרת הוא מסגיר איפה האויב (הבודק, 7.11)
+const mbZoneShown=z=>z.team===MB.me.team||typeof mbVisPt!=='function'||mbVisPt(z.x,z.y);
 function mobaDraw(ox,oy){
   const M=MB,L=MOBA.lane,me=M.me,ally=t=>t===me.team;
   // הנתיב
   if(!(typeof mb3dHere==='function'&&mb3dHere())){mbFloor2d();mbDecor2d(ox,oy)}   // הרצפה והקישוטים (moba-look.js). בתלת-ממד הם שם, כטקסטורה ומודלים (moba3d.js)
   const uk=mbUiK();   // מה שמעל הדמויות גדל בחזרה, כי המצלמה רחוקה (MBLOOK.cam)
   // גיבור מת: גולגולת במקום שבו נפל, עם השניות עד שהוא חוזר
-  for(const u of M.u)if(u.k==='hero'&&u.dead&&u.resp>0&&onScreen(u.x+ox,u.y+oy)){const col=MOBA.team[u.team];
+  for(const u of M.u)if(u.k==='hero'&&u.dead&&u.resp>0&&onScreen(u.x+ox,u.y+oy)&&(ally(u.team)||typeof mbVisPt!=='function'||mbVisPt(u.x,u.y))){   // גיבור אויב שמת בערפל: לא מגלים איפה
+   const col=MOBA.team[u.team];
     ctx.globalAlpha=0.85;ctx.fillStyle='rgba(14,16,26,0.7)';ctx.beginPath();ctx.ellipse(u.x,u.y,22,10,0,0,7);ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
     mbIcon('skull',u.x,u.y-16,24,col);ctx.font='800 13px Heebo, system-ui, sans-serif';ctx.textAlign='center';ctx.direction='ltr';ctx.fillStyle=C.chalk;ctx.fillText(Math.ceil(u.resp),u.x,u.y-34);ctx.direction=DIR;ctx.globalAlpha=1}
   // אזורים מסומנים: שלנו בכחול, של האויב באדום
-  for(const z of M.zones){const col=ally(z.team)?MOBA.team[0]:C.blood;
+  for(const z of M.zones){if(!mbZoneShown(z))continue;const col=ally(z.team)?MOBA.team[0]:C.blood;
     if(z.delay>0){const k=1-z.delay/z.t0;ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.stroke();
       ctx.globalAlpha=0.28;ctx.fillStyle=col;ctx.beginPath();ctx.arc(z.x,z.y,z.r*k,0,7);ctx.fill();ctx.globalAlpha=1}
     else{ctx.globalAlpha=0.22;ctx.fillStyle=col;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.fill();ctx.globalAlpha=0.8;ctx.strokeStyle=C.chalk;ctx.lineWidth=2;ctx.beginPath();
