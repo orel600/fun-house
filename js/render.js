@@ -138,7 +138,7 @@ function render(){
   if(R3D.on)ctx.clearRect(0,0,W,H);else{ctx.fillStyle=S&&S.room?'#262114':arenaFloor('d2')||C.ink;ctx.fillRect(0,0,W,H)}
   if(!P)return;
   const sh=RM?0:S.shake,px=DPR*ZOOM,ox=Math.round((W/2-S.cam.x+rand(-sh,sh))*px)/px,oy=Math.round((H/2-S.cam.y+rand(-sh,sh))*px)/px;   // מעוגל לפיקסל של המסך ולא ליחידת משחק: אחרת הגלילה קופצת 2-3 פיקסלים לסירוגין (תנועה מקוטעת)
-  if(S.mb){render3d(ox,oy);ctx.translate(ox,oy);mobaDraw(ox,oy);return}   // משחקי השאול: ציור משלו (moba.js)
+  if(S.mb){render3d(ox,oy);ctx.translate(ox,oy);mobaDraw(ox,oy);fxDraw();ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);fxDrawUi();return}   // משחקי השאול: ציור משלו (moba.js)
   render3d(ox,oy);
   ctx.translate(ox,oy);
   // ground
@@ -165,6 +165,7 @@ function render(){
   drawWorld();   // העולם הפתוח (world.js)
   drawNpcs();
   homeDraw();   // עמודי הפנסים בכפר (homecoming.js)
+  skcDraw();   // עיגול רונות מתחת לגיבור כשמטיל סקיל, בדו-ממד (skillcast.js)
   drawPet();   // חיית המחמד: חול מהחפירה, להבות בשלב 3, ובדו-ממד גם הגוף (pet.js)
   // actors sorted by y
   // מציירים רק מי שעל המסך: עם מאות אויבים זה חוסך את רובם
@@ -194,6 +195,7 @@ function render(){
   ctx.globalAlpha=1;
   juiceDraw();   // ניצוצות, עשן ומספרי נזק של קרב בעולם (juice.js)
   drawFx();   // חגיגות של התקדמות (fx.js)
+  fxDraw();   // אפקטים מהחבילות (fxlib.js)
   ctx.textAlign='center';
   // מספר עם סימן (+12, -16) נכתב משמאל לימין בכל שפה, אחרת הסימן קופץ לצד הלא נכון
   // מכה קריטית קופצת לרגע ומקבלת מסגרת לבנה
@@ -210,6 +212,7 @@ function render(){
   if(S.boss){const b=S.boss,sx=b.x+ox,sy=b.y+oy;
     if(sx<-20||sx>W+20||sy<-20||sy>H+20){const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(110,Math.min(H-40,H/2+Math.sin(a)*H));
       ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.fillStyle=C.lilac;ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(-8,-10);ctx.lineTo(-8,10);ctx.fill();ctx.restore()}}
+  fxDrawUi();   // אפקטים על המסך (fxlib.js)
   drawBonusScreen(ox,oy);
   drawWantedScreen(ox,oy);arenaArrows(ox,oy);waveArrows(ox,oy);   // חץ לאויב-על מחוץ למסך (arenaui.js), ולאחרונים בגל (arenas.js)
   drawVillageScreen(ox,oy);

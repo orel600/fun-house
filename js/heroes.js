@@ -16,7 +16,7 @@ const HEROES={
     // אחרי #321 רטיבות והלם נגמרים גם בעולם, והקוסם מת שם פי 3 מהציידת
     // worldLate (5.11.2026, fix/mage-boss): עוד give מרמה lv, בעולם בלבד. בשתי מדידות של 10 קרבות ברמה המומלצת הקוסם היה איטי ב-26% מהממוצע בשומר האש
     // וב-22% בצל (הסקילים שלו בעיקר אש וקרח), אבל מהיר ב-20-30% בשומר האדמה (רמה 6, המטה המתביית לא מחטיא). לכן התוספת רק מרמה 12
-    mage:   {weapon:'oakStaff',passive:{regen:1},worldPassive:{def:12,speed:10,gdmg:15},worldLate:{lv:12,give:{gdmg:10}},arms:['staff','wand'],icon:'🔮',col:'#C7A6FF'}
+    mage:   {weapon:'oakStaff',passive:{regen:1},worldPassive:{def:72,speed:10,gdmg:15},worldLate:{lv:12,give:{gdmg:10}},arms:['staff','wand'],icon:'🔮',col:'#C7A6FF'}
   },
   /* סגנון המשחק, לקווסטי הדרגה. כל מונה נשמר ב-SAVE.hero.style.
      sec: כמה שניות בזירה התנאי היה נכון (heroTick, כל פריים). המפתח נשמר עם t_ לפניו.

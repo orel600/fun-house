@@ -35,7 +35,8 @@ const FOEATK3D={
   fast:0.22,          // כמה שניות שאר המכה
   glow:'#FF4D4D',glowK:[0.2,0.75],   // זוהר אדום שמתחזק לאורך ההכנה (מ-glowK[0] עד glowK[1]), ופועם
   squat:0.14,         // קפיצה: מתכווץ לפני
-  jump:46             // קפיצה: כמה גבוה באוויר (פיקסלים)
+  jump:46,            // קפיצה: כמה גבוה באוויר (פיקסלים)
+  actFlash:0.05       // באמצע פעולה (foeai.js): e.flash עד כאן הוא סימון, לא מכה, ולא מלבין
 };
 const LOOK3D={
   player:{model:'knight',h:66,foot:14,
@@ -446,11 +447,18 @@ function loop(a,name,speed=1){
   a.base=name;
 }
 // אנימציה חד-פעמית (תקיפה, מוות). dur: כמה שניות היא צריכה להימשך
-function once(a,name,dur,hold=false){
+// skip: איזה חלק מתחילת האנימציה מדלגים (ההכנה), כך שהתנוחה מגיעה מיד והזמן dur הולך על ההמשך (HERO_SKIP)
+function once(a,name,dur,hold=false,skip=0){
   const x=act(a,name);if(!x)return;
   if(a.one&&a.one!==x)a.one.fadeOut(0.08);
-  x.reset().setLoop(THREE.LoopOnce,1);x.clampWhenFinished=hold;x.timeScale=dur?x.getClip().duration/dur:1;x.fadeIn(0.06).play();a.one=x;
+  const d=x.getClip().duration;
+  x.reset().setLoop(THREE.LoopOnce,1);x.clampWhenFinished=hold;x.timeScale=dur?d*(1-skip)/dur:1;x.time=d*skip;x.fadeIn(skip?0.03:0.06).play();a.one=x;
 }
+/* גיבור בלי הכנה (ניר, 7.11, מסרטון של מפתח Diablo 3: "לפעולות של השחקן אין הכנה"): תקיפה וסקיל מתחילים כבר באמצע התנועה.
+   כמה מדלגים מכל אנימציה (חלק מהאורך). רק לגיבור, ורק בעולם ובכפר (SKCAST.where). לאויבים ולבוס ההכנה נשארת, כי היא האזהרה */
+const HERO_SKIP={Melee_1H_Attack_Chop:0.3,Melee_1H_Attack_Slice_Horizontal:0.25,Melee_2H_Attack_Chop:0.35,Melee_2H_Attack_Spin:0.2,
+  Ranged_Magic_Shoot:0.15,Ranged_Magic_Spellcasting:0.35,Ranged_Magic_Summon:0.3,Melee_Block:0.15,Ranged_Bow_Release:0};
+const heroSkip=n=>SKCAST.where()?(HERO_SKIP[n]||0):0;
 function place(a,x,y,foot,yaw,lift=0){
   const S_=SIN();a.root.position.set(x,(lift+(TR&&S.wd?hAt(x,y):0))/COS(),(y+foot)/S_);   // hAt: על הרכס הדמות עומדת גבוה יותר (terrain.js)
   if(yaw!=null){let d=yaw-a.root.rotation.y;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;a.root.rotation.y+=d*0.35}
@@ -484,17 +492,20 @@ function syncPlayer(dt){
   else{
     if(st.mode==='over'){st.mode='';a.one=null;a.mixer.stopAllAction()}
     // תקיפה: רק פלג הגוף העליון, כך שאפשר לתקוף תוך כדי ריצה
-    const swing=sword&&P.sw.anim>st.anim,shot=!sword&&P.gn.t>st.gt+0.01;
+    // סקיל (skillcast.js): התנועה של ההטלה גוברת לרגע על תנועות התקיפה. רק מראה, התקיפה עצמה ממשיכה
+    if(P.skCast&&st.sc!==P.skCast.n&&performance.now()-P.skCast.at<SKCAST.dur*1000){st.sc=P.skCast.n;st.scT=SKCAST.dur;{const c=skcClip(L);once(a,c+'@up',SKCAST.dur,false,heroSkip(c))}}
+    st.scT=Math.max(0,(st.scT||0)-dt);const casting=st.scT>0;
+    const swing=!casting&&sword&&P.sw.anim>st.anim,shot=!casting&&!sword&&P.gn.t>st.gt+0.01;
     st.anim=P.sw.anim;st.gt=P.gn.t;
-    if(swing)once(a,L.anim.sword+'@up',Math.max(0.28,Math.min(0.5,P.sw.cd*wK('cd')*0.8)));
+    if(swing)once(a,L.anim.sword+'@up',Math.max(0.28,Math.min(0.5,P.sw.cd*wK('cd')*0.8)),false,heroSkip(L.anim.sword));
     const gcd=P.gn.cd*wK('cd');
-    if(shot){st.shots=(st.shots||0)+1;once(a,L.anim.gun+'@up',Math.max(0.2,Math.min(0.45,gcd*0.9)))}
+    if(shot){st.shots=(st.shots||0)+1;once(a,L.anim.gun+'@up',Math.max(0.2,Math.min(0.45,gcd*0.9)),false,heroSkip(L.anim.gun))}
     // קשת: מותחים את המיתר ממש לפני החץ הבא, כשיש במי לירות
     const drawT=Math.min(0.4,gcd*0.5);
-    if(!sword&&L.anim.gunDraw&&P.gn.t>0&&P.gn.t<=drawT&&st.drawn!==st.shots&&nearest(440)&&!(a.one&&a.one.isRunning())){st.drawn=st.shots;once(a,L.anim.gunDraw+'@up',P.gn.t)}
+    if(!casting&&!sword&&L.anim.gunDraw&&P.gn.t>0&&P.gn.t<=drawT&&st.drawn!==st.shots&&nearest(440)&&!(a.one&&a.one.isRunning())){st.drawn=st.shots;once(a,L.anim.gunDraw+'@up',P.gn.t)}
     // פגיעה (combat.js מדליק P.inv=0.6): הגוף נרתע, אם הוא לא באמצע תקיפה
     const hurt=P.inv>st.inv+0.3&&P.inv<=0.7;st.inv=P.inv;
-    if(hurt&&!swing&&!shot&&!(a.one&&a.one.isRunning()))once(a,L.anim.hit+'@up',0.3);
+    if(hurt&&!casting&&!swing&&!shot&&!(a.one&&a.one.isRunning()))once(a,L.anim.hit+'@up',0.3);
     if(P.skrCast&&st.cast!==P.skrCast){st.cast=P.skrCast;once(a,(R3D.clips[SKREVEAL.anim+'@up']?SKREVEAL.anim:L.anim.win)+'@up',SKREVEAL.cast)}   // סקיל חדש: הגיבור מטיל (skillreveal.js)
     const busy=a.one&&a.one.isRunning(),idle=!sword&&L.anim.gunIdle||L.anim.idle;   // עם קשת ביד: עמידה עם קשת
     loop(a,(P.moving?L.anim.run:idle)+(busy?'@low':''),P.moving?Math.min(1.6,P.speed/165):1);
@@ -552,7 +563,10 @@ function syncEnemy(e,dt){
   const rage=e.isBoss&&e.rage>0.05?e.rage:0;
   const tk=e.isBoss||e.wboss?-1:foeTele(e),F=FOEATK3D;   // מתכונן למתקפה: מאדים (strike.js מדליק e.flash קטן בהכנה, בשביל הדו-ממד. מכה אמיתית היא 0.09)
   if(tk>=0&&!(e.flash>0.06))setFlash(a,(F.glowK[0]+(F.glowK[1]-F.glowK[0])*tk)*(0.8+0.2*Math.sin(S.t*20)),F.glow);
-  else setFlash(a,e.flash>0?0.9:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,e.flash>0?0xffffff:C.blood);
+  // לבן רק במכה אמיתית. foeai.js משאיר e.flash קטן (0.04) כל הפעולה, בשביל הדו-ממד, ובתלת-ממד זה צבע את המסתער בלבן מלא
+  // לאורך כל ההסתערות והסחרור (ניר, 7.11: "זקן-הקליפה לבן"). בהסתערות ובקפיצה עצמן: הזוהר האדום של המתקפה, במלואו
+  else if((e.act==='dash'||e.act==='jump')&&!(e.flash>FOEATK3D.actFlash))setFlash(a,F.glowK[1],F.glow);
+  else{const hit=e.flash>(e.act?FOEATK3D.actFlash:0);setFlash(a,hit?0.9:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,hit?0xffffff:C.blood)}
   if(a.sc0){const q=juiceSquash(e)+(e.act==='crouch'?F.squat*Math.max(0,tk):0);a.root.scale.set(a.sc0*(1+q),a.sc0*(1-q),a.sc0*(1+q))}   // מעיכה קטנה במכה (juice.js)
   // כשיש הרבה אויבים, כל אחד מונפש רק בכל פריים שני (חצי מהם בכל פריים). בעין זה לא נראה, ובטלפון זה חוסך הרבה
   a.acc=(a.acc||0)+dt;
@@ -730,6 +744,29 @@ function vilWarm(r,c){
   const n=R3D.vil.g.children.length+Object.keys(R3D.npcs||{}).length+(R3D.pet?1:0);if(R3D.vilWarm===n)return;R3D.vilWarm=n;
   try{if(r.compileAsync)r.compileAsync(R3D.scene,c).catch(()=>{});else r.compile(R3D.scene,c)}catch(e){}
 }
+// העולם: כמו vilWarm. בפעם הראשונה שסוג אויב חדש נכנס למסך, הטלפון מכין לו shader, טקסטורה וקהל (crowdOf) באמצע הקרב,
+// והציור נעצר (ניר, 7.11: "94 fps · 166.1ms" כשזקן-הקליפה הופיע). בכניסה לאזור מכינים מראש דמות אחת מכל סוג באזור (גם הנדירות),
+// מצוירת כמה פריימים (כדי שגם הטקסטורות יעלו), ואז למאגר. כך הקפיצה קורה במעבר בשער, ולא באמצע הקרב
+const WWARM={frames:3,s:1e-4};   // s: כמה קטנה הדמות בזמן ההכנה. היא על המסך (כדי שהציור האמיתי יכין אותה, compile לבד לא מספיק), אבל קטנה מפיקסל
+function wldWarm(r,c){
+  const reg=S.wd.reg||'meadow',W=R3D.wWarm||(R3D.wWarm={done:{},a:null,n:0});
+  if(W.a){wldWarmCrowd(W);if(--W.n<=0){for(const a of W.a){a.root.scale.setScalar(a.sc0w);freeActor(a)}W.a=null}}
+  if(W.done[reg])return;W.done[reg]=1;
+  if(typeof rareLooks==='function')rareLooks();
+  const ks=new Set((WR().foes||[]).map(G=>G.type));
+  if(typeof RARES!=='undefined')for(const id in RARES.list)if(RARES.list[id].reg===reg)ks.add(id);
+  const tmp=[];W.c=[...ks];
+  for(const k of ks){const L=LOOK3D[k];if(!L||!R3D.tmpl[L.model])continue;crowdOf(k);   // crowdOf משאיר דמות במאגר. makeActor לוקח אותה ומצייר אותה
+    const a=makeActor(L);a.sc0w=a.root.scale.x;a.root.scale.setScalar(WWARM.s);place(a,P.x,P.y,0,null);tmp.push(a)}
+  if(!tmp.length)return;
+  W.a=(W.a||[]).concat(tmp);W.n=WWARM.frames;wldWarmCrowd(W);
+  try{if(r.compileAsync)r.compileAsync(R3D.scene,c).catch(()=>{});else r.compile(R3D.scene,c)}catch(e){}
+}
+// גם הקהל (crowdOf): עותק זעיר אחד ליד השחקן בפריימים של ההכנה, אחרת ה-shader שלו (גם של הצל) נבנה כשהקהל מופיע לראשונה
+function wldWarmCrowd(W){
+  const M=R3D._mx;R3D._p.set(P.x,0,P.y/SIN());R3D._q.identity();R3D._s.setScalar(WWARM.s);M.compose(R3D._p,R3D._q,R3D._s);
+  for(const k of W.c||[])for(const p of R3D.crowd[k]||[])for(const m of p)if(!m.count){m.setMatrixAt(0,M);m.count=1}
+}
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
 function render3d(ox,oy){
   if(!R3D.on||!P)return;
@@ -755,7 +792,7 @@ function render3d(ox,oy){
   if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil);if(typeof deco3d==='function')deco3d(R3D.vil);vilWarm(r,c)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
-    if(S.wd){syncWorld();syncWnpcs(dt)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)
+    if(S.wd){syncWorld();syncWnpcs(dt);wldWarm(r,c)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)
     // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
     const vis=enemies.filter(e=>!e.dead&&(e.isBoss||e.wboss||onScreen(e.x+ox,e.y+oy)));
     // בעולם: רק world הקרובים מונפשים, והשאר בקהל (דמות מונפשת היא רוב הזמן של הציור בעולם, מבקר 2)

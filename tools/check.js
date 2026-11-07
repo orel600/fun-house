@@ -1323,6 +1323,18 @@ function worldBot(m,L,god){
       drawOrbits();r.orbDraw=W.draws>d0&&W.lights>=5;r.orbFlash=W.flashes>f0;
       e3.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // הגיבור מטיל סקיל (skillcast.js): בכל שימוש יש תנועה של פלג הגוף העליון ועיגול רונות בצבע סוג הנזק שנעלם לבד. בזירה לא
+  const skc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];SAVE.hero.skSeen=[...(SAVE.hero.skSeen||[]),...S.sk.ids];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
+      const e=addEnemy('grunt',P.x+150,P.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;
+      const id=S.sk.ids[0],n0=P.skCast?P.skCast.n:0;S.sk.cd[0]=0;r.id=id;r.cast=wskUse(id);if(SKR)skrEnd(false);
+      r.anim=!!P.skCast&&P.skCast.n===n0+1;r.clip=R3D.ready?skcClip(heroLook()):'Ranged_Magic_Shoot';r.clipOk=!R3D.ready||!!R3D.clips[r.clip+'@up'];
+      r.rune=!!skcRune;r.col=skcRune&&skcRune.col;const d=skcRune&&skcRune.d3;r.r3d=!!d;r.band=!R3D.on||!!(skcRune&&skcRune.d3b);r.tier=skcRune&&skcRune.big?'big':'normal';
+      run(SKCAST.rune.life+0.1);r.gone=!skcRune&&!(d&&d.on);
+      worldUi(false);reset();const c0=skcStat.casts;skCast(id);r.arena=skcStat.casts===c0;   // זירה: כלום
+      enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // רגע גילוי של סקיל חדש בעולם (skillreveal.js): מתחיל אחרי SKREVEAL.delay, עוצר את הזמן ומקרב, האייקון עף ונגמר לבד, פעם אחת לכל סקיל.
   // ההטלה הראשונה גדולה, נגיעה מדלגת, ודרגה גבוהה בעץ מגדילה ומחליפה צבע. אחר כך המשחק ממשיך
   const skr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
@@ -2882,12 +2894,20 @@ function worldBot(m,L,god){
     hunt('mossback');o.same=qProg(q,ri)===1&&RS().got.mossback===2;
     hunt('glimmer');hunt('pearl');o.p3=qProg(q,ri);
     const v=rareSpawn('hoarfrost',0);S.wd.rare.t=0;rareUpdate(0.01);o.vanish=v.dead&&!RS().got.hoarfrost&&S.wd.rare.done;
+    // ניר, 7.11: מי שנשאר באזור מקבל עוד הגרלה, שורת שמועה עם זמן, עיגול במפה, שם זהוב עם ✨, ורשימה בקווסט
+    const ac0=RARES.againChance;RARES.againChance=1;rareUpdate(30);o.wait=S.wd.rare.done;rareUpdate((tierRareAgain()||RARES.again));
+    const ag=S.wd.rare;RARES.againChance=ac0;o.again=!ag.done&&!ag.e.dead&&RARES.list[ag.id].reg===(S.wd.reg||'meadow');
+    o.label=ag.e.pname.startsWith(RARES.icon)&&ag.e.pname.includes(rareName(ag.id));
+    ag.rumor=0;rareLineSync();const rl=document.getElementById('rareLine');o.line=!rl.hidden&&rl.textContent.includes(rareAt(ag.sp))&&/\d:\d\d/.test(rl.textContent)&&Math.hypot(ag.mx-ag.sp.x,ag.my-ag.sp.y)<=RARES.mapR*0.5+1;
+    const lh=rareListHtml();o.list=(lh.match(/class="runk"/g)||[]).length===Object.keys(RARES.list).length-Object.keys(RS().got).length&&lh.includes(rareName('pearl'));
+    ag.gone=true;ag.e.dead=true;rareUpdate(0.01);rareLineSync();o.lineOff=rl.hidden;
     o.saved=((JSON.parse(localStorage.getItem(SAVE_STORE.key)).rares||{}).got||{}).pearl===1;
     delete QS().active.rank1;SAVE.rares=JSON.parse(r0);SAVE.book=JSON.parse(b0);enemies=[];enterVillage();return o});
-  check(!rar.noRare.length&&!rar.bad.length&&rar.none&&rar.spawn&&rar.rumor&&rar.scent&&rar.p1===1&&rar.book&&rar.same&&rar.p3===3&&rar.vanish&&rar.saved,
+  check(!rar.noRare.length&&!rar.bad.length&&rar.none&&rar.spawn&&rar.rumor&&rar.scent&&rar.p1===1&&rar.book&&rar.same&&rar.p3===3&&rar.vanish&&rar.saved&&rar.wait&&rar.again&&rar.label&&rar.line&&rar.list&&rar.lineOff,
     'מפלצות נדירות: '+(rar.noRare.length?'אזור בלי נדירה: '+rar.noRare.join(','):'בכל אזור')+(rar.bad.length?', נתונים שבורים: '+rar.bad.join(','):', מקומות, שם, מראה וספר')+(rar.none?', בלי מזל אין':', מופיעה תמיד')+
     (rar.spawn?', הופיעה חזקה במקום הנסתר':', לא הופיעה')+(rar.rumor?', שמועה':', בלי שמועה')+(rar.scent?', פיוחו מריחה':', פיוחו לא מריחה')+
-    ', קווסט הדרגה '+rar.p1+'→'+rar.p3+'/3'+(rar.same?'':' (אותה נדירה נספרה פעמיים!)')+(rar.book?', בספר':', לא בספר')+(rar.vanish?', נעלמת בזמן':', לא נעלמת')+(rar.saved?', נשמר':', לא נשמר'));
+    ', קווסט הדרגה '+rar.p1+'→'+rar.p3+'/3'+(rar.same?'':' (אותה נדירה נספרה פעמיים!)')+(rar.book?', בספר':', לא בספר')+(rar.vanish?', נעלמת בזמן':', לא נעלמת')+(rar.saved?', נשמר':', לא נשמר')+
+    (rar.wait?'':', הגרלה חוזרת מוקדם מדי')+(rar.again?', הגרלה חוזרת באזור':', אין הגרלה חוזרת')+(rar.label?', שם ✨':', בלי שם ✨')+(rar.line?', שורת שמועה עם זמן':', אין שורת שמועה')+(rar.lineOff?'':', השורה לא נעלמת')+(rar.list?', רשימה בקווסט':', אין רשימה בקווסט'));
   // שמות ואופי לאויבים (foelore.js): לכל סוג בעולם שם, שם אישי לעלית, כרטיס בפגישה ראשונה שנסגר לבד ונשמר, בועה מעל הראש
   const flo=await page.evaluate(()=>{
     const o={},m0=JSON.stringify(SAVE.lore||null);SAVE.lore=null;FLC.q=[];flCardNext();   // כרטיסים שנשארו בתור מהמשחק של הבוט
@@ -3129,13 +3149,14 @@ function worldBot(m,L,god){
   // שריון לפי מחלקה (armor.js): קסדה וגוף של המחלקה נלבשים במשבצות ראש וגוף, ההגנה עולה, השריון נראה על הדמות ובחלון, והשלל בעולם מוטה למחלקה
   const ar=await page.evaluate(()=>{
     const o={},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,pity:SAVE.clsPity}),c0=celebrate;celebrate=()=>{};
-    const h=ARMOR.cls[heroId()]?heroId():'warrior',hd=h+'Head2',bd=h+'Body2',d0=P.def||0;
+    const h=ARMOR.cls[heroId()]?heroId():'warrior',hd=h+'Head2',bd=h+'Body2',d0=P.def||0,od0=defOld();
     o.items=ARMOR.slots.every(s=>Object.keys(ARMOR.cls).every(c=>[0,1,2,3,4].every(t=>{const it=gItem(c+armorSlot(s)+t);return it&&it.slot===s&&it.stats.def>0&&T('it.'+c+armorSlot(s)+t)!=='it.'+c+armorSlot(s)+t})));
     o.items=o.items&&[0,1,2,3,4].every(t=>gItem('shield'+t)&&gItem('shield'+t).slot==='shield');
     bagAdd(hd);bagAdd(bd);bagAdd('shield2');S.mode='play';gearOpen();
     o.slots=!!document.querySelector('#gSlots [data-slot="head"]')&&!!document.querySelector('#gSlots [data-slot="body"]')&&!!document.querySelector('#gSlots [data-slot="shield"]');
     gDoEquip(hd);gDoEquip(bd);gDoEquip('shield2');gRedraw();
     o.worn=gGet('head',0)===hd&&gGet('body',0)===bd&&gearWorn().includes(hd)&&gearWorn().includes(bd);
+    o.oldD=Math.round((defOld()-od0)*100)/100;   // בזירה: אותו אחוז כמו קודם, 5+9+8 (defense.js)
     o.def=Math.round(((P.def||0)-d0)*10)/10;o.defOk=o.def===gItem(hd).stats.def+gItem(bd).stats.def+gItem('shield2').stats.def;
     {const t=document.querySelector('#gSlots [data-slot="head"]');o.tile=!!t&&(t.textContent.includes(gItem(hd).icon)||!!t.querySelector('img[src*="/'+gBase(hd)+'.png"]'))}   // אימוג'י, או התמונה של הפריט (icons/ui/gear)
     if(R3D.on&&R3D.ready){syncPlayer(0.016);o.r3=(R3D.player.arG||[]).length>0;o.doll=!R3D.doll||!R3D.doll.a||(R3D.doll.a.arG||[]).length>0}else o.r3=o.doll=true;
@@ -3151,8 +3172,25 @@ function worldBot(m,L,god){
     o.back=(P.def||0)===d0;return o});
   check(ar.items&&ar.slots&&ar.worn&&ar.defOk&&ar.tile&&ar.r3&&ar.doll&&ar.lootOk&&ar.back,
     'שריון לפי מחלקה: '+(ar.items?'30 חלקים ו-5 מגנים':'חסרים חלקים או שמות')+(ar.slots?', משבצות ראש, גוף ומגן':', אין משבצות')+(ar.worn?', נלבש':', לא נלבש')+
-    (ar.defOk?', הגנה +'+ar.def+'%':', ההגנה לא עלתה ('+ar.def+')')+(ar.tile?'':', לא מופיע במשבצת')+(ar.r3?'':', לא נראה על הדמות')+(ar.doll?'':', לא נראה בחלון')+
+    (ar.defOk?', הגנה +'+ar.def:', ההגנה לא עלתה ('+ar.def+')')+(ar.tile?'':', לא מופיע במשבצת')+(ar.r3?'':', לא נראה על הדמות')+(ar.doll?'':', לא נראה בחלון')+
     (ar.lootOk?', שלל מוטה למחלקה ('+ar.loot+')':', השלל לא מוטה ('+ar.loot+')')+(ar.back?'':', לא חזר אחרי הבדיקה'));
+  // הגנה כדירוג (defense.js, ניר 7.11.2026): נקודות מול רמת התוקף, תשואה פוחתת, תקרה גבוהה, והזירה בדיוק כמו קודם
+  const dfr=await page.evaluate(()=>{
+    const o={},r1=v=>Math.round(v*10)/10;
+    o.pct=[defPct(36,1),defPct(110,12),defPct(210,22)].map(r1);   // עץ באחו, כסף ברכס, זהב במדבר: היו 12%, 22%, 30%
+    o.pctOk=Math.abs(o.pct[0]-12)<2&&Math.abs(o.pct[1]-22)<2&&Math.abs(o.pct[2]-30)<2;
+    o.dr=defPct(200,10)-defPct(100,10)<defPct(100,10)&&defPct(100,30)<defPct(100,1);   // כל נקודה שווה פחות, ומפלצת גבוהה בולעת פחות
+    o.cap=DEFENSE.cap>=80;
+    o.anchor=[1,12,30].every(L=>{const K=defK(L);return K>0&&defPct(0,L)===0&&defPct(-50,L)===0&&Math.abs(defPct(K,L)-50)<1e-9&&Math.abs(defPct(2*K,L)-200/3)<1e-9});   // עוגנים: 0 → 0%, K → 50%, 2K → 66.7%
+    const k={wd:S.wd,vil:S.vil,mb:S.mb},pd=P.def;
+    try{S.wd=null;S.vil=null;S.mb=null;P.def=9e4;o.arenaCap=defNow()===STATS.cap.def;   // בזירה: התקרה הישנה
+      P.def=pd;o.arena=Math.abs(defNow()-Math.min(STATS.cap.def,defOld()+defFx()))<1e-9;
+      S.vil=k.vil||{};P.def=9e4;o.worldCap=defNow()<=DEFENSE.cap&&defNow()>STATS.cap.def}
+    finally{S.wd=k.wd;S.vil=k.vil;S.mb=k.mb;P.def=pd}
+    return o});
+  check(dfr.pctOk&&dfr.anchor&&dfr.dr&&dfr.cap&&dfr.arenaCap&&dfr.arena&&dfr.worldCap&&Math.abs(ar.oldD-22)<0.01,
+    'הגנה כדירוג: '+dfr.pct.join('% / ')+'%'+(dfr.pctOk?' (כמו קודם באזור)':' (רחוק מהישן)')+(dfr.anchor?', עוגנים 0/50/67%':', עוגנים שגויים')+(dfr.dr?', תשואה פוחתת':', בלי תשואה פוחתת')+
+    (dfr.worldCap&&dfr.cap?', תקרה '+'85%':', תקרה שגויה')+(dfr.arenaCap&&dfr.arena&&Math.abs(ar.oldD-22)<0.01?', בזירה כמו קודם (+'+ar.oldD+'%)':', הזירה השתנתה (+'+ar.oldD+'%)'));
   // משבצת ריקה = בלי כובע (ניר, 4.11.2026): בלי ראש וגוף אין קסדה, כובע או גלימה דלוקים, ולבישת ראש משנה את מה שרואים. בכל המחלקות, בסקינים ובבובה
   if(CFG.gfx==='3d'){const hv=await page.evaluate(()=>{
     if(!R3D.on||!R3D.ready)return {skip:true};
@@ -3382,7 +3420,14 @@ function worldBot(m,L,god){
     {const bs=[...document.querySelectorAll('#mbWin [data-diff]')],d0=mbDiffGet(),on=bs.filter(b=>b.classList.contains('on'));
       document.querySelector('#mbWin [data-diff="hard"]').click();const saved=mbDiffGet()==='hard'&&document.querySelector('#mbWin [data-diff="hard"]').classList.contains('on');
       document.querySelector('#mbWin [data-diff="easy"]').click();o.diff={n:bs.length,one:on.length===1&&on[0].dataset.diff===d0,saved,back:mbDiffGet()==='easy'}}
-    document.querySelector('#mbWin [data-kit="tank"]').click();o.on=!!S.mb&&document.body.classList.contains('mb');if(o.diff)o.diff.game=MB.diff==='easy';
+    document.querySelector('#mbWin [data-kit="tank"]').click();
+    // מסך הבנייה (moba-spells.js): אחרי הגיבור, בחירת לחש עם הסבר. ברירת המחדל זינוק, הבחירה נשמרת לכל גיבור ונטענת שוב
+    if(typeof MBSPELL!=='undefined'){const B={},q=x=>document.querySelector('#mbWin '+x);try{localStorage.removeItem(MBSPELL.key)}catch(e){}mbBuildOpen('tank');
+      B.step=$('mbWin').dataset.mode==='build';B.n=document.querySelectorAll('#mbWin [data-b]').length;B.def=mbSpellGet('tank')==='dash'&&!!q('[data-b="dash"].on');
+      q('[data-b="barrier"]').click();B.saved=mbSpellGet('tank')==='barrier'&&mbSpellGet('hunter')==='dash'&&!!q('[data-b="barrier"].on')&&$('mbWin').innerText.includes(T('mb.spD.barrier'));
+      q('[data-bact="back"]').click();B.back=$('mbWin').dataset.mode==='pick'&&!!q('[data-diff].on');q('[data-kit="tank"]').click();B.load=!!q('[data-b="barrier"].on');
+      if(en&&!o.he&&heb($('mbWin').innerText))o.he=$('mbWin').innerText.slice(0,60);q('[data-bact="go"]').click();o.build=B}
+    o.on=!!S.mb&&document.body.classList.contains('mb');if(o.build)o.build.game=MB.me.spell==='barrier'||(mobaUpdate(1/30),MB.me.spell==='barrier');if(o.diff)o.diff.game=MB.diff==='easy';
     if(en&&!o.he&&heb($('mbHud').innerText))o.he=$('mbHud').innerText.slice(0,60);
     mbPress('ult');o.lock=$('banner').textContent!==T('mb.locked')&&document.querySelector('#mbSk [data-sk="ult"]').classList.contains('shake');   // סקיל-על נעול: הכפתור רועד, בלי הודעה באמצע
     // תנועה (moba-move.js, אוראל 3.11: "התנועתיות מוזרה"): סיבוב רך ולא בבת אחת, גיבור עובר דרך חייל בלי להאט, והודעת הריגה
@@ -3431,8 +3476,8 @@ function worldBot(m,L,god){
       o.two={held:wHeld().length};try{hud();o.two.ok=true}catch(e){o.two.err=e.message}f.x=fx;f.y=fy;SAVE.gear.weapon=g;SAVE.bag=JSON.parse(bag)}
     for(let i=0;i<30;i++)mobaUpdate(1/30);render();o.m3=typeof M3!=='undefined'?M3.map.size:-1;o.r3=R3D.on;   // תלת-ממד: מגדלים ובסיסים כמודלים (moba3d.js)
     // המראה (moba-look.js): כפתורי הסקילים והפקודות כאייקוני SVG בלי אימוג'י, והרצפה של המוד (בתלת-ממד: במקום הרצפה של הזירה)
-    o.look={svg:document.querySelectorAll('#mbSk svg').length+document.querySelectorAll('#mbPing svg').length,emoji:/\p{Extended_Pictographic}/u.test($('mbSk').textContent+$('mbPing').textContent),
-      pic:[...document.querySelectorAll('#mbSk [data-sk]')].map(b=>{const im=b.querySelector('img.mbpic');return im?im.getAttribute('src'):''}),   // האייקונים המצוירים של העולם (moba-icons.js)
+    o.look={svg:document.querySelectorAll('#mbSk [data-sk]:not(.mbsp) svg').length+document.querySelectorAll('#mbPing svg').length,emoji:/\p{Extended_Pictographic}/u.test($('mbSk').textContent+$('mbPing').textContent),
+      pic:[...document.querySelectorAll('#mbSk [data-sk]:not(.mbsp)')].map(b=>{const im=b.querySelector('img.mbpic');return im?im.getAttribute('src'):''}),   // האייקונים המצוירים של העולם (moba-icons.js)
       floor:R3D.on&&R3D.ready?!!(M3.floor&&M3.floor.visible)&&!R3D.ground.visible:!!MB_FLOOR};
     // מצלמה ומפה (moba-look.js, 3.11): המצלמה רחוקה (רואים לרוחב לפחות פי 1.5), יש שיחים ואבנים, והמפה הקטנה בתוך המסך
     {const b=mbMiniBox(W/2-MB.me.x,H/2-MB.me.y);o.cam={z:ZOOM,wide:Math.round(100/ZOOM)/100,bush:mbDecor().filter(d=>d.k==='bush').length,rock:mbDecor().filter(d=>d.k==='rock').length,
@@ -3456,11 +3501,13 @@ function worldBot(m,L,god){
      o.combo={shock:w0.shock||0,k:Math.round(wetD/dry*100)/100,freeze:w0.freeze||0,frozen:e.st.stun>MBKIT.mage.ult.freeze*0.9,want:MOBA.combo.shock};
      mbWord=ow;MB.u.splice(MB.u.indexOf(mg),1);e.hp=e.max=MBKIT[e.kit].hp}
     // כל סקיל של כל ערכה, בתרחיש קבוע: גיבור ברמה 6 מטיל את שלושת הסקילים על אויב קרוב (לא תלוי באורך משחק הבוטים)
-    {const e=mbHeroes(1)[0];e.hp=e.max=1e6;o.fixed=[];
+    {const e=mbHeroes(1)[0];e.hp=e.max=1e6;o.fixed=[];const fx0=typeof FXLIB!=='undefined'?FXLIB.list.length:-1;o.fxIds=new Set();
+     const ofx=typeof fxPlay==='function'?fxPlay:null;if(ofx)window.fxPlay=(id,...a)=>{o.fxIds.add(id);return ofx(id,...a)};   // ספריית האפקטים: אילו אפקטים הסקילים הפעילו
      for(const k of Object.keys(MBKIT)){const h=mbHero(k,0,false,1);h.lvl=MOBA.ultAt;h.x=e.x-150;h.y=e.y;MB.u.push(h);
        for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);for(let i=0;i<20;i++)mobaUpdate(1/30)}
        MB.u.splice(MB.u.indexOf(h),1)}
-     e.hp=e.max=MBKIT[e.kit].hp}
+     e.hp=e.max=MBKIT[e.kit].hp;if(ofx)window.fxPlay=ofx;o.fxIds=[...o.fxIds];o.fxLib=typeof FXDATA!=='undefined'?Object.keys(FXDATA).length:0;
+     try{fxDraw();fxDrawUi();o.fxDrawOk=true}catch(err){o.fxDrawOk=err.message}}
     // הסקילים שהחליפו זינוק וריפוי (6.11, docs/moba-plan.md פרק 2), בתרחיש קבוע: אין יותר charge, leap ו-heal ב-MBKIT. רשת ציד לוכדת (st.root):
     // לא זז, כן תוקף, ואחרי זה חסינות קצרה. כלא מים מרים ומרטיב, וברק אחריו = חשמול. גל חרב מהמם ומאט לאורך קו
     {const e=mbHeroes(1)[0],R={},ow=mbWord,w0={},ex=e.x,ey=e.y,clr=()=>{Object.assign(e.st,{wet:0,imm:0,stun:0,taunt:0,root:0,bub:0,slow:0,armor:0,rage:0,shield:0,dash:null});e.dead=false;e.hp=e.max=1e6};
@@ -3495,10 +3542,10 @@ function worldBot(m,L,god){
      const tw=MB.u.find(b=>b.k==='tower'&&b.team===1&&Math.abs(b.x)===MOBA.towers[0]&&!b.dead),hp0=tw.hp;
      MB.t=10;const early=mbDmg(null,tw,100,'physical');MB.t=MOBA.shield.t+5;const late=mbDmg(null,tw,100,'physical');MB.t=t0;tw.hp=hp0;
      r.shield=Math.abs(early-100*(1-MOBA.shield.k))<0.01&&Math.abs(late-100)<0.01;
-     const bk=mbHeroes(1).map(x=>x.earn||0);mbHeroes(1).forEach(x=>x.earn=(x.earn||0)+MBITEM.comeback.gap*2);
+     const bk=mbHeroes(1).map(x=>x.gold||0);mbHeroes(1).forEach(x=>x.gold=(x.gold||0)+3000);   // בלי זהב קאמבק (moba-gamble.js מחליף אותו): הריגה של מוביל משלמת בדיוק כמו כל הריגה
      const victim=mbUnit({k:'hero',kit:red.kit,team:1,hp:10,max:10,lvl:1,hitBy:new Map(),deaths:0,home:red.home});const g0=blue.gold||0;
-     mbItDie(victim,blue);r.bounty=Math.round((blue.gold||0)-g0)===Math.round(MBITEM.gold.kill*(1+MBITEM.comeback.bounty))&&mbBehind(0);
-     mbHeroes(1).forEach((x,i)=>x.earn=bk[i]);
+     mbItDie(victim,blue);r.bounty=Math.abs((blue.gold||0)-g0-MBITEM.gold.kill)<0.01&&!MBITEM.comeback;
+     mbHeroes(1).forEach((x,i)=>x.gold=bk[i]);
      MB.t=30;r.resp=mbResp({lvl:1})===MOBA.respawn.base;r.late=mbResp({lvl:6})>mbResp({lvl:1})*4;MB.t=t0;
      const hx=blue.x,hy=blue.y,ht=blue.hurtT;blue.x=blue.home.x;blue.y=blue.home.y;blue.hurtT=-99;const fast=mbSpeed(blue);blue.hurtT=MB.t;const hurt=mbSpeed(blue);blue.hurtT=-99;
      blue.x=0;blue.y=0;const out=mbSpeed(blue);r.haste=Math.abs(fast/out-MOBA.haste.k)<0.01&&Math.abs(hurt-out)<0.01;blue.x=hx;blue.y=hy;blue.hurtT=ht;
@@ -3506,6 +3553,70 @@ function worldBot(m,L,god){
      if(typeof mbRecallStart==='function'){blue.x=0;blue.y=0;blue.hurtT=-99;Object.assign(blue.st,{stun:0,dash:null});const on0=mbHaste(blue);   // חזרה לבסיס (moba-recall.js) + ריצה מהבסיס: מי שחזר רץ מהר כשהוא יוצא
        r.recall=!on0&&mbRecallStart(blue)&&(mbRecallTick(MB,MBRECALL.t+0.1),mbHaste(blue));blue.recall=null;blue.x=hx;blue.y=hy;blue.hurtT=ht}else r.recall=true;
      blue.dead=bd;o.flow=r}
+    // ריפוי ולחשים (moba-spells.js) בתרחיש קבוע, באמצע המפה: כל אחד עובד, נכנס לטעינה, ויש לו הסבר. וכפתורים שלא מכסים את הסקילים
+    if(typeof MBSPELL!=='undefined'){const me=MB.me,r={},L=MBSPELL.list,hx=me.x,hy=me.y,e=mbHeroes(1).find(x=>!x.dead)||mbHeroes(1)[0],ex=e.x,ey=e.y,ed=e.dead;
+      const calm=u=>Object.assign(u.st,{stun:0,taunt:0,slow:0,slowK:0,imm:0,dash:null,haste:0,exh:0,pure:0,shield:0});
+      const away=mbHeroes(1).filter(x=>x!==e).map(x=>[x,x.x,x.y]);for(const [x] of away){x.x=MOBA.base.x;x.y=0}   // רק גיבור אויב אחד ליד
+      me.x=0;me.y=0;calm(me);me.dead=false;me.hp=me.max*0.5;me.cd.heal=0;const h0=me.hp;mbPress('heal');
+      r.heal=Math.abs(me.hp-h0-me.max*MBSPELL.heal.k)<1&&me.cd.heal===MBSPELL.heal.cd;const h1=me.hp;mbPress('heal');r.healCd=me.hp===h1;
+      const done=[],tip=[];for(const id in L){if(T('mb.spD.'+id)!=='mb.spD.'+id)tip.push(id);me.spell=id;me.cd.spell=0;calm(me);me.x=0;me.y=0;e.dead=false;e.hp=e.max;calm(e);e.x=600;e.y=0;let ok=false;
+        if(id==='dash'){ok=mbSpellCast(me,{x:500,y:0});for(let i=0;i<8&&me.st.dash;i++){const D=me.st.dash,st=Math.min(D.left,D.sp/30);mbStep(me,D.vx*st,D.vy*st);D.left-=st;if(D.left<=0.5){me.st.dash=null;D.end()}}ok=ok&&Math.abs(me.x-L.dash.range)<15}
+        else if(id==='haste'){const v0=mbSpeed(me);ok=mbSpellCast(me)&&Math.abs(mbSpeed(me)/v0-1-L.haste.k)<0.01}
+        else if(id==='barrier')ok=mbSpellCast(me)&&Math.abs(me.st.shield-me.max*L.barrier.k)<1;
+        else if(id==='reveal'){const n=(MB.spellZ||[]).length;ok=mbSpellCast(me,{x:300,y:0})&&MB.spellZ.length===n+1}
+        else if(id==='exhaust'){ok=!mbSpellCast(me)&&me.cd.spell===0;e.x=300;typeof mbVisNow==='function'&&mbVisNow(true);ok=ok&&mbSpellCast(me)&&e.st.exh>0&&e.st.slow>0&&Math.abs(mbSpellDmgK(e)-(1-L.exhaust.dmg))<0.01}
+        else if(id==='cleanse'){me.st.stun=2;me.st.slow=2;me.st.slowK=0.5;me.st.root=2;me.st.bub=2;ok=mbSpellCast(me)&&!(me.st.stun>0)&&!(me.st.slow>0)&&!(me.st.root>0)&&!(me.st.bub>0)&&!mbCC(me,'stun',1,e)}
+        if(ok&&me.cd.spell===L[id].cd&&!mbSpellCast(me,{x:300,y:0}))done.push(id)}
+      // נגיעה קצרה אחרי פריים כבד (ההסבר כבר הופיע) עדיין מטילה, ולחיצה ארוכה באמת לא (moba-aim.js, לפי הזמנים של הנגיעה)
+      {const b=document.querySelector('#mbSk [data-sk="spell"]'),ev=t=>new PointerEvent(t,{pointerId:91,bubbles:true,cancelable:true,clientX:5,clientY:5});me.spell='haste';calm(me);me.dead=false;
+       me.cd.spell=0;b.dispatchEvent(ev('pointerdown'));let tp=!!mbAim;if(tp){mbAim.t0-=2000;mbAimDraw();tp=mbAim.tip}dispatchEvent(ev('pointerup'));r.tap=tp&&me.cd.spell>0;
+       me.cd.spell=0;calm(me);b.dispatchEvent(ev('pointerdown'));if(mbAim){mbAim.t0-=2000;mbAim.ts-=2000;mbAimDraw()}dispatchEvent(ev('pointerup'));r.hold=me.cd.spell===0&&!mbAim;calm(me);me.cd.spell=0}
+      Object.assign(r,{done,tip,n:Object.keys(L).length});calm(me);calm(e);me.spell='barrier';me.cd.spell=0;me.x=hx;me.y=hy;me.hp=me.max;e.x=ex;e.y=ey;e.dead=ed;MB.spellZ=[];for(const [x,ax,ay] of away){x.x=ax;x.y=ay}
+      mobaHud();const sk=k=>{const b=document.querySelector('#mbSk [data-sk="'+k+'"]');return b&&b.getBoundingClientRect()},hit=(a,b)=>a&&b&&a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
+      const mine=['heal','spell'].map(sk),rc=$('mbRecall').getBoundingClientRect();const bad=[];['heal','spell'].forEach((n,i)=>{const m=mine[i];if(!m){bad.push(n+' חסר');return}for(const k of ['s1','s2','ult'])if(hit(m,sk(k)))bad.push(n+'/'+k);if(hit(m,rc))bad.push(n+'/חזרה');if(m.right>innerWidth||m.bottom>innerHeight||m.left<0||m.top<0)bad.push(n+' בחוץ '+[m.left,m.top,m.right,m.bottom].map(Math.round))});
+      if(hit(mine[0],mine[1]))bad.push('heal/spell');r.btn=!bad.length;r.bad=bad;
+      r.pic=[...document.querySelectorAll('#mbSk .mbsp img.mbpic')].map(i=>i.getAttribute('src'));o.spell=r}
+    // תיקונים מבדיקת ה-QA (docs/moba-qa-report.md, 7.11): הטלה בחדר ההימור חוסמת זינוק, סדן וחזרה בלי טעינה; מי שמת בחדר חוזר בלי רשת ובועה;
+    // לחש מתוך שיח חושף; אזור של אויב בערפל לא מצויר; הודעה של החדר קופצת לראש התור; ההסבר מעל כפתור הריפוי; ליד החדר ההודעות יורדות
+    if(typeof mbGbBusy==='function'&&typeof MBSPELL!=='undefined'){const r={},me=MB.me,bk={x:me.x,y:me.y,sp:me.spell,cd:{...me.cd},hp:me.hp,dead:me.dead,deaths:me.deaths,resp:me.resp},G=mbGb(),R0=G.roll;
+     try{me.dead=false;me.hp=me.max;mbStReset(me);me.x=MBGAMBLE.at.x;me.y=MBGAMBLE.at.y;me.cd.s1=0;me.cd.spell=0;me.spell='dash';
+      G.roll={u:me,t:2,x:me.x,y:me.y,win:false,tick:-1};
+      r.roll=!mbCast(me,'s1',{x:me.x+100,y:me.y})&&me.cd.s1===0&&!mbSpellCast(me,{x:me.x+100,y:me.y})&&me.cd.spell===0&&!mbRecallStart(me);
+      me.st.root=2;me.st.bub=2;me.st.stun=1;mbGambleTick(MB,2.1);r.reset=me.dead&&!(me.st.root>0)&&!(me.st.bub>0)&&!(me.st.stun>0);
+      G.roll=null;G.used[me.team]=Math.max(0,G.used[me.team]-1);
+      me.dead=false;me.hp=me.max;me.x=MBGAMBLE.at.x;me.y=MBGAMBLE.at.y;mbGambleTick(MB,1/30);r.near=document.body.classList.contains('mbgbnear');me.x=bk.x;me.y=bk.y;mbGambleTick(MB,1/30);r.near=r.near&&!document.body.classList.contains('mbgbnear');
+      const e=mbHeroes(1)[0],eb={x:e.x,y:e.y,dead:e.dead,sp:e.spell,cd:e.cd.spell,act:e.actT},bz=mbBushes().list.find(b=>Math.abs(b.x)<300&&b.y<0)||mbBushes().list[0];
+      e.dead=false;e.x=bz.x;e.y=bz.y;e.actT=-99;me.x=bz.x;me.y=bz.y+200;mbVisNow(true);const hid=!mbSeen(e,0);e.spell='haste';e.cd.spell=0;e.st.haste=0;mbSpellCast(e);mbVisNow(true);r.bushCast=hid&&mbSeen(e,0);
+      e.actT=-99;mbVisNow(true);let fp=null;for(let x=-1800;x<=1800&&!fp;x+=150)for(const y of [-600,0,600])if(!fp&&!mbVisPt(x,y))fp={x,y};
+      const far=fp?{x:fp.x,y:fp.y,r:80,team:1}:{x:0,y:0,r:80,team:0},mine={x:far.x,y:far.y,r:80,team:0},seen={x:me.x+100,y:me.y,r:80,team:1};e.actT=-99;mbVisNow(true);r.zone=!!fp&&!mbZoneShown(far)&&mbZoneShown(mine)&&mbZoneShown(seen);
+      Object.assign(e,{x:eb.x,y:eb.y,dead:eb.dead,spell:eb.sp,actT:eb.act});e.cd.spell=eb.cd;e.st.haste=0;mbVisNow(true);
+      clearTimeout(mbBanner.tm);mbBanner.tm=null;mbBanner.q=[];mbBanner.at=performance.now();mbBanner('qa-a',C.dim);mbBanner('qa-b',C.dim);mbBanner('qa-gb',C.gold,true);r.pri=mbBanner.q[0].txt==='qa-gb';clearTimeout(mbBanner.tm);mbBanner.tm=null;mbBanner.q=[];
+      me.x=bk.x;me.y=bk.y;mobaHud();const hb=document.querySelector('#mbSk [data-sk="spell"]');mbSpellTip('spell',hb);const tp=$('mbSpTip'),cs=getComputedStyle(tp);   // ההסבר מעל כל הכפתורים (pointer-events:none, אז בודקים את הסדר ולא elementFromPoint)
+      r.tip=tp.parentNode===document.body&&cs.position==='fixed'&&+cs.zIndex>+(getComputedStyle($('mbSk')).zIndex||0)&&!tp.hidden;mbSpellTip(null);
+     }catch(e){r.err=String(e)}
+     MB.gb.roll=R0;Object.assign(me,{x:bk.x,y:bk.y,spell:bk.sp,hp:bk.hp,dead:bk.dead,deaths:bk.deaths,resp:bk.resp});Object.assign(me.cd,bk.cd);mbStReset(me);document.body.classList.remove('mbgbnear');o.qa=r}
+    const spl={heal:0,use:{},pick:{}};if(typeof MBSPELL!=='undefined'){const fs0={c:mbSpellCast,h:mbHealCast};spl.f=fs0;
+      mbSpellCast=function(u,a){const r=fs0.c(u,a);if(r&&u.bot)spl.use[u.spell]=(spl.use[u.spell]||0)+1;return r};
+      mbHealCast=function(u){const r=fs0.h(u);if(r&&u.bot)spl.heal++;return r}}
+    // חדר ההימור (moba-gamble.js): סגור לפני unlock, רק הזכאי נכנס ואחרים נדחפים, בשוויון אף אחד, ניצחון = בדיוק כמו העשיר, הפסד בלי זהב ו-XP לאויב, פעם לקבוצה
+    if(typeof MBGAMBLE==='object'){const r={},A=MBGAMBLE,c=A.at,t0=MB.t,G0=MB.gb,rnd=Math.random,sc=[...MB.score],hs=MB.u.filter(u=>u.k==='hero');
+     const bak=hs.map(h=>({h,v:{x:h.x,y:h.y,gold:h.gold,it:[...(h.it||[])],dead:h.dead,hp:h.hp,deaths:h.deaths,resp:h.resp,xp:h.xp,lvl:h.lvl,kills:h.kills,bot:h.bot&&{...h.bot}}}));
+     try{const B=mbHeroes(0),R=mbHeroes(1),set=(L,g)=>L.forEach((h,i)=>{h.gold=g[i];h.it=[];mbItCalc(h);h.dead=false;h.hp=h.max;h.x=-600-i*80;h.y=200}),
+       put=u=>{u.x=c.x;u.y=c.y;u.dead=false;u.hp=u.max},out=u=>Math.hypot(u.x-c.x,u.y-c.y)>=A.r,tk=s=>{for(let i=0;i<s*30;i++)mbGambleTick(MB,1/30)};
+      MB.gb=null;set(B,[100,200,300]);set(R,[500,600,700]);const low=B[0],mid=B[2];
+      MB.t=A.unlock-10;put(low);tk(0.1);r.closed=!MB.gb.roll&&out(low);
+      MB.t=A.unlock+1;put(mid);tk(0.1);r.push=!MB.gb.roll&&out(mid)&&MB.gb.open;
+      set(R,[100,200,300]);put(low);tk(0.1);r.tie=mbGbTeam()===null&&!MB.gb.roll&&out(low);set(R,[500,600,700]);
+      Math.random=()=>0;put(low);tk(0.05);r.enter=!!MB.gb.roll&&MB.gb.roll.u===low&&MB.gb.used[0]===1;Math.random=rnd;
+      put(mid);tk(0.1);r.busy=out(mid)&&MB.gb.roll&&MB.gb.roll.u===low;
+      const lx=low.x;low.x+=60;tk(0.2);r.lock=low.x===lx;tk(A.roll);
+      r.win=!MB.gb.roll&&Math.abs(mbWorth(low)-700)<0.01&&!low.dead;
+      const nxt=B.reduce((a,h)=>mbWorth(h)<mbWorth(a)?h:a);put(nxt);tk(0.1);r.once=!MB.gb.roll&&out(nxt);
+      set(R,[50,60,70]);const rl=R[0],bg=B.map(h=>h.gold),bx=B.map(h=>h.xp),bk=B.map(h=>h.kills),s0=MB.score.join();
+      Math.random=()=>0.99;put(rl);tk(0.05);Math.random=rnd;const started=!!MB.gb.roll&&MB.gb.roll.u===rl;tk(A.roll+0.1);
+      r.lose=started&&rl.dead&&rl.resp>0&&MB.score.join()===s0&&B.every((h,i)=>h.gold===bg[i]&&h.xp===bx[i]&&h.kills===bk[i]);
+     }catch(e){r.err=String(e)}
+     Math.random=rnd;MB.gb=G0;MB.t=t0;MB.score=sc;for(const {h,v} of bak){Object.assign(h,v);mbItCalc(h);h.hp=v.hp}o.gb=r}
     // ראייה, ערפל ושיחים (moba-vision.js, אוראל 6.11): אויב מחוץ לראייה לא מצויר ולא מותקף, מופיע כשנכנס, ושיח מסתיר מהאויב בלבד
     if(typeof mbSeen==='function'){const r={},me=MB.me,e=mbHeroes(1)[0],al=mbHeroes(0).find(h=>!h.me),hs=MB.u.filter(u=>u.k==='hero'),bak=hs.map(h=>[h,h.x,h.y,h.dead,h.actT,h.st.stun]);
      for(const h of hs){h.x=h.home.x;h.y=h.home.y;h.dead=false;h.actT=-99}
@@ -3525,12 +3636,52 @@ function worldBot(m,L,god){
     mbWord=function(u,w){cmb[w]=(cmb[w]||0)+1;return f.word(u,w)};
     let n=0;while(!MB.over&&n<MOBA.maxT*30+60){mobaUpdate(1/30);n++}
     mbCast=f.cast;mbCC=f.cc;mbWord=f.word;
+    if(spl.f){mbSpellCast=spl.f.c;mbHealCast=spl.f.h;delete spl.f;for(const h of MB.u)if(h.k==='hero'&&!h.me)spl.pick[h.kit+':'+h.spell]=(MBSPELL.bot[h.kit]||[]).includes(h.spell);o.spl=spl}
     const kits=[...new Set(MB.u.filter(u=>u.k==='hero').map(u=>u.kit))];
     o.kits=kits.join(',');o.miss=kits.flatMap(k=>MB_SLOTS.map(s=>MBKIT[k][s].id)).filter(id=>!casts[id]);o.mage=kits.includes('mage');
     o.t=Math.round(MB.t);o.over=MB.over;o.towers=MB.u.filter(u=>u.k==='tower'&&u.dead).length;o.base=MB.u.some(u=>u.k==='base'&&u.dead);
     o.cc=cc;o.cmb=cmb;o.lv=Math.max(...MB.u.filter(u=>u.k==='hero').map(u=>u.lvl));o.score=MB.score.join(':');
+    // מסך הסוף ומסך הבנייה יוצאים באמת (הבודק, 7.11: "בית", "שחק שוב" ו-✕ פתחו שוב את מסך הבנייה, והמשחק הישן נשאר ב-S.mb)
+    if(typeof mbBuildOpen==='function'){const X={},q=x=>document.querySelector('#mbWin '+x);
+      mbEndShow(S.won);q('[data-act="home"]').click();X.home=!S.mb&&!MB&&$('ovMoba').hidden&&!document.body.classList.contains('mb');
+      mobaStart('tank');MB.over=true;mbEndShow(true);q('[data-act="again"]').click();X.again=!S.mb&&!MB&&$('mbWin').dataset.mode==='pick'&&!$('ovMoba').hidden;
+      q('[data-kit="tank"]').click();X.build=$('mbWin').dataset.mode==='build';q('[data-act="close"]').click();X.bx=$('ovMoba').hidden&&!S.mb;
+      mobaOpen();q('[data-kit="tank"]').click();q('[data-bact="back"]').click();q('[data-act="close"]').click();X.px=$('ovMoba').hidden&&!S.mb;
+      if(!$('ovStart').hidden)$('ovStart').hidden=true;o.endX=X}
     mobaExit();o.out=!S.mb&&!document.body.classList.contains('mb');if(o.cam)o.cam.back=camZoom()!==MBLOOK.cam.zoom;   // מחוץ למוד: המצלמה הרגילה
   }catch(e){o.err=String(e)+(e.stack?' @ '+(e.stack.split('\n')[1]||'').trim().replace(/^at /,'').replace(/.*\/js\//,'js/'):'')}return o},CFG.lang==='en');
+  // המפה הקטנה במשחקי השאול (moba-look.js, אוראל 6.11): במגע אמיתי (CDP), שתי אצבעות. נגיעה מזיזה את המצלמה, גרירה עוקבת, המלבן לפי המצלמה,
+  // אחרי שחרור המצלמה נשארת, נגיעה בגיבור שלי / 🎯 / C / ג'ויסטיק מחזירים, והג'ויסטיק עובד בזמן גרירה
+  const mmap=await(async()=>{const o={};try{
+    const cdp=await page.context().newCDPSession(page),E=(f,a)=>page.evaluate(f,a);
+    const touch=async(type,pts)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:pts.map(([id,x,y])=>({id,x,y}))});
+    await E(()=>{mobaOpen();document.querySelector('#mbWin [data-kit="hunter"]').click();const go=document.querySelector('#mbWin [data-bact="go"]');if(go)go.click();render()});   // go: מסך הבנייה (moba-spells.js)
+    const px=(x,y)=>E(([x,y])=>{const l=mbMiniLay();return [l.X(x),l.Y(y)]},[x,y]);
+    const st=()=>E(()=>{const g=giantCam(),me=MB.me;for(let i=0;i<20;i++){S.cam.x+=(P.x+giantCam().x-S.cam.x)*0.3;S.cam.y+=(P.y+giantCam().y-S.cam.y)*0.3}   // כמו main.js: המצלמה הולכת אל P + giantCam
+      return {x:S.cam.x,y:S.cam.y,free:MBCAM.free,pid:MBCAM.pid,g}});
+    const at=(c,x,y,d)=>Math.abs(c.x-x)<(d||30)&&Math.abs(c.y-y)<(d||30);
+    let [ax,ay]=await px(1000,200);await touch('touchStart',[[1,ax,ay]]);
+    o.tap=await E(()=>({x:S.cam.x,y:S.cam.y,joy:!!joy}));o.tap=at(o.tap,1000,200)&&!o.tap.joy;
+    [ax,ay]=await px(-500,-300);await touch('touchMove',[[1,ax,ay]]);o.drag=at(await E(()=>({x:S.cam.x,y:S.cam.y})),-500,-300);
+    o.rect=await E(()=>{render();const l=MB_MINI_L,v=l.view;return !!v&&Math.abs(v.x+v.w/2-l.X(S.cam.x))<1&&Math.abs(v.y+v.h/2-l.Y(S.cam.y))<1&&Math.abs(v.w-innerWidth/ZOOM*l.k)<1});
+    await touch('touchEnd',[]);{const c=await st();o.stay=at(c,-500,-300)&&c.free&&c.pid===null}
+    const [hx,hy]=await px(...await E(()=>[MB.me.x,MB.me.y]));await touch('touchStart',[[2,hx,hy]]);await touch('touchEnd',[]);
+    {const c=await st();o.meBack=!c.free&&at(c,...await E(()=>[P.x,P.y]))}
+    [ax,ay]=await px(800,0);await touch('touchStart',[[3,ax,ay]]);await touch('touchEnd',[]);await page.keyboard.press('c');o.key=!(await st()).free;
+    await touch('touchStart',[[4,ax,ay]]);await touch('touchEnd',[]);const bt=await E(()=>{const b=MB_MINI_L.bt;return [b.x+b.s/2,b.y+b.s/2]});
+    await touch('touchStart',[[5,...bt]]);await touch('touchEnd',[]);o.btn=!(await st()).free;
+    // ג'ויסטיק אחרי שהמצלמה חופשית: מחזיר לגיבור
+    await touch('touchStart',[[6,ax,ay]]);await touch('touchEnd',[]);
+    await touch('touchStart',[[7,200,300]]);await touch('touchMove',[[7,140,300]]);o.joyBack=await E(()=>!!joy&&joy.dx<-0.5)&&!(await st()).free;await touch('touchEnd',[]);
+    // שתי אצבעות: אחת גוררת על המפה, השנייה מזיזה את הגיבור. המצלמה נשארת על האצבע, והגיבור זז
+    [ax,ay]=await px(600,100);await touch('touchStart',[[8,ax,ay]]);await touch('touchStart',[[8,ax,ay],[9,200,300]]);
+    const [bx,by]=await px(400,-100);await touch('touchMove',[[8,bx,by],[9,140,300]]);
+    o.two=await E(()=>{const me=MB.me,x0=me.x,j=!!joy&&joy.dx<-0.5,p=MBCAM.pid;for(let i=0;i<10;i++){mobaUpdate(1/30);const g=giantCam();S.cam.x+=(P.x+g.x-S.cam.x)*0.3;S.cam.y+=(P.y+g.y-S.cam.y)*0.3}
+      return {j,p:p!==null,moved:me.x<x0-5,free:MBCAM.free,x:S.cam.x,y:S.cam.y}});o.two=o.two.j&&o.two.p&&o.two.moved&&o.two.free&&at(o.two,400,-100);
+    await touch('touchEnd',[[8,bx,by]]);   // משחררים רק את האצבע שעל המפה (touchEnd עם האצבע הזאת בלבד. touchMove בלעדיה לא משחרר אותה בכרום הזה)
+    o.lift=await E(()=>MBCAM.pid===null&&!!joy);o.liftBack=!(await st()).free;await touch('touchEnd',[]);
+    await E(()=>{mobaExit()});await cdp.detach();
+  }catch(e){o.err=String(e).slice(0,160)}return o})();
   // שלל לפי דמות (LOOT.gear ב-loot.js): לכל דמות רוב הנשקים בעולם שלה, יש לה נשק בכל שכבה, ה"מזל" מבטיח נשק שלה, וברמה 20 השכבה גבוהה יותר
   const clsL=await page.evaluate(()=>{const bak=JSON.stringify(SAVE.hero),cp=SAVE.clsPity,out={};
     try{for(const c in HEROES.list){const A=HEROES.list[c].arms;SAVE.hero.start=c;let w=0,m=0,t1=0,t20=0;
@@ -3738,6 +3889,8 @@ function worldBot(m,L,god){
     'סקיל חדש בעולם ('+skr.id+'): '+(skr.err||[skr.wait&&skr.start?'רגע גילוי מתחיל':'לא התחיל',skr.zoom&&skr.fly?'מצלמה מתקרבת ואייקון עף':'בלי מצלמה או אייקון',
     skr.end?'נגמר והמשחק ממשיך':'לא נגמר',skr.once?'פעם אחת':'חוזר',skr.big&&skr.on?'הטלה ראשונה גדולה':'הטלה ראשונה רגילה',
     skr.skipStart&&skr.skip?'נגיעה מדלגת':'אי אפשר לדלג',skr.grade?'דרגה בעץ משנה מראה':'דרגה לא משנה'].join(', ')));
+  check(!skc.err&&skc.cast&&skc.anim&&skc.clipOk&&skc.rune&&skc.band&&skc.gone&&skc.arena,
+    'הטלת סקיל ('+skc.id+'): '+(skc.err||[skc.anim?'תנועה '+skc.clip:'אין תנועה',skc.rune?'עיגול רונות '+skc.col+' ('+skc.tier+')'+(skc.r3d?' בתלת-ממד':'')+(skc.band?'':' בלי טבעת חיצונית'):'אין עיגול',skc.gone?'נעלם':'לא נעלם',skc.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
   check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw&&wsk.orbFlash,
     'סקילים בעולם ('+wsk.id+'): '+(wsk.err||[wsk.btn?'כפתור':'אין כפתור',wsk.place?'למטה מימין, מעל הסרגל':'הכפתור לא במקום',wsk.tap&&wsk.tapHit?'נגיעה יורה ופוגעת':'נגיעה לא פגעה',
     wsk.cd&&wsk.sec&&wsk.again?'קירור עם מספר':'אין קירור',wsk.drag&&wsk.dragHit?'גרירה מכוונת ופוגעת':'גרירה לא פגעה',wsk.aimDraw?'כוונת מצוירת':'אין כוונת',wsk.finger?'אצבע על הכפתור יורה':'אצבע לא ירתה',
@@ -3820,6 +3973,8 @@ function worldBot(m,L,god){
     {const p=(mb.look||{}).pic||[],ok=p.filter(f=>f&&fs.existsSync(path.resolve(__dirname,'..',f)));check(p.length===3&&ok.length===3,'משחקי השאול: כפתורי הסקילים עם האייקונים המצוירים של העולם: '+ok.length+' מתוך '+p.length+(ok.length<p.length?' (חסר: '+p.filter(f=>!ok.includes(f)).join(', ')+')':''))}
     {const k=mb.look||{};check(k.svg===5&&!k.emoji&&k.floor,'משחקי השאול: מראה: '+k.svg+' אייקונים (צריך 5)'+(k.emoji?', נשאר אימוג\'י בכפתורים':'')+(k.floor?', רצפה משלו':', בלי רצפה משלו'))}
     {const c=mb.cam||{};check(c.wide>=1.5&&c.bush>0&&c.rock>0&&c.mini&&c.back&&c.fires!==0,'משחקי השאול: מצלמה ומפה: רואים פי '+c.wide+' לרוחב (צריך 1.5), '+c.bush+' שיחים, '+c.rock+' אבנים'+(c.mini?'':', המפה הקטנה יוצאת מהמסך')+(c.back?'':', המצלמה לא חזרה אחרי היציאה')+(c.fires===0?', בלי לפידים בתלת-ממד':''))}
+    {const m=mmap,ks={tap:'נגיעה מזיזה',drag:'גרירה עוקבת',rect:'המלבן לפי המצלמה',stay:'נשארת אחרי שחרור',meBack:'נגיעה בגיבור מחזירה',key:'C מחזיר',btn:'🎯 מחזיר',joyBack:'ג׳ויסטיק מחזיר',two:'ג׳ויסטיק עובד בזמן גרירה',lift:'שחרור אצבע אחת',liftBack:'ואז הג׳ויסטיק מחזיר'},bad=Object.keys(ks).filter(k=>!m[k]);
+     check(!m.err&&!bad.length,'משחקי השאול: מפה קטנה במגע: '+(m.err||(bad.length?bad.map(k=>ks[k]+' ✗').join(', '):'נגיעה, גרירה, מלבן, חזרה לגיבור ושתי אצבעות')))}
     check(mb.two&&mb.two.held===2&&mb.two.ok,'משחקי השאול עם קשת וחרב: '+(mb.two?(mb.two.ok?'ה-HUD עובד':'ה-HUD נופל: '+mb.two.err):'לא נבדק'));
     check(mb.slide&&mb.slide.pass,'משחקי השאול: הולכים ישר אל מגדל ומחליקים מסביבו '+(mb.slide?(mb.slide.pass?'✓':'נתקע ('+mb.slide.dx+' מהמגדל)'):'לא נבדק'));
     {const f=mb.feel||{};check(f.soft&&f.turned&&f.run>=f.want*0.9&&f.feed,'משחקי השאול: תנועה: סיבוב '+(f.soft&&f.turned?'רך ✓':'בבת אחת או תקוע')+', דרך חייל '+f.run+'/'+f.want+' פיקסלים בשנייה'+(f.feed?', הודעת הריגה ✓':', בלי הודעת הריגה'))}
@@ -3827,14 +3982,25 @@ function worldBot(m,L,god){
      check(Object.keys(ks).every(k=>L[k]),'משחקי השאול: שומר בחיים: '+Object.keys(ks).map(k=>ks[k]+(L[k]?' ✓':' ✗')).join(', '))}
     {const I=mb.items||{},ks={tick:'זהב עם הזמן',minion:'זהב מחייל',quick:'קנייה מהירה',stat:'סטטים',sell:'מכירה',win:'חלון החנות',buy:'קנייה בחלון',close:'סגירה',bot:'בוט קונה'};
      check(Object.keys(ks).every(k=>I[k]),'משחקי השאול: חפצים: '+Object.keys(ks).map(k=>ks[k]+(I[k]?' ✓':' ✗')).join(', '))}
+    if(mb.build||mb.spell){const B=mb.build||{},r=mb.spell||{},p=mb.spl||{pick:{},use:{}},pk=Object.entries(p.pick),bad=pk.filter(x=>!x[1]).map(x=>x[0]),pics=(r.pic||[]).filter(f=>fs.existsSync(path.resolve(__dirname,'..',f)));
+      check(B.step&&B.n===6&&B.def&&B.saved&&B.back&&B.load&&B.game,'משחקי השאול: מסך בנייה: '+(B.step?B.n+' לחשים':'לא נפתח אחרי הגיבור')+(B.def?', ברירת מחדל זינוק':', ברירת המחדל לא זינוק')+(B.saved?', בחירה נשמרת לגיבור עם הסבר':', הבחירה לא נשמרה')+(B.back?', חזרה לבחירת גיבור (והקושי שם)':', החזרה לא עובדת')+(B.load?', נטענת שוב':', לא נטענת')+(B.game?', ובמשחק':', לא עברה למשחק'));
+      check(r.heal&&r.healCd&&r.done&&r.done.length===r.n&&r.tip.length===r.n&&r.btn&&pics.length===2&&r.tap&&r.hold,'משחקי השאול: ריפוי '+(r.heal?'✓ 15%':'✗')+(r.healCd?' עם טעינה':' בלי טעינה')+' · לחשים שעובדים עם טעינה: '+(r.done||[]).join(', ')+' ('+(r.done||[]).length+'/'+r.n+')'+(r.tip&&r.tip.length===r.n?', לכולם הסבר':', חסר הסבר')+(r.btn?', הכפתורים לא מכסים סקילים או חזרה':', כפתור מכסה או מחוץ למסך: '+(r.bad||[]).join(', '))+', '+pics.length+'/2 אייקונים מצוירים'+(r.tap?', נגיעה קצרה אחרי פריים כבד מטילה':', נגיעה קצרה אחרי פריים כבד נבלעה')+(r.hold?', לחיצה ארוכה לא':', לחיצה ארוכה הטילה'));
+      check(!bad.length&&pk.length>0&&p.heal>0&&Object.keys(p.use).length>0,'משחקי השאול: בוטים: בחרו לפי תפקיד '+(bad.length?'✗ '+bad.join(', '):'✓ ('+pk.map(x=>x[0]).join(', ')+')')+', ריפוי '+(p.heal||0)+' פעמים, לחשים: '+(Object.entries(p.use).map(x=>x[0]+' '+x[1]).join(', ')||'אף אחד'))}
+    {const X=mb.endX||{};check(X.home&&X.again&&X.build&&X.bx&&X.px,'משחקי השאול: יציאה: '+[X.home?'"בית" בסוף יוצא ✓':'"בית" לא יוצא ✗',X.again?'"שחק שוב" לבחירת גיבור ✓':'"שחק שוב" ✗',X.build&&X.bx?'✕ במסך הבנייה סוגר ✓':'✕ במסך הבנייה ✗',X.px?'✕ בבחירה אחרי "גיבור אחר" סוגר ✓':'✕ אחרי "גיבור אחר" ✗'].join(', '))}
+    {const q=mb.qa||{};check(!q.err&&q.roll&&q.reset&&q.bushCast&&q.zone&&q.pri&&q.tip&&q.near,'משחקי השאול: תיקוני QA: '+(q.err?'שגיאה '+q.err+' · ':'')+[q.roll?'בהטלה זינוק/סדן/חזרה חסומים בלי טעינה ✓':'בהטלה ✗',q.reset?'מת בחדר חוזר בלי רשת ובועה ✓':'רשת/בועה נשארו ✗',q.bushCast?'לחש משיח חושף ✓':'לחש משיח ✗',q.zone?'אזור אויב בערפל מוסתר ✓':'אזור בערפל ✗',q.pri?'הודעת החדר בראש התור ✓':'הודעת החדר ✗',q.tip?'ההסבר מעל הריפוי ✓':'ההסבר מוסתר ✗',q.near?'ליד החדר ההודעות יורדות ✓':'הודעות ליד החדר ✗'].join(', '))}
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
     {const A=mb.aim||{};check(A.on&&A.hot&&A.cancel&&A.cast&&A.sec,'משחקי השאול: כיוון בגרירה '+(A.on?'✓':'לא הופיע')+(A.hot?', ✕ נדלק':', ✕ לא נדלק')+(A.cancel?', ביטול בלי טעינה':', הביטול לא עבד')+(A.cast?', שחרור מטיל לנקודה':', השחרור לא הטיל לנקודה')+(A.sec?', שניות על הכפתור':', אין שניות'))}
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));
+    {const need=['sk_pierce','sk_wave'],miss=need.filter(i=>!(mb.fxIds||[]).includes(i)),fs=require('fs'),path=require('path'),
+       files=Object.keys(JSON.parse(fs.readFileSync(path.join(__dirname,'fx-list.json'),'utf8'))).filter(k=>!k.startsWith('_')).filter(k=>!fs.existsSync(path.join(__dirname,'..','fx',k+'.webp')));
+     check(mb.fxLib>=100&&!files.length&&!miss.length&&mb.fxDrawOk===true,'ספריית האפקטים: '+mb.fxLib+' אפקטים'+(files.length?', חסרים קבצים: '+files.slice(0,5).join(', '):', כל הקבצים ב-fx/')+(miss.length?' · חץ ברק/גל מים בלי אפקט: '+miss.join(', '):' · חץ ברק וגל מים עם אפקט')+(mb.fxDrawOk===true?'':' · הציור נכשל: '+mb.fxDrawOk))}
     check(mb.fixed&&!mb.fixed.length,'משחקי השאול: כל 12 הסקילים (4 ערכות) הוטלו בתרחיש קבוע'+(mb.fixed&&mb.fixed.length?' · לא הוטלו: '+mb.fixed.join(', '):'')+' · במשחק הבוטים ('+mb.kits+'): '+(mb.miss.length?'לא הגיעו ל: '+mb.miss.join(', '):'כולם'));
     {const r=mb.fx||{};check(r.tank&&r.warrior&&r.shield&&r.cap&&r.stop&&r.ult,'משחקי השאול: טנק ולוחם מזנקים אל מטרה קצת רחוקה: '+(r.tank?'נפח ✓':'נפח ✗')+(r.warrior?' לוחם ✓':' לוחם ✗')+(r.shield?', מגן סופג':', המגן לא סופג')+' · פיצוצי: '+(r.cap?'חלקיקים מוגבלים':'חלקיקים בלי גבול')+(r.stop?', עצירת פריים בקריטי':', בלי עצירת פריים')+(r.ult?', רגע סקיל-על':', בלי רגע סקיל-על'))}
     {const d=mb.diff||{},r=mb.flow||{};
      check(d.n===3&&d.one&&d.saved&&d.back&&d.game&&r.diff,'משחקי השאול: קושי: '+(d.n===3?'3 כפתורים':(d.n||0)+' כפתורים')+(d.one?', אחד מסומן':', הסימון שגוי')+(d.saved&&d.back?', נשמר':', לא נשמר')+(d.game?', המשחק לפי הבחירה':', המשחק לא לפי הבחירה')+(r.diff?', משנה רק את המוח של האויבים':', לא משנה את הבוטים'));
-     check(r.shield&&r.bounty&&r.resp&&r.late&&r.haste&&r.xp&&r.recall,'משחקי השאול: זרימה: '+[r.shield?'מגן מגדל בהתחלה ✓':'מגן מגדל ✗',r.bounty?'זהב חזרה ✓':'זהב חזרה ✗',r.resp&&r.late?'חזרה מהירה בהתחלה ✓':'זמן חזרה ✗',r.haste?'ריצה מהבסיס ✓':'ריצה מהבסיס ✗',r.recall?'גם אחרי חזרה לבסיס ✓':'אחרי חזרה לבסיס ✗',r.xp?'XP ברדיוס רחב ✓':'XP ✗'].join(', '))}
+     check(r.shield&&r.bounty&&r.resp&&r.late&&r.haste&&r.xp&&r.recall,'משחקי השאול: זרימה: '+[r.shield?'מגן מגדל בהתחלה ✓':'מגן מגדל ✗',r.bounty?'בלי זהב קאמבק ✓':'זהב קאמבק עוד קיים ✗',r.resp&&r.late?'חזרה מהירה בהתחלה ✓':'זמן חזרה ✗',r.haste?'ריצה מהבסיס ✓':'ריצה מהבסיס ✗',r.recall?'גם אחרי חזרה לבסיס ✓':'אחרי חזרה לבסיס ✗',r.xp?'XP ברדיוס רחב ✓':'XP ✗'].join(', '))}
+    {const g=mb.gb||{};check(g.closed&&g.push&&g.tie&&g.enter&&g.busy&&g.lock&&g.win&&g.once&&g.lose,'משחקי השאול: חדר ההימור: '+(g.err?'שגיאה '+g.err+' · ':'')+[g.closed?'סגור לפני הזמן ✓':'פתוח לפני הזמן ✗',g.push?'אחר נדחף ✓':'אחר נכנס ✗',g.tie?'בשוויון אף אחד ✓':'שוויון ✗',
+      g.enter?'הזכאי נכנס ✓':'הזכאי לא נכנס ✗',g.busy?'אחד בכל פעם ✓':'שניים יחד ✗',g.lock?'מקובע בהטלה ✓':'זז בהטלה ✗',g.win?'ניצחון = העשיר ביותר ✓':'ניצחון ✗',g.once?'פעם לקבוצה ✓':'יותר מפעם ✗',g.lose?'הפסד בלי פרס לאויב ✓':'הפסד ✗'].join(', '))}
     {const R=mb.newSk||{};check(R.gone&&!R.gone.length&&R.new,'משחקי השאול: אין יותר זינוק או ריפוי בסקילים (גל חרב, רשת ציד וכלא מים במקומם)'+(R.gone&&R.gone.length?' · עוד יש: '+R.gone.join(', '):''));
      check(R.root&&R.still&&R.atk&&R.free,'משחקי השאול: רשת ציד: לכוד '+(R.root?'✓':'✗')+', לא זז '+(R.still?'✓':'✗')+', תוקף '+(R.atk?'✓':'✗')+', ואחרי זה חסין לרגע '+(R.free?'✓':'✗'));
      check(R.bub&&R.shock&&R.cleave,'משחקי השאול: כלא מים מרים ומרטיב '+(R.bub?'✓':'✗')+', ברק אחריו = חשמול '+(R.shock?'✓':'✗')+' · גל חרב מהמם ומאט '+(R.cleave?'✓':'✗'))}

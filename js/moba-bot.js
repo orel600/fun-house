@@ -28,6 +28,7 @@ function mbDiffSet(d){if(!MBBOT.diff[d])return;try{localStorage.setItem(MBBOT.ke
 
 function mbBot(u,dt){
   const B=u.bot,A=MBKIT[u.kit].atk;B.t-=dt;
+  if(typeof mbSpellBot==='function')mbSpellBot(u,dt);   // ריפוי ולחש, גם בהלם (ניקוי) (moba-spells.js)
   if(u.st.taunt>0&&u.st.tBy){mbMove(u,u.st.tBy.x,u.st.tBy.y,dt,u.r+u.st.tBy.r);mbAttack(u,dt,u.st.tBy,A);return}   // הוכרח: רק אל הנפח
   if(mbRecallBot(u))return;   // חוזר לבסיס: עומד במקום (moba-recall.js)
   if(B.t<=0){B.t=mbMind(u).think*rand(0.8,1.2);mbThink(u)}
@@ -45,6 +46,7 @@ function mbThink(u){
   B.stop=6;B.focus=null;
   // 1. נסוג: חיים נמוכים, עד שהתרפא ליד הבסיס
   if(u.hp<u.max*MBBOT.retreat||B.mode==='retreat'&&u.hp<u.max*MBBOT.back){B.mode='retreat';B.goal=u.home;return}
+  if(mbGambleBot(u))return;   // זכאי לחדר ההימור והקבוצה מאחור: הולך לשם לפעמים (moba-gamble.js)
   // פקודה מהשחקן (mbOrder ב-moba.js): נסיגה אל המגדל הקדמי שלנו, או התקפה יחד איתו
   const O=u.team===0&&MB.order;
   if(O&&O.kind==='back'){const t=MB.u.filter(b=>b.k==='tower'&&b.team===u.team&&!b.dead).sort((a,b)=>Math.abs(a.x)-Math.abs(b.x))[0]||MB.u.find(b=>b.k==='base'&&b.team===u.team);
