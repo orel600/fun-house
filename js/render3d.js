@@ -485,7 +485,7 @@ function syncPlayer(dt){
     if(st.mode==='over'){st.mode='';a.one=null;a.mixer.stopAllAction()}
     // תקיפה: רק פלג הגוף העליון, כך שאפשר לתקוף תוך כדי ריצה
     // סקיל (skillcast.js): התנועה של ההטלה גוברת לרגע על תנועות התקיפה. רק מראה, התקיפה עצמה ממשיכה
-    if(P.skCast&&st.sc!==P.skCast.n&&performance.now()-P.skCast.at<SKCAST.dur*1000){st.sc=P.skCast.n;st.scT=SKCAST.dur;once(a,skcClip(L)+'@up',SKCAST.dur)}
+    if(P.skCast&&st.sc!==P.skCast.n&&performance.now()-P.skCast.at<SKCAST.dur*1000){st.sc=P.skCast.n;st.scT=SKCAST.dur;once(a,skcClip(L)+'@up',SKCAST.dur);const x=a.one,d=x&&x.getClip().duration;if(d){x.time=d*SKCAST.skip;x.timeScale=d*(1-SKCAST.skip)/SKCAST.dur}}
     st.scT=Math.max(0,(st.scT||0)-dt);const casting=st.scT>0;
     const swing=!casting&&sword&&P.sw.anim>st.anim,shot=!casting&&!sword&&P.gn.t>st.gt+0.01;
     st.anim=P.sw.anim;st.gt=P.gn.t;
