@@ -19,7 +19,7 @@ const DEFENSE={
 
 const defK=lv=>DEFENSE.a+DEFENSE.b*lv;
 // כמה אחוז נזק נבלע: נקודות מול תוקף ברמה lv
-const defPct=(r,lv)=>r>0?100*r/(r+defK(lv)):0;
+const defPct=(r,lv)=>r>0?100*r/(r+defK(lv)):0;   // מתחת ל-0 (קללה): 0, לא נזק נוסף. חיים אפקטיביים = חיים × (1 + r/K), קו ישר בנקודות
 // בכפר ובעולם: הדירוג החדש. בזירה, במובה ובחדר הבונוס: ההתנהגות הישנה
 const defWorld=()=>!!(typeof S!=='undefined'&&S&&(S.wd||S.vil)&&!S.mb);
 // רמת המפלצות כאן: רמת האזור, המרחק מהשער ודרגת העולם

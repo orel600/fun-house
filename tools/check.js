@@ -3173,14 +3173,15 @@ function worldBot(m,L,god){
     o.pctOk=Math.abs(o.pct[0]-12)<2&&Math.abs(o.pct[1]-22)<2&&Math.abs(o.pct[2]-30)<2;
     o.dr=defPct(200,10)-defPct(100,10)<defPct(100,10)&&defPct(100,30)<defPct(100,1);   // כל נקודה שווה פחות, ומפלצת גבוהה בולעת פחות
     o.cap=DEFENSE.cap>=80;
+    o.anchor=[1,12,30].every(L=>{const K=defK(L);return K>0&&defPct(0,L)===0&&defPct(-50,L)===0&&Math.abs(defPct(K,L)-50)<1e-9&&Math.abs(defPct(2*K,L)-200/3)<1e-9});   // עוגנים: 0 → 0%, K → 50%, 2K → 66.7%
     const k={wd:S.wd,vil:S.vil,mb:S.mb},pd=P.def;
     try{S.wd=null;S.vil=null;S.mb=null;P.def=9e4;o.arenaCap=defNow()===STATS.cap.def;   // בזירה: התקרה הישנה
       P.def=pd;o.arena=Math.abs(defNow()-Math.min(STATS.cap.def,defOld()+defFx()))<1e-9;
       S.vil=k.vil||{};P.def=9e4;o.worldCap=defNow()<=DEFENSE.cap&&defNow()>STATS.cap.def}
     finally{S.wd=k.wd;S.vil=k.vil;S.mb=k.mb;P.def=pd}
     return o});
-  check(dfr.pctOk&&dfr.dr&&dfr.cap&&dfr.arenaCap&&dfr.arena&&dfr.worldCap&&Math.abs(ar.oldD-22)<0.01,
-    'הגנה כדירוג: '+dfr.pct.join('% / ')+'%'+(dfr.pctOk?' (כמו קודם באזור)':' (רחוק מהישן)')+(dfr.dr?', תשואה פוחתת':', בלי תשואה פוחתת')+
+  check(dfr.pctOk&&dfr.anchor&&dfr.dr&&dfr.cap&&dfr.arenaCap&&dfr.arena&&dfr.worldCap&&Math.abs(ar.oldD-22)<0.01,
+    'הגנה כדירוג: '+dfr.pct.join('% / ')+'%'+(dfr.pctOk?' (כמו קודם באזור)':' (רחוק מהישן)')+(dfr.anchor?', עוגנים 0/50/67%':', עוגנים שגויים')+(dfr.dr?', תשואה פוחתת':', בלי תשואה פוחתת')+
     (dfr.worldCap&&dfr.cap?', תקרה '+'85%':', תקרה שגויה')+(dfr.arenaCap&&dfr.arena&&Math.abs(ar.oldD-22)<0.01?', בזירה כמו קודם (+'+ar.oldD+'%)':', הזירה השתנתה (+'+ar.oldD+'%)'));
   // משבצת ריקה = בלי כובע (ניר, 4.11.2026): בלי ראש וגוף אין קסדה, כובע או גלימה דלוקים, ולבישת ראש משנה את מה שרואים. בכל המחלקות, בסקינים ובבובה
   if(CFG.gfx==='3d'){const hv=await page.evaluate(()=>{
