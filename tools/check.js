@@ -1029,7 +1029,7 @@ function worldBot(m,L,god){
     questEvent('collect','bone',30);SAVE.rares={got:{mossback:1,glimmer:1,pearl:1},miss:0};questEvent('rare','pearl');   // 3 נדירות שונות (rares.js). הצייד האמיתי נבדק ב'מפלצות נדירות'
     questLog();const hp=P.maxHp,cl=document.querySelector('#qLog [data-q="'+q.id+'"][data-act="claim"]');if(cl)cl.click();
     r.claimed=!!cl&&SAVE.quests.done[q.id]===1;r.rank=SAVE.hero.rankId;r.hp=P.maxHp-hp;r.want=RANKS.list.knight.bonus.hp;
-    r.fx=FX.some(f=>f.K===CELEBRATE.rank);
+    r.fx=FX.some(f=>f.K===CELEBRATE.rankup);r.fxLib=!(S.vil||S.wd)||FXV.stat.rankup>0;   // דרגה: טקס זהב משלו, ובכפר ובעולם גם עמוד אור ומדליה מהספרייה (fxvil.js)
     const sv=JSON.parse(localStorage.getItem(SAVE_STORE.key));r.saved=sv.hero.rankId==='knight'&&sv.hero.rank===1;
     SAVE.hero.rankId=null;reset();const base=P.maxHp;SAVE.hero.rankId='knight';reset();r.kept=P.maxHp-base;
     r.label=rankLabel();
@@ -1051,8 +1051,8 @@ function worldBot(m,L,god){
     return r});
   check(rk.locked&&rk.lv===rk.every&&rk.open&&rk.call&&rk.style,'דרגות: '+(rk.locked?'נעול לפני רמה '+rk.every:'פתוח מוקדם מדי')+', '+(rk.open?'ברמה '+rk.lv+' נפתח קווסט אצל הכוהנת':'לא נפתח ברמה '+rk.lv)+(rk.call?', הכוהנת קוראת לך':', בלי הודעה שהכוהנת קוראת')+
     ' · לפי סגנון: '+rk.picks);
-  check(rk.accepted&&rk.card&&rk.claimed&&rk.rank==='knight'&&rk.saved&&rk.fx&&rk.hp===rk.want&&rk.kept===rk.want,'קווסט דרגה: '+(rk.accepted?'התקבל':'לא התקבל')+(rk.card?', הכרטיס מראה "אביר"':', הכרטיס לא מראה את הדרגה')+
-    (rk.claimed?', הושלם ונלקח':', הפרס לא נלקח')+', דרגה: '+(rk.label||'-')+(rk.saved?', נשמרה':', לא נשמרה')+(rk.fx?', טקס':', בלי טקס')+
+  check(rk.accepted&&rk.card&&rk.claimed&&rk.rank==='knight'&&rk.saved&&rk.fx&&rk.fxLib&&rk.hp===rk.want&&rk.kept===rk.want,'קווסט דרגה: '+(rk.accepted?'התקבל':'לא התקבל')+(rk.card?', הכרטיס מראה "אביר"':', הכרטיס לא מראה את הדרגה')+
+    (rk.claimed?', הושלם ונלקח':', הפרס לא נלקח')+', דרגה: '+(rk.label||'-')+(rk.saved?', נשמרה':', לא נשמרה')+(rk.fx?', טקס'+(rk.fxLib?' עם עמוד אור ומדליה':' בלי עמוד ומדליה!'):', בלי טקס')+
     ', חיים +'+rk.hp+' מיד ו-+'+rk.kept+' בכל ריצה (צפוי +'+rk.want+')');
   if(rk.armor)check(rk.armor.ok,'שריון לפי דרגה ('+rk.armor.model+'): לפני הדרגה '+rk.armor.before+', אחרי '+rk.armor.after+' (צפוי שיופיעו '+rk.armor.want+')'+(rk.armor.glow?', זוהר בצבע הדרגה':', בלי זוהר'));
   else results.push('· שריון לפי דרגה: דו-ממד, אין מה לבדוק');
@@ -1342,7 +1342,7 @@ function worldBot(m,L,god){
       const e=addEnemy('grunt',P.x+150,P.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;
       const id=S.sk.ids[0],n0=P.skCast?P.skCast.n:0;S.sk.cd[0]=0;r.id=id;r.cast=wskUse(id);if(SKR)skrEnd(false);
       r.anim=!!P.skCast&&P.skCast.n===n0+1;r.clip=R3D.ready?skcClip(heroLook()):'Ranged_Magic_Shoot';r.clipOk=!R3D.ready||!!R3D.clips[r.clip+'@up'];
-      r.rune=!!skcRune;r.col=skcRune&&skcRune.col;const d=skcRune&&skcRune.d3;r.r3d=!!d;r.band=!R3D.on||!!(skcRune&&skcRune.d3b);r.tier=skcRune&&skcRune.big?'big':'normal';
+      r.rune=!!skcRune;r.col=skcRune&&skcRune.col;const d=skcRune&&(skcRune.d3||skcRune.d3b);r.r3d=!!d;r.band=!R3D.on||!!(skcRune&&skcRune.d3b);r.tier=skcRune&&skcRune.big?'big':'normal';
       // בקרב (אויב במרחק 150): קטן ושקוף יותר, וגל ההדף לא מגיע לאויב. בלי אויבים: בגודל מלא
       const C=SKCAST.combat,rk=()=>skcRune?[skcRune.fight,skcRune.k,skcRune.a,skcWaveR(skcRune.T.wave)]:[];r.fight=rk();
       run(SKCAST.rune.life+0.1);r.gone=!skcRune&&!(d&&d.on);
@@ -2474,8 +2474,7 @@ function worldBot(m,L,god){
   const fxw=await page.evaluate(()=>{
     const o={ids:new Set()},of=fxPlay;window.fxPlay=(id,...a)=>{o.ids.add(id);return of(id,...a)};
     const tick=n=>{for(let i=0;i<n;i++){FXW.t=0;fxwUpdate(1/60)}},walk=n=>{for(let i=0;i<n;i++){P.x+=FXW.step.dist+1;tick(1);P.x-=FXW.step.dist+1;tick(1)}};
-    enterVillage();tick(2);const all=npcState(),id=Object.keys(all).find(k=>npcHere(k));
-    if(id){fxwMarks({[id]:'!'},'v');tick(1);o.mark=[...FXW.live.keys()].some(k=>k==='m:'+id+'npc_quest');S.vil.npcNear=id;fxwMarks({},'v');tick(1);o.talk=FXW.live.has('t:'+id)||FXW.live.has('s:'+id)}
+    enterVillage();tick(2);
     celebrate(P.x,P.y,'upgrade');o.party=o.ids.has('win_confetti');walk(2);o.stepV=o.ids.has('step_dust');
     const reg={};for(const r of ['ridge','desert','storm']){SAVE.story.ice=true;FXW.gustEnd=0;FXW.gustT=99;enterWorld('home',r);P.inv=99;FXW.t=0;tick(2);walk(2);reg[r]=[...FXW.wxl.keys()].filter(k=>k.startsWith('w:')).map(k=>k.slice(2).replace(/\d.*/,''))}
     o.weather=reg.ridge.includes('snow')&&(fxwNight()?reg.ridge.includes('aurora'):!reg.ridge.includes('aurora'))&&reg.desert.includes('haze')&&reg.storm.includes('wx_rainheavy');
@@ -2495,9 +2494,40 @@ function worldBot(m,L,god){
     const wd=S.wd;S.wd=null;o.ids.clear();P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.arena=FXW.live.size===0&&FXW.wxl.size===0&&![...o.ids].some(i=>i.startsWith('tr_'));S.wd=wd;
     S.mode=md;P.weapon=wt;P.dt.sword=pdt;
     window.fxPlay=of;o.ids=[...o.ids];enterVillage();return o});
-  check(fxw.mark&&fxw.talk&&fxw.party&&fxw.stepV&&fxw.weather&&fxw.steps&&fxw.shore&&fxw.stars&&fxw.arena&&fxw.trailOk&&fxw.sceneOk&&fxw.mine<=fxw.cap&&fxw.all<=fxw.max,
-    'אפקטים בכפר ובעולם: '+(fxw.mark?'זוהר מאחורי סימן הקווסט':'בלי זוהר לסימן')+(fxw.talk?', סימן ליד מי שקרוב':', בלי סימן שיחה')+(fxw.party?', קונפטי בחגיגה':', בלי קונפטי')+
+  check(fxw.party&&fxw.stepV&&fxw.weather&&fxw.steps&&fxw.shore&&fxw.stars&&fxw.arena&&fxw.trailOk&&fxw.sceneOk&&fxw.mine<=fxw.cap&&fxw.all<=fxw.max,
+    'אפקטים בכפר ובעולם: '+(fxw.party?'קונפטי בחגיגה':'בלי קונפטי')+
     (fxw.stepV&&fxw.steps?', צעדים לפי הקרקע':', בלי צעדים')+(fxw.weather?', מזג אוויר לפי אזור':', מזג אוויר חסר')+(fxw.shore?', אדוות על קו המים באגם':', בלי אדוות באגם')+(fxw.stars?', כוכבים בלב הצל':', בלי כוכבים בצל')+(fxw.trailOk?', שובל אש על הנפה':', שובל חסר או בצבע לא נכון ('+fxw.trail+')')+(fxw.sceneOk?', אווירה לכל אזור':', אווירה חסרה ב-'+Object.keys(fxw.scene).filter(k=>!fxw.scene[k]).join('/'))+(fxw.arena?', כבוי בזירה':', פועל בזירה!')+', '+fxw.mine+'/'+fxw.cap+' אפקטים של השכבה ('+fxw.all+'/'+fxw.max+' בכל המשחק)');
+  // סבב 2 (fxvil.js, skillcast.js): סימן אחד מעל כל דמות לפי המצב, טקס דרגה עם עמוד אור ומדליה, ומעגל קסם לפי סוג הנזק
+  // התמונות נטענות בלי קשר לשעון של הבדיקה (שעומד), אז מחכים להן מבחוץ ולא ב-setTimeout בתוך הדף
+  const fxvIds=await page.evaluate(()=>{const N=FXV.npc.ids,ids=[N.turnin,N.quest,N.shop,N.talk,'wrank_burst','wrank_badge',...Object.values(SKCAST.sprite.ids)];fxPreload(ids);return ids});
+  for(let i=0;i<60&&!await page.evaluate(ids=>ids.every(id=>fxImg(id)||FXLIB.bad[id]),fxvIds);i++)await new Promise(r=>setTimeout(r,50));
+  const fxv=await page.evaluate(ids=>{const o={},bak=JSON.stringify(SAVE);
+    try{o.loaded=ids.filter(id=>fxImg(id)).length+'/'+ids.length;
+      enterVillage();const all=npcState(),here=Object.keys(all).filter(k=>npcHere(k)),pos=(id,n)=>({x:n.x,y:n.y-80}),seen=FXV.seen.v;
+      const other=here.find(k=>!FXV.npc.shop.includes(k)&&!/^v/.test(k)),shop=here.find(k=>FXV.npc.shop.includes(k));
+      const st=(mark,near,px)=>{S.vil.npcNear=near;if(px){P.x=px.x;P.y=px.y}fxvNpcIcons(mark,'v',pos);for(const k in mark)fxvMark(mark[k],0,0);return {...seen}};
+      const far={x:all[other].x+3000,y:all[other].y};
+      o.turn=st({[other]:'✓'},other,far)[other];o.quest=st({[other]:'!'},other,far)[other];o.talk=st({},other,far)[other];o.none=st({},null,far)[other]===undefined;
+      o.shop=shop?st({},null,{x:all[shop].x+50,y:all[shop].y})[shop]:'shop';o.shopQuest=shop?st({[shop]:'✓'},shop,{x:all[shop].x+50,y:all[shop].y})[shop]:'turnin';   // מסירה גוברת על חנות ושיחה
+      o.one=Object.values(seen).length===Object.keys(seen).length;
+      // המצב האמיתי: הסימנים שהציור חישב מהקווסטים, ושום עיגול כהה ישן כשהתמונה נטענה
+      S.vil.npcNear=null;drawQuestMarks(0,0);o.real=Object.entries(FXV.seen.v).map(([k,v])=>k+':'+v).join(',');
+      // דרגה
+      const r0=FXV.stat.rankup,c0=FXLIB.list.length;S.mode='play';celebrate(P.x,P.y,'rankup');o.rankup=FXV.stat.rankup===r0+1&&FXLIB.list.slice(c0).some(f=>f.id==='wrank_burst')&&FXLIB.list.slice(c0).some(f=>f.id==='wrank_badge');
+      const r1=FXV.stat.rankup;celebrate(P.x,P.y,'rank');o.lvDiff=FXV.stat.rankup===r1;   // רמה רגילה: בלי עמוד ומדליה
+      // מעגל לפי סוג נזק: אותו סקיל עם סוג נזק אחר בכל פעם
+      SAVE.hero.level=99;enterWorld('home');enemies=[];const id=S.sk.ids[0],D=SKILLS.list[id],dt0=D.dt;o.circ={};
+      for(const dt of ['fire','ice','lightning','earth','water','physical','plant']){D.dt=dt;skCast(id);o.circ[dt]=skcStat.spr||'-';o.mesh=o.mesh||!!(R3D.on&&skcSpr.m&&skcSpr.m.visible)}
+      D.dt=dt0;const t0=performance.now();for(let i=0;i<60;i++)skcUpdate(1/60);o.gone=!skcRune&&!(skcSpr.m&&skcSpr.m.visible);
+      skCast(id);const t1=performance.now();for(let i=0;i<20;i++){skcDraw()}o.ms=+((performance.now()-t1)/20).toFixed(3);skcFree();skcRune=null;
+      const cd=JSON.stringify(o.circ);o.circOk=o.circ.fire==='wcirc_fire'&&o.circ.ice==='wcirc_ice'&&o.circ.lightning==='wcirc_lightning'&&o.circ.earth==='wcirc_earth'&&o.circ.water==='wcirc_water'&&o.circ.physical==='wcirc_phys'&&o.circ.plant==='-';
+      const ta=performance.now();for(let i=0;i<200;i++)fxvNpcIcons({},'v',pos);o.iconMs=+((performance.now()-ta)/200).toFixed(3)}
+    catch(err){o.err=String(err&&err.stack||err).slice(0,300)}
+    SAVE=JSON.parse(bak);enterVillage();return o},fxvIds);
+  check(!fxv.err&&fxv.turn==='turnin'&&fxv.quest==='quest'&&fxv.talk==='talk'&&fxv.none&&fxv.shop==='shop'&&fxv.shopQuest==='turnin'&&fxv.rankup&&fxv.lvDiff&&fxv.circOk&&fxv.gone,
+    'סימנים, דרגה ומעגלים (סבב 2): '+(fxv.err||('תמונות '+fxv.loaded+', דמות: מסירה='+fxv.turn+' קווסט='+fxv.quest+' שיחה='+fxv.talk+(fxv.none?', בלי מצב בלי סימן':', סימן בלי מצב!')+', סוחרת='+fxv.shop+' ועם מסירה='+fxv.shopQuest+
+    ' · בכפר עכשיו: '+(fxv.real||'אין')+' · '+(fxv.rankup?'דרגה: עמוד אור ומדליה':'דרגה בלי עמוד ומדליה!')+(fxv.lvDiff?', רמה רגילה בלעדיהם':', גם ברמה רגילה!')+
+    ' · מעגל: '+Object.entries(fxv.circ||{}).map(([k,v])=>k+'→'+v.replace('wcirc_','')).join(' ')+(fxv.mesh?' (תלת-ממד)':'')+(fxv.gone?', נעלם':', לא נעלם!')+' · ציור: עיגול '+fxv.ms+'ms, סימנים '+fxv.iconMs+'ms')));
   // אפקטים של קרב בעולם (fxcombat.js): אזהרה על הרצפה בזמן ההכנה ונעלמת אחריה, פגיעה ומוות לפי סוג הנזק, כרייה, ותקרה לפגיעות בפריים
   await page.evaluate(()=>fxcPreload());
   for(let i=0;i<60&&!await page.evaluate(()=>['wtg_cone','wtg_line','wtg_circle','wtg_circle_big','whit_fire','whit_phys','wko_ice','wmine_stone','wmine_gem_ruby'].every(id=>fxImg(id)));i++)await new Promise(r=>setTimeout(r,150));   // הגיליונות נטענים מהקבצים (שעון אמיתי, לא השעון של הבדיקה)
