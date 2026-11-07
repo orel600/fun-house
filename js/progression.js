@@ -50,6 +50,7 @@ let banT=null;
 function banTop(){const b=$('banner');if(!b.classList.contains('artop'))return;
   const bot=[document.querySelector('.hud'),$('bossbar'),$('runbar')].filter(e=>e&&!e.closest('[hidden]')&&e.getBoundingClientRect().height>0).reduce((m,e)=>Math.max(m,e.getBoundingClientRect().bottom),48),t=Math.round(bot+6)+'px';
   if(b.style.top!==t)b.style.top=t}
-function banner(txt,col){const b=$('banner'),bc=document.body.classList,ar=!['vil','world','mb'].some(c=>bc.contains(c));
+function banner(txt,col){if(typeof msgOn==='function'&&msgOn())return msgSay(txt,col);   // בעולם ובכפר: עמודת ההודעות (msglane.js)
+  const b=$('banner'),bc=document.body.classList,ar=!['vil','world','mb'].some(c=>bc.contains(c));
   b.classList.toggle('artop',ar);if(ar)banTop();else b.style.top='';
   b.textContent=txt;b.style.color=col||C.chalk;b.classList.add('on');clearTimeout(banT);banT=setTimeout(()=>b.classList.remove('on'),1600)}

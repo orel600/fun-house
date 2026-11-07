@@ -155,7 +155,7 @@ const GRIP3D={
   spare:{sword:'w_sword_A',gun:'w_bow_A_withString'}   // רק כשלפריט אין מודל
 };
 // המודל של פריט: מודל משלו (w_item_<id>, ITEMS ב-build3d.js) ברגע שהוא נבנה, ועד אז look.model. כך חפץ חדש לא צריך שינוי ב-gear.js
-const itemModel=(id,it=GEAR.items[id])=>R3D.props['w_item_'+id]?'w_item_'+id:it&&it.look&&it.look.model;
+const itemModel=(id,it=GEAR.items[id])=>R3D.props['w_item_'+id]?'w_item_'+id:(m3dNeed('w_item_'+id),it&&it.look&&it.look.model);   // מודל משלו שעוד נטען (m3d.js): בינתיים look.model
 /* ציוד שרואים על הגיבור בעולם, בכפר ובבובה (docs/plan-progression.md בענף research/progression, PR #168). דלוק לכולם. ?gear3d=0 מכבה.
    ההחלטות של ניר (1.11): זוהר עדין (רק נדיר ומעלה זוהר, ורק אגדי פועם), נשק ומגן קצת יותר גדולים מהמציאות, וכל פריט משנה את המראה בעדינות.
    glow: כמה חזק הנשק, המגן והחלקים זוהרים בצבע הדרגה (GEAR.tiers), לפי tier 0 עד 4. pulse: כמה אגדי פועם, ו-rate כמה מהר.
@@ -291,6 +291,24 @@ function mergeSkinned(root,keep){
 function lambert(root){root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap,side:m.side});o.frustumCulled=false}})}
 function bone(root,name){let b=null;root.traverse(o=>{if(!b&&o.isBone&&o.name===name)b=o});return b}
 
+// אנימציות מקובץ אחד (anim_*): בפתיחה, ומקובץ שנטען אחר כך (m3d.js)
+function addClips(g){for(const a0 of g.animations){
+    // משאירים רק מה שמזיז את הגוף בפועל: סיבוב של עצמות הגוף והידיים, ותזוזה של האגן והרגליים.
+    // עצמות העזר (IK, control) וקנה המידה לא משנים כלום במשחק, ומכפילים פי ארבעה את העבודה בכל פריים
+    // חיות (dog_): כל הסיבובים חוץ מעצמות העזר של הכפות, ו-Body זז (קפיצה, ישיבה)
+    // מפלצות (mon_, Quaternius): כל הסיבובים והתזוזות. הגוש קופץ בתזוזה של Body, והרגליים של הגדולות הן עצמות נפרדות שזזות לבד
+    const dog=a0.name.startsWith('dog_'),mon=a0.name.startsWith('mon_');
+    const a=new THREE.AnimationClip(a0.name,a0.duration,a0.tracks.filter(t=>{const [n,pr]=t.name.split('.');
+      return mon?pr==='quaternion'||pr==='position':dog?(pr==='quaternion'&&!/^(IK|FF|Pole)/.test(n)||n==='Body'&&pr==='position'):!/IK|control/.test(n)&&(pr==='quaternion'||pr==='position'&&/^(root|hips|upperleg)/.test(n))}));
+    R3D.clips[a.name]=a;
+    R3D.clips[a.name+'@up']=new THREE.AnimationClip(a.name+'@up',a.duration,a.tracks.filter(t=>UPPER.test(t.name)));
+    R3D.clips[a.name+'@low']=new THREE.AnimationClip(a.name+'@low',a.duration,a.tracks.filter(t=>!UPPER.test(t.name)))}}
+// דמות שנטענה (R3D.tmpl[k]): איחוד החלקים, חומר פשוט, וגובה לקנה המידה. בפתיחה, ולמודל שנטען אחר כך (m3d.js)
+function prepTmpl(k){const t=R3D.tmpl[k],heroModels=R3D.heroModels||(R3D.heroModels=new Set(Object.keys(LOOK3D).filter(k=>k==='player'||k.startsWith('hero_')).map(k=>LOOK3D[k].model)));
+  mergeSkinned(t,heroModels.has(k)&&[...ARMOR3D,...(GEAR3D.on?GEAR3D.keep:[]),...ARMOR_NATIVE,ARMOR.hat.head]);   // הראש נפרד: הברדס מחליף אותו (armor.js)
+  lambert(t);t.updateMatrixWorld(true);
+  // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
+  const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=t.userData.h0||bb.max.y-bb.min.y||2}   // h0: הגובה לפני הדחיסה (build3d.js, pack), כי quantize משנה את המיקומים הגולמיים
 async function init3d(){
   if(R3D.loading||R3D.failed)return;R3D.loading=true;
   try{
@@ -304,31 +322,21 @@ async function init3d(){
     const sun=new THREE.DirectionalLight(0xfff1dc,1.9*VIEW.light);sun.position.set(-0.5,1,0.6);sc.add(sun);
     R3D.cam=new THREE.OrthographicCamera(-1,1,1,-1,1,4000);
     makeGround();makeMarks();
-    const [anims]=await Promise.all([Promise.all(Object.keys(MODELS3D).filter(k=>k.startsWith('anim_')).map(parseGLB)),
-      ...Object.values(LOOK3D).map(async L=>{if(R3D.tmpl[L.model])return;const g=await parseGLB(L.model);R3D.tmpl[L.model]=g.scene})]);
-    for(const g of anims)for(const a0 of g.animations){
-      // משאירים רק מה שמזיז את הגוף בפועל: סיבוב של עצמות הגוף והידיים, ותזוזה של האגן והרגליים.
-      // עצמות העזר (IK, control) וקנה המידה לא משנים כלום במשחק, ומכפילים פי ארבעה את העבודה בכל פריים
-      // חיות (dog_): כל הסיבובים חוץ מעצמות העזר של הכפות, ו-Body זז (קפיצה, ישיבה)
-      // מפלצות (mon_, Quaternius): כל הסיבובים והתזוזות. הגוש קופץ בתזוזה של Body, והרגליים של הגדולות הן עצמות נפרדות שזזות לבד
-      const dog=a0.name.startsWith('dog_'),mon=a0.name.startsWith('mon_');
-      const a=new THREE.AnimationClip(a0.name,a0.duration,a0.tracks.filter(t=>{const [n,pr]=t.name.split('.');
-        return mon?pr==='quaternion'||pr==='position':dog?(pr==='quaternion'&&!/^(IK|FF|Pole)/.test(n)||n==='Body'&&pr==='position'):!/IK|control/.test(n)&&(pr==='quaternion'||pr==='position'&&/^(root|hips|upperleg)/.test(n))}));
-      R3D.clips[a.name]=a;
-      R3D.clips[a.name+'@up']=new THREE.AnimationClip(a.name+'@up',a.duration,a.tracks.filter(t=>UPPER.test(t.name)));
-      R3D.clips[a.name+'@low']=new THREE.AnimationClip(a.name+'@low',a.duration,a.tracks.filter(t=>!UPPER.test(t.name)))}
-    for(const k in MODELS3D)if(['blade','shield','staff'].includes(k)||k.startsWith('w_')){const g=await parseGLB(k);lambert(g.scene);R3D.props[k]=g.scene}   // נשקים
-    R3D.hats={};for(const k in MODELS3D)if(k.startsWith('hat_')){const g=await parseGLB(k);lambert(g.scene);R3D.hats[k.slice(4)]=g.scene}   // כובעים (ARMOR.hat ב-armor.js)
+    try{m3dBoot()}catch(e){}   // הדמות האישית, החיה והחפצים: מתחילים להוריד כבר עכשיו (m3d.js)
+    const [anims]=await Promise.all([Promise.all(Object.keys(MODELS3D).filter(k=>k.startsWith('anim_')&&!m3dLazy(k)).map(parseGLB)),
+      ...Object.values(LOOK3D).map(async L=>{if(R3D.tmpl[L.model]||m3dLazy(L.model))return;   // מה שבחוץ (m3d.js) נטען כשצריך
+        const g=await parseGLB(L.model);R3D.tmpl[L.model]=g.scene})]);
+    for(const g of anims)addClips(g);
+    // נשקים, כובעים, חומרי הנשקים, מבני הכפר והטבע: כולם במקביל (perf/lazy-models: אחד אחרי השני חיכה לכל טקסטורה בנפרד), ונכנסים לפי הסדר של הקובץ
+    const ks=Object.keys(MODELS3D).filter(k=>!m3dLazy(k)&&(['blade','shield','staff'].includes(k)||/^(w_|hat_|v_|n_)/.test(k)));
+    const tex=Object.keys(MODELS3D).filter(k=>k.startsWith('wtex_'));
+    const [gs,imgs]=await Promise.all([Promise.all(ks.map(parseGLB)),Promise.all(tex.map(async k=>{const img=new Image();img.src='data:image/png;base64,'+MODELS3D[k];await img.decode();return img}))]);
+    R3D.hats={};ks.forEach((k,i)=>{const sc=gs[i].scene;lambert(sc);
+      if(k.startsWith('hat_'))R3D.hats[k.slice(4)]=sc;   // כובעים (ARMOR.hat ב-armor.js)
+      else{if(/^[vn]_/.test(k))sc.traverse(o=>{o.frustumCulled=true});R3D.props[k]=sc}});   // נשקים, ומבני הכפר והטבע
     // חומרי הנשקים: אותה פלטה בצבעים אחרים, שמחליפה את הטקסטורה של הנשק (makeActor)
-    R3D.wtex={};for(const k in MODELS3D)if(k.startsWith('wtex_')){
-      const img=new Image();img.src='data:image/png;base64,'+MODELS3D[k];await img.decode();
-      const t=new THREE.Texture(img);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;R3D.wtex[k.slice(5)]=t}
-    for(const k in MODELS3D)if(k.startsWith('v_')||k.startsWith('n_')){const g=await parseGLB(k);lambert(g.scene);g.scene.traverse(o=>{o.frustumCulled=true});R3D.props[k]=g.scene}   // מבני הכפר
-    const heroModels=new Set(Object.keys(LOOK3D).filter(k=>k==='player'||k.startsWith('hero_')).map(k=>LOOK3D[k].model));
-    for(const k in R3D.tmpl){const t=R3D.tmpl[k];mergeSkinned(t,heroModels.has(k)&&[...ARMOR3D,...(GEAR3D.on?GEAR3D.keep:[]),...ARMOR_NATIVE,ARMOR.hat.head]);   // הראש נפרד: הברדס מחליף אותו (armor.js)
-      lambert(t);t.updateMatrixWorld(true);
-      // גובה הדמות בתנוחת הבסיס, כדי לקבוע את קנה המידה
-      const bb=new THREE.Box3();t.traverse(o=>{if(o.isMesh){o.geometry.computeBoundingBox();bb.union(o.geometry.boundingBox)}});t.userData.h=t.userData.h0||bb.max.y-bb.min.y||2}   // h0: הגובה לפני הדחיסה (build3d.js, pack), כי quantize משנה את המיקומים הגולמיים
+    R3D.wtex={};tex.forEach((k,i)=>{const t=new THREE.Texture(imgs[i]);t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;R3D.wtex[k.slice(5)]=t});
+    for(const k in R3D.tmpl)prepTmpl(k);
     bakeCrowd();
     R3D.ready=true;R3D.on=R3D.want;c.hidden=!R3D.on;
   }catch(e){
@@ -336,7 +344,7 @@ async function init3d(){
     console.warn('תלת-ממד לא זמין, ממשיכים בדו-ממד:',e&&e.message);
     if(!R3D.user)R3D.note=true;
   }
-  R3D.loading=false;showGfx();
+  R3D.loading=false;M3D.booted();showGfx();
 }
 
 /* ---- קרקע וסימונים ---- */
@@ -366,7 +374,8 @@ function bakeCrowd(){R3D.crowd={};for(const k of CROWD.types)crowdOf(k)}
 // הקהל של סוג אחד: נאפה בפעם הראשונה (כמה מילישניות), ואחר כך מהזיכרון. null: לסוג הזה אין מודל עם ריצה, והוא מצויר לבד
 function crowdOf(k){
   if(k in R3D.crowd)return R3D.crowd[k];
-  const L=LOOK3D[k],clip=L&&L.model&&L.anim&&R3D.clips[L.anim.run];if(!clip||!R3D.tmpl[L.model])return R3D.crowd[k]=null;
+  const L=LOOK3D[k];if(L&&!m3dNeed(L.model))return null;   // עוד נטען (m3d.js): בלי לזכור null, כדי שהקהל ייאפה כשהוא מוכן
+  const clip=L&&L.model&&L.anim&&R3D.clips[L.anim.run];if(!clip||!R3D.tmpl[L.model])return R3D.crowd[k]=null;
   const v=new THREE.Vector3();
   {
     const a=makeActor(L);a.mixer.clipAction(clip).play();
@@ -399,8 +408,12 @@ const SIN=()=>Math.sin(camTilt()),COS=()=>Math.cos(camTilt());   // הזווית
 const COSB=()=>Math.cos(VIEW.baseTilt*Math.PI/180);   // לגודל הדמויות: קבוע בכל מקום, כדי שדמות שנבנתה בכפר תתאים גם בעולם
 // השחקן: הדמות שנבחרה, ובידיים הנשק שלבוש (GRIP3D). נבנה מחדש רק כשהדמות או הנשק מתחלפים
 function heroLook(){
-  const wid=SAVE.gear.weapon,sk=heroSkin(),ck=heroId()+'|'+wid+'|'+PILOT3D+'|'+sk+(GEAR3D.on?'|'+gearWorn().join():'');if(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
-  const L=Object.assign({},LOOK3D.player,sk?LOOK3D[HEROES.skins[sk].look]:PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()]),it=gItem(wid);
+  const wid=SAVE.gear.weapon,sk=heroSkin(),it=gItem(wid);
+  let B=sk?LOOK3D[HEROES.skins[sk].look]:PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()];
+  if(B&&!m3dNeed(B.model))B=LOOK3D['hero_'+heroId()];   // דמות אישית שעוד נטענת (m3d.js): לרגע הגיבור של המחלקה
+  // במפתח: המודל שמוצג בפועל, הנשק שביד, ו-M3D.hv (נטענו דמות או חפץ, m3d.js), כדי שהגיבור ייבנה מחדש רק כשמשהו שלו מוכן
+  const ck=heroId()+'|'+wid+'|'+PILOT3D+'|'+sk+'|'+(B&&B.model)+'|'+(it?itemModel(gBase(wid),it):'')+'|'+M3D.hv+(GEAR3D.on?'|'+gearWorn().join():'');if(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
+  const L=Object.assign({},LOOK3D.player,B);
   L.props={};L.anim=Object.assign({},L.anim);L.ck=ck;
   for(const w of ['sword','gun']){
     const im=it&&itemModel(gBase(wid),it),mine=it&&wUse(wid)===w&&im&&R3D.props[im],model=mine?im:GRIP3D.spare[w],g=GRIP3D[GRIP3D.of(model)];
@@ -524,7 +537,7 @@ function syncPlayer(dt){
   mark('shadow',a.root.position.x,a.root.position.z,16);
 }
 function syncEnemy(e,dt){
-  let a=R3D.actors.get(e);const L=lookOf(e);if(!L)return;
+  let a=R3D.actors.get(e);const L=lookOf(e);if(!L||!a&&!m3dNeed(L.model))return;   // עוד נטען (m3d.js): לרגע בלי גוף, הצל והטבעת בקנבס
   if(!a){a=makeActor(L);R3D.actors.set(e,a);
     if(!e.isBoss){a.root.scale.setScalar(L.h/COSB()/R3D.tmpl[L.model].userData.h*(e.wboss?1:e.big||1));a.sc0=a.root.scale.x}   // ענק: h הוא כבר הגובה הסופי
     // קמים מהאדמה רק בפעם הראשונה, ולא בכל פעם שאויב חוזר למסך
@@ -718,6 +731,7 @@ function syncPet(dt){
   const p=S.pet;let a=R3D.pet;
   if(!p||!petHere()){if(a)a.root.visible=false;return}
   const L0=LOOK3D['pet_'+(SAVE.pet.kind||PET.default)+(SAVE.pet.stage+1)];if(!L0)return;
+  if(!m3dNeed(L0.model)){if(a)a.root.visible=false;return}   // שלב חדש שעוד נטען (m3d.js): לרגע מוסתרת
   const L=Object.assign({h:petStage().h},L0);
   if(!a||a.key!==lookKey(L)){if(a)freeActor(a);a=R3D.pet=makeActor(L);a.st=null;a.bark=0}
   a.root.visible=true;
@@ -746,20 +760,38 @@ function vilWarm(r,c){
 }
 // העולם: כמו vilWarm. בפעם הראשונה שסוג אויב חדש נכנס למסך, הטלפון מכין לו shader, טקסטורה וקהל (crowdOf) באמצע הקרב,
 // והציור נעצר (ניר, 7.11: "94 fps · 166.1ms" כשזקן-הקליפה הופיע). בכניסה לאזור מכינים מראש דמות אחת מכל סוג באזור (גם הנדירות),
-// מצוירת כמה פריימים (כדי שגם הטקסטורות יעלו), ואז למאגר. כך הקפיצה קורה במעבר בשער, ולא באמצע הקרב
-const WWARM={frames:3,s:1e-4};   // s: כמה קטנה הדמות בזמן ההכנה. היא על המסך (כדי שהציור האמיתי יכין אותה, compile לבד לא מספיק), אבל קטנה מפיקסל
+// מצוירת כמה פריימים (כדי שגם הטקסטורות יעלו), ואז למאגר. כך הקפיצה קורה במעבר בשער, ולא באמצע הקרב.
+// ועוד (ניר, 7.11 ערב: "107 fps · 215.9ms" כשחלודן הטבוע הופיע): אויב יכול להגיע גם לא מהרשימה של האזור. שומר של מקור משאבים (סלע ← גולם,
+// שיח ← ניצנית, nodes.js), נמסיס או ציד מאזור אחר, המבוקש. לכן באזור: גם השומרים של המקורות שלו, הנמסיס שלו והמבוקש. ושאר סוגי העולם
+// ברקע, per סוגים כל gap פריימים, פעם אחת למשחק (seen): טקסטורה שעלתה לכרטיס הגרפי נשארת שם (המגן של החלודן, למשל, עלה רק כשהוא הופיע)
+const WWARM={frames:3,s:1e-4,per:2,gap:12};   // s: כמה קטנה הדמות בזמן ההכנה. היא על המסך (כדי שהציור האמיתי יכין אותה, compile לבד לא מספיק), אבל קטנה מפיקסל
+// כל הסוגים שיכולים להופיע באזור reg (בלי reg: בכל העולם). 'wanted' הוא המראה של המבוקש (lookOf)
+function wldTypes(reg){
+  const ks=new Set(),add=t=>{if(t&&LOOK3D[t])ks.add(t)},R=reg?[reg==='meadow'?WORLD:WORLD.regions[reg]]:[WORLD,...Object.values(WORLD.regions)];
+  for(const W of R){if(!W)continue;for(const G of W.foes||[])add(G.type);
+    if(typeof NODES!=='undefined')for(const F of W.fields||[]){const K=NODES.kinds[F.kind];if(K&&K.guard)add(K.guard.type)}}
+  if(typeof RARES!=='undefined')for(const id in RARES.list)if(!reg||RARES.list[id].reg===reg)add(id);
+  if(reg&&typeof nemOf==='function'){const N=nemOf(reg);if(N)add(N.type)}
+  add('wanted');return [...ks];
+}
 function wldWarm(r,c){
-  const reg=S.wd.reg||'meadow',W=R3D.wWarm||(R3D.wWarm={done:{},a:null,n:0});
+  const reg=S.wd.reg||'meadow',W=R3D.wWarm||(R3D.wWarm={done:{},seen:{},a:null,n:0,q:null,gap:0});
   if(W.a){wldWarmCrowd(W);if(--W.n<=0){for(const a of W.a){a.root.scale.setScalar(a.sc0w);freeActor(a)}W.a=null}}
-  if(W.done[reg])return;W.done[reg]=1;
-  if(typeof rareLooks==='function')rareLooks();
-  const ks=new Set((WR().foes||[]).map(G=>G.type));
-  if(typeof RARES!=='undefined')for(const id in RARES.list)if(RARES.list[id].reg===reg)ks.add(id);
-  const tmp=[];W.c=[...ks];
-  for(const k of ks){const L=LOOK3D[k];if(!L||!R3D.tmpl[L.model])continue;crowdOf(k);   // crowdOf משאיר דמות במאגר. makeActor לוקח אותה ומצייר אותה
+  if(!W.done[reg]){W.done[reg]=1;
+    m3dWorld(reg);   // ברקע: הענק של האזור ומפלצות הזירה (m3d.js)
+    if(typeof rareLooks==='function')rareLooks();
+    wldWarmSet(r,c,wldTypes(reg));W.q=wldTypes().filter(k=>!W.seen[k]);W.gap=WWARM.gap;return}
+  // ברקע: שאר הסוגים של העולם, כמה בכל פעם, כשאין הכנה פתוחה
+  if(W.q&&W.q.length&&!W.a&&--W.gap<=0){W.gap=WWARM.gap;wldWarmSet(r,c,W.q.splice(0,WWARM.per))}
+}
+function wldWarmSet(r,c,ks){
+  const W=R3D.wWarm,tmp=[],cs=[];
+  for(const k of ks){const L=LOOK3D[k];if(!L)continue;
+    if(!R3D.tmpl[L.model]){if(m3dLazy(L.model)&&W.q){m3dNeed(L.model);W.q.push(k)}continue}   // מודל שעוד נטען (m3d.js): בסוף התור
+    W.seen[k]=1;if(k!=='wanted'&&crowdOf(k))cs.push(k);   // crowdOf משאיר דמות במאגר. makeActor לוקח אותה ומצייר אותה
     const a=makeActor(L);a.sc0w=a.root.scale.x;a.root.scale.setScalar(WWARM.s);place(a,P.x,P.y,0,null);tmp.push(a)}
   if(!tmp.length)return;
-  W.a=(W.a||[]).concat(tmp);W.n=WWARM.frames;wldWarmCrowd(W);
+  W.c=cs;W.a=(W.a||[]).concat(tmp);W.n=WWARM.frames;wldWarmCrowd(W);
   try{if(r.compileAsync)r.compileAsync(R3D.scene,c).catch(()=>{});else r.compile(R3D.scene,c)}catch(e){}
 }
 // גם הקהל (crowdOf): עותק זעיר אחד ליד השחקן בפריימים של ההכנה, אחרת ה-shader שלו (גם של הצל) נבנה כשהקהל מופיע לראשונה
@@ -772,6 +804,7 @@ function render3d(ox,oy){
   if(!R3D.on||!P)return;
   r3dScratch();R3D.ox=ox;R3D.oy=oy;   // ההזזה של המסך, לבדיקה מי על המסך (worldnpc.js)
   // drawEvery: הבדיקה האוטומטית מציירת רק חלק מהפריימים, כי שם התלת-ממד רץ על המעבד בלי כרטיס גרפי. בשאר הפריימים לא עושים כלום
+  m3dTick();   // מודלים לפי צורך וברקע (m3d.js)
   if(typeof VFX3D!=='undefined')VFX3D.frame();   // אפקטים בתלת-ממד (vfx3d.js): מתקדמים בכל פריים, גם כשהבדיקה לא מציירת
   R3D.frame=(R3D.frame||0)+1;const skip=R3D.drawEvery&&R3D.frame%R3D.drawEvery!==0;if(skip&&!S.vil)return;   // בכפר ממשיכים לעדכן, כי שם נבנים המבנים
   const r=R3D.r,c=R3D.cam,now=typeof FRAME_T==='number'&&FRAME_T>(R3D.last||0)?FRAME_T:performance.now(),dt=Math.min(0.05*(R3D.drawEvery||1),R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;

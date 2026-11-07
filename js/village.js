@@ -146,6 +146,7 @@ function vGiftNote(){
 }
 function enterVillage(){
   const back=S&&(S.mode==='over'||S.wd);   // חוזרים מהעולם (או מריצה): ליד השער
+  if(typeof worldUi==='function'&&!$('whud').hidden)worldUi(false);   // פס המשאבים של העולם לא נשאר מתחת לזה של הכפר (שורות שעולות אחת על השנייה)
   reset();S.mode='play';S.vil={near:null,open:null,ui:'',raise:{}};
   const at=back?{x:VILLAGE.gate.x,y:VILLAGE.gate.y-110}:VILLAGE.spawn;
   P.x=at.x;P.y=at.y;P.aim=P.face=-Math.PI/2;S.cam.x=P.x;S.cam.y=P.y;
@@ -170,6 +171,7 @@ function villageUpdate(dt){
   const V=S.vil;
   P.inv-=dt;S.hurt-=dt;S.shake=Math.max(0,S.shake-dt*30);
   sigUpdate(dt);   // סקיל החתימה: גם בכפר אפשר להטיל (sigskill.js)
+  if(typeof fxwUpdate==='function')fxwUpdate(dt);   // שכבת אפקטים: סימנים, אווירה וצעדים (fxworld.js)
   const {ix,iy}=movePlayer(dt);if(P.moving)P.aim=Math.atan2(iy,ix);
   // לא נכנסים לתוך מבנים, ולא יוצאים מהכפר
   for(const k in VILLAGE.b){const B=VILLAGE.b[k],dx=P.x-B.x,dy=P.y-B.y,d=Math.hypot(dx,dy)||1,min=B.r+P.r;if(d<min){P.x=B.x+dx/d*min;P.y=B.y+dy/d*min}}

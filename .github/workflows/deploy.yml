@@ -104,6 +104,10 @@ jobs:
           [ -n "$IS_PR" ] && ver="$ver-pr$PR_NUM"
           echo "const MAJOR=$major, STAGE=$stage, STAGE_FROM=$from;const VERSION='$ver';" > "$site/js/version.js"
           echo "{\"v\":\"$ver\"}" > "$site/version.json"   # המשחק בודק בו אם יש גרסה חדשה (js/update-check.js)
+          # כל סקריפט ועיצוב מקבל את מספר הגרסה בכתובת (js/a.js?v=<גרסה>): קובץ חדש = כתובת חדשה, ולכן ה-service worker (sw.js) והדפדפן
+          # אף פעם לא מגישים עותק ישן שלו לצד index.html חדש. רק בעותק שעולה ל-Vercel: בריפו, ומ-file://, הכתובות נשארות בלי גרסה
+          sed -i -E "s#(src=\"js/[^\"?]+\.js)\"#\1?v=$ver\"#g; s#(href=\"css/[^\"?]+\.css)\"#\1?v=$ver\"#g" "$site/index.html"
+          echo "קבצים עם גרסה בכתובת: $(grep -c "?v=$ver" "$site/index.html")" >> "$GITHUB_STEP_SUMMARY"
           echo "גרסה: $ver" >> "$GITHUB_STEP_SUMMARY"
           cd "$RUNNER_TEMP"   # npx רץ מחוץ לקוד של ה-PR
           # רווח או ירידת שורה שנדבקו לטוקן בהעתקה הופכים אותו ללא תקף, אז מנקים אותם
