@@ -191,6 +191,7 @@ function foeAiScreen(ox,oy){
     const tk=foeTele(e);
     if(tk>=0&&e.act!=='flee'){ctx.font='900 '+((16+8*tk)/ZOOM)+'px Heebo, system-ui, sans-serif';ctx.fillStyle=FOEAI.col;ctx.globalAlpha=0.6+0.4*tk;ctx.fillText('!',x,y);ctx.globalAlpha=1;if(!e.leader)continue}
     if(e.act==='flee'){ctx.font='900 '+(20/ZOOM)+'px Heebo, system-ui, sans-serif';ctx.fillStyle=FOEAI.call.col;ctx.fillText('!',x,y)}
+    else if(e.leader&&typeof lblAdd==='function'&&lblAdd({t:'👑 '+T('fai.leader'),icon:'👑',x,y:y-8,col:FOEAI.leader.col,fs:13/ZOOM,pri:3,d:Math.hypot(e.x-P.x,e.y-P.y),bg:'rgba(10,12,20,0.75)'}));   // בעולם: labels.js
     else if(e.leader){const fs=13/ZOOM,t='👑 '+T('fai.leader');ctx.font='800 '+fs+'px Heebo, system-ui, sans-serif';const tw=ctx.measureText(t).width+10;
       ctx.fillStyle='rgba(10,12,20,0.75)';ctx.fillRect(x-tw/2,y-fs*0.92-8,tw,fs*1.25);ctx.fillStyle=FOEAI.leader.col;ctx.fillText(t,x,y-8)}}
 }

@@ -44,10 +44,14 @@ function feedRes(r,n){feedAdd(resIcon(r),resName(r),(dropTier(r)||{}).col||C.gol
 function feedGear(id){feedAdd(gIcon(id),T('loot.gear')+' '+gName(id)+powTag(id),dropTier(id).col,'g:'+id,0,true)}
 
 // הגבול התחתון: מעל הסקילים וכפתורי ההקשר שבחצי הימני של המסך
-function feedBottom(){
-  let b=innerHeight*FEED.low;
-  for(const id of ['skills','nav']){const el=document.getElementById(id);if(!el||el.hidden)continue;
-    for(const k of (id==='nav'?el.children:[el])){if(k.hidden)continue;const q=k.getBoundingClientRect();if(q.width&&q.height&&q.right>innerWidth*0.6&&q.top<b+40)b=Math.min(b,q.top-10)}}
+// כל כפתור באשכול הימני התחתון נמדד לבד (getBoundingClientRect): כל כפתור בקשת הסקילים, אולטימייט, סקיל חתימה, כישוף, וכפתורי ההקשר.
+// x0: הקצה השמאלי של העמודה. כפתור שמימינו נחשב (ניר, סרטון 7.11: השורות ירדו מתחת לכפתור השלישי בקשת, כי נמדד רק המיכל)
+const FEED_HUD='#skills>*,#skills,#ult,#sig,#spell,#divine,#swap,#nav>*';
+function feedBottom(x0){
+  let b=innerHeight*FEED.low;const xl=x0==null?innerWidth*0.6:x0;
+  for(const k of document.querySelectorAll(FEED_HUD)){if(k.hidden||k.closest('[hidden]'))continue;const q=k.getBoundingClientRect();
+    if(!q.width||!q.height||q.right<=xl||getComputedStyle(k).display==='none'||getComputedStyle(k).visibility==='hidden')continue;
+    if(q.top<b+40)b=Math.min(b,q.top-10)}
   return Math.max(innerHeight*FEED.top+40,b);
 }
 /* העמודה (7.11.2026, הסרטון של ניר: שורות מתחת לסקילים ונחתכות בקצה). שורות HTML ולא ציור בקנבס, כדי שאפשר יהיה למדוד אותן.
@@ -61,7 +65,7 @@ let FSAFE=null;addEventListener('resize',()=>{FSAFE=null});
 function feedSpot(lh){
   const vw=innerWidth,vh=innerHeight,F=FEED,sf=FSAFE||(FSAFE=feedSafe()),x1=vw-Math.max(F.edge,sf.r+8),x0=x1-Math.min(300,vw*0.36),pad=6;
   const bl=(typeof msgBlocks==='function'?msgBlocks():[]).filter(r=>r.right>x0&&r.left<x1).sort((a,b)=>a.top-b.top);
-  const lo=vh*0.12,hi=feedBottom();let y=lo;const gaps=[];
+  const lo=vh*0.12,hi=feedBottom(x0);let y=lo;const gaps=[];
   for(const r of bl){if(r.bottom<=y)continue;if(r.top>=hi)break;if(r.top-pad>y)gaps.push([y,r.top-pad]);y=Math.max(y,r.bottom+pad)}
   if(y<hi)gaps.push([y,hi]);
   const ok=gaps.filter(g=>g[1]-g[0]>=lh);if(!ok.length)return null;
