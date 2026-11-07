@@ -138,6 +138,7 @@ function guideUpdate(){
   const now=fxNow();if(now<guideT)return;guideT=now+GUIDE.every;
   guideG=S&&(S.vil||S.wd)&&SAVE&&SAVE.quests?guideGoal():null;
   guideUi();
+  if(typeof rareLineSync==='function')rareLineSync();   // שורת השמועה על נדירה, מתחת לשורה (rares.js)
 }
 $('guideMain').addEventListener('click',()=>{if(!S.vil&&!S.wd)return;if(typeof wmapOpen==='function'&&S.wd&&!$('wMap').hidden)wmapOpen(false);if($('qLog').hidden)menuShow('qBtn');sfx('ui')});   // היומן נפתח בתפריט הראשי (menu.js)
 $('guideJump').addEventListener('click',()=>{const to=$('guideJump').dataset.to;if(!to)return;
