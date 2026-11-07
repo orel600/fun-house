@@ -57,7 +57,7 @@ function mbSpellPress(slot,pt){
 }
 function mbHealCast(u){
   const H=MBSPELL.heal;if(!u||u.dead||u.cd.heal>0||u.hp>=u.max)return false;
-  const v=Math.min(u.max-u.hp,u.max*H.k);u.hp+=v;u.cd.heal=H.cd;
+  const v=Math.min(u.max-u.hp,u.max*H.k);u.hp+=v;u.cd.heal=H.cd;u.actT=MB.t;
   mbFloat(u.x,u.y-u.r-16,'+'+Math.round(v),H.col);mbBoom(u.x,u.y,70,'heal');mbSpellFx(u,H.col,'up');
   if(u.me)sfx(H.sfx);return true;
 }
@@ -66,7 +66,7 @@ function mbSpellCast(u,aim){
   mbSpellInit(u);const id=u.spell,L=MBSPELL.list[id],s=u.st;
   if(!L||u.dead||u.cd.spell>0||u.st.dash)return false;
   if(id!=='cleanse'&&(s.stun>0||s.taunt>0))return false;   // בהלם רק ניקוי עובד
-  if(id==='dash'&&s.root>0)return false;                    // לכוד ברשת: לא זז, כמו סקילים שמזיזים (MB_MOVES ב-moba-kits.js)
+  if(id==='dash'&&(s.root>0||typeof mbGbBusy==='function'&&mbGbBusy(u)))return false;   // לכוד, או בהטלה בחדר ההימור                    // לכוד ברשת: לא זז, כמו סקילים שמזיזים (MB_MOVES ב-moba-kits.js)
   switch(id){
     case 'dash':{let a=u.face;
       if(aim)a=Math.atan2(aim.y-u.y,aim.x-u.x);else if(u.me&&joy&&Math.hypot(joy.dx,joy.dy)>0.12)a=Math.atan2(joy.dy,joy.dx);
@@ -83,7 +83,7 @@ function mbSpellCast(u,aim){
       t.st.exh=L.t;if(!(t.st.pure>0))mbSlow(t,L.slow,L.t);mbSpellFx(t,L.col,'down');mbBoom(t.x,t.y,50,'blue');break}
     case 'cleanse':Object.assign(s,{stun:0,taunt:0,tBy:null,slow:0,slowK:0,root:0,bub:0,ice:0,imm:L.pure,pure:L.pure});mbSpellFx(u,L.col,'up');break;
   }
-  u.cd.spell=L.cd;if(u.me)sfx(L.sfx,L.vol||1);MB.spellN=(MB.spellN||0)+1;
+  u.cd.spell=L.cd;u.actT=MB.t;if(u.me)sfx(L.sfx,L.vol||1);   // actT: לחש מתוך שיח חושף, כמו תקיפה וסקיל (moba-vision.js)MB.spellN=(MB.spellN||0)+1;
   return true;
 }
 
@@ -143,7 +143,7 @@ function mbSpellHud(){
 function mbSpellTip(slot,b){
   let t=$('mbSpTip');const u=mbMe();
   if(!slot||!u){if(t)t.hidden=true;return}
-  if(!t){t=document.createElement('div');t.id='mbSpTip';t.className='mbsptip';$('mbHud').appendChild(t)}
+  if(!t){t=document.createElement('div');t.id='mbSpTip';t.className='mbsptip';document.body.appendChild(t)}   // ב-body ומעל הכפתורים: הריפוי הסתיר את הכותרת (הבודק, 7.11)
   const id=slot==='heal'?'heal':u.spell,cd=slot==='heal'?MBSPELL.heal.cd:MBSPELL.list[id].cd;
   t.innerHTML='<b>'+T(slot==='heal'?'mb.heal':'mb.sp.'+id)+' <small>'+T('mb.spCd',cd)+'</small></b><span>'+T(slot==='heal'?'mb.healD':'mb.spD.'+id)+'</span>';
   const r=b.getBoundingClientRect();t.style.right=Math.max(8,innerWidth-r.right-40)+'px';t.style.bottom=(innerHeight-r.top+10)+'px';t.hidden=false;
@@ -180,7 +180,7 @@ function mbSpellBot(u,dt){
 /* ---- מסך הבנייה: אחרי בחירת הגיבור בחלון #mbWin (mobaOpen ב-moba.js) ---- */
 function mbBuildOpen(kit,tab){
   const w=$('mbWin'),K=MBKIT[kit];if(!K)return;tab=tab||w.dataset.tab||MB_BUILD[0].id;if(!MB_BUILD.some(b=>b.id===tab))tab=MB_BUILD[0].id;
-  w.dataset.mode='build';w.dataset.kit=kit;w.dataset.tab=tab;
+  w.dataset.mode='build';w.dataset.bkit=kit;w.dataset.tab=tab;   // bkit ולא kit: [data-kit] על החלון עצמו נתפס כבחירת גיבור (הבודק, 7.11)
   w.innerHTML=winHead(T('mb.build'),T('mb.k.'+kit)+(MB_BUILD.length>1?'':' · '+T('mb.bt.'+tab)))+
     (MB_BUILD.length>1?'<div class="mbbtabs" role="tablist">'+MB_BUILD.map(b=>'<button role="tab" data-btab="'+b.id+'" aria-selected="'+(b.id===tab)+'">'+T('mb.bt.'+b.id)+'</button>').join('')+'</div>':
       '')+
@@ -195,7 +195,7 @@ function mbBuildSpell(kit){
     '<p class="mbsph"><b>'+mbSpellPic(MBSPELL.heal.pic,'heal')+'</b>'+T('mb.healD')+'</p></div>';
 }
 $('mbWin').addEventListener('click',e=>{
-  const w=$('mbWin');if(w.dataset.mode!=='build')return;const kit=w.dataset.kit;
+  const w=$('mbWin');if(w.dataset.mode!=='build')return;const kit=w.dataset.bkit;
   const b=e.target.closest('[data-b]'),t=e.target.closest('[data-btab]'),a=e.target.closest('[data-bact]');
   if(t){sfx('tap');mbBuildOpen(kit,t.dataset.btab);return}
   if(b){const T0=MB_BUILD.find(x=>x.id===w.dataset.tab);if(T0&&T0.pick(kit,b)){sfx('tap');mbBuildOpen(kit)}return}
