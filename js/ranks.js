@@ -47,7 +47,7 @@ function rankCall(lv){
   const q=QUESTS.list.find(q=>q.kind==='rank'&&q.reward.rank===lv/RANKS.every);
   if(!q||QS().done[q.id])return false;
   const txt=T('rank.call',T('npc.'+q.giver)[0]);
-  banner(txt,C.lilac);if(typeof feedTitle==='function')feedTitle(txt,C.lilac);
+  if(typeof msgOn==='function'&&msgOn())msgBig(txt,C.lilac);else banner(txt,C.lilac);if(typeof feedTitle==='function')feedTitle(txt,C.lilac);   // דרגה: רגע גדול (msglane.js)
   if(P)celebrate(P.x,P.y-20,'rank','🎖️');
   return true;
 }
