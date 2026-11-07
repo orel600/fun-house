@@ -46,7 +46,7 @@ function wskUse(id,aim){
     const W=S.wsk||(S.wsk={shots:[]});
     W.shots.push({id,x:P.x,y:P.y-6,fx:P.x,fy:P.y,tx:tg.x,ty:tg.y,base,col,dt:D.dt,r:D.r*WSKILL.blast*(F?F.r:1),vis,echo:skrGrade(id)>=SKREVEAL.grade.echo});
   }
-  S.sk.cd[i]=D.cd;wrCd(id,i);S.sk.used++;S.sk.wUsed=(S.sk.wUsed||0)+1;sfx('shoot');S.shake=Math.max(S.shake,2);
+  S.sk.cd[i]=D.cd;wrCd(id,i);S.sk.used++;skCast(id);S.sk.wUsed=(S.sk.wUsed||0)+1;sfx('shoot');S.shake=Math.max(S.shake,2);
   return true;
 }
 // הכדורים שבדרך. כשנוחת: טבעת (מצוירת ב-drawSkills) ונזק לכל מי שבתוכה ובטווח
