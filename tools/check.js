@@ -1339,7 +1339,11 @@ function worldBot(m,L,god){
       const id=S.sk.ids[0],n0=P.skCast?P.skCast.n:0;S.sk.cd[0]=0;r.id=id;r.cast=wskUse(id);if(SKR)skrEnd(false);
       r.anim=!!P.skCast&&P.skCast.n===n0+1;r.clip=R3D.ready?skcClip(heroLook()):'Ranged_Magic_Shoot';r.clipOk=!R3D.ready||!!R3D.clips[r.clip+'@up'];
       r.rune=!!skcRune;r.col=skcRune&&skcRune.col;const d=skcRune&&skcRune.d3;r.r3d=!!d;r.band=!R3D.on||!!(skcRune&&skcRune.d3b);r.tier=skcRune&&skcRune.big?'big':'normal';
+      // בקרב (אויב במרחק 150): קטן ושקוף יותר, וגל ההדף לא מגיע לאויב. בלי אויבים: בגודל מלא
+      const C=SKCAST.combat,rk=()=>skcRune?[skcRune.fight,skcRune.k,skcRune.a,skcWaveR(skcRune.T.wave)]:[];r.fight=rk();
       run(SKCAST.rune.life+0.1);r.gone=!skcRune&&!(d&&d.on);
+      e.dead=true;enemies=[];skCast(id);r.calm=rk();skcFree();skcRune=null;
+      r.combat=r.fight[0]===true&&r.fight[1]===C.r&&r.fight[2]===C.a&&r.fight[3]<150-e.r&&r.calm[0]===false&&r.calm[1]===1&&r.calm[3]>r.fight[3];
       worldUi(false);reset();const c0=skcStat.casts;skCast(id);r.arena=skcStat.casts===c0;   // זירה: כלום
       enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
@@ -1810,6 +1814,27 @@ function worldBot(m,L,god){
     const log=await page.evaluate(()=>M3D.log.map(l=>l.ms));
     check(!bad.length&&!m3dWarn.length,'מודלים לפי צורך: בכניסה לאזור הענק שלו ('+rows.join(', ')+') ומפלצות הזירה, '+log.length+' נטענו, הארוך '+Math.max(0,...log)+'ms'+
       (bad.length?' · חסר: '+bad.join(' | '):'')+(m3dWarn.length?' · אזהרות: '+m3dWarn.slice(0,3).join(' | '):''))}
+  // קפיצה כשאויב חדש מופיע בעולם (ניר, 7.11: "215.9ms" כשחלודן הטבוע הופיע): אחרי ההכנה בכניסה לאזור והתור ברקע (wldWarm ב-render3d.js),
+  // כל סוג שיכול להופיע בעולם, בכל אזור, מופיע בלי טקסטורה חדשה, בלי shader חדש, וכשהקהל שלו כבר אפוי. הזמן בדוח רק למידע (בלי כרטיס גרפי)
+  if(g3.on){
+    const wm=await page.evaluate(()=>{const o={rows:[],bad:[],max:0},B={save:JSON.stringify(SAVE),mode:S.mode,vil:S.vil,wd:S.wd,room:S.room,de:R3D.drawEvery,gap:WWARM.gap};let ls=null;try{ls=localStorage.getItem(SAVE_STORE.key)}catch(e){}
+      try{R3D.drawEvery=0;WWARM.gap=1;const I=R3D.r.info,draw=()=>render3d(0,0);
+        for(const reg of ['meadow',...Object.keys(WORLD.regions)]){
+          enterWorld('home',reg);S.mode='play';enemies=[];R3D.wWarm&&(R3D.wWarm.done[reg]=0);
+          for(let i=0;i<400&&(i<6||R3D.wWarm.a||R3D.wWarm.q&&R3D.wWarm.q.length);i++)draw();   // ההכנה של האזור, והתור ברקע (בפעם הראשונה)
+          const ks=wldTypes();let n=0,worst=[0,''];
+          for(const k of ks){const p0=I.programs.length,t0=I.memory.textures,crowd=k==='wanted'||k in R3D.crowd;
+            const e=addEnemy(k==='wanted'?'grunt':k,P.x+90,P.y+30,1);if(k==='wanted')e.wanted=true;e.flSeen=1;
+            const pool=((R3D.pool||{})[lookKey(lookOf(e))]||[]).length>0;   // דמות מוכנה (כבר צוירה) מחכה במאגר
+            const t=performance.now();draw();const ms=performance.now()-t;if(ms>worst[0])worst=[ms,k];
+            const dp=I.programs.length-p0,dt=I.memory.textures-t0;if(dp||dt||!crowd||!pool)o.bad.push(reg+'/'+k+(dp?' shader+'+dp:'')+(dt?' טקסטורה+'+dt:'')+(crowd?'':' בלי קהל')+(pool?'':' לא הוכן'));
+            e.dead=true;draw();enemies=[];draw();n++}
+          o.max=Math.max(o.max,worst[0]);o.rows.push(reg+' '+n+' ('+Math.round(worst[0])+'ms '+worst[1]+')')}
+      }catch(err){o.bad.push(String(err&&err.stack||err))}
+      R3D.drawEvery=B.de;WWARM.gap=B.gap;worldUi(false);enemies=[];SAVE=JSON.parse(B.save);reset();S.mode=B.mode;S.vil=B.vil;S.wd=B.wd;S.room=B.room;
+      try{if(ls==null)localStorage.removeItem(SAVE_STORE.key);else localStorage.setItem(SAVE_STORE.key,ls)}catch(e){}
+      return o});
+    check(!wm.bad.length,'אויב חדש בעולם בלי קפיצה: כל סוג בכל אזור כבר הוכן (דמות במאגר, קהל אפוי) ומופיע בלי טקסטורה או shader חדשים ('+wm.rows.join(', ')+')'+(wm.bad.length?' · חסר הכנה: '+wm.bad.slice(0,8).join(' | '):''))}
   // מפלצות הזירה (Quaternius, HORDE.monsters ב-spawn.js, RUN.elite.types ב-run.js): לכל אחת חומרים, שם, צבע בדו-ממד ומודל עם ריצה ומוות,
   // הן לא מופיעות לפני הזמן שלהן ומופיעות אחריו, ואויבי-העל בתחנות הם לפי התור
   const mons=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={bad:[],early:0,seen:{},elites:[],want:RUN.elite.types},er=window.eliteRoll;window.eliteRoll=()=>{};startRun();enemies=[];
@@ -4004,8 +4029,9 @@ function worldBot(m,L,god){
     'סקיל חדש בעולם ('+skr.id+'): '+(skr.err||[skr.wait&&skr.start?'רגע גילוי מתחיל':'לא התחיל',skr.zoom&&skr.fly?'מצלמה מתקרבת ואייקון עף':'בלי מצלמה או אייקון',
     skr.end?'נגמר והמשחק ממשיך':'לא נגמר',skr.once?'פעם אחת':'חוזר',skr.big&&skr.on?'הטלה ראשונה גדולה':'הטלה ראשונה רגילה',
     skr.skipStart&&skr.skip?'נגיעה מדלגת':'אי אפשר לדלג',skr.grade?'דרגה בעץ משנה מראה':'דרגה לא משנה'].join(', ')));
-  check(!skc.err&&skc.cast&&skc.anim&&skc.clipOk&&skc.rune&&skc.band&&skc.gone&&skc.arena,
-    'הטלת סקיל ('+skc.id+'): '+(skc.err||[skc.anim?'תנועה '+skc.clip:'אין תנועה',skc.rune?'עיגול רונות '+skc.col+' ('+skc.tier+')'+(skc.r3d?' בתלת-ממד':'')+(skc.band?'':' בלי טבעת חיצונית'):'אין עיגול',skc.gone?'נעלם':'לא נעלם',skc.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
+  check(!skc.err&&skc.cast&&skc.anim&&skc.clipOk&&skc.rune&&skc.band&&skc.gone&&skc.arena&&skc.combat,
+    'הטלת סקיל ('+skc.id+'): '+(skc.err||[skc.anim?'תנועה '+skc.clip:'אין תנועה',skc.rune?'עיגול רונות '+skc.col+' ('+skc.tier+')'+(skc.r3d?' בתלת-ממד':'')+(skc.band?'':' בלי טבעת חיצונית'):'אין עיגול',skc.gone?'נעלם':'לא נעלם',skc.arena?'בזירה כבוי':'דולק בזירה',
+      skc.combat?'בקרב קטן ×'+skc.fight[1]+' (גל עד '+Math.round(skc.fight[3])+', בלי קרב '+Math.round(skc.calm[3])+')':'בקרב לא קטן: '+JSON.stringify([skc.fight,skc.calm])].join(', ')));
   check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw&&wsk.orbFlash,
     'סקילים בעולם ('+wsk.id+'): '+(wsk.err||[wsk.btn?'כפתור':'אין כפתור',wsk.place?'למטה מימין, מעל הסרגל':'הכפתור לא במקום',wsk.tap&&wsk.tapHit?'נגיעה יורה ופוגעת':'נגיעה לא פגעה',
     wsk.cd&&wsk.sec&&wsk.again?'קירור עם מספר':'אין קירור',wsk.drag&&wsk.dragHit?'גרירה מכוונת ופוגעת':'גרירה לא פגעה',wsk.aimDraw?'כוונת מצוירת':'אין כוונת',wsk.finger?'אצבע על הכפתור יורה':'אצבע לא ירתה',

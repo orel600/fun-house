@@ -30,6 +30,9 @@ const SKCAST={
     big:   {life:1.15,r:140,pop:0.16,over:1.18,hdr:2.6,flash:{r:1.0,life:0.26,a:0.35,hdr:1.6}, wave:{r:2.1,life:0.6,w:0.24,a:0.6},  wave2:{r:2.4,life:0.75,w:0.3,a:0.3},motes:26,
             pillar:{r:20,h:360,life:0.6,hdr:1.4},shake:5,zoom:0.045,zoomT:0.4,light:7}
   },
+  // בקרב (ניר, 7.11, מהסרטון: "העיגול הצהוב כיסה חצי מסך והסתיר אויבים"): כשיש אויב חי עד near מהגיבור ברגע ההטלה, העיגול קטן (r) ושקוף יותר (a),
+  // פחות ניצוצות (motes), וגל ההדף נעצר gap לפני האויב הקרוב (ואם האויב כבר בתוך העיגול, אין גל). עמוד האור והרעד של סקיל גדול נשארים
+  combat:{near:250,r:0.6,a:0.5,motes:0.5,light:0.6,gap:18},
   // הבזק בידיים ברגע ההטלה, בצבע סוג הנזק. h: הגובה של הידיים (פיקסלים של המשחק)
   flash:{h:34,size:46,size2:80,life:[0.16,0.22],spark:10,light:6,lightT:0.3},
   motes:{up:150,grav:90,drag:0.6,spd:28,size:9,size2:3,life:[0.55,1.0]}   // ניצוצות שעולים מהעיגול, בצבע סוג הנזק
@@ -39,9 +42,12 @@ let skcRune=null;                   // {t,col,T,d3,d3b}: העיגול הנוכח
 const skcO={glow:{n:1,raw:1,col:'',col2:'',hdr:2,size:46,size2:80,life:null},spark:{n:10,col:'#ffffff',col2:'',spd:160,up:120,grav:-300,life:[0.2,0.4]},
   mote:{n:0,col:'#ffffff',col2:'',spread:0,spd:0,up:0,grav:0,drag:0,size:0,size2:0,life:null},
   d:{life:Infinity,col:'',a:0,hdr:1,p:0},fl:{life:0,col:'',fade:0.9,a:1,hdr:2},wv:{life:0,grow:[0,0],col:'',w:0.3,fade:0.7,a:1},pl:{life:0,hdr:3}};   // אובייקטים קבועים, בלי הקצאה בכל הטלה
-const skcRuneObj={t:0,col:'',T:null,d3:null,d3b:null,big:false};
+const skcRuneObj={t:0,col:'',T:null,d3:null,d3b:null,big:false,k:1,a:1,fight:false};   // k, a: גודל ושקיפות (קטנים בקרב, SKCAST.combat)
 function skcKind(D){return D.kind||(D.range?'zap':D.dt==='earth'?'ground':'ring')}
 const skcBig=D=>!!(D.sig||SKCAST.bigKinds.includes(skcKind(D))||D.cd>=SKCAST.bigCd);
+// האויב החי הקרוב לגיבור, עד SKCAST.combat.near: המרחק עד הקצה שלו, או null כשאין קרב
+function skcNear(){let m=null;if(typeof enemies==='undefined')return m;const N=SKCAST.combat.near;
+  for(const e of enemies){if(e.dead||e.dummy)continue;const d=Math.hypot(e.x-P.x,e.y-P.y)-(e.r||0);if(d<N&&(m===null||d<m))m=Math.max(0,d)}return m}
 function skcFree(){if(!skcRune||typeof VFX3D==='undefined')return;VFX3D.free(skcRune.d3);VFX3D.free(skcRune.d3b)}
 function skCast(id){
   if(!SKCAST.where())return;
@@ -49,7 +55,8 @@ function skCast(id){
   P.skCast={n:(P.skCast?P.skCast.n:0)+1,k:skcKind(D),at:performance.now()};skcStat.casts++;
   const col=typeof skCol==='function'?skCol(id):dtCol(D.dt),R=SKCAST.rune,big=skcBig(D),T=SKCAST.tier[big?'big':'normal'];
   skcFree();   // עיגול אחד בכל פעם
-  skcRune=skcRuneObj;skcRune.t=0;skcRune.col=col;skcRune.T=T;skcRune.big=big;skcRune.d3=skcRune.d3b=null;skcStat.runes++;if(big)skcStat.big++;
+  const near=skcNear(),C=SKCAST.combat,fight=near!==null,K=fight?C.r:1,A=fight?C.a:1,rr=T.r*K;   // בקרב: קטן ושקוף יותר
+  skcRune=skcRuneObj;skcRune.t=0;skcRune.col=col;skcRune.T=T;skcRune.big=big;skcRune.k=K;skcRune.a=A;skcRune.fight=fight;skcRune.near=near;skcRune.d3=skcRune.d3b=null;skcStat.runes++;if(big)skcStat.big++;if(fight)skcStat.fight=(skcStat.fight||0)+1;
   if(T.shake&&S)S.shake=Math.max(S.shake||0,T.shake);   // רעד קטן (render.js, וכבוי ב"הפחתת תנועה")
   if(typeof VFX3D==='undefined'||!R3D.on)return;
   // בכפר המדבקות כבויות (VFX3D.on רק בעולם). כמו האש של פיוחו (petfx3d.js), מדליקים לרגע את VFX3D.pet
@@ -59,17 +66,20 @@ function skCast(id){
   O.d.p=0;const d=skcRune.d3=VFX3D.decal('rune',P.x,P.y,1,O.d);
   if(b)b.spin=R.spin[0];if(d)d.spin=R.spin[1];
   // הבזק על הקרקע וגל הדף (נשארים במקום ההטלה)
-  O.fl.life=T.flash.life;O.fl.col=col;O.fl.a=T.flash.a;O.fl.hdr=T.flash.hdr;VFX3D.decal('glow',P.x,P.y,T.r*T.flash.r,O.fl);
-  for(const w of [T.wave,T.wave2]){if(!w)continue;O.wv.life=w.life;O.wv.grow[0]=T.r*0.3;O.wv.grow[1]=T.r*w.r;O.wv.col=col;O.wv.w=w.w;O.wv.a=w.a;VFX3D.decal('ring',P.x,P.y,T.r*w.r,O.wv)}
+  O.fl.life=T.flash.life;O.fl.col=col;O.fl.a=T.flash.a*A;O.fl.hdr=T.flash.hdr;VFX3D.decal('glow',P.x,P.y,rr*T.flash.r,O.fl);
+  for(const w of [T.wave,T.wave2]){const wr=skcWaveR(w);if(!wr)continue;O.wv.life=w.life;O.wv.grow[0]=rr*0.3;O.wv.grow[1]=wr;O.wv.col=col;O.wv.w=w.w;O.wv.a=w.a*A;VFX3D.decal('ring',P.x,P.y,wr,O.wv)}
   // הבזק בידיים
   O.glow.col=O.glow.col2=col;O.glow.size=F.size*(big?1.25:1);O.glow.size2=F.size2*(big?1.25:1);O.glow.life=F.life;VFX3D.emit('glow',P.x,P.y,F.h,O.glow);
   O.spark.col2=col;O.spark.n=F.spark*(big?2:1);VFX3D.emit('spark',P.x,P.y,F.h,O.spark);
   // ניצוצות שעולים מכל העיגול
-  const m=O.mote;m.n=T.motes;m.col2=col;m.spread=T.r*0.85;m.spd=M.spd;m.up=M.up;m.grav=M.grav;m.drag=M.drag;m.size=M.size;m.size2=M.size2;m.life=M.life;VFX3D.emit('ember',P.x,P.y,4,m);
+  const m=O.mote;m.n=Math.round(T.motes*(fight?C.motes:1));m.col2=col;m.spread=rr*0.85;m.spd=M.spd;m.up=M.up;m.grav=M.grav;m.drag=M.drag;m.size=M.size;m.size2=M.size2;m.life=M.life;VFX3D.emit('ember',P.x,P.y,4,m);
   if(T.pillar){O.pl.life=T.pillar.life;O.pl.hdr=T.pillar.hdr;VFX3D.pillar(P.x,P.y,T.pillar.r,T.pillar.h,col,O.pl)}
-  VFX3D.light(P.x,P.y,F.h,col,T.light,F.lightT*(big?1.6:1));
+  VFX3D.light(P.x,P.y,F.h,col,T.light*(fight?C.light:1),F.lightT*(big?1.6:1));
   VFX3D.pet=was;
 }
+// כמה רחוק גל ההדף מגיע (הרדיוס הסופי), או 0 כשאין גל: בקרב נעצר gap לפני האויב הקרוב, ולא מכסה אותו
+function skcWaveR(w){const R=skcRune;if(!w||!R)return 0;const full=R.T.r*R.k*w.r;if(!R.fight)return full;
+  const lim=R.near-SKCAST.combat.gap;return lim>R.T.r*R.k*1.05?Math.min(full,lim):0}
 // קפיצה עם מעבר מעל הגודל (easeOutBack), ואחר כך מתייצב
 function skcScale(T,t){if(t>=T.pop*2)return 1;if(t<T.pop){const f=t/T.pop;return T.over*(1-Math.pow(1-f,3))}return T.over+(1-T.over)*((t-T.pop)/T.pop)}
 // זום קטן ברגע ההטלה של סקיל גדול (camera.js): מקרב מעט ומתרחק חזרה
@@ -81,20 +91,21 @@ function skcClip(L){
   return R3D.clips[c+'@up']?c:SKCAST.fallback;
 }
 // העיגול הולך עם הגיבור. בתלת-ממד מזיזים את המדבקות, ובדו-ממד מציירים בקנבס, מתחת לדמויות
-const skcAlpha=f=>{const R=SKCAST.rune;return R.a*(f>1-R.fade?Math.max(0,(1-f)/R.fade):1)};
+const skcAlpha=f=>{const R=SKCAST.rune;return R.a*(skcRune?skcRune.a:1)*(f>1-R.fade?Math.max(0,(1-f)/R.fade):1)};
 function skcUpdate(dt){
   if(!skcRune)return;skcRune.t+=dt;
   const T=skcRune.T,f=skcRune.t/T.life,a=skcAlpha(Math.min(1,f)),k=skcScale(T,skcRune.t),d=skcRune.d3,b=skcRune.d3b;
-  if(b&&b.on){b.x=P.x;b.y=P.y;b.a=a;b.r=T.r*k}
-  if(d&&d.on){d.x=P.x;d.y=P.y;d.a=a;d.r=T.r*SKCAST.rune.inner*k}
+  const r=T.r*skcRune.k;
+  if(b&&b.on){b.x=P.x;b.y=P.y;b.a=a;b.r=r*k}
+  if(d&&d.on){d.x=P.x;d.y=P.y;d.a=a;d.r=r*SKCAST.rune.inner*k}
   if(f>=1){skcFree();skcRune=null}
 }
 function skcDraw(){
   if(!skcRune||R3D.on&&skcRune.d3)return;
-  const T=skcRune.T,R=SKCAST.rune,t=skcRune.t,f=t/T.life,a=skcAlpha(Math.min(1,f)),r=T.r*skcScale(T,t),ri=r*R.inner,c=skcRune.col;
+  const T=skcRune.T,R=SKCAST.rune,t=skcRune.t,f=t/T.life,a=skcAlpha(Math.min(1,f)),r0=T.r*skcRune.k,r=r0*skcScale(T,t),ri=r*R.inner,c=skcRune.col,A=skcRune.a,wr=skcWaveR(T.wave);
   ctx.save();ctx.translate(P.x,P.y+6);ctx.scale(1,0.5);ctx.strokeStyle=c;ctx.fillStyle=c;ctx.shadowColor=c;ctx.shadowBlur=14;
-  if(t<T.flash.life){ctx.globalAlpha=0.5*(1-t/T.flash.life);ctx.beginPath();ctx.arc(0,0,T.r*T.flash.r,0,7);ctx.fill()}   // הבזק
-  if(t<T.wave.life){const w=t/T.wave.life;ctx.globalAlpha=(1-w)*0.9;ctx.lineWidth=4*(1-w)+1;ctx.beginPath();ctx.arc(0,0,T.r*(0.3+(T.wave.r-0.3)*(1-Math.pow(1-w,2.4))),0,7);ctx.stroke()}   // גל הדף
+  if(t<T.flash.life){ctx.globalAlpha=0.5*A*(1-t/T.flash.life);ctx.beginPath();ctx.arc(0,0,r0*T.flash.r,0,7);ctx.fill()}   // הבזק
+  if(wr&&t<T.wave.life){const w=t/T.wave.life;ctx.globalAlpha=(1-w)*0.9*A;ctx.lineWidth=4*(1-w)+1;ctx.beginPath();ctx.arc(0,0,r0*0.3+(wr-r0*0.3)*(1-Math.pow(1-w,2.4)),0,7);ctx.stroke()}   // גל הדף
   ctx.globalAlpha=a;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(0,0,r*0.97,0,7);ctx.stroke();ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(0,0,r*0.78,0,7);ctx.stroke();
   ctx.save();ctx.rotate(t*R.spin[0]);ctx.beginPath();for(let i=0;i<24;i++){const q=i*Math.PI/12;ctx.moveTo(Math.cos(q)*r*0.82,Math.sin(q)*r*0.82);ctx.lineTo(Math.cos(q)*r*(i%3?0.9:0.94),Math.sin(q)*r*(i%3?0.9:0.94))}ctx.stroke();ctx.restore();   // טבעת סימנים
   ctx.rotate(t*R.spin[1]);ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,ri*0.94,0,7);   // בפנים: משולש כפול (מגן דוד של קווים)
