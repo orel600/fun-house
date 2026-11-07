@@ -19,7 +19,7 @@ const MBFX={
   net:{col:'#D9C39A',cells:4,close:0.25},   // רשת: צבע החבל, כמה משבצות, וכמה שניות היא נסגרת על מי שנתפס
   bubble:{col:'#7FD3FF',r:30},              // בועת המים סביב מי שהורם
 };
-const mbfxS=()=>MB.fxs||(MB.fxs={p:[],n:[],stop:0,stopCd:0,slow:0,flash:0,fcol:'#fff',ult:null});
+const mbfxS=()=>MB.fxs||(mbfxPreload(),MB.fxs={p:[],n:[],stop:0,stopCd:0,slow:0,flash:0,fcol:'#fff',ult:null});   // משחק חדש: טוענים מראש את אפקטי הסקילים
 const mbfxMe=()=>MB.me&&!MB.me.bot;   // שחקן אמיתי (בבדיקת האיזון וב-check.js גם השחקן בוט: בלי האטות)
 const mbfxSeen=(x,y)=>Math.abs(x-S.cam.x)<W/2+MBFX.near&&Math.abs(y-S.cam.y)<H/2+MBFX.near;
 function mbfxShake(v){S.shake=Math.min(MBFX.shake.max,Math.max(S.shake,v))}
@@ -107,6 +107,7 @@ function mbfxDraw(){
     ctx.globalAlpha=0.16*k+0.06;ctx.fillStyle=col;ctx.beginPath();ctx.arc(u.x,u.y-22,u.r+16,0,7);ctx.fill();
     ctx.globalAlpha=0.5*k+0.2;ctx.strokeStyle='#E8F4FF';ctx.lineWidth=2;ctx.beginPath();ctx.arc(u.x,u.y-22,u.r+16,-2.6+MB.t*2,-0.6+MB.t*2);ctx.stroke()}
   mbfxMarks();mbfxShots();
+  if(typeof fxDraw==='function')fxDraw();   // ספריית האפקטים (fxlib.js) כאן, בקואורדינטות העולם ומתחת למספרים. ב-render.js היא ציירה אחרי ש-mobaDraw כבר עבר לקואורדינטות המסך, ולכן מחוץ למסך
   ctx.globalCompositeOperation='lighter';
   for(const p of F.p){if(!mbVisPt(p.x,p.y))continue;const k=p.life/p.t0;ctx.globalAlpha=Math.min(1,k*1.6);ctx.fillStyle=p.col;const s=p.size*(0.4+0.6*k);ctx.fillRect(p.x-s/2,p.y-p.z-s/2,s,s)}
   ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
@@ -176,6 +177,8 @@ const MBFXSK={
   recall:{size:120,add:true,sy:0.5},coins:{size:150,add:true,dy:-30},gamble_win:{size:150,add:true,dy:-24},gamble_lose:{size:150,add:true,dy:-20},
   netRot:1.1,   // הוו של הרשת בגיליון מצויר באלכסון למעלה-ימינה: מסובבים בזה כדי שיעוף בכיוון הזריקה
 };
+// טעינה מראש בתחילת משחק: בלי זה, הסקיל הראשון מכל סוג עובר בלי אפקט (התמונה נטענת רק כשצריך)
+function mbfxPreload(){if(typeof fxPreload==='function')fxPreload(Object.keys(MBFXSK).filter(k=>typeof MBFXSK[k]==='object').concat(['sk_wave','sk_wave_crest','sk_pierce_ray','hit_light','hit_water']))}
 // מנגן אפקט מהספרייה עם ההגדרות למעלה. o.r: רדיוס הסקיל (ל-k). בלי fxlib.js או בלי הקבצים: לא קורה כלום
 function mbfxSk(id,x,y,o={}){
   if(typeof fxPlay!=='function')return null;
