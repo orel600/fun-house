@@ -339,6 +339,7 @@ function drawQuestMarks(ox,oy){
     if(!q.giver||!npcHere(q.giver))continue;
     if(ready)mark[q.giver]='✓';else if(qOpen(q)&&(q.kind==='rank'||!mark[q.giver]))mark[q.giver]=q.kind==='rank'?'!!':'!';   // דרגה: סימן גדול וסגול, שלא מתפספס (ניר, 5.11)
   }
+  if(typeof fxwMarks==='function')fxwMarks(mark,'v');   // זוהר מספריית האפקטים מאחורי הסימן (fxworld.js)
   ctx.textAlign='center';ctx.direction='ltr';ctx.font='800 22px Heebo, system-ui, sans-serif';
   const bob=Math.sin(fxNow()*4)*4;
   for(const k in mark){const N=npcAt(k);if(!N)continue;const x=N.x+ox,y=N.y-NPC.markUp+oy+bob,rk=mark[k]==='!!',m=rk?'!':mark[k];

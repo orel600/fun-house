@@ -128,6 +128,7 @@ function drawWnpcs(){
 function drawWnpcScreen(ox,oy){
   const all=wnpcState();if(!all)return;
   const mark=wnpcMarks(),bob=Math.sin(fxNow()*4)*4;
+  if(typeof fxwMarks==='function')fxwMarks(mark,'w');   // זוהר מספריית האפקטים מאחורי הסימן (fxworld.js)
   ctx.textAlign='center';ctx.direction=DIR;
   for(const id in all){const n=all[id],x=n.x+ox,y=n.y+oy,col=WNPC.list[id].col;
     if(n.emote){ctx.font='26px system-ui, sans-serif';ctx.fillText(n.emote,x,y-WNPC.markUp-14+Math.sin(fxNow()*8)*3)}

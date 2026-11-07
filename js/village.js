@@ -170,6 +170,7 @@ function villageUpdate(dt){
   const V=S.vil;
   P.inv-=dt;S.hurt-=dt;S.shake=Math.max(0,S.shake-dt*30);
   sigUpdate(dt);   // סקיל החתימה: גם בכפר אפשר להטיל (sigskill.js)
+  if(typeof fxwUpdate==='function')fxwUpdate(dt);   // שכבת אפקטים: סימנים, אווירה וצעדים (fxworld.js)
   const {ix,iy}=movePlayer(dt);if(P.moving)P.aim=Math.atan2(iy,ix);
   // לא נכנסים לתוך מבנים, ולא יוצאים מהכפר
   for(const k in VILLAGE.b){const B=VILLAGE.b[k],dx=P.x-B.x,dy=P.y-B.y,d=Math.hypot(dx,dy)||1,min=B.r+P.r;if(d<min){P.x=B.x+dx/d*min;P.y=B.y+dy/d*min}}
