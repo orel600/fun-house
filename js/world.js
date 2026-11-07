@@ -324,7 +324,7 @@ function worldUpdate(dt){
   ridgeUpdate(dt);   // מפולות במדרון (ridge-hazards.js)
   riverUpdate(dt);   // נהר הברקים במגדלי הסערה (storm-river.js)
   terrainTick();   // אויבים ופיוחו: לא בתוך מים, יער או צוק, ולאט במעבר הרדוד (terrain.js)
-  dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
+  dropsUpdate(dt);secretsUpdate(dt);wlifeUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*mutK('regen')*dt);   // mutK: יום הצמא מרפא לאט (mutation.js)
   enemies=enemies.filter(e=>!e.dead);
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}
@@ -438,6 +438,7 @@ function drawWorld(){
   foeAiDraw();   // הסתערות, ירייה וקפיצה שמסומנות על הרצפה (foeai.js)
   eventsDraw();scentDraw();rareDraw();   // אירועים (events.js), החיה מובילה (petscent.js)
   lakeBellDraw();   // גל הפעמון, אדוות ליד הגשרים והתיבה הטבועה (lake-bell.js)
+  wlifeDraw();   // מחנות חיים, שרידים וחיות (wlife.js)
   secretsDraw();curioDraw();   // סודות (secrets.js), מכשול בדרך לאזור הבא (curiosity.js)
   if(WR().fog)wFog();
   if(WR().snow)wSnow();   // הרכס הקפוא

@@ -2064,6 +2064,14 @@ Object.assign(TEXT,{
 
 // ======== סודות בעולם (secrets.js) ========
 Object.assign(TEXT,{
+  // עולם עם חיים (wlife.js): מה הדמות ליד המדורה אומרת בביקור הראשון, ואחר כך. ומה כתוב כשלוקחים שריד
+  'wl.say.meadow.0':{he:'חוטבי העצים הלכו מכאן מזמן. תיקח, אני לא צריך את זה.',en:'The loggers left long ago. Take this, I won\'t need it.'},
+  'wl.say.meadow.1':{he:'ראיתי צבי זהוב ליד הנחל. אם תתקרב בשקט, אולי תספיק לראות מה הוא משאיר.',en:'I saw a golden deer by the stream. Get close and see what it leaves.'},
+  'wl.say.meadow.2':{he:'האש הזאת דולקת מאז שהפנסים כבו. שב, תתחמם.',en:'This fire has burned since the lanterns went dark. Sit, get warm.'},
+  'wl.say.meadow.3':{he:'הים הביא עגלה שבורה אתמול. מה שהיה בה, כבר אצלך.',en:'The sea brought in a broken cart yesterday. What was in it is yours now.'},
+  'wl.rest':{he:'שב ליד האש. היא מרפאת.',en:'Sit by the fire. It heals.'},
+  'wl.rem.cart':{he:'עגלה הפוכה',en:'Overturned cart'},'wl.rem.pack':{he:'תרמיל ישן',en:'Old pack'},
+  'wl.rem.chest':{he:'ארגז שבור',en:'Broken chest'},'wl.rem.tent':{he:'אוהל קרוע',en:'Torn tent'},
   'sc.found':{he:(n,of)=>'🔍 גילית סוד! '+n+'/'+of+' באזור',en:(n,of)=>'🔍 Secret found! '+n+'/'+of+' here'},
   'sc.hud':{he:'סודות שנמצאו באזור',en:'Secrets found here'},
   'sc.bless.speed':{he:'🌀 ברכת הרוח: רגליים קלות לדקה',en:'🌀 Wind blessing: light feet for a minute'},
