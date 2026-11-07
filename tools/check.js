@@ -2469,9 +2469,11 @@ function worldBot(m,L,god){
     'אפקטים בכפר ובעולם: '+(fxw.party?'קונפטי בחגיגה':'בלי קונפטי')+
     (fxw.stepV&&fxw.steps?', צעדים לפי הקרקע':', בלי צעדים')+(fxw.weather?', מזג אוויר לפי אזור':', מזג אוויר חסר')+(fxw.shore?', אדוות על קו המים באגם':', בלי אדוות באגם')+(fxw.stars?', כוכבים בלב הצל':', בלי כוכבים בצל')+(fxw.trailOk?', שובל אש על הנפה':', שובל חסר או בצבע לא נכון ('+fxw.trail+')')+(fxw.sceneOk?', אווירה לכל אזור':', אווירה חסרה ב-'+Object.keys(fxw.scene).filter(k=>!fxw.scene[k]).join('/'))+(fxw.arena?', כבוי בזירה':', פועל בזירה!')+', '+fxw.mine+'/'+fxw.cap+' אפקטים של השכבה ('+fxw.all+'/'+fxw.max+' בכל המשחק)');
   // סבב 2 (fxvil.js, skillcast.js): סימן אחד מעל כל דמות לפי המצב, טקס דרגה עם עמוד אור ומדליה, ומעגל קסם לפי סוג הנזק
-  const fxv=await page.evaluate(async()=>{const o={},bak=JSON.stringify(SAVE),Q=JSON.stringify(SAVE.quests||{}),N=FXV.npc.ids;
-    try{const ids=[N.turnin,N.quest,N.shop,N.talk,'wrank_burst','wrank_badge',...Object.values(SKCAST.sprite.ids)];fxPreload(ids);
-      for(let i=0;i<100&&ids.some(id=>!fxImg(id)&&!FXLIB.bad[id]);i++)await new Promise(r=>setTimeout(r,50));o.loaded=ids.filter(id=>fxImg(id)).length+'/'+ids.length;
+  // התמונות נטענות בלי קשר לשעון של הבדיקה (שעומד), אז מחכים להן מבחוץ ולא ב-setTimeout בתוך הדף
+  const fxvIds=await page.evaluate(()=>{const N=FXV.npc.ids,ids=[N.turnin,N.quest,N.shop,N.talk,'wrank_burst','wrank_badge',...Object.values(SKCAST.sprite.ids)];fxPreload(ids);return ids});
+  for(let i=0;i<60&&!await page.evaluate(ids=>ids.every(id=>fxImg(id)||FXLIB.bad[id]),fxvIds);i++)await new Promise(r=>setTimeout(r,50));
+  const fxv=await page.evaluate(ids=>{const o={},bak=JSON.stringify(SAVE);
+    try{o.loaded=ids.filter(id=>fxImg(id)).length+'/'+ids.length;
       enterVillage();const all=npcState(),here=Object.keys(all).filter(k=>npcHere(k)),pos=(id,n)=>({x:n.x,y:n.y-80}),seen=FXV.seen.v;
       const other=here.find(k=>!FXV.npc.shop.includes(k)&&!/^v/.test(k)),shop=here.find(k=>FXV.npc.shop.includes(k));
       const st=(mark,near,px)=>{S.vil.npcNear=near;if(px){P.x=px.x;P.y=px.y}fxvNpcIcons(mark,'v',pos);for(const k in mark)fxvMark(mark[k],0,0);return {...seen}};
@@ -2492,7 +2494,7 @@ function worldBot(m,L,god){
       const cd=JSON.stringify(o.circ);o.circOk=o.circ.fire==='wcirc_fire'&&o.circ.ice==='wcirc_ice'&&o.circ.lightning==='wcirc_lightning'&&o.circ.earth==='wcirc_earth'&&o.circ.water==='wcirc_water'&&o.circ.physical==='wcirc_phys'&&o.circ.plant==='-';
       const ta=performance.now();for(let i=0;i<200;i++)fxvNpcIcons({},'v',pos);o.iconMs=+((performance.now()-ta)/200).toFixed(3)}
     catch(err){o.err=String(err&&err.stack||err).slice(0,300)}
-    SAVE=JSON.parse(bak);enterVillage();return o});
+    SAVE=JSON.parse(bak);enterVillage();return o},fxvIds);
   check(!fxv.err&&fxv.turn==='turnin'&&fxv.quest==='quest'&&fxv.talk==='talk'&&fxv.none&&fxv.shop==='shop'&&fxv.shopQuest==='turnin'&&fxv.rankup&&fxv.lvDiff&&fxv.circOk&&fxv.gone,
     'סימנים, דרגה ומעגלים (סבב 2): '+(fxv.err||('תמונות '+fxv.loaded+', דמות: מסירה='+fxv.turn+' קווסט='+fxv.quest+' שיחה='+fxv.talk+(fxv.none?', בלי מצב בלי סימן':', סימן בלי מצב!')+', סוחרת='+fxv.shop+' ועם מסירה='+fxv.shopQuest+
     ' · בכפר עכשיו: '+(fxv.real||'אין')+' · '+(fxv.rankup?'דרגה: עמוד אור ומדליה':'דרגה בלי עמוד ומדליה!')+(fxv.lvDiff?', רמה רגילה בלעדיהם':', גם ברמה רגילה!')+
