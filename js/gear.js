@@ -12,7 +12,7 @@ const GEAR={
   // הסטטים. איך כל אחד חל על השחקן: gearReset. unit: מה מוצג אחרי המספר. w: משקל בהשוואה "מה יותר טוב"
   stats:{sdmg:{unit:'%',w:1},gdmg:{unit:'%',w:1},hp:{unit:'',w:0.4},speed:{unit:'%',w:1.5},magnet:{unit:'%',w:0.3},regen:{unit:'',w:8},
     // מגיעים מכוחות (powers.js). t: מפתח השם ב-lang.js, כש-'st.<סטט>' כבר תפוס
-    aspd:{unit:'%',w:1.5,t:'gst.aspd'},crit:{unit:'%',w:1.5,t:'gst.crit'},loot:{unit:'%',w:0.5,t:'gst.loot'},def:{unit:'%',w:1.5,t:'gst.def'},combo:{unit:'%',w:1,t:'gst.combo'}},   // combo: נזק שילובים בעולם (wcombo.js)
+    aspd:{unit:'%',w:1.5,t:'gst.aspd'},crit:{unit:'%',w:1.5,t:'gst.crit'},loot:{unit:'%',w:0.5,t:'gst.loot'},def:{unit:'',w:0.25,t:'gst.def'},combo:{unit:'%',w:1,t:'gst.combo'}},   // combo: נזק שילובים בעולם (wcombo.js). def: נקודות הגנה (defense.js), ומשקל לפי flat כדי שהציון לא ישתנה
   // חפצים מסתובבים: הסוג והאייקון במסך הציוד. מה כל סוג עושה בזירה: ORBIT ב-orbit.js
   orbit:{attack:'🔥',defense:'🛡️',control:'❄️',support:'💚',luck:'🍀'},
   /* הפריטים. slot: weapon / acc / boots / orbit. נעליים נותנות מהירות (speed). tier: מספר ב-tiers. w: סוג הנשק ב-WEAPONS (weapons.js): איך הוא תוקף. איתו מתחילים את הריצה.

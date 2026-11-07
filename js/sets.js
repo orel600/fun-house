@@ -4,7 +4,8 @@
    מפתחות שאפשר לתת: כל מה ש-gApply מכיר (sdmg, gdmg, hp, speed, magnet, regen, def, crit, loot, hpPct, multi, pierce, aspd).
    השמות ב-lang.js: 'set.<id>' לסט, ו-'set.<id>.<n>' למה שהמדרגה נותנת. col: הצבע של הסט בחלון הציוד */
 const SETS={
-  warden:{col:'#C9A26B',bonus:{2:{hp:30,def:5},4:{def:8,hpPct:15,sdmg:20}}},     // השומר האבן: מקרוב ועמיד (פרק 1 בעלילה)
+  warden:{col:'#C9A26B',bonus:{2:{hp:30,def:30},4:{def:48,hpPct:15,sdmg:20}}},   // def: נקודות הגנה (defense.js), היו 5% ו-8%
+      // השומר האבן: מקרוב ועמיד (פרק 1 בעלילה)
   storm: {col:'#C7A6FF',bonus:{2:{gdmg:15,crit:4},4:{speed:10,multi:1,gdmg:20}}}  // צייד הסערה: מרחוק ומהיר
 };
 
