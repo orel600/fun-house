@@ -38,7 +38,7 @@ function wambNew(id,x,y,o,kind){
   WAMB.list.push(f);return f;
 }
 const wambCount=kind=>{let n=0;for(const f of WAMB.list)if(f.kind===kind)n++;return n};
-// נקודה במסך (בעולם), לא צמודה לקצה. // סביב הגיבור: המצלמה עוקבת אחריו, והיא מתעדכנת רק בציור
+// נקודה במסך סביב הגיבור, לא צמודה לקצה (המצלמה עוקבת אחריו, והיא מתעדכנת רק בציור)
 function wambView(){const m=WAMB.edge;return{x:P.x+rand(-W/2+m,W/2-m),y:P.y+rand(-H/2+m,H/2-m)}}
 const wambIn=(x,y)=>Math.abs(x-P.x)<W/2&&Math.abs(y-P.y)<H/2;
 // קו המים הקרוב לנקודה אקראית במסך (terrain.js). אין מים במסך: null
