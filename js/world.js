@@ -196,6 +196,7 @@ function worldUi(on){if(!on)TR=null;document.body.classList.toggle('world',on);$
 // at: 'home' (מהכפר, או מהאזור הקודם), id של שער (חזרה מהזירה) או של דרך (חזרה מאזור אחר). reg: איזה אזור, ברירת המחדל האחו
 function enterWorld(at,reg){
   wRet=null;reset();S.mode='play';
+  if(typeof villageUi==='function'&&!$('vhud').hidden)villageUi(false);   // פס המשאבים של הכפר לא נשאר מתחת לזה של העולם (שורות מטבעות שעולות אחת על השנייה)
   reg=WORLD.regions[reg]?reg:'meadow';
   S.wd={reg,t:0,gt:0,near:null,ui:'',groups:[],got:{}};S.wd.groups=WR().foes.map(()=>({t:0}));   // קודם S.wd, ואז WR() יודע באיזה אזור אנחנו (לפני כן החזיר תמיד את האחו)
   const R=WR();terrainEnter(R,reg);   // המפה של האזור: מה חסום ומה מאט (terrain.js). אזור בלי map: null, ומלבן כמו קודם
