@@ -59,16 +59,17 @@ const FXW={
      when: day/night. dawn: [שקיפות בבוקר ובערב, שקיפות בשאר היום]. flash: הבזק מסך עם הברק (לא ב-RM ולא ב"פחות אפקטים") */
   scene:{every:[3.5,7],max:1,   // אחד בבת אחת: כל אפקט כאן הוא שטח גדול לצייר
     dawn:[[5,9],[17,21]],
-    meadow:[{id:'wx_petals',w:3,size:0.30,a:0.75,dur:3,fps:20,when:'day'},{id:'pl_pollen',w:2,size:130,a:0.85,add:1,dur:2.4,fps:20,when:'day'},
-            {id:'wx_sunrays',w:1,size:0.32,a:0.3,add:1,at:'sky',dur:3.2,fps:12,when:'day'}],
+    meadow:[{id:'wx_petals',w:3,size:0.30,a:0.75,dur:3,fps:20,when:'day'},{id:'pl_pollen',w:2,size:130,a:0.85,add:1,dur:2.4,fps:20,when:'day'}],   // wx_sunrays לא כאן: הרקע שלו אפור כמעט אטום, ובגודל חלקי רואים מלבן. קרני אור יש ליד היער (lr_forest)
     desert:[{id:'wx_dust',w:4,size:0.28,a:0.7,at:'low',dur:2.6,fps:22},{id:'wx_devil',w:1,size:150,a:0.85,dur:2.2,fps:22,vx:60},
             {id:'sf_embers',w:2,size:120,a:0.9,add:1,at:'pond',dur:2,fps:24}],
-    storm:[{id:'wx_bolt',w:1,size:0.29,a:0.8,add:1,at:'sky',fps:30,flash:0.32}],
-    ridge:[{id:'wx_blizzard',w:1,size:0.36,a:0.5,add:1,dur:2.6,fps:24}],
+    storm:[{id:'wx_flash',w:1,a:0.32,add:1,fps:60,layer:1,calm:1}],   // הבזק ברק על כל המסך (layer). calm: לא כשביקשו פחות תנועה או 'פחות אפקטים'. wx_bolt לא: הרקע האפור שלו נראה כמלבן
+    ridge:[],   // סופת השלג היא משב: אריחי השלג מתחלפים לרגע (FXW.gust), בלי שטח נוסף לצייר
     lake:[{id:'wx_fog',w:1,size:0.32,dawn:[0.5,0.24],at:'low',dur:4,fps:10,vx:18}],
-    shadow:[{id:'sf_fog',w:2,size:0.30,a:0.6,at:'low',dur:3.5,fps:14},{id:'lr_moon',w:1,size:0.26,a:0.35,add:1,at:'sky',dur:3,fps:12}],
+    shadow:[{id:'sf_fog',w:2,size:0.30,a:0.6,at:'low',dur:3.5,fps:14},{id:'lr_moon',w:1,size:0.26,a:0.25,add:1,at:'sky',dur:3,fps:12}],
     forest:[{id:'lr_forest',w:2,size:0.30,a:0.35,add:1,at:'forest',dur:3,fps:12,when:'day'},{id:'pl_shroom',w:2,size:60,a:1,add:1,at:'forest',dur:3,fps:16,when:'night'}],
-    forestNear:520},   // יער (TR.map.forests) במרחק הזה מהמצלמה: מוסיפים את רשימת forest לאזור
+    forestNear:520},
+  // משב: אריחי מזג האוויר של האזור מתחלפים לרגע לגיליון אחר, באותו שטח (אז בלי עלות נוספת). add: הגיליון עם רקע אפור
+  gust:{ridge:{from:'snow',to:'wx_blizzard',every:[6,12],dur:2.6,a:0.5,add:1}},gustT:4,gustEnd:0,   // יער (TR.map.forests) במרחק הזה מהמצלמה: מוסיפים את רשימת forest לאזור
   // הגיבור במים: התזה (hit_water) כשהולכים במים רדודים, טיפות כשהולכים לאורך המים
   wet:{splash:'hit_water',splashSize:58,drop:'wt_droplet',dropSize:44,near:70},
   // גל על החוף (כל אזור עם מים במסך), ודג קופץ באגם
@@ -102,10 +103,11 @@ function fxwWant(){
     const T_=FXW.talk;if(near&&all[near]&&!marks[near]&&dlg!==near&&!want.has('s:'+near))want.set('t:'+near,{id:'npc_talk',o:all[near],size:T_.size,alpha:T_.alpha,dy:-T_.up,dx:T_.dx})}
   if(S.wd){
     // מזג אוויר: אריחים שעוקבים אחרי המצלמה
-    for(const [id,a,kind,when] of FXW.weather[fxwReg()]||[]){if(when==='night'&&!fxwNight())continue;
+    const Gu=FXW.gust[fxwReg()],gu=Gu&&fxNowT()<FXW.gustEnd;
+    for(const [id0,a0,kind,when] of FXW.weather[fxwReg()]||[]){if(when==='night'&&!fxwNight())continue;const g=gu&&id0===Gu.from,id=g?Gu.to:id0,a=g?Gu.a:a0,add=g&&!!Gu.add;
       if(kind==='sky'){const s=cw/2;for(let i=0;i<2;i++)want.set('w:'+id+i,{id,o:cam,size:s,alpha:a,dx:(i-0.5)*s,dy:-ch/2+s*0.1,flip:i===1})}   // flip: החצי השני במראה, כדי שהתפר באמצע יתחבר
       else if(kind==='low'){const s=cw/2.2;for(let i=0;i<2;i++)want.set('w:'+id+i,{id,o:cam,size:s,alpha:a,dx:(i-0.5)*s*1.1,dy:ch*0.18})}
-      else{const s=Math.max(cw/2,ch),c=Math.ceil(cw/s),r=Math.ceil(ch/s);for(let i=0;i<c;i++)for(let j=0;j<r;j++)want.set('w:'+id+i+'_'+j,{id,o:cam,size:s,alpha:a,dx:(i-(c-1)/2)*s,dy:(j-(r-1)/2)*s})}}
+      else{const s=Math.max(cw/2,ch),c=Math.ceil(cw/s),r=Math.ceil(ch/s);for(let i=0;i<c;i++)for(let j=0;j<r;j++)want.set('w:'+id+i+'_'+j,{id,o:cam,size:s,alpha:a,add,dx:(i-(c-1)/2)*s,dy:(j-(r-1)/2)*s})}}
     // מקום של קווסט צדדי פעיל: טבעת על הרצפה וסימן מעל עמוד האור הקיים
     const Q=FXW.quest;for(const t of typeof sqTargets==='function'?sqTargets():[]){const k=Math.round(t.p.x)+'_'+Math.round(t.p.y);
       want.set('q:'+k,{id:'waypoint',o:t.p,size:Q.way,alpha:0.8,under:true});want.set('qm:'+k,{id:'quest_mark',o:t.p,size:Q.mark,alpha:0.9,dy:-Q.up})}}
@@ -116,9 +118,9 @@ function fxwSync(){
   const want=fxwWant();
   for(const [k,h] of FXW.live)if(!want.has(k)||!fxwAlive(h)||h.id!==want.get(k).id){fxStop(h);FXW.live.delete(k)}
   // מזג אוויר (w:) בשכבה משלו (fxwWxDraw), לא ברשימה הכללית
-  for(const [k,h] of FXW.wxl)if(k!=='flash'&&(!want.has(k)||!h.on||h.id!==want.get(k).id))FXW.wxl.delete(k);
+  for(const [k,h] of FXW.wxl)if(k!=='flash'&&k!=='gust'&&(!want.has(k)||!h.on||h.id!==want.get(k).id))FXW.wxl.delete(k);
   for(const [k,w] of want){if(FXW.live.has(k)||FXW.wxl.has(k))continue;
-    if(k.startsWith('w:')){const h=fxMake(w.id,w.o.x,w.o.y,{follow:w.o,loop:true,size:w.size,alpha:w.alpha,dx:w.dx||0,dy:w.dy||0,flip:!!w.flip});if(h)FXW.wxl.set(k,h);continue}
+    if(k.startsWith('w:')){const h=fxMake(w.id,w.o.x,w.o.y,{follow:w.o,loop:true,size:w.size,alpha:w.alpha,dx:w.dx||0,dy:w.dy||0,flip:!!w.flip,add:!!w.add,fps:w.add?24:0});if(h)FXW.wxl.set(k,h);continue}
     const h=fxPlay(w.id,w.o.x,w.o.y,{follow:w.o,loop:true,size:w.size,alpha:w.alpha,dx:w.dx||0,dy:w.dy||0,add:!!w.add,under:!!w.under,flip:!!w.flip});if(h)FXW.live.set(k,h)}
 }
 function fxwStopAll(){for(const h of FXW.live.values())fxStop(h);FXW.live.clear();FXW.wxl.clear()}
@@ -127,7 +129,7 @@ function fxwStopAll(){for(const h of FXW.live.values())fxStop(h);FXW.live.clear(
 function fxwUpdate(dt){
   if(!fxwOn()){if(FXW.live.size)fxwStopAll();return}
   FXW.cam.x=S.cam.x;FXW.cam.y=S.cam.y;
-  FXW.once=FXW.once.filter(fxwAlive);FXW.n=FXW.once.length+FXW.live.size+FXW.wxl.size;
+  FXW.once=FXW.once.filter(fxwAlive);{const now=fxNowT();for(const [k,f] of FXW.wxl)if(fxFrame(f,now)<0)FXW.wxl.delete(k)}FXW.n=FXW.once.length+FXW.live.size+FXW.wxl.size;
   const reg=fxwReg();if(reg!==FXW.reg){FXW.reg=reg;fxwStopAll();FXW.lx=null;FXW.dead.clear();FXW.hp=null;if(S.wd)fxwPingNow();fxwPreload(reg)}   // אזור חדש: מנקים ומתחילים מחדש, טוענים מראש, ופינג במפה
   if((FXW.t-=dt)<=0){FXW.t=FXW.sync;fxwSync();fxwNews();fxwSlow()}
   // צעדים לפי הקרקע
@@ -197,11 +199,13 @@ function fxwScene(reg){
   let L=(Sc[reg]||[]).concat(FXW.forest?Sc.forest:[]).filter(e=>!e.when||(e.when==='night')===night);
   if(!L.length||FXW.once.filter(h=>h.scene).length>=Sc.max)return;
   let w=L.reduce((a,e)=>a+e.w,0)*Math.random(),e=L[L.length-1];for(const x of L)if((w-=x.w)<0){e=x;break}
+  // שכבת מזג האוויר: על כל המסך, עוקב אחרי המצלמה. עם השלג או הגשם זה עובר לקנבס הקטן, אז כמעט בחינם
+  if(e.calm&&(RM||typeof fxLess==='function'&&fxLess()))return;
+  if(e.layer){if(FXW.wxl.has('gust'))return;const f=fxMake(e.id,0,0,{follow:FXW.cam,size:Math.max(W_(),H_())*1.15,alpha:e.a,add:!!e.add,fps:e.fps,loop:!!e.dur,dur:e.dur||0});if(!f)return;FXW.wxl.set('gust',f);return}
   const p=fxwAt(e);if(!p)return;
   const size=e.size<=3?e.size*W_():e.size,a=e.dawn?e.dawn[fxwDawn()?0:1]:e.a;
   const h=fxwPlay(e.id,p.x,p.y,{size,alpha:a,add:!!e.add,dur:e.dur||0,loop:!!e.dur,fps:e.fps,vx:e.vx?e.vx*(Math.random()<0.5?-1:1):0});
-  if(!h)return;h.scene=1;
-  if(e.flash&&!RM&&!(typeof fxLess==='function'&&fxLess())&&typeof fxMake==='function'){const f=fxMake('wx_flash',0,0,{follow:FXW.cam,size:Math.max(W_(),H_())*1.2,alpha:e.flash,add:true,fps:60});if(f)FXW.wxl.set('flash',f)}   // הבזק קצר עם הברק
+  if(h)h.scene=1;
 }
 // מצב על הגיבור: קטן, מעל הראש, לכל היותר פעם ב-gap
 function fxwStatus(id){const St=FXW.status,now=fxNowT();if(now-(FXW.stT[id]||-99)<St.gap)return;FXW.stT[id]=now;fxwPlay(id,P.x,P.y,{follow:P,dy:-St.up,size:St.size,alpha:St.a})}
@@ -210,6 +214,8 @@ function fxwMore(dt,reg){
   const a=P.sw?P.sw.anim:0;if(P.weapon==='sword'&&a>FXW.swA+0.05&&S.mode==='play')fxwSwing();FXW.swA=a;
   if(!S.wd)return;
   if((FXW.sceneT-=dt)<=0){FXW.sceneT=rand(...FXW.scene.every);fxwScene(reg)}
+  const Gu=FXW.gust[reg];if(Gu&&(FXW.gustT-=dt)<=0){FXW.gustT=rand(...Gu.every)+Gu.dur;FXW.gustEnd=fxNowT()+Gu.dur;FXW.t=0}   // משב: הסנכרון הבא מחליף את האריחים, ואחרי dur הם חוזרים
+  if(FXW.gustEnd&&fxNowT()>FXW.gustEnd){FXW.gustEnd=0;FXW.t=0}
   const M=typeof TR!=='undefined'&&TR&&TR.map,cw=W_(),ch=H_();
   // גל על החוף: הנקודה הקרובה על שפת המים, אם היא במסך
   if(M&&(M.water&&M.water.length||M.sea)&&(FXW.waveT-=dt)<=0){FXW.waveT=rand(...FXW.wave.every);

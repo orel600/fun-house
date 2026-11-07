@@ -2375,7 +2375,8 @@ function worldBot(m,L,god){
     const md=S.mode,wt=P.weapon,pdt=P.dt.sword;S.mode='play';P.weapon='sword';P.dt.sword='fire';P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.trail=[...o.ids].find(i=>i.startsWith('tr_'))||'';
     o.trailOk=/^tr_(slash|axe|smash)_crimson$/.test(o.trail);   // אש = crimson, בכל סוג נשק קרוב
     o.scene={};for(const r of ['desert','storm','ridge','lake','shadow']){enterWorld('home',r);S.mode='play';P.inv=99;const want=FXW.scene[r].map(e=>e.id);
-      for(let i=0;i<12;i++){FXW.sceneT=0;FXW.once.length=0;tick(1)}o.scene[r]=want.some(id=>o.ids.has(id))}
+      for(let i=0;i<12;i++){FXW.sceneT=0;FXW.once.length=0;tick(1)}const wx=id=>[...FXW.wxl.values()].some(h=>h.id===id);if(FXW.gust[r]){FXW.gustT=0;tick(1);tick(1)}   // רכס: משב סופת שלג מחליף את אריחי השלג
+      o.scene[r]=want.some(id=>o.ids.has(id)||wx(id))||!!FXW.gust[r]&&wx(FXW.gust[r].to)}
     o.sceneOk=Object.values(o.scene).every(Boolean);
     const wd=S.wd;S.wd=null;o.ids.clear();P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.arena=FXW.live.size===0&&FXW.wxl.size===0&&![...o.ids].some(i=>i.startsWith('tr_'));S.wd=wd;
     S.mode=md;P.weapon=wt;P.dt.sword=pdt;
