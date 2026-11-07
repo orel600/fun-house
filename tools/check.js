@@ -1323,6 +1323,22 @@ function worldBot(m,L,god){
       drawOrbits();r.orbDraw=W.draws>d0&&W.lights>=5;r.orbFlash=W.flashes>f0;
       e3.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // אווירה בעולם ובכפר (wambient.js): בכל אזור אפקטים מהספרייה נוצרים ליד המצלמה, לא יותר מהתקרה, צעדים כשהולכים, פופ באיסוף, ובזירה כלום
+  const wamb=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={reg:{},over:[],none:[],steps:[]};
+    try{if(typeof WAMB==='undefined'||!WAMB.on)return{off:1};
+      for(const reg of ['village','meadow','lake','ridge','desert','storm','shadow']){
+        if(reg==='village')enterVillage();else enterWorld('home',reg);enemies=[];WAMB.st.spawn={};WAMB.st.max=0;const s0=WAMB.st.steps,x0=P.x,y0=P.y;
+        for(let i=0;i<14*60;i++){P.hp=P.maxHp;P.x=x0+Math.cos(i/40)*90;P.y=y0+Math.sin(i/40)*90;S.wd?worldUpdate(1/60):villageUpdate(1/60);P.x=x0+Math.cos(i/40)*90;P.y=y0+Math.sin(i/40)*90}
+        wambDraw();const n=Object.values(WAMB.st.spawn).reduce((a,b)=>a+b,0);r.reg[reg]=n;
+        if(!n)r.none.push(reg);if(WAMB.st.max>WAMB.cap)r.over.push(reg+':'+WAMB.st.max);if(WAMB.st.steps<=s0)r.steps.push(reg)}
+      const p0=WAMB.st.pops;wambPop(P.x,P.y,false);r.pop=WAMB.st.pops>p0;
+      startRun();update(1/60);render();r.arena=WAMB.list.length===0&&!wambHere();
+    }catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  check(wamb.off||!wamb.err&&!wamb.none.length&&!wamb.over.length&&!wamb.steps.length&&wamb.pop&&wamb.arena,
+    'אווירה בעולם (wambient.js): '+(wamb.off?'כבוי':wamb.err||Object.entries(wamb.reg).map(([k,n])=>k+':'+n).join(' ')+
+    (wamb.none.length?', בלי אווירה ב-'+wamb.none.join(','):'')+(wamb.over.length?', מעל התקרה: '+wamb.over.join(','):', בתוך התקרה')+
+    (wamb.steps.length?', בלי צעדים ב-'+wamb.steps.join(','):', צעדים בכל אזור')+(wamb.pop?', פופ באיסוף':', בלי פופ')+(wamb.arena?', כבוי בזירה':', פועל בזירה!')));
   // הגיבור מטיל סקיל (skillcast.js): בכל שימוש יש תנועה של פלג הגוף העליון ועיגול רונות בצבע סוג הנזק שנעלם לבד. בזירה לא
   const skc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];SAVE.hero.skSeen=[...(SAVE.hero.skSeen||[]),...S.sk.ids];

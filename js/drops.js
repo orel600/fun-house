@@ -47,6 +47,7 @@ function dropSpawn(r,n,x,y){
 }
 function dropTake(d,auto){
   d.got=true;const st=dropStats();
+  if(!auto)wambPop(d.x,d.y,dropGear(d.r));   // פופ קטן בעולם ובכפר (wambient.js)
   // פריט ציוד נכנס ישר לתרמיל ונשמר, בכל מקום: הוא לא הולך לאיבוד במוות בעולם
   if(dropGear(d.r)){bagAdd(d.r,d.n);innGear(d.r);saveNow();st.gear.push(d.r);if(!auto)sfx('coin');
     if(feedOn())feedGear(d.r);else floatText(P.x,P.y-40,gIcon(d.r)+' '+gName(d.r),dropTier(d.r).col,16);const all=drops(),i=all.indexOf(d);if(i>=0)all.splice(i,1);return}
