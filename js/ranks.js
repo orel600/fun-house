@@ -72,7 +72,7 @@ function rankUp(tier){
   SAVE.hero.rank=tier;SAVE.hero.rankId=id;
   gApply(R.bonus,1);P.hp=P.maxHp;   // הבונוס חל מיד, וגם בכל ריצה מעכשיו
   saveNow();
-  celebrate(P.x,P.y-10,'rank',R.icon);   // הטקס: עמוד אור, ניצוצות וצליל (fx.js)
+  celebrate(P.x,P.y-10,'rankup',R.icon);   // הטקס: עמוד אור זהב, מדליה, ניצוצות וצליל (fx.js, fxvil.js). שונה מרמה רגילה ('rank')
   banner(T('rank.up',rankName(id)),R.col);
   return id;
 }
