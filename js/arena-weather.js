@@ -5,8 +5,8 @@
      new phase, weatherBolt hits the boss himself (the source), never the danger zone, so the telegraph stays clear.
    - Arena without a boss (scene 'arena'): gentle weather by arena type (AWX.arena), or none where it hurts readability.
      After a boss falls: 'clearing' for AWX.clearT seconds, then the arena's own weather.
-   - Readability first: in 3D the core draws right after the 3D layer. In 2D awxDraw (render.js, right after the floor) draws the
-     core's layer there, so the boss's mines and shock rings, fxDraw, skills, numbers and the HUD are on top of it.
+   - Readability first: the core draws right after the 3D layer, and in a 2D arena right after the floor (render.js), so the boss's
+     mines and shock rings, fxDraw, skills, numbers and the HUD are on top of it.
    boss.js is not touched: the attacks are seen from outside. Delete this file and its line in render.js: the core's defaults remain. */
 const AWX={
   on:true,
@@ -45,8 +45,7 @@ function awxWatch(b){
   if((now.charge&&now.charge!==s.charge)||now.waves>s.waves||now.mines>s.mines+2||now.phase>s.phase)
     if(typeof weatherBolt==='function'&&weatherBolt(b.x,b.y-b.r*0.4))AWX.bolts++;   // the core keeps its own gap between bolts
 }
-/* Called from render() in world coordinates, right after the floor and before the telegraphs (mines, shock rings),
-   the actors, the skills, fxDraw and the damage numbers */
+/* Called from render() every frame in the arena: picks the scene state and sends the bolts. The core draws */
 function awxDraw(){
   if(!awxHere()||!awxApi()){AWX.st='';AWX.seen=null;return}
   const dt=Math.max(0,Math.min(0.1,S.t-AWX.t0));AWX.t0=S.t;   // game time: a pause stops the clearing timer too
@@ -64,5 +63,4 @@ function awxDraw(){
     if(st!==AWX.st)weatherState(st==='clearing'?'clearing':'calm','arena');
   }
   AWX.st=st;AWX.n++;
-  if(!(typeof R3D!=='undefined'&&R3D.on)&&typeof wxDraw==='function')wxDraw('mid');   // 2D: the core's layer here, under the telegraphs (it skips its later call this frame)
 }
