@@ -1327,12 +1327,12 @@ function worldBot(m,L,god){
   const wamb=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={reg:{},over:[],none:[],steps:[]};
     try{if(typeof WAMB==='undefined'||!WAMB.on)return{off:1};
       for(const reg of ['village','meadow','lake','ridge','desert','storm','shadow']){
-        if(reg==='village')enterVillage();else enterWorld('home',reg);enemies=[];WAMB.st.spawn={};WAMB.st.max=0;const s0=WAMB.st.steps,x0=P.x,y0=P.y;
+        if(reg==='village')enterVillage();else enterWorld('home',reg);enemies=[];WAMB.st.spawn={};WAMB.st.max=0;const s0=WAMB.st.steps,sh=reg==='lake'&&tWaterNear(P.x,P.y),x0=sh?sh.x:P.x,y0=sh?sh.y:P.y;   // באגם: על קו המים
         for(let i=0;i<14*60;i++){P.hp=P.maxHp;P.x=x0+Math.cos(i/40)*90;P.y=y0+Math.sin(i/40)*90;S.wd?worldUpdate(1/60):villageUpdate(1/60);P.x=x0+Math.cos(i/40)*90;P.y=y0+Math.sin(i/40)*90}
         wambDraw();const n=Object.values(WAMB.st.spawn).reduce((a,b)=>a+b,0);r.reg[reg]=n;
         if(!n)r.none.push(reg);if(WAMB.st.max>WAMB.cap)r.over.push(reg+':'+WAMB.st.max);if(WAMB.st.steps<=s0)r.steps.push(reg)}
       const p0=WAMB.st.pops;wambPop(P.x,P.y,false);r.pop=WAMB.st.pops>p0;
-      startRun();update(1/60);render();r.arena=WAMB.list.length===0&&!wambHere();
+      const wd=S.wd,vl=S.vil;S.wd=null;S.vil=null;wambUpdate(1/60);wambDraw();r.arena=WAMB.list.length===0&&!wambHere();S.wd=wd;S.vil=vl;   // בזירה אין S.wd ואין S.vil: כלום לא נוצר ומה שהיה מתנקה
     }catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   check(wamb.off||!wamb.err&&!wamb.none.length&&!wamb.over.length&&!wamb.steps.length&&wamb.pop&&wamb.arena,
