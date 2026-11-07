@@ -561,9 +561,11 @@ function drawWorldScreen(ox,oy){
   drawWnpcScreen(ox,oy);   // worldnpc.js
   fishScreen(ox,oy);   // "!" והפס של הדיג (fishing.js)
   storyScreen(ox,oy);   // story.js
+  lblBegin();   // שמות מעל אויבים: נאספים ומצוירים יחד בסוף, בלי לעלות אחד על השני ועל הכפתורים (labels.js)
   foeLoreScreen(ox,oy);affixScreen(ox,oy);huntScreen(ox,oy);   // שמות ובועות (foelore.js), affix.js, hunt.js
   qmScreen(ox,oy);   // "!" מעל אויב שצריך להרוג לקווסט (questmark.js)
   foeAiScreen(ox,oy);   // "!" מעל קורא שבורח (foeai.js)
+  lblFlush();
   eventsScreen(ox,oy);scentScreen(ox,oy);   // events.js, petscent.js
   lakeBellScreen(ox,oy);   // חצים לאויבים רחוקים כשהערפל למטה (lake-bell.js)
   secretsScreen(ox,oy);secretsHud();curioScreen(ox,oy);   // secrets.js, השלט "רמה מומלצת" (curiosity.js)

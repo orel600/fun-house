@@ -19,6 +19,7 @@ const RARES={
   againChance:0.5,      // הסיכוי בהגרלה הזאת (ועוד pity לכל החטאה)
   mapR:520,             // רדיוס העיגול במפת העולם. המרכז זז עד חצי ממנו מהמקום האמיתי: אזור לחפש, לא נקודה
   beam:{h:300,w:18},    // עמוד האור מעליה: גובה ורוחב בעולם (כמו הקרן של שלל, drops.js)
+  fight:{near:250,size:0.5,alpha:0.45},   // באמצע קרב (אויב חי עד near מהגיבור): העמוד וההילה בחצי גודל ושקופים יותר (ניר, סרטון 7.11: "זוהר צהוב על חצי מסך". כמו העיגול של skillcast.js)
   roam:70,              // כמה רחוק מהמקום שלה היא מסתובבת
   leash:300,            // כמה רחוק מהמקום שלה היא רודפת
   hp:6, dmg:1.4, size:1.3,   // פי כמה מהאויב שהיא מבוססת עליו (גם hp של האזור)
@@ -129,11 +130,15 @@ function rareDraw(){
   for(let i=0;i<K.n;i++){const a=i*2.4+sp.x*0.01,q=K.r*(0.35+((i*37)%60)/100),tw=Math.max(0,Math.sin(t*2.2+i*1.7));
     if(tw<0.15)continue;const x=sp.x+Math.cos(a)*q,y=sp.y+Math.sin(a)*q*0.7,s=1.5+tw*2.5;
     ctx.globalAlpha=tw*0.85;ctx.beginPath();ctx.moveTo(x,y-s*2);ctx.lineTo(x+s*0.6,y);ctx.lineTo(x,y+s*2);ctx.lineTo(x-s*0.6,y);ctx.closePath();ctx.fill()}
-  const e=r.e;if(!e.dead){ctx.globalAlpha=0.22+Math.sin(t*3)*0.08;ctx.beginPath();ctx.ellipse(e.x,e.y+e.r*0.6,e.r*1.9,e.r*0.9,0,0,7);ctx.fill();
-    const B=RARES.beam,gr=ctx.createLinearGradient(0,e.y-B.h,0,e.y);gr.addColorStop(0,RARES.col+'00');gr.addColorStop(1,RARES.col+'aa');   // עמוד אור: רואים מרחוק איפה היא (כמו הקרן של שלל, drops.js)
-    ctx.globalAlpha=0.6+0.15*Math.sin(t*4);ctx.fillStyle=gr;ctx.fillRect(e.x-B.w/2,e.y-B.h,B.w,B.h);ctx.fillStyle='#fff';ctx.globalAlpha*=0.6;ctx.fillRect(e.x-B.w/8,e.y-B.h*0.9,B.w/4,B.h*0.9)}
+  const e=r.e;if(!e.dead){const fg=rareFight(),k=fg?RARES.fight.size:1,ka=fg?RARES.fight.alpha:1;RARES.fight.on=fg;   // באמצע קרב: קטן ועמום
+    ctx.globalAlpha=(0.22+Math.sin(t*3)*0.08)*ka;ctx.beginPath();ctx.ellipse(e.x,e.y+e.r*0.6,e.r*1.9*k,e.r*0.9*k,0,0,7);ctx.fill();
+    const B=RARES.beam,bh=B.h*k,bw=B.w*k,gr=ctx.createLinearGradient(0,e.y-bh,0,e.y);gr.addColorStop(0,RARES.col+'00');gr.addColorStop(1,RARES.col+'aa');   // עמוד אור: רואים מרחוק איפה היא (כמו הקרן של שלל, drops.js)
+    ctx.globalAlpha=(0.6+0.15*Math.sin(t*4))*ka;ctx.fillStyle=gr;ctx.fillRect(e.x-bw/2,e.y-bh,bw,bh);ctx.fillStyle='#fff';ctx.globalAlpha*=0.6;ctx.fillRect(e.x-bw/8,e.y-bh*0.9,bw/4,bh*0.9)}
   ctx.restore();
 }
+// קרב: אויב חי (גם הנדירה עצמה) עד RARES.fight.near מהגיבור
+function rareFight(){const N=RARES.fight.near;if(typeof enemies==='undefined'||typeof P==='undefined')return false;
+  for(const e of enemies)if(!e.dead&&!e.dummy&&Math.hypot(e.x-P.x,e.y-P.y)-(e.r||0)<N)return true;return false}
 // פיוחו (petscent.js): נדירה חיה באזור שעוד לא הריחה
 const rareScent=()=>{const r=S.wd&&S.wd.rare;return r&&!r.done&&!r.e.dead&&!r.sniffed?r:null};
 

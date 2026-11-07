@@ -20,17 +20,20 @@ const CELEBRATE={
   agingFail:{dust:0.35,col:'#7E8698',burst:22,speed:110,pillar:0,pillarW:0,pillarH:0,label:'-1',sound:'hurt'},
   // בעולם ובכפר אין טקסט גדול על הדמות (docs/plan-hud.md פרק 6): הניצוצות והעמוד נשארים, והכיתוב רק ברגעים הגדולים.
   // bigLabel: הסוגים שהכיתוב שלהם נשאר (רמה חדשה ודרגה, שלל אגדי, מבנה שעלה רמה, אזור חדש). near: עד איזה מרחק מהדמות זה נחשב "על הדמות"
-  bigLabel:['rank','loot4','upgrade','travel'], near:110
+  bigLabel:['rank','loot4','upgrade','travel'], near:110,
+  fight:{size:0.5,alpha:0.5,n:0}   // בעולם באמצע קרב: גודל ושקיפות של העמוד והניצוצות (n: לבדיקה)
 };
 let FX=[];
 const fxNow=()=>performance.now()/1000;
 
 // מחזיר כמה שניות עד הפרץ, כדי שמי שקרא יחליף את המראה בדיוק אז (למשל פיגום ← המבנה החדש)
 function celebrate(x,y,kind='upgrade',label){
-  const K=CELEBRATE[kind]||CELEBRATE.upgrade,f={x,y,K,t0:fxNow(),label:label??K.label,dust:[],burst:[]};
+  const K=CELEBRATE[kind]||CELEBRATE.upgrade,f={x,y,K,t0:fxNow(),label:label??K.label,dust:[],burst:[],s:1};
+  // בעולם באמצע קרב (נדירה שנפלה ליד עוד אויבים): חצי גודל ועמום יותר, כדי שלא יכסה את הקרב (ניר, סרטון 7.11)
+  if(typeof S!=='undefined'&&S&&S.wd&&typeof rareFight==='function'&&rareFight()){f.s=CELEBRATE.fight.size;CELEBRATE.fight.n++}
   if(typeof feedOn==='function'&&feedOn()&&!CELEBRATE.bigLabel.some(k=>String(kind).startsWith(k))&&typeof P!=='undefined'&&P&&Math.hypot(x-P.x,y-P.y)<CELEBRATE.near)f.label='';   // בלי טקסט גדול על הדמות
   for(let i=0;i<14;i++)f.dust.push({a:rand(0,6.28),r:rand(20,60),s:rand(8,16),d:rand(0,K.dust*0.6)});
-  for(let i=0;i<K.burst;i++){const a=rand(0,6.28),s=rand(K.speed*0.35,K.speed);f.burst.push({vx:Math.cos(a)*s,vy:Math.sin(a)*s-K.speed*0.4,z:rand(2,4.5),life:rand(0.6,1.1)})}
+  for(let i=0;i<K.burst*f.s;i++){const a=rand(0,6.28),s=rand(K.speed*0.35,K.speed)*f.s;f.burst.push({vx:Math.cos(a)*s,vy:Math.sin(a)*s-K.speed*0.4,z:rand(2,4.5),life:rand(0.6,1.1)})}
   FX.push(f);
   if(typeof fxwCelebrate==='function')fxwCelebrate(x,y,kind);   // קונפטי ובלונים מהספרייה, רק בכפר ובעולם (fxworld.js)
   setTimeout(()=>sfx(K.sound||'celebrate'),K.dust*1000);   // הצליל מ-audio.js, כדי שההשתקה תחול גם עליו
@@ -49,8 +52,8 @@ function drawFx(){
     if(b<0)continue;
     ctx.globalCompositeOperation='lighter';
     // עמוד אור: נפתח מהר ונמוג
-    if(b<K.pillar){const k=b/K.pillar,w=K.pillarW*(1-k*0.6),gr=ctx.createLinearGradient(0,f.y-K.pillarH,0,f.y);
-      gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(1,K.col);ctx.globalAlpha=0.55*(1-k);ctx.fillStyle=gr;ctx.fillRect(f.x-w/2,f.y-K.pillarH,w,K.pillarH)}
+    if(b<K.pillar){const k=b/K.pillar,w=K.pillarW*(1-k*0.6)*f.s,ph=K.pillarH*f.s,gr=ctx.createLinearGradient(0,f.y-ph,0,f.y);
+      gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(1,K.col);ctx.globalAlpha=0.55*(1-k)*(f.s<1?CELEBRATE.fight.alpha:1);ctx.fillStyle=gr;ctx.fillRect(f.x-w/2,f.y-ph,w,ph)}
     // ניצוצות: עפים החוצה ונופלים
     ctx.fillStyle=K.col;
     for(const p of f.burst){if(b>p.life)continue;const k=b/p.life;ctx.globalAlpha=1-k;

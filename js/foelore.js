@@ -98,11 +98,11 @@ function foeLoreScreen(ox,oy){
   let near=null,nd=F.near;
   for(const e of enemies){
     if(e.dead||e.hunt||e.warden)continue;
-    if(e.pname&&(e.flSeen||e.rare)){flTag(e.pname,e.x+ox,e.y+oy-e.r-(e.affix?46:30),e.rare?RARES.col:L.elite,fs);continue}   // נדירה (rares.js): תמיד, בזוהר שלה   // עלית ומבוקש: תמיד
+    if(e.pname&&(e.flSeen||e.rare)){flTag(e.pname,e.x+ox,e.y+oy-e.r-(e.affix?46:30),e.rare?RARES.col:L.elite,fs,e,e.rare?5:4,e.rare?RARES.icon:'💀');continue}   // נדירה (rares.js): תמיד, בזוהר שלה   // עלית ומבוקש: תמיד
     if(!flHas(e.type)||e.wanted)continue;
     const d=Math.hypot(P.x-e.x,P.y-e.y);if(d<nd&&(e.flSeen||e.hitT!=null)){nd=d;near=e}
   }
-  if(near&&!near.affix)flTag(flName(near.type),near.x+ox,near.y+oy-near.r-30,L.col,fs);
+  if(near&&!near.affix)flTag(flName(near.type),near.x+ox,near.y+oy-near.r-30,L.col,fs,near,1,'');
   const s=w.flSay;
   if(s&&!s.e.dead){
     const B=F.bubble,bf=B.size/ZOOM,x=s.e.x+ox,y=s.e.y+oy-s.e.r-(s.e.pname||s.e.affix||s.e.hunt?66:50);
@@ -116,8 +116,9 @@ function foeLoreScreen(ox,oy){
   }
   ctx.restore();
 }
-function flTag(t,x,y,col,fs){
+function flTag(t,x,y,col,fs,e,pri,icon){
   if(!t||!onScreen(x,y))return;
+  if(e&&typeof lblAdd==='function'&&lblAdd({t,icon:icon||'',x,y,col,fs,w:'700',pri,d:Math.hypot(e.x-P.x,e.y-P.y),bg:'rgba(10,12,20,0.6)'}))return;   // בעולם: דרך labels.js, בלי עומס
   const tw=ctx.measureText(t).width+10/ZOOM;
   ctx.fillStyle='rgba(10,12,20,0.6)';ctx.fillRect(x-tw/2,y-fs*0.92,tw,fs*1.25);
   ctx.fillStyle=col;ctx.fillText(t,x,y);
