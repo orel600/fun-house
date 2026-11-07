@@ -552,6 +552,7 @@ function worldBot(m,L,god){
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+  const m3dWarn=[];page.on('console',m=>{if(/missing model/.test(m.text()))m3dWarn.push(m.text())});   // מודל שלא נטען (js/m3d.js)
   // הפונטים מגוגל לא נטענים בבדיקה, כדי שהיא תרוץ זהה גם בלי רשת
   await page.route(/^https?:/,r=>r.fulfill({status:200,contentType:'text/css',body:''}));
   await page.addInitScript(seed=>{let a=seed>>>0;Math.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}},CFG.seed);
@@ -582,6 +583,10 @@ function worldBot(m,L,god){
 
   const results=[];
   const check=(ok,txt)=>results.push((ok?'✓ ':'✗ ')+txt);
+  // מודלים לפי צורך (js/m3d.js): בפתיחה נטענת רק הליבה, ומבחוץ רק מה שהשמירה צריכה עכשיו (דמות אישית, חיה, חפץ לבוש)
+  if(g3.ready){const b=await page.evaluate(()=>{const on=Object.keys(M3D_LAZY).filter(k=>MODELS3D[k]),want=new Set(M3D.bootKs||[]);
+      return {n:Object.keys(M3D_LAZY).length,on,extra:on.filter(k=>!want.has(k)),core:Object.keys(MODELS3D).length-on.length,mb:(Object.values(M3D_LAZY).reduce((a,b)=>a+b,0)/1e6).toFixed(1)}});
+    check(b.n>0&&!b.extra.length,'מודלים בפתיחה: '+b.core+' בליבה, '+b.on.length+' מתוך '+b.n+' שבחוץ ('+b.mb+'MB) נטענו'+(b.on.length?' ('+b.on.join(', ')+')':'')+(b.extra.length?' · נטענו בלי צורך: '+b.extra.join(', '):''))}
   let shotN=0;
   // כל מסך שמצטלם נסרק גם למפתחות גולמיים (__rkScan), גם בלי צילומים
   const shot=async name=>{await page.evaluate(()=>window.__rkScan&&__rkScan()).catch(()=>{});if(!CFG.shots)return;fs.mkdirSync(CFG.shots,{recursive:true});
@@ -1251,6 +1256,9 @@ function worldBot(m,L,god){
     catch(e){r.draw=e.message}
     SAVE.hero.skin=sk;r.off=!fluteOn();return r});
   // המראה שלי בכל זמן (heroes.js, ניר 4.11.2026): כפתור בהגדרות מחליף את הדמות בתלת-ממד, נשמר, ונמצא גם בחלון הציוד
+  // הדמות האישית נטענת לפי צורך (js/m3d.js): עד שהיא מוכנה רואים לרגע את הגיבור של המחלקה. כאן מחכים לה, ואז בודקים שהבחירה מחליפה
+  if(g3.on){await page.evaluate(()=>{m3dGo(LOOK3D[HEROES.skins.nir.look].model)});
+    for(let i=0;i<200&&!(await page.evaluate(()=>m3dReady(LOOK3D[HEROES.skins.nir.look].model)));i++){await page.waitForTimeout(20);await page.clock.runFor(50)}}
   const hsk=await page.evaluate(()=>{const sk=SAVE.hero.skin,pk=SAVE.pet.kind,r={};
     try{soundOpen();const lk=()=>R3D.on?heroLook().model:heroSkin();SAVE.hero.skin=null;const base=lk();
       document.querySelector('#ovSound [data-skin="nir"]').click();
@@ -1752,6 +1760,25 @@ function worldBot(m,L,god){
     enemies=[];orbs=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(crowd.n<=crowd.cap&&typeof crowd.elite==='number'&&crowd.elite<=crowd.lim&&(crowd.far==='נעלם'||crowd.far<=crowd.lim)&&crowd.orbs<=150&&crowd.xp===400,
     'עומס בזירה: '+crowd.n+' אויבים (מגבלה '+crowd.cap+'), אויב רחוק: '+crowd.far+', אויב-על רחוק קפץ ל-'+crowd.elite+' (עד '+crowd.lim+'), כדורי XP: 400→'+crowd.orbs+' ששווים '+crowd.xp+' XP');
+  // מודלים לפי צורך (js/m3d.js): בכניסה לכל אזור נטענים ברקע הענק שלו ומפלצות הזירה, ובזירה המפלצות שלה. בלי אזהרת "missing model"
+  if(g3.on){
+    const settle=async()=>{for(let i=0;i<300;i++){if(await page.evaluate(()=>!M3D.hint.length&&!M3D.busy&&!M3D.pending()))return true;await page.waitForTimeout(20);await page.clock.runFor(50)}return false};
+    const regs=await page.evaluate(()=>{let ls=null;try{ls=localStorage.getItem(SAVE_STORE.key)}catch(e){}   // כמו שאר הבדיקות: הכל חוזר בסוף, כולל השמירה בדפדפן (enterWorld שומר)
+      window.__m3dBak={save:JSON.stringify(SAVE),ls,mode:S.mode,vil:S.vil,wd:S.wd,room:S.room,body:document.body.className,ov:[...document.querySelectorAll('[id^=ov]')].map(e=>[e,e.hidden])};return ['meadow',...Object.keys(WORLD.regions).filter(k=>k!=='meadow')]}),rows=[],bad=[];
+    for(const reg of regs){
+      await page.evaluate(r=>{enterWorld('home',r);R3D.wWarm&&(R3D.wWarm.done[r]=0);for(let i=0;i<R3D.drawEvery;i++)render3d(0,0)},reg);   // render3d: הכניסה (wldWarm) מבקשת את מה שצריך
+      const ok=await settle();
+      const r=await page.evaluate(r=>{const ks=[];for(const k in STORY.lanterns)if(STORY.lanterns[k].reg===r&&LOOK3D['wb_'+k])ks.push(LOOK3D['wb_'+k].model);
+        const want=ks.concat(M3D.arena.map(t=>LOOK3D[t].model)),miss=want.filter(k=>!m3dReady(k));return {giant:ks.join('/')||'-',miss}},reg);
+      rows.push(reg+' '+r.giant.replace(/mon_/g,''));if(!ok||r.miss.length)bad.push(reg+': '+(ok?'':'לא נגמר ')+r.miss.join(','))}
+    await page.evaluate(()=>{worldUi(false);startRun();for(let i=0;i<R3D.drawEvery;i++)render3d(0,0)});const ok=await settle();
+    const ar=await page.evaluate(()=>{const miss=M3D.arena.filter(t=>!m3dReady(LOOK3D[t].model)||!R3D.tmpl[LOOK3D[t].model]),B=__m3dBak;
+      worldUi(false);enemies=[];SAVE=JSON.parse(B.save);reset();S.mode=B.mode;S.vil=B.vil;S.wd=B.wd;S.room=B.room;try{if(B.ls==null)localStorage.removeItem(SAVE_STORE.key);else localStorage.setItem(SAVE_STORE.key,B.ls)}catch(e){}
+      document.body.className=B.body;for(const [e,h] of B.ov)e.hidden=h;return miss});
+    if(!ok||ar.length)bad.push('זירה: '+ar.join(','));
+    const log=await page.evaluate(()=>M3D.log.map(l=>l.ms));
+    check(!bad.length&&!m3dWarn.length,'מודלים לפי צורך: בכניסה לאזור הענק שלו ('+rows.join(', ')+') ומפלצות הזירה, '+log.length+' נטענו, הארוך '+Math.max(0,...log)+'ms'+
+      (bad.length?' · חסר: '+bad.join(' | '):'')+(m3dWarn.length?' · אזהרות: '+m3dWarn.slice(0,3).join(' | '):''))}
   // מפלצות הזירה (Quaternius, HORDE.monsters ב-spawn.js, RUN.elite.types ב-run.js): לכל אחת חומרים, שם, צבע בדו-ממד ומודל עם ריצה ומוות,
   // הן לא מופיעות לפני הזמן שלהן ומופיעות אחריו, ואויבי-העל בתחנות הם לפי התור
   const mons=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={bad:[],early:0,seen:{},elites:[],want:RUN.elite.types},er=window.eliteRoll;window.eliteRoll=()=>{};startRun();enemies=[];
@@ -1759,7 +1786,8 @@ function worldBot(m,L,god){
     for(const t of all){const d=ETYPES[t],L=LOOK3D[t],miss=[];
       if(!d||!(d.tags||[]).length)miss.push('tags');if(!MATCOL[((d&&d.tags)||[])[0]])miss.push('צבע בדו-ממד');
       for(const k of ['foe.','book.f.'])if(T(k+t)===k+t)miss.push(k+t);
-      if(!L||!MODELS3D[L.model]||!MODELS3D['anim_'+L.model]||!L.anim||!L.anim.run||!L.anim.die)miss.push('מודל');
+      const has=k=>MODELS3D[k]||m3dLazy(k);   // מבחוץ (js/m3d.js): נטען כשצריך
+      if(!L||!has(L.model)||!has('anim_'+L.model)||!L.anim||!L.anim.run||!L.anim.die)miss.push('מודל');
       else if(R3D.ready&&(!R3D.tmpl[L.model]||!R3D.clips[L.anim.run]||!R3D.clips[L.anim.die]))miss.push('אנימציה בתלת-ממד');
       if(miss.length)o.bad.push(t+': '+miss.join(', '))}
     const roll=t=>{S.t=t;const c={};for(let i=0;i<1500;i++){enemies=[];S.spawnT=0;S.hordeT=99;spawner(0);for(const e of enemies)c[e.type]=(c[e.type]||0)+1}return c};
