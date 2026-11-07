@@ -159,3 +159,27 @@ function mbfxScreen(){
   const ty=H*MBFX.ult.y;ctx.lineWidth=6;ctx.strokeStyle='#0B0A12';ctx.strokeText(U.txt,W/2,ty);ctx.fillStyle=U.col;ctx.fillText(U.txt,W/2,ty);
   ctx.fillStyle='#FFF4D8';ctx.fillRect(W/2-90*k,ty+12,180*k,3);ctx.globalAlpha=1;
 }
+
+/* ---- הסקילים, הלחשים והחזרה עם אפקטים מהספרייה (fxlib.js, אוראל 7.11.2026) ----
+   סדר החשיבות: סקיל-על (עיגול קסם גדול מתחת למטיל ועמוד אור) > סקיל > תקיפה רגילה. כל סקיל בצורה משלו ובצבע סוג הנזק שלו.
+   המספרים כאן: size בפיקסלים של המשחק, או k כפול הרדיוס של הסקיל (r). sy:0.5 = עיגול ששוכב על הרצפה. השאר עובר ל-fxPlay כמו שהוא.
+   האפקטים בקנבס (חלקיקים, גל הדף, הבזק, רעידה) נשארים: הספרייה מוסיפה את הצורה, והקנבס את המכה */
+const MBFXSK={
+  sk_anvil:{k:2.4},sk_anvil_wave:{k:2.8,add:true,sy:0.5},sk_taunt:{k:1.5,add:true,alpha:0.85},sk_wall:{size:170,add:true,alpha:0.9,dy:-30},
+  sk_cleave:{size:170,add:true},sk_spin:{k:2.3,add:true},sk_rage:{size:170,add:true,alpha:0.85,dy:-14},sk_rage_glow:{size:120,add:true,dy:-30},
+  sk_pierce:{size:150,add:true},sk_net:{size:120},sk_net_root:{size:80,dy:-16},sk_rain:{k:2.2},
+  sk_bubble:{size:110,add:true,dy:-34},sk_bubble_halo:{k:2.2,add:true,sy:0.55},sk_bubble_aura:{k:2.1,add:true,sy:0.5},
+  sk_blizzard:{k:2.3,add:true,sy:0.5,alpha:0.9},sk_blizzard_ice:{k:1.7,add:true},
+  ult_cast:{size:240,add:true,sy:0.5},ult_ray:{size:270,add:true,dy:-115},
+  sp_dash:{size:130,alpha:0.9},sp_haste:{size:90,add:true,dy:-16},sp_barrier:{size:110,add:true,alpha:0.55,dy:-22},sp_reveal:{k:2,add:true,sy:0.5},
+  sp_exhaust:{size:90,dy:-38},sp_cleanse:{size:120,add:true,dy:-50},sp_heal:{size:110,add:true,dy:-20},
+  recall:{size:120,add:true,sy:0.5},coins:{size:150,add:true,dy:-30},gamble_win:{size:150,add:true,dy:-24},gamble_lose:{size:150,add:true,dy:-20},
+  netRot:1.1,   // הוו של הרשת בגיליון מצויר באלכסון למעלה-ימינה: מסובבים בזה כדי שיעוף בכיוון הזריקה
+};
+// מנגן אפקט מהספרייה עם ההגדרות למעלה. o.r: רדיוס הסקיל (ל-k). בלי fxlib.js או בלי הקבצים: לא קורה כלום
+function mbfxSk(id,x,y,o={}){
+  if(typeof fxPlay!=='function')return null;
+  const q=Object.assign({},MBFXSK[id],o);if(q.k&&q.r)q.size=q.k*q.r;delete q.k;delete q.r;return fxPlay(id,x,y,q);
+}
+// סקיל-על: עיגול קסם גדול מתחת למטיל ועמוד אור עליו (לכל ארבע הערכות, בנוסף לאפקט של הסקיל)
+function mbfxUltLib(u){mbfxSk('ult_cast',u.x,u.y,{follow:u,dur:1.2,loop:true});mbfxSk('ult_ray',u.x,u.y,{follow:u})}
