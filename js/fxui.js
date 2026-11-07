@@ -2,7 +2,7 @@
    fxUi (fxlib.js) מצייר על הקנבס, ולכן מתחת לחלונות. כאן נגן קטן ב-HTML (fxDom) שמצייר מעל החלונות, באותם גיליונות.
    הכל כאן, כדי לא לגעת בקבצים של אחרים: מה קורה, ואיזה אפקט, בטבלאות בראש הקובץ.
    - FXUI.hooks: פונקציה קיימת במשחק → האפקט אחריה (עוטפים אותה פעם אחת בטעינה). קווסט, דרגה, קנייה, מתנה, טעינה.
-   - FXUI.open: חלון שנפתח → אפקט סביבו. כל חלון ב-WINS גם נפתח בתנועה קצרה (0.18 שנ').
+   - FXUI.open: חלון שנפתח → אפקט סביבו (התנועה של הפתיחה עצמה כבר ב-style.css, winIn).
    - מעבר מקום (פתיחה, כפר, עולם, זירה, משחקי השאול): וילון שנעלם ב-FXUI.trans שניות, ואפקט ui_trans.
    - כפתורים: ui_juice על כפתור חשוב, ui_click על השאר, ui_hover רק עם עכבר. כפתורי הסקילים לא, יש להם אפקט משלהם.
    - נדירות: ui_epic / ui_legend חוזר סביב התמונה בכרטיס חפץ זהב או אגדי, כל עוד הכרטיס פתוח.
@@ -11,7 +11,6 @@
 const FXUI={
   max:16,          // כמה אפקטים בבת אחת על המסך
   trans:0.35,      // מעבר מקום, בשניות (לכל היותר 0.4)
-  win:0.18,        // פתיחת חלון, בשניות
   hover:56,click:64,juice:110,
   // כפתורים שמקבלים ui_juice (חשובים). השאר ui_click. ולא בכלל: כפתורי סקילים ותנועה
   important:'.go,.vbtn,.icbuy,.qr,.mtab,.updbtn',
@@ -106,10 +105,9 @@ function fxuiWrap(name,after){
   const w=function(...a){const r=f.apply(this,a);try{after(r,a)}catch(e){}return r};w.fxui=true;window[name]=w;
 }
 
-/* ---- חלונות: תנועת פתיחה קצרה, ואפקט לחלונות מיוחדים ---- */
+/* ---- חלונות: אפקט לחלונות מיוחדים. תנועת הפתיחה כבר קיימת לכל חלון (winIn ב-style.css): לא דורסים אותה,
+   כי החלפת animation מפעילה את winIn מחדש, ובזמן scale הבועה (position:fixed, itemtip.js) זזה אל מחוץ למסך ---- */
 function fxuiWinOpen(el){
-  el.classList.remove('fxin');void el.offsetWidth;el.classList.add('fxin');
-  clearTimeout(el.fxinT);el.fxinT=setTimeout(()=>el.classList.remove('fxin'),FXUI.win*1000+80);
   FXUI.log.win=(FXUI.log.win||0)+1;
   const box=el.querySelector('.win')||el;
   for(const [id,o] of FXUI.open[el.id]||[])fxDom(id,0,0,Object.assign({anchor:box},o));
