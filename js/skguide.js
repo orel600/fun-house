@@ -3,6 +3,7 @@
    2. נקודה אדומה כשנפתח סקיל או רונה שעוד לא ראית בספר: על ☰, על לשונית הגיבור, על "📖 סקילים" ועל הכפתור הראשי בעולם.
       נעלמת כשפותחים את הספר. מה כבר נראה: SAVE.hero.skKnown (סקילים, ורונות כ-"סקיל:רונה").
    3. אחרי רגע הגילוי (skillreveal.js): כרטיס קטן למעלה עם "לספר" ו"לנסות" (אימון של 20 שניות, skpractice.js). נעלם לבד.
+      כשחלון פתוח (יומן, מפה, תפריט) הכרטיס מחכה עד שהוא נסגר, ולא יושב על הכותרת שלו (המתאם, 7.11: שני ✕ אחד ליד השני)
    המספרים כאן, הטקסט ב-lang.js ('skg.*') */
 const SKGUIDE={
   hold:0.45,    // כמה שניות להחזיק את כפתור הסקיל עד שהספר נפתח
@@ -51,10 +52,13 @@ addEventListener('pointerup',skgCancel,true);addEventListener('pointercancel',sk
 addEventListener('pointermove',e=>{if(skgHold&&e.pointerId===skgHold.pid&&Math.hypot(e.clientX-skgHold.sx,e.clientY-skgHold.sy)>=WSKILL.drag)skgCancel(e)},true);
 
 /* ---- הכרטיס אחרי רגע הגילוי: "לספר" ו"לנסות" ---- */
-let skgOfferT=0;
+let skgOfferT=0,skgPend=null;
+// חלון או תפריט פתוח: הכרטיס מחכה (כמו כרטיס הפגישה ב-foelore.js)
+const skgBlocked=()=>document.body.classList.contains('menu')||[...document.querySelectorAll('.ov,.win')].some(o=>!o.hidden&&!o.closest('[hidden]'));
 function skgOffer(id){
   if(!S||!S.wd||!SKILLS.list[id])return;
-  let el=$('skOffer');
+  if(skgBlocked()){skgPend=id;return}
+  skgPend=null;let el=$('skOffer');
   if(!el){el=document.createElement('div');el.id='skOffer';el.className='skoffer';el.hidden=true;document.body.appendChild(el);
     el.addEventListener('click',e=>{const b=e.target.closest('[data-skg]');if(!b)return;e.stopPropagation();const k=b.dataset.skg,sid=el.dataset.id;skgOfferClose();
       if(k==='book')skgBook();else if(k==='try'&&typeof skpStart==='function')skpStart(sid);else sfx('ui')})}
@@ -66,4 +70,12 @@ function skgOffer(id){
     '<button class="wx" data-skg="x" aria-label="'+T('q.close')+'">✕</button>';
   el.hidden=false;skgStat.offers++;clearTimeout(skgOfferT);skgOfferT=setTimeout(skgOfferClose,SKGUIDE.offer*1000);
 }
-function skgOfferClose(){clearTimeout(skgOfferT);const el=$('skOffer');if(el)el.hidden=true}
+function skgOfferClose(){clearTimeout(skgOfferT);skgPend=null;const el=$('skOffer');if(el)el.hidden=true}
+// כל רבע שנייה: חלון נפתח מעל הכרטיס, הוא מחכה. נסגר, הכרטיס חוזר (עם זמן מלא). יצאת מהעולם, הוא נשכח
+function skgOfferTick(){
+  const el=$('skOffer');
+  if(!S||!S.wd){if(skgPend||el&&!el.hidden)skgOfferClose();return}
+  if(el&&!el.hidden&&skgBlocked()){const id=el.dataset.id;skgOfferClose();skgPend=id;return}
+  if(skgPend&&!skgBlocked())skgOffer(skgPend);
+}
+setInterval(()=>{try{skgOfferTick()}catch(e){}},250);

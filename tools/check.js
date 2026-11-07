@@ -1573,7 +1573,10 @@ function worldBot(m,L,god){
       const d=SKP&&SKP.dummies[0],x0=d&&d.x;run(2);r.pDummy=!!d&&!d.dead&&d.x===x0&&enemies.filter(e=>e.dummy&&!e.dead).length===SKPRACTICE.n&&!$('skpBar').hidden;
       $('skpBar').querySelector('[data-skp="x"]').click();run(0.05);r.pSkip=!SKP&&!enemies.some(e=>e.dummy)&&$('skpBar').hidden;
       skpStart(id);run(SKPRACTICE.t+0.5);r.pEnd=!SKP&&!enemies.some(e=>e.dummy);
-      skgOffer(id);$('skOffer').querySelector('[data-skg="book"]').click();r.offerBook=!ov.hidden;wsbClose()}catch(err){r.err=String(err&&err.stack||err)}
+      skgOffer(id);$('skOffer').querySelector('[data-skg="book"]').click();r.offerBook=!ov.hidden;wsbClose();
+      // חלון פתוח: הכרטיס מחכה ולא יושב על הכותרת שלו. נפתח מעל כרטיס שכבר מוצג: מתחבא. נסגר: חוזר
+      questLogOpen(true);skgOffer(id);r.offerWait=$('skOffer').hidden;questLogOpen(false);skgOfferTick();r.offerBack=!$('skOffer').hidden;
+      questLogOpen(true);skgOfferTick();r.offerHide=$('skOffer').hidden;questLogOpen(false);skgOfferTick();r.offerBack=r.offerBack&&!$('skOffer').hidden;skgOfferClose()}catch(err){r.err=String(err&&err.stack||err)}
     if(ov)ov.hidden=true;skgOfferClose();if(SKP)skpEnd(true);if(S.mode==='gear')S.mode='play';if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(G.bak);
     if(G.vil)enterVillage();else{reset();S.mode=G.mode}delete window.__skg;return r});
   // שילובים בעולם (wcombo.js): לכל דמות שני סקילים מהספר בסדר הנכון יוצרים שילוב. לוחם: שריון קרח ואז הסתערות = ניפוץ.
@@ -3832,9 +3835,10 @@ function worldBot(m,L,god){
     fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
-  check(!skg.err&&skg.top&&skg.gearStays&&skg.play&&skg.shortNo&&skg.hold&&skg.holdBack&&skg.dotOn&&skg.dotOff&&skg.offer&&skg.pStart&&skg.pDummy&&skg.pSkip&&skg.pEnd&&skg.offerBook,
+  check(!skg.err&&skg.top&&skg.gearStays&&skg.play&&skg.shortNo&&skg.hold&&skg.holdBack&&skg.dotOn&&skg.dotOff&&skg.offer&&skg.pStart&&skg.pDummy&&skg.pSkip&&skg.pEnd&&skg.offerBook&&skg.offerWait&&skg.offerHide&&skg.offerBack,
     'מציאת הסקילים: '+(skg.err||[skg.top?'הספר מעל חלון הדמות':'הספר מוסתר',skg.shortNo&&skg.hold&&skg.holdBack?'נגיעה ארוכה פותחת':'נגיעה ארוכה לא עובדת',
     skg.dotOn&&skg.dotOff?'נקודה אדומה מופיעה ונעלמת':'הנקודה האדומה לא עובדת',skg.offer&&skg.offerBook?'כרטיס אחרי הגילוי':'אין כרטיס',
+    skg.offerWait&&skg.offerHide&&skg.offerBack?'הכרטיס מחכה כשחלון פתוח':'הכרטיס יושב על חלון פתוח',
     skg.pStart&&skg.pDummy&&skg.pSkip&&skg.pEnd?'אימון: בובות, דילוג וסוף':'האימון לא עובד'].join(', ')+(skg.err||Object.values(skg).every(Boolean)?'':' '+JSON.stringify(skg))));
   check(!sig.err&&sig.noRank&&sig.all&&sig.reveal&&sig.btn&&!sig.bad.length&&sig.ok.length===sig.n&&sig.clean&&sig.arena,'סקיל חתימה: '+(sig.err||[sig.noRank?'בלי דרגה אין כפתור':'יש כפתור בלי דרגה',
     sig.all?'לכל דרגה סקיל':'יש דרגה בלי סקיל',sig.reveal?'רגע גילוי':'אין רגע גילוי',sig.btn?'כפתור בעולם':'אין כפתור בעולם','עובדים: '+sig.ok.join(', '),
