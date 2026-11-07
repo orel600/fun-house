@@ -18,7 +18,9 @@ const SKCAST={
   shot:{bow:'Ranged_Bow_Release',other:'Ranged_Magic_Shoot'},
   fallback:'Ranged_Magic_Spellcasting',
   // עיגול הרונות: עדין, כי סקילים חוזרים הרבה. מדבקה אחת לכל היותר (משתמשים שוב באותה), אז מאגר המדבקות לא מתמלא
-  rune:{life:0.55,r:44,a:0.7,hdr:1.6,spin:2.2,fin:0.18,fade:0.45}   // hdr: כמה זוהר (מעל 1 נכנס ל-bloom). גבוה מזה הצבע נשרף ללבן-צהוב
+  rune:{life:0.7,r:62,a:1,hdr:2.4,spin:2,fin:0.14,fade:0.4},   // ניר, 7.11: "המצלמה בעולם רחוקה": פי 1.5 מרוחב הדמות, ועם הילה. hdr: כמה זוהר (מעל 1 נכנס ל-bloom)
+  // הבזק בידיים ברגע ההטלה, בצבע סוג הנזק. h: הגובה של הידיים (פיקסלים של המשחק)
+  flash:{h:34,size:46,size2:80,life:[0.16,0.22],spark:10,light:6,lightT:0.3}
 };
 const skcStat={casts:0,runes:0};   // בשביל הבוט
 let skcRune=null;                   // {t,col,id}: העיגול הנוכחי (גם לדו-ממד)
@@ -32,8 +34,11 @@ function skCast(id){
   skcRune={t:0,col};skcStat.runes++;
   if(typeof VFX3D==='undefined'||!R3D.on)return;
   // בכפר המדבקות כבויות (VFX3D.on רק בעולם). כמו האש של פיוחו (petfx3d.js), מדליקים לרגע את VFX3D.pet
-  const was=VFX3D.pet;VFX3D.pet=true;
+  const was=VFX3D.pet,F=SKCAST.flash;VFX3D.pet=true;
   const d=skcRune.d3=VFX3D.decal('rune',P.x,P.y,R.r,{life:R.life,col,a:R.a,fin:R.fin,fade:R.fade,hdr:R.hdr});
+  VFX3D.emit('glow',P.x,P.y,F.h,{n:1,raw:1,col:'#ffffff',col2:col,size:F.size,size2:F.size2,life:F.life});
+  VFX3D.emit('spark',P.x,P.y,F.h,{n:F.spark,col:'#ffffff',col2:col,spd:160,up:120,grav:-300,life:[0.2,0.4]});
+  VFX3D.light(P.x,P.y,F.h,col,F.light,F.lightT);
   VFX3D.pet=was;
   if(d)d.spin=R.spin;
 }
@@ -52,7 +57,7 @@ function skcUpdate(dt){
 function skcDraw(){
   if(!skcRune||R3D.on&&skcRune.d3)return;
   const R=SKCAST.rune,f=skcRune.t/R.life,a=R.a*(f<R.fin?f/R.fin:f>1-R.fade?(1-f)/R.fade:1),r=R.r*(0.85+0.15*Math.min(1,f*4)),rot=skcRune.t*R.spin;
-  ctx.save();ctx.translate(P.x,P.y+6);ctx.scale(1,0.5);ctx.globalAlpha=a;ctx.strokeStyle=skcRune.col;ctx.lineWidth=2;
+  ctx.save();ctx.translate(P.x,P.y+6);ctx.scale(1,0.5);ctx.globalAlpha=a;ctx.strokeStyle=skcRune.col;ctx.shadowColor=skcRune.col;ctx.shadowBlur=10;ctx.lineWidth=2.5;
   ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.stroke();ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(0,0,r*0.78,0,7);ctx.stroke();
   ctx.rotate(rot);ctx.beginPath();   // משולש כפול (מגן דוד של קווים) וסימנים בין הטבעות
   for(let j=0;j<2;j++)for(let i=0;i<=3;i++){const t=j*Math.PI/3+i*Math.PI*2/3;i?ctx.lineTo(Math.cos(t)*r*0.74,Math.sin(t)*r*0.74):ctx.moveTo(Math.cos(t)*r*0.74,Math.sin(t)*r*0.74)}

@@ -105,7 +105,7 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
       else{float an=atan(q.y,q.x)+uS,sx=2.0943951;   // rune: עיגול רונות שמסתובב (uS = זווית). שתי טבעות, משולש כפול וסימנים ביניהן (skillcast.js)
         float l1=smoothstep(.045,0.,abs(d*cos(mod(an+1.0471976,sx)-1.0471976)-.37)),l2=smoothstep(.045,0.,abs(d*cos(mod(an,sx)-1.0471976)-.37));
         float tk=step(.82,fract(an*1.9098593))*step(.81,d)*step(d,.92);
-        a=smoothstep(.05,0.,abs(d-.95))+.8*smoothstep(.035,0.,abs(d-.79))+(l1+l2)*.85*step(d,.76)+tk*.7+.08*(1.-d);a=min(a,1.);}
+        a=smoothstep(.06,0.,abs(d-.94))+.35*smoothstep(.22,0.,abs(d-.94))+.8*smoothstep(.04,0.,abs(d-.79))+(l1+l2)*.85*step(d,.76)+tk*.7+.08*(1.-d);a=min(a,1.);}
       gl_FragColor=vec4(c,a*uA);
       #include <colorspace_fragment>
     }`;
