@@ -42,8 +42,8 @@ function m3dGo(k){
 // אותו עיבוד כמו בפתיחה (init3d): אנימציות, חפץ, או דמות
 function m3dDecode(k,g){
   if(k.startsWith('anim_'))addClips(g);
-  else if(k.startsWith('w_item_')){lambert(g.scene);R3D.props[k]=g.scene;M3D.hv++}   // hv: הגיבור נבנה מחדש (heroLook)
-  else{R3D.tmpl[k]=g.scene;prepTmpl(k);if(!/^mon_/.test(k))M3D.hv++}
+  else if(k.startsWith('w_item_')){lambert(g.scene);R3D.props[k]=g.scene;M3D.hv++}   // hv: חפץ (גם מגן) מוכן, הגיבור נבנה מחדש (heroLook). רק כאן: בנייה מחדש בלי צורך מבלבלת את השריון (armor3d)
+  else{R3D.tmpl[k]=g.scene;prepTmpl(k)}   // דמות אישית: heroLook רואה לבד שהמודל המוצג התחלף. חיה ומפלצת לא נוגעות בגיבור
 }
 // ברקע, אחד אחד, בסדר שביקשו
 function m3dHint(ks){for(const k of ks)if(m3dLazy(k)&&!m3dReady(k)&&!M3D.hint.includes(k))M3D.hint.push(k)}
