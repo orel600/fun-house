@@ -171,9 +171,12 @@ const GROUND={
     const t0=performance.now(),P_=pl.pal;
     if(!bakeScene)bakeSetup();
     const u=baseMat.uniforms,bw=pl.size.w+GROUND.margin.w,bh=pl.size.h+GROUND.margin.h,res=Math.max(pl.map?GROUND.resMap:GROUND.res,bw/GROUND.maxTex,bh/GROUND.maxTex),cw=Math.ceil(bw/res),ch=Math.ceil(bh/res);   // maxTex: תמונה אחת לא גדולה מזה
-    if(u.tMask.value){u.tMask.value.dispose();u.tMask.value=null}u.tOn.value=0;
-    if(pl.map){const mk=terrainMask(pl.map,bw,bh),tx=new THREE.DataTexture(mk.data,mk.w,mk.h,THREE.RGBAFormat);tx.magFilter=tx.minFilter=THREE.LinearFilter;tx.needsUpdate=true;
-      u.tMask.value=tx;u.tOn.value=1;const Q=TERRAIN.pal[pl.reg]||TERRAIN.pal.meadow;u.cForest.value.copy(rgb(Q.forest));u.cRock.value.copy(rgb(Q.rock));u.cBank.value.copy(rgb(Q.bank))}
+    // המסכה של המפה (נהר, יער, גבול, סלעים) קבועה לכל אזור, ובטלפון היא רוב הזמן של האפייה (קריאות קנבס עם טשטוש).
+    // לכן נשמרת, ונבנית מחדש רק באזור אחר. בלי זה, כל עץ שנכרת או צמח מחדש ביער עצר את המשחק ל-150ms (ניר, 7.11)
+    const mkK=pl.map?pl.reg+':'+bw+'x'+bh:null;
+    if(u.tMask.value&&u.tMask.value.userData.k!==mkK){u.tMask.value.dispose();u.tMask.value=null}u.tOn.value=0;
+    if(pl.map){if(!u.tMask.value){const mk=terrainMask(pl.map,bw,bh),tx=new THREE.DataTexture(mk.data,mk.w,mk.h,THREE.RGBAFormat);tx.magFilter=tx.minFilter=THREE.LinearFilter;tx.needsUpdate=true;tx.userData.k=mkK;u.tMask.value=tx}
+      u.tOn.value=1;const Q=TERRAIN.pal[pl.reg]||TERRAIN.pal.meadow;u.cForest.value.copy(rgb(Q.forest));u.cRock.value.copy(rgb(Q.rock));u.cBank.value.copy(rgb(Q.bank))}
     box=new THREE.Vector4(-bw/2,-bh/2,bw,bh);u.box.value.copy(box);u.size.value.set(pl.size.w,pl.size.h);
     for(const k of ['base','lush','dry','path','shore','out'])u['c'+k[0].toUpperCase()+k.slice(1)].value.copy(rgb(P_[k]));
     u.cRim.value.copy(rgb(P_.rim||P_.shore));u.rimA.value=P_.rim?GROUND.rimA:0;
@@ -184,8 +187,8 @@ const GROUND={
     const sg=pl.segs();u.seg.value.forEach((v,i)=>sg[i]?v.set(...sg[i]):v.set(9e4,9e4,9e4,9e4));
     const ps=pl.ponds;u.pond.value.forEach((v,i)=>ps[i]?v.set(ps[i].x,ps[i].y,ps[i].r):v.set(9e4,9e4,1));
     shadowMesh(pl.shadows());
-    if(bk)bk.dispose();   // רק האזור הנוכחי שמור בזיכרון. חזרה לאזור אופה מחדש (אלפיות שנייה)
-    bk=new THREE.WebGLRenderTarget(cw,ch,{depthBuffer:false,stencilBuffer:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,generateMipmaps:false});
+    if(bk&&(bk.width!==cw||bk.height!==ch)){bk.dispose();bk=null}   // רק האזור הנוכחי שמור בזיכרון. באותו גודל: אותה תמונה, בלי להקצות מחדש
+    if(!bk)bk=new THREE.WebGLRenderTarget(cw,ch,{depthBuffer:false,stencilBuffer:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,generateMipmaps:false});
     const r=R3D.r,prev=r.getRenderTarget(),ac=r.autoClear;r.autoClear=true;
     r.setRenderTarget(bk);r.render(bakeScene,bakeCam);r.setRenderTarget(prev);r.autoClear=ac;
     GROUND.bakeMs=Math.round(performance.now()-t0);
@@ -228,7 +231,7 @@ const GROUND={
   GROUND.mat=()=>{
     if(GROUND.failed||!on())return null;
     const pl=place();if(!pl)return null;
-    // מקור שנשבר או צמח, דרך שנפתחה, או מבנה שעלה רמה בכפר: אופים שוב (1-2ms)
+    // מקור שנשבר או צמח, דרך שנפתחה, או מבנה שעלה רמה בכפר: אופים שוב (כמה ms. המסכה של המפה נשמרת, ראו bake)
     try{if(pl.key!==key){key=pl.key;bake(pl)}}catch(e){GROUND.failed=e.message;console.warn('ground',e);return null}   // תקלה: נשארת הקרקע של שלב 1
     if(!mat)mat=makeMat();
     mat.map=grainTex(GROUND.motif[pl.reg]||'grass');   // הדוגמה של האזור (אותו שיידר, רק תמונה אחרת)
