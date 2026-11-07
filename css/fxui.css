@@ -1,0 +1,15 @@
+/* אפקטים בממשק (js/fxui.js). שום דבר כאן לא חוסם נגיעה */
+.fxlayer{position:fixed;inset:0;z-index:45;pointer-events:none;overflow:hidden;contain:strict}
+.fxlayer.lo{z-index:2}   /* מתחת להודעה (.banner, z-index 3): האפקט מאחורי הטקסט ולא מכסה אותו */
+.fxd{position:absolute;left:0;top:0;background-repeat:no-repeat;pointer-events:none;will-change:transform,background-position;image-rendering:auto}
+.fxd.add{mix-blend-mode:screen}
+/* פתיחת חלון: 0.18 שנ', מ-0.94 ל-1 (docs/ui-guide.md פרק 4). scale ולא transform, כדי לא לדרוס מיקום של חלון */
+.fxin.ov{animation:fxovin .18s ease-out}
+.fxin>.win,.fxin>.panel,.fxin.win{animation:fxwinin .18s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes fxovin{from{opacity:0}}
+@keyframes fxwinin{from{scale:.94;opacity:0}}
+/* מעבר מקום: וילון כהה שנעלם */
+#fxVeil{position:fixed;inset:0;z-index:44;pointer-events:none;background:#0B0E18;opacity:0}
+#fxVeil.on{animation:fxveil .35s ease-out forwards}
+@keyframes fxveil{from{opacity:.7}to{opacity:0}}
+@media (prefers-reduced-motion:reduce){.fxin.ov,.fxin>.win,.fxin>.panel,.fxin.win,#fxVeil.on{animation:none}}

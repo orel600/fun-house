@@ -1067,6 +1067,22 @@ function worldBot(m,L,god){
     try{const Q=QS();delete Q.done.bones;delete Q.active.bones;SAVE.bag.bone=200;qStart(q);const ready=qReady(q);
       questEvent('gather','bone',1);const ok=questClaim('bones',true);return{ready,ok,left:SAVE.bag.bone}}
     finally{const o=JSON.parse(keep);for(const k in SAVE)delete SAVE[k];Object.assign(SAVE,o)}});
+  // אפקטים בממשק (fxui.js, אוראל 7.11): קווסט, קנייה, דרגה, פתיחת חלון ומעבר מקום מפעילים אפקט, ואף אפקט לא חוסם נגיעה
+  const fxuiT=await page.evaluate(async()=>{if(typeof FXUI==='undefined')return{miss:1};
+    const n=k=>FXUI.log[k]||0,b0={t:n('ui_toast'),b:n('ui_buy'),a:n('ui_ach'),w:n('win'),tr:n('trans')},r={};
+    r.wrapped=['questClaim','shopBuy','rankUp','gearCraft','dailyClaim'].filter(f=>!(window[f]&&window[f].fxui));
+    FXUI.hooks.questClaim(true,['bones',false]);FXUI.hooks.shopBuy(true);FXUI.hooks.rankUp('x');
+    const d=$('ovDaily'),was=d.hidden;d.hidden=true;await new Promise(f=>setTimeout(f,0));d.hidden=false;await new Promise(f=>setTimeout(f,30));
+    r.anim=d.classList.contains('fxin');d.hidden=was;
+    const pl=FXUI.place;FXUI.place='fxtest';document.body.classList.toggle('fxtest');await new Promise(f=>setTimeout(f,30));document.body.classList.toggle('fxtest');
+    r.toast=n('ui_toast')>b0.t;r.buy=n('ui_buy')>b0.b;r.ach=n('ui_ach')>b0.a;r.win=n('win')>b0.w;r.trans=n('trans')>b0.tr;r.place=pl;
+    const els=[...document.querySelectorAll('.fxd,.fxlayer,#fxVeil')];r.n=els.length;
+    r.block=els.filter(e=>getComputedStyle(e).pointerEvents!=='none').length;
+    const f=document.querySelector('#fxLayer .fxd');if(f){const q=f.getBoundingClientRect(),h=document.elementFromPoint(q.left+q.width/2,q.top+q.height/2);r.hit=!!(h&&h.closest('.fxlayer,#fxVeil'))}
+    return r});
+  check(!fxuiT.miss&&!fxuiT.wrapped.length&&fxuiT.toast&&fxuiT.buy&&fxuiT.ach&&fxuiT.win&&fxuiT.anim&&fxuiT.trans&&!fxuiT.block&&!fxuiT.hit,
+    'אפקטים בממשק: '+(fxuiT.miss?'fxui.js לא נטען':'קווסט '+(fxuiT.toast?'✓':'✗')+', קנייה '+(fxuiT.buy?'✓':'✗')+', דרגה '+(fxuiT.ach?'✓':'✗')+', חלון נפתח בתנועה '+(fxuiT.win&&fxuiT.anim?'✓':'✗')+', מעבר מקום '+(fxuiT.trans?'✓':'✗')+
+    (fxuiT.wrapped.length?', לא מחובר: '+fxuiT.wrapped.join(','):'')+(fxuiT.block||fxuiT.hit?', חוסם נגיעה!':', לא חוסם נגיעה ('+fxuiT.n+' שכבות)')));
   const setT=await page.evaluate(()=>{const r={};for(const s in SETS){const it=setItems(s),b=SETS[s].bonus;
     const one=setStats(it.slice(0,1)),two=setStats(it.slice(0,2)),four=gearStats(it);
     r[s]={n:it.length,one:Object.keys(one).length===0,two:JSON.stringify(two)===JSON.stringify(b[2]),
