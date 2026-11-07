@@ -7,7 +7,7 @@
    - פגיעות (juiceHit): hit_<סוג נזק>, hit_heavy למכה כבדה, dmg_crit לקריטי. מכה מהנשק או מסקיל בלבד, עם תקרה לפריים, ובהמון רק קריטי ואויב-על.
    - הריגה (kill): ko למפלצות (עם תקרה), ko_boss לבוס.  ניצחון (runWon, gameOver): זיקוקים וקונפטי בזירה, ובמסך הניצחון.
    - סקילים (skillUse): אפקט הטלה לכל סקיל, בצבע סוג הנזק שלו. טבעת זוהר (glow_ally) מתחת לגיבור כשיש הרבה אויבים קרוב.
-   - כפתורים: אייקון מצויר (icons/ui/skills, כמו בעולם) במקום סמל ה-SVG, וקיצורי מקלדת E, R, F עם רמז קטן (רק כשיש מקלדת).
+   - כפתורים: באייקונים "חדש" (ברירת המחדל) הצלליות של gicons.js כמו בעולם (skillsHud). ב"קלאסי" אייקון מצויר (icons/ui/skills) במקום סמל ה-SVG, וקיצורי מקלדת E, R, F עם רמז קטן (רק כשיש מקלדת).
      Q ו-W תפוסים (Q מחליף נשק, W הולך למעלה), ולכן E, R, F. גם 1, 2, 3 ממשיכים לעבוד (skills.js).
    "פחות אפקטים": בלי פגיעות, הריגות, הטלות וזוהר. האזהרות והניצחון נשארים, כי הן חלק מהמשחק. הספירה לבוט ב-ARFX.stat */
 const ARFX={
@@ -195,8 +195,8 @@ const arfxPicOk={};
     '.arfxwin{position:fixed;inset:0;width:100vw;height:100vh;z-index:6;pointer-events:none}';
   document.head.appendChild(st);
   for(const id in ARFX.pic){const im=new Image();im.onload=()=>{arfxPicOk[id]=true;
-      st.textContent+='body:not(.world) .skb[data-sk="'+id+'"]::before{content:"";position:absolute;inset:3px;border-radius:50%;background:url(icons/ui/skills/'+ARFX.pic[id]+'.png) center/cover;pointer-events:none}'+
-        'body:not(.world) .skb[data-sk="'+id+'"]:not(.ready)::before{opacity:.45}body:not(.world) .skb[data-sk="'+id+'"] .dti{display:none}'};
+      st.textContent+='body:not(.world) .skb:not(.gif)[data-sk="'+id+'"]::before{content:"";position:absolute;inset:3px;border-radius:50%;background:url(icons/ui/skills/'+ARFX.pic[id]+'.png) center/cover;pointer-events:none}'+
+        'body:not(.world) .skb:not(.gif)[data-sk="'+id+'"]:not(.ready)::before{opacity:.45}body:not(.world) .skb:not(.gif)[data-sk="'+id+'"] .dti{display:none}'};
     im.src='icons/ui/skills/'+ARFX.pic[id]+'.png'}})();
 {const old=skillsHud;skillsHud=function(){
   const r=old.apply(this,arguments),box=$('skills');
