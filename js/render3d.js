@@ -484,17 +484,20 @@ function syncPlayer(dt){
   else{
     if(st.mode==='over'){st.mode='';a.one=null;a.mixer.stopAllAction()}
     // תקיפה: רק פלג הגוף העליון, כך שאפשר לתקוף תוך כדי ריצה
-    const swing=sword&&P.sw.anim>st.anim,shot=!sword&&P.gn.t>st.gt+0.01;
+    // סקיל (skillcast.js): התנועה של ההטלה גוברת לרגע על תנועות התקיפה. רק מראה, התקיפה עצמה ממשיכה
+    if(P.skCast&&st.sc!==P.skCast.n&&performance.now()-P.skCast.at<SKCAST.dur*1000){st.sc=P.skCast.n;st.scT=SKCAST.dur;once(a,skcClip(L)+'@up',SKCAST.dur)}
+    st.scT=Math.max(0,(st.scT||0)-dt);const casting=st.scT>0;
+    const swing=!casting&&sword&&P.sw.anim>st.anim,shot=!casting&&!sword&&P.gn.t>st.gt+0.01;
     st.anim=P.sw.anim;st.gt=P.gn.t;
     if(swing)once(a,L.anim.sword+'@up',Math.max(0.28,Math.min(0.5,P.sw.cd*wK('cd')*0.8)));
     const gcd=P.gn.cd*wK('cd');
     if(shot){st.shots=(st.shots||0)+1;once(a,L.anim.gun+'@up',Math.max(0.2,Math.min(0.45,gcd*0.9)))}
     // קשת: מותחים את המיתר ממש לפני החץ הבא, כשיש במי לירות
     const drawT=Math.min(0.4,gcd*0.5);
-    if(!sword&&L.anim.gunDraw&&P.gn.t>0&&P.gn.t<=drawT&&st.drawn!==st.shots&&nearest(440)&&!(a.one&&a.one.isRunning())){st.drawn=st.shots;once(a,L.anim.gunDraw+'@up',P.gn.t)}
+    if(!casting&&!sword&&L.anim.gunDraw&&P.gn.t>0&&P.gn.t<=drawT&&st.drawn!==st.shots&&nearest(440)&&!(a.one&&a.one.isRunning())){st.drawn=st.shots;once(a,L.anim.gunDraw+'@up',P.gn.t)}
     // פגיעה (combat.js מדליק P.inv=0.6): הגוף נרתע, אם הוא לא באמצע תקיפה
     const hurt=P.inv>st.inv+0.3&&P.inv<=0.7;st.inv=P.inv;
-    if(hurt&&!swing&&!shot&&!(a.one&&a.one.isRunning()))once(a,L.anim.hit+'@up',0.3);
+    if(hurt&&!casting&&!swing&&!shot&&!(a.one&&a.one.isRunning()))once(a,L.anim.hit+'@up',0.3);
     if(P.skrCast&&st.cast!==P.skrCast){st.cast=P.skrCast;once(a,(R3D.clips[SKREVEAL.anim+'@up']?SKREVEAL.anim:L.anim.win)+'@up',SKREVEAL.cast)}   // סקיל חדש: הגיבור מטיל (skillreveal.js)
     const busy=a.one&&a.one.isRunning(),idle=!sword&&L.anim.gunIdle||L.anim.idle;   // עם קשת ביד: עמידה עם קשת
     loop(a,(P.moving?L.anim.run:idle)+(busy?'@low':''),P.moving?Math.min(1.6,P.speed/165):1);

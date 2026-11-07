@@ -8,7 +8,7 @@
      VFX3D.emit(kind,x,y,h,o)            חלקיקים מסוג kind (מתוך VFX3D_CFG.kinds), o משנה: n,col,col2,size,size2,life,spd,up,spread,grav,drag
      VFX3D.trail(st,x,y,h,kind,o)        שובל: חלקיקים לאורך הדרך מהמיקום הקודם (נשמר ב-st) לנוכחי
      VFX3D.burst(kind,x,y,o)             מתכון מוכן: 'explode' (הבזק, גל הדף, ניצוצות, גחלים, עשן, אור), 'ring', 'flash'
-     VFX3D.decal(kind,x,y,r,o)           סימן על הקרקע: 'ring' גל הדף, 'mark' סימון מטרה, 'scorch' חרוך, 'cracks' סדקים זוהרים, 'glow' הבזק
+     VFX3D.decal(kind,x,y,r,o)           סימן על הקרקע: 'ring' גל הדף, 'mark' סימון מטרה, 'scorch' חרוך, 'cracks' סדקים זוהרים, 'glow' הבזק, 'rune' עיגול רונות (spin על הידית מסובב)
                                          o: life (שניות, Infinity = ידני), col, a, grow:[r0,r1], fade (חלק מהזמן בסוף), w (עובי טבעת), p
      VFX3D.light(x,y,h,col,i,life)       אור נקודתי (רק באיכות גבוהה), מחזיר ידית או null
      VFX3D.orb(col,size)                 כדור זוהר (גוף של מטאור, קליע). ידית עם .set(x,y,h,size)
@@ -101,11 +101,15 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
         float sp=step(.5,fract(atan(q.y,q.x)*1.909+uS));a=e*(.7+.3*sp)+r*.9+.18*uP*(1.-d);}
       else if(uK<2.5){float nn=n(q*3.+uS)*.5+n(q*7.+uS)*.25;a=smoothstep(1.,.55,d+nn*.45-.15)*.92;c=uC*(.6+.7*d);}
       else if(uK<3.5){float l=abs(n(q*5.+uS)-.5)*2.;a=pow(1.-l,10.)*smoothstep(.95,.25,d)+.35*smoothstep(.5,0.,d);}
-      else{a=pow(1.-d,2.2);}
+      else if(uK<4.5){a=pow(1.-d,2.2);}
+      else{float an=atan(q.y,q.x)+uS,sx=2.0943951;   // rune: עיגול רונות שמסתובב (uS = זווית). שתי טבעות, משולש כפול וסימנים ביניהן (skillcast.js)
+        float l1=smoothstep(.045,0.,abs(d*cos(mod(an+1.0471976,sx)-1.0471976)-.37)),l2=smoothstep(.045,0.,abs(d*cos(mod(an,sx)-1.0471976)-.37));
+        float tk=step(.82,fract(an*1.9098593))*step(.81,d)*step(d,.92);
+        a=smoothstep(.05,0.,abs(d-.95))+.8*smoothstep(.035,0.,abs(d-.79))+(l1+l2)*.85*step(d,.76)+tk*.7+.08*(1.-d);a=min(a,1.);}
       gl_FragColor=vec4(c,a*uA);
       #include <colorspace_fragment>
     }`;
-  const DK={ring:0,mark:1,scorch:2,cracks:3,glow:4};
+  const DK={ring:0,mark:1,scorch:2,cracks:3,glow:4,rune:5};
   function build(){
     if(B||!R3D.ready)return B;
     B={sc:R3D.scene};
@@ -184,7 +188,7 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
   function take(L){for(const d of L)if(!d.on){d.on=true;return d}return null}
   VFX3D.decal=function(kind,x,y,r,o){
     if(!live()||!build())return null;o=o||{};const d=take(B.decals);if(!d)return null;
-    const u=d.m.material.uniforms;d.kind=kind;d.x=x;d.y=y;d.r=r;d.t=0;d.life=o.life==null?1:o.life;d.grow=o.grow||null;d.fade=o.fade==null?0.5:o.fade;d.a=o.a==null?1:o.a;d.fin=o.fin||0;d.p=o.p==null?null:o.p;
+    const u=d.m.material.uniforms;d.spin=0;d.kind=kind;d.x=x;d.y=y;d.r=r;d.t=0;d.life=o.life==null?1:o.life;d.grow=o.grow||null;d.fade=o.fade==null?0.5:o.fade;d.a=o.a==null?1:o.a;d.fin=o.fin||0;d.p=o.p==null?null:o.p;
     const add=kind!=='scorch';d.m.material.blending=add?THREE.AdditiveBlending:THREE.NormalBlending;d.m.renderOrder=add?3:2;
     lin(o.col||'#ffffff');u.uC.value.setRGB(col.r*(add?(o.hdr||CF.hdr):1),col.g*(add?(o.hdr||CF.hdr):1),col.b*(add?(o.hdr||CF.hdr):1));
     u.uK.value=DK[kind]||0;u.uP.value=o.p||0;u.uS.value=Math.random()*40;u.uW.value=o.w||0.3;d.m.visible=true;place(d);return d;
@@ -208,6 +212,7 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
         const fa=d.fade>0&&f>1-d.fade?(1-f)/d.fade:1,fi=d.fin>0&&f<d.fin?f/d.fin:1;d.m.material.uniforms.uA.value=d.a*fa*fi}
       else d.m.material.uniforms.uA.value=d.a;
       if(d.p!=null)d.m.material.uniforms.uP.value=d.p;
+      if(d.spin)d.m.material.uniforms.uS.value+=d.spin*dt;   // rune מסתובב
       const S_=sin();d.m.position.set(d.x,d.m.position.y,d.y/S_);d.m.scale.set(d.r,1,d.r/S_)}
     for(const d of B.lights){if(!d.on||d.life===Infinity)continue;d.t+=dt;if(d.t>=d.life){VFX3D.free(d);continue}const f=d.t/d.life;d.l.intensity=d.i0*(1-f)*(1-f)}
   }
