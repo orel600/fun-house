@@ -140,6 +140,7 @@ function props3dWorldTick(G){
     for(const id in G.chest||{})G.chest[id].visible=!scFound(id)&&!!st['v'+id]}
   for(const m of G.tow||[]){const w=m.userData.win;w.material.color.set(Math.sin(t*3+m.position.x)>0.6?PROPS3D.tower.glow:'#2a2638')}   // החלון מהבהב כמו בדו-ממד
   for(const m of G.look||[]){const f=m.userData.flag;f.rotation.y=Math.sin(t*3+m.position.x)*0.25}
+  if(typeof wlife3d==='function')wlife3d(G);   // מחנות, שרידים וחיות (wlife.js)
 }
 /* הכפר הגדול (2.11): הקישוטים מ-VILLAGE.props (village.js). עצים מהמודלים, ופנס רחוב וגדר מצורות פשוטות.
    tree/pine/bush: מודל ורוחב. lamp: גובה העמוד וצבע האור. fence: כל כמה פיקסלים עמוד, וגובה */
