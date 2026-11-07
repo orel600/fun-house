@@ -2343,18 +2343,25 @@ function worldBot(m,L,god){
     if(id){fxwMarks({[id]:'!'},'v');tick(1);o.mark=[...FXW.live.keys()].some(k=>k==='m:'+id+'npc_quest');S.vil.npcNear=id;fxwMarks({},'v');tick(1);o.talk=FXW.live.has('t:'+id)||FXW.live.has('s:'+id)}
     celebrate(P.x,P.y,'upgrade');o.party=o.ids.has('win_confetti');walk(2);o.stepV=o.ids.has('step_dust');
     const reg={};for(const r of ['ridge','desert','storm']){SAVE.story.ice=true;enterWorld('home',r);P.inv=99;FXW.t=0;tick(2);walk(2);reg[r]=[...FXW.live.keys()].filter(k=>k.startsWith('w:')).map(k=>k.slice(2).replace(/\d.*/,''))}
-    o.weather=reg.ridge.includes('snow')&&reg.ridge.includes('aurora')&&reg.desert.includes('haze')&&reg.storm.includes('rain');
+    o.weather=reg.ridge.includes('snow')&&reg.ridge.includes('aurora')&&reg.desert.includes('haze')&&reg.storm.includes('wx_rainheavy');
     o.steps=o.ids.has('step_snow')&&o.ids.has('step_sand');
     walk(400);o.mine=FXW.n;o.cap=FXW.cap;o.all=FXLIB.list.length;o.max=FXLIB.max;   // הרבה הליכה בלי שהזמן עובר: השכבה נעצרת בתקרה
     // באגם על קו המים: אדוות או בועות (בלי הליכה, אז לא מהצעדים). בלב הצל: כוכבים. ובזירה (בלי עולם וכפר): הכל כבה
     enterWorld('home','lake');P.inv=99;tick(1);const b=tWaterNear(P.x,P.y);if(b){P.x=b.x;P.y=b.y}o.ids.delete('water_ripple');o.ids.delete('bubbles_bg');
     for(let i=0;i<20;i++){FXW.shoreT=0;FXW.once.length=0;tick(1)}o.shore=o.ids.has('water_ripple')||o.ids.has('bubbles_bg');
     enterWorld('home','shadow');P.inv=99;tick(1);FXW.ambT=0;FXW.once.length=0;tick(1);o.stars=o.ids.has('stars');
-    const wd=S.wd;S.wd=null;tick(1);o.arena=FXW.live.size===0;S.wd=wd;
+    // 7.11 (הבאנדל): שובל בצבע סוג הנזק על הנפה, ואווירה משלו לכל אזור
+    const md=S.mode,wt=P.weapon,pdt=P.dt.sword;S.mode='play';P.weapon='sword';P.dt.sword='fire';P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.trail=[...o.ids].find(i=>i.startsWith('tr_'))||'';
+    o.trailOk=/^tr_(slash|axe|smash)_crimson$/.test(o.trail);   // אש = crimson, בכל סוג נשק קרוב
+    o.scene={};for(const r of ['desert','storm','ridge','lake','shadow']){enterWorld('home',r);S.mode='play';P.inv=99;const want=FXW.scene[r].map(e=>e.id);
+      for(let i=0;i<12;i++){FXW.sceneT=0;FXW.once.length=0;tick(1)}o.scene[r]=want.some(id=>o.ids.has(id))}
+    o.sceneOk=Object.values(o.scene).every(Boolean);
+    const wd=S.wd;S.wd=null;o.ids.clear();P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.arena=FXW.live.size===0&&![...o.ids].some(i=>i.startsWith('tr_'));S.wd=wd;
+    S.mode=md;P.weapon=wt;P.dt.sword=pdt;
     window.fxPlay=of;o.ids=[...o.ids];enterVillage();return o});
-  check(fxw.mark&&fxw.talk&&fxw.party&&fxw.stepV&&fxw.weather&&fxw.steps&&fxw.shore&&fxw.stars&&fxw.arena&&fxw.mine<=fxw.cap&&fxw.all<=fxw.max,
+  check(fxw.mark&&fxw.talk&&fxw.party&&fxw.stepV&&fxw.weather&&fxw.steps&&fxw.shore&&fxw.stars&&fxw.arena&&fxw.trailOk&&fxw.sceneOk&&fxw.mine<=fxw.cap&&fxw.all<=fxw.max,
     'אפקטים בכפר ובעולם: '+(fxw.mark?'זוהר מאחורי סימן הקווסט':'בלי זוהר לסימן')+(fxw.talk?', סימן ליד מי שקרוב':', בלי סימן שיחה')+(fxw.party?', קונפטי בחגיגה':', בלי קונפטי')+
-    (fxw.stepV&&fxw.steps?', צעדים לפי הקרקע':', בלי צעדים')+(fxw.weather?', מזג אוויר לפי אזור':', מזג אוויר חסר')+(fxw.shore?', אדוות על קו המים באגם':', בלי אדוות באגם')+(fxw.stars?', כוכבים בלב הצל':', בלי כוכבים בצל')+(fxw.arena?', כבוי בזירה':', פועל בזירה!')+', '+fxw.mine+'/'+fxw.cap+' אפקטים של השכבה ('+fxw.all+'/'+fxw.max+' בכל המשחק)');
+    (fxw.stepV&&fxw.steps?', צעדים לפי הקרקע':', בלי צעדים')+(fxw.weather?', מזג אוויר לפי אזור':', מזג אוויר חסר')+(fxw.shore?', אדוות על קו המים באגם':', בלי אדוות באגם')+(fxw.stars?', כוכבים בלב הצל':', בלי כוכבים בצל')+(fxw.trailOk?', שובל אש על הנפה':', שובל חסר או בצבע לא נכון ('+fxw.trail+')')+(fxw.sceneOk?', אווירה לכל אזור':', אווירה חסרה ב-'+Object.keys(fxw.scene).filter(k=>!fxw.scene[k]).join('/'))+(fxw.arena?', כבוי בזירה':', פועל בזירה!')+', '+fxw.mine+'/'+fxw.cap+' אפקטים של השכבה ('+fxw.all+'/'+fxw.max+' בכל המשחק)');
   // העלילה, פרק 5 (story.js, WORLD.regions.storm): השביל מהמדבר למגדלים סגור עד שפנס האש דולק, במגדלים גשם, ברקים ומגדלים שבורים שאי אפשר לעבור,
   // אויבים מחושמלים (חלשים לאדמה), ושומר הסערה מסמן עיגולי ברק שמתפוצצים אחרי שנייה: מי שנשאר נפגע, מי שזז לא
   const ch5=await page.evaluate(()=>{

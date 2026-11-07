@@ -6,8 +6,9 @@
    - אווירה בכפר: עלי כותרת ופרחים ביום, גחליליות בלילה. כוכבים בלב הצל, ואדוות ובועות על קו המים באגם
    - בעולם: מזג אוויר לפי אזור (שכבה עדינה מעל הקנבס של world.js), צעדים לפי הקרקע, אדוות במים רדודים, בועות בבורות הלבה,
      אובך במדבר, waypoint ו-quest_mark על מקום של קווסט צדדי, pickup_* באיסוף, ו-mm_ping במפה הקטנה כשמשהו חדש מופיע
+   7.11 (הבאנדל): שובל על כל הנפה בצבע סוג הנזק, אווירה לפי אזור (FXW.scene), התזות, גלים ודג באגם, צמיחה מחדש ומצבים על הגיבור (fxwMore, fxwSlow).
    חיבורים: fxwUpdate ב-villageUpdate וב-worldUpdate, fxwMarks ב-drawQuestMarks (quests.js) וב-drawWnpcScreen (worldnpc.js),
-   fxwCelebrate ב-celebrate (fx.js). ועוטף מבחוץ: npcTalk, wnpcTalk, questClaim, dropTake, nodeDown, mmDraw. פיוחו אוכלת: לפי SAVE.pet.fed.
+   fxwCelebrate ב-celebrate (fx.js). ועוטף מבחוץ: wsbCast, npcTalk, wnpcTalk, questClaim, dropTake, nodeDown, mmDraw. פיוחו אוכלת: לפי SAVE.pet.fed.
    ביצועים: עד FXW.cap אפקטים משלנו בבת אחת, בתוך FXLIB.max של כל המשחק. סנכרון של אפקטים קבועים פעמיים-שלוש בשנייה, לא בכל פריים */
 const FXW={
   on:true,
@@ -33,7 +34,7 @@ const FXW={
   // מזג אוויר לפי אזור: [אפקט, שקיפות, איפה]. full: אריחים על כל המסך, sky: פס למעלה, low: חלק תחתון. עובר מעל הקנבס הקיים
   weather:{
     ridge:[['snow',0.45,'full'],['aurora',0.45,'sky']],
-    storm:[['rain',0.5,'full']],
+    storm:[['wx_rainheavy',0.5,'full']],   // גשם כבד מהבאנדל (7.11) במקום rain
     desert:[['haze',0.4,'low']]
   },
   // צעדים: כל step פיקסלים של הליכה. ground: לפי אזור. במים רדודים (tSlow<1): אדווה
@@ -43,7 +44,39 @@ const FXW={
   quest:{way:120,mark:56,up:170},                      // מקום של קווסט צדדי (sqTargets ב-questboard.js): טבעת על הרצפה וסימן מעל העמוד
   pick:{size:58,gap:0.15},                             // איסוף: coins → pickup_coin, ציוד ומשאב נדיר → pickup_gem, תיבה → pickup_chest
   ping:{dur:0.7,size:0.95},                            // מפה קטנה: כמה זמן, וגודל ביחס למפה
+  /* ---- 7.11 (באנדל Mochi Lab, PR #433): שובלי חרב, מזג אוויר, מים, טבע ומצבים על הגיבור ---- */
+  // שובל על כל הנפה של הגיבור (P.sw.anim עולה, combat.js). צבע = סוג הנזק (CLAUDE.md): 5 צבעים ל-6 סוגים.
+  // פיזי (לבן) אין לו צבע ניטרלי, אז כחול-פלדה חלש יותר (alpha.physical). emerald שמור לצמח/רעל אם יתווספו
+  trail:{col:{physical:'sapphire',fire:'crimson',water:'sapphire',ice:'sapphire',lightning:'amethyst',earth:'amber',plant:'emerald',poison:'emerald'},
+    alpha:{physical:0.7},a:0.95,add:false,   // add (אור) עולה פי 2 בציור, והגיליון כבר זוהר בעצמו
+    kind:{sword:'slash',axe:'axe',hammer:'smash'},   // P.wt → סוג השובל. פטיש יש רק ב-amber/crimson (smashCol)
+    smashCol:{crimson:'crimson'},smashDef:'amber',
+    size:2,fps:48,dy:-12,   // גודל: פי size מטווח המכה (ציור: ~0.6ms בתוכנה בצפיפות 3, רבע מגשם הסערה של #430). fps 48: חצי שנייה, כמו ההנפה
+    rot:{slash:Math.PI,axe:Math.PI,smash:-Math.PI/2},   // לאן הגיליון פונה (שמאלה / למעלה), כדי לסובב לכיוון ההנפה
+    spin:{whirl:1},spinSize:2.6},                       // סקילים מסתובבים (wskbook.js): tr_spin בצבע הסקיל כל זמן שהם פועלים
+  /* אווירה לפי אזור: כל every שניות אפקט אחד מהרשימה (לפי w), עד max בבת אחת. רק במסך, ליד המצלמה.
+     size: פיקסלים, או חלק מרוחב המסך (≤3). at: any במסך, sky למעלה, low למטה, scr כל המסך, pond ליד בור לבה, forest בשולי יער.
+     when: day/night. dawn: [שקיפות בבוקר ובערב, שקיפות בשאר היום]. flash: הבזק מסך עם הברק (לא ב-RM ולא ב"פחות אפקטים") */
+  scene:{every:[2.2,4.5],max:2,dawn:[[5,9],[17,21]],
+    meadow:[{id:'wx_petals',w:3,size:0.5,a:0.75,dur:3,fps:20,when:'day'},{id:'pl_pollen',w:2,size:130,a:0.85,add:1,dur:2.4,fps:20,when:'day'},
+            {id:'wx_sunrays',w:1,size:0.55,a:0.3,add:1,at:'sky',dur:3.2,fps:12,when:'day'}],
+    desert:[{id:'wx_dust',w:4,size:0.45,a:0.7,at:'low',dur:2.6,fps:22},{id:'wx_devil',w:1,size:150,a:0.85,dur:2.2,fps:22,vx:60},
+            {id:'sf_embers',w:2,size:120,a:0.9,add:1,at:'pond',dur:2,fps:24}],
+    storm:[{id:'wx_bolt',w:1,size:0.42,a:0.8,add:1,at:'sky',fps:30,flash:0.32}],
+    ridge:[{id:'wx_blizzard',w:1,size:1,a:0.42,add:1,at:'scr',dur:2.6,fps:24}],
+    lake:[{id:'wx_fog',w:1,size:0.45,dawn:[0.5,0.24],at:'low',dur:4,fps:10,vx:18}],
+    shadow:[{id:'sf_fog',w:2,size:0.5,a:0.6,at:'low',dur:3.5,fps:14},{id:'lr_moon',w:1,size:0.4,a:0.35,add:1,at:'sky',dur:3,fps:12}],
+    forest:[{id:'lr_forest',w:2,size:0.45,a:0.35,add:1,at:'forest',dur:3,fps:12,when:'day'},{id:'pl_shroom',w:2,size:60,a:1,add:1,at:'forest',dur:3,fps:16,when:'night'}],
+    forestNear:520},   // יער (TR.map.forests) במרחק הזה מהמצלמה: מוסיפים את רשימת forest לאזור
+  // הגיבור במים: התזה (hit_water) כשהולכים במים רדודים, טיפות כשהולכים לאורך המים
+  wet:{splash:'hit_water',splashSize:58,drop:'wt_droplet',dropSize:44,near:70},
+  // גל על החוף (כל אזור עם מים במסך), ודג קופץ באגם
+  wave:{every:[2.4,4.6],size:110,a:0.85},jump:{reg:{lake:1},every:[7,13],size:96,a:0.95,edge:60},
+  regrow:{size:110},   // עץ או מקור שצומחים מחדש (world.js, n.back)
+  // מצבים על הגיבור: קטן וקצר, לכל היותר פעם ב-gap שניות לכל אחד
+  status:{size:54,up:58,a:0.85,gap:3.5,heal:0.5},   // heal: כמה חיים צריך לעלות בין סנכרונים כדי שזה ייחשב ריפוי
   // ---- מצב חי ----
+  sceneT:1.5,waveT:2,jumpT:5,swA:0,stT:{},hp:null,dead:new Set(),forest:false,
   live:new Map(),once:[],cam:{x:0,y:0},t:0,ambT:2,lavaT:1,pickT:0,lx:null,ly:null,shoreT:1,reg:'',pingT:0,seen:null,fed:null,marks:{v:null,w:null},n:0
 };
 const fxwOn=()=>FXW.on&&typeof fxPlay==='function'&&!!S&&!S.mb&&!!(S.vil||S.wd)&&!!P;
@@ -91,15 +124,15 @@ function fxwUpdate(dt){
   if(!fxwOn()){if(FXW.live.size)fxwStopAll();return}
   FXW.cam.x=S.cam.x;FXW.cam.y=S.cam.y;
   FXW.once=FXW.once.filter(fxwAlive);FXW.n=FXW.once.length+FXW.live.size;
-  const reg=fxwReg();if(reg!==FXW.reg){FXW.reg=reg;fxwStopAll();FXW.lx=null;if(S.wd)fxwPingNow();fxwPreload(reg)}   // אזור חדש: מנקים ומתחילים מחדש, טוענים מראש, ופינג במפה
-  if((FXW.t-=dt)<=0){FXW.t=FXW.sync;fxwSync();fxwNews()}
+  const reg=fxwReg();if(reg!==FXW.reg){FXW.reg=reg;fxwStopAll();FXW.lx=null;FXW.dead.clear();FXW.hp=null;if(S.wd)fxwPingNow();fxwPreload(reg)}   // אזור חדש: מנקים ומתחילים מחדש, טוענים מראש, ופינג במפה
+  if((FXW.t-=dt)<=0){FXW.t=FXW.sync;fxwSync();fxwNews();fxwSlow()}
   // צעדים לפי הקרקע
   if(FXW.lx===null){FXW.lx=P.x;FXW.ly=P.y}
   const St=FXW.step,d=Math.hypot(P.x-FXW.lx,P.y-FXW.ly);
   if(d>St.dist*2.5){FXW.lx=P.x;FXW.ly=P.y}   // קפיצה (אבן מסע, מעבר): בלי צעד
   else if(d>=St.dist){FXW.lx=P.x;FXW.ly=P.y;
     const wet=S.wd&&typeof tSlow==='function'&&tSlow(P.x,P.y)<1,id=wet?St.water:S.wd?(St.ground[reg]||St.def):St.def;
-    fxwPlay(id,P.x,P.y+P.r*0.7,{size:wet||id==='water_ripple'?St.waterSize*(wet?1:0.6):St.size,alpha:St.alpha,under:true})}
+    fxwPlay(id,P.x,P.y+P.r*0.7,{size:wet||id==='water_ripple'?St.waterSize*(wet?1:0.6):St.size,alpha:St.alpha,under:true});fxwWet(wet)}
   // אווירה רכה
   const A=FXW.amb[reg];
   if(A&&(FXW.ambT-=dt)<=0){FXW.ambT=rand(...FXW.amb.every);
@@ -111,6 +144,7 @@ function fxwUpdate(dt){
   const Sh=FXW.shore;if(S.wd&&Sh.reg[reg]&&typeof tWaterNear==='function'&&(FXW.shoreT-=dt)<=0){FXW.shoreT=rand(...Sh.every);const cw=W_(),ch=H_();
     for(let i=0;i<3;i++){const b=tWaterNear(P.x+rand(-cw*0.45,cw*0.45),P.y+rand(-ch*0.45,ch*0.45));
       if(b&&Math.abs(b.x-P.x)<cw/2&&Math.abs(b.y-P.y)<ch/2){const id=Sh.ids[Math.floor(Math.random()*Sh.ids.length)];fxwPlay(id,b.x,b.y,{size:Sh.size[id],alpha:Sh.alpha,under:true});break}}}
+  fxwMore(dt,reg);   // 7.11: שובלים, אווירה לפי אזור, גלים, צמיחה ומצבים
   // בועות בבורות הלבה (המדבר)
   if(S.wd&&WR().heat&&(FXW.lavaT-=dt)<=0){FXW.lavaT=rand(...FXW.lava.every);
     const ps=(WR().ponds||[]).filter(p=>Math.hypot(p.x-P.x,p.y-P.y)<FXW.lava.range+p.r);
@@ -120,10 +154,82 @@ function fxwUpdate(dt){
   if(FXW.pingT&&fxNowT()-FXW.pingT<FXW.ping.dur&&typeof MM!=='undefined')MM.t=0;   // בזמן הפינג המפה הקטנה מצוירת בכל פריים
 }
 
+/* ---- 7.11: הבאנדל של Mochi Lab בעולם ---- */
+// השובל לנשק ולסוג הנזק שביד. kind: slash/axe/smash/spin
+function fxwTrailId(kind,dt){const T=FXW.trail,c=T.col[dt]||T.col.physical;return kind==='smash'?'tr_smash_'+(T.smashCol[c]||T.smashDef):'tr_'+kind+'_'+c}
+function fxwSwing(){
+  const T=FXW.trail,s=P.sw,kind=T.kind[P.wt]||'slash',dt=P.dt&&P.dt.sword||'physical';
+  const h=fxwPlay(fxwTrailId(kind,dt),P.x,P.y,{follow:P,dy:T.dy,rot:s.ang+T.rot[kind],size:s.range*T.size,alpha:T.alpha[dt]||T.a,fps:T.fps,add:T.add});
+  if(h)h.trail=1;return h;
+}
+// הגיבור במים: התזה כשהולכים במים רדודים, טיפה כשהולכים לאורך המים
+function fxwWet(wet){
+  if(!S.wd)return;const Wt=FXW.wet;
+  if(wet){fxwPlay(Wt.splash,P.x,P.y+P.r*0.4,{size:Wt.splashSize,alpha:0.85,under:true});return}
+  const b=typeof tWaterNear==='function'&&tWaterNear(P.x,P.y);if(b&&b.e<Wt.near&&Math.random()<0.5)fxwPlay(Wt.drop,(P.x+b.x)/2,(P.y+b.y)/2,{size:Wt.dropSize,alpha:0.9,under:true});
+}
+const fxwHr=()=>typeof VFX!=='undefined'&&VFX.hour?VFX.hour():new Date().getHours();
+const fxwDawn=()=>{const h=fxwHr();return FXW.scene.dawn.some(r=>h>=r[0]&&h<r[1])};
+// יער ליד המצלמה (בדיקה פעם בסנכרון, לא בכל פריים)
+function fxwForestNear(){const M=typeof TR!=='undefined'&&TR&&TR.map;if(!S.wd||!M||!M.forests||!M.forests.length)return false;const c=S.cam,R=FXW.scene.forestNear;
+  return M.forests.some(F=>inPoly(c.x,c.y,F)||polyDist(c.x,c.y,F)<R)}
+// איפה אפקט אווירה מופיע. null = אין מקום מתאים עכשיו
+function fxwAt(e){
+  const c=S.cam,cw=W_(),ch=H_(),r=(a,b)=>rand(a,b);
+  switch(e.at){
+    case 'sky':return{x:c.x+r(-cw*0.3,cw*0.3),y:c.y-ch*0.22};
+    case 'low':return{x:c.x+r(-cw*0.25,cw*0.25),y:c.y+ch*0.22};
+    case 'scr':return{x:c.x,y:c.y};
+    case 'pond':{const ps=(WR().ponds||[]).filter(p=>Math.abs(p.x-c.x)<cw/2&&Math.abs(p.y-c.y)<ch/2);if(!ps.length)return null;const p=ps[Math.floor(Math.random()*ps.length)];return{x:p.x+r(-p.r,p.r)*0.4,y:p.y-p.r*0.3}}
+    case 'forest':{const M=TR.map;for(let i=0;i<4;i++){const x=c.x+r(-cw*0.42,cw*0.42),y=c.y+r(-ch*0.38,ch*0.38);
+      if(M.forests.some(F=>polyDist(x,y,F)<90))return{x,y}}return null}
+    default:return{x:c.x+r(-cw*0.4,cw*0.4),y:c.y+r(-ch*0.35,ch*0.35)};
+  }
+}
+function fxwScene(reg){
+  const Sc=FXW.scene,night=fxwNight();
+  let L=(Sc[reg]||[]).concat(FXW.forest?Sc.forest:[]).filter(e=>!e.when||(e.when==='night')===night);
+  if(!L.length||FXW.once.filter(h=>h.scene).length>=Sc.max)return;
+  let w=L.reduce((a,e)=>a+e.w,0)*Math.random(),e=L[L.length-1];for(const x of L)if((w-=x.w)<0){e=x;break}
+  const p=fxwAt(e);if(!p)return;
+  const size=e.size<=3?e.size*W_():e.size,a=e.dawn?e.dawn[fxwDawn()?0:1]:e.a;
+  const h=fxwPlay(e.id,p.x,p.y,{size,alpha:a,add:!!e.add,dur:e.dur||0,loop:!!e.dur,fps:e.fps,vx:e.vx?e.vx*(Math.random()<0.5?-1:1):0});
+  if(!h)return;h.scene=1;
+  if(e.flash&&!RM&&!(typeof fxLess==='function'&&fxLess())&&typeof fxUi==='function')fxUi('wx_flash',W_()/2,H_()/2,{size:Math.max(W_(),H_())*1.2,alpha:e.flash,add:true,fps:40});   // הבזק קצר עם הברק
+}
+// מצב על הגיבור: קטן, מעל הראש, לכל היותר פעם ב-gap
+function fxwStatus(id){const St=FXW.status,now=fxNowT();if(now-(FXW.stT[id]||-99)<St.gap)return;FXW.stT[id]=now;fxwPlay(id,P.x,P.y,{follow:P,dy:-St.up,size:St.size,alpha:St.a})}
+function fxwMore(dt,reg){
+  // שובל על הנפה: P.sw.anim קופץ ל-0.2 בכל מכה (combat.js), רק עם נשק קרוב
+  const a=P.sw?P.sw.anim:0;if(P.weapon==='sword'&&a>FXW.swA+0.05&&S.mode==='play')fxwSwing();FXW.swA=a;
+  if(!S.wd)return;
+  if((FXW.sceneT-=dt)<=0){FXW.sceneT=rand(...FXW.scene.every);fxwScene(reg)}
+  const M=typeof TR!=='undefined'&&TR&&TR.map,cw=W_(),ch=H_();
+  // גל על החוף: הנקודה הקרובה על שפת המים, אם היא במסך
+  if(M&&(M.water&&M.water.length||M.sea)&&(FXW.waveT-=dt)<=0){FXW.waveT=rand(...FXW.wave.every);
+    const b=tWaterNear(S.cam.x+rand(-cw*0.4,cw*0.4),S.cam.y+rand(-ch*0.4,ch*0.4));
+    if(b&&Math.abs(b.x-S.cam.x)<cw/2&&Math.abs(b.y-S.cam.y)<ch/2)fxwPlay('wt_wave',b.x,b.y,{size:FXW.wave.size,alpha:FXW.wave.a,under:true})}
+  // דג קופץ באגם: נקודה במים, רחוק מהשפה
+  const J=FXW.jump;if(M&&J.reg[reg]&&(FXW.jumpT-=dt)<=0){FXW.jumpT=rand(...J.every);
+    for(let i=0;i<4;i++){const x=S.cam.x+rand(-cw*0.42,cw*0.42),y=S.cam.y+rand(-ch*0.4,ch*0.4);
+      if((M.water||[]).some(Wp=>inPoly(x,y,Wp)&&polyDist(x,y,Wp)>J.edge)||M.sea&&tB(M).every(B=>!inPoly(x,y,B)&&polyDist(x,y,B)>J.edge)){fxwPlay('wt_jump',x,y,{size:J.size,alpha:J.a,under:true});break}}}   // במים של האגם, או בים שמחוץ לגבול
+}
+// פעמיים-שלוש בשנייה (עם fxwSync): יער ליד המצלמה, מקורות שצמחו מחדש, ומצבים על הגיבור
+function fxwSlow(){
+  FXW.forest=fxwForestNear();
+  if(S.wd&&S.nd){const cw=W_(),ch=H_();for(const n of S.nd.list){
+    if(n.dead){FXW.dead.add(n);continue}
+    if(FXW.dead.delete(n)&&Math.abs(n.x-S.cam.x)<cw/2&&Math.abs(n.y-S.cam.y)<ch/2)fxwPlay('pl_regrow',n.x,n.y-10,{size:FXW.regrow.size,alpha:0.95})}}
+  const hp=P.hp;if(FXW.hp!==null&&hp>FXW.hp+FXW.status.heal&&hp<P.maxHp)fxwStatus('st_regen');FXW.hp=hp;
+  if(P.raging||P.fury>0||P.swapBuff>0)fxwStatus('st_atkup');
+  if(P.lockDef>0||P.rooted)fxwStatus('st_defup');
+}
+
 // טעינה מראש של מה שיופיע במקום הזה, כדי שאפקט ראשון (קונפטי, חותמת) לא יפספס את תחילתו
 function fxwPreload(reg){if(typeof fxPreload!=='function')return;const A=FXW.amb[reg]||{day:[],night:[]};
   fxPreload(['npc_quest','npc_turnin','npc_shop','npc_talk','emote_heart','emote_idea','emote_dots','stamp_done','hearts','win_confetti','balloons','pickup_coin','pickup_gem','pickup_chest','mm_ping',
-    'waypoint','quest_mark',...(FXW.shore.reg[reg]?FXW.shore.ids:[]),FXW.step.ground[reg]||FXW.step.def,FXW.step.water,'lava_bubble',...A.day,...A.night,...(FXW.weather[reg]||[]).map(w=>w[0])])}
+    'waypoint','quest_mark',...(FXW.shore.reg[reg]?FXW.shore.ids:[]),FXW.step.ground[reg]||FXW.step.def,FXW.step.water,'lava_bubble',...A.day,...A.night,...(FXW.scene[reg]||[]).map(e=>e.id),...FXW.scene.forest.map(e=>e.id),'wt_wave','wt_jump','wt_droplet','hit_water','pl_regrow','st_regen','st_atkup','st_defup','wx_flash',
+    ...(P&&P.sw&&P.weapon==='sword'?[fxwTrailId(FXW.trail.kind[P.wt]||'slash',P.dt&&P.dt.sword)]:[]),...(FXW.weather[reg]||[]).map(w=>w[0])])}
 // הסימנים שהציור הקיים כבר חישב: v בכפר (drawQuestMarks), w בעולם (drawWnpcScreen)
 function fxwMarks(mark,where){FXW.marks[where]=mark}
 
@@ -152,6 +258,10 @@ function fxwEmote(id){
 (()=>{
   const wrap=(name,after)=>{const old=window[name];if(typeof old!=='function')return;window[name]=function(){const r=old.apply(this,arguments);try{after(r,...arguments)}catch(e){}return r}};
   const talkFx=(r,id)=>{if(id&&fxwOn())fxwEmote(id)};
+  // סקיל מסתובב (מערבולת): tr_spin בצבע הסקיל כל זמן שהוא פועל. שריון קרח: הגנה עולה (wskbook.js)
+  wrap('wsbCast',(r,id,D)=>{if(!D||!fxwOn())return;
+    if(FXW.trail.spin[id]){const h=fxwPlay(fxwTrailId('spin',D.dt),P.x,P.y,{follow:P,dy:FXW.trail.dy,size:(D.r||80)*FXW.trail.spinSize,alpha:0.9,add:true,loop:true,dur:D.t||1});if(h)h.trail=1}
+    if(D.kind==='guard')fxwStatus('st_defup')});
   wrap('npcTalk',talkFx);wrap('wnpcTalk',talkFx);
   // קווסט שנמסר: חותמת "בוצע" מעל מי שנתן אותו, או מעל הגיבור
   wrap('questClaim',(r,id)=>{if(r===false||!fxwOn())return;const q=typeof QBY!=='undefined'&&QBY[id],n=q&&q.giver&&fxwNpc(q.giver),o=n||P;
