@@ -2391,7 +2391,7 @@ function worldBot(m,L,god){
     enterVillage();tick(2);const all=npcState(),id=Object.keys(all).find(k=>npcHere(k));
     if(id){fxwMarks({[id]:'!'},'v');tick(1);o.mark=[...FXW.live.keys()].some(k=>k==='m:'+id+'npc_quest');S.vil.npcNear=id;fxwMarks({},'v');tick(1);o.talk=FXW.live.has('t:'+id)||FXW.live.has('s:'+id)}
     celebrate(P.x,P.y,'upgrade');o.party=o.ids.has('win_confetti');walk(2);o.stepV=o.ids.has('step_dust');
-    const reg={};for(const r of ['ridge','desert','storm']){SAVE.story.ice=true;enterWorld('home',r);P.inv=99;FXW.t=0;tick(2);walk(2);reg[r]=[...FXW.wxl.keys()].filter(k=>k.startsWith('w:')).map(k=>k.slice(2).replace(/\d.*/,''))}
+    const reg={};for(const r of ['ridge','desert','storm']){SAVE.story.ice=true;FXW.gustEnd=0;FXW.gustT=99;enterWorld('home',r);P.inv=99;FXW.t=0;tick(2);walk(2);reg[r]=[...FXW.wxl.keys()].filter(k=>k.startsWith('w:')).map(k=>k.slice(2).replace(/\d.*/,''))}
     o.weather=reg.ridge.includes('snow')&&(fxwNight()?reg.ridge.includes('aurora'):!reg.ridge.includes('aurora'))&&reg.desert.includes('haze')&&reg.storm.includes('wx_rainheavy');
     o.steps=o.ids.has('step_snow')&&o.ids.has('step_sand');
     walk(400);o.mine=FXW.n;o.cap=FXW.cap;o.all=FXLIB.list.length;o.max=FXLIB.max;   // הרבה הליכה בלי שהזמן עובר: השכבה נעצרת בתקרה

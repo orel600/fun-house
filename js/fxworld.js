@@ -201,7 +201,7 @@ function fxwScene(reg){
   let w=L.reduce((a,e)=>a+e.w,0)*Math.random(),e=L[L.length-1];for(const x of L)if((w-=x.w)<0){e=x;break}
   // שכבת מזג האוויר: על כל המסך, עוקב אחרי המצלמה. עם השלג או הגשם זה עובר לקנבס הקטן, אז כמעט בחינם
   if(e.calm&&(RM||typeof fxLess==='function'&&fxLess()))return;
-  if(e.layer){if(FXW.wxl.has('gust'))return;const f=fxMake(e.id,0,0,{follow:FXW.cam,size:Math.max(W_(),H_())*1.15,alpha:e.a,add:!!e.add,fps:e.fps,loop:!!e.dur,dur:e.dur||0});if(!f)return;FXW.wxl.set('gust',f);return}
+  if(e.layer){if(FXW.wxl.has('gust')||FXW.n>=FXW.cap)return;const f=fxMake(e.id,0,0,{follow:FXW.cam,size:Math.max(W_(),H_())*1.15,alpha:e.a,add:!!e.add,fps:e.fps,loop:!!e.dur,dur:e.dur||0});if(!f)return;FXW.wxl.set('gust',f);return}
   const p=fxwAt(e);if(!p)return;
   const size=e.size<=3?e.size*W_():e.size,a=e.dawn?e.dawn[fxwDawn()?0:1]:e.a;
   const h=fxwPlay(e.id,p.x,p.y,{size,alpha:a,add:!!e.add,dur:e.dur||0,loop:!!e.dur,fps:e.fps,vx:e.vx?e.vx*(Math.random()<0.5?-1:1):0});
