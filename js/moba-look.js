@@ -254,6 +254,7 @@ function mbMini(ox,oy){
   ctx.globalAlpha=a;
   for(const u of M.u)if(u.k==='minion'&&!u.dead&&seen(u)){ctx.fillStyle=MOBA.team[u.team];ctx.fillRect(X(u.x)-1.2,Y(u.y)-1.2,2.4,2.4)}
   for(const f of MBLOOK.miniMarks)f(ctx,X,Y,k);   // סימנים של מערכות אחרות
+  if(typeof mbGambleMini==='function')mbGambleMini(X,Y);   // חדר ההימור (moba-gamble.js)
   for(const u of M.u)if(u.k==='hero'&&!u.dead&&!u.me&&seen(u)){ctx.fillStyle=MOBA.team[u.team];ctx.beginPath();ctx.arc(X(u.x),Y(u.y),3.6,0,7);ctx.fill();ctx.strokeStyle='#0B0D14';ctx.lineWidth=1;ctx.stroke()}
   const me=M.me;if(me&&!me.dead){ctx.fillStyle=MOBA.team[me.team];ctx.beginPath();ctx.arc(X(me.x),Y(me.y),5,0,7);ctx.fill();ctx.strokeStyle=C.gold;ctx.lineWidth=2;ctx.stroke()}   // אני: גדול, עם טבעת זהב
   if(M.order){ctx.strokeStyle=M.order.kind==='attack'?C.blood:MOBA.team[0];ctx.lineWidth=2;ctx.beginPath();ctx.arc(X(M.order.x),Y(M.order.y),5+3*Math.sin(M.t*8),0,7);ctx.stroke()}
