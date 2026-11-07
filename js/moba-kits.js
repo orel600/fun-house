@@ -62,8 +62,14 @@ function mbCast(u,slot,aim){
       for(const o of foesIn(u.x,u.y,s.r)){mbDmg(u,o,s.dmg0*k,'physical',{big:true});mbPush(o,Math.atan2(o.y-u.y,o.x-u.x),40)}
       mbBoom(u.x,u.y,s.r,'physical');mbWord(u,'rage');break}
     case 'pierce':case 'wave':{
-      MB.shots.push({kind:'line',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,
-        on:o=>{mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});if(s.wet){o.st.wet=Math.max(o.st.wet,s.wet);mbSlow(o,s.slow,s.slowT)}}});break}
+      const L=s.id==='pierce',sh={kind:'line',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,
+        on:o=>{mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});if(s.wet){o.st.wet=Math.max(o.st.wet,s.wet);mbSlow(o,s.slow,s.slowT)}
+          if(typeof fxPlay==='function')fxPlay(L?'hit_light':'hit_water',o.x,o.y-o.r,{size:L?90:100,add:L})}};
+      MB.shots.push(sh);
+      // האפקט שעף עם הסקיל (אוראל, 7.11: "חץ הברק וגל המים עפים בלי שום אפקט"), והבזק ביד של המטיל
+      if(typeof fxPlay==='function'){fxPlay(L?'sk_pierce':'sk_wave',u.x,u.y,{follow:sh,rot:ang,loop:true,size:L?110:s.w*2.2,add:L});
+        fxPlay(L?'sk_pierce_ray':'sk_wave_crest',u.x+Math.cos(ang)*40,u.y+Math.sin(ang)*40,{rot:ang,size:L?150:140,add:L})}
+      break}
     case 'net':{   // רשת ציד: עפה פתוחה, ונסגרת על הגיבור הראשון שהיא פוגעת בו. חיילים לא עוצרים אותה
       const n={kind:'line',fx:'net',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,
         on:o=>{if(o.k!=='hero'||n.gone)return;n.gone=true;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'root',s.root,u))mbWord(o,'root');mbfxHit(o,'net')}};

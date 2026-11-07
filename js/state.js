@@ -7,6 +7,7 @@ const keys={};
 const newTrack=()=>({sword:0,gun:0,move:0,still:0,dist:0,distN:0,types:Object.fromEntries(Object.keys(DMG.types).map(k=>[k,0]))});
 
 function reset(){
+  if(typeof fxClear==='function')fxClear();   // אפקטים של המקום הקודם (fxlib.js)
   P={x:0,y:0,r:14,hp:100,maxHp:100,speed:MOVE.speed,weapon:'sword',wt:'sword',wid:null,aim:0,face:0,walk:0,inv:0,moving:false,
     sw:{dmg:WEAPONS.base.sword,range:80,arc:2.3,cd:0.55,t:0,anim:0,ang:0},
     gn:{dmg:WEAPONS.base.gun,cd:0.3,t:0,speed:580,multi:1,pierce:0,recoil:0},
