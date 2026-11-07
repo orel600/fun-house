@@ -18,7 +18,7 @@ const SKCAST={
   shot:{bow:'Ranged_Bow_Release',other:'Ranged_Magic_Shoot'},
   fallback:'Ranged_Magic_Spellcasting',
   // עיגול הרונות: עדין, כי סקילים חוזרים הרבה. מדבקה אחת לכל היותר (משתמשים שוב באותה), אז מאגר המדבקות לא מתמלא
-  rune:{life:0.7,r:62,a:1,hdr:1.4,spin:2,fin:0.14,fade:0.4},   // ניר, 7.11: "המצלמה בעולם רחוקה": פי 1.5 מרוחב הדמות, ועם הילה. hdr: כמה זוהר (מעל 1 נכנס ל-bloom)
+  rune:{life:0.7,r:62,a:1,hdr:1.15,spin:2,fin:0.14,fade:0.4},   // ניר, 7.11: "המצלמה בעולם רחוקה": פי 1.5 מרוחב הדמות, ועם הילה. hdr: כמה זוהר (מעל 1 נכנס ל-bloom)
   // הבזק בידיים ברגע ההטלה, בצבע סוג הנזק. h: הגובה של הידיים (פיקסלים של המשחק)
   flash:{h:34,size:46,size2:80,life:[0.16,0.22],spark:10,light:6,lightT:0.3}
 };
@@ -36,7 +36,7 @@ function skCast(id){
   // בכפר המדבקות כבויות (VFX3D.on רק בעולם). כמו האש של פיוחו (petfx3d.js), מדליקים לרגע את VFX3D.pet
   const was=VFX3D.pet,F=SKCAST.flash;VFX3D.pet=true;
   const d=skcRune.d3=VFX3D.decal('rune',P.x,P.y,R.r,{life:R.life,col,a:R.a,fin:R.fin,fade:R.fade,hdr:R.hdr});
-  VFX3D.emit('glow',P.x,P.y,F.h,{n:1,raw:1,col:'#ffffff',col2:col,size:F.size,size2:F.size2,life:F.life});
+  VFX3D.emit('glow',P.x,P.y,F.h,{n:1,raw:1,col,col2:col,hdr:2,size:F.size,size2:F.size2,life:F.life});
   VFX3D.emit('spark',P.x,P.y,F.h,{n:F.spark,col:'#ffffff',col2:col,spd:160,up:120,grav:-300,life:[0.2,0.4]});
   VFX3D.light(P.x,P.y,F.h,col,F.light,F.lightT);
   VFX3D.pet=was;
