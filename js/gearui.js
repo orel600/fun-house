@@ -10,7 +10,7 @@ const GEARUI={
     {id:'aspd',icon:'⏱️',v:()=>{const g=P.weapon==='sword'?P.sw:P.gn;return T('gui.ps',(1/Math.max(0.05,g.cd*wK('cd'))).toFixed(1))}},
     {id:'speed',icon:'👟',v:()=>gPct(P.speed/MOVE.speed*100-100)},
     {id:'crit',icon:'💥',v:()=>Math.round(HITFX.crit*100+Math.min(STATS.cap.crit,P.crit||0))+'%'},
-    {id:'def',icon:'🛡️',v:()=>Math.round(Math.min(STATS.cap.def,P.def||0))+'%'},
+    {id:'def',icon:'🛡️',v:()=>P.def>0||defFx()?T('gui.defV',Math.round(P.def||0),Math.round(defNow())):'0'},   // נקודות הגנה, וכמה הן בולעות מול המפלצות כאן (defense.js)
     {id:'regen',icon:'💚',v:()=>P.regen>0?T('gui.ps','+'+Math.round(P.regen*10)/10):null,opt:1},
     {id:'loot',icon:'🍀',v:()=>P.loot>0?gPct(P.loot):null,opt:1}
   ],
@@ -18,8 +18,8 @@ const GEARUI={
   empty:{weapon:'⚔️',shield:'🛡️',head:'🪖',body:'🧥',acc:'💍',boots:'👢',orbit:'✨'}
 };
 const gPct=n=>(n>0?'+':'')+Math.round(n)+'%';
-// עמידות לסוג נזק: ההגנה הכללית חלה על כל מכה, ועמידות לסוג מסוים (P.res, כשתהיה) נוספת לה. עד התקרה של STATS.cap.def
-const gResist=t=>Math.round(Math.min(STATS.cap.def,(P.def||0)+((P.res||{})[t]||0)));
+// עמידות לסוג נזק: ההגנה הכללית חלה על כל מכה, ועמידות לסוג מסוים (P.res, כשתהיה) נוספת לה. עד התקרה (defense.js)
+const gResist=t=>Math.round(Math.min(defWorld()?DEFENSE.cap:STATS.cap.def,defNow()+((P.res||{})[t]||0)));   // defense.js
 const gDtPic=t=>'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+DMG.types[t].icon+'" fill="currentColor"/></svg>';
 
 // ערך שהוא 0 ("0%", "+0%", "0"): השורה לא מוצגת (ניר, 2.11: "טבלה עם הרבה 0%")

@@ -28,12 +28,15 @@ const LOOT={
     /* מה נופל ובאיזו שכבה (ניר, 2.11.2026: "הגעתי לרמה 20 ולא נפל לי אף נשק שמתאים לקלאס שלי"). רק בעולם, דרך lootRoll. בזירה gRoll כמו קודם.
        slot: כמה נפוצה כל משבצת. cls.share: איזה חלק מהנשקים הם של הדמות (arms ב-HEROES), והשאר מהדמויות האחרות, כי כל דמות יכולה להחזיק כל נשק.
        cls.pity: אחרי כמה פריטים ברצף בלי נשק של הדמות, הבא הוא בטוח נשק שלה (SAVE.clsPity).
-       tier: המשקל של כל שכבה (עץ, ברזל, כסף, זהב, אגדי) לפי רמת הדמות. חל המדרג האחרון שה-lv שלו קטן או שווה לרמה.
-       דרגת העולם מכפילה את המשקלות (TIERS.list[*].gw ב-tiers.js): אגדי נופל בעולם רק בדרגה 3.
+       tier: מפל שכבות (ניר, 7.11.2026, מסרטון על טבלאות שלל). p = האחוז האמיתי של כל שכבה (עץ, ברזל, כסף, זהב, אגדי) לפי רמת הדמות.
+       מגרילים מלמעלה: קודם אגדי, אחר כך זהב, כסף וברזל, ועץ הוא מה שנשאר (המספר שלו לא בשימוש). כך האחוז של שכבה לא זז
+       כשמוסיפים פריטים או משנים שכבה אחרת. הסכום של ברזל עד אגדי לא עובר 100.
+       חל המדרג האחרון שה-lv שלו קטן או שווה לרמה. דרגת העולם מכפילה את האחוזים (TIERS.list[*].gw ב-tiers.js) ואז הם חוזרים לסכום 100:
+       אגדי נופל בעולם רק בדרגה 3.
        אין פריט בשכבה שנבחרה (למשל מגפי זהב): השכבה הקרובה מתחת, ואם אין, מעל */
     slot:{weapon:0.4,acc:0.25,boots:0.15,orbit:0.2},
     cls:{share:0.6,pity:3},
-    tier:[{lv:1,w:[60,30,9,1,0]},{lv:5,w:[35,40,20,5,0]},{lv:10,w:[15,35,35,13,2]},{lv:15,w:[6,25,40,24,5]},{lv:20,w:[2,15,38,35,10]}]
+    tier:[{lv:1,p:[0,30,9,1,0]},{lv:5,p:[0,40,20,5,0]},{lv:10,p:[0,35,35,13,2]},{lv:15,p:[0,25,40,24,5]},{lv:20,p:[0,15,38,35,10]}]
   },
   beam:90                          // גובה עמוד האור של שלל נדיר על הרצפה, כפול beam של הדרגה חלקי 100 (drops.js)
 };
@@ -98,13 +101,17 @@ function lootGear(e,force){
 
 /* איזה פריט נופל בעולם (LOOT.gear: slot, cls, tier). n: כמה הגרלות של שכבה, והגבוהה נבחרת. mine: לבדיקה, true מכריח נשק של הדמות.
    לפעמים עם כוח (powRoll ב-powers.js), כמו gRoll */
+// מפל השכבות (LOOT.gear.tier): מגריל מספר אחד בין 0 ל-100 ובודק מהשכבה הנדירה למטה. מחזיר את מספר השכבה (0 = עץ)
+function lootCascade(P){let r=Math.random()*100;for(let i=P.length-1;i>0;i--){if(r<P[i])return i;r-=P[i]}return 0}
+
 function lootRoll(n=1,mine){
   const G=LOOT.gear,h=heroId(),arms=h&&HEROES.list[h].arms,pick=o=>{let r=Math.random()*Object.values(o).reduce((a,b)=>a+b,0);for(const k in o){r-=o[k];if(r<0)return k}return Object.keys(o)[0]};
   let slot=pick(Object.assign({},G.slot,ARMOR.loot.slot));
   if(arms){if(mine||(SAVE.clsPity||0)>=G.cls.pity){slot='weapon';mine=true}else mine=slot==='weapon'&&Math.random()<G.cls.share}
   const arm=armorPick(slot);   // שריון: מוטה למחלקה שלך (armor.js). אחרי המזל, שכבר יכול היה להפוך את המשבצת לנשק
-  const lv=heroLv(),W=tierGearW(G.tier.filter(b=>b.lv<=lv).pop().w);let t=0;   // tierGearW: דרגת העולם. זהב נפוץ רק מדרגה 2, אגדי רק בדרגה 3 (tiers.js)
-  for(let i=0;i<n;i++)t=Math.max(t,+pick(Object.assign({},W)));
+  const lv=heroLv(),B=G.tier.filter(b=>b.lv<=lv).pop().p,W=tierGearW([100-B.slice(1).reduce((a,b)=>a+b,0)].concat(B.slice(1))),   // tierGearW: דרגת העולם. זהב נפוץ רק מדרגה 2, אגדי רק בדרגה 3 (tiers.js)
+    tot=W.reduce((a,b)=>a+b,0),P=W.map(w=>w*100/tot);let t=0;   // אחרי דרגת העולם חוזרים ל-100%, כדי שמה שירד לא ייפול כולו על עץ
+  for(let i=0;i<n;i++)t=Math.max(t,lootCascade(P));
   const ok=id=>{const it=GEAR.items[id];return it.slot===slot&&!it.types&&arm(it)&&(slot!=='weapon'||!arms||arms.includes(it.w)===!!mine)};
   const pool=Object.keys(GEAR.items).filter(ok),near=pool.length?Math.min(...pool.map(id=>{const d=GEAR.items[id].tier-t;return d<=0?-d:d+10})):0,
     at=pool.filter(id=>{const d=GEAR.items[id].tier-t;return (d<=0?-d:d+10)===near}),id=at[Math.floor(Math.random()*at.length)]||gRoll(n);

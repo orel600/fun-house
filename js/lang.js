@@ -38,7 +38,7 @@ const TEXT={
   'shop.title':{he:'חנות הריצה',en:'Run Shop'},'shop.max':{he:'מקסימום',en:'Max'},
   'shop.blade':{he:'להב חד',en:'Keen Edge'},'shop.blade.d':{he:'נזק ‎+15%',en:'Damage +15%'},
   'shop.boots':{he:'מגפיים קלים',en:'Light Boots'},'shop.boots.d':{he:'מהירות ‎+8%',en:'Speed +8%'},
-  'shop.armor':{he:'שריון',en:'Armor'},'shop.armor.d':{he:'הגנה ‎+4',en:'Defense +4'},
+  'shop.armor':{he:'שריון',en:'Armor'},'shop.armor.d':{he:'הגנה ‎+24',en:'Defense +24'},
   'shop.charm':{he:'קמע מזל',en:'Lucky Charm'},'shop.charm.d':{he:'קריטית ‎+5%',en:'Crit +5%'},
   'shop.heart':{he:'לב חזק',en:'Strong Heart'},'shop.heart.d':{he:'חיים ‎+25',en:'Health +25'},
   // רצף הריגות (streak.js): מילים משלנו לכל מדרגה
@@ -1247,6 +1247,7 @@ const TEXT={
   'gui.speed':{he:'מהירות',en:'Move speed'},
   'gui.crit':{he:'קריטי',en:'Critical'},
   'gui.def':{he:'הגנה',en:'Defense'},
+  'gui.defV':{he:(r,n)=>r+' · <bdi dir="ltr">≈'+n+'%</bdi> כאן',en:(r,n)=>r+' · ≈'+n+'% here'},   // defense.js: נקודות הגנה, וכמה נזק הן בולעות מול המפלצות כאן
   'gui.regen':{he:'ריפוי',en:'Healing'},
   'gui.loot':{he:'שלל',en:'Loot'},
   'gui.ps':{he:n=>n+' בשנ׳',en:n=>n+'/s'},   // לשנייה
@@ -1277,8 +1278,8 @@ const TEXT={
   'orb.f.crit':{he:'סיכוי למכה קריטית',en:'critical hit chance'},
   'orb.f.loot':{he:'שלל',en:'loot'},
   'set.warden':{he:'סט השומר האבן',en:'Stone Warden Set'},
-  'set.warden.2':{he:'+30 חיים, 5% פחות נזק',en:'+30 health, 5% less damage taken'},
-  'set.warden.4':{he:'עוד 8% פחות נזק, 15% יותר חיים, 20% נזק מקרוב',en:'8% less damage, 15% more health, 20% melee damage'},
+  'set.warden.2':{he:'+30 חיים, +30 הגנה',en:'+30 health, +30 defense'},
+  'set.warden.4':{he:'עוד 48 הגנה, 15% יותר חיים, 20% נזק מקרוב',en:'+48 defense, 15% more health, 20% melee damage'},
   'set.storm':{he:'סט צייד הסערה',en:'Storm Hunter Set'},
   'set.storm.2':{he:'15% נזק מרחוק, 4% מכה קריטית',en:'15% ranged damage, 4% critical hits'},
   'set.storm.4':{he:'חץ נוסף בכל ירייה, 10% מהירות, עוד 20% נזק מרחוק',en:'An extra arrow every shot, 10% speed, 20% more ranged damage'},
@@ -1926,6 +1927,9 @@ Object.assign(TEXT,{
   'qo.rare':{he:()=>'לצוד מפלצות נדירות שונות',en:()=>'Hunt different rare monsters'},
   'rare.rumor':{he:p=>'שמועה: ראו משהו זוהר '+p,en:p=>'Rumor: something glowing was seen '+p},
   'rare.first':{he:(n,k)=>'נדירה חדשה: '+n+'! ('+k+' שונות)',en:(n,k)=>'New rare: '+n+'! ('+k+' different)'},
+  'rare.line':{he:(p,t)=>'שמועה: משהו זוהר '+p+' · עוד '+t,en:(p,t)=>'Rumor: something glowing '+p+' · '+t+' left'},
+  'rare.far':{he:'אזור שעוד לא גילית',en:'A region you haven’t found yet'},
+  'rare.unk':{he:'עוד לא צדת',en:'Not hunted yet'},
   'rare.down':{he:n=>'צדת שוב את '+n,en:n=>'You hunted '+n+' again'},
   'scent.rare':{he:n=>n+' מצאה משהו נדיר! הנה זה',en:n=>n+' found something rare! There it is'},
   'rare.at.quarry':{he:'ליד המחצבה',en:'by the quarry'},

@@ -60,6 +60,7 @@
 <div class="vpanel win" id="wPanel" hidden></div>
 <!-- המטרה הבאה (js/guide.js): שורה אחת למעלה, בכפר ובעולם. נגיעה פותחת את היומן, ▴ מכווץ -->
 <div class="guide" id="guide" hidden><button class="gmain" id="guideMain" type="button" data-ta="g.tap"><span class="gico" id="guideIco"></span><span class="gtxt" id="guideTxt"></span><b class="gdist" id="guideDist"></b></button><button class="gjump" id="guideJump" type="button" hidden></button><button class="gmin" id="guideMin" type="button"></button></div>
+<div class="grare" id="rareLine" hidden></div>
 <!-- הפינות העליונות בכפר ובעולם (js/minimap.js): "מי אני" (רמה, חיים, XP) בתחילת השורה, ומפה קטנה עגולה מתחת ל-☰ בעולם. נגיעה במפה פותחת את מפת העולם -->
 <div class="who" id="who" role="img" hidden><b class="wlv" id="whoLv"></b><div class="wbars"><div class="whp"><i id="whoHp"></i></div><div class="wxp"><i id="whoXp"></i></div></div></div>
 <button class="minimap" id="miniMap" data-ta="mm.open" hidden><canvas id="mmC"></canvas></button>
@@ -390,6 +391,7 @@
 <script src="js/wsklvl.js"></script>   <!-- שדרוג סקילים אצל הכוהנת: +0 עד +5, יותר נזק ופחות טעינה -->
 <script src="js/skillreveal.js"></script>   <!-- סקיל חדש: רגע גילוי, ומראה לפי הדרגה בעץ (docs/plan-progression.md עמוד 3) -->
 <script src="js/sigskill.js"></script>   <!-- סקיל חתימה: סקיל-על לכל דרגה, כפתור משלו בעולם ובכפר -->
+<script src="js/skillcast.js"></script>   <!-- הגיבור מטיל כל סקיל: תנועה קצרה ועיגול רונות בצבע סוג הנזק (SKCAST) -->
 <script src="js/skguide.js"></script>   <!-- איך מוצאים את הסקילים: נגיעה ארוכה פותחת את הספר, נקודה אדומה, וכרטיס אחרי רגע הגילוי -->
 <script src="js/skpractice.js"></script>   <!-- אימון סקיל: 20 שניות על בובות אחרי סקיל חדש, אופציונלי -->
 <script src="js/drops.js"></script>
@@ -425,6 +427,7 @@
 <script src="js/doll3d.js"></script>
 <script src="js/itemtip.js"></script>
 <script src="js/gearui.js"></script>
+<script src="js/defense.js"></script>   <!-- הגנה כדירוג עם תשואה פוחתת: נקודות מול רמת התוקף -->
 <script src="js/armor.js"></script>   <!-- שריון לפי מחלקה: משבצות ראש וגוף -->
 <script src="js/aging.js"></script>
 <script src="js/powers.js"></script>

@@ -8,8 +8,9 @@
      VFX3D.emit(kind,x,y,h,o)            חלקיקים מסוג kind (מתוך VFX3D_CFG.kinds), o משנה: n,col,col2,size,size2,life,spd,up,spread,grav,drag
      VFX3D.trail(st,x,y,h,kind,o)        שובל: חלקיקים לאורך הדרך מהמיקום הקודם (נשמר ב-st) לנוכחי
      VFX3D.burst(kind,x,y,o)             מתכון מוכן: 'explode' (הבזק, גל הדף, ניצוצות, גחלים, עשן, אור), 'ring', 'flash'
-     VFX3D.decal(kind,x,y,r,o)           סימן על הקרקע: 'ring' גל הדף, 'mark' סימון מטרה, 'scorch' חרוך, 'cracks' סדקים זוהרים, 'glow' הבזק
+     VFX3D.decal(kind,x,y,r,o)           סימן על הקרקע: 'ring' גל הדף, 'mark' סימון מטרה, 'scorch' חרוך, 'cracks' סדקים זוהרים, 'glow' הבזק, 'rune' עיגול רונות (spin על הידית מסובב, p:1 טבעת סימנים חיצונית)
                                          o: life (שניות, Infinity = ידני), col, a, grow:[r0,r1], fade (חלק מהזמן בסוף), w (עובי טבעת), p
+     VFX3D.pillar(x,y,r,h,col,o)         עמוד אור אנכי (o: life, hdr, a), נעלם לבד
      VFX3D.light(x,y,h,col,i,life)       אור נקודתי (רק באיכות גבוהה), מחזיר ידית או null
      VFX3D.orb(col,size)                 כדור זוהר (גוף של מטאור, קליע). ידית עם .set(x,y,h,size)
      VFX3D.free(handle)                  משחרר ידית (מדבקה, אור או כדור)
@@ -17,7 +18,7 @@
    "פחות אפקטים" (juice.js) מוריד עוד חצי מהחלקיקים. ?bloom=0 מכבה רק את הזוהר. בזירה (של אוראל) אין זוהר ואין אפקטים */
 const VFX3D_CFG={
   pool:{glow:{hi:900,lo:260},smoke:{hi:260,lo:80}},   // כמה חלקיקים לכל היותר
-  decals:12,orbs:4,lights:2,
+  decals:16,orbs:4,lights:2,pillars:2,
   lo:0.4,less:0.5,           // כמה חלקיקים באיכות נמוכה, וב"פחות אפקטים"
   hdr:5,                   // כמה בהיר חלקיק זוהר (מעל 1 = זוהר ב-bloom)
   y:0.8,                     // גובה המדבקות מעל הקרקע
@@ -101,11 +102,18 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
         float sp=step(.5,fract(atan(q.y,q.x)*1.909+uS));a=e*(.7+.3*sp)+r*.9+.18*uP*(1.-d);}
       else if(uK<2.5){float nn=n(q*3.+uS)*.5+n(q*7.+uS)*.25;a=smoothstep(1.,.55,d+nn*.45-.15)*.92;c=uC*(.6+.7*d);}
       else if(uK<3.5){float l=abs(n(q*5.+uS)-.5)*2.;a=pow(1.-l,10.)*smoothstep(.95,.25,d)+.35*smoothstep(.5,0.,d);}
-      else{a=pow(1.-d,2.2);}
+      else if(uK<4.5){a=pow(1.-d,2.2);}
+      else if(uP>.5){float an=atan(q.y,q.x)+uS,sg=floor(an*3.8197186),g=h(vec2(sg,7.)),f=fract(an*3.8197186);   // rune עם p=1: טבעת חיצונית של סימנים (skillcast.js)
+        float bar=step(.18+.25*g,f)*step(f,.82-.25*g)*smoothstep(.035+.025*g,.0,abs(d-.875));
+        a=smoothstep(.05,0.,abs(d-.97))+.3*smoothstep(.2,0.,abs(d-.97))+.9*smoothstep(.035,0.,abs(d-.78))+bar*.95+.06*smoothstep(.75,1.,d);a=min(a,1.);}
+      else{float an=atan(q.y,q.x)+uS,sx=2.0943951;   // rune: עיגול רונות שמסתובב (uS = זווית). שתי טבעות, משולש כפול וסימנים ביניהן (skillcast.js)
+        float l1=smoothstep(.045,0.,abs(d*cos(mod(an+1.0471976,sx)-1.0471976)-.37)),l2=smoothstep(.045,0.,abs(d*cos(mod(an,sx)-1.0471976)-.37));
+        float tk=step(.82,fract(an*1.9098593))*step(.81,d)*step(d,.92);
+        a=smoothstep(.06,0.,abs(d-.94))+.35*smoothstep(.22,0.,abs(d-.94))+.8*smoothstep(.04,0.,abs(d-.79))+(l1+l2)*.85*step(d,.76)+tk*.7+.08*(1.-d);a=min(a,1.);}
       gl_FragColor=vec4(c,a*uA);
       #include <colorspace_fragment>
     }`;
-  const DK={ring:0,mark:1,scorch:2,cracks:3,glow:4};
+  const DK={ring:0,mark:1,scorch:2,cracks:3,glow:4,rune:5};
   function build(){
     if(B||!R3D.ready)return B;
     B={sc:R3D.scene};
@@ -115,6 +123,13 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
         vertexShader:DV,fragmentShader:DF,transparent:true,depthWrite:false}));m.visible=false;m.frustumCulled=false;m.renderOrder=3;B.sc.add(m);B.decals.push({m,on:false,h:1})}
     const og=new THREE.IcosahedronGeometry(1,2);
     B.orbs=[];for(let i=0;i<CF.orbs;i++){const m=new THREE.Mesh(og,new THREE.MeshBasicMaterial({color:0xffffff,fog:false}));m.visible=false;m.frustumCulled=false;m.renderOrder=4;B.sc.add(m);B.orbs.push({m,on:false,h:2})}
+    // עמוד אור (skillcast.js): גליל פתוח בלי מכסים, בהיר באמצע ובבסיס ודוהה למעלה ובשוליים
+    const pg=new THREE.CylinderGeometry(1,1,1,20,1,true).translate(0,0.5,0);
+    B.pillars=[];for(let i=0;i<CF.pillars;i++){const m=new THREE.Mesh(pg,new THREE.ShaderMaterial({uniforms:{uC:{value:new THREE.Color()},uA:{value:1}},
+        vertexShader:`varying float vY,vF;void main(){vY=uv.y;vec3 n=normalize(normalMatrix*normal);vF=abs(n.z);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+        fragmentShader:`varying float vY,vF;uniform vec3 uC;uniform float uA;void main(){float a=pow(1.-vY,1.6)*pow(vF,1.5)*uA;gl_FragColor=vec4(uC*(1.+vF),a);
+          #include <colorspace_fragment>
+          }`,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));m.visible=false;m.frustumCulled=false;m.renderOrder=6;B.sc.add(m);B.pillars.push({m,on:false,h:4})}
     B.lights=[];lightsSync();
     VFX3D.built=true;return B;
   }
@@ -184,9 +199,10 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
   function take(L){for(const d of L)if(!d.on){d.on=true;return d}return null}
   VFX3D.decal=function(kind,x,y,r,o){
     if(!live()||!build())return null;o=o||{};const d=take(B.decals);if(!d)return null;
-    const u=d.m.material.uniforms;d.kind=kind;d.x=x;d.y=y;d.r=r;d.t=0;d.life=o.life==null?1:o.life;d.grow=o.grow||null;d.fade=o.fade==null?0.5:o.fade;d.a=o.a==null?1:o.a;d.fin=o.fin||0;d.p=o.p==null?null:o.p;
-    const add=kind!=='scorch';d.m.material.blending=add?THREE.AdditiveBlending:THREE.NormalBlending;d.m.renderOrder=add?3:2;
-    lin(o.col||'#ffffff');u.uC.value.setRGB(col.r*(add?(o.hdr||CF.hdr):1),col.g*(add?(o.hdr||CF.hdr):1),col.b*(add?(o.hdr||CF.hdr):1));
+    const u=d.m.material.uniforms;d.spin=0;d.kind=kind;d.x=x;d.y=y;d.r=r;d.t=0;d.life=o.life==null?1:o.life;d.grow=o.grow||null;d.fade=o.fade==null?0.5:o.fade;d.a=o.a==null?1:o.a;d.fin=o.fin||0;d.p=o.p==null?null:o.p;
+    const add=kind!=='scorch'&&kind!=='rune',k=kind==='scorch'?1:(o.hdr||CF.hdr);   // rune: בלי חיבור אור, כי סגול על דשא ירוק נהיה לבן. הצבע נשאר הצבע של סוג הנזק
+    d.m.material.blending=add?THREE.AdditiveBlending:THREE.NormalBlending;d.m.renderOrder=add?3:2;
+    lin(o.col||'#ffffff');u.uC.value.setRGB(col.r*k,col.g*k,col.b*k);
     u.uK.value=DK[kind]||0;u.uP.value=o.p||0;u.uS.value=Math.random()*40;u.uW.value=o.w||0.3;d.m.visible=true;place(d);return d;
   };
   function place(d){const S_=sin(),r=d.r;d.m.position.set(d.x,CF.y+(d.kind==='scorch'?0:0.2),d.y/S_);d.m.scale.set(r,1,r/S_);d.m.material.uniforms.uA.value=d.a}
@@ -194,6 +210,12 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
     if(!VFX3D.on()||!build())return null;const d=take(B.orbs);if(!d)return null;lin(c||'#ffffff');d.m.material.color.setRGB(col.r*CF.hdr,col.g*CF.hdr,col.b*CF.hdr);
     d.m.scale.setScalar(size||12);d.m.visible=true;
     d.set=(x,y,h,s)=>{d.m.position.set(x,h,y/sin());if(s)d.m.scale.setScalar(s);d.m.rotation.x+=0.13;d.m.rotation.y+=0.21};return d;
+  };
+  // עמוד אור: VFX3D.pillar(x,y,r,h,col,{life,hdr}). רוחב r, גובה h. ידית: x,y,r,a ניתנים לשינוי (כמו מדבקה). life: Infinity = ידני
+  VFX3D.pillar=function(x,y,r,h,c,o){
+    if(!live()||!build())return null;o=o||{};const d=take(B.pillars);if(!d)return null;const k=o.hdr||CF.hdr;
+    lin(c||'#ffffff');d.m.material.uniforms.uC.value.setRGB(col.r*k,col.g*k,col.b*k);
+    d.x=x;d.y=y;d.r=r;d.hh=h;d.a=o.a==null?1:o.a;d.t=0;d.life=o.life==null?0.6:o.life;d.m.visible=true;return d;
   };
   VFX3D.light=function(x,y,h,c,i,life){
     if(!live()||!build()||!hi())return null;const d=take(B.lights);if(!d)return null;
@@ -208,7 +230,10 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
         const fa=d.fade>0&&f>1-d.fade?(1-f)/d.fade:1,fi=d.fin>0&&f<d.fin?f/d.fin:1;d.m.material.uniforms.uA.value=d.a*fa*fi}
       else d.m.material.uniforms.uA.value=d.a;
       if(d.p!=null)d.m.material.uniforms.uP.value=d.p;
+      if(d.spin)d.m.material.uniforms.uS.value+=d.spin*dt;   // rune מסתובב
       const S_=sin();d.m.position.set(d.x,d.m.position.y,d.y/S_);d.m.scale.set(d.r,1,d.r/S_)}
+    for(const d of B.pillars){if(!d.on)continue;d.t+=dt;if(d.t>=d.life){VFX3D.free(d);continue}
+      const f=d.life<Infinity?d.t/d.life:0;d.m.material.uniforms.uA.value=d.a*(1-f)*(1-f);d.m.position.set(d.x,0,d.y/sin());d.m.scale.set(d.r,d.hh,d.r)}
     for(const d of B.lights){if(!d.on||d.life===Infinity)continue;d.t+=dt;if(d.t>=d.life){VFX3D.free(d);continue}const f=d.t/d.life;d.l.intensity=d.i0*(1-f)*(1-f)}
   }
 
@@ -240,11 +265,11 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
     VFX3D.stat.peak=Math.max(VFX3D.stat.peak,B.glow.n+B.smoke.n);
   };
   // כמה דברים חיים עכשיו (בשביל הבוט): חלקיקים, מדבקות, כדורים ואורות
-  VFX3D.n=()=>B?B.glow.n+B.smoke.n+B.decals.filter(d=>d.on).length+B.orbs.filter(d=>d.on).length+B.lights.filter(d=>d.on).length:0;
+  VFX3D.n=()=>B?B.glow.n+B.smoke.n+B.decals.filter(d=>d.on).length+B.orbs.filter(d=>d.on).length+B.lights.filter(d=>d.on).length+B.pillars.filter(d=>d.on).length:0;
   VFX3D.parts=()=>B?B.glow.n+B.smoke.n:0;
   // יציאה מהעולם: הכל נעלם מיד
   VFX3D.clear=function(){if(!B)return;B.glow.n=B.smoke.n=0;for(const P_ of [B.glow,B.smoke]){P_.g.setDrawRange(0,0);P_.pts.visible=false}
-    for(const L of [B.decals,B.orbs,B.lights])for(const d of L)VFX3D.free(d);if(typeof SKFX3D!=='undefined')SKFX3D.clear()};
+    for(const L of [B.decals,B.orbs,B.lights,B.pillars])for(const d of L)VFX3D.free(d);if(typeof SKFX3D!=='undefined')SKFX3D.clear()};
 
   /* ---- זוהר (bloom): מציירים את הסצנה לתמונה, לוקחים רק את מה שבהיר, מטשטשים ברזולוציה נמוכה ומוסיפים בחזרה ---- */
   const QV=`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}`;

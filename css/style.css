@@ -1028,7 +1028,15 @@ body:not(.vil):not(.world) .guide{display:none}
 .gico{flex:none;font-size:15px}
 .gtxt{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 3px #000}
 .gdist{flex:none;color:var(--gold);font-weight:800;direction:ltr;unicode-bidi:isolate}
-.guide.min .gtxt{-webkit-line-clamp:1}   /* מכווצת: שורה אחת קצרה של המטרה (guide.js), לא רק מרחק */
+.guide.min .gtxt{-webkit-line-clamp:1}
+/* שורת השמועה על נדירה (rares.js): מתחת למפה הקטנה, בצד שלה. שורת המטרה והקיצורים בצד השני */
+.grare{position:fixed;z-index:3;top:calc(var(--ctop,8px) + 64px + var(--mmap,96px));inset-inline-end:var(--cside,14px);max-width:min(34vw,300px);padding:3px 10px;border-radius:12px;border:1px solid #F7E27A88;
+  background:rgba(18,22,36,.82);color:#F7E27A;font:700 var(--t1,12px) var(--body);line-height:1.25;text-shadow:0 0 3px #000;pointer-events:none}
+.grare[hidden],body:not(.world) .grare,body.menu .grare{display:none}
+/* בקווסט הדרגה: הנדירות לפי אזור, צללית עד שצדת */
+.rlist{list-style:none;padding:0;margin:4px 0;font-size:.9em}
+.rlist li{margin:2px 0}.rlist small{opacity:.7}
+.rlist .rgot{color:#F7E27A}.rlist .runk i{font-style:normal;filter:brightness(0) drop-shadow(0 0 1px #A9B0C4);opacity:.6}   /* מכווצת: שורה אחת קצרה של המטרה (guide.js), לא רק מרחק */
 .guide button:active{transform:scale(.92)}
 .guide button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 @media (orientation:portrait){.guide{max-width:calc(100vw - 32px)}}

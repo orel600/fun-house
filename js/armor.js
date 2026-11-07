@@ -1,6 +1,6 @@
 /* שריון לפי מחלקה (ניר, 2.11.2026: "צריך להוסיף שריון לשים על הדמות, מותאם נושא לפי הקלאס"). 1ג בתוכנית ההתקדמות.
    שתי משבצות חדשות בבובה: ראש וגוף. לכל דמות התחלה (HEROES) סט משלה בכל שכבה: לוחם קסדה ושריון, צייד ברדס ואפודה, קוסם כובע וגלימה.
-   כל חלק נותן הגנה (def, אחוז פחות נזק, combat.js) ועוד סטט לפי המחלקה: לוחם חיים, צייד מהירות, קוסם התחדשות.
+   כל חלק נותן הגנה (def, נקודות הגנה, defense.js) ועוד סטט לפי המחלקה: לוחם חיים, צייד מהירות, קוסם התחדשות.
    לא נועל כלום: כל דמות יכולה ללבוש כל שריון, והשלל בעולם רק מוטה לשריון של המחלקה שלך (armorPick, נקרא מ-lootRoll ב-loot.js).
    הפריטים נבנים כאן לתוך GEAR.items (armorItems), עם id כמו 'warriorHead2'. השם והמשפט ב-lang.js ('it.warriorHead2', 'itf.warriorHead2'), ובלי שם מורכב מחלקים ('arm.*').
    המראה בתלת-ממד (armor3d, נקרא מ-render3d.js ומ-doll3d.js): הכובע הוא כובע אמיתי של KayKit (ARMOR.hat, hat_* ב-models3d.js) על עצם הראש,
@@ -8,9 +8,9 @@
 
 const ARMOR={
   slots:['head','body'],
-  /* המספרים לכל שכבה (עץ, ברזל, כסף, זהב, אגדי). def: ההגנה באחוזים. extra: כמה שווה הסטט של המחלקה, ביחידות של gScore,
+  /* המספרים לכל שכבה (עץ, ברזל, כסף, זהב, אגדי). def: נקודות הגנה (defense.js): האחוז הישן [3,4,5,7,9] כפול DEFENSE.tierMul. extra: כמה שווה הסטט של המחלקה, ביחידות של gScore,
      והוא מתחלק במשקל של הסטט (GEAR.stats) כדי שכל מחלקה תקבל אותו שווי. כל שכבה ~פי 1.3 מהקודמת, בגלל חוק הנדירות (GEAR.ladder) */
-  def:  {head:[3,4,5,7,9],      body:[5,7,9,12,16]},
+  def:  {head:[9,16,25,49,90],  body:[15,28,45,84,160]},
   extra:{head:[3,4,6.2,7.6,10], body:[4,5.5,7,9.5,13]},
   /* stat: הסטט של המחלקה. icon: בממשק. cape: צבע הגלימה כשלובשים שריון גוף. head: איזה כובע (ARMOR.hat למטה). body: איזה חלק בגוף (look למטה) */
   cls:{
@@ -36,7 +36,8 @@ const ARMOR={
   icon:{head:'🪖',body:'🧥',shield:'🛡️'},   // לשונית בתרמיל וצללית במשבצת ריקה
   /* מגן (המתאם, 2.11.2026: משבצת אמיתית במקום המגן שנגזר מהתכשיט). לא לפי מחלקה: מגן אחד לכל שכבה, 'shield0' עד 'shield4'.
      נראה ביד השנייה רק עם נשק של יד אחת (חרב, גרזן), כמו קודם (gear3dLook ב-render3d.js). gift: מגן עץ לכל אחד, פעם אחת */
-  shield:{def:[4,6,8,11,15],hp:[10,14,20,26,35],gift:'shield0',
+  shield:{def:[12,24,40,77,150],   // נקודות הגנה. היה באחוזים [4,6,8,11,15], כפול DEFENSE.tierMul
+    hp:[10,14,20,26,35],gift:'shield0',
     /* המודל לכל שכבה, הכי קרוב לתמונה (icons/ui/gear/shield<t>.png): עגול מעץ, ומברזל ומעלה מגן משולש. החומר (wtex) לפי השכבה, ב-GEAR3D.shield.metal */
     model:['w_shield_A','w_shield_B','w_shield_B','w_shield_B','w_shield_B']},
   // שלל בעולם (lootRoll): slot נוסף ל-LOOT.gear.slot. mine: איזה חלק מהשריון שנופל הוא של המחלקה שלך
@@ -63,10 +64,10 @@ const armorSlot=s=>s[0].toUpperCase()+s.slice(1);
     for(const s of ARMOR.slots)ARMOR.def[s].forEach((d,t)=>{
       let v=ARMOR.extra[s][t]/w;v=C_.stat==='regen'?Math.round(v*10)/10:Math.round(v);
       const id=c+armorSlot(s)+t;
-      GEAR.items[id]={slot:s,tier:t,cls:c,icon:C_.icon[s],stats:{def:d,[C_.stat]:v},look:t>=3?{glow:GEAR.tiers[t].col}:undefined};
+      GEAR.items[id]={slot:s,tier:t,cls:c,icon:C_.icon[s],stats:{def:d,[C_.stat]:v},defMul:DEFENSE.tierMul[t],look:t>=3?{glow:GEAR.tiers[t].col}:undefined};
       const N=TEXT['arm.name'];if(!TEXT['it.'+id])TEXT['it.'+id]={he:N.he(c,s,t),en:N.en(c,s,t)};   // שם עם אופי ב-lang.js ('it.warriorHead2'). בלי: מורכב מהחלקים
     })}
-  const SH=ARMOR.shield;SH.def.forEach((d,t)=>{GEAR.items['shield'+t]={slot:'shield',tier:t,icon:'🛡️',stats:{def:d,hp:SH.hp[t]},look:Object.assign({model:SH.model[t]},t>=3?{glow:GEAR.tiers[t].col}:{})};
+  const SH=ARMOR.shield;SH.def.forEach((d,t)=>{GEAR.items['shield'+t]={slot:'shield',tier:t,icon:'🛡️',stats:{def:d,hp:SH.hp[t]},defMul:DEFENSE.tierMul[t],look:Object.assign({model:SH.model[t]},t>=3?{glow:GEAR.tiers[t].col}:{})};
     const N=TEXT['arm.shield'];if(!TEXT['it.shield'+t])TEXT['it.shield'+t]={he:N.he(t),en:N.en(t)}});
 })();
 // מגן עץ לכל אחד, פעם אחת (נקרא מ-gearReset), כדי שמי שהיה לו מגן מהתכשיט לא יישאר בלי

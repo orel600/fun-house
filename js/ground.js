@@ -39,7 +39,7 @@ const GROUND={
      שלושה ציורים בסך הכל. נכבה לבד בטלפון חלש (minFps, לפי המדידה של GFX_AUTO ב-render3d.js), ועם ?scatter=0.
      cell: כל כמה פיקסלים בודקים אם לשים משהו. win: גודל החלון סביב השחקן. step: כמה לזוז עד שבונים את החלון מחדש.
      לכל אזור: n כמה מכל סוג לכל היותר בחלון, col צבעים. tuft עשב, flower פרחים (בגושים), pebble אבנים */
-  scatter:{cell:30,win:{w:1700,h:1500},step:320,minFps:40,wind:1,
+  scatter:{cell:30,win:{w:1700,h:1500},step:320,minFps:40,wind:1,budget:2,   // budget: כמה ms בכל פריים לבנייה ברקע של החלון הבא (scRun)
     size:{tuft:[18,30],flower:[3.5,5],pebble:[3.5,7]},
     meadow:{tuft:{n:600,col:['#6fae44','#7fba4a','#8cc456','#5f9a3a']},flower:{n:220,col:['#ffffff','#ffd94a','#ff8fb0','#b58cff','#ffb347']},pebble:{n:90,col:['#9a9a92','#7d7f78','#b0aa9a']}},
     lake:  {tuft:{n:520,col:['#5a8f6a','#6a9f72','#7aa878']},flower:{n:90,col:['#e8f4ff','#b8d8ff','#c8b8ff']},pebble:{n:110,col:['#7f8f88','#6a7a74']}},
@@ -171,9 +171,12 @@ const GROUND={
     const t0=performance.now(),P_=pl.pal;
     if(!bakeScene)bakeSetup();
     const u=baseMat.uniforms,bw=pl.size.w+GROUND.margin.w,bh=pl.size.h+GROUND.margin.h,res=Math.max(pl.map?GROUND.resMap:GROUND.res,bw/GROUND.maxTex,bh/GROUND.maxTex),cw=Math.ceil(bw/res),ch=Math.ceil(bh/res);   // maxTex: תמונה אחת לא גדולה מזה
-    if(u.tMask.value){u.tMask.value.dispose();u.tMask.value=null}u.tOn.value=0;
-    if(pl.map){const mk=terrainMask(pl.map,bw,bh),tx=new THREE.DataTexture(mk.data,mk.w,mk.h,THREE.RGBAFormat);tx.magFilter=tx.minFilter=THREE.LinearFilter;tx.needsUpdate=true;
-      u.tMask.value=tx;u.tOn.value=1;const Q=TERRAIN.pal[pl.reg]||TERRAIN.pal.meadow;u.cForest.value.copy(rgb(Q.forest));u.cRock.value.copy(rgb(Q.rock));u.cBank.value.copy(rgb(Q.bank))}
+    // המסכה של המפה (נהר, יער, גבול, סלעים) קבועה לכל אזור, ובטלפון היא רוב הזמן של האפייה (קריאות קנבס עם טשטוש).
+    // לכן נשמרת, ונבנית מחדש רק באזור אחר. בלי זה, כל עץ שנכרת או צמח מחדש ביער עצר את המשחק ל-150ms (ניר, 7.11)
+    const mkK=pl.map?pl.reg+':'+bw+'x'+bh:null;
+    if(u.tMask.value&&u.tMask.value.userData.k!==mkK){u.tMask.value.dispose();u.tMask.value=null}u.tOn.value=0;
+    if(pl.map){if(!u.tMask.value){const mk=terrainMask(pl.map,bw,bh),tx=new THREE.DataTexture(mk.data,mk.w,mk.h,THREE.RGBAFormat);tx.magFilter=tx.minFilter=THREE.LinearFilter;tx.needsUpdate=true;tx.userData.k=mkK;u.tMask.value=tx}
+      u.tOn.value=1;const Q=TERRAIN.pal[pl.reg]||TERRAIN.pal.meadow;u.cForest.value.copy(rgb(Q.forest));u.cRock.value.copy(rgb(Q.rock));u.cBank.value.copy(rgb(Q.bank))}
     box=new THREE.Vector4(-bw/2,-bh/2,bw,bh);u.box.value.copy(box);u.size.value.set(pl.size.w,pl.size.h);
     for(const k of ['base','lush','dry','path','shore','out'])u['c'+k[0].toUpperCase()+k.slice(1)].value.copy(rgb(P_[k]));
     u.cRim.value.copy(rgb(P_.rim||P_.shore));u.rimA.value=P_.rim?GROUND.rimA:0;
@@ -184,8 +187,8 @@ const GROUND={
     const sg=pl.segs();u.seg.value.forEach((v,i)=>sg[i]?v.set(...sg[i]):v.set(9e4,9e4,9e4,9e4));
     const ps=pl.ponds;u.pond.value.forEach((v,i)=>ps[i]?v.set(ps[i].x,ps[i].y,ps[i].r):v.set(9e4,9e4,1));
     shadowMesh(pl.shadows());
-    if(bk)bk.dispose();   // רק האזור הנוכחי שמור בזיכרון. חזרה לאזור אופה מחדש (אלפיות שנייה)
-    bk=new THREE.WebGLRenderTarget(cw,ch,{depthBuffer:false,stencilBuffer:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,generateMipmaps:false});
+    if(bk&&(bk.width!==cw||bk.height!==ch)){bk.dispose();bk=null}   // רק האזור הנוכחי שמור בזיכרון. באותו גודל: אותה תמונה, בלי להקצות מחדש
+    if(!bk)bk=new THREE.WebGLRenderTarget(cw,ch,{depthBuffer:false,stencilBuffer:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,generateMipmaps:false});
     const r=R3D.r,prev=r.getRenderTarget(),ac=r.autoClear;r.autoClear=true;
     r.setRenderTarget(bk);r.render(bakeScene,bakeCam);r.setRenderTarget(prev);r.autoClear=ac;
     GROUND.bakeMs=Math.round(performance.now()-t0);
@@ -228,7 +231,7 @@ const GROUND={
   GROUND.mat=()=>{
     if(GROUND.failed||!on())return null;
     const pl=place();if(!pl)return null;
-    // מקור שנשבר או צמח, דרך שנפתחה, או מבנה שעלה רמה בכפר: אופים שוב (1-2ms)
+    // מקור שנשבר או צמח, דרך שנפתחה, או מבנה שעלה רמה בכפר: אופים שוב (כמה ms. המסכה של המפה נשמרת, ראו bake)
     try{if(pl.key!==key){key=pl.key;bake(pl)}}catch(e){GROUND.failed=e.message;console.warn('ground',e);return null}   // תקלה: נשארת הקרקע של שלב 1
     if(!mat)mat=makeMat();
     mat.map=grainTex(GROUND.motif[pl.reg]||'grass');   // הדוגמה של האזור (אותו שיידר, רק תמונה אחרת)
@@ -261,13 +264,25 @@ const GROUND={
       const m=new THREE.InstancedMesh(geos[k],k==='pebble'?new THREE.MeshLambertMaterial({flatShading:true}):windMat(),K[k].n);
       m.count=0;m.frustumCulled=false;m.userData.k=k;grp.add(m)}
     R3D.scene.add(grp);return grp}
-  // ממלא את החלון סביב (cx,cy): משבצת לכל cell, ובכל אחת אולי משהו, לפי רעש קבוע. אותו מקום תמיד מקבל אותו דבר
-  function scFill(pl,cx,cy){
-    const F=GROUND.scatter,K=F[pl.reg]||{},sg=pl.segs(),pw=pl.pathW*1.1,sin=SIN(),c=F.cell,mx=new THREE.Matrix4(),q=new THREE.Quaternion(),e=new THREE.Euler(),v=new THREE.Vector3(),s3=new THREE.Vector3(),col=new THREE.Color();
-    const mesh={};for(const m of sc.children){mesh[m.userData.k]=m;m.count=0}
-    const blocks=pl.blocks,hw=pl.size.w/2+60,hh_=pl.size.h/2+60,pz=pl.plaza;
-    const x0=Math.floor((cx-F.win.w/2)/c),x1=Math.ceil((cx+F.win.w/2)/c),y0=Math.floor((cy-F.win.h/2)/c),y1=Math.ceil((cy+F.win.h/2)/c);
-    for(let j=y0;j<=y1;j++)for(let i=x0;i<=x1;i++){
+  // שתי שכבות של אותו פיזור: sc על המסך, ו-scB נבנית מאחור, כמה שורות בכל פריים (budget), ואז מתחלפות.
+  // בנייה של כל החלון בפריים אחד לקחה 15-25ms כל 320 פיקסלים של הליכה, עצירה קטנה ותדירה ב-120fps (ניר, 7.11)
+  function scTwin(g){const b=new THREE.Group();for(const m of g.children){const n=new THREE.InstancedMesh(m.geometry,m.material,m.instanceMatrix.count);n.count=0;n.frustumCulled=false;n.userData.k=m.userData.k;b.add(n)}
+    b.visible=false;R3D.scene.add(b);return b}
+  const scT={mx:null,q:null,e:null,v:null,s3:null,col:null};
+  // מתחילים למלא את החלון סביב (cx,cy) לתוך grp: משבצת לכל cell, ובכל אחת אולי משהו, לפי רעש קבוע. אותו מקום תמיד מקבל אותו דבר
+  function scStart(pl,cx,cy,grp){
+    if(!scT.mx)Object.assign(scT,{mx:new THREE.Matrix4(),q:new THREE.Quaternion(),e:new THREE.Euler(),v:new THREE.Vector3(),s3:new THREE.Vector3(),col:new THREE.Color()});
+    const F=GROUND.scatter,c=F.cell,mesh={};for(const m of grp.children){mesh[m.userData.k]=m;m.count=0}
+    const y0=Math.floor((cy-F.win.h/2)/c);
+    return{pl,grp,mesh,F,K:F[pl.reg]||{},sg:pl.segs(),pw:pl.pathW*1.1,sin:SIN(),c,blocks:pl.blocks,hw:pl.size.w/2+60,hh_:pl.size.h/2+60,pz:pl.plaza,
+      x0:Math.floor((cx-F.win.w/2)/c),x1:Math.ceil((cx+F.win.w/2)/c),j:y0,y1:Math.ceil((cy+F.win.h/2)/c)}
+  }
+  // ממשיך למלא עד שנגמר החלון או הזמן (ms). מחזיר true כשהחלון מלא
+  function scRun(J,ms){
+    const {pl,mesh,F,K,sg,pw,sin,c,blocks,hw,hh_,pz,x0,x1}=J,{mx,q,e,v,s3,col}=scT,end=performance.now()+ms;
+    for(;J.j<=J.y1;J.j++,J.i=x0){const j=J.j;
+     for(let i=J.i??x0;i<=x1;i++){
+      if((i&15)===0&&performance.now()>end){J.i=i;return false}   // בודקים את השעון כל 16 משבצות, וממשיכים מאותה משבצת בפריים הבא
       const r=hh(i*1.13,j*0.71),x=(i+hh(i,j+5))*c,y=(j+hh(i+9,j))*c;
       if(pl.round?Math.hypot(x,y)>hw||Math.hypot(x,y)<pl.inner:Math.abs(x)>hw||Math.abs(y)>hh_)continue;   // בכפר: רק בשוליים
       const nb=fbm(x/GROUND.big,y/GROUND.big),cl=fbm(x/90+4,y/90+2);
@@ -283,20 +298,29 @@ const GROUND={
       const sz=F.size[k],z=sz[0]+(sz[1]-sz[0])*hh(i+1,j+2),wd=k==='tuft'?1.2:1;
       e.set(0,hh(i+4,j+1)*6.28,0);q.setFromEuler(e);s3.set(z*wd,z,z*wd);v.set(x,0,y/sin);mx.compose(v,q,s3);
       m.setMatrixAt(m.count,mx);m.setColorAt(m.count,col.set(K[k].col[Math.floor(hh(i+6,j+3)*K[k].col.length)]).multiplyScalar(0.9+hh(i+2,j+8)*0.2));m.count++;
-    }
-    for(const m of sc.children){m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true}
+     }}
+    for(const m of J.grp.children){m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true}
+    return true;
   }
+  let scB=null,scJob=null,scReg=null;
   function scTick(){
     const pl=on()&&P&&place();
-    if(!pl||!scOn()){if(sc)sc.visible=false;return}
-    const reg=pl.reg,k=pl.sk;
-    if(k!==scKey){if(sc){R3D.scene.remove(sc);sc.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose()}})}sc=scBuild(reg);scKey=k;scAt=null}
-    sc.visible=true;
-    const st=GROUND.scatter.step;
-    if(!scAt||Math.abs(P.x-scAt.x)>st||Math.abs(P.y-scAt.y)>st){const t=performance.now();scAt={x:Math.round(P.x/st)*st,y:Math.round(P.y/st)*st};scFill(pl,scAt.x,scAt.y);GROUND.fillMs=Math.round(performance.now()-t)}
+    if(!pl||!scOn()){if(sc){sc.visible=false;scB.visible=false}return}
+    const reg=pl.reg,k=pl.sk,F=GROUND.scatter,st=F.step;
+    // אזור אחר: שכבות חדשות. אותו אזור (מקור נוסף או ירד, זווית מצלמה): אותן שכבות ואותם חומרים, רק ממלאים מחדש.
+    // אחרת ה-shader של העשב נזרק ונבנה מחדש באמצע המשחק
+    if(reg!==scReg){if(sc){for(const g of [sc,scB])R3D.scene.remove(g);sc.traverse(o=>{if(o.isMesh){o.geometry.dispose();o.material.dispose()}})}
+      sc=scBuild(reg);scB=scTwin(sc);scReg=reg;scKey=null}
+    if(k!==scKey){scKey=k;scJob=null;scAt=sc.children.some(m=>m.count)?{x:1e9,y:1e9}:null}   // כבר יש עשב: בונים מחדש ברקע
+    sc.visible=true;scB.visible=false;
+    GROUND.fillMs=0;
+    // בכניסה (או כשהמקורות השתנו): הכל בבת אחת, כדי שלא יהיה רגע בלי עשב. בהליכה: ברקע, ומתחלפים כשמוכן
+    if(!scAt){const t=performance.now();scAt={x:Math.round(P.x/st)*st,y:Math.round(P.y/st)*st};scRun(scStart(pl,scAt.x,scAt.y,sc),1e9);GROUND.fillMs=performance.now()-t}
+    else if(!scJob&&(Math.abs(P.x-scAt.x)>st||Math.abs(P.y-scAt.y)>st)){scAt={x:Math.round(P.x/st)*st,y:Math.round(P.y/st)*st};scJob=scStart(pl,scAt.x,scAt.y,scB)}
+    if(scJob){const t=performance.now();if(scRun(scJob,F.budget)){const g=sc;sc=scB;scB=g;sc.visible=true;scB.visible=false;scJob=null}GROUND.fillMs=performance.now()-t}
     const tt=(performance.now()-t0)/1000;for(const m of sc.children)if(m.material.userData.u)m.material.userData.u.gT.value=tt;
   }
   // מתחברים לציור: לפני כל ציור מעדכנים את הפיזור (ומסתירים אותו בזירה)
   const base=window.render3d;
-  window.render3d=function(...a){try{scTick()}catch(e){GROUND.scFailed=e.message;sc&&(sc.visible=false)}return base.apply(this,a)};
+  window.render3d=function(...a){try{scTick()}catch(e){GROUND.scFailed=e.message;if(sc){sc.visible=false;scB.visible=false}}return base.apply(this,a)};
 })();

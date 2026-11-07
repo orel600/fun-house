@@ -20,7 +20,7 @@ const powW=k=>((GEAR.stats[k]||{}).w||0)*(((POWER.cls[typeof heroId==='function'
 // ציון של אוסף סטטים, בפורמט של GEAR.stats
 function powStats(s){let n=0;for(const k in s||{})n+=s[k]*powW(k);return n}
 // ציון של חפץ, לפני mult. במקום gScore בכל מה שהשחקן רואה (▲/▼, "הכי טוב"), כדי שהכל יסכים עם המספר שעל הכרטיס
-const pScore=id=>{const it=gItem(id);return it?it.tier*POWER.tier+powStats(gStats(id)):0};
+const pScore=id=>{const it=gItem(id);if(!it)return 0;const s=gStats(id);if(s.def)s.def=defItemOld(id)*DEFENSE.flat;return it.tier*POWER.tier+powStats(s)};   // הגנה: לפי האחוז הישן (defense.js), כדי שהמספר לא יקפוץ
 // המספר שמוצג על חפץ
 const powItem=id=>id&&gItem(id)?Math.round(pScore(id)*POWER.mult):0;
 // המספר של הגיבור: כל מה שלבוש, הסטים, הנקודות, העץ והפסיבית
