@@ -6,8 +6,9 @@
    כשהמנוע של מזג האוויר (js/weather.js, setWeather/weatherScene) קיים, הוא מצייר. בלעדיו: שכבת גשם אחת משלנו מ-FXDATA. */
 const MBWX={
   on:true,
-  id:'wx_rainheavy',   // אריח הגשם (256px) כשאין את המנוע
-  a0:0.10,a1:0.34,     // שקיפות הגשם בתחילת המשחק ובסוף (MOBA.maxT)
+  ids:['wx_rain_light_night','wx_rain_heavy_night','wx_rain_torrent_night'],   // אריח הגשם לכל שלב (calm, building, storm) כשאין את המנוע (חבילה 44, נושא night)
+  old:'wx_rainheavy',   // אם הגיליונות של חבילה 44 חסרים
+  a0:0.16,a1:0.34,     // שקיפות הגשם בתחילת המשחק ובסוף (MOBA.maxT)
   tower:0.12,          // כל מבנה שנפל מקרב את הסערה
   dark:0.16,           // הכהיה של המסך בשיא הסערה (מתחת לסקילים)
   flash:{a:0.32,t:0.45},   // הבזק על כל המסך כשמבנה נופל
@@ -19,24 +20,28 @@ const MBWX={
     storm:[['rain_torrent',0.6],['storm_cloud',0.45]],
     clearing:[['rain_drip',0.3]]},
   // מצב
-  k:0,fl:0,bolts:[],h:null,st:'',falls:0,core:false,ms:0,n:0,
+  k:0,fl:0,bolts:[],h:null,st:'',si:-1,falls:0,core:false,ms:0,n:0,
 };
 const mbWxCore=()=>typeof weatherScene==='function'&&typeof weatherState==='function';
 // עוצמה 0..1: הזמן במשחק, ועוד כל מבנה שנפל
 const mbWxK=M=>Math.min(1,M.t/MOBA.maxT+MBWX.falls*MBWX.tower);
 
 function mbWxStart(){
-  const X=MBWX;X.k=0;X.fl=0;X.bolts=[];X.falls=0;X.st='';X.h=null;X.core=mbWxCore();
+  const X=MBWX;X.k=0;X.fl=0;X.bolts=[];X.falls=0;X.st='';X.si=-1;X.h=null;X.core=mbWxCore();
   if(!X.on)return;
   if(X.core){try{weatherScene('moba',X.scene);weatherState('moba','calm');X.st='calm'}catch(e){X.core=false}}
-  if(!X.core&&typeof fxMake==='function'){X.h=fxMake(X.id,0,0,{loop:true,fps:24});typeof fxPreload==="function"&&fxPreload([X.id])}
+  if(!X.core){mbWxRain(0);typeof fxPreload==='function'&&fxPreload(X.ids.map(mbWxId))}
 }
+const mbWxId=id=>typeof FXDATA!=='undefined'&&FXDATA[id]?id:MBWX.old;
+// אריח הגשם של השלב: מחליפים רק כשהשלב משתנה
+function mbWxRain(si){const X=MBWX;X.si=si;if(typeof fxMake==='function')X.h=fxMake(mbWxId(X.ids[si]),0,0,{loop:true,fps:24})}
 function mbWxTick(dt){
   const X=MBWX,M=MB;if(!X.on||!M)return;
   X.k=mbWxK(M);X.fl=Math.max(0,X.fl-dt/MBWX.flash.t);
   for(const b of X.bolts)b.life-=dt;X.bolts=X.bolts.filter(b=>b.life>0);
-  if(X.core){let s='calm';for(const [k,n] of X.states)if(X.k>=k)s=n;
-    if(s!==X.st){X.st=s;try{weatherState('moba',s)}catch(e){}}}
+  let si=0;X.states.forEach(([k],i)=>{if(X.k>=k)si=i});
+  if(X.core){const s=X.states[si][1];if(s!==X.st){X.st=s;try{weatherState('moba',s)}catch(e){}}}
+  else if(si!==X.si)mbWxRain(si);
 }
 // מבנה נפל: ברק עליו אם רואים אותו, והבזק תמיד (גם בסיס שנופל בסוף)
 function mbWxFall(b){
