@@ -35,7 +35,8 @@ const FOEATK3D={
   fast:0.22,          // כמה שניות שאר המכה
   glow:'#FF4D4D',glowK:[0.2,0.75],   // זוהר אדום שמתחזק לאורך ההכנה (מ-glowK[0] עד glowK[1]), ופועם
   squat:0.14,         // קפיצה: מתכווץ לפני
-  jump:46             // קפיצה: כמה גבוה באוויר (פיקסלים)
+  jump:46,            // קפיצה: כמה גבוה באוויר (פיקסלים)
+  actFlash:0.05       // באמצע פעולה (foeai.js): e.flash עד כאן הוא סימון, לא מכה, ולא מלבין
 };
 const LOOK3D={
   player:{model:'knight',h:66,foot:14,
@@ -552,7 +553,10 @@ function syncEnemy(e,dt){
   const rage=e.isBoss&&e.rage>0.05?e.rage:0;
   const tk=e.isBoss||e.wboss?-1:foeTele(e),F=FOEATK3D;   // מתכונן למתקפה: מאדים (strike.js מדליק e.flash קטן בהכנה, בשביל הדו-ממד. מכה אמיתית היא 0.09)
   if(tk>=0&&!(e.flash>0.06))setFlash(a,(F.glowK[0]+(F.glowK[1]-F.glowK[0])*tk)*(0.8+0.2*Math.sin(S.t*20)),F.glow);
-  else setFlash(a,e.flash>0?0.9:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,e.flash>0?0xffffff:C.blood);
+  // לבן רק במכה אמיתית. foeai.js משאיר e.flash קטן (0.04) כל הפעולה, בשביל הדו-ממד, ובתלת-ממד זה צבע את המסתער בלבן מלא
+  // לאורך כל ההסתערות והסחרור (ניר, 7.11: "זקן-הקליפה לבן"). בהסתערות ובקפיצה עצמן: הזוהר האדום של המתקפה, במלואו
+  else if((e.act==='dash'||e.act==='jump')&&!(e.flash>FOEATK3D.actFlash))setFlash(a,F.glowK[1],F.glow);
+  else{const hit=e.flash>(e.act?FOEATK3D.actFlash:0);setFlash(a,hit?0.9:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,hit?0xffffff:C.blood)}
   if(a.sc0){const q=juiceSquash(e)+(e.act==='crouch'?F.squat*Math.max(0,tk):0);a.root.scale.set(a.sc0*(1+q),a.sc0*(1-q),a.sc0*(1+q))}   // מעיכה קטנה במכה (juice.js)
   // כשיש הרבה אויבים, כל אחד מונפש רק בכל פריים שני (חצי מהם בכל פריים). בעין זה לא נראה, ובטלפון זה חוסך הרבה
   a.acc=(a.acc||0)+dt;
@@ -730,6 +734,29 @@ function vilWarm(r,c){
   const n=R3D.vil.g.children.length+Object.keys(R3D.npcs||{}).length+(R3D.pet?1:0);if(R3D.vilWarm===n)return;R3D.vilWarm=n;
   try{if(r.compileAsync)r.compileAsync(R3D.scene,c).catch(()=>{});else r.compile(R3D.scene,c)}catch(e){}
 }
+// העולם: כמו vilWarm. בפעם הראשונה שסוג אויב חדש נכנס למסך, הטלפון מכין לו shader, טקסטורה וקהל (crowdOf) באמצע הקרב,
+// והציור נעצר (ניר, 7.11: "94 fps · 166.1ms" כשזקן-הקליפה הופיע). בכניסה לאזור מכינים מראש דמות אחת מכל סוג באזור (גם הנדירות),
+// מצוירת כמה פריימים (כדי שגם הטקסטורות יעלו), ואז למאגר. כך הקפיצה קורה במעבר בשער, ולא באמצע הקרב
+const WWARM={frames:3,s:1e-4};   // s: כמה קטנה הדמות בזמן ההכנה. היא על המסך (כדי שהציור האמיתי יכין אותה, compile לבד לא מספיק), אבל קטנה מפיקסל
+function wldWarm(r,c){
+  const reg=S.wd.reg||'meadow',W=R3D.wWarm||(R3D.wWarm={done:{},a:null,n:0});
+  if(W.a){wldWarmCrowd(W);if(--W.n<=0){for(const a of W.a){a.root.scale.setScalar(a.sc0w);freeActor(a)}W.a=null}}
+  if(W.done[reg])return;W.done[reg]=1;
+  if(typeof rareLooks==='function')rareLooks();
+  const ks=new Set((WR().foes||[]).map(G=>G.type));
+  if(typeof RARES!=='undefined')for(const id in RARES.list)if(RARES.list[id].reg===reg)ks.add(id);
+  const tmp=[];W.c=[...ks];
+  for(const k of ks){const L=LOOK3D[k];if(!L||!R3D.tmpl[L.model])continue;crowdOf(k);   // crowdOf משאיר דמות במאגר. makeActor לוקח אותה ומצייר אותה
+    const a=makeActor(L);a.sc0w=a.root.scale.x;a.root.scale.setScalar(WWARM.s);place(a,P.x,P.y,0,null);tmp.push(a)}
+  if(!tmp.length)return;
+  W.a=(W.a||[]).concat(tmp);W.n=WWARM.frames;wldWarmCrowd(W);
+  try{if(r.compileAsync)r.compileAsync(R3D.scene,c).catch(()=>{});else r.compile(R3D.scene,c)}catch(e){}
+}
+// גם הקהל (crowdOf): עותק זעיר אחד ליד השחקן בפריימים של ההכנה, אחרת ה-shader שלו (גם של הצל) נבנה כשהקהל מופיע לראשונה
+function wldWarmCrowd(W){
+  const M=R3D._mx;R3D._p.set(P.x,0,P.y/SIN());R3D._q.identity();R3D._s.setScalar(WWARM.s);M.compose(R3D._p,R3D._q,R3D._s);
+  for(const k of W.c||[])for(const p of R3D.crowd[k]||[])for(const m of p)if(!m.count){m.setMatrixAt(0,M);m.count=1}
+}
 /* נקרא מ-render() אחרי שהקנבס חישב את ההזזה (כולל רעידת מסך), כדי ששתי השכבות יזוזו יחד */
 function render3d(ox,oy){
   if(!R3D.on||!P)return;
@@ -755,7 +782,7 @@ function render3d(ox,oy){
   if(S.vil){syncPlayer(dt);syncVillage();syncNpcs(dt);if(typeof props3dVillage==='function')props3dVillage(R3D.vil);if(typeof deco3d==='function')deco3d(R3D.vil);vilWarm(r,c)}   // props3d.js: עמודי הפנסים   // בכפר: השחקן, המבנים והתושבים
   else if(!S.room){
     syncPlayer(dt);
-    if(S.wd){syncWorld();syncWnpcs(dt)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)
+    if(S.wd){syncWorld();syncWnpcs(dt);wldWarm(r,c)}   // העולם הפתוח: עצים, סלעים ושערים (world.js), והדמויות שמגלים בו (worldnpc.js)
     // רק מי שעל המסך. הבוס, המבוקש ואויבי-העל תמיד מונפשים, ואחריהם הקרובים לשחקן. השאר בקהל
     const vis=enemies.filter(e=>!e.dead&&(e.isBoss||e.wboss||onScreen(e.x+ox,e.y+oy)));
     // בעולם: רק world הקרובים מונפשים, והשאר בקהל (דמות מונפשת היא רוב הזמן של הציור בעולם, מבקר 2)
