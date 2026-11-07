@@ -52,7 +52,7 @@ function arfxTeleStat(k,warn){const s=ARFXS.stat.tele[k]||(ARFXS.stat.tele[k]={n
 /* ---- אזהרות לבוס ---- */
 function arfxTeleFx(b,k,dur){
   const D=ARFX.tele[k],aP=Math.atan2(P.y-b.y,P.x-b.x),o={follow:b,fps:arfxFps(D.fx,dur),dur,under:true},hs=[];
-  if(k==='aimed'){const s=440;hs.push(fxPlay(D.fx,b.x,b.y,{...o,size:s,rot:aP+Math.PI/2,dx:Math.cos(aP)*s*0.35,dy:Math.sin(aP)*s*0.35}))}
+  if(k==='aimed'){const s=560;hs.push(fxPlay(D.fx,b.x,b.y,{...o,size:s,sx:0.5,rot:aP+Math.PI/2,dx:Math.cos(aP)*s*0.35,dy:Math.sin(aP)*s*0.35}))}
   else if(k==='charge'){const L=680*0.45+b.r,s=L/0.9;hs.push(fxPlay(D.fx,b.x,b.y,{...o,size:s,rot:aP,dx:Math.cos(aP)*L/2,dy:Math.sin(aP)*L/2}))}
   else if(k==='shields'||k==='wisps'){const n=2+b.phase;for(let i=0;i<n;i++){const a=i/n*Math.PI*2;hs.push(fxPlay(D.fx,b.x,b.y,{...o,size:90,dx:Math.cos(a)*60,dy:Math.sin(a)*60}))}}
   else if(k==='shock')hs.push(fxPlay(D.fx,b.x,b.y,{...o,size:2*270/0.85}));
@@ -129,7 +129,7 @@ function arfxFrame(){if(ARFXS.f===S.t)return;ARFXS.f=S.t;ARFXS.n=0}
 {const old=runWon;runWon=function(){
   if(skArena()&&S.boss==null){const s=S;ARFXS.stat.win++;
     fxUi('win_confetti',W/2,H*0.35,{size:Math.min(W,H)*0.9});
-    for(let i=0;i<5;i++)setTimeout(()=>{if(S===s)fxUi('win_fireworks',W*rand(0.2,0.8),H*rand(0.15,0.5),{size:rand(160,240),add:true})},i*380)}
+    for(let i=0;i<5;i++)setTimeout(()=>{if(S===s)fxUi('win_fireworks',W*rand(0.2,0.8),H*rand(0.15,0.5),{size:rand(220,320),add:true})},i*380)}
   return old.apply(this,arguments)}}
 // מסך הניצחון הוא חלון מעל הקנבס, לכן קנבס קטן משלו מעל החלון, רק לזמן הזיקוקים, ובלי לחסום נגיעות
 function arfxWinScreen(){
@@ -140,7 +140,7 @@ function arfxWinScreen(){
   let next=t0;
   (function step(){
     const now=performance.now()/1000;if(now-t0>ARFX.win.t+0.8||!document.body.contains(cv)){cv.remove();return}
-    if(now<t0+ARFX.win.t&&now>=next){next=now+ARFX.win.every;list.push({id:'win_fireworks',x:w*rand(0.12,0.88),y:h*rand(0.1,0.55),s:rand(150,260),t:now})}
+    if(now<t0+ARFX.win.t&&now>=next){next=now+ARFX.win.every;list.push({id:'win_fireworks',x:w*rand(0.12,0.88),y:h*rand(0.1,0.55),s:rand(220,340),t:now})}
     c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);c.globalCompositeOperation='lighter';
     for(const f of list){const D=FXDATA[f.id],im=D&&fxImg(f.id),i=Math.floor((now-f.t)*FXLIB.fps);if(!im||i<0||i>=D.n)continue;
       c.drawImage(im,(i%D.c)*D.s,Math.floor(i/D.c)*D.s,D.s,D.s,f.x-f.s/2,f.y-f.s/2,f.s,f.s)}
@@ -169,6 +169,11 @@ function arfxCast(id,x,y,o={}){
   const r=old.apply(this,arguments);
   if(pend)for(const p of pend)if(p.done)arfxCast('comet',p.x,p.y);   // השביט נפל
   if(arfxOn())arfxGlow(dt);
+  return r}}
+
+// בתחילת ריצה בזירה: טוענים מראש את מה שיופיע, כדי שהאזהרה הראשונה והניצחון לא יחכו לתמונה
+{const old=skillsReset;skillsReset=function(){const r=old.apply(this,arguments);
+  if(skArena())fxPreload(Object.values(ARFX.tele).map(t=>t.fx).concat(Object.values(ARFX.hitFx),Object.values(ARFX.cast).map(c=>c.fx),['hit_heavy','dmg_crit','ko','ko_boss','win_fireworks','win_confetti','glow_ally']));
   return r}}
 
 /* ---- טבעת זוהר מתחת לגיבור בקרב צפוף ---- */
