@@ -164,17 +164,18 @@ function foeLeaderMake(e){
 function foeAiDraw(){
   const A=FOEAI,t=fxNow();
   for(const e of enemies){if(e.dead||!e.act)continue;const k=e.am?1-Math.max(0,e.at)/e.am:1;
+    const sp=typeof fxcTgOn==='function'&&fxcTgOn(e);   // הסימן מהגיליון מראה איפה (fxcombat.js): כאן רק השעון, המילוי שגדל עד המכה
     ctx.save();
-    if(e.act==='wind'){const C=A.charge;ctx.translate(e.x,e.y);ctx.rotate(e.aa);
-      ctx.globalAlpha=0.2;ctx.fillStyle=A.col;ctx.fillRect(0,-C.w,C.len,C.w*2);
-      ctx.globalAlpha=0.5+0.35*k;ctx.fillRect(0,-C.w,C.len*k,C.w*2);
-      ctx.globalAlpha=0.9;ctx.strokeStyle=A.col;ctx.lineWidth=(2.5+2*k)/ZOOM;ctx.strokeRect(0,-C.w,C.len,C.w*2)}
+    if(e.act==='wind'){const C=A.charge;ctx.translate(e.x,e.y);ctx.rotate(e.aa);ctx.fillStyle=A.col;
+      if(!sp){ctx.globalAlpha=0.2;ctx.fillRect(0,-C.w,C.len,C.w*2)}
+      ctx.globalAlpha=(sp?0.35:0.5)+0.35*k;ctx.fillRect(0,-C.w*(sp?0.6:1),C.len*k,C.w*(sp?1.2:2));
+      if(!sp){ctx.globalAlpha=0.9;ctx.strokeStyle=A.col;ctx.lineWidth=(2.5+2*k)/ZOOM;ctx.strokeRect(0,-C.w,C.len,C.w*2)}}
     else if(e.act==='aim'){const R=A.ranged;ctx.translate(e.x,e.y);ctx.rotate(e.aa);
-      ctx.globalAlpha=0.45+0.5*k;ctx.strokeStyle=A.col;ctx.lineWidth=(2.5+3*k)/ZOOM;ctx.setLineDash([12,8]);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(R.range,0);ctx.stroke();ctx.setLineDash([])}
-    else if(e.act==='crouch'||e.act==='jump'){const L=A.leap,kk=e.act==='jump'?1:k;
-      ctx.globalAlpha=0.2;ctx.fillStyle=A.col;ctx.beginPath();ctx.arc(e.tx,e.ty,L.r,0,7);ctx.fill();
-      ctx.globalAlpha=0.45+0.4*kk;ctx.beginPath();ctx.arc(e.tx,e.ty,L.r*kk,0,7);ctx.fill();
-      ctx.globalAlpha=0.9;ctx.strokeStyle=A.col;ctx.lineWidth=(2.5+2*kk)/ZOOM;ctx.beginPath();ctx.arc(e.tx,e.ty,L.r,0,7);ctx.stroke()}
+      ctx.globalAlpha=0.45+0.5*k;ctx.strokeStyle=A.col;ctx.lineWidth=(2.5+3*k)/ZOOM;if(sp){ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(R.range*k,0);ctx.stroke()}else{ctx.setLineDash([12,8]);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(R.range,0);ctx.stroke();ctx.setLineDash([])}}
+    else if(e.act==='crouch'||e.act==='jump'){const L=A.leap,kk=e.act==='jump'?1:k;ctx.fillStyle=A.col;
+      if(!sp){ctx.globalAlpha=0.2;ctx.beginPath();ctx.arc(e.tx,e.ty,L.r,0,7);ctx.fill()}
+      ctx.globalAlpha=(sp?0.3:0.45)+0.4*kk;ctx.beginPath();ctx.arc(e.tx,e.ty,L.r*kk,0,7);ctx.fill();
+      if(!sp){ctx.globalAlpha=0.9;ctx.strokeStyle=A.col;ctx.lineWidth=(2.5+2*kk)/ZOOM;ctx.beginPath();ctx.arc(e.tx,e.ty,L.r,0,7);ctx.stroke()}}
     else if(e.act==='flee'){const C=A.call,p=0.5+0.5*Math.sin(t*14);
       ctx.globalAlpha=0.25+0.3*p;ctx.strokeStyle=C.col;ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,e.r+10,0,7);ctx.stroke();
       ctx.globalAlpha=0.85;ctx.lineWidth=4;ctx.beginPath();ctx.arc(e.x,e.y,e.r+18,-Math.PI/2,-Math.PI/2+k*Math.PI*2);ctx.stroke()}
