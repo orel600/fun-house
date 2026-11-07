@@ -134,4 +134,8 @@ fxPreload(['levelup','ko']);                                    // לטעון מ
   - **טבע ומצבים:** `pl_regrow` כשעץ או מקור צומח מחדש, `st_regen` כשמתרפאים, `st_atkup` בזעם/דם רותח/באף החלפה, `st_defup` בשריון קרח או בהגנה מהעץ. קטן, ולכל היותר פעם ב-3.5 שניות.
 - **עומס:** עד `FXW.cap` (24) אפקטים של השכבה בבת אחת, מתוך `FXLIB.max`.
 
+## Weather in the arena and boss fights (js/arena-weather.js, W4, 7.11.2026)
+
+Every number is in `AWX`. A boss fight starts with fog and dark clouds (`calm`), turns to clouds and light rain as his rage builds (`building`), and to heavy rain and a storm when he gets angry (rage from boss.js, or phase 2: `storm`). After he falls, `clearing` for 6 seconds. A big attack (charge, shock ring, mines) and the new phase bring a lightning bolt onto the boss himself, never onto the danger zone, at most once every 1.1 seconds. A regular arena by type (`AWX.arena`): none in classic and maze, light fog in waves, fog and clouds in the boss arena. **Readability first:** render.js draws the layer right after the floor, so the mines, the shock rings, `fxDraw` (telegraphs), skills, damage numbers and the HUD are all on top of it, and no layer is stronger than `AWX.maxA` (0.32). It uses js/weather.js (`weatherScene`/`weatherState`/`setWeather`/`weatherBolt`/`weatherFlash`) when it exists, and until then a light local layer of `wx_fog`, `haze` and `wx_rainheavy` (two layers or more at half resolution). boss.js is not touched: the attacks are seen from outside.
+
 אפקט חדש: מוסיפים שורה ב-`tools/fx-list.json` (שם החבילה והגיליון מתוך `public/fx/<חבילה>/<חבילה>/sprite_sheets/`), מריצים את `tools/fx-convert.py`, ומוסיפים אותו לרשימה כאן.

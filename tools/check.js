@@ -3628,6 +3628,37 @@ function worldBot(m,L,god){
       (al.here&&al.mat?'רצפת אבן':'הרצפה הישנה')+(al.fog?', אובך':', בלי אובך')+(al.sig?', חותמת האש דולקת':', החותמות לא מגיבות')+(al.pulse?', רונות פועמות בגל ענק':', בלי פעימה')+(al.beam?', עמוד אור לבוס':', בלי עמוד אור')+
       (al.noShadow?'':', צללים עם 150 אויבים')+(al.room?'':', דולק בחדר הבונוס')+', ציור עם 150 אויבים '+al.ms[false].toFixed(1)+'→'+al.ms[true].toFixed(1)+'ms (פי '+al.ratio.toFixed(2)+')'));
   }
+  // Weather in the arena and boss fights (arena-weather.js): atmosphere in a boss fight, a storm when he gets angry, lightning with a big attack,
+  // all of it under the telegraphs (drawn before the mines and fxDraw), opacity capped, and the frame time with and without it
+  {const aw=await page.evaluate(()=>{
+    if(typeof AWX==='undefined')return {err:'no AWX'};
+    const o={};window.__awDe=R3D.drawEvery;R3D.drawEvery=0;
+    try{reset();S.mode='play';enemies.length=0;S.arena='classic';
+      const draw=window.__awDraw=()=>{S.cam.x=P.x;S.cam.y=P.y;render()};
+      draw();o.plain=AWX.st;o.plainN=AWX.layers.size;
+      const b=window.__awB=makeBoss();b.x=P.x+150;b.y=P.y;S.boss=b;enemies.push(b);
+      draw();o.calm=AWX.st;o.calmN=AWX.api?-1:AWX.layers.size;
+      b.rage=1;draw();o.storm=AWX.st;
+      const n0=AWX.bolts;S.t+=5;doPattern(b,'shock');draw();o.bolt=AWX.bolts-n0;o.tele=waves.some(w=>w.t<0);
+      mines.push({x:P.x+40,y:P.y,t:1});let at=null,fx=null;const sl=ctx.setLineDash,fd=window.fxDraw;
+      ctx.setLineDash=function(a){if(at==null&&a&&a[0]===6)at=AWX.n;return sl.apply(this,arguments)};window.fxDraw=function(){fx=AWX.n;return fd.apply(this,arguments)};
+      const n1=AWX.n;draw();ctx.setLineDash=sl;window.fxDraw=fd;o.under=at===n1+1&&fx===n1+1;
+      o.maxA=Math.max(0,...[...AWX.layers.values()].map(L=>L.to));o.ids=[...AWX.layers.keys()];
+      mines.length=0;waves.length=0;AWX.bolt=null;AWX.flash=0;
+    }catch(e){o.err=String(e&&e.stack||e)}
+    return o});
+  if(!aw.err){
+    for(let i=0;i<60;i++){if(await page.evaluate(ids=>ids.every(id=>fxImg(id)),aw.ids))break;await page.waitForTimeout(50)}   // the sheets load in the background
+    const ms={};
+    for(const on of [false,true,false,true]){await page.evaluate(on=>{AWX.on=on;__awDraw();for(const L of AWX.layers.values())L.a=L.to;__awDraw()},on);   // turned back on: the layers are made again, then at full strength
+      const t0=Date.now();await page.evaluate(()=>{for(let i=0;i<20;i++){__awDraw();if(R3D.on&&R3D.r)R3D.r.getContext().finish()}});ms[on]=Math.min(ms[on]??1e9,(Date.now()-t0)/20)}
+    Object.assign(aw,await page.evaluate(()=>{const o={loaded:[...AWX.layers.keys()].every(id=>fxImg(id)),n:AWX.layers.size};AWX.on=true;
+      try{S.boss=null;__awB.dead=true;enemies.length=0;__awDraw();o.clear=AWX.st}catch(e){o.err=String(e)}reset();R3D.drawEvery=__awDe;return o}));
+    aw.off=ms[false];aw.on=ms[true]}
+  check(!aw.err&&aw.plain==='arena'&&aw.plainN===0&&aw.calm==='calm'&&aw.calmN!==0&&aw.storm==='storm'&&aw.bolt===1&&aw.tele&&aw.under&&aw.maxA<=0.32&&aw.clear==='clearing'&&aw.on-aw.off<6,
+    'Arena weather: '+(aw.err||[aw.plain==='arena'&&aw.plainN===0?'classic arena clear':'classic arena has weather ('+aw.plainN+')',aw.calm==='calm'&&aw.calmN!==0?'boss fight: fog and clouds':'no boss atmosphere ('+aw.calm+')',
+      aw.storm==='storm'?'storm when he gets angry':'no storm ('+aw.storm+')',aw.bolt===1&&aw.tele?'lightning with the shock telegraph':'lightning '+aw.bolt,aw.under?'under the telegraphs':'drawn over the telegraphs!',
+      'opacity ≤'+aw.maxA.toFixed(2),aw.clear==='clearing'?'clears after the boss':'no clearing ('+aw.clear+')','frame in the storm '+aw.off.toFixed(1)+'→'+aw.on.toFixed(1)+'ms with '+aw.n+' layers'+(aw.loaded?'':' (sheets not loaded)')].join(', ')));}
   // מסלול רמות (levelpath.js): מה נפתח בכל רמה נגזר מהטבלאות, "הבא" בחלון הדמות, ובעליית רמה הבזק וכרטיס עם מה שנפתח ומה הבא
   const lp=await page.evaluate(()=>{
     enterWorld('home');const o={};
