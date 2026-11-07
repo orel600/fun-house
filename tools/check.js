@@ -1710,7 +1710,7 @@ function worldBot(m,L,god){
         // שורה שנחתכה בתוך העמודה (overflow) לא נראית: נמדד רק החלק שבתוך העמודה
         const rows=[...document.querySelectorAll('#msgLane>*')].filter(vis).map(e=>{const r=R(e);return {left:r.left,right:r.right,top:Math.max(r.top,lr.top),bottom:Math.min(r.bottom,lr.bottom)}}).filter(r=>r.bottom-r.top>2)
           .concat([...document.querySelectorAll('#feedCol .frow')].filter(vis).map(R));
-        const keep=[...document.querySelectorAll('#skills>*,#ult,#sig,#nav>*,#qTrack,#miniMap,#menuBtn,#whud>*')].filter(vis).map(R),h=msgHero();
+        const keep=[...document.querySelectorAll('#skills>*,#ult,#sig,#nav>*,#qTrack,#miniMap,#menuBtn,#whud>*,#who')].filter(vis).map(R),h=msgHero();
         return {n:rows.length,big:[...document.querySelectorAll('#msgLane .mrow.big')].filter(vis).length,hero:rows.some(r=>hit(r,h)),ui:rows.some(r=>keep.some(k=>hit(r,k))),
           out:rows.some(r=>r.left<-1||r.top<-1||r.right>vw+1||r.bottom>vh+1),d:ln?[ln.style.top,ln.style.maxHeight,Math.round(h.top),ln.style.visibility||'-',ln.querySelectorAll('.cut').length,ln.children.length,Math.round(h.left)+'..'+Math.round(h.right),MSG.where||'-'].join('/'):'-',feed:document.querySelectorAll('#feedCol .frow').length,sk:document.querySelectorAll('#skills>*').length,keep:keep.length}};
       enterWorld('home');S.mode='play';enemies=[];FL.length=0;msgClear();__lbak.ov=[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden);for(const o of __lbak.ov)o.hidden=true;   // חלון פתוח מסתיר את העמודה (msgWinOpen), אז בבדיקה כמו במשחק: בלי חלון
@@ -1720,7 +1720,7 @@ function worldBot(m,L,god){
       for(let i=0;i<4;i++){const e=addEnemy('grunt',P.x+90+i*25,P.y+30);e.home=0;e.speed=0;e.dmg=0;e.hp=e.max=1e9}
       S.cam.x=P.x;S.cam.y=P.y;
       banner(T('home.earth.gift'),C.gold);banner(T('rare.rumor',T('rare.at.reeds')),C.gold);banner(T('wn.found','Nessa'),C.gold);banner(T('skr.new','Xx'),C.gold);banner(HUNT.icon+' '+T('hunt.here','Grok'),HUNT.col);if(typeof skgOffer==='function')skgOffer(Object.keys(SKILLS.list)[0]);
-      msgBig(T('bossDown','Test'),C.gold);feedRes('stone',3);feedGear('oakSword');feedAdd('🎯','Spotted the Wanted · '.repeat(4),C.gold,'w');render()});
+      msgBig(T('bossDown','Test'),C.gold);if(innerWidth===848||innerWidth===924){SAVE.lore={met:{}};flMeet('grunt');FLC.t=99}feedRes('stone',3);feedGear('oakSword');feedAdd('🎯','Spotted the Wanted · '.repeat(4),C.gold,'w');render()});
     await page.clock.runFor(700);
     const a=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();return {...__lmeas(),waits:MSG.stat.waits,shown:MSG.stat.big,win:msgWinOpen(),on:msgOn()}});
     await page.evaluate(()=>{for(const e of enemies)e.dead=true;enemies=[];window.__lmf=msgFight;msgFight=()=>false;msgPump()});   // הקרב נגמר (העולם יכול להוליד להקה חדשה בזמן ההמתנה, אז הקרב נקבע כאן)
@@ -1733,21 +1733,35 @@ function worldBot(m,L,god){
       const o={feed:f.width>0&&!sk.some(k=>hit(f,k))};
       enemies=[];const nm=['Dardak Terror of Ducks','Pack Leader','Armored','Elemental Shield','Bruza the Almost-Brave'];
       for(let i=0;i<5;i++){const e=addEnemy('grunt',P.x+60+i*24,P.y+10-i*8);e.home=0;e.speed=0;e.dmg=0;e.hp=e.max=1e9;if(i===0||i===4){e.pname=nm[i];e.flSeen=true}if(i===1)e.leader=true;if(i===2)e.affix='tough';if(i===3)e.affix='shell'}
+      S.wd.flSay={e:enemies[0],txt:'I am Dardak Who Ate a Lantern! Fear my bark!',t:99};   // בועת דיבור על העלית: עוברת באותו סידור כמו השמות (ביקורת 7.11.2026, ממצא 4)
       const L=LABELS.stat;for(const k in L)L[k]=0;S.cam.x=P.x;S.cam.y=P.y;
-      const C2=CanvasRenderingContext2D.prototype,fr=C2.fillRect,boxes=[];let on=false;C2.fillRect=function(x,y,w,h){if(on&&this.fillStyle.startsWith('rgba(10, 12, 20')){const t=this.getTransform(),d=devicePixelRatio||1;boxes.push({left:(t.a*x+t.e)/d,top:(t.d*y+t.f)/d,right:(t.a*(x+w)+t.e)/d,bottom:(t.d*(y+h)+t.f)/d})}return fr.apply(this,arguments)};
+      const C2=CanvasRenderingContext2D.prototype,fr=C2.fillRect,rr=C2.roundRect,boxes=[];let on=false;C2.fillRect=function(x,y,w,h){if(on&&this.fillStyle.startsWith('rgba(10, 12, 20')){const t=this.getTransform(),d=devicePixelRatio||1;boxes.push({left:(t.a*x+t.e)/d,top:(t.d*y+t.f)/d,right:(t.a*(x+w)+t.e)/d,bottom:(t.d*(y+h)+t.f)/d})}return fr.apply(this,arguments)};
+      C2.roundRect=function(x,y,w,h){if(on&&String(this.fillStyle).startsWith('rgba(250, 246, 232')){const t=this.getTransform(),d=devicePixelRatio||1;boxes.push({bub:1,left:(t.a*x+t.e)/d,top:(t.d*y+t.f)/d,right:(t.a*(x+w)+t.e)/d,bottom:(t.d*(y+h)+t.f)/d})}return rr.apply(this,arguments)};
       const lf=lblFlush;lblFlush=function(){on=true;try{return lf.apply(this,arguments)}finally{on=false}};
-      try{render()}finally{C2.fillRect=fr;lblFlush=lf}
-      const hud=lblHud();o.n=boxes.length;o.full=L.full;o.icon=L.icon;o.over=boxes.some((a,i)=>boxes.some((b,j)=>j>i&&a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1));
+      try{render()}finally{C2.fillRect=fr;C2.roundRect=rr;lblFlush=lf;S.wd.flSay=null}
+      const hud=lblHud();o.bub=boxes.filter(b=>b.bub).length;o.n=boxes.length;o.full=L.full;o.icon=L.icon;o.over=boxes.some((a,i)=>boxes.some((b,j)=>j>i&&a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1));
       o.onHud=boxes.some(a=>hud.some(b=>hit(a,b)));
       // נדירה באמצע קרב (rares.js, fx.js): העמוד והחגיגה בחצי גודל. בלי אויבים: בגודל מלא
       celebrate(P.x,P.y,'quest','');o.fx=FX[FX.length-1].s;enemies=[];celebrate(P.x,P.y,'quest','');o.fx0=FX[FX.length-1].s;FX.length=0;return o});
     if(!extra)await ownRnd(false);
     if(CFG.shots)await shot('msg-lane-'+vp.width);
-    await page.evaluate(()=>{const k=__lbak;msgClear();$('sig').hidden=k.hid.sig;$('feedBtn').hidden=k.hid.feed;for(const o of k.ov)o.hidden=false;FL.length=0;enemies=[];if(typeof skgOfferClose==='function')skgOfferClose();worldUi(false);SAVE=JSON.parse(k.s);if(S.sk&&k.sk)S.sk.ids=JSON.parse(k.sk);if(k.vil)enterVillage();else{reset();S.mode=k.mode}});
+    await page.evaluate(()=>{const k=__lbak;FLC.q=[];flCardNext();msgClear();$('sig').hidden=k.hid.sig;$('feedBtn').hidden=k.hid.feed;for(const o of k.ov)o.hidden=false;FL.length=0;enemies=[];if(typeof skgOfferClose==='function')skgOfferClose();worldUi(false);SAVE=JSON.parse(k.s);if(S.sk&&k.sk)S.sk.ids=JSON.parse(k.sk);if(k.vil)enterVillage();else{reset();S.mode=k.mode}});
     if(extra)await ownRnd(false);   // רק אחרי החזרה למצב הקודם (גם היא משתמשת באקראי)
     lane[vp.width]={a,b,hb,ok:hb.feed&&hb.fx===0.5&&hb.fx0===1&&hb.full<=3&&hb.full>0&&!hb.over&&!hb.onHud&&a.n>0&&a.big===0&&a.waits>0&&!a.hero&&!a.ui&&!a.out&&a.feed>0&&b.big===1&&b.shown===1&&!b.hero&&!b.ui&&!b.out&&b.most<=3};
   }
   if(laneCdp)await laneCdp.send('Emulation.setSafeAreaInsetsOverride',{insets:{left:0,right:0,top:0,bottom:0}}).catch(()=>{});
+  // הפיד בכפר (ביקורת 7.11.2026, ממצא 2): "חדש בספר!" לא מתחת לכפתורי הצד (ספר, קווסטים, גיבור ב-#qRail), ב-848x388 וב-924x424
+  const vfeed={};
+  for(const [vw,vh] of [[848,388],[924,424]]){
+    await page.setViewportSize({width:vw,height:vh});await page.clock.runFor(100);
+    vfeed[vw]=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,R=e=>e.getBoundingClientRect(),hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1,r={};
+      const ov=[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden);
+      try{enterVillage();S.mode='play';for(const o of document.querySelectorAll('.ov,.win'))o.hidden=true;FL.length=0;FEED._spot=null;feedAdd('',T('book.new'),C.gold,'book');render();
+        const rows=[...document.querySelectorAll('#feedCol .frow')].filter(e=>e.offsetHeight>0).map(R),rail=[...document.querySelectorAll('#qRail>*')].filter(e=>!e.hidden&&e.offsetHeight>0).map(R);
+        r.rows=rows.length;r.rail=rail.length;r.hit=rows.some(a=>rail.some(b=>hit(a,b)))}
+      finally{FL.length=0;render();for(const o of ov)o.hidden=false;SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}}return r});
+  }
+  check(Object.values(vfeed).every(o=>o.rows>0&&o.rail>0&&!o.hit),'פיד בכפר מול כפתורי הצד: '+Object.entries(vfeed).map(([k,o])=>k+'px: '+(o.rows?(o.hit?'השורה מתחת לכפתור':'לא נוגע')+' ('+o.rail+' כפתורים)':'אין שורה')).join(' · '));
   await page.setViewportSize(CFG.phone);
   // רואים מה כל אור עושה (wisps.js, WACT): פגיעה של אש וכפור מסומנת על האויב, ריפוי בפיד, הסבר בפעם הראשונה, ושורת אייקונים ליד "מי אני"
   const wac=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
@@ -3098,7 +3112,7 @@ function worldBot(m,L,god){
   for(const [vw,vh] of [[CFG.phone.width,CFG.phone.height],[1280,590]]){
     await page.setViewportSize({width:vw,height:vh});await page.clock.runFor(100);
     wml[vw]=await page.evaluate(()=>{const st0=JSON.stringify(SAVE.story),wm0=JSON.stringify(SAVE.wmap||{seen:{}}),all=['meadow',...Object.keys(WORLD.regions)];
-      SAVE.wmap={seen:{}};all.forEach(r=>SAVE.wmap.seen[r]=1);SAVE.story=Object.assign({},SAVE.story,{earth:true,water:true,ice:true,fire:true,bolt:true});
+      SAVE.wmap={seen:{}};all.forEach(r=>SAVE.wmap.seen[r]=1);SAVE.story=Object.assign({},SAVE.story,{earth:true,water:true,ice:true,fire:true,bolt:true,end:true});   // end: שורת דרגת העולם מתחת למפה, כמו אחרי ריצה ארוכה (ביקורת 7.11.2026, ממצא 6)
       enterWorld('home','ridge');for(const e of enemies)e.dead=true;wmapOpen(true);
       const c=$('wmWorld'),cw=c.clientWidth,ch=c.clientHeight,in_=(WMAP.rects||[]).every(b=>b.x0>=-1&&b.y0>=-1&&b.x1<=cw+1&&b.y1<=ch+1);
       const o={n:(WMAP.rects||[]).length,show:wmGraph().show.length,bad:WMAP.bad,here:WMAP.hereBad,in:in_};
@@ -4092,7 +4106,7 @@ function worldBot(m,L,god){
     wac.ring?'טבעת כפור':'אין טבעת כפור',wac.heal?'ריפוי בפיד':'ריפוי לא בפיד',wac.row?'שורת אייקונים':'אין שורת אייקונים',wac.hunt?'אש יוצאת לציד ופוגעת':'אין ציד'].join(', ')));
   check(!fxl.err&&fxl.first&&fxl.lane&&fxl.once&&fxl.btn&&fxl.half&&fxl.saved&&fxl.off,'כותרת אזור ופחות אפקטים: '+(fxl.err||[fxl.first?'כותרת בכניסה הראשונה':'אין כותרת',fxl.lane?'בעמודת ההודעות':'בקנבס, מעל ההודעות',fxl.once?'לא חוזרת':'חוזרת בכל כניסה',
     fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
-  for(const w in lane){const {a,b,hb}=lane[w];check(lane[w].ok,'עמודת הודעות '+w+': '+[(hb.feed?'🥕 לא נוגע בסקילים':'🥕 על כפתור סקיל'),'שמות אויבים: '+hb.full+' מלאים, '+hb.icon+' אייקונים'+(hb.over?', עולים אחד על השני':'')+(hb.onHud?', על כפתור':''),hb.fx===0.5&&hb.fx0===1?'חגיגה בקרב בחצי גודל':'חגיגה בקרב: '+hb.fx+'/'+hb.fx0,a.waits>0&&a.big===0?'בקרב הגדולה מחכה':'גדולה באמצע קרב',b.big===1?'אחרי הקרב גדולה אחת':'גדולות: '+b.big,
+  for(const w in lane){const {a,b,hb}=lane[w];check(lane[w].ok,'עמודת הודעות '+w+': '+[(hb.feed?'🥕 לא נוגע בסקילים':'🥕 על כפתור סקיל'),'שמות אויבים: '+hb.full+' מלאים, '+hb.icon+' אייקונים, '+hb.bub+' בועות'+(hb.over?', עולים אחד על השני':'')+(hb.onHud?', על כפתור':''),hb.fx===0.5&&hb.fx0===1?'חגיגה בקרב בחצי גודל':'חגיגה בקרב: '+hb.fx+'/'+hb.fx0,a.waits>0&&a.big===0?'בקרב הגדולה מחכה':'גדולה באמצע קרב',b.big===1?'אחרי הקרב גדולה אחת':'גדולות: '+b.big,
     !a.hero&&!b.hero?'לא על הגיבור':'על הגיבור',!a.ui&&!b.ui?'לא על כפתורים, סקילים, קווסט ומפה':'על כפתור',!a.out&&!b.out?'הכל בתוך המסך':'נחתך בקצה',a.feed>0?'פיד בצד':'אין פיד','שורות '+a.n+'/'+b.n+', סקילים '+a.sk+', כפתורים '+a.keep,...(lane[w].ok?[]:['חלון: '+b.win+', פעיל: '+b.on+', מקום (top/max/hero/vis/cut/n/x): '+a.d+' → '+b.d])].join(', '))}
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
