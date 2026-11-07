@@ -3778,13 +3778,13 @@ function worldBot(m,L,god){
      o.combo={shock:w0.shock||0,k:Math.round(wetD/dry*100)/100,freeze:w0.freeze||0,frozen:e.st.stun>MBKIT.mage.ult.freeze*0.9,want:MOBA.combo.shock};
      mbWord=ow;MB.u.splice(MB.u.indexOf(mg),1);e.hp=e.max=MBKIT[e.kit].hp}
     // כל סקיל של כל ערכה, בתרחיש קבוע: גיבור ברמה 6 מטיל את שלושת הסקילים על אויב קרוב (לא תלוי באורך משחק הבוטים)
-    {const e=mbHeroes(1)[0];e.hp=e.max=1e6;o.fixed=[];const fx0=typeof FXLIB!=='undefined'?FXLIB.list.length:-1;o.fxIds=new Set();
+    {const e=mbHeroes(1)[0],ex0=e.x,ey0=e.y;e.hp=e.max=1e6;o.fixed=[];const fx0=typeof FXLIB!=='undefined'?FXLIB.list.length:-1;o.fxIds=new Set();
      const ofx=typeof fxPlay==='function'?fxPlay:null;if(ofx)window.fxPlay=(id,...a)=>{o.fxIds.add(id);return ofx(id,...a)};   // ספריית האפקטים: אילו אפקטים הסקילים הפעילו
      for(const k of Object.keys(MBKIT)){const h=mbHero(k,0,false,1);h.lvl=MOBA.ultAt;h.x=e.x-150;h.y=e.y;MB.u.push(h);
-       for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});Object.assign(e.st,{imm:0,pure:0});   /* בלי חסינות: הרשת והבועה תופסות, והאפקטים שלהן מופיעים */if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);for(let i=0;i<20;i++)mobaUpdate(1/30)}
+       for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});Object.assign(e.st,{imm:0,pure:0});   /* בלי חסינות: הרשת והבועה תופסות, והאפקטים שלהן מופיעים */if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);for(let i=0;i<20;i++){e.x=ex0;e.y=ey0;e.st.imm=0;mobaUpdate(1/30)}}   /* האויב נשאר במקום: בוט שזז יוצא מהבועה לפני שהיא עולה */
        MB.u.splice(MB.u.indexOf(h),1)}
      // הלחשים, הריפוי והחזרה לבסיס (moba-spells.js, moba-recall.js): כל אחד מפעיל את האפקט שלו מהספרייה
-     if(typeof mbSpellCast==='function'){const h=mbHero('mage',0,false,1),V0=MB.vis&&MB.vis.rev.slice(),Z0=MB.spellZ&&MB.spellZ.slice(),es=JSON.stringify(e.st);h.x=e.x-150;h.y=e.y;MB.u.push(h);typeof mbVisNow==='function'&&mbVisNow(true);
+     if(typeof mbSpellCast==='function'){const h=mbHero('mage',0,false,1),V0=MB.vis&&MB.vis.rev.slice(),Z0=MB.spellZ&&MB.spellZ.slice(),es=JSON.stringify(e.st);e.x=ex0;e.y=ey0;h.x=e.x-150;h.y=e.y;MB.u.push(h);typeof mbVisReveal==='function'&&mbVisReveal(e.x,e.y,120,5,h.team);typeof mbVisNow==='function'&&mbVisNow(true);   /* חשיפה קצרה: תשישות צריכה לראות את האויב גם אם הוא בשיח */
        for(const id of Object.keys(MBSPELL.list)){mbSpellInit(h);h.spell=id;h.cd.spell=0;Object.assign(h.st,{dash:null,stun:0,taunt:0,root:0});mbSpellCast(h,{x:e.x,y:e.y});h.st.dash=null;h.x=e.x-150;h.y=e.y}
        h.hp=h.max/2;h.cd.heal=0;mbHealCast(h);
        if(typeof mbRecallStart==='function'){h.st.stun=0;mbRecallStart(h);if(h.recall)mbRecallStop(h,false)}
