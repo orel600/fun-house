@@ -35,7 +35,7 @@ function skCast(id){
   if(typeof VFX3D==='undefined'||!R3D.on)return;
   // בכפר המדבקות כבויות (VFX3D.on רק בעולם). כמו האש של פיוחו (petfx3d.js), מדליקים לרגע את VFX3D.pet
   const was=VFX3D.pet,F=SKCAST.flash;VFX3D.pet=true;
-  const d=skcRune.d3=VFX3D.decal('rune',P.x,P.y,R.r,{life:R.life,col,a:R.a,fin:R.fin,fade:R.fade,hdr:R.hdr});
+  const d=skcRune.d3=VFX3D.decal('rune',P.x,P.y,R.r,{life:Infinity,col,a:0,hdr:R.hdr});   // הזמן לפי המשחק (skcUpdate), לא לפי הציור
   VFX3D.emit('glow',P.x,P.y,F.h,{n:1,raw:1,col,col2:col,hdr:2,size:F.size,size2:F.size2,life:F.life});
   VFX3D.emit('spark',P.x,P.y,F.h,{n:F.spark,col:'#ffffff',col2:col,spd:160,up:120,grav:-300,life:[0.2,0.4]});
   VFX3D.light(P.x,P.y,F.h,col,F.light,F.lightT);
@@ -49,14 +49,15 @@ function skcClip(L){
   return R3D.clips[c+'@up']?c:SKCAST.fallback;
 }
 // העיגול הולך עם הגיבור. בתלת-ממד מזיזים את המדבקה, ובדו-ממד מציירים בקנבס, מתחת לדמויות
+const skcAlpha=f=>{const R=SKCAST.rune;return R.a*(f<R.fin?f/R.fin:f>1-R.fade?(1-f)/R.fade:1)};
 function skcUpdate(dt){
   if(!skcRune)return;skcRune.t+=dt;
-  const d=skcRune.d3;if(d&&d.on){d.x=P.x;d.y=P.y}
-  if(skcRune.t>=SKCAST.rune.life)skcRune=null;
+  const d=skcRune.d3,f=skcRune.t/SKCAST.rune.life;if(d&&d.on){d.x=P.x;d.y=P.y;d.a=skcAlpha(Math.min(1,f))}
+  if(f>=1){if(d&&typeof VFX3D!=='undefined')VFX3D.free(d);skcRune=null}
 }
 function skcDraw(){
   if(!skcRune||R3D.on&&skcRune.d3)return;
-  const R=SKCAST.rune,f=skcRune.t/R.life,a=R.a*(f<R.fin?f/R.fin:f>1-R.fade?(1-f)/R.fade:1),r=R.r*(0.85+0.15*Math.min(1,f*4)),rot=skcRune.t*R.spin;
+  const R=SKCAST.rune,f=skcRune.t/R.life,a=skcAlpha(f),r=R.r*(0.85+0.15*Math.min(1,f*4)),rot=skcRune.t*R.spin;
   ctx.save();ctx.translate(P.x,P.y+6);ctx.scale(1,0.5);ctx.globalAlpha=a;ctx.strokeStyle=skcRune.col;ctx.shadowColor=skcRune.col;ctx.shadowBlur=10;ctx.lineWidth=2.5;
   ctx.beginPath();ctx.arc(0,0,r,0,7);ctx.stroke();ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(0,0,r*0.78,0,7);ctx.stroke();
   ctx.rotate(rot);ctx.beginPath();   // משולש כפול (מגן דוד של קווים) וסימנים בין הטבעות
