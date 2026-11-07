@@ -702,6 +702,18 @@ function worldBot(m,L,god){
     for(const k of['-bad','-bak2'])localStorage.removeItem(K+k);SAVE_STORE.note=null;$('saveWarn').hidden=true;
     SAVE=JSON.parse(bak);SAVE_STORE.lastBak=0;SAVE_STORE.write(SAVE,true);return r});
   check(bad.restored&&bad.kept&&bad.lost&&bad.lostKept,'שמירה פגומה: '+(bad.restored?'שוחזרה מהגיבוי, עם הודעה':'לא שוחזרה מגיבוי')+', '+(bad.kept&&bad.lostKept?'והעותק הפגום נשמר בצד ולא נדרס':'והעותק הפגום נדרס')+(bad.lost?'':', ובלי גיבוי משהו נשבר'));
+  // 2ב (ביקורת 7.11.2026): מקום מלא. הגיבוי נכשל: השמירה הראשית עדיין נכתבת. גם הראשית נכשלת: השמירה הקודמת נשארת, והודעה פעם אחת
+  const quota=await page.evaluate(()=>{const r={},K=SAVE_STORE.key,bak=JSON.stringify(SAVE),set0=Storage.prototype.setItem;let deny=null,warns=0;
+    const warn0=window.saveWarnShow;window.saveWarnShow=()=>{warns++};
+    Storage.prototype.setItem=function(k,v){if(deny&&deny(k)){const e=new Error('quota');e.name='QuotaExceededError';throw e}return set0.call(this,k,v)};
+    try{deny=k=>k===K+'-bak2';SAVE_STORE.lastBak=-1e15;SAVE.bag.wood=(SAVE.bag.wood||0)+777;const w=SAVE.bag.wood;saveNow();
+      r.main=JSON.parse(localStorage.getItem(K)).bag.wood===w&&!SAVE_STORE.failed;
+      deny=k=>k===K;SAVE.bag.wood+=1;saveNow();saveNow();
+      r.kept=JSON.parse(localStorage.getItem(K)).bag.wood===w&&SAVE_STORE.failed&&warns===1;
+      deny=null;saveNow();r.back=JSON.parse(localStorage.getItem(K)).bag.wood===w+1&&!SAVE_STORE.failed}
+    finally{Storage.prototype.setItem=set0;window.saveWarnShow=warn0;SAVE_STORE.failed=false;SAVE_STORE.note=null;
+      localStorage.removeItem(K+'-bak2');SAVE=JSON.parse(bak);SAVE_STORE.lastBak=0;SAVE_STORE.write(SAVE,true)}return r});
+  check(quota.main&&quota.kept&&quota.back,'מקום מלא בטלפון: '+(quota.main?'הגיבוי נכשל והשמירה הראשית נכתבה':'הגיבוי נכשל והשמירה הראשית דולגה')+', '+(quota.kept?'כשגם הראשית נכשלת, הקודמת נשארת והודעה פעם אחת':'כשהראשית נכשלת משהו נשבר')+(quota.back?'':', ואחרי שהתפנה מקום השמירה לא חזרה'));
   // 3: אויב קפוא, מסוחרר או מאובן לא מכה (strike.js), ואויב רגיל כן
   const frz=await page.evaluate(()=>{const h0=window.hurt;let n=0;window.hurt=()=>{n++};const r={};
     try{const run=k=>{n=0;const e={x:P.x+P.r+6,y:P.y,r:10,dmg:1,kx:0,ky:0};if(k)e[k]=30;for(let i=0;i<300;i++)strikeTick(e,1/60,6);return n};
