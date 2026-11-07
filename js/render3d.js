@@ -760,21 +760,38 @@ function vilWarm(r,c){
 }
 // העולם: כמו vilWarm. בפעם הראשונה שסוג אויב חדש נכנס למסך, הטלפון מכין לו shader, טקסטורה וקהל (crowdOf) באמצע הקרב,
 // והציור נעצר (ניר, 7.11: "94 fps · 166.1ms" כשזקן-הקליפה הופיע). בכניסה לאזור מכינים מראש דמות אחת מכל סוג באזור (גם הנדירות),
-// מצוירת כמה פריימים (כדי שגם הטקסטורות יעלו), ואז למאגר. כך הקפיצה קורה במעבר בשער, ולא באמצע הקרב
-const WWARM={frames:3,s:1e-4};   // s: כמה קטנה הדמות בזמן ההכנה. היא על המסך (כדי שהציור האמיתי יכין אותה, compile לבד לא מספיק), אבל קטנה מפיקסל
+// מצוירת כמה פריימים (כדי שגם הטקסטורות יעלו), ואז למאגר. כך הקפיצה קורה במעבר בשער, ולא באמצע הקרב.
+// ועוד (ניר, 7.11 ערב: "107 fps · 215.9ms" כשחלודן הטבוע הופיע): אויב יכול להגיע גם לא מהרשימה של האזור. שומר של מקור משאבים (סלע ← גולם,
+// שיח ← ניצנית, nodes.js), נמסיס או ציד מאזור אחר, המבוקש. לכן באזור: גם השומרים של המקורות שלו, הנמסיס שלו והמבוקש. ושאר סוגי העולם
+// ברקע, per סוגים כל gap פריימים, פעם אחת למשחק (seen): טקסטורה שעלתה לכרטיס הגרפי נשארת שם (המגן של החלודן, למשל, עלה רק כשהוא הופיע)
+const WWARM={frames:3,s:1e-4,per:2,gap:12};   // s: כמה קטנה הדמות בזמן ההכנה. היא על המסך (כדי שהציור האמיתי יכין אותה, compile לבד לא מספיק), אבל קטנה מפיקסל
+// כל הסוגים שיכולים להופיע באזור reg (בלי reg: בכל העולם). 'wanted' הוא המראה של המבוקש (lookOf)
+function wldTypes(reg){
+  const ks=new Set(),add=t=>{if(t&&LOOK3D[t])ks.add(t)},R=reg?[reg==='meadow'?WORLD:WORLD.regions[reg]]:[WORLD,...Object.values(WORLD.regions)];
+  for(const W of R){if(!W)continue;for(const G of W.foes||[])add(G.type);
+    if(typeof NODES!=='undefined')for(const F of W.fields||[]){const K=NODES.kinds[F.kind];if(K&&K.guard)add(K.guard.type)}}
+  if(typeof RARES!=='undefined')for(const id in RARES.list)if(!reg||RARES.list[id].reg===reg)add(id);
+  if(reg&&typeof nemOf==='function'){const N=nemOf(reg);if(N)add(N.type)}
+  add('wanted');return [...ks];
+}
 function wldWarm(r,c){
-  const reg=S.wd.reg||'meadow',W=R3D.wWarm||(R3D.wWarm={done:{},a:null,n:0});
+  const reg=S.wd.reg||'meadow',W=R3D.wWarm||(R3D.wWarm={done:{},seen:{},a:null,n:0,q:null,gap:0});
   if(W.a){wldWarmCrowd(W);if(--W.n<=0){for(const a of W.a){a.root.scale.setScalar(a.sc0w);freeActor(a)}W.a=null}}
-  if(W.done[reg])return;W.done[reg]=1;
-  m3dWorld(reg);   // ברקע: הענק של האזור ומפלצות הזירה (m3d.js)
-  if(typeof rareLooks==='function')rareLooks();
-  const ks=new Set((WR().foes||[]).map(G=>G.type));
-  if(typeof RARES!=='undefined')for(const id in RARES.list)if(RARES.list[id].reg===reg)ks.add(id);
-  const tmp=[];W.c=[...ks];
-  for(const k of ks){const L=LOOK3D[k];if(!L||!R3D.tmpl[L.model])continue;crowdOf(k);   // crowdOf משאיר דמות במאגר. makeActor לוקח אותה ומצייר אותה
+  if(!W.done[reg]){W.done[reg]=1;
+    m3dWorld(reg);   // ברקע: הענק של האזור ומפלצות הזירה (m3d.js)
+    if(typeof rareLooks==='function')rareLooks();
+    wldWarmSet(r,c,wldTypes(reg));W.q=wldTypes().filter(k=>!W.seen[k]);W.gap=WWARM.gap;return}
+  // ברקע: שאר הסוגים של העולם, כמה בכל פעם, כשאין הכנה פתוחה
+  if(W.q&&W.q.length&&!W.a&&--W.gap<=0){W.gap=WWARM.gap;wldWarmSet(r,c,W.q.splice(0,WWARM.per))}
+}
+function wldWarmSet(r,c,ks){
+  const W=R3D.wWarm,tmp=[],cs=[];
+  for(const k of ks){const L=LOOK3D[k];if(!L)continue;
+    if(!R3D.tmpl[L.model]){if(m3dLazy(L.model)&&W.q){m3dNeed(L.model);W.q.push(k)}continue}   // מודל שעוד נטען (m3d.js): בסוף התור
+    W.seen[k]=1;if(k!=='wanted'&&crowdOf(k))cs.push(k);   // crowdOf משאיר דמות במאגר. makeActor לוקח אותה ומצייר אותה
     const a=makeActor(L);a.sc0w=a.root.scale.x;a.root.scale.setScalar(WWARM.s);place(a,P.x,P.y,0,null);tmp.push(a)}
   if(!tmp.length)return;
-  W.a=(W.a||[]).concat(tmp);W.n=WWARM.frames;wldWarmCrowd(W);
+  W.c=cs;W.a=(W.a||[]).concat(tmp);W.n=WWARM.frames;wldWarmCrowd(W);
   try{if(r.compileAsync)r.compileAsync(R3D.scene,c).catch(()=>{});else r.compile(R3D.scene,c)}catch(e){}
 }
 // גם הקהל (crowdOf): עותק זעיר אחד ליד השחקן בפריימים של ההכנה, אחרת ה-shader שלו (גם של הצל) נבנה כשהקהל מופיע לראשונה
