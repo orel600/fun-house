@@ -1709,7 +1709,7 @@ function worldBot(m,L,god){
       enterWorld('home');S.mode='play';enemies=[];FL.length=0;msgClear();__lbak.ov=[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden);for(const o of __lbak.ov)o.hidden=true;   // חלון פתוח מסתיר את העמודה (msgWinOpen), אז בבדיקה כמו במשחק: בלי חלון
       for(const k in MSG.stat)MSG.stat[k]=0;
       if(S.sk&&S.sk.ids.length<3){S.sk.ids=Object.keys(SKILLS.list).slice(0,3);S.sk.cd=S.sk.ids.map(()=>0)}if(typeof skillsHud==='function')skillsHud();   // כל שלושת הכפתורים בקשת: השלישי יוצא מגבולות #skills (הסרטון של ניר)
-      $('sig').hidden=false;$('feedBtn').hidden=false;   // סקיל החתימה ו-🥕 גלויים, כמו בסרטון
+      __lbak.hid={sig:$('sig').hidden,feed:$('feedBtn').hidden};$('sig').hidden=false;$('feedBtn').hidden=false;   // סקיל החתימה ו-🥕 גלויים, כמו בסרטון (ומוחזרים בסוף)
       for(let i=0;i<4;i++){const e=addEnemy('grunt',P.x+90+i*25,P.y+30);e.home=0;e.speed=0;e.dmg=0;e.hp=e.max=1e9}
       S.cam.x=P.x;S.cam.y=P.y;
       banner(T('home.earth.gift'),C.gold);banner(T('rare.rumor',T('rare.at.reeds')),C.gold);banner(T('wn.found','Nessa'),C.gold);banner(T('skr.new','Xx'),C.gold);banner(HUNT.icon+' '+T('hunt.here','Grok'),HUNT.col);if(typeof skgOffer==='function')skgOffer(Object.keys(SKILLS.list)[0]);
@@ -1734,7 +1734,7 @@ function worldBot(m,L,god){
       // נדירה באמצע קרב (rares.js, fx.js): העמוד והחגיגה בחצי גודל. בלי אויבים: בגודל מלא
       celebrate(P.x,P.y,'quest','');o.fx=FX[FX.length-1].s;enemies=[];celebrate(P.x,P.y,'quest','');o.fx0=FX[FX.length-1].s;FX.length=0;return o});
     if(CFG.shots)await shot('msg-lane-'+vp.width);
-    await page.evaluate(()=>{const k=__lbak;msgClear();for(const o of k.ov)o.hidden=false;FL.length=0;enemies=[];if(typeof skgOfferClose==='function')skgOfferClose();worldUi(false);SAVE=JSON.parse(k.s);if(S.sk&&k.sk)S.sk.ids=JSON.parse(k.sk);if(k.vil)enterVillage();else{reset();S.mode=k.mode}});
+    await page.evaluate(()=>{const k=__lbak;msgClear();$('sig').hidden=k.hid.sig;$('feedBtn').hidden=k.hid.feed;for(const o of k.ov)o.hidden=false;FL.length=0;enemies=[];if(typeof skgOfferClose==='function')skgOfferClose();worldUi(false);SAVE=JSON.parse(k.s);if(S.sk&&k.sk)S.sk.ids=JSON.parse(k.sk);if(k.vil)enterVillage();else{reset();S.mode=k.mode}});
     lane[vp.width]={a,b,hb,ok:hb.feed&&hb.fx===0.5&&hb.fx0===1&&hb.full<=3&&hb.full>0&&!hb.over&&!hb.onHud&&a.n>0&&a.big===0&&a.waits>0&&!a.hero&&!a.ui&&!a.out&&a.feed>0&&b.big===1&&b.shown===1&&!b.hero&&!b.ui&&!b.out&&b.most<=3};
   }
   if(laneCdp)await laneCdp.send('Emulation.setSafeAreaInsetsOverride',{insets:{left:0,right:0,top:0,bottom:0}}).catch(()=>{});
