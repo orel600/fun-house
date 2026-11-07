@@ -28,7 +28,7 @@ fxPreload(['levelup','ko']);                                    // לטעון מ
 - **בלי הקבצים:** המשחק רץ כרגיל. אפקט שהתמונה שלו לא נטענה מדלג בשקט.
 - **מעבר מקום:** `reset()` מנקה את כל האפקטים (`fxClear`).
 
-## האפקטים (122)
+## האפקטים (161)
 
 השמות ב-`tools/fx-list.json`. תמונה של כל האפקטים: `docs/refs/fx-gallery.png`.
 - **סקילים במשחקי השאול:** `sk_<id>` לכל סקיל (סדן, קריאת קרב, חומה, גל חרב, סיבוב, זעם, חץ ברק, רשת, גשם חצים, גל מים, כלא מים, סופת קרח), ו-`ult_cast`/`ult_ray` לסקיל-על.
@@ -50,6 +50,14 @@ fxPreload(['levelup','ko']);                                    // לטעון מ
   - סימונים: `waypoint`, `quest_mark`, `mm_ping`.
   - סביבה: `lava_bubble`, `water_ripple`, `stars`, `bubbles_bg`, `haze`, `balloons`.
 - **איסוף:** `pickup_*`.
+- **עולם, 7.11: שובלי חרב, מזג אוויר, מים, אור, טבע** (39, רק קבצים: עוד לא מחוברים למשחק):
+  - שובלי חרב, בחמישה צבעים (amber, amethyst, crimson, emerald, sapphire): `tr_slash_<צבע>` מכה אופקית, `tr_axe_<צבע>` גרזן, `tr_spin_<צבע>` סיבוב. וגם `tr_smash_amber`, `tr_smash_crimson` פטיש.
+  - מזג אוויר (256px): `wx_dust` אבק, `wx_devil` מערבולת, `wx_bolt` ברק, `wx_flash` הבזק, `wx_rainheavy` גשם כבד, `wx_blizzard` סופת שלג, `wx_petals` עלי כותרת ברוח, `wx_sunrays` קרני שמש, `wx_fog` ערפל. ל-`wx_bolt`, `wx_blizzard` ו-`wx_sunrays` יש רקע אפור: מנגנים אותם עם `add:true`.
+  - מים: `wt_droplet` טיפה, `wt_wave` גל נשבר, `wt_jump` התזה גדולה. להתזה קטנה יש כבר `hit_water`.
+  - אור (256px): `lr_forest` שלוש קרני שמש, `lr_moon` קרן ירח.
+  - טבע: `pl_regrow` עץ צומח, `pl_pollen` אבקה, `pl_shroom` פטרייה זוהרת.
+  - מצבים על השחקן: `st_regen` ריפוי, `st_defup` הגנה עולה, `st_atkup` התקפה עולה.
+  - עשן ואש: `sf_fog` ערפל זוחל, `sf_embers` גחלים עולות.
 
 ## בכפר ובעולם (js/fxworld.js)
 
