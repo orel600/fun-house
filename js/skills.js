@@ -131,7 +131,7 @@ let skKey='';
 function skillsHud(){
   const box=$('skills'),on=!!S.sk&&skHere()&&S.mode==='play'&&S.sk.ids.length>0;
   box.hidden=!on;if(!on)return;
-  const gi=typeof gSkHere==='function'&&gSkHere(),key=LANG+'|'+gi+'|'+S.sk.ids.join(',');   // gi: האייקונים החדשים (gicons.js), בעולם ובכפר
+  const gi=typeof gSkHere==='function'&&(gSkHere()||(skArena()&&!S.mb&&gicoOn('sk'))),key=LANG+'|'+gi+'|'+S.sk.ids.join(',');   // gi: האייקונים החדשים (gicons.js), בעולם, בכפר ובזירה (אותה הגדרה חדש/קלאסי)
   if(key!==skKey){skKey=key;
     box.innerHTML=S.sk.ids.map(id=>{const g=gi&&gSk(id,'gsk');return '<button class="skb'+(g?' gif':'')+'" data-sk="'+id+'" style="--dt:'+dtCol(skDef(id).dt)+'" aria-label="'+T('sk.'+id)+'">'+(g||dtSvg(skDef(id).dt))+'<i></i></button>'}).join('')}
   S.sk.ids.forEach((id,i)=>{const b=box.children[i],v=String(Math.round(20*S.sk.cd[i]/skDef(id).cd)/20);

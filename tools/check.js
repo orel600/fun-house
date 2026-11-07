@@ -142,6 +142,7 @@ function botStep({god,en}){
     if(L.room!=null&&L.roomBack==null)L.roomBack=at;
     for(const k of S.bn.picks)L['pick_'+k.type]??=at;
     if(S.bossCount>0)L.bossDown??=at;
+    if(S.boss||S.bossCount>0)L.arfx=JSON.parse(JSON.stringify(ARFXS.stat));   // אפקטים בזירה ובבוס (arena-fx.js)
     L.nodes=S.nd.broken;L.nodeGot=[...new Set(S.nd.got)].join(', ');if(S.nd.broken)L.nodeAt??=at;
     L.nodeInLoot=S.nd.got.length>0&&S.nd.got.every(r=>(S.loot||{})[r]>0||drops().some(d=>!d.got&&d.r===r));   // או שעוד שוכב על הרצפה (drops.js), ונאסף בסוף לבד
     L.gearDrops=S.gearDrops||0;
@@ -3668,11 +3669,11 @@ function worldBot(m,L,god){
       const b=window.__awB=makeBoss();b.x=P.x+150;b.y=P.y;S.boss=b;enemies.push(b);
       draw();wxSync();o.calm=WX.scene+':'+WX.run.boss.state;o.calmL=layers();
       b.rage=1;draw();wxSync();o.storm=WX.run.boss.state;o.stormL=layers();
-      const n0=AWX.bolts;WX.boltT=-99;S.t+=5;doPattern(b,'shock');draw();o.bolt=AWX.bolts-n0;o.boltPt=WX.pts.some(p=>/lightning_bolt/.test(p.id));o.tele=waves.some(w=>w.t<0);
+      const n0=AWX.bolts;WX.boltT=-99;S.t+=5;doPattern(b,'shock');draw();o.bolt=AWX.bolts-n0;o.boltPt=WX.pts.some(p=>/lightning_bolt/.test(p.id));o.tele=waves.some(w=>w.t<0)||!!(b.arTele&&b.arTele.k==='shock');   // with arena-fx.js the attack waits behind its warning
       mines.push({x:P.x+40,y:P.y,t:1});let at=null,fx=null;const sl=ctx.setLineDash,fd=window.fxDraw;
       ctx.setLineDash=function(a){if(at==null&&a&&a[0]===6)at=WX.drawn===FRAME_T;return sl.apply(this,arguments)};window.fxDraw=function(){fx=WX.drawn===FRAME_T;return fd.apply(this,arguments)};
       draw();ctx.setLineDash=sl;window.fxDraw=fd;o.under=at===true&&fx===true;
-      o.maxA=Math.max(0,...[...WX.layers.values()].map(f=>f.a));mines.length=0;waves.length=0;
+      o.maxA=Math.max(0,...[...WX.layers.values()].map(f=>f.a));mines.length=0;waves.length=0;b.arTele=null;
     }catch(e){o.err=String(e&&e.stack||e)}
     return o});
   if(!aw.err){
@@ -4280,6 +4281,9 @@ function worldBot(m,L,god){
     check(L.rageLow<L.rageMax,'נרגע כשמתעמתים: ירד ל-'+Math.round(100*(L.rageLow??1))+'%');
     check(L.bossDown!=null,'בוס הובס: '+t(L.bossDown));
     check(L.won!=null,'ניצחון: הבוס בסוף הובס והריצה נגמרה '+t(L.won));
+    {const A=L.arfx||{tele:{}},tl=Object.entries(A.tele||{}),low=tl.filter(([k,v])=>v.warn<1);   // אזהרה לכל מתקפה של הבוס, לפחות שנייה לפני (arena-fx.js)
+      check(tl.length>=2&&!low.length&&A.hits>0&&A.koBoss>0&&A.win>0,'אפקטים בבוס: אזהרות '+(tl.map(([k,v])=>k+' '+v.n+'× '+v.warn.toFixed(2)+'ש\'').join(', ')||'אף אחת')+
+        (low.length?' (פחות משנייה: '+low.map(([k])=>k).join(', ')+')':'')+' · פגיעות '+(A.hits||0)+' (כבדות '+(A.heavy||0)+', קריטי '+(A.crits||0)+') · הריגות '+(A.ko||0)+' · ko_boss '+(A.koBoss||0)+' · ניצחון '+(A.win||0))}
   }
   const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null)&&!['bell','creak'].includes(id));   // bell, creak: נבדקים בבדיקת פעמון הערפל, שרצה אחרי הצילום של הצלילים
   check(au.unlocked&&!quiet.length,'צלילים: '+au.ids.map(id=>id+' '+(au.count[id]||0)).join(', ')+(au.unlocked?'':' · לא נפתחו בנגיעה')+(quiet.length?' · לא נשמעו: '+quiet.join(', '):''));

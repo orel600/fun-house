@@ -23,7 +23,8 @@ const AWX={
   },
   rage:0.6,          // boss.rage from here up = storm (and always in phase 2)
   build:0.3,         // boss.rage from here up = building
-  clearT:6,          // after the boss falls: clearing in the arena scene, then calm
+  clearT:6,
+  big:['shock','charge','mines'],   // the big attacks that bring lightning (pattern names in boss.js)          // after the boss falls: clearing in the arena scene, then calm
   // state
   st:'',runS:null,arenaK:null,clr:0,bossObj:null,seen:null,bolts:0,t0:0,n:0,
 };
@@ -38,11 +39,13 @@ function awxScenes(){
   if(AWX.arenaK!==a||!WEATHER.scenes.arena||!WEATHER.scenes.arena.awx){AWX.arenaK=a;const L=awxCfg(AWX.arena[a]);
     weatherScene('arena',{awx:1,theme:AWX.theme,auto:false,calm:L,building:L,storm:L,clearing:awxCfg(AWX.boss.clearing)})}
 }
-// the boss's big attacks, seen from outside: a new charge, a new shock ring, new mines, a new phase
+// the boss's big attacks, seen from outside: the warning of a big attack starts (b.arTele, arena-fx.js), or without it
+// a new charge, a new shock ring, new mines; and a new phase
 function awxWatch(b){
-  const s=AWX.seen,now={b,charge:b.charge,waves:waves.filter(w=>w.t<0).length,mines:mines.length,phase:b.phase};AWX.seen=now;
+  const tl=b.arTele&&AWX.big.includes(b.arTele.k)?b.arTele:null;
+  const s=AWX.seen,now={b,tl,charge:b.charge,waves:waves.filter(w=>w.t<0).length,mines:mines.length,phase:b.phase};AWX.seen=now;
   if(!s||s.b!==b)return;
-  if((now.charge&&now.charge!==s.charge)||now.waves>s.waves||now.mines>s.mines+2||now.phase>s.phase)
+  if((tl&&tl!==s.tl)||(now.charge&&now.charge!==s.charge)||now.waves>s.waves||now.mines>s.mines+2||now.phase>s.phase)
     if(typeof weatherBolt==='function'&&weatherBolt(b.x,b.y-b.r*0.4))AWX.bolts++;   // the core keeps its own gap between bolts
 }
 /* Called from render() every frame in the arena: picks the scene state and sends the bolts. The core draws */
