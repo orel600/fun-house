@@ -1,10 +1,11 @@
-/* שפות: כל טקסט שהשחקן רואה נמצא כאן, בעברית ובאנגלית. המשחק יהיה באנגלית, ובינתיים עברית כברירת מחדל.
-   טקסט חדש = מפתח חדש ב-TEXT עם he ו-en. בקוד: T('מפתח'), ולטקסט עם ערכים: T('מפתח',ערך).
+/* Texts: every text the player sees lives here. The game is English only (Nir, 7.11.2026); old keys also keep their Hebrew, unused.
+   New text = a new key in TEXT with `en` only. בקוד: T('מפתח'), ולטקסט עם ערכים: T('מפתח',ערך).
    ערך יכול להיות מחרוזת, מערך, או פונקציה שמקבלת את הערכים.
    ב-index.html: data-t="מפתח" ממלא את התוכן (מערך הופך לרשימת <li>), ו-data-ta="מפתח" את ה-aria-label */
-const LANGS={he:{dir:'rtl'},en:{dir:'ltr'}};
-let LANG='he';try{const s=localStorage.getItem('zm-lang');if(LANGS[s])LANG=s}catch(e){}
-let DIR=LANGS[LANG].dir;   // כיוון הטקסט, גם לציור על הקנבס
+// English only (Nir, 7.11.2026). The Hebrew strings stay in TEXT but are never shown; new keys need only `en`.
+const LANGS={en:{dir:'ltr'}};
+let LANG='en';try{if(localStorage.getItem('zm-lang')!=='en')localStorage.setItem('zm-lang','en')}catch(e){}   // old saves stored 'he': migrate once
+let DIR='ltr';   // text direction, also for canvas drawing
 
 const TEXT={
   // מסך פתיחה
@@ -2108,7 +2109,7 @@ Object.assign(TEXT,{
   'cu.in.desert':{he:'במדבר הבוער',en:'in the Burning Desert'},'cu.in.storm':{he:'במגדלי הסערה',en:'at the Storm Towers'},'cu.in.shadow':{he:'בלב הצל',en:'in the Heart of Shadow'}
 });
 
-function T(key,...a){const e=TEXT[key],v=e?(e[LANG]??e.he):key;return typeof v==='function'?v(...a):v}
+function T(key,...a){const e=TEXT[key],v=e?(e.en??e.he):key;return typeof v==='function'?v(...a):v}
 function setLang(l){if(!LANGS[l])return;LANG=l;DIR=LANGS[l].dir;try{localStorage.setItem('zm-lang',l)}catch(e){}}
 // ממלא את כל הטקסטים הקבועים בדף לפי השפה הנוכחית, והופך את כיוון המסך
 function applyLang(){
