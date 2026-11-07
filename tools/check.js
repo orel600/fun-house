@@ -2331,6 +2331,21 @@ function worldBot(m,L,god){
   check(well.mark&&well.went&&well.dig&&well.dug&&well.loot&&well.wait&&well.again&&well.hint&&well.clock,
     'הבאר היבשה במדבר: '+(!well.mark?'אין באר במפה':(well.went?'פיוחו רצה לבאר':'פיוחו לא יצאה לבאר')+(well.dig?', חופרת':', לא חופרת')+(well.dug&&well.loot?', אוצר עלה':', בלי אוצר')+
     (well.wait?', הבאר יבשה לשעתיים':', בלי זמן המתנה')+(well.again?'':', חופרת שוב מיד!')+(well.hint?', הסבר בלי חיה שחופרת':', בלי הסבר')+(well.clock?'':', השעון שבור')));
+  // שכבת האפקטים בכפר ובעולם (fxworld.js): כל אפקט במקום שלו, ובלי עומס (סופרים כמה אפקטים פעילים)
+  const fxw=await page.evaluate(()=>{
+    const o={ids:new Set()},of=fxPlay;window.fxPlay=(id,...a)=>{o.ids.add(id);return of(id,...a)};
+    const tick=n=>{for(let i=0;i<n;i++){FXW.t=0;fxwUpdate(1/60)}},walk=n=>{for(let i=0;i<n;i++){P.x+=FXW.step.dist+1;tick(1);P.x-=FXW.step.dist+1;tick(1)}};
+    enterVillage();tick(2);const all=npcState(),id=Object.keys(all).find(k=>npcHere(k));
+    if(id){fxwMarks({[id]:'!'},'v');tick(1);o.mark=[...FXW.live.keys()].some(k=>k==='m:'+id+'npc_quest');S.vil.npcNear=id;fxwMarks({},'v');tick(1);o.talk=FXW.live.has('t:'+id)||FXW.live.has('s:'+id)}
+    celebrate(P.x,P.y,'upgrade');o.party=o.ids.has('win_confetti');walk(2);o.stepV=o.ids.has('step_dust');
+    const reg={};for(const r of ['ridge','desert','storm']){SAVE.story.ice=true;enterWorld('home',r);P.inv=99;FXW.t=0;tick(2);walk(2);reg[r]=[...FXW.live.keys()].filter(k=>k.startsWith('w:')).map(k=>k.slice(2).replace(/\d.*/,''))}
+    o.weather=reg.ridge.includes('snow')&&reg.ridge.includes('aurora')&&reg.desert.includes('haze')&&reg.storm.includes('rain');
+    o.steps=o.ids.has('step_snow')&&o.ids.has('step_sand');
+    walk(400);o.mine=FXW.n;o.cap=FXW.cap;o.all=FXLIB.list.length;o.max=FXLIB.max;   // הרבה הליכה בלי שהזמן עובר: השכבה נעצרת בתקרה
+    window.fxPlay=of;o.ids=[...o.ids];enterVillage();return o});
+  check(fxw.mark&&fxw.talk&&fxw.party&&fxw.stepV&&fxw.weather&&fxw.steps&&fxw.mine<=fxw.cap&&fxw.all<=fxw.max,
+    'אפקטים בכפר ובעולם: '+(fxw.mark?'זוהר מאחורי סימן הקווסט':'בלי זוהר לסימן')+(fxw.talk?', סימן ליד מי שקרוב':', בלי סימן שיחה')+(fxw.party?', קונפטי בחגיגה':', בלי קונפטי')+
+    (fxw.stepV&&fxw.steps?', צעדים לפי הקרקע':', בלי צעדים')+(fxw.weather?', מזג אוויר לפי אזור':', מזג אוויר חסר')+', '+fxw.mine+'/'+fxw.cap+' אפקטים של השכבה ('+fxw.all+'/'+fxw.max+' בכל המשחק)');
   // העלילה, פרק 5 (story.js, WORLD.regions.storm): השביל מהמדבר למגדלים סגור עד שפנס האש דולק, במגדלים גשם, ברקים ומגדלים שבורים שאי אפשר לעבור,
   // אויבים מחושמלים (חלשים לאדמה), ושומר הסערה מסמן עיגולי ברק שמתפוצצים אחרי שנייה: מי שנשאר נפגע, מי שזז לא
   const ch5=await page.evaluate(()=>{
