@@ -58,7 +58,8 @@ function m3dBoot(){
   const ks=[];if(PILOT3D)ks.push('pilotHero');
   if(typeof SAVE!=='undefined'&&SAVE){
     const sk=typeof heroSkin==='function'&&heroSkin(),L=sk&&typeof HEROES!=='undefined'&&HEROES.skins[sk]&&LOOK3D[HEROES.skins[sk].look];if(L)ks.push(L.model);
-    const pt=SAVE.pet&&LOOK3D['pet_'+(SAVE.pet.kind||(typeof PET!=='undefined'?PET.default:'piocho'))+((SAVE.pet.stage||0)+1)];if(pt)ks.push(pt.model);
+    const pk='pet_'+(SAVE.pet&&SAVE.pet.kind||(typeof PET!=='undefined'?PET.default:'piocho')),st=SAVE.pet&&SAVE.pet.stage||0,pt=LOOK3D[pk+(st+1)],nx=LOOK3D[pk+(st+2)];if(pt)ks.push(pt.model);
+    if(nx)M3D.boot.then(()=>m3dHint([nx.model]));   // השלב הבא של החיה: ברקע, כדי שבעלייה בשלב היא לא תיעלם לרגע
     for(const s in SAVE.gear||{}){const id=SAVE.gear[s];if(typeof id==='string')ks.push('w_item_'+(typeof gBase==='function'?gBase(id):id))}
   }
   M3D.bootKs=ks.filter(m3dLazy);for(const k of M3D.bootKs)m3dGo(k);   // bootKs: לבדיקה (tools/check.js)
