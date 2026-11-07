@@ -48,7 +48,7 @@ function sigUse(){
       for(let i=0;i<D.n+(F?F.hops:0);i++)fx.push({k:'bolt',t:-i*D.t/D.n,max:0.45,cx:c.x,cy:c.y,R:D.r,hr:D.hit*Math.min(big,1.4),col,base,dt:D.dt,done:false});
       fx.push({k:'mark',t:0,max:D.t+0.4,x:c.x,y:c.y,r:D.r,col});break}
   }
-  sigCd=SIGSKILL.cd;sigStat.casts++;
+  sigCd=SIGSKILL.cd;sigStat.casts++;skCast(id);   // הגיבור מטיל, ועיגול רונות (skillcast.js)
   S.hitstop=Math.max(S.hitstop||0,SIGSKILL.hitstop);S.shake=Math.max(S.shake||0,SIGSKILL.shake);
   sparks(P.x,P.y-20,col,sigLess()?16:40,340);sfx('celebrate');banner('⭐ '+T('sk.'+id),col);
   const b=$('sig');if(b){b.classList.remove('ping');void b.offsetWidth;b.classList.add('ping')}
@@ -57,6 +57,7 @@ function sigUse(){
 
 /* ---- כל פריים בעולם ובכפר ---- */
 function sigUpdate(dt){
+  skcUpdate(dt);   // עיגול הרונות של ההטלה (skillcast.js). sigUpdate רץ גם בעולם וגם בכפר
   if(sigCd>0)sigCd=Math.max(0,sigCd-dt);
   sigHud();
   const L=S.sig&&S.sig.fx;if(!L||!L.length)return;
