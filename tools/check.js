@@ -3580,6 +3580,38 @@ function worldBot(m,L,god){
     o.cc=cc;o.cmb=cmb;o.lv=Math.max(...MB.u.filter(u=>u.k==='hero').map(u=>u.lvl));o.score=MB.score.join(':');
     mobaExit();o.out=!S.mb&&!document.body.classList.contains('mb');if(o.cam)o.cam.back=camZoom()!==MBLOOK.cam.zoom;   // מחוץ למוד: המצלמה הרגילה
   }catch(e){o.err=String(e)+(e.stack?' @ '+(e.stack.split('\n')[1]||'').trim().replace(/^at /,'').replace(/.*\/js\//,'js/'):'')}return o},CFG.lang==='en');
+  // המפה הקטנה במשחקי השאול (moba-look.js, אוראל 6.11): במגע אמיתי (CDP), שתי אצבעות. נגיעה מזיזה את המצלמה, גרירה עוקבת, המלבן לפי המצלמה,
+  // אחרי שחרור המצלמה נשארת, נגיעה בגיבור שלי / 🎯 / C / ג'ויסטיק מחזירים, והג'ויסטיק עובד בזמן גרירה
+  const mmap=await(async()=>{const o={};try{
+    const cdp=await page.context().newCDPSession(page),E=(f,a)=>page.evaluate(f,a);
+    const touch=async(type,pts)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:pts.map(([id,x,y])=>({id,x,y}))});
+    await E(()=>{mobaOpen();document.querySelector('#mbWin [data-kit="hunter"]').click();const go=document.querySelector('#mbWin [data-bact="go"]');if(go)go.click();render()});   // go: מסך הבנייה (moba-spells.js)
+    const px=(x,y)=>E(([x,y])=>{const l=mbMiniLay();return [l.X(x),l.Y(y)]},[x,y]);
+    const st=()=>E(()=>{const g=giantCam(),me=MB.me;for(let i=0;i<20;i++){S.cam.x+=(P.x+giantCam().x-S.cam.x)*0.3;S.cam.y+=(P.y+giantCam().y-S.cam.y)*0.3}   // כמו main.js: המצלמה הולכת אל P + giantCam
+      return {x:S.cam.x,y:S.cam.y,free:MBCAM.free,pid:MBCAM.pid,g}});
+    const at=(c,x,y,d)=>Math.abs(c.x-x)<(d||30)&&Math.abs(c.y-y)<(d||30);
+    let [ax,ay]=await px(1000,200);await touch('touchStart',[[1,ax,ay]]);
+    o.tap=await E(()=>({x:S.cam.x,y:S.cam.y,joy:!!joy}));o.tap=at(o.tap,1000,200)&&!o.tap.joy;
+    [ax,ay]=await px(-500,-300);await touch('touchMove',[[1,ax,ay]]);o.drag=at(await E(()=>({x:S.cam.x,y:S.cam.y})),-500,-300);
+    o.rect=await E(()=>{render();const l=MB_MINI_L,v=l.view;return !!v&&Math.abs(v.x+v.w/2-l.X(S.cam.x))<1&&Math.abs(v.y+v.h/2-l.Y(S.cam.y))<1&&Math.abs(v.w-innerWidth/ZOOM*l.k)<1});
+    await touch('touchEnd',[]);{const c=await st();o.stay=at(c,-500,-300)&&c.free&&c.pid===null}
+    const [hx,hy]=await px(...await E(()=>[MB.me.x,MB.me.y]));await touch('touchStart',[[2,hx,hy]]);await touch('touchEnd',[]);
+    {const c=await st();o.meBack=!c.free&&at(c,...await E(()=>[P.x,P.y]))}
+    [ax,ay]=await px(800,0);await touch('touchStart',[[3,ax,ay]]);await touch('touchEnd',[]);await page.keyboard.press('c');o.key=!(await st()).free;
+    await touch('touchStart',[[4,ax,ay]]);await touch('touchEnd',[]);const bt=await E(()=>{const b=MB_MINI_L.bt;return [b.x+b.s/2,b.y+b.s/2]});
+    await touch('touchStart',[[5,...bt]]);await touch('touchEnd',[]);o.btn=!(await st()).free;
+    // ג'ויסטיק אחרי שהמצלמה חופשית: מחזיר לגיבור
+    await touch('touchStart',[[6,ax,ay]]);await touch('touchEnd',[]);
+    await touch('touchStart',[[7,200,300]]);await touch('touchMove',[[7,140,300]]);o.joyBack=await E(()=>!!joy&&joy.dx<-0.5)&&!(await st()).free;await touch('touchEnd',[]);
+    // שתי אצבעות: אחת גוררת על המפה, השנייה מזיזה את הגיבור. המצלמה נשארת על האצבע, והגיבור זז
+    [ax,ay]=await px(600,100);await touch('touchStart',[[8,ax,ay]]);await touch('touchStart',[[8,ax,ay],[9,200,300]]);
+    const [bx,by]=await px(400,-100);await touch('touchMove',[[8,bx,by],[9,140,300]]);
+    o.two=await E(()=>{const me=MB.me,x0=me.x,j=!!joy&&joy.dx<-0.5,p=MBCAM.pid;for(let i=0;i<10;i++){mobaUpdate(1/30);const g=giantCam();S.cam.x+=(P.x+g.x-S.cam.x)*0.3;S.cam.y+=(P.y+g.y-S.cam.y)*0.3}
+      return {j,p:p!==null,moved:me.x<x0-5,free:MBCAM.free,x:S.cam.x,y:S.cam.y}});o.two=o.two.j&&o.two.p&&o.two.moved&&o.two.free&&at(o.two,400,-100);
+    await touch('touchEnd',[[8,bx,by]]);   // משחררים רק את האצבע שעל המפה (touchEnd עם האצבע הזאת בלבד. touchMove בלעדיה לא משחרר אותה בכרום הזה)
+    o.lift=await E(()=>MBCAM.pid===null&&!!joy);o.liftBack=!(await st()).free;await touch('touchEnd',[]);
+    await E(()=>{mobaExit()});await cdp.detach();
+  }catch(e){o.err=String(e).slice(0,160)}return o})();
   // שלל לפי דמות (LOOT.gear ב-loot.js): לכל דמות רוב הנשקים בעולם שלה, יש לה נשק בכל שכבה, ה"מזל" מבטיח נשק שלה, וברמה 20 השכבה גבוהה יותר
   const clsL=await page.evaluate(()=>{const bak=JSON.stringify(SAVE.hero),cp=SAVE.clsPity,out={};
     try{for(const c in HEROES.list){const A=HEROES.list[c].arms;SAVE.hero.start=c;let w=0,m=0,t1=0,t20=0;
@@ -3869,6 +3901,8 @@ function worldBot(m,L,god){
     {const p=(mb.look||{}).pic||[],ok=p.filter(f=>f&&fs.existsSync(path.resolve(__dirname,'..',f)));check(p.length===3&&ok.length===3,'משחקי השאול: כפתורי הסקילים עם האייקונים המצוירים של העולם: '+ok.length+' מתוך '+p.length+(ok.length<p.length?' (חסר: '+p.filter(f=>!ok.includes(f)).join(', ')+')':''))}
     {const k=mb.look||{};check(k.svg===5&&!k.emoji&&k.floor,'משחקי השאול: מראה: '+k.svg+' אייקונים (צריך 5)'+(k.emoji?', נשאר אימוג\'י בכפתורים':'')+(k.floor?', רצפה משלו':', בלי רצפה משלו'))}
     {const c=mb.cam||{};check(c.wide>=1.5&&c.bush>0&&c.rock>0&&c.mini&&c.back&&c.fires!==0,'משחקי השאול: מצלמה ומפה: רואים פי '+c.wide+' לרוחב (צריך 1.5), '+c.bush+' שיחים, '+c.rock+' אבנים'+(c.mini?'':', המפה הקטנה יוצאת מהמסך')+(c.back?'':', המצלמה לא חזרה אחרי היציאה')+(c.fires===0?', בלי לפידים בתלת-ממד':''))}
+    {const m=mmap,ks={tap:'נגיעה מזיזה',drag:'גרירה עוקבת',rect:'המלבן לפי המצלמה',stay:'נשארת אחרי שחרור',meBack:'נגיעה בגיבור מחזירה',key:'C מחזיר',btn:'🎯 מחזיר',joyBack:'ג׳ויסטיק מחזיר',two:'ג׳ויסטיק עובד בזמן גרירה',lift:'שחרור אצבע אחת',liftBack:'ואז הג׳ויסטיק מחזיר'},bad=Object.keys(ks).filter(k=>!m[k]);
+     check(!m.err&&!bad.length,'משחקי השאול: מפה קטנה במגע: '+(m.err||(bad.length?bad.map(k=>ks[k]+' ✗').join(', '):'נגיעה, גרירה, מלבן, חזרה לגיבור ושתי אצבעות')))}
     check(mb.two&&mb.two.held===2&&mb.two.ok,'משחקי השאול עם קשת וחרב: '+(mb.two?(mb.two.ok?'ה-HUD עובד':'ה-HUD נופל: '+mb.two.err):'לא נבדק'));
     check(mb.slide&&mb.slide.pass,'משחקי השאול: הולכים ישר אל מגדל ומחליקים מסביבו '+(mb.slide?(mb.slide.pass?'✓':'נתקע ('+mb.slide.dx+' מהמגדל)'):'לא נבדק'));
     {const f=mb.feel||{};check(f.soft&&f.turned&&f.run>=f.want*0.9&&f.feed,'משחקי השאול: תנועה: סיבוב '+(f.soft&&f.turned?'רך ✓':'בבת אחת או תקוע')+', דרך חייל '+f.run+'/'+f.want+' פיקסלים בשנייה'+(f.feed?', הודעת הריגה ✓':', בלי הודעת הריגה'))}

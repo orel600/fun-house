@@ -17,7 +17,9 @@ const MBLOOK={
     rocks:{every:150,r:[22,46]},braziers:[[420,470],[1150,470],[1600,150]],banners:[[1700,190],[1700,-190]],
     bushCol:['#2e5a5e','#3a5f7a','#2b4658'],bushLit:'#7FE0B8',rockCol:['#5b4c66','#4b3e57','#6a5a72']},
   pulse:{speed:1.6,lo:0.55,hi:1},   // הלבה פועמת: כמה מהר, ובין איזו בהירות לאיזו
-  mini:{w:300,vw:0.36,h:46,top:36,fade:0.3},   // המפה הקטנה (פיקסלים של המסך): רוחב מקסימלי, חלק מרוחב המסך, גובה, מרחק מלמעלה. fade: כמה היא שקופה כשיש מתחתיה פס חיים
+  // המפה הקטנה (פיקסלים של המסך), בפינה השמאלית העליונה: x/top מהפינה (מתחת לחיים ולחפצים), w רוחב מקסימלי, vw חלק מרוחב המסך (הגובה לפי צורת המפה).
+  // gap: רווח ל-🎯 ולהודעות שמתחת. btn: גודל 🎯. pad: כמה מחוץ למפה עוד נחשב נגיעה. me: רדיוס הנגיעה בגיבור שלי. joy: כמה צריך להזיז את הג'ויסטיק כדי לחזור לגיבור. fade: כמה היא אטומה כשיש מאחוריה פס חיים (לפחות 0.6, שתמיד תהיה ברורה)
+  mini:{x:10,top:84,w:230,vw:0.27,gap:8,btn:34,pad:8,me:12,joy:0.25,fade:0.6},
 };
 // המצלמה: רק במשחקי השאול. עוטף את camera.js מבחוץ, כך שהזירה, הכפר והעולם לא משתנים
 (function(){const z=camZoom,t=camTilt,on=()=>typeof S!=='undefined'&&S&&!!S.mb;
@@ -200,29 +202,94 @@ function mbDecor2d(ox,oy){
   }
 }
 
-/* ---- המפה הקטנה: למעלה, בפיקסלים של המסך, ונעשית שקופה כשיש מתחתיה פס חיים של גיבור או מבנה ---- */
-function mbMiniBox(ox,oy){
-  const K=MBLOOK.mini,sw=innerWidth,mw=Math.min(K.w,sw*K.vw),x0=sw/2-mw/2,y0=Math.max(K.top,innerHeight*0.1);
-  // מה מצויר מתחת: הפס והתג של גיבור או של מבנה (בפיקסלים של המסך, אחרי הזום)
-  let under=false;const z=ZOOM,k=mbUiK();
-  for(const u of MB.u){if(u.dead||u.k==='minion')continue;const sx=(u.x+ox)*z,sy=(u.y+oy)*z,top=sy-(u.k==='hero'?78*z+30*k:u.k==='base'?150*z:120*z);
-    if(sx>x0-30&&sx<x0+mw+30&&top<y0+K.h+6&&sy>y0-6){under=true;break}}
-  return {x0,y0,mw,mh:K.h,a:under?K.fade:1};
+/* ---- המפה הקטנה (אוראל, 6.11: "מפה קטנה שאפשר לגעת בה"): בפינה השמאלית העליונה, מתחת לחיים, כמו ב-MLBB, ולא באמצע למעלה (קשה להגיע, docs/ui-guide.md).
+   כל המפה בקנה מידה אחד: הקרקע, השבילים והשיחים, המגדלים והבסיסים (כהים כשנפלו), החברים, והאויבים רק כשרואים אותם (mbSeen, moba-vision.js).
+   נגיעה מזיזה את המצלמה לשם, גרירה עוקבת אחרי האצבע, והמצלמה נשארת שם גם אחרי ששחררו.
+   חוזרת לגיבור: נגיעה בגיבור שלי במפה, 🎯 ליד המפה, C, או תזוזה בג'ויסטיק (או במקשים). הג'ויסטיק והסקילים עובדים בזמן הגרירה: כל אצבע לפי pointerId.
+   סימן של מערכת אחרת במפה (למשל חדר ההימור): MBLOOK.miniMarks.push((c,X,Y,k)=>{...}). X(x), Y(y): נקודה במשחק ← פיקסל במפה. k: פיקסלים ליחידת משחק */
+MBLOOK.miniMarks=[];
+const MBCAM={free:false,x:0,y:0,pid:null,mb:null};   // free: המצלמה לא על הגיבור, אלא ב-(x,y). pid: האצבע שגוררת על המפה
+let MB_MINI_L=null,MB_MINI_BG=null;   // המיקום (לפי גודל המסך), והרקע הקבוע של המפה, שמצויר פעם אחת
+function mbMiniLay(){
+  const K=MBLOOK.mini,L=MOBA.lane,key=innerWidth+'x'+innerHeight+'x'+DPR;
+  if(MB_MINI_L&&MB_MINI_L.key===key)return MB_MINI_L;
+  // שוליים בטוחים (חריץ במסך): לפי המקום של פס החיים, שכבר מכבד אותם ב-CSS
+  const el=document.querySelector('#mbHud .mbme'),r=el&&el.getBoundingClientRect(),ok=!!(r&&r.height);
+  const mw=Math.round(Math.min(K.w,innerWidth*K.vw)),k=mw/(L.len*2),mh=Math.round(L.half*2*k),x0=(ok?r.left-10:0)+K.x,y0=(ok?r.top-6:0)+K.top;
+  MB_MINI_L={key:ok?key:null,x0,y0,mw,mh,k,X:x=>x0+(x+L.len)*k,Y:y=>y0+(y+L.half)*k,bt:{x:x0+mw+K.gap,y:y0,s:K.btn}};MB_MINI_BG=null;
+  const R=document.documentElement.style;R.setProperty('--mbmini-b',Math.round(y0+mh+K.gap)+'px');R.setProperty('--mbmini-r',Math.round(x0+mw+K.gap*2+K.btn)+'px');   // הודעות ההריגה (.mbfeed) יורדות אל מתחת למפה, וההודעה למעלה (.mb .banner) מתחילה מימין ל-🎯
+  return MB_MINI_L;
 }
-// המפה הקטנה עצמה: הנתיב, השבילים והשיחים, המבנים, הגיבורים (נקודה גדולה), החיילים, והחלק שרואים על המסך
+function mbMiniBox(ox,oy){
+  const K=MBLOOK.mini,l=mbMiniLay(),{x0,y0,mw,mh}=l;
+  // מה מצויר מתחת: הפס והתג של גיבור או של מבנה (בפיקסלים של המסך, אחרי הזום). בזמן נגיעה במפה היא לא שקופה
+  let under=false;const z=ZOOM,k=mbUiK();
+  // רק כשהפס עצמו (רוחב כ-60, גובה כ-10) נמצא מאחורי המפה, ולא כשרק הגוף של היחידה שם
+  if(MBCAM.pid===null)for(const u of MB.u){if(u.dead||u.k==='minion'||(typeof mbShow==='function'&&!mbShow(u)))continue;const sx=(u.x+ox)*z,sy=(u.y+oy)*z,top=sy-(u.k==='hero'?78*z+30*k:u.k==='base'?150*z:120*z),hw=(u.k==='base'?42:30)*k;
+    if(sx+hw>x0-3&&sx-hw<x0+mw+3&&top+10>y0-3&&top-14<y0+mh+3){under=true;break}}
+  return Object.assign({a:under?K.fade:1},l);
+}
+// הרקע הקבוע: אבן, צבע הקבוצות, הנתיב הראשי, שבילי העקיפה והשיחים (מ-mbDecor, אותם שיחים כמו על המפה)
+function mbMiniBg(l){
+  if(MB_MINI_BG)return MB_MINI_BG;
+  const G=MBLOOK.map,L=MOBA.lane,c=document.createElement('canvas'),d=DPR,g=c.getContext('2d'),X=x=>(x+L.len)*l.k,Y=y=>(y+L.half)*l.k;
+  c.width=Math.ceil(l.mw*d);c.height=Math.ceil(l.mh*d);g.scale(d,d);
+  g.fillStyle='#21151f';g.fillRect(0,0,l.mw,l.mh);
+  const gr=g.createLinearGradient(0,0,l.mw,0);gr.addColorStop(0,MOBA.team[0]+'40');gr.addColorStop(0.5,'rgba(120,90,100,0.12)');gr.addColorStop(1,MOBA.team[1]+'40');g.fillStyle=gr;g.fillRect(0,0,l.mw,l.mh);
+  g.fillStyle='rgba(236,210,200,0.07)';for(const sg of [-1,1]){const a=Y(sg*G.side[0]),b=Y(sg*G.side[1]);g.fillRect(0,Math.min(a,b),l.mw,Math.abs(b-a))}   // שבילי העקיפה
+  g.fillStyle='rgba(236,210,200,0.17)';g.fillRect(0,Y(-G.mid),l.mw,Y(G.mid)-Y(-G.mid));   // הנתיב הראשי
+  g.fillStyle='rgba(95,190,150,0.55)';for(const b of mbDecor())if(b.k==='bush'){g.beginPath();g.arc(X(b.x),Y(b.y),Math.max(1.3,b.r*l.k),0,7);g.fill()}   // השיחים
+  return MB_MINI_BG=c;
+}
+// המפה הקטנה עצמה. אויב (גיבור או חייל) מצויר רק אם הקבוצה שלי רואה אותו
 function mbMini(ox,oy){
-  const M=MB,L=MOBA.lane,G=MBLOOK.map,{x0,y0,mw,mh,a}=mbMiniBox(ox,oy),sx=x=>x0+(x+L.len)/(L.len*2)*mw,sy=y=>y0+mh/2+y/L.half*(mh/2-3);
+  const M=MB,K=MBLOOK.mini,l=mbMiniBox(ox,oy),{x0,y0,mw,mh,k,X,Y,a}=l,my=M.me?M.me.team:0,seen=u=>u.team===my||(typeof mbSeen==='function'?mbSeen(u,my):true);
   ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.globalAlpha=a;
-  ctx.fillStyle='rgba(14,10,20,0.82)';ctx.fillRect(x0-4,y0-4,mw+8,mh+8);ctx.strokeStyle='rgba(244,199,79,0.45)';ctx.lineWidth=1;ctx.strokeRect(x0-4.5,y0-4.5,mw+9,mh+9);
-  const gr=ctx.createLinearGradient(x0,0,x0+mw,0);gr.addColorStop(0,MOBA.team[0]+'33');gr.addColorStop(0.5,'rgba(120,90,100,0.18)');gr.addColorStop(1,MOBA.team[1]+'33');ctx.fillStyle=gr;ctx.fillRect(x0,y0,mw,mh);
-  ctx.fillStyle='rgba(236,210,200,0.14)';ctx.fillRect(x0,sy(-G.mid),mw,sy(G.mid)-sy(-G.mid));   // הנתיב הראשי
-  ctx.fillStyle='rgba(127,224,184,0.35)';for(const sg of [-1,1])for(const [p,q] of G.bush.seg)ctx.fillRect(sx(p),sy(sg*G.bush.y)-1,sx(q)-sx(p),2);   // השיחים
-  {const vw=innerWidth/ZOOM,l=Math.max(x0,sx(S.cam.x-vw/2)),r=Math.min(x0+mw,sx(S.cam.x+vw/2));ctx.strokeStyle='rgba(236,231,220,0.6)';ctx.strokeRect(l,y0-2,Math.max(2,r-l),mh+4)}   // מה שרואים על המסך
-  if(typeof mbGambleMini==='function')mbGambleMini(sx,sy);   // חדר ההימור (moba-gamble.js)
-  if(M.order){ctx.strokeStyle=M.order.kind==='attack'?C.blood:MOBA.team[0];ctx.lineWidth=2;ctx.beginPath();ctx.arc(sx(M.order.x),sy(M.order.y),5+3*Math.sin(M.t*8),0,7);ctx.stroke()}
-  for(const u of M.u){if(u.dead||!mbShow(u))continue;const c=MOBA.team[u.team];ctx.fillStyle=c;   // בערפל: לא במפה (moba-vision.js)
-    if(u.k==='tower'||u.k==='base'){const s=u.k==='base'?9:6;ctx.fillRect(sx(u.x)-s/2,sy(0)-s/2,s,s);ctx.strokeStyle='#0B0D14';ctx.lineWidth=1;ctx.strokeRect(sx(u.x)-s/2,sy(0)-s/2,s,s)}
-    else if(u.k==='hero'){ctx.beginPath();ctx.arc(sx(u.x),sy(u.y),u.me?4.5:3.5,0,7);ctx.fill();ctx.strokeStyle=u.me?C.gold:'#0B0D14';ctx.lineWidth=u.me?1.5:1;ctx.stroke()}
-    else ctx.fillRect(sx(u.x)-1,sy(u.y)-1,2,2)}
+  ctx.fillStyle='rgba(14,10,20,0.85)';ctx.fillRect(x0-3,y0-3,mw+6,mh+6);ctx.drawImage(mbMiniBg(l),x0,y0,mw,mh);
+  ctx.strokeStyle='rgba(244,199,79,0.55)';ctx.lineWidth=1;ctx.strokeRect(x0-3.5,y0-3.5,mw+7,mh+7);
+  ctx.save();ctx.beginPath();ctx.rect(x0,y0,mw,mh);ctx.clip();
+  for(const u of M.u){if(u.k!=='tower'&&u.k!=='base')continue;const s=u.k==='base'?10:7,c=MOBA.team[u.team];   // מבנים: גם שנפלו, כהים ומחוקים
+    ctx.globalAlpha=a*(u.dead?0.45:1);ctx.fillStyle=u.dead?'#3a3340':c;ctx.fillRect(X(u.x)-s/2,Y(u.y)-s/2,s,s);ctx.strokeStyle=u.dead?c:'#0B0D14';ctx.lineWidth=1;ctx.strokeRect(X(u.x)-s/2,Y(u.y)-s/2,s,s);
+    if(u.dead){ctx.beginPath();ctx.moveTo(X(u.x)-s/2,Y(u.y)-s/2);ctx.lineTo(X(u.x)+s/2,Y(u.y)+s/2);ctx.stroke()}}
+  ctx.globalAlpha=a;
+  for(const u of M.u)if(u.k==='minion'&&!u.dead&&seen(u)){ctx.fillStyle=MOBA.team[u.team];ctx.fillRect(X(u.x)-1.2,Y(u.y)-1.2,2.4,2.4)}
+  for(const f of MBLOOK.miniMarks)f(ctx,X,Y,k);   // סימנים של מערכות אחרות
+  if(typeof mbGambleMini==='function')mbGambleMini(X,Y);   // חדר ההימור (moba-gamble.js)
+  for(const u of M.u)if(u.k==='hero'&&!u.dead&&!u.me&&seen(u)){ctx.fillStyle=MOBA.team[u.team];ctx.beginPath();ctx.arc(X(u.x),Y(u.y),3.6,0,7);ctx.fill();ctx.strokeStyle='#0B0D14';ctx.lineWidth=1;ctx.stroke()}
+  const me=M.me;if(me&&!me.dead){ctx.fillStyle=MOBA.team[me.team];ctx.beginPath();ctx.arc(X(me.x),Y(me.y),5,0,7);ctx.fill();ctx.strokeStyle=C.gold;ctx.lineWidth=2;ctx.stroke()}   // אני: גדול, עם טבעת זהב
+  if(M.order){ctx.strokeStyle=M.order.kind==='attack'?C.blood:MOBA.team[0];ctx.lineWidth=2;ctx.beginPath();ctx.arc(X(M.order.x),Y(M.order.y),5+3*Math.sin(M.t*8),0,7);ctx.stroke()}
+  {const vw=innerWidth/ZOOM*k,vh=innerHeight/ZOOM*k;ctx.strokeStyle=MBCAM.free?C.gold:'rgba(236,231,220,0.7)';ctx.lineWidth=1.5;MB_MINI_L.view={x:X(S.cam.x)-vw/2,y:Y(S.cam.y)-vh/2,w:vw,h:vh};ctx.strokeRect(X(S.cam.x)-vw/2,Y(S.cam.y)-vh/2,vw,vh)}   // מה שרואים על המסך (view: לבדיקה)
+  ctx.restore();
+  if(MBCAM.free){const b=l.bt;ctx.fillStyle='rgba(14,10,20,0.85)';ctx.beginPath();ctx.arc(b.x+b.s/2,b.y+b.s/2,b.s/2,0,7);ctx.fill();ctx.strokeStyle=C.gold;ctx.lineWidth=1.5;ctx.stroke();   // 🎯 חזרה לגיבור
+    ctx.font=Math.round(b.s*0.55)+'px system-ui, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('🎯',b.x+b.s/2,b.y+b.s/2+1)}
   ctx.restore();
 }
+/* ---- נגיעה במפה: המצלמה ---- */
+function mbCamBack(){MBCAM.free=false;MBCAM.pid=null}   // המצלמה חוזרת לגיבור (בהחלקה, דרך main.js)
+function mbCamTo(cx,cy){   // נקודה במסך על המפה ← המצלמה מסתכלת לשם, מיד
+  const l=MB_MINI_L,L=MOBA.lane,cl=(v,m)=>Math.max(-m,Math.min(m,v));
+  MBCAM.mb=MB;MBCAM.free=true;MBCAM.x=cl((cx-l.x0)/l.k-L.len,L.len);MBCAM.y=cl((cy-l.y0)/l.k-L.half,L.half);S.cam.x=MBCAM.x;S.cam.y=MBCAM.y;
+}
+function mbMiniHit(cx,cy){   // 'btn' (🎯), 'me' (הגיבור שלי), 'map', או null
+  if(!S||!S.mb||S.mode!=='play'||!MB||!MB_MINI_L)return null;
+  const l=MB_MINI_L,K=MBLOOK.mini,p=K.pad,b=l.bt,me=MB.me;
+  if(MBCAM.free&&cx>=b.x-p&&cx<=b.x+b.s+p&&cy>=b.y-p&&cy<=b.y+b.s+p)return 'btn';
+  if(cx<l.x0-p||cx>l.x0+l.mw+p||cy<l.y0-p||cy>l.y0+l.mh+p)return null;
+  return me&&!me.dead&&MBCAM.free&&Math.hypot(cx-l.X(me.x),cy-l.Y(me.y))<=K.me?'me':'map';
+}
+// לפני input.js (שלב ה-capture): אצבע שנוגעת במפה לא מפעילה את הג'ויסטיק. אצבע אחרת כן
+addEventListener('pointerdown',e=>{if(e.target!==cvs)return;const h=mbMiniHit(e.clientX,e.clientY);if(!h)return;
+  e.preventDefault();e.stopImmediatePropagation();
+  if(h!=='map'){mbCamBack();return}
+  MBCAM.pid=e.pointerId;mbCamTo(e.clientX,e.clientY)},true);
+addEventListener('pointermove',e=>{if(MBCAM.pid===null||e.pointerId!==MBCAM.pid)return;e.stopImmediatePropagation();if(S&&S.mb&&MB_MINI_L)mbCamTo(e.clientX,e.clientY)},true);
+{const up=e=>{if(MBCAM.pid!==null&&e.pointerId===MBCAM.pid){MBCAM.pid=null;e.stopImmediatePropagation()}};addEventListener('pointerup',up,true);addEventListener('pointercancel',up,true)}
+addEventListener('keydown',e=>{if(e.code==='KeyC'&&S&&S.mb&&S.mode==='play')mbCamBack()});
+// main.js מזיז את S.cam אל P + giantCam(). במוד: כשהמצלמה חופשית, היעד הוא הנקודה שבחרו. תזוזה בג'ויסטיק (לא בזמן גרירה) מחזירה לגיבור
+(function(){const g=giantCam;giantCam=function(){
+  if(!(typeof S!=='undefined'&&S&&S.mb))return g();
+  if(MBCAM.mb!==MB){MBCAM.mb=MB;mbCamBack()}   // משחק חדש: על הגיבור
+  if(!MBCAM.free)return g();
+  const mv=(joy&&Math.hypot(joy.dx,joy.dy)>MBLOOK.mini.joy)||keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight;
+  if(mv&&MBCAM.pid===null){mbCamBack();return g()}
+  return {x:MBCAM.x-P.x,y:MBCAM.y-P.y}}})();
