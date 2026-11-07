@@ -1568,7 +1568,7 @@ function worldBot(m,L,god){
       G.pe('pointerup',12);r.hold=!ov.hidden&&S.mode==='gear'&&!wskAim&&skgStat.holds>0;wsbClose();r.holdBack=S.mode==='play';
       SAVE.hero.skKnown=[];skgDots();await tick();r.dotOn=!$('skDot').hidden&&$('skills').classList.contains('sknew')&&!document.querySelector('#qRail [data-tab="gearBtn"] .qrdot').hidden;   // הנקודה על "דמות" בטור הקיצורים (menu.js)
       wsbOpenUi();await tick();r.dotOff=$('skDot').hidden&&!$('skills').classList.contains('sknew');wsbClose();
-      const id=S.sk.ids[S.sk.ids.length-1];if(skgBlocked())r.blk=[document.body.className,...skgWins().map(o=>o.id||o.className)].join('|');skgOffer(id);const of=$('skOffer');r.offer=!!of&&!of.hidden&&!!of.querySelector('[data-skg="book"]');
+      const id=S.sk.ids[S.sk.ids.length-1];if(skgBlocked())throw 'הכרטיס חסום: '+[document.body.className,...skgWins().map(o=>o.id||o.className)].join(' | ');skgOffer(id);const of=$('skOffer');r.offer=!!of&&!of.hidden&&!!of.querySelector('[data-skg="book"]');
       of.querySelector('[data-skg="try"]').click();r.pStart=!!SKP&&SKP.dummies.length===SKPRACTICE.n&&of.hidden;
       const d=SKP&&SKP.dummies[0],x0=d&&d.x;run(2);r.pDummy=!!d&&!d.dead&&d.x===x0&&enemies.filter(e=>e.dummy&&!e.dead).length===SKPRACTICE.n&&!$('skpBar').hidden;
       $('skpBar').querySelector('[data-skp="x"]').click();run(0.05);r.pSkip=!SKP&&!enemies.some(e=>e.dummy)&&$('skpBar').hidden;
