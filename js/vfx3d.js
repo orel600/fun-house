@@ -189,8 +189,9 @@ const VFX3D={built:false,q:null,stat:{emits:0,peak:0,bloomFrames:0,frames:0}};
   VFX3D.decal=function(kind,x,y,r,o){
     if(!live()||!build())return null;o=o||{};const d=take(B.decals);if(!d)return null;
     const u=d.m.material.uniforms;d.spin=0;d.kind=kind;d.x=x;d.y=y;d.r=r;d.t=0;d.life=o.life==null?1:o.life;d.grow=o.grow||null;d.fade=o.fade==null?0.5:o.fade;d.a=o.a==null?1:o.a;d.fin=o.fin||0;d.p=o.p==null?null:o.p;
-    const add=kind!=='scorch';d.m.material.blending=add?THREE.AdditiveBlending:THREE.NormalBlending;d.m.renderOrder=add?3:2;
-    lin(o.col||'#ffffff');u.uC.value.setRGB(col.r*(add?(o.hdr||CF.hdr):1),col.g*(add?(o.hdr||CF.hdr):1),col.b*(add?(o.hdr||CF.hdr):1));
+    const add=kind!=='scorch'&&kind!=='rune',k=kind==='scorch'?1:(o.hdr||CF.hdr);   // rune: בלי חיבור אור, כי סגול על דשא ירוק נהיה לבן. הצבע נשאר הצבע של סוג הנזק
+    d.m.material.blending=add?THREE.AdditiveBlending:THREE.NormalBlending;d.m.renderOrder=add?3:2;
+    lin(o.col||'#ffffff');u.uC.value.setRGB(col.r*k,col.g*k,col.b*k);
     u.uK.value=DK[kind]||0;u.uP.value=o.p||0;u.uS.value=Math.random()*40;u.uW.value=o.w||0.3;d.m.visible=true;place(d);return d;
   };
   function place(d){const S_=sin(),r=d.r;d.m.position.set(d.x,CF.y+(d.kind==='scorch'?0:0.2),d.y/S_);d.m.scale.set(r,1,r/S_);d.m.material.uniforms.uA.value=d.a}
