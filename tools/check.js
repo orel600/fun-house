@@ -3836,7 +3836,9 @@ function worldBot(m,L,god){
       G.roll=null;G.used[me.team]=Math.max(0,G.used[me.team]-1);
       me.dead=false;me.hp=me.max;me.x=MBGAMBLE.at.x;me.y=MBGAMBLE.at.y;mbGambleTick(MB,1/30);r.near=document.body.classList.contains('mbgbnear');me.x=bk.x;me.y=bk.y;mbGambleTick(MB,1/30);r.near=r.near&&!document.body.classList.contains('mbgbnear');
       const e=mbHeroes(1)[0],eb={x:e.x,y:e.y,dead:e.dead,sp:e.spell,cd:e.cd.spell,act:e.actT},bz=mbBushes().list.find(b=>Math.abs(b.x)<300&&b.y<0)||mbBushes().list[0];
+      const iso=MB.u.filter(u=>u!==me&&u!==e&&u.k!=='tower'&&u.k!=='base'&&!u.dead).map(u=>[u,u.x,u.y]);for(const [u] of iso){u.x=-1e5;u.y=-1e5}const rvb=MB.vis?MB.vis.rev.splice(0):[];   // יחידות אחרות וחשיפות פעילות לא בשיח (אחרת התוצאה תלויה במקרה: מיניון שעבר שם)
       e.dead=false;e.x=bz.x;e.y=bz.y;e.actT=-99;me.x=bz.x;me.y=bz.y+200;mbVisNow(true);const hid=!mbSeen(e,0);e.spell='haste';e.cd.spell=0;e.st.haste=0;mbSpellCast(e);mbVisNow(true);r.bushCast=hid&&mbSeen(e,0);
+      for(const [u,x,y] of iso){u.x=x;u.y=y}if(MB.vis)MB.vis.rev.push(...rvb);mbVisNow(true);
       e.actT=-99;mbVisNow(true);let fp=null;for(let x=-1800;x<=1800&&!fp;x+=150)for(const y of [-600,0,600])if(!fp&&!mbVisPt(x,y))fp={x,y};
       const far=fp?{x:fp.x,y:fp.y,r:80,team:1}:{x:0,y:0,r:80,team:0},mine={x:far.x,y:far.y,r:80,team:0},seen={x:me.x+100,y:me.y,r:80,team:1};e.actT=-99;mbVisNow(true);r.zone=!!fp&&!mbZoneShown(far)&&mbZoneShown(mine)&&mbZoneShown(seen);
       Object.assign(e,{x:eb.x,y:eb.y,dead:eb.dead,spell:eb.sp,actT:eb.act});e.cd.spell=eb.cd;e.st.haste=0;mbVisNow(true);
@@ -3871,6 +3873,7 @@ function worldBot(m,L,god){
     if(typeof mbSeen==='function'){const r={},me=MB.me,e=mbHeroes(1)[0],al=mbHeroes(0).find(h=>!h.me),hs=MB.u.filter(u=>u.k==='hero'),bak=hs.map(h=>[h,h.x,h.y,h.dead,h.actT,h.st.stun]);
      for(const h of hs){h.x=h.home.x;h.y=h.home.y;h.dead=false;h.actT=-99}
      const bz=mbBushes().list.find(b=>Math.abs(b.x)<300&&b.y<0)||mbBushes().list[0],see=()=>(mbVisNow(true),mbSeen(e,0)),put=(u,x,y)=>{u.x=x;u.y=y};
+     const iso=MB.u.filter(u=>u!==me&&u!==e&&u!==al&&u.k!=='tower'&&u.k!=='base'&&!u.dead).map(u=>[u,u.x,u.y]);for(const [u] of iso){u.x=-1e5;u.y=-1e5}const rvb=MB.vis?MB.vis.rev.splice(0):[];   // יחידות אחרות וחשיפות פעילות רחוק מהשיח: אחרת התוצאה תלויה במקרה (מיניון שעבר שם)
      const shown=()=>{e.st.stun=me.st.stun=1;mobaUpdate(1/30);return enemies.includes(e)},aimed=()=>mbAutoTarget(me,2000)===e||mbAimFor(me,{range:2000})===e;
      put(me,bz.x,-560);put(e,bz.x+650,-560);r.far=!see()&&!shown()&&!aimed();   // רחוק: לא רואים, לא מצויר בתלת-ממד, לא מכוונים אליו
      put(e,me.x+250,me.y);r.near=see()&&shown();   // נכנס לטווח: מופיע
@@ -3879,6 +3882,7 @@ function worldBot(m,L,god){
      put(me,bz.x+4,bz.y);r.same=mbInBush(me)===mbInBush(e)&&see();put(me,bz.x,bz.y+200);   // אותו שיח: רואים
      e.actT=MB.t;r.atk=see();e.actT=MB.t-MBVIS.bushReveal-0.1;r.atk=r.atk&&!see();   // תקף מהשיח: חשוף לשנייה, ואז שוב נסתר
      mbVisReveal(bz.x,bz.y,150,2,0);r.rev=mbSeen(e,0);const t0=MB.t;MB.t+=2.5;r.rev=r.rev&&!see();MB.t=t0;   // חשיפה: רואים לתוך השיח, ונגמרת
+     for(const [u,x,y] of iso){u.x=x;u.y=y}if(MB.vis)MB.vis.rev.push(...rvb);
      for(const [h,x,y,d,a,st] of bak){h.x=x;h.y=y;h.dead=d;h.actT=a;h.st.stun=st}mbVisNow(true);o.vis=r}
     MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
     mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
