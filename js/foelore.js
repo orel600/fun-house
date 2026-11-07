@@ -14,7 +14,7 @@ const FOELORE={
   lowAt:0.25,                            // מתחת לכמה חיים אויב אומר משהו של בורח
   near:220,                              // השם מעל הראש: רק לאויב הקרוב ביותר עד המרחק הזה
   label:{size:11, col:'#E8E4D8', elite:'#F4C74F'}, // גודל במסך (לא מתכווץ עם המצלמה), וצבעים: רגיל ושם אישי
-  bubble:{size:12, w:200}                // גודל הטקסט בבועה ורוחב מרבי
+  bubble:{size:13, w:300}                // גודל הטקסט בבועה ורוחב מרבי
 };
 
 const flHas=k=>!!FOELORE.list[k]&&!!TEXT['fl.'+k];
@@ -109,10 +109,13 @@ function foeLoreScreen(ox,oy){
     if(onScreen(x,y)){
       ctx.font='700 '+bf+'px Heebo, system-ui, sans-serif';
       const tw=Math.min(ctx.measureText(s.txt).width,B.w/ZOOM)+14/ZOOM,h=bf*1.6,a=Math.min(1,s.t*3);
-      ctx.globalAlpha=a;ctx.fillStyle='rgba(250,246,232,0.95)';ctx.strokeStyle='rgba(20,22,34,0.8)';ctx.lineWidth=1.5/ZOOM;
-      ctx.beginPath();ctx.roundRect(x-tw/2,y-h*0.75,tw,h,h/2);ctx.fill();ctx.stroke();
-      ctx.beginPath();ctx.moveTo(x-5/ZOOM,y+h*0.25-1);ctx.lineTo(x,y+h*0.25+7/ZOOM);ctx.lineTo(x+5/ZOOM,y+h*0.25-1);ctx.closePath();ctx.fill();
-      ctx.fillStyle='#1A1C28';ctx.fillText(s.txt,x,y+bf*0.3,B.w/ZOOM);ctx.globalAlpha=1}
+      const paint=y=>{ctx.save();ctx.font='700 '+bf+'px Heebo, system-ui, sans-serif';ctx.textAlign='center';
+        ctx.globalAlpha=a;ctx.fillStyle='rgba(250,246,232,0.95)';ctx.strokeStyle='rgba(20,22,34,0.8)';ctx.lineWidth=1.5/ZOOM;
+        ctx.beginPath();ctx.roundRect(x-tw/2,y-h*0.75,tw,h,h/2);ctx.fill();ctx.stroke();
+        ctx.beginPath();ctx.moveTo(x-5/ZOOM,y+h*0.25-1);ctx.lineTo(x,y+h*0.25+7/ZOOM);ctx.lineTo(x+5/ZOOM,y+h*0.25-1);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#1A1C28';ctx.fillText(s.txt,x,y+bf*0.3,B.w/ZOOM);ctx.restore()};
+      // בעולם: דרך labels.js, יחד עם השמות, כדי שלא יעלו אחד על השני (ביקורת 7.11.2026)
+      if(typeof lblAdd!=='function'||!lblAdd({paint,x,y,bw:tw,bh:h,pri:-1,d:0}))paint(y)}
   }
   ctx.restore();
 }
