@@ -37,7 +37,8 @@ const MB_MOVES={anvil:1};   // סקילים שמזיזים את מי שמטיל 
 function mbCast(u,slot,aim){
   const K=MBKIT[u.kit],s=K[slot];
   if(!s||u.dead||u.cd[slot]>0||u.st.stun>0||u.st.dash)return false;
-  if(u.st.root>0&&MB_MOVES[s.id])return false;   // לכוד ברשת: רק סקילים שלא מזיזים אותו
+  if(u.st.root>0&&MB_MOVES[s.id])return false;
+  if(MB_MOVES[s.id]&&typeof mbGbBusy==='function'&&mbGbBusy(u))return false;   // בהטלה בחדר ההימור לא זזים: בלי טעינה (הבודק, 7.11)   // לכוד ברשת: רק סקילים שלא מזיזים אותו
   if(slot==='ult'&&u.lvl<MOBA.ultAt)return false;
   const k=mbK(u)*(1+mbIb(u).sk),ax=aim?aim.x:u.x+Math.cos(u.face)*100,ay=aim?aim.y:u.y+Math.sin(u.face)*100;
   const ang=Math.atan2(ay-u.y,ax-u.x),dist=Math.hypot(ax-u.x,ay-u.y);

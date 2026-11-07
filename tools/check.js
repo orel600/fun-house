@@ -3538,6 +3538,25 @@ function worldBot(m,L,god){
       const mine=['heal','spell'].map(sk),rc=$('mbRecall').getBoundingClientRect();const bad=[];['heal','spell'].forEach((n,i)=>{const m=mine[i];if(!m){bad.push(n+' חסר');return}for(const k of ['s1','s2','ult'])if(hit(m,sk(k)))bad.push(n+'/'+k);if(hit(m,rc))bad.push(n+'/חזרה');if(m.right>innerWidth||m.bottom>innerHeight||m.left<0||m.top<0)bad.push(n+' בחוץ '+[m.left,m.top,m.right,m.bottom].map(Math.round))});
       if(hit(mine[0],mine[1]))bad.push('heal/spell');r.btn=!bad.length;r.bad=bad;
       r.pic=[...document.querySelectorAll('#mbSk .mbsp img.mbpic')].map(i=>i.getAttribute('src'));o.spell=r}
+    // תיקונים מבדיקת ה-QA (docs/moba-qa-report.md, 7.11): הטלה בחדר ההימור חוסמת זינוק, סדן וחזרה בלי טעינה; מי שמת בחדר חוזר בלי רשת ובועה;
+    // לחש מתוך שיח חושף; אזור של אויב בערפל לא מצויר; הודעה של החדר קופצת לראש התור; ההסבר מעל כפתור הריפוי; ליד החדר ההודעות יורדות
+    if(typeof mbGbBusy==='function'&&typeof MBSPELL!=='undefined'){const r={},me=MB.me,bk={x:me.x,y:me.y,sp:me.spell,cd:{...me.cd},hp:me.hp,dead:me.dead,deaths:me.deaths,resp:me.resp},G=mbGb(),R0=G.roll;
+     try{me.dead=false;me.hp=me.max;mbStReset(me);me.x=MBGAMBLE.at.x;me.y=MBGAMBLE.at.y;me.cd.s1=0;me.cd.spell=0;me.spell='dash';
+      G.roll={u:me,t:2,x:me.x,y:me.y,win:false,tick:-1};
+      r.roll=!mbCast(me,'s1',{x:me.x+100,y:me.y})&&me.cd.s1===0&&!mbSpellCast(me,{x:me.x+100,y:me.y})&&me.cd.spell===0&&!mbRecallStart(me);
+      me.st.root=2;me.st.bub=2;me.st.stun=1;mbGambleTick(MB,2.1);r.reset=me.dead&&!(me.st.root>0)&&!(me.st.bub>0)&&!(me.st.stun>0);
+      G.roll=null;G.used[me.team]=Math.max(0,G.used[me.team]-1);
+      me.dead=false;me.hp=me.max;me.x=MBGAMBLE.at.x;me.y=MBGAMBLE.at.y;mbGambleTick(MB,1/30);r.near=document.body.classList.contains('mbgbnear');me.x=bk.x;me.y=bk.y;mbGambleTick(MB,1/30);r.near=r.near&&!document.body.classList.contains('mbgbnear');
+      const e=mbHeroes(1)[0],eb={x:e.x,y:e.y,dead:e.dead,sp:e.spell,cd:e.cd.spell,act:e.actT},bz=mbBushes().list.find(b=>Math.abs(b.x)<300&&b.y<0)||mbBushes().list[0];
+      e.dead=false;e.x=bz.x;e.y=bz.y;e.actT=-99;me.x=bz.x;me.y=bz.y+200;mbVisNow(true);const hid=!mbSeen(e,0);e.spell='haste';e.cd.spell=0;e.st.haste=0;mbSpellCast(e);mbVisNow(true);r.bushCast=hid&&mbSeen(e,0);
+      e.actT=-99;mbVisNow(true);let fp=null;for(let x=-1800;x<=1800&&!fp;x+=150)for(const y of [-600,0,600])if(!fp&&!mbVisPt(x,y))fp={x,y};
+      const far=fp?{x:fp.x,y:fp.y,r:80,team:1}:{x:0,y:0,r:80,team:0},mine={x:far.x,y:far.y,r:80,team:0},seen={x:me.x+100,y:me.y,r:80,team:1};e.actT=-99;mbVisNow(true);r.zone=!!fp&&!mbZoneShown(far)&&mbZoneShown(mine)&&mbZoneShown(seen);
+      Object.assign(e,{x:eb.x,y:eb.y,dead:eb.dead,spell:eb.sp,actT:eb.act});e.cd.spell=eb.cd;e.st.haste=0;mbVisNow(true);
+      clearTimeout(mbBanner.tm);mbBanner.tm=null;mbBanner.q=[];mbBanner.at=performance.now();mbBanner('qa-a',C.dim);mbBanner('qa-b',C.dim);mbBanner('qa-gb',C.gold,true);r.pri=mbBanner.q[0].txt==='qa-gb';clearTimeout(mbBanner.tm);mbBanner.tm=null;mbBanner.q=[];
+      me.x=bk.x;me.y=bk.y;mobaHud();const hb=document.querySelector('#mbSk [data-sk="spell"]');mbSpellTip('spell',hb);const tp=$('mbSpTip'),cs=getComputedStyle(tp);   // ההסבר מעל כל הכפתורים (pointer-events:none, אז בודקים את הסדר ולא elementFromPoint)
+      r.tip=tp.parentNode===document.body&&cs.position==='fixed'&&+cs.zIndex>+(getComputedStyle($('mbSk')).zIndex||0)&&!tp.hidden;mbSpellTip(null);
+     }catch(e){r.err=String(e)}
+     MB.gb.roll=R0;Object.assign(me,{x:bk.x,y:bk.y,spell:bk.sp,hp:bk.hp,dead:bk.dead,deaths:bk.deaths,resp:bk.resp});Object.assign(me.cd,bk.cd);mbStReset(me);document.body.classList.remove('mbgbnear');o.qa=r}
     const spl={heal:0,use:{},pick:{}};if(typeof MBSPELL!=='undefined'){const fs0={c:mbSpellCast,h:mbHealCast};spl.f=fs0;
       mbSpellCast=function(u,a){const r=fs0.c(u,a);if(r&&u.bot)spl.use[u.spell]=(spl.use[u.spell]||0)+1;return r};
       mbHealCast=function(u){const r=fs0.h(u);if(r&&u.bot)spl.heal++;return r}}
@@ -3584,6 +3603,13 @@ function worldBot(m,L,god){
     o.kits=kits.join(',');o.miss=kits.flatMap(k=>MB_SLOTS.map(s=>MBKIT[k][s].id)).filter(id=>!casts[id]);o.mage=kits.includes('mage');
     o.t=Math.round(MB.t);o.over=MB.over;o.towers=MB.u.filter(u=>u.k==='tower'&&u.dead).length;o.base=MB.u.some(u=>u.k==='base'&&u.dead);
     o.cc=cc;o.cmb=cmb;o.lv=Math.max(...MB.u.filter(u=>u.k==='hero').map(u=>u.lvl));o.score=MB.score.join(':');
+    // מסך הסוף ומסך הבנייה יוצאים באמת (הבודק, 7.11: "בית", "שחק שוב" ו-✕ פתחו שוב את מסך הבנייה, והמשחק הישן נשאר ב-S.mb)
+    if(typeof mbBuildOpen==='function'){const X={},q=x=>document.querySelector('#mbWin '+x);
+      mbEndShow(S.won);q('[data-act="home"]').click();X.home=!S.mb&&!MB&&$('ovMoba').hidden&&!document.body.classList.contains('mb');
+      mobaStart('tank');MB.over=true;mbEndShow(true);q('[data-act="again"]').click();X.again=!S.mb&&!MB&&$('mbWin').dataset.mode==='pick'&&!$('ovMoba').hidden;
+      q('[data-kit="tank"]').click();X.build=$('mbWin').dataset.mode==='build';q('[data-act="close"]').click();X.bx=$('ovMoba').hidden&&!S.mb;
+      mobaOpen();q('[data-kit="tank"]').click();q('[data-bact="back"]').click();q('[data-act="close"]').click();X.px=$('ovMoba').hidden&&!S.mb;
+      if(!$('ovStart').hidden)$('ovStart').hidden=true;o.endX=X}
     mobaExit();o.out=!S.mb&&!document.body.classList.contains('mb');if(o.cam)o.cam.back=camZoom()!==MBLOOK.cam.zoom;   // מחוץ למוד: המצלמה הרגילה
   }catch(e){o.err=String(e)+(e.stack?' @ '+(e.stack.split('\n')[1]||'').trim().replace(/^at /,'').replace(/.*\/js\//,'js/'):'')}return o},CFG.lang==='en');
   // המפה הקטנה במשחקי השאול (moba-look.js, אוראל 6.11): במגע אמיתי (CDP), שתי אצבעות. נגיעה מזיזה את המצלמה, גרירה עוקבת, המלבן לפי המצלמה,
@@ -3920,6 +3946,8 @@ function worldBot(m,L,god){
       check(B.step&&B.n===6&&B.def&&B.saved&&B.back&&B.load&&B.game,'משחקי השאול: מסך בנייה: '+(B.step?B.n+' לחשים':'לא נפתח אחרי הגיבור')+(B.def?', ברירת מחדל זינוק':', ברירת המחדל לא זינוק')+(B.saved?', בחירה נשמרת לגיבור עם הסבר':', הבחירה לא נשמרה')+(B.back?', חזרה לבחירת גיבור (והקושי שם)':', החזרה לא עובדת')+(B.load?', נטענת שוב':', לא נטענת')+(B.game?', ובמשחק':', לא עברה למשחק'));
       check(r.heal&&r.healCd&&r.done&&r.done.length===r.n&&r.tip.length===r.n&&r.btn&&pics.length===2&&r.tap&&r.hold,'משחקי השאול: ריפוי '+(r.heal?'✓ 15%':'✗')+(r.healCd?' עם טעינה':' בלי טעינה')+' · לחשים שעובדים עם טעינה: '+(r.done||[]).join(', ')+' ('+(r.done||[]).length+'/'+r.n+')'+(r.tip&&r.tip.length===r.n?', לכולם הסבר':', חסר הסבר')+(r.btn?', הכפתורים לא מכסים סקילים או חזרה':', כפתור מכסה או מחוץ למסך: '+(r.bad||[]).join(', '))+', '+pics.length+'/2 אייקונים מצוירים'+(r.tap?', נגיעה קצרה אחרי פריים כבד מטילה':', נגיעה קצרה אחרי פריים כבד נבלעה')+(r.hold?', לחיצה ארוכה לא':', לחיצה ארוכה הטילה'));
       check(!bad.length&&pk.length>0&&p.heal>0&&Object.keys(p.use).length>0,'משחקי השאול: בוטים: בחרו לפי תפקיד '+(bad.length?'✗ '+bad.join(', '):'✓ ('+pk.map(x=>x[0]).join(', ')+')')+', ריפוי '+(p.heal||0)+' פעמים, לחשים: '+(Object.entries(p.use).map(x=>x[0]+' '+x[1]).join(', ')||'אף אחד'))}
+    {const X=mb.endX||{};check(X.home&&X.again&&X.build&&X.bx&&X.px,'משחקי השאול: יציאה: '+[X.home?'"בית" בסוף יוצא ✓':'"בית" לא יוצא ✗',X.again?'"שחק שוב" לבחירת גיבור ✓':'"שחק שוב" ✗',X.build&&X.bx?'✕ במסך הבנייה סוגר ✓':'✕ במסך הבנייה ✗',X.px?'✕ בבחירה אחרי "גיבור אחר" סוגר ✓':'✕ אחרי "גיבור אחר" ✗'].join(', '))}
+    {const q=mb.qa||{};check(!q.err&&q.roll&&q.reset&&q.bushCast&&q.zone&&q.pri&&q.tip&&q.near,'משחקי השאול: תיקוני QA: '+(q.err?'שגיאה '+q.err+' · ':'')+[q.roll?'בהטלה זינוק/סדן/חזרה חסומים בלי טעינה ✓':'בהטלה ✗',q.reset?'מת בחדר חוזר בלי רשת ובועה ✓':'רשת/בועה נשארו ✗',q.bushCast?'לחש משיח חושף ✓':'לחש משיח ✗',q.zone?'אזור אויב בערפל מוסתר ✓':'אזור בערפל ✗',q.pri?'הודעת החדר בראש התור ✓':'הודעת החדר ✗',q.tip?'ההסבר מעל הריפוי ✓':'ההסבר מוסתר ✗',q.near?'ליד החדר ההודעות יורדות ✓':'הודעות ליד החדר ✗'].join(', '))}
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
     {const A=mb.aim||{};check(A.on&&A.hot&&A.cancel&&A.cast&&A.sec,'משחקי השאול: כיוון בגרירה '+(A.on?'✓':'לא הופיע')+(A.hot?', ✕ נדלק':', ✕ לא נדלק')+(A.cancel?', ביטול בלי טעינה':', הביטול לא עבד')+(A.cast?', שחרור מטיל לנקודה':', השחרור לא הטיל לנקודה')+(A.sec?', שניות על הכפתור':', אין שניות'))}
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));

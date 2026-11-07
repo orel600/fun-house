@@ -192,6 +192,7 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
 .banner{position:fixed;z-index:3;left:0;right:0;top:32%;text-align:center;font-family:var(--display);font-size:28px;
   pointer-events:none;opacity:0;transition:opacity .25s;padding-inline:16px;text-shadow:0 2px 0 #0008}
 .banner.on{opacity:1}
+body.mb.mbgbnear .banner{top:58%}   /* ליד חדר ההימור (moba-gamble.js): הקשת והגלגל למעלה, אז ההודעות יורדות */
 .ov{position:fixed;inset:0;z-index:5;display:grid;place-items:center;background:rgba(10,12,20,.8);backdrop-filter:blur(3px);
   padding:calc(env(safe-area-inset-top,0px) + 16px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 16px) max(16px,env(safe-area-inset-left,0px));overflow-y:auto}
 .panel{width:min(420px,100%);display:flex;flex-direction:column;gap:14px}
@@ -1758,8 +1759,8 @@ body:has(#ovMoba:not([hidden])) #muteBtn{display:none}
 .swap:not([hidden])~.skills.mbsk .mbsp-spell{--x:214px;--y:-2px}
 .swap:not([hidden])~.skills.mbsk .mbsp-heal{--x:174px;--y:98px}
 .mbsp.off .mbpic,.mbsp.off svg{opacity:.4;filter:grayscale(.6)}
-.mbsptip{position:absolute;max-width:min(260px,60vw);padding:7px 10px;border-radius:10px;background:linear-gradient(#3A2716f2,#22160Cf2);box-shadow:var(--bevel),0 0 0 2px var(--wood),0 0 0 3px var(--brass-lo),0 6px 14px #000a;
-  display:flex;flex-direction:column;gap:2px;font:600 12px/1.35 var(--body);color:var(--chalk);pointer-events:none;z-index:4}
+.mbsptip{position:fixed;max-width:min(260px,60vw);padding:7px 10px;border-radius:10px;background:linear-gradient(#3A2716f2,#22160Cf2);box-shadow:var(--bevel),0 0 0 2px var(--wood),0 0 0 3px var(--brass-lo),0 6px 14px #000a;
+  display:flex;flex-direction:column;gap:2px;font:600 12px/1.35 var(--body);color:var(--chalk);pointer-events:none;z-index:6}
 .mbsptip b{font:900 14px var(--body);color:var(--brass-hi)}.mbsptip small{font:700 11px var(--body);color:var(--dim);margin-inline-start:6px}
 /* מסך הבנייה (שלב אחרי בחירת הגיבור): לשוניות אם יש יותר מאחת, ושני טורים: האפשרויות, וההסבר של הנבחרת */
 .mbbtabs{display:flex;gap:6px;justify-content:center;margin:0 0 8px}

@@ -11,7 +11,7 @@ const MBRECALL={
   bot:{far:900,safe:650}, // בוט שנסוג חוזר כך רק כשהוא רחוק מהבסיס, ואין גיבור אויב קרוב
 };
 function mbRecallStart(u){
-  if(!u||u.dead||MB.over||u.st.stun>0||u.st.dash||mbDist(u,u.home)<MBRECALL.ring.r*3)return false;
+  if(!u||u.dead||MB.over||u.st.stun>0||u.st.dash||mbDist(u,u.home)<MBRECALL.ring.r*3||typeof mbGbBusy==='function'&&mbGbBusy(u))return false;   // לא בהטלה בחדר ההימור
   u.recall={t:MBRECALL.t,x:u.x,y:u.y,hp:u.hp};if(u.me)sfx('tap');return true;
 }
 function mbRecallStop(u,why){if(!u.recall)return;u.recall=null;if(u.me&&why)mbBanner(T('mb.recallOff'),C.dim)}

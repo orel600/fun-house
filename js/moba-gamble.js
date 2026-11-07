@@ -14,6 +14,7 @@ const MBGAMBLE={
   roll:2,              // שניות של מתח
   push:30,             // כמה רחוק מעבר לטבעת נדחף מי שאסור לו
   say:2.5,             // שניות בין הודעות "אסור" לשחקן
+  near:260,            // השחקן קרוב מזה לחדר: ההודעות יורדות למטה, כדי לא להסתיר את הקשת והגלגל
   bot:{p:0.5,gap:300,every:20},   // בוט זכאי: אם הקבוצה שלו מאחור לפחות gap, בסיכוי p הולך לחדר. מחליט מחדש כל every שניות
 };
 MOBA.feed.src.push('gamble');
@@ -28,6 +29,7 @@ function mbGbWho(){
   const G=mbGb(),tm=mbGbTeam();if(tm===null||G.used[tm]>=MBGAMBLE.uses)return null;
   return mbHeroes(tm).reduce((a,h)=>!a||mbWorth(h)<mbWorth(a)?h:a,null);
 }
+const mbGbBusy=u=>!!(MB&&MB.gb&&MB.gb.roll&&MB.gb.roll.u===u);   // באמצע הטלה: לא זז, ולכן סקיל שמזיז, זינוק וחזרה לבסיס לא עובדים ולא נטענים
 const mbGbName=u=>u.me?T('mb.you'):T(u.team===MB.me.team?'mb.gb.ally':'mb.gb.foe',T('mb.k.'+u.kit));
 function mbGbFeed(u,txt){   // שורה בהודעות ההריגה: הגיבור ומה קרה לו
   const f=$('mbFeed');if(!f)return;const row=document.createElement('p');row.className='mbfr'+(u.me?' mine':'');
@@ -36,7 +38,8 @@ function mbGbFeed(u,txt){   // שורה בהודעות ההריגה: הגיבו�
 }
 function mbGambleTick(M,dt){
   const G=mbGb(),A=MBGAMBLE,c=A.at;G.say-=dt;
-  if(!G.open&&mbGbOpen()){G.open=true;mbBanner(T('mb.gb.open'),C.gold);sfx('bell');const w=mbGbWho();if(w&&w.me)setTimeout(()=>{if(S.mb===M)mbBanner(T('mb.gb.you'),C.gold)},1600)}
+  if(!G.open&&mbGbOpen()){G.open=true;mbBanner(T('mb.gb.open'),C.gold,true);sfx('bell');const w=mbGbWho();if(w&&w.me)setTimeout(()=>{if(S.mb===M&&!G.roll&&mbGbWho()===M.me)mbBanner(T('mb.gb.you'),C.gold,true)},1600)}   // עדיין זכאי? (הבודק, 7.11: ההודעה הגיעה אחרי שכבר נכנס)
+  const near=!!M.me&&!M.me.dead&&Math.hypot(M.me.x-c.x,M.me.y-c.y)<A.near;if(near!==G.near){G.near=near;document.body.classList.toggle('mbgbnear',near)}   // ליד החדר: ההודעות יורדות, כדי לא להסתיר את הקשת
   // הטלה: הגיבור מקובע במקום, ובסוף מתגלה התוצאה (שנקבעה בכניסה)
   const R=G.roll;
   if(R){const u=R.u;R.t-=dt;
@@ -48,22 +51,22 @@ function mbGambleTick(M,dt){
     const dx=u.x-c.x,dy=u.y-c.y,d=Math.hypot(dx,dy);if(d>=A.r+u.r*0.5)continue;
     const open=mbGbOpen(),who=open&&!G.roll?mbGbWho():null;
     if(who===u){G.used[u.team]++;G.roll={u,t:A.roll,x:u.x,y:u.y,win:Math.random()<A.win,tick:-1};
-      if(u.bot)u.bot.gb=0;mbBanner(u.me?T('mb.gb.rollMe'):T('mb.gb.roll',mbGbName(u)),u.team===M.me.team?C.gold:C.blood);mbGbFeed(u,T('mb.gb.in'));continue}
+      if(u.bot)u.bot.gb=0;mbBanner(u.me?T('mb.gb.rollMe'):T('mb.gb.roll',mbGbName(u)),u.team===M.me.team?C.gold:C.blood,true);mbGbFeed(u,T('mb.gb.in'));continue}
     const a=d>0.5?Math.atan2(dy,dx):Math.PI/2,k=A.r+u.r+A.push-d;mbStep(u,Math.cos(a)*k,Math.sin(a)*k);
     if(u.me&&G.say<=0){G.say=A.say;sfx('tap');
-      mbBanner(!open?T('mb.gb.locked',fmt(A.unlock)):G.roll?T('mb.gb.busy'):G.used[u.team]>=A.uses?T('mb.gb.used'):T('mb.gb.no'),C.dim)}}
+      mbBanner(!open?T('mb.gb.locked',fmt(A.unlock)):G.roll?T('mb.gb.busy'):G.used[u.team]>=A.uses?T('mb.gb.used'):T('mb.gb.no'),C.dim,true)}}
 }
 // התוצאה: ניצחון = זהב עד העשיר ביותר במשחק. הפסד = מוות בלי פרס לאויב
 function mbGbDone(u,win){
   const col=u.team===MB.me.team?C.gold:C.blood;
   if(win){const top=Math.max(...MB.u.filter(o=>o.k==='hero').map(mbWorth)),g=Math.max(0,top-mbWorth(u));
     mbGold(u,g);mbBoom(u.x,u.y,90,'fire');if(u.me){sfx('celebrate');celebrate(u.x,u.y,'gear')}else sfx('coin');
-    mbBanner(u.me?T('mb.gb.winMe',Math.round(g)):T('mb.gb.win',mbGbName(u),Math.round(g)),col);mbGbFeed(u,T('mb.gb.won',Math.round(g)));return}
-  mbBanner(u.me?T('mb.gb.loseMe'):T('mb.gb.lose',mbGbName(u)),u.team===MB.me.team?C.blood:C.gold);
+    mbBanner(u.me?T('mb.gb.winMe',Math.round(g)):T('mb.gb.win',mbGbName(u),Math.round(g)),col,true);mbGbFeed(u,T('mb.gb.won',Math.round(g)));return}
+  mbBanner(u.me?T('mb.gb.loseMe'):T('mb.gb.lose',mbGbName(u)),u.team===MB.me.team?C.blood:C.gold,true);
   if(u.dead){mbGbFeed(u,T('mb.gb.lost'));return}   // כבר מת באמצע: נשאר מת
   // מוות כמו ב-mbDie, אבל בלי mbItDie, בלי XP, בלי נקודה ובלי הריגה לאף אחד
   u.hp=0;u.dead=true;u.deaths++;u.resp=mbResp(u);u.hitBy.clear();
-  Object.assign(u.st,{stun:0,taunt:0,slow:0,wet:0,armor:0,burn:0,rage:0,imm:0,ice:0,dash:null,shield:0});
+  mbStReset(u);   // כולל רשת ובועה: מי שמת בחדר לא חוזר לכוד (הבודק, 7.11)
   if(u.me)sfx('hurt');mbKillFeed({k:'gamble'},u);mbBoom(u.x,u.y,80,'red');
 }
 // בוט זכאי שהקבוצה שלו מאחור הרבה: הולך לחדר בסיכוי p (מחליט פעם ב-every שניות). מחזיר true כשהבוט בדרך
