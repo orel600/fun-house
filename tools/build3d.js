@@ -24,6 +24,7 @@
    לכן כל אנימציה עובדת על כל דמות.
    מה נכנס: הטבלאות CHARS, PROPS, WEAPONS, WTIERS, ANIMS, BUILDS, NATURE ו-MONSTERS למטה. דמות או אנימציה חדשה = שורה כאן ושורה ב-js/render3d.js */
 const path=require('path'),fs=require('fs');
+const M3IO=require('./models3d-io.js');   // המודלים מפוצלים לליבה ולקבצים לפי צורך (js/m3d/). כאן קוראים וכותבים אותם כקובץ אחד
 const {NodeIO}=require('@gltf-transform/core');
 const {ALL_EXTENSIONS,EXTMeshoptCompression}=require('@gltf-transform/extensions');
 const {MeshoptEncoder,MeshoptDecoder}=require('meshoptimizer');
@@ -300,12 +301,12 @@ async function bundle(){
 
 // node tools/build3d.js - --only compress: דוחס את כל המודלים שכבר בקובץ (pack), בלי החבילות של KayKit. מודל שכבר דחוס נשאר כמו שהוא
 async function compressAll(){
-  const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D='),out=JSON.parse(src.slice(i+15).replace(/;\s*$/,''));
+  const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D='),out=JSON.parse(src.slice(i+15).replace(/;\s*$/,''));
   let a=0,b=0;
   for(const k in out){if(k.startsWith('wtex_'))continue;   // טקסטורות החומר הן PNG, לא מודל
     const doc=await io.readBinary(Buffer.from(out[k],'base64'));if(doc.getRoot().listExtensionsUsed().some(e=>e.extensionName==='EXT_meshopt_compression'))continue;
     const before=out[k].length;await pack(doc);out[k]=Buffer.from(await io.writeBinary(doc)).toString('base64');a+=before;b+=out[k].length}
-  fs.writeFileSync(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+  M3IO.write(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
   console.log('נדחס: '+Math.round(a/1024)+'KB → '+Math.round(b/1024)+'KB');console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');
 }
 // node tools/build3d.js C:/kk --only nature: מוסיף רק את NATURE לקובץ הקיים, בלי שאר החבילות ובלי לבנות מחדש את three.js
@@ -314,19 +315,19 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
   const out={},sizes=[];
   // דמות אחת מ-CHARS, בלי לבנות את כל השאר (וגם בלי החבילות שלהן): node tools/build3d.js C:/kk --only parosh1
   if(ONLY&&CHARS[ONLY]){
-    const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
+    const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D=');
     Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));const c=CHARS[ONLY];
     const bin=await slim(await io.read(c.src),{keepMeshes:c.keep,tex:c.tex,fmt:c.fmt});out[ONLY]=Buffer.from(bin).toString('base64');
-    fs.writeFileSync(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    M3IO.write(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(ONLY,Math.round(bin.byteLength/1024)+'KB');console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
   }
   if(ONLY==='nature'){
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
-    const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
+    const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D=');
     Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
     for(const k in out)if(k.startsWith('n_'))delete out[k];
     for(const [k,c] of Object.entries(NATURE))add(k,await slim(await io.read(c.src),{q:true}));
-    fs.writeFileSync(f,src.slice(0,i).replace('Fantasy Weapons Bits ו-Medieval Hexagon מאת','Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת')+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    M3IO.write(f,src.slice(0,i).replace('Fantasy Weapons Bits ו-Medieval Hexagon מאת','Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת')+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
   }
   // node tools/build3d.js - --only items: מוסיף רק את ITEMS לקובץ הקיים (לא צריך את חבילות KayKit, אז במקום התיקייה אפשר -). --items=skyBow,starStaff: רק אלה
@@ -335,32 +336,32 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
   // node tools/build3d.js C:/kk --only hats: מוסיף רק את הכובעים (HATS) לקובץ הקיים. צריך רק את adv
   if(ONLY==='hats'){
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
-    const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
+    const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D=');
     Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
     for(const k in out)if(k.startsWith('hat_'))delete out[k];
     await addHats(add);
-    fs.writeFileSync(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    M3IO.write(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
   }
   if(ONLY==='items'){
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
-    const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
+    const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D=');
     Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
     const pick=(process.argv.find(a=>a.startsWith('--items='))||'').slice(8).split(',').filter(Boolean);
     for(const k in out)if(k.startsWith('w_item_')&&(!pick.length||pick.includes(k.slice(7))))delete out[k];
     await addItems(add);
-    fs.writeFileSync(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    M3IO.write(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
   }
   // node tools/build3d.js C:/kk --only monsters: מוסיף רק את MONSTERS לקובץ הקיים
   if(ONLY==='monsters'){
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
-    const f=path.join(ROOT,'js/models3d.js'),src=fs.readFileSync(f,'utf8'),i=src.indexOf('const MODELS3D=');
+    const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D=');
     Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
     for(const k in out)if(k.startsWith('mon_')||k.startsWith('anim_mon_'))delete out[k];
     await addMonsters(add);
     let head=src.slice(0,i);if(!head.includes('Quaternius'))head=head.replace(' רישיון CC0.',' רישיון CC0.\n   מפלצות: Ultimate Monsters מאת Quaternius (quaternius.com), רישיון CC0.');
-    fs.writeFileSync(f,head+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    M3IO.write(f,head+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
   }
   const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
@@ -389,7 +390,7 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
     add('anim_'+k,await slim(doc,{keepMeshes:null,keepAnims:c.keep}));
   }
   const head='/* נוצר אוטומטית ע"י tools/build3d.js. לא עורכים ביד.\n   דמויות, כובעים, אנימציות, נשקים ומבנים: KayKit Adventurers, Skeletons, Character Animations, Fantasy Weapons Bits, Medieval Hexagon ו-Forest Nature מאת Kay Lousberg (www.kaylousberg.com), רישיון CC0.\n   מפלצות: Ultimate Monsters מאת Quaternius (quaternius.com), רישיון CC0.\n   מוטמעות כאן כטקסט ולא כקבצים, כי המשחק נפתח גם מ-file:// ושם הדפדפן לא טוען קבצים לבד */\n';
-  fs.writeFileSync(path.join(ROOT,'js/models3d.js'),head+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+  M3IO.write(path.join(ROOT,'js/models3d.js'),head+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
 
   await bundle();
   console.log(sizes.join('\n'));
