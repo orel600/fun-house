@@ -3,7 +3,8 @@
    קריאות קודם: מזג האוויר מצויר מתחת לכל האזורים, הסקילים, היריות והמספרים (שורה אחת ב-mobaDraw, מיד אחרי הרצפה),
    ובשקיפות נמוכה. הוא בכל המפה, אז הוא לא מסגיר אף אחד בערפל.
    מתחבר דרך עטיפות של mobaStart, mobaUpdate, mbDie ו-mbEnd (בלי לגעת בקוד שלהן), ושורה אחת ב-mobaDraw.
-   כשהמנוע של מזג האוויר (js/weather.js, setWeather/weatherScene) קיים, הוא מצייר. בלעדיו: שכבת גשם אחת משלנו מ-FXDATA. */
+   כשהמנוע של מזג האוויר (js/weather.js) קיים, הוא מצייר את השכבה מתחת לכל הקרב (בדו-ממד אחרי הרצפה, בתלת-ממד מיד אחרי התלת-ממד),
+   והקובץ הזה רק רושם את הסצנה 'moba' ומעביר מצבים לפי העוצמה. בלעדיו: שכבת גשם אחת משלנו מ-FXDATA. */
 const MBWX={
   on:true,
   ids:['wx_rain_light_night','wx_rain_heavy_night','wx_rain_torrent_night'],   // אריח הגשם לכל שלב (calm, building, storm) כשאין את המנוע (חבילה 44, נושא night)
@@ -22,14 +23,14 @@ const MBWX={
   // מצב
   k:0,fl:0,bolts:[],h:null,st:'',si:-1,falls:0,core:false,ms:0,n:0,
 };
-const mbWxCore=()=>typeof weatherScene==='function'&&typeof weatherState==='function';
+const mbWxCore=()=>typeof weatherScene==='function'&&typeof weatherState==='function'&&typeof weatherBolt==='function'&&typeof weatherFlash==='function';
 // עוצמה 0..1: הזמן במשחק, ועוד כל מבנה שנפל
 const mbWxK=M=>Math.min(1,M.t/MOBA.maxT+MBWX.falls*MBWX.tower);
 
 function mbWxStart(){
   const X=MBWX;X.k=0;X.fl=0;X.bolts=[];X.falls=0;X.st='';X.si=-1;X.h=null;X.core=mbWxCore();
   if(!X.on)return;
-  if(X.core){try{weatherScene('moba',X.scene);weatherState('moba','calm');X.st='calm'}catch(e){X.core=false}}
+  if(X.core){try{weatherScene('moba',X.scene);weatherState('calm','moba');X.st='calm'}catch(e){X.core=false}}
   if(!X.core){mbWxRain(0);typeof fxPreload==='function'&&fxPreload(X.ids.map(mbWxId))}
 }
 const mbWxId=id=>typeof FXDATA!=='undefined'&&FXDATA[id]?id:MBWX.old;
@@ -40,14 +41,14 @@ function mbWxTick(dt){
   X.k=mbWxK(M);X.fl=Math.max(0,X.fl-dt/MBWX.flash.t);
   for(const b of X.bolts)b.life-=dt;X.bolts=X.bolts.filter(b=>b.life>0);
   let si=0;X.states.forEach(([k],i)=>{if(X.k>=k)si=i});
-  if(X.core){const s=X.states[si][1];if(s!==X.st){X.st=s;try{weatherState('moba',s)}catch(e){}}}
+  if(X.core){const s=X.states[si][1];if(s!==X.st){X.st=s;try{weatherState(s,'moba')}catch(e){}}}
   else if(si!==X.si)mbWxRain(si);
 }
 // מבנה נפל: ברק עליו אם רואים אותו, והבזק תמיד (גם בסיס שנופל בסוף)
 function mbWxFall(b){
   const X=MBWX;if(!X.on)return;X.falls++;
   const seen=typeof mbVisPt!=='function'||mbVisPt(b.x,b.y),calm=RM||typeof fxLess==='function'&&fxLess();
-  if(X.core){try{if(!calm&&typeof weatherFlash==='function')weatherFlash(MBWX.flash.a);if(seen&&typeof weatherBolt==='function')weatherBolt(b.x,b.y,{})}catch(e){}return}
+  if(X.core){try{if(seen)weatherBolt(b.x,b.y,{});else weatherFlash(MBWX.flash.a)}catch(e){}return}   // המנוע: ברק (עם הבזק) רק כשרואים, אחרת רק הבזק. הוא בודק בעצמו RM ו'פחות אפקטים'
   if(!calm)X.fl=1;
   if(seen){const pts=[],B=MBWX.bolt;let x=b.x;for(let i=0;i<=B.seg;i++){pts.push([x,b.y-B.h*(1-i/B.seg)-40]);x+=(Math.random()-0.5)*B.jit*2}
     pts[pts.length-1][0]=b.x;X.bolts.push({pts,life:B.t})}
