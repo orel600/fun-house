@@ -53,7 +53,7 @@ function mbHittable(b){
   if(b.k==='base')return !MB.u.some(o=>o.k==='tower'&&o.team===b.team&&!o.dead);
   return true;
 }
-const mbSpeed=u=>u.speed*(1+mbIb(u).spd)*(u.st.slow>0?1-u.st.slowK:1)*(u.st.rage>0?u.st.rageSp:1)*(mbHaste(u)?MOBA.haste.k:1);   // spd: מגפיים (moba-items.js)
+const mbSpeed=u=>u.speed*(1+mbIb(u).spd)*(u.st.slow>0?1-u.st.slowK:1)*(u.st.rage>0?u.st.rageSp:1)*(mbHaste(u)?MOBA.haste.k:1)*(typeof mbSpellSpd==='function'?mbSpellSpd(u):1);   // spd: מגפיים (moba-items.js)
 
 /* ---- נזק, שליטה בקהל ומוות ---- */
 // ריצה מהבסיס: גיבור ליד הבסיס שלו שלא נפגע לאחרונה
@@ -65,6 +65,7 @@ function mbDmg(src,t,d,dt,o={}){
   if(mbShielded(t))d*=1-MOBA.shield.k;
   if(t.k==='hero'&&src&&src!==t)t.hurtT=MB.t;
   if(src&&src.k==='hero'&&src.st.rage>0)d*=src.st.rageK;
+  if(typeof mbSpellDmgK==='function')d*=mbSpellDmgK(src);   // תשישות (moba-spells.js)
   if(t.st.wet>0&&dt==='lightning'){d*=MOBA.combo.shock;t.st.wet=0;mbWord(t,'shock')}   // קומבו: רטוב + ברק
   if(t.k==='hero')d*=1-Math.min(MBITEM.cap.def,(MBKIT[t.kit].def||0)+mbIb(t).def);   // הנפח והלוחם נלחמים מקרוב, וסופגים קצת פחות. ועוד הגנה מחפצים (moba-items.js)
   if(t.st.rage>0)d*=1-(t.st.rageDef||0);   // זעם של הלוחם: סופג פחות
@@ -225,7 +226,7 @@ function mobaUpdate(dt){
     else if(u.k==='minion'){u.atkT-=dt;mbMinion(u,dt)}
     else mbTower(u,dt);
   }
-  mbFeel(M,dt);mbItTick(M,dt);mbRecallTick(M,dt);mbGambleTick(M,dt);   // חזרה לבסיס (moba-recall.js), חדר ההימור (moba-gamble.js)
+  mbFeel(M,dt);mbItTick(M,dt);mbRecallTick(M,dt);mbGambleTick(M,dt);typeof mbSpellTick==='function'&&mbSpellTick(M,dt);   // חזרה לבסיס (moba-recall.js), חדר ההימור (moba-gamble.js), ריפוי ולחשים (moba-spells.js)
     // זהב עם הזמן, והבוטים קונים (moba-items.js)   // גיבורים וחיילים לא עומדים אחד בתוך השני, וסיבוב ואנימציה רכים (moba-move.js)
   mbShots(dt);
   for(const z of M.zones){
@@ -274,6 +275,7 @@ function mbAimFor(u,s){
   return mbNearest(u,foes.filter(o=>o.k==='hero'),range)||mbNearest(u,foes,range)||null;
 }
 function mbPress(slot,pt){   // pt: נקודה או יחידה מהכיוון בגרירה (moba-aim.js). בלי pt: כיוון אוטומטי
+  if(slot==='heal'||slot==='spell'){mbSpellPress(slot,pt);return}   // ריפוי ולחש (moba-spells.js)
   const u=mbMe();if(!u||u.dead||MB.over)return;
   const s=MBKIT[u.kit][slot];
   if(slot==='ult'&&u.lvl<MOBA.ultAt){mbShake(slot);return}   // נעול: הכפתור רועד, בלי הודעה באמצע המסך (הבודק, 2.11)
@@ -340,7 +342,7 @@ function mobaExit(){
 function mbUi(on){
   document.body.classList.toggle('mb',on);$('mbHud').hidden=!on;$('mbSk').hidden=!on;
   if(on){const u=mbMe();$('mbSk').innerHTML=MB_SLOTS.map(k=>{const s=MBKIT[u.kit][k],col=dtCol(s.dt||MBKIT[u.kit].dt);
-    return '<button class="skb mbskb" data-sk="'+k+'" style="--dt:'+col+'" aria-label="'+T('mb.s.'+s.id)+'">'+mbPic(s.id)+'<i></i><b class="mblock" hidden>'+MOBA.ultAt+'</b></button>'}).join('');
+    return '<button class="skb mbskb" data-sk="'+k+'" style="--dt:'+col+'" aria-label="'+T('mb.s.'+s.id)+'">'+mbPic(s.id)+'<i></i><b class="mblock" hidden>'+MOBA.ultAt+'</b></button>'}).join('')+(typeof mbSpellBtns==='function'?mbSpellBtns(u):'');   // ריפוי ולחש (moba-spells.js)
     for(const b of document.querySelectorAll('#mbPing [data-o] b'))b.innerHTML=mbSvg(b.parentNode.dataset.o,'mbpi');   // פקודות: אייקונים במקום אימוג'י
     mbAimInit($('mbSk'))}   // נגיעה, גרירה לכיוון וביטול (moba-aim.js)
 }
@@ -365,9 +367,9 @@ function mobaHud(){
     const p=$('mbPor');if(p.dataset.kit!==u.kit){p.dataset.kit=u.kit;p.innerHTML=mbSvg('k_'+u.kit)}   // הדמות שלי: האייקון של הערכה
     const r=$('mbResp');r.hidden=!u.dead;if(u.dead)$('mbRespN').textContent=Math.ceil(u.resp)}
   const ok=M.order?M.order.kind:'';if(mbOrdKey!==ok){mbOrdKey=ok;for(const b of document.querySelectorAll('#mbPing [data-o]'))b.classList.toggle('on',b.dataset.o===ok)}
-  for(const b of $('mbSk').querySelectorAll('[data-sk]')){const k=b.dataset.sk,s=MBKIT[u.kit][k],lock=k==='ult'&&u.lvl<MOBA.ultAt;
+  for(const b of $('mbSk').querySelectorAll('[data-sk]')){const k=b.dataset.sk,s=MBKIT[u.kit][k];if(!s)continue;const lock=k==='ult'&&u.lvl<MOBA.ultAt;
     b.style.setProperty('--cd',lock?1:Math.max(0,u.cd[k])/s.cd);const l=b.querySelector('.mblock');if(l.hidden===lock)l.hidden=!lock}
-  mbItHud();mbRecallHud();   // אזהרה בחיים נמוכים וכפתור החזרה (moba-recall.js)
+  mbItHud();mbRecallHud();typeof mbSpellHud==='function'&&mbSpellHud();   // אזהרה בחיים נמוכים וכפתור החזרה (moba-recall.js)
     // זהב, קנייה מהירה וחפצים (moba-items.js)
 }
 // חלון הבחירה: ארבע הערכות, בשני טורים לרוחב
@@ -392,7 +394,7 @@ function mobaPickClose(){const w=$('mbWin');if(w.dataset.mode==='end'||S.mb)moba
 $('mbWin').addEventListener('click',e=>{
   const k=e.target.closest('[data-kit]'),a=e.target.closest('[data-act]'),df=e.target.closest('[data-diff]');
   if(df){sfx('tap');mbDiffSet(df.dataset.diff);for(const b of $('mbWin').querySelectorAll('[data-diff]')){const on=b===df;b.classList.toggle('on',on);b.setAttribute('aria-checked',on)}return}
-  if(k){sfx('tap');mobaStart(k.dataset.kit);return}
+  if(k){sfx('tap');typeof mbBuildOpen==='function'?mbBuildOpen(k.dataset.kit):mobaStart(k.dataset.kit);return}   // שלב הבנייה: לחש (moba-spells.js)
   if(!a)return;sfx('ui');
   if(a.dataset.act==='close')mobaPickClose();
   else if(a.dataset.act==='again'){mbUi(false);S.mb=MB=null;mobaOpen()}
@@ -452,6 +454,7 @@ function mobaDraw(ox,oy){
   for(const f of M.fx){if(!mbVisPt(f.x,f.y))continue;const k=f.life/0.45;ctx.strokeStyle=f.col;ctx.globalAlpha=k;ctx.lineWidth=6*k+1;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.1-k*0.4),0,7);ctx.stroke()}ctx.globalAlpha=1;
   mbRecallDraw();   // טבעת החזרה לבסיס (moba-recall.js)
   mbGambleTop();   // הגלגל של חדר ההימור מעל הגיבור (moba-gamble.js)
+  typeof mbSpellDraw==='function'&&mbSpellDraw();   // לחשים: מואץ, מותש, נקי, ואזור חשוף (moba-spells.js)
   mbfxDraw();   // חלקיקים, מגנים ומספרים גדולים (moba-fx.js)
   ctx.textAlign='center';ctx.font='800 '+Math.round(15*uk)+'px Heebo, system-ui, sans-serif';
   for(const f of M.floats){if(!mbVisPt(f.x,f.y))continue;ctx.globalAlpha=Math.min(1,f.life*2);ctx.direction=/^[+\-]?\d/.test(f.txt)?'ltr':DIR;ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y)}
