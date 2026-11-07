@@ -2,10 +2,11 @@
    הכלל: כל אפקט חדש מחפשים קודם כאן (FXDATA, tools/fx-list.json), ובונים בעצמנו רק אם אין מתאים.
    הקבצים: fx/<id>.webp (מוקטנים ב-tools/fx-convert.py). המידע לכל אפקט ב-FXDATA (js/fx-data.js): c עמודות, r שורות, n פריימים, s גודל פריים.
    שימוש, מכל מקום במשחק:
-     fxPlay(id,x,y,{size,rot,loop,dur,follow,alpha,add,fps,flip,under})  אפקט בנקודה של העולם (מעל התלת-ממד, באותו מקום כמו הקנבס)
+     fxPlay(id,x,y,{size,rot,loop,dur,follow,alpha,add,fps,flip,under,sy})  אפקט בנקודה של העולם (מעל התלת-ממד, באותו מקום כמו הקנבס)
      fxUi(id,x,y,{...})       אפקט על המסך (פיקסלים של המשחק, כמו W,H): ממשק, חלונות, מעברים
      fxStop(h)                עוצר אפקט שחוזר (loop) או עוקב (follow)
    follow: יחידה עם x,y. האפקט זז איתה, ונעלם כשהיא מתה (dead) או כש-dur נגמר.
+   sy: כיווץ לגובה (0.5 = עיגול שוכב על הרצפה במבט המוטה, לעיגולי קסם וטבעות).
    add: true = הוספת אור (lighter), לאש, ברק וזוהר. under: true = מצויר לפני הדמויות (בדו-ממד), לטבעות על הרצפה.
    התמונות נטענות רק כשצריך (new Image עובד גם מ-file://). עד שנטענו, האפקט מדלג בשקט. בלי קבצים בכלל (בדיקה בלי fx/): המשחק רץ כרגיל.
    מגבלה: עד FXLIB.max אפקטים בעולם ו-maxUi במסך. כשמגיעים לגבול, הוותיק נזרק. */
@@ -28,7 +29,7 @@ function fxMake(id,x,y,o){
   const D=typeof FXDATA!=='undefined'&&FXDATA[id];if(!D)return null;
   fxImg(id);
   return{id,D,x,y,t0:fxNowT(),size:o.size||D.s,rot:o.rot||0,loop:!!o.loop,dur:o.dur||0,follow:o.follow||null,dx:o.dx||0,dy:o.dy||0,
-    alpha:o.alpha??1,add:!!o.add,fps:o.fps||FXLIB.fps,flip:!!o.flip,under:!!o.under,vx:o.vx||0,vy:o.vy||0,on:true};
+    alpha:o.alpha??1,add:!!o.add,sy:o.sy||1,fps:o.fps||FXLIB.fps,flip:!!o.flip,under:!!o.under,vx:o.vx||0,vy:o.vy||0,on:true};
 }
 function fxPlay(id,x,y,o={}){const f=fxMake(id,x,y,o);if(!f)return null;FXLIB.list.push(f);if(FXLIB.list.length>FXLIB.max)FXLIB.list.shift();return f}
 function fxUi(id,x,y,o={}){const f=fxMake(id,x,y,o);if(!f)return null;FXLIB.ui.push(f);if(FXLIB.ui.length>FXLIB.maxUi)FXLIB.ui.shift();return f}
@@ -54,7 +55,7 @@ function fxDrawList(list,under){
     const D=f.D,age=now-f.t0,x=(f.follow?f.follow.x:f.x)+f.dx+f.vx*age,y=(f.follow?f.follow.y:f.y)+f.dy+f.vy*age,s=f.size;
     if(list===FXLIB.list&&!fxSeen(x,y))continue;   // בערפל של משחקי השאול: לא מסגירים אויב נסתר
     ctx.globalAlpha=f.alpha;ctx.globalCompositeOperation=f.add?'lighter':'source-over';
-    ctx.save();ctx.translate(x,y);if(f.rot)ctx.rotate(f.rot);if(f.flip)ctx.scale(-1,1);
+    ctx.save();ctx.translate(x,y);if(f.sy!==1)ctx.scale(1,f.sy);if(f.rot)ctx.rotate(f.rot);if(f.flip)ctx.scale(-1,1);
     ctx.drawImage(im,(i%D.c)*D.s,Math.floor(i/D.c)*D.s,D.s,D.s,-s/2,-s/2,s,s);
     ctx.restore();
   }
