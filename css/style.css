@@ -1818,7 +1818,8 @@ body:has(#ovMoba:not([hidden])) #muteBtn{display:none}
 .skpbar{pointer-events:auto}.skpbar span{overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .skpbar .skpt{min-width:28px;text-align:center;font-size:20px;color:var(--gold)}
 /* כפתורי ההקשר בעולם (לדבר, להאכיל, לדוג, פנס): בשורה למטה, משמאל לקשת הסקילים, ולא מעליה. הפינה הימנית התחתונה רק לסקילים (docs/ui-guide.md) */
-.world .bnav{bottom:calc(env(safe-area-inset-bottom,0px) + 30px);right:calc(env(safe-area-inset-right,0px) + 228px);max-width:calc(60% - 228px)}
+/* מקום קבוע משמאל לסקיל החתימה (#sig: 216px מהקצה + 78px רוחב) ולאולטימייט, כדי ש-🥕 "האכל" לא ייגע בכוכב (ניר, סרטון 7.11) */
+.world .bnav{bottom:calc(env(safe-area-inset-bottom,0px) + 30px);right:calc(env(safe-area-inset-right,0px) + 306px);max-width:calc(60% - 306px)}
 /* זירת גלים (arenas.js): המונה "גל 3/10" בשעון במקום התחנות של הזירה הרגילה, ובלי פס התחנות */
 /* רקע כהה משלו: מה שמצויר בקנבס מתחת (החיה, אויבים, אפקטים) לא מסתיר את הטקסט. inline-block ולא נמתח, כדי שלא יגיע לשכנים בשורה */
 .clock .wavetag{display:inline-block;font-family:var(--display);font-size:15px;line-height:1.2;color:var(--gold);margin-top:6px;white-space:nowrap;background:rgba(10,12,20,.72);border-radius:10px;padding:1px 9px}
