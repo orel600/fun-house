@@ -1696,6 +1696,9 @@ function worldBot(m,L,god){
   for(const vp of [{width:844,height:390},{width:1386,height:636},{width:848,height:388},{width:924,height:424,safe:{left:40,right:40,top:0,bottom:16}}]){
     if(laneCdp)await laneCdp.send('Emulation.setSafeAreaInsetsOverride',{insets:vp.safe||{left:0,right:0,top:0,bottom:0}}).catch(()=>{});
     await page.setViewportSize({width:vp.width,height:vp.height});
+    // הגדלים שנוספו (848, 924) והבדיקה של 🥕 והשמות רצים על מחולל אקראי משלהם, כדי לא להזיז את הרצף של שאר הבדיקות (משחקי השאול תלויים בו)
+    const ownRnd=on=>page.evaluate(on=>{if(on){window.__rndMain=Math.random;let a=4242;Math.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}else if(window.__rndMain){Math.random=__rndMain;window.__rndMain=null}},on);
+    const extra=vp.width===848||vp.width===924;if(extra)await ownRnd(true);
     await page.evaluate(()=>{window.__lbak={s:JSON.stringify(SAVE),vil:!!S.vil,mode:S.mode,sk:S.sk&&JSON.stringify(S.sk.ids)};
       window.__lmeas=()=>{const vw=innerWidth,vh=innerHeight,R=e=>e.getBoundingClientRect(),hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1;
         const vis=e=>!e.hidden&&!e.closest('[hidden]')&&e.offsetHeight>0&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden';
@@ -1720,6 +1723,7 @@ function worldBot(m,L,god){
     await page.clock.runFor(500);
     const b=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();const o={...__lmeas(),shown:MSG.stat.big,most:MSG.stat.most,win:msgWinOpen(),on:msgOn()};msgFight=__lmf;return o});
     // 🥕 "האכל" לא נוגע באף כפתור סקיל (מקום קבוע ב-style.css), ושמות האויבים (labels.js) לא על כפתור ולא אחד על השני
+    if(!extra)await ownRnd(true);
     const hb=await page.evaluate(()=>{const R=e=>e.getBoundingClientRect(),hit=(a,b)=>a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
       $('sig').hidden=false;$('feedBtn').hidden=false;const f=R($('feedBtn')),sk=[...document.querySelectorAll('#skills>*,#sig,#ult')].filter(e=>!e.hidden&&!e.closest('[hidden]')&&e.getClientRects().length).map(R);
       const o={feed:f.width>0&&!sk.some(k=>hit(f,k))};
@@ -1733,8 +1737,10 @@ function worldBot(m,L,god){
       o.onHud=boxes.some(a=>hud.some(b=>hit(a,b)));
       // נדירה באמצע קרב (rares.js, fx.js): העמוד והחגיגה בחצי גודל. בלי אויבים: בגודל מלא
       celebrate(P.x,P.y,'quest','');o.fx=FX[FX.length-1].s;enemies=[];celebrate(P.x,P.y,'quest','');o.fx0=FX[FX.length-1].s;FX.length=0;return o});
+    if(!extra)await ownRnd(false);
     if(CFG.shots)await shot('msg-lane-'+vp.width);
     await page.evaluate(()=>{const k=__lbak;msgClear();$('sig').hidden=k.hid.sig;$('feedBtn').hidden=k.hid.feed;for(const o of k.ov)o.hidden=false;FL.length=0;enemies=[];if(typeof skgOfferClose==='function')skgOfferClose();worldUi(false);SAVE=JSON.parse(k.s);if(S.sk&&k.sk)S.sk.ids=JSON.parse(k.sk);if(k.vil)enterVillage();else{reset();S.mode=k.mode}});
+    if(extra)await ownRnd(false);   // רק אחרי החזרה למצב הקודם (גם היא משתמשת באקראי)
     lane[vp.width]={a,b,hb,ok:hb.feed&&hb.fx===0.5&&hb.fx0===1&&hb.full<=3&&hb.full>0&&!hb.over&&!hb.onHud&&a.n>0&&a.big===0&&a.waits>0&&!a.hero&&!a.ui&&!a.out&&a.feed>0&&b.big===1&&b.shown===1&&!b.hero&&!b.ui&&!b.out&&b.most<=3};
   }
   if(laneCdp)await laneCdp.send('Emulation.setSafeAreaInsetsOverride',{insets:{left:0,right:0,top:0,bottom:0}}).catch(()=>{});
