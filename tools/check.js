@@ -2822,6 +2822,26 @@ function worldBot(m,L,god){
     'סודות בעולם: '+(sec.bad.length?'מחוץ לאזור או במים: '+sec.bad.join(','):'כל המקומות תקינים')+(sec.shown?', תיבה נחשפת':', התיבה לא נחשפה')+(sec.chest?' ונפתחת':' ולא נפתחת')+
     (sec.bless?', מקדש מברך':', המקדש לא מברך')+(sec.blessEnd?' והברכה נגמרת':' והברכה לא נגמרת!')+(sec.look?', תצפית חושפת':', התצפית לא עובדת')+
     (sec.read?', סימן בעץ':', הסימן לא נקרא')+(sec.sniff?', פיוחו רצה':'')+(sec.dug?' וחופרת אוצר':' ולא חפרה')+', '+sec.count+' באחו ("'+sec.hud+'"), נשמר '+sec.saved+', באגם '+sec.lake+', ברכס '+sec.ridge);
+  // עולם עם חיים (wlife.js): שרידים בכל אזור פעיל ורק על קרקע פתוחה, מחנה נותן מתנה פעם אחת ומרפא, שריד נלקח פעם אחת ולא חוזר אחרי כניסה מחדש, וחיות בורחות
+  const wlf=await page.evaluate(()=>{
+    const o={reg:[],bad:[]},bak=JSON.stringify(SAVE.wlife||null);SAVE.wlife={met:{},got:{}};const n0=()=>drops().length;
+    for(const reg in WLIFE.on){enterWorld('home',reg);const st=wlState();o.reg.push(reg+':'+st.rems.length+'/'+st.camps.length+'/'+st.herds.length);
+      for(const r of st.rems)if(tBlocked(r.x,r.y))o.bad.push(r.id);if(!st.rems.length)o.bad.push(reg+':ריק')}
+    enterWorld('home','meadow');for(const e of enemies)e.dead=true;let st=wlState();
+    const c=st.camps[0];P.x=c.x;P.y=c.y+40;let d0=n0();wlifeUpdate(0.05);o.gift=n0()>d0&&!!WLS().met[c.id];
+    P.x=c.x;P.y=c.y+600;wlifeUpdate(0.05);P.x=c.x;P.y=c.y+40;d0=n0();wlifeUpdate(0.05);o.once=n0()===d0;
+    P.hp=P.maxHp*0.5;for(let i=0;i<10;i++)wlifeUpdate(0.1);o.heal=P.hp>P.maxHp*0.5;P.hp=P.maxHp;
+    const r=st.rems[0];P.x=r.x;P.y=r.y;d0=n0();wlifeUpdate(0.05);o.rem=n0()>d0&&!!WLS().got[r.id];
+    enterWorld('home','meadow');st=wlState();P.x=r.x;P.y=r.y;d0=n0();wlifeUpdate(0.05);o.stay=st.rems.some(q=>q.id===r.id)&&n0()===d0;
+    const H=st.herds.find(h=>!WLIFE.beasts[h.sp].fly)||st.herds[0],a=H.a[0],x0=a.x,y0=a.y;P.x=a.x-60;P.y=a.y;for(let i=0;i<20;i++)wlifeUpdate(0.05);
+    o.flee=Math.hypot(a.x-x0,a.y-y0)>80&&Math.hypot(a.x-P.x,a.y-P.y)>Math.hypot(x0-P.x,y0-P.y);o.sp=H.sp;
+    o.saved=Object.keys((JSON.parse(localStorage.getItem(SAVE_STORE.key)).wlife||{}).got||{}).length;
+    SAVE.wlife=JSON.parse(bak)||undefined;return o});
+  if(CFG.shots){await page.clock.runFor(300);await shot('world-life')}
+  await page.evaluate(()=>enterVillage());
+  check(!wlf.bad.length&&wlf.gift&&wlf.once&&wlf.heal&&wlf.rem&&wlf.stay&&wlf.flee&&wlf.saved>0,
+    'עולם עם חיים: '+wlf.reg.join(', ')+' (שרידים/מחנות/להקות)'+(wlf.bad.length?', לא במקום: '+wlf.bad.join(','):'')+(wlf.gift?', מחנה נותן מתנה':', אין מתנה במחנה')+(wlf.once?' פעם אחת':' שוב ושוב!')+
+    (wlf.heal?' ומרפא':', האש לא מרפאת')+(wlf.rem?', שריד נלקח':', השריד לא נלקח')+(wlf.stay?' ולא חוזר':' וחוזר אחרי כניסה!')+(wlf.flee?', '+wlf.sp+' בורחים':', החיות לא בורחות')+', נשמר '+wlf.saved);
   // פעמון הערפל והגשרים הצפים באגם (lake-bell.js): כפתור ליד הפעמון, צלצול, הערפל נחלש וחוזר, המתנה בין צלצולים, התיבה הטבועה, וגשר שחורק
   const lbl=await page.evaluate(()=>{
     const o={};SAVE.lakeBell={};LB.cd=0;LB.t=0;LB.k=0;enterWorld('home','lake');for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);
