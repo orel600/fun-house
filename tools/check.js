@@ -7,7 +7,7 @@
              --real       בלי חסינות: הבוט יכול למות, כדי לבדוק קושי ולא רק קריסות
              --shots      צילומי מסך לתיקייה tools/shots
              --skin nomad הדמות לובשת סקין מ-SKINS, כדי לראות עיצוב חדש בצילומים
-             --lang en    משחק באנגלית, ונכשל אם על המסך מופיע טקסט בעברית
+             (English only, 7.11.2026: every run is in English and fails on Hebrew on screen; --lang is ignored)
              --gfx 2d     משחק בדו-ממד. ברירת המחדל: תלת-ממד, ונכשל אם הוא לא עלה
    הזמן במשחק מואץ בשעון מזויף, אז ריצה של שש דקות לוקחת דקה-שתיים. */
 const {chromium}=require('playwright');
@@ -21,7 +21,7 @@ const CFG={
   god:!opt('real'),
   shots:opt('shots')?path.join(__dirname,'shots'):null,
   skin:opt('skin'),
-  lang:opt('lang')||'he',
+  lang:'en',   // English only (Nir, 7.11.2026): every run is in English and fails on Hebrew on screen
   gfx:opt('gfx')==='2d'?'2d':'3d',
   step:200,                          // כל כמה מילישניות של משחק הבוט מחליט מחדש
   phone:{width:844,height:390}       // טלפון לרוחב: ככה משחקים (ניר, 30.10.2026)
@@ -572,7 +572,7 @@ function worldBot(m,L,god){
         test(s,el.closest('[id]')?el.closest('[id]').id:el.tagName)}}});
   {const rf=page.clock.runFor.bind(page.clock);let n=0;   // כל כמה צעדים של הבוט סורקים את המסך
     page.clock.runFor=async ms=>{const r=await rf(ms);if(++n%6===0)await page.evaluate(()=>window.__rkScan&&__rkScan()).catch(()=>{});return r}}
-  await page.addInitScript(g=>{try{localStorage.setItem('zm-gfx',g)}catch(e){}},CFG.gfx);
+  await page.addInitScript(g=>{try{localStorage.setItem('zm-gfx',g);localStorage.setItem('zm-lang','he')}catch(e){}},CFG.gfx);   // zm-lang 'he': an old save, must migrate to en (English only, 7.11)
   // 5.11.2026: models3d.js כבר כ-16MB, ובמכונות של GitHub הטעינה עברה את 30 השניות של ברירת המחדל. הבדיקה לא בודקת זמן טעינה
   await page.goto('file://'+path.resolve(__dirname,'..','index.html'),{timeout:120000});
   await page.clock.runFor(300);
@@ -1060,10 +1060,14 @@ function worldBot(m,L,god){
   let startLeak=null;
   // הבדיקות שלמעלה רצו בעברית, ויכלו להשאיר באנר בעברית (קווסט שהושלם). בלי זה מסך בחירת הדמות מציג אותו באנגלית
   await page.evaluate(()=>{document.getElementById('banner').textContent=''});
-  if(CFG.lang!=='he'){
-    await page.click('[data-lang="'+CFG.lang+'"]');
-    startLeak=await page.evaluate(()=>{const s=document.getElementById('ovStart').innerText.replace('עברית','');return /[֐-׿]/.test(s)||document.documentElement.dir!=='ltr'?s.slice(0,80):null});
-    await shot('start-'+CFG.lang);
+  {startLeak=await page.evaluate(()=>{const s=document.getElementById('ovStart').innerText;return /[֐-׿]/.test(s)||document.documentElement.dir!=='ltr'?s.slice(0,80):null});
+    await shot('start-en');
+    // English only (Nir, 7.11.2026): no language toggle on the start screen, LANG is en, and an old save that stored 'he' opens in English
+    const enOnly=await page.evaluate(()=>({toggle:document.querySelectorAll('#ovStart [data-lang],[data-lang="he"],[data-ta="langGroup"]').length,lang:LANG,dir:document.documentElement.dir,stored:localStorage.getItem('zm-lang')}));
+    // the page was loaded with zm-lang='he' (an old save, see addInitScript above), so stored==='en' means it migrated
+    check(!enOnly.toggle&&enOnly.lang==='en'&&enOnly.dir==='ltr'&&enOnly.stored==='en',
+      'English only: '+(enOnly.toggle?enOnly.toggle+' language buttons left on screen':'no language toggle')+', LANG '+enOnly.lang+', dir '+enOnly.dir+
+      ' · old save with he: stored now '+enOnly.stored);
   }
   const rgHp=await page.evaluate(()=>GEAR.items.boneCharm.stats.hp);   // כמה חיים הקמע מוסיף באמצע ריצה
   // סטים (sets.js): חלק אחד לא נותן כלום, שניים נותנים את מדרגה 2, ארבעה את שתי המדרגות. וכל פריט בסט מקבל שם ומתכון
@@ -1078,16 +1082,16 @@ function worldBot(m,L,god){
       four:Object.keys(b[4]).every(k=>four[k]>=(b[4][k]+(b[2][k]||0))),named:it.every(k=>!/^it\./.test(T('it.'+k))&&GEAR.recipes[k])}}return r});
   // אופי לחפצים (ניר, 3.11.2026): לכל חפץ של ניר (לא המסתובבים, של אוראל) שם ומשפט אופי בעברית ובאנגלית, והמסגרת מקבלת class לפי השכבה (css/rarity.css)
   const chr=await page.evaluate(()=>{const miss=[],cls=[],ids=Object.keys(GEAR.items).filter(id=>GEAR.items[id].slot!=='orbit');
-    const ok=e=>e&&typeof e.he==='string'&&typeof e.en==='string'&&e.he.trim()&&e.en.trim()&&/[\u0590-\u05FF]/.test(e.he)&&!/[\u0590-\u05FF]/.test(e.en);
+    const ok=e=>e&&typeof e.en==='string'&&e.en.trim()&&!/[\u0590-\u05FF]/.test(e.en);   // English only (7.11): he is optional
     for(const id of ids){if(!ok(TEXT['it.'+id]))miss.push('it.'+id);if(!ok(TEXT['itf.'+id]))miss.push('itf.'+id);
       const t=GEAR.tiers[GEAR.items[id].tier].id;if(!gTile(id,'','').includes('rar-'+t)||!gFlavHtml(id).includes('gflav'))cls.push(id)}
     const css=[...document.styleSheets].some(x=>/rarity\.css/.test(x.href||''));
     return{n:ids.length,miss,cls,css,tiers:GEAR.tiers.map(t=>t.id).join('/')}});
-  check(chr.n>=60&&!chr.miss.length&&!chr.cls.length&&chr.css,'אופי לחפצים: '+chr.n+' חפצים עם שם ומשפט אופי בשתי השפות, ומסגרת לפי השכבה ('+chr.tiers+')'+
+  check(chr.n>=60&&!chr.miss.length&&!chr.cls.length&&chr.css,'אופי לחפצים: '+chr.n+' חפצים עם שם ומשפט אופי באנגלית, ומסגרת לפי השכבה ('+chr.tiers+')'+
     (chr.miss.length?' · חסר: '+chr.miss.slice(0,8).join(', '):'')+(chr.cls.length?' · בלי class של שכבה: '+chr.cls.slice(0,8).join(', '):'')+(chr.css?'':' · css/rarity.css לא נטען'));
   // שמות מקומות לקווסטים צדדיים (ביקורת 6.11, פריט 8): לכל מקום ב-SIDEQ.places (גם ציוני הדרך של המפות הגדולות) יש שם ב-lang.js
-  const sqNames=await page.evaluate(()=>{const miss=[];let n=0;for(const reg in SIDEQ.places)for(const id in SIDEQ.places[reg]){n++;const k='sq.pl.'+reg+'.'+id,e=TEXT[k];if(!e||!e.he||!e.en)miss.push(reg+'.'+id)}return{n,miss}});
-  check(sqNames.n>0&&!sqNames.miss.length,'שמות מקומות לקווסטים: '+sqNames.n+' מקומות'+(sqNames.miss.length?' · בלי שם ('+sqNames.miss.length+'): '+sqNames.miss.slice(0,10).join(', '):', לכולם שם בשתי השפות'));
+  const sqNames=await page.evaluate(()=>{const miss=[];let n=0;for(const reg in SIDEQ.places)for(const id in SIDEQ.places[reg]){n++;const k='sq.pl.'+reg+'.'+id,e=TEXT[k];if(!e||!e.en)miss.push(reg+'.'+id)}return{n,miss}});
+  check(sqNames.n>0&&!sqNames.miss.length,'שמות מקומות לקווסטים: '+sqNames.n+' מקומות'+(sqNames.miss.length?' · בלי שם ('+sqNames.miss.length+'): '+sqNames.miss.slice(0,10).join(', '):', לכולם שם באנגלית'));
   // איזון לפי אזור (ביקורת 6.11, פריט 10): בכל אזור, האויב הממוצע ליד השער (start) לא חזק מזה שבאזור הבא (near). חיים אחרי הרצפה (wFloor), ונזק
   const zoneBal=await page.evaluate(()=>{const out=[],bad=[];
     for(const [reg,R] of [['meadow',WORLD],...Object.entries(WORLD.regions)]){if(!R||!R.zones||!R.foes||!R.home)continue;if(typeof wFloors==='function')wFloors(R.zones);
@@ -4145,7 +4149,7 @@ function worldBot(m,L,god){
   check(!clsL.err&&Object.values(clsL).every(o=>o.share>=50&&o.all&&o.pity&&o.up),'שלל לפי דמות: '+(clsL.err||Object.keys(clsL).map(c=>c+' '+clsL[c].share+'% מהנשקים'+(clsL[c].all?'':', חסרה שכבה')+(clsL[c].pity?'':', מזל שבור')+(clsL[c].up?'':', רמה 20 לא משפרת')).join(' · ')));
   if(CFG.gfx==='3d')check(g3.on&&L.actorsMax>0,g3.on?'תלת-ממד: פעיל, עד '+L.actorsMax+' דמויות במסך, עד '+L.callsMax+' ציורים בפריים':'תלת-ממד: לא עלה'+(g3.failed?' (נפל לדו-ממד)':''));
   else check(!g3.on,'דו-ממד: פעיל לפי הבחירה');
-  if(CFG.lang==='en')check(!startLeak&&!L.heLeak,startLeak||L.heLeak?'שפה: נשאר טקסט בעברית: '+(startLeak||L.heLeak):'שפה: כל המסכים באנגלית, משמאל לימין');
+  check(!startLeak&&!L.heLeak,startLeak||L.heLeak?'שפה: נשאר טקסט בעברית: '+(startLeak||L.heLeak):'שפה: כל המסכים באנגלית, משמאל לימין');
   if(!CFG.god)results.push(L.died!=null?'· מת ב-'+t(L.died):'· שרד עד '+t(L.t));
   const pt=L.pet||{st:{}},pst=Object.entries(pt.st).map(([k,v])=>k+' '+v).join(', ');
   check(pt.n>20&&pt.near/pt.n>0.85,'חיית מחמד הולכת אחרי השחקן: קרובה אליו ב-'+Math.round(100*pt.near/(pt.n||1))+'% מהזמן · מצבים: '+(pst||'לא נראתה'));
