@@ -26,9 +26,9 @@ const SKCAST={
   rune:{life:1.15,a:1,fade:0.4,inner:0.74,spin:[1.6,-2.6]},
   bigKinds:['meteor','storm','nova','rain','blade'],bigCd:12,
   tier:{
-    normal:{life:0.9, r:108,pop:0.14,over:1.14,hdr:1.8,flash:{r:0.9,life:0.2,a:0.55,hdr:1.6},wave:{r:1.7,life:0.45,w:0.22,a:0.9},motes:12,pillar:null,shake:0,zoom:0,light:6},
-    big:   {life:1.15,r:140,pop:0.16,over:1.18,hdr:2.6,flash:{r:1.0,life:0.26,a:0.6,hdr:2}, wave:{r:2.1,life:0.6,w:0.3,a:1},  wave2:{r:2.8,life:0.8,w:0.4,a:0.6},motes:26,
-            pillar:{r:34,h:340,life:0.65,hdr:3},shake:5,zoom:0.045,zoomT:0.4,light:10}
+    normal:{life:0.9, r:108,pop:0.14,over:1.14,hdr:1.8,flash:{r:0.9,life:0.2,a:0.28,hdr:1.3},wave:{r:1.7,life:0.45,w:0.2,a:0.6},motes:12,pillar:null,shake:0,zoom:0,light:4},
+    big:   {life:1.15,r:140,pop:0.16,over:1.18,hdr:2.6,flash:{r:1.0,life:0.26,a:0.35,hdr:1.6}, wave:{r:2.1,life:0.6,w:0.24,a:0.6},  wave2:{r:2.4,life:0.75,w:0.3,a:0.3},motes:26,
+            pillar:{r:20,h:360,life:0.6,hdr:1.4},shake:5,zoom:0.045,zoomT:0.4,light:7}
   },
   // הבזק בידיים ברגע ההטלה, בצבע סוג הנזק. h: הגובה של הידיים (פיקסלים של המשחק)
   flash:{h:34,size:46,size2:80,life:[0.16,0.22],spark:10,light:6,lightT:0.3},
