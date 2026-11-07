@@ -1256,6 +1256,9 @@ function worldBot(m,L,god){
     catch(e){r.draw=e.message}
     SAVE.hero.skin=sk;r.off=!fluteOn();return r});
   // המראה שלי בכל זמן (heroes.js, ניר 4.11.2026): כפתור בהגדרות מחליף את הדמות בתלת-ממד, נשמר, ונמצא גם בחלון הציוד
+  // הדמות האישית נטענת לפי צורך (js/m3d.js): עד שהיא מוכנה רואים לרגע את הגיבור של המחלקה. כאן מחכים לה, ואז בודקים שהבחירה מחליפה
+  if(g3.on){await page.evaluate(()=>{m3dGo(LOOK3D[HEROES.skins.nir.look].model)});
+    for(let i=0;i<200&&!(await page.evaluate(()=>m3dReady(LOOK3D[HEROES.skins.nir.look].model)));i++){await page.waitForTimeout(20);await page.clock.runFor(50)}}
   const hsk=await page.evaluate(()=>{const sk=SAVE.hero.skin,pk=SAVE.pet.kind,r={};
     try{soundOpen();const lk=()=>R3D.on?heroLook().model:heroSkin();SAVE.hero.skin=null;const base=lk();
       document.querySelector('#ovSound [data-skin="nir"]').click();
@@ -1760,15 +1763,18 @@ function worldBot(m,L,god){
   // מודלים לפי צורך (js/m3d.js): בכניסה לכל אזור נטענים ברקע הענק שלו ומפלצות הזירה, ובזירה המפלצות שלה. בלי אזהרת "missing model"
   if(g3.on){
     const settle=async()=>{for(let i=0;i<300;i++){if(await page.evaluate(()=>!M3D.hint.length&&!M3D.busy&&!M3D.pending()))return true;await page.waitForTimeout(20);await page.clock.runFor(50)}return false};
-    const regs=await page.evaluate(()=>{window.__m3dBak={save:JSON.stringify(SAVE)};return Object.keys(WORLD.regions)}),rows=[],bad=[];
+    const regs=await page.evaluate(()=>{let ls=null;try{ls=localStorage.getItem(SAVE_STORE.key)}catch(e){}   // כמו שאר הבדיקות: הכל חוזר בסוף, כולל השמירה בדפדפן (enterWorld שומר)
+      window.__m3dBak={save:JSON.stringify(SAVE),ls,mode:S.mode,vil:S.vil,wd:S.wd,room:S.room,body:document.body.className,ov:[...document.querySelectorAll('[id^=ov]')].map(e=>[e,e.hidden])};return ['meadow',...Object.keys(WORLD.regions).filter(k=>k!=='meadow')]}),rows=[],bad=[];
     for(const reg of regs){
       await page.evaluate(r=>{enterWorld('home',r);R3D.wWarm&&(R3D.wWarm.done[r]=0);for(let i=0;i<R3D.drawEvery;i++)render3d(0,0)},reg);   // render3d: הכניסה (wldWarm) מבקשת את מה שצריך
       const ok=await settle();
       const r=await page.evaluate(r=>{const ks=[];for(const k in STORY.lanterns)if(STORY.lanterns[k].reg===r&&LOOK3D['wb_'+k])ks.push(LOOK3D['wb_'+k].model);
         const want=ks.concat(M3D.arena.map(t=>LOOK3D[t].model)),miss=want.filter(k=>!m3dReady(k));return {giant:ks.join('/')||'-',miss}},reg);
       rows.push(reg+' '+r.giant.replace(/mon_/g,''));if(!ok||r.miss.length)bad.push(reg+': '+(ok?'':'לא נגמר ')+r.miss.join(','))}
-    await page.evaluate(()=>{startRun();for(let i=0;i<R3D.drawEvery;i++)render3d(0,0)});const ok=await settle();
-    const ar=await page.evaluate(()=>{const miss=M3D.arena.filter(t=>!m3dReady(LOOK3D[t].model)||!R3D.tmpl[LOOK3D[t].model]);SAVE=JSON.parse(__m3dBak.save);enemies=[];enterVillage();return miss});
+    await page.evaluate(()=>{worldUi(false);startRun();for(let i=0;i<R3D.drawEvery;i++)render3d(0,0)});const ok=await settle();
+    const ar=await page.evaluate(()=>{const miss=M3D.arena.filter(t=>!m3dReady(LOOK3D[t].model)||!R3D.tmpl[LOOK3D[t].model]),B=__m3dBak;
+      worldUi(false);enemies=[];SAVE=JSON.parse(B.save);reset();S.mode=B.mode;S.vil=B.vil;S.wd=B.wd;S.room=B.room;try{if(B.ls==null)localStorage.removeItem(SAVE_STORE.key);else localStorage.setItem(SAVE_STORE.key,B.ls)}catch(e){}
+      document.body.className=B.body;for(const [e,h] of B.ov)e.hidden=h;return miss});
     if(!ok||ar.length)bad.push('זירה: '+ar.join(','));
     const log=await page.evaluate(()=>M3D.log.map(l=>l.ms));
     check(!bad.length&&!m3dWarn.length,'מודלים לפי צורך: בכניסה לאזור הענק שלו ('+rows.join(', ')+') ומפלצות הזירה, '+log.length+' נטענו, הארוך '+Math.max(0,...log)+'ms'+

@@ -12,7 +12,7 @@
 const M3D={
   arena:['slime','mushnub','goleling','ghost','yeti','demon'],   // אויבי הזירה (spawn.js, arenas.js, run.js): מפתחות ב-LOOK3D
   idle:{on:!/[?&]m3dIdle=0/.test(location.search),after:8,gap:250},   // after: שניות אחרי שהתלת-ממד עלה. gap: מילישניות בין קובץ לקובץ (ובין פענוח לפענוח ברקע)
-  st:{},p:{},files:{},hint:[],busy:0,next:0,v:0,log:[]   // st: 'ready' או 'fail'. v: עולה כשנוסף מודל, כדי שמי ששומר מראה (heroLook) יבנה מחדש. log: מה נטען ומתי (לבדיקה)
+  st:{},p:{},files:{},hint:[],busy:0,next:0,v:0,hv:0,log:[]   // st: 'ready' או 'fail'. v: עולה כשנוסף מודל, כדי שמי ששומר מראה (heroLook) יבנה מחדש. log: מה נטען ומתי (לבדיקה)
 };
 M3D.boot=new Promise(r=>{M3D.booted=r});   // הליבה מפוענחת (סוף init3d). מודל מבחוץ מפוענח רק אחריה
 const m3dLazy=k=>typeof M3D_LAZY!=='undefined'&&!!k&&k in M3D_LAZY;
@@ -42,8 +42,8 @@ function m3dGo(k){
 // אותו עיבוד כמו בפתיחה (init3d): אנימציות, חפץ, או דמות
 function m3dDecode(k,g){
   if(k.startsWith('anim_'))addClips(g);
-  else if(k.startsWith('w_item_')){lambert(g.scene);R3D.props[k]=g.scene}
-  else{R3D.tmpl[k]=g.scene;prepTmpl(k)}
+  else if(k.startsWith('w_item_')){lambert(g.scene);R3D.props[k]=g.scene;M3D.hv++}   // hv: הגיבור נבנה מחדש (heroLook)
+  else{R3D.tmpl[k]=g.scene;prepTmpl(k);if(!/^mon_/.test(k))M3D.hv++}
 }
 // ברקע, אחד אחד, בסדר שביקשו
 function m3dHint(ks){for(const k of ks)if(m3dLazy(k)&&!m3dReady(k)&&!M3D.hint.includes(k))M3D.hint.push(k)}

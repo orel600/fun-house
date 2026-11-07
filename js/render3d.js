@@ -408,10 +408,12 @@ const SIN=()=>Math.sin(camTilt()),COS=()=>Math.cos(camTilt());   // הזווית
 const COSB=()=>Math.cos(VIEW.baseTilt*Math.PI/180);   // לגודל הדמויות: קבוע בכל מקום, כדי שדמות שנבנתה בכפר תתאים גם בעולם
 // השחקן: הדמות שנבחרה, ובידיים הנשק שלבוש (GRIP3D). נבנה מחדש רק כשהדמות או הנשק מתחלפים
 function heroLook(){
-  const wid=SAVE.gear.weapon,sk=heroSkin(),ck=heroId()+'|'+wid+'|'+PILOT3D+'|'+sk+'|'+M3D.v+(GEAR3D.on?'|'+gearWorn().join():'');   // M3D.v: מודל שנטען עכשיו (m3d.js), בונים מחדשif(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
+  const wid=SAVE.gear.weapon,sk=heroSkin(),it=gItem(wid);
   let B=sk?LOOK3D[HEROES.skins[sk].look]:PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()];
   if(B&&!m3dNeed(B.model))B=LOOK3D['hero_'+heroId()];   // דמות אישית שעוד נטענת (m3d.js): לרגע הגיבור של המחלקה
-  const L=Object.assign({},LOOK3D.player,B),it=gItem(wid);
+  // במפתח: המודל שמוצג בפועל, הנשק שביד, ו-M3D.hv (נטענו דמות או חפץ, m3d.js), כדי שהגיבור ייבנה מחדש רק כשמשהו שלו מוכן
+  const ck=heroId()+'|'+wid+'|'+PILOT3D+'|'+sk+'|'+(B&&B.model)+'|'+(it?itemModel(gBase(wid),it):'')+'|'+M3D.hv+(GEAR3D.on?'|'+gearWorn().join():'');if(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
+  const L=Object.assign({},LOOK3D.player,B);
   L.props={};L.anim=Object.assign({},L.anim);L.ck=ck;
   for(const w of ['sword','gun']){
     const im=it&&itemModel(gBase(wid),it),mine=it&&wUse(wid)===w&&im&&R3D.props[im],model=mine?im:GRIP3D.spare[w],g=GRIP3D[GRIP3D.of(model)];
