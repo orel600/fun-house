@@ -54,7 +54,9 @@ addEventListener('pointermove',e=>{if(skgHold&&e.pointerId===skgHold.pid&&Math.h
 /* ---- הכרטיס אחרי רגע הגילוי: "לספר" ו"לנסות" ---- */
 let skgOfferT=0,skgPend=null;
 // חלון או תפריט פתוח: הכרטיס מחכה (כמו כרטיס הפגישה ב-foelore.js)
-const skgBlocked=()=>document.body.classList.contains('menu')||[...document.querySelectorAll('.ov,.win')].some(o=>!o.hidden&&!o.closest('[hidden]'));
+// רק מה שבאמת על המסך: חלון שמוסתר ב-CSS (display:none, גם של אבא) לא נחשב
+const skgWins=()=>[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden&&o.getClientRects().length);
+const skgBlocked=()=>document.body.classList.contains('menu')||skgWins().length>0;
 function skgOffer(id){
   if(!S||!S.wd||!SKILLS.list[id])return;
   if(skgBlocked()){skgPend=id;return}
