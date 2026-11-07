@@ -2497,6 +2497,37 @@ function worldBot(m,L,god){
     'סימנים, דרגה ומעגלים (סבב 2): '+(fxv.err||('תמונות '+fxv.loaded+', דמות: מסירה='+fxv.turn+' קווסט='+fxv.quest+' שיחה='+fxv.talk+(fxv.none?', בלי מצב בלי סימן':', סימן בלי מצב!')+', סוחרת='+fxv.shop+' ועם מסירה='+fxv.shopQuest+
     ' · בכפר עכשיו: '+(fxv.real||'אין')+' · '+(fxv.rankup?'דרגה: עמוד אור ומדליה':'דרגה בלי עמוד ומדליה!')+(fxv.lvDiff?', רמה רגילה בלעדיהם':', גם ברמה רגילה!')+
     ' · מעגל: '+Object.entries(fxv.circ||{}).map(([k,v])=>k+'→'+v.replace('wcirc_','')).join(' ')+(fxv.mesh?' (תלת-ממד)':'')+(fxv.gone?', נעלם':', לא נעלם!')+' · ציור: עיגול '+fxv.ms+'ms, סימנים '+fxv.iconMs+'ms')));
+  // אפקטים של קרב בעולם (fxcombat.js): אזהרה על הרצפה בזמן ההכנה ונעלמת אחריה, פגיעה ומוות לפי סוג הנזק, כרייה, ותקרה לפגיעות בפריים
+  await page.evaluate(()=>fxcPreload());
+  for(let i=0;i<60&&!await page.evaluate(()=>['wtg_cone','wtg_line','wtg_circle','wtg_circle_big','whit_fire','whit_phys','wko_ice','wmine_stone','wmine_gem_ruby'].every(id=>fxImg(id)));i++)await new Promise(r=>setTimeout(r,150));   // הגיליונות נטענים מהקבצים (שעון אמיתי, לא השעון של הבדיקה)
+  const fxc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{enterWorld('home');enemies=[];S.mode='play';P.inv=99;const tick=()=>fxcUpdate(1/60),live=h=>!!h&&h.on&&FXLIB.list.includes(h);
+      const e=addEnemy('grunt',P.x+60,P.y,1);e.hp=e.max=1e6;
+      // מכה מקרוב: משולש בזמן ההכנה, ונעלם כשהיא נגמרת
+      e.sw=0.5;e.sa=0;tick();const h1=e.fxTg&&e.fxTg.h;o.cone=!!h1&&h1.id==='wtg_cone'&&live(h1)&&fxcTgOn(e);
+      e.sw=0;tick();o.coneGone=!e.fxTg&&!live(h1);
+      // קפיצה: עיגול במקום הנחיתה. הסתערות: פס וכדור נטען
+      e.act='crouch';e.at=e.am=0.7;e.tx=P.x;e.ty=P.y;tick();const h2=e.fxTg&&e.fxTg.h;o.leap=!!h2&&h2.id==='wtg_circle'&&Math.abs(h2.x-P.x)<1;
+      e.act='wind';e.aa=0;tick();o.charge=!!e.fxTg&&e.fxTg.h.id==='wtg_line'&&!!e.fxTg.h2&&!live(h2);
+      e.act=null;tick();o.chargeGone=!e.fxTg;
+      // עיגול של שומר (S.wd.marks): עיגול גדול למכה הגדולה של ענק
+      S.wd.marks=[{x:P.x,y:P.y,t:1,boom:0,k:'bolt',big:true,mk:{r:120,fuse:1,dmg:0,flash:0.3}}];tick();o.big=!!S.wd.marks[0].fxTg&&S.wd.marks[0].fxTg.h.id==='wtg_circle_big';S.wd.marks=[];
+      // פגיעה לפי סוג: אש = whit_fire, ובמוות מקרח = wko_ice
+      const n0=FXC.stat.hit.whit_fire||0;FXC.fr++;damage(e,1,'sword',0,'fire');o.hitFire=(FXC.stat.hit.whit_fire||0)>n0;
+      const k0=FXC.stat.ko.wko_ice||0;FXC.fr++;e.hp=1;damage(e,999,'sword',0,'ice');o.koIce=(FXC.stat.ko.wko_ice||0)>k0&&e.dead;
+      // תקרה: 12 אויבים נפגעים באותו פריים, לכל היותר FXC.hit.perFrame פיצוצים
+      const many=[];for(let i=0;i<12;i++){const f=addEnemy('grunt',P.x+rand(-80,80),P.y+rand(-80,80),1);f.hp=f.max=1e6;many.push(f)}
+      const s0=Object.values(FXC.stat.hit).reduce((a,b)=>a+b,0);FXC.fr++;for(const f of many)damage(f,1,'sword',0,'physical');
+      o.perFrame=Object.values(FXC.stat.hit).reduce((a,b)=>a+b,0)-s0;o.cap=FXC.hit.perFrame;
+      // כרייה: סלע = רסיסים, מרבץ אש = אבן חן אדומה
+      const m0=Object.assign({},FXC.stat.mine);nodeDown({kind:'rock',x:P.x,y:P.y,r:24,dead:true});nodeDown({kind:'emberRock',x:P.x,y:P.y,r:24,dead:true});
+      o.mineStone=(FXC.stat.mine.wmine_stone||0)>(m0.wmine_stone||0);o.mineGem=(FXC.stat.mine.wmine_gem_ruby||0)>(m0.wmine_gem_ruby||0);
+      o.all=FXLIB.list.length;o.max=FXLIB.max;o.img=!!fxImg('wtg_cone');
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];SAVE=JSON.parse(bak);enterVillage();return o});
+  check(!fxc.err&&(!fxc.img||fxc.cone&&fxc.coneGone&&fxc.leap&&fxc.charge&&fxc.chargeGone&&fxc.big&&fxc.hitFire&&fxc.koIce&&fxc.perFrame<=fxc.cap&&fxc.mineStone&&fxc.mineGem)&&fxc.all<=fxc.max,
+    'אפקטים של קרב בעולם: '+(fxc.err||(!fxc.img?'הגיליונות לא נטענו, דילגתי':(fxc.cone&&fxc.coneGone?'משולש אזהרה בזמן ההכנה ונעלם אחריה':'אזהרת מכה חסרה או נשארת')+(fxc.leap?', עיגול בקפיצה':', בלי עיגול קפיצה')+(fxc.charge&&fxc.chargeGone?', פס וכדור בהסתערות':', הסתערות בלי סימן')+(fxc.big?', מכ"ם לענק':', בלי מכ"ם לענק')+
+    (fxc.hitFire?', פגיעת אש':', בלי פגיעה לפי סוג')+(fxc.koIce?', מוות מקרח':', בלי מוות לפי סוג')+', '+fxc.perFrame+'/'+fxc.cap+' פגיעות בפריים'+(fxc.mineStone&&fxc.mineGem?', רסיסים ואבן חן בכרייה':', כרייה בלי אפקט')))+' ('+fxc.all+'/'+fxc.max+' אפקטים)');
   // העלילה, פרק 5 (story.js, WORLD.regions.storm): השביל מהמדבר למגדלים סגור עד שפנס האש דולק, במגדלים גשם, ברקים ומגדלים שבורים שאי אפשר לעבור,
   // אויבים מחושמלים (חלשים לאדמה), ושומר הסערה מסמן עיגולי ברק שמתפוצצים אחרי שנייה: מי שנשאר נפגע, מי שזז לא
   const ch5=await page.evaluate(()=>{
