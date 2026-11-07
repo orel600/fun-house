@@ -11,7 +11,7 @@ const MSG={
   small:{max:3, life:2.4, q:4},     // כמה קטנות יחד, כמה שניות כל אחת, וכמה מחכות בתור לכל היותר (הישנות נזרקות)
   big:{life:2.2, wait:6, q:2},      // גדולה: כמה שניות, כמה לחכות לסוף הקרב לפני שיורדת לקטנה, וכמה בתור
   fight:360,                        // אויב חי במרחק הזה (יחידות משחק) = באמצע קרב
-  pad:8, gap:6, minW:220, maxW:440, // רווח מכל כפתור, רווח בין שורות, ורוחב העמודה
+  pad:8, gap:6, minW:220, maxW:540, // רווח מכל כפתור, רווח בין שורות, ורוחב העמודה
   hero:{up:95, side:70},            // הגיבור על המסך: כמה מעליו וכמה לצדדים שמורים לו (יחידות משחק, כפול ZOOM)
   seen:[], stat:{small:0,big:0,down:0,waits:0,most:0,mostBig:0}   // לבדיקה (tools/check.js)
 };
@@ -100,7 +100,7 @@ function msgPlace(){
 }
 addEventListener('resize',()=>{if(msgOn())msgPlace()});
 // הכרטיסים שכבר קיימים (פגישה ראשונה foelore.js, "היום בעולם" mutation.js) עוברים לגור בעמודה: אותו מקום, ולא עולים על הכפתורים
-const MSG_CARDS=['flCard','mutBar'];
+const MSG_CARDS=['skOffer','flCard','mutBar'];   // skOffer: "חדש: סקיל" עם כפתורים (skguide.js)
 const msgWinOpen=()=>[...document.querySelectorAll('.ov,.win')].some(o=>!o.hidden&&!o.closest('[hidden]'));
 setInterval(()=>{const el=msgEl();
   if(!msgOn()){for(const id of MSG_CARDS){const c=$(id);if(c&&c.parentNode===el)document.body.appendChild(c)}return}
@@ -116,8 +116,9 @@ setInterval(()=>{const el=msgEl();
   '.msglane .mrow{max-width:100%;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center;flex:none;'+
     'padding:2px 12px;border-radius:999px;background:rgba(5,7,13,.62);border-inline-start:3px solid var(--mc);color:#ECE7DC;'+
     'font:700 clamp(11px,2.8vh,14px)/1.35 Heebo,system-ui,sans-serif;text-shadow:0 1px 2px #000a;opacity:0;transform:translateY(-6px);transition:opacity .22s,transform .22s}'+
-  '.msglane>.cut{visibility:hidden}.msglane .mrow.on{opacity:1;transform:none}.msglane .mrow.big{order:0}#msgLane>.flcard{order:1}#msgLane>.mutbar{order:2}.msglane .mrow:not(.big){order:3}'+
-  '#msgLane>.flcard,#msgLane>.mutbar{position:static;transform:none;left:auto;top:auto;max-width:100%;flex:none;box-sizing:border-box}#msgLane>.flcard:not(.on),#msgLane>.mutbar:not(.on),#msgLane>[hidden]{display:none}'+
+  '#msgLane>.skoffer{flex-wrap:wrap;justify-content:center;row-gap:4px}#msgLane>.skoffer .skon{flex-basis:100%;text-align:center}#msgLane>.skoffer .vbtn{min-height:38px;font-size:14px}'+
+  '.msglane>.cut{visibility:hidden}.msglane .mrow.on{opacity:1;transform:none}.msglane .mrow.big{order:0}#msgLane>.skoffer{order:1;pointer-events:auto}#msgLane>.flcard{order:2}#msgLane>.mutbar{order:3}.msglane .mrow:not(.big){order:4}'+
+  '#msgLane>.skoffer,#msgLane>.flcard,#msgLane>.mutbar{position:static;transform:none;left:auto;top:auto;max-width:100%;flex:none;box-sizing:border-box}#msgLane>.flcard:not(.on),#msgLane>.mutbar:not(.on),#msgLane>[hidden]{display:none}'+
   '.msglane .mrow.big{color:var(--mc);font:800 clamp(14px,4.2vh,20px)/1.3 var(--display,Heebo),Heebo,system-ui,sans-serif;padding:3px 18px;border:1.5px solid var(--mc);background:linear-gradient(#3a2818ee,#20160ee6)}'+
   '@media (prefers-reduced-motion:reduce){.msglane .mrow{transition:none;transform:none}}';
   document.head.appendChild(st)})();
