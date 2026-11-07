@@ -7,6 +7,8 @@
 const CELEBRATE={
   upgrade:{dust:0.7,col:'#F4C74F',burst:34,speed:260,pillar:1.1,pillarW:50,pillarH:240,label:'+1'},
   rank:   {dust:0,  col:'#C7A6FF',burst:50,speed:320,pillar:1.4,pillarW:64,pillarH:320,label:''},
+  // עלייה בדרגה (rankUp ב-ranks.js): זהב וגדול יותר מרמה רגילה, ועמוד אור ומדליה מהספרייה (fxvCelebrate ב-fxvil.js)
+  rankup: {dust:0,  col:'#F4C74F',burst:70,speed:360,pillar:1.8,pillarW:80,pillarH:380,label:''},
   quest:  {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:40,pillarH:200,label:'✓'},
   weapon: {dust:0,  col:'#FF8A3D',burst:26,speed:220,pillar:0.8,pillarW:36,pillarH:180,label:'+1'},
   gear:   {dust:0,  col:'#F4C74F',burst:30,speed:240,pillar:0.9,pillarW:44,pillarH:200,label:'+1'},   // פריט טוב יותר במסך הציוד
@@ -36,6 +38,7 @@ function celebrate(x,y,kind='upgrade',label){
   for(let i=0;i<K.burst*f.s;i++){const a=rand(0,6.28),s=rand(K.speed*0.35,K.speed)*f.s;f.burst.push({vx:Math.cos(a)*s,vy:Math.sin(a)*s-K.speed*0.4,z:rand(2,4.5),life:rand(0.6,1.1)})}
   FX.push(f);
   if(typeof fxwCelebrate==='function')fxwCelebrate(x,y,kind);   // קונפטי ובלונים מהספרייה, רק בכפר ובעולם (fxworld.js)
+  if(typeof fxvCelebrate==='function')fxvCelebrate(x,y,kind);   // עלייה בדרגה: עמוד אור ומדליה (fxvil.js)
   setTimeout(()=>sfx(K.sound||'celebrate'),K.dust*1000);   // הצליל מ-audio.js, כדי שההשתקה תחול גם עליו
   return K.dust;
 }

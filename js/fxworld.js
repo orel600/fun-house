@@ -1,7 +1,7 @@
 /* שכבת אפקטים לכפר ולעולם (FXW, אוראל 7.11.2026): רק אפקטים מספריית Mochi Lab (fxlib.js) מעל מה שכבר קיים.
    לא משנה מפה, לוגיקה, קווסטים או איזון. אם מוחקים את הקובץ ואת השורות שקוראות לו, הכל עובד כמו קודם.
    מה יש כאן:
-   - סימנים מעל דמויות: זוהר npc_quest/npc_turnin מאחורי ה-! וה-✓ הקיימים (לא במקומם), npc_shop מעל הסוחרת, npc_talk מעל מי שקרוב
+   - הסימנים מעל דמויות (קווסט, מסירה, חנות, שיחה): ב-fxvil.js, סימן אחד לכל דמות
    - emote_* כשפותחים שיחה, stamp_done כשמוסרים קווסט, hearts כשפיוחו אוכלת, קונפטי ובלונים בחגיגות (celebrate ב-fx.js)
    - אווירה בכפר: עלי כותרת ופרחים ביום, גחליליות בלילה. כוכבים בלב הצל, ואדוות ובועות על קו המים באגם
    - בעולם: מזג אוויר לפי אזור (שכבה עדינה מעל הקנבס של world.js), צעדים לפי הקרקע, אדוות במים רדודים, בועות בבורות הלבה,
@@ -14,10 +14,6 @@ const FXW={
   on:true,
   cap:24,              // כמה אפקטים של השכבה הזו בבת אחת (מתוך FXLIB.max=70)
   sync:0.3,            // כל כמה שניות מסנכרנים את האפקטים הקבועים (סימנים, מזג אוויר, מקום הקווסט)
-  // סימנים מעל דמויות. הסימן הקיים (! או ✓ בעיגול כהה) נשאר, והאפקט זוהר מאחוריו
-  mark:{'!':'npc_quest','!!':'npc_quest','✓':'npc_turnin',size:62,alpha:0.8,up:85},
-  shop:{ids:['merchant'],near:420,size:46,alpha:0.85,up:70},   // סוחרים בלי קווסט: מטבע קטן מעליהם כשמתקרבים
-  talk:{size:42,alpha:0.85,up:62,dx:20},                         // מי שאפשר לדבר איתו עכשיו (כפתור "לדבר" מופיע)
   emote:{ready:'emote_heart',open:'emote_idea',idle:'emote_dots',size:54,dur:1.7,up:64,dx:26},
   stamp:{size:96,up:70},
   hearts:{size:84},
@@ -93,16 +89,8 @@ function fxwPlay(id,x,y,o){if(!fxwOn()||FXW.n>=FXW.cap)return null;const h=fxPla
 
 /* ---- אפקטים קבועים: רשימה של מה שצריך להיות עכשיו, והסנכרון מוסיף ומוריד רק מה שהשתנה ---- */
 function fxwWant(){
-  const want=new Map(),M=FXW.mark,cam=FXW.cam,cw=W_(),ch=H_();
-  // סימני קווסט: מהסימנים שהציור הקיים חישב (fxwMarks)
-  const where=S.vil?'v':'w',marks=FXW.marks[where]||{};
-  const at=id=>S.vil?(typeof npcAt==='function'?npcAt(id):null):(S.wd.npc||{})[id];
-  for(const id in marks){const n=at(id),fx=M[marks[id]];if(n&&fx)want.set('m:'+id+fx,{id:fx,o:n,size:M.size*(marks[id]==='!!'?1.25:1),alpha:M.alpha,dy:-M.up,add:true})}
-  const dlg=S.vil?S.vil.dlg:S.wd.dlg,near=S.vil?S.vil.npcNear:S.wd.npcNear,all=S.vil?(typeof npcState==='function'?npcState():null):S.wd.npc;
-  if(all){
-    if(S.vil)for(const id of FXW.shop.ids.concat(Object.keys(all).filter(k=>/^v/.test(k)))){const n=typeof npcHere==='function'&&npcHere(id)&&all[id];   // הסוחרת, ומי שעברה לגור בכפר וקונה (residents.js)
-      if(n&&!marks[id]&&dlg!==id&&Math.hypot(P.x-n.x,P.y-n.y)<FXW.shop.near)want.set('s:'+id,{id:'npc_shop',o:n,size:FXW.shop.size,alpha:FXW.shop.alpha,dy:-FXW.shop.up})}
-    const T_=FXW.talk;if(near&&all[near]&&!marks[near]&&dlg!==near&&!want.has('s:'+near))want.set('t:'+near,{id:'npc_talk',o:all[near],size:T_.size,alpha:T_.alpha,dy:-T_.up,dx:T_.dx})}
+  const want=new Map(),cam=FXW.cam,cw=W_(),ch=H_();
+  // הסימנים מעל דמויות (קווסט, מסירה, חנות, שיחה) עברו ל-fxvil.js: סימן אחד לכל דמות, במקום העיגול ולא מאחוריו
   if(S.wd){
     // מזג אוויר: אריחים שעוקבים אחרי המצלמה
     const Gu=FXW.gust[fxwReg()],gu=Gu&&fxNowT()<FXW.gustEnd;
@@ -274,7 +262,7 @@ function fxwWxDraw(){
 
 // טעינה מראש של מה שיופיע במקום הזה, כדי שאפקט ראשון (קונפטי, חותמת) לא יפספס את תחילתו
 function fxwPreload(reg){if(typeof fxPreload!=='function')return;const A=FXW.amb[reg]||{day:[],night:[]};
-  fxPreload(['npc_quest','npc_turnin','npc_shop','npc_talk','emote_heart','emote_idea','emote_dots','stamp_done','hearts','win_confetti','balloons','pickup_coin','pickup_gem','pickup_chest','mm_ping',
+  fxPreload(['emote_heart','emote_idea','emote_dots','stamp_done','hearts','win_confetti','balloons','pickup_coin','pickup_gem','pickup_chest','mm_ping',
     'waypoint','quest_mark',...(FXW.shore.reg[reg]?FXW.shore.ids:[]),FXW.step.ground[reg]||FXW.step.def,FXW.step.water,'lava_bubble',...A.day,...A.night,...(FXW.scene[reg]||[]).map(e=>e.id),...FXW.scene.forest.map(e=>e.id),'wt_wave','wt_jump','wt_droplet','hit_water','pl_regrow','st_regen','st_atkup','st_defup','wx_flash',
     ...(P&&P.sw&&P.weapon==='sword'?[fxwTrailId(FXW.trail.kind[P.wt]||'slash',P.dt&&P.dt.sword)]:[]),...(FXW.weather[reg]||[]).map(w=>w[0])])}
 // הסימנים שהציור הקיים כבר חישב: v בכפר (drawQuestMarks), w בעולם (drawWnpcScreen)
