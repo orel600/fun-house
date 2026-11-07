@@ -2363,7 +2363,7 @@ function worldBot(m,L,god){
     enterVillage();tick(2);const all=npcState(),id=Object.keys(all).find(k=>npcHere(k));
     if(id){fxwMarks({[id]:'!'},'v');tick(1);o.mark=[...FXW.live.keys()].some(k=>k==='m:'+id+'npc_quest');S.vil.npcNear=id;fxwMarks({},'v');tick(1);o.talk=FXW.live.has('t:'+id)||FXW.live.has('s:'+id)}
     celebrate(P.x,P.y,'upgrade');o.party=o.ids.has('win_confetti');walk(2);o.stepV=o.ids.has('step_dust');
-    const reg={};for(const r of ['ridge','desert','storm']){SAVE.story.ice=true;enterWorld('home',r);P.inv=99;FXW.t=0;tick(2);walk(2);reg[r]=[...FXW.live.keys()].filter(k=>k.startsWith('w:')).map(k=>k.slice(2).replace(/\d.*/,''))}
+    const reg={};for(const r of ['ridge','desert','storm']){SAVE.story.ice=true;enterWorld('home',r);P.inv=99;FXW.t=0;tick(2);walk(2);reg[r]=[...FXW.wxl.keys()].filter(k=>k.startsWith('w:')).map(k=>k.slice(2).replace(/\d.*/,''))}
     o.weather=reg.ridge.includes('snow')&&(fxwNight()?reg.ridge.includes('aurora'):!reg.ridge.includes('aurora'))&&reg.desert.includes('haze')&&reg.storm.includes('wx_rainheavy');
     o.steps=o.ids.has('step_snow')&&o.ids.has('step_sand');
     walk(400);o.mine=FXW.n;o.cap=FXW.cap;o.all=FXLIB.list.length;o.max=FXLIB.max;   // הרבה הליכה בלי שהזמן עובר: השכבה נעצרת בתקרה
@@ -2377,7 +2377,7 @@ function worldBot(m,L,god){
     o.scene={};for(const r of ['desert','storm','ridge','lake','shadow']){enterWorld('home',r);S.mode='play';P.inv=99;const want=FXW.scene[r].map(e=>e.id);
       for(let i=0;i<12;i++){FXW.sceneT=0;FXW.once.length=0;tick(1)}o.scene[r]=want.some(id=>o.ids.has(id))}
     o.sceneOk=Object.values(o.scene).every(Boolean);
-    const wd=S.wd;S.wd=null;o.ids.clear();P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.arena=FXW.live.size===0&&![...o.ids].some(i=>i.startsWith('tr_'));S.wd=wd;
+    const wd=S.wd;S.wd=null;o.ids.clear();P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.arena=FXW.live.size===0&&FXW.wxl.size===0&&![...o.ids].some(i=>i.startsWith('tr_'));S.wd=wd;
     S.mode=md;P.weapon=wt;P.dt.sword=pdt;
     window.fxPlay=of;o.ids=[...o.ids];enterVillage();return o});
   check(fxw.mark&&fxw.talk&&fxw.party&&fxw.stepV&&fxw.weather&&fxw.steps&&fxw.shore&&fxw.stars&&fxw.arena&&fxw.trailOk&&fxw.sceneOk&&fxw.mine<=fxw.cap&&fxw.all<=fxw.max,

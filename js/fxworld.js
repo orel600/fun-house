@@ -77,7 +77,7 @@ const FXW={
   // מצבים על הגיבור: קטן וקצר, לכל היותר פעם ב-gap שניות לכל אחד
   status:{size:54,up:58,a:0.85,gap:3.5,heal:0.5},   // heal: כמה חיים צריך לעלות בין סנכרונים כדי שזה ייחשב ריפוי
   // ---- מצב חי ----
-  sceneT:1.5,trailH:null,waveT:2,jumpT:5,swA:0,stT:{},hp:null,dead:new Set(),forest:false,
+  sceneT:1.5,trailH:null,wxl:new Map(),wxc:null,wxK:0.5,waveT:2,jumpT:5,swA:0,stT:{},hp:null,dead:new Set(),forest:false,
   live:new Map(),once:[],cam:{x:0,y:0},t:0,ambT:2,lavaT:1,pickT:0,lx:null,ly:null,shoreT:1,reg:'',pingT:0,seen:null,fed:null,marks:{v:null,w:null},n:0
 };
 const fxwOn=()=>FXW.on&&typeof fxPlay==='function'&&!!S&&!S.mb&&!!(S.vil||S.wd)&&!!P;
@@ -115,16 +115,19 @@ const W_=()=>typeof W!=='undefined'?W:900,H_=()=>typeof H!=='undefined'?H:420;
 function fxwSync(){
   const want=fxwWant();
   for(const [k,h] of FXW.live)if(!want.has(k)||!fxwAlive(h)||h.id!==want.get(k).id){fxStop(h);FXW.live.delete(k)}
-  for(const [k,w] of want){if(FXW.live.has(k))continue;
+  // מזג אוויר (w:) בשכבה משלו (fxwWxDraw), לא ברשימה הכללית
+  for(const [k,h] of FXW.wxl)if(k!=='flash'&&(!want.has(k)||!h.on||h.id!==want.get(k).id))FXW.wxl.delete(k);
+  for(const [k,w] of want){if(FXW.live.has(k)||FXW.wxl.has(k))continue;
+    if(k.startsWith('w:')){const h=fxMake(w.id,w.o.x,w.o.y,{follow:w.o,loop:true,size:w.size,alpha:w.alpha,dx:w.dx||0,dy:w.dy||0,flip:!!w.flip});if(h)FXW.wxl.set(k,h);continue}
     const h=fxPlay(w.id,w.o.x,w.o.y,{follow:w.o,loop:true,size:w.size,alpha:w.alpha,dx:w.dx||0,dy:w.dy||0,add:!!w.add,under:!!w.under,flip:!!w.flip});if(h)FXW.live.set(k,h)}
 }
-function fxwStopAll(){for(const h of FXW.live.values())fxStop(h);FXW.live.clear()}
+function fxwStopAll(){for(const h of FXW.live.values())fxStop(h);FXW.live.clear();FXW.wxl.clear()}
 
 /* ---- כל פריים בכפר ובעולם (villageUpdate, worldUpdate) ---- */
 function fxwUpdate(dt){
   if(!fxwOn()){if(FXW.live.size)fxwStopAll();return}
   FXW.cam.x=S.cam.x;FXW.cam.y=S.cam.y;
-  FXW.once=FXW.once.filter(fxwAlive);FXW.n=FXW.once.length+FXW.live.size;
+  FXW.once=FXW.once.filter(fxwAlive);FXW.n=FXW.once.length+FXW.live.size+FXW.wxl.size;
   const reg=fxwReg();if(reg!==FXW.reg){FXW.reg=reg;fxwStopAll();FXW.lx=null;FXW.dead.clear();FXW.hp=null;if(S.wd)fxwPingNow();fxwPreload(reg)}   // אזור חדש: מנקים ומתחילים מחדש, טוענים מראש, ופינג במפה
   if((FXW.t-=dt)<=0){FXW.t=FXW.sync;fxwSync();fxwNews();fxwSlow()}
   // צעדים לפי הקרקע
@@ -198,7 +201,7 @@ function fxwScene(reg){
   const size=e.size<=3?e.size*W_():e.size,a=e.dawn?e.dawn[fxwDawn()?0:1]:e.a;
   const h=fxwPlay(e.id,p.x,p.y,{size,alpha:a,add:!!e.add,dur:e.dur||0,loop:!!e.dur,fps:e.fps,vx:e.vx?e.vx*(Math.random()<0.5?-1:1):0});
   if(!h)return;h.scene=1;
-  if(e.flash&&!RM&&!(typeof fxLess==='function'&&fxLess())&&typeof fxUi==='function')fxUi('wx_flash',W_()/2,H_()/2,{size:Math.max(W_(),H_())*1.2,alpha:e.flash,add:true,fps:60});   // הבזק קצר עם הברק
+  if(e.flash&&!RM&&!(typeof fxLess==='function'&&fxLess())&&typeof fxMake==='function'){const f=fxMake('wx_flash',0,0,{follow:FXW.cam,size:Math.max(W_(),H_())*1.2,alpha:e.flash,add:true,fps:60});if(f)FXW.wxl.set('flash',f)}   // הבזק קצר עם הברק
 }
 // מצב על הגיבור: קטן, מעל הראש, לכל היותר פעם ב-gap
 function fxwStatus(id){const St=FXW.status,now=fxNowT();if(now-(FXW.stT[id]||-99)<St.gap)return;FXW.stT[id]=now;fxwPlay(id,P.x,P.y,{follow:P,dy:-St.up,size:St.size,alpha:St.a})}
@@ -226,6 +229,28 @@ function fxwSlow(){
   const hp=P.hp;if(FXW.hp!==null&&hp>FXW.hp+FXW.status.heal&&hp<P.maxHp)fxwStatus('st_regen');FXW.hp=hp;
   if(P.raging||P.fury>0||P.swapBuff>0)fxwStatus('st_atkup');
   if(P.lockDef>0||P.rooted)fxwStatus('st_defup');
+}
+
+/* מזג אוויר על כל המסך (אריחי FXW.weather והבזק הברק): הציור עולה לפי השטח, ואריח כזה הוא כמעט מסך שלם.
+   שכבה אחת: מצוירת ישר. שתיים או יותר (רכס בלילה: שלג וזוהר, סערה בזמן הבזק): לקנבס קטן (wxK מהרזולוציה, רבע מהפיקסלים)
+   ומשם מתיחה אחת למסך, כך שכל השכבות יחד עולות קצת יותר ממסך אחד ולא מסך לכל שכבה */
+function fxwWxOne(g,f,now){
+  const i=fxFrame(f,now);if(i<0)return false;const im=fxImg(f.id);if(!im)return true;
+  const D=f.D,age=now-f.t0,o=f.follow||f,x=o.x+f.dx+f.vx*age,y=o.y+f.dy+f.vy*age,z=f.size;
+  g.globalAlpha=f.alpha;g.globalCompositeOperation=f.add?'lighter':'source-over';
+  g.save();g.translate(x,y);if(f.flip)g.scale(-1,1);g.drawImage(im,(i%D.c)*D.s,Math.floor(i/D.c)*D.s,D.s,D.s,-z/2,-z/2,z,z);g.restore();return true;
+}
+function fxwWxDraw(){
+  if(!FXW.wxl.size||!fxwOn())return;
+  const now=fxNowT(),L=[...FXW.wxl];
+  const ids=new Set();for(const [,f] of L)ids.add(f.id);
+  if(ids.size<2){ctx.save();for(const [k,f] of L)if(!fxwWxOne(ctx,f,now))FXW.wxl.delete(k);ctx.restore();return}
+  const cv=ctx.canvas,K=FXW.wxK,w=Math.max(1,Math.round(cv.width*K)),h=Math.max(1,Math.round(cv.height*K));
+  let c=FXW.wxc;if(!c){c=FXW.wxc=document.createElement('canvas')}if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+  const g=c.getContext('2d'),m=ctx.getTransform();
+  g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,w,h);g.setTransform(m.a*K,m.b*K,m.c*K,m.d*K,m.e*K,m.f*K);
+  for(const [k,f] of L)if(!fxwWxOne(g,f,now))FXW.wxl.delete(k);
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.drawImage(c,0,0,cv.width,cv.height);ctx.restore();
 }
 
 // טעינה מראש של מה שיופיע במקום הזה, כדי שאפקט ראשון (קונפטי, חותמת) לא יפספס את תחילתו
@@ -260,6 +285,8 @@ function fxwEmote(id){
 /* ---- עטיפות מבחוץ: הפונקציה המקורית רצה כמו שהיא, והאפקט אחריה ---- */
 (()=>{
   const wrap=(name,after)=>{const old=window[name];if(typeof old!=='function')return;window[name]=function(){const r=old.apply(this,arguments);try{after(r,...arguments)}catch(e){}return r}};
+  // מזג האוויר מצויר אחרי כל האפקטים של העולם (render.js קורא fxDraw() פעם אחת בעולם ובכפר)
+  {const old=window.fxDraw;if(typeof old==='function')window.fxDraw=function(u){old.apply(this,arguments);if(u===undefined)try{fxwWxDraw()}catch(e){}}}
   const talkFx=(r,id)=>{if(id&&fxwOn())fxwEmote(id)};
   // סקיל מסתובב (מערבולת): tr_spin בצבע הסקיל כל זמן שהוא פועל. שריון קרח: הגנה עולה (wskbook.js)
   wrap('wsbCast',(r,id,D)=>{if(!D||!fxwOn())return;
