@@ -101,4 +101,4 @@ const ICON={sword:'<path d="M20 4 9.5 14.5M20 4h-4M20 4v4M7 12l5 5M8.5 15.5 4 20
 let swapBag='';
 function swapCheck(){if(!P||!SAVE)return;const k=SAVE.gear.weapon+'|'+wHeld().join(',');if(k!==swapBag){swapBag=k;updateSwapBtn()}}
 function updateSwapBtn(){const w=P?P.weapon:'sword',t=P?P.dt[w]:'physical';const b=$('swap');b.hidden=!P||wHeld().length<2;
-  b.classList.toggle('gun',w==='gun');b.style.setProperty('--dt',dtCol(t));$('ico').innerHTML=ICON[P&&P.wt]||ICON[w];$('swaplbl').textContent=P?wLabel(w):T('w.'+w)}
+  b.classList.toggle('gun',w==='gun');b.style.setProperty('--dt',dtCol(t));if(typeof gWpn==='function')gWpn($('ico'),w,P&&P.wt);else $('ico').innerHTML=ICON[P&&P.wt]||ICON[w];$('swaplbl').textContent=P?wLabel(w):T('w.'+w)}
