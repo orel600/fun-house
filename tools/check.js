@@ -2154,6 +2154,27 @@ function worldBot(m,L,god){
           if(q.width&&getComputedStyle(e).display!=='none'&&r.left<q.right-1&&q.left<r.right-1&&r.top<q.bottom-1&&q.top<r.bottom-1)bad.push(e.id||e.className.split(' ')[0])}
         return r.right>innerWidth||r.left<0?'מחוץ למסך':bad.join(',')})}}
   await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();npcTalk(null);const g=VILLAGE.gate;P.x=g.x;P.y=g.y-90;S.cam.x=P.x;S.cam.y=P.y});
+  // פס המשאבים ליד ☰ (#vBag, #wBag): השבבים יושבים זה ליד זה בלי לעלות אחד על השני, גם עם מספרים ארוכים (8.5K, 12K) ושבב החוק של היום,
+  // בטלפון שוכב ובמסך של ניר (OnePlus 15, 2772x1272 = 1386x636), ובמעבר ישר מהכפר לעולם (פס הכפר לא נשאר מתחת לפס העולם)
+  const pillBad={};
+  for(const [nm,vp] of [['phone',CFG.phone],['nir',{width:1386,height:636}]]){await page.setViewportSize(vp);
+    pillBad[nm]=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),out=[];
+      try{const ks=Object.keys(RES.list).filter(k=>k!=='coins');SAVE.bag.coins=12345;SAVE.bag[ks[0]]=8500;for(const k of ks.slice(1,5))SAVE.bag[k]=3;
+        SAVE.story=SAVE.story||{};if(typeof MUTATION!=='undefined')SAVE.story[MUTATION.after]=true;
+        const look=pl=>{const L=[...document.querySelectorAll('#vhud .res,#vhud .resmore,#whud .res,#whud .resmore,#whud .mutchip,#whud .innchip')].filter(e=>!e.closest('[hidden]')&&getComputedStyle(e).display!=='none'&&e.getBoundingClientRect().width)
+          .map(e=>({e,r:e.getBoundingClientRect(),n:(e.closest('#vhud')?'v:':'w:')+(e.className.split(' ')[0])+'('+e.textContent.trim().slice(0,6)+')'}));
+          const fix=[...document.querySelectorAll('#menuBtn,#miniMap')].filter(e=>!e.closest('[hidden]')&&e.getBoundingClientRect().width).map(e=>({r:e.getBoundingClientRect(),n:e.id}));
+          const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1;
+          for(let i=0;i<L.length;i++){for(let j=i+1;j<L.length;j++)if(hit(L[i].r,L[j].r))out.push(pl+': '+L[i].n+'×'+L[j].n);
+            for(const f of fix)if(hit(L[i].r,f.r))out.push(pl+': '+L[i].n+'×'+f.n);if(L[i].r.left<0||L[i].r.right>innerWidth)out.push(pl+': '+L[i].n+' מחוץ למסך')}
+          if(!L.length)out.push(pl+': אין שבבים')};
+        enterVillage();for(let i=0;i<5;i++)villageUpdate(1/60);hud();look('village');
+        const mf=MUT.force;MUT.force='split';enterWorld('home','meadow');for(let i=0;i<5;i++)worldUpdate(1/60);hud();if(typeof mutHud==='function')mutHud();look('world');MUT.force=mf;
+      }catch(err){out.push(String(err&&err.message||err))}
+      worldUi(false);SAVE=JSON.parse(bak);enterVillage();return out})}
+  await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();npcTalk(null);const g=VILLAGE.gate;P.x=g.x;P.y=g.y-90;S.cam.x=P.x;S.cam.y=P.y});
+  check(!pillBad.phone.length&&!pillBad.nir.length,'שבבי המשאבים ליד ☰: '+(!pillBad.phone.length&&!pillBad.nir.length?'זה ליד זה בלי חפיפה, עם 12K ו-8.5K ושבב החוק, בטלפון ובמסך של ניר, וגם במעבר ישר מהכפר לעולם':
+    'חפיפה: '+[...pillBad.phone.map(x=>'טלפון '+x),...pillBad.nir.map(x=>'ניר '+x)].join(', ')));
   // ניר (31.10.2026): המבוקש נהרג מחוץ לגבולות העולם, והשלל לא נאסף. כאן הוא בורח לקצה ונהרג מעבר לו: הוא נשאר בפנים, והשלל נוחת בפנים ונאסף.
   // וציוד מאויב: פריט שנפל (בכוח) נוחת על הרצפה, נמשך לשחקן ונכנס לתרמיל ולשמירה
   // העלילה, פרק 1 (story.js): ההקדמה אצל ראש הכפר, הרסיס מפיוחו, השומר ליד הפנס, והפנס נדלק
