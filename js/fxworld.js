@@ -78,6 +78,8 @@ const FXW={
   // מצבים על הגיבור: קטן וקצר, לכל היותר פעם ב-gap שניות לכל אחד
   status:{size:54,up:58,a:0.85,gap:3.5,heal:0.5},   // heal: כמה חיים צריך לעלות בין סנכרונים כדי שזה ייחשב ריפוי
   // ---- מצב חי ----
+  // גיליונות שהתוכן שלהם נחתך בשולי הפריים (ערפל שזז, אובך): מרככים את השוליים פעם אחת בטעינה (fxwSoft), אחרת רואים מלבן. inner: עד איפה אטום (חלק מחצי הפריים)
+  soft:{ids:['haze','wx_fog','sf_fog','wx_dust','wx_petals','lr_forest','lr_moon','pl_pollen'],inner:0.45},softDone:{},
   sceneT:1.5,trailH:null,wxl:new Map(),wxc:null,wxK:0.5,waveT:2,jumpT:5,swA:0,stT:{},hp:null,dead:new Set(),forest:false,
   live:new Map(),once:[],cam:{x:0,y:0},t:0,ambT:2,lavaT:1,pickT:0,lx:null,ly:null,shoreT:1,reg:'',pingT:0,seen:null,fed:null,marks:{v:null,w:null},n:0
 };
@@ -131,7 +133,7 @@ function fxwUpdate(dt){
   FXW.cam.x=S.cam.x;FXW.cam.y=S.cam.y;
   FXW.once=FXW.once.filter(fxwAlive);{const now=fxNowT();for(const [k,f] of FXW.wxl)if(fxFrame(f,now)<0)FXW.wxl.delete(k)}FXW.n=FXW.once.length+FXW.live.size+FXW.wxl.size;
   const reg=fxwReg();if(reg!==FXW.reg){FXW.reg=reg;fxwStopAll();FXW.lx=null;FXW.dead.clear();FXW.hp=null;if(S.wd)fxwPingNow();fxwPreload(reg)}   // אזור חדש: מנקים ומתחילים מחדש, טוענים מראש, ופינג במפה
-  if((FXW.t-=dt)<=0){FXW.t=FXW.sync;fxwSync();fxwNews();fxwSlow()}
+  if((FXW.t-=dt)<=0){FXW.t=FXW.sync;fxwSoft();fxwSync();fxwNews();fxwSlow()}
   // צעדים לפי הקרקע
   if(FXW.lx===null){FXW.lx=P.x;FXW.ly=P.y}
   const St=FXW.step,d=Math.hypot(P.x-FXW.lx,P.y-FXW.ly);
@@ -235,6 +237,17 @@ function fxwSlow(){
   const hp=P.hp;if(FXW.hp!==null&&hp>FXW.hp+FXW.status.heal&&hp<P.maxHp)fxwStatus('st_regen');FXW.hp=hp;
   if(P.raging||P.fury>0||P.swapBuff>0)fxwStatus('st_atkup');
   if(P.lockDef>0||P.rooted)fxwStatus('st_defup');
+}
+
+// ריכוך שוליים: עותק של הגיליון בקנבס, וכל פריים מוכפל במסכה עגולה שדועכת לאפס בשוליים. fxImg מחזיר את הקנבס במקום התמונה
+function fxwSoft(){
+  for(const id of FXW.soft.ids){if(FXW.softDone[id])continue;const im=FXLIB.img[id],D=typeof FXDATA!=='undefined'&&FXDATA[id];
+    if(!D||!im||!im.complete||!im.naturalWidth)continue;FXW.softDone[id]=1;
+    const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');g.drawImage(im,0,0);
+    g.globalCompositeOperation='destination-in';const h=D.s/2;
+    for(let k=0;k<D.c*D.r;k++){const x=(k%D.c)*D.s+h,y=Math.floor(k/D.c)*D.s+h,gr=g.createRadialGradient(x,y,h*FXW.soft.inner,x,y,h);
+      gr.addColorStop(0,'#000');gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(x-h,y-h,D.s,D.s)}
+    c.complete=true;c.naturalWidth=c.width;FXLIB.img[id]=c}
 }
 
 /* מזג אוויר על כל המסך (אריחי FXW.weather והבזק הברק): הציור עולה לפי השטח, ואריח כזה הוא כמעט מסך שלם.
