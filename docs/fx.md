@@ -1,0 +1,54 @@
+# ספריית האפקטים (אוראל, 7.11.2026)
+
+43 חבילות אפקטים של Mochi Lab (Mega Bundle, נקנו ב-itch.io) הן מעכשיו הספרייה הקבועה של המשחק לאפקטים ולסקילים.
+**הכלל:** לפני שבונים אפקט, מחפשים קודם כאן. בונים בעצמנו רק אם אין שום דבר שמתאים. ושמים אפקטים בכל מקום שהם מוסיפים חיים: זירה, בוס, משחקי השאול, עולם, כפר ותפריטים.
+
+## איפה הכל
+
+- **החבילות המלאות לא בריפו.** הן 17GB, נקנו, והריפו ציבורי. הסקריפט שמוריד אותן (`fetch-and-extract.sh`) נשלח לאוראל בהודעה פרטית, ולא נכנס לריפו. הוא מוריד מ-Google Drive ומחלץ ל-`public/fx/<חבילה>/`. סביבת הענן `fun-house` כבר פתוחה ל-Drive.
+- **רק מה שבשימוש נכנס לריפו**, מוקטן:
+  - `tools/fx-list.json`: הרשימה. לכל אפקט: id → חבילה, שם הגיליון וגודל פריים בפיקסלים.
+  - `tools/fx-convert.py <תיקיית החבילות>`: ממיר כל אפקט ברשימה ל-`fx/<id>.webp` (בערך 10 עד 290KB), וכותב את `js/fx-data.js`. אפקט שכבר הומר נשאר כמו שהוא, ו-`--all` ממיר הכל מחדש.
+  - `js/fxlib.js`: הנגן. אחד לכל המשחק.
+- כל גיליון הוא רשת של 6 עמודות (24 פריימים, ובחבילות procedural 48). הנגן מנגן 30 פריימים בשנייה, כלומר 0.8 שניות לאפקט רגיל.
+
+## איך משתמשים
+
+```js
+fxPlay('hit_crit', x, y, {size:120, add:true});               // בנקודה בעולם (מעל התלת-ממד, מתיישר איתו)
+fxPlay('sk_wave', u.x, u.y, {follow:shot, rot:ang, loop:true}); // עוקב אחרי יחידה או יריה, ונעלם כשהיא נעלמת (dead/gone)
+const h=fxPlay('sk_rage', u.x, u.y, {follow:u, loop:true, dur:5}); fxStop(h);   // אפקט שחוזר
+fxUi('ui_toast', W/2, 90);                                      // על המסך: ממשק, חלונות, מעברים
+fxPreload(['levelup','ko']);                                    // לטעון מראש כשנכנסים למקום
+```
+אפשרויות: `size` (פיקסלים של המשחק), `rot`, `flip`, `alpha`, `add` (אור: אש, ברק, זוהר), `loop`, `dur`, `fps`, `follow`, `dx`/`dy`, ו-`vx`/`vy` (תזוזה).
+
+- **ביצועים לטלפון:** עד 70 אפקטים בעולם ועד 14 במסך (`FXLIB.max`). כשמגיעים לגבול, הוותיק נזרק. התמונות נטענות רק כשצריך.
+- **ערפל במשחקי השאול:** אפקט במקום שהקבוצה שלי לא רואה לא מצויר, כדי שלא יסגיר אויב נסתר (`fxSeen`).
+- **בלי הקבצים:** המשחק רץ כרגיל. אפקט שהתמונה שלו לא נטענה מדלג בשקט.
+- **מעבר מקום:** `reset()` מנקה את כל האפקטים (`fxClear`).
+
+## האפקטים (122)
+
+השמות ב-`tools/fx-list.json`. תמונה של כל האפקטים: `docs/refs/fx-gallery.png`.
+- **סקילים במשחקי השאול:** `sk_<id>` לכל סקיל (סדן, קריאת קרב, חומה, גל חרב, סיבוב, זעם, חץ ברק, רשת, גשם חצים, גל מים, כלא מים, סופת קרח), ו-`ult_cast`/`ult_ray` לסקיל-על.
+- **לחשים:** `sp_*`. **חזרה לבסיס:** `recall`.
+- **מצבים על אויב:** `st_wet`, `st_burn`, `st_freeze`, `st_shock`, `st_stun`, `st_slow`, `st_poison`, `st_weak`.
+- **פגיעות:**
+  - לפי סוג נזק: `hit`, `hit_fire`, `hit_ice`, `hit_light`, `hit_water`, `hit_earth`, `hit_metal`.
+  - חזקות: `hit_crit`, `hit_heavy`, `dmg_crit`.
+- **יריות ותקיפה רגילה:** `shot_arrow`, `shot_orb`, `shot_basic`, `slash`.
+- **רמה, הריגה ומבנים:** `levelup`, `levelup_ring`, `ko`, `ko_soul`, `ko_boss`, `tower_hit`, `tower_fall`, `debris`.
+- **צבע קבוצה:** `glow_ally`, `glow_enemy`.
+- **בוס, אזהרות:** `tg_circle`, `tg_growing`, `tg_ring`, `tg_line`, `tg_cone`, `tg_target`, `tg_charge`, `tg_skull`.
+- **ניצחון וחדר ההימור:** `win_fireworks`, `win_confetti`, `coins`, `gamble_win`, `gamble_lose`.
+- **ממשק:** `ui_*` (הודעות, הישגים, XP, מטבעות, נגיעה, ריחוף, קנייה, נדירות, טעינה, מעבר), `ui_juice`, `globe_frame`, `halo_ach`.
+- **כפר ועולם:**
+  - דמויות ותקשורת: `npc_*`, `emote_*`, `stamp_done`, `hearts`.
+  - טבע: `fireflies`, `leaves`, `petals`, `bloom`.
+  - מזג אוויר וצעדים: `rain`, `snow`, `aurora`, `step_*`.
+  - סימונים: `waypoint`, `quest_mark`, `mm_ping`.
+  - סביבה: `lava_bubble`, `water_ripple`, `stars`, `bubbles_bg`, `haze`, `balloons`.
+- **איסוף:** `pickup_*`.
+
+אפקט חדש: מוסיפים שורה ב-`tools/fx-list.json` (שם החבילה והגיליון מתוך `public/fx/<חבילה>/<חבילה>/sprite_sheets/`), מריצים את `tools/fx-convert.py`, ומוסיפים אותו לרשימה כאן.
