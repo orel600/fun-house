@@ -172,7 +172,8 @@ function wmDraw(){
   $('wMap').innerHTML=winHead('🗺️ '+T('wm.title'))+
     '<div class="wmcols"><section><h4>'+T('wm.world')+'</h4><div class="wmbox"><canvas id="wmWorld"></canvas></div></section>'+
     '<section><h4>'+T('w.region.'+S.wd.reg)+' <small>★ '+T('wm.here')+'</small></h4><div class="wmbox"><canvas id="wmHere"></canvas></div></section></div>'+
-    (SAVE.story&&SAVE.story.end?tierRow():'')+travelMapRow()+wsMapRow()+   // בחירת הדרגה רק אחרי סוף הסיפור (tiers.js). לפני, שלוש דרגות נעולות רק מסיחות
+    '<div class="wmbar">'+(SAVE.story&&SAVE.story.end?tierRow():'')+travelMapRow()+'</div>'+wsMapRow()+   // wmbar: לרוחב בשורה אחת, כדי שהמפה לא תתכווץ (ביקורת 7.11.2026, ממצא 6)
+       // בחירת הדרגה רק אחרי סוף הסיפור (tiers.js). לפני, שלוש דרגות נעולות רק מסיחות
     '<p class="wmkey">'+[$('wSec').textContent,$('chTag').hidden?'':$('chTag').textContent].filter(Boolean).map(s=>'<b>'+s+'</b>').join(' ')+' '+T('wm.key')+'</p>';   // 🔍 ו-🌀 עברו מהפס העליון לכאן (docs/plan-hud.md)   // דרגת העולם (tiers.js)
   wmDrawWorld();wmDrawHere();
 }

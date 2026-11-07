@@ -90,8 +90,8 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
 .swap:not([hidden])~.skills .skb:nth-child(1){--w:72px;--x:116px;--y:0px}
 .swap:not([hidden])~.skills .skb:nth-child(2){--x:84px;--y:84px}
 .swap:not([hidden])~.skills .skb:nth-child(3){--x:0px;--y:116px}
-.skb .dti{width:34px;height:34px;transition:opacity .15s}
-.skb:nth-child(1) .dti{width:40px;height:40px}
+.skb .dti{width:var(--ic-l);height:var(--ic-l);transition:opacity .15s}
+.skb:nth-child(1) .dti{width:var(--ic-l);height:var(--ic-l)}
 .skb:not(.ready) .dti{opacity:.45}   /* בטעינה: האייקון דהוי, והשניות באמצע */
 .skb i{position:absolute;inset:0;border-radius:50%;pointer-events:none;
   background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
@@ -110,7 +110,7 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
   touch-action:none;cursor:pointer;overflow:hidden;--dt:#D46BFF}
 .divine[hidden]{display:none}
 .swap:not([hidden])~.divine{bottom:calc(env(safe-area-inset-bottom,0px) + 194px);right:calc(env(safe-area-inset-right,0px) + 186px)}
-.divine .dti{width:30px;height:30px}
+.divine .dti{width:var(--ic-m);height:var(--ic-m)}
 .divine i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
 .divine.ready{box-shadow:0 0 12px var(--gold)}
 .divine:focus-visible{outline:3px solid var(--chalk);outline-offset:3px}
@@ -122,7 +122,7 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
   touch-action:none;cursor:pointer;overflow:hidden;background:radial-gradient(circle at 50% 35%,#2E3854e6,#141A2Ae6 72%);
   box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 4px 10px #000a;transition:transform .08s}
 .ult[hidden]{display:none}
-.ult .dti{width:30px;height:30px;transition:opacity .15s}
+.ult .dti{width:var(--ic-m);height:var(--ic-m);transition:opacity .15s}
 .ult:not(.ready) .dti{opacity:.45}
 .ult i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,1)*360deg),transparent 0)}
 .ult.ready{box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 0 16px var(--dt)}
@@ -154,7 +154,7 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
   border-radius:50%;border:3px solid #E9D8A6;color:#E9D8A6;display:grid;place-items:center;padding:0;overflow:hidden;touch-action:none;cursor:pointer;
   background:radial-gradient(circle at 50% 35%,#2E3854e6,#141A2Ae6 72%);box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 4px 10px #000a}
 .swap:not([hidden])~.spellb{right:calc(env(safe-area-inset-right,0px) + 97px);bottom:calc(env(safe-area-inset-bottom,0px) + 209px)}
-.spellb .dti{width:22px;height:22px}
+.spellb .dti{width:var(--ic-s);height:var(--ic-s)}
 .spellb:not(.ready) .dti{opacity:.45}
 .spellb i{position:absolute;inset:0;border-radius:50%;pointer-events:none;background:conic-gradient(rgba(10,12,20,.72) calc(var(--cd,0)*360deg),transparent 0)}
 .spellb.ready{box-shadow:inset 0 2px 0 #ffffff22,inset 0 -4px 6px #0008,0 0 0 2px var(--wood),0 0 10px #E9D8A688}
@@ -706,9 +706,9 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .stdmg{margin:4px 0 0;font:800 14px var(--body);color:var(--chalk)}
 .strows{display:flex;flex-direction:column;gap:4px}
 .strow{display:flex;align-items:center;gap:8px;background:rgba(18,22,36,.6);border:1px solid var(--line);border-radius:10px;padding:2px 6px}
-.sti{font-size:20px;width:26px;text-align:center}
-.sti .ski{width:28px;height:28px;object-fit:contain;vertical-align:middle}
-.trb h4 .ski,.vbtn .ski{width:1.4em;height:1.4em;object-fit:contain;vertical-align:-.35em}
+.sti{font-size:20px;width:var(--ic-m);text-align:center}
+.sti .ski{width:var(--ic-m);height:var(--ic-m);object-fit:contain;vertical-align:middle}
+.trb h4 .ski,.vbtn .ski{width:var(--ic-s);height:var(--ic-s);object-fit:contain;vertical-align:-.3em}
 .stn{flex:1;display:flex;flex-direction:column;line-height:1.15;min-width:0}
 .stn b{font:800 14px var(--body)}
 .stn small{font-size:11px;color:var(--dim)}
@@ -739,10 +739,10 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .vbtn:active:not(:disabled){transform:translateY(2px)}
 .vbtn:disabled{background:url(../icons/ui/btn-off.png) center/100% 100% no-repeat;color:#E4E4E4;text-shadow:0 1px 0 #444}
 .vbtn.ghost{background:url(../icons/ui/btn-dark.png) center/100% 100% no-repeat;border:0;color:var(--chalk);text-shadow:none}
-.res .ri,.ti .ri,.tp .ri,.gtile .ri{width:1.35em;height:1.35em;vertical-align:-.3em;object-fit:contain}
+.res .ri,.ti .ri,.tp .ri,.gtile .ri{width:var(--ic-s);height:var(--ic-s);vertical-align:-.3em;object-fit:contain}
 .gtile .ri{width:70%;height:70%}
-.gdicon .ri{width:42px;height:42px}
-#qBtn .ni,#gearBtn .ni{font-size:0;width:30px;height:30px;background:center/contain no-repeat}
+.gdicon .ri{width:var(--ic-l);height:var(--ic-l)}
+#qBtn .ni,#gearBtn .ni{font-size:0;width:var(--ic-m);height:var(--ic-m);background:center/contain no-repeat}
 #qBtn .ni{background-image:url(../icons/ui/nav-quests.png)}#gearBtn .ni{background-image:url(../icons/ui/nav-gear.png)}
 .trkey{margin:4px 0 0;font:800 11px var(--body);color:var(--gold)}.tror{margin:-2px 0;text-align:center;font:700 11px var(--body);color:var(--dim)}.trn.gone{opacity:.3}
 .bname{color:var(--chalk);background:rgba(255,138,61,.2);border:1px solid var(--ember);border-radius:8px;padding:0 6px}
@@ -800,7 +800,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .bpic.big{font-size:44px;width:64px;height:64px}
 .bkrew{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center}
 .bkrew.ready{border-color:var(--gold)}
-.bkrew .ri{width:1.35em;height:1.35em;vertical-align:-.3em;object-fit:contain}
+.bkrew .ri{width:var(--ic-s);height:var(--ic-s);vertical-align:-.3em;object-fit:contain}
 .bkbar{width:100%;height:10px;border-radius:5px;background:#0006;overflow:hidden}
 .bkbar i{display:block;height:100%;background:var(--gold)}
 .bkclaim{appearance:none;min-height:48px;min-width:140px;border-radius:12px;border:2px solid #0006;background:linear-gradient(#FFD86B,#E0A92E);color:var(--ink);
@@ -831,7 +831,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   border:2px solid #3A4566;background:linear-gradient(#2C3654,#1D2438);font:800 13px/1.1 var(--body);text-align:center}
 .dday small{font:800 12px var(--body);opacity:.8}
 .dday span{display:flex;align-items:center;gap:2px;font-size:13px}
-.dday .ri{width:30px;height:30px}.dday span .ri{width:16px;height:16px}
+.dday .ri{width:var(--ic-m);height:var(--ic-m)}.dday span .ri{width:var(--ic-s);height:var(--ic-s)}
 .dday.big{grid-column:span 2}
 .dday .dchest{width:52px;height:52px;object-fit:contain}
 .dday.now{border-color:var(--gold);box-shadow:0 0 14px rgba(244,199,79,.55);animation:tpulse 1.2s ease-in-out infinite alternate}
@@ -840,7 +840,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .dside{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
 .dside h3{margin:0;color:var(--gold);font:900 20px var(--body)}
 .dside ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font:700 15px var(--body)}
-.dside li{display:flex;align-items:center;gap:6px}.dside li .ri{width:26px;height:26px}
+.dside li{display:flex;align-items:center;gap:6px}.dside li .ri{width:var(--ic-m);height:var(--ic-m)}
 .dside .dim{font-size:13px;opacity:.8;margin:2px 0}
 .dside .vbtn{margin-top:auto;min-height:48px}
 .dgift{position:relative;width:48px;height:48px;flex:none;
@@ -874,7 +874,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .visres,.visamt,.visnotes{display:flex;flex-wrap:wrap;gap:6px}
 .vispick{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .visr{position:relative;width:48px;height:48px;border-radius:10px;border:2px solid var(--line,#2A3249);background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center}
-.visr .ri{width:32px;height:32px}.visr small{position:absolute;bottom:1px;inset-inline-end:3px;font:800 11px var(--body);color:var(--chalk)}
+.visr .ri{width:var(--ic-m);height:var(--ic-m)}.visr small{position:absolute;bottom:1px;inset-inline-end:3px;font:800 11px var(--body);color:var(--chalk)}
 .visn,.visnote{min-height:44px;padding:0 10px;border-radius:10px;border:2px solid var(--line,#2A3249);background:rgba(255,255,255,.05);color:var(--chalk);font:800 14px var(--body)}
 .visr.on,.visn.on,.visnote.on{border-color:var(--gold);box-shadow:0 0 8px rgba(244,199,79,.45)}
 .visn:disabled{opacity:.4}
@@ -889,7 +889,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .trdarrow{align-self:center;font:900 24px var(--body);color:var(--gold)}
 .trdfoot{display:flex;flex-direction:column;gap:6px}
 .trdinc{overflow-y:auto;flex:1;min-height:0}
-.trdd{display:inline-flex;align-items:center;gap:2px;vertical-align:middle}.trdd .ri{width:24px;height:24px}.trdd b{font:800 13px var(--body)}
+.trdd{display:inline-flex;align-items:center;gap:2px;vertical-align:middle}.trdd .ri{width:var(--ic-s);height:var(--ic-s)}.trdd b{font:800 13px var(--body)}
 .trdrow{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:12px;background:rgba(255,255,255,.06)}
 .trdrow.mine small{flex:1;opacity:.8;font-size:12px}
 .trdwho{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}.trdwho small{font:700 13px var(--body)}
@@ -923,6 +923,11 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
   .wmcols{flex-direction:row}
   .wmcols section:first-child{flex:5}
   .wmcols section:last-child{flex:4}
+  /* דרגת העולם ו"לאן?" בשורה אחת, וההסבר לידם: אחרי סוף הסיפור המפה התכווצה ל-78px והשמות עלו זה על זה (ביקורת 7.11.2026) */
+  .wmbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+  .wmbar .tierrow{flex:1 1 auto;flex-wrap:nowrap}
+  .wmbar .tierrow small{flex:1 1 120px;line-height:1.2}
+  .wmbar .trrow{margin:0}
 }
 /* "תודה ששיחקת": הסוף של העלילה (storyEndOpen ב-story.js) */
 .endwin{width:min(560px,92vw);max-height:calc(100dvh - 32px);overflow:auto;display:flex;flex-direction:column;gap:10px;padding:12px 16px;color:var(--chalk);animation:dpop .16s ease-out;text-align:center}
@@ -959,7 +964,7 @@ body.menu #nav,body.menu .menubtn,body.menu .dgift,body.menu .vtop{display:none!
   background:linear-gradient(#2C3654,#1D2438);color:var(--chalk);font:800 11px/1 var(--body);cursor:pointer;box-shadow:0 3px 0 #0B0E18;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;white-space:nowrap;touch-action:manipulation}
 .mtab[hidden]{display:none}
-.mtab .ni{font-size:22px;line-height:1}
+.mtab .ni{font-size:24px;line-height:1}
 .mtab[aria-selected=true]{border-color:var(--gold);color:var(--gold);background:linear-gradient(#3A3220,#241F14)}
 .mtab:active{transform:scale(.92)}
 .mtab:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
@@ -999,7 +1004,7 @@ body.menu #ovGear .gearpanel{height:100%}
 .qr{appearance:none;position:relative;width:var(--qrs);height:var(--qrs);border-radius:12px;border:2px solid #3A4566;padding:0;pointer-events:auto;
   background:linear-gradient(#2C3654,#1D2438);color:var(--chalk);font:800 9px/1 var(--body);cursor:pointer;box-shadow:0 2px 0 #0B0E18;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;white-space:nowrap;touch-action:manipulation}
-.qr .ni{font-size:20px;line-height:1}
+.qr .ni{font-size:24px;line-height:1}
 .qr:active{transform:scale(.92)}
 .qr:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
 .qrdot{position:absolute;top:-4px;inset-inline-end:-4px;width:13px;height:13px;border-radius:50%;border:2px solid var(--ink);background:var(--blood);box-shadow:0 1px 3px #000a;pointer-events:none}
@@ -1054,7 +1059,7 @@ body:not(.vil):not(.world) .guide{display:none}
 .welrow b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .welic{font-size:22px;width:28px;text-align:center}
 .welgot{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
-.welgot .ri,.welsum .ri{width:22px;height:22px}
+.welgot .ri,.welsum .ri{width:var(--ic-s);height:var(--ic-s)}
 .welrow.daily{border-color:var(--gold)}
 .welgo{align-self:center;width:100%;max-width:340px;min-height:52px;font-size:18px}
 .weldone{margin:0;text-align:center;color:var(--gold);font:900 22px var(--body)}
@@ -1174,7 +1179,7 @@ body.menu .minimap{display:none!important}
 .stfree.stnone{margin:0;font-size:11px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 #ovGear .strows{display:grid;grid-template-columns:minmax(0,1fr);gap:4px}
 .strow{gap:5px;padding:2px 3px 2px 5px;min-height:0}
-.sti{width:24px;font-size:18px}.sti .ski{width:24px;height:24px}
+.sti{width:var(--ic-m);font-size:18px}
 .stn b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .stn small{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #ovGear .stplus{width:40px;height:40px;font-size:20px;border-radius:9px}
@@ -1498,7 +1503,7 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 .wsbc.lock,.sigc.lock{opacity:.5;cursor:default}
 .sigc{grid-column:1/-1}
 .wsbi{position:relative;flex:none;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#0006;box-shadow:0 0 0 2px var(--dt)}
-.wsbi .dti{width:22px;height:22px}
+.wsbi .dti{width:var(--ic-s);height:var(--ic-s)}
 .wsbi.pic{overflow:hidden}.wsbi .wsbp,.skrfly .wsbp{width:100%;height:100%;border-radius:50%;display:block}
 .wsbp{width:1.3em;height:1.3em;object-fit:contain;vertical-align:-.3em}
 .wsbi em{position:absolute;bottom:-4px;inset-inline-end:-6px;font-style:normal;font-size:15px}
@@ -1818,7 +1823,9 @@ body:has(#ovMoba:not([hidden])) #muteBtn{display:none}
 .skpbar{pointer-events:auto}.skpbar span{overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .skpbar .skpt{min-width:28px;text-align:center;font-size:20px;color:var(--gold)}
 /* כפתורי ההקשר בעולם (לדבר, להאכיל, לדוג, פנס): בשורה למטה, משמאל לקשת הסקילים, ולא מעליה. הפינה הימנית התחתונה רק לסקילים (docs/ui-guide.md) */
-.world .bnav{bottom:calc(env(safe-area-inset-bottom,0px) + 30px);right:calc(env(safe-area-inset-right,0px) + 228px);max-width:calc(60% - 228px)}
+/* מקום קבוע משמאל לסקיל החתימה (#sig: 216px מהקצה + 78px רוחב) ולאולטימייט, כדי ש-🥕 "האכל" לא ייגע בכוכב (ניר, סרטון 7.11) */
+.world .bnav{bottom:calc(env(safe-area-inset-bottom,0px) + 30px);right:calc(env(safe-area-inset-right,0px) + 306px);max-width:calc(60% - 306px)}
+@media (orientation:portrait){.world .bnav{bottom:calc(env(safe-area-inset-bottom,0px) + 126px);right:calc(env(safe-area-inset-right,0px) + 216px);max-width:calc(100% - 232px)}}   /* טלפון עומד: אין מקום משמאל, אז מעל סקיל החתימה */
 /* זירת גלים (arenas.js): המונה "גל 3/10" בשעון במקום התחנות של הזירה הרגילה, ובלי פס התחנות */
 /* רקע כהה משלו: מה שמצויר בקנבס מתחת (החיה, אויבים, אפקטים) לא מסתיר את הטקסט. inline-block ולא נמתח, כדי שלא יגיע לשכנים בשורה */
 .clock .wavetag{display:inline-block;font-family:var(--display);font-size:15px;line-height:1.2;color:var(--gold);margin-top:6px;white-space:nowrap;background:rgba(10,12,20,.72);border-radius:10px;padding:1px 9px}
@@ -1946,3 +1953,26 @@ body:not(.world):not(.vil) .hud .gearbtn:active{transform:scale(.92)}
   background:linear-gradient(transparent,#1A2033 55%)}   /* "יש עוד למטה" בחלון שגולל (scrollMore ב-travel.js) */
 .more>.scrmore{display:block}
 .sndpanel>.scrmore{bottom:-16px;margin:4px -16px -16px}   /* ההגדרות עם ריפוד 16 */
+
+/* ---- אייקונים: סולם גדלים אחד (קטן/בינוני/גדול) בשני הסגנונות, והמסגרות של האייקונים החדשים (js/gicons.js, docs/concept-icons.md) ---- */
+:root{--ic-s:20px;--ic-m:28px;--ic-l:40px;--ic-ring:#C9A23E}
+.gi{fill:currentColor;color:var(--gold);flex:none;filter:drop-shadow(0 1.5px 1px #000c)}
+/* כפתור סקיל: צללית בצבע סוג הנזק, שפה בצבע סוג הנזק וטבעת זהב דקה. בטעינה: דהוי */
+.skb.gif{background:radial-gradient(circle at 50% 40%,#2A3352,#121624 70%);box-shadow:0 0 0 2px var(--ic-ring),0 0 0 3px #5A4310}
+.skb.gif.ready{box-shadow:0 0 0 2px var(--ic-ring),0 0 0 3px #5A4310,0 0 12px var(--dt)}
+.skb .gsk{width:var(--ic-l);height:var(--ic-l);transition:opacity .15s;position:relative}
+.skb.gif:not(.ready) .gsk{opacity:.45}
+.world .skb.gif::before{content:none!important}   /* בלי הציור והאימוג'י מ-wskbook.js: הצללית כבר אומרת איזה סקיל */
+/* העיגול בכרטיס בספר הסקילים: אותה מסגרת בקטן */
+.wsbi.gif{width:40px;height:40px;background:#121624;box-shadow:0 0 0 2px var(--dt),0 0 0 3px var(--ic-ring)}
+.wsbi.gif .gi{width:var(--ic-m);height:var(--ic-m)}
+.skrfly .gi.wsbp{width:70%;height:70%;margin:auto}
+/* העץ: בצבע הענף */
+.trb .gi,.trb h4 .gi{color:var(--br)}
+.sti .gi{width:var(--ic-m);height:var(--ic-m);vertical-align:middle}
+.trb h4 .gi,.vbtn .gi{width:var(--ic-s);height:var(--ic-s);vertical-align:-.3em}
+.credits{font-size:11px;color:var(--dim);margin-top:10px}
+/* סרגל התפריט (gNav): צללית זהב במסגרת עץ. הלשונית הפתוחה שומרת את המראה שלה */
+.gnav .ni{font-size:0;width:var(--ic-m);height:var(--ic-m);background:none!important;display:block}
+.gnav .ni .gi{width:100%;height:100%;color:var(--gold)}
+.mtab.gnav:not([aria-selected=true]),.qr.gnav{border-color:#8A6A2A;background:linear-gradient(#6B4A2B,#3E2A18)}

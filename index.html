@@ -1,10 +1,10 @@
-<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- התקנה כאפליקציה בטלפון (js/pwa.js) -->
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#121624">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="שישה פנסים">
-<title>שישה פנסים · Six Lanterns</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Six Lanterns">
+<title>Six Lanterns</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&family=Secular+One&display=swap">
 <link rel="stylesheet" href="css/style.css">
@@ -174,10 +174,6 @@
 <div class="ov start" id="ovStart">
   <div class="panel spanel">
     <div class="stop">
-      <div class="langs" role="group" data-ta="langGroup">
-        <button class="lang" data-lang="he" lang="he">עברית</button>
-        <button class="lang" data-lang="en" lang="en">English</button>
-      </div>
       <button class="lang" id="helpBtn" data-t="help.btn"></button>
       <button class="lang mbbtn" id="mbBtn" data-t="mb.btn"></button>
     </div>
@@ -309,6 +305,9 @@
     </div>
     <!-- הצג כובע: הכובע של משבצת הראש על הדמות (js/armor.js, נשמר ב-SAVE.showHat). ההגנה נשארת גם כשכבוי -->
     <div class="sub"><span data-t="hatGroup"></span><div class="langs" role="group" data-ta="hatGroup"><button class="lang" data-hat="1" data-t="shadow.on"></button><button class="lang" data-hat="0" data-t="shadow.off"></button></div></div>
+    <!-- אייקוני סקילים: חדש (game-icons.net) / קלאסי (הציורים והאימוג'י). js/gicons.js, נשמר ב-SAVE.icons.sk -->
+    <div class="sub"><span data-t="gicoGroup"></span><div class="langs" role="group" data-ta="gicoGroup"><button class="lang" data-gk="sk" data-gico="new" data-t="gico.new"></button><button class="lang" data-gk="sk" data-gico="classic" data-t="gico.old"></button></div></div>
+    <div class="sub"><span data-t="gicoNav"></span><div class="langs" role="group" data-ta="gicoNav"><button class="lang" data-gk="nav" data-gico="new" data-t="gico.new"></button><button class="lang" data-gk="nav" data-gico="classic" data-t="gico.old"></button></div></div>
     <!-- צללים מהשמש בכפר ובעולם: נדלקים לבד, ונכבים לבד בטלפון איטי (js/look-hd.js, HD.shadow). בחירה כאן מנצחת את האוטומטי -->
     <div class="sub shd"><span data-t="shadowGroup"></span><div class="langs" role="group" data-ta="shadowGroup"><button class="lang" data-shadow="1" data-t="shadow.on"></button><button class="lang" data-shadow="0" data-t="shadow.off"></button></div></div>
     <!-- מונה FPS קטן בתחתית המסך: FPS ממוצע והפריים הכי איטי ב-2 השניות האחרונות (js/perf.js, נשמר ב-zm-fps). גם ?fps=1 בכתובת -->
@@ -321,6 +320,8 @@
     <div id="setSkin"></div>
     <!-- גרסה ועדכון (js/update-check.js) -->
     <div class="sub upd"><span id="updLine"></span> <button class="lang" id="updCheckBtn" data-t="upd.check"></button> <span id="updNote"></span></div>
+    <!-- קרדיטים: האייקונים מ-game-icons.net (CC BY 3.0). הרשימה המלאה: docs/credits.md -->
+    <p class="sub credits" data-t="credits.icons"></p>
     <!-- דיווח באג: דוח + צילום מסך לשיתוף או ללוח (js/bugreport.js). גם לחיצה ארוכה על מספר הגרסה -->
     <button class="lang" id="bugBtn" data-t="bug.btn"></button>
   </div>
@@ -347,6 +348,8 @@
 <script src="js/resources.js"></script>
 <script src="js/weapons.js"></script>
 <script src="js/save.js"></script>
+<script src="js/gicons-data.js"></script>   <!-- הצורות של האייקונים (נוצר ב-tools/gicons.js) -->
+<script src="js/gicons.js"></script>   <!-- אייקונים אחידים מ-game-icons.net, חדש/קלאסי בהגדרות (docs/concept-icons.md) -->
 <script src="js/cloud.js"></script>
 <script src="js/run.js"></script>
 <script src="js/arena-scale.js"></script>
@@ -410,6 +413,7 @@
 <script src="js/foeai.js"></script>
 <script src="js/ridge-hazards.js"></script>   <!-- הרכס הקפוא: מפולות במדרון ואגם שמחליקים בו -->
 <script src="js/secrets.js"></script>
+<script src="js/wlife.js"></script>    <!-- עולם עם חיים: מחנות, שרידים וחיות שבורחות -->
 <script src="js/worldmap.js"></script>
 <script src="js/curiosity.js"></script>
 <script src="js/travel.js"></script>
@@ -467,6 +471,7 @@
 <script src="js/skills-more.js"></script>   <!-- סקילים נוספים לזירה: שביט, חנית קרח ופריחה (SKMORE), עם ציור דק משלהם -->
 <script src="js/vendor/three-bundle.js"></script>
 <script src="js/models3d.js"></script>
+<script src="js/m3d.js"></script>   <!-- מודלים לפי צורך: מה שלא בליבה נטען מ-js/m3d/ כשצריך (לפני render3d.js, שמשתמש בו בפתיחה) -->
 <script src="js/render3d.js"></script>
 <script src="js/rares.js"></script>   <!-- מפלצות נדירות במקומות נסתרים בעולם, לקווסט הדרגה (אחרי render3d.js ו-book.js, שהוא מוסיף להם) -->
 <script src="js/questboard.js"></script>   <!-- קווסטים צדדיים: מקומות לחקור ולהגן, ולוח מודעות בכל אזור (אחרי render3d.js, שאותו הוא מוסיף ל-LOOK3D) -->
@@ -482,6 +487,7 @@
 <script src="js/arena-look.js"></script>   <!-- מראה הזירה: רצפת אבן, תאורה ואובך כמו בעולם, חותמות לסוגי הנזק, רונות שפועמות וכניסת הבוס -->
 <script src="js/vfx.js"></script>   <!-- אופי: אווירה לכל אזור, שעה ביום, אור סביב הגיבור וקו אור בקצוות שלו (VFX). ?vfx=off מכבה -->
 <script src="js/vfx3d.js"></script>   <!-- ערכת אפקטים בתלת-ממד: חלקיקים, גל הדף, מכתש, אור וזוהר (VFX3D). איכות בהגדרות -->
+<script src="js/readable3d.js"></script>   <!-- קריאות: רואים את הגיבור דרך עצים, טבעת לבנה מתחתיו, ואויבים בולטים מהדשא (READ3D). רק בכפר ובעולם -->
 <script src="js/skfx3d.js"></script>   <!-- מתכונים של סקילים בתלת-ממד (SKFX3D.register), כל סקיל בקובץ משלו -->
 <script src="js/skfx3d-meteor.js"></script>   <!-- המטאור: נופל מהשמיים ומתפוצץ -->
 <script src="js/skfx3d-volley.js"></script>   <!-- מטר החצים: חצים יורדים מהשמיים ונועצים באדמה -->
@@ -498,8 +504,13 @@
 <script src="js/skfx3d-vortex.js"></script>   <!-- מערבולת: משפך מים מסתובב שבולע טיפות -->
 <script src="js/petfx3d.js"></script>
 <script src="js/lake-bell.js"></script>   <!-- אגם הערפל: פעמון שמעלים את הערפל לדקה, וגשרים צפים שמתנדנדים (אחרי look-hd.js ו-vfx.js, שאותם הוא מחליש) -->   <!-- האש של פיוחו בשלב 3: זנב בוער, גחלים ושלהבת בנשיכה -->
+<script src="js/fxworld.js"></script>   <!-- שכבת אפקטים לכפר ולעולם מספריית האפקטים: סימנים, מזג אוויר, צעדים, איסוף וחגיגות (FXW). עוטף כמה פונקציות מבחוץ -->
+<script src="js/fxvil.js"></script>     <!-- סימנים מעל דמויות (קווסט, מסירה, חנות, שיחה) ועלייה בדרגה מהספרייה (FXV) -->
+<script src="js/fxcombat.js"></script>   <!-- אפקטים של קרב בעולם: אזהרות על הרצפה, פגיעה ומוות לפי סוג נזק, כרייה (FXC). עוטף את nodeDown -->
 <script src="js/render.js"></script>
 <script src="js/feed.js"></script>   <!-- פיד הודעות בצד, בעולם ובכפר (docs/plan-hud.md פרק 6) -->
+<script src="js/msglane.js"></script>   <!-- עמודת הודעות אחת בעולם ובכפר: קטנות בתור, גדולה רק לרגעים גדולים ולא באמצע קרב, ולא על כפתורים או על הגיבור -->
+<script src="js/labels.js"></script>   <!-- שמות מעל אויבים בעולם: עד 3 מלאים, השאר אייקון, לא עולים אחד על השני ולא על כפתורים (LABELS) -->
 <script src="js/moba-kits.js"></script>   <!-- משחקי השאול: מובה 3 על 3 עם בוטים (docs/moba.md) -->
 <script src="js/moba-fx.js"></script>   <!-- משחקי השאול: חלקיקים, הבזק, עצירת פריים ורגע הסקיל-על -->
 <script src="js/moba-look.js"></script>   <!-- משחקי השאול: אייקונים, רצפה ומפה קטנה -->

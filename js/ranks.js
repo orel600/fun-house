@@ -47,7 +47,7 @@ function rankCall(lv){
   const q=QUESTS.list.find(q=>q.kind==='rank'&&q.reward.rank===lv/RANKS.every);
   if(!q||QS().done[q.id])return false;
   const txt=T('rank.call',T('npc.'+q.giver)[0]);
-  banner(txt,C.lilac);if(typeof feedTitle==='function')feedTitle(txt,C.lilac);
+  if(typeof msgOn==='function'&&msgOn())msgBig(txt,C.lilac);else banner(txt,C.lilac);if(typeof feedTitle==='function')feedTitle(txt,C.lilac);   // דרגה: רגע גדול (msglane.js)
   if(P)celebrate(P.x,P.y-20,'rank','🎖️');
   return true;
 }
@@ -72,7 +72,7 @@ function rankUp(tier){
   SAVE.hero.rank=tier;SAVE.hero.rankId=id;
   gApply(R.bonus,1);P.hp=P.maxHp;   // הבונוס חל מיד, וגם בכל ריצה מעכשיו
   saveNow();
-  celebrate(P.x,P.y-10,'rank',R.icon);   // הטקס: עמוד אור, ניצוצות וצליל (fx.js)
+  celebrate(P.x,P.y-10,'rankup',R.icon);   // הטקס: עמוד אור זהב, מדליה, ניצוצות וצליל (fx.js, fxvil.js). שונה מרמה רגילה ('rank')
   banner(T('rank.up',rankName(id)),R.col);
   return id;
 }

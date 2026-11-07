@@ -339,11 +339,14 @@ function drawQuestMarks(ox,oy){
     if(!q.giver||!npcHere(q.giver))continue;
     if(ready)mark[q.giver]='✓';else if(qOpen(q)&&(q.kind==='rank'||!mark[q.giver]))mark[q.giver]=q.kind==='rank'?'!!':'!';   // דרגה: סימן גדול וסגול, שלא מתפספס (ניר, 5.11)
   }
+  if(typeof fxwMarks==='function')fxwMarks(mark,'v');   // הסימנים בשביל ה-emote בשיחה (fxworld.js)
   ctx.textAlign='center';ctx.direction='ltr';ctx.font='800 22px Heebo, system-ui, sans-serif';
   const bob=Math.sin(fxNow()*4)*4;
+  if(typeof fxvNpcIcons==='function')fxvNpcIcons(mark,'v',(id,n)=>({x:n.x+ox,y:n.y-NPC.markUp+oy-7}));   // חנות או שיחה למי שאין סימן קווסט (fxvil.js)
   for(const k in mark){const N=npcAt(k);if(!N)continue;const x=N.x+ox,y=N.y-NPC.markUp+oy+bob,rk=mark[k]==='!!',m=rk?'!':mark[k];
     if(rk)edgeArrow(N.x+ox,N.y+oy,C.lilac,1.5,true);   // ומחוץ למסך: חץ אליה (render.js)
     if(rk){ctx.fillStyle='rgba(199,166,255,'+(0.25+Math.sin(fxNow()*5)*0.12)+')';ctx.beginPath();ctx.arc(x,y-7,26,0,7);ctx.fill()}
+    if(typeof fxvMark==='function'&&fxvMark(mark[k],x,y-7-bob))continue;   // הסימן מספריית האפקטים (fxvil.js), ובלי התמונה: העיגול הישן
     ctx.fillStyle='rgba(18,22,36,0.85)';ctx.beginPath();ctx.arc(x,y-7,rk?19:15,0,7);ctx.fill();ctx.fillStyle=rk?C.lilac:C.gold;if(rk)ctx.font='800 28px Heebo, system-ui, sans-serif';ctx.fillText(m,x,y+(rk?3:1));if(rk)ctx.font='800 22px Heebo, system-ui, sans-serif'}
   ctx.direction=DIR;
   const t=n?String(n):'';if($('qBadge').textContent!==t){$('qBadge').textContent=t;$('qBadge').hidden=!n}
