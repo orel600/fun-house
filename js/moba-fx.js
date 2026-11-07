@@ -93,7 +93,7 @@ function mbfxNum(x,y,txt,col,o,src,t){
   const F=mbfxS();if(F.n.length>=MBFX.nums||!(t&&t.k==='hero'||src===MB.me))return mbFloat(x,y,txt,col);   // גדול רק על גיבור, או של השחקן
   const stack=F.n.filter(n=>n.life>0.55&&Math.abs(n.x-x)<40&&Math.abs(n.y-y)<40).length;x+=rand(-14,14);y-=stack*20;   // כמה מכות באותו מקום: אחד מעל השני, לא אחד על השני
   F.n.push({x,y,txt:String(txt)+(o.crit?'!':''),col:o.crit&&!(t&&t.me)?C.gold:col,life:1,crit:!!o.crit});
-  if(o.crit)mbfxSpray(x,y+18,5,160,160,C.gold,0.35,3);
+  if(o.crit){mbfxSpray(x,y+18,5,160,160,C.gold,0.35,3);mbfxPush(F.top||(F.top=[]),'dmg_crit',x,y-30,{size:110,alpha:0.95})}   // CRIT! מאחורי המספר (MBLIB)
   const mine=mbfxMe()&&(src===MB.me||t===MB.me);
   if(mine&&(o.crit||+txt>=MBFX.stop.need)&&F.stopCd<=0){F.stop=MBFX.stop.t;F.stopCd=MBFX.stop.cool;mbfxShake(MBFX.shake.hit)}
 }
@@ -106,14 +106,15 @@ function mbfxDraw(){
     const k=Math.max(0.25,u.st.shield/(u.st.shieldMax||u.st.shield)),col=MOBA.team[u.team];
     ctx.globalAlpha=0.16*k+0.06;ctx.fillStyle=col;ctx.beginPath();ctx.arc(u.x,u.y-22,u.r+16,0,7);ctx.fill();
     ctx.globalAlpha=0.5*k+0.2;ctx.strokeStyle='#E8F4FF';ctx.lineWidth=2;ctx.beginPath();ctx.arc(u.x,u.y-22,u.r+16,-2.6+MB.t*2,-0.6+MB.t*2);ctx.stroke()}
-  mbfxMarks();mbfxShots();
+  mbfxUnits();mbfxMarks();mbfxShots();
   ctx.globalCompositeOperation='lighter';
   for(const p of F.p){if(!mbVisPt(p.x,p.y))continue;const k=p.life/p.t0;ctx.globalAlpha=Math.min(1,k*1.6);ctx.fillStyle=p.col;const s=p.size*(0.4+0.6*k);ctx.fillRect(p.x-s/2,p.y-p.z-s/2,s,s)}
   ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+  fxDrawList(F.top||(F.top=[]));   // סימני מצב ו-CRIT!, מתחת למספרים (MBLIB)
   ctx.textAlign='center';ctx.direction='ltr';ctx.lineJoin='round';
-  for(const n of F.n){if(!mbVisPt(n.x,n.y))continue;const age=1-n.life,pop=age<0.12?1+(0.12-age)*5:1,sz=(n.crit?28:22)*pop;
+  for(const n of F.n){if(!mbVisPt(n.x,n.y))continue;const age=1-n.life,pop=age<0.12?1+(0.12-age)*5:1,sz=(n.crit?30:24)*pop*mbUiK();
     ctx.globalAlpha=Math.min(1,n.life*2.5);ctx.font='900 '+Math.round(sz)+'px Heebo, system-ui, sans-serif';
-    ctx.lineWidth=4;ctx.strokeStyle='#0B0A12';ctx.strokeText(n.txt,n.x,n.y);ctx.fillStyle=n.col;ctx.fillText(n.txt,n.x,n.y)}
+    ctx.lineWidth=5;ctx.strokeStyle='#0B0A12';ctx.strokeText(n.txt,n.x,n.y);ctx.fillStyle=n.col;ctx.fillText(n.txt,n.x,n.y)}
   ctx.globalAlpha=1;ctx.direction=DIR;
 }
 // סימנים על יחידות: רשת ושורשים ברגליים של מי שלכוד (st.root), ובועת מים סביב מי שהורם (st.bub). בקנבס, ולכן גם מעל התלת-ממד
@@ -158,4 +159,86 @@ function mbfxScreen(){
   ctx.globalAlpha=k;ctx.textAlign='center';ctx.direction=DIR;ctx.font='900 '+sz+'px Heebo, system-ui, sans-serif';ctx.lineJoin='round';
   const ty=H*MBFX.ult.y;ctx.lineWidth=6;ctx.strokeStyle='#0B0A12';ctx.strokeText(U.txt,W/2,ty);ctx.fillStyle=U.col;ctx.fillText(U.txt,W/2,ty);
   ctx.fillStyle='#FFF4D8';ctx.fillRect(W/2-90*k,ty+12,180*k,3);ctx.globalAlpha=1;
+}
+
+/* ---- משוב קרב מספריית האפקטים (אוראל, 7.11.2026: משחק עם כל 4 הגיבורים). fxlib.js, docs/fx.md ----
+   תקיפה רגילה: יריה עפה (חץ, כדור, יריית חייל) או חיתוך, ופגיעה לפי סוג הנזק. מספרים גדולים עם קו מתאר, קריטי עם CRIT!,
+   עליית רמה, סימני מצב מעל הראש כל עוד המצב נמשך (רטוב, בוער, קפוא, הלם...), הריגה, מגדל שנפגע ונופל, וטבעת זוהרת בצבע הקבוצה.
+   הטבעות והסימנים חוזרים (loop) ולכן יושבים ברשימות משלהם (MB.fxs.under/top), כדי שאפקט חולף לא יזרוק אותם מ-FXLIB.list */
+const MBLIB={
+  shot:{hunter:'shot_arrow',mage:'shot_orb',minion:'shot_basic',size:{hunter:70,mage:46,minion:34}},
+  hit:{physical:'hit',fire:'hit_fire',ice:'hit_ice',lightning:'hit_light',water:'hit_water',earth:'hit_earth',metal:'hit_metal'},
+  hitSize:{hero:64,minion:40,crit:96},
+  slash:96,                    // החיתוך של תקיפה מקרוב (טנק, לוחם, חייל קרוב)
+  busy:52,                     // יותר מזה אפקטים חולפים בעולם: פגיעות של חיילים בחיילים מדלגים (FXLIB.max=70)
+  lvl:{me:170,ally:100},       // עליית רמה: גדול לי, קטן לחבר
+  ko:140,tower:{hit:110,fall:300,debris:220,hitCd:0.35,shake:2,barT:0.9},
+  glow:{size:110,a:0.75},        // טבעת קבוצה מתחת לגיבור: עדינה
+  st:{size:38,gap:30,y:72,over:36},   // y: גובה פס החיים מעל הרגליים, over: כמה מעליו (כפול mbUiK)    // סימני מצב: גודל, רווח ביניהם, וכמה מעל הרגליים (בפיקסלים של המשחק, כפול mbUiK)
+  // מצב ← אפקט. הסדר הוא הסדר מעל הראש. לכוד ומורם: הרשת והבועה עצמן מצוירות ב-mbfxMarks, וכאן רק הסימן
+  stOrder:[['ice','st_freeze'],['stun','st_stun'],['root','st_slow'],['wet','st_wet'],['burn','st_burn'],['slow','st_slow'],['exh','st_weak']],
+  heal:{every:0.6,min:8,col:'#7BD88F'},   // מספרי ריפוי (בסיס, חיים מהנזק): מצטברים ויוצאים פעם ב-every שניות
+};
+const mbfxOn=(x,y)=>mbfxSeen(x,y)&&(typeof mbVisPt!=='function'||mbVisPt(x,y));
+// אפקט חולף בעולם (בדיקה: MBFX.log סופר לפי שם)
+function mbfxLib(id,x,y,o){if(!mbfxOn(x,y))return null;const f=fxPlay(id,x,y,o);if(f&&MBFX.log)MBFX.log[id]=(MBFX.log[id]||0)+1;return f}
+function mbfxPush(list,id,x,y,o){const f=fxMake(id,x,y,o);if(f){list.push(f);if(MBFX.log)MBFX.log[id]=(MBFX.log[id]||0)+1}return f}
+// יריה של תקיפה רגילה: האפקט עף עם היריה (follow) ונעלם כשהיא פוגעת
+function mbfxShot(s,u){
+  const k=u.k==='minion'?'minion':u.kit,id=MBLIB.shot[k];if(!id)return;
+  const f=mbfxLib(id,s.x,s.y,{follow:s,loop:true,rot:Math.atan2(s.tgt.y-s.y,s.tgt.x-s.x),size:MBLIB.shot.size[k],add:true});
+  if(f&&fxImg(id))s.lib=1;   // יש תמונה: בלי הנקודה של הקנבס
+}
+// פגיעה של תקיפה רגילה (מקרוב או יריה): התפוצצות לפי סוג הנזק. חייל בחייל רק כשאין עומס
+function mbfxImpact(src,t,dt,crit,melee){
+  if(!t||t.k==='tower'||t.k==='base')return;
+  const hero=t.k==='hero'||src&&src.k==='hero';if(!hero&&FXLIB.list.length>MBLIB.busy)return;
+  const S2=MBLIB.hitSize,y=t.y-t.r-6;
+  if(melee&&src&&(src.k==='hero'||!(FXLIB.list.length>MBLIB.busy*0.7)))mbfxLib('slash',t.x,y,{rot:Math.atan2(t.y-src.y,t.x-src.x),size:MBLIB.slash*(src.k==='hero'?1:0.6),add:true});
+  mbfxLib(crit?'hit_crit':MBLIB.hit[dt]||'hit',t.x,y,{size:crit?S2.crit:t.k==='hero'?S2.hero:S2.minion,add:true});
+}
+// עליית רמה: אני גדול, חבר קטן
+function mbfxLevel(h){
+  if(!h.me&&h.team!==MB.me.team)return;const s=h.me?MBLIB.lvl.me:MBLIB.lvl.ally;
+  mbfxLib('levelup',h.x,h.y-30,{follow:h,dy:-30,size:s,add:true});
+  if(mbfxOn(h.x,h.y))mbfxPush(mbfxS().under||(mbfxS().under=[]),'levelup_ring',h.x,h.y,{follow:h,size:s*0.8,add:true});
+}
+// גיבור נפל: ko על אויב, נשמה עולה על חבר
+function mbfxKo(t){mbfxLib(t.team===MB.me.team?'ko_soul':'ko',t.x,t.y-24,{size:MBLIB.ko,add:t.team!==MB.me.team})}
+// מגדל או בסיס נפגע: ניצוץ ורעידה קטנה (לא יותר מפעם ב-hitCd)
+function mbfxTower(b){
+  const T2=MBLIB.tower;if((b.fxHit||-9)>MB.t-T2.hitCd)return;b.fxHit=MB.t;
+  if(mbfxLib('tower_hit',b.x+rand(-10,10),b.y-(b.k==='base'?70:50),{size:T2.hit,add:true}))mbfxShake(T2.shake);
+}
+// מגדל נפל: קריסה ורסיסים, ופס החיים מתפרק (mbfxBar)
+function mbfxFall(b){const T2=MBLIB.tower;b.fallT=MB.t;mbfxLib('tower_fall',b.x,b.y-50,{size:T2.fall,add:true});mbfxLib('debris',b.x,b.y-20,{size:T2.debris})}
+// מספר ריפוי ירוק: מצטבר, ויוצא פעם ב-every שניות
+function mbfxHeal(u,v){
+  if(!(v>0)||u.dead)return;u.healAcc=(u.healAcc||0)+v;const H=MBLIB.heal;
+  if(u.healAcc>=H.min&&!((u.healAt||-9)>MB.t-H.every)){if(mbShow(u))mbFloat(u.x+rand(-6,6),u.y-u.r-30,'+'+Math.round(u.healAcc),H.col,u.k==='hero'?1.2:0.9);u.healAcc=0;u.healAt=MB.t}
+}
+// טבעות הקבוצה וסימני המצב: נבנים מחדש כשצריך, ונעצרים כשהמצב נגמר או שהיחידה יצאה מהמסך או מהראייה
+function mbfxUnits(){
+  const F=mbfxS(),U=F.under||(F.under=[]),Tp=F.top||(F.top=[]),L=MBLIB.st,uk=mbUiK(),alive=(f,l)=>f&&f.on&&l.includes(f);
+  for(const u of MB.u){
+    if(u.k!=='hero'&&u.k!=='minion')continue;const H=u.fxh||(u.fxh={});
+    const on=!u.dead&&mbShow(u)&&mbfxSeen(u.x,u.y);
+    if(u.k==='hero'){const want=on&&MBLIB.glow.a>0;
+      if(want&&!alive(H.glow,U))H.glow=mbfxPush(U,u.team===MB.me.team?'glow_ally':'glow_enemy',u.x,u.y,{follow:u,loop:true,size:MBLIB.glow.size,alpha:MBLIB.glow.a,add:true,dy:2});
+      else if(!want&&H.glow){fxStop(H.glow);H.glow=null}}
+    const s=u.st,ids=[];
+    if(on)for(const [k,id] of MBLIB.stOrder){const v=k==='stun'?s.stun>0&&!s.ice:k==='ice'?s.ice>0&&s.stun>0:s[k]>0;if(v&&!ids.includes(id))ids.push(id)}
+    const top=u.k==='hero'?L.y+L.over*uk:L.y*0.62+L.over*0.5*uk;   // מעל תג הערכה (גיבור) או מעל פס החיים (חייל)
+    for(const id in H){if(id==='glow')continue;if(!ids.includes(id)){fxStop(H[id]);delete H[id]}}
+    ids.forEach((id,i)=>{let f=H[id];if(!alive(f,Tp))f=H[id]=mbfxPush(Tp,id,u.x,u.y,{follow:u,loop:true,size:L.size*uk,add:id!=='st_slow'&&id!=='st_weak'});
+      if(f){f.dx=(i-(ids.length-1)/2)*L.gap*uk;f.dy=-top;f.size=L.size*uk*(u.k==='hero'?1:0.8)}});
+  }
+}
+// פס חיים של מבנה שנפל: מתפרק לשני חצאים שנופלים ודוהים (נקרא מ-mobaDraw)
+function mbfxBar(b,col){
+  const k=(MB.t-b.fallT)/MBLIB.tower.barT;if(!(k>=0&&k<1))return;
+  const base=b.k==='base',bw=base?84:60,top=b.y-(base?96:74)-(base?48:38),uk=mbUiK(),dy=k*k*60,a=1-k;
+  ctx.save();ctx.translate(b.x,top+8);ctx.scale(uk,uk);ctx.globalAlpha=a;
+  for(const sd of [-1,1]){ctx.save();ctx.translate(sd*bw/4+sd*k*18,dy-8);ctx.rotate(sd*k*0.9);ctx.fillStyle='#000a';ctx.fillRect(-bw/4-1,-1,bw/2+2,8);ctx.fillStyle=k<0.15?col:'#fff';ctx.fillRect(-bw/4,0,bw/2*(1-k),6);ctx.restore()}
+  ctx.restore();
 }
