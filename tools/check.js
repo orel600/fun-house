@@ -2505,7 +2505,7 @@ function worldBot(m,L,god){
     enterVillage();tick(2);
     celebrate(P.x,P.y,'upgrade');o.party=o.ids.has('win_confetti');walk(2);o.stepV=o.ids.has('step_dust');
     const reg={};for(const r of ['ridge','desert','storm']){SAVE.story.ice=true;FXW.gustEnd=0;FXW.gustT=99;enterWorld('home',r);P.inv=99;FXW.t=0;tick(2);walk(2);reg[r]=[...FXW.wxl.keys()].filter(k=>k.startsWith('w:')).map(k=>k.slice(2).replace(/\d.*/,''))}
-    o.weather=reg.ridge.includes('snow')&&(fxwNight()?reg.ridge.includes('aurora'):!reg.ridge.includes('aurora'))&&reg.desert.includes('haze')&&reg.storm.includes('wx_rainheavy');
+    o.weather=wxwCore()||reg.ridge.includes('snow')&&(fxwNight()?reg.ridge.includes('aurora'):!reg.ridge.includes('aurora'))&&reg.desert.includes('haze')&&reg.storm.includes('wx_rainheavy');
     o.steps=o.ids.has('step_snow')&&o.ids.has('step_sand');
     walk(400);o.mine=FXW.n;o.cap=FXW.cap;o.all=FXLIB.list.length;o.max=FXLIB.max;   // הרבה הליכה בלי שהזמן עובר: השכבה נעצרת בתקרה
     // באגם על קו המים: אדוות או בועות (בלי הליכה, אז לא מהצעדים). בלב הצל: כוכבים. ובזירה (בלי עולם וכפר): הכל כבה
@@ -2519,9 +2519,20 @@ function worldBot(m,L,god){
       for(let i=0;i<12;i++){FXW.sceneT=0;FXW.once.length=0;tick(1)}const wx=id=>[...FXW.wxl.values()].some(h=>h.id===id);if(FXW.gust[r]){FXW.gustT=0;tick(1);tick(1)}   // רכס: משב סופת שלג מחליף את אריחי השלג
       o.scene[r]=want.some(id=>o.ids.has(id)||wx(id))||!!FXW.gust[r]&&wx(FXW.gust[r].to)}
     o.sceneOk=Object.values(o.scene).every(Boolean);
+    // 7.11 (WXW, wxworld.js): מזג האוויר הנכון לכל אזור, סערה שמתקדמת במצבים, כפר עם גשם קל, ומצויר מתחת לאפקטים ולמספרי הנזק
+    {const core=wxwCore(),r={},has=id=>[...FXW.wxl.values()].some(h=>h.id===id);
+      enterWorld('home','meadow');P.inv=99;tick(1);WXW.t=0;tick(1);r.cycle=WXW.st==='building';wxwSet('storm');tick(1);
+      r.meadow=core?/^(meadow|forest)\|/.test(WXW.key):has('wx_rainheavy');
+      enterWorld('home','ridge');P.inv=99;tick(1);const rc=wxwCfg('ridge');r.ridge=WXW.reg==='ridge'&&(rc.theme==='arctic'||rc.theme==='night')&&rc.storm[0][0]==='snow_blizzard';
+      enterWorld('home','desert');P.inv=99;tick(1);r.desert=wxwCfg('desert').theme!=='temperate'&&wxwCfg('desert').storm.some(v=>v[0]==='wind_tornado');
+      enterWorld('home','storm');P.inv=99;tick(1);r.storm=WXW.st==='storm';
+      enterVillage();tick(1);wxwSet('storm');tick(1);r.village=core?WXW.key.startsWith('village|'):has('rain');wxwSet('calm');tick(1);
+      r.under=String(juiceDraw).includes('fxwWxDraw')&&!String(fxDraw).includes('fxwWxDraw');
+      o.wxw=r;o.wxwOk=Object.values(r).every(Boolean)}
     const wd=S.wd;S.wd=null;o.ids.clear();P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.arena=FXW.live.size===0&&FXW.wxl.size===0&&![...o.ids].some(i=>i.startsWith('tr_'));S.wd=wd;
     S.mode=md;P.weapon=wt;P.dt.sword=pdt;
     window.fxPlay=of;o.ids=[...o.ids];enterVillage();return o});
+  check(fxw.wxwOk,'מזג אוויר בעולם ובכפר (wxworld.js): '+Object.entries(fxw.wxw||{}).map(([k,v])=>(v?'✓ ':'✗ ')+k).join(' · '));
   check(fxw.party&&fxw.stepV&&fxw.weather&&fxw.steps&&fxw.shore&&fxw.stars&&fxw.arena&&fxw.trailOk&&fxw.sceneOk&&fxw.mine<=fxw.cap&&fxw.all<=fxw.max,
     'אפקטים בכפר ובעולם: '+(fxw.party?'קונפטי בחגיגה':'בלי קונפטי')+
     (fxw.stepV&&fxw.steps?', צעדים לפי הקרקע':', בלי צעדים')+(fxw.weather?', מזג אוויר לפי אזור':', מזג אוויר חסר')+(fxw.shore?', אדוות על קו המים באגם':', בלי אדוות באגם')+(fxw.stars?', כוכבים בלב הצל':', בלי כוכבים בצל')+(fxw.trailOk?', שובל אש על הנפה':', שובל חסר או בצבע לא נכון ('+fxw.trail+')')+(fxw.sceneOk?', אווירה לכל אזור':', אווירה חסרה ב-'+Object.keys(fxw.scene).filter(k=>!fxw.scene[k]).join('/'))+(fxw.arena?', כבוי בזירה':', פועל בזירה!')+', '+fxw.mine+'/'+fxw.cap+' אפקטים של השכבה ('+fxw.all+'/'+fxw.max+' בכל המשחק)');
