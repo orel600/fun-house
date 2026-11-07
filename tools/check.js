@@ -3585,7 +3585,7 @@ function worldBot(m,L,god){
   const mmap=await(async()=>{const o={};try{
     const cdp=await page.context().newCDPSession(page),E=(f,a)=>page.evaluate(f,a);
     const touch=async(type,pts)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:pts.map(([id,x,y])=>({id,x,y}))});
-    await E(()=>{mobaOpen();document.querySelector('#mbWin [data-kit="hunter"]').click();render()});
+    await E(()=>{mobaOpen();document.querySelector('#mbWin [data-kit="hunter"]').click();const go=document.querySelector('#mbWin [data-bact="go"]');if(go)go.click();render()});   // go: מסך הבנייה (moba-spells.js)
     const px=(x,y)=>E(([x,y])=>{const l=mbMiniLay();return [l.X(x),l.Y(y)]},[x,y]);
     const st=()=>E(()=>{const g=giantCam(),me=MB.me;for(let i=0;i<20;i++){S.cam.x+=(P.x+giantCam().x-S.cam.x)*0.3;S.cam.y+=(P.y+giantCam().y-S.cam.y)*0.3}   // כמו main.js: המצלמה הולכת אל P + giantCam
       return {x:S.cam.x,y:S.cam.y,free:MBCAM.free,pid:MBCAM.pid,g}});
