@@ -10,6 +10,7 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 
 ### Delapouite (http://delapouite.com) - CC BY 3.0
 
+- backpack
 - biceps
 - enrage
 - falling-star
@@ -23,21 +24,25 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - stone-bust
 - sword-brandish
 - tree-roots
+- warhammer
 
 ### Lorc (http://lorcblog.blogspot.com) - CC BY 3.0
 
 - arrow-cluster
+- battle-axe
 - big-wave
 - bleeding-wound
 - broadsword
 - burning-meteor
 - checked-shield
 - clover
+- cog
 - comet-spark
 - crossed-swords
 - crystal-growth
 - earth-crack
 - earth-spit
+- fairy-wand
 - ghost
 - high-shot
 - ice-shield
@@ -50,16 +55,19 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - magnifying-glass
 - meteor-impact
 - mountains
+- open-book
 - rainbow-star
 - return-arrow
 - rock
 - run
 - sands-of-time
+- scroll-unfurled
 - snowflake-2
 - sprint
 - spyglass
 - star-swirl
 - stone-tower
+- treasure-map
 - vine-whip
 - vortex
 - whirlwind
