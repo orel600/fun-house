@@ -9,7 +9,7 @@
    נשמר ב-SAVE.tier: {t:הדרגה, w:הדרגה הגבוהה שבה ניצחת את הצל, k:הריגות בדרגה 2 ומעלה}. הטקסטים ב-lang.js תחת 'tier.' */
 const TIERS={
   /* לכל דרגה: hp, dmg פי כמה לאויב רגיל. big: פי כמה לשומר, נדירה, מבוקש ונמסיס. loot: סיכוי להגרלת שלל נוספת. coins: מטבעות נוספים בכל הריגה.
-     gw: פי כמה המשקל של כל שכבת ציוד (עץ, ברזל, כסף, זהב, אגדי; GEAR.tiers) בציוד שנופל בעולם. 0 = לא נופל בדרגה הזאת.
+     gw: פי כמה האחוז של כל שכבת ציוד (עץ, ברזל, כסף, זהב, אגדי; GEAR.tiers) בציוד שנופל בעולם. 0 = לא נופל בדרגה הזאת.
      bigLoot: מה ששומר, נדירה או מבוקש מפילים בנוסף בדרגה הזאת (בפורמט של runGive). gear: 1 = גם חפץ בטוח (בהגרלה של בוס, LOOT.gear.boss)
      כוונון קצב (5.11, docs/playtime-2026-11-05.md): ה-XP איטי פי 3, אז בדרגות הגבוהות יש יותר "רגעים טובים" לשעה, ולא יותר חיים לאויבים:
      gearK: פי כמה הסיכוי לציוד מאויב (lootGear ב-loot.js). rareAgain: כל כמה שניות באזור עוד הגרלה של מפלצת נדירה (rareUpdate ב-rares.js). 0 = רק בכניסה */
@@ -50,7 +50,7 @@ function tierWin(e){
 // כניסה לעולם (enterWorld): הדרגה הנוכחית בשורה קטנה, רק כשהיא מעל רגיל
 function tierEnter(){const t=tierNow();if(t<2||!S.wd)return;const txt='⚔️ '+T('tier.title')+': '+T('tier.n'+t);
   if(typeof feedOn==='function'&&feedOn())feedAdd('⚔️',txt,TIERS.list[t-1].col,'tier');else banner(txt,TIERS.list[t-1].col)}
-// ציוד שנופל בעולם (lootRoll ב-loot.js): המשקלות של LOOT.gear.tier, כפול gw של הדרגה. בזירה ובעומק לא משתנה
+// ציוד שנופל בעולם (lootRoll ב-loot.js): האחוזים של LOOT.gear.tier, כפול gw של הדרגה. בזירה ובעומק לא משתנה
 function tierGearW(W){if(!S.wd||S.wd.dp)return W;const g=TIERS.list[tierNow()-1].gw;return W.map((w,i)=>w*(g[i]==null?1:g[i]))}
 // פי כמה ציוד מאויבים (lootGear), וכל כמה שניות עוד הגרלה של נדירה באזור (rareUpdate). רק בעולם, לא בעומק
 const tierGearK=()=>!S.wd||S.wd.dp?1:TIERS.list[tierNow()-1].gearK||1;
