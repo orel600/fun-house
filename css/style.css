@@ -742,7 +742,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .res .ri,.ti .ri,.tp .ri,.gtile .ri{width:var(--ic-s);height:var(--ic-s);vertical-align:-.3em;object-fit:contain}
 .gtile .ri{width:70%;height:70%}
 .gdicon .ri{width:var(--ic-l);height:var(--ic-l)}
-#qBtn .ni,#gearBtn .ni{font-size:0;width:30px;height:30px;background:center/contain no-repeat}
+#qBtn .ni,#gearBtn .ni{font-size:0;width:var(--ic-m);height:var(--ic-m);background:center/contain no-repeat}
 #qBtn .ni{background-image:url(../icons/ui/nav-quests.png)}#gearBtn .ni{background-image:url(../icons/ui/nav-gear.png)}
 .trkey{margin:4px 0 0;font:800 11px var(--body);color:var(--gold)}.tror{margin:-2px 0;text-align:center;font:700 11px var(--body);color:var(--dim)}.trn.gone{opacity:.3}
 .bname{color:var(--chalk);background:rgba(255,138,61,.2);border:1px solid var(--ember);border-radius:8px;padding:0 6px}
@@ -959,7 +959,7 @@ body.menu #nav,body.menu .menubtn,body.menu .dgift,body.menu .vtop{display:none!
   background:linear-gradient(#2C3654,#1D2438);color:var(--chalk);font:800 11px/1 var(--body);cursor:pointer;box-shadow:0 3px 0 #0B0E18;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;white-space:nowrap;touch-action:manipulation}
 .mtab[hidden]{display:none}
-.mtab .ni{font-size:22px;line-height:1}
+.mtab .ni{font-size:24px;line-height:1}
 .mtab[aria-selected=true]{border-color:var(--gold);color:var(--gold);background:linear-gradient(#3A3220,#241F14)}
 .mtab:active{transform:scale(.92)}
 .mtab:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
@@ -999,7 +999,7 @@ body.menu #ovGear .gearpanel{height:100%}
 .qr{appearance:none;position:relative;width:var(--qrs);height:var(--qrs);border-radius:12px;border:2px solid #3A4566;padding:0;pointer-events:auto;
   background:linear-gradient(#2C3654,#1D2438);color:var(--chalk);font:800 9px/1 var(--body);cursor:pointer;box-shadow:0 2px 0 #0B0E18;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;white-space:nowrap;touch-action:manipulation}
-.qr .ni{font-size:20px;line-height:1}
+.qr .ni{font-size:24px;line-height:1}
 .qr:active{transform:scale(.92)}
 .qr:focus-visible{outline:3px solid var(--chalk);outline-offset:2px}
 .qrdot{position:absolute;top:-4px;inset-inline-end:-4px;width:13px;height:13px;border-radius:50%;border:2px solid var(--ink);background:var(--blood);box-shadow:0 1px 3px #000a;pointer-events:none}
@@ -1967,3 +1967,7 @@ body:not(.world):not(.vil) .hud .gearbtn:active{transform:scale(.92)}
 .sti .gi{width:var(--ic-m);height:var(--ic-m);vertical-align:middle}
 .trb h4 .gi,.vbtn .gi{width:var(--ic-s);height:var(--ic-s);vertical-align:-.3em}
 .credits{font-size:11px;color:var(--dim);margin-top:10px}
+/* סרגל התפריט (gNav): צללית זהב במסגרת עץ. הלשונית הפתוחה שומרת את המראה שלה */
+.gnav .ni{font-size:0;width:var(--ic-m);height:var(--ic-m);background:none!important;display:block}
+.gnav .ni .gi{width:100%;height:100%;color:var(--gold)}
+.mtab.gnav:not([aria-selected=true]),.qr.gnav{border-color:#8A6A2A;background:linear-gradient(#6B4A2B,#3E2A18)}

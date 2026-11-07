@@ -607,6 +607,7 @@ const TEXT={
   'fpsGroup':{he:'הצג FPS',en:'Show FPS'},   // perf.js
   'hatGroup':{he:'הצג כובע',en:'Show hat'},   // armor.js
   'gicoGroup':{he:'אייקוני סקילים',en:'Skill icons'},   // gicons.js
+  'gicoNav':{en:'Menu icons'},   // gicons.js
   'gico.new':{he:'חדש',en:'New'},
   'gico.old':{he:'קלאסי',en:'Classic'},
   'credits.icons':{he:'אייקונים: Lorc, Delapouite ויוצרים נוספים מ-game-icons.net, ברישיון CC BY 3.0. הצבעים והמסגרות שונו.',en:'Icons by Lorc, Delapouite and other contributors from game-icons.net, licensed under CC BY 3.0. Colors and frames were changed.'},
