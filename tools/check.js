@@ -3815,7 +3815,8 @@ function worldBot(m,L,god){
     if(typeof MBWX!=='undefined'){const X=MBWX,w={},t0=MB.t,f0=X.falls,fl0=X.fl,b0=X.bolts.length;
      w.rain=X.core||!!X.h;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;const k2=mbWxK(MB);MB.t=t0;w.build=k1<0.1&&k2>k1+0.5;
      const mt=MB.u.find(b=>b.k==='tower'&&b.team===0),fake=b=>mbUnit({k:'tower',team:b.team,x:b.x,y:b.y,r:b.r,hp:1,max:1});
-     const sv=mbHeroes(1).map(h=>[h.xp,h.lvl]);mbDie(fake(mt),null);w.fall=X.falls===f0+1&&(X.core||X.bolts.length===b0+1&&(RM||X.fl===1));
+     if(typeof mbVisNow==='function')mbVisNow(true);   // הראייה מחושבת מחדש: הבלוק הקודם חישב אותה עם שתי יחידות בלבד
+     const sv=mbHeroes(1).map(h=>[h.xp,h.lvl]);mbDie(fake(mt),null);w.fall=X.falls===f0+1&&(X.core||X.bolts.length===b0+1&&(RM||typeof fxLess==='function'&&fxLess()||X.fl===1));
      const fx=MOBA.base.x,hid=typeof mbVisPt==='function'&&!mbVisPt(fx,0);if(hid){const n=X.bolts.length;mbDie(fake({team:1,x:fx,y:0,r:40}),null);w.fog=X.bolts.length===n}else w.fog=true;
      mbHeroes(1).forEach((h,i)=>{h.xp=sv[i][0];h.lvl=sv[i][1]});X.falls=f0;X.fl=fl0;X.bolts.length=b0;
      const src=mobaDraw.toString(),iw=src.indexOf('mbWxDraw');w.under=iw>0&&iw<src.indexOf('mbfxDraw')&&iw<src.indexOf('M.zones')&&iw<src.indexOf('M.shots');
