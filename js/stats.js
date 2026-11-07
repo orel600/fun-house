@@ -52,7 +52,7 @@ const statLoot=()=>1+(P.loot||0)/100;
 const SK_PIC={w5:'def',h3:'agi',h5:'hunt',hMark:'h1'};   // צמתים שחולקים תמונה עם אייקון אחר
 ['str','vit','agi','haste','def','luck','war','hunt','mage','w1','wRoot','wCounter','w3','wBlood','wQuake','wMountain','wBerserk',
  'h1','hMomentum','hFirst','hHop','hSniper','hWind','m1','mRotate','mFocus','m3','mSpread','mCircle','m5','mStorm','mGlass'].forEach(k=>SK_PIC[k]=k);
-const skPic=(k,emoji)=>SK_PIC[k]?'<img class="ski" src="icons/ui/skills/'+SK_PIC[k]+'.png" alt="">':emoji;
+const skPic=(k,emoji)=>typeof gTree==='function'&&gTree(k,'ski')||(SK_PIC[k]?'<img class="ski" src="icons/ui/skills/'+SK_PIC[k]+'.png" alt="">':emoji);
 
 /* ---- המסך: בחלון הציוד, כשלא נבחר פריט ---- */
 // בלי גלילה גם בטלפון שוכב (docs/plan-hud.md פרק 5, ניר 1.11): כותרת בשורה אחת עם הנקודות, הסטטים ברשת של שורות קצרות
