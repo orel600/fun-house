@@ -101,7 +101,7 @@ function msgPlace(){
 addEventListener('resize',()=>{if(msgOn())msgPlace()});
 // הכרטיסים שכבר קיימים (פגישה ראשונה foelore.js, "היום בעולם" mutation.js) עוברים לגור בעמודה: אותו מקום, ולא עולים על הכפתורים
 const MSG_CARDS=['skOffer','flCard','mutBar'];   // skOffer: "חדש: סקיל" עם כפתורים (skguide.js)
-const msgWinOpen=()=>[...document.querySelectorAll('.ov,.win')].some(o=>!o.hidden&&!o.closest('[hidden]'));
+const msgWinOpen=()=>[...document.querySelectorAll('.ov,.win')].some(o=>!o.hidden&&!o.closest('[hidden]')&&o.getClientRects().length>0);   // רק חלון שבאמת על המסך (גם display:none של אבא לא נחשב, כמו skgWins)
 setInterval(()=>{const el=msgEl();
   if(!msgOn()){for(const id of MSG_CARDS){const c=$(id);if(c&&c.parentNode===el)document.body.appendChild(c)}return}
   for(const id of MSG_CARDS){const c=$(id);if(c&&c.parentNode!==el)el.appendChild(c)}

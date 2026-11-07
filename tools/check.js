@@ -1702,20 +1702,21 @@ function worldBot(m,L,god){
           .concat([...document.querySelectorAll('#feedCol .frow')].filter(vis).map(R));
         const keep=[...document.querySelectorAll('#skills>*,#nav>*,#qTrack,#miniMap,#menuBtn,#whud>*,#skOffer')].filter(vis).map(R),h=msgHero();
         return {n:rows.length,big:[...document.querySelectorAll('#msgLane .mrow.big')].filter(vis).length,hero:rows.some(r=>hit(r,h)),ui:rows.some(r=>keep.some(k=>hit(r,k))),
-          out:rows.some(r=>r.left<-1||r.top<-1||r.right>vw+1||r.bottom>vh+1),feed:document.querySelectorAll('#feedCol .frow').length,sk:document.querySelectorAll('#skills>*').length,keep:keep.length}};
-      enterWorld('home');S.mode='play';enemies=[];FL.length=0;msgClear();for(const k in MSG.stat)MSG.stat[k]=0;
+          out:rows.some(r=>r.left<-1||r.top<-1||r.right>vw+1||r.bottom>vh+1),d:ln?[ln.style.top,ln.style.maxHeight,Math.round(h.top),ln.style.visibility||'-',ln.querySelectorAll('.cut').length,ln.children.length,Math.round(h.left)+'..'+Math.round(h.right)].join('/'):'-',feed:document.querySelectorAll('#feedCol .frow').length,sk:document.querySelectorAll('#skills>*').length,keep:keep.length}};
+      enterWorld('home');S.mode='play';enemies=[];FL.length=0;msgClear();__lbak.ov=[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden);for(const o of __lbak.ov)o.hidden=true;   // חלון פתוח מסתיר את העמודה (msgWinOpen), אז בבדיקה כמו במשחק: בלי חלון
+      for(const k in MSG.stat)MSG.stat[k]=0;
       if(S.sk&&!S.sk.ids.length){S.sk.ids=Object.keys(SKILLS.list).slice(0,3);S.sk.cd=S.sk.ids.map(()=>0)}if(typeof skillsHud==='function')skillsHud();
       for(let i=0;i<4;i++){const e=addEnemy('grunt',P.x+90+i*25,P.y+30);e.home=0;e.speed=0;e.dmg=0;e.hp=e.max=1e9}
       S.cam.x=P.x;S.cam.y=P.y;
       banner(T('home.earth.gift'),C.gold);banner(T('rare.rumor',T('rare.at.reeds')),C.gold);banner(T('wn.found','Nessa'),C.gold);banner(T('skr.new','Xx'),C.gold);banner(HUNT.icon+' '+T('hunt.here','Grok'),HUNT.col);if(typeof skgOffer==='function')skgOffer(Object.keys(SKILLS.list)[0]);
       msgBig(T('bossDown','Test'),C.gold);feedRes('stone',3);feedGear('oakSword');feedAdd('🎯','Spotted the Wanted · '.repeat(4),C.gold,'w');render()});
     await page.clock.runFor(700);
-    const a=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();return {...__lmeas(),waits:MSG.stat.waits,shown:MSG.stat.big}});
+    const a=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();return {...__lmeas(),waits:MSG.stat.waits,shown:MSG.stat.big,win:msgWinOpen(),on:msgOn()}});
     await page.evaluate(()=>{for(const e of enemies)e.dead=true;enemies=[];window.__lmf=msgFight;msgFight=()=>false;msgPump()});   // הקרב נגמר (העולם יכול להוליד להקה חדשה בזמן ההמתנה, אז הקרב נקבע כאן)
     await page.clock.runFor(500);
-    const b=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();const o={...__lmeas(),shown:MSG.stat.big,most:MSG.stat.most};msgFight=__lmf;return o});
+    const b=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();const o={...__lmeas(),shown:MSG.stat.big,most:MSG.stat.most,win:msgWinOpen(),on:msgOn()};msgFight=__lmf;return o});
     if(CFG.shots)await shot('msg-lane-'+vp.width);
-    await page.evaluate(()=>{const k=__lbak;msgClear();FL.length=0;enemies=[];if(typeof skgOfferClose==='function')skgOfferClose();worldUi(false);SAVE=JSON.parse(k.s);if(S.sk&&k.sk)S.sk.ids=JSON.parse(k.sk);if(k.vil)enterVillage();else{reset();S.mode=k.mode}});
+    await page.evaluate(()=>{const k=__lbak;msgClear();for(const o of k.ov)o.hidden=false;FL.length=0;enemies=[];if(typeof skgOfferClose==='function')skgOfferClose();worldUi(false);SAVE=JSON.parse(k.s);if(S.sk&&k.sk)S.sk.ids=JSON.parse(k.sk);if(k.vil)enterVillage();else{reset();S.mode=k.mode}});
     lane[vp.width]={a,b,ok:a.n>0&&a.big===0&&a.waits>0&&!a.hero&&!a.ui&&!a.out&&a.feed>0&&b.big===1&&b.shown===1&&!b.hero&&!b.ui&&!b.out&&b.most<=3};
   }
   await page.setViewportSize(CFG.phone);
@@ -3976,7 +3977,7 @@ function worldBot(m,L,god){
   check(!fxl.err&&fxl.first&&fxl.once&&fxl.btn&&fxl.half&&fxl.saved&&fxl.off,'כותרת אזור ופחות אפקטים: '+(fxl.err||[fxl.first?'כותרת בכניסה הראשונה':'אין כותרת',fxl.once?'לא חוזרת':'חוזרת בכל כניסה',
     fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
   for(const w in lane){const {a,b}=lane[w];check(lane[w].ok,'עמודת הודעות '+w+': '+[a.waits>0&&a.big===0?'בקרב הגדולה מחכה':'גדולה באמצע קרב',b.big===1?'אחרי הקרב גדולה אחת':'גדולות: '+b.big,
-    !a.hero&&!b.hero?'לא על הגיבור':'על הגיבור',!a.ui&&!b.ui?'לא על כפתורים, סקילים, קווסט ומפה':'על כפתור',!a.out&&!b.out?'הכל בתוך המסך':'נחתך בקצה',a.feed>0?'פיד בצד':'אין פיד','שורות '+a.n+'/'+b.n+', סקילים '+a.sk+', כפתורים '+a.keep].join(', '))}
+    !a.hero&&!b.hero?'לא על הגיבור':'על הגיבור',!a.ui&&!b.ui?'לא על כפתורים, סקילים, קווסט ומפה':'על כפתור',!a.out&&!b.out?'הכל בתוך המסך':'נחתך בקצה',a.feed>0?'פיד בצד':'אין פיד','שורות '+a.n+'/'+b.n+', סקילים '+a.sk+', כפתורים '+a.keep,...(lane[w].ok?[]:['חלון: '+b.win+', פעיל: '+b.on+', מקום (top/max/hero/vis/cut/n/x): '+a.d+' → '+b.d])].join(', '))}
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
   check(!skg.err&&skg.top&&skg.gearStays&&skg.play&&skg.shortNo&&skg.hold&&skg.holdBack&&skg.dotOn&&skg.dotOff&&skg.offer&&skg.pStart&&skg.pDummy&&skg.pSkip&&skg.pEnd&&skg.offerBook&&skg.offerWait&&skg.offerHide&&skg.offerBack,
