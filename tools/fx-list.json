@@ -253,5 +253,8 @@
   "wx_rain_heavy_tropical": ["weather-fx-pack-vol1", "weather_rain_heavy_tropical", 256],
   "wx_wind_breeze_tropical": ["weather-fx-pack-vol1", "weather_wind_breeze_tropical", 256],
   "wx_sun_rays_tropical": ["weather-fx-pack-vol1", "weather_sun_rays_tropical", 256],
-  "wx_rainbow_tropical": ["weather-fx-pack-vol1", "weather_rainbow_tropical", 256]
+  "wx_rainbow_tropical": ["weather-fx-pack-vol1", "weather_rainbow_tropical", 256],
+  "wx_rain_light_dusk": ["weather-fx-pack-vol1", "weather_rain_light_dusk", 256],
+  "wx_cloud_dark_dusk": ["weather-fx-pack-vol1", "weather_cloud_dark_dusk", 256],
+  "wx_lightning_bolt_dusk": ["weather-fx-pack-vol1", "weather_lightning_bolt_dusk", 192]
 }
