@@ -2,7 +2,7 @@
    צללית אחת בצבע, במסגרת קבועה לכל הקשר. סקיל בצבע סוג הנזק שלו, צומת בעץ בצבע הענף.
    ניר רוצה לנסות ולהחליט: בהגדרות "אייקוני סקילים: חדש / קלאסי", נשמר ב-SAVE.icons.sk. קלאסי = מה שהיה לפני (ציורים ואימוג'י).
    אייקון חדש לסקיל: שורה ב-GICO.sk (או tree), ואז node tools/gicons.js <תיקיית הריפו של game-icons> מעדכן את js/gicons-data.js ואת docs/credits.md.
-   הזירה לא משתמשת בזה (של אוראל). */
+   בזירה (של אוראל) רק כפתורי הסקילים, לפי אותה הגדרה (skillsHud ב-skills.js). */
 const GICO={
   // הגדלים: אותו סולם בשני הסגנונות (style.css, --ic-s/m/l). קטן: בתוך טקסט ושורות. בינוני: משבצות וכרטיסים. גדול: בתוך כפתור סקיל
   size:{s:20,m:28,l:40},
@@ -38,7 +38,7 @@ function gIco(name,cls,col){const k=name&&name.split('/')[1],d=typeof GICON==='o
 const gSk=(id,cls)=>gicoOn('sk')&&GICO.sk[id]&&typeof SKILLS==='object'&&SKILLS.list[id]?gIco(GICO.sk[id],cls,dtCol(SKILLS.list[id].dt)):'';
 // צומת או סטט בעץ: '' כשהסגנון קלאסי
 const gTree=(k,cls)=>gicoOn('sk')&&GICO.tree[k]?gIco(GICO.tree[k],cls):'';
-// כפתור הסקיל: בעולם ובכפר בלבד (הזירה כמו קודם)
+// כפתור הסקיל בעולם ובכפר. בזירה skillsHud בודק בעצמו (skills.js)
 const gSkHere=()=>gicoOn('sk')&&!!(S.wd||document.body.classList.contains('vil'));
 
 // הנשק על כפתור ההחלפה (#ico, combat.js): צללית, או ציור הקו הקלאסי (ICON). w: 'sword'/'gun'/'staff', wt: הנשק המדויק (P.wt)
