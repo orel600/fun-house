@@ -207,17 +207,17 @@ function storyTele(e,dt,W,L,K,d,dx,dy,far){
 function storyTelDraw(e,L){
   const t=e.tel,W=e.pw||L.warden;if(!t&&!(e.stun>0))return;ctx.save();
   if(e.stun>0){ctx.globalAlpha=0.9;ctx.font='800 22px Heebo, system-ui, sans-serif';ctx.textAlign='center';ctx.fillText('💫',e.x,e.y-e.r-26-Math.sin(fxNow()*8)*4);ctx.restore();return}
-  const k=1-t.t/t.dur,col=(W[t.kind]&&W[t.kind].col)||L.col,blink=k>0.7&&Math.floor(t.t*16)%2;
+  const k=1-t.t/t.dur,col=(W[t.kind]&&W[t.kind].col)||L.col,blink=k>0.7&&Math.floor(t.t*16)%2,sp=typeof fxcTgOn==='function'&&fxcTgOn(e);   // sp: הסימן מהגיליון מראה איפה (fxcombat.js), כאן רק השעון
   if(t.kind==='shoot'){const sh=W.shoot;ctx.lineCap='round';
     for(let i=0;i<sh.n;i++){const a=t.a+(i-(sh.n-1)/2)*sh.spread,len=60+k*180;
       ctx.globalAlpha=0.25+k*0.55;ctx.strokeStyle=col;ctx.lineWidth=4+k*3;ctx.beginPath();ctx.moveTo(e.x+Math.cos(a)*e.r,e.y+Math.sin(a)*e.r);ctx.lineTo(e.x+Math.cos(a)*(e.r+len),e.y+Math.sin(a)*(e.r+len));ctx.stroke()}}
   else if(t.kind==='ring'){ctx.globalAlpha=0.3+k*0.5;ctx.strokeStyle=col;ctx.lineWidth=6+k*8;ctx.beginPath();ctx.arc(e.x,e.y,e.r*(1.8-k*0.6),0,7);ctx.stroke();
     ctx.globalAlpha=0.15+k*0.3;ctx.fillStyle=L.glow;ctx.beginPath();ctx.arc(e.x,e.y,e.r*1.2,0,7);ctx.fill()}
   else if(t.kind==='slam'){const sl=W.slam;ctx.globalAlpha=0.22+k*0.3;ctx.fillStyle=col;ctx.beginPath();ctx.arc(t.x,t.y,sl.r*k,0,7);ctx.fill();
-    ctx.globalAlpha=blink?1:0.85;ctx.strokeStyle=col;ctx.lineWidth=4;ctx.beginPath();ctx.arc(t.x,t.y,sl.r,0,7);ctx.stroke()}
+    if(!sp||blink)ctx.globalAlpha=blink?1:0.85;else ctx.globalAlpha=0;ctx.strokeStyle=col;ctx.lineWidth=4;ctx.beginPath();ctx.arc(t.x,t.y,sl.r,0,7);ctx.stroke()}
   else if(t.kind==='charge'){const ch=W.charge,cx=Math.cos(t.a),cy=Math.sin(t.a),nx=-cy*ch.w/2,ny=cx*ch.w/2,ex=t.x+cx*ch.len,ey=t.y+cy*ch.len;
-    ctx.globalAlpha=0.18+k*0.3;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(t.x+nx,t.y+ny);ctx.lineTo(ex+nx,ey+ny);ctx.lineTo(ex-nx,ey-ny);ctx.lineTo(t.x-nx,t.y-ny);ctx.closePath();ctx.fill();
-    ctx.globalAlpha=blink?1:0.8;ctx.strokeStyle=col;ctx.lineWidth=3;ctx.setLineDash([14,10]);ctx.stroke();ctx.setLineDash([]);
+    ctx.globalAlpha=sp?0:0.18+k*0.3;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(t.x+nx,t.y+ny);ctx.lineTo(ex+nx,ey+ny);ctx.lineTo(ex-nx,ey-ny);ctx.lineTo(t.x-nx,t.y-ny);ctx.closePath();ctx.fill();
+    ctx.globalAlpha=sp&&!blink?0:blink?1:0.8;ctx.strokeStyle=col;ctx.lineWidth=3;ctx.setLineDash([14,10]);ctx.stroke();ctx.setLineDash([]);
     const fx=t.x+cx*ch.len*k,fy=t.y+cy*ch.len*k;ctx.globalAlpha=0.9;ctx.fillStyle=col;ctx.beginPath();ctx.arc(fx,fy,ch.w*0.32,0,7);ctx.fill()}
   ctx.restore();
 }
@@ -252,7 +252,7 @@ function storyMarksDraw(){
   for(const M of list){const L=STORY.lanterns[M.k],mk=M.mk||L.warden.marks,col=mk.col||L.col,gl=mk.col||L.glow;
     if(M.t>0){const k=1-M.t/mk.fuse;   // העיגול מתמלא עד הפיצוץ, ומהבהב בסוף
       ctx.globalAlpha=0.25+k*0.35;ctx.fillStyle=col;ctx.beginPath();ctx.arc(M.x,M.y,mk.r*k,0,7);ctx.fill();
-      ctx.globalAlpha=k>0.7&&Math.floor(M.t*20)%2?1:0.8;ctx.strokeStyle=gl;ctx.lineWidth=M.big?6:3;ctx.beginPath();ctx.arc(M.x,M.y,mk.r,0,7);ctx.stroke();
+      const bl=k>0.7&&Math.floor(M.t*20)%2;ctx.globalAlpha=bl?1:typeof fxcTgOn==='function'&&fxcTgOn(M)?0:0.8;ctx.strokeStyle=gl;   // הסימן מהגיליון מראה את העיגול (fxcombat.js): המסגרת רק מהבהבת בסוףctx.lineWidth=M.big?6:3;ctx.beginPath();ctx.arc(M.x,M.y,mk.r,0,7);ctx.stroke();
       ctx.globalAlpha=0.9;if(M.big){ctx.font='800 30px Heebo, system-ui, sans-serif';ctx.textAlign='center';ctx.fillText('⚠️',M.x,M.y+10)}else dtIcon(M.x,M.y,mk.icon||'lightning',22,gl)}
     else if(M.big){const a=M.boom/mk.flash;ctx.globalAlpha=a*0.7;ctx.fillStyle=gl;ctx.beginPath();ctx.arc(M.x,M.y,mk.r*(1.1-a*0.1),0,7);ctx.fill()}   // המכה הגדולה: הבזק מלא
     else{const a=M.boom/mk.flash;ctx.globalAlpha=a;ctx.strokeStyle='#FFFFFF';ctx.lineWidth=4;ctx.lineJoin='round';   // הברק עצמו: קו שבור מלמעלה

@@ -61,7 +61,8 @@ function juiceHit(e,d,m,crit,t,ang){
   else if(m>=1)jStop(m>1?K.stop.weak:K.stop.hit,false,true);   // מכה חלשה (עמיד) לא עוצרת: היא לא אמורה להרגיש חזקה
   const hy=e.y-(e.node?4:e.r*0.6);
   jBurst(e.x,hy,t,crit?K.parts.crit:m>1?K.parts.weak:m<1?3:K.parts.hit,ang);
-  if((m>=1||crit)&&!(fxLess()&&!crit)){if(J.fl.length>=K.impact.max)J.fl.shift();J.fl.push({x:e.x-Math.cos(ang||0)*e.r*0.4,y:hy,t0:jNow(),r:crit?K.impact.rCrit:K.impact.r*(m>1?1.25:1),col:dtCol(t),a:rand(0,1.6)})}
+  const fxs=typeof fxcHit==='function'&&fxcHit(e,t,crit,m,hy);   // בעולם: פיצוץ לפי סוג הנזק מהגיליון במקום ההבזק (fxcombat.js)
+  if(!fxs&&(m>=1||crit)&&!(fxLess()&&!crit)){if(J.fl.length>=K.impact.max)J.fl.shift();J.fl.push({x:e.x-Math.cos(ang||0)*e.r*0.4,y:hy,t0:jNow(),r:crit?K.impact.rCrit:K.impact.r*(m>1?1.25:1),col:dtCol(t),a:rand(0,1.6)})}
   if(J.n.length>=K.nums.max)J.n.shift();
   const N=K.nums;
   // עמיד (ניר, 1.11: "0!" נראה כמו באג): במקום המספר "🛡 עמיד" באפור, וסמל סוג הנזק לידו
@@ -87,9 +88,10 @@ function juiceKill(e){
   const J=juice(),K=JUICE,boss=e.isBoss||e.wanted||e.warden,elite=e.elite||e.affix;
   jStop(boss||elite?K.stop.big:K.stop.kill,boss||elite);
   S.shake=Math.max(S.shake,boss?K.shake.big:elite?K.shake.elite:K.shake.kill);
+  if(!(typeof fxcKill==='function'&&fxcKill(e))){   // בעולם: מוות לפי סוג הנזק מהגיליון במקום ענן העשן (fxcombat.js)
   if(J.poofs.length>=K.poof.max)J.poofs.shift();
   const pf=[];for(let i=0;i<K.poof.puffs*(fxLess()?FX_LESS.parts:1);i++){const a=rand(0,6.28);pf.push({a,s:rand(20,55),r:rand(...K.poof.r)})}
-  J.poofs.push({x:e.x,y:e.y,t0:jNow(),pf,r:e.r*(e.big||1),col:dtCol(e.weak)});
+  J.poofs.push({x:e.x,y:e.y,t0:jNow(),pf,r:e.r*(e.big||1),col:dtCol(e.weak)});}
   const now=jNow(),St=K.streak;J.st=now-(J.stT||-9)<St.gap?(J.st||0)+1:1;J.stT=now;
   const mi=St.marks.indexOf(J.st);if(mi>=0){J.stPop=now;jBurst(P.x,P.y+24,'gold',K.parts.kill,null);sfx('coin',1.2+mi*0.25)}
   jBurst(e.x,e.y-e.r*0.5,'gold',K.parts.kill,null);
