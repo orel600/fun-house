@@ -1,10 +1,11 @@
-/* שפות: כל טקסט שהשחקן רואה נמצא כאן, בעברית ובאנגלית. המשחק יהיה באנגלית, ובינתיים עברית כברירת מחדל.
-   טקסט חדש = מפתח חדש ב-TEXT עם he ו-en. בקוד: T('מפתח'), ולטקסט עם ערכים: T('מפתח',ערך).
+/* Texts: every text the player sees lives here. The game is English only (Nir, 7.11.2026); old keys also keep their Hebrew, unused.
+   New text = a new key in TEXT with `en` only. בקוד: T('מפתח'), ולטקסט עם ערכים: T('מפתח',ערך).
    ערך יכול להיות מחרוזת, מערך, או פונקציה שמקבלת את הערכים.
    ב-index.html: data-t="מפתח" ממלא את התוכן (מערך הופך לרשימת <li>), ו-data-ta="מפתח" את ה-aria-label */
-const LANGS={he:{dir:'rtl'},en:{dir:'ltr'}};
-let LANG='he';try{const s=localStorage.getItem('zm-lang');if(LANGS[s])LANG=s}catch(e){}
-let DIR=LANGS[LANG].dir;   // כיוון הטקסט, גם לציור על הקנבס
+// English only (Nir, 7.11.2026). The Hebrew strings stay in TEXT but are never shown; new keys need only `en`.
+const LANGS={en:{dir:'ltr'}};
+let LANG='en';try{if(localStorage.getItem('zm-lang')!=='en')localStorage.setItem('zm-lang','en')}catch(e){}   // old saves stored 'he': migrate once
+let DIR='ltr';   // text direction, also for canvas drawing
 
 const TEXT={
   // מסך פתיחה
@@ -606,7 +607,7 @@ const TEXT={
   'fpsGroup':{he:'הצג FPS',en:'Show FPS'},   // perf.js
   'hatGroup':{he:'הצג כובע',en:'Show hat'},   // armor.js
   'gicoGroup':{he:'אייקוני סקילים',en:'Skill icons'},   // gicons.js
-  'gicoNav':{he:'אייקוני תפריט',en:'Menu icons'},   // gicons.js
+  'gicoNav':{en:'Menu icons'},   // gicons.js
   'gico.new':{he:'חדש',en:'New'},
   'gico.old':{he:'קלאסי',en:'Classic'},
   'credits.icons':{he:'אייקונים: Lorc, Delapouite ויוצרים נוספים מ-game-icons.net, ברישיון CC BY 3.0. הצבעים והמסגרות שונו.',en:'Icons by Lorc, Delapouite and other contributors from game-icons.net, licensed under CC BY 3.0. Colors and frames were changed.'},
@@ -2069,6 +2070,34 @@ Object.assign(TEXT,{
 
 // ======== סודות בעולם (secrets.js) ========
 Object.assign(TEXT,{
+  // עולם עם חיים (wlife.js): מה הדמות ליד המדורה אומרת בביקור הראשון, ואחר כך. ומה כתוב כשלוקחים שריד
+  'wl.say.meadow.0':{he:'חוטבי העצים הלכו מכאן מזמן. תיקח, אני לא צריך את זה.',en:'The loggers left long ago. Take this, I won\'t need it.'},
+  'wl.say.meadow.1':{he:'ראיתי צבי זהוב ליד הנחל. אם תתקרב בשקט, אולי תספיק לראות מה הוא משאיר.',en:'I saw a golden deer by the stream. Get close and see what it leaves.'},
+  'wl.say.meadow.2':{he:'האש הזאת דולקת מאז שהפנסים כבו. שב, תתחמם.',en:'This fire has burned since the lanterns went dark. Sit, get warm.'},
+  'wl.say.meadow.3':{he:'הים הביא עגלה שבורה אתמול. מה שהיה בה, כבר אצלך.',en:'The sea brought in a broken cart yesterday. What was in it is yours now.'},
+  'wl.say.lake.0':{he:'הערפל מביא דברים לחוף. לפעמים גם אנשים. קח, זה נסחף אליי.',en:'The mist brings things ashore. Sometimes people. Take this, it drifted in.'},
+  'wl.say.lake.1':{he:'הברווזים יודעים מתי הפעמון יצלצל. אני רק מקשיב להם.',en:'The ducks know when the bell will ring. I just listen to them.'},
+  'wl.say.lake.2':{he:'שב. הרטיבות לא נכנסת לעצמות ליד האש הזאת.',en:'Sit. The damp stays out of your bones by this fire.'},
+  'wl.say.lake.3':{he:'מישהו השאיר תרמיל על המזח. מה שהיה בו, עכשיו שלך.',en:'Someone left a pack on the pier. What was in it is yours now.'},
+  'wl.say.ridge.0':{he:'העיזים טיפסו לפניך. תלך אחריהן, הן לא נופלות.',en:'The goats climbed ahead of you. Follow them, they never fall.'},
+  'wl.say.ridge.1':{he:'קר פה כמו בלב של מכשף. קח את זה, יחמם לך את הידיים.',en:'Cold as a wizard\'s heart up here. Take this, it\'ll warm your hands.'},
+  'wl.say.ridge.2':{he:'שמעתי מפולת הלילה. מישהו למעלה זורק שלג בכוונה.',en:'Heard a slide last night. Someone up there throws snow on purpose.'},
+  'wl.say.ridge.3':{he:'האש קטנה, אבל היא הייתה פה לפני השלג.',en:'Small fire, but it was here before the snow.'},
+  'wl.say.desert.0':{he:'כשהנשרים חגים, משהו שוכב מתחתם. בדרך כלל לא מת.',en:'When the vultures circle, something lies below. Usually not dead.'},
+  'wl.say.desert.1':{he:'מים אין לי. יש לי את זה. קח.',en:'I have no water. I have this. Take it.'},
+  'wl.say.desert.2':{he:'הלטאות בורחות מהר. אני כבר לא.',en:'The lizards run fast. I don\'t anymore.'},
+  'wl.say.desert.3':{he:'בלילה החול קר, ואז הכל נראה קרוב יותר.',en:'At night the sand turns cold, and everything looks closer.'},
+  'wl.say.storm.0':{he:'העורבים לא מפחדים מברקים. רק ממך.',en:'The crows aren\'t afraid of lightning. Only of you.'},
+  'wl.say.storm.1':{he:'העיר נפלה, אבל המרתפים מלאים. זה מאחד מהם.',en:'The city fell, but the cellars are full. This came from one.'},
+  'wl.say.storm.2':{he:'ספור את השניות בין הברק לרעם. ככה אני יודע מתי לברוח.',en:'Count between flash and thunder. That\'s how I know when to run.'},
+  'wl.say.storm.3':{he:'שב, הגשם לא מגיע עד כאן. בדרך כלל.',en:'Sit, the rain doesn\'t reach here. Usually.'},
+  'wl.say.shadow.0':{he:'אתה עדיין חי? אז קח את זה, לי זה כבר לא יעזור.',en:'Still alive? Then take this. It won\'t help me anymore.'},
+  'wl.say.shadow.1':{he:'הרוחות האלה לא רעות. הן רק מחפשות את הפנס שלהן.',en:'Those wisps aren\'t evil. They\'re looking for their lantern.'},
+  'wl.say.shadow.2':{he:'זו האש האחרונה לפני החושך. תתחמם טוב.',en:'Last fire before the dark. Warm up well.'},
+  'wl.say.shadow.3':{he:'ראיתי אור בתהום. אל תסתכל עליו יותר מדי.',en:'I saw a light in the abyss. Don\'t stare at it too long.'},
+  'wl.rest':{he:'שב ליד האש. היא מרפאת.',en:'Sit by the fire. It heals.'},
+  'wl.rem.cart':{he:'עגלה הפוכה',en:'Overturned cart'},'wl.rem.pack':{he:'תרמיל ישן',en:'Old pack'},
+  'wl.rem.chest':{he:'ארגז שבור',en:'Broken chest'},'wl.rem.tent':{he:'אוהל קרוע',en:'Torn tent'},
   'sc.found':{he:(n,of)=>'🔍 גילית סוד! '+n+'/'+of+' באזור',en:(n,of)=>'🔍 Secret found! '+n+'/'+of+' here'},
   'sc.hud':{he:'סודות שנמצאו באזור',en:'Secrets found here'},
   'sc.bless.speed':{he:'🌀 ברכת הרוח: רגליים קלות לדקה',en:'🌀 Wind blessing: light feet for a minute'},
@@ -2085,7 +2114,7 @@ Object.assign(TEXT,{
   'cu.in.desert':{he:'במדבר הבוער',en:'in the Burning Desert'},'cu.in.storm':{he:'במגדלי הסערה',en:'at the Storm Towers'},'cu.in.shadow':{he:'בלב הצל',en:'in the Heart of Shadow'}
 });
 
-function T(key,...a){const e=TEXT[key],v=e?(e[LANG]??e.he):key;return typeof v==='function'?v(...a):v}
+function T(key,...a){const e=TEXT[key],v=e?(e.en??e.he):key;return typeof v==='function'?v(...a):v}
 function setLang(l){if(!LANGS[l])return;LANG=l;DIR=LANGS[l].dir;try{localStorage.setItem('zm-lang',l)}catch(e){}}
 // ממלא את כל הטקסטים הקבועים בדף לפי השפה הנוכחית, והופך את כיוון המסך
 function applyLang(){

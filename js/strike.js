@@ -51,10 +51,11 @@ function strikeDraw(){
       ctx.beginPath();ctx.arc(0,0,R*0.85,e.sa-K.arc,e.sa+K.arc);ctx.stroke();ctx.restore()}
     if(!(e.sw>0))continue;
     const k=1-e.sw/(e.wind||K.wind),R=(e.r+P.r+K.reach)*K.show,a0=e.sa-K.arc,a1=e.sa+K.arc,p=0.5+0.5*Math.sin(t*18);
+    const sp=typeof fxcTgOn==='function'&&fxcTgOn(e);   // הסימן מהגיליון מראה איפה (fxcombat.js): כאן רק השעון, המילוי שגדל עד המכה
     ctx.save();ctx.translate(e.x,e.y);ctx.fillStyle=K.col;ctx.strokeStyle=K.col;
-    ctx.globalAlpha=0.25;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,a0,a1);ctx.closePath();ctx.fill();
-    ctx.globalAlpha=0.5+0.4*k;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R*k,a0,a1);ctx.closePath();ctx.fill();
-    ctx.globalAlpha=0.7+0.3*p;ctx.lineWidth=(2.5+2*k)/z;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,a0,a1);ctx.closePath();ctx.stroke();
+    if(!sp){ctx.globalAlpha=0.25;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,a0,a1);ctx.closePath();ctx.fill()}
+    ctx.globalAlpha=(sp?0.35:0.5)+0.4*k;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R*k,a0,a1);ctx.closePath();ctx.fill();
+    if(!sp){ctx.globalAlpha=0.7+0.3*p;ctx.lineWidth=(2.5+2*k)/z;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,a0,a1);ctx.closePath();ctx.stroke()}
     ctx.restore()}
   ctx.globalAlpha=1;
 }

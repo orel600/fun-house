@@ -1,4 +1,4 @@
-<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!doctype html><html lang="en" dir="ltr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- התקנה כאפליקציה בטלפון (js/pwa.js) -->
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#121624">
 <link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -174,10 +174,6 @@
 <div class="ov start" id="ovStart">
   <div class="panel spanel">
     <div class="stop">
-      <div class="langs" role="group" data-ta="langGroup">
-        <button class="lang" data-lang="he" lang="he">עברית</button>
-        <button class="lang" data-lang="en" lang="en">English</button>
-      </div>
       <button class="lang" id="helpBtn" data-t="help.btn"></button>
       <button class="lang mbbtn" id="mbBtn" data-t="mb.btn"></button>
     </div>
@@ -417,6 +413,7 @@
 <script src="js/foeai.js"></script>
 <script src="js/ridge-hazards.js"></script>   <!-- הרכס הקפוא: מפולות במדרון ואגם שמחליקים בו -->
 <script src="js/secrets.js"></script>
+<script src="js/wlife.js"></script>    <!-- עולם עם חיים: מחנות, שרידים וחיות שבורחות -->
 <script src="js/worldmap.js"></script>
 <script src="js/curiosity.js"></script>
 <script src="js/travel.js"></script>
@@ -508,9 +505,11 @@
 <script src="js/petfx3d.js"></script>
 <script src="js/lake-bell.js"></script>   <!-- אגם הערפל: פעמון שמעלים את הערפל לדקה, וגשרים צפים שמתנדנדים (אחרי look-hd.js ו-vfx.js, שאותם הוא מחליש) -->   <!-- האש של פיוחו בשלב 3: זנב בוער, גחלים ושלהבת בנשיכה -->
 <script src="js/fxworld.js"></script>   <!-- שכבת אפקטים לכפר ולעולם מספריית האפקטים: סימנים, מזג אוויר, צעדים, איסוף וחגיגות (FXW). עוטף כמה פונקציות מבחוץ -->
+<script src="js/fxcombat.js"></script>   <!-- אפקטים של קרב בעולם: אזהרות על הרצפה, פגיעה ומוות לפי סוג נזק, כרייה (FXC). עוטף את nodeDown -->
 <script src="js/render.js"></script>
 <script src="js/feed.js"></script>   <!-- פיד הודעות בצד, בעולם ובכפר (docs/plan-hud.md פרק 6) -->
 <script src="js/msglane.js"></script>   <!-- עמודת הודעות אחת בעולם ובכפר: קטנות בתור, גדולה רק לרגעים גדולים ולא באמצע קרב, ולא על כפתורים או על הגיבור -->
+<script src="js/labels.js"></script>   <!-- שמות מעל אויבים בעולם: עד 3 מלאים, השאר אייקון, לא עולים אחד על השני ולא על כפתורים (LABELS) -->
 <script src="js/moba-kits.js"></script>   <!-- משחקי השאול: מובה 3 על 3 עם בוטים (docs/moba.md) -->
 <script src="js/moba-fx.js"></script>   <!-- משחקי השאול: חלקיקים, הבזק, עצירת פריים ורגע הסקיל-על -->
 <script src="js/moba-look.js"></script>   <!-- משחקי השאול: אייקונים, רצפה ומפה קטנה -->
