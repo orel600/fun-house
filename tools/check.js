@@ -1097,13 +1097,14 @@ function worldBot(m,L,god){
     const d=$('ovDaily'),was=d.hidden;d.hidden=true;await tick();d.hidden=false;await tick();
     d.hidden=was;
     const pl=FXUI.place;FXUI.place='fxtest';document.body.classList.toggle('fxtest');await tick();document.body.classList.toggle('fxtest');
+    r.wipe=[...document.querySelectorAll('.fxd')].filter(e=>FXUI.never.some(id=>e.style.backgroundImage.includes(id+'.webp'))).length+(fxDom('ui_trans',100,100)?1:0);   // מעבר שממלא מסך לא מופיע כריבוע
     r.toast=n('ui_toast')>b0.t;r.buy=n('ui_buy')>b0.b;r.ach=n('ui_ach')>b0.a;r.win=n('win')>b0.w;r.trans=n('trans')>b0.tr;r.place=pl;
     const els=[...document.querySelectorAll('.fxd,.fxlayer,#fxVeil')];r.n=els.length;
     r.block=els.filter(e=>getComputedStyle(e).pointerEvents!=='none').length;
     const f=document.querySelector('#fxLayer .fxd');if(f){const q=f.getBoundingClientRect(),h=document.elementFromPoint(q.left+q.width/2,q.top+q.height/2);r.hit=!!(h&&h.closest('.fxlayer,#fxVeil'))}
     return r});
-  check(!fxuiT.miss&&!fxuiT.wrapped.length&&fxuiT.toast&&fxuiT.buy&&fxuiT.ach&&fxuiT.win&&fxuiT.trans&&!fxuiT.block&&!fxuiT.hit,
-    'אפקטים בממשק: '+(fxuiT.miss?'fxui.js לא נטען':'קווסט '+(fxuiT.toast?'✓':'✗')+', קנייה '+(fxuiT.buy?'✓':'✗')+', דרגה '+(fxuiT.ach?'✓':'✗')+', אפקט בפתיחת חלון '+(fxuiT.win?'✓':'✗')+', מעבר מקום '+(fxuiT.trans?'✓':'✗')+
+  check(!fxuiT.miss&&!fxuiT.wrapped.length&&fxuiT.toast&&fxuiT.buy&&fxuiT.ach&&fxuiT.win&&fxuiT.trans&&!fxuiT.wipe&&!fxuiT.block&&!fxuiT.hit,
+    'אפקטים בממשק: '+(fxuiT.miss?'fxui.js לא נטען':'קווסט '+(fxuiT.toast?'✓':'✗')+', קנייה '+(fxuiT.buy?'✓':'✗')+', דרגה '+(fxuiT.ach?'✓':'✗')+', אפקט בפתיחת חלון '+(fxuiT.win?'✓':'✗')+', מעבר מקום '+(fxuiT.trans?'✓':'✗')+(fxuiT.wipe?' (ריבוע אטום של ui_trans!)':' בלי ריבוע אטום')+
     (fxuiT.wrapped.length?', לא מחובר: '+fxuiT.wrapped.join(','):'')+(fxuiT.block||fxuiT.hit?', חוסם נגיעה!':', לא חוסם נגיעה ('+fxuiT.n+' שכבות)')));
   const setT=await page.evaluate(()=>{const r={};for(const s in SETS){const it=setItems(s),b=SETS[s].bonus;
     const one=setStats(it.slice(0,1)),two=setStats(it.slice(0,2)),four=gearStats(it);

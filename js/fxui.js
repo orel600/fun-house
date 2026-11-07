@@ -3,7 +3,7 @@
    הכל כאן, כדי לא לגעת בקבצים של אחרים: מה קורה, ואיזה אפקט, בטבלאות בראש הקובץ.
    - FXUI.hooks: פונקציה קיימת במשחק → האפקט אחריה (עוטפים אותה פעם אחת בטעינה). קווסט, דרגה, קנייה, מתנה, טעינה.
    - FXUI.open: חלון שנפתח → אפקט סביבו (התנועה של הפתיחה עצמה כבר ב-style.css, winIn).
-   - מעבר מקום (פתיחה, כפר, עולם, זירה, משחקי השאול): וילון שנעלם ב-FXUI.trans שניות, ואפקט ui_trans.
+   - מעבר מקום (פתיחה, כפר, עולם, זירה, משחקי השאול): וילון כהה שנעלם ב-FXUI.trans שניות.
    - כפתורים: ui_juice על כפתור חשוב, ui_click על השאר, ui_hover רק עם עכבר. כפתורי הסקילים לא, יש להם אפקט משלהם.
    - נדירות: ui_epic / ui_legend חוזר סביב התמונה בכרטיס חפץ זהב או אגדי, כל עוד הכרטיס פתוח.
    שום דבר כאן לא חוסם נגיעה (pointer-events:none), ושום אפקט לא נשאר יותר מ-dur שלו. בלי קבצי fx/: מדלג בשקט.
@@ -26,6 +26,7 @@ const FXUI={
   rare:{gold:'ui_epic',legend:'ui_legend'},   // שכבת נדירות (GEAR.tiers) → האפקט סביב התמונה
   rareTiles:4,     // כמה אריחים ברשימה זוהרים בבת אחת
   tiles:['.ictile','.gtile'],   // אריחי חפצים: בנפחייה ובשוק (itemcard.js), ובתרמיל (gear.js)
+  never:['ui_trans'],   // גיליונות שממלאים את המסך (מעבר): בגודל שלהם הם ריבוע אטום מעל החלונות, ולכן fxDom לא מנגן אותם
   log:{},          // כמה פעמים כל סוג אפקט רץ (לבדיקה ב-check.js)
   list:[],raf:0,ready:false,lastTap:null,
 };
@@ -46,7 +47,7 @@ function fxuiLayer(lo){
    anchor (אלמנט: האפקט נצמד אליו ונעלם כשהוא נסגר), fit (גודל ביחס ל-anchor), lo (מתחת להודעה, כדי לא לכסות טקסט),
    behind (מאחורי החלון של ה-anchor: מעל הרקע הכהה ומתחת לחלון, כדי לא לכסות טקסט או כפתור), clip (נעלם כשה-anchor גלל אל מחוץ לרשימה) */
 function fxDom(id,x,y,o={}){
-  const D=typeof FXDATA!=='undefined'&&FXDATA[id];if(!D||typeof FXLIB!=='undefined'&&FXLIB.bad[id])return null;
+  const D=typeof FXDATA!=='undefined'&&FXDATA[id];if(!D||FXUI.never.includes(id)||typeof FXLIB!=='undefined'&&FXLIB.bad[id])return null;
   if(typeof fxImg==='function')fxImg(id);   // טוען, ומסמן אם הקובץ חסר
   FXUI.log[id]=(FXUI.log[id]||0)+1;
   const el=document.createElement('i');el.className='fxd'+(o.add?' add':'');
@@ -118,7 +119,8 @@ function fxuiWatchWins(){
   for(const id of new Set(ids)){const el=document.getElementById(id);if(el)mo.observe(el,{attributes:true,attributeFilter:['hidden'],attributeOldValue:true})}
 }
 
-/* ---- מעבר בין מקומות: וילון כהה שנעלם, ו-ui_trans במרכז ---- */
+/* ---- מעבר בין מקומות: וילון כהה שנעלם. בלי ui_trans: הוא מעבר שממלא את המסך (54% מהפיקסלים אטומים),
+   ובגודל שלו נראה כריבוע סגול מעל החלון (FXUI.never) ---- */
 function fxuiPlace0(){
   const b=document.body.classList,st=document.getElementById('ovStart');
   return b.contains('mb')?'mb':b.contains('world')?'world':b.contains('vil')?'vil':st&&!st.hidden?'start':'arena';
@@ -127,7 +129,6 @@ function fxuiTrans(){
   let v=document.getElementById('fxVeil');
   if(!v){v=document.createElement('div');v.id='fxVeil';v.setAttribute('aria-hidden','true');document.body.appendChild(v)}
   v.style.animationDuration=FXUI.trans+'s';v.classList.remove('on');void v.offsetWidth;v.classList.add('on');
-  const m=fxuiMid();fxDom('ui_trans',m.x,m.y,{size:Math.min(innerWidth,innerHeight)*0.9,fps:24/FXUI.trans/1.6,alpha:0.85});   // נגמר יחד עם הווילון, בערך
   FXUI.log.trans=(FXUI.log.trans||0)+1;
 }
 function fxuiWatchPlace(){
@@ -177,7 +178,7 @@ function fxuiInit(){
   for(const n in FXUI.hooks)fxuiWrap(n,FXUI.hooks[n]);
   fxuiWatchWins();fxuiWatchPlace();fxuiButtons();
   setInterval(fxuiRare,400);
-  fxPreload(['ui_click','ui_juice','ui_trans','ui_toast','ui_buy']);
+  fxPreload(['ui_click','ui_juice','ui_toast','ui_buy']);
   setTimeout(()=>{FXUI.ready=true},2500);   // הטעינה הראשונה (שמירה, קווסטים אוטומטיים) בלי אפקטים
 }
 if(document.readyState==='loading')addEventListener('DOMContentLoaded',fxuiInit);else fxuiInit();
