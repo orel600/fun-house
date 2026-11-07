@@ -163,7 +163,6 @@ function render(){
   drawNodes();   // עצים, סלעים ועורקים (nodes.js)
   drawLoot();    // טבעות עלית ועמודי אור של שלל (loot.js)
   drawWorld();   // העולם הפתוח (world.js)
-  wambDraw();   // אווירה בעולם ובכפר (wambient.js)
   drawNpcs();
   homeDraw();   // עמודי הפנסים בכפר (homecoming.js)
   skcDraw();   // עיגול רונות מתחת לגיבור כשמטיל סקיל, בדו-ממד (skillcast.js)

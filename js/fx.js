@@ -32,6 +32,7 @@ function celebrate(x,y,kind='upgrade',label){
   for(let i=0;i<14;i++)f.dust.push({a:rand(0,6.28),r:rand(20,60),s:rand(8,16),d:rand(0,K.dust*0.6)});
   for(let i=0;i<K.burst;i++){const a=rand(0,6.28),s=rand(K.speed*0.35,K.speed);f.burst.push({vx:Math.cos(a)*s,vy:Math.sin(a)*s-K.speed*0.4,z:rand(2,4.5),life:rand(0.6,1.1)})}
   FX.push(f);
+  if(typeof fxwCelebrate==='function')fxwCelebrate(x,y,kind);   // קונפטי ובלונים מהספרייה, רק בכפר ובעולם (fxworld.js)
   setTimeout(()=>sfx(K.sound||'celebrate'),K.dust*1000);   // הצליל מ-audio.js, כדי שההשתקה תחול גם עליו
   return K.dust;
 }

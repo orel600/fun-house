@@ -298,7 +298,7 @@ function worldUpdate(dt){
   P.inv-=dt;P.swapBuff-=dt;S.hurt-=dt;S.shake=Math.max(0,S.shake-dt*30);
   const {ix,iy}=movePlayer(dt);if(P.moving&&!nearest(440))P.aim=Math.atan2(iy,ix);
   ridgeSlip(dt);   // אגם קפוא: החלקה (ridge-hazards.js)
-  wambUpdate(dt);   // אווירה לפי אזור, צעדים ואיסוף (wambient.js)
+  if(typeof fxwUpdate==='function')fxwUpdate(dt);   // שכבת אפקטים: מזג אוויר, צעדים, לבה ומקום הקווסט (fxworld.js)
   placeClamp(P);
   srUpdate(dt);   // הסלעים המרחפים בלב הצל: זזים ולוקחים את השחקן איתם (shadowrocks.js)
   for(const n of S.nd.list){
