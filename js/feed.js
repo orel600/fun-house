@@ -4,7 +4,7 @@
    מה נכנס: שלל שנאסף (dropTake ב-drops.js), "ציוד!" (loot.js) בצבע הדרגה, "חדש בספר" (book.js), "הריגה ראשונה היום" (loot.js).
    בעולם ובכפר. בזירה (של אוראל) הכל כמו קודם: feedOn() מחזיר false, ומי שקרא מצייר כמו פעם.
    אוראל, להדליק בזירה: FEED.where.arena=true
-   הציור בקנבס, בפיקסלים של המסך (לא מתכווץ עם המצלמה), ועוטף את render (render.js) מבחוץ */
+   שורות HTML בעמודה שנמדדת מול המסך (7.11.2026), ומתעדכנת מ-render (render.js), שנעטף מבחוץ */
 const FEED={
   where:{world:true,village:true,arena:false},
   max:3, life:2.5, fadeIn:0.12, fadeOut:0.4,   // כמה שורות יחד, כמה שניות כל אחת, וכמה מהר היא נכנסת ויוצאת
@@ -17,9 +17,11 @@ const FEED={
   title:{life:2, size:[13,0.031,16], y:0.2}
 };
 let FTITLE=null;
-function feedTitle(txt,col){FTITLE={txt,col:col||C.gold,t:feedNow()};FEED.stat.titles++}
+function feedTitle(txt,col){FTITLE={txt,col:col||C.gold,t:feedNow()};FEED.stat.titles++;if(typeof msgBig==='function'&&msgOn()){FTITLE.lane=1;msgBig(txt,col||C.gold)}}   // בעולם ובכפר: רגע גדול בעמודת ההודעות (msglane.js), לא כותרת בקנבס
 function drawFeedTitle(){
-  const T_=FEED.title,f=FTITLE;if(!f)return;const age=feedNow()-f.t;if(age>T_.life){FTITLE=null;return}
+  const T_=FEED.title,f=FTITLE;if(!f||f.lane)return;
+  // כניסה לאזור: feedTitle נקרא לפני worldUi (world.js), כשעמודת ההודעות עוד לא פעילה. ברגע שהיא פעילה, הכותרת עוברת אליה ולא מצוירת בקנבס מעל השורות (הסרטון של ניר, 7.11)
+  if(typeof msgOn==='function'&&msgOn()){f.lane=1;msgBig(f.txt,f.col);return}const age=feedNow()-f.t;if(age>T_.life){FTITLE=null;return}
   const fs=Math.round(Math.max(T_.size[0],Math.min(T_.size[2],innerHeight*T_.size[1]))),a=Math.min(1,age/0.2,(T_.life-age)/0.4);
   ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.globalAlpha=a;ctx.direction=DIR;ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.font='800 '+fs+'px Heebo, system-ui, sans-serif';const x=innerWidth/2,y=Math.max(64,innerHeight*T_.y),w=ctx.measureText(f.txt).width+fs*1.6;
@@ -35,7 +37,7 @@ function feedAdd(icon,txt,col,key,n,tint){
   const st=FEED.stat,now=feedNow(),f=key&&FL.find(f=>f.key===key);
   if(f){if(n)f.n=(f.n||0)+n;f.txt=txt;f.t=now;f.pop=now;st.merged++;return f}
   const o={icon:icon||'',txt,col:col||C.gold,key,n:n||0,t:now,pop:now,tint};
-  FL.push(o);while(FL.length>FEED.max)FL.shift();st.added++;return o;
+  FL.push(o);while(FL.length>FEED.max){const x=FL.shift();if(x.el)x.el.remove()}st.added++;return o;
 }
 // שלל שנאסף: מתאחד לפי המשאב
 function feedRes(r,n){feedAdd(resIcon(r),resName(r),(dropTier(r)||{}).col||C.gold,'r:'+r,n)}
@@ -44,37 +46,62 @@ function feedRes(r,n){feedAdd(resIcon(r),resName(r),(dropTier(r)||{}).col||C.gol
 function feedGear(id){feedAdd(gIcon(id),T('loot.gear')+' '+gName(id)+powTag(id),dropTier(id).col,'g:'+id,0,true)}
 
 // הגבול התחתון: מעל הסקילים וכפתורי ההקשר שבחצי הימני של המסך
-function feedBottom(){
-  let b=innerHeight*FEED.low;
-  for(const id of ['skills','nav']){const el=document.getElementById(id);if(!el||el.hidden)continue;
-    for(const k of (id==='nav'?el.children:[el])){if(k.hidden)continue;const q=k.getBoundingClientRect();if(q.width&&q.height&&q.right>innerWidth*0.6&&q.top<b+40)b=Math.min(b,q.top-10)}}
+// כל כפתור באשכול הימני התחתון נמדד לבד (getBoundingClientRect): כל כפתור בקשת הסקילים, אולטימייט, סקיל חתימה, כישוף, וכפתורי ההקשר.
+// x0: הקצה השמאלי של העמודה. כפתור שמימינו נחשב (ניר, סרטון 7.11: השורות ירדו מתחת לכפתור השלישי בקשת, כי נמדד רק המיכל)
+const FEED_HUD='#skills>*,#skills,#ult,#sig,#spell,#divine,#swap,#nav>*';
+function feedBottom(x0){
+  let b=innerHeight*FEED.low;const xl=x0==null?innerWidth*0.6:x0;
+  for(const k of document.querySelectorAll(FEED_HUD)){if(k.hidden||k.closest('[hidden]'))continue;const q=k.getBoundingClientRect();
+    if(!q.width||!q.height||q.right<=xl||getComputedStyle(k).display==='none'||getComputedStyle(k).visibility==='hidden')continue;
+    if(q.top<b+40)b=Math.min(b,q.top-10)}
   return Math.max(innerHeight*FEED.top+40,b);
+}
+/* העמודה (7.11.2026, הסרטון של ניר: שורות מתחת לסקילים ונחתכות בקצה). שורות HTML ולא ציור בקנבס, כדי שאפשר יהיה למדוד אותן.
+   המקום נמדד מול כל מה שעל המסך (msgBlocks ב-msglane.js): הרצועה בצד ימין, החלק הפנוי הכי נמוך שעדיין מעל הסקילים.
+   השוליים הבטוחים (מסך מעוגל, מצלמה) נכנסים לחשבון, והשורה מתקצרת ב-… ולא נחתכת. אין מקום בכלל: השורה עוברת לעמודת ההודעות למעלה */
+function feedColEl(){let el=document.getElementById('feedCol');if(!el){el=document.createElement('div');el.id='feedCol';el.className='feedcol';el.setAttribute('aria-live','polite');document.body.appendChild(el)}return el}
+function feedSafe(){const p=document.createElement('div');p.style.cssText='position:fixed;visibility:hidden;pointer-events:none;top:0;left:0;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)';document.body.appendChild(p);
+  const cs=getComputedStyle(p),o={l:parseFloat(cs.paddingLeft)||0,r:parseFloat(cs.paddingRight)||0};p.remove();return o}
+// המקום הפנוי בצד ימין: {x0,x1,y0,y1}, או null. החלק הפנוי הכי נמוך בין ראש המסך לסקילים (feedBottom)
+let FSAFE=null;addEventListener('resize',()=>{FSAFE=null});
+function feedSpot(lh){
+  const vw=innerWidth,vh=innerHeight,F=FEED,sf=FSAFE||(FSAFE=feedSafe()),x1=vw-Math.max(F.edge,sf.r+8),x0=x1-Math.min(300,vw*0.36),pad=6;
+  const bl=(typeof msgBlocks==='function'?msgBlocks():[]).filter(r=>r.right>x0&&r.left<x1).sort((a,b)=>a.top-b.top);
+  const lo=vh*0.12,hi=feedBottom(x0);let y=lo;const gaps=[];
+  for(const r of bl){if(r.bottom<=y)continue;if(r.top>=hi)break;if(r.top-pad>y)gaps.push([y,r.top-pad]);y=Math.max(y,r.bottom+pad)}
+  if(y<hi)gaps.push([y,hi]);
+  const ok=gaps.filter(g=>g[1]-g[0]>=lh);if(!ok.length)return null;
+  const g=ok[ok.length-1];return {x0,x1,y0:g[0],y1:g[1]};
 }
 function drawFeed(){
   const now=feedNow(),F=FEED;
-  for(let i=FL.length-1;i>=0;i--)if(now-FL[i].t>F.life)FL.splice(i,1);
-  if(!FL.length||!feedOn())return;
-  const fs=Math.round(Math.max(F.size[0],Math.min(F.size[2],innerHeight*F.size[1]))),lh=fs+F.padY*2,rtl=DIR==='rtl';
-  ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.textBaseline='middle';ctx.globalCompositeOperation='source-over';
-  const font='700 '+fs+'px Heebo, system-ui, sans-serif',x1=innerWidth-F.edge;
-  let y=feedBottom()-lh;
-  for(let i=FL.length-1;i>=0;i--){const f=FL[i],age=now-f.t,a=Math.min(1,(now-f.pop)/F.fadeIn,(F.life-age)/F.fadeOut);if(a<=0){y-=lh+F.gap;continue}
-    // החלקים לפי סדר הקריאה: אייקון, כמות, טקסט. בעברית מימין לשמאל, באנגלית משמאל לימין, וכל השורה צמודה לקצה הימני
-    ctx.font=font;const parts=[];if(f.icon)parts.push({s:f.icon,d:'ltr'});if(f.n)parts.push({s:'+'+f.n,d:'ltr',c:f.col});parts.push({s:f.txt,d:DIR,c:f.tint?f.col:null});
-    for(const p of parts){ctx.direction=p.d;p.w=ctx.measureText(p.s).width}
-    const sp=fs*0.35,w=parts.reduce((s,p)=>s+p.w,0)+sp*(parts.length-1)+F.padX*2+F.bar,x0=x1-w,pop=fxLess()?1:1+0.12*Math.max(0,1-(now-f.pop)/0.15);   // בפחות אפקטים (juice.js) בלי קפיצה
-    ctx.globalAlpha=a;ctx.fillStyle=F.bg;ctx.beginPath();ctx.roundRect?ctx.roundRect(x0,y,w,lh,lh/2.6):ctx.rect(x0,y,w,lh);ctx.fill();
-    ctx.fillStyle=f.col;ctx.fillRect(x1-F.bar,y+2,F.bar,lh-4);
-    // מניחים מהקצה פנימה: בעברית החלק הראשון ליד הקצה, באנגלית האחרון
-    const seq=rtl?parts:parts.slice().reverse();let cx=x1-F.bar-F.padX;
-    for(const p of seq){ctx.direction=p.d;ctx.textAlign='left';const px=cx-p.w,py=y+lh/2;
-      if(p.c&&pop>1){ctx.save();ctx.translate(px+p.w/2,py);ctx.scale(pop,pop);ctx.translate(-px-p.w/2,-py)}
-      ctx.fillStyle='#000a';ctx.fillText(p.s,px+1,py+1);ctx.fillStyle=p.c||F.text;ctx.fillText(p.s,px,py);
-      if(p.c&&pop>1)ctx.restore();cx=px-sp}
-    y-=lh+F.gap}
-  ctx.restore();ctx.direction=DIR;
-  F.stat.drawn++;F.stat.most=Math.max(F.stat.most,FL.length);
+  for(let i=FL.length-1;i>=0;i--)if(now-FL[i].t>F.life){if(FL[i].el)FL[i].el.remove();FL.splice(i,1)}
+  const col=feedColEl();
+  if(!FL.length||!feedOn()){if(col.childElementCount)col.textContent='';for(const f of FL)f.el=null;return}
+  const fs=Math.round(Math.max(F.size[0],Math.min(F.size[2],innerHeight*F.size[1]))),lh=fs+F.padY*2+4;
+  // המקום נמדד פעם ב-0.25 שניות ובכל שורה חדשה, לא בכל פריים
+  if(!F._spot||now-F._spotT>0.25||F._n!==FL.length){F._spot=feedSpot(lh);F._spotT=now;F._n=FL.length}
+  const sp=F._spot;
+  if(!sp){for(const f of FL){if(!f.lane&&typeof msgSay==='function'){f.lane=1;msgSay((f.icon?f.icon+' ':'')+(f.n?'+'+f.n+' ':'')+f.txt,f.col)}}col.style.display='none';return}
+  col.style.display='';const rows=Math.max(1,Math.min(F.max,Math.floor((sp.y1-sp.y0+F.gap)/(lh+F.gap))));
+  const cs=col.style;cs.right=Math.round(innerWidth-sp.x1)+'px';cs.width=Math.round(sp.x1-sp.x0)+'px';cs.top=Math.round(sp.y0)+'px';cs.height=Math.round(sp.y1-sp.y0)+'px';cs.fontSize=fs+'px';cs.gap=F.gap+'px';
+  const show=FL.slice(-rows);for(const c of [...col.children])if(!FL.some(f=>f.el===c))c.remove();   // שורות שכבר לא בפיד (FL.length=0 מבחוץ)
+  for(const f of FL)if(!show.includes(f)&&f.el){f.el.remove();f.el=null}
+  for(const f of show){
+    if(!f.el){f.el=document.createElement('div');f.el.className='frow';f.el.dir=DIR;col.appendChild(f.el);f.html=null}
+    const html=(f.icon?'<i>'+f.icon+'</i>':'')+(f.n?'<b>+'+f.n+'</b>':'')+'<span>'+String(f.txt).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[c])+'</span>';
+    if(f.html!==html){f.el.innerHTML=html;f.html=html}
+    f.el.style.setProperty('--fc',f.col);f.el.classList.toggle('tint',!!f.tint);
+    const age=now-f.t,a=Math.max(0,Math.min(1,(now-f.pop)/F.fadeIn,(F.life-age)/F.fadeOut));f.el.style.opacity=a.toFixed(2);
+    f.el.classList.toggle('pop',!fxLess()&&now-f.pop<0.15)}
+  F.stat.drawn++;F.stat.most=Math.max(F.stat.most,show.length);
 }
+(function(){const st=document.createElement('style');st.textContent=
+  '.feedcol{position:fixed;z-index:4;pointer-events:none;direction:ltr;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;overflow:hidden}'+
+  '.feedcol .frow{max-width:100%;box-sizing:border-box;display:flex;align-items:center;gap:.35em;white-space:nowrap;overflow:hidden;flex:none;padding:'+FEED.padY+'px '+FEED.padX+'px;border-radius:999px;'+
+    'background:'+FEED.bg+';border-inline-end:'+FEED.bar+'px solid var(--fc);color:'+FEED.text+';font:700 1em/1.2 Heebo,system-ui,sans-serif;text-shadow:0 1px 2px #000a;transition:transform .15s}'+
+  '.feedcol .frow i{font-style:normal;flex:none}.feedcol .frow b{color:var(--fc);flex:none}.feedcol .frow span{overflow:hidden;text-overflow:ellipsis;min-width:0}.feedcol .frow.tint span{color:var(--fc)}.feedcol .frow.pop{transform:scale(1.06)}';
+  document.head.appendChild(st)})();
 
 // חיבור: אחרי כל ציור של המסך. render.js קורא ל-render בשם, אז העטיפה נתפסת
 (()=>{const old=render;render=function(){old.apply(this,arguments);drawFeed();if(feedOn())drawFeedTitle()}})();

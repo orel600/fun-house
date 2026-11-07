@@ -128,13 +128,16 @@ function drawWnpcs(){
 function drawWnpcScreen(ox,oy){
   const all=wnpcState();if(!all)return;
   const mark=wnpcMarks(),bob=Math.sin(fxNow()*4)*4;
+  if(typeof fxwMarks==='function')fxwMarks(mark,'w');   // הסימנים בשביל ה-emote בשיחה (fxworld.js)
   ctx.textAlign='center';ctx.direction=DIR;
+  if(typeof fxvNpcIcons==='function')fxvNpcIcons(mark,'w',(id,n)=>({x:n.x+ox,y:n.y+oy-WNPC.markUp-7}));   // סימן שיחה למי שקרוב ואין לו קווסט (fxvil.js)
   for(const id in all){const n=all[id],x=n.x+ox,y=n.y+oy,col=WNPC.list[id].col;
     if(n.emote){ctx.font='26px system-ui, sans-serif';ctx.fillText(n.emote,x,y-WNPC.markUp-14+Math.sin(fxNow()*8)*3)}
     if(S.wd.npcNear===id||S.wd.dlg===id){const nm=T('npc.'+id)[0];ctx.font='800 14px Heebo, system-ui, sans-serif';ctx.fillStyle='#0009';ctx.fillText(nm,x+1,y+33);ctx.fillStyle=col;ctx.fillText(nm,x,y+32)}
     const m=mark[id];if(!m)continue;
-    ctx.direction='ltr';ctx.font='800 22px Heebo, system-ui, sans-serif';const my=y-WNPC.markUp+bob;
-    ctx.fillStyle='rgba(18,22,36,0.85)';ctx.beginPath();ctx.arc(x,my-7,15,0,7);ctx.fill();ctx.fillStyle=C.gold;ctx.fillText(m,x,my+1);ctx.direction=DIR;
+    const my=y-WNPC.markUp+bob;
+    if(!(typeof fxvMark==='function'&&fxvMark(m,x,my-7-bob))){ctx.direction='ltr';ctx.font='800 22px Heebo, system-ui, sans-serif';   // הסימן מספריית האפקטים (fxvil.js), ובלי התמונה: העיגול הישן
+    ctx.fillStyle='rgba(18,22,36,0.85)';ctx.beginPath();ctx.arc(x,my-7,15,0,7);ctx.fill();ctx.fillStyle=C.gold;ctx.fillText(m,x,my+1);ctx.direction=DIR}
     edgeArrow(x,y,C.gold)}
   sqScreen(ox,oy);   // שם המקום וחץ אליו (questboard.js)
 }

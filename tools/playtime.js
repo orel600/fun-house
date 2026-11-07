@@ -12,6 +12,7 @@
    - village 90 שניות לכל חזרה לכפר (מכירה, כוהנת, ציוד, דיבור עם דמויות). הבוט חוזר כל PT.trip שניות משחק, ובסוף כל פרק.
    - death 45 שניות לכל מוות (מסך המוות, ההליכה חזרה מהכפר).
    - מה לא נספר: קווסטים, הזירה, דיג, סודות, פונדק. הם לוקחים זמן, אבל גם נותנים XP ושלל שמקצרים את הטיפוס. מניחים שהם בערך מתקזזים.
+   צפיפות בהליכה (עולם עם חיים): node tools/playtime.js --density [--walks 40] [--out <קובץ>]
    הרצה: node tools/playtime.js [--cls warrior,hunter,mage] [--seed 7] [--kills 60] [--cap 2400] [--trip 600] [--out docs/playtime-<תאריך>.md] [--set "<js>"]
    לא רץ ב-GitHub. דו-ממד בלבד. ריצה מלאה: כ-20-40 דקות אמיתיות, שלוש המחלקות במקביל */
 const {chromium}=require('playwright');
@@ -80,11 +81,66 @@ async function runCls(browser,cls,B){
   await page.close();return r.R;
 }
 
+/* --density (עולם עם חיים, docs/concept-world-life.md, 7.11.2026): כמה מלא העולם בזמן הליכה. בלי הבוט ובלי קרב, דקה-שתיים אמיתיות.
+   בכל אזור: walks הליכות אקראיות מנקודה פתוחה לנקודה פתוחה בדרך האמיתית (tPath), במהירות של הגיבור. כל רבע שנייה בודקים:
+   - "ריק": אין על המסך שום דבר שהוא לא אויב (שער, ציון דרך, אבן מסע, פנס, דמות, מחנה ועשן שלו, שריד, חיות).
+   - "לגעת": כמה שניות עוברות בין דבר שאפשר לגעת בו (מחנה, שריד שלא נלקח, אבן מסע, דמות) לבא. היעד: כ-10.
+   לפי איזור (start/near/far: שליש המרחק מהכניסה). פעמיים: בלי wlife.js ואיתו, באותן הליכות */
+function densityRun(walks){
+  const out={},regs=['meadow','lake','ridge','desert','storm','shadow'],on0=Object.assign({},WLIFE.on);
+  let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  for(const reg of regs){
+    out[reg]={};
+    for(const mode of ['off','on']){
+      WLIFE.on=mode==='on'?Object.fromEntries(regs.map(r=>[r,1])):{};seed=7+reg.length;
+      enterWorld('home',reg);enemies=[];const R=WR(),{w,h}=R.size,home={x:P.x,y:P.y},sp=P.speed||200,hw=W/2,hh=H/2;
+      const st=WLIFE.on[reg]?wlState():null,smokeH=WLIFE.camp.smoke.h;
+      const fixed=[];const add=o=>{if(o&&o.x!=null)fixed.push(o)};const gs=wGates(true);for(const k in gs)add(gs[k]);
+      ((R.map&&R.map.marks)||[]).forEach(add);(R.waystones||[]).forEach(add);
+      for(const k in STORY.lanterns)if(STORY.lanterns[k].reg===reg)add(STORY.lanterns[k]);
+      const npcs=[];for(const id in WNPC.list)if((WNPC.list[id].reg||'meadow')===reg)npcs.push(WNPC.list[id].at);
+      const touch=[...(R.waystones||[]),...npcs,...(st?st.camps:[]),...(st?st.rems:[])];
+      const maxD=Math.hypot(w,h)/2,zone=(x,y)=>{const d=Math.hypot(x-home.x,y-home.y)/maxD;return d<0.33?'start':d<0.66?'near':'far'};
+      const Z={};for(const z of ['start','near','far'])Z[z]={t:0,empty:0,gaps:[],run:0,maxRun:0};
+      const used=new Set();
+      for(let k=0;k<walks;k++){
+        let a=null,b=null;for(let i=0;i<60&&!b;i++){const x=(rnd()-0.5)*(w-500),y=(rnd()-0.5)*(h-500);if(tBlocked(x,y))continue;if(!a){a={x,y};continue}if(Math.hypot(x-a.x,y-a.y)>1500)b={x,y}}
+        if(!a||!b)continue;const path=tPath(a.x,a.y,b.x,b.y);if(!path||path.length<2)continue;
+        let lastT=0,t=0,px=a.x,py=a.y,seen=null;
+        const pts=[[a.x,a.y],...path.map(q=>Array.isArray(q)?q:[q.x,q.y])];
+        for(let i=1;i<pts.length;i++){const [x1,y1]=pts[i],[x0,y0]=pts[i-1],L=Math.hypot(x1-x0,y1-y0),n=Math.max(1,Math.ceil(L/(sp*0.25)));
+          for(let j=1;j<=n;j++){px=x0+(x1-x0)*j/n;py=y0+(y1-y0)*j/n;t+=0.25;const zn=Z[zone(px,py)];zn.t+=0.25;
+            const on=o=>Math.abs(o.x-px)<hw+40&&Math.abs(o.y-py)<hh+40;
+            let any=fixed.some(on)||npcs.some(on);
+            if(!any&&st)any=st.rems.some(on)||st.camps.some(c=>Math.abs(c.x-px)<hw&&c.y-smokeH*0.8<py+hh&&c.y>py-hh)||st.herds.some(H=>!H.gone&&H.a.some(on));
+            if(!any){zn.empty+=0.25;zn.run+=0.25;zn.maxRun=Math.max(zn.maxRun,zn.run)}else zn.run=0;
+            const near=touch.find(o=>Math.hypot(o.x-px,o.y-py)<160&&!(st&&st.rems.includes(o)&&used.has(o.id)));
+            if(near&&near!==seen){zn.gaps.push(t-lastT);lastT=t;seen=near;if(near.id&&st&&st.rems.includes(near))used.add(near.id)}}}
+        for(const z in Z)Z[z].run=0}
+      out[reg][mode]=Object.fromEntries(Object.entries(Z).map(([z,v])=>[z,{t:Math.round(v.t),empty:v.t?Math.round(v.empty/v.t*100):0,maxRun:Math.round(v.maxRun),
+        gap:v.gaps.length?Math.round(v.gaps.reduce((a,b)=>a+b,0)/v.gaps.length):null,n:v.gaps.length}]))}
+  }
+  WLIFE.on=on0;return out;
+}
+async function density(){
+  const browser=await chromium.launch(),page=await browser.newPage({viewport:BAL.phone,deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  await page.route(/^https?:/,r=>r.fulfill({status:200,contentType:'text/css',body:''}));
+  await page.addInitScript(()=>{try{localStorage.setItem('zm-gfx','2d')}catch(e){}});
+  await page.goto('file://'+path.resolve(__dirname,'..','index.html'));await page.waitForTimeout(800);
+  if(opt('set'))await page.evaluate(js=>{(0,eval)(js)},opt('set'));
+  const walks=+(opt('walks')||40),R=await page.evaluate(`(${densityRun})(${walks})`);await browser.close();
+  const L=['# צפיפות העולם בהליכה (playtime.js --density)','','לכל אזור ולכל איזור: % מזמן ההליכה בלי שום דבר שהוא לא אויב על המסך, הרצף הריק הכי ארוך (שניות), וממוצע השניות בין דבר שאפשר לגעת בו לבא. "לפני" בלי wlife.js, "אחרי" איתו.','',
+    '| אזור | איזור | ריק לפני | ריק אחרי | רצף ריק אחרי | בין נגיעות לפני | בין נגיעות אחרי |','| --- | --- | --- | --- | --- | --- | --- |'];
+  for(const reg in R)for(const z of ['start','near','far']){const a=R[reg].off[z],b=R[reg].on[z];L.push(`| ${reg} | ${z} | ${a.empty}% | ${b.empty}% | ${b.maxRun} | ${a.gap??'-'} | ${b.gap??'-'} |`)}
+  const txt=L.join('\n');console.log(txt);if(opt('out'))fs.writeFileSync(opt('out'),txt+'\n');
+}
+
 // שניות משחק → שעות של שחקן
 const hrs=(t,trips,deaths)=>(t*PT.walk+trips*PT.village+deaths*PT.death)/3600;
 const f1=x=>x==null?'-':(Math.round(x*10)/10).toString();
 
 (async()=>{
+  if(opt('density'))return density();
   const story=BAL.chapters.map(c=>Object.assign({},c,{st:'story'}));
   const tier=n=>BAL.chapters.map((c,i)=>{const a=PT.lv[n-2],b=PT.lv[n-1];return Object.assign({},c,{st:'t'+n,tier:n,kills:PT.kills},b?{lv:Math.round(a+(b-a)*(i+1)/6)}:{})});
   const B=Object.assign({},BAL,{rares:true,cap:PT.cap,wardenCap:Math.min(600,PT.cap/2),trip:PT.trip,chapters:story.concat(tier(2),tier(3))});

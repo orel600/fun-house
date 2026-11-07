@@ -74,7 +74,7 @@ function bossDown(b){
   for(let i=0;i<22;i++)orbs.push({x:b.x+rand(-40,40),y:b.y+rand(-40,40),v:1});
   sparks(b.x,b.y,C.lilac,40,320);sparks(b.x,b.y,C.gold,20,260);
   eb=[];waves=[];mines=[];S.hitstop=0.25;S.slow=0.8;S.shake=14;
-  banner(T('bossDown',b.name),C.gold);sfx('bossDown');
+  if(typeof msgOn==='function'&&msgOn())msgBig(T('bossDown',b.name),C.gold);else banner(T('bossDown',b.name),C.gold);   // בעולם: רגע גדול (msglane.js)sfx('bossDown');
   P.track=newTrack();
   const more=arenaBossDown();   // זירת בוסים: יש עוד בוס (arenas.js)
   if(!more)questEvent('win');
