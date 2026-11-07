@@ -3523,7 +3523,7 @@ function worldBot(m,L,god){
      h.x=e.x-(e.r+h.r+5);h.y=e.y;e.atkT=0;R.atk=mbAttack(e,0,h,MBKIT[e.kit].atk)&&e.atkT>0;
      for(let i=0;i<60;i++)mbTick(e,1/30);R.free=!(e.st.root>0)&&e.st.imm>0&&!mbCC(e,'root',1,h);del(h);
      clr();h=add('mage');mbCast(h,'s2',e);const z=MB.zones.pop();z.fire(z);R.bub=e.st.bub>0&&e.st.stun>0&&e.st.wet>0;
-     const sh=w0.shock||0,mt=MB.t;MB.t=Math.max(MB.t,MOBA.early?MOBA.early.t:0);const d0=mbDmg(null,e,100,'lightning');MB.t=mt;R.shock=(w0.shock||0)>sh&&d0>100;   // אחרי הפתיחה הרכה (MOBA.early)del(h);
+     const sh=w0.shock||0,mt=MB.t;MB.t=Math.max(MB.t,MOBA.early?MOBA.early.t:0);const d0=mbDmg(null,e,100,'lightning');MB.t=mt;R.shock=(w0.shock||0)>sh&&d0>100;del(h);   // d0 אחרי הפתיחה הרכה (MOBA.early)
      clr();h=add('warrior');mbCast(h,'s1',e);run(40,()=>e.st.stun>0);R.cleave=e.st.stun>0&&e.st.slow>0;del(h);
      mbWord=ow;clr();e.hp=e.max=MBKIT[e.kit].hp;e.x=ex;e.y=ey;o.newSk=R}
     // טנק ולוחם יעילים, ואפקטים (moba-kits.js, moba-fx.js), בתרחיש קבוע: זינוק של תקיפה רגילה אל מטרה קצת מחוץ לטווח, מגן שסופג,
