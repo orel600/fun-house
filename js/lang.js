@@ -606,6 +606,10 @@ const TEXT={
   'w.enter':{he:'האחו והמחצבה',en:'The Meadow & the Quarry'},
   'fpsGroup':{he:'הצג FPS',en:'Show FPS'},   // perf.js
   'hatGroup':{he:'הצג כובע',en:'Show hat'},   // armor.js
+  'gicoGroup':{he:'אייקוני סקילים',en:'Skill icons'},   // gicons.js
+  'gico.new':{he:'חדש',en:'New'},
+  'gico.old':{he:'קלאסי',en:'Classic'},
+  'credits.icons':{he:'אייקונים: Lorc, Delapouite ויוצרים נוספים מ-game-icons.net, ברישיון CC BY 3.0. הצבעים והמסגרות שונו.',en:'Icons by Lorc, Delapouite and other contributors from game-icons.net, licensed under CC BY 3.0. Colors and frames were changed.'},
   'shadowGroup':{he:'צללים',en:'Shadows'},'shadow.on':{he:'דלוק',en:'On'},'shadow.off':{he:'כבוי',en:'Off'},   // look-hd.js
   'vfxqGroup':{he:'איכות אפקטים',en:'Effects quality'},'vfxq.hi':{he:'גבוהה',en:'High'},'vfxq.lo':{he:'נמוכה',en:'Low'},   // vfx3d.js
   'fxGroup':{he:'אפקטים',en:'Effects'},'fx.full':{he:'מלא',en:'Full'},'fx.less':{he:'פחות',en:'Fewer'},
