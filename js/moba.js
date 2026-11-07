@@ -415,6 +415,7 @@ function mobaDraw(ox,oy){
   const M=MB,L=MOBA.lane,me=M.me,ally=t=>t===me.team;
   // הנתיב
   if(!(typeof mb3dHere==='function'&&mb3dHere())){mbFloor2d();mbDecor2d(ox,oy)}   // הרצפה והקישוטים (moba-look.js). בתלת-ממד הם שם, כטקסטורה ומודלים (moba3d.js)
+  typeof mbWxDraw==='function'&&mbWxDraw();   // מזג אוויר: מתחת לאזורים, ליחידות ולסקילים (moba-weather.js)
   const uk=mbUiK();   // מה שמעל הדמויות גדל בחזרה, כי המצלמה רחוקה (MBLOOK.cam)
   // גיבור מת: גולגולת במקום שבו נפל, עם השניות עד שהוא חוזר
   for(const u of M.u)if(u.k==='hero'&&u.dead&&u.resp>0&&onScreen(u.x+ox,u.y+oy)&&(ally(u.team)||typeof mbVisPt!=='function'||mbVisPt(u.x,u.y))){   // גיבור אויב שמת בערפל: לא מגלים איפה
