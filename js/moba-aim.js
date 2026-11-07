@@ -31,7 +31,7 @@ function mbAimInit(box){
 function mbAimDown(b,e){
   const u=mbMe(),slot=b.dataset.sk;if(!u||u.dead||MB.over||mbAim)return;
   if(slot==='ult'&&u.lvl<MOBA.ultAt||u.cd[slot]>0&&!MBAIM.tip.includes(slot)){mbPress(slot);return}   // נעול או בטעינה: mbPress מרעיד או מתעלם, כמו קודם
-  mbAim={slot,pid:e.pointerId,b,sx:e.clientX,sy:e.clientY,a:u.face,len:0,on:false,cancel:false,t0:performance.now(),tip:false};
+  mbAim={slot,pid:e.pointerId,b,sx:e.clientX,sy:e.clientY,a:u.face,len:0,on:false,cancel:false,t0:performance.now(),ts:e.timeStamp,tip:false};   // ts: זמן הנגיעה עצמה, בשביל ההחלטה בשחרור
   try{b.setPointerCapture(e.pointerId)}catch(_){}
 }
 function mbAimMove(e){
@@ -45,7 +45,9 @@ function mbAimMove(e){
 function mbAimUp(e){
   const A=mbAim;if(!A||e.pointerId!==A.pid)return;mbAimEnd();
   if(!S.mb||!MB||A.cancel)return;   // בוטל: בלי הטלה ובלי טעינה
-  if(A.tip)return;                   // לחיצה ארוכה הראתה הסבר (בלי גרירה): בלי הטלה
+  // לחיצה ארוכה (בלי גרירה) הראתה הסבר: בלי הטלה. ההחלטה לפי הזמנים של הנגיעה עצמה ולא לפי הפריימים,
+  // כי פריים כבד אחד (יותר מחצי שנייה) מראה את ההסבר כבר בפריים הראשון, ונגיעה קצרה נבלעה (המתאם, 7.11)
+  if(A.tip&&!(e.timeStamp-A.ts<MBSPELL.hold*1000))return;
   if(!A.on){mbPress(A.slot);return}  // נגיעה קצרה: כיוון אוטומטי
   const u=mbMe();if(u)mbPress(A.slot,mbAimPick(u,A).aim);
 }
