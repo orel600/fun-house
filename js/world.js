@@ -196,6 +196,7 @@ function worldUi(on){if(!on)TR=null;document.body.classList.toggle('world',on);$
 // at: 'home' (מהכפר, או מהאזור הקודם), id של שער (חזרה מהזירה) או של דרך (חזרה מאזור אחר). reg: איזה אזור, ברירת המחדל האחו
 function enterWorld(at,reg){
   wRet=null;reset();S.mode='play';
+  if(typeof villageUi==='function'&&!$('vhud').hidden)villageUi(false);   // פס המשאבים של הכפר לא נשאר מתחת לזה של העולם (שורות מטבעות שעולות אחת על השנייה)
   reg=WORLD.regions[reg]?reg:'meadow';
   S.wd={reg,t:0,gt:0,near:null,ui:'',groups:[],got:{}};S.wd.groups=WR().foes.map(()=>({t:0}));   // קודם S.wd, ואז WR() יודע באיזה אזור אנחנו (לפני כן החזיר תמיד את האחו)
   const R=WR();terrainEnter(R,reg);   // המפה של האזור: מה חסום ומה מאט (terrain.js). אזור בלי map: null, ומלבן כמו קודם
@@ -298,6 +299,8 @@ function worldUpdate(dt){
   P.inv-=dt;P.swapBuff-=dt;S.hurt-=dt;S.shake=Math.max(0,S.shake-dt*30);
   const {ix,iy}=movePlayer(dt);if(P.moving&&!nearest(440))P.aim=Math.atan2(iy,ix);
   ridgeSlip(dt);   // אגם קפוא: החלקה (ridge-hazards.js)
+  if(typeof fxwUpdate==='function')fxwUpdate(dt);
+  if(typeof fxcUpdate==='function')fxcUpdate(dt);   // אפקטים של קרב: אזהרות על הרצפה ונצנוץ מרבצים (fxcombat.js)   // שכבת אפקטים: מזג אוויר, צעדים, לבה ומקום הקווסט (fxworld.js)
   placeClamp(P);
   srUpdate(dt);   // הסלעים המרחפים בלב הצל: זזים ולוקחים את השחקן איתם (shadowrocks.js)
   for(const n of S.nd.list){
@@ -322,7 +325,7 @@ function worldUpdate(dt){
   ridgeUpdate(dt);   // מפולות במדרון (ridge-hazards.js)
   riverUpdate(dt);   // נהר הברקים במגדלי הסערה (storm-river.js)
   terrainTick();   // אויבים ופיוחו: לא בתוך מים, יער או צוק, ולאט במעבר הרדוד (terrain.js)
-  dropsUpdate(dt);secretsUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
+  dropsUpdate(dt);secretsUpdate(dt);wlifeUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*mutK('regen')*dt);   // mutK: יום הצמא מרפא לאט (mutation.js)
   enemies=enemies.filter(e=>!e.dead);
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}
@@ -436,6 +439,7 @@ function drawWorld(){
   foeAiDraw();   // הסתערות, ירייה וקפיצה שמסומנות על הרצפה (foeai.js)
   eventsDraw();scentDraw();rareDraw();   // אירועים (events.js), החיה מובילה (petscent.js)
   lakeBellDraw();   // גל הפעמון, אדוות ליד הגשרים והתיבה הטבועה (lake-bell.js)
+  wlifeDraw();   // מחנות חיים, שרידים וחיות (wlife.js)
   secretsDraw();curioDraw();   // סודות (secrets.js), מכשול בדרך לאזור הבא (curiosity.js)
   if(WR().fog)wFog();
   if(WR().snow)wSnow();   // הרכס הקפוא
@@ -557,9 +561,11 @@ function drawWorldScreen(ox,oy){
   drawWnpcScreen(ox,oy);   // worldnpc.js
   fishScreen(ox,oy);   // "!" והפס של הדיג (fishing.js)
   storyScreen(ox,oy);   // story.js
+  lblBegin();   // שמות מעל אויבים: נאספים ומצוירים יחד בסוף, בלי לעלות אחד על השני ועל הכפתורים (labels.js)
   foeLoreScreen(ox,oy);affixScreen(ox,oy);huntScreen(ox,oy);   // שמות ובועות (foelore.js), affix.js, hunt.js
   qmScreen(ox,oy);   // "!" מעל אויב שצריך להרוג לקווסט (questmark.js)
   foeAiScreen(ox,oy);   // "!" מעל קורא שבורח (foeai.js)
+  lblFlush();
   eventsScreen(ox,oy);scentScreen(ox,oy);   // events.js, petscent.js
   lakeBellScreen(ox,oy);   // חצים לאויבים רחוקים כשהערפל למטה (lake-bell.js)
   secretsScreen(ox,oy);secretsHud();curioScreen(ox,oy);   // secrets.js, השלט "רמה מומלצת" (curiosity.js)

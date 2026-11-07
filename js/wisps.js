@@ -23,6 +23,8 @@ const WISPS={
     defense:{rate:0}
   },
   maxParts:160,
+  // אויב קרוב (near): האורות קטנים ועמומים יותר, כדי שלא ייראו כמו אויבים או יריות (ניר, 7.11). size/alpha: כמה נשאר, rate: כמה מהר עוברים
+  calm:{near:230,size:0.7,alpha:0.5,rate:4},
   // כוח שרואים (docs/plan-combat.md שינוי 4): האורות גדלים מעט עם רמת הדמות (lvl לכל רמה, עד max), ומשבצת אור חדשה (GEAR.slots.orbit) נפתחת בחגיגה
   grow:{lvl:0.015,max:0.35},
   stat:{draws:0,lights:0,parts:0,flashes:0}   // לבדיקה: כמה פעמים צוירו, כמה אורות וחלקיקים, וכמה הבזקים
@@ -43,9 +45,11 @@ const wispBlit=(img,x,y,s,a)=>{ctx.globalAlpha=Math.max(0,Math.min(1,a));ctx.dra
 function wispsOn(){const W=WISPS.where;if(typeof HD!=='undefined'&&!HD.on)return false;return S.wd?W.world:S.vil?W.village:W.arena}
 
 /* ---- תנועה: כל אור בזווית שלו במעגל של orbit.js (אז הוא נראה איפה שהוא פוגע), עם רדיוס שנושם, גובה שעולה ויורד, וקפיץ שמושך אותו אחרי הדמות ---- */
-const WL={list:[],parts:[],t:0,last:0,seen:null};
+const WL={list:[],parts:[],t:0,last:0,seen:null,calm:0};
 function wispsUpdate(dt){
   const o=S.orb,W=WISPS,types=o.types;WL.t+=dt;const t=WL.t;
+  {const C=W.calm,n2=C.near*C.near;let near=false;for(const e of enemies)if(!e.dead&&(e.x-P.x)*(e.x-P.x)+(e.y-P.y)*(e.y-P.y)<n2){near=true;break}
+    WL.calm=Math.max(0,Math.min(1,WL.calm+(near?1:-1)*dt*C.rate))}
   while(WL.list.length<types.length)WL.list.push({x:P.x,y:P.y,h:W.h,tr:[],ph:Math.random()*6.28,sp:0.8+Math.random()*0.5,last:0,fl:0});
   WL.list.length=types.length;
   // הבזקים מהמונים של orbit.js: פגיעה (אש וקרח), עצירת ירייה ובליעת מכה (הגנה), ריפוי (עלה)
@@ -81,8 +85,8 @@ function wispBright(w,i){const o=S.orb,t=WL.t;let b;
 
 const wispK=()=>1+Math.min(WISPS.grow.max,(((typeof SAVE!=='undefined'&&SAVE.hero&&SAVE.hero.level)||1)-1)*WISPS.grow.lvl);
 function drawWisps(){
-  const o=S.orb,W0=WISPS,gk=wispK(),W=Object.assign({},W0,{halo:W0.halo*gk,core:W0.core*gk});ctx.save();
-  WL.list.forEach((w,i)=>{const [hot,col]=W.col[w.ty],b=wispBright(w,i),g=wispGlow(col),gh=wispGlow(col,hot),c=w.tr[0];
+  const o=S.orb,W0=WISPS,cm=WL.calm,gk=wispK()*(1-(1-W0.calm.size)*cm),ca=1-(1-W0.calm.alpha)*cm,W=Object.assign({},W0,{halo:W0.halo*gk,core:W0.core*gk});ctx.save();
+  WL.list.forEach((w,i)=>{const [hot,col]=W.col[w.ty],b=wispBright(w,i)*ca,g=wispGlow(col),gh=wispGlow(col,hot),c=w.tr[0];
     // צל רך על הרצפה: מחבר את האור לעולם
     ctx.globalCompositeOperation='source-over';ctx.globalAlpha=0.18*Math.min(1,b);ctx.fillStyle='#000';ctx.beginPath();ctx.ellipse(w.x,w.y,7,2.6,0,0,7);ctx.fill();
     // גוון רגיל מתחת: על דשא בהיר אור לבד נשטף, אז שכבה דקה בצבע הסוג נותנת לו צבע

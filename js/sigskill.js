@@ -131,7 +131,7 @@ function sigBook(){
   const id=sigId();
   if(!id)return '<div class="sigc lock"><span class="wsbi">⭐</span><span class="wsbn"><b>'+T('sig.title')+'</b><small>🔒 '+T('sig.lock',RANKS.every)+'</small></span></div>';
   const D=SIGSKILL.list[id];
-  return '<div class="sigc on" style="--dt:'+dtCol(D.dt)+'"><span class="wsbi">'+D.ic+'</span><span class="wsbn"><b>⭐ '+T('sk.'+id)+'</b><small>'+T('sig.d.'+id)+'</small></span><span class="wsbk">4</span></div>';
+  return '<div class="sigc on" style="--dt:'+dtCol(D.dt)+'">'+(typeof gSk==='function'&&gSk(id)?'<span class="wsbi gif">'+gSk(id)+'</span>':'<span class="wsbi">'+D.ic+'</span>')+'<span class="wsbn"><b>⭐ '+T('sk.'+id)+'</b><small>'+T('sig.d.'+id)+'</small></span><span class="wsbk">4</span></div>';
 }
 $('sig').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();sigUse()});
 $('sig').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();sigUse()}});

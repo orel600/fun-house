@@ -47,9 +47,9 @@ const wsbPicOk={};   // אילו אייקונים נטענו (בשביל הבו�
 const wsbIds=()=>Object.keys(WSKBOOK.old).concat(Object.keys(WSKBOOK.list));
 const wsbIc=id=>(WSKBOOK.list[id]||{}).ic||WSKBOOK.ic[id]||'✨';
 // האייקון המצויר כ-HTML (ואם לא נטען, האימוג'י במקומו). לסקיל בלי אייקון: ''
-const wsbImg=id=>WSKBOOK.list[id]?'<img class="wsbp" src="'+wsbPicSrc(id)+'" alt="" data-e="'+wsbIc(id)+'" onerror="this.outerHTML=this.dataset.e">':'';
+const wsbImg=id=>typeof gSk==='function'&&gSk(id,'wsbp')||(WSKBOOK.list[id]?'<img class="wsbp" src="'+wsbPicSrc(id)+'" alt="" data-e="'+wsbIc(id)+'" onerror="this.outerHTML=this.dataset.e">':'');
 // העיגול בכרטיס ובמשבצת: אייקון מצויר, או סוג הנזק עם אימוג'י (הסקילים של הזירה)
-const wsbIcon=id=>'<span class="wsbi'+(WSKBOOK.list[id]?' pic':'')+'">'+(wsbImg(id)||dtSvg(SKILLS.list[id].dt)+'<em>'+wsbIc(id)+'</em>')+'</span>';
+const wsbIcon=id=>typeof gSk==='function'&&gSk(id)?'<span class="wsbi gif">'+gSk(id)+'</span>':'<span class="wsbi'+(WSKBOOK.list[id]?' pic':'')+'">'+(wsbImg(id)||dtSvg(SKILLS.list[id].dt)+'<em>'+wsbIc(id)+'</em>')+'</span>';
 const wsbWeapon=()=>SKILLS.weapon[P.wt]||null;
 const wsbLoad=()=>{const h=SAVE.hero;if(!Array.isArray(h.skLoad))h.skLoad=[];return h.skLoad};
 // באיזו רמה נפתח. הסקיל של הנשק תמיד פתוח
