@@ -1707,9 +1707,9 @@ function worldBot(m,L,god){
       msgBig(T('bossDown','Test'),C.gold);feedRes('stone',3);feedGear('oakSword');feedAdd('🎯','Spotted the Wanted · '.repeat(4),C.gold,'w');render()});
     await page.clock.runFor(700);
     const a=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();return {...__lmeas(),waits:MSG.stat.waits,shown:MSG.stat.big}});
-    await page.evaluate(()=>{for(const e of enemies)e.dead=true;enemies=[];msgPump()});
+    await page.evaluate(()=>{for(const e of enemies)e.dead=true;enemies=[];window.__lmf=msgFight;msgFight=()=>false;msgPump()});   // הקרב נגמר (העולם יכול להוליד להקה חדשה בזמן ההמתנה, אז הקרב נקבע כאן)
     await page.clock.runFor(500);
-    const b=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();return {...__lmeas(),shown:MSG.stat.big,most:MSG.stat.most}});
+    const b=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();const o={...__lmeas(),shown:MSG.stat.big,most:MSG.stat.most};msgFight=__lmf;return o});
     if(CFG.shots)await shot('msg-lane-'+vp.width);
     await page.evaluate(()=>{const k=__lbak;msgClear();FL.length=0;enemies=[];worldUi(false);SAVE=JSON.parse(k.s);if(S.sk&&k.sk)S.sk.ids=JSON.parse(k.sk);if(k.vil)enterVillage();else{reset();S.mode=k.mode}});
     lane[vp.width]={a,b,ok:a.n>0&&a.big===0&&a.waits>0&&!a.hero&&!a.ui&&!a.out&&a.feed>0&&b.big===1&&b.shown===1&&!b.hero&&!b.ui&&!b.out&&b.most<=3};
