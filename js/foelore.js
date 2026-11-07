@@ -98,7 +98,7 @@ function foeLoreScreen(ox,oy){
   let near=null,nd=F.near;
   for(const e of enemies){
     if(e.dead||e.hunt||e.warden)continue;
-    if(e.pname&&e.flSeen){flTag(e.pname,e.x+ox,e.y+oy-e.r-(e.affix?46:30),L.elite,fs);continue}   // עלית ומבוקש: תמיד
+    if(e.pname&&(e.flSeen||e.rare)){flTag(e.pname,e.x+ox,e.y+oy-e.r-(e.affix?46:30),e.rare?RARES.col:L.elite,fs);continue}   // נדירה (rares.js): תמיד, בזוהר שלה   // עלית ומבוקש: תמיד
     if(!flHas(e.type)||e.wanted)continue;
     const d=Math.hypot(P.x-e.x,P.y-e.y);if(d<nd&&(e.flSeen||e.hitT!=null)){nd=d;near=e}
   }
