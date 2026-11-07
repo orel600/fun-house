@@ -446,11 +446,18 @@ function loop(a,name,speed=1){
   a.base=name;
 }
 // אנימציה חד-פעמית (תקיפה, מוות). dur: כמה שניות היא צריכה להימשך
-function once(a,name,dur,hold=false){
+// skip: איזה חלק מתחילת האנימציה מדלגים (ההכנה), כך שהתנוחה מגיעה מיד והזמן dur הולך על ההמשך (HERO_SKIP)
+function once(a,name,dur,hold=false,skip=0){
   const x=act(a,name);if(!x)return;
   if(a.one&&a.one!==x)a.one.fadeOut(0.08);
-  x.reset().setLoop(THREE.LoopOnce,1);x.clampWhenFinished=hold;x.timeScale=dur?x.getClip().duration/dur:1;x.fadeIn(0.06).play();a.one=x;
+  const d=x.getClip().duration;
+  x.reset().setLoop(THREE.LoopOnce,1);x.clampWhenFinished=hold;x.timeScale=dur?d*(1-skip)/dur:1;x.time=d*skip;x.fadeIn(skip?0.03:0.06).play();a.one=x;
 }
+/* גיבור בלי הכנה (ניר, 7.11, מסרטון של מפתח Diablo 3: "לפעולות של השחקן אין הכנה"): תקיפה וסקיל מתחילים כבר באמצע התנועה.
+   כמה מדלגים מכל אנימציה (חלק מהאורך). רק לגיבור, ורק בעולם ובכפר (SKCAST.where). לאויבים ולבוס ההכנה נשארת, כי היא האזהרה */
+const HERO_SKIP={Melee_1H_Attack_Chop:0.3,Melee_1H_Attack_Slice_Horizontal:0.25,Melee_2H_Attack_Chop:0.35,Melee_2H_Attack_Spin:0.2,
+  Ranged_Magic_Shoot:0.15,Ranged_Magic_Spellcasting:0.35,Ranged_Magic_Summon:0.3,Melee_Block:0.15,Ranged_Bow_Release:0};
+const heroSkip=n=>SKCAST.where()?(HERO_SKIP[n]||0):0;
 function place(a,x,y,foot,yaw,lift=0){
   const S_=SIN();a.root.position.set(x,(lift+(TR&&S.wd?hAt(x,y):0))/COS(),(y+foot)/S_);   // hAt: על הרכס הדמות עומדת גבוה יותר (terrain.js)
   if(yaw!=null){let d=yaw-a.root.rotation.y;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;a.root.rotation.y+=d*0.35}
@@ -485,13 +492,13 @@ function syncPlayer(dt){
     if(st.mode==='over'){st.mode='';a.one=null;a.mixer.stopAllAction()}
     // תקיפה: רק פלג הגוף העליון, כך שאפשר לתקוף תוך כדי ריצה
     // סקיל (skillcast.js): התנועה של ההטלה גוברת לרגע על תנועות התקיפה. רק מראה, התקיפה עצמה ממשיכה
-    if(P.skCast&&st.sc!==P.skCast.n&&performance.now()-P.skCast.at<SKCAST.dur*1000){st.sc=P.skCast.n;st.scT=SKCAST.dur;once(a,skcClip(L)+'@up',SKCAST.dur);const x=a.one,d=x&&x.getClip().duration;if(d){x.time=d*SKCAST.skip;x.timeScale=d*(1-SKCAST.skip)/SKCAST.dur}}
+    if(P.skCast&&st.sc!==P.skCast.n&&performance.now()-P.skCast.at<SKCAST.dur*1000){st.sc=P.skCast.n;st.scT=SKCAST.dur;{const c=skcClip(L);once(a,c+'@up',SKCAST.dur,false,heroSkip(c))}}
     st.scT=Math.max(0,(st.scT||0)-dt);const casting=st.scT>0;
     const swing=!casting&&sword&&P.sw.anim>st.anim,shot=!casting&&!sword&&P.gn.t>st.gt+0.01;
     st.anim=P.sw.anim;st.gt=P.gn.t;
-    if(swing)once(a,L.anim.sword+'@up',Math.max(0.28,Math.min(0.5,P.sw.cd*wK('cd')*0.8)));
+    if(swing)once(a,L.anim.sword+'@up',Math.max(0.28,Math.min(0.5,P.sw.cd*wK('cd')*0.8)),false,heroSkip(L.anim.sword));
     const gcd=P.gn.cd*wK('cd');
-    if(shot){st.shots=(st.shots||0)+1;once(a,L.anim.gun+'@up',Math.max(0.2,Math.min(0.45,gcd*0.9)))}
+    if(shot){st.shots=(st.shots||0)+1;once(a,L.anim.gun+'@up',Math.max(0.2,Math.min(0.45,gcd*0.9)),false,heroSkip(L.anim.gun))}
     // קשת: מותחים את המיתר ממש לפני החץ הבא, כשיש במי לירות
     const drawT=Math.min(0.4,gcd*0.5);
     if(!casting&&!sword&&L.anim.gunDraw&&P.gn.t>0&&P.gn.t<=drawT&&st.drawn!==st.shots&&nearest(440)&&!(a.one&&a.one.isRunning())){st.drawn=st.shots;once(a,L.anim.gunDraw+'@up',P.gn.t)}
