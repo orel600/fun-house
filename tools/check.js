@@ -3988,6 +3988,24 @@ function worldBot(m,L,god){
       const t0=MB.atkTaps||0;keys.Space=true;fr(8);keys.Space=false;fr(2);K.space=(MB.atkTaps||0)===t0+1;
      }catch(err){K.err=String(err&&err.stack||err)}
      MB.u=keep;MB.lock=MB.atkGo=null;keys.Space=false;joy=null;me.x=hx;me.y=hy;S.cam.x=cam.x;S.cam.y=cam.y;mbFeelReset(me);mobaHud();o.atk=K}
+    // חץ הברק (#513, moba-skill-anim.js): תנועת שחרור קשת ברגע ההטלה, בלי מעגל על הרצפה, פס מאחורי החץ האמיתי, הבזק רק בפגיעה מאושרת,
+    // נקודה עמומה בסוף, בלי שאריות אחרי משחק חדש, וחץ של אויב בערפל לא מצויר
+    {const me=MB.me,Z={},kit=me.kit,hx=me.x,hy=me.y,keep=MB.u,cd=me.cd.s1,H=MBANIMS.stat,cam={x:S.cam.x,y:S.cam.y};
+     try{me.kit='hunter';MB.u=keep.filter(o=>o===me||o.k==='tower'||o.k==='base');me.x=0;me.y=0;me.dead=false;me.cd.s1=0;const vis=()=>{S.cam.x=me.x;S.cam.y=me.y;if(typeof mbVisNow==='function')mbVisNow(true)};vis();   // המצלמה והראייה במקום החדש (אפקט מחוץ למסך או בערפל לא נוצר)
+       const fly=()=>{for(let i=0;i<60&&MB.shots.length;i++)mbShots(1/30)};MB.shots=[];
+       const n0=P.skCast?P.skCast.n:0,h0=H.hits,e0=H.end||0;Z.cast=mbCast(me,'s1',{x:me.x+300,y:me.y});
+       Z.pose=!!P.skCast&&P.skCast.k==='zap'&&P.skCast.n===n0+1&&SKCAST.dur>0&&SKCAST.dur<1;   // שחרור קשת, פעם אחת, וקצר (נגמר לבד)
+       Z.circ=!FXLIB.list.some(f=>f.id==='wcirc_lightning');const sh=MB.shots[0];Z.trail=!!sh&&!!sh.trail;
+       const t0=H.trail||0;mbPierceTrail(sh);mbShots(1/30);mbPierceTrail(sh);Z.drawn=(H.trail||0)>t0;
+       fly();Z.miss=H.hits===h0&&(H.end||0)===e0+1;   // החטאה: בלי הבזק פגיעה, ונקודה אחת בסוף
+       const m=mbUnit({k:'minion',team:1-me.team,type:'mb_m1',x:me.x+200,y:me.y,r:MOBA.minion.r,hp:1e6,max:1e6,speed:0,lane:0,face:0});MB.u.push(m);vis();
+       me.cd.s1=0;const h1=H.hits;mbCast(me,'s1',m);fly();Z.hit=H.hits===h1+1;
+       // אויב בערפל: חץ שלו לא מצויר (גם לא הפס)
+       const f=mbHero('hunter',1-me.team,false,1);f.x=1500;f.y=-300;MB.u.push(f);if(typeof mbVisNow==='function')mbVisNow(true);f.cd.s1=0;
+       Z.fogged=typeof mbVisPt==='function'&&!mbVisPt(f.x,f.y);mbCast(f,'s1',{x:f.x-300,y:f.y});const fs=MB.shots[MB.shots.length-1];mbShots(1/30);const t1=H.trail||0;mbPierceTrail(fs);Z.fog=Z.fogged&&(H.trail||0)===t1;
+       MB.shots=[];Z.reset=MB.shots.length===0;
+     }catch(err){Z.err=String(err&&err.stack||err)}
+     MB.shots=[];MB.u=keep;me.kit=kit;me.x=hx;me.y=hy;me.cd.s1=cd;S.cam.x=cam.x;S.cam.y=cam.y;if(typeof mbVisNow==='function')mbVisNow(true);mbFeelReset(me);mobaHud();o.arrow=Z}
     // לא מתנפלים יחד (moba-bot.js, 8.11, DANA, moba-difficulty): ב"קל" לכל היותר בוט אויב אחד מתמקד בשחקן כשהוא מעל 20% חיים.
     // שלושת גיבורי האויב לידך, החברים רחוק, ו-8 שניות של קרב. בודקים גם שמתחת ל-20% מותר לגמור (יותר מאחד)
     {const me=MB.me,G={max:0,low:0,n:0},keep=MB.u.map(u=>({u,x:u.x,y:u.y,hp:u.hp})),diff=MB.diff,mine=me.bot;
@@ -4628,6 +4646,8 @@ function worldBot(m,L,god){
      check(Object.keys(ks).every(k=>L[k]),'משחקי השאול: שומר בחיים: '+Object.keys(ks).map(k=>ks[k]+(L[k]?' ✓':' ✗')).join(', '))}
     {const G=mb.gang||{};check(!G.err&&G.n>0&&G.max===1&&G.low===0,'משחקי השאול: לא מתנפלים יחד ב"קל": '+(G.err||'הכי הרבה בוטים על השחקן בבת אחת: '+G.max+' (מותר 1), התמקדו בו '+G.n+' פריימים מתוך 240, ומתחת ל-20% '+(G.low===0?'מותר לגמור':'עדיין חסום!')))}
     {const R=mb.rigK||{};check(R.ok,'סקין מתמונות בגודל ×1.15 (rig.js): '+(R.err||R.n+' חלקים מצוירים'+(R.ok?', כל המידות סופיות ופי 1.15':', מידות לא נכונות')))}
+    {const Z=mb.arrow||{},ks={cast:'הטלה',pose:'שחרור קשת',circ:'בלי מעגל',trail:'פס',drawn:'מצויר',miss:'החטאה בלי הבזק',hit:'הבזק רק בפגיעה',fog:'אויב בערפל מוסתר',reset:'ניקוי'};
+     check(!Z.err&&Object.keys(ks).every(k=>Z[k]),'משחקי השאול: חץ הברק: '+(Z.err||Object.keys(ks).map(k=>ks[k]+(Z[k]?' ✓':' ✗')).join(', ')))}
     {const K=mb.atk||{},ks={btn:'כפתור',big:'הכי גדול',free:'לא נוגע בסקילים',step:'נגיעה מקרבת',lock:'גרירה נועלת',pref:'הנעול קודם',far:'נגמרת במרחק',dead:'נגמרת במוות',cancel:'✕ מבטל',cd:'טעינה על הכפתור',space:'רווח'};
      check(!K.err&&K.draw===true&&Object.keys(ks).every(k=>K[k]),'משחקי השאול: כפתור התקיפה: '+(K.err||Object.keys(ks).map(k=>ks[k]+(K[k]?' ✓':' ✗')).join(', ')+(K.draw===true?'':', ציור: '+K.draw)))}
     {const I=mb.items||{},ks={tick:'זהב עם הזמן',minion:'זהב מחייל',quick:'קנייה מהירה',stat:'סטטים',sell:'מכירה',win:'חלון החנות',buy:'קנייה בחלון',close:'סגירה',bot:'בוט קונה'};

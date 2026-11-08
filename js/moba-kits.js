@@ -75,11 +75,12 @@ function mbCast(u,slot,aim){
     case 'pierce':case 'wave':{
       const L=s.id==='pierce',sh={kind:'line',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,
         on:o=>{mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});if(s.wet){o.st.wet=Math.max(o.st.wet,s.wet);mbSlow(o,s.slow,s.slowT)}
-          mbAnimHit(o,s.dt)}};   // פגיעה לפי סוג הנזק, גדולה על גיבור (moba-skill-anim.js)
+          mbAnimHit(o,s.dt,L?MBANIM.pierce.hit:null)}};   // פגיעה לפי סוג הנזק, גדולה על גיבור (moba-skill-anim.js). חץ הברק: קצר יותר (fps 60), רק בפגיעה מאושרת
+      if(L){sh.trail=1;sh.x0=u.x;sh.y0=u.y;sh.end=mbPierceEnd}   // חץ הברק (#513): פס מאחורי החץ, ונקודה עמומה כשהוא נעצר
       MB.shots.push(sh);
       // האפקט שעף עם הסקיל (אוראל, 7.11: "חץ הברק וגל המים עפים בלי שום אפקט"), והבזק ביד של המטיל
-      if(typeof fxPlay==='function'){fxPlay(L?'sk_pierce':'sk_wave',u.x,u.y,{follow:sh,rot:ang,loop:true,size:L?MBFXSK.sk_pierce.size:s.w*2.2,add:L});
-        fxPlay(L?'sk_pierce_ray':'sk_wave_crest',u.x+Math.cos(ang)*40,u.y+Math.sin(ang)*40,{rot:ang,size:L?150:140,add:L})}
+      if(typeof fxPlay==='function'){const c=fxPlay(L?'sk_pierce':'sk_wave',u.x,u.y,{follow:sh,rot:ang,loop:true,size:L?MBANIM.pierce.core:s.w*2.2,add:L});if(L&&c)sh.lib=1;   // lib: הליבה מהספרייה, בלי החץ המצויר (בלי גיליון: החץ המצויר נשאר)
+        if(!L)fxPlay('sk_wave_crest',u.x+Math.cos(ang)*40,u.y+Math.sin(ang)*40,{rot:ang,size:140})}   // חץ הברק: פס השחרור ב-MBANIM.flash.pierce, ביד
       break}
     case 'net':{   // רשת ציד: עפה פתוחה, ונסגרת על הגיבור הראשון שהיא פוגעת בו. חיילים לא עוצרים אותה
       const n={kind:'line',fx:'net',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,

@@ -17,7 +17,8 @@ const ARFEEL={
   buf:0.15,                     // חוצץ: לחיצה שנשארו לה עד כך שניות קירור נשמרת, ויוצאת ברגע שהסקיל מוכן
   rampage:{n:3,pillar:{r:34,h:260,life:0.6},col:'#FF8A3D'},   // מ-3 הריגות ברצף: מילה ועמוד אור (פעם אחת לרצף)
   pillar:{r:30,h:220,life:0.6}, // עמוד אור במדרגות הקיימות של הרצף (10/25/50/100)
-  mb:{heroKill:0.11}            // משחקי השאול: הריגת גיבור על ידך
+  mb:{heroKill:0.11},           // משחקי השאול: הריגת גיבור על ידך
+  mbCast:{pierce:'zap'}         // משחקי השאול: סקיל של השחקן ← תנועה (SKCAST.anim). zap = שחרור קשת (Ranged_Bow_Release, רגע השחרור ב-0.07 הראשונות). חץ הברק (#513)
 };
 const AF={last:-9,win:0,used:0,buf:null,mbBuf:null,n:0,stat:{stops:0,slows:0,cut:0,casts:0,buffered:0,rampage:0,pillars:0}};
 // הפחתת תנועה: המתג במשחק, או ההגדרה של הטלפון
@@ -97,6 +98,11 @@ function afTick(){
 (()=>{const old=mbPress;mbPress=function(slot,pt){const u=MB&&mbMe();
   if(ARFEEL.on&&u&&!u.dead&&!MB.over&&MB_SLOTS.includes(slot)&&u.cd[slot]>0&&u.cd[slot]<=ARFEEL.buf&&!(slot==='ult'&&u.lvl<MOBA.ultAt)){AF.mbBuf={slot,pt,until:afClock()+ARFEEL.buf};AF.stat.buffered++;return}
   return old.apply(this,arguments)}})();
+// תנועת הטלה בשאול (#513): אותו P.skCast של הזירה (afCast), כדי שיהיה מקום אחד שמחליט. render3d.js מנגן אותו על פלג הגוף העליון,
+// באותו פריים של mbCast, בלי שום עיכוב לנזק
+(()=>{const old=mbCast;mbCast=function(u,slot,aim){const r=old.apply(this,arguments);
+  if(r&&ARFEEL.on&&u&&u.me&&S.mb){const s=MBKIT[u.kit][slot],k=s&&ARFEEL.mbCast[s.id];if(k){P.skCast={n:(P.skCast?P.skCast.n:0)+1,k,at:performance.now()};AF.stat.casts++}}
+  return r}})();
 // 1. הריגת גיבור על ידך: עצירה של 110ms. אותה עצירה של moba-fx.js (mbfxTime מחזיר dt=0, וכל המשחק עומד יחד: קירור, בוטים, גלים, MB.t)
 (()=>{const old=mbDie;mbDie=function(t,src){const r=old.apply(this,arguments);
   if(ARFEEL.on&&S.mb&&MB&&t&&t.k==='hero'&&src&&src.me&&!calmOn()){const F=mbfxS(),now=afClock();if(now-AF.win>=1){AF.win=now;AF.used=0}
