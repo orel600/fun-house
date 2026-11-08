@@ -37,7 +37,7 @@ function afStop(t){
   if(calmOn())return false;const now=afClock(),P_=ARFEEL.stop;
   if(now-AF.win>=1){AF.win=now;AF.used=0}
   if(S.hitstop>0||now-AF.last<P_.gap||AF.used+t>P_.budget){AF.stat.cut++;return false}
-  S.hitstop=t;AF.last=now;AF.used+=t;AF.stat.stops++;return true;
+  S.hitstop=t;AF.last=now;AF.stat.stops++;return true;   // AF.used נספר ב-afTick לפי הזמן שבאמת עמד, מכל מערכת
 }
 
 // 1+3. מכה של השחקן בזירה: עצירה לפי מדרגה, הבזק קצר ונטייה אחורה (hitfeel.js)
@@ -80,9 +80,17 @@ function afPillar(c,o){if(typeof VFX3D==='undefined'||!VFX3D.on||!VFX3D.on()||VF
   if(s.show&&s.show.t0===S.t&&s.n>R.n)afPillar(STREAK.ring,ARFEEL.pillar);   // מדרגה של streak.js (10/25/50/100) עכשיו
   return r}})();
 
-// כל פריים (render, גם בזמן עצירה): החוצץ, הכפתור "מתנשף", והפחתת תנועה
+// התקרה לשנייה, אמיתית: כל פריים שבו הזירה או השאול עומדים נספר, מכל מערכת (arena-feel, arena-juice, skill-anim, eliteDown,
+// moba-fx), ומעל budget העצירה נחתכת (QUINN, #508: נמדדו עד 184ms ב-9 עצירות מכמה מערכות יחד)
+function afCap(){
+  const now=afClock(),dt=Math.min(0.1,now-(AF.tk??now));AF.tk=now;if(now-AF.win>=1){AF.win=now;AF.used=0}
+  const B=ARFEEL.stop.budget;
+  if(S.mb&&typeof MB!=='undefined'&&MB&&MB.fxs){const F=MB.fxs;if(F.stop>0){AF.used+=dt;if(AF.used>=B){F.stop=0;AF.stat.cut++}}}
+  else if(!S.wd&&!S.vil&&!S.room&&S.hitstop>0){AF.used+=dt;if(AF.used>=B){S.hitstop=0;AF.stat.cut++}}
+}
+// כל פריים (render, גם בזמן עצירה): התקרה, החוצץ, הכפתור "מתנשף", והפחתת תנועה
 function afTick(){
-  if(!S)return;
+  if(!S)return;if(ARFEEL.on&&S.mode==='play')afCap();
   if(calmOn()&&!S.wd&&!S.vil){S.shake=0;if(!S.mb){S.hitstop=0;S.slow=0}}   // הפחתת תנועה: בזירה ובשאול בלי רעידה, עצירה והילוך איטי
   if(afArena()&&S.sk){
     const k=S.sk,b=AF.buf;
@@ -106,7 +114,7 @@ function afTick(){
 // 1. הריגת גיבור על ידך: עצירה של 110ms. אותה עצירה של moba-fx.js (mbfxTime מחזיר dt=0, וכל המשחק עומד יחד: קירור, בוטים, גלים, MB.t)
 (()=>{const old=mbDie;mbDie=function(t,src){const r=old.apply(this,arguments);
   if(ARFEEL.on&&S.mb&&MB&&t&&t.k==='hero'&&src&&src.me&&!calmOn()){const F=mbfxS(),now=afClock();if(now-AF.win>=1){AF.win=now;AF.used=0}
-    if(F.stop<=0&&AF.used+ARFEEL.mb.heroKill<=ARFEEL.stop.budget){F.stop=ARFEEL.mb.heroKill;AF.used+=F.stop;AF.stat.stops++}}
+    if(F.stop<=0&&AF.used+ARFEEL.mb.heroKill<=ARFEEL.stop.budget){F.stop=ARFEEL.mb.heroKill;AF.stat.stops++}}   // הזמן עצמו נספר ב-afCap
   return r}})();
 // הפחתת תנועה בשאול: בלי העצירה וההילוך האיטי של moba-fx.js
 (()=>{const old=mbfxTime;mbfxTime=function(dt){if(calmOn()&&MB){const F=mbfxS();F.stop=0;F.slow=0}return old.apply(this,arguments)}})();

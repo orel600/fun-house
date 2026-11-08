@@ -3,7 +3,14 @@
     "SessionStart": [
       {
         "hooks": [
-          {"type": "command", "command": "node", "args": ["${CLAUDE_PROJECT_DIR}/tools/hooks/session-start.js"], "timeout": 60}
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/tools/hooks/session-start.js"
+            ],
+            "timeout": 60
+          }
         ]
       }
     ],
@@ -11,9 +18,33 @@
       {
         "matcher": "Bash|PowerShell",
         "hooks": [
-          {"type": "command", "command": "node", "args": ["${CLAUDE_PROJECT_DIR}/tools/hooks/guard.js"], "timeout": 15}
+          {
+            "type": "command",
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/tools/hooks/guard.js"
+            ],
+            "timeout": 15
+          }
         ]
       }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git fetch)",
+      "Bash(git fetch *)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(Get-Content *)",
+      "PowerShell(Get-NetTCPConnection *)",
+      "PowerShell(Get-CimInstance *)",
+      "PowerShell(Get-Date *)",
+      "PowerShell(Get-PSDrive *)",
+      "PowerShell(Get-NetFirewallRule *)",
+      "mcp__claude_ai_Claude_Docs__read",
+      "mcp__claude_ai_Claude_Docs__guide",
+      "mcp__claude_ai_Google_Drive__search_files",
+      "mcp__claude_ai_Gmail__search_threads"
     ]
   }
 }

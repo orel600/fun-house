@@ -2102,6 +2102,8 @@ function worldBot(m,L,god){
       fake+=2;let n=0;for(let i=0;i<19;i++){S.hitstop=0;fake+=0.05;if(afStop(0.035))n++}o.perSec=n;   // שנייה אחת בצעדים של 0.05: המרווח (0.22) נותן לכל היותר 4
       fake+=2;afStop(0.035);S.hitstop=0;fake+=0.3;AF.used=ARFEEL.stop.budget-0.01;o.budget=!afStop(0.035);   // התקרה לשנייה: אין מקום
       S.hitstop=0;SAVE.calm=true;fake+=2;o.calm=!afStop(0.1)&&S.hitstop===0;SAVE.calm=calm;
+      // התקרה האמיתית: עצירה ארוכה של מערכת אחרת (S.hitstop ישירות) נחתכת אחרי budget שניות של עמידה
+      fake+=2;AF.tk=fake;S.hitstop=0.5;let cut=-1;for(let j=1;j<=15&&cut<0;j++){fake+=0.02;afTick();if(!(S.hitstop>0))cut=j}o.capCut=cut;S.hitstop=0;
       // חוצץ: לחיצה שנשארו לה 0.1 שניות נשמרת, ויוצאת כשהסקיל מוכן
       const k=S.sk,id=k.ids[0],i=0;k.cd[i]=0.1;fake+=2;const u0=k.used;o.press=skillUse(id);o.buf=!!AF.buf;k.cd[i]=0;afTick();o.fired=k.used===u0+1&&!AF.buf;o.cast=!!P.skCast&&P.skCast.k===ARFEEL.cast[id];
       // Rampage: הריגה שלישית ברצף
@@ -2111,8 +2113,8 @@ function worldBot(m,L,god){
       enterWorld('home');S.hitstop=0;const ew=addEnemy('grunt',P.x+30,P.y);o.world=!afArena()&&S.hitstop===0;
     }catch(err){o.err=String(err&&err.stack||err)}
     window.afClock=clk;enemies=[];S.hitstop=0;S.slow=0;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
-  check(!afl.err&&afl.hit===35&&afl.flash===60&&afl.lean&&afl.stack===35&&afl.perSec>0&&afl.perSec<=4&&afl.budget&&afl.calm&&afl.press===false&&afl.buf&&afl.fired&&afl.cast&&afl.ramp&&afl.rampOnce&&afl.world,
-    'תחושת קרב בזירה: '+(afl.err||'עצירה '+afl.hit+'ms, הבזק '+afl.flash+'ms, נטייה אחורה '+(afl.lean?'✓':'✗')+', בלי הצטברות ('+afl.stack+'ms), '+afl.perSec+' עצירות בשנייה (מרווח), תקרה לשנייה '+(afl.budget?'✓':'✗')+', הפחתת תנועה '+(afl.calm?'מכבה':'לא מכבה!')+
+  check(!afl.err&&afl.hit===35&&afl.flash===60&&afl.lean&&afl.stack===35&&afl.perSec>0&&afl.perSec<=4&&afl.budget&&afl.capCut>=7&&afl.capCut<=8&&afl.calm&&afl.press===false&&afl.buf&&afl.fired&&afl.cast&&afl.ramp&&afl.rampOnce&&afl.world,
+    'תחושת קרב בזירה: '+(afl.err||'עצירה '+afl.hit+'ms, הבזק '+afl.flash+'ms, נטייה אחורה '+(afl.lean?'✓':'✗')+', בלי הצטברות ('+afl.stack+'ms), '+afl.perSec+' עצירות בשנייה (מרווח), תקרה לשנייה '+(afl.budget?'✓':'✗')+', עצירה ארוכה של מערכת אחרת נחתכה אחרי '+afl.capCut+' פריימים של 20ms'+', הפחתת תנועה '+(afl.calm?'מכבה':'לא מכבה!')+
       ', חוצץ '+(afl.buf&&afl.fired?'✓':'✗')+', תנועת הטלה '+(afl.cast?'✓':'✗')+', Rampage '+(afl.ramp?(afl.rampOnce?'פעם אחת לרצף':'חוזר!'):'✗')+', בעולם '+(afl.world?'כלום':'משהו!')));
   // אויבים ישנים (arenaZz ב-arenas.js): רחוק מ-wake.r הולכים לאט ומכשף לא יורה. מתעוררים מקרבה, ממכה, מסוף הגל ומהבוס. קפיצה של arena-load לא מעירה, והישנים נספרים בגל
   const zz=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},at=window.attack,r0=ARENAS.gauntlet.wake.r,lc0=ARENAS.gauntlet.lastCall;
@@ -2708,17 +2710,17 @@ function worldBot(m,L,god){
   await page.evaluate(()=>fxcPreload());
   for(let i=0;i<60&&!await page.evaluate(()=>['wtg_cone','wtg_line','wtg_circle','wtg_circle_big','whit_fire','whit_phys','wko_ice','wmine_stone','wmine_gem_ruby'].every(id=>fxImg(id)));i++)await new Promise(r=>setTimeout(r,150));   // הגיליונות נטענים מהקבצים (שעון אמיתי, לא השעון של הבדיקה)
   const fxc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
-    try{enterWorld('home');enemies=[];S.mode='play';P.inv=99;const tick=()=>fxcUpdate(1/60),live=h=>!!h&&h.on&&FXLIB.list.includes(h);
+    try{enterWorld('home');enemies=[];S.mode='play';P.inv=99;const tick=()=>fxcUpdate(1/60),live=h=>!!h&&h.on&&(FXLIB.list.includes(h)||FXC.tgL.includes(h));
       const e=addEnemy('grunt',P.x+60,P.y,1);e.hp=e.max=1e6;
       // מכה מקרוב: משולש בזמן ההכנה, ונעלם כשהיא נגמרת
-      e.sw=0.5;e.sa=0;tick();const h1=e.fxTg&&e.fxTg.h;o.cone=!!h1&&h1.id==='wtg_cone'&&live(h1)&&fxcTgOn(e);
+      e.sw=0.5;e.sa=0;tick();const h1=e.fxTg&&e.fxTg.h;o.cone=!!h1&&h1.id.replace('~t','')==='wtg_cone'&&live(h1)&&fxcTgOn(e);
       e.sw=0;tick();o.coneGone=!e.fxTg&&!live(h1);
       // קפיצה: עיגול במקום הנחיתה. הסתערות: פס וכדור נטען
-      e.act='crouch';e.at=e.am=0.7;e.tx=P.x;e.ty=P.y;tick();const h2=e.fxTg&&e.fxTg.h;o.leap=!!h2&&h2.id==='wtg_circle'&&Math.abs(h2.x-P.x)<1;
-      e.act='wind';e.aa=0;tick();o.charge=!!e.fxTg&&e.fxTg.h.id==='wtg_line'&&!!e.fxTg.h2&&!live(h2);
+      e.act='crouch';e.at=e.am=0.7;e.tx=P.x;e.ty=P.y;tick();const h2=e.fxTg&&e.fxTg.h;o.leap=!!h2&&h2.id.replace('~t','')==='wtg_circle'&&Math.abs(h2.x-P.x)<1;
+      e.act='wind';e.aa=0;tick();o.charge=!!e.fxTg&&e.fxTg.h.id.replace('~t','')==='wtg_line'&&!!e.fxTg.h2&&!live(h2);
       e.act=null;tick();o.chargeGone=!e.fxTg;
       // עיגול של שומר (S.wd.marks): עיגול גדול למכה הגדולה של ענק
-      S.wd.marks=[{x:P.x,y:P.y,t:1,boom:0,k:'bolt',big:true,mk:{r:120,fuse:1,dmg:0,flash:0.3}}];tick();o.big=!!S.wd.marks[0].fxTg&&S.wd.marks[0].fxTg.h.id==='wtg_circle_big';S.wd.marks=[];
+      S.wd.marks=[{x:P.x,y:P.y,t:1,boom:0,k:'bolt',big:true,mk:{r:120,fuse:1,dmg:0,flash:0.3}}];tick();o.big=!!S.wd.marks[0].fxTg&&S.wd.marks[0].fxTg.h.id.replace('~t','')==='wtg_circle_big';S.wd.marks=[];
       // פגיעה לפי סוג: אש = whit_fire, ובמוות מקרח = wko_ice
       const n0=FXC.stat.hit.whit_fire||0;FXC.fr++;damage(e,1,'sword',0,'fire');o.hitFire=(FXC.stat.hit.whit_fire||0)>n0;
       const k0=FXC.stat.ko.wko_ice||0;FXC.fr++;e.hp=1;damage(e,999,'sword',0,'ice');o.koIce=(FXC.stat.ko.wko_ice||0)>k0&&e.dead;
@@ -2735,6 +2737,31 @@ function worldBot(m,L,god){
   check(!fxc.err&&(!fxc.img||fxc.cone&&fxc.coneGone&&fxc.leap&&fxc.charge&&fxc.chargeGone&&fxc.big&&fxc.hitFire&&fxc.koIce&&fxc.perFrame<=fxc.cap&&fxc.mineStone&&fxc.mineGem)&&fxc.all<=fxc.max,
     'אפקטים של קרב בעולם: '+(fxc.err||(!fxc.img?'הגיליונות לא נטענו, דילגתי':(fxc.cone&&fxc.coneGone?'משולש אזהרה בזמן ההכנה ונעלם אחריה':'אזהרת מכה חסרה או נשארת')+(fxc.leap?', עיגול בקפיצה':', בלי עיגול קפיצה')+(fxc.charge&&fxc.chargeGone?', פס וכדור בהסתערות':', הסתערות בלי סימן')+(fxc.big?', מכ"ם לענק':', בלי מכ"ם לענק')+
     (fxc.hitFire?', פגיעת אש':', בלי פגיעה לפי סוג')+(fxc.koIce?', מוות מקרח':', בלי מוות לפי סוג')+', '+fxc.perFrame+'/'+fxc.cap+' פגיעות בפריים'+(fxc.mineStone&&fxc.mineGem?', רסיסים ואבן חן בכרייה':', כרייה בלי אפקט')))+' ('+fxc.all+'/'+fxc.max+' אפקטים)');
+  // קריאות בקרב צפוף (ניר 8.11, docs/combat-feel-2026-11-08.md פרק 3): האזהרה בצבע משלה ומצוירת אחרי הפגיעות והמספרים, משולש קרוב בגודל מינימלי,
+  // שמות עמומים ומעט, טיפ מחכה לסוף הקרב, ובעמודת ההודעות הודעה קטנה אחת בקרב (השאר אחרי)
+  const crd=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{enterWorld('home');enemies=[];S.mode='play';msgClear();tipClose();TIP1.q=[];TIP1.pendWin=null;SAVE.tipsOff=false;
+      const e=addEnemy('grunt',P.x+60,P.y,1);e.hp=e.max=1e6;e.home=0;e.speed=0;e.dmg=0;e.pname='Test Terror';e.flSeen=true;
+      e.sw=0.5;e.sa=0;fxcUpdate(1/60);const h=e.fxTg&&e.fxTg.h;o.img=!!fxImg('wtg_cone');
+      o.own=!!h&&FXC.tgL.includes(h)&&!FXLIB.list.includes(h);o.tint=!!h&&h.id==='wtg_cone~t';
+      o.size=!!h&&h.size>=FXC.tg.coneMin/FXC.tg.fit.wtg_cone.h-0.01;
+      const seq=[],fd=fxDraw,fc=fxcTgDraw,jd=juiceDraw,t0=FXC.stat.top,l0=LABELS.stat.fight;
+      fxDraw=function(){seq.push('fx');return fd.apply(this,arguments)};fxcTgDraw=function(){seq.push('tg');return fc.apply(this,arguments)};juiceDraw=function(){seq.push('juice');return jd.apply(this,arguments)};
+      S.cam.x=P.x;S.cam.y=P.y;try{render()}finally{fxDraw=fd;fxcTgDraw=fc;juiceDraw=jd}
+      const ti=seq.indexOf('tg');o.top=ti>seq.lastIndexOf('fx')&&ti>seq.indexOf('juice')&&FXC.stat.top>t0;o.seq=seq.join('>');
+      o.lbl=LABELS.stat.fight>l0;
+      FLC.q=[];flCardNext();nemCardOff();MUT.bar=null;if(typeof skgOfferClose==='function')skgOfferClose();   // פסים אחרים שמעכבים טיפ גם בלי קרב (כמו בבדיקת הטיפים)
+      delete tipSeen().inn;tipOnce('inn');tipTick(0.25);o.tipHeld=!(TIP1.on&&TIP1.on.k==='inn')&&TIP1.q.some(x=>x.k==='inn');
+      o.lane=msgOn();if(o.lane){banner('one',C.gold);banner('two',C.gold);banner('three',C.gold);o.laneFight=MQ.rows.length}
+      e.sw=0;fxcUpdate(1/60);for(const f of enemies)f.dead=true;enemies=[];
+      tipTick(0.25);o.tipAfter=!!TIP1.on&&TIP1.on.k==='inn';o.tipWhy=tipBusy()?'busy':'q='+TIP1.q.map(x=>x.k);
+      if(o.lane){msgPump();o.laneAfter=MQ.rows.length}
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    tipClose();TIP1.q=[];msgClear();enemies=[];SAVE=JSON.parse(bak);enterVillage();return o});
+  check(!crd.err&&(!crd.img||crd.own&&crd.tint&&crd.size&&crd.top)&&crd.lbl&&crd.tipHeld&&crd.tipAfter&&(!crd.lane||crd.laneFight===1&&crd.laneAfter===3),
+    'Combat readability: '+(crd.err||((!crd.img?'sheets not loaded, warning skipped':(crd.own&&crd.tint?'warning in its own colour':'warning colour/list wrong!')+(crd.size?', cone min size':', cone too small!')+(crd.top?', drawn on top':', NOT on top ('+crd.seq+')'))+
+    (crd.lbl?', names dimmed in fight':', names not dimmed!')+(crd.tipHeld&&crd.tipAfter?', tip waits for fight end':', tip shown mid-fight or lost! ('+crd.tipHeld+' '+crd.tipWhy+')')+
+    (crd.lane?(crd.laneFight===1&&crd.laneAfter===3?', 1 message in fight then 3':', messages in fight '+crd.laneFight+'/'+crd.laneAfter+'!'):', lane off'))));
   // תחושת איסוף (gather.js, ניר 8.11): חורשות, מכה מתיזה עם תקרה, המקור מתכווץ, עץ מתנדנד ונופל, קרב קודם, השלל עף לגיבור ונאסף,
   // נבט שגדל בזמן הצמיחה, צמיחה מחדש שמתחילה קטנה, ובזירה כלום לא משתנה. מזל משלה (Math.random מוחלף ומוחזר): לא מזיז את ה-seed לבדיקות שאחריה
   const gat=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),R0=Math.random,o={};let sd=4242;

@@ -9,12 +9,13 @@
      לכן הממוצע הוא בדיוק הנזק של לפני הטווח, והאיזון בזירה ובעולם לא זז. חרב ושרביט צר, קשת ומטה בינוני, גרזן ופטיש רחב.
      Aging, נקודות דמות, סטים וכוחות מכפילים את הממוצע, אז הם מזיזים את שני הקצוות יחד.
    home: כמה מהר הקליע מסתובב לעבר האויב הקרוב, ברדיאנים לשנייה (0: ישר). life: כמה שניות הוא עף.
+   homeW: כמו home, בעולם בלבד (8.11.2026): מרחפים שומרים מרחק וזזים הצידה, וחץ ישר פספס שני שלישים מהם. הזירה לא משתנה.
    ההנפשה בתלת-ממד לפי המודל של הפריט: GRIP3D ב-render3d.js */
 const WEAPONS={
   sword: {use:'sword',spread:0.25},
   axe:   {use:'sword',spread:0.5,k:{dmg:1.25,cd:1.2}},
   hammer:{use:'sword',spread:0.6,k:{dmg:1.6,cd:1.5}},
-  bow:   {use:'gun',spread:0.35,shot:'arrow',life:0.9},
+  bow:   {use:'gun',spread:0.35,shot:'arrow',life:0.9,homeW:2.5},
   staff: {use:'gun',spread:0.3,shot:'bolt',home:5,life:1.2,k:{dmg:1.15,cd:1.1,speed:0.7}},
   wand:  {use:'gun',spread:0.2,shot:'bolt',home:7,life:1,k:{dmg:0.7,cd:0.75,speed:0.8}},
   base:{sword:20,gun:9},   // הנזק הבסיסי של דמות בלי כלום, מקרוב ומרחוק (P.sw.dmg / P.gn.dmg ב-reset, state.js)
@@ -68,9 +69,20 @@ function wFire(n=1,extra){
   g.t=g.cd*wK('cd');g.recoil=1;sfx('shoot');
   for(let i=0;i<n;i++){
     const a=P.aim+(i-(n-1)/2)*0.14,hx=P.x+Math.cos(a)*22,hy=P.y-6+Math.sin(a)*22;
-    pb.push(Object.assign({x:hx,y:hy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:W.life||0.9,pierce:g.pierce,hit:new Set(),shot:W.shot||'arrow',home:W.home||0},extra));
+    const b=Object.assign({x:hx,y:hy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:W.life||0.9,pierce:g.pierce,hit:new Set(),shot:W.shot||'arrow',home:(S.wd&&W.homeW)||W.home||0},extra);
+    if(S.wd&&!extra)wPointBlank(b,a);
+    if(b.life>0)pb.push(b);
   }
   parts.push({x:P.x+Math.cos(P.aim)*24,y:P.y-6+Math.sin(P.aim)*24,vx:0,vy:0,life:.06,max:.06,col:dtCol(P.dt.gun),size:3});
+}
+/* מקרוב מדי (8.11.2026): אויב שעומד צמוד לגיבור (אביר שהסתער עליו) נמצא בין הגיבור לנקודה שבה החץ נולד, 22 פיקסלים קדימה,
+   והחץ עף ממנו והלאה בלי לפגוע. 11-15 שניות לאויב רגיל בחלק הרחוק לצייד שעומד במקום (docs/combat-feel-2026-11-08.md).
+   כאן: אויב שנוגע בקטע שבין הגיבור לנקודת הלידה נפגע מיד. בעולם בלבד */
+function wPointBlank(b,a){
+  const cx=Math.cos(a),cy=Math.sin(a),x0=P.x,y0=P.y-6;
+  for(const e of enemies){if(e.dead||b.life<=0)continue;
+    const t=Math.max(0,Math.min(22,(e.x-x0)*cx+(e.y-y0)*cy));
+    if(Math.hypot(e.x-(x0+cx*t),e.y-(y0+cy*t))<e.r+4)shotHit(b,e)}
 }
 function shotFly(b,dt){
   if(b.home){

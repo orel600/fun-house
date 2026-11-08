@@ -231,7 +231,7 @@ function wlSmoke(x,y,t,seed){
 // בועת דיבור באותו סגנון כמו הבועה של המפלצות (foelore.js): רקע בהיר, טקסט כהה וזנב. (x,y) קצה הזנב, מעל הראש. גודל קבוע על המסך (/ZOOM)
 function wlBubble(x,y,txt,a){
   const z=typeof ZOOM==='number'&&ZOOM>0?ZOOM:1,bf=WLIFE.camp.say.size/z,lh=bf*1.35,pad=8/z,tail=8/z;
-  ctx.save();ctx.globalAlpha=Math.max(0,a);ctx.font='700 '+bf+'px Heebo, system-ui, sans-serif';ctx.direction=DIR;ctx.textAlign='center';
+  ctx.save();ctx.globalAlpha=Math.max(0,a)*(typeof lblFight==='function'&&lblFight()?LABELS.fight.bubA:1);if(ctx.globalAlpha<=0){ctx.restore();return}ctx.font='700 '+bf+'px Heebo, system-ui, sans-serif';ctx.direction=DIR;ctx.textAlign='center';
   const lines=wlWrap(txt,WLIFE.camp.say.w/z),w=Math.max(...lines.map(l=>ctx.measureText(l).width))+pad*2.4,h=lines.length*lh+pad*1.4,yy=y-tail-h;
   ctx.fillStyle='rgba(250,246,232,0.96)';ctx.strokeStyle='rgba(20,22,34,0.8)';ctx.lineWidth=1.5/z;
   ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-w/2,yy,w,h,Math.min(h/2,12/z));else ctx.rect(x-w/2,yy,w,h);ctx.fill();ctx.stroke();
