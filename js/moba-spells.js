@@ -58,7 +58,7 @@ function mbSpellPress(slot,pt){
 function mbHealCast(u){
   const H=MBSPELL.heal;if(!u||u.dead||u.cd.heal>0||u.hp>=u.max)return false;
   const v=Math.min(u.max-u.hp,u.max*H.k);u.hp+=v;u.cd.heal=H.cd;u.actT=MB.t;
-  mbFloat(u.x,u.y-u.r-16,'+'+Math.round(v),H.col);mbBoom(u.x,u.y,70,'heal');mbSpellFx(u,H.col,'up');
+  mbFloat(u.x,u.y-u.r-16,'+'+Math.round(v),H.col);mbBoom(u.x,u.y,70,'heal');mbSpellFx(u,H.col,'up');typeof mbfxSk==='function'&&mbfxSk('sp_heal',u.x,u.y,{follow:u});
   if(u.me)sfx(H.sfx);return true;
 }
 // aim: נקודה {x,y} (זינוק, חשיפה). מחזיר אם הוטל
@@ -71,17 +71,19 @@ function mbSpellCast(u,aim){
     case 'dash':{let a=u.face;
       if(aim)a=Math.atan2(aim.y-u.y,aim.x-u.x);else if(u.me&&joy&&Math.hypot(joy.dx,joy.dy)>0.12)a=Math.atan2(joy.dy,joy.dx);
       if(typeof mbRecallStop==='function')mbRecallStop(u,false);
-      mbSpellFx(u,L.col,'puff');s.dash={vx:Math.cos(a),vy:Math.sin(a),sp:L.sp,left:L.range,end:()=>mbSpellFx(u,L.col,'puff')};u.face=u.aim=a;break}
-    case 'haste':s.haste=L.t;mbSpellFx(u,L.col,'ring');break;
-    case 'barrier':mbShield(u,u.max*L.k,L.t);mbSpellFx(u,L.col,'ring');break;
+      mbSpellFx(u,L.col,'puff');s.dash={vx:Math.cos(a),vy:Math.sin(a),sp:L.sp,left:L.range,end:()=>mbSpellFx(u,L.col,'puff')};u.face=u.aim=a;
+      typeof mbfxSk==='function'&&mbfxSk('sp_dash',u.x,u.y,{follow:u,rot:a,dur:L.range/L.sp+0.15,loop:true});break}   // קווי מהירות עם הזינוק
+    case 'haste':s.haste=L.t;mbSpellFx(u,L.col,'ring');typeof mbfxSk==='function'&&mbfxSk('sp_haste',u.x,u.y,{follow:u,loop:true,dur:L.t});break;
+    case 'barrier':mbShield(u,u.max*L.k,L.t);mbSpellFx(u,L.col,'ring');typeof mbfxSk==='function'&&mbfxSk('sp_barrier',u.x,u.y,{follow:u,loop:true,dur:L.t});break;
     case 'reveal':{const p=aim||{x:u.x+Math.cos(u.face)*L.range*0.6,y:u.y+Math.sin(u.face)*L.range*0.6},d=Math.hypot(p.x-u.x,p.y-u.y),k=d>L.range?L.range/d:1;
       const x=u.x+(p.x-u.x)*k,y=u.y+(p.y-u.y)*k;
       typeof mbVisReveal==='function'&&mbVisReveal(x,y,L.r,L.t,u.team);
-      MB.spellZ=(MB.spellZ||[]).concat({x,y,r:L.r,t:L.t,t0:L.t,team:u.team,col:L.col});break}
+      MB.spellZ=(MB.spellZ||[]).concat({x,y,r:L.r,t:L.t,t0:L.t,team:u.team,col:L.col});typeof mbfxSk==='function'&&mbfxSk('sp_reveal',x,y,{r:L.r});break}
     case 'exhaust':{const t=mbNearest(u,MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&(typeof mbSeen!=='function'||mbSeen(o,u.team))),L.range+20);
       if(!t)return false;
-      t.st.exh=L.t;if(!(t.st.pure>0))mbSlow(t,L.slow,L.t);mbSpellFx(t,L.col,'down');mbBoom(t.x,t.y,50,'blue');break}
-    case 'cleanse':Object.assign(s,{stun:0,taunt:0,tBy:null,slow:0,slowK:0,root:0,bub:0,ice:0,imm:L.pure,pure:L.pure});mbSpellFx(u,L.col,'up');break;
+      t.st.exh=L.t;if(!(t.st.pure>0))mbSlow(t,L.slow,L.t);mbSpellFx(t,L.col,'down');mbBoom(t.x,t.y,50,'blue');typeof mbfxSk==='function'&&mbfxSk('sp_exhaust',t.x,t.y,{follow:t,loop:true,dur:L.t});break}
+    case 'cleanse':Object.assign(s,{stun:0,taunt:0,tBy:null,slow:0,slowK:0,root:0,bub:0,ice:0,imm:L.pure,pure:L.pure});mbSpellFx(u,L.col,'up');if(u.fxs&&typeof fxStop==='function'){fxStop(u.fxs.rootFx);fxStop(u.fxs.bubFx)}   // השורשים והבועה נעלמים עם הלכידה
+      typeof mbfxSk==='function'&&mbfxSk('sp_cleanse',u.x,u.y,{follow:u});break;
   }
   u.cd.spell=L.cd;u.actT=MB.t;if(u.me)sfx(L.sfx,L.vol||1);   // actT: לחש מתוך שיח חושף, כמו תקיפה וסקיל (moba-vision.js)MB.spellN=(MB.spellN||0)+1;
   return true;

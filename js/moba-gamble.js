@@ -60,9 +60,9 @@ function mbGambleTick(M,dt){
 function mbGbDone(u,win){
   const col=u.team===MB.me.team?C.gold:C.blood;
   if(win){const top=Math.max(...MB.u.filter(o=>o.k==='hero').map(mbWorth)),g=Math.max(0,top-mbWorth(u));
-    mbGold(u,g);mbBoom(u.x,u.y,90,'fire');if(u.me){sfx('celebrate');celebrate(u.x,u.y,'gear')}else sfx('coin');
+    mbGold(u,g);mbBoom(u.x,u.y,90,'fire');typeof mbfxSk==='function'&&(mbfxSk('gamble_win',u.x,u.y,{follow:u}),mbfxSk('coins',u.x,u.y,{follow:u}));if(u.me){sfx('celebrate');celebrate(u.x,u.y,'gear')}else sfx('coin');
     mbBanner(u.me?T('mb.gb.winMe',Math.round(g)):T('mb.gb.win',mbGbName(u),Math.round(g)),col,true);mbGbFeed(u,T('mb.gb.won',Math.round(g)));return}
-  mbBanner(u.me?T('mb.gb.loseMe'):T('mb.gb.lose',mbGbName(u)),u.team===MB.me.team?C.blood:C.gold,true);
+  mbBanner(u.me?T('mb.gb.loseMe'):T('mb.gb.lose',mbGbName(u)),u.team===MB.me.team?C.blood:C.gold,true);typeof mbfxSk==='function'&&mbfxSk('gamble_lose',u.x,u.y);
   if(u.dead){mbGbFeed(u,T('mb.gb.lost'));return}   // כבר מת באמצע: נשאר מת
   // מוות כמו ב-mbDie, אבל בלי mbItDie, בלי XP, בלי נקודה ובלי הריגה לאף אחד
   u.hp=0;u.dead=true;u.deaths++;u.resp=mbResp(u);u.hitBy.clear();
