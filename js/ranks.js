@@ -81,3 +81,14 @@ function rankReset(){rankFix();const R=RANKS.list[rankId()];if(R)gApply(R.bonus,
 
 // בממשק: הדרגה הנוכחית, למשל "⚔️ אביר"
 const rankLabel=()=>{const id=rankId();return id?RANKS.list[id].icon+' '+rankName(id):''};
+
+/* כלי פיתוח (אוראל, 8.11: "תעשה אותי רמה 30"): ?level=30 בכתובת מעלה את רמת הדמות לשם, פעם אחת בטעינה, כמו ?hero=orel.
+   ה-XP נקבע בדיוק ל-XP של תחילת הרמה (rankXpAt), ו-rankSync מעדכן את הרמה, ולכן נקודות הסטטים (stFree, stats.js) ושאר מה שנגזר מהרמה עקביים.
+   רק מעלה (הורדה הייתה משאירה רמה גבוהה מה-XP), עד RANKS.xp.max. לא נוגע בדרגה או בשום שדה אחר. search: לבדיקה */
+function rankDevLevel(search=location.search){
+  const q=/[?&]level=(\d+)/.exec(search);if(!q||rankDevLevel.done||!SAVE||!SAVE.hero)return false;rankDevLevel.done=true;
+  const lv=Math.max(1,Math.min(RANKS.xp.max,+q[1]));if(lv<=(SAVE.hero.level||1))return false;
+  SAVE.hero.xp=rankXpAt(lv);rankSync();if(typeof saveNow==='function')saveNow();return true;
+}
+// מחכים שהגיבור באמת בכפר או בעולם: עלייה ברמה קוראת לספר הסקילים ולמסלול הרמות (levelpath.js, wskbook.js), שצריכים את הגיבור והנשק
+if(/[?&]level=\d/.test(location.search)){let n=0;(function rdlWait(){if(typeof P!=='undefined'&&P&&S&&(S.vil||S.wd)&&SAVE.hero.start)rankDevLevel();else if(++n<240)setTimeout(rdlWait,500)})()}

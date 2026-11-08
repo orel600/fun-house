@@ -1328,6 +1328,18 @@ function worldBot(m,L,god){
     SAVE.hero.skin=sk;SAVE.pet.kind=pk;return r});
   check(!hpp.err&&hpp.nul==='parosh'&&hpp.def==='parosh'&&hpp.nir===hpp.d&&hpp.none===null&&hpp.keep==='parosh'&&hpp.cloud,
     'הפרעוש של אוראל: '+(hpp.err||'סקין אוראל עם חיה ריקה: '+hpp.nul+', עם פיוחו: '+hpp.def+' · סקין ניר: '+hpp.nir+' · בלי סקין: '+hpp.none+' · בענן: '+(hpp.cloud?'✓':'✗')));
+  // כלי פיתוח: ?level=30 (rankDevLevel ב-ranks.js) מעלה לרמה 30 עם 29 נקודות סטטים פנויות, בלי פרמטר כלום לא משתנה, פעם אחת בטעינה, ועד המקסימום
+  const dlv=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),r={},lpu=window.lpLevelUp,rc=window.rankCall;
+    try{window.lpLevelUp=()=>{};window.rankCall=()=>false;   // בלי חגיגות וחלונות באמצע הבדיקה
+      const fresh=()=>{SAVE.hero.xp=0;SAVE.hero.level=1;SAVE.hero.xpv=2;rankDevLevel.done=false};
+      fresh();const j0=JSON.stringify(SAVE);r.none=!rankDevLevel('')&&JSON.stringify(SAVE)===j0;
+      fresh();r.set=rankDevLevel('?level=30')&&SAVE.hero.level===30&&SAVE.hero.xp===rankXpAt(30)&&stFree()===29-stSpent();
+      r.once=!rankDevLevel('?level=40')&&SAVE.hero.level===30;
+      fresh();rankDevLevel('?skin=orel&level=999');r.max=SAVE.hero.level===RANKS.xp.max;
+      fresh();SAVE.hero.xp=rankXpAt(50);SAVE.hero.level=50;r.down=!rankDevLevel('?level=30')&&SAVE.hero.level===50;   // רק מעלה
+    }catch(err){r.err=String(err&&err.stack||err)}
+    window.lpLevelUp=lpu;window.rankCall=rc;rankDevLevel.done=true;SAVE=JSON.parse(bak);return r});
+  check(!dlv.err&&dlv.none&&dlv.set&&dlv.once&&dlv.max&&dlv.down,'?level=30 (כלי פיתוח): '+(dlv.err||[dlv.set?'רמה 30 עם 29 נקודות':'לא עלה ל-30',dlv.none?'בלי פרמטר בלי שינוי':'שינה בלי פרמטר!',dlv.once?'פעם אחת':'חוזר',dlv.max?'עד המקסימום':'עבר את המקסימום',dlv.down?'רק מעלה':'הוריד רמה!'].join(', ')));
   const hsk=await page.evaluate(()=>{const sk=SAVE.hero.skin,pk=SAVE.pet.kind,r={};
     try{soundOpen();const lk=()=>R3D.on?heroLook().model:heroSkin();SAVE.hero.skin=null;const base=lk();
       document.querySelector('#ovSound [data-skin="nir"]').click();
