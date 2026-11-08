@@ -1340,6 +1340,10 @@ body:not(.vil):not(.world) .dgift{display:none!important}
   box-shadow:var(--bevel),0 0 0 2px var(--wood),0 4px 10px #0009;color:var(--brass-hi);transition:transform .08s}
 .dgift{background:radial-gradient(circle at 50% 30%,#4A3B1E,#241A0C 75%);border-color:var(--brass-hi)}
 .mute:active,.menubtn:active,.dgift:active{transform:scale(.92)}
+/* "השתק הכל" בחלון ההגדרות (js/audio.js): לוח צפחה עם טבעת פליז כמו שאר הכפתורים, ולא קרם בוהק של .go (אוראל, 8.11) */
+.sndpanel #sndMute{border:2px solid var(--brass);border-radius:12px;padding:10px 14px;font:800 15px var(--body);color:var(--brass-hi);
+  background:radial-gradient(circle at 50% 30%,var(--slate-hi),var(--slate) 80%);box-shadow:var(--bevel),0 0 0 2px var(--wood),0 3px 8px #0009;text-shadow:0 2px 0 var(--wood);transition:transform .08s}
+.sndpanel #sndMute:active{transform:scale(.96)}
 .menubtn span{text-shadow:0 2px 0 var(--wood)}
 @keyframes tpulse{to{box-shadow:var(--bevel),0 0 0 2px var(--wood),0 0 16px rgba(244,199,79,.55)}}
 /* כפתורי מקום (לדבר, לדוג) ולשוניות התפריט: לוח צפחה עם מסגרת פליז וקצה עץ */
