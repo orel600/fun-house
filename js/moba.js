@@ -172,6 +172,7 @@ function mbAutoTarget(u,range){
   if(u.st.taunt>0&&u.st.tBy&&!u.st.tBy.dead)return u.st.tBy;
   const veil=u.st.veil>0;   // מכוסה (היעלמות): התקיפה האוטומטית לא שוברת את הכיסוי על חייל או מגדל, רק על גיבור צמוד (מארב), ובלי זינוק
   if(u.k==='hero'&&!veil&&!((u.lungeT||0)>MB.t))range+=MBKIT[u.kit].atk.lunge||0;   // הזינוק מוכן: מחפשים מטרה גם קצת יותר רחוק
+  {const lk=u.me&&!veil&&mbAtkPick(u,range);if(lk)return lk}   // נעול בכפתור התקיפה, ובטווח: קודם לכולם (moba-atk.js)
   let best=null,bs=1e9;
   for(const o of MB.u){if(o.team===u.team||o.dead||!mbHittable(o)||!mbSeen(o,u.team)||!mbTgt(o)||veil&&o.k!=='hero')continue;   // לא רואים: לא תוקפים (moba-vision.js)
     const d=mbDist(u,o)-o.r-u.r;if(d>range)continue;
@@ -289,6 +290,7 @@ function mbPlayer(u,dt){
   else if(u.st.stun>0||u.st.root>0)u.moving=false;
   else if(m>0.12){const sp=mbSpeed(u)*dt;mbStep(u,ix*sp,iy*sp);u.moving=true;u.face=Math.atan2(iy,ix)}
   else u.moving=false;
+  mbAtkTick(u,dt,m>0.12);   // כפתור התקיפה: רווח, צעדים אל המטרה, ותוקף הנעילה (moba-atk.js)
   const A=MBKIT[u.kit].atk;mbAttack(u,dt,mbAutoTarget(u,A.range),A);
   // מקלדת: 1/2/3 או Q/E/R
   [['Digit1','KeyQ'],['Digit2','KeyE'],['Digit3','KeyR']].forEach((ks,i)=>{const on=ks.some(k=>keys[k]);if(on&&!MB.keys[i])mbPress(MB_SLOTS[i]);MB.keys[i]=on});
@@ -368,9 +370,9 @@ function mobaExit(){
 function mbUi(on){
   document.body.classList.toggle('mb',on);$('mbHud').hidden=!on;$('mbSk').hidden=!on;
   if(on){const u=mbMe();$('mbSk').innerHTML=MB_SLOTS.map(k=>{const s=MBKIT[u.kit][k],col=dtCol(s.dt||MBKIT[u.kit].dt);
-    return '<button class="skb mbskb" data-sk="'+k+'" style="--dt:'+col+'" aria-label="'+T('mb.s.'+s.id)+'">'+mbPic(s.id)+'<i></i>'+mbLockTag(MOBA.ultAt)+'</button>'}).join('')+(typeof mbSpellBtns==='function'?mbSpellBtns(u):'');   // ריפוי ולחש (moba-spells.js)
+    return '<button class="skb mbskb" data-sk="'+k+'" style="--dt:'+col+'" aria-label="'+T('mb.s.'+s.id)+'">'+mbPic(s.id)+'<i></i>'+mbLockTag(MOBA.ultAt)+'</button>'}).join('')+(typeof mbSpellBtns==='function'?mbSpellBtns(u):'')+mbAtkBtn();   // ריפוי ולחש (moba-spells.js), וכפתור התקיפה (moba-atk.js)
     for(const b of document.querySelectorAll('#mbPing [data-o] b'))b.innerHTML=mbSvg(b.parentNode.dataset.o,'mbpi');   // פקודות: אייקונים במקום אימוג'י
-    mbAimInit($('mbSk'))}   // נגיעה, גרירה לכיוון וביטול (moba-aim.js)
+    mbAimInit($('mbSk'));mbAtkInit()}   // נגיעה, גרירה לכיוון וביטול (moba-aim.js), ונעילה בגרירה מכפתור התקיפה (moba-atk.js)
 }
 // הודעת הריגה: מי הפיל את מי, בצבעי הקבוצות. עד MOBA.feed.max שורות, וכל אחת נעלמת אחרי MOBA.feed.t שניות
 function mbKillFeed(by,t){
@@ -396,7 +398,7 @@ function mobaHud(){
   for(const b of $('mbSk').querySelectorAll('[data-sk]')){const k=b.dataset.sk,s=MBKIT[u.kit][k];if(!s)continue;const lock=k==='ult'&&u.lvl<MOBA.ultAt;
     b.style.setProperty('--cd',lock?1:Math.max(0,u.cd[k])/s.cd);const l=b.querySelector('.mblock');if(l.hidden===lock)l.hidden=!lock;
     const rd=!lock&&u.cd[k]<=0;if(b.classList.contains('ready')!==rd)b.classList.toggle('ready',rd);if(b.classList.contains('lock')!==lock)b.classList.toggle('lock',lock)}   // מוכן / נעול: המראה ב-style.css (W3)
-  mbItHud();mbRecallHud();typeof mbSpellHud==='function'&&mbSpellHud();   // אזהרה בחיים נמוכים וכפתור החזרה (moba-recall.js)
+  mbAtkHud(u);mbItHud();mbRecallHud();typeof mbSpellHud==='function'&&mbSpellHud();   // אזהרה בחיים נמוכים וכפתור החזרה (moba-recall.js)
     // זהב, קנייה מהירה וחפצים (moba-items.js)
 }
 // חלון הבחירה: ארבע הערכות, בשני טורים לרוחב
@@ -452,6 +454,7 @@ function mobaDraw(ox,oy){
     else{ctx.globalAlpha=0.22;ctx.fillStyle=col;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.fill();ctx.globalAlpha=0.8;ctx.strokeStyle=C.chalk;ctx.lineWidth=2;ctx.beginPath();
       for(let i=0;i<8;i++){const a=hash(i,Math.floor(M.t*6))*7,d=hash(Math.floor(M.t*6),i)*z.r,x=z.x+Math.cos(a)*d,y=z.y+Math.sin(a)*d;ctx.moveTo(x,y-14);ctx.lineTo(x,y)}ctx.stroke();ctx.globalAlpha=1}}
   mbAimDraw();   // סימון הכיוון של סקיל בגרירה (moba-aim.js)
+  mbAtkDraw();   // הטבעת האדומה על הנעול (moba-atk.js)
   mbGambleDraw();   // חדר ההימור: הטבעת והקשת (moba-gamble.js)
   for(const w of M.walls){ctx.fillStyle='#5A5F6E';ctx.fillRect(w.x-10,-L.half,20,L.half*2);ctx.fillStyle=MOBA.team[w.team];ctx.fillRect(w.x-10,-L.half,4,L.half*2);ctx.fillRect(w.x+6,-L.half,4,L.half*2)}
   {const F=mbfxS();fxDrawList(F.under||(F.under=[]))}   // טבעות קבוצה ועליית רמה, מתחת לדמויות (moba-fx.js)
@@ -461,9 +464,9 @@ function mobaDraw(ox,oy){
   for(const u of list){
     const col=MOBA.team[u.team];
     if(u.k==='tower'||u.k==='base'){mbDrawBuild(u,col);continue}
-    ctx.strokeStyle=col;ctx.lineWidth=u.k==='hero'?3:2;ctx.globalAlpha=0.9;ctx.beginPath();ctx.ellipse(u.x,u.y+2,u.r+4,(u.r+4)*0.45,0,0,7);ctx.stroke();ctx.globalAlpha=1;
-    if(u.me){ctx.strokeStyle=C.gold;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(u.x,u.y+2,u.r+9,(u.r+9)*0.45,0,0,7);ctx.stroke()}
-    if(!R3D.on||u.me&&!R3D.player){const p=pose(u.x,u.y,u.ph,mbMoving(u),u.aim,10,mbRot(u));ctx.globalAlpha=mbVisFade(u);drawRig(p,{skin:LOOK.player,col:u.flash>0?'#fff':u.k==='hero'?col:col+'AA',lw:u.k==='hero'?3:2});ctx.globalAlpha=1}   // חבר בשיח: שקוף למחצה (moba-vision.js)
+    mbRing(u,col);   // טבעת הקבוצה, ולגיבור שלך גם טבעת זהב (moba-look.js)
+    if(!R3D.on||u.me&&!R3D.player){const G=MBLOOK.rig,hero=u.k==='hero',p=pose(u.x,u.y,u.ph,mbMoving(u),u.aim,10,mbRot(u),hero?G.hero:G.minion),c=u.flash>0?'#fff':hero?col:col+'AA';
+      ctx.globalAlpha=mbVisFade(u);drawRig(p,{skin:LOOK.player,col:c,lw:(hero?G.lw.hero:G.lw.minion)*p.k});if(hero)mbWeapon2d(p,u.kit,c);ctx.globalAlpha=1}   // חבר בשיח: שקוף למחצה (moba-vision.js). גודל ונשק לפי ערכה (MBLOOK.rig)
     const s=u.st,top=u.y-(u.k==='hero'?78:52);
     if(s.armor>0){ctx.strokeStyle=C.ember;ctx.lineWidth=3;ctx.globalAlpha=0.6;ctx.beginPath();ctx.arc(u.x,u.y-24,30,0,7);ctx.stroke();ctx.globalAlpha=1}
     if(s.rage>0){ctx.fillStyle='rgba(239,78,87,0.18)';ctx.beginPath();ctx.arc(u.x,u.y-24,28,0,7);ctx.fill()}

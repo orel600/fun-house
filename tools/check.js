@@ -3862,6 +3862,35 @@ function worldBot(m,L,god){
      mbRecallStart(me);tk(10);me.hp-=50;tk(1);L.hit=!me.recall&&mbDist(me,me.home)>800;me.hp=me.max;
      const n=mbNext(me),c=MBITEM.items[n].cost,q=$('mbQuick'),p=()=>+q.style.getPropertyValue('--p');me.gold=c/2;mobaHud();L.half=Math.abs(p()-0.5)<0.02&&!q.classList.contains('ok')&&q.textContent.includes(String(c))&&q.querySelector('span').classList.contains('miss');   // המחיר תמיד, ובאדום כשחסר (W4, 8.11: בלי מספר שלילי)
      me.gold=c;mobaHud();L.full=p()===1&&q.classList.contains('ok');me.gold=0;me.x=hx;me.y=hy;mbFeelReset(me);mobaHud();o.life=L}
+    // כפתור התקיפה (moba-atk.js, אוראל 8.11, כמו ב-MLBB): הכי גדול ולא נוגע בסקילים, נגיעה בלי אף אחד בטווח מקרבת, גרירה אל אויב נועלת, הנעול קודם,
+    // הנעילה נגמרת במוות ובמרחק, ✕ מבטל, הטעינה על הכפתור, ורווח במקלדת
+    {const me=MB.me,K={},hx=me.x,hy=me.y,cam={x:S.cam.x,y:S.cam.y},A=MBKIT[me.kit].atk,keep=MB.u,b=$('mbAtk'),cv=cvs.getBoundingClientRect();   // cam: המצלמה חוזרת בסוף, אחרת הבדיקות שאחרי רואות אפקטים מחוץ למסך
+     const scr=o=>({x:cv.left+((o.x-S.cam.x)/W+0.5)*cv.width,y:cv.top+((o.y-S.cam.y)/H+0.5)*cv.height});
+     const pe=(el,t,x,y)=>(el||window).dispatchEvent(new PointerEvent(t,{bubbles:true,cancelable:true,pointerId:9,clientX:x,clientY:y}));
+     try{mobaHud();K.btn=!!b&&!!b.offsetParent;const sk=[...document.querySelectorAll('#mbSk [data-sk]')].filter(e=>e.offsetParent),br=b.getBoundingClientRect();
+      K.big=sk.length>0&&sk.every(e=>e.getBoundingClientRect().width<br.width);
+      const rs=[br,...sk.map(e=>e.getBoundingClientRect())];K.free=!rs.some((a,i)=>rs.some((c,j)=>j>i&&Math.min(a.right,c.right)-Math.max(a.left,c.left)>1&&Math.min(a.bottom,c.bottom)-Math.max(a.top,c.top)>1));
+      MB.u=keep.filter(o=>o===me||o.k==='tower'||o.k==='base');me.x=0;me.y=0;me.atkT=0;joy=null;MB.lock=MB.atkGo=null;
+      const mk=(dx,dy)=>{const m=mbUnit({k:'minion',team:1-me.team,type:'mb_m1',x:me.x+dx,y:me.y+dy,r:MOBA.minion.r,hp:1e6,max:1e6,speed:0,lane:dy,face:0});MB.u.push(m);return m};
+      const far=mk(A.range+me.r+MOBA.minion.r+160,0),cx=br.left+br.width/2,cy=br.top+br.height/2;
+      pe(b,'pointerdown',cx,cy);pe(null,'pointerup',cx,cy);const d0=mbDist(me,far);for(let i=0;i<10;i++)mobaUpdate(1/30);K.step=d0-mbDist(me,far)>20;K.taps=MB.atkTaps||0;
+      me.x=0;me.y=0;MB.atkGo=null;far.x=me.x+60;far.y=-50;const lk=mk(70,60);S.cam.x=me.x;S.cam.y=me.y;
+      const p=scr(lk);pe(b,'pointerdown',cx,cy);pe(null,'pointermove',cx-30,cy-30);pe(null,'pointermove',p.x,p.y);pe(null,'pointerup',p.x,p.y);K.lock=MB.lock===lk;
+      K.pref=mbAutoTarget(me,A.range+200)===lk;K.draw=(()=>{try{mbAtkDraw();return true}catch(err){return String(err)}})();
+      const fr=n=>{for(let i=0;i<n;i++)mobaUpdate(1/30)};   // כמה פריימים: אחרי מכה יש עצירת פריים (mbfxTime)
+      lk.x=me.x+(A.range+me.r+lk.r)*MBATK.lockK+120;fr(8);K.far=MB.lock===null;
+      MB.lock=far;far.dead=true;fr(8);K.dead=MB.lock===null;far.dead=false;MB.lock=null;
+      lk.x=me.x+70;const c=$('mbCancel'),q=c.getBoundingClientRect();pe(b,'pointerdown',cx,cy);pe(null,'pointermove',cx-30,cy-30);const cr=c.getBoundingClientRect();pe(null,'pointermove',cr.left+cr.width/2,cr.top+cr.height/2);pe(null,'pointerup',cr.left+cr.width/2,cr.top+cr.height/2);K.cancel=MB.lock===null&&c.hidden;
+      me.atkT=A.cd/2;mobaHud();K.cd=Math.abs(parseFloat(b.style.getPropertyValue('--cd'))-0.5)<0.02;me.atkT=0;
+      const t0=MB.atkTaps||0;keys.Space=true;fr(8);keys.Space=false;fr(2);K.space=(MB.atkTaps||0)===t0+1;
+     }catch(err){K.err=String(err&&err.stack||err)}
+     MB.u=keep;MB.lock=MB.atkGo=null;keys.Space=false;joy=null;me.x=hx;me.y=hy;S.cam.x=cam.x;S.cam.y=cam.y;mbFeelReset(me);mobaHud();o.atk=K}
+    // סקין מתמונות עם גודל (rig.js, pose עם k): כל drawImage מקבל מידות סופיות ופי k. תמונה מזויפת "טעונה", ו-drawImage רק נרשם
+    {const R={},src='skins/__t.png',dI=ctx.drawImage,sizes=[];SKINS.__t={};for(const n of ['head','body','armF','armB','legF','legB','sword'])SKINS.__t[n]={src,w:10,h:12};
+     skinImgs[src]={complete:true,naturalWidth:10};ctx.drawImage=function(im,x,y,w,h){sizes.push(w,h)};
+     try{const p=pose(0,0,0,false,0,10,0,1.15);drawRig(p,{skin:'__t',col:'#fff',lw:2});drawRigWeapon(p,{skin:'__t'},'sword',0);
+       R.n=sizes.length/2;R.ok=R.n===7&&sizes.every(v=>Number.isFinite(v)&&(Math.abs(v/11.5-1)<0.01||Math.abs(v/13.8-1)<0.01))}catch(err){R.err=String(err)}
+     ctx.drawImage=dI;delete SKINS.__t;delete skinImgs[src];o.rigK=R}
     // כיוון וביטול בגרירה (moba-aim.js): גוררים מהכפתור, משחררים על ✕ = בוטל ובלי טעינה. גוררים שמאלה עד הסוף = הסדן נוחת בקצה הטווח משמאל
     {const me=MB.me,b=document.querySelector('#mbSk [data-sk="s1"]'),r=b.getBoundingClientRect(),cx=r.x+r.width/2,cy=r.y+r.height/2,z0=MB.zones.length,R=MBKIT.tank.s1.range;
       const ev=(el,t,x,y)=>el.dispatchEvent(new PointerEvent(t,{pointerId:9,clientX:x,clientY:y,bubbles:true,cancelable:true}));
@@ -4409,7 +4438,7 @@ function worldBot(m,L,god){
   const num=/^\d+ \/ \d+$/;
   check(num.test(L.hpTxt)&&num.test(L.xpTxt)&&L.gainMax>0,'מספרים בממשק: חיים '+L.hpTxt+', XP '+L.xpTxt+', הכי הרבה שנאסף ברצף: +'+(L.gainMax||0));
   check(/^\d+:\d\d$/.test(L.clock||'')&&/\d+\/\d+/.test(L.waveTag||''),'שעון ומונה גלים: השעון הגיע ל-'+L.clock+', המונה "'+(L.waveTag||'-')+'"');
-  check(L.wvMax===L.wvN&&L.wvHeal>=L.wvN-1&&L.elites>0,'הזירה בריצה: הגיע לגל '+(L.wvMax||0)+'/'+(L.wvN||'-')+', הפסקות עם ריפוי: '+(L.wvHeal||0)+' · גלים נגמרו ב: '+(L.wvEnds||'-')+(L.wvLate?' ('+L.wvLate+' בזמן שנגמר)':'')+(L.wvStuck?' · '+L.wvStuck:'')+' · רמה בתחילת גל: '+Object.entries(L.lvAt||{}).map(([w,l])=>w+':'+l).join(' ')+' · אויבי-על שהופלו: '+L.elites+' מתוך '+(L.supsN||0)+(L.eliteLeft?' (נשאר: '+L.eliteLeft+')':''));
+  check(L.wvMax===L.wvN&&L.wvHeal>=L.wvN-1&&L.elites>0,'הזירה בריצה: הגיע לגל '+(L.wvMax||0)+'/'+(L.wvN||'-')+', הפסקות עם ריפוי: '+(L.wvHeal||0)+' · גלים נגמרו ב: '+(L.wvEnds||'-')+(L.wvLate?' ('+L.wvLate+' בזמן שנגמר)':'')+(L.wvStuck?' · '+L.wvStuck:'')+' · רמה בתחילת גל: '+Object.entries(L.lvAt||{}).map(([w,l])=>w+':'+l).join(' ')+' · אויבי-על מתוכננים בגלים: '+(L.supsN||0)+', כל אויבי-העל והעלית שהופלו: '+L.elites+(L.eliteLeft?' (נשאר: '+L.eliteLeft+')':''));
   check(L.peak>=20,'גושים: עד '+L.peak+' אויבים בזירה יחד');
   check(/[KMB]!?$/.test(L.dmgMaxTxt||'')&&L.crits>0&&!L.notLtr,'מספרים גדולים: הכי גדול '+(L.dmgMaxTxt||'-')+', קריטיות: '+(L.crits||0)+(L.notLtr?', מספר שלא נכתב משמאל לימין: '+L.notLtr:''));
   check(L.boss!=null,'בוס: הופיע '+t(L.boss)+(L.bossName?' ('+L.bossName+')':''));
@@ -4468,6 +4497,9 @@ function worldBot(m,L,god){
     {const f=mb.feel||{};check(f.soft&&f.turned&&f.run>=f.want*0.9&&f.feed,'משחקי השאול: תנועה: סיבוב '+(f.soft&&f.turned?'רך ✓':'בבת אחת או תקוע')+', דרך חייל '+f.run+'/'+f.want+' פיקסלים בשנייה'+(f.feed?', הודעת הריגה ✓':', בלי הודעת הריגה'))}
     {const L=mb.life||{},ks={lowOn:'אזהרה בחיים נמוכים',lowOff:'נעלמת',start:'כפתור חזרה',home:'מגיע לבסיס',move:'תזוזה מבטלת',hit:'פגיעה מבטלת',half:'טבעת זהב חצי',full:'מלאה ומוארת'};
      check(Object.keys(ks).every(k=>L[k]),'משחקי השאול: שומר בחיים: '+Object.keys(ks).map(k=>ks[k]+(L[k]?' ✓':' ✗')).join(', '))}
+    {const R=mb.rigK||{};check(R.ok,'סקין מתמונות בגודל ×1.15 (rig.js): '+(R.err||R.n+' חלקים מצוירים'+(R.ok?', כל המידות סופיות ופי 1.15':', מידות לא נכונות')))}
+    {const K=mb.atk||{},ks={btn:'כפתור',big:'הכי גדול',free:'לא נוגע בסקילים',step:'נגיעה מקרבת',lock:'גרירה נועלת',pref:'הנעול קודם',far:'נגמרת במרחק',dead:'נגמרת במוות',cancel:'✕ מבטל',cd:'טעינה על הכפתור',space:'רווח'};
+     check(!K.err&&K.draw===true&&Object.keys(ks).every(k=>K[k]),'משחקי השאול: כפתור התקיפה: '+(K.err||Object.keys(ks).map(k=>ks[k]+(K[k]?' ✓':' ✗')).join(', ')+(K.draw===true?'':', ציור: '+K.draw)))}
     {const I=mb.items||{},ks={tick:'זהב עם הזמן',minion:'זהב מחייל',quick:'קנייה מהירה',stat:'סטטים',sell:'מכירה',win:'חלון החנות',buy:'קנייה בחלון',close:'סגירה',bot:'בוט קונה'};
      check(Object.keys(ks).every(k=>I[k]),'משחקי השאול: חפצים: '+Object.keys(ks).map(k=>ks[k]+(I[k]?' ✓':' ✗')).join(', '))}
     if(mb.build||mb.spell){const B=mb.build||{},r=mb.spell||{},p=mb.spl||{pick:{},use:{}},pk=Object.entries(p.pick),bad=pk.filter(x=>!x[1]).map(x=>x[0]),pics=(r.pic||[]).filter(f=>f==='gi'||f&&fs.existsSync(path.resolve(__dirname,'..',f)));
