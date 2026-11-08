@@ -4047,7 +4047,7 @@ function worldBot(m,L,god){
      MB.u=keep;MB.lock=MB.atkGo=null;keys.Space=false;joy=null;me.x=hx;me.y=hy;S.cam.x=cam.x;S.cam.y=cam.y;mbFeelReset(me);mobaHud();o.atk=K}
     // הטלה מהירה (moba-aim.js, MLBB 1.2): נגיעה בלי גרירה מראה לרגע את הצורה של הסקיל (קו, עיגול, מטרה, סביבך) בצבע סוג הנזק, ודועכת.
     // בגרירה אין הבזק (רואים כבר), ולבוט אין
-    {const me=MB.me,F={kinds:{}},kit=me.kit,keep=MB.u,hx=me.x,hy=me.y,cam={x:S.cam.x,y:S.cam.y},cds={...me.cd};
+    {const me=MB.me,F={kinds:{}},kit=me.kit,keep=MB.u,hx=me.x,hy=me.y,lv=me.lvl,cam={x:S.cam.x,y:S.cam.y},cds={...me.cd};
      try{MB.u=keep.filter(o=>o===me||o.k==='tower'||o.k==='base');me.x=0;me.y=0;me.dead=false;me.lvl=MOBA.ultAt;S.cam.x=0;S.cam.y=0;
        const foe=mbHero('warrior',1-me.team,false,1);foe.x=150;foe.y=10;foe.hp=foe.max=1e6;MB.u.push(foe);if(typeof mbVisNow==='function')mbVisNow(true);
        for(const k of Object.keys(MBKIT))for(const sl of MB_SLOTS){const sk=MBKIT[k][sl],kind=mbAimKind(sk);if(F.kinds[kind]!=null)continue;
@@ -4058,7 +4058,7 @@ function worldBot(m,L,god){
        me.kit=kit;for(const c of MB_SLOTS)me.cd[c]=0;MB.aimFl=null;mbPress('s1',{x:me.x+100,y:me.y});F.drag=MB.aimFl===null;   // כיוון מגרירה: בלי הבזק
        const bot=mbHero(kit,me.team,false,0);bot.x=0;bot.y=0;MB.u.push(bot);for(const c of MB_SLOTS)bot.cd[c]=0;MB.aimFl=null;mbCast(bot,'s1',foe);F.bot=MB.aimFl===null;
      }catch(err){F.err=String(err&&err.stack||err)}
-     MB.u=keep;me.kit=kit;Object.assign(me.cd,cds);me.x=hx;me.y=hy;S.cam.x=cam.x;S.cam.y=cam.y;MB.aimFl=null;if(typeof mbVisNow==='function')mbVisNow(true);mbFeelReset(me);mobaHud();o.qaim=F}
+     MB.u=keep;me.kit=kit;me.lvl=lv;Object.assign(me.cd,cds);mbStReset(me);me.x=hx;me.y=hy;S.cam.x=cam.x;S.cam.y=cam.y;MB.aimFl=null;if(typeof mbVisNow==='function')mbVisNow(true);mbFeelReset(me);mobaHud();o.qaim=F}   // mbStReset: סקיל שהוטל כאן (קפיצה, כיסוי) לא נשאר לבדיקות שאחרי
     // חץ הברק (#513, moba-skill-anim.js): תנועת שחרור קשת ברגע ההטלה, בלי מעגל על הרצפה, פס מאחורי החץ האמיתי, הבזק רק בפגיעה מאושרת,
     // נקודה עמומה בסוף, בלי שאריות אחרי משחק חדש, וחץ של אויב בערפל לא מצויר
     {const me=MB.me,Z={},kit=me.kit,hx=me.x,hy=me.y,keep=MB.u,cd=me.cd.s1,H=MBANIMS.stat,cam={x:S.cam.x,y:S.cam.y};
