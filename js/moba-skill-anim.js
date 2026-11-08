@@ -60,6 +60,7 @@ function mbaPlay(id,x,y,o){
   const h=fxPlay(id,x,y,o);if(h){MBANIMS.n++;MBANIMS.stat.fx++;if(MBFX.log)MBFX.log[id]=(MBFX.log[id]||0)+1}return h;
 }
 const mbaClamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
+let mbaSeedN=0;const mbaRnd=()=>{mbaSeedN=(mbaSeedN*9301+49297)%233280;return mbaSeedN/233280};   // בלי Math.random: שהמשחק עם seed (check.js, moba-balance.js) יישאר אותה ריצה בדיוק
 
 /* ---- (a): הטלה. נקרא מ-mbCast אחרי שכל הבדיקות עברו, לפני הסקיל עצמו. s: הגדרת הסקיל, ang: כיוון ההטלה ---- */
 function mbAnimCast(u,s,slot,ang){
@@ -117,14 +118,14 @@ function mbAnimHit(o,dt){
 function mbAnimTick(o){
   if(!mbaOn()||fxLess()||!o||o.dead)return;const B=MBANIM.rain,N=MBFX_N(o);
   if((N.rainT||-9)>MB.t-B.every||!mbaRoom()||!mbfxOn(o.x,o.y))return;N.rainT=MB.t;
-  const f=fxPlay(B.arrow,o.x,o.y-o.r*0.5,{size:B.arrowSize*mbaLessK(),add:true,rot:Math.random()*6.283});if(f)MBANIMS.stat.fx++;
+  const f=fxPlay(B.arrow,o.x,o.y-o.r*0.5,{size:B.arrowSize*mbaLessK(),add:true,rot:mbaRnd()*6.283});if(f)MBANIMS.stat.fx++;
 }
 
 // גשם חצים: חץ נופל מהשמיים בנקודה אקראית באזור, פעם ב-dropEvery שניות (נקרא מכל טיק של האזור)
 function mbAnimRain(z){
   if(!mbaOn()||fxLess())return;const B=MBANIM.rain;
   if((z.dropT||-9)>MB.t-B.dropEvery||!mbaRoom())return;z.dropT=MB.t;
-  const a=Math.random()*6.283,d=Math.sqrt(Math.random())*z.r*0.9,x=z.x+Math.cos(a)*d,y=z.y+Math.sin(a)*d*0.8;
+  const a=mbaRnd()*6.283,d=Math.sqrt(mbaRnd())*z.r*0.9,x=z.x+Math.cos(a)*d,y=z.y+Math.sin(a)*d*0.8;
   if(!mbfxOn(x,y))return;
   const f=fxPlay(B.drop,x,y-B.dropH,{size:B.dropSize*mbaLessK(),rot:Math.PI/2,vy:B.dropFall,dur:B.dropT,add:true});if(f)MBANIMS.stat.fx++;
 }
