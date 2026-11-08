@@ -7,3 +7,6 @@ tools/shots/
 __pycache__/
 tools/ux-shots/
 tools/critic/out/
+
+# Mochi Lab full packs (paid, 17GB): never commit. Only converted fx/<id>.webp go in.
+public/fx/
