@@ -42,18 +42,18 @@ function skinImg(part){
 
 /* o: {skin, col, lw} — צבע ועובי הקו לחלקים שמצוירים כקו */
 function drawRig(p,o){
-  const sk=SKINS[o.skin]||SKINS.stick,k=p.k||1;   // k: גודל הדמות (pose)
+  const sk=SKINS[o.skin]||SKINS.stick,sc=p.k||1;   // sc: גודל הדמות (k של pose). לא k: בלולאה k הוא שם החלק
   ctx.strokeStyle=o.col;ctx.lineWidth=o.lw;ctx.lineCap='round';ctx.lineJoin='round';
   for(const k of ORDER){
     const seg=p[k];if(!seg)continue;
     const part=sk[k],im=skinImg(part);
     if(k==='head'){
-      if(im){ctx.save();ctx.translate(seg.x,seg.y);ctx.scale(p.face,1);ctx.drawImage(im,-part.w*k/2,-part.h*k/2,part.w*k,part.h*k);ctx.restore()}
+      if(im){ctx.save();ctx.translate(seg.x,seg.y);ctx.scale(p.face,1);ctx.drawImage(im,-part.w*sc/2,-part.h*sc/2,part.w*sc,part.h*sc);ctx.restore()}
       else{ctx.beginPath();ctx.arc(seg.x,seg.y,seg.r,0,Math.PI*2);ctx.stroke()}
       continue;
     }
     const [a,b]=seg;
-    if(im){ctx.save();ctx.translate(a.x,a.y);ctx.rotate(Math.atan2(b.y-a.y,b.x-a.x)-Math.PI/2);ctx.scale(p.face,1);ctx.drawImage(im,-part.w*k/2,0,part.w*k,part.h*k);ctx.restore()}
+    if(im){ctx.save();ctx.translate(a.x,a.y);ctx.rotate(Math.atan2(b.y-a.y,b.x-a.x)-Math.PI/2);ctx.scale(p.face,1);ctx.drawImage(im,-part.w*sc/2,0,part.w*sc,part.h*sc);ctx.restore()}
     else{ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}
   }
 }
@@ -64,6 +64,6 @@ function drawRigWeapon(p,o,w,ang){
   if(!im||!p.armF)return false;
   const h=p.armF[1];
   ctx.save();ctx.translate(h.x,h.y);ctx.rotate(ang);if(p.face<0)ctx.scale(1,-1);
-  const k=p.k||1;ctx.drawImage(im,0,-part.h*k/2,part.w*k,part.h*k);ctx.restore();
+  const sc=p.k||1;ctx.drawImage(im,0,-part.h*sc/2,part.w*sc,part.h*sc);ctx.restore();
   return true;
 }
