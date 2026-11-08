@@ -2009,7 +2009,7 @@ function worldBot(m,L,god){
       for(const g of ['pit','grove']){w.near=w.open=g;w.ui='';worldHud();o.btns[g]=document.querySelectorAll('#wPanel [data-act="arena"]').length}   // בכל שער כפתור זירה אחד
       const b=document.querySelector('#wPanel [data-act="arena"]');o.btn=b?b.innerText:null;if(b)b.click();else{worldUi(false);startRun()}
       o.arena=S.arena;o.bar=getComputedStyle(document.getElementById('runbar')).display==='none';
-      const A=ARENAS.gauntlet,N=A.list.length,dt=1/30,k={},tag={},types={},sups=[],maze=new Set(),heals=[],seen=new WeakSet(),ringA=new Set();o.N=N;
+      const A=ARENAS.gauntlet,N=A.list.length,dt=1/30,k={},tag={},types={},sups=[],maze=new Set(),heals=[],seen=new WeakSet(),ringA=new Set();o.N=N;o.heal=A.heal;
       // המונה לא נוגע בשכנים בשורה העליונה ולא בחיה (שמצוירת בקנבס: הקופסה שלה סביב המקום שלה על המסך, כשהיא ליד השחקן)
       const tagOverlap=()=>{const el=document.getElementById('waveTag'),r=el.getBoundingClientRect(),out=[];
         const hit=(b,nm)=>{if(Math.min(r.right,b.right)-Math.max(r.left,b.left)>1&&Math.min(r.bottom,b.bottom)-Math.max(r.top,b.top)>1)out.push(nm)};
@@ -2038,7 +2038,7 @@ function worldBot(m,L,god){
       o.won=won;o.bossCount=S.bossCount;o.runWon=S.run.won>0;o.stations=S.run.next;o.t=Math.round(S.t)}catch(err){o.err=String(err&&err.stack||err)}
     window.runWon=rw;Math.random=rnd;enemies=[];wRet=null;for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;document.getElementById('banner').textContent='';
     SAVE=JSON.parse(bak);reset();S.mode=mode;o.after=!S.wv&&!document.documentElement.classList.contains('waves');return o});
-  {const H=ARENAS.gauntlet.heal*100,hOk=wav.heals&&wav.heals.length===wav.N-1&&wav.heals.every(h=>h>=H-0.5&&h<=H+1);
+  {const H=wav.heal*100,hOk=wav.heals&&wav.heals.length===wav.N-1&&wav.heals.every(h=>h>=H-0.5&&h<=H+1);
   check(!wav.err&&wav.btns&&wav.btns.pit===1&&wav.btns.grove===1&&!!wav.btn&&wav.arena==='gauntlet'&&wav.bar&&wav.waves===wav.N&&wav.N===10&&wav.grow&&wav.breaks>=wav.N-1&&wav.breakSpawn===0&&wav.tag3.includes('3/'+wav.N)&&!!wav.tagBr&&wav.sets>=4
     &&wav.bossAt===wav.N-1&&wav.won===1&&wav.bossCount===1&&wav.runWon&&wav.stations===0&&wav.after&&wav.maze==='5,6'&&wav.wall===true&&wav.ring>=7&&hOk
     &&wav.news.length===4&&wav.sups.some(x=>x.startsWith('yeti'))&&wav.sups.some(x=>x.startsWith('demon'))&&wav.ovl&&!wav.ovl.length,
