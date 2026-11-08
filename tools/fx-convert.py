@@ -28,6 +28,14 @@ def find_sheet(pack, name):
     hits = glob.glob(os.path.join(base, '**', name + '_sheet.png'), recursive=True)
     return hits[0] if hits else None
 
+# המידע הקודם (n נספר מהמקור). בקובץ הקטן פריים "ריק" יכול להשאיר שאריות דחיסה, ואז n גדל בלי סיבה (8.11: wx_lightning_bolt_dusk מ-19 ל-24)
+OLD = {}
+try:
+    _t = open(os.path.join(ROOT, 'js', 'fx-data.js'), encoding='utf-8').read()
+    OLD = json.loads(_t[_t.index('const FXDATA=') + 13:_t.rindex(';')])
+except (OSError, ValueError):
+    pass
+
 data, total, missing = {}, 0, []
 for fid, spec in LIST.items():
     if fid.startswith('_'):
@@ -35,6 +43,9 @@ for fid, spec in LIST.items():
     pack, name, size = spec
     dst = os.path.join(OUT, fid + '.webp')
     if os.path.exists(dst) and '--all' not in sys.argv:   # כבר הומר: לוקחים את המידע מהקובץ הקטן (מהיר). --all ממיר הכל מחדש
+        if OLD.get(fid, {}).get('s') == size:   # כבר רשום באותו גודל: שומרים אותו כמו שהוא
+            data[fid] = OLD[fid]; total += os.path.getsize(dst)
+            continue
         sm = Image.open(dst).convert('RGBA'); cols = 6; rows = sm.height // size
         n = max([i + 1 for i in range(cols * rows) if sm.crop(((i % cols) * size, (i // cols) * size, (i % cols + 1) * size, (i // cols + 1) * size)).getbbox()] or [0])
         data[fid] = {'c': cols, 'r': rows, 'n': n, 's': size}; total += os.path.getsize(dst)
