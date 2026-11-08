@@ -25,6 +25,21 @@ function fxImg(id){
   return im.complete&&im.naturalWidth?im:null;
 }
 const fxPreload=ids=>{for(const id of ids)fxImg(id)};   // לטעון מראש: כשנכנסים למקום, לפני שהאפקט צריך להופיע
+/* טעינה מראש של האפקטים של הסקילים שנבחרו (W6, 8.11.2026), כדי שההטלה הראשונה לא תיתקע על פענוח התמונה.
+   נקרא בכניסה לזירה (startRun, input.js) עם S.sk.ids, ובכניסה למשחקי השאול (mobaStart, moba.js) עם שם הערכה של השחקן (MBKIT).
+   לכל סקיל: האפקט שכתוב לו ב-ARFX.cast (arena-fx.js), ולפי המוסכמה sk_<id> וכל sk_<id>_* שיש ב-FXDATA.
+   where: 'arena' מוסיף את אפקטי הפגיעה וההריגה של הזירה, 'moba' את אפקטי הסקיל-על. ids לא מוכרים לא מזיקים: fxImg מדלג עליהם */
+const FXPRE={arena:['hit_heavy','ko','glow_ally','dmg_crit'],moba:['ult_cast','ult_ray']};
+function fxPreloadSkills(ids,where){
+  if(typeof FXDATA==='undefined')return;
+  if(typeof ids==='string'){const k=typeof MBKIT!=='undefined'&&MBKIT[ids];ids=k?[k.s1&&k.s1.id,k.s2&&k.s2.id,k.ult&&k.ult.id]:[]}
+  const want=(FXPRE[where]||[]).slice();
+  if(where==='arena'&&typeof ARFX!=='undefined'&&ARFX.hitFx)for(const t in ARFX.hitFx)want.push(ARFX.hitFx[t]);
+  for(const id of ids||[]){if(!id)continue;
+    const c=typeof ARFX!=='undefined'&&ARFX.cast&&ARFX.cast[id];if(c&&c.fx)want.push(c.fx);
+    const pre='sk_'+id;for(const k in FXDATA)if(k===pre||k.startsWith(pre+'_'))want.push(k)}
+  fxPreload(want);
+}
 const fxNowT=()=>performance.now()/1000;
 function fxMake(id,x,y,o){
   const D=typeof FXDATA!=='undefined'&&FXDATA[id];if(!D)return null;
