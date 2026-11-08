@@ -532,7 +532,7 @@ function syncPlayer(dt){
     loop(a,(P.moving?L.anim.run:idle)+(busy?'@low':''),P.moving?Math.min(1.6,P.speed/165):1);
   }
   // הגוף לפי P.face: לאן שהולכים (update.js). הסיבוב הרך כבר שם, אז כאן בלי עיכוב נוסף
-  place(a,P.x,P.y,L.foot,null);a.root.rotation.y=yawOf(Math.cos(P.face),Math.sin(P.face));
+  place(a,P.x,P.y,L.foot,null);a.root.rotation.y=yawOf(Math.cos(P.face),Math.sin(P.face));hf3d(a,null);   // הכנה והתאוששות במכה (hitfeel.js)
   a.root.visible=!(P.inv>0&&Math.floor(P.inv*20)%2===0)||RM;
   setFlash(a,P.inv>0.45?0.5:P.swapBuff>0?0.25:0,P.inv>0.45?C.blood:C.gold);
   if(a.pulse&&!(P.inv>0.45||P.swapBuff>0)){const k=1+GEAR3D.pulse*Math.sin(performance.now()/1000*GEAR3D.rate);for(const m of a.pulse)m.emissive.copy(m.userData.em).multiplyScalar(k)}   // אגדי פועם (GEAR3D)
@@ -580,7 +580,7 @@ function syncEnemy(e,dt){
   }
   const lift=(L.float?L.float+Math.sin(e.ph*0.6)*3:0)+(e.wboss?giantLift(e,L):0)   // ענק בכניסה: קם מהאדמה או נוחת מהשמיים
     +(e.act==='jump'&&e.am?Math.sin(Math.PI*Math.min(1,1-e.at/e.am))*FOEATK3D.jump:0);   // קפיצה (foeai.js): באוויר בדרך אליך
-  place(a,e.x,e.y,e.wboss?L.foot:L.foot*(e.big||1),yaw,lift);
+  place(a,e.x,e.y,e.wboss?L.foot:L.foot*(e.big||1),yaw,lift);hf3d(a,e);   // נוטה אחורה במכה (hitfeel.js)
   const rage=e.isBoss&&e.rage>0.05?e.rage:0;
   const tk=e.isBoss||e.wboss?-1:foeTele(e),F=FOEATK3D;   // מתכונן למתקפה: מאדים (strike.js מדליק e.flash קטן בהכנה, בשביל הדו-ממד. מכה אמיתית היא 0.09)
   if(tk>=0&&!(e.flash>0.06))setFlash(a,(F.glowK[0]+(F.glowK[1]-F.glowK[0])*tk)*(0.8+0.2*Math.sin(S.t*20)),F.glow);
