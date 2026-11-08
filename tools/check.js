@@ -3877,7 +3877,7 @@ function worldBot(m,L,god){
        MB.u.splice(MB.u.indexOf(h),1)}
      // הלחשים, הריפוי והחזרה לבסיס (moba-spells.js, moba-recall.js): כל אחד מפעיל את האפקט שלו מהספרייה
      if(typeof mbSpellCast==='function'){const h=mbHero('mage',0,false,1),V0=MB.vis&&MB.vis.rev.slice(),Z0=MB.spellZ&&MB.spellZ.slice(),es=JSON.stringify(e.st);e.x=ex0;e.y=ey0;h.x=e.x-150;h.y=e.y;MB.u.push(h);typeof mbVisReveal==='function'&&mbVisReveal(e.x,e.y,120,5,h.team);typeof mbVisNow==='function'&&mbVisNow(true);   /* חשיפה קצרה: תשישות צריכה לראות את האויב גם אם הוא בשיח */
-       for(const id of Object.keys(MBSPELL.list)){mbSpellInit(h);h.spell=id;h.cd.spell=0;Object.assign(h.st,{dash:null,stun:0,taunt:0,root:0});mbSpellCast(h,{x:e.x,y:e.y});h.st.dash=null;h.x=e.x-150;h.y=e.y}
+       for(const id of Object.keys(MBSPELL.list)){mbSpellInit(h);h.spell=id;h.cd.spell=0;Object.assign(h.st,{dash:null,stun:0,taunt:0,root:0});if(id==='exhaust'){e.dead=false;e.x=h.x+150;e.y=h.y;typeof mbVisReveal==='function'&&mbVisReveal(e.x,e.y,120,5,h.team);typeof mbVisNow==='function'&&mbVisNow(true)}   /* תשישות: האויב בטווח, חי ונראה, ממש לפני ההטלה (נכשל לפעמים ב-main) */mbSpellCast(h,{x:e.x,y:e.y});h.st.dash=null;h.x=e.x-150;h.y=e.y}
        h.hp=h.max/2;h.cd.heal=0;mbHealCast(h);
        if(typeof mbRecallStart==='function'){h.st.stun=0;mbRecallStart(h);if(h.recall)mbRecallStop(h,false)}
        MB.u.splice(MB.u.indexOf(h),1);if(MB.vis)MB.vis.rev=V0||[];MB.spellZ=Z0;Object.assign(e.st,JSON.parse(es));typeof mbVisNow==='function'&&mbVisNow(true)}   /* בלי שאריות: חשיפה ותשישות היו מפילות את בדיקות הראייה שאחרי */
