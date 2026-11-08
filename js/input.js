@@ -7,7 +7,7 @@ cvs.addEventListener('pointerup',endJoy);cvs.addEventListener('pointercancel',en
 document.addEventListener('touchmove',e=>{if(e.target===cvs)e.preventDefault()},{passive:false});
 $('swap').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();swapWeapon()});
 $('swap').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();swapWeapon()}});
-addEventListener('keydown',e=>{keys[e.code]=true;if((e.code==='KeyQ'||e.code==='Space')&&e.target===document.body){e.preventDefault();swapWeapon()}});
+addEventListener('keydown',e=>{keys[e.code]=true;if((e.code==='KeyQ'||e.code==='Space')&&e.target===document.body){e.preventDefault();if(!(S&&S.mb))swapWeapon()}});
 addEventListener('keyup',e=>{keys[e.code]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;joy=null});
 
