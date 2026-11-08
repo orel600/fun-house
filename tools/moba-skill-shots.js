@@ -1,6 +1,6 @@
 // צילומי הטלה של כל סקיל במשחקי השאול ברגע ההטלה (W2, אוראל 8.11.2026, js/moba-skill-anim.js). הבוט של check.js לא תופס את הרגע, אז כאן מטילים ומצלמים בכוונה.
 // שימוש: node tools/moba-skill-shots.js . <תיקיית פלט> [--less]   (דורש playwright, כמו tools/check.js). לכל ערכה: תקיפה, s1, s2, ult, ובנוסף הלחשים.
-// בסוף נבנים שלושה גרידים (jpg): grid-skills (ערכה בכל שורה: תקיפה, s1, s2), grid-ults (2x2) ו-grid-spells. הצילומים ב-docs/refs/fx-moba-skill-anim*.jpg
+// בסוף נבנים שלושה גרידים (jpg): grid-skills (ערכה בכל שורה: תקיפה, s1, s2), grid-ults (2 בשורה) ו-grid-spells. הצילומים ב-docs/refs/fx-moba-skill-anim*.jpg
 // סקילי-על של השחקן רצים חצי שנייה בהילוך איטי (MBFX.slow), ולכן הזמן שלהם ארוך יותר
 const {chromium}=require('playwright'),path=require('path'),fs=require('fs');
 const repo=process.argv[2],out=process.argv[3],less=process.argv.includes('--less');
@@ -30,9 +30,9 @@ const repo=process.argv[2],out=process.argv[3],less=process.argv.includes('--les
     P.x=h.x;P.y=h.y;S.cam.x=h.x;S.cam.y=h.y;P.weapon=MBKIT[kit].atk.shot?'gun':'sword';
     typeof mbVisNow==='function'&&mbVisNow(true);window.__h=h;window.__e=MB.u.find(u=>u.team===1&&u.k==='hero')};
   // מה לצלם ומתי (שניות אחרי ההטלה): סקיל עם השהיה מצולם כשהוא נוחת
-  const when={atk:0.22,anvil:0.3,taunt:0.25,wall:0.3,cleave:0.22,spin:0.2,rage:0.35,pierce:0.18,net:0.3,rain:1.6,wave:0.3,bubble:0.6,blizzard:1.4};
+  const when={atk:0.22,anvil:0.3,taunt:0.25,wall:0.3,cleave:0.22,spin:0.2,rage:0.35,pierce:0.18,net:0.3,rain:1.6,wave:0.3,bubble:0.6,blizzard:1.4,shadowstep:0.22,vanish:0.3,deathmark:0.35};
   const stats={};
-  for(const kit of ['tank','warrior','hunter','mage']){
+  for(const kit of ['tank','warrior','hunter','mage','assassin']){
     for(const slot of ['atk','s1','s2','ult']){
       await page.evaluate(setup,kit);await page.clock.runFor(34);
       const id=slot==='atk'?'atk':MBKIT_ID(kit,slot);
@@ -59,7 +59,7 @@ const repo=process.argv[2],out=process.argv[3],less=process.argv.includes('--les
     const g=await browser.newPage({viewport:{width:cols*(w+4),height:Math.ceil(files.length/cols)*(Math.round(w*390/844)+4)},deviceScaleFactor:1});
     await g.setContent(html);await g.waitForFunction(()=>[...document.images].every(i=>i.complete));
     await g.screenshot({path:path.join(out,name+sfx+'.jpg'),type:'jpeg',quality:82,fullPage:true});await g.close()};
-  const kits=['tank','warrior','hunter','mage'];
+  const kits=['tank','warrior','hunter','mage','assassin'];   // המתנקש (QUINN, 8.11: לא היה כאן, ARI מצא בסבב 0)
   await grid('grid-skills',kits.flatMap(k=>['atk','s1','s2'].map(sl=>k+'-'+(sl==='atk'?'atk':MBKIT_ID(k,sl)))),3,500);
   await grid('grid-ults',kits.map(k=>k+'-'+MBKIT_ID(k,'ult')),2,700);
   await grid('grid-spells',Object.keys(MBSPELL_LIST).concat(['heal']).map(id=>'spell-'+id),4,400);
@@ -68,5 +68,5 @@ const repo=process.argv[2],out=process.argv[3],less=process.argv.includes('--les
   await browser.close();
 })();
 // שמות הסקילים והלחשים, כדי לא להריץ קוד של המשחק ב-node
-const MBKIT_ID=(kit,slot)=>({tank:{s1:'anvil',s2:'taunt',ult:'wall'},warrior:{s1:'cleave',s2:'spin',ult:'rage'},hunter:{s1:'pierce',s2:'net',ult:'rain'},mage:{s1:'wave',s2:'bubble',ult:'blizzard'}})[kit][slot];
+const MBKIT_ID=(kit,slot)=>({tank:{s1:'anvil',s2:'taunt',ult:'wall'},warrior:{s1:'cleave',s2:'spin',ult:'rage'},hunter:{s1:'pierce',s2:'net',ult:'rain'},mage:{s1:'wave',s2:'bubble',ult:'blizzard'},assassin:{s1:'shadowstep',s2:'vanish',ult:'deathmark'}})[kit][slot];
 const MBSPELL_LIST={dash:1,haste:1,barrier:1,reveal:1,exhaust:1,cleanse:1};
