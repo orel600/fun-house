@@ -42,6 +42,7 @@ const GICO={
   spell:{dash:'lorc/wingfoot',heal:'sbed/health-increase',smite:'lorc/lightning-helix'},
   // ממשק: תג "נעול עד רמה" (moba-icons.js). תמיד, גם בקלאסי
   ui:{lock:'lorc/padlock'},
+  gm:{wood:'lorc/wood-axe',stone:'lorc/mining',plant:'delapouite/herbs-bundle'},   // מומחיות איסוף בחלון הדמות (gmastery.js)
   // כרטיסי עליית רמה בזירה (progression.js, UPS ב-data.js): שדרוג -> אייקון. סקיל חדש (k_*) לוקח מ-sk. צבע: סוג הנזק של הכרטיס (--dt), ובלי: צבע הנדירות
   up:{sdmg:'lorc/sword-wound',srng:'delapouite/sword-brandish',sspd:'lorc/sands-of-time',gdmg:'lorc/supersonic-arrow',grate:'lorc/fast-arrow',gmulti:'lorc/double-shot',gpierce:'lorc/arrow-dunk',
     sfire:'sbed/fire',slight:'lorc/lightning-arc',gice:'lorc/snowflake-2',glight:'lorc/lightning-arc',searth:'lorc/earth-crack',gwater:'lorc/big-wave',

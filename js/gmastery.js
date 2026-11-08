@@ -6,8 +6,8 @@
    רק בעולם הפתוח (S.wd): הזירה של אוראל לא משתנה.
    חיבורים: gmGain מ-gDown, gmHit מ-gHit (gather.js), gmMagnet מ-dropsUpdate (drops.js), gmHtml מ-gStatPanel (gearui.js) */
 const GMASTERY={
-  // המשפחות: אילו צורות (shape ב-NODES.kinds) שייכות לכל אחת, ואייקון
-  fams:{wood:{shapes:['tree'],icon:'🪓'},stone:{shapes:['rock','vein','crystal'],icon:'⛏️'},plant:{shapes:['bush','reed'],icon:'🌿'}},
+  // המשפחות: אילו צורות (shape ב-NODES.kinds) שייכות לכל אחת, וצבע הצללית (האייקון עצמו ב-GICO.gm, gicons.js)
+  fams:{wood:{shapes:['tree'],col:'#C89B5E'},stone:{shapes:['rock','vein','crystal'],col:'#A9AFBF'},plant:{shapes:['bush','reed'],col:'#7FC86A'}},
   at:[0,12,40,100,200],   // כמה מקורות שבורים צריך לכל דרגה: 1 מההתחלה, 5 אחרי 200
   magnet:{from:2,k:1.8},  // מדרגה 2: השלל העיקרי של המשפחה נמשך אליך מפי k מרחק (DROPS.magnet)
   near:{from:3,r:70,n:{3:1,5:2}},   // מדרגה 3: עוד מקור צמוד (עד r מהקצה) נפגע מאותה מכה. n: כמה, לפי הדרגה
@@ -28,7 +28,7 @@ function gmGain(n){
   const t0=gmTier(f),s=gmSave();s[f]=(s[f]||0)+1;GMASTERY.stat.gain++;
   const t=gmTier(f);if(t<=t0)return;
   GMASTERY.stat.up++;saveNow();
-  celebrate(P.x,P.y-20,'gear',GMASTERY.fams[f].icon);
+  celebrate(P.x,P.y-20,'gear','+1');
   banner(T('gm.up',T('gm.'+f),t)+' · '+T('gm.u'+t),C.gold);
 }
 // המשפחה של משאב: המשאב הראשון בטבלת השלל של כל מקור (עץ, אבן, נחושת, עשב...). נבנה פעם אחת
@@ -58,6 +58,6 @@ const gmGlint=(n,i)=>gmTierOf(n)>=GMASTERY.glint.from&&i%GMASTERY.glint.every===
 function gmHtml(){
   const s=gmSave(),A=GMASTERY.at;
   const fam=Object.keys(GMASTERY.fams).map(f=>{const t=gmTier(f),p=s[f]||0,tip=T('gm.'+f)+': '+T('gm.lv',t)+(t<A.length?' · '+p+'/'+A[t]:' · '+T('gm.max'));
-    return '<i title="'+tip+'" aria-label="'+tip+'">'+GMASTERY.fams[f].icon+'<bdi>'+t+'</bdi></i>'}).join(' ');
-  return '<ul class="gsrows gmrow"><li><span class="gsi" aria-hidden="true">🧺</span><span class="gsn">'+T('gm.title')+'</span><b>'+fam+'</b></li></ul>';
+    return '<i title="'+tip+'" aria-label="'+tip+'">'+gIco(GICO.gm[f],'gmi',GMASTERY.fams[f].col)+'<bdi>'+t+'</bdi></i>'}).join(' ');
+  return '<ul class="gsrows gmrow"><li><span class="gsi" aria-hidden="true">'+gIco(GICO.gm.plant,'gmi',C.gold)+'</span><span class="gsn">'+T('gm.title')+'</span><b>'+fam+'</b></li></ul>';
 }
