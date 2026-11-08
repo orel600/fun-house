@@ -370,6 +370,7 @@ h1{font-size:46px} h2{font-size:30px}
 .gtile[aria-pressed="true"]{outline:3px solid var(--gold);outline-offset:1px}
 .gtile.pop{animation:gpop .5s ease-out}
 @keyframes gpop{40%{transform:scale(1.3);box-shadow:0 0 18px var(--gold)}}
+.whud .tbar .res.gpulse{animation:gpop .45s ease-out}   /* המונה קופץ כשנאסף שלל ממקור משאבים (gather.js) */
 /* הפס העליון בנפחייה: שורה אחת, רק מה שהפעולה צריכה, והשאר מאחורי "+N" (aging.js, forgeBar) */
 .fres{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:4px;scrollbar-width:none}
 .fres .res{flex:none;padding:2px 8px;font-size:13px}

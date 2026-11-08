@@ -77,6 +77,7 @@ function mbItDie(t,src){
 }
 function mbItTick(M,dt){
   for(const u of M.u){if(u.k!=='hero')continue;const g=MBITEM.gold.tick*dt;u.gold=(u.gold||0)+g;u.earn=(u.earn||0)+g;
+    if(u.bot&&u.team!==MB.me.team&&(u.it||[]).length>=(mbFoe().items??Infinity))continue;   // בוט של האויב עם מספיק חפצים (ב"קל" 3, גם מגפיים): לא קונה עוד (8.11, DANA, moba-difficulty)
     if(u.bot){const ev=MBITEM.botEvery*(u.team?mbFoe().buy:1);u.buyT=(u.buyT??ev*Math.random())-dt;
       if(u.buyT<=0||(u.dead||mbDist(u,u.home)<300)&&!(u.team&&mbFoe().buy>1)){if(u.buyT<=0)u.buyT=ev;const n=mbNext(u);if(n)mbBuy(u,n)}}}
 }
