@@ -152,6 +152,7 @@ function render(){
   ctx.stroke()}
   if(!S.wd&&!S.vil)wxDraw('mid');   // מזג אוויר בדו-ממד בזירה: מיד אחרי הרצפה, לפני מוקשים, גלים, דמויות, אזהרות ואפקטים (weather.js)
   mazeDraw(ox,oy);   // קירות זירת המבוך (maze.js)
+  if(typeof awxDraw==='function')awxDraw();   // weather in the arena and boss fights: scenes and lightning for weather.js (arena-weather.js)
   // mines & waves
   for(const mn of mines){const k=mn.t/1.3;ctx.strokeStyle='rgba(239,78,87,'+(0.5-k*0.3)+')';ctx.lineWidth=2;ctx.setLineDash([6,6]);ctx.beginPath();ctx.arc(mn.x,mn.y,58,0,7);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle=Math.floor(mn.t*(k<.4?16:6))%2?C.blood:C.ink;ctx.strokeStyle=C.blood;ctx.beginPath();ctx.arc(mn.x,mn.y,7,0,7);ctx.fill();ctx.stroke()}

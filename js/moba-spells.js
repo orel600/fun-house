@@ -133,13 +133,15 @@ function mbSpellBtns(u){
 }
 // אייקון מצויר, ואם לא נטען: SVG באותו סגנון של הסקילים
 function mbSpellPic(pic,id){
+  const g=typeof mbGi==='function'&&mbGi('sp_'+id);if(g)return g;   // הסגנון האחיד (moba-icons.js)
   return '<img class="mbpic" src="icons/ui/skills/'+pic+'.png" alt="" draggable="false" onerror="this.remove()">'+mbSvg(MB_SVG['sp_'+id]?'sp_'+id:'heal');
 }
 function mbSpellHud(){
   const u=mbMe();if(!u)return;
   for(const k of ['heal','spell']){const b=document.querySelector('#mbSk [data-sk="'+k+'"]');if(!b)continue;
     const cd=k==='heal'?MBSPELL.heal.cd:MBSPELL.list[u.spell].cd;b.style.setProperty('--cd',Math.max(0,u.cd[k]||0)/cd);
-    const off=u.dead||k==='heal'&&u.hp>=u.max;if(b.classList.contains('off')!==off)b.classList.toggle('off',off)}
+    const off=u.dead||k==='heal'&&u.hp>=u.max;if(b.classList.contains('off')!==off)b.classList.toggle('off',off);
+    const rd=!off&&(u.cd[k]||0)<=0;if(b.classList.contains('ready')!==rd)b.classList.toggle('ready',rd)}   // מוכן: זוהר (style.css, כמו .skb בזירה)
 }
 // לחיצה ארוכה על אחד הכפתורים (moba-aim.js): בועה עם השם וההסבר מעל הכפתור, עד שעוזבים
 function mbSpellTip(slot,b){
