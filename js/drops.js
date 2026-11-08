@@ -40,10 +40,10 @@ function dropSpawn(r,n,x,y){
   const p=placeClamp({x,y});x=p.x;y=p.y;   // אויב שמת בקצה: השלל נוחת בתוך המקום (placeBox ב-world.js)
   const L=drops(),near=!dropGear(r)&&L.find(d=>d.r===r&&!d.fly&&Math.hypot(d.x-x,d.y-y)<DROPS.stack);
   dropStats().spawned+=n;
-  if(near){near.n+=n;near.vz=DROPS.pop[0]*0.6;return near}
+  if(near){near.n+=n;near.vz=DROPS.pop[0]*0.6;gSpawn(near);return near}
   if(L.length>=DROPS.max)dropTake(L[0],true);
   const a=rand(0,6.28),s=rand(...DROPS.spread),d={r,n,x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,z:0,vz:rand(...DROPS.pop),t:0,ph:rand(0,6),fly:dropGear(r)};   // ציוד נמשך לשחקן מכל מרחק, כדי שלא יישאר מאחור
-  L.push(d);return d;
+  L.push(d);gSpawn(d);return d;   // gSpawn: שלל של מקור משאבים בעולם עף ישר לגיבור (gather.js)
 }
 function dropTake(d,auto){
   d.got=true;const st=dropStats();
@@ -52,6 +52,7 @@ function dropTake(d,auto){
     if(feedOn())feedGear(d.r);else floatText(P.x,P.y-40,gIcon(d.r)+' '+gName(d.r),dropTier(d.r).col,16);const all=drops(),i=all.indexOf(d);if(i>=0)all.splice(i,1);return}
   const L=runLoot();L[d.r]=(L[d.r]||0)+d.n;
   if(auto)st.auto+=d.n;else{st.picked+=d.n;sfx('coin');if(feedOn())feedRes(d.r,d.n);else floatText(P.x,P.y-40,'+'+d.n+' '+resIcon(d.r),(dropTier(d.r)||{}).col||C.gold,16)}   // בעולם ובכפר: בפיד בצד (feed.js), לא על הדמות
+  gTake(d);   // "+N" מעל הגיבור והמונה למעלה קופץ (gather.js)
   const all=drops(),i=all.indexOf(d);if(i>=0)all.splice(i,1);
 }
 // כל פריים, בזירה ובעולם: קפיצה ונחיתה, ומשיכה לשחקן כשקרובים
