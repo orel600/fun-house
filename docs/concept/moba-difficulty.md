@@ -75,8 +75,8 @@
 ## הנחיה ל-BOB (באנגלית, להעתקה)
 
 ```
-Task: MOBA difficulty, gang cap + easy buy speed + fair tiebreak.
-Concept: docs/concept/moba-difficulty.md (DANA, approved by Orel via MAX). Data from QUINN's 5 sim rounds.
+Task: MOBA difficulty, gang cap + easy shopping cap + fair tiebreak.
+Concept: docs/concept/moba-difficulty.md (DANA; build only after MAX confirms Orel approved). Data from QUINN's 7 sim rounds.
 Branch: fix/moba-difficulty from fresh main (git fetch && git merge origin/main), in your own worktree. Draft PR.
 
 1) GANG CAP (enemy brain only, js/moba-bot.js)
