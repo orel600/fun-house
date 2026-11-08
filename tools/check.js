@@ -4493,8 +4493,15 @@ function worldBot(m,L,god){
       check(tl.length>=2&&!low.length&&A.hits>0&&A.koBoss>0&&A.win>0,'אפקטים בבוס: אזהרות '+(tl.map(([k,v])=>k+' '+v.n+'× '+v.warn.toFixed(2)+'ש\'').join(', ')||'אף אחת')+
         (low.length?' (פחות משנייה: '+low.map(([k])=>k).join(', ')+')':'')+' · פגיעות '+(A.hits||0)+' (כבדות '+(A.heavy||0)+', קריטי '+(A.crits||0)+') · הריגות '+(A.ko||0)+' · ko_boss '+(A.koBoss||0)+' · ניצחון '+(A.win||0))}
   }
-  const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null)&&!['bell','creak'].includes(id));   // bell, creak: נבדקים בבדיקת פעמון הערפל, שרצה אחרי הצילום של הצלילים
+  const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null)&&!['bell','creak'].includes(id)&&!id.startsWith('cast_'));   // cast_*: הבוט מטיל רק חלק מסוגי הנזק, ונבדק למטה שלפחות אחד נשמע   // bell, creak: נבדקים בבדיקת פעמון הערפל, שרצה אחרי הצילום של הצלילים
   check(au.unlocked&&!quiet.length,'צלילים: '+au.ids.map(id=>id+' '+(au.count[id]||0)).join(', ')+(au.unlocked?'':' · לא נפתחו בנגיעה')+(quiet.length?' · לא נשמעו: '+quiet.join(', '):''));
+  // סבב צלילים 1 (audio.js, docs/concept/sound.md): (א) כל sfx('...') בקוד קיים ב-SOUNDS (כך sfx('ui') היה שקט ב-64 מקומות),
+  // (ב) בריצה בזירה נשמע לפחות צליל הטלה אחד לפי סוג נזק, ו-ui נשמע
+  {const ids=new Set();for(const f of fs.readdirSync(path.resolve(__dirname,'..','js')).filter(f=>f.endsWith('.js')&&f!=='sounds-data.js')){
+     const src=fs.readFileSync(path.resolve(__dirname,'..','js',f),'utf8');for(const m of src.matchAll(/\bsfx\(([^)]*)\)/g))for(const q of m[1].matchAll(/(?<!==)'([A-Za-z_]\w*)'/g))ids.add(q[1])}   // לא מחרוזת אחרי == (השוואה, לא שם צליל)
+   const miss=[...ids].filter(id=>!au.ids.includes(id)),casts=au.ids.filter(id=>id.startsWith('cast_')&&au.count[id]>0);
+   check(!miss.length,'כל sfx בקוד קיים ב-SOUNDS: '+ids.size+' שמות'+(miss.length?' · חסרים: '+miss.join(', '):''));
+   check(casts.length>0&&au.count.ui>0,'צלילי הטלה ו-ui בזירה: '+(casts.map(id=>id+' '+au.count[id]).join(', ')||'אף צליל הטלה')+' · ui '+(au.count.ui||0))}
   check(!au.errors.length&&au.loaded===au.ids.length,'קבצי צליל: נטענו '+au.loaded+' מתוך '+au.ids.length+(au.errors.length?' · שגיאות: '+[...new Set(au.errors)].join(', '):''));
   check(au.open&&au.mute&&au.vSaved&&au.closed,'חלון צלילים: '+(au.open?'נפתח מהרמקול':'לא נפתח')+(au.mute?', השתקה עובדת ונשמרת':', השתקה לא עובדת')+
     (au.vSaved?', עוצמת קרב נשמרת':', העוצמה לא נשמרה')+(au.closed?', נסגר':', לא נסגר'));

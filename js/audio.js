@@ -17,7 +17,15 @@ const SOUNDS={
   tap:      {file:'tap.mp3',      vol:0.35, pitch:0,    max:1, gap:0.08, grp:'fx'},     // לחיצה על כפתור
   celebrate:{file:'celebrate.mp3',vol:0.6,  pitch:0,    max:2, gap:0.3,  grp:'fx'},     // שדרוג, שלל נדיר, כל רגע של "יש!"
   bell:     {file:'bell.mp3',     vol:0.6,  pitch:0,    max:1, gap:1,    grp:'fx'},     // פעמון הערפל באגם (lake-bell.js)
-  creak:    {file:'creak.mp3',    vol:0.2,  pitch:0.2,  max:1, gap:0.5,  grp:'fight'}   // גשר צף חורק כשדורכים עליו (lake-bell.js)
+  creak:    {file:'creak.mp3',    vol:0.2,  pitch:0.2,  max:1, gap:0.5,  grp:'fight'},  // גשר צף חורק כשדורכים עליו (lake-bell.js)
+  // סבב צלילים 1 (8.11, docs/concept/sound.md, הבחירות של אוראל דרך MAX): התראה רכה, וצליל הטלה לכל סוג נזק. החלפה = קובץ אחר באותו שם
+  ui:       {file:'ui.mp3',       vol:0.3,  pitch:0.05, max:1, gap:0.12, grp:'fx'},     // התראה רכה: ספירה לאחור, גל נוקה, כפתורים בחלונות (נקרא ב-64 מקומות)
+  cast_physical: {file:'cast_physical.mp3', vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'},   // הטלת סקיל פיזי: חבטה יבשה
+  cast_fire:     {file:'cast_fire.mp3',     vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'},   // אש: וושש והתלקחות
+  cast_water:    {file:'cast_water.mp3',    vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'},   // מים: התזה
+  cast_ice:      {file:'cast_ice.mp3',      vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'},   // קרח: צלצול גבישי
+  cast_lightning:{file:'cast_lightning.mp3',vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'},   // ברק: זמזום חד
+  cast_earth:    {file:'cast_earth.mp3',    vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'}    // אדמה: רעם נמוך
 };
 /* הערוצים והמחוונים בחלון הצלילים (נפתח מכפתור הרמקול). def: העוצמה ההתחלתית. gap: לכל הערוץ יחד, כדי שפגיעה, ירייה ומטבע באותו רגע לא יישמעו כרעש אחד.
    duck: כשצליל fx מתנגן, צלילי הקרב יורדים לחלק הזה לכמה שניות (duckT), כדי שרגע גדול יישמע. העוצמות נשמרות בטלפון (key) */
@@ -74,6 +82,11 @@ function sfx(id,k=1){   // k: עוצמה יחסית (מכה חזקה, juice.js),
   if(s.grp==='fx'&&id!=='tap'&&AUDIO.gain.fight){const f=AUDIO.gain.fight.gain,t=c.currentTime,v=AUDIO.vol.fight;
     f.cancelScheduledValues(t);f.setValueAtTime(v*SOUND_MIX.duck,t);f.linearRampToValueAtTime(v,t+SOUND_MIX.duckT)}
 }
+// הטלת סקיל: הצליל של סוג הנזק (cast_fire...), ובלי קובץ לסוג הזה 'tap'. k מעל 1: נמוך וחזק יותר (קומבו, סקיל-על)
+function sfxCast(dt,k=1){const id='cast_'+dt;sfx(SOUNDS[id]?id:'tap',k)}
+// מילת קומבו: הצליל של סוג הנזק שסוגר אותו, נמוך וחזק (SFX_COMBO.k)
+const SFX_COMBO={shock:'lightning',freeze:'ice',melt:'fire',stun:'earth',k:1.4};
+function sfxCombo(kind){const dt=SFX_COMBO[kind];if(dt)sfxCast(dt,SFX_COMBO.k)}
 // עוצמה של ערוץ (0 עד 1), מהחלון. נשמרת בטלפון מיד
 function setVol(k,v){
   if(!(k in SOUND_MIX.ch))return;AUDIO.vol[k]=Math.max(0,Math.min(1,+v||0));

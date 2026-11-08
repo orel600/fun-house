@@ -65,7 +65,7 @@ function skillUse(id){
     k.fx.push({ring:1,x:P.x,y:P.y,r:D.r,t:0,max:0.35*themeK(),col});
     for(const e of enemies){if(e.dead)continue;const dx=e.x-P.x,dy=e.y-P.y;if(Math.hypot(dx,dy)-e.r>D.r)continue;damage(e,base,'skill',Math.atan2(dy,dx),D.dt)}
   }
-  k.cd[i]=D.cd;k.used++;sfx('shoot');S.shake=Math.max(S.shake,3);
+  k.cd[i]=D.cd;k.used++;sfxCast(D.dt);S.shake=Math.max(S.shake,3);   // הצליל של סוג הנזק (audio.js)
   return true;
 }
 // ברק מהשחקן יוצא מהנשק שביד (AGE_FX.hand, מתעדכן בציור בדו-ממד ובתלת-ממד), ונשאר צמוד אליו גם כשזזים (אוראל, 1.11.2026)
@@ -88,13 +88,13 @@ function comboHit(e,d,base,w,t,ang,chained){
     e.frozen=0;
     if(e.isBoss){if(S.t<(e.stunReady||0))return;e.stun=K.stun.boss;e.stunReady=S.t+K.stun.bossCd}
     else e.stun=K.stun.t;
-    comboShow(e,'stun');sfx('celebrate');
+    comboShow(e,'stun');
   }
 }
 // המילה הגדולה מעל האויב, וספירה (בשביל הבוט)
 function comboShow(e,kind){
   const k=S.sk;if(!k)return;k.combos[kind]=(k.combos[kind]||0)+1;
-  if(S.t-(k.last[kind]??-9)<SKILLS.combo.gap)return;k.last[kind]=S.t;
+  if(S.t-(k.last[kind]??-9)<SKILLS.combo.gap)return;k.last[kind]=S.t;sfxCombo(kind);   // צליל סוג הנזק, נמוך וחזק (audio.js)
   floatText(e.x,e.y-e.r-30,T('combo.'+kind),SKILLS.combo[kind].col,20,false,true);
 }
 

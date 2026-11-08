@@ -40,9 +40,15 @@ Only sources whose files are actually in this repository are listed as "in use".
 
 ### Kenney: sound effects
 
-- **What:** 11 of the 13 files in `sounds/` (embedded as `js/sounds-data.js`), converted to mono 22 kHz MP3 and trimmed. The per-file mapping to the original Kenney packs (Impact Sounds, Interface Sounds, RPG Audio, Digital Audio) is in [sounds/README.md](sounds/README.md). `bell.mp3` and `creak.mp3` were synthesized in code and are ours.
+- **What:** 13 of the 20 files in `sounds/` (embedded as `js/sounds-data.js`), converted to mono 22 kHz MP3 and trimmed. The per-file mapping to the original Kenney packs (Impact Sounds, Interface Sounds, RPG Audio, Digital Audio) is in [sounds/README.md](sounds/README.md). `bell.mp3` and `creak.mp3` were synthesized in code and are ours.
 - **License:** [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
 - **Source:** https://kenney.nl
+
+### lentikula and CoMiGo: spell sounds
+
+- **What:** `cast_fire.mp3`, `cast_water.mp3`, `cast_ice.mp3` (lentikula, Basic Spell Impacts), `cast_earth.mp3` (lentikula, Druid Spell Impacts) and `cast_lightning.mp3` (CoMiGo, Bleeps and Bloops: ElectroZap), via the OpenGameArt collection "150 combat sound effects". Converted to MP3 and trimmed. Per-file mapping in [sounds/README.md](sounds/README.md).
+- **License:** [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
+- **Source:** https://opengameart.org
 
 ### Fonts: Heebo and Secular One
 
