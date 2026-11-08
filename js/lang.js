@@ -270,6 +270,7 @@ const TEXT={
   'mb.tower1':{he:'הרסת מגדל!',en:'Tower destroyed!'},
   'mb.ultReady':{he:'סקיל-העל מוכן!',en:'Ultimate ready!'},
   'mb.cancel':{he:'ביטול',en:'Cancel'},
+  'mb.atk':{en:'Attack: tap to hit, drag onto an enemy to lock it'},   // moba-atk.js: כפתור התקיפה
   // ריפוי, לחשים ומסך הבנייה (js/moba-spells.js)
   'mb.heal':{he:'ריפוי',en:'Heal'},'mb.healD':{he:'מרפא 15% מהחיים שלך. לכל גיבור, בנוסף ללחש.',en:'Restores 15% of your health. Every hero has it, on top of the spell.'},
   'mb.spCd':{he:n=>'טעינה '+n+' שנ\'',en:n=>n+'s cooldown'},

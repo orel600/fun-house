@@ -1708,7 +1708,8 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbshopin{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px}
 .mbcats{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;align-content:start}
 .mbcat h5{margin:0 0 3px;font:800 11px var(--body);color:var(--dim)}
-.mbcat>div{display:flex;gap:6px}
+.mbcat{min-width:0}   /* טור צר: החפצים יורדים שורה, ולא נשפכים על הפרטים (844x390) */
+.mbcat>div{display:flex;flex-wrap:wrap;gap:6px}
 .mbic{position:relative;width:54px;height:54px;flex:none;border-radius:10px;border:0;padding:0;cursor:pointer;display:grid;place-items:center;background:linear-gradient(var(--slate-hi),var(--slate));
   box-shadow:var(--bevel),0 0 0 2px var(--brass-lo),0 0 0 3px var(--wood)}
 .mbic img{width:42px;height:42px;object-fit:contain;filter:grayscale(.45) brightness(.8)}
@@ -1784,6 +1785,15 @@ body:has(#ovMoba:not([hidden])) #muteBtn{display:none}
 /* שמירה עם קשת וחרב: הסקילים בקשת (שורות .swap למעלה), ולכן גם הריפוי והלחש זזים */
 .swap:not([hidden])~.skills.mbsk .mbsp-spell{--x:214px;--y:-2px}
 .swap:not([hidden])~.skills.mbsk .mbsp-heal{--x:174px;--y:98px}
+/* כפתור התקיפה (moba-atk.js, כמו ב-MLBB): הכי גדול, בפינה. הסקילים בקשת סביבו: 1 משמאל, 2 באלכסון, העל מעל, והלחש והריפוי בחוץ */
+.skills.mbsk .mbatk,.swap:not([hidden])~.skills.mbsk .mbatk{--w:92px;--x:0px;--y:0px;background:radial-gradient(circle at 50% 35%,#5A4A36,#241A12);border-color:var(--brass)}
+.mbatk .mbski{width:48px;height:48px;color:var(--dt)}
+.mbatk.tap{animation:mbatktap .18s}@keyframes mbatktap{50%{transform:scale(.9)}}
+.skills.mbsk .skb:nth-child(1),.swap:not([hidden])~.skills.mbsk .skb:nth-child(1){--w:66px;--x:112px;--y:-4px}
+.skills.mbsk .skb:nth-child(2),.swap:not([hidden])~.skills.mbsk .skb:nth-child(2){--w:62px;--x:92px;--y:88px}
+.skills.mbsk .skb:nth-child(3),.swap:not([hidden])~.skills.mbsk .skb:nth-child(3){--w:70px;--x:0px;--y:114px}
+.skills.mbsk .mbsp-spell,.swap:not([hidden])~.skills.mbsk .mbsp-spell{--x:196px;--y:-4px}
+.skills.mbsk .mbsp-heal,.swap:not([hidden])~.skills.mbsk .mbsp-heal{--x:180px;--y:96px}
 .mbsp.off .mbpic,.mbsp.off svg{opacity:.4;filter:grayscale(.6)}
 .mbsps .mbgi,.mbsph .mbgi{width:30px;height:30px}.mbspi .mbgi{width:40px;height:40px}
 .mbsptip{position:fixed;max-width:min(260px,60vw);padding:7px 10px;border-radius:10px;background:linear-gradient(#3A2716f2,#22160Cf2);box-shadow:var(--bevel),0 0 0 2px var(--wood),0 0 0 3px var(--brass-lo),0 6px 14px #000a;

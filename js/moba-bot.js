@@ -90,7 +90,7 @@ function mbThink(u){
   const mins=MB.u.filter(o=>o.k==='minion'&&o.team===u.team&&!o.dead);
   if(mins.length){const front=mins.reduce((a,b)=>(b.x-a.x)*dir>0?b:a),gap=K.front?20:A.shot?150:60;
     B.goal={x:front.x-dir*gap,y:front.y*0.4+u.home.y*0.6}}
-  else{const t=mine.filter(b=>b.k==='tower').sort((a,b)=>Math.abs(a.x)-Math.abs(b.x))[0]||mine[0];B.goal={x:t.x+dir*70,y:u.home.y}}
+  else{const t=mine.filter(b=>b.k==='tower').sort((a,b)=>Math.abs(a.x)-Math.abs(b.x))[0]||mine[0];if(!t)return;B.goal={x:t.x+dir*70,y:u.home.y}}   // בלי חיילים ובלי מגדל או בסיס (הפריים שהבסיס נופל): אין לאן לדחוף
   // מכה אחרונה בחייל חלש בטווח: ה-XP הולך לכולם בסביבה, אבל ככה הגל זז מהר יותר
   const low=MB.u.find(o=>o.k==='minion'&&o.team!==u.team&&!o.dead&&mbDist(o,u)<A.range+40&&o.hp<A.dmg*mbK(u)*1.2);
   if(low)B.focus=low;
