@@ -638,6 +638,8 @@ const TEXT={
   'shadowGroup':{he:'צללים',en:'Shadows'},'shadow.on':{he:'דלוק',en:'On'},'shadow.off':{he:'כבוי',en:'Off'},   // look-hd.js
   'vfxqGroup':{he:'איכות אפקטים',en:'Effects quality'},'vfxq.hi':{he:'גבוהה',en:'High'},'vfxq.lo':{he:'נמוכה',en:'Low'},   // vfx3d.js
   'fxGroup':{he:'אפקטים',en:'Effects'},'fx.full':{he:'מלא',en:'Full'},'fx.less':{he:'פחות',en:'Fewer'},
+  'calmGroup':{en:'Motion'},'calm.off':{en:'Full'},'calm.on':{en:'Reduced'},   // arena-feel.js: הפחתת תנועה (רעידה, עצירה, הילוך איטי)
+  'feel.rampage':{en:'Rampage!'},   // arena-feel.js: 3 הריגות ברצף
   'w.home':{he:'לכפר',en:'To the village'},
   'w.homeInfo':{he:'חוזרים הביתה. שם אפשר להכניס שלל למחסן, ושם הוא בטוח.',en:'Head home. Put your loot in the stash there, and it is safe.'},
   'w.goHome':{he:'חזרה לכפר',en:'Back to the village'},

@@ -1359,7 +1359,7 @@ function worldBot(m,L,god){
       // בזירה (arena-juice.js): juice.js כבוי (בלי המספרים שלו), ומכה של הנשק מקבלת הבזק וניצוצות קטנים. חיית מחמד וברק שקפץ לא.
       // 250 אויבים: לא יותר מ-perFrame אפקטים בפריים, ניצוצות והבזקים מתחת לתקרה, בלי עצירה. פוף רק לאלוף. "פחות אפקטים" מכבה
       JUICE.where.arena=false;const A=JUICE.arena,a0=A.on,fl0=SAVE.fxLess;A.on=true;SAVE.fxLess=false;
-      const n0=J.n.length;J.fl=[];J.p=[];J.poofs=[];AJ.f=-1;e.flash=0;damage(e,10,'sword',0,'fire');r.arenaOff=J.n.length===n0;r.arOn=J.fl.length===1&&e.flash>=JUICE.flash-1e-6&&J.p.length>0;
+      const n0=J.n.length;J.fl=[];J.p=[];J.poofs=[];AJ.f=-1;e.flash=0;damage(e,10,'sword',0,'fire');r.arenaOff=J.n.length===n0;r.arOn=J.fl.length===1&&e.flash>=(A.flash??JUICE.flash)-1e-6&&J.p.length>0;   // A.flash: 60ms מ-arena-feel.js (#508)
       AJ.f=-1;const fx0=AJ.stat.fx;damage(e,10,'pet',0,'fire');damage(e,10,'sword',0,'fire',true);r.arSrc=AJ.stat.fx===fx0;
       const many=[];for(let i=0;i<250;i++){const o=addEnemy('grunt',P.x+rand(-300,300),P.y+rand(-150,150));o.hp=o.max=1e9;o.elite=false;many.push(o)}
       AJ.f=-1;S.hitstop=0;const fx1=AJ.stat.fx;HITFX.crit=1;for(const o of many)damage(o,1,'gun',0,'fire');HITFX.crit=0;r.arN=AJ.stat.fx-fx1;r.arMax=A.perFrame;
@@ -2083,6 +2083,28 @@ function worldBot(m,L,god){
     }catch(err){o.err=String(err&&err.stack||err)}
     enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(!mz3.err&&(mz3.on?mz3.n>0&&mz3.vis&&mz3.op>0.9&&!mz3.canvas&&mz3.off:mz3.draw===true),'קירות הזירה בתלת-ממד: '+(mz3.err||(mz3.on?mz3.n+' קירות בסצנה'+(mz3.vis?'':' (מוסתרים!)')+', שקיפות '+(mz3.op||0).toFixed(2)+(mz3.canvas?', גם בקנבס!':', לא בקנבס')+(mz3.off?', נעלמים מחוץ לזירה':', נשארים מחוץ לזירה!'):'בדו-ממד: הקנבס מצייר ('+mz3.draw+')')));
+  // תחושת קרב בזירה (arena-feel.js, #502): עצירה במכה בלי הצטברות ועם תקרה, הפחתת תנועה מכבה, חוצץ לחיצה, Rampage מ-3 ברצף,
+  // תנועת הטלה (P.skCast), הבזק קצר, נטייה אחורה של hitfeel בזירה, ובעולם כלום. בלי rand: לא מזיז את ה-seed
+  const afl=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},calm=SAVE.calm,clk=window.afClock;let fake=1000;
+    try{window.afClock=()=>fake;startRun();S.mode='play';enemies=[];AF.last=-9;AF.win=0;AF.used=0;S.hitstop=0;
+      const e=addEnemy('grunt',P.x+30,P.y);e.hp=e.max=1e9;AJ.src={w:'sword',ch:false};
+      juiceHit(e,10,1,false,'physical',0);o.hit=Math.round(S.hitstop*1000);o.flash=Math.round(e.flash*1000);o.lean=e.hfT>0;
+      juiceHit(e,10,1,true,'physical',0);o.stack=Math.round(S.hitstop*1000);   // עצירה פעילה: לא מתחלפת ולא מצטברת
+      fake+=2;let n=0;for(let i=0;i<19;i++){S.hitstop=0;fake+=0.05;if(afStop(0.035))n++}o.perSec=n;   // שנייה אחת בצעדים של 0.05: המרווח (0.22) נותן לכל היותר 4
+      fake+=2;afStop(0.035);S.hitstop=0;fake+=0.3;AF.used=ARFEEL.stop.budget-0.01;o.budget=!afStop(0.035);   // התקרה לשנייה: אין מקום
+      S.hitstop=0;SAVE.calm=true;fake+=2;o.calm=!afStop(0.1)&&S.hitstop===0;SAVE.calm=calm;
+      // חוצץ: לחיצה שנשארו לה 0.1 שניות נשמרת, ויוצאת כשהסקיל מוכן
+      const k=S.sk,id=k.ids[0],i=0;k.cd[i]=0.1;fake+=2;const u0=k.used;o.press=skillUse(id);o.buf=!!AF.buf;k.cd[i]=0;afTick();o.fired=k.used===u0+1&&!AF.buf;o.cast=!!P.skCast&&P.skCast.k===ARFEEL.cast[id];
+      // Rampage: הריגה שלישית ברצף
+      S.st=null;const r0=AF.stat.rampage;for(let j=0;j<3;j++)streakKill();o.ramp=AF.stat.rampage===r0+1;for(let j=0;j<3;j++)streakKill();o.rampOnce=AF.stat.rampage===r0+1;
+      AJ.src=null;enemies=[];
+      // בעולם: כלום
+      enterWorld('home');S.hitstop=0;const ew=addEnemy('grunt',P.x+30,P.y);o.world=!afArena()&&S.hitstop===0;
+    }catch(err){o.err=String(err&&err.stack||err)}
+    window.afClock=clk;enemies=[];S.hitstop=0;S.slow=0;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!afl.err&&afl.hit===35&&afl.flash===60&&afl.lean&&afl.stack===35&&afl.perSec>0&&afl.perSec<=4&&afl.budget&&afl.calm&&afl.press===false&&afl.buf&&afl.fired&&afl.cast&&afl.ramp&&afl.rampOnce&&afl.world,
+    'תחושת קרב בזירה: '+(afl.err||'עצירה '+afl.hit+'ms, הבזק '+afl.flash+'ms, נטייה אחורה '+(afl.lean?'✓':'✗')+', בלי הצטברות ('+afl.stack+'ms), '+afl.perSec+' עצירות בשנייה (מרווח), תקרה לשנייה '+(afl.budget?'✓':'✗')+', הפחתת תנועה '+(afl.calm?'מכבה':'לא מכבה!')+
+      ', חוצץ '+(afl.buf&&afl.fired?'✓':'✗')+', תנועת הטלה '+(afl.cast?'✓':'✗')+', Rampage '+(afl.ramp?(afl.rampOnce?'פעם אחת לרצף':'חוזר!'):'✗')+', בעולם '+(afl.world?'כלום':'משהו!')));
   // אויבים ישנים (arenaZz ב-arenas.js): רחוק מ-wake.r הולכים לאט ומכשף לא יורה. מתעוררים מקרבה, ממכה, מסוף הגל ומהבוס. קפיצה של arena-load לא מעירה, והישנים נספרים בגל
   const zz=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},at=window.attack,r0=ARENAS.gauntlet.wake.r,lc0=ARENAS.gauntlet.lastCall;
     try{window.attack=()=>{};startRun();const A=ARENAS.gauntlet,Z=A.wake,R=Z.r*Math.max(W,H),dt=1/30;waveStart(0);const w=S.wv;w.q=[];enemies=[];eb.length=0;P.x=P.y=0;
