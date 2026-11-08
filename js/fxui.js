@@ -58,13 +58,13 @@ function fxuiLayer(lo){
 function fxDom(id,x,y,o={}){
   if(!o.anchor&&!o.tap&&fxuiWin())return null;   // חלון פתוח: רק מה שצמוד לאלמנט או לנגיעה
   const D=typeof FXDATA!=='undefined'&&FXDATA[id];if(!D||FXUI.never.includes(id)||typeof FXLIB!=='undefined'&&FXLIB.bad[id])return null;
-  if(!o.anchor&&!o.tap&&fxuiOnCard(x,y,o.size||D.s))return null;   // כרטיס עם טקסט (עלית רמה): לא עליו
+  if(!o.anchor&&!o.tap&&!o.lo&&fxuiOnCard(x,y,o.size||D.s))return null;   // כרטיס עם טקסט (עלית רמה): לא עליו. lo מצויר מתחתיו (z-index 2, הכרטיסים 4 ומעלה)
   if(typeof fxImg==='function')fxImg(id);   // טוען, ומסמן אם הקובץ חסר
   FXUI.log[id]=(FXUI.log[id]||0)+1;
   const el=document.createElement('i');el.className='fxd'+(o.add?' add':'')+(o.anchor?' anch':'')+(o.tap?' tap':'');
   el.style.backgroundImage='url('+(typeof FXLIB!=='undefined'?FXLIB.base:'fx/')+id+'.webp)';
   if(o.alpha!=null)el.style.opacity=o.alpha;
-  const f={id,el,D,x,y,free:!o.anchor&&!o.tap,size:o.size||D.s,fit:o.fit||0,anchor:o.anchor||null,clip:o.clip||null,t0:performance.now()/1000,loop:!!o.loop,dur:o.dur||0,fps:o.fps||30,i:-1};
+  const f={id,el,D,x,y,free:!o.anchor&&!o.tap,lo:!!o.lo,size:o.size||D.s,fit:o.fit||0,anchor:o.anchor||null,clip:o.clip||null,t0:performance.now()/1000,loop:!!o.loop,dur:o.dur||0,fps:o.fps||30,i:-1};
   const ov=o.behind&&o.anchor&&o.anchor.closest('.ov');
   if(ov)ov.insertBefore(el,ov.firstChild);else fxuiLayer(o.lo||o.behind).appendChild(el);   // .ov על כל המסך: אותן קואורדינטות
   fxuiPlace(f);
@@ -84,7 +84,7 @@ function fxuiPlace(f){
 function fxuiTick(){
   const free=FXUI.list.some(f=>f.free&&f.el),now=performance.now()/1000,win=free&&fxuiWin(),cards=free?fxuiCardRects():[];let j=0;   // win: חלון נפתח בדרך שלא ראינו. cards: כרטיס עם טקסט הופיע. בשניהם אפקט חופשי נעצר
   for(const f of FXUI.list){
-    if(f.free&&f.el&&(win||cards.length&&cards.some(b=>fxuiHit(f.el.getBoundingClientRect(),b))))fxuiEnd(f);
+    if(f.free&&f.el&&(win||!f.lo&&cards.length&&cards.some(b=>fxuiHit(f.el.getBoundingClientRect(),b))))fxuiEnd(f);
     if(!f.el)continue;
     const age=now-f.t0,n=Math.floor(age*f.fps);let i=f.loop||f.dur?n%f.D.n:n;
     if((!f.loop&&!f.dur&&n>=f.D.n)||(f.dur&&age>f.dur)||!fxuiPlace(f)){fxuiEnd(f);continue}
@@ -191,9 +191,9 @@ function fxuiRare(){
 // לבדיקה (check.js, בכל צילום): אילו אפקטים חופשיים (לא צמודים ולא מנגיעה) יושבים עכשיו על חלון פתוח או על כרטיס עם טקסט
 function fxuiOverWin(){
   const wins=[...document.querySelectorAll('.ov:not([hidden]) .win,.ov:not([hidden]) .panel'+(typeof WINS!=='undefined'?','+WINS.map(w=>'#'+w.id+':not([hidden])').join(','):''))]
-    .map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height).concat(fxuiCardRects());   // וגם כרטיסים עם טקסט (FXUI.cards)
-  return FXUI.list.filter(f=>f.el&&f.free).map(f=>[f.id,f.el.getBoundingClientRect()])
-    .filter(([,a])=>wins.some(b=>a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom)).map(([id])=>id);
+    .map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height),cards=fxuiCardRects();   // וגם כרטיסים עם טקסט (FXUI.cards), רק מול מה שמעליהם (לא lo)
+  return FXUI.list.filter(f=>f.el&&f.free).map(f=>[f,f.el.getBoundingClientRect()])
+    .filter(([f,a])=>wins.some(b=>fxuiHit(a,b))||!f.lo&&cards.some(b=>fxuiHit(a,b))).map(([f])=>f.id);
 }
 function fxuiInit(){
   for(const n in FXUI.hooks)fxuiWrap(n,FXUI.hooks[n]);

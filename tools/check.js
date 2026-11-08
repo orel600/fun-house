@@ -1097,7 +1097,7 @@ function worldBot(m,L,god){
     const tick=()=>new Promise(f=>queueMicrotask(f)),n=k=>FXUI.log[k]||0,b0={t:n('ui_toast'),b:n('ui_buy'),a:n('ui_ach'),w:n('win'),tr:n('trans')},r={};
     const keep=[...document.querySelectorAll('.ov,'+WINS.map(w=>'#'+w.id).join(','))].map(e=>[e,e.hidden]);for(const [e] of keep)e.hidden=true;await tick();   // בלי חלון פתוח, ובסוף חוזרים למצב שהיה
     r.wrapped=['questClaim','shopBuy','rankUp','gearCraft','dailyClaim'].filter(f=>!(window[f]&&window[f].fxui));
-    FXUI.hooks.questClaim(true,['bones',false]);FXUI.hooks.shopBuy(true);FXUI.hooks.rankUp('x');
+    FXUI.hooks.questClaim(true,['bones',false]);FXUI.lastTap={x:innerWidth/2,y:innerHeight*0.7,t:performance.now()};FXUI.hooks.shopBuy(true);FXUI.hooks.rankUp('x');   // קנייה: בנגיעה, כמו במשחק
     const d=$('ovDaily'),was=d.hidden;d.hidden=true;await tick();d.hidden=false;await tick();
     d.hidden=was;
     const pl=FXUI.place;FXUI.place='fxtest';document.body.classList.toggle('fxtest');await tick();document.body.classList.toggle('fxtest');
