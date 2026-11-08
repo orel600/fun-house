@@ -13,6 +13,7 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - backpack
 - biceps
 - brick-wall
+- carrot
 - enrage
 - eye-target
 - falling-star
@@ -21,6 +22,7 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - holy-water
 - jump-across
 - podium-winner
+- present
 - running-shoe
 - sparkles
 - star-formation
@@ -28,7 +30,9 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - switch-weapon
 - sword-brandish
 - tree-roots
+- village
 - warhammer
+- wooden-crate
 
 ### Lorc (http://lorcblog.blogspot.com) - CC BY 3.0
 

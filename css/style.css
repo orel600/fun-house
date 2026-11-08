@@ -741,7 +741,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .vbtn:disabled{background:url(../icons/ui/btn-off.png) center/100% 100% no-repeat;color:#E4E4E4;text-shadow:0 1px 0 #444}
 .vbtn.ghost{background:url(../icons/ui/btn-dark.png) center/100% 100% no-repeat;border:0;color:var(--chalk);text-shadow:none}
 .res .ri,.ti .ri,.tp .ri,.gtile .ri{width:var(--ic-s);height:var(--ic-s);vertical-align:-.3em;object-fit:contain}
-.gtile .ri{width:70%;height:70%}
+.gtile .ri{width:min(var(--ic-m),78%);height:min(var(--ic-m),78%)}
 .gdicon .ri{width:var(--ic-l);height:var(--ic-l)}
 #qBtn .ni,#gearBtn .ni{font-size:0;width:var(--ic-m);height:var(--ic-m);background:center/contain no-repeat}
 #qBtn .ni{background-image:url(../icons/ui/nav-quests.png)}#gearBtn .ni{background-image:url(../icons/ui/nav-gear.png)}
@@ -788,7 +788,7 @@ body:has(#ovStart:not([hidden])) .mute{top:max(14px,env(safe-area-inset-top,0px)
 .bkc.on{outline:3px solid var(--gold);outline-offset:1px}
 .bkc:active{transform:scale(.92)}
 .bpic{font-size:28px;line-height:1;display:grid;place-items:center;height:100%}
-.bpic .ri{width:70%;height:70%;object-fit:contain}
+.bpic .ri{width:min(var(--ic-l),78%);height:min(var(--ic-l),78%);object-fit:contain}
 .bkc.unk,.bkc.unk:active{border-color:var(--line);background:var(--panel)}
 .bkc.unk .bpic,.bpic.unk{filter:brightness(0);opacity:.35}
 .bkc>b{position:absolute;inset:0;display:grid;place-items:center;font:900 22px var(--body);color:var(--dim)}
@@ -1067,9 +1067,9 @@ body:not(.vil):not(.world) .guide{display:none}
 .welsum{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
 .welnext{margin:0;text-align:center;font:700 16px var(--body)}
 /* טלפון שוכב (גובה 350): שורות נמוכות וכפתור קטן יותר, כדי שהרשימה לא תגלול ולא תיחתך */
-@media (max-height:420px){.welbody{gap:6px}.wellist{gap:4px}.welrow{padding:3px 10px;font-size:14px}.welic{font-size:18px}.welgot .ri{width:18px;height:18px}.welgo{min-height:42px;font-size:16px}}
+@media (max-height:420px){.welbody{gap:6px}.wellist{gap:4px}.welrow{padding:3px 10px;font-size:14px}.welic{font-size:18px}.welgot .ri{width:var(--ic-s);height:var(--ic-s)}.welgo{min-height:42px;font-size:16px}}
 .welfly{position:fixed;z-index:30;pointer-events:none;display:flex;align-items:center;gap:3px;font:900 18px var(--body);color:var(--gold);text-shadow:0 1px 3px #000}
-.welfly .ri{width:24px;height:24px}
+.welfly .ri{width:var(--ic-m);height:var(--ic-m)}
 
 /* ===== מטרות לחיצה ושיחה (בדיקת החוויה, docs/ux-audit.md, סעיפים 2 ו-10) =====
    כל כפתור בחלון לפחות 48 (docs/ui-guide.md פרק 2): כפתורים ראשיים, לשוניות, מתכונים, מחסן, נקודות דמות ודרגות עולם */
@@ -1265,7 +1265,7 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 #vPanel .craft{flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px}
 #vPanel .craft:has(>button:not(:disabled)){order:-1;border-color:var(--gold);box-shadow:0 0 0 1px rgba(244,199,79,.35)}
 #vPanel .craft>button{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:64px;font-size:var(--t1);white-space:normal;text-align:center;border-radius:10px}
-#vPanel .craft>button .ri,#vPanel .craft>button img{width:34px;height:34px}
+#vPanel .craft>button .ri,#vPanel .craft>button img{width:var(--ic-m);height:var(--ic-m)}
 #vPanel .craft>button:disabled{opacity:.75}
 #vPanel .craft .cost{display:flex;flex-wrap:wrap;gap:3px;justify-content:center}
 #vPanel .craft .cost .res{font-size:12px;padding:1px 6px}
@@ -1455,7 +1455,7 @@ body:not(.vil):not(.world) .dgift{display:none!important}
   #ovGear .gdoll .gtile,#ovGear .gd-start .gtile{width:48px;font-size:24px}
   #ovGear .gd-under .gtile{flex-basis:38px;width:38px;font-size:18px}
   #ovGear .gdicon{width:44px;height:44px;font-size:24px}
-  #ovGear .gdicon .ri{width:34px;height:34px}
+  #ovGear .gdicon .ri{width:var(--ic-m);height:var(--ic-m)}
   #ovGear .gdetail .gbtns .vbtn{min-height:40px;padding:6px 2px;font-size:14px;border-width:0 18px;border-image-width:0 18px}
 }
 /* ===== חלונות שלא נחתכים (ניר 2.11.2026, טלפון שוכב באנגלית: ארבעה צילומים) =====
@@ -1995,6 +1995,10 @@ body:not(.world):not(.vil) .hud .gearbtn:active{transform:scale(.92)}
 .gnav .ni{font-size:0;width:var(--ic-m);height:var(--ic-m);background:none!important;display:block}
 .gnav .ni .gi{width:100%;height:100%;color:var(--gold)}
 .mtab.gnav:not([aria-selected=true]),.qr.gnav{border-color:#8A6A2A;background:linear-gradient(#6B4A2B,#3E2A18)}
+/* השורה העליונה (gNav, GICO.top): צללית זהב בינונית בלי מסגרת, על הכדור הכהה. התג האדום נשאר בפינה */
+.gtop>span,.feedbtn .ni{display:grid;place-items:center}
+.gtop>span .gi,.feedbtn .ni .gi{width:var(--ic-m);height:var(--ic-m);color:var(--gold)}
+.visbtn.off .gi{color:var(--dim)}
 
 /* ---- כפתורי הסקילים: שלושה מצבים ברורים (אוראל, W3, 8.11.2026), בזירה, בעולם ובשאול ----
    מוכן: טבעת מלאה בצבע סוג הנזק, זוהר זהב מסביב (סטטי), ונשימה עדינה בפנים. הנשימה היא opacity על <i> בלבד, שזול לכרטיס הגרפי.
