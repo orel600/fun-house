@@ -4063,6 +4063,20 @@ function worldBot(m,L,god){
       const t0=MB.atkTaps||0;keys.Space=true;fr(8);keys.Space=false;fr(2);K.space=(MB.atkTaps||0)===t0+1;
      }catch(err){K.err=String(err&&err.stack||err)}
      MB.u=keep;MB.lock=MB.atkGo=null;keys.Space=false;joy=null;me.x=hx;me.y=hy;S.cam.x=cam.x;S.cam.y=cam.y;mbFeelReset(me);mobaHud();o.atk=K}
+    // הטלה מהירה (moba-aim.js, MLBB 1.2): נגיעה בלי גרירה מראה לרגע את הצורה של הסקיל (קו, עיגול, מטרה, סביבך) בצבע סוג הנזק, ודועכת.
+    // בגרירה אין הבזק (רואים כבר), ולבוט אין
+    {const me=MB.me,F={kinds:{}},kit=me.kit,keep=MB.u,hx=me.x,hy=me.y,lv=me.lvl,cam={x:S.cam.x,y:S.cam.y},cds={...me.cd};
+     try{MB.u=keep.filter(o=>o===me||o.k==='tower'||o.k==='base');me.x=0;me.y=0;me.dead=false;me.lvl=MOBA.ultAt;S.cam.x=0;S.cam.y=0;
+       const foe=mbHero('warrior',1-me.team,false,1);foe.x=150;foe.y=10;foe.hp=foe.max=1e6;MB.u.push(foe);if(typeof mbVisNow==='function')mbVisNow(true);
+       for(const k of Object.keys(MBKIT))for(const sl of MB_SLOTS){const sk=MBKIT[k][sl],kind=mbAimKind(sk);if(F.kinds[kind]!=null)continue;
+         me.kit=k;for(const c of MB_SLOTS)me.cd[c]=0;Object.assign(me.st,{stun:0,root:0,dash:null,veil:0});me.x=0;me.y=0;MB.aimFl=null;
+         mbPress(sl);const f=MB.aimFl;F.kinds[kind]=!!f&&f.kind===kind&&f.col===(sk.col||dtCol(sk.dt||MBKIT[k].dt))}
+       F.draw=(()=>{try{mbAimFlashDraw();return true}catch(err){return String(err)}})();
+       if(MB.aimFl){MB.aimFl.t0-=MBAIM.flash.dur*1000+10;mbAimFlashDraw();F.ends=MB.aimFl===null}
+       me.kit=kit;for(const c of MB_SLOTS)me.cd[c]=0;MB.aimFl=null;mbPress('s1',{x:me.x+100,y:me.y});F.drag=MB.aimFl===null;   // כיוון מגרירה: בלי הבזק
+       const bot=mbHero(kit,me.team,false,0);bot.x=0;bot.y=0;MB.u.push(bot);for(const c of MB_SLOTS)bot.cd[c]=0;MB.aimFl=null;mbCast(bot,'s1',foe);F.bot=MB.aimFl===null;
+     }catch(err){F.err=String(err&&err.stack||err)}
+     MB.u=keep;me.kit=kit;me.lvl=lv;Object.assign(me.cd,cds);mbStReset(me);me.x=hx;me.y=hy;S.cam.x=cam.x;S.cam.y=cam.y;MB.aimFl=null;if(typeof mbVisNow==='function')mbVisNow(true);mbFeelReset(me);mobaHud();o.qaim=F}   // mbStReset: סקיל שהוטל כאן (קפיצה, כיסוי) לא נשאר לבדיקות שאחרי
     // חץ הברק (#513, moba-skill-anim.js): תנועת שחרור קשת ברגע ההטלה, בלי מעגל על הרצפה, פס מאחורי החץ האמיתי, הבזק רק בפגיעה מאושרת,
     // נקודה עמומה בסוף, בלי שאריות אחרי משחק חדש, וחץ של אויב בערפל לא מצויר
     {const me=MB.me,Z={},kit=me.kit,hx=me.x,hy=me.y,keep=MB.u,cd=me.cd.s1,H=MBANIMS.stat,cam={x:S.cam.x,y:S.cam.y};
@@ -4739,6 +4753,8 @@ function worldBot(m,L,god){
      check(!Q.err&&Object.keys(ks).every(k=>Q[k]),'משחקי השאול: אפקטים של המתנקש: '+(Q.err||Object.keys(ks).map(k=>ks[k]+(Q[k]?' ✓':' ✗')).join(', ')))}
     {const Z=mb.arrow||{},ks={cast:'הטלה',pose:'שחרור קשת',circ:'בלי מעגל',trail:'פס',drawn:'מצויר',miss:'החטאה בלי הבזק',hit:'הבזק רק בפגיעה',fog:'אויב בערפל מוסתר',reset:'ניקוי'};
      check(!Z.err&&Object.keys(ks).every(k=>Z[k]),'משחקי השאול: חץ הברק: '+(Z.err||Object.keys(ks).map(k=>ks[k]+(Z[k]?' ✓':' ✗')).join(', ')))}
+    {const F=mb.qaim||{},kn=Object.entries(F.kinds||{}),ok=kn.length>=4&&kn.every(([,v])=>v);
+     check(!F.err&&ok&&F.draw===true&&F.ends&&F.drag&&F.bot,'משחקי השאול: סימון בהטלה מהירה: '+(F.err||kn.map(([k,v])=>k+(v?' ✓':' ✗')).join(', ')+(F.draw===true?'':', ציור: '+F.draw)+', דועך '+(F.ends?'✓':'✗')+', בגרירה בלי הבזק '+(F.drag?'✓':'✗')+', לבוט בלי '+(F.bot?'✓':'✗')))}
     {const K=mb.atk||{},ks={btn:'כפתור',big:'הכי גדול',free:'לא נוגע בסקילים',step:'נגיעה מקרבת',lock:'גרירה נועלת',pref:'הנעול קודם',far:'נגמרת במרחק',dead:'נגמרת במוות',cancel:'✕ מבטל',cd:'טעינה על הכפתור',space:'רווח'};
      check(!K.err&&K.draw===true&&Object.keys(ks).every(k=>K[k]),'משחקי השאול: כפתור התקיפה: '+(K.err||Object.keys(ks).map(k=>ks[k]+(K[k]?' ✓':' ✗')).join(', ')+(K.draw===true?'':', ציור: '+K.draw)))}
     {const I=mb.items||{},ks={tick:'זהב עם הזמן',minion:'זהב מחייל',quick:'קנייה מהירה',stat:'סטטים',sell:'מכירה',win:'חלון החנות',buy:'קנייה בחלון',close:'סגירה',bot:'בוט קונה'};
