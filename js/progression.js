@@ -28,12 +28,13 @@ function openLevelUp(){
   });
   $('ovLevel').hidden=false;
 }
-// חגיגה קטנה במקום הכרטיס שנבחר (fxui.js, מעל החלונות): לפי הנדירות. "פחות אפקטים" מכבה אותה. UP_FX: נדירות -> גיליון
-const UP_FX={gold:'ui_epic',legend:'ui_legend',other:'ui_juice',size:150};
+// חגיגה קטנה בבחירת כרטיס (fxui.js, מעל החלונות): לפי הנדירות. "פחות אפקטים" מכבה אותה. UP_FX: נדירות -> גיליון.
+// במרכז המסך למעלה (y: חלק מגובה המסך), ולא במקום הכרטיס: הכרטיס הימני יושב מעל פינת כפתורי הסקילים, שהיא שמורה להם (docs/ui-guide.md, המתאם 8.11)
+const UP_FX={gold:'ui_epic',legend:'ui_legend',other:'ui_juice',size:150,y:0.3};
 function upCelebrate(b,u){
   if(typeof fxDom!=='function'||(typeof SAVE==='object'&&SAVE.fxLess))return;
-  const r=b.getBoundingClientRect(),id=UP_FX[u.rar]||UP_FX.other;
-  fxDom(id,r.left+r.width/2,r.top+r.height/2,{tap:true,size:UP_FX.size,add:true});   // tap: מנגן גם כשחלון פתוח (החלון נסגר מיד אחרי)
+  const id=UP_FX[u.rar]||UP_FX.other;
+  fxDom(id,innerWidth/2,innerHeight*UP_FX.y,{tap:true,size:UP_FX.size,add:true});   // tap: מנגן גם כשחלון פתוח (החלון נסגר מיד אחרי)
   UP_FX.last=id;   // לבוט (check.js)
 }
 function showIntro(b){
