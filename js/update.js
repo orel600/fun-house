@@ -1,4 +1,5 @@
 /* עדכון כל פריים */
+const SEP={ky:2.6};   // הפרדה בין אויבים: כמה רדיוסים שומרים לאורך העומק (y) לעומת רוחב (x). 2.6 = גובה דמות ועוד רווח, כדי שלא ייראו עומדים אחד על השני
 function movePlayer(dt){
   let ix=0,iy=0;if(joy){ix=joy.dx;iy=joy.dy}
   if(keys.KeyA||keys.ArrowLeft)ix-=1;if(keys.KeyD||keys.ArrowRight)ix+=1;if(keys.KeyW||keys.ArrowUp)iy-=1;if(keys.KeyS||keys.ArrowDown)iy+=1;
@@ -40,8 +41,14 @@ function update(dt){
     if(d<e.r+P.r-3)hurt(e.dmg);
   }
   dmgUpdate(dt);
-  // separation
-  for(let i=0;i<enemies.length;i++){const a=enemies[i];for(let j=i+1;j<enemies.length;j++){const b=enemies[j];const dx=b.x-a.x,dy=b.y-a.y,rr=a.r+b.r;if(Math.abs(dx)>rr||Math.abs(dy)>rr)continue;const d=Math.hypot(dx,dy)||.01;if(d<rr){const p=(rr-d)/2,ux=dx/d,uy=dy/d;if(!a.isBoss){a.x-=ux*p;a.y-=uy*p}if(!b.isBoss){b.x+=ux*p;b.y+=uy*p}}}}
+  // separation: טביעת רגל אליפטית ולא עיגול. הדמויות גבוהות פי ~4 מהרדיוס, ועם הפרדה עגולה אויב מאחור נעמד בדיוק על הראש
+  // של זה שלפניו ("טוטם" של שלדים בתלת-ממד, אוראל 8.11). לכן לאורך העומק (y) שומרים SEP.ky רדיוסים, ולרוחב רדיוס אחד,
+  // ושניים שעומדים אחד מאחורי השני נדחפים הצידה (הדרך הקצרה החוצה מהאליפסה) ולא לעומק: הצפיפות נפרשת לשורות ולא לעמוד
+  for(let i=0;i<enemies.length;i++){const a=enemies[i];for(let j=i+1;j<enemies.length;j++){const b=enemies[j];const dx=b.x-a.x,dy=b.y-a.y,rr=a.r+b.r,ry=rr*SEP.ky;if(Math.abs(dx)>=rr||Math.abs(dy)>=ry)continue;
+    const qx=dx*dx/(rr*rr),qy=dy*dy/(ry*ry);if(qx+qy>=1)continue;
+    const needX=rr*Math.sqrt(1-qy)-Math.abs(dx),needY=ry*Math.sqrt(1-qx)-Math.abs(dy);   // כמה חסר עד שפת האליפסה בכל ציר
+    if(needX<=needY){const p=needX/2,sx=Math.sign(dx)||(i&1?1:-1);if(!a.isBoss)a.x-=sx*p;if(!b.isBoss)b.x+=sx*p}
+    else{const p=needY/2,sy=Math.sign(dy)||1;if(!a.isBoss)a.y-=sy*p;if(!b.isBoss)b.y+=sy*p}}}
   // player bullets
   const hitable=S.nd.list.length?enemies.concat(S.nd.list):enemies;   // גם מקורות משאבים (nodes.js)
   for(const b of pb){
