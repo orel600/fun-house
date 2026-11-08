@@ -25,6 +25,7 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - sparkles
 - star-formation
 - stone-bust
+- switch-weapon
 - sword-brandish
 - tree-roots
 - warhammer
@@ -47,9 +48,11 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - comet-spark
 - crossed-swords
 - crystal-growth
+- double-shot
 - earth-crack
 - earth-spit
 - fairy-wand
+- fast-arrow
 - fishing-net
 - frozen-orb
 - ghost
@@ -64,6 +67,7 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - lightning-storm
 - lotus-flower
 - magic-portal
+- magnet
 - magnifying-glass
 - meteor-impact
 - mountains
@@ -82,7 +86,9 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - spyglass
 - star-swirl
 - stone-tower
+- supersonic-arrow
 - sword-spin
+- sword-wound
 - thunder-struck
 - treasure-map
 - vine-whip
