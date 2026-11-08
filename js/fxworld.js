@@ -91,13 +91,16 @@ function fxwPlay(id,x,y,o){if(!fxwOn()||FXW.n>=FXW.cap)return null;const h=fxPla
 function fxwWant(){
   const want=new Map(),cam=FXW.cam,cw=W_(),ch=H_();
   // הסימנים מעל דמויות (קווסט, מסירה, חנות, שיחה) עברו ל-fxvil.js: סימן אחד לכל דמות, במקום העיגול ולא מאחוריו
-  if(S.wd){
-    // מזג אוויר: אריחים שעוקבים אחרי המצלמה
-    const Gu=FXW.gust[fxwReg()],gu=Gu&&fxNowT()<FXW.gustEnd;
-    for(const [id0,a0,kind,when] of FXW.weather[fxwReg()]||[]){if(when==='night'&&!fxwNight())continue;const g=gu&&id0===Gu.from,id=g?Gu.to:id0,a=g?Gu.a:a0,add=g&&!!Gu.add;
+  {
+    // מזג אוויר: אריחים שעוקבים אחרי המצלמה. 7.11 (WXW, wxworld.js): עם ליבת מזג האוויר (weather.js) היא מציירת והאריחים לא נוצרים,
+    // ובלעדיה נוספים כאן אריחים לפי מצב הסערה (wxwTiles), גם בכפר
+    const Gu=FXW.gust[fxwReg()],gu=Gu&&fxNowT()<FXW.gustEnd,core=typeof wxwCore==='function'&&wxwCore();
+    for(const [id0,a0,kind,when] of core?[]:[...(S.wd&&FXW.weather[fxwReg()]||[]),...(typeof wxwTiles==='function'?wxwTiles():[])]){if(when==='night'&&!fxwNight())continue;const g=gu&&id0===Gu.from,id=g?Gu.to:id0,a=g?Gu.a:a0,add=g&&!!Gu.add;
       if(kind==='sky'){const s=cw/2;for(let i=0;i<2;i++)want.set('w:'+id+i,{id,o:cam,size:s,alpha:a,dx:(i-0.5)*s,dy:-ch/2+s*0.1,flip:i===1})}   // flip: החצי השני במראה, כדי שהתפר באמצע יתחבר
       else if(kind==='low'){const s=cw/2.2;for(let i=0;i<2;i++)want.set('w:'+id+i,{id,o:cam,size:s,alpha:a,dx:(i-0.5)*s*1.1,dy:ch*0.18})}
       else{const s=Math.max(cw/2,ch),c=Math.ceil(cw/s),r=Math.ceil(ch/s);for(let i=0;i<c;i++)for(let j=0;j<r;j++)want.set('w:'+id+i+'_'+j,{id,o:cam,size:s,alpha:a,add,dx:(i-(c-1)/2)*s,dy:(j-(r-1)/2)*s})}}
+  }
+  if(S.wd){
     // מקום של קווסט צדדי פעיל: טבעת על הרצפה וסימן מעל עמוד האור הקיים
     const Q=FXW.quest;for(const t of typeof sqTargets==='function'?sqTargets():[]){const k=Math.round(t.p.x)+'_'+Math.round(t.p.y);
       want.set('q:'+k,{id:'waypoint',o:t.p,size:Q.way,alpha:0.8,under:true});want.set('qm:'+k,{id:'quest_mark',o:t.p,size:Q.mark,alpha:0.9,dy:-Q.up})}}
@@ -119,8 +122,9 @@ function fxwStopAll(){for(const h of FXW.live.values())fxStop(h);FXW.live.clear(
 function fxwUpdate(dt){
   if(!fxwOn()){if(FXW.live.size)fxwStopAll();return}
   FXW.cam.x=S.cam.x;FXW.cam.y=S.cam.y;
+  if(typeof wxwUpdate==='function')wxwUpdate(dt);   // מצב מזג האוויר (wxworld.js, 7.11)
   FXW.once=FXW.once.filter(fxwAlive);{const now=fxNowT();for(const [k,f] of FXW.wxl)if(fxFrame(f,now)<0)FXW.wxl.delete(k)}FXW.n=FXW.once.length+FXW.live.size+FXW.wxl.size;
-  const reg=fxwReg();if(reg!==FXW.reg){FXW.reg=reg;fxwStopAll();FXW.lx=null;FXW.dead.clear();FXW.hp=null;if(S.wd)fxwPingNow();fxwPreload(reg)}   // אזור חדש: מנקים ומתחילים מחדש, טוענים מראש, ופינג במפה
+  const reg=fxwReg();if(reg!==FXW.reg){FXW.reg=reg;FXW.forest=false;fxwStopAll();FXW.lx=null;FXW.dead.clear();FXW.hp=null;if(S.wd)fxwPingNow();fxwPreload(reg)}   // אזור חדש: מנקים ומתחילים מחדש, טוענים מראש, ופינג במפה
   if((FXW.t-=dt)<=0){FXW.t=FXW.sync;fxwSoft();fxwSync();fxwNews();fxwSlow()}
   // צעדים לפי הקרקע
   if(FXW.lx===null){FXW.lx=P.x;FXW.ly=P.y}
@@ -180,13 +184,14 @@ function fxwAt(e){
     case 'scr':return{x:c.x,y:c.y};
     case 'pond':{const ps=(WR().ponds||[]).filter(p=>Math.abs(p.x-c.x)<cw/2&&Math.abs(p.y-c.y)<ch/2);if(!ps.length)return null;const p=ps[Math.floor(Math.random()*ps.length)];return{x:p.x+r(-p.r,p.r)*0.4,y:p.y-p.r*0.3}}
     case 'forest':{const M=TR.map;for(let i=0;i<4;i++){const x=c.x+r(-cw*0.42,cw*0.42),y=c.y+r(-ch*0.38,ch*0.38);
-      if(M.forests.some(F=>polyDist(x,y,F)<90))return{x,y}}return null}
+      if((M&&M.forests||[]).some(F=>polyDist(x,y,F)<90))return{x,y}}return null}   // 7.11: אזור בלי יערות (FXW.forest מהאזור הקודם, עד הסנכרון הבא)
     default:return{x:c.x+r(-cw*0.4,cw*0.4),y:c.y+r(-ch*0.35,ch*0.35)};
   }
 }
 function fxwScene(reg){
   const Sc=FXW.scene,night=fxwNight();
-  let L=(Sc[reg]||[]).concat(FXW.forest?Sc.forest:[]).filter(e=>!e.when||(e.when==='night')===night);
+  const core=typeof wxwCore==='function'&&wxwCore();   // 7.11 (WXW): עם ליבת מזג האוויר, גיליונות wx_ (עלי כותרת, אבק, ערפל, הבזק) מגיעים ממנה, מתחת לקרב
+  let L=(Sc[reg]||[]).concat(FXW.forest?Sc.forest:[]).filter(e=>(!e.when||(e.when==='night')===night)&&!(core&&/^wx_/.test(e.id)));
   if(!L.length||FXW.once.filter(h=>h.scene).length>=Sc.max)return;
   let w=L.reduce((a,e)=>a+e.w,0)*Math.random(),e=L[L.length-1];for(const x of L)if((w-=x.w)<0){e=x;break}
   // שכבת מזג האוויר: על כל המסך, עוקב אחרי המצלמה. עם השלג או הגשם זה עובר לקנבס הקטן, אז כמעט בחינם
@@ -204,7 +209,8 @@ function fxwMore(dt,reg){
   const a=P.sw?P.sw.anim:0;if(P.weapon==='sword'&&a>FXW.swA+0.05&&S.mode==='play')fxwSwing();FXW.swA=a;
   if(!S.wd)return;
   if((FXW.sceneT-=dt)<=0){FXW.sceneT=rand(...FXW.scene.every);fxwScene(reg)}
-  const Gu=FXW.gust[reg];if(Gu&&(FXW.gustT-=dt)<=0){FXW.gustT=rand(...Gu.every)+Gu.dur;FXW.gustEnd=fxNowT()+Gu.dur;FXW.t=0}   // משב: הסנכרון הבא מחליף את האריחים, ואחרי dur הם חוזרים
+  // עם הליבה (7.11): סופת השלג היא מצב storm שלה, בלי משב של FXW
+  const Gu=!(typeof wxwCore==='function'&&wxwCore())&&FXW.gust[reg];if(Gu&&(FXW.gustT-=dt)<=0){FXW.gustT=rand(...Gu.every)+Gu.dur;FXW.gustEnd=fxNowT()+Gu.dur;FXW.t=0}   // משב: הסנכרון הבא מחליף את האריחים, ואחרי dur הם חוזרים
   if(FXW.gustEnd&&fxNowT()>FXW.gustEnd){FXW.gustEnd=0;FXW.t=0}
   const M=typeof TR!=='undefined'&&TR&&TR.map,cw=W_(),ch=H_();
   // גל על החוף: הנקודה הקרובה על שפת המים, אם היא במסך
@@ -293,7 +299,8 @@ function fxwEmote(id){
 (()=>{
   const wrap=(name,after)=>{const old=window[name];if(typeof old!=='function')return;window[name]=function(){const r=old.apply(this,arguments);try{after(r,...arguments)}catch(e){}return r}};
   // מזג האוויר מצויר אחרי כל האפקטים של העולם (render.js קורא fxDraw() פעם אחת בעולם ובכפר)
-  {const old=window.fxDraw;if(typeof old==='function')window.fxDraw=function(u){old.apply(this,arguments);if(u===undefined)try{fxwWxDraw()}catch(e){}}}
+  // 7.11 (WXW): מזג האוויר מתחת לאפקטים, לניצוצות ולמספרי הנזק (juiceDraw ב-render.js רץ לפניהם), ולא מעליהם. מחוץ לעולם ולכפר: wxwLeave
+  {const old=window.juiceDraw;if(typeof old==='function')window.juiceDraw=function(){try{if(fxwOn())fxwWxDraw();else if(typeof wxwLeave==='function')wxwLeave()}catch(e){}return old.apply(this,arguments)}}
   const talkFx=(r,id)=>{if(id&&fxwOn())fxwEmote(id)};
   // סקיל מסתובב (מערבולת): tr_spin בצבע הסקיל כל זמן שהוא פועל. שריון קרח: הגנה עולה (wskbook.js)
   wrap('wsbCast',(r,id,D)=>{if(!D||!fxwOn())return;
