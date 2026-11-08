@@ -8,6 +8,12 @@ const MBLOOK={
   // המצלמה במוד (אוראל, 3.11: "כיוון המצלמה קרוב מדי", כמו ב-MLBB): רחוקה וגבוהה יותר. zoom: מתחת ל-1 רואים יותר (0.58 = פי 1.7 לרוחב). tilt: מעלות מעל הקרקע.
   // ui: פסי החיים, התגים והמספרים מעל הדמויות גדלים בחזרה חלקית, כדי שיהיו קריאים גם כשהמצלמה רחוקה
   cam:{zoom:0.58,tilt:52,ui:0.8},
+  // קריאות מרחוק (אוראל, 8.11): בדו-ממד גיבור גדול וחייל קטן (k של pose ב-rig.js), ולכל ערכה הנשק שלה ביד. חיילים בלי נשק.
+  // lw: עובי הקו. len: אורך הנשק (יחידות משחק, לפני k)
+  rig:{hero:1.15,minion:0.75,lw:{hero:3,minion:2},
+    weapon:{tank:'sword',warrior:'sword',hunter:'bow',mage:'staff',assassin:'blades'},len:{sword:17,bow:10,staff:24,blades:10}},
+  // טבעת הקבוצה מתחת לכל יחידה (גם בתלת-ממד, בקנבס מעל): pad מעבר לרדיוס, w עובי, fill שקיפות המילוי. me: טבעת זהב עבה לגיבור שלך
+  ring:{hero:{pad:9,w:3.5,fill:0.2},minion:{pad:5,w:2.5,fill:0.14},me:{pad:15,w:4.5}},
   floor:{x0:-2200,x1:2200,y0:-940,y1:940,px:0.9,rim:34,   // השטח שמצויר (יחידות משחק), ופיקסלים לכל יחידה (עד 4096 לצד). rim: שפת אבן מחוץ לנתיב
     abyss:'#0e070d',stone:'#3b2d38',blot:['#2f232d','#463545','#35282f'],grain:0.06,side:'#2d2230',mortar:'#170c14',path:'#7a585a',   // W5 (8.11): אבן כהה אחידה (כתמים וגרגור), בלי לבנים. side: שבילי העקיפה כהים יותר
     rimCol:'#4a3646',cliff:['#3a2833','#1a0f16'],lava:'#FF6A2A',lavaHot:'#FFC861',rune:'#8C5A7A',moss:'#24302c',tint:0.13,drop:90},   // tint: כמה צבע הקבוצה צובע את החצי שלה. drop: כמה עמוקה התהום בתלת-ממד
@@ -50,6 +56,9 @@ const MB_SVG={
   wave:{f:'M1.5 17c3-7 7.5-11 13-11 4 0 6 2 7.5 4.5-3.5-1-6.5 0-6.5 3 0 2 2 3.5 6.5 3.5v4.5h-20.5z'},
   bubble:{s:'M12 3a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17zM7.5 9a5 5 0 0 1 3-3M4 22.5h16'},
   blizzard:{s:'M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7M9 3.5l3 3 3-3M9 20.5l3-3 3 3M2.5 10.5l4-1.2-1-4M21.5 13.5l-4 1.2 1 4M2.5 13.5l4 1.2-1 4M21.5 10.5l-4-1.2 1-4'},
+  shadowstep:{f:'M14 2.5 21.5 10 11 20.5l-2-2L6 21.5 2.5 18 5.5 15l-2-2z',s:'M1.5 6.5h5M3 10h3.5'},   // המתנקש: פגיון, עשן וגולגולת
+  vanish:{s:'M4 18c-2-3 0-7 4-7 0-4 5-6 8-3 3-1 6 1 5.5 4.5 2 1 1.5 5-1.5 5.5H6M8 21.5h9'},
+  deathmark:{eo:1,f:'M12 1.5a8 8 0 0 0-8 8c0 2.8 1.4 4.8 3.3 5.8v3.7h9.4v-3.7c1.9-1 3.3-3 3.3-5.8a8 8 0 0 0-8-8zM8.7 8a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM15.3 8a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM12 12.5l1.3 2.5h-2.6z',s:'M9.5 22.5h5'},
   // פקודות לחברים
   attack:{f:'M2.5 2.5H7l9 9-2.5 2.5-9-9z M21.5 2.5V7l-9 9-2.5-2.5 9-9z',s:'M12.5 19.5l7-7M4.5 12.5l7 7M17.5 17.5l3 3M6.5 17.5l-3 3'},
   back:{f:'M12 2l8.5 3v6.5c0 5-3.6 9-8.5 11-4.9-2-8.5-6-8.5-11V5z'},
@@ -58,6 +67,7 @@ const MB_SVG={
   k_warrior:{f:'M17 2h5v5L9.5 19.5l-5-5z M2.5 15l6.5 6.5-1.5 1.5L1 16.5z'},
   k_hunter:{s:'M6 2.5c9 3 9 16 0 19M6 2.5v19M3 12h17',f:'M22.5 12 18 9v6z'},
   k_mage:{f:'M12 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14zM7 19h10l1.5 3h-13z'},
+  k_assassin:{eo:1,f:'M12 2C7 2 4 6.5 4 11v10.5h16V11c0-4.5-3-9-8-9zM8 11.5c1.2-1 2.5-1.3 4-1.3s2.8.3 4 1.3c-.4 2.4-2 3.8-4 3.8s-3.6-1.4-4-3.8z'},   // ברדס
   skull:{eo:1,f:'M12 2.5a8.5 8.5 0 0 0-8.5 8.5c0 3 1.5 5 3.5 6v4h10v-4c2-1 3.5-3 3.5-6A8.5 8.5 0 0 0 12 2.5zM8.5 9.5a2 2 0 1 1 0 4 2 2 0 0 1 0-4zM15.5 9.5a2 2 0 1 1 0 4 2 2 0 0 1 0-4z'},
 };
 // HTML: <svg> בצבע של currentColor, עם קו כהה מסביב כדי שיהיה קריא על כל רקע
@@ -311,3 +321,24 @@ addEventListener('keydown',e=>{if(e.code==='KeyC'&&S&&S.mb&&S.mode==='play')mbCa
   const mv=(joy&&Math.hypot(joy.dx,joy.dy)>MBLOOK.mini.joy)||keys.KeyW||keys.KeyA||keys.KeyS||keys.KeyD||keys.ArrowUp||keys.ArrowDown||keys.ArrowLeft||keys.ArrowRight;
   if(mv&&MBCAM.pid===null){mbCamBack();return g()}
   return {x:MBCAM.x-P.x,y:MBCAM.y-P.y}}})();
+
+/* ---- קריאות מרחוק בדו-ממד (MBLOOK.rig, MBLOOK.ring) ---- */
+// טבעת הקבוצה מתחת ליחידה: מילוי שקוף וקו בצבע הקבוצה, ולגיבור שלך עוד טבעת זהב עבה. נקרא מ-mobaDraw לפני הדמות
+function mbRing(u,col){
+  const R=MBLOOK.ring,g=u.k==='hero'?R.hero:R.minion,r=u.r+g.pad;
+  ctx.globalAlpha=g.fill;ctx.fillStyle=col;ctx.beginPath();ctx.ellipse(u.x,u.y+2,r,r*0.45,0,0,7);ctx.fill();
+  ctx.globalAlpha=0.95;ctx.strokeStyle=col;ctx.lineWidth=g.w;ctx.stroke();
+  if(u.me){const m=R.me,rm=u.r+m.pad;ctx.strokeStyle=C.gold;ctx.lineWidth=m.w;ctx.beginPath();ctx.ellipse(u.x,u.y+2,rm,rm*0.45,0,0,7);ctx.stroke()}
+  ctx.globalAlpha=1;
+}
+// הנשק של הערכה ביד הקדמית (pose ב-rig.js): חרב, קשת, מטה או שני להבים. צורה ולא תמונה, באותו צבע כמו הדמות
+function mbWeapon2d(p,kit,col){
+  const w=MBLOOK.rig.weapon[kit];if(!w||!p.armF)return;
+  const h=p.armF[1],a=p.aim,k=p.k||1,L=MBLOOK.rig.len[w]*k,c=Math.cos(a),s=Math.sin(a);
+  ctx.strokeStyle=col;ctx.lineWidth=2.5*k;ctx.lineCap='round';ctx.beginPath();
+  if(w==='sword'){ctx.moveTo(h.x,h.y);ctx.lineTo(h.x+c*L,h.y+s*L);const g=4*k;ctx.moveTo(h.x+c*3*k-s*g,h.y+s*3*k+c*g);ctx.lineTo(h.x+c*3*k+s*g,h.y+s*3*k-c*g)}   // להב ומגן יד
+  else if(w==='bow'){ctx.arc(h.x,h.y,L,a-1.1,a+1.1);ctx.moveTo(h.x+Math.cos(a-1.1)*L,h.y+Math.sin(a-1.1)*L);ctx.lineTo(h.x+Math.cos(a+1.1)*L,h.y+Math.sin(a+1.1)*L)}   // קשת ומיתר
+  else if(w==='staff'){ctx.moveTo(h.x-c*L*0.35,h.y-s*L*0.35);ctx.lineTo(h.x+c*L*0.65,h.y+s*L*0.65);ctx.stroke();ctx.beginPath();ctx.arc(h.x+c*L*0.65,h.y+s*L*0.65,3.2*k,0,7);ctx.fillStyle=col;ctx.fill()}   // מטה עם כדור בקצה
+  else if(w==='blades'){for(const d of [-0.4,0.4]){const e=a+d;ctx.moveTo(h.x,h.y);ctx.lineTo(h.x+Math.cos(e)*L,h.y+Math.sin(e)*L)}}   // שני להבים קצרים
+  ctx.stroke();
+}

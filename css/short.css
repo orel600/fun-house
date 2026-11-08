@@ -47,14 +47,14 @@
   .bw-up>.vbtn,.bw-up>.bwbad{grid-area:b;align-self:start;position:static;max-width:none}
   /* נפחייה: כרטיס יצירה נמוך יותר, האייקון ליד השם */
   #vPanel.bw .craft>button{flex-direction:row;justify-content:center;min-height:44px;gap:6px}
-  #vPanel.bw .craft>button .ri,#vPanel.bw .craft>button img{width:28px;height:28px}
+  #vPanel.bw .craft>button .ri,#vPanel.bw .craft>button img{width:var(--ic-m);height:var(--ic-m)}
 
   /* ביקור ומסחר: החלון בכל הגובה, מסגרת דקה */
   .viswin.dailywin{height:calc(100dvh - 16px);max-height:none;border-width:14px;border-image-width:14px;padding:4px 10px 6px;gap:6px}
   .viswin>.whd{min-height:44px;padding-block:0 2px}
   .viswin>.whd h2{font-size:24px}
   body:has(:is(#ovVisit,#ovTrade):not([hidden])) :is(#menuBtn,.dgift){visibility:hidden}   /* ☰ לא יושב על ה-✕ */
-  .visr{width:44px;height:44px}.visr .ri{width:30px;height:30px}   /* 8 משאבים בשורה אחת, והכמות (×1 ×5 ×10) נראית בלי לגלול */
+  .visr{width:44px;height:44px}.visr .ri{width:var(--ic-m);height:var(--ic-m)}   /* 8 משאבים בשורה אחת, והכמות (×1 ×5 ×10) נראית בלי לגלול */
   .trdcol h3{margin:0;font-size:15px}
   .trdhint{font-size:11px}
   .trdsend{min-height:46px}

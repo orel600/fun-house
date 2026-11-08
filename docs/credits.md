@@ -13,14 +13,18 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - backpack
 - biceps
 - brick-wall
+- carrot
+- dead-head
 - enrage
 - eye-target
 - falling-star
 - healing
 - heart-beats
+- herbs-bundle
 - holy-water
 - jump-across
 - podium-winner
+- present
 - running-shoe
 - sparkles
 - star-formation
@@ -28,7 +32,9 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - switch-weapon
 - sword-brandish
 - tree-roots
+- village
 - warhammer
+- wooden-crate
 
 ### Lorc (http://lorcblog.blogspot.com) - CC BY 3.0
 
@@ -43,11 +49,13 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - bubbles
 - burning-meteor
 - checked-shield
+- cloak-dagger
 - clover
 - cog
 - comet-spark
 - crossed-swords
 - crystal-growth
+- daggers
 - double-shot
 - earth-crack
 - earth-spit
@@ -70,6 +78,7 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - magnet
 - magnifying-glass
 - meteor-impact
+- mining
 - mountains
 - open-book
 - padlock
@@ -100,6 +109,7 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - wingfoot
 - wizard-staff
 - wolf-trap
+- wood-axe
 
 ### Sbed (http://opengameart.org/content/95-game-icons) - CC BY 3.0
 

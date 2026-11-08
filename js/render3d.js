@@ -55,6 +55,7 @@ const LOOK3D={
   mb_tank:{model:'barbarian',h:72,foot:15,props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'earth'}},anim:{idle:'Idle_A',run:'Running_B',die:'Death_A'}},
   mb_warrior:{model:'knight',h:66,foot:14,props:{blade:{prop:'blade',...HAND_R}},anim:{idle:'Idle_A',run:'Running_A',die:'Death_A'}},
   mb_hunter:{model:'ranger',h:59,foot:14,anim:{idle:'Idle_A',run:'Running_A',die:'Death_A'}},
+  mb_assassin:{model:'rogue',h:62,foot:14,props:{blade:{prop:'blade',...HAND_R}},anim:{idle:'Idle_A',run:'Running_A',die:'Death_A'}},   // המתנקש: הנוכל של KayKit עם להב
   mb_mage:{model:'mage',h:69,foot:14,props:{staff:{prop:'staff',...HAND_R,tint:'water'}},anim:{idle:'Idle_A',run:'Running_C',die:'Death_A'}},
   mb_m0:{model:'minion',h:44,foot:10,tint:'#4C8DFF',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   mb_m1:{model:'minion',h:44,foot:10,tint:'#FF5A5A',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
@@ -509,7 +510,7 @@ function syncPlayer(dt){
   const sword=P.weapon==='sword';
   for(const k in a.props)a.props[k].visible=k==='shield'?sword:(k==='sword')===sword;
   const st=a.st||(a.st={anim:0,gt:0,inv:0,mode:''});
-  if(S.mode==='over'){if(st.mode!=='over'){st.mode='over';a.base=null;a.mixer.stopAllAction();once(a,S.won?L.anim.win:L.anim.die,1.2,true)}}
+  if(S.mode==='over'){if(st.mode!=='over'){st.mode='over';a.base=null;a.mixer.stopAllAction();once(a,S.won?L.anim.win:S.mb&&MB&&MB.draw?L.anim.idle:L.anim.die,1.2,true)}}   // תיקו במשחקי השאול (MB.draw): עומד, לא נופל
   else{
     if(st.mode==='over'){st.mode='';a.one=null;a.mixer.stopAllAction()}
     // תקיפה: רק פלג הגוף העליון, כך שאפשר לתקוף תוך כדי ריצה
@@ -532,7 +533,7 @@ function syncPlayer(dt){
     loop(a,(P.moving?L.anim.run:idle)+(busy?'@low':''),P.moving?Math.min(1.6,P.speed/165):1);
   }
   // הגוף לפי P.face: לאן שהולכים (update.js). הסיבוב הרך כבר שם, אז כאן בלי עיכוב נוסף
-  place(a,P.x,P.y,L.foot,null);a.root.rotation.y=yawOf(Math.cos(P.face),Math.sin(P.face));
+  place(a,P.x,P.y,L.foot,null);a.root.rotation.y=yawOf(Math.cos(P.face),Math.sin(P.face));hf3d(a,null);   // הכנה והתאוששות במכה (hitfeel.js)
   a.root.visible=!(P.inv>0&&Math.floor(P.inv*20)%2===0)||RM;
   setFlash(a,P.inv>0.45?0.5:P.swapBuff>0?0.25:0,P.inv>0.45?C.blood:C.gold);
   if(a.pulse&&!(P.inv>0.45||P.swapBuff>0)){const k=1+GEAR3D.pulse*Math.sin(performance.now()/1000*GEAR3D.rate);for(const m of a.pulse)m.emissive.copy(m.userData.em).multiplyScalar(k)}   // אגדי פועם (GEAR3D)
@@ -580,7 +581,7 @@ function syncEnemy(e,dt){
   }
   const lift=(L.float?L.float+Math.sin(e.ph*0.6)*3:0)+(e.wboss?giantLift(e,L):0)   // ענק בכניסה: קם מהאדמה או נוחת מהשמיים
     +(e.act==='jump'&&e.am?Math.sin(Math.PI*Math.min(1,1-e.at/e.am))*FOEATK3D.jump:0);   // קפיצה (foeai.js): באוויר בדרך אליך
-  place(a,e.x,e.y,e.wboss?L.foot:L.foot*(e.big||1),yaw,lift);
+  place(a,e.x,e.y,e.wboss?L.foot:L.foot*(e.big||1),yaw,lift);hf3d(a,e);   // נוטה אחורה במכה (hitfeel.js)
   const rage=e.isBoss&&e.rage>0.05?e.rage:0;
   const tk=e.isBoss||e.wboss?-1:foeTele(e),F=FOEATK3D;   // מתכונן למתקפה: מאדים (strike.js מדליק e.flash קטן בהכנה, בשביל הדו-ממד. מכה אמיתית היא 0.09)
   if(tk>=0&&!(e.flash>0.06))setFlash(a,(F.glowK[0]+(F.glowK[1]-F.glowK[0])*tk)*(0.8+0.2*Math.sin(S.t*20)),F.glow);
@@ -714,6 +715,7 @@ function syncWorld(){
       if(D.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(D.glow).multiplyScalar(0.5)}})}
     if(m.userData.lift==null)tLift(m);
     m.visible=!n.dead&&(!TR||Math.abs(n.x-S.cam.x)+Math.abs(n.y-S.cam.y)<TERRAIN.cull*1.4);   // באחו הגדול: מקור רחוק לא מצויר
+    gather3d(n,m,G.g);   // מתכווץ, מתנדנד, נופל, גדם ונבט (gather.js)
   }
 }
 // תושבי הכפר: דמות לכל תושב שנמצא בכפר, והקישוטים בפינה של מי שאין לו מבנה. המצב (הולך, עובד, מנופף) מגיע מ-npc.js
@@ -824,6 +826,7 @@ function render3d(ox,oy){
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
   R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?(W3D.regions[S.wd.reg]||{}).bg||VIEW.world:arenaFloor('d3')||VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?(W3D.regions[S.wd.reg]||{}).line||VIEW.worldLine:arenaFloor('line')||VIEW.groundLine);
   if(typeof aLookColors==='function')aLookColors();   // הזירה: שמיים ואובך לפי הפלטה (arena-look.js)
+  if(typeof maze3d==='function')maze3d();   // קירות הזירה כקופסאות בסצנה, מאחורי ולפני הדמויות (maze3d.js). מחוץ לזירה הם נעלמים
   for(const k in R3D.marks)R3D.marks[k].count=0;
   for(const k in R3D.crowd)if(R3D.crowd[k])for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;

@@ -16,7 +16,8 @@ const ultArena=()=>!!S&&skArena()&&S.mode==='play';
 function ultKill(e){
   if(!skArena())return;
   const u=S.ult||(S.ult={c:0,used:0});
-  u.c=Math.min(ULT.need,u.c+(e&&(e.elite||e.champ||e.wanted)?ULT.boss:1));
+  const was=u.c;u.c=Math.min(ULT.need,u.c+(e&&(e.elite||e.champ||e.wanted)?ULT.boss:1));
+  if(was<ULT.need&&u.c>=ULT.need)sfx('ult_ready');   // נצנוץ: הסקיל-על מוכן (audio.js)
 }
 function ultUse(){
   const u=S.ult;if(!ultArena()||!u||u.c<ULT.need)return false;
@@ -27,7 +28,7 @@ function ultUse(){
     damage(e,e.isBoss?base*ULT.boss2:base,'skill',Math.atan2(e.y-P.y,e.x-P.x),t);
   }
   if(S.sk)S.sk.fx.push({ring:1,x:P.x,y:P.y,r:ULT.r,t:0,max:0.6*themeK(),col});
-  S.slow=Math.max(S.slow||0,ULT.slow);S.shake=Math.max(S.shake||0,ULT.shake);sfx('celebrate');
+  S.slow=Math.max(S.slow||0,ULT.slow);S.shake=Math.max(S.shake||0,ULT.shake);sfxCast(t,1.3);   // הצליל של סוג הנזק של הנשק, נמוך וחזק (audio.js)
   return true;
 }
 // הכפתור: מוסתר מחוץ לזירה. --cd הוא החלק שעוד לא נטען (כמו בסקילים), ו-ping כשהוא מתמלא

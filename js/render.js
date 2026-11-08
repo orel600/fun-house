@@ -175,9 +175,10 @@ function render(){
   // actors sorted by y
   // מציירים רק מי שעל המסך: עם מאות אויבים זה חוסך את רובם
   const actors=enemies.filter(e=>e.isBoss||onScreen(e.x+ox,e.y+oy));actors.push({isPlayer:true,y:P.y});actors.sort((a,b)=>a.y-b.y);
-  for(const a of actors){if(a.isPlayer)drawPlayer();
+  for(const a of actors){const hf=hf2d(a);   // נטייה של הגוף במכה (hitfeel.js)
+    if(a.isPlayer)drawPlayer();
     else if(a.big&&!R3D.on){ctx.save();ctx.translate(a.x,a.y);ctx.scale(a.big,a.big);ctx.translate(-a.x,-a.y);drawEnemy(a);ctx.restore()}
-    else drawEnemy(a)}
+    else drawEnemy(a);hf2dEnd(hf)}
   drawAgeFx();   // זוהר, שובל וחלקיקים על נשק משודרג (aging.js)
   drawSkills(ox,oy);   // טבעות וברקים של סקילים, וסימני רטוב/קפוא/הלם (skills.js)
   drawOrbits();drawDivine();   // החפצים המסתובבים (orbit.js)

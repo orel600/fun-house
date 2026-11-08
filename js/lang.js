@@ -193,6 +193,14 @@ const TEXT={
   'mb.r.warrior':{he:'נזק מקרוב',en:'Close-range damage'},
   'mb.r.hunter':{he:'נזק מרחוק',en:'Ranged damage'},
   'mb.r.mage':{he:'שליטה ועזרה',en:'Control and support'},
+  'mb.k.assassin':{en:'Assassin'},'mb.r.assassin':{en:'Assassin: hunts weak targets'},
+  'mb.s.shadowstep':{en:'Shadowstep: appear behind an enemy, empower your next hit'},
+  'mb.s.vanish':{en:'Vanish: smoke and flip away. Untargetable'},
+  'mb.s.deathmark':{en:'Death Mark: detonates with the damage you dealt'},
+  'mb.i.fang':{en:'Silver Fangs'},'mb.i.venom':{en:'Venom Edge'},
+  'mb.st.critp':{en:n=>'+'+n+'% crit chance'},
+  'mb.p.venom':{en:'Venom: your hits poison for 2.5s'},
+  'mb.w.vanish':{en:'Vanished!'},'mb.w.marked':{en:'Marked!'},
   'mb.s.anvil':{he:'סדן נופל: קופץ ומהמם',en:'Anvil Drop: leap in and stun'},
   'mb.s.taunt':{he:'קריאת קרב: מושך, מגן, וכולם תוקפים אותך',en:'Battle Cry: pull, shield, enemies must hit you'},
   'mb.s.wall':{he:'חומת ברזל: מושכת, מהממת וחוסמת',en:'Iron Wall: pull in, stun and trap'},
@@ -208,6 +216,7 @@ const TEXT={
   'mb.ult':{he:'על, רמה 6',en:'ultimate, level 6'},
   'mb.start':{he:'המשחק התחיל! החיילים יוצאים',en:'Match on! Minions marching'},
   'mb.win':{he:'ניצחון!',en:'Victory!'},'mb.lose':{he:'הפסד',en:'Defeat'},
+  'mb.draw':{en:'Draw'},   // moba.js: תיקו בסוף הזמן (אותם מבנים ואותן הריגות)
   'mb.again':{he:'עוד משחק',en:'Play again'},'mb.home':{he:'הביתה',en:'Home'},
   'mb.exit':{he:'יציאה מהמשחק',en:'Leave match'},
   'mb.you':{he:'אתה',en:'You'},'mb.bot':{he:'בוט',en:'Bot'},
@@ -262,6 +271,7 @@ const TEXT={
   'mb.tower1':{he:'הרסת מגדל!',en:'Tower destroyed!'},
   'mb.ultReady':{he:'סקיל-העל מוכן!',en:'Ultimate ready!'},
   'mb.cancel':{he:'ביטול',en:'Cancel'},
+  'mb.atk':{en:'Attack: tap to hit, drag onto an enemy to lock it'},   // moba-atk.js: כפתור התקיפה
   // ריפוי, לחשים ומסך הבנייה (js/moba-spells.js)
   'mb.heal':{he:'ריפוי',en:'Heal'},'mb.healD':{he:'מרפא 15% מהחיים שלך. לכל גיבור, בנוסף ללחש.',en:'Restores 15% of your health. Every hero has it, on top of the spell.'},
   'mb.spCd':{he:n=>'טעינה '+n+' שנ\'',en:n=>n+'s cooldown'},
@@ -611,6 +621,20 @@ const TEXT={
   'gico.new':{he:'חדש',en:'New'},
   'gico.old':{he:'קלאסי',en:'Classic'},
   'credits.icons':{he:'אייקונים: Lorc, Delapouite ויוצרים נוספים מ-game-icons.net, ברישיון CC BY 3.0. הצבעים והמסגרות שונו.',en:'Icons by Lorc, Delapouite and other contributors from game-icons.net, licensed under CC BY 3.0. Colors and frames were changed.'},
+  // חלון הקרדיטים (js/credits.js, W7 8.11.2026). English only
+  'cr.btn':{en:'Credits'},
+  'cr.title':{en:'Credits'},
+  'cr.intro':{en:'Everything the game borrows, and under what terms. The full list with file paths: CREDITS.md in the project.'},
+  'cr.license':{en:'license'},
+  'cr.mochi':{en:'Mochi Lab: effect and skill sprite sheets (Mega Bundle, bought on itch.io). Commercial asset license; only the converted sheets ship with the game.'},
+  'cr.gicons':{en:'game-icons.net: skill, tree, weapon and menu icons by Lorc, Delapouite and other contributors. CC BY 3.0, colors and frames changed.'},
+  'cr.kaykit':{en:'KayKit by Kay Lousberg: 3D characters, animations, weapons, buildings and nature. CC0.'},
+  'cr.quat':{en:'Quaternius: arena monsters, and the skeleton and animations of the pets. CC0.'},
+  'cr.claw':{en:'Creative Claw: painted title, frames, buttons, item, resource, skill and portrait images. Used with permission of its creator, Itay.'},
+  'cr.kenney':{en:'Kenney: sound effects (Impact, Interface, RPG and Digital Audio packs). CC0. Two sounds were synthesized in code.'},
+  'cr.fonts':{en:'Fonts: Heebo and Secular One, loaded from Google Fonts. SIL Open Font License 1.1.'},
+  'cr.three':{en:'three.js with its GLTF loader and skeleton utils, and MeshoptDecoder. MIT License.'},
+  'cr.own':{en:'Made for this game: hero and pet drawings by Nir (with Gemini), their 3D models (TRELLIS and Hunyuan3D on Hugging Face), two Blender weapons, all code, design and texts.'},
   'shadowGroup':{he:'צללים',en:'Shadows'},'shadow.on':{he:'דלוק',en:'On'},'shadow.off':{he:'כבוי',en:'Off'},   // look-hd.js
   'vfxqGroup':{he:'איכות אפקטים',en:'Effects quality'},'vfxq.hi':{he:'גבוהה',en:'High'},'vfxq.lo':{he:'נמוכה',en:'Low'},   // vfx3d.js
   'fxGroup':{he:'אפקטים',en:'Effects'},'fx.full':{he:'מלא',en:'Full'},'fx.less':{he:'פחות',en:'Fewer'},
@@ -619,20 +643,18 @@ const TEXT={
   'w.goHome':{he:'חזרה לכפר',en:'Back to the village'},
   'w.gate.grove':{he:'זירת החורשה',en:'Grove Arena'},
   'w.gate.pit':{he:'זירת הבור',en:'Quarry Pit Arena'},
-  'w.arenaInfo':{he:'ריצה עד הבוס. השלל מהזירה נכנס לתרמיל גם אם נופלים, ובסוף חוזרים לשער הזה.',en:'A run until the boss. Arena loot goes in your bag even if you fall, and you come back to this gate.'},
+  'w.arenaInfo':{he:'ריצה עד הבוס. השלל מהזירה נכנס לתרמיל גם אם נופלים, ובסוף חוזרים לשער הזה.',en:'A 10-wave gauntlet: shifting walls mid-run, a boss at the end. Arena loot goes in your bag even if you fall, and you come back to this gate.'},
   'w.enterArena':{he:'כניסה לזירה',en:'Enter the arena'},
-  'w.enterMaze':{he:'זירת מבוך: קירות שמשתנים',en:'Maze arena: shifting walls'},
-  'w.enterBoss':{he:'זירת בוסים: שלושה בוסים ברצף',en:'Boss arena: three bosses in a row'},
-  'bossar.count':{he:(i,n)=>'בוס '+i+'/'+n,en:(i,n)=>'Boss '+i+'/'+n},
-  'bossar.next':{he:(i,n,s)=>'בוס '+i+'/'+n+' בעוד '+s,en:(i,n,s)=>'Boss '+i+'/'+n+' in '+s},
-  'w.enterWaves':{he:'זירת גלים: 10 גלים ובוס',en:'Wave arena: 10 waves and a boss'},
-  // זירת גלים (arenas.js)
+  // הזירה: גלים (arenas.js)
   'wave.start':{he:(i,n)=>'גל '+i+'/'+n,en:(i,n)=>'Wave '+i+'/'+n},
   'wave.last':{he:'גל אחרון! הבוס בדרך',en:'Final wave! The boss is coming'},
   'wave.clear':{he:i=>'גל '+i+' נוקה!',en:i=>'Wave '+i+' cleared!'},
   'wave.count':{he:(i,n,l)=>'גל '+i+'/'+n+' · נשארו '+l,en:(i,n,l)=>'Wave '+i+'/'+n+' · '+l+' left'},
   'wave.final':{he:n=>'גל '+n+'/'+n+' · בוס',en:n=>'Wave '+n+'/'+n+' · Boss'},
   'wave.next':{he:(i,s)=>'גל '+i+' בעוד '+s,en:(i,s)=>'Wave '+i+' in '+s},
+  'wave.ring':{en:(i,n)=>'Wave '+i+'/'+n+' · Surrounded!'},   // arenas.js: גל הטבעת
+  'wave.time':{en:i=>'Wave '+i+' over: the next one is coming'},   // arenas.js: הזמן של הגל נגמר (waveMax)
+  'arena.wake':{en:s=>'The arena wakes... '+s},   // arenas.js: ספירה לאחור לפני הגל הראשון
   'w.back':{he:'חזרה לשער',en:'Back to the gate'},
   'w.fell':{he:'נפלת בדרך',en:'You fell out there'},
   'w.lost':{he:'איבדת חצי מכל משאב שבתרמיל:',en:'You lost half of every resource in your bag:'},
@@ -1243,6 +1265,9 @@ const TEXT={
   'pow.hero':{he:'עוצמה',en:'Power'},   // מספר העוצמה של הגיבור, בראש טור הסטטים (power.js)
   // טור הסטטים בחלון הציוד (gearui.js)
   'gui.stats':{he:'סטטים',en:'Stats'},
+  'gm.title':{en:'Gathering'},'gm.wood':{en:'Woodcutting'},'gm.stone':{en:'Mining'},'gm.plant':{en:'Foraging'},
+  'gm.lv':{en:t=>'Rank '+t},'gm.max':{en:'max'},'gm.up':{en:(f,t)=>f+' rank '+t+'!'},
+  'gm.u2':{en:'Loot is pulled from farther away'},'gm.u3':{en:'Each hit also strikes a neighbor'},'gm.u4':{en:'Stronger hits on resources'},'gm.u5':{en:'Three at once, with golden sparkles'},
   'gui.q':{he:(n,r)=>'איכות: '+n+' מתוך '+r,en:(n,r)=>'Quality: '+n+' of '+r},
   'gui.up':{he:'לשדרג',en:'Upgrade'},
   'gui.upVil':{he:'לשדרג בנפחייה בכפר',en:'Upgrade at the village forge'},

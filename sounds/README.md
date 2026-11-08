@@ -1,6 +1,6 @@
 # צלילים
 
-כל הצלילים כאן מחבילות של **Kenney** (www.kenney.nl), ברישיון **CC0** (נחלת הכלל): מותר להשתמש, לשנות ולהפיץ בלי לבקש רשות. הקרדיט לא חובה, אבל מגיע לו.
+כל הצלילים כאן ברישיון **CC0**, רובם מחבילות של **Kenney** (www.kenney.nl), והשאר מ-OpenGameArt (נחלת הכלל): מותר להשתמש, לשנות ולהפיץ בלי לבקש רשות. הקרדיט לא חובה, אבל מגיע לו.
 https://creativecommons.org/publicdomain/zero/1.0/
 
 הקבצים הוסבו ל-mp3 מונו, 22kHz, ונחתך מהם השקט בהתחלה ובסוף, כדי שיהיו קטנים (כ-34KB ביחד).
@@ -20,5 +20,24 @@ https://creativecommons.org/publicdomain/zero/1.0/
 | celebrate.mp3 | שדרוג, שלל נדיר | Interface Sounds | confirmation_002 |
 | bell.mp3 | פעמון הערפל באגם (lake-bell.js) | נוצר בקוד (סינתזה), לא Kenney | - |
 | creak.mp3 | חריקה של גשר צף באגם | נוצר בקוד (סינתזה), לא Kenney | - |
+| ui.mp3 | התראה רכה (ספירה, גל נוקה, כפתורים בחלונות) | Kenney Interface Sounds | confirmation_001 |
+| cast_physical.mp3 | הטלת סקיל פיזי | Kenney Impact Sounds | impactPunch_heavy_001 |
+| cast_fire.mp3 | הטלת סקיל אש | lentikula, Basic Spell Impacts (CC0, OpenGameArt) | Fire Spell Impact 3 |
+| cast_water.mp3 | הטלת סקיל מים | lentikula, Basic Spell Impacts (CC0, OpenGameArt) | Water Spell Impact 4 |
+| cast_ice.mp3 | הטלת סקיל קרח | lentikula, Basic Spell Impacts (CC0, OpenGameArt) | Ice Spell Impact 5 |
+| cast_lightning.mp3 | הטלת סקיל ברק | CoMiGo, Bleeps and Bloops (CC0, OpenGameArt) | ElectroZap |
+| cast_earth.mp3 | הטלת סקיל אדמה | lentikula, Druid Spell Impacts (CC0, OpenGameArt) | Earth Spell Impact 2 |
+| wave_start.mp3 | קרן: גל מתחיל בזירה | stumpystrust, "Their coming" generic horn (CC0, OpenGameArt) | theircoming3, השנייה הראשונה וחצי |
+| streak1.mp3, streak2.mp3, streak3.mp3 | רצף הריגות, שלוש דרגות | Kenney Interface Sounds | confirmation_003, בגובה 0, +4 ו-+7 חצאי טונים |
+| ult_ready.mp3 | הסקיל-על מוכן | rubberduck, 80 CC0 RPG SFX (OpenGameArt) | item_gem_04 |
+| tower_fall.mp3 | מגדל או בסיס נופלים (משחקי השאול) | Kenney Sci-fi Sounds | lowFrequency_explosion_001 |
+| base_alarm.mp3 | הבסיס שלך מותקף | Kenney Interface Sounds | error_005 |
+| me_die.mp3 | אתה נופל (משחקי השאול) | Kenney Digital Audio | lowThreeTone |
+| me_back.mp3 | אתה חוזר לחיים | lentikula, Healing Spell Impacts (CC0) | Healing Spell Impact 9 |
+| gamble_tick.mp3 | גלגל ההימור: תקתוק | Kenney Casino Audio | chip-lay-1 |
+| gamble_win.mp3 | ניצחון בהימור | Kenney Casino Audio | chips-handle-1 |
+| gamble_lose.mp3 | הפסד בהימור | Kenney Digital Audio | lowDown |
+
+סבב צלילים 1 ו-2 (8.11.2026, docs/concept/sound.md): `cast_` ו-`ui` נבחרו בדף ההאזנה של ARI (MAX בחר במקום אוראל). צלילי הרגעים (סבב 2) נבחרו על ידי ARI, ומקודדים ב-48k כדי לעמוד בתקציב של 200KB. החלפה = קובץ אחר באותו שם, ו-`node tools/build-sounds.js`.
 
 צליל חדש: קובץ קצר כאן, שורה ב-`SOUNDS` בראש `js/audio.js`, ואז `node tools/build-sounds.js`, שבונה מחדש את `js/sounds-data.js`.

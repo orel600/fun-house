@@ -5,12 +5,20 @@
 
 ## איפה הכל
 
-- **החבילות המלאות לא בריפו.** הן 17GB, נקנו, והריפו ציבורי. הסקריפט שמוריד אותן (`fetch-and-extract.sh`) נשלח לאוראל בהודעה פרטית, ולא נכנס לריפו. הוא מוריד מ-Google Drive ומחלץ ל-`public/fx/<חבילה>/`. סביבת הענן `fun-house` כבר פתוחה ל-Drive.
+- **החבילות המלאות לא בריפו.** הן 17GB, נקנו, והריפו ציבורי. הסקריפט שמוריד אותן (`fetch-and-extract.sh`) נמצא בדרייב, בתיקייה "Mochi Lab Mega Bundle - FX Packs" של אוראל, ולא נכנס לריפו. הוא מוריד מ-Google Drive ומחלץ ל-`public/fx/<חבילה>/`. סביבת הענן `fun-house` כבר פתוחה ל-Drive.
 - **רק מה שבשימוש נכנס לריפו**, מוקטן:
   - `tools/fx-list.json`: הרשימה. לכל אפקט: id → חבילה, שם הגיליון וגודל פריים בפיקסלים.
   - `tools/fx-convert.py <תיקיית החבילות>`: ממיר כל אפקט ברשימה ל-`fx/<id>.webp` (בערך 10 עד 290KB), וכותב את `js/fx-data.js`. אפקט שכבר הומר נשאר כמו שהוא, ו-`--all` ממיר הכל מחדש.
   - `js/fxlib.js`: הנגן. אחד לכל המשחק.
 - כל גיליון הוא רשת של 6 עמודות (24 פריימים, ובחבילות procedural 48). הנגן מנגן 30 פריימים בשנייה, כלומר 0.8 שניות לאפקט רגיל.
+
+## לניר ול-Claude שלו: כל החבילה, לא רק מה שכבר בריפו (8.11.2026)
+
+בריפו יש רק האפקטים שכבר הומרו (`fx/`, ברשימה `tools/fx-list.json`). כל הבאנדל גדול פי עשרים: 44 חבילות, 5275 גיליונות. ניר שותף בתיקייה בדרייב, ויש לו גישה לכולה.
+1. **מחפשים קודם בקטלוג המלא:** [docs/refs/fx-catalog.md](refs/fx-catalog.md) (שורה לכל אפקט) ו-`docs/refs/fx-catalog/<חבילה>.webp` (דף תמונות לכל חבילה). אל תציע רק מתוך `fx/`.
+2. **מורידים את החבילות:** בדרייב של ניר, "Shared with me", התיקייה "Mochi Lab Mega Bundle - FX Packs". בתוכה `fetch-and-extract.sh` ותיקיית `chunks` (קובצי zip מפוצלים). מורידים ומחלצים **לתיקייה מחוץ לריפו** (או ל-`public/fx/`, שנמצאת ב-.gitignore). את הקישור לתיקייה לא כותבים בריפו: הריפו ציבורי.
+3. **ממירים רק מה שבחרת:** מוסיפים שורה ל-`tools/fx-list.json` (id → חבילה, גיליון, גודל פריים), ומריצים `python tools/fx-convert.py <תיקיית החבילות>`. נכנס לריפו רק `fx/<id>.webp` המוקטן ו-`js/fx-data.js`.
+4. **לא מעלים לריפו קבצים מקוריים מהחבילות**, ולא את הסקריפט. שאלת הרישיון לריפו ציבורי נשלחה ל-Mochi Lab ב-8.11, ועד שתגיע תשובה ממשיכים רק עם אפקטים מומרים.
 
 ## איך משתמשים
 
@@ -138,7 +146,7 @@ fxPreload(['levelup','ko']);                                    // לטעון מ
 
 ## Weather in the arena and boss fights (js/arena-weather.js, W4, 7.11.2026)
 
-A driver over the core (js/weather.js), with every number in `AWX`. The 'boss' scene: fog and dark clouds (`calm`), clouds and light rain as his rage builds (`building`), heavy rain and a storm when he gets angry (rage from boss.js, or phase 2: `storm`). The 'arena' scene by arena type (`AWX.arena`): none in classic and maze, light fog in waves, fog and clouds in the boss arena. After a boss falls: `clearing` for 6 seconds. A big attack (charge, shock ring, mines) and a new phase bring `weatherBolt` onto the boss himself, never onto the danger zone. **Readability first:** the core draws right after the 3D layer, and in a 2D arena right after the floor, so the mines, the shock rings, `fxDraw`, skills, damage numbers and the HUD are on top of it. Intensities × `AWX.k` (0.75): the rain reaches about 0.27 opacity. boss.js is not touched: the attacks are seen from outside.
+A driver over the core (js/weather.js), with every number in `AWX`. The 'boss' scene: fog and dark clouds (`calm`), clouds and light rain as his rage builds (`building`), heavy rain and a storm when he gets angry (rage from boss.js, or phase 2: `storm`). The 'arena' scene (`AWX.arena`): light fog in the arena (gauntlet), none when `S.arena` is classic. After a boss falls: `clearing` for 6 seconds. A big attack (charge, shock ring, mines) and a new phase bring `weatherBolt` onto the boss himself, never onto the danger zone. **Readability first:** the core draws right after the 3D layer, and in a 2D arena right after the floor, so the mines, the shock rings, `fxDraw`, skills, damage numbers and the HUD are on top of it. Intensities × `AWX.k` (0.75): the rain reaches about 0.27 opacity. boss.js is not touched: the attacks are seen from outside.
 
 
 אפקט חדש: מוסיפים שורה ב-`tools/fx-list.json` (שם החבילה והגיליון מתוך `public/fx/<חבילה>/<חבילה>/sprite_sheets/`), מריצים את `tools/fx-convert.py`, ומוסיפים אותו לרשימה כאן.
@@ -234,3 +242,16 @@ A driver over the core (js/weather.js), with every number in `AWX`. The 'boss' s
 ## אפקטים בממשק (js/fxui.js, 7.11.2026)
 
 `fxUi` מצייר על הקנבס, כלומר מתחת לחלונות. לכן לממשק יש נגן קטן משלו ב-HTML, `fxDom(id,x,y,opt)`, שמצייר מעל החלונות מאותם גיליונות (`anchor` נצמד לאלמנט ונעלם כשהוא נסגר, `lo` מצייר מתחת להודעה כדי לא לכסות טקסט). הכל מוגדר בטבלאות בראש fxui.js, בלי לגעת בקבצים אחרים: `FXUI.hooks` (קווסט הושלם או חדש, דרגה, ספר, אתגר, קנייה בחנות, בנפחייה, בשוק ובקישוטים, מתנה יומית, חפץ לתרמיל, וטעינת גרסה חדשה), ו-`FXUI.open` (מסגרת קסם למתנה היומית, `levelup` בעלית רמה). תנועת הפתיחה של חלון נשארת של style.css (`winIn`), ולא דורסים אותה: דריסה מפעילה אותה מחדש, ובזמן ה-scale בועה ב-position:fixed זזה. מעבר בין מקומות מקבל וילון כהה של 0.35 שניות (בלי `ui_trans`: הוא מעבר שממלא את המסך, ובגודל שלו הוא ריבוע אטום. `FXUI.never`), כפתור חשוב מקבל `ui_juice` ושאר הכפתורים `ui_click` (ריחוף רק עם עכבר), וכרטיס חפץ זהב או אגדי זוהר ב-`ui_epic`/`ui_legend`. **כשחלון פתוח** מנוגן רק אפקט שצמוד לאלמנט (`anchor`) או לנגיעה של השחקן (`tap`), ואפקט חופשי שכבר רץ נעצר כשחלון נפתח, כדי שלא ישב על הכותרת. אותו דבר לכרטיסים עם טקסט שאינם חלון (`FXUI.cards`: עלית רמה בעולם, אויב חדש, נמסיס, טיפ ראשון, שורת ההודעות): אפקט חופשי לא נוחת עליהם, ומה שכבר רץ עליהם נעצר. שום דבר לא חוסם נגיעה, ו-check.js בודק את שניהם, גם בכל רגע של צילום (`fxuiOverWin`).
+
+## מה חסר: גיליונות לסבב ההמרה הבא (W7, 8.11.2026)
+
+בקשות שעלו בסבב הגרפיקה של 8.11 ואי אפשר למלא בלי החבילות המלאות (הן במחשב של אוראל, לא בענן). לכל אחת החבילה והגיליון המוצעים מתוך [docs/refs/fx-catalog.md](refs/fx-catalog.md), כדי שאוראל יוסיף שורה ל-`tools/fx-list.json` ויריץ `python tools/fx-convert.py <תיקיית החבילות>`.
+בדיקת שלמות אחרי כל המרה: `npm run fx:audit` (tools/fx-audit.js).
+
+| מי ביקש | מה חסר | הצעה מהקטלוג | id מוצע |
+| --- | --- | --- | --- |
+| W2 (משחקי השאול) | **פגיעת הרשת**: היום `sk_net` הוא וו (`hookshot_hook_green`) ו-`sk_net_root` שורש. חסר גיליון של רשת או חבל שנכרך על המטרה | `bullet-projectile-pack-vol1` / `chained` (שורה של חמש חוליות, "row of five linked dots") לחבל שנמתח, ול"נלכד" `procedural-magic-vol1` עם chains (לבדוק בדף `fx-catalog/procedural-magic-vol1.webp` איזה גיליון מתאים לעיגול סביב דמות) | `sk_net_hit`, `sk_net_bind` |
+| W2 (משחקי השאול) | **גשם חצים צפוף יותר**: `sk_rain` (`arrow_volley_arc_amber`) עדין מדי למטח הסופי | `bullet-projectile-pack-vol1` / `arrow_volley` (שלושה חצים מקבילים) לשכבה נוספת, ואפשר `arrow_flame` לחץ בוער במטח האחרון | `sk_rain_dense`, `sk_rain_flame` |
+| W1 (זירה) | **fade בסוף לאפקטים שחוזרים** (`wcirc_*`, `sk_blizzard`, `sk_rage`): דיסק שנעלם בבת אחת כש-`dur` נגמר | זה לא גיליון אלא אפשרות בנגן: `fade` (שניות) ב-`fxPlay`, שמוריד `alpha` לקראת סוף `dur` או אחרי `fxStop`. שינוי קטן ב-`js/fxlib.js` (`fxFrame`/`fxDraw`), בסשן שהקובץ בבעלותו | אפשרות `fade` ב-`fxPlay` |
+| דוח fx-audit | **גיליונות בלי שום שימוש בקוד:** `pickup_heart`, `st_poison`, `ui_xp`. לא מוחקים: `st_poison` מחכה למצב רעל, `pickup_heart` לריפוי בעולם, `ui_xp` לפס ה-XP | - | - |
+

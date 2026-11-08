@@ -40,7 +40,7 @@ function skmSeg(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy||1,t=Ma
     for(const e of enemies){if(e.dead||skmSeg(e.x,e.y,P.x,P.y,bx,by)>D.w+e.r)continue;damage(e,base,'skill',a,D.dt)}
     m.fx.push({k:'beam',ax:P.x,ay:P.y-6,bx,by,t:0,max:SKMORE.life.beam*themeK(),col});P.aim=a}
   else if(id==='bloom'){m.pools.push({x:P.x,y:P.y,t:0,max:D.t,tick:0,col})}
-  k.cd[i]=D.cd;k.used++;m.cast++;sfx('shoot');S.shake=Math.max(S.shake,2);
+  k.cd[i]=D.cd;k.used++;m.cast++;sfxCast(D.dt);S.shake=Math.max(S.shake,2);   // הצליל של סוג הנזק (audio.js)
   return true}}
 
 {const old=skillsUpdate;skillsUpdate=function(dt){

@@ -216,7 +216,7 @@ function enterWorld(at,reg){
 }
 // דרך לאזור אחר. חוזרים לאזור הקודם ליד הדרך שממנה יצאו
 function wGo(to){if(depthsGo(to))return;const from=S.wd.reg;worldUi(false);enterWorld(WR().back===to?from:'home',to)}
-function wArena(id,a){wRet=id;worldUi(false);startRun(a);questEvent('reach','arena')}
+function wArena(id){wRet=id;worldUi(false);startRun();questEvent('reach','arena')}
 function wHome(){worldUi(false);enterVillage()}
 
 /* ---- מקורות משאבים: אותם מקורות כמו ב-nodes.js, במקומות קבועים. שבור צומח מחדש אחרי regrow (nodeDown) ---- */
@@ -224,7 +224,7 @@ function wNodes(){
   const R=WR(),out=[],block=Object.values(wGates(true)),wet=R.ponds||[];
   R.fields.forEach((F,fi)=>{const K=wKind(F.kind);
     for(let i=0,tries=0;i<F.n&&tries<F.n*12;tries++){
-      const a=hash(fi*31+tries,7)*Math.PI*2,r=Math.sqrt(hash(tries,fi*17+3))*F.r,x=F.x+Math.cos(a)*r,y=F.y+Math.sin(a)*r;
+      const [x,y]=gSpot(F,fi,tries,K);   // בחורשות קטנות בתוך השדה (gather.js)
       if(tBlocked(x,y)||tBlocked(x+K.r,y)||tBlocked(x-K.r,y)||out.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||block.some(g=>Math.hypot(g.x-x,g.y-y)<g.r+WORLD.arrive)||wet.some(p=>Math.hypot(p.x-x,p.y-y)<p.r+K.r))continue;
       out.push({node:true,id:fi+'_'+i,kind:F.kind,x,y,r:K.r,hp:K.hp,max:K.hp,mult:multOf(K.tags),flash:0,back:0,regrow:WORLD.regrow});i++}});
   return out;
@@ -300,6 +300,7 @@ function worldUpdate(dt){
   const {ix,iy}=movePlayer(dt);if(P.moving&&!nearest(440))P.aim=Math.atan2(iy,ix);
   ridgeSlip(dt);   // אגם קפוא: החלקה (ridge-hazards.js)
   if(typeof fxwUpdate==='function')fxwUpdate(dt);
+  gUpdate(dt);   // תחושת איסוף: חתיכות, מקור שמתכווץ וצמיחה מחדש (gather.js)
   if(typeof fxcUpdate==='function')fxcUpdate(dt);   // אפקטים של קרב: אזהרות על הרצפה ונצנוץ מרבצים (fxcombat.js)   // שכבת אפקטים: מזג אוויר, צעדים, לבה ומקום הקווסט (fxworld.js)
   placeClamp(P);
   srUpdate(dt);   // הסלעים המרחפים בלב הצל: זזים ולוקחים את השחקן איתם (shadowrocks.js)
@@ -368,11 +369,11 @@ function worldHud(){
   const back=k==='home'&&WR().back,to=back||(wIsPath(k)&&k);
   pn.innerHTML=to?winHead(wGateName(k))+'<p>'+T('w.pathInfo.'+to)+'</p><button class="vbtn" data-act="path" data-g="'+to+'">'+T('w.goPath')+'</button>'
     :k==='home'?winHead(T('w.home'))+'<p>'+T('w.homeInfo')+'</p><button class="vbtn" data-act="home">'+T('w.goHome')+'</button>'
-    :winHead(T('w.gate.'+k))+'<p>'+T('w.arenaInfo')+'</p><button class="vbtn" data-act="arena" data-g="'+k+'">'+T('w.enterArena')+'</button><button class="vbtn" data-act="arena" data-g="'+k+'" data-a="waves">'+T('w.enterWaves')+'</button><button class="vbtn" data-act="arena" data-g="'+k+'" data-a="boss">'+T('w.enterBoss')+'</button><button class="vbtn" data-act="arena" data-g="'+k+'" data-a="maze">'+T('w.enterMaze')+'</button>';   // זירת גלים (arenas.js)
+    :winHead(T('w.gate.'+k))+'<p>'+T('w.arenaInfo')+'</p><button class="vbtn" data-act="arena" data-g="'+k+'">'+T('w.enterArena')+'</button>';   // זירה אחת (arenas.js): שני השערים הם שתי כניסות לאותה זירה 
 }
 $('wPanel').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b||!S.wd||S.mode!=='play')return;
-  if(b.dataset.act==='close')wShut();else if(b.dataset.act==='home')wHome();else if(b.dataset.act==='arena')wArena(b.dataset.g,b.dataset.a);else if(b.dataset.act==='path')wGo(b.dataset.g);
+  if(b.dataset.act==='close')wShut();else if(b.dataset.act==='home')wHome();else if(b.dataset.act==='arena')wArena(b.dataset.g);else if(b.dataset.act==='path')wGo(b.dataset.g);
 });
 
 function wShut(){if(!S.wd)return;S.wd.open=null;worldHud()}
@@ -419,7 +420,7 @@ function drawWorld(){
   }
   wsDraw();   // אבני מסע (waystones.js)
   for(const n of S.nd.list){
-    if(n.dead)continue;const K=wKind(n.kind),fl=n.flash>0,r=n.r,x=n.x,y=n.y;
+    if(n.dead){gStump2d(n);continue}const K=wKind(n.kind),fl=n.flash>0,r=n.r*gScale(n),x=n.x+gSway(n)*5,y=n.y;   // גדם, מתכווץ ומתנדנד (gather.js)
     if(!R3D.on){
       ctx.fillStyle='rgba(5,7,13,0.35)';ctx.beginPath();ctx.ellipse(x,y+r*0.7,r*1.1,r*0.4,0,0,7);ctx.fill();ctx.strokeStyle=C.ink;ctx.lineWidth=2;
       if(K.shape==='tree'){ctx.fillStyle=fl?'#fff':'#6B4A2B';ctx.fillRect(x-4,y-4,8,r*0.9);ctx.fillStyle=fl?'#fff':K.col;ctx.beginPath();ctx.arc(x,y-r*0.6,r,0,7);ctx.fill();ctx.stroke()}
@@ -429,6 +430,7 @@ function drawWorld(){
     }
     if(n.hp<n.max){const bw=r*2;ctx.fillStyle='rgba(5,7,13,0.6)';ctx.fillRect(x-bw/2,y-r*2.2,bw,4);ctx.fillStyle=C.gold;ctx.fillRect(x-bw/2,y-r*2.2,bw*Math.max(0,n.hp/n.max),4)}
   }
+  gDraw();   // החתיכות שעפות מהמכות (gather.js)
   drawWnpcs();   // worldnpc.js
   wellDraw();   // הבאר היבשה במדבר (desertwell.js)
   fishDraw();   // החכה והמצוף (fishing.js)

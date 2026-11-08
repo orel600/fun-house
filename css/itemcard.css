@@ -15,7 +15,7 @@
 .ictile>*{flex:none}
 #vPanel.bw .ictile{height:auto;min-height:72px}
 .ictile .icp{display:grid;place-items:center;width:52px;height:52px;border-radius:10px;font-size:30px;line-height:1}
-.ictile .icp .ri{width:44px;height:44px;object-fit:contain}
+.ictile .icp .ri{width:var(--ic-l);height:var(--ic-l);object-fit:contain}
 .ictile .icn{font:700 10.5px/1.15 var(--body);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--rar)}
 .ictile[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold),0 0 12px #F4C74F66;background:#1D1A12}
 .ictile.poor .icp{opacity:.45;filter:saturate(.5)}
@@ -53,9 +53,9 @@
 .iccost{display:flex;flex-wrap:wrap;gap:4px;flex:1 1 auto;min-width:0}
 .icc{display:inline-flex;align-items:center;gap:3px;padding:2px 7px 2px 4px;border-radius:10px;background:#0008;border:1px solid #5EE07A88;font:800 13px var(--body)}
 .icc.miss{border-color:#FF6B6B;color:#FF9A9A}
-.icc .ri{width:20px;height:20px;object-fit:contain}
+.icc .ri{width:var(--ic-s);height:var(--ic-s);object-fit:contain}
 #vPanel.bw .icfoot .vbtn.icbuy{flex:none;width:auto;min-width:120px;max-width:55%;min-height:48px;font-size:18px;margin:0}
-.icbuy .ri{width:18px;height:18px;vertical-align:middle}
+.icbuy .ri{width:var(--ic-s);height:var(--ic-s);vertical-align:middle}
 #vPanel.bw .icfoot .vbtn.icbuy:disabled{font-size:13px}
 .icbody .ireq,.icbody .icls,.icbody .iq{margin:0;font-size:12.5px}
 

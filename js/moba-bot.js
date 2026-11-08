@@ -9,20 +9,31 @@ const MBBOT={
   engage:520,     // מאיזה מרחק מסתכלים על גיבורי האויב
   defend:900,     // מאיזה מרחק באים להגן על מגדל
   wait:1.2,       // כמה שניות הצייד מחכה לגל המים של הקוסמת
+  sin:{retreat:0.5,weak:0.6},   // המתנקש: נסוג מוקדם יותר (הכי מעט חיים), ונכנס לקרב רק כדי לגמור מטרה מתחת ל-60%
   brave:{hp:0.5,odds:0},   // החברים: נלחמים כשהם לפחות כמו האויבים ועם יותר מחצי חיים
   // רמת קושי (אוראל, 6.11: "השחקן הפסיד 4/4"): משנה רק את המוח של בוטי האויב, לא חיים ונזק (כוח שוויוני).
   // think: שניות בין החלטות. skill: כמה מהר מגיבים בסקיל. dodge: הסיכוי לצאת מאזור מסומן. hp ו-odds: נלחמים רק מעל hp מהחיים,
   // ורק כשיש להם odds גיבורים יותר מאשר לנו (אגרסיביות). buy: פי כמה לאט הם קונים חפצים. קשה = כמו החברים שלך
   diff:{
-    easy:  {think:0.9, skill:1.4, dodge:0.15,hp:0.65,odds:1,buy:1.5},   // שחקן ממוצע מנצח בערך 60% (השחקן ה"טיפש" של הבדיקה: כ-55%)
-    normal:{think:0.6, skill:0.75,dodge:0.3, hp:0.5, odds:0,buy:1},     // בערך 50%
-    hard:  {think:0.25,skill:0.15,dodge:0.55,hp:0.5, odds:0,buy:1},
+    // gang: כמה בוטים של האויב תוקפים את השחקן בבת אחת (8.11, DANA, moba-difficulty: 85% מהמיתות בפתיחה היו 2-3 עליו). 3 = בלי הגבלה
+    // items: אחרי כמה חפצים בוט של האויב מפסיק לקנות (8.11, DANA, moba-difficulty: ב"קל" החפצים הפכו אותו לקשה). בלי = בלי הגבלה
+    easy:  {think:0.9, skill:1.4, dodge:0.15,hp:0.65,odds:1,buy:2.5,gang:1,items:3},   // buy 2.5 (היה 1.5, 8.11, DANA, moba-difficulty)
+    normal:{think:0.6, skill:0.75,dodge:0.3, hp:0.5, odds:0,buy:1,gang:2},     // בערך 50%
+    hard:  {think:0.25,skill:0.15,dodge:0.55,hp:0.5, odds:0,buy:1,gang:3},
   },
+  gangSecure:0.2,   // שחקן מתחת ל-20% חיים: מותר לגמור אותו, גם מעל gang (8.11, DANA, moba-difficulty). אחרת השחקן בלתי מנוצח
   def:'easy',key:'fh-mb-diff',
 };
 // המוח של בוט: האויבים לפי רמת הקושי של המשחק (MB.diff), החברים תמיד כמו "קשה"
 const mbFoe=()=>MBBOT.diff[MB&&MB.diff]||MBBOT.diff[MBBOT.def];
 const mbMind=u=>u.team?mbFoe():MBBOT.diff.hard;
+/* לא מתנפלים יחד (8.11, DANA, moba-difficulty): בוט של האויב שבוחר את השחקן (MB.me) כמטרה, כשכבר gang בוטים אחרים מהקבוצה שלו עליו
+   (focus עליו, או בקרב או בהגנה קרוב אליו), צריך לבחור משהו אחר. רק בוטים של האויב, ורק על השחקן. מתחת ל-gangSecure מותר */
+function mbGangFull(u,t){
+  const me=MB.me;if(!me||t!==me||u.team===me.team||me.dead||me.hp<=me.max*MBBOT.gangSecure)return false;
+  let n=0;for(const o of MB.u)if(o!==u&&o.k==='hero'&&o.team===u.team&&!o.dead&&o.bot&&(o.bot.focus===me||(o.bot.mode==='fight'||o.bot.mode==='defend')&&mbDist(o,me)<MBBOT.engage))n++;
+  return n>=mbFoe().gang;
+}
 function mbDiffGet(){let d=null;try{d=localStorage.getItem(MBBOT.key)}catch(e){}return MBBOT.diff[d]?d:MBBOT.def}
 function mbDiffSet(d){if(!MBBOT.diff[d])return;try{localStorage.setItem(MBBOT.key,d)}catch(e){}}
 
@@ -33,19 +44,22 @@ function mbBot(u,dt){
   if(mbRecallBot(u))return;   // חוזר לבסיס: עומד במקום (moba-recall.js)
   if(B.t<=0){B.t=mbMind(u).think*rand(0.8,1.2);mbThink(u)}
   if(B.goal)mbMove(u,B.goal.x,B.goal.y,dt,B.stop||6);
-  const f=B.focus,t=f&&!f.dead&&mbHittable(f)&&mbSeen(f,u.team)&&mbDist(u,f)-f.r-u.r<=A.range?f:mbAutoTarget(u,A.range);
-  mbAttack(u,dt,t,A);
+  if(u.kit==='assassin'&&B.mode==='retreat')u.lungeT=Math.max(u.lungeT||0,MB.t+0.05);   // המתנקש בנסיגה לא מזנק בחזרה אל האויב
+  const f=B.focus;let t=f&&!f.dead&&mbHittable(f)&&mbSeen(f,u.team)&&mbTgt(f)&&mbDist(u,f)-f.r-u.r<=A.range?f:mbAutoTarget(u,A.range);
+  if(t&&mbGangFull(u,t))t=mbAutoTarget(u,A.range,t)||t;   // השחקן כבר מוקף: מטרה אחרת בטווח, ואם אין אחרת אז הוא
+  if(!(u.st.veil>0&&B.mode==='retreat'))mbAttack(u,dt,t,A);   // מתנקש מכוסה בנסיגה: בורח, לא תוקף
   B.skT=(B.skT||0)-dt;if(B.skT<=0){B.skT=mbMind(u).skill*(u.team?rand(0.7,1.3):1);mbBotSkills(u)}
 }
 
 function mbThink(u){
   const B=u.bot,K=MBKIT[u.kit],A=K.atk,dir=u.team?-1:1;   // dir: לכיוון הבסיס של האויב
-  const foeH=MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&mbSeen(o,u.team));   // רואים רק מה שהקבוצה רואה (moba-vision.js)
+  const seenH=MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&mbSeen(o,u.team));   // רואים רק מה שהקבוצה רואה (moba-vision.js)
+  const foeH=seenH.filter(mbTgt);   // מתנקש מכוסה: רואים, אבל לא מטרה
   const allyH=MB.u.filter(o=>o.k==='hero'&&o.team===u.team&&!o.dead&&o!==u);
   const near=(list,r)=>list.filter(o=>mbDist(o,u)<r);
   B.stop=6;B.focus=null;
   // 1. נסוג: חיים נמוכים, עד שהתרפא ליד הבסיס
-  if(u.hp<u.max*MBBOT.retreat||B.mode==='retreat'&&u.hp<u.max*MBBOT.back){B.mode='retreat';B.goal=u.home;return}
+  if(u.hp<u.max*(u.kit==='assassin'?MBBOT.sin.retreat:MBBOT.retreat)||B.mode==='retreat'&&u.hp<u.max*MBBOT.back){B.mode='retreat';B.goal=u.home;return}
   if(mbGambleBot(u))return;   // זכאי לחדר ההימור והקבוצה מאחור: הולך לשם לפעמים (moba-gamble.js)
   // פקודה מהשחקן (mbOrder ב-moba.js): נסיגה אל המגדל הקדמי שלנו, או התקפה יחד איתו
   const O=u.team===0&&MB.order;
@@ -64,19 +78,21 @@ function mbThink(u){
   // 4. גיבורי אויב קרובים: נלחמים רק עם יתרון, או כשהאויב כמעט מת
   const fh=near(foeH,MBBOT.engage);
   if(fh.length){
-    const mine=near(allyH,MBBOT.engage).length+1,weak=fh.reduce((a,b)=>a.hp/a.max<=b.hp/b.max?a:b);
+    const mine=near(allyH,MBBOT.engage).length+1,low=l=>l.reduce((a,b)=>a.hp/a.max<=b.hp/b.max?a:b);let weak=low(fh),gang=false;
+    if(mbGangFull(u,weak)){const o=fh.filter(h=>h!==MB.me);if(o.length)weak=low(o);else gang=true}   // לא מתנפלים יחד: החלש הבא, ואם אין אז כמו בלי יתרון
     const under=MB.u.some(b=>(b.k==='tower'||b.k==='base')&&b.team!==u.team&&!b.dead&&mbDist(b,weak)<MOBA.tower.range+20);
-    const D=u.team?mbFoe():MBBOT.brave,brave=mine>=fh.length+D.odds&&u.hp>u.max*D.hp||weak.hp<weak.max*0.3&&u.hp>u.max*0.4;
+    const D=u.team?mbFoe():MBBOT.brave;let brave=!gang&&(mine>=fh.length+D.odds&&u.hp>u.max*D.hp||weak.hp<weak.max*0.3&&u.hp>u.max*0.4);
+    if(u.kit==='assassin')brave=brave&&weak.hp<weak.max*MBBOT.sin.weak;   // המתנקש לא פותח קרב: רק מסיים מטרה חלשה
     if(brave&&(!under||weak.hp<weak.max*0.2)){
       B.mode='fight';B.focus=weak;const a=Math.atan2(u.y-weak.y,u.x-weak.x),r=A.range*0.85+weak.r+u.r;
       B.goal={x:weak.x+Math.cos(a)*r,y:weak.y+Math.sin(a)*r};return}
     if(!brave&&fh.some(o=>mbDist(o,u)<MBKIT[o.kit].atk.range+90)){B.mode='kite';B.goal={x:u.x-dir*160,y:u.y*0.7};return}
   }
-  const ck=mbVisLost(u,foeH);if(ck){B.mode='check';B.goal=ck;return}   // איבדנו גיבור ליד שיח: בודקים אותו (moba-vision.js)
+  const ck=mbVisLost(u,seenH);if(ck){B.mode='check';B.goal=ck;return}   // איבדנו גיבור ליד שיח: בודקים אותו (moba-vision.js)
   // 5. גיבור אויב ליד מגדל שלנו: באים להגן
   const mine=MB.u.filter(b=>(b.k==='tower'||b.k==='base')&&b.team===u.team&&!b.dead);
   const threat=foeH.find(o=>mine.some(b=>mbDist(o,b)<MOBA.tower.range+60));
-  if(threat&&mbDist(threat,u)<MBBOT.defend){B.mode='defend';B.focus=threat;B.goal={x:threat.x,y:threat.y};B.stop=A.range*0.8;return}
+  if(threat&&mbDist(threat,u)<MBBOT.defend&&!mbGangFull(u,threat)){B.mode='defend';B.focus=threat;B.goal={x:threat.x,y:threat.y};B.stop=A.range*0.8;return}   // השחקן כבר מוקף: לא באים להגן עליו, ממשיכים הלאה
   // 6. מצור: מגדל של האויב מכה בחייל שלנו, ואין גיבורי אויב קרובים: תוקפים את המגדל
   const eT=MB.u.filter(b=>(b.k==='tower'||b.k==='base')&&b.team!==u.team&&mbHittable(b)).sort((a,b)=>mbDist(a,u)-mbDist(b,u))[0];
   if(eT&&!fh.length&&mbDist(eT,u)<900&&eT.tgt&&eT.tgt.k==='minion'&&eT.tgt.team===u.team){
@@ -86,7 +102,7 @@ function mbThink(u){
   const mins=MB.u.filter(o=>o.k==='minion'&&o.team===u.team&&!o.dead);
   if(mins.length){const front=mins.reduce((a,b)=>(b.x-a.x)*dir>0?b:a),gap=K.front?20:A.shot?150:60;
     B.goal={x:front.x-dir*gap,y:front.y*0.4+u.home.y*0.6}}
-  else{const t=mine.filter(b=>b.k==='tower').sort((a,b)=>Math.abs(a.x)-Math.abs(b.x))[0]||mine[0];B.goal={x:t.x+dir*70,y:u.home.y}}
+  else{const t=mine.filter(b=>b.k==='tower').sort((a,b)=>Math.abs(a.x)-Math.abs(b.x))[0]||mine[0];if(!t)return;B.goal={x:t.x+dir*70,y:u.home.y}}   // בלי חיילים ובלי מגדל או בסיס (הפריים שהבסיס נופל): אין לאן לדחוף
   // מכה אחרונה בחייל חלש בטווח: ה-XP הולך לכולם בסביבה, אבל ככה הגל זז מהר יותר
   const low=MB.u.find(o=>o.k==='minion'&&o.team!==u.team&&!o.dead&&mbDist(o,u)<A.range+40&&o.hp<A.dmg*mbK(u)*1.2);
   if(low)B.focus=low;
@@ -95,10 +111,10 @@ function mbThink(u){
 function mbBotSkills(u){
   if(u.st.stun>0||u.st.dash)return;
   const B=u.bot,K=MBKIT[u.kit],ready=s=>u.cd[s]<=0&&(s!=='ult'||u.lvl>=MOBA.ultAt);
-  const foeH=MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&mbSeen(o,u.team));
-  const foes=MB.u.filter(o=>o.team!==u.team&&!o.dead&&(o.k==='hero'||o.k==='minion')&&mbSeen(o,u.team));
+  const foeH=MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&mbSeen(o,u.team)&&mbTgt(o));
+  const foes=MB.u.filter(o=>o.team!==u.team&&!o.dead&&(o.k==='hero'||o.k==='minion')&&mbSeen(o,u.team)&&mbTgt(o));
   const near=(list,r,c=u)=>list.filter(o=>mbDist(o,c)<r+o.r);
-  const tgt=B.focus&&B.focus.k==='hero'&&!B.focus.dead&&mbSeen(B.focus,u.team)?B.focus:mbNearest(u,foeH,650);
+  const tgt=B.focus&&B.focus.k==='hero'&&!B.focus.dead&&mbSeen(B.focus,u.team)&&mbTgt(B.focus)?B.focus:mbNearest(u,foeH,650);
   const inR=s=>tgt&&mbDist(u,tgt)<=K[s].range;
   const allies=MB.u.filter(o=>o.k==='hero'&&o.team===u.team&&!o.dead);
   const allyLow=allies.some(o=>o.hp<o.max*0.4&&mbDist(o,u)<350);
@@ -141,5 +157,22 @@ function mbBotSkills(u){
       if(ready('s1')&&(inR('s1')||!tgt&&near(foes,K.s1.range*0.8).length>=3)){mbCast(u,'s1',tgt||mbNearest(u,foes,K.s1.range));return}
       if(ready('ult')&&inR('ult')&&(held(tgt)||tgt.st.wet>0||near(foeH,K.ult.r,tgt).length>=2)&&!(tgt.st.imm>0)){mbCast(u,'ult',tgt);return}
       break;
+    case 'assassin':{
+      // היעלמות: הבריחה. בנסיגה, בחיים נמוכים עם אויבים קרובים, או מיד אחרי הריגה
+      const close=near(foeH,320).length,kill=u.killT&&MB.t-u.killT<1.5,shot=MB.u.some(b=>(b.k==='tower'||b.k==='base')&&b.team!==u.team&&b.tgt===u);
+      if(ready('s2')&&!(u.st.veil>0)&&(close&&(B.mode==='retreat'||u.hp<u.max*0.4)||kill&&close||shot&&u.hp<u.max*0.6)){mbCast(u,'s2');return}
+      if(B.mode==='retreat')break;
+      const towerAt=t=>MB.u.some(b=>(b.k==='tower'||b.k==='base')&&b.team!==u.team&&!b.dead&&mbDist(b,t)<MOBA.tower.range+20);
+      // סימן מוות: על המטרה כשהיא גיבור מתחת ל-55% בטווח. עדיפות למי שחבר כבר מכה בו
+      if(ready('ult')){const c=foeH.filter(o=>mbDist(u,o)<=K.ult.range&&o.hp<o.max*0.55&&!o.mark).sort((a,b)=>(a.hp/a.max-(a.hitBy.size?0.15:0))-(b.hp/b.max-(b.hitBy.size?0.15:0)))[0];
+        if(c&&!mbGangFull(u,c)&&(fight||c.hp<c.max*0.35)){mbCast(u,'ult',c);B.focus=c;return}}   // לא מתנפלים יחד: גם לא דרך סקיל
+      // צעד צל: הגיבור הכי חלש בטווח מתחת לחצי חיים כשנלחמים, או מטרה מוחזקת של חבר. לבד לתוך מגדל רק מתחת ל-25%
+      if(ready('s1')){const inS=foeH.filter(o=>mbDist(u,o)<=K.s1.range);
+        const weak=inS.length?inS.reduce((a,b)=>a.hp/a.max<=b.hp/b.max?a:b):null;
+        const join=inS.find(o=>held(o)&&allies.some(a=>a!==u&&mbDist(a,o)<300));
+        const t=weak&&weak.hp<weak.max*0.5&&(fight||weak.hp<weak.max*0.3)?weak:join;
+        const alone=t&&!allies.some(a=>a!==u&&mbDist(a,t)<350);
+        if(t&&!mbGangFull(u,t)&&u.hp>u.max*0.4&&(!towerAt(t)||!alone||t.hp<t.max*0.25)){mbCast(u,'s1',t);B.focus=t;return}}
+      break}
   }
 }

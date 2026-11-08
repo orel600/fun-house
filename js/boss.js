@@ -76,7 +76,7 @@ function bossDown(b){
   eb=[];waves=[];mines=[];S.hitstop=0.25;S.slow=0.8;S.shake=14;
   if(typeof msgOn==='function'&&msgOn())msgBig(T('bossDown',b.name),C.gold);else banner(T('bossDown',b.name),C.gold);   // בעולם: רגע גדול (msglane.js)sfx('bossDown');
   P.track=newTrack();
-  const more=arenaBossDown();   // זירת בוסים: יש עוד בוס (arenas.js)
+  const more=arenaBossDown();   // תמיד false: בזירה בוס אחד (arenas.js)
   if(!more)questEvent('win');
   if(!more)runWon();   // אחרי רגע חוזרים לכפר עם השלל (village.js)
 }

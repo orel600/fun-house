@@ -29,9 +29,16 @@ const MBKIT={
     s1:{id:'wave',kind:'line',cd:8,range:440,w:70,dmg:70,speed:620,wet:3,slow:0.3,slowT:2,dt:'water'},   // גל מים: מרטיב ומאט
     s2:{id:'bubble',kind:'point',cd:11,range:380,r:100,delay:0.4,lift:1.1,dmg:80,wet:3,dt:'water'},           // כלא מים: בועה שמרימה את האויבים (כמו הלם) ומרטיבה. אחריה ברק או קרח: קומבו
     ult:{id:'blizzard',kind:'point',cd:50,range:420,r:170,delay:0.6,dmg:80,freeze:1.5,dt:'ice'}},       // סופת קרח: מקפיאה. על רטוב: יותר זמן
+  // המתנקש: מחסל. נכנס מהגב, מוציא מטרה חלשה ויוצא. בלי שליטה קשיחה ובלי ריפוי: טעות עולה בחיים (8.11.2026)
+  assassin:{icon:'🗡️',dt:'physical',hp:520,speed:170,
+    atk:{dmg:42,range:48,cd:0.7,dt:'physical',lunge:100,lungeCd:1.8,backstab:1.75},   // backstab: מכה מאחורי הכיוון שהמטרה פונה אליו ×1.75, נחשבת קריטי
+    s1:{id:'shadowstep',kind:'unit',cd:9,range:360,dmg:85,bonus:95,bonusT:2.5,slow:0.35,slowT:1,dt:'physical'},   // צעד צל: מופיע מאחורי המטרה. התקיפה הבאה מחוזקת ומאטה
+    s2:{id:'vanish',kind:'self',cd:11,flip:130,t:2,speed:1.4,crit:1.8,dt:'physical'},   // היעלמות: עשן וקפיצה הרחק מהאויב. מכוסה: מגדלים, חיילים ובוטים לא מכוונים אליו. תקיפה שוברת, והיא קריטית ×crit
+    ult:{id:'deathmark',kind:'unit',cd:50,range:300,t:2,share:0.5,end:120,dt:'physical'}},   // סימן מוות: גולגולת מעל המטרה, ואז פיצוץ עם חלק מהנזק שנצבר בחלון. הריגה: צעד צל נטען
 };
+const MB_VEIL_A=0.45;   // מתנקש מכוסה (היעלמות): כמה הוא שקוף, בדו-ממד ובתלת-ממד (mbVisFade ב-moba-vision.js)
 const MB_SLOTS=['s1','s2','ult'];
-const MB_MOVES={anvil:1};   // סקילים שמזיזים את מי שמטיל אותם: אי אפשר כשהוא לכוד (st.root)
+const MB_MOVES={anvil:1,shadowstep:1,vanish:1};   // סקילים שמזיזים את מי שמטיל אותם: אי אפשר כשהוא לכוד (st.root)
 
 // מטיל סקיל. aim: גיבור/יחידה, או נקודה {x,y}. מחזיר אם הוטל
 function mbCast(u,slot,aim){
@@ -40,6 +47,8 @@ function mbCast(u,slot,aim){
   if(u.st.root>0&&MB_MOVES[s.id])return false;
   if(MB_MOVES[s.id]&&typeof mbGbBusy==='function'&&mbGbBusy(u))return false;   // בהטלה בחדר ההימור לא זזים: בלי טעינה (הבודק, 7.11)   // לכוד ברשת: רק סקילים שלא מזיזים אותו
   if(slot==='ult'&&u.lvl<MOBA.ultAt)return false;
+  if(s.kind==='unit'&&!mbUnitOk(u,s,aim))return false;   // סקיל על יחידה בלי מטרה חוקית: לא מוטל ולא נכנס לטעינה
+  if(u.st.veil>0){u.st.veil=0;u.st.veilSp=1;u.st.veilCrit=0}   // כל סקיל מסיר את הכיסוי של ההיעלמות
   const k=mbK(u)*(1+mbIb(u).sk),ax=aim?aim.x:u.x+Math.cos(u.face)*100,ay=aim?aim.y:u.y+Math.sin(u.face)*100;
   const ang=Math.atan2(ay-u.y,ax-u.x),dist=Math.hypot(ax-u.x,ay-u.y);
   // נקודה בטווח: אם הכוונה רחוקה מדי, הסקיל נוחת בקצה הטווח
@@ -81,12 +90,35 @@ function mbCast(u,slot,aim){
     case 'bubble':{const p=pt();mbfxSk('sk_bubble_aura',p.x,p.y,{r:s.r,loop:true,dur:s.delay+0.3});mbZone(u,p.x,p.y,s.r,s.delay,z=>{   // כלא מים: אחרי רגע הבועה עולה, מרימה (הלם) ומרטיבה. רטוב + ברק או קרח = קומבו (moba.js)
       for(const o of foesIn(z.x,z.y,z.r)){mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});o.st.wet=Math.max(o.st.wet,s.wet);if(mbCC(o,'stun',s.lift,u)){o.st.bub=s.lift;MBFX_N(o).bubFx=mbfxSk('sk_bubble',o.x,o.y,{follow:o,loop:true,dur:s.lift})}mbAnimHit(o,s.dt)}
       mbBoom(z.x,z.y,s.r,s.dt);mbfxBubble(z.x,z.y,z.r);mbfxSk('sk_bubble_halo',z.x,z.y,{r:z.r});mbAnimLand('bubble',z.x,z.y,s)},'bubble');break}
-    case 'blizzard':{const p=pt();mbfxSk('sk_blizzard',p.x,p.y,{r:s.r,loop:true,dur:s.delay+0.4});mbZone(u,p.x,p.y,s.r,s.delay,z=>{for(const o of foesIn(z.x,z.y,z.r)){const wet=o.st.wet>0;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'stun',s.freeze*(wet?MOBA.combo.freeze:1),u)&&wet){o.st.wet=0;mbWord(o,'freeze')}if(o.st.stun>0)o.st.ice=1;mbAnimHit(o,s.dt)}mbBoom(z.x,z.y,s.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt));mbfxSk('sk_blizzard_ice',z.x,z.y,{r:z.r});mbAnimLand('blizzard',z.x,z.y,s)},'blizzard');break}
+    case 'shadowstep':{const t=aim,g=t.r+u.r+6;   // מופיע מאחורי המטרה, פוגע, ומחזיק חיזוק לתקיפה הבאה
+      mbfxSk('sf_fog',u.x,u.y,{size:130});   // עשן בנקודת ההיעלמות
+      u.x=t.x;u.y=t.y;mbStep(u,-Math.cos(t.face)*g,-Math.sin(t.face)*g);   // דרך mbStep: לא בתוך מגדל, חומה או מחוץ למפה
+      u.face=u.aim=Math.atan2(t.y-u.y,t.x-u.x);
+      mbDmg(u,t,s.dmg*k,s.dt,{big:t.k==='hero'});mbAnimHit(t,s.dt);mbfxLib('tr_slash_crimson',t.x,t.y-t.r-6,{rot:u.face,size:MBFXSK.tr_slash_crimson.size,add:true});
+      u.st.step={t:s.bonusT,dmg:s.bonus*k,slow:s.slow,slowT:s.slowT};
+      mbfxSk('sf_fog',u.x,u.y,{size:130});mbFeelReset(u);
+      u.cd[slot]=s.cd*(1-mbIb(u).cdr);if(u.me)sfxCast(s.dt||MBKIT[u.kit].dt);return true}   // הפנים כבר אל המטרה (לא אל הנקודה שממנה יצא)
+    case 'vanish':{   // קפיצה הרחק מהאויב הקרוב (בלי אויב: אחורה) + כיסוי. תקיפה או סקיל מסיימים את הכיסוי
+      const f=mbNearest(u,MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&mbSeen(o,u.team)),400),a=f?Math.atan2(u.y-f.y,u.x-f.x):u.face+Math.PI;
+      mbfxSk('sf_fog',u.x,u.y,{size:180,alpha:0.9});
+      u.st.dash={vx:Math.cos(a),vy:Math.sin(a),sp:700,left:s.flip,end:()=>{}};
+      u.st.veil=s.t;u.st.veilSp=s.speed;u.st.veilCrit=s.crit;mbWord(u,'vanish');break}
+    case 'deathmark':{const t=aim;   // סימן על גיבור: נצבר ב-mbDmg, מתפוצץ ב-mbTick (moba.js)
+      if(t.mark)fxStop(t.mark.fx);
+      t.mark={by:u,end:MB.t+s.t,share:s.share,endDmg:s.end*k,dmg:0,fx:mbfxSk('tg_skull',t.x,t.y,{follow:t,dy:-70,loop:true,dur:s.t})};
+      mbWord(t,'marked');break}
+    case 'blizzard':{const p=pt();mbfxSk('sk_blizzard',p.x,p.y,{r:s.r,loop:true,dur:s.delay+0.4});mbZone(u,p.x,p.y,s.r,s.delay,z=>{for(const o of foesIn(z.x,z.y,z.r)){const wet=o.st.wet>0;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'stun',s.freeze*(wet?MOBA.combo.freeze:1),u)&&wet){o.st.wet=0;mbWord(o,'freeze');if(u.me)sfxCombo('freeze')}if(o.st.stun>0)o.st.ice=1;mbAnimHit(o,s.dt)}mbBoom(z.x,z.y,s.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt));mbfxSk('sk_blizzard_ice',z.x,z.y,{r:z.r});mbAnimLand('blizzard',z.x,z.y,s)},'blizzard');break}
   }
   u.cd[slot]=s.cd*(1-mbIb(u).cdr);u.face=ang;u.aim=ang;
-  if(u.me)sfx(slot==='ult'?'levelup':'tap');
+  if(u.me)sfxCast(s.dt||MBKIT[u.kit].dt,slot==='ult'?1.3:1);   // רק השחקן: הצליל של סוג הנזק, ובסקיל-על נמוך וחזק (audio.js)
   if(slot==='ult'){mbfxUlt(u,s);mbfxUltLib(u)}   // רגע דרמטי, ועיגול קסם ועמוד אור מהספרייה (moba-fx.js)
   return true;
+}
+// מטרה חוקית לסקיל על יחידה (צעד צל, סימן מוות): אויב חי, נראה, לא מכוסה ובטווח. סימן מוות רק על גיבור
+function mbUnitOk(u,s,t){
+  if(!t||t.dead||t.team===u.team||!mbTgt(t)||!mbSeen(t,u.team))return false;
+  if(t.k!=='hero'&&(t.k!=='minion'||s.id==='deathmark'))return false;
+  return mbDist(u,t)-t.r-u.r<=(s.range||200)*1.15;
 }
 // מגן שסופג נזק עד שנגמר או שהזמן עובר (mbDmg ב-moba.js מוריד ממנו קודם)
 function mbShield(o,amt,t){o.st.shield=Math.max(o.st.shield&&o.st.shieldEnd>MB.t?o.st.shield:0,amt);o.st.shieldEnd=MB.t+t;o.st.shieldMax=o.st.shield}
