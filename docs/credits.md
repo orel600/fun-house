@@ -20,6 +20,7 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - falling-star
 - healing
 - heart-beats
+- herbs-bundle
 - holy-water
 - jump-across
 - podium-winner
@@ -77,6 +78,7 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - magnet
 - magnifying-glass
 - meteor-impact
+- mining
 - mountains
 - open-book
 - padlock
@@ -107,6 +109,7 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - wingfoot
 - wizard-staff
 - wolf-trap
+- wood-axe
 
 ### Sbed (http://opengameart.org/content/95-game-icons) - CC BY 3.0
 
