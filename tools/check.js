@@ -1317,6 +1317,15 @@ function worldBot(m,L,god){
   // הדמות האישית נטענת לפי צורך (js/m3d.js): עד שהיא מוכנה רואים לרגע את הגיבור של המחלקה. כאן מחכים לה, ואז בודקים שהבחירה מחליפה
   if(g3.on){await page.evaluate(()=>{m3dGo(LOOK3D[HEROES.skins.nir.look].model)});
     for(let i=0;i<200&&!(await page.evaluate(()=>m3dReady(LOOK3D[HEROES.skins.nir.look].model)));i++){await page.waitForTimeout(20);await page.clock.runFor(50)}}
+  // החיה של הסקין (heroSkinPet ב-heroes.js, אוראל 8.11: "לאן הלך הפרעוש"): סקין אוראל עם חיה ריקה או פיוחו מקבל את הפרעוש,
+  // סקין אחר נשאר כמו שהוא, וחיה שנבחרה (לא ברירת המחדל) לא מתחלפת. בטעינה (parosh.js) ובענן (cloudTake) אותה פונקציה
+  const hpp=await page.evaluate(()=>{const sk=SAVE.hero.skin,pk=SAVE.pet.kind,r={};
+    try{const go=(skin,kind)=>{SAVE.hero.skin=skin;SAVE.pet.kind=kind;heroSkinPet();return SAVE.pet.kind};
+      r.d=PET.default;r.nul=go('orel',null);r.def=go('orel',PET.default);r.nir=go('nir',PET.default);r.none=go(null,null);r.keep=go('orel','parosh');
+      r.cloud=/heroSkinPet\(\)/.test(String(cloudTake))}catch(err){r.err=String(err)}
+    SAVE.hero.skin=sk;SAVE.pet.kind=pk;return r});
+  check(!hpp.err&&hpp.nul==='parosh'&&hpp.def==='parosh'&&hpp.nir===hpp.d&&hpp.none===null&&hpp.keep==='parosh'&&hpp.cloud,
+    'הפרעוש של אוראל: '+(hpp.err||'סקין אוראל עם חיה ריקה: '+hpp.nul+', עם פיוחו: '+hpp.def+' · סקין ניר: '+hpp.nir+' · בלי סקין: '+hpp.none+' · בענן: '+(hpp.cloud?'✓':'✗')));
   const hsk=await page.evaluate(()=>{const sk=SAVE.hero.skin,pk=SAVE.pet.kind,r={};
     try{soundOpen();const lk=()=>R3D.on?heroLook().model:heroSkin();SAVE.hero.skin=null;const base=lk();
       document.querySelector('#ovSound [data-skin="nir"]').click();

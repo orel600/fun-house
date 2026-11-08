@@ -83,3 +83,5 @@ function paroshDraw(p,h){
 }
 // המטבע שחטף, מסתובב מעל הראש בדרך חזרה
 function paroshCoin(x,y,r,t){ctx.fillStyle=PAROSH.coin;ctx.beginPath();ctx.ellipse(x,y,r,r*Math.abs(Math.cos(t*6))+1,0,0,7);ctx.fill()}
+// בטעינה: שמירה עם הסקין של אוראל וחיה ריקה או ברירת מחדל מקבלת את הפרעוש (heroSkinPet ב-heroes.js)
+if(typeof heroSkinPet==='function'&&typeof SAVE==='object'&&SAVE)heroSkinPet();
