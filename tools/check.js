@@ -117,7 +117,7 @@ function botStep({god,en}){
   // הריצה: טיימר, פס התקדמות, תחנות, וכמה אויבים היו בזירה יחד
   L.peak=Math.max(L.peak||0,enemies.length);L.hordeMax=S.hordeMax||0;L.clock=document.getElementById('clock').textContent;
   // הזירה (arenas.js): עד איזה גל הגענו, כמה הפסקות עם ריפוי, והמונה למעלה
-  if(S.wv){L.wvN=ARENAS.gauntlet.list.length;L.wvMax=Math.max(L.wvMax||0,S.wv.i+1);L.wvHeal=S.wv.healed;const tg=document.getElementById('waveTag');if(tg&&!tg.hidden&&tg.textContent)L.waveTag=tg.textContent}
+  if(S.wv){L.wvN=ARENAS.gauntlet.list.length;L.wvMax=Math.max(L.wvMax||0,S.wv.i+1);L.wvHeal=S.wv.healed;L.wvEnds=S.wv.log.map(x=>fmt(x.end)).join(' ');L.lvAt=L.lvAt||{};L.lvAt[S.wv.i+1]??=P.level;const tg=document.getElementById('waveTag');if(tg&&!tg.hidden&&tg.textContent)L.waveTag=tg.textContent}
   L.elites=S.run.elites;L.supsN=ARENAS.gauntlet.list.filter((x,i)=>x.sup&&i<(L.wvMax||0)).length;
   L.eliteLeft=enemies.filter(e=>e.elite).map(e=>e.type+' '+Math.round(100*e.hp/e.max)+'% במרחק '+Math.round(Math.hypot(e.x-P.x,e.y-P.y))).join(', ');
   // מספרים גדולים: הכי גדול שנראה, כמה קריטיות, ומספר נזק שלא נכתב משמאל לימין
@@ -4399,7 +4399,7 @@ function worldBot(m,L,god){
   const num=/^\d+ \/ \d+$/;
   check(num.test(L.hpTxt)&&num.test(L.xpTxt)&&L.gainMax>0,'מספרים בממשק: חיים '+L.hpTxt+', XP '+L.xpTxt+', הכי הרבה שנאסף ברצף: +'+(L.gainMax||0));
   check(/^\d+:\d\d$/.test(L.clock||'')&&/\d+\/\d+/.test(L.waveTag||''),'שעון ומונה גלים: השעון הגיע ל-'+L.clock+', המונה "'+(L.waveTag||'-')+'"');
-  check(L.wvMax===L.wvN&&L.wvHeal>=L.wvN-1&&L.elites>0,'הזירה בריצה: הגיע לגל '+(L.wvMax||0)+'/'+(L.wvN||'-')+', הפסקות עם ריפוי: '+(L.wvHeal||0)+' · אויבי-על שהופלו: '+L.elites+' מתוך '+(L.supsN||0)+(L.eliteLeft?' (נשאר: '+L.eliteLeft+')':''));
+  check(L.wvMax===L.wvN&&L.wvHeal>=L.wvN-1&&L.elites>0,'הזירה בריצה: הגיע לגל '+(L.wvMax||0)+'/'+(L.wvN||'-')+', הפסקות עם ריפוי: '+(L.wvHeal||0)+' · גלים נגמרו ב: '+(L.wvEnds||'-')+' · רמה בתחילת גל: '+Object.entries(L.lvAt||{}).map(([w,l])=>w+':'+l).join(' ')+' · אויבי-על שהופלו: '+L.elites+' מתוך '+(L.supsN||0)+(L.eliteLeft?' (נשאר: '+L.eliteLeft+')':''));
   check(L.peak>=20,'גושים: עד '+L.peak+' אויבים בזירה יחד');
   check(/[KMB]!?$/.test(L.dmgMaxTxt||'')&&L.crits>0&&!L.notLtr,'מספרים גדולים: הכי גדול '+(L.dmgMaxTxt||'-')+', קריטיות: '+(L.crits||0)+(L.notLtr?', מספר שלא נכתב משמאל לימין: '+L.notLtr:''));
   check(L.boss!=null,'בוס: הופיע '+t(L.boss)+(L.bossName?' ('+L.bossName+')':''));
