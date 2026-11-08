@@ -13,7 +13,7 @@
    הזירה נשארת zoom 1 ו-tilt 42 (התחום של אוראל). כדי לאמץ: arena ב-zoom וב-tilt. השחקן מכוון קרוב/רגיל/רחוק בהגדרות (CAM ב-camera.js).
    baseTilt: הגודל של הדמויות נקבע לפיו ולא משתנה בין מקומות. בזווית גבוהה יותר הן נראות קצת נמוכות, כמו כשמסתכלים מלמעלה.
    יותר שטח = יותר דברים לצייר, אז בטלפון חלש כדאי למדוד עם ?fps */
-const VIEW={pr:1.5,prLo:1,   // pr: כמה פיקסלים לכל פיקסל של המסך, לכל היותר. prLo: באיכות אפקטים נמוכה, בכפר ובעולם בלבד (לא בזירה)
+const VIEW={pr:1.5,prLo:1,   // pr: כמה פיקסלים לכל פיקסל של המסך, לכל היותר. prLo: באיכות אפקטים נמוכה או במכשיר חלש (r3dPr), בכפר ובעולם בלבד (לא בזירה)
   zoom:{village:0.95,world:0.68},tilt:{arena:42,village:34,world:34},baseTilt:42, light:1.15, ground:'#263049', groundLine:'#3a4562', room:'#3a3018', village:'#2a3a2c', villageLine:'#5f7d52', world:'#2c4229', worldLine:'#6f8f55'};
 
 /* מי לובש איזה מודל. h: גובה הדמות על המסך בפיקסלים. foot: כמה פיקסלים מתחת למרכז הלוגי הרגליים נוגעות בקרקע.
@@ -242,6 +242,14 @@ const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',
     shadow:{bg:'#0f0a18',line:'#3a2a58',pond:'#1a0f2c'}}};   // לב הצל (פרק 6): כמעט שחור, וסגול
 // עצמות פלג הגוף העליון: תקיפה תוך כדי ריצה מזיזה רק אותן, והרגליים ממשיכות לרוץ
 const UPPER=/^(spine|chest|head|upperarm|lowerarm|wrist|hand)/;
+/* רזולוציית הציור בתלת-ממד (W6, 8.11.2026). בכפר ובעולם יורדים ל-VIEW.prLo (פיקסל אחד לכל פיקסל מסך) לא רק כשאיכות האפקטים נמוכה (VFX3D),
+   אלא גם במכשיר חלש או מסך קטן: מעט ליבות או זיכרון, מסך שהצלע הקצרה שלו פחות מ-px פיקסלים אמיתיים, או קצב פריימים שנמדד נמוך (gfxMeasure, R3D.fps).
+   OnePlus 15 של ניר (8 ליבות, 1272 בצלע הקצרה, 120 FPS) נשאר ב-VIEW.pr המלא. בזירה ובחדר הבונוס תמיד VIEW.pr */
+const R3D_LO={cores:4,mem:4,px:1000,fps:45};
+function r3dWeak(){if(R3D.weak==null){const n=navigator,d=window.devicePixelRatio||1;
+  R3D.weak=!!((n.hardwareConcurrency&&n.hardwareConcurrency<=R3D_LO.cores)||(n.deviceMemory&&n.deviceMemory<R3D_LO.mem)||(screen&&Math.min(screen.width,screen.height)*d<R3D_LO.px))}
+  return R3D.weak||!!(R3D.fps&&R3D.fps<R3D_LO.fps)}
+function r3dPr(){const here=(S.vil||S.wd)&&!S.room;return Math.min(DPR,here&&((typeof VFX3D!=='undefined'&&VFX3D.quality()==='lo')||r3dWeak())?VIEW.prLo:VIEW.pr)}
 
 const R3D={shown:new WeakSet(),nid:0,on:false,ready:false,failed:false,want:true,actors:new Map(),dying:[],tmpl:{},clips:{},props:{},stats:{}};
 /* גרפיקה: תלת-ממד כברירת מחדל. אם WebGL לא עולה, או שהמשחק איטי בשניות הראשונות, עוברים לבד לדו-ממד, עם הודעה אחת.
@@ -808,7 +816,7 @@ function render3d(ox,oy){
   if(typeof VFX3D!=='undefined')VFX3D.frame();   // אפקטים בתלת-ממד (vfx3d.js): מתקדמים בכל פריים, גם כשהבדיקה לא מציירת
   R3D.frame=(R3D.frame||0)+1;const skip=R3D.drawEvery&&R3D.frame%R3D.drawEvery!==0;if(skip&&!S.vil)return;   // בכפר ממשיכים לעדכן, כי שם נבנים המבנים
   const r=R3D.r,c=R3D.cam,now=typeof FRAME_T==='number'&&FRAME_T>(R3D.last||0)?FRAME_T:performance.now(),dt=Math.min(0.05*(R3D.drawEvery||1),R3D.last?(now-R3D.last)/1000:0)*(S.mode==='play'&&!(S.hitstop>0)?(S.slow>0?0.35:1):S.mode==='over'?1:0);R3D.last=now;
-  const pr=Math.min(DPR,(S.vil||S.wd)&&!S.room&&typeof VFX3D!=='undefined'&&VFX3D.quality()==='lo'?VIEW.prLo:VIEW.pr);if(r.getPixelRatio()!==pr)r.setPixelRatio(pr);   // איכות אפקטים נמוכה: פחות פיקסלים לצייר
+  const pr=r3dPr();if(r.getPixelRatio()!==pr)r.setPixelRatio(pr);   // איכות אפקטים נמוכה או מכשיר חלש: פחות פיקסלים לצייר (R3D_LO)
   if(R3D.w!==W||R3D.h!==H){R3D.w=W;R3D.h=H;if(R3D.sw!==innerWidth||R3D.sh!==innerHeight){R3D.sw=innerWidth;R3D.sh=innerHeight;r.setSize(innerWidth,innerHeight,false)}c.left=-W/2;c.right=W/2;c.top=H/2;c.bottom=-H/2;c.updateProjectionMatrix()}
   // המצלמה מסתכלת על אותה נקודה שבמרכז הקנבס
   const S_=SIN(),cx=W/2-ox,cz=(H/2-oy)/S_;

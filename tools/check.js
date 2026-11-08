@@ -2534,7 +2534,7 @@ function worldBot(m,L,god){
     enterVillage();tick(2);
     celebrate(P.x,P.y,'upgrade');o.party=o.ids.has('win_confetti');walk(2);o.stepV=o.ids.has('step_dust');
     const reg={};for(const r of ['ridge','desert','storm']){SAVE.story.ice=true;FXW.gustEnd=0;FXW.gustT=99;enterWorld('home',r);P.inv=99;FXW.t=0;tick(2);walk(2);reg[r]=[...FXW.wxl.keys()].filter(k=>k.startsWith('w:')).map(k=>k.slice(2).replace(/\d.*/,''))}
-    o.weather=reg.ridge.includes('snow')&&(fxwNight()?reg.ridge.includes('aurora'):!reg.ridge.includes('aurora'))&&reg.desert.includes('haze')&&reg.storm.includes('wx_rainheavy');
+    o.weather=wxwCore()||reg.ridge.includes('snow')&&(fxwNight()?reg.ridge.includes('aurora'):!reg.ridge.includes('aurora'))&&reg.desert.includes('haze')&&reg.storm.includes('wx_rainheavy');
     o.steps=o.ids.has('step_snow')&&o.ids.has('step_sand');
     walk(400);o.mine=FXW.n;o.cap=FXW.cap;o.all=FXLIB.list.length;o.max=FXLIB.max;   // הרבה הליכה בלי שהזמן עובר: השכבה נעצרת בתקרה
     // באגם על קו המים: אדוות או בועות (בלי הליכה, אז לא מהצעדים). בלב הצל: כוכבים. ובזירה (בלי עולם וכפר): הכל כבה
@@ -2546,11 +2546,23 @@ function worldBot(m,L,god){
     o.trailOk=/^tr_(slash|axe|smash)_crimson$/.test(o.trail);   // אש = crimson, בכל סוג נשק קרוב
     o.scene={};for(const r of ['desert','storm','ridge','lake','shadow']){enterWorld('home',r);S.mode='play';P.inv=99;const want=FXW.scene[r].map(e=>e.id);
       for(let i=0;i<12;i++){FXW.sceneT=0;FXW.once.length=0;tick(1)}const wx=id=>[...FXW.wxl.values()].some(h=>h.id===id);if(FXW.gust[r]){FXW.gustT=0;tick(1);tick(1)}   // רכס: משב סופת שלג מחליף את אריחי השלג
-      o.scene[r]=want.some(id=>o.ids.has(id)||wx(id))||!!FXW.gust[r]&&wx(FXW.gust[r].to)}
+      o.scene[r]=want.some(id=>o.ids.has(id)||wx(id))||!!FXW.gust[r]&&wx(FXW.gust[r].to)||wxwCore()&&WXW.reg===r&&!!WEATHER.scenes.world}   // עם ליבת מזג האוויר: גיליונות wx_ ומשב השלג מגיעים ממנה
     o.sceneOk=Object.values(o.scene).every(Boolean);
+    // 7.11 (WXW, wxworld.js): מזג האוויר הנכון לכל אזור, סערה שמתקדמת במצבים, כפר עם גשם קל, ומצויר מתחת לאפקטים ולמספרי הנזק
+    {const core=wxwCore(),r={},has=id=>[...FXW.wxl.values()].some(h=>h.id===id),run=n=>core&&WX.run[n]&&WX.run[n].state,cfg=n=>core&&WEATHER.scenes[n]||{};
+      enterWorld('home','meadow');P.inv=99;tick(1);WXW.t=0;tick(1);r.cycle=WXW.st==='building'&&(!core||run('world')==='building');wxwSet('storm');tick(1);
+      r.meadow=core?run('world')==='storm'&&(cfg('world').storm||[]).some(v=>v[0]==='rain_heavy')&&!!cfg('world').ev:has('wx_rainheavy');
+      enterWorld('home','ridge');P.inv=99;tick(1);const rc=wxwCfg('ridge');r.ridge=WXW.reg==='ridge'&&(rc.theme==='arctic'||rc.theme==='night')&&rc.storm[0][0]==='snow_blizzard'&&(!core||cfg('world')[`storm`][0][0]==='snow_blizzard');
+      enterWorld('home','desert');P.inv=99;tick(1);r.desert=wxwCfg('desert').theme!=='temperate'&&wxwCfg('desert').storm.some(v=>v[0]==='wind_tornado');
+      enterWorld('home','storm');P.inv=99;tick(1);r.storm=WXW.st==='storm'&&(!core||run('world')==='storm'&&!!cfg('world').ev.storm.bolt);
+      enterVillage();tick(1);wxwSet('storm');tick(1);r.village=core?run('village')==='storm'&&!!cfg('village').ev:has('rain');wxwSet('calm');tick(1);
+      // מתחת לקרב: עם הליבה, FXW לא מצייר מזג אוויר משלו (אין אריחי w: ואין משב או הבזק), והליבה מציירת לפני הסקילים (render.js)
+      enterWorld('home','storm');P.inv=99;FXW.t=0;tick(2);r.under=core?![...FXW.wxl.keys()].length&&!String(fxDraw).includes('fxwWxDraw'):String(juiceDraw).includes('fxwWxDraw')&&!String(fxDraw).includes('fxwWxDraw');
+      o.wxw=r;o.wxwOk=Object.values(r).every(Boolean)}
     const wd=S.wd;S.wd=null;o.ids.clear();P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.arena=FXW.live.size===0&&FXW.wxl.size===0&&![...o.ids].some(i=>i.startsWith('tr_'));S.wd=wd;
     S.mode=md;P.weapon=wt;P.dt.sword=pdt;
     window.fxPlay=of;o.ids=[...o.ids];enterVillage();return o});
+  check(fxw.wxwOk,'מזג אוויר בעולם ובכפר (wxworld.js): '+Object.entries(fxw.wxw||{}).map(([k,v])=>(v?'✓ ':'✗ ')+k).join(' · '));
   check(fxw.party&&fxw.stepV&&fxw.weather&&fxw.steps&&fxw.shore&&fxw.stars&&fxw.arena&&fxw.trailOk&&fxw.sceneOk&&fxw.mine<=fxw.cap&&fxw.all<=fxw.max,
     'אפקטים בכפר ובעולם: '+(fxw.party?'קונפטי בחגיגה':'בלי קונפטי')+
     (fxw.stepV&&fxw.steps?', צעדים לפי הקרקע':', בלי צעדים')+(fxw.weather?', מזג אוויר לפי אזור':', מזג אוויר חסר')+(fxw.shore?', אדוות על קו המים באגם':', בלי אדוות באגם')+(fxw.stars?', כוכבים בלב הצל':', בלי כוכבים בצל')+(fxw.trailOk?', שובל אש על הנפה':', שובל חסר או בצבע לא נכון ('+fxw.trail+')')+(fxw.sceneOk?', אווירה לכל אזור':', אווירה חסרה ב-'+Object.keys(fxw.scene).filter(k=>!fxw.scene[k]).join('/'))+(fxw.arena?', כבוי בזירה':', פועל בזירה!')+', '+fxw.mine+'/'+fxw.cap+' אפקטים של השכבה ('+fxw.all+'/'+fxw.max+' בכל המשחק)');
@@ -3868,19 +3880,17 @@ function worldBot(m,L,god){
      o.combo={shock:w0.shock||0,k:Math.round(wetD/dry*100)/100,freeze:w0.freeze||0,frozen:e.st.stun>MBKIT.mage.ult.freeze*0.9,want:MOBA.combo.shock};
      mbWord=ow;MB.u.splice(MB.u.indexOf(mg),1);e.hp=e.max=MBKIT[e.kit].hp}
     // כל סקיל של כל ערכה, בתרחיש קבוע: גיבור ברמה 6 מטיל את שלושת הסקילים על אויב קרוב (לא תלוי באורך משחק הבוטים)
-    {const e=mbHeroes(1)[0],ex0=e.x,ey0=e.y;e.hp=e.max=1e6;o.fixed=[];const fx0=typeof FXLIB!=='undefined'?FXLIB.list.length:-1;o.fxIds=new Set();
+    {const e=mbHeroes(1)[0],ex0=e.x,ey0=e.y;e.hp=e.max=1e6;e.dead=false;o.fixed=[];   /* dead=false: אם מת בסוף משחק הבוטים, הרשת, הבועה והתשישות לא תופסות (mbCC) ונראה כאילו אין להן אפקט */const fx0=typeof FXLIB!=='undefined'?FXLIB.list.length:-1;o.fxIds=new Set();
      const ofx=typeof fxPlay==='function'?fxPlay:null;if(ofx)window.fxPlay=(id,...a)=>{o.fxIds.add(id);return ofx(id,...a)};   // ספריית האפקטים: אילו אפקטים הסקילים הפעילו
      for(const k of Object.keys(MBKIT)){const h=mbHero(k,0,false,1);h.lvl=MOBA.ultAt;h.x=e.x-150;h.y=e.y;MB.u.push(h);
-       for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});Object.assign(e.st,{imm:0,pure:0});   /* בלי חסינות: הרשת והבועה תופסות, והאפקטים שלהן מופיעים */if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);
-         for(const z of MB.zones.filter(z=>z.src===h&&z.fire)){MB.zones.splice(MB.zones.indexOf(z),1);e.x=z.x;e.y=z.y;Object.assign(e.st,{imm:0,pure:0,stun:0,dash:null});z.fire(z)}   /* בועה וסופה נוחתות מיד, על האויב ובלי חסינות: לא תלוי בתנועה של הבוט או בחסינות מהלם קודם (main נכשל ב-e01bae6) */
-         for(let i=0;i<20;i++){e.x=ex0;e.y=ey0;e.st.imm=0;mobaUpdate(1/30)}}
+       for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});Object.assign(e.st,{imm:0,pure:0,stun:0,taunt:0,root:0,bub:0,exh:0,dash:null});e.dead=false;e.hp=e.max;   /* בלי חסינות ובלי שליטה שנשארה מהסקיל הקודם או ממשחק הבוטים: שליטה שפגה מדליקה חסינות (ccImmune) באמצע החלון, והרשת או הבועה לא תופסות (W4) */if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);for(let i=0;i<20;i++){e.x=ex0;e.y=ey0;e.st.imm=0;h.st.imm=9;mobaUpdate(1/30)}}   /* האויב נשאר במקום: בוט שזז יוצא מהבועה לפני שהיא עולה. h חסין: הלם או רשת מהבוט של האויב היו מבטלים את זינוק הסדן לפני הנחיתה (W2) */
        MB.u.splice(MB.u.indexOf(h),1)}
      // הלחשים, הריפוי והחזרה לבסיס (moba-spells.js, moba-recall.js): כל אחד מפעיל את האפקט שלו מהספרייה
-     if(typeof mbSpellCast==='function'){const h=mbHero('mage',0,false,1),V0=MB.vis&&MB.vis.rev.slice(),Z0=MB.spellZ&&MB.spellZ.slice(),es=JSON.stringify(e.st);e.x=ex0;e.y=ey0;h.x=e.x-150;h.y=e.y;MB.u.push(h);typeof mbVisReveal==='function'&&mbVisReveal(e.x,e.y,120,5,h.team);typeof mbVisNow==='function'&&mbVisNow(true);   /* חשיפה קצרה: תשישות צריכה לראות את האויב גם אם הוא בשיח */
-       for(const id of Object.keys(MBSPELL.list)){mbSpellInit(h);h.spell=id;h.cd.spell=0;Object.assign(h.st,{dash:null,stun:0,taunt:0,root:0});if(id==='exhaust'){e.dead=false;e.x=h.x+150;e.y=h.y;typeof mbVisReveal==='function'&&mbVisReveal(e.x,e.y,120,5,h.team);typeof mbVisNow==='function'&&mbVisNow(true)}   /* תשישות: האויב בטווח, חי ונראה, ממש לפני ההטלה (נכשל לפעמים ב-main) */mbSpellCast(h,{x:e.x,y:e.y});h.st.dash=null;h.x=e.x-150;h.y=e.y}
+     if(typeof mbSpellCast==='function'){const h=mbHero('mage',0,false,1),V0=MB.vis&&MB.vis.rev.slice(),Z0=MB.spellZ&&MB.spellZ.slice(),es=Object.assign({},e.st);   /* העתק שטוח ולא JSON: st.tBy מצביע על גיבור, ומאז #423 לגיבור שנלכד ברשת יש fxs.rootFx.follow שחוזר אליו (מעגל) */e.x=ex0;e.y=ey0;h.x=e.x-150;h.y=e.y;MB.u.push(h);typeof mbVisReveal==='function'&&mbVisReveal(e.x,e.y,120,5,h.team);typeof mbVisNow==='function'&&mbVisNow(true);   /* חשיפה קצרה: תשישות צריכה לראות את האויב גם אם הוא בשיח */
+       for(const id of Object.keys(MBSPELL.list)){mbSpellInit(h);h.spell=id;h.cd.spell=0;Object.assign(h.st,{dash:null,stun:0,taunt:0,root:0});mbSpellCast(h,{x:e.x,y:e.y});h.st.dash=null;h.x=e.x-150;h.y=e.y}
        h.hp=h.max/2;h.cd.heal=0;mbHealCast(h);
        if(typeof mbRecallStart==='function'){h.st.stun=0;mbRecallStart(h);if(h.recall)mbRecallStop(h,false)}
-       MB.u.splice(MB.u.indexOf(h),1);if(MB.vis)MB.vis.rev=V0||[];MB.spellZ=Z0;Object.assign(e.st,JSON.parse(es));typeof mbVisNow==='function'&&mbVisNow(true)}   /* בלי שאריות: חשיפה ותשישות היו מפילות את בדיקות הראייה שאחרי */
+       MB.u.splice(MB.u.indexOf(h),1);if(MB.vis)MB.vis.rev=V0||[];MB.spellZ=Z0;Object.assign(e.st,es);typeof mbVisNow==='function'&&mbVisNow(true)}   /* בלי שאריות: חשיפה ותשישות היו מפילות את בדיקות הראייה שאחרי */
      e.hp=e.max=MBKIT[e.kit].hp;if(ofx)window.fxPlay=ofx;o.fxIds=[...o.fxIds];o.fxLib=typeof FXDATA!=='undefined'?Object.keys(FXDATA).length:0;
      try{fxDraw();fxDrawUi();o.fxDrawOk=true}catch(err){o.fxDrawOk=err.message}
      // האפקט נוחת על המסך ליד הגיבור: עד 7.11 render.js צייר אותם אחרי ש-mobaDraw עבר לקואורדינטות המסך, וכל אפקט במובה היה מחוץ למסך

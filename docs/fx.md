@@ -134,6 +134,8 @@ fxPreload(['levelup','ko']);                                    // לטעון מ
   - **טבע ומצבים:** `pl_regrow` כשעץ או מקור צומח מחדש, `st_regen` כשמתרפאים, `st_atkup` בזעם/דם רותח/באף החלפה, `st_defup` בשריון קרח או בהגנה מהעץ. קטן, ולכל היותר פעם ב-3.5 שניות.
 - **עומס:** עד `FXW.cap` (24) אפקטים של השכבה בבת אחת, מתוך `FXLIB.max`.
 
+**מזג אוויר בעולם ובכפר (`WXW`, js/wxworld.js, 7.11):** לכל אזור סצנה עם ארבעה מצבים (calm, building, storm, clearing) ב-`WXW.scene`: אחו עלי כותרת, יער גשם, רכס שלג וסופת שלג (arctic), מדבר אבק ועמודי אבק (dusk), אזור הסערה תמיד בסערה עם ברקים, וכפר נעים (שמש בבוקר, רוח עם עלי כותרת, לפעמים שלג, גשם קל עם שלוליות וקשת אחריו). סערה אקראית לפי `WXW.cycle`, וערכה לפי השעה (temperate, dusk, night). הסצנה נשלחת לליבה (weather.js) כ-`weatherScene('world'|'village', cfg)`, נרשמת מחדש כשהאזור או הערכה משתנים, והמצב עובר ב-`weatherState(מצב, שם)`. ברקים, הבזקים ושלוליות דרך `cfg.ev`. עם הליבה, FXW לא מצייר מזג אוויר משלו (אריחי `FXW.weather`, משב השלג, וגיליונות `wx_` ב-`FXW.scene`), כך שהכל מתחת לקרב. בלי הליבה: אריחים מהגיליונות הקיימים (`WXW.tiles`), מצוירים לפני `juiceDraw`.
+
 ## Weather in the arena and boss fights (js/arena-weather.js, W4, 7.11.2026)
 
 A driver over the core (js/weather.js), with every number in `AWX`. The 'boss' scene: fog and dark clouds (`calm`), clouds and light rain as his rage builds (`building`), heavy rain and a storm when he gets angry (rage from boss.js, or phase 2: `storm`). The 'arena' scene by arena type (`AWX.arena`): none in classic and maze, light fog in waves, fog and clouds in the boss arena. After a boss falls: `clearing` for 6 seconds. A big attack (charge, shock ring, mines) and a new phase bring `weatherBolt` onto the boss himself, never onto the danger zone. **Readability first:** the core draws right after the 3D layer, and in a 2D arena right after the floor, so the mines, the shock rings, `fxDraw`, skills, damage numbers and the HUD are on top of it. Intensities × `AWX.k` (0.75): the rain reaches about 0.27 opacity. boss.js is not touched: the attacks are seen from outside.
@@ -203,6 +205,16 @@ A driver over the core (js/weather.js), with every number in `AWX`. The 'boss' s
 ## בזירה ובבוס (js/arena-fx.js, אוראל 7.11.2026)
 
 כל מתקפה של הבוס בזירה מקבלת אזהרה בצורה משלה, לפחות שנייה לפני שמשהו יכול לפגוע: טבעת יריות `tg_ring`, ספירלה `tg_charge`, מניפה `tg_cone` (עוקבת אחריך עד הירייה), הסתערות `tg_line` לאורך המסלול, זימון `tg_circle` בכל מקום שמישהו יופיע, גל הדף `tg_growing`, מוקשים `tg_target`, וזעם `tg_skull` מעל הבוס (אין יריית זעם לפני שהגולגולת הופיעה שנייה). מכה מהנשק או מסקיל: `hit_<סוג נזק>`, `hit_heavy` באויב גדול, `dmg_crit` בקריטי. הריגה: `ko` (עם תקרה), `ko_boss`. ניצחון: `win_confetti` ו-`win_fireworks` בזירה ובמסך הניצחון (קנבס קטן מעל החלון). לכל סקיל בזירה אפקט הטלה (`ARFX.cast`), וטבעת `glow_ally` מתחת לגיבור כשיש 8 אויבים ומעלה קרוב. כפתורי הסקילים בזירה קיבלו את האייקונים המצוירים של העולם (`ARFX.pic`), וקיצורי מקלדת E, R, F (Q מחליף נשק ו-W הולך). המספרים ב-`ARFX`, והבוט בודק שכל אזהרה הגיעה לפחות שנייה לפני.
+
+## סקילי משחקי השאול: אנימציה מלאה (js/moba-skill-anim.js, אוראל 8.11.2026, W2)
+
+משלים את משימה א (#423) בשלבים שחסרו, כמו בזירה, בקובץ של המובה. המספרים ב-`MBANIM`, והחיבור בנקודות בודדות ב-moba-kits.js.
+- **(a) הטלה:** מעגל קסם `wcirc_<סוג>` מתחת למטיל לחצי שנייה (לא בסקיל-על: שם `ult_cast` כבר גדול), והבזק משלו לכל סקיל: `hit_heavy` לסדן, `hit_fire` לקריאת קרב, `hit` ביד לגל החרב ולרשת, `hit` לסיבוב, `st_shock` ביד לחץ הברק, `hit_water` ביד לגל המים ולבועה.
+- **(b) השלמות לאפקט הראשי:** אבנים `debris` בנחיתת הסדן. סדקים `sk_anvil` וטבעת הדף `sk_anvil_wave` בנקודת המשיכה של החומה. חיתוך `slash` שעף עם קשת גל החרב. שובל `tr_spin_sapphire` חצי שנייה בסיבוב. פיצוץ `whit_phys` גדול בתחילת הזעם. התזה `wt_jump` כשהבועה עולה. סדקי קרח `whit_ice` על הרצפה כשהסופה נוחתת. בגשם החצים: `shot_arrow` נופל מהשמיים בנקודה אקראית באזור פעם ב-0.12 שנ', `hit` קטן על כל מי שבגשם פעם ב-0.35 שנ', ו-`hit_heavy` במטח האחרון.
+- **(c) פגיעה:** על כל יחידה שסקיל פגע בה `whit_<סוג>` גדול על גיבור ו-`hit_<סוג>` על חייל, עד `hit.perFrame` (4) בפריים. ב-moba-kits.js ליד כל `mbDmg` של סקיל (`mbAnimHit`). חץ הברק וגל המים עברו לכאן מהקריאה הישירה של #423.
+- **(d) מצב:** על אויבים `MBLIB.stOrder` כבר מראה הלם, לכוד, רטוב, בוער, איטי וקפוא. חדש: `tg_target` על מי שהוכרח בקריאת הקרב, ועל המטיל עצמו `st_defup` כל זמן המגן של קריאת הקרב, `st_atkup` כל זמן הזעם ו-`st_regen` כשהסיבוב ריפא. ב-`FXLIB.list` (לא ב-`MB.fxs.top`), כי רק שם הערפל נשמר בציור.
+- **ערפל ותקרות:** אפקט נוצר רק במקום שהקבוצה רואה ושעל המסך (`mbfxOn`), ולא כש-`FXLIB.list` קרובה לתקרה (`room`). `perCast` (8) ל-(a)+(b) בהטלה אחת, ועם הפגיעות לא יותר מ-12 לסקיל. "פחות אפקטים": (a)+(b) ב-70% ועותק אחד, בלי (c) ו-(d).
+- **צילומים:** `node tools/moba-skill-shots.js . <תיקייה> [--less]` מטיל כל סקיל ולחש בתרחיש קבוע ומצלם ברגע ההטלה (בלי מספרי נזק והודעות, כדי לראות את האפקט), ובונה גרידים: docs/refs/fx-moba-skill-anim.jpg (ערכה בכל שורה: תקיפה, s1, s2), fx-moba-ults.jpg ו-fx-moba-skill-anim-less.jpg.
 
 ## סקילי הזירה: אנימציה מלאה (js/skill-anim.js, אוראל 8.11.2026, W1)
 
