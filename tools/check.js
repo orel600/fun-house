@@ -4111,6 +4111,19 @@ function worldBot(m,L,god){
     o.lift=await E(()=>MBCAM.pid===null&&!!joy);o.liftBack=!(await st()).free;await touch('touchEnd',[]);
     await E(()=>{mobaExit()});await cdp.detach();
   }catch(e){o.err=String(e).slice(0,160)}return o})();
+  // צילומי משחקי השאול (QUINN, 8.11): חלון הבחירה, מסך הבנייה, משחק באמצע (כולם בוטים, 40 שניות), החנות ומסך הסוף, כדי לבדוק את החלון כולו
+  // הגיבור: האחרון ב-MBKIT, כך שגיבור חדש מצולם לבד. תקלה כאן לא מפילה את הבדיקה, רק נכתבת
+  if(CFG.shots){try{const E=(f,a)=>page.evaluate(f,a),k=await E(()=>Object.keys(MBKIT).pop());
+    await E(()=>{mobaOpen();render()});await page.clock.runFor(200);await shot('moba-pick');
+    await E(k=>{const b=document.querySelector('#mbWin [data-kit="'+k+'"]');if(b)b.click()},k);await page.clock.runFor(200);
+    if(await E(()=>$('mbWin').dataset.mode==='build'))await shot('moba-build');
+    await E(k=>{const go=document.querySelector('#mbWin [data-bact="go"]');if(go)go.click();if(!S.mb)mobaStart(k);
+      MB.me.bot={t:0,mode:'push'};for(let i=0;i<1200&&!MB.over;i++)mobaUpdate(1/30);S.cam.x=P.x;S.cam.y=P.y;render()},k);
+    await page.clock.runFor(400);await shot('moba-game');
+    await E(()=>{MB.me.gold=3000;mbShopOpen();render()});await page.clock.runFor(200);await shot('moba-shop');
+    await E(()=>{mbShopClose();MB.over=true;mbEndShow(true);render()});await page.clock.runFor(200);await shot('moba-end');
+    await E(()=>mobaExit());
+  }catch(e){console.log('  ⚠ צילומי משחקי השאול: '+String(e).slice(0,140))}}
   // שלל לפי דמות (LOOT.gear ב-loot.js): לכל דמות רוב הנשקים בעולם שלה, יש לה נשק בכל שכבה, ה"מזל" מבטיח נשק שלה, וברמה 20 השכבה גבוהה יותר
   const clsL=await page.evaluate(()=>{const bak=JSON.stringify(SAVE.hero),cp=SAVE.clsPity,out={};
     try{for(const c in HEROES.list){const A=HEROES.list[c].arms;SAVE.hero.start=c;let w=0,m=0,t1=0,t20=0;
