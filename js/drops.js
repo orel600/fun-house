@@ -64,7 +64,7 @@ function dropsUpdate(dt){
     if(d.t<DROPS.land)continue;
     if(!d.ok){d.ok=true;dropReach(d)}   // פעם אחת, כשנחת: בתוך הגבולות ולא בתוך עץ או סלע
     const dx=P.x-d.x,dy=P.y-d.y,dd=Math.hypot(dx,dy)||1;
-    if(dd<R||d.fly){d.fly=true;const s=DROPS.fly*dt;d.x+=dx/dd*Math.min(s,dd);d.y+=dy/dd*Math.min(s,dd)}
+    if(dd<R*gmMagnet(d.r)||d.fly){d.fly=true;const s=DROPS.fly*dt;d.x+=dx/dd*Math.min(s,dd);d.y+=dy/dd*Math.min(s,dd)}   // gmMagnet: מומחיות איסוף בדרגה 2 (gmastery.js)
     if(dd<DROPS.take)dropTake(d,false);
   }
 }

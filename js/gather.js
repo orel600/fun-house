@@ -40,8 +40,8 @@ const gNow=()=>performance.now()/1000;
 let gSeed=12345;const gRnd=(a,b)=>a+(gSeed=(gSeed*16807)%2147483647)/2147483647*(b-a);
 function gPool(){if(GATHER.chips)return GATHER.chips;const L=GATHER.chips=[];for(let i=0;i<GATHER.chip.pool;i++)L.push({on:false,x:0,y:0,z:0,vx:0,vy:0,vz:0,t:0,max:1,col:'',sz:3,a:0,k:0});return L}
 // מכה במקור (damage ב-combat.js). ang: הכיוון מהגיבור אל המקור
-function gHit(n,ang){
-  if(!gOn()||!n||!n.node)return;GATHER.stat.hit++;
+function gHit(n,ang,d){
+  if(!gOn()||!n||!n.node)return;GATHER.stat.hit++;gmHit(n,d,ang);   // מומחיות: מכה חזקה יותר וגם במקור צמוד (gmastery.js)
   if(gShape(n)==='tree'&&gFx()){n.gHitT=gNow();n.gDir=Math.cos(ang||0)>=0?1:-1}
   if(!gFx())return;
   const C=GATHER.chip,sh=gShape(n),pal=GATHER.cols[sh]||GATHER.cols.rock,col=(wKind(n.kind)||{}).col||'#fff',lf=GATHER.leaf[sh]||[],sp=GATHER.spark[sh]||[];
@@ -50,7 +50,7 @@ function gHit(n,ang){
   for(const c of L){if(made>=C.n||GATHER.frN>=C.perFrame)break;if(c.on)continue;
     const i=made%pal.length,a=(ang||0)+gRnd(-1.3,1.3),s=gRnd(...C.side);
     c.on=true;c.x=n.x+gRnd(-n.r,n.r)*0.4;c.y=n.y+gRnd(-4,4);c.z=n.r*0.7;c.vx=Math.cos(a)*s;c.vy=Math.sin(a)*s*0.5;c.vz=gRnd(...C.up);
-    c.t=0;c.max=gRnd(...C.life);c.col=pal[i]==='*'?col:pal[i];c.sz=gRnd(...C.size);c.a=gRnd(0,3.14);c.k=sp.includes(i)?2:lf.includes(i)?1:0;
+    c.t=0;c.max=gRnd(...C.life);c.col=gmGlint(n,made)||(pal[i]==='*'?col:pal[i]);c.sz=gRnd(...C.size);c.a=gRnd(0,3.14);c.k=sp.includes(i)?2:lf.includes(i)?1:0;
     made++;GATHER.frN++}
   GATHER.stat.chips+=made;
 }
@@ -72,7 +72,7 @@ function gDraw(){
 // עץ, שיח או סלע שנשבר (nodeDown ב-nodes.js). n=null בסוף nodeDown: השלל שנפל עד עכשיו הוא של המקור
 function gDown(n){
   if(!n){GATHER.from=null;return}
-  if(!gOn()||!n.node)return;GATHER.from=n;n.gDead=true;
+  if(!gOn()||!n.node)return;GATHER.from=n;n.gDead=true;gmGain(n);   // נקודת מומחיות (gmastery.js)
   if(gShape(n)==='tree'&&gFx()){n.gFall=gNow();n.gDir=n.gDir||(n.x>=P.x?1:-1);GATHER.stat.fell++}else n.gFall=0;
 }
 // כל פריים בעולם (worldUpdate): הגודל מתקרב לחיים שנשארו, צמיחה מחדש מתחילה קטנה, והחתיכות זזות

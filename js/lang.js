@@ -1265,6 +1265,9 @@ const TEXT={
   'pow.hero':{he:'עוצמה',en:'Power'},   // מספר העוצמה של הגיבור, בראש טור הסטטים (power.js)
   // טור הסטטים בחלון הציוד (gearui.js)
   'gui.stats':{he:'סטטים',en:'Stats'},
+  'gm.title':{en:'Gathering'},'gm.wood':{en:'Woodcutting'},'gm.stone':{en:'Mining'},'gm.plant':{en:'Foraging'},
+  'gm.lv':{en:t=>'Rank '+t},'gm.max':{en:'max'},'gm.up':{en:(f,t)=>f+' rank '+t+'!'},
+  'gm.u2':{en:'Loot is pulled from farther away'},'gm.u3':{en:'Each hit also strikes a neighbor'},'gm.u4':{en:'Stronger hits on resources'},'gm.u5':{en:'Three at once, with golden sparkles'},
   'gui.q':{he:(n,r)=>'איכות: '+n+' מתוך '+r,en:(n,r)=>'Quality: '+n+' of '+r},
   'gui.up':{he:'לשדרג',en:'Upgrade'},
   'gui.upVil':{he:'לשדרג בנפחייה בכפר',en:'Upgrade at the village forge'},
