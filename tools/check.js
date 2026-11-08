@@ -1342,14 +1342,14 @@ function worldBot(m,L,god){
       fresh();SAVE.hero.xp=rankXpAt(50);SAVE.hero.level=50;rankDevLevel('?level=30');r.down=SAVE.hero.level===50;   // רק מעלה
       // ענן (שרת מדומה): מחובר, אז נדחף מיד. ומכשיר אחר עם שמירה ישנה יותר לוקח את החדשה ולא דורס אותה
       CLOUD.fake=cloudFakeServer();cloudHeld(false);try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}
-      fresh();SAVE.hero.xp=rankXpAt(15);SAVE.hero.level=15;saveNow();await cloudSync();const old=JSON.parse(JSON.stringify(SAVE));
-      rankDevLevel.done=false;rankDevLevel('?level=30');await rankDevLevel.push;const row=CLOUD.fake.rows.u1;
-      r.cloud=!!row&&row.data.hero.level===30&&row.data.bag.coins===t.coins&&row.data.ts===SAVE.ts&&SAVE.ts>old.ts;
+      fresh();SAVE.hero.xp=rankXpAt(15);SAVE.hero.level=15;saveNow();SAVE.ts-=60000;await cloudSync();const old=JSON.parse(JSON.stringify(SAVE));   // ts ישן בדקה: בריצה מהירה שתי השמירות יוצאות באותה אלפית
+      rankDevLevel.done=false;rankDevLevel('?level=30');const ts1=SAVE.ts,pu=rankDevLevel.push;await pu;const row=CLOUD.fake.rows.u1;   // המשחק רץ בין ה-await, ויכול לשמור שוב: משווים ל-ts של הרגע הזה
+      r.cloud=!!pu&&!!row&&row.data.hero.level===30&&(row.data.bag.coins||0)>=t.coins&&row.data.ts>=ts1&&ts1>old.ts;if(!r.cloud)r.cdbg=[!!pu,!!row,row&&row.data.hero.level,row&&row.data.bag.coins,row&&row.data.ts-ts1,ts1-old.ts,cloudHeld(),CLOUD.status].join('/');
       SAVE=old;const rr=await cloudSync();r.other=CLOUD.fake.rows.u1.data.hero.level===30&&(rr==='took'?SAVE.hero.level===30:rr==='newer'&&cloudHeld());   // בפתיחה לוקח אותה, ובאמצע משחק מחכה לבחירה, ובשני המקרים לא דורס
     }catch(err){r.err=String(err&&err.stack||err)}
     window.lpLevelUp=lpu;window.rankCall=rc;rankDevLevel.done=true;CLOUD.fake=cf;CLOUD.session=cs;cloudHeld(!!ch);CLOUD.dirty=false;
     try{lsS?localStorage.setItem(CLOUD.lsKey,lsS):localStorage.removeItem(CLOUD.lsKey)}catch(e){}SAVE=JSON.parse(bak);SAVE_STORE.write(SAVE,true);return r});
-  {const L=[[dlv.set,'רמה 30 עם 29 נקודות','לא עלה ל-30'],[dlv.res,'משאבים של רמה 30 ('+dlv.coins+' מטבעות)','משאבים לא לפי הטבלאות'],[dlv.none,'בלי פרמטר בלי שינוי','שינה בלי פרמטר!'],[dlv.once,'פעם אחת','חוזר'],[dlv.stack,'טעינה חוזרת לא מוסיפה','המשאבים נערמים'],[dlv.keep,'לא מוריד משאבים','הוריד משאבים!'],[dlv.max,'עד המקסימום','עבר את המקסימום'],[dlv.down,'רק מעלה','הוריד רמה!'],[dlv.cloud,'נדחף לענן מיד','לא הגיע לענן'],[dlv.other,'מכשיר אחר לוקח את החדשה','ענן ישן דרס']];
+  {const L=[[dlv.set,'רמה 30 עם 29 נקודות','לא עלה ל-30'],[dlv.res,'משאבים של רמה 30 ('+dlv.coins+' מטבעות)','משאבים לא לפי הטבלאות'],[dlv.none,'בלי פרמטר בלי שינוי','שינה בלי פרמטר!'],[dlv.once,'פעם אחת','חוזר'],[dlv.stack,'טעינה חוזרת לא מוסיפה','המשאבים נערמים'],[dlv.keep,'לא מוריד משאבים','הוריד משאבים!'],[dlv.max,'עד המקסימום','עבר את המקסימום'],[dlv.down,'רק מעלה','הוריד רמה!'],[dlv.cloud,'נדחף לענן מיד','לא הגיע לענן ('+dlv.cdbg+')'],[dlv.other,'מכשיר אחר לוקח את החדשה','ענן ישן דרס']];
    check(!dlv.err&&L.every(x=>x[0]),'?level=30 (כלי פיתוח): '+(dlv.err||L.map(x=>x[0]?x[1]:x[2]).join(', ')))}
   const hsk=await page.evaluate(()=>{const sk=SAVE.hero.skin,pk=SAVE.pet.kind,r={};
     try{soundOpen();const lk=()=>R3D.on?heroLook().model:heroSkin();SAVE.hero.skin=null;const base=lk();
