@@ -1934,6 +1934,13 @@ body:not(.world):not(.vil) .hud .bossfill{background:linear-gradient(#EBDDFF,#B4
 body:not(.world):not(.vil) .hud .ragefill{background:linear-gradient(#FF8A8F,#C9303A);border-radius:inherit}
 body:not(.world):not(.vil) .hud .bossname{text-shadow:0 1px 0 #000,0 0 4px #000}
 body:not(.world):not(.vil) .hud .bossname span{color:#E3D2FF}
+/* השעון ו"גל ענק בעוד" במרכז, הרמה ותג ה-XP (W5 המשך, המתאם 8.11): על רצפת האבן הבהירה (#461) אפור בהיר על אפור לא נקרא.
+   השעון על לוחית צפחה כהה חצי שקופה עם שפת פליז כמו הפסים, הרמה ותג ה-XP בהירים עם הילה כהה חזקה. גם ב-60% של הקרב (html.fight) נשאר קריא */
+body:not(.world):not(.vil) .hud .clock{background:linear-gradient(#1C1510E8,#0E0A07E8);border-radius:11px;padding:4px 12px 5px;color:#F6EBD0;
+  box-shadow:0 0 0 1.5px #0E0805,0 0 0 2.5px var(--brass-lo),0 2px 4px #0009;text-shadow:0 1px 0 #000,0 0 4px #000}
+body:not(.world):not(.vil) .hud .clock small{color:#E9D8A6}
+body:not(.world):not(.vil) .hud .lvl{color:#F6EBD0;text-shadow:0 1px 0 #000,0 0 3px #000,0 0 6px #000,0 0 10px #000}
+body:not(.world):not(.vil) .hud .xptag{color:#FFE28A;text-shadow:0 1px 0 #000,0 0 3px #000,0 0 6px #000}
 /* פס הבוס והכתר שבסוף פס הדרך לא נכנסים מתחת לכפתור ההשתקה שבצד */
 body:not(.world):not(.vil) .hud .bossbar{margin-inline-end:54px}
 body:not(.world):not(.vil) .hud .runbar{margin-inline-end:60px}

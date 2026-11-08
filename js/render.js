@@ -143,14 +143,15 @@ function render(){
   ctx.translate(ox,oy);
   wxDraw('base');   // מזג אוויר בתלת-ממד: מעל הסצנה ומתחת לכל מה שבקנבס (weather.js)
   // ground
-  if(!R3D.on){const g=90,x0=Math.floor(-ox/g)*g,y0=Math.floor(-oy/g)*g;
+  // בזירה: רצפת אבן, גבול, לפידים וקהל (arena-look.js, aLook2d). אחרת (חדר הבונוס, look=classic): הסימנים הישנים
+  if(!R3D.on&&!(typeof aLook2d==='function'&&aLook2d(ox,oy))){const g=90,x0=Math.floor(-ox/g)*g,y0=Math.floor(-oy/g)*g;
   ctx.strokeStyle='rgba(236,231,220,0.07)';ctx.lineWidth=1.5;ctx.beginPath();
   for(let x=x0;x<-ox+W+g;x+=g)for(let y=y0;y<-oy+H+g;y+=g){const h=hash(x,y);
     if(h<0.5){ctx.moveTo(x-4,y);ctx.lineTo(x+4,y);ctx.moveTo(x,y-4);ctx.lineTo(x,y+4)}
     else if(h<0.72){ctx.moveTo(x+14,y+22);ctx.lineTo(x+26,y+18)}}
-  ctx.stroke();if(typeof aLook2d==='function')aLook2d()}
+  ctx.stroke()}
   if(!S.wd&&!S.vil)wxDraw('mid');   // מזג אוויר בדו-ממד בזירה: מיד אחרי הרצפה, לפני מוקשים, גלים, דמויות, אזהרות ואפקטים (weather.js)
-  mazeDraw(ox,oy);   // קירות זירת המבוך (maze.js)   // טבעות עדינות בזירה (arena-look.js)
+  mazeDraw(ox,oy);   // קירות זירת המבוך (maze.js)
   if(typeof awxDraw==='function')awxDraw();   // weather in the arena and boss fights: scenes and lightning for weather.js (arena-weather.js)
   // mines & waves
   for(const mn of mines){const k=mn.t/1.3;ctx.strokeStyle='rgba(239,78,87,'+(0.5-k*0.3)+')';ctx.lineWidth=2;ctx.setLineDash([6,6]);ctx.beginPath();ctx.arc(mn.x,mn.y,58,0,7);ctx.stroke();ctx.setLineDash([]);
