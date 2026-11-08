@@ -27,6 +27,8 @@ const GICO={
     gun:'lorc/high-shot'},
   // סרגל התפריט והקיצורים בצד (לפי ה-id של הכפתור, או data-tab בקיצור). צבע: זהב, במסגרת עץ. "אייקוני תפריט" בהגדרות
   nav:{gearBtn:'delapouite/backpack',qBtn:'lorc/scroll-unfurled',bookBtn:'lorc/open-book',wMapBtn:'lorc/treasure-map',mbTab:'lorc/crossed-swords',setBtn:'lorc/cog'},
+  // השורה העליונה בכפר ובעולם (#vTop, hudrank.js): צללית זהב בלי מסגרת, על הכדור הכהה הקיים. גם היא "אייקוני תפריט" בהגדרות
+  top:{dBtn:'delapouite/present',visBtn:'delapouite/village',welBtn:'delapouite/wooden-crate',feedBtn:'delapouite/carrot'},
   // משחקי השאול (moba-icons.js): הסקילים של הערכות, הערכות עצמן (k_), והריפוי והלחשים (sp_, moba-spells.js). צבע: --dt של הכפתור. חלק מ"אייקוני סקילים"
   mb:{anvil:'lorc/anvil-impact',taunt:'lorc/shouting',wall:'delapouite/brick-wall',
     cleave:'lorc/wave-strike',spin:'lorc/sword-spin',rage:'delapouite/enrage',
@@ -67,7 +69,12 @@ function gWpn(el,w,wt){const n=gicoOn('sk')&&(GICO.wpn[wt]||GICO.wpn[w]),k=n&&n.
 function gNav(){const on=gicoOn('nav');
   for(const b of document.querySelectorAll('.mtab[id],.qr[data-tab]')){const n=GICO.nav[b.dataset.tab||b.id],ni=b.querySelector('.ni');if(!n||!ni)continue;
     if(ni.dataset.e===undefined)ni.dataset.e=ni.innerHTML;
-    const want=on?gIco(n):ni.dataset.e;if(ni.innerHTML!==want)ni.innerHTML=want;b.classList.toggle('gnav',on&&!!want)}}
+    const want=on?gIco(n):ni.dataset.e;if(ni.innerHTML!==want)ni.innerHTML=want;b.classList.toggle('gnav',on&&!!want)}
+  for(const b of document.querySelectorAll('.dgift[id]')){const n=GICO.top[b.id],ni=b.querySelector('span');if(!n||!ni)continue;   // הגזר נבנה כשהוא מופיע (gTop ב-pet.js)
+    if(ni.dataset.e===undefined)ni.dataset.e=ni.innerHTML;
+    const want=on?gIco(n):ni.dataset.e;if(ni.innerHTML!==want)ni.innerHTML=want;b.classList.toggle('gtop',on)}}
+// כפתור בשורה העליונה שנבנה בקוד (הגזר): הצללית, או האימוג'י בקלאסי
+const gTop=(id,emoji)=>gicoOn('nav')&&GICO.top[id]&&gIco(GICO.top[id])||emoji;
 
 /* ההגדרות בחלון ההגדרות (data-gico="new|classic", data-gk="sk|nav"). בלי טעינה מחדש: הכפתורים מתחלפים מיד, והחלונות נבנים מחדש בפעם הבאה שנפתחים */
 function gicoApply(){

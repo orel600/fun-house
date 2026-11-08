@@ -50,7 +50,7 @@
 .bwc:active:not(:disabled){transform:scale(.92)}
 .bwc:disabled{opacity:.5;cursor:default}
 .bwc .ic{grid-row:1/span 2;font-size:24px;line-height:1}
-.bwc .ic .ri{width:30px;height:30px;vertical-align:middle;object-fit:contain}
+.bwc .ic .ri{width:var(--ic-m);height:var(--ic-m);vertical-align:middle;object-fit:contain}
 .bwc .nm{font:700 11px/1.15 var(--body);color:#C9CCD8;overflow-wrap:anywhere}
 .bwc b{font:800 15px var(--body);direction:ltr;text-align:start;font-variant-numeric:tabular-nums}
 
@@ -66,14 +66,14 @@
 #vPanel.bw .bwgrid.trade{grid-template-columns:repeat(auto-fill,minmax(146px,1fr))}
 #vPanel.bw .trade .tcard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:center;justify-items:start;column-gap:6px;row-gap:1px;min-height:50px;padding:4px 8px;text-align:start;
   border-color:color-mix(in srgb,var(--rar,#3A4566) 65%,#2A3249)}
-#vPanel.bw .tcard .ic .ri{width:30px;height:30px;vertical-align:middle;object-fit:contain}
+#vPanel.bw .tcard .ic .ri{width:var(--ic-m);height:var(--ic-m);vertical-align:middle;object-fit:contain}
 #vPanel.bw .tcard .ic{grid-row:1/span 2;font-size:24px;line-height:1}
 #vPanel.bw .tcard .nm{font:800 13px/1.15 var(--body);color:var(--chalk);overflow-wrap:anywhere;min-width:0}
 #vPanel.bw .tcard .nm small{font:800 11px var(--body);color:var(--dim)}
 #vPanel.bw .tcard .hv{grid-column:2/span 2;font:700 11px/1.15 var(--body);color:var(--dim);text-align:start}
 #vPanel.bw .tcard .hv.tw{color:#FF8A8F}
 #vPanel.bw .tcard .pr{justify-self:end;font:800 14px var(--body);color:var(--gold);direction:ltr;white-space:nowrap}
-#vPanel.bw .tcard .pr .ri{width:1.2em;height:1.2em;vertical-align:-.25em}
+#vPanel.bw .tcard .pr .ri{width:var(--ic-s);height:var(--ic-s);vertical-align:-.25em}
 #vPanel.bw .tcard:disabled .ic{opacity:.45;filter:grayscale(.7)}
 #vPanel.bw .tcard:disabled .pr{color:var(--dim)}
 #vPanel.bw .tcard:active:not(:disabled){transform:scale(.94)}
@@ -91,7 +91,7 @@
 .bwpc{display:grid;grid-template-columns:auto auto;grid-template-rows:auto auto;align-items:center;column-gap:4px;min-width:62px;padding:3px 8px;border-radius:10px;
   background:#0006;border:1px solid color-mix(in srgb,var(--rar,#3A4566) 60%,#2A3249);direction:ltr}
 .bwpc .ic{grid-row:1/span 2;font-size:20px;line-height:1}
-.bwpc .ic .ri{width:26px;height:26px;vertical-align:middle;object-fit:contain}
+.bwpc .ic .ri{width:var(--ic-m);height:var(--ic-m);vertical-align:middle;object-fit:contain}
 .bwpc b{font:800 14px var(--body);color:var(--chalk);font-variant-numeric:tabular-nums}
 .bwpc small{font:800 11px var(--body);color:#6FD08C;white-space:nowrap}
 .bwpc.miss{border-color:var(--blood);background:#3A141866}
@@ -101,7 +101,7 @@
 /* ---- מנסרה ומכרה: כמה מחכה מכל משאב, עם פס עד המקסימום ---- */
 .bwstock{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px;flex:none}
 .bwst{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:6px;padding:6px 9px 9px;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.bwst .ic .ri{width:28px;height:28px;vertical-align:middle}
+.bwst .ic .ri{width:var(--ic-m);height:var(--ic-m);vertical-align:middle}
 .bwst .nm{font:700 13px var(--body)}
 .bwst b{font:800 14px var(--body);direction:ltr;font-variant-numeric:tabular-nums}
 .bwst i{position:absolute;inset-inline-start:0;bottom:0;height:4px;background:var(--rar,var(--gold))}
@@ -115,7 +115,7 @@
 #npcDlg.bw .fcook{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:6px;margin:0;max-height:none;overflow:visible;align-content:start}
 #npcDlg.bw .fmeal{padding:6px 8px;gap:8px;align-items:center}
 #npcDlg.bw .fmeal .fmi{font-size:28px;flex:none}
-#npcDlg.bw .fmeal .fmi .ri{width:34px;height:34px;vertical-align:middle}
+#npcDlg.bw .fmeal .fmi .ri{width:var(--ic-m);height:var(--ic-m);vertical-align:middle}
 #npcDlg.bw .fmeal .fmt{font-size:14px;min-width:0;gap:2px}
 #npcDlg.bw .fmeal .fmt small{font-size:12px;color:#C9CCD8}
 #npcDlg.bw .fmeal .fmt>span{display:flex;flex-wrap:wrap;gap:4px}
