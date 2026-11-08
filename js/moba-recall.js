@@ -12,15 +12,16 @@ const MBRECALL={
 };
 function mbRecallStart(u){
   if(!u||u.dead||MB.over||u.st.stun>0||u.st.dash||mbDist(u,u.home)<MBRECALL.ring.r*3||typeof mbGbBusy==='function'&&mbGbBusy(u))return false;   // לא בהטלה בחדר ההימור
-  u.recall={t:MBRECALL.t,x:u.x,y:u.y,hp:u.hp};if(u.me)sfx('tap');return true;
+  u.recall={t:MBRECALL.t,x:u.x,y:u.y,hp:u.hp,fx:typeof mbfxSk==='function'&&mbfxSk('recall',u.x,u.y,{follow:u,loop:true,dur:MBRECALL.t})};   // עיגול קסם מתחת לגיבור כל זמן החזרה (fxlib.js)
+  if(u.me)sfx('tap');return true;
 }
-function mbRecallStop(u,why){if(!u.recall)return;u.recall=null;if(u.me&&why)mbBanner(T('mb.recallOff'),C.dim)}
+function mbRecallStop(u,why){if(!u.recall)return;typeof fxStop==='function'&&fxStop(u.recall.fx);u.recall=null;if(u.me&&why)mbBanner(T('mb.recallOff'),C.dim)}
 function mbRecallTick(M,dt){
   for(const u of M.u){const R=u.recall;if(!R)continue;
     if(u.dead||u.st.stun>0)mbRecallStop(u,true);
     else if(Math.hypot(u.x-R.x,u.y-R.y)>MBRECALL.move||u.hp<R.hp-0.5)mbRecallStop(u,true);   // זז או נפגע: בוטל
     else{R.hp=Math.max(R.hp,u.hp);R.t-=dt;
-      if(R.t<=0){u.recall=null;u.x=u.home.x;u.y=u.home.y;mbFeelReset(u);mbBoom(u.x,u.y,70,u.team?'red':'blue');if(u.me)sfx('celebrate')}}}
+      if(R.t<=0){typeof fxStop==='function'&&fxStop(R.fx);u.recall=null;u.x=u.home.x;u.y=u.home.y;mbFeelReset(u);mbBoom(u.x,u.y,70,u.team?'red':'blue');if(u.me)sfx('celebrate')}}}
 }
 // בוט: עומד במקום בזמן החזרה, ומתחיל לחזור כשהוא נסוג רחוק בלי אויב קרוב. מחזיר true = הבוט לא עושה כלום אחר בפריים הזה
 function mbRecallBot(u){

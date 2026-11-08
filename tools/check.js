@@ -1139,7 +1139,8 @@ function worldBot(m,L,god){
     try{S.vil=null;S.wd=null;S.room=null;S.mode='play';SAVE.fxLess=false;S.sk.fx=[];S.sk.last={};
       const ens=[];for(let i=0;i<6;i++){const e=addEnemy('grunt',P.x+60+i*30,P.y+20);e.hp=e.max=1e9;e.speed=0;e.mult={};ens.push(e)}
       ens[0].wet=3;ens[1].frozen=2;ens[2].stun=2;
-      const ids=['quake','splash','frost','flame','zap'];S.sk.ids=ids;S.sk.cd=ids.map(()=>0);r.cast=ids.filter(id=>skillUse(id)).length;
+      const ids=['quake','splash','frost','flame','zap'];S.sk.ids=ids;S.sk.cd=ids.map(()=>0);const an0=SKANIMS.stat.fx,l0=FXLIB.list.length;r.cast=ids.filter(id=>skillUse(id)).length;
+      r.anim=[SKANIMS.stat.fx-an0,ids.filter(id=>SKANIMS.stat.cast[id]).length,FXLIB.list.length-l0<=FXLIB.max,SKANIM.perCast+SKANIM.hit.perFrame<=12];   // אנימציות מהגיליונות (skill-anim.js): כמה אפקטים, לכמה סקילים, בתוך התקרה
       comboShow(ens[0],'shock');comboShow(ens[1],'melt');r.combo=S.sk.fx.some(f=>f.combo);
       const d0=SKFXS.drawn,o0=SKFXS.old;SKFXS.peak=0;ctx.save();for(let i=0;i<20;i++){skillsUpdate(1/60);drawSkills(0,0)}r.drawn=SKFXS.drawn-d0===20&&SKFXS.old===o0;r.peak=SKFXS.peak;r.max=SKFX.maxParts;
       SAVE.fxLess=true;drawSkills(0,0);r.less=SKFXS.parts===0;SAVE.fxLess=false;
@@ -3731,7 +3732,7 @@ function worldBot(m,L,god){
      me.x=me.home.x+(me.team?-1:1)*900;me.y=0;$('mbRecall').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));L.start=!!me.recall;tk(MBRECALL.t*30+3);L.home=!me.recall&&mbDist(me,me.home)<1;
      me.x=me.home.x+(me.team?-1:1)*900;mbFeelReset(me);mbRecallStart(me);tk(10);me.x+=20;tk(1);L.move=!me.recall&&mbDist(me,me.home)>800;
      mbRecallStart(me);tk(10);me.hp-=50;tk(1);L.hit=!me.recall&&mbDist(me,me.home)>800;me.hp=me.max;
-     const n=mbNext(me),c=MBITEM.items[n].cost,q=$('mbQuick'),p=()=>+q.style.getPropertyValue('--p');me.gold=c/2;mobaHud();L.half=Math.abs(p()-0.5)<0.02&&!q.classList.contains('ok')&&q.textContent.includes(String(c-Math.floor(c/2)));
+     const n=mbNext(me),c=MBITEM.items[n].cost,q=$('mbQuick'),p=()=>+q.style.getPropertyValue('--p');me.gold=c/2;mobaHud();L.half=Math.abs(p()-0.5)<0.02&&!q.classList.contains('ok')&&q.textContent.includes(String(c))&&q.querySelector('span').classList.contains('miss');   // המחיר תמיד, ובאדום כשחסר (W4, 8.11: בלי מספר שלילי)
      me.gold=c;mobaHud();L.full=p()===1&&q.classList.contains('ok');me.gold=0;me.x=hx;me.y=hy;mbFeelReset(me);mobaHud();o.life=L}
     // כיוון וביטול בגרירה (moba-aim.js): גוררים מהכפתור, משחררים על ✕ = בוטל ובלי טעינה. גוררים שמאלה עד הסוף = הסדן נוחת בקצה הטווח משמאל
     {const me=MB.me,b=document.querySelector('#mbSk [data-sk="s1"]'),r=b.getBoundingClientRect(),cx=r.x+r.width/2,cy=r.y+r.height/2,z0=MB.zones.length,R=MBKIT.tank.s1.range;
@@ -3778,13 +3779,24 @@ function worldBot(m,L,god){
      o.combo={shock:w0.shock||0,k:Math.round(wetD/dry*100)/100,freeze:w0.freeze||0,frozen:e.st.stun>MBKIT.mage.ult.freeze*0.9,want:MOBA.combo.shock};
      mbWord=ow;MB.u.splice(MB.u.indexOf(mg),1);e.hp=e.max=MBKIT[e.kit].hp}
     // כל סקיל של כל ערכה, בתרחיש קבוע: גיבור ברמה 6 מטיל את שלושת הסקילים על אויב קרוב (לא תלוי באורך משחק הבוטים)
-    {const e=mbHeroes(1)[0];e.hp=e.max=1e6;o.fixed=[];const fx0=typeof FXLIB!=='undefined'?FXLIB.list.length:-1;o.fxIds=new Set();
+    {const e=mbHeroes(1)[0],ex0=e.x,ey0=e.y;e.hp=e.max=1e6;o.fixed=[];const fx0=typeof FXLIB!=='undefined'?FXLIB.list.length:-1;o.fxIds=new Set();
      const ofx=typeof fxPlay==='function'?fxPlay:null;if(ofx)window.fxPlay=(id,...a)=>{o.fxIds.add(id);return ofx(id,...a)};   // ספריית האפקטים: אילו אפקטים הסקילים הפעילו
      for(const k of Object.keys(MBKIT)){const h=mbHero(k,0,false,1);h.lvl=MOBA.ultAt;h.x=e.x-150;h.y=e.y;MB.u.push(h);
-       for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);for(let i=0;i<20;i++)mobaUpdate(1/30)}
+       for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});Object.assign(e.st,{imm:0,pure:0});   /* בלי חסינות: הרשת והבועה תופסות, והאפקטים שלהן מופיעים */if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);for(let i=0;i<20;i++){e.x=ex0;e.y=ey0;e.st.imm=0;mobaUpdate(1/30)}}   /* האויב נשאר במקום: בוט שזז יוצא מהבועה לפני שהיא עולה */
        MB.u.splice(MB.u.indexOf(h),1)}
+     // הלחשים, הריפוי והחזרה לבסיס (moba-spells.js, moba-recall.js): כל אחד מפעיל את האפקט שלו מהספרייה
+     if(typeof mbSpellCast==='function'){const h=mbHero('mage',0,false,1),V0=MB.vis&&MB.vis.rev.slice(),Z0=MB.spellZ&&MB.spellZ.slice(),es=JSON.stringify(e.st);e.x=ex0;e.y=ey0;h.x=e.x-150;h.y=e.y;MB.u.push(h);typeof mbVisReveal==='function'&&mbVisReveal(e.x,e.y,120,5,h.team);typeof mbVisNow==='function'&&mbVisNow(true);   /* חשיפה קצרה: תשישות צריכה לראות את האויב גם אם הוא בשיח */
+       for(const id of Object.keys(MBSPELL.list)){mbSpellInit(h);h.spell=id;h.cd.spell=0;Object.assign(h.st,{dash:null,stun:0,taunt:0,root:0});mbSpellCast(h,{x:e.x,y:e.y});h.st.dash=null;h.x=e.x-150;h.y=e.y}
+       h.hp=h.max/2;h.cd.heal=0;mbHealCast(h);
+       if(typeof mbRecallStart==='function'){h.st.stun=0;mbRecallStart(h);if(h.recall)mbRecallStop(h,false)}
+       MB.u.splice(MB.u.indexOf(h),1);if(MB.vis)MB.vis.rev=V0||[];MB.spellZ=Z0;Object.assign(e.st,JSON.parse(es));typeof mbVisNow==='function'&&mbVisNow(true)}   /* בלי שאריות: חשיפה ותשישות היו מפילות את בדיקות הראייה שאחרי */
      e.hp=e.max=MBKIT[e.kit].hp;if(ofx)window.fxPlay=ofx;o.fxIds=[...o.fxIds];o.fxLib=typeof FXDATA!=='undefined'?Object.keys(FXDATA).length:0;
-     try{fxDraw();fxDrawUi();o.fxDrawOk=true}catch(err){o.fxDrawOk=err.message}}
+     try{fxDraw();fxDrawUi();o.fxDrawOk=true}catch(err){o.fxDrawOk=err.message}
+     // האפקט נוחת על המסך ליד הגיבור: עד 7.11 render.js צייר אותם אחרי ש-mobaDraw עבר לקואורדינטות המסך, וכל אפקט במובה היה מחוץ למסך
+     try{const me=MB.me,od=ctx.drawImage,oi=window.fxImg,fake=document.createElement('canvas');let at=null;const al=MB.u.find(u=>u.k==='hero'&&u.team===me.team&&!u.dead)||me,cam0={x:S.cam.x,y:S.cam.y};S.cam.x=al.x;S.cam.y=al.y;const L0=FXLIB.list.splice(0);fxPlay('ult_cast',al.x,al.y,{dur:5});   /* רק האפקט של הבדיקה ברשימה: אפקטים אחרים ממשחק הבוטים נמצאים במקומות אחרים במפה */   /* מצלמה על גיבור חי שלנו: בלי ערפל, והאפקט צריך לנחות במרכז */
+       window.fxImg=()=>fake;   // תמונה מדומה: בתוך הבדיקה הזמן לא עובר, והתמונה האמיתית לא מספיקה להיטען
+       ctx.drawImage=function(im){if(!at&&im===fake){const t=ctx.getTransform();at=[t.e/DPR,t.f/DPR];return}return od.apply(this,arguments)};
+       try{render()}finally{ctx.drawImage=od;window.fxImg=oi;S.cam.x=cam0.x;S.cam.y=cam0.y;FXLIB.list.length=0;FXLIB.list.push(...L0)}o.fxAt=at?{x:Math.round(at[0]),y:Math.round(at[1]),on:at[0]>0&&at[0]<innerWidth&&at[1]>0&&at[1]<innerHeight}:null}catch(err){o.fxAt={err:err.message}}}
     // הסקילים שהחליפו זינוק וריפוי (6.11, docs/moba-plan.md פרק 2), בתרחיש קבוע: אין יותר charge, leap ו-heal ב-MBKIT. רשת ציד לוכדת (st.root):
     // לא זז, כן תוקף, ואחרי זה חסינות קצרה. כלא מים מרים ומרטיב, וברק אחריו = חשמול. גל חרב מהמם ומאט לאורך קו
     {const e=mbHeroes(1)[0],R={},ow=mbWord,w0={},ex=e.x,ey=e.y,clr=()=>{Object.assign(e.st,{wet:0,imm:0,stun:0,taunt:0,root:0,bub:0,slow:0,armor:0,rage:0,shield:0,dash:null});e.dead=false;e.hp=e.max=1e6};
@@ -3796,7 +3808,7 @@ function worldBot(m,L,god){
      h.x=e.x-(e.r+h.r+5);h.y=e.y;e.atkT=0;R.atk=mbAttack(e,0,h,MBKIT[e.kit].atk)&&e.atkT>0;
      for(let i=0;i<60;i++)mbTick(e,1/30);R.free=!(e.st.root>0)&&e.st.imm>0&&!mbCC(e,'root',1,h);del(h);
      clr();h=add('mage');mbCast(h,'s2',e);const z=MB.zones.pop();z.fire(z);R.bub=e.st.bub>0&&e.st.stun>0&&e.st.wet>0;
-     const sh=w0.shock||0,d0=mbDmg(null,e,100,'lightning');R.shock=(w0.shock||0)>sh&&d0>100;del(h);
+     const sh=w0.shock||0,mt=MB.t;MB.t=Math.max(MB.t,MOBA.early?MOBA.early.t:0);const d0=mbDmg(null,e,100,'lightning');MB.t=mt;R.shock=(w0.shock||0)>sh&&d0>100;del(h);   // d0 אחרי הפתיחה הרכה (MOBA.early)
      clr();h=add('warrior');mbCast(h,'s1',e);run(40,()=>e.st.stun>0);R.cleave=e.st.stun>0&&e.st.slow>0;del(h);
      mbWord=ow;clr();e.hp=e.max=MBKIT[e.kit].hp;e.x=ex;e.y=ey;o.newSk=R}
     // טנק ולוחם יעילים, ואפקטים (moba-kits.js, moba-fx.js), בתרחיש קבוע: זינוק של תקיפה רגילה אל מטרה קצת מחוץ לטווח, מגן שסופג,
@@ -3812,6 +3824,21 @@ function worldBot(m,L,god){
      F.stopCd=0;mbfxNum(e.x,e.y,150,C.gold,{crit:true},me,e);const t0=MB.t;mobaUpdate(1/30);r.stop=F.stop>=0&&MB.t===t0&&F.n.length>0;F.stop=0;
      Object.assign(me,{dead:false,lvl:MOBA.ultAt,hp:me.max});me.cd.ult=0;Object.assign(me.st,{stun:0,taunt:0,dash:null});r.ult=mbCast(me,'ult',e)&&F.slow>0&&!!F.ult&&F.ult.txt.length>0;
      F.slow=0;F.ult=null;me.bot=bot;Object.assign(e.st,{stun:0,shield:0});e.hp=e.max=MBKIT[e.kit].hp;e.x=ex;e.y=ey;o.fx=r}
+    // משוב קרב מספריית האפקטים (moba-fx.js MBLIB, אוראל 7.11), בתרחיש קבוע ליד המצלמה: יריה עפה ופגיעה, חיתוך מקרוב, CRIT!, עליית רמה,
+    // סימן "רטוב" שמופיע ונעלם עם המצב, הריגה, מגדל שנפגע ונופל, וטבעת קבוצה מתחת לגיבור
+    if(typeof MBLIB!=='undefined'){const r={},all=MB.u,me=MB.me,bk={x:me.x,y:me.y,lvl:me.lvl,xp:me.xp,hp:me.hp,dead:me.dead,score:MB.score.slice()};MBFX.log={};
+     const cx=S.cam.x,cy=S.cam.y,hu=mbHero('hunter',0,false,1),wa=mbHero('warrior',0,false,2),e=mbHero('tank',1,false,0),tw=all.find(b=>b.k==='tower'&&b.team===1&&Math.abs(b.x)===MOBA.towers[0]);
+     Object.assign(me,{x:cx,y:cy,dead:false});hu.x=cx-60;hu.y=cy;wa.x=cx+100;wa.y=cy+40;e.x=cx+150;e.y=cy;e.hp=e.max=1e6;MB.u=[me,hu,wa,e,tw];mbVisNow(true);
+     hu.atkT=0;mbAttack(hu,0,e,MBKIT.hunter.atk);for(let i=0;i<40&&MB.shots.length;i++)mbShots(1/30);
+     wa.atkT=0;mbAttack(wa,0,e,MBKIT.warrior.atk);mbfxNum(e.x,e.y,150,C.gold,{crit:true},hu,e);
+     me.lvl=1;me.xp=0;mbXp(me,MOBA.xp.need[1]+1);
+     e.st.wet=3;mbfxUnits();r.wetOn=!!(e.fxh&&e.fxh.st_wet&&e.fxh.st_wet.on);const wh=e.fxh&&e.fxh.st_wet;e.st.wet=0;mbfxUnits();r.wetOff=!!wh&&!wh.on&&!e.fxh.st_wet;
+     r.glow=!!(me.fxh&&me.fxh.glow&&e.fxh.glow&&e.fxh.glow.id==='glow_enemy');
+     const tx=tw.x,ty=tw.y;tw.x=cx-150;tw.y=cy-60;tw.fxHit=-9;mbfxTower(tw);mbfxFall(tw);delete tw.fallT;tw.x=tx;tw.y=ty;
+     e.hp=1;mbDmg(hu,e,999,'physical');const L=MBFX.log;
+     r.got=['shot_arrow','hit','slash','dmg_crit','levelup','levelup_ring','st_wet','ko','tower_hit','tower_fall','debris','glow_ally','glow_enemy'].filter(id=>!L[id]);
+     try{render();r.draw=true}catch(err){r.draw=err.message}
+     MB.u=all;MB.shots.length=0;MBFX.log=null;Object.assign(me,{x:bk.x,y:bk.y,lvl:bk.lvl,xp:bk.xp,hp:bk.hp,dead:bk.dead});MB.score=bk.score;mbVisNow(true);o.lib=r}
     // זרימה (הבודק, 6.11): הקושי משנה את המוח של בוטי האויב בלבד, מגן מגדלים ב-3 הדקות הראשונות, זהב חזרה, חזרה מהירה בהתחלה, ריצה מהבסיס, ו-XP ברדיוס רחב
     {const r={},t0=MB.t,me=MB.me,red=mbHeroes(1)[0],blue=mbHeroes(0).find(h=>!h.me),d0=MB.diff;
      MB.diff='easy';const e=mbMind(red),a=mbMind(blue);MB.diff='hard';const h=mbMind(red);MB.diff=d0;
@@ -3915,7 +3942,7 @@ function worldBot(m,L,god){
     mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
     mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
     mbWord=function(u,w){cmb[w]=(cmb[w]||0)+1;return f.word(u,w)};
-    let n=0;while(!MB.over&&n<MOBA.maxT*30+60){mobaUpdate(1/30);n++}
+    let n=0;while(!MB.over&&n<MOBA.maxT*30+60){mobaUpdate(1/30);n++;if(o.ult1===undefined&&MB.u.some(h=>h.k==='hero'&&!h.me&&h.lvl>=MOBA.ultAt))o.ult1=Math.round(MB.t)}   // הסקיל-על הראשון של בוט (MOBA.xp.need)
     mbCast=f.cast;mbCC=f.cc;mbWord=f.word;
     if(spl.f){mbSpellCast=spl.f.c;mbHealCast=spl.f.h;delete spl.f;for(const h of MB.u)if(h.k==='hero'&&!h.me)spl.pick[h.kit+':'+h.spell]=(MBSPELL.bot[h.kit]||[]).includes(h.spell);o.spl=spl}
     const kits=[...new Set(MB.u.filter(u=>u.k==='hero').map(u=>u.kit))];
@@ -4107,7 +4134,7 @@ function worldBot(m,L,god){
   check(wk.weakDmg>wk.plain*1.2,'חולשה: מכה של '+wk.weak+' על מגן עשתה '+wk.weakDmg+', ואותה מכה בלי חולשה '+wk.plain);
   check(wk.stone.lightning===0&&wk.stone.water===15&&wk.stone.fire===5,'טבלת יעילות: מכה של 10 על אבן · מים '+wk.stone.water+' (צריך 15), ברק '+wk.stone.lightning+' (צריך 0), אש '+wk.stone.fire+' (צריך 5)');
   const hits=L.hits||{},nTypes=Object.keys(hits).filter(k=>hits[k]>0).length;
-  check(!sfx.err&&sfx.cast===5&&sfx.combo&&sfx.drawn&&sfx.peak>0&&sfx.peak<=sfx.max&&sfx.less&&sfx.world,'מראה הסקילים בזירה: '+(sfx.err||[sfx.cast+'/5 סקילים',sfx.combo?'הבזק קומבו':'בלי הבזק קומבו',sfx.drawn?'מצויר':'לא מצויר',
+  check(!sfx.err&&sfx.cast===5&&sfx.combo&&sfx.drawn&&sfx.peak>0&&sfx.peak<=sfx.max&&sfx.less&&sfx.world&&sfx.anim[1]===5&&sfx.anim[2]&&sfx.anim[3],'מראה הסקילים בזירה: '+(sfx.err||[sfx.cast+'/5 סקילים','אנימציות מגיליונות: '+sfx.anim[0]+' ל-'+sfx.anim[1]+'/5 סקילים'+(sfx.anim[2]&&sfx.anim[3]?'':' (מעל התקרה)'),sfx.combo?'הבזק קומבו':'בלי הבזק קומבו',sfx.drawn?'מצויר':'לא מצויר',
     'עד '+sfx.peak+' חלקיקים בפריים (תקרה '+sfx.max+')',sfx.less?'"פחות אפקטים" בלי חלקיקים':'חלקיקים גם ב"פחות אפקטים"',sfx.world?'בעולם הציור הישן':'בעולם הציור החדש'].join(', ')));
   check(cb.shock&&cb.frozen&&cb.stun&&cb.melt>=1.9&&cb.bossStun&&cb.plainIce,'קומבו: '+[cb.shock?'רטוב+ברק קפץ לרטוב רחוק':'חשמול לא קפץ',cb.frozen?'רטוב+קרח קפא ולא זז':'לא קפא',
     cb.stun?'קפוא+אדמה = הלם':'אין הלם','אש+קרח x'+cb.melt+(cb.melt>=1.9?'':' (צריך x2)'),cb.bossStun?'בוס בהלם פעם אחת ואז חסין':'הלם בבוס לא עבד',cb.plainIce?'קרח לבד לא מקפיא':'קרח לבד הקפיא'].join(', '));
@@ -4279,10 +4306,12 @@ function worldBot(m,L,god){
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
     {const A=mb.aim||{};check(A.on&&A.hot&&A.cancel&&A.cast&&A.sec,'משחקי השאול: כיוון בגרירה '+(A.on?'✓':'לא הופיע')+(A.hot?', ✕ נדלק':', ✕ לא נדלק')+(A.cancel?', ביטול בלי טעינה':', הביטול לא עבד')+(A.cast?', שחרור מטיל לנקודה':', השחרור לא הטיל לנקודה')+(A.sec?', שניות על הכפתור':', אין שניות'))}
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));
-    {const need=['sk_pierce','sk_wave'],miss=need.filter(i=>!(mb.fxIds||[]).includes(i)),fs=require('fs'),path=require('path'),
+    {const need=['sk_pierce','sk_wave','sk_anvil','sk_anvil_wave','sk_taunt','sk_wall','sk_cleave','sk_spin','sk_rage','sk_rage_glow','sk_net','sk_net_root','sk_rain','sk_bubble','sk_bubble_halo','sk_bubble_aura','sk_blizzard','sk_blizzard_ice','ult_cast','ult_ray','sp_dash','sp_haste','sp_barrier','sp_reveal','sp_exhaust','sp_cleanse','sp_heal','recall'],miss=need.filter(i=>!(mb.fxIds||[]).includes(i)),fs=require('fs'),path=require('path'),
        files=Object.keys(JSON.parse(fs.readFileSync(path.join(__dirname,'fx-list.json'),'utf8'))).filter(k=>!k.startsWith('_')).filter(k=>!fs.existsSync(path.join(__dirname,'..','fx',k+'.webp')));
-     check(mb.fxLib>=100&&!files.length&&!miss.length&&mb.fxDrawOk===true,'ספריית האפקטים: '+mb.fxLib+' אפקטים'+(files.length?', חסרים קבצים: '+files.slice(0,5).join(', '):', כל הקבצים ב-fx/')+(miss.length?' · חץ ברק/גל מים בלי אפקט: '+miss.join(', '):' · חץ ברק וגל מים עם אפקט')+(mb.fxDrawOk===true?'':' · הציור נכשל: '+mb.fxDrawOk))}
+     check(mb.fxLib>=100&&!files.length&&!miss.length&&mb.fxDrawOk===true&&!!mb.fxAt&&mb.fxAt.on,'ספריית האפקטים: '+mb.fxLib+' אפקטים'+(files.length?', חסרים קבצים: '+files.slice(0,5).join(', '):', כל הקבצים ב-fx/')+(miss.length?' · סקילים/לחשים בלי אפקט: '+miss.join(', '):' · '+need.length+' אפקטים של סקילים, לחשים וחזרה הופעלו')+(mb.fxDrawOk===true?'':' · הציור נכשל: '+mb.fxDrawOk)+(!mb.fxAt?' · האפקט לא צויר בכלל!':mb.fxAt.on?' · על המסך ליד הגיבור':' · מחוץ למסך! '+JSON.stringify(mb.fxAt)))}
     check(mb.fixed&&!mb.fixed.length,'משחקי השאול: כל 12 הסקילים (4 ערכות) הוטלו בתרחיש קבוע'+(mb.fixed&&mb.fixed.length?' · לא הוטלו: '+mb.fixed.join(', '):'')+' · במשחק הבוטים ('+mb.kits+'): '+(mb.miss.length?'לא הגיעו ל: '+mb.miss.join(', '):'כולם'));
+    {const r=mb.lib||{},got=r.got||['?'];check(!got.length&&r.wetOn&&r.wetOff&&r.glow&&r.draw===true,'משחקי השאול: משוב קרב מספריית האפקטים: '+(got.length?'חסר '+got.join(','):'יריה, פגיעה, חיתוך, CRIT!, רמה, הריגה ומגדל ✓')+(r.wetOn&&r.wetOff?' · סימן רטוב מופיע ונעלם':' · סימן רטוב ✗')+(r.glow?' · טבעות קבוצה':' · בלי טבעות קבוצה')+(r.draw===true?'':' · ציור נפל: '+r.draw))}
+    {const u=mb.ult1;check(u!==undefined&&u>=100&&u<=270,'משחקי השאול: הסקיל-על הראשון של בוט ב-'+(u===undefined?'אף פעם':Math.floor(u/60)+':'+String(u%60).padStart(2,'0'))+' (צריך בין 1:40 ל-4:30, אוראל 7.11: "סביב דקה 3-4")')}
     {const r=mb.fx||{};check(r.tank&&r.warrior&&r.shield&&r.cap&&r.stop&&r.ult,'משחקי השאול: טנק ולוחם מזנקים אל מטרה קצת רחוקה: '+(r.tank?'נפח ✓':'נפח ✗')+(r.warrior?' לוחם ✓':' לוחם ✗')+(r.shield?', מגן סופג':', המגן לא סופג')+' · פיצוצי: '+(r.cap?'חלקיקים מוגבלים':'חלקיקים בלי גבול')+(r.stop?', עצירת פריים בקריטי':', בלי עצירת פריים')+(r.ult?', רגע סקיל-על':', בלי רגע סקיל-על'))}
     {const d=mb.diff||{},r=mb.flow||{};
      check(d.n===3&&d.one&&d.saved&&d.back&&d.game&&r.diff,'משחקי השאול: קושי: '+(d.n===3?'3 כפתורים':(d.n||0)+' כפתורים')+(d.one?', אחד מסומן':', הסימון שגוי')+(d.saved&&d.back?', נשמר':', לא נשמר')+(d.game?', המשחק לפי הבחירה':', המשחק לא לפי הבחירה')+(r.diff?', משנה רק את המוח של האויבים':', לא משנה את הבוטים'));
