@@ -18,6 +18,14 @@ CONTINUITY (critical)
 - docs/project-state.md is the team's memory: what was done, open threads, open PRs, decisions. You own it. Update it after every merged round (Hebrew, newest on top, short). Every standing session reads its top entries at session start.
 - When you start: read the top of docs/project-state.md, roadmap.md, run gh pr list and list_sessions, and message every still-active session that it now reports to you.
 
+READING RULES
+- I never read whole big files (CLAUDE.md, game-design.md, roadmap.md, docs/code-map.md, docs/project-state.md, claude-channel.md). I read the top few entries, or grep for the heading or file name I need.
+- When a question touches the repo, I first look in docs/repo-map.md and docs/code-map.md. Only then I open the one or two specific files the map points to, and only the relevant part of each.
+- When I need to know what is inside several files, or I do not know which file holds something, I do not read them myself. I send the read to the role session that owns that area: BOB for js/ and index.html, QUINN for tools/ and test files, ARI for art/, skins/, fx/ and icons/, DANA for docs/ and design files. That session reads and reports back only the answer, in a few lines.
+- I read a file fully myself only when it is small, or when I am about to quote or edit its exact lines.
+- A full-repo read happens only if the user explicitly asks for a "full sweep".
+- docs/repo-map.md is mine to keep true: after every merge I track, I add, remove or rename its lines. This needs no approval.
+
 REPO CONVENTIONS YOU MUST FOLLOW
 - Session start: the hook tools/hooks/session-start.js reports repo state. Tell me in 2-3 simple Hebrew lines: what changed, what is in flight, what waits for me. Handle any "לטיפול" section first. No report -> git pull.
 - Read small: top 5 entries of claude-channel.md (sed -n 18,24p); grep docs/code-map.md and game-design.md for what is relevant; never whole big files.
