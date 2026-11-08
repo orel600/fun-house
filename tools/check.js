@@ -4688,7 +4688,7 @@ function worldBot(m,L,god){
     {const G=mb.gang||{};check(!G.err&&G.n>0&&G.max===1&&G.low===0,'משחקי השאול: לא מתנפלים יחד ב"קל": '+(G.err||'הכי הרבה בוטים על השחקן בבת אחת: '+G.max+' (מותר 1), התמקדו בו '+G.n+' פריימים מתוך 240, ומתחת ל-20% '+(G.low===0?'מותר לגמור':'עדיין חסום!')))}
     {const R=mb.rigK||{};check(R.ok,'סקין מתמונות בגודל ×1.15 (rig.js): '+(R.err||R.n+' חלקים מצוירים'+(R.ok?', כל המידות סופיות ופי 1.15':', מידות לא נכונות')))}
     {const Q=mb.sinFx||{},ks={vanish:'עשן בהיעלמות',mine:'מוטות לקבוצה שלו',foe:'לא לאויב',brk:'נעלמים בשבירה',dead:'נעלמים במוות',back:'CRIT סגול בגב',mark:'יהלום לסימן מוות'};
-     check(!Q.err&&Object.keys(ks).every(k=>Q[k]),'משחקי השאול: אפקטים של המתנקש: '+(Q.err||Object.keys(ks).map(k=>ks[k]+(Q[k]?' ✓':' ✗')).join(', '))+(Object.keys(ks).every(k=>Q[k])?'':'))}
+     check(!Q.err&&Object.keys(ks).every(k=>Q[k]),'משחקי השאול: אפקטים של המתנקש: '+(Q.err||Object.keys(ks).map(k=>ks[k]+(Q[k]?' ✓':' ✗')).join(', ')))}
     {const Z=mb.arrow||{},ks={cast:'הטלה',pose:'שחרור קשת',circ:'בלי מעגל',trail:'פס',drawn:'מצויר',miss:'החטאה בלי הבזק',hit:'הבזק רק בפגיעה',fog:'אויב בערפל מוסתר',reset:'ניקוי'};
      check(!Z.err&&Object.keys(ks).every(k=>Z[k]),'משחקי השאול: חץ הברק: '+(Z.err||Object.keys(ks).map(k=>ks[k]+(Z[k]?' ✓':' ✗')).join(', ')))}
     {const K=mb.atk||{},ks={btn:'כפתור',big:'הכי גדול',free:'לא נוגע בסקילים',step:'נגיעה מקרבת',lock:'גרירה נועלת',pref:'הנעול קודם',far:'נגמרת במרחק',dead:'נגמרת במוות',cancel:'✕ מבטל',cd:'טעינה על הכפתור',space:'רווח'};
