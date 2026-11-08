@@ -183,8 +183,10 @@ function botStep({god,en}){
       L.nodeSeen??=at;useWeapon('sword');tx=n.x;ty=n.y;
     }
     else{
-      const n=nearest(220);
-      if(n){tx=n.x;ty=n.y;flee=true}
+      // בזירה עם חרב נצמדים לאויב הקרוב, ובורחים רק עם קשת או בחיים נמוכים (QUINN, 8.11: הבריחה מכל אויב ב-220 מתחה את הגלים, והבוס לא הגיע עד 600 שניות)
+      const n=nearest(220),melee=S.wv&&S.wv.phase==='fight'&&P.weapon==='sword'&&P.hp>P.maxHp*0.35;
+      if(n&&melee){tx=n.x;ty=n.y;stop=n.r+30}
+      else if(n){tx=n.x;ty=n.y;flee=true}
       else if(S.wv&&S.wv.phase==='fight'){   // הזירה (arenas.js): אף אחד לא קרוב, אז כמו שחקן הולכים לאויב הקרוב בגל (רחוקים ישנים ומתקרבים לאט)
         const e=enemies.reduce((b,e)=>e.dead||e.wv==null||b&&Math.hypot(b.x-P.x,b.y-P.y)<=Math.hypot(e.x-P.x,e.y-P.y)?b:e,null);
         if(e){tx=e.x;ty=e.y;stop=P.weapon==='sword'?e.r+40:180}}
