@@ -51,11 +51,14 @@ function install(B){
   // זמן המשחק נספר רק בעולם, כדי שההמתנה אחרי מוות (setTimeout אמיתי) לא תיספר
   frame=function(){};
   // מה פוגע בשחקן בקרב בשומר: לפי הפונקציה שקראה ל-hurt (יריות, טבעות, עיגולים, רקיעה, מגע)
-  const hu=hurt;hurt=function(d){const h0=P.hp,r=hu.apply(this,arguments);if(m.ph==='warden'&&S.wd){const ln=(new Error().stack.split('\n')[2]||''),fn=(ln.match(/at (\w+)/)||[])[1]||'?';
+  const hu=hurt;hurt=function(d){const h0=P.hp,r=hu.apply(this,arguments);{const z=zRep();if(z)z.hin+=Math.max(0,h0-P.hp)/P.maxHp}if(m.ph==='warden'&&S.wd){const ln=(new Error().stack.split('\n')[2]||''),fn=(ln.match(/at (\w+)/)||[])[1]||'?';
     const c=R.hurtBy[m.ch]||(R.hurtBy[m.ch]={});c[fn]=(c[fn]||0)+Math.max(0,h0-P.hp)}
     else if(m.ph==='grind'&&S.wd&&m.ch<B.chapters.length){const c=cRep();c.hin=(c.hin||0)+Math.max(0,h0-P.hp)/P.maxHp}return r};   // נזק שנספג בטיפוס, בפסי חיים מלאים (איזון הקרב, 6.11)
   if(typeof giantLoot==='function')giantLoot=function(){};   // שלל של ניצחון חוזר: לא, כדי שהציוד לא ישתפר בין קרב לקרב
-  window.__balRun=n=>{let r={};for(let i=0;i<n&&!r.done;i++){last=performance.now()-50;frameStep(performance.now());if(S.wd)m.gt+=0.05;if(i%5===0)r=step()}return r};
+  // לפי איזור (WORLD.zones: start, near, far; ביקורת 6.11: "איזון נבדק גם לפי אזור"): זמן, נזק שנספג ומוות, איפה שהשחקן עומד
+  const zId=()=>{try{return S.wd&&!S.wd.dp&&typeof wZone==='function'&&(wZone(P)||{}).id||null}catch(e){return null}};
+  const zRep=()=>{if(!S.wd||m.ch>=B.chapters.length)return null;const id=zId();if(!id)return null;const c=cRep(),z=c.z||(c.z={});return z[id]||(z[id]={t:0,hin:0,d:0})};
+  window.__balRun=n=>{let r={};for(let i=0;i<n&&!r.done;i++){last=performance.now()-50;frameStep(performance.now());if(S.wd){m.gt+=0.05;if(S.mode==='play'){const z=zRep();if(z)z.t+=0.05}}if(i%5===0)r=step()}return r};
   function chap(){return B.chapters[m.ch]}
   // הריגות בפרק (ל-kills של playtime.js)
   const k0=kill;kill=function(e){const x0=S.wd&&!e.node&&m.ch<B.chapters.length?cumXp():null;const r=k0.apply(this,arguments);if(x0!==null){m.kc=(m.kc||0)+1;const c=cRep();c.kn=(c.kn||0)+1;c.kxp=(c.kxp||0)+cumXp()-x0}return r};
@@ -130,7 +133,7 @@ function install(B){
     if(m.ch>=B.chapters.length||B.only&&m.ch>=B.only)return{done:true,R};   // --chapters N: רק N הפרקים הראשונים (בדיקה מהירה)
     const now=m.gt,c=cRep(),vis=id=>!$(id).hidden;
     if(vis('ovWDeath')){$('wRespawn').click();return{}}
-    if(S.wd&&S.mode==='over'){if(!m.dead){m.dead=1;R.deaths++;c.deaths++;if(m.ph==='warden')c.wDeaths=(c.wDeaths||0)+1}return{}}
+    if(S.wd&&S.mode==='over'){if(!m.dead){m.dead=1;R.deaths++;c.deaths++;{const z=zRep();if(z)z.d++}if(m.ph==='warden')c.wDeaths=(c.wDeaths||0)+1}return{}}
     m.dead=0;
     if(now-m.chT>B.cap+(m.ph==='warden'?B.wardenCap*(B.fights-1):0)){const L0=STORY.lanterns[chap().k];finish(false,m.ph==='warden'?'שומר (במרחק '+Math.round(Math.hypot(P.x-L0.x,P.y-L0.y))+' מהפנס'+(S.wd.warden?', ער':'')+')':'רמה '+heroLv()+'/'+need());return{}}
     for(const id of ['npcDlg','qLog','ovGear','ovDaily','ovWelcome','ovBook'])if($(id)&&!$(id).hidden)$(id).hidden=true;
