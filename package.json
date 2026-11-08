@@ -4,7 +4,8 @@
   "description": "Six Lanterns (שישה פנסים): משחק האקשן לטלפון של ניר ואוראל. המשחק עצמו לא צריך התקנה, זה רק לבדיקה האוטומטית",
   "scripts": {
     "setup": "npm install && npx playwright install chromium",
-    "check": "node tools/check.js"
+    "check": "node tools/check.js",
+    "fx:audit": "node tools/fx-audit.js"
   },
   "devDependencies": {
     "playwright": "1.64.1"
