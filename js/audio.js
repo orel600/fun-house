@@ -19,26 +19,27 @@ const SOUNDS={
   bell:     {file:'bell.mp3',     vol:0.6,  pitch:0,    max:1, gap:1,    grp:'fx'},     // פעמון הערפל באגם (lake-bell.js)
   creak:    {file:'creak.mp3',    vol:0.2,  pitch:0.2,  max:1, gap:0.5,  grp:'fight'},  // גשר צף חורק כשדורכים עליו (lake-bell.js)
   // סבב צלילים 1 (8.11, docs/concept/sound.md, הבחירות של אוראל דרך MAX): התראה רכה, וצליל הטלה לכל סוג נזק. החלפה = קובץ אחר באותו שם
-  ui:       {file:'ui.mp3',       vol:0.3,  pitch:0.05, max:1, gap:0.12, grp:'fx'},     // התראה רכה: ספירה לאחור, גל נוקה, כפתורים בחלונות (נקרא ב-64 מקומות)
-  cast_physical: {file:'cast_physical.mp3', vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'},   // הטלת סקיל פיזי: חבטה יבשה
-  cast_fire:     {file:'cast_fire.mp3',     vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'},   // אש: וושש והתלקחות
-  cast_water:    {file:'cast_water.mp3',    vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'},   // מים: התזה
-  cast_ice:      {file:'cast_ice.mp3',      vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'},   // קרח: צלצול גבישי
-  cast_lightning:{file:'cast_lightning.mp3',vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'},   // ברק: זמזום חד
-  cast_earth:    {file:'cast_earth.mp3',    vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'},   // אדמה: רעם נמוך
+  // where:'fight': רק בזירה ובמשחקי השאול. בכפר ובעולם (הצד של ניר) הצליל שקט, גם כשקוד שם קורא לו (sfx('ui') ב-12 קבצים, וקומבו מ-dmg.js)
+  ui:       {file:'ui.mp3',       vol:0.3,  pitch:0.05, max:1, gap:0.12, grp:'fx',where:'fight'},     // התראה רכה: ספירה לאחור, גל נוקה, כפתורים בחלונות (נקרא ב-64 מקומות)
+  cast_physical: {file:'cast_physical.mp3', vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // הטלת סקיל פיזי: חבטה יבשה
+  cast_fire:     {file:'cast_fire.mp3',     vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // אש: וושש והתלקחות
+  cast_water:    {file:'cast_water.mp3',    vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // מים: התזה
+  cast_ice:      {file:'cast_ice.mp3',      vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // קרח: צלצול גבישי
+  cast_lightning:{file:'cast_lightning.mp3',vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // ברק: זמזום חד
+  cast_earth:    {file:'cast_earth.mp3',    vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // אדמה: רעם נמוך
   // סבב צלילים 2 (8.11, docs/concept/sound.md סעיף 4, הקבצים של ARI): רגעים. gap: לא חוזר מהר מזה
-  wave_start:  {file:'wave_start.mp3', vol:0.45, pitch:0,    max:1, gap:2,   grp:'fx'},   // קרן: גל מתחיל בזירה (arenas.js)
-  streak1:     {file:'streak1.mp3',    vol:0.4,  pitch:0,    max:1, gap:0.5, grp:'fx'},   // רצף הריגות, שלוש דרגות שעולות בגובה (streak.js)
-  streak2:     {file:'streak2.mp3',    vol:0.45, pitch:0,    max:1, gap:0.5, grp:'fx'},
-  streak3:     {file:'streak3.mp3',    vol:0.5,  pitch:0,    max:1, gap:0.5, grp:'fx'},
-  ult_ready:   {file:'ult_ready.mp3',  vol:0.4,  pitch:0,    max:1, gap:5,   grp:'fx'},   // נצנוץ: הסקיל-על מוכן (ult.js, ובמשחקי השאול mobaHud)
-  tower_fall:  {file:'tower_fall.mp3', vol:0.6,  pitch:0.05, max:1, gap:1,   grp:'fx'},   // רעם: מגדל או בסיס נופלים (moba.js)
-  base_alarm:  {file:'base_alarm.mp3', vol:0.45, pitch:0,    max:1, gap:10,  grp:'fx'},   // הבסיס שלך מותקף (moba.js), לכל היותר פעם ב-10 שניות
-  me_die:      {file:'me_die.mp3',     vol:0.45, pitch:0,    max:1, gap:1,   grp:'fx'},   // אתה נופל במשחקי השאול (במקור שקט, הוגבר: אולי דק)
-  me_back:     {file:'me_back.mp3',    vol:0.45, pitch:0,    max:1, gap:1,   grp:'fx'},   // אתה חוזר לחיים
-  gamble_tick: {file:'gamble_tick.mp3',vol:0.35, pitch:0.06, max:1, gap:0.05,grp:'fx'},   // גלגל ההימור: תקתוק (moba-gamble.js)
-  gamble_win:  {file:'gamble_win.mp3', vol:0.5,  pitch:0,    max:1, gap:1,   grp:'fx'},   // ניצחון בהימור
-  gamble_lose: {file:'gamble_lose.mp3',vol:0.45, pitch:0,    max:1, gap:1,   grp:'fx'}    // הפסד בהימור (במקור שקט, הוגבר: אולי דק)
+  wave_start:  {file:'wave_start.mp3', vol:0.45, pitch:0,    max:1, gap:2,   grp:'fx',where:'fight'},   // קרן: גל מתחיל בזירה (arenas.js)
+  streak1:     {file:'streak1.mp3',    vol:0.4,  pitch:0,    max:1, gap:0.5, grp:'fx',where:'fight'},   // רצף הריגות, שלוש דרגות שעולות בגובה (streak.js)
+  streak2:     {file:'streak2.mp3',    vol:0.45, pitch:0,    max:1, gap:0.5, grp:'fx',where:'fight'},
+  streak3:     {file:'streak3.mp3',    vol:0.5,  pitch:0,    max:1, gap:0.5, grp:'fx',where:'fight'},
+  ult_ready:   {file:'ult_ready.mp3',  vol:0.4,  pitch:0,    max:1, gap:5,   grp:'fx',where:'fight'},   // נצנוץ: הסקיל-על מוכן (ult.js, ובמשחקי השאול mobaHud)
+  tower_fall:  {file:'tower_fall.mp3', vol:0.6,  pitch:0.05, max:1, gap:1,   grp:'fx',where:'fight'},   // רעם: מגדל או בסיס נופלים (moba.js)
+  base_alarm:  {file:'base_alarm.mp3', vol:0.45, pitch:0,    max:1, gap:10,  grp:'fx',where:'fight'},   // הבסיס שלך מותקף (moba.js), לכל היותר פעם ב-10 שניות
+  me_die:      {file:'me_die.mp3',     vol:0.45, pitch:0,    max:1, gap:1,   grp:'fx',where:'fight'},   // אתה נופל במשחקי השאול (במקור שקט, הוגבר: אולי דק)
+  me_back:     {file:'me_back.mp3',    vol:0.45, pitch:0,    max:1, gap:1,   grp:'fx',where:'fight'},   // אתה חוזר לחיים
+  gamble_tick: {file:'gamble_tick.mp3',vol:0.35, pitch:0.06, max:1, gap:0.05,grp:'fx',where:'fight'},   // גלגל ההימור: תקתוק (moba-gamble.js)
+  gamble_win:  {file:'gamble_win.mp3', vol:0.5,  pitch:0,    max:1, gap:1,   grp:'fx',where:'fight'},   // ניצחון בהימור
+  gamble_lose: {file:'gamble_lose.mp3',vol:0.45, pitch:0,    max:1, gap:1,   grp:'fx',where:'fight'}    // הפסד בהימור (במקור שקט, הוגבר: אולי דק)
 };
 /* הערוצים והמחוונים בחלון הצלילים (נפתח מכפתור הרמקול). def: העוצמה ההתחלתית. gap: לכל הערוץ יחד, כדי שפגיעה, ירייה ומטבע באותו רגע לא יישמעו כרעש אחד.
    duck: כשצליל fx מתנגן, צלילי הקרב יורדים לחלק הזה לכמה שניות (duckT), כדי שרגע גדול יישמע. העוצמות נשמרות בטלפון (key) */
@@ -80,6 +81,7 @@ function sfxGate(id,now){
 }
 function sfx(id,k=1){   // k: עוצמה יחסית (מכה חזקה, juice.js), וגם צליל קצת נמוך יותר
   const s=SOUNDS[id];if(!s)return;
+  if(s.where==='fight'&&typeof S!=='undefined'&&S&&(S.vil||S.wd))return;   // צליל של קרב: לא בכפר ולא בעולם (סבב צלילים 1)
   AUDIO.count[id]=(AUDIO.count[id]||0)+1;
   const c=AUDIO.ctx,b=AUDIO.buf[id];
   if(AUDIO.muted||!AUDIO.unlocked||!c||!b||c.state!=='running'||!AUDIO.vol[s.grp])return;
