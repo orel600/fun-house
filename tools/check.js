@@ -2684,6 +2684,35 @@ function worldBot(m,L,god){
   check(!fxc.err&&(!fxc.img||fxc.cone&&fxc.coneGone&&fxc.leap&&fxc.charge&&fxc.chargeGone&&fxc.big&&fxc.hitFire&&fxc.koIce&&fxc.perFrame<=fxc.cap&&fxc.mineStone&&fxc.mineGem)&&fxc.all<=fxc.max,
     'אפקטים של קרב בעולם: '+(fxc.err||(!fxc.img?'הגיליונות לא נטענו, דילגתי':(fxc.cone&&fxc.coneGone?'משולש אזהרה בזמן ההכנה ונעלם אחריה':'אזהרת מכה חסרה או נשארת')+(fxc.leap?', עיגול בקפיצה':', בלי עיגול קפיצה')+(fxc.charge&&fxc.chargeGone?', פס וכדור בהסתערות':', הסתערות בלי סימן')+(fxc.big?', מכ"ם לענק':', בלי מכ"ם לענק')+
     (fxc.hitFire?', פגיעת אש':', בלי פגיעה לפי סוג')+(fxc.koIce?', מוות מקרח':', בלי מוות לפי סוג')+', '+fxc.perFrame+'/'+fxc.cap+' פגיעות בפריים'+(fxc.mineStone&&fxc.mineGem?', רסיסים ואבן חן בכרייה':', כרייה בלי אפקט')))+' ('+fxc.all+'/'+fxc.max+' אפקטים)');
+  // תחושת איסוף (gather.js, ניר 8.11): חורשות, מכה מתיזה עם תקרה, המקור מתכווץ, עץ מתנדנד ונופל, קרב קודם, השלל עף לגיבור ונאסף,
+  // נבט שגדל בזמן הצמיחה, צמיחה מחדש שמתחילה קטנה, ובזירה כלום לא משתנה. מזל משלה (Math.random מוחלף ומוחזר): לא מזיז את ה-seed לבדיקות שאחריה
+  const gat=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),R0=Math.random,o={};let sd=4242;
+    Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;
+    try{SAVE.fxLess=false;enterWorld('home');enemies=[];S.mode='play';P.inv=99;const st=GATHER.stat,s0=Object.assign({},st),sh=n=>wKind(n.kind).shape;
+      const live=S.nd.list.filter(n=>!n.dead),trees=live.filter(n=>sh(n)==='tree'),tree=trees[0],rock=live.find(n=>['rock','vein','crystal'].includes(sh(n)));
+      o.grove=Math.round(100*trees.filter(t=>trees.some(u=>u!==t&&Math.hypot(u.x-t.x,u.y-t.y)<160)).length/Math.max(1,trees.length));
+      P.x=rock.x-rock.r-P.r-10;P.y=rock.y;gUpdate(1/60);gHit(rock,0);o.chips=st.chips-s0.chips;
+      for(let i=0;i<5;i++)gHit(rock,0);o.perFrame=st.chips-s0.chips;o.cap=GATHER.chip.perFrame;
+      rock.hp=rock.max*0.2;for(let i=0;i<60;i++)gUpdate(1/60);o.shrink=gScale(rock)<0.75;
+      gHit(tree,0);o.sway=!!tree.gHitT;
+      const foe={x:P.x+30,y:P.y,r:12,dead:false};enemies=[foe];o.foeFirst=aimTarget(999)===foe;enemies=[];o.node=aimTarget(999)===rock;
+      const bag0=Object.values(SAVE.bag).reduce((a,b)=>a+b,0);
+      rock.hp=0;nodeDown(rock);o.fly=st.fly-s0.fly;o.cleared=GATHER.from===null;
+      for(let i=0;i<120;i++){dropsUpdate(1/60);wLootIn()}
+      o.take=st.take-s0.take;o.bag=Object.values(SAVE.bag).reduce((a,b)=>a+b,0)>bag0;
+      tree.hp=0;nodeDown(tree);o.fell=st.fell-s0.fell;
+      tree.back=tree.regrow*0.5;o.sprout=Math.abs(gSprout(tree)-0.5)<0.01;
+      tree.back=0;tree.dead=false;tree.hp=tree.max;gUpdate(1/60);o.regrow=st.regrown>s0.regrown&&gScale(tree)<0.6;
+      const wd=S.wd,a0=JSON.stringify(st),d={r:'stone',n:1,fly:false,t:0,vz:100};S.wd=null;
+      try{gHit(rock,0);gDown(rock);gDown(null);gSpawn(d);gTake({gth:1,r:'stone',n:1})}finally{S.wd=wd}
+      o.arena=JSON.stringify(st)===a0&&!d.fly&&!d.gth;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    finally{Math.random=R0}
+    enemies=[];SAVE=JSON.parse(bak);enterVillage();return o});
+  check(!gat.err&&gat.grove>=60&&gat.chips>0&&gat.perFrame<=gat.cap&&gat.shrink&&gat.sway&&gat.foeFirst&&gat.node&&gat.fly>0&&gat.cleared&&gat.take>0&&gat.bag&&gat.fell>0&&gat.sprout&&gat.regrow&&gat.arena,
+    'תחושת איסוף: '+(gat.err||('חורשות '+gat.grove+'% מהעצים עם שכן'+(gat.chips>0?', מכה מתיזה '+gat.chips+' חתיכות':', מכה בלי חתיכות!')+' ('+gat.perFrame+'/'+gat.cap+' בפריים)'+
+    (gat.shrink?', סלע מתכווץ':', לא מתכווץ')+(gat.sway?', עץ מתנדנד':', בלי נדנוד')+(gat.foeFirst&&gat.node?', אויב קודם למקור':', עדיפות שגויה!')+
+    (gat.fly>0&&gat.take>0&&gat.bag?', השלל עף ונאסף ('+gat.take+')':', השלל לא נאסף!')+(gat.fell>0?', עץ נופל':', לא נופל')+(gat.sprout&&gat.regrow?', נבט וצמיחה מחדש':', בלי צמיחה')+(gat.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
   // העלילה, פרק 5 (story.js, WORLD.regions.storm): השביל מהמדבר למגדלים סגור עד שפנס האש דולק, במגדלים גשם, ברקים ומגדלים שבורים שאי אפשר לעבור,
   // אויבים מחושמלים (חלשים לאדמה), ושומר הסערה מסמן עיגולי ברק שמתפוצצים אחרי שנייה: מי שנשאר נפגע, מי שזז לא
   const ch5=await page.evaluate(()=>{
