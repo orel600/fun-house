@@ -1708,7 +1708,8 @@ body.mb .skills.mbsk{bottom:calc(env(safe-area-inset-bottom,0px) + 26px)}
 .mbshopin{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px}
 .mbcats{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;align-content:start}
 .mbcat h5{margin:0 0 3px;font:800 11px var(--body);color:var(--dim)}
-.mbcat>div{display:flex;gap:6px}
+.mbcat{min-width:0}   /* טור צר: החפצים יורדים שורה, ולא נשפכים על הפרטים (844x390) */
+.mbcat>div{display:flex;flex-wrap:wrap;gap:6px}
 .mbic{position:relative;width:54px;height:54px;flex:none;border-radius:10px;border:0;padding:0;cursor:pointer;display:grid;place-items:center;background:linear-gradient(var(--slate-hi),var(--slate));
   box-shadow:var(--bevel),0 0 0 2px var(--brass-lo),0 0 0 3px var(--wood)}
 .mbic img{width:42px;height:42px;object-fit:contain;filter:grayscale(.45) brightness(.8)}
