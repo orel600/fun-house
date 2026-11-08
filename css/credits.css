@@ -1,0 +1,11 @@
+/* חלון הקרדיטים (js/credits.js): מעל חלון ההגדרות, שני טורים לרוחב ואחד לאורך (docs/ui-guide.md) */
+#ovCredits{z-index:6}
+.crpanel{width:min(600px,100%);max-height:calc(100% - 24px);padding:0 16px 16px;gap:10px;overflow:auto}
+.crpanel>.whd{position:sticky;top:0;z-index:1;margin:0 -16px;padding:8px 8px 6px 16px;background:#232B44;border-bottom:1px solid var(--line)}
+.crpanel>.sub{margin:0}
+.crlist{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (orientation:portrait){.crlist{grid-template-columns:1fr}}
+.critem{background:#0003;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.35;color:var(--chalk)}
+.critem p{margin:0 0 4px}
+.critem a{color:var(--gold);font-weight:700;text-decoration:none;display:inline-block;margin-inline-end:10px;min-height:28px;line-height:28px}
+#crBtn{align-self:flex-start}
