@@ -352,7 +352,7 @@ function mobaExit(){
 function mbUi(on){
   document.body.classList.toggle('mb',on);$('mbHud').hidden=!on;$('mbSk').hidden=!on;
   if(on){const u=mbMe();$('mbSk').innerHTML=MB_SLOTS.map(k=>{const s=MBKIT[u.kit][k],col=dtCol(s.dt||MBKIT[u.kit].dt);
-    return '<button class="skb mbskb" data-sk="'+k+'" style="--dt:'+col+'" aria-label="'+T('mb.s.'+s.id)+'">'+mbPic(s.id)+'<i></i><b class="mblock" hidden>'+MOBA.ultAt+'</b></button>'}).join('')+(typeof mbSpellBtns==='function'?mbSpellBtns(u):'');   // ריפוי ולחש (moba-spells.js)
+    return '<button class="skb mbskb" data-sk="'+k+'" style="--dt:'+col+'" aria-label="'+T('mb.s.'+s.id)+'">'+mbPic(s.id)+'<i></i>'+mbLockTag(MOBA.ultAt)+'</button>'}).join('')+(typeof mbSpellBtns==='function'?mbSpellBtns(u):'');   // ריפוי ולחש (moba-spells.js)
     for(const b of document.querySelectorAll('#mbPing [data-o] b'))b.innerHTML=mbSvg(b.parentNode.dataset.o,'mbpi');   // פקודות: אייקונים במקום אימוג'י
     mbAimInit($('mbSk'))}   // נגיעה, גרירה לכיוון וביטול (moba-aim.js)
 }
@@ -378,7 +378,8 @@ function mobaHud(){
     const r=$('mbResp');r.hidden=!u.dead;if(u.dead)$('mbRespN').textContent=Math.ceil(u.resp)}
   const ok=M.order?M.order.kind:'';if(mbOrdKey!==ok){mbOrdKey=ok;for(const b of document.querySelectorAll('#mbPing [data-o]'))b.classList.toggle('on',b.dataset.o===ok)}
   for(const b of $('mbSk').querySelectorAll('[data-sk]')){const k=b.dataset.sk,s=MBKIT[u.kit][k];if(!s)continue;const lock=k==='ult'&&u.lvl<MOBA.ultAt;
-    b.style.setProperty('--cd',lock?1:Math.max(0,u.cd[k])/s.cd);const l=b.querySelector('.mblock');if(l.hidden===lock)l.hidden=!lock}
+    b.style.setProperty('--cd',lock?1:Math.max(0,u.cd[k])/s.cd);const l=b.querySelector('.mblock');if(l.hidden===lock)l.hidden=!lock;
+    const rd=!lock&&u.cd[k]<=0;if(b.classList.contains('ready')!==rd)b.classList.toggle('ready',rd);if(b.classList.contains('lock')!==lock)b.classList.toggle('lock',lock)}   // מוכן / נעול: המראה ב-style.css (W3)
   mbItHud();mbRecallHud();typeof mbSpellHud==='function'&&mbSpellHud();   // אזהרה בחיים נמוכים וכפתור החזרה (moba-recall.js)
     // זהב, קנייה מהירה וחפצים (moba-items.js)
 }
