@@ -3886,6 +3886,16 @@ function worldBot(m,L,god){
      F.stopCd=0;mbfxNum(e.x,e.y,150,C.gold,{crit:true},me,e);const t0=MB.t;mobaUpdate(1/30);r.stop=F.stop>=0&&MB.t===t0&&F.n.length>0;F.stop=0;
      Object.assign(me,{dead:false,lvl:MOBA.ultAt,hp:me.max});me.cd.ult=0;Object.assign(me.st,{stun:0,taunt:0,dash:null});r.ult=mbCast(me,'ult',e)&&F.slow>0&&!!F.ult&&F.ult.txt.length>0;
      F.slow=0;F.ult=null;me.bot=bot;Object.assign(e.st,{stun:0,shield:0});e.hp=e.max=MBKIT[e.kit].hp;e.x=ex;e.y=ey;o.fx=r}
+    // מזג אוויר (moba-weather.js, אוראל 7.11): גשם קל בהתחלה שמתחזק עם הזמן, ברק ומבזק במבנה שנופל (רק איפה שאני רואה), ומצויר מתחת לסקילים
+    if(typeof MBWX!=='undefined'){const X=MBWX,w={},t0=MB.t,f0=X.falls,fl0=X.fl,b0=X.bolts.length;
+     w.rain=X.core||!!X.h;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;const k2=mbWxK(MB);MB.t=t0;w.build=k1<0.1&&k2>k1+0.5;
+     const mt=MB.u.find(b=>b.k==='tower'&&b.team===0),fake=b=>mbUnit({k:'tower',team:b.team,x:b.x,y:b.y,r:b.r,hp:1,max:1});
+     if(typeof mbVisNow==='function')mbVisNow(true);   // הראייה מחושבת מחדש: הבלוק הקודם חישב אותה עם שתי יחידות בלבד
+     const sv=mbHeroes(1).map(h=>[h.xp,h.lvl]);mbDie(fake(mt),null);w.fall=X.falls===f0+1&&(X.core||X.bolts.length===b0+1&&(RM||typeof fxLess==='function'&&fxLess()||X.fl===1));
+     const fx=MOBA.base.x,hid=typeof mbVisPt==='function'&&!mbVisPt(fx,0);if(hid){const n=X.bolts.length;mbDie(fake({team:1,x:fx,y:0,r:40}),null);w.fog=X.bolts.length===n}else w.fog=true;
+     mbHeroes(1).forEach((h,i)=>{h.xp=sv[i][0];h.lvl=sv[i][1]});X.falls=f0;X.fl=fl0;X.bolts.length=b0;
+     const src=mobaDraw.toString(),iw=src.indexOf('mbWxDraw');w.under=iw>0&&iw<src.indexOf('mbfxDraw')&&iw<src.indexOf('M.zones')&&iw<src.indexOf('M.shots');
+     try{mbWxDraw();w.draw=true}catch(err){w.draw=err.message}w.ms=Math.round(X.ms*100)/100;o.wx=w}
     // משוב קרב מספריית האפקטים (moba-fx.js MBLIB, אוראל 7.11), בתרחיש קבוע ליד המצלמה: יריה עפה ופגיעה, חיתוך מקרוב, CRIT!, עליית רמה,
     // סימן "רטוב" שמופיע ונעלם עם המצב, הריגה, מגדל שנפגע ונופל, וטבעת קבוצה מתחת לגיבור
     if(typeof MBLIB!=='undefined'){const r={},all=MB.u,me=MB.me,bk={x:me.x,y:me.y,lvl:me.lvl,xp:me.xp,hp:me.hp,dead:me.dead,score:MB.score.slice()};MBFX.log={};
@@ -4380,6 +4390,7 @@ function worldBot(m,L,god){
      check(r.shield&&r.bounty&&r.resp&&r.late&&r.haste&&r.xp&&r.recall,'משחקי השאול: זרימה: '+[r.shield?'מגן מגדל בהתחלה ✓':'מגן מגדל ✗',r.bounty?'בלי זהב קאמבק ✓':'זהב קאמבק עוד קיים ✗',r.resp&&r.late?'חזרה מהירה בהתחלה ✓':'זמן חזרה ✗',r.haste?'ריצה מהבסיס ✓':'ריצה מהבסיס ✗',r.recall?'גם אחרי חזרה לבסיס ✓':'אחרי חזרה לבסיס ✗',r.xp?'XP ברדיוס רחב ✓':'XP ✗'].join(', '))}
     {const g=mb.gb||{};check(g.closed&&g.push&&g.tie&&g.enter&&g.busy&&g.lock&&g.win&&g.once&&g.lose,'משחקי השאול: חדר ההימור: '+(g.err?'שגיאה '+g.err+' · ':'')+[g.closed?'סגור לפני הזמן ✓':'פתוח לפני הזמן ✗',g.push?'אחר נדחף ✓':'אחר נכנס ✗',g.tie?'בשוויון אף אחד ✓':'שוויון ✗',
       g.enter?'הזכאי נכנס ✓':'הזכאי לא נכנס ✗',g.busy?'אחד בכל פעם ✓':'שניים יחד ✗',g.lock?'מקובע בהטלה ✓':'זז בהטלה ✗',g.win?'ניצחון = העשיר ביותר ✓':'ניצחון ✗',g.once?'פעם לקבוצה ✓':'יותר מפעם ✗',g.lose?'הפסד בלי פרס לאויב ✓':'הפסד ✗'].join(', '))}
+    {const w=mb.wx;check(w&&w.rain&&w.build&&w.fall&&w.fog&&w.under&&w.draw===true,'משחקי השאול: מזג אוויר: גשם קל בהתחלה שמתחזק, ברק במגדל שנופל (לא בערפל), ומצויר מתחת לסקילים'+(w?' ('+w.ms+'ms)'+(w.draw!==true?' · '+w.draw:'')+['rain','build','fall','fog','under'].filter(k=>!w[k]).map(k=>' · '+k).join(''):' · לא נבדק'))}
     {const R=mb.newSk||{};check(R.gone&&!R.gone.length&&R.new,'משחקי השאול: אין יותר זינוק או ריפוי בסקילים (גל חרב, רשת ציד וכלא מים במקומם)'+(R.gone&&R.gone.length?' · עוד יש: '+R.gone.join(', '):''));
      check(R.root&&R.still&&R.atk&&R.free,'משחקי השאול: רשת ציד: לכוד '+(R.root?'✓':'✗')+', לא זז '+(R.still?'✓':'✗')+', תוקף '+(R.atk?'✓':'✗')+', ואחרי זה חסין לרגע '+(R.free?'✓':'✗'));
      check(R.bub&&R.shock&&R.cleave,'משחקי השאול: כלא מים מרים ומרטיב '+(R.bub?'✓':'✗')+', ברק אחריו = חשמול '+(R.shock?'✓':'✗')+' · גל חרב מהמם ומאט '+(R.cleave?'✓':'✗'))}
