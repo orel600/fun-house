@@ -74,7 +74,8 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
     m.onBeforeCompile=sh=>{Object.assign(sh.uniforms,U);
       sh.vertexShader='varying vec2 vAp;uniform float aSin;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec4 aW=modelMatrix*vec4(transformed,1.0);vAp=vec2(aW.x,aW.z*aSin);');
       sh.fragmentShader=`varying vec2 vAp;uniform float aT,aProg,aPulse;uniform vec3 aBoss,cStone,cStone2,cDark,cMortar,cCrack,cRune,cEmber,cOut,cBrass,cWood,cWood2,cCurb;uniform vec3 sCol[6];uniform float sLit[6];${NOISE}${WORLEY}
-        float aRing(float d,float r,float w){float aw=max(fwidth(d),0.001);return 1.0-smoothstep(w*0.5-aw*0.5,w*0.5+aw*0.5,abs(d-r));}   // טבעת חדה: רוחב w, וקצה של פיקסל אחד בכל זום (1.3)
+        float aRingSoft(float d,float r,float w){return 1.0-smoothstep(w*0.5,w,abs(d-r));}   // הטבעת הרכה הישנה: החותמות, זוהר הבוס ושפת העץ (נשארים כמו שהיו)
+        float aRing(float d,float r,float w){float aw=max(fwidth(d),0.001);return 1.0-smoothstep(w*0.5-aw*0.5,w*0.5+aw*0.5,abs(d-r));}   // טבעת חדה: רוחב w, וקצה של פיקסל אחד בכל זום. רק לארבע טבעות השיבוץ (1.3)
         `+sh.fragmentShader.replace('#include <map_fragment>',`
         vec2 p=vAp;float d=length(p),ang=atan(p.y,p.x);vec3 glow=vec3(0.0);
         // אבני ריצוף לא סדירות: תאי Worley על רשת מעוותת ברעש, כל אבן בגוון משלה, שחיקה בקצוות ותפר כהה
@@ -104,11 +105,11 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
         // שש החותמות: עיגול עם כוכב, לכל סוג נזק, דולקות לפי השימוש
         for(int i=0;i<6;i++){float a=float(i)*1.0472+0.5236;vec2 sp=vec2(cos(a),sin(a))*${f(A.sigil.r)};vec2 q=p-sp;float sd=length(q),sa=atan(q.y,q.x);
           float star=abs(cos(3.0*sa))*0.35+0.45;
-          float s=aRing(sd,${f(A.sigil.size)},5.0)+aRing(sd,${f(A.sigil.size*0.62)},3.0)+(1.0-smoothstep(${f(A.sigil.size)}*star-3.0,${f(A.sigil.size)}*star,sd))*0.35;
+          float s=aRingSoft(sd,${f(A.sigil.size)},5.0)+aRingSoft(sd,${f(A.sigil.size*0.62)},3.0)+(1.0-smoothstep(${f(A.sigil.size)}*star-3.0,${f(A.sigil.size)}*star,sd))*0.35;
           s*=step(sd,${f(A.sigil.size+6)});
           c=mix(c,sCol[i]*0.6,s*0.45);glow+=sCol[i]*s*(sLit[i]+aPulse*0.3);}
         // הבוס נכנס: זוהר ברצפה סביבו
-        float bd=length(p-aBoss.xy);glow+=cRune*aBoss.z*(1.0-smoothstep(0.0,${f(A.boss.r)},bd))*1.4+cEmber*aBoss.z*aRing(bd,${f(A.boss.r*0.8)},8.0);
+        float bd=length(p-aBoss.xy);glow+=cRune*aBoss.z*(1.0-smoothstep(0.0,${f(A.boss.r)},bd))*1.4+cEmber*aBoss.z*aRingSoft(bd,${f(A.boss.r*0.8)},8.0);
         // הגבול והקצה: רק מעבר לרדיוס הזה (רוב המסך בפנים, וחוסך את כל החישוב שם)
         if(d>${f(A.border.curb[0]-40)}){
         // שפת אבן כהה עם מסמרות פליז, ומסביבה טבעת קרשי עץ (גם היא רצפה: הולכים עליה)
@@ -122,7 +123,7 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
         float pid=gH(vec2(floor(ang/6.2832*${f(A.border.plankN)}),2.0));vec3 wc=mix(cWood,cWood2,0.25+0.5*pid)*(0.88+0.24*gN(vec2(ang*260.0+pid*40.0,d/36.0)));   // כל קרש בגוון משלו, וסיבים דקים לאורכו
         wc=mix(wc,cWood2*0.6,seam);wc=mix(wc,cBrass,step(0.995,gH(floor(vec2(ang*120.0,d/6.0)))));   // תפר כהה בין קרשים, ומסמר פה ושם
         c=mix(c,wc,wood);
-        float rim=aRing(d,${f(A.border.planks[0])},3.0)+aRing(d,${f(A.border.planks[1])},3.0);c=mix(c,cBrass*0.7,rim*0.6);   // קו פליז דק בשתי שפות העץ
+        float rim=aRingSoft(d,${f(A.border.planks[0])},3.0)+aRingSoft(d,${f(A.border.planks[1])},3.0);c=mix(c,cBrass*0.7,rim*0.6);   // קו פליז דק בשתי שפות העץ
         // מחוץ לעץ: אבן גסה וכהה שמחשיכה ככל שמתרחקים
         float outer=smoothstep(${f(A.border.planks[1])},${f(A.border.planks[1]+30)},d);
         c=mix(c,mix(cDark,cOut,0.4)*(0.8+0.3*gN(p/16.0)),outer*0.7);
