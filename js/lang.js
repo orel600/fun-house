@@ -611,6 +611,20 @@ const TEXT={
   'gico.new':{he:'חדש',en:'New'},
   'gico.old':{he:'קלאסי',en:'Classic'},
   'credits.icons':{he:'אייקונים: Lorc, Delapouite ויוצרים נוספים מ-game-icons.net, ברישיון CC BY 3.0. הצבעים והמסגרות שונו.',en:'Icons by Lorc, Delapouite and other contributors from game-icons.net, licensed under CC BY 3.0. Colors and frames were changed.'},
+  // חלון הקרדיטים (js/credits.js, W7 8.11.2026). English only
+  'cr.btn':{en:'Credits'},
+  'cr.title':{en:'Credits'},
+  'cr.intro':{en:'Everything the game borrows, and under what terms. The full list with file paths: CREDITS.md in the project.'},
+  'cr.license':{en:'license'},
+  'cr.mochi':{en:'Mochi Lab: effect and skill sprite sheets (Mega Bundle, bought on itch.io). Commercial asset license; only the converted sheets ship with the game.'},
+  'cr.gicons':{en:'game-icons.net: skill, tree, weapon and menu icons by Lorc, Delapouite and other contributors. CC BY 3.0, colors and frames changed.'},
+  'cr.kaykit':{en:'KayKit by Kay Lousberg: 3D characters, animations, weapons, buildings and nature. CC0.'},
+  'cr.quat':{en:'Quaternius: arena monsters, and the skeleton and animations of the pets. CC0.'},
+  'cr.claw':{en:'Creative Claw: painted title, frames, buttons, item, resource, skill and portrait images. Used with permission of its creator, Itay.'},
+  'cr.kenney':{en:'Kenney: sound effects (Impact, Interface, RPG and Digital Audio packs). CC0. Two sounds were synthesized in code.'},
+  'cr.fonts':{en:'Fonts: Heebo and Secular One, loaded from Google Fonts. SIL Open Font License 1.1.'},
+  'cr.three':{en:'three.js with its GLTF loader and skeleton utils, and MeshoptDecoder. MIT License.'},
+  'cr.own':{en:'Made for this game: hero and pet drawings by Nir (with Gemini), their 3D models (TRELLIS and Hunyuan3D on Hugging Face), two Blender weapons, all code, design and texts.'},
   'shadowGroup':{he:'צללים',en:'Shadows'},'shadow.on':{he:'דלוק',en:'On'},'shadow.off':{he:'כבוי',en:'Off'},   // look-hd.js
   'vfxqGroup':{he:'איכות אפקטים',en:'Effects quality'},'vfxq.hi':{he:'גבוהה',en:'High'},'vfxq.lo':{he:'נמוכה',en:'Low'},   // vfx3d.js
   'fxGroup':{he:'אפקטים',en:'Effects'},'fx.full':{he:'מלא',en:'Full'},'fx.less':{he:'פחות',en:'Fewer'},
