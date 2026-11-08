@@ -2102,6 +2102,8 @@ function worldBot(m,L,god){
       fake+=2;let n=0;for(let i=0;i<19;i++){S.hitstop=0;fake+=0.05;if(afStop(0.035))n++}o.perSec=n;   // שנייה אחת בצעדים של 0.05: המרווח (0.22) נותן לכל היותר 4
       fake+=2;afStop(0.035);S.hitstop=0;fake+=0.3;AF.used=ARFEEL.stop.budget-0.01;o.budget=!afStop(0.035);   // התקרה לשנייה: אין מקום
       S.hitstop=0;SAVE.calm=true;fake+=2;o.calm=!afStop(0.1)&&S.hitstop===0;SAVE.calm=calm;
+      // התקרה האמיתית: עצירה ארוכה של מערכת אחרת (S.hitstop ישירות) נחתכת אחרי budget שניות של עמידה
+      fake+=2;AF.tk=fake;S.hitstop=0.5;let cut=-1;for(let j=1;j<=15&&cut<0;j++){fake+=0.02;afTick();if(!(S.hitstop>0))cut=j}o.capCut=cut;S.hitstop=0;
       // חוצץ: לחיצה שנשארו לה 0.1 שניות נשמרת, ויוצאת כשהסקיל מוכן
       const k=S.sk,id=k.ids[0],i=0;k.cd[i]=0.1;fake+=2;const u0=k.used;o.press=skillUse(id);o.buf=!!AF.buf;k.cd[i]=0;afTick();o.fired=k.used===u0+1&&!AF.buf;o.cast=!!P.skCast&&P.skCast.k===ARFEEL.cast[id];
       // Rampage: הריגה שלישית ברצף
@@ -2111,8 +2113,8 @@ function worldBot(m,L,god){
       enterWorld('home');S.hitstop=0;const ew=addEnemy('grunt',P.x+30,P.y);o.world=!afArena()&&S.hitstop===0;
     }catch(err){o.err=String(err&&err.stack||err)}
     window.afClock=clk;enemies=[];S.hitstop=0;S.slow=0;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
-  check(!afl.err&&afl.hit===35&&afl.flash===60&&afl.lean&&afl.stack===35&&afl.perSec>0&&afl.perSec<=4&&afl.budget&&afl.calm&&afl.press===false&&afl.buf&&afl.fired&&afl.cast&&afl.ramp&&afl.rampOnce&&afl.world,
-    'תחושת קרב בזירה: '+(afl.err||'עצירה '+afl.hit+'ms, הבזק '+afl.flash+'ms, נטייה אחורה '+(afl.lean?'✓':'✗')+', בלי הצטברות ('+afl.stack+'ms), '+afl.perSec+' עצירות בשנייה (מרווח), תקרה לשנייה '+(afl.budget?'✓':'✗')+', הפחתת תנועה '+(afl.calm?'מכבה':'לא מכבה!')+
+  check(!afl.err&&afl.hit===35&&afl.flash===60&&afl.lean&&afl.stack===35&&afl.perSec>0&&afl.perSec<=4&&afl.budget&&afl.capCut>=7&&afl.capCut<=8&&afl.calm&&afl.press===false&&afl.buf&&afl.fired&&afl.cast&&afl.ramp&&afl.rampOnce&&afl.world,
+    'תחושת קרב בזירה: '+(afl.err||'עצירה '+afl.hit+'ms, הבזק '+afl.flash+'ms, נטייה אחורה '+(afl.lean?'✓':'✗')+', בלי הצטברות ('+afl.stack+'ms), '+afl.perSec+' עצירות בשנייה (מרווח), תקרה לשנייה '+(afl.budget?'✓':'✗')+', עצירה ארוכה של מערכת אחרת נחתכה אחרי '+afl.capCut+' פריימים של 20ms'+', הפחתת תנועה '+(afl.calm?'מכבה':'לא מכבה!')+
       ', חוצץ '+(afl.buf&&afl.fired?'✓':'✗')+', תנועת הטלה '+(afl.cast?'✓':'✗')+', Rampage '+(afl.ramp?(afl.rampOnce?'פעם אחת לרצף':'חוזר!'):'✗')+', בעולם '+(afl.world?'כלום':'משהו!')));
   // אויבים ישנים (arenaZz ב-arenas.js): רחוק מ-wake.r הולכים לאט ומכשף לא יורה. מתעוררים מקרבה, ממכה, מסוף הגל ומהבוס. קפיצה של arena-load לא מעירה, והישנים נספרים בגל
   const zz=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},at=window.attack,r0=ARENAS.gauntlet.wake.r,lc0=ARENAS.gauntlet.lastCall;
