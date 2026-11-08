@@ -3885,6 +3885,18 @@ function worldBot(m,L,god){
       const t0=MB.atkTaps||0;keys.Space=true;fr(8);keys.Space=false;fr(2);K.space=(MB.atkTaps||0)===t0+1;
      }catch(err){K.err=String(err&&err.stack||err)}
      MB.u=keep;MB.lock=MB.atkGo=null;keys.Space=false;joy=null;me.x=hx;me.y=hy;S.cam.x=cam.x;S.cam.y=cam.y;mbFeelReset(me);mobaHud();o.atk=K}
+    // לא מתנפלים יחד (moba-bot.js, 8.11, DANA, moba-difficulty): ב"קל" לכל היותר בוט אויב אחד מתמקד בשחקן כשהוא מעל 20% חיים.
+    // שלושת גיבורי האויב לידך, החברים רחוק, ו-8 שניות של קרב. בודקים גם שמתחת ל-20% מותר לגמור (יותר מאחד)
+    {const me=MB.me,G={max:0,low:0,n:0},keep=MB.u.map(u=>({u,x:u.x,y:u.y,hp:u.hp})),diff=MB.diff,mine=me.bot;
+     try{MB.diff='easy';me.bot=null;const foes=mbHeroes(1-me.team),al=mbHeroes(me.team).filter(h=>h!==me);
+      me.x=0;me.y=0;for(const [i,f] of foes.entries()){f.dead=false;f.hp=f.max;f.x=me.x+(me.team?-1:1)*(140+i*30);f.y=(i-1)*60;f.bot.t=0;f.bot.focus=null;f.bot.mode='push'}
+      for(const a of al){a.x=me.home.x;a.y=me.home.y}
+      for(let i=0;i<8*30;i++){me.hp=Math.max(me.hp,me.max*0.6);me.dead=false;for(const a of al){a.x=me.home.x;a.y=me.home.y}mobaUpdate(1/30);
+        const n=foes.filter(f=>!f.dead&&f.bot&&f.bot.focus===me).length;G.max=Math.max(G.max,n);G.n+=n>0?1:0}
+      // מתחת ל-20%: מותר לגמור, הכלל לא חל
+      for(const f of foes){f.bot.focus=me}me.hp=me.max*0.1;G.low=foes.filter(f=>mbGangFull(f,me)).length;
+     }catch(err){G.err=String(err&&err.stack||err)}
+     for(const k of keep){k.u.x=k.x;k.u.y=k.y;k.u.hp=k.hp}for(const f of mbHeroes(1-me.team))f.bot.focus=null;MB.diff=diff;me.bot=mine;mbFeelReset(me);mobaHud();o.gang=G}
     // סקין מתמונות עם גודל (rig.js, pose עם k): כל drawImage מקבל מידות סופיות ופי k. תמונה מזויפת "טעונה", ו-drawImage רק נרשם
     {const R={},src='skins/__t.png',dI=ctx.drawImage,sizes=[];SKINS.__t={};for(const n of ['head','body','armF','armB','legF','legB','sword'])SKINS.__t[n]={src,w:10,h:12};
      skinImgs[src]={complete:true,naturalWidth:10};ctx.drawImage=function(im,x,y,w,h){sizes.push(w,h)};
@@ -4497,6 +4509,7 @@ function worldBot(m,L,god){
     {const f=mb.feel||{};check(f.soft&&f.turned&&f.run>=f.want*0.9&&f.feed,'משחקי השאול: תנועה: סיבוב '+(f.soft&&f.turned?'רך ✓':'בבת אחת או תקוע')+', דרך חייל '+f.run+'/'+f.want+' פיקסלים בשנייה'+(f.feed?', הודעת הריגה ✓':', בלי הודעת הריגה'))}
     {const L=mb.life||{},ks={lowOn:'אזהרה בחיים נמוכים',lowOff:'נעלמת',start:'כפתור חזרה',home:'מגיע לבסיס',move:'תזוזה מבטלת',hit:'פגיעה מבטלת',half:'טבעת זהב חצי',full:'מלאה ומוארת'};
      check(Object.keys(ks).every(k=>L[k]),'משחקי השאול: שומר בחיים: '+Object.keys(ks).map(k=>ks[k]+(L[k]?' ✓':' ✗')).join(', '))}
+    {const G=mb.gang||{};check(!G.err&&G.n>0&&G.max===1&&G.low===0,'משחקי השאול: לא מתנפלים יחד ב"קל": '+(G.err||'הכי הרבה בוטים על השחקן בבת אחת: '+G.max+' (מותר 1), התמקדו בו '+G.n+' פריימים מתוך 240, ומתחת ל-20% '+(G.low===0?'מותר לגמור':'עדיין חסום!')))}
     {const R=mb.rigK||{};check(R.ok,'סקין מתמונות בגודל ×1.15 (rig.js): '+(R.err||R.n+' חלקים מצוירים'+(R.ok?', כל המידות סופיות ופי 1.15':', מידות לא נכונות')))}
     {const K=mb.atk||{},ks={btn:'כפתור',big:'הכי גדול',free:'לא נוגע בסקילים',step:'נגיעה מקרבת',lock:'גרירה נועלת',pref:'הנעול קודם',far:'נגמרת במרחק',dead:'נגמרת במוות',cancel:'✕ מבטל',cd:'טעינה על הכפתור',space:'רווח'};
      check(!K.err&&K.draw===true&&Object.keys(ks).every(k=>K[k]),'משחקי השאול: כפתור התקיפה: '+(K.err||Object.keys(ks).map(k=>ks[k]+(K[k]?' ✓':' ✗')).join(', ')+(K.draw===true?'':', ציור: '+K.draw)))}

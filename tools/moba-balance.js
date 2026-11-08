@@ -5,7 +5,7 @@
 const {chromium}=require('playwright');const path=require('path');
 const N=+process.argv[2]||40,DIFF=process.argv[3]||'normal';
 (async()=>{
-  const b=await chromium.launch();const p=await b.newPage({viewport:{width:844,height:390}});
+  const b=await chromium.launch(process.env.PW_CHANNEL?{channel:process.env.PW_CHANNEL}:{});const p=await b.newPage({viewport:{width:844,height:390}});   // PW_CHANNEL=chrome: ה-Chrome של המחשב, בלי להוריד דפדפן
   await p.addInitScript(d=>{try{localStorage.setItem('zm-gfx','2d');localStorage.setItem('fh-mb-diff',d)}catch(e){}},DIFF);
   await p.goto('file://'+path.resolve(__dirname,'..','index.html'));await p.waitForTimeout(800);
   const res=[];
@@ -19,13 +19,13 @@ const N=+process.argv[2]||40,DIFF=process.argv[3]||'normal';
         for(const h of MB.u)if(h.k==='hero'){if(h.lvl>=MOBA.ultAt&&ult[h.id]===undefined)ult[h.id]=MB.t;if(n===40*30)hp40[h.id]=h.dead?0:h.hp/h.max}}
       for(const w of window.mbGbLog)w?gb.w++:gb.l++;
       const team=t=>mbHeroes(t).map(h=>({kit:h.kit,k:h.kills,d:h.deaths,ult:ult[h.id],hp40:hp40[h.id]}));
-      return{gb,t:MB.t,won:S.won?0:1,base:MB.u.some(u=>u.k==='base'&&u.dead),teams:[team(0),team(1)]}},g));
+      return{gb,t:MB.t,won:MB.draw?-1:S.won?0:1,base:MB.u.some(u=>u.k==='base'&&u.dead),teams:[team(0),team(1)]}},g));
     process.stdout.write('.');
   }
   await b.close();console.log();
   const st={};for(const r of res)r.teams.forEach((tm,i)=>tm.forEach(h=>{const s=st[h.kit]||(st[h.kit]={n:0,w:0,k:0,d:0});s.n++;s.k+=h.k;s.d+=h.d;if(r.won===i)s.w++}));
   const avg=res.reduce((a,r)=>a+r.t,0)/res.length,base=res.filter(r=>r.base).length;
-  console.log(N+' משחקים · ממוצע '+Math.floor(avg/60)+':'+String(Math.round(avg%60)).padStart(2,'0')+' · נגמרו בבסיס: '+base+' ('+Math.round(100*base/N)+'%) · כחולים ניצחו '+res.filter(r=>r.won===0).length);
+  console.log(N+' משחקים · ממוצע '+Math.floor(avg/60)+':'+String(Math.round(avg%60)).padStart(2,'0')+' · נגמרו בבסיס: '+base+' ('+Math.round(100*base/N)+'%) · כחולים ניצחו '+res.filter(r=>r.won===0).length+' · תיקו '+res.filter(r=>r.won===-1).length);
   {const us=res.flatMap(r=>r.teams.flat().map(h=>h.ult)),got=us.filter(x=>x!==undefined),f=res.map(r=>Math.min(...r.teams.flat().map(h=>h.ult??1e9))).filter(x=>x<1e9);
    const mm=x=>Math.floor(x/60)+':'+String(Math.round(x%60)).padStart(2,'0'),av=a=>a.reduce((s,x)=>s+x,0)/(a.length||1);
    const h40=res.flatMap(r=>r.teams.flat().map(h=>h.hp40)).filter(x=>x!==undefined);
