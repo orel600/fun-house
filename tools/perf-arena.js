@@ -35,7 +35,7 @@ const CFG={seed:+(opt('seed')||7),secs:+(opt('secs')||60),warm:+(opt('warm')||5)
       M.peak.floats=Math.max(M.peak.floats,floats.length);M.peak.enemies=Math.max(M.peak.enemies,enemies.length);
       M.peak.nums=Math.max(M.peak.nums,S.jc?S.jc.n.length:0);M.peak.layers=Math.max(M.peak.layers,S.jc&&typeof jLayers==='function'?jLayers(S.jc):0);M.peak.fx=Math.max(M.peak.fx,typeof FXLIB!=='undefined'?FXLIB.list.length:0)}}};
     let lastRaf=0;const loop=t=>{if(M.on&&lastRaf)M.gaps.push(t-lastRaf);lastRaf=t;requestAnimationFrame(loop)};requestAnimationFrame(loop);
-    if(scene==='world'){SAVE.story=SAVE.story||{};SAVE.story.earth=true;enterWorld('home','meadow')}else startRun('classic');
+    if(scene==='world'){SAVE.story=SAVE.story||{};SAVE.story.earth=true;enterWorld('home','meadow')}else startRun();
     // השחקן לא מת, הולך במעגל, ומאשר כל חלון (רמה, בוס) מיד, כדי שהקרב לא ייעצר
     window.__pt=0;window.__pi=setInterval(()=>{if(!P||!S)return;P.hp=P.maxHp;window.__pt+=0.05;const a=window.__pt*0.5;joy={id:-1,ox:-999,oy:-999,dx:Math.cos(a)*0.8,dy:Math.sin(a)*0.8};
       const vis=id=>!document.getElementById(id).hidden;

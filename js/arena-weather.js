@@ -12,8 +12,8 @@ const AWX={
   on:true,
   theme:'night',
   k:0.75,            // all intensities here × this (the core: intensity 1 = WEATHER.alpha)
-  // a regular arena by type: [[variant,intensity,{kind}],...] or null = no weather (classic and maze: readability first)
-  arena:{classic:null,maze:null,waves:[['fog_drift',0.4,{kind:'low'}]],boss:[['fog_drift',0.45,{kind:'low'}],['cloud_dark',0.35,{kind:'sky'}]]},
+  // the arena (gauntlet, arenas.js): [[variant,intensity,{kind}],...] or null = no weather
+  arena:{classic:null,gauntlet:[['fog_drift',0.4,{kind:'low'}]]},
   // the boss fight, in the core's terms (weatherScene)
   boss:{
     calm:[['fog_drift',0.6,{kind:'low'}],['cloud_dark',0.5,{kind:'sky'}]],

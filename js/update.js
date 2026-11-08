@@ -24,19 +24,21 @@ function update(dt){
   if(nn){const tr=P.track;tr[P.weapon]+=dt;if(P.moving)tr.move+=dt;else tr.still+=dt;tr.dist+=Math.hypot(nn.x-P.x,nn.y-P.y);tr.distN++}
   attack(dt);skillsUpdate(dt);orbitUpdate(dt);divineUpdate(dt);spawner(dt);arenaLoad(dt);runUpdate();   // arenaLoad: עומס אויבים וכדורי XP (arena-load.js)
   if(S.mode!=='play')return;
-  if(!S.boss&&S.t>=S.nextBoss){const b=makeBoss();arenaBoss(b);S.boss=b;enemies.push(b);showIntro(b);return}
+  if(!S.boss&&S.t>=S.nextBoss){const b=makeBoss();S.boss=b;enemies.push(b);showIntro(b);return}
   // enemies
   for(const e of enemies){
     if(e.dead)continue;
     if(e.isBoss){bossUpdate(e,dt);continue}
     if(e.wanted){wantedMove(e,dt);continue}
     const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;let mx=dx/d,my=dy/d;
-    if(e.type==='wisp'){
+    const zz=arenaZz(e,d);   // אויב רחוק ישן: הולך לאט עם נדנוד, ומכשף לא יורה (arenas.js)
+    if(zz){const a=arenaWob(e),c=Math.cos(a),s=Math.sin(a),t=mx;mx=t*c-my*s;my=t*s+my*c}
+    else if(e.type==='wisp'){
       // מכשף רגיל שומר מרחק. מכשף-על, והאחרונים בגל (e.left, arenas.js), מתקדמים אליך
       if(e.elite||e.left){}else if(d<170){mx=-mx;my=-my}else if(d<240){const t=mx;mx=-my;my=t}
       e.shoot-=dt;if(e.shoot<=0&&d<380){e.shoot=rand(1.8,2.8);const aim=Math.atan2(dy,dx);shootE(e.x,e.y,typeof atgAim==='function'?atgAim(e,aim):aim,175,6,8*easeK())}   // הכיוון ננעל באזהרה (arena-tg.js)
     }
-    const sp=e.speed*slowK(e)*(e.rush||1);e.x+=mx*sp*dt+e.kx*dt;e.y+=my*sp*dt+e.ky*dt;
+    const sp=e.speed*slowK(e)*(e.rush||1)*(zz||1);e.x+=mx*sp*dt+e.kx*dt;e.y+=my*sp*dt+e.ky*dt;
     const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
     if(d<e.r+P.r-3)hurt(e.dmg);
   }

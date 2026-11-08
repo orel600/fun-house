@@ -1,7 +1,7 @@
-/* זירת מבוך (אוראל, roadmap.md: "עוד סוגי זירות", ARENAS.maze ב-arenas.js). זירת גלים (6 גלים ובוס) עם קירות נמוכים שחוסמים הליכה, לך ולאויבים, אבל לא חצים.
+/* קירות שמשתנים באמצע הזירה (אוראל, ARENAS.gauntlet.mazeWaves ב-arenas.js: גלים 5 ו-6). קירות נמוכים שחוסמים הליכה, לך ולאויבים, אבל לא חצים.
    הקירות לא נשמרים: כל קיר נקבע מהתא שלו ומהמחזור (hash), ולכן אין מה לאפס. כל shiftSecs שניות הקירות נעלמים ברכות ומופיעים במקומות אחרים, ובזמן ההחלפה הם לא חוסמים.
-   כל קיר קצר מהתא, ולכן תמיד יש מעבר מסביב. בלי קירות באמצע הזירה (safe), ורק בזירה הזאת: S.arena==='maze'.
-   חיבורים: mazeRun() בתחילת arenaRun (arenas.js), mazeDraw(ox,oy) ב-render.js אחרי הרצפה. הטקסטים: 'w.enterMaze' ב-lang.js */
+   כשהגלים של הקירות מתחילים הם צומחים ברכות (fadeIn), וכשהם נגמרים נעלמים (fadeOut). כל קיר קצר מהתא, ולכן תמיד יש מעבר מסביב. בלי קירות באמצע הזירה (safe).
+   חיבורים: mazeRun() בתחילת arenaRun (arenas.js), mazeDraw(ox,oy) ב-render.js אחרי הרצפה */
 const MAZE={
   cell:240,            // גודל תא (יחידות משחק). בכל תא לכל היותר קיר אחד
   len:[120,170],       // אורך קיר: מינימום ומקסימום
@@ -13,12 +13,19 @@ const MAZE={
   shiftSecs:40,        // כל כמה זמן הקירות מתחלפים
   fadeIn:1.6,fadeOut:1.0,   // כמה שניות הם מופיעים ונעלמים (ובזמן הזה לא חוסמים)
   solidAt:0.98,        // מאיזו בהירות הקיר חוסם
-  col:{fill:'#2F3A44',edge:'#8FD1C9',shade:'rgba(0,0,0,0.35)'}   // גוף כהה, קו עליון דק בתכלת, וצל רך. תכלת כמו הרצפה של הזירה
+  col:{fill:'#2F3A44',edge:'#8FD1C9',shade:'rgba(0,0,0,0.35)'}   // גוף כהה, קו עליון דק בתכלת, וצל רך
 };
-const MZ={key:'',walls:[]};
+const MZ={key:'',walls:[],on:false,t0:-99};   // on: הקירות פעילים עכשיו. t0: מתי זה השתנה
 const mzH=(i,j,k)=>{let h=Math.sin(i*127.1+j*311.7+k*74.7)*43758.5453;return h-Math.floor(h)};
 // בהירות הקירות עכשיו: 0 עד 1 (נעלמים בסוף המחזור ומופיעים בתחילת הבא)
-function mazeFade(){const f=S.t%MAZE.shiftSecs;return Math.min(1,f/MAZE.fadeIn,(MAZE.shiftSecs-f)/MAZE.fadeOut)}
+function mazeFade(){
+  const M=MAZE,f=S.t%M.shiftSecs,k=S.t-MZ.t0,g=MZ.on?Math.min(1,k/M.fadeIn):Math.max(0,1-k/M.fadeOut);   // g: צומחים כשהגלים מתחילים, נעלמים כשנגמרים
+  return Math.min(1,f/M.fadeIn,(M.shiftSecs-f)/M.fadeOut)*g}
+// האם הקירות פעילים: בזירה, בגלים של mazeWaves (גם בהפסקה ביניהם, לא בהפסקה שאחרי האחרון)
+function mazeOn(){
+  const w=S.wv,mw=S.arena==='gauntlet'&&w&&ARENA().mazeWaves;if(!mw||!mw.includes(w.i))return false;
+  return !(w.phase==='break'&&w.i===mw[mw.length-1]);
+}
 // הקירות סביב השחקן (מחושב מחדש רק כשהשחקן עובר תא או כשהמחזור מתחלף)
 function mazeWalls(){
   const M=MAZE,ep=Math.floor(S.t/M.shiftSecs),ci=Math.round(P.x/M.cell),cj=Math.round(P.y/M.cell),key=ep+':'+ci+':'+cj;
@@ -46,16 +53,17 @@ function mazePush(o,r){
   }
   return hit;
 }
-// כל פריים בזירת מבוך (arenaRun): הקירות חוסמים אותך ואת האויבים כשהם מלאים
+// כל פריים בזירה (arenaRun): הקירות חוסמים אותך ואת האויבים כשהם מלאים
 function mazeRun(){
-  if(S.arena!=='maze')return;
+  const on=mazeOn();if(on!==MZ.on){MZ.on=on;MZ.t0=S.t}
+  if(!on&&S.t-MZ.t0>MAZE.fadeOut)return;
   mazeWalls();if(mazeFade()<MAZE.solidAt)return;
   mazePush(P,P.r);
   for(const e of enemies)if(!e.dead)mazePush(e,e.r*0.8);
 }
 // ציור (render.js, בעולם המשחק): גוף כהה, קו עליון דק וצל רך מתחת. בלי תנועה ובלי חלקיקים
 function mazeDraw(ox,oy){
-  if(S.arena!=='maze'||S.mode==='over')return;
+  if(S.arena!=='gauntlet'||!S.wv||S.mode==='over')return;
   const M=MAZE,a=mazeFade();if(a<=0.02)return;mazeWalls();
   ctx.save();
   for(const w of MZ.walls){

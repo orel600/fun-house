@@ -22,7 +22,7 @@ function wantedReset(){
 }
 
 function wantedUpdate(dt){
-  if(S.arena==='waves'||S.arena==='maze'||S.bd)return;   // בזירת הגלים אין מבוקש: הגלים הם האירוע, ובאנר באמצע המסך רק מפריע (arenas.js)
+  // גם בזירה (האתגר, arenas.js): המבוקש מגיע בזמן משלו, לא שייך לאף גל ולא עוצר את הגלים (אוראל, 8.11)
   const wn=S.wn;
   if(wn.e){
     const e=wn.e;

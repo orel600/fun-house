@@ -641,20 +641,17 @@ const TEXT={
   'w.goHome':{he:'חזרה לכפר',en:'Back to the village'},
   'w.gate.grove':{he:'זירת החורשה',en:'Grove Arena'},
   'w.gate.pit':{he:'זירת הבור',en:'Quarry Pit Arena'},
-  'w.arenaInfo':{he:'ריצה עד הבוס. השלל מהזירה נכנס לתרמיל גם אם נופלים, ובסוף חוזרים לשער הזה.',en:'A run until the boss. Arena loot goes in your bag even if you fall, and you come back to this gate.'},
+  'w.arenaInfo':{he:'ריצה עד הבוס. השלל מהזירה נכנס לתרמיל גם אם נופלים, ובסוף חוזרים לשער הזה.',en:'A 10-wave gauntlet: shifting walls mid-run, a boss at the end. Arena loot goes in your bag even if you fall, and you come back to this gate.'},
   'w.enterArena':{he:'כניסה לזירה',en:'Enter the arena'},
-  'w.enterMaze':{he:'זירת מבוך: קירות שמשתנים',en:'Maze arena: shifting walls'},
-  'w.enterBoss':{he:'זירת בוסים: שלושה בוסים ברצף',en:'Boss arena: three bosses in a row'},
-  'bossar.count':{he:(i,n)=>'בוס '+i+'/'+n,en:(i,n)=>'Boss '+i+'/'+n},
-  'bossar.next':{he:(i,n,s)=>'בוס '+i+'/'+n+' בעוד '+s,en:(i,n,s)=>'Boss '+i+'/'+n+' in '+s},
-  'w.enterWaves':{he:'זירת גלים: 10 גלים ובוס',en:'Wave arena: 10 waves and a boss'},
-  // זירת גלים (arenas.js)
+  // הזירה: גלים (arenas.js)
   'wave.start':{he:(i,n)=>'גל '+i+'/'+n,en:(i,n)=>'Wave '+i+'/'+n},
   'wave.last':{he:'גל אחרון! הבוס בדרך',en:'Final wave! The boss is coming'},
   'wave.clear':{he:i=>'גל '+i+' נוקה!',en:i=>'Wave '+i+' cleared!'},
   'wave.count':{he:(i,n,l)=>'גל '+i+'/'+n+' · נשארו '+l,en:(i,n,l)=>'Wave '+i+'/'+n+' · '+l+' left'},
   'wave.final':{he:n=>'גל '+n+'/'+n+' · בוס',en:n=>'Wave '+n+'/'+n+' · Boss'},
   'wave.next':{he:(i,s)=>'גל '+i+' בעוד '+s,en:(i,s)=>'Wave '+i+' in '+s},
+  'wave.ring':{en:(i,n)=>'Wave '+i+'/'+n+' · Surrounded!'},   // arenas.js: גל הטבעת
+  'arena.wake':{en:s=>'The arena wakes... '+s},   // arenas.js: ספירה לאחור לפני הגל הראשון
   'w.back':{he:'חזרה לשער',en:'Back to the gate'},
   'w.fell':{he:'נפלת בדרך',en:'You fell out there'},
   'w.lost':{he:'איבדת חצי מכל משאב שבתרמיל:',en:'You lost half of every resource in your bag:'},
