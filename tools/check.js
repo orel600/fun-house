@@ -1357,7 +1357,7 @@ function worldBot(m,L,god){
       // בזירה (arena-juice.js): juice.js כבוי (בלי המספרים שלו), ומכה של הנשק מקבלת הבזק וניצוצות קטנים. חיית מחמד וברק שקפץ לא.
       // 250 אויבים: לא יותר מ-perFrame אפקטים בפריים, ניצוצות והבזקים מתחת לתקרה, בלי עצירה. פוף רק לאלוף. "פחות אפקטים" מכבה
       JUICE.where.arena=false;const A=JUICE.arena,a0=A.on,fl0=SAVE.fxLess;A.on=true;SAVE.fxLess=false;
-      const n0=J.n.length;J.fl=[];J.p=[];J.poofs=[];AJ.f=-1;e.flash=0;damage(e,10,'sword',0,'fire');r.arenaOff=J.n.length===n0;r.arOn=J.fl.length===1&&e.flash>=JUICE.flash-1e-6&&J.p.length>0;
+      const n0=J.n.length;J.fl=[];J.p=[];J.poofs=[];AJ.f=-1;e.flash=0;damage(e,10,'sword',0,'fire');r.arenaOff=J.n.length===n0;r.arOn=J.fl.length===1&&e.flash>=(A.flash??JUICE.flash)-1e-6&&J.p.length>0;   // A.flash: 60ms מ-arena-feel.js (#508)
       AJ.f=-1;const fx0=AJ.stat.fx;damage(e,10,'pet',0,'fire');damage(e,10,'sword',0,'fire',true);r.arSrc=AJ.stat.fx===fx0;
       const many=[];for(let i=0;i<250;i++){const o=addEnemy('grunt',P.x+rand(-300,300),P.y+rand(-150,150));o.hp=o.max=1e9;o.elite=false;many.push(o)}
       AJ.f=-1;S.hitstop=0;const fx1=AJ.stat.fx;HITFX.crit=1;for(const o of many)damage(o,1,'gun',0,'fire');HITFX.crit=0;r.arN=AJ.stat.fx-fx1;r.arMax=A.perFrame;

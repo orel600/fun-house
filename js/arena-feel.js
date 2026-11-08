@@ -43,7 +43,7 @@ function afStop(t){
 (()=>{const old=juiceHit;juiceHit=function(e,d,m,crit,t,ang){const r=old.apply(this,arguments);
   if(r||!afArena()||typeof AJ==='undefined'||!AJ.src||AJ.src.ch||!JUICE.arena.src[AJ.src.w]||e.node)return r;
   ajFrame();if(typeof hfHit==='function')hfHit(e,m,crit,ang);   // הנטייה אחורה של ניר, דרך HITFEEL.where.arena (למטה)
-  if(crit)afStop(ARFEEL.stop.big);else if(m>=1&&AJ.seen<=ARFEEL.stop.crowdHit)afStop(ARFEEL.stop.hit);
+  if(AJ.seen<=ARFEEL.stop.crowdHit){if(crit)afStop(ARFEEL.stop.big);else if(m>=1)afStop(ARFEEL.stop.hit)}   // מעל crowdHit על המסך: בלי עצירה בכלל, גם בקריטי (כמו JUICE.arena.stopCrowd)
   return r}})();
 if(typeof JUICE!=='undefined'&&JUICE.arena)JUICE.arena.flash=ARFEEL.flash;   // arena-juice.js קורא את זה (במקום JUICE.flash של העולם)
 if(typeof HITFEEL!=='undefined')HITFEEL.where.arena=true;   // החלטת אוראל (#502): הנטייה של hitfeel.js בזירה, בלי לשכפל אותה. hfOn עדיין כבוי ב-RM
