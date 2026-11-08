@@ -36,10 +36,11 @@ let spellKey='';
 function spellHud(){
   const b=$('spell'),on=spellArena();if(b.hidden===on)b.hidden=!on;if(!on)return;
   const s=spellState(),cd=spellCd(),pk=spellPicking();if(b.classList.contains('pick')!==pk)b.classList.toggle('pick',pk);
-  if(spellKey!==s.id+LANG){spellKey=s.id+LANG;b.innerHTML=spellSvg(s.id)+'<i></i>';b.setAttribute('aria-label',T('sp.'+s.id));b.dataset.name='⇄ '+T('sp.'+s.id)}
+  if(spellKey!==s.id+LANG+gicoOn('sk')){spellKey=s.id+LANG+gicoOn('sk');b.innerHTML=spellSvg(s.id)+'<i></i>';b.setAttribute('aria-label',T('sp.'+s.id));b.dataset.name='⇄ '+T('sp.'+s.id)}
   const v=String(Math.round(20*cd/SPELL.list[s.id].cd)/20);if(b.dataset.cd!==v){b.dataset.cd=v;b.style.setProperty('--cd',v);b.classList.toggle('ready',v==='0')}
   const sec=cd>0?String(Math.ceil(cd)):'';if(b.dataset.sec!==sec)b.dataset.sec=sec;
 }
-const spellSvg=id=>'<svg class="dti" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="'+SPELL.list[id].icon+'"/></svg>';
+// חדש: צללית מ-game-icons (GICO.spell, gicons.js). קלאסי: ציור הקו
+const spellSvg=id=>gicoOn('sk')&&GICO.spell[id]?gIco(GICO.spell[id],'dti'):'<svg class="dti" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="'+SPELL.list[id].icon+'"/></svg>';
 $('spell').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(spellArena()&&spellPicking())spellNext();else spellUse()});
 addEventListener('keydown',e=>{if(e.code==='Digit5'&&S&&e.target===document.body)spellUse()});

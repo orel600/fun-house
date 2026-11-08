@@ -119,8 +119,9 @@ function sigDraw(){
 function sigHud(){
   const b=$('sig');if(!b)return;const id=sigId(),on=!!id&&sigHere();
   if(b.hidden===on)b.hidden=!on;if(!on)return;
-  if(b.dataset.id!==id){b.dataset.id=id;const D=SIGSKILL.list[id];b.style.setProperty('--dt',dtCol(D.dt));
-    b.innerHTML='<span class="sigi">'+D.ic+'</span><i></i>';b.setAttribute('aria-label',T('sig.btn',T('sk.'+id)));b.dataset.sk=id}
+  const gk=id+'|'+gicoOn('sk');   // גם הסגנון (gicons.js): חדש = צללית בצבע סוג הנזק, קלאסי = האימוג'י
+  if(b.dataset.id!==gk){b.dataset.id=gk;const D=SIGSKILL.list[id];b.style.setProperty('--dt',dtCol(D.dt));
+    b.innerHTML=(gicoOn('sk')&&GICO.sk[id]?gIco(GICO.sk[id],'sigi',dtCol(D.dt)):'<span class="sigi">'+D.ic+'</span>')+'<i></i>';b.setAttribute('aria-label',T('sig.btn',T('sk.'+id)));b.dataset.sk=id}
   const v=String(Math.round(20*sigCd/SIGSKILL.cd)/20),n=sigCd>0?String(Math.ceil(sigCd)):'';
   if(b.dataset.cd!==v){const was=b.classList.contains('ready');b.dataset.cd=v;b.style.setProperty('--cd',v);b.classList.toggle('ready',v==='0');
     if(v==='0'&&!was){b.classList.remove('ping');void b.offsetWidth;b.classList.add('ping')}}

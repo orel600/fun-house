@@ -37,7 +37,7 @@ const skDef=id=>SKILLS.list[id];
 const skBase=()=>(P.weapon==='sword'?P.sw.dmg:P.gn.dmg)*wK('dmg')*dmgK();
 // אפשר לקבל את הסקיל הזה משדרוג? רק אם עוד אין אותו ויש משבצת פנויה
 const skillCan=id=>!!S.sk&&!S.sk.ids.includes(id)&&S.sk.ids.length<SKILLS.max;
-function skillAdd(id){if(!skillCan(id))return;S.sk.ids.push(id);S.sk.cd.push(0)}
+function skillAdd(id){if(!skillCan(id))return;S.sk.ids.push(id);S.sk.cd.push(0);if(typeof fxPreloadSkills==='function')fxPreloadSkills([id],'arena')}   // האפקט של הסקיל החדש נטען מראש (fxlib.js, W6)
 
 // בתחילת כל ריצה: הסקיל של הנשק
 function skillsReset(){
