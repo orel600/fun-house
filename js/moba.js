@@ -168,13 +168,13 @@ function mbAttack(u,dt,t,A){
   return true;
 }
 // על מי תוקפים אוטומטית: הקרוב בטווח, גיבור קצת לפני חייל, ומבנה רק כשאין אחר. מי שהוכרח תוקף רק את הנפח
-function mbAutoTarget(u,range){
+function mbAutoTarget(u,range,skip){   // skip: יחידה שלא בוחרים (moba-bot.js, לא מתנפלים יחד)
   if(u.st.taunt>0&&u.st.tBy&&!u.st.tBy.dead)return u.st.tBy;
   const veil=u.st.veil>0;   // מכוסה (היעלמות): התקיפה האוטומטית לא שוברת את הכיסוי על חייל או מגדל, רק על גיבור צמוד (מארב), ובלי זינוק
   if(u.k==='hero'&&!veil&&!((u.lungeT||0)>MB.t))range+=MBKIT[u.kit].atk.lunge||0;   // הזינוק מוכן: מחפשים מטרה גם קצת יותר רחוק
   {const lk=u.me&&!veil&&mbAtkPick(u,range);if(lk)return lk}   // נעול בכפתור התקיפה, ובטווח: קודם לכולם (moba-atk.js)
   let best=null,bs=1e9;
-  for(const o of MB.u){if(o.team===u.team||o.dead||!mbHittable(o)||!mbSeen(o,u.team)||!mbTgt(o)||veil&&o.k!=='hero')continue;   // לא רואים: לא תוקפים (moba-vision.js)
+  for(const o of MB.u){if(o===skip||o.team===u.team||o.dead||!mbHittable(o)||!mbSeen(o,u.team)||!mbTgt(o)||veil&&o.k!=='hero')continue;   // לא רואים: לא תוקפים (moba-vision.js)
     const d=mbDist(u,o)-o.r-u.r;if(d>range)continue;
     const s=d+(o.k==='tower'||o.k==='base'?400:0)-(o.k==='hero'?30:0);if(s<bs){bs=s;best=o}}
   return best;
@@ -263,7 +263,9 @@ function mobaUpdate(dt){
   // השחקן P עוקב אחרי הגיבור שלו, בשביל המצלמה והמודל בתלת-ממד
   const me=M.me;P.x=me.x;P.y=me.y;P.hp=me.hp;P.maxHp=me.max;P.moving=mbMoving(me);P.face=mbRot(me);P.aim=me.aim;
   if(P.moving)P.walk+=dt*(me.vs||0)*0.07;P.sw.anim=Math.max(0,P.sw.anim-dt);P.gn.t=Math.max(0,P.gn.t-dt);P.inv=me.dead?1:0;
-  if(M.t>=MOBA.maxT){const left=tm=>M.u.filter(o=>o.team===tm&&(o.k==='tower'||o.k==='base')).reduce((s,o)=>s+o.hp/o.max,0);mbEnd(left(0)>=left(1))}
+  if(M.t>=MOBA.maxT){   // הזמן נגמר (8.11, DANA, moba-difficulty): יותר מבנים עומדים, אחרת יותר הריגות, אחרת תיקו
+    const left=tm=>M.u.filter(o=>o.team===tm&&(o.k==='tower'||o.k==='base')&&!o.dead).length,a=left(0),b=left(1),k=M.score;
+    if(a!==b)mbEnd(a>b);else if(k[0]!==k[1])mbEnd(k[0]>k[1]);else mbEnd(false,true)}
 }
 function mbTick(u,dt){
   const s=u.st,hero=u.k==='hero';
@@ -355,9 +357,9 @@ function mbShots(dt){
   }
   MB.shots=MB.shots.filter(s=>!s.gone);
 }
-function mbEnd(won){
-  if(MB.over)return;MB.over=true;S.mode='over';S.won=won;
-  sfx(won?'celebrate':'hurt');if(won)celebrate(P.x,P.y,'rank');
+function mbEnd(won,draw){   // draw: תיקו בסוף הזמן. S.won נשאר false, ו-MB.draw מסמן את התיקו
+  if(MB.over)return;MB.over=true;S.mode='over';S.won=won;MB.draw=!!draw;
+  sfx(won?'celebrate':draw?'ui':'hurt');if(won)celebrate(P.x,P.y,'rank');
   const m=MB;setTimeout(()=>{if(S.mb===m)mbEndShow(won)},1400);
 }
 function mobaExit(){
@@ -414,7 +416,7 @@ function mobaOpen(){
 }
 function mbEndShow(won){
   const w=$('mbWin'),row=u=>'<li class="'+(u.me?'me':'')+'" style="--dt:'+dtCol(MBKIT[u.kit].dt)+'">'+mbPic('k_'+u.kit,'mbli')+' '+T('mb.k.'+u.kit)+' <small>'+(u.me?T('mb.you'):T('mb.bot'))+'</small><span dir="ltr">'+u.kills+' / '+u.deaths+'</span><span>'+T('mb.lvl',u.lvl)+'</span></li>';
-  w.innerHTML=winHead(T(won?'mb.win':'mb.lose'),fmt(MB.t))+'<div class="mbend"><section class="t0"><h4>'+T('mb.blue')+'<b>'+MB.score[0]+'</b></h4><ul>'+mbHeroes(0).map(row).join('')+'</ul></section>'+
+  w.innerHTML=winHead(T(MB.draw?'mb.draw':won?'mb.win':'mb.lose'),fmt(MB.t))+'<div class="mbend"><section class="t0"><h4>'+T('mb.blue')+'<b>'+MB.score[0]+'</b></h4><ul>'+mbHeroes(0).map(row).join('')+'</ul></section>'+
     '<section class="t1"><h4>'+T('mb.red')+'<b>'+MB.score[1]+'</b></h4><ul>'+mbHeroes(1).map(row).join('')+'</ul></section></div>'+
     '<p class="mbkd">'+T('mb.kdH')+'</p><div class="mbbtns"><button class="go" data-act="again">'+T('mb.again')+'</button><button class="lang" data-act="home">'+T('mb.home')+'</button></div>';
   $('ovMoba').hidden=false;w.dataset.mode='end';

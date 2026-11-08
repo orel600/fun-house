@@ -216,6 +216,7 @@ const TEXT={
   'mb.ult':{he:'על, רמה 6',en:'ultimate, level 6'},
   'mb.start':{he:'המשחק התחיל! החיילים יוצאים',en:'Match on! Minions marching'},
   'mb.win':{he:'ניצחון!',en:'Victory!'},'mb.lose':{he:'הפסד',en:'Defeat'},
+  'mb.draw':{en:'Draw'},   // moba.js: תיקו בסוף הזמן (אותם מבנים ואותן הריגות)
   'mb.again':{he:'עוד משחק',en:'Play again'},'mb.home':{he:'הביתה',en:'Home'},
   'mb.exit':{he:'יציאה מהמשחק',en:'Leave match'},
   'mb.you':{he:'אתה',en:'You'},'mb.bot':{he:'בוט',en:'Bot'},
