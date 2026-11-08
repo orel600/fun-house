@@ -79,6 +79,7 @@ function mbDmg(src,t,d,dt,o={}){
   t.hp-=d;t.flash=0.12;if(t.mark&&src===t.mark.by)t.mark.dmg+=d;mbItHit(src,t,d);   // סימן מוות: הנזק של המתנקש נצבר לפיצוץ (mbTick)if(t.k==='tower'||t.k==='base')mbfxTower(t);   // ניצוץ ורעידה קטנה על מבנה (moba-fx.js)   // קוצים, מגן בחיים נמוכים, האטה (moba-items.js)
   if(!o.quiet&&mbShow(t)&&(t.k==='hero'||t.k==='tower'||t.k==='base'||src&&src.me))(o.big||o.crit?mbfxNum:mbFloat)(t.x+rand(-8,8),t.y-t.r-18,Math.round(d),t.me?C.blood:dtCol(dt),o.big||o.crit?o:t.k==='hero'?1.3:t.k==='minion'?0.85:1.1,src,t);   // גודל: מכה בגיבור בולטת יותר ממכה בחייל   // מכה חזקה: מספר גדול (moba-fx.js)
   if(src&&src.k==='hero'&&t.k==='hero'){src.aggro=2;t.hitBy.set(src,MB.t)}   // מגדל מכה במי שתוקף גיבור מתחתיו
+  if(t.k==='base'&&MB.me&&t.team===MB.me.team&&d>0)sfx('base_alarm');   // הבסיס שלך מותקף (gap של 10 שניות ב-SOUNDS)
   if(t.hp<=0)mbDie(t,src);
   return d;
 }
@@ -113,12 +114,12 @@ function mbDie(t,src){
     if(killer){killer.kills++;killer.killT=MB.t;mbXp(killer,MOBA.xp.kill)}
     for(const [h,at] of t.hitBy)if(h!==killer&&MB.t-at<8)mbXp(h,MOBA.xp.kill*MOBA.xp.assist);
     t.hitBy.clear();mbStReset(t);
-    if(t.me){mbBanner(T('mb.died'),C.blood);sfx('hurt')}
+    if(t.me){mbBanner(T('mb.died'),C.blood);sfx('me_die')}
     else if(killer&&killer.me){mbBanner(T('mb.kill'),C.gold);sfx('bossDown')}
     mbKillFeed(killer||src,t);   // "X הפיל את Y" מתחת לדמות שלי (במקום ההודעה "חבר נפל")
     mbBoom(t.x,t.y,60,t.team?'red':'blue');mbfxKo(t);
   }else{
-    sfx('bossDown');S.shake=Math.max(S.shake,8);mbBoom(t.x,t.y,120,'fire');mbfxFall(t);
+    sfx('tower_fall');S.shake=Math.max(S.shake,8);mbBoom(t.x,t.y,120,'fire');mbfxFall(t);
     if(t.k==='base'){mbEnd(t.team===1);return}
     mbBanner(T(t.team?'mb.tower1':'mb.tower0'),t.team?C.gold:C.blood);
     for(const h of mbHeroes(foe))mbXp(h,MOBA.xp.tower);
@@ -240,7 +241,7 @@ function mobaUpdate(dt){
     M.u.push(mbUnit({k:'minion',team:q.team,ranged:q.ranged,type:'mb_m'+q.team,x:(q.team?1:-1)*(MOBA.base.x-70),y:rand(-25,25),lane:rand(-70,70),r:N.r,hp:R.hp*q.k,max:R.hp*q.k,pow:q.k,speed:N.speed,face:q.team?Math.PI:0}))}
   M.queue=M.queue.filter(q=>!q.done);
   for(const u of M.u){
-    if(u.dead){if(u.k==='hero'){u.resp-=dt;if(u.resp<=0){u.dead=false;u.hp=u.max;u.x=u.home.x;u.y=u.home.y;u.cd.s1=u.cd.s2=0;mbStReset(u);mbFeelReset(u)}}continue}
+    if(u.dead){if(u.k==='hero'){u.resp-=dt;if(u.resp<=0){u.dead=false;u.hp=u.max;u.x=u.home.x;u.y=u.home.y;u.cd.s1=u.cd.s2=0;mbStReset(u);mbFeelReset(u);if(u.me)sfx('me_back')}}continue}
     mbTick(u,dt);if(u.dead)continue;
     if(u.st.dash){const D=u.st.dash,s=Math.min(D.left,D.sp*dt);mbStep(u,D.vx*s,D.vy*s);D.left-=s;u.moving=true;if(D.left<=0.5){u.st.dash=null;D.end()}continue}
     if(u.k==='hero'){for(const k of MB_SLOTS)if(u.cd[k]>0)u.cd[k]-=dt;u.atkT-=dt;u.aggro-=dt;mbXp(u,MOBA.xp.tick*dt);u.me&&!u.bot?mbPlayer(u,dt):mbBot(u,dt)}
@@ -399,7 +400,7 @@ function mobaHud(){
   const ok=M.order?M.order.kind:'';if(mbOrdKey!==ok){mbOrdKey=ok;for(const b of document.querySelectorAll('#mbPing [data-o]'))b.classList.toggle('on',b.dataset.o===ok)}
   for(const b of $('mbSk').querySelectorAll('[data-sk]')){const k=b.dataset.sk,s=MBKIT[u.kit][k];if(!s)continue;const lock=k==='ult'&&u.lvl<MOBA.ultAt;
     b.style.setProperty('--cd',lock?1:Math.max(0,u.cd[k])/s.cd);const l=b.querySelector('.mblock');if(l.hidden===lock)l.hidden=!lock;
-    const rd=!lock&&u.cd[k]<=0;if(b.classList.contains('ready')!==rd)b.classList.toggle('ready',rd);if(b.classList.contains('lock')!==lock)b.classList.toggle('lock',lock)}   // מוכן / נעול: המראה ב-style.css (W3)
+    const rd=!lock&&u.cd[k]<=0;if(b.classList.contains('ready')!==rd){if(rd&&k==='ult')sfx('ult_ready');b.classList.toggle('ready',rd)}if(b.classList.contains('lock')!==lock)b.classList.toggle('lock',lock)}   // מוכן / נעול: המראה ב-style.css (W3)   // ult_ready: נצנוץ כשהסקיל-על נהיה מוכן (audio.js)
   mbAtkHud(u);mbItHud();mbRecallHud();typeof mbSpellHud==='function'&&mbSpellHud();   // אזהרה בחיים נמוכים וכפתור החזרה (moba-recall.js)
     // זהב, קנייה מהירה וחפצים (moba-items.js)
 }
