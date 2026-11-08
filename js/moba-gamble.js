@@ -44,7 +44,7 @@ function mbGambleTick(M,dt){
   const R=G.roll;
   if(R){const u=R.u;R.t-=dt;
     if(!u.dead){u.x=R.x;u.y=R.y;u.moving=false;u.st.dash=null;u.recall=null}
-    const tick=Math.floor((A.roll-R.t)*(6-2*(A.roll-R.t)/A.roll));if(tick!==R.tick){R.tick=tick;if(R.t>0.15)sfx('tap')}   // תקתוק שמאט
+    const tick=Math.floor((A.roll-R.t)*(6-2*(A.roll-R.t)/A.roll));if(tick!==R.tick){R.tick=tick;if(R.t>0.15)sfx('gamble_tick')}   // תקתוק שמאט
     if(R.t<=0){G.roll=null;mbGbDone(u,R.win)}}
   // מי שבתוך הטבעת: הזכאי נכנס, כל השאר נדחפים
   for(const u of M.u){if(u.k!=='hero'||u.dead||G.roll&&G.roll.u===u)continue;
@@ -60,14 +60,14 @@ function mbGambleTick(M,dt){
 function mbGbDone(u,win){
   const col=u.team===MB.me.team?C.gold:C.blood;
   if(win){const top=Math.max(...MB.u.filter(o=>o.k==='hero').map(mbWorth)),g=Math.max(0,top-mbWorth(u));
-    mbGold(u,g);mbBoom(u.x,u.y,90,'fire');typeof mbfxSk==='function'&&(mbfxSk('gamble_win',u.x,u.y,{follow:u}),mbfxSk('coins',u.x,u.y,{follow:u}));if(u.me){sfx('celebrate');celebrate(u.x,u.y,'gear')}else sfx('coin');
+    mbGold(u,g);mbBoom(u.x,u.y,90,'fire');typeof mbfxSk==='function'&&(mbfxSk('gamble_win',u.x,u.y,{follow:u}),mbfxSk('coins',u.x,u.y,{follow:u}));if(u.me){sfx('gamble_win');celebrate(u.x,u.y,'gear')}else sfx('coin');
     mbBanner(u.me?T('mb.gb.winMe',Math.round(g)):T('mb.gb.win',mbGbName(u),Math.round(g)),col,true);mbGbFeed(u,T('mb.gb.won',Math.round(g)));return}
   mbBanner(u.me?T('mb.gb.loseMe'):T('mb.gb.lose',mbGbName(u)),u.team===MB.me.team?C.blood:C.gold,true);typeof mbfxSk==='function'&&mbfxSk('gamble_lose',u.x,u.y);
   if(u.dead){mbGbFeed(u,T('mb.gb.lost'));return}   // כבר מת באמצע: נשאר מת
   // מוות כמו ב-mbDie, אבל בלי mbItDie, בלי XP, בלי נקודה ובלי הריגה לאף אחד
   u.hp=0;u.dead=true;u.deaths++;u.resp=mbResp(u);u.hitBy.clear();
   mbStReset(u);   // כולל רשת ובועה: מי שמת בחדר לא חוזר לכוד (הבודק, 7.11)
-  if(u.me)sfx('hurt');mbKillFeed({k:'gamble'},u);mbBoom(u.x,u.y,80,'red');
+  if(u.me)sfx('gamble_lose');mbKillFeed({k:'gamble'},u);mbBoom(u.x,u.y,80,'red');
 }
 // בוט זכאי שהקבוצה שלו מאחור הרבה: הולך לחדר בסיכוי p (מחליט פעם ב-every שניות). מחזיר true כשהבוט בדרך
 function mbGambleBot(u){
