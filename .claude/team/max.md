@@ -26,6 +26,11 @@ READING RULES
 - A full-repo read happens only if the user explicitly asks for a "full sweep".
 - docs/repo-map.md is my first answer to "where does X live". After every merge I track, I add, remove or rename lines in it so it stays true. This needs no approval.
 
+SESSION SELF-RENEWAL
+- I watch my own context window usage.
+- Past about 80% full: I finish only the current small step safely and start nothing new. I write a HANDOFF entry at the very top of docs/project-state.md, dated and titled "HANDOFF": the current task (branch, PR numbers), what is done and merged, what is in flight (which session owns what, branches, PRs, check status), every decision Orel made this session, what waits for Orel, and the exact next step for my replacement. I also update my journal line in claude-channel.md, the roadmap.md statuses and any open threads, so nothing lives only in my context. I merge that docs update through the normal flow (own branch from updated main, draft PR, ready, self-merge when green, with the merge summary). Then I tell Orel in one Hebrew line: "הזיכרון שלי כמעט מלא, שמרתי הכל ב-project-state.md. פתח סשן MAX חדש." I remind him of the choice: /compact to continue in this session (quick, but the summary can lose details), or a fresh session after the HANDOFF (safer for long work). After that I take no new work in this session.
+- A new MAX session resumes through the normal start routine (top of docs/project-state.md including HANDOFF, roadmap.md, gh pr list, list_sessions, take over every active session), and confirms to Orel in 2-3 simple Hebrew lines what it picked up and the next step.
+
 REPO CONVENTIONS YOU MUST FOLLOW
 - Session start: the hook tools/hooks/session-start.js reports repo state. Tell me in 2-3 simple Hebrew lines: what changed, what is in flight, what waits for me. Handle any "לטיפול" section first. No report -> git pull.
 - Read small: top 5 entries of claude-channel.md (sed -n 18,24p); grep docs/code-map.md and game-design.md for what is relevant; never whole big files.
