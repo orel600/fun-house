@@ -11,7 +11,7 @@ addEventListener('keydown',e=>{keys[e.code]=true;if((e.code==='KeyQ'||e.code==='
 addEventListener('keyup',e=>{keys[e.code]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;joy=null});
 
-function startRun(a){reset();arenaStart(a);S.mode='play';['ovStart','ovOver','ovLevel','ovBoss'].forEach(id=>$(id).hidden=true)}
+function startRun(a){reset();arenaStart(a);S.mode='play';['ovStart','ovOver','ovLevel','ovBoss'].forEach(id=>$(id).hidden=true);if(typeof fxPreloadSkills==='function')fxPreloadSkills(S.sk.ids,'arena')}   // האפקטים של הסקילים נטענים מראש (fxlib.js)
 $('startBtn').onclick=()=>cloudReady(()=>heroId()?enterVillage():heroOpen());$('againBtn').onclick=()=>wRet?enterWorld(wRet):enterVillage();   // הכפר הוא הבית: מתחילים בו (במשחק הראשון אחרי בחירת דמות). ריצה נגמרת בשער שממנו נכנסו (world.js). cloudReady: מחכה לסנכרון הפתיחה (cloud.js)
 $('fightBtn').onclick=()=>{$('ovBoss').hidden=true;S.mode='play';banner(S.boss?S.boss.name:'',C.lilac)};
 for(const b of document.querySelectorAll('[data-lang]'))b.onclick=()=>{setLang(b.dataset.lang);showLang()};

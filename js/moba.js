@@ -212,6 +212,7 @@ function mobaStart(kit){
   MB.me=MB.u[0];$('mbFeed').innerHTML='';
   for(const tm of [0,1]){for(const x of MOBA.towers)MB.u.push(mbBuild(tm,'tower',x));MB.u.push(mbBuild(tm,'base',MOBA.base.x))}
   const me=MB.me;P.weapon=MBKIT[me.kit].atk.shot?'gun':'sword';P.x=me.x;P.y=me.y;P.face=P.aim=0;S.cam.x=P.x;S.cam.y=P.y;
+  if(typeof fxPreloadSkills==='function')fxPreloadSkills(me.kit,'moba');   // האפקטים של הסקילים של הערכה נטענים מראש (fxlib.js, W6)
   ['ovStart','ovOver','ovLevel','ovBoss'].forEach(id=>{const e=$(id);if(e)e.hidden=true});
   mbUi(true);mbBanner(T('mb.start'),C.gold);
   let n=0;try{n=+localStorage.getItem('fh-mb-tips')||0;localStorage.setItem('fh-mb-tips',n+1)}catch(e){}
