@@ -4045,6 +4045,9 @@ function worldBot(m,L,god){
     // לא זז, כן תוקף, ואחרי זה חסינות קצרה. כלא מים מרים ומרטיב, וברק אחריו = חשמול. גל חרב מהמם ומאט לאורך קו
     {const e=mbHeroes(1)[0],R={},ow=mbWord,w0={},ex=e.x,ey=e.y,clr=()=>{Object.assign(e.st,{wet:0,imm:0,stun:0,taunt:0,root:0,bub:0,slow:0,armor:0,rage:0,shield:0,dash:null});e.dead=false;e.hp=e.max=1e6};
      mbWord=function(u,w){w0[w]=(w0[w]||0)+1;return ow(u,w)};
+     // רשת, כלא מים וגל חרב יוצאים בקו: חומת ברזל אדומה שנשארה מהקרב (MB.walls, נבדקת לפי x בלבד) או גיבור אדום אחר בנתיב תפסו אותם, והבדיקה נכשלה לפעמים (QUINN, 8.11).
+     // לכן בבלוק הזה אין חומות ואין גיבורים אדומים חוץ מ-e. הכל חוזר בסוף
+     const wl=MB.walls.slice(),u0=MB.u;MB.walls.length=0;MB.u=MB.u.filter(o=>o===e||!(o.k==='hero'&&o.team===e.team));
      const ids=Object.values(MBKIT).flatMap(K=>MB_SLOTS.map(sl=>K[sl].id));R.gone=['charge','leap','heal'].filter(i=>ids.includes(i));R.new=['cleave','net','bubble'].every(i=>ids.includes(i));
      const add=k=>{const h=mbHero(k,0,false,1);h.x=e.x-200;h.y=e.y;MB.u.push(h);return h},del=h=>MB.u.splice(MB.u.indexOf(h),1),run=(n,f)=>{for(let i=0;i<n&&!f();i++)mbShots(1/30)};
      clr();let h=add('hunter');mbCast(h,'s2',e);run(40,()=>e.st.root>0);R.root=e.st.root>0&&w0.root>0;
@@ -4054,7 +4057,7 @@ function worldBot(m,L,god){
      clr();h=add('mage');mbCast(h,'s2',e);const z=MB.zones.pop();z.fire(z);R.bub=e.st.bub>0&&e.st.stun>0&&e.st.wet>0;
      const sh=w0.shock||0,mt=MB.t;MB.t=Math.max(MB.t,MOBA.early?MOBA.early.t:0);const d0=mbDmg(null,e,100,'lightning');MB.t=mt;R.shock=(w0.shock||0)>sh&&d0>100;del(h);   // d0 אחרי הפתיחה הרכה (MOBA.early)
      clr();h=add('warrior');mbCast(h,'s1',e);run(40,()=>e.st.stun>0);R.cleave=e.st.stun>0&&e.st.slow>0;del(h);
-     mbWord=ow;clr();e.hp=e.max=MBKIT[e.kit].hp;e.x=ex;e.y=ey;o.newSk=R}
+     mbWord=ow;clr();e.hp=e.max=MBKIT[e.kit].hp;e.x=ex;e.y=ey;MB.u=u0;MB.walls.length=0;MB.walls.push(...wl);o.newSk=R}
     // טנק ולוחם יעילים, ואפקטים (moba-kits.js, moba-fx.js), בתרחיש קבוע: זינוק של תקיפה רגילה אל מטרה קצת מחוץ לטווח, מגן שסופג,
     // חלקיקים מוגבלים, עצירת פריים במכה קריטית של השחקן, ורגע הסקיל-על (הילוך איטי ושם הסקיל). gap: הכי קרוב שהגיע, כי אחרי המכה הבוט יכול ללכת
     {const e=mbHeroes(1)[0],r={},ex=e.x,ey=e.y;Object.assign(e.st,{stun:9,taunt:0,imm:0,shield:0,armor:0,rage:0,slow:0,dash:null});e.dead=false;e.hp=e.max=1e6;
