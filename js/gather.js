@@ -36,6 +36,8 @@ const gShape=n=>(typeof wKind==='function'?wKind(n.kind):NODES.kinds[n.kind]||{}
 const gNow=()=>performance.now()/1000;
 
 /* ---- 1. חתיכות ---- */
+// מזל משלה לחתיכות: הן רק מראה, ולכן לא צורכות את Math.random של המשחק (הבוט עם seed נשאר אותה ריצה)
+let gSeed=12345;const gRnd=(a,b)=>a+(gSeed=(gSeed*16807)%2147483647)/2147483647*(b-a);
 function gPool(){if(GATHER.chips)return GATHER.chips;const L=GATHER.chips=[];for(let i=0;i<GATHER.chip.pool;i++)L.push({on:false,x:0,y:0,z:0,vx:0,vy:0,vz:0,t:0,max:1,col:'',sz:3,a:0,k:0});return L}
 // מכה במקור (damage ב-combat.js). ang: הכיוון מהגיבור אל המקור
 function gHit(n,ang){
@@ -46,9 +48,9 @@ function gHit(n,ang){
   if(GATHER.fr!==GATHER.tick){GATHER.fr=GATHER.tick;GATHER.frN=0}
   const L=gPool();let made=0;
   for(const c of L){if(made>=C.n||GATHER.frN>=C.perFrame)break;if(c.on)continue;
-    const i=made%pal.length,a=(ang||0)+rand(-1.3,1.3),s=rand(...C.side);
-    c.on=true;c.x=n.x+rand(-n.r,n.r)*0.4;c.y=n.y+rand(-4,4);c.z=n.r*0.7;c.vx=Math.cos(a)*s;c.vy=Math.sin(a)*s*0.5;c.vz=rand(...C.up);
-    c.t=0;c.max=rand(...C.life);c.col=pal[i]==='*'?col:pal[i];c.sz=rand(...C.size);c.a=rand(0,3.14);c.k=sp.includes(i)?2:lf.includes(i)?1:0;
+    const i=made%pal.length,a=(ang||0)+gRnd(-1.3,1.3),s=gRnd(...C.side);
+    c.on=true;c.x=n.x+gRnd(-n.r,n.r)*0.4;c.y=n.y+gRnd(-4,4);c.z=n.r*0.7;c.vx=Math.cos(a)*s;c.vy=Math.sin(a)*s*0.5;c.vz=gRnd(...C.up);
+    c.t=0;c.max=gRnd(...C.life);c.col=pal[i]==='*'?col:pal[i];c.sz=gRnd(...C.size);c.a=gRnd(0,3.14);c.k=sp.includes(i)?2:lf.includes(i)?1:0;
     made++;GATHER.frN++}
   GATHER.stat.chips+=made;
 }
