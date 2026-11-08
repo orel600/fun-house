@@ -13,6 +13,7 @@
    - death 45 שניות לכל מוות (מסך המוות, ההליכה חזרה מהכפר).
    - מה לא נספר: קווסטים, הזירה, דיג, סודות, פונדק. הם לוקחים זמן, אבל גם נותנים XP ושלל שמקצרים את הטיפוס. מניחים שהם בערך מתקזזים.
    צפיפות בהליכה (עולם עם חיים): node tools/playtime.js --density [--walks 40] [--out <קובץ>]
+   דרגה 3 בלבד (איזון, 8.11): --snap <קובץ.json> שומר את המצב בתחילת דרגה 3 (קובץ לכל מחלקה), ו---from <קובץ.json> ממשיך משם בלי לשחק שוב את מה שלפני
    הרצה: node tools/playtime.js [--cls warrior,hunter,mage] [--seed 7] [--kills 60] [--cap 2400] [--trip 600] [--out docs/playtime-<תאריך>.md] [--set "<js>"]
    לא רץ ב-GitHub. דו-ממד בלבד. ריצה מלאה: כ-20-40 דקות אמיתיות, שלוש המחלקות במקביל */
 const {chromium}=require('playwright');
@@ -65,6 +66,9 @@ async function runCls(browser,cls,B){
   await page.route(/^https?:/,r=>r.fulfill({status:200,contentType:'text/css',body:''}));
   await page.addInitScript(seed=>{let a=seed>>>0;Math.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}},PT.seed);
   await page.addInitScript(()=>{try{localStorage.setItem('zm-gfx','2d')}catch(e){}});
+  // --from: ממשיכים מתחילת דרגה 3 (שמירה שנכתבה ב---snap), במקום לשחק שוב את הסיפור ואת דרגה 2. השמירה נטענת כמו שחקן שפותח את המשחק
+  const snapF=f=>f.replace(/\.json$/,'')+'-'+cls+'.json',from=opt('from')?JSON.parse(fs.readFileSync(snapF(opt('from')),'utf8')):null;
+  if(from)await page.addInitScript(raw=>{try{localStorage.setItem('fh-save',raw)}catch(e){}},from.save);
   await page.goto('file://'+path.resolve(__dirname,'..','index.html'));
   await page.waitForTimeout(500);
   if(opt('set'))await page.evaluate(js=>{(0,eval)(js)},opt('set'));
@@ -72,8 +76,13 @@ async function runCls(browser,cls,B){
   await page.waitForTimeout(300);
   await page.evaluate(install,B);
   await page.evaluate(track);
+  if(from)await page.evaluate(f=>{const m=window.__bal,ev=m.rep.ev;Object.assign(m.rep,f.rep);m.rep.ev=(f.rep.ev||[]).concat(ev);m.ch=f.ch;m.gt=m.chT=m.lastTrip=f.gt},from);
+  const t3=B.chapters.findIndex(c=>c.st==='t3');let snapped=!opt('snap');
   const t0=Date.now();let r={},n=0;
   while(!r.done){r=await page.evaluate(()=>__balRun(40));
+    // --snap: שומרים את המצב בתחילת דרגה 3, ל---from
+    if(!snapped){const s=await page.evaluate(i=>__bal.ch>=i?{save:localStorage.getItem('fh-save'),rep:__bal.rep,ch:__bal.ch,gt:__bal.gt}:null,t3);
+      if(s){snapped=true;fs.writeFileSync(snapF(opt('snap')),JSON.stringify(s));console.log(cls,'נשמר מצב בתחילת דרגה 3')}}
     if(++n%300===0){const s=await page.evaluate(()=>({ch:__bal.ch,lv:heroLv(),ph:__bal.ph,gt:Math.round(__bal.gt)}));
       console.log(cls,'פרק',s.ch+1+'/'+B.chapters.length,'רמה',s.lv,s.ph,Math.round(s.gt/60)+' דק משחק',Math.round((Date.now()-t0)/1000)+'s')}}
   r.R.end=await page.evaluate(()=>({lv:heroLv(),sets:Object.keys(SETS).map(s=>{const all=setItems(s);return s+' '+all.filter(id=>Object.keys(SAVE.bag).concat(Object.keys(SAVE.stash||{}),[].concat(...Object.values(SAVE.gear).map(g=>[].concat(g||[])))).some(x=>x&&gBase(x)===id)).length+'/'+all.length})}));
@@ -151,7 +160,7 @@ const f1=x=>x==null?'-':(Math.round(x*10)/10).toString();
   // לכל מחלקה ולכל פרק: שעות. חזרות לכפר: כל trip שניות בטיפוס, ועוד אחת בסוף כל פרק
   const A={};
   for(const c of PT.cls){const R=out[c];A[c]=R.ch.map((h,i)=>{const trips=Math.floor((h.t||0)/PT.trip)+1;
-    return{st:B.chapters[i].st,reg:h.reg,h:hrs(h.t||0,trips,h.deaths||0),qn:h.qn||0,qxp:h.qxp||0,kxp:h.kxp||0,xp:h.xp||0,lv:h.lv1,ok:h.ok,why:h.why,deaths:h.deaths,fight:h.fightT,gate:h.gate}})}
+    return{st:B.chapters[i].st,reg:h.reg,h:hrs(h.t||0,trips,h.deaths||0),qn:h.qn||0,qxp:h.qxp||0,kxp:h.kxp||0,xp:h.xp||0,lv:h.lv1,ok:h.ok,why:h.why,deaths:h.deaths,fight:h.fightT,gate:h.gate,z:h.z||{}}})}
   const L=[];const p=s=>L.push(s);
   const date=new Date().toISOString().slice(0,10);
   p(`# כמה שעות לוקח המשחק: ${date}`);p('');
@@ -181,6 +190,20 @@ const f1=x=>x==null?'-':(Math.round(x*10)/10).toString();
     const notes=[];if(xs.some(x=>!x.ok))notes.push('תקוע: '+xs.filter(x=>!x.ok).map(x=>x.why).join(', '));if(xs.some(x=>x.gate))notes.push('חיכה לפתיחת הדרגה');
     if(h>g*PT.wall||xs.some(x=>!x.ok)){walls.push(ch.st+' '+ch.reg);if(h>g*PT.wall)notes.push('קיר')}else if(h<g/PT.wall)short.push(ch.st+' '+ch.reg);
     p(`| ${STAGES.find(s=>s[0]===ch.st)[1]} | ${ch.reg} | ${f1(h)} | ${f1(g)} | ${xs.map(x=>x.lv).join('/')} | ${fs.length?f1(fs.reduce((a,b)=>a+b,0)/fs.length):'-'} | ${notes.join('; ')} |`)});
+  p('');
+  // לפי איזור (start, near, far: WORLD.zones, לפי המרחק מהשער. בקרת איכות, 6.11): איפה מתים ואיפה נפגעים, לכל מחלקה
+  const ZN=['start','near','far'],zSum=(xs,z,k)=>xs.reduce((a,x)=>a+((x.z[z]||{})[k]||0),0);
+  p('## לפי איזור (start, near, far)');p('');
+  p('זמן: איזה חלק מזמן השלב השחקן היה באיזור. מוות ונספג (פסי חיים מלאים לדקת משחק): לכל מחלקה לפי הסדר '+PT.cls.join(', ')+'.');p('');
+  p('| שלב | איזור | % מהזמן | מוות | נספג לדקה |');p('| --- | --- | --- | --- | --- |');
+  for(const [st,name] of STAGES){const per=PT.cls.map(c=>A[c].filter(x=>x.st===st));if(!per[0].length)continue;
+    const all=per.flat(),T=ZN.reduce((a,z)=>a+zSum(all,z,'t'),0)||1;
+    for(const z of ZN)p(`| ${name} | ${z} | ${Math.round(zSum(all,z,'t')/T*100)}% | ${per.map(l=>zSum(l,z,'d')).join('/')} | ${per.map(l=>{const t=zSum(l,z,'t');return t?(zSum(l,z,'hin')/t*60).toFixed(2):'-'}).join('/')} |`)}
+  p('');
+  // דרגה 3 לכל אזור ואיזור: מוות (שם נמצאה הבעיה ב-6.11)
+  p('### דרגה 3: מוות לפי אזור ואיזור');p('');p('| אזור | start | near | far |');p('| --- | --- | --- | --- |');
+  B.chapters.forEach((ch,i)=>{if(ch.st!=='t3')return;const xs=PT.cls.map(c=>A[c][i]);if(!xs[0])return;
+    p(`| ${ch.reg} | ${ZN.map(z=>xs.map(x=>x?((x.z[z]||{}).d||0):'-').join('/')).join(' | ')} |`)});
   p('');
   // דברים מעניינים: כמה דקות (של שחקן) בין אחד לבא, לכל שלב
   p('## כמה זמן בין "דבר מעניין" לבא');p('');
