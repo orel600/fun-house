@@ -10,7 +10,7 @@ const GTOOL={
   tools:{axe:{fams:['wood','plant'],gm:'wood',model:'w_axe_A',pic:'icons/ui/gear/axe.png'},
          hammer:{fams:['stone'],gm:'stone',model:'w_hammer_A',pic:'icons/ui/gear/hammer.png'}},
   // הדרגות. tex: הטקסטורה של החומר (wtex ב-build3d.js). glow: זוהר עדין לנחושת ולזהב. pow: פי כמה המכה במקור
-  tiers:[null,{id:'wood',tex:'wood',pow:1},{id:'copper',tex:'iron',glow:'#C87533',gk:0.35,pow:1.25},{id:'iron',tex:'iron',pow:1.5},{id:'silver',tex:'silver',pow:1.75},{id:'gold',tex:'gold',glow:'#FFD45A',gk:0.25,pow:2}],
+  tiers:[null,{id:'wood',tex:'wood',col:'#B07A45',pow:1},{id:'copper',tex:'iron',col:'#C87533',glow:'#C87533',gk:0.35,pow:1.25},{id:'iron',tex:'iron',col:'#9AA3AD',pow:1.5},{id:'silver',tex:'silver',col:'#DCE3EA',pow:1.75},{id:'gold',tex:'gold',col:'#FFD45A',glow:'#FFD45A',gk:0.25,pow:2}],
   // cost[t]: מה עולה להגיע לדרגה t. time[t]: כמה שניות השעון
   cost:[null,null,{coins:30,wood:20,stone:15,copper:6},{coins:80,wood:40,stone:35,iron:10},{coins:180,wood:80,stone:70,silver:8},{coins:350,wood:150,stone:120,gold:5}],
   time:[0,0,120,300,600,1200],
@@ -72,23 +72,36 @@ function gtTick(){
 setInterval(gtTick,1000);
 
 /* ---- הלשונית בנפחייה (forgeDraw ב-aging.js) ---- */
+let GT_SEL='axe';   // הכלי שנבחר בלשונית
 function gtDraw(){
-  $('fItems').innerHTML=Object.keys(GTOOL.tools).map(k=>{
-    const T_=GTOOL.tools[k],t=gtTier(k),tr=GTOOL.tiers[t],nx=GTOOL.tiers[t+1],why=gtBlock(k);
-    let h='<div class="gtcard" data-k="'+k+'"><img src="'+T_.pic+'" alt=""><div><b>'+T('gt.'+k)+'</b> <span class="dim">'+T('gt.t.'+tr.id)+' · '+T('gt.lv',t)+'</span>';
-    if(why==='max')h+='<p class="dim">'+T('gt.max')+'</p>';
-    else if(why==='job'){const j=gtJob(k);h+='<p class="gtwait">⏳ '+T('gt.wait',T('gt.t.'+GTOOL.tiers[j.to].id),gtClock(gtLeft(k)))+'</p>'}
-    else{
-      h+='<p class="dim">'+T('gt.next',T('gt.t.'+nx.id),Math.round((nx.pow-1)*100),Math.round(GTOOL.time[t+1]/60))+'</p><div class="cost">'+costLine(GTOOL.cost[t+1])+'</div>';
-      h+='<button class="vbtn" data-act="gtUp" data-k="'+k+'"'+(why?' disabled':'')+'>'+(why==='forge'?T('gt.needForge',t+1):why==='gm'?T('gt.needGm',T('gm.'+T_.gm),GTOOL.gm.rank):why==='cost'?T('age.needCost'):T('gt.go'))+'</button>';
-    }
-    return h+'</div></div>'}).join('');
-  $('fDetail').innerHTML='<p class="dim">'+T('gt.hint')+'</p>';
+  // שמאל: שורה לכל כלי (תמונה, שם, דרגה, ושעון אם הוא בעבודה). ימין: הכלי שנבחר, מה הבא, המחיר והכפתור
+  $('fItems').innerHTML=Object.keys(GTOOL.tools).map(k=>{const t=gtTier(k),j=gtJob(k);
+    return '<button class="gtcard" data-gt="'+k+'"'+(GT_SEL===k?' aria-pressed="true"':'')+'><img src="'+GTOOL.tools[k].pic+'" alt=""><span><b>'+T('gt.'+k)+'</b><small class="dim">'+T('gt.t.'+GTOOL.tiers[t].id)+' · '+T('gt.lv',t)+'</small>'+
+      (j?'<small class="gtwait">⏳ '+gtClock(gtLeft(k))+'</small>':'')+'</span></button>'}).join('');
+  const k=GT_SEL,T_=GTOOL.tools[k],t=gtTier(k),nx=GTOOL.tiers[t+1],why=gtBlock(k);
+  let d='<h3>'+T('gt.'+k)+' <span class="dim">'+T('gt.t.'+GTOOL.tiers[t].id)+'</span></h3>';
+  if(why==='max')d+='<p class="dim">'+T('gt.max')+'</p>';
+  else if(why==='job'){const j=gtJob(k);d+='<p class="gtwait">⏳ '+T('gt.wait',T('gt.t.'+GTOOL.tiers[j.to].id),gtClock(gtLeft(k)))+'</p>'}
+  else d+='<p class="dim">'+T('gt.next',T('gt.t.'+nx.id),Math.round((nx.pow-1)*100),Math.round(GTOOL.time[t+1]/60))+'</p><div class="cost">'+costLine(GTOOL.cost[t+1])+'</div>'+
+    '<div class="gbtns"><button class="vbtn" data-act="gtUp" data-k="'+k+'"'+(why?' disabled':'')+'>'+(why==='forge'?T('gt.needForge',t+1):why==='gm'?T('gt.needGm',T('gm.'+T_.gm),GTOOL.gm.rank):why==='cost'?T('age.needCost'):T('gt.go'))+'</button></div>';
+  $('fDetail').innerHTML=d+'<p class="dim gthint">'+T('gt.hint')+'</p>';
 }
-function gtClick(b){if(b.dataset.act!=='gtUp')return false;gtStart(b.dataset.k);return true}
+function gtClick(b){
+  if(b.dataset.gt){GT_SEL=b.dataset.gt;return true}
+  if(b.dataset.act!=='gtUp')return false;gtStart(b.dataset.k);return true}
 // השלט מעל הנפחייה בכפר בזמן שדרוג: השעון הקצר מבין השניים
 function gtSign(){const ks=Object.keys(GTOOL.tools).filter(gtJob);if(!ks.length)return null;
   const l=Math.min(...ks.map(gtLeft));return l>0?'⏳ '+gtClock(l):'✓ '+T('gt.ready')}
+
+/* ---- דו-ממד: ידית עץ וראש בצבע הדרגה (col). גרזן: להב בצד. פטיש: גוש ברוחב. מ-drawPlayer (render.js) ---- */
+function gtDraw2d(hx,hy,a){
+  const k=gtHeld();if(!k)return false;const col=GTOOL.tiers[gtTier(k)].col,cx=Math.cos(a),cy=Math.sin(a),ex=hx+cx*28,ey=hy+cy*28,nx=-cy,ny=cx;
+  ctx.strokeStyle='#8A5A30';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hx-cx*4,hy-cy*4);ctx.lineTo(ex,ey);ctx.stroke();
+  ctx.fillStyle=col;ctx.strokeStyle='#2A2230';ctx.lineWidth=1.2;ctx.beginPath();
+  if(k==='axe'){ctx.moveTo(ex-cx*2,ey-cy*2);ctx.lineTo(ex-cx*7+nx*9,ey-cy*7+ny*9);ctx.quadraticCurveTo(ex+nx*13,ey+ny*13,ex+cx*5+nx*9,ey+cy*5+ny*9);ctx.lineTo(ex+cx*2,ey+cy*2)}
+  else{const w=7,l=10;ctx.moveTo(ex-cx*w+nx*l,ey-cy*w+ny*l);ctx.lineTo(ex+cx*w+nx*l,ey+cy*w+ny*l);ctx.lineTo(ex+cx*w-nx*l,ey+cy*w-ny*l);ctx.lineTo(ex-cx*w-nx*l,ey-cy*w-ny*l)}
+  ctx.closePath();ctx.fill();ctx.stroke();return true;
+}
 
 /* ---- תלת-ממד: שני הכלים כחלקים בדמות, מוסתרים עד שמכים במקור ---- */
 const gtKey=()=>S&&S.wd?'|gt'+gtTier('axe')+gtTier('hammer'):'';
