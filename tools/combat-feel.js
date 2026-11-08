@@ -150,7 +150,8 @@ async function shots(browser,dir){
     await page.waitForTimeout(300);
     await page.evaluate(install,CF);
     await page.evaluate(r=>__cfHero(r,'fresh'),reg);
-    await page.waitForTimeout(1200);   // the fx sheets (wtg_*) load from files
+    // the fx sheets (wtg_*) load from files: wait until they are ready, or the warning is drawn the old way and does not count
+    await page.waitForFunction(()=>typeof fxImg==='function'&&['wtg_cone','wtg_line','wtg_circle'].every(id=>fxImg(id)),null,{timeout:20000}).catch(()=>console.log('wtg sheets not loaded'));
     const b=await page.evaluate(()=>__cfBusy(90));
     const f=path.join(dir,'busy-'+reg+'.png');
     await page.screenshot({path:f});
@@ -162,7 +163,8 @@ async function shots(browser,dir){
 if(require.main===module)(async()=>{
   const browser=await chromium.launch();
   const shotDir=path.resolve(opt('shots')||path.join(__dirname,'..','docs','combat-feel'));fs.mkdirSync(shotDir,{recursive:true});
-  const [res,sh]=await Promise.all([Promise.all(CF.cls.map(c=>runCls(browser,c))),opt('noshots')?[]:shots(browser,shotDir)]);
+  const [res,sh]=await Promise.all([opt('onlyshots')?[]:Promise.all(CF.cls.map(c=>runCls(browser,c))),opt('noshots')?[]:shots(browser,shotDir)]);
+  if(opt('onlyshots')){await browser.close();for(const s of sh)console.log(s.reg,s.file,JSON.stringify(s.info));return}
   await browser.close();
   const out={};CF.cls.forEach((c,i)=>out[c]=res[i]);
   const f1=x=>x==null?'-':x.toFixed(1),f0=x=>x==null?'-':Math.round(x)+'',pc=(a,b)=>a&&b?((b-a)/a*100>=0?'+':'')+Math.round((b-a)/a*100)+'%':'-';
