@@ -1139,7 +1139,8 @@ function worldBot(m,L,god){
     try{S.vil=null;S.wd=null;S.room=null;S.mode='play';SAVE.fxLess=false;S.sk.fx=[];S.sk.last={};
       const ens=[];for(let i=0;i<6;i++){const e=addEnemy('grunt',P.x+60+i*30,P.y+20);e.hp=e.max=1e9;e.speed=0;e.mult={};ens.push(e)}
       ens[0].wet=3;ens[1].frozen=2;ens[2].stun=2;
-      const ids=['quake','splash','frost','flame','zap'];S.sk.ids=ids;S.sk.cd=ids.map(()=>0);r.cast=ids.filter(id=>skillUse(id)).length;
+      const ids=['quake','splash','frost','flame','zap'];S.sk.ids=ids;S.sk.cd=ids.map(()=>0);const an0=SKANIMS.stat.fx,l0=FXLIB.list.length;r.cast=ids.filter(id=>skillUse(id)).length;
+      r.anim=[SKANIMS.stat.fx-an0,ids.filter(id=>SKANIMS.stat.cast[id]).length,FXLIB.list.length-l0<=FXLIB.max,SKANIM.perCast+SKANIM.hit.perFrame<=12];   // אנימציות מהגיליונות (skill-anim.js): כמה אפקטים, לכמה סקילים, בתוך התקרה
       comboShow(ens[0],'shock');comboShow(ens[1],'melt');r.combo=S.sk.fx.some(f=>f.combo);
       const d0=SKFXS.drawn,o0=SKFXS.old;SKFXS.peak=0;ctx.save();for(let i=0;i<20;i++){skillsUpdate(1/60);drawSkills(0,0)}r.drawn=SKFXS.drawn-d0===20&&SKFXS.old===o0;r.peak=SKFXS.peak;r.max=SKFX.maxParts;
       SAVE.fxLess=true;drawSkills(0,0);r.less=SKFXS.parts===0;SAVE.fxLess=false;
@@ -3731,7 +3732,7 @@ function worldBot(m,L,god){
      me.x=me.home.x+(me.team?-1:1)*900;me.y=0;$('mbRecall').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));L.start=!!me.recall;tk(MBRECALL.t*30+3);L.home=!me.recall&&mbDist(me,me.home)<1;
      me.x=me.home.x+(me.team?-1:1)*900;mbFeelReset(me);mbRecallStart(me);tk(10);me.x+=20;tk(1);L.move=!me.recall&&mbDist(me,me.home)>800;
      mbRecallStart(me);tk(10);me.hp-=50;tk(1);L.hit=!me.recall&&mbDist(me,me.home)>800;me.hp=me.max;
-     const n=mbNext(me),c=MBITEM.items[n].cost,q=$('mbQuick'),p=()=>+q.style.getPropertyValue('--p');me.gold=c/2;mobaHud();L.half=Math.abs(p()-0.5)<0.02&&!q.classList.contains('ok')&&q.textContent.includes(String(c-Math.floor(c/2)));
+     const n=mbNext(me),c=MBITEM.items[n].cost,q=$('mbQuick'),p=()=>+q.style.getPropertyValue('--p');me.gold=c/2;mobaHud();L.half=Math.abs(p()-0.5)<0.02&&!q.classList.contains('ok')&&q.textContent.includes(String(c))&&q.querySelector('span').classList.contains('miss');   // המחיר תמיד, ובאדום כשחסר (W4, 8.11: בלי מספר שלילי)
      me.gold=c;mobaHud();L.full=p()===1&&q.classList.contains('ok');me.gold=0;me.x=hx;me.y=hy;mbFeelReset(me);mobaHud();o.life=L}
     // כיוון וביטול בגרירה (moba-aim.js): גוררים מהכפתור, משחררים על ✕ = בוטל ובלי טעינה. גוררים שמאלה עד הסוף = הסדן נוחת בקצה הטווח משמאל
     {const me=MB.me,b=document.querySelector('#mbSk [data-sk="s1"]'),r=b.getBoundingClientRect(),cx=r.x+r.width/2,cy=r.y+r.height/2,z0=MB.zones.length,R=MBKIT.tank.s1.range;
@@ -4133,7 +4134,7 @@ function worldBot(m,L,god){
   check(wk.weakDmg>wk.plain*1.2,'חולשה: מכה של '+wk.weak+' על מגן עשתה '+wk.weakDmg+', ואותה מכה בלי חולשה '+wk.plain);
   check(wk.stone.lightning===0&&wk.stone.water===15&&wk.stone.fire===5,'טבלת יעילות: מכה של 10 על אבן · מים '+wk.stone.water+' (צריך 15), ברק '+wk.stone.lightning+' (צריך 0), אש '+wk.stone.fire+' (צריך 5)');
   const hits=L.hits||{},nTypes=Object.keys(hits).filter(k=>hits[k]>0).length;
-  check(!sfx.err&&sfx.cast===5&&sfx.combo&&sfx.drawn&&sfx.peak>0&&sfx.peak<=sfx.max&&sfx.less&&sfx.world,'מראה הסקילים בזירה: '+(sfx.err||[sfx.cast+'/5 סקילים',sfx.combo?'הבזק קומבו':'בלי הבזק קומבו',sfx.drawn?'מצויר':'לא מצויר',
+  check(!sfx.err&&sfx.cast===5&&sfx.combo&&sfx.drawn&&sfx.peak>0&&sfx.peak<=sfx.max&&sfx.less&&sfx.world&&sfx.anim[1]===5&&sfx.anim[2]&&sfx.anim[3],'מראה הסקילים בזירה: '+(sfx.err||[sfx.cast+'/5 סקילים','אנימציות מגיליונות: '+sfx.anim[0]+' ל-'+sfx.anim[1]+'/5 סקילים'+(sfx.anim[2]&&sfx.anim[3]?'':' (מעל התקרה)'),sfx.combo?'הבזק קומבו':'בלי הבזק קומבו',sfx.drawn?'מצויר':'לא מצויר',
     'עד '+sfx.peak+' חלקיקים בפריים (תקרה '+sfx.max+')',sfx.less?'"פחות אפקטים" בלי חלקיקים':'חלקיקים גם ב"פחות אפקטים"',sfx.world?'בעולם הציור הישן':'בעולם הציור החדש'].join(', ')));
   check(cb.shock&&cb.frozen&&cb.stun&&cb.melt>=1.9&&cb.bossStun&&cb.plainIce,'קומבו: '+[cb.shock?'רטוב+ברק קפץ לרטוב רחוק':'חשמול לא קפץ',cb.frozen?'רטוב+קרח קפא ולא זז':'לא קפא',
     cb.stun?'קפוא+אדמה = הלם':'אין הלם','אש+קרח x'+cb.melt+(cb.melt>=1.9?'':' (צריך x2)'),cb.bossStun?'בוס בהלם פעם אחת ואז חסין':'הלם בבוס לא עבד',cb.plainIce?'קרח לבד לא מקפיא':'קרח לבד הקפיא'].join(', '));
