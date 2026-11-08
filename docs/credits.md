@@ -14,6 +14,7 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - biceps
 - brick-wall
 - carrot
+- dead-head
 - enrage
 - eye-target
 - falling-star
@@ -47,11 +48,13 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - bubbles
 - burning-meteor
 - checked-shield
+- cloak-dagger
 - clover
 - cog
 - comet-spark
 - crossed-swords
 - crystal-growth
+- daggers
 - double-shot
 - earth-crack
 - earth-spit

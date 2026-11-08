@@ -66,7 +66,7 @@ function mbVisPt(x,y){
   return false;
 }
 // חבר בשיח: שקוף למחצה (גם השחקן עצמו, כדי שידע שהוא מוסתר)
-const mbVisFade=u=>MB&&MB.me&&u.team===MB.me.team&&u.k==='hero'&&!u.dead&&u.bush>0?MBVIS.allyFade:1;
+const mbVisFade=u=>u.st&&u.st.veil>0&&!u.dead?MB_VEIL_A:MB&&MB.me&&u.team===MB.me.team&&u.k==='hero'&&!u.dead&&u.bush>0?MBVIS.allyFade:1;   // מתנקש מכוסה (היעלמות, moba-kits.js): שקוף לשני הצדדים
 
 /* ---- בוטים: איבד גיבור ליד שיח? הולכים לבדוק אותו לרגע. seen: גיבורי האויב שהקבוצה רואה עכשיו. מחזיר נקודה או null ---- */
 function mbVisLost(u,seen){

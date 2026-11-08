@@ -55,6 +55,7 @@ const LOOK3D={
   mb_tank:{model:'barbarian',h:72,foot:15,props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'earth'}},anim:{idle:'Idle_A',run:'Running_B',die:'Death_A'}},
   mb_warrior:{model:'knight',h:66,foot:14,props:{blade:{prop:'blade',...HAND_R}},anim:{idle:'Idle_A',run:'Running_A',die:'Death_A'}},
   mb_hunter:{model:'ranger',h:59,foot:14,anim:{idle:'Idle_A',run:'Running_A',die:'Death_A'}},
+  mb_assassin:{model:'rogue',h:62,foot:14,props:{blade:{prop:'blade',...HAND_R}},anim:{idle:'Idle_A',run:'Running_A',die:'Death_A'}},   // המתנקש: הנוכל של KayKit עם להב
   mb_mage:{model:'mage',h:69,foot:14,props:{staff:{prop:'staff',...HAND_R,tint:'water'}},anim:{idle:'Idle_A',run:'Running_C',die:'Death_A'}},
   mb_m0:{model:'minion',h:44,foot:10,tint:'#4C8DFF',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   mb_m1:{model:'minion',h:44,foot:10,tint:'#FF5A5A',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},

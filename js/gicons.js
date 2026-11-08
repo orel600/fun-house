@@ -34,7 +34,8 @@ const GICO={
     cleave:'lorc/wave-strike',spin:'lorc/sword-spin',rage:'delapouite/enrage',
     pierce:'lorc/arrow-dunk',net:'lorc/fishing-net',rain:'lorc/arrow-flights',
     wave:'lorc/wave-crest',bubble:'lorc/bubbles',blizzard:'lorc/frozen-orb',
-    k_tank:'lorc/hammer-drop',k_warrior:'lorc/crossed-swords',k_hunter:'lorc/high-shot',k_mage:'lorc/wizard-staff',
+    shadowstep:'lorc/cloak-dagger',vanish:'lorc/ghost',deathmark:'delapouite/dead-head',
+    k_tank:'lorc/hammer-drop',k_warrior:'lorc/crossed-swords',k_hunter:'lorc/high-shot',k_mage:'lorc/wizard-staff',k_assassin:'lorc/daggers',
     sp_heal:'sbed/health-increase',sp_dash:'lorc/sprint',sp_haste:'lorc/wingfoot',sp_barrier:'lorc/shield-reflect',sp_reveal:'delapouite/eye-target',sp_exhaust:'sbed/weight-crush',sp_cleanse:'delapouite/holy-water'},
   // הכפתורים הגדולים בזירה: אולטימייט "פרץ הפנס" (ult.js), ברק אלוהי (divine.js) והכישוף (spell.js). הסקיל החתימה (sigskill.js) לוקח מ-sk
   ult:{ult:'lorc/lantern-flame',divine:'lorc/thunder-struck'},
