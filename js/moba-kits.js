@@ -22,7 +22,7 @@ const MBKIT={
   hunter:{icon:'🏹',dt:'lightning',hp:540,speed:160,
     atk:{dmg:34,range:300,cd:0.9,dt:'physical',shot:true,crit:{p:0.2,k:1.8}},   // crit: מכה קריטית, מספר גדול
     s1:{id:'pierce',kind:'line',cd:8,range:640,w:28,dmg:90,speed:1000,dt:'lightning'},   // חץ ברק שעובר דרך כולם. על רטוב: חשמול
-    s2:{id:'net',kind:'line',cd:9,range:460,w:26,dmg:50,root:1.2,speed:820,dt:'physical'},   // רשת ציד: נעצרת בגיבור הראשון ולוכדת אותו (לא זז, אבל תוקף). עוברת מעל חיילים
+    s2:{id:'net',kind:'line',cd:9,range:460,w:26,dmg:50,root:1.2,speed:820,dt:'physical',flee:{t:1.2,k:1.45}},   // flee: אחרי שהרשת תופסת, הצייד מהיר ×1.45 לשנייה ורבע (אוראל, 7.11: "אין לו בריחה")   // רשת ציד: נעצרת בגיבור הראשון ולוכדת אותו (לא זז, אבל תוקף). עוברת מעל חיילים
     ult:{id:'rain',kind:'point',cd:50,range:440,r:150,delay:0.5,t:3,dps:65,slow:0.3,end:90,dt:'physical'}},   // גשם חצים, ובסוף מטח אחרון
   mage:{icon:'🔮',dt:'water',hp:560,speed:155,
     atk:{dmg:34,range:270,cd:1.0,dt:'water',shot:true},
