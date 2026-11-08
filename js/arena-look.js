@@ -56,7 +56,7 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
     float gF(vec2 p){return 0.5*gN(p)+0.3*gN(p*2.03+vec2(1.7,9.2))+0.2*gN(p*4.01+vec2(5.1,3.3));}`;
   // תאי Worley (אבני ריצוף): המרחק לנקודה הקרובה (f1) והשנייה (f2), ומזהה התא. ההפרש f2-f1 קטן = תפר
   const WORLEY=`
-    vec2 wH2(vec2 p){return vec2(gH(p),gH(p+vec2(19.7,7.3)));}
+    vec2 wH2(vec2 p){vec3 q=fract(vec3(p.xyx)*vec3(0.1031,0.1030,0.0973));q+=dot(q,q.yzx+33.33);return fract((q.xx+q.yz)*q.zy);}   // hash אחד לשתי הקואורדינטות, בלי sin (יקר על המעבד)
     void worley(vec2 p,out float f1,out float f2,out vec2 id){vec2 i=floor(p),f=fract(p);f1=8.0;f2=8.0;id=i;
       for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 g=vec2(float(x),float(y));vec2 r=g+wH2(i+g)-f;float d=dot(r,r);if(d<f1){f2=f1;f1=d;id=i+g;}else if(d<f2){f2=d;}}
       f1=sqrt(f1);f2=sqrt(f2);}`;
@@ -73,16 +73,16 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
         `+sh.fragmentShader.replace('#include <map_fragment>',`
         vec2 p=vAp;float d=length(p),ang=atan(p.y,p.x);vec3 glow=vec3(0.0);
         // אבני ריצוף לא סדירות: תאי Worley על רשת מעוותת ברעש, כל אבן בגוון משלה, שחיקה בקצוות ותפר כהה
-        vec2 wp=p/${f(A.flag.size)}+(vec2(gN(p/160.0),gN(p/160.0+vec2(41.0,17.0)))-0.5)*${f(A.flag.warp)};
+        vec2 wp=p/${f(A.flag.size)}+vec2(sin(p.y*0.0131)+sin(p.x*0.0071+1.7),cos(p.x*0.0113)+sin(p.y*0.0089+4.2))*${f(A.flag.warp*0.25)};   // עיוות הרשת בסינוסים: זול, ובלי חזרה נראית
         float f1,f2;vec2 sid;worley(wp,f1,f2,sid);float edge=f2-f1;
-        float mac=gF(p/${f(A.macro)});
-        vec3 c=mix(cStone,cStone2,gH(sid))*(1.0-${f(A.flag.tint)}+${f(A.flag.tint*2)}*gH(sid+7.1));
+        vec2 mq=p/${f(A.macro)};float mac=0.62*gN(mq)+0.38*gN(mq*2.03+vec2(1.7,9.2)),grain=gH(floor(p/3.5)),wearN=gN(p/23.0);   // שתי אוקטבות לכתמים הגדולים (במקום שלוש)
+        vec2 sh2=wH2(sid);vec3 c=mix(cStone,cStone2,sh2.x)*(1.0-${f(A.flag.tint)}+${f(A.flag.tint*2)}*sh2.y);   // גוון וגובה של האבן מ-hash אחד
         c=mix(c,cDark,smoothstep(0.35,0.75,mac)*0.6);
         c*=1.0+${f(A.flag.bevel)}*(0.5-f1);                                   // מרכז האבן בולט, הקצה שוקע
-        c*=1.0-${f(A.flag.wear)}*smoothstep(0.35,0.05,edge)*gN(p/23.0);         // שחיקה וכתמים ליד התפרים
-        c*=0.93+0.14*gN(p/9.0)+${f(A.flag.grit)}*(step(0.86,gN(p/3.5))-0.5);  // גרגור עדין
-        float mort=smoothstep(${f(A.flag.mortar*0.5)},${f(A.flag.mortar*1.4)},edge+0.02*gN(p/7.0));
-        c=mix(mix(cMortar,cStone2*0.55,step(0.9,gN(p/4.0))),c,mort);          // תפר כהה עם חצץ בהיר בודד
+        c*=1.0-${f(A.flag.wear)}*smoothstep(0.35,0.05,edge)*wearN;              // שחיקה וכתמים ליד התפרים
+        c*=0.93+0.14*wearN+${f(A.flag.grit)}*(step(0.86,grain)-0.5);          // גרגור עדין
+        float mort=smoothstep(${f(A.flag.mortar*0.5)},${f(A.flag.mortar*1.4)},edge+0.02*(grain-0.5));
+        c=mix(mix(cMortar,cStone2*0.55,step(0.985,grain)),c,mort);            // תפר כהה עם חצץ בהיר בודד
         // סדקים: קו לאורך החצי של רעש, שמתרחב עם הריצה, וזוהר בסוף
         float cn=abs(gN(p/${f(A.crack.scale)})-0.5)+0.18*abs(gN(p/${f(A.crack.scale*0.33)})-0.5);
         float cw=mix(${f(A.crack.w0)},${f(A.crack.w1)},aProg),ck=1.0-smoothstep(cw*0.4,cw,cn);
@@ -93,7 +93,7 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
         float seg=fract(ang/6.2832*${f(A.runes.n)}),rr=abs(d-${f(A.runes.r)});
         float rn=step(rr,14.0)*step(0.2,seg)*step(seg,0.8)*step(0.35,gH(vec2(floor(ang/6.2832*${f(A.runes.n)}),3.0)))*(1.0-smoothstep(abs(seg-0.5)*28.0,abs(seg-0.5)*28.0+3.0,rr+gH(vec2(floor(ang*7.6),1.0))*10.0));
         float rune=clamp(rg+rn*${f(A.runes.a)},0.0,1.0);
-        c=mix(c,cBrass*(0.8+0.3*gN(p/5.0)),rune*0.75);                      // שיבוץ פליז ברצפה, עם ברק קל
+        c=mix(c,cBrass*(0.8+0.3*gH(floor(p/5.0))),rune*0.75);                      // שיבוץ פליז ברצפה, עם ברק קל
         glow+=cRune*rune*aPulse*0.9;
         // שש החותמות: עיגול עם כוכב, לכל סוג נזק, דולקות לפי השימוש
         for(int i=0;i<6;i++){float a=float(i)*1.0472+0.5236;vec2 sp=vec2(cos(a),sin(a))*${f(A.sigil.r)};vec2 q=p-sp;float sd=length(q),sa=atan(q.y,q.x);
@@ -103,7 +103,9 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
           c=mix(c,sCol[i]*0.6,s*0.45);glow+=sCol[i]*s*(sLit[i]+aPulse*0.3);}
         // הבוס נכנס: זוהר ברצפה סביבו
         float bd=length(p-aBoss.xy);glow+=cRune*aBoss.z*(1.0-smoothstep(0.0,${f(A.boss.r)},bd))*1.4+cEmber*aBoss.z*aRing(bd,${f(A.boss.r*0.8)},8.0);
-        // הגבול: שפת אבן כהה עם מסמרות פליז, ומסביבה טבעת קרשי עץ (גם היא רצפה: הולכים עליה)
+        // הגבול והקצה: רק מעבר לרדיוס הזה (רוב המסך בפנים, וחוסך את כל החישוב שם)
+        if(d>${f(A.border.curb[0]-40)}){
+        // שפת אבן כהה עם מסמרות פליז, ומסביבה טבעת קרשי עץ (גם היא רצפה: הולכים עליה)
         float dw=d+(gN(p/70.0)-0.5)*14.0;
         float curb=smoothstep(${f(A.border.curb[0]-6)},${f(A.border.curb[0])},dw)*(1.0-smoothstep(${f(A.border.curb[1])},${f(A.border.curb[1]+6)},dw));
         c=mix(c,cCurb*(0.9+0.25*gN(p/12.0)),curb);
@@ -112,14 +114,15 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
         float wood=smoothstep(${f(A.border.planks[0])},${f(A.border.planks[0]+4)},d)*(1.0-smoothstep(${f(A.border.planks[1]-4)},${f(A.border.planks[1])},d));
         float pk=fract(ang/6.2832*${f(A.border.plankN)}),seam=1.0-smoothstep(0.0,0.06,min(pk,1.0-pk));
         float pid=gH(vec2(floor(ang/6.2832*${f(A.border.plankN)}),2.0));vec3 wc=mix(cWood,cWood2,0.25+0.5*pid)*(0.88+0.24*gN(vec2(ang*260.0+pid*40.0,d/36.0)));   // כל קרש בגוון משלו, וסיבים דקים לאורכו
-        wc=mix(wc,cWood2*0.6,seam);wc=mix(wc,cBrass,step(0.995,gN(vec2(ang*120.0,d))));   // תפר כהה בין קרשים, ומסמר פה ושם
+        wc=mix(wc,cWood2*0.6,seam);wc=mix(wc,cBrass,step(0.995,gH(floor(vec2(ang*120.0,d/6.0)))));   // תפר כהה בין קרשים, ומסמר פה ושם
         c=mix(c,wc,wood);
         float rim=aRing(d,${f(A.border.planks[0])},3.0)+aRing(d,${f(A.border.planks[1])},3.0);c=mix(c,cBrass*0.7,rim*0.6);   // קו פליז דק בשתי שפות העץ
         // מחוץ לעץ: אבן גסה וכהה שמחשיכה ככל שמתרחקים
         float outer=smoothstep(${f(A.border.planks[1])},${f(A.border.planks[1]+30)},d);
         c=mix(c,mix(cDark,cOut,0.4)*(0.8+0.3*gN(p/16.0)),outer*0.7);
         float ed=smoothstep(${f(A.edge.from)},${f(A.edge.to)},d+(gN(p/120.0)-0.5)*160.0);
-        c=mix(c,cOut,ed*${f(1-A.edge.dark)});glow*=1.0-ed*0.7;glow*=1.0-curb-wood;
+        c=mix(c,cOut,ed*${f(1-A.edge.dark)});glow*=(1.0-ed*0.7)*(1.0-curb-wood);
+        }
         diffuseColor.rgb=pow(c,vec3(2.2));vec3 aGlow=pow(glow,vec3(2.2));`).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance+=aGlow;')};
     return m;
   }
