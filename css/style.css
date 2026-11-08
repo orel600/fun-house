@@ -2035,3 +2035,8 @@ body.mb .skb.lock::after{content:none}
 #ovForge .gtwait{color:var(--gold,#F2C14E);font-weight:700}
 #ovForge #fDetail h3{margin:0}
 #ovForge .gthint{margin-top:auto;font-size:.85em}
+
+
+/* arena-feel.js: הסקיל כמעט מוכן (ARFEEL.soon): הכפתור "מתנשף" רגע לפני */
+.skb.afsoon{animation:afsoon .12s ease-out infinite alternate}@keyframes afsoon{to{transform:scale(1.07);box-shadow:0 0 0 3px var(--dt),0 0 14px var(--dt)}}
+@media (prefers-reduced-motion:reduce){.skb.afsoon{animation:none}}

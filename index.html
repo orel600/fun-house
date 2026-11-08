@@ -316,6 +316,8 @@
     <div class="sub"><span data-t="fpsGroup"></span><div class="langs" role="group" data-ta="fpsGroup"><button class="lang" data-fps="1" data-t="shadow.on"></button><button class="lang" data-fps="0" data-t="shadow.off"></button></div></div>
     <!-- פחות אפקטים: חצי חלקיקים, בלי שובל ונצנוץ, מספרי נזק קטנים (FX_LESS ב-js/juice.js, נשמר ב-SAVE) -->
     <div class="sub gfx fxl"><span data-t="fxGroup"></span><div class="langs" role="group" data-ta="fxGroup"><button class="lang" data-fxless="0" data-t="fx.full"></button><button class="lang" data-fxless="1" data-t="fx.less"></button></div></div>
+    <!-- הפחתת תנועה: בלי רעידה, עצירה והילוך איטי בזירה ובשאול (js/arena-feel.js, נשמר ב-SAVE.calm) -->
+    <div class="sub gfx calm"><span data-t="calmGroup"></span><div class="langs" role="group" data-ta="calmGroup"><button class="lang" data-calm="0" data-t="calm.off"></button><button class="lang" data-calm="1" data-t="calm.on"></button></div></div>
     <!-- איכות אפקטים: גבוהה (זוהר, אור וחלקיקים מלאים) / נמוכה. ברירת מחדל לפי המכשיר (js/vfx3d.js, נשמר ב-SAVE.vfxQ) -->
     <div class="sub gfx vfxq"><span data-t="vfxqGroup"></span><div class="langs" role="group" data-ta="vfxqGroup"><button class="lang" data-vfxq="hi" data-t="vfxq.hi"></button><button class="lang" data-vfxq="lo" data-t="vfxq.lo"></button></div></div>
     <!-- המראה שלי: רגיל / ניר / אוראל (js/heroes.js, heroSkinRow) -->
@@ -544,6 +546,7 @@
 <script src="js/depths.js"></script>   <!-- עומק הצל: קומה אחרי קומה אחרי הסוף -->
 <script src="js/firsttips.js"></script>   <!-- טיפ ראשון: בועה קטנה בפעם הראשונה שפוגשים מערכת חדשה -->
 <script src="js/input.js"></script>
+<script src="js/arena-feel.js"></script>   <!-- תחושת קרב בזירה ובשאול: עצירה ורעידה מדורגות, תנועת הטלה, חוצץ לחיצה, Rampage (docs/concept/arena-feel.md) -->
 <script src="js/main.js"></script>
 <script src="js/perf.js"></script>
 <script src="js/pwa.js"></script>
