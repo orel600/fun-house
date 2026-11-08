@@ -16,7 +16,7 @@ const path=require('path'),fs=require('fs');
 const args=process.argv.slice(2);
 const opt=k=>{const i=args.indexOf('--'+k);if(i<0)return null;const v=args[i+1];return v&&!v.startsWith('--')?v:true};
 const CFG={
-  time:+(opt('time')||560),   // 560 (היה 480): באחו הגדול ההליכה לשער הזירה ארוכה בכ-40 שניות
+  time:+(opt('time')||600),   // 600 (היה 560, 8.11: מרווח לזירה של 10 גלים). 560 (היה 480): באחו הגדול ההליכה לשער הזירה ארוכה בכ-40 שניות
   seed:+(opt('seed')||Math.floor(Math.random()*1e6)),
   god:!opt('real'),
   shots:opt('shots')?path.join(__dirname,'shots'):null,
@@ -117,7 +117,7 @@ function botStep({god,en}){
   // הריצה: טיימר, פס התקדמות, תחנות, וכמה אויבים היו בזירה יחד
   L.peak=Math.max(L.peak||0,enemies.length);L.hordeMax=S.hordeMax||0;L.clock=document.getElementById('clock').textContent;
   // הזירה (arenas.js): עד איזה גל הגענו, כמה הפסקות עם ריפוי, והמונה למעלה
-  if(S.wv){L.wvN=ARENAS.gauntlet.list.length;L.wvMax=Math.max(L.wvMax||0,S.wv.i+1);L.wvHeal=S.wv.healed;L.wvEnds=S.wv.log.map(x=>fmt(x.end)).join(' ');L.lvAt=L.lvAt||{};L.lvAt[S.wv.i+1]??=P.level;const tg=document.getElementById('waveTag');if(tg&&!tg.hidden&&tg.textContent)L.waveTag=tg.textContent}
+  if(S.wv){L.wvN=ARENAS.gauntlet.list.length;L.wvMax=Math.max(L.wvMax||0,S.wv.i+1);L.wvHeal=S.wv.healed;L.wvEnds=S.wv.log.map(x=>fmt(x.end)).join(' ');L.wvLate=S.wv.late||0;if(S.wv.phase==='fight'&&S.t-S.wv.start>60&&!L.wvStuck)L.wvStuck='גל '+(S.wv.i+1)+' אחרי 60 שניות: '+enemies.filter(e=>!e.dead&&e.wv===S.wv.i).map(e=>e.type+(e.champ?'*':'')+' '+Math.round(100*e.hp/e.max)+'% '+Math.round(Math.hypot(e.x-P.x,e.y-P.y))+(e.awake?'':' ישן')).join(', ')+' · נשק '+P.weapon;L.lvAt=L.lvAt||{};L.lvAt[S.wv.i+1]??=P.level;const tg=document.getElementById('waveTag');if(tg&&!tg.hidden&&tg.textContent)L.waveTag=tg.textContent}
   L.elites=S.run.elites;L.supsN=ARENAS.gauntlet.list.filter((x,i)=>x.sup&&i<(L.wvMax||0)).length;
   L.eliteLeft=enemies.filter(e=>e.elite).map(e=>e.type+' '+Math.round(100*e.hp/e.max)+'% במרחק '+Math.round(Math.hypot(e.x-P.x,e.y-P.y))).join(', ');
   // מספרים גדולים: הכי גדול שנראה, כמה קריטיות, ומספר נזק שלא נכתב משמאל לימין
@@ -2058,6 +2058,16 @@ function worldBot(m,L,god){
     window.banner=ob;joy=null;enemies=[];document.getElementById('banner').textContent='';SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(!gr.err&&gr.inv===3&&gr.gap===6&&gr.moved>20&&gr.hpKept&&gr.first!=null&&gr.first>=5.9&&gr.cd==='3,2,1',
     'כניסה רכה לזירה: '+(gr.err||'חסינות '+gr.inv+' שניות'+(gr.hpKept?' (מכות לא פגעו)':' (נפגע!)')+', הגל הראשון אחרי '+gr.first+' שניות (מתוכנן '+gr.gap+'), ספירה '+(gr.cd||'אין')+', זז '+gr.moved+' בזמן ההמתנה'));
+  // זמן לגל (waveMax ב-arenas.js): אויב שלא נופל (סוג נזק שלא עובד עליו) לא תוקע את הריצה. אחרי waveMax הגל הבא מתחיל, והשארית לא חוסמת אותו
+  const wmx=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},at=window.attack;
+    try{window.attack=()=>{};startRun();const A=ARENAS.gauntlet,dt=1/30;waveStart(1);const w=S.wv;w.q=[];enemies=[];
+      const e=addEnemy('golem',P.x+2000,P.y);e.wv=1;e.hp=e.max=1e12;
+      for(let t=0;t<A.waveMax+1;t+=dt){P.hp=P.maxHp;P.inv=1;update(dt);if(w.phase==='break'&&o.at==null)o.at=Math.round(S.t-w.start)}
+      o.late=w.late||0;o.alive=!e.dead;o.ban=document.getElementById('banner').textContent;
+      for(let t=0;t<A.breakSecs+1&&w.i<2;t+=dt){P.hp=P.maxHp;P.inv=1;update(dt)}o.next=w.i===2;
+    }catch(err){o.err=String(err&&err.stack||err)}
+    window.attack=at;enemies=[];document.getElementById('banner').textContent='';SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!wmx.err&&wmx.late===1&&wmx.at!=null&&wmx.alive&&wmx.next,'זמן לגל בזירה: '+(wmx.err||'אויב שלא נופל, הגל נגמר אחרי '+wmx.at+' שניות'+(wmx.alive?' והוא נשאר':'')+', '+(wmx.next?'הגל הבא התחיל':'הגל הבא לא התחיל!')+' · "'+wmx.ban+'"'));
   // אויבים ישנים (arenaZz ב-arenas.js): רחוק מ-wake.r הולכים לאט ומכשף לא יורה. מתעוררים מקרבה, ממכה, מסוף הגל ומהבוס. קפיצה של arena-load לא מעירה, והישנים נספרים בגל
   const zz=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},at=window.attack,r0=ARENAS.gauntlet.wake.r,lc0=ARENAS.gauntlet.lastCall;
     try{window.attack=()=>{};startRun();const A=ARENAS.gauntlet,Z=A.wake,R=Z.r*Math.max(W,H),dt=1/30;waveStart(0);const w=S.wv;w.q=[];enemies=[];eb.length=0;P.x=P.y=0;
@@ -4399,7 +4409,7 @@ function worldBot(m,L,god){
   const num=/^\d+ \/ \d+$/;
   check(num.test(L.hpTxt)&&num.test(L.xpTxt)&&L.gainMax>0,'מספרים בממשק: חיים '+L.hpTxt+', XP '+L.xpTxt+', הכי הרבה שנאסף ברצף: +'+(L.gainMax||0));
   check(/^\d+:\d\d$/.test(L.clock||'')&&/\d+\/\d+/.test(L.waveTag||''),'שעון ומונה גלים: השעון הגיע ל-'+L.clock+', המונה "'+(L.waveTag||'-')+'"');
-  check(L.wvMax===L.wvN&&L.wvHeal>=L.wvN-1&&L.elites>0,'הזירה בריצה: הגיע לגל '+(L.wvMax||0)+'/'+(L.wvN||'-')+', הפסקות עם ריפוי: '+(L.wvHeal||0)+' · גלים נגמרו ב: '+(L.wvEnds||'-')+' · רמה בתחילת גל: '+Object.entries(L.lvAt||{}).map(([w,l])=>w+':'+l).join(' ')+' · אויבי-על שהופלו: '+L.elites+' מתוך '+(L.supsN||0)+(L.eliteLeft?' (נשאר: '+L.eliteLeft+')':''));
+  check(L.wvMax===L.wvN&&L.wvHeal>=L.wvN-1&&L.elites>0,'הזירה בריצה: הגיע לגל '+(L.wvMax||0)+'/'+(L.wvN||'-')+', הפסקות עם ריפוי: '+(L.wvHeal||0)+' · גלים נגמרו ב: '+(L.wvEnds||'-')+(L.wvLate?' ('+L.wvLate+' בזמן שנגמר)':'')+(L.wvStuck?' · '+L.wvStuck:'')+' · רמה בתחילת גל: '+Object.entries(L.lvAt||{}).map(([w,l])=>w+':'+l).join(' ')+' · אויבי-על שהופלו: '+L.elites+' מתוך '+(L.supsN||0)+(L.eliteLeft?' (נשאר: '+L.eliteLeft+')':''));
   check(L.peak>=20,'גושים: עד '+L.peak+' אויבים בזירה יחד');
   check(/[KMB]!?$/.test(L.dmgMaxTxt||'')&&L.crits>0&&!L.notLtr,'מספרים גדולים: הכי גדול '+(L.dmgMaxTxt||'-')+', קריטיות: '+(L.crits||0)+(L.notLtr?', מספר שלא נכתב משמאל לימין: '+L.notLtr:''));
   check(L.boss!=null,'בוס: הופיע '+t(L.boss)+(L.bossName?' ('+L.bossName+')':''));
