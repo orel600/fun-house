@@ -2717,6 +2717,29 @@ function worldBot(m,L,god){
     'תחושת איסוף: '+(gat.err||('חורשות '+gat.grove+'% מהעצים עם שכן'+(gat.chips>0?', מכה מתיזה '+gat.chips+' חתיכות':', מכה בלי חתיכות!')+' ('+gat.perFrame+'/'+gat.cap+' בפריים)'+
     (gat.shrink?', סלע מתכווץ':', לא מתכווץ')+(gat.sway?', עץ מתנדנד':', בלי נדנוד')+(gat.foeFirst&&gat.node?', אויב קודם למקור':', עדיפות שגויה!')+
     (gat.fly>0&&gat.take>0&&gat.bag?', השלל עף ונאסף ('+gat.take+')':', השלל לא נאסף!')+(gat.fell>0?', עץ נופל':', לא נופל')+(gat.sprout&&gat.regrow?', נבט וצמיחה מחדש':', בלי צמיחה')+(gat.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
+  // מומחיות איסוף (gmastery.js): דרגה 1 = הקצב של היום, נקודות מכל מקור שנשבר, דרגה חדשה עם חגיגה, שלל נמשך מרחוק, מקור צמוד, מכה חזקה, נצנוץ,
+  // חלון הדמות, שמירה, ובזירה בלי שינוי. מזל משלה, כמו הבדיקה שלפניה
+  const gmr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),R0=Math.random,o={};let sd=777;
+    Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;
+    try{SAVE.gm={wood:0,stone:0,plant:0};enterWorld('home');enemies=[];S.mode='play';P.inv=99;const G=GMASTERY,st=G.stat,up0=st.up,sh=n=>wKind(n.kind).shape;
+      const trees=S.nd.list.filter(n=>!n.dead&&sh(n)==='tree'),t=trees.find(a=>trees.some(b=>b!==a&&Math.hypot(a.x-b.x,a.y-b.y)-a.r-b.r<=G.near.r));
+      const nb=trees.find(b=>b!==t&&Math.hypot(t.x-b.x,t.y-b.y)-t.r-b.r<=G.near.r);o.pair=!!(t&&nb);
+      t.hp=nb.hp=1e4;gHit(t,0,10);o.t1=gmTier('wood')===1&&t.hp===1e4&&nb.hp===1e4&&gmMagnet('wood')===1;
+      for(let i=0;i<G.at[1];i++)gmGain(t);o.t2=gmTier('wood')===2&&st.up===up0+1&&SAVE.gm.wood===G.at[1];
+      o.magnet=gmMagnet('wood')===G.magnet.k&&gmMagnet('stone')===1;
+      SAVE.gm.wood=G.at[2];gHit(t,0,10);o.t3=nb.hp===1e4-10&&t.hp===1e4;
+      SAVE.gm.wood=G.at[3];t.hp=nb.hp=1e4;gHit(t,0,10);o.t4=t.hp===1e4-10*(G.power.k-1)&&nb.hp===1e4-10*G.power.k;
+      SAVE.gm.wood=G.at[4];o.t5=gmTier('wood')===5&&gmGlint(t,2)===G.glint.col&&!gmGlint(t,1);
+      o.win=gStatPanel().includes('gmrow')&&gmHtml().includes(T('gm.wood')+': '+T('gm.lv',5));o.blank=saveBlank().gm.wood===0;
+      const wd=S.wd,g0=JSON.stringify(SAVE.gm),h0=t.hp;S.wd=null;
+      try{gmGain(t);gHit(t,0,10);o.arena=JSON.stringify(SAVE.gm)===g0&&t.hp===h0&&gmMagnet('wood')===1}finally{S.wd=wd}
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    finally{Math.random=R0}
+    enemies=[];SAVE=JSON.parse(bak);enterVillage();return o});
+  check(!gmr.err&&gmr.pair&&gmr.t1&&gmr.t2&&gmr.magnet&&gmr.t3&&gmr.t4&&gmr.t5&&gmr.win&&gmr.blank&&gmr.arena,
+    'מומחיות איסוף: '+(gmr.err||((gmr.t1?'דרגה 1 בקצב של היום':'דרגה 1 שונה!')+(gmr.t2?', עלייה לדרגה 2 עם חגיגה ושמירה':', בלי עלייה')+(gmr.magnet?', שלל נמשך מרחוק':', בלי משיכה')+
+    (gmr.t3?', מכה גם בעץ צמוד':gmr.pair?', בלי צמוד':', לא נמצאו עצים צמודים')+(gmr.t4?', מכה חזקה':', בלי מכה חזקה')+(gmr.t5?', נצנוץ זהב':', בלי נצנוץ')+(gmr.win?', בחלון הדמות':', לא בחלון הדמות')+
+    (gmr.blank?', בשמירה':', לא בשמירה')+(gmr.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
   // העלילה, פרק 5 (story.js, WORLD.regions.storm): השביל מהמדבר למגדלים סגור עד שפנס האש דולק, במגדלים גשם, ברקים ומגדלים שבורים שאי אפשר לעבור,
   // אויבים מחושמלים (חלשים לאדמה), ושומר הסערה מסמן עיגולי ברק שמתפוצצים אחרי שנייה: מי שנשאר נפגע, מי שזז לא
   const ch5=await page.evaluate(()=>{
