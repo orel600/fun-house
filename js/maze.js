@@ -63,7 +63,7 @@ function mazeRun(){
 }
 // ציור (render.js, בעולם המשחק): גוף כהה, קו עליון דק וצל רך מתחת. בלי תנועה ובלי חלקיקים
 function mazeDraw(ox,oy){
-  if(S.arena!=='gauntlet'||!S.wv||S.mode==='over')return;
+  if(S.arena!=='gauntlet'||!S.wv||S.mode==='over'||typeof maze3dOn==='function'&&maze3dOn())return;   // בתלת-ממד הקירות בסצנה (maze3d.js)
   const M=MAZE,a=mazeFade();if(a<=0.02)return;mazeWalls();
   ctx.save();
   for(const w of MZ.walls){

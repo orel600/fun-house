@@ -1419,6 +1419,7 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 .gsrows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .gsrows li{display:flex;align-items:center;gap:6px;font-size:13px;line-height:21px;border-bottom:1px solid #ffffff10;white-space:nowrap}
 .gsrows .gsi{width:18px;text-align:center;font-size:13px;flex:none}
+.gmrow b{flex:1;display:flex;justify-content:space-between;padding-inline-end:4px}.gmrow b i{font-style:normal;display:inline-flex;align-items:center;gap:2px}.gmrow .gmi{width:var(--ic-s);height:var(--ic-s);fill:currentColor}   /* מומחיות איסוף: שורה אחת בחלון הדמות (gmastery.js) */
 .gsrows .gsn{flex:1;min-width:0;color:var(--dim);font-weight:700}
 .gsrows b{font:800 14px var(--body);color:var(--chalk)}
 .gres{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}

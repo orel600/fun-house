@@ -118,6 +118,10 @@ function botStep({god,en}){
   L.peak=Math.max(L.peak||0,enemies.length);L.hordeMax=S.hordeMax||0;L.clock=document.getElementById('clock').textContent;
   // הזירה (arenas.js): עד איזה גל הגענו, כמה הפסקות עם ריפוי, והמונה למעלה
   if(S.wv){L.wvN=ARENAS.gauntlet.list.length;L.wvMax=Math.max(L.wvMax||0,S.wv.i+1);L.wvHeal=S.wv.healed;L.wvEnds=S.wv.log.map(x=>fmt(x.end)).join(' ');L.wvLate=S.wv.late||0;if(S.wv.phase==='fight'&&S.t-S.wv.start>60&&!L.wvStuck)L.wvStuck='גל '+(S.wv.i+1)+' אחרי 60 שניות: '+enemies.filter(e=>!e.dead&&e.wv===S.wv.i).map(e=>e.type+(e.champ?'*':'')+' '+Math.round(100*e.hp/e.max)+'% '+Math.round(Math.hypot(e.x-P.x,e.y-P.y))+(e.awake?'':' ישן')).join(', ')+' · נשק '+P.weapon;L.lvAt=L.lvAt||{};L.lvAt[S.wv.i+1]??=P.level;const tg=document.getElementById('waveTag');if(tg&&!tg.hidden&&tg.textContent)L.waveTag=tg.textContent}
+  // צילומים באמצע הגלים המיוחדים (QUINN, 8.11): קירות המבוך אחרי שצמחו (גלים 5-6), והטבעת בגל 8 כשהיא כבר סביבך
+  if(S.wv&&S.wv.phase==='fight'){
+    if(L.wvMaze==null&&!S.room&&typeof mazeOn==='function'&&mazeOn()&&mazeFade()>=MAZE.solidAt&&MZ.walls.some(w=>w.x+w.w>S.cam.x-W*0.45&&w.x<S.cam.x+W*0.45&&w.y+w.h>S.cam.y-H*0.45&&w.y<S.cam.y+H*0.45))L.wvMaze=at;   // קיר בתוך המסך
+    if(L.wvRing==null&&ARENAS.gauntlet.list[S.wv.i]&&ARENAS.gauntlet.list[S.wv.i].ring&&enemies.filter(e=>!e.dead&&e.wv!=null&&Math.hypot(e.x-P.x,e.y-P.y)<420).length>=6)L.wvRing=at}
   L.elites=S.run.elites;L.supsN=ARENAS.gauntlet.list.filter((x,i)=>x.sup&&i<(L.wvMax||0)).length;
   L.eliteLeft=enemies.filter(e=>e.elite).map(e=>e.type+' '+Math.round(100*e.hp/e.max)+'% במרחק '+Math.round(Math.hypot(e.x-P.x,e.y-P.y))).join(', ');
   // מספרים גדולים: הכי גדול שנראה, כמה קריטיות, ומספר נזק שלא נכתב משמאל לימין
@@ -2068,6 +2072,15 @@ function worldBot(m,L,god){
     }catch(err){o.err=String(err&&err.stack||err)}
     window.attack=at;enemies=[];document.getElementById('banner').textContent='';SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(!wmx.err&&wmx.late===1&&wmx.at!=null&&wmx.alive&&wmx.next,'זמן לגל בזירה: '+(wmx.err||'אויב שלא נופל, הגל נגמר אחרי '+wmx.at+' שניות'+(wmx.alive?' והוא נשאר':'')+', '+(wmx.next?'הגל הבא התחיל':'הגל הבא לא התחיל!')+' · "'+wmx.ban+'"'));
+  // קירות הזירה בתלת-ממד (maze3d.js): בגלים 5-6 קופסאות בסצנה (לא בקנבס, שמצייר מעל הגיבור), ומחוץ לזירה נעלמות. בדו-ממד: הקנבס
+  const mz3=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={on:R3D.on&&R3D.ready};
+    try{startRun();S.mode='play';waveStart(4);S.wv.q=[];enemies=[];S.t=Math.floor(S.t/MAZE.shiftSecs)*MAZE.shiftSecs+10;MZ.on=true;MZ.t0=S.t-5;
+      if(o.on){maze3d();o.n=MZ3.m.count;o.vis=MZ3.m.visible&&MZ3.top.visible;o.op=MZ3.m.material.opacity;o.canvas=!maze3dOn()}
+      else{o.draw=(()=>{try{mazeDraw(0,0);return true}catch(err){return String(err)}})()}
+      reset();if(o.on){maze3d();o.off=!MZ3.m.visible}   // maze3d ישירות: בבדיקה render3d מדלג על רוב הפריימים (R3D.drawEvery)
+    }catch(err){o.err=String(err&&err.stack||err)}
+    enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!mz3.err&&(mz3.on?mz3.n>0&&mz3.vis&&mz3.op>0.9&&!mz3.canvas&&mz3.off:mz3.draw===true),'קירות הזירה בתלת-ממד: '+(mz3.err||(mz3.on?mz3.n+' קירות בסצנה'+(mz3.vis?'':' (מוסתרים!)')+', שקיפות '+(mz3.op||0).toFixed(2)+(mz3.canvas?', גם בקנבס!':', לא בקנבס')+(mz3.off?', נעלמים מחוץ לזירה':', נשארים מחוץ לזירה!'):'בדו-ממד: הקנבס מצייר ('+mz3.draw+')')));
   // אויבים ישנים (arenaZz ב-arenas.js): רחוק מ-wake.r הולכים לאט ומכשף לא יורה. מתעוררים מקרבה, ממכה, מסוף הגל ומהבוס. קפיצה של arena-load לא מעירה, והישנים נספרים בגל
   const zz=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},at=window.attack,r0=ARENAS.gauntlet.wake.r,lc0=ARENAS.gauntlet.lastCall;
     try{window.attack=()=>{};startRun();const A=ARENAS.gauntlet,Z=A.wake,R=Z.r*Math.max(W,H),dt=1/30;waveStart(0);const w=S.wv;w.q=[];enemies=[];eb.length=0;P.x=P.y=0;
@@ -2116,7 +2129,7 @@ function worldBot(m,L,god){
     // התקדמות ל-stderr (לא נכנס לדוח): אם הבדיקה נתקעת ב-GitHub, רואים איפה
     if(guard%300===1)console.error('…',await page.evaluate(()=>[Math.round(S.t),S.mode,S.vil?'village':S.wd?'world':S.room?'room':'arena',enemies.length,S.nd?S.nd.list.length:0].join(' ')));
     L=await page.evaluate(botStep,{god:CFG.god,en:CFG.lang==='en'});
-    for(const k of ['welOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','fuseOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','fishDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='welOpen'?'welcome':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='fishDone'?'fishing':k==='wDeathTxt'?'world-death':k)}
+    for(const k of ['welOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','fuseOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','fishDone','wArena','rgOpen','door','room','wanted','wvMaze','wvRing','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='welOpen'?'welcome':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='fishDone'?'fishing':k==='wDeathTxt'?'world-death':k==='wvMaze'?'arena-maze':k==='wvRing'?'arena-ring':k)}
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
@@ -2718,6 +2731,29 @@ function worldBot(m,L,god){
     'תחושת איסוף: '+(gat.err||('חורשות '+gat.grove+'% מהעצים עם שכן'+(gat.chips>0?', מכה מתיזה '+gat.chips+' חתיכות':', מכה בלי חתיכות!')+' ('+gat.perFrame+'/'+gat.cap+' בפריים)'+
     (gat.shrink?', סלע מתכווץ':', לא מתכווץ')+(gat.sway?', עץ מתנדנד':', בלי נדנוד')+(gat.foeFirst&&gat.node?', אויב קודם למקור':', עדיפות שגויה!')+
     (gat.fly>0&&gat.take>0&&gat.bag?', השלל עף ונאסף ('+gat.take+')':', השלל לא נאסף!')+(gat.fell>0?', עץ נופל':', לא נופל')+(gat.sprout&&gat.regrow?', נבט וצמיחה מחדש':', בלי צמיחה')+(gat.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
+  // מומחיות איסוף (gmastery.js): דרגה 1 = הקצב של היום, נקודות מכל מקור שנשבר, דרגה חדשה עם חגיגה, שלל נמשך מרחוק, מקור צמוד, מכה חזקה, נצנוץ,
+  // חלון הדמות, שמירה, ובזירה בלי שינוי. מזל משלה, כמו הבדיקה שלפניה
+  const gmr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),R0=Math.random,o={};let sd=777;
+    Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;
+    try{SAVE.gm={wood:0,stone:0,plant:0};enterWorld('home');enemies=[];S.mode='play';P.inv=99;const G=GMASTERY,st=G.stat,up0=st.up,sh=n=>wKind(n.kind).shape;
+      const trees=S.nd.list.filter(n=>!n.dead&&sh(n)==='tree'),t=trees.find(a=>trees.some(b=>b!==a&&Math.hypot(a.x-b.x,a.y-b.y)-a.r-b.r<=G.near.r));
+      const nb=trees.find(b=>b!==t&&Math.hypot(t.x-b.x,t.y-b.y)-t.r-b.r<=G.near.r);o.pair=!!(t&&nb);
+      t.hp=nb.hp=1e4;gHit(t,0,10);o.t1=gmTier('wood')===1&&t.hp===1e4&&nb.hp===1e4&&gmMagnet('wood')===1;
+      for(let i=0;i<G.at[1];i++)gmGain(t);o.t2=gmTier('wood')===2&&st.up===up0+1&&SAVE.gm.wood===G.at[1];
+      o.magnet=gmMagnet('wood')===G.magnet.k&&gmMagnet('stone')===1;
+      SAVE.gm.wood=G.at[2];gHit(t,0,10);o.t3=nb.hp===1e4-10&&t.hp===1e4;
+      SAVE.gm.wood=G.at[3];t.hp=nb.hp=1e4;gHit(t,0,10);o.t4=t.hp===1e4-10*(G.power.k-1)&&nb.hp===1e4-10*G.power.k;
+      SAVE.gm.wood=G.at[4];o.t5=gmTier('wood')===5&&gmGlint(t,2)===G.glint.col&&!gmGlint(t,1);
+      o.win=gStatPanel().includes('gmrow')&&gmHtml().includes(T('gm.wood')+': '+T('gm.lv',5));o.blank=saveBlank().gm.wood===0;
+      const wd=S.wd,g0=JSON.stringify(SAVE.gm),h0=t.hp;S.wd=null;
+      try{gmGain(t);gHit(t,0,10);o.arena=JSON.stringify(SAVE.gm)===g0&&t.hp===h0&&gmMagnet('wood')===1}finally{S.wd=wd}
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    finally{Math.random=R0}
+    enemies=[];SAVE=JSON.parse(bak);enterVillage();return o});
+  check(!gmr.err&&gmr.pair&&gmr.t1&&gmr.t2&&gmr.magnet&&gmr.t3&&gmr.t4&&gmr.t5&&gmr.win&&gmr.blank&&gmr.arena,
+    'מומחיות איסוף: '+(gmr.err||((gmr.t1?'דרגה 1 בקצב של היום':'דרגה 1 שונה!')+(gmr.t2?', עלייה לדרגה 2 עם חגיגה ושמירה':', בלי עלייה')+(gmr.magnet?', שלל נמשך מרחוק':', בלי משיכה')+
+    (gmr.t3?', מכה גם בעץ צמוד':gmr.pair?', בלי צמוד':', לא נמצאו עצים צמודים')+(gmr.t4?', מכה חזקה':', בלי מכה חזקה')+(gmr.t5?', נצנוץ זהב':', בלי נצנוץ')+(gmr.win?', בחלון הדמות':', לא בחלון הדמות')+
+    (gmr.blank?', בשמירה':', לא בשמירה')+(gmr.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
   // העלילה, פרק 5 (story.js, WORLD.regions.storm): השביל מהמדבר למגדלים סגור עד שפנס האש דולק, במגדלים גשם, ברקים ומגדלים שבורים שאי אפשר לעבור,
   // אויבים מחושמלים (חלשים לאדמה), ושומר הסערה מסמן עיגולי ברק שמתפוצצים אחרי שנייה: מי שנשאר נפגע, מי שזז לא
   const ch5=await page.evaluate(()=>{
