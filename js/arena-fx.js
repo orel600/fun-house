@@ -6,7 +6,7 @@
        זעם (יריות כשבורחים, הכי מסוכן): tg_skull מעל הבוס כל עוד הוא זועם, ואין יריה לפני שהגולגולת הופיעה minWarn.
    - פגיעות (juiceHit): hit_<סוג נזק>, hit_heavy למכה כבדה, dmg_crit לקריטי. מכה מהנשק או מסקיל בלבד, עם תקרה לפריים, ובהמון רק קריטי ואויב-על.
    - הריגה (kill): ko למפלצות (עם תקרה), ko_boss לבוס.  ניצחון (runWon, gameOver): זיקוקים וקונפטי בזירה, ובמסך הניצחון.
-   - סקילים (skillUse): אפקט הטלה לכל סקיל, בצבע סוג הנזק שלו. טבעת זוהר (glow_ally) מתחת לגיבור כשיש הרבה אויבים קרוב.
+   - סקילים (skillUse): האנימציה המלאה ב-skill-anim.js (skAnimCast, skAnimLand, skAnimHit). ARFX.cast כאן הוא הגיבוי כשהיא כבויה. טבעת זוהר (glow_ally) מתחת לגיבור כשיש הרבה אויבים קרוב.
    - כפתורים: באייקונים "חדש" (ברירת המחדל) הצלליות של gicons.js כמו בעולם (skillsHud). ב"קלאסי" אייקון מצויר (icons/ui/skills) במקום סמל ה-SVG, וקיצורי מקלדת E, R, F עם רמז קטן (רק כשיש מקלדת).
      Q ו-W תפוסים (Q מחליף נשק, W הולך למעלה), ולכן E, R, F. גם 1, 2, 3 ממשיכים לעבוד (skills.js).
    "פחות אפקטים": בלי פגיעות, הריגות, הטלות וזוהר. האזהרות והניצחון נשארים, כי הן חלק מהמשחק. הספירה לבוט ב-ARFX.stat */
@@ -105,6 +105,7 @@ function arfxFrame(){if(ARFXS.f===S.t)return;ARFXS.f=S.t;ARFXS.n=0}
 {const old=juiceHit;juiceHit=function(e,d,m,crit,t,ang){
   const r=old.apply(this,arguments);
   if(!arfxOn()||fxLess()||e.node||typeof AJ==='undefined'||!AJ.src||AJ.src.ch||!JUICE.arena.src[AJ.src.w])return r;
+  if(AJ.src.w==='skill'&&typeof skAnimHit==='function'&&skAnimHit(e,d,t))return r;   // פגיעה מסקיל: פיצוץ ומצב מהגיליונות ב-skill-anim.js
   const H=ARFX.hit,big=ajBig(e);arfxFrame();ajFrame();
   if(ARFXS.n>=H.perFrame||(AJ.seen>H.crowd&&!crit&&!big))return r;
   ARFXS.n++;
@@ -160,6 +161,7 @@ function arfxCast(id,x,y,o={}){
 {const old=skillUse;skillUse=function(id){
   const r=old.apply(this,arguments);
   if(!r||!arfxOn())return r;
+  if(typeof skAnimCast==='function'&&skAnimCast(id))return r;   // האנימציה המלאה (skill-anim.js). מה שלמטה הוא הגיבוי כשהיא כבויה
   if(id==='bloom'){const p=S.skm&&S.skm.pools[S.skm.pools.length-1];if(p)arfxCast(id,p.x,p.y,{loop:true,dur:SKMORE.list.bloom.t,under:true})}
   else if(id==='zap'||id==='lance')arfxCast(id,P.x+Math.cos(P.aim)*24,P.y-10+Math.sin(P.aim)*24);
   else if(id!=='comet')arfxCast(id,P.x,P.y,{under:true});
@@ -167,7 +169,7 @@ function arfxCast(id,x,y,o={}){
 {const old=skillsUpdate;skillsUpdate=function(dt){
   const m=S.skm,pend=m&&skArena()?m.pend.slice():null;
   const r=old.apply(this,arguments);
-  if(pend)for(const p of pend)if(p.done)arfxCast('comet',p.x,p.y);   // השביט נפל
+  if(pend)for(const p of pend)if(p.done&&!(typeof skAnimLand==='function'&&skAnimLand(p)))arfxCast('comet',p.x,p.y);   // השביט נפל
   if(arfxOn())arfxGlow(dt);
   return r}}
 
