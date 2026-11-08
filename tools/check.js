@@ -1328,6 +1328,29 @@ function worldBot(m,L,god){
     SAVE.hero.skin=sk;SAVE.pet.kind=pk;return r});
   check(!hpp.err&&hpp.nul==='parosh'&&hpp.def==='parosh'&&hpp.nir===hpp.d&&hpp.none===null&&hpp.keep==='parosh'&&hpp.cloud,
     'הפרעוש של אוראל: '+(hpp.err||'סקין אוראל עם חיה ריקה: '+hpp.nul+', עם פיוחו: '+hpp.def+' · סקין ניר: '+hpp.nir+' · בלי סקין: '+hpp.none+' · בענן: '+(hpp.cloud?'✓':'✗')));
+  // כלי פיתוח: ?level=30 (rankDevLevel ב-ranks.js) מעלה לרמה 30 עם 29 נקודות סטטים פנויות, בלי פרמטר כלום לא משתנה, פעם אחת בטעינה, ועד המקסימום
+  const dlv=await page.evaluate(async()=>{const bak=JSON.stringify(SAVE),r={},lpu=window.lpLevelUp,rc=window.rankCall,cf=CLOUD.fake,cs=CLOUD.session,ch=CLOUD.hold,lsS=localStorage.getItem(CLOUD.lsKey);
+    try{window.lpLevelUp=()=>{};window.rankCall=()=>false;CLOUD.session=null;   // בלי חגיגות וחלונות באמצע הבדיקה, ובלי ענן עד החלק שלו
+      const fresh=()=>{SAVE.hero.xp=0;SAVE.hero.level=1;SAVE.hero.xpv=2;SAVE.bag={};rankDevLevel.done=false};
+      fresh();const j0=JSON.stringify(SAVE);r.none=!rankDevLevel('')&&JSON.stringify(SAVE)===j0;
+      fresh();r.set=rankDevLevel('?level=30')&&SAVE.hero.level===30&&SAVE.hero.xp===rankXpAt(30)&&stFree()===29-stSpent();
+      const t=rankDevRes(30);r.coins=t.coins;r.res=Object.keys(t).length>5&&Object.keys(t).every(k=>RES.list[k]&&SAVE.bag[k]===t[k])&&t.coins>1000&&!t.horn;   // רק משאבים, בלי חלקי בוס ברמה 30
+      r.once=!rankDevLevel('?level=40')&&SAVE.hero.level===30;
+      const j1=JSON.stringify(SAVE.bag);rankDevLevel.done=false;r.stack=!rankDevLevel('?level=30')&&JSON.stringify(SAVE.bag)===j1;   // טעינה חוזרת: לא מוסיף עוד
+      fresh();SAVE.bag.wood=99999;rankDevLevel('?level=30');r.keep=SAVE.bag.wood===99999;   // יש יותר מהיעד: לא מוריד
+      fresh();rankDevLevel('?skin=orel&level=999');r.max=SAVE.hero.level===RANKS.xp.max;
+      fresh();SAVE.hero.xp=rankXpAt(50);SAVE.hero.level=50;rankDevLevel('?level=30');r.down=SAVE.hero.level===50;   // רק מעלה
+      // ענן (שרת מדומה): מחובר, אז נדחף מיד. ומכשיר אחר עם שמירה ישנה יותר לוקח את החדשה ולא דורס אותה
+      CLOUD.fake=cloudFakeServer();cloudHeld(false);try{localStorage.removeItem(CLOUD.lsKey)}catch(e){}
+      fresh();SAVE.hero.xp=rankXpAt(15);SAVE.hero.level=15;saveNow();SAVE.ts-=60000;await cloudSync();const old=JSON.parse(JSON.stringify(SAVE));   // ts ישן בדקה: בריצה מהירה שתי השמירות יוצאות באותה אלפית
+      rankDevLevel.done=false;rankDevLevel('?level=30');const ts1=SAVE.ts,pu=rankDevLevel.push;await pu;const row=CLOUD.fake.rows.u1;   // המשחק רץ בין ה-await, ויכול לשמור שוב: משווים ל-ts של הרגע הזה
+      r.cloud=!!pu&&!!row&&row.data.hero.level===30&&(row.data.bag.coins||0)>=t.coins&&row.data.ts>=ts1&&ts1>old.ts;if(!r.cloud)r.cdbg=[!!pu,!!row,row&&row.data.hero.level,row&&row.data.bag.coins,row&&row.data.ts-ts1,ts1-old.ts,cloudHeld(),CLOUD.status].join('/');
+      SAVE=old;const rr=await cloudSync();r.other=CLOUD.fake.rows.u1.data.hero.level===30&&(rr==='took'?SAVE.hero.level===30:rr==='newer'&&cloudHeld());   // בפתיחה לוקח אותה, ובאמצע משחק מחכה לבחירה, ובשני המקרים לא דורס
+    }catch(err){r.err=String(err&&err.stack||err)}
+    window.lpLevelUp=lpu;window.rankCall=rc;rankDevLevel.done=true;CLOUD.fake=cf;CLOUD.session=cs;cloudHeld(!!ch);CLOUD.dirty=false;
+    try{lsS?localStorage.setItem(CLOUD.lsKey,lsS):localStorage.removeItem(CLOUD.lsKey)}catch(e){}SAVE=JSON.parse(bak);SAVE_STORE.write(SAVE,true);return r});
+  {const L=[[dlv.set,'רמה 30 עם 29 נקודות','לא עלה ל-30'],[dlv.res,'משאבים של רמה 30 ('+dlv.coins+' מטבעות)','משאבים לא לפי הטבלאות'],[dlv.none,'בלי פרמטר בלי שינוי','שינה בלי פרמטר!'],[dlv.once,'פעם אחת','חוזר'],[dlv.stack,'טעינה חוזרת לא מוסיפה','המשאבים נערמים'],[dlv.keep,'לא מוריד משאבים','הוריד משאבים!'],[dlv.max,'עד המקסימום','עבר את המקסימום'],[dlv.down,'רק מעלה','הוריד רמה!'],[dlv.cloud,'נדחף לענן מיד','לא הגיע לענן ('+dlv.cdbg+')'],[dlv.other,'מכשיר אחר לוקח את החדשה','ענן ישן דרס']];
+   check(!dlv.err&&L.every(x=>x[0]),'?level=30 (כלי פיתוח): '+(dlv.err||L.map(x=>x[0]?x[1]:x[2]).join(', ')))}
   const hsk=await page.evaluate(()=>{const sk=SAVE.hero.skin,pk=SAVE.pet.kind,r={};
     try{soundOpen();const lk=()=>R3D.on?heroLook().model:heroSkin();SAVE.hero.skin=null;const base=lk();
       document.querySelector('#ovSound [data-skin="nir"]').click();

@@ -81,3 +81,34 @@ function rankReset(){rankFix();const R=RANKS.list[rankId()];if(R)gApply(R.bonus,
 
 // בממשק: הדרגה הנוכחית, למשל "⚔️ אביר"
 const rankLabel=()=>{const id=rankId();return id?RANKS.list[id].icon+' '+rankName(id):''};
+
+/* כלי פיתוח (אוראל, 8.11: "תעשה אותי רמה 30"): ?level=30 בכתובת מעלה את רמת הדמות לשם, פעם אחת בטעינה, כמו ?hero=orel.
+   ה-XP נקבע בדיוק ל-XP של תחילת הרמה (rankXpAt), ו-rankSync מעדכן את הרמה, ולכן נקודות הסטטים (stFree, stats.js) ושאר מה שנגזר מהרמה עקביים.
+   רק מעלה (הורדה הייתה משאירה רמה גבוהה מה-XP), עד RANKS.xp.max. לא נוגע בדרגה, בחפצים, בקווסטים או בכפר. search: לבדיקה */
+/* המשאבים של רמה כזו (אוראל: "תוסיף גם משאבים לרמה 30"), מהטבלאות של המשחק ולא ערימה אינסופית:
+   כל המבנים עד רמה 1+lv/bldPer (ברמה 30: עד 5), כל מתכון ציוד אחד בשכבה lv/gearPer (ברמה 30: כסף),
+   ושדרוגי סקילים אצל הכוהנת עד lv/wsk.per (ברמה 30: +3) לשלושה סקילים. רק מפתחות שהם משאבים (RES.list), אף פעם לא חפצים */
+const DEVLV={bldPer:10,gearPer:15,wsk:{per:10,n:3}};
+function rankDevRes(lv){
+  const t={},add=c=>{for(const k in c)if(RES.list[k])t[k]=(t[k]||0)+c[k]};
+  const T=1+Math.floor(lv/DEVLV.bldPer);for(const k in VILLAGE.b){const c=VILLAGE.b[k].cost;if(c)for(let i=1;i<=T&&i<c.length;i++)if(c[i])add(c[i])}
+  const g=Math.min(GEAR.tiers.length-1,Math.floor(lv/DEVLV.gearPer));for(const id in GEAR.recipes)if(GEAR.items[id]&&GEAR.items[id].tier===g)add(GEAR.recipes[id]);
+  if(typeof WSKLVL!=='undefined'){const L=Math.min(WSKLVL.max,Math.floor(lv/DEVLV.wsk.per));
+    for(let i=0;i<L;i++){add({coins:WSKLVL.coins[i]*DEVLV.wsk.n});const m={};for(const e in WSKLVL.mat)m[WSKLVL.mat[e]]=WSKLVL.matN[i];add(m)}}
+  return t;
+}
+/* רמה ומשאבים, פעם אחת בטעינה. הרמה רק עולה. כל משאב = הגדול מבין מה שיש לו לבין היעד, ולכן טעינה חוזרת לא מוסיפה עוד.
+   התרמיל בלי תקרה (התקרה היא רק של המחסן, stash.js, שלא נוגעים בו). אחרי השינוי: saveNow נותן SAVE.ts חדש,
+   ולכן שמירה ישנה בענן לא דורסת אותו (cloudPull לוקח רק ts גדול יותר), ואם הוא מחובר דוחפים לענן מיד (cloudSync, הדרך הרגילה) */
+function rankDevLevel(search=location.search){
+  const q=/[?&]level=(\d+)/.exec(search);if(!q||rankDevLevel.done||!SAVE||!SAVE.hero)return false;rankDevLevel.done=true;
+  const lv=Math.max(1,Math.min(RANKS.xp.max,+q[1]));let ch=false;
+  if(lv>(SAVE.hero.level||1)){SAVE.hero.xp=rankXpAt(lv);rankSync();ch=true}
+  const t=rankDevRes(lv);for(const k in t){const c=SAVE.bag[k]||0;if(t[k]>c){bagAdd(k,t[k]-c);ch=true}}
+  if(!ch)return false;
+  if(typeof saveNow==='function')saveNow();
+  if(typeof CLOUD!=='undefined'&&CLOUD.session&&typeof cloudSync==='function')rankDevLevel.push=cloudSync(true);
+  return true;
+}
+// מחכים שהגיבור באמת בכפר או בעולם: עלייה ברמה קוראת לספר הסקילים ולמסלול הרמות (levelpath.js, wskbook.js), שצריכים את הגיבור והנשק
+if(/[?&]level=\d/.test(location.search)){let n=0;(function rdlWait(){if(typeof P!=='undefined'&&P&&S&&(S.vil||S.wd)&&SAVE.hero.start)rankDevLevel();else if(++n<240)setTimeout(rdlWait,500)})()}
