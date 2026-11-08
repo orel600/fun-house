@@ -20,14 +20,14 @@ const ARDG={
   scorch:{max:6,life:4,fade:1,a:0.55,shock:120,charge:70,mine:50},   // כמה בבת אחת, כמה שניות, דעיכה בסוף, שקיפות, וגודל לכל סוג
   stat:{fills:0,ticks:0,flash:0,scorch:0,hitP:{}}   // לבוט: hitP = המילוי ברגע הפגיעה לכל סוג
 };
-const ARDGS={b:new Map(),sc:[],mn:[],f:-1,img:null};
+const ARDGS={b:new Map(),sc:[],mn:[],fl:[],f:-1,img:null};
 const ardgOn=()=>ARDG.on&&typeof skArena==='function'&&skArena()&&!S.mb&&S.mode==='play';
 
 /* ---- מעקב: כל פריים אחרי bossUpdate ---- */
 // st: {k,tl,ext,ph,o,p,tk,a}. ph: 'tele' (האזהרה רצה), 'after' (המתקפה התחילה וממתינה לפגיעה: הסתערות, גל הדף)
 // הפגיעה: hitP = המילוי בפריים האחרון לפניה (לבוט: קרוב ל-1 עד פריים אחד), ואז מלא לגמרי ל-hold שניות ונמוג
 function ardgHit(b,st){
-  const s=ARDG.stat;s.hitP[st.k]=st.p;st.p=1;st.ph='done';st.d0=S.t;b.ardgFl=S.t;s.flash++;
+  const s=ARDG.stat;s.hitP[st.k]=st.p;st.p=1;st.ph='done';st.d0=S.t;b.ardgFl=S.t;s.flash++;if(!ARDGS.fl.includes(b))ARDGS.fl.push(b);
   if(st.k==='shock')ardgScorch(b.x,b.y,ARDG.scorch.shock);
   if(st.k==='charge')ardgScorch(b.x,b.y,ARDG.scorch.charge);
 }
@@ -82,42 +82,52 @@ function ardgScorchImg(){
   g.stroke();return ARDGS.img=c;
 }
 
-/* ---- ציור ---- */
-function ardgShape(b,st){
-  const S_=ARDG.shape,p=Math.min(1,st.p),k=st.k;
-  const circ=(x,y,R)=>{ctx.beginPath();ctx.arc(x,y,R,0,7)};
-  const both=(path,fillPath)=>{ctx.globalAlpha=ARDG.fill*fade;fillPath();ctx.fill();ctx.globalAlpha=(ARDG.lineA+(1-ARDG.lineA)*tk)*fade;ctx.lineWidth=ARDG.line+ARDG.tickW*tk;path();ctx.stroke()};
-  const tk=Math.max(0,1-(S.t-st.tk)/ARDG.tickT),fade=st.ph==='done'?1-(S.t-st.d0)/ARDG.hold:1;
-  if(k==='aimed'){const C=S_.cone,a=st.a;
-    both(()=>{ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.arc(b.x,b.y,C.len,a-C.half,a+C.half);ctx.closePath()},
-         ()=>{ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.arc(b.x,b.y,C.len*p,a-C.half,a+C.half);ctx.closePath()})}
-  else if(k==='charge'){const L=S_.charge.len+b.r,w=b.r,a=st.a;ctx.save();ctx.translate(b.x,b.y);ctx.rotate(a);
-    both(()=>{ctx.beginPath();ctx.rect(0,-w,L,2*w)},()=>{ctx.beginPath();ctx.rect(0,-w,L*p,2*w)});ctx.restore()}
-  else if(k==='shields'||k==='wisps'){const n=2+b.phase;for(let i=0;i<n;i++){const a=i/n*Math.PI*2,x=b.x+Math.cos(a)*60,y=b.y+Math.sin(a)*60;both(()=>circ(x,y,S_.spawn),()=>circ(x,y,S_.spawn*p))}}
-  else{const R=k==='shock'?S_.shock:(b.r+(S_[k]||S_.ring));both(()=>circ(b.x,b.y,R),()=>circ(b.x,b.y,R*p))}
+/* ---- ציור (בכל פריים: בלי closures ובלי הקצאות, ובלי צורה שמחוץ למסך. QUINN, #536) ---- */
+const ardgCalm=()=>typeof calmOn==='function'?calmOn():RM;
+// הנתיב של הצורה בקנה מידה s (1 = הקו החיצוני, p = המילוי)
+function ardgPath(b,st,s){
+  const S_=ARDG.shape,k=st.k;ctx.beginPath();
+  if(k==='aimed'){const C=S_.cone;ctx.moveTo(b.x,b.y);ctx.arc(b.x,b.y,C.len*s,st.a-C.half,st.a+C.half);ctx.closePath()}
+  else if(k==='charge'){const L=(S_.charge.len+b.r)*s,w=b.r,ux=Math.cos(st.a),uy=Math.sin(st.a);
+    ctx.moveTo(b.x-uy*w,b.y+ux*w);ctx.lineTo(b.x+ux*L-uy*w,b.y+uy*L+ux*w);ctx.lineTo(b.x+ux*L+uy*w,b.y+uy*L-ux*w);ctx.lineTo(b.x+uy*w,b.y-ux*w);ctx.closePath()}
+  else if(k==='shields'||k==='wisps'){const n=2+b.phase,R=S_.spawn*s;for(let i=0;i<n;i++){const a=i/n*Math.PI*2,x=b.x+Math.cos(a)*60,y=b.y+Math.sin(a)*60;ctx.moveTo(x+R,y);ctx.arc(x,y,R,0,7)}}
+  else ctx.arc(b.x,b.y,ardgR(b,k)*s,0,7);
+}
+const ardgR=(b,k)=>{const S_=ARDG.shape;return k==='shock'?S_.shock:k==='aimed'?S_.cone.len:k==='charge'?S_.charge.len+b.r:k==='shields'||k==='wisps'?90:b.r+(S_[k]||S_.ring)};
+function ardgShape(st,b){
+  if(b.dead)return;const R=ardgR(b,st.k);
+  if(Math.abs(b.x-S.cam.x)>W/2+R||Math.abs(b.y-S.cam.y)>H/2+R)return;   // מחוץ למסך
+  const tk=ardgCalm()?0:Math.max(0,1-(S.t-st.tk)/ARDG.tickT),fade=st.ph==='done'?1-(S.t-st.d0)/ARDG.hold:1;   // הפחתת תנועה: בלי הבהוב והתעבות
+  ctx.globalAlpha=ARDG.fill*fade;ardgPath(b,st,Math.min(1,st.p));ctx.fill();
+  ctx.globalAlpha=(ARDG.lineA+(1-ARDG.lineA)*tk)*fade;ctx.lineWidth=ARDG.line+ARDG.tickW*tk;ardgPath(b,st,1);ctx.stroke();
 }
 // מתחת לדמויות: חריכה, ואז המילוי
 function ardgDrawUnder(){
   const L=ARDGS.sc,C=ARDG.scorch;let live=false;
-  if(L.length){const im=ardgScorchImg();
-    for(const s of L){const age=S.t-s.t;if(age<0||age>=C.life)continue;live=true;
+  const r3=typeof ardg3dOn==='function'&&ardg3dOn();   // בתלת-ממד המילוי והחריכה על הרצפה בסצנה (arena-danger3d.js), ולא על הקנבס שמעל הדמויות
+  if(L.length&&!r3){const im=ardgScorchImg();
+    for(let i=0;i<L.length;i++){const s=L[i],age=S.t-s.t;if(age<0||age>=C.life)continue;live=true;
       ctx.globalAlpha=C.a*Math.min(1,(C.life-age)/C.fade);ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.rot);ctx.drawImage(im,-s.r,-s.r,2*s.r,2*s.r);ctx.restore()}
     if(!live)L.length=0}
-  if(!ardgOn())return void(ctx.globalAlpha=1);
+  if(r3)for(let i=0;i<L.length;i++){if(S.t-L[i].t<C.life){live=true;break}}
+  if(r3&&!live)L.length=0;
+  if(!ardgOn()||r3)return void(ctx.globalAlpha=1);
+  if(!ARDGS.b.size&&!mines.length)return void(ctx.globalAlpha=1);
   ctx.save();ctx.fillStyle=ctx.strokeStyle=ARDG.col;
-  for(const [b,st] of ARDGS.b)if(!b.dead)ardgShape(b,st);
-  if(mines.length){const R=ARDG.shape.mine;for(const m of mines){const p=1-Math.max(0,m.t)/(m.ardgT0||1.3);
-    ctx.globalAlpha=ARDG.fill;ctx.beginPath();ctx.arc(m.x,m.y,R*Math.min(1,p),0,7);ctx.fill()}}
+  ARDGS.b.forEach(ardgShape);
+  if(mines.length){const R=ARDG.shape.mine;ctx.globalAlpha=ARDG.fill;ctx.beginPath();
+    for(let i=0;i<mines.length;i++){const m=mines[i],r=R*Math.min(1,1-Math.max(0,m.t)/(m.ardgT0||1.3));ctx.moveTo(m.x+r,m.y);ctx.arc(m.x,m.y,r,0,7)}ctx.fill()}   // כל המוקשים בנתיב אחד
   ctx.restore();ctx.globalAlpha=1;
 }
-// מעל הדמויות: הבזק הבוס
+// מעל הדמויות: הבזק הבוס (רק הבוסים שהבזיקו עכשיו, ARDGS.fl, ולא כל האויבים). "פחות אפקטים" והפחתת תנועה: בלי
 function ardgDrawOver(){
-  if(!ardgOn()||(typeof fxLess==='function'&&fxLess()))return;
-  const F=ARDG.flash;
-  for(const b of enemies){if(!b.isBoss||b.dead||b.ardgFl==null)continue;const age=S.t-b.ardgFl;if(age<0||age>=F.t)continue;
+  const L=ARDGS.fl;if(!L.length)return;
+  const F=ARDG.flash,off=!ardgOn()||(typeof fxLess==='function'&&fxLess())||ardgCalm();let j=0;
+  for(let i=0;i<L.length;i++){const b=L[i],age=S.t-b.ardgFl;if(b.dead||age<0||age>=F.t)continue;L[j++]=b;if(off)continue;
     const k=1-age/F.t;ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=F.a*k;
     ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(b.x,b.y,b.r*(1+0.2*(1-k)),0,7);ctx.fill();
     ctx.globalAlpha=F.a*k*0.6;ctx.fillStyle=ARDG.col;ctx.beginPath();ctx.arc(b.x,b.y,b.r*F.k,0,7);ctx.fill();ctx.restore()}
+  L.length=j;
 }
 (function(){
   if(typeof drawDrops==='function'){const o=drawDrops;drawDrops=function(){if(typeof skArena==='function'&&skArena()&&!S.mb)ardgDrawUnder();return o.apply(this,arguments)}}

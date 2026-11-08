@@ -2130,11 +2130,21 @@ function worldBot(m,L,god){
       o.ticks=ARDG.stat.ticks-n0.ticks;o.flash=ARDG.stat.flash-n0.flash;o.sc=ARDGS.sc.length;o.scN=ARDG.stat.scorch-n0.scorch;
       SAVE.fxLess=true;ARDGS.sc.length=0;run('shock',2.5);o.less=ARDGS.sc.length===0;
       o.col=ARDG.col==='#FF3DD8'&&ATG.fallback.col===ARDG.col;
+      // reduced motion: no flash and no tick thickening; the fill and outline stay. Measured on the drawing itself ('lighter' fills, line width)
+      SAVE.fxLess=false;const calm0=SAVE.calm;SAVE.calm=true;b.patT=99;b.arTele=null;doPattern(b,'ring');const tl=b.arTele;tl.t=tl.max*0.5;update(1/60);const st=ARDGS.b.get(b);st.tk=S.t;
+      let lighter=0,maxW=0;const fl=ctx.fill,sk=ctx.stroke;ctx.fill=function(){if(ctx.globalCompositeOperation==='lighter')lighter++;return fl.apply(this,arguments)};ctx.stroke=function(){maxW=Math.max(maxW,ctx.lineWidth);return sk.apply(this,arguments)};
+      const r3=R3D.on;R3D.on=false;   // the canvas path (2D); 3D is checked below on the scene
+      try{S.cam.x=b.x;S.cam.y=b.y;ardgDrawUnder();b.ardgFl=S.t;if(!ARDGS.fl.includes(b))ARDGS.fl.push(b);ardgDrawOver()}finally{ctx.fill=fl;ctx.stroke=sk;R3D.on=r3}
+      o.calm=lighter===0&&maxW===ARDG.line;
+      // 3D: the fill and edge are meshes on the floor (arena-danger3d.js), and the canvas draws no fill on top of the actors
+      if(R3D.on&&R3D.ready){let cf=0;const f2=ctx.fill;ctx.fill=function(){cf++;return f2.apply(this,arguments)};try{ardgDrawUnder()}finally{ctx.fill=f2}
+        ardg3d();const s0=AD3.sl[0];o.d3=!!s0&&s0.fill.visible&&s0.edge.visible&&cf===0&&Math.abs(s0.edge.material.opacity-ARDG.lineA)<0.01;o.d3s=(s0&&s0.fill.visible)+'/'+cf}else o.d3=true;
+      SAVE.calm=calm0;
     }catch(err){o.err=String(err&&err.stack||err)}
-    SAVE.fxLess=fl;mines.length=0;waves.length=0;enemies.length=0;S.boss=null;ARDGS.b.clear();ARDGS.sc.length=0;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
-  check(!adg.err&&adg.full&&adg.mid&&adg.ticks>=8&&adg.flash>=5&&adg.sc>0&&adg.sc<=6&&adg.scN>adg.sc&&adg.less&&adg.col,
+    SAVE.fxLess=fl;mines.length=0;waves.length=0;enemies.length=0;S.boss=null;ARDGS.b.clear();ARDGS.sc.length=0;ARDGS.fl.length=0;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!adg.err&&adg.full&&adg.mid&&adg.ticks>=8&&adg.flash>=5&&adg.sc>0&&adg.sc<=6&&adg.scN>adg.sc&&adg.less&&adg.col&&adg.calm&&adg.d3,
     'רגע הסכנה של הבוס: '+(adg.err||'מילוי ברגע הפגיעה '+adg.hit+(adg.full?' ✓':' ✗')+', באמצע '+(adg.mShock??0).toFixed(2)+'/'+(adg.mCharge??0).toFixed(2)+(adg.mid?' ✓':' ✗')+
-    ', תקתוקים '+adg.ticks+', הבזקים '+adg.flash+', חריכה '+adg.sc+' מתוך '+adg.scN+(adg.sc<=6?' (עד 6)':' (מעל 6!)')+', פחות אפקטים '+(adg.less?'בלי חריכה':'עם חריכה!')+', מג\'נטה '+(adg.col?'✓':'✗')));
+    ', תקתוקים '+adg.ticks+', הבזקים '+adg.flash+', חריכה '+adg.sc+' מתוך '+adg.scN+(adg.sc<=6?' (עד 6)':' (מעל 6!)')+', פחות אפקטים '+(adg.less?'בלי חריכה':'עם חריכה!')+', מג\'נטה '+(adg.col?'✓':'✗')+', reduced motion '+(adg.calm?'no flash/thickening ✓':'flash or thickening!')+(adg.d3?'':', 3D floor mesh missing ('+adg.d3s+')')));
   const smo=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},fl=SAVE.fxLess;
     try{startRun();S.mode='play';enemies=[];P.x=0;P.y=0;S.cam.x=0;S.cam.y=0;SAVE.fxLess=false;
       for(let i=0;i<6;i++){const e=addEnemy('grunt',60+i*25,(i%2?40:-40));e.hp=e.max=1e9;e.elite=false}
