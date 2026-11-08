@@ -2169,6 +2169,11 @@ function worldBot(m,L,god){
     AUDIO.last={};AUDIO.grpLast={};
     return{count:AUDIO.count,played:AUDIO.played,errors:AUDIO.errors,unlocked:AUDIO.unlocked,ids:Object.keys(SOUNDS),mute:m&&!AUDIO.muted,open,closed,vSaved,rate,
       grp:Object.fromEntries(Object.keys(SOUNDS).map(id=>[id,SOUNDS[id].grp])),loaded:Object.keys(AUDIO.buf).length}});
+  // צלילי קרב בכפר ובעולם (where:'fight', audio.js): נמדד כאן, כשהדף עוד פתוח. הבדיקה עצמה בדוח בסוף
+  const sg=await page.evaluate(()=>{const o={},c=()=>Object.keys(SOUNDS).filter(id=>SOUNDS[id].where==='fight').reduce((n,id)=>n+(AUDIO.count[id]||0),0),sv=S.vil,sw=S.wd;
+    const fire=()=>{const a=c();sfx('ui');sfxCast('fire');sfxCombo('melt');return c()-a};
+    try{o.n=Object.keys(SOUNDS).filter(id=>SOUNDS[id].where==='fight').length;S.vil=null;S.wd={};o.world=fire();S.wd=null;S.vil={};o.vil=fire();S.vil=null;o.arena=fire()}catch(err){o.err=String(err)}
+    S.vil=sv;S.wd=sw;return o});
   const cp=await page.evaluate(()=>({n:CLOUD.pushes,every:CLOUD.pushEvery}));
   check(cp.n>cl.p0,'ענן: במשחק עצמו נדחפו '+(cp.n-cl.p0)+' שמירות לענן (המדומה), לכל היותר אחת בכל '+cp.every+' שניות');
   // בפעם השנייה מסך הפתיחה מוביל ישר לכפר, בלי בחירת דמות
@@ -4496,10 +4501,6 @@ function worldBot(m,L,god){
   const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null)&&!['bell','creak'].includes(id)&&!id.startsWith('cast_'));   // cast_*: הבוט מטיל רק חלק מסוגי הנזק, ונבדק למטה שלפחות אחד נשמע   // bell, creak: נבדקים בבדיקת פעמון הערפל, שרצה אחרי הצילום של הצלילים
   check(au.unlocked&&!quiet.length,'צלילים: '+au.ids.map(id=>id+' '+(au.count[id]||0)).join(', ')+(au.unlocked?'':' · לא נפתחו בנגיעה')+(quiet.length?' · לא נשמעו: '+quiet.join(', '):''));
   // צלילי קרב (where:'fight' ב-SOUNDS) שקטים בכפר ובעולם, הצד של ניר, גם כשקוד שם קורא להם, ונשמעים בזירה
-  const sg=await page.evaluate(()=>{const o={},c=()=>Object.keys(SOUNDS).filter(id=>SOUNDS[id].where==='fight').reduce((n,id)=>n+(AUDIO.count[id]||0),0),sv=S.vil,sw=S.wd;
-    const fire=()=>{const a=c();sfx('ui');sfxCast('fire');sfxCombo('melt');return c()-a};
-    try{o.n=Object.keys(SOUNDS).filter(id=>SOUNDS[id].where==='fight').length;S.vil=null;S.wd={};o.world=fire();S.wd=null;S.vil={};o.vil=fire();S.vil=null;o.arena=fire()}catch(err){o.err=String(err)}
-    S.vil=sv;S.wd=sw;return o});
   check(!sg.err&&sg.n>0&&sg.world===0&&sg.vil===0&&sg.arena===3,'צלילי קרב לא בכפר ובעולם: '+(sg.err||sg.n+' צלילים מסומנים, בעולם '+sg.world+', בכפר '+sg.vil+', בזירה '+sg.arena+'/3'));
   // סבב צלילים 1 (audio.js, docs/concept/sound.md): (א) כל sfx('...') בקוד קיים ב-SOUNDS (כך sfx('ui') היה שקט ב-64 מקומות),
   // (ב) בריצה בזירה נשמע לפחות צליל הטלה אחד לפי סוג נזק, ו-ui נשמע
