@@ -3891,9 +3891,12 @@ function worldBot(m,L,god){
     // כל סקיל של כל ערכה, בתרחיש קבוע: גיבור ברמה 6 מטיל את שלושת הסקילים על אויב קרוב (לא תלוי באורך משחק הבוטים)
     {const e=mbHeroes(1)[0],ex0=e.x,ey0=e.y;e.hp=e.max=1e6;e.dead=false;o.fixed=[];   /* dead=false: אם מת בסוף משחק הבוטים, הרשת, הבועה והתשישות לא תופסות (mbCC) ונראה כאילו אין להן אפקט */const fx0=typeof FXLIB!=='undefined'?FXLIB.list.length:-1;o.fxIds=new Set();
      const ofx=typeof fxPlay==='function'?fxPlay:null;if(ofx)window.fxPlay=(id,...a)=>{o.fxIds.add(id);return ofx(id,...a)};   // ספריית האפקטים: אילו אפקטים הסקילים הפעילו
+     /* חשיפה (QUINN, 8.11): האויב בסוף משחק הבוטים יכול לעמוד בשיח, ואז סקיל על יחידה (צעד צל, סימן מוות) לא מוטל. רואים אותו כאן, ומחזירים אחרי */
+     const rv=typeof mbVisReveal==='function'?(mbVisReveal(e.x,e.y,300,999,0),MB.vis.rev[MB.vis.rev.length-1]):null;
      for(const k of Object.keys(MBKIT)){const h=mbHero(k,0,false,1);h.lvl=MOBA.ultAt;h.x=e.x-150;h.y=e.y;MB.u.push(h);
-       for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});Object.assign(e.st,{imm:0,pure:0,stun:0,taunt:0,root:0,bub:0,exh:0,dash:null});e.dead=false;e.hp=e.max;   /* בלי חסינות ובלי שליטה שנשארה מהסקיל הקודם או ממשחק הבוטים: שליטה שפגה מדליקה חסינות (ccImmune) באמצע החלון, והרשת או הבועה לא תופסות (W4) */if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);for(let i=0;i<20;i++){e.x=ex0;e.y=ey0;e.st.imm=0;h.st.imm=9;mobaUpdate(1/30)}}   /* האויב נשאר במקום: בוט שזז יוצא מהבועה לפני שהיא עולה. h חסין: הלם או רשת מהבוט של האויב היו מבטלים את זינוק הסדן לפני הנחיתה (W2) */
+       for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});Object.assign(e.st,{imm:0,pure:0,stun:0,taunt:0,root:0,bub:0,exh:0,dash:null,veil:0});e.dead=false;e.hp=e.max;   /* בלי חסינות ובלי שליטה שנשארה מהסקיל הקודם או ממשחק הבוטים: שליטה שפגה מדליקה חסינות (ccImmune) באמצע החלון, והרשת או הבועה לא תופסות (W4) */if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);for(let i=0;i<20;i++){e.x=ex0;e.y=ey0;e.st.imm=0;h.st.imm=9;mobaUpdate(1/30)}}   /* האויב נשאר במקום: בוט שזז יוצא מהבועה לפני שהיא עולה. h חסין: הלם או רשת מהבוט של האויב היו מבטלים את זינוק הסדן לפני הנחיתה (W2) */
        MB.u.splice(MB.u.indexOf(h),1)}
+     if(rv)MB.vis.rev=MB.vis.rev.filter(r=>r!==rv);   // החשיפה של הבדיקה לא נשארת
      // הלחשים, הריפוי והחזרה לבסיס (moba-spells.js, moba-recall.js): כל אחד מפעיל את האפקט שלו מהספרייה
      if(typeof mbSpellCast==='function'){const h=mbHero('mage',0,false,1),V0=MB.vis&&MB.vis.rev.slice(),Z0=MB.spellZ&&MB.spellZ.slice(),es=Object.assign({},e.st);   /* העתק שטוח ולא JSON: st.tBy מצביע על גיבור, ומאז #423 לגיבור שנלכד ברשת יש fxs.rootFx.follow שחוזר אליו (מעגל) */e.x=ex0;e.y=ey0;h.x=e.x-150;h.y=e.y;MB.u.push(h);typeof mbVisReveal==='function'&&mbVisReveal(e.x,e.y,120,5,h.team);typeof mbVisNow==='function'&&mbVisNow(true);   /* חשיפה קצרה: תשישות צריכה לראות את האויב גם אם הוא בשיח */
        for(const id of Object.keys(MBSPELL.list)){mbSpellInit(h);h.spell=id;h.cd.spell=0;Object.assign(h.st,{dash:null,stun:0,taunt:0,root:0});mbSpellCast(h,{x:e.x,y:e.y});h.st.dash=null;h.x=e.x-150;h.y=e.y}
@@ -4129,6 +4132,19 @@ function worldBot(m,L,god){
     o.lift=await E(()=>MBCAM.pid===null&&!!joy);o.liftBack=!(await st()).free;await touch('touchEnd',[]);
     await E(()=>{mobaExit()});await cdp.detach();
   }catch(e){o.err=String(e).slice(0,160)}return o})();
+  // צילומי משחקי השאול (QUINN, 8.11): חלון הבחירה, מסך הבנייה, משחק באמצע (כולם בוטים, 40 שניות), החנות ומסך הסוף, כדי לבדוק את החלון כולו
+  // הגיבור: האחרון ב-MBKIT, כך שגיבור חדש מצולם לבד. תקלה כאן לא מפילה את הבדיקה, רק נכתבת
+  if(CFG.shots){try{const E=(f,a)=>page.evaluate(f,a),k=await E(()=>Object.keys(MBKIT).pop());
+    await E(()=>{mobaOpen();render()});await page.clock.runFor(200);await shot('moba-pick');
+    await E(k=>{const b=document.querySelector('#mbWin [data-kit="'+k+'"]');if(b)b.click()},k);await page.clock.runFor(200);
+    if(await E(()=>$('mbWin').dataset.mode==='build'))await shot('moba-build');
+    await E(k=>{const go=document.querySelector('#mbWin [data-bact="go"]');if(go)go.click();if(!S.mb)mobaStart(k);
+      MB.me.bot={t:0,mode:'push'};for(let i=0;i<1200&&!MB.over;i++)mobaUpdate(1/30);S.cam.x=P.x;S.cam.y=P.y;render()},k);
+    await page.clock.runFor(400);await shot('moba-game');
+    await E(()=>{MB.me.gold=3000;mbShopOpen();render()});await page.clock.runFor(200);await shot('moba-shop');
+    await E(()=>{mbShopClose();MB.over=true;mbEndShow(true);render()});await page.clock.runFor(200);await shot('moba-end');
+    await E(()=>mobaExit());
+  }catch(e){console.log('  ⚠ צילומי משחקי השאול: '+String(e).slice(0,140))}}
   // שלל לפי דמות (LOOT.gear ב-loot.js): לכל דמות רוב הנשקים בעולם שלה, יש לה נשק בכל שכבה, ה"מזל" מבטיח נשק שלה, וברמה 20 השכבה גבוהה יותר
   const clsL=await page.evaluate(()=>{const bak=JSON.stringify(SAVE.hero),cp=SAVE.clsPity,out={};
     try{for(const c in HEROES.list){const A=HEROES.list[c].arms;SAVE.hero.start=c;let w=0,m=0,t1=0,t20=0;
