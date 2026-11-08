@@ -54,10 +54,11 @@ function gmHit(n,d,ang){
 // דרגה 5: חתיכה בצבע זהב מדי פעם (gHit). i: מספר החתיכה במכה
 const gmGlint=(n,i)=>gmTierOf(n)>=GMASTERY.glint.from&&i%GMASTERY.glint.every===2?GMASTERY.glint.col:null;
 
-// בחלון הדמות, שורה אחת בסוף הסטטים (בלי גלילה ב-844×390): הדרגה של כל משפחה, וכמה נשאר לדרגה הבאה בנגיעה (title)
+// בחלון הדמות, שורה אחת בסוף הסטטים: שלוש צלליות ודרגה ליד כל אחת (בלי גלילה ב-844×390): הדרגה של כל משפחה, וכמה נשאר לדרגה הבאה בנגיעה (title)
 function gmHtml(){
   const s=gmSave(),A=GMASTERY.at;
   const fam=Object.keys(GMASTERY.fams).map(f=>{const t=gmTier(f),p=s[f]||0,tip=T('gm.'+f)+': '+T('gm.lv',t)+(t<A.length?' · '+p+'/'+A[t]:' · '+T('gm.max'));
     return '<i title="'+tip+'" aria-label="'+tip+'">'+gIco(GICO.gm[f],'gmi',GMASTERY.fams[f].col)+'<bdi>'+t+'</bdi></i>'}).join(' ');
-  return '<ul class="gsrows gmrow"><li><span class="gsi" aria-hidden="true">'+gIco(GICO.gm.plant,'gmi',C.gold)+'</span><span class="gsn">'+T('gm.title')+'</span><b>'+fam+'</b></li></ul>';
+  // בלי המילה בשורה: בעמודה צרה (הבוט, 8.11) היא נחתכה ל-"…". המילה בנגיעה (title), וכל משפחה עם התווית שלה
+  return '<ul class="gsrows gmrow"><li title="'+T('gm.title')+'"><b>'+fam+'</b></li></ul>';
 }

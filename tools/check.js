@@ -2726,7 +2726,7 @@ function worldBot(m,L,god){
       SAVE.gm.wood=G.at[2];gHit(t,0,10);o.t3=nb.hp===1e4-10&&t.hp===1e4;
       SAVE.gm.wood=G.at[3];t.hp=nb.hp=1e4;gHit(t,0,10);o.t4=t.hp===1e4-10*(G.power.k-1)&&nb.hp===1e4-10*G.power.k;
       SAVE.gm.wood=G.at[4];o.t5=gmTier('wood')===5&&gmGlint(t,2)===G.glint.col&&!gmGlint(t,1);
-      o.win=gStatPanel().includes(T('gm.title'))&&gmHtml().includes(T('gm.wood')+': '+T('gm.lv',5));o.blank=saveBlank().gm.wood===0;
+      o.win=gStatPanel().includes('gmrow')&&gmHtml().includes(T('gm.wood')+': '+T('gm.lv',5));o.blank=saveBlank().gm.wood===0;
       const wd=S.wd,g0=JSON.stringify(SAVE.gm),h0=t.hp;S.wd=null;
       try{gmGain(t);gHit(t,0,10);o.arena=JSON.stringify(SAVE.gm)===g0&&t.hp===h0&&gmMagnet('wood')===1}finally{S.wd=wd}
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
