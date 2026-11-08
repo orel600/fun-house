@@ -16,7 +16,7 @@ const path=require('path'),fs=require('fs');
 const args=process.argv.slice(2);
 const opt=k=>{const i=args.indexOf('--'+k);if(i<0)return null;const v=args[i+1];return v&&!v.startsWith('--')?v:true};
 const CFG={
-  time:+(opt('time')||560),   // 560 (היה 480): באחו הגדול ההליכה לשער הזירה ארוכה בכ-40 שניות
+  time:+(opt('time')||600),   // 600 (היה 560, 8.11: מרווח לזירה של 10 גלים). 560 (היה 480): באחו הגדול ההליכה לשער הזירה ארוכה בכ-40 שניות
   seed:+(opt('seed')||Math.floor(Math.random()*1e6)),
   god:!opt('real'),
   shots:opt('shots')?path.join(__dirname,'shots'):null,

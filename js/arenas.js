@@ -21,18 +21,18 @@ const ARENAS={
     spread:55,                       // כמה הגוש צפוף
     bossDelay:3,                     // כמה שניות אחרי תחילת הגל האחרון הבוס מגיע
     mazeWaves:[4,5],                 // באילו גלים (מ-0) הקירות של maze.js פעילים: גלים 5 ו-6
-    waveMax:100,                     // שניות מתחילת גל: אחרי זה הגל הבא מתחיל גם אם נשארו אויבים (סוג נזק שלא עובד עליהם לא תוקע את הריצה). לא בגל של הבוס
+    waveMax:90,                     // שניות מתחילת גל: אחרי זה הגל הבא מתחיל גם אם נשארו אויבים (סוג נזק שלא עובד עליהם לא תוקע את הריצה). לא בגל של הבוס
     /* טבעת: בגל עם ring:true כל גוש נפרש סביבך במעגל שלם, כמו הגל הענק (swarm ב-run.js), במרחק RUN.swarmR מהצלע הארוכה */
     /* אויבים ישנים: רחוק מ-r (כפול הצלע הארוכה של המסך) אויב רגיל הולך אליך במהירות speed עם נדנוד קל (wob: תדירות, זווית),
        ומכשף לא יורה. מתעורר לתמיד כשמתקרבים, כשהוא נפגע, בסוף הגל (lastCall) וכשהבוס בדרך. בוס ומבוקש לא ישנים */
     wake:{r:0.55,speed:0.3,wob:[1.3,0.55]},
     /* סוף הגל: כשנשארו n אויבים או פחות (ואין עוד גושים בדרך), חץ בקצה המסך לכל אחד, והם מפסיקים לשמור מרחק ובאים אליך
        (מכשפים נשארו רחוק והגל לא נגמר). secs: אם אף אחד לא נפל כל כך הרבה שניות, הם רצים אליך מהר פי rush */
-    lastCall:{n:5,secs:20,rush:1.8,col:'#FF6B5E',arrow:1.2},
+    lastCall:{n:5,secs:10,rush:1.8,col:'#FF6B5E',arrow:1.2,after:40},   // secs 10 (היה 20, 8.11: גל נמרח). after: גל שרץ כך הרבה שניות נכנס לסוף הגל עם כמה אויבים שנשארו, וכולם מתעוררים ובאים
     /* השלבים. t: כמה חזקים האויבים, כמו בשנייה הזו של ריצה רגילה (runK ב-run.js). g: [סוג מ-ETYPES, כמה, חיים יחסית לרגיל].
        t הוא 0.6 מהזירה הישנה (8.11): בגלים יש פחות אויבים מבריצה הרגילה, ולכן פחות XP ורמות. עם הערכים הישנים הבוט הגיע לגל 9
        ברמה 16, ואויב-העל של גל 9 (3.2 מיליון חיים) לא ירד. כך החוזק בסוף תואם בערך את הרמה שמגיעים אליה, וההתחלה כמעט לא משתנה
-       sup: אויב-על אחד (גדול, RUN.elite ב-run.js) שמגיע באמצע הגל. ring: הגושים מקיפים אותך.
+       sup: אויב-על אחד (גדול, RUN.elite ב-run.js) שמגיע באמצע הגל, ו-supHp: חלק מהחיים שלו (הייתי בגלים 5 ו-9: חצי, 8.11, אחרי ש-t ירד ל-0.6 הוא נשאר טנק). ring: הגושים מקיפים אותך.
        1 עצמות וג׳לי (פיזי, ברק) · 2 שריון ורוחות (אש, קרח) · 3 ביצה (ברק, מים) · 4 יער (אש, קרח) · 5 קור ומתכת, וייתי (אש), קירות
        6 רוחות (קרח, ברק), קירות · 7 אבנים (מים) · 8 קברים בטבעת, ושד (אש, מים) · 9 הכל מעורבב לפני הבוס, וייתי · 10 הבוס */
     list:[
@@ -40,11 +40,11 @@ const ARENAS={
       {t:18, g:[['ghost',10,1],['shield',4,1],['grunt',8,0.5]]},
       {t:36, g:[['slime',10,1],['wisp',8,1],['goleling',3,1]]},
       {t:57, g:[['treant',5,1],['sprite',8,1],['mushnub',3,1]]},
-      {t:78, g:[['shield',8,1],['crawler',4,1]],sup:'yeti'},
+      {t:78, g:[['shield',8,1],['crawler',4,1]],sup:'yeti',supHp:0.5},
       {t:99, g:[['grunt',24,0.5],['ghost',8,1],['wisp',10,1]]},
       {t:120,g:[['golem',5,1],['goleling',10,1],['shield',7,1]]},
       {t:144,g:[['mummy',12,1],['grunt',16,0.5]],sup:'demon',ring:true},
-      {t:168,g:[['crawler',6,1],['mushnub',6,1],['slime',8,1],['ghost',6,1]],sup:'yeti'},
+      {t:168,g:[['crawler',6,1],['mushnub',6,1],['slime',8,1],['ghost',6,1]],sup:'yeti',supHp:0.5},
       {t:192,g:[['grunt',20,0.5],['shield',6,1],['slime',6,1]],boss:true}
     ]
   }
@@ -101,13 +101,13 @@ function waveStart(i){
   const parts=W.g.map(([type,n,hp])=>{const out=[];for(let k=n;k>0;k-=A.clump)out.push({type,n:Math.min(A.clump,k),hp});return out});
   const q=[];for(let k=0;parts.some(p=>p.length);k++)for(const p of parts)if(p.length)q.push(p.shift());
   q.forEach((c,k)=>{c.at=S.t+k*A.spawnSecs/q.length;if(W.ring)c.ring=true});
-  if(W.sup)q.splice(q.length>>1,0,{type:W.sup,n:1,hp:1,sup:true,at:q[q.length>>1]?q[q.length>>1].at:S.t});   // אויב-העל באמצע הגל
+  if(W.sup)q.splice(q.length>>1,0,{type:W.sup,n:1,hp:W.supHp||1,sup:true,at:q[q.length>>1]?q[q.length>>1].at:S.t});   // אויב-העל באמצע הגל
   w.q=q;
   if(W.boss){S.nextBoss=S.t+A.bossDelay;w.boss=true}   // update.js מביא את הבוס (makeBoss) כשמגיע הזמן. w.boss גם מעיר את כולם (arenaZz)
   banner(W.boss?T('wave.last'):W.ring?T('wave.ring',i+1,A.list.length):T('wave.start',i+1,A.list.length),W.boss?C.lilac:C.chalk);S.shake=Math.max(S.shake,4);
 }
 function waveClump(c){
-  if(c.sup)return waveSuper(c.type);
+  if(c.sup)return waveSuper(c.type,c.hp);
   const n=Math.min(c.n,HORDE.cap-enemies.length),A=ARENA();
   if(c.ring){   // טבעת שלמה סביבך, כמו swarm ב-run.js
     const o=rand(0,6.28),R=RUN.swarmR*Math.max(W,H);
@@ -133,7 +133,7 @@ const arenaWob=e=>{const Z=ARENA().wake.wob;return Math.sin(S.t*Z[0]+(e.zz||(e.z
 // סוף הגל (lastCall): האחרונים מסומנים e.left (update.js: מכשף לא בורח), ואחרי secs בלי הפלה גם e.rush (מהירות)
 function waveLastCall(w,A,left){
   const L=A.lastCall;if(!L)return;
-  if(w.q.length||!left||left>L.n){w.call=w.rush=false;w.lk=null;return}
+  if(w.q.length||!left||left>L.n&&S.t-w.start<L.after){w.call=w.rush=false;w.lk=null;return}   // אחרי after שניות: סוף הגל גם עם יותר מ-n
   if(w.lk==null||left<w.lkN){w.lk=S.t;w.lkN=left}   // מתי נפל האחרון (או מתי התחיל סוף הגל)
   w.call=true;w.rush=S.t-w.lk>=L.secs;
   for(const e of enemies)if(!e.dead&&e.wv===w.i){e.left=true;if(w.rush)e.rush=L.rush}
@@ -146,9 +146,9 @@ function waveArrows(ox,oy){
 }
 
 // אויב-על בגל: אותם מספרים כמו אויב-על רגיל (RUN.elite), בלי ליווי, כי הגל עצמו הוא הליווי
-function waveSuper(type){
+function waveSuper(type,k=1){
   const E=RUN.elite,p=spawnPos(),e=addEnemy(type,p.x,p.y);e.wv=S.wv.i;
-  e.elite=true;e.big=E.size;e.r*=E.size;e.hp*=E.hp;e.max=e.hp;e.dmg*=E.dmg;e.xp=E.xp;e.speed*=E.speed;
+  e.elite=true;e.big=E.size;e.r*=E.size;e.hp*=E.hp*k;e.max=e.hp;e.dmg*=E.dmg;e.xp=E.xp;e.speed*=E.speed;
   banner(T('st.elite',T('elite.'+type)),dtCol(e.weak));S.shake=Math.max(S.shake,6);
 }
 
