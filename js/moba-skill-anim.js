@@ -24,7 +24,7 @@ const MBANIM={
     taunt:{fx:'hit_fire',size:110,dy:-26,add:true},
     cleave:{fx:'hit',size:80,dy:-14,add:true,hand:1},
     spin:{fx:'hit',size:90,dy:-20,add:true},
-    pierce:{fx:'st_shock',size:90,dy:-16,add:true,hand:1},
+    pierce:{fx:'sk_pierce_ray',size:70,dy:-16,add:true,hand:1,alpha:0.85,dur:0.1,less:1},   // חץ הברק (#513): פס שחרור קצר בכיוון, ולא הבזק עגול. less: נעלם ב"פחות אפקטים"
     net:{fx:'hit',size:70,dy:-14,add:true,hand:1},
     wave:{fx:'hit_water',size:90,dy:-16,add:true,hand:1},
     bubble:{fx:'hit_water',size:90,dy:-16,add:true,hand:1},
@@ -42,6 +42,11 @@ const MBANIM={
   blizzard:{cracks:'whit_ice',cracksK:2.1,cracksSy:0.6,cracksAlpha:0.85},                        // סדקי קרח על הרצפה כשהסופה נוחתת
   // (c) פגיעות: perFrame בפריים אחד. גיבור מקבל whit גדול, חייל hit קטן. גודל לפי רדיוס היחידה, בין min ל-max
   hit:{perFrame:4,k:3,min:50,max:90,heroK:4,heroMin:100,heroMax:150,dyK:0.6},
+  // סקילי קו בלי מעגל קסם על הרצפה: צורת הסקיל היא קו, לא עיגול (docs/concept/skill-anim-mlbb.md, #513)
+  noCirc:{pierce:1},
+  // חץ הברק (#513): core גודל הליבה שעפה (היה 150). trail: פס שרוך מאחורי החץ האמיתי, עד len, סגול עם לב לבן, רק כשראש וזנב נראים.
+  // hit: פגיעה מאושרת בלבד, fps 60 (לב בהיר כ-83ms וזנב כ-280ms), גיבור 90-110. end: נקודה עמומה איפה שהחץ נעצר (טווח או חומה), לא אפקט פגיעה
+  pierce:{core:190,trail:{len:90,w:6,core:2,col:'#B26BFF',coreCol:'#FFFFFF',a:0.85},hit:{fps:60,heroMin:90,heroMax:110},end:{fx:'hit_light',size:45,alpha:0.4}},
   hitFx:{physical:'hit',fire:'hit_fire',water:'hit_water',ice:'hit_ice',lightning:'hit_light',earth:'hit_earth'},
   heroFx:{physical:'whit_phys',fire:'whit_fire',water:'whit_water',ice:'whit_ice',lightning:'whit_lightning',earth:'whit_earth'},
   // (d) מצבים: על המטיל (self) וסימן על מי שהוכרח (taunt). dy כפול mbUiK, מעל תג הערכה
@@ -66,9 +71,9 @@ let mbaSeedN=0;const mbaRnd=()=>{mbaSeedN=(mbaSeedN*9301+49297)%233280;return mb
 function mbAnimCast(u,s,slot,ang){
   if(!mbaOn())return false;
   const A=MBANIM,k=mbaLessK(),dt=s.dt||MBKIT[u.kit].dt;MBANIMS.n=0;MBANIMS.stat.cast[s.id]=(MBANIMS.stat.cast[s.id]||0)+1;
-  if(slot!=='ult'){const circ=A.circOf[dt],C_=A.circ;   // סקיל-על: ult_cast כבר מעגל קסם גדול (mbfxUltLib)
+  if(slot!=='ult'){const circ=A.noCirc[s.id]?null:A.circOf[dt],C_=A.circ;   // סקיל-על: ult_cast כבר מעגל קסם גדול (mbfxUltLib). noCirc: סקיל קו
     if(circ)mbaPlay(circ,u.x,u.y,{follow:u,dy:C_.dy,size:C_.size*k,dur:C_.dur,alpha:C_.alpha,sy:C_.sy});
-    const F=A.flash[s.id];if(F){const hx=F.hand?Math.cos(ang)*A.hand:0,hy=F.hand?Math.sin(ang)*A.hand*0.5:0;mbaPlay(F.fx,u.x+hx,u.y+hy+F.dy,{size:F.size*k,add:!!F.add,rot:F.hand?ang:0})}}
+    const F=A.flash[s.id];if(F&&!(F.less&&fxLess())){const hx=F.hand?Math.cos(ang)*A.hand:0,hy=F.hand?Math.sin(ang)*A.hand*0.5:0;mbaPlay(F.fx,u.x+hx,u.y+hy+F.dy,{size:F.size*k,add:!!F.add,rot:F.hand?ang:0,alpha:F.alpha,dur:F.dur})}}
   // (b) מה שמתחיל ברגע ההטלה
   if(s.id==='spin'){const B=A.spin;mbaPlay(B.trail,u.x,u.y,{follow:u,loop:true,dur:B.trailDur,size:s.r*B.trailK*k,alpha:B.trailAlpha,add:true,dy:-8})}
   else if(s.id==='rage'){const B=A.rage;mbaPlay(B.burst,u.x,u.y-10,{size:s.r*B.burstK*k,alpha:B.burstAlpha,add:true})}
@@ -104,13 +109,13 @@ function mbAnimShot(sh,s,ang){
 
 /* ---- (c): פגיעה של סקיל ביחידה. נקרא ליד כל mbDmg של סקיל ב-moba-kits.js ---- */
 function mbaFrame(){if(MBANIMS.f===MB.t)return;MBANIMS.f=MB.t;MBANIMS.hn=0}
-function mbAnimHit(o,dt){
+function mbAnimHit(o,dt,X){   // X: תיקון לסקיל (fps, heroMin, heroMax), למשל MBANIM.pierce.hit
   if(!mbaOn()||fxLess()||!o||o.dead||!(o.k==='hero'||o.k==='minion'))return false;
-  mbaFrame();const H=MBANIM.hit;
+  mbaFrame();const H=X?Object.assign({},MBANIM.hit,X):MBANIM.hit;
   if(MBANIMS.hn>=H.perFrame||!mbaRoom()||!mbfxOn(o.x,o.y)){MBANIMS.stat.skip++;return false}
   MBANIMS.hn++;MBANIMS.stat.hits++;const hy=o.y-o.r*H.dyK;
-  let f;if(o.k==='hero'){f=fxPlay(MBANIM.heroFx[dt]||'whit_phys',o.x,hy,{size:mbaClamp(o.r*H.heroK,H.heroMin,H.heroMax),add:true});MBANIMS.stat.hero++}
-  else f=fxPlay(MBANIM.hitFx[dt]||'hit',o.x,hy,{size:mbaClamp(o.r*H.k,H.min,H.max),add:true});
+  let f;if(o.k==='hero'){f=fxPlay(MBANIM.heroFx[dt]||'whit_phys',o.x,hy,{size:mbaClamp(o.r*H.heroK,H.heroMin,H.heroMax),add:true,fps:H.fps});MBANIMS.stat.hero++}
+  else f=fxPlay(MBANIM.hitFx[dt]||'hit',o.x,hy,{size:mbaClamp(o.r*H.k,H.min,H.max),add:true,fps:H.fps});
   if(f){MBANIMS.stat.fx++;if(MBFX.log)MBFX.log[f.id]=(MBFX.log[f.id]||0)+1}
   return !!f;
 }
@@ -149,3 +154,20 @@ function mbAnimIds(){
   return [...ids];
 }
 {const old=mbfxPreload;mbfxPreload=function(){old.apply(this,arguments);if(typeof fxPreload==='function'&&typeof FXDATA!=='undefined')fxPreload(mbAnimIds())}}
+
+/* ---- חץ הברק (#513): הפס שמאחורי החץ האמיתי, ומה שקורה כשהוא נעצר ---- */
+// נקרא מ-mobaDraw בלולאת היריות (בקואורדינטות העולם). הפס נגזר מהמיקום האמיתי של היריה בכל פריים, אף פעם לא ממסלול נפרד.
+// לא מצויר כשאחד הקצוות בערפל, כדי שחץ של אויב מוסתר לא יגלה איפה הוא. בלי הקצאות
+function mbPierceTrail(s){
+  const T=MBANIM.pierce.trail,v=Math.hypot(s.vx,s.vy)||1,go=Math.hypot(s.x-s.x0,s.y-s.y0),len=Math.min(T.len,go);if(len<4)return;
+  const tx=s.x-s.vx/v*len,ty=s.y-s.vy/v*len;
+  if(typeof mbVisPt==='function'&&!(mbVisPt(s.x,s.y)&&mbVisPt(tx,ty)))return;
+  ctx.save();ctx.lineCap='round';ctx.globalAlpha=T.a;ctx.strokeStyle=T.col;ctx.lineWidth=T.w;ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(s.x,s.y);ctx.stroke();
+  ctx.globalAlpha=1;ctx.strokeStyle=T.coreCol;ctx.lineWidth=T.core;ctx.beginPath();ctx.moveTo(s.x-(s.x-tx)*0.6,s.y-(s.y-ty)*0.6);ctx.lineTo(s.x,s.y);ctx.stroke();ctx.restore();
+  MBANIMS.stat.trail=(MBANIMS.stat.trail||0)+1;
+}
+// החץ נעצר (טווח או חומה, moba.js): נקודה עמומה איפה שהוא באמת נעצר. קישוט, לא אפקט פגיעה: החטאה נשארת החטאה
+function mbPierceEnd(s){
+  const E=MBANIM.pierce.end;MBANIMS.stat.end=(MBANIMS.stat.end||0)+1;
+  if(!mbaOn()||fxLess()||!mbfxOn(s.x,s.y))return;fxPlay(E.fx,s.x,s.y,{size:E.size,alpha:E.alpha,add:true});
+}

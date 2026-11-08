@@ -353,6 +353,7 @@ function mbShots(dt){
       s.vx=dx/d*s.sp;s.vy=dy/d*s.sp;s.x+=dx/d*st;s.y+=dy/d*st;
     }else{const ox=s.x;s.x+=s.vx*dt;s.y+=s.vy*dt;s.left-=Math.hypot(s.vx,s.vy)*dt;if(s.left<=0)s.gone=true;
       for(const w of MB.walls)if(w.team!==s.team&&(ox-w.x)*(s.x-w.x)<=0)s.gone=true;   // החומה עוצרת חצים
+      if(s.gone&&s.end){s.end(s);s.end=null}   // נעצר (טווח או חומה): קישוט במקום שנעצר (חץ הברק, moba-skill-anim.js)
       for(const o of MB.u){if(o.team===s.team||o.dead||s.hit.has(o)||(o.k!=='hero'&&o.k!=='minion'))continue;
         if(Math.hypot(o.x-s.x,o.y-s.y)<s.w/2+o.r){s.hit.add(o);s.on(o)}}}
   }
@@ -485,7 +486,7 @@ function mobaDraw(ox,oy){
     if(s.wet>0){ctx.fillStyle=dtCol('water');ctx.beginPath();ctx.arc(u.x+16,top-6,4,0,7);ctx.fill()}
     ctx.restore();
   }
-  for(const s of M.shots){if(s.fx||s.lib||!mbVisPt(s.x,s.y))continue;   // lib: היריה מצוירת מספריית האפקטים (mbfxShot)   // גל חרב ורשת: moba-fx.js מצייר אותם. בערפל: לא מצויר
+  for(const s of M.shots){if(s.trail)mbPierceTrail(s);if(s.fx||s.lib||!mbVisPt(s.x,s.y))continue;   // trail: הפס של חץ הברק (moba-skill-anim.js), עם בדיקת ערפל משלו   // lib: היריה מצוירת מספריית האפקטים (mbfxShot)   // גל חרב ורשת: moba-fx.js מצייר אותם. בערפל: לא מצויר
     if(s.kind==='home'){const c=s.big?MOBA.team[s.team]:dtCol(s.dt);ctx.fillStyle=c;ctx.globalAlpha=0.35;ctx.beginPath();ctx.arc(s.x,s.y,s.big?11:7,0,7);ctx.fill();ctx.globalAlpha=1;ctx.beginPath();ctx.arc(s.x,s.y,s.big?6:3.5,0,7);ctx.fill()}
     else{const a=Math.atan2(s.vy,s.vx);ctx.save();ctx.translate(s.x,s.y);ctx.rotate(a);ctx.fillStyle=dtCol(s.dt);ctx.globalAlpha=0.75;
       if(s.dt==='water'){ctx.beginPath();ctx.ellipse(0,0,12,s.w/2,0,0,7);ctx.fill()}else{ctx.fillRect(-26,-3,34,6);ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(4,-7);ctx.lineTo(4,7);ctx.fill()}
