@@ -50,9 +50,11 @@ function heroSkin(){
   if(k&&!heroSkin.url){heroSkin.url=1;if(HEROES.skins[k]){SAVE.hero.skin=k;heroSkinPet()}else if(k==='none')SAVE.hero.skin=null}
   return HEROES.skins[SAVE.hero.skin]?SAVE.hero.skin:null;
 }
-// נבחר סקין (בכתובת או בכפתור): אם יש לו חיה (pet) ובשמירה עוד לא נבחרה חיה, היא שלו. רק בבחירה, לא בכל קריאה, כדי שבדיקה שמציצה בסקין לא תחליף חיה
+// נבחר סקין (בכתובת או בכפתור), או נטענה שמירה (parosh.js בטעינה, cloudTake ב-cloud.js): אם לסקין יש חיה (pet), והחיה בשמירה
+// עוד לא נבחרה או שהיא ברירת המחדל (פיוחו), החיה של הסקין נכנסת (אוראל, 8.11: "לאן הלך הפרעוש"). סקין אחר: בלי שינוי.
+// רק בנקודות האלה, לא בכל קריאה ל-heroSkin, כדי שבדיקה שמציצה בסקין לא תחליף חיה
 function heroSkinPet(){
-  const sk=HEROES.skins[SAVE.hero.skin];if(sk&&sk.pet&&!SAVE.pet.kind&&typeof PET!=='undefined'&&PET.kinds[sk.pet])SAVE.pet.kind=sk.pet;
+  const sk=HEROES.skins[SAVE.hero.skin];if(sk&&sk.pet&&typeof PET!=='undefined'&&PET.kinds[sk.pet]&&(!SAVE.pet.kind||SAVE.pet.kind===PET.default))SAVE.pet.kind=sk.pet;
 }
 
 /* ---- בתחילת כל ריצה (ובכפר): הפסיבית של הדמות ---- */

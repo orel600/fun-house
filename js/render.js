@@ -213,6 +213,7 @@ function render(){
     else{ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1)}
     ctx.fillStyle=f.crit?C.ink:f.col;ctx.fillText(f.txt,f.x,f.y);if(f.crit){ctx.lineWidth=1.5;ctx.strokeStyle=f.col;ctx.strokeText(f.txt,f.x,f.y)}}
   ctx.globalAlpha=1;ctx.direction=DIR;
+  if(S.wd&&typeof fxcTgDraw==='function')fxcTgDraw();   // אזהרות על הרצפה בעולם: מעל הפגיעות והמספרים (fxcombat.js)
   // screen space (ביחידות של המשחק, כמו W,H)
   ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);
   if(S.boss){const b=S.boss,sx=b.x+ox,sy=b.y+oy;

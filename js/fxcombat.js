@@ -17,7 +17,12 @@ const FXC={
     fit:{wtg_cone:{h:0.44,apex:0.35},wtg_line:0.81,wtg_circle:0.56,wtg_ring:0.76,wtg_charge:0.56,wtg_circle_big:0.64},
     charge:{on:0.9},    // הכדור הנטען (wtg_charge) על אביר שמתכונן להסתער: פי כך מהגוף
     shoot:240,          // שומר שיורה: עד כמה רחוק המשולש (כמו קווי הכיוון ב-storyTelDraw)
-    ring:1.8},          // שומר האש לפני טבעת: הטבעת סביבו, פי כך מהרדיוס (כמו ההילה ב-storyTelDraw)
+    ring:1.8,           // שומר האש לפני טבעת: הטבעת סביבו, פי כך מהרדיוס (כמו ההילה ב-storyTelDraw)
+    // קריאות בקרב צפוף (ניר 8.11, docs/combat-feel-2026-11-08.md פרק 3): האזהרה הייתה קטנה, אדומה כמו טבעות האויבים והניצוצות, ומתחת למספרים ולשמות.
+    // עכשיו: צבע שאף דבר אחר לא משתמש בו (ורוד-מג'נטה, לא אחד מסוגי הנזק ולא זהב), מצוירת מעל הפגיעות והמספרים (fxcTgDraw מ-render.js), ומשולש קרוב גדול יותר
+    col:'#FF3DD8',      // הצבע של כל אזהרה על הרצפה בעולם
+    tint:0.85,          // כמה מהצבע נכנס לגיליון (השאר: הצל והמרקם המקוריים)
+    coneMin:64},        // טווח מינימלי לציור משולש של מכה מקרוב (יחידות משחק). הפגיעה עצמה לא משתנה, רק הסימן קצת גדול יותר
   // פגיעה: גודל לפי האויב (פי k מהרדיוס, בין min ל-max), לכל היותר perFrame בפריים. crit: גדול יותר
   hit:{k:2.6,min:46,max:170,perFrame:3,a:0.95,crit:1.35,fps:40},
   ko:{k:3.2,min:70,max:280,a:1,fps:30},
@@ -29,7 +34,7 @@ const FXC={
     stone:110,gemSize:120,
     glint:{every:[1.4,2.8],near:380,size:44,a:0.65,max:2,up:0.6}},
   // מצב חי
-  own:[],pre:0,fr:0,hitFr:-1,hits:0,glT:1,glints:[],stat:{tg:{},hit:{},ko:{},mine:{},glint:0}
+  own:[],tgL:[],tint:{},pre:0,fr:0,hitFr:-1,hits:0,glT:1,glints:[],stat:{tg:{},hit:{},ko:{},mine:{},glint:0,top:0}
 };
 const fxcOn=()=>FXC.on&&typeof fxPlay==='function'&&!!S&&!!S.wd&&!S.mb;
 const fxcRoom=()=>{FXC.own=FXC.own.filter(h=>h.on&&FXLIB.list.includes(h));return FXC.own.length<FXC.cap&&FXLIB.list.length<FXLIB.max-FXC.room};
@@ -41,7 +46,7 @@ const fxcCount=(b,id)=>{b[id]=(b[id]||0)+1};
 function fxcTgWant(e){
   const G=FXC.tg,F=G.fit;
   if(e.sw>0&&typeof STRIKE!=='undefined'){   // מכה מקרוב: משולש לכיוון המכה, באורך הטווח האמיתי (בלי ההגדלה של STRIKE.show)
-    const R=e.r+P.r+STRIKE.reach,s=R/F.wtg_cone.h;
+    const R=Math.max(G.coneMin,e.r+P.r+STRIKE.reach),s=R/F.wtg_cone.h;
     return{k:'sw'+e.sa,id:'wtg_cone',x:e.x+Math.cos(e.sa)*F.wtg_cone.apex*s,y:e.y+Math.sin(e.sa)*F.wtg_cone.apex*s,size:s,rot:e.sa+Math.PI/2,left:e.sw}}
   if(e.act&&typeof FOEAI!=='undefined'){const A=FOEAI,left=Math.max(0,e.at);
     if(e.act==='wind'){const L=A.charge.len,s=L/F.wtg_line;return{k:'wd'+e.aa,id:'wtg_line',x:e.x+Math.cos(e.aa)*L/2,y:e.y+Math.sin(e.aa)*L/2,size:s,rot:e.aa+Math.PI/2,left,extra:'wtg_charge'}}
@@ -61,10 +66,21 @@ function fxcTgSet(o,w){
   if(!w)return;
   if(o.fxTg){const h=o.fxTg.h;if(h){h.x=w.x;h.y=w.y}if(o.fxTg.h2){o.fxTg.h2.x=o.x;o.fxTg.h2.y=o.y}return}   // אותה הכנה: רק עוקב אחרי המיקום
   const a=w.big?G.big:G.a,dur=Math.max(0.05,w.left)+0.04;
-  const h=fxPlay(w.id,w.x,w.y,{size:w.size,rot:w.rot||0,alpha:a,dur,fps:G.fps,under:true});
-  const h2=w.extra?fxPlay(w.extra,o.x,o.y,{size:o.r*2*G.charge.on/FXC.tg.fit.wtg_charge,alpha:a,dur,fps:G.fps}):null;
+  const h=fxcTgPlay(w.id,w.x,w.y,{size:w.size,rot:w.rot||0,alpha:a,dur,fps:G.fps});
+  const h2=w.extra?fxcTgPlay(w.extra,o.x,o.y,{size:o.r*2*G.charge.on/FXC.tg.fit.wtg_charge,alpha:a,dur,fps:G.fps}):null;
   o.fxTg={k:w.k,h,h2};fxcCount(FXC.stat.tg,w.id);
 }
+// הגיליון בצבע של האזהרות (FXC.tg.col): נצבע פעם אחת לקנבס, ונרשם בספרייה בשם <id>~t עם אותם נתונים. עד שהמקור נטען: המקור
+function fxcTintId(id){
+  const im=fxImg(id);if(!im)return id;const k=id+'~t';if(FXC.tint[k])return k;
+  try{const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');
+    g.drawImage(im,0,0);g.globalCompositeOperation='source-atop';g.globalAlpha=FXC.tg.tint;g.fillStyle=FXC.tg.col;g.fillRect(0,0,c.width,c.height);
+    c.complete=true;c.naturalWidth=c.width;FXLIB.img[k]=c;FXDATA[k]=FXDATA[id];FXC.tint[k]=1;return k}catch(e){return id}
+}
+// האזהרות לא נכנסות לרשימה של הספרייה (שם הן מתחת לפגיעות שנוספו אחריהן), אלא לרשימה משלהן שמצוירת אחרונה (fxcTgDraw)
+function fxcTgPlay(id,x,y,o){const f=fxMake(fxcTintId(id),x,y,o);if(f)FXC.tgL.push(f);return f}
+// מ-render.js בעולם, אחרי הפגיעות, העשן והמספרים: האזהרות מעל הכל בקרב
+function fxcTgDraw(){if(!FXC.tgL.length||!S||!S.wd)return;FXC.stat.top++;fxDrawList(FXC.tgL)}
 // לציור הישן (strike.js, foeai.js, story.js): true כשהסימן מהגיליון מוצג, ואז מציירים רק את השעון (המילוי שגדל)
 function fxcTgOn(o){const c=o&&o.fxTg;return !!(c&&c.h&&c.h.on&&typeof fxImg==='function'&&fxImg(c.h.id))}
 function fxcTgTick(){
