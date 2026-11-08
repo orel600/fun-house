@@ -26,6 +26,8 @@ const FXUI={
   rare:{gold:'ui_epic',legend:'ui_legend'},   // שכבת נדירות (GEAR.tiers) → האפקט סביב התמונה
   rareTiles:4,     // כמה אריחים ברשימה זוהרים בבת אחת
   tiles:['.ictile','.gtile'],   // אריחי חפצים: בנפחייה ובשוק (itemcard.js), ובתרמיל (gear.js)
+  // כרטיסים והודעות עם טקסט שהם לא חלון (לא ב-WINS ולא .ov): אפקט חופשי לא יושב עליהם (עלית רמה בעולם, אויב חדש, נמסיס, טיפ ראשון, שורת ההודעות)
+  cards:['#lpCard.on','#flCard:not([hidden])','#nemCard:not([hidden])','#tip1:not([hidden])','#msgLane .mrow'],
   never:['ui_trans'],   // גיליונות שממלאים את המסך (מעבר): בגודל שלהם הם ריבוע אטום מעל החלונות, ולכן fxDom לא מנגן אותם
   log:{},          // כמה פעמים כל סוג אפקט רץ (לבדיקה ב-check.js)
   list:[],raf:0,ready:false,lastTap:null,
@@ -38,6 +40,10 @@ const fxuiBanner=()=>{const b=document.getElementById('banner');if(b&&b.classLis
 /* חלון פתוח (ui.js, WINS, או .ov): מנוגן רק אפקט שצמוד לאלמנט (anchor) או לנגיעה שהשחקן עשה עכשיו (tap).
    כל השאר (הודעה, תרמיל, מטבעות) לא מנוגן, ומה שכבר רץ נעצר כשחלון נפתח, כדי שלא ישב על הכותרת והטקסט של החלון */
 const fxuiWin=()=>typeof WINS!=='undefined'&&WINS.some(w=>{const e=document.getElementById(w.id);return e&&!e.hidden})||!!document.querySelector('.ov:not([hidden])');
+// המלבנים של הכרטיסים שעל המסך עכשיו (FXUI.cards)
+const fxuiCardRects=()=>[...document.querySelectorAll(FXUI.cards.join(','))].map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height);
+const fxuiHit=(a,b)=>a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
+const fxuiOnCard=(x,y,s,cards=fxuiCardRects())=>{const a={left:x-s/2,right:x+s/2,top:y-s/2,bottom:y+s/2};return cards.some(b=>fxuiHit(a,b))};
 const fxuiTap=()=>FXUI.lastTap&&performance.now()-FXUI.lastTap.t<1500?{x:FXUI.lastTap.x,y:FXUI.lastTap.y,tap:true}:fxuiBanner();
 const fxuiBag=()=>fxuiAt('#gearBtnQ')||fxuiAt('#gearBtnRun')||fxuiAt('#gearBtn')||fxuiBanner();
 
@@ -52,6 +58,7 @@ function fxuiLayer(lo){
 function fxDom(id,x,y,o={}){
   if(!o.anchor&&!o.tap&&fxuiWin())return null;   // חלון פתוח: רק מה שצמוד לאלמנט או לנגיעה
   const D=typeof FXDATA!=='undefined'&&FXDATA[id];if(!D||FXUI.never.includes(id)||typeof FXLIB!=='undefined'&&FXLIB.bad[id])return null;
+  if(!o.anchor&&!o.tap&&fxuiOnCard(x,y,o.size||D.s))return null;   // כרטיס עם טקסט (עלית רמה): לא עליו
   if(typeof fxImg==='function')fxImg(id);   // טוען, ומסמן אם הקובץ חסר
   FXUI.log[id]=(FXUI.log[id]||0)+1;
   const el=document.createElement('i');el.className='fxd'+(o.add?' add':'')+(o.anchor?' anch':'')+(o.tap?' tap':'');
@@ -75,9 +82,9 @@ function fxuiPlace(f){
   return true;
 }
 function fxuiTick(){
-  const now=performance.now()/1000,win=FXUI.list.some(f=>f.free&&f.el)&&fxuiWin();let j=0;   // win: חלון נפתח בדרך שלא ראינו, אפקט חופשי נעצר
+  const free=FXUI.list.some(f=>f.free&&f.el),now=performance.now()/1000,win=free&&fxuiWin(),cards=free?fxuiCardRects():[];let j=0;   // win: חלון נפתח בדרך שלא ראינו. cards: כרטיס עם טקסט הופיע. בשניהם אפקט חופשי נעצר
   for(const f of FXUI.list){
-    if(win&&f.free)fxuiEnd(f);
+    if(f.free&&f.el&&(win||cards.length&&cards.some(b=>fxuiHit(f.el.getBoundingClientRect(),b))))fxuiEnd(f);
     if(!f.el)continue;
     const age=now-f.t0,n=Math.floor(age*f.fps);let i=f.loop||f.dur?n%f.D.n:n;
     if((!f.loop&&!f.dur&&n>=f.D.n)||(f.dur&&age>f.dur)||!fxuiPlace(f)){fxuiEnd(f);continue}
@@ -181,10 +188,10 @@ function fxuiRare(){
   }
 }
 
-// לבדיקה (check.js, בכל צילום): כמה אפקטים חופשיים (לא צמודים ולא מנגיעה) יושבים עכשיו על חלון פתוח
+// לבדיקה (check.js, בכל צילום): אילו אפקטים חופשיים (לא צמודים ולא מנגיעה) יושבים עכשיו על חלון פתוח או על כרטיס עם טקסט
 function fxuiOverWin(){
   const wins=[...document.querySelectorAll('.ov:not([hidden]) .win,.ov:not([hidden]) .panel'+(typeof WINS!=='undefined'?','+WINS.map(w=>'#'+w.id+':not([hidden])').join(','):''))]
-    .map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height);
+    .map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height).concat(fxuiCardRects());   // וגם כרטיסים עם טקסט (FXUI.cards)
   return FXUI.list.filter(f=>f.el&&f.free).map(f=>[f.id,f.el.getBoundingClientRect()])
     .filter(([,a])=>wins.some(b=>a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom)).map(([id])=>id);
 }

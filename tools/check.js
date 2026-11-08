@@ -1107,14 +1107,19 @@ function worldBot(m,L,god){
     FXUI.hooks.questClaim(true,['bones',false]);FXUI.hooks.rankUp('x');
     const hd=$('qLog').getBoundingClientRect(),ov=(a,b)=>a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
     r.overWin=[...document.querySelectorAll('.fxlayer .fxd')].slice(qn).filter(e=>ov(e.getBoundingClientRect(),hd)).length;questLogOpen(false);
+    // כרטיס עם טקסט שאינו חלון (עלית רמה בעולם, lpCard): אפקט חופשי לא נוחת עליו, ומה שכבר רץ עליו נעצר
+    {let c=$('lpCard'),mk=!c;if(mk){c=document.createElement('div');c.id='lpCard';c.className='lpcard';c.innerHTML='<h3>Level 2!</h3><ul><li>+1 hero points</li></ul>';document.body.appendChild(c)}
+     const wasOn=c.classList.contains('on');c.classList.add('on');const q=c.getBoundingClientRect(),cx=q.left+q.width/2,cy=q.top+q.height/2;
+     r.card=fxDom('ui_coin',cx,cy,{size:120})?1:0;c.classList.remove('on');const pre=fxDom('ui_coin',cx,cy,{size:120});c.classList.add('on');
+     r.cardOver=fxuiOverWin().length;if(pre)fxuiTick();r.cardRun=pre&&pre.el?1:0;c.classList.toggle('on',wasOn);if(mk)c.remove()}
     r.toast=n('ui_toast')>b0.t;r.buy=n('ui_buy')>b0.b;r.ach=n('ui_ach')>b0.a;r.win=n('win')>b0.w;r.trans=n('trans')>b0.tr;r.place=pl;
     for(const [e,h] of keep)e.hidden=h;
     const els=[...document.querySelectorAll('.fxd,.fxlayer,#fxVeil')];r.n=els.length;
     r.block=els.filter(e=>getComputedStyle(e).pointerEvents!=='none').length;
     const f=document.querySelector('#fxLayer .fxd');if(f){const q=f.getBoundingClientRect(),h=document.elementFromPoint(q.left+q.width/2,q.top+q.height/2);r.hit=!!(h&&h.closest('.fxlayer,#fxVeil'))}
     return r});
-  check(!fxuiT.miss&&!fxuiT.wrapped.length&&fxuiT.toast&&fxuiT.buy&&fxuiT.ach&&fxuiT.win&&fxuiT.trans&&!fxuiT.wipe&&!fxuiT.overWin&&!fxuiT.block&&!fxuiT.hit,
-    'אפקטים בממשק: '+(fxuiT.miss?'fxui.js לא נטען':'קווסט '+(fxuiT.toast?'✓':'✗')+', קנייה '+(fxuiT.buy?'✓':'✗')+', דרגה '+(fxuiT.ach?'✓':'✗')+', אפקט בפתיחת חלון '+(fxuiT.win?'✓':'✗')+', מעבר מקום '+(fxuiT.trans?'✓':'✗')+(fxuiT.wipe?' (ריבוע אטום של ui_trans!)':' בלי ריבוע אטום')+(fxuiT.overWin?', '+fxuiT.overWin+' אפקטים על חלון פתוח!':', לא על חלון פתוח')+
+  check(!fxuiT.miss&&!fxuiT.wrapped.length&&fxuiT.toast&&fxuiT.buy&&fxuiT.ach&&fxuiT.win&&fxuiT.trans&&!fxuiT.wipe&&!fxuiT.overWin&&!fxuiT.card&&!fxuiT.cardRun&&!fxuiT.block&&!fxuiT.hit,
+    'אפקטים בממשק: '+(fxuiT.miss?'fxui.js לא נטען':'קווסט '+(fxuiT.toast?'✓':'✗')+', קנייה '+(fxuiT.buy?'✓':'✗')+', דרגה '+(fxuiT.ach?'✓':'✗')+', אפקט בפתיחת חלון '+(fxuiT.win?'✓':'✗')+', מעבר מקום '+(fxuiT.trans?'✓':'✗')+(fxuiT.wipe?' (ריבוע אטום של ui_trans!)':' בלי ריבוע אטום')+(fxuiT.overWin?', '+fxuiT.overWin+' אפקטים על חלון פתוח!':', לא על חלון פתוח')+(fxuiT.card||fxuiT.cardRun?', אפקט על כרטיס עלית רמה!':', לא על כרטיס עלית רמה')+
     (fxuiT.wrapped.length?', לא מחובר: '+fxuiT.wrapped.join(','):'')+(fxuiT.block||fxuiT.hit?', חוסם נגיעה!':', לא חוסם נגיעה ('+fxuiT.n+' שכבות)')));
   const setT=await page.evaluate(()=>{const r={};for(const s in SETS){const it=setItems(s),b=SETS[s].bonus;
     const one=setStats(it.slice(0,1)),two=setStats(it.slice(0,2)),four=gearStats(it);
@@ -4433,7 +4438,7 @@ function worldBot(m,L,god){
     check(!bad.length&&!w.cover.length&&!w.open.length&&!(w.cut||[]).length,'חלונות לרוחב: '+Object.keys(w.wins).join(', ')+(bad.length?' · יושבים זה על זה: '+bad.map(([k,v])=>k+': '+v.slice(0,4).join(', ')).join(' | '):', שום דבר לא יושב על משהו אחר')+
       (w.cover.length?' · כרטיס "חדש" מעל: '+w.cover.join(', '):', כרטיס "חדש" לא מכסה חלון')+(w.open.length?' · לא נפתחו: '+w.open.join(', '):'')+((w.cut||[]).length?' · תוכן חתוך בלי סימן שיש עוד: '+w.cut.join(', '):', בלי תוכן חתוך'))}
   else check(false,'חלונות לרוחב: הבדיקה לא רצה');
-  check(!fxOver.length,'אפקטים בממשק לא יושבים על חלון פתוח בשום צילום'+(fxOver.length?': '+fxOver.join(' · '):''));
+  check(!fxOver.length,'אפקטים בממשק לא יושבים על חלון פתוח או על כרטיס עם טקסט (עלית רמה ועוד, FXUI.cards) בשום צילום'+(fxOver.length?': '+fxOver.join(' · '):''));
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
 
   console.log('ריצה: seed '+CFG.seed+', '+t(L.t)+' זמן משחק'+(CFG.god?', עם חסינות':'')+(CFG.lang==='en'?', באנגלית':'')+(CFG.gfx==='2d'?', בדו-ממד':', בתלת-ממד')+(CFG.shots?', צילומים ב-'+CFG.shots:''));
