@@ -68,7 +68,7 @@ function mbAimPick(u,A){
   if(kind==='self')return{kind,aim:null};
   if(kind==='point'){const d=R*Math.max(MBAIM.minK,Math.min(1,A.len/MBAIM.pull));const p={x:u.x+ca*d,y:u.y+sa*d};return{kind,aim:p,x:p.x,y:p.y}}
   if(kind==='unit'){let best=null,bd=MBAIM.cone;
-    for(const o of MB.u){if(o.team===u.team||o.dead||(o.k!=='hero'&&o.k!=='minion')||!mbSeen(o,u.team))continue;const dd=Math.hypot(o.x-u.x,o.y-u.y);if(dd>R*MBAIM.reach)continue;
+    for(const o of MB.u){if(o.team===u.team||o.dead||(o.k!=='hero'&&o.k!=='minion')||!mbSeen(o,u.team)||!mbTgt(o))continue;const dd=Math.hypot(o.x-u.x,o.y-u.y);if(dd>R*MBAIM.reach)continue;
       const d=Math.abs(angDiff(Math.atan2(o.y-u.y,o.x-u.x),A.a))+(o.k==='hero'?0:0.25);if(d<bd){bd=d;best=o}}   // גיבור קודם לחייל
     if(best)return{kind,aim:best,x:best.x,y:best.y,t:best}}
   const p={x:u.x+ca*R,y:u.y+sa*R};return{kind,aim:p,x:p.x,y:p.y};   // line, away, ו-unit בלי אויב בכיוון
