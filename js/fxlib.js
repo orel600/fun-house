@@ -45,7 +45,7 @@ function fxMake(id,x,y,o){
   const D=typeof FXDATA!=='undefined'&&FXDATA[id];if(!D)return null;
   fxImg(id);
   return{id,D,x,y,t0:fxNowT(),size:o.size||D.s,rot:o.rot||0,loop:!!o.loop,dur:o.dur||0,follow:o.follow||null,dx:o.dx||0,dy:o.dy||0,
-    alpha:o.alpha??1,sx:o.sx||1,add:!!o.add,sy:o.sy||1,fps:o.fps||FXLIB.fps,flip:!!o.flip,under:!!o.under,vx:o.vx||0,vy:o.vy||0,on:true};
+    alpha:o.alpha??1,sx:o.sx||1,add:!!o.add,sy:o.sy||1,fps:o.fps||FXLIB.fps,flip:!!o.flip,under:!!o.under,vx:o.vx||0,vy:o.vy||0,hold:o.hold||0,on:true};   // hold: מתנגן פעם אחת, ואז הפריים האחרון נשאר עד hold שניות ונמוג (סימן ברצפה)
 }
 function fxPlay(id,x,y,o={}){const f=fxMake(id,x,y,o);if(!f)return null;FXLIB.list.push(f);if(FXLIB.list.length>FXLIB.max)FXLIB.list.shift();return f}
 function fxUi(id,x,y,o={}){const f=fxMake(id,x,y,o);if(!f)return null;FXLIB.ui.push(f);if(FXLIB.ui.length>FXLIB.maxUi)FXLIB.ui.shift();return f}
@@ -57,6 +57,7 @@ function fxFrame(f,now){
   if(f.dur&&age>f.dur)return -1;
   if(f.follow&&(f.follow.dead||f.follow.gone))return -1;
   const i=Math.floor(age*f.fps);
+  if(f.hold)return age>f.hold?-1:Math.min(i,f.D.n-1);
   if(f.loop||f.dur)return i%f.D.n;
   return i<f.D.n?i:-1;
 }
@@ -70,7 +71,7 @@ function fxDrawList(list,under){
     const im=fxImg(f.id);if(!im)continue;
     const D=f.D,age=now-f.t0,x=(f.follow?f.follow.x:f.x)+f.dx+f.vx*age,y=(f.follow?f.follow.y:f.y)+f.dy+f.vy*age,s=f.size;
     if(list===FXLIB.list&&!fxSeen(x,y))continue;   // בערפל של משחקי השאול: לא מסגירים אויב נסתר
-    ctx.globalAlpha=f.alpha;ctx.globalCompositeOperation=f.add?'lighter':'source-over';
+    ctx.globalAlpha=f.alpha*(f.hold?Math.min(1,(f.hold-age)/0.4):1);ctx.globalCompositeOperation=f.add?'lighter':'source-over';   // hold: נמוג ב-0.4 השניות האחרונות
     ctx.save();ctx.translate(x,y);if(f.sy!==1)ctx.scale(1,f.sy);if(f.rot)ctx.rotate(f.rot);if(f.flip)ctx.scale(-1,1);if(f.sx!==1)ctx.scale(f.sx,1);
     ctx.drawImage(im,(i%D.c)*D.s,Math.floor(i/D.c)*D.s,D.s,D.s,-s/2,-s/2,s,s);
     ctx.restore();
