@@ -116,8 +116,9 @@ function botStep({god,en}){
   L.taken=S.bn.taken;L.coins=S.bn.coins;L.t=at;L.level=P.level;
   // הריצה: טיימר, פס התקדמות, תחנות, וכמה אויבים היו בזירה יחד
   L.peak=Math.max(L.peak||0,enemies.length);L.hordeMax=S.hordeMax||0;L.clock=document.getElementById('clock').textContent;
-  L.marks=document.querySelectorAll('#runbar .mk').length;L.marksDone=document.querySelectorAll('#runbar .mk.done').length;
-  L.stations=S.run.log.map(s=>s.kind+'@'+Math.round(s.t)).join(' ');L.elites=S.run.elites;L.nStations=RUN.stations.length;
+  // הזירה (arenas.js): עד איזה גל הגענו, כמה הפסקות עם ריפוי, והמונה למעלה
+  if(S.wv){L.wvN=ARENAS.gauntlet.list.length;L.wvMax=Math.max(L.wvMax||0,S.wv.i+1);L.wvHeal=S.wv.healed;const tg=document.getElementById('waveTag');if(tg&&!tg.hidden&&tg.textContent)L.waveTag=tg.textContent}
+  L.elites=S.run.elites;L.supsN=ARENAS.gauntlet.list.filter((x,i)=>x.sup&&i<(L.wvMax||0)).length;
   L.eliteLeft=enemies.filter(e=>e.elite).map(e=>e.type+' '+Math.round(100*e.hp/e.max)+'% במרחק '+Math.round(Math.hypot(e.x-P.x,e.y-P.y))).join(', ');
   // מספרים גדולים: הכי גדול שנראה, כמה קריטיות, ומספר נזק שלא נכתב משמאל לימין
   const val=s=>{const x=/^([\d.]+)([KMBT]?)/.exec(s);return x?+x[1]*{'':1,K:1e3,M:1e6,B:1e9,T:1e12}[x[2]]:0};
@@ -1933,7 +1934,7 @@ function worldBot(m,L,god){
     check(!wm.bad.length,'אויב חדש בעולם בלי קפיצה: כל סוג בכל אזור כבר הוכן (דמות במאגר, קהל אפוי) ומופיע בלי טקסטורה או shader חדשים ('+wm.rows.join(', ')+')'+(wm.bad.length?' · חסר הכנה: '+wm.bad.slice(0,8).join(' | '):''))}
   // מפלצות הזירה (Quaternius, HORDE.monsters ב-spawn.js, RUN.elite.types ב-run.js): לכל אחת חומרים, שם, צבע בדו-ממד ומודל עם ריצה ומוות,
   // הן לא מופיעות לפני הזמן שלהן ומופיעות אחריו, ואויבי-העל בתחנות הם לפי התור
-  const mons=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={bad:[],early:0,seen:{},elites:[],want:RUN.elite.types},er=window.eliteRoll;window.eliteRoll=()=>{};startRun();enemies=[];
+  const mons=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={bad:[],early:0,seen:{},elites:[],want:RUN.elite.types},er=window.eliteRoll,os=window.arenaOwnSpawn;window.eliteRoll=()=>{};startRun();enemies=[];window.arenaOwnSpawn=()=>false;   // spawner לבד (בזירה עצמה הגלים מביאים את האויבים)
     const all=[...new Set([...HORDE.monsters.map(m=>m.type),...RUN.elite.types])];o.n=all.length;
     for(const t of all){const d=ETYPES[t],L=LOOK3D[t],miss=[];
       if(!d||!(d.tags||[]).length)miss.push('tags');if(!MATCOL[((d&&d.tags)||[])[0]])miss.push('צבע בדו-ממד');
@@ -1946,7 +1947,7 @@ function worldBot(m,L,god){
     const first=Math.min(...HORDE.monsters.map(m=>m.from)),c0=roll(first-1);o.early=all.reduce((n,t)=>n+(c0[t]||0),0);
     o.seen=roll(RUN.bossAt-10);o.missing=HORDE.monsters.map(m=>m.type).filter(t=>!o.seen[t]);
     enemies=[];S.run.log=[];for(const t of RUN.elite.types){S.run.log.push({kind:'elite',t:0});elite();o.elites.push((enemies.find(e=>e.elite)||{}).type);enemies=[]}
-    window.eliteRoll=er;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+    window.eliteRoll=er;window.arenaOwnSpawn=os;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(!mons.bad.length&&!mons.early&&!mons.missing.length&&mons.elites.join()===mons.want.join(),
     'מפלצות בזירה: '+mons.n+' סוגים'+(mons.bad.length?' · חסר: '+mons.bad.join(' | '):', לכל אחת מודל, שם וצבע')+', לפני הזמן '+mons.early+
     ', בסוף הריצה '+Object.entries(mons.seen).filter(([k])=>!['grunt','shield','wisp'].includes(k)).map(([k,n])=>k+' '+n).join(', ')+(mons.missing.length?' · לא הופיעו: '+mons.missing.join(', '):'')+
@@ -1998,15 +1999,17 @@ function worldBot(m,L,god){
   const flv=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,rnd=Math.random,er=window.eliteRoll;let sd=7,t=null;
     Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;window.eliteRoll=()=>{};
     try{startRun();for(let i=0;i<60*30&&t==null;i++){P.hp=P.maxHp;joy=null;S.mode='play';update(1/60);if(P.level>1)t=S.t}}
-    finally{Math.random=rnd;window.eliteRoll=er;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode}return{t,k:S.kills}});
-  check(flv.t!=null&&flv.t<15,'רמה ראשונה בזירה: '+(flv.t!=null?'אחרי '+flv.t.toFixed(1)+' שניות של משחק':'לא הגיעה תוך 30 שניות'));
-  // זירת גלים (arenas.js): נכנסים מהכפתור בכרטיס של שער בעולם, ומשחקים עד הסוף (האויבים נופלים ביד, כדי שיהיה מהר). גלים לפי הסדר, הפסקה בלי אויבים, המונה, כל גל חזק יותר עם אויבים משלו, ובוס בגל האחרון שמנצח
+    finally{Math.random=rnd;window.eliteRoll=er;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode}return{t:t==null?null:t-ARENAS.gauntlet.firstGap,k:S.kills}});   // נספר מהגל הראשון (לפניו המתנה רכה, arenas.js)
+  check(flv.t!=null&&flv.t<15,'רמה ראשונה בזירה: '+(flv.t!=null?'אחרי '+flv.t.toFixed(1)+' שניות מהגל הראשון':'לא הגיעה תוך 30 שניות'));
+  // הזירה (arenas.js, ARENAS.gauntlet): נכנסים מהכפתור היחיד בכרטיס של שער בעולם, ומשחקים עד הסוף (האויבים נופלים ביד, כדי שיהיה מהר).
+  // 10 גלים לפי הסדר, הפסקה בלי אויבים וריפוי של 12% בכל הפסקה, קירות רק בגלים 5-6, טבעת בגל 8, המונה, כל גל חזק יותר עם אויבים משלו, ובוס בגל האחרון שמנצח
   const wav=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},rw=window.runWon,rnd=Math.random;let won=0,sd=99;window.runWon=()=>{won++};
     Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;   // מזל משלה, כדי לא להזיז את המזל של הבדיקות שאחריה (אותו seed = אותה ריצה)
-    try{enterWorld('home');const w=S.wd;w.near=w.open='grove';w.ui='';worldHud();
-      const b=document.querySelector('#wPanel [data-a="waves"]');o.btn=b?b.innerText:null;if(b)b.click();else{worldUi(false);startRun('waves')}
-      o.arena=S.arena;o.floor=arenaFloor('d2');o.bar=getComputedStyle(document.getElementById('runbar')).display==='none';
-      const N=ARENAS.waves.list.length,dt=1/30,k={},tag={},types={},sups=[];o.N=N;o.wanted=0;
+    try{enterWorld('home');const w=S.wd;o.btns={};
+      for(const g of ['pit','grove']){w.near=w.open=g;w.ui='';worldHud();o.btns[g]=document.querySelectorAll('#wPanel [data-act="arena"]').length}   // בכל שער כפתור זירה אחד
+      const b=document.querySelector('#wPanel [data-act="arena"]');o.btn=b?b.innerText:null;if(b)b.click();else{worldUi(false);startRun()}
+      o.arena=S.arena;o.bar=getComputedStyle(document.getElementById('runbar')).display==='none';
+      const A=ARENAS.gauntlet,N=A.list.length,dt=1/30,k={},tag={},types={},sups=[],maze=new Set(),heals=[],seen=new WeakSet(),ringA=new Set();o.N=N;
       // המונה לא נוגע בשכנים בשורה העליונה ולא בחיה (שמצוירת בקנבס: הקופסה שלה סביב המקום שלה על המסך, כשהיא ליד השחקן)
       const tagOverlap=()=>{const el=document.getElementById('waveTag'),r=el.getBoundingClientRect(),out=[];
         const hit=(b,nm)=>{if(Math.min(r.right,b.right)-Math.max(r.left,b.left)>1&&Math.min(r.bottom,b.bottom)-Math.max(r.top,b.top)>1)out.push(nm)};
@@ -2014,30 +2017,69 @@ function worldBot(m,L,god){
         if(S.pet){const p=S.pet;p.x=P.x-30;p.y=P.y-40;const z=innerWidth/W,sx=(p.x+W/2-S.cam.x)*z,sy=(p.y+H/2-S.cam.y)*z,h=petStage().h*z;hit({left:sx-h*0.6,right:sx+h*0.6,top:sy-h,bottom:sy},'pet')}
         return out};o.breaks=0;o.breakSpawn=0;let ph='';o.bossAt=null;
       for(let t=0;t<900&&!won;t+=dt){
-        P.hp=P.maxHp;if(S.mode!=='play'){for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;S.mode='play';S.pendingLv=0}
-        update(dt);hud();const v=S.wv;if(!v)break;
-        if(v.phase==='break'){if(ph!=='break'){o.breaks++;tag.br??=document.getElementById('waveTag').textContent}if(enemies.some(e=>!e.dead&&e.wv>v.i))o.breakSpawn++}
+        P.hp=P.maxHp*0.5;P.inv=1;if(S.mode!=='play'){for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;S.mode='play';S.pendingLv=0}   // חצי חיים וחסין: כך רואים את הריפוי בהפסקה
+        const was=S.wv&&S.wv.phase;update(dt);hud();const v=S.wv;if(!v)break;
+        if(v.phase==='break'&&was==='fight')heals.push(Math.round(1000*(P.hp/P.maxHp-0.5))/10);   // באותו פריים שהגל נוקה
+        if(v.phase==='break'){if(ph!=='break'){o.breaks++;if(v.i>=0)tag.br??=document.getElementById('waveTag').textContent}if(enemies.some(e=>!e.dead&&e.wv>v.i))o.breakSpawn++}
         ph=v.phase;
+        if(v.phase==='fight'){if(mazeOn())maze.add(v.i+1);if(v.i===A.mazeWaves[0]&&mazeFade()>=MAZE.solidAt&&o.wall==null&&MZ.walls.length){   // קיר חוסם באמת: שחקן במרכז קיר נדחף החוצה
+          const q=MZ.walls[0],bx=P.x,by=P.y;P.x=q.x+q.w/2;P.y=q.y+q.h/2;mazeRun();o.wall=!(P.x>q.x&&P.x<q.x+q.w&&P.y>q.y&&P.y<q.y+q.h);P.x=bx;P.y=by}}
         if(v.phase==='fight'&&k[v.i]==null){k[v.i]=runK();tag[v.i]=document.getElementById('waveTag').textContent;if(v.i===2)o.ovl=tagOverlap()}
-        if(S.wn&&(S.wn.rumor||S.wn.e))o.wanted=(o.wanted||0)+1;
-        for(const e of enemies)if(!e.dead&&e.wv!=null){(types[e.wv]=types[e.wv]||new Set()).add(e.type);if(e.elite&&!sups.includes(e.type+(e.wv+1)))sups.push(e.type+(e.wv+1));if(e.wv===v.i&&Math.random()<0.06)kill(e)}
+        for(const e of enemies)if(!e.dead&&e.wv!=null){
+          if(!seen.has(e)){seen.add(e);if(e.wv===7&&!e.elite)ringA.add(Math.floor(((Math.atan2(e.y-P.y,e.x-P.x)+Math.PI)/(2*Math.PI))*8)%8)}   // גל 8: מאיזה כיוון כל אויב נולד (8 גזרות)
+          (types[e.wv]=types[e.wv]||new Set()).add(e.type);if(e.elite&&!sups.includes(e.type+(e.wv+1)))sups.push(e.type+(e.wv+1));if(e.wv===v.i&&Math.random()<0.06)kill(e)}
         if(S.boss&&!S.boss.dead){o.bossAt??=v.i;if(Math.random()<0.03)kill(S.boss)}
       }
       const ks=Object.keys(k).map(Number).sort((a,b)=>a-b).map(i=>k[i]);
       o.waves=ks.length;o.grow=ks.every((x,i)=>!i||x>ks[i-1]);o.k1=Math.round(ks[0]*10)/10;o.kN=Math.round(ks[ks.length-1]);
       o.tag3=tag[2]||'';o.tagBr=tag.br||'';o.tagN=tag[N-1]||'';o.sets=new Set(Object.values(types).map(s=>[...s].sort().join('+'))).size;
       const NEW=['slime','mushnub','goleling','ghost'];o.news=NEW.filter(t=>Object.values(types).some(s=>s.has(t)));o.sups=sups;
+      o.maze=[...maze].sort((a,b)=>a-b).join(',');o.heals=heals;o.ring=ringA.size;
       o.won=won;o.bossCount=S.bossCount;o.runWon=S.run.won>0;o.stations=S.run.next;o.t=Math.round(S.t)}catch(err){o.err=String(err&&err.stack||err)}
     window.runWon=rw;Math.random=rnd;enemies=[];wRet=null;for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;document.getElementById('banner').textContent='';
-    SAVE=JSON.parse(bak);reset();S.mode=mode;o.after=S.arena==='classic'&&!document.documentElement.classList.contains('waves');return o});
-  check(!wav.err&&!!wav.btn&&wav.arena==='waves'&&!!wav.floor&&wav.bar&&wav.waves===wav.N&&wav.grow&&wav.breaks>=wav.N-1&&wav.breakSpawn===0&&wav.tag3.includes('3/'+wav.N)&&!!wav.tagBr&&wav.sets>=4
-    &&wav.bossAt===wav.N-1&&wav.won===1&&wav.bossCount===1&&wav.runWon&&wav.stations===0&&wav.after
-    &&wav.news.length===4&&wav.sups.some(x=>x.startsWith('yeti'))&&wav.sups.some(x=>x.startsWith('demon'))&&wav.wanted===0&&wav.ovl&&!wav.ovl.length,
-    'זירת גלים: '+(wav.err||'כפתור "'+wav.btn+'", '+wav.waves+'/'+wav.N+' גלים ב-'+wav.t+' שניות, '+wav.breaks+' הפסקות (אויבים בהפסקה: '+wav.breakSpawn+'), מונה "'+wav.tag3+'", בהפסקה "'+wav.tagBr+'", אחרון "'+wav.tagN+'", חוזק x'+wav.k1+'→x'+wav.kN+(wav.grow?' (עולה)':' (לא עולה!)')+', '+wav.sets+' הרכבי אויבים, בוס בגל '+(wav.bossAt==null?'-':wav.bossAt+1)+', ניצחון: '+(wav.won===1&&wav.runWon?'כן':'לא')+', תחנות רגילות: '+wav.stations+', אחרי: '+(wav.after?'זירה רגילה':'נשאר גלים!')+', מפלצות חדשות: '+(wav.news||[]).join('+')+', אויבי-על: '+(wav.sups||[]).join(' ')+', מבוקש: '+(wav.wanted?'הופיע!':'לא')+', המונה נוגע ב: '+(wav.ovl?wav.ovl.join(',')||'כלום':'-')));
-  // סוף הגל (lastCall ב-ARENAS.waves): 3 מכשפים נשארו רחוק בגל 3 והשחקן עומד. תוך 25 שניות של משחק הגל נגמר (או שהם הגיעו לטווח), וחצים מצוירים אליהם
+    SAVE=JSON.parse(bak);reset();S.mode=mode;o.after=!S.wv&&!document.documentElement.classList.contains('waves');return o});
+  {const H=ARENAS.gauntlet.heal*100,hOk=wav.heals&&wav.heals.length===wav.N-1&&wav.heals.every(h=>h>=H-0.5&&h<=H+1);
+  check(!wav.err&&wav.btns&&wav.btns.pit===1&&wav.btns.grove===1&&!!wav.btn&&wav.arena==='gauntlet'&&wav.bar&&wav.waves===wav.N&&wav.N===10&&wav.grow&&wav.breaks>=wav.N-1&&wav.breakSpawn===0&&wav.tag3.includes('3/'+wav.N)&&!!wav.tagBr&&wav.sets>=4
+    &&wav.bossAt===wav.N-1&&wav.won===1&&wav.bossCount===1&&wav.runWon&&wav.stations===0&&wav.after&&wav.maze==='5,6'&&wav.wall===true&&wav.ring>=7&&hOk
+    &&wav.news.length===4&&wav.sups.some(x=>x.startsWith('yeti'))&&wav.sups.some(x=>x.startsWith('demon'))&&wav.ovl&&!wav.ovl.length,
+    'הזירה (האתגר): '+(wav.err||'כפתורי זירה בשער: '+JSON.stringify(wav.btns)+', "'+wav.btn+'", '+wav.waves+'/'+wav.N+' גלים ב-'+wav.t+' שניות, '+wav.breaks+' הפסקות (אויבים בהפסקה: '+wav.breakSpawn+'), ריפוי בהפסקות: '+(wav.heals||[]).join('/')+'%'+(hOk?'':' (צריך '+(wav.N-1)+' × '+H+'%)')
+      +', קירות בגלים: '+(wav.maze||'אף אחד')+(wav.wall?' (חוסמים)':' (לא חוסמים!)')+', טבעת בגל 8: '+wav.ring+'/8 כיוונים, מונה "'+wav.tag3+'", בהפסקה "'+wav.tagBr+'", אחרון "'+wav.tagN+'", חוזק x'+wav.k1+'→x'+wav.kN+(wav.grow?' (עולה)':' (לא עולה!)')+', '+wav.sets+' הרכבי אויבים, בוס בגל '+(wav.bossAt==null?'-':wav.bossAt+1)+', ניצחון: '+(wav.won===1&&wav.runWon?'כן':'לא')+', תחנות ישנות: '+wav.stations+', אחרי: '+(wav.after?'נקי':'נשאר גלים!')+', מפלצות: '+(wav.news||[]).join('+')+', אויבי-על: '+(wav.sups||[]).join(' ')+', המונה נוגע ב: '+(wav.ovl?wav.ovl.join(',')||'כלום':'-')))}
+  // כניסה רכה (arenas.js): חסינות בכניסה, הגל הראשון אחרי firstGap עם ספירה 3/2/1, וזזים חופשי בזמן ההמתנה
+  const gr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={bn:[]},ob=window.banner;
+    try{window.banner=(t,c)=>{o.bn.push(t);return ob(t,c)};startRun();const A=ARENAS.gauntlet,dt=1/30;o.inv=Math.round(P.inv*10)/10;o.gap=Math.round((S.wv.until-S.t)*10)/10;
+      const x0=P.x;joy={id:-1,ox:0,oy:0,dx:1,dy:0};for(let t=0;t<0.5;t+=dt)update(dt);joy=null;o.moved=Math.round(P.x-x0);
+      const hp0=P.hp;let first=null;
+      for(let t=0.5;t<A.firstGap+1;t+=dt){if(S.mode!=='play'){S.mode='play';S.pendingLv=0}update(dt);if(first==null&&enemies.some(e=>!e.dead&&e.wv===0))first=Math.round(S.t*10)/10;if(S.t<A.inv-0.1)hurt(5)}
+      o.first=first;o.hpKept=P.hp>=hp0;o.cd=o.bn.filter(t=>/wakes/i.test(t)).map(t=>t.replace(/\D/g,'')).join(',');
+    }catch(err){o.err=String(err&&err.stack||err)}
+    window.banner=ob;joy=null;enemies=[];document.getElementById('banner').textContent='';SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!gr.err&&gr.inv===3&&gr.gap===6&&gr.moved>20&&gr.hpKept&&gr.first!=null&&gr.first>=5.9&&gr.cd==='3,2,1',
+    'כניסה רכה לזירה: '+(gr.err||'חסינות '+gr.inv+' שניות'+(gr.hpKept?' (מכות לא פגעו)':' (נפגע!)')+', הגל הראשון אחרי '+gr.first+' שניות (מתוכנן '+gr.gap+'), ספירה '+(gr.cd||'אין')+', זז '+gr.moved+' בזמן ההמתנה'));
+  // אויבים ישנים (arenaZz ב-arenas.js): רחוק מ-wake.r הולכים לאט ומכשף לא יורה. מתעוררים מקרבה, ממכה, מסוף הגל ומהבוס. קפיצה של arena-load לא מעירה, והישנים נספרים בגל
+  const zz=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},at=window.attack,r0=ARENAS.gauntlet.wake.r,lc0=ARENAS.gauntlet.lastCall;
+    try{window.attack=()=>{};startRun();const A=ARENAS.gauntlet,Z=A.wake,R=Z.r*Math.max(W,H),dt=1/30;waveStart(0);const w=S.wv;w.q=[];enemies=[];eb.length=0;P.x=P.y=0;
+      o.zs=Z.speed;const mk=(type,d,a=0)=>{const e=addEnemy(type,Math.cos(a)*d,Math.sin(a)*d);e.wv=0;e.elite=false;e.champ=false;return e};
+      const far=mk('grunt',R*1.6),wisp=mk('wisp',R*1.5,2),near=mk('grunt',R*0.5,4),hit=mk('grunt',R*1.6,1),lc=mk('grunt',R*1.6,3),jump=mk('grunt',R*3,5);
+      const p0=[far.x,far.y];let T=0;for(;T<1;T+=dt){P.hp=P.maxHp;P.inv=1;arenaLoad(0);update(dt)}   // aloadT לא מגיע ל-0 כאן: את הקפיצה בודקים לבד
+      o.slow=Math.round(100*Math.hypot(far.x-p0[0],far.y-p0[1])/(far.speed*slowK(far)*T))/100;
+      o.farZz=!far.awake;o.nearAw=!!near.awake;o.wispZz=!wisp.awake;update(dt);o.left=w.left;
+      hit.hp-=1;update(dt);o.hitAw=!!hit.awake;
+      lc.left=true;update(dt);o.lcAw=!!lc.awake;
+      S.aloadT=0;arenaLoad(1/60);o.jumpD=Math.round(Math.hypot(jump.x-P.x,jump.y-P.y));o.jumpZz=!jump.awake;o.R=Math.round(R);update(dt);o.jumpZz2=!jump.awake;
+      w.boss=true;update(dt);o.bossAw=enemies.filter(e=>!e.dead&&!e.isBoss).every(e=>e.awake);
+      // מכשף ישן בטווח יריה: רדיוס ההתעוררות קטן זמנית, כדי שהמכשף יהיה ישן אבל קרוב מספיק לירות אם היה ער
+      w.boss=false;enemies=[];eb.length=0;Z.r=0.2;A.lastCall=null;   /* אויב אחד בגל: בלי סוף-הגל, שמעיר אותו */
+      const R2=Z.r*Math.max(W,H),wz=mk('wisp',Math.min(330,R2+140));for(let t=0;t<3;t+=dt){P.hp=P.maxHp;P.inv=1;update(dt)}
+      o.wispShots=eb.length;o.wispZz=o.wispZz&&!wz.awake;
+    }catch(err){o.err=String(err&&err.stack||err)}
+    window.attack=at;ARENAS.gauntlet.wake.r=r0;ARENAS.gauntlet.lastCall=lc0;enemies=[];eb.length=0;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!zz.err&&zz.farZz&&Math.abs(zz.slow-zz.zs)<0.08&&zz.nearAw&&zz.wispZz&&zz.wispShots===0&&zz.left===6&&zz.hitAw&&zz.lcAw&&zz.jumpZz&&zz.jumpZz2&&zz.jumpD>zz.R&&zz.bossAw,
+    'אויבים ישנים בזירה: '+(zz.err||'רחוק: '+(zz.farZz?'ישן':'ער!')+' במהירות ×'+zz.slow+', קרוב: '+(zz.nearAw?'ער':'ישן!')+', מכשף ישן: '+zz.wispShots+' יריות, נספרים בגל: '+zz.left+'/6, מכה מעירה: '+zz.hitAw+', סוף הגל מעיר: '+zz.lcAw+
+      ', קפיצה של arena-load: '+zz.jumpD+' (רדיוס '+zz.R+')'+(zz.jumpZz&&zz.jumpZz2?' ונשאר ישן':' והתעורר!')+', הבוס מעיר את כולם: '+zz.bossAw));
+  // סוף הגל (lastCall ב-ARENAS.gauntlet): 3 מכשפים נשארו רחוק בגל 3 והשחקן עומד. תוך 25 שניות של משחק הגל נגמר (או שהם הגיעו לטווח), וחצים מצוירים אליהם
   const wlc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={arrows:0,minD:1e9},rnd=Math.random,ea=window.edgeArrow;let sd=7;
     Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;
-    try{enterWorld('home');worldUi(false);startRun('waves');waveStart(2);const w=S.wv,L=ARENAS.waves.lastCall,dt=1/30;w.q=[];enemies=[];o.n=L.n;
+    try{enterWorld('home');worldUi(false);startRun();waveStart(2);const w=S.wv,L=ARENAS.gauntlet.lastCall,dt=1/30;w.q=[];enemies=[];o.n=L.n;
       for(let k=0;k<3;k++){const a=k*2.1;const e=addEnemy('wisp',P.x+Math.cos(a)*1100,P.y+Math.sin(a)*1100);e.wv=2}
       window.edgeArrow=(...a)=>{if(S.wv&&S.wv.call)o.arrows++;return ea(...a)};
       for(let t=0;t<25;t+=dt){
@@ -2054,43 +2096,6 @@ function worldBot(m,L,god){
     SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(!wlc.err&&wlc.called===0&&wlc.arrows>0&&(wlc.end!=null||wlc.near!=null),
     'סוף גל: '+(wlc.err||'3 מכשפים רחוק, '+(wlc.called===0?'מסומנים מיד':'לא סומנו!')+', '+wlc.arrows+' חצים, '+(wlc.end!=null?'הגל נגמר אחרי '+wlc.end+' שניות':wlc.near!=null?'הגיעו לטווח אחרי '+wlc.near+' שניות':'תקוע! נשארו '+wlc.left+', הכי קרוב '+Math.round(wlc.minD))+(wlc.rush!=null?', רצו אחרי '+wlc.rush:'')));
-  // זירת בוסים (arenas.js, ARENAS.boss): נכנסים מהכרטיס של השער, שלושה בוסים ברצף בלי אויבים אחרים, הפסקה עם ריפוי ביניהם, ורק אחרי השלישי הריצה נגמרת בניצחון
-  const bar=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={bosses:0,minions:0,heal:0},rw=window.runWon,rnd=Math.random;let won=0,sd=5;window.runWon=()=>{won++};
-    Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;
-    try{enterWorld('home');const w=S.wd;w.near=w.open='grove';w.ui='';worldHud();
-      const b=document.querySelector('#wPanel [data-a="boss"]');o.btn=b?b.innerText:null;if(b)b.click();else{worldUi(false);startRun('boss')}
-      o.arena=S.arena;o.floor=arenaFloor('d2');const N=ARENAS.boss.hp.length,dt=1/30,hps=[],tags=[];o.N=N;o.wanted=0;
-      for(let t=0,seen=0;t<200&&won===0;t+=dt){
-        P.hp=Math.max(P.hp,P.maxHp*0.5);if(S.mode!=='play'){for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;S.mode='play';S.pendingLv=0}
-        update(dt);if(S.wn&&S.wn.e)o.wanted++;
-        const live=enemies.filter(e=>!e.dead);if(!S.boss){const m=live.filter(e=>e.type!=='wisp');o.minions=Math.max(o.minions,m.length);if(m.length)o.mt=m.map(e=>e.type+'@'+Math.round(t)).join(',')}   // בין הבוסים אין אף אויב (רוחות שנשארו הן של הבוס שנפל)
-        
-        if(S.boss&&S.boss!==seen){seen=S.boss;hps.push(Math.round(S.boss.max));tags.push(document.getElementById('waveTag').textContent);o.bosses++;
-          if(o.bosses===2)o.hp1=P.hp}   // החיים ברגע שהבוס השני נולד: אחרי הפסקה עם ריפוי
-        if(S.boss){S.boss.hp=0;S.boss.dead=true;bossDown(S.boss);enemies=enemies.filter(e=>!e.dead)}   // הבוס נופל ביד
-        o.t=Math.round(t)}
-      o.hps=hps;o.tags=tags;o.won=won;o.cleared=!S.bd||S.bd.i;
-    }catch(err){o.err=String(err&&err.stack||err)}
-    Math.random=rnd;window.runWon=rw;enemies=[];wRet=null;for(const id of ['ovLevel','ovBoss'])document.getElementById(id).hidden=true;
-    SAVE=JSON.parse(bak);reset();S.mode=mode;o.after=S.arena==='classic'&&!document.documentElement.classList.contains('waves');return o});
-  check(!bar.err&&!!bar.btn&&bar.arena==='boss'&&!!bar.floor&&bar.bosses===bar.N&&bar.won===1&&bar.minions===0&&bar.wanted===0&&bar.hps[0]<bar.hps[1]&&bar.hps[1]<bar.hps[2]&&bar.tags.every(x=>/\d\/\d|\d$/.test(x))&&bar.after,
-    'זירת בוסים: '+(bar.err||'כפתור "'+bar.btn+'", '+bar.bosses+'/'+bar.N+' בוסים, חיים '+(bar.hps||[]).join('<'+'')+', אויבים בהפסקות: '+bar.minions+(bar.mt?' ('+bar.mt+')':'')+', ניצחון: '+bar.won+', מבוקש: '+bar.wanted+', חזרה לרגיל: '+bar.after));
-  // זירת מבוך (maze.js, ARENAS.maze): נכנסים מהכרטיס של השער, קירות חוסמים אותך ואת האויבים כשהם מלאים, לא בזמן ההחלפה, מתחלפים כל מחזור, ולא באמצע הזירה
-  const mz=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={};
-    try{enterWorld('home');const w=S.wd;w.near=w.open='grove';w.ui='';worldHud();
-      const b=document.querySelector('#wPanel [data-a="maze"]');o.btn=b?b.innerText:null;if(b)b.click();else{worldUi(false);startRun('maze')}
-      o.arena=S.arena;o.waves=ARENAS.maze.list.length;o.last=!!ARENAS.maze.list[o.waves-1].boss;o.floor=arenaFloor('d2');
-      S.t=10;P.x=400;P.y=0;P.hp=P.maxHp;const ws=mazeWalls();o.n=ws.length;o.safe=ws.every(w=>Math.hypot(w.x+w.w/2,w.y+w.h/2)>=MAZE.safe);
-      const w0=ws[0],cx=w0.x+w0.w/2,cy=w0.y+w0.h/2;
-      P.x=cx;P.y=cy;S.t=10;mazeRun();o.out=!(P.x>w0.x&&P.x<w0.x+w0.w&&P.y>w0.y&&P.y<w0.y+w0.h)&&Math.hypot(P.x-cx,P.y-cy)>=P.r;   // המרכז בתוך הקיר: נדחף החוצה
-      const e=addEnemy('grunt',cx,cy);mazeRun();o.eOut=!(e.x>w0.x&&e.x<w0.x+w0.w&&e.y>w0.y&&e.y<w0.y+w0.h);
-      S.t=MAZE.shiftSecs*2+0.2;o.fade=mazeFade();const w1=mazeWalls()[0];P.x=w1.x+w1.w/2;P.y=w1.y+w1.h/2;const bx=P.x,by=P.y;mazeRun();o.soft=P.x===bx&&P.y===by&&o.fade<MAZE.solidAt;   // בזמן ההחלפה לא חוסמים
-      S.t=10;P.x=400;P.y=0;const k1=mazeWalls().map(w=>w.x+','+w.y).join();S.t=10+MAZE.shiftSecs;const k2=mazeWalls().map(w=>w.x+','+w.y).join();o.shift=k1!==k2;
-      S.t=10;mazeWalls();const cv=document.createElement('canvas');o.draw=(()=>{try{ctx.save();mazeDraw(0,0);ctx.restore();return true}catch(err){return String(err)}})();
-    }catch(err){o.err=String(err&&err.stack||err)}
-    enemies=[];wRet=null;SAVE=JSON.parse(bak);reset();S.mode=mode;o.after=S.arena==='classic';return o});
-  check(!mz.err&&!!mz.btn&&mz.arena==='maze'&&mz.waves===6&&mz.last&&!!mz.floor&&mz.n>0&&mz.safe&&mz.out&&mz.eOut&&mz.soft&&mz.shift&&mz.draw===true&&mz.after,
-    'זירת מבוך: '+(mz.err||'כפתור "'+mz.btn+'", '+mz.waves+' גלים, '+mz.n+' קירות, מרכז פנוי: '+mz.safe+', דוחף שחקן: '+mz.out+', דוחף אויב: '+mz.eOut+', לא חוסם בהחלפה: '+mz.soft+', מתחלף: '+mz.shift+', ציור: '+mz.draw+', חזרה לרגיל: '+mz.after));
   await page.addScriptTag({content:steer+'\n'+faceStep+'\n'+petBot+'\n'+villageBot+'\n'+worldBot});   // עוזרים של הבוט, בתוך הדף
   let L={},took={},guard=0;
   while(guard++<CFG.time*30){
@@ -4374,10 +4379,9 @@ function worldBot(m,L,god){
     (L.wEnd==null?'לא נתפס ולא ברח':'נגמר '+t(L.wEnd)+' · נתפס '+L.wCaught+', ברח '+L.wEscaped+(L.wLoot?' · שלל: '+L.wLoot:'')));
   const num=/^\d+ \/ \d+$/;
   check(num.test(L.hpTxt)&&num.test(L.xpTxt)&&L.gainMax>0,'מספרים בממשק: חיים '+L.hpTxt+', XP '+L.xpTxt+', הכי הרבה שנאסף ברצף: +'+(L.gainMax||0));
-  const nElite=(L.stations||'').split('elite').length-1;
-  check(L.marks===L.nStations+1&&/^\d+:\d\d$/.test(L.clock||''),'טיימר ופס התקדמות: השעון הגיע ל-'+L.clock+', '+L.marksDone+' מתוך '+L.marks+' סימנים בפס עברו');
-  check(L.stations&&L.stations.split(' ').length===L.nStations&&L.elites>0,'תחנות: '+(L.stations||'אף אחת')+' · אויבי-על שהופלו: '+L.elites+' מתוך '+nElite+(L.eliteLeft?' (נשאר: '+L.eliteLeft+')':''));
-  check(L.hordeMax>=20,'גושים: הגוש הכי גדול '+L.hordeMax+' אויבים, ועד '+L.peak+' בזירה יחד');
+  check(/^\d+:\d\d$/.test(L.clock||'')&&/\d+\/\d+/.test(L.waveTag||''),'שעון ומונה גלים: השעון הגיע ל-'+L.clock+', המונה "'+(L.waveTag||'-')+'"');
+  check(L.wvMax===L.wvN&&L.wvHeal>=L.wvN-1&&L.elites>0,'הזירה בריצה: הגיע לגל '+(L.wvMax||0)+'/'+(L.wvN||'-')+', הפסקות עם ריפוי: '+(L.wvHeal||0)+' · אויבי-על שהופלו: '+L.elites+' מתוך '+(L.supsN||0)+(L.eliteLeft?' (נשאר: '+L.eliteLeft+')':''));
+  check(L.peak>=20,'גושים: עד '+L.peak+' אויבים בזירה יחד');
   check(/[KMB]!?$/.test(L.dmgMaxTxt||'')&&L.crits>0&&!L.notLtr,'מספרים גדולים: הכי גדול '+(L.dmgMaxTxt||'-')+', קריטיות: '+(L.crits||0)+(L.notLtr?', מספר שלא נכתב משמאל לימין: '+L.notLtr:''));
   check(L.boss!=null,'בוס: הופיע '+t(L.boss)+(L.bossName?' ('+L.bossName+')':''));
   if(L.boss!=null){
