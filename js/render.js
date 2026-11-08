@@ -138,9 +138,10 @@ function render(){
   if(R3D.on)ctx.clearRect(0,0,W,H);else{ctx.fillStyle=S&&S.room?'#262114':arenaFloor('d2')||C.ink;ctx.fillRect(0,0,W,H)}
   if(!P)return;
   const sh=RM?0:S.shake,px=DPR*ZOOM,ox=Math.round((W/2-S.cam.x+rand(-sh,sh))*px)/px,oy=Math.round((H/2-S.cam.y+rand(-sh,sh))*px)/px;   // מעוגל לפיקסל של המסך ולא ליחידת משחק: אחרת הגלילה קופצת 2-3 פיקסלים לסירוגין (תנועה מקוטעת)
-  if(S.mb){render3d(ox,oy);ctx.translate(ox,oy);mobaDraw(ox,oy);ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);fxDrawUi();return}   // משחקי השאול: ציור משלו (moba.js)
+  if(S.mb){render3d(ox,oy);ctx.translate(ox,oy);wxDraw('base');mobaDraw(ox,oy);ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);fxDrawUi();return}   // משחקי השאול: ציור משלו (moba.js)
   render3d(ox,oy);
   ctx.translate(ox,oy);
+  wxDraw('base');   // מזג אוויר בתלת-ממד: מעל הסצנה ומתחת לכל מה שבקנבס (weather.js)
   // ground
   if(!R3D.on){const g=90,x0=Math.floor(-ox/g)*g,y0=Math.floor(-oy/g)*g;
   ctx.strokeStyle='rgba(236,231,220,0.07)';ctx.lineWidth=1.5;ctx.beginPath();
@@ -148,6 +149,7 @@ function render(){
     if(h<0.5){ctx.moveTo(x-4,y);ctx.lineTo(x+4,y);ctx.moveTo(x,y-4);ctx.lineTo(x,y+4)}
     else if(h<0.72){ctx.moveTo(x+14,y+22);ctx.lineTo(x+26,y+18)}}
   ctx.stroke();if(typeof aLook2d==='function')aLook2d()}
+  if(!S.wd&&!S.vil)wxDraw('mid');   // מזג אוויר בדו-ממד בזירה: מיד אחרי הרצפה, לפני מוקשים, גלים, דמויות, אזהרות ואפקטים (weather.js)
   mazeDraw(ox,oy);   // קירות זירת המבוך (maze.js)   // טבעות עדינות בזירה (arena-look.js)
   // mines & waves
   for(const mn of mines){const k=mn.t/1.3;ctx.strokeStyle='rgba(239,78,87,'+(0.5-k*0.3)+')';ctx.lineWidth=2;ctx.setLineDash([6,6]);ctx.beginPath();ctx.arc(mn.x,mn.y,58,0,7);ctx.stroke();ctx.setLineDash([]);
@@ -163,6 +165,7 @@ function render(){
   drawNodes();   // עצים, סלעים ועורקים (nodes.js)
   drawLoot();    // טבעות עלית ועמודי אור של שלל (loot.js)
   drawWorld();   // העולם הפתוח (world.js)
+  wxDraw('mid');   // מזג אוויר בדו-ממד בכפר ובעולם: אחרי הקרקע והמבנים (שמצוירים ב-drawVillage/drawWorld), לפני הדמויות, הסקילים, האזהרות והאפקטים (weather.js)
   drawNpcs();
   homeDraw();   // עמודי הפנסים בכפר (homecoming.js)
   skcDraw();   // עיגול רונות מתחת לגיבור כשמטיל סקיל, בדו-ממד (skillcast.js)

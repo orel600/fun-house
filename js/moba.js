@@ -486,9 +486,8 @@ function mbDrawBuild(b,col){
   const base=b.k==='base',h=base?96:74,w=base?54:30,open=mbHittable(b);
   if(typeof mb3dHere!=='function'||!mb3dHere()){   // בתלת-ממד הגוף מצויר שם (moba3d.js)
   ctx.fillStyle='#0006';ctx.beginPath();ctx.ellipse(b.x,b.y+4,w,w*0.4,0,0,7);ctx.fill();
-  ctx.fillStyle=b.flash>0?'#fff':'#4A4458';ctx.beginPath();ctx.moveTo(b.x-w*0.7,b.y);ctx.lineTo(b.x-w*0.45,b.y-h);ctx.lineTo(b.x+w*0.45,b.y-h);ctx.lineTo(b.x+w*0.7,b.y);ctx.fill();
-  ctx.strokeStyle='#2A2436';ctx.lineWidth=2;ctx.stroke();
-  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(b.x,b.y-h-(base?34:24));ctx.lineTo(b.x+(base?14:9),b.y-h-6);ctx.lineTo(b.x,b.y-h+4);ctx.lineTo(b.x-(base?14:9),b.y-h-6);ctx.fill();}
+  const sp=mbTowerSprite(base,col,b.flash>0);ctx.drawImage(sp.c,b.x-sp.cw/2,b.y-sp.top,sp.cw,sp.ch);   // ספרייט מצויר פעם אחת, רק העתקה בכל פריים
+  if(!(b.flash>0)){const gl=0.55+0.25*Math.sin(MB.t*2.4+(b.team?1:0));ctx.globalAlpha=gl*0.35;ctx.fillStyle=col;ctx.beginPath();ctx.arc(b.x,b.y-h-(base?32:26),base?22:16,0,7);ctx.fill();ctx.globalAlpha=1}}   // הגביש נושם
   if(mbShielded(b)){const k=0.55+0.25*Math.sin(MB.t*3),R=w+16;   // מגן מגדל בתחילת המשחק: בועה זוהרת, ופס שמתרוקן עד שהמגן נגמר
     ctx.globalAlpha=0.16*k;ctx.fillStyle='#9FD8FF';ctx.beginPath();ctx.arc(b.x,b.y-h/2,R,0,7);ctx.fill();
     ctx.globalAlpha=k;ctx.strokeStyle='#BFE6FF';ctx.lineWidth=3;ctx.beginPath();ctx.arc(b.x,b.y-h/2,R,0,7);ctx.stroke();
@@ -499,5 +498,59 @@ function mbDrawBuild(b,col){
   if(near){ctx.strokeStyle=b.tgt===me?C.blood:'rgba(239,78,87,0.55)';ctx.lineWidth=b.tgt===me?3:2;ctx.setLineDash(b.tgt===me?[]:[8,8]);ctx.beginPath();ctx.arc(b.x,b.y,B.range,0,7);ctx.stroke();ctx.setLineDash([])}
   else if(b.tgt&&!b.tgt.dead){ctx.strokeStyle=col+'55';ctx.lineWidth=1.5;ctx.setLineDash([4,6]);ctx.beginPath();ctx.arc(b.x,b.y,B.range,0,7);ctx.stroke();ctx.setLineDash([])}
   const bw=base?84:60,top=b.y-h-(base?48:38),uk=mbUiK();ctx.save();ctx.translate(b.x,top+8);ctx.scale(uk,uk);ctx.translate(-b.x,-top-8);ctx.fillStyle='#000a';ctx.fillRect(b.x-bw/2-1,top-1,bw+2,8);ctx.fillStyle=col;ctx.fillRect(b.x-bw/2,top,bw*b.hp/b.max,6);ctx.restore();
+}
+/* המגדל והבסיס בדו-ממד (אוראל, סבב גרפיקה 8.11): במקום משולש אפור, מגדל אבן בקו של שאר הממשק (אבן כהה, פליז, עץ).
+   מצויר פעם אחת לקנבס נסתר לכל (סוג, קבוצה, הבזק) ורק מועתק בכל פריים. המספרים כאן */
+const MBTOWER={px:2,stone:['#3A3344','#4D4559','#5E5670'],mortar:'#241E2C',edge:'#17121D',brass:'#D9A85B',brassHi:'#F6D38A',wood:'#4A2E16',door:'#2A1A0C',rows:12};
+const mbTowerCache={};
+function mbTowerSprite(base,col,flash){
+  const key=(base?'b':'t')+col+(flash?'!':'');if(mbTowerCache[key])return mbTowerCache[key];
+  const T=MBTOWER,h=base?96:74,w=base?54:30,k=T.px,cw=w*2+40,ch=h+72,top=ch-14;   // top: קו הקרקע בתוך הקנבס (מהקצה העליון)
+  const c=document.createElement('canvas');c.width=cw*k;c.height=ch*k;const g=c.getContext('2d');g.scale(k,k);g.translate(cw/2,top);
+  const trap=(x0,y0,x1,y1)=>{g.beginPath();g.moveTo(-x0,y0);g.lineTo(-x1,y1);g.lineTo(x1,y1);g.lineTo(x0,y0);g.closePath()};
+  const shade=(x)=>{const gr=g.createLinearGradient(-x,0,x,0);gr.addColorStop(0,T.stone[0]);gr.addColorStop(0.42,T.stone[2]);gr.addColorStop(0.7,T.stone[1]);gr.addColorStop(1,T.stone[0]);return gr};
+  // גוף אבן: טרפז עם הצללה גלילית, שורות אבנים עם חיבורים מוזזים, וכמה אבנים בהירות
+  const body=(x0,y0,x1,y1,rows)=>{
+    g.save();trap(x0,y0,x1,y1);g.clip();g.fillStyle=shade(x0);g.fillRect(-x0,y1,x0*2,y0-y1);
+    const hh=(y0-y1)/rows;g.strokeStyle=T.mortar;g.lineWidth=1.3;g.beginPath();
+    for(let i=1;i<rows;i++){const y=y0-i*hh;g.moveTo(-x0,y);g.lineTo(x0,y)}
+    for(let i=0;i<rows;i++){const y=y0-i*hh,off=(i%2)*x0*0.5;for(let x=-x0+off-x0*0.5;x<x0;x+=x0*0.5){g.moveTo(x,y);g.lineTo(x,y-hh)}}
+    g.stroke();
+    g.fillStyle='#ffffff14';for(let i=0;i<rows;i++)if((i*7+3)%4===0){const y=y0-i*hh,x=-x0+((i*5)%3)*x0*0.5;g.fillRect(x+1,y-hh+1,x0*0.5-2,hh-2)}
+    g.fillStyle='#00000022';for(let i=0;i<rows;i++)if((i*5+1)%4===0){const y=y0-i*hh,x=-x0+((i*3+1)%3)*x0*0.5;g.fillRect(x+1,y-hh+1,x0*0.5-2,hh-2)}
+    g.restore();trap(x0,y0,x1,y1);g.strokeStyle=T.edge;g.lineWidth=2;g.stroke()};
+  // כרכוב עם שיניים (חומה) וקו פליז מתחתיו
+  const cap=(x,y,n,d)=>{g.fillStyle=T.stone[1];g.fillRect(-x,y-d,x*2,d);g.strokeStyle=T.edge;g.lineWidth=2;g.strokeRect(-x,y-d,x*2,d);
+    const mw=x*2/(n*2-1);g.fillStyle=T.stone[2];for(let i=0;i<n;i++){const mx=-x+i*2*mw;g.fillRect(mx,y-d-7,mw,8);g.strokeRect(mx,y-d-7,mw,8)}
+    g.strokeStyle=T.brass;g.lineWidth=2;g.beginPath();g.moveTo(-x,y+1);g.lineTo(x,y+1);g.stroke()};
+  // דלת עץ עם קשת, ציר פליז
+  const door=(dw,dh)=>{g.fillStyle=T.door;g.beginPath();g.moveTo(-dw/2,0);g.lineTo(-dw/2,-dh+dw/2);g.arc(0,-dh+dw/2,dw/2,Math.PI,0);g.lineTo(dw/2,0);g.closePath();g.fill();
+    g.save();g.clip();g.strokeStyle=T.wood;g.lineWidth=1.5;g.beginPath();for(let x=-dw/2+dw/4;x<dw/2;x+=dw/4){g.moveTo(x,0);g.lineTo(x,-dh)}g.stroke();g.restore();
+    g.strokeStyle=T.brass;g.lineWidth=1.5;g.stroke();g.fillStyle=T.brassHi;g.beginPath();g.arc(dw*0.2,-dh*0.45,1.5,0,7);g.fill()};
+  // חלון צר שמאיר בצבע הקבוצה
+  const slit=(x,y,sw,sh)=>{g.fillStyle=T.edge;g.fillRect(x-sw/2-1,y-sh-1,sw+2,sh+2);g.fillStyle=col;g.fillRect(x-sw/2,y-sh,sw,sh);g.fillStyle='#ffffff55';g.fillRect(x-sw/2,y-sh,sw,sh*0.35)};
+  // דגל הקבוצה: בד תלוי מהכרכוב, קצה משולש, מסגרת וסמל פליז
+  const banner=(x,y0,bw,bh)=>{g.fillStyle=col;g.beginPath();g.moveTo(x-bw/2,y0);g.lineTo(x+bw/2,y0);g.lineTo(x+bw/2,y0+bh-5);g.lineTo(x,y0+bh);g.lineTo(x-bw/2,y0+bh-5);g.closePath();g.fill();
+    g.fillStyle='#00000033';g.fillRect(x,y0,bw/2,bh-5);g.strokeStyle=T.brass;g.lineWidth=1.5;g.stroke();
+    g.fillStyle=T.brassHi;g.beginPath();g.arc(x,y0+bh*0.42,bw*0.2,0,7);g.fill()};
+  // הגביש שעל הראש: זוהר, יהלום בשני גוונים, ניצוץ, על מעמד פליז
+  const gem=(y,gw,gh)=>{const gr=g.createRadialGradient(0,y,2,0,y,gh*1.1);gr.addColorStop(0,col+'99');gr.addColorStop(1,col+'00');g.fillStyle=gr;g.beginPath();g.arc(0,y,gh*1.1,0,7);g.fill();
+    g.fillStyle=T.brass;g.fillRect(-gw*0.5,y+gh*0.75,gw,4);g.fillStyle=T.brassHi;g.fillRect(-gw*0.3,y+gh*0.55,gw*0.6,3);
+    g.fillStyle=col;g.beginPath();g.moveTo(0,y-gh);g.lineTo(gw*0.55,y);g.lineTo(0,y+gh*0.7);g.lineTo(-gw*0.55,y);g.closePath();g.fill();
+    g.fillStyle='#00000040';g.beginPath();g.moveTo(0,y-gh);g.lineTo(gw*0.55,y);g.lineTo(0,y+gh*0.7);g.closePath();g.fill();
+    g.strokeStyle='#ffffff88';g.lineWidth=1;g.beginPath();g.moveTo(0,y-gh);g.lineTo(gw*0.55,y);g.lineTo(0,y+gh*0.7);g.lineTo(-gw*0.55,y);g.closePath();g.stroke();
+    g.fillStyle='#fff';g.beginPath();g.ellipse(-gw*0.15,y-gh*0.35,gw*0.1,gh*0.22,-0.5,0,7);g.fill()};
+  if(base){   // הבסיס: במה רחבה עם שיניים משלה, ועליה המגדל
+    body(w*0.98,0,w*0.86,-h*0.4,4);cap(w*0.9,-h*0.4,8,7);
+    body(w*0.62,-h*0.4,w*0.46,-h,7);cap(w*0.52,-h,6,9);
+    door(22,30);slit(-w*0.3,-h*0.62,5,13);slit(w*0.3,-h*0.62,5,13);banner(0,-h+3,18,26);
+    gem(-h-30,24,16);
+  }else{
+    body(w*0.72,0,w*0.5,-h,MBTOWER.rows*0.5|0);cap(w*0.56,-h,5,8);
+    door(14,20);slit(0,-h*0.36,4,11);banner(0,-h+3,12,22);
+    gem(-h-25,16,11);
+  }
+  if(flash){g.globalCompositeOperation='source-atop';g.fillStyle='rgba(255,255,255,.85)';g.fillRect(-cw/2,-top,cw,ch)}   // הבזק פגיעה: לבן על הצורה בלבד
+  return mbTowerCache[key]={c,cw,ch,top};
 }
 // המפה הקטנה (mbMini) ב-moba-look.js

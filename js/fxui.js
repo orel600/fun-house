@@ -35,9 +35,10 @@ function fxuiRect(el){if(typeof el==='string')el=document.querySelector(el);if(!
 function fxuiAt(el){const r=fxuiRect(el);return r?{x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height}:null}
 const fxuiMid=()=>({x:innerWidth/2,y:innerHeight/2});
 const fxuiBanner=()=>{const b=document.getElementById('banner');if(b&&b.classList.contains('on')){const r=b.getBoundingClientRect();return{x:innerWidth/2,y:r.top+r.height/2}}return{x:innerWidth/2,y:innerHeight*0.34}};
-// חלון פתוח (ui.js, WINS): אפקטים של הודעה (קווסט, דרגה, ספר) לא מנוגנים, כי הם היו יושבים על הכותרת והטקסט של החלון
+/* חלון פתוח (ui.js, WINS, או .ov): מנוגן רק אפקט שצמוד לאלמנט (anchor) או לנגיעה שהשחקן עשה עכשיו (tap).
+   כל השאר (הודעה, תרמיל, מטבעות) לא מנוגן, ומה שכבר רץ נעצר כשחלון נפתח, כדי שלא ישב על הכותרת והטקסט של החלון */
 const fxuiWin=()=>typeof WINS!=='undefined'&&WINS.some(w=>{const e=document.getElementById(w.id);return e&&!e.hidden})||!!document.querySelector('.ov:not([hidden])');
-const fxuiTap=()=>FXUI.lastTap&&performance.now()-FXUI.lastTap.t<1500?FXUI.lastTap:fxuiBanner();
+const fxuiTap=()=>FXUI.lastTap&&performance.now()-FXUI.lastTap.t<1500?{x:FXUI.lastTap.x,y:FXUI.lastTap.y,tap:true}:fxuiBanner();
 const fxuiBag=()=>fxuiAt('#gearBtnQ')||fxuiAt('#gearBtnRun')||fxuiAt('#gearBtn')||fxuiBanner();
 
 function fxuiLayer(lo){
@@ -49,13 +50,14 @@ function fxuiLayer(lo){
    anchor (אלמנט: האפקט נצמד אליו ונעלם כשהוא נסגר), fit (גודל ביחס ל-anchor), lo (מתחת להודעה, כדי לא לכסות טקסט),
    behind (מאחורי החלון של ה-anchor: מעל הרקע הכהה ומתחת לחלון, כדי לא לכסות טקסט או כפתור), clip (נעלם כשה-anchor גלל אל מחוץ לרשימה) */
 function fxDom(id,x,y,o={}){
+  if(!o.anchor&&!o.tap&&fxuiWin())return null;   // חלון פתוח: רק מה שצמוד לאלמנט או לנגיעה
   const D=typeof FXDATA!=='undefined'&&FXDATA[id];if(!D||FXUI.never.includes(id)||typeof FXLIB!=='undefined'&&FXLIB.bad[id])return null;
   if(typeof fxImg==='function')fxImg(id);   // טוען, ומסמן אם הקובץ חסר
   FXUI.log[id]=(FXUI.log[id]||0)+1;
-  const el=document.createElement('i');el.className='fxd'+(o.add?' add':'');
+  const el=document.createElement('i');el.className='fxd'+(o.add?' add':'')+(o.anchor?' anch':'')+(o.tap?' tap':'');
   el.style.backgroundImage='url('+(typeof FXLIB!=='undefined'?FXLIB.base:'fx/')+id+'.webp)';
   if(o.alpha!=null)el.style.opacity=o.alpha;
-  const f={id,el,D,x,y,size:o.size||D.s,fit:o.fit||0,anchor:o.anchor||null,clip:o.clip||null,t0:performance.now()/1000,loop:!!o.loop,dur:o.dur||0,fps:o.fps||30,i:-1};
+  const f={id,el,D,x,y,free:!o.anchor&&!o.tap,size:o.size||D.s,fit:o.fit||0,anchor:o.anchor||null,clip:o.clip||null,t0:performance.now()/1000,loop:!!o.loop,dur:o.dur||0,fps:o.fps||30,i:-1};
   const ov=o.behind&&o.anchor&&o.anchor.closest('.ov');
   if(ov)ov.insertBefore(el,ov.firstChild);else fxuiLayer(o.lo||o.behind).appendChild(el);   // .ov על כל המסך: אותן קואורדינטות
   fxuiPlace(f);
@@ -88,17 +90,17 @@ const fxuiAtEl=(id,el,o={})=>{const a=fxuiAt(el);return a?fxDom(id,a.x,a.y,o):nu
 
 /* ---- מה קורה במשחק → איזה אפקט. r: מה הפונקציה החזירה, a: הארגומנטים ---- */
 FXUI.hooks={
-  questClaim:(r,a)=>{if(!r||a[1]||fxuiWin())return;const b=fxuiBanner();fxDom('ui_toast',b.x,b.y-80,{size:170,lo:true});   // מעל ההודעה, לא עליה   // קווסט הושלם
+  questClaim:(r,a)=>{if(!r||a[1])return;const b=fxuiBanner();fxDom('ui_toast',b.x,b.y-80,{size:170,lo:true});   // מעל ההודעה, לא עליה   // קווסט הושלם
     const q=typeof QBY!=='undefined'&&QBY[a[0]];if(q&&q.reward&&q.reward.coins)setTimeout(()=>fxDom('ui_coin',b.x,b.y+40,{size:120}),250)},
-  qStart:()=>{if(!FXUI.ready||fxuiWin())return;const b=fxuiBanner();fxDom('ui_new',b.x,b.y-70,{size:150,lo:true})},          // קווסט חדש
-  rankUp:r=>{if(!r||fxuiWin())return;const b=fxuiBanner();fxDom('halo_ach',b.x,b.y-110,{size:120,add:true});fxDom('ui_ach',b.x,b.y-50,{size:200,lo:true,alpha:0.8})},   // דרגה
-  bookClaim:(r,a)=>{if(r&&!a[0]&&!fxuiWin()){const b=fxuiBanner();fxDom('ui_ach',b.x,b.y,{size:240,lo:true})}},           // ספר ההרפתקאות
-  challengeClaim:r=>{if(r&&!fxuiWin()){const b=fxuiBanner();fxDom('halo_ach',b.x,b.y-50,{size:140,add:true});fxDom('ui_ach',b.x,b.y,{size:240,lo:true})}},
-  shopBuy:r=>{if(r){const t=fxuiTap();fxDom('ui_buy',t.x,t.y,{size:160})}},                                      // חנות הריצה
-  gearCraft:r=>{if(r){const t=fxuiTap();fxDom('ui_buy',t.x,t.y,{size:180})}},                                    // נפחייה: יצירה
-  vTrade:(r,a)=>{if(r){const t=fxuiTap();fxDom(a[0]==='sell'?'ui_coin':'ui_buy',t.x,t.y,{size:140})}},          // שוק
-  decoBuy:r=>{if(!r){const t=fxuiTap();fxDom('ui_buy',t.x,t.y,{size:160})}},                                      // קישוטים: מחזיר סיבה רק כשנכשל
-  dailyClaim:r=>{if(r){const t=fxuiTap();fxDom('ui_buy',t.x,t.y,{size:180});fxDom('ui_coin',t.x,t.y-40,{size:120})}},   // המתנה היומית
+  qStart:()=>{if(!FXUI.ready)return;const b=fxuiBanner();fxDom('ui_new',b.x,b.y-70,{size:150,lo:true})},          // קווסט חדש
+  rankUp:r=>{if(!r)return;const b=fxuiBanner();fxDom('halo_ach',b.x,b.y-110,{size:120,add:true});fxDom('ui_ach',b.x,b.y-50,{size:200,lo:true,alpha:0.8})},   // דרגה
+  bookClaim:(r,a)=>{if(r&&!a[0]){const b=fxuiBanner();fxDom('ui_ach',b.x,b.y,{size:240,lo:true})}},           // ספר ההרפתקאות
+  challengeClaim:r=>{if(r){const b=fxuiBanner();fxDom('halo_ach',b.x,b.y-50,{size:140,add:true});fxDom('ui_ach',b.x,b.y,{size:240,lo:true})}},
+  shopBuy:r=>{if(r){const t=fxuiTap();fxDom('ui_buy',t.x,t.y,{size:160,tap:t.tap})}},                                      // חנות הריצה
+  gearCraft:r=>{if(r){const t=fxuiTap();fxDom('ui_buy',t.x,t.y,{size:180,tap:t.tap})}},                                    // נפחייה: יצירה
+  vTrade:(r,a)=>{if(r){const t=fxuiTap();fxDom(a[0]==='sell'?'ui_coin':'ui_buy',t.x,t.y,{size:140,tap:t.tap})}},          // שוק
+  decoBuy:r=>{if(!r){const t=fxuiTap();fxDom('ui_buy',t.x,t.y,{size:160,tap:t.tap})}},                                      // קישוטים: מחזיר סיבה רק כשנכשל
+  dailyClaim:r=>{if(r){const t=fxuiTap();fxDom('ui_buy',t.x,t.y,{size:180,tap:t.tap});fxDom('ui_coin',t.x,t.y-40,{size:120,tap:t.tap})}},   // המתנה היומית
   updGo:()=>{const m=fxuiMid();fxDom('ui_load',m.x,m.y,{size:96,loop:true,dur:8})},                              // גרסה חדשה: נטען
   bagAdd:(r,a)=>{if(!FXUI.ready||typeof gItem!=='function'||!gItem(a[0]))return;   // חפץ נכנס לתרמיל
     const t=performance.now();if(t-(FXUI.bagT||0)<600)return;FXUI.bagT=t;const p=fxuiBag();fxDom(gRar(a[0])>=3?'pickup_chest':'pickup_gem',p.x,p.y,{size:96})},
@@ -111,6 +113,7 @@ function fxuiWrap(name,after){
 /* ---- חלונות: אפקט לחלונות מיוחדים. תנועת הפתיחה כבר קיימת לכל חלון (winIn ב-style.css): לא דורסים אותה,
    כי החלפת animation מפעילה את winIn מחדש, ובזמן scale הבועה (position:fixed, itemtip.js) זזה אל מחוץ למסך ---- */
 function fxuiWinOpen(el){
+  for(const f of FXUI.list)if(f.free)fxuiEnd(f);   // הודעה שכבר רצה לא נשארת על החלון שנפתח
   FXUI.log.win=(FXUI.log.win||0)+1;
   const box=el.querySelector('.win')||el;
   for(const [id,o] of FXUI.open[el.id]||[])fxDom(id,0,0,Object.assign({anchor:box},o));
@@ -146,14 +149,14 @@ function fxuiButtons(){
     FXUI.lastTap={x:e.clientX,y:e.clientY,t:performance.now()};
     const b=e.target.closest&&e.target.closest('button,[data-act]');
     if(!b||b.disabled||b.closest(FXUI.skip)||!b.closest(FXUI.zone))return;
-    if(b.matches(FXUI.important)){const a=fxuiAt(b);if(a)fxDom('ui_juice',a.x,a.y,{size:Math.max(FXUI.juice,Math.min(a.w,200)*1.3)})}
-    else fxDom('ui_click',e.clientX,e.clientY,{size:FXUI.click,add:true});
+    if(b.matches(FXUI.important)){const a=fxuiAt(b);if(a)fxDom('ui_juice',a.x,a.y,{size:Math.max(FXUI.juice,Math.min(a.w,200)*1.3),tap:true})}
+    else fxDom('ui_click',e.clientX,e.clientY,{size:FXUI.click,add:true,tap:true});
   },{capture:true,passive:true});
   if(!matchMedia('(hover:hover) and (pointer:fine)').matches)return;   // ריחוף: רק במחשב עם עכבר
   addEventListener('pointerover',e=>{
     if(e.pointerType!=='mouse')return;const b=e.target.closest&&e.target.closest('button');
     if(!b||b===FXUI.hov||b.disabled||b.closest(FXUI.skip)||!b.closest(FXUI.zone))return;
-    FXUI.hov=b;const a=fxuiAt(b);if(a)fxDom('ui_hover',a.x,a.y,{size:FXUI.hover,add:true,alpha:0.8});
+    FXUI.hov=b;const a=fxuiAt(b);if(a)fxDom('ui_hover',a.x,a.y,{size:FXUI.hover,add:true,alpha:0.8,tap:true});
   },{passive:true});
   addEventListener('pointerout',e=>{if(FXUI.hov&&!FXUI.hov.contains(e.relatedTarget))FXUI.hov=null},{passive:true});
 }
@@ -176,6 +179,13 @@ function fxuiRare(){
   }
 }
 
+// לבדיקה (check.js, בכל צילום): כמה אפקטים חופשיים (לא צמודים ולא מנגיעה) יושבים עכשיו על חלון פתוח
+function fxuiOverWin(){
+  const wins=[...document.querySelectorAll('.ov:not([hidden]) .win,.ov:not([hidden]) .panel'+(typeof WINS!=='undefined'?','+WINS.map(w=>'#'+w.id+':not([hidden])').join(','):''))]
+    .map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height);
+  return FXUI.list.filter(f=>f.el&&f.free).map(f=>[f.id,f.el.getBoundingClientRect()])
+    .filter(([,a])=>wins.some(b=>a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom)).map(([id])=>id);
+}
 function fxuiInit(){
   for(const n in FXUI.hooks)fxuiWrap(n,FXUI.hooks[n]);
   fxuiWatchWins();fxuiWatchPlace();fxuiButtons();
