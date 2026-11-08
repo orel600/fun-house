@@ -2117,6 +2117,24 @@ function worldBot(m,L,god){
     'תחושת קרב בזירה: '+(afl.err||'עצירה '+afl.hit+'ms, הבזק '+afl.flash+'ms, נטייה אחורה '+(afl.lean?'✓':'✗')+', בלי הצטברות ('+afl.stack+'ms), '+afl.perSec+' עצירות בשנייה (מרווח), תקרה לשנייה '+(afl.budget?'✓':'✗')+', עצירה ארוכה של מערכת אחרת נחתכה אחרי '+afl.capCut+' פריימים של 20ms'+', הפחתת תנועה '+(afl.calm?'מכבה':'לא מכבה!')+
       ', חוצץ '+(afl.buf&&afl.fired?'✓':'✗')+', תנועת הטלה '+(afl.cast?'✓':'✗')+', Rampage '+(afl.ramp?(afl.rampOnce?'פעם אחת לרצף':'חוזר!'):'✗')+', בעולם '+(afl.world?'כלום':'משהו!')));
   // רגעים לסקילי הזירה (MLBB 1.1, skill-anim.js SKANIM.mo): רק מה שהיה חסר לפי טבלת הפערים. בתוך perCast, ו"פחות אפקטים" מוריד את הקישוטים
+  // רגע הסכנה של הבוס (arena-danger.js, MLBB 2.1): המילוי לפי השעונים האמיתיים מגיע ל-100% ברגע הפגיעה (בפריים האחרון לפניה: 1 פחות פריים),
+  // באמצע לפי החשבון (גל הדף: 0.4 מתוך 1.0 ברגע שהאזהרה נגמרת), תקתוק, הבזק, חריכה עד max, ו"פחות אפקטים" בלי חריכה. המכשף במג'נטה
+  const adg=await page.evaluate(()=>{const o={},mode=S.mode,fl=SAVE.fxLess,bak=JSON.stringify(SAVE);
+    try{reset();S.mode='play';enemies.length=0;S.arena='classic';SAVE.fxLess=false;P.hp=P.maxHp=1e9;
+      for(const k in ARDG.stat.hitP)delete ARDG.stat.hitP[k];const n0={...ARDG.stat};ARDGS.sc.length=0;
+      const b=makeBoss();b.x=P.x+200;b.y=P.y;S.boss=b;enemies.push(b);b.hp=b.max=1e12;
+      const run=(k,sec)=>{b.patT=99;b.arTele=null;doPattern(b,k);let mid=null;for(let i=0;i<sec*60;i++){b.patT=99;P.hp=P.maxHp;update(1/60);const st=ARDGS.b.get(b);if(st&&mid==null&&st.ph==='after')mid=st.p}return mid};
+      o.mShock=run('shock',2.5);o.mCharge=run('charge',2.5);run('ring',1.5);run('aimed',1.5);run('mines',2.5);run('shock',2.5);run('mines',2.5);
+      const H=ARDG.stat.hitP,ks=['shock','charge','ring','aimed','mines'];o.hit=ks.map(k=>k+' '+(H[k]==null?'-':H[k].toFixed(3))).join(', ');
+      o.full=ks.every(k=>H[k]>=0.97&&H[k]<=1);o.mid=Math.abs(o.mShock-0.4)<0.02&&Math.abs(o.mCharge-0.3/1.05)<0.02;
+      o.ticks=ARDG.stat.ticks-n0.ticks;o.flash=ARDG.stat.flash-n0.flash;o.sc=ARDGS.sc.length;o.scN=ARDG.stat.scorch-n0.scorch;
+      SAVE.fxLess=true;ARDGS.sc.length=0;run('shock',2.5);o.less=ARDGS.sc.length===0;
+      o.col=ARDG.col==='#FF3DD8'&&ATG.fallback.col===ARDG.col;
+    }catch(err){o.err=String(err&&err.stack||err)}
+    SAVE.fxLess=fl;mines.length=0;waves.length=0;enemies.length=0;S.boss=null;ARDGS.b.clear();ARDGS.sc.length=0;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!adg.err&&adg.full&&adg.mid&&adg.ticks>=8&&adg.flash>=5&&adg.sc>0&&adg.sc<=6&&adg.scN>adg.sc&&adg.less&&adg.col,
+    'רגע הסכנה של הבוס: '+(adg.err||'מילוי ברגע הפגיעה '+adg.hit+(adg.full?' ✓':' ✗')+', באמצע '+(adg.mShock??0).toFixed(2)+'/'+(adg.mCharge??0).toFixed(2)+(adg.mid?' ✓':' ✗')+
+    ', תקתוקים '+adg.ticks+', הבזקים '+adg.flash+', חריכה '+adg.sc+' מתוך '+adg.scN+(adg.sc<=6?' (עד 6)':' (מעל 6!)')+', פחות אפקטים '+(adg.less?'בלי חריכה':'עם חריכה!')+', מג\'נטה '+(adg.col?'✓':'✗')));
   const smo=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},fl=SAVE.fxLess;
     try{startRun();S.mode='play';enemies=[];P.x=0;P.y=0;S.cam.x=0;S.cam.y=0;SAVE.fxLess=false;
       for(let i=0;i<6;i++){const e=addEnemy('grunt',60+i*25,(i%2?40:-40));e.hp=e.max=1e9;e.elite=false}
