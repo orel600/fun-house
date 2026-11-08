@@ -25,7 +25,11 @@ const JUICE={
   impact:{max:16,life:0.14,r:16,rCrit:28,rays:4},
   // שובל של הנפת חרב/גרזן/פטיש: חרמש של אור בצבע סוג הנזק, עם קצה לבן. w: רוחב מרבי. רק בעולם ובכפר (בזירה נשאר הקו הישן)
   swing:{w:22,edge:4,alpha:0.95},
-  nums:{max:12,life:0.7,pop:0.12,popK:1.8,rise:40,size:11,weak:15,resist:11,crit:22,critCol:'#FFE14D'},   // מספרי נזק: תקרה, משך, קפיצה בהתחלה, כמה עולים, גדלים, צבע קריטי. קטנים ב-25% וקצרים יותר מ-1.11 (docs/plan-hud.md פרק 6), ולא יותר מ-12 על המסך
+  nums:{max:12,life:0.7,pop:0.12,popK:1.8,rise:40,size:11,weak:15,resist:11,crit:22,critCol:'#FFE14D',merge:0.4,grow:1.35},   // מספרי נזק: תקרה, משך, קפיצה בהתחלה, כמה עולים, גדלים, צבע קריטי. קטנים ב-25% וקצרים יותר מ-1.11 (docs/plan-hud.md פרק 6), ולא יותר מ-12 על המסך
+                                                                                                           // merge: מכה באותו אויב בתוך כמה שניות מצטרפת למספר שלו (W6, כמו ARENAUI.merge בזירה). grow: עד פי כמה המספר המתמזג גדל
+  // תקציב שכבות טקסט על המסך (W6, 8.11.2026, טלפון קודם): מספרי נזק + טקסטים צפים (floats: נזק לשחקן, XP) + בועת דיבור של אויב (foelore.js) + כרטיס פגישה ראשונה.
+  // מעבר ל-max, מספר נזק חדש זורק את הוותיק. בקרב צפוף זה מה שמונע ערימת מספרים אחד על השני
+  layers:{max:16},
   resist:0.5,tip:{after:3,gap:1.2},                             // מכפיל של 0.5 ומטה: "עמיד" במקום מספר. tip: אחרי 3 שניות של מכות חלשות (בלי הפסקה של יותר מ-1.2) שורה בפיד עם סוג נזק טוב יותר, פעם אחת לכל סוג אויב
   shake:{kill:1.6,crit:3.5,elite:6,big:9},                      // רעידה: הריגה רגילה (קטנטנה), קריטי, עלית או מיוחד, שומר/מבוקש/בוס
   snd:{weak:1.3,crit:1.7,grow:0.6},                                      // צליל הפגיעה חזק יותר: חולשה, קריטי (combat.js קורא jSnd)
@@ -63,15 +67,24 @@ function juiceHit(e,d,m,crit,t,ang){
   jBurst(e.x,hy,t,crit?K.parts.crit:m>1?K.parts.weak:m<1?3:K.parts.hit,ang);
   const fxs=typeof fxcHit==='function'&&fxcHit(e,t,crit,m,hy);   // בעולם: פיצוץ לפי סוג הנזק מהגיליון במקום ההבזק (fxcombat.js)
   if(!fxs&&(m>=1||crit)&&!(fxLess()&&!crit)){if(J.fl.length>=K.impact.max)J.fl.shift();J.fl.push({x:e.x-Math.cos(ang||0)*e.r*0.4,y:hy,t0:jNow(),r:crit?K.impact.rCrit:K.impact.r*(m>1?1.25:1),col:dtCol(t),a:rand(0,1.6)})}
-  if(J.n.length>=K.nums.max)J.n.shift();
-  const N=K.nums;
+  const N=K.nums,now=jNow();
   // עמיד (ניר, 1.11: "0!" נראה כמו באג): במקום המספר "🛡 עמיד" באפור, וסמל סוג הנזק לידו
   const res=m<=K.resist;
-  J.n.push({x:e.x+rand(-10,10),y:e.y-e.r-10,txt:res?'🛡 '+T(m<=0?'jc.immune':'jc.resist'):big(d)+(crit&&!res?'!':''),crit:crit&&!res,t0:jNow(),
-    col:res?C.dim:crit?N.critCol:m>1?dtCol(t):m<1?C.dim:C.chalk,size:Math.max(9,(res?N.resist:crit?N.crit:m>1?N.weak:m<1?N.resist:N.size)*(fxLess()?FX_LESS.nums:1)),weak:m>1||res?t:null,dx:rand(-14,14)});
+  // מיזוג (W6): מכה נוספת באותו אויב בתוך merge שניות מצטרפת למספר שלו וגדלה, במקום מספר חדש מעל מספר. קריטי ועמיד נשארים לבד
+  const f=crit||res?null:jFind(J.n,e,now,N.merge);
+  if(f){f.n+=d;f.txt=big(f.n);f.t0=now;f.size=Math.min(f.sz0*N.grow,f.size+0.6);f.x=e.x;f.y=e.y-e.r-10;if(m>1){f.col=dtCol(t);f.weak=t}}
+  else{jRoom(J,N);const sz=Math.max(9,(res?N.resist:crit?N.crit:m>1?N.weak:m<1?N.resist:N.size)*(fxLess()?FX_LESS.nums:1));
+    J.n.push({e,n:d,x:e.x+rand(-10,10),y:e.y-e.r-10,txt:res?'🛡 '+T(m<=0?'jc.immune':'jc.resist'):big(d)+(crit&&!res?'!':''),crit:crit&&!res,res,t0:now,b0:now,sz0:sz,size:sz,
+      col:res?C.dim:crit?N.critCol:m>1?dtCol(t):m<1?C.dim:C.chalk,weak:m>1||res?t:null,dx:rand(-14,14)})}
   if(m<1&&!e.node)jTip(e,t);else if(e.jRes)e.jRes=null;
   return true;
 }
+// המספר הצעיר של אותו אויב, אם יש (בלי הקצאות: לולאה מהסוף)
+function jFind(L,e,now,gap){for(let i=L.length-1;i>=0;i--){const f=L[i];if(f.e===e&&!f.crit&&!f.res&&now-f.t0<gap)return f}return null}
+// כמה שכבות טקסט יש עכשיו על המסך: מספרי נזק, טקסטים צפים, בועת דיבור וכרטיס פגישה (JUICE.layers)
+function jLayers(J){return J.n.length+(typeof floats!=='undefined'?floats.length:0)+(S.wd&&S.wd.flSay?1:0)+(typeof FLC!=='undefined'&&FLC.on?1:0)}
+// מקום למספר חדש: לא יותר מ-nums.max מספרים, ולא יותר מ-layers.max שכבות. הוותיק נזרק
+function jRoom(J,N){while(J.n.length&&(J.n.length>=N.max||jLayers(J)>=JUICE.layers.max))J.n.shift()}
 // טיפ בפיד: מכים כמה שניות בסוג נזק חלש נגד אותו אויב. אילו סוגים עדיפים: לפי e.mult (מטבלת היעילות DMG.chart). פעם אחת לכל סוג אויב
 const JTIP={};
 function jTip(e,t){
@@ -137,30 +150,31 @@ function jSwing(s,k,col){
     for(let i=1;i<=ns;i++){ctx.globalAlpha=0.55*fade/i;ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,R+w*0.5+i*7,a0+(end-a0)*0.25,end);ctx.stroke()}}
   ctx.restore();return true;
 }
-// נקרא מ-render() בקואורדינטות העולם, אחרי הניצוצות הרגילים
+// נקרא מ-render() בקואורדינטות העולם, אחרי הניצוצות הרגילים.
+// בלי הקצאות בכל פריים (W6): מה שנגמר נזרק בדחיסה במקום (j++), ולא ב-filter שבונה מערך חדש ארבע פעמים בפריים
 function juiceDraw(){
   const J=S&&S.jc;if(!J)return;
   const now=jNow(),dt=S.hitstop>0||S.mode!=='play'?0:Math.min(0.05,now-(J.t||now));J.t=now;
-  ctx.save();
+  ctx.save();let j=0;
   // עשן וטבעת
-  for(const f of J.poofs){const k=(now-f.t0)/JUICE.poof.life;if(k>=1)continue;
+  for(const f of J.poofs){const k=(now-f.t0)/JUICE.poof.life;if(k>=1)continue;J.poofs[j++]=f;
     ctx.globalAlpha=0.6*(1-k);ctx.strokeStyle=f.col;ctx.lineWidth=3*(1-k)+1;ctx.beginPath();ctx.ellipse(f.x,f.y,f.r+JUICE.poof.ring*k,(f.r+JUICE.poof.ring*k)*0.55,0,0,7);ctx.stroke();
     ctx.fillStyle=JUICE.poof.col;
     for(const p of f.pf){ctx.globalAlpha=0.55*(1-k);ctx.beginPath();ctx.arc(f.x+Math.cos(p.a)*p.s*k,f.y+Math.sin(p.a)*p.s*k*0.6-k*18,p.r*(0.6+k*0.8),0,7);ctx.fill()}}
-  J.poofs=J.poofs.filter(f=>now-f.t0<JUICE.poof.life);
+  J.poofs.length=j;j=0;
   // הבזק פגיעה: עיגול לבן שנפתח, טבעת וקרניים בצבע סוג הנזק
   const I=JUICE.impact;ctx.globalCompositeOperation='lighter';
-  for(const f of J.fl){const k=(now-f.t0)/I.life;if(k>=1)continue;const r=f.r*(0.5+k*0.8);
+  for(const f of J.fl){const k=(now-f.t0)/I.life;if(k>=1)continue;J.fl[j++]=f;const r=f.r*(0.5+k*0.8);
     ctx.globalAlpha=0.9*(1-k);ctx.fillStyle=f.col;ctx.beginPath();ctx.arc(f.x,f.y,r*0.55,0,7);ctx.fill();
     ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(f.x,f.y,r*0.28*(1-k),0,7);ctx.fill();
     ctx.strokeStyle=f.col;ctx.lineWidth=3*(1-k)+0.5;ctx.beginPath();ctx.arc(f.x,f.y,r,0,7);ctx.stroke();
     ctx.lineWidth=2.5*(1-k)+0.5;ctx.strokeStyle='#fff';ctx.beginPath();
     for(let i=0;i<I.rays;i++){const a=f.a+i*Math.PI/I.rays*2,r0=r*0.4,r1=r*1.5;ctx.moveTo(f.x+Math.cos(a)*r0,f.y+Math.sin(a)*r0*0.8);ctx.lineTo(f.x+Math.cos(a)*r1,f.y+Math.sin(a)*r1*0.8)}
     ctx.stroke()}
-  J.fl=J.fl.filter(f=>now-f.t0<I.life);ctx.globalCompositeOperation='source-over';
+  J.fl.length=j;j=0;ctx.globalCompositeOperation='source-over';
   // ניצוצות
   for(const p of J.p){
-    p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=p.g*dt;p.vx*=1-dt*3;p.rot+=p.vr*dt;p.life-=dt;
+    p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=p.g*dt;p.vx*=1-dt*3;p.rot+=p.vr*dt;p.life-=dt;if(p.life<=0)continue;J.p[j++]=p;
     const a=Math.max(0,Math.min(1,p.life*3));ctx.globalAlpha=a;ctx.fillStyle=ctx.strokeStyle=p.col;
     if(p.k==='physical'){ctx.lineWidth=2;const l=0.05;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-p.vx*l,p.y-p.vy*l);ctx.stroke()}
     else if(p.k==='lightning'){ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(p.x-6,p.y-6);ctx.lineTo(p.x+2,p.y-1);ctx.lineTo(p.x-2,p.y+1);ctx.lineTo(p.x+6,p.y+6);ctx.stroke()}
@@ -168,15 +182,15 @@ function juiceDraw(){
     else if(p.k==='earth'){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillRect(-p.sz/2,-p.sz/2,p.sz,p.sz);ctx.restore()}
     else{ctx.beginPath();ctx.arc(p.x,p.y,p.k==='fire'?p.sz*a:p.sz,0,7);ctx.fill()}
   }
-  J.p=J.p.filter(p=>p.life>0);
-  // מספרי נזק: קופצים גדולים, מתכווצים, עולים ונעלמים
+  J.p.length=j;j=0;
+  // מספרי נזק: קופצים גדולים (פעם אחת, מהלידה b0, גם אחרי מיזוג), מתכווצים, עולים ונעלמים
   const N=JUICE.nums;ctx.textAlign='center';ctx.direction='ltr';ctx.lineJoin='round';
-  for(const f of J.n){const k=(now-f.t0)/N.life;if(k>=1)continue;
-    const pop=k<N.pop/N.life?N.popK-(N.popK-1)*k/(N.pop/N.life):1,sz=f.size*pop*(f.crit?1:1),y=f.y-N.rise*Math.sqrt(k),x=f.x+f.dx*k;
+  for(const f of J.n){const k=(now-f.t0)/N.life;if(k>=1)continue;J.n[j++]=f;
+    const kb=(now-f.b0)/N.life,pop=kb<N.pop/N.life?N.popK-(N.popK-1)*kb/(N.pop/N.life):1,sz=f.size*pop,y=f.y-N.rise*Math.sqrt(k),x=f.x+f.dx*k;
     ctx.globalAlpha=k>0.7?(1-k)/0.3:1;ctx.font='900 '+sz.toFixed(1)+'px Heebo, system-ui, sans-serif';
     ctx.lineWidth=f.crit?5:3.5;ctx.strokeStyle='#000b';ctx.strokeText(f.txt,x,y);ctx.fillStyle=f.col;ctx.fillText(f.txt,x,y);
     if(f.weak){const w=ctx.measureText(f.txt).width;dtIcon(x+w/2+sz*0.45,y-sz*0.35,f.weak,sz*0.7)}}   // חולשה: הסמל של סוג הנזק ליד המספר
-  J.n=J.n.filter(f=>now-f.t0<N.life);
+  J.n.length=j;
   // רצף הריגות ליד הדמות
   const St=JUICE.streak;if(J.st>=St.show&&now-J.stT<St.gap){const pk=J.stPop&&now-J.stPop<St.pop?1+(St.popK-1)*(1-(now-J.stPop)/St.pop):1,
     sz=St.size*pk*(1+Math.min(0.5,J.st/200)),fade=Math.min(1,(St.gap-(now-J.stT))/0.5),txt='×'+J.st;
