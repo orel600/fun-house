@@ -8,7 +8,7 @@
    רק בכפר ובעולם. הזירה (של אוראל) לא משתנה: occK=0 שם, והסימנים החדשים לא מצוירים. עוטף את render3d מבחוץ (syncPlayer, syncEnemy, crowdAdd). ?read=0 מכבה */
 const READ3D={
   on:!/[?&]read=0/.test(location.search),
-  see:{r:120,edge:0.3,keep:0.3,minY:24,lift:32,near:18,fade:5},   // r: רדיוס העיגול (יחידות משחק) סביב אמצע הגוף. keep: כמה נשאר מהעץ. near: כמה לפני הגיבור מתחיל החיתוך. fade: כמה מהר נדלק בכניסה
+  see:{r:120,edge:0.3,keep:0.3,minY:24,lift:32,near:18,fade:5,skip:['v_gate']},   // skip: מודלים שלא נעשים שקופים (השער: הגיבור עומד מתחת לקשת ולא מוסתר בה, והגג קיבל נקודות. באג 8.11.2026). r: רדיוס העיגול (יחידות משחק) סביב אמצע הגוף. keep: כמה נשאר מהעץ. near: כמה לפני הגיבור מתחיל החיתוך. fade: כמה מהר נדלק בכניסה
   hero:{col:0xF4F7FF,op:0.8,r:22,in:0.72},          // הטבעת מתחת לגיבור: צבע, שקיפות, רדיוס, ועובי (in: הרדיוס הפנימי ביחס)
   foe:{shadow:0.38,sk:1.05,rim:0.6,rk:1.1,rkWeak:1.32,in:0.86}   // אויבים: צל נוסף, קו כהה (rk: רדיוס ביחס ל-e.r*1.15; עם חולשה מחוץ לטבעת שלה)
 };
@@ -37,6 +37,7 @@ function rdScan(){
   let st='';for(const g of roots)st+=g.id+':'+g.children.length+':'+(R3D.wld&&R3D.wld.terr?R3D.wld.terr.chunks.length:0)+';';st+=typeof M3D!=='undefined'?M3D.hv:'';
   if(st===RD.stamp)return;RD.stamp=st;
   const ridge=R3D.wld&&R3D.wld.terr&&R3D.wld.terr.ridge;
+  for(const k of READ3D.see.skip){const t=R3D.props&&R3D.props[k];if(t)t.traverse(o=>{if(o.isMesh)[].concat(o.material).forEach(m=>RD.seen.add(m))})}   // העותקים (vPut) חולקים את החומרים של המודל
   for(const g of roots)g.traverse(o=>{if(!o.isMesh||o.isSkinnedMesh||o===ridge)return;if(Array.isArray(o.material))o.material.forEach(rdPatch);else rdPatch(o.material)});
 }
 // איפה הגיבור על המסך (בפיקסלים של הציור) ובאיזה עומק: נקרא אחרי שהמצלמה זזה ולפני הציור
