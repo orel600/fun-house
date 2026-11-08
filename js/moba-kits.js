@@ -97,7 +97,7 @@ function mbCast(u,slot,aim){
       mbDmg(u,t,s.dmg*k,s.dt,{big:t.k==='hero'});mbAnimHit(t,s.dt);mbfxLib('tr_slash_crimson',t.x,t.y-t.r-6,{rot:u.face,size:MBFXSK.tr_slash_crimson.size,add:true});
       u.st.step={t:s.bonusT,dmg:s.bonus*k,slow:s.slow,slowT:s.slowT};
       mbfxSk('sf_fog',u.x,u.y,{size:130});mbFeelReset(u);
-      u.cd[slot]=s.cd*(1-mbIb(u).cdr);if(u.me)sfx('tap');return true}   // הפנים כבר אל המטרה (לא אל הנקודה שממנה יצא)
+      u.cd[slot]=s.cd*(1-mbIb(u).cdr);if(u.me)sfxCast(s.dt||MBKIT[u.kit].dt);return true}   // הפנים כבר אל המטרה (לא אל הנקודה שממנה יצא)
     case 'vanish':{   // קפיצה הרחק מהאויב הקרוב (בלי אויב: אחורה) + כיסוי. תקיפה או סקיל מסיימים את הכיסוי
       const f=mbNearest(u,MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&mbSeen(o,u.team)),400),a=f?Math.atan2(u.y-f.y,u.x-f.x):u.face+Math.PI;
       mbfxSk('sf_fog',u.x,u.y,{size:180,alpha:0.9});
@@ -107,10 +107,10 @@ function mbCast(u,slot,aim){
       if(t.mark)fxStop(t.mark.fx);
       t.mark={by:u,end:MB.t+s.t,share:s.share,endDmg:s.end*k,dmg:0,fx:mbfxSk('tg_skull',t.x,t.y,{follow:t,dy:-70,loop:true,dur:s.t})};
       mbWord(t,'marked');break}
-    case 'blizzard':{const p=pt();mbfxSk('sk_blizzard',p.x,p.y,{r:s.r,loop:true,dur:s.delay+0.4});mbZone(u,p.x,p.y,s.r,s.delay,z=>{for(const o of foesIn(z.x,z.y,z.r)){const wet=o.st.wet>0;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'stun',s.freeze*(wet?MOBA.combo.freeze:1),u)&&wet){o.st.wet=0;mbWord(o,'freeze')}if(o.st.stun>0)o.st.ice=1;mbAnimHit(o,s.dt)}mbBoom(z.x,z.y,s.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt));mbfxSk('sk_blizzard_ice',z.x,z.y,{r:z.r});mbAnimLand('blizzard',z.x,z.y,s)},'blizzard');break}
+    case 'blizzard':{const p=pt();mbfxSk('sk_blizzard',p.x,p.y,{r:s.r,loop:true,dur:s.delay+0.4});mbZone(u,p.x,p.y,s.r,s.delay,z=>{for(const o of foesIn(z.x,z.y,z.r)){const wet=o.st.wet>0;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'stun',s.freeze*(wet?MOBA.combo.freeze:1),u)&&wet){o.st.wet=0;mbWord(o,'freeze');if(u.me)sfxCombo('freeze')}if(o.st.stun>0)o.st.ice=1;mbAnimHit(o,s.dt)}mbBoom(z.x,z.y,s.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt));mbfxSk('sk_blizzard_ice',z.x,z.y,{r:z.r});mbAnimLand('blizzard',z.x,z.y,s)},'blizzard');break}
   }
   u.cd[slot]=s.cd*(1-mbIb(u).cdr);u.face=ang;u.aim=ang;
-  if(u.me)sfx(slot==='ult'?'levelup':'tap');
+  if(u.me)sfxCast(s.dt||MBKIT[u.kit].dt,slot==='ult'?1.3:1);   // רק השחקן: הצליל של סוג הנזק, ובסקיל-על נמוך וחזק (audio.js)
   if(slot==='ult'){mbfxUlt(u,s);mbfxUltLib(u)}   // רגע דרמטי, ועיגול קסם ועמוד אור מהספרייה (moba-fx.js)
   return true;
 }

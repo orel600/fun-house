@@ -70,7 +70,7 @@ function mbDmg(src,t,d,dt,o={}){
   if(t.k==='hero'&&src&&src!==t)t.hurtT=MB.t;
   if(src&&src.k==='hero'&&src.st.rage>0)d*=src.st.rageK;
   if(typeof mbSpellDmgK==='function')d*=mbSpellDmgK(src);   // תשישות (moba-spells.js)
-  if(t.st.wet>0&&dt==='lightning'){d*=MOBA.combo.shock;t.st.wet=0;mbWord(t,'shock');mbfxLib('st_shock',t.x,t.y-30,{follow:t,dy:-30,size:110,add:true})}   // קומבו: רטוב + ברק
+  if(t.st.wet>0&&dt==='lightning'){d*=MOBA.combo.shock;t.st.wet=0;mbWord(t,'shock');if(src&&src.me)sfxCombo('shock');mbfxLib('st_shock',t.x,t.y-30,{follow:t,dy:-30,size:110,add:true})}   // קומבו: רטוב + ברק
   if(t.k==='hero')d*=1-Math.min(MBITEM.cap.def,(MBKIT[t.kit].def||0)+mbIb(t).def);   // הנפח והלוחם נלחמים מקרוב, וסופגים קצת פחות. ועוד הגנה מחפצים (moba-items.js)
   if(t.st.rage>0)d*=1-(t.st.rageDef||0);   // זעם של הלוחם: סופג פחות
   if(t.st.armor>0){d*=1-t.st.armorK;   // קריאת קרב: הנפח סופג, ומי שמכה בו מקרוב נשרף
