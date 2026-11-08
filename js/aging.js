@@ -131,10 +131,11 @@ function forgeBar(){
 function forgeDraw(){
   $('fLevel').textContent=AUI.tab==='age'?T('age.cap',ageCap()):'';
   $('fRes').innerHTML=forgeBar();
-  $('fTabs').innerHTML=['age','pow','fuse'].map(t=>'<button data-tab="'+t+'"'+(AUI.tab===t?' aria-pressed="true"':'')+'>'+T('forge.tab.'+t)+'</button>').join('');
+  $('fTabs').innerHTML=['age','pow','fuse','tool'].map(t=>'<button data-tab="'+t+'"'+(AUI.tab===t?' aria-pressed="true"':'')+'>'+T('forge.tab.'+t)+'</button>').join('');
   itemTip($('fDetail'));   // הבועה (itemtip.js) רק בלשונית השדרוג
   if(AUI.tab==='pow'){powDraw();return}   // כוחות: powers.js
   if(AUI.tab==='fuse'){fuseDraw();return}   // התכה: fuse.js
+  if(AUI.tab==='tool'){gtDraw();return}   // כלי איסוף: gtool.js
   $('fItems').innerHTML=forgeItemsHtml(AGING.slots)||'<p class="dim">'+T('age.noItems')+'</p>';
   // הפרטים: מה ישתנה, הסיכוי, המחיר, ומה קורה בכישלון
   const id=aSelId();let d='<p class="dim">'+T('age.hint')+'</p>';
@@ -169,6 +170,7 @@ $('ovForge').addEventListener('click',e=>{
   else if(b.dataset.tab){AUI.tab=b.dataset.tab;AUI.sel=null;AUI.allRes=false}
   else if(AUI.tab==='pow'&&powClick(b));   // כוחות (powers.js)
   else if(AUI.tab==='fuse'&&fuseClick(b));   // התכה (fuse.js)
+  else if(AUI.tab==='tool'&&gtClick(b));   // כלי איסוף (gtool.js)
   else if(b.dataset.id||b.dataset.slot)AUI.sel=b.getAttribute('aria-pressed')==='true'?null:b.dataset.id?{id:b.dataset.id}:{slot:b.dataset.slot,i:+b.dataset.i};   // נגיעה שנייה: הבועה נסגרת
   else if(b.dataset.act==='gem')AUI.gem=!AUI.gem;
   else if(b.dataset.act==='age'){

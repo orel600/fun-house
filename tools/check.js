@@ -2754,6 +2754,31 @@ function worldBot(m,L,god){
     'מומחיות איסוף: '+(gmr.err||((gmr.t1?'דרגה 1 בקצב של היום':'דרגה 1 שונה!')+(gmr.t2?', עלייה לדרגה 2 עם חגיגה ושמירה':', בלי עלייה')+(gmr.magnet?', שלל נמשך מרחוק':', בלי משיכה')+
     (gmr.t3?', מכה גם בעץ צמוד':gmr.pair?', בלי צמוד':', לא נמצאו עצים צמודים')+(gmr.t4?', מכה חזקה':', בלי מכה חזקה')+(gmr.t5?', נצנוץ זהב':', בלי נצנוץ')+(gmr.win?', בחלון הדמות':', לא בחלון הדמות')+
     (gmr.blank?', בשמירה':', לא בשמירה')+(gmr.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
+  // כלי איסוף ביד (gtool.js): דרגה 1 בקצב של היום, דרגה גבוהה מכה חזק יותר, מתכת קשה עם כלי חלש לאט (לא חסום), הכלי ביד, תנאי נפחייה ומומחיות,
+  // שדרוג עם שעון שנגמר, הלשונית בנפחייה, השלט בכפר, שמירה, ובזירה בלי שינוי
+  const gtr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{SAVE.gt={axe:1,hammer:1,job:{}};SAVE.gm={wood:0,stone:0,plant:0};enterWorld('home');enemies=[];S.mode='play';P.inv=99;const G=GTOOL,sh=n=>wKind(n.kind).shape;
+      const t=S.nd.list.find(n=>!n.dead&&sh(n)==='tree');o.tree=!!t;
+      t.hp=1e4;gHit(t,0,10);o.t1=t.hp===1e4&&gtHeld()==='axe';
+      SAVE.gt.axe=3;t.hp=1e4;gHit(t,0,10);o.t3=t.hp===1e4-10*(G.tiers[3].pow-1);
+      const v={node:true,kind:'silver',x:t.x+2000,y:t.y,r:24,hp:1e4};o.metal=gtOf(v)==='hammer';
+      gHit(v,0,10);o.slow=v.hp===1e4+10*(1-G.slow)&&gtHeld()==='hammer';
+      SAVE.gt.hammer=G.hard.silver;v.hp=1e4;gHit(v,0,10);o.hard=v.hp===1e4-10*(G.tiers[G.hard.silver].pow-1);
+      SAVE.gt={axe:1,hammer:2,job:{}};const lv=SAVE.village.forge;SAVE.village.forge=1;o.bForge=gtBlock('axe')==='forge';
+      SAVE.village.forge=5;o.bGm=gtBlock('hammer')==='gm';for(const r in G.cost[2])SAVE.bag[r]=(SAVE.bag[r]||0)+G.cost[2][r];
+      o.start=gtStart('axe')&&!!gtJob('axe')&&gtTier('axe')===1&&gtBlock('axe')==='job'&&gtLeft('axe')>0;
+      o.sign=(gtSign()||'').startsWith('⏳');
+      SAVE.gt.job.axe.end=Date.now()-1;const d0=G.stat.done;gtTick();o.done=gtTier('axe')===2&&!gtJob('axe')&&G.stat.done===d0+1;
+      AUI.tab='tool';gtDraw();o.tab=document.querySelectorAll('#fItems .gtcard').length===2;SAVE.village.forge=lv;
+      if(R3D.on){const L=heroLook();o.look=!!(L.props.tool_axe&&L.props.tool_hammer)}else o.look=true;
+      o.blank=saveBlank().gt.axe===1;
+      const wd=S.wd;S.wd=null;try{SAVE.gt.axe=5;t.hp=1e4;P.gtHold=null;gHit(t,0,10);o.arena=t.hp===1e4&&!gtHeld()}finally{S.wd=wd}
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];SAVE=JSON.parse(bak);P.gtHold=null;AUI.tab='age';enterVillage();return o});
+  check(!gtr.err&&gtr.tree&&gtr.t1&&gtr.t3&&gtr.metal&&gtr.slow&&gtr.hard&&gtr.bForge&&gtr.bGm&&gtr.start&&gtr.sign&&gtr.done&&gtr.tab&&gtr.look&&gtr.blank&&gtr.arena,
+    'כלי איסוף: '+(gtr.err||((gtr.t1?'דרגה 1 בקצב של היום והגרזן ביד':'דרגה 1 שונה!')+(gtr.t3?', דרגה 3 חזקה יותר':', בלי חיזוק')+(gtr.slow?', כסף עם פטיש חלש לאט':', כסף חסום או רגיל!')+
+    (gtr.hard?', ובפטיש מתאים רגיל':', פטיש מתאים לא עוזר')+(gtr.bForge&&gtr.bGm?', תנאי נפחייה ומומחיות':', תנאים שגויים')+(gtr.start&&gtr.sign?', שעון ושלט בכפר':', השעון לא התחיל')+
+    (gtr.done?', השעון נגמר והדרגה עלתה':', הדרגה לא עלתה')+(gtr.tab?', לשונית בנפחייה':', אין לשונית')+(gtr.look?', הכלים בדמות בתלת-ממד':', אין כלים בתלת-ממד')+(gtr.blank?', בשמירה':', לא בשמירה')+(gtr.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
   // העלילה, פרק 5 (story.js, WORLD.regions.storm): השביל מהמדבר למגדלים סגור עד שפנס האש דולק, במגדלים גשם, ברקים ומגדלים שבורים שאי אפשר לעבור,
   // אויבים מחושמלים (חלשים לאדמה), ושומר הסערה מסמן עיגולי ברק שמתפוצצים אחרי שנייה: מי שנשאר נפגע, מי שזז לא
   const ch5=await page.evaluate(()=>{

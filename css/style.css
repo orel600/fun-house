@@ -2027,3 +2027,9 @@ body.mb .skb:is(.lock,.off){border-color:#4A5061;box-shadow:var(--bz,0 0 0 2px v
 body.mb .skb:is(.lock,.off) :is(.mbski,.mbpic,.mbgi){opacity:.4;filter:grayscale(1) drop-shadow(0 1px 1px #000a)}
 body.mb .skb.lock i{background:none}
 body.mb .skb.lock::after{content:none}
+/* כלי איסוף בלשונית "כלים" בנפחייה (gtool.js): כרטיס לכל כלי לכל הרוחב */
+#ovForge .gtcard{grid-column:1/-1;display:flex;gap:8px;align-items:flex-start;padding:6px;border-radius:10px;background:rgba(255,255,255,.05)}
+#ovForge .gtcard>img{width:44px;height:44px;flex:none;object-fit:contain}
+#ovForge .gtcard p{margin:2px 0}
+#ovForge .gtcard .vbtn{margin-top:4px}
+#ovForge .gtwait{color:var(--gold,#F2C14E);font-weight:700}
