@@ -12,10 +12,13 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 
 - backpack
 - biceps
+- brick-wall
 - enrage
+- eye-target
 - falling-star
 - healing
 - heart-beats
+- holy-water
 - jump-across
 - podium-winner
 - running-shoe
@@ -28,11 +31,15 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 
 ### Lorc (http://lorcblog.blogspot.com) - CC BY 3.0
 
+- anvil-impact
 - arrow-cluster
+- arrow-dunk
+- arrow-flights
 - battle-axe
 - big-wave
 - bleeding-wound
 - broadsword
+- bubbles
 - burning-meteor
 - checked-shield
 - clover
@@ -43,12 +50,17 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - earth-crack
 - earth-spit
 - fairy-wand
+- fishing-net
+- frozen-orb
 - ghost
+- hammer-drop
 - high-shot
 - ice-shield
 - ice-spear
+- lantern-flame
 - lightning-arc
 - lightning-branches
+- lightning-helix
 - lightning-storm
 - lotus-flower
 - magic-portal
@@ -56,28 +68,38 @@ Icons by Delapouite, Lorc, Sbed, Skoll from [game-icons.net](https://game-icons.
 - meteor-impact
 - mountains
 - open-book
+- padlock
 - rainbow-star
 - return-arrow
 - rock
 - run
 - sands-of-time
 - scroll-unfurled
+- shield-reflect
+- shouting
 - snowflake-2
 - sprint
 - spyglass
 - star-swirl
 - stone-tower
+- sword-spin
+- thunder-struck
 - treasure-map
 - vine-whip
 - vortex
+- wave-crest
+- wave-strike
 - whirlwind
 - wind-slap
+- wingfoot
 - wizard-staff
 - wolf-trap
 
 ### Sbed (http://opengameart.org/content/95-game-icons) - CC BY 3.0
 
 - fire
+- health-increase
+- weight-crush
 
 ### Skoll - CC BY 3.0
 
