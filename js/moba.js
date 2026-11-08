@@ -35,7 +35,7 @@ let MB=null;
 /* ---- יחידות ---- */
 let mbN=0;
 function mbUnit(o){return Object.assign({id:++mbN,x:0,y:0,r:16,hp:100,max:100,dead:false,flash:0,kx:0,ky:0,ph:0,speed:0,aim:0,face:0,moving:false,atkT:0,aggro:0,
-  st:{stun:0,taunt:0,tBy:null,slow:0,slowK:0,wet:0,armor:0,armorK:0,burnBack:0,burn:0,burnD:0,burnBy:null,rage:0,imm:0,ice:0,root:0,bub:0,dash:null}},o)}
+  st:{stun:0,taunt:0,tBy:null,slow:0,slowK:0,wet:0,armor:0,armorK:0,burnBack:0,burn:0,burnD:0,burnBy:null,rage:0,imm:0,ice:0,root:0,bub:0,dash:null,step:null,veil:0,veilSp:1,veilCrit:0,poison:0}},o)}
 function mbHero(kit,team,me,i){
   const K=MBKIT[kit],hx=(team?1:-1)*(MOBA.base.x-110),hy=(i-1)*70;
   return mbUnit({k:'hero',kit,team,me,bot:me?null:{t:0,mode:'push'},type:'mb_'+kit,x:hx,y:hy,home:{x:hx,y:hy},face:team?Math.PI:0,
@@ -54,7 +54,9 @@ function mbHittable(b){
   if(b.k==='base')return !MB.u.some(o=>o.k==='tower'&&o.team===b.team&&!o.dead);
   return true;
 }
-const mbSpeed=u=>u.speed*(1+mbIb(u).spd)*(u.st.slow>0?1-u.st.slowK:1)*(u.st.rage>0?u.st.rageSp:1)*(mbHaste(u)?MOBA.haste.k:1)*(u.st.flee>0?u.st.fleeK:1)*(typeof mbSpellSpd==='function'?mbSpellSpd(u):1);   // spd: מגפיים (moba-items.js)
+// אפשר לכוון אליו: מתנקש מכוסה (היעלמות, moba-kits.js) לא מטרה לתקיפה אוטומטית, למגדלים, לחיילים, לכיוון ולבוטים. רואים אותו, ואזור עדיין פוגע בו
+const mbTgt=o=>!(o.st&&o.st.veil>0);
+const mbSpeed=u=>u.speed*(1+mbIb(u).spd)*(u.st.slow>0?1-u.st.slowK:1)*(u.st.rage>0?u.st.rageSp:1)*(u.st.veil>0?u.st.veilSp:1)*(mbHaste(u)?MOBA.haste.k:1)*(u.st.flee>0?u.st.fleeK:1)*(typeof mbSpellSpd==='function'?mbSpellSpd(u):1);   // spd: מגפיים (moba-items.js)
 
 /* ---- נזק, שליטה בקהל ומוות ---- */
 // ריצה מהבסיס: גיבור ליד הבסיס שלו שלא נפגע לאחרונה
@@ -74,7 +76,7 @@ function mbDmg(src,t,d,dt,o={}){
   if(t.st.armor>0){d*=1-t.st.armorK;   // קריאת קרב: הנפח סופג, ומי שמכה בו מקרוב נשרף
     if(src&&src.k!=='tower'&&src.k!=='base'&&mbDist(src,t)<140){src.st.burn=2;src.st.burnD=t.st.burnBack;src.st.burnBy=t}}
   if(t.st.shield>0&&t.st.shieldEnd>MB.t){const a=Math.min(d,t.st.shield);t.st.shield-=a;d-=a}   // מגן (mbShield ב-moba-kits.js) סופג קודם
-  t.hp-=d;t.flash=0.12;mbItHit(src,t,d);if(t.k==='tower'||t.k==='base')mbfxTower(t);   // ניצוץ ורעידה קטנה על מבנה (moba-fx.js)   // קוצים, מגן בחיים נמוכים, האטה (moba-items.js)
+  t.hp-=d;t.flash=0.12;if(t.mark&&src===t.mark.by)t.mark.dmg+=d;mbItHit(src,t,d);   // סימן מוות: הנזק של המתנקש נצבר לפיצוץ (mbTick)if(t.k==='tower'||t.k==='base')mbfxTower(t);   // ניצוץ ורעידה קטנה על מבנה (moba-fx.js)   // קוצים, מגן בחיים נמוכים, האטה (moba-items.js)
   if(!o.quiet&&mbShow(t)&&(t.k==='hero'||t.k==='tower'||t.k==='base'||src&&src.me))(o.big||o.crit?mbfxNum:mbFloat)(t.x+rand(-8,8),t.y-t.r-18,Math.round(d),t.me?C.blood:dtCol(dt),o.big||o.crit?o:t.k==='hero'?1.3:t.k==='minion'?0.85:1.1,src,t);   // גודל: מכה בגיבור בולטת יותר ממכה בחייל   // מכה חזקה: מספר גדול (moba-fx.js)
   if(src&&src.k==='hero'&&t.k==='hero'){src.aggro=2;t.hitBy.set(src,MB.t)}   // מגדל מכה במי שתוקף גיבור מתחתיו
   if(t.hp<=0)mbDie(t,src);
@@ -100,15 +102,15 @@ function mbXp(h,v){
     if(h.me){celebrate(h.x,h.y,'gear');mbBanner(h.lvl>=MOBA.ultAt?T('mb.ultReady'):T('mb.lvup',h.lvl),C.gold)}}
 }
 // כל המצבים חוזרים לאפס: במוות (mbDie, חדר ההימור) ובחזרה לחיים. מצב חדר ב-st מקבל מקום כאן, ולא נשאר תקוע אצל מי שמת (הבודק, 7.11)
-function mbStReset(u){Object.assign(u.st,{stun:0,taunt:0,tBy:null,slow:0,slowK:0,wet:0,armor:0,burn:0,rage:0,imm:0,ice:0,root:0,bub:0,dash:null,shield:0,haste:0,exh:0,pure:0,flee:0})}
+function mbStReset(u){Object.assign(u.st,{stun:0,taunt:0,tBy:null,slow:0,slowK:0,wet:0,armor:0,burn:0,rage:0,imm:0,ice:0,root:0,bub:0,dash:null,shield:0,haste:0,exh:0,pure:0,flee:0,step:null,veil:0,veilSp:1,veilCrit:0,poison:0})}
 const mbResp=t=>{const R=MOBA.respawn;return R.base+R.lvl*(t.lvl-1)**2+R.min*Math.max(0,MB.t/60-R.after)};   // רמה בריבוע: כמעט כלום בהתחלה, הרבה ברמה 6
 function mbDie(t,src){
-  if(t.dead)return;t.hp=0;t.dead=true;const foe=1-t.team;mbItDie(t,src);   // זהב (moba-items.js)
+  if(t.dead)return;t.hp=0;t.dead=true;const foe=1-t.team;mbItDie(t,src);mbMarkClear(t);   // סימן מוות על גופה: לא מתפוצץ   // זהב (moba-items.js)
   if(t.k==='minion'){for(const h of mbHeroes(foe))if(mbDist(h,t)<MOBA.xp.share)mbXp(h,MOBA.minion.xp)}
   else if(t.k==='hero'){
     t.deaths++;t.resp=mbResp(t);MB.score[foe]++;
     const killer=src&&src.k==='hero'?src:t.st.burnBy&&t.st.burnBy.k==='hero'?t.st.burnBy:null;
-    if(killer){killer.kills++;mbXp(killer,MOBA.xp.kill)}
+    if(killer){killer.kills++;killer.killT=MB.t;mbXp(killer,MOBA.xp.kill)}
     for(const [h,at] of t.hitBy)if(h!==killer&&MB.t-at<8)mbXp(h,MOBA.xp.kill*MOBA.xp.assist);
     t.hitBy.clear();mbStReset(t);
     if(t.me){mbBanner(T('mb.died'),C.blood);sfx('hurt')}
@@ -152,7 +154,14 @@ function mbAttack(u,dt,t,A){
   if(u.atkT>0)return true;
   u.actT=MB.t;const ib=mbIb(u);u.atkT=A.cd*(u.st.rage>0?u.st.rageCd:1)/(1+ib.aspd);   // חפצים: מהירות תקיפה, נזק וחיים מהנזק (moba-items.js)
   let d=A.dmg*(u.k==='hero'?mbK(u)*(1+ib.atk):1)*(u.k==='minion'&&(t.k==='tower'||t.k==='base')?MOBA.minion.build*(t.k==='base'?MOBA.base.minK:1):1);   // build: חיילים מכים חזק במבנים. בבסיס פחות (minK)
-  const crit=!!(A.crit&&Math.random()<A.crit.p);if(crit)d*=A.crit.k;   // מכה קריטית (הצייד): מספר גדול
+  const hero=u.k==='hero';let crit=hero&&Math.random()<(A.crit?A.crit.p:0)+(ib.critp||0);if(crit)d*=A.crit?A.crit.k:1.8;   // מכה קריטית (הצייד, וניבי הכסף): מספר גדול
+  // מתנקש: פגיעה בגב ×backstab, נחשבת קריטי. מאחורי = u בצד ההפוך מהכיוון שהמטרה פונה אליו
+  let back=false;
+  if(hero&&A.backstab&&(t.k==='hero'||t.k==='minion')){back=Math.cos(t.face)*(u.x-t.x)+Math.sin(t.face)*(u.y-t.y)<0;if(back&&!crit){d*=A.backstab;crit=true}}
+  if(hero&&u.st.veil>0){if(u.st.veilCrit&&!crit){d*=u.st.veilCrit;crit=true}u.st.veil=0;u.st.veilSp=1;u.st.veilCrit=0}   // היעלמות: תקיפה שוברת את הכיסוי, והיא קריטית
+  const step=hero&&u.st.step&&u.st.step.t>0?u.st.step:null;   // צעד צל: החיזוק לתקיפה הבאה
+  if(step){d+=step.dmg;mbSlow(t,step.slow,step.slowT);u.st.step=null}
+  if(back||step)mbfxLib('tr_slash_crimson',t.x,t.y-t.r-6,{rot:u.aim,size:MBFXSK.tr_slash_crimson.size,add:true});
   if(A.shot){const s={kind:'home',x:u.x,y:u.y-14,tgt:t,team:u.team,src:u,dmg:d,dt:A.dt,sp:MOBA.shot,crit};MB.shots.push(s);mbfxShot(s,u)}   // חץ, כדור או יריית חייל שעפים (moba-fx.js)
   else{mbfxImpact(u,t,A.dt,crit,true);const got=mbDmg(u,t,d,A.dt,{crit});const lc=(A.leech||0)+ib.leech;if(lc){const h0=u.hp;u.hp=Math.min(u.max,u.hp+got*lc);mbfxHeal(u,u.hp-h0)}if(A.slow)mbSlow(t,A.slow.k,A.slow.t)}
   if(u.me){if(A.shot){P.gn.t=0.3;sfx('shoot')}else{P.sw.anim=0.2;P.sw.ang=u.aim;sfx('hit')}}
@@ -161,9 +170,10 @@ function mbAttack(u,dt,t,A){
 // על מי תוקפים אוטומטית: הקרוב בטווח, גיבור קצת לפני חייל, ומבנה רק כשאין אחר. מי שהוכרח תוקף רק את הנפח
 function mbAutoTarget(u,range){
   if(u.st.taunt>0&&u.st.tBy&&!u.st.tBy.dead)return u.st.tBy;
-  if(u.k==='hero'&&!((u.lungeT||0)>MB.t))range+=MBKIT[u.kit].atk.lunge||0;   // הזינוק מוכן: מחפשים מטרה גם קצת יותר רחוק
+  const veil=u.st.veil>0;   // מכוסה (היעלמות): התקיפה האוטומטית לא שוברת את הכיסוי על חייל או מגדל, רק על גיבור צמוד (מארב), ובלי זינוק
+  if(u.k==='hero'&&!veil&&!((u.lungeT||0)>MB.t))range+=MBKIT[u.kit].atk.lunge||0;   // הזינוק מוכן: מחפשים מטרה גם קצת יותר רחוק
   let best=null,bs=1e9;
-  for(const o of MB.u){if(o.team===u.team||o.dead||!mbHittable(o)||!mbSeen(o,u.team))continue;   // לא רואים: לא תוקפים (moba-vision.js)
+  for(const o of MB.u){if(o.team===u.team||o.dead||!mbHittable(o)||!mbSeen(o,u.team)||!mbTgt(o)||veil&&o.k!=='hero')continue;   // לא רואים: לא תוקפים (moba-vision.js)
     const d=mbDist(u,o)-o.r-u.r;if(d>range)continue;
     const s=d+(o.k==='tower'||o.k==='base'?400:0)-(o.k==='hero'?30:0);if(s<bs){bs=s;best=o}}
   return best;
@@ -261,10 +271,16 @@ function mbTick(u,dt){
   else if(s.imm>0)s.imm-=dt;
   if(s.root>0){s.root-=dt;if(s.root<=0&&hero&&!(s.stun>0||s.taunt>0))s.imm=MOBA.ccImmune}   // אחרי רשת: אותה חסינות קצרה
   if(s.bub>0)s.bub-=dt;
-  for(const k of ['slow','wet','armor','rage','flee'])if(s[k]>0)s[k]-=dt;
+  for(const k of ['slow','wet','armor','rage','flee','poison'])if(s[k]>0)s[k]-=dt;
+  if(s.veil>0){s.veil-=dt;if(s.veil<=0){s.veil=0;s.veilSp=1;s.veilCrit=0}}   // היעלמות נגמרת
+  if(s.step){s.step.t-=dt;if(s.step.t<=0)s.step=null}   // החיזוק של צעד צל פג
   if(s.burn>0){s.burn-=dt;u.hp-=s.burnD*dt;if(u.hp<=0)mbDie(u,s.burnBy)}
+  if(u.mark&&!u.dead&&MB.t>=u.mark.end){const m=u.mark;mbMarkClear(u);   // סימן מוות מתפוצץ, גם אם המתנקש כבר מת (ההריגה שלו)
+    mbDmg(m.by,u,m.endDmg+m.dmg*m.share,'physical',{big:true});mbfxLib('hit_heavy',u.x,u.y-20,{size:MBFXSK.hit_heavy.size,add:true});
+    if(u.dead&&m.by.kit==='assassin')m.by.cd.s1=0}   // הריגה: צעד צל נטען, כדי לצאת
   u.flash-=dt;
 }
+function mbMarkClear(t){if(t.mark){if(typeof fxStop==='function')fxStop(t.mark.fx);t.mark=null}}
 function mbPlayer(u,dt){
   let ix=0,iy=0;if(joy){ix=joy.dx;iy=joy.dy}
   if(keys.KeyA||keys.ArrowLeft)ix-=1;if(keys.KeyD||keys.ArrowRight)ix+=1;if(keys.KeyW||keys.ArrowUp)iy-=1;if(keys.KeyS||keys.ArrowDown)iy+=1;
@@ -280,7 +296,7 @@ function mbPlayer(u,dt){
 }
 // כפתור סקיל של השחקן: מכוון לבד. אל הגיבור הקרוב בטווח, אחרת חייל, אחרת קדימה
 function mbAimFor(u,s){
-  const foes=MB.u.filter(o=>o.team!==u.team&&!o.dead&&(o.k==='hero'||o.k==='minion')&&mbSeen(o,u.team));
+  const foes=MB.u.filter(o=>o.team!==u.team&&!o.dead&&(o.k==='hero'||o.k==='minion')&&mbSeen(o,u.team)&&mbTgt(o));
   const range=(s.range||200)*1.15;
   return mbNearest(u,foes.filter(o=>o.k==='hero'),range)||mbNearest(u,foes,range)||null;
 }
@@ -291,7 +307,7 @@ function mbPress(slot,pt){   // pt: נקודה או יחידה מהכיוון ב
   if(slot==='ult'&&u.lvl<MOBA.ultAt){mbShake(slot);return}   // נעול: הכפתור רועד, בלי הודעה באמצע המסך (הבודק, 2.11)
   if(u.cd[slot]>0)return;
   const aim=pt!==undefined?pt:s.kind==='self'||s.kind==='away'?null:mbAimFor(u,s)||(s.kind==='point'?{x:u.x+Math.cos(u.face)*(s.range||200)*0.6,y:u.y+Math.sin(u.face)*(s.range||200)*0.6}:null);
-  if(!mbCast(u,slot,aim)&&MB_MOVES[s.id]&&typeof mbGbBusy==='function'&&mbGbBusy(u))mbShake(slot);   // בהטלה בחדר ההימור: רועד, בלי טעינה
+  if(!mbCast(u,slot,aim)&&(MB_MOVES[s.id]&&typeof mbGbBusy==='function'&&mbGbBusy(u)||s.kind==='unit'))mbShake(slot);   // בלי מטרה בטווח (צעד צל, סימן מוות): רועד, בלי טעינה   // בהטלה בחדר ההימור: רועד, בלי טעינה
 }
 // פקודה לשני הבוטים החברים (אוראל, docs/moba.md שלב 4): "התקפה" אל המקום שלך, או "נסיגה" אל המגדל. נמשכת MOBA.order שניות
 function mbOrder(kind){
@@ -306,8 +322,8 @@ function mbMinion(m,dt){
   const N=MOBA.minion,A={dmg:(m.ranged?N.ranged.dmg:N.dmg)*(m.pow||1),range:m.ranged?N.ranged.range:N.range,cd:N.cd,dt:'physical',shot:m.ranged};
   let t=m.st.taunt>0?m.st.tBy:m.tgt;
   if(!(m.st.taunt>0)){m.retT=(m.retT||0)-dt;
-    if(!t||t.dead||!mbHittable(t)||mbDist(m,t)>N.aggro+120||m.retT<=0){m.retT=0.5;t=null;let bd=1e9;
-      for(const o of MB.u){if(o.team===m.team||o.dead||!mbHittable(o))continue;const d=mbDist(m,o)-o.r;if(d>N.aggro)continue;
+    if(!t||t.dead||!mbHittable(t)||!mbTgt(t)||mbDist(m,t)>N.aggro+120||m.retT<=0){m.retT=0.5;t=null;let bd=1e9;
+      for(const o of MB.u){if(o.team===m.team||o.dead||!mbHittable(o)||!mbTgt(o))continue;const d=mbDist(m,o)-o.r;if(d>N.aggro)continue;
         const s=d+(o.k==='hero'?60:0)+(o.k==='tower'||o.k==='base'?120:0);if(s<bd){bd=s;t=o}}
       m.tgt=t}}
   if(t){if(mbDist(m,t)-t.r-m.r>A.range)mbMove(m,t.x,t.y,dt);else{m.moving=false;mbAttack(m,dt,t,A)}}
@@ -315,7 +331,7 @@ function mbMinion(m,dt){
 }
 function mbTower(b,dt){
   const B=b.k==='base'?MOBA.base:MOBA.tower;b.shotT-=dt;
-  const ok=o=>o&&!o.dead&&o.team!==b.team&&(o.k==='hero'||o.k==='minion')&&mbDist(o,b)<B.range+o.r;
+  const ok=o=>o&&!o.dead&&o.team!==b.team&&(o.k==='hero'||o.k==='minion')&&mbTgt(o)&&mbDist(o,b)<B.range+o.r;   // מתנקש מכוסה מתחת למגדל לא נורה: זו הבריחה שלו
   let t=b.tgt;
   const ag=MB.u.find(o=>o.k==='hero'&&o.aggro>0&&ok(o)&&MB.u.some(h=>h.k==='hero'&&h.team===b.team&&!h.dead&&mbDist(h,b)<B.range+60));
   if(ag)t=ag;
@@ -452,6 +468,7 @@ function mobaDraw(ox,oy){
     if(s.armor>0){ctx.strokeStyle=C.ember;ctx.lineWidth=3;ctx.globalAlpha=0.6;ctx.beginPath();ctx.arc(u.x,u.y-24,30,0,7);ctx.stroke();ctx.globalAlpha=1}
     if(s.rage>0){ctx.fillStyle='rgba(239,78,87,0.18)';ctx.beginPath();ctx.arc(u.x,u.y-24,28,0,7);ctx.fill()}
     if(s.ice>0){ctx.fillStyle='rgba(70,211,230,0.35)';ctx.beginPath();ctx.arc(u.x,u.y-22,24,0,7);ctx.fill()}
+    if(s.veil>0){ctx.fillStyle='rgba(120,116,140,0.22)';for(let i=0;i<3;i++){const a=M.t*1.6+i*2.1;ctx.beginPath();ctx.arc(u.x+Math.cos(a)*14,u.y-18+Math.sin(a)*6,13+3*Math.sin(M.t*3+i),0,7);ctx.fill()}}   // היעלמות: עשן קלוש סביבו
     // חיים, ולגיבור גם הרמה והסמל של הערכה
     ctx.save();ctx.translate(u.x,top+6);ctx.scale(uk,uk);ctx.translate(-u.x,-top-6);   // פסי החיים והסימנים: קריאים גם במצלמה הרחוקה
     const bw=u.k==='hero'?46:24;ctx.fillStyle='#000a';ctx.fillRect(u.x-bw/2-1,top-1,bw+2,u.k==='hero'?7:5);ctx.fillStyle=u.me?'#7BD88F':col;ctx.fillRect(u.x-bw/2,top,bw*Math.max(0,u.hp)/u.max,u.k==='hero'?5:3);

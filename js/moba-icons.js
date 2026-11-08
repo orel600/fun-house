@@ -12,7 +12,9 @@ const MB_PIC={
   // הקוסמת
   wave:'spirit',bubble:'mCircle',blizzard:'mGlass',
   // הערכות (חלון הבחירה ומסך הסוף)
-  k_tank:'def',k_warrior:'war',k_hunter:'hunt',k_mage:'mage',
+  // המתנקש
+  shadowstep:'hHop',vanish:'hWind',deathmark:'wBlood',
+  k_tank:'def',k_warrior:'war',k_hunter:'hunt',k_mage:'mage',k_assassin:'agi',
 };
 const mbPicSrc=id=>MB_PIC[id]?'icons/ui/skills/'+MB_PIC[id]+'.png':'';
 /* הסגנון האחיד (gicons.js, W3 8.11.2026): כש"אייקוני סקילים" על "חדש", צללית מ-game-icons בצבע --dt של הכפתור, כמו בזירה ובעולם.

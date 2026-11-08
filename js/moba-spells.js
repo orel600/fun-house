@@ -17,7 +17,7 @@ const MBSPELL={
     cleanse:{cd:90,pure:1,col:'#FFFFFF',pic:'m1',sfx:'celebrate',vol:0.5},                          // מסיר הלם, הכרחה, האטה ולכידה, ושנייה של חסינות
   },
   def:'dash',key:'fh-mb-spell',hold:0.5,   // hold: לחיצה ארוכה על הכפתור (שניות) מראה הסבר, בלי להטיל
-  bot:{tank:['barrier','haste'],warrior:['dash','exhaust'],hunter:['dash'],mage:['reveal','cleanse']},   // הבוטים בוחרים לפי תפקיד
+  bot:{tank:['barrier','haste'],warrior:['dash','exhaust'],hunter:['dash'],mage:['reveal','cleanse'],assassin:['dash','haste']},   // הבוטים בוחרים לפי תפקיד
   botHeal:0.35,                             // בוט מתרפא מתחת ל-35% חיים
 };
 // אייקוני SVG לכשהתמונה לא נטענה, באותו סגנון של הסקילים (MB_SVG ב-moba-look.js)
@@ -79,10 +79,10 @@ function mbSpellCast(u,aim){
       const x=u.x+(p.x-u.x)*k,y=u.y+(p.y-u.y)*k;
       typeof mbVisReveal==='function'&&mbVisReveal(x,y,L.r,L.t,u.team);
       MB.spellZ=(MB.spellZ||[]).concat({x,y,r:L.r,t:L.t,t0:L.t,team:u.team,col:L.col});typeof mbfxSk==='function'&&mbfxSk('sp_reveal',x,y,{r:L.r});break}
-    case 'exhaust':{const t=mbNearest(u,MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&(typeof mbSeen!=='function'||mbSeen(o,u.team))),L.range+20);
+    case 'exhaust':{const t=mbNearest(u,MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&(typeof mbSeen!=='function'||mbSeen(o,u.team))&&mbTgt(o)),L.range+20);
       if(!t)return false;
       t.st.exh=L.t;if(!(t.st.pure>0))mbSlow(t,L.slow,L.t);mbSpellFx(t,L.col,'down');mbBoom(t.x,t.y,50,'blue');typeof mbfxSk==='function'&&mbfxSk('sp_exhaust',t.x,t.y,{follow:t,loop:true,dur:L.t});break}
-    case 'cleanse':Object.assign(s,{stun:0,taunt:0,tBy:null,slow:0,slowK:0,root:0,bub:0,ice:0,imm:L.pure,pure:L.pure});mbSpellFx(u,L.col,'up');if(u.fxs&&typeof fxStop==='function'){fxStop(u.fxs.rootFx);fxStop(u.fxs.bubFx)}   // השורשים והבועה נעלמים עם הלכידה
+    case 'cleanse':Object.assign(s,{stun:0,taunt:0,tBy:null,slow:0,slowK:0,root:0,bub:0,ice:0,imm:L.pure,pure:L.pure});mbSpellFx(u,L.col,'up');if(u.fxs&&typeof fxStop==='function'){fxStop(u.fxs.rootFx);fxStop(u.fxs.bubFx)}mbMarkClear(u);   // השורשים והבועה נעלמים עם הלכידה. וגם סימן המוות של המתנקש
       typeof mbfxSk==='function'&&mbfxSk('sp_cleanse',u.x,u.y,{follow:u});break;
   }
   u.cd.spell=L.cd;u.actT=MB.t;if(u.me)sfx(L.sfx,L.vol||1);   // actT: לחש מתוך שיח חושף, כמו תקיפה וסקיל (moba-vision.js)MB.spellN=(MB.spellN||0)+1;
@@ -160,7 +160,7 @@ function mbSpellBot(u,dt){
   if(u.cd.heal<=0&&u.hp<u.max*MBSPELL.botHeal&&mbHealCast(u))return;
   if(u.cd.spell>0)return;
   const s=u.st,L=MBSPELL.list,id=u.spell,A=MBKIT[u.kit].atk;
-  const foes=MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&(typeof mbSeen!=='function'||mbSeen(o,u.team)));
+  const foes=MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&(typeof mbSeen!=='function'||mbSeen(o,u.team))&&mbTgt(o));
   const near=r=>foes.filter(o=>mbDist(o,u)<r);
   const fight=B.mode==='fight'||B.mode==='defend'||B.mode==='order'&&B.focus&&B.focus.k==='hero';
   const f=B.focus&&B.focus.k==='hero'&&!B.focus.dead?B.focus:mbNearest(u,foes,500);

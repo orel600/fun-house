@@ -15,6 +15,8 @@ const MBITEM={
     sword:{cat:'atk',img:'ironSword',cost:450,atk:0.15},
     bow:{cat:'atk',img:'stormBow',cost:500,aspd:0.25},
     dragon:{cat:'atk',img:'dragonBlade',cost:900,atk:0.25,leech:0.1},
+    fang:{cat:'atk',img:'silverBlade',cost:700,atk:0.2,critp:0.15},   // critp: +15% סיכוי לקריטי (×1.8). נצבר עם הקריטי של הערכה
+    venom:{cat:'atk',img:'boneCharm',cost:750,atk:0.15,venom:{dps:10,t:2.5}},   // venom: כל פגיעה מרעילה (נזק לשנייה)
     armor:{cat:'def',img:'shield1',cost:450,hp:250},
     charm:{cat:'def',img:'wardenCharm',cost:550,def:0.12,thorns:0.15},   // thorns: מי שמכה בך מקרוב חוטף 15% מהנזק
     aegis:{cat:'def',img:'bastionOrb',cost:850,hp:200,guard:{at:0.3,k:0.25,t:3,cd:30}},   // guard: מתחת ל-30% חיים, מגן של 25% מהחיים ל-3 שניות, פעם ב-30 שניות
@@ -27,15 +29,17 @@ const MBITEM={
   },
   // המסלול לכל ערכה: הקנייה המהירה מציעה את הבא בתור, והבוטים קונים לפי הסדר
   build:{tank:['warden','armor','charm','moon','aegis','staff'],warrior:['swift','sword','armor','dragon','aegis','charm'],
-    hunter:['swift','bow','sword','dragon','aegis','armor'],mage:['boots','staff','moon','star','aegis','armor']},
-  stats:['atk','aspd','leech','hp','def','sk','cdr','spd'],
+    hunter:['swift','bow','sword','dragon','aegis','armor'],mage:['boots','staff','moon','star','aegis','armor'],
+    assassin:['swift','sword','fang','venom','dragon','armor']},
+  stats:['atk','aspd','leech','hp','def','sk','cdr','spd','critp'],
+  passive:['thorns','guard','frost','venom'],   // חפצים עם כוח מיוחד (לא סכום): מועתקים כמו שהם
 };
 MBITEM.zero=Object.fromEntries(MBITEM.stats.map(k=>[k,0]));
 const mbIb=u=>u&&u.ib||MBITEM.zero;
 const mbMaxHp=u=>Math.round(MBKIT[u.kit].hp*mbK(u)+mbIb(u).hp);
 function mbItCalc(u){
   const b=Object.assign({},MBITEM.zero);
-  for(const id of u.it||[]){const I=MBITEM.items[id];for(const k of MBITEM.stats)if(I[k])b[k]+=I[k];for(const p of ['thorns','guard','frost'])if(I[p])b[p]=I[p]}
+  for(const id of u.it||[]){const I=MBITEM.items[id];for(const k of MBITEM.stats)if(I[k])b[k]+=I[k];for(const p of MBITEM.passive)if(I[p])b[p]=I[p]}
   b.def=Math.min(MBITEM.cap.def,b.def);b.cdr=Math.min(MBITEM.cap.cdr,b.cdr);u.ib=b;
   const old=u.max;u.max=mbMaxHp(u);if(!u.dead)u.hp=Math.max(1,Math.min(u.max,u.hp+u.max-old));
 }
@@ -81,7 +85,8 @@ function mbItHit(src,t,d){
   if(t.k==='hero'&&!t.dead){const b=mbIb(t);
     if(b.thorns&&src&&(src.k==='hero'||src.k==='minion')&&!src.dead&&mbDist(src,t)<140){src.hp-=d*b.thorns;if(src.hp<=0)mbDie(src,t)}
     if(b.guard&&t.hp<t.max*b.guard.at&&(t.guardT||0)<=MB.t){t.guardT=MB.t+b.guard.cd;mbShield(t,t.max*b.guard.k,b.guard.t);mbWord(t,'guard')}}
-  if(src&&src.k==='hero'){const f=mbIb(src).frost;if(f&&!t.dead)mbSlow(t,f.k,f.t)}
+  if(src&&src.k==='hero'){const f=mbIb(src).frost;if(f&&!t.dead)mbSlow(t,f.k,f.t)
+    const v=mbIb(src).venom;if(v&&!t.dead&&(t.k==='hero'||t.k==='minion')){const s=t.st;s.burnD=s.burn>0?Math.max(s.burnD,v.dps):v.dps;s.burn=Math.max(s.burn,v.t);s.burnBy=src;s.poison=v.t}}   // ארס: רעל על כל פגיעה (נזק דרך burn, הסימן st_poison)
 }
 
 /* ---- ממשק: זהב, קנייה מהירה, תרמיל קטן וחלון החנות ---- */
@@ -101,7 +106,7 @@ function mbItHud(){
 function mbQuickBuy(){const u=mbMe();if(!u||MB.over)return;const n=mbNext(u);if(!n)return;
   if(!mbBuy(u,n)){const q=$('mbQuick');q.classList.remove('shake');void q.offsetWidth;q.classList.add('shake');sfx('tap')}mbItKey=''}
 const mbStatLines=I=>MBITEM.stats.filter(k=>I[k]).map(k=>'<li>'+T('mb.st.'+k,k==='hp'?I[k]:Math.round(I[k]*100))+'</li>').join('')+
-  ['thorns','guard','frost'].filter(k=>I[k]).map(k=>'<li class="mbpas">'+T('mb.p.'+k)+'</li>').join('');
+  MBITEM.passive.filter(k=>I[k]).map(k=>'<li class="mbpas">'+T('mb.p.'+k)+'</li>').join('');
 function mbShopOpen(){
   if(!MB||MB.over)return;const u=mbMe();if(S.mode==='play')S.mode='mbshop';
   mbShopSel=mbShopSel&&MBITEM.items[mbShopSel]?mbShopSel:mbNext(u)||Object.keys(MBITEM.items)[0];
