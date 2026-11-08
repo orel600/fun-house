@@ -118,6 +118,10 @@ function botStep({god,en}){
   L.peak=Math.max(L.peak||0,enemies.length);L.hordeMax=S.hordeMax||0;L.clock=document.getElementById('clock').textContent;
   // הזירה (arenas.js): עד איזה גל הגענו, כמה הפסקות עם ריפוי, והמונה למעלה
   if(S.wv){L.wvN=ARENAS.gauntlet.list.length;L.wvMax=Math.max(L.wvMax||0,S.wv.i+1);L.wvHeal=S.wv.healed;L.wvEnds=S.wv.log.map(x=>fmt(x.end)).join(' ');L.wvLate=S.wv.late||0;if(S.wv.phase==='fight'&&S.t-S.wv.start>60&&!L.wvStuck)L.wvStuck='גל '+(S.wv.i+1)+' אחרי 60 שניות: '+enemies.filter(e=>!e.dead&&e.wv===S.wv.i).map(e=>e.type+(e.champ?'*':'')+' '+Math.round(100*e.hp/e.max)+'% '+Math.round(Math.hypot(e.x-P.x,e.y-P.y))+(e.awake?'':' ישן')).join(', ')+' · נשק '+P.weapon;L.lvAt=L.lvAt||{};L.lvAt[S.wv.i+1]??=P.level;const tg=document.getElementById('waveTag');if(tg&&!tg.hidden&&tg.textContent)L.waveTag=tg.textContent}
+  // צילומים באמצע הגלים המיוחדים (QUINN, 8.11): קירות המבוך אחרי שצמחו (גלים 5-6), והטבעת בגל 8 כשהיא כבר סביבך
+  if(S.wv&&S.wv.phase==='fight'){
+    if(L.wvMaze==null&&!S.room&&typeof mazeOn==='function'&&mazeOn()&&mazeFade()>=MAZE.solidAt&&MZ.walls.some(w=>w.x+w.w>S.cam.x-W*0.45&&w.x<S.cam.x+W*0.45&&w.y+w.h>S.cam.y-H*0.45&&w.y<S.cam.y+H*0.45))L.wvMaze=at;   // קיר בתוך המסך
+    if(L.wvRing==null&&ARENAS.gauntlet.list[S.wv.i]&&ARENAS.gauntlet.list[S.wv.i].ring&&enemies.filter(e=>!e.dead&&e.wv!=null&&Math.hypot(e.x-P.x,e.y-P.y)<420).length>=6)L.wvRing=at}
   L.elites=S.run.elites;L.supsN=ARENAS.gauntlet.list.filter((x,i)=>x.sup&&i<(L.wvMax||0)).length;
   L.eliteLeft=enemies.filter(e=>e.elite).map(e=>e.type+' '+Math.round(100*e.hp/e.max)+'% במרחק '+Math.round(Math.hypot(e.x-P.x,e.y-P.y))).join(', ');
   // מספרים גדולים: הכי גדול שנראה, כמה קריטיות, ומספר נזק שלא נכתב משמאל לימין
@@ -2116,7 +2120,7 @@ function worldBot(m,L,god){
     // התקדמות ל-stderr (לא נכנס לדוח): אם הבדיקה נתקעת ב-GitHub, רואים איפה
     if(guard%300===1)console.error('…',await page.evaluate(()=>[Math.round(S.t),S.mode,S.vil?'village':S.wd?'world':S.room?'room':'arena',enemies.length,S.nd?S.nd.list.length:0].join(' ')));
     L=await page.evaluate(botStep,{god:CFG.god,en:CFG.lang==='en'});
-    for(const k of ['welOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','fuseOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','fishDone','wArena','rgOpen','door','room','wanted','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='welOpen'?'welcome':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='fishDone'?'fishing':k==='wDeathTxt'?'world-death':k)}
+    for(const k of ['welOpen','vilOpen','qAccepted','npcTalk','built','collected','gearOpen','ageOpen','powOpen','fuseOpen','glowOn','stash','wEnter','wGather','wKill','wnDone','fishDone','wArena','rgOpen','door','room','wanted','wvMaze','wvRing','boss','bossDown','lootTxt','back','wDeathTxt','qClaimed'])if(L[k]!=null&&!took[k]){took[k]=1;await shot(k==='welOpen'?'welcome':k==='vilOpen'?'village':k==='lootTxt'?'loot':k==='qAccepted'?'quests':k==='npcTalk'?'npc':k==='wEnter'?'world':k==='wnDone'?'world-npc':k==='fishDone'?'fishing':k==='wDeathTxt'?'world-death':k==='wvMaze'?'arena-maze':k==='wvRing'?'arena-ring':k)}
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
