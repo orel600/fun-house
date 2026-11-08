@@ -101,11 +101,9 @@ function mbDecor(){
   if(MB_DECOR)return MB_DECOR;
   const M=MBLOOK.map,L=MOBA.lane,F=MBLOOK.floor,out=[],R=(a,b)=>hash(a*0.53+2.1,b*0.77+5.3);
   // שיחים: רצועה בין הנתיב הראשי לשבילי העקיפה, עם פתחים לעבור בהם
-  // נבנה רק החצי של הכחולים (x<0), והאדומים מקבלים מראה ב--x: אותם פתחים ואותם שיחים בשני הצדדים (8.11, DANA, moba-difficulty)
-  for(const sg of [-1,1])for(const [a,b] of M.bush.seg){if(a>=0)continue;for(let x=a,i=0;x<=Math.min(b,-M.bush.gap/2);x+=M.bush.gap,i++){
+  for(const sg of [-1,1])for(const [a,b] of M.bush.seg)for(let x=a,i=0;x<=b;x+=M.bush.gap,i++){
     if(i%5===2)continue;   // פתח
-    const r=M.bush.r[0]+(M.bush.r[1]-M.bush.r[0])*R(x,sg),dx=(R(sg,x)-0.5)*18,y=sg*(M.bush.y+(R(x,i)-0.5)*20),v=R(i,x);
-    out.push({k:'bush',x:x+dx,y,r,v},{k:'bush',x:-(x+dx),y,r,v})}}
+    const r=M.bush.r[0]+(M.bush.r[1]-M.bush.r[0])*R(x,sg);out.push({k:'bush',x:x+(R(sg,x)-0.5)*18,y:sg*(M.bush.y+(R(x,i)-0.5)*20),r,v:R(i,x)})}
   // כתמי שיחים בשטח הפתוח בצדדים (אותו דבר לשתי הקבוצות)
   for(const sg of [-1,1])for(const sx of [-1,1])for(const [xi,px] of M.patch.xs.entries())for(let i=0;i<M.patch.n;i++){const y0=M.patch.y[xi%2],a=i*2.4+xi;
     out.push({k:'bush',x:sx*px+Math.cos(a)*34*Math.sqrt(i),y:sg*(y0+Math.sin(a)*22*Math.sqrt(i)),r:M.bush.r[0]+(M.bush.r[1]-M.bush.r[0])*R(i,xi+sg),v:R(xi*7+i,sx*sg)})}
