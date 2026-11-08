@@ -57,8 +57,8 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
   // תאי Worley (אבני ריצוף): המרחק לנקודה הקרובה (f1) והשנייה (f2), ומזהה התא. ההפרש f2-f1 קטן = תפר
   const WORLEY=`
     vec2 wH2(vec2 p){vec3 q=fract(vec3(p.xyx)*vec3(0.1031,0.1030,0.0973));q+=dot(q,q.yzx+33.33);return fract((q.xx+q.yz)*q.zy);}   // hash אחד לשתי הקואורדינטות, בלי sin (יקר על המעבד)
-    void worley(vec2 p,out float f1,out float f2,out vec2 id){vec2 i=floor(p),f=fract(p);f1=8.0;f2=8.0;id=i;
-      for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 g=vec2(float(x),float(y));vec2 r=g+wH2(i+g)-f;float d=dot(r,r);if(d<f1){f2=f1;f1=d;id=i+g;}else if(d<f2){f2=d;}}
+    void worley(vec2 p,out float f1,out float f2,out vec2 id){vec2 i=floor(p-0.5),f=p-i;f1=8.0;f2=8.0;id=i;   // 2x2: הנקודה של כל תא בתוך הרבע האמצעי שלו, אז ארבעת השכנים מספיקים (חצי מהעבודה של 3x3)
+      for(int y=0;y<=1;y++)for(int x=0;x<=1;x++){vec2 g=vec2(float(x),float(y));vec2 r=g+0.25+0.5*wH2(i+g)-f;float d=dot(r,r);if(d<f1){f2=f1;f1=d;id=i+g;}else if(d<f2){f2=d;}}
       f1=sqrt(f1);f2=sqrt(f2);}`;
   function makeMat(){
     const m=new THREE.MeshLambertMaterial({color:0xffffff}),Z=()=>new THREE.Vector3();
