@@ -3857,6 +3857,11 @@ function worldBot(m,L,god){
     setShadow(false);draw();o.off=!sun.castShadow;setShadow(true);draw();o.back=sun.castShadow;
     HD.sh.user=u;try{if(u)localStorage.setItem(HD.shadow.key,u);else localStorage.removeItem(HD.shadow.key)}catch(e){}R3D.drawEvery=de;return o});
     check(sd.skip||(sd.on&&sd.hero&&!sd.trees&&sd.off&&sd.back&&!sd.err),'צללים: '+(sd.skip?'אין תלת-ממד':(sd.on?'דלוקים בעולם':'לא דלוקים')+(sd.hero?', הגיבור מטיל צל':', הגיבור בלי צל')+(sd.trees?', '+sd.trees+' מקורות מטילים צל (רק דמויות ומבנים)':', עצים וסלעים בלי')+(sd.off&&sd.back?', המתג מכבה ומדליק':', המתג לא עובד')+(sd.err?', שגיאה: '+sd.err:'')))}
+  // טבעות השיבוץ ברצפת הזירה (MLBB 1.3, arena-look.js): רוחב מהנתונים (A.inlay), קצה חד (fwidth) בתלת-ממד, בלי ברק גרגירי,
+  // ובדיווח: כמה זמן לוקחת אפיית אריח הרצפה בדו-ממד (באפייה הרגילה היא מתחלקת לפריימים של עד 5ms)
+  {const ri=await page.evaluate(()=>{const o={};try{const A=ARENA_LOOK,I=A.inlay;o.data=!!I&&I.w.length===A.rings.length&&I.w.every(w=>w>0&&w<=4)&&I.mix<=0.5&&I.sparkle===0;
+      ALOOK2.tile=null;ALOOK2.key='';ALOOK2.bake=null;let g=0;while(!aLook2dTile(1000)&&g++<50);o.bake=ALOOK2.stat.bakeMs}catch(err){o.err=String(err)}return o});
+   check(!ri.err&&ri.data,'טבעות ברצפת הזירה: '+(ri.err||(ri.data?'דקות וחדות (A.inlay)':'הנתונים לא כמו שצריך')+' · אפיית הרצפה בדו-ממד, בבת אחת: '+ri.bake+'ms'))}
   // מראה הזירה (arena-look.js): בתלת-ממד הזירה מקבלת את הרצפה, התאורה והאובך של העולם, החותמות והרונות מגיבות, והציור לא כבד בהרבה מהמראה הישן
   if(CFG.gfx==='3d'){
     const al=await page.evaluate(()=>{
