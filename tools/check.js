@@ -120,7 +120,7 @@ function botStep({god,en}){
   if(S.wv){L.wvN=ARENAS.gauntlet.list.length;L.wvMax=Math.max(L.wvMax||0,S.wv.i+1);L.wvHeal=S.wv.healed;L.wvEnds=S.wv.log.map(x=>fmt(x.end)).join(' ');L.wvLate=S.wv.late||0;if(S.wv.phase==='fight'&&S.t-S.wv.start>60&&!L.wvStuck)L.wvStuck='גל '+(S.wv.i+1)+' אחרי 60 שניות: '+enemies.filter(e=>!e.dead&&e.wv===S.wv.i).map(e=>e.type+(e.champ?'*':'')+' '+Math.round(100*e.hp/e.max)+'% '+Math.round(Math.hypot(e.x-P.x,e.y-P.y))+(e.awake?'':' ישן')).join(', ')+' · נשק '+P.weapon;L.lvAt=L.lvAt||{};L.lvAt[S.wv.i+1]??=P.level;const tg=document.getElementById('waveTag');if(tg&&!tg.hidden&&tg.textContent)L.waveTag=tg.textContent}
   // צילומים באמצע הגלים המיוחדים (QUINN, 8.11): קירות המבוך אחרי שצמחו (גלים 5-6), והטבעת בגל 8 כשהיא כבר סביבך
   if(S.wv&&S.wv.phase==='fight'){
-    if(L.wvMaze==null&&!S.room&&typeof mazeOn==='function'&&mazeOn()&&mazeFade()>=MAZE.solidAt&&MZ.walls.some(w=>w.x+w.w>S.cam.x-W*0.4&&w.x<S.cam.x+W*0.4&&w.y+w.h>S.cam.y-H*0.4&&w.y<S.cam.y+H*0.4))L.wvMaze=at;   // קיר בתוך המסך
+    if(L.wvMaze==null&&!S.room&&typeof mazeOn==='function'&&mazeOn()&&mazeFade()>=MAZE.solidAt&&MZ.walls.some(w=>w.x+w.w>S.cam.x-W*0.45&&w.x<S.cam.x+W*0.45&&w.y+w.h>S.cam.y-H*0.45&&w.y<S.cam.y+H*0.45))L.wvMaze=at;   // קיר בתוך המסך
     if(L.wvRing==null&&ARENAS.gauntlet.list[S.wv.i]&&ARENAS.gauntlet.list[S.wv.i].ring&&enemies.filter(e=>!e.dead&&e.wv!=null&&Math.hypot(e.x-P.x,e.y-P.y)<420).length>=6)L.wvRing=at}
   L.elites=S.run.elites;L.supsN=ARENAS.gauntlet.list.filter((x,i)=>x.sup&&i<(L.wvMax||0)).length;
   L.eliteLeft=enemies.filter(e=>e.elite).map(e=>e.type+' '+Math.round(100*e.hp/e.max)+'% במרחק '+Math.round(Math.hypot(e.x-P.x,e.y-P.y))).join(', ');
