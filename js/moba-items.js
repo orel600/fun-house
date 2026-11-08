@@ -94,7 +94,7 @@ function mbItHud(){
   const q=$('mbQuick');q.hidden=!n;
   if(n){const c=MBITEM.items[n].cost;q.classList.toggle('ok',g>=c);q.style.setProperty('--p',Math.min(1,g/c));
     if(q.dataset.id!==n){q.dataset.id=n;q.innerHTML=mbImg(n)+'<span></span>'}
-    const sp=q.querySelector('span');sp.textContent=g>=c?c:'−'+(c-g);sp.classList.toggle('miss',g<c);   /* כמה זהב חסר (הבודק, 4.11) */q.setAttribute('aria-label',T('mb.quick',T('mb.i.'+n),c))}
+    const sp=q.querySelector('span');sp.textContent=c;sp.classList.toggle('miss',g<c);   /* המחיר תמיד. הטבעת מראה כמה כבר יש; מספר שלילי של "כמה חסר" נראה כמו חוב (אוראל, 8.11) */q.setAttribute('aria-label',T('mb.quick',T('mb.i.'+n),c))}
   if($('mbInv').dataset.k!==inv){$('mbInv').dataset.k=inv;$('mbInv').innerHTML=(u.it||[]).map(mbImg).join('')}
   if(!$('ovMbShop').hidden)mbShopDraw();
 }

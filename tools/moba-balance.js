@@ -14,9 +14,11 @@ const N=+process.argv[2]||40,DIFF=process.argv[3]||'normal';
       const kits=Object.keys(MBKIT);if(MB){mbUi(false);S.mb=MB=null}
       mobaStart(kits[g%kits.length]);MB.me.bot={t:0,mode:'push'};
       const gb={w:0,l:0};if(typeof mbGbDone==='function'&&!mbGbDone.wrap){const f=mbGbDone;mbGbDone=function(u,w){(window.mbGbLog||[]).push(w);return f(u,w)};mbGbDone.wrap=1}window.mbGbLog=[];   // חדר ההימור
-      let n=0;while(!MB.over&&n<MOBA.maxT*30+60){mobaUpdate(1/30);n++}
+      const ult={},hp40={};let n=0;   // מתי כל גיבור הגיע לסקיל-על, וכמה חיים נשארו לכל אחד אחרי 40 שניות (אוראל, 7.11: "הטנק איבד 60% עד 0:40")
+      while(!MB.over&&n<MOBA.maxT*30+60){mobaUpdate(1/30);n++;
+        for(const h of MB.u)if(h.k==='hero'){if(h.lvl>=MOBA.ultAt&&ult[h.id]===undefined)ult[h.id]=MB.t;if(n===40*30)hp40[h.id]=h.dead?0:h.hp/h.max}}
       for(const w of window.mbGbLog)w?gb.w++:gb.l++;
-      const team=t=>mbHeroes(t).map(h=>({kit:h.kit,k:h.kills,d:h.deaths}));
+      const team=t=>mbHeroes(t).map(h=>({kit:h.kit,k:h.kills,d:h.deaths,ult:ult[h.id],hp40:hp40[h.id]}));
       return{gb,t:MB.t,won:S.won?0:1,base:MB.u.some(u=>u.k==='base'&&u.dead),teams:[team(0),team(1)]}},g));
     process.stdout.write('.');
   }
@@ -24,6 +26,10 @@ const N=+process.argv[2]||40,DIFF=process.argv[3]||'normal';
   const st={};for(const r of res)r.teams.forEach((tm,i)=>tm.forEach(h=>{const s=st[h.kit]||(st[h.kit]={n:0,w:0,k:0,d:0});s.n++;s.k+=h.k;s.d+=h.d;if(r.won===i)s.w++}));
   const avg=res.reduce((a,r)=>a+r.t,0)/res.length,base=res.filter(r=>r.base).length;
   console.log(N+' משחקים · ממוצע '+Math.floor(avg/60)+':'+String(Math.round(avg%60)).padStart(2,'0')+' · נגמרו בבסיס: '+base+' ('+Math.round(100*base/N)+'%) · כחולים ניצחו '+res.filter(r=>r.won===0).length);
+  {const us=res.flatMap(r=>r.teams.flat().map(h=>h.ult)),got=us.filter(x=>x!==undefined),f=res.map(r=>Math.min(...r.teams.flat().map(h=>h.ult??1e9))).filter(x=>x<1e9);
+   const mm=x=>Math.floor(x/60)+':'+String(Math.round(x%60)).padStart(2,'0'),av=a=>a.reduce((s,x)=>s+x,0)/(a.length||1);
+   const h40=res.flatMap(r=>r.teams.flat().map(h=>h.hp40)).filter(x=>x!==undefined);
+   console.log('סקיל-על: '+Math.round(100*got.length/us.length)+'% מהגיבורים הגיעו · ממוצע '+mm(av(got))+' · הראשון במשחק בממוצע '+mm(av(f))+' · חיים אחרי 0:40 בממוצע '+Math.round(100*av(h40))+'%')}
   const cm={};for(const r of res)r.teams.forEach((tm,i)=>{const k=tm.map(h=>h.kit).sort().join('+'),c=cm[k]||(cm[k]={n:0,w:0});c.n++;if(r.won===i)c.w++});
   {const w=res.reduce((a,r)=>a+(r.gb?r.gb.w:0),0),l=res.reduce((a,r)=>a+(r.gb?r.gb.l:0),0),g=res.filter(r=>r.gb&&r.gb.w+r.gb.l).length;
    console.log('חדר ההימור: '+(w+l)+' כניסות ב-'+g+' משחקים · ניצחונות '+w+' · הפסדים '+l)}
