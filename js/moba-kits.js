@@ -45,26 +45,28 @@ function mbCast(u,slot,aim){
   // נקודה בטווח: אם הכוונה רחוקה מדי, הסקיל נוחת בקצה הטווח
   const pt=()=>{const d=Math.min(dist,s.range||0);return{x:u.x+Math.cos(ang)*d,y:u.y+Math.sin(ang)*d}};
   const foesIn=(x,y,r)=>MB.u.filter(o=>o.team!==u.team&&!o.dead&&(o.k==='hero'||o.k==='minion')&&Math.hypot(o.x-x,o.y-y)<r+o.r);
+  mbAnimCast(u,s,slot,ang);   // הבזק ההטלה ומצב על המטיל (moba-skill-anim.js). רק מראה
   switch(s.id){
     case 'anvil':{const p=pt(),d=Math.hypot(p.x-u.x,p.y-u.y);   // קופץ ונוחת: הלם ונזק מסביב לנקודת הנחיתה
-      u.st.dash={vx:Math.cos(ang),vy:Math.sin(ang),sp:800,left:Math.max(1,d),jump:true,end:()=>{for(const o of foesIn(u.x,u.y,s.r)){mbDmg(u,o,s.dmg*k,s.dt,{big:true});mbCC(o,'stun',s.stun,u)}mbBoom(u.x,u.y,s.r,s.dt);mbfxSlam(u,s.r,s.dt);mbfxSk('sk_anvil',u.x,u.y,{r:s.r});mbfxSk('sk_anvil_wave',u.x,u.y,{r:s.r})}};break}
-    case 'taunt':{for(const o of foesIn(u.x,u.y,s.r)){mbPull(o,u.x,u.y,s.pull,u.r+o.r+6);mbCC(o,'taunt',s.t,u)}
+      u.st.dash={vx:Math.cos(ang),vy:Math.sin(ang),sp:800,left:Math.max(1,d),jump:true,end:()=>{for(const o of foesIn(u.x,u.y,s.r)){mbDmg(u,o,s.dmg*k,s.dt,{big:true});mbCC(o,'stun',s.stun,u);mbAnimHit(o,s.dt)}mbBoom(u.x,u.y,s.r,s.dt);mbfxSlam(u,s.r,s.dt);mbfxSk('sk_anvil',u.x,u.y,{r:s.r});mbfxSk('sk_anvil_wave',u.x,u.y,{r:s.r});mbAnimLand('anvil',u.x,u.y,s)}};break}
+    case 'taunt':{for(const o of foesIn(u.x,u.y,s.r)){mbPull(o,u.x,u.y,s.pull,u.r+o.r+6);if(mbCC(o,'taunt',s.t,u))mbAnimTaunt(o,s.t)}
       mbShield(u,s.shield*k,s.shieldT);u.st.armor=s.shieldT;u.st.armorK=0;u.st.burnBack=s.burn;mbBoom(u.x,u.y,s.r,'fire');mbWord(u,'taunt');mbfxSk('sk_taunt',u.x,u.y,{r:s.r,follow:u,loop:true,dur:s.t});break}
     case 'wall':{const p=pt(),dir=u.team?-1:1;   // מושך את כולם אל הנקודה, הלם, וחומה בצד שלהם (אל הבסיס שלהם) שחוסמת את הבריחה
-      for(const o of foesIn(p.x,p.y,s.r)){mbPull(o,p.x,p.y,s.r,o.r+8);mbDmg(u,o,s.dmg*k,s.dt,{big:true});mbCC(o,'stun',s.stun,u)}
-      MB.walls.push({x:p.x+dir*(s.r*0.55),team:u.team,t:s.t});mbfxSk('sk_wall',p.x+dir*(s.r*0.55),p.y,{loop:true,dur:s.t});mbBoom(p.x,p.y,s.r,s.dt);mbfxSlam(Object.assign({},u,{x:p.x,y:p.y}),s.r,s.dt);break}
+      for(const o of foesIn(p.x,p.y,s.r)){mbPull(o,p.x,p.y,s.r,o.r+8);mbDmg(u,o,s.dmg*k,s.dt,{big:true});mbCC(o,'stun',s.stun,u);mbAnimHit(o,s.dt)}
+      MB.walls.push({x:p.x+dir*(s.r*0.55),team:u.team,t:s.t});mbfxSk('sk_wall',p.x+dir*(s.r*0.55),p.y,{loop:true,dur:s.t});mbBoom(p.x,p.y,s.r,s.dt);mbfxSlam(Object.assign({},u,{x:p.x,y:p.y}),s.r,s.dt);mbAnimLand('wall',p.x,p.y,s);break}
     case 'cleave':{   // גל חרב: קשת של הדף שטסה לאורך הקו (moba-fx.js מצייר אותה)
-      MB.shots.push({kind:'line',fx:'cleave',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,
-        on:o=>{mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});mbCC(o,'stun',s.stun,u);mbSlow(o,s.slow,s.slowT);mbfxHit(o,'cleave')}});mbfxCleave(u,ang,s);mbfxSk('sk_cleave',u.x+Math.cos(ang)*30,u.y+Math.sin(ang)*30-10,{rot:ang+Math.PI});break}
-    case 'spin':{let got=0;for(const o of foesIn(u.x,u.y,s.r))got+=mbDmg(u,o,s.dmg*k,s.dt);u.hp=Math.min(u.max,u.hp+got*s.heal);
-      if(got*s.heal>5)mbFloat(u.x,u.y-u.r-16,'+'+Math.round(got*s.heal),'#7BD88F');mbBoom(u.x,u.y,s.r,s.dt);mbfxSpin(u,s.r);mbfxSk('sk_spin',u.x,u.y,{r:s.r,follow:u});break}
+      const sh={kind:'line',fx:'cleave',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,
+        on:o=>{mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});mbCC(o,'stun',s.stun,u);mbSlow(o,s.slow,s.slowT);mbfxHit(o,'cleave');mbAnimHit(o,s.dt)}};
+      MB.shots.push(sh);mbAnimShot(sh,s,ang);mbfxCleave(u,ang,s);mbfxSk('sk_cleave',u.x+Math.cos(ang)*30,u.y+Math.sin(ang)*30-10,{rot:ang+Math.PI});break}
+    case 'spin':{let got=0;for(const o of foesIn(u.x,u.y,s.r)){got+=mbDmg(u,o,s.dmg*k,s.dt);mbAnimHit(o,s.dt)}u.hp=Math.min(u.max,u.hp+got*s.heal);
+      if(got*s.heal>5){mbFloat(u.x,u.y-u.r-16,'+'+Math.round(got*s.heal),'#7BD88F');mbAnimHeal(u)}mbBoom(u.x,u.y,s.r,s.dt);mbfxSpin(u,s.r);mbfxSk('sk_spin',u.x,u.y,{r:s.r,follow:u});break}
     case 'rage':{Object.assign(u.st,{rage:s.t,rageK:s.dmg,rageSp:s.speed,rageCd:s.atkCd,rageDef:s.def,stun:0,taunt:0,root:0,bub:0,imm:s.imm,ice:0});
-      for(const o of foesIn(u.x,u.y,s.r)){mbDmg(u,o,s.dmg0*k,'physical',{big:true});mbPush(o,Math.atan2(o.y-u.y,o.x-u.x),40)}
+      for(const o of foesIn(u.x,u.y,s.r)){mbDmg(u,o,s.dmg0*k,'physical',{big:true});mbPush(o,Math.atan2(o.y-u.y,o.x-u.x),40);mbAnimHit(o,'physical')}
       mbBoom(u.x,u.y,s.r,'physical');mbWord(u,'rage');mbfxSk('sk_rage',u.x,u.y,{follow:u,loop:true,dur:s.t});mbfxSk('sk_rage_glow',u.x,u.y,{follow:u,loop:true,dur:s.t});break}
     case 'pierce':case 'wave':{
       const L=s.id==='pierce',sh={kind:'line',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,
         on:o=>{mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});if(s.wet){o.st.wet=Math.max(o.st.wet,s.wet);mbSlow(o,s.slow,s.slowT)}
-          if(typeof fxPlay==='function')fxPlay(L?'hit_light':'hit_water',o.x,o.y-o.r,{size:L?90:100,add:L})}};
+          mbAnimHit(o,s.dt)}};   // פגיעה לפי סוג הנזק, גדולה על גיבור (moba-skill-anim.js)
       MB.shots.push(sh);
       // האפקט שעף עם הסקיל (אוראל, 7.11: "חץ הברק וגל המים עפים בלי שום אפקט"), והבזק ביד של המטיל
       if(typeof fxPlay==='function'){fxPlay(L?'sk_pierce':'sk_wave',u.x,u.y,{follow:sh,rot:ang,loop:true,size:L?MBFXSK.sk_pierce.size:s.w*2.2,add:L});
@@ -72,14 +74,14 @@ function mbCast(u,slot,aim){
       break}
     case 'net':{   // רשת ציד: עפה פתוחה, ונסגרת על הגיבור הראשון שהיא פוגעת בו. חיילים לא עוצרים אותה
       const n={kind:'line',fx:'net',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,
-        on:o=>{if(o.k!=='hero'||n.gone)return;n.gone=true;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'root',s.root,u)){mbWord(o,'root');MBFX_N(o).rootFx=mbfxSk('sk_net_root',o.x,o.y,{follow:o,loop:true,dur:o.st.root})}mbfxHit(o,'net')}};
+        on:o=>{if(o.k!=='hero'||n.gone)return;n.gone=true;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'root',s.root,u)){mbWord(o,'root');MBFX_N(o).rootFx=mbfxSk('sk_net_root',o.x,o.y,{follow:o,loop:true,dur:o.st.root})}mbfxHit(o,'net');mbAnimHit(o,s.dt)}};
       MB.shots.push(n);mbfxSk('sk_net',u.x,u.y,{follow:n,loop:true,rot:ang+MBFXSK.netRot,dur:s.range/s.speed});break}
-    case 'rain':{const p=pt();mbfxSk('sk_rain',p.x,p.y,{r:s.r,loop:true,dur:s.delay+s.t});mbZone(u,p.x,p.y,s.r,s.delay,null,'rain',{t:s.t,tick:(z,dt)=>{for(const o of foesIn(z.x,z.y,z.r)){mbDmg(u,o,s.dps*k*dt,s.dt,{quiet:true});mbSlow(o,s.slow,0.3)}
-      if(z.left-dt<=0){for(const o of foesIn(z.x,z.y,z.r))mbDmg(u,o,s.end*k,s.dt,{big:true});mbBoom(z.x,z.y,z.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt))}}});break}   // מטח אחרון
+    case 'rain':{const p=pt();mbfxSk('sk_rain',p.x,p.y,{r:s.r,loop:true,dur:s.delay+s.t});mbZone(u,p.x,p.y,s.r,s.delay,null,'rain',{t:s.t,tick:(z,dt)=>{mbAnimRain(z);for(const o of foesIn(z.x,z.y,z.r)){mbDmg(u,o,s.dps*k*dt,s.dt,{quiet:true});mbSlow(o,s.slow,0.3);mbAnimTick(o)}
+      if(z.left-dt<=0){for(const o of foesIn(z.x,z.y,z.r)){mbDmg(u,o,s.end*k,s.dt,{big:true});mbAnimHit(o,s.dt)}mbBoom(z.x,z.y,z.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt));mbAnimLand('rain',z.x,z.y,s)}}});break}   // מטח אחרון
     case 'bubble':{const p=pt();mbfxSk('sk_bubble_aura',p.x,p.y,{r:s.r,loop:true,dur:s.delay+0.3});mbZone(u,p.x,p.y,s.r,s.delay,z=>{   // כלא מים: אחרי רגע הבועה עולה, מרימה (הלם) ומרטיבה. רטוב + ברק או קרח = קומבו (moba.js)
-      for(const o of foesIn(z.x,z.y,z.r)){mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});o.st.wet=Math.max(o.st.wet,s.wet);if(mbCC(o,'stun',s.lift,u)){o.st.bub=s.lift;MBFX_N(o).bubFx=mbfxSk('sk_bubble',o.x,o.y,{follow:o,loop:true,dur:s.lift})}}
-      mbBoom(z.x,z.y,s.r,s.dt);mbfxBubble(z.x,z.y,z.r);mbfxSk('sk_bubble_halo',z.x,z.y,{r:z.r})},'bubble');break}
-    case 'blizzard':{const p=pt();mbfxSk('sk_blizzard',p.x,p.y,{r:s.r,loop:true,dur:s.delay+0.4});mbZone(u,p.x,p.y,s.r,s.delay,z=>{for(const o of foesIn(z.x,z.y,z.r)){const wet=o.st.wet>0;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'stun',s.freeze*(wet?MOBA.combo.freeze:1),u)&&wet){o.st.wet=0;mbWord(o,'freeze')}if(o.st.stun>0)o.st.ice=1}mbBoom(z.x,z.y,s.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt));mbfxSk('sk_blizzard_ice',z.x,z.y,{r:z.r})},'blizzard');break}
+      for(const o of foesIn(z.x,z.y,z.r)){mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});o.st.wet=Math.max(o.st.wet,s.wet);if(mbCC(o,'stun',s.lift,u)){o.st.bub=s.lift;MBFX_N(o).bubFx=mbfxSk('sk_bubble',o.x,o.y,{follow:o,loop:true,dur:s.lift})}mbAnimHit(o,s.dt)}
+      mbBoom(z.x,z.y,s.r,s.dt);mbfxBubble(z.x,z.y,z.r);mbfxSk('sk_bubble_halo',z.x,z.y,{r:z.r});mbAnimLand('bubble',z.x,z.y,s)},'bubble');break}
+    case 'blizzard':{const p=pt();mbfxSk('sk_blizzard',p.x,p.y,{r:s.r,loop:true,dur:s.delay+0.4});mbZone(u,p.x,p.y,s.r,s.delay,z=>{for(const o of foesIn(z.x,z.y,z.r)){const wet=o.st.wet>0;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'stun',s.freeze*(wet?MOBA.combo.freeze:1),u)&&wet){o.st.wet=0;mbWord(o,'freeze')}if(o.st.stun>0)o.st.ice=1;mbAnimHit(o,s.dt)}mbBoom(z.x,z.y,s.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt));mbfxSk('sk_blizzard_ice',z.x,z.y,{r:z.r});mbAnimLand('blizzard',z.x,z.y,s)},'blizzard');break}
   }
   u.cd[slot]=s.cd*(1-mbIb(u).cdr);u.face=ang;u.aim=ang;
   if(u.me)sfx(slot==='ult'?'levelup':'tap');

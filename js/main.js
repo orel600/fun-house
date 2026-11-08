@@ -2,9 +2,17 @@
 let last=performance.now(),FRAME_T=last;
 // dt עד 0.05: בטלפון שרץ ב-20-30 פריימים בשנייה (הכפר בתלת-ממד) פריים איטי לא "מאבד" זמן, אז הדמות לא מאטה ונתקעת (ניר, 2.11: "מקוטעת")
 // שגיאה בפריים לא עוצרת את המשחק: הפריים הבא תמיד מתוזמן (אוראל, 3.11: באייפון שגיאה ב-hud הקפיאה את משחקי השאול לגמרי)
-function frame(now){requestAnimationFrame(frame);try{frameStep(now)}catch(e){console.error(e)}}
+// עצירה ברקע (W6, 8.11.2026): כשהטלפון עובר לאפליקציה אחרת או נועל מסך (document.hidden) הלולאה נעצרת לגמרי: בלי פריימים, בלי עדכון.
+// בחזרה היא ממשיכה נקי: last מתאפס, אז אין קפיצת dt (וגם ככה dt מוגבל ל-maxDt). טיימרים של זמן אמיתי (ייצור בכפר) ממשיכים לפי השעון כמו קודם.
+// log: שורת console בכל עצירה וחזרה, כדי שאפשר יהיה לראות בבדיקה (tools/perf-arena.js --hidden) שזה באמת קרה
+const LOOP={paused:false,raf:0,maxDt:0.05,log:true,hidAt:0};
+function frame(now){if(LOOP.paused){LOOP.raf=0;return}LOOP.raf=requestAnimationFrame(frame);try{frameStep(now)}catch(e){console.error(e)}}
+function loopPause(){if(LOOP.paused)return;LOOP.paused=true;if(LOOP.raf)cancelAnimationFrame(LOOP.raf);LOOP.raf=0;LOOP.hidAt=performance.now();if(LOOP.log)console.log('[loop] paused')}
+function loopResume(){if(!LOOP.paused)return;LOOP.paused=false;last=performance.now();LOOP.raf=requestAnimationFrame(frame);
+  if(LOOP.log)console.log('[loop] resumed after '+((performance.now()-LOOP.hidAt)/1000).toFixed(1)+'s')}
+document.addEventListener('visibilitychange',()=>{document.hidden?loopPause():loopResume()});
 function frameStep(now){
-  let dt=Math.min(0.05,(now-last)/1000);last=now;FRAME_T=now;   // FRAME_T: אותו שעון לתלת-ממד (render3d.js), בלי קפיצות בין שני שעונים
+  let dt=Math.min(LOOP.maxDt,(now-last)/1000);last=now;FRAME_T=now;   // FRAME_T: אותו שעון לתלת-ממד (render3d.js), בלי קפיצות בין שני שעונים
   if(typeof pwaHeld==='function'&&pwaHeld())dt=0;   // אפליקציה מותקנת שמוחזקת לאורך: המשחק עוצר עד שמסובבים (pwa.js)
   if(S&&S.mode==='play'){
     if(S.mb)mobaUpdate(dt);   // משחקי השאול (moba.js)
@@ -22,6 +30,6 @@ function showLang(){applyLang();showGfx();updateSwapBtn();$('verLine').textConte
 function boot(){
   reset();
   showLang();
-  requestAnimationFrame(frame);
+  LOOP.raf=requestAnimationFrame(frame);
 }
 window.claude?.hot?.ready?window.claude.hot.ready(boot):boot();
