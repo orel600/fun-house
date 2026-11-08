@@ -26,7 +26,10 @@ const ARENA_LOOK={
   flag:{size:76,warp:0.35,mortar:0.09,tint:0.14,bevel:0.18,wear:0.35,grit:0.05},
   macro:620,                                // גודל הכתמים הגדולים, שמסתירים את החזרה
   rings:[150,320,430,462],                  // טבעות שיבוץ הפליז סביב מרכז הזירה (0,0). האחרונות: הטבעת הכפולה שעליה החותמות
-  runes:{r:446,n:48,a:0.55},                // הרונות: על איזה רדיוס, כמה סביב, כמה בולטות
+  runes:{r:446,n:48,a:0.35},                // הרונות: על איזה רדיוס, כמה סביב, כמה בולטות (0.35, היה 0.55: פחות מסיח, 1.3)
+  // השיבוץ (MLBB 1.3, אוראל 8.11: "הטבעות והסימנים ברצפה מטושטשים או מפריעים"): w רוחב כל טבעת ביחידות עולם, עם קצה חד של פיקסל אחד
+  // (fwidth) בכל זום. mix: כמה הפליז מכסה את האבן (היה 0.75). sparkle: ברק גרגירי בפליז (היה 0.3, נראה מטושטש בטלפון). w2d: עובי בדו-ממד
+  inlay:{w:[3,3.5,2.5,2.5],mix:0.45,sparkle:0,w2d:2},
   sigil:{r:446,size:38,dim:0.18,lit:1.6,min:0.12,ease:1.5},   // החותמות: רדיוס, גודל, כמה דולקות בלי שימוש ובשימוש מלא, מאיזה חלק מהמכות נדלקות, וכמה מהר
   // הגבול (W4): שפת אבן כהה עם מסמרות פליז, ומסביבה טבעת קרשי עץ (רצפה, לא קיר: אפשר ללכת עליה). studs: כמה מסמרות סביב, planks: כמה קרשים
   border:{curb:[880,930],studs:60,planks:[930,1030],plankN:72,torches:12},
@@ -71,7 +74,8 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
     m.onBeforeCompile=sh=>{Object.assign(sh.uniforms,U);
       sh.vertexShader='varying vec2 vAp;uniform float aSin;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec4 aW=modelMatrix*vec4(transformed,1.0);vAp=vec2(aW.x,aW.z*aSin);');
       sh.fragmentShader=`varying vec2 vAp;uniform float aT,aProg,aPulse;uniform vec3 aBoss,cStone,cStone2,cDark,cMortar,cCrack,cRune,cEmber,cOut,cBrass,cWood,cWood2,cCurb;uniform vec3 sCol[6];uniform float sLit[6];${NOISE}${WORLEY}
-        float aRing(float d,float r,float w){return 1.0-smoothstep(w*0.5,w,abs(d-r));}
+        float aRingSoft(float d,float r,float w){return 1.0-smoothstep(w*0.5,w,abs(d-r));}   // הטבעת הרכה הישנה: החותמות, זוהר הבוס ושפת העץ (נשארים כמו שהיו)
+        float aRing(float d,float r,float w){float aw=max(fwidth(d),0.001);return 1.0-smoothstep(w*0.5-aw*0.5,w*0.5+aw*0.5,abs(d-r));}   // טבעת חדה: רוחב w, וקצה של פיקסל אחד בכל זום. רק לארבע טבעות השיבוץ (1.3)
         `+sh.fragmentShader.replace('#include <map_fragment>',`
         vec2 p=vAp;float d=length(p),ang=atan(p.y,p.x);vec3 glow=vec3(0.0);
         // אבני ריצוף לא סדירות: תאי Worley על רשת מעוותת ברעש, כל אבן בגוון משלה, שחיקה בקצוות ותפר כהה
@@ -92,20 +96,20 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
         glow+=cEmber*ck*smoothstep(${f(A.crack.glowAt)},1.0,aProg)*(0.35+0.25*sin(aT*3.0+gN(p/40.0)*6.0));
         ${FLAT?'':`
         // טבעות הרונות סביב המרכז, ורונות על החיצונית. פועמות בקומבו ובגל הענק
-        float rg=aRing(d,${R[0]},5.0)+aRing(d,${R[1]},6.0)+aRing(d,${R[2]},4.0)+aRing(d,${R[3]},4.0);
+        float rg=aRing(d,${R[0]},${f(A.inlay.w[0])})+aRing(d,${R[1]},${f(A.inlay.w[1])})+aRing(d,${R[2]},${f(A.inlay.w[2])})+aRing(d,${R[3]},${f(A.inlay.w[3])});
         float seg=fract(ang/6.2832*${f(A.runes.n)}),rr=abs(d-${f(A.runes.r)});
         float rn=step(rr,14.0)*step(0.2,seg)*step(seg,0.8)*step(0.35,gH(vec2(floor(ang/6.2832*${f(A.runes.n)}),3.0)))*(1.0-smoothstep(abs(seg-0.5)*28.0,abs(seg-0.5)*28.0+3.0,rr+gH(vec2(floor(ang*7.6),1.0))*10.0));
         float rune=clamp(rg+rn*${f(A.runes.a)},0.0,1.0);
-        c=mix(c,cBrass*(0.8+0.3*gH(floor(p/5.0))),rune*0.75);                      // שיבוץ פליז ברצפה, עם ברק קל
+        c=mix(c,cBrass*(${f(0.95-A.inlay.sparkle*0.5)}+${f(A.inlay.sparkle)}*gH(floor(p/5.0))),rune*${f(A.inlay.mix)});   // שיבוץ פליז ברצפה (A.inlay)
         glow+=cRune*rune*aPulse*0.9;
         // שש החותמות: עיגול עם כוכב, לכל סוג נזק, דולקות לפי השימוש
         for(int i=0;i<6;i++){float a=float(i)*1.0472+0.5236;vec2 sp=vec2(cos(a),sin(a))*${f(A.sigil.r)};vec2 q=p-sp;float sd=length(q),sa=atan(q.y,q.x);
           float star=abs(cos(3.0*sa))*0.35+0.45;
-          float s=aRing(sd,${f(A.sigil.size)},5.0)+aRing(sd,${f(A.sigil.size*0.62)},3.0)+(1.0-smoothstep(${f(A.sigil.size)}*star-3.0,${f(A.sigil.size)}*star,sd))*0.35;
+          float s=aRingSoft(sd,${f(A.sigil.size)},5.0)+aRingSoft(sd,${f(A.sigil.size*0.62)},3.0)+(1.0-smoothstep(${f(A.sigil.size)}*star-3.0,${f(A.sigil.size)}*star,sd))*0.35;
           s*=step(sd,${f(A.sigil.size+6)});
           c=mix(c,sCol[i]*0.6,s*0.45);glow+=sCol[i]*s*(sLit[i]+aPulse*0.3);}
         // הבוס נכנס: זוהר ברצפה סביבו
-        float bd=length(p-aBoss.xy);glow+=cRune*aBoss.z*(1.0-smoothstep(0.0,${f(A.boss.r)},bd))*1.4+cEmber*aBoss.z*aRing(bd,${f(A.boss.r*0.8)},8.0);
+        float bd=length(p-aBoss.xy);glow+=cRune*aBoss.z*(1.0-smoothstep(0.0,${f(A.boss.r)},bd))*1.4+cEmber*aBoss.z*aRingSoft(bd,${f(A.boss.r*0.8)},8.0);
         // הגבול והקצה: רק מעבר לרדיוס הזה (רוב המסך בפנים, וחוסך את כל החישוב שם)
         if(d>${f(A.border.curb[0]-40)}){
         // שפת אבן כהה עם מסמרות פליז, ומסביבה טבעת קרשי עץ (גם היא רצפה: הולכים עליה)
@@ -119,7 +123,7 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
         float pid=gH(vec2(floor(ang/6.2832*${f(A.border.plankN)}),2.0));vec3 wc=mix(cWood,cWood2,0.25+0.5*pid)*(0.88+0.24*gN(vec2(ang*260.0+pid*40.0,d/36.0)));   // כל קרש בגוון משלו, וסיבים דקים לאורכו
         wc=mix(wc,cWood2*0.6,seam);wc=mix(wc,cBrass,step(0.995,gH(floor(vec2(ang*120.0,d/6.0)))));   // תפר כהה בין קרשים, ומסמר פה ושם
         c=mix(c,wc,wood);
-        float rim=aRing(d,${f(A.border.planks[0])},3.0)+aRing(d,${f(A.border.planks[1])},3.0);c=mix(c,cBrass*0.7,rim*0.6);   // קו פליז דק בשתי שפות העץ
+        float rim=aRingSoft(d,${f(A.border.planks[0])},3.0)+aRingSoft(d,${f(A.border.planks[1])},3.0);c=mix(c,cBrass*0.7,rim*0.6);   // קו פליז דק בשתי שפות העץ
         // מחוץ לעץ: אבן גסה וכהה שמחשיכה ככל שמתרחקים
         float outer=smoothstep(${f(A.border.planks[1])},${f(A.border.planks[1]+30)},d);
         c=mix(c,mix(cDark,cOut,0.4)*(0.8+0.3*gN(p/16.0)),outer*0.7);
@@ -265,7 +269,7 @@ function aLook2d(ox,oy){
   const dc=Math.hypot(Math.max(0,Math.max(x0,-x1)),Math.max(0,Math.max(y0,-y1))),dfar=Math.max(Math.hypot(x0,y0),Math.hypot(x1,y0),Math.hypot(x0,y1),Math.hypot(x1,y1));   // טווח המרחקים מהמרכז שעל המסך
   const ring=(r,w,col,al,dash)=>{if(r+w<dc||r-w>dfar)return;ctx.globalAlpha=al;ctx.strokeStyle=col;ctx.lineWidth=w;if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.arc(0,0,r,0,6.2832);ctx.stroke();if(dash)ctx.setLineDash([])};
   // 2. שיבוץ פליז במרכז: טבעות, רונות (קטעים על הטבעת החיצונית) ושש חותמות של סוגי הנזק, דולקות לפי השימוש
-  for(const r of A.rings)ring(r,3,L.brass,0.32);
+  for(const r of A.rings)ring(r,A.inlay.w2d,L.brass,0.32);
   const seg=6.2832*A.runes.r/A.runes.n;ring(A.runes.r,9,L.brass,0.16,[seg*0.55,seg*0.45]);
   if(A.sigil.r+60>dc&&A.sigil.r-60<dfar){const types=Object.keys(DMG.types).slice(0,6),hits=S.hits||{},tot=types.reduce((a,t)=>a+(hits[t]||0),0)||1,G=A.sigil;
     types.forEach((t,i)=>{const a=i*1.0472+0.5236,sx=Math.cos(a)*G.r,sy=Math.sin(a)*G.r;if(!vis(sx,sy,G.size+8))return;const sh=(hits[t]||0)/tot,lit=sh<G.min?0:Math.min(1,(sh-G.min)/(0.5-G.min));

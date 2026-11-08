@@ -20,7 +20,7 @@ Kept true after every merge: add, remove or rename lines here (no approval neede
 - Underworld Games / MOBA (Orel): moba.js, moba3d.js, moba-*.js.
 - Skills: skills.js, skills-more.js (arena); wskill.js, wskbook.js, wskx.js, wsklvl.js, wrunes.js, sigskill.js, skillcast.js, skillreveal.js, skguide.js, skpractice.js (world); skill-anim.js, skill-fx.js.
 - Village (Nir): village.js, npc.js, residents.js, inn.js, deco.js, daily.js, visit.js, trade.js, feed.js, homecoming.js, welcome.js.
-- World (Nir): world.js, terrain.js, map-*.js, nodes.js, drops.js, gather.js, gmastery.js, fishing.js, worldnpc.js, worldmap.js, minimap.js, waystones.js, travel.js, curiosity.js, events.js, wlife.js, tiers.js, depths.js, story.js, quests.js, questboard.js, escort.js, mutation.js, wanted.js, secrets.js, lake-bell.js, ridge-hazards.js, storm-river.js, desertwell.js, shadowrocks.js, wisps.js, levelpath.js, book.js.
+- World (Nir): world.js, terrain.js, map-*.js, nodes.js, drops.js, gather.js, gmastery.js, gtool.js, fishing.js, worldnpc.js, worldmap.js, minimap.js, waystones.js, travel.js, curiosity.js, events.js, wlife.js, tiers.js, depths.js, story.js, quests.js, questboard.js, escort.js, mutation.js, wanted.js, secrets.js, lake-bell.js, ridge-hazards.js, storm-river.js, desertwell.js, shadowrocks.js, wisps.js, levelpath.js, book.js.
 - Pets: pet.js, petscent.js, rescue.js, parosh.js, petfx3d.js.
 - FX and weather: fx.js (`celebrate`), fxlib.js, fx-data.js (generated), fxui.js, fxworld.js, fxvil.js, vfx.js, weather.js, wxworld.js, spark.js, flute.js.
 - UI: ui.js, menu.js, hudrank.js, msglane.js, firsttips.js, guide.js, credits.js, gicons.js, gicons-data.js.
