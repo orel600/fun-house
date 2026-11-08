@@ -75,8 +75,9 @@ function fxuiPlace(f){
   return true;
 }
 function fxuiTick(){
-  const now=performance.now()/1000;let j=0;
+  const now=performance.now()/1000,win=FXUI.list.some(f=>f.free&&f.el)&&fxuiWin();let j=0;   // win: חלון נפתח בדרך שלא ראינו, אפקט חופשי נעצר
   for(const f of FXUI.list){
+    if(win&&f.free)fxuiEnd(f);
     if(!f.el)continue;
     const age=now-f.t0,n=Math.floor(age*f.fps);let i=f.loop||f.dur?n%f.D.n:n;
     if((!f.loop&&!f.dur&&n>=f.D.n)||(f.dur&&age>f.dur)||!fxuiPlace(f)){fxuiEnd(f);continue}
@@ -121,7 +122,8 @@ function fxuiWinOpen(el){
 function fxuiWatchWins(){
   const ids=(typeof WINS!=='undefined'?WINS.map(w=>w.id):[]).concat(Object.keys(FXUI.open));
   const mo=new MutationObserver(ms=>{for(const m of ms){const el=m.target;if(m.oldValue!==null&&!el.hidden)fxuiWinOpen(el)}});
-  for(const id of new Set(ids)){const el=document.getElementById(id);if(el)mo.observe(el,{attributes:true,attributeFilter:['hidden'],attributeOldValue:true})}
+  const els=new Set([...ids.map(id=>document.getElementById(id)),...document.querySelectorAll('.ov')]);   // גם .ov שלא ב-WINS: מסך הפתיחה, שלל, מוות בעולם
+  for(const el of els)if(el)mo.observe(el,{attributes:true,attributeFilter:['hidden'],attributeOldValue:true});
 }
 
 /* ---- מעבר בין מקומות: וילון כהה שנעלם. בלי ui_trans: הוא מעבר שממלא את המסך (54% מהפיקסלים אטומים),
