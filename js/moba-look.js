@@ -9,17 +9,25 @@ const MBLOOK={
   // ui: פסי החיים, התגים והמספרים מעל הדמויות גדלים בחזרה חלקית, כדי שיהיו קריאים גם כשהמצלמה רחוקה
   cam:{zoom:0.58,tilt:52,ui:0.8},
   floor:{x0:-2200,x1:2200,y0:-940,y1:940,px:0.9,rim:34,   // השטח שמצויר (יחידות משחק), ופיקסלים לכל יחידה (עד 4096 לצד). rim: שפת אבן מחוץ לנתיב
-    abyss:'#0e070d',stone:['#4a3040','#432a3a','#503448','#3d2634','#56364a'],side:['#352536','#302231','#3b293d','#2d1e2a'],mortar:'#170c14',path:'#7a585a',
+    abyss:'#0e070d',stone:'#3b2d38',blot:['#2f232d','#463545','#35282f'],grain:0.06,side:'#2d2230',mortar:'#170c14',path:'#7a585a',   // W5 (8.11): אבן כהה אחידה (כתמים וגרגור), בלי לבנים. side: שבילי העקיפה כהים יותר
     rimCol:'#4a3646',cliff:['#3a2833','#1a0f16'],lava:'#FF6A2A',lavaHot:'#FFC861',rune:'#8C5A7A',moss:'#24302c',tint:0.13,drop:90},   // tint: כמה צבע הקבוצה צובע את החצי שלה. drop: כמה עמוקה התהום בתלת-ממד
+  // תלת-ממד (W5): הנתיב מקבל את רצפת האבן של הזירה (arena-look.js, aLookFlatMat: אבני ריצוף לא סדירות בלי הטבעות והגבול העגול) בפלטה של השאול,
+  // ומעליה שכבה שקופה עם הסימנים של הנתיב (צבע הקבוצות, השביל, הבסיסים, הלבה: mbFloorCanvas בלי האבן). בלי arena-look: הטקסטורה של הדו-ממד כמו קודם
+  floor3d:{stone:'#6a4c60',stone2:'#56404f',dark:'#3a2634',mortar:'#221420',crack:'#160c12',rune:'#C9A23E',ember:'#ff6a2a',out:'#0e070d'},
   // המפה (רק מראה, בלי השפעה על המשחק): נתיב ראשי באמצע (|y|<mid), שבילי עקיפה בצדדים (side), ורצועות שיחים ביניהם עם פתחים (bush)
   map:{mid:190,side:[310,650],bush:{y:250,seg:[[-1620,-1020],[-470,470],[1020,1620]],gap:50,r:[26,40]},
     patch:{y:[440,560],xs:[150,750,1350],n:5},   // שיחים בשטח הפתוח בצדדים
     rocks:{every:150,r:[22,46]},braziers:[[420,470],[1150,470],[1600,150]],banners:[[1700,190],[1700,-190]],
-    bushCol:['#2e5a5e','#3a5f7a','#2b4658'],bushLit:'#7FE0B8',rockCol:['#5b4c66','#4b3e57','#6a5a72']},
+    bushCol:['#3d5658','#46636a','#354b4e'],bushLit:'#A8DCC4',rockCol:['#5b4c66','#4b3e57','#6a5a72']},   // שיחים בגוון אפרפר-ירקרק שיושב על האבן הכהה (W5), לא טורקיז על סגול
   pulse:{speed:1.6,lo:0.55,hi:1},   // הלבה פועמת: כמה מהר, ובין איזו בהירות לאיזו
   // המפה הקטנה (פיקסלים של המסך), בפינה השמאלית העליונה: x/top מהפינה (מתחת לחיים ולחפצים), w רוחב מקסימלי, vw חלק מרוחב המסך (הגובה לפי צורת המפה).
   // gap: רווח ל-🎯 ולהודעות שמתחת. btn: גודל 🎯. pad: כמה מחוץ למפה עוד נחשב נגיעה. me: רדיוס הנגיעה בגיבור שלי. joy: כמה צריך להזיז את הג'ויסטיק כדי לחזור לגיבור. fade: כמה היא אטומה כשיש מאחוריה פס חיים (לפחות 0.6, שתמיד תהיה ברורה)
-  mini:{x:10,top:84,w:230,vw:0.27,gap:8,btn:34,pad:8,me:12,joy:0.25,fade:0.6},
+  mini:{x:10,top:84,w:230,vw:0.27,gap:8,btn:34,pad:8,me:12,joy:0.25,fade:0.75,
+    // W5 (8.11): ניגודיות. צבע קבוע לכל צד: כחול לקבוצה שלי, אדום לאויב, אפור ליחידה שאינה של אף אחת (mbMiniCol). dot: גודל הנקודות בפיקסלים.
+    // frame: מסגרת עץ עם קו זהב ומסמרות בפינות, כמו שאר החלונות (bwin). bg: האבן של המפה, בהירה מהרצפה כדי שהנקודות יבלטו
+    col:{ally:'#58AEFF',foe:'#FF5C5C',neu:'#A6A6B4',dead:'#3a3340'},dot:{minion:4,hero:5.5,me:7,tower:9,base:12},
+    bg:'#302536',lane:'rgba(236,210,200,0.32)',side:'rgba(236,210,200,0.13)',bush:'rgba(120,205,160,0.78)',tint:'70',
+    frame:{w:7,wood:'#7A4E2A',wood2:'#45291A',gold:'#C9A23E',stud:'#F6D38A'}},
 };
 // המצלמה: רק במשחקי השאול. עוטף את camera.js מבחוץ, כך שהזירה, הכפר והעולם לא משתנים
 (function(){const z=camZoom,t=camTilt,on=()=>typeof S!=='undefined'&&S&&!!S.mb;
@@ -102,8 +110,10 @@ function mbDecor(){
 
 /* ---- הרצפה ---- */
 let MB_FLOOR=null;   // {stone, glow}: שני קנבסים, מצוירים פעם אחת
-function mbFloorCanvas(){
-  if(MB_FLOOR)return MB_FLOOR;
+let MB_FLOOR_OV=null;   // שכבת הסימנים בלי האבן, לתלת-ממד (W5)
+// marksOnly: רק הסימנים (צבע הקבוצות, השביל, הצללים, השפה, הבסיסים והלבה) על קנבס שקוף, מעל רצפת האבן של הזירה בתלת-ממד
+function mbFloorCanvas(marksOnly){
+  if(marksOnly?MB_FLOOR_OV:MB_FLOOR)return marksOnly?MB_FLOOR_OV:MB_FLOOR;
   const F=MBLOOK.floor,M=MBLOOK.map,L=MOBA.lane,s=F.px,Wd=Math.min(4096,Math.round((F.x1-F.x0)*s)),Ht=Math.min(4096,Math.round((F.y1-F.y0)*s));
   const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
   const st=mk(Wd,Ht),g=st.getContext('2d'),gl=mk(Math.round(Wd/2),Math.round(Ht/2)),q=gl.getContext('2d');
@@ -111,20 +121,19 @@ function mbFloorCanvas(){
   q.setTransform(gl.width/(F.x1-F.x0),0,0,gl.height/(F.y1-F.y0),-F.x0*gl.width/(F.x1-F.x0),-F.y0*gl.height/(F.y1-F.y0));
   const R=(a,b)=>hash(a*0.37+1.3,b*0.91+7.1);   // אקראי קבוע: אותה רצפה בכל פעם
   const A=L.half+F.rim,x0=-L.len-F.rim,x1=L.len+F.rim;   // A: הקצה של שפת האבן
+  if(!marksOnly){
   // תהום מסביב, עם זוהר לבה עמום מתחת לשפה
   g.fillStyle=F.abyss;g.fillRect(F.x0,F.y0,F.x1-F.x0,F.y1-F.y0);
   for(const sg of [-1,1]){const gr=g.createLinearGradient(0,sg*A,0,sg*F.y1);
     gr.addColorStop(0,'#4a160e');gr.addColorStop(0.3,'#22090b');gr.addColorStop(1,F.abyss);g.fillStyle=gr;g.fillRect(F.x0,Math.min(sg*A,sg*F.y1),F.x1-F.x0,F.y1-A)}
-  // אבני ריצוף בשורות, באורכים שונים. שבילי העקיפה בצדדים: אבן כהה יותר
-  const rowH=52;
-  for(let r=0,y=-A;y<A;r++,y+=rowH){let x=x0-R(r,0)*80,i=0;const h=Math.min(rowH,A-y),yc=Math.abs(y+h/2),pal=yc>M.side[0]-20?F.side:F.stone;
-    while(x<x1){const w=64+R(r,i)*86,c=pal[Math.floor(R(i,r)*pal.length)];
-      g.fillStyle=F.mortar;g.fillRect(x,y,w,h);
-      g.fillStyle=c;g.fillRect(x+2.5,y+2.5,w-5,h-5);
-      g.fillStyle='rgba(255,255,255,0.05)';g.fillRect(x+2.5,y+2.5,w-5,3.5);   // אור על הקצה העליון
-      g.fillStyle='rgba(0,0,0,0.18)';g.fillRect(x+2.5,y+h-6,w-5,3.5);         // צל על הקצה התחתון: עומק
-      if(R(r*3,i)>0.82){g.strokeStyle='rgba(10,4,8,0.55)';g.lineWidth=1.5;g.beginPath();const cx=x+w*R(i,r*2);g.moveTo(cx,y+3);g.lineTo(cx+8,y+h*0.5);g.lineTo(cx-4,y+h-4);g.stroke()}   // סדק
-      x+=w;i++}}
+  // אבן כהה אחידה (W5): בסיס אחד, כתמים רכים בגוונים קרובים, וגרגור עדין. שבילי העקיפה בצדדים כהים יותר. בלי לבנים: הן רבו עם השיחים ועם המגדלים
+  g.fillStyle=F.stone;g.fillRect(x0,-A,x1-x0,A*2);
+  for(const sg of [-1,1]){const a=sg*M.side[0],b=sg*A,gr=g.createLinearGradient(0,a,0,b);gr.addColorStop(0,F.side+'00');gr.addColorStop(0.35,F.side);gr.addColorStop(1,F.side);g.fillStyle=gr;g.fillRect(x0,Math.min(a,b),x1-x0,Math.abs(b-a))}
+  for(let i=0;i<420;i++){const x=x0+R(i,11)*(x1-x0),y=-A+R(i,13)*A*2,r=60+R(i,17)*170,c=F.blot[Math.floor(R(i,19)*F.blot.length)];
+    const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,c+'80');gr.addColorStop(1,c+'00');g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2)}
+  for(let i=0;i<2600;i++){const x=x0+R(i,23)*(x1-x0),y=-A+R(i,29)*A*2,k=R(i,31);g.fillStyle=k>0.5?'rgba(255,255,255,'+F.grain+')':'rgba(0,0,0,'+F.grain*1.6+')';g.fillRect(x,y,2+R(i,37)*4,1.5)}
+  for(let i=0;i<70;i++){const x=x0+R(i,41)*(x1-x0),y=-A+R(i,43)*A*2;g.strokeStyle='rgba(10,4,8,0.4)';g.lineWidth=1.5;g.beginPath();g.moveTo(x,y);g.lineTo(x+(R(i,47)-0.5)*40,y+10+R(i,53)*30);g.lineTo(x+(R(i,59)-0.5)*60,y+30+R(i,61)*40);g.stroke()}   // סדקים בודדים
+  }
   // צבע הקבוצה: הצד הכחול קר והאדום חם, ומתערבבים באמצע
   {const gr=g.createLinearGradient(x0,0,x1,0),[b,rd]=MOBA.team,a=Math.round(F.tint*255).toString(16).padStart(2,'0');
     gr.addColorStop(0,b+a);gr.addColorStop(0.42,b+'00');gr.addColorStop(0.58,rd+'00');gr.addColorStop(1,rd+a);g.fillStyle=gr;g.fillRect(x0,-A,x1-x0,A*2)}
@@ -171,6 +180,7 @@ function mbFloorCanvas(){
     for(let x=F.x0;x<F.x1;x+=140){const y=sg*(A+90+R(x,1)*120),pts=[[x,y]];for(let k=1;k<5;k++)pts.push([x+k*35,y+(R(x,k)-0.5)*40]);crack(pts,2.5)}}
   // זוהר עדין מתחת ללפידים
   for(const d of mbDecor())if(d.k==='fire'){const gr=q.createRadialGradient(d.x,d.y,0,d.x,d.y,90);gr.addColorStop(0,'rgba(255,150,70,0.5)');gr.addColorStop(1,'rgba(255,150,70,0)');q.fillStyle=gr;q.fillRect(d.x-90,d.y-90,180,180)}
+  if(marksOnly)return MB_FLOOR_OV={stone:st,glow:gl};
   return MB_FLOOR={stone:st,glow:gl};
 }
 const mbPulse=()=>{const P=MBLOOK.pulse;return P.lo+(P.hi-P.lo)*(0.5+0.5*Math.sin((MB?MB.t:0)*P.speed))};
@@ -229,35 +239,43 @@ function mbMiniBox(ox,oy){
     if(sx+hw>x0-3&&sx-hw<x0+mw+3&&top+10>y0-3&&top-14<y0+mh+3){under=true;break}}
   return Object.assign({a:under?K.fade:1},l);
 }
+// הצבע של קבוצה במפה הקטנה: כחול לשלי, אדום לאויב, אפור ליחידה שאינה של אף קבוצה (W5). הקבוצה שלי קבועה לאורך המשחק, אז הרקע השמור נשאר נכון
+const mbMiniCol=t=>{const K=MBLOOK.mini.col,my=MB&&MB.me?MB.me.team:0;return t===my?K.ally:t===0||t===1?K.foe:K.neu};
 // הרקע הקבוע: אבן, צבע הקבוצות, הנתיב הראשי, שבילי העקיפה והשיחים (מ-mbDecor, אותם שיחים כמו על המפה)
 function mbMiniBg(l){
   if(MB_MINI_BG)return MB_MINI_BG;
   const G=MBLOOK.map,L=MOBA.lane,c=document.createElement('canvas'),d=DPR,g=c.getContext('2d'),X=x=>(x+L.len)*l.k,Y=y=>(y+L.half)*l.k;
   c.width=Math.ceil(l.mw*d);c.height=Math.ceil(l.mh*d);g.scale(d,d);
-  g.fillStyle='#21151f';g.fillRect(0,0,l.mw,l.mh);
-  const gr=g.createLinearGradient(0,0,l.mw,0);gr.addColorStop(0,MOBA.team[0]+'40');gr.addColorStop(0.5,'rgba(120,90,100,0.12)');gr.addColorStop(1,MOBA.team[1]+'40');g.fillStyle=gr;g.fillRect(0,0,l.mw,l.mh);
-  g.fillStyle='rgba(236,210,200,0.07)';for(const sg of [-1,1]){const a=Y(sg*G.side[0]),b=Y(sg*G.side[1]);g.fillRect(0,Math.min(a,b),l.mw,Math.abs(b-a))}   // שבילי העקיפה
-  g.fillStyle='rgba(236,210,200,0.17)';g.fillRect(0,Y(-G.mid),l.mw,Y(G.mid)-Y(-G.mid));   // הנתיב הראשי
-  g.fillStyle='rgba(95,190,150,0.55)';for(const b of mbDecor())if(b.k==='bush'){g.beginPath();g.arc(X(b.x),Y(b.y),Math.max(1.3,b.r*l.k),0,7);g.fill()}   // השיחים
+  const K=MBLOOK.mini;
+  g.fillStyle=K.bg;g.fillRect(0,0,l.mw,l.mh);
+  const gr=g.createLinearGradient(0,0,l.mw,0);gr.addColorStop(0,mbMiniCol(0)+K.tint);gr.addColorStop(0.5,'rgba(120,90,100,0.12)');gr.addColorStop(1,mbMiniCol(1)+K.tint);g.fillStyle=gr;g.fillRect(0,0,l.mw,l.mh);   // הצד של כל קבוצה בצבע שלה
+  g.fillStyle=K.side;for(const sg of [-1,1]){const a=Y(sg*G.side[0]),b=Y(sg*G.side[1]);g.fillRect(0,Math.min(a,b),l.mw,Math.abs(b-a))}   // שבילי העקיפה
+  g.fillStyle=K.lane;g.fillRect(0,Y(-G.mid),l.mw,Y(G.mid)-Y(-G.mid));   // הנתיב הראשי
+  g.fillStyle=K.bush;for(const b of mbDecor())if(b.k==='bush'){g.beginPath();g.arc(X(b.x),Y(b.y),Math.max(2,b.r*l.k),0,7);g.fill()}   // השיחים
   return MB_MINI_BG=c;
 }
 // המפה הקטנה עצמה. אויב (גיבור או חייל) מצויר רק אם הקבוצה שלי רואה אותו
 function mbMini(ox,oy){
   const M=MB,K=MBLOOK.mini,l=mbMiniBox(ox,oy),{x0,y0,mw,mh,k,X,Y,a}=l,my=M.me?M.me.team:0,seen=u=>u.team===my||(typeof mbSeen==='function'?mbSeen(u,my):true);
   ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.globalAlpha=a;
-  ctx.fillStyle='rgba(14,10,20,0.85)';ctx.fillRect(x0-3,y0-3,mw+6,mh+6);ctx.drawImage(mbMiniBg(l),x0,y0,mw,mh);
-  ctx.strokeStyle='rgba(244,199,79,0.55)';ctx.lineWidth=1;ctx.strokeRect(x0-3.5,y0-3.5,mw+7,mh+7);
+  // המסגרת: עץ עם קו זהב דק ומסמרה בכל פינה, כמו שאר החלונות (W5). הגיאומטריה של הנגיעה (x0,y0,mw,mh) לא משתנה
+  {const F=K.frame,w=F.w,wg=ctx.createLinearGradient(x0,y0-w,x0,y0+mh+w);wg.addColorStop(0,F.wood);wg.addColorStop(1,F.wood2);
+    ctx.fillStyle=wg;ctx.fillRect(x0-w,y0-w,mw+w*2,mh+w*2);ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fillRect(x0-w,y0+mh+w-2,mw+w*2,2);
+    ctx.fillStyle='rgba(14,10,20,0.9)';ctx.fillRect(x0-1.5,y0-1.5,mw+3,mh+3);ctx.drawImage(mbMiniBg(l),x0,y0,mw,mh);
+    ctx.strokeStyle=F.gold;ctx.lineWidth=1.5;ctx.strokeRect(x0-1.5,y0-1.5,mw+3,mh+3);
+    ctx.fillStyle=F.stud;for(const [sx,sy] of [[x0-w/2,y0-w/2],[x0+mw+w/2,y0-w/2],[x0-w/2,y0+mh+w/2],[x0+mw+w/2,y0+mh+w/2]]){ctx.beginPath();ctx.arc(sx,sy,1.6,0,7);ctx.fill()}}
   ctx.save();ctx.beginPath();ctx.rect(x0,y0,mw,mh);ctx.clip();
-  for(const u of M.u){if(u.k!=='tower'&&u.k!=='base')continue;const s=u.k==='base'?10:7,c=MOBA.team[u.team];   // מבנים: גם שנפלו, כהים ומחוקים
-    ctx.globalAlpha=a*(u.dead?0.45:1);ctx.fillStyle=u.dead?'#3a3340':c;ctx.fillRect(X(u.x)-s/2,Y(u.y)-s/2,s,s);ctx.strokeStyle=u.dead?c:'#0B0D14';ctx.lineWidth=1;ctx.strokeRect(X(u.x)-s/2,Y(u.y)-s/2,s,s);
+  const D=K.dot;
+  for(const u of M.u){if(u.k!=='tower'&&u.k!=='base')continue;const s=u.k==='base'?D.base:D.tower,c=mbMiniCol(u.team);   // מבנים: גם שנפלו, כהים ומחוקים
+    ctx.globalAlpha=a*(u.dead?0.45:1);ctx.fillStyle=u.dead?K.col.dead:c;ctx.fillRect(X(u.x)-s/2,Y(u.y)-s/2,s,s);ctx.strokeStyle=u.dead?c:'#0B0D14';ctx.lineWidth=1;ctx.strokeRect(X(u.x)-s/2,Y(u.y)-s/2,s,s);
     if(u.dead){ctx.beginPath();ctx.moveTo(X(u.x)-s/2,Y(u.y)-s/2);ctx.lineTo(X(u.x)+s/2,Y(u.y)+s/2);ctx.stroke()}}
   ctx.globalAlpha=a;
-  for(const u of M.u)if(u.k==='minion'&&!u.dead&&seen(u)){ctx.fillStyle=MOBA.team[u.team];ctx.fillRect(X(u.x)-1.2,Y(u.y)-1.2,2.4,2.4)}
+  {const s=D.minion;ctx.strokeStyle='#0B0D14';ctx.lineWidth=1;for(const u of M.u)if(u.k==='minion'&&!u.dead&&seen(u)){ctx.fillStyle=mbMiniCol(u.team);ctx.fillRect(X(u.x)-s/2,Y(u.y)-s/2,s,s);ctx.strokeRect(X(u.x)-s/2,Y(u.y)-s/2,s,s)}}
   for(const f of MBLOOK.miniMarks)f(ctx,X,Y,k);   // סימנים של מערכות אחרות
   if(typeof mbGambleMini==='function')mbGambleMini(X,Y);   // חדר ההימור (moba-gamble.js)
-  for(const u of M.u)if(u.k==='hero'&&!u.dead&&!u.me&&seen(u)){ctx.fillStyle=MOBA.team[u.team];ctx.beginPath();ctx.arc(X(u.x),Y(u.y),3.6,0,7);ctx.fill();ctx.strokeStyle='#0B0D14';ctx.lineWidth=1;ctx.stroke()}
-  const me=M.me;if(me&&!me.dead){ctx.fillStyle=MOBA.team[me.team];ctx.beginPath();ctx.arc(X(me.x),Y(me.y),5,0,7);ctx.fill();ctx.strokeStyle=C.gold;ctx.lineWidth=2;ctx.stroke()}   // אני: גדול, עם טבעת זהב
-  if(M.order){ctx.strokeStyle=M.order.kind==='attack'?C.blood:MOBA.team[0];ctx.lineWidth=2;ctx.beginPath();ctx.arc(X(M.order.x),Y(M.order.y),5+3*Math.sin(M.t*8),0,7);ctx.stroke()}
+  for(const u of M.u)if(u.k==='hero'&&!u.dead&&!u.me&&seen(u)){ctx.fillStyle=mbMiniCol(u.team);ctx.beginPath();ctx.arc(X(u.x),Y(u.y),D.hero,0,7);ctx.fill();ctx.strokeStyle='#0B0D14';ctx.lineWidth=1.5;ctx.stroke()}
+  const me=M.me;if(me&&!me.dead){ctx.fillStyle=mbMiniCol(me.team);ctx.beginPath();ctx.arc(X(me.x),Y(me.y),D.me,0,7);ctx.fill();ctx.strokeStyle=C.gold;ctx.lineWidth=2;ctx.stroke()}   // אני: גדול, עם טבעת זהב
+  if(M.order){ctx.strokeStyle=M.order.kind==='attack'?C.blood:mbMiniCol(me?me.team:0);ctx.lineWidth=2;ctx.beginPath();ctx.arc(X(M.order.x),Y(M.order.y),5+3*Math.sin(M.t*8),0,7);ctx.stroke()}
   {const vw=innerWidth/ZOOM*k,vh=innerHeight/ZOOM*k;ctx.strokeStyle=MBCAM.free?C.gold:'rgba(236,231,220,0.7)';ctx.lineWidth=1.5;MB_MINI_L.view={x:X(S.cam.x)-vw/2,y:Y(S.cam.y)-vh/2,w:vw,h:vh};ctx.strokeRect(X(S.cam.x)-vw/2,Y(S.cam.y)-vh/2,vw,vh)}   // מה שרואים על המסך (view: לבדיקה)
   ctx.restore();
   if(MBCAM.free){const b=l.bt;ctx.fillStyle='rgba(14,10,20,0.85)';ctx.beginPath();ctx.arc(b.x+b.s/2,b.y+b.s/2,b.s/2,0,7);ctx.fill();ctx.strokeStyle=C.gold;ctx.lineWidth=1.5;ctx.stroke();   // 🎯 חזרה לגיבור

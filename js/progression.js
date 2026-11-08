@@ -14,17 +14,28 @@ function openLevelUp(){
   $('lvTitle').textContent=T('level',P.level);
   const box=$('cards');box.innerHTML='';
   pool.forEach(u=>{
-    const b=document.createElement('button');b.className='card';
+    const b=document.createElement('button');b.className='card upc rar rar-'+(u.rar||'wood');   // upc: כרטיס שדרוג עם אייקון ומסגרת נדירות (css/rarity.css)
     // הצבע של הכרטיס: סוג הנזק שהוא נותן, או סוג הנזק של הנשק שהוא משפר
     if(u.w!=='any')b.style.setProperty('--dt',dtCol(u.el||P.dt[u.w]));if(u.el){b.dataset.el=u.el;b.dataset.w=u.w}
     const sk=u.sk&&SKILLS.list[u.sk].dt;if(sk){b.style.setProperty('--dt',dtCol(sk));b.dataset.sk=u.sk}   // סקיל: בצבע סוג הנזק שלו
     // לקסם יש טקסט משלו ('up.gdmg.bolt'), כדי שהקוסם לא יקרא על חצים
     const shot=u.w==='gun'&&wNow().shot,[name,desc]=T(TEXT['up.'+u.id+'.'+shot]?'up.'+u.id+'.'+shot:'up.'+u.id);
-    b.innerHTML='<span class="tag">'+(sk?T('sk.tag'):u.w==='any'?T('w.any'):wLabel(u.w))+(u.el||sk?' '+dtSvg(u.el||sk):'')+'</span><b>'+name+'</b><span>'+desc+'</span>';
-    b.onclick=()=>{if(u.el){P.dt[u.w]=u.el;updateSwapBtn()}else u.f();sfx('celebrate');S.picks[u.id]=(S.picks[u.id]||0)+1;$('ovLevel').hidden=true;S.mode='play';if(S.pendingLv>0)openLevelUp()};
+    // אייקון (gicons.js, GICO.up) בצבע סוג הנזק של הכרטיס, ובלי סוג: בצבע הנדירות. הטקסט בטור משלו
+    const ico=typeof gUp==='function'?gUp(u):'';
+    b.innerHTML=(ico?'<span class="uico">'+ico+'</span>':'')+'<span class="utxt"><span class="tag">'+(sk?T('sk.tag'):u.w==='any'?T('w.any'):wLabel(u.w))+(u.el||sk?' '+dtSvg(u.el||sk):'')+'</span><b>'+name+'</b><span>'+desc+'</span></span>';
+    b.onclick=()=>{if(u.el){P.dt[u.w]=u.el;updateSwapBtn()}else u.f();sfx('celebrate');S.picks[u.id]=(S.picks[u.id]||0)+1;upCelebrate(b,u);$('ovLevel').hidden=true;S.mode='play';if(S.pendingLv>0)openLevelUp()};
     box.appendChild(b);
   });
   $('ovLevel').hidden=false;
+}
+// חגיגה קטנה בבחירת כרטיס (fxui.js, מעל החלונות): לפי הנדירות. "פחות אפקטים" מכבה אותה. UP_FX: נדירות -> גיליון.
+// במרכז המסך למעלה (y: חלק מגובה המסך), ולא במקום הכרטיס: הכרטיס הימני יושב מעל פינת כפתורי הסקילים, שהיא שמורה להם (docs/ui-guide.md, המתאם 8.11)
+const UP_FX={gold:'ui_epic',legend:'ui_legend',other:'ui_juice',size:150,y:0.3};
+function upCelebrate(b,u){
+  if(typeof fxDom!=='function'||(typeof SAVE==='object'&&SAVE.fxLess))return;
+  const id=UP_FX[u.rar]||UP_FX.other;
+  fxDom(id,innerWidth/2,innerHeight*UP_FX.y,{tap:true,size:UP_FX.size,add:true});   // tap: מנגן גם כשחלון פתוח (החלון נסגר מיד אחרי)
+  UP_FX.last=id;   // לבוט (check.js)
 }
 function showIntro(b){
   S.mode='intro';joy=null;sfx('bossIn');

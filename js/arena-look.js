@@ -60,7 +60,9 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
     void worley(vec2 p,out float f1,out float f2,out vec2 id){vec2 i=floor(p-0.5),f=p-i;f1=8.0;f2=8.0;id=i;   // 2x2: הנקודה של כל תא בתוך הרבע האמצעי שלו, אז ארבעת השכנים מספיקים (חצי מהעבודה של 3x3)
       for(int y=0;y<=1;y++)for(int x=0;x<=1;x++){vec2 g=vec2(float(x),float(y));vec2 r=g+0.25+0.5*wH2(i+g)-f;float d=dot(r,r);if(d<f1){f2=f1;f1=d;id=i+g;}else if(d<f2){f2=d;}}
       f1=sqrt(f1);f2=sqrt(f2);}`;
-  function makeMat(){
+  // opt.flat: רק אבני הריצוף, הכתמים והסדקים, בלי הטבעות, החותמות, הגבול והבוס (רצפה מלבנית למשחקי השאול, moba3d.js, W5 8.11)
+  function makeMat(opt={}){
+    const FLAT=!!opt.flat;
     const m=new THREE.MeshLambertMaterial({color:0xffffff}),Z=()=>new THREE.Vector3();
     const U=m.userData.u={aSin:{value:1},aT:{value:0},aProg:{value:0},aPulse:{value:0},aBoss:{value:new THREE.Vector3(9e4,9e4,0)},
       cStone:{value:Z()},cStone2:{value:Z()},cDark:{value:Z()},cMortar:{value:Z()},cCrack:{value:Z()},cRune:{value:Z()},cEmber:{value:Z()},cOut:{value:Z()},cBrass:{value:Z()},cWood:{value:Z()},cWood2:{value:Z()},cCurb:{value:Z()},
@@ -88,6 +90,7 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
         float cw=mix(${f(A.crack.w0)},${f(A.crack.w1)},aProg),ck=1.0-smoothstep(cw*0.4,cw,cn);
         c=mix(c,cCrack,ck*0.7);
         glow+=cEmber*ck*smoothstep(${f(A.crack.glowAt)},1.0,aProg)*(0.35+0.25*sin(aT*3.0+gN(p/40.0)*6.0));
+        ${FLAT?'':`
         // טבעות הרונות סביב המרכז, ורונות על החיצונית. פועמות בקומבו ובגל הענק
         float rg=aRing(d,${R[0]},5.0)+aRing(d,${R[1]},6.0)+aRing(d,${R[2]},4.0)+aRing(d,${R[3]},4.0);
         float seg=fract(ang/6.2832*${f(A.runes.n)}),rr=abs(d-${f(A.runes.r)});
@@ -122,17 +125,19 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
         c=mix(c,mix(cDark,cOut,0.4)*(0.8+0.3*gN(p/16.0)),outer*0.7);
         float ed=smoothstep(${f(A.edge.from)},${f(A.edge.to)},d+(gN(p/120.0)-0.5)*160.0);
         c=mix(c,cOut,ed*${f(1-A.edge.dark)});glow*=(1.0-ed*0.7)*(1.0-curb-wood);
-        }
+        }`}
         diffuseColor.rgb=pow(c,vec3(2.2));vec3 aGlow=pow(glow,vec3(2.2));`).replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance+=aGlow;')};
     return m;
   }
-  function setPal(){
-    const u=ALOOK.mat.userData.u,p=aLookPal();
+  function setPal(){setPalOn(ALOOK.mat,aLookPal());ALOOK.palKey=S.arena||'classic'}
+  // הצבעים של פלטה p לתוך החומר m (גם לרצפה השטוחה של השאול)
+  function setPalOn(m,p){
+    const u=m.userData.u;
     for(const k of ['stone','stone2','dark','mortar','crack','rune','ember','out'])u['c'+k[0].toUpperCase()+k.slice(1)].value.copy(v3(p[k]));
     // צבעי הקו המשותף נכנסים כ-sRGB ממש (THREE.Color ממיר ללינארי, והרצפה עושה pow 2.2 בעצמה: פעמיים = עץ שחור)
     const L=A.line,sr=h=>new THREE.Vector3(parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255);
     u.cBrass.value.copy(sr(L.brass));u.cWood.value.copy(sr(L.wood));u.cWood2.value.copy(sr(L.wood2));u.cCurb.value.copy(sr(L.curb));
-    types().forEach((t,i)=>u.sCol.value[i].copy(v3(DMG.types[t].col)));ALOOK.palKey=S.arena||'classic';
+    types().forEach((t,i)=>u.sCol.value[i].copy(v3(DMG.types[t].col)));
   }
   // עמוד האור של הבוס: גליל שקוף שמתחבר לאור, רק בזמן הכניסה
   function beam(){
@@ -168,6 +173,11 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
   window.aLookMat=()=>{
     if(!aLookHere())return null;
     try{if(!ALOOK.mat){ALOOK.mat=makeMat();setPal()}tick();return ALOOK.mat}catch(e){ALOOK.failed=String(e);ARENA_LOOK.on=false;console.warn('arena-look',e);return null}
+  };
+  // moba3d.js (W5): רצפת אבן שטוחה בפלטה אחרת, לנתיב של משחקי השאול. sin: SIN() של המצלמה שם. null כשהזירה כבויה (look=classic) או כשנכשל
+  window.aLookFlatMat=(pal,sin)=>{
+    if(!ARENA_LOOK.on||typeof THREE==='undefined')return null;
+    try{const m=makeMat({flat:true});setPalOn(m,pal);const u=m.userData.u;u.aSin.value=sin||1;u.aProg.value=0;return m}catch(e){console.warn('arena-look flat',e);return null}
   };
   // render3d.js: צבע השמיים והאובך בזירה (look-hd.js מערבב את האובך עם השמיים שלו)
   window.aLookColors=()=>{if(!aLookHere()||!ALOOK.mat)return;const p=aLookPal();R3D.scene.background.set(p.bg);R3D.ground.material.color.set(p.fog)};

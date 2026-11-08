@@ -82,33 +82,35 @@ const BOSSES={
   boss:{drop:{coins:[1,40],horn:[1,2],bone:[1,8],dust:[0.6,3],plate:[0.5,2],essence:[1,4],shadow:[0.4,1],venom:[0.6,3],silver:[0.8,3],gem:[0.5,1],
     ruby:[0.3,1],bolt:[0.3,1],aqua:[0.2,1],star:[0.1,1],mythril:[0.15,1]}}
 };
+/* rar: הנדירות של השדרוג, רק למראה של הכרטיס בעליית רמה (מסגרת בצבע הנדירות, css/rarity.css, והחגיגה בבחירה). לא איזון.
+   wood שדרוג קטן, iron נזק וחיים, silver סוג נזק לנשק, gold סקיל חדש. האייקון של כל שדרוג ב-GICO.up (js/gicons.js) */
 const UPS=[
-  {id:'sdmg',w:'sword',f:()=>P.sw.dmg*=1.35},
-  {id:'srng',w:'sword',f:()=>P.sw.range*=1.2,max:3},
-  {id:'sspd',w:'sword',f:()=>P.sw.cd*=0.78,max:4},
-  {id:'gdmg',w:'gun',f:()=>P.gn.dmg*=1.35},
-  {id:'grate',w:'gun',f:()=>P.gn.cd*=0.8,max:4},
-  {id:'gmulti',w:'gun',f:()=>P.gn.multi++,max:3},
-  {id:'gpierce',w:'gun',f:()=>P.gn.pierce++,max:2},
+  {id:'sdmg',rar:'iron',w:'sword',f:()=>P.sw.dmg*=1.35},
+  {id:'srng',rar:'wood',w:'sword',f:()=>P.sw.range*=1.2,max:3},
+  {id:'sspd',rar:'wood',w:'sword',f:()=>P.sw.cd*=0.78,max:4},
+  {id:'gdmg',rar:'iron',w:'gun',f:()=>P.gn.dmg*=1.35},
+  {id:'grate',rar:'wood',w:'gun',f:()=>P.gn.cd*=0.8,max:4},
+  {id:'gmulti',rar:'iron',w:'gun',f:()=>P.gn.multi++,max:3},
+  {id:'gpierce',rar:'iron',w:'gun',f:()=>P.gn.pierce++,max:2},
   // נשק מקבל סוג נזק, במקום מה שהיה לו. זמני, עד שסקילים וחפצים ייתנו סוגי נזק
-  {id:'sfire',w:'sword',el:'fire'},
-  {id:'slight',w:'sword',el:'lightning'},
-  {id:'gice',w:'gun',el:'ice'},
-  {id:'glight',w:'gun',el:'lightning'},
-  {id:'searth',w:'sword',el:'earth'},
-  {id:'gwater',w:'gun',el:'water'},
+  {id:'sfire',rar:'silver',w:'sword',el:'fire'},
+  {id:'slight',rar:'silver',w:'sword',el:'lightning'},
+  {id:'gice',rar:'silver',w:'gun',el:'ice'},
+  {id:'glight',rar:'silver',w:'gun',el:'lightning'},
+  {id:'searth',rar:'silver',w:'sword',el:'earth'},
+  {id:'gwater',rar:'silver',w:'gun',el:'water'},
   // סקיל חדש לכפתור פנוי (skills.js). מוצע רק אם עוד אין אותו ויש מקום
-  {id:'k_splash',w:'any',sk:'splash',f:()=>skillAdd('splash')},
-  {id:'k_frost',w:'any',sk:'frost',f:()=>skillAdd('frost')},
-  {id:'k_zap',w:'any',sk:'zap',f:()=>skillAdd('zap')},
-  {id:'k_quake',w:'any',sk:'quake',f:()=>skillAdd('quake')},
-  {id:'k_flame',w:'any',sk:'flame',f:()=>skillAdd('flame')},
-  {id:'k_comet',w:'any',sk:'comet',f:()=>skillAdd('comet')},   // סקילים נוספים: skills-more.js
-  {id:'k_lance',w:'any',sk:'lance',f:()=>skillAdd('lance')},
-  {id:'k_bloom',w:'any',sk:'bloom',f:()=>skillAdd('bloom')},
-  {id:'hp',w:'any',f:()=>{P.maxHp+=25;P.hp=P.maxHp}},
-  {id:'spd',w:'any',f:()=>P.speed*=1.12,max:3},
-  {id:'mag',w:'any',f:()=>P.magnet*=1.6,max:2},
-  {id:'swap',w:'any',f:()=>P.swapLvl++,max:3},
-  {id:'regen',w:'any',f:()=>P.regen+=1.5,max:3}
+  {id:'k_splash',rar:'gold',w:'any',sk:'splash',f:()=>skillAdd('splash')},
+  {id:'k_frost',rar:'gold',w:'any',sk:'frost',f:()=>skillAdd('frost')},
+  {id:'k_zap',rar:'gold',w:'any',sk:'zap',f:()=>skillAdd('zap')},
+  {id:'k_quake',rar:'gold',w:'any',sk:'quake',f:()=>skillAdd('quake')},
+  {id:'k_flame',rar:'gold',w:'any',sk:'flame',f:()=>skillAdd('flame')},
+  {id:'k_comet',rar:'gold',w:'any',sk:'comet',f:()=>skillAdd('comet')},   // סקילים נוספים: skills-more.js
+  {id:'k_lance',rar:'gold',w:'any',sk:'lance',f:()=>skillAdd('lance')},
+  {id:'k_bloom',rar:'gold',w:'any',sk:'bloom',f:()=>skillAdd('bloom')},
+  {id:'hp',rar:'iron',w:'any',f:()=>{P.maxHp+=25;P.hp=P.maxHp}},
+  {id:'spd',rar:'wood',w:'any',f:()=>P.speed*=1.12,max:3},
+  {id:'mag',rar:'wood',w:'any',f:()=>P.magnet*=1.6,max:2},
+  {id:'swap',rar:'wood',w:'any',f:()=>P.swapLvl++,max:3},
+  {id:'regen',rar:'wood',w:'any',f:()=>P.regen+=1.5,max:3}
 ];

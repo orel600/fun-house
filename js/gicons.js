@@ -39,6 +39,10 @@ const GICO={
   spell:{dash:'lorc/wingfoot',heal:'sbed/health-increase',smite:'lorc/lightning-helix'},
   // ממשק: תג "נעול עד רמה" (moba-icons.js). תמיד, גם בקלאסי
   ui:{lock:'lorc/padlock'},
+  // כרטיסי עליית רמה בזירה (progression.js, UPS ב-data.js): שדרוג -> אייקון. סקיל חדש (k_*) לוקח מ-sk. צבע: סוג הנזק של הכרטיס (--dt), ובלי: צבע הנדירות
+  up:{sdmg:'lorc/sword-wound',srng:'delapouite/sword-brandish',sspd:'lorc/sands-of-time',gdmg:'lorc/supersonic-arrow',grate:'lorc/fast-arrow',gmulti:'lorc/double-shot',gpierce:'lorc/arrow-dunk',
+    sfire:'sbed/fire',slight:'lorc/lightning-arc',gice:'lorc/snowflake-2',glight:'lorc/lightning-arc',searth:'lorc/earth-crack',gwater:'lorc/big-wave',
+    hp:'delapouite/heart-beats',spd:'delapouite/running-shoe',mag:'lorc/magnet',swap:'delapouite/switch-weapon',regen:'delapouite/healing'},
 };
 
 // הסגנון: 'new' (ברירת מחדל) או 'classic'. kind: 'sk' (סקילים, ספר, עץ ונשק) או 'nav' (סרגל התפריט)
@@ -48,6 +52,8 @@ function gIco(name,cls,col){const k=name&&name.split('/')[1],d=typeof GICON==='o
   return '<svg class="gi'+(cls?' '+cls:'')+'" viewBox="0 0 512 512" aria-hidden="true"'+(col?' style="color:'+col+'"':'')+'><path d="'+d+'"/></svg>'}
 // סקיל: האייקון בצבע סוג הנזק, או '' כשהסגנון קלאסי או שאין אייקון
 const gSk=(id,cls)=>gicoOn('sk')&&GICO.sk[id]&&typeof SKILLS==='object'&&SKILLS.list[id]?gIco(GICO.sk[id],cls,dtCol(SKILLS.list[id].dt)):'';
+// שדרוג בעליית רמה (כרטיס): האייקון של השדרוג, או של הסקיל שהוא נותן. תמיד, גם בקלאסי (לכרטיס לא היה ציור קודם)
+const gUp=(u,cls,col)=>{const n=GICO.up[u.id]||(u.sk&&GICO.sk[u.sk]);return n?gIco(n,cls,col):''};
 // צומת או סטט בעץ: '' כשהסגנון קלאסי
 const gTree=(k,cls)=>gicoOn('sk')&&GICO.tree[k]?gIco(GICO.tree[k],cls):'';
 // כפתור הסקיל בעולם ובכפר. בזירה skillsHud בודק בעצמו (skills.js)
