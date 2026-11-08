@@ -101,3 +101,42 @@
 }
 /* כרטיס בנפחייה: רקע בגוון הנדירות מזהב ומעלה, כדי שהמיוחדים יבלטו ברשת */
 #vPanel .craft.rar-gold>button,#vPanel .craft.rar-legend>button{background:linear-gradient(180deg,color-mix(in srgb,var(--rar) 16%,transparent),transparent 75%)}
+
+/* ---- כרטיסי עליית רמה בזירה (.upc, progression.js, W5 8.11.2026): מסגרת בצבע הנדירות של השדרוג (rar ב-UPS, data.js), אייקון בעיגול, הטקסט בטור ----
+   אותם רקעים ואנימציות כמו האריחים: הכרטיס מצטרף לרשימות למעלה דרך .upc. שני טורים: אייקון | טקסט, וקריא ב-844x390 (שלושה כרטיסים בשורה, style.css) */
+.upc.rar{position:relative;--rbw:2px;--rmix:12%;border:var(--rbw) solid var(--rf);border-inline-start-width:var(--rbw);border-radius:14px;
+  flex-direction:row;align-items:center;gap:10px;padding:10px 12px;
+  background:radial-gradient(circle at 50% 36%,color-mix(in srgb,var(--rar,var(--rf)) var(--rmix),#171C2B),#0F121C 80%)}
+.upc.rar-wood{--rmix:8%;background:repeating-linear-gradient(100deg,#ffffff05 0 3px,transparent 3px 9px),radial-gradient(circle at 50% 36%,#2A2119,#14110E 80%);box-shadow:inset 0 0 0 1px #00000066}
+.upc.rar-iron{--rmix:16%;background:radial-gradient(circle at 6px 6px,#C9D0D6 0 1.5px,transparent 2.2px),radial-gradient(circle at calc(100% - 6px) 6px,#C9D0D6 0 1.5px,transparent 2.2px),
+    radial-gradient(circle at 6px calc(100% - 6px),#C9D0D6 0 1.5px,transparent 2.2px),radial-gradient(circle at calc(100% - 6px) calc(100% - 6px),#C9D0D6 0 1.5px,transparent 2.2px),
+    radial-gradient(circle at 50% 36%,color-mix(in srgb,#9AA3AD var(--rmix),#1B202C),#0F121C 80%);box-shadow:inset 0 1px 0 #ffffff26,inset 0 0 0 1px #00000055}
+.upc.rar-silver{--rmix:24%;background:linear-gradient(135deg,transparent 30%,#ffffff1f 46%,transparent 60%),radial-gradient(circle at 50% 36%,color-mix(in srgb,#DCE3EA var(--rmix),#1A2030),#0F131E 80%);box-shadow:0 0 6px #DCE3EA55,inset 0 0 6px #ffffff1a}
+.upc.rar-gold{--rbw:3px;--rmix:32%;overflow:hidden;
+  background:radial-gradient(circle at 7px 7px,#FFD1D6 0 .8px,#E8384F 1.2px 2.4px,transparent 3px),radial-gradient(circle at calc(100% - 7px) 7px,#FFD1D6 0 .8px,#E8384F 1.2px 2.4px,transparent 3px),
+    radial-gradient(circle at 7px calc(100% - 7px),#D6ECFF 0 .8px,#3A86E8 1.2px 2.4px,transparent 3px),radial-gradient(circle at calc(100% - 7px) calc(100% - 7px),#D6ECFF 0 .8px,#3A86E8 1.2px 2.4px,transparent 3px),
+    radial-gradient(circle at 50% 36%,color-mix(in srgb,#F4C74F var(--rmix),#221C2A),#130F1A 80%);box-shadow:0 0 10px #F4C74F55,inset 0 0 0 1px #7A5A1288}
+.upc.rar-gold::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(115deg,transparent 42%,#FFF5D088 50%,transparent 58%) no-repeat;background-size:260% 100%;animation:rShine 4.5s ease-in-out infinite}
+.upc.rar-legend{--rbw:3px;--rmix:40%;border-radius:16px 5px 16px 5px;box-shadow:0 0 12px #FF6FB599,0 0 22px #9B6BFF44}
+.upc.rar-legend::before{content:'';position:absolute;inset:calc(-1 * var(--rbw));border-radius:inherit;padding:var(--rbw);pointer-events:none;
+  background:conic-gradient(from var(--ra),#FF6FB5,#C7A6FF,#FFD6F0,#9B6BFF,#FF6FB5);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:rSpin 3.5s linear infinite}
+/* האייקון: עיגול כהה עם טבעת בצבע הנדירות, הצללית בצבע סוג הנזק (--dt מ-progression.js), ובלי: בצבע הנדירות */
+.upc .uico{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:#0A0D16CC;border:1.5px solid var(--rf);box-shadow:inset 0 0 8px #000}
+.upc .uico .gi{width:30px;height:30px;color:var(--dt,var(--rf))}
+.upc .utxt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.upc .utxt b{color:var(--rf)}
+.upc.rar-wood .utxt b,.upc.rar-iron .utxt b{color:var(--chalk)}
+.upc .utxt>span:last-child{line-height:1.3}
+/* הכרטיס בזירה (style.css .arwin .card) נותן פס צד בצבע סוג הנזק: כאן המסגרת היא הנדירות */
+.arwin .upc.rar{border-inline-start:var(--rbw) solid var(--rf)}
+.arwin .upc.rar:active{transform:scale(.96)}
+/* טלפון לרוחב: שלושה כרטיסים בשורה, האייקון קטן יותר והתיאור צפוף, כדי שהכל ייכנס ב-390 גובה */
+@media (orientation:landscape) and (max-height:500px){
+  .upc.rar{padding:8px 10px;gap:8px;align-items:flex-start}
+  .upc .uico{width:40px;height:40px;margin-top:2px}
+  .upc .uico .gi{width:26px;height:26px}
+  .upc .utxt b{font-size:15px}
+  .upc .utxt>span:last-child{font-size:12.5px;line-height:1.25}
+}
