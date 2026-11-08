@@ -8,12 +8,12 @@
    בזירה (של אוראל) ובמשחקי השאול: הכל כמו קודם (msgOn() מחזיר false).
    חיבור: banner ב-progression.js שואל את msgOn() בשורה הראשונה, והעטיפה למטה עוקפת את התור של welcome.js. feedTitle ו-mutShowBar קוראים לכאן */
 const MSG={
-  small:{max:3, life:2.4, q:4},     // כמה קטנות יחד, כמה שניות כל אחת, וכמה מחכות בתור לכל היותר (הישנות נזרקות)
+  small:{max:3, life:2.4, q:4, fight:1},  // כמה קטנות יחד, כמה שניות כל אחת, כמה מחכות בתור (הישנות נזרקות), וכמה יחד באמצע קרב (השאר מחכות לסוף. ניר 8.11)
   big:{life:2.2, wait:6, q:2},      // גדולה: כמה שניות, כמה לחכות לסוף הקרב לפני שיורדת לקטנה, וכמה בתור
   fight:360,                        // אויב חי במרחק הזה (יחידות משחק) = באמצע קרב
   pad:8, gap:6, minW:220, maxW:540, // רווח מכל כפתור, רווח בין שורות, ורוחב העמודה
   hero:{up:95, side:70},            // הגיבור על המסך: כמה מעליו וכמה לצדדים שמורים לו (יחידות משחק, כפול ZOOM)
-  seen:[], stat:{small:0,big:0,down:0,waits:0,most:0,mostBig:0}   // לבדיקה (tools/check.js)
+  seen:[], stat:{small:0,big:0,down:0,waits:0,most:0,mostBig:0,held:0}   // לבדיקה (tools/check.js)
 };
 const MQ={small:[],big:[],rows:[],bigRow:null,t:0};
 function msgOn(){const bc=document.body.classList;return !!S&&!bc.contains('mb')&&(bc.contains('world')||bc.contains('vil'))}
@@ -48,7 +48,8 @@ function msgPump(){
     if(!msgFight()){MQ.big.shift();MQ.bigRow={txt:m.txt,t:now,life:MSG.big.life,el:msgRow(m,true)};el.prepend(MQ.bigRow.el);MSG.stat.big++}
     else if(now-m.at>MSG.big.wait){MQ.big.shift();MSG.stat.down++;MQ.small.unshift({txt:m.txt,col:m.col})}
     else MSG.stat.waits++}
-  while(MQ.small.length&&MQ.rows.length<MSG.small.max){const m=MQ.small.shift();MQ.rows.push({txt:m.txt,t:now,el:msgRow(m)});MSG.stat.small++}
+  const cap=MQ.small.length&&msgFight()?MSG.small.fight:MSG.small.max;if(MQ.small.length&&MQ.rows.length>=cap&&cap<MSG.small.max)MSG.stat.held++;
+  while(MQ.small.length&&MQ.rows.length<cap){const m=MQ.small.shift();MQ.rows.push({txt:m.txt,t:now,el:msgRow(m)});MSG.stat.small++}
   MSG.stat.most=Math.max(MSG.stat.most,MQ.rows.length);MSG.stat.mostBig=Math.max(MSG.stat.mostBig,el.querySelectorAll('.mrow.big').length);
   msgPlace();
   if(!MQ.t&&(MQ.rows.length||MQ.bigRow||MQ.big.length||MQ.small.length))MQ.t=setInterval(msgTick,200);

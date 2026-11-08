@@ -560,7 +560,7 @@ function drawWorldScreen(ox,oy){
     ctx.beginPath();ctx.moveTo(-6,-13+b);ctx.lineTo(0,-20+b);ctx.lineTo(6,-13+b);ctx.closePath();ctx.fill();
     ctx.beginPath();ctx.roundRect(-tw/2,-13+b,tw,26,13);ctx.fill();ctx.stroke();
     ctx.fillStyle=C.gold;ctx.fillText(txt,0,5+b);ctx.restore()}
-  drawWnpcScreen(ox,oy);   // worldnpc.js
+  {const fa=typeof lblFightA==='function'?lblFightA():1;ctx.globalAlpha=fa;drawWnpcScreen(ox,oy);ctx.globalAlpha=1}   // worldnpc.js. בקרב: שמות ושלטים עמומים (labels.js)
   fishScreen(ox,oy);   // "!" והפס של הדיג (fishing.js)
   storyScreen(ox,oy);   // story.js
   lblBegin();   // שמות מעל אויבים: נאספים ומצוירים יחד בסוף, בלי לעלות אחד על השני ועל הכפתורים (labels.js)
