@@ -177,6 +177,7 @@ const MBFXSK={
   sp_dash:{size:130,alpha:0.9},sp_haste:{size:90,add:true,dy:-16},sp_barrier:{size:110,add:true,alpha:0.55,dy:-22},sp_reveal:{k:2,add:true,sy:0.5},
   sp_exhaust:{size:90,dy:-38},sp_cleanse:{size:120,add:true,dy:-50},sp_heal:{size:110,add:true,dy:-20},
   recall:{size:120,add:true,sy:0.5},coins:{size:150,add:true,dy:-30},gamble_win:{size:150,add:true,dy:-24},gamble_lose:{size:150,add:true,dy:-20},
+  sf_fog:{size:140,alpha:0.9},tg_skull:{size:90},tr_slash_crimson:{size:150,add:true},hit_heavy:{size:150,add:true},   // המתנקש: עשן, גולגולת, חיתוך ארגמן ופיצוץ
   netRot:1.1,   // הוו של הרשת בגיליון מצויר באלכסון למעלה-ימינה: מסובבים בזה כדי שיעוף בכיוון הזריקה
 };
 // טעינה מראש בתחילת משחק: בלי זה, הסקיל הראשון מכל סוג עובר בלי אפקט (התמונה נטענת רק כשצריך)
@@ -204,7 +205,7 @@ const MBLIB={
   glow:{size:110,a:0.75},        // טבעת קבוצה מתחת לגיבור: עדינה
   st:{size:38,gap:30,y:72,over:36},   // y: גובה פס החיים מעל הרגליים, over: כמה מעליו (כפול mbUiK)    // סימני מצב: גודל, רווח ביניהם, וכמה מעל הרגליים (בפיקסלים של המשחק, כפול mbUiK)
   // מצב ← אפקט. הסדר הוא הסדר מעל הראש. לכוד ומורם: הרשת והבועה עצמן מצוירות ב-mbfxMarks, וכאן רק הסימן
-  stOrder:[['ice','st_freeze'],['stun','st_stun'],['root','st_slow'],['wet','st_wet'],['burn','st_burn'],['slow','st_slow'],['exh','st_weak']],
+  stOrder:[['ice','st_freeze'],['stun','st_stun'],['root','st_slow'],['wet','st_wet'],['poison','st_poison'],['burn','st_burn'],['slow','st_slow'],['exh','st_weak']],   // poison: ארס (moba-items.js). הוא גם burn, אז st_burn לא מופיע איתו
   heal:{every:0.6,min:8,col:'#7BD88F'},   // מספרי ריפוי (בסיס, חיים מהנזק): מצטברים ויוצאים פעם ב-every שניות
 };
 const mbfxOn=(x,y)=>mbfxSeen(x,y)&&(typeof mbVisPt!=='function'||mbVisPt(x,y));
@@ -255,7 +256,7 @@ function mbfxUnits(){
       if(want&&!alive(H.glow,U))H.glow=mbfxPush(U,u.team===MB.me.team?'glow_ally':'glow_enemy',u.x,u.y,{follow:u,loop:true,size:MBLIB.glow.size,alpha:MBLIB.glow.a,add:true,dy:2});
       else if(!want&&H.glow){fxStop(H.glow);H.glow=null}}
     const s=u.st,ids=[];
-    if(on)for(const [k,id] of MBLIB.stOrder){const v=k==='stun'?s.stun>0&&!s.ice:k==='ice'?s.ice>0&&s.stun>0:s[k]>0;if(v&&!ids.includes(id))ids.push(id)}
+    if(on)for(const [k,id] of MBLIB.stOrder){const v=k==='stun'?s.stun>0&&!s.ice:k==='ice'?s.ice>0&&s.stun>0:k==='burn'?s.burn>0&&!(s.poison>0):s[k]>0;if(v&&!ids.includes(id))ids.push(id)}
     const top=u.k==='hero'?L.y+L.over*uk:L.y*0.62+L.over*0.5*uk;   // מעל תג הערכה (גיבור) או מעל פס החיים (חייל)
     for(const id in H){if(id==='glow')continue;if(!ids.includes(id)){fxStop(H[id]);delete H[id]}}
     ids.forEach((id,i)=>{let f=H[id];if(!alive(f,Tp))f=H[id]=mbfxPush(Tp,id,u.x,u.y,{follow:u,loop:true,size:L.size*uk,add:id!=='st_slow'&&id!=='st_weak'});

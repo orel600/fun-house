@@ -4058,6 +4058,24 @@ function worldBot(m,L,god){
      mbVisReveal(bz.x,bz.y,150,2,0);r.rev=mbSeen(e,0);const t0=MB.t;MB.t+=2.5;r.rev=r.rev&&!see();MB.t=t0;   // חשיפה: רואים לתוך השיח, ונגמרת
      for(const [u,x,y] of iso){u.x=x;u.y=y}if(MB.vis)MB.vis.rev.push(...rvb);
      for(const [h,x,y,d,a,st] of bak){h.x=x;h.y=y;h.dead=d;h.actT=a;h.st.stun=st}mbVisNow(true);o.vis=r}
+    // המתנקש (moba-kits.js, 8.11): מכה בגב חזקה, צעד צל נוחת מאחורי המטרה עם מכה מחוזקת, היעלמות שמגדל וחיילים לא מכוונים אליה,
+    // סימן מוות שמתפוצץ עם הנזק שנצבר ונטען בהריגה, ניקוי מסיר אותו, ושני החפצים (ניבי הכסף, להב הארס)
+    if(MBKIT.assassin){const A={},bak=MB.u,bt=MB.t,rnd=Math.random;try{
+      MB.u=bak.filter(u=>u.k==='tower'||u.k==='base');MB.t=400;Math.random=()=>0.99;
+      const mk=(k,tm,x)=>{const h=mbHero(k,tm,false,1);h.x=x;h.y=0;h.bot={t:999,skT:999,mode:'push'};MB.u.push(h);return h},K=MBKIT.assassin;
+      let a=mk('assassin',0,0),v=mk('hunter',1,40);if(typeof mbVisNow==='function')mbVisNow(true);
+      v.face=0;a.atkT=0;let h0=v.hp;mbAttack(a,0,v,K.atk);const bk=h0-v.hp;v.face=Math.PI;a.atkT=0;h0=v.hp;mbAttack(a,0,v,K.atk);A.back=Math.abs(bk/(h0-v.hp)-K.atk.backstab)<0.02;
+      a.x=-200;v.hp=v.max;v.face=Math.PI;A.step=mbCast(a,'s1',v)&&a.x>v.x&&!!a.st.step&&!mbCast(mk('assassin',0,0),'s1',{x:9,y:9});
+      a.atkT=0;h0=v.hp;mbAttack(a,0,v,K.atk);A.step=A.step&&h0-v.hp>K.atk.dmg*K.atk.backstab&&v.st.slow>0&&!a.st.step;
+      MB.u=MB.u.filter(u=>u.k==='tower'||u.k==='base');const tw=MB.u.find(u=>u.k==='tower'&&u.team===1&&Math.abs(u.x)===MOBA.towers[0]);
+      a=mk('assassin',0,tw.x-150);const w=mk('warrior',1,tw.x-200);mbCast(a,'s2');for(let i=0;i<8;i++)mobaUpdate(1/30);
+      A.veil=a.st.veil>0&&tw.tgt!==a&&mbAutoTarget(w,500)!==a&&mbAimFor(w,{range:500})!==a;
+      w.x=a.x+30;w.y=a.y;a.atkT=0;mbAttack(a,0,w,K.atk);A.veil=A.veil&&a.st.veil===0;
+      a.lvl=MOBA.ultAt;v=mk('hunter',1,a.x+100);v.st.imm=0;a.cd.ult=0;mbCast(a,'ult',v);mbDmg(a,v,100,'physical');const acc=v.mark&&v.mark.dmg;h0=v.hp;MB.t+=K.ult.t+0.1;mbTick(v,0.01);
+      A.mark=acc>90&&h0-v.hp>K.ult.end&&!v.mark;a.cd.s1=5;a.cd.ult=0;mbCast(a,'ult',v);v.hp=5;MB.t+=K.ult.t+0.1;mbTick(v,0.01);A.mark=A.mark&&v.dead&&a.cd.s1===0;
+      const c=mk('hunter',1,a.x+60);a.cd.ult=0;mbCast(a,'ult',c);c.spell='cleanse';c.cd.spell=0;Object.assign(c.st,{stun:1});mbSpellCast(c);A.cleanse=!c.mark;
+      a.it=['fang','venom'];mbItCalc(a);const m=mk('tank',1,a.x+30);a.atkT=0;mbAttack(a,0,m,K.atk);A.items=mbIb(a).critp===MBITEM.items.fang.critp&&m.st.poison>0&&m.st.burn>0&&MBITEM.build.assassin.every(k=>MBITEM.items[k]);
+    }catch(e){A.err=String(e)}MB.u=bak;MB.t=bt;Math.random=rnd;if(typeof mbVisNow==='function')mbVisNow(true);o.sin=A}
     MB.me.bot={t:0,mode:'push'};const casts={},cc={stun:0,taunt:0},cmb={},f={cast:mbCast,cc:mbCC,word:mbWord};
     mbCast=function(u,s,a){const r=f.cast(u,s,a);if(r)casts[MBKIT[u.kit][s].id]=1;return r};
     mbCC=function(t,k,d,b){const r=f.cc(t,k,d,b);if(r&&t.k==='hero')cc[k]++;return r};
@@ -4403,7 +4421,7 @@ function worldBot(m,L,god){
   check(Object.keys(setT).length&&!setBad.length,'סטים של ציוד: '+Object.keys(setT).length+' סטים, 2 ו-4 חלקים נותנים בונוס'+(setBad.length?' · בעיה: '+setBad.join(', '):''));
   check(pt.evo==='1→2→3'&&pt.evoSaved&&pt.evoFx&&pt.fxOk,'פיוחו מתפתחת: '+(pt.evo||'לא נבדק')+(pt.evoSaved?', נשמר':', לא נשמר')+(pt.evoFx?', עם חגיגה':', בלי חגיגה')+(pt.fxOk?'':', להבה בשלב 3 לא מצאה את הזנב'));
   if(CFG.gfx==='3d')check(pt.r3&&pt.clips==='ok','פיוחו בתלת-ממד: '+(pt.r3?'נראית':'לא נראתה')+(pt.clips==='ok'?', כל 7 האנימציות נטענו':', חסרות: '+pt.clips));
-  check(!mb.err&&mb.pick===4&&mb.on&&mb.out,'משחקי השאול: '+(mb.err||'חלון בחירה עם '+mb.pick+' דמויות'+(mb.on?', המשחק נפתח':', לא נפתח')+(mb.out?', יציאה עובדת':', היציאה לא עובדת')));
+  check(!mb.err&&mb.pick===5&&mb.on&&mb.out,'משחקי השאול: '+(mb.err||'חלון בחירה עם '+mb.pick+' דמויות'+(mb.on?', המשחק נפתח':', לא נפתח')+(mb.out?', יציאה עובדת':', היציאה לא עובדת')));
   if(!mb.err){
     check(mb.over,'משחקי השאול: משחק של בוטים '+(mb.over?'נגמר':'לא נגמר')+' אחרי '+t(mb.t)+' · '+mb.towers+' מגדלים נפלו'+(mb.base?', בסיס נהרס':', נגמר בזמן')+' · הריגות '+mb.score+' · רמה עד '+mb.lv);
     if(CFG.gfx==='3d')check(!mb.r3||mb.m3===6,'משחקי השאול בתלת-ממד: '+(mb.r3?mb.m3+' מבנים כמודלים (צריך 6)':'התלת-ממד כבוי'));
@@ -4425,13 +4443,15 @@ function worldBot(m,L,god){
       check(!bad.length&&pk.length>0&&p.heal>0&&Object.keys(p.use).length>0,'משחקי השאול: בוטים: בחרו לפי תפקיד '+(bad.length?'✗ '+bad.join(', '):'✓ ('+pk.map(x=>x[0]).join(', ')+')')+', ריפוי '+(p.heal||0)+' פעמים, לחשים: '+(Object.entries(p.use).map(x=>x[0]+' '+x[1]).join(', ')||'אף אחד'))}
     {const X=mb.endX||{};check(X.home&&X.again&&X.build&&X.bx&&X.px,'משחקי השאול: יציאה: '+[X.home?'"בית" בסוף יוצא ✓':'"בית" לא יוצא ✗',X.again?'"שחק שוב" לבחירת גיבור ✓':'"שחק שוב" ✗',X.build&&X.bx?'✕ במסך הבנייה סוגר ✓':'✕ במסך הבנייה ✗',X.px?'✕ בבחירה אחרי "גיבור אחר" סוגר ✓':'✕ אחרי "גיבור אחר" ✗'].join(', '))}
     {const q=mb.qa||{};check(!q.err&&q.roll&&q.reset&&q.bushCast&&q.zone&&q.pri&&q.tip&&q.near,'משחקי השאול: תיקוני QA: '+(q.err?'שגיאה '+q.err+' · ':'')+[q.roll?'בהטלה זינוק/סדן/חזרה חסומים בלי טעינה ✓':'בהטלה ✗',q.reset?'מת בחדר חוזר בלי רשת ובועה ✓':'רשת/בועה נשארו ✗',q.bushCast?'לחש משיח חושף ✓':'לחש משיח ✗',q.zone?'אזור אויב בערפל מוסתר ✓':'אזור בערפל ✗',q.pri?'הודעת החדר בראש התור ✓':'הודעת החדר ✗',q.tip?'ההסבר מעל הריפוי ✓':'ההסבר מוסתר ✗',q.near?'ליד החדר ההודעות יורדות ✓':'הודעות ליד החדר ✗'].join(', '))}
+    {const A=mb.sin||{},ks={back:'מכה בגב',step:'צעד צל מאחור',veil:'היעלמות (לא מטרה)',mark:'סימן מוות ונטען בהריגה',cleanse:'ניקוי מסיר סימן',items:'ניבים וארס'};
+     check(!A.err&&Object.keys(ks).every(k=>A[k]),'משחקי השאול: המתנקש: '+(A.err?'שגיאה '+A.err+' · ':'')+Object.keys(ks).map(k=>ks[k]+(A[k]?' ✓':' ✗')).join(', '))}
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
     {const A=mb.aim||{};check(A.on&&A.hot&&A.cancel&&A.cast&&A.sec,'משחקי השאול: כיוון בגרירה '+(A.on?'✓':'לא הופיע')+(A.hot?', ✕ נדלק':', ✕ לא נדלק')+(A.cancel?', ביטול בלי טעינה':', הביטול לא עבד')+(A.cast?', שחרור מטיל לנקודה':', השחרור לא הטיל לנקודה')+(A.sec?', שניות על הכפתור':', אין שניות'))}
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));
     {const need=['sk_pierce','sk_wave','sk_anvil','sk_anvil_wave','sk_taunt','sk_wall','sk_cleave','sk_spin','sk_rage','sk_rage_glow','sk_net','sk_net_root','sk_rain','sk_bubble','sk_bubble_halo','sk_bubble_aura','sk_blizzard','sk_blizzard_ice','ult_cast','ult_ray','sp_dash','sp_haste','sp_barrier','sp_reveal','sp_exhaust','sp_cleanse','sp_heal','recall'],miss=need.filter(i=>!(mb.fxIds||[]).includes(i)),fs=require('fs'),path=require('path'),
        files=Object.keys(JSON.parse(fs.readFileSync(path.join(__dirname,'fx-list.json'),'utf8'))).filter(k=>!k.startsWith('_')).filter(k=>!fs.existsSync(path.join(__dirname,'..','fx',k+'.webp')));
      check(mb.fxLib>=100&&!files.length&&!miss.length&&mb.fxDrawOk===true&&!!mb.fxAt&&mb.fxAt.on,'ספריית האפקטים: '+mb.fxLib+' אפקטים'+(files.length?', חסרים קבצים: '+files.slice(0,5).join(', '):', כל הקבצים ב-fx/')+(miss.length?' · סקילים/לחשים בלי אפקט: '+miss.join(', '):' · '+need.length+' אפקטים של סקילים, לחשים וחזרה הופעלו')+(mb.fxDrawOk===true?'':' · הציור נכשל: '+mb.fxDrawOk)+(!mb.fxAt?' · האפקט לא צויר בכלל!':mb.fxAt.on?' · על המסך ליד הגיבור':' · מחוץ למסך! '+JSON.stringify(mb.fxAt)))}
-    check(mb.fixed&&!mb.fixed.length,'משחקי השאול: כל 12 הסקילים (4 ערכות) הוטלו בתרחיש קבוע'+(mb.fixed&&mb.fixed.length?' · לא הוטלו: '+mb.fixed.join(', '):'')+' · במשחק הבוטים ('+mb.kits+'): '+(mb.miss.length?'לא הגיעו ל: '+mb.miss.join(', '):'כולם'));
+    check(mb.fixed&&!mb.fixed.length,'משחקי השאול: כל 15 הסקילים (5 ערכות) הוטלו בתרחיש קבוע'+(mb.fixed&&mb.fixed.length?' · לא הוטלו: '+mb.fixed.join(', '):'')+' · במשחק הבוטים ('+mb.kits+'): '+(mb.miss.length?'לא הגיעו ל: '+mb.miss.join(', '):'כולם'));
     {const r=mb.lib||{},got=r.got||['?'];check(!got.length&&r.wetOn&&r.wetOff&&r.glow&&r.draw===true,'משחקי השאול: משוב קרב מספריית האפקטים: '+(got.length?'חסר '+got.join(','):'יריה, פגיעה, חיתוך, CRIT!, רמה, הריגה ומגדל ✓')+(r.wetOn&&r.wetOff?' · סימן רטוב מופיע ונעלם':' · סימן רטוב ✗')+(r.glow?' · טבעות קבוצה':' · בלי טבעות קבוצה')+(r.draw===true?'':' · ציור נפל: '+r.draw))}
     {const u=mb.ultMed,mm=t=>t===undefined?'never':Math.floor(t/60)+':'+String(t%60).padStart(2,'0');check(u!==undefined&&u>=100&&u<=270,'משחקי השאול: חציון הסקיל-על של הבוטים ב-'+mm(u)+' (הראשון ב-'+mm(mb.ult1)+', '+(mb.ultN||0)+' מתוך '+mb.ultBots+' הגיעו. צריך בין 1:40 ל-4:30, אוראל 7.11: "סביב דקה 3-4")')}
     {const r=mb.fx||{};check(r.tank&&r.warrior&&r.shield&&r.cap&&r.stop&&r.ult,'משחקי השאול: טנק ולוחם מזנקים אל מטרה קצת רחוקה: '+(r.tank?'נפח ✓':'נפח ✗')+(r.warrior?' לוחם ✓':' לוחם ✗')+(r.shield?', מגן סופג':', המגן לא סופג')+' · פיצוצי: '+(r.cap?'חלקיקים מוגבלים':'חלקיקים בלי גבול')+(r.stop?', עצירת פריים בקריטי':', בלי עצירת פריים')+(r.ult?', רגע סקיל-על':', בלי רגע סקיל-על'))}
