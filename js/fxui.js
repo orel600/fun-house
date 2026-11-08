@@ -35,6 +35,8 @@ function fxuiRect(el){if(typeof el==='string')el=document.querySelector(el);if(!
 function fxuiAt(el){const r=fxuiRect(el);return r?{x:r.left+r.width/2,y:r.top+r.height/2,w:r.width,h:r.height}:null}
 const fxuiMid=()=>({x:innerWidth/2,y:innerHeight/2});
 const fxuiBanner=()=>{const b=document.getElementById('banner');if(b&&b.classList.contains('on')){const r=b.getBoundingClientRect();return{x:innerWidth/2,y:r.top+r.height/2}}return{x:innerWidth/2,y:innerHeight*0.34}};
+// חלון פתוח (ui.js, WINS): אפקטים של הודעה (קווסט, דרגה, ספר) לא מנוגנים, כי הם היו יושבים על הכותרת והטקסט של החלון
+const fxuiWin=()=>typeof WINS!=='undefined'&&WINS.some(w=>{const e=document.getElementById(w.id);return e&&!e.hidden})||!!document.querySelector('.ov:not([hidden])');
 const fxuiTap=()=>FXUI.lastTap&&performance.now()-FXUI.lastTap.t<1500?FXUI.lastTap:fxuiBanner();
 const fxuiBag=()=>fxuiAt('#gearBtnQ')||fxuiAt('#gearBtnRun')||fxuiAt('#gearBtn')||fxuiBanner();
 
@@ -86,12 +88,12 @@ const fxuiAtEl=(id,el,o={})=>{const a=fxuiAt(el);return a?fxDom(id,a.x,a.y,o):nu
 
 /* ---- מה קורה במשחק → איזה אפקט. r: מה הפונקציה החזירה, a: הארגומנטים ---- */
 FXUI.hooks={
-  questClaim:(r,a)=>{if(!r||a[1])return;const b=fxuiBanner();fxDom('ui_toast',b.x,b.y-80,{size:170,lo:true});   // מעל ההודעה, לא עליה   // קווסט הושלם
+  questClaim:(r,a)=>{if(!r||a[1]||fxuiWin())return;const b=fxuiBanner();fxDom('ui_toast',b.x,b.y-80,{size:170,lo:true});   // מעל ההודעה, לא עליה   // קווסט הושלם
     const q=typeof QBY!=='undefined'&&QBY[a[0]];if(q&&q.reward&&q.reward.coins)setTimeout(()=>fxDom('ui_coin',b.x,b.y+40,{size:120}),250)},
-  qStart:()=>{if(!FXUI.ready)return;const b=fxuiBanner();fxDom('ui_new',b.x,b.y-70,{size:150,lo:true})},          // קווסט חדש
-  rankUp:r=>{if(!r)return;const b=fxuiBanner();fxDom('halo_ach',b.x,b.y-110,{size:120,add:true});fxDom('ui_ach',b.x,b.y-50,{size:200,lo:true,alpha:0.8})},   // דרגה
-  bookClaim:(r,a)=>{if(r&&!a[0]){const b=fxuiBanner();fxDom('ui_ach',b.x,b.y,{size:240,lo:true})}},           // ספר ההרפתקאות
-  challengeClaim:r=>{if(r){const b=fxuiBanner();fxDom('halo_ach',b.x,b.y-50,{size:140,add:true});fxDom('ui_ach',b.x,b.y,{size:240,lo:true})}},
+  qStart:()=>{if(!FXUI.ready||fxuiWin())return;const b=fxuiBanner();fxDom('ui_new',b.x,b.y-70,{size:150,lo:true})},          // קווסט חדש
+  rankUp:r=>{if(!r||fxuiWin())return;const b=fxuiBanner();fxDom('halo_ach',b.x,b.y-110,{size:120,add:true});fxDom('ui_ach',b.x,b.y-50,{size:200,lo:true,alpha:0.8})},   // דרגה
+  bookClaim:(r,a)=>{if(r&&!a[0]&&!fxuiWin()){const b=fxuiBanner();fxDom('ui_ach',b.x,b.y,{size:240,lo:true})}},           // ספר ההרפתקאות
+  challengeClaim:r=>{if(r&&!fxuiWin()){const b=fxuiBanner();fxDom('halo_ach',b.x,b.y-50,{size:140,add:true});fxDom('ui_ach',b.x,b.y,{size:240,lo:true})}},
   shopBuy:r=>{if(r){const t=fxuiTap();fxDom('ui_buy',t.x,t.y,{size:160})}},                                      // חנות הריצה
   gearCraft:r=>{if(r){const t=fxuiTap();fxDom('ui_buy',t.x,t.y,{size:180})}},                                    // נפחייה: יצירה
   vTrade:(r,a)=>{if(r){const t=fxuiTap();fxDom(a[0]==='sell'?'ui_coin':'ui_buy',t.x,t.y,{size:140})}},          // שוק
