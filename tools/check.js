@@ -3778,13 +3778,24 @@ function worldBot(m,L,god){
      o.combo={shock:w0.shock||0,k:Math.round(wetD/dry*100)/100,freeze:w0.freeze||0,frozen:e.st.stun>MBKIT.mage.ult.freeze*0.9,want:MOBA.combo.shock};
      mbWord=ow;MB.u.splice(MB.u.indexOf(mg),1);e.hp=e.max=MBKIT[e.kit].hp}
     // כל סקיל של כל ערכה, בתרחיש קבוע: גיבור ברמה 6 מטיל את שלושת הסקילים על אויב קרוב (לא תלוי באורך משחק הבוטים)
-    {const e=mbHeroes(1)[0];e.hp=e.max=1e6;o.fixed=[];const fx0=typeof FXLIB!=='undefined'?FXLIB.list.length:-1;o.fxIds=new Set();
+    {const e=mbHeroes(1)[0],ex0=e.x,ey0=e.y;e.hp=e.max=1e6;o.fixed=[];const fx0=typeof FXLIB!=='undefined'?FXLIB.list.length:-1;o.fxIds=new Set();
      const ofx=typeof fxPlay==='function'?fxPlay:null;if(ofx)window.fxPlay=(id,...a)=>{o.fxIds.add(id);return ofx(id,...a)};   // ספריית האפקטים: אילו אפקטים הסקילים הפעילו
      for(const k of Object.keys(MBKIT)){const h=mbHero(k,0,false,1);h.lvl=MOBA.ultAt;h.x=e.x-150;h.y=e.y;MB.u.push(h);
-       for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);for(let i=0;i<20;i++)mobaUpdate(1/30)}
+       for(const sl of MB_SLOTS){h.cd[sl]=0;h.st.dash=null;Object.assign(h.st,{stun:0,taunt:0});Object.assign(e.st,{imm:0,pure:0});   /* בלי חסינות: הרשת והבועה תופסות, והאפקטים שלהן מופיעים */if(!mbCast(h,sl,e))o.fixed.push(MBKIT[k][sl].id);for(let i=0;i<20;i++){e.x=ex0;e.y=ey0;e.st.imm=0;mobaUpdate(1/30)}}   /* האויב נשאר במקום: בוט שזז יוצא מהבועה לפני שהיא עולה */
        MB.u.splice(MB.u.indexOf(h),1)}
+     // הלחשים, הריפוי והחזרה לבסיס (moba-spells.js, moba-recall.js): כל אחד מפעיל את האפקט שלו מהספרייה
+     if(typeof mbSpellCast==='function'){const h=mbHero('mage',0,false,1),V0=MB.vis&&MB.vis.rev.slice(),Z0=MB.spellZ&&MB.spellZ.slice(),es=JSON.stringify(e.st);e.x=ex0;e.y=ey0;h.x=e.x-150;h.y=e.y;MB.u.push(h);typeof mbVisReveal==='function'&&mbVisReveal(e.x,e.y,120,5,h.team);typeof mbVisNow==='function'&&mbVisNow(true);   /* חשיפה קצרה: תשישות צריכה לראות את האויב גם אם הוא בשיח */
+       for(const id of Object.keys(MBSPELL.list)){mbSpellInit(h);h.spell=id;h.cd.spell=0;Object.assign(h.st,{dash:null,stun:0,taunt:0,root:0});mbSpellCast(h,{x:e.x,y:e.y});h.st.dash=null;h.x=e.x-150;h.y=e.y}
+       h.hp=h.max/2;h.cd.heal=0;mbHealCast(h);
+       if(typeof mbRecallStart==='function'){h.st.stun=0;mbRecallStart(h);if(h.recall)mbRecallStop(h,false)}
+       MB.u.splice(MB.u.indexOf(h),1);if(MB.vis)MB.vis.rev=V0||[];MB.spellZ=Z0;Object.assign(e.st,JSON.parse(es));typeof mbVisNow==='function'&&mbVisNow(true)}   /* בלי שאריות: חשיפה ותשישות היו מפילות את בדיקות הראייה שאחרי */
      e.hp=e.max=MBKIT[e.kit].hp;if(ofx)window.fxPlay=ofx;o.fxIds=[...o.fxIds];o.fxLib=typeof FXDATA!=='undefined'?Object.keys(FXDATA).length:0;
-     try{fxDraw();fxDrawUi();o.fxDrawOk=true}catch(err){o.fxDrawOk=err.message}}
+     try{fxDraw();fxDrawUi();o.fxDrawOk=true}catch(err){o.fxDrawOk=err.message}
+     // האפקט נוחת על המסך ליד הגיבור: עד 7.11 render.js צייר אותם אחרי ש-mobaDraw עבר לקואורדינטות המסך, וכל אפקט במובה היה מחוץ למסך
+     try{const me=MB.me,od=ctx.drawImage,oi=window.fxImg,fake=document.createElement('canvas');let at=null;const al=MB.u.find(u=>u.k==='hero'&&u.team===me.team&&!u.dead)||me,cam0={x:S.cam.x,y:S.cam.y};S.cam.x=al.x;S.cam.y=al.y;const L0=FXLIB.list.splice(0);fxPlay('ult_cast',al.x,al.y,{dur:5});   /* רק האפקט של הבדיקה ברשימה: אפקטים אחרים ממשחק הבוטים נמצאים במקומות אחרים במפה */   /* מצלמה על גיבור חי שלנו: בלי ערפל, והאפקט צריך לנחות במרכז */
+       window.fxImg=()=>fake;   // תמונה מדומה: בתוך הבדיקה הזמן לא עובר, והתמונה האמיתית לא מספיקה להיטען
+       ctx.drawImage=function(im){if(!at&&im===fake){const t=ctx.getTransform();at=[t.e/DPR,t.f/DPR];return}return od.apply(this,arguments)};
+       try{render()}finally{ctx.drawImage=od;window.fxImg=oi;S.cam.x=cam0.x;S.cam.y=cam0.y;FXLIB.list.length=0;FXLIB.list.push(...L0)}o.fxAt=at?{x:Math.round(at[0]),y:Math.round(at[1]),on:at[0]>0&&at[0]<innerWidth&&at[1]>0&&at[1]<innerHeight}:null}catch(err){o.fxAt={err:err.message}}}
     // הסקילים שהחליפו זינוק וריפוי (6.11, docs/moba-plan.md פרק 2), בתרחיש קבוע: אין יותר charge, leap ו-heal ב-MBKIT. רשת ציד לוכדת (st.root):
     // לא זז, כן תוקף, ואחרי זה חסינות קצרה. כלא מים מרים ומרטיב, וברק אחריו = חשמול. גל חרב מהמם ומאט לאורך קו
     {const e=mbHeroes(1)[0],R={},ow=mbWord,w0={},ex=e.x,ey=e.y,clr=()=>{Object.assign(e.st,{wet:0,imm:0,stun:0,taunt:0,root:0,bub:0,slow:0,armor:0,rage:0,shield:0,dash:null});e.dead=false;e.hp=e.max=1e6};
@@ -4294,9 +4305,9 @@ function worldBot(m,L,god){
     check(mb.lock,'משחקי השאול: סקיל-על נעול '+(mb.lock?'רועד בלי הודעה':'קפץ כהודעה'));
     {const A=mb.aim||{};check(A.on&&A.hot&&A.cancel&&A.cast&&A.sec,'משחקי השאול: כיוון בגרירה '+(A.on?'✓':'לא הופיע')+(A.hot?', ✕ נדלק':', ✕ לא נדלק')+(A.cancel?', ביטול בלי טעינה':', הביטול לא עבד')+(A.cast?', שחרור מטיל לנקודה':', השחרור לא הטיל לנקודה')+(A.sec?', שניות על הכפתור':', אין שניות'))}
     check(mb.back&&mb.att&&mb.btn&&mb.end,'משחקי השאול: פקודות לחברים: נסיגה '+(mb.back?'✓':'לא עבדה')+', התקפה '+(mb.att?'✓':'לא עבדה')+(mb.btn?', הכפתור מסומן':', הכפתור לא מסומן')+(mb.end?', נגמרת לבד':', לא נגמרת'));
-    {const need=['sk_pierce','sk_wave'],miss=need.filter(i=>!(mb.fxIds||[]).includes(i)),fs=require('fs'),path=require('path'),
+    {const need=['sk_pierce','sk_wave','sk_anvil','sk_anvil_wave','sk_taunt','sk_wall','sk_cleave','sk_spin','sk_rage','sk_rage_glow','sk_net','sk_net_root','sk_rain','sk_bubble','sk_bubble_halo','sk_bubble_aura','sk_blizzard','sk_blizzard_ice','ult_cast','ult_ray','sp_dash','sp_haste','sp_barrier','sp_reveal','sp_exhaust','sp_cleanse','sp_heal','recall'],miss=need.filter(i=>!(mb.fxIds||[]).includes(i)),fs=require('fs'),path=require('path'),
        files=Object.keys(JSON.parse(fs.readFileSync(path.join(__dirname,'fx-list.json'),'utf8'))).filter(k=>!k.startsWith('_')).filter(k=>!fs.existsSync(path.join(__dirname,'..','fx',k+'.webp')));
-     check(mb.fxLib>=100&&!files.length&&!miss.length&&mb.fxDrawOk===true,'ספריית האפקטים: '+mb.fxLib+' אפקטים'+(files.length?', חסרים קבצים: '+files.slice(0,5).join(', '):', כל הקבצים ב-fx/')+(miss.length?' · חץ ברק/גל מים בלי אפקט: '+miss.join(', '):' · חץ ברק וגל מים עם אפקט')+(mb.fxDrawOk===true?'':' · הציור נכשל: '+mb.fxDrawOk))}
+     check(mb.fxLib>=100&&!files.length&&!miss.length&&mb.fxDrawOk===true&&!!mb.fxAt&&mb.fxAt.on,'ספריית האפקטים: '+mb.fxLib+' אפקטים'+(files.length?', חסרים קבצים: '+files.slice(0,5).join(', '):', כל הקבצים ב-fx/')+(miss.length?' · סקילים/לחשים בלי אפקט: '+miss.join(', '):' · '+need.length+' אפקטים של סקילים, לחשים וחזרה הופעלו')+(mb.fxDrawOk===true?'':' · הציור נכשל: '+mb.fxDrawOk)+(!mb.fxAt?' · האפקט לא צויר בכלל!':mb.fxAt.on?' · על המסך ליד הגיבור':' · מחוץ למסך! '+JSON.stringify(mb.fxAt)))}
     check(mb.fixed&&!mb.fixed.length,'משחקי השאול: כל 12 הסקילים (4 ערכות) הוטלו בתרחיש קבוע'+(mb.fixed&&mb.fixed.length?' · לא הוטלו: '+mb.fixed.join(', '):'')+' · במשחק הבוטים ('+mb.kits+'): '+(mb.miss.length?'לא הגיעו ל: '+mb.miss.join(', '):'כולם'));
     {const r=mb.lib||{},got=r.got||['?'];check(!got.length&&r.wetOn&&r.wetOff&&r.glow&&r.draw===true,'משחקי השאול: משוב קרב מספריית האפקטים: '+(got.length?'חסר '+got.join(','):'יריה, פגיעה, חיתוך, CRIT!, רמה, הריגה ומגדל ✓')+(r.wetOn&&r.wetOff?' · סימן רטוב מופיע ונעלם':' · סימן רטוב ✗')+(r.glow?' · טבעות קבוצה':' · בלי טבעות קבוצה')+(r.draw===true?'':' · ציור נפל: '+r.draw))}
     {const u=mb.ult1;check(u!==undefined&&u>=100&&u<=270,'משחקי השאול: הסקיל-על הראשון של בוט ב-'+(u===undefined?'אף פעם':Math.floor(u/60)+':'+String(u%60).padStart(2,'0'))+' (צריך בין 1:40 ל-4:30, אוראל 7.11: "סביב דקה 3-4")')}
