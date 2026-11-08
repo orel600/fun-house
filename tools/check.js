@@ -3671,6 +3671,39 @@ function worldBot(m,L,god){
       (al.here&&al.mat?'רצפת אבן':'הרצפה הישנה')+(al.fog?', אובך':', בלי אובך')+(al.sig?', חותמת האש דולקת':', החותמות לא מגיבות')+(al.pulse?', רונות פועמות בגל ענק':', בלי פעימה')+(al.beam?', עמוד אור לבוס':', בלי עמוד אור')+
       (al.noShadow?'':', צללים עם 150 אויבים')+(al.room?'':', דולק בחדר הבונוס')+', ציור עם 150 אויבים '+al.ms[false].toFixed(1)+'→'+al.ms[true].toFixed(1)+'ms (פי '+al.ratio.toFixed(2)+')'));
   }
+  // Weather in the arena and boss fights (arena-weather.js over weather.js): atmosphere in a boss fight, a storm when he gets angry, lightning with a big attack,
+  // drawn before the boss's telegraphs (mines) and before fxDraw, nothing in the classic arena, clearing after the boss, and the frame time with and without it
+  {const aw=await page.evaluate(()=>{
+    if(typeof AWX==='undefined'||typeof WX==='undefined')return {err:'no AWX/WX'};
+    const o={};window.__awDe=R3D.drawEvery;R3D.drawEvery=0;window.__awMenu=WEATHER.menus.map(id=>document.getElementById(id)).filter(Boolean).map(e=>[e,e.hidden]);for(const [e] of __awMenu)e.hidden=true;   // a menu window open = the 'menu' scene
+    try{reset();S.mode='play';enemies.length=0;S.arena='classic';
+      const draw=window.__awDraw=()=>{FRAME_T+=17;S.t+=1/60;S.cam.x=P.x;S.cam.y=P.y;render()},layers=()=>[...WX.layers.keys()].join(',');
+      draw();wxSync();o.plain=WX.scene+':'+WX.run.arena.state;o.plainN=wxWant().length;
+      const b=window.__awB=makeBoss();b.x=P.x+150;b.y=P.y;S.boss=b;enemies.push(b);
+      draw();wxSync();o.calm=WX.scene+':'+WX.run.boss.state;o.calmL=layers();
+      b.rage=1;draw();wxSync();o.storm=WX.run.boss.state;o.stormL=layers();
+      const n0=AWX.bolts;WX.boltT=-99;S.t+=5;doPattern(b,'shock');draw();o.bolt=AWX.bolts-n0;o.boltPt=WX.pts.some(p=>/lightning_bolt/.test(p.id));o.tele=waves.some(w=>w.t<0)||!!(b.arTele&&b.arTele.k==='shock');   // with arena-fx.js the attack waits behind its warning
+      mines.push({x:P.x+40,y:P.y,t:1});let at=null,fx=null;const sl=ctx.setLineDash,fd=window.fxDraw;
+      ctx.setLineDash=function(a){if(at==null&&a&&a[0]===6)at=WX.drawn===FRAME_T;return sl.apply(this,arguments)};window.fxDraw=function(){fx=WX.drawn===FRAME_T;return fd.apply(this,arguments)};
+      draw();ctx.setLineDash=sl;window.fxDraw=fd;o.under=at===true&&fx===true;
+      o.maxA=Math.max(0,...[...WX.layers.values()].map(f=>f.a));mines.length=0;waves.length=0;b.arTele=null;
+    }catch(e){o.err=String(e&&e.stack||e)}
+    return o});
+  if(!aw.err){
+    for(let i=0;i<60;i++){if(await page.evaluate(()=>[...WX.layers.values()].every(f=>wxIm(f.id))))break;await page.waitForTimeout(50)}   // the sheets load in the background
+    const ms={};
+    for(const on of [false,true,false,true]){await page.evaluate(on=>{WEATHER.on=on;__awDraw();wxSync();for(const f of WX.layers.values())f.cur=1;__awDraw()},on);
+      const t0=Date.now();await page.evaluate(()=>{for(let i=0;i<20;i++){__awDraw();if(R3D.on&&R3D.r)R3D.r.getContext().finish()}});ms[on]=Math.min(ms[on]??1e9,(Date.now()-t0)/20)}
+    Object.assign(aw,await page.evaluate(()=>{const o={loaded:[...WX.layers.values()].every(f=>wxIm(f.id)),n:WX.layers.size};WEATHER.on=true;
+      try{S.boss=null;__awB.dead=true;enemies.length=0;__awDraw();o.clear=WX.scene+':'+WX.run.arena.state;for(let i=0;i<AWX.clearT*60+30;i++)__awDraw();o.after=WX.run.arena.state}catch(e){o.err=String(e)}
+      reset();R3D.drawEvery=__awDe;for(const [e,h] of __awMenu)e.hidden=h;return o}));
+    aw.off=ms[false];aw.on=ms[true]}
+  else await page.evaluate(()=>{if(window.__awMenu)for(const [e,h] of __awMenu)e.hidden=h;if(window.__awDe!=null)R3D.drawEvery=__awDe;reset()});
+  check(!aw.err&&aw.plain==='arena:calm'&&aw.plainN===0&&aw.calm==='boss:calm'&&/fog_drift/.test(aw.calmL)&&aw.storm==='storm'&&/rain_heavy/.test(aw.stormL)&&aw.bolt===1&&aw.boltPt&&aw.tele&&aw.under&&aw.maxA<=0.45&&aw.clear==='arena:clearing'&&aw.after==='calm'&&aw.on-aw.off<6,
+    'Arena weather: '+(aw.err||[aw.plain==='arena:calm'&&aw.plainN===0?'classic arena clear':'classic arena '+aw.plain+' ('+aw.plainN+')',aw.calm==='boss:calm'&&/fog_drift/.test(aw.calmL)?'boss fight: '+aw.calmL:'no boss atmosphere ('+aw.calm+' '+aw.calmL+')',
+      aw.storm==='storm'&&/rain_heavy/.test(aw.stormL)?'storm when he gets angry':'no storm ('+aw.storm+' '+aw.stormL+')',aw.bolt===1&&aw.boltPt&&aw.tele?'lightning with the shock telegraph':'lightning '+aw.bolt+(aw.boltPt?'':' (no bolt drawn)'),
+      aw.under?'under the telegraphs and fxDraw':'drawn over the telegraphs!','opacity ≤'+aw.maxA.toFixed(2),aw.clear==='arena:clearing'&&aw.after==='calm'?'clears after the boss':'no clearing ('+aw.clear+'→'+aw.after+')',
+      'frame in the storm '+aw.off.toFixed(1)+'→'+aw.on.toFixed(1)+'ms with '+aw.n+' layers'+(aw.loaded?'':' (sheets not loaded)')].join(', ')));}
   // מסלול רמות (levelpath.js): מה נפתח בכל רמה נגזר מהטבלאות, "הבא" בחלון הדמות, ובעליית רמה הבזק וכרטיס עם מה שנפתח ומה הבא
   const lp=await page.evaluate(()=>{
     enterWorld('home');const o={};
@@ -3795,8 +3828,8 @@ function worldBot(m,L,god){
       o.two={held:wHeld().length};try{hud();o.two.ok=true}catch(e){o.two.err=e.message}f.x=fx;f.y=fy;SAVE.gear.weapon=g;SAVE.bag=JSON.parse(bag)}
     for(let i=0;i<30;i++)mobaUpdate(1/30);render();o.m3=typeof M3!=='undefined'?M3.map.size:-1;o.r3=R3D.on;   // תלת-ממד: מגדלים ובסיסים כמודלים (moba3d.js)
     // המראה (moba-look.js): כפתורי הסקילים והפקודות כאייקוני SVG בלי אימוג'י, והרצפה של המוד (בתלת-ממד: במקום הרצפה של הזירה)
-    o.look={svg:document.querySelectorAll('#mbSk [data-sk]:not(.mbsp) svg').length+document.querySelectorAll('#mbPing svg').length,emoji:/\p{Extended_Pictographic}/u.test($('mbSk').textContent+$('mbPing').textContent),
-      pic:[...document.querySelectorAll('#mbSk [data-sk]:not(.mbsp)')].map(b=>{const im=b.querySelector('img.mbpic');return im?im.getAttribute('src'):''}),   // האייקונים המצוירים של העולם (moba-icons.js)
+    o.look={svg:document.querySelectorAll('#mbSk [data-sk]:not(.mbsp) :is(svg.mbski,svg.mbgi)').length+document.querySelectorAll('#mbPing svg').length,emoji:/\p{Extended_Pictographic}/u.test($('mbSk').textContent+$('mbPing').textContent),
+      pic:[...document.querySelectorAll('#mbSk [data-sk]:not(.mbsp)')].map(b=>{const im=b.querySelector('img.mbpic');return im?im.getAttribute('src'):b.querySelector('svg.mbgi')?'gi':''}),   // האייקון: צללית game-icons ('gi', הסגנון החדש) או התמונה המצוירת של העולם (קלאסי, moba-icons.js)
       floor:R3D.on&&R3D.ready?!!(M3.floor&&M3.floor.visible)&&!R3D.ground.visible:!!MB_FLOOR};
     // מצלמה ומפה (moba-look.js, 3.11): המצלמה רחוקה (רואים לרוחב לפחות פי 1.5), יש שיחים ואבנים, והמפה הקטנה בתוך המסך
     {const b=mbMiniBox(W/2-MB.me.x,H/2-MB.me.y);o.cam={z:ZOOM,wide:Math.round(100/ZOOM)/100,bush:mbDecor().filter(d=>d.k==='bush').length,rock:mbDecor().filter(d=>d.k==='rock').length,
@@ -3920,7 +3953,7 @@ function worldBot(m,L,god){
       mobaHud();const sk=k=>{const b=document.querySelector('#mbSk [data-sk="'+k+'"]');return b&&b.getBoundingClientRect()},hit=(a,b)=>a&&b&&a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
       const mine=['heal','spell'].map(sk),rc=$('mbRecall').getBoundingClientRect();const bad=[];['heal','spell'].forEach((n,i)=>{const m=mine[i];if(!m){bad.push(n+' חסר');return}for(const k of ['s1','s2','ult'])if(hit(m,sk(k)))bad.push(n+'/'+k);if(hit(m,rc))bad.push(n+'/חזרה');if(m.right>innerWidth||m.bottom>innerHeight||m.left<0||m.top<0)bad.push(n+' בחוץ '+[m.left,m.top,m.right,m.bottom].map(Math.round))});
       if(hit(mine[0],mine[1]))bad.push('heal/spell');r.btn=!bad.length;r.bad=bad;
-      r.pic=[...document.querySelectorAll('#mbSk .mbsp img.mbpic')].map(i=>i.getAttribute('src'));o.spell=r}
+      r.pic=[...document.querySelectorAll('#mbSk .mbsp')].map(b=>{const im=b.querySelector('img.mbpic');return im?im.getAttribute('src'):b.querySelector('svg.mbgi')?'gi':''});o.spell=r}
     // תיקונים מבדיקת ה-QA (docs/moba-qa-report.md, 7.11): הטלה בחדר ההימור חוסמת זינוק, סדן וחזרה בלי טעינה; מי שמת בחדר חוזר בלי רשת ובועה;
     // לחש מתוך שיח חושף; אזור של אויב בערפל לא מצויר; הודעה של החדר קופצת לראש התור; ההסבר מעל כפתור הריפוי; ליד החדר ההודעות יורדות
     if(typeof mbGbBusy==='function'&&typeof MBSPELL!=='undefined'){const r={},me=MB.me,bk={x:me.x,y:me.y,sp:me.spell,cd:{...me.cd},hp:me.hp,dead:me.dead,deaths:me.deaths,resp:me.resp},G=mbGb(),R0=G.roll;
@@ -4326,7 +4359,7 @@ function worldBot(m,L,god){
   if(!mb.err){
     check(mb.over,'משחקי השאול: משחק של בוטים '+(mb.over?'נגמר':'לא נגמר')+' אחרי '+t(mb.t)+' · '+mb.towers+' מגדלים נפלו'+(mb.base?', בסיס נהרס':', נגמר בזמן')+' · הריגות '+mb.score+' · רמה עד '+mb.lv);
     if(CFG.gfx==='3d')check(!mb.r3||mb.m3===6,'משחקי השאול בתלת-ממד: '+(mb.r3?mb.m3+' מבנים כמודלים (צריך 6)':'התלת-ממד כבוי'));
-    {const p=(mb.look||{}).pic||[],ok=p.filter(f=>f&&fs.existsSync(path.resolve(__dirname,'..',f)));check(p.length===3&&ok.length===3,'משחקי השאול: כפתורי הסקילים עם האייקונים המצוירים של העולם: '+ok.length+' מתוך '+p.length+(ok.length<p.length?' (חסר: '+p.filter(f=>!ok.includes(f)).join(', ')+')':''))}
+    {const p=(mb.look||{}).pic||[],ok=p.filter(f=>f==='gi'||f&&fs.existsSync(path.resolve(__dirname,'..',f)));check(p.length===3&&ok.length===3,'משחקי השאול: כפתורי הסקילים עם אייקון (צללית או תמונה): '+ok.length+' מתוך '+p.length+(ok.length<p.length?' (חסר: '+p.filter(f=>!ok.includes(f)).join(', ')+')':''))}
     {const k=mb.look||{};check(k.svg===5&&!k.emoji&&k.floor,'משחקי השאול: מראה: '+k.svg+' אייקונים (צריך 5)'+(k.emoji?', נשאר אימוג\'י בכפתורים':'')+(k.floor?', רצפה משלו':', בלי רצפה משלו'))}
     {const c=mb.cam||{};check(c.wide>=1.5&&c.bush>0&&c.rock>0&&c.mini&&c.back&&c.fires!==0,'משחקי השאול: מצלמה ומפה: רואים פי '+c.wide+' לרוחב (צריך 1.5), '+c.bush+' שיחים, '+c.rock+' אבנים'+(c.mini?'':', המפה הקטנה יוצאת מהמסך')+(c.back?'':', המצלמה לא חזרה אחרי היציאה')+(c.fires===0?', בלי לפידים בתלת-ממד':''))}
     {const m=mmap,ks={tap:'נגיעה מזיזה',drag:'גרירה עוקבת',rect:'המלבן לפי המצלמה',stay:'נשארת אחרי שחרור',meBack:'נגיעה בגיבור מחזירה',key:'C מחזיר',btn:'🎯 מחזיר',joyBack:'ג׳ויסטיק מחזיר',two:'ג׳ויסטיק עובד בזמן גרירה',lift:'שחרור אצבע אחת',liftBack:'ואז הג׳ויסטיק מחזיר'},bad=Object.keys(ks).filter(k=>!m[k]);
@@ -4338,7 +4371,7 @@ function worldBot(m,L,god){
      check(Object.keys(ks).every(k=>L[k]),'משחקי השאול: שומר בחיים: '+Object.keys(ks).map(k=>ks[k]+(L[k]?' ✓':' ✗')).join(', '))}
     {const I=mb.items||{},ks={tick:'זהב עם הזמן',minion:'זהב מחייל',quick:'קנייה מהירה',stat:'סטטים',sell:'מכירה',win:'חלון החנות',buy:'קנייה בחלון',close:'סגירה',bot:'בוט קונה'};
      check(Object.keys(ks).every(k=>I[k]),'משחקי השאול: חפצים: '+Object.keys(ks).map(k=>ks[k]+(I[k]?' ✓':' ✗')).join(', '))}
-    if(mb.build||mb.spell){const B=mb.build||{},r=mb.spell||{},p=mb.spl||{pick:{},use:{}},pk=Object.entries(p.pick),bad=pk.filter(x=>!x[1]).map(x=>x[0]),pics=(r.pic||[]).filter(f=>fs.existsSync(path.resolve(__dirname,'..',f)));
+    if(mb.build||mb.spell){const B=mb.build||{},r=mb.spell||{},p=mb.spl||{pick:{},use:{}},pk=Object.entries(p.pick),bad=pk.filter(x=>!x[1]).map(x=>x[0]),pics=(r.pic||[]).filter(f=>f==='gi'||f&&fs.existsSync(path.resolve(__dirname,'..',f)));
       check(B.step&&B.n===6&&B.def&&B.saved&&B.back&&B.load&&B.game,'משחקי השאול: מסך בנייה: '+(B.step?B.n+' לחשים':'לא נפתח אחרי הגיבור')+(B.def?', ברירת מחדל זינוק':', ברירת המחדל לא זינוק')+(B.saved?', בחירה נשמרת לגיבור עם הסבר':', הבחירה לא נשמרה')+(B.back?', חזרה לבחירת גיבור (והקושי שם)':', החזרה לא עובדת')+(B.load?', נטענת שוב':', לא נטענת')+(B.game?', ובמשחק':', לא עברה למשחק'));
       check(r.heal&&r.healCd&&r.done&&r.done.length===r.n&&r.tip.length===r.n&&r.btn&&pics.length===2&&r.tap&&r.hold,'משחקי השאול: ריפוי '+(r.heal?'✓ 15%':'✗')+(r.healCd?' עם טעינה':' בלי טעינה')+' · לחשים שעובדים עם טעינה: '+(r.done||[]).join(', ')+' ('+(r.done||[]).length+'/'+r.n+')'+(r.tip&&r.tip.length===r.n?', לכולם הסבר':', חסר הסבר')+(r.btn?', הכפתורים לא מכסים סקילים או חזרה':', כפתור מכסה או מחוץ למסך: '+(r.bad||[]).join(', '))+', '+pics.length+'/2 אייקונים מצוירים'+(r.tap?', נגיעה קצרה אחרי פריים כבד מטילה':', נגיעה קצרה אחרי פריים כבד נבלעה')+(r.hold?', לחיצה ארוכה לא':', לחיצה ארוכה הטילה'));
       check(!bad.length&&pk.length>0&&p.heal>0&&Object.keys(p.use).length>0,'משחקי השאול: בוטים: בחרו לפי תפקיד '+(bad.length?'✗ '+bad.join(', '):'✓ ('+pk.map(x=>x[0]).join(', ')+')')+', ריפוי '+(p.heal||0)+' פעמים, לחשים: '+(Object.entries(p.use).map(x=>x[0]+' '+x[1]).join(', ')||'אף אחד'))}

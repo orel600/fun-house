@@ -27,6 +27,18 @@ const GICO={
     gun:'lorc/high-shot'},
   // סרגל התפריט והקיצורים בצד (לפי ה-id של הכפתור, או data-tab בקיצור). צבע: זהב, במסגרת עץ. "אייקוני תפריט" בהגדרות
   nav:{gearBtn:'delapouite/backpack',qBtn:'lorc/scroll-unfurled',bookBtn:'lorc/open-book',wMapBtn:'lorc/treasure-map',mbTab:'lorc/crossed-swords',setBtn:'lorc/cog'},
+  // משחקי השאול (moba-icons.js): הסקילים של הערכות, הערכות עצמן (k_), והריפוי והלחשים (sp_, moba-spells.js). צבע: --dt של הכפתור. חלק מ"אייקוני סקילים"
+  mb:{anvil:'lorc/anvil-impact',taunt:'lorc/shouting',wall:'delapouite/brick-wall',
+    cleave:'lorc/wave-strike',spin:'lorc/sword-spin',rage:'delapouite/enrage',
+    pierce:'lorc/arrow-dunk',net:'lorc/fishing-net',rain:'lorc/arrow-flights',
+    wave:'lorc/wave-crest',bubble:'lorc/bubbles',blizzard:'lorc/frozen-orb',
+    k_tank:'lorc/hammer-drop',k_warrior:'lorc/crossed-swords',k_hunter:'lorc/high-shot',k_mage:'lorc/wizard-staff',
+    sp_heal:'sbed/health-increase',sp_dash:'lorc/sprint',sp_haste:'lorc/wingfoot',sp_barrier:'lorc/shield-reflect',sp_reveal:'delapouite/eye-target',sp_exhaust:'sbed/weight-crush',sp_cleanse:'delapouite/holy-water'},
+  // הכפתורים הגדולים בזירה: אולטימייט "פרץ הפנס" (ult.js), ברק אלוהי (divine.js) והכישוף (spell.js). הסקיל החתימה (sigskill.js) לוקח מ-sk
+  ult:{ult:'lorc/lantern-flame',divine:'lorc/thunder-struck'},
+  spell:{dash:'lorc/wingfoot',heal:'sbed/health-increase',smite:'lorc/lightning-helix'},
+  // ממשק: תג "נעול עד רמה" (moba-icons.js). תמיד, גם בקלאסי
+  ui:{lock:'lorc/padlock'},
 };
 
 // הסגנון: 'new' (ברירת מחדל) או 'classic'. kind: 'sk' (סקילים, ספר, עץ ונשק) או 'nav' (סרגל התפריט)

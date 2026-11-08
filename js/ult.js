@@ -31,8 +31,10 @@ function ultUse(){
   return true;
 }
 // הכפתור: מוסתר מחוץ לזירה. --cd הוא החלק שעוד לא נטען (כמו בסקילים), ו-ping כשהוא מתמלא
+const ULT_CLASSIC=$('ult').innerHTML;   // הכוכב מ-index.html: הסגנון הקלאסי. חדש: פנס מ-game-icons (GICO.ult, gicons.js)
 function ultHud(){
   const b=$('ult'),on=ultArena();if(b.hidden===on)b.hidden=!on;if(!on)return;
+  const g=String(gicoOn('sk'));if(b.dataset.gi!==g){b.dataset.gi=g;b.innerHTML=g==='true'?gIco(GICO.ult.ult,'dti')+'<i></i>':ULT_CLASSIC}
   const u=S.ult||(S.ult={c:0,used:0}),v=String(Math.round(20*(1-u.c/ULT.need))/20);
   if(b.dataset.cd!==v){const was=b.classList.contains('ready');b.dataset.cd=v;b.style.setProperty('--cd',v);b.style.setProperty('--dt',dtCol(P.dt[P.weapon]||'physical'));
     b.classList.toggle('ready',v==='0');if(v==='0'&&!was){b.classList.remove('ping');void b.offsetWidth;b.classList.add('ping')}}

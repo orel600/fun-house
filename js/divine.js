@@ -44,7 +44,7 @@ function drawDivine(){
 function divineHud(){
   const b=$('divine'),d=S.dv,on=!!d&&skArena()&&S.mode==='play'&&(d.ready||d.t>0);
   b.hidden=!on;if(!on)return;
-  if(!b.firstChild){b.innerHTML=dtSvg('lightning')+'<i></i>'}
+  const g=String(gicoOn('sk'));if(b.dataset.gi!==g){b.dataset.gi=g;b.innerHTML=(g==='true'?gIco(GICO.ult.divine,'dti'):dtSvg('lightning'))+'<i></i>'}   // חדש: ברק מ-game-icons (gicons.js), קלאסי: סמל סוג הנזק
   b.setAttribute('aria-label',T('dv.name'));
   const v=String(Math.round(20*(d.t>0?1-d.t/DIVINE.dur:0))/20);
   if(b.dataset.cd!==v){b.dataset.cd=v;b.style.setProperty('--cd',v)}
