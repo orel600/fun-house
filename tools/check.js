@@ -2127,10 +2127,12 @@ function worldBot(m,L,god){
       o.comet=R.comet.ids.some(i=>i==='hit_fire');o.lance=R.lance.hold.includes('sk_pierce_ray');o.bloom=R.bloom.ids.includes('petals');
       FXLIB.list.length=0;for(let i=0;i<40;i++)skillsUpdate(0.05);o.crater=FXLIB.list.some(f=>f.id==='whit_fire'&&f.hold>0);   // השביט נחת
       P.hp=P.maxHp*0.5;const f0=floats.length;for(let i=0;i<20;i++)skillsUpdate(0.05);o.heal=floats.slice(f0).some(f=>/^\+\d/.test(f.txt)&&f.col===SKANIM.mo.bloom.healCol);
+      enemies=[];for(let i=0;i<150;i++){const e=addEnemy('grunt',(i%15-7)*4,(Math.floor(i/15)-5)*4);e.hp=e.max=1e9;e.elite=false}S.shake=0;got('quake');   // 150 בטווח: הרעידה עד max, לא 8 של הבוס
+      o.qshake=(typeof calmOn==='function'&&calmOn())||S.shake===SKANIM.mo.quake.shake.max&&SKANIM.mo.quake.shake.max<ARFEEL.shake.big;o.qsh=S.shake;enemies=[];
       SAVE.fxLess=true;const lite=got('quake');o.less=!lite.ids.includes('step_dust')&&!lite.hold.length;
     }catch(err){o.err=String(err&&err.stack||err)}
     SAVE.fxLess=fl;FXLIB.list.length=0;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
-  {const ks={quake:'רעידה: אבק וסדקים שנשארים',splash:'התזה: טבעת גל',frost:'כפור שנשאר',comet:'שביט: שובל',crater:'מכתש',lance:'פס קרח',bloom:'עלי כותרת',heal:'מספר ריפוי ירוק',cap:'בתוך perCast',less:'פחות אפקטים'};
+  {const ks={quake:'רעידה: אבק וסדקים שנשארים',splash:'התזה: טבעת גל',frost:'כפור שנשאר',comet:'שביט: שובל',crater:'מכתש',lance:'פס קרח',bloom:'עלי כותרת',heal:'מספר ריפוי ירוק',cap:'בתוך perCast',less:'פחות אפקטים',qshake:'רעידה ב-150 אויבים עד '+(smo.qsh??'?')+' (בוס 8)'};
    check(!smo.err&&Object.keys(ks).every(k=>smo[k]),'רגעים לסקילי הזירה: '+(smo.err||Object.keys(ks).map(k=>ks[k]+(smo[k]?' ✓':' ✗')).join(', ')+' ('+smo.n+')'))}
   // אויבים ישנים (arenaZz ב-arenas.js): רחוק מ-wake.r הולכים לאט ומכשף לא יורה. מתעוררים מקרבה, ממכה, מסוף הגל ומהבוס. קפיצה של arena-load לא מעירה, והישנים נספרים בגל
   const zz=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},at=window.attack,r0=ARENAS.gauntlet.wake.r,lc0=ARENAS.gauntlet.lastCall;

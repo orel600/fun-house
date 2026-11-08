@@ -30,9 +30,9 @@ const SKANIM={
   // (c) פגיעות: perFrame בפריים אחד (הסקיל פוגע בכולם ביחד). big: אויב-על ובוס מקבלים whit גדול. גודל לפי רדיוס האויב, בין min ל-max
   hit:{perFrame:4,k:3.2,min:56,max:130,bigK:4.5,bigMax:260},
   /* MLBB 1.1 (טבלת הפערים #528): רק מה שהיה חסר. hold: סימן שנשאר ברצפה ונמוג (fxlib.js). הכל בתוך perCast, ובלי בפחות אפקטים.
-     quake: גל שני wave2 שניות אחרי, אבק, הסדקים נשארים, ורעידה לפי כמה נפגעו (base+per לכל אחד, עד ARFEEL.shake.big). splash: טבעת גל, וטיפה על כל אויב.
+     quake: גל שני wave2 שניות אחרי, אבק, הסדקים נשארים, ורעידה לפי כמה נפגעו (base+per לכל אחד, עד max, מתחת ל-ARFEEL.shake.big של הבוס). splash: טבעת גל, וטיפה על כל אויב.
      frost: הסדקים נשארים. comet: שובל אש שנופל בזמן ההמתנה, ומכתש שנשאר. lance: פס קרח שנשאר לאורך הקרן. bloom: עלי כותרת, ומספר ירוק בכל ריפוי */
-  mo:{quake:{wave2:0.15,dust:'step_dust',dustN:2,dustSize:70,hold:2,holdAlpha:0.55,shake:{base:2,per:0.5}},
+  mo:{quake:{wave2:0.15,dust:'step_dust',dustN:2,dustSize:70,hold:2,holdAlpha:0.55,shake:{base:2,per:0.5,max:4}},
     splash:{ring:'wt_wave',ringK:2.4,drop:'wt_droplet',dropSize:52},
     frost:{hold:2,holdAlpha:0.4},
     comet:{streak:'hit_fire',streakSize:44,streakSx:3.2,streakUp:260,hold:2,holdAlpha:0.45},
@@ -82,7 +82,7 @@ function skAnimCast(id){
     if(!lite){const x=P.x,y=P.y,s=R*A.waveK*k;setTimeout(()=>{if(skAnimOn())skaPlay(A.wave,x,y,{size:s*1.15,under:true,alpha:0.7})},Mq.wave2*1000);   // גל שני (לא tg_ring של הבוס, ההחלטה ה4)
       for(let i=0;i<skaN(Mq.dustN);i++){const a=skaRnd()*6.283;skaPlay(Mq.dust,P.x+Math.cos(a)*R*0.6,P.y+Math.sin(a)*R*0.5,{size:Mq.dustSize*k})}}
     if(typeof calmOn!=='function'||!calmOn()){let hit=0;for(const e of enemies)if(!e.dead&&Math.hypot(e.x-P.x,e.y-P.y)-e.r<R)hit++;   // רעידה לפי כמה נפגעו (עד הרעידה הגדולה של arena-feel)
-      const big=typeof ARFEEL!=='undefined'?ARFEEL.shake.big:8;S.shake=Math.max(S.shake,Math.min(big,Mq.shake.base+Mq.shake.per*hit))}
+      S.shake=Math.max(S.shake,Math.min(Mq.shake.max,Mq.shake.base+Mq.shake.per*hit))}   // עד max (4): מעל פגיעה בך (3), ו-8 נשאר רק להריגת בוס או אויב-על (QUINN)
     const n=skaN(A.rocksN);for(let i=0;i<n;i++){const a=(i+skaRnd()*0.6)/n*6.283;skaPlay(A.rocks,P.x+Math.cos(a)*R*0.55,P.y+Math.sin(a)*R*0.45,{size:A.rocksSize*k,vy:A.rocksUp,rot:skaRnd()*6.283})}}
   else if(id==='splash'){
     skaPlay(A.flash,P.x,P.y-R*0.2,{size:R*A.flashK*k,add:true});
