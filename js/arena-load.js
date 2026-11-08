@@ -13,8 +13,9 @@ const aloadKeep=e=>e.isBoss||e.wanted||e.elite;   // אלה לא נעלמים א
 function arenaLoad(dt){
   S.aloadT=(S.aloadT||0)-dt;if(S.aloadT>0)return;S.aloadT=ALOAD.every;
   const far=ALOAD.far*Math.max(W,H);
+  // אויב ישן (arenaZz ב-arenas.js) נשאר ישן: נוחת תמיד מחוץ ל-wake.r, והקפיצה לא נוגעת ב-e.awake או בחיים
   for(const e of enemies){if(e.dead||e.isBoss||e.wanted)continue;
-    if(Math.hypot(e.x-P.x,e.y-P.y)>far){const p=spawnPos();e.x=p.x;e.y=p.y;e.kx=e.ky=0;S.aload=S.aload||{moved:0,cut:0,merged:0};S.aload.moved++}}
+    if(Math.hypot(e.x-P.x,e.y-P.y)>far){const p=spawnPos();if(S.wv&&!e.awake){const z=ARENA().wake.r*Math.max(W,H)*1.1,dx=p.x-P.x,dy=p.y-P.y,dd=Math.hypot(dx,dy)||1;if(dd<z){p.x=P.x+dx/dd*z;p.y=P.y+dy/dd*z}}e.x=p.x;e.y=p.y;e.kx=e.ky=0;S.aload=S.aload||{moved:0,cut:0,merged:0};S.aload.moved++}}
   // מעל המגבלה: הרגילים הכי רחוקים נעלמים (לא kill: בלי שלל, XP וקווסטים)
   let over=enemies.length-HORDE.cap;
   if(over>0){const d=e=>Math.hypot(e.x-P.x,e.y-P.y);
