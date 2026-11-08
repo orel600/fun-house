@@ -45,7 +45,7 @@ These are the moments as they look now. They come from `tools/skill-shots.js` an
 - Underworld ults (wall, rage, rain, blizzard): ![underworld ults before](../refs/mlbb-before/moba-ults.webp)
 
 Three things are visible in the shots:
-- The rain ult is a flat, opaque blue disc (`sk_rain` = `rain_sky_mystic`).
+- The rain ult is a flat blue disc. That's the **canvas zone fill** (`moba.js:454-457`: team colour at 22% alpha for every zone, red for enemies), not a sheet. `sk_rain` is `arrow_volley_arc_amber`.
 - The iron wall is a gold hex shield (`sk_wall` = `shield_hex_gold`), not stone.
 - The warrior's spin covers the whole cluster with an amber four-arc ring (`sk_spin`, about 290 px).
 
@@ -104,9 +104,9 @@ Three things are visible in the shots:
 | Net: everything | ⛔ H2 | Per #514: no `sk_net`, no `sk_net_root`, no green. The rope net closes for the root. "Caught!" already exists (`mbWord(o,'root')`) | after #514 |
 | Net: `wtg_circle` root decal | ⛔ H2/H4 | `wtg_` is the world-danger telegraph. The closing rope net is the decal | |
 | Net: speed streaks during flee | ➕ | Procedural, only while `flee` is active | 2.2 |
-| Rain: `tg_circle` reticle during the 0.5 s delay | ⛔ H4 → ≈ | Not crimson `tg_`. Instead: `wcirc_phys` growing over `delay`, which is the area rule (H1: area skills keep their circle) | 2.2 |
+| Rain: `tg_circle` reticle during the 0.5 s delay | ≈ | Already exists: the canvas zone draws an edge ring with a fill that grows over `delay` (`moba.js:455-456`), in team colour. No crimson `tg_` (H4) | 2.2 |
 | Rain: arrows from the sky with trails | ✅ | `MBANIM.rain.drop` = `shot_arrow` falling (W2) | |
-| Rain: no flat puddle | ➕ | The shot shows it: **`sk_rain` is an opaque blue disc.** Replace it with a thin edge ring (`wcirc_phys` at low alpha) | 2.2 |
+| Rain: no flat puddle | ➕ | The shot shows it: the **canvas zone fill** (`moba.js:457`, team colour 22%) under the rain. Keep the team edge ring (it's the boundary of the hit test, and the enemy's red is a warning), and drop the fill to about 8% | 2.2 |
 | Rain: final volley stop + `hit_heavy` + one BIG number per enemy | ≈ | `hit_heavy` (`MBANIM.rain.end`) + `mbDmg big:true` exist. Stop only through `MBFX.stop` (H3) | |
 | Rain: slow-mo beat | ⛔ H3 | | |
 | Rain: arrows stuck in the ground for about 2 s | ➕ | `shot_arrow` frame 0, held, `rot` straight down, 6 copies, 2 s fade. Needs the same `hold` option as the anvil | 2.2 |
@@ -190,7 +190,7 @@ All 8 skills already have cast, main, hit and status layers. Only the missing pi
 | Cracks toward the boss, boss glow | ≈ | Exist in `arena-look.js`. Visibility to be measured | 1.3 |
 | Enemy rings = shadow + thin rim | ➕ | Today the arena shows thin white rings (see the shots), not filled discs. Underworld units have filled team discs (`glow_ally`, `MBLIB.glow`) | 1.3 |
 | Tower range only when relevant, dashed | ✅ | `moba.js:523-525` (since 2.11). Nothing to build | |
-| No solid disc anywhere | ➕ | The real offender is **`sk_rain`** (Part 1, hunter) | 2.2 |
+| No solid disc anywhere | ➕ | The real offender is the **underworld zone fill**, after the delay (`moba.js:457`). Only the rain zone lasts after its delay (bubble and blizzard end there), so that's the disc in the shot. Same fix as in Part 1 | 2.2 |
 
 ## Part 6: one-tap arena entry
 
