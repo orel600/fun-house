@@ -26,7 +26,11 @@ function mb3dFloor(){
   const add=c=>({map:c,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false});
   plane(new THREE.MeshLambertMaterial({map:tex(fl.stone)}),-D,w,h/sn);                         // התהום, נמוך
   const glowLo=plane(new THREE.MeshBasicMaterial(add(tex(fl.glow))),-D+0.3,w,h/sn);
-  plane(new THREE.MeshLambertMaterial({map:tex(fl.stone,1)}),0,lx*2,A*2/sn);                   // הנתיב, למעלה
+  // הנתיב, למעלה (W5): רצפת האבן של הזירה (arena-look.js) בפלטה של השאול, ומעליה שכבה שקופה עם הסימנים (צבע הקבוצות, השביל, הבסיסים, השפה).
+  // בלי arena-look (look=classic): הטקסטורה של הדו-ממד, כמו קודם
+  const flat=typeof aLookFlatMat==='function'&&MBLOOK.floor3d&&aLookFlatMat(MBLOOK.floor3d,sn);
+  if(flat){plane(flat,0,lx*2,A*2/sn);const ov=mbFloorCanvas(true);plane(new THREE.MeshBasicMaterial({map:tex(ov.stone,1),transparent:true,depthWrite:false,toneMapped:false}),0.15,lx*2,A*2/sn)}
+  else plane(new THREE.MeshLambertMaterial({map:tex(fl.stone,1)}),0,lx*2,A*2/sn);
   const glow=plane(new THREE.MeshBasicMaterial(add(tex(fl.glow,1))),0.3,lx*2,A*2/sn);
   // הצוק: קיר אבן מתחת לשפה הקרובה (הרחוקה פונה הלאה מהמצלמה ולא נראית), מתכהה כלפי מטה, עם קו אור בראש
   const cc=document.createElement('canvas');cc.width=256;cc.height=64;const q=cc.getContext('2d'),gr=q.createLinearGradient(0,0,0,64);
