@@ -46,6 +46,7 @@ function ajHit(e,m,crit,t,ang){
 // "פוף" בהריגה: רק אויב-על, אלוף ובוס. בלי עצירה, בלי רעידה ובלי רצף (אלה של העולם)
 (()=>{const old=juiceKill;juiceKill=function(e){old.apply(this,arguments);
   if(juiceOn()||!ajOn()||!ajBig(e))return;
+  if(typeof ARFX!=='undefined'&&!fxLess()&&typeof fxImg==='function'&&fxImg(e.isBoss?'ko_boss':'ko'))return;   // MLBB 3.3: אירוע אחד = רגע אחד. הגיליון ko/ko_boss (arena-fx.js) הוא הרגע, והפוף רק כשהוא לא יוצג
   const J=juice(),K=JUICE.poof;while(J.poofs.length>=JUICE.arena.poof.max)J.poofs.shift();
   const pf=[];for(let i=0;i<K.puffs;i++)pf.push({a:rand(0,6.28),s:rand(20,55),r:rand(...K.r)});
   J.poofs.push({x:e.x,y:e.y,t0:jNow(),pf,r:e.r*(e.big||1),col:dtCol(e.weak)});AJ.stat.poofs++}})();
