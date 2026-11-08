@@ -1,6 +1,6 @@
 # קונספט: צלילים ומוזיקה (DANA, 8.11.2026)
 
-**מצב:** טיוטה לאישור של אוראל. בלי קוד, רק כיוון, רשימה ומספרים.
+**מצב:** אושר (אוראל, 8.11, #483): קודם צלילים, ומוזיקה אחר כך. סגנון של מכות אמיתיות ונקיות. קרדיטים של Creative Claw רק למה שחסר (30 עד 60). דף השמיעה וההנחיה לבנייה בסוף המסמך.
 **תחום:** צלילים ומוזיקה הם של אוראל, בכל המשחק (ניר, 7.11). מתחילים בזירה, במשחקי השאול ובסקילים. לכפר ולעולם מגיעים אחר כך, ושואלים קודם את ניר.
 
 ## מה יש היום
@@ -67,6 +67,55 @@
 2. **מה פספסתי?** (א) מאה הטלות בדקה בזירה: לכל צליל הטלה יש מגבלת קצב (`gap`), והוא בערוץ הרגעים, שמנמיך את הקרב ולא מצטבר. (ב) הבוטים במשחקי השאול: צליל רק לסקילים שלך ולסקילים שפוגעים בך, לא לכל בוט בכל המפה. (ג) טלפון בשקט: המשחק חייב להיות ברור בלי צליל, והצליל רק מוסיף. (ד) בפעם העשירית: לולאה של דקה מתחילה לשעמם, ולכן בהמשך יבואו שתיים לכל מקום, שמתחלפות.
 3. **האם זה כבר קיים? מה הסיכון?** המנוע, הערוצים ומגבלות הקצב קיימים. חדש: הצלילים עצמם, ערוץ מוזיקה וטעינה מאוחרת של המוזיקה. הסיכון: משקל (נפתר בטעינה מאוחרת), ורעש (נפתר בכלל "מעט ושקט" ובמחוונים). תיקון ה-`ui` בטוח לגמרי: מוסיף צליל, ולא משנה לוגיקה.
 
-## הנחיה ל-BOB
+## דף השמיעה (שלב 1, לפני הבנייה)
 
-תיכתב אחרי שאוראל יענה על שלוש השאלות ויבחר בדף השמיעה. **אפשר לבנות כבר עכשיו, בנפרד:** תיקון ה-`ui` (צליל אחד מ-Interface Sounds ושורה ב-`SOUNDS`).
+מוזיקה נדחתה, ולכן בדף אין לולאות: רק צלילי ההטלה, וצליל ה-`ui`. אוראל בוחר אות לכל שורה, וכל שאר הצלילים נבחרים באותו סגנון.
+
+```
+Task: sound listening page (no game code). Spec: docs/concept/sound.md (approved by Orel, #483).
+Candidates (Kenney CC0 first; Creative Claw sfx/mirelo-sfx-2.0 only for gaps, max ~30 credits, 3 variants each):
+- One row per damage type: physical, fire, water, ice, lightning, earth. 3 candidates each (A/B/C).
+  Brief: punchy and realistic, not cartoony. physical = dry thud, fire = whoosh + flare, water = splash,
+  ice = crystal chime, lightning = sharp electric zap, earth = low rumble/rock drop.
+- One row 'ui': 2 candidates for a soft notification (wave countdown, "wave cleared", window buttons). Kenney Interface Sounds.
+- A reference row with the current sounds/hit.mp3 and sounds/celebrate.mp3, for loudness context.
+Processing: mono, 22kHz, mp3 ~64kbps, silence trimmed, at most 0.7 s (earth at most 0.9 s), peak-normalized to the same level.
+Kenney zips go to your scratchpad only. Never commit raw packs.
+Page: one private HTML Artifact, phone landscape, audio embedded as base64. Each row has a chip in the DMG color and the type name.
+Per candidate: "▶" (play once) and "×5" (5 plays, 0.25 s apart, random pitch ±12%, like the game, to hear whether it gets annoying).
+Tapping a candidate selects it. At the bottom, one line to copy, e.g. "physical B, fire A, water C, ice A, lightning B, earth C, ui A".
+Keep the chosen files (named cast_<type>.mp3 and ui.mp3) in your scratchpad for the build step.
+Deliver: the artifact link + the candidate files' sources (pack + original filename, or Creative Claw model + prompt) to MAX.
+```
+
+## הנחיה ל-BOB (שלב 2, אחרי שאוראל בחר)
+
+```
+Task: sound pass 1, arena + underworld + skills (no music). Spec: docs/concept/sound.md (approved by Orel, #483).
+Inputs: Orel's picks from the listening page (cast_<type>.mp3 ×6, ui.mp3), plus the event sounds below,
+sourced in the same punchy-realistic style (Kenney CC0 first).
+Branch: feature/sound-pass-1 from fresh main (git fetch && git merge origin/main), in your own worktree. Draft PR.
+
+1) BUG FIX: sfx('ui') is called in ~64 places, but there is no 'ui' in SOUNDS (js/audio.js), so those moments are silent.
+   Add ui:{file:'ui.mp3', vol:0.3, pitch:0.05, max:1, gap:0.12, grp:'fx'}.
+2) CAST SOUNDS: SOUNDS rows cast_physical ... cast_earth: {vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx'}.
+   Helper in js/audio.js: sfxCast(dt,k=1) plays 'cast_'+dt, or 'tap' if missing.
+   Hooks (player casts only):
+   - arena: js/skills.js (cast, now sfx('shoot') ~line 68) -> sfxCast(<skill's dmg type>); js/skills-more.js casts; js/ult.js cast.
+   - underworld: js/moba-kits.js ~lines 100 and 113 (now sfx('tap') / 'levelup' for u.me) -> sfxCast(<slot's dmg type>). Keep the u.me guard.
+   - Do NOT hook world/village skills (Nir's side). That comes later, after Nir hears it.
+3) COMBO WORDS (skills.js comboShow and its moba equivalent): sfxCast(<combo's type>, 1.4) (k>1 = lower and louder), instead of 'celebrate'.
+4) EVENT SOUNDS (new files, fx channel, each with a gap):
+   wave_start (horn, arenas.js wave start, gap 2), streak1/2/3 (rising, streak.js, replacing the current pick),
+   ult_ready (shimmer, when the ult button becomes ready, arena + underworld for u.me, gap 5),
+   tower_fall (rumble, moba.js tower death ~line 119, gap 1),
+   base_alarm (your base is hit, moba.js, gap 10, my team only),
+   me_die / me_back (moba.js, u.me only),
+   gamble_tick / gamble_win / gamble_lose (js/moba-gamble.js; Kenney Casino Audio).
+5) Every new file gets a row in sounds/README.md (pack + original filename, or Creative Claw model + prompt).
+   Credit Kenney in CREDITS.md if not already there. Run node tools/build-sounds.js.
+   Budget: js/sounds-data.js stays under 200KB (today 68KB).
+6) CHECKS in tools/check.js: (a) static: every sfx('<id>') id used in js/*.js exists in SOUNDS (this would have caught 'ui');
+   (b) in the arena run, AUDIO.count has cast_* > 0 and ui > 0; (c) in the underworld run, tower_fall > 0.
+Hebrew comments, numbers in SOUNDS (not in logic). No journal lines, no roadmap.md edits. Message MAX when checks are green.
+```
