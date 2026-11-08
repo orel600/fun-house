@@ -171,6 +171,8 @@ const MBFXSK={
   sk_anvil:{k:2.4},sk_anvil_wave:{k:2.8,add:true,sy:0.5},sk_taunt:{k:1.5,add:true,alpha:0.85},sk_wall:{size:170,add:true,alpha:0.9,dy:-30},
   sk_cleave:{size:170,add:true},sk_spin:{k:2.3,add:true},sk_rage:{size:170,add:true,alpha:0.85,dy:-14},sk_rage_glow:{size:120,add:true,dy:-30},
   sk_pierce:{size:150,add:true},sk_net:{size:120},sk_net_root:{size:80,dy:-16},sk_rain:{k:2.2},
+  // המתנקש (#485, הגיליונות ב-#529, ARI): עשן סגול בהיעלמות ובצעד צל, יהלום מסתובב לסימן מוות ופיצוץ סגול בסוף, מוטות לילך על המתנקש המכוסה (רק לקבוצה שלו), CRIT סגול במכה בגב
+  sk_vanish:{size:180,alpha:0.9},sk_shadowstep:{size:110,alpha:0.9},sk_deathmark:{size:80,add:true},sk_deathmark_burst:{size:160,add:true},st_veil:{size:90,add:true,alpha:0.8,dy:-18},dmg_backstab:{size:110,add:true},tr_slash_amethyst:{size:150,add:true},
   sk_bubble:{size:110,add:true,dy:-34},sk_bubble_halo:{k:2.2,add:true,sy:0.55},sk_bubble_aura:{k:2.1,add:true,sy:0.5},
   sk_blizzard:{k:2.3,add:true,sy:0.5,alpha:0.9},sk_blizzard_ice:{k:1.7,add:true},
   ult_cast:{size:240,add:true,sy:0.5},ult_ray:{size:270,add:true,dy:-115},

@@ -4077,6 +4077,20 @@ function worldBot(m,L,god){
        MB.shots=[];Z.reset=MB.shots.length===0;
      }catch(err){Z.err=String(err&&err.stack||err)}
      MB.shots=[];MB.u=keep;me.kit=kit;me.x=hx;me.y=hy;me.cd.s1=cd;S.cam.x=cam.x;S.cam.y=cam.y;if(typeof mbVisNow==='function')mbVisNow(true);mbFeelReset(me);mobaHud();o.arrow=Z}
+    // המתנקש (#485, הגיליונות של ARI ב-#529): עשן סגול בהיעלמות, מוטות לילך רק לקבוצה שלו ושנעלמים כשהכיסוי נשבר או במוות,
+    // יהלום סגול לסימן מוות, ו-CRIT סגול במכה בגב
+    {const me=MB.me,Q={},keep=MB.u,hx=me.x,hy=me.y,cam={x:S.cam.x,y:S.cam.y},has=id=>FXLIB.list.some(f=>f.id===id&&f.on!==false);   // hx,hy: הגיבור חוזר למקומו בסוף (אחרת בדיקת הספרייה רואה אפקטים מחוץ למסך)
+     try{MB.u=keep.filter(o=>o===me||o.k==='tower'||o.k==='base');me.x=0;me.y=0;S.cam.x=0;S.cam.y=0;
+       const a=mbHero('assassin',me.team,false,1),b=mbHero('assassin',1-me.team,false,1);a.x=60;a.y=0;b.x=160;b.y=40;MB.u.push(a,b);if(typeof mbVisNow==='function')mbVisNow(true);
+       for(const h of [a,b]){h.cd.s1=h.cd.s2=h.cd.ult=0;h.lvl=MOBA.ultAt}
+       Q.c1=mbCast(a,'s2');Q.vanish=has('sk_vanish');Q.mine=!!a.st.veilFx;Q.c2=mbCast(b,'s2');Q.foe=!b.st.veilFx;   // הכיסוי של האויב לא מסומן
+       a.st.dash=null;a.st.veil=0;mbTick(a,0.01);Q.brk=a.st.veilFx===null;
+       a.cd.s2=0;mbCast(a,'s2');a.st.dash=null;const had=!!a.st.veilFx;mbStReset(a);Q.dead=had&&!a.st.veilFx;
+       const t=mbHero('warrior',1-me.team,false,1);t.x=120;t.y=0;t.face=0;t.hp=t.max=1e6;MB.u.push(t);a.x=t.x-(a.r+t.r+4);a.y=0;a.atkT=0;if(typeof mbVisNow==='function')mbVisNow(true);
+       mbAttack(a,0,t,MBKIT.assassin.atk);Q.back=has('dmg_backstab');
+       a.cd.ult=0;t.mark=null;mbCast(a,'ult',t);Q.mark=!!t.mark&&!!t.mark.fx&&t.mark.fx.id==='sk_deathmark';
+     }catch(err){Q.err=String(err&&err.stack||err)}
+     MB.u=keep;me.x=hx;me.y=hy;S.cam.x=cam.x;S.cam.y=cam.y;if(typeof mbVisNow==='function')mbVisNow(true);mbFeelReset(me);o.sinFx=Q}   // sinFx ולא sin: הבדיקה של המתנקש מ-#475 כותבת ל-o.sin
     // לא מתנפלים יחד (moba-bot.js, 8.11, DANA, moba-difficulty): ב"קל" לכל היותר בוט אויב אחד מתמקד בשחקן כשהוא מעל 20% חיים.
     // שלושת גיבורי האויב לידך, החברים רחוק, ו-8 שניות של קרב. בודקים גם שמתחת ל-20% מותר לגמור (יותר מאחד)
     {const me=MB.me,G={max:0,low:0,n:0},keep=MB.u.map(u=>({u,x:u.x,y:u.y,hp:u.hp})),diff=MB.diff,mine=me.bot;
@@ -4717,6 +4731,8 @@ function worldBot(m,L,god){
      check(Object.keys(ks).every(k=>L[k]),'משחקי השאול: שומר בחיים: '+Object.keys(ks).map(k=>ks[k]+(L[k]?' ✓':' ✗')).join(', '))}
     {const G=mb.gang||{};check(!G.err&&G.n>0&&G.max===1&&G.low===0,'משחקי השאול: לא מתנפלים יחד ב"קל": '+(G.err||'הכי הרבה בוטים על השחקן בבת אחת: '+G.max+' (מותר 1), התמקדו בו '+G.n+' פריימים מתוך 240, ומתחת ל-20% '+(G.low===0?'מותר לגמור':'עדיין חסום!')))}
     {const R=mb.rigK||{};check(R.ok,'סקין מתמונות בגודל ×1.15 (rig.js): '+(R.err||R.n+' חלקים מצוירים'+(R.ok?', כל המידות סופיות ופי 1.15':', מידות לא נכונות')))}
+    {const Q=mb.sinFx||{},ks={vanish:'עשן בהיעלמות',mine:'מוטות לקבוצה שלו',foe:'לא לאויב',brk:'נעלמים בשבירה',dead:'נעלמים במוות',back:'CRIT סגול בגב',mark:'יהלום לסימן מוות'};
+     check(!Q.err&&Object.keys(ks).every(k=>Q[k]),'משחקי השאול: אפקטים של המתנקש: '+(Q.err||Object.keys(ks).map(k=>ks[k]+(Q[k]?' ✓':' ✗')).join(', ')))}
     {const Z=mb.arrow||{},ks={cast:'הטלה',pose:'שחרור קשת',circ:'בלי מעגל',trail:'פס',drawn:'מצויר',miss:'החטאה בלי הבזק',hit:'הבזק רק בפגיעה',fog:'אויב בערפל מוסתר',reset:'ניקוי'};
      check(!Z.err&&Object.keys(ks).every(k=>Z[k]),'משחקי השאול: חץ הברק: '+(Z.err||Object.keys(ks).map(k=>ks[k]+(Z[k]?' ✓':' ✗')).join(', ')))}
     {const F=mb.qaim||{},kn=Object.entries(F.kinds||{}),ok=kn.length>=4&&kn.every(([,v])=>v);

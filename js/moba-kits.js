@@ -92,21 +92,23 @@ function mbCast(u,slot,aim){
       for(const o of foesIn(z.x,z.y,z.r)){mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});o.st.wet=Math.max(o.st.wet,s.wet);if(mbCC(o,'stun',s.lift,u)){o.st.bub=s.lift;MBFX_N(o).bubFx=mbfxSk('sk_bubble',o.x,o.y,{follow:o,loop:true,dur:s.lift})}mbAnimHit(o,s.dt)}
       mbBoom(z.x,z.y,s.r,s.dt);mbfxBubble(z.x,z.y,z.r);mbfxSk('sk_bubble_halo',z.x,z.y,{r:z.r});mbAnimLand('bubble',z.x,z.y,s)},'bubble');break}
     case 'shadowstep':{const t=aim,g=t.r+u.r+6;   // מופיע מאחורי המטרה, פוגע, ומחזיק חיזוק לתקיפה הבאה
-      mbfxSk('sf_fog',u.x,u.y,{size:130});   // עשן בנקודת ההיעלמות
+      mbfxSk('sk_shadowstep',u.x,u.y);   // עשן סגול בנקודת ההיעלמות (#485)
       u.x=t.x;u.y=t.y;mbStep(u,-Math.cos(t.face)*g,-Math.sin(t.face)*g);   // דרך mbStep: לא בתוך מגדל, חומה או מחוץ למפה
       u.face=u.aim=Math.atan2(t.y-u.y,t.x-u.x);
-      mbDmg(u,t,s.dmg*k,s.dt,{big:t.k==='hero'});mbAnimHit(t,s.dt);mbfxLib('tr_slash_crimson',t.x,t.y-t.r-6,{rot:u.face,size:MBFXSK.tr_slash_crimson.size,add:true});
+      mbDmg(u,t,s.dmg*k,s.dt,{big:t.k==='hero'});mbAnimHit(t,s.dt);mbfxLib('tr_slash_amethyst',t.x,t.y-t.r-6,{rot:u.face,size:MBFXSK.tr_slash_amethyst.size,add:true});
       u.st.step={t:s.bonusT,dmg:s.bonus*k,slow:s.slow,slowT:s.slowT};
-      mbfxSk('sf_fog',u.x,u.y,{size:130});mbFeelReset(u);
+      mbfxSk('sk_shadowstep',u.x,u.y);mbFeelReset(u);
       u.cd[slot]=s.cd*(1-mbIb(u).cdr);if(u.me)sfxCast(s.dt||MBKIT[u.kit].dt);return true}   // הפנים כבר אל המטרה (לא אל הנקודה שממנה יצא)
     case 'vanish':{   // קפיצה הרחק מהאויב הקרוב (בלי אויב: אחורה) + כיסוי. תקיפה או סקיל מסיימים את הכיסוי
       const f=mbNearest(u,MB.u.filter(o=>o.k==='hero'&&o.team!==u.team&&!o.dead&&mbSeen(o,u.team)),400),a=f?Math.atan2(u.y-f.y,u.x-f.x):u.face+Math.PI;
-      mbfxSk('sf_fog',u.x,u.y,{size:180,alpha:0.9});
-      u.st.dash={vx:Math.cos(a),vy:Math.sin(a),sp:700,left:s.flip,end:()=>{}};
-      u.st.veil=s.t;u.st.veilSp=s.speed;u.st.veilCrit=s.crit;mbWord(u,'vanish');break}
+      mbfxSk('sk_vanish',u.x,u.y);   // טבעת עשן סגולה במקום ההיעלמות (#485)
+      u.st.dash={vx:Math.cos(a),vy:Math.sin(a),sp:700,left:s.flip,end:()=>mbfxSk('sk_shadowstep',u.x,u.y,{size:90})};   // נחיתה: נשיפת עשן קטנה
+      u.st.veil=s.t;u.st.veilSp=s.speed;u.st.veilCrit=s.crit;mbWord(u,'vanish');
+      if(MB.me&&u.team===MB.me.team){if(u.st.veilFx)fxStop(u.st.veilFx);u.st.veilFx=mbfxSk('st_veil',u.x,u.y,{follow:u,loop:true,dur:s.t})}   // מוטות לילך: רק הקבוצה שלו רואה (האויב לא, אושר ב-#485). נעצר ב-mbTick ו-mbStReset
+      break}
     case 'deathmark':{const t=aim;   // סימן על גיבור: נצבר ב-mbDmg, מתפוצץ ב-mbTick (moba.js)
       if(t.mark)fxStop(t.mark.fx);
-      t.mark={by:u,end:MB.t+s.t,share:s.share,endDmg:s.end*k,dmg:0,fx:mbfxSk('tg_skull',t.x,t.y,{follow:t,dy:-70,loop:true,dur:s.t})};
+      t.mark={by:u,end:MB.t+s.t,share:s.share,endDmg:s.end*k,dmg:0,fx:mbfxSk('sk_deathmark',t.x,t.y,{follow:t,dy:-70,loop:true,dur:s.t})};   // יהלום סגול מסתובב (#485)
       mbWord(t,'marked');break}
     case 'blizzard':{const p=pt();mbfxSk('sk_blizzard',p.x,p.y,{r:s.r,loop:true,dur:s.delay+0.4});mbZone(u,p.x,p.y,s.r,s.delay,z=>{for(const o of foesIn(z.x,z.y,z.r)){const wet=o.st.wet>0;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'stun',s.freeze*(wet?MOBA.combo.freeze:1),u)&&wet){o.st.wet=0;mbWord(o,'freeze');if(u.me)sfxCombo('freeze')}if(o.st.stun>0)o.st.ice=1;mbAnimHit(o,s.dt)}mbBoom(z.x,z.y,s.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt));mbfxSk('sk_blizzard_ice',z.x,z.y,{r:z.r});mbAnimLand('blizzard',z.x,z.y,s)},'blizzard');break}
   }
