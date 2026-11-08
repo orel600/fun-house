@@ -103,7 +103,7 @@ function mbXp(h,v){
     if(h.me){celebrate(h.x,h.y,'gear');mbBanner(h.lvl>=MOBA.ultAt?T('mb.ultReady'):T('mb.lvup',h.lvl),C.gold)}}
 }
 // כל המצבים חוזרים לאפס: במוות (mbDie, חדר ההימור) ובחזרה לחיים. מצב חדר ב-st מקבל מקום כאן, ולא נשאר תקוע אצל מי שמת (הבודק, 7.11)
-function mbStReset(u){Object.assign(u.st,{stun:0,taunt:0,tBy:null,slow:0,slowK:0,wet:0,armor:0,burn:0,rage:0,imm:0,ice:0,root:0,bub:0,dash:null,shield:0,haste:0,exh:0,pure:0,flee:0,step:null,veil:0,veilSp:1,veilCrit:0,poison:0})}
+function mbStReset(u){if(u.st&&u.st.veilFx)fxStop(u.st.veilFx);Object.assign(u.st,{veilFx:null,stun:0,taunt:0,tBy:null,slow:0,slowK:0,wet:0,armor:0,burn:0,rage:0,imm:0,ice:0,root:0,bub:0,dash:null,shield:0,haste:0,exh:0,pure:0,flee:0,step:null,veil:0,veilSp:1,veilCrit:0,poison:0})}
 const mbResp=t=>{const R=MOBA.respawn;return R.base+R.lvl*(t.lvl-1)**2+R.min*Math.max(0,MB.t/60-R.after)};   // רמה בריבוע: כמעט כלום בהתחלה, הרבה ברמה 6
 function mbDie(t,src){
   if(t.dead)return;t.hp=0;t.dead=true;const foe=1-t.team;mbItDie(t,src);mbMarkClear(t);   // סימן מוות על גופה: לא מתפוצץ   // זהב (moba-items.js)
@@ -158,11 +158,11 @@ function mbAttack(u,dt,t,A){
   const hero=u.k==='hero';let crit=hero&&Math.random()<(A.crit?A.crit.p:0)+(ib.critp||0);if(crit)d*=A.crit?A.crit.k:1.8;   // מכה קריטית (הצייד, וניבי הכסף): מספר גדול
   // מתנקש: פגיעה בגב ×backstab, נחשבת קריטי. מאחורי = u בצד ההפוך מהכיוון שהמטרה פונה אליו
   let back=false;
-  if(hero&&A.backstab&&(t.k==='hero'||t.k==='minion')){back=Math.cos(t.face)*(u.x-t.x)+Math.sin(t.face)*(u.y-t.y)<0;if(back&&!crit){d*=A.backstab;crit=true}}
+  if(hero&&A.backstab&&(t.k==='hero'||t.k==='minion')){back=Math.cos(t.face)*(u.x-t.x)+Math.sin(t.face)*(u.y-t.y)<0;if(back&&!crit){d*=A.backstab;crit=true}if(back)mbfxLib('dmg_backstab',t.x,t.y-t.r-40,{size:MBFXSK.dmg_backstab.size,add:true})}   // CRIT סגול במכה בגב (#485)
   if(hero&&u.st.veil>0){if(u.st.veilCrit&&!crit){d*=u.st.veilCrit;crit=true}u.st.veil=0;u.st.veilSp=1;u.st.veilCrit=0}   // היעלמות: תקיפה שוברת את הכיסוי, והיא קריטית
   const step=hero&&u.st.step&&u.st.step.t>0?u.st.step:null;   // צעד צל: החיזוק לתקיפה הבאה
   if(step){d+=step.dmg;mbSlow(t,step.slow,step.slowT);u.st.step=null}
-  if(back||step)mbfxLib('tr_slash_crimson',t.x,t.y-t.r-6,{rot:u.aim,size:MBFXSK.tr_slash_crimson.size,add:true});
+  if(back||step)mbfxLib('tr_slash_amethyst',t.x,t.y-t.r-6,{rot:u.aim,size:MBFXSK.tr_slash_amethyst.size,add:true});
   if(A.shot){const s={kind:'home',x:u.x,y:u.y-14,tgt:t,team:u.team,src:u,dmg:d,dt:A.dt,sp:MOBA.shot,crit};MB.shots.push(s);mbfxShot(s,u)}   // חץ, כדור או יריית חייל שעפים (moba-fx.js)
   else{mbfxImpact(u,t,A.dt,crit,true);const got=mbDmg(u,t,d,A.dt,{crit});const lc=(A.leech||0)+ib.leech;if(lc){const h0=u.hp;u.hp=Math.min(u.max,u.hp+got*lc);mbfxHeal(u,u.hp-h0)}if(A.slow)mbSlow(t,A.slow.k,A.slow.t)}
   if(u.me){if(A.shot){P.gn.t=0.3;sfx('shoot')}else{P.sw.anim=0.2;P.sw.ang=u.aim;sfx('hit')}}
@@ -270,6 +270,7 @@ function mobaUpdate(dt){
 }
 function mbTick(u,dt){
   const s=u.st,hero=u.k==='hero';
+  if(s.veilFx&&!(s.veil>0)){fxStop(s.veilFx);s.veilFx=null}   // הכיסוי נשבר (תקיפה, סקיל, זמן): המוטות נעלמים
   if(s.stun>0){s.stun-=dt;if(s.stun<=0){s.ice=0;if(hero)s.imm=MOBA.ccImmune}}
   else if(s.taunt>0){s.taunt-=dt;if(s.taunt<=0||!s.tBy||s.tBy.dead){s.taunt=0;if(hero)s.imm=MOBA.ccImmune}}
   else if(s.imm>0)s.imm-=dt;
@@ -280,7 +281,7 @@ function mbTick(u,dt){
   if(s.step){s.step.t-=dt;if(s.step.t<=0)s.step=null}   // החיזוק של צעד צל פג
   if(s.burn>0){s.burn-=dt;u.hp-=s.burnD*dt;if(u.hp<=0)mbDie(u,s.burnBy)}
   if(u.mark&&!u.dead&&MB.t>=u.mark.end){const m=u.mark;mbMarkClear(u);   // סימן מוות מתפוצץ, גם אם המתנקש כבר מת (ההריגה שלו)
-    mbDmg(m.by,u,m.endDmg+m.dmg*m.share,'physical',{big:true});mbfxLib('hit_heavy',u.x,u.y-20,{size:MBFXSK.hit_heavy.size,add:true});
+    mbDmg(m.by,u,m.endDmg+m.dmg*m.share,'physical',{big:true});mbfxLib('sk_deathmark_burst',u.x,u.y-20,{size:MBFXSK.sk_deathmark_burst.size,add:true});   // פיצוץ סגול של סימן המוות (#485)
     if(u.dead&&m.by.kit==='assassin')m.by.cd.s1=0}   // הריגה: צעד צל נטען, כדי לצאת
   u.flash-=dt;
 }
