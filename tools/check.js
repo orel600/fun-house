@@ -3854,7 +3854,7 @@ function worldBot(m,L,god){
      me.gold=c;mobaHud();L.full=p()===1&&q.classList.contains('ok');me.gold=0;me.x=hx;me.y=hy;mbFeelReset(me);mobaHud();o.life=L}
     // כפתור התקיפה (moba-atk.js, אוראל 8.11, כמו ב-MLBB): הכי גדול ולא נוגע בסקילים, נגיעה בלי אף אחד בטווח מקרבת, גרירה אל אויב נועלת, הנעול קודם,
     // הנעילה נגמרת במוות ובמרחק, ✕ מבטל, הטעינה על הכפתור, ורווח במקלדת
-    {const me=MB.me,K={},hx=me.x,hy=me.y,A=MBKIT[me.kit].atk,keep=MB.u,b=$('mbAtk'),cv=cvs.getBoundingClientRect();
+    {const me=MB.me,K={},hx=me.x,hy=me.y,cam={x:S.cam.x,y:S.cam.y},A=MBKIT[me.kit].atk,keep=MB.u,b=$('mbAtk'),cv=cvs.getBoundingClientRect();   // cam: המצלמה חוזרת בסוף, אחרת הבדיקות שאחרי רואות אפקטים מחוץ למסך
      const scr=o=>({x:cv.left+((o.x-S.cam.x)/W+0.5)*cv.width,y:cv.top+((o.y-S.cam.y)/H+0.5)*cv.height});
      const pe=(el,t,x,y)=>(el||window).dispatchEvent(new PointerEvent(t,{bubbles:true,cancelable:true,pointerId:9,clientX:x,clientY:y}));
      try{mobaHud();K.btn=!!b&&!!b.offsetParent;const sk=[...document.querySelectorAll('#mbSk [data-sk]')].filter(e=>e.offsetParent),br=b.getBoundingClientRect();
@@ -3874,7 +3874,7 @@ function worldBot(m,L,god){
       me.atkT=A.cd/2;mobaHud();K.cd=Math.abs(parseFloat(b.style.getPropertyValue('--cd'))-0.5)<0.02;me.atkT=0;
       const t0=MB.atkTaps||0;keys.Space=true;fr(8);keys.Space=false;fr(2);K.space=(MB.atkTaps||0)===t0+1;
      }catch(err){K.err=String(err&&err.stack||err)}
-     MB.u=keep;MB.lock=MB.atkGo=null;keys.Space=false;joy=null;me.x=hx;me.y=hy;mbFeelReset(me);mobaHud();o.atk=K}
+     MB.u=keep;MB.lock=MB.atkGo=null;keys.Space=false;joy=null;me.x=hx;me.y=hy;S.cam.x=cam.x;S.cam.y=cam.y;mbFeelReset(me);mobaHud();o.atk=K}
     // סקין מתמונות עם גודל (rig.js, pose עם k): כל drawImage מקבל מידות סופיות ופי k. תמונה מזויפת "טעונה", ו-drawImage רק נרשם
     {const R={},src='skins/__t.png',dI=ctx.drawImage,sizes=[];SKINS.__t={};for(const n of ['head','body','armF','armB','legF','legB','sword'])SKINS.__t[n]={src,w:10,h:12};
      skinImgs[src]={complete:true,naturalWidth:10};ctx.drawImage=function(im,x,y,w,h){sizes.push(w,h)};
