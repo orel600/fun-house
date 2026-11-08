@@ -1,6 +1,6 @@
 # קונספט: קושי במשחקי השאול (DANA, 8.11.2026)
 
-**מצב:** לאישור של אוראל. מבוסס על 5 סבבים של QUINN (כ-2,000 משחקים מדומים). מספר אחד (`buy` ב"קל") ממתין לבדיקה אחרונה.
+**מצב:** סופי, לאישור של אוראל. מבוסס על 7 סבבים של QUINN (כ-2,500 משחקים מדומים). כל המספרים נבדקו.
 
 ## הבעיה
 
@@ -27,9 +27,20 @@
 - **למה זה הוגן:** זה רק המוח של האויב, בדיוק כמו שאר רמות הקושי. בלי חיים ובלי נזק (כוח שוויוני). החברים שלך לא מושפעים.
 - **מה זה עושה (QUINN):** ב"קל" השחקן נמצא במוות 22% מהזמן במקום 29%, ופחות מפעם אחת לפני 1:00. ב"קשה" עם שחקן במוח של "קל": 15% ← 28%, קרוב ליעד 35%. בבוטים מול בוטים ב"קשה": 45%, סימטרי.
 
-### 2. בוטי האויב ב"קל" קונים לאט יותר
+### 2. בוטי האויב ב"קל" קונים פחות חפצים
 
-`MBBOT.diff.easy.buy`: מ-1.5 ל-**2.5** (ממתין לבדיקה אחרונה של QUINN, שמשווה בין 2.5 ל-4). זה המספר הכי משפיע על שחקן חלש ב"קל", וזה נתון אחד בלבד. היעד: שחקן פשוט מנצח לפחות 35% ב"קל", ושחקן טוב לא יותר מ-90%, כדי שזה יהיה סלחני ועדיין לא ניצחון חינם.
+ב"קל" כל בוט של האויב **מפסיק לקנות אחרי 3 חפצים** (המגפיים נחשבים), וקונה לאט יותר (`MBBOT.diff.easy.buy` מ-1.5 ל-**2.5**). שדה חדש: `MBBOT.diff[d].items`, שהוא 3 ב"קל" ובלי הגבלה ב"רגיל" וב"קשה". זו החלטת קנייה של הבוט, כמו `buy` שכבר קיים, ולכן זה נשאר בגדר "המוח".
+- **למה לא רק קצב קנייה:** QUINN מצא שזה כמעט לא משנה, כי הזהב נאסף והבוט קונה מאוחר יותר יותר בבת אחת. וגם לא פחות זהב: זה כבר שינוי בכלכלה ושובר את "כוח שוויוני".
+- **מה זה עושה (QUINN, 40 משחקים לכל מדידה, ב"קל" עם כלל 1):**
+
+| | היום | הגבלה 2 | הגבלה 3 | **הגבלה 3 וקנייה 2.5** |
+|---|---|---|---|---|
+| שחקן פשוט מנצח | 13% | 57% | 28% | **35%** |
+| שחקן במוח של "קל" מנצח | 73% | 95% | 90% | **80%** |
+| זמן במוות (שחקן פשוט) | 29% | 23% | 26% | **26%** |
+| אורך משחק (שחקן פשוט) | 10:42 | 10:29 | 10:52 | **11:01** |
+
+"קל" נהיה סלחני לשחקן חלש, ועדיין לא ניצחון חינם לשחקן טוב.
 
 ### 3. תיקון קטן: תיקו אמיתי
 
@@ -80,7 +91,10 @@ Branch: fix/moba-difficulty from fresh main (git fetch && git merge origin/main)
   (mbAutoTarget excluding MB.me). Hit MB.me only if he is the only target in range.
 - Friendly bots are unchanged. The cap protects only MB.me, also when a bot plays MB.me (that is how QUINN measured it).
 
-2) EASY BUY SPEED: MBBOT.diff.easy.buy 1.5 -> <FINAL, DANA will confirm: 2.5 or 4>.
+2) EASY SHOPPING (foe bots only): MBBOT.diff.easy.buy 1.5 -> 2.5, and a new field items in MBBOT.diff:
+   easy 3, normal and hard Infinity (or omit = no cap). In js/moba-items.js (bot buying, ~line 80), a foe bot
+   (u.team!==MB.me.team) with items.length >= mbFoe().items stops buying (boots count as an item). Friendly bots unchanged.
+   QUINN verified this exact package on easy with the gang cap on: dumb player 35%, easy-brain player 80%, avg 10:05-11:01.
 
 3) FAIR END (js/moba.js, timeout end ~line 265): more structures left wins. Tie -> more kills (MB.score). Still tie -> draw:
   the existing end window with a "Draw" title (new lang.js key, en only, e.g. 'mb.draw':'Draw'). Check that nothing
