@@ -2116,6 +2116,24 @@ function worldBot(m,L,god){
   check(!afl.err&&afl.hit===35&&afl.flash===60&&afl.lean&&afl.stack===35&&afl.perSec>0&&afl.perSec<=4&&afl.budget&&afl.capCut>=7&&afl.capCut<=8&&afl.calm&&afl.press===false&&afl.buf&&afl.fired&&afl.cast&&afl.ramp&&afl.rampOnce&&afl.world,
     'תחושת קרב בזירה: '+(afl.err||'עצירה '+afl.hit+'ms, הבזק '+afl.flash+'ms, נטייה אחורה '+(afl.lean?'✓':'✗')+', בלי הצטברות ('+afl.stack+'ms), '+afl.perSec+' עצירות בשנייה (מרווח), תקרה לשנייה '+(afl.budget?'✓':'✗')+', עצירה ארוכה של מערכת אחרת נחתכה אחרי '+afl.capCut+' פריימים של 20ms'+', הפחתת תנועה '+(afl.calm?'מכבה':'לא מכבה!')+
       ', חוצץ '+(afl.buf&&afl.fired?'✓':'✗')+', תנועת הטלה '+(afl.cast?'✓':'✗')+', Rampage '+(afl.ramp?(afl.rampOnce?'פעם אחת לרצף':'חוזר!'):'✗')+', בעולם '+(afl.world?'כלום':'משהו!')));
+  // רגעים לסקילי הזירה (MLBB 1.1, skill-anim.js SKANIM.mo): רק מה שהיה חסר לפי טבלת הפערים. בתוך perCast, ו"פחות אפקטים" מוריד את הקישוטים
+  const smo=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},fl=SAVE.fxLess;
+    try{startRun();S.mode='play';enemies=[];P.x=0;P.y=0;S.cam.x=0;S.cam.y=0;SAVE.fxLess=false;
+      for(let i=0;i<6;i++){const e=addEnemy('grunt',60+i*25,(i%2?40:-40));e.hp=e.max=1e9;e.elite=false}
+      const ids=['quake','splash','frost','flame','zap','comet','lance','bloom'];S.sk.ids=ids.slice();S.sk.cd=ids.map(()=>0);
+      const got=id=>{FXLIB.list.length=0;S.sk.cd=ids.map(()=>0);const ok=skillUse(id);return {ok,ids:FXLIB.list.map(f=>f.id),hold:FXLIB.list.filter(f=>f.hold>0).map(f=>f.id),n:SKANIMS.n}};
+      const R={};for(const id of ids)R[id]=got(id);o.cap=ids.every(id=>R[id].n<=SKANIM.perCast);o.n=ids.map(id=>id+':'+R[id].n).join(' ');
+      o.quake=R.quake.ids.includes('step_dust')&&R.quake.hold.includes('sk_anvil');o.splash=R.splash.ids.includes('wt_wave');o.frost=R.frost.hold.includes('whit_ice');
+      o.comet=R.comet.ids.some(i=>i==='hit_fire');o.lance=R.lance.hold.includes('sk_pierce_ray');o.bloom=R.bloom.ids.includes('petals');
+      FXLIB.list.length=0;for(let i=0;i<40;i++)skillsUpdate(0.05);o.crater=FXLIB.list.some(f=>f.id==='whit_fire'&&f.hold>0);   // השביט נחת
+      P.hp=P.maxHp*0.5;const f0=floats.length;for(let i=0;i<20;i++)skillsUpdate(0.05);o.heal=floats.slice(f0).some(f=>/^\+\d/.test(f.txt)&&f.col===SKANIM.mo.bloom.healCol);
+      enemies=[];for(let i=0;i<150;i++){const e=addEnemy('grunt',(i%15-7)*4,(Math.floor(i/15)-5)*4);e.hp=e.max=1e9;e.elite=false}S.shake=0;got('quake');   // 150 בטווח: הרעידה עד max, לא 8 של הבוס
+      o.qshake=(typeof calmOn==='function'&&calmOn())||S.shake===SKANIM.mo.quake.shake.max&&SKANIM.mo.quake.shake.max<ARFEEL.shake.big;o.qsh=S.shake;enemies=[];
+      SAVE.fxLess=true;const lite=got('quake');o.less=!lite.ids.includes('step_dust')&&!lite.hold.length;
+    }catch(err){o.err=String(err&&err.stack||err)}
+    SAVE.fxLess=fl;FXLIB.list.length=0;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  {const ks={quake:'רעידה: אבק וסדקים שנשארים',splash:'התזה: טבעת גל',frost:'כפור שנשאר',comet:'שביט: שובל',crater:'מכתש',lance:'פס קרח',bloom:'עלי כותרת',heal:'מספר ריפוי ירוק',cap:'בתוך perCast',less:'פחות אפקטים',qshake:'רעידה ב-150 אויבים עד '+(smo.qsh??'?')+' (בוס 8)'};
+   check(!smo.err&&Object.keys(ks).every(k=>smo[k]),'רגעים לסקילי הזירה: '+(smo.err||Object.keys(ks).map(k=>ks[k]+(smo[k]?' ✓':' ✗')).join(', ')+' ('+smo.n+')'))}
   // אויבים ישנים (arenaZz ב-arenas.js): רחוק מ-wake.r הולכים לאט ומכשף לא יורה. מתעוררים מקרבה, ממכה, מסוף הגל ומהבוס. קפיצה של arena-load לא מעירה, והישנים נספרים בגל
   const zz=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},at=window.attack,r0=ARENAS.gauntlet.wake.r,lc0=ARENAS.gauntlet.lastCall;
     try{window.attack=()=>{};startRun();const A=ARENAS.gauntlet,Z=A.wake,R=Z.r*Math.max(W,H),dt=1/30;waveStart(0);const w=S.wv;w.q=[];enemies=[];eb.length=0;P.x=P.y=0;
