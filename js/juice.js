@@ -59,7 +59,7 @@ const jSnd=(m,crit)=>!juiceOn()?1:(crit?JUICE.snd.crit:m>1?JUICE.snd.weak:1)*(1+
 function juiceHit(e,d,m,crit,t,ang){
   if(!juiceOn())return false;
   const J=juice(),K=JUICE;
-  e.flash=Math.max(e.flash||0,K.flash);e.jT=jNow();
+  e.flash=Math.max(e.flash||0,K.flash);e.jT=jNow();hfHit(e,m,crit,ang);   // הגוף נוטה אחורה (hitfeel.js)
   if(!e.isBoss&&!e.node){const kb=K.push*(m>1?1.4:1)*(crit?1.5:1)/(e.big||1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   if(crit){jStop(K.stop.crit);if(!e.node)S.shake=Math.max(S.shake,K.shake.crit)}
   else if(m>=1)jStop(m>1?K.stop.weak:K.stop.hit,false,true);   // מכה חלשה (עמיד) לא עוצרת: היא לא אמורה להרגיש חזקה

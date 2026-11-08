@@ -1326,6 +1326,10 @@ function worldBot(m,L,god){
       damage(e,10,'sword',0,'fire');const J=juice();r.stop=S.hitstop>0&&S.hitstop<=JUICE.stop.weak+1e-6;r.fl=J.fl.length===1;r.flash=e.flash>=JUICE.flash-1e-6;r.kb=e.kx>0;r.parts=J.p.length>0;r.num=J.n.length===1&&J.n[0].weak==='fire';
       r.squash=(e.jT=jNow()-JUICE.squash.t/2,juiceSquash(e)>0);
       S.hitstop=0;damage(e,10,'sword',0,'fire');r.stopGap=!(S.hitstop>0);   // מכה שנייה מיד: בלי עצירה (gapHit)
+      // תחושת מכה (hitfeel.js): האויב נוטה ונגמר, והגיבור נוטה לאחור בהכנה, בלי לשנות את זמן הקירור
+      {const W=HITFEEL.where.arena,w0=P.weapon,t0=P.sw.t;HITFEEL.where.arena=true;e.hfT=0;hfHit(e,1.5,false,0);const on=e.hfT>0;   // ישירות ולא דרך damage: בלי rand, כדי לא להזיז את ה-seed לבדיקות שאחרי
+        e.hfT=jNow()-e.hfD*0.2;r.hfLean=on&&hfFoe(e)>0;e.hfT=jNow()-e.hfD-0.01;r.hfEnd=hfFoe(e)===0&&!e.hfT;
+        P.weapon='sword';P.sw.t=0.03;r.hfWind=hfHero().lean<0&&P.sw.t===0.03;P.sw.t=t0;P.weapon=w0;HITFEEL.where.arena=W;r.hfN=HF.n.wind+'/'+HF.n.foe}
       HITFX.crit=1;S.hitstop=0;J.last=-9;damage(e,10,'sword',0,'ice');const N=J.n[J.n.length-1];r.crit=!!N&&N.crit&&N.col===JUICE.nums.critCol&&S.hitstop>=JUICE.stop.crit-1e-6;r.shake=S.shake>0;HITFX.crit=0;
       e.elite=true;S.hitstop=0;J.last=jNow();juiceKill(e);r.poof=J.poofs.length===1&&S.hitstop>=JUICE.stop.big-1e-6;
       // מכה עם הכנה (strike.js): נעצר ומתכונן, לא פוגע לפני הסוף, פוגע כשנשארים בטווח, ולא פוגע כשמתרחקים (התחמקות)
@@ -4338,6 +4342,7 @@ function worldBot(m,L,god){
   check(fl.on&&fl.off&&fl.slow&&fl.prop&&fl.draw===true,'הנודד עם החליל: '+[fl.on?'נדלק':'לא נדלק',fl.prop?'חליל ביד':'אין חליל ביד',fl.slow?'אפקט סקיל ארוך יותר':'אפקט סקיל באורך רגיל',
     fl.draw===true?'תווים וחלילים מצוירים':'ציור נכשל: '+fl.draw,fl.off?'כבה בחזרה':'נשאר דלוק'].join(', '));
   check(jc.swStart&&jc.swEarly&&jc.swHit&&jc.swDodge,'אויבים שנלחמים בחזרה (strike.js): '+(jc.swStart?'נעצר ומתכונן':'לא מתכונן')+', '+(jc.swEarly?'לא פוגע באמצע ההכנה':'פוגע לפני הזמן')+', '+(jc.swHit?'מכה בסוף':'אין מכה')+', '+(jc.swDodge?'התרחקות = התחמקות':'פוגע גם כשהתרחקת'));
+  check(!jc.err&&jc.hfLean&&jc.hfEnd&&jc.hfWind,'תחושת מכה (hitfeel.js): '+(jc.hfLean?'האויב נוטה אחורה':'האויב לא נוטה')+', '+(jc.hfEnd?'ונגמר':'לא נגמר')+', '+(jc.hfWind?'הגיבור מתכונן לפני המכה':'בלי הכנה')+' (הכנות/נטיות: '+jc.hfN+')');
   check(jc.resist&&jc.tip&&jc.tipOnce,'עמיד במכה: '+(jc.resist?'"🛡 חסין" באפור עם סמל הסוג':'עדיין מספר')+', '+(jc.tip?'טיפ בפיד עם סוג טוב יותר':'אין טיפ')+(jc.tipOnce?', פעם אחת':', חוזר'));
   check(!jc.err&&jc.grow&&jc.streak&&jc.stop&&jc.stopGap&&jc.fl&&jc.swing&&jc.flash&&jc.kb&&jc.parts&&jc.num&&jc.squash&&jc.crit&&jc.shake&&jc.poof&&jc.cap&&jc.draw===true&&jc.arenaOff&&jc.arOn&&jc.arSrc&&jc.arCap&&jc.arStop&&jc.arPoof&&jc.arLess,'אפקטים של קרב: '+(jc.err||[jc.grow?'נשק שגדל':'נשק לא גדל',jc.streak?'רצף הריגות':'בלי רצף',jc.stop?'עצירה קטנה במכה':'בלי עצירה במכה',jc.stopGap?'לא עוצר ברצף':'עוצר בכל מכה ברצף',jc.fl?'הבזק פגיעה':'בלי הבזק פגיעה',jc.swing?'שובל הנפה':'בלי שובל הנפה',jc.flash?'הבזק':'בלי הבזק',jc.kb?'הדיפה':'בלי הדיפה',jc.parts?'ניצוצות':'בלי ניצוצות',jc.num?'מספר עם סמל חולשה':'אין מספר',jc.squash?'מעיכה':'בלי מעיכה',
     jc.crit?'קריטי צהוב':'קריטי רגיל',jc.shake?'רעידה':'בלי רעידה',jc.poof?'פוף בהריגה':'בלי פוף',jc.cap?'בתקרה':'מעל התקרה',jc.draw===true?'מצויר':'ציור נכשל: '+jc.draw,'בזירה: '+(jc.arenaOff&&jc.arOn?'גרסה קלה דולקת':'לא כמו שצריך')+(jc.arSrc?'':', גם מחיית מחמד או מברק שקפץ')+(jc.arCap?', עם 250 אויבים '+jc.arN+' אפקטים בפריים (עד '+jc.arMax+')':', מעל התקרה ('+jc.arN+')')+(jc.arStop?'':', עוצר בגל גדול')+(jc.arPoof?', פוף רק לאלוף':', פוף לא נכון')+(jc.arLess?'':', דולק גם ב"פחות אפקטים"')].join(', ')));
