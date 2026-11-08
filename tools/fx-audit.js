@@ -30,6 +30,7 @@ for(const f of jsFiles){
     const where=f+':'+(i+1);
     // מחרוזות קבועות: 'x', "x", `x` בלי ${}
     for(const m of line.matchAll(/(['"`])([a-z][a-z0-9_]*)\1/g)){const id=m[2];
+      if(/\bsfx\(\s*$/.test(line.slice(0,m.index)))continue;   // sfx('ult_ready'): מזהה של צליל (sounds-data.js), לא של אפקט (QUINN, 8.11)
       if(has.has(id)){(used[id]=used[id]||[]).push(where);continue}
       if(idRe.test(id)&&prefixes.has(id.split('_')[0]))suspects.push({id,where,line:line.trim().slice(0,120)})}
     // מזהה שנבנה בקוד: 'sk_'+x, "hit_"+t, `wx_${v}`, 'tr_spin_'+c. הקידומת נרשמת, ומה שמתחיל בה "אולי בשימוש"
