@@ -181,6 +181,9 @@ function botStep({god,en}){
     else{
       const n=nearest(220);
       if(n){tx=n.x;ty=n.y;flee=true}
+      else if(S.wv&&S.wv.phase==='fight'){   // הזירה (arenas.js): אף אחד לא קרוב, אז כמו שחקן הולכים לאויב הקרוב בגל (רחוקים ישנים ומתקרבים לאט)
+        const e=enemies.reduce((b,e)=>e.dead||e.wv==null||b&&Math.hypot(b.x-P.x,b.y-P.y)<=Math.hypot(e.x-P.x,e.y-P.y)?b:e,null);
+        if(e){tx=e.x;ty=e.y;stop=P.weapon==='sword'?e.r+40:180}}
       if(wHeld().length>1&&(document.getElementById('swap').classList.contains('hint')||S.t-m.swapAt>10)){swapWeapon();L.swaps++;m.swapAt=S.t}
     }
   }
@@ -2048,9 +2051,9 @@ function worldBot(m,L,god){
   const gr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={bn:[]},ob=window.banner;
     try{window.banner=(t,c)=>{o.bn.push(t);return ob(t,c)};startRun();const A=ARENAS.gauntlet,dt=1/30;o.inv=Math.round(P.inv*10)/10;o.gap=Math.round((S.wv.until-S.t)*10)/10;
       const x0=P.x;joy={id:-1,ox:0,oy:0,dx:1,dy:0};for(let t=0;t<0.5;t+=dt)update(dt);joy=null;o.moved=Math.round(P.x-x0);
-      const hp0=P.hp;let first=null;
-      for(let t=0.5;t<A.firstGap+1;t+=dt){if(S.mode!=='play'){S.mode='play';S.pendingLv=0}update(dt);if(first==null&&enemies.some(e=>!e.dead&&e.wv===0))first=Math.round(S.t*10)/10;if(S.t<A.inv-0.1)hurt(5)}
-      o.first=first;o.hpKept=P.hp>=hp0;o.cd=o.bn.filter(t=>/wakes/i.test(t)).map(t=>t.replace(/\D/g,'')).join(',');
+      const hp0=P.hp;let first=null,hpLow=hp0;
+      for(let t=0.5;t<A.firstGap+1;t+=dt){if(S.mode!=='play'){S.mode='play';S.pendingLv=0}update(dt);if(first==null&&enemies.some(e=>!e.dead&&e.wv===0))first=Math.round(S.t*10)/10;if(S.t<A.inv-0.1){hurt(5);hpLow=Math.min(hpLow,P.hp)}}   // רק בזמן החסינות
+      o.first=first;o.hpKept=hpLow>=hp0;o.cd=o.bn.filter(t=>/wakes/i.test(t)).map(t=>t.replace(/\D/g,'')).join(',');
     }catch(err){o.err=String(err&&err.stack||err)}
     window.banner=ob;joy=null;enemies=[];document.getElementById('banner').textContent='';SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(!gr.err&&gr.inv===3&&gr.gap===6&&gr.moved>20&&gr.hpKept&&gr.first!=null&&gr.first>=5.9&&gr.cd==='3,2,1',
