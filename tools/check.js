@@ -183,8 +183,10 @@ function botStep({god,en}){
       L.nodeSeen??=at;useWeapon('sword');tx=n.x;ty=n.y;
     }
     else{
-      const n=nearest(220);
-      if(n){tx=n.x;ty=n.y;flee=true}
+      // בזירה עם חרב נצמדים לאויב הקרוב, ובורחים רק עם קשת או בחיים נמוכים (QUINN, 8.11: הבריחה מכל אויב ב-220 מתחה את הגלים, והבוס לא הגיע עד 600 שניות)
+      const n=nearest(220),melee=S.wv&&S.wv.phase==='fight'&&P.weapon==='sword'&&P.hp>P.maxHp*0.35;
+      if(n&&melee){tx=n.x;ty=n.y;stop=n.r+30}
+      else if(n){tx=n.x;ty=n.y;flee=true}
       else if(S.wv&&S.wv.phase==='fight'){   // הזירה (arenas.js): אף אחד לא קרוב, אז כמו שחקן הולכים לאויב הקרוב בגל (רחוקים ישנים ומתקרבים לאט)
         const e=enemies.reduce((b,e)=>e.dead||e.wv==null||b&&Math.hypot(b.x-P.x,b.y-P.y)<=Math.hypot(e.x-P.x,e.y-P.y)?b:e,null);
         if(e){tx=e.x;ty=e.y;stop=P.weapon==='sword'?e.r+40:180}}
@@ -4107,8 +4109,9 @@ function worldBot(m,L,god){
     {const r={},t0=MB.t,me=MB.me,red=mbHeroes(1)[0],blue=mbHeroes(0).find(h=>!h.me),d0=MB.diff;
      MB.diff='easy';const e=mbMind(red),a=mbMind(blue);MB.diff='hard';const h=mbMind(red);MB.diff=d0;
      r.diff=e.think>h.think&&e.skill>h.skill&&a===MBBOT.diff.hard;   // האויבים לפי הקושי, החברים תמיד אותו דבר. חיים ונזק לא תלויים בזה (MBKIT)
-     const tw=MB.u.find(b=>b.k==='tower'&&b.team===1&&Math.abs(b.x)===MOBA.towers[0]&&!b.dead),hp0=tw.hp;
-     MB.t=10;const early=mbDmg(null,tw,100,'physical');MB.t=MOBA.shield.t+5;const late=mbDmg(null,tw,100,'physical');MB.t=t0;tw.hp=hp0;
+     // המגדל כמו שמשחק הבוטים השאיר אותו (QUINN, 8.11): עם 50 חיים או פחות המכה הראשונה הפילה אותו והבדיקה נכשלה, ומגדל שכבר נפל לא נמצא. מודדים על מגדל מלא, ומחזירים חיים, מקסימום ומוות
+     const tw=MB.u.find(b=>b.k==='tower'&&b.team===1&&Math.abs(b.x)===MOBA.towers[0]),tw0={hp:tw.hp,max:tw.max,dead:tw.dead};tw.dead=false;tw.hp=tw.max=1e6;
+     MB.t=10;const early=mbDmg(null,tw,100,'physical');MB.t=MOBA.shield.t+5;const late=mbDmg(null,tw,100,'physical');MB.t=t0;Object.assign(tw,tw0);
      r.shield=Math.abs(early-100*(1-MOBA.shield.k))<0.01&&Math.abs(late-100)<0.01;
      const bk=mbHeroes(1).map(x=>x.gold||0);mbHeroes(1).forEach(x=>x.gold=(x.gold||0)+3000);   // בלי זהב קאמבק (moba-gamble.js מחליף אותו): הריגה של מוביל משלמת בדיוק כמו כל הריגה
      const victim=mbUnit({k:'hero',kit:red.kit,team:1,hp:10,max:10,lvl:1,hitBy:new Map(),deaths:0,home:red.home});const g0=blue.gold||0;
