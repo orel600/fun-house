@@ -421,7 +421,7 @@ function heroLook(){
   let B=sk?LOOK3D[HEROES.skins[sk].look]:PILOT3D&&heroId()==='warrior'?LOOK3D.pilotHero:LOOK3D['hero_'+heroId()];
   if(B&&!m3dNeed(B.model))B=LOOK3D['hero_'+heroId()];   // דמות אישית שעוד נטענת (m3d.js): לרגע הגיבור של המחלקה
   // במפתח: המודל שמוצג בפועל, הנשק שביד, ו-M3D.hv (נטענו דמות או חפץ, m3d.js), כדי שהגיבור ייבנה מחדש רק כשמשהו שלו מוכן
-  const ck=heroId()+'|'+wid+'|'+PILOT3D+'|'+sk+'|'+(B&&B.model)+'|'+(it?itemModel(gBase(wid),it):'')+'|'+M3D.hv+(GEAR3D.on?'|'+gearWorn().join():'');if(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
+  const ck=heroId()+'|'+wid+'|'+PILOT3D+'|'+sk+'|'+(B&&B.model)+'|'+(it?itemModel(gBase(wid),it):'')+'|'+M3D.hv+(GEAR3D.on?'|'+gearWorn().join():'')+gtKey();if(R3D._hl&&R3D._hl.ck===ck)return R3D._hl;
   const L=Object.assign({},LOOK3D.player,B);
   L.props={};L.anim=Object.assign({},L.anim);L.ck=ck;
   for(const w of ['sword','gun']){
@@ -430,6 +430,7 @@ function heroLook(){
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
   if(GEAR3D.on)gear3dLook(L,wid);
+  gtProps(L);   // כלי איסוף ביד בעולם (gtool.js)
   {const th=heroTheme();if(th&&th.grip){delete L.props.shield;th.grip(L)}}   // דמות אישית: חפץ ביד במקום הנשק, ובלי מגן ביד השנייה (החליל ב-flute.js)
   return R3D._hl=L;
 }
@@ -509,6 +510,7 @@ function syncPlayer(dt){
   armor3d(a);   // שריון לפי מחלקה (armor.js)
   const sword=P.weapon==='sword';
   for(const k in a.props)a.props[k].visible=k==='shield'?sword:(k==='sword')===sword;
+  gtShow3d(a);   // מכה במקור: הכלי ביד במקום הנשק (gtool.js)
   const st=a.st||(a.st={anim:0,gt:0,inv:0,mode:''});
   if(S.mode==='over'){if(st.mode!=='over'){st.mode='over';a.base=null;a.mixer.stopAllAction();once(a,S.won?L.anim.win:S.mb&&MB&&MB.draw?L.anim.idle:L.anim.die,1.2,true)}}   // תיקו במשחקי השאול (MB.draw): עומד, לא נופל
   else{

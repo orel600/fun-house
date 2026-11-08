@@ -359,8 +359,9 @@ function drawVillageScreen(ox,oy){
     // השם: רק כשקרובים. המבנה שלידו: 👆 וזהב, אפשר לגעת
     if(here||d<near)vSign(x,y,(here?'👆 ':'')+T('vil.'+k)+(L?' · '+L:''),here?C.gold:L?C.chalk:C.dim,here?100:40-d/20);
     // תג מעליו: מה מחכה שם, מכל מרחק. תוצרת לאסוף קודמת לשדרוג אפשרי
-    const n=vStock(k);
-    if(n>0){const r=Object.keys(VILLAGE.b[k].make)[0];vSign(x,y-B.r*1.6,'✓ '+resIcon(r)+' '+n,C.gold,60)}
+    const n=vStock(k),gs=k==='forge'&&gtSign();   // שעון של כלי איסוף (gtool.js)
+    if(gs)vSign(x,y-B.r*1.6,gs,C.gold,58);
+    else if(n>0){const r=Object.keys(VILLAGE.b[k].make)[0];vSign(x,y-B.r*1.6,'✓ '+resIcon(r)+' '+n,C.gold,60)}
     else if(!vBlock(k))vSign(x,y-B.r*1.6,'⬆ '+T(L?'vil.tagUp':'vil.tagBuild'),C.gold,55);
   }
   const g=VILLAGE.gate,dg=Math.hypot(P.x-g.x,P.y-g.y);if(dg<near*1.4)vSign(g.x+ox,g.y+oy+40,T('vil.gate'),C.chalk,45-dg/20);

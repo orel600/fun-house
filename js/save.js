@@ -8,6 +8,7 @@ const isObj=o=>!!o&&typeof o==='object'&&!Array.isArray(o);
 function saveBlank(){return{
   v:SAVE_VER,
   hero:{start:null,skin:null,level:1,xp:0,rank:0,rankId:null,style:{}},   // start: דמות ההתחלה. skin: מראה אישי מעליה (HEROES.skins). xp: כל מה שנאסף, והרמה נגזרת ממנו. rank, rankId: שלב ודרגה (ranks.js). style: במה שיחק הכי הרבה, לקווסטי הדרגה
+  gt:{axe:1,hammer:1,job:{}},                      // כלי איסוף: דרגה לכל כלי, ושדרוג בשעון {axe:{to,end}} (gtool.js)
   gm:{wood:0,stone:0,plant:0},                     // מומחיות איסוף: כמה מקורות נשברו בכל משפחה (gmastery.js)
   bag:{},                                           // התרמיל, בלי הגבלה: {wood:12,bone:3}. מה שסוחבים, ובעולם הפתוח מסתכנים בו
   stash:{},                                         // המחסן בכפר: המקום הבטוח, באותה צורה כמו התרמיל. מנוהל ב-stash.js
