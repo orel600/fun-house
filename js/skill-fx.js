@@ -8,6 +8,8 @@
    - ברק: קו שבור שמהבהב ומשתנה, עם ענף, הילה קצרה והבזק במטרה
    - מעל אויב: טיפה, פתית שלג וכוכבים בתוך עיגול כהה, וקרום קרח סביב קפוא. קומבו: הבזק חזק במקום
    כל ציור מקבל קו כהה מתחת, כדי שייראה גם על רצפת האבן בתלת-ממד (arena-look.js).
+   כשגיליונות skill-anim.js נטענו (skLite): נשאר רק מה שמשלים אותם. סדקים וחצי מהאבנים ברעידה, קצף ואדווה בהתזה, לשונות בלהבה, רסיסים בכפור, והברק עצמו.
+   הגל, המילוי, האבק, הגחלים וההבזק במטרה מגיעים מהגיליונות.
    החלקיקים מחושבים מהזמן (בלי מערך שמתעדכן), עם תקרה לכל סקיל ולכל פריים.
    "פחות אפקטים" בהגדרות, או "הפחתת תנועה" בטלפון: בלי חלקיקים, בלי הבהוב ובלי הבזק. כל המספרים ב-SKFX */
 const SKFX={
@@ -45,10 +47,10 @@ const skDtOf=col=>{for(const t in DMG.types)if(DMG.types[t].col===col)return t;r
 
 (()=>{const old=drawSkills;drawSkills=function(ox,oy){if(!skfxOn()){SKFXS.old++;return old.apply(this,arguments)}skfxDraw(ox,oy)}})();
 
-let skfxBudget=0;
+let skfxBudget=0,skLite=false;   // skLite: הגיליונות של skill-anim.js נטענו, אז כאן נשאר רק מה שמשלים (סדקים, לשונות, רסיסים, הברק עצמו)
 const skTake=n=>{const m=Math.max(0,Math.min(n,skfxBudget));skfxBudget-=m;return m};
 function skfxDraw(ox,oy){
-  const parts=skfxParts();skfxBudget=parts?SKFX.maxParts:0;SKFXS.drawn++;
+  const parts=skfxParts();skfxBudget=parts?SKFX.maxParts:0;SKFXS.drawn++;skLite=typeof skAnimLite==='function'&&skAnimLite();
   ctx.save();ctx.lineJoin='round';ctx.lineCap='round';let nl=0,rcol=null;const rest=new Path2D();
   for(const f of S.sk.fx){
     if(f.hand&&AGE_FX.tip){f.ax=AGE_FX.tip.x;f.ay=AGE_FX.tip.y}   // כמו ב-skills.js: מקצה הלהב, או מהיד לכיוון המטרה
@@ -92,12 +94,12 @@ function skfxQuake(f,k,parts){
     for(let j=1;j<=Q.seg;j++){const d=L*j/Q.seg,b=an+(skRnd(s,c*9+j)-0.5)*Q.jit*2;ctx.lineTo(f.x+Math.cos(b)*d,f.y+Math.sin(b)*d*0.85)}}
   ctx.globalAlpha=Math.min(1,a*1.6);ctx.strokeStyle='#1E140C';ctx.lineWidth=2+2.5*a;ctx.stroke();
   ctx.globalAlpha=a*0.8;ctx.strokeStyle='#D9B48A';ctx.lineWidth=1.2;ctx.stroke();
-  skWave(f,rr,a,3+4*a,0.18);ctx.globalAlpha=a;ctx.strokeStyle='#E8C79A';ctx.lineWidth=1.3;ctx.stroke();   // קצה בהיר על הגל
+  if(!skLite){skWave(f,rr,a,3+4*a,0.18);ctx.globalAlpha=a;ctx.strokeStyle='#E8C79A';ctx.lineWidth=1.3;ctx.stroke()}   // קצה בהיר על הגל. עם הגיליונות: הגל מ-sk_anvil_wave
   if(!parts)return;
-  const nd=skTake(Q.dust);ctx.beginPath();
+  const nd=skLite?0:skTake(Q.dust);ctx.beginPath();
   for(let i=0;i<nd;i++){const an=skRnd(s,i+90)*6.283,d=rr*(0.85+0.2*skRnd(s,i+91));skDot(f.x+Math.cos(an)*d,f.y+Math.sin(an)*d*0.85,10+22*k)}
   ctx.globalAlpha=a*0.22;ctx.fillStyle='#C9AE8C';ctx.fill();
-  const n=skTake(SKFX.parts.quake-Q.dust);ctx.beginPath();
+  const n=skTake(skLite?Math.ceil((SKFX.parts.quake-Q.dust)/2):SKFX.parts.quake-Q.dust);ctx.beginPath();
   for(let i=0;i<n;i++){const an=skRnd(s,i+60)*6.283,sp=0.45+0.55*skRnd(s,i+61),d=R*sp*skEase(k),h=Q.up*sp*Math.sin(Math.PI*Math.min(1,k*1.2)),z=3.5+4*skRnd(s,i+62);
     skPoly(f.x+Math.cos(an)*d,f.y+Math.sin(an)*d*0.85-h,ROCK.map(([u,v])=>[u*z,v*z]),an+k*8*(skRnd(s,i+63)-0.5))}
   ctx.globalAlpha=Math.min(1,a*1.8);ctx.fillStyle=f.col;ctx.fill();ctx.strokeStyle=SKFX.shade;ctx.lineWidth=1.5;ctx.stroke();
@@ -106,12 +108,12 @@ function skfxQuake(f,k,parts){
 /* ---- התזה: גל עם קצף לבן, שתי אדוות אחריו, וטיפות עם ברק לבן ---- */
 function skfxSplash(f,k,parts){
   const Z=SKFX.splash,a=1-k,R=f.r,s=f.seed,rr=R*(0.3+0.7*skEase(k));
-  skWave(f,rr,a,4+5*a,0.2);
+  if(!skLite)skWave(f,rr,a,4+5*a,0.2);   // עם הגיליונות: הגל מ-whit_water ו-sk_wave
   ctx.beginPath();for(let i=0;i<8;i++){const b=(i+skRnd(s,i)*0.5)/8*6.283;ctx.moveTo(f.x+Math.cos(b)*rr,f.y+Math.sin(b)*rr);ctx.arc(f.x,f.y,rr,b,b+0.35)}
   ctx.strokeStyle=Z.crest;ctx.lineWidth=2;ctx.globalAlpha=a*0.9;ctx.stroke();
   for(const lag of [0.25]){const q=Math.max(0,k-lag)/(1-lag);if(q<=0)continue;skCircle(f.x,f.y,R*0.75*skEase(q));ctx.strokeStyle=f.col;ctx.lineWidth=1.5;ctx.globalAlpha=(1-q)*0.55;ctx.stroke()}
   if(!parts)return;
-  const n=skTake(SKFX.parts.splash),hl=[];ctx.beginPath();
+  const n=skTake(skLite?Math.ceil(SKFX.parts.splash/2):SKFX.parts.splash),hl=[];ctx.beginPath();
   for(let i=0;i<n;i++){const an=skRnd(s,i+30)*6.283,sp=0.55+0.6*skRnd(s,i+31),d=R*sp*skEase(k),h=Z.up*sp*Math.sin(Math.PI*k),
       x=f.x+Math.cos(an)*d,y=f.y+Math.sin(an)*d*0.85-h,z=2+2.5*skRnd(s,i+32),up=Math.cos(Math.PI*k)>0?1:-1;
     // טיפה: עיגול וזנב לכיוון שממנו באה
@@ -126,7 +128,7 @@ function skTongues(T,kw,kh,ks){ctx.beginPath();for(const t of T){const w=t.w*kw,
 function skfxFlame(f,k,parts){
   const F=SKFX.flame,a=1-k,R=f.r,s=f.seed,rr=R*(0.35+0.65*skEase(k)),grow=Math.sin(Math.PI*Math.min(1,k*1.15)),flick=parts?S.t*14:0;
   const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,Math.max(1,rr));g.addColorStop(0,'rgba(255,216,77,0)');g.addColorStop(0.7,f.col);g.addColorStop(1,'rgba(255,138,61,0)');
-  ctx.fillStyle=g;ctx.globalAlpha=a*0.3;skCircle(f.x,f.y,rr);ctx.fill();skStroke(2+3*a,f.col,a*0.9);
+  if(!skLite){ctx.fillStyle=g;ctx.globalAlpha=a*0.3;skCircle(f.x,f.y,rr);ctx.fill();skStroke(2+3*a,f.col,a*0.9)}   // עם הגיליונות: החום מ-sk_rage
   const T=[];for(let i=0;i<F.tongues;i++){const an=(i+skRnd(s,i)*0.5)/F.tongues*6.283,h=F.h*grow*(0.6+0.4*skRnd(s,i+20))*(1+0.12*Math.sin(flick+i*1.7)),w=F.w*(0.7+0.3*skRnd(s,i+21));
     if(h>=2)T.push({x:f.x+Math.cos(an)*rr,y:f.y+Math.sin(an)*rr*0.85,h,w,sw:Math.sin(flick*0.7+i)*w*0.5})}
   if(T.length){
@@ -134,7 +136,7 @@ function skfxFlame(f,k,parts){
     ctx.globalAlpha=a;ctx.fillStyle=f.col;skTongues(T,1,1,1);ctx.fill();
     ctx.fillStyle=F.core;skTongues(T,0.6,0.65,0.7);ctx.fill();
     ctx.fillStyle=F.tip;skTongues(T,0.28,0.32,0.4);ctx.fill()}
-  if(!parts)return;
+  if(!parts||skLite)return;   // עם הגיליונות: הגחלים מ-sf_embers
   const n=skTake(SKFX.parts.flame);
   for(const odd of [0,1]){ctx.beginPath();
     for(let i=odd;i<n;i+=2){const an=skRnd(s,i+50)*6.283,d=rr*(0.5+0.6*skRnd(s,i+51));skDot(f.x+Math.cos(an)*d+Math.sin(S.t*6+i)*4,f.y+Math.sin(an)*d*0.85-F.h*1.4*k*(0.6+0.6*skRnd(s,i+52)),1.6+1.6*skRnd(s,i+53))}
@@ -145,8 +147,8 @@ function skfxFlame(f,k,parts){
 const SHARD=(len,w)=>[[0,w],[len,0],[0,-w],[-w*0.6,0]];
 function skfxFrost(f,k,parts){
   const I=SKFX.frost,a=1-k,R=f.r,s=f.seed,rr=R*(0.35+0.65*skEase(k)),g=Math.min(1,k/0.3);
-  ctx.fillStyle=I.light;ctx.globalAlpha=a*0.16;skCircle(f.x,f.y,rr);ctx.fill();skStroke(2.5+3*a,f.col,a);
-  skCircle(f.x,f.y,rr*0.9);ctx.globalAlpha=a*0.7;ctx.strokeStyle=I.light;ctx.lineWidth=1;ctx.stroke();
+  if(!skLite){ctx.fillStyle=I.light;ctx.globalAlpha=a*0.16;skCircle(f.x,f.y,rr);ctx.fill();skStroke(2.5+3*a,f.col,a);
+    skCircle(f.x,f.y,rr*0.9);ctx.globalAlpha=a*0.7;ctx.strokeStyle=I.light;ctx.lineWidth=1;ctx.stroke()}   // עם הגיליונות: המילוי מ-sk_blizzard
   const sh=[];for(let i=0;i<I.shards;i++){const an=(i+skRnd(s,i)*0.4)/I.shards*6.283;sh.push([f.x+Math.cos(an)*rr*0.92,f.y+Math.sin(an)*rr*0.92*0.85,an,I.len*g*(0.6+0.5*skRnd(s,i+10)),I.w*(0.7+0.3*skRnd(s,i+11))])}
   ctx.beginPath();for(const [x,y,an,l,w] of sh)skPoly(x,y,SHARD(l,w),an);ctx.globalAlpha=a;ctx.fillStyle=f.col;ctx.fill();ctx.strokeStyle=SKFX.shade;ctx.lineWidth=1.5;ctx.stroke();
   ctx.beginPath();for(const [x,y,an,l,w] of sh)skPoly(x,y,SHARD(l*0.6,w*0.35),an);ctx.fillStyle=I.light;ctx.fill();
@@ -170,8 +172,8 @@ function skfxZap(f,k,parts){
   skPath(pts);for(const [w,c] of [[6,SKFX.shade],[3.5,f.col],[1.4,'#fff']]){ctx.globalAlpha=a*fl;ctx.strokeStyle=c;ctx.lineWidth=w;ctx.stroke()}
   skPath(skBolt(m[0],m[1],m[0]+dx*bl-dy*bl*0.5*side,m[1]+dy*bl+dx*bl*0.5*side,sd+3,4,Z.jit*0.6));
   for(const [w,c] of [[2,f.col],[0.8,'#fff']]){ctx.globalAlpha=a*fl*0.9;ctx.strokeStyle=c;ctx.lineWidth=w;ctx.stroke()}
-  ctx.globalAlpha=a*0.45;ctx.fillStyle=f.col;skCircle(f.bx,f.by,6+12*a);ctx.fill();
-  ctx.beginPath();skStarPath(f.bx,f.by,5+9*a,4);skStarPath(f.ax,f.ay,3+5*a,4);ctx.globalAlpha=a;ctx.fillStyle='#fff';ctx.fill();
+  if(!skLite){ctx.globalAlpha=a*0.45;ctx.fillStyle=f.col;skCircle(f.bx,f.by,6+12*a);ctx.fill();
+    ctx.beginPath();skStarPath(f.bx,f.by,5+9*a,4);skStarPath(f.ax,f.ay,3+5*a,4);ctx.globalAlpha=a;ctx.fillStyle='#fff';ctx.fill()}   // עם הגיליונות: ההבזק במטרה מ-hit_light
   if(!parts)return;
   const n=skTake(SKFX.parts.zap);ctx.beginPath();
   for(let i=0;i<n;i++){const an=skRnd(f.seed,i+5)*6.283,d=6+26*k*(0.5+skRnd(f.seed,i+6));ctx.moveTo(f.bx+Math.cos(an)*d,f.by+Math.sin(an)*d);ctx.lineTo(f.bx+Math.cos(an)*(d+5),f.by+Math.sin(an)*(d+5))}
