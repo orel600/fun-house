@@ -76,7 +76,7 @@ async function runCls(browser,cls,B){
   await page.waitForTimeout(300);
   await page.evaluate(install,B);
   await page.evaluate(track);
-  if(from)await page.evaluate(f=>{const m=window.__bal,ev=m.rep.ev;Object.assign(m.rep,f.rep);m.rep.ev=(f.rep.ev||[]).concat(ev);m.ch=f.ch;m.gt=m.chT=m.lastTrip=f.gt},from);
+  if(from)await page.evaluate(f=>{const m=window.__bal,ev=m.rep.ev;Object.assign(m.rep,f.rep);ev.unshift(...(f.rep.ev||[]));m.rep.ev=ev;m.ch=f.ch;m.gt=m.chT=m.lastTrip=f.gt},from);
   const t3=B.chapters.findIndex(c=>c.st==='t3');let snapped=!opt('snap');
   const t0=Date.now();let r={},n=0;
   while(!r.done){r=await page.evaluate(()=>__balRun(40));
