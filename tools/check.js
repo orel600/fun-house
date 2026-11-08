@@ -1327,7 +1327,7 @@ function worldBot(m,L,god){
       r.squash=(e.jT=jNow()-JUICE.squash.t/2,juiceSquash(e)>0);
       S.hitstop=0;damage(e,10,'sword',0,'fire');r.stopGap=!(S.hitstop>0);   // מכה שנייה מיד: בלי עצירה (gapHit)
       // תחושת מכה (hitfeel.js): האויב נוטה ונגמר, והגיבור נוטה לאחור בהכנה, בלי לשנות את זמן הקירור
-      {const W=HITFEEL.where.arena,w0=P.weapon,t0=P.sw.t;HITFEEL.where.arena=true;e.hfT=0;S.hitstop=0;damage(e,10,'sword',0,'fire');const on=e.hfT>0;
+      {const W=HITFEEL.where.arena,w0=P.weapon,t0=P.sw.t;HITFEEL.where.arena=true;e.hfT=0;hfHit(e,1.5,false,0);const on=e.hfT>0;   // ישירות ולא דרך damage: בלי rand, כדי לא להזיז את ה-seed לבדיקות שאחרי
         e.hfT=jNow()-e.hfD*0.2;r.hfLean=on&&hfFoe(e)>0;e.hfT=jNow()-e.hfD-0.01;r.hfEnd=hfFoe(e)===0&&!e.hfT;
         P.weapon='sword';P.sw.t=0.03;r.hfWind=hfHero().lean<0&&P.sw.t===0.03;P.sw.t=t0;P.weapon=w0;HITFEEL.where.arena=W;r.hfN=HF.n.wind+'/'+HF.n.foe}
       HITFX.crit=1;S.hitstop=0;J.last=-9;damage(e,10,'sword',0,'ice');const N=J.n[J.n.length-1];r.crit=!!N&&N.crit&&N.col===JUICE.nums.critCol&&S.hitstop>=JUICE.stop.crit-1e-6;r.shake=S.shake>0;HITFX.crit=0;
