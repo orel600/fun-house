@@ -84,7 +84,7 @@ function cloudHeld(v){const k=CLOUD.lsKey+'-hold';if(v!==undefined){CLOUD.hold=!
 function cloudRow(s){return cloudReq('GET','/rest/v1/saves?select=data,updated_at&user_id=eq.'+s.uid,null,s.access).then(r=>r.json&&r.json[0]&&r.json[0].data)}
 // לוקחים שמירה מהענן במקום זו שבטלפון. העותק הישן נשאר בצד (fh-save-bak), ליתר ביטחון
 function cloudTake(d){cloudHeld(false);try{localStorage.setItem(SAVE_STORE.key+'-bak',JSON.stringify(SAVE))}catch(e){}
-  SAVE=saveMerge(saveBlank(),d);resMigrate(SAVE);SAVE.v=SAVE_VER;SAVE_STORE.write(SAVE,true)}
+  SAVE=saveMerge(saveBlank(),d);resMigrate(SAVE);SAVE.v=SAVE_VER;if(typeof heroSkinPet==='function')heroSkinPet();SAVE_STORE.write(SAVE,true)}   // heroSkinPet: החיה של הסקין (heroes.js)
 
 function cloudPush(opt){return cloudOnce(async()=>{
   if(cloudHeld())return;   // הענן חדש יותר: לא דורסים (cloudPull)
