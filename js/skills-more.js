@@ -53,7 +53,7 @@ function skmSeg(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy||1,t=Ma
   const b=D.bloom;
   for(const o of m.pools){o.t+=dt;o.tick-=dt;if(o.tick>0)continue;o.tick=b.tick;const base=skBase()*b.dmg;
     for(const e of enemies){if(e.dead||Math.hypot(e.x-o.x,e.y-o.y)-e.r>b.r)continue;damage(e,base,'skill',0,b.dt);m.hits++}
-    if(Math.hypot(P.x-o.x,P.y-o.y)<b.r&&P.hp<P.maxHp)P.hp=Math.min(P.maxHp,P.hp+P.maxHp*b.heal)}
+    if(Math.hypot(P.x-o.x,P.y-o.y)<b.r&&P.hp<P.maxHp){const h0=P.hp;P.hp=Math.min(P.maxHp,P.hp+P.maxHp*b.heal);if(typeof SKANIM!=='undefined')floatText(P.x,P.y-P.r-24,'+'+Math.round(P.hp-h0),SKANIM.mo.bloom.healCol,15,true)}}   // מספר ירוק בכל ריפוי (MLBB 1.1)
   m.pools=m.pools.filter(o=>o.t<o.max);
   for(const f of m.fx)f.t+=dt;m.fx=m.fx.filter(f=>f.t<f.max)}}
 

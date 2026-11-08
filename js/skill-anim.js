@@ -19,7 +19,7 @@ const SKANIM={
   circ:{size:150,dur:0.5,alpha:0.75},   // (a) מעגל הקסם מתחת לגיבור
   circOf:{earth:'wcirc_earth',fire:'wcirc_fire',ice:'wcirc_ice',lightning:'wcirc_lightning',water:'wcirc_water',physical:'wcirc_phys'},
   // (a)+(b) לכל סקיל. k: גודל ביחס לרדיוס הטבעת. n: כמה עותקים סביב הטבעת
-  quake:{flash:'hit_heavy',flashSize:110,cracks:'sk_anvil',cracksK:1.9,wave:'sk_anvil_wave',waveK:2.5,rocks:'debris',rocksN:3,rocksSize:76,rocksUp:-26},
+  quake:{flash:'hit_heavy',flashSize:110,cracks:'sk_anvil',cracksK:1.9,wave:'sk_anvil_wave',waveK:2.5,rocks:'debris',rocksN:1,rocksSize:76,rocksUp:-26},   // rocksN 1 (היה 3): מקום לאבק ולגל השני בתוך perCast
   splash:{flash:'wt_jump',flashK:1,ring:'whit_water',ringK:2.5,blast:'sk_wave',blastN:4,blastK:1.1,blastAt:0.5},
   frost:{flash:'sk_blizzard_ice',flashSize:120,storm:'sk_blizzard',stormK:1.5,stormAlpha:0.6,stormDur:0.45,cracks:'whit_ice',cracksK:2.2,shards:'hit_ice',shardsN:4,shardsSize:72},   // הסופה היא דיסק מלא שחוזר: קטנה, שקופה וקצרה, והטבעת היא סדקי הזכוכית
   flame:{flash:'hit_fire',flashSize:100,fire:'sk_rage',fireK:2.1,fireDur:0.45,fireAlpha:0.85,embers:'sf_embers',embersN:2,embersK:1,sparks:'hit_fire',sparksN:3,sparksSize:70},
@@ -29,6 +29,15 @@ const SKANIM={
   bloom:{flash:'wt_jump',flashK:1,circ:'wcirc_water',circK:2.3,circAlpha:0.7,ripple:'water_ripple',rippleK:2.2},
   // (c) פגיעות: perFrame בפריים אחד (הסקיל פוגע בכולם ביחד). big: אויב-על ובוס מקבלים whit גדול. גודל לפי רדיוס האויב, בין min ל-max
   hit:{perFrame:4,k:3.2,min:56,max:130,bigK:4.5,bigMax:260},
+  /* MLBB 1.1 (טבלת הפערים #528): רק מה שהיה חסר. hold: סימן שנשאר ברצפה ונמוג (fxlib.js). הכל בתוך perCast, ובלי בפחות אפקטים.
+     quake: גל שני wave2 שניות אחרי, אבק, הסדקים נשארים, ורעידה לפי כמה נפגעו (base+per לכל אחד, עד max, מתחת ל-ARFEEL.shake.big של הבוס). splash: טבעת גל, וטיפה על כל אויב.
+     frost: הסדקים נשארים. comet: שובל אש שנופל בזמן ההמתנה, ומכתש שנשאר. lance: פס קרח שנשאר לאורך הקרן. bloom: עלי כותרת, ומספר ירוק בכל ריפוי */
+  mo:{quake:{wave2:0.15,dust:'step_dust',dustN:2,dustSize:70,hold:2,holdAlpha:0.55,shake:{base:2,per:0.5,max:4}},
+    splash:{ring:'wt_wave',ringK:2.4,drop:'wt_droplet',dropSize:52},
+    frost:{hold:2,holdAlpha:0.4},
+    comet:{streak:'hit_fire',streakSize:44,streakSx:3.2,streakUp:260,hold:2,holdAlpha:0.45},
+    lance:{hold:1.5,holdAlpha:0.3},
+    bloom:{petals:'petals',petalsK:1.7,petalsAlpha:0.75,healCol:'#7BE38F'}},
   hitFx:{physical:'hit',fire:'hit_fire',water:'hit_water',ice:'hit_ice',lightning:'hit_light',earth:'hit_earth'},
   bigFx:{physical:'whit_phys',fire:'whit_fire',water:'whit_water',ice:'whit_ice',lightning:'whit_lightning',earth:'whit_earth'},
   // (d) מצבים: עד max בבת אחת על כל האויבים. dur: לפי המצב (רטוב ושריפה מ-DMG, קפוא והלם מ-SKILLS.combo)
@@ -62,20 +71,27 @@ function skAnimCast(id){
     skaPlay(A.circ,p.x,p.y,{size:R*A.circK*k,alpha:A.circAlpha,loop:true,dur:t,under:true});
     skaPlay(A.ripple,p.x,p.y,{size:R*A.rippleK*k,loop:true,dur:t,add:true,under:true});
     skaPlay(A.flash,p.x,p.y,{size:R*A.flashK*k,add:true});
+    if(!fxLess()){const Mb=SKANIM.mo.bloom;skaPlay(Mb.petals,p.x,p.y,{size:R*Mb.petalsK*k,alpha:Mb.petalsAlpha,loop:true,dur:t})}   // עלי כותרת שנסחפים לכל זמן הבריכה
     return true}
   if(circ)skaPlay(circ,P.x,P.y+2,{size:C_.size*k,dur:C_.dur,alpha:C_.alpha,under:true});
   if(id==='quake'){
     skaPlay(A.flash,P.x,P.y-10,{size:A.flashSize*k,add:true});
-    skaPlay(A.cracks,P.x,P.y,{size:R*A.cracksK*k,under:true});
+    const Mq=SKANIM.mo.quake,lite=fxLess();
+    skaPlay(A.cracks,P.x,P.y,{size:R*A.cracksK*k,under:true,hold:lite?0:Mq.hold,alpha:lite?1:Mq.holdAlpha});   // הסדקים נשארים ברצפה ונמוגים
     skaPlay(A.wave,P.x,P.y,{size:R*A.waveK*k,under:true});
+    if(!lite){const x=P.x,y=P.y,s=R*A.waveK*k;setTimeout(()=>{if(skAnimOn())skaPlay(A.wave,x,y,{size:s*1.15,under:true,alpha:0.7})},Mq.wave2*1000);   // גל שני (לא tg_ring של הבוס, ההחלטה ה4)
+      for(let i=0;i<skaN(Mq.dustN);i++){const a=skaRnd()*6.283;skaPlay(Mq.dust,P.x+Math.cos(a)*R*0.6,P.y+Math.sin(a)*R*0.5,{size:Mq.dustSize*k})}}
+    if(typeof calmOn!=='function'||!calmOn()){let hit=0;for(const e of enemies)if(!e.dead&&Math.hypot(e.x-P.x,e.y-P.y)-e.r<R)hit++;   // רעידה לפי כמה נפגעו (עד הרעידה הגדולה של arena-feel)
+      S.shake=Math.max(S.shake,Math.min(Mq.shake.max,Mq.shake.base+Mq.shake.per*hit))}   // עד max (4): מעל פגיעה בך (3), ו-8 נשאר רק להריגת בוס או אויב-על (QUINN)
     const n=skaN(A.rocksN);for(let i=0;i<n;i++){const a=(i+skaRnd()*0.6)/n*6.283;skaPlay(A.rocks,P.x+Math.cos(a)*R*0.55,P.y+Math.sin(a)*R*0.45,{size:A.rocksSize*k,vy:A.rocksUp,rot:skaRnd()*6.283})}}
   else if(id==='splash'){
     skaPlay(A.flash,P.x,P.y-R*0.2,{size:R*A.flashK*k,add:true});
     skaPlay(A.ring,P.x,P.y,{size:R*A.ringK*k,under:true});
+    if(!fxLess())skaPlay(SKANIM.mo.splash.ring,P.x,P.y,{size:R*SKANIM.mo.splash.ringK*k,under:true});   // טבעת גל שיוצאת החוצה
     const n=skaN(A.blastN),a0=skaRnd()*6.283;for(let i=0;i<n;i++){const a=a0+i/n*6.283;skaPlay(A.blast,P.x+Math.cos(a)*R*A.blastAt,P.y+Math.sin(a)*R*A.blastAt*0.85,{size:R*A.blastK*k,rot:a})}}
   else if(id==='frost'){
     skaPlay(A.storm,P.x,P.y,{size:R*A.stormK*k,add:true,under:true,alpha:A.stormAlpha,dur:A.stormDur});
-    skaPlay(A.cracks,P.x,P.y,{size:R*A.cracksK*k,under:true});
+    {const Mf=SKANIM.mo.frost,lite=fxLess();skaPlay(A.cracks,P.x,P.y,{size:R*A.cracksK*k,under:true,hold:lite?0:Mf.hold,alpha:lite?1:Mf.holdAlpha})}   // כפור שנשאר ברצפה
     skaPlay(A.flash,P.x,P.y-12,{size:A.flashSize*k,add:true});
     const n=skaN(A.shardsN),a0=skaRnd()*6.283;for(let i=0;i<n;i++){const a=a0+i/n*6.283;skaPlay(A.shards,P.x+Math.cos(a)*R*0.9,P.y+Math.sin(a)*R*0.75,{size:A.shardsSize*k,rot:skaRnd()*6.283})}}
   else if(id==='flame'){
@@ -88,14 +104,17 @@ function skAnimCast(id){
     if(id==='lance'){const f=S.skm&&S.skm.fx[S.skm.fx.length-1];
       if(f&&f.k==='beam'){const dx=f.bx-f.ax,dy=f.by-f.ay,L=Math.hypot(dx,dy)||1,w=SKMORE.list.lance.w*A.rayW*k;
         skaPlay(A.ray,(f.ax+f.bx)/2,(f.ay+f.by)/2,{size:w,sx:L/w,rot:Math.atan2(dy,dx),add:true,dur:A.rayDur,fps:24/A.rayDur});
-        skaPlay(A.tip,f.bx,f.by,{size:A.tipSize*k,add:true})}}}
+        skaPlay(A.tip,f.bx,f.by,{size:A.tipSize*k,add:true});
+        if(!fxLess()){const Ml=SKANIM.mo.lance;skaPlay(A.ray,(f.ax+f.bx)/2,(f.ay+f.by)/2,{size:w,sx:L/w,rot:Math.atan2(dy,dx),under:true,hold:Ml.hold,alpha:Ml.holdAlpha,fps:60})}}}   // פס קרח שנשאר לאורך הקרן
+    if(id==='comet'&&!fxLess()){const p=S.skm&&S.skm.pend[S.skm.pend.length-1],Mc=SKANIM.mo.comet;   // שובל אש שנופל אל הנקודה בזמן ההמתנה (בלי tg_growing, ההחלטה ה4)
+      if(p){const dl=Math.max(0.1,p.max-p.t);skaPlay(Mc.streak,p.x,p.y-Mc.streakUp,{size:Mc.streakSize*k,sx:Mc.streakSx,rot:Math.PI/2,vy:Mc.streakUp/dl,dur:dl,loop:true,add:true})}}}
   return true;
 }
 // השביט נפל (arena-fx.js קורא מ-skillsUpdate): פיצוץ גדול, סדקים, גחלים ואבנים
 function skAnimLand(p){
   if(!skAnimOn())return false;
   const A=SKANIM.comet,R=SKMORE.list.comet.r,k=skaK();SKANIMS.n=0;SKANIMS.stat.cast.cometLand=(SKANIMS.stat.cast.cometLand||0)+1;
-  skaPlay(A.cracks,p.x,p.y,{size:R*A.cracksK*k,under:true});
+  {const Mc=SKANIM.mo.comet,lite=fxLess();skaPlay(A.cracks,p.x,p.y,{size:R*A.cracksK*k,under:true,hold:lite?0:Mc.hold,alpha:lite?1:Mc.holdAlpha})}   // מכתש שנשאר ברצפה
   skaPlay(A.boom,p.x,p.y-R*0.2,{size:R*A.boomK*k,add:true});
   if(!fxLess()){skaPlay(A.embers,p.x,p.y-R*0.3,{size:R*A.embersK,add:true,vy:-30});skaPlay(A.rocks,p.x,p.y,{size:R*A.rocksK,vy:-24})}
   return true;
