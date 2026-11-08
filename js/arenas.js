@@ -21,6 +21,7 @@ const ARENAS={
     spread:55,                       // כמה הגוש צפוף
     bossDelay:3,                     // כמה שניות אחרי תחילת הגל האחרון הבוס מגיע
     mazeWaves:[4,5],                 // באילו גלים (מ-0) הקירות של maze.js פעילים: גלים 5 ו-6
+    waveMax:100,                     // שניות מתחילת גל: אחרי זה הגל הבא מתחיל גם אם נשארו אויבים (סוג נזק שלא עובד עליהם לא תוקע את הריצה). לא בגל של הבוס
     /* טבעת: בגל עם ring:true כל גוש נפרש סביבך במעגל שלם, כמו הגל הענק (swarm ב-run.js), במרחק RUN.swarmR מהצלע הארוכה */
     /* אויבים ישנים: רחוק מ-r (כפול הצלע הארוכה של המסך) אויב רגיל הולך אליך במהירות speed עם נדנוד קל (wob: תדירות, זווית),
        ומכשף לא יורה. מתעורר לתמיד כשמתקרבים, כשהוא נפגע, בסוף הגל (lastCall) וכשהבוס בדרך. בוס ומבוקש לא ישנים */
@@ -81,9 +82,10 @@ function arenaRun(){
     while(w.q.length&&S.t>=w.q[0].at&&enemies.length<HORDE.cap)waveClump(w.q.shift());   // מעל המגבלה הגוש מחכה
     const left=enemies.filter(e=>!e.dead&&e.wv===w.i).length;w.left=left+w.q.reduce((s,c)=>s+c.n,0);
     waveLastCall(w,A,left);
-    if(!w.q.length&&!left&&w.i<A.list.length-1){   // הגל נוקה: הפסקה עם ריפוי, ואז הגל הבא
-      w.phase='break';w.until=S.t+A.breakSecs;w.log.push({i:w.i,end:S.t});
-      banner(T('wave.clear',w.i+1),C.gold);sfx('ui');waveHeal(A);
+    const late=!w.q.length&&left&&S.t-w.start>=A.waveMax;   // הזמן של הגל נגמר: מי שנשאר נשאר בזירה, אבל לא עוצר את הגל הבא
+    if(!w.q.length&&(!left||late)&&w.i<A.list.length-1){   // הגל נוקה (או שהזמן שלו נגמר): הפסקה עם ריפוי, ואז הגל הבא
+      w.phase='break';w.until=S.t+A.breakSecs;w.log.push({i:w.i,end:S.t,left:late?left:0});if(late)w.late=(w.late||0)+1;
+      banner(late?T('wave.time',w.i+1):T('wave.clear',w.i+1),C.gold);sfx('ui');waveHeal(A);
     }
   }
   arenaHud();return true;
