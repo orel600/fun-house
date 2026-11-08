@@ -15,9 +15,11 @@ const MBAIM={
   lineW:26,        // קו בלי w
   cancelPad:16,    // אזור הביטול גדול מהכפתור שלו בכמה פיקסלים, כדי שקל לפגוע בו
   alpha:0.28,      // שקיפות המילוי של הסימון
-  tip:['heal','spell'],   // כפתורים שלחיצה ארוכה עליהם מראה הסבר (moba-spells.js, MBSPELL.hold) במקום להטיל
+  tip:['heal','spell'],
+  flash:{dur:0.35,a:0.85},   // הטלה מהירה (MLBB 1.2): כמה שניות הצורה מהבהבת ודועכת, ובאיזו שקיפות מתחילה   // כפתורים שלחיצה ארוכה עליהם מראה הסבר (moba-spells.js, MBSPELL.hold) במקום להטיל
 };
 let mbAim=null;
+const MBAIMS={flash:0};   // לבדיקה: כמה הבזקים של הטלה מהירה
 // ההגדרה של הכפתור: סקיל מהערכה, או ריפוי ולחש (moba-spells.js)
 const mbAimS=(u,slot)=>MBKIT[u.kit][slot]||(typeof mbSpellS==='function'?mbSpellS(u,slot):{});   // {slot,pid,b,sx,sy,a,len,on,cancel}
 
@@ -76,29 +78,52 @@ function mbAimPick(u,A){
 
 // הסימון על הרצפה, בקנבס מעל התלת-ממד (נקרא מ-mobaDraw, בקואורדינטות של העולם). גם השניות על הכפתורים
 function mbAimDraw(){
-  mbAimSecs();
+  mbAimSecs();mbAimFlashDraw();
   const A=mbAim,u=MB&&MB.me;if(!A)return;
   if(!u||u.dead||MB.over){mbAimEnd();return}
   if(!A.on&&!A.tip&&MBAIM.tip.includes(A.slot)&&typeof mbSpellTip==='function'&&performance.now()-A.t0>MBSPELL.hold*1000){A.tip=true;mbSpellTip(A.slot,A.b)}   // לחיצה ארוכה: הסבר
   if(!A.on||A.tip)return;
   const s=mbAimS(u,A.slot),R=mbAimRange(s),P0=mbAimPick(u,A),col=A.cancel?'#8A8F9E':s.col||dtCol(s.dt||MBKIT[u.kit].dt);
+  mbAimPaint(u,s,R,P0,A.a,col,1,true);
+}
+// הצורה על הרצפה (גרירה, וגם ההבזק של הטלה מהירה): k מכפיל שקיפות, ring: עיגול הטווח
+function mbAimPaint(u,s,R,P0,a,col,k,ring){
   ctx.save();ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=2;
-  // עיגול הטווח: תמיד
-  ctx.globalAlpha=0.5;ctx.setLineDash([8,6]);ctx.beginPath();ctx.arc(u.x,u.y,P0.kind==='self'?(s.r||R):R,0,7);ctx.stroke();ctx.setLineDash([]);
-  ctx.globalAlpha=MBAIM.alpha;
+  // עיגול הטווח: תמיד בגרירה
+  if(ring){ctx.globalAlpha=0.5*k;ctx.setLineDash([8,6]);ctx.beginPath();ctx.arc(u.x,u.y,P0.kind==='self'?(s.r||R):R,0,7);ctx.stroke();ctx.setLineDash([])}
+  ctx.globalAlpha=MBAIM.alpha*k;
   if(P0.kind==='self'){ctx.beginPath();ctx.arc(u.x,u.y,s.r||R,0,7);ctx.fill()}
-  else if(P0.kind==='point'){const r=s.r||MBAIM.dotR;ctx.beginPath();ctx.arc(P0.x,P0.y,r,0,7);ctx.fill();ctx.globalAlpha=0.9;ctx.lineWidth=3;ctx.stroke();
-    ctx.globalAlpha=0.5;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(u.x,u.y);ctx.lineTo(P0.x,P0.y);ctx.stroke()}
-  else if(P0.kind==='unit'&&P0.t){const t=P0.t;ctx.globalAlpha=0.85;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(u.x,u.y);ctx.lineTo(t.x,t.y);ctx.stroke();
+  else if(P0.kind==='point'){const r=s.r||MBAIM.dotR;ctx.beginPath();ctx.arc(P0.x,P0.y,r,0,7);ctx.fill();ctx.globalAlpha=0.9*k;ctx.lineWidth=3;ctx.stroke();
+    ctx.globalAlpha=0.5*k;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(u.x,u.y);ctx.lineTo(P0.x,P0.y);ctx.stroke()}
+  else if(P0.kind==='unit'&&P0.t){const t=P0.t;ctx.globalAlpha=0.85*k;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(u.x,u.y);ctx.lineTo(t.x,t.y);ctx.stroke();
     ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(t.x,t.y+2,t.r+10,(t.r+10)*0.5,0,0,7);ctx.stroke()}
-  else mbAimArrow(u.x,u.y,A.a,P0.kind==='line'?R:Math.min(R,s.dist||R),P0.kind==='line'?(s.w||MBAIM.lineW):MBAIM.lineW,P0.kind!=='line');
+  else mbAimArrow(u.x,u.y,a,P0.kind==='line'?R:Math.min(R,s.dist||R),P0.kind==='line'?(s.w||MBAIM.lineW):MBAIM.lineW,P0.kind!=='line',k);
   ctx.restore();
 }
+
+/* הטלה מהירה (MLBB 1.2): נגיעה בלי גרירה, או 1/2/3 במקלדת, לא הראתה איפה הסקיל הלך. עכשיו אותה צורה מהבהבת ודועכת (MBAIM.flash),
+   בצבע סוג הנזק, רק לשחקן (mbPress הוא קלט של השחקן, הבוטים מטילים ישר ב-mbCast). בגרירה כבר רואים את הצורה, אז שם אין הבזק */
+function mbAimFlashSet(u,slot,s,aim){
+  const kind=mbAimKind(s),R=mbAimRange(s),a=u.face,P0={kind};
+  if(kind==='point'){const d=aim?Math.min(R,Math.hypot(aim.x-u.x,aim.y-u.y)):R*0.6;P0.x=u.x+Math.cos(a)*d;P0.y=u.y+Math.sin(a)*d}
+  else if(kind==='unit'&&aim&&aim.k)P0.t=aim;
+  MB.aimFl={slot,s,R,P0,a,col:s.col||dtCol(s.dt||MBKIT[u.kit].dt),t0:performance.now(),kind};MBAIMS.flash++;
+}
+function mbAimFlashDraw(){
+  const F=MB&&MB.aimFl,u=MB&&MB.me;if(!F)return;const k=1-(performance.now()-F.t0)/(MBAIM.flash.dur*1000);
+  if(k<=0||!u||u.dead||MB.over){MB.aimFl=null;return}
+  mbAimPaint(u,F.s,F.R,F.P0,F.a,F.col,k*MBAIM.flash.a,false);
+}
+{const old=mbPress;mbPress=function(slot,pt){
+  const u=mbMe(),s=u&&MB_SLOTS.includes(slot)&&MBKIT[u.kit][slot],auto=!!s&&pt===undefined,cd0=s?u.cd[slot]:0;
+  const aim=auto&&s.kind!=='self'&&s.kind!=='away'?mbAimFor(u,s):null,r=old.apply(this,arguments);
+  if(auto&&!(cd0>0)&&u.cd[slot]>0)mbAimFlashSet(u,slot,s,aim);   // הוטל עכשיו (נכנס לטעינה)
+  return r}}
 // חץ על הרצפה: גוף ברוחב w עד אורך len, וראש בקצה. dash: קו מקווקו (קפיצה, או unit בלי אויב)
-function mbAimArrow(x,y,a,len,w,dash){
+function mbAimArrow(x,y,a,len,w,dash,k=1){
   ctx.translate(x,y);ctx.rotate(a);const h=Math.max(w/2,10),head=Math.min(36,len*0.25);
   if(!dash){ctx.fillRect(0,-w/2,len-head,w)}
-  ctx.globalAlpha=0.85;ctx.lineWidth=3;if(dash)ctx.setLineDash([10,8]);
+  ctx.globalAlpha=0.85*k;ctx.lineWidth=3;if(dash)ctx.setLineDash([10,8]);
   ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(len-head,0);ctx.stroke();ctx.setLineDash([]);
   ctx.beginPath();ctx.moveTo(len,0);ctx.lineTo(len-head,-h-6);ctx.lineTo(len-head,h+6);ctx.closePath();ctx.fill();
 }
