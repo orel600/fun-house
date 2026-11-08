@@ -21,9 +21,11 @@ function maze3d(){
   if(!R3D.ready)return;if(!MZ3.m)maze3dInit();
   const a=maze3dOn()?mazeFade():0;
   if(a<=0.02){MZ3.m.visible=MZ3.top.visible=false;return}
-  const ws=mazeWalls(),n=Math.min(ws.length,MAZE3D.max),sn=SIN(),hh=MAZE3D.h/COS(),{mx,p,q,s}=MZ3;
+  const ws=mazeWalls(),n=Math.min(ws.length,MAZE3D.max),sn=SIN(),hh=MAZE3D.h/COS(),{mx,p,q,s}=MZ3,key=MZ.key+'|'+sn;
+  if(MZ3.key!==key){MZ3.key=key;   // המיקומים משתנים רק כשהקירות משתנים (תא חדש או מחזור חדש, maze.js). בכל פריים רק השקיפות
   for(let i=0;i<n;i++){const w=ws[i];
     p.set(w.x+w.w/2,0,(w.y+w.h/2)/sn);s.set(w.w,hh,w.h/sn);mx.compose(p,q,s);MZ3.m.setMatrixAt(i,mx);
     const L=w.w>=w.h;p.y=hh;s.set(L?w.w:MAZE3D.ridge,MAZE3D.edge/COS(),(L?MAZE3D.ridge:w.h)/sn);mx.compose(p,q,s);MZ3.top.setMatrixAt(i,mx)}   // קו דק לאורך הקיר, לא כל הגג
-  for(const m of [MZ3.m,MZ3.top]){m.count=n;m.instanceMatrix.needsUpdate=true;m.visible=n>0;m.material.opacity=a;m.material.depthWrite=a>=MAZE.solidAt}
+  for(const m of [MZ3.m,MZ3.top]){m.count=n;m.instanceMatrix.needsUpdate=true}}
+  for(const m of [MZ3.m,MZ3.top]){m.visible=n>0;m.material.opacity=a;m.material.depthWrite=a>=MAZE.solidAt}
 }
