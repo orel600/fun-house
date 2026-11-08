@@ -2027,3 +2027,7 @@ body.mb .skb:is(.lock,.off){border-color:#4A5061;box-shadow:var(--bz,0 0 0 2px v
 body.mb .skb:is(.lock,.off) :is(.mbski,.mbpic,.mbgi){opacity:.4;filter:grayscale(1) drop-shadow(0 1px 1px #000a)}
 body.mb .skb.lock i{background:none}
 body.mb .skb.lock::after{content:none}
+
+/* arena-feel.js: הסקיל כמעט מוכן (ARFEEL.soon): הכפתור "מתנשף" רגע לפני */
+.skb.afsoon{animation:afsoon .12s ease-out infinite alternate}@keyframes afsoon{to{transform:scale(1.07);box-shadow:0 0 0 3px var(--dt),0 0 14px var(--dt)}}
+@media (prefers-reduced-motion:reduce){.skb.afsoon{animation:none}}

@@ -36,7 +36,7 @@ function ajHit(e,m,crit,t,ang){
   const A=JUICE.arena,K=JUICE,big=ajBig(e);ajFrame();
   if(AJ.n>=A.perFrame||(AJ.seen>A.crowd&&!crit&&!big)){AJ.stat.skip++;return}
   AJ.n++;AJ.stat.fx++;const J=juice();
-  e.flash=Math.max(e.flash||0,K.flash);e.jT=jNow();   // לבן ומעיכה קטנה בתלת-ממד
+  e.flash=Math.max(e.flash||0,A.flash??K.flash);e.jT=jNow();   // לבן (A.flash: מ-arena-feel.js, 60ms) ומעיכה קטנה בתלת-ממד
   const hy=e.y-e.r*0.6,P_=A.parts,n=Math.min(crit?P_.crit:m>1?P_.weak:P_.hit,P_.max-J.p.length);
   if(n>0)jBurst(e.x,hy,t,n,ang);
   if(m>=1||crit){while(J.fl.length>=A.impact.max)J.fl.shift();
