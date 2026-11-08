@@ -4100,8 +4100,9 @@ function worldBot(m,L,god){
     {const r={},t0=MB.t,me=MB.me,red=mbHeroes(1)[0],blue=mbHeroes(0).find(h=>!h.me),d0=MB.diff;
      MB.diff='easy';const e=mbMind(red),a=mbMind(blue);MB.diff='hard';const h=mbMind(red);MB.diff=d0;
      r.diff=e.think>h.think&&e.skill>h.skill&&a===MBBOT.diff.hard;   // האויבים לפי הקושי, החברים תמיד אותו דבר. חיים ונזק לא תלויים בזה (MBKIT)
-     const tw=MB.u.find(b=>b.k==='tower'&&b.team===1&&Math.abs(b.x)===MOBA.towers[0]&&!b.dead),hp0=tw.hp;
-     MB.t=10;const early=mbDmg(null,tw,100,'physical');MB.t=MOBA.shield.t+5;const late=mbDmg(null,tw,100,'physical');MB.t=t0;tw.hp=hp0;
+     // המגדל כמו שמשחק הבוטים השאיר אותו (QUINN, 8.11): עם 50 חיים או פחות המכה הראשונה הפילה אותו והבדיקה נכשלה, ומגדל שכבר נפל לא נמצא. מודדים על מגדל מלא, ומחזירים חיים, מקסימום ומוות
+     const tw=MB.u.find(b=>b.k==='tower'&&b.team===1&&Math.abs(b.x)===MOBA.towers[0]),tw0={hp:tw.hp,max:tw.max,dead:tw.dead};tw.dead=false;tw.hp=tw.max=1e6;
+     MB.t=10;const early=mbDmg(null,tw,100,'physical');MB.t=MOBA.shield.t+5;const late=mbDmg(null,tw,100,'physical');MB.t=t0;Object.assign(tw,tw0);
      r.shield=Math.abs(early-100*(1-MOBA.shield.k))<0.01&&Math.abs(late-100)<0.01;
      const bk=mbHeroes(1).map(x=>x.gold||0);mbHeroes(1).forEach(x=>x.gold=(x.gold||0)+3000);   // בלי זהב קאמבק (moba-gamble.js מחליף אותו): הריגה של מוביל משלמת בדיוק כמו כל הריגה
      const victim=mbUnit({k:'hero',kit:red.kit,team:1,hp:10,max:10,lvl:1,hitBy:new Map(),deaths:0,home:red.home});const g0=blue.gold||0;
