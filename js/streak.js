@@ -13,7 +13,7 @@ function streakKill(){
   const s=S.st&&S.t-S.st.last<=STREAK.gap?S.st:(S.st={n:0,last:0,show:null,best:(S.st&&S.st.best)||0});
   s.n++;s.last=S.t;s.best=Math.max(s.best,s.n);
   const top=STREAK.steps[STREAK.steps.length-1],i=STREAK.steps.indexOf(s.n);
-  if(i>=0||s.n>top&&s.n%top===0){const k=i>=0?i:STREAK.steps.length-1;s.show={k,n:s.n,t0:S.t};sfx(k>=2?'celebrate':'xp')}
+  if(i>=0||s.n>top&&s.n%top===0){const k=i>=0?i:STREAK.steps.length-1;s.show={k,n:s.n,t0:S.t};sfx(k>=2?'streak3':k>=1?'streak2':'streak1')}   // שלוש דרגות שעולות בגובה (audio.js)
 }
 // המילה: קופצת לרגע, ונעלמת בהדרגה. מספר ההריגות קטן מתחתיה
 function streakDraw(){

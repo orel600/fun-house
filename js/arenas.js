@@ -104,6 +104,7 @@ function waveStart(i){
   if(W.sup)q.splice(q.length>>1,0,{type:W.sup,n:1,hp:W.supHp||1,sup:true,at:q[q.length>>1]?q[q.length>>1].at:S.t});   // אויב-העל באמצע הגל
   w.q=q;
   if(W.boss){S.nextBoss=S.t+A.bossDelay;w.boss=true}   // update.js מביא את הבוס (makeBoss) כשמגיע הזמן. w.boss גם מעיר את כולם (arenaZz)
+  sfx('wave_start');   // קרן (audio.js)
   banner(W.boss?T('wave.last'):W.ring?T('wave.ring',i+1,A.list.length):T('wave.start',i+1,A.list.length),W.boss?C.lilac:C.chalk);S.shake=Math.max(S.shake,4);
 }
 function waveClump(c){

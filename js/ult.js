@@ -16,7 +16,8 @@ const ultArena=()=>!!S&&skArena()&&S.mode==='play';
 function ultKill(e){
   if(!skArena())return;
   const u=S.ult||(S.ult={c:0,used:0});
-  u.c=Math.min(ULT.need,u.c+(e&&(e.elite||e.champ||e.wanted)?ULT.boss:1));
+  const was=u.c;u.c=Math.min(ULT.need,u.c+(e&&(e.elite||e.champ||e.wanted)?ULT.boss:1));
+  if(was<ULT.need&&u.c>=ULT.need)sfx('ult_ready');   // נצנוץ: הסקיל-על מוכן (audio.js)
 }
 function ultUse(){
   const u=S.ult;if(!ultArena()||!u||u.c<ULT.need)return false;
