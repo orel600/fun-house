@@ -825,6 +825,7 @@ function render3d(ox,oy){
   const gt=R3D.ground.userData.tile;R3D.ground.position.set(Math.round(cx/gt)*gt,0,Math.round(cz/gt)*gt);
   R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?(W3D.regions[S.wd.reg]||{}).bg||VIEW.world:arenaFloor('d3')||VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?(W3D.regions[S.wd.reg]||{}).line||VIEW.worldLine:arenaFloor('line')||VIEW.groundLine);
   if(typeof aLookColors==='function')aLookColors();   // הזירה: שמיים ואובך לפי הפלטה (arena-look.js)
+  if(typeof maze3d==='function')maze3d();   // קירות הזירה כקופסאות בסצנה, מאחורי ולפני הדמויות (maze3d.js). מחוץ לזירה הם נעלמים
   for(const k in R3D.marks)R3D.marks[k].count=0;
   for(const k in R3D.crowd)if(R3D.crowd[k])for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;

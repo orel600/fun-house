@@ -2068,6 +2068,15 @@ function worldBot(m,L,god){
     }catch(err){o.err=String(err&&err.stack||err)}
     window.attack=at;enemies=[];document.getElementById('banner').textContent='';SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(!wmx.err&&wmx.late===1&&wmx.at!=null&&wmx.alive&&wmx.next,'זמן לגל בזירה: '+(wmx.err||'אויב שלא נופל, הגל נגמר אחרי '+wmx.at+' שניות'+(wmx.alive?' והוא נשאר':'')+', '+(wmx.next?'הגל הבא התחיל':'הגל הבא לא התחיל!')+' · "'+wmx.ban+'"'));
+  // קירות הזירה בתלת-ממד (maze3d.js): בגלים 5-6 קופסאות בסצנה (לא בקנבס, שמצייר מעל הגיבור), ומחוץ לזירה נעלמות. בדו-ממד: הקנבס
+  const mz3=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={on:R3D.on&&R3D.ready};
+    try{startRun();S.mode='play';waveStart(4);S.wv.q=[];enemies=[];S.t=Math.floor(S.t/MAZE.shiftSecs)*MAZE.shiftSecs+10;MZ.on=true;MZ.t0=S.t-5;
+      if(o.on){render();o.n=MZ3.m.count;o.vis=MZ3.m.visible&&MZ3.top.visible;o.op=MZ3.m.material.opacity;o.canvas=!maze3dOn()}
+      else{o.draw=(()=>{try{mazeDraw(0,0);return true}catch(err){return String(err)}})()}
+      reset();if(o.on){render();o.off=!MZ3.m.visible}
+    }catch(err){o.err=String(err&&err.stack||err)}
+    enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!mz3.err&&(mz3.on?mz3.n>0&&mz3.vis&&mz3.op>0.9&&!mz3.canvas&&mz3.off:mz3.draw===true),'קירות הזירה בתלת-ממד: '+(mz3.err||(mz3.on?mz3.n+' קירות בסצנה'+(mz3.vis?'':' (מוסתרים!)')+', שקיפות '+(mz3.op||0).toFixed(2)+(mz3.canvas?', גם בקנבס!':', לא בקנבס')+(mz3.off?', נעלמים מחוץ לזירה':', נשארים מחוץ לזירה!'):'בדו-ממד: הקנבס מצייר ('+mz3.draw+')')));
   // אויבים ישנים (arenaZz ב-arenas.js): רחוק מ-wake.r הולכים לאט ומכשף לא יורה. מתעוררים מקרבה, ממכה, מסוף הגל ומהבוס. קפיצה של arena-load לא מעירה, והישנים נספרים בגל
   const zz=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},at=window.attack,r0=ARENAS.gauntlet.wake.r,lc0=ARENAS.gauntlet.lastCall;
     try{window.attack=()=>{};startRun();const A=ARENAS.gauntlet,Z=A.wake,R=Z.r*Math.max(W,H),dt=1/30;waveStart(0);const w=S.wv;w.q=[];enemies=[];eb.length=0;P.x=P.y=0;
