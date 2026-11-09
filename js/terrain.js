@@ -29,7 +29,7 @@ const TERRAIN={
   cull:1800,               // בתלת-ממד: חפצים רחוקים מהמצלמה יותר מזה לא מצוירים
   chunk:1100,              // גודל אריח של עצים וסלעים במופע אחד: כל אריח נחתך לבד כשהוא מחוץ למסך
   // יער: עץ כל gap פיקסלים בערך. pick: אילו עצים (כמו W3D.decor ב-render3d.js). edge: בשולי היער עצים נמוכים יותר
-  forest:{gap:74,jit:0.45,edge:90,pick:[{model:'n_tree',h:150,tint:'#cfe6bf'},{model:'n_pine',h:165},{model:'v_treeA',w:118},{model:'n_pine',h:135}]},
+  forest:{gap:74,jit:0.45,edge:90,pick:[{model:'n_tree',h:150,tint:'#cfe6bf'},{model:'n_pine',h:165},{model:'n_tree',h:125,tint:'#b4d29e'},{model:'n_tree',h:140,tint:'#c4dcae'}],clear:60},   // clear: עץ לכריתה לא נוצר קרוב מזה לשולי היער. v_treeA הוא העץ שכורתים (W3D.nodes.tree), לכן לא ביער (ניר, 9.11: "קשה להבין מה אפשר לכרות")
   cliff:{gap:62,out:[20,120],pick:[{model:'n_crag',w:150,tint:'#b8a890'},{model:'n_block',w:130,tint:'#a89c88'},{model:'n_crag',w:110,tint:'#c9bba2'}]},   // צוקים לאורך הגבול: סלע כל gap, ובין out[0] ל-out[1] מחוץ לקו
   reeds:{gap:46,model:'n_reeds',h:58},
   crag:{gap:170,deep:300,mul:[1.1,2]},   // גושי צוקים (map.crags): סלע כל gap, ובעומק deep מהשפה הם בגודל mul[1]   // קני סוף לאורך הביצה
@@ -128,6 +128,8 @@ function tWaterNear(x,y){const M=TR&&TR.map;if(!M)return null;let b=null;
 
 /* ---- שאלות ---- */
 const tCell=(x,y)=>{const T=TR,i=Math.floor((x-T.x0)/T.c),j=Math.floor((y-T.y0)/T.c);return i<0||j<0||i>=T.gw||j>=T.gh?-1:j*T.gw+i};
+// קרוב ליער (בתוכו, או פחות מ-d משוליו): שם לא שמים עץ לכריתה, כדי שלא יתערבב בעצי היער
+function tNearForest(x,y,d){const M=TR&&TR.map;if(!M)return false;for(const F of M.forests||[])if(inPoly(x,y,F)||polyDist(x,y,F)<d)return true;return false}
 function tBlocked(x,y){if(!TR||!S.wd)return false;const i=tCell(x,y);return i<0||TR.blk[i]===1}
 function tSlow(x,y){if(!TR)return 1;const i=tCell(x,y);return i<0?1:TR.slw[i]/255}
 function hAt(x,y){

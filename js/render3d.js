@@ -217,12 +217,14 @@ const VIL3D={
    glow: צבע לעורק מתכת. הקישוטים והשערים כמו בכפר (VIL3D.decor, VIL3D.gate) */
 const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',w:42,glow:'#5FA35A'},chest:{model:'v_crate',w:48,glow:'#F4C74F'},rock:{model:'v_rock',w:62},vein:{model:'v_rock',w:62,glow:'#C87533'},
   reed:{model:'v_treeB',w:34,glow:'#3FA7A0'},crystal:{model:'v_rock',w:62,glow:'#4FB4FF'}},   // w: רוחב המודל
+  /* סימן לעץ שאפשר לכרות (ניר, 9.11): בול עץ קטן ליד הגזע. dx/dy: כמה רדיוסים מהמרכז. עצי קישוט בלי. הנצנוץ: FXC.mine.glint ב-fxcombat.js */
+  log:{model:'v_lumber',w:38,dx:0.75,dy:0.45},
   /* קישוטים לכל אזור, מסביב לגבול (worldDecor ב-world.js): במקום עצי האחו בכל מקום. אזור שלא כתוב כאן: VIL3D.decor, כמו בכפר.
      model: מפתח ב-MODELS3D (n_ מ-KayKit Forest Nature, v_ מהכפר), או n_cactus/n_reeds שנבנים בקוד (natureProp). pick: כמה אפשרויות, לפי המקום.
      h: גובה (לעצים צרים וגבוהים) או w: רוחב. tint: צבע שמוכפל בצבעים של המודל (חול, צל). snow: כמה להלבין (שלג). רק במראה החדש, ?look=classic מחזיר את עצי האחו */
   decor:{
-    meadow:{hills:{pick:[{model:'n_tree',h:150,tint:'#cfe6bf'},{model:'n_pine',h:160},{model:'v_treeA',w:120}]}},   // האחו: יער גבוה בשוליים במקום אריחי המשושה (שנראו כמו לוח משחק). העצים והסלעים הקטנים כמו בכפר
-    lake:  {tree:{pick:[{model:'n_tree',h:100,tint:'#a9d2bf'},{model:'v_treeB',w:55,tint:'#bfe0d0'},{model:'n_reeds',h:55}]},rock:{model:'n_round',w:55,tint:'#a9bcb8'},hills:{model:'v_hills',w:260,tint:'#bfd8cc'}},
+    meadow:{hills:{pick:[{model:'n_tree',h:150,tint:'#cfe6bf'},{model:'n_pine',h:160},{model:'n_pine',h:140}]}},   // האחו: יער גבוה בשוליים במקום אריחי המשושה (שנראו כמו לוח משחק). העצים והסלעים הקטנים כמו בכפר
+    lake:  {tree:{pick:[{model:'n_tree',h:100,tint:'#a9d2bf'},{model:'n_pine',h:85,tint:'#bfe0d0'},{model:'n_reeds',h:55}]},rock:{model:'n_round',w:55,tint:'#a9bcb8'},hills:{model:'v_hills',w:260,tint:'#bfd8cc'}},
     ridge: {tree:{pick:[{model:'n_pine',h:125,snow:0.35},{model:'n_pine',h:95,snow:0.5}]},rock:{model:'n_crag',w:62,tint:'#eef4fa'},hills:{pick:[{model:'n_pine',h:175,snow:0.45},{model:'n_crag',w:120,tint:'#e2ecf4'},{model:'n_pine',h:150,snow:0.55}]}},
     desert:{tree:{pick:[{model:'n_acacia',h:85,tint:'#d8c27a'},{model:'n_cactus',h:70},{model:'n_dead',h:105,tint:'#e0b58a'}]},rock:{model:'n_crag',w:62,tint:'#e7b47a'},hills:{pick:[{model:'n_crag',w:115,tint:'#d9a05e'},{model:'n_dead',h:160,tint:'#e0b58a'},{model:'n_acacia',h:140,tint:'#d8c27a'}]}},
     storm: {tree:{pick:[{model:'n_dead',h:115,tint:'#8f86aa'},{model:'n_bare',h:90,tint:'#7d7598'}]},rock:{model:'n_block',w:60,tint:'#9a96b4'},hills:{pick:[{model:'n_block',w:105,tint:'#8a86a4'},{model:'n_dead',h:165,tint:'#8f86aa'},{model:'n_bare',h:130,tint:'#7d7598'}]}},
@@ -715,8 +717,9 @@ function syncWorld(){
     if(!m){const D=W3D.nodes[wKind(n.kind).shape],v=hash(n.x,n.y),md=Array.isArray(D.model)?D.model[v<0.5?0:1]:D.model;
       m=G.nodes[n.id]=vPut(md,n.x,n.y,D.w*(0.85+v*0.3),v*6.28,G.g);
       if(D.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(D.glow).multiplyScalar(0.5)}})}
-    if(m.userData.lift==null)tLift(m);
+    if(m.userData.lift==null){tLift(m);const L=W3D.log;if(wKind(n.kind).shape==='tree'){m.userData.log=vPut(L.model,n.x+n.r*L.dx,n.y+n.r*L.dy,L.w,hash(n.y,n.x)*6.28,G.g);tLift(m.userData.log)}}   // בול ליד עץ שאפשר לכרות
     m.visible=!n.dead&&(!TR||Math.abs(n.x-S.cam.x)+Math.abs(n.y-S.cam.y)<TERRAIN.cull*1.4);   // באחו הגדול: מקור רחוק לא מצויר
+    if(m.userData.log)m.userData.log.visible=m.visible;
     gather3d(n,m,G.g);   // מתכווץ, מתנדנד, נופל, גדם ונבט (gather.js)
   }
 }
