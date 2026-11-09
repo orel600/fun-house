@@ -533,11 +533,11 @@ function worldBot(m,L,god){
     if(f.st==='bite'){M.bites++;F.bite=true;tap();return stay()}
     if(f.st==='reel'){F.reel=true;if(fishNeedleIn())tap();return stay()}
     return stay()}
-  if(m.wp==='gate'){   // שער החורשה: ליד השער רק בועה וכפתור עגול (#wGo). לוחצים עליו, נפתח הכרטיס, ונכנסים רק מהכפתור שבכרטיס
-    const g=WORLD.gates.grove,pn=document.getElementById('wPanel'),wg=document.getElementById('wGo'),go=!pn.hidden&&pn.querySelector('[data-act="arena"][data-g="grove"]');
-    if(W.near==='grove'&&pn.hidden&&!wg.hidden&&(L.wFoeBack!=null||W.t-m.wt>90)){if(L.wGateAuto==null){L.wGateAuto=false;L.wGoBtn=wg.innerText.replace(/\s+/g,' ')}wg.click();return stay()}
-    if(W.near==='grove'&&!pn.hidden&&L.wGateAuto==null)L.wGateAuto=true;   // הכרטיס נפתח לבד, בלי לחיצה
-    if(W.near==='grove'&&go&&(L.wFoeBack!=null||W.t-m.wt>90)){L.wPicked=dropStats().picked;m.runBag=bag();L.wGateBtn=go.innerText;go.click();L.wArena=!S.wd&&S.mode==='play';m.wp='arena';return L}
+  if(m.wp==='gate'){   // שער החורשה: ליד השער רק בועה וכפתור עגול (#wGo). לחיצה אחת עליו נכנסת לזירה, בלי כרטיס (9.11)
+    const g=WORLD.gates.grove,pn=document.getElementById('wPanel'),wg=document.getElementById('wGo');
+    if(W.near==='grove'&&!pn.hidden&&L.wGateAuto==null)L.wGateAuto=true;   // כרטיס נפתח לבד: לא אמור לקרות
+    if(W.near==='grove'&&pn.hidden&&!wg.hidden&&(L.wFoeBack!=null||W.t-m.wt>90)){if(L.wGateAuto==null)L.wGateAuto=false;L.wGoBtn=wg.innerText.replace(/\s+/g,' ');
+      L.wPicked=dropStats().picked;m.runBag=bag();wg.click();L.wArena=!S.wd&&S.mode==='play';m.wp='arena';return L}
     return steer(g.x,g.y,false,0,L)}
   if(m.wp==='arena'){   // חזרנו מהזירה: לאותו שער, והשלל בתרמיל
     const g=WORLD.gates.grove;L.wBack=Math.round(Math.hypot(P.x-g.x,P.y-g.y));L.back=S.t;
@@ -2073,13 +2073,14 @@ function worldBot(m,L,god){
     try{startRun();for(let i=0;i<60*30&&t==null;i++){P.hp=P.maxHp;joy=null;S.mode='play';update(1/60);if(P.level>1)t=S.t}}
     finally{Math.random=rnd;window.eliteRoll=er;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode}return{t:t==null?null:t-ARENAS.gauntlet.firstGap,k:S.kills}});   // נספר מהגל הראשון (לפניו המתנה רכה, arenas.js)
   check(flv.t!=null&&flv.t<15,'רמה ראשונה בזירה: '+(flv.t!=null?'אחרי '+flv.t.toFixed(1)+' שניות מהגל הראשון':'לא הגיעה תוך 30 שניות'));
-  // הזירה (arenas.js, ARENAS.gauntlet): נכנסים מהכפתור היחיד בכרטיס של שער בעולם, ומשחקים עד הסוף (האויבים נופלים ביד, כדי שיהיה מהר).
+  // הזירה (arenas.js, ARENAS.gauntlet): נכנסים בלחיצה אחת על העיגול ליד שער בעולם, ומשחקים עד הסוף (האויבים נופלים ביד, כדי שיהיה מהר).
   // 10 גלים לפי הסדר, הפסקה בלי אויבים וריפוי של 12% בכל הפסקה, קירות רק בגלים 5-6, טבעת בגל 8, המונה, כל גל חזק יותר עם אויבים משלו, ובוס בגל האחרון שמנצח
   const wav=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},rw=window.runWon,rnd=Math.random;let won=0,sd=99;window.runWon=()=>{won++};
     Math.random=()=>(sd=(sd*16807)%2147483647)/2147483647;   // מזל משלה, כדי לא להזיז את המזל של הבדיקות שאחריה (אותו seed = אותה ריצה)
     try{enterWorld('home');const w=S.wd;o.btns={};
-      for(const g of ['pit','grove']){w.near=w.open=g;w.ui='';worldHud();o.btns[g]=document.querySelectorAll('#wPanel [data-act="arena"]').length}   // בכל שער כפתור זירה אחד
-      const b=document.querySelector('#wPanel [data-act="arena"]');o.btn=b?b.innerText:null;if(b)b.click();else{worldUi(false);startRun()}
+      const wg=document.getElementById('wGo');
+      for(const g of ['pit','grove']){w.near=g;w.open=null;w.ui='';worldHud();o.btns[g]=!wg.hidden&&document.getElementById('wPanel').hidden?1:0}   // בכל שער עיגול אחד שנכנס מיד, בלי כרטיס
+      o.btn=!wg.hidden?wg.innerText.replace(/\s+/g,' '):null;if(o.btn)wg.click();if(S.wd){o.btn=null;worldUi(false);startRun()}
       o.arena=S.arena;o.bar=getComputedStyle(document.getElementById('runbar')).display==='none';
       const A=ARENAS.gauntlet,N=A.list.length,dt=1/30,k={},tag={},types={},sups=[],maze=new Set(),heals=[],seen=new WeakSet(),ringA=new Set();o.N=N;o.heal=A.heal;
       // המונה לא נוגע בשכנים בשורה העליונה ולא בחיה (שמצוירת בקנבס: הקופסה שלה סביב המקום שלה על המסך, כשהיא ליד השחקן)
@@ -2384,7 +2385,7 @@ function worldBot(m,L,god){
     for(const x of els)if(x.r.left<-0.5||x.r.right>W+0.5||x.r.top<-0.5||x.r.bottom>H+0.5)off.push(x.n);
     o0.who=!!vis($('who'));o0.res=document.querySelectorAll('#'+(place==='world'?'w':'v')+'Bag .res').length;
     if(place==='world'){const mm=$('miniMap');o0.mini=!!vis(mm);if(o0.mini){mm.click();o0.miniOpen=!$('wMap').hidden&&S.mode==='map';wmapOpen(false)}}   // המפה הקטנה (minimap.js)
-    if(place==='world'){const g=$('wGo');o0.gateAuto=!$('wPanel').hidden;o0.goBtn=!!g&&!g.hidden;if(o0.goBtn)g.click()}   // שער: נפתח רק בלחיצה על העיגול
+    if(place==='world'){const g=$('wGo');o0.gateAuto=!$('wPanel').hidden;o0.goBtn=!!g&&!g.hidden}   // שער: רק עיגול, ולחיצה עליו נכנסת לזירה (לא לוחצים כאן)
     const pid=place==='world'?'wPanel':'vPanel',pn=vis($(pid));if(pn)for(const x of box('#nav .nbtn,#guide'))if(hit(pn,x.r))bad.push(pid+'×'+x.n);
     const win=(open,panel,sel)=>{open();const p=$(panel),b=document.querySelector(sel),r=vis(b),ok=!!r&&r.width>=40&&r.height>=40&&r.left>=0&&r.right<=W&&r.top>=0&&r.bottom<=H&&!p.hidden;
       const why=!ok?(!b?'אין כפתור':!r?'מוסתר':'מקום '+[r.left,r.top,r.width,r.height].map(Math.round).join(',')+(p.hidden?' חלון סגור':'')+(!$('npcDlg').hidden?' שיחה פתוחה':'')+' · רוחב העמוד '+document.documentElement.scrollWidth+'/'+innerWidth+' · רחב מדי: '+[...document.querySelectorAll('body *')].filter(e=>{const q=e.getBoundingClientRect();return q.width>0&&q.right>innerWidth+2&&!e.closest('[hidden]')}).slice(0,4).map(e=>e.id||e.className||e.tagName).join(',')):'';
@@ -2399,7 +2400,7 @@ function worldBot(m,L,god){
       o.cards=document.querySelectorAll('#vPanel .tcard').length;o.cols=ss.length===2&&ss[0]&&ss[1]?(Math.abs(ss[0].top-ss[1].top)<2?2:1):0;
       const tab=t=>{const b=document.querySelector('#vPanel [data-act="tab"][data-tab="'+t+'"]');if(b)b.click();return!!b};
       o.tradeBack=tab('up')&&!!document.querySelector('#vPanel .bwup')&&!document.querySelector('#vPanel .tcard')&&tab('main')&&document.querySelectorAll('#vPanel .tcard').length===o.cards}
-    o.wins[place==='world'?'gate':'market']=win(()=>{},pid,'#'+pid+' [data-act="close"]');
+    if(place!=='world')o.wins.market=win(()=>{},pid,'#'+pid+' [data-act="close"]');   // בעולם אין כרטיס שער: העיגול נכנס מיד
     o.wins.gear=win(gearOpen,'ovGear','#gearClose');
     o.wins.quests=win(()=>questLogOpen(true),'qLog','#qLog [data-act="close"]');
     o.wins.book=win(()=>bookOpen(true),'bookWin','#bookWin [data-act="close"]');
@@ -2496,7 +2497,7 @@ function worldBot(m,L,god){
     const v=await page.evaluate(uiMeasure,'village');
     const vm=await page.evaluate(menuTest,'village');
     if(CFG.shots){await page.evaluate(()=>$('menuBtn').click());await shot('ui-menu-'+nm);await page.evaluate(()=>menuClose())}
-    await page.evaluate(()=>{leaveVillage();const g=WORLD.gates.grove;P.x=g.x;P.y=g.y+g.r+P.r+2;S.cam.x=P.x;S.cam.y=P.y});   // שער לזירה: העיגול פותח כרטיס (הביתה ושבילים נכנסים מיד)
+    await page.evaluate(()=>{leaveVillage();const g=WORLD.gates.grove;P.x=g.x;P.y=g.y+g.r+P.r+2;S.cam.x=P.x;S.cam.y=P.y});   // ליד שער לזירה: העיגול נראה (לחיצה עליו נכנסת מיד)
     await page.clock.runFor(200);
     await shot('ui-world-'+nm);
     const w=await page.evaluate(uiMeasure,'world');
@@ -4581,9 +4582,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(L.heroHp===heroHp,'פסיבית בריצה: הלוחם קיבל +'+L.heroHp+' חיים (צפוי +'+heroHp+')');
   check(again,'בחירת דמות: '+(again?'לא חוזרת במשחק השני':'הופיעה שוב'));
   for(const nm in uiR){const {v,w}=uiR[nm],all=[...Object.entries(v.wins),...Object.entries(w.wins)],bad=[...v.bad,...w.bad],off=[...v.off,...w.off];
-    check(!bad.length&&!off.length&&v.n>3&&w.n>3&&v.panel&&w.panel&&w.gateAuto===false&&w.goBtn&&v.who&&w.who&&w.mini&&w.miniOpen&&v.res<=2&&w.res<=2&&v.more&&v.cards>0&&v.tradeBack&&(nm!=='land'||v.cols===2)&&all.every(x=>x[1]==='ok')&&v.esc&&v.backdrop&&v.tapOut,
+    check(!bad.length&&!off.length&&v.n>3&&w.n>3&&v.panel&&w.gateAuto===false&&w.goBtn&&v.who&&w.who&&w.mini&&w.miniOpen&&v.res<=2&&w.res<=2&&v.more&&v.cards>0&&v.tradeBack&&(nm!=='land'||v.cols===2)&&all.every(x=>x[1]==='ok')&&v.esc&&v.backdrop&&v.tapOut,
       'ממשק, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(bad.length?'נוגעים זה בזה: '+bad.join(', '):'הפס העליון והסרגל לא נוגעים')+(off.length?', מחוץ למסך: '+off.join(', '):'')+
-      (v.who&&w.who?', רמה וחיים בפינה':', אין "מי אני"')+(w.mini?(w.miniOpen?', מפה קטנה פותחת את המפה':', המפה הקטנה לא פותחת'):', אין מפה קטנה')+', '+Math.max(v.res,w.res)+' משאבים למעלה'+(w.gateAuto?', כרטיס השער נפתח לבד':w.goBtn?', שער: עיגול ואז כרטיס':', אין עיגול ליד השער')+(v.more?', "+N" לשאר התרמיל':', אין "+N"')+', '+v.cards+' כרטיסים במסחר'+(v.cols===2?' בשני טורים':'')+(v.tradeBack?', ✕ חוזר לשוק':', ✕ לא חזר לשוק')+' · יציאה: '+all.map(x=>x[0]+(x[1]==='ok'?' ✕':' '+x[1])).join(', ')+
+      (v.who&&w.who?', רמה וחיים בפינה':', אין "מי אני"')+(w.mini?(w.miniOpen?', מפה קטנה פותחת את המפה':', המפה הקטנה לא פותחת'):', אין מפה קטנה')+', '+Math.max(v.res,w.res)+' משאבים למעלה'+(w.gateAuto?', כרטיס השער נפתח לבד':w.goBtn?', שער: עיגול שנכנס בלחיצה':', אין עיגול ליד השער')+(v.more?', "+N" לשאר התרמיל':', אין "+N"')+', '+v.cards+' כרטיסים במסחר'+(v.cols===2?' בשני טורים':'')+(v.tradeBack?', ✕ חוזר לשוק':', ✕ לא חזר לשוק')+' · יציאה: '+all.map(x=>x[0]+(x[1]==='ok'?' ✕':' '+x[1])).join(', ')+
       (v.esc?', Esc':', Esc לא סוגר')+(v.backdrop?', רקע':', רקע לא סוגר')+(v.tapOut?', נגיעה במשחק':', נגיעה במשחק לא סוגרת יומן'))}
   if(uiNoScroll){const n=uiNoScroll;check(n.stv&&!n.gear.length&&!n.cut.length&&n.cols>=4&&!n.npc&&n.pager,'חלונות בלי גלילה, לרוחב: '+(n.gear.length?'הציוד נגלל ('+n.gear.join(', ')+')':'הציוד ודף הדמות נכנסים')+
     (n.stv?'':', דף הדמות לא נפתח')+(n.cut.length?', טקסט חתוך: '+n.cut.join(' | '):'')+', התרמיל '+n.cols+' בשורה'+
@@ -4673,7 +4674,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   const DA=JSON.parse(L.dropsArena||'{}');
   check(L.wDropGround&&L.wPicked>0&&DA.spawned>0&&DA.picked>0,'שלל על הרצפה: '+(L.wDropGround?'עץ נפל לרצפה לפני התרמיל':'נכנס לתרמיל בלי להיראות')+', בעולם נאספו '+(L.wPicked||0)+' בהליכה'+
     ' · בזירה נפלו '+(DA.spawned||0)+', נאספו בהליכה '+(DA.picked||0)+', ובסוף לבד '+(DA.auto||0));
-  check(L.wArena&&L.wGateAuto===false&&!!L.wGoBtn&&L.wBack!=null&&L.wBack<200,'שער לזירה: '+(L.wGateAuto?'הכרטיס נפתח לבד':L.wGoBtn?'ליד השער רק עיגול "'+L.wGoBtn+'", ולחיצה פותחת את הכרטיס':'אין עיגול ליד השער')+', '+(L.wArena?'לחיצה על "'+L.wGateBtn+'" מתחילה ריצה':'לא נכנס לזירה')+(L.wBack!=null?', בסוף חזר לשער ('+L.wBack+' פיקסלים ממנו)':', לא חזר לעולם'));
+  check(L.wArena&&L.wGateAuto===false&&!!L.wGoBtn&&L.wBack!=null&&L.wBack<200,'שער לזירה: '+(L.wGateAuto?'כרטיס נפתח לבד':L.wGoBtn?'ליד השער רק עיגול "'+L.wGoBtn+'"':'אין עיגול ליד השער')+', '+(L.wArena?'לחיצה אחת מתחילה ריצה':'לחיצה על העיגול לא נכנסה לזירה')+(L.wBack!=null?', בסוף חזר לשער ('+L.wBack+' פיקסלים ממנו)':', לא חזר לעולם'));
   check(L.back!=null&&!!L.lootGot&&L.lootSaved,'שלל: '+(L.won!=null?'ניצחון '+t(L.won):L.died!=null?'נפל '+t(L.died):'הריצה לא נגמרה')+
     (L.back!=null?', חזר לשער. במסך: '+L.lootTxt+' · בתרמיל: '+(L.lootGot||'כלום')+(L.lootSaved?', נשמר':', לא נשמר'):''));
   const D=L.wDeath||{};
