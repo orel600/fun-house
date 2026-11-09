@@ -2310,7 +2310,7 @@ function worldBot(m,L,god){
   // רגע הסכנה של הבוס (arena-danger.js, MLBB 2.1): המילוי לפי השעונים האמיתיים מגיע ל-100% ברגע הפגיעה (בפריים האחרון לפניה: 1 פחות פריים),
   // באמצע לפי החשבון (גל הדף: 0.4 מתוך 1.0 ברגע שהאזהרה נגמרת), תקתוק, הבזק, חריכה עד max, ו"פחות אפקטים" בלי חריכה. המכשף במג'נטה
   const adg=await page.evaluate(()=>{const o={},mode=S.mode,fl=SAVE.fxLess,bak=JSON.stringify(SAVE);
-    try{reset();S.mode='play';enemies.length=0;S.arena='classic';SAVE.fxLess=false;P.hp=P.maxHp=1e9;
+    try{reset();S.mode='play';enemies.length=0;S.arena='classic';SAVE.fxLess=false;P.hp=P.maxHp=1e9;P.next=1e9;   // P.next: בלי עליית רמה באמצע (S.mode='level' עוצר את update, ואז אין st)
       for(const k in ARDG.stat.hitP)delete ARDG.stat.hitP[k];const n0={...ARDG.stat};ARDGS.sc.length=0;
       const b=makeBoss();b.x=P.x+200;b.y=P.y;S.boss=b;enemies.push(b);b.hp=b.max=1e12;
       const run=(k,sec)=>{b.patT=99;b.arTele=null;doPattern(b,k);let mid=null;for(let i=0;i<sec*60;i++){b.patT=99;P.hp=P.maxHp;update(1/60);const st=ARDGS.b.get(b);if(st&&mid==null&&st.ph==='after')mid=st.p}return mid};
@@ -2321,7 +2321,7 @@ function worldBot(m,L,god){
       SAVE.fxLess=true;ARDGS.sc.length=0;run('shock',2.5);o.less=ARDGS.sc.length===0;
       o.col=ARDG.col==='#FF3DD8'&&ATG.fallback.col===ARDG.col;
       // reduced motion: no flash and no tick thickening; the fill and outline stay. Measured on the drawing itself ('lighter' fills, line width)
-      SAVE.fxLess=false;const calm0=SAVE.calm;SAVE.calm=true;b.patT=99;b.arTele=null;doPattern(b,'ring');const tl=b.arTele;tl.t=tl.max*0.5;update(1/60);const st=ARDGS.b.get(b);st.tk=S.t;
+      SAVE.fxLess=false;const calm0=SAVE.calm;SAVE.calm=true;S.mode='play';S.hitstop=0;b.patT=99;b.arTele=null;doPattern(b,'ring');const tl=b.arTele;tl.t=tl.max*0.5;update(1/60);const st=ARDGS.b.get(b);st.tk=S.t;
       let lighter=0,maxW=0;const fl=ctx.fill,sk=ctx.stroke;ctx.fill=function(){if(ctx.globalCompositeOperation==='lighter')lighter++;return fl.apply(this,arguments)};ctx.stroke=function(){maxW=Math.max(maxW,ctx.lineWidth);return sk.apply(this,arguments)};
       const r3=R3D.on;R3D.on=false;   // the canvas path (2D); 3D is checked below on the scene
       try{S.cam.x=b.x;S.cam.y=b.y;ardgDrawUnder();b.ardgFl=S.t;if(!ARDGS.fl.includes(b))ARDGS.fl.push(b);ardgDrawOver()}finally{ctx.fill=fl;ctx.stroke=sk;R3D.on=r3}
