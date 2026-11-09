@@ -17,7 +17,7 @@ const DRAMA={
     skull:{up:300,side:110,spin:10,r:0.65,t:1.0},
     bones:{n:4,sp:[160,300],up:170,len:[10,15],t:0.85},
     pile:{t:1.1,fade:0.45},ring:{t:0.45,r:2.6},col:'#EFE7D2',line:'#3B3328',loot:200},   // loot: הקפיצה של השלל לפני שהוא נמשך
-  crush:{gap:3,per:0.2,max:2.5,exec:{strong:0.3,even:0.15},kills:4,win:1.2,slow:0.12,shake:8,ring:{t:0.5,r:170}},
+  crush:{gap:3,per:0.2,max:2.5,blast:1.5,exec:{strong:0.3,even:0.15},kills:4,win:1.2,slow:0.12,shake:8,ring:{t:0.5,r:170}},
   bal:{auto:0.75,skill:1.3,needSk:2,cd:{quake:5,splash:4.5,frost:6,flame:4.5,zap:4},cdK:0.8},
   weak:{gap:-2,full:-5,charge:0.6,pair:200,
     pounce:{every:[3.5,6],warn:0.9,leap:0.25,r:54,hp:0.12,range:340,far:90}}
@@ -95,10 +95,15 @@ wskUse=function(id){
   const ok=dm0Use.apply(this,arguments);
   if(ok&&dmOn()){const i=S.sk.ids.indexOf(id),D=skDef(id),B=DRAMA.bal;
     if(i>=0&&D&&D.cd>0&&S.sk.cd[i]>0)S.sk.cd[i]*=dmCdK(id);
-    DM.cast={id,t:DM.t,k:0}}
+    DM.cast={id,t:DM.t,k:0};dmBlast(id)}
   return ok};
 // פי כמה הקירור בעולם. לפי הקירור הבסיסי (cd0, לפני שדרוג אצל הכוהנת), כדי ששדרוג ימשיך לקצר
 function dmCdK(id){const D=skDef(id),B=DRAMA.bal;if(!dmOn()||!D)return 1;return B.cd[id]?B.cd[id]/(D.cd0||SKILLS.list[id].cd0||D.cd):B.cdK}
+// פער crush.gap ומעלה: סקיל טבעת (רקיעה, התזה, כפור, להבה) נוחת בפיצוץ רחב יותר, כדי שגם קבוצה מפוזרת נמחצת
+function dmBlast(id){
+  const W=S.wsk,s=W&&W.shots[W.shots.length-1];if(!s||s.id!==id||s.dmB)return;s.dmB=1;
+  let n=null,bd=1e9;for(const e of enemies){if(e.dead||!dmOrd(e))continue;const d=Math.hypot(e.x-s.tx,e.y-s.ty);if(d<bd){bd=d;n=e}}
+  if(n&&dmGap(n)>=DRAMA.crush.gap)s.r*=DRAMA.crush.blast}
 const dm0Upd=wskUpdate;
 wskUpdate=function(dt){dm0Upd.apply(this,arguments);if(dmOn())dmUpdate(dt)};
 
