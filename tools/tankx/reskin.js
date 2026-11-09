@@ -80,8 +80,8 @@ globalThis.DBG={body,ham};
 (async()=>{
  if(process.env.DEBUG_SPLIT){const io=new NodeIO(),uv=m.uv.map((v,i)=>i%2?1-v:v),jpg=await sharp(texF).resize(512,512).jpeg({quality:80}).toBuffer();for(const [nm,sel] of [['DbgBody',body],['DbgHam',ham]]){const d=new Document(),b=d.createBuffer(),A=(a,t,C)=>d.createAccessor().setType(t).setArray(C.from(a.flat?a.flat():a)).setBuffer(b);const mt=d.createMaterial('m').setDoubleSided(true).setBaseColorTexture(d.createTexture().setImage(new Uint8Array(jpg)).setMimeType('image/jpeg'));const pr=d.createPrimitive().setAttribute('POSITION',A(sel.V.map(o=>P0[o]),'VEC3',Float32Array)).setAttribute('NORMAL',A(sel.V.map(o=>N0[o]),'VEC3',Float32Array)).setAttribute('TEXCOORD_0',A(sel.V.map(o=>[uv[o*2],uv[o*2+1]]),'VEC2',Float32Array)).setIndices(A(sel.tri,'SCALAR',Uint32Array)).setMaterial(mt);d.createScene().addChild(d.createNode(nm).setMesh(d.createMesh(nm).addPrimitive(pr)));await io.write(path.join(outDir,nm+'.glb'),d)}console.log('debug split written');return}
  const io=new NodeIO().registerExtensions(ALL_EXTENSIONS);fs.mkdirSync(outDir,{recursive:true});
- const jpg=await sharp(texF).resize(1024,1024).jpeg({quality:88}).toBuffer();
- const uv=m.uv.map((v,i)=>i%2?1-v:v);
+ const jpg=await require('./emis.js').liftTexture(texF,1024,{gamma:+process.env.GAMMA||1,bright:+process.env.BRIGHT||1});
+ const uv=m.uv.map((v,i)=>i%2?1-v:v);const emj=await require('./emis.js').makeEmissive(texF,1024,{gain:+process.env.EGAIN||0.8});
  // body on the KayKit Barbarian skeleton, bone translations rewritten to the tank's lengths
  const d=await io.read(KK),root=d.getRoot(),skin=root.listSkins()[0],joints=skin.listJoints();
  const rm=new Set(root.listNodes().filter(n=>n.getMesh()));
@@ -112,7 +112,7 @@ globalThis.DBG={body,ham};
  const ibm=joints.map(j=>{const w=j.getWorldMatrix();return inv(w)});   // after translations changed (gltf-transform recomputes world matrices)
  skin.setInverseBindMatrices(d.createAccessor().setType('MAT4').setArray(Float32Array.from(ibm.flat())).setBuffer(root.listBuffers()[0]));
  const buf=root.listBuffers()[0],A_=(a,t,C)=>d.createAccessor().setType(t).setArray(C.from(a.flat?a.flat():a)).setBuffer(buf);
- const mat=d.createMaterial('tank').setRoughnessFactor(0.9).setMetallicFactor(0).setDoubleSided(true).setBaseColorTexture(d.createTexture().setImage(new Uint8Array(jpg)).setMimeType('image/jpeg'));
+ const mat=d.createMaterial('tank').setRoughnessFactor(0.9).setMetallicFactor(0).setDoubleSided(true).setBaseColorTexture(d.createTexture().setImage(new Uint8Array(jpg)).setMimeType('image/jpeg')).setEmissiveTexture(d.createTexture().setImage(new Uint8Array(emj)).setMimeType('image/jpeg')).setEmissiveFactor([1,1,1]);
  const mk=(sel,name,jointsFor)=>{const P=sel.V.map(o=>P1[o]),N=sel.V.map(o=>N1[o]),U=sel.V.map(o=>[uv[o*2],uv[o*2+1]]);
    const J_=sel.V.map(o=>SI[o].map(j=>jidx[J[j][0]])),W_=sel.V.map(o=>SW[o]);
    return d.createPrimitive().setAttribute('POSITION',A_(P,'VEC3',Float32Array)).setAttribute('NORMAL',A_(N,'VEC3',Float32Array)).setAttribute('TEXCOORD_0',A_(U,'VEC2',Float32Array)).setAttribute('JOINTS_0',A_(J_,'VEC4',Uint16Array)).setAttribute('WEIGHTS_0',A_(W_,'VEC4',Float32Array)).setIndices(A_(sel.tri,'SCALAR',Uint32Array)).setMaterial(mat)};
@@ -124,16 +124,16 @@ globalThis.DBG={body,ham};
  const {prune}=require('@gltf-transform/functions');await d.transform(prune());
  await io.write(path.join(outDir,'TankKK.glb'),d);
  // hammer prop
- const d2=new Document(),b2=d2.createBuffer(),mat2=d2.createMaterial('tank').setRoughnessFactor(0.9).setMetallicFactor(0).setDoubleSided(true).setBaseColorTexture(d2.createTexture().setImage(new Uint8Array(jpg)).setMimeType('image/jpeg'));
+ const d2=new Document(),b2=d2.createBuffer(),mat2=d2.createMaterial('tank').setRoughnessFactor(0.9).setMetallicFactor(0).setDoubleSided(true).setBaseColorTexture(d2.createTexture().setImage(new Uint8Array(jpg)).setMimeType('image/jpeg')).setEmissiveTexture(d2.createTexture().setImage(new Uint8Array(emj)).setMimeType('image/jpeg')).setEmissiveFactor([1,1,1]);
  let hp=ham.V.map(o=>toGrip(P0[o])),hn=ham.V.map(o=>toGripN(N0[o])),hu=ham.V.map(o=>[uv[o*2],uv[o*2+1]]);
  // longer handle: the Tripo head block is lifted by DY and the handle is rebuilt as a clean 10-sided tube (+ bands, pommel) coloured from the original handle texels
- const DY=+process.env.DY||0.10;const headMin=Math.min(...hp.map(p=>p[1]));hp=hp.map(p=>[p[0],p[1]+DY,p[2]]);
+ const DY=process.env.DY!==undefined?+process.env.DY:0.10;const headMin=Math.min(...hp.map(p=>p[1]));hp=hp.map(p=>[p[0],p[1]+DY,p[2]]);
  const med=a=>{a.sort((x,y)=>x-y);return a[a.length>>1]};
  const uvs=(sel)=>{const U=[],V=[];for(let t=0;t<nT;t++)if(triHam[t]==='cut'){const c=[0,1,2].reduce((q,k)=>add(q,mul(P0[idx[t*3+k]],1/3)),[0,0,0]);if(sel(axisT(c),axisR(c))){for(let k=0;k<3;k++){U.push(uv[idx[t*3+k]*2]);V.push(uv[idx[t*3+k]*2+1])}}}return U.length?[med(U),med(V)]:[0.5,0.5]};
  const uvH=uvs((t,r)=>r<0.03&&t<0.1),uvB=uvs((t,r)=>t>0.12);console.log('handle uv',uvH.map(v=>+v.toFixed(3)),'band uv',uvB.map(v=>+v.toFixed(3)));
  const tube=(y0,y1,R,seg,uvv)=>{const P=[],N=[],U=[],I=[];for(let i=0;i<=seg;i++){const a=i/seg*Math.PI*2,x=Math.cos(a),z=Math.sin(a);for(const y of [y0,y1]){P.push([x*R,y,z*R]);N.push([x,0,z]);U.push(uvv)}}
    for(let i=0;i<seg;i++){const b=i*2;I.push(b,b+1,b+3,b,b+3,b+2)}return {P,N,U,I}};
- const parts=[tube(-0.26,headMin+DY+0.06,0.03,10,uvB),tube(-0.2,-0.15,0.042,10,uvH),tube(0.05,0.09,0.042,10,uvH),tube(0.28,0.32,0.042,10,uvH),tube(-0.3,-0.26,0.05,10,uvH)];
+ const parts=[tube(-0.10,headMin+DY+0.06,0.03,10,uvB),tube(-0.06,-0.01,0.042,10,uvH),tube(0.05,0.09,0.042,10,uvH),tube(0.28,0.32,0.042,10,uvH),tube(-0.14,-0.10,0.05,10,uvH)];
  const base0=hp.length;let off=hp.length;const addI=[];for(const q of parts){hp.push(...q.P);hn.push(...q.N);hu.push(...q.U);for(const i of q.I)addI.push(i+off);off+=q.P.length}
  ham.tri=[...ham.tri,...addI];
  const A2=(a,t,C)=>d2.createAccessor().setType(t).setArray(C.from(a.flat?a.flat():a)).setBuffer(b2);
