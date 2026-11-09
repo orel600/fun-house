@@ -194,7 +194,8 @@ function mbWall(u,x,s){
 // הודעה חדשה לא קוטעת את הקודמת לפני MOBA.msgMin שניות: מחכה בתור (עד 2), ואז מחליפה אותה
 // pri: הודעה שחייבת להגיע בזמן (חדר ההימור): קופצת לראש התור
 function mbBanner(txt,col,pri){const now=performance.now(),Q=mbBanner.q||(mbBanner.q=[]);if(mbBanner.t===txt&&now-mbBanner.at<1500||Q.some(m=>m.txt===txt))return;
-  const wait=mbBanner.at?mbBanner.at+MOBA.msgMin*1000-now:0;
+  const uF=typeof mbfxS==='function'&&mbfxS().ult,ultW=uF&&uF.t>0?uF.t*1000:0;   // שם הסקיל-על על המסך (moba-fx.js): ההודעה מחכה לו, אחת בכל פעם
+  const wait=Math.max(ultW,mbBanner.at?mbBanner.at+MOBA.msgMin*1000-now:0);
   if(wait<=0&&!Q.length){mbBanner.t=txt;mbBanner.at=now;banner(txt,col);return}
   if(pri){Q.unshift({txt,col});if(Q.length>2)Q.pop();if(!mbBanner.tm)mbBanner.tm=setTimeout(mbBannerNext,Math.max(0,wait));return}
   Q.push({txt,col});if(Q.length>2)Q.shift();if(!mbBanner.tm)mbBanner.tm=setTimeout(mbBannerNext,Math.max(0,wait))}

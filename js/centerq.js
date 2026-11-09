@@ -58,7 +58,7 @@ setInterval(()=>{if(CQS.cur||CQS.q.length)cqTick()},50);
 // הודעה כללית בזירה (בסגנון banner): loot.js, book.js
 function cqSay(txt,col,pri){
   if(!cqOn())return banner(txt,col);
-  cqPush({kind:'say',key:'t:'+txt,pri:pri??cqPri(txt),dur:1.6,show:()=>CQS.raw(txt,col),hide:cqBanHide});
+  cqPush({kind:'say',txt,key:'t:'+txt,pri:pri??cqPri(txt),dur:1.6,show:()=>CQS.raw(txt,col),hide:cqBanHide});
 }
 const cqBanHide=()=>{const b=document.getElementById('banner');if(b)b.classList.remove('on')};
 
