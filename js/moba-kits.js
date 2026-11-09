@@ -10,7 +10,8 @@ const MBKIT={
   // lunge: כשהמטרה קצת מחוץ לטווח, התקיפה הרגילה מזנקת אליה (פעם ב-lungeCd שניות). כך טנק ולוחם לא רודפים לנצח (אוראל, 3.11)
   tank:{icon:'🔨',dt:'earth',hp:1050,speed:150,front:true,def:0.15,   // def: פחות נזק אליו תמיד, כי הוא נלחם מקרוב
     atk:{dmg:30,range:46,cd:1.0,dt:'earth',slow:{k:0.25,t:1.2},lunge:95,lungeCd:2.5},   // כל מכה בפטיש מאטה 25%: מי שנפגע לא בורח
-    s1:{id:'anvil',kind:'point',cd:10,range:300,r:95,dmg:80,stun:1.1,dt:'earth'},   // סדן נופל: קופץ אל הנקודה ונוחת כמו סדן, מהמם מסביב
+    s1:{id:'anvil',kind:'point',cd:10,range:300,r:95,dmg:80,stun:1.1,dt:'earth',
+      field:{k:0.30,t:2}},   // סדן נופל: קופץ אל הנקודה ונוחת כמו סדן, מהמם מסביב. field (חבילת הבוקר, השינוי היחיד שאושר): אחרי הנחיתה שדה ברדיוס של המכה, מאט אויבים 30% כל עוד הם בו, 2 שניות. ערכים התחלתיים שלא נבדקו: מכוונים רק דרך tools/moba-balance.js ואוראל   // סדן נופל: קופץ אל הנקודה ונוחת כמו סדן, מהמם מסביב
     s2:{id:'taunt',kind:'self',cd:13,r:170,t:1.8,pull:55,shield:170,shieldT:3,burn:16,dt:'fire'},   // קריאת קרב: מושך קצת, כולם תוקפים רק אותו, מגן שסופג, ומי שמכה בו נשרף
     ult:{id:'wall',kind:'point',cd:50,range:220,r:180,dmg:110,stun:1.3,t:4,dt:'earth'}},   // חומת ברזל: מושכת את כולם לנקודה, מהממת, וחומה עולה מאחוריהם וחוסמת את הבריחה
   // הלוחם: נלחם מקרוב, נכנס ולא יוצא. גל חרב שמגיע רחוק ומהמם, סיבוב שמחזיר חיים, וזעם שאי אפשר לעצור
@@ -57,7 +58,8 @@ function mbCast(u,slot,aim){
   mbAnimCast(u,s,slot,ang);   // הבזק ההטלה ומצב על המטיל (moba-skill-anim.js). רק מראה
   switch(s.id){
     case 'anvil':{const p=pt(),d=Math.hypot(p.x-u.x,p.y-u.y);   // קופץ ונוחת: הלם ונזק מסביב לנקודת הנחיתה
-      u.st.dash={vx:Math.cos(ang),vy:Math.sin(ang),sp:800,left:Math.max(1,d),jump:true,end:()=>{for(const o of foesIn(u.x,u.y,s.r)){mbDmg(u,o,s.dmg*k,s.dt,{big:true});mbCC(o,'stun',s.stun,u);mbAnimHit(o,s.dt)}mbBoom(u.x,u.y,s.r,s.dt);mbfxSlam(u,s.r,s.dt);mbfxSk('sk_anvil',u.x,u.y,{r:s.r});mbfxSk('sk_anvil_wave',u.x,u.y,{r:s.r});mbAnimLand('anvil',u.x,u.y,s)}};break}
+      u.st.dash={vx:Math.cos(ang),vy:Math.sin(ang),sp:800,left:Math.max(1,d),jump:true,end:()=>{for(const o of foesIn(u.x,u.y,s.r)){mbDmg(u,o,s.dmg*k,s.dt,{big:true});mbCC(o,'stun',s.stun,u);mbAnimHit(o,s.dt)}mbBoom(u.x,u.y,s.r,s.dt);mbfxSlam(u,s.r,s.dt);mbfxSk('sk_anvil',u.x,u.y,{r:s.r,hold:s.field?s.field.t:0});mbfxSk('sk_anvil_wave',u.x,u.y,{r:s.r});mbAnimLand('anvil',u.x,u.y,s);
+        if(s.field)mbZone(u,u.x,u.y,s.r,0,null,'anvil',{t:s.field.t,tick:z=>{for(const o of foesIn(z.x,z.y,z.r))mbSlow(o,s.field.k,0.2)}})}};break}   // רק האטה: בלי נזק ובלי הלם נוסף. מגדלים ובסיסים לא (foesIn, mbSlow). יוצאים מהשדה: נגמר תוך 0.2 שנייה
     case 'taunt':{for(const o of foesIn(u.x,u.y,s.r)){mbPull(o,u.x,u.y,s.pull,u.r+o.r+6);if(mbCC(o,'taunt',s.t,u))mbAnimTaunt(o,s.t)}
       mbShield(u,s.shield*k,s.shieldT);u.st.armor=s.shieldT;u.st.armorK=0;u.st.burnBack=s.burn;mbBoom(u.x,u.y,s.r,'fire');mbWord(u,'taunt');mbfxSk('sk_taunt',u.x,u.y,{r:s.r,follow:u,loop:true,dur:s.t});break}
     case 'wall':{const p=pt(),dir=u.team?-1:1;   // מושך את כולם אל הנקודה, הלם, וחומה בצד שלהם (אל הבסיס שלהם) שחוסמת את הבריחה

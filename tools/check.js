@@ -4509,6 +4509,23 @@ function worldBot(m,L,god){
     MBATK3D.on=true;try{mobaExit()}catch(e){}return o});
   check(!tka.err&&tka.dmg>0&&tka.same&&tka.snd===1&&tka.d3,'underworld tank attack (visual only): '+(tka.err||'damage '+tka.dmg+(tka.same?' and cooldown unchanged by the visuals':' CHANGED by the visuals!')+', impact sound '+(tka.snd===1?'on the damage frame':tka.snd+'×')+
     (tka.ph==null?' (2D: no body)':', strike '+(tka.ph==='hit'&&tka.clip?'on the frame':'missing ('+tka.ph+'/'+tka.clip+')')+', hard stop at '+tka.stop+', then '+tka.base)));
+  // tank s1 slow field (moba-kits.js, the one approved mechanic change of the morning package): after the anvil lands, an mbZone the size of the slam
+  // slows enemies inside by field.k, refreshed in short steps (so it ends when they walk out), no damage, and the zone ends after field.t
+  const anf=await page.evaluate(()=>(()=>{const o={};try{mobaStart('tank');const me=MB.me,s=MBKIT.tank.s1;
+  const foes=MB.u.filter(x=>x.team!==me.team&&x.k==='hero'),foe=foes[0],late=foes[1];
+  me.lvl=10;me.cd.s1=0;const tx=me.x+150,ty=me.y;for(const f of [foe,late]){f.hp=f.max=1e9;f.st.root=99}
+  foe.x=tx+30;foe.y=ty;late.x=tx+600;late.y=ty;
+  o.cast=mbCast(me,'s1',{x:tx,y:ty});let landed=-1;
+  for(let i=0;i<60&&landed<0;i++){mobaUpdate(1/60);if(!me.st.dash)landed=i}
+  me.st.stun=99;let mine=0;const md=mbDmg;mbDmg=function(u){if(u===me)mine++;return md.apply(this,arguments)};o.zone=MB.zones.some(z=>z.look==='anvil');
+  const hold=(f,x,n)=>{for(let i=0;i<n;i++){f.x=x;mobaUpdate(1/60)}};
+  hold(late,tx+600,30);o.lateBefore=!(late.st.slow>0);   // 0.5s: far away, no slow
+  late.st.stun=0;hold(late,tx+20,6);o.lateIn=late.st.slow>0&&late.st.slow<=0.25&&late.st.slowK===s.field.k;   // walked in: 30%, refreshed in small steps
+  hold(late,tx+600,16);o.lateOut=!(late.st.slow>0);   // walked out: gone within 0.27s
+  for(let i=0;i<120;i++)mobaUpdate(1/60);o.ended=!MB.zones.some(z=>z.look==='anvil');
+  mbDmg=md;o.noDmg=mine===0;   // the field never damages (only damage from me counts: the tower near my base shoots)
+}catch(e){o.err=String(e&&e.stack||e)}try{mobaExit()}catch(e){}return o})());
+  check(!anf.err&&anf.cast&&anf.zone&&anf.lateBefore&&anf.lateIn&&anf.lateOut&&anf.ended&&anf.noDmg,'underworld tank s1 slow field: '+(anf.err||[['zone after landing',anf.zone],['enemy walking in is slowed '+Math.round(100*0.3)+'%',anf.lateIn],['ends when it walks out',anf.lateOut],['no damage',anf.noDmg],['field ends',anf.ended]].map(x=>x[0]+(x[1]?' ✓':' ✗')).join(', ')));
   // צילומי משחקי השאול (QUINN, 8.11): חלון הבחירה, מסך הבנייה, משחק באמצע (כולם בוטים, 40 שניות), החנות ומסך הסוף, כדי לבדוק את החלון כולו
   // הגיבור: האחרון ב-MBKIT, כך שגיבור חדש מצולם לבד. תקלה כאן לא מפילה את הבדיקה, רק נכתבת
   if(CFG.shots){try{const E=(f,a)=>page.evaluate(f,a),k=await E(()=>Object.keys(MBKIT).pop());
