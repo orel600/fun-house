@@ -66,7 +66,9 @@ const CHARS={
   // הדף מורכב משני דפים של ג'מיני: מלפנים ומאחור מהראשון (חד), ומהצד מהשני (בראשון היו פנים כפולות), מוגדל לאותו גובה והפוך כך שיפנה ימינה
   orelHero:{src:path.join(ROOT,'art/heroes/OrelHeroHF.glb'),keep:['OrelHero_'],tex:512,fmt:'jpeg'},
   // הצייד החדש (ARI, 9.11.2026): דף הדמות של אוראל, TRELLIS ו-tools/trellis/reskin.py על השלד של ה-Ranger. מפתח חדש, לא מחליף את ranger: עד שאוראל מאשר, שום LOOK3D לא משתמש בו
-  hunterHF:{src:path.join(ROOT,'art/heroes/HunterHF.glb'),keep:['Ranger_'],tex:512,fmt:'jpeg'}
+  hunterHF:{src:path.join(ROOT,'art/heroes/HunterHF.glb'),keep:['Ranger_'],tex:512,fmt:'jpeg'},
+  // הטנק החדש (ARI, 9.11.2026): tools/blender/tankbody.js, גולם אובסידיאן וזהב על השלד של ה-Barbarian, פלטה בלי טקסטורת תמונה. מפתח חדש, לא מחליף את barbarian: LOOK3D לא משתמש בו עד שאוראל מאשר
+  tankHF:{src:path.join(ROOT,'art/heroes/TankHF.glb'),keep:['Barbarian_'],tex:64,fmt:'png'}
 };
 // חפצים שנאחזים ביד של אויב (המיקום ביד מוגדר ב-render3d.js)
 const PROPS={
