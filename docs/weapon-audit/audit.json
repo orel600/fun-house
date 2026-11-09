@@ -1,0 +1,2116 @@
+{
+ "view": {
+  "width": 1280,
+  "height": 590
+ },
+ "hueTol": 45,
+ "errors": [],
+ "weapons": {
+  "oakSword": {
+   "id": "oakSword",
+   "hasPic": true,
+   "tier": 0,
+   "look": {
+    "model": "w_sword_A"
+   },
+   "tierCol": "#B07A45",
+   "emoji": "🗡️",
+   "pic": {
+    "col": {
+     "n": 5139,
+     "hex": "#9f7146",
+     "hue": 29,
+     "peak": 28,
+     "sat": 0.56,
+     "v": 0.62,
+     "chroma": 0.93,
+     "neutral": false,
+     "tinted": false,
+     "name": "orange"
+    }
+   },
+   "cls": "warrior",
+   "own": {
+    "lazy": false,
+    "ready": false
+   },
+   "loadMs": 33,
+   "loadSt": "not lazy",
+   "own2": {
+    "lazy": false,
+    "ready": false
+   },
+   "doll": {
+    "model": "sword_A",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_sword_A",
+    "glow": null,
+    "gk": 0,
+    "ndc": 2.1,
+    "ndcCheer": 0.92,
+    "fitScale": 0.48,
+    "col": {
+     "n": 1280,
+     "hex": "#6c5544",
+     "hue": 26,
+     "peak": 23,
+     "sat": 0.37,
+     "v": 0.42,
+     "chroma": 0.99,
+     "neutral": false,
+     "tinted": false,
+     "name": "brown"
+    },
+    "bb": [
+     0,
+     126,
+     43,
+     182
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 56,
+    "projOut": 3,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 197,
+     "hex": "#cabb97",
+     "hue": 42,
+     "peak": 29,
+     "sat": 0.25,
+     "v": 0.8,
+     "chroma": 0.39,
+     "neutral": false,
+     "tinted": true,
+     "name": "greyish gold"
+    },
+    "n": 197,
+    "prop": "w_sword_A",
+    "glow": null,
+    "gk": 0
+   },
+   "matchDoll": true,
+   "matchPre": null,
+   "matchWorld": true,
+   "frameOk": false
+  },
+  "ironSword": {
+   "id": "ironSword",
+   "hasPic": true,
+   "tier": 1,
+   "look": {
+    "model": "w_sword_B"
+   },
+   "tierCol": "#9AA3AD",
+   "emoji": "🗡️",
+   "pic": {
+    "col": {
+     "n": 5390,
+     "hex": "#8d8286",
+     "hue": 338,
+     "peak": 23,
+     "sat": 0.08,
+     "v": 0.55,
+     "chroma": 0.06,
+     "neutral": true,
+     "tinted": true,
+     "name": "silver"
+    }
+   },
+   "cls": "warrior",
+   "own": {
+    "lazy": false,
+    "ready": false
+   },
+   "loadMs": 7,
+   "loadSt": "not lazy",
+   "own2": {
+    "lazy": false,
+    "ready": false
+   },
+   "doll": {
+    "model": "sword_B",
+    "prop": "w_sword_B",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_sword_B",
+    "glow": null,
+    "gk": 0,
+    "ndc": 2.1,
+    "ndcCheer": 0.91,
+    "fitScale": 0.48,
+    "col": {
+     "n": 1074,
+     "hex": "#485460",
+     "hue": 210,
+     "peak": 216,
+     "sat": 0.25,
+     "v": 0.38,
+     "chroma": 0.49,
+     "neutral": false,
+     "tinted": true,
+     "name": "greyish blue"
+    },
+    "bb": [
+     0,
+     126,
+     43,
+     182
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 40,
+    "projOut": 3,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 147,
+     "hex": "#b3b299",
+     "hue": 58,
+     "peak": 82,
+     "sat": 0.15,
+     "v": 0.72,
+     "chroma": 0.15,
+     "neutral": true,
+     "tinted": true,
+     "name": "silver"
+    },
+    "n": 147,
+    "prop": "w_sword_B",
+    "glow": null,
+    "gk": 0
+   },
+   "matchDoll": true,
+   "matchPre": null,
+   "matchWorld": true,
+   "frameOk": false
+  },
+  "silverBlade": {
+   "id": "silverBlade",
+   "hasPic": true,
+   "tier": 2,
+   "look": {
+    "model": "w_sword_C",
+    "glow": "#DCE3EA"
+   },
+   "tierCol": "#DCE3EA",
+   "emoji": "⚔️",
+   "pic": {
+    "col": {
+     "n": 5340,
+     "hex": "#8c97b4",
+     "hue": 224,
+     "peak": 222,
+     "sat": 0.22,
+     "v": 0.7,
+     "chroma": 0.51,
+     "neutral": false,
+     "tinted": true,
+     "name": "greyish blue"
+    }
+   },
+   "cls": "warrior",
+   "own": {
+    "lazy": false,
+    "ready": false
+   },
+   "loadMs": 7,
+   "loadSt": "not lazy",
+   "own2": {
+    "lazy": false,
+    "ready": false
+   },
+   "doll": {
+    "model": "sword_C",
+    "prop": "w_sword_C",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_sword_C",
+    "glow": "#DCE3EA",
+    "gk": 0.22,
+    "ndc": 2.52,
+    "ndcCheer": 0.95,
+    "fitScale": 0.4,
+    "col": {
+     "n": 579,
+     "hex": "#93979f",
+     "hue": 220,
+     "peak": 23,
+     "sat": 0.08,
+     "v": 0.63,
+     "chroma": 0,
+     "neutral": true,
+     "tinted": true,
+     "name": "silver"
+    },
+    "bb": [
+     0,
+     146,
+     41,
+     173
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 25,
+    "projOut": 3,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 137,
+     "hex": "#cbd0b0",
+     "hue": 69,
+     "peak": 83,
+     "sat": 0.15,
+     "v": 0.83,
+     "chroma": 0.28,
+     "neutral": true,
+     "tinted": true,
+     "name": "white"
+    },
+    "n": 137,
+    "prop": "w_sword_C",
+    "glow": "#DCE3EA",
+    "gk": 0.22
+   },
+   "matchDoll": true,
+   "matchPre": null,
+   "matchWorld": true,
+   "frameOk": false
+  },
+  "oakBow": {
+   "id": "oakBow",
+   "hasPic": true,
+   "tier": 0,
+   "look": {
+    "model": "w_bow_A_withString"
+   },
+   "tierCol": "#B07A45",
+   "emoji": "🏹",
+   "pic": {
+    "col": {
+     "n": 4036,
+     "hex": "#7e613b",
+     "hue": 34,
+     "peak": 27,
+     "sat": 0.53,
+     "v": 0.51,
+     "chroma": 0.86,
+     "neutral": false,
+     "tinted": false,
+     "name": "brown"
+    }
+   },
+   "cls": "hunter",
+   "own": {
+    "lazy": false,
+    "ready": false
+   },
+   "loadMs": 3,
+   "loadSt": "not lazy",
+   "own2": {
+    "lazy": false,
+    "ready": false
+   },
+   "doll": {
+    "model": "bow_A_withString",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_bow_A_withString",
+    "glow": null,
+    "gk": 0,
+    "ndc": 0.83,
+    "ndcCheer": 1.07,
+    "fitScale": 0.94,
+    "col": {
+     "n": 763,
+     "hex": "#5f5148",
+     "hue": 23,
+     "peak": 23,
+     "sat": 0.24,
+     "v": 0.37,
+     "chroma": 0.51,
+     "neutral": false,
+     "tinted": true,
+     "name": "greyish brown"
+    },
+    "bb": [
+     63,
+     63,
+     112,
+     203
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 0,
+    "projOut": 0,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 3,
+     "hex": "#98855c",
+     "hue": 41,
+     "peak": 28,
+     "sat": 0.39,
+     "v": 0.62,
+     "chroma": 1,
+     "neutral": false,
+     "tinted": false,
+     "name": "gold"
+    },
+    "n": 3,
+    "prop": "w_bow_A_withString",
+    "glow": null,
+    "gk": 0
+   },
+   "matchDoll": true,
+   "matchPre": null,
+   "matchWorld": null,
+   "frameOk": true
+  },
+  "ironBow": {
+   "id": "ironBow",
+   "hasPic": true,
+   "tier": 1,
+   "look": {
+    "model": "w_bow_B_withString"
+   },
+   "tierCol": "#9AA3AD",
+   "emoji": "🏹",
+   "pic": {
+    "col": {
+     "n": 3689,
+     "hex": "#7a6d6a",
+     "hue": 11,
+     "peak": 24,
+     "sat": 0.13,
+     "v": 0.48,
+     "chroma": 0.2,
+     "neutral": true,
+     "tinted": true,
+     "name": "silver"
+    }
+   },
+   "cls": "hunter",
+   "own": {
+    "lazy": false,
+    "ready": false
+   },
+   "loadMs": 4,
+   "loadSt": "not lazy",
+   "own2": {
+    "lazy": false,
+    "ready": false
+   },
+   "doll": {
+    "model": "bow_B_withString",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_bow_B_withString",
+    "glow": null,
+    "gk": 0,
+    "ndc": 0.9,
+    "ndcCheer": 1.07,
+    "fitScale": 0.94,
+    "col": {
+     "n": 1477,
+     "hex": "#535255",
+     "hue": 260,
+     "peak": 23,
+     "sat": 0.04,
+     "v": 0.4,
+     "chroma": 0.59,
+     "neutral": true,
+     "tinted": true,
+     "name": "dark grey"
+    },
+    "bb": [
+     66,
+     71,
+     127,
+     203
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 0,
+    "projOut": 0,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 1,
+     "hex": "#aa7d62",
+     "hue": 23,
+     "peak": 23,
+     "sat": 0.42,
+     "v": 0.67,
+     "chroma": 1,
+     "neutral": false,
+     "tinted": false,
+     "name": "orange"
+    },
+    "n": 1,
+    "prop": "w_bow_B_withString",
+    "glow": null,
+    "gk": 0
+   },
+   "matchDoll": true,
+   "matchPre": null,
+   "matchWorld": null,
+   "frameOk": true
+  },
+  "goldBow": {
+   "id": "goldBow",
+   "hasPic": true,
+   "tier": 3,
+   "look": {
+    "model": "w_bow_B_withString",
+    "glow": "#F4C74F"
+   },
+   "tierCol": "#F4C74F",
+   "emoji": "🏹",
+   "pic": {
+    "col": {
+     "n": 4059,
+     "hex": "#ad7b38",
+     "hue": 34,
+     "peak": 35,
+     "sat": 0.68,
+     "v": 0.68,
+     "chroma": 0.96,
+     "neutral": false,
+     "tinted": false,
+     "name": "orange"
+    }
+   },
+   "cls": "hunter",
+   "own": {
+    "lazy": false,
+    "ready": false
+   },
+   "loadMs": 9,
+   "loadSt": "not lazy",
+   "own2": {
+    "lazy": false,
+    "ready": false
+   },
+   "doll": {
+    "model": "bow_B_withString",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_bow_B_withString",
+    "glow": "#F4C74F",
+    "gk": 0.38,
+    "ndc": 0.9,
+    "ndcCheer": 1.07,
+    "fitScale": 0.94,
+    "col": {
+     "n": 1506,
+     "hex": "#bb984e",
+     "hue": 41,
+     "peak": 37,
+     "sat": 0.58,
+     "v": 0.73,
+     "chroma": 0.92,
+     "neutral": false,
+     "tinted": false,
+     "name": "gold"
+    },
+    "bb": [
+     66,
+     71,
+     127,
+     203
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 0,
+    "projOut": 0,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": null,
+    "n": 0,
+    "prop": "w_bow_B_withString",
+    "glow": "#F4C74F",
+    "gk": 0.38
+   },
+   "matchDoll": true,
+   "matchPre": null,
+   "matchWorld": null,
+   "frameOk": true
+  },
+  "oakStaff": {
+   "id": "oakStaff",
+   "hasPic": true,
+   "tier": 0,
+   "look": {
+    "model": "w_staff_A"
+   },
+   "tierCol": "#B07A45",
+   "emoji": "🪄",
+   "pic": {
+    "col": {
+     "n": 4357,
+     "hex": "#7b5c36",
+     "hue": 33,
+     "peak": 24,
+     "sat": 0.56,
+     "v": 0.5,
+     "chroma": 0.87,
+     "neutral": false,
+     "tinted": false,
+     "name": "brown"
+    }
+   },
+   "cls": "mage",
+   "own": {
+    "lazy": false,
+    "ready": false
+   },
+   "loadMs": 9,
+   "loadSt": "not lazy",
+   "own2": {
+    "lazy": false,
+    "ready": false
+   },
+   "doll": {
+    "model": "staff_A",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_staff_A",
+    "glow": null,
+    "gk": 0,
+    "ndc": 0.91,
+    "ndcCheer": 0.6,
+    "fitScale": 1,
+    "col": {
+     "n": 733,
+     "hex": "#4c3a32",
+     "hue": 18,
+     "peak": 19,
+     "sat": 0.34,
+     "v": 0.3,
+     "chroma": 0.79,
+     "neutral": false,
+     "tinted": false,
+     "name": "brown"
+    },
+    "bb": [
+     40,
+     91,
+     78,
+     214
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 0,
+    "projOut": 0,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 181,
+     "hex": "#beab84",
+     "hue": 40,
+     "peak": 37,
+     "sat": 0.31,
+     "v": 0.75,
+     "chroma": 0.8,
+     "neutral": false,
+     "tinted": false,
+     "name": "gold"
+    },
+    "n": 181,
+    "prop": "w_staff_A",
+    "glow": null,
+    "gk": 0
+   },
+   "matchDoll": true,
+   "matchPre": null,
+   "matchWorld": true,
+   "frameOk": true
+  },
+  "ironStaff": {
+   "id": "ironStaff",
+   "hasPic": true,
+   "tier": 1,
+   "look": {
+    "model": "w_staff_B"
+   },
+   "tierCol": "#9AA3AD",
+   "emoji": "🪄",
+   "pic": {
+    "col": {
+     "n": 3041,
+     "hex": "#7a6a61",
+     "hue": 22,
+     "peak": 23,
+     "sat": 0.2,
+     "v": 0.48,
+     "chroma": 0.3,
+     "neutral": false,
+     "tinted": true,
+     "name": "greyish brown"
+    }
+   },
+   "cls": "mage",
+   "own": {
+    "lazy": true,
+    "ready": false
+   },
+   "dollPre": {
+    "model": "staff_B",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_staff_B",
+    "glow": null,
+    "gk": 0,
+    "ndc": 0.82,
+    "ndcCheer": 0.51,
+    "fitScale": 1,
+    "col": {
+     "n": 1420,
+     "hex": "#424c4f",
+     "hue": 194,
+     "peak": 204,
+     "sat": 0.16,
+     "v": 0.41,
+     "chroma": 0.86,
+     "neutral": true,
+     "tinted": true,
+     "name": "dark grey"
+    },
+    "bb": [
+     32,
+     66,
+     76,
+     204
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 0,
+    "projOut": 0,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "loadMs": 465,
+   "loadSt": "ready",
+   "stale": true,
+   "own2": {
+    "lazy": true,
+    "ready": true
+   },
+   "doll": {
+    "model": "world",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_item_ironStaff",
+    "glow": null,
+    "gk": 0,
+    "ndc": 0.9,
+    "ndcCheer": 0.53,
+    "fitScale": 1,
+    "col": {
+     "n": 1673,
+     "hex": "#534747",
+     "hue": 0,
+     "peak": 8,
+     "sat": 0.14,
+     "v": 0.33,
+     "chroma": 0.19,
+     "neutral": true,
+     "tinted": true,
+     "name": "dark grey"
+    },
+    "bb": [
+     21,
+     63,
+     77,
+     205
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 0,
+    "projOut": 0,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 433,
+     "hex": "#938664",
+     "hue": 43,
+     "peak": 40,
+     "sat": 0.32,
+     "v": 0.58,
+     "chroma": 0.84,
+     "neutral": false,
+     "tinted": false,
+     "name": "gold"
+    },
+    "n": 480,
+    "prop": "w_item_ironStaff",
+    "glow": null,
+    "gk": 0
+   },
+   "matchDoll": true,
+   "matchPre": true,
+   "matchWorld": true,
+   "frameOk": true
+  },
+  "silverWand": {
+   "id": "silverWand",
+   "hasPic": true,
+   "tier": 2,
+   "look": {
+    "model": "w_wand_A",
+    "glow": "#DCE3EA"
+   },
+   "tierCol": "#DCE3EA",
+   "emoji": "🪄",
+   "pic": {
+    "col": {
+     "n": 2520,
+     "hex": "#7389ad",
+     "hue": 217,
+     "peak": 216,
+     "sat": 0.34,
+     "v": 0.69,
+     "chroma": 0.37,
+     "neutral": false,
+     "tinted": false,
+     "name": "blue"
+    }
+   },
+   "cls": "mage",
+   "own": {
+    "lazy": false,
+    "ready": false
+   },
+   "loadMs": 9,
+   "loadSt": "not lazy",
+   "own2": {
+    "lazy": false,
+    "ready": false
+   },
+   "doll": {
+    "model": "wand_A",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_wand_A",
+    "glow": "#DCE3EA",
+    "gk": 0.22,
+    "ndc": 0.58,
+    "ndcCheer": 0.31,
+    "fitScale": 1,
+    "col": {
+     "n": 600,
+     "hex": "#8592a1",
+     "hue": 212,
+     "peak": 207,
+     "sat": 0.17,
+     "v": 0.64,
+     "chroma": 0.3,
+     "neutral": true,
+     "tinted": true,
+     "name": "silver"
+    },
+    "bb": [
+     43,
+     108,
+     70,
+     176
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 0,
+    "projOut": 0,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 119,
+     "hex": "#c5c7be",
+     "hue": 73,
+     "peak": 83,
+     "sat": 0.05,
+     "v": 0.8,
+     "chroma": 0.08,
+     "neutral": true,
+     "tinted": true,
+     "name": "white"
+    },
+    "n": 119,
+    "prop": "w_wand_A",
+    "glow": "#DCE3EA",
+    "gk": 0.22
+   },
+   "matchDoll": false,
+   "matchPre": null,
+   "matchWorld": false,
+   "frameOk": true
+  },
+  "goldStaff": {
+   "id": "goldStaff",
+   "hasPic": true,
+   "tier": 3,
+   "look": {
+    "model": "w_staff_B",
+    "glow": "#F4C74F"
+   },
+   "tierCol": "#F4C74F",
+   "emoji": "🪄",
+   "pic": {
+    "col": {
+     "n": 2603,
+     "hex": "#b4633d",
+     "hue": 19,
+     "peak": 35,
+     "sat": 0.66,
+     "v": 0.71,
+     "chroma": 0.93,
+     "neutral": false,
+     "tinted": false,
+     "name": "orange"
+    }
+   },
+   "cls": "mage",
+   "own": {
+    "lazy": true,
+    "ready": false
+   },
+   "dollPre": {
+    "model": "staff_B",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_staff_B",
+    "glow": "#F4C74F",
+    "gk": 0.38,
+    "ndc": 0.82,
+    "ndcCheer": 0.51,
+    "fitScale": 1,
+    "col": {
+     "n": 1430,
+     "hex": "#af955f",
+     "hue": 41,
+     "peak": 38,
+     "sat": 0.46,
+     "v": 0.69,
+     "chroma": 0.76,
+     "neutral": false,
+     "tinted": false,
+     "name": "gold"
+    },
+    "bb": [
+     32,
+     66,
+     76,
+     204
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 0,
+    "projOut": 0,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "loadMs": 80,
+   "loadSt": "ready",
+   "stale": true,
+   "own2": {
+    "lazy": true,
+    "ready": true
+   },
+   "doll": {
+    "model": "world",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_item_goldStaff",
+    "glow": "#F4C74F",
+    "gk": 0.38,
+    "ndc": 0.99,
+    "ndcCheer": 0.56,
+    "fitScale": 1,
+    "col": {
+     "n": 2496,
+     "hex": "#704827",
+     "hue": 27,
+     "peak": 44,
+     "sat": 0.65,
+     "v": 0.44,
+     "chroma": 0.84,
+     "neutral": false,
+     "tinted": false,
+     "name": "brown"
+    },
+    "bb": [
+     11,
+     64,
+     74,
+     202
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 3,
+    "projOut": 0,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 569,
+     "hex": "#b08957",
+     "hue": 34,
+     "peak": 34,
+     "sat": 0.51,
+     "v": 0.69,
+     "chroma": 0.94,
+     "neutral": false,
+     "tinted": false,
+     "name": "orange"
+    },
+    "n": 569,
+    "prop": "w_item_goldStaff",
+    "glow": "#F4C74F",
+    "gk": 0.38
+   },
+   "matchDoll": true,
+   "matchPre": true,
+   "matchWorld": true,
+   "frameOk": true
+  },
+  "starStaff": {
+   "id": "starStaff",
+   "hasPic": true,
+   "tier": 4,
+   "look": {
+    "model": "w_staff_B",
+    "glow": "#FF6FB5"
+   },
+   "tierCol": "#FF6FB5",
+   "emoji": "🌟",
+   "pic": {
+    "col": {
+     "n": 4070,
+     "hex": "#6c6362",
+     "hue": 6,
+     "peak": 42,
+     "sat": 0.09,
+     "v": 0.49,
+     "chroma": 0.43,
+     "neutral": true,
+     "tinted": true,
+     "name": "silver"
+    }
+   },
+   "cls": "mage",
+   "own": {
+    "lazy": true,
+    "ready": false
+   },
+   "dollPre": {
+    "model": "staff_B",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_staff_B",
+    "glow": "#FF6FB5",
+    "gk": 0.55,
+    "ndc": 0.82,
+    "ndcCheer": 0.51,
+    "fitScale": 1,
+    "col": {
+     "n": 1432,
+     "hex": "#cf729f",
+     "hue": 331,
+     "peak": 334,
+     "sat": 0.45,
+     "v": 0.82,
+     "chroma": 1,
+     "neutral": false,
+     "tinted": false,
+     "name": "pink"
+    },
+    "bb": [
+     32,
+     66,
+     76,
+     204
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 0,
+    "projOut": 0,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "loadMs": 96,
+   "loadSt": "ready",
+   "stale": true,
+   "own2": {
+    "lazy": true,
+    "ready": true
+   },
+   "doll": {
+    "model": "starStaff",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_item_starStaff",
+    "glow": "#FF6FB5",
+    "gk": 0.55,
+    "ndc": 1.03,
+    "ndcCheer": 0.58,
+    "fitScale": 0.97,
+    "col": {
+     "n": 1707,
+     "hex": "#868275",
+     "hue": 46,
+     "peak": 45,
+     "sat": 0.13,
+     "v": 0.6,
+     "chroma": 0.63,
+     "neutral": true,
+     "tinted": true,
+     "name": "silver"
+    },
+    "bb": [
+     17,
+     42,
+     76,
+     204
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 24,
+    "projOut": 1,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 423,
+     "hex": "#c4bc9b",
+     "hue": 48,
+     "peak": 40,
+     "sat": 0.21,
+     "v": 0.79,
+     "chroma": 0.36,
+     "neutral": false,
+     "tinted": true,
+     "name": "greyish gold"
+    },
+    "n": 423,
+    "prop": "w_item_starStaff",
+    "glow": "#FF6FB5",
+    "gk": 0.55
+   },
+   "matchDoll": true,
+   "matchPre": false,
+   "matchWorld": true,
+   "frameOk": false
+  },
+  "ironAxe": {
+   "id": "ironAxe",
+   "hasPic": true,
+   "tier": 1,
+   "look": {
+    "model": "w_axe_A"
+   },
+   "tierCol": "#9AA3AD",
+   "emoji": "🪓",
+   "pic": {
+    "col": {
+     "n": 7239,
+     "hex": "#847a78",
+     "hue": 10,
+     "peak": 23,
+     "sat": 0.09,
+     "v": 0.52,
+     "chroma": 0.15,
+     "neutral": true,
+     "tinted": true,
+     "name": "silver"
+    }
+   },
+   "cls": "warrior",
+   "own": {
+    "lazy": false,
+    "ready": false
+   },
+   "loadMs": 20,
+   "loadSt": "not lazy",
+   "own2": {
+    "lazy": false,
+    "ready": false
+   },
+   "doll": {
+    "model": "axe_A",
+    "prop": "w_axe_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_axe_A",
+    "glow": null,
+    "gk": 0,
+    "ndc": 1.31,
+    "ndcCheer": 0.87,
+    "fitScale": 0.76,
+    "col": {
+     "n": 1665,
+     "hex": "#57595c",
+     "hue": 216,
+     "peak": 216,
+     "sat": 0.05,
+     "v": 0.41,
+     "chroma": 0.55,
+     "neutral": true,
+     "tinted": true,
+     "name": "dark grey"
+    },
+    "bb": [
+     5,
+     117,
+     43,
+     202
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 155,
+    "projOut": 1,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 231,
+     "hex": "#b0a78c",
+     "hue": 45,
+     "peak": 36,
+     "sat": 0.2,
+     "v": 0.7,
+     "chroma": 0.32,
+     "neutral": false,
+     "tinted": true,
+     "name": "greyish gold"
+    },
+    "n": 231,
+    "prop": "w_axe_A",
+    "glow": null,
+    "gk": 0
+   },
+   "matchDoll": true,
+   "matchPre": null,
+   "matchWorld": true,
+   "frameOk": false
+  },
+  "goldAxe": {
+   "id": "goldAxe",
+   "hasPic": true,
+   "tier": 3,
+   "look": {
+    "model": "w_axe_B",
+    "glow": "#F4C74F"
+   },
+   "tierCol": "#F4C74F",
+   "emoji": "🪓",
+   "pic": {
+    "col": {
+     "n": 6154,
+     "hex": "#be873e",
+     "hue": 34,
+     "peak": 39,
+     "sat": 0.67,
+     "v": 0.75,
+     "chroma": 0.89,
+     "neutral": false,
+     "tinted": false,
+     "name": "orange"
+    }
+   },
+   "cls": "warrior",
+   "own": {
+    "lazy": false,
+    "ready": false
+   },
+   "loadMs": 6,
+   "loadSt": "not lazy",
+   "own2": {
+    "lazy": false,
+    "ready": false
+   },
+   "doll": {
+    "model": "axe_B",
+    "prop": "w_axe_B",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_axe_B",
+    "glow": "#F4C74F",
+    "gk": 0.38,
+    "ndc": 1.89,
+    "ndcCheer": 0.96,
+    "fitScale": 0.53,
+    "col": {
+     "n": 2497,
+     "hex": "#b69441",
+     "hue": 43,
+     "peak": 38,
+     "sat": 0.64,
+     "v": 0.71,
+     "chroma": 1,
+     "neutral": false,
+     "tinted": false,
+     "name": "gold"
+    },
+    "bb": [
+     0,
+     102,
+     43,
+     225
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 258,
+    "projOut": 4,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 432,
+     "hex": "#ddd098",
+     "hue": 49,
+     "peak": 51,
+     "sat": 0.31,
+     "v": 0.87,
+     "chroma": 0.65,
+     "neutral": false,
+     "tinted": false,
+     "name": "gold"
+    },
+    "n": 432,
+    "prop": "w_axe_B",
+    "glow": "#F4C74F",
+    "gk": 0.38
+   },
+   "matchDoll": true,
+   "matchPre": null,
+   "matchWorld": true,
+   "frameOk": false
+  },
+  "dragonBlade": {
+   "id": "dragonBlade",
+   "hasPic": true,
+   "tier": 4,
+   "look": {
+    "model": "w_item_dragonBlade",
+    "glow": "#FF6FB5"
+   },
+   "tierCol": "#FF6FB5",
+   "emoji": "⚔️",
+   "pic": {
+    "col": {
+     "n": 6675,
+     "hex": "#d68aa6",
+     "hue": 338,
+     "peak": 305,
+     "sat": 0.36,
+     "v": 0.85,
+     "chroma": 0.75,
+     "neutral": false,
+     "tinted": false,
+     "name": "red"
+    }
+   },
+   "cls": "warrior",
+   "own": {
+    "lazy": true,
+    "ready": false
+   },
+   "dollPre": {
+    "model": "sword_A",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_sword_A",
+    "glow": "#FF6FB5",
+    "gk": 0.55,
+    "ndc": 2.1,
+    "ndcCheer": 0.92,
+    "fitScale": 0.48,
+    "col": {
+     "n": 1287,
+     "hex": "#d97597",
+     "hue": 340,
+     "peak": 338,
+     "sat": 0.46,
+     "v": 0.85,
+     "chroma": 1,
+     "neutral": false,
+     "tinted": false,
+     "name": "red"
+    },
+    "bb": [
+     0,
+     126,
+     43,
+     182
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 56,
+    "projOut": 3,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "loadMs": 156,
+   "loadSt": "ready",
+   "stale": true,
+   "own2": {
+    "lazy": true,
+    "ready": true
+   },
+   "doll": {
+    "model": "world",
+    "prop": "w_item_dragonBlade",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_item_dragonBlade",
+    "glow": "#FF6FB5",
+    "gk": 0.55,
+    "ndc": 3.22,
+    "ndcCheer": 1.11,
+    "fitScale": 0.31,
+    "col": {
+     "n": 4171,
+     "hex": "#634341",
+     "hue": 4,
+     "peak": 44,
+     "sat": 0.34,
+     "v": 0.41,
+     "chroma": 0.95,
+     "neutral": false,
+     "tinted": false,
+     "name": "red"
+    },
+    "bb": [
+     0,
+     82,
+     52,
+     225
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 247,
+    "projOut": 4,
+    "ofSamples": 4,
+    "hidPct": 2,
+    "offPct": 0,
+    "cover": {
+     "b": 11
+    },
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 880,
+     "hex": "#b2a288",
+     "hue": 37,
+     "peak": 40,
+     "sat": 0.24,
+     "v": 0.71,
+     "chroma": 0.48,
+     "neutral": false,
+     "tinted": true,
+     "name": "greyish orange"
+    },
+    "n": 880,
+    "prop": "w_item_dragonBlade",
+    "glow": "#FF6FB5",
+    "gk": 0.55
+   },
+   "matchDoll": false,
+   "matchPre": true,
+   "matchWorld": false,
+   "frameOk": false
+  },
+  "skyBow": {
+   "id": "skyBow",
+   "hasPic": true,
+   "tier": 4,
+   "look": {
+    "model": "w_bow_B_withString",
+    "glow": "#FF6FB5"
+   },
+   "tierCol": "#FF6FB5",
+   "emoji": "🏹",
+   "pic": {
+    "col": {
+     "n": 4222,
+     "hex": "#75849b",
+     "hue": 216,
+     "peak": 215,
+     "sat": 0.25,
+     "v": 0.64,
+     "chroma": 0.52,
+     "neutral": false,
+     "tinted": true,
+     "name": "greyish blue"
+    }
+   },
+   "cls": "hunter",
+   "own": {
+    "lazy": true,
+    "ready": false
+   },
+   "dollPre": {
+    "model": "bow_B_withString",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_bow_B_withString",
+    "glow": "#FF6FB5",
+    "gk": 0.55,
+    "ndc": 0.9,
+    "ndcCheer": 1.07,
+    "fitScale": 0.94,
+    "col": {
+     "n": 1514,
+     "hex": "#da6a9e",
+     "hue": 332,
+     "peak": 334,
+     "sat": 0.51,
+     "v": 0.86,
+     "chroma": 1,
+     "neutral": false,
+     "tinted": false,
+     "name": "pink"
+    },
+    "bb": [
+     66,
+     71,
+     127,
+     203
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 0,
+    "projOut": 0,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "loadMs": 206,
+   "loadSt": "ready",
+   "stale": true,
+   "own2": {
+    "lazy": true,
+    "ready": true
+   },
+   "doll": {
+    "model": "skyBow",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_item_skyBow",
+    "glow": "#FF6FB5",
+    "gk": 0.55,
+    "ndc": 1.08,
+    "ndcCheer": 1.22,
+    "fitScale": 0.82,
+    "col": {
+     "n": 3714,
+     "hex": "#879aaa",
+     "hue": 207,
+     "peak": 213,
+     "sat": 0.21,
+     "v": 0.73,
+     "chroma": 0.66,
+     "neutral": false,
+     "tinted": true,
+     "name": "greyish blue"
+    },
+    "bb": [
+     53,
+     43,
+     141,
+     217
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 97,
+    "projOut": 1,
+    "ofSamples": 4,
+    "hidPct": 4,
+    "offPct": 0,
+    "cover": {
+     "b": 23
+    },
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 5,
+     "hex": "#a8a38a",
+     "hue": 50,
+     "peak": 23,
+     "sat": 0.18,
+     "v": 0.73,
+     "chroma": 0.8,
+     "neutral": true,
+     "tinted": true,
+     "name": "silver"
+    },
+    "n": 5,
+    "prop": "w_item_skyBow",
+    "glow": "#FF6FB5",
+    "gk": 0.55
+   },
+   "matchDoll": true,
+   "matchPre": false,
+   "matchWorld": null,
+   "frameOk": false
+  },
+  "wardenHammer": {
+   "id": "wardenHammer",
+   "hasPic": true,
+   "tier": 1,
+   "look": {
+    "model": "w_hammer_A"
+   },
+   "tierCol": "#9AA3AD",
+   "emoji": "🔨",
+   "pic": {
+    "col": {
+     "n": 7262,
+     "hex": "#79705a",
+     "hue": 43,
+     "peak": 69,
+     "sat": 0.26,
+     "v": 0.48,
+     "chroma": 0.32,
+     "neutral": false,
+     "tinted": true,
+     "name": "greyish brown"
+    }
+   },
+   "cls": "warrior",
+   "own": {
+    "lazy": false,
+    "ready": false
+   },
+   "loadMs": 9,
+   "loadSt": "not lazy",
+   "own2": {
+    "lazy": false,
+    "ready": false
+   },
+   "doll": {
+    "model": "hammer_A",
+    "prop": "w_hammer_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_hammer_A",
+    "glow": null,
+    "gk": 0,
+    "ndc": 1.35,
+    "ndcCheer": 1.04,
+    "fitScale": 0.74,
+    "col": {
+     "n": 3562,
+     "hex": "#57626b",
+     "hue": 207,
+     "peak": 215,
+     "sat": 0.19,
+     "v": 0.43,
+     "chroma": 0.27,
+     "neutral": false,
+     "tinted": true,
+     "name": "greyish blue"
+    },
+    "bb": [
+     0,
+     118,
+     49,
+     202
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 157,
+    "projOut": 3,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 339,
+     "hex": "#adab96",
+     "hue": 55,
+     "peak": 84,
+     "sat": 0.13,
+     "v": 0.69,
+     "chroma": 0.12,
+     "neutral": true,
+     "tinted": true,
+     "name": "silver"
+    },
+    "n": 339,
+    "prop": "w_hammer_A",
+    "glow": null,
+    "gk": 0
+   },
+   "matchDoll": false,
+   "matchPre": null,
+   "matchWorld": true,
+   "frameOk": false
+  },
+  "stormBow": {
+   "id": "stormBow",
+   "hasPic": true,
+   "tier": 2,
+   "look": {
+    "model": "w_bow_B_withString",
+    "glow": "#C7A6FF"
+   },
+   "tierCol": "#DCE3EA",
+   "emoji": "🏹",
+   "pic": {
+    "col": {
+     "n": 4922,
+     "hex": "#977dd5",
+     "hue": 258,
+     "peak": 250,
+     "sat": 0.41,
+     "v": 0.83,
+     "chroma": 0.74,
+     "neutral": false,
+     "tinted": false,
+     "name": "purple"
+    }
+   },
+   "cls": "hunter",
+   "own": {
+    "lazy": true,
+    "ready": false
+   },
+   "dollPre": {
+    "model": "bow_B_withString",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_bow_B_withString",
+    "glow": "#DCE3EA",
+    "gk": 0.22,
+    "ndc": 0.9,
+    "ndcCheer": 1.07,
+    "fitScale": 0.94,
+    "col": {
+     "n": 1510,
+     "hex": "#959498",
+     "hue": 255,
+     "peak": 209,
+     "sat": 0.03,
+     "v": 0.62,
+     "chroma": 0.09,
+     "neutral": true,
+     "tinted": true,
+     "name": "silver"
+    },
+    "bb": [
+     66,
+     71,
+     127,
+     203
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 0,
+    "projOut": 0,
+    "ofSamples": 4,
+    "hidPct": 0,
+    "offPct": 0,
+    "cover": {},
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "loadMs": 138,
+   "loadSt": "ready",
+   "stale": true,
+   "own2": {
+    "lazy": true,
+    "ready": true
+   },
+   "doll": {
+    "model": "world",
+    "prop": "w_sword_A",
+    "rect": [
+     242,
+     196,
+     144,
+     226
+    ],
+    "samples": [],
+    "propName": "w_item_stormBow",
+    "glow": "#DCE3EA",
+    "gk": 0.22,
+    "ndc": 1.76,
+    "ndcCheer": 1.44,
+    "fitScale": 0.57,
+    "col": {
+     "n": 3001,
+     "hex": "#545381",
+     "hue": 241,
+     "peak": 235,
+     "sat": 0.36,
+     "v": 0.51,
+     "chroma": 0.73,
+     "neutral": false,
+     "tinted": false,
+     "name": "blue"
+    },
+    "bb": [
+     67,
+     63,
+     143,
+     225
+    ],
+    "cw": 144,
+    "ch": 226,
+    "edgePx": 344,
+    "projOut": 4,
+    "ofSamples": 4,
+    "hidPct": 9,
+    "offPct": 0,
+    "cover": {
+     "b": 57
+    },
+    "clipRect": [
+     242,
+     196,
+     386,
+     422
+    ]
+   },
+   "world": {
+    "col": {
+     "n": 76,
+     "hex": "#c7c2af",
+     "hue": 48,
+     "peak": 83,
+     "sat": 0.12,
+     "v": 0.8,
+     "chroma": 0.21,
+     "neutral": true,
+     "tinted": true,
+     "name": "white"
+    },
+    "n": 76,
+    "prop": "w_item_stormBow",
+    "glow": "#DCE3EA",
+    "gk": 0.22
+   },
+   "matchDoll": true,
+   "matchPre": false,
+   "matchWorld": false,
+   "frameOk": false
+  }
+ }
+}
