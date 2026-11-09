@@ -4492,6 +4492,27 @@ function worldBot(m,L,god){
     o.lift=await E(()=>MBCAM.pid===null&&!!joy);o.liftBack=!(await st()).free;await touch('touchEnd',[]);
     await E(()=>{mobaExit()});await cdp.detach();
   }catch(e){o.err=String(e).slice(0,160)}return o})();
+  // tank basic attack (mb-atk3d.js, morning package item 1): visual only. Same damage and the same cooldown with the layer on and off,
+  // the impact sound on the damage frame, and in 3D: the strike starts on that frame, stops hard at the contact pose, then the ready pose
+  const tka=await page.evaluate(()=>{const o={};try{mobaStart('tank');const me=MB.me,A=MBKIT.tank.atk,C=MBATK3D.kit.tank;
+      const t=MB.u.find(x=>x.team!==me.team&&x.k==='minion')||MB.u.find(x=>x.team!==me.team&&x.k==='hero');
+      const near=()=>{t.x=me.x+me.r+t.r+10;t.y=me.y;t.dead=false;t.hp=t.max=1e9;t.st.shield=0};near();
+      const hit=()=>{me.atkT=0;const h=t.hp;mbAttack(me,1/30,t,A);return [Math.round(h-t.hp),me.atkT]};
+      const s0=MBATK3D.stat.sounds;const on=hit();o.snd=MBATK3D.stat.sounds-s0;MBATK3D.on=false;near();const off=hit();MBATK3D.on=true;
+      o.dmg=on[0];o.same=on[0]===off[0]&&on[1]===off[1];
+      if(R3D.on&&R3D.ready&&R3D.player){me.moving=false;me.mvT=0;me.atkT=0;syncPlayer(1/60);near();mbAttack(me,1/30,t,A);syncPlayer(1/60);
+        const a=R3D.player,st=a.mbA||{};o.ph=st.ph;o.clip=a.one&&a.one.getClip().name;
+        for(let i=0;i<40;i++){me.atkT=Math.max(0,me.atkT-1/60);syncPlayer(1/60)}
+        o.stop=st.x?+(st.x.time/st.x.getClip().duration).toFixed(2):null;o.base=a.base;
+        o.d3=o.ph==='hit'&&o.clip===C.hit+'@up'&&o.stop===C.to&&o.base===C.ready}else o.d3=true;
+      // never pose-locked: in the middle of the strike (and of the hard stop) the tank still casts, moves and strikes again
+      me.st.stun=0;me.st.dash=null;me.atkT=0;near();mbAttack(me,1/30,t,A);if(R3D.on&&R3D.ready&&R3D.player)syncPlayer(1/60);
+      me.cd.s2=0;me.lvl=10;o.castMid=mbCast(me,'s2',{x:me.x+10,y:me.y});const x0=me.x;mbMove(me,me.x+300,me.y,0.1,0);o.moveMid=me.x>x0;
+      const k0=MBATK3D.stat.strikes;me.atkT=0;if(R3D.on&&R3D.ready&&R3D.player)syncPlayer(1/60);near();mbAttack(me,1/30,t,A);if(R3D.on&&R3D.ready&&R3D.player)syncPlayer(1/60);o.reMid=!(R3D.on&&R3D.ready&&R3D.player)||MBATK3D.stat.strikes===k0+1;
+    }catch(err){o.err=String(err&&err.stack||err)}
+    MBATK3D.on=true;try{mobaExit()}catch(e){}return o});
+  check(!tka.err&&tka.dmg>0&&tka.same&&tka.snd===1&&tka.d3&&tka.castMid&&tka.moveMid&&tka.reMid,'underworld tank attack (visual only): '+(tka.err||'damage '+tka.dmg+(tka.same?' and cooldown unchanged by the visuals':' CHANGED by the visuals!')+', impact sound '+(tka.snd===1?'on the damage frame':tka.snd+'×')+
+    (tka.ph==null?' (2D: no body)':', strike '+(tka.ph==='hit'&&tka.clip?'on the frame':'missing ('+tka.ph+'/'+tka.clip+')')+', hard stop at '+tka.stop+', then '+tka.base))+', never locked: cast '+(tka.castMid?'✓':'✗')+' move '+(tka.moveMid?'✓':'✗')+' strike again '+(tka.reMid?'✓':'✗'));
   // צילומי משחקי השאול (QUINN, 8.11): חלון הבחירה, מסך הבנייה, משחק באמצע (כולם בוטים, 40 שניות), החנות ומסך הסוף, כדי לבדוק את החלון כולו
   // הגיבור: האחרון ב-MBKIT, כך שגיבור חדש מצולם לבד. תקלה כאן לא מפילה את הבדיקה, רק נכתבת
   if(CFG.shots){try{const E=(f,a)=>page.evaluate(f,a),k=await E(()=>Object.keys(MBKIT).pop());
@@ -4765,7 +4786,7 @@ function worldBot(m,L,god){
       check(tl.length>=2&&!low.length&&A.hits>0&&A.koBoss>0&&A.win>0,'אפקטים בבוס: אזהרות '+(tl.map(([k,v])=>k+' '+v.n+'× '+v.warn.toFixed(2)+'ש\'').join(', ')||'אף אחת')+
         (low.length?' (פחות משנייה: '+low.map(([k])=>k).join(', ')+')':'')+' · פגיעות '+(A.hits||0)+' (כבדות '+(A.heavy||0)+', קריטי '+(A.crits||0)+') · הריגות '+(A.ko||0)+' · ko_boss '+(A.koBoss||0)+' · ניצחון '+(A.win||0))}
   }
-  const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null)&&!['bell','creak'].includes(id)&&!id.startsWith('cast_')&&!['streak2','streak3','tower_fall','base_alarm','me_die','me_back','gamble_tick','gamble_win','gamble_lose'].includes(id));   // רצף 2-3 תלוי במזל, והשאר במשחקי השאול (tower_fall נבדק שם)   // cast_*: הבוט מטיל רק חלק מסוגי הנזק, ונבדק למטה שלפחות אחד נשמע   // bell, creak: נבדקים בבדיקת פעמון הערפל, שרצה אחרי הצילום של הצלילים
+  const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null)&&!['bell','creak'].includes(id)&&!id.startsWith('cast_')&&!['streak2','streak3','tower_fall','base_alarm','imp_hammer','me_die','me_back','gamble_tick','gamble_win','gamble_lose'].includes(id));   // רצף 2-3 תלוי במזל, והשאר במשחקי השאול (tower_fall נבדק שם)   // cast_*: הבוט מטיל רק חלק מסוגי הנזק, ונבדק למטה שלפחות אחד נשמע   // bell, creak: נבדקים בבדיקת פעמון הערפל, שרצה אחרי הצילום של הצלילים
   check(au.unlocked&&!quiet.length,'צלילים: '+au.ids.map(id=>id+' '+(au.count[id]||0)).join(', ')+(au.unlocked?'':' · לא נפתחו בנגיעה')+(quiet.length?' · לא נשמעו: '+quiet.join(', '):''));
   // צלילי קרב (where:'fight' ב-SOUNDS) שקטים בכפר ובעולם, הצד של ניר, גם כשקוד שם קורא להם, ונשמעים בזירה
   check(!sg.err&&sg.n>0&&sg.world===0&&sg.vil===0&&sg.arena===3,'צלילי קרב לא בכפר ובעולם: '+(sg.err||sg.n+' צלילים מסומנים, בעולם '+sg.world+', בכפר '+sg.vil+', בזירה '+sg.arena+'/3'));
