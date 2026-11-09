@@ -2380,6 +2380,7 @@ function worldBot(m,L,god){
       enemies=[];for(let i=0;i<150;i++){const e=addEnemy('grunt',(i%15-7)*4,(Math.floor(i/15)-5)*4);e.hp=e.max=1e9;e.elite=false}S.shake=0;got('quake');   // 150 בטווח: הרעידה עד max, לא 8 של הבוס
       o.qshake=(typeof calmOn==='function'&&calmOn())||S.shake===SKANIM.mo.quake.shake.max&&SKANIM.mo.quake.shake.max<ARFEEL.shake.big;o.qsh=S.shake;enemies=[];
       SAVE.fxLess=true;const lite=got('quake');o.less=!lite.ids.includes('step_dust')&&!lite.hold.length;
+      if(typeof ARSH!=='undefined'&&ARSH.on){const c=SKANIMS.stat.cast,sp=ARSH.stat.spawn;for(const k of ['quake','splash','frost','comet','lance','bloom'])o[k]=!!c[k];o.crater=!!sp.cometHit;o.qshake=S.shake===0;o.qsh=S.shake}   // שפת האפקטים החדה (arena-sharp.js): ההטלה נספרת, הנחיתה של השביט נוצרת, ובלי רעידה
     }catch(err){o.err=String(err&&err.stack||err)}
     SAVE.fxLess=fl;FXLIB.list.length=0;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   {const ks={quake:'רעידה: אבק וסדקים שנשארים',splash:'התזה: טבעת גל',frost:'כפור שנשאר',comet:'שביט: שובל',crater:'מכתש',lance:'פס קרח',bloom:'עלי כותרת',heal:'מספר ריפוי ירוק',cap:'בתוך perCast',less:'פחות אפקטים',qshake:'רעידה ב-150 אויבים עד '+(smo.qsh??'?')+' (בוס 8)'};
