@@ -3482,9 +3482,10 @@ function worldBot(m,L,god){
   // Chest opening moment (chest.js, Nir 9.11): m_chest wobbles, slams open (not instant), loot + capped gear, effects capped, reduced-motion path short
   const chs=await page.evaluate(()=>{
     const o={};enterWorld('home');for(const e of enemies)e.dead=true;const s=SECRETS.regions.meadow.find(q=>q.id==='m_chest'),n0=()=>drops().length,run=sec=>{for(let i=0;i<sec/0.05;i++)secretsUpdate(0.05)};
-    const play=calm=>{SAVE.secrets={found:{},read:{}};S.wd.sc=null;SAVE.calm=calm;const n=CHEST.n,d0=n0();P.x=s.x;P.y=s.y+40;secretsUpdate(0.05);
+    // d0: loot spawned, not the floor count (coins land on the last play's coins and stack)
+    const play=calm=>{SAVE.secrets={found:{},read:{}};S.wd.sc=null;S.gd=[];S.hitstop=0;SAVE.calm=calm;const n=CHEST.n,d0=dropStats().spawned;P.x=s.x;P.y=s.y+40;secretsUpdate(0.05);
       const r={started:CHEST.n===n+1,instant:scFound(s.id)};run(0.3);const p=chPose(chSt()[s.id]);r.wobble=Math.abs(p.rot)>0.001||p.sx!==1;r.early=scFound(s.id);
-      run(calm?0.1:0.5);r.found=scFound(s.id);r.loot=n0()>d0;r.hs=S.hitstop||0;S.hitstop=0;r.sp=(chSt()[s.id]||{sp:[]}).sp.length;
+      run(calm?0.1:0.5);r.found=scFound(s.id);r.loot=dropStats().spawned>d0;r.hs=S.hitstop||0;S.hitstop=0;r.sp=(chSt()[s.id]||{sp:[]}).sp.length;
       r.parts=juice().p.length<=JUICE.parts.max&&parts.length<=HITFX.parts;run(3);r.gone=!chSt()[s.id];return r};
     o.n=play(false);o.c=play(true);SAVE.calm=false;
     // loot odds: 200 gear rolls, none above the meadow cap
