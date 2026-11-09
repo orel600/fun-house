@@ -46,5 +46,5 @@ function askySync(){
   if(ASKY.cur!==n){ASKY.cur=n;ARENA_SKY.stat.shown++}
 }
 (function(){
-  const o=window.aLookColors;window.aLookColors=function(){const r=o?o.apply(this,arguments):undefined;try{askySync()}catch(e){ARENA_SKY.on=false;console.warn('arena-sky',e)}return r};
+  const o=window.aLookColors;window.aLookColors=function(){const r=o?o.apply(this,arguments):undefined;try{askySync()}catch(e){ARENA_SKY.on=false;ARENA_SKY.stat.err=String(e&&e.message||e);console.warn('arena-sky',e)}return r};
 })();
