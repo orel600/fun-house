@@ -11,13 +11,16 @@ const MBSHARP={
   screen:{flash:0,shake:0},          // כמה מההבזק ומהרעידה נשאר (0 = כבוי)
   noSigil:true,                      // בלי מעגל קסם מתחת למטיל
   skip:{anvil:['sk_anvil_wave']},    // אפקטים שלא מתנגנים בסקיל הזה
-  noRing:{anvil:true},               // בלי טבעות קנבס (mbBoom, mbfxSlam) בסקיל הזה
+  noRing:{anvil:true,taunt:true},    // בלי טבעות קנבס (mbBoom, mbfxSlam) בסקיל הזה
+  noBubble:{tank:true},              // מגן בלי בועה וטבעת שריון מעליו (בתלת-ממד בלבד): אצל הטנק המגן הוא הזוהר החם על הגוף (mb-tankskill3d.js), כמו במסמך של s2
   teamGlow:false,                    // טבעת הזוהר הגדולה של הקבוצה מתחת לגיבור (MBLIB.glow): כבויה. הטבעת הקטנה בתלת-ממד מתחת לרגליים נשארת סימן הקבוצה
   fieldEdge:false,                   // קו השדה של הסדן בקנבס (moba.js): כבוי, הסדקים (sk_anvil, hold) הם הסימן
   stat:{skipped:0,rings:0}
 };
 // הטבעת של סקיל: רגילה, או כלום בסקיל שב-noRing
 function mbSharpBoom(id,x,y,r,t){if(MBSHARP.on&&MBSHARP.noRing[id]){MBSHARP.stat.rings++;return}mbBoom(x,y,r,t)}
+// בועת המגן וטבעת השריון בקנבס (moba-fx.js, moba.js): לא לגיבור שב-noBubble, ורק בתלת-ממד. בדו-ממד אין זוהר על הגוף, אז הבועה נשארת
+function mbSharpNoBubble(u){return MBSHARP.on&&u&&u.k==='hero'&&!!MBSHARP.noBubble[u.kit]&&typeof R3D!=='undefined'&&R3D.on}
 // mbfxSlam של סקיל: האבנים תמיד, הטבעת (MB.fx) רק בסקיל שלא ב-noRing
 function mbSharpSlam(id,u,r,t){const n=MB.fx.length,v=mbfxSlam(u,r,t);if(MBSHARP.on&&MBSHARP.noRing[id]&&MB.fx.length>n){MB.fx.length=n;MBSHARP.stat.rings++}return v}
 (function(){

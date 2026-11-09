@@ -104,7 +104,7 @@ function mbfxNum(x,y,txt,col,o,src,t){
 function mbfxDraw(){
   const F=mbfxS();
   mbfxUnits();   // טבעות קבוצה וסימני מצב (MBLIB)
-  for(const u of MB.u)if(!u.dead&&mbShow(u)&&u.st.shield>0&&u.st.shieldEnd>MB.t){   // מגן: בועה בצבע הקבוצה, דוהה ככל שנשאר פחות
+  for(const u of MB.u)if(!u.dead&&mbShow(u)&&u.st.shield>0&&u.st.shieldEnd>MB.t&&!(typeof mbSharpNoBubble==='function'&&mbSharpNoBubble(u))){   // מגן: בועה בצבע הקבוצה, דוהה ככל שנשאר פחות
     const k=Math.max(0.25,u.st.shield/(u.st.shieldMax||u.st.shield)),col=MOBA.team[u.team];
     ctx.globalAlpha=0.16*k+0.06;ctx.fillStyle=col;ctx.beginPath();ctx.arc(u.x,u.y-22,u.r+16,0,7);ctx.fill();
     ctx.globalAlpha=0.5*k+0.2;ctx.strokeStyle='#E8F4FF';ctx.lineWidth=2;ctx.beginPath();ctx.arc(u.x,u.y-22,u.r+16,-2.6+MB.t*2,-0.6+MB.t*2);ctx.stroke()}
