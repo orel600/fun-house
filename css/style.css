@@ -2075,3 +2075,24 @@ body.mb .skb.lock::after{content:none}
 /* arena-feel.js: הסקיל כמעט מוכן (ARFEEL.soon): הכפתור "מתנשף" רגע לפני */
 .skb.afsoon{animation:afsoon .12s ease-out infinite alternate}@keyframes afsoon{to{transform:scale(1.07);box-shadow:0 0 0 3px var(--dt),0 0 14px var(--dt)}}
 @media (prefers-reduced-motion:reduce){.skb.afsoon{animation:none}}
+
+/* משחקי השאול, השיפוץ: כפתורי סקיל לפי skill-buttons-design.md (js/mb-skbtn.js, ?mbskb=0 מכבה).
+   שתי שכבות של אותו אייקון: מתחת אפור ועמום (55%), ומעל הצבעוני שנחשף עם כיוון השעון מ-12 ככל שהטעינה (--cd) נגמרת. לחוץ: בהיר ורווי יותר, וגדל 5% */
+.mbskx .mbicon{position:absolute;inset:3px;border-radius:50%;overflow:hidden;pointer-events:none;transition:filter .08s,transform .08s}
+.mbskx .mbib,.mbskx .mbic{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.mbskx .mbib{filter:grayscale(1) brightness(.55)}
+.mbskx .mbic{-webkit-mask:conic-gradient(#000 calc((1 - var(--cd,0))*360deg),transparent 0);mask:conic-gradient(#000 calc((1 - var(--cd,0))*360deg),transparent 0)}
+.mbskx .mbicon .mbpic,.mbskx .mbuw{position:absolute;inset:0;width:100%;height:100%;border-radius:50%;object-fit:cover}
+.mbuw~*{display:none}
+.mbskx>i{display:none}
+.mbskx:not(.ready) .mbic :is(.mbpic,.mbski,.mbgi,.mbuw){opacity:1}
+.mbskx:active .mbicon{filter:brightness(1.35) saturate(1.2);transform:scale(1.05)}
+/* 2x2 בפינה הימנית התחתונה (המסמך, ו-MAX: ברירת המחדל בתצוגה; ?mbbtn=arc מחזיר את הקשת). ארבעה עיגולים שווים, 74px ומרווח 10:
+   התקיפה בפינה, s1 משמאלה, סקיל-העל מעליה, s2 באלכסון. הלחש והריפוי בטור משמאל לרשת, מחוץ לה */
+body.mbgrid .skills.mbsk .mbskb,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb{--w:74px}
+body.mbgrid .skills.mbsk .mbatk,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbatk{--x:0px;--y:0px}
+body.mbgrid .skills.mbsk .mbskb[data-sk="s1"],body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb[data-sk="s1"]{--x:84px;--y:0px}
+body.mbgrid .skills.mbsk .mbskb[data-sk="s2"],body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb[data-sk="s2"]{--x:84px;--y:84px}
+body.mbgrid .skills.mbsk .mbskb[data-sk="ult"],body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb[data-sk="ult"]{--x:0px;--y:84px}
+body.mbgrid .skills.mbsk .mbsp-spell,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbsp-spell{--w:54px;--x:178px;--y:8px}
+body.mbgrid .skills.mbsk .mbsp-heal,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbsp-heal{--w:50px;--x:180px;--y:94px}
