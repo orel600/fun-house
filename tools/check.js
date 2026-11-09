@@ -1359,6 +1359,29 @@ function worldBot(m,L,god){
     try{lsS?localStorage.setItem(CLOUD.lsKey,lsS):localStorage.removeItem(CLOUD.lsKey)}catch(e){}SAVE=JSON.parse(bak);SAVE_STORE.write(SAVE,true);return r});
   {const L=[[dlv.set,'רמה 30 עם 29 נקודות','לא עלה ל-30'],[dlv.res,'משאבים של רמה 30 ('+dlv.coins+' מטבעות)','משאבים לא לפי הטבלאות'],[dlv.none,'בלי פרמטר בלי שינוי','שינה בלי פרמטר!'],[dlv.once,'פעם אחת','חוזר'],[dlv.stack,'טעינה חוזרת לא מוסיפה','המשאבים נערמים'],[dlv.keep,'לא מוריד משאבים','הוריד משאבים!'],[dlv.max,'עד המקסימום','עבר את המקסימום'],[dlv.down,'רק מעלה','הוריד רמה!'],[dlv.cloud,'נדחף לענן מיד','לא הגיע לענן ('+dlv.cdbg+')'],[dlv.other,'מכשיר אחר לוקח את החדשה','ענן ישן דרס']];
    check(!dlv.err&&L.every(x=>x[0]),'?level=30 (כלי פיתוח): '+(dlv.err||L.map(x=>x[0]?x[1]:x[2]).join(', ')))}
+  // כלי פיתוח: ?fresh=1 / ?restore=1 (js/devsave.js): גיבוי, שמירה חדשה מאפס, ושחזור זהה לגמרי. ענן מדומה
+  const dfs=await page.evaluate(async()=>{const bak=JSON.stringify(SAVE),r={},cf=CLOUD.fake,cs=CLOUD.session,ch=CLOUD.hold,lsS=localStorage.getItem(CLOUD.lsKey),lsB=localStorage.getItem(DEVSAVE.key);
+    const noTs=o=>{const c=devStrip(o);delete c.ts;return JSON.stringify(c)};
+    try{CLOUD.fake=cloudFakeServer();CLOUD.session=null;cloudHeld(false);localStorage.removeItem(CLOUD.lsKey);localStorage.removeItem(DEVSAVE.key);delete SAVE.devBak;delete SAVE.devFresh;
+      SAVE.hero.xp=rankXpAt(12);SAVE.hero.level=12;bagAdd('wood',77);SAVE.village.forge=3;saveNow();SAVE.ts-=60000;await cloudSync();
+      const before=devClone(SAVE);r.btn0=!devHasBak();
+      r.fresh=await devFresh()==='ok';const row=()=>CLOUD.fake.rows.u1.data;
+      r.gone=SAVE.hero.level===1&&!SAVE.hero.xp&&!SAVE.bag.wood&&!SAVE.village.forge&&SAVE.devFresh===true;
+      r.bakL=devSame(devLocalBak(),devStrip(before));r.bakS=devSame(SAVE.devBak,devStrip(before));
+      r.bakC=devSame(row().devBak,devStrip(before))&&row().devFresh===true&&row().ts===SAVE.ts;
+      r.pull=await cloudSync()!=='took'&&SAVE.devFresh===true&&!SAVE.bag.wood;   // the old save does not come back
+      bagAdd('stone',5);saveNow();r.again=await devFresh()==='ok'&&devSame(devLocalBak(),devStrip(before))&&!SAVE.bag.stone;   // a 2nd ?fresh keeps the real backup
+      r.rest=await devRestore()==='ok';r.same=noTs(SAVE)===noTs(before);if(!r.same)r.dbg=[noTs(SAVE).length,noTs(before).length].join('/');
+      r.keep=devHasBak()&&devSame(devLocalBak(),devStrip(before))&&devSame(row().devBak,devStrip(before))&&!row().devFresh&&row().hero.level===12;
+      // the backup can't be written: nothing changes
+      const j0=JSON.stringify(SAVE),si=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k===DEVSAVE.key)throw new Error('full');return si.call(this,k,v)};
+      try{localStorage.removeItem(DEVSAVE.key);delete SAVE.devBak;const j1=JSON.stringify(SAVE);r.abort=await devFresh()==='fail'&&JSON.stringify(SAVE)===j1&&SAVE.hero.level===12}finally{Storage.prototype.setItem=si}
+      CLOUD.session=null;r.none=await devRestore()==='none';
+    }catch(err){r.err=String(err&&err.stack||err)}
+    CLOUD.fake=cf;CLOUD.session=cs;cloudHeld(!!ch);CLOUD.dirty=false;clearTimeout(CLOUD.timer);CLOUD.timer=null;
+    try{lsS?localStorage.setItem(CLOUD.lsKey,lsS):localStorage.removeItem(CLOUD.lsKey);lsB?localStorage.setItem(DEVSAVE.key,lsB):localStorage.removeItem(DEVSAVE.key)}catch(e){}SAVE=JSON.parse(bak);SAVE_STORE.write(SAVE,true);return r});
+  {const L=[[dfs.fresh&&dfs.gone,'מאפס','לא התאפס'],[dfs.bakL&&dfs.bakS,'גיבוי בטלפון','גיבוי בטלפון חסר!'],[dfs.bakC,'גיבוי בענן','גיבוי בענן חסר!'],[dfs.pull,'הישנה לא חוזרת מהענן','הישנה חזרה'],[dfs.again,'?fresh שני שומר את הגיבוי','הגיבוי נדרס!'],[dfs.rest&&dfs.same,'שחזור זהה','השחזור שונה! '+(dfs.dbg||'')],[dfs.keep,'הגיבוי נשאר','הגיבוי נמחק'],[dfs.abort,'גיבוי נכשל = בלי שינוי','שינה בלי גיבוי!'],[dfs.none&&dfs.btn0,'בלי גיבוי: אין שחזור','שחזור בלי גיבוי']];
+   check(!dfs.err&&L.every(x=>x[0]),'?fresh=1 / ?restore=1 (כלי פיתוח): '+(dfs.err||L.map(x=>x[0]?x[1]:x[2]).join(', ')))}
   const hsk=await page.evaluate(()=>{const sk=SAVE.hero.skin,pk=SAVE.pet.kind,r={};
     try{soundOpen();const lk=()=>R3D.on?heroLook().model:heroSkin();SAVE.hero.skin=null;const base=lk();
       document.querySelector('#ovSound [data-skin="nir"]').click();

@@ -131,6 +131,7 @@ function soundOpen(){
   for(const el of document.querySelectorAll('#ovSound input[data-ch]'))el.value=Math.round(AUDIO.vol[el.dataset.ch]*100);
   $('sndMute').textContent=T(AUDIO.muted?'snd.on':'snd.off');$('ovSound').hidden=false;const sp=document.querySelector('#ovSound .sndpanel');sp.scrollTop=0;scrollMore(sp);
   if(typeof hatShowBtns==='function')hatShowBtns();
+  if(typeof devShow==='function')devShow();   // "Restore my old save" (devsave.js)
   if(typeof gicoApply==='function')gicoApply();   // אייקוני סקילים: חדש / קלאסי (gicons.js)   // הצג כובע (armor.js): השמירה נטענת אחרי הסקריפטים
 }
 function soundClose(){$('ovSound').hidden=true;if(sndPrev&&S.mode==='sound')S.mode=sndPrev;sndPrev=null}
