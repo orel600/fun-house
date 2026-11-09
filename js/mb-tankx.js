@@ -5,7 +5,8 @@
    - אורך העצמות (ARI): כל ערוץ מיקום באנימציה מוכפל ביחס בין העצמה בגוף החדש לזו של הברברי של KayKit. ערוצי סיבוב לא משתנים.
    - ריצה: צעד מוקטן (RETARGET.dampen, TANKX.gait) ומהירות האנימציה לפי הטבלה speed, כדי שהרגל על הרצפה תזוז כמו הקרקע (בלי החלקה).
    - גובה: הגוף החדש מוצג בגובה size מהטנק הישן, בתנוחת העמידה (נמדד פעם אחת כשהגוף נטען).
-   - קריאות על הרצפה הכהה: הבהרה, קו אור בשוליים (rim), זוהר הסדקים (emissiveMap של ARI) עד 1.2, והבהוב פגיעה על כל הגוף ולא רק על הסדקים.
+   - קריאות על הרצפה הכהה: הבהרה וקו אור בשוליים (rim), לפי look. זוהר קבוע בסדקים כבוי (emK 0), והבהוב פגיעה על כל הגוף ולא רק על הסדקים.
+   - השוואה: ?txdiag=512|1024|neutral (diags), לצילומים של QUINN ו-ARI באותה מצלמה.
    - הפטיש: על handslotr, בתנוחה לפי סוג האנימציה (carry, מ-ARI), ובגודל hammer.s.
    מחיקה: הקובץ והשורה ב-index.html */
 const MBTANKX={
@@ -18,19 +19,33 @@ const MBTANKX={
   gait:true,      // צעד מוקטן בריצה לפי TANKX.gait (js/retarget-tracks.js). false: האנימציה כמו שהיא
   speed:{Running_B:1.2},   // מהירות האנימציה לכל אנימציה (1: כמו המקור). 1.2: הרגל על הרצפה זזה כ-0.83 ממהירות הקרקע (הטנק הישן 0.49, 1 = בלי החלקה)
   size:1.15,      // הגובה המוצג בעמידה, ביחס לטנק הישן (ה-hitbox לא משתנה)
-  // נבחר מחמש אפשרויות על רצפת השאול (BOB, 9.11): גוף כהה של אובסידיאן (gain מתחת ל-1), קו אור כתום בשוליים, וסדקים זוהרים עד התקרה 1.2
-  look:{gain:0.7,lift:0,rim:'#FF9A50',rimK:0.45,rimP:2.5,emK:2.4,emMax:1.2},
+  // הרגליים על הרצפה: בעמידה של הברברי הגוף הזה ריחף כ-4.5 יחידות (הירכיים גבוהות פי 1.48). 1: יורד בכל הפער שנמדד, 0: כמו קודם
+  ground:1,
+  // אוראל דחה את המראה (9.11: "ג'לי"). עכשיו הטקסטורה כמו שהיא, עד שהמספרים של ARI מגיעים:
+  // emK 0: בלי זוהר קבוע בסדקים. rimK 0: קו האור בשוליים צבע את כל הגוף, כי מהמצלמה של המשחק (מלמעלה) רוב המשטחים בזווית. ההבהוב בפגיעה נשאר (txF בחומר)
+  look:{gain:1,lift:0,rim:'#FF9A50',rimK:0,rimP:2.5,emK:0,emMax:1.2},
+  // השוואה בלבד (MAX ל-BOB, 9.11, ל-QUINN ול-ARI): ?tankx=1&txdiag=512|1024|neutral, אותה מצלמה ואותו מצב.
+  // 512: הגוף כמו שהוא. 1024: אותו גוף עם הטקסטורות המקוריות ב-1024 (קובץ נפרד, נטען רק עם הדגל). neutral: חומר אפור אחיד, בלי טקסטורה, בלי זוהר ובלי rim
+  diag:(location.search.match(/[?&]txdiag=(512|1024|neutral)(&|$)/)||[])[1]||'',
+  diags:{'512':{},'1024':{tex:'js/tankx-diag/tx1024.js'},neutral:{color:'#A09A90',rough:0.85,look:{gain:1,lift:0,rimK:0,emK:0}}},
   minLen:1e-4,    // עצמה שאורכה בברברי קטן מזה: בלי תיקון
   comp:null,      // אם ARI מספקת פונקציה משלה: (clip, tmpl, ref) => clip. אחרת tankxComp למטה
-  stat:{looks:0,actors:0,rebuilt:0,clips:0,tracks:0,gait:0,fallback:0,fac:null,h:null,mats:0,player:0}
+  stat:{looks:0,actors:0,rebuilt:0,clips:0,tracks:0,gait:0,fallback:0,fac:null,h:null,mats:0,player:0,diag:0,tex:0}
 };
 // הגובה בפיקסלים של המשחק בתנוחת העמידה (Idle_A), של הגוף בלבד (בלי חפצים), כשהמראה בגובה L.h
-function tankxStand(L,clip){
+function tankxStand(L,clip,o){
   const t=R3D.tmpl[L.model],r=THREE.SkeletonUtils.clone(t);r.scale.setScalar(L.h/COSB()/t.userData.h);
   const mx=new THREE.AnimationMixer(r);if(clip){mx.clipAction(clip).play();mx.update(0)}
   r.updateMatrixWorld(true);const b=new THREE.Box3(),q=new THREE.Box3();
   r.traverse(o=>{if(o.isSkinnedMesh){o.computeBoundingBox();q.copy(o.boundingBox).applyMatrix4(o.matrixWorld);b.union(q)}});
+  // o.lo: הנקודה הנמוכה של הגוף ביחידות של המודל (0 = הרצפה). נמדד לפי כל קודקוד בתנוחה, ולא לפי התיבה
+  if(o){let lo=1e9;const v=new THREE.Vector3();r.traverse(m=>{if(m.isSkinnedMesh){const pa=m.geometry.attributes.position;for(let i=0;i<pa.count;i+=2){v.fromBufferAttribute(pa,i);m.applyBoneTransform(i,v);v.applyMatrix4(m.matrixWorld);if(v.y<lo)lo=v.y}}});o.lo=lo/r.scale.y}
   mx.stopAllAction();return (b.max.y-b.min.y)*COSB();
+}
+// על הרצפה: הגוף יורד במה שנמדד בעמידה (ground: כמה מהפער, 1 = כולו). דמות שחוזרת מהמאגר כבר הורדה
+function tankxGround(a){
+  const X=MBTANKX,d=X.ground&&X._lo>0?X._lo*X.ground:0;
+  for(const c of a.root.children){const u=c.userData;if(u.txY0==null)u.txY0=c.position.y;c.position.y=u.txY0-d}
 }
 // המראה: כמו הטנק הרגיל, עם הגוף החדש והפטיש, בגובה שנמדד. null אם משהו עוד לא מוכן (ואז הטנק הרגיל)
 function tankxLook(){
@@ -39,7 +54,7 @@ function tankxLook(){
   if(!okM||!okH||!R3D.tmpl[X.model]){X.stat.fallback++;return null}
   const hasH=!!hm&&!!R3D.props[hm],t=R3D.tmpl[X.model];
   if(X._L&&X._L.base===B&&X._t===t&&X._h===hasH&&X._sz===X.size&&X._hs===X.hammer.s)return X._L;
-  if(X._t!==t){const idle=B.anim.idle,o=tankxStand(B,R3D.clips[idle]),n=tankxStand(Object.assign({},B,{model:X.model}),tankxClip(idle));X._k=o/n;X.stat.h={old:Math.round(o),raw:Math.round(n)}}
+  if(X._t!==t){const idle=B.anim.idle,o=tankxStand(B,R3D.clips[idle]),g={},n=tankxStand(Object.assign({},B,{model:X.model}),tankxClip(idle),g);X._k=o/n;X._lo=g.lo;X.stat.h={old:Math.round(o),raw:Math.round(n),lo:+g.lo.toFixed(4)}}
   const props={};if(X.shield&&B.props&&B.props.shield)props.shield=B.props.shield;
   if(hasH)props.hammer=Object.assign({},X.hammer);
   X._h=hasH;X._t=t;X._sz=X.size;X._hs=X.hammer.s;X.stat.looks++;X.stat.h.now=Math.round(X.stat.h.old*X.size);
@@ -92,7 +107,7 @@ function tankxCarry(a){
 }
 // החומר: הבהרה, קו אור בשוליים, זוהר הסדקים עד התקרה, והבהוב פגיעה אחיד (המפה של הזוהר לא מכפילה אותו)
 const MBTX_U={txGain:{value:1},txLift:{value:0},txRim:{value:new THREE.Color()},txRimK:{value:0},txRimP:{value:2},txEmK:{value:1},txEmMax:{value:1.2}};
-function tankxUniforms(){const V=MBTANKX.look,U=MBTX_U;U.txGain.value=V.gain;U.txLift.value=V.lift;U.txRim.value.set(V.rim);U.txRimK.value=V.rimK;U.txRimP.value=V.rimP;U.txEmK.value=V.emK;U.txEmMax.value=V.emMax}
+function tankxUniforms(){const X=MBTANKX,V=Object.assign({},X.look,(X.diags[X.diag]||{}).look),U=MBTX_U;U.txGain.value=V.gain;U.txLift.value=V.lift;U.txRim.value.set(V.rim);U.txRimK.value=V.rimK;U.txRimP.value=V.rimP;U.txEmK.value=V.emK;U.txEmMax.value=V.emMax}
 function tankxMat(m){
   if(m.userData.txF)return;m.userData.txF={value:0};MBTANKX.stat.mats++;
   m.onBeforeCompile=sh=>{Object.assign(sh.uniforms,MBTX_U,{txF:m.userData.txF});
@@ -101,6 +116,26 @@ function tankxMat(m){
       .replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n{vec3 txV=isOrthographic?vec3(0.0,0.0,1.0):normalize(vViewPosition);float txR=pow(1.0-clamp(dot(normal,txV),0.0,1.0),txRimP);\ntotalEmissiveRadiance=mix(min(totalEmissiveRadiance*txEmK,vec3(txEmMax))+txRim*txR*txRimK,emissive,txF);}');
   };
   m.customProgramCacheKey=()=>'mbTankX';m.needsUpdate=true;
+}
+// השוואה (txdiag): הטקסטורות ב-1024, נטענות פעם אחת מהקובץ הנפרד. null עד שהן מוכנות
+function tankxTex1024(){
+  const X=MBTANKX;if(X._t1)return X._t1.ready?X._t1:null;X._t1={};
+  const s=document.createElement('script');s.src=X.diags['1024'].tex;
+  s.onload=()=>{const T=window.TANKX_TEX1024;if(!T)return;const ld=new THREE.TextureLoader();let n=0;
+    const fin=t=>{t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;if(++n===2)X._t1.ready=1};
+    X._t1.map=ld.load(T.map,fin);X._t1.em=ld.load(T.em,fin)};
+  document.head.appendChild(s);return null;
+}
+// השוואה: על הגוף בלבד (לא על הפטיש). פעם אחת לכל דמות, כשמה שצריך מוכן. a.txDiag: מה הוחל, ורוחב הטקסטורה בפועל (לבדיקה)
+function tankxDiag(a){
+  const X=MBTANKX,D=X.diags[X.diag];if(!D||a.txDiag)return;
+  const body=[];a.root.traverse(o=>{if(o.isSkinnedMesh&&!body.includes(o.material))body.push(o.material)});
+  if(X.diag==='1024'){const T=tankxTex1024();if(!T)return;
+    for(const m of body){const o=m.map,c=t=>{if(o){t.wrapS=o.wrapS;t.wrapT=o.wrapT;t.anisotropy=o.anisotropy;t.minFilter=o.minFilter;t.magFilter=o.magFilter}return t};
+      if(m.map)m.map=c(T.map);if(m.emissiveMap)m.emissiveMap=c(T.em);m.needsUpdate=true}}
+  if(X.diag==='neutral')for(const m of body){m.map=null;m.emissiveMap=null;m.color.set(D.color);if('roughness' in m){m.roughness=D.rough;m.metalness=0}m.needsUpdate=true}
+  const w=body[0]&&body[0].map&&body[0].map.image?body[0].map.image.width:0;
+  a.txDiag={mode:X.diag,tex:w,mats:body.length};X.stat.diag++;X.stat.tex=w;
 }
 // המראה שלך כשאתה משחק טנק: הגוף החדש, הפטיש במקום הנשק מקרוב, והאנימציות של הטנק
 function tankxPlayer(H){
@@ -121,7 +156,7 @@ function tankxPlayer(H){
   // האנימציות של הגוף החדש עוברות דרך התיקון. כל המקומות שמנגנים (loop, once) עוברים דרך act
   const ba=act;act=function(a,name){if(a&&a.L&&a.L.tx){const c=tankxClip(name);return c?a.mixer.clipAction(c):null}return ba.apply(this,arguments)};
   // החומר החדש לכל דמות בגוף הזה (גם לפטיש). דמות שחוזרת מהמאגר כבר מוכנה
-  const bm=makeActor;makeActor=function(L){const a=bm.apply(this,arguments);if(L&&L.tx){tankxUniforms();for(const m of a.mats)tankxMat(m)}return a};
+  const bm=makeActor;makeActor=function(L){const a=bm.apply(this,arguments);if(L&&L.tx){tankxUniforms();for(const m of a.mats)tankxMat(m);tankxGround(a)}return a};
   const bf=setFlash;setFlash=function(a,k){bf.apply(this,arguments);if(a&&a.L&&a.L.tx)for(const m of a.mats)if(m.userData.txF)m.userData.txF.value=k>0?1:0};
   // שריון, דרגה וציור הציוד מחפשים חלקים של KayKit בשם. לגוף הזה אין כאלה, ולא מלבישים עליו
   for(const n of ['armor3d','rankArmor3d','gear3dParts'])if(typeof window[n]==='function'){const b=window[n];window[n]=function(a){if(a&&a.L&&a.L.tx)return;return b.apply(this,arguments)}}
@@ -131,7 +166,7 @@ function tankxPlayer(H){
       if(a&&L&&a.key!==lookKey(L)&&!a.dieT){const pv=a.prev;freeActor(a);R3D.actors.delete(e);MBTANKX.stat.rebuilt++;
         const n=makeActor(L);n.root.scale.setScalar(L.h/COSB()/R3D.tmpl[L.model].userData.h);n.sc0=n.root.scale.x;n.prev=pv;R3D.actors.set(e,n)}}
     const r=bu.apply(this,arguments);
-    if(isTank(e)){const a=R3D.actors.get(e);if(a&&a.L&&a.L.tx){if(!a.txSeen){a.txSeen=1;MBTANKX.stat.actors++}tankxCarry(a)}}
+    if(isTank(e)){const a=R3D.actors.get(e);if(a&&a.L&&a.L.tx){if(!a.txSeen){a.txSeen=1;MBTANKX.stat.actors++}tankxCarry(a);tankxDiag(a)}}
     return r};
-  const bp=syncPlayer;syncPlayer=function(){if(MBTANKX.on)tankxUniforms();const r=bp.apply(this,arguments),a=R3D.player;if(a&&a.L&&a.L.tx)tankxCarry(a);return r};
+  const bp=syncPlayer;syncPlayer=function(){if(MBTANKX.on)tankxUniforms();const r=bp.apply(this,arguments),a=R3D.player;if(a&&a.L&&a.L.tx){tankxCarry(a);tankxDiag(a)}return r};
 })();
