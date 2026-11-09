@@ -233,6 +233,7 @@ const TEXT={
   'mb.lvup':{he:n=>'רמה '+n+'!',en:n=>'Level '+n+'!'},
   'mb.resp':{he:s=>'חוזר בעוד '+s,en:s=>'Back in '+s},
   'mb.shop':{he:'חנות',en:'Shop'},
+  'mb.sb.you':{en:'You'},'mb.sb.lv':{en:'Lv'},'mb.sb.blue':{en:'Blue team'},'mb.sb.red':{en:'Red team'},'mb.sb.kd':{en:'Kills / Deaths'},   // לוח התוצאות (mb-score.js, השיפוץ)
   'mb.low':{he:'⚠️ חיים נמוכים: לסגת!',en:'⚠️ Low health: fall back!'},
   'mb.recall':{he:'חזרה',en:'Recall'},'mb.recallA':{he:'חזרה לבסיס (B)',en:'Recall to base (B)'},'mb.recallOff':{he:'החזרה בוטלה',en:'Recall cancelled'},
   'mb.quick':{he:(n,c)=>'קנייה מהירה: '+n+' ('+c+' זהב)',en:(n,c)=>'Quick buy: '+n+' ('+c+' gold)'},
