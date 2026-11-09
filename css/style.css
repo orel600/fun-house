@@ -384,6 +384,16 @@ h3 .goalpin span{display:none}
 .vpst{display:flex;align-items:center;gap:5px;margin:4px 0}   /* שלבי הפרויקט (vproj.js) */
 .vpst i{width:22px;height:8px;border-radius:4px;background:rgba(255,255,255,.15)}
 .vpst i.on{background:var(--gold,#F4C74F)}
+/* הלוח בפונדק עם 4 כרטיסים (ההזמנה מהכפר, services.js): צפוף יותר, כדי שכל הכפתורים ייראו בטלפון לרוחב */
+.innboard:has(>.qc:nth-child(4)){gap:5px}
+.innboard:has(>.qc:nth-child(4))>.qc{padding:5px 7px;gap:2px}
+.innboard:has(>.qc:nth-child(4)) .say{display:none}
+.innboard:has(>.qc:nth-child(4)) ul{font-size:12px;padding-inline-start:14px}
+.innboard:has(>.qc:nth-child(4)) .qrow{flex-direction:column;align-items:stretch;gap:4px;margin-top:auto}
+.innboard:has(>.qc:nth-child(4)) .qrow .cost{display:flex;flex-wrap:nowrap;gap:3px;overflow:hidden}
+.innboard:has(>.qc:nth-child(4)) .qrow .cost .res{padding:1px 5px;font-size:12px;flex:0 1 auto;min-width:0}
+.innboard:has(>.qc:nth-child(4)) .qrow .cost .ri{width:15px;height:15px}
+.innboard:has(>.qc:nth-child(4)) .qc .vbtn{min-height:36px;padding:4px 8px;font-size:13px}
 .svsmith{display:flex;flex-direction:column;gap:4px;margin-top:6px}   /* כוח מהנפח (services.js) */
 .svpick{display:flex;gap:6px;flex-wrap:wrap}
 .svpick .goalpin{flex-direction:column;align-items:flex-start;gap:0}
