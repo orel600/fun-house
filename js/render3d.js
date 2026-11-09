@@ -436,7 +436,7 @@ function heroLook(){
   for(const w of ['sword','gun']){
     const im=it&&itemModel(gBase(wid),it),mine=it&&wUse(wid)===w&&im&&R3D.props[im],model=mine?im:GRIP3D.spare[w],g=GRIP3D[GRIP3D.of(model)];
     // מודל משלו שעוד נטען: look.model הוא רק מקום שמור. בלי מתכת ובלי זוהר של הדרגה, כדי שלא ייראה כמו הנשק (באג 9.11: קשת השמיים ורודה, קשת הסערה כסופה)
-    const wait=it&&wUse(wid)===w&&im!=='w_item_'+gBase(wid)&&m3dLazy('w_item_'+gBase(wid))&&M3D.st['w_item_'+gBase(wid)]!=='fail';   // לא נטען בכלל: נשאר המודל הזמני עם הדרגה
+    const wait=it&&wUse(wid)===w&&!R3D.props['w_item_'+gBase(wid)]&&m3dLazy('w_item_'+gBase(wid))&&M3D.st['w_item_'+gBase(wid)]!=='fail';   // לא נטען בכלל: נשאר המודל הזמני עם הדרגה
     L.props[w]=Object.assign({prop:model,tier:mine&&!wait?GEAR.tiers[it.tier].id:'wood',wait},g);
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
