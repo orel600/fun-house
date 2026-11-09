@@ -31,7 +31,8 @@ def sample(img, uv):
     x = np.clip((uv[:, 0] % 1) * (w - 1), 0, w - 1).astype(int); y = np.clip((uv[:, 1] % 1) * (h - 1), 0, h - 1).astype(int)
     return a[y, x]
 
-fix = '--color' in sys.argv; sys.argv = [a for a in sys.argv if a != '--color']
+fix = '--color' in sys.argv; match = next((a[8:] for a in sys.argv if a.startswith('--match=')), None)   # --match=<ציור.png>: הצבע האמצעי של הטקסטורה נקבע לפי הציור המקורי (פיקסלים שאינם לבנים) ולא לפי הדמות הישנה. לדמות שהצבעים שלה שונים מאוד מהישנה (הצייד: טורקיז ושחור מול חום)
+sys.argv = [a for a in sys.argv if a != '--color' and not a.startswith('--match=')]
 old_f, new_f, out_f = sys.argv[1:4]
 G = pygltflib.GLTF2().load(old_f); N = pygltflib.GLTF2().load(new_f)
 gp = G.meshes[0].primitives[0]; npm = N.meshes[0].primitives[0]
@@ -39,8 +40,11 @@ oP = acc(G, gp.attributes.POSITION); oJ = acc(G, gp.attributes.JOINTS_0); oW = a
 oC = sample(image(G, gp)[0], acc(G, gp.attributes.TEXCOORD_0))
 nP = acc(N, npm.attributes.POSITION); nUV = acc(N, npm.attributes.TEXCOORD_0); nI = acc(N, npm.indices).reshape(-1, 3)
 nImg = image(N, npm)[0]; nC = sample(nImg, nUV)
-if fix:
-    om, nm = np.median(oC, 0) / 255, np.median(nC, 0) / 255; gam = np.log(om) / np.log(nm)
+tgt = oC
+if fix or match:
+    if match:
+        _a = np.asarray(Image.open(match).convert('RGB'), np.float32); _a = _a[(_a < 235).any(2)]; tgt = _a   # רק ציור הדמות עצמה, בלי הרקע הלבן
+    om, nm = np.median(tgt, 0) / 255, np.median(nC, 0) / 255; gam = np.log(om) / np.log(nm)
     print('color fix, gamma per channel', gam.round(2))
     a = np.asarray(nImg, np.float32) / 255; nImg = Image.fromarray((255 * a ** gam).clip(0, 255).astype(np.uint8)); nC = sample(nImg, nUV)
 lo, hi = oP.min(0), oP.max(0); tree = cKDTree(oP)
