@@ -384,6 +384,12 @@ h3 .goalpin span{display:none}
 .vpst i{width:22px;height:8px;border-radius:4px;background:rgba(255,255,255,.15)}
 .vpst i.on{background:var(--gold,#F4C74F)}
 .gtcard .gtopen{color:var(--gold,#F4C74F);font-size:11px}   /* מה הדרגה הבאה פותחת (gtool.js) */
+/* לשונית הכלים בנפחייה: כל המחיר בשורה אחת מעל הכפתור, בלי לגלול (המתאם, 9.11) */
+#ovForge #fDetail:has(.gthint) .cost{display:flex;flex-wrap:nowrap;gap:3px}
+#ovForge #fDetail:has(.gthint) .cost .res{padding:1px 5px;font-size:12px;gap:2px;flex:0 1 auto;min-width:0}
+#ovForge #fDetail:has(.gthint) .cost .res .ri{width:16px;height:16px}
+#ovForge #fDetail:has(.gthint) .gbtns{position:static;padding-top:2px}
+#ovForge #fDetail:has(.gthint) .gbtns .vbtn{min-height:40px;font-size:15px}
 /* הפס העליון בנפחייה: שורה אחת, רק מה שהפעולה צריכה, והשאר מאחורי "+N" (aging.js, forgeBar) */
 .fres{justify-content:flex-start;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:4px;scrollbar-width:none}
 .fres .res{flex:none;padding:2px 8px;font-size:13px}

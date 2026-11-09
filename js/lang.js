@@ -84,6 +84,13 @@ const TEXT={
   'upd.going':{he:'מתעדכן…',en:'Updating…'},
   'upd.check':{he:'בדוק עדכון',en:'Check for update'},
   'bug.btn':{he:'🐞 דיווח על באג',en:'🐞 Report a bug'},
+  // ?fresh=1 / ?restore=1 (js/devsave.js)
+  'dev.fresh':{en:'Fresh start! Your old save is backed up'},
+  'dev.restored':{en:'Old save restored'},
+  'dev.fail':{en:'Backup failed - nothing was changed'},
+  'dev.none':{en:'No backup found'},
+  'dev.btn':{en:'↩️ Restore my old save'},
+  'dev.ask':{en:'Restore your old save? Progress since the fresh start will be lost.'},
   'bug.copied':{he:'הועתק. הדביקו ל-Claude בצ׳אט',en:'Copied. Paste it to Claude in the chat'},
   'bug.shared':{he:'נשלח. הדוח גם הועתק',en:'Shared. The report was also copied'},
   'bug.fail':{he:'לא הצלחתי להעתיק. צלמו את המסך',en:'Could not copy. Take a screenshot'},
