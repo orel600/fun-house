@@ -726,7 +726,7 @@ function syncWorld(){
 // תושבי הכפר: דמות לכל תושב שנמצא בכפר, והקישוטים בפינה של מי שאין לו מבנה. המצב (הולך, עובד, מנופף) מגיע מ-npc.js
 function syncNpcs(dt){
   const all=npcState(),A=R3D.npcs||(R3D.npcs={}),V=R3D.vil;
-  resSync3d();   // הבתים של מי שעברה מהעולם (residents.js)
+  resSync3d();vpSync3d();   // הבתים של מי שעברה מהעולם (residents.js), והסדנה לפי השלב (vproj.js)
   if(!V.npcDeco){V.npcDeco=1;for(const id in NPC.list){const sp=NPC.list[id].spot;if(sp)sp.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length];vPut(VIL3D.deco[d].model,sp.x+dx*40,sp.y+dy*40,VIL3D.deco[d].w)})}}
   for(const id in NPC.list){
     const L=LOOK3D['npc_'+id],n=all[id];let a=A[id];
