@@ -86,9 +86,10 @@ const RES_PIC={coins:1,wood:1,stone:1,cloth:1,copper:1,iron:1,silver:1,gold:1,bo
 const resPic=r=>{const p=RES_PIC[r];return p?'<img class="ri" src="icons/ui/res/'+(p===1?r:p)+'.png" alt="">':resIcon(r)};
 // כל המשאבים של משפחה, לפי הסדר בטבלה
 const resFam=f=>Object.keys(RES.list).filter(r=>RES.list[r].fam===f);
-// שמירה ישנה: משאב ששמו השתנה עובר לשם החדש, בתרמיל ובמחסן. נקרא מ-saveLoad
+// שמירה ישנה: משאב ששמו השתנה עובר לשם החדש, בתרמיל, במחסן ובמה שמחכה באיסוף במבנים (SAVE.prod). נקרא מ-saveLoad
 function resMigrate(sv){
-  for(const box of [sv.bag,sv.stash])for(const o in RES.renamed)if(box[o]){const n=RES.renamed[o];box[n]=(box[n]||0)+box[o];delete box[o]}
+  const boxes=[sv.bag,sv.stash];for(const k in sv.prod||{})if(sv.prod[k]&&sv.prod[k].have)boxes.push(sv.prod[k].have);
+  for(const box of boxes)if(box)for(const o in RES.renamed)if(o in box){const n=RES.renamed[o];box[n]=(box[n]||0)+(box[o]||0);delete box[o]}
 }
 // מה מוצג בפס העליון עכשיו: רשימת משאבים, או null = כל מה שיש בתרמיל
 function resShown(place){

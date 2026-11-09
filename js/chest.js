@@ -65,7 +65,8 @@ function chUpdate(dt){
 function chSlam(c,cx,cy){
   const K=CHEST,s=c.s;
   if(!c.calm){jStop(K.stop,true);S.shake=Math.max(S.shake||0,K.shake)}
-  c.ring=0;const J=juice().p,j0=J.length;jBurst(cx,cy-12,K.stars.col,c.calm?Math.round(K.stars.n/2):K.stars.n,null);if(R3D.on)for(let i=j0;i<J.length;i++)J[i].sz*=K.r3d.stars;   // 3D: bigger starssfx('hit',1.4);sfx('coin',1.2);
+  c.ring=0;const J=juice().p,j0=J.length;jBurst(cx,cy-12,K.stars.col,c.calm?Math.round(K.stars.n/2):K.stars.n,null);if(R3D.on)for(let i=j0;i<J.length;i++)J[i].sz*=K.r3d.stars;   // 3D: bigger stars
+  sfx('hit',1.4);sfx('coin',1.2);
   runGive(SECRETS.chest.loot,cx,cy);
   c.gear=chGear(cx,cy);
   scFind(s,cx,cy,true);   // the counter banner + save. quiet: no generic celebration, this moment replaces it

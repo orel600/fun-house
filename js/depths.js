@@ -33,7 +33,7 @@ const dpBase=b=>b==='meadow'?WORLD:WORLD.regions[b];
 // ב-WORLD.regions אבל לא ברשימה שלו (enumerable:false): WR() ו-enterWorld מוצאים אותן, ומפת העולם, הסודות והעלילה לא רואים אותן
 (function(){
   for(const b of DEPTHS.bases){const B=dpBase(b);if(!B)continue;
-    Object.defineProperty(WORLD.regions,'dp_'+b,{enumerable:false,value:Object.assign({},WORLD,B,{regions:null,region:'depths',back:null,enter:'dp.enter',noNpc:true,gates:{},
+    Object.defineProperty(WORLD.regions,'dp_'+b,{enumerable:false,value:Object.assign({},WORLD,B,{regions:null,camp:null,safe:null,region:'depths',back:null,enter:'dp.enter',noNpc:true,gates:{},
       paths:{deeper:Object.assign({open:()=>!!(S.wd&&S.wd.dpClear)},DEPTHS.deeper,B.map&&B.map.deeper)},dpBase:b})})}   // B.map.deeper: באזור עם מפה (האחו הגדול) השער למטה קרוב לבית
   for(const T_ of DEPTHS.look())if(T_)for(const b of DEPTHS.bases)if(T_[b])T_['dp_'+b]=T_[b];
   // השביל לעומק בלב הצל, אחרי הסוף (storyOpen('end'))

@@ -101,7 +101,7 @@ function gtDraw(){
   let d='<h3>'+T('gt.'+k)+' <span class="dim">'+T('gt.t.'+GTOOL.tiers[t].id)+'</span>'+(why==='max'||why==='job'?'':goalPinBtn({t:k},'pinT'))+'</h3>';   // 📌 יעד בעולם (goal.js)
   if(why==='max')d+='<p class="dim">'+T('gt.max')+'</p>';
   else if(why==='job'){const j=gtJob(k);d+='<p class="gtwait">⏳ '+T('gt.wait',T('gt.t.'+GTOOL.tiers[j.to].id),gtClock(gtLeft(k)))+'</p>'}
-  else d+='<p class="dim">'+T('gt.next',T('gt.t.'+nx.id),Math.round((nx.yld-1)*100),Math.round(GTOOL.time[t+1]/60))+'</p><div class="cost">'+costLine(GTOOL.cost[t+1])+'</div>'+
+  else d+='<p class="dim">'+T('gt.next',T('gt.t.'+nx.id),Math.round((nx.yld/GTOOL.tiers[t].yld-1)*100),Math.round(GTOOL.time[t+1]/60))+'</p><div class="cost">'+costLine(GTOOL.cost[t+1])+'</div>'+
     '<div class="gbtns"><button class="vbtn" data-act="gtUp" data-k="'+k+'"'+(why?' disabled':'')+'>'+(why==='forge'?T('gt.needForge',t+1):why==='gm'?T('gt.needGm',T('gm.'+T_.gm),GTOOL.gm.rank):why==='cost'?T('age.needCost'):T('gt.go'))+'</button></div>';
   $('fDetail').innerHTML=d+'<p class="dim gthint">'+T('gt.hint')+'</p>';
 }
