@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Hammer in engine</title>
+<!-- פטיש הטנק בתוך המנוע (ARI, 9.11.2026): הברברי (mb_tank) עם הפטיש ביד ימין, אותה אחיזה (HAND_R) ותאורה כמו render3d.js, ובאנימציות האמיתיות. השורה העליונה: הגרזן של היום. נטען מ-shoot-hammer.js -->
+<style>body{margin:0;background:#1b2130;color:#eef;font:600 13px system-ui;width:1500px}h2{margin:8px 12px 2px;font-size:16px}.row{display:flex;gap:6px;padding:4px 12px 8px}
+figure{margin:0;text-align:center}figcaption{font-size:12px;color:#b9c3dc}canvas{border-radius:6px;display:block}</style></head><body><div id="out"></div>
+<script src="../../js/vendor/three-bundle.js"></script><script src="../../js/models3d.js"></script>
+<script>
+const b64buf=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
+const parse=buf=>new Promise((ok,bad)=>new THREE.GLTFLoader().setMeshoptDecoder(THREE.MeshoptDecoder).parse(buf,'',ok,bad));
+const lambert=root=>root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap,side:m.side});o.frustumCulled=false}});
+const R=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});R.outputColorSpace=THREE.SRGBColorSpace;R.setPixelRatio(1);
+function scene(){const s=new THREE.Scene();s.background=new THREE.Color('#3a2a30');s.add(new THREE.HemisphereLight(0xdfe6ff,0x2a2236,1.6*1.15));const l=new THREE.DirectionalLight(0xfff1dc,1.9*1.15);l.position.set(-0.5,1,0.6);s.add(l);return s}
+function shot(s,cam,w,h,cap,row){R.setSize(w,h);R.render(s,cam);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(R.domElement,0,0);const f=document.createElement('figure');f.append(c);const t=document.createElement('figcaption');t.textContent=cap;f.append(t);row.append(f)}
+const HAND_R={bone:'handslotr',pos:[0,0.033,0],rot:[0,-1,0,0]};
+async function main(){
+  const W=window.WEAP,H=new URLSearchParams(location.search);const hammer=await parse(b64buf(W.stoneHammer));lambert(hammer.scene);const crown=W.tankCrown?await parse(b64buf(W.tankCrown)):null;if(crown)lambert(crown.scene);
+  const clips={};for(const k of ['anim_general','anim_move','anim_melee']){const g=await parse(b64buf(MODELS3D[k]));for(const a of g.animations)clips[a.name]=new THREE.AnimationClip(a.name,a.duration,a.tracks.filter(t=>{const [n,p]=t.name.split('.');return !/IK|control/.test(n)&&(p==='quaternion'||p==='position'&&/^(root|hips|upperleg)/.test(n))}))}
+  const bar=await parse(b64buf(MODELS3D.barbarian));lambert(bar.scene);
+  const info=[];bar.scene.traverse(o=>{if(/Axe/.test(o.name))info.push(o.name+' parent '+(o.parent&&o.parent.name)+' pos '+o.position.toArray().map(x=>+x.toFixed(3))+' q '+o.quaternion.toArray().map(x=>+x.toFixed(3)))});console.log('INFO',info.join(' ; '));
+  const out=document.getElementById('out');
+  const mk=(withHammer,scl)=>{const ch=THREE.SkeletonUtils.clone(bar.scene);let bone=null;let head=null;ch.traverse(o=>{if(o.isBone&&o.name===HAND_R.bone)bone=o;if(o.isBone&&o.name==='head')head=o;if(withHammer&&/Axe/.test(o.name))o.visible=false;if(withHammer&&crown&&/Barbarian_Hat/.test(o.name))o.visible=false});if(withHammer&&crown&&head)head.add(crown.scene.clone(true));
+    if(withHammer){const w=hammer.scene.clone(true);w.position.fromArray(HAND_R.pos);w.quaternion.fromArray(HAND_R.rot);w.scale.setScalar(scl||1);bone.add(w)}return ch};
+  const ROWS=[['הגרזן של היום (2H_Axe)',false,'Melee_2H_Attack_Chop'],['פטיש חדש, סיבוב החבטה',true,'Melee_2H_Attack_Chop'],['פטיש חדש, ריצה ועמידה',true,'Running_B']];
+  const f=new URLSearchParams(location.search);
+  for(const [t,hm,an] of ROWS){const h=document.createElement('h2');h.textContent=t+' '+an;out.append(h);const row=document.createElement('div');row.className='row';out.append(row);
+    const dur=clips[an].duration,ts=an==='Running_B'?[0,0.15,0.3,0.45,0.6,0.75]:[0,0.18,0.35,0.5,0.7,0.9,1.15,1.5].map(x=>x*dur/1.63);
+    for(const at of ts){const s=scene(),ch=mk(hm);ch.rotation.y=-0.6;s.add(ch);const mx=new THREE.AnimationMixer(ch);mx.clipAction(clips[an]).play();mx.update(at);ch.updateMatrixWorld(true);
+      const t34=34*Math.PI/180,cam=new THREE.OrthographicCamera(-1.9,1.9,2.2,-0.8,0.01,100),C=new THREE.Vector3(0,0.9,0);cam.position.copy(C).add(new THREE.Vector3(0,Math.sin(t34),Math.cos(t34)).multiplyScalar(10));cam.lookAt(C);cam.updateProjectionMatrix();R.setSize(220,260);
+      shot(s,cam,220,260,'t='+at.toFixed(2)+'s',row)}}
+  document.title='ready';
+}
+main().catch(e=>{document.title='ERR '+e.message;console.error(e)});
+</script></body></html>
