@@ -12,7 +12,7 @@ const ARSHC={
   quake:{rows:[[0.35,6],[0.65,9],[0.95,12]],travel:0.18,rise:0.1,hold:0.28,sink:0.24,h:[36,58],w:[7,11],cracks:8,crackT:0.2,dur:1.0,snd:{t:0.08,id:'imp_wall',k:0.8}},
   frost:{n:11,rain:0.28,fall:0.16,high:230,slant:44,hold:0.35,shatter:0.28,dur:1.1,snd:{t:0.2,id:'cast_ice',k:0.8}},
   flame:{n:20,front:0.22,burn:0.45,h:34,dur:0.62},
-  splash:{n:7,travel:0.2,rise:0.12,hold:0.14,fall:0.34,h:[62,92],w:9,drops:5,dur:0.9},
+  splash:{n:7,travel:0.2,rise:0.12,hold:0.14,fall:0.34,h:[50,76],w:15,drops:6,dur:0.9},
   zap:{sky:330,skyT:0.26,arc:0.16,gap:0.07,jit:9,seg:6,star:16},
   lance:{run:0.14,shaft:170,lift:80,gouge:0.5,star:28,dur:0.55},
   comet:{start:0.2,sx:-110,sy:300,tail:150,dur:1.4,star:92,fwd:1.4,cracks:7,embers:6,snd:{id:'tower_fall',k:0.9}},
@@ -173,9 +173,9 @@ const ARSHD={
       const px=e.x+Math.cos(g.an)*g.d,py=e.y+Math.sin(g.an)*g.d*0.85,tt=t-g.d/e.R*S_.travel;if(tt<0)continue;
       const H=S_.h[0]+(S_.h[1]-S_.h[0])*arshR(e.seed,g.i+11),up=arshE(arshC(tt/S_.rise)),dn=arshC((tt-S_.rise-S_.hold)/S_.fall),h=H*up*(1-dn*dn);
       if(h>2){const w=S_.w*(1-0.4*dn);
-        ctx.beginPath();ctx.moveTo(px-w,py);ctx.quadraticCurveTo(px-w*0.6,py-h*0.6,px-w*0.25,py-h);ctx.lineTo(px+w*0.25,py-h);ctx.quadraticCurveTo(px+w*0.6,py-h*0.6,px+w,py);ctx.closePath();
+        ctx.beginPath();ctx.moveTo(px-w,py);ctx.quadraticCurveTo(px-w*0.9,py-h*0.6,px-w*0.7,py-h);ctx.arc(px,py-h,w*0.7,Math.PI,0);ctx.quadraticCurveTo(px+w*0.9,py-h*0.6,px+w,py);ctx.closePath();
         ctx.globalAlpha=0.9;ctx.fillStyle=ARSHC.shade;ctx.fill();ctx.globalAlpha=0.95;ctx.fillStyle='#4FB4F2';ctx.fill();
-        ctx.beginPath();ctx.moveTo(px-w*0.1,py);ctx.quadraticCurveTo(px+w*0.1,py-h*0.6,px+w*0.15,py-h);ctx.lineTo(px+w*0.4,py-h);ctx.quadraticCurveTo(px+w*0.45,py-h*0.6,px+w*0.7,py);ctx.closePath();ctx.fillStyle='#DDF0FF';ctx.fill();
+        ctx.beginPath();ctx.moveTo(px+w*0.15,py);ctx.quadraticCurveTo(px+w*0.35,py-h*0.6,px+w*0.3,py-h);ctx.lineTo(px+w*0.6,py-h);ctx.quadraticCurveTo(px+w*0.7,py-h*0.6,px+w*0.75,py);ctx.closePath();ctx.fillStyle='#DDF0FF';ctx.fill();ctx.beginPath();ctx.ellipse(px,py-h,w*0.8,w*0.35,0,0,7);ctx.fillStyle='#fff';ctx.globalAlpha=0.95*(1-dn);ctx.fill();
         ctx.beginPath();ctx.moveTo(px-w*1.6,py);ctx.quadraticCurveTo(px-w*0.9,py-5*up,px-w*0.5,py);ctx.moveTo(px+w*0.5,py);ctx.quadraticCurveTo(px+w*0.9,py-5*up,px+w*1.6,py);ctx.globalAlpha=0.9*(1-dn);ctx.strokeStyle='#DDF0FF';ctx.lineWidth=1.6;ctx.stroke()}   // שני קשתות קצף בבסיס
       if(!arshLess()&&tt>S_.rise*0.6&&dn<1){const q=arshC((tt-S_.rise*0.6)/(S_.rise+S_.hold+S_.fall));ctx.beginPath();
         for(let j=0;j<S_.drops;j++){const a2=g.an+(j/S_.drops-0.5)*2.2+arshR(e.seed,g.i*9+j)*0.5,sp=18+28*arshR(e.seed,g.i*9+j+3),x=px+Math.cos(a2)*sp*q*1.3,y=py-H*0.9*Math.sin(Math.PI*Math.min(1,q*1.0))*arshR(e.seed,g.i*9+j+5)*1.1+60*q*q*0.2;
