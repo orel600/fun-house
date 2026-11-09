@@ -327,6 +327,8 @@
     <!-- קרדיטים: האייקונים מ-game-icons.net (CC BY 3.0). הרשימה המלאה: docs/credits.md -->
     <p class="sub credits" data-t="credits.icons"></p>
     <!-- דיווח באג: דוח + צילום מסך לשיתוף או ללוח (js/bugreport.js). גם לחיצה ארוכה על מספר הגרסה -->
+    <!-- backup from ?fresh=1 (js/devsave.js): shown only while a backup exists -->
+    <button class="lang" id="devRestoreBtn" data-t="dev.btn" hidden></button>
     <button class="lang" id="bugBtn" data-t="bug.btn"></button>
   </div>
 </div>
@@ -555,6 +557,7 @@
 <script src="js/perf.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/update-check.js"></script>
+<script src="js/devsave.js"></script>   <!-- ?fresh=1 / ?restore=1: replay from scratch, keep a backup (Nir, 9.11) -->
 <script src="js/fxui.js"></script>       <!-- אפקטים בממשק: חלונות, מעברים, כפתורים, קנייה וקווסטים (ספריית Mochi Lab) -->
 
 </body></html>

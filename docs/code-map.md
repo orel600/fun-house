@@ -193,6 +193,7 @@
 | `js/input.js` | מגע, מקלדת וכפתורים |
 | `js/main.js` | לולאת המשחק והפעלה |
 | `js/update-check.js` | עדכון לבד לגרסה חדשה (`UPD`): בודק את `version.json` (נכתב בפרסום) בפתיחה, כשחוזרים לאפליקציה וכל 5 דקות. במסך הפתיחה ובכפר בלי חלון: שומר ומרענן לבד. בעולם ובזירה רק כפתור "🔄 גרסה חדשה" למעלה. באמצע ריצה בזירה לעולם לא מרענן לבד. בהגדרות: מספר הגרסה ו"בדוק עדכון". service worker ב-`sw.js` (קודם רשת, עותק שמור רק בלי רשת) |
+| `js/devsave.js` | Dev tool (`DEVSAVE`, Nir 9.11.2026): `?fresh=1` backs up the full save (own localStorage key + `SAVE.devBak`, so the cloud row carries it), verifies it, then starts a new save from scratch and reloads. `?restore=1` or Settings "Restore my old save" brings it back. The backup is never auto-deleted |
 | `js/bugreport.js` | דיווח באג (`BUG`): כפתור 🐞 בהגדרות (או לחיצה ארוכה על מספר הגרסה שם) בונה דוח קצר באנגלית: גרסה, מכשיר, מקום, חיים, קווסט, אויב קרוב, השגיאות האחרונות ומה קרה לפני רגע. משתף עם צילום מסך, או מעתיק ללוח. נטען מוקדם, מיד אחרי version.js, כדי לתפוס שגיאות מהטעינה |
 | `js/perf.js` | מד מהירות בטלפון (`FPSM`): ⚙️ "הצג FPS" או `?fps=1` מציגים FPS ממוצע והפריים הכי איטי ב-2 שניות, בתחתית. `?fps`: לפיתוח, גם הזמן של כל חלק בפריים. נטען אחרון |
 | `tools/check.js` | הבדיקה האוטומטית. לא חלק מהמשחק |
