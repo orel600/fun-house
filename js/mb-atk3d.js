@@ -39,8 +39,9 @@ function mbAtk3dTick(u,a,C,dt){
   else if(st.ph==='settle'){st.t+=dt;if(st.t>=C.settle){const R=C.recover;st.x.fadeOut(Math.max(R.min,Math.min(R.max,u.atkT||0)));st.ph=''}}
 }
 function mbAtk3dPuff(u,C){
+  // r: כיוון המכה (u.aim, mbAttack קובע אותו באותו פריים). הסיבוב של הגוף (mbRot) עוד יכול להסתובב, ואז האבק יצא מאחור
   const P_=C.puff;if(!P_||typeof fxPlay!=='function'||(typeof fxLess==='function'&&fxLess()))return;
-  const r=mbRot(u),x=u.x+Math.cos(r)*(u.r+P_.ahead),y=u.y+Math.sin(r)*(u.r+P_.ahead);
+  const r=u.aim!=null?u.aim:mbRot(u),x=u.x+Math.cos(r)*(u.r+P_.ahead),y=u.y+Math.sin(r)*(u.r+P_.ahead);
   if(typeof mbfxOn==='function'&&!mbfxOn(x,y))return;   // בערפל: לא מסגירים
   if(fxPlay(P_.fx,x,y,{size:P_.size}))MBATK3D.stat.puffs++;
 }

@@ -58,7 +58,7 @@ function mbCast(u,slot,aim){
   mbAnimCast(u,s,slot,ang);   // הבזק ההטלה ומצב על המטיל (moba-skill-anim.js). רק מראה
   switch(s.id){
     case 'anvil':{const p=pt(),d=Math.hypot(p.x-u.x,p.y-u.y);   // קופץ ונוחת: הלם ונזק מסביב לנקודת הנחיתה
-      u.st.dash={vx:Math.cos(ang),vy:Math.sin(ang),sp:800,left:Math.max(1,d),jump:true,end:()=>{for(const o of foesIn(u.x,u.y,s.r)){mbDmg(u,o,s.dmg*k,s.dt,{big:true});mbCC(o,'stun',s.stun,u);mbAnimHit(o,s.dt)}mbBoom(u.x,u.y,s.r,s.dt);mbfxSlam(u,s.r,s.dt);mbfxSk('sk_anvil',u.x,u.y,{r:s.r,hold:s.field?s.field.t:0});mbfxSk('sk_anvil_wave',u.x,u.y,{r:s.r});mbAnimLand('anvil',u.x,u.y,s);
+      u.st.dash={vx:Math.cos(ang),vy:Math.sin(ang),sp:800,left:Math.max(1,d),jump:true,end:()=>{for(const o of foesIn(u.x,u.y,s.r)){mbDmg(u,o,s.dmg*k,s.dt,{big:true});mbCC(o,'stun',s.stun,u);mbAnimHit(o,s.dt)}(typeof mbSharpBoom==='function'?mbSharpBoom('anvil',u.x,u.y,s.r,s.dt):mbBoom(u.x,u.y,s.r,s.dt));(typeof mbSharpSlam==='function'?mbSharpSlam('anvil',u,s.r,s.dt):mbfxSlam(u,s.r,s.dt));mbfxSk('sk_anvil',u.x,u.y,{r:s.r,hold:s.field?s.field.t:0});mbfxSk('sk_anvil_wave',u.x,u.y,{r:s.r});mbAnimLand('anvil',u.x,u.y,s);
         if(s.field)mbZone(u,u.x,u.y,s.r,0,null,'anvil',{t:s.field.t,tick:z=>{for(const o of foesIn(z.x,z.y,z.r))mbSlow(o,s.field.k,0.2)}})}};break}   // רק האטה: בלי נזק ובלי הלם נוסף. מגדלים ובסיסים לא (foesIn, mbSlow). יוצאים מהשדה: נגמר תוך 0.2 שנייה
     case 'taunt':{for(const o of foesIn(u.x,u.y,s.r)){mbPull(o,u.x,u.y,s.pull,u.r+o.r+6);if(mbCC(o,'taunt',s.t,u))mbAnimTaunt(o,s.t)}
       mbShield(u,s.shield*k,s.shieldT);u.st.armor=s.shieldT;u.st.armorK=0;u.st.burnBack=s.burn;mbBoom(u.x,u.y,s.r,'fire');mbWord(u,'taunt');mbfxSk('sk_taunt',u.x,u.y,{r:s.r,follow:u,loop:true,dur:s.t});break}
