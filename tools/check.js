@@ -1477,7 +1477,7 @@ function worldBot(m,L,god){
       const k=Object.keys(VILLAGE.b).find(k=>VILLAGE.b[k].make);SAVE.village[k]=Math.max(1,SAVE.village[k]||0);SAVE.prod[k]={t:0,have:{}};vSettle(k);
       menuShow('qBtn');r.vHold=uiHold();const T0=dn();Date.now=()=>T0+3600e3;run(0.5);
       const p=vSettle(k);r.prod=Object.values(p.have).some(v=>v>0);Date.now=dn;menuClose()}catch(err){r.err=String(err&&err.stack||err)}
-    Date.now=dn;menuClose();SAVE=JSON.parse(bak);if(vil)enterVillage();else{worldUi(false);reset();S.mode=mode}return r});
+    Date.now=dn;last=performance.now();menuClose();SAVE=JSON.parse(bak);if(vil)enterVillage();else{worldUi(false);reset();S.mode=mode}return r});   // last: השעון של הלולאה חוזר להווה, אחרת הפריים הבא מקבל dt שלילי
   // סקילים וחפצים מסתובבים בעולם הפתוח (wskill.js): כפתור סקיל מעל הסרגל, נגיעה יורה אל הקרוב, גרירה מכוונת, הכדור נוחת ופוגע, קירור עם מספר,
   // וחמשת החפצים מסתובבים, פוגעים ומצוירים (מרחפים עם צל). אחר כך הכל חוזר
   const wsk=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
