@@ -64,7 +64,7 @@ const CHARS={
   nirHero:{src:path.join(ROOT,'art/heroes/NirHero.glb'),keep:['NirHero_'],tex:512,fmt:'jpeg'},
   // הדמות האישית של אוראל ("הנודד עם החליל"), מ-art/heroes/orel-sheet.jpg. בתנוחת T, אז rig.py בלי דגלים.
   // הדף מורכב משני דפים של ג'מיני: מלפנים ומאחור מהראשון (חד), ומהצד מהשני (בראשון היו פנים כפולות), מוגדל לאותו גובה והפוך כך שיפנה ימינה
-  orelHero:{src:path.join(ROOT,'art/heroes/OrelHeroHF.glb'),keep:['OrelHero_'],tex:512,fmt:'jpeg'},
+  orelHero:{src:path.join(ROOT,'art/heroes/OrelHeroHF.glb'),keep:['OrelHero_'],tex:512,fmt:'jpeg'},
   // ניסוי tankX (ARI, 9.11.2026, art/tankx): הטנק של אוראל (Tripo) על שלד Rig_Medium. מפתח חדש, לא מחליף כלום. עיבוד: tools/tankx/. טקסטורה 512
   tankX:{src:path.join(ROOT,'art/heroes/TankX.glb'),keep:['Barbarian_'],tex:512,fmt:'jpeg'}
 };
@@ -198,9 +198,12 @@ const ITEMS={
   // ready: נבנה ב-Blender מקוד (tools/blender) כבר בצירים, בגודל ובאחיזה של KayKit, עם פלטה ו-emissive (זוהר שפועם, render3d.js). לא מקטינים, לא מזיזים ולא מסובבים
   starStaff:{src:raw('starStaff'),ready:true,tex:128},
   skyBow:   {src:raw('skyBow'),ready:true,tex:128},
+  silverBlade:{src:raw('silverBlade'),ready:true,tex:128},
+  oakStaff: {src:raw('oakStaff'),ready:true,tex:128},
+  wardenHammer:{src:raw('wardenHammer'),ready:true,tex:128},
   stormBow: {src:raw('stormBow'),tris:4000,tex:512,len:2.4,grip:0.5,rot:[0,0,-90]},
   shield3:  {src:raw('shield3'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},   // יצא כבר כמו KayKit: הפנים ב-xy
-  shield4:  {src:raw('shield4'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},
+  shield4:  {src:raw('shield4'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},
   // פטיש הטנק החדש (tankX): ready, גריפ בראשית וידית על y, טקסטורה 512 jpeg
   tankXHammer:{src:raw('tankXHammer'),ready:true,tex:512,fmt:'jpeg'}
 };
