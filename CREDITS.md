@@ -24,6 +24,7 @@ Only sources whose files are actually in this repository are listed as "in use".
 ### KayKit (Kay Lousberg): 3D characters, animations, weapons, buildings and nature
 
 - **What:** the models and animations embedded in `js/models3d.js` and `js/m3d/*.js`, built by `tools/build3d.js` from: KayKit Character Pack Adventures 1.0, KayKit Adventurers 2.0 (Knight, Ranger, Mage), KayKit Skeletons 1.0, KayKit Character Animations 1.1, KayKit Fantasy Weapons Bits 1.0, KayKit Medieval Hexagon Pack 1.0 and KayKit Forest Nature. The reference image `art/kaykit2/heroes.jpg` is from the Adventurers 2.0 pack.
+- **Village growth (9.11.2026):** the ruin, building stages, tower base, fences and props (`vx_*` in `js/m3d/`) are also from KayKit Medieval Hexagon Pack 1.0 (`tools/build3d.js --only village`).
 - **License:** [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) (public domain dedication). No attribution required; given anyway.
 - **Source:** https://kaylousberg.itch.io/ and https://github.com/KayKit-Game-Assets. Details: [docs/3d-assets.md](docs/3d-assets.md).
 

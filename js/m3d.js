@@ -42,6 +42,7 @@ function m3dGo(k){
 // אותו עיבוד כמו בפתיחה (init3d): אנימציות, חפץ, או דמות
 function m3dDecode(k,g){
   if(k.startsWith('anim_'))addClips(g);
+  else if(k.startsWith('vx_')){lambert(g.scene);g.scene.traverse(o=>{o.frustumCulled=true});R3D.props[k]=g.scene;if(typeof tx3dMark==='function')tx3dMark(k)}   // שלבי הכפר (syncVillage ב-render3d.js)
   else if(k.startsWith('w_item_')){lambert(g.scene);R3D.props[k]=g.scene;M3D.hv++}   // hv: חפץ (גם מגן) מוכן, הגיבור נבנה מחדש (heroLook). רק כאן: בנייה מחדש בלי צורך מבלבלת את השריון (armor3d)
   else{R3D.tmpl[k]=g.scene;prepTmpl(k)}   // דמות אישית: heroLook רואה לבד שהמודל המוצג התחלף. חיה ומפלצת לא נוגעות בגיבור
 }
@@ -61,8 +62,10 @@ function m3dBoot(){
     const pk='pet_'+(SAVE.pet&&SAVE.pet.kind||(typeof PET!=='undefined'?PET.default:'piocho')),st=SAVE.pet&&SAVE.pet.stage||0,pt=LOOK3D[pk+(st+1)];nx=LOOK3D[pk+(st+2)];if(pt)ks.push(pt.model);
     if(nx)M3D.boot.then(()=>m3dHint([nx.model]));   // השלב הבא של החיה: ברקע, כדי שבעלייה בשלב היא לא תיעלם לרגע
     for(const s in SAVE.gear||{}){const id=SAVE.gear[s];if(typeof id==='string')ks.push('w_item_'+(typeof gBase==='function'?gBase(id):id))}
+    // הכפר (שם המשחק נפתח): המבנים והקישוטים של הרמה הנוכחית שבחוץ (vx_), כדי שהפיגום שבמקומם יופיע לרגע קצר בלבד
+    if(typeof VILLAGE!=='undefined'&&SAVE.village)for(const k in VILLAGE.b){const L=SAVE.village[k]||0,lk=L&&VILLAGE.b[k].look.filter(b=>L>=b.at).pop();if(lk)ks.push(VIL3D.models[lk.model].model,...lk.deco.map(d=>VIL3D.deco[d].model))}   // כמו vLook, בלי S (עוד לא קיים)
   }
-  M3D.bootKs=ks.filter(m3dLazy);for(const k of M3D.bootKs)m3dGo(k);
+  M3D.bootKs=[...new Set(ks.filter(m3dLazy))];for(const k of M3D.bootKs)m3dGo(k);
   if(nx&&m3dLazy(nx.model))M3D.bootKs.push(nx.model);   // bootKs: מה שמותר שיהיה בטלפון כבר בפתיחה (tools/check.js)
 }
 // כל פריים (render3d): הזירה מבקשת את המפלצות שלה, רמז אחד ברקע, והורדה ברקע
