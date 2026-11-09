@@ -2161,7 +2161,8 @@ function worldBot(m,L,god){
   // center queue (centerq.js, MLBB 3.1): never two center messages at once in the arena; danger jumps ahead and replaces what is shown;
   // info (first kill, book) goes last; a streak replaces a streak; at most CQ.max waiting. Fake clock (CQ.clock), so no timing flakes
   const cq=await page.evaluate(()=>{const o={},mode=S.mode,bak=JSON.stringify(SAVE);let t=0;
-    try{startRun();S.mode='play';CQ.clock=()=>t;CQS.cur=null;CQS.q.length=0;{const b0=document.getElementById('banner');if(b0)b0.classList.remove('on')}S.st=null;const st0={...CQ.stat};let worst=0;
+    try{startRun();S.mode='play';document.body.classList.remove('vil','world','mb');CQ.clock=()=>t;   // body classes are set on the next frame; a leftover 'vil' sends banner to the village lane (msglane.js)
+      CQS.cur=null;CQS.q.length=0;{const b0=document.getElementById('banner');if(b0)b0.classList.remove('on')}S.st=null;const st0={...CQ.stat};let worst=0;
       const v=()=>{const n=cqVisible();worst=Math.max(worst,n);return n},txt=()=>document.getElementById('banner').textContent;
       S.st={n:10,last:S.t,show:null,best:10};
       banner('Alpha',C.gold);o.a=v()===1&&txt()==='Alpha';
