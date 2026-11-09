@@ -4663,6 +4663,17 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     MBATK3D.on=true;try{mobaExit()}catch(e){}return o});
   check(!tka.err&&tka.dmg>0&&tka.same&&tka.snd===1&&tka.d3&&tka.castMid&&tka.moveMid&&tka.reMid,'underworld tank attack (visual only): '+(tka.err||'damage '+tka.dmg+(tka.same?' and cooldown unchanged by the visuals':' CHANGED by the visuals!')+', impact sound '+(tka.snd===1?'on the damage frame':tka.snd+'×')+
     (tka.ph==null?' (2D: no body)':', strike '+(tka.ph==='hit'&&tka.clip?'on the frame':'missing ('+tka.ph+'/'+tka.clip+')')+', hard stop at '+tka.stop+', then '+tka.base))+', never locked: cast '+(tka.castMid?'✓':'✗')+' move '+(tka.moveMid?'✓':'✗')+' strike again '+(tka.reMid?'✓':'✗'));
+  // underworld kit look (mb-kitlook.js): your hero wears the kit's model at the bots' height (tank = barbarian); SAVE.mbOwnLook keeps the personal skin.
+  // Only the look: rank and armor never paint the kit model. 2D: nothing to draw
+  const kl=await page.evaluate(()=>{const o={},own=SAVE.mbOwnLook;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      o.kits={};for(const k of Object.keys(MBKIT)){mobaStart(k);syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,B=LOOK3D['mb_'+k];
+        o.kits[k]=!B||!m3dNeed(B.model)||a.L.model===B.model&&a.L.h===B.h&&Object.values(a.props).some(p=>p.visible)}
+      mobaStart('tank');SAVE.mbOwnLook=true;syncPlayer(1/60);o.own=R3D.player.L.model!==LOOK3D.mb_tank.model||!m3dNeed(LOOK3D.mb_tank.model);
+      SAVE.mbOwnLook=false;syncPlayer(1/60);o.back=R3D.player.L.mbKit==='tank'||!m3dNeed(LOOK3D.mb_tank.model);
+    }catch(e){o.err=String(e&&e.stack||e)}SAVE.mbOwnLook=own;return o});
+  check(!kl.err&&(kl.d2||Object.values(kl.kits).every(Boolean)&&kl.own&&kl.back),'underworld kit look: '+(kl.err||(kl.d2?'2D, nothing to draw':
+    Object.entries(kl.kits).map(([k,v])=>k+(v?' ✓':' ✗')).join(', ')+', personal skin option '+(kl.own&&kl.back?'✓':'✗'))));
   // tank s1 slow field (moba-kits.js, the one approved mechanic change of the morning package): after the anvil lands, an mbZone the size of the slam
   // slows enemies inside by field.k, refreshed in short steps (so it ends when they walk out), no damage, and the zone ends after field.t
   const anf=await page.evaluate(()=>(()=>{const o={};try{mobaStart('tank');const me=MB.me,s=MBKIT.tank.s1;

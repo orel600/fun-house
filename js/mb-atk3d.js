@@ -69,6 +69,7 @@ function mbAtk3dWith(L,u,C,fn){
   const bp=syncPlayer;window.syncPlayer=function(dt){
     const u=S.mb&&MB&&MB.me,C=mbAtk3dCfg(u);if(!C||!R3D.player)return bp.apply(this,arguments);
     mbAtk3dTick(u,R3D.player,C,dt);
+    {const st=R3D.player.st;if(st){st.anim=P.sw.anim;st.gt=P.gn.t}}   // המכה כאן היא שלנו: בלי התנופה הרגילה של syncPlayer, שהחליפה את המכה של הטנק באמצע
     return mbAtk3dWith(heroLook(),u,C,()=>bp.call(this,dt));
   };
 })();
