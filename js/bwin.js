@@ -104,6 +104,7 @@ function npcSvcs(id){
   if(id===FISH.cookAt)s.push({id:'cook',label:'🍳 '+T('bw.cook'),html:()=>'<p class="bwlead">'+T('bw.cookWhy')+'</p>'+fishCookHtml()});   // fishing.js
   const R=NPC.list[id]&&NPC.list[id].serve&&RESID.list[NPC.list[id].serve];
   if(R)s.push({id:'serve',label:R.sign+' '+T('rsd.'+NPC.list[id].serve+'.t'),html:()=>resHtml(id)});   // residents.js
+  const pj=R&&vpTab(NPC.list[id].serve);if(pj)s.push(pj);   // פרויקט בכפר (vproj.js)
   return s;
 }
 
