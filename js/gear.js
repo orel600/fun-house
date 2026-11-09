@@ -239,7 +239,7 @@ function gearLive(before,id){
 const gCanCraft=id=>gItem(id)&&GEAR.recipes[id]&&gItem(id).tier<vLv('forge');
 function gearCraft(id){
   const c=GEAR.recipes[id];if(!gCanCraft(id)||Object.keys(c).some(r=>!bagHas(r,c[r])))return false;
-  for(const r in c)bagTake(r,c[r]);bagAdd(id);saveNow();
+  for(const r in c)bagTake(r,c[r]);bagAdd(svcCraftId(id));saveNow();   // svcCraftId: כוח מהנפח (services.js)
   const B=VILLAGE.b.forge;celebrate(B.x,B.y,'gear',gIcon(id));banner(T('forge.made',T('it.'+id)),gTint(id));
   return true;
 }

@@ -1285,6 +1285,8 @@ const TEXT={
   'vp.stage':{en:(a,b)=>'Stage '+a+'/'+b},'vp.build':{en:n=>'Build stage '+n},
   'vp.done':{en:(n,pl)=>n+' is done! The crew cleared the way to '+pl},'vp.isDone':{en:(pl,n)=>'Done. '+pl[0].toUpperCase()+pl.slice(1)+' is open, and I trade '+n+' iron now.'},
   'vp.open':{en:pl=>pl[0].toUpperCase()+pl.slice(1)+' is open!'},
+  'svc.board4':{en:'Three jobs a day, plus an order from the village. Tomorrow brings new ones.'},'svc.smith':{en:'Smith’s touch: pick a free power'},'svc.trade':{en:f=>'Most gathered today: '+f+'. Those materials sell for more today.'},
+  'q.iOrder':{en:['Village Order','The village needs supplies. Gather them out in the world, and the reward is better than usual.']},
   'goal.aria':{en:(r,h,n,g)=>r+' '+h+' of '+n+' for '+g},'gt.go':{en:'Upgrade'},'gt.max':{en:'Best tool there is'},
   'gt.wait':{en:(n,c)=>n+' ready in '+c},'gt.ready':{en:'Tool ready'},'gt.done':{en:(k,n)=>'Your '+k+' is now '+n+'!'},
   'gt.needForge':{en:l=>'Needs forge level '+l},'gt.needGm':{en:(f,r)=>'Needs '+f+' rank '+r},

@@ -60,7 +60,8 @@ function goalUpdate(dt){
   GOALW.r=o.r;GOALW.have=o.have||0;GOALW.g=goalKey(o.g);
   if(o.done&&goalS().hit!==goalLv(o.g)){goalS().hit=goalLv(o.g);saveNow();GOAL.stat.done++;celebrate(P.x,P.y-20,'gear','⌂');banner(T('goal.ready',goalName(o.g)),C.gold)}
   if(key===GOALW.key)return;GOALW.key=key;GOAL.stat.show++;
-  b.innerHTML=o.done?'⌂ <b>'+goalName(o.g)+'</b> ✓':resPic(o.r)+'<b>'+shortN(o.have)+'/'+shortN(o.need)+'</b><small>'+goalName(o.g)+'</small>';
+  // span ולא b: ‎.whud b‎ הוא שם האזור, שנעלם אחרי 5 שניות (style.css), והמספר היה נעלם איתו
+  b.innerHTML=o.done?'⌂ <span class="gnum">'+goalName(o.g)+'</span> ✓':resPic(o.r)+'<span class="gnum">'+shortN(o.have)+'/'+shortN(o.need)+'</span><small>'+goalName(o.g)+'</small>';
   b.setAttribute('aria-label',o.done?T('goal.ready',goalName(o.g)):T('goal.aria',resName(o.r),o.have,o.need,goalName(o.g)));
 }
 // לחיצה בכפר (village.js) או בנפחייה (gtClick): true אם זו הייתה לחיצה על 📌

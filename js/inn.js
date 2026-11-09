@@ -18,7 +18,9 @@ const INN={
     iSklv: {obj:[{type:'sklv',n:1}],reward:{coins:35,essence:3},gem:0.3,need:()=>typeof wslIds==='function'&&wslIds().length>0},
     iWeak: {obj:[{type:'weak',what:'fire',n:15}],reward:{coins:40,bone:8,copper:4},gem:0.3},
     iQual: {obj:[{type:'qual',n:1}],reward:{coins:45,copper:6,hide:4},gem:0.3},
-    iHunt: {obj:[{type:'kill',what:'any',n:60}],reward:{coins:30,wood:15},gem:0.15}   // תמיד אפשר: כדי שיהיו 3 גם לשחקן שעוד אין לו הכל
+    iHunt: {obj:[{type:'kill',what:'any',n:60}],reward:{coins:30,wood:15},gem:0.15},   // תמיד אפשר: כדי שיהיו 3 גם לשחקן שעוד אין לו הכל
+    // הזמנה מהכפר: משבצת רביעית (extra), מפונדק ברמה 2. מה מבקשים והפרס נקבעים כל יום ב-svcOrder (services.js)
+    iOrder:{obj:[{type:'gather',what:'stone',n:30}],reward:{coins:50},gem:0.2,extra:true,order:true,need:()=>typeof svcOrderOn==='function'&&svcOrderOn()}
   },
   dpMin:3,dpUp:2,
   gemN:1,               // כמה אבני חן כשיש
@@ -47,7 +49,7 @@ function innRoll(){
   if(I.day!==day||!Array.isArray(I.ids)){
     const Q=QS();for(const id in INN.pool)if(Q.active[id]&&!qReady(QBY[id]))delete Q.active[id];   // משימה של אתמול שלא נגמרה יורדת. מוכנה נשארת עד שלוקחים
     const ok=Object.keys(INN.pool).filter(id=>!INN.pool[id].need||INN.pool[id].need());
-    I.ids=ok.sort((a,b)=>innHash(day+a,7)-innHash(day+b,7)).slice(0,INN.board);
+    I.ids=ok.filter(id=>!INN.pool[id].extra).sort((a,b)=>innHash(day+a,7)-innHash(day+b,7)).slice(0,INN.board).concat(ok.filter(id=>INN.pool[id].extra));   // extra: מעבר ל-3 (services.js)
     I.day=day;I.weak=innWeak();I.dp=Math.max(INN.dpMin,(typeof depthsBest==='function'?depthsBest():0)+INN.dpUp);I.got={};
   }
   innApply();return I.ids;
@@ -58,6 +60,7 @@ function innApply(){
   for(const id in INN.pool){const p=INN.pool[id],q=QBY[id];q.reward={...p.reward};
     if(innHash(day+id,23)%100<p.gem*100)q.reward.gem=INN.gemN;
     for(const o of q.obj){if(o.type==='depth')o.n=I.dp||INN.dpMin;if(o.type==='weak')o.what=I.weak||'fire'}
+    if(p.order&&typeof svcOrder==='function')svcOrder(q,day);   // הזמנה מהכפר (services.js)
     innFreeze(id)}
 }
 // משימה שנלקחה שומרת את היעד והפרס של היום שבו נלקחה (fz על הרשומה הפעילה), כדי שמחר היא לא תאבד אבן חן או תפסיק להיות מוכנה (ביקורת 6.11, פריט 3)
@@ -76,7 +79,7 @@ function innCard(id){
 function innBoardHtml(){
   let h='<p class="innrum">🗣️ '+innRumor()+'</p>';
   if(qEarly())return h+'<p class="next">'+T('inn.early')+'</p>';
-  const ids=innRoll();h+='<p class="bwlead">'+T('inn.boardWhy')+'</p><div class="innboard">'+ids.map(innCard).join('')+'</div>';
+  const ids=innRoll();h+='<p class="bwlead">'+T(ids.length>INN.board?'svc.board4':'inn.boardWhy')+'</p><div class="innboard">'+ids.map(innCard).join('')+'</div>';
   return h;
 }
 // השמועה: נמסיס שמחכה, המבוקש של היום, או רכילות סתם. מתחלפת כל rumorEvery שניות
