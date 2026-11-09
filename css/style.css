@@ -380,6 +380,10 @@ h1{font-size:46px} h2{font-size:30px}
 .goalpin[aria-pressed="true"]{color:var(--gold,#F4C74F);border-color:var(--gold,#F4C74F)}
 h3 .goalpin{margin-inline-start:8px;vertical-align:middle}
 h3 .goalpin span{display:none}
+.svsmith{display:flex;flex-direction:column;gap:4px;margin-top:6px}   /* כוח מהנפח (services.js) */
+.svpick{display:flex;gap:6px;flex-wrap:wrap}
+.svpick .goalpin{flex-direction:column;align-items:flex-start;gap:0}
+.svpick .goalpin small{font-weight:600;opacity:.85}
 .gtcard .gtopen{color:var(--gold,#F4C74F);font-size:11px}   /* מה הדרגה הבאה פותחת (gtool.js) */
 /* לשונית הכלים בנפחייה: כל המחיר בשורה אחת מעל הכפתור, בלי לגלול (המתאם, 9.11) */
 #ovForge #fDetail:has(.gthint) .cost{display:flex;flex-wrap:nowrap;gap:3px}

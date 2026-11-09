@@ -3054,6 +3054,28 @@ function worldBot(m,L,god){
     (vlr.ok?', פטיש 2: מלא':', פטיש 2 לא עוזר')+(vlr.arena?', בזירה בלי שינוי':', הזירה השתנתה!')+(vlr.nores?', בלי "עמיד" על מקורות':', "עמיד" על מקור!')+(vlr.late?', רמה 4 ×1.3 עץ':', מחיר רמה 4 שגוי')+(vlr.opens?', מה נפתח ו-📌 בנפחייה':', אין "נפתח" או 📌')+
     (vlr.pin&&vlr.miss?', יעד מסומן ומה חסר':', היעד שגוי')+(vlr.chip?', שבב בעולם':', אין שבב')+(vlr.pulse?', פועם באיסוף':', לא פועם')+(vlr.done&&vlr.once?', ⌂ וחגיגה פעם אחת':', בלי ⌂ או חגיגה כפולה')+
     (vlr.unpin?', ביטול סימון':', הסימון נתקע')+(vlr.blank?', בשמירה':', לא בשמירה'))));
+  // לולאת הכפר, שלב 3 (services.js): הנפח נותן כוח לבחירה, הזמנה רביעית בלוח הפונדק עם פרס ×1.25 שנוטה ליעד, והשוק משלם יותר על המשפחה של היום
+  const svr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{const V=SVC;SAVE.svc={n:0,day:'',fam:{}};
+      // הנפח
+      SAVE.village.forge=V.smith.forge-1;const id=Object.keys(GEAR.recipes).find(k=>{const it=gItem(k);return it&&powFor(it.slot).length>=2});
+      o.off=svcPicks(id).length===0&&svcCraftId(id)===id;
+      SAVE.village.forge=V.smith.forge;const ps=svcPicks(id);SVC_PICK=ps[1];const got=svcCraftId(id);o.smith=ps.length===2&&gPow(got)===ps[1]&&svcPicks(id)[0]!==ps[0]&&svcSmithHtml(id).includes('data-act="smithP"');
+      // הפונדק
+      SAVE.village.inn=V.order.inn-1;IN().day=null;o.three=!innRoll().includes('iOrder');
+      SAVE.village.inn=V.order.inn;IN().day=null;delete QS().active.iOrder;const ids=innRoll(),q=QBY.iOrder,r=q.obj[0].what;
+      o.four=ids.length===INN.board+1&&ids.includes('iOrder')&&q.obj[0].type==='gather'&&q.obj[0].n===V.order.what[r].n&&q.reward.coins===Math.round(V.order.reward.coins*V.order.k);
+      // השוק: אבן נשברה הכי הרבה היום
+      SAVE.village.market=Math.max(1,SAVE.village.market||0);const p0=vPrice('stone','sell'),w0=vPrice('wood','sell'),b0=vPrice('stone','buy');
+      enterWorld('home');const rk=S.nd.list.find(n=>gmFam(n)==='stone');svcNode(rk);svcNode(rk);
+      o.trade=svcFam()==='stone'&&svcSellK('stone')===1+V.trade.bonus&&svcSellK('wood')===1&&vPrice('wood','sell')===w0&&vPrice('stone','buy')===b0&&svcTradeLine().includes(T('gm.stone'));
+      o.trade=o.trade&&vPrice('stone','sell')>p0&&vPrice('stone','sell')<b0;   // לפחות מטבע אחד יותר, ותמיד פחות מקנייה
+      o.blank=!!saveBlank().svc;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];SAVE=JSON.parse(bak);SVC_PICK=null;enterVillage();return o});
+  check(!svr.err&&svr.off&&svr.smith&&svr.three&&svr.four&&svr.trade&&svr.blank,
+    'שירותי הכפר: '+(svr.err||((svr.off?'נפחייה נמוכה בלי כוח':'כוח בנפחייה נמוכה!')+(svr.smith?', הנפח נותן את הכוח שבחרת':', הכוח לא לפי הבחירה')+(svr.three?', פונדק נמוך: 3':', הזמנה בפונדק נמוך!')+
+    (svr.four?', הזמנה רביעית ×1.25':', בלי הזמנה')+(svr.trade?', אבן של היום ביותר בשוק':', השוק לא משתנה')+(svr.blank?', בשמירה':', לא בשמירה'))));
   // העלילה, פרק 5 (story.js, WORLD.regions.storm): השביל מהמדבר למגדלים סגור עד שפנס האש דולק, במגדלים גשם, ברקים ומגדלים שבורים שאי אפשר לעבור,
   // אויבים מחושמלים (חלשים לאדמה), ושומר הסערה מסמן עיגולי ברק שמתפוצצים אחרי שנייה: מי שנשאר נפגע, מי שזז לא
   const ch5=await page.evaluate(()=>{

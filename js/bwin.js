@@ -56,7 +56,7 @@ function bwTrade(L){
   const sell=rs.filter(r=>vCanTrade('sell',r)&&bagHas(r)),
     buy=rs.filter(r=>resOf(r).buy).map(r=>{const p=vPrice(r,'buy')*vLot(r);return[r,p,!vCanTrade('buy',r)?'🔒 '+T('vil.mkLv',RES.rarity[resOf(r).rar].market):bagHas('coins',p)?'':T('vil.noCoins')]})
       .sort((a,b)=>(!!a[2]-!!b[2]));   // מה שאפשר לקנות עכשיו קודם
-  return '<div class="bwcols">'+
+  return svcTradeLine()+'<div class="bwcols">'+   // המשפחה של היום נמכרת ביותר (services.js)
     '<section><div class="bwch"><b>'+T('bw.sellT')+'</b></div>'+(sell.length?'<div class="bwgrid trade">'+sell.map(r=>card('sell',r,bagHas(r,vLot(r))?'':T('vil.needN',vLot(r)),'+'+vPrice(r,'sell')*vLot(r))).join('')+'</div>':'<p class="next">'+T('bw.sellNone')+'</p>')+'</section>'+
     '<section><div class="bwch"><b>'+T('bw.buyT')+'</b></div><div class="bwgrid trade">'+buy.map(([r,p,why])=>card('buy',r,why,p)).join('')+'</div></section></div>';
 }
@@ -69,7 +69,7 @@ function bwForge(){
   const top='<div class="bwch"><b>'+T('forge.craft')+'</b><button class="vbtn bwall" data-act="forge">✨ '+T('age.open')+'</button></div>';
   if(!ids.length)return top+'<p class="next">'+T('ic.none')+'</p>';
   return '<div class="bwcols icols"><section>'+top+'<div class="bwgrid ictiles">'+ids.map(id=>itemTile(id,{on:id===sel,cost:GEAR.recipes[id]})).join('')+'</div></section>'+
-    '<section class="icside">'+itemCard(sel,{cost:GEAR.recipes[sel],act:'craft'})+'</section></div>';
+    '<section class="icside">'+itemCard(sel,{cost:GEAR.recipes[sel],act:'craft'})+svcSmithHtml(sel)+'</section></div>';   // svcSmithHtml: כוח לבחירה מהנפח (services.js)
 }
 // נגיעה באריח (data-act="pick"): בוחרים אותו ומציירים מחדש. נתפס לפני village.js, שלא מכיר את הפעולה
 $('vPanel').addEventListener('click',e=>{const b=e.target.closest('button[data-act="pick"]');if(!b||!S.vil)return;
