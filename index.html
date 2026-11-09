@@ -327,6 +327,8 @@
     <!-- קרדיטים: האייקונים מ-game-icons.net (CC BY 3.0). הרשימה המלאה: docs/credits.md -->
     <p class="sub credits" data-t="credits.icons"></p>
     <!-- דיווח באג: דוח + צילום מסך לשיתוף או ללוח (js/bugreport.js). גם לחיצה ארוכה על מספר הגרסה -->
+    <!-- backup from ?fresh=1 (js/devsave.js): shown only while a backup exists -->
+    <button class="lang" id="devRestoreBtn" data-t="dev.btn" hidden></button>
     <button class="lang" id="bugBtn" data-t="bug.btn"></button>
   </div>
 </div>
@@ -472,10 +474,12 @@
 <script src="js/fx-data.js"></script>   <!-- ספריית האפקטים: המידע על כל גיליון (נוצר ב-tools/fx-convert.py) -->
 <script src="js/fxlib.js"></script>     <!-- ספריית האפקטים: fxPlay/fxUi, גיליונות מ-fx/ -->
 <script src="js/juice.js"></script>
-<script src="js/hitfeel.js"></script>   <!-- תחושת מכה בגוף: הכנה והתאוששות של הגיבור, ונטייה של אויב שנפגע (HITFEEL) -->
+<script src="js/hitfeel.js"></script>
+<script src="js/upfeel.js"></script>   <!-- שדרוג שמרגישים: מספרים בזהב, מכה שמעיפה, מדרגות Aging לנשק ומכה טעונה באזור הרחוק (UPFEEL) -->   <!-- תחושת מכה בגוף: הכנה והתאוששות של הגיבור, ונטייה של אויב שנפגע (HITFEEL) -->
 <script src="js/gather.js"></script>   <!-- תחושת איסוף בעולם: חתיכות בכל מכה, מקור שנעלם בהדרגה, שלל שעף לגיבור, גדם ונבט, חורשות (GATHER) -->
 <script src="js/gmastery.js"></script>   <!-- מומחיות איסוף: עצים, אבנים ומתכות, צמחים, 5 דרגות שמאיצות את הקצב (GMASTERY) -->
 <script src="js/gtool.js"></script>   <!-- כלי איסוף ביד: גרזן ופטיש, 5 דרגות, שדרוג בנפחייה עם שעון (GTOOL) -->
+<script src="js/goal.js"></script>   <!-- יעד ליד המשאבים: "🪨 12/40 · Market" בפס העליון בעולם, 📌 בכפר (GOAL) -->
 <script src="js/arena-juice.js"></script>   <!-- אפקטים של קרב בזירה: גרסה קלה ומסוננת של juice.js (JUICE.arena) -->
 <script src="js/skill-fx.js"></script>   <!-- מראה של סקילים בזירה: סדקים, גל, לשונות אש, רסיסי קרח וברק מהבהב (SKFX). עוטף את drawSkills -->
 <script src="js/skills-more.js"></script>   <!-- סקילים נוספים לזירה: שביט, חנית קרח ופריחה (SKMORE), עם ציור דק משלהם -->
@@ -556,6 +560,7 @@
 <script src="js/perf.js"></script>
 <script src="js/pwa.js"></script>
 <script src="js/update-check.js"></script>
+<script src="js/devsave.js"></script>   <!-- ?fresh=1 / ?restore=1: replay from scratch, keep a backup (Nir, 9.11) -->
 <script src="js/fxui.js"></script>       <!-- אפקטים בממשק: חלונות, מעברים, כפתורים, קנייה וקווסטים (ספריית Mochi Lab) -->
 
 </body></html>

@@ -132,12 +132,13 @@ async function runCls(browser,cls){
       for(const z of CF.zones)out.ttk[reg+':'+kind+':'+z]=sum(await page.evaluate(([z,n,s])=>__cfZone(z,n,s),[z,CF.n,CF.seed]));
       if(kind==='mid'){out.elite[reg]=sum(await page.evaluate(n=>__cfElite(n,7),CF.n));out.rare[reg]=sum(await page.evaluate(n=>__cfRare(n,7),Math.max(2,CF.n/2|0)))}}
     // one upgrade: fresh hero holding one stat point back is the baseline
-    const v={base:{hold:1},aging:{hold:1,plus:1},stat:{},tier:{hold:1,wT:'+1'}};
+    const v={base:{hold:1},aging:{hold:1,plus:1},stat:{},tier:{hold:1,wT:'+1'},age2:{hold:1,plus:2},age3:{hold:1,plus:3}};   // age2→age3: the step where Heavy Hit unlocks (upfeel.js)
     for(const k in v){const o=Object.assign({},v[k]);
       if(o.wT==='+1'){const h=await page.evaluate(r=>__cfHero(r,'fresh'),reg);o.wT=h.T+1}
       const h=await page.evaluate(([r,o])=>__cfHero(r,'fresh',o),[reg,o]);
       out.up[reg+':'+k]=Object.assign(sum(await page.evaluate(([z,n,s])=>__cfZone(z,n,s),['near',CF.n*5,CF.seed])),{w:h.w,pts:h.pts})}
     console.log(cls,reg,'done',Math.round((Date.now()-t0)/1000)+'s')}
+  out.uf=await page.evaluate(()=>typeof UF==='undefined'?null:{ch:UF.chN,hit:UF.chHit,dodge:UF.chDodge,heavy:UF.hvN,fly:UF.flyN});   // upfeel.js counters (charged hits, heavy hits, fly-apart kills)
   out.errors=[...new Set(errors)].slice(0,8);
   await page.close();return out;
 }
@@ -185,11 +186,12 @@ if(require.main===module)(async()=>{
   L.push('','### Elites and rares (mid hero)','','Elite = a far-zone foe with a forced affix (each affix in turn). Rare = the region\'s rare monster (RARES).','','| region | '+CF.cls.map(c=>c+' elite TTK (hits)').join(' | ')+' | '+CF.cls.map(c=>c+' rare TTK (hits)').join(' | ')+' |','|---|'+CF.cls.map(()=>'---|').join('')+CF.cls.map(()=>'---|').join(''));
   for(const reg of CF.regs)L.push(`| ${reg} | `+CF.cls.map(c=>{const s=out[c].elite[reg];return `${f1(s.ttk)} (${f0(s.hits)})`}).join(' | ')+' | '+CF.cls.map(c=>{const s=out[c].rare[reg];return s.n?`${f1(s.ttk)} (${f0(s.hits)})${s.dead<s.n?' ⚠':''}`:'-'}).join(' | ')+' |');
   L.push('','## 2. Does one upgrade show in the next fight?','','Fresh hero, near zone. Baseline holds one stat point back. Each cell: change in median damage per non-final hit / in hits to kill / in TTK (same enemies, same seed). Negative hits and TTK = faster.','',
-    '| region | class | base TTK s (hits, dmg/hit) | +1 aging | +1 stat point | +1 weapon tier |','|---|---|---|---|---|---|');
+    '| region | class | base TTK s (hits, dmg/hit) | +1 aging | +1 stat point | +1 weapon tier | +2 → +3 aging |','|---|---|---|---|---|---|---|');
   for(const reg of CF.regs)for(const c of CF.cls){const u=k=>out[c].up[reg+':'+k],b=u('base');
-    L.push(`| ${reg} | ${c} | ${f1(b.ttk)} (${f1(b.hits)}, ${f0(b.dph)}) | `+['aging','stat','tier'].map(k=>`${pc(b.dph,u(k).dph)} dmg · ${pc(b.hits,u(k).hits)} hits · ${pc(b.ttk,u(k).ttk)} TTK`).join(' | ')+' |')}
+    L.push(`| ${reg} | ${c} | ${f1(b.ttk)} (${f1(b.hits)}, ${f0(b.dph)}) | `+['aging','stat','tier'].map(k=>`${pc(b.dph,u(k).dph)} dmg · ${pc(b.hits,u(k).hits)} hits · ${pc(b.ttk,u(k).ttk)} TTK`).join(' | ')+` | ${pc(u('age2').dph,u('age3').dph)} dmg · ${pc(u('age2').hits,u('age3').hits)} hits · ${pc(u('age2').ttk,u('age3').ttk)} TTK |`)}
   L.push('','## 3. Danger readability (phone, landscape 844x390, 2D)','');
   for(const s of sh)L.push(`- **${s.reg}**: \`${s.file}\` · `+(s.info?`warning on at ${s.info.t}s: ${s.info.warn.join(', ')}, ${s.info.near} enemies within 330px`:'no floor warning appeared in 90s (picture taken anyway)'));
+  if(CF.cls.some(c=>out[c].uf))L.push('','Upgrade feel (upfeel.js), whole run per class: '+CF.cls.map(c=>{const u=out[c].uf;return u?`${c}: charged hits ${u.ch} (landed ${u.hit}, dodged ${u.dodge}), heavy hits ${u.heavy}, fly-apart kills ${u.fly}`:c+': -'}).join(' · '));
   const errs=CF.cls.flatMap(c=>out[c].errors);if(errs.length)L.push('','Console errors: '+[...new Set(errs)].join(' | '));
   const md=L.join('\n')+'\n';
   const o=opt('out');if(o)fs.writeFileSync(o,md);console.log(md);
