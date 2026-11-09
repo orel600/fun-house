@@ -83,11 +83,11 @@ const scCount=reg=>(SECRETS.regions[reg]||[]).filter(s=>scFound(s.id)).length;
 const scState=()=>S.wd.sc||(S.wd.sc={bless:null,look:0,dig:null,saw:false,cd:{},hint:0,ui:''});
 
 // נמצא בפעם הראשונה: חגיגה, הודעה עם המונה, שמירה
-function scFind(s,x,y){
+function scFind(s,x,y,quiet){   // quiet: no generic celebration (the chest moment in chest.js has its own)
   if(scFound(s.id))return false;
   SC().found[s.id]=1;saveNow();
   const n=scCount(S.wd.reg),of=scList().length;
-  celebrate(x??s.x,y??s.y,'quest','🔍');
+  if(!quiet)celebrate(x??s.x,y??s.y,'quest','🔍');
   banner(T('sc.found',n,of),C.gold);
   if(typeof questEvent==='function')questEvent('secret',s.kind,1);
   return true;
@@ -97,6 +97,7 @@ function scFind(s,x,y){
 function secretsUpdate(dt){
   if(!S.wd)return;const st=scState(),Z=SECRETS;
   for(const k in st.cd)st.cd[k]-=dt;
+  chUpdate(dt);   // the chest opening moment (chest.js)
   // ברכה
   if(st.bless){st.bless.t-=dt;
     if(st.bless.k==='loot'&&S.loot)for(const r in S.loot)if(S.loot[r]>0)S.loot[r]=Math.ceil(S.loot[r]*Z.shrine.loot);
@@ -108,7 +109,7 @@ function secretsUpdate(dt){
     if(s.kind==='chest'){
       if(scFound(s.id))continue;
       if(d<Z.reveal&&!st['v'+s.id]){st['v'+s.id]=1;sfx('tap');sparks(s.x,s.y,Z.hint.col,10,120)}   // נחשפה
-      if(d<Z.touch+10){runGive(Z.chest.loot,s.x,s.y);scFind(s)}}
+      if(d<Z.touch+10&&!chStart(s)){runGive(Z.chest.loot,s.x,s.y);scFind(s)}}   // chStart: the opening moment (chest.js)
     else if(s.kind==='shrine'){
       if(d<Z.touch&&!(st.cd[s.id]>0)&&!st.bless){
         st.bless={k:s.bless,t:Z.shrine.dur};st.cd[s.id]=Z.shrine.cd;if(s.bless==='speed')P.speed*=Z.shrine.speed;
@@ -144,7 +145,7 @@ function secretsDraw(){
   if(!S.wd)return;const st=scState(),t=fxNow(),Z=SECRETS,two=!R3D.on;
   for(const s of scList()){const x=s.x,y=s.y,found=scFound(s.id);
     if(s.kind==='chest'){
-      if(two&&!found&&st['v'+s.id]){   // התיבה, שנחשפה. בתלת-ממד: מודל (props3d.js)
+      if(two&&!found&&st['v'+s.id]&&!chOwn(s)){   // התיבה, שנחשפה. בתלת-ממד: מודל (props3d.js)
         ctx.fillStyle='#7A5230';ctx.strokeStyle='#3A2412';ctx.lineWidth=2;ctx.fillRect(x-14+18,y-10,28,18);ctx.strokeRect(x-14+18,y-10,28,18);
         ctx.fillStyle=C.gold;ctx.fillRect(x+16,y-3,4,6)}
       if(two)scHide(s.hide,x,y);
@@ -170,6 +171,7 @@ function secretsDraw(){
         ctx.fillStyle='rgba(120,90,50,'+(rd?0.55:0.22)+')';ctx.beginPath();ctx.ellipse(tx,ty,18,7,0,0,7);ctx.fill();
         if(rd){ctx.strokeStyle='rgba(244,226,184,0.7)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(tx-6,ty-6);ctx.lineTo(tx+6,ty+6);ctx.moveTo(tx+6,ty-6);ctx.lineTo(tx-6,ty+6);ctx.stroke()}}}
   }
+  chDraw();   // the chest opening moment (chest.js)
   // תצפית: טבעת זהב על כל מקור משאבים באזור
   if(st.look>0&&S.nd){const a=Math.min(1,st.look)*(0.6+Math.sin(t*6)*0.25);ctx.globalAlpha=a;ctx.strokeStyle=Z.lookout.col;ctx.lineWidth=3;
     for(const n of S.nd.list){if(n.dead)continue;ctx.beginPath();ctx.arc(n.x,n.y,n.r+10,0,7);ctx.stroke()}ctx.globalAlpha=1}

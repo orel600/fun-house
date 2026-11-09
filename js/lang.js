@@ -2147,6 +2147,7 @@ Object.assign(TEXT,{
   'wl.rest':{he:'שב ליד האש. היא מרפאת.',en:'Sit by the fire. It heals.'},
   'wl.rem.cart':{he:'עגלה הפוכה',en:'Overturned cart'},'wl.rem.pack':{he:'תרמיל ישן',en:'Old pack'},
   'wl.rem.chest':{he:'ארגז שבור',en:'Broken chest'},'wl.rem.tent':{he:'אוהל קרוע',en:'Torn tent'},
+  'chest.rare':{en:'✨ A rare find!'},
   'sc.found':{he:(n,of)=>'🔍 גילית סוד! '+n+'/'+of+' באזור',en:(n,of)=>'🔍 Secret found! '+n+'/'+of+' here'},
   'sc.hud':{he:'סודות שנמצאו באזור',en:'Secrets found here'},
   'sc.bless.speed':{he:'🌀 ברכת הרוח: רגליים קלות לדקה',en:'🌀 Wind blessing: light feet for a minute'},
