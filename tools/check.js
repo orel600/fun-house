@@ -4703,6 +4703,19 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       MBPARTS.tank.on=false;syncPlayer(1/60);o.off=!R3D.player.props.x_crown;
     }catch(e){o.err=String(e&&e.stack||e)}MBPARTS.tank.on=on;return o});
   check(!pa.err&&(pa.d2||pa.me&&pa.bot&&pa.off),'underworld hero parts: '+(pa.err||(pa.d2?'2D, nothing to draw':[['your tank: hammer + crown, axe and fur hat hidden',pa.me],['bot rebuilt once parts load',pa.bot],['switch off',pa.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
+  // hero accents (mb-accent.js, ARI's colours): each hero's weapon glows in its own colour, capped at 1.2, on your hero and the bots;
+  // the mage's staff flashes turquoise on the ult; steady (no pulse) in fewer effects. 2D: nothing to draw
+  const ac=await page.evaluate(async()=>{const o={},fl=SAVE.fxLess;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      m3dNeed('w_item_stoneHammer');for(let i=0;i<100&&!R3D.props.w_item_stoneHammer;i++)await new Promise(r=>setTimeout(r,100));
+      const lit=m=>m.emissive.r+m.emissive.g+m.emissive.b>0.05;o.kits={};
+      for(const k of Object.keys(MBACC.kit)){mobaStart(k);syncPlayer(1/60);syncPlayer(1/60);const M=mbAccMats(R3D.player,MBACC.kit[k]);o.kits[k]=M.length>0&&M.every(lit)}
+      mobaStart('mage');const me=MB.me;me.lvl=10;me.cd.ult=0;mbCast(me,'ult',{x:me.x+50,y:me.y});syncPlayer(1/60);
+      const m=mbAccMats(R3D.player,MBACC.kit.mage)[0],u=new THREE.Color(MBACC.kit.mage.ult.col);o.ult=m.emissive.b>m.emissive.r&&Math.abs(m.emissive.g/m.emissive.b-u.g/u.b)<0.1;
+      me.accUlt=0;SAVE.fxLess=true;MB.t=1.1;syncPlayer(1/60);const e1=m.emissive.b;MB.t=1.3;syncPlayer(1/60);o.steady=Math.abs(m.emissive.b-e1)<1e-6;
+    }catch(e){o.err=String(e&&e.stack||e)}SAVE.fxLess=fl;return o});
+  check(!ac.err&&(ac.d2||Object.values(ac.kits).every(Boolean)&&ac.ult&&ac.steady),'underworld hero accents: '+(ac.err||(ac.d2?'2D, nothing to draw':
+    Object.entries(ac.kits).map(([k,v])=>k+(v?' ✓':' ✗')).join(', ')+', mage ult flash '+(ac.ult?'✓':'✗')+', steady in fewer effects '+(ac.steady?'✓':'✗'))));
   // tank s1 slow field (moba-kits.js, the one approved mechanic change of the morning package): after the anvil lands, an mbZone the size of the slam
   // slows enemies inside by field.k, refreshed in short steps (so it ends when they walk out), no damage, and the zone ends after field.t
   const anf=await page.evaluate(()=>(()=>{const o={};try{mobaStart('tank');const me=MB.me,s=MBKIT.tank.s1;
