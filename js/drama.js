@@ -24,6 +24,8 @@ const DRAMA={
 };
 const DM={fx:[],rings:[],fulls:[],gk:{},cast:null,t:0,pT:2,marks:[],stat:{full:0,short:0,last:0,exec:0,crush:0,pull:0,charge:0,pair:0,pounce:0,pHit:0,pDodge:0}};
 
+// מספרים אקראיים לציור בלבד (עצמות, גולגולת): מחולל משלו, כדי שהאפקט (שתלוי בזמן אמיתי) לא יזיז את Math.random של המשחק ושל הבדיקות
+let dmSeed=12345;const dmR=(a,b)=>{dmSeed=dmSeed*1103515245+12345&0x7fffffff;return a+(b-a)*dmSeed/0x7fffffff};
 function dmOn(){return !DRAMA.off&&!!S&&S.mode==='play'&&(DRAMA.test||!!S.wd&&!S.room&&!S.mb)}
 // לא בוס, לא נדיר, לא מקור: מקבל את תוספת הפער (גם עלית). רגיל (dmOrd): גם לא עלית, ורק אותו אפשר לחסל
 const dmPlain=e=>!!e&&!e.node&&!e.isBoss&&!e.wanted&&!e.warden&&!e.rare&&!e.nem&&!e.creature&&!e.hunt&&!e.evt;
@@ -74,9 +76,9 @@ function dmDeath(e){
   if(full){DM.fulls.push(now);DM.stat.full++}else DM.stat.short++;
   const a=e.dmAng!=null?e.dmAng:Math.atan2(e.y-P.y,e.x-P.x),z=e.big||1,k=full?1:0.6;
   const f={x:e.x,y:e.y,r:e.r*z,t0:now,full,bones:[],skull:null};
-  if(full){const s=(Math.cos(a)>=0?1:-1)*rand(0.6,1)*D.skull.side;f.skull={vx:s,vy:-D.skull.up*rand(0.85,1.1),vr:(s>0?1:-1)*D.skull.spin}}
-  for(let i=0;i<Math.round(D.bones.n*k);i++){const b=a+rand(-0.8,0.8),sp=rand(...D.bones.sp)*k;
-    f.bones.push({vx:Math.cos(b)*sp,vy:Math.sin(b)*sp-D.bones.up*k,rot:rand(0,6.28),vr:rand(-14,14),len:rand(...D.bones.len)*z})}
+  if(full){const s=(Math.cos(a)>=0?1:-1)*dmR(0.6,1)*D.skull.side;f.skull={vx:s,vy:-D.skull.up*dmR(0.85,1.1),vr:(s>0?1:-1)*D.skull.spin}}
+  for(let i=0;i<Math.round(D.bones.n*k);i++){const b=a+dmR(-0.8,0.8),sp=dmR(...D.bones.sp)*k;
+    f.bones.push({vx:Math.cos(b)*sp,vy:Math.sin(b)*sp-D.bones.up*k,rot:dmR(0,6.28),vr:dmR(-14,14),len:dmR(...D.bones.len)*z})}
   DM.fx.push(f);if(DM.fx.length>24)DM.fx.shift();
   if(last){DM.stat.last++;DM.rings.push({x:e.x,y:e.y,t0:now,t:D.ring.t,r:e.r*D.ring.r,col:C.gold});S.shake=Math.max(S.shake||0,4);delete DM.gk[e.home]}
 }
@@ -126,8 +128,9 @@ function dmUpdate(dt){
   DM.t+=dt;const Pn=DRAMA.weak.pounce;
   for(const m of DM.marks){m.t-=dt;const e=m.e;
     if(m.t>0){if(e.dead){m.gone=true}continue}
-    if(!m.leap){m.leap=Pn.leap;m.fx=e.x;m.fy=e.y}
-    m.leap-=dt;const q=Math.min(1,1-m.leap/Pn.leap);if(!e.dead){e.x=m.fx+(m.x-m.fx)*q;e.y=m.fy+(m.y-m.fy)*q}
+    if(!m.leap){m.leap=Pn.leap;m.fx=e.x;m.fy=e.y;   // נוחת קצת לפני המרכז: אויב בדיוק על הגיבור נותן כיוון 0/0 (NaN) בקוד שדוחף אויבים
+      const dx=e.x-m.x,dy=e.y-m.y,d=Math.hypot(dx,dy)||1,o=Math.min(d,(e.r||12)+(P.r||12)*0.5);m.lx=m.x+dx/d*o;m.ly=m.y+dy/d*o}
+    m.leap-=dt;const q=Math.min(1,1-m.leap/Pn.leap);if(!e.dead&&isFinite(m.lx+m.ly)){e.x=m.fx+(m.lx-m.fx)*q;e.y=m.fy+(m.ly-m.fy)*q}
     if(m.leap<=0){m.gone=true;if(e.dead)continue;S.shake=Math.max(S.shake||0,4);sparks(m.x,m.y,FXCOL(),8,200);
       if(Math.hypot(P.x-m.x,P.y-m.y)<Pn.r+P.r){const h=P.hp;hurt(P.maxHp*Pn.hp*m.wk);if(P.hp<h)DM.stat.pHit++}else DM.stat.pDodge++}}
   DM.marks=DM.marks.filter(m=>!m.gone);
