@@ -147,6 +147,7 @@
 | `js/mb-tankx.js` | משחקי השאול: ניסוי הטנק החדש (`MBTANKX`, `?tankx=1`, כבוי). גוף `tankX` ופטיש `w_item_tankXHammer` לבוט הטנק, תיקון אורך עצמות לערוצי המיקום באנימציות (`tankxComp`), ונפילה לטנק הרגיל כשמשהו חסר. עוטף lookOf, act ו-mb3dUnit |
 | `js/mb-floor.js` | משחקי השאול, השיפוץ: הפלטה של רצפת האבן (`MBFLOOR`), `?mbfloor=current|deep|quiet|quiet2`. נבחר לפי מדידה (ΔL* בין הדמויות לרצפה): deep |
 | `js/mb-scale.js` | משחקי השאול, השיפוץ: גיבור לפחות פי 1.4 מגובה החייל (`MBSCALE`), לפי גובה הגוף האמיתי בעמידה. רק מראה, ה-hitbox לא משתנה. `?mbscale=0` מכבה |
+| `js/mb-dummy.js` | משחקי השאול, השיפוץ: מגרש אימון (`MBDUMMY`, `?mbdummy=1`): אתה מול גיבור אחד שעומד, לא תוקף וחוזר לחיים. `&dummy=<ערכה>`, `&dummyauto=1` תוקף ומפעיל סקילים לבד (לצילום) |
 | `js/petx.js` | חיית המחמד: ניסוי קפיצות, מעיכה ונשימה בציור בלבד (`PETX`, `?petx=1`, כבוי). עוטף syncPet |
 | `js/retarget-tracks.js` | אנימציות של KayKit לשלד עם אורכי עצמות אחרים (ARI): `RETARGET.ratios`, `apply`, `applyRotOnly`, `dampen` (צעד קטן יותר בריצה), וטבלאות `TANKX` ו-`WANDERX` |
 | `js/moba-vision.js` | משחקי השאול: ראייה, ערפל ושיחים (`MBVIS`). כל קבוצה רואה רק מה שבטווח של הגיבורים, החיילים, המגדלים והבסיס שלה. `mbSeen(u,team)`, `mbInBush(u)` (השיחים של mbDecor, מקובצים לשיחים), `mbVisReveal(x,y,r,t,team)` לחשיפת אזור, `mbShow` ו-`mbVisPt` לציור. גיבור בשיח נסתר מהאויב, חוץ מאותו שיח או שנייה אחרי תקיפה. בוט שאיבד גיבור ליד שיח בודק אותו (`mbVisLost`). עוטף את mbCast ואת syncEnemy/syncPlayer (חבר בשיח שקוף) |
