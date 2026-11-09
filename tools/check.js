@@ -1463,6 +1463,21 @@ function worldBot(m,L,god){
       e.dead=true;enemies=enemies.filter(x=>!x.dead)}catch(err){r.err=String(err)}
     S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.hitstop=bak.hs;S.shake=bak.sh;S.jc=bak.jc;JUICE.where.arena=bak.ar;P.track=bak.tr;S.hits=bak.hits;HITFX.crit=c;return r});
 
+  // חלון מלא עוצר את העולם (ui.js, uiHold. באג 9.11: יומן הקווסטים נפתח ליד אויבים, והגיבור המשיך לחטוף מאחוריו).
+  // אויב צמוד לגיבור, פותחים את היומן בתפריט ומריצים 5 שניות של פריימים: בלי נזק ובלי תזוזה. סוגרים: הקרב חוזר. בכפר הייצור ממשיך לפי השעון
+  const hold=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};const dn=Date.now;
+    try{if(SKR)skrEnd(false);enterWorld('home');enemies=[];P.maxHp=P.hp=1e6;
+      let t=performance.now();const run=s=>{last=t;for(let i=0;i<s*60;i++){t+=1000/60;frameStep(t)}};
+      const e=addEnemy('grunt',P.x+60,P.y);e.home=0;e.hp=e.max=1e9;run(0.5);
+      menuShow('qBtn');r.open=!$('qLog').hidden&&document.body.classList.contains('menu')&&uiHold();
+      const hp=P.hp,ex=e.x,ey=e.y,n=enemies.length;run(5);
+      r.still=P.hp===hp&&e.x===ex&&e.y===ey&&enemies.length===n;
+      menuClose();r.closed=$('qLog').hidden&&!uiHold();run(3);r.resume=P.hp<hp||e.x!==ex||e.y!==ey;
+      enemies=[];worldUi(false);enterVillage();
+      const k=Object.keys(VILLAGE.b).find(k=>VILLAGE.b[k].make);SAVE.village[k]=Math.max(1,SAVE.village[k]||0);SAVE.prod[k]={t:0,have:{}};vSettle(k);
+      menuShow('qBtn');r.vHold=uiHold();const T0=dn();Date.now=()=>T0+3600e3;run(0.5);
+      const p=vSettle(k);r.prod=Object.values(p.have).some(v=>v>0);Date.now=dn;menuClose()}catch(err){r.err=String(err&&err.stack||err)}
+    Date.now=dn;menuClose();SAVE=JSON.parse(bak);if(vil)enterVillage();else{worldUi(false);reset();S.mode=mode}return r});
   // סקילים וחפצים מסתובבים בעולם הפתוח (wskill.js): כפתור סקיל מעל הסרגל, נגיעה יורה אל הקרוב, גרירה מכוונת, הכדור נוחת ופוגע, קירור עם מספר,
   // וחמשת החפצים מסתובבים, פוגעים ומצוירים (מרחפים עם צל). אחר כך הכל חוזר
   const wsk=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
@@ -4843,6 +4858,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(!skc.err&&skc.cast&&skc.anim&&skc.clipOk&&skc.rune&&skc.band&&skc.gone&&skc.arena&&skc.combat,
     'הטלת סקיל ('+skc.id+'): '+(skc.err||[skc.anim?'תנועה '+skc.clip:'אין תנועה',skc.rune?'עיגול רונות '+skc.col+' ('+skc.tier+')'+(skc.r3d?' בתלת-ממד':'')+(skc.band?'':' בלי טבעת חיצונית'):'אין עיגול',skc.gone?'נעלם':'לא נעלם',skc.arena?'בזירה כבוי':'דולק בזירה',
       skc.combat?'בקרב קטן ×'+skc.fight[1]+' (גל עד '+Math.round(skc.fight[3])+', בלי קרב '+Math.round(skc.calm[3])+')':'בקרב לא קטן: '+JSON.stringify([skc.fight,skc.calm])].join(', ')));
+  check(!hold.err&&hold.open&&hold.still&&hold.closed&&hold.resume&&hold.vHold&&hold.prod,
+    'חלון עוצר את העולם: '+(hold.err||[hold.open?'היומן נפתח בתפריט':'היומן לא נפתח',hold.still?'5 שניות בלי נזק ובלי תזוזה':'העולם המשיך מאחורי היומן',
+      hold.closed&&hold.resume?'בסגירה הקרב חוזר':'הקרב לא חזר',hold.vHold&&hold.prod?'בכפר הייצור ממשיך לפי השעון':'הייצור בכפר נעצר'].join(', ')));
   check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw&&wsk.orbFlash,
     'סקילים בעולם ('+wsk.id+'): '+(wsk.err||[wsk.btn?'כפתור':'אין כפתור',wsk.place?'למטה מימין, מעל הסרגל':'הכפתור לא במקום',wsk.tap&&wsk.tapHit?'נגיעה יורה ופוגעת':'נגיעה לא פגעה',
     wsk.cd&&wsk.sec&&wsk.again?'קירור עם מספר':'אין קירור',wsk.drag&&wsk.dragHit?'גרירה מכוונת ופוגעת':'גרירה לא פגעה',wsk.aimDraw?'כוונת מצוירת':'אין כוונת',wsk.finger?'אצבע על הכפתור יורה':'אצבע לא ירתה',
