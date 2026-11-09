@@ -2264,8 +2264,9 @@ function worldBot(m,L,god){
       ', חוצץ '+(afl.buf&&afl.fired?'✓':'✗')+', תנועת הטלה '+(afl.cast?'✓':'✗')+', Rampage '+(afl.ramp?(afl.rampOnce?'פעם אחת לרצף':'חוזר!'):'✗')+', בעולם '+(afl.world?'כלום':'משהו!')));
   // אירוע אחד = רגע אחד (MLBB 3.3, ה5): "Rampage!" והמדרגות של הרצף באותו מקום למעלה, כרטיס אחד בכל רגע ובלי מילה צפה מעל הגיבור.
   // הריגת אויב-על: הגיליון ko או הפוף, לא שניהם. "פחות אפקטים": בלי כרטיס. הפחתת תנועה: בלי עמוד אור
-  const om=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},fl=SAVE.fxLess,calm=SAVE.calm;
-    try{startRun();S.mode='play';enemies=[];P.hp=P.maxHp=1e9;P.next=1e9;SAVE.fxLess=false;SAVE.calm=false;S.st=null;FXLIB.ui.length=0;FXLIB.list.length=0;
+  const om=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},fl=SAVE.fxLess,calm=SAVE.calm,cq=typeof CQ!=='undefined'&&CQ.on;
+    // בלי תור המרכז (centerq.js): הבאנר של startRun מחזיק את הרצף בתור, וזה תלוי בתזמון (נכשל לפעמים ב-seed 2026). לתור יש בדיקה משלו
+    if(cq)CQ.on=false;try{startRun();S.mode='play';enemies=[];P.hp=P.maxHp=1e9;P.next=1e9;SAVE.fxLess=false;SAVE.calm=false;S.st=null;FXLIB.ui.length=0;FXLIB.list.length=0;
       const cards=()=>FXLIB.ui.filter(f=>f.id===STREAK.card.fx&&f.on!==false).length,k=()=>{const e=addEnemy('grunt',P.x+80,P.y);e.hp=1;e.elite=false;kill(e)};
       const f0=floats.length,sh0=STREAK.shown||0;k();k();k();o.ramp=S.st.show&&S.st.show.key;o.c3=cards();
       o.noFloat=!floats.slice(f0).some(f=>f.txt===T('feel.rampage'));o.noWorld=!FXLIB.list.some(f=>f.id===STREAK.card.fx);
@@ -2275,7 +2276,7 @@ function worldBot(m,L,god){
       S.st=null;FXLIB.ui.length=0;k();k();k();o.lessCard=cards()===0&&S.st.show&&S.st.show.key==='feel.rampage';
       SAVE.fxLess=false;SAVE.calm=true;const pl=AF.stat.pillars;S.st=null;k();k();k();o.calmPillar=AF.stat.pillars===pl;
     }catch(err){o.err=String(err&&err.stack||err)}
-    SAVE.fxLess=fl;SAVE.calm=calm;FXLIB.ui.length=0;FXLIB.list.length=0;enemies=[];S.st=null;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+    if(cq)CQ.on=true;SAVE.fxLess=fl;SAVE.calm=calm;FXLIB.ui.length=0;FXLIB.list.length=0;enemies=[];S.st=null;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(!om.err&&om.ramp==='feel.rampage'&&om.c3===1&&om.noFloat&&om.noWorld&&om.step==='st.0'&&om.c10===1&&om.shows===2&&om.big===1&&om.bigLess<=1&&om.lessCard&&om.calmPillar,
     'רגע אחד לכל אירוע: '+(om.err||'Rampage למעלה '+(om.ramp==='feel.rampage'&&om.noFloat&&om.noWorld?'✓':'✗ ('+om.ramp+(om.noFloat?'':', מילה צפה')+(om.noWorld?'':', כרטיס בעולם')+')')+
     ', כרטיסים '+om.c3+'/'+om.c10+' ('+om.shows+' רגעים ב-10 הריגות), אויב-על '+(om.big===1?'רגע אחד ('+(om.koImg?'ko':'פוף')+')':om.big+' רגעים!')+
