@@ -177,4 +177,4 @@ def silver_blade(part):
     part(cyl(0.09,0.05,Vector((0,0,-0.47)),8,0.07),'pcap','white',vf=lambda c:0.8)
 build('skyBow',sky_bow,0.9)   # כמו קשת KayKit (1.9) ועוד קצת, כי היא אגדית
 build('starStaff',star_staff)
-build('silverBlade',silver_blade)   # קונספט: עוד לא ב-ITEMS (build3d.js), אז לא במשחק
+build('silverBlade',silver_blade)

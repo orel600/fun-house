@@ -1,6 +1,6 @@
 # קונספט: מודל משלו לנשק שלא דומה לתמונה (9.11.2026)
 
-ממשיך את [בדיקת הנשקים](weapon-audit-2026-11-09.md). הראשון: **silverBlade** (להב הכסף). עדיין לא במשחק: מחכה לאישור של ניר.
+ממשיך את [בדיקת הנשקים](weapon-audit-2026-11-09.md). הראשון: **silverBlade** (להב הכסף). **ניר אישר אותו כמו שהוא (9.11), והוא מחובר למשחק.**
 
 ## איך הוא נראה
 - **עקום כמו בתמונה:** להב רחב באמצע שמתעקל הצידה ונגמר בקצה דק. בפרופיל הוא דק, עם רכס באמצע (סגנון KayKit, פאות שטוחות).
@@ -10,11 +10,11 @@
 - תמונות: [מודל מול התמונה](concept/silverblade-model.png), [ביד, במצלמה של המשחק](concept/silverblade-held.png), [בחלון הציוד](concept/silverblade-gear-window.png), [בכפר](concept/silverblade-world.png).
 - **מדדתי:** 562 משולשים (החרב של היום: 349). הקובץ 41KB ב-Blender, ו-27KB במשחק (`js/m3d/w_item_silverBlade.js`, נטען רק כשצריך). נטען תוך 0.26 עד 0.64 שניות מקובץ במחשב. בחלון הציוד הצבע יצא כחול-אפרפר (גוון 224°), **בדיוק הגוון של התמונה**, ושום דבר לא נחתך.
 
-## איך הוא מתחבר (כשניר מאשר)
+## איך הוא מתחבר (נעשה)
 1. שורה אחת ב-`ITEMS` (tools/build3d.js): `silverBlade:{src:raw('silverBlade'),ready:true,tex:128}`, ואז `node tools/build3d.js - --only items --items=silverBlade`.
 2. זהו. render3d.js כבר מעדיף את `w_item_silverBlade` על `look.model`, וזה נטען רק כשצריך (m3d.js). מאז #584 החלון מתעדכן כשהמודל מגיע, בלי צבע זמני. **gear.js לא משתנה.**
 3. אייקון חדש לא צריך: התמונה של היום היא המקור, והמודל נבנה כך שיתאים לה.
-- הקוד של המודל: `silver_blade` ב-tools/blender/build_weapons.py. הקובץ: art/weapons/raw/silverBlade.glb. כרגע הוא רק בענף, ולא ב-`ITEMS`.
+- הקוד של המודל: `silver_blade` ב-tools/blender/build_weapons.py. הקובץ: art/weapons/raw/silverBlade.glb. השורה ב-`ITEMS` כבר קיימת.
 
 ## שאר ה-4 (אותו סגנון)
 | נשק | מה חסר היום | ההצעה |
