@@ -103,6 +103,45 @@ function install(B){
       const tg=enemies.filter(e=>!e.dead&&e.fxTg&&fxcTgOn(e)),near=F.filter(e=>Math.hypot(e.x-P.x,e.y-P.y)<330).length;
       if(tg.length&&near>=3){best={t:Math.round(m.gt*10)/10,warn:tg.map(e=>e.fxTg.h.id+':'+e.type),near};break}}
     joy=null;return best};
+  /* ---- group fights (9.11, docs/concept-combat-drama.md): a whole real group, skills on ----
+     policy: 'auto' = auto-attack only. 'skills' = every skill fired as soon as it is ready (at the nearest foe). 'one' = one skill, the strongest
+     area skill, aimed at the group centre on first contact, then auto only: how much of the group one skill kills.
+     Damage and kills are split by source: auto (sword/gun) vs everything else (skills, combos, orbit, pet). */
+  const AUTO={sword:1,gun:1};
+  const d1=damage;damage=function(e,base,w){const h=e.hp,dead=e.dead;const r=d1.apply(this,arguments);
+    if(m.g&&m.g.set.has(e)){const lost=Math.max(0,h-Math.max(0,e.hp));const k=AUTO[w]?'auto':'skill';m.g.dmg[k]+=lost;if(m.g.t0==null&&lost>0)m.g.t0=m.gt;
+      if(!dead&&e.dead){m.g.kill[k]++;if(m.g.one&&m.g.one.live&&k==='skill')m.g.one.kills++}}return r};
+  // the class's skills that are open at this level: own book skills (highest first), then the arena ones
+  function loadSk(){const me=cls(),own=Object.keys(WSKBOOK.list).filter(id=>WSKBOOK.list[id].cls===me&&wsbOpen(id)).sort((a,b)=>WSKBOOK.list[b].lv-WSKBOOK.list[a].lv);
+    const old=Object.keys(WSKBOOK.old).filter(id=>wsbOpen(id)&&id!==wsbWeapon());SAVE.hero.skLoad=own.concat(old).slice(0,WSKBOOK.slots);SAVE.hero.skSeen=wsbIds().slice();wsbSync()}
+  // the strongest area skill on the buttons (dmg x radius), for policy 'one'
+  function bigSk(){let b=null,bs=-1;for(const id of S.sk.ids){const D=skDef(id);if(D.self&&!D.r)continue;const s=(D.dmg||0)*(D.r||60)*(D.n||1);if(s>bs){bs=s;b=id}}return b}
+  window.__cfGroup=(z,n,seed,policy)=>{const G=__cfGroups()[z]||[];if(!G.length)return[];loadSk();const out=[];
+    for(let k=0;k<n;k++){if(seed!=null)__cfSeed(seed+k*101);
+      for(const x of enemies)x.dead=true;enemies.length=0;
+      const i=G[k%G.length],sp=spawnFrom(i).filter(e=>!e.dead);if(!sp.length)continue;for(const e of sp)if(e.affix)e.affix=null;
+      const cx=sp.reduce((a,e)=>a+e.x,0)/sp.length,cy=sp.reduce((a,e)=>a+e.y,0)/sp.length;
+      for(const a of [Math.PI/2,0,Math.PI,-Math.PI/2,0.8,2.4,-0.8,-2.4]){const x=cx+Math.cos(a)*B.gap*1.4,y=cy+Math.sin(a)*B.gap*1.4;if(typeof tBlocked!=='function'||!tBlocked(x,y)){P.x=x;P.y=y;break}}
+      P.hp=P.maxHp;S.cam.x=P.x;S.cam.y=P.y;S.sk.cd=S.sk.cd.map(()=>0);if(S.wsk)S.wsk.shots=[];
+      const g=m.g={set:new Set(sp),dmg:{auto:0,skill:0},kill:{auto:0,skill:0},t0:null,casts:0,one:policy==='one'?{live:false,done:false,kills:0}:null};
+      m.hin=0;m.gt=0;m.t=sp[0];m.dl=[];m.hits=0;m.first=null;const big=bigSk();
+      while(m.gt<B.cap&&sp.some(e=>!e.dead)){
+        enemies=enemies.filter(x=>g.set.has(x));
+        const live=sp.filter(e=>!e.dead),nn=live.reduce((b,e)=>{const d=Math.hypot(e.x-P.x,e.y-P.y);return d<b.d?{e,d}:b},{e:null,d:1e9});
+        const melee=P.weapon==='sword',stop=(melee?28:150)+(nn.e.r||0);
+        joy=nn.d>stop?{id:-1,ox:-999,oy:-999,dx:(nn.e.x-P.x)/nn.d,dy:(nn.e.y-P.y)/nn.d}:null;
+        const inR=nn.d-nn.e.r<=WORLD.attackRange;
+        if(inR&&policy==='skills'){for(const id of S.sk.ids.slice())if(wskUse(id))g.casts++}
+        if(inR&&g.one&&!g.one.done&&big){const lx=live.reduce((a,e)=>a+e.x,0)/live.length,ly=live.reduce((a,e)=>a+e.y,0)/live.length;
+          const D=Math.hypot(lx-P.x,ly-P.y);if(wskUse(big,{a:Math.atan2(ly-P.y,lx-P.x),len:WSKILL.pull*Math.min(1,D/WORLD.attackRange)})){g.casts++;g.one.done=true;g.one.live=true;g.one.t=m.gt}}
+        if(g.one&&g.one.live&&m.gt-g.one.t>4)g.one.live=false;   // what one skill (with its ticks, combos and rings) killed in 4 s
+        for(const id of ['npcDlg','qLog','ovGear','ovDaily','ovWelcome','ovBook','ovWDeath'])if($(id)&&!$(id).hidden)$(id).hidden=true;
+        S.mode='play';step()}
+      const all=g.dmg.auto+g.dmg.skill;
+      out.push({n:sp.length,dead:sp.filter(e=>e.dead).length,clear:sp.every(e=>e.dead)&&g.t0!=null?m.gt-g.t0:null,auto:all?g.dmg.auto/all:null,
+        kAuto:g.kill.auto,kSkill:g.kill.skill,casts:g.casts,hin:m.hin,oneKill:g.one?g.one.kills/sp.length:null,types:[...new Set(sp.map(e=>e.type))].join('+'),sk:S.sk.ids.join(',')});
+      m.g=null;m.t=null;joy=null;for(const e of sp)e.dead=true;enemies=[]}
+    return out};
 }
 
 const med=a=>{if(!a.length)return null;const b=a.slice().sort((x,y)=>x-y);return b[b.length>>1]};
@@ -160,7 +199,45 @@ async function shots(browser,dir){
   return res;
 }
 
-if(require.main===module)(async()=>{
+/* group mode: node tools/combat-feel.js --group [--n 3] [--regs meadow,lake] [--out file.md] [--json file.json] */
+async function runGroupCls(browser,cls,n){
+  const {page,errors}=await page0(browser);
+  await page.evaluate(c=>{$('ovStart').hidden=true;heroPick(c)},cls);
+  await page.waitForTimeout(300);
+  await page.evaluate(install,CF);
+  const out={};const t0=Date.now();
+  for(const reg of CF.regs)for(const kind of ['fresh','mid']){
+    const h=await page.evaluate(([r,k])=>__cfHero(r,k),[reg,kind]);
+    for(const z of CF.zones)for(const pol of ['auto','skills','one'])
+      out[reg+':'+kind+':'+z+':'+pol]=Object.assign({L:h.L},{r:await page.evaluate(([z,n,s,p])=>__cfGroup(z,n,s,p),[z,n,CF.seed,pol])});
+    console.log(cls,reg,kind,'done',Math.round((Date.now()-t0)/1000)+'s')}
+  out.errors=[...new Set(errors)].slice(0,8);await page.close();return out}
+function groupReport(out,n){
+  const f1=x=>x==null?'-':x.toFixed(1),pct=x=>x==null?'-':Math.round(x*100)+'%';
+  const cell=(c,k)=>{const r=out[c][k].r,ok=r.filter(x=>x.clear!=null);return{n:r.length,ok:ok.length,clear:avg(ok.map(x=>x.clear)),auto:avg(r.map(x=>x.auto).filter(x=>x!=null)),
+    size:avg(r.map(x=>x.n)),hin:avg(r.map(x=>x.hin)),kpc:(()=>{const c2=r.reduce((a,x)=>a+x.casts,0);return c2?r.reduce((a,x)=>a+x.kSkill,0)/c2:null})(),one:avg(r.map(x=>x.oneKill).filter(x=>x!=null)),sk:r[0]&&r[0].sk}};
+  const L=['# Group fights, measured','','Tool: `node tools/combat-feel.js --group` (seed '+CF.seed+', '+n+' groups per cell, 2D). Concept: [concept-combat-drama.md](concept-combat-drama.md).',
+    'A whole real group (affixes removed), hero starts ~300px away, cannot die. **clear** = seconds from first hit to the last death. **auto%** = share of the damage done by auto-attack. **k/cast** = kills by skills per skill cast. **one** = share of the group killed by ONE area skill (policy one). **taken** = health bars lost.',
+    'Policies: auto = no skills · skills = every skill as soon as it is ready · one = one area skill at the group centre, then auto.',''];
+  for(const c of CF.cls){L.push('## '+c,'','| region | hero | zone | size | auto: clear s | skills: clear s · auto% · k/cast · taken | one: clear s · one-kill | skills |','|---|---|---|---|---|---|---|---|');
+    for(const reg of CF.regs)for(const kind of ['fresh','mid'])for(const z of CF.zones){const k=reg+':'+kind+':'+z,a=cell(c,k+':auto'),s=cell(c,k+':skills'),o=cell(c,k+':one');
+      const w=x=>x.ok<x.n?' ⚠'+(x.n-x.ok):'';
+      L.push(`| ${reg} | ${kind} ${out[c][k+':auto'].L} | ${z} | ${f1(a.size)} | ${f1(a.clear)}${w(a)} | ${f1(s.clear)}${w(s)} · ${pct(s.auto)} · ${f1(s.kpc)} · ${f1(s.hin)} | ${f1(o.clear)}${w(o)} · ${pct(o.one)} | ${s.sk||'-'} |`)}
+    L.push('')}
+  // summary per class: averages over all cells
+  L.push('## Summary (average over regions)','','| class | hero | auto clear s | skills clear s | skills auto% | one-kill | taken (skills) |','|---|---|---|---|---|---|---|');
+  for(const c of CF.cls)for(const kind of ['fresh','mid']){const ks=CF.regs.flatMap(r=>CF.zones.map(z=>r+':'+kind+':'+z));const A=p=>ks.map(k=>cell(c,k+':'+p));
+    const av=(p,f)=>avg(A(p).map(f).filter(x=>x!=null));
+    L.push(`| ${c} | ${kind} | ${f1(av('auto',x=>x.clear))} | ${f1(av('skills',x=>x.clear))} | ${pct(av('skills',x=>x.auto))} | ${pct(av('one',x=>x.one))} | ${f1(av('skills',x=>x.hin))} |`)}
+  const errs=CF.cls.flatMap(c=>out[c].errors);if(errs.length)L.push('','Console errors: '+[...new Set(errs)].join(' | '));
+  return L.join('\n')+'\n'}
+if(require.main===module&&opt('group'))(async()=>{
+  const n=+(opt('n')||3);const browser=await chromium.launch();
+  const res=await Promise.all(CF.cls.map(c=>runGroupCls(browser,c,n)));await browser.close();
+  const out={};CF.cls.forEach((c,i)=>out[c]=res[i]);const md=groupReport(out,n);
+  const o=opt('out');if(o)fs.writeFileSync(o,md);console.log(md);const j=opt('json');if(j)fs.writeFileSync(j,JSON.stringify(out,null,1));
+})();
+else if(require.main===module)(async()=>{
   const browser=await chromium.launch();
   const shotDir=path.resolve(opt('shots')||path.join(__dirname,'..','docs','combat-feel'));fs.mkdirSync(shotDir,{recursive:true});
   const [res,sh]=await Promise.all([opt('onlyshots')?[]:Promise.all(CF.cls.map(c=>runCls(browser,c))),opt('noshots')?[]:shots(browser,shotDir)]);
