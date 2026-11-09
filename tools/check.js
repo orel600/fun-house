@@ -1396,7 +1396,7 @@ function worldBot(m,L,god){
       const many=[];for(let i=0;i<250;i++){const o=addEnemy('grunt',P.x+rand(-300,300),P.y+rand(-150,150));o.hp=o.max=1e9;o.elite=false;many.push(o)}
       AJ.f=-1;S.hitstop=0;const fx1=AJ.stat.fx;HITFX.crit=1;for(const o of many)damage(o,1,'gun',0,'fire');HITFX.crit=0;r.arN=AJ.stat.fx-fx1;r.arMax=A.perFrame;
       r.arCap=r.arN>0&&r.arN<=A.perFrame&&J.p.length<=A.parts.max&&J.fl.length<=A.impact.max;r.arStop=!(S.hitstop>0);
-      const p0=J.poofs.length;juiceKill(many[0]);r.arPoof=J.poofs.length===p0;many[1].champ=true;juiceKill(many[1]);r.arPoof=r.arPoof&&J.poofs.length===p0+1;
+      const p0=J.poofs.length;juiceKill(many[0]);r.arPoof=J.poofs.length===p0;many[1].champ=true;juiceKill(many[1]);r.arPoof=r.arPoof&&J.poofs.length===p0+(!fxLess()&&typeof fxImg==='function'&&fxImg(many[1].isBoss?'ko_boss':'ko')?0:1);   // MLBB 3.3: when the ko sheet will show, it is the moment and the poof steps aside
       for(const o of many)o.dead=true;
       SAVE.fxLess=true;AJ.f=-1;const fx2=AJ.stat.fx;damage(e,10,'sword',0,'fire');r.arLess=AJ.stat.fx===fx2;SAVE.fxLess=fl0;A.on=a0;
       e.dead=true;enemies=enemies.filter(x=>!x.dead)}catch(err){r.err=String(err)}
