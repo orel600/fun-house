@@ -14,3 +14,5 @@ The first two are seen from the real game camera (from above), so faces and bodi
 Observations from the front view, not judgements: the tank and the warrior wear similar grey plate (the tank has a blond head and no helmet, the warrior a visor-less helmet); no axe or hammer is visible on the tank in this pose; the hunter is a hooded ranger with a bow; the mage has the purple witch hat and a floating pet; the assassin is a small green-hooded rogue.
 
 Regenerate: `node tools/hero-lineup.js . <out dir> --gpu` (needs playwright; the images here are converted from the PNG output to webp).
+
+Gaps against Orel's concept images: [docs/concept/hero-fidelity-gaps.md](../../concept/hero-fidelity-gaps.md).
