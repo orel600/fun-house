@@ -141,6 +141,7 @@ $('npcDlg').addEventListener('click',e=>{
   if(b.dataset.act==='cook'){fishCook(b.dataset.m);npcDialog();return}   // fishing.js
   if(b.dataset.act==='sklv'){wslUp(b.dataset.id);npcDialog();return}   // שדרוג סקיל (wsklvl.js)
   if(b.dataset.act==='res'){resDo(S.vil.dlg,b.dataset.k);npcDialog();return}   // residents.js
+  if(vpAct(b)){npcDialog();return}   // פרויקט בכפר (vproj.js)
   if(b.dataset.act==='pg'){npcPg(+b.dataset.d);npcDialog();return}   // ‹ ›
   if(b.dataset.q)NPCPG.q=b.dataset.q;
   questAct(b.dataset.act,b.dataset.q);   // quests.js
@@ -152,7 +153,7 @@ function npcHide(){$('talkBtn').hidden=true;$('talkBtn').dataset.id='';$('npcDlg
 /* ---- ציור ---- */
 // דו-ממד: גוף פשוט בצבע שלו, ובפינה של מי שאין לו מבנה, הקישוטים. בתלת-ממד הם מצוירים בשכבה שמתחת (render3d.js)
 function drawNpcs(){
-  resDraw();   // הבתים של מי שעברה מהעולם (residents.js)
+  resDraw();vpDraw2d();   // הבתים של מי שעברה מהעולם (residents.js), והסדנה לפי השלב (vproj.js)
   if(!S.vil||R3D.on)return;
   for(const id in NPC.list){const sp=NPC.list[id].spot;if(!sp)continue;
     sp.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length],px=sp.x+dx*40,py=sp.y+dy*40;

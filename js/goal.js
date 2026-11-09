@@ -11,13 +11,14 @@ const GOAL={
   stat:{show:0,pulse:0,done:0}
 };
 const goalS=()=>SAVE.goal||(SAVE.goal={pin:null,hit:null});
-const goalKey=g=>g?(g.k?'b:'+g.k:'t:'+g.t):'';
-const goalLv=g=>goalKey(g)+':'+(g.k?vLv(g.k):gtTier(g.t));   // היעד ברמה הבאה שלו: חגיגה אחת לכל שדרוג
-const goalName=g=>g.k?T('vil.'+g.k):T('gt.'+g.t);
+const goalKey=g=>g?(g.k?'b:'+g.k:g.p?'p:'+g.p:'t:'+g.t):'';
+const goalLv=g=>goalKey(g)+':'+(g.k?vLv(g.k):g.p?vpStage(g.p):gtTier(g.t));   // היעד ברמה הבאה שלו: חגיגה אחת לכל שדרוג
+const goalName=g=>g.k?T('vil.'+g.k):g.p?vpName(g.p):T('gt.'+g.t);
 // המחיר של היעד, או null אם הוא כבר לא אפשרי (מקסימום, או כלי שכבר בשעון)
 function goalCost(g){
   if(!g)return null;
   if(g.k)return VILLAGE.b[g.k]&&vBlock(g.k)!=='max'?vCost(g.k):null;
+  if(g.p&&VPROJ.list[g.p])return vpHere(g.p)?vpCost(g.p):null;   // פרויקט בכפר (vproj.js)
   if(g.t&&GTOOL.tools[g.t]){const w=gtBlock(g.t);return w==='max'||w==='job'?null:GTOOL.cost[gtTier(g.t)+1]}
   return null;
 }
@@ -29,6 +30,7 @@ function goalNow(){
   if(s.pin)s.pin=null;
   let best=null,bf=-1;
   for(const k in VILLAGE.b){const w=vBlock(k);if(w&&w!=='cost')continue;const f=goalFrac(vCost(k)||{});if(f!=null&&f<1&&f>bf){bf=f;best={k}}}
+  for(const p in VPROJ.list){const c=goalCost({p});const f=c&&goalFrac(c);if(f!=null&&f<1&&f>bf){bf=f;best={p}}}   // פרויקט בכפר
   return best;
 }
 // מה להראות: המשאב מהעולם שהכי חסר ליעד {g,r,have,need}, או {g,done:true} כשיש הכל
@@ -43,7 +45,7 @@ function goalShow(){
 function goalPin(g){const s=goalS();s.pin=goalKey(s.pin)===goalKey(g)?null:g;saveNow();sfx('ui')}
 const goalPinned=g=>goalKey(goalS().pin)===goalKey(g);
 // הכפתור 📌 בחלון השדרוג (bwUpgrade) ובלשונית הכלים (gtDraw)
-const goalPinBtn=(g,act)=>'<button class="goalpin" data-act="'+act+'"'+(g.t?' data-k="'+g.t+'"':'')+' aria-pressed="'+goalPinned(g)+'" aria-label="'+T(goalPinned(g)?'goal.pinned':'goal.pin')+'">📌<span>'+T(goalPinned(g)?'goal.pinned':'goal.pin')+'</span></button>';
+const goalPinBtn=(g,act)=>'<button class="goalpin" data-act="'+act+'"'+(g.t||g.p?' data-k="'+(g.t||g.p)+'"':'')+' aria-pressed="'+goalPinned(g)+'" aria-label="'+T(goalPinned(g)?'goal.pinned':'goal.pin')+'">📌<span>'+T(goalPinned(g)?'goal.pinned':'goal.pin')+'</span></button>';
 
 /* ---- בעולם: השבב בפס העליון ---- */
 const GOALW={t:0,key:'',r:null,have:0,g:''};
