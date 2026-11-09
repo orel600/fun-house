@@ -4762,6 +4762,61 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     o.lift=await E(()=>MBCAM.pid===null&&!!joy);o.liftBack=!(await st()).free;await touch('touchEnd',[]);
     await E(()=>{mobaExit()});await cdp.detach();
   }catch(e){o.err=String(e).slice(0,160)}return o})();
+  /* ניסוי הטנק החדש (mb-tankx.js, ?tankx=1) וקפיצות חיית המחמד (petx.js, ?petx=1): שניהם כבויים כברירת מחדל, ונבדקים רק בתוך הניסוי.
+     הטנק: אותו משחק פעמיים (seed קבוע), פעם עם הגוף החדש ופעם בלי. הלוגיקה זהה (רגעי התקיפה, החיים והמיקומים), הגוף החדש מנגן
+     אנימציות מתוקנות (ערוצי המיקום מוכפלים ביחס אורך העצמות), העצמות זזות, תוקף תוך כדי תנועה, מהבהב בפגיעה, נופל במוות, ומתג באמצע משחק בונה מחדש.
+     עד שהקבצים של ARI נכנסים, הגוף הוא תחליף: הברברי עם עצמות ירכיים ורגליים ארוכות פי 1.5, כדי לבדוק את כל הדרך */
+  /* הציור עצמו מושך מספרים אקראיים (כ-260 ב-900 פריימים, גם בלי הניסוי), ולכן הוא רץ על מקור אקראי נפרד, כדי שרק הלוגיקה תושווה */
+  const txT=await (async()=>{const E=(f,a)=>page.evaluate(f,a),o={};
+    try{o.def=await E(()=>MBTANKX.on===false&&PETX.on===false);o.d3=await E(()=>!!(R3D.on&&R3D.ready));if(!o.d3)return o;
+      o.real=await E(()=>m3dLazy(MBTANKX.model));
+      if(o.real){await E(()=>{m3dGo(MBTANKX.model);if(MBTANKX.hammer&&m3dLazy(MBTANKX.hammer.prop))m3dGo(MBTANKX.hammer.prop)});
+        for(let i=0;i<120&&!(await E(()=>m3dReady(MBTANKX.model)&&m3dReady(MBTANKX.hammer.prop)));i++)await page.clock.runFor(100);
+        o.load=await E(()=>M3D.log.filter(l=>l.k===MBTANKX.model||l.k===MBTANKX.hammer.prop).map(l=>l.k+' '+l.ms+'ms').join(', '))}
+      else await E(()=>{const r=R3D.tmpl[MBTANKX.ref],t=THREE.SkeletonUtils.clone(r);t.userData=Object.assign({},r.userData);
+        t.traverse(b=>{if(b.isBone&&/^(hips|upperleg)/.test(b.name))b.position.multiplyScalar(1.5)});R3D.tmpl.__tx=t;MBTANKX._m0=MBTANKX.model;MBTANKX.model='__tx'});
+      Object.assign(o,await E(()=>{const X=MBTANKX,rnd=Math.random,out={},seed=s=>{let x=s;Math.random=()=>(x=(x*16807)%2147483647)/2147483647};
+        const tkOf=()=>MB.u.find(u=>u.k==='hero'&&u.kit===X.kit&&!u.me);
+        const game=(on,s)=>{seed(s);X.on=on;mobaStart('warrior');MB.me.bot={t:0,mode:'push'};const tk=tkOf();if(!tk){mobaExit();return null}
+          const r={atk:[],moveAtk:0,tx:0,comp:0,bones:new Set(),fams:new Set(),flash:false,die:null,toggle:null};let pa=tk.atkT;
+          for(let i=0;i<900&&!MB.over;i++){const x0=tk.x,y0=tk.y;mobaUpdate(1/30);if(tk.atkT>pa+0.05)r.atk.push(i);pa=tk.atkT;
+            if(i===300)tk.flash=1;
+            if(!tk.dead){const R0=Math.random;Math.random=rnd;try{syncEnemy(tk,1/30)}finally{Math.random=R0}const a=R3D.actors.get(tk);
+              if(a&&on){if(a.L.tx)r.tx++;if(a.fam)r.fams.add(a.fam);const b=a.base&&act(a,a.base);if(b&&b.getClip()!==R3D.clips[a.base])r.comp++;
+                const h=bone(a.root,'upperarm.r')||bone(a.root,'hips');if(h&&i%15===0)r.bones.add(h.quaternion.toArray().map(v=>v.toFixed(2)).join());
+                const one=a.one&&a.one.isRunning()?a.one.getClip().name:'';if(/Attack|Chop|Slice/.test(one)&&Math.hypot(tk.x-x0,tk.y-y0)>0.5)r.moveAtk++;
+                if(i===300)r.flash=a.mats.some(m=>m.emissive.r>0.5)}}
+            if(i===300)tk.flash=0}
+          r.hash=MB.u.map(u=>[u.kit||u.k,Math.round(u.hp),Math.round(u.x),Math.round(u.y)].join(':')).join('|');
+          if(on){const a=R3D.actors.get(tk);
+            if(a){const L=a.L,h=bone(a.root,'hips'),q0=h&&h.quaternion.clone();once(a,L.anim.die,1.2,true);a.mixer.update(0.6);tankxCarry(a);r.dieFam=a.fam;
+              const d=a.one&&a.one.getClip(),tr=d&&d.tracks.find(t=>t.name==='hips.position'),t0=R3D.clips[L.anim.die].tracks.find(t=>t.name==='hips.position');
+              r.die={moved:!!h&&h.quaternion.angleTo(q0)>0.05,ratio:tr&&t0?+(tr.values[1]/t0.values[1]).toFixed(3):null};
+              a.one=null;a.mixer.stopAllAction();
+              X.on=false;tk.dead=false;syncEnemy(tk,1/30);const off=R3D.actors.get(tk);X.on=true;syncEnemy(tk,1/30);const back=R3D.actors.get(tk);
+              r.toggle={off:!!off&&off.L.model===X.ref,back:!!back&&!!back.L.tx}}}
+          mobaExit();return r};
+        try{let s=0,A=null;for(let k=1;k<40&&!A;k++){A=game(true,k);if(A)s=k}
+          if(A){const B=game(false,s);out.same=!!B&&A.hash===B.hash&&A.atk.join()===B.atk.join();out.atkN=A.atk.length;out.tx=A.tx;out.comp=A.comp;out.bones=A.bones.size;
+            out.moveAtk=A.moveAtk;out.flash=A.flash;out.die=A.die;out.toggle=A.toggle;out.seed=s;out.fams=[...A.fams].sort().join('/');out.dieFam=A.dieFam}else out.err='no tank bot';
+          out.fac=X.stat.fac;out.clips=X.stat.clips;out.tracks=X.stat.tracks;out.rebuilt=X.stat.rebuilt;out.hammer=!!R3D.props[X.hammer.prop]}
+        catch(e){out.err=String(e&&e.stack||e).slice(0,200)}
+        Math.random=rnd;X.on=false;if(X._m0){X.model=X._m0;delete X._m0;delete R3D.tmpl.__tx;X._f=null;X._L=null}if(S.mb)mobaExit();return out}));
+      /* חיית המחמד: אותו מסלול פעמיים (זזה 1.5 שניות, עומדת 1.5), עם הקפיצות ובלי. המיקום שלה זהה (המעקב לא השתנה),
+         בתנועה הגוף קופץ ונמעך בגבולות המפרט, ובעמידה חוזר לגודל ולזווית הרגילים, עם נשימה קטנה */
+      const pk=await E(()=>{const L=LOOK3D['pet_'+(SAVE.pet.kind||PET.default)+(SAVE.pet.stage+1)];if(L)m3dNeed(L.model);return L&&L.model});
+      if(pk)for(let i=0;i<80&&!(await E(k=>m3dReady(k),pk));i++)await page.clock.runFor(100);
+      o.pet=await E(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,rnd=Math.random,r={};
+        const path=on=>{let x=7;Math.random=()=>(x=(x*16807)%2147483647)/2147483647;PETX.on=on;Object.assign(PETX.stat,{frames:0,hops:0,maxLift:0,minSy:9,maxSy:0});
+          enterWorld('home');enemies=[];S.pet=null;P.x=0;P.y=0;P.face=0;petUpdate(1/60);const pos=[];let idle=null;
+          for(let i=0;i<180;i++){const mv=i<90;P.x+=mv?185/60:0;P.moving=mv;P.speed=185;enemies=[];if(S.wd)S.wd.scentT=999;if(S.pet)S.pet.digT=999;
+            petUpdate(1/60);syncPet(1/60);if(S.pet)pos.push(Math.round(S.pet.x)+','+Math.round(S.pet.y))}
+          const a=R3D.pet;if(a&&a.root.visible){const t=R3D.tmpl[a.L.model],sc0=a.L.h/COSB()/t.userData.h;idle={sy:+(a.root.scale.y/sc0).toFixed(3),sx:+(a.root.scale.x/sc0).toFixed(3),rz:+a.root.rotation.z.toFixed(3),w:a.px?+a.px.w.toFixed(2):null}}
+          return {pos:pos.join(';'),idle,vis:!!(a&&a.root.visible),st:Object.assign({},PETX.stat)}};
+        try{const A=path(true),B=path(false);r.same=A.pos===B.pos&&A.pos.length>0;r.vis=A.vis;r.idle=A.idle;r.hops=A.st.hops;r.lift=+A.st.maxLift.toFixed(3);r.sy=[+A.st.minSy.toFixed(3),+A.st.maxSy.toFixed(3)];
+          r.offIdle=B.idle}catch(e){r.err=String(e&&e.stack||e).slice(0,200)}
+        PETX.on=false;Math.random=rnd;SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+    }catch(e){o.err=String(e).slice(0,200)}return o})();
   // צילומי משחקי השאול (QUINN, 8.11): חלון הבחירה, מסך הבנייה, משחק באמצע (כולם בוטים, 40 שניות), החנות ומסך הסוף, כדי לבדוק את החלון כולו
   // הגיבור: האחרון ב-MBKIT, כך שגיבור חדש מצולם לבד. תקלה כאן לא מפילה את הבדיקה, רק נכתבת
   if(CFG.shots){try{const E=(f,a)=>page.evaluate(f,a),k=await E(()=>Object.keys(MBKIT).pop());
@@ -4794,6 +4849,14 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     ', נשק: '+(L.heroW||'-')+(L.heroVil?', ומשם לכפר':', לא נכנס לכפר'));
   check(L.heroHp===heroHp,'פסיבית בריצה: הלוחם קיבל +'+L.heroHp+' חיים (צפוי +'+heroHp+')');
   check(again,'בחירת דמות: '+(again?'לא חוזרת במשחק השני':'הופיעה שוב'));
+  {const o=txT,pt=o.pet||{},T=o.real?'הגוף החדש':'תחליף (הקבצים של ARI עוד לא נכנסו)';
+    const tk=!o.d3||(o.same&&o.tx>0&&o.comp>0&&o.bones>=3&&o.moveAtk>0&&o.flash&&o.die&&o.die.moved&&o.toggle&&o.toggle.off&&o.toggle.back&&o.fac&&o.tracks>0&&(!o.hammer||o.fams==='attack/idle/run'&&o.dieFam==='attack')&&!o.err);
+    const pe=!o.d3||(pt.vis&&pt.same&&pt.hops>=2&&pt.lift>0.08&&pt.lift<=0.125&&pt.sy[0]>=0.87&&pt.sy[1]<=1.14&&pt.idle&&Math.abs(pt.idle.sy-1)<=0.025&&Math.abs(pt.idle.sx-1)<0.01&&Math.abs(pt.idle.rz)<0.01&&!pt.err);
+    check(o.def&&tk&&pe,'ניסוי הטנק והחיה (?tankx=1, ?petx=1): '+(o.def?'כבויים כברירת מחדל':'דולקים בלי לבקש')+(!o.d3?', בדו-ממד אין מה לבדוק':
+      ', טנק ('+T+(o.load?', נטען '+o.load:'')+'): '+(o.err||(o.same?'אותו משחק בדיוק עם ובלי':'המשחק השתנה!')+', '+o.atkN+' תקיפות, '+o.tx+' פריימים בגוף החדש, '+o.comp+' באנימציה מתוקנת'+
+        ', '+o.clips+' אנימציות ו-'+o.tracks+' ערוצים תוקנו (יחס '+JSON.stringify(o.fac)+')'+', '+o.bones+' תנוחות שונות, '+o.moveAtk+' פריימים של תקיפה בתנועה'+(o.flash?', מהבהב':', לא מהבהב')+
+        (o.die?', מוות '+(o.die.moved?'זז':'לא זז')+' (יחס הירכיים '+o.die.ratio+')':', אין מוות')+(o.toggle?', מתג: '+(o.toggle.off?'חוזר לטנק הרגיל':'לא חוזר')+' ו'+(o.toggle.back?'שוב לחדש':'לא חוזר לחדש'):'')+(o.hammer?', עם פטיש (תנוחות '+o.fams+', במוות '+o.dieFam+')':', בלי פטיש (עוד לא נכנס)'))+
+      ', חיה: '+(pt.err||(!pt.vis?'לא נראית':(pt.same?'אותו מסלול':'המסלול השתנה!')+', '+pt.hops+' קפיצות, גובה עד '+pt.lift+', מעיכה '+(pt.sy||[]).join('..')+', בעמידה '+JSON.stringify(pt.idle)))))}
   for(const nm in uiR){const {v,w}=uiR[nm],all=[...Object.entries(v.wins),...Object.entries(w.wins)],bad=[...v.bad,...w.bad],off=[...v.off,...w.off];
     check(!bad.length&&!off.length&&v.n>3&&w.n>3&&v.panel&&w.gateAuto===false&&w.goBtn&&v.who&&w.who&&w.mini&&w.miniOpen&&v.res<=2&&w.res<=2&&v.more&&v.cards>0&&v.tradeBack&&(nm!=='land'||v.cols===2)&&all.every(x=>x[1]==='ok')&&v.esc&&v.backdrop&&v.tapOut,
       'ממשק, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(bad.length?'נוגעים זה בזה: '+bad.join(', '):'הפס העליון והסרגל לא נוגעים')+(off.length?', מחוץ למסך: '+off.join(', '):'')+
