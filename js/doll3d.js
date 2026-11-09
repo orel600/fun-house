@@ -83,7 +83,7 @@ function dollFit(D){
       for(let j=0;j<P.swing;j++){a.root.rotation.y=D.yaw+D.sway*(j/(P.swing-1)*2-1);const b=dollBox(a.root);if(b.isEmpty())continue;
         for(const X of [b.min.x,b.max.x])for(const Y of [b.min.y,b.max.y])for(const Z of [b.min.z,b.max.z])pts.push(new THREE.Vector3(X,Y,Z))}}
     x.stop()}
-  a.root.rotation.y=D.yaw;loop(a,D.idle);a.mixer.update(0.01);
+  a.root.rotation.y=D.yaw;loop(a,D.idle);const ix=act(a,D.idle);if(ix)ix.stopFading().setEffectiveWeight(1);a.mixer.update(0.01);   // בלי fadeIn: אחרת ברגע אחרי הבנייה הדמות בתנוחת T והנשק יוצא מהמסגרת (חרב רחבה, #585)
   D.pts=pts;dollCam(D);
 }
 /* מצלמה ישרה (מבט לאורך z): המרכז באמצע הקופסה, והמרחק הקטן שבו כל הנקודות בתוך הקנבס, בלי פינת התג.
