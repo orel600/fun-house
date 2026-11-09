@@ -4999,14 +4999,14 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
             if(i===300)tk.flash=0}
           r.hash=MB.u.map(u=>[u.kit||u.k,Math.round(u.hp),Math.round(u.x),Math.round(u.y)].join(':')).join('|');
           if(on){const a=R3D.actors.get(tk);
-            if(a){const L=a.L,fp=[],at=MBMOVE.atk[tk.kit];a.mixer.stopAllAction();a.one=null;a.base=null;   // תנוחת הפטיש: עמידה, ריצה ותקיפה, אחת אחת
+            if(a){const L=a.L,fp=[],at=MBMOVE.atk[tk.kit]||(typeof MBATK3D!=='undefined'&&MBATK3D.kit[tk.kit]&&MBATK3D.kit[tk.kit].hit)||'Melee_2H_Attack_Chop';a.mixer.stopAllAction();   /* mb-atk3d.js (חבילת הבוקר) מאפס את MBMOVE.atk לערכות שלו */a.one=null;a.base=null;   // תנוחת הפטיש: עמידה, ריצה ותקיפה, אחת אחת
               loop(a,L.anim.idle);tankxCarry(a);fp.push(a.fam);loop(a,L.anim.run);tankxCarry(a);fp.push(a.fam);once(a,R3D.clips[at+'@up']?at+'@up':at,0.4);a.mixer.update(0.05);tankxCarry(a);fp.push(a.fam);r.fams=fp.join('/');
               const h=bone(a.root,'hips'),q0=h&&h.quaternion.clone();once(a,L.anim.die,1.2,true);a.mixer.update(0.6);tankxCarry(a);r.dieFam=a.fam;
               const d=a.one&&a.one.getClip(),tr=d&&d.tracks.find(t=>t.name==='hips.position'),t0=R3D.clips[L.anim.die].tracks.find(t=>t.name==='hips.position');
               r.die={moved:!!h&&h.quaternion.angleTo(q0)>0.05,ratio:tr&&t0?+(tr.values[1]/t0.values[1]).toFixed(3):null};
               a.one=null;a.mixer.stopAllAction();
               X.on=false;tk.dead=false;syncEnemy(tk,1/30);const off=R3D.actors.get(tk);X.on=true;syncEnemy(tk,1/30);const back=R3D.actors.get(tk);
-              r.toggle={off:!!off&&off.L.model===X.ref,back:!!back&&!!back.L.tx}}}
+              r.toggle={off:!!off&&!off.L.tx&&off.L.model!==X.model,   /* כבוי: חוזר לגוף שבלי הניסוי (בחבילת הבוקר זה tankHF, לא הברברי) */back:!!back&&!!back.L.tx}}}
           mobaExit();return r};
         try{let s=0,A=null;for(let k=1;k<40&&!s;k++){seed(k);mobaStart('warrior');if(tkOf())s=k;mobaExit()}
           // המשחק הראשון אחרי הפתיחה תמיד שונה מכל השאר (גם בלי הניסוי), ולכן משחק חימום לפני ההשוואה
@@ -5014,7 +5014,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
           if(A){const B=game(false,s),C=game(false,s);out.same=!!B&&A.hash===B.hash&&A.atk.join()===B.atk.join();out.offoff=!!C&&B.hash===C.hash&&B.atk.join()===C.atk.join();out.dirty=A.dirty+(B?B.dirty:0);out.atkN=A.atk.length;out.tx=A.tx;out.comp=A.comp;out.bones=A.bones.size;
             out.moveAtk=A.moveAtk;out.flash=A.flash;out.die=A.die;out.toggle=A.toggle;out.seed=s;out.fams=A.fams;out.dieFam=A.dieFam}else out.err='no tank bot';
           // הצעד בריצה: כמה הרגל עולה (ביחס לגובה הגוף), וכמה מהר היא זזה כשהיא על הרצפה מול מהירות הקרקע. הגוף החדש מול הברברי
-          const gait=L=>{const a=makeActor(L);a.root.position.set(0,0,0);a.root.rotation.set(0,0,0);const H=L.h/COSB(),x=act(a,L.anim.run);a.mixer.stopAllAction();x.reset().setLoop(THREE.LoopRepeat).play();
+          const gait=L=>{const a=makeActor(L);a.root.position.set(0,0,0);a.root.scale.setScalar(L.h/COSB()/R3D.tmpl[L.model].userData.h);   /* דמות מהמאגר אחרי משחק: קנה המידה שלה יכול להיות מעוך (juiceSquash) */a.root.rotation.set(0,0,0);const H=L.h/COSB(),x=act(a,L.anim.run);a.mixer.stopAllAction();x.reset().setLoop(THREE.LoopRepeat).play();
             const D=x.getClip().duration,N=120,b=bone(a.root,'footl'),pts=[];if(!b){freeActor(a);return null}
             for(let i=0;i<=N;i++){a.mixer.setTime(D*i/N);a.root.updateMatrixWorld(true);pts.push(b.getWorldPosition(new THREE.Vector3()))}
             const ys=pts.map(v=>v.y),lo=Math.min(...ys),bd=0.03*H;let sp=0,n=0;for(let i=1;i<pts.length;i++)if(pts[i].y<lo+bd&&pts[i-1].y<lo+bd){sp+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z)/(D/N);n++}
