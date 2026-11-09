@@ -2095,4 +2095,4 @@ body.mbgrid .skills.mbsk .mbskb[data-sk="s1"],body.mbgrid .swap:not([hidden])~.s
 body.mbgrid .skills.mbsk .mbskb[data-sk="s2"],body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb[data-sk="s2"]{--x:86px;--y:86px}
 body.mbgrid .skills.mbsk .mbskb[data-sk="ult"],body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb[data-sk="ult"]{--x:0px;--y:86px}
 body.mbgrid .skills.mbsk .mbsp-spell,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbsp-spell{--w:54px;--x:182px;--y:8px}
-body.mbgrid .skills.mbsk .mbsp-heal,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbsp-heal{--w:50px;--x:184px;--y:96px}
+body.mbgrid .skills.mbsk .mbsp-heal,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbsp-heal{--w:50px;--x:181px;--y:94px}
