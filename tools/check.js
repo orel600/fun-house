@@ -3040,7 +3040,7 @@ function worldBot(m,L,god){
       const lv=SAVE.village.market,lc=SAVE.village.center;SAVE.village.center=Math.max(2,lc||0);SAVE.village.market=1;SAVE.bag.wood=0;SAVE.bag.stone=0;
       goalS().pin=null;goalS().hit=null;goalPin({k:'market'});o.pin=goalPinned({k:'market'});
       const sh=goalShow();o.miss=!!sh&&!sh.done&&(sh.r==='wood'||sh.r==='stone')&&sh.need===vCost('market')[sh.r];
-      GOALW.t=0;GOALW.key='';goalUpdate(0.1);const chip=document.getElementById('goalChip');o.chip=!!chip&&!chip.hidden&&chip.textContent.includes(T('vil.market'))&&chip.textContent.includes('/'+sh.need);
+      GOALW.t=0;GOALW.key='';goalUpdate(0.1);const chip=document.getElementById('goalChip');o.chip=!!chip&&!chip.hidden&&chip.textContent.includes(T('vil.market'))&&chip.textContent.includes('/'+sh.need)&&!chip.querySelector('b');   // לא b: שם האזור (‎.whud b‎) נעלם אחרי 5 שניות
       const p0=GOAL.stat.pulse;SAVE.bag[sh.r]=1;GOALW.t=0;goalUpdate(0.1);o.pulse=GOAL.stat.pulse===p0+1;
       const c=vCost('market');for(const r of GOAL.res)if(c[r])SAVE.bag[r]=c[r];const d0=GOAL.stat.done;GOALW.t=0;goalUpdate(0.1);o.done=GOAL.stat.done===d0+1&&chip.textContent.includes('⌂');
       GOALW.t=0;goalUpdate(0.1);o.once=GOAL.stat.done===d0+1;

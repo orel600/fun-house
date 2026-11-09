@@ -374,6 +374,7 @@ h1{font-size:46px} h2{font-size:30px}
 .goalchip{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:800;color:var(--gold,#F4C74F);background:rgba(10,12,20,.7);border-radius:10px;padding:2px 8px;white-space:nowrap;flex:none}   /* יעד ליד המשאבים (goal.js) */
 .goalchip[hidden]{display:none}
 .goalchip .ri{width:16px;height:16px}
+.goalchip .gnum{font-weight:800;color:var(--gold,#F4C74F)}
 .goalchip small{font-weight:600;color:var(--ink2,#C9CFDB);max-width:90px;overflow:hidden;text-overflow:ellipsis}
 .goalchip.gpulse{animation:gpop .45s ease-out}
 .goalpin{font:inherit;font-size:12px;font-weight:700;color:var(--ink2,#C9CFDB);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:3px 9px;min-height:28px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;align-self:flex-start}   /* 📌 יעד בעולם (goal.js) */
