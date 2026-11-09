@@ -4778,18 +4778,20 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       Object.assign(o,await E(()=>{const X=MBTANKX,rnd=Math.random,out={},seed=s=>{let x=s;Math.random=()=>(x=(x*16807)%2147483647)/2147483647};
         const tkOf=()=>MB.u.find(u=>u.k==='hero'&&u.kit===X.kit&&!u.me);
         const game=(on,s)=>{seed(s);X.on=on;mobaStart('warrior');MB.me.bot={t:0,mode:'push'};const tk=tkOf();if(!tk){mobaExit();return null}
-          const r={atk:[],moveAtk:0,tx:0,comp:0,bones:new Set(),fams:new Set(),flash:false,die:null,toggle:null};let pa=tk.atkT;
+          const r={atk:[],moveAtk:0,tx:0,comp:0,bones:new Set(),fams:'',flash:false,die:null,toggle:null};let pa=tk.atkT;
           for(let i=0;i<900&&!MB.over;i++){const x0=tk.x,y0=tk.y;mobaUpdate(1/30);if(tk.atkT>pa+0.05)r.atk.push(i);pa=tk.atkT;
             if(i===300)tk.flash=1;
             if(!tk.dead){const R0=Math.random;Math.random=rnd;try{syncEnemy(tk,1/30)}finally{Math.random=R0}const a=R3D.actors.get(tk);
-              if(a&&on){if(a.L.tx)r.tx++;if(a.fam)r.fams.add(a.fam);const b=a.base&&act(a,a.base);if(b&&b.getClip()!==R3D.clips[a.base])r.comp++;
-                const h=bone(a.root,'upperarm.r')||bone(a.root,'hips');if(h&&i%15===0)r.bones.add(h.quaternion.toArray().map(v=>v.toFixed(2)).join());
+              if(a&&on){if(a.L.tx)r.tx++;const b=a.base&&act(a,a.base);if(b&&b.getClip()!==R3D.clips[a.base])r.comp++;
+                const h=bone(a.root,'upperarmr')||bone(a.root,'hips');if(h&&i%15===0)r.bones.add(h.quaternion.toArray().map(v=>v.toFixed(2)).join());
                 const one=a.one&&a.one.isRunning()?a.one.getClip().name:'';if(/Attack|Chop|Slice/.test(one)&&Math.hypot(tk.x-x0,tk.y-y0)>0.5)r.moveAtk++;
                 if(i===300)r.flash=a.mats.some(m=>m.emissive.r>0.5)}}
             if(i===300)tk.flash=0}
           r.hash=MB.u.map(u=>[u.kit||u.k,Math.round(u.hp),Math.round(u.x),Math.round(u.y)].join(':')).join('|');
           if(on){const a=R3D.actors.get(tk);
-            if(a){const L=a.L,h=bone(a.root,'hips'),q0=h&&h.quaternion.clone();once(a,L.anim.die,1.2,true);a.mixer.update(0.6);tankxCarry(a);r.dieFam=a.fam;
+            if(a){const L=a.L,fp=[],at=MBMOVE.atk[tk.kit];a.mixer.stopAllAction();a.one=null;a.base=null;   // תנוחת הפטיש: עמידה, ריצה ותקיפה, אחת אחת
+              loop(a,L.anim.idle);tankxCarry(a);fp.push(a.fam);loop(a,L.anim.run);tankxCarry(a);fp.push(a.fam);once(a,R3D.clips[at+'@up']?at+'@up':at,0.4);a.mixer.update(0.05);tankxCarry(a);fp.push(a.fam);r.fams=fp.join('/');
+              const h=bone(a.root,'hips'),q0=h&&h.quaternion.clone();once(a,L.anim.die,1.2,true);a.mixer.update(0.6);tankxCarry(a);r.dieFam=a.fam;
               const d=a.one&&a.one.getClip(),tr=d&&d.tracks.find(t=>t.name==='hips.position'),t0=R3D.clips[L.anim.die].tracks.find(t=>t.name==='hips.position');
               r.die={moved:!!h&&h.quaternion.angleTo(q0)>0.05,ratio:tr&&t0?+(tr.values[1]/t0.values[1]).toFixed(3):null};
               a.one=null;a.mixer.stopAllAction();
@@ -4798,7 +4800,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
           mobaExit();return r};
         try{let s=0,A=null;for(let k=1;k<40&&!A;k++){A=game(true,k);if(A)s=k}
           if(A){const B=game(false,s);out.same=!!B&&A.hash===B.hash&&A.atk.join()===B.atk.join();out.atkN=A.atk.length;out.tx=A.tx;out.comp=A.comp;out.bones=A.bones.size;
-            out.moveAtk=A.moveAtk;out.flash=A.flash;out.die=A.die;out.toggle=A.toggle;out.seed=s;out.fams=[...A.fams].sort().join('/');out.dieFam=A.dieFam}else out.err='no tank bot';
+            out.moveAtk=A.moveAtk;out.flash=A.flash;out.die=A.die;out.toggle=A.toggle;out.seed=s;out.fams=A.fams;out.dieFam=A.dieFam}else out.err='no tank bot';
           out.fac=X.stat.fac;out.clips=X.stat.clips;out.tracks=X.stat.tracks;out.rebuilt=X.stat.rebuilt;out.hammer=!!R3D.props[X.hammer.prop]}
         catch(e){out.err=String(e&&e.stack||e).slice(0,200)}
         Math.random=rnd;X.on=false;if(X._m0){X.model=X._m0;delete X._m0;delete R3D.tmpl.__tx;X._f=null;X._L=null}if(S.mb)mobaExit();return out}));
@@ -4850,7 +4852,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(L.heroHp===heroHp,'פסיבית בריצה: הלוחם קיבל +'+L.heroHp+' חיים (צפוי +'+heroHp+')');
   check(again,'בחירת דמות: '+(again?'לא חוזרת במשחק השני':'הופיעה שוב'));
   {const o=txT,pt=o.pet||{},T=o.real?'הגוף החדש':'תחליף (הקבצים של ARI עוד לא נכנסו)';
-    const tk=!o.d3||(o.same&&o.tx>0&&o.comp>0&&o.bones>=3&&o.moveAtk>0&&o.flash&&o.die&&o.die.moved&&o.toggle&&o.toggle.off&&o.toggle.back&&o.fac&&o.tracks>0&&(!o.hammer||o.fams==='attack/idle/run'&&o.dieFam==='attack')&&!o.err);
+    const tk=!o.d3||(o.same&&o.tx>0&&o.comp>0&&o.bones>=3&&o.moveAtk>0&&o.flash&&o.die&&o.die.moved&&o.toggle&&o.toggle.off&&o.toggle.back&&o.fac&&o.tracks>0&&(!o.hammer||o.fams==='idle/run/attack'&&o.dieFam==='attack')&&!o.err);
     const pe=!o.d3||(pt.vis&&pt.same&&pt.hops>=2&&pt.lift>0.08&&pt.lift<=0.125&&pt.sy[0]>=0.87&&pt.sy[1]<=1.14&&pt.idle&&Math.abs(pt.idle.sy-1)<=0.025&&Math.abs(pt.idle.sx-1)<0.01&&Math.abs(pt.idle.rz)<0.01&&!pt.err);
     check(o.def&&tk&&pe,'ניסוי הטנק והחיה (?tankx=1, ?petx=1): '+(o.def?'כבויים כברירת מחדל':'דולקים בלי לבקש')+(!o.d3?', בדו-ממד אין מה לבדוק':
       ', טנק ('+T+(o.load?', נטען '+o.load:'')+'): '+(o.err||(o.same?'אותו משחק בדיוק עם ובלי':'המשחק השתנה!')+', '+o.atkN+' תקיפות, '+o.tx+' פריימים בגוף החדש, '+o.comp+' באנימציה מתוקנת'+
