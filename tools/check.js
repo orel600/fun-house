@@ -4707,6 +4707,15 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       MBPARTS.tank.on=false;syncPlayer(1/60);o.off=!R3D.player.props.x_crown;
     }catch(e){o.err=String(e&&e.stack||e)}MBPARTS.tank.on=on;return o});
   check(!pa.err&&(pa.d2||pa.me&&pa.bot&&pa.one&&pa.off),'underworld hero parts: '+(pa.err||(pa.d2?'2D, nothing to draw':[['your tank: hammer + crown, axe and fur hat hidden',pa.me],['bot rebuilt once parts load',pa.bot],['one part off (crown): fur hat back, hammer stays',pa.one],['switch off',pa.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
+  // tank stone look (mb-tankstone.js): the barbarian body gets the stone + lava-crack shader, the hammer draws bigger (visual only), and the switch turns both off live
+  const tsk=await page.evaluate(()=>{const o={},on=MBTANKSTONE.on;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      mobaStart('tank');MBTANKSTONE.on=true;syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player;let body=0,ts=0;a.root.traverse(x=>{if(x.isSkinnedMesh){body++;if(x.material.userData.ts)ts++}});
+      const h=Object.keys(a.props).find(k=>a.L.props[k]&&a.L.props[k].prop==='w_item_stoneHammer'),m=h&&a.props[h];
+      o.body=body>0&&ts===body&&MBTS_U.tsOn.value===1;o.big=!!m&&Math.abs(m.scale.x/m.userData.s0-MBTANKSTONE.hammer)<1e-6;
+      const r0=MB.me.r;MBTANKSTONE.on=false;syncPlayer(1/60);o.off=MBTS_U.tsOn.value===0&&!!m&&Math.abs(m.scale.x-m.userData.s0)<1e-6&&MB.me.r===r0;
+    }catch(e){o.err=String(e&&e.stack||e)}MBTANKSTONE.on=on;return o});
+  check(!tsk.err&&(tsk.d2||tsk.body&&tsk.big&&tsk.off),'underworld tank stone look: '+(tsk.err||(tsk.d2?'2D, nothing to draw':[['stone + lava cracks on the body',tsk.body],['bigger hammer (draw only)',tsk.big],['switch off',tsk.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
   // ARI #556/#557: the assassin's mask and second dagger, the mage's circlet (witch hat hidden) and floating crystal that bobs. 2D: nothing to draw
   const p2=await page.evaluate(()=>{const o={};try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
