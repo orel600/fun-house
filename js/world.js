@@ -30,7 +30,7 @@ const WORLD={
     {type:'grunt',n:2,x:-1120,y:-1700,r:110},   // על הדרך מהשער לשביל היער ולאגם
     {type:'shield',n:3,x:-1070,y:-1290,r:150},{type:'grunt',n:2,x:-960,y:-1180,r:120},   // 20 מחנה כורתים נטוש
     {type:'wisp',n:2,x:940,y:-1140,r:140},{type:'shield',n:2,x:1040,y:-1060,r:120},    // 21 מחנה ציידים
-    {type:'shield',n:2,x:1480,y:-1500,r:130},{type:'grunt',n:2,x:720,y:-520,r:140},{type:'grunt',n:3,x:1950,y:-480,r:150},
+    {type:'shield',n:2,x:1290,y:-1700,r:120},{type:'grunt',n:2,x:720,y:-520,r:140},{type:'grunt',n:3,x:1950,y:-480,r:150},
     {type:'shield',n:3,x:2450,y:-240,r:150},{type:'wisp',n:2,x:2350,y:-380,r:120},     // 23 מחנה המפרץ
     {type:'treant',n:2,x:-1840,y:-640,r:120},{type:'wisp',n:2,x:-2030,y:250,r:120},{type:'grunt',n:2,x:-2400,y:-1000,r:100},   // 12 הקיצור ביער ושביל היער: עצים מהלכים ורוחות
     // מעבר לנהר (קשה): מחנה הגדה, הרכס, המקדש, הדרך למאורה, והדרום-מערב
@@ -39,10 +39,13 @@ const WORLD={
     {type:'shield',n:3,x:1900,y:1500,r:150},{type:'grunt',n:3,x:2250,y:1300,r:150},
     {type:'shield',n:3,x:-1130,y:1440,r:150},{type:'grunt',n:3,x:-800,y:780,r:150},{type:'wisp',n:3,x:-1250,y:250,r:150},
     {type:'wisp',n:2,x:-690,y:1780,r:90},{type:'grunt',n:3,x:400,y:1700,r:150},{type:'shield',n:2,x:1300,y:1650,r:130},{type:'treant',n:2,x:-2300,y:1150,r:110},
-    // יצורי משאבים, ליד המקור שלהם
-    {type:'treant',creature:true,n:2,x:-1150,y:-950,r:170},{type:'golem',creature:true,n:2,x:1840,y:-1180,r:150},
-    {type:'crawler',creature:true,n:2,x:2300,y:-1500,r:105},{type:'sprite',creature:true,n:2,x:-700,y:-660,r:115},{type:'golem',creature:true,n:2,x:600,y:1500,r:130}
+    /* יצורי משאבים: מחנה ליד השדה, לא עליו (משחק בדיקה 9.11: "אין רגע שקט לאסוף"). מנקים את המחנה ואוספים בשקט, כמו ב-My Universe.
+       leash: רודפים רק קרוב למחנה (WORLD.camp). back: חוזרים לאט, כדי שהאיסוף אחרי הקרב לא ייקטע */
+    {type:'treant',creature:true,n:2,x:-1150,y:-950,r:170},{type:'golem',creature:true,n:2,x:1380,y:-950,r:110},
+    {type:'crawler',creature:true,n:2,x:2780,y:-1550,r:100},{type:'sprite',creature:true,n:2,x:-330,y:-860,r:100},{type:'golem',creature:true,n:2,x:980,y:1560,r:110}
   ],
+  camp:{leash:280,back:60},              // מחנה של יצורי משאבים (creature): רודף רק עד כאן מהבית, וחוזר אחרי כך שניות (במקום leash ו-back של האזור). שורה ב-foes יכולה לקבוע leash/back משלה
+  safe:{r:220},                          // טבעת בטוחה סביב השער לכפר: מי שבתוכה, אויבים לא רודפים אחריו וחוזרים (גם להקות, pacing.js). שאר האזורים בלי
   aggro:240,                             // מאיזה מרחק אויב רודף
   attackRange:260,                       // ההתקפה האוטומטית בוחרת רק מטרות עד המרחק הזה, וחץ או קסם לא פוגעים במה שרחוק ממנו (ניר, 31.10.2026: "בעולם הפתוח טווח ההתקפה צריך להיות מוגבל יותר"). בזירה הטווח של הנשק עצמו (אוראל)
   wander:0.4,                            // מהירות ההסתובבות ליד הבית, יחסית לרדיפה
@@ -173,7 +176,7 @@ const WORLD={
   }
 };
 // אזור שלא כותב size או map מקבל את המלבן הישן, ולא את המפה של האחו
-for(const k in WORLD.regions)WORLD.regions[k]=Object.assign({},WORLD,{regions:null,map:null,size:{w:2100,h:1400}},WORLD.regions[k]);
+for(const k in WORLD.regions)WORLD.regions[k]=Object.assign({},WORLD,{regions:null,map:null,camp:null,safe:null,size:{w:2100,h:1400}},WORLD.regions[k]);
 // האזור שבו נמצאים עכשיו: WORLD (האחו) או אחד מ-WORLD.regions
 const WR=()=>S&&S.wd&&WORLD.regions[S.wd.reg]||WORLD;
 
@@ -255,8 +258,13 @@ function wSpawn(G,i){
     mutSpawn(e);tierSpawn(e);wtSpawn(e)}   // mutSpawn: החוק של היום (mutation.js)   // wtSpawn: שחקן שעבר את האזור (wtension.js)   // דרגת העולם (tiers.js)
    // בלי XP: בעולם לא עולים רמה, זה שייך לריצה בזירה
 }
+// כמה רחוק מהבית קבוצה רודפת, ותוך כמה שניות היא חוזרת: מה שהשורה קובעת, אחרת מחנה יצורים (WORLD.camp), אחרת האזור
+const wLeash=G=>G.leash||(G.creature&&WR().camp||{}).leash||wZone(G).leash;
+const wBack=G=>G.back||(G.creature&&WR().camp||{}).back||wZone(G).back;
+// השחקן בטבעת הבטוחה סביב השער לכפר (WORLD.safe): אויבים לא רודפים
+const wSafe=()=>{const R=WR();return!!R.safe&&Math.hypot(P.x-R.home.x,P.y-R.home.y)<R.safe.r};
 function wFoes(dt){
-  const FO=WR().foes,alive=FO.map(()=>0);
+  const FO=WR().foes,alive=FO.map(()=>0),safe=wSafe();
   wtGroups();   // מכים אחד, והקבוצה שלו מתעוררת (wtension.js)
   for(const e of enemies){
     if(e.dead||e.dummy)continue;   // בובות אימון (skpractice.js) לא זזות: בלי זה התנהגות של foeai.js (הסתערות, קפיצה) הזיזה אותן
@@ -264,13 +272,14 @@ function wFoes(dt){
     if(e.warden){storyWardenMove(e,dt);continue}
     if(e.evt){evFoeMove(e,dt);continue}
     if(e.rare){rareMove(e,dt);continue}   // מפלצת נדירה: ליד המקום הנסתר שלה (rares.js)
+    if(e.pack&&safe){paceFoeBack(e,dt);continue}   // השחקן בטבעת הבטוחה ליד השער: הלהקה חוזרת למקום שממנו באה
     if(e.pack){if(foeAi(e,dt,Math.hypot(P.x-e.x,P.y-e.y)))foeAiTail(e,dt);else paceFoeMove(e,dt);continue}   // התנהגות לפי סוג (foeai.js)   // להקה שמגיעה מקצה המסך (pacing.js)   // גל של אירוע (events.js)   // השומר האבן (story.js)
     if(!e.nem&&!e.hunt)alive[e.home]++;   // נמסיס ומטרת ציד גרים ליד קבוצה אבל לא שייכים לה: בלי זה הלהקה שלהם לא התעוררה עד שמתו (nemesis.js, hunt.js)
     const G=FO[e.home]||FO[0];let dx=P.x-e.x,dy=P.y-e.y;const d=Math.hypot(dx,dy)||1;
     if(TR&&d>TERRAIN.sleep)continue;   // רחוק מאוד מהשחקן: לא חושב ולא זז (האחו הגדול)
     let mx=0,my=0,sp=e.speed*slowK(e);   // קפוא, תקוע או מאובן לא זזים (slowK ב-dmg.js)
     if(e.alert>0)e.alert-=dt;   // קורא תקע בקרן (foeai.js): רודף גם מרחוק, ורחוק יותר מהבית
-    if((d<WORLD.aggro||e.alert>0)&&Math.hypot(P.x-G.x,P.y-G.y)<wZone(G).leash*(e.alert>0?1.6:1)){   // רודף, אבל לא רחוק מהבית. אחרת חוזר להסתובב שם
+    if((d<WORLD.aggro||e.alert>0)&&!safe&&Math.hypot(P.x-G.x,P.y-G.y)<wLeash(G)*(e.alert>0?1.6:1)){   // רודף, אבל לא רחוק מהבית. אחרת חוזר להסתובב שם
       if(foeAi(e,dt,d)){foeAiTail(e,dt);continue}   // התנהגות לפי סוג: מקיף, מסתער, יורה מרחוק, קופץ (foeai.js)
       if(TR){const t=tDir(e,P.x,P.y);dx=t.x-e.x;dy=t.y-e.y}const dd=Math.hypot(dx,dy)||1;   // בלי קו ראייה (נהר, יער): מסביב, במורד מפת המרחקים (terrain.js)
       mx=dx/dd;my=dy/dd;   // הייתה בסוף שורת ההערה מעל ונבלעה בה (#114), ולכן קבוצות לא רדפו
@@ -280,7 +289,7 @@ function wFoes(dt){
         if(TR&&!tLOS(e.x,e.y,e.wx,e.wy)){const t=tDir(e,G.x,G.y);e.wx=t.x;e.wy=t.y}}   // לא מנסים להסתובב אל מעבר לנהר: חוזרים הביתה מסביב
       e.wt=(e.wt||0)+dt;
       const wx=e.wx-e.x,wy=e.wy-e.y,wd=Math.hypot(wx,wy)||1;mx=wx/wd;my=wy/wd;sp*=WORLD.wander}
-    if(strikeTick(e,dt,d)){mx=my=0}   // מכה עם הכנה במקום נזק במגע. בזמן ההכנה עומד (strike.js)
+    if(strikeTick(e,dt,safe?1e9:d)){mx=my=0}   // בטבעת הבטוחה לא מתחילים מכה   // מכה עם הכנה במקום נזק במגע. בזמן ההכנה עומד (strike.js)
     e.x+=mx*sp*dt+e.kx*dt;e.y+=my*sp*dt+e.ky*dt;
     const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*sp*0.08;e.flash-=dt;
   }
@@ -291,7 +300,7 @@ function wFoes(dt){
     g.lazy=1;alive[i]=0});
   FO.forEach((G,i)=>{const g=S.wd.groups[i];if(alive[i]||!ETYPES[G.type])return;
     if(g.lazy){if(Math.hypot(P.x-G.x,P.y-G.y)<TERRAIN.wake&&paceRoom(G.n+TERRAIN.room)){g.lazy=0;wSpawn(G,i)}return}   // paceRoom: לא עוברים את מגבלת האויבים (PACE.cap)   // עוד לא נוצרה: רק כשמתקרבים
-    if(g.t<=0)g.t=wZone(G).back;else if((g.t-=dt)<=0&&paceRoom(G.n)&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+Math.max(WORLD.far,Math.hypot(W,H)/2)){wSpawn(G,i);g.n=(g.n||0)+1}else g.t=Math.max(g.t,0.01)});
+    if(g.t<=0)g.t=wBack(G);else if((g.t-=dt)<=0&&paceRoom(G.n)&&Math.hypot(P.x-G.x,P.y-G.y)>G.r+Math.max(WORLD.far,Math.hypot(W,H)/2)){wSpawn(G,i);g.n=(g.n||0)+1}else g.t=Math.max(g.t,0.01)});
 }
 
 /* ---- כל פריים בעולם ---- */

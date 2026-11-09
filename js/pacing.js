@@ -25,6 +25,7 @@ const PACE={
   cap:45,                                    // הכי הרבה אויבים חיים בעולם יחד (כולל הקבוצות הקבועות, כ-30), בשביל הטלפון (CROWD ב-render3d.js)
   reserve:2,                                 // מקום שנשמר תמיד לשומר הפנס ולמבוקש, שמופיעים בלי לשאול. כל השאר (להקות, קבוצות שחוזרות, גל של אירוע, פיצול) נעצר ב-cap פחות reserve
   bonus:{coins:[1,3]},                      // להקה שהופלה כולה: מטבעות, ועוד שלל מאחד המקורות של האזור (NODES)
+  gather:{hold:4,slow:0.3},                  // בזמן איסוף (מכה במקור ב-hold השניות האחרונות, gHit ב-gather.js): הלהקה הבאה מגיעה פי slow לאט. האיסוף רגוע, והקרב מסביב (משחק בדיקה 9.11)
   hush:6                                     // בכניסה לאזור: הודעה אחת. מה שמגיע בשניות האלה מחכה לסופן, ורק האחרונה מוצגת (בדיקת חוויה, #121)
 };
 // הודעות בכניסה לעולם: הראשונה (שם האזור) מוצגת, והבאות מחכות לסוף hush. banner מ-progression.js, ומעליו התור של welcome.js
@@ -91,7 +92,8 @@ function paceUpdate(dt){
   if(p.kills.length>=PACE.bigFight.kills&&p.quiet<=0){p.quiet=PACE.bigFight.rest;p.kills=[];p.rests++}
   if(p.quiet>0){p.quiet-=dt;return}
   const N=paceBeat(p);if(!N.every)return;
-  if((p.next-=dt*(paceOnPath(P.x,P.y)?1/PACE.path.every:1))>0)return;
+  const gath=w.gath!=null&&w.t-w.gath<PACE.gather.hold;   // אוסף עכשיו
+  if((p.next-=dt*(paceOnPath(P.x,P.y)?1/PACE.path.every:1)*(gath?PACE.gather.slow:1))>0)return;
   p.next=rand(...N.every);if(paceBusy(w)||!paceSpawn())p.next=1;   // לא הסתדר עכשיו: עוד שנייה
 }
 // תנועה של מפלצת מלהקה (wFoes ב-world.js): רודפת אחרי השחקן. רחוקה מדי לאורך זמן: נעלמת בלי שלל
@@ -102,6 +104,13 @@ function paceFoeMove(e,dt){
   else if((e.far+=dt)>PACE.lose){e.dead=true;e.pack.left--;e.gone=true}
   e.x+=e.kx*dt;e.y+=e.ky*dt;const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;
   if(ETYPES[e.type].speed>=95&&d<240){e.shoot-=dt;if(e.shoot<=0){e.shoot=rand(2,3);shootE(e.x,e.y,Math.atan2(dy,dx),175,6,8)}}   // המרחפים יורים, כמו ה-wisp בקבוצות
+  wPonds(e);
+}
+// השחקן בטבעת הבטוחה ליד השער (wSafe ב-world.js): הלהקה חוזרת למקום שממנו באה (מחוץ ל-PACE.safe), בלי לתקוף
+function paceFoeBack(e,dt){
+  const pk=e.pack,dx=pk.x-e.x,dy=pk.y-e.y,d=Math.hypot(dx,dy),sp=e.speed*slowK(e);
+  if(d>12){e.x+=dx/d*sp*dt;e.y+=dy/d*sp*dt}
+  e.x+=e.kx*dt;e.y+=e.ky*dt;const f=Math.max(0,1-dt*9);e.kx*=f;e.ky*=f;e.ph+=dt*e.speed*0.08;e.flash-=dt;e.far=0;
   wPonds(e);
 }
 // מפלצת מלהקה הופלה. להקה שהופלה כולה משאירה שלל
