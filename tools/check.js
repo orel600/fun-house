@@ -1383,7 +1383,7 @@ function worldBot(m,L,god){
       SAVE.gear.weapon=base+'+10';UF.n=0;[e,o]=two();const L10=hits(e,3);r.fury=Math.abs(L10[2]-2.5*u)<=1&&L10[0]===u;
       SAVE.gear.weapon=base;UF.gold=0;[e]=two();damage(e,10,'sword',0,'physical');const N0=juice().n[juice().n.length-1],c0=N0&&N0.col;
       ufUp();damage(e,10,'sword',0,'physical');const N1=juice().n[juice().n.length-1];r.gold=!!N1&&N1.col===UPFEEL.gold.col&&String(N1.txt).startsWith(UPFEEL.gold.mark)&&!!N0&&c0!==UPFEEL.gold.col;
-      const f0=UF.flyN;[e]=two();ufKill(e,10,8,0);r.noFly=UF.flyN===f0;ufKill(e,20,5,0);r.fly=UF.flyN===f0+1&&UF.fr.length>0;
+      const f0=UF.flyN;[e]=two();e.max=100;ufKill(e,10,8,0);ufKill(e,20,5,0);r.noFly=UF.flyN===f0;ufKill(e,60,25,0);r.fly=UF.flyN===f0+1&&UF.fr.length>0;
       r.hint=ufForgeHint(base+'+1',1).includes(T('uf.p.heavy'))&&ufForgeHint(base+'+9',9).includes(T('uf.p.fury'))&&ufForgeHint(base+'+10',10)==='';
       // מכה טעונה: באזור הרחוק ההכנה ארוכה יותר ולוקחת 17% מהחיים, ואחריה מכה רגילה. בהתחלה אף פעם
       UPFEEL.charge.chance.far=1;const s=addEnemy('grunt',P.x+40,P.y);s.zone='far';s.dmg=1;

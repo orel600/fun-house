@@ -9,7 +9,7 @@
 const UPFEEL={
   test:false,                                    // tools/check.js: מדליק גם מחוץ לעולם
   gold:{t:30,col:'#F4C74F',mark:'▲'},             // t: שניות בעולם אחרי שדרוג
-  fly:{over:2,n:7,t:0.7,sp:[200,340],up:160,grav:700,size:[4,8],shake:6,stop:0.05},   // over: המכה גדולה פי כך מהחיים שנשארו
+  fly:{over:2,share:0.5,n:7,t:0.7,sp:[200,340],up:160,grav:700,size:[4,8],shake:6,stop:0.05},   // over: המכה גדולה פי כך מהחיים שנשארו. share: ולפחות חצי מהחיים המלאים (אויב חלש ממך, לא סתם המכה האחרונה)
   // מדרגות לנשק לפי רמת ה-Aging שלו. every: כל כמה מכות. mul: פי כמה. r: רדיוס. k: חלק מהנזק
   perks:[
     {at:3, id:'heavy', every:5,mul:2},
@@ -59,7 +59,7 @@ function ufAfter(e,base,w,t,ang,chained){
 }
 // מ-damage, לפני kill: מכה הרבה יותר גדולה מהחיים שנשארו מפרקת אויב רגיל לחתיכות. hp0: החיים לפני המכה
 function ufKill(e,d,hp0,ang){
-  const F=UPFEEL.fly;if(!ufOn()||e.node||e.isBoss||e.wanted||e.warden||!(hp0>0)||d<F.over*hp0)return;
+  const F=UPFEEL.fly;if(!ufOn()||e.node||e.isBoss||e.wanted||e.warden||!(hp0>0)||d<F.over*hp0||d<F.share*(e.max||hp0))return;
   UF.flyN++;const col=e.col||dtCol(e.weak),now=fxNow(),n=Math.round(F.n*(typeof fxLess==='function'&&fxLess()?0.5:1));
   for(let i=0;i<n;i++){const a=(ang||0)+rand(-0.7,0.7),s=rand(...F.sp);
     UF.fr.push({x:e.x,y:e.y-e.r*0.5,vx:Math.cos(a)*s,vy:Math.sin(a)*s-F.up,t0:now,sz:rand(...F.size)*(e.big||1),rot:rand(0,6.28),vr:rand(-12,12),col})}
