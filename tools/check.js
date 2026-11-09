@@ -4798,6 +4798,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       out[c]={share:Math.round(m/Math.max(1,w)*100),all:tiers.size===GEAR.tiers.length,pity:A.includes(p.w)&&SAVE.clsPity===0,up:t20>t1*1.5}}}catch(e){out.err=e.message}
     SAVE.hero=JSON.parse(bak);SAVE.clsPity=cp;return out});
   await page.evaluate(()=>window.__rkScan&&__rkScan()).catch(()=>{});const rawKeys=await page.evaluate(()=>(window.__rk||{hits:[]}).hits).catch(()=>['(לא נקרא)']);   // מפתחות גולמיים: נבדק בסוף הדוח
+  // שמירה ישנה: משאב ששמו השתנה (RES.renamed, ore→iron) עובר גם במה שמחכה באיסוף במבנה (SAVE.prod), ולא נאסף לתרמיל כמשאב שלא מופיע בשום מקום (ביקורת 9.11)
+  const rmOk=await page.evaluate(()=>{const sv={bag:{ore:2,iron:1},stash:{ore:3},prod:{mine:{t:1,have:{ore:12.4,stone:1}},x:{t:1}}};resMigrate(sv);
+     return sv.bag.iron===3&&!('ore' in sv.bag)&&sv.stash.iron===3&&!('ore' in sv.stash)&&Math.abs(sv.prod.mine.have.iron-12.4)<1e-9&&!('ore' in sv.prod.mine.have)&&sv.prod.mine.have.stone===1});
   await browser.close();
 
   const t=s=>s==null?'-':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
@@ -5152,10 +5155,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
      check(Object.keys(ks).every(k=>V[k]),'משחקי השאול: ראייה ושיחים: '+Object.keys(ks).map(k=>ks[k]+(V[k]?' ✓':' ✗')).join(', '))}
     if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');
   }
-  // שמירה ישנה: משאב ששמו השתנה (RES.renamed, ore→iron) עובר גם במה שמחכה באיסוף במבנה (SAVE.prod), ולא נאסף לתרמיל כמשאב שלא מופיע בשום מקום (ביקורת 9.11)
-  {const rm=await page.evaluate(()=>{const sv={bag:{ore:2,iron:1},stash:{ore:3},prod:{mine:{t:1,have:{ore:12.4,stone:1}},x:{t:1}}};resMigrate(sv);
-     return sv.bag.iron===3&&!('ore' in sv.bag)&&sv.stash.iron===3&&!('ore' in sv.stash)&&Math.abs(sv.prod.mine.have.iron-12.4)<1e-9&&!('ore' in sv.prod.mine.have)&&sv.prod.mine.have.stone===1});
-   check(rm,'שמירה ישנה: עפרה (ore) עוברת לברזל בתרמיל, במחסן ובאיסוף של המכרה'+(rm?'':' ✗'))}
+  check(rmOk,'שמירה ישנה: עפרה (ore) עוברת לברזל בתרמיל, במחסן ובאיסוף של המכרה'+(rmOk?'':' ✗'));
   // מפתחות גולמיים על המסך, בכל מה שהבוט עבר (נסרק כל כמה צעדים, בכל צילום ובכל חלון של winOvl)
   {const rk=rawKeys;check(!rk.length,rk.length?'מפתח טקסט גולמי על המסך: '+rk.slice(0,8).join(', '):'אין מפתח טקסט גולמי על המסך (DOM וקנבס)')}
   if(winChk){const w=winChk,bad=Object.entries(w.wins).filter(([k,v])=>v.length);
