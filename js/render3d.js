@@ -175,13 +175,25 @@ const GEAR3D={on:!/[?&]gear3d=0/.test(location.search),
 /* תיקונים לנשק לפי הפריט (ניר אישר 9.11.2026, docs/concept-weapon-models.md), כדי שהנשק ביד ובבובה ידמה לתמונה. המפתח: id ב-GEAR.items.
    add: תוספת קטנה על המודל הרגיל (look.model), באותה אחיזה. shape: 'gem' (20 משולשים) או 'crystal' (8), col הצבע, glow כמה הוא זוהר,
      pos/s/rot במרחב של מודל הנשק (w_axe_B: הראש סביב y=1, w_wand_A: הקצה ב-y=0.83). לא נוסף כשהפריט מקבל מודל משלו (w_item_).
+   metal: מודל רגיל שהמתכת שלו עמומה מהתמונה (goldAxe: חרדל ולא זהב, 9.11). בעותק של טקסטורת החומר (wtex) רק הפיקסלים שהגוון שלהם בטווח hue
+     ושהרוויה שלהם מעל sat (המתכת, לא העץ והחבל) מתבהרים פי v, הרוויה פי s, והגוון זז ל-h. רק לפריט הזה, לא ל-w_axe_B של כולם.
    bright: מודל משלו (w_item_) כהה מהתמונה: פי כמה להבהיר את הטקסטורה. glow ו-gk: זוהר עדין, והאגדי פועם בו (GEAR3D.pulse) */
 const ITEM3D={
-  goldAxe:   {add:[{shape:'gem',col:'#E0243C',glow:0.45,pos:[0,1.0,0],s:[0.14,0.19,0.17]}]},
+  goldAxe:   {add:[{shape:'gem',col:'#E0243C',glow:0.45,pos:[0,1.0,0],s:[0.19,0.25,0.23]}],metal:{hue:[28,58],sat:0.5,v:1.25,s:1.4,h:43}},   // אבן גדולה פי 1.35 (9.11: בודק לא ראה אותה בזום של המשחק)
   silverWand:{add:[{shape:'crystal',col:'#4FA8FF',glow:0.6,pos:[0,0.88,0],s:[0.1,0.21,0.1]}]},
   dragonBlade:{bright:1.9,glow:'#FF6FB5',gk:0.18}
 };
 const ITEM3D_GEO={gem:()=>new THREE.IcosahedronGeometry(1,0),crystal:()=>new THREE.OctahedronGeometry(1,0)};
+// טקסטורת החומר של פריט עם metal (ITEM3D): עותק של base שבו רק המתכת מתבהרת. נבנה פעם אחת לכל פריט
+function item3dTex(id,base){
+  const k='wtex_'+id;if(R3D[k])return R3D[k];const M=ITEM3D[id].metal,im=base.image,c=document.createElement('canvas');
+  c.width=im.width;c.height=im.height;const x=c.getContext('2d');x.drawImage(im,0,0);const D=x.getImageData(0,0,c.width,c.height),d=D.data,col=new THREE.Color(),hsl={};
+  for(let i=0;i<d.length;i+=4){col.setRGB(d[i]/255,d[i+1]/255,d[i+2]/255);const mx=Math.max(col.r,col.g,col.b),sat=mx?(mx-Math.min(col.r,col.g,col.b))/mx:0;col.getHSL(hsl);const h=hsl.h*360;
+    if(h<M.hue[0]||h>M.hue[1]||sat<M.sat)continue;
+    col.setHSL(M.h/360,Math.min(1,hsl.s*M.s),hsl.l);col.multiplyScalar(M.v);d[i]=Math.min(255,col.r*255);d[i+1]=Math.min(255,col.g*255);d[i+2]=Math.min(255,col.b*255)}
+  x.putImageData(D,0,0);const t=new THREE.CanvasTexture(c);for(const p of ['flipY','colorSpace','wrapS','wrapT','magFilter','minFilter'])t[p]=base[p];t.needsUpdate=true;
+  return R3D[k]=t;
+}
 // בונה את התוספות של פריט ומחבר אותן למודל הנשק m. החומרים נכנסים ל-mats (הבהוב פגיעה) ול-pulse אם אגדי
 function item3dAdd(m,id,mats,pulse){
   for(const d of (ITEM3D[id]||{}).add||[]){
@@ -482,7 +494,7 @@ function makeActor(L){
     const m=R3D.props[p.prop].clone(true);m.position.fromArray(p.pos);m.quaternion.fromArray(p.rot);if(p.s)m.scale.setScalar(p.s);
     const own=/^w_item_/.test(p.prop),fix=ITEM3D[p.item||own&&p.prop.slice(7)]||{};   // מודל משלו: הטקסטורה נשארת, ובלי זוהר הדרגה. מודל מ-Blender עם emissiveMap (tools/blender) פועם בחלקים הזוהרים שלו
     // מודל משלו עם fix.glow (ITEM3D): זוהר עדין בצבע של התמונה, והאגדי פועם בו. fix.bright מבהיר טקסטורה כהה
-    m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(p.tier&&R3D.wtex[p.tier]&&!own)o.material.map=R3D.wtex[p.tier];if(own&&fix.bright)o.material.color.multiplyScalar(fix.bright);if(p.tint)o.material.emissive.set(TINT[p.tint]).multiplyScalar(0.55);if(p.glow&&!own)o.material.emissive.set(p.glow).multiplyScalar(p.gk);if(own&&fix.glow&&!o.material.emissiveMap)o.material.emissive.set(fix.glow).multiplyScalar(fix.gk);if(p.pulse&&(!own||o.material.emissiveMap||fix.glow))(a_pulse||(a_pulse=[])).push(o.material);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
+    m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(p.tier&&R3D.wtex[p.tier]&&!own)o.material.map=R3D.wtex[p.tier];if(!own&&fix.metal&&o.material.map)o.material.map=item3dTex(p.item,o.material.map);if(own&&fix.bright)o.material.color.multiplyScalar(fix.bright);if(p.tint)o.material.emissive.set(TINT[p.tint]).multiplyScalar(0.55);if(p.glow&&!own)o.material.emissive.set(p.glow).multiplyScalar(p.gk);if(own&&fix.glow&&!o.material.emissiveMap)o.material.emissive.set(fix.glow).multiplyScalar(fix.gk);if(p.pulse&&(!own||o.material.emissiveMap||fix.glow))(a_pulse||(a_pulse=[])).push(o.material);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
     if(!own&&p.item)item3dAdd(m,p.item,mats,p.pulse&&(a_pulse||(a_pulse=[])));   // תוספת קטנה (ITEM3D.add)
     b.add(m);props[k]=m;
   }
