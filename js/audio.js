@@ -21,6 +21,7 @@ const SOUNDS={
   // סבב צלילים 1 (8.11, docs/concept/sound.md, הבחירות של אוראל דרך MAX): התראה רכה, וצליל הטלה לכל סוג נזק. החלפה = קובץ אחר באותו שם
   // where:'fight': רק בזירה ובמשחקי השאול. בכפר ובעולם (הצד של ניר) הצליל שקט, גם כשקוד שם קורא לו (sfx('ui') ב-12 קבצים, וקומבו מ-dmg.js)
   ui:       {file:'ui.mp3',       vol:0.3,  pitch:0.05, max:1, gap:0.12, grp:'fx',where:'fight'},     // התראה רכה: ספירה לאחור, גל נוקה, כפתורים בחלונות (נקרא ב-64 מקומות)
+  imp_hammer:{file:'imp_hammer.mp3',vol:0.4, pitch:0.15, max:2, gap:0.1,  grp:'fx',where:'fight'},     // הטנק בשאול: מכה של התקיפה הרגילה, באותו פריים של הנזק (mb-atk3d.js). CC0 (ARI, #546). לא נשמע עדיין במשחק
   cast_physical: {file:'cast_physical.mp3', vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // הטלת סקיל פיזי: חבטה יבשה
   cast_fire:     {file:'cast_fire.mp3',     vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // אש: וושש והתלקחות
   cast_water:    {file:'cast_water.mp3',    vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // מים: התזה
