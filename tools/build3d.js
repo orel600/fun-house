@@ -70,7 +70,8 @@ const CHARS={
   // הטנק החדש (ARI, 9.11.2026): tools/blender/tankbody.js, גולם אובסידיאן וזהב על השלד של ה-Barbarian, פלטה בלי טקסטורת תמונה. מפתח חדש, לא מחליף את barbarian: LOOK3D לא משתמש בו עד שאוראל מאשר
   tankHF:{src:path.join(ROOT,'art/heroes/TankHF.glb'),keep:['Barbarian_'],tex:64,fmt:'png'},
   // הלוחם החדש (ARI, 9.11.2026): tools/blender/warriorbody.js, גלדיאטור חשוף חזה עם כתפית אריה וגלימה אדומה על שלד ה-Barbarian. מפתח חדש, לא מחליף את warrior
-  warriorHF:{src:path.join(ROOT,'art/heroes/WarriorHF.glb'),keep:['Barbarian_'],tex:64,fmt:'png'}
+  warriorHF:{src:path.join(ROOT,'art/heroes/WarriorHF.glb'),keep:['Barbarian_'],tex:64,fmt:'png'},
+  mageHF:{src:path.join(ROOT,'art/heroes/MageHF.glb'),keep:['Barbarian_'],tex:64,fmt:'png'}   // הגוף החדש (ARI, 9.11.2026): tools/blender/magebody.js על שלד ה-Barbarian. מפתח חדש, לא מחליף כלום
 };
 // חפצים שנאחזים ביד של אויב (המיקום ביד מוגדר ב-render3d.js)
 const PROPS={
