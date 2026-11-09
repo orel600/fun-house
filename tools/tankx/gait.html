@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><title>gait</title>
+<!-- מדידת החלקה ורום צעד לקליפ ריצה (ARI, 9.11.2026): מהירות הרגל בזמן מגע ועליית הצעד, מנורמלות לגובה הגוף. ?m=tankX|barbarian&k=0.3 (k = משרעת הרגליים) -->
+<script src="../../js/vendor/three-bundle.js"></script><script src="../../js/models3d.js"></script>
+<script>function m3dPut(k,b){MODELS3D[k]=b}</script><script src="../../js/m3d/tankX.js"></script><script src="../../js/retarget-tracks.js"></script></head><body><script>
+const b64buf=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
+const parse=buf=>new Promise((ok,bad)=>new THREE.GLTFLoader().setMeshoptDecoder(THREE.MeshoptDecoder).parse(buf,'',ok,bad));
+(async()=>{try{const q=new URLSearchParams(location.search),KEY=q.get('m')||'tankX',K=+(q.get('k')||1),CLIP=q.get('clip')||'Running_B';
+ const mine=await parse(b64buf(MODELS3D[KEY])),ref=await parse(b64buf(MODELS3D.barbarian)),gs=await Promise.all(['anim_general','anim_move','anim_ranged','anim_melee'].map(k=>parse(b64buf(MODELS3D[k])))),g={animations:gs.flatMap(x=>x.animations)};
+ let clip=g.animations.find(a=>a.name===CLIP);const names=new Set();mine.scene.traverse(o=>names.add(o.name));
+ clip=new THREE.AnimationClip(clip.name,clip.duration,clip.tracks.filter(t=>names.has(t.name.split('.')[0])));
+ if(KEY!=='barbarian'){const f=RETARGET.ratios(mine.scene,ref.scene);clip=RETARGET.apply(clip,f);
+   if(K<1){const rq={};mine.scene.traverse(o=>{if(o.isBone)rq[o.name]=o.quaternion.toArray()});clip=RETARGET.dampen(clip,rq,K,/^(hips|upperleg|lowerleg|foot|toes)/)}}
+ const ch=THREE.SkeletonUtils.clone(mine.scene),mx=new THREE.AnimationMixer(ch);mx.clipAction(clip).play();
+ mx.setTime(0);ch.updateMatrixWorld(true);const H0=(()=>{const b=new THREE.Box3().setFromObject(ch);return b.max.y-b.min.y})();
+ // rest height from idle
+ const N=120,T=clip.duration,P={footl:[],footr:[]};
+ for(let i=0;i<N;i++){mx.setTime(T*i/N);ch.updateMatrixWorld(true);ch.traverse(o=>{if(o.isBone&&(o.name==='footl'||o.name==='footr')){P[o.name].push(o.getWorldPosition(new THREE.Vector3()).toArray())}})}
+ // body height reference = hips-to-ground at idle
+ const idle=g.animations.find(a=>a.name==='Idle_A');const hb=new THREE.Box3().setFromObject(ch);
+ const H=(()=>{const c=THREE.SkeletonUtils.clone(mine.scene),m2=new THREE.AnimationMixer(c);m2.clipAction(new THREE.AnimationClip('i',1,idle.tracks.filter(t=>names.has(t.name.split('.')[0])&&!(KEY!=='barbarian'&&t.name.endsWith('.position'))))).play();m2.setTime(0);c.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(c);return b.max.y-b.min.y})();
+ const out={};
+ for(const s of ['footl','footr']){const p=P[s],ys=p.map(a=>a[1]),lo=Math.min(...ys),hi=Math.max(...ys);const sp=[];for(let i=0;i<N;i++){const a=p[i],b=p[(i+1)%N],d=Math.hypot(a[0]-b[0],a[2]-b[2],a[1]-b[1])/(T/N);if(ys[i]-lo<0.03*H)sp.push(d)}
+  out[s]={lift:+((hi-lo)/H).toFixed(3),contactSpeed:+(sp.length?sp.reduce((x,y)=>x+y,0)/sp.length/H:0).toFixed(3),contactSamples:sp.length,strideX:+((Math.max(...p.map(a=>a[2]))-Math.min(...p.map(a=>a[2])))/H).toFixed(3)}}
+ window.RESULT={model:KEY,k:K,clip:CLIP,H:+H.toFixed(3),out};document.title='ready'}catch(e){document.title='ERR '+e.message;console.error(e)}})();
+</script></body></html>

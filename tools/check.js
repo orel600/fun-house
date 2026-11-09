@@ -4801,7 +4801,14 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
         try{let s=0,A=null;for(let k=1;k<40&&!A;k++){A=game(true,k);if(A)s=k}
           if(A){const B=game(false,s);out.same=!!B&&A.hash===B.hash&&A.atk.join()===B.atk.join();out.atkN=A.atk.length;out.tx=A.tx;out.comp=A.comp;out.bones=A.bones.size;
             out.moveAtk=A.moveAtk;out.flash=A.flash;out.die=A.die;out.toggle=A.toggle;out.seed=s;out.fams=A.fams;out.dieFam=A.dieFam}else out.err='no tank bot';
-          out.fac=X.stat.fac;out.clips=X.stat.clips;out.tracks=X.stat.tracks;out.rebuilt=X.stat.rebuilt;out.hammer=!!R3D.props[X.hammer.prop]}
+          // הצעד בריצה: כמה הרגל עולה (ביחס לגובה הגוף), וכמה מהר היא זזה כשהיא על הרצפה מול מהירות הקרקע. הגוף החדש מול הברברי
+          const gait=L=>{const a=makeActor(L);a.root.position.set(0,0,0);a.root.rotation.set(0,0,0);const H=L.h/COSB(),x=act(a,L.anim.run);a.mixer.stopAllAction();x.reset().setLoop(THREE.LoopRepeat).play();
+            const D=x.getClip().duration,N=120,b=bone(a.root,'footl'),pts=[];if(!b){freeActor(a);return null}
+            for(let i=0;i<=N;i++){a.mixer.setTime(D*i/N);a.root.updateMatrixWorld(true);pts.push(b.getWorldPosition(new THREE.Vector3()))}
+            const ys=pts.map(v=>v.y),lo=Math.min(...ys),bd=0.03*H;let sp=0,n=0;for(let i=1;i<pts.length;i++)if(pts[i].y<lo+bd&&pts[i-1].y<lo+bd){sp+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z)/(D/N);n++}
+            a.mixer.stopAllAction();freeActor(a);return {lift:+((Math.max(...ys)-lo)/H).toFixed(3),slide:+(sp/Math.max(1,n)/MBMOVE.run).toFixed(2)}};   // slide: מהירות הרגל במגע מול מהירות הקרקע (1 = בלי החלקה)
+          X.on=true;const LX=tankxLook();X.on=false;out.gait={kk:gait(LOOK3D.mb_tank),tx:LX&&gait(LX)};
+          out.fac=X.stat.fac;out.clips=X.stat.clips;out.gaitN=X.stat.gait;out.tracks=X.stat.tracks;out.rebuilt=X.stat.rebuilt;out.hammer=!!R3D.props[X.hammer.prop]}
         catch(e){out.err=String(e&&e.stack||e).slice(0,200)}
         Math.random=rnd;X.on=false;if(X._m0){X.model=X._m0;delete X._m0;delete R3D.tmpl.__tx;X._f=null;X._L=null}if(S.mb)mobaExit();return out}));
       /* חיית המחמד: אותו מסלול פעמיים (זזה 1.5 שניות, עומדת 1.5), עם הקפיצות ובלי. המיקום שלה זהה (המעקב לא השתנה),
@@ -4875,12 +4882,12 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(L.heroHp===heroHp,'פסיבית בריצה: הלוחם קיבל +'+L.heroHp+' חיים (צפוי +'+heroHp+')');
   check(again,'בחירת דמות: '+(again?'לא חוזרת במשחק השני':'הופיעה שוב'));
   {const o=txT,pt=o.pet||{},T=o.real?'הגוף החדש':'תחליף (הקבצים של ARI עוד לא נכנסו)';
-    const tk=!o.d3||(o.same&&o.tx>0&&o.comp>0&&o.bones>=3&&o.moveAtk>0&&o.flash&&o.die&&o.die.moved&&o.toggle&&o.toggle.off&&o.toggle.back&&o.fac&&o.tracks>0&&(!o.hammer||o.fams==='idle/run/attack'&&o.dieFam==='attack')&&!o.err);
+    const tk=!o.d3||(o.same&&o.tx>0&&o.comp>0&&o.bones>=3&&o.moveAtk>0&&o.flash&&o.die&&o.die.moved&&o.toggle&&o.toggle.off&&o.toggle.back&&o.fac&&o.tracks>0&&(!o.real||o.gait&&o.gait.tx&&o.gait.kk&&o.gait.tx.lift<=o.gait.kk.lift*1.5&&o.gait.tx.slide>=0.5&&o.gait.tx.slide<=1.5)&&(!o.hammer||o.fams==='idle/run/attack'&&o.dieFam==='attack')&&!o.err);
     const w=o.wx||{},wx=!o.d3||(w.same&&w.hit>0&&w.model==='wandererX'&&w.comp>0&&w.bones>=3&&/Idle_A/.test(w.carry)&&/default/.test(w.carry)&&w.staff>0&&w.lambert&&w.flash&&w.die&&w.off==='orelHero'&&w.back==='wandererX'&&!w.err);
     const pe=!o.d3||(pt.vis&&pt.same&&pt.hops>=2&&pt.lift>0.08&&pt.lift<=0.125&&pt.sy[0]>=0.87&&pt.sy[1]<=1.14&&pt.idle&&Math.abs(pt.idle.sy-1)<=0.025&&Math.abs(pt.idle.sx-1)<0.01&&Math.abs(pt.idle.rz)<0.01&&!pt.err);
     check(o.def&&tk&&pe&&wx,'ניסוי הטנק, החיה והנודד (?tankx=1, ?petx=1, ?wanderx=1): '+(o.def?'כבויים כברירת מחדל':'דולקים בלי לבקש')+(!o.d3?', בדו-ממד אין מה לבדוק':
       ', טנק ('+T+(o.load?', נטען '+o.load:'')+'): '+(o.err||(o.same?'אותו משחק בדיוק עם ובלי':'המשחק השתנה!')+', '+o.atkN+' תקיפות, '+o.tx+' פריימים בגוף החדש, '+o.comp+' באנימציה מתוקנת'+
-        ', '+o.clips+' אנימציות ו-'+o.tracks+' ערוצים תוקנו (יחס '+JSON.stringify(o.fac)+')'+', '+o.bones+' תנוחות שונות, '+o.moveAtk+' פריימים של תקיפה בתנועה'+(o.flash?', מהבהב':', לא מהבהב')+
+        ', צעד בריצה (גובה ביחס לגוף, ומהירות במגע מול הקרקע): '+(o.gait?JSON.stringify(o.gait.tx)+' מול הברברי '+JSON.stringify(o.gait.kk):'-')+', '+o.clips+' אנימציות ו-'+o.tracks+' ערוצים תוקנו (יחס '+JSON.stringify(o.fac)+')'+', '+o.bones+' תנוחות שונות, '+o.moveAtk+' פריימים של תקיפה בתנועה'+(o.flash?', מהבהב':', לא מהבהב')+
         (o.die?', מוות '+(o.die.moved?'זז':'לא זז')+' (יחס הירכיים '+o.die.ratio+')':', אין מוות')+(o.toggle?', מתג: '+(o.toggle.off?'חוזר לטנק הרגיל':'לא חוזר')+' ו'+(o.toggle.back?'שוב לחדש':'לא חוזר לחדש'):'')+(o.hammer?', עם פטיש (תנוחות '+o.fams+', במוות '+o.dieFam+')':', בלי פטיש (עוד לא נכנס)'))+
       ', נודד: '+(w.err||(w.same?'אותו מסלול ואותו נזק ('+w.hit+')':'המשחק השתנה!')+', '+w.model+', '+w.comp+' פריימים באנימציה מתוקנת (יחס '+w.fac+'), '+w.bones+' תנוחות, מטה גלוי '+w.staff+' פריימים בתנוחות '+w.carry+(w.flash?', מהבהב':', לא מהבהב')+(w.die?', מוות זז':', מוות לא זז')+', מתג: '+w.off+' ושוב '+w.back)+
       ', חיה: '+(pt.err||(!pt.vis?'לא נראית':(pt.same?'אותו מסלול':'המסלול השתנה!')+', '+pt.hops+' קפיצות, גובה עד '+pt.lift+', מעיכה '+(pt.sy||[]).join('..')+', בעמידה '+JSON.stringify(pt.idle)))))}

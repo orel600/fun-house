@@ -13,9 +13,10 @@ const MBTANKX={
   shield:false,   // הגוף החדש מחזיק פטיש בשתי ידיים: בלי המגן של הטנק הרגיל
   // תנוחת הפטיש ביד לפי מה שמנגן (ARI, #586, נפתרה לכל אנימציה): idle רק ל-Idle_*, run לריצה, וכל השאר (תקיפה, פגיעה, מוות) בתנוחה הרגילה
   carry:{idle:{pos:[0,0,0],rot:[-0.5998,0.4684,0.6176,0.1985]},run:{pos:[0,0,0],rot:[-0.6369,0.2983,0.6826,0.1987]},attack:{pos:[0,0,0],rot:[0,-1,0,0]}},
+  gait:true,     // צעד מוקטן בריצה לפי TANKX.gait (js/retarget-tracks.js). false: האנימציה כמו שהיא
   minLen:1e-4,    // עצמה שאורכה בברברי קטן מזה: בלי תיקון
   comp:null,      // אם ARI מספקת פונקציה משלה: (clip, tmpl, ref) => clip. אחרת tankxComp למטה
-  stat:{looks:0,actors:0,rebuilt:0,clips:0,tracks:0,fallback:0,fac:null}
+  stat:{looks:0,actors:0,rebuilt:0,clips:0,tracks:0,gait:0,fallback:0,fac:null}
 };
 // המראה: כמו הטנק הרגיל, עם הגוף החדש והפטיש. null אם משהו עוד לא מוכן (ואז הטנק הרגיל)
 function tankxLook(){
@@ -37,7 +38,7 @@ function tankxFactors(){
   if(X._f&&X._ft===t)return X._f;
   const a=tankxRest(t),b=tankxRest(k),f={};let lo=Infinity,hi=0,n=0;
   for(const nm in a)if(nm in b&&b[nm]>=X.minLen){f[nm]=a[nm]/b[nm];lo=Math.min(lo,f[nm]);hi=Math.max(hi,f[nm]);n++}
-  X._f=f;X._ft=t;X._c={};
+  X._f=f;X._ft=t;X._c={};X._rq=null;
   X.stat.fac={n,lo:+lo.toFixed(3),hi:+hi.toFixed(3),hips:f.hips!=null?+f.hips.toFixed(3):null};
   return f;
 }
@@ -55,7 +56,11 @@ function tankxClip(name){
   const f=tankxFactors();if(!f)return c;
   if(name in X._c)return X._c[name];
   X.stat.clips++;
-  return X._c[name]=typeof X.comp==='function'?X.comp(c,R3D.tmpl[X.model],R3D.tmpl[X.ref]):tankxComp(c,f);
+  let k=typeof X.comp==='function'?X.comp(c,R3D.tmpl[X.model],R3D.tmpl[X.ref]):tankxComp(c,f);
+  // ריצה: צעד קטן יותר (ARI, RETARGET.dampen): לגוף הזה רגליים ארוכות ביחס לגובה, ובאותן זוויות הרגל עפה רחוק ומחליקה. רק לאנימציות שבטבלה TANKX.gait
+  const G=X.gait&&typeof TANKX!=='undefined'&&TANKX.gait&&TANKX.gait[name.split('@')[0]];
+  if(G&&typeof RETARGET!=='undefined'){if(!X._rq){X._rq={};R3D.tmpl[X.model].traverse(o=>{if(o.isBone)X._rq[o.name]=o.quaternion.toArray()})}k=RETARGET.dampen(k,X._rq,G.k,G.bones);X.stat.gait++}
+  return X._c[name]=k;
 }
 // סוג האנימציה בשביל הפטיש: אנימציה חד-פעמית (תקיפה, פגיעה, מוות, הופעה) גוברת, ואז הבסיס. רק Idle_* ו-Running/Walking מקבלים תנוחה משלהם
 const tankxFam=(one,base)=>{const n=(one||base||'').split('@')[0];return /^Idle_/.test(n)?'idle':/^(Running|Walking)_/.test(n)?'run':'attack'};

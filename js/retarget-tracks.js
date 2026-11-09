@@ -32,6 +32,16 @@ const RETARGET={
      העצמות שומרות על אורכי המנוחה שלהן. המחיר: אין תזוזה של עצמות מלבד ה-hips (מספיק לריצה והתקפה, פחות למוות). */
   applyRotOnly(clip,f){
     const tr=clip.tracks.filter(t=>!(t.name.endsWith('.position')&&t.name.split('.')[0]!=='hips'));return RETARGET.apply(new THREE.AnimationClip(clip.name,clip.duration,tr),f)},
+  /* dampen(clip, restQ, k, boneRe): מקטין את משרעת הסיבוב של עצמות (למשל הרגליים בריצה) ל-k מהמקורי: q' = slerp(rest, q, k). restQ = {שם עצם: [x,y,z,w]} מהשלד של המודל.
+     למה: מודל בפרופורציות מציאותיות (רגליים ~70% מהגובה, ב-KayKit ~17%) עושה עם אותן זוויות צעד גדול פי 4 ביחס לגובה המוצג: החלקה ורגל שעולה גבוה. k ~ 0.3 מחזיר את הצעד ליחס של KayKit. משתמשים רק בקליפי הליכה/ריצה. */
+  dampen(clip,restQ,k,boneRe){
+    const tr=clip.tracks.map(t=>{const i=t.name.lastIndexOf('.'),bone=t.name.slice(0,i);
+      if(t.name==='hips.position'&&boneRe.test('hips')){const v=t.values.slice(),n=v.length/3,m=[0,0,0];for(let a=0;a<v.length;a++)m[a%3]+=v[a]/n;for(let a=0;a<v.length;a++)v[a]=m[a%3]+(v[a]-m[a%3])*k;return new THREE.VectorKeyframeTrack(t.name,t.times,v)}   // התנודה האנכית של האגן סביב ממוצעה
+      if(t.name.slice(i+1)!=='quaternion'||!boneRe.test(bone)||!restQ[bone])return t;
+      const r=new THREE.Quaternion().fromArray(restQ[bone]),q=new THREE.Quaternion(),v=t.values.slice();
+      for(let n=0;n<v.length;n+=4){q.fromArray(v,n);const o=r.clone().slerp(q,k);v[n]=o.x;v[n+1]=o.y;v[n+2]=o.z;v[n+3]=o.w}
+      return new THREE.QuaternionKeyframeTrack(t.name,t.times,v)});
+    return new THREE.AnimationClip(clip.name,clip.duration,tr)},
   report(f){const e=Object.entries(f).sort((a,b)=>a[1]-b[1]);return {min:e[0],max:e[e.length-1],count:e.length}}
 };
 /* הטבלה של הפטיש (נפתרה ב-9.11.2026 על TankX.glb; rot הוא quaternion [x,y,z,w] מקומי לעצם handslotr). משפחות: idle ו-run מורמים, השאר ברירת המחדל */
@@ -42,6 +52,9 @@ const TANKX={
     Idle_A:{pos:[0,0,0],rot:[-0.5998,0.4684,0.6176,0.1985]},
     Running_B:{pos:[0,0,0],rot:[-0.6369,0.2983,0.6826,0.1987]}
   },
+  /* הליכה/ריצה: הגוף בפרופורציות מציאותיות (רגליים ~70% מהגובה, ב-KayKit ~17%), ולכן אותן זוויות נותנות צעד גדול פי 4 ביחס לגובה: החלקה ורגל גבוהה (BOB, ?tankx=1). פתרון: RETARGET.dampen(clip, restQ, k, /^(hips|upperleg|lowerleg|foot|toes)/) עם k=0.3 לקליפים מהסוג הזה.
+     נמדד ב-tools/tankx/gait.js (Running_B, מנורמל לגובה הגוף): barbarian lift 0.094 / stride 0.275 / contact 1.49 גובה-לשנייה; tankX בלי dampen 0.337 / 0.658 / 4.2; עם k=0.3: 0.090 / 0.305 / 1.39. */
+  gait:{Running_B:{k:0.3,bones:/^(hips|upperleg|lowerleg|foot|toes)/}},
   /* הקליפים שבודקים לכל מודל (tools/tankx/verify.js) */
   verifyClips:['Idle_A','Running_B','Melee_2H_Attack_Chop','Death_A','Hit_A','Melee_2H_Idle','Jump_Idle','Taunt']
 };
