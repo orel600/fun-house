@@ -21,7 +21,7 @@ const MBATK3D={
       puff:{fx:'hit_earth',size:58,ahead:20}},
     // השיפוץ (BOB, 10.11, roster 4.1: לכל גיבור תקיפה רגילה משלו, שונה מהסקילים). from/to: נמדד לפי מהירות היד (handslotr) בקליפ, מהתנופה עד המגע/השחרור
     // ready: עמידה מוכנה בין מכות (רק אם יש קליפ). puff: אבק/ניצוץ במגע, רק למכה מקרוב (בטווח רחוק הפגיעה כבר יוצאת בחץ או בכדור). הצליל: נשאר הקיים (hit/shoot) עד שמיעת ה-CC0
-    warrior:{ready:null,hit:'Melee_1H_Attack_Slice_Horizontal',from:0.08,to:0.24,dur:0.16,settle:0.05,recover:{min:0.18,max:0.6},keep:0.6,puff:{fx:'hit',size:46,ahead:18}},   // חיתוך רוחבי: המגע ב-0.20-0.23
+    warrior:{ready:null,hit:'Melee_1H_Attack_Chop',from:0.44,to:0.6,dur:0.14,settle:0.05,recover:{min:0.18,max:0.6},keep:0.6,puff:{fx:'hit',size:46,ahead:18}},   // חיתוך יורד (MAX/DANA 10.11: שונה מ-s1, שנשאר החיתוך הרוחבי). המגע ב-0.55-0.60
     assassin:{ready:null,hit:'Melee_1H_Attack_Chop',from:0.44,to:0.6,dur:0.12,settle:0.04,recover:{min:0.15,max:0.5},keep:0.5,puff:{fx:'hit',size:40,ahead:16}},   // חיתוך אלכסוני מהיר (שונה מהלוחם). המגע ב-0.55-0.60. עד עכשיו למתנקש לא היה קליפ תקיפה בכלל
     hunter:{ready:'Ranged_Bow_Idle',hit:'Ranged_Bow_Release',from:0,to:0.12,dur:0.14,settle:0.06,recover:{min:0.2,max:0.7},keep:0.8,puff:null},   // השחרור בתחילת הקליפ (0.03-0.05), מקשת מתוחה
     mage:{ready:null,hit:'Ranged_Magic_Shoot',from:0.02,to:0.2,dur:0.16,settle:0.05,recover:{min:0.18,max:0.7},keep:0.6,puff:null}   // שליחה קצרה, השיא ב-0.07-0.20   // אבק במגע: בצבע סוג הנזק של הטנק (אדמה, חום). step_dust יוצא ירקרק: גודל, וכמה לפני הגוף (מעבר לרדיוס)
