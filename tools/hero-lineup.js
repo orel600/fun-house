@@ -1,6 +1,6 @@
 // צילום השוואה של חמשת גיבורי משחקי השאול כמו שהם במשחק היום (ARI, 9.11.2026): חמישה מודלים זה לצד זה על רצפה ריקה.
 // שימוש: node tools/hero-lineup.js . <תיקיית פלט> [--gpu]   (תלת-ממד, דורש playwright, כמו tools/check.js)
-// יוצא: lineup-game.png (זום המשחק) ו-lineup-close.png (קרוב פי 2, בלי ממשק), ושלוש מצלמות לכל גיבור: lineup-<גיבור>.png (חתך קרוב).
+// יוצא: lineup-game.png (זום המשחק) ו-lineup-close.png (קרוב פי 2, בלי ממשק), ו-lineup-front.png (מבט מלפנים, tilt 14).
 // זה "המודלים בפועל במשחק", לא תמונת קונספט: אין כאן טענה שהם דומים לאיורי הקונספט.
 const {chromium}=require('playwright'),path=require('path'),fs=require('fs'),GPU=require('./gpu.js');
 const repo=process.argv[2],out=process.argv[3];
@@ -29,6 +29,10 @@ const repo=process.argv[2],out=process.argv[3];
   await page.evaluate(()=>{window.__z=MBLOOK.cam.zoom;MBLOOK.cam.zoom=MBLOOK.cam.zoom*2.1;window.dispatchEvent(new Event('resize'));for(const e of document.body.children)if(e.tagName!=='CANVAS'&&!e.querySelector('canvas'))e.style.visibility='hidden'});   // 2.1 ולא 2: כך שחמשת הגיבורים ממלאים את המסך. בלי ממשק, כדי לראות רק את המודלים
   for(let i=0;i<20;i++)await page.clock.runFor(34);
   await shot('lineup-close');
+  // מבט מלפנים: רק המצלמה משתנה (tilt נמוך), בלי נגיעה בקוד המשחק. האיורים של אוראל הם מבט מלפנים, ומלמעלה לא רואים פנים ושריון
+  await page.evaluate(()=>{MBLOOK.cam.tilt=14;MBLOOK.cam.zoom=window.__z*2.1;for(const u of MB.u)if(u.k==='hero')u.x-=100;P.x=MB.me.x;S.cam.x=MB.me.x+70;window.dispatchEvent(new Event('resize'))});
+  for(let i=0;i<20;i++)await page.clock.runFor(34);
+  await shot('lineup-front');
   console.log(JSON.stringify({renderer,gfx:await page.evaluate(()=>R3D.on),zoomGame:await page.evaluate(()=>window.__z),errors},null,1));
   await browser.close();
 })();
