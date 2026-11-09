@@ -14,8 +14,9 @@ const MBTANKX={
   kit:'tank',model:'tankX',ref:'barbarian',
   hammer:{prop:'w_item_tankXHammer',bone:'handslotr',pos:[0,0,0],rot:[0,-1,0,0],s:0.9},
   shield:false,   // הגוף החדש מחזיק פטיש בשתי ידיים: בלי המגן של הטנק הרגיל
-  // תנוחת הפטיש ביד לפי מה שמנגן (ARI, #586, נפתרה לכל אנימציה): idle רק ל-Idle_*, run לריצה, וכל השאר (תקיפה, פגיעה, מוות) בתנוחה הרגילה
-  carry:{idle:{pos:[0,0,0],rot:[-0.5998,0.4684,0.6176,0.1985]},run:{pos:[0,0,0],rot:[-0.6369,0.2983,0.6826,0.1987]},attack:{pos:[0,0,0],rot:[0,-1,0,0]}},
+  // תנוחת הפטיש ביד לפי מה שמנגן (ARI, #586, נפתרה לכל אנימציה): idle רק ל-Idle_*, run לריצה, וכל השאר (תקיפה, פגיעה, מוות) בתנוחה הרגילה.
+  // s: גודל לתנוחה. בעמידה הראש של הפטיש מורם ליד הגוף ונראה ענק (MAX, 9.11), אז 0.8
+  carry:{idle:{pos:[0,0,0],rot:[-0.5998,0.4684,0.6176,0.1985],s:0.8},run:{pos:[0,0,0],rot:[-0.6369,0.2983,0.6826,0.1987]},attack:{pos:[0,0,0],rot:[0,-1,0,0]}},
   gait:true,      // צעד מוקטן בריצה לפי TANKX.gait (js/retarget-tracks.js). false: האנימציה כמו שהיא
   speed:{Running_B:1.2},   // מהירות האנימציה לכל אנימציה (1: כמו המקור). 1.2: הרגל על הרצפה זזה כ-0.83 ממהירות הקרקע (הטנק הישן 0.49, 1 = בלי החלקה)
   size:1.25,      // הגובה המוצג בעמידה, ביחס לטנק הישן (ה-hitbox לא משתנה). ARI, 9.11: הגוף צר (41 פיקסלים מול 56 של הברברי עם המגן), אז 1.25 כדי שהשטח על הרצפה יהיה דומה
@@ -103,7 +104,7 @@ function tankxCarry(a){
   const one=a.one&&a.one.isRunning()?a.one.getClip().name:'';
   const fam=tankxFam(one,a.base),p=C[fam]||C.attack;a.fam=fam;
   if(!p||a.carry===p)return;a.carry=p;
-  if(p.pos)m.position.fromArray(p.pos);if(p.rot)m.quaternion.fromArray(p.rot);m.scale.setScalar((p.s||1)*(MBTANKX.hammer.s||1));
+  if(p.pos)m.position.fromArray(p.pos);if(p.rot)m.quaternion.fromArray(p.rot);m.scale.setScalar((p.s||1)*(MBTANKX.hammer.s||1));   // p.s: גודל לתנוחה (carry), כפול הגודל הכללי
 }
 // החומר: הבהרה, קו אור בשוליים, זוהר הסדקים עד התקרה, והבהוב פגיעה אחיד (המפה של הזוהר לא מכפילה אותו)
 const MBTX_U={txGain:{value:1},txLift:{value:0},txRim:{value:new THREE.Color()},txRimK:{value:0},txRimP:{value:2},txEmK:{value:1},txEmMax:{value:1.2}};
