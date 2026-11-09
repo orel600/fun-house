@@ -4575,7 +4575,7 @@ function worldBot(m,L,god){
      e.hp=e.max=MBKIT[e.kit].hp;if(ofx)window.fxPlay=ofx;o.fxIds=[...o.fxIds];o.sharpSkip=typeof MBSHARP!=='undefined'&&MBSHARP.on?Object.values(MBSHARP.skip).flat():[];o.fxLib=typeof FXDATA!=='undefined'?Object.keys(FXDATA).length:0;
      try{fxDraw();fxDrawUi();o.fxDrawOk=true}catch(err){o.fxDrawOk=err.message}
      // האפקט נוחת על המסך ליד הגיבור: עד 7.11 render.js צייר אותם אחרי ש-mobaDraw עבר לקואורדינטות המסך, וכל אפקט במובה היה מחוץ למסך
-     try{const me=MB.me,od=ctx.drawImage,oi=window.fxImg,fake=document.createElement('canvas');let at=null;const al=MB.u.find(u=>u.k==='hero'&&u.team===me.team&&!u.dead)||me,cam0={x:S.cam.x,y:S.cam.y};S.cam.x=al.x;S.cam.y=al.y;const L0=FXLIB.list.splice(0);fxPlay('ult_cast',al.x,al.y,{dur:5});   /* רק האפקט של הבדיקה ברשימה: אפקטים אחרים ממשחק הבוטים נמצאים במקומות אחרים במפה */   /* מצלמה על גיבור חי שלנו: בלי ערפל, והאפקט צריך לנחות במרכז */
+     try{const me=MB.me,od=ctx.drawImage,oi=window.fxImg,fake=document.createElement('canvas');let at=null;const al=!me.dead?me:(MB.u.find(u=>u.k==='hero'&&u.team===me.team&&!u.dead)||me),cam0={x:S.cam.x,y:S.cam.y};S.cam.x=al.x;S.cam.y=al.y;const L0=FXLIB.list.splice(0);fxPlay('ult_cast',al.x,al.y,{dur:5});   /* רק האפקט של הבדיקה ברשימה: אפקטים אחרים ממשחק הבוטים נמצאים במקומות אחרים במפה */   /* מצלמה על גיבור חי שלנו: בלי ערפל, והאפקט צריך לנחות במרכז */
        window.fxImg=()=>fake;   // תמונה מדומה: בתוך הבדיקה הזמן לא עובר, והתמונה האמיתית לא מספיקה להיטען
        ctx.drawImage=function(im){if(!at&&im===fake){const t=ctx.getTransform();at=[t.e/DPR,t.f/DPR];return}return od.apply(this,arguments)};
        try{render()}finally{ctx.drawImage=od;window.fxImg=oi;S.cam.x=cam0.x;S.cam.y=cam0.y;FXLIB.list.length=0;FXLIB.list.push(...L0)}o.fxAt=at?{x:Math.round(at[0]),y:Math.round(at[1]),on:at[0]>0&&at[0]<innerWidth&&at[1]>0&&at[1]<innerHeight}:null}catch(err){o.fxAt={err:err.message}}}
@@ -4895,6 +4895,8 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(!thf.err&&(thf.d2||thf.me&&thf.bot&&thf.noStone&&!thf.bad.length&&thf.off),'underworld new tank body: '+(thf.err||(thf.d2?'2D, nothing to draw':[['yours, with hammer + crown',thf.me],['bots',thf.bot],['no stone shader on it',thf.noStone],['all 7 tank clips move it'+(thf.bad.length?' ('+thf.bad.join(',')+')':''),!thf.bad.length],['switch: barbarian back',thf.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
   // the new warrior, mage and assassin bodies (ARI #579-#581, mb-parts.js): on your hero, every clip moves them, the overlapping part (mask, circlet) is skipped,
   // the weapons stay, and each switch brings the old body back
+  // הגופים והחלקים נטענים לפי צורך: מחכים להם קודם, אחרת זו תחרות עם שאר ההורדות ברקע (בענף השיפוץ יש יותר קבצים בתור)
+  await page.evaluate(()=>typeof R3D!=='undefined'&&R3D.on&&typeof M3D_LAZY!=='undefined'?Promise.all(['assassinHF','warriorHF','mageHF','w_item_shadowDagger','w_item_mageCrystal'].filter(k=>k in M3D_LAZY).map(k=>m3dGo(k).catch(()=>{}))):0);
   const hf3=await page.evaluate(()=>{const o={},W={warrior:[MBWARHF,'warriorHF','knight'],mage:[MBMAGEHF,'mageHF','mage'],assassin:[MBASNHF,'assassinHF','rogue']};try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
       for(const k in W){const [sw,hf,old]=W[k],on0=sw.on;sw.on=true;mobaStart(k);syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,r={};

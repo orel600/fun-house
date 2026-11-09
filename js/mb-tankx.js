@@ -184,7 +184,7 @@ function tankxPlayer(H){
   // מתג תוך כדי משחק, או גוף שסיים להיטען: הדמות נבנית מחדש (עם אותו מצב תקיפה, כדי שלא תצא תקיפה מיותרת)
   const bu=mb3dUnit;mb3dUnit=function(e,dt){
     if(isTank(e)&&(MBTANKX.on||(R3D.actors.get(e)||{L:{}}).L.tx)){const a=R3D.actors.get(e),L=lookOf(e);   // כבוי: רק כדי לחזור מהגוף החדש. אחרת mb-parts (ובונים אחרים של מראה) בונים מחדש בעצמם
-      if(a&&L&&a.key!==lookKey(L)&&!a.dieT){const pv=a.prev;freeActor(a);R3D.actors.delete(e);MBTANKX.stat.rebuilt++;
+      if(a&&L&&a.key!==lookKey(L)&&!(e.dead&&a.dieT)){   /* dieT ישן מהמוות הקודם לא חוסם יחידה חיה */const pv=a.prev;freeActor(a);R3D.actors.delete(e);MBTANKX.stat.rebuilt++;
         const n=makeActor(L);n.root.scale.setScalar(L.h/COSB()/R3D.tmpl[L.model].userData.h);n.sc0=n.root.scale.x;n.prev=pv;R3D.actors.set(e,n)}}
     const r=bu.apply(this,arguments);
     if(isTank(e)){const a=R3D.actors.get(e);if(a&&a.L&&a.L.tx){if(!a.txSeen){a.txSeen=1;MBTANKX.stat.actors++}tankxCarry(a,dt);tankxDiag(a)}}
