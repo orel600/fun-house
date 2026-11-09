@@ -38,8 +38,9 @@ const POSES=(process.env.POSES||'idle,attack').split(',');
   // רגע: מחכים שהדמות תיבנה מחדש
   await p.clock.runFor(400);
   if(pose==='attack'){await p.evaluate(()=>{const h=window.__h,e=window.__e;h.atkT=0;mbAttack(h,0,e,MBKIT[h.kit].atk)});await p.clock.runFor(220)}
+  if(pose.startsWith('death')){const tt=+pose.split('@')[1]||0.5;await p.evaluate(()=>{for(const a of [R3D.actors.get(window.__e)]){if(!a)continue;once(a,a.L.anim.die,1.2,true)}});await p.clock.runFor(Math.round(tt*1000))}
   if(pose==='run'){await p.evaluate(()=>{const h=window.__h;h.vx=300;});await p.clock.runFor(300)}
-  if(v.neutral)await p.evaluate(()=>{for(const a of R3D.actors.values())for(const m of a.mats){m.map=null;m.emissiveMap=null;m.color.set('#808080');m.emissive.set('#000000');m.needsUpdate=true}if(R3D.player)for(const m of R3D.player.mats){m.map=null;m.emissiveMap=null;m.color.set('#808080');m.emissive.set('#000000');m.needsUpdate=true}});
+  if(v.neutral)await p.evaluate(()=>{for(const a of R3D.actors.values())for(const m of a.mats){m.map=null;m.emissiveMap=null;m.color.set('#555555');m.emissive.set('#000000');m.needsUpdate=true}if(R3D.player)for(const m of R3D.player.mats){m.map=null;m.emissiveMap=null;m.color.set('#555555');m.emissive.set('#000000');m.needsUpdate=true}});
   await p.evaluate(()=>{MB.floats.length=0});await p.clock.runFor(34);
   if(process.env.PROBE)console.log(v.n,pose,JSON.stringify(await p.evaluate(()=>{const o={};const bx=(r)=>{const b=new THREE.Box3().setFromObject(r);return[b.min,b.max].map(v=>[v.x,v.y,v.z].map(x=>+x.toFixed(2)))};
    for(const [nm,a] of [['me',R3D.player],['en',R3D.actors.get(window.__e)]]){if(!a)continue;const r={props:Object.keys(a.props||{}),L:a.L&&a.L.model,scale:+a.root.scale.x.toFixed(3)};
