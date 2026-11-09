@@ -838,7 +838,8 @@ function render3d(ox,oy){
   R3D.scene.background.set(S.room?VIEW.room:S.vil?VIEW.village:S.wd?(W3D.regions[S.wd.reg]||{}).bg||VIEW.world:arenaFloor('d3')||VIEW.ground);R3D.ground.material.color.set(S.room?'#5b4a24':S.vil?VIEW.villageLine:S.wd?(W3D.regions[S.wd.reg]||{}).line||VIEW.worldLine:arenaFloor('line')||VIEW.groundLine);
   if(typeof aLookColors==='function')aLookColors();   // הזירה: שמיים ואובך לפי הפלטה (arena-look.js)
   if(typeof maze3d==='function')maze3d();
-  if(typeof ardg3d==='function')ardg3d();   // רגע הסכנה של הבוס: מילוי וחריכה על הרצפה בסצנה, מתחת לדמויות (arena-danger3d.js)   // קירות הזירה כקופסאות בסצנה, מאחורי ולפני הדמויות (maze3d.js). מחוץ לזירה הם נעלמים
+  if(typeof ardg3d==='function')ardg3d();
+  if(typeof ult3dLanterns==='function')ult3dLanterns(dt);   // הסקיל-על בזירה: פנסים מרחפים שעפים החוצה (ult-lantern3d.js)   // רגע הסכנה של הבוס: מילוי וחריכה על הרצפה בסצנה, מתחת לדמויות (arena-danger3d.js)   // קירות הזירה כקופסאות בסצנה, מאחורי ולפני הדמויות (maze3d.js). מחוץ לזירה הם נעלמים
   for(const k in R3D.marks)R3D.marks[k].count=0;
   for(const k in R3D.crowd)if(R3D.crowd[k])for(const p of R3D.crowd[k])for(const m of p)m.count=0;
   R3D.nCrowd=0;

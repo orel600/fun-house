@@ -67,17 +67,18 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
   function makeMat(opt={}){
     const FLAT=!!opt.flat;
     const m=new THREE.MeshLambertMaterial({color:0xffffff}),Z=()=>new THREE.Vector3();
-    const U=m.userData.u={aSin:{value:1},aT:{value:0},aProg:{value:0},aPulse:{value:0},aBoss:{value:new THREE.Vector3(9e4,9e4,0)},
+    const U=m.userData.u={aSin:{value:1},aSky:{value:0},aT:{value:0},aProg:{value:0},aPulse:{value:0},aBoss:{value:new THREE.Vector3(9e4,9e4,0)},
       cStone:{value:Z()},cStone2:{value:Z()},cDark:{value:Z()},cMortar:{value:Z()},cCrack:{value:Z()},cRune:{value:Z()},cEmber:{value:Z()},cOut:{value:Z()},cBrass:{value:Z()},cWood:{value:Z()},cWood2:{value:Z()},cCurb:{value:Z()},
       sCol:{value:Array.from({length:6},Z)},sLit:{value:new Array(6).fill(0)}};
     const R=A.rings.map(r=>r.toFixed(1)),f=x=>(+x).toFixed(4);
     m.onBeforeCompile=sh=>{Object.assign(sh.uniforms,U);
       sh.vertexShader='varying vec2 vAp;uniform float aSin;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec4 aW=modelMatrix*vec4(transformed,1.0);vAp=vec2(aW.x,aW.z*aSin);');
-      sh.fragmentShader=`varying vec2 vAp;uniform float aT,aProg,aPulse;uniform vec3 aBoss,cStone,cStone2,cDark,cMortar,cCrack,cRune,cEmber,cOut,cBrass,cWood,cWood2,cCurb;uniform vec3 sCol[6];uniform float sLit[6];${NOISE}${WORLEY}
+      sh.fragmentShader=`varying vec2 vAp;uniform float aT,aProg,aPulse,aSky;uniform vec3 aBoss,cStone,cStone2,cDark,cMortar,cCrack,cRune,cEmber,cOut,cBrass,cWood,cWood2,cCurb;uniform vec3 sCol[6];uniform float sLit[6];${NOISE}${WORLEY}
         float aRingSoft(float d,float r,float w){return 1.0-smoothstep(w*0.5,w,abs(d-r));}   // הטבעת הרכה הישנה: החותמות, זוהר הבוס ושפת העץ (נשארים כמו שהיו)
         float aRing(float d,float r,float w){float aw=max(fwidth(d),0.001);return 1.0-smoothstep(w*0.5-aw*0.5,w*0.5+aw*0.5,abs(d-r));}   // טבעת חדה: רוחב w, וקצה של פיקסל אחד בכל זום. רק לארבע טבעות השיבוץ (1.3)
         `+sh.fragmentShader.replace('#include <map_fragment>',`
         vec2 p=vAp;float d=length(p),ang=atan(p.y,p.x);vec3 glow=vec3(0.0);
+        if(aSky>0.0&&d>aSky)discard;   // שמיים מצוירים (arena-sky.js): מעבר לשפת העץ לא מציירים רצפה, ורואים את השמיים מאחור. aSky = הרדיוס, 0 = כבוי
         // אבני ריצוף לא סדירות: תאי Worley על רשת מעוותת ברעש, כל אבן בגוון משלה, שחיקה בקצוות ותפר כהה
         vec2 wp=p/${f(A.flag.size)}+vec2(sin(p.y*0.0131)+sin(p.x*0.0071+1.7),cos(p.x*0.0113)+sin(p.y*0.0089+4.2))*${f(A.flag.warp*0.25)};   // עיוות הרשת בסינוסים: זול, ובלי חזרה נראית
         float f1,f2;vec2 sid;worley(wp,f1,f2,sid);float edge=f2-f1;

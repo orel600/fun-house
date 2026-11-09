@@ -2305,6 +2305,35 @@ function worldBot(m,L,god){
     CQ.clock=null;CQS.cur=null;CQS.q.length=0;const b=document.getElementById('banner');if(b)b.classList.remove('on');S.st=null;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   {const L=[[cq.a,'shown'],[cq.wait,'second waits'],[cq.jump,'danger jumps ahead'],[cq.lowQ,'info last'],[cq.minHold,'min time'],[cq.streakNext,'then the streak'],[cq.sameKind,'streak replaces streak'],[cq.low,'then info'],[cq.max,'at most '+cq.qmax+' waiting'],[cq.stale,'old ones dropped'],[cq.last,'final wave behind 3 waiting'],[cq.rage,'boss moments high']];
    check(!cq.err&&L.every(x=>x[0])&&cq.worst===1&&cq.overlap===0,'center queue in the arena: '+(cq.err||L.map(x=>x[1]+(x[0]?' ✓':' ✗')).join(', ')+', at most '+cq.worst+' on screen'+(cq.overlap?', '+cq.overlap+' overlaps!':'')))}
+  // arena ult lanterns (ult-lantern3d.js, correction pack B): visual only, on the cast frame; n lanterns in the damage-type color, fewer in fxLess,
+  // all gone after the flight, and a new run starts clean. 2D: nothing to draw
+  const ull=await page.evaluate(()=>{const o={},fl=SAVE.fxLess,mode=S.mode;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      startRun();S.mode='play';SAVE.fxLess=false;const cast=()=>{S.ult={c:ULT.need,used:0};return ultUse()};
+      o.ok=cast();o.n=ULTLS.orbs.filter(x=>x.g.visible).length;
+      const want=new THREE.Color(dtCol(P.dt[P.weapon]||'physical'));o.col=ULTLS.orbs[0].g.userData.O.cr.material.color.equals(want);
+      for(let i=0;i<20;i++)ult3dLanterns(0.05);o.gone=ULTLS.orbs.every(x=>!x.g.visible)&&!ULTLS.beam.visible&&!ULTLS.ring.visible;
+      SAVE.fxLess=true;cast();o.less=ULTLS.orbs.filter(x=>x.g.visible).length;SAVE.fxLess=fl;
+      reset();startRun();o.clean=ULTLS.orbs.every(x=>!x.g.visible);
+    }catch(e){o.err=String(e&&e.stack||e)}SAVE.fxLess=fl;S.mode=mode;return o});
+  check(!ull.err&&(ull.d2||ull.ok&&ull.n===6&&ull.col&&ull.gone&&ull.less===4&&ull.clean),'arena ult lanterns: '+(ull.err||(ull.d2?'2D, nothing to draw':[[ull.n+' lanterns',ull.n===6],['damage-type color',ull.col],['gone after the flight',ull.gone],['fewer effects '+ull.less,ull.less===4],['new run clean',ull.clean]].map(x=>x[0]+(x[1]?' ✓':' ✗')).join(', '))));
+  // painted arena sky (arena-sky.js, correction pack layer A): in 3D the floor stops at the wooden rim and a camera-attached sky shows beyond it.
+  // Off (flat color, floor everywhere) in fewer effects, in the boss palette (no picture) and outside the arena. 2D: nothing to check
+  // waiting for something async in the page (a picture decoding, a lazy model): the page clock is paused, so wait here and step it (like settle above)
+  const waitPage=async(fn,arg)=>{for(let i=0;i<300;i++){if(await page.evaluate(fn,arg))return true;await page.waitForTimeout(20);await page.clock.runFor(50)}return false};
+  await page.evaluate(()=>{if(R3D.on&&R3D.ready)for(const a of ['classic','waves','maze'])askyTex(ARENA_SKY.map[a])});   // decoding the data URIs takes a moment
+  await waitPage(()=>!(R3D.on&&R3D.ready)||['classic','waves','maze'].every(a=>{const t=askyTex(ARENA_SKY.map[a]);return t&&t.image&&t.image.width}));
+  const sky=await page.evaluate(()=>{const o={},fl=SAVE.fxLess,mode=S.mode;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      startRun();S.mode='play';const run=a=>{S.arena=a;FRAME_T+=17;const de=R3D.drawEvery;R3D.drawEvery=0;render3d(R3D.ox||0,R3D.oy||0);R3D.drawEvery=de;   // drawEvery=0: in CI 3D draws once every 60 frames, so force this one
+        const u=ALOOK.mat&&ALOOK.mat.userData.u;return {q:!!(ASKY.quad&&ASKY.quad.visible),r:u&&u.aSky.value}};
+      o.why={on:ARENA_SKY.on,err:ARENA_SKY.stat.err||'',name:askyName(),w:(askyTex('classic')||{image:{}}).image&&askyTex('classic').image.width,here:aLookHere(),less:fxLess(),calm:calmOn(),u:!!(ALOOK.mat&&ALOOK.mat.userData.u)};   // why it would not show (for a failing run)
+      o.key=S.arena;const g=run(S.arena);o.real=g.q&&g.r===ARENA_SKY.edge;   // הזירה האמיתית (startRun שם S.arena), בלי לכפות מפתח
+      const c=run('classic');o.on=c.q&&c.r===ARENA_SKY.edge;o.waves=run('waves').q;o.maze=run('maze').q;
+      const b=run('boss');o.boss=!b.q&&b.r===0;
+      SAVE.fxLess=true;const l=run('classic');o.less=!l.q&&l.r===0;SAVE.fxLess=fl;
+    }catch(e){o.err=String(e&&e.stack||e)}SAVE.fxLess=fl;S.mode=mode;return o});
+  check(!sky.err&&(sky.d2||sky.real&&sky.on&&sky.waves&&sky.maze&&sky.boss&&sky.less),'painted arena sky: '+(sky.err||(sky.d2?'2D, nothing to draw':[['real arena ('+sky.key+')'+(sky.real?'':' '+JSON.stringify(sky.why)),sky.real],['classic',sky.on],['waves',sky.waves],['maze (dimension)',sky.maze],['boss stays flat',sky.boss],['fewer effects: flat',sky.less]].map(x=>x[0]+(x[1]?' ✓':' ✗')).join(', '))));
   // רגעים לסקילי הזירה (MLBB 1.1, skill-anim.js SKANIM.mo): רק מה שהיה חסר לפי טבלת הפערים. בתוך perCast, ו"פחות אפקטים" מוריד את הקישוטים
   // רגע הסכנה של הבוס (arena-danger.js, MLBB 2.1): המילוי לפי השעונים האמיתיים מגיע ל-100% ברגע הפגיעה (בפריים האחרון לפניה: 1 פחות פריים),
   // באמצע לפי החשבון (גל הדף: 0.4 מתוך 1.0 ברגע שהאזהרה נגמרת), תקתוק, הבזק, חריכה עד max, ו"פחות אפקטים" בלי חריכה. המכשף במג'נטה
@@ -4715,6 +4744,168 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     o.lift=await E(()=>MBCAM.pid===null&&!!joy);o.liftBack=!(await st()).free;await touch('touchEnd',[]);
     await E(()=>{mobaExit()});await cdp.detach();
   }catch(e){o.err=String(e).slice(0,160)}return o})();
+  // tank basic attack (mb-atk3d.js, morning package item 1): visual only. Same damage and the same cooldown with the layer on and off,
+  // the impact sound on the damage frame, and in 3D: the strike starts on that frame, stops hard at the contact pose, then the ready pose
+  const tka=await page.evaluate(()=>{const o={};try{mobaStart('tank');const me=MB.me,A=MBKIT.tank.atk,C=MBATK3D.kit.tank;
+      const t=MB.u.find(x=>x.team!==me.team&&x.k==='minion')||MB.u.find(x=>x.team!==me.team&&x.k==='hero');
+      const near=()=>{t.x=me.x+me.r+t.r+10;t.y=me.y;t.dead=false;t.hp=t.max=1e9;t.st.shield=0};near();
+      const hit=()=>{me.atkT=0;const h=t.hp;mbAttack(me,1/30,t,A);return [Math.round(h-t.hp),me.atkT]};
+      const s0=MBATK3D.stat.sounds;const on=hit();o.snd=MBATK3D.stat.sounds-s0;MBATK3D.on=false;near();const off=hit();MBATK3D.on=true;
+      o.dmg=on[0];o.same=on[0]===off[0]&&on[1]===off[1];
+      if(R3D.on&&R3D.ready&&R3D.player){me.moving=false;me.mvT=0;me.atkT=0;syncPlayer(1/60);near();mbAttack(me,1/30,t,A);syncPlayer(1/60);
+        const a=R3D.player,st=a.mbA||{};o.ph=st.ph;o.clip=a.one&&a.one.getClip().name;
+        for(let i=0;i<40;i++){me.atkT=Math.max(0,me.atkT-1/60);syncPlayer(1/60)}
+        o.stop=st.x?+(st.x.time/st.x.getClip().duration).toFixed(2):null;o.base=a.base;
+        o.d3=o.ph==='hit'&&o.clip===C.hit+'@up'&&o.stop===C.to&&o.base===C.ready}else o.d3=true;
+      // never pose-locked: in the middle of the strike (and of the hard stop) the tank still casts, moves and strikes again
+      me.st.stun=0;me.st.dash=null;me.atkT=0;near();mbAttack(me,1/30,t,A);if(R3D.on&&R3D.ready&&R3D.player)syncPlayer(1/60);
+      me.cd.s2=0;me.lvl=10;o.castMid=mbCast(me,'s2',{x:me.x+10,y:me.y});const x0=me.x;mbMove(me,me.x+300,me.y,0.1,0);o.moveMid=me.x>x0;
+      const k0=MBATK3D.stat.strikes;me.atkT=0;if(R3D.on&&R3D.ready&&R3D.player)syncPlayer(1/60);near();mbAttack(me,1/30,t,A);if(R3D.on&&R3D.ready&&R3D.player)syncPlayer(1/60);o.reMid=!(R3D.on&&R3D.ready&&R3D.player)||MBATK3D.stat.strikes===k0+1;
+    }catch(err){o.err=String(err&&err.stack||err)}
+    MBATK3D.on=true;try{mobaExit()}catch(e){}return o});
+  check(!tka.err&&tka.dmg>0&&tka.same&&tka.snd===1&&tka.d3&&tka.castMid&&tka.moveMid&&tka.reMid,'underworld tank attack (visual only): '+(tka.err||'damage '+tka.dmg+(tka.same?' and cooldown unchanged by the visuals':' CHANGED by the visuals!')+', impact sound '+(tka.snd===1?'on the damage frame':tka.snd+'×')+
+    (tka.ph==null?' (2D: no body)':', strike '+(tka.ph==='hit'&&tka.clip?'on the frame':'missing ('+tka.ph+'/'+tka.clip+')')+', hard stop at '+tka.stop+', then '+tka.base))+', never locked: cast '+(tka.castMid?'✓':'✗')+' move '+(tka.moveMid?'✓':'✗')+' strike again '+(tka.reMid?'✓':'✗'));
+  // underworld kit look (mb-kitlook.js): your hero wears the kit's model at the bots' height (tank = barbarian); SAVE.mbOwnLook keeps the personal skin.
+  // Only the look: rank and armor never paint the kit model. 2D: nothing to draw
+  const kl=await page.evaluate(()=>{const o={},own=SAVE.mbOwnLook;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      o.kits={};for(const k of Object.keys(MBKIT)){mobaStart(k);syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,B=LOOK3D['mb_'+k];
+        o.kits[k]=!B||!m3dNeed(B.model)||a.L.model===(mbPartsLook(B,k)||B).model&&a.L.h===B.h&&Object.values(a.props).some(p=>p.visible)}
+      mobaStart('tank');SAVE.mbOwnLook=true;syncPlayer(1/60);o.own=R3D.player.L.model!==LOOK3D.mb_tank.model||!m3dNeed(LOOK3D.mb_tank.model);
+      SAVE.mbOwnLook=false;syncPlayer(1/60);o.back=R3D.player.L.mbKit==='tank'||!m3dNeed(LOOK3D.mb_tank.model);
+    }catch(e){o.err=String(e&&e.stack||e)}SAVE.mbOwnLook=own;return o});
+  check(!kl.err&&(kl.d2||Object.values(kl.kits).every(Boolean)&&kl.own&&kl.back),'underworld kit look: '+(kl.err||(kl.d2?'2D, nothing to draw':
+    Object.entries(kl.kits).map(([k,v])=>k+(v?' ✓':' ✗')).join(', ')+', personal skin option '+(kl.own&&kl.back?'✓':'✗'))));
+  // home zone (mb-zone.js, morning package 6): an enemy hero inside your base circle loses MOBA.zone.hurt.k of max HP per second in ticks,
+  // minions are never punished, allies still heal exactly as before (mbTower), the warning glow grows as you near the enemy circle,
+  // and a recall landing flashes your circle gold. Off switch: MOBA.zone.hurt.on=false. Values are untested starting values
+  const zn=await page.evaluate(()=>{const o={},Z=MOBA.zone;try{mobaStart('tank');const me=MB.me,b0=MB.u.find(b=>b.k==='base'&&b.team===me.team),b1=MB.u.find(b=>b.k==='base'&&b.team!==me.team);
+      MB.t=999;const foe=MB.u.find(u=>u.k==='hero'&&u.team!==me.team),mn=MB.u.find(u=>u.k==='minion'&&u.team!==me.team);
+      const put=(u,b,dx)=>{u.x=b.x+dx;u.y=b.y;u.dead=false;u.hp=u.max;u.st.shield=0};
+      put(foe,b0,60);const t0=Z.stat.ticks;mbZoneTick(Z.hurt.every);o.lost=1-foe.hp/foe.max;o.maxLoss=Z.hurt.k*Z.hurt.every;o.ticks=Z.stat.ticks-t0;
+      put(foe,b0,MOBA.base.healR+40);mbZoneTick(Z.hurt.every);o.outside=foe.hp===foe.max;
+      if(mn){put(mn,b0,60);mbZoneTick(Z.hurt.every);o.minion=mn.hp===mn.max}else o.minion=true;
+      Z.hurt.on=false;put(foe,b0,60);mbZoneTick(Z.hurt.every);o.off=foe.hp===foe.max;Z.hurt.on=true;
+      put(me,b0,60);me.hp=me.max*0.5;mbTower(b0,0.5);o.heal=Math.abs(me.hp/me.max-0.5-MOBA.base.heal*0.5)<0.01;
+      put(me,b1,MOBA.base.healR+Z.warn.pad+50);o.w0=mbZoneWarnK();put(me,b1,MOBA.base.healR+Z.warn.pad/2);o.wMid=mbZoneWarnK();put(me,b1,30);o.w1=mbZoneWarnK();
+      me.x=b0.x+600;me.y=b0.y;const f0=Z.stat.flash;mbRecallStart(me);for(let i=0;i<400&&me.recall;i++)mbRecallTick(MB,1/60);o.flash=Z.stat.flash===f0+1;
+    }catch(e){o.err=String(e&&e.stack||e)}Z.hurt.on=true;return o});
+  check(!zn.err&&zn.ticks===1&&zn.lost>0&&zn.lost<=zn.maxLoss+1e-6&&zn.outside&&zn.minion&&zn.off&&zn.heal&&zn.w0===0&&zn.wMid>0&&zn.wMid<1&&zn.w1===1&&zn.flash,
+    'underworld home zone: '+(zn.err||[['enemy loses '+Math.round(zn.lost*1000)/10+'% per tick',zn.ticks===1&&zn.lost>0],['outside safe',zn.outside],['minions safe',zn.minion],['switch off',zn.off],['ally heal unchanged',zn.heal],['warning '+zn.w0+'/'+(+zn.wMid).toFixed(2)+'/'+zn.w1,zn.w0===0&&zn.wMid>0&&zn.w1===1],['recall flash',zn.flash]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', ')));
+  // hero parts (mb-parts.js, ARI #552): the tank gets the stone hammer in the right hand and the crown on the head, with the barbarian's axe and fur hat hidden,
+  // on bots and on your hero (kit look). A bot built before the parts loaded is rebuilt once. Switch: MBPARTS.tank.on. 2D: nothing to draw
+  const PARTS=['w_item_stoneHammer','w_item_shadowDagger','w_item_mageCrystal','tankHF','warriorHF','mageHF','assassinHF'];   // lazy models (m3d.js): ask once, wait here
+  await page.evaluate(ps=>{if(R3D.on&&R3D.ready)ps.forEach(m3dNeed)},PARTS);await waitPage(ps=>!(R3D.on&&R3D.ready)||ps.every(p=>R3D.props[p]||m3dReady(p)),PARTS);
+  const pa=await page.evaluate(()=>{const o={},on=MBPARTS.tank.on,hf=MBTANKHF.on;MBTANKHF.on=false;try{   // the barbarian body (the new body has no axe or fur hat to hide)
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      mobaStart('tank');
+      syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,hid={};a.root.traverse(x=>{if(['2H_Axe','Barbarian_Hat'].includes(x.name))hid[x.name]=x.visible});
+      o.me=!!(a.props.sword&&a.props.sword.visible&&a.props.x_crown&&a.props.x_crown.visible)&&Object.keys(hid).length===2&&!Object.values(hid).some(Boolean);
+      const bot=MB.u.find(u=>u.k==='hero'&&u.kit==='tank'&&!u.me);
+      if(bot){MBPARTS.tank.on=false;R3D.actors.delete(bot);mb3dUnit(bot,1/60);const k0=R3D.actors.get(bot).key;MBPARTS.tank.on=true;const r0=MBPARTS.stat.rebuilt;mb3dUnit(bot,1/60);
+        o.bot=MBPARTS.stat.rebuilt===r0+1&&R3D.actors.get(bot).key!==k0&&!!R3D.actors.get(bot).props.hammer}else o.bot=true;
+      MBPARTS.use.crown=false;syncPlayer(1/60);{const b=R3D.player;let hat=null;b.root.traverse(x=>{if(x.name==='Barbarian_Hat')hat=x.visible});o.one=!b.props.x_crown&&!!(b.props.sword&&b.props.sword.visible)&&hat===true}MBPARTS.use.crown=true;   // חלק אחד כבוי: הכובע הפרוותי חוזר, הפטיש נשאר
+      MBPARTS.tank.on=false;syncPlayer(1/60);o.off=!R3D.player.props.x_crown;
+    }catch(e){o.err=String(e&&e.stack||e)}MBPARTS.tank.on=on;MBTANKHF.on=hf;return o});
+  check(!pa.err&&(pa.d2||pa.me&&pa.bot&&pa.one&&pa.off),'underworld hero parts: '+(pa.err||(pa.d2?'2D, nothing to draw':[['your tank: hammer + crown, axe and fur hat hidden',pa.me],['bot rebuilt once parts load',pa.bot],['one part off (crown): fur hat back, hammer stays',pa.one],['switch off',pa.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
+  // tank stone look (mb-tankstone.js): the barbarian body gets the stone + lava-crack shader, the hammer draws bigger (visual only), and the switch turns both off live
+  const tsk=await page.evaluate(()=>{const o={},on=MBTANKSTONE.on,hf=MBTANKHF.on;MBTANKHF.on=false;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      mobaStart('tank');MBTANKSTONE.on=true;syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player;let body=0,ts=0;a.root.traverse(x=>{if(x.isSkinnedMesh){body++;if(x.material.userData.ts)ts++}});
+      const h=Object.keys(a.props).find(k=>a.L.props[k]&&a.L.props[k].prop==='w_item_stoneHammer'),m=h&&a.props[h];
+      o.body=body>0&&ts===body&&MBTS_U.tsOn.value===1;o.big=!!m&&Math.abs(m.scale.x/m.userData.s0-MBTANKSTONE.hammer)<1e-6;
+      const r0=MB.me.r;MBTANKSTONE.on=false;syncPlayer(1/60);o.off=MBTS_U.tsOn.value===0&&!!m&&Math.abs(m.scale.x-m.userData.s0)<1e-6&&MB.me.r===r0;
+    }catch(e){o.err=String(e&&e.stack||e)}MBTANKSTONE.on=on;MBTANKHF.on=hf;return o});
+  check(!tsk.err&&(tsk.d2||tsk.body&&tsk.big&&tsk.off),'underworld tank stone look: '+(tsk.err||(tsk.d2?'2D, nothing to draw':[['stone + lava cracks on the body',tsk.body],['bigger hammer (draw only)',tsk.big],['switch off',tsk.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
+  // the new tank body (ARI #578, tankHF via mb-parts.js, MBTANKHF): on your hero and the bots, every tank clip moves its bones, hammer and crown stay,
+  // the stone shader stays off (the body has its own cracks), and the switch brings the barbarian back
+  const thf=await page.evaluate(()=>{const o={},hf=MBTANKHF.on;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      MBTANKHF.on=true;mobaStart('tank');syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player;o.me=a.L.model==='tankHF'&&!!(a.props.sword&&a.props.x_crown);
+      let st=0;a.root.traverse(x=>{if(x.isSkinnedMesh&&x.material.userData.ts)st++});o.noStone=st===0;
+      const bot=MB.u.find(u=>u.k==='hero'&&u.kit==='tank'&&!u.me);if(bot){mb3dUnit(bot,1/60);mb3dUnit(bot,1/60);o.bot=R3D.actors.get(bot).L.model==='tankHF'}else o.bot=true;
+      let arm=null;a.root.traverse(n=>{if(!arm&&n.isBone&&/arm|upper/i.test(n.name))arm=n});o.bad=[];
+      for(const c of ['Idle_A','Running_B','Death_A','Melee_2H_Attack_Chop@up','Melee_2H_Idle','Jump_Idle','Taunt@up']){const C=R3D.clips[c];if(!C){o.bad.push(c+' missing');continue}
+        const x=a.mixer.clipAction(C);a.mixer.stopAllAction();x.reset().play();const q=arm.quaternion.clone();a.mixer.update(0.3);if(arm.quaternion.equals(q))o.bad.push(c);x.stop()}
+      MBTANKHF.on=false;syncPlayer(1/60);o.off=R3D.player.L.model==='barbarian';
+    }catch(e){o.err=String(e&&e.stack||e)}MBTANKHF.on=hf;return o});
+  check(!thf.err&&(thf.d2||thf.me&&thf.bot&&thf.noStone&&!thf.bad.length&&thf.off),'underworld new tank body: '+(thf.err||(thf.d2?'2D, nothing to draw':[['yours, with hammer + crown',thf.me],['bots',thf.bot],['no stone shader on it',thf.noStone],['all 7 tank clips move it'+(thf.bad.length?' ('+thf.bad.join(',')+')':''),!thf.bad.length],['switch: barbarian back',thf.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
+  // the new warrior, mage and assassin bodies (ARI #579-#581, mb-parts.js): on your hero, every clip moves them, the overlapping part (mask, circlet) is skipped,
+  // the weapons stay, and each switch brings the old body back
+  const hf3=await page.evaluate(()=>{const o={},W={warrior:[MBWARHF,'warriorHF','knight'],mage:[MBMAGEHF,'mageHF','mage'],assassin:[MBASNHF,'assassinHF','rogue']};try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      for(const k in W){const [sw,hf,old]=W[k],on0=sw.on;sw.on=true;mobaStart(k);syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,r={};
+        r.on=a.L.model===hf&&Object.values(a.props).some(p=>p.visible)&&!a.props.x_mask&&!a.props.x_circlet;
+        let arm=null;a.root.traverse(n=>{if(!arm&&n.isBone&&/arm|upper/i.test(n.name))arm=n});r.bad=[];
+        for(const c of [a.L.anim.idle,a.L.anim.run,a.L.anim.die,'Spellcasting']){const C=R3D.clips[c];if(!C){r.bad.push(c+'?');continue}const x=a.mixer.clipAction(C);a.mixer.stopAllAction();x.reset().play();const q=arm.quaternion.clone();a.mixer.update(0.3);if(arm.quaternion.equals(q))r.bad.push(c);x.stop()}
+        sw.on=false;syncPlayer(1/60);r.off=R3D.player.L.model===old;sw.on=on0;o[k]=r}
+    }catch(e){o.err=String(e&&e.stack||e)}return o});
+  check(!hf3.err&&(hf3.d2||['warrior','mage','assassin'].every(k=>hf3[k]&&hf3[k].on&&!hf3[k].bad.length&&hf3[k].off)),'underworld new warrior/mage/assassin bodies: '+(hf3.err||(hf3.d2?'2D, nothing to draw':
+    ['warrior','mage','assassin'].map(k=>{const r=hf3[k]||{};return k+(r.on?' ✓':' ✗')+(r.bad&&r.bad.length?' (clips '+r.bad.join(',')+')':'')+(r.off?'':' (switch ✗)')}).join(', '))));
+  // ARI #556/#557: the assassin's mask and second dagger, the mage's circlet (witch hat hidden) and floating crystal that bobs. 2D: nothing to draw
+  const p2=await page.evaluate(()=>{const o={},hf=[MBMAGEHF.on,MBASNHF.on];MBMAGEHF.on=MBASNHF.on=false;try{   // the old bodies: the new ones carry their own mask and circlet
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      const vis=(a,ks)=>ks.every(k=>a.props[k]&&a.props[k].visible);
+      mobaStart('assassin');syncPlayer(1/60);syncPlayer(1/60);o.as=vis(R3D.player,['sword','x_mask','x_dagger2']);
+      mobaStart('mage');syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player;let hat=null;a.root.traverse(x=>{if(x.name==='Mage_Hat')hat=x.visible});
+      o.mg=vis(a,['gun','x_circlet','x_crystal'])&&hat===false;const c=a.props.x_crystal,y0=c.position.y;MB.t+=0.4;syncPlayer(1/60);o.bob=Math.abs(c.position.y-y0)>0.005;
+    }catch(e){o.err=String(e&&e.stack||e)}MBMAGEHF.on=hf[0];MBASNHF.on=hf[1];return o});
+  check(!p2.err&&(p2.d2||p2.as&&p2.mg&&p2.bob),'underworld assassin and mage parts: '+(p2.err||(p2.d2?'2D, nothing to draw':[['assassin mask + second dagger',p2.as],['mage circlet (hat hidden) + crystal',p2.mg],['crystal bobs',p2.bob]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
+  // hero accents (mb-accent.js, ARI's colours): each hero's weapon glows in its own colour, capped at 1.2, on your hero and the bots;
+  // the mage's staff flashes turquoise on the ult; steady (no pulse) in fewer effects. 2D: nothing to draw
+  const ac=await page.evaluate(()=>{const o={},fl=SAVE.fxLess;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      const lit=m=>m.emissive.r+m.emissive.g+m.emissive.b>0.05;o.kits={};
+      for(const k of Object.keys(MBACC.kit)){mobaStart(k);syncPlayer(1/60);syncPlayer(1/60);const M=mbAccMats(R3D.player,MBACC.kit[k]);o.kits[k]=M.length>0&&M.every(lit)}
+      mobaStart('mage');const me=MB.me;me.lvl=10;me.cd.ult=0;mbCast(me,'ult',{x:me.x+50,y:me.y});syncPlayer(1/60);
+      const m=mbAccMats(R3D.player,MBACC.kit.mage)[0],u=new THREE.Color(MBACC.kit.mage.ult.col);o.ult=m.emissive.b>m.emissive.r&&Math.abs(m.emissive.g/m.emissive.b-u.g/u.b)<0.1;
+      me.accUlt=0;SAVE.fxLess=true;MB.t=1.1;syncPlayer(1/60);const e1=m.emissive.b;MB.t=1.3;syncPlayer(1/60);o.steady=Math.abs(m.emissive.b-e1)<1e-6;
+    }catch(e){o.err=String(e&&e.stack||e)}SAVE.fxLess=fl;return o});
+  check(!ac.err&&(ac.d2||Object.values(ac.kits).every(Boolean)&&ac.ult&&ac.steady),'underworld hero accents: '+(ac.err||(ac.d2?'2D, nothing to draw':
+    Object.entries(ac.kits).map(([k,v])=>k+(v?' ✓':' ✗')).join(', ')+', mage ult flash '+(ac.ult?'✓':'✗')+', steady in fewer effects '+(ac.steady?'✓':'✗'))));
+  // tank s1 slow field (moba-kits.js, the one approved mechanic change of the morning package): after the anvil lands, an mbZone the size of the slam
+  // slows enemies inside by field.k, refreshed in short steps (so it ends when they walk out), no damage, and the zone ends after field.t
+  const anf=await page.evaluate(()=>(()=>{const o={};try{mobaStart('tank');const me=MB.me,s=MBKIT.tank.s1;
+  const foes=MB.u.filter(x=>x.team!==me.team&&x.k==='hero'),foe=foes[0],late=foes[1];
+  me.lvl=10;me.cd.s1=0;const tx=me.x+150,ty=me.y;for(const f of [foe,late]){f.hp=f.max=1e9;f.st.root=99}
+  foe.x=tx+30;foe.y=ty;late.x=tx+600;late.y=ty;
+  o.cast=mbCast(me,'s1',{x:tx,y:ty});let landed=-1;
+  for(let i=0;i<60&&landed<0;i++){mobaUpdate(1/60);if(!me.st.dash)landed=i}
+  me.st.stun=99;let mine=0;const md=mbDmg;mbDmg=function(u){if(u===me)mine++;return md.apply(this,arguments)};o.zone=MB.zones.some(z=>z.look==='anvil');
+  const hold=(f,x,n)=>{for(let i=0;i<n;i++){f.x=x;mobaUpdate(1/60)}};
+  hold(late,tx+600,30);o.lateBefore=!(late.st.slow>0);   // 0.5s: far away, no slow
+  late.st.stun=0;hold(late,tx+20,6);o.lateIn=late.st.slow>0&&late.st.slow<=0.25&&late.st.slowK===s.field.k;   // walked in: 30%, refreshed in small steps
+  hold(late,tx+600,16);o.lateOut=!(late.st.slow>0);   // walked out: gone within 0.27s
+  for(let i=0;i<120;i++)mobaUpdate(1/60);o.ended=!MB.zones.some(z=>z.look==='anvil');
+  mbDmg=md;o.noDmg=mine===0;   // the field never damages (only damage from me counts: the tower near my base shoots)
+}catch(e){o.err=String(e&&e.stack||e)}try{mobaExit()}catch(e){}return o})());
+  check(!anf.err&&anf.cast&&anf.zone&&anf.lateBefore&&anf.lateIn&&anf.lateOut&&anf.ended&&anf.noDmg,'underworld tank s1 slow field: '+(anf.err||[['zone after landing',anf.zone],['enemy walking in is slowed '+Math.round(100*0.3)+'%',anf.lateIn],['ends when it walks out',anf.lateOut],['no damage',anf.noDmg],['field ends',anf.ended]].map(x=>x[0]+(x[1]?' ✓':' ✗')).join(', ')));
+  // tank s1 body (mb-anvil3d.js, morning package 2, visual only): jump pose and arc in the air, the hammer chop hard-stops on the landing frame, a 14% squash,
+  // and the landing frame and damage are identical with the visual on or off
+  const an=await page.evaluate(()=>{const o={},on=MBANVIL.on,rnd0=Math.random;try{
+      const rnd=Math.random,run=v=>{let sd=7;Math.random=()=>(sd=sd*16807%2147483647)/2147483647;MBANVIL.on=v;mobaStart('tank');const me=MB.me;me.lvl=10;me.cd.s1=0;S.mode='play';
+        const foe=MB.u.find(u=>u.k==='hero'&&u.team!==me.team);for(const u of MB.u)if(u!==me&&u!==foe&&u.k!=='base'&&u.k!=='tower'){u.x=me.x+5000;u.y=me.y;u.st.stun=99}foe.x=me.x+250;foe.y=me.y;foe.hp=foe.max=1e6;foe.st.root=99;foe.st.stun=99;
+        const d3=R3D.on&&R3D.ready;if(d3)syncPlayer(1/60);const y0=d3&&R3D.player.root.position.y;mbCast(me,'s1',{x:me.x+250,y:me.y});
+        let land=-1,maxY=0,air='',clip=null,sq=1,hit=0;
+        for(let i=0;i<40;i++){const h0=foe.hp;mobaUpdate(1/60);if(d3){syncPlayer(1/60);const a=R3D.player,dy=a.root.position.y-y0;if(dy>maxY){maxY=dy;air=a.base}}
+          if(land<0&&!me.st.dash){land=i;hit=Math.round(h0-foe.hp);if(d3){syncPlayer(1/60);clip=R3D.player.one&&R3D.player.one.getClip().name;sq=R3D.player.root.scale.y/R3D.player.root.scale.x}}}
+        Math.random=rnd;return {land,dmg:hit,maxY,air,clip,sq,d3}};
+      const a=run(true),b=run(false);o.same=a.land===b.land&&a.dmg===b.dmg&&a.dmg>0;o.land=a.land;o.dmg=a.dmg;
+      o.d3=a.d3;o.body=!a.d3||a.maxY>10&&a.air===MBANVIL.air&&a.clip===MBANVIL.land.clip+'@up'&&a.sq<0.95;o.off=!b.d3||b.maxY<1;
+    }catch(e){o.err=String(e&&e.stack||e)}MBANVIL.on=on;if(typeof rnd0==='function')Math.random=rnd0;return o});
+  check(!an.err&&an.same&&an.body&&an.off,'underworld tank s1 body (visual only): '+(an.err||'landing frame '+an.land+' and damage '+an.dmg+(an.same?' same with the body on or off ✓':' CHANGED ✗')+
+    (an.d3?', jump arc + chop on landing + squash '+(an.body?'✓':'✗')+', off = flat '+(an.off?'✓':'✗'):' (2D: no body)')));
+  // tank taunt and iron wall bodies (mb-tankskill3d.js, morning package 3+4, visual only): the roar plays on the cast frame with cry_war and a heat glow while the
+  // shield lasts; the wall chop hard-stops at contact and holds, with imp_wall; never locked (moves mid-animation). 2D: sounds only
+  const tkb=await page.evaluate(()=>{const o={};try{mobaStart('tank');const me=MB.me;me.lvl=10;S.mode='play';const d3=R3D.on&&R3D.ready&&R3D.player;
+      if(d3)syncPlayer(1/60);const s0=MBTANK3D.stat.sounds;me.cd.s2=0;mbCast(me,'s2',{x:me.x,y:me.y});
+      if(d3){syncPlayer(1/60);o.roar=R3D.player.one&&R3D.player.one.getClip().name===MBTANK3D.taunt.clip+'@up';for(let i=0;i<6;i++){mobaUpdate(1/60);syncPlayer(1/60)}o.heat=R3D.player.mats.some(m=>m.emissive.r>0.1)}
+      me.cd.ult=0;mbCast(me,'ult',{x:me.x+100,y:me.y});
+      if(d3){syncPlayer(1/60);for(let i=0;i<12;i++)syncPlayer(1/60);const st=R3D.player.tk3;o.hold=st.ph==='hold'&&+(st.x.time/st.x.getClip().duration).toFixed(2)===MBTANK3D.wall.to}
+      o.snd=MBTANK3D.stat.sounds-s0;const x0=me.x;mbMove(me,me.x+300,me.y,0.1,0);o.move=me.x>x0;o.d3=!!d3;
+    }catch(e){o.err=String(e&&e.stack||e)}return o});
+  check(!tkb.err&&tkb.snd===2&&tkb.move&&(!tkb.d3||tkb.roar&&tkb.heat&&tkb.hold),'underworld tank taunt + iron wall bodies (visual only): '+(tkb.err||'sounds on the cast frame '+(tkb.snd===2?'✓':'✗ ('+tkb.snd+')')+', moves mid-animation '+(tkb.move?'✓':'✗')+
+    (tkb.d3?', roar '+(tkb.roar?'✓':'✗')+', heat glow '+(tkb.heat?'✓':'✗')+', wall chop holds at contact '+(tkb.hold?'✓':'✗'):' (2D: no body)')));
   // צילומי משחקי השאול (QUINN, 8.11): חלון הבחירה, מסך הבנייה, משחק באמצע (כולם בוטים, 40 שניות), החנות ומסך הסוף, כדי לבדוק את החלון כולו
   // הגיבור: האחרון ב-MBKIT, כך שגיבור חדש מצולם לבד. תקלה כאן לא מפילה את הבדיקה, רק נכתבת
   if(CFG.shots){try{const E=(f,a)=>page.evaluate(f,a),k=await E(()=>Object.keys(MBKIT).pop());
@@ -4991,7 +5182,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       check(tl.length>=2&&!low.length&&A.hits>0&&A.koBoss>0&&A.win>0,'אפקטים בבוס: אזהרות '+(tl.map(([k,v])=>k+' '+v.n+'× '+v.warn.toFixed(2)+'ש\'').join(', ')||'אף אחת')+
         (low.length?' (פחות משנייה: '+low.map(([k])=>k).join(', ')+')':'')+' · פגיעות '+(A.hits||0)+' (כבדות '+(A.heavy||0)+', קריטי '+(A.crits||0)+') · הריגות '+(A.ko||0)+' · ko_boss '+(A.koBoss||0)+' · ניצחון '+(A.win||0))}
   }
-  const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null)&&!['bell','creak'].includes(id)&&!id.startsWith('cast_')&&!['streak2','streak3','tower_fall','base_alarm','me_die','me_back','gamble_tick','gamble_win','gamble_lose'].includes(id));   // רצף 2-3 תלוי במזל, והשאר במשחקי השאול (tower_fall נבדק שם)   // cast_*: הבוט מטיל רק חלק מסוגי הנזק, ונבדק למטה שלפחות אחד נשמע   // bell, creak: נבדקים בבדיקת פעמון הערפל, שרצה אחרי הצילום של הצלילים
+  const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null)&&!['bell','creak'].includes(id)&&!id.startsWith('cast_')&&!['streak2','streak3','tower_fall','base_alarm','imp_hammer','imp_wall','cry_war','me_die','me_back','gamble_tick','gamble_win','gamble_lose'].includes(id));   // רצף 2-3 תלוי במזל, והשאר במשחקי השאול (tower_fall נבדק שם)   // cast_*: הבוט מטיל רק חלק מסוגי הנזק, ונבדק למטה שלפחות אחד נשמע   // bell, creak: נבדקים בבדיקת פעמון הערפל, שרצה אחרי הצילום של הצלילים
   check(au.unlocked&&!quiet.length,'צלילים: '+au.ids.map(id=>id+' '+(au.count[id]||0)).join(', ')+(au.unlocked?'':' · לא נפתחו בנגיעה')+(quiet.length?' · לא נשמעו: '+quiet.join(', '):''));
   // צלילי קרב (where:'fight' ב-SOUNDS) שקטים בכפר ובעולם, הצד של ניר, גם כשקוד שם קורא להם, ונשמעים בזירה
   check(!sg.err&&sg.n>0&&sg.world===0&&sg.vil===0&&sg.arena===3,'צלילי קרב לא בכפר ובעולם: '+(sg.err||sg.n+' צלילים מסומנים, בעולם '+sg.world+', בכפר '+sg.vil+', בזירה '+sg.arena+'/3'));
