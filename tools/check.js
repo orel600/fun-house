@@ -4670,7 +4670,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   const kl=await page.evaluate(()=>{const o={},own=SAVE.mbOwnLook;try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
       o.kits={};for(const k of Object.keys(MBKIT)){mobaStart(k);syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,B=LOOK3D['mb_'+k];
-        o.kits[k]=!B||!m3dNeed(B.model)||a.L.model===B.model&&a.L.h===B.h&&Object.values(a.props).some(p=>p.visible)}
+        o.kits[k]=!B||!m3dNeed(B.model)||a.L.model===(mbPartsLook(B,k)||B).model&&a.L.h===B.h&&Object.values(a.props).some(p=>p.visible)}
       mobaStart('tank');SAVE.mbOwnLook=true;syncPlayer(1/60);o.own=R3D.player.L.model!==LOOK3D.mb_tank.model||!m3dNeed(LOOK3D.mb_tank.model);
       SAVE.mbOwnLook=false;syncPlayer(1/60);o.back=R3D.player.L.mbKit==='tank'||!m3dNeed(LOOK3D.mb_tank.model);
     }catch(e){o.err=String(e&&e.stack||e)}SAVE.mbOwnLook=own;return o});
@@ -4694,7 +4694,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     'underworld home zone: '+(zn.err||[['enemy loses '+Math.round(zn.lost*1000)/10+'% per tick',zn.ticks===1&&zn.lost>0],['outside safe',zn.outside],['minions safe',zn.minion],['switch off',zn.off],['ally heal unchanged',zn.heal],['warning '+zn.w0+'/'+(+zn.wMid).toFixed(2)+'/'+zn.w1,zn.w0===0&&zn.wMid>0&&zn.w1===1],['recall flash',zn.flash]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', ')));
   // hero parts (mb-parts.js, ARI #552): the tank gets the stone hammer in the right hand and the crown on the head, with the barbarian's axe and fur hat hidden,
   // on bots and on your hero (kit look). A bot built before the parts loaded is rebuilt once. Switch: MBPARTS.tank.on. 2D: nothing to draw
-  const PARTS=['w_item_stoneHammer','w_item_shadowDagger','w_item_mageCrystal','tankHF'];   // lazy models (m3d.js): ask once, wait here
+  const PARTS=['w_item_stoneHammer','w_item_shadowDagger','w_item_mageCrystal','tankHF','warriorHF','mageHF','assassinHF'];   // lazy models (m3d.js): ask once, wait here
   await page.evaluate(ps=>{if(R3D.on&&R3D.ready)ps.forEach(m3dNeed)},PARTS);await waitPage(ps=>!(R3D.on&&R3D.ready)||ps.every(p=>R3D.props[p]||m3dReady(p)),PARTS);
   const pa=await page.evaluate(()=>{const o={},on=MBPARTS.tank.on,hf=MBTANKHF.on;MBTANKHF.on=false;try{   // the barbarian body (the new body has no axe or fur hat to hide)
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
@@ -4730,14 +4730,26 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       MBTANKHF.on=false;syncPlayer(1/60);o.off=R3D.player.L.model==='barbarian';
     }catch(e){o.err=String(e&&e.stack||e)}MBTANKHF.on=hf;return o});
   check(!thf.err&&(thf.d2||thf.me&&thf.bot&&thf.noStone&&!thf.bad.length&&thf.off),'underworld new tank body: '+(thf.err||(thf.d2?'2D, nothing to draw':[['yours, with hammer + crown',thf.me],['bots',thf.bot],['no stone shader on it',thf.noStone],['all 7 tank clips move it'+(thf.bad.length?' ('+thf.bad.join(',')+')':''),!thf.bad.length],['switch: barbarian back',thf.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
+  // the new warrior, mage and assassin bodies (ARI #579-#581, mb-parts.js): on your hero, every clip moves them, the overlapping part (mask, circlet) is skipped,
+  // the weapons stay, and each switch brings the old body back
+  const hf3=await page.evaluate(()=>{const o={},W={warrior:[MBWARHF,'warriorHF','knight'],mage:[MBMAGEHF,'mageHF','mage'],assassin:[MBASNHF,'assassinHF','rogue']};try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      for(const k in W){const [sw,hf,old]=W[k],on0=sw.on;sw.on=true;mobaStart(k);syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,r={};
+        r.on=a.L.model===hf&&Object.values(a.props).some(p=>p.visible)&&!a.props.x_mask&&!a.props.x_circlet;
+        let arm=null;a.root.traverse(n=>{if(!arm&&n.isBone&&/arm|upper/i.test(n.name))arm=n});r.bad=[];
+        for(const c of [a.L.anim.idle,a.L.anim.run,a.L.anim.die,'Spellcasting']){const C=R3D.clips[c];if(!C){r.bad.push(c+'?');continue}const x=a.mixer.clipAction(C);a.mixer.stopAllAction();x.reset().play();const q=arm.quaternion.clone();a.mixer.update(0.3);if(arm.quaternion.equals(q))r.bad.push(c);x.stop()}
+        sw.on=false;syncPlayer(1/60);r.off=R3D.player.L.model===old;sw.on=on0;o[k]=r}
+    }catch(e){o.err=String(e&&e.stack||e)}return o});
+  check(!hf3.err&&(hf3.d2||['warrior','mage','assassin'].every(k=>hf3[k]&&hf3[k].on&&!hf3[k].bad.length&&hf3[k].off)),'underworld new warrior/mage/assassin bodies: '+(hf3.err||(hf3.d2?'2D, nothing to draw':
+    ['warrior','mage','assassin'].map(k=>{const r=hf3[k]||{};return k+(r.on?' ✓':' ✗')+(r.bad&&r.bad.length?' (clips '+r.bad.join(',')+')':'')+(r.off?'':' (switch ✗)')}).join(', '))));
   // ARI #556/#557: the assassin's mask and second dagger, the mage's circlet (witch hat hidden) and floating crystal that bobs. 2D: nothing to draw
-  const p2=await page.evaluate(()=>{const o={};try{
+  const p2=await page.evaluate(()=>{const o={},hf=[MBMAGEHF.on,MBASNHF.on];MBMAGEHF.on=MBASNHF.on=false;try{   // the old bodies: the new ones carry their own mask and circlet
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
       const vis=(a,ks)=>ks.every(k=>a.props[k]&&a.props[k].visible);
       mobaStart('assassin');syncPlayer(1/60);syncPlayer(1/60);o.as=vis(R3D.player,['sword','x_mask','x_dagger2']);
       mobaStart('mage');syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player;let hat=null;a.root.traverse(x=>{if(x.name==='Mage_Hat')hat=x.visible});
       o.mg=vis(a,['gun','x_circlet','x_crystal'])&&hat===false;const c=a.props.x_crystal,y0=c.position.y;MB.t+=0.4;syncPlayer(1/60);o.bob=Math.abs(c.position.y-y0)>0.005;
-    }catch(e){o.err=String(e&&e.stack||e)}return o});
+    }catch(e){o.err=String(e&&e.stack||e)}MBMAGEHF.on=hf[0];MBASNHF.on=hf[1];return o});
   check(!p2.err&&(p2.d2||p2.as&&p2.mg&&p2.bob),'underworld assassin and mage parts: '+(p2.err||(p2.d2?'2D, nothing to draw':[['assassin mask + second dagger',p2.as],['mage circlet (hat hidden) + crystal',p2.mg],['crystal bobs',p2.bob]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
   // hero accents (mb-accent.js, ARI's colours): each hero's weapon glows in its own colour, capped at 1.2, on your hero and the bots;
   // the mage's staff flashes turquoise on the ult; steady (no pulse) in fewer effects. 2D: nothing to draw
