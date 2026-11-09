@@ -6,31 +6,40 @@
    חל על הבוטים (lookOf) ועל הגיבור שלך במראה הערכה (mb-kitlook.js). רק מראה: הנזק, הגודל והפגיעות לא תלויים בזה.
    עד שהחלקים נטענים (m3dNeed, m3d.js): המראה הקודם, ואז הדמות נבנית מחדש פעם אחת.
    model: מודל אחר לגיבור (הצייד החדש, רק עם ?hunter=hf).
-   כיבוי לגיבור אחד: MBPARTS.<kit>.on=false, או ?parts=off לכולם. מחיקה: הקובץ והשורה ב-index.html */
+   כיבוי של חלק אחד: שורה ב-MBPARTS.use. של גיבור אחד: MBPARTS.<kit>.on=false. של כולם: ?parts=off. מחיקה: הקובץ והשורה ב-index.html */
 const MBPARTS={
-  on:!/[?&]parts=off\b/.test(location.search),
+  on:!/[?&]parts=off/.test(location.search),
+  // מתג לכל חלק בשורה אחת (MAX, 9.11: כל חלק יכול לצאת לבד). false: החלק לא מורכב, ומה שהוא מחליף נשאר
+  use:{
+    hammer:true,    // טנק: פטיש האבן (#552), במקום הגרזן
+    crown:true,     // טנק: כתר (#552), במקום הכובע הפרוותי
+    mask:true,      // מתנקש: חצי מסכה (#556)
+    dagger2:true,   // מתנקש: פגיון שני ביד שמאל (#556)
+    circlet:true,   // קוסם: עטרה (#557), במקום כובע המכשפה
+    crystal:true    // קוסם: גביש מרחף (#557)
+  },
   tank:{on:true,
-    add:{hammer:{prop:'w_item_stoneHammer',...HAND_R,s:1},crown:{prop:'hat_tankCrown',bone:'head',pos:[0,0,0],rot:[0,0,0,1]}},
-    hide:['2H_Axe','Barbarian_Hat']},
+    add:{hammer:{prop:'w_item_stoneHammer',...HAND_R,s:1,hide:'2H_Axe'},crown:{prop:'hat_tankCrown',bone:'head',pos:[0,0,0],rot:[0,0,0,1],hide:'Barbarian_Hat'}}},
   assassin:{on:true,   // #556: חצי מסכה עם חריצים זוהרים, ופגיון שני ביד שמאל (לילך, זוהר משלו)
-    add:{mask:{prop:'hat_assassinMask',bone:'head',pos:[0,0,0],rot:[0,0,0,1]},dagger2:{prop:'w_item_shadowDagger',bone:'handslotl',pos:[0,0.033,0],rot:[0,0,0,1],s:1}},
-    hide:[]},
+    add:{mask:{prop:'hat_assassinMask',bone:'head',pos:[0,0,0],rot:[0,0,0,1]},dagger2:{prop:'w_item_shadowDagger',bone:'handslotl',pos:[0,0.033,0],rot:[0,0,0,1],s:1}}},
   mage:{on:true,   // #557: עטרה במקום כובע המכשפה, וגביש שמרחף מעל יד שמאל ועולה ויורד (bob, ביחידות של העצם)
-    add:{circlet:{prop:'hat_mageCirclet',bone:'head',pos:[0,0,0],rot:[0,0,0,1]},crystal:{prop:'w_item_mageCrystal',bone:'handslotl',pos:[0,0.42,0],rot:[0,0,0,1],bob:{amp:0.05,rate:0.6}}},
-    hide:['Mage_Hat']},
-  hunter:{on:/[?&]hunter=hf/.test(location.search),model:'hunterHF',add:{},hide:[]},   // הצייד החדש של ARI (#555): רק כשמבקשים, ?hunter=hf. אותו שלד (Ranger), אותם קליפים והקשת
+    add:{circlet:{prop:'hat_mageCirclet',bone:'head',pos:[0,0,0],rot:[0,0,0,1],hide:'Mage_Hat'},crystal:{prop:'w_item_mageCrystal',bone:'handslotl',pos:[0,0.42,0],rot:[0,0,0,1],bob:{amp:0.05,rate:0.6}}}},
+  hunter:{on:/[?&]hunter=hf/.test(location.search),model:'hunterHF',add:{}},   // הצייד החדש של ARI (#555): רק כשמבקשים, ?hunter=hf. אותו שלד (Ranger), אותם קליפים והקשת
   stat:{built:0,hidden:0,rebuilt:0}
 };
 const MBPARTSC={};   // המראה המורכב לכל גיבור, נבנה פעם אחת כשהחלקים מוכנים
 // המראה של הגיבור עם החלקים, או B כמו שהוא (אין חלקים, כבוי, או שהם עוד נטענים)
 function mbPartsLook(B,kit){
   const C=MBPARTS.on&&MBPARTS[kit];if(!B||!C||!C.on||typeof R3D==='undefined'||!R3D.on)return B;
-  if(MBPARTSC[kit]&&MBPARTSC[kit].base===B)return MBPARTSC[kit];
-  let ok=!C.model||m3dNeed(C.model);for(const k in C.add){const p=C.add[k].prop;
+  const add={};for(const k in C.add)if(MBPARTS.use[k]!==false)add[k]=C.add[k];const sig=Object.keys(add).join();   // רק החלקים שדולקים
+  if(!C.model&&!sig)return B;
+  if(MBPARTSC[kit]&&MBPARTSC[kit].base===B&&MBPARTSC[kit].sig===sig)return MBPARTSC[kit];
+  let ok=!C.model||m3dNeed(C.model);for(const k in add){const p=add[k].prop;
     if(!R3D.props[p]&&p.startsWith('hat_')&&R3D.hats&&R3D.hats[p.slice(4)])R3D.props[p]=R3D.hats[p.slice(4)];   // כובע (render3d.js שם אותם ב-R3D.hats): גם כחפץ על עצם
     if(!R3D.props[p]&&!m3dNeed(p))ok=false}   // מבקש לטעון את כולם, לא רק את הראשון
-  if(!ok||Object.values(C.add).some(p=>!R3D.props[p.prop]))return B;
-  const L=Object.assign({},B,{props:Object.assign({},B.props,C.add),hide:C.hide,base:B},C.model?{model:C.model}:{});MBPARTS.stat.built++;
+  if(!ok||Object.values(add).some(p=>!R3D.props[p.prop]))return B;
+  const hide=Object.values(add).map(p=>p.hide).filter(Boolean);   // כל חלק מסתיר רק את מה שהוא מחליף
+  const L=Object.assign({},B,{props:Object.assign({},B.props,add),hide,base:B,sig},C.model?{model:C.model}:{});MBPARTS.stat.built++;
   return MBPARTSC[kit]=L;
 }
 (function(){

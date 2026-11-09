@@ -4698,14 +4698,15 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   const pa=await page.evaluate(()=>{const o={},on=MBPARTS.tank.on;try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
       mobaStart('tank');
-      syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,hid={};a.root.traverse(x=>{if(MBPARTS.tank.hide.includes(x.name))hid[x.name]=x.visible});
+      syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,hid={};a.root.traverse(x=>{if(['2H_Axe','Barbarian_Hat'].includes(x.name))hid[x.name]=x.visible});
       o.me=!!(a.props.sword&&a.props.sword.visible&&a.props.x_crown&&a.props.x_crown.visible)&&Object.keys(hid).length===2&&!Object.values(hid).some(Boolean);
       const bot=MB.u.find(u=>u.k==='hero'&&u.kit==='tank'&&!u.me);
       if(bot){MBPARTS.tank.on=false;R3D.actors.delete(bot);mb3dUnit(bot,1/60);const k0=R3D.actors.get(bot).key;MBPARTS.tank.on=true;const r0=MBPARTS.stat.rebuilt;mb3dUnit(bot,1/60);
         o.bot=MBPARTS.stat.rebuilt===r0+1&&R3D.actors.get(bot).key!==k0&&!!R3D.actors.get(bot).props.hammer}else o.bot=true;
+      MBPARTS.use.crown=false;syncPlayer(1/60);{const b=R3D.player;let hat=null;b.root.traverse(x=>{if(x.name==='Barbarian_Hat')hat=x.visible});o.one=!b.props.x_crown&&!!(b.props.sword&&b.props.sword.visible)&&hat===true}MBPARTS.use.crown=true;   // חלק אחד כבוי: הכובע הפרוותי חוזר, הפטיש נשאר
       MBPARTS.tank.on=false;syncPlayer(1/60);o.off=!R3D.player.props.x_crown;
     }catch(e){o.err=String(e&&e.stack||e)}MBPARTS.tank.on=on;return o});
-  check(!pa.err&&(pa.d2||pa.me&&pa.bot&&pa.off),'underworld hero parts: '+(pa.err||(pa.d2?'2D, nothing to draw':[['your tank: hammer + crown, axe and fur hat hidden',pa.me],['bot rebuilt once parts load',pa.bot],['switch off',pa.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
+  check(!pa.err&&(pa.d2||pa.me&&pa.bot&&pa.one&&pa.off),'underworld hero parts: '+(pa.err||(pa.d2?'2D, nothing to draw':[['your tank: hammer + crown, axe and fur hat hidden',pa.me],['bot rebuilt once parts load',pa.bot],['one part off (crown): fur hat back, hammer stays',pa.one],['switch off',pa.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
   // ARI #556/#557: the assassin's mask and second dagger, the mage's circlet (witch hat hidden) and floating crystal that bobs. 2D: nothing to draw
   const p2=await page.evaluate(()=>{const o={};try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}

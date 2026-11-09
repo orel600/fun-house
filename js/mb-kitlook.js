@@ -14,7 +14,7 @@ function mbKitLook(){
   const u=typeof S!=='undefined'&&S.mb&&typeof MB!=='undefined'&&MB&&MB.me;if(!u||!MBKLOOK.on||mbLookOwn())return null;
   const B0=LOOK3D['mb_'+u.kit];if(!B0||!m3dNeed(B0.model))return null;   // עוד נטען (m3d.js): לרגע הדמות הרגילה
   const B=typeof mbPartsLook==='function'?mbPartsLook(B0,u.kit):B0;   // חלקים של ARI (mb-parts.js): פטיש וכתר לטנק
-  const ck='mbk|'+u.kit+'|'+P.weapon+'|'+M3D.hv+'|'+(B!==B0);if(R3D._hlk&&R3D._hlk.ck===ck)return R3D._hlk;
+  const ck='mbk|'+u.kit+'|'+P.weapon+'|'+M3D.hv+'|'+(B!==B0?B.sig||'p':'');if(R3D._hlk&&R3D._hlk.ck===ck)return R3D._hlk;
   const L=Object.assign({},LOOK3D.player,B);L.ck=ck;L.mbKit=u.kit;
   L.anim=Object.assign({},LOOK3D.player.anim,B.anim);
   const atk=MBKLOOK.atk[u.kit];if(atk){L.anim.sword=atk;L.anim.gun=atk;delete L.anim.gunDraw;delete L.anim.gunIdle;delete L.anim.swordIdle;delete L.anim.swordDraw}
