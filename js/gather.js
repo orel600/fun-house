@@ -10,7 +10,14 @@
    gUpdate ו-gDraw מ-worldUpdate ו-drawWorld, gScale/gSway/gStump2d בציור המקורות בדו-ממד, gSpot ב-wNodes (world.js), gather3d ב-syncWorld (render3d.js) */
 const GATHER={
   // חתיכות: n בכל מכה, perFrame לכל היותר בפריים, pool כמה חיות יחד. up/side: מהירות למעלה ולצדדים, grav משיכה, life שניות, size פיקסלים
-  chip:{n:6,perFrame:12,pool:60,up:[110,220],side:[50,150],grav:620,life:[0.55,0.9],size:[2.5,5]},
+  // 9.11 (ניר: "רק כמה אבנים קטנות על הרצפה"): היו 2.5-5, כ-2 פיקסלים בטלפון ובצבע של הרצפה. עכשיו גדולות יותר, עם קו כהה (edge) שנראה על כל רקע
+  chip:{n:6,perFrame:12,pool:90,up:[130,240],side:[60,170],grav:620,life:[0.6,1.0],size:[6,10]},
+  edge:{col:'rgba(5,7,13,0.85)',w:1.5},
+  // התנפצות כשהמקור נשבר: הבזק וטבעת (flash), ואז רסיסים גדולים שעפים בקשת, קופצים, נחים רגע (wait) ונמשכים לגיבור (pull, מהירות; take: מאיזה מרחק נעלמים).
+  // תקרה משלהם (n), מאותו מאגר. לפי מחקר שלל: קשת וקפיצה, המתנה קצרה (פחות מ-0.6 שניות), ואז משיכה
+  burst:{n:10,up:[160,240],side:[70,150],size:[9,15],wait:0.3,still:120,pull:520,take:16,max:2.6,flash:{t:0.28,r:[0.6,2.2],a:0.75,col:'#FFF4D6'}},
+  // השלל עצמו (התרמיל): קופץ החוצה מהמקור בקשת, קופץ שוב פעם אחת, מחכה ואז נמשך. wait: מהנפילה עד המשיכה (DROPS.land), bounce: הקפיצה השנייה
+  loot:{pop:[150,180],side:[70,120],wait:0.95,bounce:80},
   // הצבעים לפי הצורה (shape ב-NODES.kinds). '*' = הצבע של המקור עצמו. leaf: אילו מהם עלים (אליפסה), spark: ניצוצות (קו)
   cols:{tree:['#7A4E2A','#B98A55','*','*'],rock:['#6E7487','#A2A8B8','*'],vein:['#5A6075','*','*','#FFE9A8'],crystal:['*','*','#FFFFFF'],
         bush:['*','*','#B8E39A'],reed:['*','*','#9FD8C0'],chest:['#7A4E2A','#B98A55','#F4C74F']},
@@ -23,12 +30,11 @@ const GATHER={
   stump:{tree:{r:9,h:11,col:'#6B4A2B',top:'#B98A55'},bush:{r:6,h:5,col:'#4E3A22',top:'#7A5A36'},reed:{r:5,h:5,col:'#4E3A22',top:'#7A5A36'},
          rock:{pebble:1},vein:{pebble:1},crystal:{pebble:1}},
   sprout:{h:20,from:0.15},                // הנבט: גובה מלא, ומאיזה חלק מהצמיחה רואים אותו
-  lift:0.12,                              // השלל עולה לרגע לפני שהוא עף לגיבור (שניות)
   plus:{size:12,dy:-30},                  // "+N" קטן מעל הגיבור
   cluster:{size:{tree:5,rock:4},def:4,r:60,per:22,spread:0.65},   // חורשה: כמה בכל קבוצה, הרדיוס (r ועוד per לכל מקור), ועד איזה חלק מהשדה המרכזים
   cull:1500,                              // גדם רחוק מהמצלמה לא מצויר בתלת-ממד
   // מצב חי
-  chips:null,tick:0,fr:-1,frN:0,from:null,pulse:null,stat:{hit:0,chips:0,fly:0,take:0,fell:0,stump:0,regrown:0}
+  chips:null,tick:0,fr:-1,frN:0,from:null,pulse:null,flashes:[],stat:{hit:0,chips:0,fly:0,take:0,fell:0,stump:0,regrown:0,burst:0,pulled:0,drawn:0}
 };
 const gOn=()=>!!S&&!!S.wd&&!S.room&&!S.mb;
 const gFx=()=>gOn()&&!(typeof RM!=='undefined'&&RM)&&!(typeof fxLess==='function'&&fxLess());
@@ -38,7 +44,7 @@ const gNow=()=>performance.now()/1000;
 /* ---- 1. חתיכות ---- */
 // מזל משלה לחתיכות: הן רק מראה, ולכן לא צורכות את Math.random של המשחק (הבוט עם seed נשאר אותה ריצה)
 let gSeed=12345;const gRnd=(a,b)=>a+(gSeed=(gSeed*16807)%2147483647)/2147483647*(b-a);
-function gPool(){if(GATHER.chips)return GATHER.chips;const L=GATHER.chips=[];for(let i=0;i<GATHER.chip.pool;i++)L.push({on:false,x:0,y:0,z:0,vx:0,vy:0,vz:0,t:0,max:1,col:'',sz:3,a:0,k:0});return L}
+function gPool(){if(GATHER.chips)return GATHER.chips;const L=GATHER.chips=[];for(let i=0;i<GATHER.chip.pool;i++)L.push({on:false,x:0,y:0,z:0,vx:0,vy:0,vz:0,t:0,max:1,col:'',sz:3,a:0,k:0,pull:0,rest:0});return L}
 // מכה במקור (damage ב-combat.js). ang: הכיוון מהגיבור אל המקור
 function gHit(n,ang,d){
   if(!gOn()||!n||!n.node)return;GATHER.stat.hit++;gmHit(n,d,ang);gtHit(n,d);   // כלי ביד (gtool.js). מומחיות: מכה חזקה יותר וגם במקור צמוד (gmastery.js)
@@ -50,21 +56,43 @@ function gHit(n,ang,d){
   for(const c of L){if(made>=C.n||GATHER.frN>=C.perFrame)break;if(c.on)continue;
     const i=made%pal.length,a=(ang||0)+gRnd(-1.3,1.3),s=gRnd(...C.side);
     c.on=true;c.x=n.x+gRnd(-n.r,n.r)*0.4;c.y=n.y+gRnd(-4,4);c.z=n.r*0.7;c.vx=Math.cos(a)*s;c.vy=Math.sin(a)*s*0.5;c.vz=gRnd(...C.up);
-    c.t=0;c.max=gRnd(...C.life);c.col=gmGlint(n,made)||(pal[i]==='*'?col:pal[i]);c.sz=gRnd(...C.size);c.a=gRnd(0,3.14);c.k=sp.includes(i)?2:lf.includes(i)?1:0;
+    c.t=0;c.pull=0;c.rest=0;c.max=gRnd(...C.life);c.col=gmGlint(n,made)||(pal[i]==='*'?col:pal[i]);c.sz=gRnd(...C.size);c.a=gRnd(0,3.14);c.k=sp.includes(i)?2:lf.includes(i)?1:0;
     made++;GATHER.frN++}
   GATHER.stat.chips+=made;
 }
 function gChips(dt){
   const L=GATHER.chips;if(!L)return;const g=GATHER.chip.grav;
+  const B=GATHER.burst;
   for(const c of L){if(!c.on)continue;c.t+=dt;if(c.t>=c.max){c.on=false;continue}
-    c.x+=c.vx*dt;c.y+=c.vy*dt;c.vz-=g*dt;c.z+=c.vz*dt;if(c.z<0){c.z=0;c.vz=-c.vz*0.3;c.vx*=0.5;c.vy*=0.5}c.a+=dt*8}
+    if(c.pull===2){const dx=P.x-c.x,dy=P.y-c.y,dd=Math.hypot(dx,dy)||1,s=B.pull*dt;   // נמשך לגיבור, ונעלם כשהגיע
+      if(dd<B.take){c.on=false;GATHER.stat.pulled++;continue}c.x+=dx/dd*Math.min(s,dd);c.y+=dy/dd*Math.min(s,dd);c.z+=(14-c.z)*Math.min(1,dt*8);c.a+=dt*14;continue}
+    if(c.rest<0){if((c.rest-=dt)<-B.wait)c.pull=2;continue}   // רסיס של התנפצות שנחת: נח רגע (rest שלילי = כמה זמן נח)
+    c.x+=c.vx*dt;c.y+=c.vy*dt;c.vz-=g*dt;c.z+=c.vz*dt;c.a+=dt*8;
+    if(c.z<0){c.z=0;if(c.pull===1&&c.vz>-B.still){c.rest=-1e-6;continue}c.vz=-c.vz*0.3;c.vx*=0.5;c.vy*=0.5}}
+  const F=GATHER.flashes;for(let i=F.length-1;i>=0;i--)if((F[i].t+=dt)>=GATHER.burst.flash.t)F.splice(i,1);
+}
+// מקור שנשבר: הבזק, טבעת ורסיסים גדולים בקשת שנמשכים אחר כך לגיבור. מאותו מאגר, עם תקרה משלו
+function gBurst(n){
+  if(!gFx())return;const B=GATHER.burst,sh=gShape(n),pal=GATHER.cols[sh]||GATHER.cols.rock,col=(wKind(n.kind)||{}).col||'#fff',lf=GATHER.leaf[sh]||[];
+  if(GATHER.flashes.length<4)GATHER.flashes.push({x:n.x,y:n.y-n.r*0.4,r:n.r,t:0});
+  const away=Math.atan2(n.y-P.y,n.x-P.x),L=gPool();let made=0;GATHER.stat.burst++;
+  for(const c of L){if(made>=B.n)break;if(c.on)continue;
+    const i=made%pal.length,a=away+gRnd(-2.2,2.2),s=gRnd(...B.side);
+    c.on=true;c.x=n.x+gRnd(-n.r,n.r)*0.3;c.y=n.y+gRnd(-4,4);c.z=n.r*0.6;c.vx=Math.cos(a)*s;c.vy=Math.sin(a)*s*0.6;c.vz=gRnd(...B.up);
+    c.t=0;c.max=B.max;c.pull=1;c.rest=0;c.col=pal[i]==='*'?col:pal[i];c.sz=gRnd(...B.size);c.a=gRnd(0,3.14);c.k=lf.includes(i)?1:0;made++}
+  GATHER.stat.chips+=made;
 }
 function gDraw(){
-  const L=GATHER.chips;if(!L||!gOn())return;
-  for(const c of L){if(!c.on)continue;const k=1-c.t/c.max,y=c.y-c.z;ctx.globalAlpha=Math.min(1,k*2);
-    if(c.k===2){ctx.strokeStyle=c.col;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(c.x,y);ctx.lineTo(c.x-c.vx*0.03,y+(c.vz-c.vy)*0.03);ctx.stroke()}
-    else if(c.k===1){ctx.fillStyle=c.col;ctx.beginPath();ctx.ellipse(c.x,y,c.sz,c.sz*0.5,c.a,0,7);ctx.fill()}
-    else{ctx.fillStyle=c.col;ctx.fillRect(c.x-c.sz/2,y-c.sz/2,c.sz,c.sz)}}
+  const L=GATHER.chips;if(!L||!gOn())return;const E=GATHER.edge,FL=GATHER.burst.flash;
+  for(const f of GATHER.flashes){const k=f.t/FL.t,r=f.r*(FL.r[0]+(FL.r[1]-FL.r[0])*k);   // הבזק ההתנפצות: עיגול בהיר שדועך וטבעת שמתרחבת
+    ctx.globalAlpha=FL.a*(1-k);ctx.fillStyle=FL.col;ctx.beginPath();ctx.arc(f.x,f.y,r*0.7*(1-k*0.5),0,7);ctx.fill();
+    ctx.strokeStyle=FL.col;ctx.lineWidth=3*(1-k)+1;ctx.beginPath();ctx.arc(f.x,f.y,r,0,7);ctx.stroke()}
+  ctx.lineWidth=E.w;ctx.strokeStyle=E.col;
+  for(const c of L){if(!c.on)continue;GATHER.stat.drawn++;const k=1-c.t/c.max,y=c.y-c.z;ctx.globalAlpha=c.pull?1:Math.min(1,k*2);
+    if(c.z>0||c.pull===2){ctx.fillStyle='rgba(5,7,13,0.25)';ctx.fillRect(c.x-c.sz*0.4,c.y-1,c.sz*0.8,2)}   // צל קטן על הרצפה: רואים את הקשת
+    if(c.k===2){ctx.strokeStyle=c.col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(c.x,y);ctx.lineTo(c.x-c.vx*0.04,y+(c.vz-c.vy)*0.04);ctx.stroke();ctx.lineWidth=E.w;ctx.strokeStyle=E.col}
+    else if(c.k===1){ctx.fillStyle=c.col;ctx.beginPath();ctx.ellipse(c.x,y,c.sz*0.6,c.sz*0.32,c.a,0,7);ctx.fill();ctx.stroke()}
+    else{const h=c.sz/2;ctx.save();ctx.translate(c.x,y);ctx.rotate(c.a);ctx.fillStyle=c.col;ctx.fillRect(-h,-h*0.8,c.sz,c.sz*0.8);ctx.strokeRect(-h,-h*0.8,c.sz,c.sz*0.8);ctx.restore()}}
   ctx.globalAlpha=1;
 }
 
@@ -72,12 +100,12 @@ function gDraw(){
 // עץ, שיח או סלע שנשבר (nodeDown ב-nodes.js). n=null בסוף nodeDown: השלל שנפל עד עכשיו הוא של המקור
 function gDown(n){
   if(!n){GATHER.from=null;return}
-  if(!gOn()||!n.node)return;GATHER.from=n;n.gDead=true;gmGain(n);   // נקודת מומחיות (gmastery.js)
+  if(!gOn()||!n.node)return;GATHER.from=n;n.gDead=true;gmGain(n);gBurst(n);   // נקודת מומחיות (gmastery.js). התנפצות ורסיסים שנמשכים לגיבור
   if(gShape(n)==='tree'&&gFx()){n.gFall=gNow();n.gDir=n.gDir||(n.x>=P.x?1:-1);GATHER.stat.fell++}else n.gFall=0;
 }
 // כל פריים בעולם (worldUpdate): הגודל מתקרב לחיים שנשארו, צמיחה מחדש מתחילה קטנה, והחתיכות זזות
 function gUpdate(dt){
-  GATHER.tick++;if(!gOn())return;gChips(dt);
+  GATHER.tick++;if(!gOn())return;gChips(dt);gLoot();
   const G=GATHER,e=Math.min(1,dt*G.ease);
   for(const n of S.nd.list){
     if(n.dead){n.gDead=true;continue}
@@ -108,10 +136,15 @@ function gStump2d(n){
 }
 
 /* ---- 3. השלל עף לגיבור ---- */
-// כל משאב שנופל בזמן nodeDown (dropSpawn ב-drops.js): עולה לרגע ועף ישר לגיבור
+// כל משאב שנופל בזמן nodeDown (dropSpawn ב-drops.js): קופץ החוצה מהמקור בקשת, נוחת, קופץ שוב, מחכה רגע ונמשך לגיבור (גם בלי להתקרב)
 function gSpawn(d){
-  if(!GATHER.from||!gOn()||!d||dropGear(d.r))return;
-  d.fly=true;d.gth=1;d.t=Math.max(d.t,DROPS.land-GATHER.lift);d.vz=Math.min(d.vz,120);GATHER.stat.fly++;
+  if(!GATHER.from||!gOn()||!d||dropGear(d.r))return;const O=GATHER.loot,n=GATHER.from,a=Math.atan2(n.y-P.y,n.x-P.x)+gRnd(-1,1),s=gRnd(...O.side);
+  d.fly=true;d.gth=1;d.t=Math.min(d.t,DROPS.land-O.wait);d.vz=gRnd(...O.pop);d.vx=Math.cos(a)*s;d.vy=Math.sin(a)*s*0.6;d.gb=0;GATHER.stat.fly++;
+}
+// השלל של מקור קופץ פעם נוספת כשהוא נוחת (dropsUpdate מאפס את vz בנחיתה)
+function gLoot(){
+  if(typeof drops!=='function'||(typeof RM!=='undefined'&&RM))return;
+  for(const d of drops())if(d.gth&&!d.gb&&d.t>0.05&&d.z===0&&d.vz===0){d.gb=1;d.vz=GATHER.loot.bounce;d.vx*=0.4;d.vy*=0.4}
 }
 // נאסף (dropTake): "+N" קטן מעל הגיבור, והמונה בפס העליון קופץ
 function gTake(d){

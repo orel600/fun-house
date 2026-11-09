@@ -2953,7 +2953,11 @@ function worldBot(m,L,god){
       const foe={x:P.x+30,y:P.y,r:12,dead:false};enemies=[foe];o.foeFirst=aimTarget(999)===foe;enemies=[];o.node=aimTarget(999)===rock;
       const bag0=Object.values(SAVE.bag).reduce((a,b)=>a+b,0);
       rock.hp=0;nodeDown(rock);o.fly=st.fly-s0.fly;o.cleared=GATHER.from===null;
-      for(let i=0;i<120;i++){dropsUpdate(1/60);wLootIn()}
+      // נראה בטלפון (ניר 9.11: "רק כמה אבנים קטנות"): התנפצות עם רסיסים, חתיכות בגודל של לפחות 4 פיקסלים במסך, מצוירות על הקנבס גם בתלת-ממד,
+      // השלל מחכה רגע לפני שהוא נמשך, והרסיסים נמשכים לגיבור
+      o.burst=st.burst-s0.burst;o.px=Math.round(GATHER.chip.size[0]*ZOOM*10)/10;o.r3d=R3D.on;const dr0=st.drawn;render();o.drawn=st.drawn-dr0;
+      for(let i=0;i<18;i++){dropsUpdate(1/60);gUpdate(1/60);wLootIn()}o.early=st.take-s0.take;
+      for(let i=0;i<120;i++){dropsUpdate(1/60);gUpdate(1/60);wLootIn()}o.pulled=st.pulled-s0.pulled;
       o.take=st.take-s0.take;o.bag=Object.values(SAVE.bag).reduce((a,b)=>a+b,0)>bag0;
       tree.hp=0;nodeDown(tree);o.fell=st.fell-s0.fell;
       tree.back=tree.regrow*0.5;o.sprout=Math.abs(gSprout(tree)-0.5)<0.01;
@@ -2964,10 +2968,12 @@ function worldBot(m,L,god){
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     finally{Math.random=R0}
     enemies=[];SAVE=JSON.parse(bak);enterVillage();return o});
-  check(!gat.err&&gat.grove>=60&&gat.chips>0&&gat.perFrame<=gat.cap&&gat.shrink&&gat.sway&&gat.foeFirst&&gat.node&&gat.fly>0&&gat.cleared&&gat.take>0&&gat.bag&&gat.fell>0&&gat.sprout&&gat.regrow&&gat.arena,
+  check(!gat.err&&gat.grove>=60&&gat.chips>0&&gat.burst>0&&gat.px>=4&&gat.drawn>0&&gat.early===0&&gat.pulled>0&&gat.perFrame<=gat.cap&&gat.shrink&&gat.sway&&gat.foeFirst&&gat.node&&gat.fly>0&&gat.cleared&&gat.take>0&&gat.bag&&gat.fell>0&&gat.sprout&&gat.regrow&&gat.arena,
     'תחושת איסוף: '+(gat.err||('חורשות '+gat.grove+'% מהעצים עם שכן'+(gat.chips>0?', מכה מתיזה '+gat.chips+' חתיכות':', מכה בלי חתיכות!')+' ('+gat.perFrame+'/'+gat.cap+' בפריים)'+
     (gat.shrink?', סלע מתכווץ':', לא מתכווץ')+(gat.sway?', עץ מתנדנד':', בלי נדנוד')+(gat.foeFirst&&gat.node?', אויב קודם למקור':', עדיפות שגויה!')+
-    (gat.fly>0&&gat.take>0&&gat.bag?', השלל עף ונאסף ('+gat.take+')':', השלל לא נאסף!')+(gat.fell>0?', עץ נופל':', לא נופל')+(gat.sprout&&gat.regrow?', נבט וצמיחה מחדש':', בלי צמיחה')+(gat.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
+    (gat.fly>0&&gat.take>0&&gat.bag?', השלל עף ונאסף ('+gat.take+')':', השלל לא נאסף!')+(gat.fell>0?', עץ נופל':', לא נופל')+(gat.sprout&&gat.regrow?', נבט וצמיחה מחדש':', בלי צמיחה')+(gat.arena?', בזירה בלי שינוי':', הזירה השתנתה!')+
+    (gat.burst>0&&gat.drawn>0&&gat.px>=4?', התנפצות נראית ('+(gat.r3d?'3D':'2D')+', חתיכה '+gat.px+'px)':', התנפצות לא נראית! ('+gat.burst+'/'+gat.drawn+'/'+gat.px+'px)')+
+    (gat.early===0&&gat.pulled>0?', שלל מחכה ונמשך ('+gat.pulled+' רסיסים)':', שלל נאסף מיד או רסיסים לא נמשכו!'))));
   // מומחיות איסוף (gmastery.js): דרגה 1 = הקצב של היום, נקודות מכל מקור שנשבר, דרגה חדשה עם חגיגה, שלל נמשך מרחוק, מקור צמוד, מכה חזקה, נצנוץ,
   // חלון הדמות, שמירה, ובזירה בלי שינוי. מזל משלה, כמו הבדיקה שלפניה
   const gmr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),R0=Math.random,o={};let sd=777;
