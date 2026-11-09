@@ -380,6 +380,9 @@ h1{font-size:46px} h2{font-size:30px}
 .goalpin[aria-pressed="true"]{color:var(--gold,#F4C74F);border-color:var(--gold,#F4C74F)}
 h3 .goalpin{margin-inline-start:8px;vertical-align:middle}
 h3 .goalpin span{display:none}
+.vpst{display:flex;align-items:center;gap:5px;margin:4px 0}   /* שלבי הפרויקט (vproj.js) */
+.vpst i{width:22px;height:8px;border-radius:4px;background:rgba(255,255,255,.15)}
+.vpst i.on{background:var(--gold,#F4C74F)}
 .gtcard .gtopen{color:var(--gold,#F4C74F);font-size:11px}   /* מה הדרגה הבאה פותחת (gtool.js) */
 /* לשונית הכלים בנפחייה: כל המחיר בשורה אחת מעל הכפתור, בלי לגלול (המתאם, 9.11) */
 #ovForge #fDetail:has(.gthint) .cost{display:flex;flex-wrap:nowrap;gap:3px}
