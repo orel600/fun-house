@@ -77,7 +77,7 @@ function lootKill(e){
   if(e.elite||e.champ){runGive(D,e.x,e.y);runGive(ETYPES[e.type].elite,e.x,e.y)}}finally{lootK=1}
   const key=e.isBoss?'boss':e.wanted?'wanted':e.type,dl=SAVE.daily;(S.killsBy||(S.killsBy={}))[key]=(S.killsBy[key]||0)+1;
   if(dl.day!==lootDay()){dl.day=lootDay();dl.first={}}
-  if(!dl.first[key]){dl.first[key]=1;S.firstKills=(S.firstKills||0)+1;if(feedOn())feedAdd('☀️',T('loot.first',T('foe.'+key)),C.gold,'first:'+key);else floatText(e.x,y-60,T('loot.first',T('foe.'+key)),C.gold,14);runGive(LOOT.firstKill,e.x,e.y)}
+  if(!dl.first[key]){dl.first[key]=1;S.firstKills=(S.firstKills||0)+1;if(feedOn())feedAdd('☀️',T('loot.first',T('foe.'+key)),C.gold,'first:'+key);else if(typeof cqOn==='function'&&cqOn())cqSay(T('loot.first',T('foe.'+key)),C.gold,0);else floatText(e.x,y-60,T('loot.first',T('foe.'+key)),C.gold,14);runGive(LOOT.firstKill,e.x,e.y)}
   lootGear(e);homeKill(e);   // חפץ ביסוד של פנס שדולק (homecoming.js)
   const J=LOOT.jackpot;
   if(!e.isBoss&&!e.wanted&&Math.random()<J.chance){

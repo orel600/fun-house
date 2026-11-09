@@ -2158,6 +2158,27 @@ function worldBot(m,L,god){
     'רגע אחד לכל אירוע: '+(om.err||'Rampage למעלה '+(om.ramp==='feel.rampage'&&om.noFloat&&om.noWorld?'✓':'✗ ('+om.ramp+(om.noFloat?'':', מילה צפה')+(om.noWorld?'':', כרטיס בעולם')+')')+
     ', כרטיסים '+om.c3+'/'+om.c10+' ('+om.shows+' רגעים ב-10 הריגות), אויב-על '+(om.big===1?'רגע אחד ('+(om.koImg?'ko':'פוף')+')':om.big+' רגעים!')+
     ', פחות אפקטים '+(om.bigLess<=1&&om.lessCard?'✓':'✗')+', הפחתת תנועה בלי עמוד אור '+(om.calmPillar?'✓':'✗')));
+  // center queue (centerq.js, MLBB 3.1): never two center messages at once in the arena; danger jumps ahead and replaces what is shown;
+  // info (first kill, book) goes last; a streak replaces a streak; at most CQ.max waiting. Fake clock (CQ.clock), so no timing flakes
+  const cq=await page.evaluate(()=>{const o={},mode=S.mode,bak=JSON.stringify(SAVE);let t=0;
+    try{startRun();S.mode='play';CQ.clock=()=>t;CQS.cur=null;CQS.q.length=0;const st0={...CQ.stat};let worst=0;
+      const v=()=>{const n=cqVisible();worst=Math.max(worst,n);return n},txt=()=>document.getElementById('banner').textContent;
+      S.st={n:10,last:S.t,show:null,best:10};
+      banner('Alpha',C.gold);o.a=v()===1&&txt()==='Alpha';
+      streakShow('st.0',10,STREAK.ring);o.wait=v()===1&&!S.st.show;
+      const peak=T('pace.peak');banner(peak,'#EF4E57');o.jump=v()===1&&txt()===peak;
+      cqSay(T('loot.first','X'),C.gold);o.lowQ=CQS.q.length===2&&CQS.q[1].pri===0;
+      t=0.5;cqTick();o.minHold=txt()===peak;   // shown at least CQ.min
+      t=1.0;cqTick();o.streakNext=v()===1&&!!S.st.show&&S.st.show.key==='st.0';
+      streakShow('st.1',25,STREAK.ring);o.sameKind=v()===1&&S.st.show.key==='st.1';
+      t=2.0;cqTick();o.low=v()===1&&txt()===T('loot.first','X')&&!S.st.show;
+      for(let i=0;i<5;i++)banner('N'+i,C.chalk);o.max=CQS.q.length===CQ.max;
+      t=9;cqTick();o.stale=CQ.stat.stale>st0.stale;
+      o.worst=worst;o.overlap=CQ.stat.overlap-st0.overlap;
+    }catch(err){o.err=String(err&&err.stack||err)}
+    CQ.clock=null;CQS.cur=null;CQS.q.length=0;const b=document.getElementById('banner');if(b)b.classList.remove('on');S.st=null;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  {const L=[[cq.a,'shown'],[cq.wait,'second waits'],[cq.jump,'danger jumps ahead'],[cq.lowQ,'info last'],[cq.minHold,'min time'],[cq.streakNext,'then the streak'],[cq.sameKind,'streak replaces streak'],[cq.low,'then info'],[cq.max,'at most '+CQ.max+' waiting'],[cq.stale,'old ones dropped']];
+   check(!cq.err&&L.every(x=>x[0])&&cq.worst===1&&cq.overlap===0,'center queue in the arena: '+(cq.err||L.map(x=>x[1]+(x[0]?' ✓':' ✗')).join(', ')+', at most '+cq.worst+' on screen'+(cq.overlap?', '+cq.overlap+' overlaps!':'')))}
   // רגעים לסקילי הזירה (MLBB 1.1, skill-anim.js SKANIM.mo): רק מה שהיה חסר לפי טבלת הפערים. בתוך perCast, ו"פחות אפקטים" מוריד את הקישוטים
   const smo=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},fl=SAVE.fxLess;
     try{startRun();S.mode='play';enemies=[];P.x=0;P.y=0;S.cam.x=0;S.cam.y=0;SAVE.fxLess=false;

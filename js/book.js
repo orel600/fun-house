@@ -43,7 +43,7 @@ function bookMark(k){
 }
 function bookNew(){
   const p=bookPending();
-  if(typeof P!=='undefined'&&P&&S&&S.mode==='play'){if(feedOn())feedAdd('',T('book.new'),C.gold,'book');else floatText(P.x,P.y-40,T('book.new'),C.gold,15)}   // בעולם ובכפר: בפיד (feed.js)
+  if(typeof P!=='undefined'&&P&&S&&S.mode==='play'){if(feedOn())feedAdd('',T('book.new'),C.gold,'book');else if(typeof cqOn==='function'&&cqOn())cqSay(T('book.new'),C.gold,0);else floatText(P.x,P.y-40,T('book.new'),C.gold,15)}   // בזירה: תור המרכז (centerq.js), אחרון בעדיפות   // בעולם ובכפר: בפיד (feed.js)
   if(p&&S&&S.mode==='play')sfx('coin');
   saveNow();bookBadge();
 }
