@@ -138,6 +138,7 @@ async function runCls(browser,cls){
       const h=await page.evaluate(([r,o])=>__cfHero(r,'fresh',o),[reg,o]);
       out.up[reg+':'+k]=Object.assign(sum(await page.evaluate(([z,n,s])=>__cfZone(z,n,s),['near',CF.n*5,CF.seed])),{w:h.w,pts:h.pts})}
     console.log(cls,reg,'done',Math.round((Date.now()-t0)/1000)+'s')}
+  out.uf=await page.evaluate(()=>typeof UF==='undefined'?null:{ch:UF.chN,hit:UF.chHit,dodge:UF.chDodge,heavy:UF.hvN,fly:UF.flyN});   // upfeel.js counters (charged hits, heavy hits, fly-apart kills)
   out.errors=[...new Set(errors)].slice(0,8);
   await page.close();return out;
 }
@@ -190,6 +191,7 @@ if(require.main===module)(async()=>{
     L.push(`| ${reg} | ${c} | ${f1(b.ttk)} (${f1(b.hits)}, ${f0(b.dph)}) | `+['aging','stat','tier'].map(k=>`${pc(b.dph,u(k).dph)} dmg · ${pc(b.hits,u(k).hits)} hits · ${pc(b.ttk,u(k).ttk)} TTK`).join(' | ')+` | ${pc(u('age2').dph,u('age3').dph)} dmg · ${pc(u('age2').hits,u('age3').hits)} hits · ${pc(u('age2').ttk,u('age3').ttk)} TTK |`)}
   L.push('','## 3. Danger readability (phone, landscape 844x390, 2D)','');
   for(const s of sh)L.push(`- **${s.reg}**: \`${s.file}\` · `+(s.info?`warning on at ${s.info.t}s: ${s.info.warn.join(', ')}, ${s.info.near} enemies within 330px`:'no floor warning appeared in 90s (picture taken anyway)'));
+  if(CF.cls.some(c=>out[c].uf))L.push('','Upgrade feel (upfeel.js), whole run per class: '+CF.cls.map(c=>{const u=out[c].uf;return u?`${c}: charged hits ${u.ch} (landed ${u.hit}, dodged ${u.dodge}), heavy hits ${u.heavy}, fly-apart kills ${u.fly}`:c+': -'}).join(' · '));
   const errs=CF.cls.flatMap(c=>out[c].errors);if(errs.length)L.push('','Console errors: '+[...new Set(errs)].join(' | '));
   const md=L.join('\n')+'\n';
   const o=opt('out');if(o)fs.writeFileSync(o,md);console.log(md);

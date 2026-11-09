@@ -26,6 +26,7 @@ function strikeTick(e,dt,d){
   if(e.stun>0||e.frozen>0||e.stone>0)return true;   // קפוא, מסוחרר או מאובן: ההכנה נעצרת ואין מכה (כמו slowK ב-dmg.js). שורשים (root) לא עוצרים מכה במקום
   if(e.sw>0){
     e.sw-=dt;e.flash=Math.max(e.flash||0,0.05);   // מאדים בזמן ההכנה
+    if(e.hv)e.kx=e.ky=0;   // מכה טעונה (upfeel.js): האויב נעמד במקום, מכות לא הודפות אותו. רק אתה יכול לזוז
     if(e.sw<=0){
       e.sw=0;e.scd=rand(...K.cd);
       const dx=P.x-e.x,dy=P.y-e.y,dd=Math.hypot(dx,dy)||1;
