@@ -100,9 +100,9 @@ for(const j of joints){j.setTranslation(outT[j.getName()]);j.setRotation(outQ[j.
 const jidx={};joints.forEach((j,i)=>jidx[j.getName()]=i);
 const ibm=joints.map(j=>invRigid(BQ[j.getName()],BP[j.getName()]));
 const buf=root.listBuffers()[0];skin.setInverseBindMatrices(d.createAccessor().setType('MAT4').setArray(Float32Array.from(ibm.flat())).setBuffer(buf));
-const jpg=await sharp(texF).resize(1024,1024).jpeg({quality:88}).toBuffer(),uv=R.uv.map((v,i)=>i%2?1-v:v);
+const emj=await require('./emis.js').makeEmissive(texF,1024,{gain:+process.env.EGAIN||1.0});const jpg=await require('./emis.js').liftTexture(texF,1024,{gamma:+process.env.GAMMA||1,bright:+process.env.BRIGHT||1}),uv=R.uv.map((v,i)=>i%2?1-v:v);
 const A_=(a,t,C)=>d.createAccessor().setType(t).setArray(C.from(a.flat?a.flat():a)).setBuffer(buf);
-const mat=d.createMaterial('wanderer').setRoughnessFactor(0.9).setMetallicFactor(0).setDoubleSided(true).setBaseColorTexture(d.createTexture().setImage(new Uint8Array(jpg)).setMimeType('image/jpeg'));
+const mat=d.createMaterial('wanderer').setRoughnessFactor(0.9).setMetallicFactor(0).setDoubleSided(true).setBaseColorTexture(d.createTexture().setImage(new Uint8Array(jpg)).setMimeType('image/jpeg')).setEmissiveTexture(d.createTexture().setImage(new Uint8Array(emj)).setMimeType('image/jpeg')).setEmissiveFactor([1,1,1]);
 const sel=bodyS;
 const prim=d.createPrimitive().setAttribute('POSITION',A_(sel.V.map(o=>P[o]),'VEC3',Float32Array)).setAttribute('NORMAL',A_(sel.V.map(o=>N[o]),'VEC3',Float32Array)).setAttribute('TEXCOORD_0',A_(sel.V.map(o=>[uv[o*2],uv[o*2+1]]),'VEC2',Float32Array))
  .setAttribute('JOINTS_0',A_(sel.V.map(o=>{const a=SI[o].map(j=>jidx[names[j]]);while(a.length<4)a.push(0);return a}),'VEC4',Uint16Array)).setAttribute('WEIGHTS_0',A_(sel.V.map(o=>{const a=SW[o].slice();while(a.length<4)a.push(0);return a}),'VEC4',Float32Array)).setIndices(A_(sel.tri,'SCALAR',Uint32Array)).setMaterial(mat);
@@ -115,7 +115,7 @@ await io.write(path.join(outDir,'WandererKK.glb'),d);
 // ---- staff prop: grip frame (origin = staff axis at the hand height, y = staff axis, x = world +x projected)
 const G=sa(HAND_Y),ya=SD,xa=nrm(sub([1,0,0],mul(ya,ya[0]))),za=cross(xa,ya);
 const toG=p=>{const q=sub(p,G);return [dot(q,xa),dot(q,ya),dot(q,za)]},toGN=n=>[dot(n,xa),dot(n,ya),dot(n,za)];
-const d2=new Document(),b2=d2.createBuffer(),m2=d2.createMaterial('wanderer').setRoughnessFactor(0.9).setMetallicFactor(0).setDoubleSided(true).setBaseColorTexture(d2.createTexture().setImage(new Uint8Array(jpg)).setMimeType('image/jpeg'));
+const d2=new Document(),b2=d2.createBuffer(),m2=d2.createMaterial('wanderer').setRoughnessFactor(0.9).setMetallicFactor(0).setDoubleSided(true).setBaseColorTexture(d2.createTexture().setImage(new Uint8Array(jpg)).setMimeType('image/jpeg')).setEmissiveTexture(d2.createTexture().setImage(new Uint8Array(emj)).setMimeType('image/jpeg')).setEmissiveFactor([1,1,1]);
 const A2=(a,t,C)=>d2.createAccessor().setType(t).setArray(C.from(a.flat?a.flat():a)).setBuffer(b2);
 const pr=d2.createPrimitive().setAttribute('POSITION',A2(staffS.V.map(o=>toG(P[o])),'VEC3',Float32Array)).setAttribute('NORMAL',A2(staffS.V.map(o=>toGN(N[o])),'VEC3',Float32Array)).setAttribute('TEXCOORD_0',A2(staffS.V.map(o=>[uv[o*2],uv[o*2+1]]),'VEC2',Float32Array)).setIndices(A2(staffS.tri,'SCALAR',Uint32Array)).setMaterial(m2);
 d2.createScene().addChild(d2.createNode('WandererStaff').setMesh(d2.createMesh('WandererStaff').addPrimitive(pr)));await io.write(path.join(outDir,'WandererStaff.glb'),d2);

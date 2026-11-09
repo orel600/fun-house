@@ -61,6 +61,8 @@ const TANKX={
 
 /* הנודד (wandererX): מטה על handslotl. ברירת מחדל = ההרכבה בתנוחת הבסיס של המודל; Idle_A ו-Running_B פתורים כך שהמטה אנכי (נפתר ב-9.11.2026) */
 const WANDERX={
-  staffProp:'w_item_wandererXStaff',bone:'handslotl',rotOnly:true,verifyClips:TANKX.verifyClips,
+  staffProp:'w_item_wandererXStaff',bone:'handslotl',rotOnly:true,
+  /* נמדד ב-tools/tankx/gait.js wandererX (Running_B, מנורמל לגובה): בלי dampen lift 0.311 / stride 0.595 / contact 4.2; k=0.35: 0.096 / 0.308 / 0.93 (barbarian 0.094 / 0.275 / 1.49) */
+  gait:{Running_B:{k:0.35,bones:/^(hips|upperleg|lowerleg|foot|toes)/}},verifyClips:TANKX.verifyClips,
   carry:{default:{pos:[0.0608, 0.0164, 0.0389],rot:[-0.1576, 0.343, 0.3175, -0.8699]},Idle_A:{pos:[0.0608, 0.0164, 0.0389],rot:[-0.5443, -0.5786, -0.4065, 0.4514]},Running_B:{pos:[0.0608, 0.0164, 0.0389],rot:[-0.067, -0.6897, -0.1512, 0.705]}}
 };
