@@ -28,7 +28,8 @@ ARSHD.wave=function(e,T){
   return true;
 };
 {const old=waveStart;waveStart=function(i){
-  const r=old.apply(this,arguments);
+  const s0=S.shake,r=old.apply(this,arguments);
+  if(ARAMB.on&&typeof arshOn==='function'&&arshOn())S.shake=s0;   // בלי הרעידה של תחילת גל (arenas.js)
   if(arambOn()){ARAMB.stat.waves++;arshSpawn('wave',{x:P.x,y:P.y,a0:arshR(i*3.1,1)*1.05})}
   return r}}
 
@@ -37,25 +38,25 @@ function arambMotes(ox,oy){
   const M=ARAMBC.motes,boss=S.boss&&!S.boss.dead?S.boss:null,vx=-ox,vy=-oy;
   let n=M.base,col='#FFE3A0',fall=-1,sz=1.8;
   if(boss){const d=Math.hypot(boss.x-P.x,boss.y-P.y),near=1-arshC((d-M.far)/(M.near-M.far));
-    n=M.boss+Math.round(M.bossNear*near)+Math.round(M.bossRage*arshC(boss.rage||0));col='#FF8A3D';fall=1;sz=3.2}
+    n=M.boss+Math.round(M.bossNear*near)+Math.round(M.bossRage*arshC(boss.rage||0));col='#FF8A3D';fall=1;sz=4.5}
   ctx.save();ctx.beginPath();
   for(let i=0;i<n;i++){
     const r1=arshR(11,i),r2=arshR(12,i),sp=0.04+0.05*arshR(13,i),u=((r1+S.t*sp*fall*0+0)%1+1)%1,
       v=(((r2+S.t*sp*fall)%1)+1)%1,x=vx+((u+Math.sin(S.t*0.7+i)*0.01)%1)*W,y=vy+v*H,z=sz*(0.6+0.8*arshR(14,i));
     ctx.moveTo(x,y-z*1.6);ctx.lineTo(x+z,y);ctx.lineTo(x,y+z*1.6);ctx.lineTo(x-z,y);
   }
-  ctx.globalAlpha=boss?0.7:0.4;ctx.fillStyle=col;ctx.fill();ctx.restore();ARAMB.stat.motes=n;
+  ctx.globalAlpha=boss?0.9:0.45;ctx.fillStyle=col;ctx.fill();ctx.restore();ARAMB.stat.motes=n;
 }
 function arambTells(ox,oy){
   const C=ARAMBC.tells;let n=0;ctx.save();
   for(let i=0;i<enemies.length&&n<C.max;i++){
     const e=enemies[i];if(e.dead||e.node||e.x+ox<-30||e.x+ox>W+30||e.y+oy<-30||e.y+oy>H+30)continue;
     const f=arambFam(e.type);if(!f)continue;n++;
-    const ph=((S.t+i*0.37)%C.each)/C.each,a=(1-ph)*0.55,r=e.r*(e.big||1);
-    if(f==='ice'){ctx.fillStyle='#E8FBFF';ctx.globalAlpha=a;ctx.beginPath();ctx.arc(e.x+r*0.5+ph*10,e.y-r*1.5-ph*8,2+4*ph,0,7);ctx.fill()}   // אדי נשימה
-    else if(f==='stone'){ctx.fillStyle='#C9AE8C';ctx.globalAlpha=a;ctx.beginPath();ctx.arc(e.x-r*0.3-ph*8,e.y+r*0.5,2+4*ph,0,7);ctx.arc(e.x+r*0.3+ph*8,e.y+r*0.5,2+3*ph,0,7);ctx.fill()}   // אבק צעדים
-    else if(f==='fire'){const x=e.x+Math.sin(i*2.1)*r*0.4,y=e.y-r*0.3+ph*r*1.6;ctx.fillStyle='#FF8A3D';ctx.globalAlpha=1-ph;ctx.beginPath();ctx.arc(x,y,1.8*(1-ph)+0.5,0,7);ctx.fill()}   // טפטוף גחלים
-    else{ctx.fillStyle='#C8F28A';ctx.globalAlpha=a;ctx.beginPath();for(let j=0;j<3;j++){const an=j*2.1+i;ctx.moveTo(e.x+Math.cos(an)*ph*r*1.2+1.6,e.y-r*0.6-ph*10);ctx.arc(e.x+Math.cos(an)*ph*r*1.2,e.y-r*0.6-ph*10,1.6,0,7)}ctx.fill()}   // נבגים
+    const ph=((S.t+i*0.37)%C.each)/C.each,a=Math.min(1,(1-ph)*1.1),r=e.r*(e.big||1);
+    if(f==='ice'){ctx.fillStyle='#E8FBFF';ctx.globalAlpha=a;ctx.beginPath();ctx.arc(e.x+r*0.5+ph*12,e.y-r*1.5-ph*10,4+6*ph,0,7);ctx.fill()}   // אדי נשימה
+    else if(f==='stone'){ctx.fillStyle='#C9AE8C';ctx.globalAlpha=a;ctx.beginPath();ctx.arc(e.x-r*0.3-ph*10,e.y+r*0.5,4+7*ph,0,7);ctx.moveTo(e.x+r*0.3+ph*10+4+5*ph,e.y+r*0.5);ctx.arc(e.x+r*0.3+ph*10,e.y+r*0.5,4+5*ph,0,7);ctx.fill()}   // אבק צעדים
+    else if(f==='fire'){const x=e.x+Math.sin(i*2.1)*r*0.4,y=e.y-r*0.3+ph*r*1.6;ctx.fillStyle='#FFB347';ctx.globalAlpha=1-ph;ctx.beginPath();ctx.arc(x,y,3*(1-ph)+0.8,0,7);ctx.fill()}   // טפטוף גחלים
+    else{ctx.fillStyle='#C8F28A';ctx.globalAlpha=a;ctx.beginPath();for(let j=0;j<3;j++){const an=j*2.1+i;ctx.moveTo(e.x+Math.cos(an)*ph*r*1.2+3,e.y-r*0.6-ph*12);ctx.arc(e.x+Math.cos(an)*ph*r*1.2,e.y-r*0.6-ph*12,3,0,7)}ctx.fill()}   // נבגים
   }
   ctx.restore();ARAMB.stat.tells=n;
 }
