@@ -36,7 +36,12 @@ const VFX={
     {h:24,  tint:0x8ea8ff,k:0.55,exp:0.86,lamp:1,  vig:1.7}],
   fixed:{night:1,dawn:6.6,day:12,dusk:18.3},   // ?tod=<שם>: שעה קבועה
   lamp:{r:170,col:'255,206,130',a:0.6},       // r: רדיוס הכתם (פיקסלים של המשחק). a: שקיפות בשיא (בלילה). חיבורי (additive), כך שהוא מאיר ולא צובע
-  rim:{col:0xffe2a8,k:1.2,pow:2.0}            // צבע הקו, חוזק, וכמה הוא דק (גבוה = דק יותר)
+  rim:{col:0xffe2a8,k:1.2,pow:2.0},           // צבע הקו, חוזק, וכמה הוא דק (גבוה = דק יותר)
+  // לילה בהיר יותר לפי מקום (ניר אישר, 9.11.2026, docs/concept-night-village.md): בשיא הלילה k, exp ו-vig מחליפים את הערכים של VFX.tod,
+  // ו-gnd הוא "אור ירח" בצבע הקרקע. בשחר ובשקיעה המעבר הדרגתי. רק בכפר: בעולם החושך הוא חלק מהסיפור
+  night:{village:{k:0.72,exp:0.96,vig:1.15,gnd:0x9a8466}},
+  // כתמי אור חמים על הקרקע בכפר בלילה (כמו lamp של הגיבור, חיבורי): מתחת לכל פנס רחוב, וגדולים יותר בציוני הדרך. ביום כבויים
+  pools:{col:'255,200,120',lamp:{r:90,a:0.35},mark:{r:190,a:0.4,dy:40,at:['gate','center','forge','market']}}
 };
 VFX.parts=(()=>{const m=location.search.match(/[?&]vfx=([\w,]+)/);return new Set(m&&m[1]!=='off'?m[1].split(',').filter(p=>VFX.parts.includes(p)):VFX.parts)})();
 VFX.has=p=>VFX.on&&VFX.parts.has(p);
@@ -48,8 +53,11 @@ VFX.hour=()=>{const m=location.search.match(/[?&]tod=(\w+)/);if(m&&VFX.fixed[m[1
   let sun,hemi,lamp,vig,base=null,set=null,hooked=null,rimAt=0;
   const cA=new THREE.Color(),cB=new THREE.Color(),cT=new THREE.Color();
   // נקודת השעה: מעבר רך בין שתי נקודות על השעון
-  function todNow(){const h=VFX.hour(),T=VFX.tod;let i=0;while(i<T.length-2&&T[i+1].h<=h)i++;const a=T[i],b=T[i+1],f=Math.min(1,Math.max(0,(h-a.h)/((b.h-a.h)||1)));
-    const s=f*f*(3-2*f),L=(x,y)=>x+(y-x)*s;cA.set(a.tint).lerp(cB.set(b.tint),s);return{tint:cA.clone(),k:L(a.k,b.k),exp:L(a.exp,b.exp),lamp:L(a.lamp,b.lamp),vig:L(a.vig,b.vig)}}
+  function todNow(at){return VFX.todAt(VFX.hour(),at)}
+  VFX.todAt=(h,at)=>{const T=VFX.tod;let i=0;while(i<T.length-2&&T[i+1].h<=h)i++;const a=T[i],b=T[i+1],f=Math.min(1,Math.max(0,(h-a.h)/((b.h-a.h)||1)));
+    const s=f*f*(3-2*f),L=(x,y)=>x+(y-x)*s;cA.set(a.tint).lerp(cB.set(b.tint),s);const D={tint:cA.clone(),k:L(a.k,b.k),exp:L(a.exp,b.exp),lamp:L(a.lamp,b.lamp),vig:L(a.vig,b.vig),n:0},N=VFX.night[at];
+    // n: כמה לילה עכשיו (0 ביום, 1 בשיא הלילה), לפי חוזק השמש
+    D.n=Math.min(1,Math.max(0,(1-D.k)/(1-T[0].k)));if(N){const z=T[0];D.k+=D.n*(N.k-z.k);D.exp+=D.n*(N.exp-z.exp);D.vig+=D.n*(N.vig-z.vig)}return D};
   function where(){if(!S||S.room||(typeof aLookHere==='function'&&aLookHere()))return null;return S.vil?'village':S.wd?(VFX.mood[S.wd.reg]?S.wd.reg:'meadow'):null}
   // כתם אור: עיגול רך על הקרקע, חיבורי
   function makeLamp(){
@@ -58,6 +66,18 @@ VFX.hour=()=>{const m=location.search.match(/[?&]tod=(\w+)/);if(m&&VFX.fixed[m[1
     const m=new THREE.Mesh(new THREE.PlaneGeometry(2,2),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:0}));
     m.rotation.x=-Math.PI/2;m.renderOrder=1;m.frustumCulled=false;m.visible=false;R3D.scene.add(m);return m;
   }
+  // כתמי האור בכפר (VFX.pools): נבנים פעם אחת, מרקם אחד לכולם. n: כמה לילה (0 = מוסתרים)
+  let pools=null;
+  VFX.poolsSync=n=>{
+    if(!pools){if(!(n>0.02)||typeof VILLAGE==='undefined'||!R3D.scene)return;const Q=VFX.pools,c=document.createElement('canvas');c.width=c.height=128;
+      const g=c.getContext('2d'),gr=g.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba('+Q.col+',1)');gr.addColorStop(0.5,'rgba('+Q.col+',0.4)');gr.addColorStop(1,'rgba('+Q.col+',0)');g.fillStyle=gr;g.fillRect(0,0,128,128);
+      const tex=new THREE.CanvasTexture(c),geo=new THREE.PlaneGeometry(2,2),s=SIN();pools=[];
+      const add=(x,y,P)=>{const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:0}));
+        m.rotation.x=-Math.PI/2;m.position.set(x,0.9,y/s);m.scale.set(P.r,P.r/s,1);m.renderOrder=1;m.visible=false;m.userData.a=P.a;R3D.scene.add(m);pools.push(m)};
+      for(const d of VILLAGE.props)if(d.k==='lamp')add(d.x,d.y,Q.lamp);
+      for(const k of Q.mark.at){const b=k==='gate'?VILLAGE.gate:VILLAGE.b[k];if(b)add(b.x,b.y+(k==='gate'?0:Q.mark.dy),Q.mark)}}
+    if(!pools)return;const on=n>0.02;for(const m of pools){m.visible=on;m.material.opacity=on?m.userData.a*n:0}};
+  VFX.poolList=()=>pools||[];
   // קו אור בקצוות: fresnel. במצלמה אורתוגרפית הכיוון למצלמה קבוע (0,0,1) במרחב המבט
   function rimOn(m){
     if(m.userData.vfxRim||!m.isMeshLambertMaterial&&!m.isMeshStandardMaterial&&!m.isMeshPhongMaterial)return;
@@ -75,12 +95,12 @@ VFX.hour=()=>{const m=location.search.match(/[?&]tod=(\w+)/);if(m&&VFX.fixed[m[1
   function hook(rr,sc){
     const at=where();
     if(!at){if(base&&set&&sun.color.getHex()===set.sun&&sun.intensity===set.sunI&&rr.toneMappingExposure===set.exp){sun.color.setHex(base.sun);sun.intensity=base.sunI;hemi.color.setHex(base.sky);hemi.groundColor.setHex(base.gnd);hemi.intensity=base.hemiI;rr.toneMappingExposure=base.exp}
-      set=null;base=null;if(lamp)lamp.visible=false;if(vig)vig.hidden=true;return}
+      set=null;base=null;if(lamp)lamp.visible=false;VFX.poolsSync(0);if(vig)vig.hidden=true;return}
     grab(rr);
-    const M=VFX.has('mood')?VFX.mood[at]:null,D=VFX.has('tod')?todNow():null,tk=D?D.k:1,tint=D?D.tint:cT.set(0xffffff);
+    const M=VFX.has('mood')?VFX.mood[at]:null,D=VFX.has('tod')?todNow(at):null,N=D&&VFX.night[at],tk=D?D.k:1,tint=D?D.tint:cT.set(0xffffff);
     cA.setHex(base.sun);if(M)cA.lerp(cB.set(M.sun),0.85);cA.multiply(tint);sun.color.copy(cA);sun.intensity=base.sunI*(M?M.sunK:1)*tk;
     cA.setHex(base.sky);if(M)cA.lerp(cB.set(M.sky),0.7);cA.multiply(tint);hemi.color.copy(cA);
-    cA.setHex(base.gnd);if(M)cA.lerp(cB.set(M.gnd),0.6);hemi.groundColor.copy(cA);hemi.intensity=base.hemiI*(M?M.hemiK:1)*(0.35+0.65*tk);
+    cA.setHex(base.gnd);if(M)cA.lerp(cB.set(M.gnd),0.6);if(N&&N.gnd!=null)cA.lerp(cB.set(N.gnd),D.n);hemi.groundColor.copy(cA);hemi.intensity=base.hemiI*(M?M.hemiK:1)*(0.35+0.65*tk);
     rr.toneMappingExposure=base.exp*(M?M.exp:1)*(D?D.exp:1);
     if(sc.fog&&M)sc.fog.color.lerp(cB.set(M.fog),M.fogK).multiply(tint);else if(sc.fog&&D)sc.fog.color.multiply(tint);
     if(sc.background&&sc.background.isColor&&D)sc.background.multiply(tint);
@@ -88,6 +108,8 @@ VFX.hour=()=>{const m=location.search.match(/[?&]tod=(\w+)/);if(m&&VFX.fixed[m[1
     // אור הגיבור
     if(VFX.has('lamp')){if(!lamp)lamp=makeLamp();const k=D?D.lamp:0.45,r=VFX.lamp.r,s=SIN();
       lamp.visible=true;lamp.position.set(P.x,0.8,P.y/s);lamp.scale.set(r,r/s,1);lamp.material.opacity=VFX.lamp.a*k}
+    // כתמי האור בכפר: בלילה בלבד
+    VFX.poolsSync(at==='village'&&D?D.n:0);
     // פינות בצבע המקום
     if(M&&vig){vig.hidden=false;const a=Math.min(0.7,M.vigA*(D?D.vig:1));vig.style.background='radial-gradient(ellipse at 50% 55%,transparent 55%,rgba('+M.vig+','+a.toFixed(3)+') 100%)'}
     // קו האור על הגיבור: בודקים פעם בחצי שנייה, כי ציוד חדש מחליף חומרים
