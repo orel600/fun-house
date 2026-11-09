@@ -10,8 +10,8 @@ const MBSHARP={
   on:!/[?&]mbsharp=0(&|$)/.test(location.search),
   screen:{flash:0,shake:0},          // כמה מההבזק ומהרעידה נשאר (0 = כבוי)
   noSigil:true,                      // בלי מעגל קסם מתחת למטיל
-  skip:{anvil:['sk_anvil_wave']},    // אפקטים שלא מתנגנים בסקיל הזה
-  noRing:{anvil:true,taunt:true},    // בלי טבעות קנבס (mbBoom, mbfxSlam) בסקיל הזה
+  skip:{anvil:['sk_anvil_wave'],wall:['sk_anvil_wave'],ult:['ult_cast']},   // אפקטים שלא מתנגנים (גל הטבעת של הסדן והחומה, ומעגל הקסם הגדול של כל סקיל-על). עמוד האור (ult_ray) נשאר
+  noRing:{anvil:true,taunt:true,wall:true,ult:true},   // בלי טבעות קנבס (mbBoom, mbfxSlam, והטבעת של רגע סקיל-העל mbfxUlt) בסקיל הזה
   noBubble:{tank:true},              // מגן בלי בועה וטבעת שריון מעליו (בתלת-ממד בלבד): אצל הטנק המגן הוא הזוהר החם על הגוף (mb-tankskill3d.js), כמו במסמך של s2
   teamGlow:false,                    // טבעת הזוהר הגדולה של הקבוצה מתחת לגיבור (MBLIB.glow): כבויה. הטבעת הקטנה בתלת-ממד מתחת לרגליים נשארת סימן הקבוצה
   fieldEdge:false,                   // קו השדה של הסדן בקנבס (moba.js): כבוי, הסדקים (sk_anvil, hold) הם הסימן
@@ -31,4 +31,6 @@ function mbSharpSlam(id,u,r,t){const n=MB.fx.length,v=mbfxSlam(u,r,t);if(MBSHARP
   // אפקט שדולגים עליו: לפי השם, רק בסקילים שבטבלה (sk_anvil_wave מתנגן רק מהסדן)
   const sk=new Set(Object.values(X.skip).flat());
   if(typeof mbfxSk==='function'){const b=mbfxSk;mbfxSk=function(id){if(sk.has(id)){X.stat.skipped++;return null}return b.apply(this,arguments)}}
+  if(typeof mbaPlay==='function'){const b=mbaPlay;mbaPlay=function(id){if(sk.has(id)){X.stat.skipped++;return null}return b.apply(this,arguments)}}   // אותה רשימה גם לאנימציות הסקילים (moba-skill-anim.js)
+  if(typeof mbfxUlt==='function'&&X.noRing.ult){const b=mbfxUlt;mbfxUlt=function(){const n=MB.fx.length,r=b.apply(this,arguments);if(MB.fx.length>n){MB.fx.length=n;X.stat.rings++}return r}}   // רגע סקיל-העל: בלי הטבעת, הרסס והשם נשארים
 })();

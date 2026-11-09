@@ -64,7 +64,7 @@ function mbCast(u,slot,aim){
       mbShield(u,s.shield*k,s.shieldT);u.st.armor=s.shieldT;u.st.armorK=0;u.st.burnBack=s.burn;(typeof mbSharpBoom==='function'?mbSharpBoom('taunt',u.x,u.y,s.r,'fire'):mbBoom(u.x,u.y,s.r,'fire'));mbWord(u,'taunt');mbfxSk('sk_taunt',u.x,u.y,{r:s.r,follow:u,loop:true,dur:s.t});break}
     case 'wall':{const p=pt(),dir=u.team?-1:1;   // מושך את כולם אל הנקודה, הלם, וחומה בצד שלהם (אל הבסיס שלהם) שחוסמת את הבריחה
       for(const o of foesIn(p.x,p.y,s.r)){mbPull(o,p.x,p.y,s.r,o.r+8);mbDmg(u,o,s.dmg*k,s.dt,{big:true});mbCC(o,'stun',s.stun,u);mbAnimHit(o,s.dt)}
-      MB.walls.push({x:p.x+dir*(s.r*0.55),team:u.team,t:s.t});mbfxSk('sk_wall',p.x+dir*(s.r*0.55),p.y,{loop:true,dur:s.t});mbBoom(p.x,p.y,s.r,s.dt);mbfxSlam(Object.assign({},u,{x:p.x,y:p.y}),s.r,s.dt);mbAnimLand('wall',p.x,p.y,s);break}
+      MB.walls.push({x:p.x+dir*(s.r*0.55),team:u.team,t:s.t});mbfxSk('sk_wall',p.x+dir*(s.r*0.55),p.y,{loop:true,dur:s.t});(typeof mbSharpBoom==='function'?mbSharpBoom('wall',p.x,p.y,s.r,s.dt):mbBoom(p.x,p.y,s.r,s.dt));(typeof mbSharpSlam==='function'?mbSharpSlam('wall',Object.assign({},u,{x:p.x,y:p.y}),s.r,s.dt):mbfxSlam(Object.assign({},u,{x:p.x,y:p.y}),s.r,s.dt));mbAnimLand('wall',p.x,p.y,s);break}
     case 'cleave':{   // גל חרב: קשת של הדף שטסה לאורך הקו (moba-fx.js מצייר אותה)
       const sh={kind:'line',fx:'cleave',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,
         on:o=>{mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});mbCC(o,'stun',s.stun,u);mbSlow(o,s.slow,s.slowT);mbfxHit(o,'cleave');mbAnimHit(o,s.dt)}};

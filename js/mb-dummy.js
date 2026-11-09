@@ -18,6 +18,7 @@ const MBDUMMY={
     const r=bs.apply(this,arguments),M=MB,X=MBDUMMY;if(!M)return r;
     const me=M.me,d=mbHero(MBKIT[X.kit]?X.kit:'warrior',1,false,0);d.dummy=true;
     M.u=[me,d];M.waveT=1e9;M.queue=[];me.x=-120;me.y=0;d.x=me.x+X.gap;d.y=0;d.home={x:d.x,y:d.y};d.face=d.rot=Math.PI;me.face=me.rot=0;
+    if(X.auto&&X.cast.includes('ult')&&me.lvl<MOBA.ultAt){me.lvl=MOBA.ultAt}   // לצלם את סקיל-העל: מתחילים ברמה שפותחת אותו (רק במגרש האימון)
     P.x=me.x;P.y=me.y;S.cam.x=P.x;S.cam.y=P.y;X.stat.starts++;return r};
   if(!MBDUMMY.banners&&typeof mbBanner==='function'){const bn=mbBanner;mbBanner=function(){if(S.mb)return;return bn.apply(this,arguments)}}   // הקובץ רץ רק במגרש האימון (MBDUMMY.on), ושם גם הודעת הפתיחה מכסה
   // הבובה: לא זזה, לא תוקפת, וחוזרת לחיים מלאים
