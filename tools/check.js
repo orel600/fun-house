@@ -2180,6 +2180,37 @@ function worldBot(m,L,god){
   {const L=[[cq.a,'shown'],[cq.wait,'second waits'],[cq.jump,'danger jumps ahead'],[cq.lowQ,'info last'],[cq.minHold,'min time'],[cq.streakNext,'then the streak'],[cq.sameKind,'streak replaces streak'],[cq.low,'then info'],[cq.max,'at most '+cq.qmax+' waiting'],[cq.stale,'old ones dropped']];
    check(!cq.err&&L.every(x=>x[0])&&cq.worst===1&&cq.overlap===0,'center queue in the arena: '+(cq.err||L.map(x=>x[1]+(x[0]?' ✓':' ✗')).join(', ')+', at most '+cq.worst+' on screen'+(cq.overlap?', '+cq.overlap+' overlaps!':'')))}
   // רגעים לסקילי הזירה (MLBB 1.1, skill-anim.js SKANIM.mo): רק מה שהיה חסר לפי טבלת הפערים. בתוך perCast, ו"פחות אפקטים" מוריד את הקישוטים
+  // רגע הסכנה של הבוס (arena-danger.js, MLBB 2.1): המילוי לפי השעונים האמיתיים מגיע ל-100% ברגע הפגיעה (בפריים האחרון לפניה: 1 פחות פריים),
+  // באמצע לפי החשבון (גל הדף: 0.4 מתוך 1.0 ברגע שהאזהרה נגמרת), תקתוק, הבזק, חריכה עד max, ו"פחות אפקטים" בלי חריכה. המכשף במג'נטה
+  const adg=await page.evaluate(()=>{const o={},mode=S.mode,fl=SAVE.fxLess,bak=JSON.stringify(SAVE);
+    try{reset();S.mode='play';enemies.length=0;S.arena='classic';SAVE.fxLess=false;P.hp=P.maxHp=1e9;
+      for(const k in ARDG.stat.hitP)delete ARDG.stat.hitP[k];const n0={...ARDG.stat};ARDGS.sc.length=0;
+      const b=makeBoss();b.x=P.x+200;b.y=P.y;S.boss=b;enemies.push(b);b.hp=b.max=1e12;
+      const run=(k,sec)=>{b.patT=99;b.arTele=null;doPattern(b,k);let mid=null;for(let i=0;i<sec*60;i++){b.patT=99;P.hp=P.maxHp;update(1/60);const st=ARDGS.b.get(b);if(st&&mid==null&&st.ph==='after')mid=st.p}return mid};
+      o.mShock=run('shock',2.5);o.mCharge=run('charge',2.5);run('ring',1.5);run('aimed',1.5);run('mines',2.5);run('shock',2.5);run('mines',2.5);
+      const H=ARDG.stat.hitP,ks=['shock','charge','ring','aimed','mines'];o.hit=ks.map(k=>k+' '+(H[k]==null?'-':H[k].toFixed(3))).join(', ');
+      o.full=ks.every(k=>H[k]>=0.97&&H[k]<=1);o.mid=Math.abs(o.mShock-0.4)<0.02&&Math.abs(o.mCharge-0.3/1.05)<0.02;
+      o.ticks=ARDG.stat.ticks-n0.ticks;o.flash=ARDG.stat.flash-n0.flash;o.sc=ARDGS.sc.length;o.scN=ARDG.stat.scorch-n0.scorch;
+      SAVE.fxLess=true;ARDGS.sc.length=0;run('shock',2.5);o.less=ARDGS.sc.length===0;
+      o.col=ARDG.col==='#FF3DD8'&&ATG.fallback.col===ARDG.col;
+      // reduced motion: no flash and no tick thickening; the fill and outline stay. Measured on the drawing itself ('lighter' fills, line width)
+      SAVE.fxLess=false;const calm0=SAVE.calm;SAVE.calm=true;b.patT=99;b.arTele=null;doPattern(b,'ring');const tl=b.arTele;tl.t=tl.max*0.5;update(1/60);const st=ARDGS.b.get(b);st.tk=S.t;
+      let lighter=0,maxW=0;const fl=ctx.fill,sk=ctx.stroke;ctx.fill=function(){if(ctx.globalCompositeOperation==='lighter')lighter++;return fl.apply(this,arguments)};ctx.stroke=function(){maxW=Math.max(maxW,ctx.lineWidth);return sk.apply(this,arguments)};
+      const r3=R3D.on;R3D.on=false;   // the canvas path (2D); 3D is checked below on the scene
+      try{S.cam.x=b.x;S.cam.y=b.y;ardgDrawUnder();b.ardgFl=S.t;if(!ARDGS.fl.includes(b))ARDGS.fl.push(b);ardgDrawOver()}finally{ctx.fill=fl;ctx.stroke=sk;R3D.on=r3}
+      o.calm=lighter===0&&maxW===ARDG.line;
+      // 3D: the fill and edge are meshes on the floor (arena-danger3d.js), and the canvas draws no fill on top of the actors
+      if(R3D.on&&R3D.ready){let cf=0;const f2=ctx.fill;ctx.fill=function(){cf++;return f2.apply(this,arguments)};try{ardgDrawUnder()}finally{ctx.fill=f2}
+        ardg3d();const s0=AD3.sl[0];o.d3=!!s0&&s0.fill.visible&&s0.edge.visible&&cf===0&&Math.abs(s0.edge.material.opacity-ARDG.lineA)<0.01;o.d3s=(s0&&s0.fill.visible)+'/'+cf}else o.d3=true;
+      SAVE.calm=calm0;
+      // ghost (QUINN): a live warning, then a new run. Nothing of the old boss stays: no entries, no scorch, no visible 3D mesh
+      b.patT=99;b.arTele=null;doPattern(b,'ring');update(1/60);ardgScorch(b.x,b.y,80);const had=ARDGS.b.size>0;reset();startRun();S.mode='play';
+      if(R3D.on&&R3D.ready)ardg3d();o.ghost=had&&ARDGS.b.size===0&&ARDGS.sc.length===0&&(typeof AD3==='undefined'||!AD3.on||!AD3.sl.some(s=>s.fill.visible||s.edge.visible)&&!AD3.sc.some(m=>m.visible));
+    }catch(err){o.err=String(err&&err.stack||err)}
+    SAVE.fxLess=fl;mines.length=0;waves.length=0;enemies.length=0;S.boss=null;ARDGS.b.clear();ARDGS.sc.length=0;ARDGS.fl.length=0;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  check(!adg.err&&adg.full&&adg.mid&&adg.ticks>=8&&adg.flash>=5&&adg.sc>0&&adg.sc<=6&&adg.scN>adg.sc&&adg.less&&adg.col&&adg.calm&&adg.d3&&adg.ghost,
+    'רגע הסכנה של הבוס: '+(adg.err||'מילוי ברגע הפגיעה '+adg.hit+(adg.full?' ✓':' ✗')+', באמצע '+(adg.mShock??0).toFixed(2)+'/'+(adg.mCharge??0).toFixed(2)+(adg.mid?' ✓':' ✗')+
+    ', תקתוקים '+adg.ticks+', הבזקים '+adg.flash+', חריכה '+adg.sc+' מתוך '+adg.scN+(adg.sc<=6?' (עד 6)':' (מעל 6!)')+', פחות אפקטים '+(adg.less?'בלי חריכה':'עם חריכה!')+', מג\'נטה '+(adg.col?'✓':'✗')+', reduced motion '+(adg.calm?'no flash/thickening ✓':'flash or thickening!')+(adg.d3?'':', 3D floor mesh missing ('+adg.d3s+')')+(adg.ghost?', new run clean':', old boss warning left on the new run!')));
   const smo=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},fl=SAVE.fxLess;
     try{startRun();S.mode='play';enemies=[];P.x=0;P.y=0;S.cam.x=0;S.cam.y=0;SAVE.fxLess=false;
       for(let i=0;i<6;i++){const e=addEnemy('grunt',60+i*25,(i%2?40:-40));e.hp=e.max=1e9;e.elite=false}

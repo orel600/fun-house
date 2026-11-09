@@ -16,7 +16,7 @@ Kept true after every merge: add, remove or rename lines here (no approval neede
 - Player and gear: heroes.js, stats.js, ranks.js, progression.js, weapons.js, gear.js, gearui.js, armor.js, defense.js, itemroll.js, itemcard.js, itemtip.js, sets.js, powers.js, power.js, aging.js, fuse.js, stash.js, loot.js.
 - Enemies (world): foeai.js, affix.js, foelore.js, rares.js, nemesis.js, giant.js, hunt.js, wtension.js, questmark.js, labels.js.
 - Combat: combat.js (hits, damage), strike.js, hitfeel.js, juice.js, fxcombat.js, wcombo.js.
-- Arena (Orel): run.js, spawn.js, arenas.js, arena-*.js, maze.js, maze3d.js, boss.js, bonus.js, shop.js, spell.js, ult.js, streak.js, divine.js, orbit.js, arenaui.js, pacing.js, bwin.js.
+- Arena (Orel): run.js, spawn.js, arenas.js, arena-*.js (arena-danger.js: the boss danger moment, fill, flash, scorch), maze.js, maze3d.js, boss.js, bonus.js, shop.js, spell.js, ult.js, streak.js, divine.js, orbit.js, arenaui.js, pacing.js, bwin.js.
 - Underworld Games / MOBA (Orel): moba.js, moba3d.js, moba-*.js.
 - Skills: skills.js, skills-more.js (arena); wskill.js, wskbook.js, wskx.js, wsklvl.js, wrunes.js, sigskill.js, skillcast.js, skillreveal.js, skguide.js, skpractice.js (world); skill-anim.js, skill-fx.js.
 - Village (Nir): village.js, npc.js, residents.js, inn.js, deco.js, daily.js, visit.js, trade.js, feed.js, homecoming.js, welcome.js.

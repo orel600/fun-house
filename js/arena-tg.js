@@ -13,7 +13,8 @@ const ATG={
   // len: אורך הפס על הרצפה. pulse: פעימה בשקיפות (כמה, וכמה מהר)
   line:{id:'tg_line',fit:0.9,len:300,sx:3,a:0.85,pulse:{k:0.3,speed:9}},
   stale:0.5,           // נעילה ישנה מזה אחרי שהיריה הייתה אמורה לצאת (השחקן יצא מהטווח): לא משתמשים בה
-  fallback:{col:'#FF4D4D',w:3},
+  fallback:{col:'#FF3DD8',w:3},   // צבע הסכנה (מג'נטה, ה4 ב-docs/concept/mlbb-fx-plan.md, כמו ARDG בבוס)
+  fill:{w:2,a:0.9},   // קו המילוי מעל הגיליון: מגיע לסוף הפס בדיוק ברגע היריה
   stat:{tg:0,shots:0,locked:0}
 };
 const atgOn=()=>ATG.on&&typeof skArena==='function'&&skArena()&&!S.mb&&S.mode==='play'&&typeof fxPlay==='function';
@@ -28,7 +29,7 @@ function atgTick(){
     const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy);if(d>=ATG.range)continue;
     const a=Math.atan2(dy,dx),dur=Math.max(0.1,e.shoot)+0.05,s=L.len/(L.fit*L.sx);
     const h=fxPlay(L.id,e.x,e.y,{follow:e,dx:Math.cos(a)*L.len/2,dy:Math.sin(a)*L.len/2,size:s,sx:L.sx,rot:a,alpha:L.a,dur,loop:true,under:true});
-    e.atg={a,h,t0:S.t,dur};ATG.stat.tg++;
+    e.atg={a,h,t0:S.t,dur,sh:Math.max(0.1,e.shoot)};ATG.stat.tg++;
   }
 }
 function atgClear(e){if(e.atg&&e.atg.h)fxStop(e.atg.h);e.atg=null}
@@ -43,8 +44,10 @@ function atgDraw(){
   if(!atgOn())return;
   const F=ATG.fallback,L=ATG.line;
   for(const e of enemies){const g=e.atg;if(!g||e.dead)continue;
-    if(g.h&&g.h.on&&typeof fxImg==='function'&&fxImg(L.id))continue;   // הגיליון מוצג: הוא האזהרה
-    const k=Math.min(1,(S.t-g.t0)/g.dur);
+    const k=Math.min(1,(S.t-g.t0)/g.sh);
+    if(g.h&&g.h.on&&typeof fxImg==='function'&&fxImg(L.id)){const Fl=ATG.fill;   // הגיליון מוצג: הוא האזהרה, ומעליו רק קו המילוי
+      ctx.save();ctx.translate(e.x,e.y);ctx.rotate(g.a);ctx.strokeStyle=F.col;ctx.lineWidth=Fl.w;ctx.lineCap='round';ctx.globalAlpha=Fl.a;
+      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(L.len*k,0);ctx.stroke();ctx.restore();continue}
     ctx.save();ctx.translate(e.x,e.y);ctx.rotate(g.a);ctx.strokeStyle=F.col;ctx.lineWidth=F.w;ctx.lineCap='round';
     ctx.globalAlpha=0.35;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(L.len,0);ctx.stroke();
     ctx.globalAlpha=0.5+0.5*k;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(L.len*k,0);ctx.stroke();ctx.restore()}
