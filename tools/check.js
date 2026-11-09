@@ -3032,6 +3032,8 @@ function worldBot(m,L,god){
       const w=gtDrop(ir,DI);o.weak=gtWeak(ir)&&w.iron[1]===Math.max(1,DI.iron[1]*G.half)&&gtPow(ir)<1;
       SAVE.gt.hammer=2;o.ok=!gtWeak(ir)&&gtDrop(ir,DI).iron[1]>=DI.iron[1];
       const wd=S.wd;S.wd=null;try{o.arena=gtDrop(tr,D)===D}finally{S.wd=wd}
+      // מקור משאבים לא מראה "עמיד": הכלי קובע, לא סוג הנזק. אויב כן
+      const rn=S.nd.list.find(n=>!n.dead);if(juiceOn()&&rn){juiceHit(rn,3,0.5,false,Object.keys(DMG.types)[0],0);const a=juice().n[juice().n.length-1];o.nores=!(a&&a.e===rn&&a.res)}else o.nores=true;
       const raw=VILLAGE.b.forge.cost;o.late=vCostAt('forge',4).wood===Math.ceil(raw[4].wood*VILLAGE.late.k)&&vCostAt('forge',3).wood===raw[3].wood&&vCostAt('forge',4).iron===raw[4].iron;
       SAVE.gt.hammer=1;AUI.tab='tool';GT_SEL='hammer';gtDraw();o.opens=!!document.querySelector('#fItems .gtopen')&&!!document.querySelector('#fDetail [data-act="pinT"]');
       // יעד: מסמנים את השוק, בלי עץ ואבן. השבב מראה את מה שחסר, פועם באיסוף, ומסמן ⌂ כשיש הכל
@@ -3047,9 +3049,9 @@ function worldBot(m,L,god){
       SAVE.village.market=lv;SAVE.village.center=lc;
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     enemies=[];SAVE=JSON.parse(bak);AUI.tab='age';const ch=document.getElementById('goalChip');if(ch)ch.hidden=true;enterVillage();return o});
-  check(!vlr.err&&vlr.y1&&vlr.y5&&vlr.weak&&vlr.ok&&vlr.arena&&vlr.late&&vlr.opens&&vlr.pin&&vlr.miss&&vlr.chip&&vlr.pulse&&vlr.done&&vlr.once&&vlr.unpin&&vlr.blank,
+  check(!vlr.err&&vlr.nores&&vlr.y1&&vlr.y5&&vlr.weak&&vlr.ok&&vlr.arena&&vlr.late&&vlr.opens&&vlr.pin&&vlr.miss&&vlr.chip&&vlr.pulse&&vlr.done&&vlr.once&&vlr.unpin&&vlr.blank,
     'לולאת הכפר: '+(vlr.err||((vlr.y1?'כלי 1 בלי שינוי':'כלי 1 שינה שלל!')+(vlr.y5?', כלי 5 מכפיל את העץ ולא את השרף':', בלי הכפלה')+(vlr.weak?', ברזל עם פטיש 1: חצי ולאט':', כלי חלש לא רך!')+
-    (vlr.ok?', פטיש 2: מלא':', פטיש 2 לא עוזר')+(vlr.arena?', בזירה בלי שינוי':', הזירה השתנתה!')+(vlr.late?', רמה 4 ×1.3 עץ':', מחיר רמה 4 שגוי')+(vlr.opens?', מה נפתח ו-📌 בנפחייה':', אין "נפתח" או 📌')+
+    (vlr.ok?', פטיש 2: מלא':', פטיש 2 לא עוזר')+(vlr.arena?', בזירה בלי שינוי':', הזירה השתנתה!')+(vlr.nores?', בלי "עמיד" על מקורות':', "עמיד" על מקור!')+(vlr.late?', רמה 4 ×1.3 עץ':', מחיר רמה 4 שגוי')+(vlr.opens?', מה נפתח ו-📌 בנפחייה':', אין "נפתח" או 📌')+
     (vlr.pin&&vlr.miss?', יעד מסומן ומה חסר':', היעד שגוי')+(vlr.chip?', שבב בעולם':', אין שבב')+(vlr.pulse?', פועם באיסוף':', לא פועם')+(vlr.done&&vlr.once?', ⌂ וחגיגה פעם אחת':', בלי ⌂ או חגיגה כפולה')+
     (vlr.unpin?', ביטול סימון':', הסימון נתקע')+(vlr.blank?', בשמירה':', לא בשמירה'))));
   // העלילה, פרק 5 (story.js, WORLD.regions.storm): השביל מהמדבר למגדלים סגור עד שפנס האש דולק, במגדלים גשם, ברקים ומגדלים שבורים שאי אפשר לעבור,
