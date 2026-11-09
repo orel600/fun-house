@@ -4505,10 +4505,14 @@ function worldBot(m,L,god){
         for(let i=0;i<40;i++){me.atkT=Math.max(0,me.atkT-1/60);syncPlayer(1/60)}
         o.stop=st.x?+(st.x.time/st.x.getClip().duration).toFixed(2):null;o.base=a.base;
         o.d3=o.ph==='hit'&&o.clip===C.hit+'@up'&&o.stop===C.to&&o.base===C.ready}else o.d3=true;
+      // never pose-locked: in the middle of the strike (and of the hard stop) the tank still casts, moves and strikes again
+      me.st.stun=0;me.st.dash=null;me.atkT=0;near();mbAttack(me,1/30,t,A);if(R3D.on&&R3D.ready&&R3D.player)syncPlayer(1/60);
+      me.cd.s2=0;me.lvl=10;o.castMid=mbCast(me,'s2',{x:me.x+10,y:me.y});const x0=me.x;mbMove(me,me.x+300,me.y,0.1,0);o.moveMid=me.x>x0;
+      const k0=MBATK3D.stat.strikes;me.atkT=0;if(R3D.on&&R3D.ready&&R3D.player)syncPlayer(1/60);near();mbAttack(me,1/30,t,A);if(R3D.on&&R3D.ready&&R3D.player)syncPlayer(1/60);o.reMid=!(R3D.on&&R3D.ready&&R3D.player)||MBATK3D.stat.strikes===k0+1;
     }catch(err){o.err=String(err&&err.stack||err)}
     MBATK3D.on=true;try{mobaExit()}catch(e){}return o});
-  check(!tka.err&&tka.dmg>0&&tka.same&&tka.snd===1&&tka.d3,'underworld tank attack (visual only): '+(tka.err||'damage '+tka.dmg+(tka.same?' and cooldown unchanged by the visuals':' CHANGED by the visuals!')+', impact sound '+(tka.snd===1?'on the damage frame':tka.snd+'×')+
-    (tka.ph==null?' (2D: no body)':', strike '+(tka.ph==='hit'&&tka.clip?'on the frame':'missing ('+tka.ph+'/'+tka.clip+')')+', hard stop at '+tka.stop+', then '+tka.base)));
+  check(!tka.err&&tka.dmg>0&&tka.same&&tka.snd===1&&tka.d3&&tka.castMid&&tka.moveMid&&tka.reMid,'underworld tank attack (visual only): '+(tka.err||'damage '+tka.dmg+(tka.same?' and cooldown unchanged by the visuals':' CHANGED by the visuals!')+', impact sound '+(tka.snd===1?'on the damage frame':tka.snd+'×')+
+    (tka.ph==null?' (2D: no body)':', strike '+(tka.ph==='hit'&&tka.clip?'on the frame':'missing ('+tka.ph+'/'+tka.clip+')')+', hard stop at '+tka.stop+', then '+tka.base))+', never locked: cast '+(tka.castMid?'✓':'✗')+' move '+(tka.moveMid?'✓':'✗')+' strike again '+(tka.reMid?'✓':'✗'));
   // tank s1 slow field (moba-kits.js, the one approved mechanic change of the morning package): after the anvil lands, an mbZone the size of the slam
   // slows enemies inside by field.k, refreshed in short steps (so it ends when they walk out), no damage, and the zone ends after field.t
   const anf=await page.evaluate(()=>(()=>{const o={};try{mobaStart('tank');const me=MB.me,s=MBKIT.tank.s1;
