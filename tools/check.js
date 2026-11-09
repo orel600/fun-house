@@ -4852,7 +4852,8 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
             const h=bone(a.root,'hips'),q0=h&&h.quaternion.clone();once(a,a.L.anim.die,1.2,true);a.mixer.update(0.6);q.die=!!h&&h.quaternion.angleTo(q0)>0.05;a.one=null;a.mixer.stopAllAction();
             WANDX.on=false;R3D._hl=null;syncPlayer(1/60);q.off=R3D.player.L.model;WANDX.on=true;R3D._hl=null;syncPlayer(1/60);q.back=R3D.player.L.model}}
           return q};
-        try{const A=path(true),B=path(false),C=path(false);r.same=A.log.join()===B.log.join();r.offoff=B.log.join()===C.log.join();r.dirty=A.dirty+B.dirty;r.hit=A.hit;r.model=A.model;r.comp=A.comp;r.bones=A.bones.size;r.carry=[...A.carry].sort().join('/');r.staff=A.staff;
+        try{path(false);const A=path(true),B=path(false),C=path(false);   // חימום: המסלול הראשון שונה מהשאר גם בלי הניסוי
+          r.same=A.log.join()===B.log.join();r.offoff=B.log.join()===C.log.join();r.dirty=A.dirty+B.dirty;r.hit=A.hit;r.model=A.model;r.comp=A.comp;r.bones=A.bones.size;r.carry=[...A.carry].sort().join('/');r.staff=A.staff;
           r.lambert=A.lambert;r.flash=A.flash;r.die=A.die;r.off=A.off;r.back=A.back;r.fac=WANDX.stat.fac&&[WANDX.stat.fac.min[1],WANDX.stat.fac.max[1]].map(v=>+v.toFixed(2)).join('..')}
         catch(e){r.err=String(e&&e.stack||e).slice(0,200)}
         WANDX.on=false;R3D._hl=null;Math.random=rnd;SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
