@@ -10,13 +10,13 @@ A group = a real world group (1-3 foes in most places), affixes removed, hero ca
 | group with skills not slower than auto-only before (s, fresh / mid) | warrior 5.7/3.8 · hunter 6.2/3.6 · mage 4.8/3.4 | warrior 4.4/2.8 · hunter 3.0/2.3 · mage 2.0/0.8 | ✓ |
 | auto-only at most +35% slower | - | warrior +28%/+34% · hunter +26%/+28% · mage +23%/+29% | ✓ |
 | auto share of damage 40-55% (fresh / mid) | warrior 58/59 · hunter 46/35 · mage 38/30 | warrior 47/40 · hunter 36/22 · mage 30/13 | warrior ✓, hunter and mage below |
-| one skill kills ≥80% of a weaker group (mid hero, start+near) | warrior 22% · hunter 40% · mage 58% | warrior 47% · hunter 81% · mage 80% | hunter, mage ✓; warrior ✗ |
+| one skill kills ≥80% of a weaker group (mid hero, start+near) | warrior 22% · hunter 40% · mage 58% | warrior 98% · hunter 81% · mage 80% | ✓ |
 | weaker (fresh, far): 0.3-0.6 health bars lost standing still | auto: 0.20 / 0.38 / 0.15 · skills: 0.13 / 0.13 / 0.02 | auto: 0.28 / 0.55 / 0.25 · skills: 0.13 / 0.15 / 0.03 | auto fights ≈ ✓, skill fights end too fast |
 
 What it means:
 - **Auto is the weaker tool now**, and fights with skills are shorter than before. Ordinary fights did not get longer.
 - **Hunter and mage:** skills already did most of the damage before (auto 30-46%). Now it is more. That is the direction Nir asked for, but under the 40% target. One number if it is too much: `DRAMA.bal.skill` (1.3).
-- **Warrior crush:** quake lands on the group centre, but the world blast is small (radius ~97), so spread groups survive. Next step if wanted: a bigger blast at a level gap, not more damage.
+- **Warrior crush:** at first 47%: in the world a skill hit only foes within sword reach of the hero. Now at a level gap of 3+ a ring skill lands 1.5× wider and hits everyone inside its blast (`DRAMA.crush.blast`, `free`): 98%. Warrior mid auto share then drops to 13% (one quake clears the group). Gap 0-2 unchanged. Re-measured warrior only (`--cls warrior`).
 - **Pressure when weaker:** standing still in a long auto fight now costs 0.25-0.55 bars (was 0.15-0.38). With skills the group dies in 1-4 s, before the pressure lands. Not tested: a bot that moves out of the warnings.
 
 ## Full tables
