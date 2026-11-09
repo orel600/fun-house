@@ -207,9 +207,14 @@ const PILOT3D=/[?&]hero=pilot/.test(location.search);
    models: המבנים (השמות ב-look). site: פיגום, למבנה שעוד לא נבנה או שבונים אותו עכשיו. deco: קישוטים סביב מבנה.
    decor: העצים והגבעות מסביב (villageDecor). stock: ערימה ליד מבנה שיש בו תוצרת שמחכה */
 const VIL3D={
-  models:{castle:{model:'v_castle',w:190},forge:{model:'v_forge',w:140},mill:{model:'v_mill',w:140},mine:{model:'v_mine',w:140},market:{model:'v_market',w:150},tent:{model:'v_tent',w:105}},
+  models:{castle:{model:'v_castle',w:190},forge:{model:'v_forge',w:140},mill:{model:'v_mill',w:140},mine:{model:'v_mine',w:140},market:{model:'v_market',w:150},tent:{model:'v_tent',w:105},
+    /* הכפר גדל (docs/concept-village-growth.md, ניר 9.11): הרמות הנמוכות. vx_ נטענים בכניסה לכפר (m3d.js), ועד אז הפיגום */
+    ruin:{model:'vx_ruin',w:150},stageA:{model:'vx_stageA',w:120},stageB:{model:'vx_stageB',w:130},stageC:{model:'vx_stageC',w:150},
+    pile:{model:'v_lumber',w:85},boulder:{model:'v_rock',w:90},stall:{model:'vx_pallet',w:70}},
   site:{model:'v_site',w:135},gate:{model:'v_gate',w:150},
-  deco:{flag:{model:'v_flag',w:46},crate:{model:'v_crate',w:30},barrel:{model:'v_barrel',w:28}},
+  deco:{flag:{model:'v_flag',w:46},crate:{model:'v_crate',w:30},barrel:{model:'v_barrel',w:28},
+    tent:{model:'v_tent',w:62},lumber:{model:'v_lumber',w:42},stone:{model:'v_stone',w:42},rack:{model:'vx_rack',w:38},sack:{model:'vx_sack',w:24},wbarrow:{model:'vx_wbarrow',w:36},
+    bucket:{model:'vx_bucket',w:20},pallet:{model:'vx_pallet',w:36},ladder:{model:'vx_ladder',w:34},crateS:{model:'vx_crateS',w:22},fenceW:{model:'vx_fenceW',w:52},fenceS:{model:'vx_fenceS',w:52},towerB:{model:'vx_towerB',w:72}},
   decor:{tree:{model:['v_treeA','v_treeB'],w:55},rock:{model:'v_rock',w:55},hills:{model:'v_hills',w:260}},
   stock:{mill:{model:'v_lumber',w:60},mine:{model:'v_stone',w:60}}
 };
@@ -645,7 +650,8 @@ function syncVillage(){
   V.g.visible=true;
   // מבנה שעלה רמה מתחלף לפי vLook: פיגום עד שנבנה, ואחר כך המודל, הגודל, הקישוטים והזוהר של הרצועה שלו
   for(const k in VILLAGE.b){
-    const B=VILLAGE.b[k],lk=vLook(k),key=lk?lk.model+lk.L:'site',cur=V.b[k];
+    const B=VILLAGE.b[k],lk0=vLook(k),ok=!lk0||[VIL3D.models[lk0.model].model,...lk0.deco.map(d=>VIL3D.deco[d].model)].every(m3dNeed),lk=ok?lk0:null;   // מודל שעוד נטען (vx_, m3d.js): בינתיים הפיגום
+    const key=lk?lk.model+lk.L:'site',cur=V.b[k];
     if(cur&&cur.key===key)continue;if(cur)for(const m of cur.all)V.g.remove(m);
     const D=lk?VIL3D.models[lk.model]:VIL3D.site,m=vPut(D.model,B.x,B.y,D.w*(lk?lk.size:1)),all=[m];
     if(lk){if(lk.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(lk.glow).multiplyScalar(0.22)}});
