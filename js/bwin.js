@@ -36,7 +36,7 @@ function bwUpgrade(k,L){
   h+='<div class="bwpay"><span class="sk">'+T('bw.price')+'</span>'+bwCost(vCost(k))+'</div>';
   h+=!why?'<button class="vbtn vmain" data-act="up">'+(L?T('vil.up',L+1):T('vil.build'))+'</button>'
     :'<p class="bwbad">'+(why==='center'?T('bw.needCenter',L+1):T('bw.missing'))+'</p>';
-  return h;
+  return h+goalPinBtn({k},'pinB');   // 📌 יעד בעולם (goal.js)
 }
 
 /* ---- מה עושים בכל מבנה (הלשונית הראשונה) ---- */
