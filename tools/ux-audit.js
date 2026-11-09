@@ -142,7 +142,7 @@ async function session(view,key,report){
   // אל שער הזירה הקרוב
   const ga=await page.evaluate(()=>{const G=WR().gates;let b=null;for(const k in G){const d=Math.hypot(G[k].x-P.x,G[k].y-P.y);if(!b||d<b.d)b={k,d,x:G[k].x,y:G[k].y}}return b});
   if(ga){F.walkToArena=await walk(ga.x,ga.y-10,20,120);await run(300);await shot('arena-gate','שער לזירה');
-    await tap('#wPanel [data-act="arena"]','כניסה לזירה');await run(800);
+    await tap('#wGo','כניסה לזירה');await run(800);
     F.arena={taps:taps-t0,sec:Math.round(await page.evaluate(t=>(Date.now()-t)/100,F.vt0))/10,ok:await page.evaluate(()=>!S.wd&&!S.vil&&S.mode==='play')};
     await shot('arena','הזירה (רק המעבר, הזירה של אוראל)');}
   /* ---- 5. עד חמש דקות משחק: מה עוד קופץ לבד. בזירה בוחרים את הכרטיס הראשון בכל רמה ---- */
