@@ -6,7 +6,7 @@
 const fs=require('fs'),path=require('path');
 const ROOT=path.join(__dirname,'..'),CORE=path.join(ROOT,'js/models3d.js'),DIR=path.join(ROOT,'js/m3d');
 // בחוץ: מפלצות הזירה והענקים (mon_ ואנימציות שלהן), חפצים עם מודל משלהם, הדמויות האישיות, חיות המחמד, ושלבי הכפר (vx_, נטענים בכניסה לכפר)
-const LAZY=k=>/^(mon_|anim_mon_|w_item_|vx_)/.test(k)||['pilotHero','nirHero','orelHero','piocho1','piocho2','piocho3','parosh1','hunterHF','tankHF','warriorHF','mageHF','assassinHF','tankX'].includes(k);
+const LAZY=k=>/^(mon_|anim_mon_|w_item_|vx_)/.test(k)||['pilotHero','nirHero','orelHero','piocho1','piocho2','piocho3','parosh1','hunterHF','tankHF','warriorHF','mageHF','assassinHF','tankX','anim_mbx_gen','anim_mbx_ranged','anim_mbx_move'].includes(k);   // anim_mbx_: קליפים של KayKit שחסרו לגיבורי השאול (השיפוץ, BOB 10.11), נטענים כשנכנסים למשחקי השאול
 const KEY='const MODELS3D=';
 // כל המודלים, כאילו הם עדיין קובץ אחד: <ראש>const MODELS3D={...};
 function src(){
