@@ -31,7 +31,7 @@ Kept true after every merge: add, remove or rename lines here (no approval neede
 
 ## Other folders
 - `css/`: style.css (main UI) plus one file per window/topic (bwin, itemcard, itemtip, rarity, credits, deco, fxui, short = low landscape screens).
-- `tools/`: check.js (test bot), hooks/ (session-start.js, guard.js), merge-driver.sh, balance and perf scripts, asset builders (build3d, build-sounds, build-icons, fx-convert), blender/, trellis/, critic/.
+- `tools/`: check.js (test bot), hooks/ (session-start.js, guard.js), merge-driver.sh, balance and perf scripts (gpu.js: `--gpu` runs the tools on the real NVIDIA card), asset builders (build3d, build-sounds, build-icons, fx-convert), blender/, trellis/, critic/.
 - `docs/`: code-map.md (one line per file), this map, project-state.md (team memory), for-orel.md, ui-guide.md, setup.md, story.md, concept-*.md and concept/ (design concepts), plan-*.md, research-*.md, audit/report folders with screenshots.
 - `art/`: 3D models and source art (heroes/, kaykit2/, pets/, pilot/, weapons/).
 - `skins/`: does not exist yet. Format for paper-doll skins (`skins/<name>/*.png`) is in the top of js/rig.js.

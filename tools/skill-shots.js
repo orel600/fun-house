@@ -1,15 +1,15 @@
 // צילומי הטלה של כל סקיל בזירה ברגע ההטלה (W1, אוראל 8.11.2026). הבוט של check.js לא תמיד תופס את הרגע, אז כאן מטילים ומצלמים בכוונה.
 // שימוש: node tools/skill-shots.js . <תיקיית פלט> [--less]   (דורש playwright, כמו tools/check.js)
-const {chromium}=require('playwright'),path=require('path'),fs=require('fs');
-const repo=process.argv[2],out=process.argv[3],less=process.argv.includes('--less');
+const {chromium}=require('playwright'),path=require('path'),fs=require('fs'),GPU=require('./gpu.js');
+const repo=process.argv[2],out=process.argv[3],less=process.argv.includes('--less'),gfxI=process.argv.indexOf('--gfx'),GFX=gfxI>0&&process.argv[gfxI+1]==='3d'?'3d':'2d';   // --gfx 3d: צילומי תלת-ממד (היה תמיד דו-ממד). --gpu: בכרטיס מסך אמיתי (tools/gpu.js)
 (async()=>{
   fs.mkdirSync(out,{recursive:true});
-  const browser=await chromium.launch(),page=await browser.newPage({viewport:{width:844,height:390},deviceScaleFactor:2,isMobile:true,hasTouch:true});
+  const browser=await chromium.launch(GPU.launchOpts(GFX==='3d'&&!GPU.gpuOn()?['--use-angle=swiftshader','--enable-unsafe-swiftshader']:[])),page=await browser.newPage({viewport:{width:844,height:390},deviceScaleFactor:2,isMobile:true,hasTouch:true});
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
   await page.route(/^https?:/,r=>r.fulfill({status:200,contentType:'text/css',body:''}));
   await page.addInitScript(()=>{let a=7;Math.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}});
   await page.clock.install({time:0});await page.clock.pauseAt(1000);
-  await page.addInitScript(()=>{try{localStorage.setItem('zm-gfx','2d')}catch(e){}});
+  await page.addInitScript(g=>{try{localStorage.setItem('zm-gfx',g)}catch(e){}},GFX);
   await page.goto('file://'+path.resolve(repo,'index.html'));
   await page.clock.runFor(300);
   await page.evaluate(l=>{startRun();SAVE.fxLess=l;S.mode='play';enemies.length=0;fxPreload(skAnimIds());},less);
