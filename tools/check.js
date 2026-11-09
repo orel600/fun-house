@@ -4674,6 +4674,22 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     }catch(e){o.err=String(e&&e.stack||e)}SAVE.mbOwnLook=own;return o});
   check(!kl.err&&(kl.d2||Object.values(kl.kits).every(Boolean)&&kl.own&&kl.back),'underworld kit look: '+(kl.err||(kl.d2?'2D, nothing to draw':
     Object.entries(kl.kits).map(([k,v])=>k+(v?' ✓':' ✗')).join(', ')+', personal skin option '+(kl.own&&kl.back?'✓':'✗'))));
+  // home zone (mb-zone.js, morning package 6): an enemy hero inside your base circle loses MOBA.zone.hurt.k of max HP per second in ticks,
+  // minions are never punished, allies still heal exactly as before (mbTower), the warning glow grows as you near the enemy circle,
+  // and a recall landing flashes your circle gold. Off switch: MOBA.zone.hurt.on=false. Values are untested starting values
+  const zn=await page.evaluate(()=>{const o={},Z=MOBA.zone;try{mobaStart('tank');const me=MB.me,b0=MB.u.find(b=>b.k==='base'&&b.team===me.team),b1=MB.u.find(b=>b.k==='base'&&b.team!==me.team);
+      MB.t=999;const foe=MB.u.find(u=>u.k==='hero'&&u.team!==me.team),mn=MB.u.find(u=>u.k==='minion'&&u.team!==me.team);
+      const put=(u,b,dx)=>{u.x=b.x+dx;u.y=b.y;u.dead=false;u.hp=u.max;u.st.shield=0};
+      put(foe,b0,60);const t0=Z.stat.ticks;mbZoneTick(Z.hurt.every);o.lost=1-foe.hp/foe.max;o.maxLoss=Z.hurt.k*Z.hurt.every;o.ticks=Z.stat.ticks-t0;
+      put(foe,b0,MOBA.base.healR+40);mbZoneTick(Z.hurt.every);o.outside=foe.hp===foe.max;
+      if(mn){put(mn,b0,60);mbZoneTick(Z.hurt.every);o.minion=mn.hp===mn.max}else o.minion=true;
+      Z.hurt.on=false;put(foe,b0,60);mbZoneTick(Z.hurt.every);o.off=foe.hp===foe.max;Z.hurt.on=true;
+      put(me,b0,60);me.hp=me.max*0.5;mbTower(b0,0.5);o.heal=Math.abs(me.hp/me.max-0.5-MOBA.base.heal*0.5)<0.01;
+      put(me,b1,MOBA.base.healR+Z.warn.pad+50);o.w0=mbZoneWarnK();put(me,b1,MOBA.base.healR+Z.warn.pad/2);o.wMid=mbZoneWarnK();put(me,b1,30);o.w1=mbZoneWarnK();
+      me.x=b0.x+600;me.y=b0.y;const f0=Z.stat.flash;mbRecallStart(me);for(let i=0;i<400&&me.recall;i++)mbRecallTick(MB,1/60);o.flash=Z.stat.flash===f0+1;
+    }catch(e){o.err=String(e&&e.stack||e)}Z.hurt.on=true;return o});
+  check(!zn.err&&zn.ticks===1&&zn.lost>0&&zn.lost<=zn.maxLoss+1e-6&&zn.outside&&zn.minion&&zn.off&&zn.heal&&zn.w0===0&&zn.wMid>0&&zn.wMid<1&&zn.w1===1&&zn.flash,
+    'underworld home zone: '+(zn.err||[['enemy loses '+Math.round(zn.lost*1000)/10+'% per tick',zn.ticks===1&&zn.lost>0],['outside safe',zn.outside],['minions safe',zn.minion],['switch off',zn.off],['ally heal unchanged',zn.heal],['warning '+zn.w0+'/'+(+zn.wMid).toFixed(2)+'/'+zn.w1,zn.w0===0&&zn.wMid>0&&zn.w1===1],['recall flash',zn.flash]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', ')));
   // tank s1 slow field (moba-kits.js, the one approved mechanic change of the morning package): after the anvil lands, an mbZone the size of the slam
   // slows enemies inside by field.k, refreshed in short steps (so it ends when they walk out), no damage, and the zone ends after field.t
   const anf=await page.evaluate(()=>(()=>{const o={};try{mobaStart('tank');const me=MB.me,s=MBKIT.tank.s1;
