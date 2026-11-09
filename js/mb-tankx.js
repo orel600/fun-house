@@ -6,7 +6,7 @@
    - ריצה: צעד מוקטן (RETARGET.dampen, TANKX.gait) ומהירות האנימציה לפי הטבלה speed, כדי שהרגל על הרצפה תזוז כמו הקרקע (בלי החלקה).
    - גובה: הגוף החדש מוצג בגובה size מהטנק הישן, בתנוחת העמידה (נמדד פעם אחת כשהגוף נטען).
    - קריאות על הרצפה הכהה: הבהרה וקו אור בשוליים (rim), לפי look. זוהר קבוע בסדקים כבוי (emK 0), והבהוב פגיעה על כל הגוף ולא רק על הסדקים.
-   - השוואה: ?txdiag=512|1024|neutral (diags), לצילומים של QUINN ו-ARI באותה מצלמה.
+   - השוואה: ?txdiag=neutral (diags), הצורה בלי צבע, לצילומים של QUINN ו-ARI באותה מצלמה.
    - הפטיש: על handslotr, בתנוחה לפי סוג האנימציה (carry, מ-ARI), ובגודל hammer.s.
    מחיקה: הקובץ והשורה ב-index.html */
 const MBTANKX={
@@ -18,16 +18,16 @@ const MBTANKX={
   carry:{idle:{pos:[0,0,0],rot:[-0.5998,0.4684,0.6176,0.1985]},run:{pos:[0,0,0],rot:[-0.6369,0.2983,0.6826,0.1987]},attack:{pos:[0,0,0],rot:[0,-1,0,0]}},
   gait:true,      // צעד מוקטן בריצה לפי TANKX.gait (js/retarget-tracks.js). false: האנימציה כמו שהיא
   speed:{Running_B:1.2},   // מהירות האנימציה לכל אנימציה (1: כמו המקור). 1.2: הרגל על הרצפה זזה כ-0.83 ממהירות הקרקע (הטנק הישן 0.49, 1 = בלי החלקה)
-  size:1.15,      // הגובה המוצג בעמידה, ביחס לטנק הישן (ה-hitbox לא משתנה)
+  size:1.25,      // הגובה המוצג בעמידה, ביחס לטנק הישן (ה-hitbox לא משתנה). ARI, 9.11: הגוף צר (41 פיקסלים מול 56 של הברברי עם המגן), אז 1.25 כדי שהשטח על הרצפה יהיה דומה
   // הרגליים על הרצפה: בעמידה של הברברי הגוף הזה ריחף כ-4.5 יחידות (הירכיים גבוהות פי 1.48). 1: יורד בכל הפער שנמדד, 0: כמו קודם
   ground:1,
-  // אוראל דחה את המראה (9.11: "ג'לי"). עכשיו הטקסטורה כמו שהיא, עד שהמספרים של ARI מגיעים:
-  // emK 0: בלי זוהר קבוע בסדקים. rimK 0: קו האור בשוליים צבע את כל הגוף, כי מהמצלמה של המשחק (מלמעלה) רוב המשטחים בזווית. ההבהוב בפגיעה נשאר (txF בחומר)
-  look:{gain:1,lift:0,rim:'#FF9A50',rimK:0,rimP:2.5,emK:0,emMax:1.2},
-  // השוואה בלבד (MAX ל-BOB, 9.11, ל-QUINN ול-ARI): ?tankx=1&txdiag=512|1024|neutral, אותה מצלמה ואותו מצב.
-  // 512: הגוף כמו שהוא. 1024: אותו גוף עם הטקסטורות המקוריות ב-1024 (קובץ נפרד, נטען רק עם הדגל). neutral: חומר אפור אחיד, בלי טקסטורה, בלי זוהר ובלי rim
-  diag:(location.search.match(/[?&]txdiag=(512|1024|neutral)(&|$)/)||[])[1]||'',
-  diags:{'512':{},'1024':{tex:'js/tankx-diag/tx1024.js'},neutral:{color:'#A09A90',rough:0.85,look:{gain:1,lift:0,rimK:0,emK:0}}},
+  // אוראל דחה את המראה (9.11: "ג'לי"). המספרים של ARI, נמדדו במשחק (art/tankx-look): הצבע כבר בגוף (אטלס צבע לכל משולש, אובסידיאן וזהב), אז החומר לא נוגע בו.
+  // emK/emMax 0: בלי זוהר קבוע. rimK 0: קו האור בשוליים צבע את כל הגוף, כי מהמצלמה של המשחק (מלמעלה) רוב המשטחים בזווית. ההבהוב בפגיעה נשאר (txF בחומר)
+  look:{gain:1,lift:0,rim:'#FF9A50',rimK:0,rimP:2.5,emK:0,emMax:0},
+  // השוואה בלבד (MAX ל-BOB, 9.11, ל-QUINN ול-ARI): ?tankx=1&txdiag=neutral, אותה מצלמה ואותו מצב. neutral: חומר אפור אחיד, בלי טקסטורה (הצורה בלבד).
+  // 512 ו-1024 של הטקסטורה הישנה הושוו (ARI, 9.11: בכל גודל, גם 1024, האיים הקטנים שלה מתמצעים לחום-כתום) והוחלפו באטלס, אז אין להם מצב כאן
+  diag:(location.search.match(/[?&]txdiag=(neutral)(&|$)/)||[])[1]||'',
+  diags:{neutral:{color:'#A09A90',rough:0.85,look:{gain:1,lift:0,rimK:0,emK:0}}},
   minLen:1e-4,    // עצמה שאורכה בברברי קטן מזה: בלי תיקון
   comp:null,      // אם ARI מספקת פונקציה משלה: (clip, tmpl, ref) => clip. אחרת tankxComp למטה
   stat:{looks:0,actors:0,rebuilt:0,clips:0,tracks:0,gait:0,fallback:0,fac:null,h:null,mats:0,player:0,diag:0,tex:0}
@@ -117,22 +117,10 @@ function tankxMat(m){
   };
   m.customProgramCacheKey=()=>'mbTankX';m.needsUpdate=true;
 }
-// השוואה (txdiag): הטקסטורות ב-1024, נטענות פעם אחת מהקובץ הנפרד. null עד שהן מוכנות
-function tankxTex1024(){
-  const X=MBTANKX;if(X._t1)return X._t1.ready?X._t1:null;X._t1={};
-  const s=document.createElement('script');s.src=X.diags['1024'].tex;
-  s.onload=()=>{const T=window.TANKX_TEX1024;if(!T)return;const ld=new THREE.TextureLoader();let n=0;
-    const fin=t=>{t.flipY=false;t.colorSpace=THREE.SRGBColorSpace;t.needsUpdate=true;if(++n===2)X._t1.ready=1};
-    X._t1.map=ld.load(T.map,fin);X._t1.em=ld.load(T.em,fin)};
-  document.head.appendChild(s);return null;
-}
-// השוואה: על הגוף בלבד (לא על הפטיש). פעם אחת לכל דמות, כשמה שצריך מוכן. a.txDiag: מה הוחל, ורוחב הטקסטורה בפועל (לבדיקה)
+// השוואה: על הגוף בלבד (לא על הפטיש), פעם אחת לכל דמות. a.txDiag: מה הוחל, ורוחב הטקסטורה בפועל (לבדיקה)
 function tankxDiag(a){
   const X=MBTANKX,D=X.diags[X.diag];if(!D||a.txDiag)return;
   const body=[];a.root.traverse(o=>{if(o.isSkinnedMesh&&!body.includes(o.material))body.push(o.material)});
-  if(X.diag==='1024'){const T=tankxTex1024();if(!T)return;
-    for(const m of body){const o=m.map,c=t=>{if(o){t.wrapS=o.wrapS;t.wrapT=o.wrapT;t.anisotropy=o.anisotropy;t.minFilter=o.minFilter;t.magFilter=o.magFilter}return t};
-      if(m.map)m.map=c(T.map);if(m.emissiveMap)m.emissiveMap=c(T.em);m.needsUpdate=true}}
   if(X.diag==='neutral')for(const m of body){m.map=null;m.emissiveMap=null;m.color.set(D.color);if('roughness' in m){m.roughness=D.rough;m.metalness=0}m.needsUpdate=true}
   const w=body[0]&&body[0].map&&body[0].map.image?body[0].map.image.width:0;
   a.txDiag={mode:X.diag,tex:w,mats:body.length};X.stat.diag++;X.stat.tex=w;
