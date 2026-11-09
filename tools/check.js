@@ -2265,11 +2265,12 @@ function worldBot(m,L,god){
   const sky=await page.evaluate(()=>{const o={},fl=SAVE.fxLess,mode=S.mode;try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
       startRun();S.mode='play';const run=a=>{S.arena=a;FRAME_T+=17;render3d(R3D.ox||0,R3D.oy||0);const u=ALOOK.mat&&ALOOK.mat.userData.u;return {q:!!(ASKY.quad&&ASKY.quad.visible),r:u&&u.aSky.value}};
+      o.key=S.arena;const g=run(S.arena);o.real=g.q&&g.r===ARENA_SKY.edge;   // הזירה האמיתית (startRun שם S.arena), בלי לכפות מפתח
       const c=run('classic');o.on=c.q&&c.r===ARENA_SKY.edge;o.waves=run('waves').q;o.maze=run('maze').q;
       const b=run('boss');o.boss=!b.q&&b.r===0;
       SAVE.fxLess=true;const l=run('classic');o.less=!l.q&&l.r===0;SAVE.fxLess=fl;
     }catch(e){o.err=String(e&&e.stack||e)}SAVE.fxLess=fl;S.mode=mode;return o});
-  check(!sky.err&&(sky.d2||sky.on&&sky.waves&&sky.maze&&sky.boss&&sky.less),'painted arena sky: '+(sky.err||(sky.d2?'2D, nothing to draw':[['classic',sky.on],['waves',sky.waves],['maze (dimension)',sky.maze],['boss stays flat',sky.boss],['fewer effects: flat',sky.less]].map(x=>x[0]+(x[1]?' ✓':' ✗')).join(', '))));
+  check(!sky.err&&(sky.d2||sky.real&&sky.on&&sky.waves&&sky.maze&&sky.boss&&sky.less),'painted arena sky: '+(sky.err||(sky.d2?'2D, nothing to draw':[['real arena ('+sky.key+')',sky.real],['classic',sky.on],['waves',sky.waves],['maze (dimension)',sky.maze],['boss stays flat',sky.boss],['fewer effects: flat',sky.less]].map(x=>x[0]+(x[1]?' ✓':' ✗')).join(', '))));
   // רגעים לסקילי הזירה (MLBB 1.1, skill-anim.js SKANIM.mo): רק מה שהיה חסר לפי טבלת הפערים. בתוך perCast, ו"פחות אפקטים" מוריד את הקישוטים
   // רגע הסכנה של הבוס (arena-danger.js, MLBB 2.1): המילוי לפי השעונים האמיתיים מגיע ל-100% ברגע הפגיעה (בפריים האחרון לפניה: 1 פחות פריים),
   // באמצע לפי החשבון (גל הדף: 0.4 מתוך 1.0 ברגע שהאזהרה נגמרת), תקתוק, הבזק, חריכה עד max, ו"פחות אפקטים" בלי חריכה. המכשף במג'נטה
@@ -4693,9 +4694,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     'underworld home zone: '+(zn.err||[['enemy loses '+Math.round(zn.lost*1000)/10+'% per tick',zn.ticks===1&&zn.lost>0],['outside safe',zn.outside],['minions safe',zn.minion],['switch off',zn.off],['ally heal unchanged',zn.heal],['warning '+zn.w0+'/'+(+zn.wMid).toFixed(2)+'/'+zn.w1,zn.w0===0&&zn.wMid>0&&zn.w1===1],['recall flash',zn.flash]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', ')));
   // hero parts (mb-parts.js, ARI #552): the tank gets the stone hammer in the right hand and the crown on the head, with the barbarian's axe and fur hat hidden,
   // on bots and on your hero (kit look). A bot built before the parts loaded is rebuilt once. Switch: MBPARTS.tank.on. 2D: nothing to draw
-  const PARTS=['w_item_stoneHammer','w_item_shadowDagger','w_item_mageCrystal'];   // lazy models (m3d.js): ask once, wait here
-  await page.evaluate(ps=>{if(R3D.on&&R3D.ready)ps.forEach(m3dNeed)},PARTS);await waitPage(ps=>!(R3D.on&&R3D.ready)||ps.every(p=>R3D.props[p]),PARTS);
-  const pa=await page.evaluate(()=>{const o={},on=MBPARTS.tank.on;try{
+  const PARTS=['w_item_stoneHammer','w_item_shadowDagger','w_item_mageCrystal','tankHF'];   // lazy models (m3d.js): ask once, wait here
+  await page.evaluate(ps=>{if(R3D.on&&R3D.ready)ps.forEach(m3dNeed)},PARTS);await waitPage(ps=>!(R3D.on&&R3D.ready)||ps.every(p=>R3D.props[p]||m3dReady(p)),PARTS);
+  const pa=await page.evaluate(()=>{const o={},on=MBPARTS.tank.on,hf=MBTANKHF.on;MBTANKHF.on=false;try{   // the barbarian body (the new body has no axe or fur hat to hide)
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
       mobaStart('tank');
       syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,hid={};a.root.traverse(x=>{if(['2H_Axe','Barbarian_Hat'].includes(x.name))hid[x.name]=x.visible});
@@ -4705,17 +4706,30 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
         o.bot=MBPARTS.stat.rebuilt===r0+1&&R3D.actors.get(bot).key!==k0&&!!R3D.actors.get(bot).props.hammer}else o.bot=true;
       MBPARTS.use.crown=false;syncPlayer(1/60);{const b=R3D.player;let hat=null;b.root.traverse(x=>{if(x.name==='Barbarian_Hat')hat=x.visible});o.one=!b.props.x_crown&&!!(b.props.sword&&b.props.sword.visible)&&hat===true}MBPARTS.use.crown=true;   // חלק אחד כבוי: הכובע הפרוותי חוזר, הפטיש נשאר
       MBPARTS.tank.on=false;syncPlayer(1/60);o.off=!R3D.player.props.x_crown;
-    }catch(e){o.err=String(e&&e.stack||e)}MBPARTS.tank.on=on;return o});
+    }catch(e){o.err=String(e&&e.stack||e)}MBPARTS.tank.on=on;MBTANKHF.on=hf;return o});
   check(!pa.err&&(pa.d2||pa.me&&pa.bot&&pa.one&&pa.off),'underworld hero parts: '+(pa.err||(pa.d2?'2D, nothing to draw':[['your tank: hammer + crown, axe and fur hat hidden',pa.me],['bot rebuilt once parts load',pa.bot],['one part off (crown): fur hat back, hammer stays',pa.one],['switch off',pa.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
   // tank stone look (mb-tankstone.js): the barbarian body gets the stone + lava-crack shader, the hammer draws bigger (visual only), and the switch turns both off live
-  const tsk=await page.evaluate(()=>{const o={},on=MBTANKSTONE.on;try{
+  const tsk=await page.evaluate(()=>{const o={},on=MBTANKSTONE.on,hf=MBTANKHF.on;MBTANKHF.on=false;try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
       mobaStart('tank');MBTANKSTONE.on=true;syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player;let body=0,ts=0;a.root.traverse(x=>{if(x.isSkinnedMesh){body++;if(x.material.userData.ts)ts++}});
       const h=Object.keys(a.props).find(k=>a.L.props[k]&&a.L.props[k].prop==='w_item_stoneHammer'),m=h&&a.props[h];
       o.body=body>0&&ts===body&&MBTS_U.tsOn.value===1;o.big=!!m&&Math.abs(m.scale.x/m.userData.s0-MBTANKSTONE.hammer)<1e-6;
       const r0=MB.me.r;MBTANKSTONE.on=false;syncPlayer(1/60);o.off=MBTS_U.tsOn.value===0&&!!m&&Math.abs(m.scale.x-m.userData.s0)<1e-6&&MB.me.r===r0;
-    }catch(e){o.err=String(e&&e.stack||e)}MBTANKSTONE.on=on;return o});
+    }catch(e){o.err=String(e&&e.stack||e)}MBTANKSTONE.on=on;MBTANKHF.on=hf;return o});
   check(!tsk.err&&(tsk.d2||tsk.body&&tsk.big&&tsk.off),'underworld tank stone look: '+(tsk.err||(tsk.d2?'2D, nothing to draw':[['stone + lava cracks on the body',tsk.body],['bigger hammer (draw only)',tsk.big],['switch off',tsk.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
+  // the new tank body (ARI #578, tankHF via mb-parts.js, MBTANKHF): on your hero and the bots, every tank clip moves its bones, hammer and crown stay,
+  // the stone shader stays off (the body has its own cracks), and the switch brings the barbarian back
+  const thf=await page.evaluate(()=>{const o={},hf=MBTANKHF.on;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      MBTANKHF.on=true;mobaStart('tank');syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player;o.me=a.L.model==='tankHF'&&!!(a.props.sword&&a.props.x_crown);
+      let st=0;a.root.traverse(x=>{if(x.isSkinnedMesh&&x.material.userData.ts)st++});o.noStone=st===0;
+      const bot=MB.u.find(u=>u.k==='hero'&&u.kit==='tank'&&!u.me);if(bot){mb3dUnit(bot,1/60);mb3dUnit(bot,1/60);o.bot=R3D.actors.get(bot).L.model==='tankHF'}else o.bot=true;
+      let arm=null;a.root.traverse(n=>{if(!arm&&n.isBone&&/arm|upper/i.test(n.name))arm=n});o.bad=[];
+      for(const c of ['Idle_A','Running_B','Death_A','Melee_2H_Attack_Chop@up','Melee_2H_Idle','Jump_Idle','Taunt@up']){const C=R3D.clips[c];if(!C){o.bad.push(c+' missing');continue}
+        const x=a.mixer.clipAction(C);a.mixer.stopAllAction();x.reset().play();const q=arm.quaternion.clone();a.mixer.update(0.3);if(arm.quaternion.equals(q))o.bad.push(c);x.stop()}
+      MBTANKHF.on=false;syncPlayer(1/60);o.off=R3D.player.L.model==='barbarian';
+    }catch(e){o.err=String(e&&e.stack||e)}MBTANKHF.on=hf;return o});
+  check(!thf.err&&(thf.d2||thf.me&&thf.bot&&thf.noStone&&!thf.bad.length&&thf.off),'underworld new tank body: '+(thf.err||(thf.d2?'2D, nothing to draw':[['yours, with hammer + crown',thf.me],['bots',thf.bot],['no stone shader on it',thf.noStone],['all 7 tank clips move it'+(thf.bad.length?' ('+thf.bad.join(',')+')':''),!thf.bad.length],['switch: barbarian back',thf.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
   // ARI #556/#557: the assassin's mask and second dagger, the mage's circlet (witch hat hidden) and floating crystal that bobs. 2D: nothing to draw
   const p2=await page.evaluate(()=>{const o={};try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}

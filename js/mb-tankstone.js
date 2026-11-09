@@ -17,7 +17,8 @@ const MBTANKSTONE={
 };
 const MBTS_U={tsOn:{value:1},tsT:{value:0},tsStone:{value:new THREE.Color()},tsEmber:{value:new THREE.Color()},tsKeep:{value:0.2},tsFreq:{value:5},tsW:{value:0.07}};
 // הגוף של הטנק: הבוט (LOOK3D.mb_tank או המראה עם החלקים) או הגיבור שלך במראה הערכה
-const mbTsIs=L=>!!L&&typeof LOOK3D!=='undefined'&&(L===LOOK3D.mb_tank||L.base===LOOK3D.mb_tank||L.mbKit==='tank');
+// רק על גוף הברברי: לגוף החדש (tankHF, mb-parts.js) יש סדקים וזהב משלו
+const mbTsIs=L=>!!L&&typeof LOOK3D!=='undefined'&&L.model==='barbarian'&&(L===LOOK3D.mb_tank||L.base===LOOK3D.mb_tank||L.mbKit==='tank');
 function mbTsMat(m){
   if(m.userData.ts)return;m.userData.ts=1;MBTANKSTONE.stat.mats++;
   m.onBeforeCompile=sh=>{Object.assign(sh.uniforms,MBTS_U);

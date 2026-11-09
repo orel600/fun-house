@@ -7,6 +7,7 @@
    עד שהחלקים נטענים (m3dNeed, m3d.js): המראה הקודם, ואז הדמות נבנית מחדש פעם אחת.
    model: מודל אחר לגיבור (הצייד החדש, רק עם ?hunter=hf).
    כיבוי של חלק אחד: שורה ב-MBPARTS.use. של גיבור אחד: MBPARTS.<kit>.on=false. של כולם: ?parts=off. מחיקה: הקובץ והשורה ב-index.html */
+const MBTANKHF={on:!/[?&]tankhf=off/.test(location.search)};   // הגוף החדש של הטנק (ARI #578, tankHF: אובסידיאן וזהב על השלד של הברברי). כבוי: הברברי
 const MBPARTS={
   on:!/[?&]parts=off/.test(location.search),
   // מתג לכל חלק בשורה אחת (MAX, 9.11: כל חלק יכול לצאת לבד). false: החלק לא מורכב, ומה שהוא מחליף נשאר
@@ -18,7 +19,7 @@ const MBPARTS={
     circlet:true,   // קוסם: עטרה (#557), במקום כובע המכשפה
     crystal:true    // קוסם: גביש מרחף (#557)
   },
-  tank:{on:true,
+  tank:{on:true,get model(){return MBTANKHF.on?'tankHF':null},
     add:{hammer:{prop:'w_item_stoneHammer',...HAND_R,s:1,hide:'2H_Axe'},crown:{prop:'hat_tankCrown',bone:'head',pos:[0,0,0],rot:[0,0,0,1],hide:'Barbarian_Hat'}}},
   assassin:{on:true,   // #556: חצי מסכה עם חריצים זוהרים, ופגיון שני ביד שמאל (לילך, זוהר משלו)
     add:{mask:{prop:'hat_assassinMask',bone:'head',pos:[0,0,0],rot:[0,0,0,1]},dagger2:{prop:'w_item_shadowDagger',bone:'handslotl',pos:[0,0.033,0],rot:[0,0,0,1],s:1}}},
@@ -31,8 +32,8 @@ const MBPARTSC={};   // המראה המורכב לכל גיבור, נבנה פע
 // המראה של הגיבור עם החלקים, או B כמו שהוא (אין חלקים, כבוי, או שהם עוד נטענים)
 function mbPartsLook(B,kit){
   const C=MBPARTS.on&&MBPARTS[kit];if(!B||!C||!C.on||typeof R3D==='undefined'||!R3D.on)return B;
-  const add={};for(const k in C.add)if(MBPARTS.use[k]!==false)add[k]=C.add[k];const sig=Object.keys(add).join();   // רק החלקים שדולקים
-  if(!C.model&&!sig)return B;
+  const add={};for(const k in C.add)if(MBPARTS.use[k]!==false)add[k]=C.add[k];const sig=Object.keys(add).join()+'|'+(C.model||'');   // רק החלקים שדולקים
+  if(!C.model&&!Object.keys(add).length)return B;
   if(MBPARTSC[kit]&&MBPARTSC[kit].base===B&&MBPARTSC[kit].sig===sig)return MBPARTSC[kit];
   let ok=!C.model||m3dNeed(C.model);for(const k in add){const p=add[k].prop;
     if(!R3D.props[p]&&p.startsWith('hat_')&&R3D.hats&&R3D.hats[p.slice(4)])R3D.props[p]=R3D.hats[p.slice(4)];   // כובע (render3d.js שם אותם ב-R3D.hats): גם כחפץ על עצם

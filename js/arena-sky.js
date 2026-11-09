@@ -8,7 +8,7 @@
    חיבור: עוטף את aLookColors (arena-look.js), שנקרא מ-render3d.js בכל פריים אחרי צבע הרקע */
 const ARENA_SKY={
   on:!/[?&]sky=off\b/.test(location.search),
-  map:{classic:'classic',waves:'waves',maze:'dimension'},   // פלטה (S.arena) → תמונה. בלי שורה: הצבע השטוח
+  map:{gauntlet:'classic',classic:'classic',waves:'waves',maze:'dimension'},   // gauntlet: הזירה האמיתית מאז האיחוד (arenas.js, S.arena תמיד 'gauntlet'). הרצפה שלה בפלטה classic (aLookPal), אז גם השמיים. QUINN מצא, 9.11   // פלטה (S.arena) → תמונה. בלי שורה: הצבע השטוח
   dim:{dimension:0.52},   // תמונה בהירה מדי מוכפלת (ARI מדד: dimension בערך פי 2.5 מהשתיים האחרות)
   edge:1050,     // מאיזה רדיוס בזירה לא מציירים רצפה (שפת העץ נגמרת ב-1030, arena-look.js border.planks)
   stat:{shown:0}
