@@ -47,7 +47,7 @@ let gSeed=12345;const gRnd=(a,b)=>a+(gSeed=(gSeed*16807)%2147483647)/2147483647*
 function gPool(){if(GATHER.chips)return GATHER.chips;const L=GATHER.chips=[];for(let i=0;i<GATHER.chip.pool;i++)L.push({on:false,x:0,y:0,z:0,vx:0,vy:0,vz:0,t:0,max:1,col:'',sz:3,a:0,k:0,pull:0,rest:0});return L}
 // מכה במקור (damage ב-combat.js). ang: הכיוון מהגיבור אל המקור
 function gHit(n,ang,d){
-  if(!gOn()||!n||!n.node)return;GATHER.stat.hit++;S.wd.gath=S.wd.t;   // מתי אספו לאחרונה: בזמן איסוף פחות להקות (PACE.gather ב-pacing.js)gmHit(n,d,ang);gtHit(n,d);   // כלי ביד (gtool.js). מומחיות: מכה חזקה יותר וגם במקור צמוד (gmastery.js)
+  if(!gOn()||!n||!n.node)return;GATHER.stat.hit++;S.wd.gath=S.wd.t;gmHit(n,d,ang);gtHit(n,d);   // כלי ביד (gtool.js). מומחיות: מכה חזקה יותר וגם במקור צמוד (gmastery.js)   // gath: מתי אספו לאחרונה, בזמן איסוף פחות להקות (PACE.gather ב-pacing.js)
   if(gShape(n)==='tree'&&gFx()){n.gHitT=gNow();n.gDir=Math.cos(ang||0)>=0?1:-1}
   if(!gFx())return;
   const C=GATHER.chip,sh=gShape(n),pal=GATHER.cols[sh]||GATHER.cols.rock,col=(wKind(n.kind)||{}).col||'#fff',lf=GATHER.leaf[sh]||[],sp=GATHER.spark[sh]||[];
