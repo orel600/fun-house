@@ -1359,6 +1359,29 @@ function worldBot(m,L,god){
     try{lsS?localStorage.setItem(CLOUD.lsKey,lsS):localStorage.removeItem(CLOUD.lsKey)}catch(e){}SAVE=JSON.parse(bak);SAVE_STORE.write(SAVE,true);return r});
   {const L=[[dlv.set,'רמה 30 עם 29 נקודות','לא עלה ל-30'],[dlv.res,'משאבים של רמה 30 ('+dlv.coins+' מטבעות)','משאבים לא לפי הטבלאות'],[dlv.none,'בלי פרמטר בלי שינוי','שינה בלי פרמטר!'],[dlv.once,'פעם אחת','חוזר'],[dlv.stack,'טעינה חוזרת לא מוסיפה','המשאבים נערמים'],[dlv.keep,'לא מוריד משאבים','הוריד משאבים!'],[dlv.max,'עד המקסימום','עבר את המקסימום'],[dlv.down,'רק מעלה','הוריד רמה!'],[dlv.cloud,'נדחף לענן מיד','לא הגיע לענן ('+dlv.cdbg+')'],[dlv.other,'מכשיר אחר לוקח את החדשה','ענן ישן דרס']];
    check(!dlv.err&&L.every(x=>x[0]),'?level=30 (כלי פיתוח): '+(dlv.err||L.map(x=>x[0]?x[1]:x[2]).join(', ')))}
+  // כלי פיתוח: ?fresh=1 / ?restore=1 (js/devsave.js): גיבוי, שמירה חדשה מאפס, ושחזור זהה לגמרי. ענן מדומה
+  const dfs=await page.evaluate(async()=>{const bak=JSON.stringify(SAVE),r={},cf=CLOUD.fake,cs=CLOUD.session,ch=CLOUD.hold,lsS=localStorage.getItem(CLOUD.lsKey),lsB=localStorage.getItem(DEVSAVE.key);
+    const noTs=o=>{const c=devStrip(o);delete c.ts;return JSON.stringify(c)};
+    try{CLOUD.fake=cloudFakeServer();CLOUD.session=null;cloudHeld(false);localStorage.removeItem(CLOUD.lsKey);localStorage.removeItem(DEVSAVE.key);delete SAVE.devBak;delete SAVE.devFresh;
+      SAVE.hero.xp=rankXpAt(12);SAVE.hero.level=12;bagAdd('wood',77);SAVE.village.forge=3;saveNow();SAVE.ts-=60000;await cloudSync();
+      const before=devClone(SAVE);r.btn0=!devHasBak();
+      r.fresh=await devFresh()==='ok';const row=()=>CLOUD.fake.rows.u1.data;
+      r.gone=SAVE.hero.level===1&&!SAVE.hero.xp&&!SAVE.bag.wood&&!SAVE.village.forge&&SAVE.devFresh===true;
+      r.bakL=devSame(devLocalBak(),devStrip(before));r.bakS=devSame(SAVE.devBak,devStrip(before));
+      r.bakC=devSame(row().devBak,devStrip(before))&&row().devFresh===true&&row().ts===SAVE.ts;
+      r.pull=await cloudSync()!=='took'&&SAVE.devFresh===true&&!SAVE.bag.wood;   // the old save does not come back
+      bagAdd('stone',5);saveNow();r.again=await devFresh()==='ok'&&devSame(devLocalBak(),devStrip(before))&&!SAVE.bag.stone;   // a 2nd ?fresh keeps the real backup
+      r.rest=await devRestore()==='ok';r.same=noTs(SAVE)===noTs(before);if(!r.same)r.dbg=[noTs(SAVE).length,noTs(before).length].join('/');
+      r.keep=devHasBak()&&devSame(devLocalBak(),devStrip(before))&&devSame(row().devBak,devStrip(before))&&!row().devFresh&&row().hero.level===12;
+      // the backup can't be written: nothing changes
+      const j0=JSON.stringify(SAVE),si=Storage.prototype.setItem;Storage.prototype.setItem=function(k,v){if(k===DEVSAVE.key)throw new Error('full');return si.call(this,k,v)};
+      try{localStorage.removeItem(DEVSAVE.key);delete SAVE.devBak;const j1=JSON.stringify(SAVE);r.abort=await devFresh()==='fail'&&JSON.stringify(SAVE)===j1&&SAVE.hero.level===12}finally{Storage.prototype.setItem=si}
+      CLOUD.session=null;r.none=await devRestore()==='none';
+    }catch(err){r.err=String(err&&err.stack||err)}
+    CLOUD.fake=cf;CLOUD.session=cs;cloudHeld(!!ch);CLOUD.dirty=false;clearTimeout(CLOUD.timer);CLOUD.timer=null;
+    try{lsS?localStorage.setItem(CLOUD.lsKey,lsS):localStorage.removeItem(CLOUD.lsKey);lsB?localStorage.setItem(DEVSAVE.key,lsB):localStorage.removeItem(DEVSAVE.key)}catch(e){}SAVE=JSON.parse(bak);SAVE_STORE.write(SAVE,true);return r});
+  {const L=[[dfs.fresh&&dfs.gone,'מאפס','לא התאפס'],[dfs.bakL&&dfs.bakS,'גיבוי בטלפון','גיבוי בטלפון חסר!'],[dfs.bakC,'גיבוי בענן','גיבוי בענן חסר!'],[dfs.pull,'הישנה לא חוזרת מהענן','הישנה חזרה'],[dfs.again,'?fresh שני שומר את הגיבוי','הגיבוי נדרס!'],[dfs.rest&&dfs.same,'שחזור זהה','השחזור שונה! '+(dfs.dbg||'')],[dfs.keep,'הגיבוי נשאר','הגיבוי נמחק'],[dfs.abort,'גיבוי נכשל = בלי שינוי','שינה בלי גיבוי!'],[dfs.none&&dfs.btn0,'בלי גיבוי: אין שחזור','שחזור בלי גיבוי']];
+   check(!dfs.err&&L.every(x=>x[0]),'?fresh=1 / ?restore=1 (כלי פיתוח): '+(dfs.err||L.map(x=>x[0]?x[1]:x[2]).join(', ')))}
   const hsk=await page.evaluate(()=>{const sk=SAVE.hero.skin,pk=SAVE.pet.kind,r={};
     try{soundOpen();const lk=()=>R3D.on?heroLook().model:heroSkin();SAVE.hero.skin=null;const base=lk();
       document.querySelector('#ovSound [data-skin="nir"]').click();
@@ -2930,7 +2953,11 @@ function worldBot(m,L,god){
       const foe={x:P.x+30,y:P.y,r:12,dead:false};enemies=[foe];o.foeFirst=aimTarget(999)===foe;enemies=[];o.node=aimTarget(999)===rock;
       const bag0=Object.values(SAVE.bag).reduce((a,b)=>a+b,0);
       rock.hp=0;nodeDown(rock);o.fly=st.fly-s0.fly;o.cleared=GATHER.from===null;
-      for(let i=0;i<120;i++){dropsUpdate(1/60);wLootIn()}
+      // נראה בטלפון (ניר 9.11: "רק כמה אבנים קטנות"): התנפצות עם רסיסים, חתיכות בגודל של לפחות 4 פיקסלים במסך, מצוירות על הקנבס גם בתלת-ממד,
+      // השלל מחכה רגע לפני שהוא נמשך, והרסיסים נמשכים לגיבור
+      o.burst=st.burst-s0.burst;o.px=Math.round(GATHER.chip.size[0]*ZOOM*10)/10;o.r3d=R3D.on;const dr0=st.drawn;render();o.drawn=st.drawn-dr0;
+      for(let i=0;i<18;i++){dropsUpdate(1/60);gUpdate(1/60);wLootIn()}o.early=st.take-s0.take;
+      for(let i=0;i<120;i++){dropsUpdate(1/60);gUpdate(1/60);wLootIn()}o.pulled=st.pulled-s0.pulled;
       o.take=st.take-s0.take;o.bag=Object.values(SAVE.bag).reduce((a,b)=>a+b,0)>bag0;
       tree.hp=0;nodeDown(tree);o.fell=st.fell-s0.fell;
       tree.back=tree.regrow*0.5;o.sprout=Math.abs(gSprout(tree)-0.5)<0.01;
@@ -2941,10 +2968,12 @@ function worldBot(m,L,god){
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     finally{Math.random=R0}
     enemies=[];SAVE=JSON.parse(bak);enterVillage();return o});
-  check(!gat.err&&gat.grove>=60&&gat.chips>0&&gat.perFrame<=gat.cap&&gat.shrink&&gat.sway&&gat.foeFirst&&gat.node&&gat.fly>0&&gat.cleared&&gat.take>0&&gat.bag&&gat.fell>0&&gat.sprout&&gat.regrow&&gat.arena,
+  check(!gat.err&&gat.grove>=60&&gat.chips>0&&gat.burst>0&&gat.px>=4&&gat.drawn>0&&gat.early===0&&gat.pulled>0&&gat.perFrame<=gat.cap&&gat.shrink&&gat.sway&&gat.foeFirst&&gat.node&&gat.fly>0&&gat.cleared&&gat.take>0&&gat.bag&&gat.fell>0&&gat.sprout&&gat.regrow&&gat.arena,
     'תחושת איסוף: '+(gat.err||('חורשות '+gat.grove+'% מהעצים עם שכן'+(gat.chips>0?', מכה מתיזה '+gat.chips+' חתיכות':', מכה בלי חתיכות!')+' ('+gat.perFrame+'/'+gat.cap+' בפריים)'+
     (gat.shrink?', סלע מתכווץ':', לא מתכווץ')+(gat.sway?', עץ מתנדנד':', בלי נדנוד')+(gat.foeFirst&&gat.node?', אויב קודם למקור':', עדיפות שגויה!')+
-    (gat.fly>0&&gat.take>0&&gat.bag?', השלל עף ונאסף ('+gat.take+')':', השלל לא נאסף!')+(gat.fell>0?', עץ נופל':', לא נופל')+(gat.sprout&&gat.regrow?', נבט וצמיחה מחדש':', בלי צמיחה')+(gat.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
+    (gat.fly>0&&gat.take>0&&gat.bag?', השלל עף ונאסף ('+gat.take+')':', השלל לא נאסף!')+(gat.fell>0?', עץ נופל':', לא נופל')+(gat.sprout&&gat.regrow?', נבט וצמיחה מחדש':', בלי צמיחה')+(gat.arena?', בזירה בלי שינוי':', הזירה השתנתה!')+
+    (gat.burst>0&&gat.drawn>0&&gat.px>=4?', התנפצות נראית ('+(gat.r3d?'3D':'2D')+', חתיכה '+gat.px+'px)':', התנפצות לא נראית! ('+gat.burst+'/'+gat.drawn+'/'+gat.px+'px)')+
+    (gat.early===0&&gat.pulled>0?', שלל מחכה ונמשך ('+gat.pulled+' רסיסים)':', שלל נאסף מיד או רסיסים לא נמשכו!'))));
   // מומחיות איסוף (gmastery.js): דרגה 1 = הקצב של היום, נקודות מכל מקור שנשבר, דרגה חדשה עם חגיגה, שלל נמשך מרחוק, מקור צמוד, מכה חזקה, נצנוץ,
   // חלון הדמות, שמירה, ובזירה בלי שינוי. מזל משלה, כמו הבדיקה שלפניה
   const gmr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),R0=Math.random,o={};let sd=777;
