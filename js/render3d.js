@@ -207,9 +207,14 @@ const PILOT3D=/[?&]hero=pilot/.test(location.search);
    models: המבנים (השמות ב-look). site: פיגום, למבנה שעוד לא נבנה או שבונים אותו עכשיו. deco: קישוטים סביב מבנה.
    decor: העצים והגבעות מסביב (villageDecor). stock: ערימה ליד מבנה שיש בו תוצרת שמחכה */
 const VIL3D={
-  models:{castle:{model:'v_castle',w:190},forge:{model:'v_forge',w:140},mill:{model:'v_mill',w:140},mine:{model:'v_mine',w:140},market:{model:'v_market',w:150},tent:{model:'v_tent',w:105}},
+  models:{castle:{model:'v_castle',w:190},forge:{model:'v_forge',w:140},mill:{model:'v_mill',w:140},mine:{model:'v_mine',w:140},market:{model:'v_market',w:150},tent:{model:'v_tent',w:105},
+    /* הכפר גדל (docs/concept-village-growth.md, ניר 9.11): הרמות הנמוכות. vx_ נטענים בכניסה לכפר (m3d.js), ועד אז הפיגום */
+    ruin:{model:'vx_ruin',w:150},stageA:{model:'vx_stageA',w:120},stageB:{model:'vx_stageB',w:130},stageC:{model:'vx_stageC',w:150},
+    pile:{model:'v_lumber',w:85},boulder:{model:'v_rock',w:90},stall:{model:'vx_pallet',w:70}},
   site:{model:'v_site',w:135},gate:{model:'v_gate',w:150},
-  deco:{flag:{model:'v_flag',w:46},crate:{model:'v_crate',w:30},barrel:{model:'v_barrel',w:28}},
+  deco:{flag:{model:'v_flag',w:46},crate:{model:'v_crate',w:30},barrel:{model:'v_barrel',w:28},
+    tent:{model:'v_tent',w:62},lumber:{model:'v_lumber',w:42},stone:{model:'v_stone',w:42},rack:{model:'vx_rack',w:38},sack:{model:'vx_sack',w:24},wbarrow:{model:'vx_wbarrow',w:36},
+    bucket:{model:'vx_bucket',w:20},pallet:{model:'vx_pallet',w:36},ladder:{model:'vx_ladder',w:34},crateS:{model:'vx_crateS',w:22},fenceW:{model:'vx_fenceW',w:52},fenceS:{model:'vx_fenceS',w:52},towerB:{model:'vx_towerB',w:72}},
   decor:{tree:{model:['v_treeA','v_treeB'],w:55},rock:{model:'v_rock',w:55},hills:{model:'v_hills',w:260}},
   stock:{mill:{model:'v_lumber',w:60},mine:{model:'v_stone',w:60}}
 };
@@ -217,12 +222,14 @@ const VIL3D={
    glow: צבע לעורק מתכת. הקישוטים והשערים כמו בכפר (VIL3D.decor, VIL3D.gate) */
 const W3D={nodes:{tree:{model:['v_treeA','v_treeB'],w:88},bush:{model:'v_treeB',w:42,glow:'#5FA35A'},chest:{model:'v_crate',w:48,glow:'#F4C74F'},rock:{model:'v_rock',w:62},vein:{model:'v_rock',w:62,glow:'#C87533'},
   reed:{model:'v_treeB',w:34,glow:'#3FA7A0'},crystal:{model:'v_rock',w:62,glow:'#4FB4FF'}},   // w: רוחב המודל
+  /* סימן לעץ שאפשר לכרות (ניר, 9.11): בול עץ קטן ליד הגזע. dx/dy: כמה רדיוסים מהמרכז. עצי קישוט בלי. הנצנוץ: FXC.mine.glint ב-fxcombat.js */
+  log:{model:'v_lumber',w:38,dx:0.75,dy:0.45},
   /* קישוטים לכל אזור, מסביב לגבול (worldDecor ב-world.js): במקום עצי האחו בכל מקום. אזור שלא כתוב כאן: VIL3D.decor, כמו בכפר.
      model: מפתח ב-MODELS3D (n_ מ-KayKit Forest Nature, v_ מהכפר), או n_cactus/n_reeds שנבנים בקוד (natureProp). pick: כמה אפשרויות, לפי המקום.
      h: גובה (לעצים צרים וגבוהים) או w: רוחב. tint: צבע שמוכפל בצבעים של המודל (חול, צל). snow: כמה להלבין (שלג). רק במראה החדש, ?look=classic מחזיר את עצי האחו */
   decor:{
-    meadow:{hills:{pick:[{model:'n_tree',h:150,tint:'#cfe6bf'},{model:'n_pine',h:160},{model:'v_treeA',w:120}]}},   // האחו: יער גבוה בשוליים במקום אריחי המשושה (שנראו כמו לוח משחק). העצים והסלעים הקטנים כמו בכפר
-    lake:  {tree:{pick:[{model:'n_tree',h:100,tint:'#a9d2bf'},{model:'v_treeB',w:55,tint:'#bfe0d0'},{model:'n_reeds',h:55}]},rock:{model:'n_round',w:55,tint:'#a9bcb8'},hills:{model:'v_hills',w:260,tint:'#bfd8cc'}},
+    meadow:{hills:{pick:[{model:'n_tree',h:150,tint:'#cfe6bf'},{model:'n_pine',h:160},{model:'n_pine',h:140}]}},   // האחו: יער גבוה בשוליים במקום אריחי המשושה (שנראו כמו לוח משחק). העצים והסלעים הקטנים כמו בכפר
+    lake:  {tree:{pick:[{model:'n_tree',h:100,tint:'#a9d2bf'},{model:'n_pine',h:85,tint:'#bfe0d0'},{model:'n_reeds',h:55}]},rock:{model:'n_round',w:55,tint:'#a9bcb8'},hills:{model:'v_hills',w:260,tint:'#bfd8cc'}},
     ridge: {tree:{pick:[{model:'n_pine',h:125,snow:0.35},{model:'n_pine',h:95,snow:0.5}]},rock:{model:'n_crag',w:62,tint:'#eef4fa'},hills:{pick:[{model:'n_pine',h:175,snow:0.45},{model:'n_crag',w:120,tint:'#e2ecf4'},{model:'n_pine',h:150,snow:0.55}]}},
     desert:{tree:{pick:[{model:'n_acacia',h:85,tint:'#d8c27a'},{model:'n_cactus',h:70},{model:'n_dead',h:105,tint:'#e0b58a'}]},rock:{model:'n_crag',w:62,tint:'#e7b47a'},hills:{pick:[{model:'n_crag',w:115,tint:'#d9a05e'},{model:'n_dead',h:160,tint:'#e0b58a'},{model:'n_acacia',h:140,tint:'#d8c27a'}]}},
     storm: {tree:{pick:[{model:'n_dead',h:115,tint:'#8f86aa'},{model:'n_bare',h:90,tint:'#7d7598'}]},rock:{model:'n_block',w:60,tint:'#9a96b4'},hills:{pick:[{model:'n_block',w:105,tint:'#8a86a4'},{model:'n_dead',h:165,tint:'#8f86aa'},{model:'n_bare',h:130,tint:'#7d7598'}]}},
@@ -645,7 +652,8 @@ function syncVillage(){
   V.g.visible=true;
   // מבנה שעלה רמה מתחלף לפי vLook: פיגום עד שנבנה, ואחר כך המודל, הגודל, הקישוטים והזוהר של הרצועה שלו
   for(const k in VILLAGE.b){
-    const B=VILLAGE.b[k],lk=vLook(k),key=lk?lk.model+lk.L:'site',cur=V.b[k];
+    const B=VILLAGE.b[k],lk0=vLook(k),ok=!lk0||[VIL3D.models[lk0.model].model,...lk0.deco.map(d=>VIL3D.deco[d].model)].every(m3dNeed),lk=ok?lk0:null;   // מודל שעוד נטען (vx_, m3d.js): בינתיים הפיגום
+    const key=lk?lk.model+lk.L:'site',cur=V.b[k];
     if(cur&&cur.key===key)continue;if(cur)for(const m of cur.all)V.g.remove(m);
     const D=lk?VIL3D.models[lk.model]:VIL3D.site,m=vPut(D.model,B.x,B.y,D.w*(lk?lk.size:1)),all=[m];
     if(lk){if(lk.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(lk.glow).multiplyScalar(0.22)}});
@@ -715,15 +723,16 @@ function syncWorld(){
     if(!m){const D=W3D.nodes[wKind(n.kind).shape],v=hash(n.x,n.y),md=Array.isArray(D.model)?D.model[v<0.5?0:1]:D.model;
       m=G.nodes[n.id]=vPut(md,n.x,n.y,D.w*(0.85+v*0.3),v*6.28,G.g);
       if(D.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(D.glow).multiplyScalar(0.5)}})}
-    if(m.userData.lift==null)tLift(m);
+    if(m.userData.lift==null){tLift(m);const L=W3D.log;if(wKind(n.kind).shape==='tree'){m.userData.log=vPut(L.model,n.x+n.r*L.dx,n.y+n.r*L.dy,L.w,hash(n.y,n.x)*6.28,G.g);tLift(m.userData.log)}}   // בול ליד עץ שאפשר לכרות
     m.visible=!n.dead&&(!TR||Math.abs(n.x-S.cam.x)+Math.abs(n.y-S.cam.y)<TERRAIN.cull*1.4);   // באחו הגדול: מקור רחוק לא מצויר
+    if(m.userData.log)m.userData.log.visible=m.visible;
     gather3d(n,m,G.g);   // מתכווץ, מתנדנד, נופל, גדם ונבט (gather.js)
   }
 }
 // תושבי הכפר: דמות לכל תושב שנמצא בכפר, והקישוטים בפינה של מי שאין לו מבנה. המצב (הולך, עובד, מנופף) מגיע מ-npc.js
 function syncNpcs(dt){
   const all=npcState(),A=R3D.npcs||(R3D.npcs={}),V=R3D.vil;
-  resSync3d();   // הבתים של מי שעברה מהעולם (residents.js)
+  resSync3d();vpSync3d();   // הבתים של מי שעברה מהעולם (residents.js), והסדנה לפי השלב (vproj.js)
   if(!V.npcDeco){V.npcDeco=1;for(const id in NPC.list){const sp=NPC.list[id].spot;if(sp)sp.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length];vPut(VIL3D.deco[d].model,sp.x+dx*40,sp.y+dy*40,VIL3D.deco[d].w)})}}
   for(const id in NPC.list){
     const L=LOOK3D['npc_'+id],n=all[id];let a=A[id];

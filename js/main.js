@@ -14,7 +14,7 @@ document.addEventListener('visibilitychange',()=>{document.hidden?loopPause():lo
 function frameStep(now){
   let dt=Math.min(LOOP.maxDt,(now-last)/1000);last=now;FRAME_T=now;   // FRAME_T: אותו שעון לתלת-ממד (render3d.js), בלי קפיצות בין שני שעונים
   if(typeof pwaHeld==='function'&&pwaHeld())dt=0;   // אפליקציה מותקנת שמוחזקת לאורך: המשחק עוצר עד שמסובבים (pwa.js)
-  if(S&&S.mode==='play'){
+  if(S&&S.mode==='play'&&!uiHold()){   // uiHold: חלון מלא פתוח בעולם או בכפר עוצר את העולם (ui.js)
     if(S.mb)mobaUpdate(dt);   // משחקי השאול (moba.js)
     else if(S.vil)villageUpdate(dt);   // בכפר מתעדכן רק הכפר
     else if(S.hitstop>0)S.hitstop-=dt;
