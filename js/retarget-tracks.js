@@ -28,6 +28,10 @@ const RETARGET={
       if(prop!=='position'||!(bone in f))return t;const v=t.values.slice();for(let k=0;k<v.length;k++)v[k]*=f[bone];
       return new THREE.VectorKeyframeTrack(t.name,t.times,v)});
     return new THREE.AnimationClip(clip.name,clip.duration,tr)},
+  /* applyRotOnly(clip): למודל שכיוון התרגומים המקומיים שלו שונה מ-KayKit (שלד שנבנה מהרשת עצמה, כמו הנודד): זורקים את כל רצועות position חוץ מ-hips (שגובהו מוכפל ב-f_hips כמו ב-apply).
+     העצמות שומרות על אורכי המנוחה שלהן. המחיר: אין תזוזה של עצמות מלבד ה-hips (מספיק לריצה והתקפה, פחות למוות). */
+  applyRotOnly(clip,f){
+    const tr=clip.tracks.filter(t=>!(t.name.endsWith('.position')&&t.name.split('.')[0]!=='hips'));return RETARGET.apply(new THREE.AnimationClip(clip.name,clip.duration,tr),f)},
   /* dampen(clip, restQ, k, boneRe): מקטין את משרעת הסיבוב של עצמות (למשל הרגליים בריצה) ל-k מהמקורי: q' = slerp(rest, q, k). restQ = {שם עצם: [x,y,z,w]} מהשלד של המודל.
      למה: מודל בפרופורציות מציאותיות (רגליים ~70% מהגובה, ב-KayKit ~17%) עושה עם אותן זוויות צעד גדול פי 4 ביחס לגובה המוצג: החלקה ורגל שעולה גבוה. k ~ 0.3 מחזיר את הצעד ליחס של KayKit. משתמשים רק בקליפי הליכה/ריצה. */
   dampen(clip,restQ,k,boneRe){
@@ -53,4 +57,12 @@ const TANKX={
   gait:{Running_B:{k:0.3,bones:/^(hips|upperleg|lowerleg|foot|toes)/}},
   /* הקליפים שבודקים לכל מודל (tools/tankx/verify.js) */
   verifyClips:['Idle_A','Running_B','Melee_2H_Attack_Chop','Death_A','Hit_A','Melee_2H_Idle','Jump_Idle','Taunt']
+};
+
+/* הנודד (wandererX): מטה על handslotl. ברירת מחדל = ההרכבה בתנוחת הבסיס של המודל; Idle_A ו-Running_B פתורים כך שהמטה אנכי (נפתר ב-9.11.2026) */
+const WANDERX={
+  staffProp:'w_item_wandererXStaff',bone:'handslotl',rotOnly:true,
+  /* נמדד ב-tools/tankx/gait.js wandererX (Running_B, מנורמל לגובה): בלי dampen lift 0.311 / stride 0.595 / contact 4.2; k=0.35: 0.096 / 0.308 / 0.93 (barbarian 0.094 / 0.275 / 1.49) */
+  gait:{Running_B:{k:0.35,bones:/^(hips|upperleg|lowerleg|foot|toes)/}},verifyClips:TANKX.verifyClips,
+  carry:{default:{pos:[0.0608, 0.0164, 0.0389],rot:[-0.1576, 0.343, 0.3175, -0.8699]},Idle_A:{pos:[0.0608, 0.0164, 0.0389],rot:[-0.5443, -0.5786, -0.4065, 0.4514]},Running_B:{pos:[0.0608, 0.0164, 0.0389],rot:[-0.067, -0.6897, -0.1512, 0.705]}}
 };

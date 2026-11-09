@@ -2,22 +2,22 @@
 <!-- בדיקת tankX לכל קליפ ברשימה (ARI, 9.11.2026): נטען מ-verify.js. בלי ציור: רק מיקסר ומדידות. חוסר קליפ = MISSING (לא כישלון). -->
 <script src="../../js/vendor/three-bundle.js"></script><script src="../../js/models3d.js"></script>
 <script>function m3dPut(k,b){MODELS3D[k]=b}</script>
-<script src="../../js/m3d/tankX.js"></script><script src="../../js/m3d/w_item_tankXHammer.js"></script><script src="../../js/retarget-tracks.js"></script>
+<script src="../../js/m3d/tankX.js"></script><script src="../../js/m3d/wandererX.js"></script><script src="../../js/m3d/w_item_wandererXStaff.js"></script><script src="../../js/m3d/w_item_tankXHammer.js"></script><script src="../../js/retarget-tracks.js"></script>
 </head><body><script>
 const b64buf=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
 const parse=buf=>new Promise((ok,bad)=>new THREE.GLTFLoader().setMeshoptDecoder(THREE.MeshoptDecoder).parse(buf,'',ok,bad));
 (async()=>{try{
- const mine=await parse(b64buf(MODELS3D.tankX)),ref=await parse(b64buf(MODELS3D.barbarian)),ham=await parse(b64buf(MODELS3D.w_item_tankXHammer));
+ const KEY=new URLSearchParams(location.search).get('m')||'tankX',ROT=KEY==='wandererX';const mine=await parse(b64buf(MODELS3D[KEY])),ref=await parse(b64buf(MODELS3D.barbarian)),ham=await parse(b64buf(MODELS3D[KEY==='tankX'?'w_item_tankXHammer':'w_item_wandererXStaff']));
  const ratios=RETARGET.ratios(mine.scene,ref.scene),rep=RETARGET.report(ratios);
  const clips={};for(const k of ['anim_general','anim_move','anim_ranged','anim_melee']){if(!MODELS3D[k])continue;const g=await parse(b64buf(MODELS3D[k]));for(const a of g.animations)clips[a.name]=a}
  const names=new Set();mine.scene.traverse(o=>names.add(o.name));
  const mkBox=()=>{const ch=THREE.SkeletonUtils.clone(mine.scene);return ch};
  const out={ratios:rep,bones:{model:names.size},clips:{}};
  // hammer attaches?
- out.hammerBone=names.has(TANKX.bone)?'ok':'MISSING '+TANKX.bone;
+ const PB=(KEY==='tankX'?TANKX:WANDERX).bone;out.propBone=names.has(PB)?'ok':'MISSING '+PB;
  let rest;{const ch=mkBox();ch.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(ch);rest=b.max.y-b.min.y;out.restHeight=+rest.toFixed(3)}
  for(const cn of TANKX.verifyClips){const a=clips[cn];if(!a){out.clips[cn]={status:'MISSING'};continue}
-  const kept=a.tracks.filter(t=>names.has(t.name.split('.')[0]));const clip=RETARGET.apply(new THREE.AnimationClip(a.name,a.duration,kept),ratios);
+  const kept=a.tracks.filter(t=>names.has(t.name.split('.')[0]));const base=new THREE.AnimationClip(a.name,a.duration,kept),clip=ROT?RETARGET.applyRotOnly(base,ratios):RETARGET.apply(base,ratios);
   const ch=mkBox(),mx=new THREE.AnimationMixer(ch),act=mx.clipAction(clip);act.play();const hs=[],bad=[];
   for(let i=0;i<=8;i++){mx.setTime(a.duration*i/8);ch.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(ch);const h=b.max.y-b.min.y;hs.push(+h.toFixed(3));if(!isFinite(h)||h<0.35*rest||h>2.2*rest)bad.push(i)}
   const feet=[];ch.traverse(o=>{if(o.isBone&&/^foot/.test(o.name)){const p=o.getWorldPosition(new THREE.Vector3());feet.push(+p.y.toFixed(3))}});
