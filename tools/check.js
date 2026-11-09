@@ -4690,6 +4690,19 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     }catch(e){o.err=String(e&&e.stack||e)}Z.hurt.on=true;return o});
   check(!zn.err&&zn.ticks===1&&zn.lost>0&&zn.lost<=zn.maxLoss+1e-6&&zn.outside&&zn.minion&&zn.off&&zn.heal&&zn.w0===0&&zn.wMid>0&&zn.wMid<1&&zn.w1===1&&zn.flash,
     'underworld home zone: '+(zn.err||[['enemy loses '+Math.round(zn.lost*1000)/10+'% per tick',zn.ticks===1&&zn.lost>0],['outside safe',zn.outside],['minions safe',zn.minion],['switch off',zn.off],['ally heal unchanged',zn.heal],['warning '+zn.w0+'/'+(+zn.wMid).toFixed(2)+'/'+zn.w1,zn.w0===0&&zn.wMid>0&&zn.w1===1],['recall flash',zn.flash]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', ')));
+  // hero parts (mb-parts.js, ARI #552): the tank gets the stone hammer in the right hand and the crown on the head, with the barbarian's axe and fur hat hidden,
+  // on bots and on your hero (kit look). A bot built before the parts loaded is rebuilt once. Switch: MBPARTS.tank.on. 2D: nothing to draw
+  const pa=await page.evaluate(async()=>{const o={},on=MBPARTS.tank.on;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      mobaStart('tank');m3dNeed('w_item_stoneHammer');for(let i=0;i<100&&!R3D.props.w_item_stoneHammer;i++)await new Promise(r=>setTimeout(r,100));
+      syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,hid={};a.root.traverse(x=>{if(MBPARTS.tank.hide.includes(x.name))hid[x.name]=x.visible});
+      o.me=!!(a.props.sword&&a.props.sword.visible&&a.props.x_crown&&a.props.x_crown.visible)&&Object.keys(hid).length===2&&!Object.values(hid).some(Boolean);
+      const bot=MB.u.find(u=>u.k==='hero'&&u.kit==='tank'&&!u.me);
+      if(bot){MBPARTS.tank.on=false;R3D.actors.delete(bot);mb3dUnit(bot,1/60);const k0=R3D.actors.get(bot).key;MBPARTS.tank.on=true;const r0=MBPARTS.stat.rebuilt;mb3dUnit(bot,1/60);
+        o.bot=MBPARTS.stat.rebuilt===r0+1&&R3D.actors.get(bot).key!==k0&&!!R3D.actors.get(bot).props.hammer}else o.bot=true;
+      MBPARTS.tank.on=false;syncPlayer(1/60);o.off=!R3D.player.props.x_crown;
+    }catch(e){o.err=String(e&&e.stack||e)}MBPARTS.tank.on=on;return o});
+  check(!pa.err&&(pa.d2||pa.me&&pa.bot&&pa.off),'underworld hero parts: '+(pa.err||(pa.d2?'2D, nothing to draw':[['your tank: hammer + crown, axe and fur hat hidden',pa.me],['bot rebuilt once parts load',pa.bot],['switch off',pa.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
   // tank s1 slow field (moba-kits.js, the one approved mechanic change of the morning package): after the anvil lands, an mbZone the size of the slam
   // slows enemies inside by field.k, refreshed in short steps (so it ends when they walk out), no damage, and the zone ends after field.t
   const anf=await page.evaluate(()=>(()=>{const o={};try{mobaStart('tank');const me=MB.me,s=MBKIT.tank.s1;
