@@ -2103,7 +2103,7 @@ body.mb .skb.lock::after{content:none}
 .mbbit{width:22px;height:22px;border-radius:5px;background:#0E1220;box-shadow:inset 0 0 0 1px #ffffff22;display:grid;place-items:center;overflow:hidden}
 .mbbit.off{opacity:.35}
 .mbbit img,.mbbit svg{width:20px;height:20px}
-/* QUINN (10.11): התוצאה למעלה גבוהה 30px. אזור נגיעה שקוף של 46px לפחות סביבה, בלי לשנות את המראה */
-.mbtop.mbtap::after{content:'';position:absolute;left:-10px;right:-10px;top:-8px;bottom:-8px}
+/* QUINN (10.11): התוצאה למעלה גבוהה 30px. קופסת נגיעה שקופה של 170x46 מעליה (mb-score.js), בלי לשנות את המראה */
+.mbtophit{position:absolute;top:env(safe-area-inset-top,0px);left:50%;transform:translateX(-50%);width:170px;height:46px;pointer-events:auto;cursor:pointer}
 /* הזהב בשורה: מטבע קטן לפני המספר, כדי שלא ייקרא כעוד רמה */
 .mbbgold::before{content:'';display:inline-block;width:9px;height:9px;margin-right:4px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#FFE9A8,#E0A93A 60%,#8A5A12);box-shadow:0 0 0 1px #0008;vertical-align:-1px}

@@ -33,7 +33,8 @@ function mbScoreOpen(on){
   if(!MBSCORE.on||typeof mobaHud!=='function')return;
   const el=document.createElement('div');el.id='mbBoard';el.className='mbboard';el.hidden=true;el.innerHTML='<div class="mbbpanel"></div>';document.body.appendChild(el);
   el.addEventListener('click',e=>{if(e.target===el)mbScoreOpen(false)});   // נגיעה מחוץ ללוח
-  const top=document.querySelector('#mbHud .mbtop');if(top){top.classList.add('mbtap');top.addEventListener('click',()=>{mbScoreOpen();sfx('ui')})}
+  // אזור הנגיעה: קופסה שקופה מעל התוצאה, גבוהה ממנה (QUINN: לפחות 44px. לתוצאה עצמה overflow:hidden, אז ריפוד שלה לא תופס נגיעות)
+  const top=document.querySelector('#mbHud .mbtop');if(top){top.classList.add('mbtap');const hit=document.createElement('div');hit.className='mbtophit';top.after(hit);hit.addEventListener('click',()=>{mbScoreOpen();sfx('ui')})}
   addEventListener('popstate',()=>{if(MBSCORE._skip){MBSCORE._skip=false;return}if(MBSCORE._hist){MBSCORE._hist=false;if(!el.hidden)el.hidden=true}});   // "חזור"
   const bh=mobaHud;mobaHud=function(){const r=bh.apply(this,arguments);if(!el.hidden){const n=performance.now();if(n-MBSCORE._t>=MBSCORE.every*1000){MBSCORE._t=n;mbScoreDraw()}}return r};
   const bx=mobaExit;mobaExit=function(){if(!el.hidden)mbScoreOpen(false);return bx.apply(this,arguments)};
