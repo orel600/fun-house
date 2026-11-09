@@ -4841,9 +4841,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
           const q={dirty:0,log:[],model:'',comp:0,bones:new Set(),carry:new Set(),staff:0};
           for(let i=0;i<300;i++){const mv=i<100;P.x+=mv?1.2:0;P.moving=mv;P.speed=185;P.hp=P.maxHp;worldUpdate(1/60);
             const s0=snap(),R0=Math.random;Math.random=rnd;try{syncPlayer(1/60)}finally{Math.random=R0}if(snap()!==s0)q.dirty++;
-            const a=R3D.player;if(a&&on){q.model=a.L.model;const b=a.base&&act(a,a.base);if(b&&b.getClip()!==R3D.clips[a.base])q.comp++;
+            const a=R3D.player;if(a&&on){const R1=Math.random;Math.random=rnd;try{q.model=a.L.model;const b=a.base&&act(a,a.base);if(b&&b.getClip()!==R3D.clips[a.base])q.comp++;
               const h=bone(a.root,'upperarmr')||bone(a.root,'hips');if(h&&i%15===0)q.bones.add(h.quaternion.toArray().map(v=>v.toFixed(2)).join());
-              if(a.wxClip)q.carry.add(a.wxClip);if(a.props.staff&&a.props.staff.visible)q.staff++}
+              if(a.wxClip)q.carry.add(a.wxClip);if(a.props.staff&&a.props.staff.visible)q.staff++}finally{Math.random=R1}}
             if(i%10===0)q.log.push(Math.round(P.x)+':'+Math.round(e.max-e.hp))}
           q.hit=Math.round(e.max-e.hp);
           if(on){const a=R3D.player;if(a){q.lambert=a.mats.every(m=>!!m.emissive);setFlash(a,0.9,0xffffff);q.flash=a.mats.some(m=>m.emissive.r>0.5)&&a.mats.every(m=>!m.userData.wxF||m.userData.wxF.value===1);setFlash(a,0,0xffffff);
