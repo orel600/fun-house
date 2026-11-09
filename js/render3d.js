@@ -176,7 +176,9 @@ const g3Rar=t=>GEAR.tiers[Math.min(t,GEAR.tiers.length-1)].col;   // הצבע ש
 // מוסיף ל-L (heroLook) את מה שהציוד מצייר: זוהר לנשק, מגן, וצבעים לחלקים (gear3dParts)
 function gear3dLook(L,wid){
   const it=gItem(wid),worn=gearWorn().map(gItem),best=s=>Math.max(-1,...worn.filter(x=>x.slot===s).map(x=>x.tier));
-  for(const w of ['sword','gun']){const p=L.props[w];p.s=GEAR3D.wscale;if(it&&wUse(wid)===w&&GEAR3D.glow[it.tier]>0){p.glow=g3Rar(it.tier);p.gk=GEAR3D.glow[it.tier];p.pulse=it.tier>=4}}
+  // הזוהר של הנשק בא מהדרגה (g3Rar), לא מ-look.glow של הפריט: look.glow נקרא רק בכרטיס בתיק (gear.js) ובבובה כש-GEAR3D כבוי.
+  // מודל זמני (wait) בלי זוהר. מודל משלו (w_item_) מדלג על הזוהר ב-makeActor
+  for(const w of ['sword','gun']){const p=L.props[w];p.s=GEAR3D.wscale;if(it&&wUse(wid)===w&&!p.wait&&GEAR3D.glow[it.tier]>0){p.glow=g3Rar(it.tier);p.gk=GEAR3D.glow[it.tier];p.pulse=it.tier>=4}}
   const fam=it&&wUse(wid)==='sword'&&GRIP3D.of(L.props.sword.prop);
   const t=best('shield'),sh=worn.find(x=>x.slot==='shield'&&x.tier===t);   // המגן מהמשבצת (armor.js). בלי מגן: יד ריקה
   if((fam==='blade'||fam==='chop')&&t>=0){const G=GEAR3D.shield,sm=sh&&itemModel(Object.keys(GEAR.items).find(k=>GEAR.items[k]===sh),sh);
@@ -433,7 +435,9 @@ function heroLook(){
   L.props={};L.anim=Object.assign({},L.anim);L.ck=ck;
   for(const w of ['sword','gun']){
     const im=it&&itemModel(gBase(wid),it),mine=it&&wUse(wid)===w&&im&&R3D.props[im],model=mine?im:GRIP3D.spare[w],g=GRIP3D[GRIP3D.of(model)];
-    L.props[w]=Object.assign({prop:model,tier:mine?GEAR.tiers[it.tier].id:'wood'},g);
+    // מודל משלו שעוד נטען: look.model הוא רק מקום שמור. בלי מתכת ובלי זוהר של הדרגה, כדי שלא ייראה כמו הנשק (באג 9.11: קשת השמיים ורודה, קשת הסערה כסופה)
+    const wait=it&&wUse(wid)===w&&!R3D.props['w_item_'+gBase(wid)]&&m3dLazy('w_item_'+gBase(wid))&&M3D.st['w_item_'+gBase(wid)]!=='fail';   // לא נטען בכלל: נשאר המודל הזמני עם הדרגה
+    L.props[w]=Object.assign({prop:model,tier:mine&&!wait?GEAR.tiers[it.tier].id:'wood',wait},g);
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
   if(GEAR3D.on)gear3dLook(L,wid);

@@ -4037,6 +4037,31 @@ function worldBot(m,L,god){
     'שריון לפי מחלקה: '+(ar.items?'30 חלקים ו-5 מגנים':'חסרים חלקים או שמות')+(ar.slots?', משבצות ראש, גוף ומגן':', אין משבצות')+(ar.worn?', נלבש':', לא נלבש')+
     (ar.defOk?', הגנה +'+ar.def:', ההגנה לא עלתה ('+ar.def+')')+(ar.tile?'':', לא מופיע במשבצת')+(ar.r3?'':', לא נראה על הדמות')+(ar.doll?'':', לא נראה בחלון')+
     (ar.lootOk?', שלל מוטה למחלקה ('+ar.loot+')':', השלל לא מוטה ('+ar.loot+')')+(ar.back?'':', לא חזר אחרי הבדיקה'));
+  // הנשק בבובה של חלון הציוד (doll3d.js, באג 9.11.2026, docs/weapon-audit-2026-11-09.md): לפני שהמודל של הנשק נטען, מודל זמני בלי זוהר הדרגה;
+  // אחרי שהוא נטען הבובה מתחלפת לבד (בלי לצייר את החלון מחדש); והנשק כולו בתוך הקנבס בכל הנדנוד
+  if(CFG.gfx==='3d'){
+    const dw=await page.evaluate(()=>{const o={keep:JSON.stringify({gear:SAVE.gear,start:SAVE.hero.start,bag:SAVE.bag})};
+      const ids=Object.keys(GEAR.items).filter(k=>GEAR.items[k].slot==='weapon'&&m3dLazy('w_item_'+k));
+      o.id=ids.find(k=>!R3D.props['w_item_'+k]&&!M3D.p['w_item_'+k])||ids[0];if(!o.id)return o;const id=o.id;o.was=!!R3D.props['w_item_'+id];
+      const t=wTypeOf(id);SAVE.hero.start=Object.keys(HEROES.list).find(k=>HEROES.list[k].arms.includes(t))||SAVE.hero.start;
+      for(const s in SAVE.gear){const v=SAVE.gear[s];SAVE.gear[s]=Array.isArray(v)?v.map(()=>null):null}SAVE.gear.weapon=id;wEquip(id);R3D._hl=null;
+      S.mode='play';gearOpen();const D=R3D.doll;if(!D||!D.a)return o;
+      const p=heroLook().props[wUse(id)];o.pre=p.prop;o.preGlow=o.was?null:p.glow||null;o.preTier=p.tier;return o});
+    for(let i=0;i<120&&dw.id&&!await page.evaluate(id=>['ready','fail'].includes(M3D.st['w_item_'+id]),dw.id);i++){await page.waitForTimeout(50);await page.clock.runFor(50)}
+    const d2=await page.evaluate(id=>{const o={};if(!id||!R3D.doll||!R3D.doll.a)return o;const D=R3D.doll;
+      o.st=M3D.st['w_item_'+id];o.keyOld=D.key!==dollKey();dollFrame();o.fresh=D.key===dollKey();o.prop=heroLook().props[wUse(id)].prop;
+      if(D.raf){cancelAnimationFrame(D.raf);D.raf=0}
+      // הקופסה של הנשק בחמש נקודות בנדנוד: כל פינה בתוך הקנבס (מעט שוליים, כי הקופסה גדולה מהנשק)
+      const a=D.a,pr=a.props[wUse(id)];o.out=0;
+      for(let j=0;j<5;j++){a.root.rotation.y=D.yaw+D.sway*(j/2-1);a.root.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(pr);
+        for(const X of [b.min.x,b.max.x])for(const Y of [b.min.y,b.max.y])for(const Z of [b.min.z,b.max.z]){const v=new THREE.Vector3(X,Y,Z).project(D.cam);if(Math.abs(v.x)>1.04||Math.abs(v.y)>1.04)o.out++}}
+      return o},dw.id);
+    await page.evaluate(k=>{gearClose();const K=JSON.parse(k);SAVE.gear=K.gear;SAVE.hero.start=K.start;SAVE.bag=K.bag;R3D._hl=null;wEquip(SAVE.gear.weapon);saveNow()},dw.keep);
+    const ok=dw.id&&!dw.preGlow&&d2.st==='ready'&&d2.fresh&&/^w_item_/.test(d2.prop)&&d2.out===0;
+    check(ok,'נשק בבובה ('+dw.id+'): '+(dw.was?'כבר נטען':'לפני הטעינה '+dw.pre+'/'+dw.preTier+(dw.preGlow?' עם זוהר '+dw.preGlow+' ✗':' בלי זוהר'))+
+      ', '+(d2.st!=='ready'?'המודל לא נטען ('+d2.st+')':d2.fresh&&/^w_item_/.test(d2.prop)?'הבובה התחלפה לבד ('+d2.prop+')':'הבובה לא התחלפה ('+d2.prop+')')+
+      (d2.out===0?', כולו בתוך הקנבס':', נחתך ('+d2.out+' פינות מחוץ לקנבס)'));
+  }
   // הגנה כדירוג (defense.js, ניר 7.11.2026): נקודות מול רמת התוקף, תשואה פוחתת, תקרה גבוהה, והזירה בדיוק כמו קודם
   const dfr=await page.evaluate(()=>{
     const o={},r1=v=>Math.round(v*10)/10;
