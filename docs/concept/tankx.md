@@ -14,6 +14,10 @@
 3. פטיש: `w_item_tankXHammer` על `handslotr`, `TANKX.carry[clipName]||TANKX.carry.default` (pos, rot quaternion מקומי). Idle_A ו-Running_B מורמים לאחור, השאר ברירת המחדל כמו #552.
 4. `node tools/tankx/verify.js` מדפיס לכל קליפ ברשימה (Idle_A, Running_B, Melee_2H_Attack_Chop, Death_A, Hit_A, Melee_2H_Idle, Jump_Idle, Taunt) PASS/FAIL/MISSING. ב-main היום Melee_2H_Idle, Jump_Idle ו-Taunt חסרים (MISSING), לא כישלון.
 
+## צעד וריצה (נמדד אחרי הבדיקה של BOB במשחק)
+הסיבה להחלקה ולרום הצעד (פי 5) היא הפרופורציות ולא השלד: רגלי הטנק ~70% מהגובה, ב-KayKit ~17% (ראש ענק), ולכן אותן זוויות מזיזות את הרגל פי 4 ביחס לגובה המוצג. ה-quaternion של המנוחה זהים ל-KayKit (נבדק). הפתרון: `RETARGET.dampen(clip, restQ, 0.3, /^(hips|upperleg|lowerleg|foot|toes)/)` לקליפי ריצה/הליכה (slerp מהמנוחה אל הקליפ ב-k, ותנודת ה-hips האנכית סביב הממוצע ב-k). `node tools/tankx/gait.js tankX 0.3` מול `barbarian`: lift 0.090 מול 0.094, stride 0.305 מול 0.275, מהירות מגע 1.39 מול 1.49 (בגובה-לשנייה). בלי dampen: 0.337 / 0.658 / 4.2. רק Running_B נמדד; Walk וכו' אותו k כנקודת פתיחה.
+בנוסף: הטקסטורה הוארה פי 1.45 (קריאות על הרצפה הכהה), והידית של הפטיש התקצרה (בלי ההארכה של 0.1 ובמוט קצר ב-0.08 בקצה התחתון).
+
 ## מה נבדק ומה לא
 נבדק (GPU אמיתי, Lambert של המשחק, ב-D:\external-3d\evidence): הרצועות נקשרות (69/69, 55/55), גוף מתעוות נקי, הפטיש עוקב אחרי היד בהתקפה, אין חור בגוף ואין גזיר ענן בפטיש, בלי פיסות צפות, אין NaN בקליפים.
 לא נבדק: בתוך המשחק (hitbox P.r, טבעת קבוצה, הבהוב פגיעה emissive, מוות במשחק, ביצועים בטלפון, זמן טעינה), החלקה של כף הרגל, Taunt/Jump_Idle/Melee_2H_Idle (חסרים ב-main).
