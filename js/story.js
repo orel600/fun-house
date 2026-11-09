@@ -177,8 +177,9 @@ function storyWardenMove(e,dt){
   if(ch&&!far&&d>ch.min&&d<ch.max&&(e.chT-=dt)<=0){e.chT=ch.every;e.tel={kind:'charge',t:ch.warn,dur:ch.warn,a:Math.atan2(dy,dx),x:e.x,y:e.y};return}
   const mk=W.marks;   // שומר הסערה: עיגולי ברק על הרצפה. אחד בדיוק איפה שהשחקן עומד, כדי שתמיד צריך לזוז
   if(mk&&!far&&d<WORLD.attackRange+260&&(e.marks-=dt)<=0){e.marks=mk.every;const list=S.wd.marks||(S.wd.marks=[]);
-    for(let i=0;i<mk.n;i++){const a=Math.random()*Math.PI*2,s=i?mk.spread*(0.35+Math.random()*0.65):0;list.push({x:P.x+Math.cos(a)*s,y:P.y+Math.sin(a)*s,t:mk.fuse,boom:0,k:K,mk})}
-    sfx('shoot');storyTelLog(K,'marks',mk.fuse)}   // הסימן הוא העיגול עצמו: fuse שניות לפני הפיצוץ
+    const f=typeof tierFuse==='function'?tierFuse(e):1,M=f!==1?Object.assign({},mk,{fuse:mk.fuse*f}):mk;   // דרגת העולם: אזהרה ארוכה יותר (tiers.js)
+    for(let i=0;i<M.n;i++){const a=Math.random()*Math.PI*2,s=i?M.spread*(0.35+Math.random()*0.65):0;list.push({x:P.x+Math.cos(a)*s,y:P.y+Math.sin(a)*s,t:M.fuse,boom:0,k:K,mk:M})}
+    sfx('shoot');storyTelLog(K,'marks',M.fuse)}   // הסימן הוא העיגול עצמו: fuse שניות לפני הפיצוץ
 }
 // לבדיקה (check.js): כל מכה שיצאה, ואחרי כמה שניות של סימן
 function storyTelLog(k,kind,warn){const l=S.wd.telLog||(S.wd.telLog=[]);l.push({k,kind,warn:Math.round(warn*100)/100});if(l.length>60)l.shift()}
