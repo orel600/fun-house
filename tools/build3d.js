@@ -83,9 +83,9 @@ const WTIERS={cells:[[1,0],[2,0],[3,0],[5,1],[6,1]],size:64,
    כי כל 10 אנימציות הן בערך 300KB. מחכות למשימות הבאות: התחמקות וחסימה (סקילים), זימון (קוסם), עבודה, ישיבה, נפנוף והליכה (NPC בכפר) */
 const ANIMS={
   general:{src:anim('General'),keep:['Idle_A','Idle_B','Hit_A','Death_A']},
-  move:   {src:anim('MovementBasic'),keep:['Running_A','Running_B','Walking_A']},
+  move:   {src:anim('MovementBasic'),keep:['Running_A','Running_B','Walking_A','Jump_Start','Jump_Idle','Jump_Land','Jump_Full_Short','Jump_Full_Long']},
   moveAdv:{src:anim('MovementAdvanced'),keep:['Dodge_Forward','Dodge_Backward','Dodge_Left','Dodge_Right','Running_HoldingBow']},
-  melee:  {src:anim('CombatMelee'),keep:['Melee_1H_Attack_Slice_Horizontal','Melee_1H_Attack_Chop','Melee_2H_Attack_Spin','Melee_2H_Attack_Chop','Melee_Block','Melee_Blocking']},
+  melee:  {src:anim('CombatMelee'),keep:['Melee_1H_Attack_Slice_Horizontal','Melee_1H_Attack_Chop','Melee_2H_Attack_Spin','Melee_2H_Attack_Chop','Melee_2H_Idle','Melee_Block','Melee_Blocking']},
   ranged: {src:anim('CombatRanged'),keep:['Ranged_Bow_Draw','Ranged_Bow_Release','Ranged_Bow_Idle','Ranged_Magic_Shoot','Ranged_Magic_Spellcasting','Ranged_Magic_Summon']},
   life:   {src:anim('Simulation'),keep:['Cheering','Waving','Sit_Chair_Idle','Sit_Floor_Idle']},
   tools:  {src:anim('Tools'),keep:['Hammering','Digging']},
@@ -320,6 +320,21 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
     const bin=await slim(await io.read(c.src),{keepMeshes:c.keep,tex:c.tex,fmt:c.fmt});out[ONLY]=Buffer.from(bin).toString('base64');
     M3IO.write(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(ONLY,Math.round(bin.byteLength/1024)+'KB');console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
+  }
+  // node tools/build3d.js C:/kk --only anims: בונה מחדש רק את האנימציות (anim_*) בקובץ הקיים. צריך רק את anims
+  if(ONLY==='anims'){
+    const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
+    const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D=');
+    Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
+    for(const [k,c] of Object.entries(ANIMS)){
+      if(k==='dog'||k==='skel'||!fs.existsSync(c.src))continue;   // dog ו-skel מגיעים מחבילות אחרות: נשארים כמו שהם
+      const doc=await io.read(c.src),miss=c.keep.filter(n=>!doc.getRoot().listAnimations().some(a=>a.getName()===n));
+      if(miss.length)throw new Error('אנימציה חסרה ב-'+k+': '+miss.join(', '));
+      const before=(out['anim_'+k]||'').length;add('anim_'+k,await slim(doc,{keepMeshes:null,keepAnims:c.keep}));
+      sizes.push('  (היה '+Math.round(before*0.75/1024)+'KB)');
+    }
+    M3IO.write(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    console.log(sizes.join('\n'));return;
   }
   if(ONLY==='nature'){
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
