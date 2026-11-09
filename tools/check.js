@@ -4758,6 +4758,17 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     }catch(e){o.err=String(e&&e.stack||e)}MBANVIL.on=on;if(typeof rnd0==='function')Math.random=rnd0;return o});
   check(!an.err&&an.same&&an.body&&an.off,'underworld tank s1 body (visual only): '+(an.err||'landing frame '+an.land+' and damage '+an.dmg+(an.same?' same with the body on or off ✓':' CHANGED ✗')+
     (an.d3?', jump arc + chop on landing + squash '+(an.body?'✓':'✗')+', off = flat '+(an.off?'✓':'✗'):' (2D: no body)')));
+  // tank taunt and iron wall bodies (mb-tankskill3d.js, morning package 3+4, visual only): the roar plays on the cast frame with cry_war and a heat glow while the
+  // shield lasts; the wall chop hard-stops at contact and holds, with imp_wall; never locked (moves mid-animation). 2D: sounds only
+  const tkb=await page.evaluate(()=>{const o={};try{mobaStart('tank');const me=MB.me;me.lvl=10;S.mode='play';const d3=R3D.on&&R3D.ready&&R3D.player;
+      if(d3)syncPlayer(1/60);const s0=MBTANK3D.stat.sounds;me.cd.s2=0;mbCast(me,'s2',{x:me.x,y:me.y});
+      if(d3){syncPlayer(1/60);o.roar=R3D.player.one&&R3D.player.one.getClip().name===MBTANK3D.taunt.clip+'@up';for(let i=0;i<6;i++){mobaUpdate(1/60);syncPlayer(1/60)}o.heat=R3D.player.mats.some(m=>m.emissive.r>0.1)}
+      me.cd.ult=0;mbCast(me,'ult',{x:me.x+100,y:me.y});
+      if(d3){syncPlayer(1/60);for(let i=0;i<12;i++)syncPlayer(1/60);const st=R3D.player.tk3;o.hold=st.ph==='hold'&&+(st.x.time/st.x.getClip().duration).toFixed(2)===MBTANK3D.wall.to}
+      o.snd=MBTANK3D.stat.sounds-s0;const x0=me.x;mbMove(me,me.x+300,me.y,0.1,0);o.move=me.x>x0;o.d3=!!d3;
+    }catch(e){o.err=String(e&&e.stack||e)}return o});
+  check(!tkb.err&&tkb.snd===2&&tkb.move&&(!tkb.d3||tkb.roar&&tkb.heat&&tkb.hold),'underworld tank taunt + iron wall bodies (visual only): '+(tkb.err||'sounds on the cast frame '+(tkb.snd===2?'✓':'✗ ('+tkb.snd+')')+', moves mid-animation '+(tkb.move?'✓':'✗')+
+    (tkb.d3?', roar '+(tkb.roar?'✓':'✗')+', heat glow '+(tkb.heat?'✓':'✗')+', wall chop holds at contact '+(tkb.hold?'✓':'✗'):' (2D: no body)')));
   // צילומי משחקי השאול (QUINN, 8.11): חלון הבחירה, מסך הבנייה, משחק באמצע (כולם בוטים, 40 שניות), החנות ומסך הסוף, כדי לבדוק את החלון כולו
   // הגיבור: האחרון ב-MBKIT, כך שגיבור חדש מצולם לבד. תקלה כאן לא מפילה את הבדיקה, רק נכתבת
   if(CFG.shots){try{const E=(f,a)=>page.evaluate(f,a),k=await E(()=>Object.keys(MBKIT).pop());
@@ -5031,7 +5042,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       check(tl.length>=2&&!low.length&&A.hits>0&&A.koBoss>0&&A.win>0,'אפקטים בבוס: אזהרות '+(tl.map(([k,v])=>k+' '+v.n+'× '+v.warn.toFixed(2)+'ש\'').join(', ')||'אף אחת')+
         (low.length?' (פחות משנייה: '+low.map(([k])=>k).join(', ')+')':'')+' · פגיעות '+(A.hits||0)+' (כבדות '+(A.heavy||0)+', קריטי '+(A.crits||0)+') · הריגות '+(A.ko||0)+' · ko_boss '+(A.koBoss||0)+' · ניצחון '+(A.win||0))}
   }
-  const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null)&&!['bell','creak'].includes(id)&&!id.startsWith('cast_')&&!['streak2','streak3','tower_fall','base_alarm','imp_hammer','me_die','me_back','gamble_tick','gamble_win','gamble_lose'].includes(id));   // רצף 2-3 תלוי במזל, והשאר במשחקי השאול (tower_fall נבדק שם)   // cast_*: הבוט מטיל רק חלק מסוגי הנזק, ונבדק למטה שלפחות אחד נשמע   // bell, creak: נבדקים בבדיקת פעמון הערפל, שרצה אחרי הצילום של הצלילים
+  const quiet=au.ids.filter(id=>!au.count[id]&&!(id==='bossIn'&&L.boss==null)&&!(id==='bossDown'&&L.bossDown==null)&&!(id==='coin'&&L.room==null)&&!['bell','creak'].includes(id)&&!id.startsWith('cast_')&&!['streak2','streak3','tower_fall','base_alarm','imp_hammer','imp_wall','cry_war','me_die','me_back','gamble_tick','gamble_win','gamble_lose'].includes(id));   // רצף 2-3 תלוי במזל, והשאר במשחקי השאול (tower_fall נבדק שם)   // cast_*: הבוט מטיל רק חלק מסוגי הנזק, ונבדק למטה שלפחות אחד נשמע   // bell, creak: נבדקים בבדיקת פעמון הערפל, שרצה אחרי הצילום של הצלילים
   check(au.unlocked&&!quiet.length,'צלילים: '+au.ids.map(id=>id+' '+(au.count[id]||0)).join(', ')+(au.unlocked?'':' · לא נפתחו בנגיעה')+(quiet.length?' · לא נשמעו: '+quiet.join(', '):''));
   // צלילי קרב (where:'fight' ב-SOUNDS) שקטים בכפר ובעולם, הצד של ניר, גם כשקוד שם קורא להם, ונשמעים בזירה
   check(!sg.err&&sg.n>0&&sg.world===0&&sg.vil===0&&sg.arena===3,'צלילי קרב לא בכפר ובעולם: '+(sg.err||sg.n+' צלילים מסומנים, בעולם '+sg.world+', בכפר '+sg.vil+', בזירה '+sg.arena+'/3'));
