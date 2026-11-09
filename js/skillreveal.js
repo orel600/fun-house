@@ -32,7 +32,7 @@ const skrStat={starts:0,ends:0,skips:0,big:0};   // בשביל הבוט
 
 // נקרא מ-wskUpdate בכל פריים שהעולם רץ: יש סקיל שעוד לא ראינו?
 function skrCheck(dt){
-  if(SKR||!S.wd||S.room||S.mode!=='play'||!S.sk)return;
+  if(SKR||!S.wd||S.room||S.mode!=='play'||!S.sk||typeof chBusy==='function'&&chBusy())return;   // chBusy: a chest is opening (chest.js), the reveal waits
   S.skrT=(S.skrT||0)+dt;if(S.skrT<SKREVEAL.delay)return;
   const id=S.sk.ids.find(i=>!skrSeen().includes(i))||(typeof sigReveal==='function'&&sigReveal());if(id)skrStart(id);   // גם סקיל החתימה של הדרגה (sigskill.js)
 }
