@@ -64,7 +64,9 @@ const CHARS={
   nirHero:{src:path.join(ROOT,'art/heroes/NirHero.glb'),keep:['NirHero_'],tex:512,fmt:'jpeg'},
   // הדמות האישית של אוראל ("הנודד עם החליל"), מ-art/heroes/orel-sheet.jpg. בתנוחת T, אז rig.py בלי דגלים.
   // הדף מורכב משני דפים של ג'מיני: מלפנים ומאחור מהראשון (חד), ומהצד מהשני (בראשון היו פנים כפולות), מוגדל לאותו גובה והפוך כך שיפנה ימינה
-  orelHero:{src:path.join(ROOT,'art/heroes/OrelHeroHF.glb'),keep:['OrelHero_'],tex:512,fmt:'jpeg'}
+  orelHero:{src:path.join(ROOT,'art/heroes/OrelHeroHF.glb'),keep:['OrelHero_'],tex:512,fmt:'jpeg'},
+  // הצייד החדש (ARI, 9.11.2026): דף הדמות של אוראל, TRELLIS ו-tools/trellis/reskin.py על השלד של ה-Ranger. מפתח חדש, לא מחליף את ranger: עד שאוראל מאשר, שום LOOK3D לא משתמש בו
+  hunterHF:{src:path.join(ROOT,'art/heroes/HunterHF.glb'),keep:['Ranger_'],tex:512,fmt:'jpeg'}
 };
 // חפצים שנאחזים ביד של אויב (המיקום ביד מוגדר ב-render3d.js)
 const PROPS={
