@@ -22,12 +22,23 @@ const CHEST={
   rays:{n:8,len:95,w:0.13,spin:0.5,alpha:0.32,col:'#FFD866',fade:0.6},   // rays: count, length, width (radians), turns/second
   spark:{every:0.12,max:14,rise:38,life:1.4,col:'#FFE7A3',idle:0.9},     // floating sparks after the slam; idle: one every N seconds while waiting
   // equipment chance. tier p = percent for [wood, iron, silver, gold, legendary]; wood gets the rest. The cap is silver (2) in the meadow
+  // 3D (Nir plays in 3D, coordinator 9.11): the chest is small among trees, so the moment is bigger there
+  r3d:{k:1.9,model:1.35,stars:1.8,zoom:1.22,zin:0.25,zhold:0.7,zout:0.45},   // k: rays/pillar/ring size, model: chest scale, stars: star size, zoom: camera nudge (camZoom)
   gear:{chance:0.4,rolls:1,cap:2,p:[0,30,8,0,0]},
   n:0                                 // how many moments played (for the check)
 };
 
 const chOwn=s=>!!CHEST.ids[s.id];
 const chCalm=()=>(typeof calmOn==='function'&&calmOn())||(typeof RM!=='undefined'&&RM);
+// a moment is playing now: the skill reveal and the "Book / Try it" card wait for it (skillreveal.js, skguide.js)
+const chBusy=()=>!!(typeof S!=='undefined'&&S&&S.wd&&S.wd.sc&&S.wd.sc.ch&&Object.keys(S.wd.sc.ch).length);
+// camera nudge in 3D around the slam (camera.js multiplies camZoom by this). Rounded, since every change resizes the canvas
+function chZoom(){
+  if(!R3D.on||!chBusy())return 1;const Z=CHEST.r3d;let k=0;
+  for(const id in S.wd.sc.ch){const c=S.wd.sc.ch[id];if(c.calm)continue;const t=c.t,a=CHEST.t.slam-Z.zin;
+    const e=t<a?0:t<CHEST.t.slam?(t-a)/Z.zin:t<CHEST.t.slam+Z.zhold?1:Math.max(0,1-(t-CHEST.t.slam-Z.zhold)/Z.zout);k=Math.max(k,e*e*(3-2*e))}
+  return Math.round((1+(Z.zoom-1)*k)*50)/50;
+}
 const chSt=()=>{const st=scState();return st.ch||(st.ch={})};   // per world visit: {id:{t,done,sp:[],sl}}
 
 // called from secretsUpdate when the player touches a chest. true = this file handles it
@@ -54,7 +65,7 @@ function chUpdate(dt){
 function chSlam(c,cx,cy){
   const K=CHEST,s=c.s;
   if(!c.calm){jStop(K.stop,true);S.shake=Math.max(S.shake||0,K.shake)}
-  c.ring=0;jBurst(cx,cy-12,K.stars.col,c.calm?Math.round(K.stars.n/2):K.stars.n,null);sfx('hit',1.4);sfx('coin',1.2);
+  c.ring=0;const J=juice().p,j0=J.length;jBurst(cx,cy-12,K.stars.col,c.calm?Math.round(K.stars.n/2):K.stars.n,null);if(R3D.on)for(let i=j0;i<J.length;i++)J[i].sz*=K.r3d.stars;   // 3D: bigger starssfx('hit',1.4);sfx('coin',1.2);
   runGive(SECRETS.chest.loot,cx,cy);
   c.gear=chGear(cx,cy);
   scFind(s,cx,cy,true);   // the counter banner + save. quiet: no generic celebration, this moment replaces it
@@ -89,17 +100,17 @@ function chDraw(){
     const cx=s.x+PROPS3D.chest.dx,cy=s.y;
     // waiting: a soft glint over the lid now and then (the "something's in there")
     if(!c){const ph=now%K.spark.idle,j=Math.floor(now/K.spark.idle);if(!fxLess()&&ph<0.35)scTwinkle(cx+Math.sin(j*2.4)*9,cy-16-Math.abs(Math.cos(j*1.7))*6,ph/0.35);if(two)chBox(cx,cy,{rot:0,sx:1,sy:1,lid:0});continue}
-    const T_=c.calm?K.calmT:K.t,a=c.t-T_.slam,fade=Math.max(0,Math.min(1,(T_.end-c.t)/K.rays.fade));
+    const T_=c.calm?K.calmT:K.t,a=c.t-T_.slam,g=R3D.on?K.r3d.k:1,fade=Math.max(0,Math.min(1,(T_.end-c.t)/K.rays.fade));
     // 4. gold light from inside: a soft pillar and slow turning rays
     if(c.done&&fade>0){ctx.save();ctx.globalCompositeOperation='lighter';
-      const k=Math.min(1,a/0.15),R=K.rays,spin=c.calm?0:a*R.spin*6.28;ctx.globalAlpha=R.alpha*k*fade;ctx.fillStyle=R.col;
+      const k=Math.min(1,a/0.15),R=K.rays,spin=c.calm?0:a*R.spin*6.28,len=R.len*g;ctx.globalAlpha=Math.min(1,R.alpha*(R3D.on?1.6:1))*k*fade;ctx.fillStyle=R.col;
       const n=fxLess()?Math.ceil(R.n/2):R.n;
       for(let i=0;i<n;i++){const an=spin+i*6.28/n;ctx.beginPath();ctx.moveTo(cx,cy-10);
-        ctx.lineTo(cx+Math.cos(an-R.w)*R.len*k,cy-10+Math.sin(an-R.w)*R.len*k*0.6);ctx.lineTo(cx+Math.cos(an+R.w)*R.len*k,cy-10+Math.sin(an+R.w)*R.len*k*0.6);ctx.fill()}
-      const gr=ctx.createLinearGradient(0,cy-150,0,cy);gr.addColorStop(0,'rgba(255,216,102,0)');gr.addColorStop(1,R.col);
-      ctx.globalAlpha=0.45*k*fade;ctx.fillStyle=gr;ctx.fillRect(cx-14,cy-150,28,150);ctx.restore()}
+        ctx.lineTo(cx+Math.cos(an-R.w)*len*k,cy-10+Math.sin(an-R.w)*len*k*0.6);ctx.lineTo(cx+Math.cos(an+R.w)*len*k,cy-10+Math.sin(an+R.w)*len*k*0.6);ctx.fill()}
+      const ph=150*g,pw=14*g,gr=ctx.createLinearGradient(0,cy-ph,0,cy);gr.addColorStop(0,'rgba(255,216,102,0)');gr.addColorStop(1,R.col);
+      ctx.globalAlpha=Math.min(1,0.45*(R3D.on?1.6:1))*k*fade;ctx.fillStyle=gr;ctx.fillRect(cx-pw,cy-ph,pw*2,ph);ctx.restore()}
     // 5. shockwave ring
-    if(c.done&&a<K.ring.life){const k=a/K.ring.life,r=8+K.ring.r*k;ctx.globalAlpha=0.8*(1-k);ctx.strokeStyle=K.ring.col;ctx.lineWidth=4*(1-k)+1;
+    if(c.done&&a<K.ring.life){const k=a/K.ring.life,r=(8+K.ring.r*k)*g;ctx.globalAlpha=0.9*(1-k);ctx.strokeStyle=K.ring.col;ctx.lineWidth=(4*(1-k)+1)*(R3D.on?1.6:1);
       ctx.beginPath();ctx.ellipse(cx,cy,r,r*0.55,0,0,7);ctx.stroke();ctx.globalAlpha=1}
     if(two)chBox(cx,cy,chPose(c));
     // 7. tiny sparks floating up
@@ -120,7 +131,7 @@ function chBox(x,y,p){
 function chest3d(m,id){
   const c=S.wd&&chSt()[id];if(!c){if(m.userData.chP){m.rotation.z=0;m.scale.copy(m.userData.chS)}return false}
   const u=m.userData;if(!u.chS){u.chS=m.scale.clone();u.lid=m.children[1];u.lid0=u.lid.position.clone();u.chP=1}
-  const p=chPose(c),b=u.chS;m.rotation.z=p.rot;m.scale.set(b.x*p.sx,b.y*p.sy,b.z*p.sx);
+  const p=chPose(c),b=u.chS,z=CHEST.r3d.model;m.rotation.z=p.rot;m.scale.set(b.x*p.sx*z,b.y*p.sy*z,b.z*p.sx*z);
   const w=PROPS3D.chest.w;u.lid.position.set(u.lid0.x,u.lid0.y+p.lid*w*0.35,u.lid0.z-p.lid*w*0.3);u.lid.rotation.x=-p.lid*1.1;
   return true;
 }
