@@ -4,12 +4,14 @@
    ובמקום הגרזן והכובע הפרוותי של הברברי. המגן ביד שמאל נשאר.
    חל על הבוטים (lookOf) ועל הגיבור שלך במראה הערכה (mb-kitlook.js). רק מראה: הנזק, הגודל והפגיעות לא תלויים בזה.
    עד שהחלקים נטענים (m3dNeed, m3d.js): המראה הקודם, ואז הדמות נבנית מחדש פעם אחת.
+   model: מודל אחר לגיבור (הצייד החדש, רק עם ?hunter=hf).
    כיבוי לגיבור אחד: MBPARTS.<kit>.on=false, או ?parts=off לכולם. מחיקה: הקובץ והשורה ב-index.html */
 const MBPARTS={
   on:!/[?&]parts=off\b/.test(location.search),
   tank:{on:true,
     add:{hammer:{prop:'w_item_stoneHammer',...HAND_R,s:1},crown:{prop:'hat_tankCrown',bone:'head',pos:[0,0,0],rot:[0,0,0,1]}},
     hide:['2H_Axe','Barbarian_Hat']},
+  hunter:{on:/[?&]hunter=hf/.test(location.search),model:'hunterHF',add:{},hide:[]},   // הצייד החדש של ARI (#555): רק כשמבקשים, ?hunter=hf. אותו שלד (Ranger), אותם קליפים והקשת
   stat:{built:0,hidden:0,rebuilt:0}
 };
 const MBPARTSC={};   // המראה המורכב לכל גיבור, נבנה פעם אחת כשהחלקים מוכנים
@@ -17,11 +19,11 @@ const MBPARTSC={};   // המראה המורכב לכל גיבור, נבנה פע
 function mbPartsLook(B,kit){
   const C=MBPARTS.on&&MBPARTS[kit];if(!B||!C||!C.on||typeof R3D==='undefined'||!R3D.on)return B;
   if(MBPARTSC[kit]&&MBPARTSC[kit].base===B)return MBPARTSC[kit];
-  let ok=true;for(const k in C.add){const p=C.add[k].prop;
+  let ok=!C.model||m3dNeed(C.model);for(const k in C.add){const p=C.add[k].prop;
     if(!R3D.props[p]&&p.startsWith('hat_')&&R3D.hats&&R3D.hats[p.slice(4)])R3D.props[p]=R3D.hats[p.slice(4)];   // כובע (render3d.js שם אותם ב-R3D.hats): גם כחפץ על עצם
     if(!R3D.props[p]&&!m3dNeed(p))ok=false}   // מבקש לטעון את כולם, לא רק את הראשון
   if(!ok||Object.values(C.add).some(p=>!R3D.props[p.prop]))return B;
-  const L=Object.assign({},B,{props:Object.assign({},B.props,C.add),hide:C.hide,base:B});MBPARTS.stat.built++;
+  const L=Object.assign({},B,{props:Object.assign({},B.props,C.add),hide:C.hide,base:B},C.model?{model:C.model}:{});MBPARTS.stat.built++;
   return MBPARTSC[kit]=L;
 }
 (function(){
