@@ -4266,7 +4266,7 @@ function worldBot(m,L,god){
      F.slow=0;F.ult=null;me.bot=bot;Object.assign(e.st,{stun:0,shield:0});e.hp=e.max=MBKIT[e.kit].hp;e.x=ex;e.y=ey;o.fx=r}
     // מזג אוויר (moba-weather.js, אוראל 7.11): גשם קל בהתחלה שמתחזק עם הזמן, ברק ומבזק במבנה שנופל (רק איפה שאני רואה), ומצויר מתחת לסקילים
     if(typeof MBWX!=='undefined'){const X=MBWX,w={},t0=MB.t,f0=X.falls,fl0=X.fl,b0=X.bolts.length;
-     w.rain=X.core||!!X.h;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;const k2=mbWxK(MB);MB.t=t0;w.build=k1<0.1&&k2>k1+0.5;
+     w.rain=X.core||!!X.h;const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;const k2=mbWxK(MB);MB.t=t0;MBWX.falls=wf;w.build=k1<0.1&&k2>k1+0.5;   // falls=0: a tower the bot already dropped added 0.12 and made this flaky (#536 CI)
      const mt=MB.u.find(b=>b.k==='tower'&&b.team===0),fake=b=>mbUnit({k:'tower',team:b.team,x:b.x,y:b.y,r:b.r,hp:1,max:1});
      if(typeof mbVisNow==='function')mbVisNow(true);   // הראייה מחושבת מחדש: הבלוק הקודם חישב אותה עם שתי יחידות בלבד
      const sv=mbHeroes(1).map(h=>[h.xp,h.lvl]);mbDie(fake(mt),null);w.fall=X.falls===f0+1&&(X.core||X.bolts.length===b0+1&&(RM||typeof fxLess==='function'&&fxLess()||X.fl===1));
