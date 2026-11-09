@@ -56,9 +56,12 @@ function ardg3dBoss(st,b){
       ardg3dCircle(x,y,ARDG.shape.spawn*Math.min(1,st.p));ardg3dFill(s.fill,ARDG.fill*fade);ardg3dCircle(x,y,ARDG.shape.spawn);ardg3dEdge(s.edge,eo,ew)}}
   else{const s=SL[AD3.k++];ardg3dShapePts(b,st,Math.min(1,st.p));ardg3dFill(s.fill,ARDG.fill*fade);ardg3dShapePts(b,st,1);ardg3dEdge(s.edge,eo,ew)}
 }
+// הכל מוסתר (ardgClear ב-arena-danger.js: ריצה חדשה)
+function ardg3dHide(){if(!AD3.on)return;for(const s of AD3.sl)s.fill.visible=s.edge.visible=false;for(const m of AD3.sc)m.visible=false}
 // כל פריים (render3d.js)
 function ardg3d(){
   if(!R3D.ready)return;
+  ardgPrune();
   const live=ardg3dOn()&&ardgOn();
   if(!AD3.on){if(!live)return;ardg3dInit()}
   let k=0;const SL=AD3.sl;

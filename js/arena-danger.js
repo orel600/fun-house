@@ -63,6 +63,12 @@ function ardgMines(){
   if(ardgOn()&&!b.dead){ardgTrack(b);if(ARDGS.f!==S.t){ARDGS.f=S.t;ardgMines()}}
   return r}}
 {const old=bossDown;bossDown=function(b){ARDGS.b.delete(b);return old.apply(this,arguments)}}
+// ריצה נגמרת כשהבוס עוד חי (נפלת, חזרת הביתה) ומתחילה חדשה: בלי שאריות מהבוס הקודם (QUINN, #536: עיגול מג'נטה "רוח רפאים" ברצפה)
+function ardgClear(){ARDGS.b.clear();ARDGS.sc.length=0;ARDGS.mn.length=0;ARDGS.fl.length=0;if(typeof ardg3dHide==='function')ardg3dHide()}
+{const old=reset;reset=function(){ardgClear();return old.apply(this,arguments)}}
+// בוס שכבר לא ברשימת האויבים (הוסר בלי bossDown): לא מציירים לו כלום. נקרא פעם בפריים מהציור, רק כשיש מה לבדוק
+function ardgPrune(){if(!ARDGS.b.size)return;ARDGS.b.forEach(ardgPrune1)}
+function ardgPrune1(st,b){if(b.dead||!enemies.includes(b))ARDGS.b.delete(b)}
 
 /* ---- חריכה: מאגר קבוע, הישן ביותר מתחלף ---- */
 function ardgScorch(x,y,r){
@@ -111,6 +117,7 @@ function ardgDrawUnder(){
     if(!live)L.length=0}
   if(r3)for(let i=0;i<L.length;i++){if(S.t-L[i].t<C.life){live=true;break}}
   if(r3&&!live)L.length=0;
+  ardgPrune();
   if(!ardgOn()||r3)return void(ctx.globalAlpha=1);
   if(!ARDGS.b.size&&!mines.length)return void(ctx.globalAlpha=1);
   ctx.save();ctx.fillStyle=ctx.strokeStyle=ARDG.col;

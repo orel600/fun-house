@@ -2163,11 +2163,14 @@ function worldBot(m,L,god){
       if(R3D.on&&R3D.ready){let cf=0;const f2=ctx.fill;ctx.fill=function(){cf++;return f2.apply(this,arguments)};try{ardgDrawUnder()}finally{ctx.fill=f2}
         ardg3d();const s0=AD3.sl[0];o.d3=!!s0&&s0.fill.visible&&s0.edge.visible&&cf===0&&Math.abs(s0.edge.material.opacity-ARDG.lineA)<0.01;o.d3s=(s0&&s0.fill.visible)+'/'+cf}else o.d3=true;
       SAVE.calm=calm0;
+      // ghost (QUINN): a live warning, then a new run. Nothing of the old boss stays: no entries, no scorch, no visible 3D mesh
+      b.patT=99;b.arTele=null;doPattern(b,'ring');update(1/60);ardgScorch(b.x,b.y,80);const had=ARDGS.b.size>0;reset();startRun();S.mode='play';
+      if(R3D.on&&R3D.ready)ardg3d();o.ghost=had&&ARDGS.b.size===0&&ARDGS.sc.length===0&&(typeof AD3==='undefined'||!AD3.on||!AD3.sl.some(s=>s.fill.visible||s.edge.visible)&&!AD3.sc.some(m=>m.visible));
     }catch(err){o.err=String(err&&err.stack||err)}
     SAVE.fxLess=fl;mines.length=0;waves.length=0;enemies.length=0;S.boss=null;ARDGS.b.clear();ARDGS.sc.length=0;ARDGS.fl.length=0;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
-  check(!adg.err&&adg.full&&adg.mid&&adg.ticks>=8&&adg.flash>=5&&adg.sc>0&&adg.sc<=6&&adg.scN>adg.sc&&adg.less&&adg.col&&adg.calm&&adg.d3,
+  check(!adg.err&&adg.full&&adg.mid&&adg.ticks>=8&&adg.flash>=5&&adg.sc>0&&adg.sc<=6&&adg.scN>adg.sc&&adg.less&&adg.col&&adg.calm&&adg.d3&&adg.ghost,
     'רגע הסכנה של הבוס: '+(adg.err||'מילוי ברגע הפגיעה '+adg.hit+(adg.full?' ✓':' ✗')+', באמצע '+(adg.mShock??0).toFixed(2)+'/'+(adg.mCharge??0).toFixed(2)+(adg.mid?' ✓':' ✗')+
-    ', תקתוקים '+adg.ticks+', הבזקים '+adg.flash+', חריכה '+adg.sc+' מתוך '+adg.scN+(adg.sc<=6?' (עד 6)':' (מעל 6!)')+', פחות אפקטים '+(adg.less?'בלי חריכה':'עם חריכה!')+', מג\'נטה '+(adg.col?'✓':'✗')+', reduced motion '+(adg.calm?'no flash/thickening ✓':'flash or thickening!')+(adg.d3?'':', 3D floor mesh missing ('+adg.d3s+')')));
+    ', תקתוקים '+adg.ticks+', הבזקים '+adg.flash+', חריכה '+adg.sc+' מתוך '+adg.scN+(adg.sc<=6?' (עד 6)':' (מעל 6!)')+', פחות אפקטים '+(adg.less?'בלי חריכה':'עם חריכה!')+', מג\'נטה '+(adg.col?'✓':'✗')+', reduced motion '+(adg.calm?'no flash/thickening ✓':'flash or thickening!')+(adg.d3?'':', 3D floor mesh missing ('+adg.d3s+')')+(adg.ghost?', new run clean':', old boss warning left on the new run!')));
   const smo=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},fl=SAVE.fxLess;
     try{startRun();S.mode='play';enemies=[];P.x=0;P.y=0;S.cam.x=0;S.cam.y=0;SAVE.fxLess=false;
       for(let i=0;i<6;i++){const e=addEnemy('grunt',60+i*25,(i%2?40:-40));e.hp=e.max=1e9;e.elite=false}
