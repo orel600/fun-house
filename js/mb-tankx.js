@@ -22,6 +22,9 @@ const MBTANKX={
   size:1.25,      // הגובה המוצג בעמידה, ביחס לטנק הישן (ה-hitbox לא משתנה). ARI, 9.11: הגוף צר (41 פיקסלים מול 56 של הברברי עם המגן), אז 1.25 כדי שהשטח על הרצפה יהיה דומה
   // הרגליים על הרצפה: בעמידה של הברברי הגוף הזה ריחף כ-4.5 יחידות (הירכיים גבוהות פי 1.48). 1: יורד בכל הפער שנמדד, 0: כמו קודם
   ground:1,
+  // בלי ריחוף באנימציות האלה (tankxClamp): במוות הגוף עלה 28 יחידות באוויר באמצע הנפילה (הטנק הישן 3.6), כי גוף ארוך מסתובב סביב ירכיים גבוהות.
+  // clampTo: כמה מעל הרצפה מותר, ביחידות של המודל (0.04 = כ-3.5 יחידות במשחק, כמו הקפיצה הקטנה של הטנק הישן)
+  clamp:{Death_A:true},clampTo:0.04,
   // אוראל דחה את המראה (9.11: "ג'לי"). המספרים של ARI, נמדדו במשחק (art/tankx-look): הצבע כבר בגוף (אטלס צבע לכל משולש, אובסידיאן וזהב), אז החומר לא נוגע בו.
   // emK/emMax 0: בלי זוהר קבוע. rimK 0: קו האור בשוליים צבע את כל הגוף, כי מהמצלמה של המשחק (מלמעלה) רוב המשטחים בזווית. ההבהוב בפגיעה נשאר (txF בחומר)
   look:{gain:1,lift:0,rim:'#FF9A50',rimK:0,rimP:2.5,emK:0,emMax:0},
@@ -55,7 +58,8 @@ function tankxLook(){
   if(!okM||!okH||!R3D.tmpl[X.model]){X.stat.fallback++;return null}
   const hasH=!!hm&&!!R3D.props[hm],t=R3D.tmpl[X.model];
   if(X._L&&X._L.base===B&&X._t===t&&X._h===hasH&&X._sz===X.size&&X._hs===X.hammer.s)return X._L;
-  if(X._t!==t){const idle=B.anim.idle,o=tankxStand(B,R3D.clips[idle]),g={},n=tankxStand(Object.assign({},B,{model:X.model}),tankxClip(idle),g);X._k=o/n;X._lo=g.lo;X.stat.h={old:Math.round(o),raw:Math.round(n),lo:+g.lo.toFixed(4)}}
+  if(X._t!==t){const idle=B.anim.idle,o=tankxStand(B,R3D.clips[idle]),g={},n=tankxStand(Object.assign({},B,{model:X.model}),tankxClip(idle),g);X._k=o/n;X._lo=g.lo;X.stat.h={old:Math.round(o),raw:Math.round(n),lo:+g.lo.toFixed(4)}
+    if(X.clamp)for(const c in X.clamp)if(R3D.clips[c])tankxClip(c)}   // מחושב כאן, ולא במוות הראשון (חצי מיליון קודקודים פעם אחת)
   const props={};if(X.shield&&B.props&&B.props.shield)props.shield=B.props.shield;
   if(hasH)props.hammer=Object.assign({},X.hammer);
   X._h=hasH;X._t=t;X._sz=X.size;X._hs=X.hammer.s;X.stat.looks++;X.stat.h.now=Math.round(X.stat.h.old*X.size);
@@ -82,6 +86,22 @@ function tankxComp(c,f){
   if(!n)return c;
   MBTANKX.stat.tracks+=n;return new THREE.AnimationClip(c.name,c.duration,tr);
 }
+// בלי ריחוף באנימציה (clamp): בכל פריים של הירכיים מודדים את הנקודה הנמוכה של הגוף (אחרי ההורדה לרצפה, ground),
+// ואם היא מעל הרצפה ביותר מ-clampTo, הירכיים יורדות בדיוק בהפרש. רק מורידים, לא מרימים. רק ציור, פעם אחת לכל אנימציה
+function tankxClamp(c){
+  const X=MBTANKX,tr=c.tracks.find(q=>q.name==='hips.position');if(!tr)return c;
+  const r=THREE.SkeletonUtils.clone(R3D.tmpl[X.model]);r.scale.setScalar(1);
+  const mx=new THREE.AnimationMixer(r),ac=mx.clipAction(c);ac.setLoop(THREE.LoopOnce,1);ac.clampWhenFinished=true;ac.play();
+  const sk=[];let hips=null;r.traverse(o=>{if(o.isSkinnedMesh)sk.push(o);if(o.isBone&&o.name==='hips')hips=o});if(!hips)return c;
+  const v=new THREE.Vector3(),a=new THREE.Vector3(),b=new THREE.Vector3(),inv=new THREE.Matrix4(),q=tr.clone(),g=(X._lo||0)*(X.ground||0);let n=0,top=0;
+  for(let i=0;i<tr.times.length;i++){ac.time=tr.times[i];mx.update(0);r.updateMatrixWorld(true);
+    let lo=1e9;for(const m of sk){const pa=m.geometry.attributes.position;for(let j=0;j<pa.count;j+=4){v.fromBufferAttribute(pa,j);m.applyBoneTransform(j,v);v.applyMatrix4(m.matrixWorld);if(v.y<lo)lo=v.y}}
+    const d=lo-g-X.clampTo;if(d<=0)continue;top=Math.max(top,d);n++;
+    inv.copy(hips.parent.matrixWorld).invert();a.set(0,0,0).applyMatrix4(inv);b.set(0,-d,0).applyMatrix4(inv);   // ירידה בעולם, ביחידות של ההורה של הירכיים
+    q.values[i*3]+=b.x-a.x;q.values[i*3+1]+=b.y-a.y;q.values[i*3+2]+=b.z-a.z}
+  mx.stopAllAction();X.stat.clamp={clip:c.name,keys:n,of:tr.times.length,top:+top.toFixed(4)};
+  return n?new THREE.AnimationClip(c.name,c.duration,c.tracks.map(x=>x===tr?q:x)):c;
+}
 // מהירות: אותה אנימציה בזמן קצר יותר (k>1) או ארוך יותר, כך שכל מי שמנגן אותה (גם עם timeScale משלו) מקבל את המהירות החדשה
 function tankxFast(c,k){return new THREE.AnimationClip(c.name,c.duration/k,c.tracks.map(t=>{const q=t.clone();for(let i=0;i<q.times.length;i++)q.times[i]/=k;return q}))}
 function tankxClip(name){
@@ -90,6 +110,7 @@ function tankxClip(name){
   if(name in X._c)return X._c[name];
   X.stat.clips++;const nm=name.split('@')[0];
   let k=typeof X.comp==='function'?X.comp(c,R3D.tmpl[X.model],R3D.tmpl[X.ref]):tankxComp(c,f);
+  if(X.clamp&&X.clamp[nm])k=tankxClamp(k);
   // ריצה: צעד קטן יותר (ARI, RETARGET.dampen): לגוף הזה רגליים ארוכות ביחס לגובה, ובאותן זוויות הרגל עפה רחוק ומחליקה. רק לאנימציות שבטבלה TANKX.gait
   const G=X.gait&&typeof TANKX!=='undefined'&&TANKX.gait&&TANKX.gait[nm];
   if(G&&typeof RETARGET!=='undefined'){if(!X._rq){X._rq={};R3D.tmpl[X.model].traverse(o=>{if(o.isBone)X._rq[o.name]=o.quaternion.toArray()})}k=RETARGET.dampen(k,X._rq,G.k,G.bones);X.stat.gait++}
