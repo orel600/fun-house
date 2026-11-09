@@ -15,6 +15,7 @@ const path=require('path'),fs=require('fs');
 
 const args=process.argv.slice(2);
 const opt=k=>{const i=args.indexOf('--'+k);if(i<0)return null;const v=args[i+1];return v&&!v.startsWith('--')?v:true};
+const GPU=require('./gpu.js');   // --gpu או FH_GPU=1: כרטיס מסך אמיתי במקום SwiftShader (tools/gpu.js). בלי זה: כמו קודם, וב-GitHub גם
 const CFG={
   time:+(opt('time')||600),   // 600 (היה 560, 8.11: מרווח לזירה של 10 גלים). 560 (היה 480): באחו הגדול ההליכה לשער הזירה ארוכה בכ-40 שניות
   seed:+(opt('seed')||Math.floor(Math.random()*1e6)),
@@ -558,7 +559,7 @@ function worldBot(m,L,god){
 
 (async()=>{
   // תלת-ממד בלי כרטיס גרפי: WebGL רץ על המעבד (SwiftShader). איטי, אבל מספיק כדי לבדוק שהכל עולה ומצויר
-  const browser=await chromium.launch({...(process.env.PW_CHANNEL?{channel:process.env.PW_CHANNEL}:{}),args:CFG.gfx==='3d'?['--use-angle=swiftshader','--enable-unsafe-swiftshader']:[]});   // רק בתלת-ממד: הדגל הזה מאט גם את הציור הרגיל  // ב-GitHub: ה-Chrome שכבר מותקן שם, בלי להוריד דפדפן
+  const browser=await chromium.launch({...(process.env.PW_CHANNEL?{channel:process.env.PW_CHANNEL}:{}),args:GPU.gpuOn()?GPU.GPU_ARGS:CFG.gfx==='3d'?['--use-angle=swiftshader','--enable-unsafe-swiftshader']:[]});   // רק בתלת-ממד: הדגל הזה מאט גם את הציור הרגיל  // ב-GitHub: ה-Chrome שכבר מותקן שם, בלי להוריד דפדפן
   const page=await browser.newPage({viewport:CFG.phone,deviceScaleFactor:1,isMobile:true,hasTouch:true});
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
@@ -588,7 +589,7 @@ function worldBot(m,L,god){
   await page.goto('file://'+path.resolve(__dirname,'..','index.html'),{timeout:120000});
   await page.clock.runFor(300);
   // הדמויות בתלת-ממד נטענות ברקע. מחכים להן לפני שמתחילים
-  await page.evaluate(()=>{R3D.drawEvery=60});   // בבדיקה מציירים תלת-ממד פעם ב-60 פריימים, אחרת היא לוקחת שעה
+  await page.evaluate(de=>{R3D.drawEvery=de},GPU.gpuOn()?1:60);   // עם --gpu: כל פריים. אחרת: בבדיקה מציירים תלת-ממד פעם ב-60 פריימים, אחרת היא לוקחת שעה
   await page.evaluate(()=>{ITEMROLL.skip=true});   // הבוט לובש חפצים בלי לצבור נקודות. הבדיקה של itemroll.js מדליקה את הדרישות לבד
   let g3={};for(let i=0;i<200;i++){g3=await page.evaluate(()=>({ready:R3D.ready,failed:R3D.failed,on:R3D.on}));if(g3.ready||g3.failed||CFG.gfx==='2d')break;await page.waitForTimeout(50);await page.clock.runFor(50)}
 
@@ -607,7 +608,7 @@ function worldBot(m,L,god){
     // השעון בבדיקה עומד, ולכן אייקון "סקיל חדש" (skillreveal.js, 1.8 שניות במשחק) נשאר באמצע המסך מעל הגיבור, והכפתור בפינה ריק.
     // לפני צילום: האייקון נוחת על הכפתור שלו
     await page.evaluate(()=>{if(typeof SKR!=='undefined'&&SKR&&SKR.el){SKR.el.remove();SKR.el=null;skrBtn(SKR.id,false)}});
-    await page.evaluate(()=>{R3D.drawEvery=0});await page.clock.runFor(34);await page.evaluate(()=>{R3D.drawEvery=60});
+    await page.evaluate(()=>{R3D.drawEvery=0});await page.clock.runFor(34);await page.evaluate(de=>{R3D.drawEvery=de},GPU.gpuOn()?1:60);
     await page.screenshot({path:path.join(CFG.shots,String(++shotN).padStart(2,'0')+'-'+name+'.png')})};
 
   const open=await page.$$eval('.ov',els=>els.filter(e=>getComputedStyle(e).display!=='none').map(e=>e.id));
