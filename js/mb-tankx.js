@@ -65,7 +65,7 @@ function tankxLook(){
   const hasH=!!hm&&!!R3D.props[hm],t=R3D.tmpl[X.model];
   if(X._L&&X._L.base===B&&X._t===t&&X._h===hasH&&X._sz===X.size&&X._hs===X.hammer.s)return X._L;
   if(X._t!==t){const idle=B.anim.idle,o=tankxStand(B,R3D.clips[idle]),g={},n=tankxStand(Object.assign({},B,{model:X.model}),tankxClip(idle),g);X._k=o/n;X._lo=g.lo;X.stat.h={old:Math.round(o),raw:Math.round(n),lo:+g.lo.toFixed(4)}
-    if(X.clamp)for(const c in X.clamp)if(R3D.clips[c])tankxClip(c)}   // מחושב כאן, ולא במוות הראשון (חצי מיליון קודקודים פעם אחת)
+    if(X.clamp){for(const k of Object.keys(X._c||{}))if(X.clamp[k.split('@')[0]])delete X._c[k];for(const c in X.clamp)if(R3D.clips[c])tankxClip(c)}}   // קליפ שנבנה לפני שהרצפה נמדדה (X._lo) נבנה מחדש, אחרת ה-clamp מרים הכל   // מחושב כאן, ולא במוות הראשון (חצי מיליון קודקודים פעם אחת)
   const props={};if(X.shield&&B.props&&B.props.shield)props.shield=B.props.shield;
   if(hasH)props.hammer=Object.assign({},X.hammer);
   X._h=hasH;X._t=t;X._sz=X.size;X._hs=X.hammer.s;X.stat.looks++;X.stat.h.now=Math.round(X.stat.h.old*X.size);
@@ -184,7 +184,7 @@ function tankxPlayer(H){
   // מתג תוך כדי משחק, או גוף שסיים להיטען: הדמות נבנית מחדש (עם אותו מצב תקיפה, כדי שלא תצא תקיפה מיותרת)
   const bu=mb3dUnit;mb3dUnit=function(e,dt){
     if(isTank(e)&&(MBTANKX.on||(R3D.actors.get(e)||{L:{}}).L.tx)){const a=R3D.actors.get(e),L=lookOf(e);   // כבוי: רק כדי לחזור מהגוף החדש. אחרת mb-parts (ובונים אחרים של מראה) בונים מחדש בעצמם
-      if(a&&L&&a.key!==lookKey(L)&&!a.dieT){const pv=a.prev;freeActor(a);R3D.actors.delete(e);MBTANKX.stat.rebuilt++;
+      if(a&&L&&a.key!==lookKey(L)&&!(e.dead&&a.dieT)){   /* dieT ישן מהמוות הקודם לא חוסם יחידה חיה */const pv=a.prev;freeActor(a);R3D.actors.delete(e);MBTANKX.stat.rebuilt++;
         const n=makeActor(L);n.root.scale.setScalar(L.h/COSB()/R3D.tmpl[L.model].userData.h);n.sc0=n.root.scale.x;n.prev=pv;R3D.actors.set(e,n)}}
     const r=bu.apply(this,arguments);
     if(isTank(e)){const a=R3D.actors.get(e);if(a&&a.L&&a.L.tx){if(!a.txSeen){a.txSeen=1;MBTANKX.stat.actors++}tankxCarry(a,dt);tankxDiag(a)}}
