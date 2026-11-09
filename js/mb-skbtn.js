@@ -8,6 +8,7 @@
 const MBSKB={
   on:!/[?&]mbskb=0(&|$)/.test(location.search),
   dir:'icons/uw/',
+  ready:false,   // התמונות העגולות עוד לא בריפו (מגיעות עם ההורדה של אוראל). false: לא מבקשים אותן בכלל (בקשה לקובץ חסר היא שגיאה בקונסול). כשהן נכנסות: true
   layout:/[?&]mbbtn=arc(&|$)/.test(location.search)?'arc':'grid',   // grid: 2x2 בפינה (המסמך, MAX 10.11). arc: הקשת של היום (?mbbtn=arc)
   // id של סקיל ← שם הקובץ (בלי .png). השמות מ-skill-buttons-design.md
   icon:{anvil:'icon-uw-tank-s1-anvil-slam-round',taunt:'icon-uw-tank-s2-taunt-round',wall:'icon-uw-tank-ult-iron-wall-round',
@@ -19,7 +20,7 @@ const MBSKB={
   stat:{built:0}
 };
 // שכבה אחת של האייקון: התמונה העגולה (אם יש), ואחריה מה שהיה בכפתור (התמונה של העולם וה-SVG)
-const mbSkbImg=f=>f?'<img class="mbuw" src="'+MBSKB.dir+f+'.png" alt="" draggable="false" onerror="this.remove()">':'';
+const mbSkbImg=f=>f&&MBSKB.ready?'<img class="mbuw" src="'+MBSKB.dir+f+'.png" alt="" draggable="false" onerror="this.remove()">':'';
 function mbSkbWrap(b,file){
   if(!b||b.querySelector('.mbicon'))return;
   const old=[...b.childNodes].filter(n=>!(n.nodeType===1&&(n.tagName==='I'||n.classList.contains('mblock')))),html=old.map(n=>n.nodeType===1?n.outerHTML:'').join('');

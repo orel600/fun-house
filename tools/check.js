@@ -4432,7 +4432,7 @@ function worldBot(m,L,god){
      const scr=o=>({x:cv.left+((o.x-S.cam.x)/W+0.5)*cv.width,y:cv.top+((o.y-S.cam.y)/H+0.5)*cv.height});
      const pe=(el,t,x,y)=>(el||window).dispatchEvent(new PointerEvent(t,{bubbles:true,cancelable:true,pointerId:9,clientX:x,clientY:y}));
      try{mobaHud();K.btn=!!b&&!!b.offsetParent;const sk=[...document.querySelectorAll('#mbSk [data-sk]')].filter(e=>e.offsetParent),br=b.getBoundingClientRect();
-      K.big=sk.length>0&&sk.every(e=>e.getBoundingClientRect().width<br.width);
+      K.big=sk.length>0&&sk.every(e=>document.body.classList.contains('mbgrid')?e.getBoundingClientRect().width<=br.width+0.5:e.getBoundingClientRect().width<br.width);   // ב-2x2 (mb-skbtn.js, השיפוץ) כל הכפתורים שווים בכוונה: התקיפה לא קטנה מאף אחד
       const rs=[br,...sk.map(e=>e.getBoundingClientRect())];K.free=!rs.some((a,i)=>rs.some((c,j)=>j>i&&Math.min(a.right,c.right)-Math.max(a.left,c.left)>1&&Math.min(a.bottom,c.bottom)-Math.max(a.top,c.top)>1));
       MB.u=keep.filter(o=>o===me||o.k==='tower'||o.k==='base');me.x=0;me.y=0;me.atkT=0;joy=null;MB.lock=MB.atkGo=null;
       const mk=(dx,dy)=>{const m=mbUnit({k:'minion',team:1-me.team,type:'mb_m1',x:me.x+dx,y:me.y+dy,r:MOBA.minion.r,hp:1e6,max:1e6,speed:0,lane:dy,face:0});MB.u.push(m);return m};
@@ -4533,7 +4533,7 @@ function worldBot(m,L,god){
       o.two={held:wHeld().length};try{hud();o.two.ok=true}catch(e){o.two.err=e.message}f.x=fx;f.y=fy;SAVE.gear.weapon=g;SAVE.bag=JSON.parse(bag)}
     for(let i=0;i<30;i++)mobaUpdate(1/30);render();o.m3=typeof M3!=='undefined'?M3.map.size:-1;o.r3=R3D.on;   // תלת-ממד: מגדלים ובסיסים כמודלים (moba3d.js)
     // המראה (moba-look.js): כפתורי הסקילים והפקודות כאייקוני SVG בלי אימוג'י, והרצפה של המוד (בתלת-ממד: במקום הרצפה של הזירה)
-    o.look={svg:document.querySelectorAll('#mbSk [data-sk]:not(.mbsp) :is(svg.mbski,svg.mbgi)').length+document.querySelectorAll('#mbPing svg').length,emoji:/\p{Extended_Pictographic}/u.test($('mbSk').textContent+$('mbPing').textContent),
+    o.look={svg:document.querySelectorAll('#mbSk [data-sk]:not(.mbsp) :is(svg.mbski,svg.mbgi):not(.mbib *)').length+document.querySelectorAll('#mbPing svg').length,emoji:/\p{Extended_Pictographic}/u.test($('mbSk').textContent+$('mbPing').textContent),
       pic:[...document.querySelectorAll('#mbSk [data-sk]:not(.mbsp)')].map(b=>{const im=b.querySelector('img.mbpic');return im?im.getAttribute('src'):b.querySelector('svg.mbgi')?'gi':''}),   // האייקון: צללית game-icons ('gi', הסגנון החדש) או התמונה המצוירת של העולם (קלאסי, moba-icons.js)
       floor:R3D.on&&R3D.ready?!!(M3.floor&&M3.floor.visible)&&!R3D.ground.visible:!!MB_FLOOR};
     // מצלמה ומפה (moba-look.js, 3.11): המצלמה רחוקה (רואים לרוחב לפחות פי 1.5), יש שיחים ואבנים, והמפה הקטנה בתוך המסך
