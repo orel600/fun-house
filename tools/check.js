@@ -2264,8 +2264,9 @@ function worldBot(m,L,god){
       ', חוצץ '+(afl.buf&&afl.fired?'✓':'✗')+', תנועת הטלה '+(afl.cast?'✓':'✗')+', Rampage '+(afl.ramp?(afl.rampOnce?'פעם אחת לרצף':'חוזר!'):'✗')+', בעולם '+(afl.world?'כלום':'משהו!')));
   // אירוע אחד = רגע אחד (MLBB 3.3, ה5): "Rampage!" והמדרגות של הרצף באותו מקום למעלה, כרטיס אחד בכל רגע ובלי מילה צפה מעל הגיבור.
   // הריגת אויב-על: הגיליון ko או הפוף, לא שניהם. "פחות אפקטים": בלי כרטיס. הפחתת תנועה: בלי עמוד אור
-  const om=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},fl=SAVE.fxLess,calm=SAVE.calm;
-    try{startRun();S.mode='play';enemies=[];P.hp=P.maxHp=1e9;P.next=1e9;SAVE.fxLess=false;SAVE.calm=false;S.st=null;FXLIB.ui.length=0;FXLIB.list.length=0;
+  const om=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},fl=SAVE.fxLess,calm=SAVE.calm,cq=typeof CQ!=='undefined'&&CQ.on;
+    // בלי תור המרכז (centerq.js): הבאנר של startRun מחזיק את הרצף בתור, וזה תלוי בתזמון (נכשל לפעמים ב-seed 2026). לתור יש בדיקה משלו
+    if(cq)CQ.on=false;try{startRun();S.mode='play';enemies=[];P.hp=P.maxHp=1e9;P.next=1e9;SAVE.fxLess=false;SAVE.calm=false;S.st=null;FXLIB.ui.length=0;FXLIB.list.length=0;
       const cards=()=>FXLIB.ui.filter(f=>f.id===STREAK.card.fx&&f.on!==false).length,k=()=>{const e=addEnemy('grunt',P.x+80,P.y);e.hp=1;e.elite=false;kill(e)};
       const f0=floats.length,sh0=STREAK.shown||0;k();k();k();o.ramp=S.st.show&&S.st.show.key;o.c3=cards();
       o.noFloat=!floats.slice(f0).some(f=>f.txt===T('feel.rampage'));o.noWorld=!FXLIB.list.some(f=>f.id===STREAK.card.fx);
@@ -2275,7 +2276,7 @@ function worldBot(m,L,god){
       S.st=null;FXLIB.ui.length=0;k();k();k();o.lessCard=cards()===0&&S.st.show&&S.st.show.key==='feel.rampage';
       SAVE.fxLess=false;SAVE.calm=true;const pl=AF.stat.pillars;S.st=null;k();k();k();o.calmPillar=AF.stat.pillars===pl;
     }catch(err){o.err=String(err&&err.stack||err)}
-    SAVE.fxLess=fl;SAVE.calm=calm;FXLIB.ui.length=0;FXLIB.list.length=0;enemies=[];S.st=null;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+    if(cq)CQ.on=true;SAVE.fxLess=fl;SAVE.calm=calm;FXLIB.ui.length=0;FXLIB.list.length=0;enemies=[];S.st=null;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(!om.err&&om.ramp==='feel.rampage'&&om.c3===1&&om.noFloat&&om.noWorld&&om.step==='st.0'&&om.c10===1&&om.shows===2&&om.big===1&&om.bigLess<=1&&om.lessCard&&om.calmPillar,
     'רגע אחד לכל אירוע: '+(om.err||'Rampage למעלה '+(om.ramp==='feel.rampage'&&om.noFloat&&om.noWorld?'✓':'✗ ('+om.ramp+(om.noFloat?'':', מילה צפה')+(om.noWorld?'':', כרטיס בעולם')+')')+
     ', כרטיסים '+om.c3+'/'+om.c10+' ('+om.shows+' רגעים ב-10 הריגות), אויב-על '+(om.big===1?'רגע אחד ('+(om.koImg?'ko':'פוף')+')':om.big+' רגעים!')+
@@ -2309,7 +2310,7 @@ function worldBot(m,L,god){
   // רגע הסכנה של הבוס (arena-danger.js, MLBB 2.1): המילוי לפי השעונים האמיתיים מגיע ל-100% ברגע הפגיעה (בפריים האחרון לפניה: 1 פחות פריים),
   // באמצע לפי החשבון (גל הדף: 0.4 מתוך 1.0 ברגע שהאזהרה נגמרת), תקתוק, הבזק, חריכה עד max, ו"פחות אפקטים" בלי חריכה. המכשף במג'נטה
   const adg=await page.evaluate(()=>{const o={},mode=S.mode,fl=SAVE.fxLess,bak=JSON.stringify(SAVE);
-    try{reset();S.mode='play';enemies.length=0;S.arena='classic';SAVE.fxLess=false;P.hp=P.maxHp=1e9;
+    try{reset();S.mode='play';enemies.length=0;S.arena='classic';SAVE.fxLess=false;P.hp=P.maxHp=1e9;P.next=1e9;   // P.next: בלי עליית רמה באמצע (S.mode='level' עוצר את update, ואז אין st)
       for(const k in ARDG.stat.hitP)delete ARDG.stat.hitP[k];const n0={...ARDG.stat};ARDGS.sc.length=0;
       const b=makeBoss();b.x=P.x+200;b.y=P.y;S.boss=b;enemies.push(b);b.hp=b.max=1e12;
       const run=(k,sec)=>{b.patT=99;b.arTele=null;doPattern(b,k);let mid=null;for(let i=0;i<sec*60;i++){b.patT=99;P.hp=P.maxHp;update(1/60);const st=ARDGS.b.get(b);if(st&&mid==null&&st.ph==='after')mid=st.p}return mid};
@@ -2320,7 +2321,7 @@ function worldBot(m,L,god){
       SAVE.fxLess=true;ARDGS.sc.length=0;run('shock',2.5);o.less=ARDGS.sc.length===0;
       o.col=ARDG.col==='#FF3DD8'&&ATG.fallback.col===ARDG.col;
       // reduced motion: no flash and no tick thickening; the fill and outline stay. Measured on the drawing itself ('lighter' fills, line width)
-      SAVE.fxLess=false;const calm0=SAVE.calm;SAVE.calm=true;b.patT=99;b.arTele=null;doPattern(b,'ring');const tl=b.arTele;tl.t=tl.max*0.5;update(1/60);const st=ARDGS.b.get(b);st.tk=S.t;
+      SAVE.fxLess=false;const calm0=SAVE.calm;SAVE.calm=true;S.mode='play';S.hitstop=0;b.patT=99;b.arTele=null;doPattern(b,'ring');const tl=b.arTele;tl.t=tl.max*0.5;update(1/60);const st=ARDGS.b.get(b);st.tk=S.t;
       let lighter=0,maxW=0;const fl=ctx.fill,sk=ctx.stroke;ctx.fill=function(){if(ctx.globalCompositeOperation==='lighter')lighter++;return fl.apply(this,arguments)};ctx.stroke=function(){maxW=Math.max(maxW,ctx.lineWidth);return sk.apply(this,arguments)};
       const r3=R3D.on;R3D.on=false;   // the canvas path (2D); 3D is checked below on the scene
       try{S.cam.x=b.x;S.cam.y=b.y;ardgDrawUnder();b.ardgFl=S.t;if(!ARDGS.fl.includes(b))ARDGS.fl.push(b);ardgDrawOver()}finally{ctx.fill=fl;ctx.stroke=sk;R3D.on=r3}

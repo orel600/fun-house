@@ -172,6 +172,25 @@ const GEAR3D={on:!/[?&]gear3d=0/.test(location.search),
   boots:{tint:0.45},head:{from:2},set:0.28,
   keep:['LegLeft','LegRight','Helmet','Hat','Quiver']
 };
+/* תיקונים לנשק לפי הפריט (ניר אישר 9.11.2026, docs/concept-weapon-models.md), כדי שהנשק ביד ובבובה ידמה לתמונה. המפתח: id ב-GEAR.items.
+   add: תוספת קטנה על המודל הרגיל (look.model), באותה אחיזה. shape: 'gem' (20 משולשים) או 'crystal' (8), col הצבע, glow כמה הוא זוהר,
+     pos/s/rot במרחב של מודל הנשק (w_axe_B: הראש סביב y=1, w_wand_A: הקצה ב-y=0.83). לא נוסף כשהפריט מקבל מודל משלו (w_item_).
+   bright: מודל משלו (w_item_) כהה מהתמונה: פי כמה להבהיר את הטקסטורה. glow ו-gk: זוהר עדין, והאגדי פועם בו (GEAR3D.pulse) */
+const ITEM3D={
+  goldAxe:   {add:[{shape:'gem',col:'#E0243C',glow:0.45,pos:[0,1.0,0],s:[0.14,0.19,0.17]}]},
+  silverWand:{add:[{shape:'crystal',col:'#4FA8FF',glow:0.6,pos:[0,0.88,0],s:[0.1,0.21,0.1]}]},
+  dragonBlade:{bright:1.9,glow:'#FF6FB5',gk:0.18}
+};
+const ITEM3D_GEO={gem:()=>new THREE.IcosahedronGeometry(1,0),crystal:()=>new THREE.OctahedronGeometry(1,0)};
+// בונה את התוספות של פריט ומחבר אותן למודל הנשק m. החומרים נכנסים ל-mats (הבהוב פגיעה) ול-pulse אם אגדי
+function item3dAdd(m,id,mats,pulse){
+  for(const d of (ITEM3D[id]||{}).add||[]){
+    const geo=R3D['geo_'+d.shape]||(R3D['geo_'+d.shape]=ITEM3D_GEO[d.shape]());
+    const mat=new THREE.MeshLambertMaterial({color:d.col,flatShading:true,emissive:new THREE.Color(d.col).multiplyScalar(d.glow||0)});
+    const g=new THREE.Mesh(geo,mat);g.position.fromArray(d.pos);g.scale.fromArray(d.s);if(d.rot)g.rotation.fromArray(d.rot);
+    mat.userData.em=mat.emissive.clone();mats.push(mat);if(pulse)pulse.push(mat);m.add(g);
+  }
+}
 const g3Rar=t=>GEAR.tiers[Math.min(t,GEAR.tiers.length-1)].col;   // הצבע של המתכת (עץ, ברזל, כסף, זהב, אגדי), כדי שהזוהר יתאים לחומר
 // מוסיף ל-L (heroLook) את מה שהציוד מצייר: זוהר לנשק, מגן, וצבעים לחלקים (gear3dParts)
 function gear3dLook(L,wid){
@@ -437,7 +456,7 @@ function heroLook(){
     const im=it&&itemModel(gBase(wid),it),mine=it&&wUse(wid)===w&&im&&R3D.props[im],model=mine?im:GRIP3D.spare[w],g=GRIP3D[GRIP3D.of(model)];
     // מודל משלו שעוד נטען: look.model הוא רק מקום שמור. בלי מתכת ובלי זוהר של הדרגה, כדי שלא ייראה כמו הנשק (באג 9.11: קשת השמיים ורודה, קשת הסערה כסופה)
     const wait=it&&wUse(wid)===w&&!R3D.props['w_item_'+gBase(wid)]&&m3dLazy('w_item_'+gBase(wid))&&M3D.st['w_item_'+gBase(wid)]!=='fail';   // לא נטען בכלל: נשאר המודל הזמני עם הדרגה
-    L.props[w]=Object.assign({prop:model,tier:mine&&!wait?GEAR.tiers[it.tier].id:'wood',wait},g);
+    L.props[w]=Object.assign({prop:model,tier:mine&&!wait?GEAR.tiers[it.tier].id:'wood',wait,item:mine&&!wait&&ITEM3D[gBase(wid)]?gBase(wid):null},g);   // item: תיקון לפי הפריט (ITEM3D)
     L.anim[w]=g.attack;if(g.idle)L.anim[w+'Idle']=g.idle;if(g.draw)L.anim[w+'Draw']=g.draw;
   }
   if(GEAR3D.on)gear3dLook(L,wid);
@@ -447,7 +466,7 @@ function heroLook(){
 }
 function lookOf(e){return e===P?heroLook():e.wboss&&LOOK3D['wb_'+e.wboss]?LOOK3D['wb_'+e.wboss]:e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
 // מפתח למאגר: רק דמות זהה (מודל, חפצים, צבע, גודל, נשק מוסתר) חוזרת לשימוש. יצורי משאבים הם מודל קיים בצבע ובגודל אחר
-const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')+(p.glow||'')).join()+(L.tint?'|'+L.tint:'')+(L.paint?'|'+L.paint:'')+'|'+L.h+(L.own===false?'|x':'');
+const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')+(p.glow||'')+(p.item||'')).join()+(L.tint?'|'+L.tint:'')+(L.paint?'|'+L.paint:'')+'|'+L.h+(L.own===false?'|x':'');
 const TINT={ember:C.ember,tide:C.tide,gold:C.gold,...Object.fromEntries(Object.keys(DMG.types).map(k=>[k,DMG.types[k].col])),lilac:C.lilac};   // צבע לכל סוג נזק, ושמות הצבעים של המשחק
 const tintOf=t=>TINT[t]||t;   // שם מ-TINT, או צבע ישיר ('#8A8F9C')
 function makeActor(L){
@@ -461,8 +480,10 @@ function makeActor(L){
   for(const [k,p] of Object.entries(L.props||{})){
     const b=bone(root,p.bone);if(!b)continue;
     const m=R3D.props[p.prop].clone(true);m.position.fromArray(p.pos);m.quaternion.fromArray(p.rot);if(p.s)m.scale.setScalar(p.s);
-    const own=/^w_item_/.test(p.prop);   // מודל משלו: הטקסטורה נשארת, ובלי זוהר. מודל מ-Blender עם emissiveMap (tools/blender) פועם בחלקים הזוהרים שלו
-    m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(p.tier&&R3D.wtex[p.tier]&&!own)o.material.map=R3D.wtex[p.tier];if(p.tint)o.material.emissive.set(TINT[p.tint]).multiplyScalar(0.55);if(p.glow&&!own)o.material.emissive.set(p.glow).multiplyScalar(p.gk);if(p.pulse&&(!own||o.material.emissiveMap))(a_pulse||(a_pulse=[])).push(o.material);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
+    const own=/^w_item_/.test(p.prop),fix=ITEM3D[p.item||own&&p.prop.slice(7)]||{};   // מודל משלו: הטקסטורה נשארת, ובלי זוהר הדרגה. מודל מ-Blender עם emissiveMap (tools/blender) פועם בחלקים הזוהרים שלו
+    // מודל משלו עם fix.glow (ITEM3D): זוהר עדין בצבע של התמונה, והאגדי פועם בו. fix.bright מבהיר טקסטורה כהה
+    m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();if(p.tier&&R3D.wtex[p.tier]&&!own)o.material.map=R3D.wtex[p.tier];if(own&&fix.bright)o.material.color.multiplyScalar(fix.bright);if(p.tint)o.material.emissive.set(TINT[p.tint]).multiplyScalar(0.55);if(p.glow&&!own)o.material.emissive.set(p.glow).multiplyScalar(p.gk);if(own&&fix.glow&&!o.material.emissiveMap)o.material.emissive.set(fix.glow).multiplyScalar(fix.gk);if(p.pulse&&(!own||o.material.emissiveMap||fix.glow))(a_pulse||(a_pulse=[])).push(o.material);o.material.userData.em=o.material.emissive.clone();mats.push(o.material)}});
+    if(!own&&p.item)item3dAdd(m,p.item,mats,p.pulse&&(a_pulse||(a_pulse=[])));   // תוספת קטנה (ITEM3D.add)
     b.add(m);props[k]=m;
   }
   // נשקים שהדמות מחזיקה בקובץ המקורי: גרזן לבוס, סכין למבוקש

@@ -10,7 +10,7 @@
    הדוח הכתוב (docs/weapon-audit-2026-11-09.md) נכתב ביד מתוך audit.json. */
 const {chromium}=require('playwright');
 const path=require('path'),fs=require('fs');
-const OUT=path.resolve(__dirname,'..','docs','weapon-audit');
+const OUT=process.env.WA_OUT||path.resolve(__dirname,'..','docs','weapon-audit');   // WA_OUT: לתיקייה אחרת, כדי לא לדרוס את הדוח
 const VIEW={width:1280,height:590};
 const HUE_TOL=45;   // מעלות: מעבר לזה הגוונים שונים
 const DARK=0.55;     // הנשק ביד כהה מפי זה מהתמונה: לא תואם (הבובה מוארת כהה יותר מהתמונה, בממוצע פי 0.75)
@@ -89,7 +89,7 @@ function pageHelpers(){
     for(const s of ['#dailyWin [data-act="close"]','#npcDlg [data-act="close"]','#qLog [data-act="close"]']){const b=document.querySelector(s);if(b&&b.offsetParent)b.click()}});
   await closeAll();await page.waitForTimeout(300);await closeAll();
 
-  const ids=await page.evaluate(()=>Object.keys(GEAR.items).filter(k=>GEAR.items[k].slot==='weapon'));
+  const ids=(await page.evaluate(()=>Object.keys(GEAR.items).filter(k=>GEAR.items[k].slot==='weapon'))).filter(k=>!process.env.WA_IDS||process.env.WA_IDS.split(',').includes(k));   // WA_IDS=goldAxe,silverWand: רק הנשקים האלה (מהיר)
   console.log('נשקים:',ids.length);
   // מלביש רק את הנשק (בלי סט, בלי מגן, בלי זוהר של פריט אחר), עם המחלקה שהנשק שלה
   const wear=id=>page.evaluate(id=>{const t=wTypeOf(id),cls=Object.keys(HEROES.list).find(k=>HEROES.list[k].arms.includes(t))||'warrior';
