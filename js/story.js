@@ -101,7 +101,7 @@ function storyVillage(){
 // ראש הכפר אומר משפט, כשאין חלון פתוח (יומן, ציוד, שיחה), כדי לא לסגור לשחקן משהו באמצע
 function storySay(key,delay,first){
   setTimeout(function go(){if(!S.vil)return;
-    if(S.mode!=='play'||!$('qLog').hidden||!$('npcDlg').hidden||!$('ovGear').hidden||!$('ovDaily').hidden||!$('ovWelcome').hidden){setTimeout(go,1000);return}
+    if(S.mode!=='play'||!$('qLog').hidden||!$('npcDlg').hidden||!$('ovGear').hidden||!$('ovDaily').hidden||!$('ovWelcome').hidden||!$('vPanel').hidden||!$('ovForge').hidden){setTimeout(go,1000);return}   // vPanel/ovForge: חלון של מבנה פתוח, ההקדמה מחכה שייסגר
     if(first)first();npcTalk('head');S.vil.dlgStay=true;S.vil.dlgLine=T(key);npcDialog()},delay*1000);
 }
 

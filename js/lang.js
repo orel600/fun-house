@@ -1278,7 +1278,7 @@ const TEXT={
   'gm.lv':{en:t=>'Rank '+t},'gm.max':{en:'max'},'gm.up':{en:(f,t)=>f+' rank '+t+'!'},
   'forge.tab.tool':{en:'🪓 Tools'},'gt.axe':{en:'Axe'},'gt.hammer':{en:'Hammer'},'gt.lv':{en:t=>'Tier '+t},
   'gt.t.wood':{en:'Wooden'},'gt.t.copper':{en:'Copper'},'gt.t.iron':{en:'Iron'},'gt.t.silver':{en:'Silver'},'gt.t.gold':{en:'Golden'},
-  'gt.next':{en:(n,y,m)=>'Next: '+n+' · +'+y+'% per node · '+m+' min'},'gt.opens':{en:l=>'Next opens: '+l},
+  'gt.next':{en:(n,y,m)=>'Next: '+n+' · +'+y+'% more per node · '+m+' min'},'gt.opens':{en:l=>'Next opens: '+l},
   'goal.pin':{en:'Track in the world'},'goal.pinned':{en:'Tracking'},'goal.ready':{en:n=>'Everything for '+n+'! Head home to build'},
   'vp.cutterShop':{en:'Stone workshop'},'vp.pl.deepQuarry':{en:'the Deep Quarry'},
   'vp.cutterShop.d':{en:(pl,lv)=>'Help me build a proper workshop. My crew will clear the rockfall in the quarry and open '+pl+'. Or come back at level '+lv+' and climb over it.'},
