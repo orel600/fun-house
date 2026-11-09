@@ -4775,9 +4775,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
         o.load=await E(()=>M3D.log.filter(l=>l.k===MBTANKX.model||l.k===MBTANKX.hammer.prop).map(l=>l.k+' '+l.ms+'ms').join(', '))}
       else await E(()=>{const r=R3D.tmpl[MBTANKX.ref],t=THREE.SkeletonUtils.clone(r);t.userData=Object.assign({},r.userData);
         t.traverse(b=>{if(b.isBone&&/^(hips|upperleg)/.test(b.name))b.position.multiplyScalar(1.5)});R3D.tmpl.__tx=t;MBTANKX._m0=MBTANKX.model;MBTANKX.model='__tx'});
-      Object.assign(o,await E(()=>{const X=MBTANKX,rnd=Math.random,out={},seed=s=>{let x=s;Math.random=()=>(x=(x*16807)%2147483647)/2147483647};
+      Object.assign(o,await E(()=>{const X=MBTANKX,rnd=Math.random,out={},sv0=JSON.stringify(SAVE),seed=s=>{let x=s;Math.random=()=>(x=(x*16807)%2147483647)/2147483647};
         const tkOf=()=>MB.u.find(u=>u.k==='hero'&&u.kit===X.kit&&!u.me);
-        const game=(on,s)=>{seed(s);X.on=on;mobaStart('warrior');MB.me.bot={t:0,mode:'push'};const tk=tkOf();if(!tk){mobaExit();return null}
+        const game=(on,s)=>{SAVE=JSON.parse(sv0);seed(s);X.on=on;mobaStart('warrior');MB.me.bot={t:0,mode:'push'};const tk=tkOf();if(!tk){mobaExit();return null}
           const r={atk:[],moveAtk:0,tx:0,comp:0,bones:new Set(),fams:'',flash:false,die:null,toggle:null};let pa=tk.atkT;
           for(let i=0;i<900&&!MB.over;i++){const x0=tk.x,y0=tk.y;mobaUpdate(1/30);if(tk.atkT>pa+0.05)r.atk.push(i);pa=tk.atkT;
             if(i===300)tk.flash=1;
@@ -4785,7 +4785,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
               if(a&&on){if(a.L.tx)r.tx++;const b=a.base&&act(a,a.base);if(b&&b.getClip()!==R3D.clips[a.base])r.comp++;
                 const h=bone(a.root,'upperarmr')||bone(a.root,'hips');if(h&&i%15===0)r.bones.add(h.quaternion.toArray().map(v=>v.toFixed(2)).join());
                 const one=a.one&&a.one.isRunning()?a.one.getClip().name:'';if(/Attack|Chop|Slice/.test(one)&&Math.hypot(tk.x-x0,tk.y-y0)>0.5)r.moveAtk++;
-                if(i===300)r.flash=a.mats.some(m=>m.emissive.r>0.5)}}
+                if(i===300)r.flash=a.mats.some(m=>m.emissive.r>0.5)&&a.mats.every(m=>!m.userData.txF||m.userData.txF.value===1)}}
             if(i===300)tk.flash=0}
           r.hash=MB.u.map(u=>[u.kit||u.k,Math.round(u.hp),Math.round(u.x),Math.round(u.y)].join(':')).join('|');
           if(on){const a=R3D.actors.get(tk);
@@ -4808,9 +4808,13 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
             const ys=pts.map(v=>v.y),lo=Math.min(...ys),bd=0.03*H;let sp=0,n=0;for(let i=1;i<pts.length;i++)if(pts[i].y<lo+bd&&pts[i-1].y<lo+bd){sp+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z)/(D/N);n++}
             a.mixer.stopAllAction();freeActor(a);return {lift:+((Math.max(...ys)-lo)/H).toFixed(3),slide:+(sp/Math.max(1,n)/MBMOVE.run).toFixed(2)}};   // slide: מהירות הרגל במגע מול מהירות הקרקע (1 = בלי החלקה)
           X.on=true;const LX=tankxLook();X.on=false;out.gait={kk:gait(LOOK3D.mb_tank),tx:LX&&gait(LX)};
+          // אתה כטנק: אותו גוף על הגיבור שלך, עם הפטיש במקום הנשק מקרוב. ובלי הניסוי: הדמות שלך
+          SAVE=JSON.parse(sv0);seed(1);X.on=true;mobaStart('tank');Math.random=rnd;syncPlayer(1/30);syncPlayer(1/30);{const a=R3D.player;out.me={model:a&&a.L.model,sword:!!(a&&a.props.sword&&a.props.sword.visible),fam:a&&a.fam||null}}
+          X.on=false;syncPlayer(1/30);out.meOff=R3D.player&&R3D.player.L.model;mobaExit();
+          out.h=X.stat.h;out.size=X.size;
           out.fac=X.stat.fac;out.clips=X.stat.clips;out.gaitN=X.stat.gait;out.tracks=X.stat.tracks;out.rebuilt=X.stat.rebuilt;out.hammer=!!R3D.props[X.hammer.prop]}
         catch(e){out.err=String(e&&e.stack||e).slice(0,200)}
-        Math.random=rnd;X.on=false;if(X._m0){X.model=X._m0;delete X._m0;delete R3D.tmpl.__tx;X._f=null;X._L=null}if(S.mb)mobaExit();return out}));
+        Math.random=rnd;X.on=false;SAVE=JSON.parse(sv0);if(X._m0){X.model=X._m0;delete X._m0;delete R3D.tmpl.__tx;X._f=null;X._L=null}if(S.mb)mobaExit();return out}));
       /* חיית המחמד: אותו מסלול פעמיים (זזה 1.5 שניות, עומדת 1.5), עם הקפיצות ובלי. המיקום שלה זהה (המעקב לא השתנה),
          בתנועה הגוף קופץ ונמעך בגבולות המפרט, ובעמידה חוזר לגודל ולזווית הרגילים, עם נשימה קטנה */
       const pk=await E(()=>{const L=LOOK3D['pet_'+(SAVE.pet.kind||PET.default)+(SAVE.pet.stage+1)];if(L)m3dNeed(L.model);return L&&L.model});
@@ -4882,13 +4886,13 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(L.heroHp===heroHp,'פסיבית בריצה: הלוחם קיבל +'+L.heroHp+' חיים (צפוי +'+heroHp+')');
   check(again,'בחירת דמות: '+(again?'לא חוזרת במשחק השני':'הופיעה שוב'));
   {const o=txT,pt=o.pet||{},T=o.real?'הגוף החדש':'תחליף (הקבצים של ARI עוד לא נכנסו)';
-    const tk=!o.d3||(o.same&&o.tx>0&&o.comp>0&&o.bones>=3&&o.moveAtk>0&&o.flash&&o.die&&o.die.moved&&o.toggle&&o.toggle.off&&o.toggle.back&&o.fac&&o.tracks>0&&(!o.real||o.gait&&o.gait.tx&&o.gait.kk&&o.gait.tx.lift<=o.gait.kk.lift*1.5&&o.gait.tx.slide>=0.5&&o.gait.tx.slide<=1.5)&&(!o.hammer||o.fams==='idle/run/attack'&&o.dieFam==='attack')&&!o.err);
+    const tk=!o.d3||(o.same&&o.tx>0&&o.comp>0&&o.bones>=3&&o.moveAtk>0&&o.flash&&o.die&&o.die.moved&&o.toggle&&o.toggle.off&&o.toggle.back&&o.fac&&o.tracks>0&&(!o.real||o.gait&&o.gait.tx&&o.gait.kk&&o.gait.tx.lift<=o.gait.kk.lift*1.5&&o.gait.tx.slide>=o.gait.kk.slide*0.8&&o.gait.tx.slide<=1.1&&o.me&&o.me.model==='tankX'&&o.me.sword&&o.meOff!=='tankX'&&o.h&&o.h.now<=o.h.old*1.2)&&(!o.hammer||o.fams==='idle/run/attack'&&o.dieFam==='attack')&&!o.err);
     const w=o.wx||{},wx=!o.d3||(w.same&&w.hit>0&&w.model==='wandererX'&&w.comp>0&&w.bones>=3&&/Idle_A/.test(w.carry)&&/default/.test(w.carry)&&w.staff>0&&w.lambert&&w.flash&&w.die&&w.off==='orelHero'&&w.back==='wandererX'&&!w.err);
     const pe=!o.d3||(pt.vis&&pt.same&&pt.hops>=2&&pt.lift>0.08&&pt.lift<=0.125&&pt.sy[0]>=0.87&&pt.sy[1]<=1.14&&pt.idle&&Math.abs(pt.idle.sy-1)<=0.025&&Math.abs(pt.idle.sx-1)<0.01&&Math.abs(pt.idle.rz)<0.01&&!pt.err);
     check(o.def&&tk&&pe&&wx,'ניסוי הטנק, החיה והנודד (?tankx=1, ?petx=1, ?wanderx=1): '+(o.def?'כבויים כברירת מחדל':'דולקים בלי לבקש')+(!o.d3?', בדו-ממד אין מה לבדוק':
       ', טנק ('+T+(o.load?', נטען '+o.load:'')+'): '+(o.err||(o.same?'אותו משחק בדיוק עם ובלי':'המשחק השתנה!')+', '+o.atkN+' תקיפות, '+o.tx+' פריימים בגוף החדש, '+o.comp+' באנימציה מתוקנת'+
         ', צעד בריצה (גובה ביחס לגוף, ומהירות במגע מול הקרקע): '+(o.gait?JSON.stringify(o.gait.tx)+' מול הברברי '+JSON.stringify(o.gait.kk):'-')+', '+o.clips+' אנימציות ו-'+o.tracks+' ערוצים תוקנו (יחס '+JSON.stringify(o.fac)+')'+', '+o.bones+' תנוחות שונות, '+o.moveAtk+' פריימים של תקיפה בתנועה'+(o.flash?', מהבהב':', לא מהבהב')+
-        (o.die?', מוות '+(o.die.moved?'זז':'לא זז')+' (יחס הירכיים '+o.die.ratio+')':', אין מוות')+(o.toggle?', מתג: '+(o.toggle.off?'חוזר לטנק הרגיל':'לא חוזר')+' ו'+(o.toggle.back?'שוב לחדש':'לא חוזר לחדש'):'')+(o.hammer?', עם פטיש (תנוחות '+o.fams+', במוות '+o.dieFam+')':', בלי פטיש (עוד לא נכנס)'))+
+        (o.die?', מוות '+(o.die.moved?'זז':'לא זז')+' (יחס הירכיים '+o.die.ratio+')':', אין מוות')+(o.toggle?', מתג: '+(o.toggle.off?'חוזר לטנק הרגיל':'לא חוזר')+' ו'+(o.toggle.back?'שוב לחדש':'לא חוזר לחדש'):'')+(o.h?', גובה '+o.h.now+' מול '+o.h.old+' (בלי תיקון '+o.h.raw+')':'')+(o.me?', אתה כטנק: '+o.me.model+(o.me.sword?' עם פטיש':' בלי פטיש')+', ובלי הניסוי '+o.meOff:'')+(o.hammer?', עם פטיש (תנוחות '+o.fams+', במוות '+o.dieFam+')':', בלי פטיש (עוד לא נכנס)'))+
       ', נודד: '+(w.err||(w.same?'אותו מסלול ואותו נזק ('+w.hit+')':'המשחק השתנה!')+', '+w.model+', '+w.comp+' פריימים באנימציה מתוקנת (יחס '+w.fac+'), '+w.bones+' תנוחות, מטה גלוי '+w.staff+' פריימים בתנוחות '+w.carry+(w.flash?', מהבהב':', לא מהבהב')+(w.die?', מוות זז':', מוות לא זז')+', מתג: '+w.off+' ושוב '+w.back)+
       ', חיה: '+(pt.err||(!pt.vis?'לא נראית':(pt.same?'אותו מסלול':'המסלול השתנה!')+', '+pt.hops+' קפיצות, גובה עד '+pt.lift+', מעיכה '+(pt.sy||[]).join('..')+', בעמידה '+JSON.stringify(pt.idle)))))}
   for(const nm in uiR){const {v,w}=uiR[nm],all=[...Object.entries(v.wins),...Object.entries(w.wins)],bad=[...v.bad,...w.bad],off=[...v.off,...w.off];
