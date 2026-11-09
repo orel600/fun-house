@@ -21,18 +21,19 @@ function floatText(x,y,txt,col,size,ltr=false,crit=false){
 function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
   t=statDmgType(w,t);   // גלגל היסודות של הקוסם (stats.js)
   const m=e.mult[t]??1;const crit=Math.random()<HITFX.crit+orbitCrit()+Math.min(STATS.cap.crit,P.crit||0)/100;   // ונקודות מזל (stats.js)   // חפץ מזל מוסיף (orbit.js)
-  const d=base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?HITFX.critMul:1)*statDmgFx(w,e);   // עץ הסקילים (stats.js)
+  const uk=ufHit(e,w,chained);   // מכה כבדה מ-Aging (upfeel.js)
+  const d=uk*base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?HITFX.critMul:1)*statDmgFx(w,e);   // עץ הסקילים (stats.js)
   statOnDamage(d);
-  e.hp-=d;e.flash=0.09;if(e.node)gHit(e,ang,d);   // מכה במקור משאבים בעולם: חתיכות ונדנוד (gather.js)
+  const hp0=e.hp;e.hp-=d;e.flash=0.09;if(e.node)gHit(e,ang,d);   // מכה במקור משאבים בעולם: חתיכות ונדנוד (gather.js)
   sfx('hit',jSnd(m,crit));heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
   if(!e.isBoss&&!e.node){const kb=(w==='sword'?150:55)*(m>1?1.4:1)/(e.big||1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
-  const col=m>1?dtCol(t):m<1?C.dim:C.chalk,J=juiceHit(e,d,m,crit,t,ang);   // אפקטים של קרב בעולם (juice.js)
+  const col=m>1?dtCol(t):m<1?C.dim:C.chalk,J=juiceHit(e,d,m,crit||uk>1,t,ang);   // אפקטים של קרב בעולם (juice.js)
   if(!J)dmgFloat(e,d,col,(m>1?21:m<1?12:15)*(crit?1.45:1),crit);   // מכות רצופות מתמזגות למספר אחד (arenaui.js)
   if(m<1&&!e.told&&!J){e.told=true;floatText(e.x,e.y-e.r-26,T('immune'),C.dim,13)}   // בעולם ובכפר המספר עצמו אומר "עמיד" (juice.js)
   if(!J)sparks(e.x,e.y,col,m>1?8:3);
   if(m>1&&w==='sword'&&!J)S.hitstop=Math.max(S.hitstop,0.03);   // בעולם העצירה ב-juice.js
-  onHit(e,d,base,w,t,ang,chained);
-  if(e.hp<=0&&!e.dead){if(e.node)nodeDown(e);else kill(e)}
+  onHit(e,d,base,w,t,ang,chained);ufAfter(e,base,w,t,ang,chained);   // התזה וגל הדף (upfeel.js)
+  if(e.hp<=0&&!e.dead){if(e.node)nodeDown(e);else{ufKill(e,d,hp0,ang);kill(e)}}
 }
 function kill(e){
   if(S.wd&&!S.room)wcKill(e);   // בעולם: בוער מדליק את השכנים, ומסומן מקצר קירורים (wcombo.js)

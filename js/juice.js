@@ -76,6 +76,7 @@ function juiceHit(e,d,m,crit,t,ang){
   else{jRoom(J,N);const sz=Math.max(9,(res?N.resist:crit?N.crit:m>1?N.weak:m<1?N.resist:N.size)*(fxLess()?FX_LESS.nums:1));
     J.n.push({e,n:d,x:e.x+rand(-10,10),y:e.y-e.r-10,txt:res?'🛡 '+T(m<=0?'jc.immune':'jc.resist'):big(d)+(crit&&!res?'!':''),crit:crit&&!res,res,t0:now,b0:now,sz0:sz,size:sz,
       col:res?C.dim:crit?N.critCol:m>1?dtCol(t):m<1?C.dim:C.chalk,weak:m>1||res?t:null,dx:rand(-14,14)})}
+  ufNum(f||J.n[J.n.length-1]);   // מספרים בזהב אחרי שדרוג (upfeel.js)
   if(m<1&&!e.node)jTip(e,t);else if(e.jRes)e.jRes=null;
   return true;
 }

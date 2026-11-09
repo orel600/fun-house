@@ -1368,6 +1368,36 @@ function worldBot(m,L,god){
       r.gear=gStatPanel().includes('data-skin="orel"');soundClose()}
     catch(e){r.err=e.message}
     SAVE.hero.skin=sk;SAVE.pet.kind=pk;saveNow();return r});
+  // שדרוג שמרגישים (upfeel.js): מדרגות Aging לנשק (מכה כבדה, התזה, גל הדף, זעם), מספרים בזהב אחרי שדרוג, מכה שמעיפה, ומכה טעונה באזור הרחוק.
+  // Math.random קבוע בזמן הבדיקה, כדי לא להזיז את ה-seed לבדיקות שאחרי
+  const upf=await page.evaluate(()=>{const rnd=Math.random,bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,hs:S.hitstop,sh:S.shake,ar:JUICE.where.arena,tr:P.track,hits:S.hits,w:SAVE.gear.weapon,uf:JSON.stringify({...UF,fr:[],rings:[]}),ch:UPFEEL.charge.chance.far,n0:enemies.length},r={};
+    Math.random=()=>0.5;
+    try{S.vil=S.wd=S.room=null;S.mode='play';UPFEEL.test=true;JUICE.where.arena=true;P.track=newTrack();S.hits={};
+      const base=gBase(SAVE.gear.weapon||'oakSword');
+      const two=()=>{for(const q of enemies)q.dead=true;const e=addEnemy('grunt',P.x+60,P.y),o=addEnemy('grunt',P.x+60,P.y+30);for(const q of [e,o]){q.mult={};q.hp=q.max=1e9}return[e,o]};
+      const hits=(e,k)=>{const L=[];for(let i=0;i<k;i++){const h=e.hp;damage(e,10,'sword',0,'physical');L.push(Math.round(h-e.hp))}return L};
+      SAVE.gear.weapon=base;UF.n=0;let [e,o]=two();const L0=hits(e,5),u=L0[0];r.u=u;r.lv0=u>0&&L0.every(x=>x===u)&&o.hp===1e9;
+      SAVE.gear.weapon=base+'+3';UF.n=0;[e,o]=two();const L3=hits(e,5);r.heavy=L3.slice(0,4).every(x=>x===u)&&L3[4]===2*u&&o.hp===1e9;
+      SAVE.gear.weapon=base+'+5';UF.n=0;[e,o]=two();hits(e,1);r.splash=Math.abs((1e9-o.hp)-u/2)<=1;
+      SAVE.gear.weapon=base+'+7';UF.n=0;[e,o]=two();const r0=UF.rings.length;hits(e,5);r.shock=Math.abs((1e9-o.hp)-u*(5*0.5+0.6))<=3&&UF.rings.length>r0;
+      SAVE.gear.weapon=base+'+10';UF.n=0;[e,o]=two();const L10=hits(e,3);r.fury=Math.abs(L10[2]-2.5*u)<=1&&L10[0]===u;
+      SAVE.gear.weapon=base;UF.gold=0;[e]=two();damage(e,10,'sword',0,'physical');const N0=juice().n[juice().n.length-1],c0=N0&&N0.col;
+      ufUp();damage(e,10,'sword',0,'physical');const N1=juice().n[juice().n.length-1];r.gold=!!N1&&N1.col===UPFEEL.gold.col&&String(N1.txt).startsWith(UPFEEL.gold.mark)&&!!N0&&c0!==UPFEEL.gold.col;
+      const f0=UF.flyN;[e]=two();e.max=100;ufKill(e,10,8,0);ufKill(e,20,5,0);r.noFly=UF.flyN===f0;ufKill(e,60,25,0);r.fly=UF.flyN===f0+1&&UF.fr.length>0;
+      r.hint=ufForgeHint(base+'+1',1).includes(T('uf.p.heavy'))&&ufForgeHint(base+'+9',9).includes(T('uf.p.fury'))&&ufForgeHint(base+'+10',10)==='';
+      // מכה טעונה: באזור הרחוק ההכנה ארוכה יותר ולוקחת 17% מהחיים, ואחריה מכה רגילה. בהתחלה אף פעם
+      UPFEEL.charge.chance.far=1;const s=addEnemy('grunt',P.x+40,P.y);s.zone='far';s.dmg=1;
+      const w=ufCharge(s);r.charge=w===UPFEEL.charge.wind&&s.hv===1&&ufStrikeDmg(s,1)>=(P.maxHp||100)*UPFEEL.charge.hp-1e-6&&ufCharge(s)===1&&!s.hv;
+      s.zone='start';r.start=ufCharge(s)===1;s.zone='far';ufCharge(s);const dg=UF.chDodge;ufDodge(s);r.dodge=UF.chDodge===dg+1&&!s.hv;
+      // לא בזירה: בלי test ומחוץ לעולם, כלום
+      UPFEEL.test=false;SAVE.gear.weapon=base+'+10';UF.n=0;[e]=two();r.arena=hits(e,3).every(x=>x===u);UPFEEL.test=true;
+      try{ctx.save();ufDraw();ctx.restore();r.draw=true}catch(err){r.draw=String(err)}
+    }catch(err){r.err=String(err&&err.stack||err)}
+    Math.random=rnd;UPFEEL.test=false;UPFEEL.charge.chance.far=bak.ch;enemies.length=bak.n0;
+    Object.assign(UF,JSON.parse(bak.uf));SAVE.gear.weapon=bak.w;Object.assign(S,{vil:bak.vil,wd:bak.wd,room:bak.room,mode:bak.mode,hitstop:bak.hs,shake:bak.sh,hits:bak.hits});JUICE.where.arena=bak.ar;P.track=bak.tr;juice().n.length=0;return r});
+  {const L=[[upf.lv0,'בלי Aging בלי שינוי','שינוי בלי Aging'],[upf.heavy,'‎+3 מכה חמישית כפולה','‎+3 בלי מכה כבדה'],[upf.splash,'‎+5 התזה','‎+5 בלי התזה'],[upf.shock,'‎+7 גל הדף','‎+7 בלי גל'],[upf.fury,'‎+10 זעם','‎+10 בלי זעם'],
+    [upf.gold,'מספרים בזהב אחרי שדרוג','בלי זהב'],[upf.fly&&upf.noFly,'מכה שמעיפה','בלי חתיכות'],[upf.hint,'רמז בנפחייה','בלי רמז'],[upf.charge&&upf.start&&upf.dodge,'מכה טעונה (רחוק, לא בהתחלה, התחמקות)','מכה טעונה שבורה'],[upf.arena,'בזירה כבוי','פועל בזירה'],[upf.draw===true,'ציור','ציור: '+upf.draw]];
+   check(!upf.err&&L.every(x=>x[0]),'שדרוג שמרגישים (upfeel.js): '+(upf.err||L.map(x=>x[0]?x[1]:x[2]).join(', ')))}
   // אפקטים של קרב (juice.js): פגיעה מפעילה עצירה, הבזק, הדיפה, ניצוצות ומספר. קריטי צהוב עם רעידה, הריגה עם עשן, תקרה לטלפון, ובזירה כבוי.
   // הבדיקה רצה במקום ניטרלי עם המתג של אוראל (JUICE.where.arena), כדי לא לגעת בשמירה של העולם
   const jc=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,hs:S.hitstop,sh:S.shake,jc:S.jc,ar:JUICE.where.arena,tr:P.track,hits:S.hits},c=HITFX.crit,r={};

@@ -45,7 +45,7 @@ const aiCd=e=>e.acd=rand(...FOEAI[e.ai].cd);
 // כמה מההכנה למתקפה עברה (0 עד 1), או -1 כשהאויב לא מתכונן. לציור: האנימציה והזוהר בתלת-ממד (render3d.js) וה-"!" מעל הראש
 const FOE_TELE={wind:1,aim:1,crouch:1};
 function foeTele(e){
-  if(e.sw>0)return 1-e.sw/(e.wind||STRIKE.wind);
+  if(e.sw>0)return 1-e.sw/(e.sw0||e.wind||STRIKE.wind);
   if(FOE_TELE[e.act]&&e.am)return 1-Math.max(0,e.at)/e.am;
   return -1;
 }

@@ -39,7 +39,7 @@ const statRespecCost=()=>SAVE.hero.respecs?STATS.respec.base+STATS.respec.per*he
 function statRespec(){
   const c=statRespecCost();if(!stSpent()&&!trSpent()||c&&!bagHas('coins',c))return false;
   if(c)bagTake('coins',c);gApply(statsGive(),-1);gApply(treeGive(),-1);SAVE.hero.pts={};SAVE.hero.tree={};P.tfx={};SAVE.hero.respecs=(SAVE.hero.respecs||0)+1;P.hp=Math.min(P.hp,P.maxHp);
-  saveNow();celebrate(P.x,P.y-20,'quest');return true;
+  saveNow();celebrate(P.x,P.y-20,'quest');ufUp();return true;
 }
 // XP לדמות מאויב שנפל בעולם הפתוח
 function statKillXp(e){if(!S.wd||e.node)return;SAVE.hero.xp=(SAVE.hero.xp||0)+(e.xp||1)*STATS.xp.kill*innXpK()*lootFoeK(e);rankSync()}
@@ -153,7 +153,7 @@ function treeLearn(b,id){
   if(!id){const st=TREE.branches[b].steps[(trHave()[b]||[]).length];id=st&&trOpts(st)[0].id}   // בלי בחירה: האפשרות הראשונה
   if(trWhy(b,id))return false;
   const before=treeGive();(trHave()[b]=trHave()[b]||[]).push(id);gApply(before,-1);gApply(treeGive(),1);P.tfx=treeFx();
-  saveNow();celebrate(P.x,P.y-20,'gear',trNode(id).n.icon);return true;
+  saveNow();celebrate(P.x,P.y-20,'gear',trNode(id).n.icon);ufUp();return true;
 }
 
 /* ---- ההתנהגויות (fx): כל פריים, בכל מקום (main.js), וההוקים ב-combat.js ---- */
