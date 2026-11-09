@@ -2325,7 +2325,8 @@ function worldBot(m,L,god){
   await waitPage(()=>!(R3D.on&&R3D.ready)||['classic','waves','maze'].every(a=>{const t=askyTex(ARENA_SKY.map[a]);return t&&t.image&&t.image.width}));
   const sky=await page.evaluate(()=>{const o={},fl=SAVE.fxLess,mode=S.mode;try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
-      startRun();S.mode='play';const run=a=>{S.arena=a;FRAME_T+=17;render3d(R3D.ox||0,R3D.oy||0);const u=ALOOK.mat&&ALOOK.mat.userData.u;return {q:!!(ASKY.quad&&ASKY.quad.visible),r:u&&u.aSky.value}};
+      startRun();S.mode='play';const run=a=>{S.arena=a;FRAME_T+=17;const de=R3D.drawEvery;R3D.drawEvery=0;render3d(R3D.ox||0,R3D.oy||0);R3D.drawEvery=de;   // drawEvery=0: in CI 3D draws once every 60 frames, so force this one
+        const u=ALOOK.mat&&ALOOK.mat.userData.u;return {q:!!(ASKY.quad&&ASKY.quad.visible),r:u&&u.aSky.value}};
       o.why={on:ARENA_SKY.on,err:ARENA_SKY.stat.err||'',name:askyName(),w:(askyTex('classic')||{image:{}}).image&&askyTex('classic').image.width,here:aLookHere(),less:fxLess(),calm:calmOn(),u:!!(ALOOK.mat&&ALOOK.mat.userData.u)};   // why it would not show (for a failing run)
       o.key=S.arena;const g=run(S.arena);o.real=g.q&&g.r===ARENA_SKY.edge;   // הזירה האמיתית (startRun שם S.arena), בלי לכפות מפתח
       const c=run('classic');o.on=c.q&&c.r===ARENA_SKY.edge;o.waves=run('waves').q;o.maze=run('maze').q;
