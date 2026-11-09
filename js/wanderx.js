@@ -7,7 +7,7 @@
 const WANDX={
   on:/[?&]wanderx=1(&|$)/.test(location.search),
   skin:'orel',model:'wandererX',ref:'barbarian',
-  stat:{looks:0,fallback:0,clips:0,carry:0}
+  stat:{looks:0,fallback:0,clips:0,carry:0,gait:0,mats:0}
 };
 // המראה: כמו של אוראל, עם הגוף החדש והמטה. בלי שינוי אם משהו עוד לא מוכן
 function wandxLook(L){
@@ -24,8 +24,12 @@ function wandxLook(L){
 function wandxClip(name){
   const X=WANDX,c=R3D.clips[name];if(!c)return null;
   const t=R3D.tmpl[X.model],r=R3D.tmpl[X.ref];if(!t||!r)return c;
-  if(X._ft!==t){X._ft=t;X._f=RETARGET.ratios(t,r);X._c={};X.stat.fac=RETARGET.report(X._f)}
-  if(!(name in X._c)){X._c[name]=RETARGET.applyRotOnly(c,X._f);X.stat.clips++}
+  if(X._ft!==t){X._ft=t;X._f=RETARGET.ratios(t,r);X._c={};X._rq=null;X.stat.fac=RETARGET.report(X._f)}
+  if(!(name in X._c)){let k=RETARGET.applyRotOnly(c,X._f);X.stat.clips++;
+    // ריצה: צעד קטן יותר (ARI, WANDERX.gait): הרגליים ארוכות ביחס לגובה, ובאותן זוויות הרגל עפה רחוק ומחליקה
+    const G=WANDERX.gait&&WANDERX.gait[name.split('@')[0]];
+    if(G&&RETARGET.dampen){if(!X._rq){X._rq={};t.traverse(o=>{if(o.isBone)X._rq[o.name]=o.quaternion.toArray()})}k=RETARGET.dampen(k,X._rq,G.k,G.bones);X.stat.gait++}
+    X._c[name]=k}
   return X._c[name];
 }
 // המטה: גלוי תמיד, ובתנוחה של האנימציה שמנגנת (חד-פעמית קודם, ואז הבסיס)
@@ -36,9 +40,20 @@ function wandxCarry(a){
   m.position.fromArray(p.pos);m.quaternion.fromArray(p.rot);
 }
 const X_=WANDX.stat;
+// הבהוב פגיעה על כל הגוף: לגוף הזה יש מפת זוהר (הפנס, ARI), שמכפילה את צבע ההבהוב ומשאירה אותו רק על הפנס
+function wandxMat(m){
+  if(m.userData.wxF)return;m.userData.wxF={value:0};X_.mats++;
+  m.onBeforeCompile=sh=>{sh.uniforms.wxF=m.userData.wxF;
+    sh.fragmentShader='uniform float wxF;\n'+sh.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\ntotalEmissiveRadiance=mix(totalEmissiveRadiance,emissive,wxF);')};
+  m.customProgramCacheKey=()=>'wandX';m.needsUpdate=true;
+}
 (function(){
   if(typeof heroLook!=='function'||typeof syncPlayer!=='function')return;
-  const bh=heroLook;heroLook=function(){const L=bh.apply(this,arguments);return WANDX.on&&L&&heroSkin()===WANDX.skin?wandxLook(L):L};
+  // כשאתה משחק טנק עם הניסוי שלו (mb-tankx.js), הגוף של הטנק גובר
+  const bh=heroLook;heroLook=function(){const L=bh.apply(this,arguments);return WANDX.on&&L&&!L.tx&&heroSkin()===WANDX.skin?wandxLook(L):L};
+  const bm=makeActor;makeActor=function(L){const a=bm.apply(this,arguments);if(L&&L.wx)for(const m of a.mats)wandxMat(m);return a};
+  const bf=setFlash;setFlash=function(a,k){bf.apply(this,arguments);if(a&&a.L&&a.L.wx)for(const m of a.mats)if(m.userData.wxF)m.userData.wxF.value=k>0?1:0};
+  for(const n of ['armor3d','rankArmor3d','gear3dParts'])if(typeof window[n]==='function'){const b=window[n];window[n]=function(a){if(a&&a.L&&a.L.wx)return;return b.apply(this,arguments)}}
   const ba=act;act=function(a,name){if(a&&a.L&&a.L.wx){const c=wandxClip(name);return c?a.mixer.clipAction(c):null}return ba.apply(this,arguments)};
   const bp=syncPlayer;syncPlayer=function(){const r=bp.apply(this,arguments),a=R3D.player;if(a&&a.L&&a.L.wx)wandxCarry(a);return r};
 })();

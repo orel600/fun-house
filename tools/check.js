@@ -4834,7 +4834,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       await E(()=>{m3dNeed('orelHero');if(typeof WANDERX!=='undefined'){m3dNeed(WANDX.model);m3dNeed(WANDERX.staffProp)}});
       for(let i=0;i<120&&!(await E(()=>m3dReady('orelHero')&&m3dReady(WANDX.model)&&m3dReady(WANDERX.staffProp)));i++)await page.clock.runFor(100);
       o.wx=await E(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,rnd=Math.random,r={};
-        const path=on=>{let x=11;Math.random=()=>(x=(x*16807)%2147483647)/2147483647;WANDX.on=on;SAVE.hero.skin='orel';R3D._hl=null;
+        const path=on=>{SAVE=JSON.parse(bak);let x=11;Math.random=()=>(x=(x*16807)%2147483647)/2147483647;WANDX.on=on;SAVE.hero.skin='orel';R3D._hl=null;
           enterWorld('home');enemies=[];P.x=0;P.y=0;P.face=0;const e=addEnemy('grunt',P.x+150,P.y);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;
           const q={log:[],model:'',comp:0,bones:new Set(),carry:new Set(),staff:0};
           for(let i=0;i<300;i++){const mv=i<100;P.x+=mv?1.2:0;P.moving=mv;P.speed=185;P.hp=P.maxHp;worldUpdate(1/60);
@@ -4844,7 +4844,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
               if(a.wxClip)q.carry.add(a.wxClip);if(a.props.staff&&a.props.staff.visible)q.staff++}
             if(i%10===0)q.log.push(Math.round(P.x)+':'+Math.round(e.max-e.hp))}
           q.hit=Math.round(e.max-e.hp);
-          if(on){const a=R3D.player;if(a){q.lambert=a.mats.every(m=>!!m.emissive);setFlash(a,0.9,0xffffff);q.flash=a.mats.some(m=>m.emissive.r>0.5);setFlash(a,0,0xffffff);
+          if(on){const a=R3D.player;if(a){q.lambert=a.mats.every(m=>!!m.emissive);setFlash(a,0.9,0xffffff);q.flash=a.mats.some(m=>m.emissive.r>0.5)&&a.mats.every(m=>!m.userData.wxF||m.userData.wxF.value===1);setFlash(a,0,0xffffff);
             const h=bone(a.root,'hips'),q0=h&&h.quaternion.clone();once(a,a.L.anim.die,1.2,true);a.mixer.update(0.6);q.die=!!h&&h.quaternion.angleTo(q0)>0.05;a.one=null;a.mixer.stopAllAction();
             WANDX.on=false;R3D._hl=null;syncPlayer(1/60);q.off=R3D.player.L.model;WANDX.on=true;R3D._hl=null;syncPlayer(1/60);q.back=R3D.player.L.model}}
           return q};
