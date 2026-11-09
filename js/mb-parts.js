@@ -44,7 +44,7 @@ function mbPartsLook(B,kit){
     if(L&&L.props){a.bob=null;for(const k in L.props){const b=L.props[k].bob;if(b&&a.props[k])(a.bob||(a.bob=[])).push({m:a.props[k],y:a.props[k].position.y,b})}}
     return a};
   // חלק מרחף (הגביש של הקוסם) עולה ויורד. בהפחתת תנועה: עומד
-  const bob=a=>{if(!a||!a.bob)return;const calm=typeof calmOn==='function'?calmOn():typeof RM!=='undefined'&&RM,t=performance.now()/1000;
+  const bob=a=>{if(!a||!a.bob)return;const calm=typeof calmOn==='function'?calmOn():typeof RM!=='undefined'&&RM,t=typeof MB!=='undefined'&&MB?MB.t:0;
     for(const o of a.bob)o.m.position.y=o.y+(calm?0:Math.sin(t*o.b.rate*Math.PI*2)*o.b.amp)};
   if(typeof syncPlayer==='function'){const bp=syncPlayer;window.syncPlayer=function(){const r=bp.apply(this,arguments);if(S.mb)bob(R3D.player);return r}}
   // בוט שנבנה לפני שהחלקים נטענו: נבנה מחדש פעם אחת עם החלקים

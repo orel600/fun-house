@@ -2258,16 +2258,17 @@ function worldBot(m,L,god){
   check(!ull.err&&(ull.d2||ull.ok&&ull.n===6&&ull.col&&ull.gone&&ull.less===4&&ull.clean),'arena ult lanterns: '+(ull.err||(ull.d2?'2D, nothing to draw':[[ull.n+' lanterns',ull.n===6],['damage-type color',ull.col],['gone after the flight',ull.gone],['fewer effects '+ull.less,ull.less===4],['new run clean',ull.clean]].map(x=>x[0]+(x[1]?' ✓':' ✗')).join(', '))));
   // painted arena sky (arena-sky.js, correction pack layer A): in 3D the floor stops at the wooden rim and a camera-attached sky shows beyond it.
   // Off (flat color, floor everywhere) in fewer effects, in the boss palette (no picture) and outside the arena. 2D: nothing to check
+  // waiting for something async in the page (a picture decoding, a lazy model): the page clock is paused, so wait here and step it (like settle above)
+  const waitPage=async(fn,arg)=>{for(let i=0;i<300;i++){if(await page.evaluate(fn,arg))return true;await page.waitForTimeout(20);await page.clock.runFor(50)}return false};
+  await page.evaluate(()=>{if(R3D.on&&R3D.ready)for(const a of ['classic','waves','maze'])askyTex(ARENA_SKY.map[a])});   // decoding the data URIs takes a moment
+  await waitPage(()=>!(R3D.on&&R3D.ready)||['classic','waves','maze'].every(a=>{const t=askyTex(ARENA_SKY.map[a]);return t&&t.image&&t.image.width}));
   const sky=await page.evaluate(()=>{const o={},fl=SAVE.fxLess,mode=S.mode;try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
       startRun();S.mode='play';const run=a=>{S.arena=a;FRAME_T+=17;render3d(R3D.ox||0,R3D.oy||0);const u=ALOOK.mat&&ALOOK.mat.userData.u;return {q:!!(ASKY.quad&&ASKY.quad.visible),r:u&&u.aSky.value}};
-      for(const a of ['classic','waves','maze'])askyTex(ARENA_SKY.map[a]);   // decoding the data URIs takes a moment
-      return new Promise(res=>setTimeout(()=>{try{
-        const c=run('classic');o.on=c.q&&c.r===ARENA_SKY.edge;o.waves=run('waves').q;o.maze=run('maze').q;
-        const b=run('boss');o.boss=!b.q&&b.r===0;
-        SAVE.fxLess=true;const l=run('classic');o.less=!l.q&&l.r===0;SAVE.fxLess=fl;
-      }catch(e){o.err=String(e&&e.stack||e)}SAVE.fxLess=fl;S.mode=mode;res(o)},600))}
-    catch(e){o.err=String(e&&e.stack||e)}SAVE.fxLess=fl;S.mode=mode;return o});
+      const c=run('classic');o.on=c.q&&c.r===ARENA_SKY.edge;o.waves=run('waves').q;o.maze=run('maze').q;
+      const b=run('boss');o.boss=!b.q&&b.r===0;
+      SAVE.fxLess=true;const l=run('classic');o.less=!l.q&&l.r===0;SAVE.fxLess=fl;
+    }catch(e){o.err=String(e&&e.stack||e)}SAVE.fxLess=fl;S.mode=mode;return o});
   check(!sky.err&&(sky.d2||sky.on&&sky.waves&&sky.maze&&sky.boss&&sky.less),'painted arena sky: '+(sky.err||(sky.d2?'2D, nothing to draw':[['classic',sky.on],['waves',sky.waves],['maze (dimension)',sky.maze],['boss stays flat',sky.boss],['fewer effects: flat',sky.less]].map(x=>x[0]+(x[1]?' ✓':' ✗')).join(', '))));
   // רגעים לסקילי הזירה (MLBB 1.1, skill-anim.js SKANIM.mo): רק מה שהיה חסר לפי טבלת הפערים. בתוך perCast, ו"פחות אפקטים" מוריד את הקישוטים
   // רגע הסכנה של הבוס (arena-danger.js, MLBB 2.1): המילוי לפי השעונים האמיתיים מגיע ל-100% ברגע הפגיעה (בפריים האחרון לפניה: 1 פחות פריים),
@@ -4692,9 +4693,11 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     'underworld home zone: '+(zn.err||[['enemy loses '+Math.round(zn.lost*1000)/10+'% per tick',zn.ticks===1&&zn.lost>0],['outside safe',zn.outside],['minions safe',zn.minion],['switch off',zn.off],['ally heal unchanged',zn.heal],['warning '+zn.w0+'/'+(+zn.wMid).toFixed(2)+'/'+zn.w1,zn.w0===0&&zn.wMid>0&&zn.w1===1],['recall flash',zn.flash]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', ')));
   // hero parts (mb-parts.js, ARI #552): the tank gets the stone hammer in the right hand and the crown on the head, with the barbarian's axe and fur hat hidden,
   // on bots and on your hero (kit look). A bot built before the parts loaded is rebuilt once. Switch: MBPARTS.tank.on. 2D: nothing to draw
-  const pa=await page.evaluate(async()=>{const o={},on=MBPARTS.tank.on;try{
+  const PARTS=['w_item_stoneHammer','w_item_shadowDagger','w_item_mageCrystal'];   // lazy models (m3d.js): ask once, wait here
+  await page.evaluate(ps=>{if(R3D.on&&R3D.ready)ps.forEach(m3dNeed)},PARTS);await waitPage(ps=>!(R3D.on&&R3D.ready)||ps.every(p=>R3D.props[p]),PARTS);
+  const pa=await page.evaluate(()=>{const o={},on=MBPARTS.tank.on;try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
-      mobaStart('tank');m3dNeed('w_item_stoneHammer');for(let i=0;i<100&&!R3D.props.w_item_stoneHammer;i++)await new Promise(r=>setTimeout(r,100));
+      mobaStart('tank');
       syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,hid={};a.root.traverse(x=>{if(MBPARTS.tank.hide.includes(x.name))hid[x.name]=x.visible});
       o.me=!!(a.props.sword&&a.props.sword.visible&&a.props.x_crown&&a.props.x_crown.visible)&&Object.keys(hid).length===2&&!Object.values(hid).some(Boolean);
       const bot=MB.u.find(u=>u.k==='hero'&&u.kit==='tank'&&!u.me);
@@ -4704,20 +4707,18 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     }catch(e){o.err=String(e&&e.stack||e)}MBPARTS.tank.on=on;return o});
   check(!pa.err&&(pa.d2||pa.me&&pa.bot&&pa.off),'underworld hero parts: '+(pa.err||(pa.d2?'2D, nothing to draw':[['your tank: hammer + crown, axe and fur hat hidden',pa.me],['bot rebuilt once parts load',pa.bot],['switch off',pa.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
   // ARI #556/#557: the assassin's mask and second dagger, the mage's circlet (witch hat hidden) and floating crystal that bobs. 2D: nothing to draw
-  const p2=await page.evaluate(async()=>{const o={};try{
+  const p2=await page.evaluate(()=>{const o={};try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
-      for(const p of ['w_item_shadowDagger','w_item_mageCrystal'])m3dNeed(p);for(let i=0;i<100&&!(R3D.props.w_item_shadowDagger&&R3D.props.w_item_mageCrystal);i++)await new Promise(r=>setTimeout(r,100));
       const vis=(a,ks)=>ks.every(k=>a.props[k]&&a.props[k].visible);
       mobaStart('assassin');syncPlayer(1/60);syncPlayer(1/60);o.as=vis(R3D.player,['sword','x_mask','x_dagger2']);
       mobaStart('mage');syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player;let hat=null;a.root.traverse(x=>{if(x.name==='Mage_Hat')hat=x.visible});
-      o.mg=vis(a,['gun','x_circlet','x_crystal'])&&hat===false;const c=a.props.x_crystal,y0=c.position.y;await new Promise(r=>setTimeout(r,250));syncPlayer(1/60);o.bob=Math.abs(c.position.y-y0)>0.005;
+      o.mg=vis(a,['gun','x_circlet','x_crystal'])&&hat===false;const c=a.props.x_crystal,y0=c.position.y;MB.t+=0.4;syncPlayer(1/60);o.bob=Math.abs(c.position.y-y0)>0.005;
     }catch(e){o.err=String(e&&e.stack||e)}return o});
   check(!p2.err&&(p2.d2||p2.as&&p2.mg&&p2.bob),'underworld assassin and mage parts: '+(p2.err||(p2.d2?'2D, nothing to draw':[['assassin mask + second dagger',p2.as],['mage circlet (hat hidden) + crystal',p2.mg],['crystal bobs',p2.bob]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
   // hero accents (mb-accent.js, ARI's colours): each hero's weapon glows in its own colour, capped at 1.2, on your hero and the bots;
   // the mage's staff flashes turquoise on the ult; steady (no pulse) in fewer effects. 2D: nothing to draw
-  const ac=await page.evaluate(async()=>{const o={},fl=SAVE.fxLess;try{
+  const ac=await page.evaluate(()=>{const o={},fl=SAVE.fxLess;try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
-      m3dNeed('w_item_stoneHammer');for(let i=0;i<100&&!R3D.props.w_item_stoneHammer;i++)await new Promise(r=>setTimeout(r,100));
       const lit=m=>m.emissive.r+m.emissive.g+m.emissive.b>0.05;o.kits={};
       for(const k of Object.keys(MBACC.kit)){mobaStart(k);syncPlayer(1/60);syncPlayer(1/60);const M=mbAccMats(R3D.player,MBACC.kit[k]);o.kits[k]=M.length>0&&M.every(lit)}
       mobaStart('mage');const me=MB.me;me.lvl=10;me.cd.ult=0;mbCast(me,'ult',{x:me.x+50,y:me.y});syncPlayer(1/60);
