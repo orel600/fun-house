@@ -113,6 +113,26 @@ const BUILDS={
   v_crate: {src:hex('decoration/props/crate_A_big.gltf')},
   v_barrel:{src:hex('decoration/props/barrel.gltf')}
 };
+/* הכפר גדל (docs/concept-village-growth.md, ניר 9.11.2026): חורבה, שלבי בנייה ואביזרים לרמות הנמוכות. המפתח מתחיל ב-vx_,
+   והם בחוץ (LAZY ב-tools/models3d-io.js): נטענים בכניסה לכפר (m3dVillage ב-render3d.js), לא בפתיחה.
+   רק אלה, בלי כל החבילות: node tools/build3d.js <תיקייה עם hex> --only village */
+const VGROW_TEX=128;   // הטקסטורה היא פלטת צבעים: 128 נראה אותו דבר וחוסך חצי מהמשקל
+const VGROW={
+  vx_ruin:  {src:hex('buildings/neutral/building_destroyed.gltf')},
+  vx_stageA:{src:hex('buildings/neutral/building_stage_A.gltf')},
+  vx_stageB:{src:hex('buildings/neutral/building_stage_B.gltf')},
+  vx_stageC:{src:hex('buildings/neutral/building_stage_C.gltf')},
+  vx_towerB:{src:hex('buildings/blue/building_tower_base_blue.gltf')},
+  vx_fenceW:{src:hex('buildings/neutral/fence_wood_straight.gltf')},
+  vx_fenceS:{src:hex('buildings/neutral/fence_stone_straight.gltf')},
+  vx_rack:  {src:hex('decoration/props/weaponrack.gltf')},
+  vx_sack:  {src:hex('decoration/props/sack.gltf')},
+  vx_wbarrow:{src:hex('decoration/props/wheelbarrow.gltf')},
+  vx_bucket:{src:hex('decoration/props/bucket_water.gltf')},
+  vx_pallet:{src:hex('decoration/props/pallet.gltf')},
+  vx_ladder:{src:hex('decoration/props/ladder.gltf')},
+  vx_crateS:{src:hex('decoration/props/crate_A_small.gltf')}
+};
 // טבע לכל אזור בעולם (KayKit Forest Nature Pack 1.0 FREE, CC0): עצים, עצים חשופים, סלעים, שיחים ועשב. המפתח מתחיל ב-n_, ומי משתמש במה: W3D.decor ב-js/render3d.js
 //   kaylousberg.itch.io/kaykit-forest  KayKit_Forest_Nature_Pack_1.0_FREE -> C:/kk/forest
 const forest=p=>path.join(KK,'forest/Assets/gltf',p+'_Color1.gltf');
@@ -334,6 +354,15 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
   if(ONLY==='bundle'){await bundle();console.log('js/vendor/three-bundle.js',Math.round(fs.statSync(path.join(ROOT,'js/vendor/three-bundle.js')).size/1024)+'KB');return}
   if(ONLY==='compress'){await compressAll();return}
   // node tools/build3d.js C:/kk --only hats: מוסיף רק את הכובעים (HATS) לקובץ הקיים. צריך רק את adv
+  if(ONLY==='village'){
+    const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
+    const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D=');
+    Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
+    for(const k in out)if(k.startsWith('vx_'))delete out[k];
+    for(const [k,c] of Object.entries(VGROW))add(k,await slim(await io.read(c.src),{tex:VGROW_TEX}));
+    M3IO.write(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
+  }
   if(ONLY==='hats'){
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
     const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D=');
@@ -380,6 +409,7 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
     add('wtex_'+t,await sharp(px,{raw:{width:N,height:N,channels:4}}).png().toBuffer());
   }
   for(const [k,c] of Object.entries(BUILDS))add(k,await slim(await io.read(c.src),{}));
+  for(const [k,c] of Object.entries(VGROW))add(k,await slim(await io.read(c.src),{tex:VGROW_TEX}));
   for(const [k,c] of Object.entries(NATURE))add(k,await slim(await io.read(c.src),{q:true}));
   await addMonsters(add);
   await addItems(add);

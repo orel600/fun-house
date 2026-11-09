@@ -56,7 +56,7 @@ let skgOfferT=0,skgPend=null;
 // חלון או תפריט פתוח: הכרטיס מחכה (כמו כרטיס הפגישה ב-foelore.js)
 // רק מה שבאמת על המסך: חלון שמוסתר ב-CSS (display:none, גם של אבא) לא נחשב
 const skgWins=()=>[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden&&o.getClientRects().length);
-const skgBlocked=()=>document.body.classList.contains('menu')||skgWins().length>0;
+const skgBlocked=()=>document.body.classList.contains('menu')||skgWins().length>0||(typeof chBusy==='function'&&chBusy());   // chBusy: a chest is opening (chest.js), the card waits
 function skgOffer(id){
   if(!S||!S.wd||!SKILLS.list[id])return;
   if(skgBlocked()){skgPend=id;return}
