@@ -220,13 +220,14 @@ function wArena(id){wRet=id;worldUi(false);startRun();questEvent('reach','arena'
 function wHome(){worldUi(false);enterVillage()}
 
 /* ---- מקורות משאבים: אותם מקורות כמו ב-nodes.js, במקומות קבועים. שבור צומח מחדש אחרי regrow (nodeDown) ---- */
-function wNodes(){
-  const R=WR(),out=[],block=Object.values(wGates(true)),wet=R.ponds||[];
-  R.fields.forEach((F,fi)=>{const K=wKind(F.kind);
+// FS: אילו שדות (ברירת המחדל: של האזור. מקומות שנפתחו בפרויקט בכפר נוספים מ-vpUpdate, vproj.js). pre: קידומת ל-id, ומקורות שכבר קיימים לא נדרסים
+function wNodes(FS,pre){
+  const R=WR(),out=[],block=Object.values(wGates(true)),wet=R.ponds||[],had=pre?S.nd.list:[];
+  (FS||R.fields).forEach((F,fi)=>{const K=wKind(F.kind);
     for(let i=0,tries=0;i<F.n&&tries<F.n*12;tries++){
       const [x,y]=gSpot(F,fi,tries,K);   // בחורשות קטנות בתוך השדה (gather.js)
-      if(tBlocked(x,y)||tBlocked(x+K.r,y)||tBlocked(x-K.r,y)||out.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||block.some(g=>Math.hypot(g.x-x,g.y-y)<g.r+WORLD.arrive)||wet.some(p=>Math.hypot(p.x-x,p.y-y)<p.r+K.r))continue;
-      out.push({node:true,id:fi+'_'+i,kind:F.kind,x,y,r:K.r,hp:K.hp,max:K.hp,mult:multOf(K.tags),flash:0,back:0,regrow:WORLD.regrow});i++}});
+      if(tBlocked(x,y)||tBlocked(x+K.r,y)||tBlocked(x-K.r,y)||out.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||had.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||block.some(g=>Math.hypot(g.x-x,g.y-y)<g.r+WORLD.arrive)||wet.some(p=>Math.hypot(p.x-x,p.y-y)<p.r+K.r))continue;
+      out.push({node:true,id:(pre||'')+fi+'_'+i,kind:F.kind,x,y,r:K.r,hp:K.hp,max:K.hp,mult:multOf(K.tags),flash:0,back:0,regrow:F.regrow||WORLD.regrow});i++}});
   return out;
 }
 // מה שנאסף מהרצפה בעולם (drops.js) עובר מיד לתרמיל ונשמר. שם הוא בסיכון
@@ -326,7 +327,7 @@ function worldUpdate(dt){
   ridgeUpdate(dt);   // מפולות במדרון (ridge-hazards.js)
   riverUpdate(dt);   // נהר הברקים במגדלי הסערה (storm-river.js)
   terrainTick();   // אויבים ופיוחו: לא בתוך מים, יער או צוק, ולאט במעבר הרדוד (terrain.js)
-  dropsUpdate(dt);secretsUpdate(dt);wlifeUpdate(dt);curioUpdate();wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
+  dropsUpdate(dt);secretsUpdate(dt);wlifeUpdate(dt);curioUpdate();vpUpdate(dt);wLootIn();   // secretsUpdate: סודות (secrets.js), לפני שהשלל נכנס לתרמיל, בשביל ברכת השלל. curioUpdate: מכשול בדרך שנעלם ברמה (curiosity.js)
   if(!nearest(WORLD.aggro)&&!TF('berserk'))P.hp=Math.min(P.maxHp,P.hp+WORLD.regen*mutK('regen')*dt);   // mutK: יום הצמא מרפא לאט (mutation.js)
   enemies=enemies.filter(e=>!e.dead);
   for(const p of parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vx*=0.9;p.vy*=0.9;p.life-=dt}
@@ -442,7 +443,7 @@ function drawWorld(){
   eventsDraw();scentDraw();rareDraw();   // אירועים (events.js), החיה מובילה (petscent.js)
   lakeBellDraw();   // גל הפעמון, אדוות ליד הגשרים והתיבה הטבועה (lake-bell.js)
   wlifeDraw();   // מחנות חיים, שרידים וחיות (wlife.js)
-  secretsDraw();curioDraw();   // סודות (secrets.js), מכשול בדרך לאזור הבא (curiosity.js)
+  secretsDraw();curioDraw();vpDraw();   // סודות (secrets.js), מכשול בדרך לאזור הבא (curiosity.js)
   if(WR().fog)wFog();
   if(WR().snow)wSnow();   // הרכס הקפוא
   if(WR().heat)wHeat();   // המדבר הבוער
