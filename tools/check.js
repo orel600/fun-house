@@ -4743,6 +4743,21 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   mbDmg=md;o.noDmg=mine===0;   // the field never damages (only damage from me counts: the tower near my base shoots)
 }catch(e){o.err=String(e&&e.stack||e)}try{mobaExit()}catch(e){}return o})());
   check(!anf.err&&anf.cast&&anf.zone&&anf.lateBefore&&anf.lateIn&&anf.lateOut&&anf.ended&&anf.noDmg,'underworld tank s1 slow field: '+(anf.err||[['zone after landing',anf.zone],['enemy walking in is slowed '+Math.round(100*0.3)+'%',anf.lateIn],['ends when it walks out',anf.lateOut],['no damage',anf.noDmg],['field ends',anf.ended]].map(x=>x[0]+(x[1]?' ✓':' ✗')).join(', ')));
+  // tank s1 body (mb-anvil3d.js, morning package 2, visual only): jump pose and arc in the air, the hammer chop hard-stops on the landing frame, a 14% squash,
+  // and the landing frame and damage are identical with the visual on or off
+  const an=await page.evaluate(()=>{const o={},on=MBANVIL.on,rnd0=Math.random;try{
+      const rnd=Math.random,run=v=>{let sd=7;Math.random=()=>(sd=sd*16807%2147483647)/2147483647;MBANVIL.on=v;mobaStart('tank');const me=MB.me;me.lvl=10;me.cd.s1=0;S.mode='play';
+        const foe=MB.u.find(u=>u.k==='hero'&&u.team!==me.team);for(const u of MB.u)if(u!==me&&u!==foe&&u.k!=='base'&&u.k!=='tower'){u.x=me.x+5000;u.y=me.y;u.st.stun=99}foe.x=me.x+250;foe.y=me.y;foe.hp=foe.max=1e6;foe.st.root=99;foe.st.stun=99;
+        const d3=R3D.on&&R3D.ready;if(d3)syncPlayer(1/60);const y0=d3&&R3D.player.root.position.y;mbCast(me,'s1',{x:me.x+250,y:me.y});
+        let land=-1,maxY=0,air='',clip=null,sq=1,hit=0;
+        for(let i=0;i<40;i++){const h0=foe.hp;mobaUpdate(1/60);if(d3){syncPlayer(1/60);const a=R3D.player,dy=a.root.position.y-y0;if(dy>maxY){maxY=dy;air=a.base}}
+          if(land<0&&!me.st.dash){land=i;hit=Math.round(h0-foe.hp);if(d3){syncPlayer(1/60);clip=R3D.player.one&&R3D.player.one.getClip().name;sq=R3D.player.root.scale.y/R3D.player.root.scale.x}}}
+        Math.random=rnd;return {land,dmg:hit,maxY,air,clip,sq,d3}};
+      const a=run(true),b=run(false);o.same=a.land===b.land&&a.dmg===b.dmg&&a.dmg>0;o.land=a.land;o.dmg=a.dmg;
+      o.d3=a.d3;o.body=!a.d3||a.maxY>10&&a.air===MBANVIL.air&&a.clip===MBANVIL.land.clip+'@up'&&a.sq<0.95;o.off=!b.d3||b.maxY<1;
+    }catch(e){o.err=String(e&&e.stack||e)}MBANVIL.on=on;if(typeof rnd0==='function')Math.random=rnd0;return o});
+  check(!an.err&&an.same&&an.body&&an.off,'underworld tank s1 body (visual only): '+(an.err||'landing frame '+an.land+' and damage '+an.dmg+(an.same?' same with the body on or off ✓':' CHANGED ✗')+
+    (an.d3?', jump arc + chop on landing + squash '+(an.body?'✓':'✗')+', off = flat '+(an.off?'✓':'✗'):' (2D: no body)')));
   // צילומי משחקי השאול (QUINN, 8.11): חלון הבחירה, מסך הבנייה, משחק באמצע (כולם בוטים, 40 שניות), החנות ומסך הסוף, כדי לבדוק את החלון כולו
   // הגיבור: האחרון ב-MBKIT, כך שגיבור חדש מצולם לבד. תקלה כאן לא מפילה את הבדיקה, רק נכתבת
   if(CFG.shots){try{const E=(f,a)=>page.evaluate(f,a),k=await E(()=>Object.keys(MBKIT).pop());
