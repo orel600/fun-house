@@ -4575,7 +4575,7 @@ function worldBot(m,L,god){
      e.hp=e.max=MBKIT[e.kit].hp;if(ofx)window.fxPlay=ofx;o.fxIds=[...o.fxIds];o.sharpSkip=typeof MBSHARP!=='undefined'&&MBSHARP.on?Object.values(MBSHARP.skip).flat():[];o.fxLib=typeof FXDATA!=='undefined'?Object.keys(FXDATA).length:0;
      try{fxDraw();fxDrawUi();o.fxDrawOk=true}catch(err){o.fxDrawOk=err.message}
      // האפקט נוחת על המסך ליד הגיבור: עד 7.11 render.js צייר אותם אחרי ש-mobaDraw עבר לקואורדינטות המסך, וכל אפקט במובה היה מחוץ למסך
-     try{const me=MB.me,od=ctx.drawImage,oi=window.fxImg,fake=document.createElement('canvas');let at=null;const al=MB.u.find(u=>u.k==='hero'&&u.team===me.team&&!u.dead)||me,cam0={x:S.cam.x,y:S.cam.y};S.cam.x=al.x;S.cam.y=al.y;const L0=FXLIB.list.splice(0);fxPlay('ult_cast',al.x,al.y,{dur:5});   /* רק האפקט של הבדיקה ברשימה: אפקטים אחרים ממשחק הבוטים נמצאים במקומות אחרים במפה */   /* מצלמה על גיבור חי שלנו: בלי ערפל, והאפקט צריך לנחות במרכז */
+     try{const me=MB.me,od=ctx.drawImage,oi=window.fxImg,fake=document.createElement('canvas');let at=null;const al=!me.dead?me:(MB.u.find(u=>u.k==='hero'&&u.team===me.team&&!u.dead)||me),cam0={x:S.cam.x,y:S.cam.y};S.cam.x=al.x;S.cam.y=al.y;const L0=FXLIB.list.splice(0);fxPlay('ult_cast',al.x,al.y,{dur:5});   /* רק האפקט של הבדיקה ברשימה: אפקטים אחרים ממשחק הבוטים נמצאים במקומות אחרים במפה */   /* מצלמה על גיבור חי שלנו: בלי ערפל, והאפקט צריך לנחות במרכז */
        window.fxImg=()=>fake;   // תמונה מדומה: בתוך הבדיקה הזמן לא עובר, והתמונה האמיתית לא מספיקה להיטען
        ctx.drawImage=function(im){if(!at&&im===fake){const t=ctx.getTransform();at=[t.e/DPR,t.f/DPR];return}return od.apply(this,arguments)};
        try{render()}finally{ctx.drawImage=od;window.fxImg=oi;S.cam.x=cam0.x;S.cam.y=cam0.y;FXLIB.list.length=0;FXLIB.list.push(...L0)}o.fxAt=at?{x:Math.round(at[0]),y:Math.round(at[1]),on:at[0]>0&&at[0]<innerWidth&&at[1]>0&&at[1]<innerHeight}:null}catch(err){o.fxAt={err:err.message}}}
@@ -4895,6 +4895,8 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(!thf.err&&(thf.d2||thf.me&&thf.bot&&thf.noStone&&!thf.bad.length&&thf.off),'underworld new tank body: '+(thf.err||(thf.d2?'2D, nothing to draw':[['yours, with hammer + crown',thf.me],['bots',thf.bot],['no stone shader on it',thf.noStone],['all 7 tank clips move it'+(thf.bad.length?' ('+thf.bad.join(',')+')':''),!thf.bad.length],['switch: barbarian back',thf.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
   // the new warrior, mage and assassin bodies (ARI #579-#581, mb-parts.js): on your hero, every clip moves them, the overlapping part (mask, circlet) is skipped,
   // the weapons stay, and each switch brings the old body back
+  // הגופים והחלקים נטענים לפי צורך: מחכים להם קודם, אחרת זו תחרות עם שאר ההורדות ברקע (בענף השיפוץ יש יותר קבצים בתור)
+  await page.evaluate(()=>typeof R3D!=='undefined'&&R3D.on&&typeof M3D_LAZY!=='undefined'?Promise.all(['assassinHF','warriorHF','mageHF','w_item_shadowDagger','w_item_mageCrystal'].filter(k=>k in M3D_LAZY).map(k=>m3dGo(k).catch(()=>{}))):0);
   const hf3=await page.evaluate(()=>{const o={},W={warrior:[MBWARHF,'warriorHF','knight'],mage:[MBMAGEHF,'mageHF','mage'],assassin:[MBASNHF,'assassinHF','rogue']};try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
       for(const k in W){const [sw,hf,old]=W[k],on0=sw.on;sw.on=true;mobaStart(k);syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,r={};
@@ -4997,14 +4999,14 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
             if(i===300)tk.flash=0}
           r.hash=MB.u.map(u=>[u.kit||u.k,Math.round(u.hp),Math.round(u.x),Math.round(u.y)].join(':')).join('|');
           if(on){const a=R3D.actors.get(tk);
-            if(a){const L=a.L,fp=[],at=MBMOVE.atk[tk.kit];a.mixer.stopAllAction();a.one=null;a.base=null;   // תנוחת הפטיש: עמידה, ריצה ותקיפה, אחת אחת
+            if(a){const L=a.L,fp=[],at=MBMOVE.atk[tk.kit]||(typeof MBATK3D!=='undefined'&&MBATK3D.kit[tk.kit]&&MBATK3D.kit[tk.kit].hit)||'Melee_2H_Attack_Chop';a.mixer.stopAllAction();   /* mb-atk3d.js (חבילת הבוקר) מאפס את MBMOVE.atk לערכות שלו */a.one=null;a.base=null;   // תנוחת הפטיש: עמידה, ריצה ותקיפה, אחת אחת
               loop(a,L.anim.idle);tankxCarry(a);fp.push(a.fam);loop(a,L.anim.run);tankxCarry(a);fp.push(a.fam);once(a,R3D.clips[at+'@up']?at+'@up':at,0.4);a.mixer.update(0.05);tankxCarry(a);fp.push(a.fam);r.fams=fp.join('/');
               const h=bone(a.root,'hips'),q0=h&&h.quaternion.clone();once(a,L.anim.die,1.2,true);a.mixer.update(0.6);tankxCarry(a);r.dieFam=a.fam;
               const d=a.one&&a.one.getClip(),tr=d&&d.tracks.find(t=>t.name==='hips.position'),t0=R3D.clips[L.anim.die].tracks.find(t=>t.name==='hips.position');
               r.die={moved:!!h&&h.quaternion.angleTo(q0)>0.05,ratio:tr&&t0?+(tr.values[1]/t0.values[1]).toFixed(3):null};
               a.one=null;a.mixer.stopAllAction();
               X.on=false;tk.dead=false;syncEnemy(tk,1/30);const off=R3D.actors.get(tk);X.on=true;syncEnemy(tk,1/30);const back=R3D.actors.get(tk);
-              r.toggle={off:!!off&&off.L.model===X.ref,back:!!back&&!!back.L.tx}}}
+              r.toggle={off:!!off&&!off.L.tx&&off.L.model!==X.model,   /* כבוי: חוזר לגוף שבלי הניסוי (בחבילת הבוקר זה tankHF, לא הברברי) */back:!!back&&!!back.L.tx}}}
           mobaExit();return r};
         try{let s=0,A=null;for(let k=1;k<40&&!s;k++){seed(k);mobaStart('warrior');if(tkOf())s=k;mobaExit()}
           // המשחק הראשון אחרי הפתיחה תמיד שונה מכל השאר (גם בלי הניסוי), ולכן משחק חימום לפני ההשוואה
@@ -5012,7 +5014,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
           if(A){const B=game(false,s),C=game(false,s);out.same=!!B&&A.hash===B.hash&&A.atk.join()===B.atk.join();out.offoff=!!C&&B.hash===C.hash&&B.atk.join()===C.atk.join();out.dirty=A.dirty+(B?B.dirty:0);out.atkN=A.atk.length;out.tx=A.tx;out.comp=A.comp;out.bones=A.bones.size;
             out.moveAtk=A.moveAtk;out.flash=A.flash;out.die=A.die;out.toggle=A.toggle;out.seed=s;out.fams=A.fams;out.dieFam=A.dieFam}else out.err='no tank bot';
           // הצעד בריצה: כמה הרגל עולה (ביחס לגובה הגוף), וכמה מהר היא זזה כשהיא על הרצפה מול מהירות הקרקע. הגוף החדש מול הברברי
-          const gait=L=>{const a=makeActor(L);a.root.position.set(0,0,0);a.root.rotation.set(0,0,0);const H=L.h/COSB(),x=act(a,L.anim.run);a.mixer.stopAllAction();x.reset().setLoop(THREE.LoopRepeat).play();
+          const gait=L=>{const a=makeActor(L);a.root.position.set(0,0,0);a.root.scale.setScalar(L.h/COSB()/R3D.tmpl[L.model].userData.h);   /* דמות מהמאגר אחרי משחק: קנה המידה שלה יכול להיות מעוך (juiceSquash) */a.root.rotation.set(0,0,0);const H=L.h/COSB(),x=act(a,L.anim.run);a.mixer.stopAllAction();x.reset().setLoop(THREE.LoopRepeat).play();
             const D=x.getClip().duration,N=120,b=bone(a.root,'footl'),pts=[];if(!b){freeActor(a);return null}
             for(let i=0;i<=N;i++){a.mixer.setTime(D*i/N);a.root.updateMatrixWorld(true);pts.push(b.getWorldPosition(new THREE.Vector3()))}
             const ys=pts.map(v=>v.y),lo=Math.min(...ys),bd=0.03*H;let sp=0,n=0;for(let i=1;i<pts.length;i++)if(pts[i].y<lo+bd&&pts[i-1].y<lo+bd){sp+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z)/(D/N);n++}
