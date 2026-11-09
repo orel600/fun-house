@@ -34,6 +34,8 @@
     "lazy": false,
     "ready": false
    },
+   "loadMs": 33,
+   "loadSt": "not lazy",
    "own2": {
     "lazy": false,
     "ready": false
@@ -51,6 +53,9 @@
     "propName": "w_sword_A",
     "glow": null,
     "gk": 0,
+    "ndc": 2.1,
+    "ndcCheer": 0.92,
+    "fitScale": 0.48,
     "col": {
      "n": 1280,
      "hex": "#6c5544",
@@ -86,8 +91,8 @@
    },
    "world": {
     "col": {
-     "n": 194,
-     "hex": "#c9ba96",
+     "n": 197,
+     "hex": "#cabb97",
      "hue": 42,
      "peak": 29,
      "sat": 0.25,
@@ -97,7 +102,7 @@
      "tinted": true,
      "name": "greyish gold"
     },
-    "n": 194,
+    "n": 197,
     "prop": "w_sword_A",
     "glow": null,
     "gk": 0
@@ -135,6 +140,8 @@
     "lazy": false,
     "ready": false
    },
+   "loadMs": 7,
+   "loadSt": "not lazy",
    "own2": {
     "lazy": false,
     "ready": false
@@ -152,6 +159,9 @@
     "propName": "w_sword_B",
     "glow": null,
     "gk": 0,
+    "ndc": 2.1,
+    "ndcCheer": 0.91,
+    "fitScale": 0.48,
     "col": {
      "n": 1074,
      "hex": "#485460",
@@ -187,18 +197,18 @@
    },
    "world": {
     "col": {
-     "n": 145,
-     "hex": "#b2b199",
+     "n": 147,
+     "hex": "#b3b299",
      "hue": 58,
      "peak": 82,
-     "sat": 0.14,
+     "sat": 0.15,
      "v": 0.72,
      "chroma": 0.15,
      "neutral": true,
      "tinted": true,
      "name": "silver"
     },
-    "n": 145,
+    "n": 147,
     "prop": "w_sword_B",
     "glow": null,
     "gk": 0
@@ -237,6 +247,8 @@
     "lazy": false,
     "ready": false
    },
+   "loadMs": 7,
+   "loadSt": "not lazy",
    "own2": {
     "lazy": false,
     "ready": false
@@ -254,6 +266,9 @@
     "propName": "w_sword_C",
     "glow": "#DCE3EA",
     "gk": 0.22,
+    "ndc": 2.52,
+    "ndcCheer": 0.95,
+    "fitScale": 0.4,
     "col": {
      "n": 579,
      "hex": "#93979f",
@@ -290,10 +305,10 @@
    "world": {
     "col": {
      "n": 137,
-     "hex": "#cbd0af",
+     "hex": "#cbd0b0",
      "hue": 69,
      "peak": 83,
-     "sat": 0.16,
+     "sat": 0.15,
      "v": 0.83,
      "chroma": 0.28,
      "neutral": true,
@@ -338,6 +353,8 @@
     "lazy": false,
     "ready": false
    },
+   "loadMs": 3,
+   "loadSt": "not lazy",
    "own2": {
     "lazy": false,
     "ready": false
@@ -355,6 +372,9 @@
     "propName": "w_bow_A_withString",
     "glow": null,
     "gk": 0,
+    "ndc": 0.83,
+    "ndcCheer": 1.07,
+    "fitScale": 0.94,
     "col": {
      "n": 763,
      "hex": "#5f5148",
@@ -376,7 +396,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 0,
-    "projOut": 4,
+    "projOut": 0,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -390,18 +410,18 @@
    },
    "world": {
     "col": {
-     "n": 6,
-     "hex": "#ad9470",
-     "hue": 35,
-     "peak": 30,
-     "sat": 0.35,
-     "v": 0.69,
+     "n": 3,
+     "hex": "#98855c",
+     "hue": 41,
+     "peak": 28,
+     "sat": 0.39,
+     "v": 0.62,
      "chroma": 1,
      "neutral": false,
      "tinted": false,
-     "name": "orange"
+     "name": "gold"
     },
-    "n": 6,
+    "n": 3,
     "prop": "w_bow_A_withString",
     "glow": null,
     "gk": 0
@@ -439,6 +459,8 @@
     "lazy": false,
     "ready": false
    },
+   "loadMs": 4,
+   "loadSt": "not lazy",
    "own2": {
     "lazy": false,
     "ready": false
@@ -456,6 +478,9 @@
     "propName": "w_bow_B_withString",
     "glow": null,
     "gk": 0,
+    "ndc": 0.9,
+    "ndcCheer": 1.07,
+    "fitScale": 0.94,
     "col": {
      "n": 1477,
      "hex": "#535255",
@@ -477,7 +502,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 0,
-    "projOut": 4,
+    "projOut": 0,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -490,8 +515,19 @@
     ]
    },
    "world": {
-    "col": null,
-    "n": 0,
+    "col": {
+     "n": 1,
+     "hex": "#aa7d62",
+     "hue": 23,
+     "peak": 23,
+     "sat": 0.42,
+     "v": 0.67,
+     "chroma": 1,
+     "neutral": false,
+     "tinted": false,
+     "name": "orange"
+    },
+    "n": 1,
     "prop": "w_bow_B_withString",
     "glow": null,
     "gk": 0
@@ -530,6 +566,8 @@
     "lazy": false,
     "ready": false
    },
+   "loadMs": 9,
+   "loadSt": "not lazy",
    "own2": {
     "lazy": false,
     "ready": false
@@ -547,6 +585,9 @@
     "propName": "w_bow_B_withString",
     "glow": "#F4C74F",
     "gk": 0.38,
+    "ndc": 0.9,
+    "ndcCheer": 1.07,
+    "fitScale": 0.94,
     "col": {
      "n": 1506,
      "hex": "#bb984e",
@@ -568,7 +609,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 0,
-    "projOut": 4,
+    "projOut": 0,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -620,6 +661,8 @@
     "lazy": false,
     "ready": false
    },
+   "loadMs": 9,
+   "loadSt": "not lazy",
    "own2": {
     "lazy": false,
     "ready": false
@@ -637,6 +680,9 @@
     "propName": "w_staff_A",
     "glow": null,
     "gk": 0,
+    "ndc": 0.91,
+    "ndcCheer": 0.6,
+    "fitScale": 1,
     "col": {
      "n": 733,
      "hex": "#4c3a32",
@@ -658,7 +704,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 0,
-    "projOut": 4,
+    "projOut": 0,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -673,7 +719,7 @@
    "world": {
     "col": {
      "n": 181,
-     "hex": "#bdaa83",
+     "hex": "#beab84",
      "hue": 40,
      "peak": 37,
      "sat": 0.31,
@@ -734,6 +780,9 @@
     "propName": "w_staff_B",
     "glow": null,
     "gk": 0,
+    "ndc": 0.82,
+    "ndcCheer": 0.51,
+    "fitScale": 1,
     "col": {
      "n": 1420,
      "hex": "#424c4f",
@@ -755,7 +804,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 0,
-    "projOut": 4,
+    "projOut": 0,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -767,6 +816,8 @@
      422
     ]
    },
+   "loadMs": 465,
+   "loadSt": "ready",
    "stale": true,
    "own2": {
     "lazy": true,
@@ -785,6 +836,9 @@
     "propName": "w_item_ironStaff",
     "glow": null,
     "gk": 0,
+    "ndc": 0.9,
+    "ndcCheer": 0.53,
+    "fitScale": 1,
     "col": {
      "n": 1673,
      "hex": "#534747",
@@ -806,7 +860,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 0,
-    "projOut": 4,
+    "projOut": 0,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -820,18 +874,18 @@
    },
    "world": {
     "col": {
-     "n": 430,
+     "n": 433,
      "hex": "#938664",
      "hue": 43,
      "peak": 40,
      "sat": 0.32,
      "v": 0.58,
-     "chroma": 0.85,
+     "chroma": 0.84,
      "neutral": false,
      "tinted": false,
      "name": "gold"
     },
-    "n": 479,
+    "n": 480,
     "prop": "w_item_ironStaff",
     "glow": null,
     "gk": 0
@@ -870,6 +924,8 @@
     "lazy": false,
     "ready": false
    },
+   "loadMs": 9,
+   "loadSt": "not lazy",
    "own2": {
     "lazy": false,
     "ready": false
@@ -887,6 +943,9 @@
     "propName": "w_wand_A",
     "glow": "#DCE3EA",
     "gk": 0.22,
+    "ndc": 0.58,
+    "ndcCheer": 0.31,
+    "fitScale": 1,
     "col": {
      "n": 600,
      "hex": "#8592a1",
@@ -922,7 +981,7 @@
    },
    "world": {
     "col": {
-     "n": 120,
+     "n": 119,
      "hex": "#c5c7be",
      "hue": 73,
      "peak": 83,
@@ -933,7 +992,7 @@
      "tinted": true,
      "name": "white"
     },
-    "n": 120,
+    "n": 119,
     "prop": "w_wand_A",
     "glow": "#DCE3EA",
     "gk": 0.22
@@ -985,6 +1044,9 @@
     "propName": "w_staff_B",
     "glow": "#F4C74F",
     "gk": 0.38,
+    "ndc": 0.82,
+    "ndcCheer": 0.51,
+    "fitScale": 1,
     "col": {
      "n": 1430,
      "hex": "#af955f",
@@ -1006,7 +1068,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 0,
-    "projOut": 4,
+    "projOut": 0,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -1018,6 +1080,8 @@
      422
     ]
    },
+   "loadMs": 80,
+   "loadSt": "ready",
    "stale": true,
    "own2": {
     "lazy": true,
@@ -1036,6 +1100,9 @@
     "propName": "w_item_goldStaff",
     "glow": "#F4C74F",
     "gk": 0.38,
+    "ndc": 0.99,
+    "ndcCheer": 0.56,
+    "fitScale": 1,
     "col": {
      "n": 2496,
      "hex": "#704827",
@@ -1057,7 +1124,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 3,
-    "projOut": 4,
+    "projOut": 0,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -1071,8 +1138,8 @@
    },
    "world": {
     "col": {
-     "n": 566,
-     "hex": "#af8856",
+     "n": 569,
+     "hex": "#b08957",
      "hue": 34,
      "peak": 34,
      "sat": 0.51,
@@ -1082,7 +1149,7 @@
      "tinted": false,
      "name": "orange"
     },
-    "n": 566,
+    "n": 569,
     "prop": "w_item_goldStaff",
     "glow": "#F4C74F",
     "gk": 0.38
@@ -1134,6 +1201,9 @@
     "propName": "w_staff_B",
     "glow": "#FF6FB5",
     "gk": 0.55,
+    "ndc": 0.82,
+    "ndcCheer": 0.51,
+    "fitScale": 1,
     "col": {
      "n": 1432,
      "hex": "#cf729f",
@@ -1155,7 +1225,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 0,
-    "projOut": 4,
+    "projOut": 0,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -1167,6 +1237,8 @@
      422
     ]
    },
+   "loadMs": 96,
+   "loadSt": "ready",
    "stale": true,
    "own2": {
     "lazy": true,
@@ -1185,6 +1257,9 @@
     "propName": "w_item_starStaff",
     "glow": "#FF6FB5",
     "gk": 0.55,
+    "ndc": 1.03,
+    "ndcCheer": 0.58,
+    "fitScale": 0.97,
     "col": {
      "n": 1707,
      "hex": "#868275",
@@ -1206,7 +1281,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 24,
-    "projOut": 4,
+    "projOut": 1,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -1221,12 +1296,12 @@
    "world": {
     "col": {
      "n": 423,
-     "hex": "#c5be9e",
-     "hue": 49,
-     "peak": 39,
-     "sat": 0.2,
-     "v": 0.8,
-     "chroma": 0.35,
+     "hex": "#c4bc9b",
+     "hue": 48,
+     "peak": 40,
+     "sat": 0.21,
+     "v": 0.79,
+     "chroma": 0.36,
      "neutral": false,
      "tinted": true,
      "name": "greyish gold"
@@ -1269,6 +1344,8 @@
     "lazy": false,
     "ready": false
    },
+   "loadMs": 20,
+   "loadSt": "not lazy",
    "own2": {
     "lazy": false,
     "ready": false
@@ -1286,6 +1363,9 @@
     "propName": "w_axe_A",
     "glow": null,
     "gk": 0,
+    "ndc": 1.31,
+    "ndcCheer": 0.87,
+    "fitScale": 0.76,
     "col": {
      "n": 1665,
      "hex": "#57595c",
@@ -1307,7 +1387,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 155,
-    "projOut": 3,
+    "projOut": 1,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -1321,9 +1401,9 @@
    },
    "world": {
     "col": {
-     "n": 232,
-     "hex": "#afa78c",
-     "hue": 46,
+     "n": 231,
+     "hex": "#b0a78c",
+     "hue": 45,
      "peak": 36,
      "sat": 0.2,
      "v": 0.7,
@@ -1332,7 +1412,7 @@
      "tinted": true,
      "name": "greyish gold"
     },
-    "n": 232,
+    "n": 231,
     "prop": "w_axe_A",
     "glow": null,
     "gk": 0
@@ -1371,6 +1451,8 @@
     "lazy": false,
     "ready": false
    },
+   "loadMs": 6,
+   "loadSt": "not lazy",
    "own2": {
     "lazy": false,
     "ready": false
@@ -1388,6 +1470,9 @@
     "propName": "w_axe_B",
     "glow": "#F4C74F",
     "gk": 0.38,
+    "ndc": 1.89,
+    "ndcCheer": 0.96,
+    "fitScale": 0.53,
     "col": {
      "n": 2497,
      "hex": "#b69441",
@@ -1429,7 +1514,7 @@
      "peak": 51,
      "sat": 0.31,
      "v": 0.87,
-     "chroma": 0.66,
+     "chroma": 0.65,
      "neutral": false,
      "tinted": false,
      "name": "gold"
@@ -1486,6 +1571,9 @@
     "propName": "w_sword_A",
     "glow": "#FF6FB5",
     "gk": 0.55,
+    "ndc": 2.1,
+    "ndcCheer": 0.92,
+    "fitScale": 0.48,
     "col": {
      "n": 1287,
      "hex": "#d97597",
@@ -1519,6 +1607,8 @@
      422
     ]
    },
+   "loadMs": 156,
+   "loadSt": "ready",
    "stale": true,
    "own2": {
     "lazy": true,
@@ -1537,6 +1627,9 @@
     "propName": "w_item_dragonBlade",
     "glow": "#FF6FB5",
     "gk": 0.55,
+    "ndc": 3.22,
+    "ndcCheer": 1.11,
+    "fitScale": 0.31,
     "col": {
      "n": 4171,
      "hex": "#634341",
@@ -1637,6 +1730,9 @@
     "propName": "w_bow_B_withString",
     "glow": "#FF6FB5",
     "gk": 0.55,
+    "ndc": 0.9,
+    "ndcCheer": 1.07,
+    "fitScale": 0.94,
     "col": {
      "n": 1514,
      "hex": "#da6a9e",
@@ -1658,7 +1754,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 0,
-    "projOut": 4,
+    "projOut": 0,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -1670,6 +1766,8 @@
      422
     ]
    },
+   "loadMs": 206,
+   "loadSt": "ready",
    "stale": true,
    "own2": {
     "lazy": true,
@@ -1688,6 +1786,9 @@
     "propName": "w_item_skyBow",
     "glow": "#FF6FB5",
     "gk": 0.55,
+    "ndc": 1.08,
+    "ndcCheer": 1.22,
+    "fitScale": 0.82,
     "col": {
      "n": 3714,
      "hex": "#879aaa",
@@ -1709,7 +1810,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 97,
-    "projOut": 4,
+    "projOut": 1,
     "ofSamples": 4,
     "hidPct": 4,
     "offPct": 0,
@@ -1726,15 +1827,15 @@
    "world": {
     "col": {
      "n": 5,
-     "hex": "#ae8f6f",
-     "hue": 30,
+     "hex": "#a8a38a",
+     "hue": 50,
      "peak": 23,
-     "sat": 0.36,
-     "v": 0.7,
-     "chroma": 1,
-     "neutral": false,
-     "tinted": false,
-     "name": "orange"
+     "sat": 0.18,
+     "v": 0.73,
+     "chroma": 0.8,
+     "neutral": true,
+     "tinted": true,
+     "name": "silver"
     },
     "n": 5,
     "prop": "w_item_skyBow",
@@ -1774,6 +1875,8 @@
     "lazy": false,
     "ready": false
    },
+   "loadMs": 9,
+   "loadSt": "not lazy",
    "own2": {
     "lazy": false,
     "ready": false
@@ -1791,6 +1894,9 @@
     "propName": "w_hammer_A",
     "glow": null,
     "gk": 0,
+    "ndc": 1.35,
+    "ndcCheer": 1.04,
+    "fitScale": 0.74,
     "col": {
      "n": 3562,
      "hex": "#57626b",
@@ -1826,18 +1932,18 @@
    },
    "world": {
     "col": {
-     "n": 338,
+     "n": 339,
      "hex": "#adab96",
      "hue": 55,
      "peak": 84,
      "sat": 0.13,
      "v": 0.69,
-     "chroma": 0.13,
+     "chroma": 0.12,
      "neutral": true,
      "tinted": true,
      "name": "silver"
     },
-    "n": 338,
+    "n": 339,
     "prop": "w_hammer_A",
     "glow": null,
     "gk": 0
@@ -1889,6 +1995,9 @@
     "propName": "w_bow_B_withString",
     "glow": "#DCE3EA",
     "gk": 0.22,
+    "ndc": 0.9,
+    "ndcCheer": 1.07,
+    "fitScale": 0.94,
     "col": {
      "n": 1510,
      "hex": "#959498",
@@ -1910,7 +2019,7 @@
     "cw": 144,
     "ch": 226,
     "edgePx": 0,
-    "projOut": 4,
+    "projOut": 0,
     "ofSamples": 4,
     "hidPct": 0,
     "offPct": 0,
@@ -1922,6 +2031,8 @@
      422
     ]
    },
+   "loadMs": 138,
+   "loadSt": "ready",
    "stale": true,
    "own2": {
     "lazy": true,
@@ -1940,6 +2051,9 @@
     "propName": "w_item_stormBow",
     "glow": "#DCE3EA",
     "gk": 0.22,
+    "ndc": 1.76,
+    "ndcCheer": 1.44,
+    "fitScale": 0.57,
     "col": {
      "n": 3001,
      "hex": "#545381",
@@ -1977,18 +2091,18 @@
    },
    "world": {
     "col": {
-     "n": 81,
-     "hex": "#c5beab",
-     "hue": 44,
+     "n": 76,
+     "hex": "#c7c2af",
+     "hue": 48,
      "peak": 83,
-     "sat": 0.13,
-     "v": 0.79,
-     "chroma": 0.25,
+     "sat": 0.12,
+     "v": 0.8,
+     "chroma": 0.21,
      "neutral": true,
      "tinted": true,
      "name": "white"
     },
-    "n": 81,
+    "n": 76,
     "prop": "w_item_stormBow",
     "glow": "#DCE3EA",
     "gk": 0.22

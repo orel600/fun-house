@@ -5,7 +5,7 @@
        איך מוצאים את הנשק בציור: מציירים את הסצנה פעם עם הנשק ופעם בלעדיו, וההפרש הוא הנשק. כך רק הפיקסלים של הנשק נמדדים.
        בפריט עם מודל משלו (w_item_<id>, נטען בעצלתיים ב-m3d.js) נמדד גם הרגע שלפני שהמודל נטען: אז מוצג look.model עם זוהר הדרגה.
    (ב) מסגור: בחלון הציוד, בכמה זוויות של הנדנוד, האם הנשק נחתך בקצה הקנבס של הבובה, או מוסתר מתחת לחלק אחר של החלון.
-   הרצה:  node tools/weapon-audit.js            (כ-13 דקות, התלת-ממד רץ על המעבד)
+   הרצה:  node tools/weapon-audit.js            (כ-15 דקות, התלת-ממד רץ על המעבד)
    פלט:   docs/weapon-audit/audit.json, docs/weapon-audit/sheet.png (תמונה מול הנשק ביד), ושורות במסוף.
    הדוח הכתוב (docs/weapon-audit-2026-11-09.md) נכתב ביד מתוך audit.json. */
 const {chromium}=require('playwright');
@@ -96,8 +96,8 @@ function pageHelpers(){
     SAVE.hero.start=cls;for(const s in SAVE.gear){const v=SAVE.gear[s];SAVE.gear[s]=Array.isArray(v)?v.map(()=>null):null}
     SAVE.gear.weapon=id;wEquip(id);return cls},id);
   const own=id=>page.evaluate(id=>({lazy:m3dLazy('w_item_'+id),ready:!!R3D.props['w_item_'+id]}),id);
-  const loadOwn=async id=>{await page.evaluate(id=>m3dNeed('w_item_'+id),id);
-    await page.waitForFunction(id=>!m3dLazy('w_item_'+id)||['ready','fail'].includes(M3D.st['w_item_'+id]),id,{timeout:30000}).catch(()=>{})};
+  const loadOwn=async id=>{const t0=Date.now();await page.evaluate(id=>m3dNeed('w_item_'+id),id);   // מחזיר כמה זמן לקח (מקומי, מקובץ: בטלפון מהרשת זה אחר)
+    await page.waitForFunction(id=>!m3dLazy('w_item_'+id)||['ready','fail'].includes(M3D.st['w_item_'+id]),id,{timeout:30000,polling:20}).catch(()=>{});return Date.now()-t0};
 
   // ---- בובה: חלון הציוד פתוח ----
   const doll=id=>page.evaluate(id=>{
@@ -114,22 +114,35 @@ function pageHelpers(){
     // מה חותך את הקנבס: אבות עם overflow שאינו visible, והמסך
     let clip=[0,0,innerWidth,innerHeight];for(let e=cvs.parentElement;e;e=e.parentElement){const s=getComputedStyle(e);if(s.overflow!=='visible'||s.overflowX!=='visible'||s.overflowY!=='visible'){const r=e.getBoundingClientRect();clip=[Math.max(clip[0],r.left),Math.max(clip[1],r.top),Math.min(clip[2],r.right),Math.min(clip[3],r.bottom)]}}
     const ph=[0,Math.PI/2,Math.PI,Math.PI*1.5];   // הקצוות של הנדנוד: sin=±1
-    let first=null,clipped=0,hidden=0,offView=0,cover={},tot=0,edge=0;
+    let first=null,clipped=0,hidden=0,offView=0,cover={},tot=0,edge=0,ndc=0;
+    const ndcMax=obj=>{obj.updateMatrixWorld(true);let mx=0;const v=new THREE.Vector3();
+      obj.traverse(o=>{if(!o.isMesh)return;const P=o.geometry.attributes.position;for(let i=0;i<P.count;i+=1){v.fromBufferAttribute(P,i).applyMatrix4(o.matrixWorld).project(D.cam);mx=Math.max(mx,Math.abs(v.x),Math.abs(v.y))}});return mx};
     for(const p of ph){a.root.rotation.y=(D.yaw||0)+Math.sin(p)*D.sway;
       const r=__wa.diff(cvs,render,[prop]);if(!first)first=r;
       edge=Math.max(edge,r.edge);
-      // ההיטל של הקופסה של הנשק: מחוץ ל-[-1,1] = חלק מהנשק מחוץ לקנבס
-      const bb=new THREE.Box3().setFromObject(prop);let out3=0;
-      for(const x of [bb.min.x,bb.max.x])for(const y of [bb.min.y,bb.max.y])for(const z of [bb.min.z,bb.max.z]){const v=new THREE.Vector3(x,y,z).project(D.cam);if(Math.abs(v.x)>1.0||Math.abs(v.y)>1.0)out3++}
-      if(out3)clipped++;
+      // ההיטל המדויק של הנשק (כל הקודקודים): כמה רחוק הוא יוצא מ-[-1,1]. מזה מחשבים כמה הדמות תקטן אם המצלמה תתאים את עצמה לגוף+נשק
+      const m=ndcMax(prop);if(m>1.0)clipped++;ndc=Math.max(ndc,m);
       // נקודות של הנשק: מה מעליהן על המסך
       for(let i=0;i<r.pts.length;i+=2*Math.max(1,Math.floor(r.pts.length/2/150))){tot++;
         const sx=rect.left+r.pts[i]/r.w*rect.width,sy=rect.top+r.pts[i+1]/r.h*rect.height;
         if(sx<clip[0]||sy<clip[1]||sx>clip[2]||sy>clip[3]){offView++;continue}
         const el=document.elementFromPoint(sx,sy);if(!el||el===cvs||el.contains(cvs))continue;
         hidden++;const k=el.tagName.toLowerCase()+(el.id?'#'+el.id:'')+(el.className?'.'+String(el.className).split(' ')[0]:'');cover[k]=(cover[k]||0)+1}}
+    // תנוחת הריעה (doll3d מריע כשלובשים): גם היא נכנסת להתאמה
+    let ndcCheer=0;try{const c=R3D.clips[DOLL3D.cheer];if(c){const act=a.mixer.clipAction(c);a.mixer.stopAllAction();act.reset().play();
+      for(const t of [0.3,0.6,0.9,1.2]){a.mixer.setTime(t);a.root.rotation.y=D.yaw||0;a.root.updateMatrixWorld(true);ndcCheer=Math.max(ndcCheer,ndcMax(prop))}
+      act.stop();loop(a,D.idle);a.mixer.update(0.6)}}catch(e){ndcCheer=-1}
+    // תקריב של הנשק לבד, מלפנים ומהצד, כדי לשפוט צורה ופרטים (לא רק צבע)
+    const shots={};{const hid=[],under=new Set();prop.traverse(o=>under.add(o));
+      D.scene.traverse(o=>{if((o.isMesh||o.isSprite||o.isPoints)&&!under.has(o)&&o.visible){o.visible=false;hid.push(o)}});
+      const cam=D.cam.clone(),S2=260;D.r.setSize(S2,S2,false);
+      for(const [k,ry] of [['front',0],['side',Math.PI/2]]){a.root.rotation.y=ry;a.root.updateMatrixWorld(true);
+        const bb=new THREE.Box3().setFromObject(prop),c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3()).length();
+        cam.aspect=1;cam.position.set(c.x,c.y,c.z+sz/2/Math.tan(cam.fov*Math.PI/360)*1.1);cam.lookAt(c);cam.updateProjectionMatrix();
+        D.r.render(D.scene,cam);const g=__wa.grab(cvs);const o=document.createElement('canvas');o.width=S2;o.height=S2;o.getContext('2d').drawImage(g.c,0,0);shots[k]=o.toDataURL('image/png')}
+      for(const o of hid)o.visible=true;D.r.setSize(w,h,false)}
     a.root.rotation.y=D.yaw||0;
-    return {...out,col:__colorStats(first.px),img:first.img,bb:first.bb,cw:first.w,ch:first.h,edgePx:edge,projOut:clipped,ofSamples:ph.length,
+    return {...out,ndc:+ndc.toFixed(2),ndcCheer:+ndcCheer.toFixed(2),fitScale:+(1/Math.max(1,ndc,ndcCheer)).toFixed(2),front:shots.front,side:shots.side,col:__colorStats(first.px),img:first.img,bb:first.bb,cw:first.w,ch:first.h,edgePx:edge,projOut:clipped,ofSamples:ph.length,
       hidPct:tot?Math.round(hidden/tot*100):0,offPct:tot?Math.round(offView/tot*100):0,cover,clipRect:clip.map(Math.round)};
   },id);
 
@@ -165,7 +178,7 @@ function pageHelpers(){
   for(const id of ids){
     const cls=await wear(id);const o=await own(id);const R=res[id];R.cls=cls;R.own=o;
     if(o.lazy&&!o.ready){R.dollPre=await doll(id);await page.evaluate(()=>{const D=R3D.doll;D.last=performance.now();D.raf=requestAnimationFrame(dollFrame)})}   // הבובה ממשיכה לזוז כמו במשחק
-    await loadOwn(id);await page.waitForTimeout(400);
+    R.loadMs=await loadOwn(id);R.loadSt=await page.evaluate(id=>M3D.st['w_item_'+id]||(m3dLazy('w_item_'+id)?'?':'not lazy'),id);await page.waitForTimeout(400);
     if(R.dollPre)R.stale=await page.evaluate(()=>R3D.doll.key!==dollKey());   // המודל נטען, אבל הבובה עדיין עם המראה הישן (dollBuild רק מ-gearDraw)
     if(id==='skyBow'&&R.stale)await page.screenshot({path:path.join(OUT,'gear-window-skyBow-stale.png')});
     R.own2=await own(id);
@@ -193,17 +206,17 @@ function pageHelpers(){
     R.matchWorld=R.world&&R.world.n>=WORLD_MIN?ok(R.world.col):null;   // בעולם הגיבור קטן, ולפעמים הנשק מאחוריו: מתחת ל-WORLD_MIN פיקסלים לא שופטים
     const d=R.doll||{};R.frameOk=!(d.edgePx>3||d.hidPct>=5||d.offPct>=5)}
   // תמונת השוואה: תמונה | בבובה (לפני טעינה) | בבובה | בעולם
-  const sheet=await browser.newPage({viewport:{width:900,height:400},deviceScaleFactor:1});
+  const sheet=await browser.newPage({viewport:{width:1220,height:400},deviceScaleFactor:1});
   const cell=(img,c,ok)=>'<td>'+(img?'<img src="'+img+'">':'<i>—</i>')+(c?'<div><span class="sw" style="background:'+c.hex+'"></span>'+c.name+' '+(c.neutral?'':c.hue+'°')+'</div>':'')+(ok===false?'<div class="x">✗</div>':ok===true?'<div class="ok">✓</div>':'')+'</td>';
-  const html='<style>body{background:#1d1a26;color:#eee;font:13px sans-serif;margin:8px}td{border:1px solid #444;padding:4px;text-align:center;vertical-align:top;width:150px}img{max-width:140px;max-height:110px;background:#2c2838}th{padding:4px}.sw{display:inline-block;width:12px;height:12px;border:1px solid #fff;margin-inline-end:4px;vertical-align:middle}.x{color:#ff6b6b;font-weight:bold}.ok{color:#7ed97e}</style><table><tr><th>weapon</th><th>picture</th><th>doll before own model loads</th><th>doll (gear window)</th><th>world (village)</th></tr>'+
-    ids.map(id=>{const R=res[id];return '<tr><td><b>'+id+'</b><br>tier '+R.tier+' · '+R.cls+'<br>'+(R.doll&&R.doll.propName||'')+(R.frameOk?'':'<div class="x">framing ✗ ('+R.doll.edgePx+'px at edge'+(R.doll.hidPct?', '+R.doll.hidPct+'% under badge':'')+')</div>')+(R.stale?'<div class="x">doll stale after load</div>':'')+'</td>'+cell(R.pic&&R.pic.img,R.pic&&R.pic.col)+cell(R.dollPre&&R.dollPre.img,R.dollPre&&R.dollPre.col,R.matchPre)+cell(R.doll&&R.doll.img,R.doll&&R.doll.col,R.matchDoll)+cell(R.world&&R.world.img,R.world&&R.world.n>=WORLD_MIN&&R.world.col,R.matchWorld)+'</tr>'}).join('')+'</table>';
+  const html='<style>body{background:#1d1a26;color:#eee;font:13px sans-serif;margin:8px}td{border:1px solid #444;padding:4px;text-align:center;vertical-align:top;width:150px}img{max-width:140px;max-height:110px;background:#2c2838}th{padding:4px}.sw{display:inline-block;width:12px;height:12px;border:1px solid #fff;margin-inline-end:4px;vertical-align:middle}.x{color:#ff6b6b;font-weight:bold}.ok{color:#7ed97e}</style><table><tr><th>weapon</th><th>picture</th><th>doll before own model loads</th><th>doll (gear window)</th><th>world (village)</th><th>weapon alone: front</th><th>side</th></tr>'+
+    ids.map(id=>{const R=res[id];return '<tr><td><b>'+id+'</b><br>tier '+R.tier+' · '+R.cls+'<br>'+(R.doll&&R.doll.propName||'')+(R.frameOk?'':'<div class="x">framing ✗ ('+R.doll.edgePx+'px at edge'+(R.doll.hidPct?', '+R.doll.hidPct+'% under badge':'')+')</div>')+(R.stale?'<div class="x">doll stale after load</div>':'')+'</td>'+cell(R.pic&&R.pic.img,R.pic&&R.pic.col)+cell(R.dollPre&&R.dollPre.img,R.dollPre&&R.dollPre.col,R.matchPre)+cell(R.doll&&R.doll.img,R.doll&&R.doll.col,R.matchDoll)+cell(R.world&&R.world.img,R.world&&R.world.n>=WORLD_MIN&&R.world.col,R.matchWorld)+cell(R.doll&&R.doll.front)+cell(R.doll&&R.doll.side)+'</tr>'}).join('')+'</table>';
   await sheet.setContent(html);await sheet.screenshot({path:path.join(OUT,'sheet.png'),fullPage:true});
   // JSON בלי התמונות
-  const slim=JSON.parse(JSON.stringify(res,(k,v)=>k==='img'?undefined:v));
+  const slim=JSON.parse(JSON.stringify(res,(k,v)=>k==='img'||k==='front'||k==='side'?undefined:v));
   fs.writeFileSync(path.join(OUT,'audit.json'),JSON.stringify({view:VIEW,hueTol:HUE_TOL,errors:errors.slice(0,10),weapons:slim},null,1));
   for(const id of ids){const R=res[id],c=x=>x?x.name+(x.neutral?'':'/'+x.hue):'-';
     console.log(id.padEnd(13)+' pic '+c(R.pic&&R.pic.col).padEnd(12)+' pre '+c(R.dollPre&&R.dollPre.col).padEnd(12)+' doll '+c(R.doll&&R.doll.col).padEnd(12)+' world '+c(R.world&&R.world.col).padEnd(12)+
-      ' '+(R.matchDoll===false?'✗doll':'✓doll')+(R.matchPre===false?' ✗pre':'')+(R.matchWorld===false?' ✗world':'')+(R.stale?' stale':'')+' '+(R.frameOk?'✓frame':'✗frame edge'+(R.doll||{}).edgePx+' proj'+(R.doll||{}).projOut+' hid'+(R.doll||{}).hidPct+'% off'+(R.doll||{}).offPct+'% '+JSON.stringify((R.doll||{}).cover||{})))}
+      ' '+(R.matchDoll===false?'✗doll':'✓doll')+(R.matchPre===false?' ✗pre':'')+(R.matchWorld===false?' ✗world':'')+(R.stale?' stale':'')+' model '+((R.doll||{}).propName)+(R.loadMs!=null&&R.own&&R.own.lazy?' load '+R.loadMs+'ms':'')+' fit×'+((R.doll||{}).fitScale)+' ndc '+((R.doll||{}).ndc)+'/'+((R.doll||{}).ndcCheer)+' '+(R.frameOk?'✓frame':'✗frame edge'+(R.doll||{}).edgePx+' proj'+(R.doll||{}).projOut+' hid'+(R.doll||{}).hidPct+'% off'+(R.doll||{}).offPct+'% '+JSON.stringify((R.doll||{}).cover||{})))}
   if(errors.length)console.log('שגיאות בדף:',errors.slice(0,5));
   await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
