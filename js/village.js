@@ -10,6 +10,7 @@ const VILLAGE={
   near:55,                        // כמה פיקסלים מקצה מבנה נחשב "לידו": מופיע כפתור "להיכנס" בסרגל (הפאנל נפתח רק בנגיעה)
   tap:{move:14,ms:400},           // נגיעה במבנה פותחת את הפאנל שלו: עד כמה פיקסלים זזה האצבע ועד כמה אלפיות שנייה, כדי שזה לא ייחשב תזוזה
   max:5,                          // הרמה הכי גבוהה. מבנה לא עולה מעל מרכז הכפר
+  late:{from:4,k:1.3,res:['wood','stone']},   // רמות 4-5 עולות יותר עץ ואבן, כי הכלי נותן יותר מכל מקור (ניר 9.11, docs/concept-village-loop.md). רמות שכבר נבנו לא משתנות
   gift:{coins:25,wood:20,stone:12},   // מתנת פתיחה, פעם אחת: מספיק לבנות מנסרה ומכרה
   gate:{x:0,y:700,r:44},
   /* איך מבנה נראה לפי רמה, כדי שכל שדרוג ייראה (ניר: "שידרגתי בניין בכפר גם צריך להיות אפקט").
@@ -98,7 +99,10 @@ function vCollect(k){
 const vStock=k=>{const p=SAVE.prod[k];if(!p)return 0;let n=0;for(const r in p.have)n+=Math.floor(p.have[r]);return n};
 
 /* ---- שדרוג ---- */
-const vCost=k=>VILLAGE.b[k].cost[vLv(k)+1]||null;
+// המחיר לרמה L של המבנה k, עם התוספת של late ברמות הגבוהות
+function vCostAt(k,L){const c=VILLAGE.b[k].cost[L];if(!c)return null;const A=VILLAGE.late;if(L<A.from)return c;
+  const o=Object.assign({},c);for(const r of A.res)if(o[r])o[r]=Math.ceil(o[r]*A.k);return o}
+const vCost=k=>vCostAt(k,vLv(k)+1);
 // למה אי אפשר לשדרג עכשיו: 'max', 'center' (מרכז הכפר נמוך מדי), 'cost', או null אם אפשר
 function vBlock(k){
   const L=vLv(k);if(L>=VILLAGE.max)return 'max';
@@ -259,6 +263,7 @@ $('vPanel').addEventListener('click',e=>{
   if(a==='tab'){(S.vil.tab||(S.vil.tab={}))[S.vil.near]=b.dataset.tab;sfx('ui');villageHud();return}   // לשונית בחלון המבנה (bwin.js)
   if(a&&a.startsWith('deco')){decoAct(a,b.dataset);villageHud();return}   // חנות הקישוטים בשוק (deco.js)
   if(!S.vil.near)return;
+  if(goalAct(b)){villageHud();return}   // 📌 יעד בעולם (goal.js)
   if(a==='forge'){forgeOpen();return}
   if(a==='collect'){if(vCollect(S.vil.near))sfx('coin');villageHud();return}
   if(a==='up')vUpgrade(S.vil.near);else if(a==='stash'){if(stashMove(b.dataset.dir,b.dataset.r,b.dataset.n==='all'?0:BWIN.move))sfx('coin')}else if(a==='stashAll'){if(stashAll(b.dataset.dir))sfx('coin')}else if(a==='craft')gearCraft(b.dataset.r);else vTrade(a,b.dataset.r);
