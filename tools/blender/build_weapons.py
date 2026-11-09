@@ -133,5 +133,48 @@ def star_staff(part):
     for k,sz in((3,0.07),(10,0.055),(15,0.045)):
         p=ring[k];part(gem(p,Vector((0,0,1)),sz*2,sz*0.6,4),'spark','glowy')
 
+# ---------- להב הכסף (קונספט 9.11.2026, docs/concept-weapon-models.md): עקום, שומר חצי-ירח בצורת S, אבן כחולה ---------
+def silver_blade(part):
+    B0,B1=0.16,1.72                       # הלהב מהשומר עד הקצה (z), הידית בראשית כמו w_sword_C (‎-0.43 עד 1.70)
+    N=12
+    def spine(t):return Vector((0.42*t**2.0,0,B0+(B1-B0)*t))
+    def width(t):  # belly (convex, -x side) and back (+x side)
+        belly=0.08+0.17*math.sin(math.pi*min(1,t/0.72)*0.5)**1.3*(1-max(0,(t-0.6)/0.4)**1.4)
+        back=0.06*(1-t)+0.012
+        return belly,back
+    bm=bmesh.new();rings=[]
+    for i in range(N):
+        t=i/(N-1);p=spine(t);d=(spine(min(1,t+0.02))-spine(max(0,t-0.02))).normalized()
+        n=Vector((-d.z,0,d.x))           # outward normal toward the belly (-x)
+        if n.x>0:n=-n
+        wf,wb=width(t);th=0.045*(1-0.85*t)+0.006
+        if i==N-1:wf=wb=0.0;th=0.0
+        rings.append([bm.verts.new(p+n*wf),bm.verts.new(p+Vector((0,th,0))),bm.verts.new(p-n*wb),bm.verts.new(p-Vector((0,th,0)))])
+    for a,b in zip(rings,rings[1:]):
+        for k in range(4):
+            q=(a[k],a[(k+1)%4],b[(k+1)%4],b[k])
+            if len(set(q))==4:bm.faces.new(q)
+    bm.faces.new(rings[0][::-1])
+    bmesh.ops.remove_doubles(bm,verts=bm.verts,dist=1e-5);bmesh.ops.recalc_face_normals(bm,faces=bm.faces)
+    part(bm,'blade','white',vf=lambda c:0.25+0.75*min(1,max(0,(c.z-B0)/(B1-B0))))
+    # fuller: thin dark line on both faces, along the spine
+    for s in(1,-1):
+        pts=[spine(t)+Vector((0,s*(0.045*(1-0.85*t)+0.004),0))*0.92 for t in [j/7*0.7 for j in range(8)]]
+        pts=[Vector((p.x-0.02*(1-j/7),p.y,p.z)) for j,p in enumerate(pts)]
+        part(tube(pts,[0.014]*8,4,ref=Vector((0,1,0))),'fuller','iron',vf=lambda c:0.35)
+    # guard: centre block + crescent arms curling up toward the blade
+    part(cyl(0.17,0.09,Vector((0,0,0.13)),4,rot=Matrix.Rotation(math.pi/2,4,'X')),'guardc','white',vf=lambda c:0.55)   # flat diamond plate facing front/back
+    for s in(1,-1):
+        arc=[Vector((s*(0.10+0.22*math.sin(a)),0,0.13+s*0.24*(1-math.cos(a)))) for a in [math.radians(x) for x in (0,30,60,90,120,145,165)]]
+        part(tube(arc,[0.055,0.055,0.05,0.042,0.032,0.02,0.008],6,ref=Vector((0,1,0))),'arm','iron',vf=lambda c:0.55+0.35*min(1,(c.z-0.08)/0.3))
+    # blue gem on both faces of the guard plate
+    for s in(1,-1):
+        part(gem(Vector((0,s*0.05,0.13)),Vector((0,s,0)),0.13,0.125,4,0.2),'gem','blue',vf=lambda c:0.9)
+    # grip: navy wrap with three silver rings, silver pommel
+    part(cyl(0.05,0.44,Vector((0,0,-0.16)),8,0.055),'grip','navy',vf=lambda c:0.55)
+    for z in(-0.30,-0.15,0.0):part(cyl(0.062,0.03,Vector((0,0,z)),8),'ring','iron',vf=lambda c:0.75)
+    part(cyl(0.085,0.08,Vector((0,0,-0.41)),8,0.06),'pommel','iron',vf=lambda c:0.6)
+    part(cyl(0.09,0.05,Vector((0,0,-0.47)),8,0.07),'pcap','white',vf=lambda c:0.8)
 build('skyBow',sky_bow,0.9)   # כמו קשת KayKit (1.9) ועוד קצת, כי היא אגדית
 build('starStaff',star_staff)
+build('silverBlade',silver_blade)   # קונספט: עוד לא ב-ITEMS (build3d.js), אז לא במשחק
