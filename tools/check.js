@@ -2175,10 +2175,13 @@ function worldBot(m,L,god){
       t=2.0;cqTick();o.low=v()===1&&txt()===T('loot.first','X')&&!S.st.show;
       for(let i=0;i<5;i++)banner('N'+i,C.chalk);o.max=CQS.q.length===CQ.max;
       t=9;cqTick();o.stale=CQ.stat.stale>st0.stale;
+      // boss/wave moments are never lost (QUINN): behind 3 waiting normal ones, and a param-first key ('n is furious')
+      t=20;cqTick();CQS.cur=null;CQS.q.length=0;banner('Busy',C.chalk);for(let i=0;i<3;i++)banner('W'+i,C.chalk);const fw=T('wave.last');banner(fw,C.gold);o.last=txt()===fw;
+      o.rage=cqPri(T('rage2','Boss'))===2&&cqPri(T('bossDown','Boss'))===2;
       o.worst=worst;o.overlap=CQ.stat.overlap-st0.overlap;o.qmax=CQ.max;
     }catch(err){o.err=String(err&&err.stack||err)}
     CQ.clock=null;CQS.cur=null;CQS.q.length=0;const b=document.getElementById('banner');if(b)b.classList.remove('on');S.st=null;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
-  {const L=[[cq.a,'shown'],[cq.wait,'second waits'],[cq.jump,'danger jumps ahead'],[cq.lowQ,'info last'],[cq.minHold,'min time'],[cq.streakNext,'then the streak'],[cq.sameKind,'streak replaces streak'],[cq.low,'then info'],[cq.max,'at most '+cq.qmax+' waiting'],[cq.stale,'old ones dropped']];
+  {const L=[[cq.a,'shown'],[cq.wait,'second waits'],[cq.jump,'danger jumps ahead'],[cq.lowQ,'info last'],[cq.minHold,'min time'],[cq.streakNext,'then the streak'],[cq.sameKind,'streak replaces streak'],[cq.low,'then info'],[cq.max,'at most '+cq.qmax+' waiting'],[cq.stale,'old ones dropped'],[cq.last,'final wave behind 3 waiting'],[cq.rage,'boss moments high']];
    check(!cq.err&&L.every(x=>x[0])&&cq.worst===1&&cq.overlap===0,'center queue in the arena: '+(cq.err||L.map(x=>x[1]+(x[0]?' ✓':' ✗')).join(', ')+', at most '+cq.worst+' on screen'+(cq.overlap?', '+cq.overlap+' overlaps!':'')))}
   // רגעים לסקילי הזירה (MLBB 1.1, skill-anim.js SKANIM.mo): רק מה שהיה חסר לפי טבלת הפערים. בתוך perCast, ו"פחות אפקטים" מוריד את הקישוטים
   // רגע הסכנה של הבוס (arena-danger.js, MLBB 2.1): המילוי לפי השעונים האמיתיים מגיע ל-100% ברגע הפגיעה (בפריים האחרון לפניה: 1 פחות פריים),

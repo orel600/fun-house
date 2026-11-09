@@ -14,7 +14,7 @@ const CQ={
   ttl:2,          // שניות שהודעה רגילה יכולה לחכות
   min:0.9,        // כל הודעה מוצגת לפחות כך, לפני שמישהי שמחכה מחליפה אותה
   // עדיפות לפי מפתח הטקסט (lang.js): 2 סכנה, קופצת. 0 מידע, אחרונה. כל השאר 1
-  hi:['pace.peak','st.elite','st.swarm'],
+  hi:['pace.peak','st.elite','st.swarm','wave.last','wave.ring','bossDown','rage1','rage2','phase2'],   // סכנה, ורגעי בוס וגל שאסור לאבד (QUINN, #545: "Final wave" נזרק)
   lo:['loot.first','book.new'],
   clock:null,     // לבדיקה: פונקציה שמחזירה שניות במקום performance.now
   stat:{shown:0,jumped:0,dropped:0,stale:0,overlap:0,maxQ:0}
@@ -24,7 +24,7 @@ const cqOn=()=>CQ.on&&typeof skArena==='function'&&skArena()&&!(typeof S!=='unde
 const cqNow=()=>CQ.clock?CQ.clock():performance.now()/1000;
 // עדיפות של טקסט: משווים לטקסט של המפתחות (גם מפתח עם פרמטר: לפי מה שלפני הפרמטר)
 function cqPri(txt){
-  const m=k=>{const v=TEXT[k]&&(TEXT[k].en??TEXT[k].he);if(typeof v==='function'){const p=String(v('\u0001')).split('\u0001')[0];return p.length>2&&txt.startsWith(p)}return v===txt};
+  const m=k=>{const v=TEXT[k]&&(TEXT[k].en??TEXT[k].he);if(typeof v==='function'){const [a,b='']=String(v('\u0001')).split('\u0001');return a.length+b.length>2&&txt.startsWith(a)&&txt.endsWith(b)}return v===txt};   // גם פרמטר בהתחלה ('n is furious')
   return CQ.hi.some(m)?2:CQ.lo.some(m)?0:1;
 }
 // כמה הודעות מרכז על המסך עכשיו (לבוט, ולמונה overlap)
