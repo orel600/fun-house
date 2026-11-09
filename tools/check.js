@@ -2264,8 +2264,9 @@ function worldBot(m,L,god){
       ', חוצץ '+(afl.buf&&afl.fired?'✓':'✗')+', תנועת הטלה '+(afl.cast?'✓':'✗')+', Rampage '+(afl.ramp?(afl.rampOnce?'פעם אחת לרצף':'חוזר!'):'✗')+', בעולם '+(afl.world?'כלום':'משהו!')));
   // אירוע אחד = רגע אחד (MLBB 3.3, ה5): "Rampage!" והמדרגות של הרצף באותו מקום למעלה, כרטיס אחד בכל רגע ובלי מילה צפה מעל הגיבור.
   // הריגת אויב-על: הגיליון ko או הפוף, לא שניהם. "פחות אפקטים": בלי כרטיס. הפחתת תנועה: בלי עמוד אור
-  const om=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},fl=SAVE.fxLess,calm=SAVE.calm;
-    try{startRun();S.mode='play';enemies=[];P.hp=P.maxHp=1e9;P.next=1e9;SAVE.fxLess=false;SAVE.calm=false;S.st=null;FXLIB.ui.length=0;FXLIB.list.length=0;
+  const om=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),mode=S.mode,o={},fl=SAVE.fxLess,calm=SAVE.calm,cq=typeof CQ!=='undefined'&&CQ.on;
+    // בלי תור המרכז (centerq.js): הבאנר של startRun מחזיק את הרצף בתור, וזה תלוי בתזמון (נכשל לפעמים ב-seed 2026). לתור יש בדיקה משלו
+    if(cq)CQ.on=false;try{startRun();S.mode='play';enemies=[];P.hp=P.maxHp=1e9;P.next=1e9;SAVE.fxLess=false;SAVE.calm=false;S.st=null;FXLIB.ui.length=0;FXLIB.list.length=0;
       const cards=()=>FXLIB.ui.filter(f=>f.id===STREAK.card.fx&&f.on!==false).length,k=()=>{const e=addEnemy('grunt',P.x+80,P.y);e.hp=1;e.elite=false;kill(e)};
       const f0=floats.length,sh0=STREAK.shown||0;k();k();k();o.ramp=S.st.show&&S.st.show.key;o.c3=cards();
       o.noFloat=!floats.slice(f0).some(f=>f.txt===T('feel.rampage'));o.noWorld=!FXLIB.list.some(f=>f.id===STREAK.card.fx);
@@ -2275,7 +2276,7 @@ function worldBot(m,L,god){
       S.st=null;FXLIB.ui.length=0;k();k();k();o.lessCard=cards()===0&&S.st.show&&S.st.show.key==='feel.rampage';
       SAVE.fxLess=false;SAVE.calm=true;const pl=AF.stat.pillars;S.st=null;k();k();k();o.calmPillar=AF.stat.pillars===pl;
     }catch(err){o.err=String(err&&err.stack||err)}
-    SAVE.fxLess=fl;SAVE.calm=calm;FXLIB.ui.length=0;FXLIB.list.length=0;enemies=[];S.st=null;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+    if(cq)CQ.on=true;SAVE.fxLess=fl;SAVE.calm=calm;FXLIB.ui.length=0;FXLIB.list.length=0;enemies=[];S.st=null;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   check(!om.err&&om.ramp==='feel.rampage'&&om.c3===1&&om.noFloat&&om.noWorld&&om.step==='st.0'&&om.c10===1&&om.shows===2&&om.big===1&&om.bigLess<=1&&om.lessCard&&om.calmPillar,
     'רגע אחד לכל אירוע: '+(om.err||'Rampage למעלה '+(om.ramp==='feel.rampage'&&om.noFloat&&om.noWorld?'✓':'✗ ('+om.ramp+(om.noFloat?'':', מילה צפה')+(om.noWorld?'':', כרטיס בעולם')+')')+
     ', כרטיסים '+om.c3+'/'+om.c10+' ('+om.shows+' רגעים ב-10 הריגות), אויב-על '+(om.big===1?'רגע אחד ('+(om.koImg?'ko':'פוף')+')':om.big+' רגעים!')+
@@ -2309,7 +2310,7 @@ function worldBot(m,L,god){
   // רגע הסכנה של הבוס (arena-danger.js, MLBB 2.1): המילוי לפי השעונים האמיתיים מגיע ל-100% ברגע הפגיעה (בפריים האחרון לפניה: 1 פחות פריים),
   // באמצע לפי החשבון (גל הדף: 0.4 מתוך 1.0 ברגע שהאזהרה נגמרת), תקתוק, הבזק, חריכה עד max, ו"פחות אפקטים" בלי חריכה. המכשף במג'נטה
   const adg=await page.evaluate(()=>{const o={},mode=S.mode,fl=SAVE.fxLess,bak=JSON.stringify(SAVE);
-    try{reset();S.mode='play';enemies.length=0;S.arena='classic';SAVE.fxLess=false;P.hp=P.maxHp=1e9;
+    try{reset();S.mode='play';enemies.length=0;S.arena='classic';SAVE.fxLess=false;P.hp=P.maxHp=1e9;P.next=1e9;   // P.next: בלי עליית רמה באמצע (S.mode='level' עוצר את update, ואז אין st)
       for(const k in ARDG.stat.hitP)delete ARDG.stat.hitP[k];const n0={...ARDG.stat};ARDGS.sc.length=0;
       const b=makeBoss();b.x=P.x+200;b.y=P.y;S.boss=b;enemies.push(b);b.hp=b.max=1e12;
       const run=(k,sec)=>{b.patT=99;b.arTele=null;doPattern(b,k);let mid=null;for(let i=0;i<sec*60;i++){b.patT=99;P.hp=P.maxHp;update(1/60);const st=ARDGS.b.get(b);if(st&&mid==null&&st.ph==='after')mid=st.p}return mid};
@@ -2320,7 +2321,7 @@ function worldBot(m,L,god){
       SAVE.fxLess=true;ARDGS.sc.length=0;run('shock',2.5);o.less=ARDGS.sc.length===0;
       o.col=ARDG.col==='#FF3DD8'&&ATG.fallback.col===ARDG.col;
       // reduced motion: no flash and no tick thickening; the fill and outline stay. Measured on the drawing itself ('lighter' fills, line width)
-      SAVE.fxLess=false;const calm0=SAVE.calm;SAVE.calm=true;b.patT=99;b.arTele=null;doPattern(b,'ring');const tl=b.arTele;tl.t=tl.max*0.5;update(1/60);const st=ARDGS.b.get(b);st.tk=S.t;
+      SAVE.fxLess=false;const calm0=SAVE.calm;SAVE.calm=true;S.mode='play';S.hitstop=0;b.patT=99;b.arTele=null;doPattern(b,'ring');const tl=b.arTele;tl.t=tl.max*0.5;update(1/60);const st=ARDGS.b.get(b);st.tk=S.t;
       let lighter=0,maxW=0;const fl=ctx.fill,sk=ctx.stroke;ctx.fill=function(){if(ctx.globalCompositeOperation==='lighter')lighter++;return fl.apply(this,arguments)};ctx.stroke=function(){maxW=Math.max(maxW,ctx.lineWidth);return sk.apply(this,arguments)};
       const r3=R3D.on;R3D.on=false;   // the canvas path (2D); 3D is checked below on the scene
       try{S.cam.x=b.x;S.cam.y=b.y;ardgDrawUnder();b.ardgFl=S.t;if(!ARDGS.fl.includes(b))ARDGS.fl.push(b);ardgDrawOver()}finally{ctx.fill=fl;ctx.stroke=sk;R3D.on=r3}
@@ -2552,7 +2553,8 @@ function worldBot(m,L,god){
     m.ok=m.btn&&m.open&&m.tabs===m.want&&!m.small.length&&!m.out.length&&m.allOk&&m.xClose&&m.esc&&m.bg&&m.dot&&m.nav&&m.rail===m.railWant&&!m.railBad.length&&!m.railOpen.length&&m.setOnly&&!m.topBad.length&&m.feedTop&&!m.rankBad.length&&m.useCap;return m};
   // חלונות לרוחב (ביקורת 6.11, פריטים 1 ו-9): בחלון פתוח אף שני כפתורים, כותרות או שדות לא יושבים זה על זה, וכרטיס "חדש" (foelore.js) לא מכסה חלון.
   // חפיפה = יותר מ-4px בשני הכיוונים, ולפחות רבע מהשטח של הקטן מהשניים. אלמנט בתוך אלמנט לא נחשב
-  const winOvl=()=>{const $=id=>document.getElementById(id),o={wins:{},cover:[],open:[]};
+  // place='village': חלונות המבנים בכפר (vPanel: נפחייה, מכרה, שוק, מחסן) וחלון הנפחייה, ובועת טיפ שלא יושבת עליהם (ביקורת 9.11)
+  const winOvl=place=>{const $=id=>document.getElementById(id),o={wins:{},cover:[],open:[]};
     const vis=e=>{if(!e||e.closest('[hidden]'))return null;const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>2&&r.height>2&&cs.display!=='none'&&cs.visibility!=='hidden'&&+cs.opacity>0.05?r:null};
     const nm=e=>e.id||e.dataset.t||e.dataset.act&&(e.dataset.act+(e.dataset.q?':'+e.dataset.q:''))||(e.textContent||'').trim().slice(0,16)||e.tagName;
     const ovl=root=>{const els=[...root.querySelectorAll('button,input,select,h2,h3,h4,label,.sub>span')].map(e=>({e,r:vis(e)})).filter(x=>x.r),bad=[];
@@ -2564,6 +2566,16 @@ function worldBot(m,L,god){
     const W=[['settings',()=>$('muteBtn').click(),'ovSound',()=>$('sndClose').click()],['gear',gearOpen,'ovGear',gearClose],
       ['quests',()=>questLogOpen(true),'qLog',()=>questLogOpen(false)],['map',()=>wmapOpen(true),'wMap',()=>wmapOpen(false)],
       ['jump',()=>travelWin(true),'trWin',()=>travelWin(false)]];
+    if(place==='village'){W.length=0;const lv0=JSON.stringify(SAVE.village);
+      const bOpen=k=>()=>{SAVE.village[k]=Math.max(1,vLv(k));S.vil.ui='';S.vil.open=S.vil.near=k;villageHud()},bClose=()=>{S.vil.open=null;S.vil.ui='';villageHud()};
+      for(const k of ['forge','mine','market','stash'])if(VILLAGE.b[k])W.push(['b:'+k,bOpen(k),'vPanel',bClose]);
+      W.push(['forgeWin',forgeOpen,'ovForge',forgeClose]);
+      // בועת טיפ כשחלון מבנה פתוח: מחכה מתחת לחלון ולא יושבת על הכותרת (firsttips.js tipBusy)
+      bOpen('market')();const t0=JSON.stringify(SAVE.tips||null),off0=!!SAVE.tipsOff;SAVE.tipsOff=false;SAVE.tips={};tipClose();TIP1.q=[];
+      tipOnce('sklv',['Luna']);for(let i=0;i<3;i++)tipTick(0.25);o.tipUnder=$('tip1').hidden;
+      bClose();tipClose();TIP1.q=[];SAVE.tips=JSON.parse(t0);SAVE.tipsOff=off0;
+      if(!o.tipUnder)o.open.push('tip on market');
+      o.restore=()=>{SAVE.village=JSON.parse(lv0);S.vil.ui=''}}
     for(const [k,open,id,close] of W){open();const p=$(id);if(p.hidden){o.open.push(k);continue}
       if(window.__rkScan)__rkScan();
       const pn=p.matches('.ov')?p.querySelector('.panel,.win')||p:p;o.wins[k]=ovl(pn);
@@ -2571,7 +2583,7 @@ function worldBot(m,L,god){
         if(hid&&(!/auto|scroll/.test(cs.overflowY)||!pn.classList.contains('more')))(o.cut=o.cut||[]).push(k)}
       flCardVis();const ce=flCardEl(),c=!ce.hidden&&ce.getBoundingClientRect(),r=pn.getBoundingClientRect();if(c&&c.left<r.right&&r.left<c.right&&c.top<r.bottom&&r.top<c.bottom)o.cover.push(k);   // הכרטיס והחלון נכנסים בהדרגה (opacity), אז בודקים רק שהם לא מוסתרים
       close()}
-    FLC.q=[];flCardNext();if(S.mode!=='play'&&S.wd)S.mode='play';return o};
+    FLC.q=[];flCardNext();if(S.mode!=='play'&&S.wd)S.mode='play';if(o.restore){o.restore();delete o.restore}return o};
   let winChk=null;
   const uiMenu={};
   for(const nm in UIV){
@@ -2587,13 +2599,14 @@ function worldBot(m,L,god){
     await shot('ui-welcome-'+nm);await page.evaluate(()=>{welcomeClose();dailySave().day=dailyDay()});
     const v=await page.evaluate(uiMeasure,'village');
     const vm=await page.evaluate(menuTest,'village');
+    const winVil=nm==='land'?await page.evaluate(winOvl,'village'):null;
     if(CFG.shots){await page.evaluate(()=>$('menuBtn').click());await shot('ui-menu-'+nm);await page.evaluate(()=>menuClose())}
     await page.evaluate(()=>{leaveVillage();const g=WORLD.gates.grove;P.x=g.x;P.y=g.y+g.r+P.r+2;S.cam.x=P.x;S.cam.y=P.y});   // ליד שער לזירה: העיגול נראה (לחיצה עליו נכנסת מיד)
     await page.clock.runFor(200);
     await shot('ui-world-'+nm);
     const w=await page.evaluate(uiMeasure,'world');
     const wm=await page.evaluate(menuTest,'world');uiMenu[nm]={vm,wm};
-    if(nm==='land'){winChk=await page.evaluate(winOvl);if(CFG.shots){await page.evaluate(()=>{FLC.q=[Object.keys(FOELORE.list)[0]];flCardNext();$('muteBtn').click()});await shot('win-settings-land');
+    if(nm==='land'){winChk=await page.evaluate(winOvl);for(const k in winVil.wins)winChk.wins[k]=winVil.wins[k];for(const f of ['cover','open','cut'])if(winVil[f])winChk[f]=[...(winChk[f]||[]),...winVil[f]];if(CFG.shots){await page.evaluate(()=>{FLC.q=[Object.keys(FOELORE.list)[0]];flCardNext();$('muteBtn').click()});await shot('win-settings-land');
       await page.evaluate(()=>{$('sndClose').click();wmapOpen(true);flCardVis()});await shot('win-map-card-land');await page.evaluate(()=>{wmapOpen(false);FLC.q=[];flCardNext()})}}
     if(CFG.shots){await page.evaluate(()=>{$('menuBtn').click();$('wMapBtn').click()});await shot('ui-menu-map-'+nm);await page.evaluate(()=>menuClose())}
     await page.evaluate(()=>wHome());await page.clock.runFor(100);   // חזרה הביתה כמו במשחק: worldUi(false) ואז הכפר. בלי זה נשארת על body גם world וכפתורי הכפר מוסתרים
@@ -3552,7 +3565,9 @@ function worldBot(m,L,god){
   const fai=await page.evaluate(()=>{
     enterWorld('home');enemies=[];eb=[];const o={},h0=hurt;let hits=0;hurt=()=>{hits++};
     try{
+      const sy=P.y;P.y=WORLD.home.y+WORLD.safe.r+60;   // מחוץ לטבעת הבטוחה בשער (WORLD.safe)
       const g=addEnemy('grunt',P.x+150,P.y,1);g.home=3;g.zone='near';const d0=Math.hypot(P.x-g.x,P.y-g.y);for(let i=0;i<10;i++)wFoes(0.05);o.chase=Math.hypot(P.x-g.x,P.y-g.y)<d0-15;enemies=[];
+      P.y=sy;{const g=addEnemy('grunt',P.x+150,P.y,1);g.home=3;g.zone='near';const d0=Math.hypot(P.x-g.x,P.y-g.y);for(let i=0;i<10;i++)wFoes(0.05);o.safe=wSafe()&&Math.hypot(P.x-g.x,P.y-g.y)>=d0-15;enemies=[]}   // בתוך הטבעת: לא רודפת
       const run=(e,t)=>{for(let i=0;i<t/0.02;i++)foeAi(e,0.02,Math.hypot(P.x-e.x,P.y-e.y))};
       const mk=(type,ai,dx)=>{enemies.length=0;const e=addEnemy(type,P.x+dx,P.y,1);e.zone='far';foeAiInit(e);e.ai=ai;e.acd=0;e.caller=0;return e};
       // הסתערות: נשארים = נפגעים. זזים הצידה בזמן ההכנה = התחמקות
@@ -3573,8 +3588,8 @@ function worldBot(m,L,god){
       if(ld){const dr0=drops().length;kill(ld);foeLeaderTick();foeLeaderTick();o.pile=(p.leaders||0)===1&&drops().length>dr0}
     }finally{hurt=h0}
     enemies=[];eb=[];enterVillage();return o});
-  check(fai.chase&&fai.cWind&&fai.cEarly&&fai.cHit&&fai.cDodge&&fai.rAim&&fai.rWait&&fai.rShot&&fai.lCrouch&&fai.lHit&&fai.lDodge&&fai.flee&&fai.called&&fai.calm&&fai.leader&&fai.once&&fai.pile,
-    'אויבים עם התנהגות (foeai.js): '+(fai.chase?'קבוצה רודפת':'קבוצה לא רודפת!')+', מסתער '+(fai.cWind&&fai.cEarly?'מסמן קודם':'בלי סימון')+(fai.cHit?' ופוגע':' ולא פוגע')+(fai.cDodge?', צעד הצידה = התחמקות':', אי אפשר להתחמק')+
+  check(fai.chase&&fai.safe&&fai.cWind&&fai.cEarly&&fai.cHit&&fai.cDodge&&fai.rAim&&fai.rWait&&fai.rShot&&fai.lCrouch&&fai.lHit&&fai.lDodge&&fai.flee&&fai.called&&fai.calm&&fai.leader&&fai.once&&fai.pile,
+    'אויבים עם התנהגות (foeai.js): '+(fai.chase?'קבוצה רודפת':'קבוצה לא רודפת!')+(fai.safe?', לא בטבעת השער':', רודפת לתוך טבעת השער!')+', מסתער '+(fai.cWind&&fai.cEarly?'מסמן קודם':'בלי סימון')+(fai.cHit?' ופוגע':' ולא פוגע')+(fai.cDodge?', צעד הצידה = התחמקות':', אי אפשר להתחמק')+
     ', יורה '+(fai.rAim&&fai.rWait?'עם קו':'בלי קו')+(fai.rShot?' ויורה':' ולא יורה')+', קופץ '+(fai.lCrouch?'עם עיגול':'בלי עיגול')+(fai.lHit?' ונוחת עליך':' ולא פוגע')+(fai.lDodge?', זזת = התחמקת':', אי אפשר להתחמק')+
     ', קורא '+(fai.flee?'בורח':'לא בורח')+(fai.called?' ומביא חברים':' ולא מביא')+(fai.calm?', ליד השער רגוע':', ליד השער לא רגוע')+(fai.leader?', מנהיג מגיע בשיא':', אין מנהיג')+(fai.once?'':' (יותר מאחד!)')+(fai.pile?' ומשאיר ערימה':' בלי ערימה'));
   // מפלצות שנלחמות (6.11, foeai.js): לכל סוג אויב בעולם תפקיד, ובקבוצה של 5 לכל היותר 3 תוקפות בו זמנית, והשאר מקיפות ומתחלפות
@@ -4856,6 +4871,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       out[c]={share:Math.round(m/Math.max(1,w)*100),all:tiers.size===GEAR.tiers.length,pity:A.includes(p.w)&&SAVE.clsPity===0,up:t20>t1*1.5}}}catch(e){out.err=e.message}
     SAVE.hero=JSON.parse(bak);SAVE.clsPity=cp;return out});
   await page.evaluate(()=>window.__rkScan&&__rkScan()).catch(()=>{});const rawKeys=await page.evaluate(()=>(window.__rk||{hits:[]}).hits).catch(()=>['(לא נקרא)']);   // מפתחות גולמיים: נבדק בסוף הדוח
+  // שמירה ישנה: משאב ששמו השתנה (RES.renamed, ore→iron) עובר גם במה שמחכה באיסוף במבנה (SAVE.prod), ולא נאסף לתרמיל כמשאב שלא מופיע בשום מקום (ביקורת 9.11)
+  const rmOk=await page.evaluate(()=>{const sv={bag:{ore:2,iron:1},stash:{ore:3},prod:{mine:{t:1,have:{ore:12.4,stone:1}},x:{t:1}}};resMigrate(sv);
+     return sv.bag.iron===3&&!('ore' in sv.bag)&&sv.stash.iron===3&&!('ore' in sv.stash)&&Math.abs(sv.prod.mine.have.iron-12.4)<1e-9&&!('ore' in sv.prod.mine.have)&&sv.prod.mine.have.stone===1});
   await browser.close();
 
   const t=s=>s==null?'-':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
@@ -5218,6 +5236,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
      check(Object.keys(ks).every(k=>V[k]),'משחקי השאול: ראייה ושיחים: '+Object.keys(ks).map(k=>ks[k]+(V[k]?' ✓':' ✗')).join(', '))}
     if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');
   }
+  check(rmOk,'שמירה ישנה: עפרה (ore) עוברת לברזל בתרמיל, במחסן ובאיסוף של המכרה'+(rmOk?'':' ✗'));
   // מפתחות גולמיים על המסך, בכל מה שהבוט עבר (נסרק כל כמה צעדים, בכל צילום ובכל חלון של winOvl)
   {const rk=rawKeys;check(!rk.length,rk.length?'מפתח טקסט גולמי על המסך: '+rk.slice(0,8).join(', '):'אין מפתח טקסט גולמי על המסך (DOM וקנבס)')}
   if(winChk){const w=winChk,bad=Object.entries(w.wins).filter(([k,v])=>v.length);

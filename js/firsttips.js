@@ -61,6 +61,7 @@ function tipBusy(){
   if(!S||S.mode!=='play'||!(S.vil||S.wd))return true;
   if(S.wd&&typeof msgFight==='function'&&msgFight()){TIP1.stat.fight=(TIP1.stat.fight||0)+1;return true}   // באמצע קרב: הטיפ מחכה לסוף (ניר 8.11, docs/combat-feel-2026-11-08.md פרק 3)
   if([...document.querySelectorAll('.ov')].some(o=>!o.hidden))return true;
+  if(tipVis(document.getElementById('vPanel'))||tipVis(document.getElementById('wPanel')))return true;   // חלון של מבנה בכפר (נפחייה, שוק, מכרה, מחסן) או של שער בעולם: הבועה לא יושבת על הכותרת והלשוניות
   if(typeof flCardOn==='function'&&flCardOn())return true;
   if(typeof nemCardOn==='function'&&nemCardOn())return true;
   if(typeof MUT!=='undefined'&&MUT.bar)return true;
