@@ -66,7 +66,9 @@ const CHARS={
   // הדף מורכב משני דפים של ג'מיני: מלפנים ומאחור מהראשון (חד), ומהצד מהשני (בראשון היו פנים כפולות), מוגדל לאותו גובה והפוך כך שיפנה ימינה
   orelHero:{src:path.join(ROOT,'art/heroes/OrelHeroHF.glb'),keep:['OrelHero_'],tex:512,fmt:'jpeg'},
   // ניסוי tankX (ARI, 9.11.2026, art/tankx): הטנק של אוראל (Tripo) על שלד Rig_Medium. מפתח חדש, לא מחליף כלום. עיבוד: tools/tankx/. טקסטורה 512
-  tankX:{src:path.join(ROOT,'art/heroes/TankX.glb'),keep:['Barbarian_'],tex:512,fmt:'jpeg'}
+  tankX:{src:path.join(ROOT,'art/heroes/TankX.glb'),keep:['Barbarian_'],tex:512,fmt:'jpeg'},
+  // ניסוי wandererX (ARI, 9.11.2026): הנודד של אוראל (Tripo) על שלד Rig_Medium, tools/tankx/autoskin.js. טקסטורה 512
+  wandererX:{src:path.join(ROOT,'art/heroes/WandererX.glb'),keep:['Barbarian_'],tex:512,fmt:'jpeg'}
 };
 // חפצים שנאחזים ביד של אויב (המיקום ביד מוגדר ב-render3d.js)
 const PROPS={
@@ -202,7 +204,9 @@ const ITEMS={
   shield3:  {src:raw('shield3'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},   // יצא כבר כמו KayKit: הפנים ב-xy
   shield4:  {src:raw('shield4'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},
   // פטיש הטנק החדש (tankX): ready, גריפ בראשית וידית על y, טקסטורה 512 jpeg
-  tankXHammer:{src:raw('tankXHammer'),ready:true,tex:512,fmt:'jpeg'}
+  tankXHammer:{src:raw('tankXHammer'),ready:true,tex:512,fmt:'jpeg'},
+  // מטה הנודד (wandererX): ready, גריפ בראשית וידית על y
+  wandererXStaff:{src:raw('wandererXStaff'),ready:true,tex:512,fmt:'jpeg'}
 };
 /* כובעים (ניר, 6.11.2026: "הגרפיקה של הכובע חייבת שיפור"). הכובעים האמיתיים של KayKit, כחלק נפרד בלי שלד, במרחב של עצם הראש,
    כדי שאפשר לחבר כל כובע לכל דמות (armor3d ב-js/armor.js). השם במשחק: hat_<שם>.

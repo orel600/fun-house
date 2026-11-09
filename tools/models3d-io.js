@@ -6,7 +6,7 @@
 const fs=require('fs'),path=require('path');
 const ROOT=path.join(__dirname,'..'),CORE=path.join(ROOT,'js/models3d.js'),DIR=path.join(ROOT,'js/m3d');
 // בחוץ: מפלצות הזירה והענקים (mon_ ואנימציות שלהן), חפצים עם מודל משלהם, הדמויות האישיות, חיות המחמד, ושלבי הכפר (vx_, נטענים בכניסה לכפר)
-const LAZY=k=>/^(mon_|anim_mon_|w_item_|vx_)/.test(k)||['pilotHero','nirHero','orelHero','piocho1','piocho2','piocho3','parosh1','tankX'].includes(k);
+const LAZY=k=>/^(mon_|anim_mon_|w_item_|vx_)/.test(k)||['pilotHero','nirHero','orelHero','piocho1','piocho2','piocho3','parosh1','tankX','wandererX'].includes(k);
 const KEY='const MODELS3D=';
 // כל המודלים, כאילו הם עדיין קובץ אחד: <ראש>const MODELS3D={...};
 function src(){
