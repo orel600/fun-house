@@ -226,7 +226,7 @@ function wNodes(FS,pre){
   (FS||R.fields).forEach((F,fi)=>{const K=wKind(F.kind);
     for(let i=0,tries=0;i<F.n&&tries<F.n*12;tries++){
       const [x,y]=gSpot(F,fi,tries,K);   // בחורשות קטנות בתוך השדה (gather.js)
-      if(tBlocked(x,y)||tBlocked(x+K.r,y)||tBlocked(x-K.r,y)||out.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||had.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||block.some(g=>Math.hypot(g.x-x,g.y-y)<g.r+WORLD.arrive)||wet.some(p=>Math.hypot(p.x-x,p.y-y)<p.r+K.r))continue;
+      if(tBlocked(x,y)||tBlocked(x+K.r,y)||K.shape==='tree'&&tNearForest(x,y,K.r+TERRAIN.forest.clear)||tBlocked(x-K.r,y)||out.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||had.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||block.some(g=>Math.hypot(g.x-x,g.y-y)<g.r+WORLD.arrive)||wet.some(p=>Math.hypot(p.x-x,p.y-y)<p.r+K.r))continue;
       out.push({node:true,id:(pre||'')+fi+'_'+i,kind:F.kind,x,y,r:K.r,hp:K.hp,max:K.hp,mult:multOf(K.tags),flash:0,back:0,regrow:F.regrow||WORLD.regrow});i++}});
   return out;
 }
