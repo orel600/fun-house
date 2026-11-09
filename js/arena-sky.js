@@ -2,13 +2,14 @@
    המצלמה בזירה מסתכלת מלמעלה בזווית ולא רואה את האופק, והרצפה (R3D.ground עם הצבע של arena-look.js) מילאה כל פיקסל,
    גם מעבר לשפת העץ. לכן: מעבר לשפה הרצפה לא מצוירת (aSky בצבע של arena-look.js), ומאחוריה מלבן שמיים צמוד למצלמה,
    כך שהזירה נראית כמו במה שמרחפת בשמיים המצוירים. הרצפה שמשחקים עליה, השפה, הלפידים והתאורה לא משתנים.
-   תמונה לכל פלטה (ARENA_SKY.map, הנתונים ב-arena-sky-data.js). זירת הבוסים: בלי תמונה, הצבע השטוח כמו קודם.
+   תמונה לכל פלטה (ARENA_SKY.map, הנתונים ב-backdrop-data.js של ARI). זירת הבוסים: בלי תמונה, הצבע השטוח כמו קודם.
    כבוי ב"פחות אפקטים" ובהפחתת תנועה (הצבע השטוח), ותמיד מחוץ לזירה: לא בשאול, לא בעולם, לא בכפר ולא בחדר הבונוס.
    מתג אחד: ARENA_SKY.on, או ?sky=off בכתובת. אם זה לא נראה טוב: חלופה (b) ב-PR, רצועת רקע מאחורי הקיר הצפוני.
    חיבור: עוטף את aLookColors (arena-look.js), שנקרא מ-render3d.js בכל פריים אחרי צבע הרקע */
 const ARENA_SKY={
   on:!/[?&]sky=off\b/.test(location.search),
   map:{classic:'classic',waves:'waves',maze:'dimension'},   // פלטה (S.arena) → תמונה. בלי שורה: הצבע השטוח
+  dim:{dimension:0.52},   // תמונה בהירה מדי מוכפלת (ARI מדד: dimension בערך פי 2.5 מהשתיים האחרות)
   edge:1050,     // מאיזה רדיוס בזירה לא מציירים רצפה (שפת העץ נגמרת ב-1030, arena-look.js border.planks)
   stat:{shown:0}
 };
@@ -16,8 +17,8 @@ const ASKY={tex:{},quad:null,cur:null};
 // התמונה של הפלטה, נטענת פעם אחת (מ-data URI, ולכן עובד גם ב-file://)
 function askyTex(n){
   if(ASKY.tex[n])return ASKY.tex[n];
-  if(typeof ARENA_SKY_DATA==='undefined'||!ARENA_SKY_DATA[n])return null;
-  const t=new THREE.TextureLoader().load(ARENA_SKY_DATA[n]);if('colorSpace' in t)t.colorSpace=THREE.SRGBColorSpace;
+  if(typeof BACKDROP==='undefined'||!BACKDROP[n])return null;
+  const t=new THREE.TextureLoader().load(BACKDROP[n]);if('colorSpace' in t)t.colorSpace=THREE.SRGBColorSpace;
   return ASKY.tex[n]=t;
 }
 function askyQuad(){
@@ -40,7 +41,7 @@ function askySync(){
   if(u&&u.aSky)u.aSky.value=ok?ARENA_SKY.edge:0;
   if(!ok){if(ASKY.quad)ASKY.quad.visible=false;ASKY.cur=null;return}
   const q=askyQuad(),c=R3D.cam,w=c.right-c.left,h=c.top-c.bottom,iw=t.image.width,ih=t.image.height,k=Math.max(w/iw,h/ih);
-  if(q.material.map!==t){q.material.map=t;q.material.needsUpdate=true}
+  if(q.material.map!==t){q.material.map=t;q.material.color.setScalar(ARENA_SKY.dim[n]||1);q.material.needsUpdate=true}
   q.scale.set(iw*k,ih*k,1);q.position.set(0,0,-(c.far*0.98));q.visible=true;
   if(ASKY.cur!==n){ASKY.cur=n;ARENA_SKY.stat.shown++}
 }
