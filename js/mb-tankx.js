@@ -24,7 +24,12 @@ const MBTANKX={
   ground:1,
   // בלי ריחוף באנימציות האלה (tankxClamp): במוות הגוף עלה 28 יחידות באוויר באמצע הנפילה (הטנק הישן 3.6), כי גוף ארוך מסתובב סביב ירכיים גבוהות.
   // clampTo: כמה מעל הרצפה מותר, ביחידות של המודל (0.04 = כ-3.5 יחידות במשחק, כמו הקפיצה הקטנה של הטנק הישן)
-  clamp:{Death_A:true},clampTo:0.04,
+  // ריצה (QUINN, 9.11): בפריים הנמוך הקרסול ירד 4.7 יחידות מתחת לגובה העמידה (הטנק הישן 0.6). lo: כמה מתחת לרצפה מותר, ואם יותר, הירכיים עולות רק בפריימים האלה
+  // hi: כמה מעל הרצפה מותר (0.04 = כ-3.5 יחידות במשחק), ואם יותר, הירכיים יורדות. ביחידות של המודל (0.01 = כ-1 יחידה במשחק)
+  clamp:{Death_A:{hi:0.04},Running_B:{lo:0.004}},
+  // הפטיש בין תנוחות (QUINN, 9.11: הגודל קפץ בין עמידה לריצה, ופעם בתקיפה רצופה): מעבר רך בזמן blend (שניות, קבוע זמן; 95% אחרי פי 3),
+  // ואחרי תקיפה הפטיש נשאר בתנוחת התקיפה hold שניות, כדי שבקרב רצוף (תקיפה כל שנייה) הוא לא יקפוץ בין תקיפה לעמידה
+  carryBlend:0.05,carryHold:1.2,
   // אוראל דחה את המראה (9.11: "ג'לי"). המספרים של ARI, נמדדו במשחק (art/tankx-look): הצבע כבר בגוף (אטלס צבע לכל משולש, אובסידיאן וזהב), אז החומר לא נוגע בו.
   // emK/emMax 0: בלי זוהר קבוע. rimK 0: קו האור בשוליים צבע את כל הגוף, כי מהמצלמה של המשחק (מלמעלה) רוב המשטחים בזווית. ההבהוב בפגיעה נשאר (txF בחומר)
   look:{gain:1,lift:0,rim:'#FF9A50',rimK:0,rimP:2.5,emK:0,emMax:0},
@@ -88,7 +93,7 @@ function tankxComp(c,f){
 }
 // בלי ריחוף באנימציה (clamp): בכל פריים של הירכיים מודדים את הנקודה הנמוכה של הגוף (אחרי ההורדה לרצפה, ground),
 // ואם היא מעל הרצפה ביותר מ-clampTo, הירכיים יורדות בדיוק בהפרש. רק מורידים, לא מרימים. רק ציור, פעם אחת לכל אנימציה
-function tankxClamp(c){
+function tankxClamp(c,C){
   const X=MBTANKX,tr=c.tracks.find(q=>q.name==='hips.position');if(!tr)return c;
   const r=THREE.SkeletonUtils.clone(R3D.tmpl[X.model]);r.scale.setScalar(1);
   const mx=new THREE.AnimationMixer(r),ac=mx.clipAction(c);ac.setLoop(THREE.LoopOnce,1);ac.clampWhenFinished=true;ac.play();
@@ -96,10 +101,10 @@ function tankxClamp(c){
   const v=new THREE.Vector3(),a=new THREE.Vector3(),b=new THREE.Vector3(),inv=new THREE.Matrix4(),q=tr.clone(),g=(X._lo||0)*(X.ground||0);let n=0,top=0;
   for(let i=0;i<tr.times.length;i++){ac.time=tr.times[i];mx.update(0);r.updateMatrixWorld(true);
     let lo=1e9;for(const m of sk){const pa=m.geometry.attributes.position;for(let j=0;j<pa.count;j+=4){v.fromBufferAttribute(pa,j);m.applyBoneTransform(j,v);v.applyMatrix4(m.matrixWorld);if(v.y<lo)lo=v.y}}
-    const d=lo-g-X.clampTo;if(d<=0)continue;top=Math.max(top,d);n++;
+    const y=lo-g;let d=0;if(C.hi!=null&&y>C.hi)d=y-C.hi;else if(C.lo!=null&&y<-C.lo)d=y+C.lo;if(!d)continue;top=Math.max(top,Math.abs(d));n++;   // d>0: יורד, d<0: עולה
     inv.copy(hips.parent.matrixWorld).invert();a.set(0,0,0).applyMatrix4(inv);b.set(0,-d,0).applyMatrix4(inv);   // ירידה בעולם, ביחידות של ההורה של הירכיים
     q.values[i*3]+=b.x-a.x;q.values[i*3+1]+=b.y-a.y;q.values[i*3+2]+=b.z-a.z}
-  mx.stopAllAction();X.stat.clamp={clip:c.name,keys:n,of:tr.times.length,top:+top.toFixed(4)};
+  mx.stopAllAction();(X.stat.clamp||(X.stat.clamp={}))[c.name.split('@')[0]]={keys:n,of:tr.times.length,top:+top.toFixed(4)};
   return n?new THREE.AnimationClip(c.name,c.duration,c.tracks.map(x=>x===tr?q:x)):c;
 }
 // מהירות: אותה אנימציה בזמן קצר יותר (k>1) או ארוך יותר, כך שכל מי שמנגן אותה (גם עם timeScale משלו) מקבל את המהירות החדשה
@@ -110,22 +115,27 @@ function tankxClip(name){
   if(name in X._c)return X._c[name];
   X.stat.clips++;const nm=name.split('@')[0];
   let k=typeof X.comp==='function'?X.comp(c,R3D.tmpl[X.model],R3D.tmpl[X.ref]):tankxComp(c,f);
-  if(X.clamp&&X.clamp[nm])k=tankxClamp(k);
   // ריצה: צעד קטן יותר (ARI, RETARGET.dampen): לגוף הזה רגליים ארוכות ביחס לגובה, ובאותן זוויות הרגל עפה רחוק ומחליקה. רק לאנימציות שבטבלה TANKX.gait
   const G=X.gait&&typeof TANKX!=='undefined'&&TANKX.gait&&TANKX.gait[nm];
   if(G&&typeof RETARGET!=='undefined'){if(!X._rq){X._rq={};R3D.tmpl[X.model].traverse(o=>{if(o.isBone)X._rq[o.name]=o.quaternion.toArray()})}k=RETARGET.dampen(k,X._rq,G.k,G.bones);X.stat.gait++}
+  if(X.clamp&&X.clamp[nm])k=tankxClamp(k,X.clamp[nm]);   // אחרי הצעד המוקטן, כי הוא משנה את הסיבובים
   const sp=X.speed&&X.speed[nm];if(sp&&sp!==1)k=tankxFast(k,sp);
   return X._c[name]=k;
 }
 // סוג האנימציה בשביל הפטיש: אנימציה חד-פעמית (תקיפה, פגיעה, מוות, הופעה) גוברת, ואז הבסיס. רק Idle_* ו-Running/Walking מקבלים תנוחה משלהם
 const tankxFam=(one,base)=>{const n=(one||base||'').split('@')[0];return /^Idle_/.test(n)?'idle':/^(Running|Walking)_/.test(n)?'run':'attack'};
 // תנוחת הפטיש לפי מה שמנגן עכשיו. בבוט החפץ נקרא hammer, אצלך sword (כדי שיוצג כשהנשק ביד הוא תקיפה מקרוב)
-function tankxCarry(a){
-  const C=MBTANKX.carry,m=a.props&&(a.props.hammer||a.L.tx&&a.props.sword);if(!C||!m)return;
+// dt: בלולאת המשחק בלבד. בלי dt (בדיקה, צילום) התנוחה מתחלפת מיד, כמו קודם. a.fam: מה שמנגן באמת, a.cfam: התנוחה שהפטיש הולך אליה
+const MBTX_V=new THREE.Vector3(),MBTX_Q=new THREE.Quaternion();
+function tankxCarry(a,dt){
+  const X=MBTANKX,C=X.carry,m=a.props&&(a.props.hammer||a.L.tx&&a.props.sword);if(!C||!m)return;
   const one=a.one&&a.one.isRunning()?a.one.getClip().name:'';
-  const fam=tankxFam(one,a.base),p=C[fam]||C.attack;a.fam=fam;
-  if(!p||a.carry===p)return;a.carry=p;
-  if(p.pos)m.position.fromArray(p.pos);if(p.rot)m.quaternion.fromArray(p.rot);m.scale.setScalar((p.s||1)*(MBTANKX.hammer.s||1));   // p.s: גודל לתנוחה (carry), כפול הגודל הכללי
+  let fam=tankxFam(one,a.base);a.fam=fam;a.txT=(a.txT||0)+(dt||0);
+  if(fam==='attack')a.txAtk=a.txT;else if(dt&&a.txAtk!=null&&a.txT-a.txAtk<X.carryHold)fam='attack';
+  const p=C[fam]||C.attack;if(!p)return;a.cfam=fam;
+  const ts=(p.s||1)*(X.hammer.s||1),k=dt&&X.carryBlend>0&&a.carry?1-Math.exp(-dt/X.carryBlend):1;a.carry=p;   // p.s: גודל לתנוחה, כפול הגודל הכללי
+  if(k>=1){if(p.pos)m.position.fromArray(p.pos);if(p.rot)m.quaternion.fromArray(p.rot);m.scale.setScalar(ts);return}
+  if(p.pos)m.position.lerp(MBTX_V.fromArray(p.pos),k);if(p.rot)m.quaternion.slerp(MBTX_Q.fromArray(p.rot),k);m.scale.setScalar(m.scale.x+(ts-m.scale.x)*k);
 }
 // החומר: הבהרה, קו אור בשוליים, זוהר הסדקים עד התקרה, והבהוב פגיעה אחיד (המפה של הזוהר לא מכפילה אותו)
 const MBTX_U={txGain:{value:1},txLift:{value:0},txRim:{value:new THREE.Color()},txRimK:{value:0},txRimP:{value:2},txEmK:{value:1},txEmMax:{value:1.2}};
@@ -176,7 +186,7 @@ function tankxPlayer(H){
       if(a&&L&&a.key!==lookKey(L)&&!a.dieT){const pv=a.prev;freeActor(a);R3D.actors.delete(e);MBTANKX.stat.rebuilt++;
         const n=makeActor(L);n.root.scale.setScalar(L.h/COSB()/R3D.tmpl[L.model].userData.h);n.sc0=n.root.scale.x;n.prev=pv;R3D.actors.set(e,n)}}
     const r=bu.apply(this,arguments);
-    if(isTank(e)){const a=R3D.actors.get(e);if(a&&a.L&&a.L.tx){if(!a.txSeen){a.txSeen=1;MBTANKX.stat.actors++}tankxCarry(a);tankxDiag(a)}}
+    if(isTank(e)){const a=R3D.actors.get(e);if(a&&a.L&&a.L.tx){if(!a.txSeen){a.txSeen=1;MBTANKX.stat.actors++}tankxCarry(a,dt);tankxDiag(a)}}
     return r};
-  const bp=syncPlayer;syncPlayer=function(){if(MBTANKX.on)tankxUniforms();const r=bp.apply(this,arguments),a=R3D.player;if(a&&a.L&&a.L.tx){tankxCarry(a);tankxDiag(a)}return r};
+  const bp=syncPlayer;syncPlayer=function(){if(MBTANKX.on)tankxUniforms();const r=bp.apply(this,arguments),a=R3D.player;if(a&&a.L&&a.L.tx){tankxCarry(a,arguments[0]);tankxDiag(a)}return r};
 })();
