@@ -2083,6 +2083,13 @@ Object.assign(TEXT,{
   'book.arena':{he:'בזירה',en:'In the arena'},
   'book.grpN':{he:(n,m)=>n+' מתוך '+m,en:(n,m)=>n+' of '+m},
   'jc.immune':{he:'חסין',en:'Immune'},
+  // שדרוג שמרגישים (upfeel.js): מדרגות Aging לנשק
+  'uf.p.heavy':{en:'Heavy Hit'},'uf.d.heavy':{en:'every 5th hit deals double'},
+  'uf.p.splash':{en:'Splash'},'uf.d.splash':{en:'each hit also strikes a nearby foe for half'},
+  'uf.p.shock':{en:'Shockwave'},'uf.d.shock':{en:'heavy hits strike every foe around the target'},
+  'uf.p.fury':{en:'Fury'},'uf.d.fury':{en:'a heavy hit every 3rd blow, even harder'},
+  'uf.got':{en:n=>'New weapon power: '+n},
+  'uf.next':{en:(k,n,d)=>k+' more to '+n+': '+d},
   'jc.tip':{he:(d,b)=>d+' חלש כאן. נסו '+b,en:(d,b)=>d+' is weak here. Try '+b},
   'jc.tipN':{he:(n,d,b)=>n+' עמיד ל'+d+'. נסו '+b,en:(n,d,b)=>'The '+n+' resists '+d+'. Try '+b},
   'tr.no.fight':{he:'אי אפשר לקפוץ באמצע קרב',en:'Can’t jump in the middle of a fight'},
