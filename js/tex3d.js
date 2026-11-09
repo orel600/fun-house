@@ -16,7 +16,7 @@ const TEX3D={
   cellsN:{'0,0':5,'0,1':7,'0,2':4},
   // חריגים לפי מודל: הסוכך של השוק והדגל הם בד ולא רעפים, הגזע של עצי הכפר הוא קליפה ולא קרשים, והגבעה היא סלע
   over:{v_market:{'0,3':6},v_flag:{'0,3':6},v_treeA:{'6,0':7},v_treeB:{'6,0':7},v_hills:{'2,1':4}},
-  ao:['v_castle','v_forge','v_mill','v_mine','v_market','v_gate','v_site','v_tent'],   // מי מקבל צל בתחתית (המבנים)
+  ao:['v_castle','v_forge','v_mill','v_mine','v_market','v_gate','v_site','v_tent','vx_ruin','vx_stageA','vx_stageB','vx_stageC','vx_towerB'],   // מי מקבל צל בתחתית (המבנים)
   colors:{'#7a5532':2,'#5a3d24':2,'#b9bfc9':1,'#868d99':1,'#b24a32':3},   // חפצים בלי תמונה (PROPS3D.col): צבע -> סוג
   size:[0,56,30,30,64,38,20,24],   // כמה פיקסלים של העולם אריח אחד מכסה, לכל סוג. גדול יותר = אבנים/קרשים גדולים יותר
   strength:[0,0.85,0.7,0.7,0.75,0.6,0.35,0.6],   // כמה חזקה הדוגמה לכל סוג (0: בלי, 1: מלא)
@@ -106,8 +106,10 @@ const TEX3D={
 
   // מסמנים את החומרים של כל מודלי הכפר והטבע (v_, n_) פעם אחת, אחרי שהמודלים נטענו ולפני שהכפר נבנה
   let done=false;
-  function mark(){
-    for(const k in R3D.props){if(!/^[vn]_/.test(k))continue;const t=R3D.props[k],ao=TEX3D.ao.includes(k),kinds=kindsOf(k[0]==='n'?1:0,TEX3D.over[k]);
+  function mark(){for(const k in R3D.props)markOne(k)}
+  // מודל אחד. גם למודל שמגיע אחר כך (vx_, שלבי הכפר שנטענים בכניסה לכפר, m3dDecode ב-m3d.js)
+  function markOne(k){
+    {if(!/^(v|n|vx)_/.test(k))return;const t=R3D.props[k],ao=TEX3D.ao.includes(k),kinds=kindsOf(k[0]==='n'?1:0,TEX3D.over[k]);
       const all=new THREE.Box3().setFromObject(t),H=all.max.y-all.min.y||1;t.updateMatrixWorld(true);
       t.traverse(o=>{if(!o.isMesh||!o.material.isMeshLambertMaterial)return;const m=o.material,u=m.userData;
         if(!m.map){const c='#'+m.color.getHexString();if(!TEX3D.colors[c])return;u.txK=TEX3D.colors[c]}   // בנוי בקוד (קקטוס, קני סוף): רק לפי הצבע
@@ -119,6 +121,7 @@ const TEX3D={
           u.txAo=w.min.y-all.min.y<H*0.1?1:0;u.txY0=b.min.y;u.txH=H*(b.max.y-b.min.y||1)/(w.max.y-w.min.y||1)}
         m.needsUpdate=true})}
   }
+  window.tx3dMark=k=>{if(done)markOne(k)};
   // חפצים מצורות פשוטות (props3d.js): הגדר והעמודים מעץ, האבן. לפי הצבע
   const pm=window.p3Mat;
   if(typeof pm==='function')window.p3Mat=function(c,glow){const m=pm(c,glow),k=!glow&&TEX3D.colors[String(c).toLowerCase()];if(k&&!m.userData.tx){m.userData.tx=1;m.userData.txK=k;m.needsUpdate=true}return m};

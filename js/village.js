@@ -15,8 +15,9 @@ const VILLAGE={
   gate:{x:0,y:700,r:44},
   /* איך מבנה נראה לפי רמה, כדי שכל שדרוג ייראה (ניר: "שידרגתי בניין בכפר גם צריך להיות אפקט").
      look: רצועות רמה. at: מאיזו רמה. model: איזה מודל (השמות ב-VIL3D.models). scale: גודל. deco: קישוטים סביב (VIL3D.deco). glow: זוהר.
-     בתוך רצועה המבנה גדל עוד grow בכל רמה, ובכל שדרוג יש חגיגה (celebrate ב-fx.js) */
-  grow:0.05,
+     בתוך רצועה המבנה גדל עוד grow בכל רמה, ובכל שדרוג יש חגיגה (celebrate ב-fx.js).
+     הכפר גדל איתך (ניר, 9.11.2026, docs/concept-village-growth.md): רצועה לכל רמה, ורמה 1 ענייה באמת (אוהל, חורבה, ערימה) */
+  grow:0.02,
   // cost[L]: מה עולה להגיע לרמה L. make: ייצור בשעה לפי רמה. cap: כמה נאגר לכל משאב עד שאוספים. המשאבים עצמם ב-RES (resources.js)
   // ברמות גבוהות מבנים צריכים מתכות טובות יותר וחומרים מיצורים, כדי שלכל משאב יהיה שימוש
   /* הרובעים (ניר, 2.11): מרכז למעלה (ראש הכפר ועמודי הפנסים, הכיכר מתחתיו), מלאכה במערב (נפחייה, מנסרה, מכרה),
@@ -24,24 +25,24 @@ const VILLAGE={
      מבנה חדש: מקום פנוי ברובע שלו, לפחות 200 פיקסלים ממבנה אחר, ולא על הדרך מהשער לכיכר (x בין -60 ל-60) */
   b:{
     center:{x:0,y:-330,r:92,
-      look:[{at:1,model:'castle',scale:0.85,deco:[]},{at:3,model:'castle',scale:1,deco:['flag','flag']},{at:5,model:'castle',scale:1.1,deco:['flag','flag','flag','flag'],glow:C.gold}],
+      look:[{at:1,model:'ruin',scale:1,deco:['tent','barrel']},{at:2,model:'stageB',scale:1,deco:['lumber','stone','wbarrow']},{at:3,model:'stageC',scale:1,deco:['flag','lumber','fenceW']},{at:4,model:'castle',scale:0.9,deco:['flag','flag']},{at:5,model:'castle',scale:1.1,deco:['towerB','towerB','flag','flag'],glow:C.gold}],   // שיקום (ניר, 9.11): חורבה, שלד, קירות, טירה
       cost:[null,null,{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50,copper:10,cloth:5},{coins:180,wood:120,stone:100,iron:20,cloth:15},{coins:350,wood:220,stone:200,silver:15,gold:5,horn:1,star:1}]},
     forge:{x:-450,y:-230,r:66,     // נפחייה: כל רמה פותחת עוד שכבת ציוד ליצירה (GEAR.recipes ב-gear.js), ו-Aging לציוד (aging.js) עד ה-+ של הרמה
-      look:[{at:1,model:'tent',scale:1,deco:['barrel']},{at:3,model:'forge',scale:1,deco:['crate','barrel']},{at:5,model:'forge',scale:1.12,deco:['flag','flag','crate','barrel'],glow:C.ember}],
+      look:[{at:1,model:'tent',scale:1,deco:['barrel']},{at:2,model:'tent',scale:1,deco:['rack','bucket','crateS']},{at:3,model:'forge',scale:0.9,deco:['crate','barrel']},{at:4,model:'forge',scale:1,deco:['rack','fenceS','barrel']},{at:5,model:'forge',scale:1.12,deco:['flag','flag','rack','crate'],glow:C.ember}],
       cost:[null,{coins:20,wood:15,stone:10},{coins:50,wood:35,stone:25,copper:8},{coins:110,wood:70,stone:60,iron:15,bone:10},{coins:220,wood:140,stone:120,silver:12,hide:15},{coins:400,wood:250,stone:220,gold:10,essence:15,rubyF:1}]},
     mill:{x:-560,y:80,r:66,
-      look:[{at:1,model:'mill',scale:0.85,deco:[]},{at:3,model:'mill',scale:1,deco:['crate']},{at:5,model:'mill',scale:1.12,deco:['flag','flag','crate'],glow:C.gold}],
+      look:[{at:1,model:'pile',scale:1,deco:['pallet','ladder']},{at:2,model:'stageA',scale:1,deco:['wbarrow','lumber']},{at:3,model:'mill',scale:0.95,deco:['crate']},{at:4,model:'mill',scale:1.05,deco:['wbarrow','crate','fenceW']},{at:5,model:'mill',scale:1.12,deco:['flag','flag','crate','wbarrow'],glow:C.gold}],
       cost:[null,{coins:10,stone:5},{coins:30,wood:15,stone:20},{coins:70,wood:30,stone:50,copper:5},{coins:140,wood:60,stone:100,iron:10},{coins:260,wood:120,stone:180,silver:8,aquaF:1}],
       make:{wood:[0,30,50,80,120,180],cloth:[0,0,0,4,8,12]},cap:[0,60,120,200,320,500]},   // מרמה 3 גם אורגת בד
     mine:{x:-380,y:350,r:66,
-      look:[{at:1,model:'mine',scale:0.85,deco:[]},{at:3,model:'mine',scale:1,deco:['barrel']},{at:5,model:'mine',scale:1.12,deco:['flag','flag','barrel'],glow:C.gold}],
+      look:[{at:1,model:'boulder',scale:1,deco:['ladder','bucket']},{at:2,model:'boulder',scale:1.05,deco:['tent','wbarrow','ladder']},{at:3,model:'mine',scale:0.95,deco:['barrel']},{at:4,model:'mine',scale:1.05,deco:['stone','wbarrow','fenceS']},{at:5,model:'mine',scale:1.12,deco:['flag','flag','barrel','stone'],glow:C.gold}],
       cost:[null,{coins:10,wood:10},{coins:30,wood:25,stone:10},{coins:70,wood:55,stone:25,copper:8},{coins:140,wood:110,stone:50,iron:12},{coins:260,wood:200,stone:90,silver:10,amber:1}],
       // מכרה עמוק יותר, מתכת טובה יותר: נחושת מההתחלה, ברזל מרמה 2, כסף מ-4, זהב ב-5
       make:{stone:[0,20,35,55,80,120],copper:[0,4,6,8,10,12],iron:[0,0,3,6,9,12],silver:[0,0,0,0,2,4],gold:[0,0,0,0,0,1.5]},cap:[0,40,80,140,220,350]},
     market:{x:450,y:-230,r:66,     // המחירים והכמות בכל לחיצה ב-RES (resources.js). כל רמה נוספת: bonus יותר טוב, ועוד נדירות שאפשר לקנות
       cost:[null,{coins:15,wood:15},{coins:40,wood:30,stone:20,cloth:4},{coins:90,wood:60,stone:50,cloth:10,copper:6},{coins:180,wood:120,stone:100,iron:15,venom:6},{coins:320,wood:220,stone:180,silver:10,essence:10,sapphireF:1}],
       bonus:0.2,
-      look:[{at:1,model:'tent',scale:1,deco:['crate','crate']},{at:3,model:'market',scale:1,deco:['crate','barrel']},{at:5,model:'market',scale:1.1,deco:['flag','flag','crate','barrel'],glow:C.gold}]},
+      look:[{at:1,model:'stall',scale:1,deco:['crateS','sack','barrel']},{at:2,model:'tent',scale:1,deco:['sack','crate','crateS']},{at:3,model:'market',scale:0.95,deco:['crate','barrel']},{at:4,model:'market',scale:1.05,deco:['tent','sack','crate']},{at:5,model:'market',scale:1.1,deco:['flag','flag','tent','crate'],glow:C.gold}]},
     stash:{x:540,y:80,r:60,     // מחסן: המקום הבטוח לשלל (stash.js). cap[L]: כמה יחידות הוא מחזיק ברמה L
       cost:[null,{coins:15,wood:10},{coins:40,wood:30,stone:15,cloth:6},{coins:90,wood:60,stone:45,copper:10,hide:8},{coins:180,wood:120,stone:90,iron:15,bone:15},{coins:320,wood:220,stone:160,silver:10,venom:8,boltF:1}],
       cap:[0,150,400,900,2000,5000],
