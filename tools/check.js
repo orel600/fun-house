@@ -2553,7 +2553,8 @@ function worldBot(m,L,god){
     m.ok=m.btn&&m.open&&m.tabs===m.want&&!m.small.length&&!m.out.length&&m.allOk&&m.xClose&&m.esc&&m.bg&&m.dot&&m.nav&&m.rail===m.railWant&&!m.railBad.length&&!m.railOpen.length&&m.setOnly&&!m.topBad.length&&m.feedTop&&!m.rankBad.length&&m.useCap;return m};
   // חלונות לרוחב (ביקורת 6.11, פריטים 1 ו-9): בחלון פתוח אף שני כפתורים, כותרות או שדות לא יושבים זה על זה, וכרטיס "חדש" (foelore.js) לא מכסה חלון.
   // חפיפה = יותר מ-4px בשני הכיוונים, ולפחות רבע מהשטח של הקטן מהשניים. אלמנט בתוך אלמנט לא נחשב
-  const winOvl=()=>{const $=id=>document.getElementById(id),o={wins:{},cover:[],open:[]};
+  // place='village': חלונות המבנים בכפר (vPanel: נפחייה, מכרה, שוק, מחסן) וחלון הנפחייה, ובועת טיפ שלא יושבת עליהם (ביקורת 9.11)
+  const winOvl=place=>{const $=id=>document.getElementById(id),o={wins:{},cover:[],open:[]};
     const vis=e=>{if(!e||e.closest('[hidden]'))return null;const r=e.getBoundingClientRect(),cs=getComputedStyle(e);return r.width>2&&r.height>2&&cs.display!=='none'&&cs.visibility!=='hidden'&&+cs.opacity>0.05?r:null};
     const nm=e=>e.id||e.dataset.t||e.dataset.act&&(e.dataset.act+(e.dataset.q?':'+e.dataset.q:''))||(e.textContent||'').trim().slice(0,16)||e.tagName;
     const ovl=root=>{const els=[...root.querySelectorAll('button,input,select,h2,h3,h4,label,.sub>span')].map(e=>({e,r:vis(e)})).filter(x=>x.r),bad=[];
@@ -2565,6 +2566,16 @@ function worldBot(m,L,god){
     const W=[['settings',()=>$('muteBtn').click(),'ovSound',()=>$('sndClose').click()],['gear',gearOpen,'ovGear',gearClose],
       ['quests',()=>questLogOpen(true),'qLog',()=>questLogOpen(false)],['map',()=>wmapOpen(true),'wMap',()=>wmapOpen(false)],
       ['jump',()=>travelWin(true),'trWin',()=>travelWin(false)]];
+    if(place==='village'){W.length=0;const lv0=JSON.stringify(SAVE.village);
+      const bOpen=k=>()=>{SAVE.village[k]=Math.max(1,vLv(k));S.vil.ui='';S.vil.open=S.vil.near=k;villageHud()},bClose=()=>{S.vil.open=null;S.vil.ui='';villageHud()};
+      for(const k of ['forge','mine','market','stash'])if(VILLAGE.b[k])W.push(['b:'+k,bOpen(k),'vPanel',bClose]);
+      W.push(['forgeWin',forgeOpen,'ovForge',forgeClose]);
+      // בועת טיפ כשחלון מבנה פתוח: מחכה מתחת לחלון ולא יושבת על הכותרת (firsttips.js tipBusy)
+      bOpen('market')();const t0=JSON.stringify(SAVE.tips||null),off0=!!SAVE.tipsOff;SAVE.tipsOff=false;SAVE.tips={};tipClose();TIP1.q=[];
+      tipOnce('sklv',['Luna']);for(let i=0;i<3;i++)tipTick(0.25);o.tipUnder=$('tip1').hidden;
+      bClose();tipClose();TIP1.q=[];SAVE.tips=JSON.parse(t0);SAVE.tipsOff=off0;
+      if(!o.tipUnder)o.open.push('tip on market');
+      o.restore=()=>{SAVE.village=JSON.parse(lv0);S.vil.ui=''}}
     for(const [k,open,id,close] of W){open();const p=$(id);if(p.hidden){o.open.push(k);continue}
       if(window.__rkScan)__rkScan();
       const pn=p.matches('.ov')?p.querySelector('.panel,.win')||p:p;o.wins[k]=ovl(pn);
@@ -2572,7 +2583,7 @@ function worldBot(m,L,god){
         if(hid&&(!/auto|scroll/.test(cs.overflowY)||!pn.classList.contains('more')))(o.cut=o.cut||[]).push(k)}
       flCardVis();const ce=flCardEl(),c=!ce.hidden&&ce.getBoundingClientRect(),r=pn.getBoundingClientRect();if(c&&c.left<r.right&&r.left<c.right&&c.top<r.bottom&&r.top<c.bottom)o.cover.push(k);   // הכרטיס והחלון נכנסים בהדרגה (opacity), אז בודקים רק שהם לא מוסתרים
       close()}
-    FLC.q=[];flCardNext();if(S.mode!=='play'&&S.wd)S.mode='play';return o};
+    FLC.q=[];flCardNext();if(S.mode!=='play'&&S.wd)S.mode='play';if(o.restore){o.restore();delete o.restore}return o};
   let winChk=null;
   const uiMenu={};
   for(const nm in UIV){
@@ -2588,13 +2599,14 @@ function worldBot(m,L,god){
     await shot('ui-welcome-'+nm);await page.evaluate(()=>{welcomeClose();dailySave().day=dailyDay()});
     const v=await page.evaluate(uiMeasure,'village');
     const vm=await page.evaluate(menuTest,'village');
+    const winVil=nm==='land'?await page.evaluate(winOvl,'village'):null;
     if(CFG.shots){await page.evaluate(()=>$('menuBtn').click());await shot('ui-menu-'+nm);await page.evaluate(()=>menuClose())}
     await page.evaluate(()=>{leaveVillage();const g=WORLD.gates.grove;P.x=g.x;P.y=g.y+g.r+P.r+2;S.cam.x=P.x;S.cam.y=P.y});   // ליד שער לזירה: העיגול נראה (לחיצה עליו נכנסת מיד)
     await page.clock.runFor(200);
     await shot('ui-world-'+nm);
     const w=await page.evaluate(uiMeasure,'world');
     const wm=await page.evaluate(menuTest,'world');uiMenu[nm]={vm,wm};
-    if(nm==='land'){winChk=await page.evaluate(winOvl);if(CFG.shots){await page.evaluate(()=>{FLC.q=[Object.keys(FOELORE.list)[0]];flCardNext();$('muteBtn').click()});await shot('win-settings-land');
+    if(nm==='land'){winChk=await page.evaluate(winOvl);for(const k in winVil.wins)winChk.wins[k]=winVil.wins[k];for(const f of ['cover','open','cut'])if(winVil[f])winChk[f]=[...(winChk[f]||[]),...winVil[f]];if(CFG.shots){await page.evaluate(()=>{FLC.q=[Object.keys(FOELORE.list)[0]];flCardNext();$('muteBtn').click()});await shot('win-settings-land');
       await page.evaluate(()=>{$('sndClose').click();wmapOpen(true);flCardVis()});await shot('win-map-card-land');await page.evaluate(()=>{wmapOpen(false);FLC.q=[];flCardNext()})}}
     if(CFG.shots){await page.evaluate(()=>{$('menuBtn').click();$('wMapBtn').click()});await shot('ui-menu-map-'+nm);await page.evaluate(()=>menuClose())}
     await page.evaluate(()=>wHome());await page.clock.runFor(100);   // חזרה הביתה כמו במשחק: worldUi(false) ואז הכפר. בלי זה נשארת על body גם world וכפתורי הכפר מוסתרים
@@ -5140,6 +5152,10 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
      check(Object.keys(ks).every(k=>V[k]),'משחקי השאול: ראייה ושיחים: '+Object.keys(ks).map(k=>ks[k]+(V[k]?' ✓':' ✗')).join(', '))}
     if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');
   }
+  // שמירה ישנה: משאב ששמו השתנה (RES.renamed, ore→iron) עובר גם במה שמחכה באיסוף במבנה (SAVE.prod), ולא נאסף לתרמיל כמשאב שלא מופיע בשום מקום (ביקורת 9.11)
+  {const rm=await page.evaluate(()=>{const sv={bag:{ore:2,iron:1},stash:{ore:3},prod:{mine:{t:1,have:{ore:12.4,stone:1}},x:{t:1}}};resMigrate(sv);
+     return sv.bag.iron===3&&!('ore' in sv.bag)&&sv.stash.iron===3&&!('ore' in sv.stash)&&Math.abs(sv.prod.mine.have.iron-12.4)<1e-9&&!('ore' in sv.prod.mine.have)&&sv.prod.mine.have.stone===1});
+   check(rm,'שמירה ישנה: עפרה (ore) עוברת לברזל בתרמיל, במחסן ובאיסוף של המכרה'+(rm?'':' ✗'))}
   // מפתחות גולמיים על המסך, בכל מה שהבוט עבר (נסרק כל כמה צעדים, בכל צילום ובכל חלון של winOvl)
   {const rk=rawKeys;check(!rk.length,rk.length?'מפתח טקסט גולמי על המסך: '+rk.slice(0,8).join(', '):'אין מפתח טקסט גולמי על המסך (DOM וקנבס)')}
   if(winChk){const w=winChk,bad=Object.entries(w.wins).filter(([k,v])=>v.length);
