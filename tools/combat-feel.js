@@ -133,7 +133,8 @@ function install(B){
         const inR=nn.d-nn.e.r<=WORLD.attackRange;
         if(inR&&policy==='skills'){for(const id of S.sk.ids.slice())if(wskUse(id))g.casts++}
         if(inR&&g.one&&!g.one.done&&big){const lx=live.reduce((a,e)=>a+e.x,0)/live.length,ly=live.reduce((a,e)=>a+e.y,0)/live.length;
-          const D=Math.hypot(lx-P.x,ly-P.y);if(wskUse(big,{a:Math.atan2(ly-P.y,lx-P.x),len:WSKILL.pull*Math.min(1,D/WORLD.attackRange)})){g.casts++;g.one.done=true;g.one.live=true;g.one.t=m.gt}}
+          const D=Math.hypot(lx-P.x,ly-P.y);g.one.live=true;g.one.t=m.gt;   // live before the cast: zap and chain hit inside wskUse
+          if(wskUse(big,{a:Math.atan2(ly-P.y,lx-P.x),len:WSKILL.pull*Math.min(1,D/WORLD.attackRange)})){g.casts++;g.one.done=true}else g.one.live=false}
         if(g.one&&g.one.live&&m.gt-g.one.t>4)g.one.live=false;   // what one skill (with its ticks, combos and rings) killed in 4 s
         for(const id of ['npcDlg','qLog','ovGear','ovDaily','ovWelcome','ovBook','ovWDeath'])if($(id)&&!$(id).hidden)$(id).hidden=true;
         S.mode='play';step()}
@@ -200,12 +201,13 @@ async function shots(browser,dir){
   return res;
 }
 
-/* group mode: node tools/combat-feel.js --group [--n 3] [--regs meadow,lake] [--out file.md] [--json file.json] */
+/* group mode: node tools/combat-feel.js --group [--nodrama] [--n 3] [--regs meadow,lake] [--out file.md] [--json file.json] */
 async function runGroupCls(browser,cls,n){
   const {page,errors}=await page0(browser);
   await page.evaluate(c=>{$('ovStart').hidden=true;heroPick(c)},cls);
   await page.waitForTimeout(300);
   await page.evaluate(install,CF);
+  if(opt('nodrama'))await page.evaluate(()=>{if(typeof DRAMA!=='undefined')DRAMA.off=true});   // the "before" numbers, on the same code
   const out={};const t0=Date.now();
   for(const reg of CF.regs)for(const kind of ['fresh','mid']){
     const h=await page.evaluate(([r,k])=>__cfHero(r,k),[reg,kind]);
@@ -217,13 +219,13 @@ function groupReport(out,n){
   const f1=x=>x==null?'-':x.toFixed(1),pct=x=>x==null?'-':Math.round(x*100)+'%';
   const cell=(c,k)=>{const r=out[c][k].r,ok=r.filter(x=>x.clear!=null);return{n:r.length,ok:ok.length,clear:avg(ok.map(x=>x.clear)),auto:avg(r.map(x=>x.auto).filter(x=>x!=null)),
     size:avg(r.map(x=>x.n)),hin:avg(r.map(x=>x.hin)),kpc:(()=>{const c2=r.reduce((a,x)=>a+x.casts,0);return c2?r.reduce((a,x)=>a+x.kSkill,0)/c2:null})(),one:avg(r.map(x=>x.oneKill).filter(x=>x!=null)),sk:r[0]&&r[0].sk}};
-  const L=['# Group fights, measured','','Tool: `node tools/combat-feel.js --group` (seed '+CF.seed+', '+n+' groups per cell, 2D). Concept: [concept-combat-drama.md](concept-combat-drama.md).',
+  const L=['# Group fights, measured'+(opt('nodrama')?' (drama.js off)':''),'','Tool: `node tools/combat-feel.js --group` (seed '+CF.seed+', '+n+' groups per cell, 2D). Concept: [concept-combat-drama.md](concept-combat-drama.md).',
     'A whole real group (affixes removed), hero starts ~300px away, cannot die. **clear** = seconds from first hit to the last death. **auto%** = share of the damage done by auto-attack. **k/cast** = kills by skills per skill cast. **one** = share of the group killed by ONE area skill (policy one). **taken** = health bars lost.',
     'Policies: auto = no skills · skills = every skill as soon as it is ready · one = one area skill at the group centre, then auto.',''];
-  for(const c of CF.cls){L.push('## '+c,'','| region | hero | zone | size | auto: clear s | skills: clear s · auto% · k/cast · taken | one: clear s · one-kill | skills |','|---|---|---|---|---|---|---|---|');
+  for(const c of CF.cls){L.push('## '+c,'','| region | hero | zone | size | auto: clear s · taken | skills: clear s · auto% · k/cast · taken | one: clear s · one-kill | skills |','|---|---|---|---|---|---|---|---|');
     for(const reg of CF.regs)for(const kind of ['fresh','mid'])for(const z of CF.zones){const k=reg+':'+kind+':'+z,a=cell(c,k+':auto'),s=cell(c,k+':skills'),o=cell(c,k+':one');
       const w=x=>x.ok<x.n?' ⚠'+(x.n-x.ok):'';
-      L.push(`| ${reg} | ${kind} ${out[c][k+':auto'].L} | ${z} | ${f1(a.size)} | ${f1(a.clear)}${w(a)} | ${f1(s.clear)}${w(s)} · ${pct(s.auto)} · ${f1(s.kpc)} · ${f1(s.hin)} | ${f1(o.clear)}${w(o)} · ${pct(o.one)} | ${s.sk||'-'} |`)}
+      L.push(`| ${reg} | ${kind} ${out[c][k+':auto'].L} | ${z} | ${f1(a.size)} | ${f1(a.clear)}${w(a)} · ${f1(a.hin)} | ${f1(s.clear)}${w(s)} · ${pct(s.auto)} · ${f1(s.kpc)} · ${f1(s.hin)} | ${f1(o.clear)}${w(o)} · ${pct(o.one)} | ${s.sk||'-'} |`)}
     L.push('')}
   // summary per class: averages over all cells
   L.push('## Summary (average over regions)','','| class | hero | auto clear s | skills clear s | skills auto% | one-kill | taken (skills) |','|---|---|---|---|---|---|---|');
