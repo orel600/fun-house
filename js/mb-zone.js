@@ -9,8 +9,10 @@
    - במפה הקטנה: שני העיגולים מוצללים בצבע הקבוצה.
    כל המספרים ב-MOBA.zone. **ערכים התחלתיים, לא נבדקו במשחק אמיתי.** חיבור: עוטף את mobaUpdate (moba.js), ואת mbRecallTick ו-mbRecallDraw (moba-recall.js) */
 MOBA.zone={
-  hurt:{on:true,k:0.10,every:0.5,heroes:true,minions:false},   // עונש לאויב: חלק מהחיים המקסימליים בשנייה, כל כמה שניות מתקתק
-  warn:{pad:70,a:0.55,rate:5},          // אזהרה: כמה לפני העיגול מתחילה, כמה חזקה, וכמה מהר פועמת
+  // on:false (השיפוץ, MAX 10.11): העונש ברשימת המעוכבים של השיפוץ. הערכים נשארים בקוד, כבויים. נשארים העיגול, הריפוי של החברים (כמו קודם), הניצנוץ והבהוב החזרה
+  hurt:{on:false,k:0.10,every:0.5,heroes:true,minions:false},   // עונש לאויב: חלק מהחיים המקסימליים בשנייה, כל כמה שניות מתקתק
+  // calm: כשאין עונש (hurt.on false) העיגול של האויב לא אדום ולא פועם, רק קו ניטרלי ודק, כדי לא להבטיח נזק שלא קורה
+  warn:{pad:70,a:0.55,rate:5,calm:'#E8DCC0',calmK:0.6},          // אזהרה: כמה לפני העיגול מתחילה, כמה חזקה, וכמה מהר פועמת
   shimmer:{every:0.7,size:60},          // ניצנוץ ריפוי: כל כמה שניות על כל חבר שמתרפא
   recall:{t:0.6,col:'#FFD34D'},         // הבהוב הזהב בחזרה לבסיס
   mini:{a:0.22},                        // הצללה במפה הקטנה
@@ -45,8 +47,8 @@ function mbZoneDraw(){
   const Z=MOBA.zone,r=MOBA.base.healR,me=MB.me;if(!me)return;
   const ring=(tm,col,a,w)=>{const b=mbZoneBase(tm);if(!b)return;ctx.save();ctx.translate(b.x,b.y);ctx.scale(1,0.9);ctx.globalAlpha=a;ctx.strokeStyle=col;ctx.lineWidth=w;ctx.shadowColor=col;ctx.shadowBlur=14;ctx.beginPath();ctx.arc(0,0,r-6,0,7);ctx.stroke();ctx.restore()};
   const k=mbZoneWarnK();
-  if(k>0){const calm=typeof calmOn==='function'?calmOn():typeof RM!=='undefined'&&RM,pulse=calm?1:0.65+0.35*Math.sin(MB.t*Z.warn.rate*Math.PI);
-    ring(1-me.team,C.blood||'#FF4D4D',Z.warn.a*k*pulse,6+4*k);Z.stat.warn++}
+  if(k>0){const calm=typeof calmOn==='function'?calmOn():typeof RM!=='undefined'&&RM,hurt=Z.hurt.on,pulse=calm||!hurt?1:0.65+0.35*Math.sin(MB.t*Z.warn.rate*Math.PI);
+    ring(1-me.team,hurt?C.blood||'#FF4D4D':Z.warn.calm,Z.warn.a*k*pulse*(hurt?1:Z.warn.calmK),hurt?6+4*k:3);Z.stat.warn++}
   const f=MBZ.flash[me.team];if(f&&f.t>0){const q=f.t/Z.recall.t;ring(me.team,Z.recall.col,q,10*q+3)}
 }
 (function(){
