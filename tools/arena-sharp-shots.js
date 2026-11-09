@@ -22,11 +22,11 @@ const TIMES=[0.04,0.12,0.22,0.35,0.5,0.7,0.95,1.3];
     const b=addEnemy('grunt',P.x+150,P.y-40);b.hp=b.max=1e9;b.speed=0;b.mult={};b.elite=true;b.r*=1.6;skillsHud()};
   const cast={quake:()=>skillUse('quake'),splash:()=>skillUse('splash'),frost:()=>skillUse('frost'),flame:()=>skillUse('flame'),zap:()=>skillUse('zap'),lance:()=>skillUse('lance'),comet:()=>skillUse('comet'),bloom:()=>skillUse('bloom'),
     dash:()=>{SAVE.x=1;spellState().id='dash';spellState().until=0;P.vx=1;P.vy=0;return spellUse()},heal:()=>{spellState().id='heal';spellState().until=0;return spellUse()},smite:()=>{spellState().id='smite';spellState().until=0;return spellUse()},
-    ult:()=>{S.ult={c:ULT.need,used:0};return ultUse()}};
+    wave:()=>{waveStart(1);return true},tells:()=>{for(const [t,a] of [['yeti',0],['golem',1.6],['demon',3.2],['treant',4.7]]){const e=addEnemy(t,P.x+Math.cos(a)*90,P.y+Math.sin(a)*70);e.hp=e.max=1e9;e.speed=0;e.mult={}}return true},boss:()=>{const b=makeBoss();b.x=P.x+160;b.y=P.y-40;b.rage=0.8;S.boss=b;enemies.push(b);return true},ult:()=>{S.ult={c:ULT.need,used:0};return ultUse()}};
   const stats={mode,errors:[]};
   for(const id of Object.keys(cast)){
     if(only.length&&!only.includes(id))continue;
-    await page.evaluate(setup,['dash','heal','smite','ult'].includes(id)?[]:[id]);await page.clock.runFor(34);
+    await page.evaluate(setup,['dash','heal','smite','ult','wave','tells','boss'].includes(id)?[]:[id]);await page.clock.runFor(34);
     for(const e of [0])await page.evaluate(()=>{for(const e of enemies)e.kx=e.ky=0});
     const ok=await page.evaluate(c=>window.__cast=eval('('+c+')')(),cast[id].toString());
     let t0=0;const peaks=[];
