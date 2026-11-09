@@ -48,6 +48,7 @@ function resVillage(){
 /* ---- השירות, בשיחה איתה בכפר (npcDialog ב-npc.js) ---- */
 const resPrice=(id,f)=>RES.list[f].sell*RESID.list[id].mult;
 const resCan=id=>{const R=RESID.list[id];return Object.keys(R.give).every(r=>bagHas(r,R.give[r]))};
+const resGet=id=>vpGet(id)||RESID.list[id].get;   // אחרי פרויקט בכפר ההחלפה משתפרת (vproj.js)
 // משאבים עם שם: "🪨 אבן 326/10". have: כמה יש לך מול כמה צריך, באדום כשחסר
 const resChips=(o,have)=>Object.keys(o).map(r=>'<span class="res'+(have&&!bagHas(r,o[r])?' short':'')+'" data-tip="'+r+'">'+resPic(r)+' '+resName(r)+' <bdi>'+(have?(SAVE.bag[r]||0)+'/':'')+o[r]+'</bdi></span>').join('');
 // השירות בלשונית משלו (npcSvcs ב-bwin.js): מה היא עושה, ומה נותנים ומקבלים, עם כפתור אחד
@@ -60,7 +61,7 @@ function resHtml(vid){
     for(const f of fish)h+='<div class="fmeal"><span class="fmi">'+resPic(f)+'</span><span class="fmt"><b>'+resName(f)+' ×'+SAVE.bag[f]+'</b><small>'+T('rsd.each',resPrice(id,f),RES.list[f].sell)+'</small></span>'+
       '<button class="vbtn" data-act="res" data-k="'+f+'">'+T('rsd.sell',resPrice(id,f))+'</button></div>';
   }else h+='<p class="bwlead">'+T('rsd.'+id+'.d')+'</p><div class="fmeal rswap"><span class="fmt"><small>'+T('bw.give')+'</small><span>'+resChips(R.give,true)+'</span></span><span class="bwarr" aria-hidden="true">➜</span>'+
-    '<span class="fmt"><small>'+T('bw.get')+'</small><span>'+resChips(R.get)+'</span></span>'+
+    '<span class="fmt"><small>'+T('bw.get')+'</small><span>'+resChips(resGet(id))+'</span></span>'+
     '<button class="vbtn" data-act="res"'+(resCan(id)?'':' disabled')+'>'+T('rsd.swap')+'</button></div>';
   return h+'</div>';
 }
@@ -68,7 +69,7 @@ function resDo(vid,k){
   const id=NPC.list[vid]&&NPC.list[vid].serve,R=RESID.list[id];if(!R)return false;
   let got;
   if(R.serve==='fish'){if(!RES.list[k]||RES.list[k].fam!=='fish'||!bagTake(k,1))return false;got={coins:resPrice(id,k)}}
-  else{if(!resCan(id))return false;for(const r in R.give)bagTake(r,R.give[r]);got=R.get}
+  else{if(!resCan(id))return false;for(const r in R.give)bagTake(r,R.give[r]);got=resGet(id)}
   for(const r in got)bagAdd(r,got[r]);
   saveNow();sfx('coin');
   floatText(P.x,P.y-46,Object.keys(got).map(r=>'+'+got[r]+' '+resIcon(r)).join(' '),C.gold,16);

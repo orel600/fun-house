@@ -86,7 +86,7 @@ function nodeDown(n){
   gDown(n);   // בעולם: עץ נופל, והשלל עף לגיבור (gather.js)
   n.dead=true;S.nd.broken++;if(n.regrow)n.back=n.regrow;   // בעולם הפתוח הוא צומח מחדש (world.js)
   if(NODES.kinds[n.kind].shape==='chest')S.nd.chests=(S.nd.chests||0)+1;sfx('coin');
-  const K=NODES.kinds[n.kind],got=runGive(S.wd&&K.wdrop?Object.assign({},K.drop,K.wdrop):K.drop,n.x,n.y);S.nd.got.push(...got);
+  const K=NODES.kinds[n.kind],D=S.wd&&K.wdrop?Object.assign({},K.drop,K.wdrop):K.drop,got=runGive(gtDrop(n,D),n.x,n.y);S.nd.got.push(...got);   // gtDrop: הכלי מכפיל את החומר הראשי (gtool.js)
   sparks(n.x,n.y,NODES.kinds[n.kind].col,14,200);gDown(null);
 }
 

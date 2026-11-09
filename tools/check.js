@@ -3068,6 +3068,58 @@ function worldBot(m,L,god){
     'כלי איסוף: '+(gtr.err||((gtr.t1?'דרגה 1 בקצב של היום והגרזן ביד':'דרגה 1 שונה!')+(gtr.t3?', דרגה 3 חזקה יותר':', בלי חיזוק')+(gtr.slow?', כסף עם פטיש חלש לאט':', כסף חסום או רגיל!')+
     (gtr.hard?', ובפטיש מתאים רגיל':', פטיש מתאים לא עוזר')+(gtr.bForge&&gtr.bGm?', תנאי נפחייה ומומחיות':', תנאים שגויים')+(gtr.start&&gtr.sign?', שעון ושלט בכפר':', השעון לא התחיל')+
     (gtr.done?', השעון נגמר והדרגה עלתה':', הדרגה לא עלתה')+(gtr.tab?', לשונית בנפחייה':', אין לשונית')+(gtr.look?', הכלים בדמות בתלת-ממד':', אין כלים בתלת-ממד')+(gtr.blank?', בשמירה':', לא בשמירה')+(gtr.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
+  // לולאת הכפר, שלב 1 (docs/concept-village-loop.md): הכלי מכפיל את החומר הראשי (לא את הנדירים), כלי חלש מדי = חצי שלל ולאט (רך, לא חסום),
+  // רמות 4-5 של מבנים עולות ×1.3 עץ ואבן, ויעד ליד המשאבים: 📌 בכפר, שבב בעולם, ⌂ וחגיגה כשיש הכל
+  const vlr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{SAVE.gt={axe:1,hammer:1,job:{}};enterWorld('home');enemies=[];S.mode='play';const G=GTOOL;
+      const tr={node:true,kind:'tree',x:0,y:0,r:28,hp:1},ir={node:true,kind:'iron',x:0,y:0,r:24,hp:1},D=NODES.kinds.tree.drop,DI=NODES.kinds.iron.drop;
+      o.y1=gtDrop(tr,D)===D;
+      SAVE.gt.axe=5;const d5=gtDrop(tr,D);o.y5=d5.wood[1]===D.wood[1]*G.tiers[5].yld&&d5.resin[1]===D.resin[1]&&d5.resin[0]===D.resin[0];
+      const w=gtDrop(ir,DI);o.weak=gtWeak(ir)&&w.iron[1]===Math.max(1,DI.iron[1]*G.half)&&gtPow(ir)<1;
+      SAVE.gt.hammer=2;o.ok=!gtWeak(ir)&&gtDrop(ir,DI).iron[1]>=DI.iron[1];
+      const wd=S.wd;S.wd=null;try{o.arena=gtDrop(tr,D)===D}finally{S.wd=wd}
+      // מקור משאבים לא מראה "עמיד": הכלי קובע, לא סוג הנזק. אויב כן
+      const rn=S.nd.list.find(n=>!n.dead);if(juiceOn()&&rn){juiceHit(rn,3,0.5,false,Object.keys(DMG.types)[0],0);const a=juice().n[juice().n.length-1];o.nores=!(a&&a.e===rn&&a.res)}else o.nores=true;
+      const raw=VILLAGE.b.forge.cost;o.late=vCostAt('forge',4).wood===Math.ceil(raw[4].wood*VILLAGE.late.k)&&vCostAt('forge',3).wood===raw[3].wood&&vCostAt('forge',4).iron===raw[4].iron;
+      SAVE.gt.hammer=1;AUI.tab='tool';GT_SEL='hammer';gtDraw();o.opens=!!document.querySelector('#fItems .gtopen')&&!!document.querySelector('#fDetail [data-act="pinT"]');
+      // יעד: מסמנים את השוק, בלי עץ ואבן. השבב מראה את מה שחסר, פועם באיסוף, ומסמן ⌂ כשיש הכל
+      const lv=SAVE.village.market,lc=SAVE.village.center;SAVE.village.center=Math.max(2,lc||0);SAVE.village.market=1;SAVE.bag.wood=0;SAVE.bag.stone=0;
+      goalS().pin=null;goalS().hit=null;goalPin({k:'market'});o.pin=goalPinned({k:'market'});
+      const sh=goalShow();o.miss=!!sh&&!sh.done&&(sh.r==='wood'||sh.r==='stone')&&sh.need===vCost('market')[sh.r];
+      GOALW.t=0;GOALW.key='';goalUpdate(0.1);const chip=document.getElementById('goalChip');o.chip=!!chip&&!chip.hidden&&chip.textContent.includes(T('vil.market'))&&chip.textContent.includes('/'+sh.need);
+      const p0=GOAL.stat.pulse;SAVE.bag[sh.r]=1;GOALW.t=0;goalUpdate(0.1);o.pulse=GOAL.stat.pulse===p0+1;
+      const c=vCost('market');for(const r of GOAL.res)if(c[r])SAVE.bag[r]=c[r];const d0=GOAL.stat.done;GOALW.t=0;goalUpdate(0.1);o.done=GOAL.stat.done===d0+1&&chip.textContent.includes('⌂');
+      GOALW.t=0;goalUpdate(0.1);o.once=GOAL.stat.done===d0+1;
+      goalPin({k:'market'});o.unpin=!goalS().pin&&!!goalNow();
+      o.blank=saveBlank().goal&&saveBlank().goal.pin===null;
+      SAVE.village.market=lv;SAVE.village.center=lc;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];SAVE=JSON.parse(bak);AUI.tab='age';const ch=document.getElementById('goalChip');if(ch)ch.hidden=true;enterVillage();return o});
+  check(!vlr.err&&vlr.nores&&vlr.y1&&vlr.y5&&vlr.weak&&vlr.ok&&vlr.arena&&vlr.late&&vlr.opens&&vlr.pin&&vlr.miss&&vlr.chip&&vlr.pulse&&vlr.done&&vlr.once&&vlr.unpin&&vlr.blank,
+    'לולאת הכפר: '+(vlr.err||((vlr.y1?'כלי 1 בלי שינוי':'כלי 1 שינה שלל!')+(vlr.y5?', כלי 5 מכפיל את העץ ולא את השרף':', בלי הכפלה')+(vlr.weak?', ברזל עם פטיש 1: חצי ולאט':', כלי חלש לא רך!')+
+    (vlr.ok?', פטיש 2: מלא':', פטיש 2 לא עוזר')+(vlr.arena?', בזירה בלי שינוי':', הזירה השתנתה!')+(vlr.nores?', בלי "עמיד" על מקורות':', "עמיד" על מקור!')+(vlr.late?', רמה 4 ×1.3 עץ':', מחיר רמה 4 שגוי')+(vlr.opens?', מה נפתח ו-📌 בנפחייה':', אין "נפתח" או 📌')+
+    (vlr.pin&&vlr.miss?', יעד מסומן ומה חסר':', היעד שגוי')+(vlr.chip?', שבב בעולם':', אין שבב')+(vlr.pulse?', פועם באיסוף':', לא פועם')+(vlr.done&&vlr.once?', ⌂ וחגיגה פעם אחת':', בלי ⌂ או חגיגה כפולה')+
+    (vlr.unpin?', ביטול סימון':', הסימון נתקע')+(vlr.blank?', בשמירה':', לא בשמירה'))));
+  // לולאת הכפר, שלב 2 (vproj.js): החוצבת בכפר → סדנה בשלושה שלבים → המחצבה העמוקה נפתחת (או ברמה 10), עם מקורות שצומחים מהר, והחלפה טובה יותר
+  const vpr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{const V=VPROJ,id='cutterShop',pl='deepQuarry',Q=QS();SAVE.vproj={st:{},seen:{}};SAVE.hero.level=1;delete Q.done[RESID.list.cutter.last];
+      o.away=!vpTab('cutter')&&vpBlock(id)==='away';
+      Q.done[RESID.list.cutter.last]=1;o.tab=!!vpTab('cutter')&&npcSvcs('vcutter').some(t=>t.id==='proj')&&vpTab('cutter').html().includes('data-act="vp"');
+      enterWorld('home');enemies=[];S.mode='play';VPW.t=0;vpUpdate(1);o.closed=!vpOpen(pl)&&!S.nd.list.some(n=>n.vp);
+      SAVE.bag.stone=0;goalS().pin=null;goalPin({p:id});const sh=goalShow();o.goal=!!sh&&sh.g.p===id&&!!vpCost(id)[sh.r];
+      SAVE.bag.stone=0;o.cost=vpBlock(id)==='cost'&&!vpBuild(id);
+      for(const c of V.list[id].stages){for(const r in c)SAVE.bag[r]=(SAVE.bag[r]||0)+c[r];vpBuild(id)}
+      o.done=vpDone(id)&&vpStage(id)===3&&V.stat.build>=3&&resGet('cutter').iron===V.list[id].get.iron;
+      const o0=V.stat.open;VPW.t=0;vpUpdate(1);const add=S.nd.list.filter(n=>n.vp===pl);
+      o.nodes=add.length>=5&&add.every(n=>n.regrow===30)&&add.some(n=>n.kind==='silver')&&V.stat.open===o0+1&&SAVE.vproj.seen[pl]===1;
+      VPW.t=0;vpUpdate(1);o.once=S.nd.list.filter(n=>n.vp===pl).length===add.length&&V.stat.open===o0+1;
+      SAVE.vproj={st:{},seen:{}};SAVE.hero.level=V.places[pl].lv;o.lv=vpOpen(pl);
+      o.blank=!!saveBlank().vproj;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];SAVE=JSON.parse(bak);goalS().pin=null;enterVillage();return o});
+  check(!vpr.err&&vpr.away&&vpr.tab&&vpr.closed&&vpr.goal&&vpr.cost&&vpr.done&&vpr.nodes&&vpr.once&&vpr.lv&&vpr.blank,
+    'סדנת החוצבת: '+(vpr.err||((vpr.away?'נסגר עד שהחוצבת בכפר':'פתוח בלי החוצבת!')+(vpr.tab?', לשונית בשיחה':', אין לשונית')+(vpr.closed?', המחצבה העמוקה סגורה':', פתוחה מההתחלה!')+(vpr.goal?', יעד 📌':', בלי יעד')+
+    (vpr.cost?', חסום בלי אבן':', נבנה בלי אבן!')+(vpr.done?', 3 שלבים והחלפה טובה יותר':', לא הושלם')+(vpr.nodes?', נפתחה עם מקורות מהירים וחגיגה':', לא נפתחה')+(vpr.once?', פעם אחת':', כפול!')+(vpr.lv?', או ברמה 10':', לא ברמה 10')+(vpr.blank?', בשמירה':', לא בשמירה'))));
   // העלילה, פרק 5 (story.js, WORLD.regions.storm): השביל מהמדבר למגדלים סגור עד שפנס האש דולק, במגדלים גשם, ברקים ומגדלים שבורים שאי אפשר לעבור,
   // אויבים מחושמלים (חלשים לאדמה), ושומר הסערה מסמן עיגולי ברק שמתפוצצים אחרי שנייה: מי שנשאר נפגע, מי שזז לא
   const ch5=await page.evaluate(()=>{

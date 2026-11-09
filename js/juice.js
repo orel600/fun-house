@@ -57,6 +57,7 @@ const jSnd=(m,crit)=>!juiceOn()?1:(crit?JUICE.snd.crit:m>1?JUICE.snd.weak:1)*(1+
 
 // נקרא מ-damage (combat.js). מחזיר true כשהאפקטים כאן מחליפים את המספר והניצוצות הרגילים
 function juiceHit(e,d,m,crit,t,ang){
+  if(e.node)m=1;   // מקור משאבים: בלי "עמיד"/חולשה מעליו. את האיסוף קובע הכלי (gtool.js), לא סוג הנזק (ניר 9.11)
   if(!juiceOn())return false;
   const J=juice(),K=JUICE;
   e.flash=Math.max(e.flash||0,K.flash);e.jT=jNow();hfHit(e,m,crit,ang);   // הגוף נוטה אחורה (hitfeel.js)

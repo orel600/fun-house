@@ -36,7 +36,7 @@ function bwUpgrade(k,L){
   h+='<div class="bwpay"><span class="sk">'+T('bw.price')+'</span>'+bwCost(vCost(k))+'</div>';
   h+=!why?'<button class="vbtn vmain" data-act="up">'+(L?T('vil.up',L+1):T('vil.build'))+'</button>'
     :'<p class="bwbad">'+(why==='center'?T('bw.needCenter',L+1):T('bw.missing'))+'</p>';
-  return h;
+  return h+goalPinBtn({k},'pinB');   // 📌 יעד בעולם (goal.js)
 }
 
 /* ---- מה עושים בכל מבנה (הלשונית הראשונה) ---- */
@@ -104,6 +104,7 @@ function npcSvcs(id){
   if(id===FISH.cookAt)s.push({id:'cook',label:'🍳 '+T('bw.cook'),html:()=>'<p class="bwlead">'+T('bw.cookWhy')+'</p>'+fishCookHtml()});   // fishing.js
   const R=NPC.list[id]&&NPC.list[id].serve&&RESID.list[NPC.list[id].serve];
   if(R)s.push({id:'serve',label:R.sign+' '+T('rsd.'+NPC.list[id].serve+'.t'),html:()=>resHtml(id)});   // residents.js
+  const pj=R&&vpTab(NPC.list[id].serve);if(pj)s.push(pj);   // פרויקט בכפר (vproj.js)
   return s;
 }
 
