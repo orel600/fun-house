@@ -33,11 +33,11 @@ function strikeTick(e,dt,d){
       // פוגע רק אם השחקן עדיין בטווח ובכיוון של הקשת
       const da=Math.abs(((Math.atan2(dy,dx)-e.sa+Math.PI*3)%(Math.PI*2))-Math.PI);
       e.slT=fxNow();   // קו המכה (strikeDraw)
-      if(dd<touch+K.reach&&da<K.arc){hurt(e.dmg*K.dmg);sparks(P.x,P.y,K.col,10,240)}else e.dodged=(e.dodged||0)+1;
+      if(dd<touch+K.reach&&da<K.arc){hurt(ufStrikeDmg(e,e.dmg*K.dmg));sparks(P.x,P.y,K.col,10,240)}else{e.dodged=(e.dodged||0)+1;ufDodge(e)}   // מכה טעונה (upfeel.js)
     }
     return true;
   }
-  if((e.scd-=dt)<=0&&d<touch+K.start){e.sw=e.wind||K.wind;e.sa=Math.atan2(P.y-e.y,P.x-e.x)}   // e.wind: אזור עם הכנה איטית יותר (WORLD.zones, start)
+  if((e.scd-=dt)<=0&&d<touch+K.start){e.sw=e.sw0=(e.wind||K.wind)*ufCharge(e);e.sa=Math.atan2(P.y-e.y,P.x-e.x)}   // e.wind: אזור עם הכנה איטית יותר (WORLD.zones, start)
   return false;
 }
 // ציור (בעולם, לפני הדמויות): קשת אדומה על הרצפה שמתמלאת עד המכה, וקו לבן-אדום כשהמכה יוצאת.
@@ -50,7 +50,7 @@ function strikeDraw(){
       ctx.save();ctx.translate(e.x,e.y);ctx.globalAlpha=0.9*q;ctx.strokeStyle='#FFE0E0';ctx.lineWidth=(4+5*q)/z;ctx.lineCap='round';
       ctx.beginPath();ctx.arc(0,0,R*0.85,e.sa-K.arc,e.sa+K.arc);ctx.stroke();ctx.restore()}
     if(!(e.sw>0))continue;
-    const k=1-e.sw/(e.wind||K.wind),R=(e.r+P.r+K.reach)*K.show,a0=e.sa-K.arc,a1=e.sa+K.arc,p=0.5+0.5*Math.sin(t*18);
+    const k=1-e.sw/(e.sw0||e.wind||K.wind),R=(e.r+P.r+K.reach)*K.show,a0=e.sa-K.arc,a1=e.sa+K.arc,p=0.5+0.5*Math.sin(t*18);
     const sp=typeof fxcTgOn==='function'&&fxcTgOn(e);   // הסימן מהגיליון מראה איפה (fxcombat.js): כאן רק השעון, המילוי שגדל עד המכה
     ctx.save();ctx.translate(e.x,e.y);ctx.fillStyle=K.col;ctx.strokeStyle=K.col;
     if(!sp){ctx.globalAlpha=0.25;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,a0,a1);ctx.closePath();ctx.fill()}
@@ -58,4 +58,5 @@ function strikeDraw(){
     if(!sp){ctx.globalAlpha=0.7+0.3*p;ctx.lineWidth=(2.5+2*k)/z;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,R,a0,a1);ctx.closePath();ctx.stroke()}
     ctx.restore()}
   ctx.globalAlpha=1;
+  ufDraw();   // הילה של מכה טעונה, טבעות וחתיכות (upfeel.js)
 }
