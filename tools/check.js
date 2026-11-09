@@ -4783,10 +4783,10 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
           for(let i=0;i<900&&!MB.over;i++){const x0=tk.x,y0=tk.y;mobaUpdate(1/30);if(tk.atkT>pa+0.05)r.atk.push(i);pa=tk.atkT;
             if(i===300)tk.flash=1;
             if(!tk.dead){const s0=snap(),R0=Math.random;Math.random=rnd;try{syncEnemy(tk,1/30)}finally{Math.random=R0}if(snap()!==s0)r.dirty++;const a=R3D.actors.get(tk);
-              if(a&&on){if(a.L.tx)r.tx++;const b=a.base&&act(a,a.base);if(b&&b.getClip()!==R3D.clips[a.base])r.comp++;
+              if(a&&on){const R1=Math.random;Math.random=rnd;try{if(a.L.tx)r.tx++;const b=a.base&&act(a,a.base);if(b&&b.getClip()!==R3D.clips[a.base])r.comp++;
                 const h=bone(a.root,'upperarmr')||bone(a.root,'hips');if(h&&i%15===0)r.bones.add(h.quaternion.toArray().map(v=>v.toFixed(2)).join());
                 const one=a.one&&a.one.isRunning()?a.one.getClip().name:'';if(/Attack|Chop|Slice/.test(one)&&Math.hypot(tk.x-x0,tk.y-y0)>0.5)r.moveAtk++;
-                if(i===300)r.flash=a.mats.some(m=>m.emissive.r>0.5)&&a.mats.every(m=>!m.userData.txF||m.userData.txF.value===1)}}
+                if(i===300)r.flash=a.mats.some(m=>m.emissive.r>0.5)&&a.mats.every(m=>!m.userData.txF||m.userData.txF.value===1)}finally{Math.random=R1}}}
             if(i===300)tk.flash=0}
           r.hash=MB.u.map(u=>[u.kit||u.k,Math.round(u.hp),Math.round(u.x),Math.round(u.y)].join(':')).join('|');
           if(on){const a=R3D.actors.get(tk);
