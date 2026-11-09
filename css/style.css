@@ -88,7 +88,7 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
 .skb:nth-child(2){--x:104px}
 .skb:nth-child(3){--y:104px}
 .swap:not([hidden])~.skills .skb:nth-child(1){--w:72px;--x:116px;--y:0px}
-.swap:not([hidden])~.skills .skb:nth-child(2){--x:84px;--y:84px}
+.swap:not([hidden])~.skills .skb:nth-child(2){--x:86px;--y:86px}
 .swap:not([hidden])~.skills .skb:nth-child(3){--x:0px;--y:116px}
 .skb .dti{width:var(--ic-l);height:var(--ic-l);transition:opacity .15s}
 .skb:nth-child(1) .dti{width:var(--ic-l);height:var(--ic-l)}
@@ -2087,12 +2087,12 @@ body.mb .skb.lock::after{content:none}
 .mbskx>i{display:none}
 .mbskx:not(.ready) .mbic :is(.mbpic,.mbski,.mbgi,.mbuw){opacity:1}
 .mbskx:active .mbicon{filter:brightness(1.35) saturate(1.2);transform:scale(1.05)}
-/* 2x2 בפינה הימנית התחתונה (המסמך, ו-MAX: ברירת המחדל בתצוגה; ?mbbtn=arc מחזיר את הקשת). ארבעה עיגולים שווים, 74px ומרווח 10:
+/* 2x2 בפינה הימנית התחתונה (המסמך, ו-MAX: ברירת המחדל בתצוגה; ?mbbtn=arc מחזיר את הקשת). ארבעה עיגולים שווים, 74px ומרווח 12 (QUINN: לפחות 2 מ"מ):
    התקיפה בפינה, s1 משמאלה, סקיל-העל מעליה, s2 באלכסון. הלחש והריפוי בטור משמאל לרשת, מחוץ לה */
 body.mbgrid .skills.mbsk .mbskb,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb{--w:74px}
 body.mbgrid .skills.mbsk .mbatk,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbatk{--x:0px;--y:0px}
-body.mbgrid .skills.mbsk .mbskb[data-sk="s1"],body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb[data-sk="s1"]{--x:84px;--y:0px}
-body.mbgrid .skills.mbsk .mbskb[data-sk="s2"],body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb[data-sk="s2"]{--x:84px;--y:84px}
-body.mbgrid .skills.mbsk .mbskb[data-sk="ult"],body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb[data-sk="ult"]{--x:0px;--y:84px}
-body.mbgrid .skills.mbsk .mbsp-spell,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbsp-spell{--w:54px;--x:178px;--y:8px}
-body.mbgrid .skills.mbsk .mbsp-heal,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbsp-heal{--w:50px;--x:180px;--y:94px}
+body.mbgrid .skills.mbsk .mbskb[data-sk="s1"],body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb[data-sk="s1"]{--x:86px;--y:0px}
+body.mbgrid .skills.mbsk .mbskb[data-sk="s2"],body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb[data-sk="s2"]{--x:86px;--y:86px}
+body.mbgrid .skills.mbsk .mbskb[data-sk="ult"],body.mbgrid .swap:not([hidden])~.skills.mbsk .mbskb[data-sk="ult"]{--x:0px;--y:86px}
+body.mbgrid .skills.mbsk .mbsp-spell,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbsp-spell{--w:54px;--x:182px;--y:8px}
+body.mbgrid .skills.mbsk .mbsp-heal,body.mbgrid .swap:not([hidden])~.skills.mbsk .mbsp-heal{--w:50px;--x:184px;--y:96px}
