@@ -36,6 +36,9 @@ https://creativecommons.org/publicdomain/zero/1.0/
 | me_back.mp3 | אתה חוזר לחיים | lentikula, Healing Spell Impacts (CC0) | Healing Spell Impact 9 |
 | gamble_tick.mp3 | גלגל ההימור: תקתוק | Kenney Casino Audio | chip-lay-1 |
 | gamble_win.mp3 | ניצחון בהימור | Kenney Casino Audio | chips-handle-1 |
+| imp_hammer.mp3 | **מוכן, לא מחובר:** חבטת הטנק (תקיפה בסיסית וסלאם). 0.38 שנ' | RPG Sound Pack (CC0, OpenGameArt) | bfh1_hit_01.ogg |
+| imp_wall.mp3 | **מוכן, לא מחובר:** חומת הברזל של הטנק. 1.2 שנ': רעידת אדמה (נחתכה מ-5 שנ') ומעליה סלע נשבר | Earthquake and Open Sesame (shake.ogg) + RPG Sound Pack (bfh1_rock_breaking_03.ogg), שניהם CC0 | shake.ogg, bfh1_rock_breaking_03.ogg |
+| cry_war.mp3 | **מוכן, לא מחובר:** שאגת הלעג של הטנק. 0.72 שנ' | mnstr5.wav (CC0, OpenGameArt) | mnstr5.wav |
 | gamble_lose.mp3 | הפסד בהימור | Kenney Digital Audio | lowDown |
 
 סבב צלילים 1 ו-2 (8.11.2026, docs/concept/sound.md): `cast_` ו-`ui` נבחרו בדף ההאזנה של ARI (MAX בחר במקום אוראל). צלילי הרגעים (סבב 2) נבחרו על ידי ARI, ומקודדים ב-48k כדי לעמוד בתקציב של 200KB. החלפה = קובץ אחר באותו שם, ו-`node tools/build-sounds.js`.
