@@ -24,6 +24,7 @@ const AGING={
   /* המראה על הנשק. at: מאיזו רמה. glow: זוהר סביב הנשק (r רדיוס, a שקיפות). trail: שובל (n נקודות).
      parts: חלקיקים שעולים מהנשק (rate בשנייה, life שניות). grow: כמה הזוהר גדל בכל רמה בתוך רצועה */
   look:[
+    {at:1,glow:{r:11,a:0.25}},   // זוהר קטן כבר מ-‎+1, כדי שכל שדרוג נראה על הנשק (upfeel.js, 9.11)
     {at:3,glow:{r:15,a:0.4}},
     {at:7,glow:{r:19,a:0.5},trail:{n:8}},
     {at:10,glow:{r:24,a:0.65},trail:{n:11},parts:{rate:22,life:0.7}}
@@ -145,7 +146,7 @@ function forgeDraw(){
     if(why==='max')d+='<p>'+T('age.max')+'</p></div>';
     else{
       const o=ageOdds(n),nx=ageId(id,n+1);
-      d+='<p class="dim">'+T('age.to',gName(nx))+'</p>'+gCompare(nx,id);
+      d+='<p class="dim">'+T('age.to',gName(nx))+'</p>'+ufForgeHint(id,n)+gCompare(nx,id);
       d+='<p class="odds">'+T('age.odds',aPct(o.total))+'</p><p class="dim">'+T('age.oddsWhy',aPct(o.base),aPct(o.forge),aPct(o.luck))+'</p>';
       d+='<div class="cost">'+costLine(ageCost(id))+'</div>';
       d+='<p class="dim">'+(n===0?T('age.failZero'):AUI.gem&&gems?T('age.failSafe'):T('age.fail',gName(ageId(id,n-AGING.drop))))+'</p>';
@@ -158,7 +159,7 @@ function forgeDraw(){
 }
 // הצלחה: חגיגה גדולה על הדמות. כישלון: אפקט עצוב משלו, רעידה קטנה, והפריט יורד (או נשמר באבן חן)
 function forgeResult(r){
-  if(r.ok){celebrate(P.x,P.y-20,'aging','+'+r.to);banner(gName(r.id),C.gold)}
+  if(r.ok){celebrate(P.x,P.y-20,'aging','+'+r.to);banner(gName(r.id),C.gold);ufAged(r)}   // מדרגה של נשק ומספרים בזהב (upfeel.js)
   else{celebrate(P.x,P.y-20,'agingFail',r.saved?'💎':'-'+AGING.drop);S.shake=Math.max(S.shake,5);banner(r.saved?T('age.saved'):T('age.failed',gName(r.id)),C.dim)}
 }
 $('ovForge').addEventListener('click',e=>{
