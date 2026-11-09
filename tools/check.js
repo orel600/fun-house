@@ -4777,6 +4777,77 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     o.lift=await E(()=>MBCAM.pid===null&&!!joy);o.liftBack=!(await st()).free;await touch('touchEnd',[]);
     await E(()=>{mobaExit()});await cdp.detach();
   }catch(e){o.err=String(e).slice(0,160)}return o})();
+  /* ניסוי הטנק החדש (mb-tankx.js, ?tankx=1) וקפיצות חיית המחמד (petx.js, ?petx=1): שניהם כבויים כברירת מחדל, ונבדקים רק בתוך הניסוי.
+     הטנק: אותו משחק פעמיים (seed קבוע), פעם עם הגוף החדש ופעם בלי. הלוגיקה זהה (רגעי התקיפה, החיים והמיקומים), הגוף החדש מנגן
+     אנימציות מתוקנות (ערוצי המיקום מוכפלים ביחס אורך העצמות), העצמות זזות, תוקף תוך כדי תנועה, מהבהב בפגיעה, נופל במוות, ומתג באמצע משחק בונה מחדש.
+     עד שהקבצים של ARI נכנסים, הגוף הוא תחליף: הברברי עם עצמות ירכיים ורגליים ארוכות פי 1.5, כדי לבדוק את כל הדרך */
+  /* הציור עצמו מושך מספרים אקראיים (כ-260 ב-900 פריימים, גם בלי הניסוי), ולכן הוא רץ על מקור אקראי נפרד, כדי שרק הלוגיקה תושווה */
+  const txT=await (async()=>{const E=(f,a)=>page.evaluate(f,a),o={};
+    try{o.def=await E(()=>MBTANKX.on===false&&PETX.on===false);o.d3=await E(()=>!!(R3D.on&&R3D.ready));if(!o.d3)return o;
+      o.real=await E(()=>m3dLazy(MBTANKX.model));
+      if(o.real){await E(()=>{m3dGo(MBTANKX.model);if(MBTANKX.hammer&&m3dLazy(MBTANKX.hammer.prop))m3dGo(MBTANKX.hammer.prop)});
+        for(let i=0;i<120&&!(await E(()=>m3dReady(MBTANKX.model)&&m3dReady(MBTANKX.hammer.prop)));i++)await page.clock.runFor(100);
+        o.load=await E(()=>M3D.log.filter(l=>l.k===MBTANKX.model||l.k===MBTANKX.hammer.prop).map(l=>l.k+' '+l.ms+'ms').join(', '))}
+      else await E(()=>{const r=R3D.tmpl[MBTANKX.ref],t=THREE.SkeletonUtils.clone(r);t.userData=Object.assign({},r.userData);
+        t.traverse(b=>{if(b.isBone&&/^(hips|upperleg)/.test(b.name))b.position.multiplyScalar(1.5)});R3D.tmpl.__tx=t;MBTANKX._m0=MBTANKX.model;MBTANKX.model='__tx'});
+      Object.assign(o,await E(()=>{const X=MBTANKX,rnd=Math.random,out={},sv0=JSON.stringify(SAVE),seed=s=>{let x=s;Math.random=()=>(x=(x*16807)%2147483647)/2147483647};
+        const tkOf=()=>MB.u.find(u=>u.k==='hero'&&u.kit===X.kit&&!u.me);
+        const game=(on,s)=>{SAVE=JSON.parse(sv0);seed(s);X.on=on;mobaStart('warrior');MB.me.bot={t:0,mode:'push'};const tk=tkOf();if(!tk){mobaExit();return null}
+          const snap=()=>MB.u.map(u=>[u.x,u.y,u.hp,u.atkT,u.dead,u.flash,u.rot,u.face,u.cd&&u.cd.s1,u.cd&&u.cd.s2].join()).join('|');
+          const r={dirty:0,atk:[],moveAtk:0,tx:0,comp:0,bones:new Set(),fams:'',flash:false,die:null,toggle:null};let pa=tk.atkT;
+          for(let i=0;i<900&&!MB.over;i++){const x0=tk.x,y0=tk.y;mobaUpdate(1/30);if(tk.atkT>pa+0.05)r.atk.push(i);pa=tk.atkT;
+            if(i===300)tk.flash=1;
+            if(!tk.dead){const s0=snap(),R0=Math.random;Math.random=rnd;try{syncEnemy(tk,1/30)}finally{Math.random=R0}if(snap()!==s0)r.dirty++;const a=R3D.actors.get(tk);
+              if(a&&on){const R1=Math.random;Math.random=rnd;try{if(a.L.tx)r.tx++;const b=a.base&&act(a,a.base);if(b&&b.getClip()!==R3D.clips[a.base])r.comp++;
+                const h=bone(a.root,'upperarmr')||bone(a.root,'hips');if(h&&i%15===0)r.bones.add(h.quaternion.toArray().map(v=>v.toFixed(2)).join());
+                const one=a.one&&a.one.isRunning()?a.one.getClip().name:'';if(/Attack|Chop|Slice/.test(one)&&Math.hypot(tk.x-x0,tk.y-y0)>0.5)r.moveAtk++;
+                if(i===300)r.flash=a.mats.some(m=>m.emissive.r>0.5)&&a.mats.every(m=>!m.userData.txF||m.userData.txF.value===1)}finally{Math.random=R1}}}
+            if(i===300)tk.flash=0}
+          r.hash=MB.u.map(u=>[u.kit||u.k,Math.round(u.hp),Math.round(u.x),Math.round(u.y)].join(':')).join('|');
+          if(on){const a=R3D.actors.get(tk);
+            if(a){const L=a.L,fp=[],at=MBMOVE.atk[tk.kit];a.mixer.stopAllAction();a.one=null;a.base=null;   // תנוחת הפטיש: עמידה, ריצה ותקיפה, אחת אחת
+              loop(a,L.anim.idle);tankxCarry(a);fp.push(a.fam);loop(a,L.anim.run);tankxCarry(a);fp.push(a.fam);once(a,R3D.clips[at+'@up']?at+'@up':at,0.4);a.mixer.update(0.05);tankxCarry(a);fp.push(a.fam);r.fams=fp.join('/');
+              const h=bone(a.root,'hips'),q0=h&&h.quaternion.clone();once(a,L.anim.die,1.2,true);a.mixer.update(0.6);tankxCarry(a);r.dieFam=a.fam;
+              const d=a.one&&a.one.getClip(),tr=d&&d.tracks.find(t=>t.name==='hips.position'),t0=R3D.clips[L.anim.die].tracks.find(t=>t.name==='hips.position');
+              r.die={moved:!!h&&h.quaternion.angleTo(q0)>0.05,ratio:tr&&t0?+(tr.values[1]/t0.values[1]).toFixed(3):null};
+              a.one=null;a.mixer.stopAllAction();
+              X.on=false;tk.dead=false;syncEnemy(tk,1/30);const off=R3D.actors.get(tk);X.on=true;syncEnemy(tk,1/30);const back=R3D.actors.get(tk);
+              r.toggle={off:!!off&&off.L.model===X.ref,back:!!back&&!!back.L.tx}}}
+          mobaExit();return r};
+        try{let s=0,A=null;for(let k=1;k<40&&!s;k++){seed(k);mobaStart('warrior');if(tkOf())s=k;mobaExit()}
+          // המשחק הראשון אחרי הפתיחה תמיד שונה מכל השאר (גם בלי הניסוי), ולכן משחק חימום לפני ההשוואה
+          if(s){game(false,s);A=game(true,s)}
+          if(A){const B=game(false,s),C=game(false,s);out.same=!!B&&A.hash===B.hash&&A.atk.join()===B.atk.join();out.offoff=!!C&&B.hash===C.hash&&B.atk.join()===C.atk.join();out.dirty=A.dirty+(B?B.dirty:0);out.atkN=A.atk.length;out.tx=A.tx;out.comp=A.comp;out.bones=A.bones.size;
+            out.moveAtk=A.moveAtk;out.flash=A.flash;out.die=A.die;out.toggle=A.toggle;out.seed=s;out.fams=A.fams;out.dieFam=A.dieFam}else out.err='no tank bot';
+          // הצעד בריצה: כמה הרגל עולה (ביחס לגובה הגוף), וכמה מהר היא זזה כשהיא על הרצפה מול מהירות הקרקע. הגוף החדש מול הברברי
+          const gait=L=>{const a=makeActor(L);a.root.position.set(0,0,0);a.root.rotation.set(0,0,0);const H=L.h/COSB(),x=act(a,L.anim.run);a.mixer.stopAllAction();x.reset().setLoop(THREE.LoopRepeat).play();
+            const D=x.getClip().duration,N=120,b=bone(a.root,'footl'),pts=[];if(!b){freeActor(a);return null}
+            for(let i=0;i<=N;i++){a.mixer.setTime(D*i/N);a.root.updateMatrixWorld(true);pts.push(b.getWorldPosition(new THREE.Vector3()))}
+            const ys=pts.map(v=>v.y),lo=Math.min(...ys),bd=0.03*H;let sp=0,n=0;for(let i=1;i<pts.length;i++)if(pts[i].y<lo+bd&&pts[i-1].y<lo+bd){sp+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].z-pts[i-1].z)/(D/N);n++}
+            a.mixer.stopAllAction();freeActor(a);return {lift:+((Math.max(...ys)-lo)/H).toFixed(3),slide:+(sp/Math.max(1,n)/MBMOVE.run).toFixed(2)}};   // slide: מהירות הרגל במגע מול מהירות הקרקע (1 = בלי החלקה)
+          X.on=true;const LX=tankxLook();X.on=false;out.gait={kk:gait(LOOK3D.mb_tank),tx:LX&&gait(LX)};
+          // אתה כטנק: אותו גוף על הגיבור שלך, עם הפטיש במקום הנשק מקרוב. ובלי הניסוי: הדמות שלך
+          SAVE=JSON.parse(sv0);seed(1);X.on=true;mobaStart('tank');Math.random=rnd;syncPlayer(1/30);syncPlayer(1/30);{const a=R3D.player;out.me={model:a&&a.L.model,sword:!!(a&&a.props.sword&&a.props.sword.visible),fam:a&&a.fam||null}}
+          X.on=false;syncPlayer(1/30);out.meOff=R3D.player&&R3D.player.L.model;mobaExit();
+          out.h=X.stat.h;out.size=X.size;out.clamp=X.stat.clamp;
+          out.fac=X.stat.fac;out.clips=X.stat.clips;out.gaitN=X.stat.gait;out.tracks=X.stat.tracks;out.rebuilt=X.stat.rebuilt;out.hammer=!!R3D.props[X.hammer.prop]}
+        catch(e){out.err=String(e&&e.stack||e).slice(0,200)}
+        Math.random=rnd;X.on=false;SAVE=JSON.parse(sv0);if(X._m0){X.model=X._m0;delete X._m0;delete R3D.tmpl.__tx;X._f=null;X._L=null}if(S.mb)mobaExit();return out}));
+      /* חיית המחמד: אותו מסלול פעמיים (זזה 1.5 שניות, עומדת 1.5), עם הקפיצות ובלי. המיקום שלה זהה (המעקב לא השתנה),
+         בתנועה הגוף קופץ ונמעך בגבולות המפרט, ובעמידה חוזר לגודל ולזווית הרגילים, עם נשימה קטנה */
+      const pk=await E(()=>{const L=LOOK3D['pet_'+(SAVE.pet.kind||PET.default)+(SAVE.pet.stage+1)];if(L)m3dNeed(L.model);return L&&L.model});
+      if(pk)for(let i=0;i<80&&!(await E(k=>m3dReady(k),pk));i++)await page.clock.runFor(100);
+      o.pet=await E(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,rnd=Math.random,r={};
+        const path=on=>{let x=7;Math.random=()=>(x=(x*16807)%2147483647)/2147483647;PETX.on=on;Object.assign(PETX.stat,{frames:0,hops:0,maxLift:0,minSy:9,maxSy:0});
+          enterWorld('home');enemies=[];S.pet=null;P.x=0;P.y=0;P.face=0;petUpdate(1/60);const pos=[];let idle=null;
+          for(let i=0;i<180;i++){const mv=i<90;P.x+=mv?185/60:0;P.moving=mv;P.speed=185;enemies=[];if(S.wd)S.wd.scentT=999;if(S.pet)S.pet.digT=999;
+            petUpdate(1/60);syncPet(1/60);if(S.pet)pos.push(Math.round(S.pet.x)+','+Math.round(S.pet.y))}
+          const a=R3D.pet;if(a&&a.root.visible){const t=R3D.tmpl[a.L.model],sc0=a.L.h/COSB()/t.userData.h;idle={sy:+(a.root.scale.y/sc0).toFixed(3),sx:+(a.root.scale.x/sc0).toFixed(3),rz:+a.root.rotation.z.toFixed(3),w:a.px?+a.px.w.toFixed(2):null}}
+          return {pos:pos.join(';'),idle,vis:!!(a&&a.root.visible),st:Object.assign({},PETX.stat)}};
+        try{const A=path(true),B=path(false);r.same=A.pos===B.pos&&A.pos.length>0;r.vis=A.vis;r.idle=A.idle;r.hops=A.st.hops;r.lift=+A.st.maxLift.toFixed(3);r.sy=[+A.st.minSy.toFixed(3),+A.st.maxSy.toFixed(3)];
+          r.offIdle=B.idle}catch(e){r.err=String(e&&e.stack||e).slice(0,200)}
+        PETX.on=false;Math.random=rnd;SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+    }catch(e){o.err=String(e).slice(0,200)}return o})();
   // צילומי משחקי השאול (QUINN, 8.11): חלון הבחירה, מסך הבנייה, משחק באמצע (כולם בוטים, 40 שניות), החנות ומסך הסוף, כדי לבדוק את החלון כולו
   // הגיבור: האחרון ב-MBKIT, כך שגיבור חדש מצולם לבד. תקלה כאן לא מפילה את הבדיקה, רק נכתבת
   if(CFG.shots){try{const E=(f,a)=>page.evaluate(f,a),k=await E(()=>Object.keys(MBKIT).pop());
@@ -4812,6 +4883,14 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     ', נשק: '+(L.heroW||'-')+(L.heroVil?', ומשם לכפר':', לא נכנס לכפר'));
   check(L.heroHp===heroHp,'פסיבית בריצה: הלוחם קיבל +'+L.heroHp+' חיים (צפוי +'+heroHp+')');
   check(again,'בחירת דמות: '+(again?'לא חוזרת במשחק השני':'הופיעה שוב'));
+  {const o=txT,pt=o.pet||{},T=o.real?'הגוף החדש':'תחליף (הקבצים של ARI עוד לא נכנסו)';
+    const tk=!o.d3||(o.dirty===0&&(o.same||!o.offoff)&&o.tx>0&&o.comp>0&&o.bones>=3&&o.moveAtk>0&&o.flash&&o.die&&o.die.moved&&o.toggle&&o.toggle.off&&o.toggle.back&&o.fac&&o.tracks>0&&(!o.real||o.gait&&o.gait.tx&&o.gait.kk&&o.gait.tx.lift<=o.gait.kk.lift*1.5&&o.gait.tx.slide>=o.gait.kk.slide*0.8&&o.gait.tx.slide<=1.1&&o.me&&o.me.model==='tankX'&&o.me.sword&&o.meOff!=='tankX'&&o.h&&o.h.now<=o.h.old*(o.size+0.02)&&!!o.clamp&&!!o.clamp.Death_A)&&(!o.hammer||o.fams==='idle/run/attack'&&o.dieFam==='attack')&&!o.err);
+    const pe=!o.d3||(pt.vis&&pt.same&&pt.hops>=2&&pt.lift>0.08&&pt.lift<=0.125&&pt.sy[0]>=0.87&&pt.sy[1]<=1.14&&pt.idle&&Math.abs(pt.idle.sy-1)<=0.025&&Math.abs(pt.idle.sx-1)<0.01&&Math.abs(pt.idle.rz)<0.01&&!pt.err);
+    check(o.def&&tk&&pe,'ניסוי הטנק והחיה (?tankx=1, ?petx=1): '+(o.def?'כבויים כברירת מחדל':'דולקים בלי לבקש')+(!o.d3?', בדו-ממד אין מה לבדוק':
+      ', טנק ('+T+(o.load?', נטען '+o.load:'')+'): '+(o.err||(o.dirty===0?'הציור לא נוגע במצב המשחק (900 פריימים)':'הציור שינה את מצב המשחק '+o.dirty+' פעמים!')+(o.same?', אותו משחק בדיוק עם ובלי':o.offoff?', המשחק השתנה!':', המשחק לא חוזר על עצמו גם בלי הניסוי (לא קשור לניסוי)')+', '+o.atkN+' תקיפות, '+o.tx+' פריימים בגוף החדש, '+o.comp+' באנימציה מתוקנת'+
+        ', צעד בריצה (גובה ביחס לגוף, ומהירות במגע מול הקרקע): '+(o.gait?JSON.stringify(o.gait.tx)+' מול הברברי '+JSON.stringify(o.gait.kk):'-')+', '+o.clips+' אנימציות ו-'+o.tracks+' ערוצים תוקנו (יחס '+JSON.stringify(o.fac)+')'+', '+o.bones+' תנוחות שונות, '+o.moveAtk+' פריימים של תקיפה בתנועה'+(o.flash?', מהבהב':', לא מהבהב')+
+        (o.die?', מוות '+(o.die.moved?'זז':'לא זז')+' (יחס הירכיים '+o.die.ratio+')':', אין מוות')+(o.toggle?', מתג: '+(o.toggle.off?'חוזר לטנק הרגיל':'לא חוזר')+' ו'+(o.toggle.back?'שוב לחדש':'לא חוזר לחדש'):'')+(o.h?', גובה '+o.h.now+' מול '+o.h.old+' (בלי תיקון '+o.h.raw+', ירד לרצפה '+o.h.lo+')'+(o.clamp&&o.clamp.Death_A?', מוות בלי ריחוף ('+o.clamp.Death_A.keys+'/'+o.clamp.Death_A.of+' פריימים ירדו)':', מוות בלי תיקון ריחוף')+(o.clamp&&o.clamp.Running_B?', ריצה בלי שקיעה ('+o.clamp.Running_B.keys+'/'+o.clamp.Running_B.of+' פריימים עלו)':''):'')+(o.me?', אתה כטנק: '+o.me.model+(o.me.sword?' עם פטיש':' בלי פטיש')+', ובלי הניסוי '+o.meOff:'')+(o.hammer?', עם פטיש (תנוחות '+o.fams+', במוות '+o.dieFam+')':', בלי פטיש (עוד לא נכנס)'))+
+      ', חיה: '+(pt.err||(!pt.vis?'לא נראית':(pt.same?'אותו מסלול':'המסלול השתנה!')+', '+pt.hops+' קפיצות, גובה עד '+pt.lift+', מעיכה '+(pt.sy||[]).join('..')+', בעמידה '+JSON.stringify(pt.idle)))))}
   for(const nm in uiR){const {v,w}=uiR[nm],all=[...Object.entries(v.wins),...Object.entries(w.wins)],bad=[...v.bad,...w.bad],off=[...v.off,...w.off];
     check(!bad.length&&!off.length&&v.n>3&&w.n>3&&v.panel&&w.gateAuto===false&&w.goBtn&&v.who&&w.who&&w.mini&&w.miniOpen&&v.res<=2&&w.res<=2&&v.more&&v.cards>0&&v.tradeBack&&(nm!=='land'||v.cols===2)&&all.every(x=>x[1]==='ok')&&v.esc&&v.backdrop&&v.tapOut,
       'ממשק, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(bad.length?'נוגעים זה בזה: '+bad.join(', '):'הפס העליון והסרגל לא נוגעים')+(off.length?', מחוץ למסך: '+off.join(', '):'')+
