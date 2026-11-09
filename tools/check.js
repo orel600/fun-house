@@ -2256,6 +2256,19 @@ function worldBot(m,L,god){
       reset();startRun();o.clean=ULTLS.orbs.every(x=>!x.g.visible);
     }catch(e){o.err=String(e&&e.stack||e)}SAVE.fxLess=fl;S.mode=mode;return o});
   check(!ull.err&&(ull.d2||ull.ok&&ull.n===6&&ull.col&&ull.gone&&ull.less===4&&ull.clean),'arena ult lanterns: '+(ull.err||(ull.d2?'2D, nothing to draw':[[ull.n+' lanterns',ull.n===6],['damage-type color',ull.col],['gone after the flight',ull.gone],['fewer effects '+ull.less,ull.less===4],['new run clean',ull.clean]].map(x=>x[0]+(x[1]?' ✓':' ✗')).join(', '))));
+  // painted arena sky (arena-sky.js, correction pack layer A): in 3D the floor stops at the wooden rim and a camera-attached sky shows beyond it.
+  // Off (flat color, floor everywhere) in fewer effects, in the boss palette (no picture) and outside the arena. 2D: nothing to check
+  const sky=await page.evaluate(()=>{const o={},fl=SAVE.fxLess,mode=S.mode;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      startRun();S.mode='play';const run=a=>{S.arena=a;FRAME_T+=17;render3d(R3D.ox||0,R3D.oy||0);const u=ALOOK.mat&&ALOOK.mat.userData.u;return {q:!!(ASKY.quad&&ASKY.quad.visible),r:u&&u.aSky.value}};
+      for(const a of ['classic','waves','maze'])askyTex(ARENA_SKY.map[a]);   // decoding the data URIs takes a moment
+      return new Promise(res=>setTimeout(()=>{try{
+        const c=run('classic');o.on=c.q&&c.r===ARENA_SKY.edge;o.waves=run('waves').q;o.maze=run('maze').q;
+        const b=run('boss');o.boss=!b.q&&b.r===0;
+        SAVE.fxLess=true;const l=run('classic');o.less=!l.q&&l.r===0;SAVE.fxLess=fl;
+      }catch(e){o.err=String(e&&e.stack||e)}SAVE.fxLess=fl;S.mode=mode;res(o)},600))}
+    catch(e){o.err=String(e&&e.stack||e)}SAVE.fxLess=fl;S.mode=mode;return o});
+  check(!sky.err&&(sky.d2||sky.on&&sky.waves&&sky.maze&&sky.boss&&sky.less),'painted arena sky: '+(sky.err||(sky.d2?'2D, nothing to draw':[['classic',sky.on],['waves',sky.waves],['maze (dimension)',sky.maze],['boss stays flat',sky.boss],['fewer effects: flat',sky.less]].map(x=>x[0]+(x[1]?' ✓':' ✗')).join(', '))));
   // רגעים לסקילי הזירה (MLBB 1.1, skill-anim.js SKANIM.mo): רק מה שהיה חסר לפי טבלת הפערים. בתוך perCast, ו"פחות אפקטים" מוריד את הקישוטים
   // רגע הסכנה של הבוס (arena-danger.js, MLBB 2.1): המילוי לפי השעונים האמיתיים מגיע ל-100% ברגע הפגיעה (בפריים האחרון לפניה: 1 פחות פריים),
   // באמצע לפי החשבון (גל הדף: 0.4 מתוך 1.0 ברגע שהאזהרה נגמרת), תקתוק, הבזק, חריכה עד max, ו"פחות אפקטים" בלי חריכה. המכשף במג'נטה
