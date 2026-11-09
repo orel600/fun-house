@@ -182,7 +182,10 @@ const ITEMS={
   shield3:  {src:raw('shield3'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},   // יצא כבר כמו KayKit: הפנים ב-xy
   shield4:  {src:raw('shield4'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},
   // פטיש האבן של הטנק: הטיוטה של אוראל (art/weapons/raw/stoneHammer.glb) אחרי tools/blender/vc2palette.js: הצירים והאחיזה של KayKit (ידית על y, האחיזה בראשית), פלטה ו-emissive. משקל וצורה כמו שהם: לא מקטינים
-  stoneHammer:{src:raw('stoneHammer'),ready:true,tex:64}
+  stoneHammer:{src:raw('stoneHammer'),ready:true,tex:64},
+  // חלקים לגיבורי השאול (ARI, art/parts/README.md): הפגיון השני של המתנקש והגביש המרחף של הקוסם. ההרכבה: js/mb-parts.js
+  shadowDagger:{src:path.join(ROOT,'art/parts/shadowDagger.glb'),ready:true,tex:64},
+  mageCrystal:{src:path.join(ROOT,'art/parts/mageCrystal.glb'),ready:true,tex:64}
 };
 /* כובעים (ניר, 6.11.2026: "הגרפיקה של הכובע חייבת שיפור"). הכובעים האמיתיים של KayKit, כחלק נפרד בלי שלד, במרחב של עצם הראש,
    כדי שאפשר לחבר כל כובע לכל דמות (armor3d ב-js/armor.js). השם במשחק: hat_<שם>.
@@ -192,6 +195,8 @@ const ITEMS={
 /* hat ready:true: כתר או כובע שנבנה מחוץ ל-KayKit (art/hats/hat_<שם>.glb, כבר במרחב של עצם הראש, y למעלה). נכנס כמו שהוא, בלי חילוץ מדמות. node tools/build3d.js - --only hats --hats=tankCrown */
 const HATS={
   tankCrown:{src:path.join(ROOT,'art/hats/hat_tankCrown.glb'),ready:true,tex:64},   // הכתר של הטנק (ARI, חבילת התיקונים). הצבת הכתר על עצם הראש: הקוד של BOB
+  assassinMask:{src:path.join(ROOT,'art/parts/assassinMask.glb'),ready:true,tex:64},   // חצי מסכה למתנקש (ARI). ההרכבה: js/mb-parts.js
+  mageCirclet:{src:path.join(ROOT,'art/parts/mageCirclet.glb'),ready:true,tex:64},     // עטרה לקוסם במקום כובע המכשפה (ARI)
   helm:{src:adv('Characters/gltf/Knight.glb'),node:'Knight_Helmet',parts:{metal:()=>true}},
   mage:{src:adv('Characters/gltf/Mage.glb'),node:'Mage_Hat',parts:{cloth:(r,g,b)=>b>r&&b>g-5,band:()=>true}},
   fur: {src:adv('Characters/gltf/Barbarian.glb'),node:'Barbarian_Hat',cut:-0.35,parts:{fur:()=>true}},

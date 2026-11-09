@@ -4703,6 +4703,16 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       MBPARTS.tank.on=false;syncPlayer(1/60);o.off=!R3D.player.props.x_crown;
     }catch(e){o.err=String(e&&e.stack||e)}MBPARTS.tank.on=on;return o});
   check(!pa.err&&(pa.d2||pa.me&&pa.bot&&pa.off),'underworld hero parts: '+(pa.err||(pa.d2?'2D, nothing to draw':[['your tank: hammer + crown, axe and fur hat hidden',pa.me],['bot rebuilt once parts load',pa.bot],['switch off',pa.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
+  // ARI #556/#557: the assassin's mask and second dagger, the mage's circlet (witch hat hidden) and floating crystal that bobs. 2D: nothing to draw
+  const p2=await page.evaluate(async()=>{const o={};try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      for(const p of ['w_item_shadowDagger','w_item_mageCrystal'])m3dNeed(p);for(let i=0;i<100&&!(R3D.props.w_item_shadowDagger&&R3D.props.w_item_mageCrystal);i++)await new Promise(r=>setTimeout(r,100));
+      const vis=(a,ks)=>ks.every(k=>a.props[k]&&a.props[k].visible);
+      mobaStart('assassin');syncPlayer(1/60);syncPlayer(1/60);o.as=vis(R3D.player,['sword','x_mask','x_dagger2']);
+      mobaStart('mage');syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player;let hat=null;a.root.traverse(x=>{if(x.name==='Mage_Hat')hat=x.visible});
+      o.mg=vis(a,['gun','x_circlet','x_crystal'])&&hat===false;const c=a.props.x_crystal,y0=c.position.y;await new Promise(r=>setTimeout(r,250));syncPlayer(1/60);o.bob=Math.abs(c.position.y-y0)>0.005;
+    }catch(e){o.err=String(e&&e.stack||e)}return o});
+  check(!p2.err&&(p2.d2||p2.as&&p2.mg&&p2.bob),'underworld assassin and mage parts: '+(p2.err||(p2.d2?'2D, nothing to draw':[['assassin mask + second dagger',p2.as],['mage circlet (hat hidden) + crystal',p2.mg],['crystal bobs',p2.bob]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
   // hero accents (mb-accent.js, ARI's colours): each hero's weapon glows in its own colour, capped at 1.2, on your hero and the bots;
   // the mage's staff flashes turquoise on the ult; steady (no pulse) in fewer effects. 2D: nothing to draw
   const ac=await page.evaluate(async()=>{const o={},fl=SAVE.fxLess;try{

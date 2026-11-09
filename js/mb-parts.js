@@ -1,5 +1,6 @@
 /* משחקי השאול: חלקים לגיבורים (חבילת הבוקר של אוראל, 9.11.2026, משימה 5). המודלים של ARI, הרכבה כאן.
    כל גיבור שנמצא כאן מקבל חפצים על עצמות (add: עצם ומיקום, כמו props ב-LOOK3D) ומסתיר חלקים מהמודל המקורי (hide: שמות של meshes).
+   המתנקש (#556): מסכה ופגיון שני. הקוסם (#557): עטרה במקום הכובע וגביש מרחף. הלוחם: הנוצה (#558) כבויה ולא נבנתה, רק קישוט.
    הטנק (#552): פטיש האבן ביד ימין (w_item_stoneHammer, HAND_R בגודל 1) וכתר על הראש (hat_tankCrown, המיקום כבר בקובץ),
    ובמקום הגרזן והכובע הפרוותי של הברברי. המגן ביד שמאל נשאר.
    חל על הבוטים (lookOf) ועל הגיבור שלך במראה הערכה (mb-kitlook.js). רק מראה: הנזק, הגודל והפגיעות לא תלויים בזה.
@@ -11,6 +12,12 @@ const MBPARTS={
   tank:{on:true,
     add:{hammer:{prop:'w_item_stoneHammer',...HAND_R,s:1},crown:{prop:'hat_tankCrown',bone:'head',pos:[0,0,0],rot:[0,0,0,1]}},
     hide:['2H_Axe','Barbarian_Hat']},
+  assassin:{on:true,   // #556: חצי מסכה עם חריצים זוהרים, ופגיון שני ביד שמאל (לילך, זוהר משלו)
+    add:{mask:{prop:'hat_assassinMask',bone:'head',pos:[0,0,0],rot:[0,0,0,1]},dagger2:{prop:'w_item_shadowDagger',bone:'handslotl',pos:[0,0.033,0],rot:[0,0,0,1],s:1}},
+    hide:[]},
+  mage:{on:true,   // #557: עטרה במקום כובע המכשפה, וגביש שמרחף מעל יד שמאל ועולה ויורד (bob, ביחידות של העצם)
+    add:{circlet:{prop:'hat_mageCirclet',bone:'head',pos:[0,0,0],rot:[0,0,0,1]},crystal:{prop:'w_item_mageCrystal',bone:'handslotl',pos:[0,0.42,0],rot:[0,0,0,1],bob:{amp:0.05,rate:0.6}}},
+    hide:['Mage_Hat']},
   hunter:{on:/[?&]hunter=hf/.test(location.search),model:'hunterHF',add:{},hide:[]},   // הצייד החדש של ARI (#555): רק כשמבקשים, ?hunter=hf. אותו שלד (Ranger), אותם קליפים והקשת
   stat:{built:0,hidden:0,rebuilt:0}
 };
@@ -33,9 +40,15 @@ function mbPartsLook(B,kit){
     return L};
   // מסתירים את החלקים המקוריים כשהדמות נבנית (דמות ממאגר כבר מוסתרת: אותו מפתח, אותו מראה)
   const bm=makeActor;window.makeActor=function(L){const a=bm.apply(this,arguments);
-    if(L&&L.hide)a.root.traverse(o=>{if(L.hide.includes(o.name)){o.visible=false;MBPARTS.stat.hidden++}});return a};
+    if(L&&L.hide)a.root.traverse(o=>{if(L.hide.includes(o.name)){o.visible=false;MBPARTS.stat.hidden++}});
+    if(L&&L.props){a.bob=null;for(const k in L.props){const b=L.props[k].bob;if(b&&a.props[k])(a.bob||(a.bob=[])).push({m:a.props[k],y:a.props[k].position.y,b})}}
+    return a};
+  // חלק מרחף (הגביש של הקוסם) עולה ויורד. בהפחתת תנועה: עומד
+  const bob=a=>{if(!a||!a.bob)return;const calm=typeof calmOn==='function'?calmOn():typeof RM!=='undefined'&&RM,t=performance.now()/1000;
+    for(const o of a.bob)o.m.position.y=o.y+(calm?0:Math.sin(t*o.b.rate*Math.PI*2)*o.b.amp)};
+  if(typeof syncPlayer==='function'){const bp=syncPlayer;window.syncPlayer=function(){const r=bp.apply(this,arguments);if(S.mb)bob(R3D.player);return r}}
   // בוט שנבנה לפני שהחלקים נטענו: נבנה מחדש פעם אחת עם החלקים
   if(typeof mb3dUnit==='function'){const bu=mb3dUnit;mb3dUnit=function(e,dt){
     const a=R3D.actors.get(e);if(a&&e&&e.k==='hero'&&MBPARTS[e.kit]){const L=lookOf(e);if(L&&a.key!==lookKey(L)){freeActor(a);R3D.actors.delete(e);MBPARTS.stat.rebuilt++}}
-    return bu.apply(this,arguments)}}
+    const r=bu.apply(this,arguments);bob(R3D.actors.get(e));return r}}
 })();
