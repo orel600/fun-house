@@ -859,6 +859,13 @@ function worldBot(m,L,god){
     const poor=!vTrade('buy','stone');bagAdd('coins',20);const buy=vTrade('buy','stone')&&SAVE.bag.stone===5&&SAVE.bag.coins===10;
     localStorage.removeItem(SAVE_STORE.key);saveLoad();return{sell,poor,buy}});
   check(mk.sell&&mk.poor&&mk.buy,'שוק: '+(mk.sell?'מכירה עובדת':'מכירה נכשלה')+', '+(mk.poor?'בלי מטבעות אי אפשר לקנות':'קנה בלי כסף')+', '+(mk.buy?'קנייה עובדת':'קנייה נכשלה'));
+  // לילה בכפר (vfx.js, VFX.night ו-VFX.pools): בשיא הלילה הכפר מקבל את המספרים הבהירים, העולם נשאר חשוך, ביום אין שינוי. בתלת-ממד: כתמי האור נבנים, דולקים בלילה וכבויים ביום
+  const nv=await page.evaluate(()=>{if(typeof VFX==='undefined'||typeof VFX.todAt!=='function')return{skip:true};const N=VFX.night.village,v=VFX.todAt(1,'village'),w=VFX.todAt(1,'meadow'),d=VFX.todAt(12,'village'),q=x=>Math.abs(x)<1e-6;
+    const r={vil:q(v.k-N.k)&&q(v.exp-N.exp)&&q(v.vig-N.vig)&&v.n===1,world:q(w.k-VFX.tod[0].k)&&q(w.exp-VFX.tod[0].exp),day:d.n===0&&d.k===1};
+    if(R3D.on&&R3D.ready){VFX.poolsSync(1);const L=VFX.poolList(),want=VILLAGE.props.filter(p=>p.k==='lamp').length+VFX.pools.mark.at.length;r.pools=L.length+'/'+want;
+      r.lit=L.length===want&&L.every(m=>m.visible&&m.material.opacity>0);VFX.poolsSync(0);r.off=L.every(m=>!m.visible)}else{r.lit=r.off=true;r.pools='2d'}
+    return r});
+  check(nv.skip||nv.vil&&nv.world&&nv.day&&nv.lit&&nv.off,'לילה בכפר: '+(nv.skip?'VFX כבוי':(nv.vil?'המספרים הבהירים בכפר':'הכפר לא קיבל את מספרי הלילה')+', '+(nv.world?'העולם לא השתנה':'העולם השתנה')+', '+(nv.day?'ביום בלי שינוי':'היום השתנה')+', כתמי אור '+nv.pools+(nv.lit?' דולקים בלילה':' לא דולקים')+(nv.off?' וכבויים ביום':' ולא כבים')));
   // חנות קישוטים (deco.js): קונים דגל, הוא עומד במקום פנוי (לא על מבנה), השני יקר יותר, בלי מטבעות אי אפשר, מזיזים ומורידים למחסן, והחבר רואה בפרופיל. בסוף מנקים
   const dc=await page.evaluate(()=>{const r={};try{SAVE.village.market=1;SAVE.bag.coins=0;bagAdd('coins',DECO.items.flag.price);
     const sl=decoSlots();r.slots=sl.length;r.clear=sl.every(s=>Object.values(VILLAGE.b).every(B=>Math.hypot(s.x-B.x,s.y-B.y)>B.r+20));
