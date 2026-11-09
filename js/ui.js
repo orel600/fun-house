@@ -3,7 +3,13 @@
    חלון חדש = שורה אחת, עם המזהה שלו ומה סוגר אותו. המראה (.win, .whd, .wx) ב-css/style.css */
 const UI={
   top:4,   // כמה משאבים לכל היותר בפס העליון. השאר בתרמיל, וכפתור "+N" פותח אותו
+  // עצירה מאחורי חלון (באג 9.11: יומן הקווסטים נפתח בעולם, והאויבים המשיכו להכות מאחוריו).
+  // בכפר ובעולם, כשהתפריט המלא פתוח (body.menu) או אחד החלונות האלה, העולם לא מתעדכן: אויבים, יריות, טיימרים.
+  // רוב החלונות כבר עוצרים לבד דרך S.mode (gear, book, map, sound). ייצור בכפר לפי שעון אמיתי ממשיך כרגיל
+  hold:['qLog'],
 };
+// האם העולם עוצר עכשיו בגלל חלון פתוח (main.js, frameStep). הזירה ומשחקי השאול לא משתנים
+const uiHold=()=>!!(S&&(S.wd||S.vil)&&!S.mb&&(document.body.classList.contains('menu')||UI.hold.some(id=>!$(id).hidden)));
 const WINS=[
   {id:'ovSound',close:()=>soundClose()},   // נגיעה בחוץ: audio.js
   {id:'ovHelp',close:()=>helpOpen(false),backdrop:true},
