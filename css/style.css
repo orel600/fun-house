@@ -88,7 +88,7 @@ html.fight .hud .xpbar,html.fight .hud .clock,html.fight .hud .lvl,html.fight .h
 .skb:nth-child(2){--x:104px}
 .skb:nth-child(3){--y:104px}
 .swap:not([hidden])~.skills .skb:nth-child(1){--w:72px;--x:116px;--y:0px}
-.swap:not([hidden])~.skills .skb:nth-child(2){--x:86px;--y:86px}
+.swap:not([hidden])~.skills .skb:nth-child(2){--x:84px;--y:84px}
 .swap:not([hidden])~.skills .skb:nth-child(3){--x:0px;--y:116px}
 .skb .dti{width:var(--ic-l);height:var(--ic-l);transition:opacity .15s}
 .skb:nth-child(1) .dti{width:var(--ic-l);height:var(--ic-l)}
