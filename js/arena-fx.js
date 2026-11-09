@@ -123,7 +123,7 @@ function arfxFrame(){if(ARFXS.f===S.t)return;ARFXS.f=S.t;ARFXS.n=0}
   const r=old.apply(this,arguments);
   if(!ar)return r;
   if(boss){fxPlay('ko_boss',x,y-30,{size:340,add:true});ARFXS.stat.koBoss++}
-  else if(!fxLess()&&S.t-ARFXS.ko>=ARFX.ko.gap){ajFrame();if(AJ.seen<=ARFX.ko.crowd||ajBig(e)){ARFXS.ko=S.t;ARFXS.stat.ko++;fxPlay('ko',x,y-e.r*0.5,{size:Math.max(70,e.r*4*(e.big||1)),add:true})}}
+  else if(!fxLess()&&(S.t-ARFXS.ko>=ARFX.ko.gap||ajBig(e))){ajFrame();if(AJ.seen<=ARFX.ko.crowd||ajBig(e)){ARFXS.ko=S.t;ARFXS.stat.ko++;fxPlay('ko',x,y-e.r*0.5,{size:Math.max(70,e.r*4*(e.big||1)),add:true})}}   // אויב-על תמיד (הפוף של arena-juice.js מוותר לו)
   return r}}
 
 /* ---- ניצחון: בזירה, ובמסך הניצחון ---- */

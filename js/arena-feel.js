@@ -69,15 +69,14 @@ function afCast(id){const k=ARFEEL.cast[id];if(!k)return;P.skCast={n:(P.skCast?P
 (()=>{const old=ultUse;ultUse=function(){const r=old.apply(this,arguments);if(r&&afArena())afCast('ult');return r}})();
 
 // 6. רצף הריגות (streak.js): "Rampage!" מ-3 ברצף, פעם אחת לרצף, ועמוד אור גם במדרגות הקיימות
-function afPillar(c,o){if(typeof VFX3D==='undefined'||!VFX3D.on||!VFX3D.on()||VFX3D.quality()!=='hi'||fxLess())return;
+function afPillar(c,o){if(calmOn()||typeof VFX3D==='undefined'||!VFX3D.on||!VFX3D.on()||VFX3D.quality()!=='hi'||fxLess())return;
   if(VFX3D.pillar(P.x,P.y,o.r,o.h,c,{life:o.life}))AF.stat.pillars++}
 (()=>{const old=streakKill;streakKill=function(){const s0=S.st,r=old.apply(this,arguments),s=S.st;if(!afArena()||!s)return r;
   const R=ARFEEL.rampage;
   if(s.n===R.n&&!s.ramp){s.ramp=true;AF.stat.rampage++;
-    floatText(P.x,P.y-P.r-46,T('feel.rampage'),R.col,22,false,true);
-    if(!fxLess()&&typeof fxPlay==='function'&&typeof SKANIM!=='undefined'){const Wd=SKANIM.word;fxPlay(Wd.fx,P.x,P.y-P.r-52,{size:Wd.size,sx:Wd.sx,alpha:Wd.alpha,vy:Wd.vy})}
+    streakShow('feel.rampage',s.n,R.col);   // MLBB 3.3: אותו רגע של הרצף (streak.js), למעלה על כרטיס הזהב, במקום מילה צפה וכרטיס נוסף מעל הגיבור
     afPillar(R.col,R.pillar);sfx('streak1')}
-  if(s.show&&s.show.t0===S.t&&s.n>R.n)afPillar(STREAK.ring,ARFEEL.pillar);   // מדרגה של streak.js (10/25/50/100) עכשיו
+  if(s.show&&s.show.t0===S.t&&s.n>R.n&&s.show.key!=='feel.rampage')afPillar(STREAK.ring,ARFEEL.pillar);   // מדרגה של streak.js (10/25/50/100) עכשיו
   return r}})();
 
 // התקרה לשנייה, אמיתית: כל פריים שבו הזירה או השאול עומדים נספר, מכל מערכת (arena-feel, arena-juice, skill-anim, eliteDown,
