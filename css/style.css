@@ -2075,3 +2075,10 @@ body.mb .skb.lock::after{content:none}
 /* arena-feel.js: הסקיל כמעט מוכן (ARFEEL.soon): הכפתור "מתנשף" רגע לפני */
 .skb.afsoon{animation:afsoon .12s ease-out infinite alternate}@keyframes afsoon{to{transform:scale(1.07);box-shadow:0 0 0 3px var(--dt),0 0 14px var(--dt)}}
 @media (prefers-reduced-motion:reduce){.skb.afsoon{animation:none}}
+
+/* Arena new skills, preview only (?arenanew=1, js/arena-new.js): a bar of 8 round buttons, top right */
+.arnbar{position:fixed;z-index:3;top:calc(env(safe-area-inset-top,0px) + 46px);left:calc(env(safe-area-inset-left,0px) + 10px);display:grid;grid-template-columns:repeat(4,44px);gap:6px;direction:ltr}
+.arnb{position:relative;width:44px;height:44px;border-radius:50%;border:2px solid var(--dt);background:rgba(18,22,36,.8);color:var(--dt);padding:0;display:grid;place-items:center;touch-action:none;cursor:pointer;overflow:hidden}
+.arnb svg{width:24px;height:24px}
+.arnb::before{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.62) calc(var(--cd,0)*100%),transparent 0)}
+.arnb::after{content:attr(data-sec);position:absolute;inset:0;display:grid;place-items:center;font:700 15px system-ui;color:#fff}
