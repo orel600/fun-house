@@ -3427,7 +3427,7 @@ function worldBot(m,L,god){
         if(q.x<B.x0||q.x>B.x1||q.y<B.y0||q.y>B.y1||(R.ponds||[]).some(p=>Math.hypot(p.x-q.x,p.y-q.y)<p.r+20)||Object.values(wGates(true)).some(g=>Math.hypot(g.x-q.x,g.y-q.y)<g.r+60))o.bad.push(s.id)}}
     enterWorld('home');const L=SECRETS.regions.meadow,go=s=>{P.x=s.x;P.y=s.y;secretsUpdate(0.05)},n0=()=>drops().length,of=k=>L.find(s=>s.kind===k);
     for(const e of enemies)e.dead=true;
-    const ch=of('chest');P.x=ch.x+SECRETS.reveal-10;P.y=ch.y;secretsUpdate(0.05);o.shown=!!scState()['v'+ch.id]&&!scFound(ch.id);let d0=n0();go(ch);o.chest=scFound(ch.id)&&n0()>d0;
+    const ch=of('chest');P.x=ch.x+SECRETS.reveal-10;P.y=ch.y;secretsUpdate(0.05);o.shown=!!scState()['v'+ch.id]&&!scFound(ch.id);let d0=n0();go(ch);for(let i=0;i<60&&!scFound(ch.id);i++)secretsUpdate(0.05);o.chest=scFound(ch.id)&&n0()>d0;   // m_chest: the opening moment takes ~0.7s (chest.js)
     const sp0=P.speed,sh=of('shrine');go(sh);o.bless=scState().bless&&P.speed>sp0;for(let i=0;i<70;i++)secretsUpdate(1);o.blessEnd=!scState().bless&&Math.abs(P.speed-sp0)<1e-6;
     const lk=of('lookout');go(lk);o.look=scState().look>0&&scFound(lk.id);
     const cv=of('carving');go(cv);o.read=!!SC().read[cv.id];P.x=cv.to.x;P.y=cv.to.y+20;petUpdate(0.05);d0=n0();secretsUpdate(0.05);o.sniff=S.pet&&S.pet.st==='go';
@@ -3442,6 +3442,22 @@ function worldBot(m,L,god){
     'סודות בעולם: '+(sec.bad.length?'מחוץ לאזור או במים: '+sec.bad.join(','):'כל המקומות תקינים')+(sec.shown?', תיבה נחשפת':', התיבה לא נחשפה')+(sec.chest?' ונפתחת':' ולא נפתחת')+
     (sec.bless?', מקדש מברך':', המקדש לא מברך')+(sec.blessEnd?' והברכה נגמרת':' והברכה לא נגמרת!')+(sec.look?', תצפית חושפת':', התצפית לא עובדת')+
     (sec.read?', סימן בעץ':', הסימן לא נקרא')+(sec.sniff?', פיוחו רצה':'')+(sec.dug?' וחופרת אוצר':' ולא חפרה')+', '+sec.count+' באחו ("'+sec.hud+'"), נשמר '+sec.saved+', באגם '+sec.lake+', ברכס '+sec.ridge);
+  // Chest opening moment (chest.js, Nir 9.11): m_chest wobbles, slams open (not instant), loot + capped gear, effects capped, reduced-motion path short
+  const chs=await page.evaluate(()=>{
+    const o={};enterWorld('home');for(const e of enemies)e.dead=true;const s=SECRETS.regions.meadow.find(q=>q.id==='m_chest'),n0=()=>drops().length,run=sec=>{for(let i=0;i<sec/0.05;i++)secretsUpdate(0.05)};
+    const play=calm=>{SAVE.secrets={found:{},read:{}};S.wd.sc=null;SAVE.calm=calm;const n=CHEST.n,d0=n0();P.x=s.x;P.y=s.y+40;secretsUpdate(0.05);
+      const r={started:CHEST.n===n+1,instant:scFound(s.id)};run(0.3);const p=chPose(chSt()[s.id]);r.wobble=Math.abs(p.rot)>0.001||p.sx!==1;r.early=scFound(s.id);
+      run(calm?0.1:0.5);r.found=scFound(s.id);r.loot=n0()>d0;r.hs=S.hitstop||0;S.hitstop=0;r.sp=(chSt()[s.id]||{sp:[]}).sp.length;
+      r.parts=juice().p.length<=JUICE.parts.max&&parts.length<=HITFX.parts;run(3);r.gone=!chSt()[s.id];return r};
+    o.n=play(false);o.c=play(true);SAVE.calm=false;
+    // loot odds: 200 gear rolls, none above the meadow cap
+    let got=0,over=0;const k=CHEST.gear.chance;CHEST.gear.chance=1;for(let i=0;i<100;i++){const id=chGear(s.x,s.y);if(id){got++;if(gItem(id).tier>CHEST.gear.cap)over++}}CHEST.gear.chance=k;
+    o.got=got;o.over=over;S.gd=[];FX.length=0;SAVE.secrets={found:{},read:{}};return o});
+  await page.evaluate(()=>enterVillage());
+  check(chs.n.started&&!chs.n.instant&&!chs.n.early&&chs.n.wobble&&chs.n.found&&chs.n.loot&&chs.n.hs>0&&chs.n.parts&&chs.n.gone&&chs.c.found&&chs.c.loot&&!chs.c.wobble&&!(chs.c.hs>0)&&chs.got>50&&!chs.over,
+    'Chest moment: '+(chs.n.started?'starts on touch':'did not start')+(chs.n.instant||chs.n.early?', opened instantly!':', wobbles first')+(chs.n.wobble?'':' (no wobble!)')+(chs.n.found?', slams open':', never opened')+(chs.n.loot?' with loot':' without loot')+
+    (chs.n.hs>0?', hit-stop':', no hit-stop')+(chs.n.parts?', effects capped':', over the particle cap!')+(chs.n.gone?', ends':', never ends')+
+    ' · reduced motion: '+(chs.c.found&&chs.c.loot?'opens':'broken')+(chs.c.wobble||chs.c.hs>0?' but still shakes!':', still')+' · gear '+chs.got+'/100, over cap '+chs.over);
   // עולם עם חיים (wlife.js): שרידים בכל אזור פעיל ורק על קרקע פתוחה, מחנה נותן מתנה פעם אחת ומרפא, שריד נלקח פעם אחת ולא חוזר אחרי כניסה מחדש, וחיות בורחות
   const wlf=await page.evaluate(()=>{
     const o={reg:[],bad:[]},bak=JSON.stringify(SAVE.wlife||null);SAVE.wlife={met:{},got:{}};const n0=()=>drops().length;
