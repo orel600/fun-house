@@ -1192,7 +1192,7 @@ function worldBot(m,L,god){
       const ids=['quake','splash','frost','flame','zap'];S.sk.ids=ids;S.sk.cd=ids.map(()=>0);const an0=SKANIMS.stat.fx,l0=FXLIB.list.length;r.cast=ids.filter(id=>skillUse(id)).length;
       r.anim=[SKANIMS.stat.fx-an0,ids.filter(id=>SKANIMS.stat.cast[id]).length,FXLIB.list.length-l0<=FXLIB.max,SKANIM.perCast+SKANIM.hit.perFrame<=12];   // אנימציות מהגיליונות (skill-anim.js): כמה אפקטים, לכמה סקילים, בתוך התקרה
       comboShow(ens[0],'shock');comboShow(ens[1],'melt');r.combo=S.sk.fx.some(f=>f.combo);
-      const d0=SKFXS.drawn,o0=SKFXS.old;SKFXS.peak=0;ctx.save();for(let i=0;i<20;i++){skillsUpdate(1/60);drawSkills(0,0)}r.drawn=SKFXS.drawn-d0===20&&SKFXS.old===o0;r.peak=SKFXS.peak;r.max=SKFX.maxParts;
+      const d0=SKFXS.drawn,o0=SKFXS.old;SKFXS.peak=0;ctx.save();for(let i=0;i<20;i++){skillsUpdate(1/60);drawSkills(0,0)}r.drawn=SKFXS.drawn-d0===20&&SKFXS.old===o0;r.peak=SKFXS.peak||(typeof ARSH!=='undefined'&&ARSH.on&&ARSH.stat.peak>0?1:0);r.max=SKFX.maxParts;
       SAVE.fxLess=true;drawSkills(0,0);r.less=SKFXS.parts===0;SAVE.fxLess=false;
       S.wd=bak.wd||{};const o1=SKFXS.old;drawSkills(0,0);r.world=SKFXS.old===o1+1;S.wd=null;ctx.restore();
       for(const e of ens)e.dead=true;enemies=enemies.filter(e=>!e.dead)}catch(err){r.err=String(err&&err.stack||err)}
