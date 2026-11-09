@@ -3,6 +3,9 @@
    מדווח: FPS חציוני (לפי חלונות של שנייה), זמן פריים חציוני ו-p95, כמה אויבים בממוצע, ושיאים של מספרי נזק ואפקטים.
    הרצה: node tools/perf-arena.js [--seed 7] [--secs 60] [--cpu 4] [--warm 5] [--json out.json] [--gfx 2d|3d] [--hidden] [--scene arena|world|moba] [--gpu]
    --scene world: קרב בעולם הפתוח (אחו), עם גושי אויבים שמופיעים סביב השחקן, כדי למדוד את juice.js (מספרי נזק, ניצוצות) שפועל רק בעולם ובכפר.
+   --enemies N: זירה צפופה קבועה (QUINN, 9.11): N אויבים חיים כל הזמן סביב השחקן (מתמלא כל 50ms, אויבים בלתי ניתנים להריגה שרודפים אחריו, סוגים מעורבים), כדי שלפני ואחרי ידמו אותה צפיפות. מיקומי ההופעה מ-RNG משלו מה-seed (לא נוגע ברצף של המשחק), ולכן שתי הרצות זהות באוכלוסייה.
+   --game <תיקייה>: מודד משחק של checkout אחר (לפני/אחרי מאותו כלי: node tools/perf-arena.js --game ../fh-main ... ואז --game ../fh-pr). commit בפלט הוא של ה-checkout הנמדד.
+   --boss: בוס אחד חי כל הזמן (זורק את המתקפות שלו כרגיל). --skills: כל הסקילים מוטלים בטיימר (עומס אפקטים). שלושתם רק בסצנת arena.
    --cpu: האטת מעבד (CDP), כדי לדמות טלפון. 1 = בלי האטה.
    --hidden: בדיקת העצירה ברקע: באמצע הקרב מדמים document.hidden, בודקים שהלולאה עצרה (S.t לא זז) ושחזרה נקי.
    במחשב בלי כרטיס גרפי מודדים רק בדו-ממד (תלת-ממד שם רץ על המעבד ולא אומר כלום על הטלפון).
@@ -12,7 +15,7 @@ const path=require('path'),fs=require('fs');
 const GPU=require('./gpu.js');   // --gpu: כרטיס מסך אמיתי (tools/gpu.js)
 const args=process.argv.slice(2);
 const opt=k=>{const i=args.indexOf('--'+k);if(i<0)return null;const v=args[i+1];return v&&!v.startsWith('--')?v:true};
-const CFG={seed:+(opt('seed')||7),secs:+(opt('secs')||60),warm:+(opt('warm')||5),cpu:+(opt('cpu')||4),gfx:opt('gfx')||'2d',hidden:!!opt('hidden'),json:opt('json'),scene:opt('scene')||'arena',
+const CFG={seed:+(opt('seed')||7),secs:+(opt('secs')||60),warm:+(opt('warm')||5),cpu:+(opt('cpu')||4),gfx:opt('gfx')||'2d',hidden:!!opt('hidden'),game:opt('game')&&opt('game')!==true?opt('game'):null,enemies:+(opt('enemies')||0),boss:!!opt('boss'),skills:!!opt('skills'),json:opt('json'),scene:opt('scene')||'arena',
   phone:{width:844,height:390},dsf:2};
 
 (async()=>{
@@ -26,11 +29,11 @@ const CFG={seed:+(opt('seed')||7),secs:+(opt('secs')||60),warm:+(opt('warm')||5)
     try{localStorage.setItem('zm-gfx',o.gfx);localStorage.setItem('zm-mute','1')}catch(e){}},{seed:CFG.seed,gfx:CFG.gfx});
   const cdp=await page.context().newCDPSession(page);
   if(CFG.cpu>1)await cdp.send('Emulation.setCPUThrottlingRate',{rate:CFG.cpu});
-  await page.goto('file://'+path.resolve(__dirname,'..','index.html'));
+  await page.goto('file://'+path.resolve(CFG.game||path.join(__dirname,'..'),'index.html'));
   await page.waitForFunction(()=>typeof startRun==='function'&&typeof S!=='undefined'&&S&&typeof R3D!=='undefined'&&(R3D.ready||R3D.failed||!R3D.want),null,{timeout:120000,polling:200});
-  const commit=(()=>{try{return require('child_process').execSync('git rev-parse --short HEAD',{cwd:path.join(__dirname,'..')}).toString().trim()}catch(e){return '?'}})();
+  const commit=(()=>{try{return require('child_process').execSync('git rev-parse --short HEAD',{cwd:path.resolve(CFG.game||path.join(__dirname,'..'))}).toString().trim()}catch(e){return '?'}})();
   // לתוך הזירה, ומדידה של כל פריים
-  await page.evaluate(scene=>{
+  await page.evaluate(o=>{const scene=o.scene;
     const M=window.__pa={on:false,f:[],gaps:[],peak:{floats:0,nums:0,layers:0,fx:0,enemies:0},en:0,n:0};
     const fs0=frameStep;window.frameStep=function(now){const a=performance.now();try{return fs0.apply(this,arguments)}finally{if(M.on){M.f.push(performance.now()-a);M.n++;M.en+=enemies.length;
       M.peak.floats=Math.max(M.peak.floats,floats.length);M.peak.enemies=Math.max(M.peak.enemies,enemies.length);
@@ -40,15 +43,21 @@ const CFG={seed:+(opt('seed')||7),secs:+(opt('secs')||60),warm:+(opt('warm')||5)
     else if(scene==='moba'){mobaStart('hunter');MB.me.bot={t:0,mode:'push'}}   // משחקי השאול: כל הששה בוטים, משחק אחרי משחק (QUINN, 9.11)
     else startRun();
     // השחקן לא מת, הולך במעגל, ומאשר כל חלון (רמה, בוס) מיד, כדי שהקרב לא ייעצר
+    let _r=(o.seed>>>0)^0x9E3779B9;const rnd=()=>{_r=_r+0x6D2B79F5|0;let t=Math.imul(_r^_r>>>15,1|_r);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};   // RNG משלנו: לא מזיז את Math.random של המשחק
+    const AT=['grunt','grunt','grunt','shield','wisp','crawler'].filter(k=>ETYPES[k]);window.__sk=0;
     window.__pt=0;window.__pi=setInterval(()=>{if(!P||!S)return;P.hp=P.maxHp;window.__pt+=0.05;const a=window.__pt*0.5;joy={id:-1,ox:-999,oy:-999,dx:Math.cos(a)*0.8,dy:Math.sin(a)*0.8};
       const vis=id=>!document.getElementById(id).hidden;
       if(scene==='moba'){if(MB&&MB.over){mobaStart('hunter');MB.me.bot={t:0,mode:'push'}}return}
       if(vis('ovLevel')){const c=document.querySelector('#cards .card');if(c)c.click()}
       if(vis('ovBoss'))document.getElementById('fightBtn').click();
       if(S.mode==='over')document.getElementById('againBtn').click();
+      if(scene==='arena'&&S.mode==='play'&&(o.enemies||o.boss||o.skills)){
+        if(o.enemies){const live=enemies.filter(e=>!e.dead&&!e.isBoss).length;for(let i=live;i<o.enemies;i++){const a=rnd()*6.283,d=130+rnd()*300,t=AT[Math.floor(rnd()*AT.length)],e=addEnemy(t,P.x+Math.cos(a)*d,P.y+Math.sin(a)*d*0.8);if(e){e.hp=e.max=1e12;e.mult={}}}}
+        if(o.boss&&!S.boss){const b=makeBoss();b.hp=b.max=1e12;S.boss=b;enemies.push(b);S.nextBoss=Infinity}
+        if(o.skills&&S.sk&&(++window.__sk%6===0)){S.sk.cd=S.sk.ids.map(()=>0);for(const id of S.sk.ids.slice())try{skillUse(id)}catch(err){}}}
       // בעולם: גוש אויבים חדש סביב השחקן כשנשארו מעט, כדי שהקרב יהיה צפוף כמו במחנה
       if(scene==='world'&&S.wd&&S.mode==='play'&&enemies.filter(e=>!e.dead).length<24)for(let i=0;i<8;i++){const a=i/8*6.283;addEnemy('grunt',P.x+Math.cos(a)*230,P.y+Math.sin(a)*230,1)}},50);
-  },CFG.scene);
+  },{scene:CFG.scene,enemies:CFG.enemies,boss:CFG.boss,skills:CFG.skills,seed:CFG.seed});
   await page.waitForTimeout(CFG.warm*1000);
   await page.evaluate(()=>{const M=__pa;M.f=[];M.gaps=[];M.n=0;M.en=0;M.on=true});
   let hid=null;
@@ -76,7 +85,7 @@ const CFG={seed:+(opt('seed')||7),secs:+(opt('secs')||60),warm:+(opt('warm')||5)
   r.renderer=await GPU.report(page,'perf-arena');
   const out={commit,cfg:CFG,result:r,hidden:hid,loopLog:logs.slice(0,10),errors:errors.slice(0,10)};
   console.log('renderer: '+r.renderer+(GPU.isSoft(r.renderer)?'  (תוכנה)':'')+(r.gfx3d?`  · 3D: calls ${r.calls}, tris ${r.tris}, objects ${r.objs}, geometries ${r.geo}, textures ${r.tex}`:''));
-  console.log(`commit ${commit} ${CFG.scene} seed ${CFG.seed} cpu x${CFG.cpu} ${CFG.gfx} ${CFG.secs}s: fps median ${r.fpsMedian} (min ${r.fpsMin}), frame ms avg ${r.msAvg} p50 ${r.ms50} p95 ${r.ms95} p99 ${r.ms99}, frames ${r.frames}, enemies avg ${r.enemiesAvg} peak ${r.peak.enemies}, floats peak ${r.peak.floats}, nums peak ${r.peak.nums}, layers peak ${r.peak.layers}, fx peak ${r.peak.fx}, game t ${r.t} lvl ${r.level} kills ${r.kills}`);
+  console.log(`commit ${commit} ${CFG.scene}${CFG.enemies?' crowd '+CFG.enemies:''}${CFG.boss?' +boss':''}${CFG.skills?' +skills':''} seed ${CFG.seed} cpu x${CFG.cpu} ${CFG.gfx} ${CFG.secs}s: fps median ${r.fpsMedian} (min ${r.fpsMin}), frame ms avg ${r.msAvg} p50 ${r.ms50} p95 ${r.ms95} p99 ${r.ms99}, frames ${r.frames}, enemies avg ${r.enemiesAvg} peak ${r.peak.enemies}, floats peak ${r.peak.floats}, nums peak ${r.peak.nums}, layers peak ${r.peak.layers}, fx peak ${r.peak.fx}, game t ${r.t} lvl ${r.level} kills ${r.kills}`);
   if(hid)console.log('hidden:',JSON.stringify(hid));
   if(logs.length)console.log('loop log:',logs.join(' | '));
   if(errors.length)console.log('errors:',errors.slice(0,5));
