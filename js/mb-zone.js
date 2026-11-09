@@ -7,7 +7,7 @@
    - ניצנוץ ריפוי עדין על חברים שמתרפאים בתוך העיגול.
    - חזרה לבסיס (moba-recall.js): העיגול שלך מהבהב בזהב ברגע הנחיתה.
    - במפה הקטנה: שני העיגולים מוצללים בצבע הקבוצה.
-   כל המספרים ב-MOBA.zone. **ערכים התחלתיים, לא נבדקו במשחק אמיתי.** חיבור: עוטף את mobaUpdate ואת mobaDraw (moba.js) ואת mbRecallTick */
+   כל המספרים ב-MOBA.zone. **ערכים התחלתיים, לא נבדקו במשחק אמיתי.** חיבור: עוטף את mobaUpdate (moba.js), ואת mbRecallTick ו-mbRecallDraw (moba-recall.js) */
 MOBA.zone={
   hurt:{on:true,k:0.10,every:0.5,heroes:true,minions:false},   // עונש לאויב: חלק מהחיים המקסימליים בשנייה, כל כמה שניות מתקתק
   warn:{pad:70,a:0.55,rate:5},          // אזהרה: כמה לפני העיגול מתחילה, כמה חזקה, וכמה מהר פועמת
@@ -52,7 +52,8 @@ function mbZoneDraw(){
 (function(){
   if(typeof mobaUpdate!=='function')return;
   const bu=mobaUpdate;mobaUpdate=function(dt){const r=bu.apply(this,arguments);try{if(S.mb&&MB)mbZoneTick(dt)}catch(e){console.warn('mb-zone',e)}return r};
-  if(typeof mobaDraw==='function'){const bd=mobaDraw;mobaDraw=function(){const r=bd.apply(this,arguments);try{if(MB)mbZoneDraw()}catch(e){console.warn('mb-zone',e)}return r}}
+  // הציור: אחרי טבעות החזרה לבסיס (mbRecallDraw, בתוך mobaDraw), ולא עטיפה של mobaDraw עצמו (הבדיקה קוראת את הסדר שבתוכו)
+  if(typeof mbRecallDraw==='function'){const bd=mbRecallDraw;mbRecallDraw=function(){const r=bd.apply(this,arguments);try{if(MB)mbZoneDraw()}catch(e){console.warn('mb-zone',e)}return r}}
   if(typeof mbRecallTick==='function'){const br=mbRecallTick;mbRecallTick=function(M,dt){const was=MB.me&&MB.me.recall;const r=br.apply(this,arguments);
     if(was&&MB.me&&!MB.me.recall&&mbDist(MB.me,MB.me.home)<1){MBZ.flash[MB.me.team]={t:MOBA.zone.recall.t};MOBA.zone.stat.flash++}return r}}
   if(typeof MBLOOK!=='undefined'&&MBLOOK.miniMarks)MBLOOK.miniMarks.push((c,X,Y,k)=>{if(!MB||!MB.u)return;

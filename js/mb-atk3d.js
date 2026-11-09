@@ -28,13 +28,13 @@ const mbAtk3dCfg=u=>MBATK3D.on&&u&&u.k==='hero'&&MBATK3D.kit[u.kit]||null;
 const mbAtk3dReady=(u,C)=>!u.dead&&!mbMoving(u)&&!u.st.dash&&u.atk3dT!=null&&MB.t-u.atk3dT<MBKIT[u.kit].atk.cd+C.keep;
 // כל פריים, לפני שה-mixer מתקדם: מכה חדשה, עצירה במגע, והתאוששות. a: השחקן או הבוט
 function mbAtk3dTick(u,a,C,dt){
-  const st=a.mbA||(a.mbA={atk:u.atkT||0,x:null,ph:'',t:0});
-  if((u.atkT||0)>st.atk+0.05&&R3D.clips[C.hit+'@up']){   // הנזק נחת בפריים הזה (moba.js)
+  const st=a.mbA||(a.mbA={x:null,ph:'',t:0});if(u.atk3dLast==null)u.atk3dLast=u.atkT||0;   // המכה האחרונה נשמרת על היחידה: דמות שנבנתה מחדש (מראה הערכה, חלקים שנטענו) לא מפספסת מכה
+  if((u.atkT||0)>u.atk3dLast+0.05&&R3D.clips[C.hit+'@up']){   // הנזק נחת בפריים הזה (moba.js)
     u.atk3dT=MB.t;once(a,C.hit+'@up',C.dur,true,C.from);
     const x=act(a,C.hit+'@up'),D=x.getClip().duration;x.timeScale=D*(C.to-C.from)/C.dur;
     st.x=x;st.stop=D*C.to;st.ph='hit';st.t=0;MBATK3D.stat.strikes++;mbAtk3dPuff(u,C);
   }
-  st.atk=u.atkT||0;
+  u.atk3dLast=u.atkT||0;
   if(st.ph==='hit'&&st.x&&st.x.time>=st.stop){st.x.time=st.stop;st.x.timeScale=0;st.ph='settle';st.t=0}   // עצירה קשה, בלי להמשיך את הקליפ
   else if(st.ph==='settle'){st.t+=dt;if(st.t>=C.settle){const R=C.recover;st.x.fadeOut(Math.max(R.min,Math.min(R.max,u.atkT||0)));st.ph=''}}
 }
