@@ -106,7 +106,8 @@ function tankxMat(m){
 function tankxPlayer(H){
   const X=MBTANKX,T=tankxLook();if(!T)return H;
   if(X._P&&X._Pb===H&&X._Pt===T)return X._P;
-  const props={};if(T.props.hammer)props.sword=T.props.hammer;
+  // tier: רק סימן, כדי שהמפתח במאגר (lookKey) יהיה שונה מזה של הבוט. אחרת דמות של בוט שהשתחררה חוזרת אליך עם הפטיש בחריץ הלא נכון, ומוסתרת
+  const props={};if(T.props.hammer)props.sword=Object.assign({},T.props.hammer,{tier:'txMe'});
   const anim=Object.assign({},H.anim,{idle:T.anim.idle,run:T.anim.run,die:T.anim.die,sword:MBMOVE.atk[X.kit]||H.anim.sword});
   X._Pb=H;X._Pt=T;X.stat.player++;
   return X._P=Object.assign({},H,{model:T.model,h:T.h,foot:T.foot,props,anim,tx:1,ck:(H.ck||'')+'|tx'});
