@@ -2183,6 +2183,18 @@ function worldBot(m,L,god){
     CQ.clock=null;CQS.cur=null;CQS.q.length=0;const b=document.getElementById('banner');if(b)b.classList.remove('on');S.st=null;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   {const L=[[cq.a,'shown'],[cq.wait,'second waits'],[cq.jump,'danger jumps ahead'],[cq.lowQ,'info last'],[cq.minHold,'min time'],[cq.streakNext,'then the streak'],[cq.sameKind,'streak replaces streak'],[cq.low,'then info'],[cq.max,'at most '+cq.qmax+' waiting'],[cq.stale,'old ones dropped'],[cq.last,'final wave behind 3 waiting'],[cq.rage,'boss moments high']];
    check(!cq.err&&L.every(x=>x[0])&&cq.worst===1&&cq.overlap===0,'center queue in the arena: '+(cq.err||L.map(x=>x[1]+(x[0]?' ✓':' ✗')).join(', ')+', at most '+cq.worst+' on screen'+(cq.overlap?', '+cq.overlap+' overlaps!':'')))}
+  // arena ult lanterns (ult-lantern3d.js, correction pack B): visual only, on the cast frame; n lanterns in the damage-type color, fewer in fxLess,
+  // all gone after the flight, and a new run starts clean. 2D: nothing to draw
+  const ull=await page.evaluate(()=>{const o={},fl=SAVE.fxLess,mode=S.mode;try{
+      if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
+      startRun();S.mode='play';SAVE.fxLess=false;const cast=()=>{S.ult={c:ULT.need,used:0};return ultUse()};
+      o.ok=cast();o.n=ULTLS.orbs.filter(x=>x.g.visible).length;
+      const want=new THREE.Color(dtCol(P.dt[P.weapon]||'physical'));o.col=ULTLS.orbs[0].g.userData.O.cr.material.color.equals(want);
+      for(let i=0;i<20;i++)ult3dLanterns(0.05);o.gone=ULTLS.orbs.every(x=>!x.g.visible)&&!ULTLS.beam.visible&&!ULTLS.ring.visible;
+      SAVE.fxLess=true;cast();o.less=ULTLS.orbs.filter(x=>x.g.visible).length;SAVE.fxLess=fl;
+      reset();startRun();o.clean=ULTLS.orbs.every(x=>!x.g.visible);
+    }catch(e){o.err=String(e&&e.stack||e)}SAVE.fxLess=fl;S.mode=mode;return o});
+  check(!ull.err&&(ull.d2||ull.ok&&ull.n===6&&ull.col&&ull.gone&&ull.less===4&&ull.clean),'arena ult lanterns: '+(ull.err||(ull.d2?'2D, nothing to draw':[[ull.n+' lanterns',ull.n===6],['damage-type color',ull.col],['gone after the flight',ull.gone],['fewer effects '+ull.less,ull.less===4],['new run clean',ull.clean]].map(x=>x[0]+(x[1]?' ✓':' ✗')).join(', '))));
   // רגעים לסקילי הזירה (MLBB 1.1, skill-anim.js SKANIM.mo): רק מה שהיה חסר לפי טבלת הפערים. בתוך perCast, ו"פחות אפקטים" מוריד את הקישוטים
   // רגע הסכנה של הבוס (arena-danger.js, MLBB 2.1): המילוי לפי השעונים האמיתיים מגיע ל-100% ברגע הפגיעה (בפריים האחרון לפניה: 1 פחות פריים),
   // באמצע לפי החשבון (גל הדף: 0.4 מתוך 1.0 ברגע שהאזהרה נגמרת), תקתוק, הבזק, חריכה עד max, ו"פחות אפקטים" בלי חריכה. המכשף במג'נטה
