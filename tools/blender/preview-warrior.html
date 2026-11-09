@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Warrior options</title>
+<!-- השוואת הלוחם (ARI, 9.11.2026, בלי להחליף כלום): הלוחם של משחקי השאול היום (אביר + חרב) מול ברברי + dragonBlade, אותה אחיזה ותאורה כמו render3d.js, בזווית המשחק (52°) ומלפנים (14°). נטען מ-shoot-warrior.js -->
+<style>body{margin:0;background:#1b2130;color:#eef;font:600 13px system-ui;width:1500px}h2{margin:8px 12px 2px;font-size:16px}.row{display:flex;gap:6px;padding:4px 12px 8px}
+figure{margin:0;text-align:center}figcaption{font-size:12px;color:#b9c3dc}canvas{border-radius:6px;display:block}</style></head><body><div id="out"></div>
+<script src="../../js/vendor/three-bundle.js"></script><script src="../../js/models3d.js"></script>
+<script>window.m3dPut=(k,v)=>{MODELS3D[k]=v}</script><script src="../../js/m3d/w_item_dragonBlade.js"></script>
+<script>
+const b64buf=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
+const parse=buf=>new Promise((ok,bad)=>new THREE.GLTFLoader().setMeshoptDecoder(THREE.MeshoptDecoder).parse(buf,'',ok,bad));
+const lambert=root=>root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap,side:m.side});o.frustumCulled=false}});
+const R=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});R.outputColorSpace=THREE.SRGBColorSpace;R.setPixelRatio(1);
+function scene(){const s=new THREE.Scene();s.background=new THREE.Color('#2c2a36');s.add(new THREE.HemisphereLight(0xdfe6ff,0x2a2236,1.6*1.15));const l=new THREE.DirectionalLight(0xfff1dc,1.9*1.15);l.position.set(-0.5,1,0.6);s.add(l);return s}
+const HAND_R={bone:'handslotr',pos:[0,0.033,0],rot:[0,-1,0,0]};
+async function main(){
+  const P=async k=>{const g=await parse(b64buf(MODELS3D[k]));lambert(g.scene);return g},knight=await P('knight'),bar=await P('barbarian'),blade=await P('blade'),dragon=await P('w_item_dragonBlade');
+  const clips={};for(const k of ['anim_general','anim_move','anim_melee']){const g=await parse(b64buf(MODELS3D[k]));for(const a of g.animations)clips[a.name]=new THREE.AnimationClip(a.name,a.duration,a.tracks.filter(t=>{const [n,p]=t.name.split('.');return !/IK|control/.test(n)&&(p==='quaternion'||p==='position'&&/^(root|hips|upperleg)/.test(n))}))}
+  const mk=(base,prop,scl,hideAxe)=>{const ch=THREE.SkeletonUtils.clone(base.scene);let bone=null;ch.traverse(o=>{if(o.isBone&&o.name===HAND_R.bone)bone=o;if(hideAxe&&/Axe/.test(o.name))o.visible=false});
+    const w=prop.scene.clone(true);w.position.fromArray(HAND_R.pos);w.quaternion.fromArray(HAND_R.rot);w.scale.setScalar(scl);bone.add(w);return ch};
+  const out=document.getElementById('out');
+  const VIEWS=[['Game camera (52 deg)',52],['Front (14 deg)',14]],POSES=[['Idle_A',0.5],['Melee_1H_Attack_Slice_Horizontal',0.3],['Melee_1H_Attack_Slice_Horizontal',0.7]];
+  for(const [vt,deg] of VIEWS){const h=document.createElement('h2');h.textContent=vt;out.append(h);const row=document.createElement('div');row.className='row';out.append(row);
+    for(const [who,mkf] of [['TODAY knight + blade',()=>mk(knight,blade,1,false)],['barbarian + dragonBlade',()=>mk(bar,dragon,1.2,true)]])for(const [an,at] of POSES){
+      const s=scene(),ch=mkf();ch.rotation.y=deg>30?-0.3:-0.55;s.add(ch);const mx=new THREE.AnimationMixer(ch);mx.clipAction(clips[an]).play();mx.update(at);ch.updateMatrixWorld(true);
+      const t=deg*Math.PI/180,cam=new THREE.OrthographicCamera(-2.1,2.1,2.3,-0.9,0.01,100),C=new THREE.Vector3(0,0.9,0);cam.position.copy(C).add(new THREE.Vector3(0,Math.sin(t),Math.cos(t)).multiplyScalar(10));cam.lookAt(C);cam.updateProjectionMatrix();
+      R.setSize(240,280);R.render(s,cam);const c=document.createElement('canvas');c.width=240;c.height=280;c.getContext('2d').drawImage(R.domElement,0,0);const f=document.createElement('figure');f.append(c);const cp=document.createElement('figcaption');cp.textContent=who+' · '+an.replace('Melee_1H_Attack_','')+' '+at+'s';f.append(cp);row.append(f)}}
+  document.title='ready';
+}
+main().catch(e=>{document.title='ERR '+e.message;console.error(e)});
+</script></body></html>
