@@ -53,7 +53,7 @@ function botStep({god,en}){
   const fitChk=(k,els)=>{L.fit=L.fit||{};if(L.fit[k])return;const out=els.filter(e=>{const r=e.getBoundingClientRect();return r.bottom>innerHeight+1||r.top<-1||r.right>innerWidth+1||r.left<-1});L.fit[k]=out.length?'בחוץ':'בפנים'};
   // הודעות בזירה (2.11.2026): פס קטן למעלה מתחת ל-HUD, לא על הגיבור באמצע ולא על פס הריצה או פס הבוס. נמדד פעם בתחילת הריצה ופעם מול הבוס
   // תור ההודעות (welcome.js) מתרוקן קודם, כדי שהודעת הבדיקה תוצג עכשיו ולא נמדוד הודעה ישנה
-  const banChk=k=>{if(L[k])return;if(typeof BANNER!=='undefined'){clearTimeout(BANNER.t);BANNER.t=0;BANNER.q.length=0;BANNER.last=-1e9}banner('check ✓',C.gold);const be=document.getElementById('banner'),b={top:be.offsetTop,bottom:be.offsetTop+be.offsetHeight,left:be.offsetLeft,right:be.offsetLeft+be.offsetWidth},   // המקום הסופי, בלי ההחלקה של הכניסה (translateY)
+  const banChk=k=>{if(L[k])return;if(typeof BANNER!=='undefined'){clearTimeout(BANNER.t);BANNER.t=0;BANNER.q.length=0;BANNER.last=-1e9}if(typeof CQS!=='undefined'){CQS.cur=null;CQS.q.length=0}banner('check ✓',C.gold);const be=document.getElementById('banner'),b={top:be.offsetTop,bottom:be.offsetTop+be.offsetHeight,left:be.offsetLeft,right:be.offsetLeft+be.offsetWidth},   // המקום הסופי, בלי ההחלקה של הכניסה (translateY)
     bars=['runbar','bossbar'].map(id=>document.getElementById(id)).filter(e=>e&&e.offsetParent).map(e=>e.getBoundingClientRect());
     const hud=document.querySelector('.hud'),hb=hud?Math.round(hud.getBoundingClientRect().bottom):0;
     L[k]={top:Math.round(b.top),bot:Math.round(b.bottom),H:innerHeight,hud:hb,hit:bars.some(r=>r.bottom>b.top&&r.top<b.bottom&&r.right>b.left&&r.left<b.right)}};
@@ -1044,7 +1044,7 @@ function worldBot(m,L,god){
   const rk=await page.evaluate(()=>{const q=QUESTS.list.find(q=>q.kind==='rank'),mode=S.mode,r={every:RANKS.every};
     r.locked=!qOpen(q);
     SAVE.hero.xp=0;for(let l=1;l<RANKS.every;l++)SAVE.hero.xp+=rankNeed(l);rankSync();r.lv=SAVE.hero.level;
-    r.open=qOpen(q)&&q.giver==='priest';r.call=[document.getElementById('banner').textContent,...(typeof BANNER!=='undefined'?BANNER.q.map(b=>b[0]):[]),...(typeof MSG!=='undefined'?MSG.seen.concat(MQ.small.map(m=>m.txt),MQ.big.map(m=>m.txt)):[])].includes(T('rank.call',T('npc.priest')[0]));   // הודעות בתור (welcome.js)   // הכוהנת קוראת לך (rankCall)
+    r.open=qOpen(q)&&q.giver==='priest';r.call=[document.getElementById('banner').textContent,...(typeof BANNER!=='undefined'?BANNER.q.map(b=>b[0]):[]),...(typeof CQS!=='undefined'?CQS.q.map(m=>m.txt||''):[]),...(typeof MSG!=='undefined'?MSG.seen.concat(MQ.small.map(m=>m.txt),MQ.big.map(m=>m.txt)):[])].includes(T('rank.call',T('npc.priest')[0]));   // הודעות בתור (welcome.js)   // הכוהנת קוראת לך (rankCall)
     const sty=st=>{SAVE.hero.style=st;return rankFor(1)};
     const picks={knight:sty({dmg_sword:900,dmg_gun:100,t_run:100}),ranger:sty({dmg_sword:50,dmg_gun:900,t_run:100}),
       hybrid:sty({dmg_sword:500,dmg_gun:500,t_run:100}),guardian:sty({dmg_sword:900,t_run:100,t_defense:80})};
@@ -1257,7 +1257,7 @@ function worldBot(m,L,god){
       shopOpen();r.pause=S.mode==='shop'&&!document.getElementById('ovShop').hidden;uiCloseTop();r.close=S.mode==='play'&&document.getElementById('ovShop').hidden}catch(err){r.err=String(err)}
     S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.shop=bak.shop;P.sw.dmg=bak.dmg;P.gn.dmg=bak.gdmg;return r});
   // רצף הריגות (streak.js): 10 הריגות ברצף מראות מילה, והפסקה ארוכה שוברת את הרצף
-  const stk=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,st:S.st,t:S.t,kills:S.kills},r={};S.vil=S.wd=S.room=null;S.mode='play';S.st=null;
+  const stk=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,st:S.st,t:S.t,kills:S.kills},r={};S.vil=S.wd=S.room=null;S.mode='play';S.st=null;if(typeof CQS!=='undefined'){CQS.cur=null;CQS.q.length=0}   // the center queue (centerq.js) empty, so the word shows now
     try{for(let i=0;i<10;i++)streakKill();r.show=!!S.st.show&&S.st.show.key==='st.0'&&T('st.0')!=='st.0';try{streakDraw();r.draw=true}catch(err){r.draw=String(err)}
       S.t+=STREAK.gap+1;streakKill();r.reset=S.st.n===1}catch(err){r.err=String(err)}
     S.vil=bak.vil;S.wd=bak.wd;S.room=bak.room;S.mode=bak.mode;S.st=bak.st;S.t=bak.t;return r});
@@ -2158,6 +2158,31 @@ function worldBot(m,L,god){
     'רגע אחד לכל אירוע: '+(om.err||'Rampage למעלה '+(om.ramp==='feel.rampage'&&om.noFloat&&om.noWorld?'✓':'✗ ('+om.ramp+(om.noFloat?'':', מילה צפה')+(om.noWorld?'':', כרטיס בעולם')+')')+
     ', כרטיסים '+om.c3+'/'+om.c10+' ('+om.shows+' רגעים ב-10 הריגות), אויב-על '+(om.big===1?'רגע אחד ('+(om.koImg?'ko':'פוף')+')':om.big+' רגעים!')+
     ', פחות אפקטים '+(om.bigLess<=1&&om.lessCard?'✓':'✗')+', הפחתת תנועה בלי עמוד אור '+(om.calmPillar?'✓':'✗')));
+  // center queue (centerq.js, MLBB 3.1): never two center messages at once in the arena; danger jumps ahead and replaces what is shown;
+  // info (first kill, book) goes last; a streak replaces a streak; at most CQ.max waiting. Fake clock (CQ.clock), so no timing flakes
+  const cq=await page.evaluate(()=>{const o={},mode=S.mode,bak=JSON.stringify(SAVE);let t=0;
+    try{startRun();S.mode='play';document.body.classList.remove('vil','world','mb');CQ.clock=()=>t;   // body classes are set on the next frame; a leftover 'vil' sends banner to the village lane (msglane.js)
+      CQS.cur=null;CQS.q.length=0;{const b0=document.getElementById('banner');if(b0)b0.classList.remove('on')}S.st=null;const st0={...CQ.stat};let worst=0;
+      const v=()=>{const n=cqVisible();worst=Math.max(worst,n);return n},txt=()=>document.getElementById('banner').textContent;
+      S.st={n:10,last:S.t,show:null,best:10};
+      banner('Alpha',C.gold);o.a=v()===1&&txt()==='Alpha';
+      streakShow('st.0',10,STREAK.ring);o.wait=v()===1&&!S.st.show;
+      const peak=T('pace.peak');banner(peak,'#EF4E57');o.jump=v()===1&&txt()===peak;
+      cqSay(T('loot.first','X'),C.gold);o.lowQ=CQS.q.length===2&&CQS.q[1].pri===0;
+      t=0.5;cqTick();o.minHold=txt()===peak;   // shown at least CQ.min
+      t=1.0;cqTick();o.streakNext=v()===1&&!!S.st.show&&S.st.show.key==='st.0';
+      streakShow('st.1',25,STREAK.ring);o.sameKind=v()===1&&S.st.show.key==='st.1';
+      t=2.0;cqTick();o.low=v()===1&&txt()===T('loot.first','X')&&!S.st.show;
+      for(let i=0;i<5;i++)banner('N'+i,C.chalk);o.max=CQS.q.length===CQ.max;
+      t=9;cqTick();o.stale=CQ.stat.stale>st0.stale;
+      // boss/wave moments are never lost (QUINN): behind 3 waiting normal ones, and a param-first key ('n is furious')
+      t=20;cqTick();CQS.cur=null;CQS.q.length=0;banner('Busy',C.chalk);for(let i=0;i<3;i++)banner('W'+i,C.chalk);const fw=T('wave.last');banner(fw,C.gold);o.last=txt()===fw;
+      o.rage=cqPri(T('rage2','Boss'))===2&&cqPri(T('bossDown','Boss'))===2;
+      o.worst=worst;o.overlap=CQ.stat.overlap-st0.overlap;o.qmax=CQ.max;
+    }catch(err){o.err=String(err&&err.stack||err)}
+    CQ.clock=null;CQS.cur=null;CQS.q.length=0;const b=document.getElementById('banner');if(b)b.classList.remove('on');S.st=null;SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
+  {const L=[[cq.a,'shown'],[cq.wait,'second waits'],[cq.jump,'danger jumps ahead'],[cq.lowQ,'info last'],[cq.minHold,'min time'],[cq.streakNext,'then the streak'],[cq.sameKind,'streak replaces streak'],[cq.low,'then info'],[cq.max,'at most '+cq.qmax+' waiting'],[cq.stale,'old ones dropped'],[cq.last,'final wave behind 3 waiting'],[cq.rage,'boss moments high']];
+   check(!cq.err&&L.every(x=>x[0])&&cq.worst===1&&cq.overlap===0,'center queue in the arena: '+(cq.err||L.map(x=>x[1]+(x[0]?' ✓':' ✗')).join(', ')+', at most '+cq.worst+' on screen'+(cq.overlap?', '+cq.overlap+' overlaps!':'')))}
   // רגעים לסקילי הזירה (MLBB 1.1, skill-anim.js SKANIM.mo): רק מה שהיה חסר לפי טבלת הפערים. בתוך perCast, ו"פחות אפקטים" מוריד את הקישוטים
   // רגע הסכנה של הבוס (arena-danger.js, MLBB 2.1): המילוי לפי השעונים האמיתיים מגיע ל-100% ברגע הפגיעה (בפריים האחרון לפניה: 1 פחות פריים),
   // באמצע לפי החשבון (גל הדף: 0.4 מתוך 1.0 ברגע שהאזהרה נגמרת), תקתוק, הבזק, חריכה עד max, ו"פחות אפקטים" בלי חריכה. המכשף במג'נטה
@@ -3504,7 +3529,7 @@ function worldBot(m,L,god){
     RARES.chance=ch0;RARES.pity=pi0;enemies=[];S.wd.rare=null;S.wd.scent=null;
     const e=rareSpawn('mossback',0),sp=RARES.list.mossback.spots[0];
     o.spawn=!!e&&e.type==='mossback'&&e.rare==='mossback'&&Math.hypot(e.x-sp.x,e.y-sp.y)<5&&e.max>ETYPES.golem.hp*2;
-    S.wd.t=PACE.hush+1;rareUpdate(RARES.rumorAt+0.1);const bq=()=>[document.getElementById('banner').textContent,...(typeof BANNER!=='undefined'?BANNER.q.map(b=>b[0]):[]),...(typeof MSG!=='undefined'?MSG.seen.concat(MQ.small.map(m=>m.txt),MQ.big.map(m=>m.txt)):[])];o.rumor=S.wd.rare.rumor<=0&&bq().some(t=>String(t).includes(T('rare.at.'+sp.at)));   // הודעות בתור (welcome.js)
+    S.wd.t=PACE.hush+1;rareUpdate(RARES.rumorAt+0.1);const bq=()=>[document.getElementById('banner').textContent,...(typeof BANNER!=='undefined'?BANNER.q.map(b=>b[0]):[]),...(typeof CQS!=='undefined'?CQS.q.map(m=>m.txt||''):[]),...(typeof MSG!=='undefined'?MSG.seen.concat(MQ.small.map(m=>m.txt),MQ.big.map(m=>m.txt)):[])];o.rumor=S.wd.rare.rumor<=0&&bq().some(t=>String(t).includes(T('rare.at.'+sp.at)));   // הודעות בתור (welcome.js)
     rareDraw();rareMove(e,0.05);
     const sc=scentStart(null);o.scent=!!sc&&sc.kind==='rare'&&sc.foe===e&&!rareScent();S.wd.scent=null;
     QS().active.rank1={p:[0,0]};const q=QBY.rank1,ri=q.obj.findIndex(x=>x.type==='rare');
@@ -4298,7 +4323,8 @@ function worldBot(m,L,god){
      F.slow=0;F.ult=null;me.bot=bot;Object.assign(e.st,{stun:0,shield:0});e.hp=e.max=MBKIT[e.kit].hp;e.x=ex;e.y=ey;o.fx=r}
     // מזג אוויר (moba-weather.js, אוראל 7.11): גשם קל בהתחלה שמתחזק עם הזמן, ברק ומבזק במבנה שנופל (רק איפה שאני רואה), ומצויר מתחת לסקילים
     if(typeof MBWX!=='undefined'){const X=MBWX,w={},t0=MB.t,f0=X.falls,fl0=X.fl,b0=X.bolts.length;
-     w.rain=X.core||!!X.h;const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;const k2=mbWxK(MB);MB.t=t0;MBWX.falls=wf;w.build=k1<0.1&&k2>k1+0.5;   // falls=0: a tower the bot already dropped added 0.12 and made this flaky (#536 CI)
+     w.rain=X.core||!!X.h;{const rb=document.getElementById('mbRecall');if(rb&&rb.offsetParent&&typeof mbfxUltY==='function'){const cr=cvs.getBoundingClientRect(),rr=rb.getBoundingClientRect(),yPx=cr.top+mbfxUltY(34)/H*cr.height;w.ultY=Math.round(yPx);w.recallTop=Math.round(rr.top);w.ultOk=yPx+8<=rr.top}}   // MLBB 3.1: the ult name (moba-fx.js) above Recall, not on it
+const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;const k2=mbWxK(MB);MB.t=t0;MBWX.falls=wf;w.build=k1<0.1&&k2>k1+0.5;   // falls=0: a tower the bot already dropped added 0.12 and made this flaky (#536 CI)
      const mt=MB.u.find(b=>b.k==='tower'&&b.team===0),fake=b=>mbUnit({k:'tower',team:b.team,x:b.x,y:b.y,r:b.r,hp:1,max:1});
      if(typeof mbVisNow==='function')mbVisNow(true);   // הראייה מחושבת מחדש: הבלוק הקודם חישב אותה עם שתי יחידות בלבד
      const sv=mbHeroes(1).map(h=>[h.xp,h.lvl]);mbDie(fake(mt),null);w.fall=X.falls===f0+1&&(X.core||X.bolts.length===b0+1&&(RM||typeof fxLess==='function'&&fxLess()||X.fl===1));
@@ -4855,6 +4881,7 @@ function worldBot(m,L,god){
      check(r.shield&&r.bounty&&r.resp&&r.late&&r.haste&&r.xp&&r.recall,'משחקי השאול: זרימה: '+[r.shield?'מגן מגדל בהתחלה ✓':'מגן מגדל ✗',r.bounty?'בלי זהב קאמבק ✓':'זהב קאמבק עוד קיים ✗',r.resp&&r.late?'חזרה מהירה בהתחלה ✓':'זמן חזרה ✗',r.haste?'ריצה מהבסיס ✓':'ריצה מהבסיס ✗',r.recall?'גם אחרי חזרה לבסיס ✓':'אחרי חזרה לבסיס ✗',r.xp?'XP ברדיוס רחב ✓':'XP ✗'].join(', '))}
     {const g=mb.gb||{};check(g.closed&&g.push&&g.tie&&g.enter&&g.busy&&g.lock&&g.win&&g.once&&g.lose,'משחקי השאול: חדר ההימור: '+(g.err?'שגיאה '+g.err+' · ':'')+[g.closed?'סגור לפני הזמן ✓':'פתוח לפני הזמן ✗',g.push?'אחר נדחף ✓':'אחר נכנס ✗',g.tie?'בשוויון אף אחד ✓':'שוויון ✗',
       g.enter?'הזכאי נכנס ✓':'הזכאי לא נכנס ✗',g.busy?'אחד בכל פעם ✓':'שניים יחד ✗',g.lock?'מקובע בהטלה ✓':'זז בהטלה ✗',g.win?'ניצחון = העשיר ביותר ✓':'ניצחון ✗',g.once?'פעם לקבוצה ✓':'יותר מפעם ✗',g.lose?'הפסד בלי פרס לאויב ✓':'הפסד ✗'].join(', '))}
+    if(mb.wx&&mb.wx.ultY!=null)check(mb.wx.ultOk,'underworld: ult name above Recall: name '+mb.wx.ultY+'px, button '+mb.wx.recallTop+'px'+(mb.wx.ultOk?' ✓':' (on the button!)'));
     {const w=mb.wx;check(w&&w.rain&&w.build&&w.fall&&w.fog&&w.under&&w.draw===true,'משחקי השאול: מזג אוויר: גשם קל בהתחלה שמתחזק, ברק במגדל שנופל (לא בערפל), ומצויר מתחת לסקילים'+(w?' ('+w.ms+'ms)'+(w.draw!==true?' · '+w.draw:'')+['rain','build','fall','fog','under'].filter(k=>!w[k]).map(k=>' · '+k).join(''):' · לא נבדק'))}
     {const R=mb.newSk||{};check(R.gone&&!R.gone.length&&R.new,'משחקי השאול: אין יותר זינוק או ריפוי בסקילים (גל חרב, רשת ציד וכלא מים במקומם)'+(R.gone&&R.gone.length?' · עוד יש: '+R.gone.join(', '):''));
      check(R.root&&R.still&&R.atk&&R.free,'משחקי השאול: רשת ציד: לכוד '+(R.root?'✓':'✗')+', לא זז '+(R.still?'✓':'✗')+', תוקף '+(R.atk?'✓':'✗')+', ואחרי זה חסין לרגע '+(R.free?'✓':'✗'));

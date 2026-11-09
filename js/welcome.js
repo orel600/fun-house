@@ -175,5 +175,6 @@ const BANNER={gap:2,max:2,q:[],last:-1e9,t:0,shown:0};
     const w=BANNER.last+BANNER.gap*1000-Date.now();if(w>0){BANNER.t=setTimeout(pump,w);return}
     const [t,c]=BANNER.q.shift();BANNER.last=Date.now();BANNER.shown++;show(t,c);
     if(BANNER.q.length)BANNER.t=setTimeout(pump,BANNER.gap*1000)};
-  banner=function(txt,col){if(BANNER.q.some(b=>b[0]===txt))return;BANNER.q.push([txt,col]);while(BANNER.q.length>BANNER.max)BANNER.q.shift();if(!BANNER.t)pump()};
+  banner=function(txt,col){if(typeof cqOn==='function'&&cqOn())return show(txt,col);   // בזירה: לתור המרכז יש תור משלו עם עדיפויות (centerq.js), ולא מחכים פעמיים
+    if(BANNER.q.some(b=>b[0]===txt))return;BANNER.q.push([txt,col]);while(BANNER.q.length>BANNER.max)BANNER.q.shift();if(!BANNER.t)pump()};
 }

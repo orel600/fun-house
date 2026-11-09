@@ -11,7 +11,7 @@ const MBFX={
   grav:900,           // כוח משיכה לחלקיקים (פיקסלים לשנייה בריבוע)
   stop:{t:0.07,need:85,cool:0.3},   // עצירת פריים: מכה של need ומעלה (או קריטי) של השחקן או עליו. cool: לא יותר מפעם ב-cool שניות
   slow:{t:0.55,k:0.3},              // סקיל-על של השחקן: חצי שנייה בהילוך איטי (×0.3)
-  ult:{t:1.2,dark:0.45,y:0.8},      // כמה זמן שם הסקיל-על על המסך, כמה כהים הקצוות, ובאיזה גובה (למטה באמצע: ההודעות למעלה, והקרב במרכז)
+  ult:{t:1.2,dark:0.45,y:0.8,gap:14},      // כמה זמן שם הסקיל-על על המסך, כמה כהים הקצוות, ובאיזה גובה (למטה באמצע: ההודעות למעלה, והקרב במרכז)
   flash:{t:0.18,a:0.32},            // הבזק לבן-צבעוני על כל המסך
   shake:{hit:2.5,slam:6,ult:7,max:9},   // רעידה: מכה חזקה, נחיתה/פיצוץ, סקיל-על. max: לא יותר מזה אף פעם
   near:80,            // אפקטים של בוטים רועדים ומבזיקים רק כשהם על המסך (עם השוליים האלה)
@@ -85,7 +85,8 @@ function mbfxUlt(u,s){
   const F=mbfxS(),col=dtCol(s.dt||MBKIT[u.kit].dt);
   if(MB.fx.length<40)MB.fx.push({x:u.x,y:u.y,r:170,col,life:0.45});
   mbfxSpray(u.x,u.y,14,320,520,col,0.8,5);
-  if(u.me&&mbfxMe()){F.slow=MBFX.slow.t;F.ult={txt:T('mb.s.'+s.id).split(/[:：]/)[0],col,t:MBFX.ult.t};mbfxShake(MBFX.shake.ult);mbfxFlash(col)}
+  if(u.me&&mbfxMe()){F.slow=MBFX.slow.t;F.ult={txt:T('mb.s.'+s.id).split(/[:：]/)[0],col,t:MBFX.ult.t};{const bn=document.getElementById('banner');if(bn)bn.classList.remove('on')}   // רגע אחד: ההודעה למעלה מפנה מקום לשם הסקיל-על, ו-mbBanner מחכה לו (moba.js)
+   mbfxShake(MBFX.shake.ult);mbfxFlash(col)}
   else if(mbfxSeen(u.x,u.y)){mbfxShake(MBFX.shake.hit);mbfxFlash(col,0.5)}
 }
 // מספר נזק גדול (קריטי או סקיל). מכה חזקה של השחקן או עליו: עצירת פריים ורעידה קטנה. בא במקום mbFloat (אותם פרמטרים, ועוד o, src, t)
@@ -149,6 +150,12 @@ function mbfxShots(){
       ctx.fillStyle='#8A7F70';for(let i=0;i<4;i++){const b=i/4*6.283;ctx.beginPath();ctx.arc(Math.cos(b)*r,Math.sin(b)*r,3,0,7);ctx.fill()}}   // משקולות בקצוות
     ctx.restore();ctx.globalAlpha=1}
 }
+// הגובה של שם הסקיל-על: MBFX.ult.y, אבל תמיד מעל כפתור החזרה (Recall) שבאמצע למטה, ולא עליו (MLBB 3.1, QUINN: ב-844x390 השם ישב על הכפתור)
+function mbfxUltY(sz){
+  let ty=H*MBFX.ult.y;const b=document.getElementById('mbRecall'),c=typeof cvs!=='undefined'&&cvs;
+  if(b&&c&&!b.hidden&&b.offsetParent){const r=b.getBoundingClientRect(),cr=c.getBoundingClientRect();if(cr.height>0){const top=(r.top-cr.top)/cr.height*H;ty=Math.min(ty,top-MBFX.ult.gap-6)}}   // 6: הפס שמתחת לשם
+  return Math.max(sz+8,ty);
+}
 // על כל המסך (אחרי setTransform): הבזק, ובסקיל-על של השחקן קצוות כהים ושם הסקיל
 function mbfxScreen(){
   const F=mbfxS();
@@ -159,7 +166,7 @@ function mbfxScreen(){
   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
   const sz=Math.round(34*(1+0.25*Math.max(0,1-(MBFX.ult.t-U.t)/0.15)));
   ctx.globalAlpha=k;ctx.textAlign='center';ctx.direction=DIR;ctx.font='900 '+sz+'px Heebo, system-ui, sans-serif';ctx.lineJoin='round';
-  const ty=H*MBFX.ult.y;ctx.lineWidth=6;ctx.strokeStyle='#0B0A12';ctx.strokeText(U.txt,W/2,ty);ctx.fillStyle=U.col;ctx.fillText(U.txt,W/2,ty);
+  const ty=mbfxUltY(sz);ctx.lineWidth=6;ctx.strokeStyle='#0B0A12';ctx.strokeText(U.txt,W/2,ty);ctx.fillStyle=U.col;ctx.fillText(U.txt,W/2,ty);
   ctx.fillStyle='#FFF4D8';ctx.fillRect(W/2-90*k,ty+12,180*k,3);ctx.globalAlpha=1;
 }
 
