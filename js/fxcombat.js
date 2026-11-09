@@ -32,7 +32,7 @@ const FXC={
   mine:{shapes:{rock:1,vein:1,crystal:1},
     gem:{tideRock:'sapphire',iceRock:'sapphire',emberRock:'ruby',stormRock:'amethyst',voidRock:'amethyst',gold:'amber',mythril:'emerald'},
     stone:110,gemSize:120,
-    glint:{every:[1.4,2.8],near:380,size:44,a:0.65,max:2,up:0.6}},
+    glint:{every:[1.4,2.8],near:380,size:44,a:0.65,max:2,up:0.6,also:{tree:2.4}}},   // also: גם עצים שאפשר לכרות מנצנצים (ניר, 9.11), והמספר: up לצורה הזאת (הצמרת גבוהה)
   // מצב חי
   own:[],tgL:[],tint:{},pre:0,fr:0,hitFr:-1,hits:0,glT:1,glints:[],stat:{tg:{},hit:{},ko:{},mine:{},glint:0,top:0}
 };
@@ -123,9 +123,9 @@ function fxcGlint(dt){
   const G=FXC.mine.glint;FXC.glints=FXC.glints.filter(h=>h.on&&FXLIB.list.includes(h));
   if((FXC.glT-=dt)>0)return;FXC.glT=rand(...G.every);
   if(FXC.glints.length>=G.max||!fxcRoom()||typeof fxLess==='function'&&fxLess())return;
-  const near=(S.nd&&S.nd.list||[]).filter(n=>fxcMineable(n)&&Math.hypot(n.x-P.x,n.y-P.y)<G.near);if(!near.length)return;
+  const near=(S.nd&&S.nd.list||[]).filter(n=>(fxcMineable(n)||S.wd&&!n.dead&&NODES.kinds[n.kind]&&G.also[NODES.kinds[n.kind].shape])&&Math.hypot(n.x-P.x,n.y-P.y)<G.near);if(!near.length)return;
   const n=near[Math.floor(Math.random()*near.length)];
-  const h=fxPlay('wmine_glint',n.x+rand(-n.r,n.r)*0.4,n.y-n.r*G.up,{size:G.size,alpha:G.a,add:true});if(h){FXC.glints.push(h);FXC.stat.glint++}
+  const h=fxPlay('wmine_glint',n.x+rand(-n.r,n.r)*0.4,n.y-n.r*(G.also[NODES.kinds[n.kind].shape]||G.up),{size:G.size,alpha:G.a,add:true});if(h){FXC.glints.push(h);FXC.stat.glint++}
 }
 function fxcMine(n){
   if(!fxcOn()||!n||!fxcMineKind(n.kind))return;

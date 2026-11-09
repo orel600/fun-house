@@ -1421,6 +1421,52 @@ function worldBot(m,L,god){
   {const L=[[upf.lv0,'בלי Aging בלי שינוי','שינוי בלי Aging'],[upf.heavy,'‎+3 מכה חמישית כפולה','‎+3 בלי מכה כבדה'],[upf.splash,'‎+5 התזה','‎+5 בלי התזה'],[upf.shock,'‎+7 גל הדף','‎+7 בלי גל'],[upf.fury,'‎+10 זעם','‎+10 בלי זעם'],
     [upf.gold,'מספרים בזהב אחרי שדרוג','בלי זהב'],[upf.fly&&upf.noFly,'מכה שמעיפה','בלי חתיכות'],[upf.hint,'רמז בנפחייה','בלי רמז'],[upf.charge&&upf.start&&upf.dodge,'מכה טעונה (רחוק, לא בהתחלה, התחמקות)','מכה טעונה שבורה'],[upf.arena,'בזירה כבוי','פועל בזירה'],[upf.draw===true,'ציור','ציור: '+upf.draw]];
    check(!upf.err&&L.every(x=>x[0]),'שדרוג שמרגישים (upfeel.js): '+(upf.err||L.map(x=>x[0]?x[1]:x[2]).join(', ')))}
+  // דרמה בקרב בעולם (drama.js): אוטומטי ×0.75 עם 2 סקילים, סקיל ×1.3 ועוד לפי הפער, חיסול בסקיל (לא באוטומטי, לא בנדיר), מוות של שלד בתקרה
+  // והאחרון בקבוצה מלא, שלל שנמשך, רגע מחיצה, מכה טעונה בזוגות כשחלש, וקפיצה על מי שעומד רחוק. Math.random קבוע, כמו upfeel
+  const drm=await page.evaluate(()=>{const rnd=Math.random,bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,hs:S.hitstop,sh:S.shake,sl:S.slow,sk:S.sk,hp:P.hp,mh:P.maxHp,inv:P.inv,x:P.x,y:P.y,n0:enemies.length,ch:UPFEEL.charge.chance.far,gd:(S.gd||[]).length,st:JSON.stringify(DM.stat)},r={};
+    Math.random=()=>0.5;
+    try{S.vil=S.wd=S.room=null;S.mode='play';S.sk={ids:['a','b'],cd:[0,0],fx:[]};
+      const L=heroLv(),mk=(gap,o={})=>{const e=addEnemy('grunt',P.x+60,P.y);e.mult={};e.hp=e.max=o.hp||1e9;e.dmLv=L-gap;Object.assign(e,o);return e};
+      const hit=(e,w,on)=>{DRAMA.test=on;const h=e.hp;damage(e,10,w,0,'physical');DRAMA.test=true;return h-e.hp};
+      const a0=hit(mk(0),'sword',false),a1=hit(mk(0),'sword',true);S.sk.ids=['a'];const a2=hit(mk(0),'sword',true);S.sk.ids=['a','b'];
+      r.auto=Math.abs(a1/a0-0.75)<0.01&&Math.abs(a2/a0-1)<0.01;
+      const s0=hit(mk(0),'skill',false),s1=hit(mk(0),'skill',true),s3=hit(mk(3),'skill',true),s9=hit(mk(9),'skill',true);
+      r.skill=Math.abs(s1/s0-1.3)<0.01&&Math.abs(s3/s0-1.3*1.6)<0.01&&Math.abs(s9/s0-1.3*2.5)<0.01;
+      const x0=DM.stat.exec,u=s0;   // u: מכת סקיל של 10 בלי דרמה
+      const e1=mk(3,{hp:100});e1.hp=u*2.08+20;damage(e1,10,'skill',0,'physical');
+      const e2=mk(0,{hp:100});e2.hp=u*1.3+20;damage(e2,10,'skill',0,'physical');
+      const e3=mk(3,{hp:100});e3.hp=a1+5;damage(e3,10,'sword',0,'physical');
+      const e4=mk(3,{hp:100,rare:'x'});e4.hp=u*2.08+20;damage(e4,10,'skill',0,'physical');
+      r.exec=e1.dead&&!e2.dead&&!e3.dead&&!e4.dead&&DM.stat.exec===x0+1;
+      // מוות: 4 שלדים מאותה קבוצה. שניים מלאים, השלישי קצר (תקרה), והאחרון בקבוצה מלא עם טבעת
+      for(const q of enemies.slice(bak.n0))q.dead=true;const g=[0,1,2,3].map(()=>mk(0,{home:9999}));DM.fulls=[];const st=Object.assign({},DM.stat),fx0=DM.fx.length;
+      for(const q of g)kill(q);
+      r.death=DM.stat.full===st.full+3&&DM.stat.short===st.short+1&&DM.stat.last===st.last+1&&DM.fx.length===fx0+4&&!!DM.fx[DM.fx.length-1].skull&&!DM.fx[DM.fx.length-2].skull;
+      const n0=drops().length;dropSpawn('wood',1,P.x+300,P.y+300);dmLoot(n0);r.pull=!!drops()[n0]&&drops()[n0].fly;drops().splice(n0);
+      // מחיצה: הטלה, ו-4 הריגות בסקיל בתוך החלון
+      const c0=DM.stat.crush;S.slow=0;DM.cast={id:'a',t:DM.t,k:0};for(let k=0;k<4;k++)damage(mk(0,{hp:5}),1e6,'skill',0,'physical');
+      r.crush=DM.stat.crush===c0+1&&S.slow>0;
+      // חלש: מכה טעונה באזור הרחוק עד 60%, ושכן טוען גם הוא. בלי פער: כלום
+      for(const q of enemies.slice(bak.n0))q.dead=true;UPFEEL.charge.chance.far=0;
+      const w1=mk(-5,{zone:'far',home:9998}),w2=mk(-5,{zone:'far',home:9998});w2.x=w1.x+50;
+      const k1=ufCharge(w1),k2=ufCharge(w2),ev=mk(0,{zone:'far'});const k3=ufCharge(ev);
+      r.charge=k1===UPFEEL.charge.wind&&w2.dmForce===0&&k2===UPFEEL.charge.wind&&k3===1;
+      // קפיצה: אויב חלש-ממני רחוק מסמן, מי שזז מתחמק, מי שעומד נפגע
+      for(const q of enemies.slice(bak.n0))q.dead=true;DM.marks=[];P.inv=0;P.hp=P.maxHp=Math.max(P.maxHp||100,100);
+      const j=mk(-5,{alert:5});j.x=P.x+200;j.y=P.y;DM.pT=0;dmUpdate(0.01);const m1=DM.marks.length===1;
+      const d0=DM.stat.pDodge;P.x+=300;for(let k=0;k<15;k++)dmUpdate(0.1);P.x-=300;const dodge=DM.stat.pDodge===d0+1;
+      j.x=P.x+200;j.y=P.y;DM.pT=0;DM.marks=[];dmUpdate(0.01);const h0=DM.stat.pHit;P.inv=0;for(let k=0;k<15;k++)dmUpdate(0.1);
+      r.pounce=m1&&dodge&&DM.stat.pHit===h0+1;
+      // בזירה: בלי test ובלי עולם, כלום
+      DRAMA.test=false;r.arena=Math.abs(hit(mk(9),'skill',false)/s0-1)<0.01&&Math.abs(hit(mk(0),'sword',false)/a0-1)<0.01;DRAMA.test=true;
+      try{ctx.save();dmDraw();ctx.restore();r.draw=true}catch(err){r.draw=String(err)}
+    }catch(err){r.err=String(err&&err.stack||err)}
+    Math.random=rnd;DRAMA.test=false;UPFEEL.charge.chance.far=bak.ch;for(const q of enemies.slice(bak.n0))q.dead=true;enemies.length=bak.n0;DM.marks=[];DM.fx=[];DM.rings=[];DM.cast=null;DM.gk={};
+    Object.assign(DM.stat,JSON.parse(bak.st));Object.assign(S,{vil:bak.vil,wd:bak.wd,room:bak.room,mode:bak.mode,hitstop:bak.hs,shake:bak.sh,slow:bak.sl,sk:bak.sk});Object.assign(P,{hp:bak.hp,maxHp:bak.mh,inv:bak.inv,x:bak.x,y:bak.y});DM.fulls=[];return r});
+  {const L=[[drm.auto,'auto x0.75 with 2 skills','auto not weaker'],[drm.skill,'skill x1.3 and by level gap','skill multiplier wrong'],[drm.exec,'skill execute (not auto, not rare)','execute wrong'],
+    [drm.death,'skeleton death (cap, last of group)','death fx wrong'],[drm.pull,'loot pulled','loot not pulled'],[drm.crush,'crush moment','no crush'],[drm.charge,'charged hit in pairs when weaker','charge pressure wrong'],
+    [drm.pounce,'pounce on ranged (dodge, hit)','pounce wrong'],[drm.arena,'off in arena','on in arena'],[drm.draw===true,'draws','draw '+drm.draw]];
+   check(!drm.err&&L.every(x=>x[0]),'Combat drama (drama.js): '+(drm.err||L.map(x=>x[0]?x[1]:x[2]).join(', ')))}
   // אפקטים של קרב (juice.js): פגיעה מפעילה עצירה, הבזק, הדיפה, ניצוצות ומספר. קריטי צהוב עם רעידה, הריגה עם עשן, תקרה לטלפון, ובזירה כבוי.
   // הבדיקה רצה במקום ניטרלי עם המתג של אוראל (JUICE.where.arena), כדי לא לגעת בשמירה של העולם
   const jc=await page.evaluate(()=>{const bak={vil:S.vil,wd:S.wd,room:S.room,mode:S.mode,hs:S.hitstop,sh:S.shake,jc:S.jc,ar:JUICE.where.arena,tr:P.track,hits:S.hits},c=HITFX.crit,r={};
@@ -1816,7 +1862,7 @@ function worldBot(m,L,god){
       enterWorld('home');enemies=[];const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
       SAVE.hero.skLoad=['meteor',null];run(0.05);const i=S.sk.ids.indexOf('meteor'),cast=()=>{S.sk.cd[i]=0;S.wsb&&(S.wsb.fx=[]);wskUse('meteor');const o=S.wsb.fx.find(o=>o.id==='meteor');return o?o.base:0};
       if(i>=0){SAVE.sklv.meteor=0;const b0=cast();SAVE.sklv.meteor=5;const b5=cast();r.dmg=b0>0?Math.round(b5/b0*100)/100:0;
-        r.cd=Math.abs(S.sk.cd[i]-WSKBOOK.list.meteor.cd0*WSKLVL.cd[5])<0.05;skillsHud();wslBadges();const sb=document.querySelector('#skills .skb[data-sk="meteor"] .wslb');r.btn=sb?sb.textContent:'';
+        r.cd=Math.abs(S.sk.cd[i]-WSKBOOK.list.meteor.cd0*WSKLVL.cd[5]*dmCdK('meteor'))<0.05;skillsHud();wslBadges();const sb=document.querySelector('#skills .skb[data-sk="meteor"] .wslb');r.btn=sb?sb.textContent:'';
         wsbOpenUi();wslBadges();const kb=document.querySelector('#ovBook .wsbc[data-wsbid="meteor"] .wslb');r.book=kb?kb.textContent:'';wsbClose()}
       for(const x of enemies)x.dead=true;enemies=[];run(2)}catch(err){r.err=String(err&&err.stack||err)}
     if(SKR)skrEnd(false);worldUi(false);if(!vil)villageUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
