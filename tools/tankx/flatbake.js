@@ -24,7 +24,27 @@ const sharp=require('sharp'),fs=require('fs'),{NodeIO,Document}=require('@gltf-t
    let L=near(c,1);if(L.length<3)L=near(c,3);if(L.length<3)L=near(c,8);const sc=L.map(i=>{const h=H[i].c;return[(h[0]-c[0])**2+(h[1]-c[1])**2+(h[2]-c[2])**2,i]}).sort((a,b)=>a[0]-b[0]).slice(0,4);
    let w=0,r=0,g=0,b=0;for(const [dd,i] of sc){const ww=1/(dd+1e-6);w+=ww;r+=ww*H[i].col[0];g+=ww*H[i].col[1];b+=ww*H[i].col[2]}bake.push([r/w,g/w,b/w])}}
  const lum=c=>0.2126*c[0]+0.7152*c[1]+0.0722*c[2];
- const GR=process.env.GRADE?JSON.parse(process.env.GRADE):null;if(GR)bake.forEach(c=>{const L=lum(c),ss=(a,b,x)=>{x=Math.max(0,Math.min(1,(x-a)/(b-a)));return x*x*(3-2*x)},a=ss(GR.a0,GR.a1,L),k=0.55+0.45*Math.min(1,L/GR.ok),m=(c[0]+c[1]+c[2])/3,g=c.map(v=>Math.min(1,Math.max(0,(m+(v-m)*GR.sat)*GR.gg)));for(let i=0;i<3;i++)c[i]=GR.ob[i]*k*(1-a)+g[i]*a});
+ const GR=process.env.GRADE?JSON.parse(process.env.GRADE):null;
+ if(GR){
+  // קבוצת גוף לכל משולש (לפי העצם הדומיננטית של שלושת הקודקודים): ידיים, זרוע/כתף, ראש, מגפיים, גוף
+  const skin=root.listSkins()[0],jn=skin?skin.listJoints().map(j=>j.getName()):[];const grp=[];
+  for(const p of prims){const I=p.getIndices(),J=p.getAttribute('JOINTS_0'),Wt=p.getAttribute('WEIGHTS_0'),n=I.getCount()/3;
+   for(let t=0;t<n;t++){const acc={};for(let k=0;k<3;k++){const i=I.getScalar(t*3+k),j=J?J.getElement(i,[0,0,0,0]):[0,0,0,0],w=Wt?Wt.getElement(i,[0,0,0,0]):[1,0,0,0];for(let q=0;q<4;q++)acc[jn[j[q]]||'?']=(acc[jn[j[q]]||'?']||0)+w[q]}
+    const best=Object.entries(acc).sort((x,y)=>y[1]-x[1])[0][0];
+    grp.push(/^(hand|wrist|handslot|thumb|index|middle|ring|pinky)/.test(best)?'hand':/^(upperarm|lowerarm|shoulder|clavicle)/.test(best)?'arm':/^(head|neck|helmet)/.test(best)?'head':/^(foot|toes|lowerleg)/.test(best)?'boot':'body')}}
+  const ss=(a,b,x)=>{x=Math.max(0,Math.min(1,(x-a)/(b-a)));return x*x*(3-2*x)},toS=v=>Math.pow(Math.max(0,v),1/2.2),toL=v=>Math.pow(Math.max(0,v),2.2);
+  const hsv=c=>{const [r,g,b]=c.map(toS),mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;if(d>1e-6){h=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;h*=60;if(h<0)h+=360}return[h,mx?d/mx:0,mx]};
+  const rgb=(h,sv,v)=>{const c=v*sv,x=c*(1-Math.abs((h/60)%2-1)),m=v-c;const[r,g,b]=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];return[toL(r+m),toL(g+m),toL(b+m)]};
+  bake.forEach((c,ti)=>{const L=lum(c),a=ss(GR.a0,GR.a1,L),gp=grp[ti];
+   // אובסידיאן: טון לפי הבהירות המקורית, מתוח לטווח רחב יותר, עם הטיה לפי חלק הגוף
+   const k=GR.k0+(GR.k1-GR.k0)*Math.min(1,L/GR.ok),pk=GR.part[gp]||{};const ob=GR.ob.map((v,i)=>v*k*(pk.k||1)*(pk.tint?pk.tint[i]:1));
+   // זהב: גוון מוזז לכיוון GR.hue, רוויה וערך מוגדרים
+   let [h,sa,v]=hsv(c);h=h<GR.hmax?h+(GR.hue-h)*GR.hpull:h;const gold=rgb(h,Math.min(1,Math.max(GR.smin,sa*GR.sg)),Math.min(1,Math.max(v*GR.vg+GR.vadd,pk.gold?0.8:0)));
+   let aa=Math.min(1,a+(pk.gold||0));const o=[0,0,0];for(let i=0;i<3;i++)o[i]=ob[i]*(1-aa)+gold[i]*aa;
+   if(pk.gold&&aa>a){/* חלק מוזהב: הערך גבוה יותר */}
+   c[0]=o[0];c[1]=o[1];c[2]=o[2]});
+  const cnt={};grp.forEach(g=>cnt[g]=(cnt[g]||0)+1);console.log('groups',JSON.stringify(cnt));
+ }
  // אטלס
  const N=Math.ceil(Math.sqrt(nT)),A=Buffer.alloc(N*N*3),E=Buffer.alloc(N*N*3);bake.forEach((c,i)=>{A[i*3]=srgb(c[0]);A[i*3+1]=srgb(c[1]);A[i*3+2]=srgb(c[2])});
  const png=await sharp(A,{raw:{width:N,height:N,channels:3}}).png().toBuffer();
