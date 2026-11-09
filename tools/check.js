@@ -5066,6 +5066,32 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   // שמירה ישנה: משאב ששמו השתנה (RES.renamed, ore→iron) עובר גם במה שמחכה באיסוף במבנה (SAVE.prod), ולא נאסף לתרמיל כמשאב שלא מופיע בשום מקום (ביקורת 9.11)
   const rmOk=await page.evaluate(()=>{const sv={bag:{ore:2,iron:1},stash:{ore:3},prod:{mine:{t:1,have:{ore:12.4,stone:1}},x:{t:1}}};resMigrate(sv);
      return sv.bag.iron===3&&!('ore' in sv.bag)&&sv.stash.iron===3&&!('ore' in sv.stash)&&Math.abs(sv.prod.mine.have.iron-12.4)<1e-9&&!('ore' in sv.prod.mine.have)&&sv.prod.mine.have.stone===1});
+  // Arena new skills (js/arena-new.js, ARENA-B, preview only): OFF by default (no bar, no state, every wrapper a no-op), and with the flag on every one of the
+  // eight casts, shows its effect, deals damage, ends, and respects its cooldown. Gravitas pulls foes (only here), Skyblade nicks and sticks, Phoenix burns a trail.
+  {const an=await page.evaluate(()=>{
+    if(typeof ARN==='undefined')return {err:'no ARN'};
+    const o={off:{on:ARN.on,bar:!!document.querySelector('.arnbar'),state:ARN.s,cast:null},sk:{}};
+    try{const de=R3D.drawEvery;
+      reset();S.mode='play';enemies.length=0;o.off.cast=ARN.use('meteor');   // flag off: refuses
+      arnEnable(true);
+      const run=(id,frames)=>{startRun();P.x=P.y=0;P.aim=0;enemies.length=0;S.nextBoss=1e9;
+        for(let i=0;i<24;i++){const a=i*2.399,d=120+((i*37)%220),e=addEnemy('grunt',Math.cos(a)*d,Math.sin(a)*d);e.elite=false;e.speed=0.4;e.hp=e.max=1e6;e.shoot=99}
+        for(let i=0;i<4;i++){const a=i*1.57,e=addEnemy('grunt',Math.cos(a)*75,Math.sin(a)*75);e.elite=false;e.speed=0.4;e.hp=e.max=1e6;e.shoot=99}
+        S.t=5;const r={ok:ARN.use(id),again:null,h0:ARN.stat.hits,fx:0,end:-1,hit:-1,px:P.x,py:P.y,clip:P.skCast&&P.skCast.k,pull0:ARN.stat.pulled,nick0:ARN.stat.nicks,st0:ARN.stat.stuck};
+        r.again=ARN.use(id);const c0={};
+        for(let f=0;f<frames;f++){P.hp=P.maxHp;P.inv=9;update(1/60);render();const n=ARN.s?ARN.s.fx.length:0;r.fx=Math.max(r.fx,n);if(r.hit<0&&ARN.stat.hits>r.h0)r.hit=f/60;if(n===0&&r.end<0){r.end=f/60;break}}
+        r.dx=P.x-r.px;r.pulled=ARN.stat.pulled-r.pull0;r.nicks=ARN.stat.nicks-r.nick0;r.stuck=ARN.stat.stuck-r.st0;r.hits=ARN.stat.hits-r.h0;r.cd=(ARN.s.cd[id]||0)>S.t;return r};
+      for(const id of ARN.order)o.sk[id]=run(id,60*8);
+      o.bar=!!document.querySelector('.arnbar')&&document.querySelectorAll('.arnb').length===8;
+      arnEnable(false);o.after={on:ARN.on,hidden:ARN.bar.hidden,state:ARN.s,cast:ARN.use('moon')};
+      enemies.length=0;R3D.drawEvery=de}catch(e){o.err=String(e)}
+    return o});
+    const sk=an.sk||{},ids=Object.keys(sk),bad=ids.filter(id=>!(sk[id].ok&&sk[id].again===false&&sk[id].fx>0&&sk[id].hit>=0&&sk[id].end>0&&sk[id].cd)),
+      extra=ids.length===8&&sk.rift.pulled>0&&sk.blade.nicks>0&&sk.blade.stuck===3&&sk.phoenix.dx>150&&sk.phoenix.hits>0&&sk.moon.hit>=1.4&&sk.arrows.hits>0;
+    check(!an.err&&an.off&&an.off.on===false&&!an.off.bar&&an.off.state==null&&an.off.cast===false&&an.bar&&ids.length===8&&!bad.length&&extra&&an.after.on===false&&an.after.hidden&&an.after.cast===false,
+      'Arena new skills (preview, ?arenanew=1): '+(an.err||[an.off.on===false&&!an.off.bar?'off by default: no bar, no cast':'NOT OFF by default',an.bar?'8 buttons':'no buttons',
+        ids.map(id=>id+' '+(sk[id].ok?'cast':'no cast')+(sk[id].hits?', '+sk[id].hits+' hits':', no hits')+(sk[id].end>0?', ends '+sk[id].end.toFixed(1)+'s':', never ends')).join(' · '),
+        bad.length?'failed: '+bad.join(','):'',extra?'rift pulls, blades nick and stick, phoenix dashes and burns, moon lands on time':'special behaviour missing',an.after&&an.after.on===false&&an.after.cast===false?'switch off again':'does not switch off'].filter(Boolean).join(' · ')));}
   await browser.close();
 
   const t=s=>s==null?'-':Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');
@@ -5429,32 +5455,6 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     if(CFG.lang==='en')check(!mb.he,mb.he?'משחקי השאול: נשאר טקסט בעברית: '+mb.he:'משחקי השאול: באנגלית');
   }
   check(rmOk,'שמירה ישנה: עפרה (ore) עוברת לברזל בתרמיל, במחסן ובאיסוף של המכרה'+(rmOk?'':' ✗'));
-  // Arena new skills (js/arena-new.js, ARENA-B, preview only): OFF by default (no bar, no state, every wrapper a no-op), and with the flag on every one of the
-  // eight casts, shows its effect, deals damage, ends, and respects its cooldown. Gravitas pulls foes (only here), Skyblade nicks and sticks, Phoenix burns a trail.
-  {const an=await page.evaluate(()=>{
-    if(typeof ARN==='undefined')return {err:'no ARN'};
-    const o={off:{on:ARN.on,bar:!!document.querySelector('.arnbar'),state:ARN.s,cast:null},sk:{}};
-    try{const de=R3D.drawEvery;
-      reset();S.mode='play';enemies.length=0;o.off.cast=ARN.use('meteor');   // flag off: refuses
-      arnEnable(true);
-      const run=(id,frames)=>{startRun();P.x=P.y=0;P.aim=0;enemies.length=0;S.nextBoss=1e9;
-        for(let i=0;i<24;i++){const a=i*2.399,d=120+((i*37)%220),e=addEnemy('grunt',Math.cos(a)*d,Math.sin(a)*d);e.elite=false;e.speed=0.4;e.hp=e.max=1e6;e.shoot=99}
-        for(let i=0;i<4;i++){const a=i*1.57,e=addEnemy('grunt',Math.cos(a)*75,Math.sin(a)*75);e.elite=false;e.speed=0.4;e.hp=e.max=1e6;e.shoot=99}
-        S.t=5;const r={ok:ARN.use(id),again:null,h0:ARN.stat.hits,fx:0,end:-1,hit:-1,px:P.x,py:P.y,clip:P.skCast&&P.skCast.k,pull0:ARN.stat.pulled,nick0:ARN.stat.nicks,st0:ARN.stat.stuck};
-        r.again=ARN.use(id);const c0={};
-        for(let f=0;f<frames;f++){P.hp=P.maxHp;P.inv=9;update(1/60);render();const n=ARN.s?ARN.s.fx.length:0;r.fx=Math.max(r.fx,n);if(r.hit<0&&ARN.stat.hits>r.h0)r.hit=f/60;if(n===0&&r.end<0){r.end=f/60;break}}
-        r.dx=P.x-r.px;r.pulled=ARN.stat.pulled-r.pull0;r.nicks=ARN.stat.nicks-r.nick0;r.stuck=ARN.stat.stuck-r.st0;r.hits=ARN.stat.hits-r.h0;r.cd=(ARN.s.cd[id]||0)>S.t;return r};
-      for(const id of ARN.order)o.sk[id]=run(id,60*8);
-      o.bar=!!document.querySelector('.arnbar')&&document.querySelectorAll('.arnb').length===8;
-      arnEnable(false);o.after={on:ARN.on,hidden:ARN.bar.hidden,state:ARN.s,cast:ARN.use('moon')};
-      enemies.length=0;R3D.drawEvery=de}catch(e){o.err=String(e)}
-    return o});
-    const sk=an.sk||{},ids=Object.keys(sk),bad=ids.filter(id=>!(sk[id].ok&&sk[id].again===false&&sk[id].fx>0&&sk[id].hit>=0&&sk[id].end>0&&sk[id].cd)),
-      extra=ids.length===8&&sk.rift.pulled>0&&sk.blade.nicks>0&&sk.blade.stuck===3&&sk.phoenix.dx>150&&sk.phoenix.hits>0&&sk.moon.hit>=1.4&&sk.arrows.hits>0;
-    check(!an.err&&an.off&&an.off.on===false&&!an.off.bar&&an.off.state==null&&an.off.cast===false&&an.bar&&ids.length===8&&!bad.length&&extra&&an.after.on===false&&an.after.hidden&&an.after.cast===false,
-      'Arena new skills (preview, ?arenanew=1): '+(an.err||[an.off.on===false&&!an.off.bar?'off by default: no bar, no cast':'NOT OFF by default',an.bar?'8 buttons':'no buttons',
-        ids.map(id=>id+' '+(sk[id].ok?'cast':'no cast')+(sk[id].hits?', '+sk[id].hits+' hits':', no hits')+(sk[id].end>0?', ends '+sk[id].end.toFixed(1)+'s':', never ends')).join(' · '),
-        bad.length?'failed: '+bad.join(','):'',extra?'rift pulls, blades nick and stick, phoenix dashes and burns, moon lands on time':'special behaviour missing',an.after&&an.after.on===false&&an.after.cast===false?'switch off again':'does not switch off'].filter(Boolean).join(' · ')));}
   // מפתחות גולמיים על המסך, בכל מה שהבוט עבר (נסרק כל כמה צעדים, בכל צילום ובכל חלון של winOvl)
   {const rk=rawKeys;check(!rk.length,rk.length?'מפתח טקסט גולמי על המסך: '+rk.slice(0,8).join(', '):'אין מפתח טקסט גולמי על המסך (DOM וקנבס)')}
   if(winChk){const w=winChk,bad=Object.entries(w.wins).filter(([k,v])=>v.length);
