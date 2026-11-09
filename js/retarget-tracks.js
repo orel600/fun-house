@@ -28,6 +28,10 @@ const RETARGET={
       if(prop!=='position'||!(bone in f))return t;const v=t.values.slice();for(let k=0;k<v.length;k++)v[k]*=f[bone];
       return new THREE.VectorKeyframeTrack(t.name,t.times,v)});
     return new THREE.AnimationClip(clip.name,clip.duration,tr)},
+  /* applyRotOnly(clip): למודל שכיוון התרגומים המקומיים שלו שונה מ-KayKit (שלד שנבנה מהרשת עצמה, כמו הנודד): זורקים את כל רצועות position חוץ מ-hips (שגובהו מוכפל ב-f_hips כמו ב-apply).
+     העצמות שומרות על אורכי המנוחה שלהן. המחיר: אין תזוזה של עצמות מלבד ה-hips (מספיק לריצה והתקפה, פחות למוות). */
+  applyRotOnly(clip,f){
+    const tr=clip.tracks.filter(t=>!(t.name.endsWith('.position')&&t.name.split('.')[0]!=='hips'));return RETARGET.apply(new THREE.AnimationClip(clip.name,clip.duration,tr),f)},
   report(f){const e=Object.entries(f).sort((a,b)=>a[1]-b[1]);return {min:e[0],max:e[e.length-1],count:e.length}}
 };
 /* הטבלה של הפטיש (נפתרה ב-9.11.2026 על TankX.glb; rot הוא quaternion [x,y,z,w] מקומי לעצם handslotr). משפחות: idle ו-run מורמים, השאר ברירת המחדל */
@@ -40,4 +44,10 @@ const TANKX={
   },
   /* הקליפים שבודקים לכל מודל (tools/tankx/verify.js) */
   verifyClips:['Idle_A','Running_B','Melee_2H_Attack_Chop','Death_A','Hit_A','Melee_2H_Idle','Jump_Idle','Taunt']
+};
+
+/* הנודד (wandererX): מטה על handslotl. ברירת מחדל = ההרכבה בתנוחת הבסיס של המודל; Idle_A ו-Running_B פתורים כך שהמטה אנכי (נפתר ב-9.11.2026) */
+const WANDERX={
+  staffProp:'w_item_wandererXStaff',bone:'handslotl',rotOnly:true,verifyClips:TANKX.verifyClips,
+  carry:{default:{pos:[0.0608, 0.0164, 0.0389],rot:[-0.1576, 0.343, 0.3175, -0.8699]},Idle_A:{pos:[0.0608, 0.0164, 0.0389],rot:[-0.5443, -0.5786, -0.4065, 0.4514]},Running_B:{pos:[0.0608, 0.0164, 0.0389],rot:[-0.067, -0.6897, -0.1512, 0.705]}}
 };
