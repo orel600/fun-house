@@ -14,10 +14,10 @@ const DOLL3D={
   yawBy:{bow:0.9,magic:-0.25},
   swayBy:{magic:0.2},        // המטה מורם ליד הראש: נדנוד קטן, כדי שהוא לא יעבור מול הפנים
   /* מסגרת (באג 9.11.2026, docs/weapon-audit-2026-11-09.md: 10 מ-17 נשקים נחתכו בקצה). המצלמה מתאימה את עצמה לקופסה של הדמות
-     ושל הנשק יחד, בכל הנדנוד ובתנוחות העמידה וההרעה (dollFit). minH: הדמות תופסת לפחות חלק כזה מגובה הקנבס, גם כשהנשק ארוך (להב הדרקון, הארוך מכולם, צריך 0.42. השאר נכנסים ב-0.58 ומעלה).
+     ושל הנשק יחד, בכל הנדנוד ובתנוחת העמידה (dollFit). minH: הדמות תופסת לפחות חלק כזה מגובה הקנבס, גם כשהנשק ארוך (קשת הסערה ומטה הכוכב צריכים 0.45, חרבות וגרזנים 0.56 עד 0.75: הקנבס צר, 136 על 215, בין טורי המשבצות).
      pad: שוליים סביב הכל (חלק מהקנבס). badge: הפינה התחתונה בצד הסוף, שם תג המחלקה (.gfig b): הנשק לא נכנס אליה.
      poses: כמה רגעים בכל אנימציה נבדקים, swing: כמה נקודות בנדנוד */
-  minH:0.42,pad:0.03,badge:{w:0.3,h:0.16},poses:4,swing:5,
+  minH:0.45,pad:0.03,badge:{w:0.3,h:0.16},poses:4,swing:5,
   glow:0.22,                 // כמה חזק הזוהר של סט או פריט זוהר
   /* חפצים מסתובבים: רדיוס (חלק מגובה הדמות), גודל, מהירות, וגובה. נמוך וקטן, סביב הרגליים: בגובה החזה כדור כתום גדול
      עבר מול הפנים (ניר, 5.11.2026: "הדמות בחפצים נראית מזעזע") */
@@ -77,7 +77,8 @@ function dollBox(root){
 // דוגמים את הדמות בכל הנדנוד, בעמידה ובהרעה, ושומרים את הפינות. dollCam מעמיד לפיהן את המצלמה
 function dollFit(D){
   const a=D.a,P=DOLL3D,pts=[];a.mixer.stopAllAction();a.base=null;a.one=null;
-  for(const n of [D.idle,P.cheer]){const x=act(a,n);if(!x)continue;const d=x.getClip().duration;x.reset().setEffectiveWeight(1).play();
+  for(const n of [D.idle]){   // רק העמידה: ההרעה (1.4 שניות אחרי שלובשים) הרימה את הנשק והקטינה את הדמות לכל הזמן (להב הדרקון 0.42 במקום 0.56)
+    const x=act(a,n);if(!x)continue;const d=x.getClip().duration;x.reset().setEffectiveWeight(1).play();
     for(let k=0;k<P.poses;k++){x.time=d*k/P.poses;a.mixer.update(0);
       for(let j=0;j<P.swing;j++){a.root.rotation.y=D.yaw+D.sway*(j/(P.swing-1)*2-1);const b=dollBox(a.root);if(b.isEmpty())continue;
         for(const X of [b.min.x,b.max.x])for(const Y of [b.min.y,b.max.y])for(const Z of [b.min.z,b.max.z])pts.push(new THREE.Vector3(X,Y,Z))}}
