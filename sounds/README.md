@@ -39,6 +39,17 @@ https://creativecommons.org/publicdomain/zero/1.0/
 | imp_hammer.mp3 | **מוכן, לא מחובר:** חבטת הטנק (תקיפה בסיסית וסלאם). 0.38 שנ' | RPG Sound Pack (CC0, OpenGameArt) | bfh1_hit_01.ogg |
 | imp_wall.mp3 | **מוכן, לא מחובר:** חומת הברזל של הטנק. 1.2 שנ': רעידת אדמה (נחתכה מ-5 שנ') ומעליה סלע נשבר | Earthquake and Open Sesame (shake.ogg) + RPG Sound Pack (bfh1_rock_breaking_03.ogg), שניהם CC0 | shake.ogg, bfh1_rock_breaking_03.ogg |
 | cry_war.mp3 | **מוכן, לא מחובר:** שאגת הלעג של הטנק. 0.72 שנ' | mnstr5.wav (CC0, OpenGameArt) | mnstr5.wav |
+| imp_anvil.mp3 | הטנק: נחיתת הסדן (s1). מכה ומעליה סלע נשבר | 75 CC0 Breaking/Falling/Hit SFX (CC0, OpenGameArt) | bfh1_hit_01 + bfh1_rock_breaking_03 |
+| whoosh_blade.mp3 | חיתוך מהיר: הלוחם והמתנקש (s1), ובשקט בהתחמקות של המתנקש (s2) | artisticdude, RPG Sound Pack (CC0, OpenGameArt) | swing.wav |
+| sweep_spin.mp3 | הלוחם: הסיבוב (s2). וושש ומעליו צלצול מתכת | Swishes Sound Pack (CC0, OpenGameArt) + artisticdude, RPG Sound Pack (CC0, OpenGameArt) | swish-8.wav + metal-ringing.wav |
+| bow_release.mp3 | הצייד: שחרור החץ (s1) וזריקת הרשת (s2). **מחליף זמני:** קשת אמיתית קיימת רק ברישיון שמחייב קרדיט | Swishes Sound Pack (CC0, OpenGameArt) | swish-4.wav |
+| net_catch.mp3 | הצייד: הרשת נסגרת על גיבור (s2) | artisticdude, RPG Sound Pack (CC0, OpenGameArt) | cloth-heavy.wav |
+| rain_volley.mp3 | הצייד: גשם החצים נוחת (סקיל-על). **מחליף זמני וחלש:** מטח קשתים אמיתי קיים רק ברישיון שמחייב קרדיט | 75 CC0 Breaking/Falling/Hit SFX (CC0, OpenGameArt) | bfh1_rock_falling_02 |
+| wave_surge.mp3 | הקוסמת: גל המים (s1) | 40 CC0 Water/Splash/Slime SFX (CC0, OpenGameArt) | splash_02 |
+| bubble_pop.mp3 | הקוסמת: כלא המים מרים (s2) | 40 CC0 Water/Splash/Slime SFX (CC0, OpenGameArt) | bubble_01 |
+| frost_crack.mp3 | הקוסמת: הסופה קופאת (סקיל-על). נחתך לשנייה | Freeze Spell 0 (CC0, OpenGameArt) | freeze.wav |
+| mark_seal.mp3 | המתנקש: סימן המוות ננעל (סקיל-על) | artisticdude, RPG Sound Pack (CC0, OpenGameArt) | magic1.wav |
+| mark_pop.mp3 | המתנקש: הסימן מתפוצץ (סקיל-על) | 75 CC0 Breaking/Falling/Hit SFX (CC0, OpenGameArt) | bfh1_hit_09 |
 | gamble_lose.mp3 | הפסד בהימור | Kenney Digital Audio | lowDown |
 
 סבב צלילים 1 ו-2 (8.11.2026, docs/concept/sound.md): `cast_` ו-`ui` נבחרו בדף ההאזנה של ARI (MAX בחר במקום אוראל). צלילי הרגעים (סבב 2) נבחרו על ידי ARI, ומקודדים ב-48k כדי לעמוד בתקציב של 200KB. החלפה = קובץ אחר באותו שם, ו-`node tools/build-sounds.js`.
