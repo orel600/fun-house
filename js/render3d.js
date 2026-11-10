@@ -565,17 +565,19 @@ function syncPlayer(dt){
     st.scT=Math.max(0,(st.scT||0)-dt);const casting=st.scT>0;
     const swing=!casting&&sword&&P.sw.anim>st.anim,shot=!casting&&!sword&&P.gn.t>st.gt+0.01;
     st.anim=P.sw.anim;st.gt=P.gn.t;
-    if(swing)once(a,L.anim.sword+'@up',Math.max(0.28,Math.min(0.5,P.sw.cd*wK('cd')*0.8)),false,heroSkip(L.anim.sword));
+    const tk=gtHeld(),swA=tk?gtAnim(tk):L.anim.sword,gnA=tk?gtAnim(tk):L.anim.gun;   // כלי ביד: גרזן חוטב, מכוש כורה (gtool.js)
+    if(tk&&(swing||shot))GTOOL.stat.anim[tk]=(GTOOL.stat.anim[tk]||0)+1;
+    if(swing)once(a,swA+'@up',Math.max(0.28,Math.min(0.5,P.sw.cd*wK('cd')*0.8)),false,heroSkip(swA));
     const gcd=P.gn.cd*wK('cd');
-    if(shot){st.shots=(st.shots||0)+1;once(a,L.anim.gun+'@up',Math.max(0.2,Math.min(0.45,gcd*0.9)),false,heroSkip(L.anim.gun))}
+    if(shot){st.shots=(st.shots||0)+1;once(a,gnA+'@up',Math.max(tk?0.3:0.2,Math.min(0.45,gcd*0.9)),false,heroSkip(gnA))}
     // קשת: מותחים את המיתר ממש לפני החץ הבא, כשיש במי לירות
     const drawT=Math.min(0.4,gcd*0.5);
-    if(!casting&&!sword&&L.anim.gunDraw&&P.gn.t>0&&P.gn.t<=drawT&&st.drawn!==st.shots&&nearest(440)&&!(a.one&&a.one.isRunning())){st.drawn=st.shots;once(a,L.anim.gunDraw+'@up',P.gn.t)}
+    if(!casting&&!sword&&!tk&&L.anim.gunDraw&&P.gn.t>0&&P.gn.t<=drawT&&st.drawn!==st.shots&&nearest(440)&&!(a.one&&a.one.isRunning())){st.drawn=st.shots;once(a,L.anim.gunDraw+'@up',P.gn.t)}
     // פגיעה (combat.js מדליק P.inv=0.6): הגוף נרתע, אם הוא לא באמצע תקיפה
     const hurt=P.inv>st.inv+0.3&&P.inv<=0.7;st.inv=P.inv;
     if(hurt&&!casting&&!swing&&!shot&&!(a.one&&a.one.isRunning()))once(a,L.anim.hit+'@up',0.3);
     if(P.skrCast&&st.cast!==P.skrCast){st.cast=P.skrCast;once(a,(R3D.clips[SKREVEAL.anim+'@up']?SKREVEAL.anim:L.anim.win)+'@up',SKREVEAL.cast)}   // סקיל חדש: הגיבור מטיל (skillreveal.js)
-    const busy=a.one&&a.one.isRunning(),idle=!sword&&L.anim.gunIdle||L.anim.idle;   // עם קשת ביד: עמידה עם קשת
+    const busy=a.one&&a.one.isRunning(),idle=!sword&&!tk&&L.anim.gunIdle||L.anim.idle;   // עם קשת ביד: עמידה עם קשת
     loop(a,(P.moving?L.anim.run:idle)+(busy?'@low':''),P.moving?Math.min(1.6,P.speed/165):1);
   }
   // הגוף לפי P.face: לאן שהולכים (update.js). הסיבוב הרך כבר שם, אז כאן בלי עיכוב נוסף
