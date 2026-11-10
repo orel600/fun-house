@@ -16,32 +16,33 @@ const WORLD={
   near:55,                               // כמה פיקסלים מקצה שער נחשב "לידו": בועה מעליו וכפתור עגול. הכרטיס נפתח רק בלחיצה
   /* מקורות משאבים בשדות: kind (מ-NODES.kinds ב-nodes.js), כמה, מרכז ורדיוס. המקומות קבועים, כך שהיער תמיד באותו מקום. מקור שנופל במים או ביער מדולג (terrain.js).
      ההתקפה האוטומטית מכה בהם כמו בזירה (aimTarget ב-combat.js), והשלל בדרגות כמו בזירה (runGive ב-loot.js) */
-  fields:[{kind:'tree',n:14,x:-1080,y:-1040,r:320},{kind:'tree',n:7,x:-680,y:-1480,r:220},{kind:'tree',n:6,x:1950,y:-250,r:220},{kind:'tree',n:6,x:-1300,y:700,r:240},{kind:'tree',n:5,x:520,y:1380,r:200},
+  fields:[{kind:'tree',n:14,x:-1080,y:-1040,r:320},{kind:'tree',n:7,x:-680,y:-1480,r:220},{kind:'tree',n:6,x:1950,y:-250,r:220},{kind:'tree',n:6,x:-1300,y:700,r:240},{kind:'tree',n:5,x:300,y:1330,r:200},
           {kind:'bush',n:6,x:-700,y:-660,r:160},{kind:'bush',n:4,x:-220,y:1580,r:150},
-          {kind:'rock',n:10,x:1800,y:-1280,r:330},{kind:'copper',n:5,x:2300,y:-1520,r:160},{kind:'iron',n:3,x:2450,y:-1150,r:110},{kind:'rock',n:4,x:600,y:1520,r:170},{kind:'rock',n:3,x:-1000,y:1180,r:150}],
+          {kind:'rock',n:10,x:1800,y:-1280,r:330},{kind:'copper',n:5,x:2300,y:-1520,r:160},{kind:'iron',n:3,x:2450,y:-1150,r:110},{kind:'rock',n:4,x:600,y:1520,r:170},{kind:'rock',n:3,x:-880,y:1120,r:150}],
   regrow:45,                             // שניות עד שמקור שנשבר צומח מחדש
   /* אויבים: קבוצות שמסתובבות ליד הבית שלהן. type: מ-ETYPES. creature: יצור משאב (data.js), ליד המקור שלו.
+     leash:300 בשורה: מחנה ליד שדה משאבים (עצים, שיחים, סלעים) רודף רק קרוב לבית, כדי שאפשר לאסוף בשדה בשקט אחרי שמנקים אותו (איסוף רגוע, 10.11).
      ראשונות: מפלצות קלות ממש מחוץ לשער, הדבר הראשון ששחקן חדש פוגש. מהן לומדים איך נראים קרב, מספרי נזק ושלל (ניר) */
   foes:[
     // ליד השער: פחות אויבים, וכל אחד חזק יותר (zones.start). קרב אחד שמרגישים, ולא עשרה שנעלמים (מבקר 2, 2.11.2026). wtension.js
     {type:'grunt',n:1,x:-260,y:-1620,r:95},{type:'grunt',n:1,x:140,y:-1610,r:95},{type:'grunt',n:2,x:-250,y:-1470,r:100},
     // האחו הפתוח מצפון לנהר (קל). הראשונה ממש מתחת לשער, בתחילת הדרך
-    {type:'grunt',n:2,x:-70,y:-1390,r:110},{type:'grunt',n:2,x:-460,y:-1180,r:140},{type:'grunt',n:3,x:380,y:-1180,r:140},{type:'wisp',n:2,x:-800,y:-1520,r:150},
-    {type:'grunt',n:2,x:-1120,y:-1700,r:110},   // על הדרך מהשער לשביל היער ולאגם
-    {type:'shield',n:3,x:-1070,y:-1290,r:150},{type:'grunt',n:2,x:-960,y:-1180,r:120},   // 20 מחנה כורתים נטוש
+    {type:'grunt',n:2,x:-70,y:-1390,r:110},{type:'grunt',n:2,x:-460,y:-1180,r:140},{type:'grunt',n:3,x:380,y:-1180,r:140},{type:'wisp',n:2,x:-900,y:-1780,r:100,leash:300},
+    {type:'grunt',n:3,x:-1250,y:-1720,r:110,leash:300},   // על הדרך מהשער לשביל היער ולאגם
+    {type:'shield',n:3,x:-1150,y:-1530,r:120,leash:300},   // 20 מחנה כורתים נטוש: בקצה הצפוני של שדה העצים הגדול, לא עליו (איסוף רגוע, 10.11). הגרנטים שלו: הקבוצה על הדרך, מעליו
     {type:'wisp',n:2,x:940,y:-1140,r:140},{type:'shield',n:2,x:1040,y:-1060,r:120},    // 21 מחנה ציידים
-    {type:'shield',n:2,x:1290,y:-1700,r:120},{type:'grunt',n:2,x:720,y:-520,r:140},{type:'grunt',n:3,x:1950,y:-480,r:150},
+    {type:'shield',n:2,x:1290,y:-1700,r:120},{type:'grunt',n:2,x:720,y:-520,r:140},{type:'grunt',n:3,x:1700,y:-560,r:130,leash:300},
     {type:'shield',n:3,x:2450,y:-240,r:150},{type:'wisp',n:2,x:2350,y:-380,r:120},     // 23 מחנה המפרץ
     {type:'treant',n:2,x:-1840,y:-640,r:120},{type:'wisp',n:2,x:-2030,y:250,r:120},{type:'grunt',n:2,x:-2400,y:-1000,r:100},   // 12 הקיצור ביער ושביל היער: עצים מהלכים ורוחות
     // מעבר לנהר (קשה): מחנה הגדה, הרכס, המקדש, הדרך למאורה, והדרום-מערב
     {type:'shield',n:3,x:130,y:400,r:150},{type:'grunt',n:3,x:260,y:300,r:130},   // 22 מחנה הגדה
-    {type:'wisp',n:2,x:300,y:740,r:150},{type:'shield',n:3,x:740,y:1240,r:150},{type:'grunt',n:3,x:1440,y:1080,r:150},
+    {type:'wisp',n:2,x:300,y:740,r:150},{type:'shield',n:3,x:740,y:1240,r:130,leash:300},{type:'grunt',n:3,x:1440,y:1080,r:150},
     {type:'shield',n:3,x:1900,y:1500,r:150},{type:'grunt',n:3,x:2250,y:1300,r:150},
-    {type:'shield',n:3,x:-1130,y:1440,r:150},{type:'grunt',n:3,x:-800,y:780,r:150},{type:'wisp',n:3,x:-1250,y:250,r:150},
-    {type:'wisp',n:2,x:-690,y:1780,r:90},{type:'grunt',n:3,x:400,y:1700,r:150},{type:'shield',n:2,x:1300,y:1650,r:130},{type:'treant',n:2,x:-2300,y:1150,r:110},
+    {type:'shield',n:3,x:-1130,y:1440,r:150,leash:300},{type:'grunt',n:3,x:-800,y:780,r:150,leash:300},{type:'wisp',n:3,x:-1250,y:250,r:150,leash:300},
+    {type:'wisp',n:2,x:-690,y:1780,r:90,leash:300},{type:'grunt',n:3,x:150,y:1720,r:120,leash:300},{type:'shield',n:2,x:1300,y:1650,r:130},{type:'treant',n:2,x:-2300,y:1150,r:110},
     /* יצורי משאבים: מחנה ליד השדה, לא עליו (משחק בדיקה 9.11: "אין רגע שקט לאסוף"). מנקים את המחנה ואוספים בשקט, כמו ב-My Universe.
        leash: רודפים רק קרוב למחנה (WORLD.camp). back: חוזרים לאט, כדי שהאיסוף אחרי הקרב לא ייקטע */
-    {type:'treant',creature:true,n:2,x:-1150,y:-950,r:170},{type:'golem',creature:true,n:2,x:1380,y:-950,r:110},
+    {type:'treant',creature:true,n:2,x:-1250,y:-600,r:110},{type:'golem',creature:true,n:2,x:1380,y:-950,r:110},
     {type:'crawler',creature:true,n:2,x:2780,y:-1550,r:100},{type:'sprite',creature:true,n:2,x:-330,y:-860,r:100},{type:'golem',creature:true,n:2,x:980,y:1560,r:110}
   ],
   camp:{leash:280,back:60},              // מחנה של יצורי משאבים (creature): רודף רק עד כאן מהבית, וחוזר אחרי כך שניות (במקום leash ו-back של האזור). שורה ב-foes יכולה לקבוע leash/back משלה
@@ -110,7 +111,7 @@ const WORLD={
       {id:'r1',x:-2600,y:-1300,in:'forest'},{id:'r2',x:2490,y:-1680,in:'quarry'},{id:'r3',x:1240,y:-590,in:'meadow'},{id:'r4',x:2850,y:250,in:'cliff'},{id:'r5',x:-2000,y:1100,in:'forest'},
       {id:'r6',x:-2730,y:1640,in:'forest'},{id:'r7',x:230,y:1140,in:'ridge'},{id:'r8',x:-670,y:1830,in:'reeds'},{id:'r9',x:2240,y:1140,in:'bay'}],   // מאורות נדירות (◆, ת8)
     deeper:{x:420,y:-1250},   // עומק הצל: בקומה שנבנית מהאחו, השער למטה (depths.js)
-    marks:[{id:'spring',kind:'spring',x:-1290,y:-430},{id:'loggers',kind:'camp',x:-1070,y:-1290},{id:'hunters',kind:'camp',x:940,y:-1140},{id:'bank',kind:'camp',x:130,y:400},{id:'bay',kind:'camp',x:2450,y:-240},
+    marks:[{id:'spring',kind:'spring',x:-1290,y:-430},{id:'loggers',kind:'camp',x:-1150,y:-1530},{id:'hunters',kind:'camp',x:940,y:-1140},{id:'bank',kind:'camp',x:130,y:400},{id:'bay',kind:'camp',x:2450,y:-240},
       {id:'tower',kind:'ruin',x:-1130,y:1440},{id:'temple',kind:'temple',x:740,y:1240},{id:'lighthouse',kind:'lighthouse',x:-690,y:1930},{id:'lookout',kind:'look',x:-300,y:860}]   // 20-26
   },
   /* אזורים נוספים. כל אזור כותב רק מה ששונה מהאחו, והשאר נלקח מ-WORLD. האחו הוא WORLD עצמו.
