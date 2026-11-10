@@ -20,7 +20,7 @@ const VGROW={
     {m:'vx_well',x:-185,y:-150,w:52,at:2,block:24},
     {m:'v_tent',x:195,y:-150,w:58,at:3,r:-0.5,block:24},{m:'v_crate',x:235,y:-115,w:24,at:3},{m:'vx_sack',x:160,y:-110,w:20,at:3},
     {m:'v_tent',x:-200,y:20,w:58,at:4,r:0.5,block:24},{m:'v_barrel',x:-165,y:50,w:22,at:4},
-    {m:'fountain',x:0,y:-80,w:70,at:5,block:40},
+    {m:'fountain',x:0,y:-80,w:96,at:5,block:52},
     // שדות, טחנה, כנסייה
     {m:'vx_grain',x:-620,y:-300,w:110,at:4},{m:'vx_grain',x:640,y:-310,w:110,at:4},
     {m:'vx_windmill',x:500,y:470,w:120,at:5,block:50},{m:'vx_church',x:-310,y:-570,w:115,at:5,block:50},
