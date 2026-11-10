@@ -1302,7 +1302,7 @@ const TEXT={
   'gui.speed':{he:'מהירות',en:'Move speed'},
   'gui.crit':{he:'קריטי',en:'Critical'},
   'gui.def':{he:'הגנה',en:'Defense'},
-  'gui.defV':{he:(r,n)=>r+' · <bdi dir="ltr">≈'+n+'%</bdi> כאן',en:(r,n)=>r+' · ≈'+n+'%<span class="gdh"> here</span>'},   // defense.js: נקודות הגנה, וכמה נזק הן בולעות מול המפלצות כאן
+  'gui.defV':{he:(r,n)=>r+' · <bdi dir="ltr">≈'+n+'%</bdi> כאן',en:(r,n)=>'<span class="gdh">'+r+' · </span>≈'+n+'%<span class="gdh"> here</span>'},   // defense.js: נקודות הגנה, וכמה נזק הן בולעות מול המפלצות כאן
   'gui.regen':{he:'ריפוי',en:'Healing'},
   'gui.loot':{he:'שלל',en:'Loot'},
   'gui.ps':{he:n=>n+' בשנ׳',en:n=>n+'/s'},   // לשנייה

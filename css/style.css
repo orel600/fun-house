@@ -1329,7 +1329,7 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 /* "המראה שלי" בכותרת חלון הציוד (heroLookBtn ב-heroes.js): כפתור אחד שעובר למראה הבא, באותו גובה של הלשוניות */
 #ovGear .glook{appearance:none;flex:none;border:1px solid var(--line);background:var(--panel);color:var(--chalk);border-radius:999px;min-height:40px;min-width:44px;padding:4px 12px;font:800 var(--t1,14px) var(--body);cursor:pointer;white-space:nowrap}
 #ovGear .glook:not([data-look="none"]){border-color:var(--gold);color:var(--gold)}
-@media (orientation:portrait){#ovGear .glook{padding:4px 8px}#ovGear .glook .glk{display:none}}   /* טלפון עומד: רק ✨, אחרת ה-✕ יוצא מהמסך. השם ב-title */
+@media (orientation:portrait){#ovGear .glook{display:none}}   /* טלפון עומד (המשחק מבקש לסובב): אין מקום בכותרת, וה-✕ יצא מהמסך. המראה בהגדרות ⚙️ */
 .ghead.whd>h2{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ghead.whd>#gHero{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (orientation:landscape){
@@ -1605,7 +1605,7 @@ html[dir="rtl"] #ovGear #gTabs{--fade-end:left}   /* הדהייה בסוף הש�
   #ovGear .gstatp .gsrows li{line-height:clamp(16px,4.9vh,21px);height:clamp(16px,4.9vh,21px)}
   #ovGear .gstatp .gsrows .gsi{font-size:12px;line-height:1}
 }
-@media (orientation:landscape) and (max-width:760px){#ovGear .gstatp .gdh{display:none}}
+@media (orientation:landscape) and (max-width:760px){#ovGear .gstatp .gdh{display:none}#ovGear .gstatp .gsn{flex-shrink:0}}   /* צר: ההגנה רק באחוזים (הנקודות בדף הדמות) */
 /* מכירה (gear.js): בתרמיל נגיעה מסמנת ✓, נעול 🔒 לא לחיץ. "החזר" ו-🔒 בפרטים: כפתורים צרים */
 .gtile .gpk{position:absolute;top:2px;inset-inline-start:3px;font:900 13px/1 var(--body);font-style:normal;color:#5BD46B;text-shadow:0 0 2px #000,0 0 2px #000}
 .gtile .glk{position:absolute;top:1px;inset-inline-end:2px;font-size:11px;font-style:normal;line-height:1}
