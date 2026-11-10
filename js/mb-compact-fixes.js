@@ -13,11 +13,11 @@ const MBCFIX={on:true,
   /* carry: per kit and prop key, rot (quaternion on the hand slot) per clip family. Solved in tools/solve-carry (compact-cap3.js) so the weapon points where it should:
      staff straight up, scimitar up-forward, dagger forward-out, bow upright, hammer resting back over the shoulder. 'attack' = the original HAND rotation (KayKit attack clips are authored for it). */
   carry:{
-    tank:{hammer:{idle:{rot:[-0.0002,0,0.8889,0.4581]},run:{rot:[-0.1377,0,0.8581,0.4947]}}},
-    warrior:{blade:{idle:{rot:[-0.1842,0,0.511,0.8396]},run:{rot:[-0.1239,0,0.4008,0.9078]}}},
-    hunter:{bow:{idle:{rot:[-0.7946,0,0,0.6071]},run:{rot:[-0.7691,-0.1478,0.0334,0.6209]}}},
+    tank:{hammer:{ready:{rot:[-0.0179,0,0.7797,0.6259]},idle:{rot:[-0.0002,0,0.8889,0.4581]},run:{rot:[-0.1377,0,0.8581,0.4947]}}},
+    warrior:{blade:{ready:{rot:[0.0985,0,0.3436,0.9339]},idle:{rot:[-0.1842,0,0.511,0.8396]},run:{rot:[-0.1239,0,0.4008,0.9078]}}},
+    hunter:{bow:{ready:{rot:[-0.3866,-0.2637,-0.0786,0.8803]},idle:{rot:[-0.7946,0,0,0.6071]},run:{rot:[-0.7691,-0.1478,0.0334,0.6209]}}},
     mage:{staff:{idle:{rot:[-0.0177,0,0.6721,0.7403]},run:{rot:[0.3355,0,0.479,0.8111]}}},
-    assassin:{blade:{idle:{rot:[-0.4237,0,0.2075,0.8817]},run:{rot:[-0.3853,0,0.1382,0.9124]}}}},
+    assassin:{blade:{ready:{rot:[-0.1335,0,0.0911,0.9869]},idle:{rot:[-0.4237,0,0.2075,0.8817]},run:{rot:[-0.3853,0,0.1382,0.9124]}}}},
   hold:1.0};
 if(typeof MBCOMPACT!=='undefined'&&MBCOMPACT.raw){
  for(const k of MBCFIX.keys)M3D_LAZY[k]=1;
@@ -30,7 +30,7 @@ if(typeof MBCOMPACT!=='undefined'&&MBCOMPACT.raw){
   return cache[key]=Object.assign({},L,{props,base:L,sig:L.sig+'|fix1'})};
 
  // runtime carry: same family logic as tankxCarry (idle / run / attack-and-everything-else)
- const fam=(one,base)=>{const n=(one||base||'').split('@')[0];return /^Idle_/.test(n)?'idle':/^(Running|Walking)_/.test(n)?'run':'attack'};
+ const fam=(one,base)=>{const n=(one||base||'').split('@')[0];return /^(Melee_2H_Idle|Ranged_Bow_Idle)$/.test(n)?'ready':/^Idle_/.test(n)?'idle':/^(Running|Walking)_/.test(n)?'run':'attack'};
  // the actor keeps its weapon under the look's slot name (sword, gun), not always the key here: find it by the prop model (BOB, 10.11)
  const cfKey=(a,kit,key)=>{const pr=(MBCFIX.props[kit][key]||{}).prop||(kit==='tank'&&key==='hammer'?'w_item_stoneHammer':null);if(!pr)return a.props[key]?key:null;
   for(const k in a.props){const d=a.L.props&&a.L.props[k];if(d&&d.prop===pr)return k}return null};
