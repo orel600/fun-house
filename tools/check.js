@@ -3293,6 +3293,19 @@ function worldBot(m,L,god){
     'כלי איסוף: '+(gtr.err||((gtr.t1?'דרגה 1 בקצב של היום והגרזן ביד':'דרגה 1 שונה!')+(gtr.t3?', דרגה 3 חזקה יותר':', בלי חיזוק')+(gtr.slow?', כסף עם פטיש חלש לאט':', כסף חסום או רגיל!')+
     (gtr.hard?', ובפטיש מתאים רגיל':', פטיש מתאים לא עוזר')+(gtr.bForge&&gtr.bGm?', תנאי נפחייה ומומחיות':', תנאים שגויים')+(gtr.start&&gtr.sign?', שעון ושלט בכפר':', השעון לא התחיל')+
     (gtr.done?', השעון נגמר והדרגה עלתה':', הדרגה לא עלתה')+(gtr.tab?', לשונית בנפחייה':', אין לשונית')+(gtr.look?', הכלים בדמות בתלת-ממד':', אין כלים בתלת-ממד')+(gtr.blank?', בשמירה':', לא בשמירה')+(gtr.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
+  // מקורות גדולים בעולם (nodesize.js, ניר 10.11): סלע ומתכת עם גבול גדול יותר, עץ עם אותו גזע, מקורות לא עולים זה על זה, ובזירה כמו קודם
+  const nzr=await page.evaluate(()=>{const o={};
+    try{enterWorld('home');enemies=[];const L=S.nd.list,sh=n=>wKind(n.kind).shape,K=NODES.kinds;
+      const rk=L.find(n=>['rock','vein','crystal'].includes(sh(n))),tr=L.find(n=>sh(n)==='tree');
+      o.rock=!!rk&&rk.r===nzR(rk.kind)&&rk.r>K[rk.kind].r;o.tree=!!tr&&tr.r===K[tr.kind].r;
+      o.over=L.filter(a=>L.some(b=>b!==a&&Math.hypot(a.x-b.x,a.y-b.y)<a.r+b.r)).length;o.n=L.length;
+      o.arena=K.rock.r===24&&K.tree.r===28;
+      if(R3D.on&&R3D.ready){syncWorld();o.big=NODESIZE.stat.big>0}else o.big=true;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];enterVillage();return o});
+  check(!nzr.err&&nzr.rock&&nzr.tree&&nzr.over===0&&nzr.arena&&nzr.big,
+    'מקורות גדולים: '+(nzr.err||((nzr.rock?'סלע עם גבול גדול':'סלע בגודל הישן!')+(nzr.tree?', עץ עם אותו גזע':', גזע השתנה!')+(nzr.over===0?', '+nzr.n+' מקורות בלי חפיפה':', '+nzr.over+' חופפים!')+
+    (nzr.arena?', בזירה כמו קודם':', הזירה השתנתה!')+(nzr.big?', המודלים גדלו':', המודלים לא גדלו!'))));
   // לולאת הכפר, שלב 1 (docs/concept-village-loop.md): הכלי מכפיל את החומר הראשי (לא את הנדירים), כלי חלש מדי = חצי שלל ולאט (רך, לא חסום),
   // רמות 4-5 של מבנים עולות ×1.3 עץ ואבן, ויעד ליד המשאבים: 📌 בכפר, שבב בעולם, ⌂ וחגיגה כשיש הכל
   const vlr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
