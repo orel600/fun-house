@@ -18,7 +18,7 @@ function kineticSprite(id,x,y,size,age,dur,rot=0,alpha=1){
 function kineticContact(e,crit,t,ang){
   if(!kineticHere()||fxLess()||e.node||S.t-KINETIC.lastHit<.045)return;
   KINETIC.lastHit=S.t;while(KINETIC.hits.length>=8)KINETIC.hits.shift();
-  const L=lookOf(e),h=L.h*(e.big||1);
+  const L=lookOf(e),h=(L&&L.h?L.h:e.r*2.4)*(e.big||1);   // enemy type without a LOOK3D entry: height from its radius (BOB 10.11)
   KINETIC.hits.push({x:e.x-Math.cos(ang||0)*e.r*.6,y:e.y-h*.46,t:S.t,a:ang||0,crit:!!crit,col:AJ.src&&AJ.src.w==='sword'?'#70d8ff':AJ.src&&AJ.src.w==='gun'?'#fa6579':dtCol(t)});
 }
 function kineticDraw(){

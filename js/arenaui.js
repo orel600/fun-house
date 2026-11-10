@@ -16,7 +16,7 @@ const hpBarOn=e=>e.elite||e.champ||e.wanted||S.t-(e.hitT??-99)<ARENAUI.hpFor;
 function arenaDamageY(e,crit){
   if(typeof abodyHere==='function'&&abodyHere()){
     const L=lookOf(e),k=e.big||1;
-    return e.y+(L.foot-L.h)*k-(crit?24:12);
+    if(L&&L.h)return e.y+((L.foot||0)-L.h)*k-(crit?24:12);   // enemy type without a LOOK3D entry: the old anchor below (BOB 10.11: TypeError foot in 2D CI)
   }
   return e.y-e.r-(crit?24:8);
 }
