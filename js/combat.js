@@ -17,7 +17,7 @@ function floatText(x,y,txt,col,size,ltr=false,crit=false){
   if(floats.length>=HITFX.floats){const i=floats.findIndex(f=>f!==S.gain);if(i>=0)floats.splice(i,1)}
   // קריאות בקרב (10.11, שיפוץ חזותי בלבד): מספר חדש שנוחת על אשכול חי זז לנתיב אופקי, כדי שהגופות לא יכוסו
   let lane=0;for(const f of floats)if(f!==S.gain&&Math.abs(f.x-x)<30&&Math.abs(f.y-y)<34)lane++;
-  if(lane)x+=((lane%2?1:-1)*Math.ceil(lane/2))*46;
+  if(lane&&!S.wd&&!S.vil)x+=((lane%2?1:-1)*Math.ceil(lane/2))*46;   // רק בזירה ובשאול: העולם והכפר (התחום של ניר) כמו קודם (BOB 10.11)
   floats.push({x,y,txt,col,size,ltr,crit,life:crit?.95:.75,vy:crit?-70:-55});
 }
 // w: הנשק שפגע. t: סוג הנזק, ברירת המחדל היא הסוג של הנשק (ופיזי למה שאינו נשק, כמו פצצה). chained: פגיעה של ברק שקפץ, שלא קופץ שוב
