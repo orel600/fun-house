@@ -50,5 +50,7 @@ MBTIDAL.cull={on:MBTIDAL.on&&/[?&]tidalcull=1(&|$)/.test(location.search),meshes
       const A=m.instanceMatrix.array,C=m.instanceColor&&m.instanceColor.array;let k=0;
       for(let i=0;i<n;i++){if(!fr.intersectsSphere(sph[i]))continue;if(k!==i){A.set(base.subarray(i*16,i*16+16),k*16);if(C&&col)C.set(col.subarray(i*3,i*3+3),k*3)}else if(m.userData.bobCull.packed){A.set(base.subarray(i*16,i*16+16),k*16);if(C&&col)C.set(col.subarray(i*3,i*3+3),k*3)}k++}
       m.userData.bobCull.packed=k<n;m.count=k;m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true;K.last={drawn:k,total:n}}};
-  setInterval(()=>{if(typeof M3==='undefined'||!M3.floor)return;for(const c of M3.floor.children)if(c.isInstancedMesh&&c.userData.tidal==='original-tripo-broadleaf-shrub')hook(c)},300);
+  // The shrub mesh is found by structure, not by NOVA's tag name (component 21 renamed it): a NOVA-tagged InstancedMesh with one instance per source bush circle.
+  const bushes=()=>typeof mbDecor==='function'?mbDecor().filter(d=>d.k==='bush').length:-1;
+  setInterval(()=>{if(typeof M3==='undefined'||!M3.floor)return;const nb=bushes();for(const c of M3.floor.children)if(c.isInstancedMesh&&typeof c.userData.tidal==='string'&&(c.userData.bobCull||c.count===nb))hook(c)},300);
 })();
