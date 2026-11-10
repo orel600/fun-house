@@ -277,14 +277,16 @@ function mbMini(ox,oy){
   ctx.save();ctx.beginPath();ctx.rect(x0,y0,mw,mh);ctx.clip();
   const D=K.dot;
   for(const u of M.u){if(u.k!=='tower'&&u.k!=='base')continue;const s=u.k==='base'?D.base:D.tower,c=mbMiniCol(u.team);   // מבנים: גם שנפלו, כהים ומחוקים
+    if(typeof mbMiniBase==='function'&&mbMiniBase(u,X,Y,k,s,c,a))continue;   // השיפוץ (mb-mini.js): בסיס כיהלום ועיגול הבית
     ctx.globalAlpha=a*(u.dead?0.45:1);ctx.fillStyle=u.dead?K.col.dead:c;ctx.fillRect(X(u.x)-s/2,Y(u.y)-s/2,s,s);ctx.strokeStyle=u.dead?c:'#0B0D14';ctx.lineWidth=1;ctx.strokeRect(X(u.x)-s/2,Y(u.y)-s/2,s,s);
     if(u.dead){ctx.beginPath();ctx.moveTo(X(u.x)-s/2,Y(u.y)-s/2);ctx.lineTo(X(u.x)+s/2,Y(u.y)+s/2);ctx.stroke()}}
   ctx.globalAlpha=a;
   {const s=D.minion;ctx.strokeStyle='#0B0D14';ctx.lineWidth=1;for(const u of M.u)if(u.k==='minion'&&!u.dead&&seen(u)){ctx.fillStyle=mbMiniCol(u.team);ctx.fillRect(X(u.x)-s/2,Y(u.y)-s/2,s,s);ctx.strokeRect(X(u.x)-s/2,Y(u.y)-s/2,s,s)}}
   for(const f of MBLOOK.miniMarks)f(ctx,X,Y,k);   // סימנים של מערכות אחרות
   if(typeof mbGambleMini==='function')mbGambleMini(X,Y);   // חדר ההימור (moba-gamble.js)
+  if(typeof MBMINI!=='undefined'&&MBMINI.on){ctx.globalAlpha=a*MBMINI.dead;for(const u of M.u)if(u.k==='hero'&&u.dead&&(u.me||seen(u))){ctx.fillStyle=mbMiniCol(u.team);ctx.beginPath();ctx.arc(X(u.x),Y(u.y),D.hero,0,7);ctx.fill()}ctx.globalAlpha=a}   // השיפוץ: גיבור מת, עמום
   for(const u of M.u)if(u.k==='hero'&&!u.dead&&!u.me&&seen(u)){ctx.fillStyle=mbMiniCol(u.team);ctx.beginPath();ctx.arc(X(u.x),Y(u.y),D.hero,0,7);ctx.fill();ctx.strokeStyle='#0B0D14';ctx.lineWidth=1.5;ctx.stroke()}
-  const me=M.me;if(me&&!me.dead){ctx.fillStyle=mbMiniCol(me.team);ctx.beginPath();ctx.arc(X(me.x),Y(me.y),D.me,0,7);ctx.fill();ctx.strokeStyle=C.gold;ctx.lineWidth=2;ctx.stroke()}   // אני: גדול, עם טבעת זהב
+  const me=M.me;if(me&&!me.dead){ctx.fillStyle=mbMiniCol(me.team);ctx.beginPath();ctx.arc(X(me.x),Y(me.y),D.me,0,7);ctx.fill();ctx.strokeStyle=C.gold;ctx.lineWidth=2;ctx.stroke();if(typeof mbMiniArrow==='function')mbMiniArrow(me,X,Y,D.me)}   // אני: גדול, עם טבעת זהב (ובשיפוץ חץ לכיוון)
   if(M.order){ctx.strokeStyle=M.order.kind==='attack'?C.blood:mbMiniCol(me?me.team:0);ctx.lineWidth=2;ctx.beginPath();ctx.arc(X(M.order.x),Y(M.order.y),5+3*Math.sin(M.t*8),0,7);ctx.stroke()}
   {const vw=innerWidth/ZOOM*k,vh=innerHeight/ZOOM*k;ctx.strokeStyle=MBCAM.free?C.gold:'rgba(236,231,220,0.7)';ctx.lineWidth=1.5;MB_MINI_L.view={x:X(S.cam.x)-vw/2,y:Y(S.cam.y)-vh/2,w:vw,h:vh};ctx.strokeRect(X(S.cam.x)-vw/2,Y(S.cam.y)-vh/2,vw,vh)}   // מה שרואים על המסך (view: לבדיקה)
   ctx.restore();
