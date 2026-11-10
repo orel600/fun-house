@@ -104,6 +104,8 @@
 .bwst .ic .ri{width:var(--ic-m);height:var(--ic-m);vertical-align:middle}
 .bwst .nm{font:700 13px var(--body)}
 .bwst b{font:800 14px var(--body);direction:ltr;font-variant-numeric:tabular-nums}
+.bwvil .bwst{grid-template-columns:minmax(0,1fr) auto}
+.bwst .nm small{display:block;font:600 12px var(--body);color:var(--dim,#aaa);margin-top:2px}
 .bwst i{position:absolute;inset-inline-start:0;bottom:0;height:4px;background:var(--rar,var(--gold))}
 
 /* ---- נפחייה: כפתור Aging, ומתחת כל מה שאפשר ליצור ברשת (הכרטיסים עצמם: #vPanel .craft ב-style.css) ---- */

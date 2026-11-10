@@ -123,7 +123,7 @@ const WORLD={
       // המפה, המקומות, המשאבים והאויבים: js/map-lake.js (האגם הגדול, ת16)
       // קשה מהאחו: מי שהגיע לכאן כבר הדליק פנס אחד
       zones:[
-        {id:'start',to:360, hp:0.6,dmg:0.5,speed:0.75,leash:260,back:16},
+        {id:'start',to:360, hp:0.7,dmg:0.6,speed:0.8,leash:260,back:16,min:120},   // 10.11: כמו האחו ליד השער (near), ולא חלש ממנו. היה hp:0.6,dmg:0.5,speed:0.75 בלי min
         {id:'near', to:800, hp:1,  dmg:0.9,speed:0.95,leash:380,back:22},
         {id:'far',  to:1e9, hp:1.4,dmg:1.2,speed:1.05,leash:480,back:30}
       ],
