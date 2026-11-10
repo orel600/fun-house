@@ -26,7 +26,7 @@ const MBATK3D={
     hunter:{ready:'Ranged_Bow_Idle',hit:'Ranged_Bow_Release',from:0,to:0.12,dur:0.14,settle:0.06,recover:{min:0.2,max:0.7},keep:0.8,puff:null},   // השחרור בתחילת הקליפ (0.03-0.05), מקשת מתוחה
     mage:{ready:null,hit:'Ranged_Magic_Shoot',from:0.02,to:0.2,dur:0.16,settle:0.05,recover:{min:0.18,max:0.7},keep:0.6,puff:null}   // שליחה קצרה, השיא ב-0.07-0.20   // אבק במגע: בצבע סוג הנזק של הטנק (אדמה, חום). step_dust יוצא ירקרק: גודל, וכמה לפני הגוף (מעבר לרדיוס)
   },
-  slash:{warrior:{fx:'tr_slash_crimson',size:130}},   // החיתוך של המכה הרגילה במקום החיתוך הכללי (moba-fx.js mbfxImpact): הלוחם, חיתוך אדום חד (DANA, uw-warrior-basic). רק מראה, הפגיעה לפי סוג הנזק נשארת
+  slash:{warrior:{fx:'tr_slash_crimson',size:130,skip:11}},   // skip: מתחילים מהפריים הזה של הדף (הדף נבנה מריק בפריימים 0-13), כדי שהחיתוך יופיע באותו פריים של הנזק (QUINN על #604: איחור של 0.2 שנ'). החיתוך של המכה הרגילה במקום החיתוך הכללי (moba-fx.js mbfxImpact): הלוחם, חיתוך אדום חד (DANA, uw-warrior-basic). רק מראה, הפגיעה לפי סוג הנזק נשארת
   sound:{tank:'imp_hammer'},   // צליל המגע, באותו פריים של הנזק (גם בדו-ממד). רק כשהמכה על המסך, או שזה אתה
   stat:{strikes:0,puffs:0,ready:0,sounds:0}
 };
@@ -65,7 +65,7 @@ function mbAtk3dWith(L,u,C,fn){
   if(typeof fxPreload==='function')fxPreload(Object.values(MBATK3D.slash).map(o=>o.fx));
   const bi=mbfxImpact;mbfxImpact=function(src,t,dt,crit,melee){
     const L=melee&&MBATK3D.on&&src&&src.k==='hero'&&t&&t.k!=='tower'&&t.k!=='base'&&MBATK3D.slash[src.kit];if(!L)return bi.apply(this,arguments);
-    if(mbfxLib(L.fx,t.x,t.y-t.r-6,{rot:Math.atan2(t.y-src.y,t.x-src.x),size:L.size,add:true}))MBATK3D.stat.slashes=(MBATK3D.stat.slashes||0)+1;
+    {const f=mbfxLib(L.fx,t.x,t.y-t.r-6,{rot:Math.atan2(t.y-src.y,t.x-src.x),size:L.size,add:true});if(f){if(L.skip)f.t0-=L.skip/f.fps;MBATK3D.stat.slashes=(MBATK3D.stat.slashes||0)+1}}
     return bi.call(this,src,t,dt,crit,false)};
 })();
 (function(){

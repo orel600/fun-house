@@ -3,9 +3,9 @@
    Models: art/compact/w_item_{staffOrb,bladeRed,dagger,bowGlow}.glb  ->  js/m3d/<key>.js (m3dPut base64, see tools/compact-fixes-install.cjs).
    No gameplay writes. Per-clip carry rotations (MBCFIX.carry) are filled by tools/solve-carry.cjs output when needed. */
 const MBCFIX={on:true,
-  keys:['w_item_staffOrb','w_item_bladeRed','w_item_dagger','w_item_bowGlow'],
+  keys:['w_item_staffOrb','w_item_bladeRed','w_item_dagger','w_item_bowGlow','w_item_tankHammer'],
   props:{
-    tank:{},   // hammer prop stays BOB's (w_item_stoneHammer); only its carry rotation is driven below
+    tank:{hammer:{prop:'w_item_tankHammer',bone:'handslotr',pos:[0,0,0],rot:[0,0,0,1],s:1}},   // ARI's basalt-and-gold hammer (grip at origin, handle along +y like the stone one). Its own key: w_item_stoneHammer is shared   // hammer prop stays BOB's (w_item_stoneHammer); only its carry rotation is driven below
     mage:{staff:{prop:'w_item_staffOrb',...HAND_R}},
     hunter:{bow:{prop:'w_item_bowGlow',bone:'handslotl',pos:[0,0,0],rot:[0,-0.7071,0,0.7071]}},
     warrior:{blade:{prop:'w_item_bladeRed',...HAND_R}},

@@ -153,7 +153,7 @@ function wmDrawHere(){
   const ln=wmLantern(S.wd.reg);
   if(ln){const c=at(ln.L.x,ln.L.y);x.beginPath();x.arc(c.x,c.y,WMAP.dot.lantern,0,Math.PI*2);x.fillStyle=ln.lit?ln.L.glow:'#2A2F3E';x.fill();x.lineWidth=2;x.strokeStyle=ln.lit?'#fff':ln.L.glow;x.stroke()}
   // הדמויות שגילית (רק באזורים שיש בהם)
-  if(!R.noNpc)for(const id in WNPC.list)if(wnpcMet(id)){const A=WNPC.list[id].at,c=at(A.x,A.y);
+  if(!R.noNpc)for(const id in WNPC.list)if(wnpcMet(id)&&(WNPC.list[id].reg||'meadow')===S.wd.reg&&!resGone(id)){const A=WNPC.list[id].at,c=at(A.x,A.y);
     x.beginPath();x.arc(c.x,c.y,WMAP.dot.npc,0,Math.PI*2);x.fillStyle=WNPC.list[id].col;x.fill();x.lineWidth=2;x.strokeStyle='#fff';x.stroke()}
   wsMapFog(x,at,k);wsMapDraw(x,at);if(typeof rareMapDraw==='function')rareMapDraw(x,at,k);   // נדירה ששמעת עליה: עיגול גס (rares.js)   // ערפל, מאורות עם טיימר ואבני מסע (waystones.js)
   // השערים: לכפר, לזירה, ולאזורים אחרים, עם השם
