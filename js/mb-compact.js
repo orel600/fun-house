@@ -3,7 +3,8 @@
    Compact bodies already include their own crowns/headwear. */
 const MBCOMPACT={raw:(new URLSearchParams(location.search).get('compact')||''),
   keys:{tank:'compactTank',warrior:'compactWarrior',hunter:'compactHunter',mage:'compactMage',assassin:'compactAssassin'},
-  visualScale:Math.max(1,Math.min(2.2,Number(new URLSearchParams(location.search).get('compactscale'))||2)),stat:{built:0,loaded:0,fallback:0},
+  // body size, visual only (the hitbox stays r16). Default 1.4: every hero 111-135 high incl. weapon (old bodies 83-117); at 2 they were 158-194 with 5-8x the footprint (QUINN gate on 616, 10.11). ?compactscale=1.2, 1.6 or 2 still selectable
+  visualScale:Math.max(1,Math.min(2.2,Number(new URLSearchParams(location.search).get('compactscale'))||1.4)),stat:{built:0,loaded:0,fallback:0},
   // compact tank hammer: prop size and the strike window of Melee_2H_Attack_Chop (parts of its length). Pose only, the damage frame never moves (MAX 10.11: reach and height measured on a clean dummy)
   tank:{hammerS:1,from:.55,to:.66,dur:.08,settle:.05,
     // the compact hand stays at chest height through the chop, so the hammer turns head-down only for the strike: rot at the damage frame, held hold s, back to the normal grip over back s.
