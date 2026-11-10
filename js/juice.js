@@ -67,7 +67,8 @@ function juiceHit(e,d,m,crit,t,ang){
   const hy=e.y-(e.node?4:e.r*0.6);
   jBurst(e.x,hy,t,crit?K.parts.crit:m>1?K.parts.weak:m<1?3:K.parts.hit,ang);
   const fxs=typeof fxcHit==='function'&&fxcHit(e,t,crit,m,hy);   // בעולם: פיצוץ לפי סוג הנזק מהגיליון במקום ההבזק (fxcombat.js)
-  if(!fxs&&(m>=1||crit)&&!(fxLess()&&!crit)){if(J.fl.length>=K.impact.max)J.fl.shift();J.fl.push({x:e.x-Math.cos(ang||0)*e.r*0.4,y:hy,t0:jNow(),r:crit?K.impact.rCrit:K.impact.r*(m>1?1.25:1),col:dtCol(t),a:rand(0,1.6)})}
+  if(!fxs&&(m>=1||crit)&&!(fxLess()&&!crit)){const hc=typeof hcFit==='function'?hcFit(e.x-Math.cos(ang||0)*e.r*0.4,hy,e):{x:e.x-Math.cos(ang||0)*e.r*0.4,y:hy,k:1,a:1};
+    if(hc){if(J.fl.length>=K.impact.max)J.fl.shift();J.fl.push({x:hc.x,y:hc.y,t0:jNow(),r:(crit?K.impact.rCrit:K.impact.r*(m>1?1.25:1))*hc.k,col:dtCol(t),a:rand(0,1.6),al:hc.a})}}
   const N=K.nums,now=jNow();
   // עמיד (ניר, 1.11: "0!" נראה כמו באג): במקום המספר "🛡 עמיד" באפור, וסמל סוג הנזק לידו
   const res=m<=K.resist;
@@ -106,7 +107,8 @@ function juiceKill(e){
   if(!(typeof fxcKill==='function'&&fxcKill(e))){   // בעולם: מוות לפי סוג הנזק מהגיליון במקום ענן העשן (fxcombat.js)
   if(J.poofs.length>=K.poof.max)J.poofs.shift();
   const pf=[];for(let i=0;i<K.poof.puffs*(fxLess()?FX_LESS.parts:1);i++){const a=rand(0,6.28);pf.push({a,s:rand(20,55),r:rand(...K.poof.r)})}
-  J.poofs.push({x:e.x,y:e.y,t0:jNow(),pf,r:e.r*(e.big||1),col:dtCol(e.weak)});}
+  const hc=typeof hcFit==='function'?hcFit(e.x,e.y,e):{x:e.x,y:e.y,k:1,a:1};   // ליד הגיבור: לצד של האויב, קטן ועמום (heroclear.js)
+  if(hc)J.poofs.push({x:hc.x,y:hc.y,t0:jNow(),pf,r:e.r*(e.big||1)*hc.k,col:dtCol(e.weak),k:hc.k,al:hc.a});}
   const now=jNow(),St=K.streak;J.st=now-(J.stT||-9)<St.gap?(J.st||0)+1:1;J.stT=now;
   const mi=St.marks.indexOf(J.st);if(mi>=0){J.stPop=now;jBurst(P.x,P.y+24,'gold',K.parts.kill,null);sfx('coin',1.2+mi*0.25)}
   jBurst(e.x,e.y-e.r*0.5,'gold',K.parts.kill,null);
@@ -160,14 +162,15 @@ function juiceDraw(){
   ctx.save();let j=0;
   // עשן וטבעת
   for(const f of J.poofs){const k=(now-f.t0)/JUICE.poof.life;if(k>=1)continue;J.poofs[j++]=f;
-    ctx.globalAlpha=0.6*(1-k);ctx.strokeStyle=f.col;ctx.lineWidth=3*(1-k)+1;ctx.beginPath();ctx.ellipse(f.x,f.y,f.r+JUICE.poof.ring*k,(f.r+JUICE.poof.ring*k)*0.55,0,0,7);ctx.stroke();
+    const fk=f.k||1,fa=f.al||1;
+    ctx.globalAlpha=0.6*(1-k)*fa;ctx.strokeStyle=f.col;ctx.lineWidth=3*(1-k)+1;ctx.beginPath();ctx.ellipse(f.x,f.y,f.r+JUICE.poof.ring*k*fk,(f.r+JUICE.poof.ring*k*fk)*0.55,0,0,7);ctx.stroke();
     ctx.fillStyle=JUICE.poof.col;
-    for(const p of f.pf){ctx.globalAlpha=0.55*(1-k);ctx.beginPath();ctx.arc(f.x+Math.cos(p.a)*p.s*k,f.y+Math.sin(p.a)*p.s*k*0.6-k*18,p.r*(0.6+k*0.8),0,7);ctx.fill()}}
+    for(const p of f.pf){ctx.globalAlpha=0.55*(1-k)*fa;ctx.beginPath();ctx.arc(f.x+Math.cos(p.a)*p.s*k*fk,f.y+Math.sin(p.a)*p.s*k*0.6*fk-k*18*fk,p.r*(0.6+k*0.8)*fk,0,7);ctx.fill()}}
   J.poofs.length=j;j=0;
   // הבזק פגיעה: עיגול לבן שנפתח, טבעת וקרניים בצבע סוג הנזק
   const I=JUICE.impact;ctx.globalCompositeOperation='lighter';
   for(const f of J.fl){const k=(now-f.t0)/I.life;if(k>=1)continue;J.fl[j++]=f;const r=f.r*(0.5+k*0.8);
-    ctx.globalAlpha=0.9*(1-k);ctx.fillStyle=f.col;ctx.beginPath();ctx.arc(f.x,f.y,r*0.55,0,7);ctx.fill();
+    ctx.globalAlpha=0.9*(1-k)*(f.al||1);ctx.fillStyle=f.col;ctx.beginPath();ctx.arc(f.x,f.y,r*0.55,0,7);ctx.fill();
     ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(f.x,f.y,r*0.28*(1-k),0,7);ctx.fill();
     ctx.strokeStyle=f.col;ctx.lineWidth=3*(1-k)+0.5;ctx.beginPath();ctx.arc(f.x,f.y,r,0,7);ctx.stroke();
     ctx.lineWidth=2.5*(1-k)+0.5;ctx.strokeStyle='#fff';ctx.beginPath();
