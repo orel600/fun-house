@@ -589,7 +589,7 @@ const TEXT={
 
   // הכפר (js/village.js)
   'vil.home':{he:'הכפר שלך',en:'Your village'},
-  'vil.gift':{he:'מתנת פתיחה: מספיק למנסרה ולמכרה',en:'A welcome gift: enough for a sawmill and a mine'},
+  'vil.gift':{he:'מתנת פתיחה: מספיק למנסרה ולמכרה',en:'A welcome gift: enough for a sawmill and a mine. Bring coins home for the Forge!'},
   'vil.won':{he:'ניצחת',en:'Victory'},
   'vil.noLoot':{he:'בלי שלל הפעם',en:'No loot this time'},
   'vil.center':{he:'מרכז הכפר',en:'Village Center'},
@@ -1494,6 +1494,15 @@ const TEXT={
   'bw.tab.stash':{he:'אחסון',en:'Store'},
   'bw.tab.craft':{he:'יצירה',en:'Craft'},
   'bw.tab.collect':{he:'תוצרת',en:'Output'},
+  'bw.tab.village':{en:'Village'},
+  'bw.v.lead':{en:(n,m)=>n+' of '+m+' buildings at max level'},
+  'bw.v.none':{en:'Not built yet'},
+  'bw.v.center':{en:n=>'Needs Center level '+n},
+  'bw.v.make':{en:'Village output per hour'},
+  'bw.v.wait':{en:n=>n+' waiting to be collected'},
+  'bw.v.build':{en:'Ready to build'},
+  'bw.v.ready':{en:n=>'Can upgrade to level '+n},
+  'bw.v.next':{en:n=>'Next: level '+n+' (gather more)'},
   'bw.talk':{he:'שיחה',en:'Talk'},
   'bw.cook':{he:'בישול',en:'Cook'},
   'wsl.tab':{he:'סקילים',en:'Skills'},
@@ -2105,6 +2114,8 @@ Object.assign(TEXT,{
   'uf.p.shock':{en:'Shockwave'},'uf.d.shock':{en:'heavy hits strike every foe around the target'},
   'uf.p.fury':{en:'Fury'},'uf.d.fury':{en:'a heavy hit every 3rd blow, even harder'},
   'uf.got':{en:n=>'New weapon power: '+n},
+  'fu.temper':{en:(w,n)=>'The smith sharpens your '+w+' to +'+n},'fu.afford':{en:'You can afford this now'},
+  'fu.done':{en:(w,s,a,b)=>w+': '+s+' '+a+' → '+b+' · Heavy Hit'},
   'uf.next':{en:(k,n,d)=>k+' more to '+n+': '+d},
   'jc.tip':{he:(d,b)=>d+' חלש כאן. נסו '+b,en:(d,b)=>d+' is weak here. Try '+b},
   'jc.tipN':{he:(n,d,b)=>n+' עמיד ל'+d+'. נסו '+b,en:(n,d,b)=>'The '+n+' resists '+d+'. Try '+b},
@@ -2168,6 +2179,8 @@ Object.assign(TEXT,{
   'cu.clear':{he:r=>'✨ הדרך אל '+r+' התפנתה!',en:r=>'✨ The way to '+r+' is clear!'},
   'cu.new':{he:r=>'משהו חדש '+r,en:r=>'Something new '+r},
   'cu.in.meadow':{he:'באחו',en:'in the Meadow'},'cu.in.lake':{he:'באגם הערפל',en:'at the Mist Lake'},'cu.in.ridge':{he:'ברכס הקפוא',en:'on the Frost Ridge'},
+  // הסקיל הראשון מלמד תזמון (skillteach.js)
+  'skt.out':{en:'Step out!'},'skt.now':{en:'Now!'},'skt.far':{en:'Get closer'},'skt.hit':{en:n=>n+' hit!'},
   'cu.in.desert':{he:'במדבר הבוער',en:'in the Burning Desert'},'cu.in.storm':{he:'במגדלי הסערה',en:'at the Storm Towers'},'cu.in.shadow':{he:'בלב הצל',en:'in the Heart of Shadow'}
 });
 
