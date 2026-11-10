@@ -55,13 +55,14 @@ function bmStart(k,from){
   V.open=null;villageHud();   // החלון נסגר כדי שיראו את המבנה, ונפתח שוב בסוף
 }
 // סוף הרגע. skip: נגיעה דילגה (החגיגה והשורה בכל זאת מגיעות). בשני המקרים חוזרים לחלון שממנו שדרגו
+// (לא אחרי בנייה ראשונה: אז החגיגה של firstup.js על הגיבור באה מיד אחרי, והחלון היה נפתח ונסגר)
 function bmEnd(skip){
   const V=S&&S.vil,m=V&&V.bm;if(!m)return;
   const B=VILLAGE.b[m.k];
   if(!m.fx){celebrate(B.x,B.y,'upgrade','+1');m.fx=true}
   if(!m.line){m.line=true;bmShowLine(bmLine(m.k,m.from,m.to))}
   V.bm=null;bmRestore(m.k);m.rec.end=skip?'skip':'done';
-  if(m.open&&!V.open&&$('npcDlg').hidden&&S.mode==='play'){V.open=V.near=m.k;V.ui='';villageHud()}
+  if(m.from&&m.open&&!V.open&&$('npcDlg').hidden&&S.mode==='play'){V.open=V.near=m.k;V.ui='';villageHud()}
 }
 // כל פריים (מ-giantCam, שנקרא בכל פריים של משחק): מתקדמים בשלבים
 function bmTick(){
