@@ -4962,15 +4962,17 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     (an.d3?', jump arc + chop on landing + squash '+(an.body?'✓':'✗')+', off = flat '+(an.off?'✓':'✗'):' (2D: no body)')));
   // tank taunt and iron wall bodies (mb-tankskill3d.js, morning package 3+4, visual only): the roar plays on the cast frame with cry_war and a heat glow while the
   // shield lasts; the wall chop hard-stops at contact and holds, with imp_wall; never locked (moves mid-animation). 2D: sounds only
+  // the tank body and its parts are lazy: wait for them first, or the actor is rebuilt mid-test when they land and the roar clip is lost (seed 2026 race, 10.11)
+  await page.evaluate(()=>typeof R3D!=='undefined'&&R3D.on&&typeof M3D_LAZY!=='undefined'?Promise.all(['tankHF','w_item_stoneHammer','hat_tankCrown'].filter(k=>k in M3D_LAZY).map(k=>m3dGo(k).catch(()=>{}))):0);
   const tkb=await page.evaluate(()=>{const o={};try{mobaStart('tank');const me=MB.me;me.lvl=10;S.mode='play';const d3=R3D.on&&R3D.ready&&R3D.player;
       if(d3)syncPlayer(1/60);const s0=MBTANK3D.stat.sounds;me.cd.s2=0;mbCast(me,'s2',{x:me.x,y:me.y});
-      if(d3){syncPlayer(1/60);o.roar=R3D.player.one&&R3D.player.one.getClip().name===MBTANK3D.taunt.clip+'@up';for(let i=0;i<6;i++){mobaUpdate(1/60);syncPlayer(1/60)}o.heat=R3D.player.mats.some(m=>m.emissive.r>0.1)}
+      if(d3){syncPlayer(1/60);o.roar=R3D.player.one&&R3D.player.one.getClip().name===MBTANK3D.taunt.clip+'@up';if(!o.roar)o.why=(R3D.player.one?R3D.player.one.getClip().name:'nothing')+' playing, rebuilt '+(typeof MBPARTS!=='undefined'?MBPARTS.stat.rebuilt:'-');for(let i=0;i<6;i++){mobaUpdate(1/60);syncPlayer(1/60)}o.heat=R3D.player.mats.some(m=>m.emissive.r>0.1)}
       me.cd.ult=0;mbCast(me,'ult',{x:me.x+100,y:me.y});
       if(d3){syncPlayer(1/60);for(let i=0;i<12;i++)syncPlayer(1/60);const st=R3D.player.tk3;o.hold=st.ph==='hold'&&+(st.x.time/st.x.getClip().duration).toFixed(2)===MBTANK3D.wall.to}
       o.snd=MBTANK3D.stat.sounds-s0;const x0=me.x;mbMove(me,me.x+300,me.y,0.1,0);o.move=me.x>x0;o.d3=!!d3;
     }catch(e){o.err=String(e&&e.stack||e)}return o});
   check(!tkb.err&&tkb.snd===2&&tkb.move&&(!tkb.d3||tkb.roar&&tkb.heat&&tkb.hold),'underworld tank taunt + iron wall bodies (visual only): '+(tkb.err||'sounds on the cast frame '+(tkb.snd===2?'✓':'✗ ('+tkb.snd+')')+', moves mid-animation '+(tkb.move?'✓':'✗')+
-    (tkb.d3?', roar '+(tkb.roar?'✓':'✗')+', heat glow '+(tkb.heat?'✓':'✗')+', wall chop holds at contact '+(tkb.hold?'✓':'✗'):' (2D: no body)')));
+    (tkb.d3?', roar '+(tkb.roar?'✓':'✗ ('+tkb.why+')')+', heat glow '+(tkb.heat?'✓':'✗')+', wall chop holds at contact '+(tkb.hold?'✓':'✗'):' (2D: no body)')));
   /* ניסוי הטנק החדש (mb-tankx.js, ?tankx=1) וקפיצות חיית המחמד (petx.js, ?petx=1): שניהם כבויים כברירת מחדל, ונבדקים רק בתוך הניסוי.
      הטנק: אותו משחק פעמיים (seed קבוע), פעם עם הגוף החדש ופעם בלי. הלוגיקה זהה (רגעי התקיפה, החיים והמיקומים), הגוף החדש מנגן
      אנימציות מתוקנות (ערוצי המיקום מוכפלים ביחס אורך העצמות), העצמות זזות, תוקף תוך כדי תנועה, מהבהב בפגיעה, נופל במוות, ומתג באמצע משחק בונה מחדש.
@@ -5441,6 +5443,6 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
 
   console.log('ריצה: seed '+CFG.seed+', '+t(L.t)+' זמן משחק'+(CFG.god?', עם חסינות':'')+(CFG.lang==='en'?', באנגלית':'')+(CFG.gfx==='2d'?', בדו-ממד':', בתלת-ממד')+(CFG.shots?', צילומים ב-'+CFG.shots:''));
-  console.log(results.join('\n'));
-  process.exit(results.some(r=>r.startsWith('✗'))?1:0);
+  // the report is long (over 64KB): exit only after it is fully written, or a pipe (| tee in CI) cuts the end, and with it the ✗ line (10.11)
+  const code=results.some(r=>r.startsWith('✗'))?1:0;process.stdout.write(results.join('\n')+'\n',()=>process.exit(code));
 })().catch(e=>{console.error(e);process.exit(1)});
