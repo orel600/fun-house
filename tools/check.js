@@ -1549,6 +1549,24 @@ function worldBot(m,L,god){
       drawOrbits();r.orbDraw=W.draws>d0&&W.lights>=5;r.orbFlash=W.flashes>f0;
       e3.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // מכה חדה (sharphit.js): מכה רגילה (חרב, קשת) נותנת פס בכיוון המכה, הבזק ורתיעה; סקיל גדול וחזק יותר; תקרה בפריים; נעלם לבד; הפחתת תנועה בלי רתיעה נוספת
+  const shk=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];SH.list=[];
+      const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;e.sw=0;e.scd=99;return e};
+      const st={...SH.stat},calm0=SAVE.calm;SAVE.calm=false;
+      const hit=(w,e)=>{SH.fr=-1;damage(e,10,w,0.4);return SH.list[SH.list.length-1]};
+      const e1=mk(60,0),a=hit('sword',e1),k1=e1.hfK;r.sword=!!a&&!a.sk&&Math.abs(a.a-0.4)<1e-6&&SH.stat.basic===st.basic+1;
+      const e2=mk(90,30),b=hit('gun',e2);r.bow=!!b&&!b.sk&&b.B===SHARP.basic.gun;
+      const e3=mk(-80,0),c=hit('skill',e3),k3=e3.hfK;r.skill=!!c&&c.sk&&SH.stat.skill===st.skill+1;
+      r.stronger=c&&a&&c.B.core>a.B.core*1.5&&c.B.rays>a.B.rays&&k3>k1;r.lean=[+(k1||0).toFixed(2),+(k3||0).toFixed(2)];
+      const n0=SH.list.length;SH.fr=-1;for(let i=0;i<20;i++)damage(e1,1,'sword',0);r.cap=SH.list.length-n0<=SHARP.perFrame&&SH.list.length<=SHARP.max;
+      const n1=SH.list.length;SH.fr=-1;for(let i=0;i<6;i++)damage(mk(40+i*6,10),1,'sword',0);const nn=SH.list.slice(n1);r.near=nn.length===SHARP.near.perFrame&&nn.every(f=>f.near);
+      const drawRaw=()=>{try{juiceDraw()}catch(_){}};drawRaw();r.drawn=SH.list.length>0;
+      const t0=performance.now;performance.now=()=>t0.call(performance)+1000;drawRaw();performance.now=t0;r.gone=SH.list.length===0;
+      SAVE.calm=true;const e4=mk(0,70),l0=SH.stat.lean;const d=hit('sword',e4);r.calm=!!d&&SH.stat.lean===l0;SAVE.calm=calm0;
+      r.pet=(()=>{const n=SH.list.length;SH.fr=-1;damage(e1,1,'pet',0);return SH.list.length===n})();
+      for(const e of enemies)e.dead=true;enemies=[];SH.list=[]}catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // הסקיל הראשון מלמד תזמון (skillteach.js): נגיעה בלי מטרה לא מבזבזת, טבעת וכפתור מואר כשיש מטרה, "Step out!" בהכנה של אויב, "Now!" אחרי, "3 hit!" בקבוצה, ונעלם אחרי SKTEACH.uses
   const skt=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.tipsOff=false;SAVE.hero.skTeach={n:0,u:0};enterWorld('home');enemies=[];SAVE.hero.skSeen=[...(SAVE.hero.skSeen||[]),...S.sk.ids];
@@ -3617,11 +3635,11 @@ function worldBot(m,L,god){
     try{
       const g0=WR().foes.findIndex(G=>G.type==='grunt'&&!G.creature),G=WR().foes[g0];P.x=G.x;P.y=G.y;
       for(let i=0;i<5;i++){const a=i/5*6.28,e=addEnemy('grunt',P.x+Math.cos(a)*120,P.y+Math.sin(a)*120,1);e.home=g0;e.zone='far';e.alert=99;e.hp=e.max=1e6;foeAiInit(e);e.ai='flank';e.caller=0}
-      const busy=e=>e.sw>0||['wind','dash','aim','crouch','jump'].includes(e.act);let maxA=0,maxT=0,moved=0;const held=new Set(),last=enemies.map(e=>[e.x,e.y]),path=enemies.map(()=>0);   // דרך שעברו, לא מרחק מההתחלה: מי שמקיף חוזר לפעמים קרוב לנקודת ההתחלה (#381 נכשל לסירוגין)
-      for(let i=0;i<400;i++){S.wd.t+=0.05;wFoes(0.05);const live=enemies.filter(e=>!e.dead);
-        maxA=Math.max(maxA,live.filter(busy).length);maxT=Math.max(maxT,live.filter(e=>e.tok>0).length);live.forEach(e=>{if(e.tok>0)held.add(e)});enemies.forEach((e,j)=>{path[j]+=Math.hypot(e.x-last[j][0],e.y-last[j][1]);last[j]=[e.x,e.y]})}
+      const busy=e=>e.sw>0||['wind','dash','aim','crouch','jump'].includes(e.act);let maxA=0,maxT=0,moved=0;const mine=enemies.slice(),held=new Set(),last=mine.map(e=>[e.x,e.y]),path=mine.map(()=>0);   // mine: רק החמש של הבדיקה. קבוצה רחוקה שמתעוררת בדרך (lazy ב-wFoes) לא נספרת (10.11)   // דרך שעברו, לא מרחק מההתחלה: מי שמקיף חוזר לפעמים קרוב לנקודת ההתחלה (#381 נכשל לסירוגין)
+      for(let i=0;i<400;i++){S.wd.t+=0.05;wFoes(0.05);const live=mine.filter(e=>!e.dead);
+        maxA=Math.max(maxA,live.filter(busy).length);maxT=Math.max(maxT,live.filter(e=>e.tok>0).length);live.forEach(e=>{if(e.tok>0)held.add(e)});mine.forEach((e,j)=>{path[j]+=Math.hypot(e.x-last[j][0],e.y-last[j][1]);last[j]=[e.x,e.y]})}
       moved=path.filter(x=>x>300).length;   // 20 שניות: כל אחת זזה לפחות 300 (בפועל 1000-1200)
-      Object.assign(o,{maxA,maxT,held:held.size,moved,n:enemies.filter(e=>!e.dead).length});
+      Object.assign(o,{maxA,maxT,held:held.size,moved,n:mine.filter(e=>!e.dead).length});
     }finally{hurt=h0}
     enemies=[];eb=[];enterVillage();return o});
   check(!trn.noRole.length&&trn.n===5&&trn.maxA<=3&&trn.maxT<=3&&trn.held>=4&&trn.moved===5,
@@ -5026,6 +5044,10 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(!hold.err&&hold.open&&hold.still&&hold.closed&&hold.resume&&hold.vHold&&hold.prod,
     'חלון עוצר את העולם: '+(hold.err||[hold.open?'היומן נפתח בתפריט':'היומן לא נפתח',hold.still?'5 שניות בלי נזק ובלי תזוזה':'העולם המשיך מאחורי היומן',
       hold.closed&&hold.resume?'בסגירה הקרב חוזר':'הקרב לא חזר',hold.vHold&&hold.prod?'בכפר הייצור ממשיך לפי השעון':'הייצור בכפר נעצר'].join(', ')));
+  check(!shk.err&&shk.sword&&shk.bow&&shk.skill&&shk.stronger&&shk.cap&&shk.near&&shk.drawn&&shk.gone&&shk.calm&&shk.pet,
+    'מכה חדה: '+(shk.err||[shk.sword?'חרב: פס בכיוון המכה':'חרב: אין',shk.bow?'קשת: פס דק':'קשת: אין',shk.skill?'סקיל':'סקיל: אין',
+    shk.stronger?'הסקיל חזק יותר (רתיעה '+shk.lean.join(' מול ')+')':'הסקיל לא חזק יותר',shk.cap?'תקרה בפריים':'בלי תקרה',shk.near?'ליד הגיבור: עד 2, קטנים':'ליד הגיבור: בלי תקרה',shk.drawn&&shk.gone?'מצויר ונעלם':'לא נעלם',
+    shk.calm?'הפחתת תנועה: בלי רתיעה נוספת':'רתיעה בהפחתת תנועה',shk.pet?'חיה לא':'גם חיה'].join(', ')));
   check(!skt.err&&skt.on&&skt.out&&skt.block&&skt.noCls&&skt.inR>=2&&skt.in&&skt.ring&&skt.danger&&skt.now&&skt.tap&&skt.group&&skt.end&&skt.blockAfter,
     'הסקיל הראשון מלמד ('+skt.id+'): '+(skt.err||[skt.on?'פועל':'לא פועל',skt.out&&skt.block&&skt.noCls?'נגיעה בלי מטרה לא מבזבזת':'נגיעה בלי מטרה בוזבזה',
     skt.in&&skt.ring?'מטרה בטווח: כפתור מואר וטבעת ('+skt.inR+')':'אין סימון טווח ('+skt.inR+')',skt.danger?'Step out בהכנה':'אין Step out',skt.now?'Now אחרי':'אין Now',
