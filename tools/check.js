@@ -2677,6 +2677,19 @@ function worldBot(m,L,god){
     SAVE.story.earth=true;questClaim('s1Warden');tick();o.after=guideG.text;o.changed=before!==guideG.text&&guideG.q!=='s1Warden';
     $('guideMin').click();o.min=$('guide').classList.contains('min')&&(t=>t.length>0&&t.split(' ').length<=3)($('guideTxt').textContent);   // מכווצת: 2-3 מילים, לא ריקה$('guideMin').click();
     $('guideMain').click();o.log=!$('qLog').hidden&&!!document.querySelector('#qLog .gnow');questLogOpen(false);
+    // פרס אצל דמות באזור אחר (ניר, 10.11: זארה במדבר, השורה אמרה "here" באחו ולא קרה כלום): המטרה באזור שלה, ושם לוקחים את הפרס
+    {const id='caravan',N=WNPC.list[id],qid='sqCar1',was=Q.active;Q.active={};delete Q.done[qid];Q.track=null;SAVE.met[id]=1;
+      SAVE.story.earth=SAVE.story.water=SAVE.story.ice=true;qStart(QBY[qid]);for(const ob of QBY[qid].obj)questEvent(ob.type,ob.what,ob.n);   // הדרך מהאחו למדבר פתוחה (אגם, רכס)
+      worldUi(false);enterWorld('home','meadow');P.x=N.at.x;P.y=N.at.y;tick();
+      o.carReady=qReady(QBY[qid])&&guideG.q===qid&&guideG.icon===GUIDE.icon.claim;o.carPlace=guideG.place;
+      const tm=guideTarget(guideG);o.carAway=!!tm&&!(tm.x===N.at.x&&tm.y===N.at.y)&&$('guideDist').textContent!==T('g.here');   // מהאחו: לשער, לא "here" במקום ריק
+      worldUi(false);enterWorld('home',N.reg);P.x=N.at.x+30;P.y=N.at.y;tick();const td=guideTarget(guideG);
+      o.carThere=!!td&&td.x===N.at.x&&td.y===N.at.y&&!!wnpcState()[id];
+      wnpcTalk(id);const b=document.querySelector('#npcDlg [data-act="claim"][data-q="'+qid+'"]');if(b)b.click();
+      o.carClaim=!!Q.done[qid]&&!Q.active[qid];wnpcTalk(null);
+      // כל דמות של העולם: המטרה "ללכת אליה" באזור שלה
+      o.npcReg=Object.keys(WNPC.list).filter(k=>gNpc(k).place!==(WNPC.list[k].reg||'meadow'));
+      Q.active=was}
     worldUi(false);startRun();tick();o.arena=$('guide').hidden;
     const k=JSON.parse(keep);SAVE.quests=k.q;k.s.intro=k.s.intro||SAVE.story.intro;SAVE.story=k.s;saveNow();enterVillage();npcTalk(null);   // הקדמה שכבר נאמרה נשארת אמורה. חוזרים לכפר רק אחרי השחזור, אחרת פנס האדמה הדלוק מפעיל שם סיפור (homecoming.js)
     return o});
@@ -4861,6 +4874,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       ' ['+m.seen+']'+(m.xClose?', ✕':', ✕ לא סוגר')+(m.esc?', Esc':', Esc לא סוגר')+(m.bg?', רקע':', רקע לא סוגר')+(m.dot?', נקודה בטור':', אין נקודה בטור (או שהיא על ☰)')+(m.nav?'':', בסרגל יש כפתור שלא שייך למקום')+
       ', טור '+m.rail+'/'+m.railWant+(m.railBad.length?' (קטן, בחוץ או על כפתור: '+m.railBad.join(',')+')':'')+(m.railOpen.length?' (לא נפתח: '+m.railOpen.join(',')+')':'')+(m.setOnly?', ☰ = הגדרות':', ☰ לא פותח הגדרות')+(m.topBad.length?', שורה עליונה: '+m.topBad.join(','):'')+(m.feedTop?'':', ההאכלה לא במקום')+(m.rankBad.length?', היררכיה: '+m.rankBad.join(' · '):', היררכיה')+(m.useCap?'':', השימוש מזיז יותר מדי');
     check(vm.ok&&wm.ok,'תפריט ראשי, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+d(vm,'כפר')+' · '+d(wm,'עולם'))}
+  check(gd.carReady&&gd.carPlace==='desert'&&gd.carAway&&gd.carThere&&gd.carClaim&&!gd.npcReg.length,'פרס אצל דמות באזור אחר (זארה במדבר): '+(gd.carReady?'מוכן':'לא מוכן')+', המטרה ב-'+gd.carPlace+(gd.carAway?', מהאחו לשער':', מהאחו "here"/בלי חץ')+(gd.carThere?', במדבר אליה':', במדבר לא אליה')+(gd.carClaim?', הפרס נלקח':', הפרס לא נלקח')+(gd.npcReg.length?', אזור שגוי: '+gd.npcReg.join(','):''));
   check(gd.vil&&gd.vilGate&&gd.lantern&&gd.toWarden&&gd.lakeBack&&gd.jump==='earth'&&gd.claim&&gd.changed&&gd.min&&gd.log&&gd.arena,'מטרה ברורה: '+(gd.vil?'בכפר "'+gd.txt+'" '+gd.dist:'אין שורה בכפר')+(gd.vilGate?', החץ לשער':', החץ לא לשער')+
     (gd.lantern?', בעולם לפנס':', לא לפנס')+(gd.toWarden?', שומר ליד: המרחק אליו':', שומר ליד: עדיין לפנס')+(gd.lakeBack?', מהאגם לשער חזרה':', מהאגם לא לשער')+(gd.jump==='earth'?', ו"קפוץ" לפנס האדמה':', בלי "קפוץ" ('+gd.jump+')')+(gd.claim?', לפרס':', לא לפרס')+(gd.changed?', אחר כך: "'+gd.after+'"':', המטרה לא התחלפה')+
     (gd.min?', מתכווצת':', לא מתכווצת')+(gd.log?', נגיעה פותחת יומן עם "עכשיו"':', נגיעה לא פותחת יומן עם "עכשיו"')+(gd.arena?', בזירה מוסתרת':', מופיעה בזירה'));

@@ -44,10 +44,16 @@ function gWhere(q,o){
   if(o.type==='reach')return o.what==='world'?{place:inW?here:'meadow'}:{place:'meadow',...gNear(Object.values(WORLD.gates))};
   if(o.type==='win')return{place:'meadow',...gNear(Object.values(WORLD.gates))};
   if(o.type==='fish'){const F=WNPC.list.fisher.at;return{place:'meadow',x:F.x,y:F.y}}
-  // להפיל או לאסוף: האזור של הפרק, או האזור שבו כבר נמצאים, או האחו. בתוך האזור: הקבוצה או השדה הקרובים
-  const reg=st?st.L.reg:inW?here:'meadow',R=gReg(reg);
-  if(o.type==='kill'&&o.what!=='any'){const g=gNear(R.foes.filter(f=>f.type===o.what));if(g)return{place:reg,x:g.x,y:g.y}}
-  if(o.type==='gather'||o.type==='collect'){const g=gNear(R.fields.filter(f=>{const N=NODES.kinds[f.kind];return N&&(N.drop&&N.drop[o.what]||N.wdrop&&N.wdrop[o.what])}));if(g)return{place:reg,x:g.x,y:g.y}}
+  // מקום לחקור, להגן או ללוות ('desert:bones', questboard.js): באזור שלו, גם כשנמצאים באזור אחר
+  if(o.type==='visit'||o.type==='hold'||o.type==='escort'){const p=sqPlace(o.what);if(p&&gReg(p.reg))return{place:p.reg,x:p.x,y:p.y}}
+  if(o.type==='meet')return gNpc(o.what);
+  // להפיל או לאסוף: האזור של הפרק, או האזור שבו כבר נמצאים אם יש בו מה שצריך, אחרת האזור של מי שנתן (קווסט צדדי במדבר), או האחו
+  const kill=o.type==='kill'&&o.what!=='any',get=o.type==='gather'||o.type==='collect';
+  const spots=R=>kill?R.foes.filter(f=>f.type===o.what):get?R.fields.filter(f=>{const N=NODES.kinds[f.kind];return N&&(N.drop&&N.drop[o.what]||N.wdrop&&N.wdrop[o.what])}):[];
+  let reg=st?st.L.reg:inW?here:'meadow';
+  const gr=gNpcReg(q.giver);if(!st&&gr&&gr!==reg&&(kill||get)&&!spots(gReg(reg)).length)reg=gr;
+  const g=gNear(spots(gReg(reg)));
+  if(g)return{place:reg,x:g.x,y:g.y};
   return{place:reg};
 }
 // המטרה של קווסט: המטרה הראשונה שעוד לא הושלמה
@@ -55,10 +61,13 @@ function gQuest(q,icon){
   const i=q.obj.findIndex((o,j)=>qProg(q,j)<o.n),o=q.obj[i];
   return{icon,q:q.id,text:qObjTxt(q,i)+' '+qProg(q,i)+'/'+o.n,...gWhere(q,o)};
 }
-// ללכת לתושב: בכפר, או בעולם (דמויות של worldnpc.js)
+// באיזה אזור עומדת דמות של העולם (reg ב-WNPC.list). בלי reg: האחו
+const gNpcReg=id=>{const W=WNPC.list[id];return W?(W.reg&&gReg(W.reg)?W.reg:'meadow'):null};
+// ללכת לתושב: בכפר, או בעולם (דמויות של worldnpc.js), באזור שלה. לפני התיקון (10.11) כל דמות נחשבה באחו:
+// ניר הגיע לנקודה של זארה באחו, ראה "here" ולא היה שם אף אחד, כי היא במדבר
 function gNpc(id){
   if(NPC.list[id]){const N=npcAt(id)||{x:NPC.list[id].at.x,y:NPC.list[id].at.y};return{place:'village',x:N.x,y:N.y}}
-  const W=WNPC.list[id];return W?{place:'meadow',x:W.at.x,y:W.at.y}:{place:'village'};
+  const W=WNPC.list[id];return W?{place:gNpcReg(id),x:W.at.x,y:W.at.y}:{place:'village'};
 }
 const gNpcName=id=>T('npc.'+id)[0];
 function guideGoal(){
