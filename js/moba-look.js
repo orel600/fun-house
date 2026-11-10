@@ -157,10 +157,10 @@ function mbFloorCanvas(marksOnly){
   if(marksOnly&&F.ob&&typeof mbObSlabs==='function')mbObSlabs(g,R,x0,x1);   // ?mbfloor=obsidian (mb-floor.js): לוחות אובסידיאן בשטח ההליכה
   // צבע הקבוצה: הצד הכחול קר והאדום חם, ומתערבבים באמצע
   {const gr=g.createLinearGradient(x0,0,x1,0),[b,rd]=MOBA.team,a=Math.round(F.tint*255).toString(16).padStart(2,'0');
-    gr.addColorStop(0,b+a);gr.addColorStop(0.42,b+'00');gr.addColorStop(0.58,rd+'00');gr.addColorStop(1,rd+a);g.fillStyle=gr;g.fillRect(x0,-A,x1-x0,A*2)}
+    if(F.ob&&F.ob.tint){const T=F.ob.tint,h=v=>Math.round(v*255).toString(16).padStart(2,'0');for(const [p,al] of T.stops){gr.addColorStop(p,T.blue+h(al));gr.addColorStop(1-p,T.red+h(al))}}else{gr.addColorStop(0,b+a);gr.addColorStop(0.42,b+'00');gr.addColorStop(0.58,rd+'00');gr.addColorStop(1,rd+a)}g.fillStyle=gr;g.fillRect(x0,-A,x1-x0,A*2)}
   // הנתיב הראשי: אבן שחוקה ובהירה יותר, עם קו גבול. ושבילי העקיפה: פס שחוק דק באמצע
   const pg=g.createLinearGradient(0,-M.mid,0,M.mid);
-  pg.addColorStop(0,'rgba(122,88,90,0)');pg.addColorStop(0.25,'rgba(122,88,90,0.38)');pg.addColorStop(0.75,'rgba(122,88,90,0.38)');pg.addColorStop(1,'rgba(122,88,90,0)');
+  const wc=F.ob&&F.ob.worn?F.ob.worn:{rgb:'122,88,90',a:0.38};pg.addColorStop(0,'rgba('+wc.rgb+',0)');pg.addColorStop(0.25,'rgba('+wc.rgb+','+wc.a+')');pg.addColorStop(0.75,'rgba('+wc.rgb+','+wc.a+')');pg.addColorStop(1,'rgba('+wc.rgb+',0)');
   g.fillStyle=pg;g.fillRect(x0,-M.mid,x1-x0,M.mid*2);
   g.setLineDash([26,30]);g.strokeStyle='rgba(236,210,200,0.12)';g.lineWidth=4;g.beginPath();g.moveTo(-L.len,0);g.lineTo(L.len,0);g.stroke();g.setLineDash([]);
   for(const sg of [-1,1]){const yc=sg*(M.side[0]+M.side[1])/2,sp=g.createLinearGradient(0,yc-50,0,yc+50);
