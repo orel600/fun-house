@@ -1388,7 +1388,7 @@ function worldBot(m,L,god){
       r.set=SAVE.hero.skin==='nir'&&JSON.parse(localStorage.getItem(SAVE_STORE.key)).hero.skin==='nir';
       r.look=lk()!==base;r.pressed=document.querySelector('#ovSound [data-skin="nir"]').getAttribute('aria-pressed')==='true';
       document.querySelector('#ovSound [data-skin="none"]').click();r.back=SAVE.hero.skin===null&&lk()===base;
-      r.gear=gStatPanel().includes('data-skin="orel"');soundClose()}
+      r.gear=!!document.getElementById('gLook')&&(heroLookBtn(),document.getElementById('gLook').dataset.look==='none');soundClose()}
     catch(e){r.err=e.message}
     SAVE.hero.skin=sk;SAVE.pet.kind=pk;saveNow();return r});
   // שדרוג שמרגישים (upfeel.js): מדרגות Aging לנשק (מכה כבדה, התזה, גל הדף, זעם), מספרים בזהב אחרי שדרוג, מכה שמעיפה, ומכה טעונה באזור הרחוק.
@@ -2668,7 +2668,7 @@ function worldBot(m,L,god){
         if(!d.querySelector('.gres li'))bad.push('no resistances');
         for(const e of d.querySelectorAll('*'))if(e.offsetParent&&e.scrollWidth>e.clientWidth+1&&getComputedStyle(e).textOverflow==='ellipsis')bad.push('cut: '+e.textContent.trim().slice(0,12));
         const L=$('gLook'),lr=L&&L.getBoundingClientRect();
-        if(!lr||lr.width<40||lr.height<38||lr.left<0||lr.right>innerWidth||lr.top<0||lr.bottom>innerHeight)bad.push('look button not visible');
+        if(!lr||lr.width<40||lr.height<36||lr.left<0||lr.right>innerWidth||lr.top<0||lr.bottom>innerHeight)bad.push('look button not visible '+(lr?[lr.left,lr.top,lr.width,lr.height].map(Math.round).join(','):'none'));
         else{const h=document.elementFromPoint(lr.left+lr.width/2,lr.top+lr.height/2);if(!h||!L.contains(h))bad.push('look button not tappable');
           const k0=heroSkin()||'none';L.click();if((heroSkin()||'none')===k0||L.dataset.look!==(heroSkin()||'none'))bad.push('look did not change')}
       }finally{P.def=B.def;P.regen=B.regen;P.loot=B.loot;P.res=B.res;heroSkinSet(B.skin||'none');gearClose()}

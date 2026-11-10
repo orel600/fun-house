@@ -1329,6 +1329,7 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 /* "המראה שלי" בכותרת חלון הציוד (heroLookBtn ב-heroes.js): כפתור אחד שעובר למראה הבא, באותו גובה של הלשוניות */
 #ovGear .glook{appearance:none;flex:none;border:1px solid var(--line);background:var(--panel);color:var(--chalk);border-radius:999px;min-height:40px;min-width:44px;padding:4px 12px;font:800 var(--t1,14px) var(--body);cursor:pointer;white-space:nowrap}
 #ovGear .glook:not([data-look="none"]){border-color:var(--gold);color:var(--gold)}
+@media (orientation:portrait){#ovGear .glook{padding:4px 8px}#ovGear .glook .glk{display:none}}   /* טלפון עומד: רק ✨, אחרת ה-✕ יוצא מהמסך. השם ב-title */
 .ghead.whd>h2{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ghead.whd>#gHero{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (orientation:landscape){
