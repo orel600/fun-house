@@ -3935,7 +3935,7 @@ function worldBot(m,L,god){
     enterWorld('home');o.gone=!S.wd.nemE;
     enemies=[];enterVillage();SAVE.nem=JSON.parse(n0);return o});
   check(Object.values(nm).every(Boolean),'בוס-נמסיס: '+Object.entries(nm).map(([k,v])=>(v?'':'✗')+k).join(', '));
-  // טיפ ראשון (firsttips.js): נמסיס ובוס ענק יחד: מוצג אחד, השני בתור. מחכה מתחת לחלון ולפס אחר, לא חוזר, נשמר. דרישה של חפץ: טיפ בתוך החלון שנעלם עם השורה. כבוי: כלום
+  // טיפ ראשון (firsttips.js): נמסיס ובוס ענק יחד: מוצג אחד, השני בתור. מחכה מתחת לחלון ולפס אחר, לא חוזר, נשמר. דרישה של חפץ: שורה בכרטיס, בלי בועה. כבוי: כלום
   const tp=await page.evaluate(()=>{const r2on=READ2.on;READ2.on=false;   // הכרטיס ליד אויב: ההמתנה לסוף הקרב נבדקת ב-rd2
     const o={},t0=JSON.stringify(SAVE.tips||null),off0=!!SAVE.tipsOff,n0=JSON.stringify(SAVE.nem||null),lo0=JSON.stringify(SAVE.lore||null);
     enterWorld('home');enemies=[];S.mode='play';FLC.q=[];flCardNext();nemCardOff();MUT.bar=null;skgOfferClose();tipClose();TIP1.q=[];TIP1.pendWin=null;
@@ -3957,7 +3957,8 @@ function worldBot(m,L,god){
     // בתוך חלון: חפץ שנעול בדרישה
     delete SAVE.tips.req;const id=Object.keys(GEAR.items).find(k=>GEAR.items[k].tier===3&&GEAR.items[k].slot!=='orbit'),lv0=ITEMROLL.req.lv[3],sk0=ITEMROLL.skip;ITEMROLL.req.lv[3]=99;ITEMROLL.skip=false;
     const d=document.createElement('div');d.innerHTML=itemCard(id);document.body.appendChild(d);tipTick(0.25);
-    o.req=!!TIP1.on&&TIP1.on.k==='req'&&TIP1.on.win&&$('tip1').textContent.includes('99');
+    // 10.11: בלי בועה מעל הכרטיס. הדרישה בשורה האדומה, ומאיפה מקבלים נקודות בשורה עמומה מתחתיה (irReqHtml)
+    const rq=d.querySelector('.ireq.no'),R=irReq(id);o.req=!TIP1.on&&!!rq&&rq.textContent.includes('99')&&(!R.st||!R.n||!!d.querySelector('.ireqh'));
     d.remove();tipTick(0.25);o.reqGone=!TIP1.on;ITEMROLL.req.lv[3]=lv0;ITEMROLL.skip=sk0;
     SAVE.tipsOff=true;o.off=!tipOnce('depths');
     S.wd.warden=w0;SAVE.nem=JSON.parse(n0);SAVE.lore=JSON.parse(lo0);SAVE.tips=JSON.parse(t0);SAVE.tipsOff=off0;tipClose();TIP1.q=[];

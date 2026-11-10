@@ -44,15 +44,8 @@ function tipWin(k,args,sel){
 /* ---- החיבור מכרטיס החפץ (itemCard ב-itemcard.js): דרישה שלא עומדים בה, או איכות ---- */
 function tipItem(id){
   if(!tipsOn()||typeof irReq!=='function'||!irOn())return;
-  const r=irReq(id);
-  if(r&&!irMeets(id)&&!tipDone('req')){
-    const st=r.st&&r.n?T('st.'+r.st)[0]:null;
-    tipWin('req',[r.lv,st,r.n],'.icard .ireq.no');return;
-  }
-  if(gQtag(id)&&!tipDone('q')){
-    const p=q=>icPow(id.replace(/~\d+/,'~'+q)),Q=gQ(id),v=Q>=TIPS.q.good?'good':Q<=TIPS.q.bad?'bad':'mid';
-    tipWin('q',[icPow(id),p(ITEMROLL.q.min)+'–'+p(ITEMROLL.q.max),T('tip1.q.'+v)],'.icard .iq');
-  }
+  // דרישה שלא עומדים בה: בלי בועה (ביקורת 10.11: חזרה על השורה האדומה וכיסתה כפתורים). ההסבר שורה עמומה בכרטיס עצמו (irReqHtml ב-itemroll.js)
+  // איכות: גם בלי בועה. ההערכה (גבוה, ממוצע, נמוך) בשורת האיכות בכרטיס (gQLine ב-gearui.js)
 }
 
 /* ---- מתי מותר להציג טיפ במשחק: אין חלון, אין פס אחר, ומשחקים ---- */
@@ -96,6 +89,11 @@ function tipPlace(){
   el.classList.toggle('free',!a);
   if(!a){el.style.left=el.style.top='';el.removeAttribute('data-up');return}
   const r=a.getBoundingClientRect(),w=el.offsetWidth||220,h=el.offsetHeight||44,m=8;
+  // בתוך חלון: לא מכסים את הכרטיס שהשורה בו (ביקורת 10.11: הבועה של הדרישה כיסתה את הסטטים). מתחת לכרטיס, מעליו, לידו, ורק אם אין מקום: ליד השורה
+  const box=x.win&&(a.closest('.gcard')||a.closest('.icard,.vwin,[role="dialog"]'));   // .gcard: כל הבועה של הפריט, עם הכפתורים
+  if(box){const b=box.getBoundingClientRect(),cyc=Math.max(m,Math.min(innerHeight-m-h,b.top+b.height/2-h/2)),cxc=Math.max(m+w/2,Math.min(innerWidth-m-w/2,b.left+b.width/2));
+    const spot=b.bottom+h+m+4<=innerHeight?[cxc,b.bottom+4]:b.top-h-4>=m?[cxc,b.top-h-4]:b.right+w+m+4<=innerWidth?[b.right+4+w/2,cyc]:b.left-w-m-4>=0?[b.left-4-w/2,cyc]:null;
+    if(spot){el.style.left=spot[0]+'px';el.style.top=spot[1]+'px';return}}
   const cx=Math.max(m+w/2,Math.min(innerWidth-m-w/2,r.left+r.width/2));
   const below=r.bottom+h+12<innerHeight;
   el.style.left=cx+'px';el.style.top=(below?r.bottom+8:r.top-h-8)+'px';

@@ -20,7 +20,7 @@ function itemTile(id,o={}){
   const d=icDelta(id),poor=Object.keys(icMiss(o.cost)).length>0;
   return '<button class="ictile'+gRarCls(id)+(poor?' poor':'')+'" data-act="'+(o.act||'pick')+'" data-id="'+id+'" aria-pressed="'+!!o.on+'" style="--rar:'+gRarCol(id)+'" aria-label="'+gName(id)+'">'+
     '<span class="icp rpic'+gRarCls(id)+'">'+gPic(id)+'</span><span class="icn">'+gName(id)+'</span>'+
-    (d>0?'<i class="icup" aria-hidden="true">▲</i>':'')+(icReqOk(id)?'':'<i class="iclock" aria-hidden="true">🔒</i>')+'</button>';
+    (d>0?'<i class="icup" aria-hidden="true">▲</i>':'')+(icReqOk(id)?'':irLockTag(id,'iclock'))+'</button>';
 }
 
 /* ---- דרישות ובונוס מחלקה (itemroll.js, של סשן אחר: רק קוראים משם) ---- */

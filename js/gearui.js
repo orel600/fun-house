@@ -53,7 +53,7 @@ function gTipSync(){
    ולמטה שני כפתורים גדולים: ללבוש (או להוריד) ולשדרג, שעובר לנפחייה (forgeOpen ב-aging.js). משאב נשאר בתצוגה הישנה (gDetailHtml) */
 // האיכות כמספר כוח: מה יצא, מתוך הטווח שיכול היה לצאת ("260 מתוך 225–275"). חפץ בלי איכות: כלום
 function gQLine(id){if(!gQtag(id))return '';const p=q=>icPow(id.replace(/~\d+/,'~'+q));
-  return '<p class="iq">'+T('gui.q','<bdi>'+icPow(id)+'</bdi>','<bdi dir="ltr">'+p(ITEMROLL.q.min)+'–'+p(ITEMROLL.q.max)+'</bdi>')+'</p>'}
+  return '<p class="iq">'+T('gui.q','<bdi>'+icPow(id)+'</bdi>','<bdi dir="ltr">'+p(ITEMROLL.q.min)+'–'+p(ITEMROLL.q.max)+'</bdi>')+' <span class="dim">'+T('tip1.q.'+(gQ(id)>=TIPS.q.good?'good':gQ(id)<=TIPS.q.bad?'bad':'mid'))+'</span></p>'}   // "Average roll." בשורה עצמה, במקום בועה (ביקורת 10.11)
 // אפשר לשדרג מכאן: בכפר עם נפחייה, וחפץ שאינו מסתובב (לאלה יש התכה). מהמחסן מוציאים קודם
 const gUpOk=(k,sel)=>!sel.sid&&gItem(k).slot!=='orbit';
 const gUpHere=()=>!!(S.vil&&vLv('forge')>0);
@@ -62,7 +62,7 @@ function gCardHtml(k,sel,n){
   const orb=it.slot==='orbit'&&sel.id?gOrbCompare(k,gGet('orbit',gTarget(it))):'';   // חפץ מסתובב: מה מתווסף ומה הולך (gear.js)
   const pre=orb+(gPlus(k)?'<p class="gage">'+T('gear.aged',gPlus(k))+'</p>':'')+gQLine(k)+powLine(k);   // הדרישות ובונוס המחלקה: בכרטיס עצמו (itemcard.js)
   let b='';
-  if(sel.id)b+=irCanWear(k)?btn('equip',T('gear.equip'),'gcequip'):btn('equip',T('ir.cant'),'gcequip',1);
+  if(sel.id)b+=irCanWear(k)?btn('equip',T('gear.equip'),'gcequip'):btn('equip',irCantTxt(k),'gcequip',1);
   if(sel.slot)b+=gCanOff(k)?btn('unequip',T('gear.unequip'),'ghost'):btn('unequip',T('gear.keepOn'),'ghost',1);   // אי אפשר ללבוש בחזרה: לא מורידים (gear.js)
   if(sel.sid)b+=btn('take',T('gear.take'),'gcequip');
   if(gUpOk(k,sel))b+=gUpHere()?btn('gup','⬆️ '+T('gui.up'),'gcup'):btn('gup',T('gui.upVil'),'gcup',1);
