@@ -131,7 +131,16 @@ const VGROW={
   vx_bucket:{src:hex('decoration/props/bucket_water.gltf')},
   vx_pallet:{src:hex('decoration/props/pallet.gltf')},
   vx_ladder:{src:hex('decoration/props/ladder.gltf')},
-  vx_crateS:{src:hex('decoration/props/crate_A_small.gltf')}
+  vx_crateS:{src:hex('decoration/props/crate_A_small.gltf')},
+  /* רמות שנראות אחרת (docs/concept-village-growth-2.md, ניר 10.11.2026): אותו מבנה בצבע גג לפי הרמה. ירוק = עץ פשוט (L3), הכחול שבליבה (L4), אדום/זהב (L5) */
+  vx_forgeG:{src:hex('buildings/green/building_blacksmith_green.gltf')},vx_forgeR:{src:hex('buildings/red/building_blacksmith_red.gltf')},
+  vx_millG:{src:hex('buildings/green/building_lumbermill_green.gltf')},vx_millR:{src:hex('buildings/red/building_lumbermill_red.gltf')},
+  vx_mineG:{src:hex('buildings/green/building_mine_green.gltf')},vx_mineR:{src:hex('buildings/red/building_mine_red.gltf')},
+  vx_marketG:{src:hex('buildings/green/building_market_green.gltf')},vx_marketR:{src:hex('buildings/red/building_market_red.gltf')},
+  vx_tavernG:{src:hex('buildings/green/building_tavern_green.gltf')},vx_tavernB:{src:hex('buildings/blue/building_tavern_blue.gltf')},vx_tavernR:{src:hex('buildings/red/building_tavern_red.gltf')},
+  vx_homeBG:{src:hex('buildings/green/building_home_B_green.gltf')},vx_homeBB:{src:hex('buildings/blue/building_home_B_blue.gltf')},vx_homeBR:{src:hex('buildings/red/building_home_B_red.gltf')},
+  vx_castleY:{src:hex('buildings/yellow/building_castle_yellow.gltf')},vx_towerA:{src:hex('buildings/red/building_tower_A_red.gltf')},
+  vx_flagR:{src:hex('decoration/props/flag_red.gltf')},vx_flagY:{src:hex('decoration/props/flag_yellow.gltf')}
 };
 // טבע לכל אזור בעולם (KayKit Forest Nature Pack 1.0 FREE, CC0): עצים, עצים חשופים, סלעים, שיחים ועשב. המפתח מתחיל ב-n_, ומי משתמש במה: W3D.decor ב-js/render3d.js
 //   kaylousberg.itch.io/kaykit-forest  KayKit_Forest_Nature_Pack_1.0_FREE -> C:/kk/forest

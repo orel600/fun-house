@@ -2513,6 +2513,13 @@ function worldBot(m,L,god){
   check(wl.prod&&wl.daily&&wl.quest&&wl.fx===1&&wl.fly&&wl.noWin,'בזמן שלא היית: נגיעה ב-📦 '+(wl.prod?'אספה '+wl.wood+' עץ':'לא אספה את הייצור')+(wl.daily?', מתנה יומית':', בלי המתנה היומית')+(wl.quest?', קווסט':', הקווסט לא נלקח')+
     ', '+wl.fx+' חגיגות (צפוי 1)'+(wl.fly?', מספרים עפים':', בלי מספרים עפים')+(wl.noWin?', בלי חלון':', ונפתח חלון'));
   check(wl.noPop&&wl.gone&&wl.empty,'בזמן שלא היית: '+(wl.noPop?'שום חלון לא קפץ אחרי האיסוף':'קפץ חלון אחרי האיסוף')+(wl.gone?', הכפתור נעלם':', הכפתור נשאר ('+wl.left+')')+(wl.empty?', ובלי כלום שמחכה הוא לא מופיע':', והופיע גם בלי כלום שמחכה'));
+  // כל רמה של כל מבנה נראית אחרת (docs/concept-village-growth-2.md, ניר 10.11): מודל, גודל, קישוטים או זוהר שונים מהרמה הקודמת, וכל מודל קיים (בליבה או ב-js/m3d)
+  {const vl=await page.evaluate(()=>{const same=[],miss=[],sig=lk=>lk.model+'|'+lk.size.toFixed(2)+'|'+lk.deco.slice().sort().join(',')+'|'+(lk.glow||'');
+      const has=m=>!!MODELS3D[m]||typeof M3D_LAZY!=='undefined'&&m in M3D_LAZY;
+      for(const k in VILLAGE.b){let prev='';for(let L=1;L<=VILLAGE.max;L++){const lk=bmLookAt(k,L),g=sig(lk);if(g.split('|')[0]===prev.split('|')[0]&&g.split('|')[2]===prev.split('|')[2])same.push(k+' L'+L);prev=g;
+        for(const m of [VIL3D.models[lk.model]&&VIL3D.models[lk.model].model,...lk.deco.map(d=>VIL3D.deco[d]&&VIL3D.deco[d].model)])if(!m||!has(m))miss.push(k+' L'+L+':'+(m||lk.model))}}
+      return{n:Object.keys(VILLAGE.b).length,same,miss:[...new Set(miss)]}});
+    check(!vl.same.length&&!vl.miss.length,'Village levels look different: '+vl.n+' buildings × 5 levels'+(vl.same.length?', same model and props as the level before: '+vl.same.join(', '):', every level changes model or props')+(vl.miss.length?', missing model: '+vl.miss.join(', '):''))}
   // רגע הבנייה (buildmoment.js, ניר 10.11): שדרוג נפחייה 2→3. החלון נסגר, המצלמה נוסעת למבנה, הישן (אוהל) שוקע, פיגום, החדש (נפחייה) קופץ,
   // שורה "לפני → אחרי", והמצלמה חוזרת והחלון נפתח. אחר כך נגיעה מדלגת (3→4), והפחתת תנועה בלי מצלמה (4→5). הרמות והתרמיל חוזרים בסוף
   {const bm=await page.evaluate(()=>{const o={},B=VILLAGE.b.forge;window.__bmKeep=JSON.stringify({v:SAVE.village,b:SAVE.bag,c:SAVE.calm});
@@ -2520,7 +2527,7 @@ function worldBot(m,L,god){
       for(const L of [3,4,5]){const c=vCostAt('forge',L);for(const r in c)bagAdd(r,c[r])}
       P.x=B.x;P.y=B.y+B.r+40;S.cam.x=P.x;S.cam.y=P.y;S.vil.open=S.vil.near='forge';S.vil.ui='';villageHud();
       o.d0=Math.round(Math.hypot(S.cam.x-B.x,S.cam.y-B.y));vUpgrade('forge');
-      o.lv=vLv('forge');o.on=!!S.vil.bm;o.closed=document.getElementById('vPanel').hidden;return o});
+      o.want2=bmLookAt('forge',2).model;o.want3=bmLookAt('forge',3).model;o.want4=bmLookAt('forge',4).model;o.lv=vLv('forge');o.on=!!S.vil.bm;o.closed=document.getElementById('vPanel').hidden;return o});
     const at=async(ms,f)=>{await page.clock.runFor(ms);return page.evaluate(f)};
     bm.pan=await at(650,new Function('const B=VILLAGE.b.forge;return{d:Math.round(Math.hypot(S.cam.x-B.x,S.cam.y-B.y+B.r*BUILDM.lift)),look:(vLook("forge")||{}).model||"-"}'));
     bm.rise=await at(700,()=>({look:vLook('forge')?vLook('forge').model:'site',fx:FX.length>0}));
@@ -2532,10 +2539,10 @@ function worldBot(m,L,god){
     bm.calm2=await at(500,c=>({d:Math.round(Math.hypot(S.cam.x-P.x,S.cam.y-P.y))}));
     await page.evaluate(()=>{const k=JSON.parse(window.__bmKeep);SAVE.village=k.v;SAVE.bag=k.b;SAVE.calm=k.c;S.vil.bm=null;S.vil.open=null;S.vil.raise={};S.vil.ui='';villageHud();saveNow()});
     const L0=bm.end.log||{};
-    check(bm.lv===3&&bm.on&&bm.closed&&bm.pan.d<40&&bm.pan.look==='tent'&&bm.rise.look==='site'&&bm.rise.fx&&bm.hold.look==='forge'&&/→/.test(bm.hold.line)&&!bm.end.on&&bm.end.open==='forge'&&bm.end.panel&&bm.end.d<30&&L0.end==='done',
+    check(bm.lv===3&&bm.on&&bm.closed&&bm.pan.d<40&&bm.pan.look===bm.want2&&bm.rise.look==='site'&&bm.rise.fx&&bm.hold.look===bm.want3&&/→/.test(bm.hold.line)&&!bm.end.on&&bm.end.open==='forge'&&bm.end.panel&&bm.end.d<30&&L0.end==='done',
       'Build moment (forge 2→3): '+(bm.on&&bm.closed?'window closes':'did not start')+', camera '+bm.d0+'→'+bm.pan.d+'px from the building, old look '+bm.pan.look+' → '+bm.rise.look+(bm.rise.fx?' with dust':' without dust!')+' → '+bm.hold.look+
       (bm.hold.line?', line "'+bm.hold.line+'"':', no before → after line!')+', then '+(bm.end.on?'still running!':'camera back ('+bm.end.d+'px from hero)')+(bm.end.panel&&bm.end.open==='forge'?', window reopens':', window not reopened!'));
-    check(!bm.skip.on&&bm.skip.end==='skip'&&bm.skip.lv===4&&bm.skip.look==='forge'&&!bm.calm.on&&bm.calm.end==='calm'&&bm.calm.lv===5&&bm.calm2.d<5,
+    check(!bm.skip.on&&bm.skip.end==='skip'&&bm.skip.lv===4&&bm.skip.look===bm.want4&&!bm.calm.on&&bm.calm.end==='calm'&&bm.calm.lv===5&&bm.calm2.d<5,
       'Build moment: tap skips ('+(bm.skip.end||'-')+', level '+bm.skip.lv+', '+bm.skip.look+'), reduce motion: '+(bm.calm.end==='calm'&&!bm.calm.on?'no camera move ('+bm.calm2.d+'px)':'the moment still ran!'))}
   // צלילים: כמה פעמים כל צליל התבקש, אם הקבצים נטענו מ-file://, ואם כפתור ההשתקה עובד ונשמר
   // הכפתור פותח את חלון הצלילים: השתקה בתוכו, ועוצמה לכל ערוץ שנשמרת בטלפון
