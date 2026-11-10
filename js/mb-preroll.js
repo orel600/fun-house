@@ -2,7 +2,8 @@
    בתחילת המשחק הסצנה של השאול נבנית, וה-shaders שלה מוכנים בפעם הראשונה שכל חפץ מצויר. חפצים שעוד לא במסך (למשל של tex3d) מוכנים מאוחר יותר,
    באמצע הקרב הראשון (פרופיל CPU: כ-420 ms). כאן, מאחורי מסך כהה קצר: פריים אחד של כל הסצנה, ואז הכנה של כל החפצים בסצנה, גם אלה שמחוץ למסך (compile).
    ואז המסך נעלם. כך הקפיאה קורה פעם אחת, מאחורי המסך, ולא בקרב. MBPRE.stat.ms: כמה זמן זה לקח. ?mbpre=0 מכבה. מחיקה: הקובץ, השורה ב-index.html וכלל .mbpre ב-css/style.css */
-const MBPRE={on:!/[?&]mbpre=0(&|$)/.test(location.search),fade:0.25,stat:{ms:0,runs:0}};
+const MBPRE={on:/[?&]mbpre=1(&|$)/.test(location.search),   // opt-in (?mbpre=1) until QUINN's real-time run confirms it (MAX); phone unmeasured
+  fade:0.25,stat:{ms:0,runs:0}};
 (function(){
   if(!MBPRE.on||typeof mobaStart!=='function')return;
   const b=mobaStart;mobaStart=function(){
