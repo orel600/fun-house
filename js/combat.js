@@ -81,6 +81,7 @@ function attack(dt){
     const g=P.gn;g.t-=dt;g.recoil=Math.max(0,g.recoil-dt*8);
     const tgt=aimTarget(440);
     if(tgt)P.aim=Math.atan2(tgt.y-P.y,tgt.x-P.x);
+    if(tgt&&tgt.node&&gtStrike(tgt))return;   // מקור בעולם: מכה בכלי מקרוב, לא חץ (gtool.js)
     if(tgt&&g.t<=0){
       wFire(g.multi);
     }

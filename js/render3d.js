@@ -69,12 +69,12 @@ const LOOK3D={
   // אגם הערפל (פרק 2): אבירים טבועים בכחול-ירוק חלוד, ערפלונים מרחפים, ושומר המים: ברבריאן גדול בכחול עמוק עם מטה מים
   drowned:{model:'warrior',h:62,foot:14,tint:'#2E7F8F',props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'water'}},
     anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
-  mistling:{model:'skelMage',h:46,foot:11,float:10,tint:'#BFE3F2',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  mistling:{model:'skelMage',h:46,foot:11,float:10,tint:'#6FC2E8',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   tidewarden:{model:'barbarian',h:84,foot:18,tint:'#1E5FD0',props:{staff:{prop:'staff',...HAND_R,tint:'water'}},anim:{run:'Running_B',die:'Death_A'}},
   // הרכס הקפוא (פרק 3): אבירי כפור בתכלת, רוחות שלג מרחפות, ושומר הקרח: ברבריאן גדול בלבן-תכלת עם מטה קרח
   rimeknight:{model:'warrior',h:64,foot:14,tint:'#9FD8F0',props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'ice'}},
     anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
-  frostwraith:{model:'skelMage',h:46,foot:11,float:10,tint:'#EAF8FF',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  frostwraith:{model:'skelMage',h:46,foot:11,float:10,tint:'#8FD8FF',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   frostwarden:{model:'barbarian',h:88,foot:18,tint:'#7FD4FF',props:{staff:{prop:'staff',...HAND_R,tint:'ice'}},anim:{run:'Running_B',die:'Death_A'}},
   // המדבר הבוער (פרק 4): עקרבי אבן-אש נמוכים בכתום, רוחות אש מרחפות, ושומר האש: ברבריאן גדול באדום-גחלים עם מטה אש
   cinderscorp:{model:'minion',h:46,foot:13,tint:'#D2582A',props:{blade:{prop:'blade',...HAND_R,tint:'fire'}},anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
@@ -83,7 +83,7 @@ const LOOK3D={
   // מגדלי הסערה (פרק 5): אבירי סערה בסגול עם מגן מחושמל, ניצוצות מרחפים, ושומר הסערה: ברבריאן גדול בסגול-חשמל עם מטה ברק
   stormknight:{model:'warrior',h:64,foot:14,tint:'#8A7BC8',props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'lightning'}},
     anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
-  sparkwisp:{model:'skelMage',h:44,foot:11,float:14,tint:'#E2CCFF',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  sparkwisp:{model:'skelMage',h:44,foot:11,float:14,tint:'#B07CFF',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   stormwarden:{model:'barbarian',h:92,foot:18,tint:'#7A4FE0',props:{staff:{prop:'staff',...HAND_R,tint:'lightning'}},anim:{run:'Running_B',die:'Death_A'}},
   // לב הצל (פרק 6): צללים כהים של אבירים ורוחות, והצל עצמו: ברבריאן ענק כמעט שחור עם מטה
   shadeknight:{model:'warrior',h:64,foot:14,tint:'#3A2A5C',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
@@ -248,12 +248,12 @@ const VIL3D={
     forgeG:{model:'vx_forgeG',w:140},forgeR:{model:'vx_forgeR',w:140},millG:{model:'vx_millG',w:140},millR:{model:'vx_millR',w:140},
     mineG:{model:'vx_mineG',w:140},mineR:{model:'vx_mineR',w:140},marketG:{model:'vx_marketG',w:150},marketR:{model:'vx_marketR',w:150},
     tavernG:{model:'vx_tavernG',w:135},tavern:{model:'vx_tavernB',w:135},tavernR:{model:'vx_tavernR',w:135},
-    homeG:{model:'vx_homeBG',w:115},home:{model:'vx_homeBB',w:115},homeR:{model:'vx_homeBR',w:115},castleY:{model:'vx_castleY',w:190}},
-  site:{model:'v_site',w:135},gate:{model:'v_gate',w:150},
+    homeG:{model:'vx_homeBG',w:115},home:{model:'vx_homeBB',w:115},homeR:{model:'vx_homeBR',w:115},castleY:{model:'vx_castleY',w:190},hallG:{model:'vx_hallG',w:170},keep:{model:'vx_towerAB',w:105}},
+  site:{model:'v_site',w:135},plot:{model:'vx_dirt',w:120},gate:{model:'v_gate',w:150},
   deco:{flag:{model:'v_flag',w:46},crate:{model:'v_crate',w:30},barrel:{model:'v_barrel',w:28},
     tent:{model:'v_tent',w:62},lumber:{model:'v_lumber',w:42},stone:{model:'v_stone',w:42},rack:{model:'vx_rack',w:38},sack:{model:'vx_sack',w:24},wbarrow:{model:'vx_wbarrow',w:36},
     bucket:{model:'vx_bucket',w:20},pallet:{model:'vx_pallet',w:36},ladder:{model:'vx_ladder',w:34},crateS:{model:'vx_crateS',w:22},fenceW:{model:'vx_fenceW',w:52},fenceS:{model:'vx_fenceS',w:52},towerB:{model:'vx_towerB',w:72},
-    towerA:{model:'vx_towerA',w:62},flagR:{model:'vx_flagR',w:46},flagY:{model:'vx_flagY',w:46}},
+    towerA:{model:'vx_towerA',w:62},site:{model:'v_site',w:78},flagR:{model:'vx_flagR',w:46},flagY:{model:'vx_flagY',w:46}},
   decor:{tree:{model:['v_treeA','v_treeB'],w:55},rock:{model:'v_rock',w:55},hills:{model:'v_hills',w:260}},
   stock:{mill:{model:'v_lumber',w:60},mine:{model:'v_stone',w:60}}
 };
@@ -571,17 +571,19 @@ function syncPlayer(dt){
     st.scT=Math.max(0,(st.scT||0)-dt);const casting=st.scT>0;
     const swing=!casting&&sword&&P.sw.anim>st.anim,shot=!casting&&!sword&&P.gn.t>st.gt+0.01;
     st.anim=P.sw.anim;st.gt=P.gn.t;
-    if(swing)once(a,L.anim.sword+'@up',Math.max(0.28,Math.min(0.5,P.sw.cd*wK('cd')*0.8)),false,heroSkip(L.anim.sword));
+    const tk=gtHeld(),swA=tk?gtAnim(tk):L.anim.sword,gnA=tk?gtAnim(tk):L.anim.gun;   // כלי ביד: גרזן חוטב, מכוש כורה (gtool.js)
+    if(tk&&(swing||shot))GTOOL.stat.anim[tk]=(GTOOL.stat.anim[tk]||0)+1;
+    if(swing)once(a,swA+'@up',Math.max(0.28,Math.min(0.5,P.sw.cd*wK('cd')*0.8)),false,heroSkip(swA));
     const gcd=P.gn.cd*wK('cd');
-    if(shot){st.shots=(st.shots||0)+1;once(a,L.anim.gun+'@up',Math.max(0.2,Math.min(0.45,gcd*0.9)),false,heroSkip(L.anim.gun))}
+    if(shot){st.shots=(st.shots||0)+1;once(a,gnA+'@up',Math.max(tk?0.3:0.2,Math.min(0.45,gcd*0.9)),false,heroSkip(gnA))}
     // קשת: מותחים את המיתר ממש לפני החץ הבא, כשיש במי לירות
     const drawT=Math.min(0.4,gcd*0.5);
-    if(!casting&&!sword&&L.anim.gunDraw&&P.gn.t>0&&P.gn.t<=drawT&&st.drawn!==st.shots&&nearest(440)&&!(a.one&&a.one.isRunning())){st.drawn=st.shots;once(a,L.anim.gunDraw+'@up',P.gn.t)}
+    if(!casting&&!sword&&!tk&&L.anim.gunDraw&&P.gn.t>0&&P.gn.t<=drawT&&st.drawn!==st.shots&&nearest(440)&&!(a.one&&a.one.isRunning())){st.drawn=st.shots;once(a,L.anim.gunDraw+'@up',P.gn.t)}
     // פגיעה (combat.js מדליק P.inv=0.6): הגוף נרתע, אם הוא לא באמצע תקיפה
     const hurt=P.inv>st.inv+0.3&&P.inv<=0.7;st.inv=P.inv;
     if(hurt&&!casting&&!swing&&!shot&&!(a.one&&a.one.isRunning()))once(a,L.anim.hit+'@up',0.3);
     if(P.skrCast&&st.cast!==P.skrCast){st.cast=P.skrCast;once(a,(R3D.clips[SKREVEAL.anim+'@up']?SKREVEAL.anim:L.anim.win)+'@up',SKREVEAL.cast)}   // סקיל חדש: הגיבור מטיל (skillreveal.js)
-    const busy=a.one&&a.one.isRunning(),idle=!sword&&L.anim.gunIdle||L.anim.idle;   // עם קשת ביד: עמידה עם קשת
+    const busy=a.one&&a.one.isRunning(),idle=!sword&&!tk&&L.anim.gunIdle||L.anim.idle;   // עם קשת ביד: עמידה עם קשת
     loop(a,(P.moving?L.anim.run:idle)+(busy?'@low':''),P.moving?Math.min(1.6,P.speed/165):1);
   }
   // הגוף לפי P.face: לאן שהולכים (update.js). הסיבוב הרך כבר שם, אז כאן בלי עיכוב נוסף
@@ -636,12 +638,14 @@ function syncEnemy(e,dt){
   place(a,e.x,e.y,e.wboss?L.foot:L.foot*(e.big||1),yaw,lift);hf3d(a,e);   // נוטה אחורה במכה (hitfeel.js)
   const rage=e.isBoss&&e.rage>0.05?e.rage:0;
   const tk=e.isBoss||e.wboss?-1:foeTele(e),F=FOEATK3D;   // מתכונן למתקפה: מאדים (strike.js מדליק e.flash קטן בהכנה, בשביל הדו-ממד. מכה אמיתית היא 0.09)
+  // world and village: a hit makes it brighter in its own colours, in a short gap-limited blink, never white (hitflash3d.js)
+  const wHit=typeof hitFlashHere==='function'&&hitFlashHere();if(wHit)hitBright(a,hitFlash3d(a,L,e.flash>(e.act?FOEATK3D.actFlash:0),dt));else if(a.hb)hitBright(a,0);
   if(tk>=0&&!(e.flash>0.06))setFlash(a,(F.glowK[0]+(F.glowK[1]-F.glowK[0])*tk)*(0.8+0.2*Math.sin(S.t*20)),F.glow);
   // לבן רק במכה אמיתית. foeai.js משאיר e.flash קטן (0.04) כל הפעולה, בשביל הדו-ממד, ובתלת-ממד זה צבע את המסתער בלבן מלא
   // לאורך כל ההסתערות והסחרור (ניר, 7.11: "זקן-הקליפה לבן"). בהסתערות ובקפיצה עצמן: הזוהר האדום של המתקפה, במלואו
   else if((e.act==='dash'||e.act==='jump')&&!(e.flash>FOEATK3D.actFlash))setFlash(a,F.glowK[1],F.glow);
   else{let hit=e.flash>(e.act?FOEATK3D.actFlash:0),fk=0.9;
-    if(e.wboss){const G=GIANT.flash;a.flC=(a.flC??9)+dt;if(hit&&a.flC>=G.gap)a.flC=0;hit=a.flC<G.dur;fk=G.k}   // giant: a short weak blink, not white all fight (giant.js GIANT.flash)
+    if(wHit)hit=false;   // world and village: no white, the blink is hitBright above (hitflash3d.js)
     setFlash(a,hit?fk:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,hit?0xffffff:C.blood)}
   if(a.sc0){const q=juiceSquash(e)+(e.act==='crouch'?F.squat*Math.max(0,tk):0);a.root.scale.set(a.sc0*(1+q),a.sc0*(1-q),a.sc0*(1+q))}   // מעיכה קטנה במכה (juice.js)
   // כשיש הרבה אויבים, כל אחד מונפש רק בכל פריים שני (חצי מהם בכל פריים). בעין זה לא נראה, ובטלפון זה חוסך הרבה
@@ -698,9 +702,10 @@ function syncVillage(){
   // מבנה שעלה רמה מתחלף לפי vLook: פיגום עד שנבנה, ואחר כך המודל, הגודל, הקישוטים והזוהר של הרצועה שלו
   for(const k in VILLAGE.b){
     const B=VILLAGE.b[k],lk0=vLook(k),ok=!lk0||[VIL3D.models[lk0.model].model,...lk0.deco.map(d=>VIL3D.deco[d].model)].every(m3dNeed),lk=ok?lk0:null;   // מודל שעוד נטען (vx_, m3d.js): בינתיים הפיגום
-    const key=lk?lk.model+lk.L:'site',cur=V.b[k];
+    const plot=!lk&&!vLv(k)&&VIL3D.plot&&m3dNeed(VIL3D.plot.model);   // עוד לא נבנה: חלקת עפר (vgrowth.js), לא פיגום. הפיגום רק בזמן בנייה
+    const key=lk?lk.model+lk.L:plot?'plot':'site',cur=V.b[k];
     if(cur&&cur.key===key)continue;if(cur)for(const m of cur.all)V.g.remove(m);
-    const D=lk?VIL3D.models[lk.model]:VIL3D.site,m=vPut(D.model,B.x,B.y,D.w*(lk?lk.size:1)),all=[m];
+    const D=lk?VIL3D.models[lk.model]:plot?VIL3D.plot:VIL3D.site,m=vPut(D.model,B.x,B.y,D.w*(lk?lk.size:1)),all=[m];
     if(lk){if(lk.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(lk.glow).multiplyScalar(0.1)}});
       lk.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length];all.push(vPut(VIL3D.deco[d].model,B.x+dx*B.r,B.y+dy*B.r,VIL3D.deco[d].w))})}
     V.b[k]={key,all};
@@ -768,10 +773,10 @@ function syncWorld(){
     if(!m){const D=W3D.nodes[wKind(n.kind).shape],v=hash(n.x,n.y),md=Array.isArray(D.model)?D.model[v<0.5?0:1]:D.model;
       m=G.nodes[n.id]=vPut(md,n.x,n.y,D.w*(0.85+v*0.3),v*6.28,G.g);
       if(D.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(D.glow).multiplyScalar(0.5)}})}
-    if(m.userData.lift==null){tLift(m);const L=W3D.log;if(wKind(n.kind).shape==='tree'){m.userData.log=vPut(L.model,n.x+n.r*L.dx,n.y+n.r*L.dy,L.w,hash(n.y,n.x)*6.28,G.g);tLift(m.userData.log)}}   // בול ליד עץ שאפשר לכרות
+    nzBig3d(n,m);if(m.userData.lift==null){tLift(m);const L=W3D.log;if(wKind(n.kind).shape==='tree'){m.userData.log=vPut(L.model,n.x+n.r*L.dx,n.y+n.r*L.dy,L.w,hash(n.y,n.x)*6.28,G.g);tLift(m.userData.log)}}   // בול ליד עץ שאפשר לכרות
     m.visible=!n.dead&&(!TR||Math.abs(n.x-S.cam.x)+Math.abs(n.y-S.cam.y)<TERRAIN.cull*1.4);   // באחו הגדול: מקור רחוק לא מצויר
     if(m.userData.log)m.userData.log.visible=m.visible;
-    gather3d(n,m,G.g);   // מתכווץ, מתנדנד, נופל, גדם ונבט (gather.js)
+    nzPulse(m);gather3d(n,m,G.g);   // nzBig3d/nzPulse: גדולים, ויקרים נושמים אור (nodesize.js). מתכווץ, מתנדנד, נופל, גדם ונבט (gather.js)
   }
 }
 // תושבי הכפר: דמות לכל תושב שנמצא בכפר, והקישוטים בפינה של מי שאין לו מבנה. המצב (הולך, עובד, מנופף) מגיע מ-npc.js
