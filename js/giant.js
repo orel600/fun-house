@@ -40,10 +40,8 @@ const GIANT={
   lair:{wake:340,safe:520,at:{earth:[0,-560],water:[0,-600],ice:[0,-560],fire:[560,0],bolt:[-396,-396],light:[396,-396]}},
   loot:{coins:40},
   lv:{step:5},
-  clock:{r:34,font:13},                  // האבן עם השעון: רדיוס האבן, וגודל הטקסט של הזמן שנשאר
-  /* hit flash in 3D (Nir's screenshot 10.11: a huge white dragon). Hits (orbit wisps, auto attack) come faster than the flash fades,
-     so the whole giant stayed white about half the frames. A giant blinks at most once every gap s, for dur s, at k strength (others: 0.9) */
-  flash:{k:0.4,dur:0.07,gap:0.3}
+  clock:{r:34,font:13}                   // האבן עם השעון: רדיוס האבן, וגודל הטקסט של הזמן שנשאר
+  // the hit flash in 3D (giants and everyone else in the world): js/hitflash3d.js, weaker for bigger models
 };
 // נקרא מ-storyWarden: השומר נהיה ענק. k: הפנס (earth, water, ice, fire, bolt, light)
 function giantRise(e,k){

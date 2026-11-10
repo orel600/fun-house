@@ -227,7 +227,7 @@ function wHome(){worldUi(false);enterVillage()}
 // FS: אילו שדות (ברירת המחדל: של האזור. מקומות שנפתחו בפרויקט בכפר נוספים מ-vpUpdate, vproj.js). pre: קידומת ל-id, ומקורות שכבר קיימים לא נדרסים
 function wNodes(FS,pre){
   const R=WR(),out=[],block=Object.values(wGates(true)),wet=R.ponds||[],had=pre?S.nd.list:[];
-  (FS||R.fields).forEach((F,fi)=>{const K=wKind(F.kind);
+  (FS||R.fields).forEach((F,fi)=>{const K=Object.assign({},wKind(F.kind),{r:nzR(F.kind)});   // nzR: מקורות גדולים בעולם (nodesize.js)
     for(let i=0,tries=0;i<F.n&&tries<F.n*12;tries++){
       const [x,y]=gSpot(F,fi,tries,K);   // בחורשות קטנות בתוך השדה (gather.js)
       if(tBlocked(x,y)||tBlocked(x+K.r,y)||K.shape==='tree'&&tNearForest(x,y,K.r+TERRAIN.forest.clear)||tBlocked(x-K.r,y)||out.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||had.some(n=>Math.hypot(n.x-x,n.y-y)<n.r+K.r+24)||block.some(g=>Math.hypot(g.x-x,g.y-y)<g.r+WORLD.arrive)||wet.some(p=>Math.hypot(p.x-x,p.y-y)<p.r+K.r))continue;

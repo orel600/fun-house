@@ -1,16 +1,19 @@
 /* כלי איסוף ביד, שלב 2 (GTOOL, ניר 8.11.2026, docs/concept-gathering.md פרק "שלב 2").
-   שני כלים: גרזן לעצים ולשיחים, פטיש לסלעים ולמתכות. 5 דרגות מהחומרים שכבר יש (עץ, נחושת, ברזל, כסף, זהב).
+   שני כלים: גרזן לעצים ולשיחים, מכוש לסלעים ולמתכות (ניר, 10.11: במקום פטיש. בקוד המפתח נשאר hammer). 5 דרגות מהחומרים שכבר יש (עץ, נחושת, ברזל, כסף, זהב).
    הדרגה נותנת קצת יותר כוח מכה במקורות (pow), ובעיקר יותר מהחומר הראשי מכל מקור (yld). ניר, 9.11.2026 (docs/concept-village-loop.md פרק 1):
    זה מבטל במכוון את הכלל "כמות השלל לא משתנה" של שלבים 1-2, רק לכלי. האבנים היקרות והנדירים לא מוכפלים.
    משאב חדש בכל דרגה (hard): מקור שצריך כלי טוב יותר נשבר לאט (slow) ונותן חצי שלל (half, לפחות 1). רך: אף פעם לא חסום.
    משדרגים בנפחייה, בלשונית "כלים", עם שעון שרץ גם כשהמשחק סגור (כמו המנסרה). בינתיים אוספים עם הכלי הישן.
    דרגה N צריכה נפחייה ברמה N. מדרגה gm.from צריך גם מומחיות gm.rank במשפחה של הכלי (gmastery.js).
-   ביד: כשהתקיפה האוטומטית פוגעת במקור, הכלי מופיע ביד במקום הנשק לרגע (hold), ובתלת-ממד הוא חלק בדמות (gtProps ב-heroLook).
+   ביד: כשמקור הוא המטרה (gtAim: אין אויב בטווח), הכלי ביד במקום הנשק, עם תנועה משלו (anim: חטיבה או כרייה), ועוד רגע אחרי המכה (hold).
+   בתלת-ממד הוא חלק בדמות (gtProps ב-heroLook). קשת ומטה: מכה בכלי מקרוב ולא חץ (gtStrike מ-attack ב-combat.js).
    רק בעולם הפתוח (gOn): הזירה של אוראל לא משתנה. נשמר ב-SAVE.gt.
    חיבורים: gtDrop מ-nodeDown (nodes.js), gtHit מ-gHit (gather.js), gtProps וגtShow3d מ-render3d.js, gtDraw/gtClick מ-forgeDraw (aging.js), gtSign מ-drawVillageScreen (village.js) */
 const GTOOL={
-  tools:{axe:{fams:['wood','plant'],gm:'wood',model:'w_axe_A',pic:'icons/ui/gear/axe.png'},
-         hammer:{fams:['stone'],gm:'stone',model:'w_hammer_A',pic:'icons/ui/gear/hammer.png'}},
+  // anim: התנועה כשמכים במקור. גרזן: מכה מלמעלה ביד אחת. מכוש: מכה כבדה בשתי ידיים (ניר, 10.11: "צריך מכוש לסלעים וגרזן לעצים")
+  // המפתח hammer נשאר בקוד ובשמירה (SAVE.gt.hammer), כמו gun=קשת. השחקן רואה מכוש: השם ב-lang.js, האייקון והמודל (gtPickaxe)
+  tools:{axe:{fams:['wood','plant'],gm:'wood',model:'w_axe_A',pic:'icons/ui/gear/axe.png',anim:'Melee_1H_Attack_Chop'},
+         hammer:{fams:['stone'],gm:'stone',model:'w_pickaxe',pic:'icons/ui/gear/pickaxe.png',anim:'Melee_2H_Attack_Chop'}},
   // הדרגות. tex: הטקסטורה של החומר (wtex ב-build3d.js). glow: זוהר עדין לנחושת ולזהב. pow: פי כמה המכה במקור. yld: פי כמה החומר הראשי מכל מקור
   tiers:[null,{id:'wood',tex:'wood',col:'#B07A45',pow:1,yld:1},{id:'copper',tex:'iron',col:'#C87533',glow:'#C87533',gk:0.35,pow:1.1,yld:1.25},{id:'iron',tex:'iron',col:'#9AA3AD',pow:1.2,yld:1.5},{id:'silver',tex:'silver',col:'#DCE3EA',pow:1.3,yld:1.75},{id:'gold',tex:'gold',col:'#FFD45A',glow:'#FFD45A',gk:0.25,pow:1.4,yld:2}],
   // cost[t]: מה עולה להגיע לדרגה t. time[t]: כמה שניות השעון
@@ -23,8 +26,9 @@ const GTOOL={
   slow:0.5,                           // כלי חלש מדי: פי כמה המכה
   half:0.5,                           // כלי חלש מדי: פי כמה החומר הראשי (לפחות 1)
   gm:{from:3,rank:2},                 // מדרגה 3 בכלי: צריך מומחיות 2 במשפחה שלו
+  scale:1.45,                         // הכלי ביד גדול מהמציאות, כדי שרואים אותו בטלפון (ניר, 10.11: "הכלי ביד")
   hold:0.7,                           // כמה שניות הכלי נשאר ביד אחרי מכה במקור
-  stat:{hit:0,slow:0,start:0,done:0,more:0,less:0}
+  stat:{hit:0,slow:0,start:0,done:0,more:0,less:0,aim:0,strike:0,anim:{}}
 };
 const gtSave=()=>SAVE.gt||(SAVE.gt={axe:1,hammer:1,job:{}});
 const gtTier=k=>gtSave()[k]||1;
@@ -55,8 +59,25 @@ function gtHit(n,d){
   if(m<1)GTOOL.stat.slow++;GTOOL.stat.hit++;
   P.gtHold={k,t:gNow()};
 }
-// הכלי שביד עכשיו, או null
-const gtHeld=()=>S&&S.wd&&P.gtHold&&gNow()-P.gtHold.t<GTOOL.hold?P.gtHold.k:null;
+/* הכלי שהגיבור עומד להשתמש בו: אין אויב בטווח (אויבים קודמים, aimTarget ב-combat.js) ויש מקור קרוב. כך הכלי יוצא ליד לפני המכה,
+   והנשק חוזר כשאויב מתקרב. פעם אחת לכל פריים */
+const GTAIM={t:-1,w:null,k:null};
+function gtAim(){
+  if(!gOn()||S.mode!=='play')return null;if(GTAIM.t===S.wd.t&&GTAIM.w===S.wd)return GTAIM.k;GTAIM.t=S.wd.t;GTAIM.w=S.wd;
+  const m=Math.min(P.weapon==='sword'?P.sw.range:440,WORLD.attackRange),n=!enemies.some(e=>!e.dead&&Math.hypot(e.x-P.x,e.y-P.y)-e.r<=m)&&nodeNear();
+  return GTAIM.k=n?gtOf(n):null;
+}
+// הכלי שביד עכשיו, או null: מקור שעומדים לפניו, או מכה במקור שקרתה עכשיו
+const gtHeld=()=>S&&S.wd&&(gtAim()||(P.gtHold&&gNow()-P.gtHold.t<GTOOL.hold?P.gtHold.k:null));
+// התנועה של הכלי ביד (syncPlayer ב-render3d.js). אנימציה שאין לדמות: המכה של הגרזן
+const gtAnim=k=>{const a=GTOOL.tools[k].anim;return R3D.clips[a+'@up']?a:GTOOL.tools.axe.anim};
+/* קשת או מטה מול מקור: לא יורים חץ בעץ. מכה בכלי מקרוב, באותו קצב ובאותו נזק כמו החצים (attack ב-combat.js). מחזיר true כשטיפל */
+function gtStrike(n){
+  if(!gOn()||!n||!n.node||!gtOf(n))return false;const g=P.gn;if(g.t>0)return true;
+  g.t=g.cd*wK('cd');GTOOL.stat.strike++;
+  damage(n,wRoll(P.gn.dmg*wK('dmg')*dmgK())*(g.multi||1),'gun',Math.atan2(n.y-P.y,n.x-P.x));S.shake=Math.max(S.shake,2);
+  return true;
+}
 
 /* ---- שדרוג עם שעון ---- */
 const gtJob=k=>gtSave().job&&gtSave().job[k];
@@ -122,20 +143,32 @@ function gtDraw2d(hx,hy,a){
   ctx.strokeStyle='#8A5A30';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(hx-cx*4,hy-cy*4);ctx.lineTo(ex,ey);ctx.stroke();
   ctx.fillStyle=col;ctx.strokeStyle='#2A2230';ctx.lineWidth=1.2;ctx.beginPath();
   if(k==='axe'){ctx.moveTo(ex-cx*2,ey-cy*2);ctx.lineTo(ex-cx*7+nx*9,ey-cy*7+ny*9);ctx.quadraticCurveTo(ex+nx*13,ey+ny*13,ex+cx*5+nx*9,ey+cy*5+ny*9);ctx.lineTo(ex+cx*2,ey+cy*2)}
-  else{const w=7,l=10;ctx.moveTo(ex-cx*w+nx*l,ey-cy*w+ny*l);ctx.lineTo(ex+cx*w+nx*l,ey+cy*w+ny*l);ctx.lineTo(ex+cx*w-nx*l,ey+cy*w-ny*l);ctx.lineTo(ex-cx*w-nx*l,ey-cy*w-ny*l)}
+  else{const l=15;ctx.moveTo(ex+nx*l-cx*5,ey+ny*l-cy*5);ctx.quadraticCurveTo(ex+cx*5,ey+cy*5,ex-nx*l-cx*5,ey-ny*l-cy*5);ctx.quadraticCurveTo(ex+cx*1,ey+cy*1,ex+nx*l-cx*5,ey+ny*l-cy*5)}   // מכוש: קשת עם שני חודים
   ctx.closePath();ctx.fill();ctx.stroke();return true;
 }
 
 /* ---- תלת-ממד: שני הכלים כחלקים בדמות, מוסתרים עד שמכים במקור ---- */
 const gtKey=()=>S&&S.wd?'|gt'+gtTier('axe')+gtTier('hammer'):'';
 function gtProps(L){
-  if(!S||!S.wd)return;
+  if(!S||!S.wd)return;gtPickaxe();
   for(const k in GTOOL.tools){const tr=GTOOL.tiers[gtTier(k)];if(!R3D.props[GTOOL.tools[k].model])continue;
-    L.props['tool_'+k]=Object.assign({prop:GTOOL.tools[k].model,tier:tr.tex},GRIP3D.chop,tr.glow?{glow:tr.glow,gk:tr.gk}:{})}
+    L.props['tool_'+k]=Object.assign({prop:GTOOL.tools[k].model,tier:tr.tex,s:GTOOL.scale},GRIP3D.chop,tr.glow?{glow:tr.glow,gk:tr.gk}:{})}
 }
 // אחרי שהנשקים קיבלו את הנראות שלהם: כלי ביד מסתיר את הנשק ואת המגן
 function gtShow3d(a){
   const k=gtHeld();let any=false;
   for(const t in GTOOL.tools){const p=a.props['tool_'+t];if(p){p.visible=t===k;any=true}}
   if(k&&any)for(const n of ['sword','gun','shield'])if(a.props[n])a.props[n].visible=false;
+}
+/* המכוש בתלת-ממד: אין מכוש ב-KayKit, אז הוא נבנה כאן מצורות פשוטות, באותם ממדים כמו הפטיש (w_hammer_A): ידית לאורך y, הראש למעלה.
+   הדרגה מלבישה עליו את הטקסטורה של החומר (wtex), כמו על כל נשק */
+function gtPickaxe(){
+  if(R3D.props.w_pickaxe||typeof THREE==='undefined'||!THREE.mergeGeometries)return;
+  const parts=[],add=g=>parts.push(g.toNonIndexed());
+  {const g=new THREE.CylinderGeometry(0.045,0.05,1.04,8);g.translate(0,0.1,0);add(g)}           // ידית
+  {const g=new THREE.BoxGeometry(0.15,0.17,0.15);g.translate(0,0.6,0);add(g)}                   // צווארון
+  for(const sd of [1,-1]){const g=new THREE.ConeGeometry(0.075,0.46,6);g.rotateZ(-sd*Math.PI/2);g.translate(sd*0.23,0,0);g.rotateZ(-sd*0.32);g.translate(0,0.62,0);add(g)}   // שני חודים שמתעקלים למטה
+  const geo=THREE.mergeGeometries(parts);geo.computeVertexNormals();
+  const root=new THREE.Group();root.add(new THREE.Mesh(geo,new THREE.MeshLambertMaterial({color:'#ffffff',flatShading:true})));
+  R3D.props.w_pickaxe=root;
 }

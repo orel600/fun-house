@@ -1568,7 +1568,7 @@ function worldBot(m,L,god){
       r.pet=(()=>{const n=SH.list.length;SH.fr=-1;damage(e1,1,'pet',0);return SH.list.length===n})();
       for(const e of enemies)e.dead=true;enemies=[];SH.list=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
-  // הגיבור נשאר גלוי (heroclear.js): עשן והבזק ליד הגיבור זזים לצד של האויב, קטנים ועמומים, עד perFrame בפריים; רחוק כמו קודם; בתלת-ממד מלבין פחות ליד הגיבור; הפחתת תנועה עמומה יותר
+  // הגיבור נשאר גלוי (heroclear.js): עשן והבזק ליד הגיבור זזים לצד של האויב, קטנים ועמומים, עד perFrame בפריים; רחוק כמו קודם; הפחתת תנועה עמומה יותר
   const hcl=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];const fx0=FXC.on,calm0=SAVE.calm;FXC.on=false;SAVE.calm=false;   // FXC כבוי: הדרך הישנה של juice.js (עננת העשן), זו שהסתירה את הגיבור
       const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.speed=0;e.dmg=0;return e};
@@ -1579,7 +1579,6 @@ function worldBot(m,L,god){
       r.side=pn.length>0&&pn.every(f=>{const e=near.reduce((b,x)=>Math.hypot(x.x-f.x,x.y-f.y)<Math.hypot(b.x-f.x,b.y-f.y)?x:b);
         return Math.hypot(f.x-P.x,f.y-P.y)>Math.hypot(e.x-P.x,e.y-P.y)&&((f.x-P.x)*(e.x-P.x)+(f.y-P.y)*(e.y-P.y))>0});
       HC.fr=-1;J.poofs.length=0;const far=mk(220,0);kill(far);r.far=J.poofs.length===1&&J.poofs[0].k===1&&J.poofs[0].al===1;
-      const e2=mk(30,0);e2.flash=0.1;const e3=mk(260,0);r.flash=hcFlash(e2)<0.5&&hcFlash(e3)===1;
       SAVE.calm=true;HC.fr=-1;J.poofs.length=0;kill(mk(0,40));r.calm=J.poofs.length===1&&J.poofs[0].al<HCLEAR.alpha;SAVE.calm=false;
       try{juiceDraw()}catch(err){r.drawErr=String(err)}
       FXC.on=fx0;SAVE.calm=calm0;for(const e of enemies)e.dead=true;enemies=[];J.poofs.length=0}catch(err){r.err=String(err&&err.stack||err)}
@@ -2100,13 +2099,13 @@ function worldBot(m,L,god){
       out[id]={wt:P.wt,swings,shots:[...shots].join('+')||'-',homed,hit:e.hp<e.max,swapHidden:document.getElementById('swap').hidden===!wBestOther(),
         anim:R3D.on?heroLook().anim[P.weapon]:null,want3d:W3[P.wt]};
     }
-    // הקוסם גם בעולם הפתוח: מכה במקור משאבים ובאויב, שתיהן בקסם ולא בחצים
+    // הקוסם גם בעולם הפתוח: אויב בקסם ולא בחצים. מקור משאבים: בכלי ביד, בלי קסם (gtStrike ב-gtool.js, ניר 10.11), ותיבה בקסם
     SAVE.hero.start='mage';SAVE.gear.weapon=HEROES.list.mage.weapon;enterWorld('home');enemies=[];
     const n=S.nd.list[0],run=t=>{const s=new Set();for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60);for(const b of pb)s.add(b.shot)}return[...s].join('+')||'-'};
     S.nd.list=[n];P.x=n.x+n.r+40;P.y=n.y;const nHp=n.hp,nShots=run(1.5);
     S.nd.list=[];const fi=Math.max(0,WORLD.foes.findIndex(G=>G.creature&&ETYPES[G.type])),ft=ETYPES[WORLD.foes[fi].type]?WORLD.foes[fi].type:'grunt',c=addEnemy(ft,P.x+110,P.y);c.home=fi;   // יצור משאב, אם כבר יש כזה
     c.hp=c.max=1e9;const cShots=run(1.5);
-    out.mageWorld={ft,node:nShots,nodeHit:n.hp<nHp||n.dead,foe:cShots,foeHit:c.hp<c.max};
+    out.mageWorld={ft,node:nShots,tool:gtOf(n),nodeHit:n.hp<nHp||n.dead,foe:cShots,foeHit:c.hp<c.max};
     worldUi(false);document.getElementById('banner').textContent='';
     SAVE=JSON.parse(bak);reset();S.mode=mode;return out});
   const T_=t=>({sword:'חרב',bow:'קשת',staff:'מטה'})[t]||t;
@@ -2536,6 +2535,28 @@ function worldBot(m,L,god){
         for(const m of [VIL3D.models[lk.model]&&VIL3D.models[lk.model].model,...lk.deco.map(d=>VIL3D.deco[d]&&VIL3D.deco[d].model)])if(!m||!has(m))miss.push(k+' L'+L+':'+(m||lk.model))}}
       return{n:Object.keys(VILLAGE.b).length,same,miss:[...new Set(miss)]}});
     check(!vl.same.length&&!vl.miss.length,'Village levels look different: '+vl.n+' buildings × 5 levels'+(vl.same.length?', same model and props as the level before: '+vl.same.join(', '):', every level changes model or props')+(vl.miss.length?', missing model: '+vl.miss.join(', '):''))}
+  // הכפר כולו גדל עם המרכז (vgrowth.js, ניר 10.11): ברמות 1, 3, 5 הגבול והשער זזים, יש יותר פנסים ותוספות, כל מבנה נגיש, והדרך מהכניסה לשער סבירה.
+  // אחר כך שדרוג המרכז 4→5: מבט על (זום החוצה) עם ניצוצות, וקישוט ישן של שחקן במקום של בית נשאר והבית מוותר
+  {const vg=await page.evaluate(()=>{window.__vgKeep=JSON.stringify({v:SAVE.village,b:SAVE.bag,d:SAVE.deco,c:SAVE.calm});welcomeClose();npcTalk(null);const o={lv:{}};
+      for(const L of [1,3,5]){SAVE.village.center=L;const R=VILLAGE.radius,far=Object.keys(VILLAGE.b).filter(k=>Math.hypot(VILLAGE.b[k].x,VILLAGE.b[k].y)-VILLAGE.b[k].r>R-20);
+        o.lv[L]={R,gate:VILLAGE.gate.y,lamps:VILLAGE.props.filter(d=>d.k==='lamp').length,items:VGROW.items.filter(it=>vgOn(it,L)).length,walk:Math.round(VILLAGE.gate.y-VILLAGE.spawn.y),far}}
+      return o});
+    // בתלת-ממד: התוספות נבנות לכל רמה (חומה בציור אחד)
+    if(CFG.gfx==='3d'){for(const L of [3,5]){await page.evaluate(L=>{SAVE.village.center=L;enterVillage();npcTalk(null);welcomeClose()},L);
+      for(let i=0;i<40;i++){await page.clock.runFor(200);if(await page.evaluate(L=>R3D.vil&&R3D.vil.vgDone===L,L))break}
+      vg['d3_'+L]=await page.evaluate(L=>{const V=R3D.vil;if(!V||V.vgDone!==L)return'not built';let inst=0,n=0;V.vg.traverse(o=>{if(o.isInstancedMesh){inst++;n=Math.max(n,o.count)}});return V.vg.children.length+' parts, ring '+n+' pieces in '+inst+' draw(s)'},L)}
+      await page.evaluate(()=>{P.x=0;P.y=-200;S.cam.x=0;S.cam.y=-200});await page.clock.runFor(600);await shot('village-L5')}
+    // שדרוג המרכז 4→5 עם מבט על. קישוט ישן במקום של בית אדום (L5) מבטל את הבית
+    Object.assign(vg,await page.evaluate(()=>{SAVE.calm=false;SAVE.village.center=4;const h=VGROW.items.find(it=>it.at===5&&it.m==='vx_homeAR');decoSave().put.push({k:'bush',x:h.x,y:h.y});
+      enterVillage();npcTalk(null);welcomeClose();const c=vCostAt('center',5);for(const r in c)bagAdd(r,c[r]);
+      const B=VILLAGE.b.center;P.x=B.x;P.y=B.y+B.r+40;S.cam.x=P.x;S.cam.y=P.y;window.__z0=camZoom();vUpgrade('center');return{free:vgFree(h),sp0:FX.length}}));
+    const ph=[];let zMin=9;for(let i=0;i<45;i++){await page.clock.runFor(150);const r=await page.evaluate(()=>{const m=S.vil.bm;return m?[bmPhase(m).n,camZoom()/window.__z0,FX.length]:['end',camZoom()/window.__z0,FX.length]});
+      if(ph[ph.length-1]!==r[0])ph.push(r[0]);if(r[0]==='over'){zMin=Math.min(zMin,r[1]);vg.spark=r[2]}if(r[0]==='over'&&!vg.shotOver){vg.shotOver=1;await shot('village-overview')}}
+    vg.zEnd=await page.evaluate(()=>+(camZoom()/window.__z0).toFixed(2));vg.ph=ph.join('>');vg.zMin=+zMin.toFixed(2);
+    await page.evaluate(()=>{const k=JSON.parse(window.__vgKeep);SAVE.village=k.v;SAVE.bag=k.b;SAVE.deco=k.d;SAVE.calm=k.c;S.vil.bm=null;enterVillage();npcTalk(null);welcomeClose();saveNow()});
+    const l=vg.lv,okL=[1,3,5].every(L=>l[L].gate===l[L].R&&!l[L].far.length&&l[L].walk<=520)&&l[1].R<l[3].R&&l[3].R<l[5].R&&l[1].lamps<l[3].lamps&&l[3].lamps<l[5].lamps&&l[1].items<l[3].items&&l[3].items<l[5].items;
+    check(okL&&(CFG.gfx!=='3d'||/ring/.test(vg.d3_5)&&/1 draw/.test(vg.d3_5)),'Village grows with the center: '+[1,3,5].map(L=>'L'+L+' edge '+l[L].R+', '+l[L].lamps+' lamps, '+l[L].items+' extras, gate walk '+l[L].walk+'px'+(l[L].far.length?' (out of reach: '+l[L].far+')':'')).join(' · ')+(CFG.gfx==='3d'?' · 3D L3: '+vg.d3_3+', L5: '+vg.d3_5:''));
+    check(/over/.test(vg.ph)&&vg.zMin<0.5&&vg.zEnd>0.95&&vg.spark>vg.sp0&&!vg.free,'Center 4→5 overview: '+vg.ph+', zoom ×'+vg.zMin+' then ×'+vg.zEnd+(vg.spark>vg.sp0?', sparks on what is new':', no sparks!')+(vg.free?', an old decoration under a new house!':', an old saved decoration keeps its spot (the house skips it)'))}
   // רגע הבנייה (buildmoment.js, ניר 10.11): שדרוג נפחייה 2→3. החלון נסגר, המצלמה נוסעת למבנה, הישן (אוהל) שוקע, פיגום, החדש (נפחייה) קופץ,
   // שורה "לפני → אחרי", והמצלמה חוזרת והחלון נפתח. אחר כך נגיעה מדלגת (3→4), והפחתת תנועה בלי מצלמה (4→5). הרמות והתרמיל חוזרים בסוף
   {const bm=await page.evaluate(()=>{const o={},B=VILLAGE.b.forge;window.__bmKeep=JSON.stringify({v:SAVE.village,b:SAVE.bag,c:SAVE.calm});
@@ -2918,6 +2939,24 @@ function worldBot(m,L,god){
     await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();bossHudPlace(true)});
     const bad=bh.filter(x=>x.err||!x.bar||!x.rare||x.sk<3||x.orbs<4||x.clash.length||x.w<200);
     check(!bad.length,'פס הבוס בעולם במקום הפנוי: '+bh.map(x=>x.k+' '+x.vp+(x.err?' שגיאה: '+x.err:(x.bar?' רוחב '+x.w+' בגובה '+x.y+(x.cut?' (הכותרת מקוצרת)':'')+(x.w<200?' צר מדי, בין '+x.why:''):' אין פס')+(x.clash&&x.clash.length?' · עולה על: '+x.clash.join(', '):' ✓')+(x.err||x.rare?'':' · אין שמועה')+(x.err||x.sk>=3?'':' · '+x.sk+' סקילים'))).join(' | '))}
+  // הבהוב פגיעה בתלת-ממד בעולם (hitflash3d.js, ניר 10.11: "do this for all monsters and bosses"): בלי לבן. פגיעה = בהיר יותר בצבעים שלו,
+  // הבהוב קצר לכל היותר פעם ב-gap, וחלש יותר לגדולים. ההיגיון לכל מראה בעולם (גם בדו-ממד), והצבע האמיתי מהפיקסלים בתלת-ממד:
+  // מכה כל 0.1 שנייה ב-120 פריימים, והרוויה הממוצעת בקרב קרובה לבלי פגיעות. כל המראות: node tools/flash-audit.js
+  {const fl=await page.evaluate(()=>{const o={bad:[],n:0,maxOn:0},F=HITFX3D;
+      const looks=[...new Set([...Object.keys(ETYPES).filter(t=>LOOK3D[t]&&LOOK3D[t].model).map(t=>LOOK3D[t]),...Object.keys(STORY.lanterns).map(k=>LOOK3D['wb_'+k]).filter(Boolean)])];
+      for(const L of looks){const a={},ks=[];for(let f=0;f<240;f++)ks.push(hitFlash3d(a,L,f%12<11,1/120));
+        const on=ks.filter(k=>k>0).length/ks.length,mx=Math.max(...ks);o.n++;o.maxOn=Math.max(o.maxOn,on);
+        if(on>F.dur/F.gap+0.05||mx>F.k[0]+1e-9||mx<F.k[1]-1e-9)o.bad.push(L.model+' '+Math.round(on*100)+'%')}
+      const s0=S.wd,v0=S.vil;S.wd=null;S.vil=null;o.arena=!hitFlashHere();S.wd=s0;S.vil=v0;return o});
+    let px=[];
+    if(CFG.gfx==='3d'){const FA=require('./flash-audit.js');await page.evaluate(src=>{window.measureLook=eval('('+src+')');window.__fa=null;window.__de=R3D.drawEvery;R3D.drawEvery=0},FA.measureLook.toString());
+      for(const key of ['t:grunt','t:wisp','t:frostwraith','g:fire']){let r=null;
+        for(let i=0;i<60&&!r;i++){r=await page.evaluate(k=>{try{return measureLook(k)}catch(err){return {key:k,err:String(err)}}},key);if(!r){await page.clock.runFor(250);await page.waitForTimeout(60)}}
+        px.push(r||{key,err:'model not loaded'})}
+      await page.evaluate(()=>{R3D.drawEvery=window.__de;if(window.__fa&&window.__fa.e)window.__fa.e.dead=true;if(S.wd&&S.wd.warden){S.wd.warden.dead=true;S.wd.warden=null}window.__fa=null;enterVillage()})}
+    const pbad=px.filter(r=>r.err||r.drop>0.1||r.s0<0.15);
+    check(!fl.bad.length&&fl.arena&&!pbad.length,'הבהוב פגיעה בעולם בלי לבן: '+fl.n+' מראות, דולק לכל היותר '+Math.round(fl.maxOn*100)+'% מהקרב'+(fl.bad.length?' · לא לפי HITFX3D: '+fl.bad.join(', '):'')+(fl.arena?'':' · השתנה גם בזירה!')+
+      (px.length?' · צבע בקרב (פיקסלים): '+px.map(r=>r.key.slice(2)+(r.err?' ✗ '+r.err:' רוויה '+r.s0+', איבוד '+Math.round(r.drop*100)+'%'+(r.s0<0.15?' חיוור גם בלי פגיעה':''))).join(', '):' · (הפיקסלים נבדקים בתלת-ממד)'))}
   // העלילה, פרק 2 (story.js, WORLD.regions.lake): הדרך לאגם סגורה עד שפנס האדמה דולק, באגם יש אויבים רטובים (חלשים לברק),
   // והקווסטים מובילים לשומר המים, שמפיל את פנס המים
   const ch2=await page.evaluate(()=>{
@@ -3263,14 +3302,38 @@ function worldBot(m,L,god){
       SAVE.gt.job.axe.end=Date.now()-1;const d0=G.stat.done;gtTick();o.done=gtTier('axe')===2&&!gtJob('axe')&&G.stat.done===d0+1;
       AUI.tab='tool';gtDraw();o.tab=document.querySelectorAll('#fItems .gtcard').length===2;SAVE.village.forge=lv;
       if(R3D.on){const L=heroLook();o.look=!!(L.props.tool_axe&&L.props.tool_hammer)}else o.look=true;
+      // הכלי הנכון ביד לפני המכה (גרזן לעץ, מכוש לסלע), אויב קרוב מחזיר את הנשק, קשת מכה בכלי ולא יורה, והתנועה בתלת-ממד
+      {const rk=S.nd.list.find(n=>!n.dead&&['rock','vein','crystal'].includes(sh(n))),at=n=>{P.x=n.x-n.r-P.r-8;P.y=n.y;P.gtHold=null;S.wd.t+=0.01};
+        at(t);o.aimAxe=gtHeld()==='axe';at(rk);o.aimPick=gtHeld()==='hammer'&&T('gt.hammer')==='Pickaxe';
+        enemies=[{x:P.x-20,y:P.y,r:12,dead:false}];S.wd.t+=0.01;o.foe=!gtHeld();enemies=[];S.wd.t+=0.01;
+        const s0=G.stat.strike;rk.hp=1e4;P.gn.t=0;o.strike=gtStrike(rk)&&rk.hp<1e4&&G.stat.strike===s0+1&&P.gn.t>0;rk.hp=rk.max;
+        if(R3D.on&&R3D.ready){const L=heroLook();o.pick=!!R3D.props.w_pickaxe&&L.props.tool_hammer&&L.props.tool_hammer.prop==='w_pickaxe';
+          syncPlayer(1/60);const a=R3D.player,st=a&&a.st,n0=G.stat.anim.hammer||0;
+          if(st){P.sw.anim=(st.anim||0)+0.2;P.gn.t=(st.gt||0)+1;syncPlayer(1/60);o.anim=(G.stat.anim.hammer||0)>n0&&a.props.tool_hammer.visible&&!(a.props.sword&&a.props.sword.visible)}else o.anim=false}
+        else o.pick=o.anim=true}
       o.blank=saveBlank().gt.axe===1;
       const wd=S.wd;S.wd=null;try{SAVE.gt.axe=5;t.hp=1e4;P.gtHold=null;gHit(t,0,10);o.arena=t.hp===1e4&&!gtHeld()}finally{S.wd=wd}
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     enemies=[];SAVE=JSON.parse(bak);P.gtHold=null;AUI.tab='age';enterVillage();return o});
+  check(!gtr.err&&gtr.aimAxe&&gtr.aimPick&&gtr.foe&&gtr.strike&&gtr.pick&&gtr.anim,'כלי ביד: '+(gtr.err||((gtr.aimAxe?'גרזן מול עץ':'אין גרזן מול עץ!')+(gtr.aimPick?', מכוש מול סלע':', אין מכוש מול סלע!')+
+    (gtr.foe?', אויב קרוב מחזיר את הנשק':', הכלי נשאר מול אויב!')+(gtr.strike?', קשת מכה בכלי':', קשת לא מכה בכלי!')+(gtr.pick?', מודל מכוש':', אין מודל מכוש!')+(gtr.anim?', תנועת כרייה':', בלי תנועה!'))));
   check(!gtr.err&&gtr.tree&&gtr.t1&&gtr.t3&&gtr.metal&&gtr.slow&&gtr.hard&&gtr.bForge&&gtr.bGm&&gtr.start&&gtr.sign&&gtr.done&&gtr.tab&&gtr.look&&gtr.blank&&gtr.arena,
     'כלי איסוף: '+(gtr.err||((gtr.t1?'דרגה 1 בקצב של היום והגרזן ביד':'דרגה 1 שונה!')+(gtr.t3?', דרגה 3 חזקה יותר':', בלי חיזוק')+(gtr.slow?', כסף עם פטיש חלש לאט':', כסף חסום או רגיל!')+
     (gtr.hard?', ובפטיש מתאים רגיל':', פטיש מתאים לא עוזר')+(gtr.bForge&&gtr.bGm?', תנאי נפחייה ומומחיות':', תנאים שגויים')+(gtr.start&&gtr.sign?', שעון ושלט בכפר':', השעון לא התחיל')+
     (gtr.done?', השעון נגמר והדרגה עלתה':', הדרגה לא עלתה')+(gtr.tab?', לשונית בנפחייה':', אין לשונית')+(gtr.look?', הכלים בדמות בתלת-ממד':', אין כלים בתלת-ממד')+(gtr.blank?', בשמירה':', לא בשמירה')+(gtr.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
+  // מקורות גדולים בעולם (nodesize.js, ניר 10.11): סלע ומתכת עם גבול גדול יותר, עץ עם אותו גזע, מקורות לא עולים זה על זה, ובזירה כמו קודם
+  const nzr=await page.evaluate(()=>{const o={};
+    try{enterWorld('home');enemies=[];const L=S.nd.list,sh=n=>wKind(n.kind).shape,K=NODES.kinds;
+      const rk=L.find(n=>['rock','vein','crystal'].includes(sh(n))),tr=L.find(n=>sh(n)==='tree');
+      o.rock=!!rk&&rk.r===nzR(rk.kind)&&rk.r>K[rk.kind].r;o.tree=!!tr&&tr.r===K[tr.kind].r;
+      o.over=L.filter(a=>L.some(b=>b!==a&&Math.hypot(a.x-b.x,a.y-b.y)<a.r+b.r)).length;o.n=L.length;
+      o.arena=K.rock.r===24&&K.tree.r===28;
+      if(R3D.on&&R3D.ready){syncWorld();o.big=NODESIZE.stat.big>0}else o.big=true;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];enterVillage();return o});
+  check(!nzr.err&&nzr.rock&&nzr.tree&&nzr.over===0&&nzr.arena&&nzr.big,
+    'מקורות גדולים: '+(nzr.err||((nzr.rock?'סלע עם גבול גדול':'סלע בגודל הישן!')+(nzr.tree?', עץ עם אותו גזע':', גזע השתנה!')+(nzr.over===0?', '+nzr.n+' מקורות בלי חפיפה':', '+nzr.over+' חופפים!')+
+    (nzr.arena?', בזירה כמו קודם':', הזירה השתנתה!')+(nzr.big?', המודלים גדלו':', המודלים לא גדלו!'))));
   // לולאת הכפר, שלב 1 (docs/concept-village-loop.md): הכלי מכפיל את החומר הראשי (לא את הנדירים), כלי חלש מדי = חצי שלל ולאט (רך, לא חסום),
   // רמות 4-5 של מבנים עולות ×1.3 עץ ואבן, ויעד ליד המשאבים: 📌 בכפר, שבב בעולם, ⌂ וחגיגה כשיש הכל
   const vlr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
@@ -5119,7 +5182,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(L.swapBtn&&(L.nHeld>1?L.swaps>0:L.swaps===0),'כפתור החלפת נשק: '+(L.nHeld>1?L.swaps+' החלפות בין '+L.nHeld+' נשקים':(L.swapBtn?'מוסתר, כי יש נשק אחד ביד':'מוצג עם נשק אחד')));
   // כל דמות עם הנשק שלה: לוחם מניף, צייד יורה חצים, קוסם יורה קסם (WEAPONS ב-weapons.js)
   const MW=heroes.mageWorld;delete heroes.mageWorld;
-  check(MW.node==='bolt'&&MW.nodeHit&&MW.foe==='bolt'&&MW.foeHit,'קוסם בעולם: מקור משאבים '+(MW.node==='bolt'?'בקסם':'ב-'+MW.node)+(MW.nodeHit?' ונפגע':' ולא נפגע')+
+  check(MW.node===(MW.tool?'-':'bolt')&&MW.nodeHit&&MW.foe==='bolt'&&MW.foeHit,'קוסם בעולם: מקור משאבים '+(MW.tool?(MW.node==='-'?'בכלי ביד':'ב-'+MW.node+' במקום בכלי'):MW.node==='bolt'?'בקסם':'ב-'+MW.node)+(MW.nodeHit?' ונפגע':' ולא נפגע')+
     ', '+MW.ft+' '+(MW.foe==='bolt'?'בקסם':'ב-'+MW.foe)+(MW.foeHit?' ונפגע':' ולא נפגע'));
   for(const id in heroes){const h=heroes[id],want={warrior:'swing',hunter:'arrow',mage:'bolt'}[id],got=h.swings&&h.shots==='-'?'swing':h.shots;
     check(got===want&&h.hit&&h.swapHidden&&(!h.homed===(want!=='bolt'))&&(h.anim==null||h.anim===h.want3d),'דמות '+id+': '+T_(h.wt)+', '+
@@ -5200,9 +5263,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(!hold.err&&hold.open&&hold.still&&hold.closed&&hold.resume&&hold.vHold&&hold.prod,
     'חלון עוצר את העולם: '+(hold.err||[hold.open?'היומן נפתח בתפריט':'היומן לא נפתח',hold.still?'5 שניות בלי נזק ובלי תזוזה':'העולם המשיך מאחורי היומן',
       hold.closed&&hold.resume?'בסגירה הקרב חוזר':'הקרב לא חזר',hold.vHold&&hold.prod?'בכפר הייצור ממשיך לפי השעון':'הייצור בכפר נעצר'].join(', ')));
-  check(!hcl.err&&!hcl.drawErr&&hcl.cap&&hcl.small&&hcl.side&&hcl.far&&hcl.flash&&hcl.calm,
+  check(!hcl.err&&!hcl.drawErr&&hcl.cap&&hcl.small&&hcl.side&&hcl.far&&hcl.calm,
     'הגיבור גלוי בקרב צפוף: '+(hcl.err||hcl.drawErr||[hcl.cap?'ליד הגיבור עד '+hcl.n+' בפריים':'ליד הגיבור: '+hcl.n+' (בלי תקרה)',hcl.small?'קטן ועמום':'בגודל מלא',hcl.side?'בצד של האויב':'על הגיבור',
-    hcl.far?'רחוק: כמו קודם':'רחוק: השתנה',hcl.flash?'תלת-ממד: מלבין פחות ליד הגיבור':'תלת-ממד: לבן מלא',hcl.calm?'הפחתת תנועה: עמום יותר':'הפחתת תנועה: אותו דבר'].join(', ')));
+    hcl.far?'רחוק: כמו קודם':'רחוק: השתנה',hcl.calm?'הפחתת תנועה: עמום יותר':'הפחתת תנועה: אותו דבר'].join(', ')));
   check(!shk.err&&shk.sword&&shk.bow&&shk.skill&&shk.stronger&&shk.cap&&shk.near&&shk.drawn&&shk.gone&&shk.calm&&shk.pet,
     'מכה חדה: '+(shk.err||[shk.sword?'חרב: פס בכיוון המכה':'חרב: אין',shk.bow?'קשת: פס דק':'קשת: אין',shk.skill?'סקיל':'סקיל: אין',
     shk.stronger?'הסקיל חזק יותר (רתיעה '+shk.lean.join(' מול ')+')':'הסקיל לא חזק יותר',shk.cap?'תקרה בפריים':'בלי תקרה',shk.near?'ליד הגיבור: עד 2, קטנים':'ליד הגיבור: בלי תקרה',shk.drawn&&shk.gone?'מצויר ונעלם':'לא נעלם',
