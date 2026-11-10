@@ -228,3 +228,56 @@ def warden_hammer(part):
     part(cyl(0.075,0.08,Vector((0,0,-0.50)),8,0.06),'pommel','darkiron',vf=lambda c:0.6)
 build('oakStaff',oak_staff)
 build('wardenHammer',warden_hammer)
+
+# ---------- קשתות הדרגות: אלון, ברזל, זהב (ניר: "קשת שונה לכל דרגה", 10.11.2026). כל אחת לפי התמונה שלה ב-icons/ui/gear ----------
+# אותם צירים כמו קשת השמיים: האורך על x, הכפיפה ב-y (המיתר ב-+y), הידית בראשית. bow_limb: נקודה על הגפה, t מ-0 (ידית) עד 1 (קצה)
+def bow_limb(G,L,bend,recurve,t,s):
+    return Vector((s*(G+L*t),-bend*math.sin(math.pi*t*0.92)+recurve*t**3,0))
+def bow_string(part,a,b,col,r=0.02):
+    part(tube([b,(a+b)/2,a],[r]*3,4,ref=Vector((0,1,0))),'string',col,vf=lambda c:0.5)
+
+def oak_bow(part):   # עץ פשוט: גפיים חומות, קשירות חבל בהירות, ושני עלים ליד הידית
+    G,L,N=0.12,0.86,10;lm=lambda t,s:bow_limb(G,L,0.28,0.06,t,s)
+    rx=Matrix.Rotation(math.pi/2,4,'Y')
+    for s in(1,-1):
+        part(tube([lm(i/(N-1),s) for i in range(N)],[(0.075-0.03*i/(N-1),0.095-0.035*i/(N-1)) for i in range(N)],7),'limb','oak',vf=lambda c:0.3+0.45*(abs(c.x)-G)/L)
+        tip=lm(1,s);d=(tip-lm(0.93,s)).normalized()
+        part(cyl(0.05,0.07,tip-d*0.03,6,0.035,rot=d.to_track_quat('Z','Y').to_matrix().to_4x4()),'nock','oak',vf=lambda c:0.15)
+        for t in(0.45,0.52):p=lm(t,s);part(cyl(0.072,0.035,p,7,rot=rx),'tie','bone',vf=lambda c:0.4)   # קשירה באמצע הגפה
+    part(cyl(0.095,2*G+0.02,Vector((0,0,0)),8,rot=rx),'grip','bone',vf=lambda c:0.55)
+    for x in(-0.08,0,0.08):part(cyl(0.104,0.03,Vector((x,0,0)),8,rot=rx),'wrap','bone',vf=lambda c:0.85)
+    for c,d,Lf,W in((Vector((0.12,-0.05,0.07)),Vector((0.6,-1,0.5)),0.36,0.14),(Vector((-0.06,-0.06,0.07)),Vector((-0.7,-1,0.4)),0.32,0.13),(Vector((0.02,-0.05,-0.07)),Vector((0.2,-1,-0.5)),0.28,0.11)):
+        part(leaf(c,d,Lf,W,n=Vector((0,0,1))),'leaf','leaf',vf=lambda c,c0=c,d0=d.normalized(),Lf=Lf:0.35+0.6*min(1,max(0,(c-c0).dot(d0)/Lf)))
+    bow_string(part,lm(1,1),lm(1,-1),'bone')
+
+def iron_bow(part):   # ברזל כהה: גפיים אפורות, עטיפת עור, להבים כסופים בקצוות ולוחות כסף ליד הידית
+    G,L,N=0.13,0.84,10;lm=lambda t,s:bow_limb(G,L,0.22,0.10,t,s)
+    rx=Matrix.Rotation(math.pi/2,4,'Y')
+    for s in(1,-1):
+        part(tube([lm(i/(N-1),s) for i in range(N)],[(0.07-0.025*i/(N-1),0.10-0.04*i/(N-1)) for i in range(N)],6),'limb','iron',vf=lambda c:0.75-0.3*(abs(c.x)-G)/L)
+        tip=lm(1,s);d=(tip-lm(0.9,s)).normalized()
+        part(gem(tip+d*0.06,d,0.30,0.075,4,0.3),'blade','iron',vf=lambda c:0.95)                  # להב בקצה
+        p=lm(0.12,s);part(gem(p+Vector((s*0.06,-0.10,0)),Vector((s*0.35,-1,0)),0.26,0.07,4,0.4),'plate','iron',vf=lambda c:0.95)   # לוח כסף ליד הידית
+        part(cyl(0.085,0.05,Vector((s*(G+0.01),0,0)),6,rot=rx),'band','iron',vf=lambda c:0.7)
+    part(cyl(0.098,2*G,Vector((0,0,0)),8,rot=rx),'grip','leather',vf=lambda c:0.5)
+    for x in(-0.07,0.0,0.07):part(cyl(0.106,0.025,Vector((x,0,0)),8,rot=rx),'wrap','leather',vf=lambda c:0.2)
+    bow_string(part,lm(1,1),lm(1,-1),'leather',0.018)
+
+def gold_bow(part):   # זהב: גפיים זהובות עם קצוות מתקפלים כמו קרניים, אבן אדומה גדולה באמצע וקטנות על הגפיים
+    G,L,N=0.12,0.80,12;lm=lambda t,s:bow_limb(G,L,0.30,0.18,t,s)
+    rx=Matrix.Rotation(math.pi/2,4,'Y')
+    for s in(1,-1):
+        part(tube([lm(i/(N-1),s) for i in range(N)],[(0.08-0.035*i/(N-1),0.11-0.05*i/(N-1)) for i in range(N)],7),'limb','gold',vf=lambda c:0.15+0.6*(abs(c.x)-G)/L)
+        tip=lm(1,s);d=(tip-lm(0.92,s)).normalized()
+        horn=[tip+Vector((s*0.06*k,0.07*k*k+0.05*k,0)) for k in(0.0,0.6,1.2,1.7)]                  # קרן מתעקלת לכיוון המיתר
+        part(tube(horn,[0.045,0.04,0.03,0.012],6),'horn','gold',vf=lambda c:0.1)
+        p=lm(0.42,s);Z=Vector((0,0,1))   # אבן קטנה על הפנים של הגפה, בולטת לשני הצדדים (רואים אותה ביד, מהצד)
+        part(gem(p,Z,0.30,0.10,4,0.5),'setting','gold',vf=lambda c:0.05);part(gem(p,Z,0.36,0.065,4,0.5),'ruby','red',vf=lambda c:0.35)
+    part(cyl(0.1,2*G,Vector((0,0,0)),8,rot=rx),'grip','gold',vf=lambda c:0.55)
+    Z=Vector((0,0,1))
+    part(gem(Vector((0,-0.04,0)),Z,0.36,0.27,4,0.5),'setting','gold',vf=lambda c:0.05)   # משבצת יהלום על הידית
+    part(gem(Vector((0,-0.04,0)),Z,0.46,0.17,4,0.5),'heart','red',vf=lambda c:0.3)       # האבן האדומה, בולטת לשני הצדדים
+    bow_string(part,lm(1,1),lm(1,-1),'white',0.018)
+build('oakBow',oak_bow,0.95)
+build('ironBow',iron_bow,0.95)
+build('goldBow',gold_bow,0.95)
