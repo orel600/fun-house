@@ -163,7 +163,9 @@ function install(B){
       // הענק קם לבד כשמתקרבים (giant.js). הטיימר מניצחון מקרי בזמן הטיפוס לא נספר: מאפסים אותו
       if(m.wE&&m.wE.gone)m.wE=null;
       // המדידה היא של הקרב, לא של הדרך: מי שלא הגיע למאורה תוך travel שניות (באחו הגדול הבוט נתקע בלהקות ובורח) קופץ ליד המאורה
-      if(!w.warden&&now-m.wT>B.travel&&Math.hypot(P.x-L.x,P.y-L.y)>L.warden.wake&&!m.jumped){m.jumped=1;c.jump=1;const lp=typeof giantLair==='function'?giantLair(chap().k):{x:L.x,y:L.y+70},lx=lp.x,ly=lp.y;   // היה L.y+GIANT.lair (אובייקט) = NaN, והשחקן נעלם מהמפה (6.11)
+      // הענק ער ליד המאורה. ליד הפנס רק כשהפנס עוד לא דולק (giantNear). בדרגות 2-3 הפנס כבר דולק, והבוט חיכה ליד הפנס לנצח (9.11): הולכים למאורה
+      const wk=typeof giantLair==='function'&&STO()[chap().k]?Object.assign(giantLair(chap().k),{r:GIANT.lair.wake}):{x:L.x,y:L.y,r:L.warden.wake};m.wk=wk;
+      if(!w.warden&&now-m.wT>B.travel&&Math.hypot(P.x-wk.x,P.y-wk.y)>wk.r&&!m.jumped){m.jumped=1;c.jump=1;const lp=typeof giantLair==='function'?giantLair(chap().k):{x:L.x,y:L.y+70},lx=lp.x,ly=lp.y;   // היה L.y+GIANT.lair (אובייקט) = NaN, והשחקן נעלם מהמפה (6.11)
         for(const [ox,oy] of [[0,320],[320,0],[-320,0],[0,-320],[230,230],[-230,230],[230,-230],[-230,-230]])if(typeof tBlocked!=='function'||!tBlocked(lx+ox,ly+oy)){P.x=lx+ox;P.y=ly+oy;break}}if(STO().bt)delete STO().bt[chap().k];
       if(!w.warden&&typeof giantReady!=='function'&&Math.hypot(P.x-L.x,P.y-L.y)<L.warden.wake)storyWarden(chap().k,L.y+70);   // גרסה ישנה (לפני הטיימר): קם רק עם קווסט, אז מקימים ביד
       if(w.warden&&!w.warden.dead&&m.wE!==w.warden){m.wE=w.warden;m.wS=now;c.tries=(c.tries||0)+1}}
@@ -190,7 +192,7 @@ function install(B){
       if(qg&&qg.at){const d=Math.hypot(P.x-qg.at.x,P.y-qg.at.y);if(d<80&&qg.near)qg.near();steer(qg.at.x,qg.at.y,false,qg.stay?20:40)}
       else{
       const tg=m.ph==='warden'?(w.warden&&!w.warden.dead?w.warden:null):qg&&qg.e||rr||near.e;
-      if(m.ph==='warden'&&!tg)steer(L.x,L.y,false,20);else if(tg)steer(tg.x,tg.y,false,stop+(tg.r||0));else joy=null}}
+      if(m.ph==='warden'&&!tg)steer(m.wk.x,m.wk.y,false,20);else if(tg)steer(tg.x,tg.y,false,stop+(tg.r||0));else joy=null}}
     if(near.e&&near.d<230&&S.sk)for(const id of S.sk.ids.slice())if(wskReady(id)>=0)wskUse(id);
     return{}
   }

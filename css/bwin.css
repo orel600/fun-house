@@ -104,6 +104,8 @@
 .bwst .ic .ri{width:var(--ic-m);height:var(--ic-m);vertical-align:middle}
 .bwst .nm{font:700 13px var(--body)}
 .bwst b{font:800 14px var(--body);direction:ltr;font-variant-numeric:tabular-nums}
+.bwvil .bwst{grid-template-columns:minmax(0,1fr) auto}
+.bwst .nm small{display:block;font:600 12px var(--body);color:var(--dim,#aaa);margin-top:2px}
 .bwst i{position:absolute;inset-inline-start:0;bottom:0;height:4px;background:var(--rar,var(--gold))}
 
 /* ---- נפחייה: כפתור Aging, ומתחת כל מה שאפשר ליצור ברשת (הכרטיסים עצמם: #vPanel .craft ב-style.css) ---- */
@@ -136,3 +138,9 @@
   .bwgrid{overflow:visible;flex:none}
   .bwtop{flex-wrap:wrap}
 }
+/* השדרוג הראשון (firstup.js): מה הנשק מקבל כשבונים את הנפחייה */
+.fubox{margin-top:6px;padding:6px 8px;border:1px solid rgba(244,199,79,.45);border-radius:8px;background:rgba(244,199,79,.08)}
+.fubox p{margin:0;font:600 12.5px/1.35 var(--body)}
+.fuline{color:#F4C74F}
+.fucmp b{color:#7CE38B}
+.fuok{color:#7CE38B;margin-top:2px}

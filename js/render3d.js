@@ -478,7 +478,7 @@ function heroLook(){
 }
 function lookOf(e){return e===P?heroLook():e.wboss&&LOOK3D['wb_'+e.wboss]?LOOK3D['wb_'+e.wboss]:e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
 // מפתח למאגר: רק דמות זהה (מודל, חפצים, צבע, גודל, נשק מוסתר) חוזרת לשימוש. יצורי משאבים הם מודל קיים בצבע ובגודל אחר
-const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')+(p.glow||'')+(p.item||'')).join()+(L.tint?'|'+L.tint:'')+(L.paint?'|'+L.paint:'')+'|'+L.h+(L.own===false?'|x':'');
+const lookKey=L=>L.model+'|'+Object.entries(L.props||{}).map(([k,p])=>k+':'+p.prop+(p.tier||'')+(p.glow||'')+(p.item||'')).join()+(L.tint?'|'+L.tint:'')+(L.paint?'|'+L.paint:'')+'|'+L.h+(L.own===false?'|x':'');
 const TINT={ember:C.ember,tide:C.tide,gold:C.gold,...Object.fromEntries(Object.keys(DMG.types).map(k=>[k,DMG.types[k].col])),lilac:C.lilac};   // צבע לכל סוג נזק, ושמות הצבעים של המשחק
 const tintOf=t=>TINT[t]||t;   // שם מ-TINT, או צבע ישיר ('#8A8F9C')
 function makeActor(L){

@@ -101,8 +101,8 @@ addEventListener('pointerdown',e=>{
 addEventListener('pointermove',e=>{const a=wskAim;if(!a||e.pointerId!==a.pid)return;
   const dx=e.clientX-a.sx,dy=e.clientY-a.sy;a.len=Math.hypot(dx,dy);if(a.len>=WSKILL.drag)a.a=Math.atan2(dy,dx)},true);
 addEventListener('pointerup',e=>{const a=wskAim;if(!a||e.pointerId!==a.pid)return;wskAim=null;
-  if(S&&S.wd)wskUse(a.id,a.len>=WSKILL.drag?a:null)},true);
+  if(S&&S.wd)(typeof sktTap==='function'?sktTap:wskUse)(a.id,a.len>=WSKILL.drag?a:null)},true);   // sktTap: נגיעה בלי מטרה בטווח לא מבזבזת (skillteach.js)
 addEventListener('pointercancel',e=>{if(wskAim&&e.pointerId===wskAim.pid)wskAim=null},true);
 // במקלדת בעולם: 1, 2, 3 יורים אל הקרוב (בזירה skills.js מטפל)
-addEventListener('keydown',e=>{const n=/^Digit([1-3])$/.exec(e.code);if(n&&S&&S.wd&&S.sk&&e.target===document.body)wskUse(S.sk.ids[n[1]-1])});
+addEventListener('keydown',e=>{const n=/^Digit([1-3])$/.exec(e.code);if(n&&S&&S.wd&&S.sk&&e.target===document.body)(typeof sktTap==='function'?sktTap:wskUse)(S.sk.ids[n[1]-1])});
 $('skills').addEventListener('keydown',e=>{const b=e.target.closest('[data-sk]');if(b&&S&&S.wd&&(e.key==='Enter'||e.key===' '))wskUse(b.dataset.sk)});
