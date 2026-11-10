@@ -1494,6 +1494,15 @@ const TEXT={
   'bw.tab.stash':{he:'אחסון',en:'Store'},
   'bw.tab.craft':{he:'יצירה',en:'Craft'},
   'bw.tab.collect':{he:'תוצרת',en:'Output'},
+  'bw.tab.village':{en:'Village'},
+  'bw.v.lead':{en:(n,m)=>n+' of '+m+' buildings at max level'},
+  'bw.v.none':{en:'Not built yet'},
+  'bw.v.center':{en:n=>'Needs Center level '+n},
+  'bw.v.make':{en:'Village output per hour'},
+  'bw.v.wait':{en:n=>n+' waiting to be collected'},
+  'bw.v.build':{en:'Ready to build'},
+  'bw.v.ready':{en:n=>'Can upgrade to level '+n},
+  'bw.v.next':{en:n=>'Next: level '+n+' (gather more)'},
   'bw.talk':{he:'שיחה',en:'Talk'},
   'bw.cook':{he:'בישול',en:'Cook'},
   'wsl.tab':{he:'סקילים',en:'Skills'},
@@ -2168,6 +2177,8 @@ Object.assign(TEXT,{
   'cu.clear':{he:r=>'✨ הדרך אל '+r+' התפנתה!',en:r=>'✨ The way to '+r+' is clear!'},
   'cu.new':{he:r=>'משהו חדש '+r,en:r=>'Something new '+r},
   'cu.in.meadow':{he:'באחו',en:'in the Meadow'},'cu.in.lake':{he:'באגם הערפל',en:'at the Mist Lake'},'cu.in.ridge':{he:'ברכס הקפוא',en:'on the Frost Ridge'},
+  // הסקיל הראשון מלמד תזמון (skillteach.js)
+  'skt.out':{en:'Step out!'},'skt.now':{en:'Now!'},'skt.far':{en:'Get closer'},'skt.hit':{en:n=>n+' hit!'},
   'cu.in.desert':{he:'במדבר הבוער',en:'in the Burning Desert'},'cu.in.storm':{he:'במגדלי הסערה',en:'at the Storm Towers'},'cu.in.shadow':{he:'בלב הצל',en:'in the Heart of Shadow'}
 });
 

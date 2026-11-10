@@ -38,7 +38,9 @@ const VILLAGE={
       look:[{at:1,model:'boulder',scale:1,deco:['ladder','bucket']},{at:2,model:'boulder',scale:1.05,deco:['tent','wbarrow','ladder']},{at:3,model:'mine',scale:0.95,deco:['barrel']},{at:4,model:'mine',scale:1.05,deco:['stone','wbarrow','fenceS']},{at:5,model:'mine',scale:1.12,deco:['flag','flag','barrel','stone'],glow:C.gold}],
       cost:[null,{coins:10,wood:10},{coins:30,wood:25,stone:10},{coins:70,wood:55,stone:25,copper:8},{coins:140,wood:110,stone:50,iron:12},{coins:260,wood:200,stone:90,silver:10,amber:1}],
       // מכרה עמוק יותר, מתכת טובה יותר: נחושת מההתחלה, ברזל מרמה 2, כסף מ-4, זהב ב-5
-      make:{stone:[0,20,35,55,80,120],copper:[0,4,6,8,10,12],iron:[0,0,3,6,9,12],silver:[0,0,0,0,2,4],gold:[0,0,0,0,0,1.5]},cap:[0,40,80,140,220,350]},
+      // ניר, 10.11: "מכרה לאט, סלעים מהר". ברזל, כסף וזהב באים בעיקר מסלעים קשים בעולם. המכרה מחזיר מעט: תקרה קטנה לכל אחד (capR), כ-25-30% ממחיר דרגת כלי בסשן
+      make:{stone:[0,20,35,55,80,120],copper:[0,4,6,8,10,12],iron:[0,0,0.5,0.5,0.75,1],silver:[0,0,0,0,0.5,0.75],gold:[0,0,0,0,0,0.25]},cap:[0,40,80,140,220,350],
+      capR:{iron:[0,0,1,2,2,2],silver:[0,0,0,0,1,1],gold:[0,0,0,0,0,1]}},
     market:{x:450,y:-230,r:66,     // המחירים והכמות בכל לחיצה ב-RES (resources.js). כל רמה נוספת: bonus יותר טוב, ועוד נדירות שאפשר לקנות
       cost:[null,{coins:15,wood:15},{coins:40,wood:30,stone:20,cloth:4},{coins:90,wood:60,stone:50,cloth:10,copper:6},{coins:180,wood:120,stone:100,iron:15,venom:6},{coins:320,wood:220,stone:180,silver:10,essence:10,sapphireF:1}],
       bonus:0.2,
@@ -83,12 +85,14 @@ function vLook(k){
 }
 
 /* ---- ייצור לפי זמן אמיתי, גם כשהמשחק סגור ---- */
+// תקרת המחסן למשאב r: capR אם יש למשאב תקרה משלו, אחרת cap
+const vCapOf=(B,r,L)=>(B.capR&&B.capR[r]||B.cap)[L];
 function vProd(k){return SAVE.prod[k]||(SAVE.prod[k]={t:0,have:{}})}
 // מעדכן את מה שהצטבר מאז הפעם הקודמת, עד המחסן. לפני כל שינוי רמה, כדי שהקצב הישן יחול עד עכשיו
 function vSettle(k){
   const B=VILLAGE.b[k];if(!B.make)return null;
   const p=vProd(k),now=Date.now(),L=vLv(k);
-  if(p.t&&L>0){const h=Math.max(0,now-p.t)/3600e3;for(const r in B.make)p.have[r]=Math.min(B.cap[L],(p.have[r]||0)+B.make[r][L]*h)}
+  if(p.t&&L>0){const h=Math.max(0,now-p.t)/3600e3;for(const r in B.make)p.have[r]=Math.min(vCapOf(B,r,L),(p.have[r]||0)+B.make[r][L]*h)}
   p.t=now;return p;
 }
 function vCollect(k){
