@@ -1560,6 +1560,7 @@ function worldBot(m,L,god){
       const e3=mk(-80,0),c=hit('skill',e3),k3=e3.hfK;r.skill=!!c&&c.sk&&SH.stat.skill===st.skill+1;
       r.stronger=c&&a&&c.B.core>a.B.core*1.5&&c.B.rays>a.B.rays&&k3>k1;r.lean=[+(k1||0).toFixed(2),+(k3||0).toFixed(2)];
       const n0=SH.list.length;SH.fr=-1;for(let i=0;i<20;i++)damage(e1,1,'sword',0);r.cap=SH.list.length-n0<=SHARP.perFrame&&SH.list.length<=SHARP.max;
+      const n1=SH.list.length;SH.fr=-1;for(let i=0;i<6;i++)damage(mk(40+i*6,10),1,'sword',0);const nn=SH.list.slice(n1);r.near=nn.length===SHARP.near.perFrame&&nn.every(f=>f.near);
       const drawRaw=()=>{try{juiceDraw()}catch(_){}};drawRaw();r.drawn=SH.list.length>0;
       const t0=performance.now;performance.now=()=>t0.call(performance)+1000;drawRaw();performance.now=t0;r.gone=SH.list.length===0;
       SAVE.calm=true;const e4=mk(0,70),l0=SH.stat.lean;const d=hit('sword',e4);r.calm=!!d&&SH.stat.lean===l0;SAVE.calm=calm0;
@@ -5043,9 +5044,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(!hold.err&&hold.open&&hold.still&&hold.closed&&hold.resume&&hold.vHold&&hold.prod,
     'חלון עוצר את העולם: '+(hold.err||[hold.open?'היומן נפתח בתפריט':'היומן לא נפתח',hold.still?'5 שניות בלי נזק ובלי תזוזה':'העולם המשיך מאחורי היומן',
       hold.closed&&hold.resume?'בסגירה הקרב חוזר':'הקרב לא חזר',hold.vHold&&hold.prod?'בכפר הייצור ממשיך לפי השעון':'הייצור בכפר נעצר'].join(', ')));
-  check(!shk.err&&shk.sword&&shk.bow&&shk.skill&&shk.stronger&&shk.cap&&shk.drawn&&shk.gone&&shk.calm&&shk.pet,
+  check(!shk.err&&shk.sword&&shk.bow&&shk.skill&&shk.stronger&&shk.cap&&shk.near&&shk.drawn&&shk.gone&&shk.calm&&shk.pet,
     'מכה חדה: '+(shk.err||[shk.sword?'חרב: פס בכיוון המכה':'חרב: אין',shk.bow?'קשת: פס דק':'קשת: אין',shk.skill?'סקיל':'סקיל: אין',
-    shk.stronger?'הסקיל חזק יותר (רתיעה '+shk.lean.join(' מול ')+')':'הסקיל לא חזק יותר',shk.cap?'תקרה בפריים':'בלי תקרה',shk.drawn&&shk.gone?'מצויר ונעלם':'לא נעלם',
+    shk.stronger?'הסקיל חזק יותר (רתיעה '+shk.lean.join(' מול ')+')':'הסקיל לא חזק יותר',shk.cap?'תקרה בפריים':'בלי תקרה',shk.near?'ליד הגיבור: עד 2, קטנים':'ליד הגיבור: בלי תקרה',shk.drawn&&shk.gone?'מצויר ונעלם':'לא נעלם',
     shk.calm?'הפחתת תנועה: בלי רתיעה נוספת':'רתיעה בהפחתת תנועה',shk.pet?'חיה לא':'גם חיה'].join(', ')));
   check(!skt.err&&skt.on&&skt.out&&skt.block&&skt.noCls&&skt.inR>=2&&skt.in&&skt.ring&&skt.danger&&skt.now&&skt.tap&&skt.group&&skt.end&&skt.blockAfter,
     'הסקיל הראשון מלמד ('+skt.id+'): '+(skt.err||[skt.on?'פועל':'לא פועל',skt.out&&skt.block&&skt.noCls?'נגיעה בלי מטרה לא מבזבזת':'נגיעה בלי מטרה בוזבזה',
