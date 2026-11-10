@@ -72,7 +72,7 @@ function mbCompactGrip(a,hit,dt,act){
 // base: where the hammer is without the strike (the carry of mb-compact-fixes.js, or else the grip in the look). The strike pose is always the look grip turned by the action's rotation (what was measured)
 function mbCompactGripApply(a,base){
  const G=MBCOMPACT.tank.grip,L=a.L||{};if(!G||!a.props)return;const w=a.cgW||0,rot=G.byAct&&G.byAct[a.cgAct]||G.rot,key=String(rot);
- for(const k in a.props){const p=L.props&&L.props[k];if(!p||p.prop!=='w_item_stoneHammer')continue;const m=a.props[k],U=m.userData;
+ for(const k in a.props){const p=L.props&&L.props[k];if(!p||!(p.prop==='w_item_stoneHammer'||p.prop==='w_item_tankHammer'))continue;const m=a.props[k],U=m.userData;
   if(!U.cq0)U.cq0=new THREE.Quaternion(...(p.rot||[0,0,0,1]));if(U.cqK!==key||!U.cq1){U.cqK=key;U.cq1=U.cq0.clone().multiply(new THREE.Quaternion(...rot))}
   if(!base&&!w&&!U.cgOn)continue;U.cgOn=w>0;   // nothing to do between strikes: the look (or the carry) owns the grip
   m.quaternion.copy(base?(U.cqB||(U.cqB=new THREE.Quaternion())).fromArray(base):U.cq0).slerp(U.cq1,w)}
