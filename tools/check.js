@@ -1549,6 +1549,23 @@ function worldBot(m,L,god){
       drawOrbits();r.orbDraw=W.draws>d0&&W.lights>=5;r.orbFlash=W.flashes>f0;
       e3.dead=true;enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // מכה חדה (sharphit.js): מכה רגילה (חרב, קשת) נותנת פס בכיוון המכה, הבזק ורתיעה; סקיל גדול וחזק יותר; תקרה בפריים; נעלם לבד; הפחתת תנועה בלי רתיעה נוספת
+  const shk=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];SH.list=[];
+      const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;e.sw=0;e.scd=99;return e};
+      const st={...SH.stat},calm0=SAVE.calm;SAVE.calm=false;
+      const hit=(w,e)=>{SH.fr=-1;damage(e,10,w,0.4);return SH.list[SH.list.length-1]};
+      const e1=mk(60,0),a=hit('sword',e1),k1=e1.hfK;r.sword=!!a&&!a.sk&&Math.abs(a.a-0.4)<1e-6&&SH.stat.basic===st.basic+1;
+      const e2=mk(90,30),b=hit('gun',e2);r.bow=!!b&&!b.sk&&b.B===SHARP.basic.gun;
+      const e3=mk(-80,0),c=hit('skill',e3),k3=e3.hfK;r.skill=!!c&&c.sk&&SH.stat.skill===st.skill+1;
+      r.stronger=c&&a&&c.B.core>a.B.core*1.5&&c.B.rays>a.B.rays&&k3>k1;r.lean=[+(k1||0).toFixed(2),+(k3||0).toFixed(2)];
+      const n0=SH.list.length;SH.fr=-1;for(let i=0;i<20;i++)damage(e1,1,'sword',0);r.cap=SH.list.length-n0<=SHARP.perFrame&&SH.list.length<=SHARP.max;
+      const drawRaw=()=>{try{juiceDraw()}catch(_){}};drawRaw();r.drawn=SH.list.length>0;
+      const t0=performance.now;performance.now=()=>t0.call(performance)+1000;drawRaw();performance.now=t0;r.gone=SH.list.length===0;
+      SAVE.calm=true;const e4=mk(0,70),l0=SH.stat.lean;const d=hit('sword',e4);r.calm=!!d&&SH.stat.lean===l0;SAVE.calm=calm0;
+      r.pet=(()=>{const n=SH.list.length;SH.fr=-1;damage(e1,1,'pet',0);return SH.list.length===n})();
+      for(const e of enemies)e.dead=true;enemies=[];SH.list=[]}catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // הגיבור מטיל סקיל (skillcast.js): בכל שימוש יש תנועה של פלג הגוף העליון ועיגול רונות בצבע סוג הנזק שנעלם לבד. בזירה לא
   const skc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];SAVE.hero.skSeen=[...(SAVE.hero.skSeen||[]),...S.sk.ids];
@@ -5009,6 +5026,10 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(!hold.err&&hold.open&&hold.still&&hold.closed&&hold.resume&&hold.vHold&&hold.prod,
     'חלון עוצר את העולם: '+(hold.err||[hold.open?'היומן נפתח בתפריט':'היומן לא נפתח',hold.still?'5 שניות בלי נזק ובלי תזוזה':'העולם המשיך מאחורי היומן',
       hold.closed&&hold.resume?'בסגירה הקרב חוזר':'הקרב לא חזר',hold.vHold&&hold.prod?'בכפר הייצור ממשיך לפי השעון':'הייצור בכפר נעצר'].join(', ')));
+  check(!shk.err&&shk.sword&&shk.bow&&shk.skill&&shk.stronger&&shk.cap&&shk.drawn&&shk.gone&&shk.calm&&shk.pet,
+    'מכה חדה: '+(shk.err||[shk.sword?'חרב: פס בכיוון המכה':'חרב: אין',shk.bow?'קשת: פס דק':'קשת: אין',shk.skill?'סקיל':'סקיל: אין',
+    shk.stronger?'הסקיל חזק יותר (רתיעה '+shk.lean.join(' מול ')+')':'הסקיל לא חזק יותר',shk.cap?'תקרה בפריים':'בלי תקרה',shk.drawn&&shk.gone?'מצויר ונעלם':'לא נעלם',
+    shk.calm?'הפחתת תנועה: בלי רתיעה נוספת':'רתיעה בהפחתת תנועה',shk.pet?'חיה לא':'גם חיה'].join(', ')));
   check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw&&wsk.orbFlash,
     'סקילים בעולם ('+wsk.id+'): '+(wsk.err||[wsk.btn?'כפתור':'אין כפתור',wsk.place?'למטה מימין, מעל הסרגל':'הכפתור לא במקום',wsk.tap&&wsk.tapHit?'נגיעה יורה ופוגעת':'נגיעה לא פגעה',
     wsk.cd&&wsk.sec&&wsk.again?'קירור עם מספר':'אין קירור',wsk.drag&&wsk.dragHit?'גרירה מכוונת ופוגעת':'גרירה לא פגעה',wsk.aimDraw?'כוונת מצוירת':'אין כוונת',wsk.finger?'אצבע על הכפתור יורה':'אצבע לא ירתה',
