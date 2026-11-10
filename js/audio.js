@@ -24,6 +24,18 @@ const SOUNDS={
   imp_hammer:{file:'imp_hammer.mp3',vol:0.4, pitch:0.15, max:2, gap:0.1,  grp:'fx',where:'fight'},     // הטנק בשאול: מכה של התקיפה הרגילה, באותו פריים של הנזק (mb-atk3d.js). CC0 (ARI, #546). לא נשמע עדיין במשחק
   imp_wall:{file:'imp_wall.mp3',vol:0.45,pitch:0.1, max:1, gap:0.5,  grp:'fx',where:'fight'},     // הטנק בשאול: חומת הברזל, רעידת אדמה וסלע נשבר (ARI #546, CC0)
   cry_war: {file:'cry_war.mp3', vol:0.4, pitch:0.1, max:1, gap:0.5,  grp:'fx',where:'fight'},     // הטנק בשאול: שאגת קריאת הקרב (ARI #546, CC0)
+  // סבב צלילים לשאול (BOB, 10.11, המניפסט של משחקי השאול): צליל זהות לכל פעולה של גיבור, מ-mb-sound.js. הכל CC0, הפירוט ב-sounds/README.md
+  imp_anvil:   {file:'imp_anvil.mp3',vol:0.45,pitch:0.12,max:1,gap:0.3,grp:'fx',where:'fight'},   // הטנק: נחיתת הסדן (s1), מכה וסלע נשבר
+  whoosh_blade:{file:'whoosh_blade.mp3',vol:0.35,pitch:0.15,max:2,gap:0.1,grp:'fx',where:'fight'},   // חיתוך מהיר: הלוחם (s1) והמתנקש (s1, ובשקט ב-s2)
+  sweep_spin:  {file:'sweep_spin.mp3',vol:0.35,pitch:0.12,max:1,gap:0.3,grp:'fx',where:'fight'},   // הלוחם: הסיבוב (s2), וושש וצלצול מתכת
+  bow_release: {file:'bow_release.mp3',vol:0.3,pitch:0.15,max:2,gap:0.15,grp:'fx',where:'fight'},   // הצייד: שחרור החץ (s1) וזריקת הרשת (s2). מחליף זמני (CC0) במקום קשת אמיתית ברישיון
+  net_catch:   {file:'net_catch.mp3',vol:0.35,pitch:0.12,max:1,gap:0.3,grp:'fx',where:'fight'},   // הצייד: הרשת נסגרת על גיבור (s2)
+  rain_volley: {file:'rain_volley.mp3',vol:0.45,pitch:0.12,max:1,gap:0.4,grp:'fx',where:'fight'},   // הצייד: גשם החצים נוחת (סקיל-על). מחליף זמני וחלש (CC0) במקום מטח קשתים ברישיון
+  wave_surge:  {file:'wave_surge.mp3',vol:0.45,pitch:0.12,max:1,gap:0.3,grp:'fx',where:'fight'},   // הקוסמת: גל המים (s1)
+  bubble_pop:  {file:'bubble_pop.mp3',vol:0.3,pitch:0.12,max:1,gap:0.3,grp:'fx',where:'fight'},   // הקוסמת: כלא המים מרים (s2)
+  frost_crack: {file:'frost_crack.mp3',vol:0.35,pitch:0.08,max:1,gap:0.5,grp:'fx',where:'fight'},   // הקוסמת: הסופה קופאת (סקיל-על)
+  mark_seal:   {file:'mark_seal.mp3',vol:0.3,pitch:0.1,max:1,gap:0.4,grp:'fx',where:'fight'},   // המתנקש: סימן המוות ננעל (סקיל-על)
+  mark_pop:    {file:'mark_pop.mp3',vol:0.45,pitch:0.1,max:2,gap:0.1,grp:'fx',where:'fight'},   // המתנקש: הסימן מתפוצץ (סקיל-על)
   cast_physical: {file:'cast_physical.mp3', vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // הטלת סקיל פיזי: חבטה יבשה
   cast_fire:     {file:'cast_fire.mp3',     vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // אש: וושש והתלקחות
   cast_water:    {file:'cast_water.mp3',    vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // מים: התזה
