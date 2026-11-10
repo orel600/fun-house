@@ -199,6 +199,9 @@ const ITEMS={
   silverBlade:{src:raw('silverBlade'),ready:true,tex:128},
   oakStaff: {src:raw('oakStaff'),ready:true,tex:128},
   wardenHammer:{src:raw('wardenHammer'),ready:true,tex:128},
+  oakBow:   {src:raw('oakBow'),ready:true,tex:128},   // קשתות הדרגות (10.11.2026): כל דרגה עם מודל משלה, כמו בחרבות
+  ironBow:  {src:raw('ironBow'),ready:true,tex:128},
+  goldBow:  {src:raw('goldBow'),ready:true,tex:128},
   stormBow: {src:raw('stormBow'),tris:4000,tex:512,len:2.4,grip:0.5,rot:[0,0,-90]},
   shield3:  {src:raw('shield3'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},   // יצא כבר כמו KayKit: הפנים ב-xy
   shield4:  {src:raw('shield4'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]}
