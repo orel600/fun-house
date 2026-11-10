@@ -465,7 +465,7 @@ function mobaDraw(ox,oy){
   mbAimDraw();   // סימון הכיוון של סקיל בגרירה (moba-aim.js)
   mbAtkDraw();   // הטבעת האדומה על הנעול (moba-atk.js)
   mbGambleDraw();   // חדר ההימור: הטבעת והקשת (moba-gamble.js)
-  if(!(typeof mbWall3dOn==='function'&&mbWall3dOn()))for(const w of M.walls){ctx.fillStyle='#5A5F6E';ctx.fillRect(w.x-10,-L.half,20,L.half*2);ctx.fillStyle=MOBA.team[w.team];ctx.fillRect(w.x-10,-L.half,4,L.half*2);ctx.fillRect(w.x+6,-L.half,4,L.half*2)}
+  for(const w of M.walls){if(typeof mbWall3dOwns==='function'&&mbWall3dOwns(w))continue;ctx.fillStyle='#5A5F6E';ctx.fillRect(w.x-10,-L.half,20,L.half*2);ctx.fillStyle=MOBA.team[w.team];ctx.fillRect(w.x-10,-L.half,4,L.half*2);ctx.fillRect(w.x+6,-L.half,4,L.half*2)}
   {const F=mbfxS();fxDrawList(F.under||(F.under=[]))}   // טבעות קבוצה ועליית רמה, מתחת לדמויות (moba-fx.js)
   for(const b of M.u)if(b.dead&&b.fallT!==undefined&&(b.k==='tower'||b.k==='base'))mbfxBar(b,MOBA.team[b.team]);   // פס החיים של מבנה שנפל מתפרק
   // יחידות לפי עומק
