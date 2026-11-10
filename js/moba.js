@@ -77,7 +77,7 @@ function mbDmg(src,t,d,dt,o={}){
     if(src&&src.k!=='tower'&&src.k!=='base'&&mbDist(src,t)<140){src.st.burn=2;src.st.burnD=t.st.burnBack;src.st.burnBy=t}}
   if(t.st.shield>0&&t.st.shieldEnd>MB.t){const a=Math.min(d,t.st.shield);t.st.shield-=a;d-=a}   // מגן (mbShield ב-moba-kits.js) סופג קודם
   t.hp-=d;t.flash=0.12;if(t.mark&&src===t.mark.by)t.mark.dmg+=d;mbItHit(src,t,d);   // סימן מוות: הנזק של המתנקש נצבר לפיצוץ (mbTick)if(t.k==='tower'||t.k==='base')mbfxTower(t);   // ניצוץ ורעידה קטנה על מבנה (moba-fx.js)   // קוצים, מגן בחיים נמוכים, האטה (moba-items.js)
-  if(!o.quiet&&mbShow(t)&&(t.k==='hero'||t.k==='tower'||t.k==='base'||src&&src.me))(o.big||o.crit?mbfxNum:mbFloat)(t.x+rand(-8,8),t.y-t.r-18,Math.round(d),t.me?C.blood:dtCol(dt),o.big||o.crit?o:t.k==='hero'?1.3:t.k==='minion'?0.85:1.1,src,t);   // גודל: מכה בגיבור בולטת יותר ממכה בחייל   // מכה חזקה: מספר גדול (moba-fx.js)
+  if(!o.quiet&&mbShow(t)&&(t.k==='hero'||t.k==='tower'||t.k==='base'||src&&src.me))(o.big||o.crit?mbfxNum:mbFloat)(...(typeof mbNumAt==='function'?mbNumAt(t):[t.x+rand(-8,8),t.y-t.r-18]),Math.round(d),t.me?C.blood:dtCol(dt),o.big||o.crit?o:t.k==='hero'?1.3:t.k==='minion'?0.85:1.1,src,t);   // גודל: מכה בגיבור בולטת יותר ממכה בחייל   // מכה חזקה: מספר גדול (moba-fx.js)
   if(src&&src.k==='hero'&&t.k==='hero'){src.aggro=2;t.hitBy.set(src,MB.t)}   // מגדל מכה במי שתוקף גיבור מתחתיו
   if(t.k==='base'&&MB.me&&t.team===MB.me.team&&d>0)sfx('base_alarm');   // הבסיס שלך מותקף (gap של 10 שניות ב-SOUNDS)
   if(t.hp<=0)mbDie(t,src);
@@ -259,7 +259,7 @@ function mobaUpdate(dt){
   M.zones=M.zones.filter(z=>z.delay>0||(z.tick&&z.left>0));
   for(const w of M.walls)w.t-=dt;M.walls=M.walls.filter(w=>w.t>0);
   for(const f of M.fx)f.life-=dt;M.fx=M.fx.filter(f=>f.life>0);
-  for(const f of M.floats){f.life-=dt;f.y-=dt*28}M.floats=M.floats.filter(f=>f.life>0);
+  for(const f of M.floats){f.life-=dt;f.y-=dt*((typeof MBHUD!=='undefined'&&MBHUD.on)?MBHUD.num.drift:28)}M.floats=M.floats.filter(f=>f.life>0);
   M.u=M.u.filter(u=>!(u.dead&&u.k==='minion'));
   enemies=M.u.filter(u=>!u.me&&(u.k==='hero'||u.k==='minion')&&mbShow(u));   // רק בשביל התלת-ממד
   // השחקן P עוקב אחרי הגיבור שלו, בשביל המצלמה והמודל בתלת-ממד
@@ -506,7 +506,8 @@ function mobaDraw(ox,oy){
   mbfxDraw();   // חלקיקים, מגנים ומספרים גדולים (moba-fx.js)
   ctx.textAlign='center';ctx.lineJoin='round';ctx.strokeStyle='#0B0A12';   // מספרים גדולים, בניגוד גבוה עם קו מתאר כהה (אוראל, 7.11: "קטנים וחיוורים")
   for(const f of M.floats){if(!mbVisPt(f.x,f.y))continue;const age=0.9-f.life,pop=age<0.1?1+(0.1-age)*3:1,sz=Math.round(17*uk*f.sz*pop);
-    ctx.globalAlpha=Math.min(1,f.life*2);ctx.direction=/^[+\-]?\d/.test(f.txt)?'ltr':DIR;ctx.font='900 '+sz+'px Heebo, system-ui, sans-serif';ctx.lineWidth=Math.max(3,sz*0.22);ctx.strokeText(f.txt,f.x,f.y);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y)}
+    ctx.direction=/^[+\-]?\d/.test(f.txt)?'ltr':DIR;if(typeof mbHudText==='function'&&MBHUD.on){mbHudText(f.txt,f.x,f.y,sz,f.col,Math.min(1,f.life*2));continue}   // סגנון אחד למספרים (mb-hud.js)
+    ctx.globalAlpha=Math.min(1,f.life*2);ctx.font='900 '+sz+'px Heebo, system-ui, sans-serif';ctx.lineWidth=Math.max(3,sz*0.22);ctx.strokeText(f.txt,f.x,f.y);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y)}
   ctx.globalAlpha=1;ctx.direction=DIR;
   drawFx();   // חגיגת רמה (fx.js)
   ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);

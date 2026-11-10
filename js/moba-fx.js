@@ -32,7 +32,7 @@ function mbfxTime(dt){
   if(F.slow>0){F.slow-=dt;dt*=MBFX.slow.k}
   for(const p of F.p){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vz-=MBFX.grav*p.g*dt;p.z=Math.max(0,p.z+p.vz*dt);p.vx*=1-dt*p.drag;p.vy*=1-dt*p.drag}
   F.p=F.p.filter(p=>p.life>0);
-  for(const n of F.n){n.life-=dt;n.y-=dt*(n.crit?40:30)}F.n=F.n.filter(n=>n.life>0);
+  for(const n of F.n){n.life-=dt;n.y-=dt*((typeof MBHUD!=='undefined'&&MBHUD.on)?MBHUD.num.drift:n.crit?40:30)}F.n=F.n.filter(n=>n.life>0);
   for(const u of MB.u)if(u.st.dash&&!u.dead&&Math.random()<0.6)mbfxPart(u.x+rand(-8,8),u.y+rand(-4,4),0,rand(-40,40),rand(-20,20),rand(20,60),'#B9AE9E',0.35,3.5,1.5,0.5);   // אבק מאחורי זינוק
   return dt;
 }
@@ -92,9 +92,9 @@ function mbfxUlt(u,s){
 // מספר נזק גדול (קריטי או סקיל). מכה חזקה של השחקן או עליו: עצירת פריים ורעידה קטנה. בא במקום mbFloat (אותם פרמטרים, ועוד o, src, t)
 function mbfxNum(x,y,txt,col,o,src,t){
   const F=mbfxS();if(F.n.length>=MBFX.nums||!(t&&t.k==='hero'||src===MB.me))return mbFloat(x,y,txt,col);   // גדול רק על גיבור, או של השחקן
-  const stack=F.n.filter(n=>n.life>0.55&&Math.abs(n.x-x)<40&&Math.abs(n.y-y)<40).length;x+=rand(-14,14);y-=stack*20;   // כמה מכות באותו מקום: אחד מעל השני, לא אחד על השני
+  const stack=F.n.filter(n=>n.life>0.55&&Math.abs(n.x-x)<40&&Math.abs(n.y-y)<40).length;if(!(typeof MBHUD!=='undefined'&&MBHUD.on)){x+=rand(-14,14);y-=stack*20}   // mb-hud.js: המקום כבר נבחר בלי חפיפה   // כמה מכות באותו מקום: אחד מעל השני, לא אחד על השני
   F.n.push({x,y,txt:String(txt)+(o.crit?'!':''),col:o.crit&&!(t&&t.me)?C.gold:col,life:1,crit:!!o.crit});
-  if(o.crit){mbfxSpray(x,y+18,5,160,160,C.gold,0.35,3);mbfxPush(F.top||(F.top=[]),'dmg_crit',x,y-30,{size:110,alpha:0.95})}   // CRIT! מאחורי המספר (MBLIB)
+  if(o.crit){mbfxSpray(x,y+18,5,160,160,C.gold,0.35,3);{const cf=mbfxPush(F.top||(F.top=[]),'dmg_crit',x,y-30,{size:110,alpha:0.95});if(cf)F.n[F.n.length-1].cfx=cf}}   // cfx: CRIT! זז יחד עם המספר כשהוא מוקם מחדש (mb-hud.js)   // CRIT! מאחורי המספר (MBLIB)
   const mine=mbfxMe()&&(src===MB.me||t===MB.me);
   if(mine&&(o.crit||+txt>=MBFX.stop.need)&&F.stopCd<=0){F.stop=MBFX.stop.t;F.stopCd=MBFX.stop.cool;mbfxShake(MBFX.shake.hit)}
 }
@@ -115,7 +115,7 @@ function mbfxDraw(){
   ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
   fxDrawList(F.top||(F.top=[]));   // סימני מצב ו-CRIT!, מתחת למספרים (MBLIB)
   ctx.textAlign='center';ctx.direction='ltr';ctx.lineJoin='round';
-  for(const n of F.n){if(!mbVisPt(n.x,n.y))continue;const age=1-n.life,pop=age<0.12?1+(0.12-age)*5:1,sz=(n.crit?30:24)*pop*mbUiK();
+  for(const n of F.n){if(!mbVisPt(n.x,n.y))continue;const age=1-n.life,pop=age<0.12?1+(0.12-age)*5:1,sz=(n.crit?30:24)*pop*mbUiK();if(typeof mbHudText==='function'&&MBHUD.on){mbHudText(n.txt,n.x,n.y,sz,n.col,Math.min(1,n.life*2.5));continue}   // סגנון אחד למספרים (mb-hud.js)
     ctx.globalAlpha=Math.min(1,n.life*2.5);ctx.font='900 '+Math.round(sz)+'px Heebo, system-ui, sans-serif';
     ctx.lineWidth=5;ctx.strokeStyle='#0B0A12';ctx.strokeText(n.txt,n.x,n.y);ctx.fillStyle=n.col;ctx.fillText(n.txt,n.x,n.y)}
   ctx.globalAlpha=1;ctx.direction=DIR;
@@ -253,7 +253,7 @@ function mbfxFall(b){const T2=MBLIB.tower;b.fallT=MB.t;mbfxLib('tower_fall',b.x,
 // מספר ריפוי ירוק: מצטבר, ויוצא פעם ב-every שניות
 function mbfxHeal(u,v){
   if(!(v>0)||u.dead)return;u.healAcc=(u.healAcc||0)+v;const H=MBLIB.heal;
-  if(u.healAcc>=H.min&&!((u.healAt||-9)>MB.t-H.every)){if(mbShow(u))mbFloat(u.x+rand(-6,6),u.y-u.r-30,'+'+Math.round(u.healAcc),H.col,u.k==='hero'?1.2:0.9);u.healAcc=0;u.healAt=MB.t}
+  if(u.healAcc>=H.min&&!((u.healAt||-9)>MB.t-H.every)){if(mbShow(u))mbFloat(...(typeof mbNumAt==='function'?mbNumAt(u,'heal'):[u.x+rand(-6,6),u.y-u.r-30]),'+'+Math.round(u.healAcc),H.col,u.k==='hero'?1.2:0.9);u.healAcc=0;u.healAt=MB.t}
 }
 // טבעות הקבוצה וסימני המצב: נבנים מחדש כשצריך, ונעצרים כשהמצב נגמר או שהיחידה יצאה מהמסך או מהראייה
 function mbfxUnits(){
