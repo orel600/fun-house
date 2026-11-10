@@ -506,7 +506,7 @@ function mobaDraw(ox,oy){
   mbfxDraw();   // חלקיקים, מגנים ומספרים גדולים (moba-fx.js)
   ctx.textAlign='center';ctx.lineJoin='round';ctx.strokeStyle='#0B0A12';   // מספרים גדולים, בניגוד גבוה עם קו מתאר כהה (אוראל, 7.11: "קטנים וחיוורים")
   for(const f of M.floats){if(!mbVisPt(f.x,f.y))continue;const age=0.9-f.life,pop=age<0.1?1+(0.1-age)*3:1,sz=Math.round(17*uk*f.sz*pop);
-    ctx.direction=/^[+\-]?\d/.test(f.txt)?'ltr':DIR;if(typeof mbHudText==='function'&&MBHUD.on){mbHudText(f.txt,f.x,f.y,sz,f.col,Math.min(1,f.life*2));continue}   // סגנון אחד למספרים (mb-hud.js)
+    ctx.direction=/^[+\-]?\d/.test(f.txt)?'ltr':DIR;if(typeof mbHudNum==='function'&&MBHUD.on){mbHudNum(f,false);continue}   // סגנון אחד למספרים (mb-hud.js)
     ctx.globalAlpha=Math.min(1,f.life*2);ctx.font='900 '+sz+'px Heebo, system-ui, sans-serif';ctx.lineWidth=Math.max(3,sz*0.22);ctx.strokeText(f.txt,f.x,f.y);ctx.fillStyle=f.col;ctx.fillText(f.txt,f.x,f.y)}
   ctx.globalAlpha=1;ctx.direction=DIR;
   drawFx();   // חגיגת רמה (fx.js)

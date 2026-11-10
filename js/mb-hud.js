@@ -8,7 +8,10 @@
    ?mbhud=0 מכבה הכל. מחיקה: הקובץ, השורה ב-index.html, הכללים של body.mbhudon ב-css/style.css, ושלוש הקריאות (mbNumAt ב-moba.js ו-moba-fx.js, mbHudText בשני הציורים) */
 const MBHUD={
   on:!/[?&]mbhud=0(&|$)/.test(location.search),
-  num:{above:16,step:1.05,rows:4,healUp:10,drift:30,out:'#0B0A12',outW:0.2,outMin:3},   // above: כמה מעל הראש. step: הצעד בחיפוש מקום, ביחס לגודל המספר. rows: כמה שורות מעל לנסות. drift: מהירות העלייה של כולם
+  num:{above:16,step:1.05,rows:4,healUp:10,drift:0,out:'#0B0A12',outW:0.2,outMin:3},   // above: כמה מעל הראש. step: הצעד בחיפוש מקום, ביחס לגודל המספר. rows: כמה שורות מעל לנסות. drift: מהירות העלייה של כולם
+  // the life of a number (DANA hit-mark-spec-0, section 4), from the frame it is placed: pop 0 -> peak -> 100% by pop s, still and fully opaque until hold s,
+  // then rises rise px (screen) and fades out by end s, and is removed. drift 0: the rise is part of the life, not a per-tick drift
+  life:{pop:0.12,peak:1.1,hold:0.45,end:0.8,rise:28},
   fight:{r:420,heroes:4,hold:2.5,every:0.25,alpha:0.5},   // r ו-heroes: מתי זה קרב קבוצתי. alpha: כמה המפה הקטנה נשארת גלויה
   stat:{nums:0,full:0,fights:0}
 };
@@ -27,8 +30,21 @@ function mbHudPlace(){
   for(const [L,big] of [[F&&F.n,true],[MB.floats,false]])if(L)for(const n of L){if(n.life<=0.05)continue;const b=box(n,big);(n.hudP?placed:fresh).push({n,w:b.w,h:b.h})}
   for(const q of fresh){const n=q.n,x0=n.x,y0=n.y;let ok=false;
     for(let row=0;row<N.rows&&!ok;row++)for(const side of [0,1,-1,2,-2]){const x=x0+side*q.w*N.step,y=y0-row*q.h*N.step;
-      if(!placed.some(p=>Math.abs(p.n.x-x)<(p.w+q.w)/2&&Math.abs(p.n.y-y)<(p.h+q.h)/2)){if(n.cfx){n.cfx.x+=x-n.x;n.cfx.y+=y-n.y}n.x=x;n.y=y;ok=true;break}}
-    if(!ok)MBHUD.stat.full++;n.hudP=1;placed.push(q)}
+      if(!placed.some(p=>Math.abs(p.n.x-x)<(p.w+q.w)/2&&Math.abs(p.n.y-(p.n.hudT0!=null?mbHudLife(MB.t-p.n.hudT0).dy*k:0)-y)<(p.h+q.h)/2)){   // against where the older number is drawn now (it may have risen)
+      if(n.cfx){n.cfx.x+=x-n.x;n.cfx.y+=y-n.y}n.x=x;n.y=y;ok=true;break}}
+    if(!ok)MBHUD.stat.full++;n.hudP=1;n.hudT0=MB.t;placed.push(q)}
+  // the life ends at life.end: removed from both lists (the old life counters keep running but no longer decide)
+  const E=MBHUD.life.end;for(const L of [F&&F.n,MB.floats])if(L)for(const n of L)if(n.hudT0!=null&&MB.t-n.hudT0>=E)n.life=0;
+}
+// scale, alpha and rise of a number at age t (seconds since placed)
+function mbHudLife(t){
+  const L=MBHUD.life;if(t<L.pop){const k=t/L.pop;return {s:k<0.6?L.peak*k/0.6:L.peak-(L.peak-1)*(k-0.6)/0.4,a:Math.min(1,k*3),dy:0}}
+  if(t<L.hold)return {s:1,a:1,dy:0};const q=Math.min(1,(t-L.hold)/(L.end-L.hold));return {s:1,a:1-q,dy:L.rise*q};
+}
+// one number, drawn by its life: big (moba-fx.js, 24 or 30 crit) or small (moba.js floats, 17 x size)
+function mbHudNum(n,big){
+  const k=typeof mbUiK==='function'?mbUiK():1,base=(big?(n.crit?30:24):17*(n.sz||1))*k,t=n.hudT0==null?0:MB.t-n.hudT0,l=mbHudLife(t);if(l.a<=0||l.s<=0)return;
+  mbHudText(n.txt,n.x,n.y-l.dy*k,base*l.s,n.col,l.a);
 }
 // סגנון אחד למספרים: קו מתאר כהה אחיד (ביחס לגודל), ואז המילוי
 function mbHudText(txt,x,y,sz,col,a){

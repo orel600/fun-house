@@ -115,7 +115,7 @@ function mbfxDraw(){
   ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
   fxDrawList(F.top||(F.top=[]));   // סימני מצב ו-CRIT!, מתחת למספרים (MBLIB)
   ctx.textAlign='center';ctx.direction='ltr';ctx.lineJoin='round';
-  for(const n of F.n){if(!mbVisPt(n.x,n.y))continue;const age=1-n.life,pop=age<0.12?1+(0.12-age)*5:1,sz=(n.crit?30:24)*pop*mbUiK();if(typeof mbHudText==='function'&&MBHUD.on){mbHudText(n.txt,n.x,n.y,sz,n.col,Math.min(1,n.life*2.5));continue}   // סגנון אחד למספרים (mb-hud.js)
+  for(const n of F.n){if(!mbVisPt(n.x,n.y))continue;const age=1-n.life,pop=age<0.12?1+(0.12-age)*5:1,sz=(n.crit?30:24)*pop*mbUiK();if(typeof mbHudNum==='function'&&MBHUD.on){mbHudNum(n,true);continue}   // סגנון אחד למספרים (mb-hud.js)
     ctx.globalAlpha=Math.min(1,n.life*2.5);ctx.font='900 '+Math.round(sz)+'px Heebo, system-ui, sans-serif';
     ctx.lineWidth=5;ctx.strokeStyle='#0B0A12';ctx.strokeText(n.txt,n.x,n.y);ctx.fillStyle=n.col;ctx.fillText(n.txt,n.x,n.y)}
   ctx.globalAlpha=1;ctx.direction=DIR;
