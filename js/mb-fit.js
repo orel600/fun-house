@@ -24,7 +24,7 @@ const MBFIT={
     'body.mbfit .mbkit small{padding:1px 6px;text-wrap:balance}'+
     'body.mbfit .mbkit small.mbfit-wrap{border-radius:9px}'+
     'body.mbfit .mbfit-cue{position:sticky;bottom:0;flex:none;display:block;height:0;pointer-events:none}'+'body.mbfit .mbfit-cue>b{position:absolute;left:0;right:0;bottom:0;height:'+F.cue.h+'px;opacity:0;transition:opacity .15s;'+
-      'background:linear-gradient(to bottom,transparent,color-mix(in srgb,var(--slate) 96%,transparent) 70%);text-align:center;color:var(--brass-hi);font:900 16px/'+F.cue.h+'px var(--body);text-shadow:0 1px 0 var(--wood);overflow:hidden}'+
+      'background:linear-gradient(to bottom,transparent 45%,color-mix(in srgb,var(--slate) 96%,transparent) 92%);text-align:center;color:var(--brass-hi);font:900 16px/'+F.cue.h+'px var(--body);text-shadow:0 1px 0 var(--wood);overflow:hidden}'+
     'body.mbfit .mbfit-cue.on>b{opacity:1}'+
     'body.mbfit #mbWin,body.mbfit #mbShop{scrollbar-width:thin}'+
     'body.mbfit #mbWin[data-mode=end] .mbbtns{position:sticky;bottom:0;z-index:1;background:linear-gradient(to bottom,transparent,var(--slate) 35%)}';   // L8: the end screen's action buttons stay visible; the score rows scroll under them
