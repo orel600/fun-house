@@ -3178,7 +3178,7 @@ function worldBot(m,L,god){
     (vlr.pin&&vlr.miss?', יעד מסומן ומה חסר':', היעד שגוי')+(vlr.chip?', שבב בעולם':', אין שבב')+(vlr.pulse?', פועם באיסוף':', לא פועם')+(vlr.done&&vlr.once?', ⌂ וחגיגה פעם אחת':', בלי ⌂ או חגיגה כפולה')+
     (vlr.unpin?', ביטול סימון':', הסימון נתקע')+(vlr.blank?', בשמירה':', לא בשמירה'))));
   // השדרוג הראשון (firstup.js): המתנה לא מספיקה לנפחייה, יציאה אחת כן. היא היעד, ובנייה משחיזה את הנשק ל-‎+3 פעם אחת
-  const fu=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+  const fu=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={},rnd=Math.random;Math.random=()=>0.5;   // בלי לגעת ברצף האקראי של הבדיקות הבאות (משחקי השאול)
     try{if(!S.vil)enterVillage();SAVE.village.forge=0;delete SAVE.fu;goalS().pin=null;const b0=gearStats(),w=gBase(SAVE.gear.weapon);SAVE.gear.weapon=w;gearLive(b0);
       SAVE.bag.coins=VILLAGE.gift.coins;SAVE.bag.wood=VILLAGE.gift.wood;SAVE.bag.stone=VILLAGE.gift.stone;
       o.gift=vBlock('forge')==='cost';o.goal=goalKey(goalNow())==='b:forge';
@@ -3188,7 +3188,7 @@ function worldBot(m,L,god){
       o.built=vUpgrade('forge')&&gPlus(SAVE.gear.weapon)===FIRSTUP.plus&&SAVE.fu===1;
       SAVE.village.forge=0;SAVE.bag.coins=999;vUpgrade('forge');o.once=gPlus(SAVE.gear.weapon)===FIRSTUP.plus&&!fuGoal();
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
-    const b2=gearStats();SAVE=JSON.parse(bak);gearLive(b2);return o});
+    clearTimeout(FIRSTUP.timer);Math.random=rnd;const b2=gearStats();SAVE=JSON.parse(bak);gearLive(b2);return o});
   check(!fu.err&&fu.gift&&fu.goal&&fu.coins&&fu.info&&fu.trip&&fu.built&&fu.once,'השדרוג הראשון: '+(fu.err||[fu.gift?'המתנה לא מספיקה לנפחייה':'המתנה מספיקה לנפחייה!',fu.goal?'היעד הוא הנפחייה':'היעד לא הנפחייה',fu.coins?'השבב מראה מטבעות':'השבב לא מראה מטבעות',fu.info?'לפני/אחרי בחלון':'אין לפני/אחרי',fu.trip?'אחרי יציאה אפשר':'אחרי יציאה עדיין לא',fu.built?'הנשק ‎+3':'הנשק לא הושחז',fu.once?'פעם אחת':'הושחז שוב'].join(', ')));
   // לולאת הכפר, שלב 2 (vproj.js): החוצבת בכפר → סדנה בשלושה שלבים → המחצבה העמוקה נפתחת (או ברמה 10), עם מקורות שצומחים מהר, והחלפה טובה יותר
   const vpr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
