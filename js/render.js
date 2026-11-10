@@ -211,11 +211,11 @@ function render(){
   const hudY=S.wd||S.vil?-1e9:floatTop(),fadeK=y=>{const sy=(y+oy)*ZOOM-hudY;return sy>=HITFX.hudFade?1:Math.max(0,sy/HITFX.hudFade)};
   const packed=typeof arenaFloatLayout==='function'?arenaFloatLayout(floats,ox,oy):new Map();
   for(const f of floats){const fp=packed.get(f),fx=fp?fp.x:f.x,fy=fp?fp.y:f.y;const fk=fadeK(fy);if(fk<=0)continue;ctx.direction=f.ltr||/^[+\-]\d/.test(f.txt)?'ltr':DIR;ctx.globalAlpha=Math.min(1,f.life*2)*fk;
-    const sz=f.crit?f.size*(1+Math.max(0,f.life-0.8)*4):f.size;ctx.font='800 '+sz+'px Heebo, system-ui, sans-serif';
-    if(f.crit){ctx.lineWidth=4;ctx.strokeStyle=C.gold;ctx.lineJoin='round';ctx.strokeText(f.txt,fx,fy)}
+    const sz=fp?arenaFloatSize(f):f.crit?f.size*(1+Math.max(0,f.life-0.8)*4):f.size;ctx.font='800 '+sz+'px Heebo, system-ui, sans-serif';
+    if(f.crit){ctx.lineWidth=fp?3:4;ctx.strokeStyle=fp?'#10131e':C.gold;ctx.lineJoin='round';ctx.strokeText(f.txt,fx,fy)}
     else if(fp){ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeStyle='#10131e';ctx.strokeText(f.txt,fx,fy)}
     else{ctx.fillStyle='#0009';ctx.fillText(f.txt,fx+1,fy+1)}
-    ctx.fillStyle=f.crit?C.ink:f.col;ctx.fillText(f.txt,fx,fy);if(f.crit){ctx.lineWidth=1.5;ctx.strokeStyle=f.col;ctx.strokeText(f.txt,fx,fy)}}
+    ctx.fillStyle=f.crit?(fp?f.col:C.ink):f.col;ctx.fillText(f.txt,fx,fy);if(f.crit&&!fp){ctx.lineWidth=1.5;ctx.strokeStyle=f.col;ctx.strokeText(f.txt,fx,fy)}}
   ctx.globalAlpha=1;ctx.direction=DIR;
   if(S.wd&&typeof fxcTgDraw==='function')fxcTgDraw();   // אזהרות על הרצפה בעולם: מעל הפגיעות והמספרים (fxcombat.js)
   // screen space (ביחידות של המשחק, כמו W,H)

@@ -1,6 +1,8 @@
 /* Arena-only number packing. Each living float owns its display offset until expiry.
    No gameplay x/y, damage, velocity or lifetime is changed. ?floatpack=0 opts out. */
 const ARFLOAT={on:!/[?&]floatpack=0(?:&|$)/.test(location.search),rects:[],overlaps:0,slots:new WeakMap()};
+// Display-only size: crit remains distinct without the old 2x early-life billboard.
+function arenaFloatSize(f){return f.crit?Math.min(21,f.size*(1+Math.max(0,f.life-.8)*.3)):f.size}
 function arenaFloatLayout(list,ox,oy){
   const out=new Map();ARFLOAT.rects=[];ARFLOAT.overlaps=0;
   if(!ARFLOAT.on||!S||S.mb||S.wd||S.vil||S.mode!=='play')return out;
@@ -14,7 +16,7 @@ function arenaFloatLayout(list,ox,oy){
   ctx.save();
   for(const f of active){
     if(out.has(f))continue;
-    const sz=f.crit?f.size*(1+Math.max(0,f.life-.8)*4):f.size;
+    const sz=arenaFloatSize(f);
     ctx.font='800 '+sz+'px Heebo, system-ui, sans-serif';
     const w=ctx.measureText(String(f.txt)).width+8,h=sz*1.3+6;
     let best=null,cost=Infinity;
