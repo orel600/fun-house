@@ -125,6 +125,7 @@ function sktDraw(){
       ctx.globalAlpha=k*K.aim.a;ctx.fillStyle=col;ctx.beginPath();ctx.arc(t.x,t.y,r,0,7);ctx.fill();
       ctx.globalAlpha=k*K.aim.line;ctx.beginPath();ctx.arc(t.x,t.y,r,0,7);ctx.stroke()}}
   const lab=SKT.danger?['skt.out',T_.col]:SKT.now?['skt.now',T_.now]:SKT.noT>0?['skt.far','#EDE8DA']:null;
+  if(lab&&typeof r2Head==='function'&&r2Head(lab[0],SKT.danger?'danger':SKT.now?'now':'info',Math.max(k,0.6))){ctx.globalAlpha=1;return}   // בעולם: במסלול מעל הראש, מצויר אחרון (readable2.js)
   if(lab){const pulse=SKT.now&&!sktCalm()?1+0.08*Math.sin(SKT.t*14):1;
     ctx.globalAlpha=Math.max(k,0.6);ctx.font='800 '+Math.round(T_.size*pulse)+'px Heebo,system-ui,sans-serif';ctx.textAlign='center';
     const y=P.y-(P.r||14)-T_.up,txt=T(lab[0]);ctx.lineWidth=4;ctx.strokeStyle='#000b';ctx.strokeText(txt,P.x,y);ctx.fillStyle=lab[1];ctx.fillText(txt,P.x,y)}
