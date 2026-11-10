@@ -296,7 +296,7 @@ function villageBot(m,L){
   if(!document.getElementById('qLog').hidden){document.querySelector('#qLog [data-act="close"]').click();return steer(null,null,false,0,L)}
   if(vLv('mill')===0){   // הולכים למנסרה ובונים אותה
     if(enter('mill')){const before=bag(),btn=document.querySelector('#vPanel [data-act="up"]');L.panel=document.getElementById('vPanel').innerText.split('\n')[0];
-      if(btn&&!btn.disabled){btn.click();L.built=vLv('mill');L.fx=FX.length>0&&vLook('mill')===null;L.paid=Object.keys(before).filter(r=>(SAVE.bag[r]||0)<before[r]).map(r=>r+' -'+(before[r]-(SAVE.bag[r]||0))).join(', ');
+      if(btn&&!btn.disabled){btn.click();L.built=vLv('mill');L.fx=(FX.length>0||!!S.vil.bm)&&vLook('mill')===null;if(S.vil.bm)bmEnd(true);L.paid=Object.keys(before).filter(r=>(SAVE.bag[r]||0)<before[r]).map(r=>r+' -'+(before[r]-(SAVE.bag[r]||0))).join(', ');
         L.builtSaved=JSON.parse(localStorage.getItem(SAVE_STORE.key)).village.mill===1}else L.built=0}
     return steer(B.x,B.y,false,0,L)}
   if(!m.away){   // כאילו השחקן לא שיחק שעתיים: התוצרת מצטברת עד המחסן
@@ -396,7 +396,7 @@ function villageBot(m,L){
       if(!m.tapTry){m.tapTry=1;joy=null;ev('pointerdown');ev('pointerup');L.tapOpen=S.vil.open==='stash'&&!document.getElementById('vPanel').hidden}
       if(S.vil.open!=='stash'&&!enter('stash'))return steer(St.x,St.y,false,0,L)}
     m.stash=1;const q=s=>document.querySelector('#vPanel '+s),up=q('[data-act="up"]');
-    if(up&&!up.disabled)up.click();L.stashLv=vLv('stash');
+    if(up&&!up.disabled){up.click();if(S.vil.bm)bmEnd(true);if(S.vil.open!=='stash'){S.vil.open=S.vil.near='stash';S.vil.ui='';villageHud()}}L.stashLv=vLv('stash');   // מדלגים על רגע הבנייה, כמו נגיעה, והחלון חוזר
     // נגיעה מעבירה BWIN.move, ולחיצה ארוכה הכל (bwin.js מסמן אותה ב-data-n="all")
     const w0=SAVE.bag.wood||0,mv=(d,r,all)=>{const b=q('[data-act="stash"][data-dir="'+d+'"][data-r="'+r+'"]');if(b){if(all)b.dataset.n='all';b.click()}return!!b};
     const s0=SAVE.bag.oakSword||0;   // כמה חרבות עץ בתרמיל: הלוחם מקבל אחת בבחירה ועוד אחת במתנה
@@ -1585,6 +1585,39 @@ function worldBot(m,L,god){
       r.blockAfter=(()=>{for(const e of enemies)e.dead=true;enemies=[];run(0.05);return !sktTap(id)&&S.sk.cd[0]<=0})();
     }catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // קריאות שלב 2 (readable2.js): אזהרה אחת מעל הראש ומצוירת אחרונה; מספר נזק לא על הגיבור ותקרה לידו; מיזוג ארוך בקרב צפוף; שמות עמומים בקרב ולא על השלטים/הגיבור; כרטיס "New" מחכה לסוף הקרב; הכל נגמר
+  const rd2=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];const st=READ2.stat,s0={...st};
+      const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;e.sw=0;e.scd=99;return e};
+      const later=(t,f)=>{const p0=performance.now;performance.now=()=>p0.call(performance)+t*1000;try{f()}finally{performance.now=p0}};
+      // 1. המסלול: שתי תוויות באותו פריים, רק הסכנה מצוירת; פריים בלי תווית לא מצייר
+      r2Head('skt.now','now',1);r2Head('skt.out','danger',1);fxcTgDraw();r.head=st.head===s0.head+1&&st.headDanger===s0.headDanger+1;
+      fxcTgDraw();r.headEnd=st.head===s0.head+1;
+      // 2. מספרים: אויב צמוד מעל הגיבור, המספר שלו זז הצידה
+      const top=mk(0,-34);const R=Math.random;Math.random=()=>0.999;try{damage(top,10,'sword',0)}finally{Math.random=R}
+      r.push=st.numPush>s0.numPush&&r2NumsOnHero()===0;
+      const ring=[];for(let i=0;i<9;i++){const a=i/9*6.28;ring.push(mk(Math.cos(a)*55,Math.sin(a)*55))}
+      fxcTgDraw();r.crowd=R2.crowd>=READ2.nums.crowd&&JUICE.nums.merge===READ2.nums.mergeCrowd;
+      Math.random=()=>0.999;try{for(const e of ring)damage(e,10,'sword',0)}finally{Math.random=R}
+      const near=S.jc.n.filter(f=>Math.hypot(f.x-P.x,f.y-P.y)<READ2.nums.near).length;r.cap=near<=READ2.nums.cap&&st.numCap>s0.numCap&&r2NumsOnHero()===0;r.near=near;
+      later(2,()=>{try{juiceDraw()}catch(_){}});r.numsEnd=S.jc.n.length===0;
+      // 3. שמות בקרב: המלא ברור, השאר עמומים; לא על השלט ולא על המסלול מעל הגיבור
+      const ox=W/2-S.cam.x,oy=H/2-S.cam.y,hx=P.x+ox,hy=P.y+oy-(P.r||14)-READ2.head.up;
+      const L0={...LABELS.stat};lblBegin();
+      lblAdd({t:'Boss name',icon:'💀',x:hx+300,y:hy+80,col:'#fff',fs:13/ZOOM,pri:5,d:300});
+      lblAdd({t:'On the hero',icon:'💀',x:hx,y:hy+4,col:'#fff',fs:13/ZOOM,pri:1,d:10});
+      r2Fix(hx-260,hy+60,120,22);lblAdd({t:'On the sign',icon:'💀',x:hx-200,y:hy+76,col:'#fff',fs:13/ZOOM,pri:1,d:20});lblAdd({t:'Far foe',icon:'💀',x:hx+120,y:hy+150,col:'#fff',fs:13/ZOOM,pri:1,d:200});
+      lblFlush();const LS=LABELS.stat;r.lblDim=st.lblDim>s0.lblDim&&r2LblA(true)===1&&r2LblA(false)<LABELS.fight.a;r.lblFix=st.lblFix>=s0.lblFix+2&&LS.nudged+LS.hidden>=L0.nudged+L0.hidden+2;
+      // 4. כרטיס פגישה ראשונה: באמצע קרב מחכה, אחרי שהקרב נרגע מופיע
+      const ovs=[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden);for(const o of ovs)o.hidden=true;   // חלון פתוח מהבוט מסתיר את הכרטיס בכל מקרה (flOvOpen)
+      const L=flLore(),k=Object.keys(FOELORE.list)[0];delete L.met[k];FLC.q=[];FLC.on=null;flMeet(k);
+      const el=$('flCard');r.cardHeld=FLC.on===k&&el.hidden&&st.cardHeld>s0.cardHeld;
+      for(const e of enemies)e.dead=true;enemies=[];fxcTgDraw();R2.fightT-=READ2.calm+0.5;flCardVis();r.cardShown=!el.hidden&&st.cardShown>s0.cardShown;
+      fxcTgDraw();r.mergeBack=JUICE.nums.merge===READ2.nums.merge;
+      FLC.q=[];flCardNext();r.cardEnd=el.hidden&&!FLC.on;for(const o of ovs)o.hidden=false;
+      r.L=[LABELS.stat.nudged-L0.nudged,LABELS.stat.hidden-L0.hidden,LABELS.stat.full-L0.full,LABELS.stat.icon-L0.icon,st.lblFix-s0.lblFix];r.st={head:st.head-s0.head,push:st.numPush-s0.numPush,cap:st.numCap-s0.numCap,held:st.cardHeld-s0.cardHeld}
+    }catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // הגיבור מטיל סקיל (skillcast.js): בכל שימוש יש תנועה של פלג הגוף העליון ועיגול רונות בצבע סוג הנזק שנעלם לבד. בזירה לא
   const skc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];SAVE.hero.skSeen=[...(SAVE.hero.skSeen||[]),...S.sk.ids];
@@ -2480,6 +2513,30 @@ function worldBot(m,L,god){
   check(wl.prod&&wl.daily&&wl.quest&&wl.fx===1&&wl.fly&&wl.noWin,'בזמן שלא היית: נגיעה ב-📦 '+(wl.prod?'אספה '+wl.wood+' עץ':'לא אספה את הייצור')+(wl.daily?', מתנה יומית':', בלי המתנה היומית')+(wl.quest?', קווסט':', הקווסט לא נלקח')+
     ', '+wl.fx+' חגיגות (צפוי 1)'+(wl.fly?', מספרים עפים':', בלי מספרים עפים')+(wl.noWin?', בלי חלון':', ונפתח חלון'));
   check(wl.noPop&&wl.gone&&wl.empty,'בזמן שלא היית: '+(wl.noPop?'שום חלון לא קפץ אחרי האיסוף':'קפץ חלון אחרי האיסוף')+(wl.gone?', הכפתור נעלם':', הכפתור נשאר ('+wl.left+')')+(wl.empty?', ובלי כלום שמחכה הוא לא מופיע':', והופיע גם בלי כלום שמחכה'));
+  // רגע הבנייה (buildmoment.js, ניר 10.11): שדרוג נפחייה 2→3. החלון נסגר, המצלמה נוסעת למבנה, הישן (אוהל) שוקע, פיגום, החדש (נפחייה) קופץ,
+  // שורה "לפני → אחרי", והמצלמה חוזרת והחלון נפתח. אחר כך נגיעה מדלגת (3→4), והפחתת תנועה בלי מצלמה (4→5). הרמות והתרמיל חוזרים בסוף
+  {const bm=await page.evaluate(()=>{const o={},B=VILLAGE.b.forge;window.__bmKeep=JSON.stringify({v:SAVE.village,b:SAVE.bag,c:SAVE.calm});
+      welcomeClose();npcTalk(null);SAVE.calm=false;SAVE.village.center=5;SAVE.village.forge=2;
+      for(const L of [3,4,5]){const c=vCostAt('forge',L);for(const r in c)bagAdd(r,c[r])}
+      P.x=B.x;P.y=B.y+B.r+40;S.cam.x=P.x;S.cam.y=P.y;S.vil.open=S.vil.near='forge';S.vil.ui='';villageHud();
+      o.d0=Math.round(Math.hypot(S.cam.x-B.x,S.cam.y-B.y));vUpgrade('forge');
+      o.lv=vLv('forge');o.on=!!S.vil.bm;o.closed=document.getElementById('vPanel').hidden;return o});
+    const at=async(ms,f)=>{await page.clock.runFor(ms);return page.evaluate(f)};
+    bm.pan=await at(650,new Function('const B=VILLAGE.b.forge;return{d:Math.round(Math.hypot(S.cam.x-B.x,S.cam.y-B.y+B.r*BUILDM.lift)),look:(vLook("forge")||{}).model||"-"}'));
+    bm.rise=await at(700,()=>({look:vLook('forge')?vLook('forge').model:'site',fx:FX.length>0}));
+    bm.hold=await at(1200,()=>{const el=document.getElementById('bmLine');return{look:(vLook('forge')||{}).model,line:el&&!el.hidden?el.textContent:''}});await shot('build-moment');
+    bm.end=await at(2200,()=>{const B=VILLAGE.b.forge,o={on:!!S.vil.bm,open:S.vil.open,panel:!document.getElementById('vPanel').hidden,d:Math.round(Math.hypot(S.cam.x-P.x,S.cam.y-P.y)),log:BUILDM.log.slice(-1)[0]};
+      vUpgrade('forge');return o});
+    bm.skip=await at(400,()=>{dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));return{on:!!S.vil.bm,end:BUILDM.log.slice(-1)[0].end,lv:vLv('forge'),look:(vLook('forge')||{}).model}});
+    bm.calm=await at(300,()=>{SAVE.calm=true;const c0={x:S.cam.x,y:S.cam.y};vUpgrade('forge');const o={on:!!S.vil.bm,end:BUILDM.log.slice(-1)[0].end,lv:vLv('forge')};o.c0=c0;return o});
+    bm.calm2=await at(500,c=>({d:Math.round(Math.hypot(S.cam.x-P.x,S.cam.y-P.y))}));
+    await page.evaluate(()=>{const k=JSON.parse(window.__bmKeep);SAVE.village=k.v;SAVE.bag=k.b;SAVE.calm=k.c;S.vil.bm=null;S.vil.open=null;S.vil.raise={};S.vil.ui='';villageHud();saveNow()});
+    const L0=bm.end.log||{};
+    check(bm.lv===3&&bm.on&&bm.closed&&bm.pan.d<40&&bm.pan.look==='tent'&&bm.rise.look==='site'&&bm.rise.fx&&bm.hold.look==='forge'&&/→/.test(bm.hold.line)&&!bm.end.on&&bm.end.open==='forge'&&bm.end.panel&&bm.end.d<30&&L0.end==='done',
+      'Build moment (forge 2→3): '+(bm.on&&bm.closed?'window closes':'did not start')+', camera '+bm.d0+'→'+bm.pan.d+'px from the building, old look '+bm.pan.look+' → '+bm.rise.look+(bm.rise.fx?' with dust':' without dust!')+' → '+bm.hold.look+
+      (bm.hold.line?', line "'+bm.hold.line+'"':', no before → after line!')+', then '+(bm.end.on?'still running!':'camera back ('+bm.end.d+'px from hero)')+(bm.end.panel&&bm.end.open==='forge'?', window reopens':', window not reopened!'));
+    check(!bm.skip.on&&bm.skip.end==='skip'&&bm.skip.lv===4&&bm.skip.look==='forge'&&!bm.calm.on&&bm.calm.end==='calm'&&bm.calm.lv===5&&bm.calm2.d<5,
+      'Build moment: tap skips ('+(bm.skip.end||'-')+', level '+bm.skip.lv+', '+bm.skip.look+'), reduce motion: '+(bm.calm.end==='calm'&&!bm.calm.on?'no camera move ('+bm.calm2.d+'px)':'the moment still ran!'))}
   // צלילים: כמה פעמים כל צליל התבקש, אם הקבצים נטענו מ-file://, ואם כפתור ההשתקה עובד ונשמר
   // הכפתור פותח את חלון הצלילים: השתקה בתוכו, ועוצמה לכל ערוץ שנשמרת בטלפון
   const au=await page.evaluate(()=>{const $=id=>document.getElementById(id);$('muteBtn').click();const open=!$('ovSound').hidden;
@@ -3870,6 +3927,7 @@ function worldBot(m,L,god){
     (rar.wait?'':', הגרלה חוזרת מוקדם מדי')+(rar.again?', הגרלה חוזרת באזור':', אין הגרלה חוזרת')+(rar.label?', שם ✨':', בלי שם ✨')+(rar.line?', שורת שמועה עם זמן':', אין שורת שמועה')+(rar.lineOff?'':', השורה לא נעלמת')+(rar.list?', רשימה בקווסט':', אין רשימה בקווסט'));
   // שמות ואופי לאויבים (foelore.js): לכל סוג בעולם שם, שם אישי לעלית, כרטיס בפגישה ראשונה שנסגר לבד ונשמר, בועה מעל הראש
   const flo=await page.evaluate(()=>{
+    const r2on=READ2.on;READ2.on=false;   // כאן נבדק הכרטיס עצמו, ליד אויב. ההמתנה לסוף הקרב נבדקת ב-rd2 (readable2.js)
     const o={},m0=JSON.stringify(SAVE.lore||null);SAVE.lore=null;FLC.q=[];flCardNext();   // כרטיסים שנשארו בתור מהמשחק של הבוט
     const types=[...new Set([WORLD,...Object.values(WORLD.regions||{})].flatMap(R=>(R.foes||[]).map(G=>G.type)))];
     o.missing=types.filter(k=>!flName(k)||/^fl\./.test(flName(k))||!flLine(k));
@@ -3884,7 +3942,7 @@ function worldBot(m,L,god){
     // חלון פתוח: הפס לא מופיע מעליו ולא נגמר מתחתיו, וחוזר כשהחלון נסגר
     const ov=document.querySelector('.ov[hidden]');ov.hidden=false;flMeet('shield');for(let i=0;i<70;i++)foeLoreUpdate(0.1);
     o.ovHide=flCardOn()&&$('flCard').hidden;ov.hidden=true;foeLoreUpdate(0.01);o.ovBack=flCardOn()&&!$('flCard').hidden;FLC.q=[];flCardNext();
-    enemies=[];enterVillage();SAVE.lore=JSON.parse(m0);return o});
+    enemies=[];enterVillage();SAVE.lore=JSON.parse(m0);READ2.on=r2on;return o});
   check(!flo.missing.length&&flo.eliteOk&&flo.pname&&flo.card&&flo.met&&flo.say&&flo.closed&&flo.once&&flo.saved&&flo.ovHide&&flo.ovBack,
     'שמות לאויבים: '+(flo.missing.length?'חסר שם ל-'+flo.missing.join(','):'לכל סוג בעולם יש שם')+', עלית: "'+flo.elite+'"'+(flo.pname?'':' (לא קיבל שם)')+(flo.card?', פס פגישה ראשונה':', אין פס')+
     (flo.closed?' שנסגר לבד':' שלא נסגר')+(flo.once?', פעם אחת':', חוזר')+(flo.saved?', נשמר':', לא נשמר')+(flo.say?', בועה':', בלי בועה')+(flo.ovHide?(flo.ovBack?', מחכה מתחת לחלון':', לא חוזר אחרי חלון'):', מופיע מעל חלון'));
@@ -3922,7 +3980,7 @@ function worldBot(m,L,god){
     enemies=[];enterVillage();SAVE.nem=JSON.parse(n0);return o});
   check(Object.values(nm).every(Boolean),'בוס-נמסיס: '+Object.entries(nm).map(([k,v])=>(v?'':'✗')+k).join(', '));
   // טיפ ראשון (firsttips.js): נמסיס ובוס ענק יחד: מוצג אחד, השני בתור. מחכה מתחת לחלון ולפס אחר, לא חוזר, נשמר. דרישה של חפץ: שורה בכרטיס, בלי בועה. כבוי: כלום
-  const tp=await page.evaluate(()=>{
+  const tp=await page.evaluate(()=>{const r2on=READ2.on;READ2.on=false;   // הכרטיס ליד אויב: ההמתנה לסוף הקרב נבדקת ב-rd2
     const o={},t0=JSON.stringify(SAVE.tips||null),off0=!!SAVE.tipsOff,n0=JSON.stringify(SAVE.nem||null),lo0=JSON.stringify(SAVE.lore||null);
     enterWorld('home');enemies=[];S.mode='play';FLC.q=[];flCardNext();nemCardOff();MUT.bar=null;skgOfferClose();tipClose();TIP1.q=[];TIP1.pendWin=null;
     SAVE.tipsOff=false;SAVE.tips={mut:1,skill:1,sklv:1,depths:1,req:1,q:1};SAVE.nem=null;
@@ -3948,7 +4006,7 @@ function worldBot(m,L,god){
     d.remove();tipTick(0.25);o.reqGone=!TIP1.on;ITEMROLL.req.lv[3]=lv0;ITEMROLL.skip=sk0;
     SAVE.tipsOff=true;o.off=!tipOnce('depths');
     S.wd.warden=w0;SAVE.nem=JSON.parse(n0);SAVE.lore=JSON.parse(lo0);SAVE.tips=JSON.parse(t0);SAVE.tipsOff=off0;tipClose();TIP1.q=[];
-    enemies=[];enterVillage();return o});
+    enemies=[];enterVillage();READ2.on=r2on;return o});
   check(Object.values(tp).every(Boolean),'טיפ ראשון: '+Object.entries(tp).map(([k,v])=>(v?'':'✗')+k).join(', '));
   // החיה מריחה ומובילה (petscent.js): מרחרחת, רצה למקום ומחכה עם חץ, תיבה נותנת שלל כשמגיעים, אויב מיוחד נותן שלל כשנופל, ומי שלא בא היא מוותרת
   const ps=await page.evaluate(()=>{
@@ -5097,6 +5155,12 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     'מכה חדה: '+(shk.err||[shk.sword?'חרב: פס בכיוון המכה':'חרב: אין',shk.bow?'קשת: פס דק':'קשת: אין',shk.skill?'סקיל':'סקיל: אין',
     shk.stronger?'הסקיל חזק יותר (רתיעה '+shk.lean.join(' מול ')+')':'הסקיל לא חזק יותר',shk.cap?'תקרה בפריים':'בלי תקרה',shk.near?'ליד הגיבור: עד 2, קטנים':'ליד הגיבור: בלי תקרה',shk.drawn&&shk.gone?'מצויר ונעלם':'לא נעלם',
     shk.calm?'הפחתת תנועה: בלי רתיעה נוספת':'רתיעה בהפחתת תנועה',shk.pet?'חיה לא':'גם חיה'].join(', ')));
+  check(!rd2.err&&rd2.head&&rd2.headEnd&&rd2.push&&rd2.crowd&&rd2.cap&&rd2.numsEnd&&rd2.lblDim&&rd2.lblFix&&rd2.cardHeld&&rd2.cardShown&&rd2.mergeBack&&rd2.cardEnd,
+    'קריאות בקרב צפוף: '+(rd2.err||[rd2.head&&rd2.headEnd?'אזהרה אחת מעל הראש, מצוירת אחרונה ונעלמת':'המסלול מעל הראש לא עובד',
+    rd2.push?'מספר נזק לא על הגיבור':'מספר נזק על הגיבור',rd2.cap?'ליד הגיבור '+rd2.near+' מספרים (תקרה '+4+')':'בלי תקרה ליד הגיבור ('+rd2.near+')',
+    rd2.crowd&&rd2.mergeBack?'מיזוג ארוך בקרב צפוף, וחוזר':'מיזוג לא משתנה',rd2.numsEnd?'המספרים נעלמים':'מספרים נשארים',
+    rd2.lblDim?'שמות עמומים בקרב, החשוב ברור':'שמות לא עמומים',rd2.lblFix?'שמות לא על השלט ולא על הגיבור':'שמות עולים על השלט או על הגיבור',
+    rd2.cardHeld&&rd2.cardShown&&rd2.cardEnd?'כרטיס "New" מחכה לסוף הקרב ונסגר':'כרטיס: מחכה '+rd2.cardHeld+', מופיע אחרי '+rd2.cardShown+', נסגר '+rd2.cardEnd].join(', ')));
   check(!skt.err&&skt.on&&skt.out&&skt.block&&skt.noCls&&skt.inR>=2&&skt.in&&skt.ring&&skt.danger&&skt.now&&skt.tap&&skt.group&&skt.end&&skt.blockAfter,
     'הסקיל הראשון מלמד ('+skt.id+'): '+(skt.err||[skt.on?'פועל':'לא פועל',skt.out&&skt.block&&skt.noCls?'נגיעה בלי מטרה לא מבזבזת':'נגיעה בלי מטרה בוזבזה',
     skt.in&&skt.ring?'מטרה בטווח: כפתור מואר וטבעת ('+skt.inR+')':'אין סימון טווח ('+skt.inR+')',skt.danger?'Step out בהכנה':'אין Step out',skt.now?'Now אחרי':'אין Now',

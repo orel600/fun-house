@@ -33,7 +33,8 @@ function fuBuilt(k){
   const g=fuGives();SAVE.fu=1;
   if(g){const before=gearStats();gSet('weapon',0,g.nid);gearLive(before);FIRSTUP.stat.temper++;
     if(typeof ufUp==='function')ufUp();   // מספרי הנזק בזהב ביציאה הבאה (upfeel.js)
-    FIRSTUP.timer=setTimeout(()=>{if(!S.vil)return;if(S.vil.open===k){S.vil.open=null;villageHud()}   // החלון נסגר, כדי לראות את החגיגה על הגיבור
+    FIRSTUP.timer=setTimeout(function go(){if(!S.vil)return;if(S.vil.bm){FIRSTUP.timer=setTimeout(go,300);return}   // אחרי רגע הבנייה (buildmoment.js), כשהמצלמה חזרה לגיבור
+      if(S.vil.open===k){S.vil.open=null;villageHud()}   // החלון נסגר, כדי לראות את החגיגה על הגיבור
       celebrate(P.x,P.y-30,'aging','+'+g.to);
       banner(T('fu.done',gName(g.nid),fuStat(g),g.a,g.b),C.gold)},1800)}
   saveNow();

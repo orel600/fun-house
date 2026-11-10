@@ -560,7 +560,8 @@ function drawWorldScreen(ox,oy){
   const nk=S.wd.near&&S.wd.open!==S.wd.near?S.wd.near:null;
   for(const k in gs){const g=gs[k],col=wGateCol(k),txt=wGateName(k),x=g.x+ox,y=g.y+oy+40,tw=ctx.measureText(txt).width+16;
     if(k===nk){edgeArrow(g.x+ox,g.y+oy,col);continue}   // השער שלידו: הבועה למטה במקום השלט
-    ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(x-tw/2,y-11,tw,22,11);ctx.fill();ctx.fillStyle=col;ctx.fillText(txt,x,y+5);
+    if(typeof r2Fix==='function')r2Fix(x-tw/2,y-11,tw,22);ctx.globalAlpha=typeof lblFightA==='function'?lblFightA():1;   // שמות האויבים לא עולים על השלט, ובקרב הוא עמום (readable2.js, labels.js)
+    ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(x-tw/2,y-11,tw,22,11);ctx.fill();ctx.fillStyle=col;ctx.fillText(txt,x,y+5);ctx.globalAlpha=1;
     edgeArrow(g.x+ox,g.y+oy,col)}
   // בועה במקום השלט של השער שלידו עומדים, כל עוד הכרטיס סגור: אייקון ושם, בזהב, בגודל קבוע על המסך (13px) שלא מתכווץ עם המצלמה.
   // מתחת לשער ולא מעליו, כי למעלה יושבים הפס העליון ושורת הקווסט
