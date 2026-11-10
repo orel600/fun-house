@@ -127,7 +127,7 @@ ARN.dr.meteor=f=>{const D=ARN.D.meteor,col=dtCol(D.dt);
       const dx=hx-tx,dy=hy-ty,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,sz=m.big?2.0:1.55;
       arnStreak(tx,ty,hx,hy,8*sz,col,0.95);
       arnPoly([[hx+ux*13*sz,hy+uy*13*sz],[hx-uy*7*sz,hy+ux*7*sz],[hx-ux*10*sz,hy-uy*10*sz],[hx+uy*7*sz,hy-ux*7*sz]]);ctx.globalAlpha=1;ctx.fillStyle='#FFF3C4';ctx.fill();arnSh(1.4,col,1)}}
-  for(const b of f.bursts){const k=b.t/0.28;arnBurst(b.x,b.y,k,b.big?150:105,10,col);
+  for(const b of f.bursts){const k=b.t/0.22;arnBurst(b.x,b.y,k,b.big?150:105,10,col);
     if(!arnLite()&&b.t<0.5){const k2=b.t/0.5;ctx.beginPath();for(let i=0;i<5;i++){const an=arnR(b.seed,i)*6.28,d=(b.big?70:48)*(0.4+0.7*k2)*(0.6+0.4*arnR(b.seed,i+5)),x=b.x+Math.cos(an)*d,y=b.y+Math.sin(an)*d*0.8-46*k2+60*k2*k2;ctx.moveTo(x,y-3);ctx.lineTo(x+2,y);ctx.lineTo(x,y+3);ctx.lineTo(x-2,y);ctx.closePath()}ctx.globalAlpha=1-k2;ctx.fillStyle='#FFD84D';ctx.fill()}}};
 
 /* =============== 2. LIGHTNING ROD: thrown rod, storm cloud gathers, five strikes on the rod, each discharges to nearby foes, the last is a radial pulse =============== */
@@ -163,7 +163,7 @@ ARN.dr.rod=f=>{const D=ARN.D.rod,col=dtCol(D.dt),tl=D.first+(D.strikes-1)*D.gap;
   for(let i=0;i<D.strikes;i++){const ts=D.first+i*D.gap,k=(f.t-ts)/0.22;if(k<0||k>=1)continue;const last=i===D.strikes-1;
     arnBolt(cx+(arnR(f.seed,i)-0.5)*30,cy+10,f.x,f.y-D.rodH,f.seed+i,f.t,last?5:3,col,1-k)}
   for(const c of f.chains){const k=(f.t-c.t)/0.2;if(k<0||k>=1)continue;arnBolt(f.x,f.y-D.rodH,c.x,c.y,c.s,f.t,2,col,1-k);arnStar(c.x,c.y,6,14*(1-k),2,0.5,'#FFFFFF',1-k,0.8)}
-  for(const b of f.bursts)arnBurst(b.x,b.y+D.rodH,b.t/0.28,b.big?D.finalR:46,b.big?12:6,col);}
+  for(const b of f.bursts)arnBurst(b.x,b.y+D.rodH,b.t/0.22,b.big?D.finalR:46,b.big?12:6,col);}
 
 /* =============== 3. SKYBLADE ORBIT: three spectral blades orbit the hero (contact nicks only, NO defence), then launch one by one and stick in the ground =============== */
 ARN.cast.blade=function(D){const bl=[];for(let i=0;i<D.n;i++)bl.push({i,st:'orbit',x:P.x,y:P.y,ang:0,last:new Map(),vx:0,vy:0,go:0,dist:0,hit:new Set(),stuck:0});
@@ -194,7 +194,7 @@ ARN.dr.blade=f=>{const D=ARN.D.blade,col='#CFEFFF';
       if(b.nk!=null&&f.t-b.nk<0.12)arnStar(b.x,b.y-lift,6,14*(1-(f.t-b.nk)/0.12),2,0.5,'#FFFFFF',1,0.9)}
     else if(b.st==='fly'){arnStreak(b.x-b.vx*110,b.y-b.vy*110-22,b.x,b.y-22,7,col,0.9);shape(b.x,b.y-22,b.ang,1.6)}
     else if(b.st==='stuck'){const k=b.stuck/D.stick,a=k>0.6?1-(k-0.6)/0.4:1,tilt=-1.5708+0.28;   // sticks in the ground, glints, fades
-      if(b.stuck<0.28)arnBurst(b.x,b.y,b.stuck/0.28,34,8,col);
+      if(b.stuck<0.22)arnBurst(b.x,b.y,b.stuck/0.22,34,8,col);
       ctx.save();ctx.globalAlpha=a;shape(b.x+Math.cos(tilt)*30,b.y+Math.sin(tilt)*30,tilt+Math.PI,1.5);ctx.restore();
       if(k>0.55&&k<0.8){const g=(k-0.55)/0.25;arnStar(b.x+Math.cos(tilt)*58,b.y+Math.sin(tilt)*58,4,12*(1-Math.abs(g-0.5)*2),2,0.8,'#FFFFFF',1,1)}}}};
 
@@ -251,7 +251,7 @@ ARN.dr.rift=f=>{const D=ARN.D.rift,col=dtCol(D.dt),cx=f.x,cy=f.y-arnH(f.y,D.heig
     ctx.globalAlpha=0.9;ctx.fillStyle='#CDB3FF';ctx.fill();
     // pull cue: short tapered streaks on dragged foes, pointing at the centre
     let n=0;for(const e of f.dragged){if(e.dead||n++>14)continue;const d=Math.hypot(f.x-e.x,f.y-e.y)||1,ux=(f.x-e.x)/d,uy=(f.y-e.y)/d;arnStreak(e.x-ux*26,e.y-uy*26-6,e.x+ux*4,e.y+uy*4-6,3,col,0.8)}}
-  if(f.pop){const k=(f.t-f.pop)/0.28;if(k<1){arnBurst(f.x,f.y-D.height*0.35*(1-k),k,D.popR*0.85,12,col);   // one pop: spikes + one sharp hexagon edge, fast decay
+  if(f.pop){const k=(f.t-f.pop)/0.22;if(k<1){arnBurst(f.x,f.y-D.height*0.35*(1-k),k,D.popR*0.85,12,col);   // one pop: spikes + one sharp hexagon edge, fast decay
       const rr=D.popR*(0.2+0.8*k);ctx.beginPath();for(let i=0;i<6;i++){const an=i*1.0472;ctx.lineTo(f.x+Math.cos(an)*rr,f.y+Math.sin(an)*rr*ARN.sq)}ctx.closePath();arnSh(2.2,'#FFFFFF',1-k)}}};
 
 /* =============== 6. ARROW STORM: a marked lane, five rolling waves of arrows from near to far, shafts stay and fade near-to-far =============== */
@@ -268,21 +268,22 @@ ARN.up.arrows=(f,dt)=>{const D=ARN.D.arrows;f.t+=dt;
 ARN.dr.arrows=f=>{const D=ARN.D.arrows,c=Math.cos(f.a),s=Math.sin(f.a),L=f.L,hw=D.half,col=dtCol(D.dt);
   const P4=(u,v)=>[f.ox+c*u-s*v,f.oy+s*u+c*v],last=D.tele+D.waves*D.gap+0.2;
   if(f.t<last){const p=Math.min(1,f.t/D.tele),a=f.t<D.tele?1:Math.max(0,1-(f.t-D.tele)/(last-D.tele)*0.7);   // telegraph: the lane, with chevrons pointing the way it will roll
-    arnPoly([P4(0,-hw),P4(L,-hw),P4(L,hw),P4(0,hw)]);ctx.globalAlpha=a*(0.04+0.12*p);ctx.fillStyle=ARN.tg;ctx.fill();ctx.setLineDash([10,7]);arnPoly([P4(0,-hw),P4(L,-hw),P4(L,hw),P4(0,hw)]);arnSh(2.2,ARN.tg,a*0.9);ctx.setLineDash([]);
-    ctx.beginPath();for(let i=0;i<4;i++){const u=L*(i+0.5)/4;for(const q of [P4(u-14,-18),P4(u+10,0),P4(u-14,18)])ctx.lineTo(...q);ctx.moveTo(...P4(u+14,-18))}arnSh(2,ARN.tg,a*0.7)}
+    arnPoly([P4(0,-hw),P4(L,-hw),P4(L,hw),P4(0,hw)]);ctx.globalAlpha=a*(0.04+0.12*p);ctx.fillStyle=ARN.tg;ctx.fill();ctx.setLineDash([10,7]);arnPoly([P4(0,-hw),P4(L,-hw),P4(L,hw),P4(0,hw)]);arnSh(3.4,ARN.tg,a*0.95);ctx.setLineDash([]);
+    ctx.beginPath();for(const [u,v] of [[0,-hw],[0,hw],[L,-hw],[L,hw]]){const sx=u?-1:1,sy=v<0?1:-1;ctx.moveTo(...P4(u,v));ctx.lineTo(...P4(u+sx*18,v));ctx.moveTo(...P4(u,v));ctx.lineTo(...P4(u,v+sy*18))}arnSh(4,ARN.tg,a);   // corner ticks, same as the zone telegraph
+    ctx.beginPath();for(let i=0;i<4;i++){const u=L*(i+0.5)/4;for(const q of [P4(u-14,-18),P4(u+10,0),P4(u-14,18)])ctx.lineTo(...q);ctx.moveTo(...P4(u+14,-18))}arnSh(3.2,ARN.tg,a*0.85)}
   ctx.lineCap='round';
   // stuck shafts: a fading forest, dissolving from the near end to the far end
   ctx.beginPath();let any=0;
   for(const r of f.ar){const age=f.t-(r.land+D.fall);if(age<0)continue;const fade=D.stick*(0.55+0.45*r.u/L);if(age>fade)continue;any=1;
     ctx.moveTo(r.x,r.y);ctx.lineTo(r.x+Math.sin(r.tilt)*4,r.y-27);ctx.moveTo(r.x+Math.sin(r.tilt)*3,r.y-17);ctx.lineTo(r.x-2,r.y-21);ctx.moveTo(r.x+Math.sin(r.tilt)*3,r.y-17);ctx.lineTo(r.x+4,r.y-21)}
-  if(any){ctx.globalAlpha=0.32;ctx.strokeStyle=ARN.shade;ctx.lineWidth=3.2;ctx.stroke();ctx.globalAlpha=0.95;ctx.strokeStyle='#F3EAD0';ctx.lineWidth=2;ctx.stroke()}
+  if(any){ctx.globalAlpha=0.4;ctx.strokeStyle=ARN.shade;ctx.lineWidth=5;ctx.stroke();ctx.globalAlpha=0.95;ctx.strokeStyle='#F3EAD0';ctx.lineWidth=3.4;ctx.stroke()}
   // arrows in the air: one batched path of sharp streaks, and a tiny strike tick on landing
   ctx.beginPath();let air=0;for(const r of f.ar){const p=(f.t-r.land)/D.fall;if(p<0||p>=1)continue;air++;const e=p*p,hx=r.x+D.lean*(1-e),hy=r.y-arnH(r.y,D.height,90,90)*(1-e),px=Math.max(0,e-0.14),tx=r.x+D.lean*(1-px),ty=r.y-arnH(r.y,D.height,90,90)*(1-px);ctx.moveTo(tx,ty);ctx.lineTo(hx,hy)}
-  if(air){ctx.globalAlpha=0.4;ctx.strokeStyle=ARN.shade;ctx.lineWidth=3.6;ctx.stroke();ctx.globalAlpha=1;ctx.strokeStyle='#FFF3C4';ctx.lineWidth=2.8;ctx.stroke()}
+  if(air){ctx.globalAlpha=0.4;ctx.strokeStyle=ARN.shade;ctx.lineWidth=6;ctx.stroke();ctx.globalAlpha=1;ctx.strokeStyle='#FFF3C4';ctx.lineWidth=4;ctx.stroke()}
   ctx.beginPath();let ticks=0;for(const r of f.ar){const age=f.t-(r.land+D.fall);if(age<0||age>0.14||r.w===D.waves-1)continue;ticks++;const k=1-age/0.14;ctx.moveTo(r.x-6*k,r.y);ctx.lineTo(r.x+6*k,r.y);ctx.moveTo(r.x,r.y-5*k);ctx.lineTo(r.x,r.y)}
   if(ticks){ctx.globalAlpha=0.9;ctx.strokeStyle='#FFFFFF';ctx.lineWidth=1.3;ctx.stroke()}
   const lw=D.waves-1,lt=D.tele+lw*D.gap+D.fall;   // the one strong burst: the last wave closes the lane with a sharp star at its far end
-  if(f.t>lt&&f.t<lt+0.4){const e=P4(L*0.92,0);arnBurst(e[0],e[1],(f.t-lt)/0.28,96,10,col)}};
+  if(f.t>lt&&f.t<lt+0.4){const e=P4(L*0.92,0);arnBurst(e[0],e[1],(f.t-lt)/0.22,96,10,col)}};
 
 /* =============== 7. PHOENIX DASH: fire-wing surge forward, a wall of flame behind that burns (trail damage only in this prototype) =============== */
 ARN.cast.phoenix=function(D){const m=Math.hypot(P.vx||0,P.vy||0),a=m>1?Math.atan2(P.vy,P.vx):P.aim||0;
@@ -307,7 +308,7 @@ ARN.dr.phoenix=f=>{const D=ARN.D.phoenix,col=dtCol(D.dt);
       arnPoly([[sx+px,sy+py],[tx,ty],[sx-px,sy-py]]);ctx.globalAlpha=0.95*wk;ctx.fillStyle=k<2?'#FFD84D':col;ctx.fill();arnSh(1.1,'#FF5A1F',wk)}
     arnPoly([[sx+Math.cos(f.a)*30,sy+Math.sin(f.a)*30],[sx+Math.cos(f.a+1.57)*7,sy+Math.sin(f.a+1.57)*7],[sx-Math.cos(f.a)*8,sy-Math.sin(f.a)*8],[sx+Math.cos(f.a-1.57)*7,sy+Math.sin(f.a-1.57)*7]]);ctx.globalAlpha=wk;ctx.fillStyle='#FFF3C4';ctx.fill();arnSh(1.2,col,wk)}
   if(f.t<D.dur){const s=f.pts.length?f.pts[0]:null;if(s)arnStreak(s.x,s.y-8,P.x,P.y-8,10,col,0.7)}   // the surge streak
-  if(f.t<0.3&&f.pts.length)arnBurst(f.pts[0].x,f.pts[0].y,f.t/0.28,60,8,col)};   // the one burst: ignition at the start point
+  if(f.t<0.3&&f.pts.length)arnBurst(f.pts[0].x,f.pts[0].y,f.t/0.22,60,8,col)};   // the one burst: ignition at the start point
 
 /* =============== 8. JUDGMENT BEAM: a pillar of light walks slowly outward from the hero, ground glow ahead is the warning, scorch trail behind =============== */
 ARN.cast.beam=function(D){arnFx({k:'beam',a:arnDir(D.range),d:D.start,tk:0,trail:[],lastP:null,fin:0,burst:0,seed:++ARN.n});sfx('ult_ready');return true};
@@ -323,24 +324,24 @@ ARN.up.beam=(f,dt)=>{const D=ARN.D.beam;f.t+=dt;const beaming=f.t>=D.warn&&f.t<D
 ARN.dr.beam=f=>{const D=ARN.D.beam,col='#FFE9A0',beaming=!f.fin,hx=beaming?P.x+Math.cos(f.a)*f.d:f.endX,hy=beaming?P.y+Math.sin(f.a)*f.d:f.endY;
   // scorch trail (under everything): dark strip with an ember edge that cools
   ctx.lineCap='round';
-  if(f.trail.length>1){for(const q of [[0,'#17110F',0.55,26],[1,'#FF8A3D',0.8,2]]){ctx.beginPath();let on=0;for(let i=0;i<f.trail.length;i++){const p=f.trail[i],age=f.t-p.t0,a=Math.max(0,1-age/D.scorch);if(a<=0)continue;on++;i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)}
+  if(f.trail.length>1){for(const q of [[0,'#17110F',0.6,48],[1,'#FF8A3D',0.85,4]]){ctx.beginPath();let on=0;for(let i=0;i<f.trail.length;i++){const p=f.trail[i],age=f.t-p.t0,a=Math.max(0,1-age/D.scorch);if(a<=0)continue;on++;i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)}
       if(on>1){const last=f.trail[f.trail.length-1];const a=Math.max(0,1-(f.t-last.t0)/D.scorch);ctx.globalAlpha=q[2]*(q[0]?Math.max(0,1-(f.t-f.trail[0].t0)/1.4):1)*Math.max(a,0.25);ctx.strokeStyle=q[1];ctx.lineWidth=q[3];ctx.stroke()}}}
   // thin origin line from the hero to the pillar
-  ctx.beginPath();ctx.moveTo(P.x,P.y);ctx.lineTo(hx,hy);arnSh(1.6,col,beaming?0.55:Math.max(0,1-(f.t-f.fin)/0.3)*0.55);
+  ctx.beginPath();ctx.moveTo(P.x,P.y);ctx.lineTo(hx,hy);arnSh(4,col,beaming?0.7:Math.max(0,1-(f.t-f.fin)/0.3)*0.7);
   if(beaming){
     // warning: the ground glows ahead of the pillar, a long tapered strip with magenta edges
-    const c=Math.cos(f.a),s=Math.sin(f.a),L=D.ahead,w0=D.w,w1=D.w*0.6,wp=f.t<D.warn?f.t/D.warn:1;
+    const c=Math.cos(f.a),s=Math.sin(f.a),L=D.ahead,w0=D.w*1.15,w1=D.w*0.75,wp=f.t<D.warn?f.t/D.warn:1;
     const A=[hx-s*w0,hy+c*w0],B=[hx+c*L-s*w1,hy+s*L+c*w1],Cc=[hx+c*L+s*w1,hy+s*L-c*w1],Dd=[hx+s*w0,hy-c*w0],g=ctx.createLinearGradient(hx,hy,hx+c*L,hy+s*L);
     g.addColorStop(0,'rgba(255,233,160,0.5)');g.addColorStop(1,'rgba(255,233,160,0)');arnPoly([A,B,Cc,Dd]);ctx.globalAlpha=wp;ctx.fillStyle=g;ctx.fill();
-    ctx.beginPath();ctx.moveTo(...A);ctx.lineTo(...B);ctx.moveTo(...Dd);ctx.lineTo(...Cc);arnSh(1.8,ARN.tg,0.8*wp);
+    ctx.beginPath();ctx.moveTo(...A);ctx.lineTo(...B);ctx.moveTo(...Dd);ctx.lineTo(...Cc);arnSh(3.2,ARN.tg,0.9*wp);
     if(f.t>=D.warn){   // the pillar: sharp-topped column, white core, flickering width; a base spike star
-      const fl=0.9+0.1*Math.sin(f.t*40),w=D.w*0.55*fl,H=D.height,gp=ctx.createLinearGradient(0,hy,0,hy-H);gp.addColorStop(0,'rgba(255,255,255,0.95)');gp.addColorStop(0.5,arnRgb(col,0.6));gp.addColorStop(1,arnRgb(col,0));
+      const fl=0.9+0.1*Math.sin(f.t*40),w=D.w*0.95*fl,H=D.height,gp=ctx.createLinearGradient(0,hy,0,hy-H);gp.addColorStop(0,'rgba(255,255,255,0.95)');gp.addColorStop(0.5,arnRgb(col,0.6));gp.addColorStop(1,arnRgb(col,0));
       arnPoly([[hx-w,hy],[hx-w*0.2,hy-H],[hx+w*0.2,hy-H],[hx+w,hy]]);ctx.globalAlpha=1;ctx.fillStyle=gp;ctx.fill();
-      arnPoly([[hx-w*0.32,hy],[hx,hy-H*0.8],[hx+w*0.32,hy]]);ctx.globalAlpha=0.95;ctx.fillStyle='#FFFFFF';ctx.fill();
-      ctx.beginPath();ctx.moveTo(hx-w,hy);ctx.lineTo(hx-w*0.2,hy-H);ctx.moveTo(hx+w,hy);ctx.lineTo(hx+w*0.2,hy-H);arnSh(1.4,col,0.9);
-      if(!arnLite())arnStar(hx,hy,8,34,3,f.t*2,col,0.85,0.8)}}
+      arnPoly([[hx-w*0.5,hy],[hx,hy-H*0.85],[hx+w*0.5,hy]]);ctx.globalAlpha=0.95;ctx.fillStyle='#FFFFFF';ctx.fill();
+      ctx.beginPath();ctx.moveTo(hx-w,hy);ctx.lineTo(hx-w*0.2,hy-H);ctx.moveTo(hx+w,hy);ctx.lineTo(hx+w*0.2,hy-H);arnSh(3,col,0.95);
+      if(!arnLite())arnStar(hx,hy,8,58,5,f.t*2,col,0.9,0.8)}}
   else{const k=(f.t-f.fin)/D.end;   // end: the pillar narrows to a line and bursts once at the final point
-    if(k<1){const w=D.w*0.55*(1-k),H=D.height*(1-k*0.5);arnPoly([[hx-w,hy],[hx,hy-H],[hx+w,hy]]);ctx.globalAlpha=1-k;ctx.fillStyle='#FFFFFF';ctx.fill();arnBurst(hx,hy,Math.min(1,(f.t-f.fin)/0.28),90,10,col)}}};
+    if(k<1){const w=D.w*0.95*(1-k),H=D.height*(1-k*0.5);arnPoly([[hx-w,hy],[hx,hy-H],[hx+w,hy]]);ctx.globalAlpha=1-k;ctx.fillStyle='#FFFFFF';ctx.fill();arnBurst(hx,hy,Math.min(1,(f.t-f.fin)/0.22),120,10,col)}}};
 
 /* =============== engine: cast / update / draw / HUD =============== */
 function arnCast(id){
