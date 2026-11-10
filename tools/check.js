@@ -3103,6 +3103,7 @@ function worldBot(m,L,god){
   await page.evaluate(()=>fxcPreload());
   for(let i=0;i<60&&!await page.evaluate(()=>['wtg_cone','wtg_line','wtg_circle','wtg_circle_big','whit_fire','whit_phys','wko_ice','wmine_stone','wmine_gem_ruby'].every(id=>fxImg(id)));i++)await new Promise(r=>setTimeout(r,150));   // הגיליונות נטענים מהקבצים (שעון אמיתי, לא השעון של הבדיקה)
   const fxc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    const hc0=HCLEAR.on;HCLEAR.on=false;   // כאן נבדקים הגיליונות עצמם, ליד הגיבור. הגיבור הגלוי (heroclear.js) נבדק ב-hcl
     try{enterWorld('home');enemies=[];S.mode='play';P.inv=99;const tick=()=>fxcUpdate(1/60),live=h=>!!h&&h.on&&(FXLIB.list.includes(h)||FXC.tgL.includes(h));
       const e=addEnemy('grunt',P.x+60,P.y,1);e.hp=e.max=1e6;
       // מכה מקרוב: משולש בזמן ההכנה, ונעלם כשהיא נגמרת
@@ -3125,6 +3126,7 @@ function worldBot(m,L,god){
       const m0=Object.assign({},FXC.stat.mine);nodeDown({kind:'rock',x:P.x,y:P.y,r:24,dead:true});nodeDown({kind:'emberRock',x:P.x,y:P.y,r:24,dead:true});
       o.mineStone=(FXC.stat.mine.wmine_stone||0)>(m0.wmine_stone||0);o.mineGem=(FXC.stat.mine.wmine_gem_ruby||0)>(m0.wmine_gem_ruby||0);
       o.all=FXLIB.list.length;o.max=FXLIB.max;o.img=!!fxImg('wtg_cone');
+    HCLEAR.on=hc0;
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     enemies=[];SAVE=JSON.parse(bak);enterVillage();return o});
   check(!fxc.err&&(!fxc.img||fxc.cone&&fxc.coneGone&&fxc.leap&&fxc.charge&&fxc.chargeGone&&fxc.big&&fxc.hitFire&&fxc.koIce&&fxc.perFrame<=fxc.cap&&fxc.mineStone&&fxc.mineGem)&&fxc.all<=fxc.max,
