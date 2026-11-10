@@ -12,11 +12,14 @@ const TIERS={
      gw: פי כמה האחוז של כל שכבת ציוד (עץ, ברזל, כסף, זהב, אגדי; GEAR.tiers) בציוד שנופל בעולם. 0 = לא נופל בדרגה הזאת.
      bigLoot: מה ששומר, נדירה או מבוקש מפילים בנוסף בדרגה הזאת (בפורמט של runGive). gear: 1 = גם חפץ בטוח (בהגרלה של בוס, LOOT.gear.boss)
      כוונון קצב (5.11, docs/playtime-2026-11-05.md): ה-XP איטי פי 3, אז בדרגות הגבוהות יש יותר "רגעים טובים" לשעה, ולא יותר חיים לאויבים:
+     איזון דרגה 3 (9.11, docs/playtime-2026-11-09.md): fuse: פי כמה זמן האזהרה של עיגולי הברק של השומרים (marks, story.js), כדי שמי שעומד ויורה יספיק לזוז.
+     zone: {אזור:{איזור:{hp,dmg}}}: עוד מכפיל לאויב רגיל (לא שומר או נדירה) רק באזור ובאיזור האלה (start, near, far ב-WORLD.zones). ריק = 1
      gearK: פי כמה הסיכוי לציוד מאויב (lootGear ב-loot.js). rareAgain: כל כמה שניות באזור עוד הגרלה של מפלצת נדירה (rareUpdate ב-rares.js). 0 = רק בכניסה */
   list:[
     {hp:1,  dmg:1,   big:{hp:1,  dmg:1},   loot:0,   coins:null, col:'#E8E2D0', gw:[1,1,1,0.35,0],      bigLoot:null,                                   gear:0, gearK:1,  rareAgain:0},
     {hp:1.9,dmg:1.45,big:{hp:2.4,dmg:1.5}, loot:0.45,coins:[2,5], col:'#F4C74F', gw:[0.6,1,1,1.3,0],    bigLoot:{coins:[1,80],star:[0.5,1],gem:[0.5,1]}, gear:1, gearK:1.5,rareAgain:150},
-    {hp:2.9,dmg:1.7, big:{hp:4.2,dmg:1.85},loot:1,   coins:[5,10],col:'#EF4E57', gw:[0.2,0.6,1,1.6,0.25],bigLoot:{coins:[1,160],star:[1,1],gem:[1,2],mythril:[0.6,1]},gear:1, gearK:2,  rareAgain:90}
+    {hp:2.9,dmg:1.7, big:{hp:4.2,dmg:1.85},loot:1,   coins:[5,10],col:'#EF4E57', gw:[0.2,0.6,1,1.6,0.25],bigLoot:{coins:[1,160],star:[1,1],gem:[1,2],mythril:[0.6,1]},gear:1, gearK:2,  rareAgain:90,
+     fuse:1.5, zone:{shadow:{far:{dmg:0.75}}}}
   ],
   boss:'light',                                     // השומר שפותח את הדרגה הבאה: שומר הצל, האחרון
   legacyK:150                                       // מי שכבר פתח את דרגה 3 בשיטה הישנה (150 הריגות באמיץ) לא מאבד אותה
@@ -28,9 +31,12 @@ const tierBig=e=>!!(e.warden||e.rare||e.hunt||e.nem);   // אויב "אירוע"
 
 // אויב שמופיע בעולם (wSpawn ב-world.js, וגם storyWarden, rareSpawn, huntEnter, nemEnter)
 function tierSpawn(e,t=tierNow()){
-  if(!S.wd||e.creature||e.rematch||S.wd.dp)return;const L=TIERS.list[t-1],D=tierBig(e)?L.big:L,o=e.tierK||{hp:1,dmg:1};
-  e.hp*=D.hp/o.hp;e.max*=D.hp/o.hp;e.dmg*=D.dmg/o.dmg;e.tierK={hp:D.hp,dmg:D.dmg,t};
+  if(!S.wd||e.creature||e.rematch||S.wd.dp)return;const L=TIERS.list[t-1],big=tierBig(e),D=big?L.big:L,o=e.tierK||{hp:1,dmg:1};
+  const z=!big&&L.zone&&L.zone[S.wd.reg],Z=z&&z[e.zone||typeof wZone==='function'&&(wZone(e)||{}).id]||{},hp=D.hp*(Z.hp||1),dmg=D.dmg*(Z.dmg||1);   // zone: רק באזור ובאיזור האלה
+  e.hp*=hp/o.hp;e.max*=hp/o.hp;e.dmg*=dmg/o.dmg;e.tierK={hp,dmg,t};
 }
+// עיגולי הברק של שומר (storyTele ב-story.js): פי כמה זמן האזהרה, לפי הדרגה שבה השומר קם
+const tierFuse=e=>((TIERS.list[((e&&e.tierK)||{}).t-1]||{}).fuse)||1;
 // אויב שנפל (kill ב-combat.js): שלל נוסף, ונספר לפתיחת הדרגה הבאה
 function tierKill(e){
   if(!S.wd||!e.tierK||e.tierK.t<2)return;const D=TIERS.list[e.tierK.t-1],s=TS();
