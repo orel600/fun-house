@@ -2084,13 +2084,13 @@ function worldBot(m,L,god){
       out[id]={wt:P.wt,swings,shots:[...shots].join('+')||'-',homed,hit:e.hp<e.max,swapHidden:document.getElementById('swap').hidden===!wBestOther(),
         anim:R3D.on?heroLook().anim[P.weapon]:null,want3d:W3[P.wt]};
     }
-    // הקוסם גם בעולם הפתוח: מכה במקור משאבים ובאויב, שתיהן בקסם ולא בחצים
+    // הקוסם גם בעולם הפתוח: אויב בקסם ולא בחצים. מקור משאבים: בכלי ביד, בלי קסם (gtStrike ב-gtool.js, ניר 10.11), ותיבה בקסם
     SAVE.hero.start='mage';SAVE.gear.weapon=HEROES.list.mage.weapon;enterWorld('home');enemies=[];
     const n=S.nd.list[0],run=t=>{const s=new Set();for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60);for(const b of pb)s.add(b.shot)}return[...s].join('+')||'-'};
     S.nd.list=[n];P.x=n.x+n.r+40;P.y=n.y;const nHp=n.hp,nShots=run(1.5);
     S.nd.list=[];const fi=Math.max(0,WORLD.foes.findIndex(G=>G.creature&&ETYPES[G.type])),ft=ETYPES[WORLD.foes[fi].type]?WORLD.foes[fi].type:'grunt',c=addEnemy(ft,P.x+110,P.y);c.home=fi;   // יצור משאב, אם כבר יש כזה
     c.hp=c.max=1e9;const cShots=run(1.5);
-    out.mageWorld={ft,node:nShots,nodeHit:n.hp<nHp||n.dead,foe:cShots,foeHit:c.hp<c.max};
+    out.mageWorld={ft,node:nShots,tool:gtOf(n),nodeHit:n.hp<nHp||n.dead,foe:cShots,foeHit:c.hp<c.max};
     worldUi(false);document.getElementById('banner').textContent='';
     SAVE=JSON.parse(bak);reset();S.mode=mode;return out});
   const T_=t=>({sword:'חרב',bow:'קשת',staff:'מטה'})[t]||t;
@@ -3267,10 +3267,21 @@ function worldBot(m,L,god){
       SAVE.gt.job.axe.end=Date.now()-1;const d0=G.stat.done;gtTick();o.done=gtTier('axe')===2&&!gtJob('axe')&&G.stat.done===d0+1;
       AUI.tab='tool';gtDraw();o.tab=document.querySelectorAll('#fItems .gtcard').length===2;SAVE.village.forge=lv;
       if(R3D.on){const L=heroLook();o.look=!!(L.props.tool_axe&&L.props.tool_hammer)}else o.look=true;
+      // הכלי הנכון ביד לפני המכה (גרזן לעץ, מכוש לסלע), אויב קרוב מחזיר את הנשק, קשת מכה בכלי ולא יורה, והתנועה בתלת-ממד
+      {const rk=S.nd.list.find(n=>!n.dead&&['rock','vein','crystal'].includes(sh(n))),at=n=>{P.x=n.x-n.r-P.r-8;P.y=n.y;P.gtHold=null;S.wd.t+=0.01};
+        at(t);o.aimAxe=gtHeld()==='axe';at(rk);o.aimPick=gtHeld()==='hammer'&&T('gt.hammer')==='Pickaxe';
+        enemies=[{x:P.x-20,y:P.y,r:12,dead:false}];S.wd.t+=0.01;o.foe=!gtHeld();enemies=[];S.wd.t+=0.01;
+        const s0=G.stat.strike;rk.hp=1e4;P.gn.t=0;o.strike=gtStrike(rk)&&rk.hp<1e4&&G.stat.strike===s0+1&&P.gn.t>0;rk.hp=rk.max;
+        if(R3D.on&&R3D.ready){const L=heroLook();o.pick=!!R3D.props.w_pickaxe&&L.props.tool_hammer&&L.props.tool_hammer.prop==='w_pickaxe';
+          syncPlayer(1/60);const a=R3D.player,st=a&&a.st,n0=G.stat.anim.hammer||0;
+          if(st){P.sw.anim=(st.anim||0)+0.2;P.gn.t=(st.gt||0)+1;syncPlayer(1/60);o.anim=(G.stat.anim.hammer||0)>n0&&a.props.tool_hammer.visible&&!(a.props.sword&&a.props.sword.visible)}else o.anim=false}
+        else o.pick=o.anim=true}
       o.blank=saveBlank().gt.axe===1;
       const wd=S.wd;S.wd=null;try{SAVE.gt.axe=5;t.hp=1e4;P.gtHold=null;gHit(t,0,10);o.arena=t.hp===1e4&&!gtHeld()}finally{S.wd=wd}
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     enemies=[];SAVE=JSON.parse(bak);P.gtHold=null;AUI.tab='age';enterVillage();return o});
+  check(!gtr.err&&gtr.aimAxe&&gtr.aimPick&&gtr.foe&&gtr.strike&&gtr.pick&&gtr.anim,'כלי ביד: '+(gtr.err||((gtr.aimAxe?'גרזן מול עץ':'אין גרזן מול עץ!')+(gtr.aimPick?', מכוש מול סלע':', אין מכוש מול סלע!')+
+    (gtr.foe?', אויב קרוב מחזיר את הנשק':', הכלי נשאר מול אויב!')+(gtr.strike?', קשת מכה בכלי':', קשת לא מכה בכלי!')+(gtr.pick?', מודל מכוש':', אין מודל מכוש!')+(gtr.anim?', תנועת כרייה':', בלי תנועה!'))));
   check(!gtr.err&&gtr.tree&&gtr.t1&&gtr.t3&&gtr.metal&&gtr.slow&&gtr.hard&&gtr.bForge&&gtr.bGm&&gtr.start&&gtr.sign&&gtr.done&&gtr.tab&&gtr.look&&gtr.blank&&gtr.arena,
     'כלי איסוף: '+(gtr.err||((gtr.t1?'דרגה 1 בקצב של היום והגרזן ביד':'דרגה 1 שונה!')+(gtr.t3?', דרגה 3 חזקה יותר':', בלי חיזוק')+(gtr.slow?', כסף עם פטיש חלש לאט':', כסף חסום או רגיל!')+
     (gtr.hard?', ובפטיש מתאים רגיל':', פטיש מתאים לא עוזר')+(gtr.bForge&&gtr.bGm?', תנאי נפחייה ומומחיות':', תנאים שגויים')+(gtr.start&&gtr.sign?', שעון ושלט בכפר':', השעון לא התחיל')+
@@ -5136,7 +5147,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(L.swapBtn&&(L.nHeld>1?L.swaps>0:L.swaps===0),'כפתור החלפת נשק: '+(L.nHeld>1?L.swaps+' החלפות בין '+L.nHeld+' נשקים':(L.swapBtn?'מוסתר, כי יש נשק אחד ביד':'מוצג עם נשק אחד')));
   // כל דמות עם הנשק שלה: לוחם מניף, צייד יורה חצים, קוסם יורה קסם (WEAPONS ב-weapons.js)
   const MW=heroes.mageWorld;delete heroes.mageWorld;
-  check(MW.node==='bolt'&&MW.nodeHit&&MW.foe==='bolt'&&MW.foeHit,'קוסם בעולם: מקור משאבים '+(MW.node==='bolt'?'בקסם':'ב-'+MW.node)+(MW.nodeHit?' ונפגע':' ולא נפגע')+
+  check(MW.node===(MW.tool?'-':'bolt')&&MW.nodeHit&&MW.foe==='bolt'&&MW.foeHit,'קוסם בעולם: מקור משאבים '+(MW.tool?(MW.node==='-'?'בכלי ביד':'ב-'+MW.node+' במקום בכלי'):MW.node==='bolt'?'בקסם':'ב-'+MW.node)+(MW.nodeHit?' ונפגע':' ולא נפגע')+
     ', '+MW.ft+' '+(MW.foe==='bolt'?'בקסם':'ב-'+MW.foe)+(MW.foeHit?' ונפגע':' ולא נפגע'));
   for(const id in heroes){const h=heroes[id],want={warrior:'swing',hunter:'arrow',mage:'bolt'}[id],got=h.swings&&h.shots==='-'?'swing':h.shots;
     check(got===want&&h.hit&&h.swapHidden&&(!h.homed===(want!=='bolt'))&&(h.anim==null||h.anim===h.want3d),'דמות '+id+': '+T_(h.wt)+', '+
