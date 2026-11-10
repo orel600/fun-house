@@ -1585,6 +1585,19 @@ function worldBot(m,L,god){
       r.blockAfter=(()=>{for(const e of enemies)e.dead=true;enemies=[];run(0.05);return !sktTap(id)&&S.sk.cd[0]<=0})();
     }catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // שובל ההנפה (fxworld.js): מתחיל בצד שהנשק באמת יוצא ממנו בתלת-ממד ועובר דרך החזית. חרב: מצד יד ימין. גרזן ופטיש: מלמעלה במסך. בשני הכיוונים
+  const swt=await page.evaluate(()=>{const r={bad:[]},P2=Math.PI*2,rel=(a,b)=>{let d=(a-b)%P2;if(d>Math.PI)d-=P2;if(d<-Math.PI)d+=P2;return d};
+    try{const T=FXW.trail;
+      for(const kind of ['slash','axe','smash'])for(const ang of [0,Math.PI,0.6,Math.PI-0.6,-0.5]){
+        const E=fxwTrailEnds(kind,ang),s=rel(E.start,ang),e=rel(E.end,ang);
+        const side=T.from[kind]==='hand'?s>0.3:Math.sin(E.start)<0;   // יד ימין = צד חיובי. מלמעלה = y שלילי במסך
+        const front=Math.sign(s)!==Math.sign(e)&&Math.abs(s)<Math.PI&&Math.abs(e)<Math.PI;   // עובר דרך כיוון המכה
+        if(!side||!front)r.bad.push(kind+'@'+ang.toFixed(1)+':'+s.toFixed(2)+'→'+e.toFixed(2))}
+      // השובל שמתנגן באמת מקבל את הסיבוב והשיקוף
+      if(SKR)skrEnd(false);enterWorld('home');const wt0=P.wt,a0=P.sw.ang;P.wt='sword';P.sw.ang=Math.PI;const h=fxwSwing();
+      const o=fxwTrailRot('slash',Math.PI);r.live=!h||Math.abs(h.rot-o.rot)<1e-6&&h.flip===o.flip;r.h=!!h;P.wt=wt0;P.sw.ang=a0;if(h)fxStop(h);
+    }catch(err){r.err=String(err&&err.stack||err)}
+    return r});
   // קריאות שלב 2 (readable2.js): אזהרה אחת מעל הראש ומצוירת אחרונה; מספר נזק לא על הגיבור ותקרה לידו; מיזוג ארוך בקרב צפוף; שמות עמומים בקרב ולא על השלטים/הגיבור; כרטיס "New" מחכה לסוף הקרב; הכל נגמר
   const rd2=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];const st=READ2.stat,s0={...st};
@@ -5155,6 +5168,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     'מכה חדה: '+(shk.err||[shk.sword?'חרב: פס בכיוון המכה':'חרב: אין',shk.bow?'קשת: פס דק':'קשת: אין',shk.skill?'סקיל':'סקיל: אין',
     shk.stronger?'הסקיל חזק יותר (רתיעה '+shk.lean.join(' מול ')+')':'הסקיל לא חזק יותר',shk.cap?'תקרה בפריים':'בלי תקרה',shk.near?'ליד הגיבור: עד 2, קטנים':'ליד הגיבור: בלי תקרה',shk.drawn&&shk.gone?'מצויר ונעלם':'לא נעלם',
     shk.calm?'הפחתת תנועה: בלי רתיעה נוספת':'רתיעה בהפחתת תנועה',shk.pet?'חיה לא':'גם חיה'].join(', ')));
+  check(!swt.err&&!swt.bad.length&&swt.live,'שובל ההנפה: '+(swt.err||(swt.bad.length?'לא מהצד של הנשק: '+swt.bad.join(' '):'מתחיל בצד של הנשק ועובר דרך החזית (חרב, גרזן, פטיש, ימינה ושמאלה)')+(swt.live?'':', השובל שמתנגן בלי השיקוף')));
   check(!rd2.err&&rd2.head&&rd2.headEnd&&rd2.push&&rd2.crowd&&rd2.cap&&rd2.numsEnd&&rd2.lblDim&&rd2.lblFix&&rd2.cardHeld&&rd2.cardShown&&rd2.mergeBack&&rd2.cardEnd,
     'קריאות בקרב צפוף: '+(rd2.err||[rd2.head&&rd2.headEnd?'אזהרה אחת מעל הראש, מצוירת אחרונה ונעלמת':'המסלול מעל הראש לא עובד',
     rd2.push?'מספר נזק לא על הגיבור':'מספר נזק על הגיבור',rd2.cap?'ליד הגיבור '+rd2.near+' מספרים (תקרה '+4+')':'בלי תקרה ליד הגיבור ('+rd2.near+')',
