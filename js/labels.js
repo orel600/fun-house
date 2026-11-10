@@ -32,7 +32,7 @@ function lblHud(){const now=performance.now();if(LBHUD&&now-LBHUDT<250)return LB
   return LBHUD}
 function lblFlush(){
   const q=LBQ;LBQ=null;if(!q||!q.length)return;
-  const Z=ZOOM||1,P_=LABELS.hudPad,hud=lblHud(),st=LABELS.stat,placed=[];
+  const Z=ZOOM||1,P_=LABELS.hudPad,hud=lblHud(),st=LABELS.stat,placed=typeof r2Fixed==='function'?r2Fixed():[];   // שלטים והמסלול מעל הגיבור תפוסים מראש (readable2.js)
   q.sort((a,b)=>(b.pri||0)-(a.pri||0)||(a.d||0)-(b.d||0));
   const hit=(a,b,p)=>a.l<b.r+p&&b.l<a.r+p&&a.t<b.b+p&&b.t<a.b+p;
   const fight=lblFight(),mx=fight?LABELS.fight.max:LABELS.max;if(fight)st.fight++;
@@ -48,14 +48,17 @@ function lblFlush(){
       if(ok){st.bubble++;o.paint(y);ctx.textAlign='center'}else st.hidden++;continue}
     const big=full<mx,t=big?o.t:o.icon;if(!t){st.hidden++;continue}
     const fs=big?o.fs:o.fs*0.85;ctx.font=(o.w||'800')+' '+fs+'px Heebo, system-ui, sans-serif';
-    const tw=ctx.measureText(t).width+10/Z,h=fs*1.25;let y=o.y,ok=false;
-    for(let i=0;i<=LABELS.nudge;i++){
+    const tw=ctx.measureText(t).width+10/Z,h=fs*1.25;let y=o.y,ok=false,low=null;
+    for(let i=0;i<=LABELS.nudge+1;i++){
+      if(i>LABELS.nudge){if(!low||!low.fix)break;y=(low.b+LABELS.gap+1)/Z+fs*0.92}   // נתקע מתחת לגיבור או לשלט (readable2.js): ניסיון אחד מתחתיו
       const r={l:(o.x-tw/2)*Z,r:(o.x+tw/2)*Z,t:(y-fs*0.92)*Z,b:(y-fs*0.92+h)*Z};
       if(hud.some(b=>hit(r,{l:b.left,r:b.right,t:b.top,b:b.bottom},P_))){st.hud++;break}   // על כפתור: לא מציירים
-      if(!placed.some(p=>hit(r,p,LABELS.gap))){placed.push(r);ok=true;if(i)st.nudged++;break}
+      const c=placed.find(p=>hit(r,p,LABELS.gap));if(!c){placed.push(r);ok=true;if(i)st.nudged++;break}
+      if(c.fix&&(!low||c.b>low.b))low=c;
       y-=h+LABELS.gap/Z}
     if(!ok){st.hidden++;continue}
-    if(big)full++;st[big?'full':'icon']++;
+    if(big){full++;if(typeof r2LblPut==='function')r2LblPut(o.x-tw/2,y-fs*0.92,tw,h)}st[big?'full':'icon']++;   // מספרי הנזק לא עולים על שם מלא (readable2.js)
+    if(fight){const a=typeof r2LblA==='function'?r2LblA(big):null;ctx.globalAlpha=a==null?LABELS.fight.a:a}   // בקרב: השם המלא (המטרה, החשוב) ברור, השאר עמומים (readable2.js)
     ctx.fillStyle=o.bg||LABELS.bg;ctx.fillRect(o.x-tw/2,y-fs*0.92,tw,h);ctx.fillStyle=o.col;ctx.fillText(t,o.x,y)}
   ctx.restore();ctx.direction=DIR;
 }
