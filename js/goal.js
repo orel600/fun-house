@@ -28,6 +28,7 @@ function goalFrac(c){let h=0,n=0;for(const r of GOAL.res)if(c[r]){n+=c[r];h+=Mat
 function goalNow(){
   const s=goalS();if(s.pin&&goalCost(s.pin))return s.pin;
   if(s.pin)s.pin=null;
+  const f=fuGoal();if(f)return f;   // עד שהשדרוג הראשון נבנה, הוא היעד (firstup.js)
   let best=null,bf=-1;
   for(const k in VILLAGE.b){const w=vBlock(k);if(w&&w!=='cost')continue;const f=goalFrac(vCost(k)||{});if(f!=null&&f<1&&f>bf){bf=f;best={k}}}
   for(const p in VPROJ.list){const c=goalCost({p});const f=c&&goalFrac(c);if(f!=null&&f<1&&f>bf){bf=f;best={p}}}   // פרויקט בכפר
@@ -39,6 +40,7 @@ function goalShow(){
   // נשארים על המשאב שכבר מוצג כל עוד הוא חסר, כדי שהשבב לא יקפוץ בין עץ לאבן באמצע האיסוף
   const k=GOALW.r;if(k&&GOALW.g===goalKey(g)&&c[k]&&(SAVE.bag[k]||0)<c[k])r=k;
   else for(const x of GOAL.res)if(c[x]){const f=(SAVE.bag[x]||0)/c[x];if(f<1&&f<low){low=f;r=x}}
+  if(!r&&c.coins&&(SAVE.bag.coins||0)<c.coins)r='coins';   // מהעולם יש הכל, חסרים מטבעות: מראים אותם, ולא ⌂ שמזמין הביתה לשווא
   if(!r)return goalFrac(c)==null?null:{g,done:true};
   return {g,r,have:SAVE.bag[r]||0,need:c[r]};
 }

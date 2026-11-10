@@ -29,7 +29,8 @@ const VILLAGE={
       cost:[null,null,{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50,copper:10,cloth:5},{coins:180,wood:120,stone:100,iron:20,cloth:15},{coins:350,wood:220,stone:200,silver:15,gold:5,horn:1,star:1}]},
     forge:{x:-450,y:-230,r:66,     // נפחייה: כל רמה פותחת עוד שכבת ציוד ליצירה (GEAR.recipes ב-gear.js), ו-Aging לציוד (aging.js) עד ה-+ של הרמה
       look:[{at:1,model:'tent',scale:1,deco:['barrel']},{at:2,model:'tent',scale:1,deco:['rack','bucket','crateS']},{at:3,model:'forge',scale:0.9,deco:['crate','barrel']},{at:4,model:'forge',scale:1,deco:['rack','fenceS','barrel']},{at:5,model:'forge',scale:1.12,deco:['flag','flag','rack','crate'],glow:C.ember}],
-      cost:[null,{coins:20,wood:15,stone:10},{coins:50,wood:35,stone:25,copper:8},{coins:110,wood:70,stone:60,iron:15,bone:10},{coins:220,wood:140,stone:120,silver:12,hide:15},{coins:400,wood:250,stone:220,gold:10,essence:15,rubyF:1}]},
+      // רמה 1: מתנת הפתיחה לא מספיקה במטבעות, יציאה אחת לעולם כן. זה השדרוג הראשון שמרגישים (firstup.js)
+      cost:[null,{coins:45,wood:15,stone:8},{coins:50,wood:35,stone:25,copper:8},{coins:110,wood:70,stone:60,iron:15,bone:10},{coins:220,wood:140,stone:120,silver:12,hide:15},{coins:400,wood:250,stone:220,gold:10,essence:15,rubyF:1}]},
     mill:{x:-560,y:80,r:66,
       look:[{at:1,model:'pile',scale:1,deco:['pallet','ladder']},{at:2,model:'stageA',scale:1,deco:['wbarrow','lumber']},{at:3,model:'mill',scale:0.95,deco:['crate']},{at:4,model:'mill',scale:1.05,deco:['wbarrow','crate','fenceW']},{at:5,model:'mill',scale:1.12,deco:['flag','flag','crate','wbarrow'],glow:C.gold}],
       cost:[null,{coins:10,stone:5},{coins:30,wood:15,stone:20},{coins:70,wood:30,stone:50,copper:5},{coins:140,wood:60,stone:100,iron:10},{coins:260,wood:120,stone:180,silver:8,aquaF:1}],
@@ -123,6 +124,7 @@ function vUpgrade(k){
   const B=VILLAGE.b[k],dust=celebrate(B.x,B.y,'upgrade','+1');S.vil.raise[k]=fxNow()+dust;
   setTimeout(()=>{if(S.vil)S.shake=Math.max(S.shake,6)},dust*1000);
   banner(T('vil.'+k)+' · '+T('level',vLv(k)),C.gold);
+  fuBuilt(k);   // הנפחייה הראשונה משחיזה את הנשק (firstup.js)
   return true;
 }
 
