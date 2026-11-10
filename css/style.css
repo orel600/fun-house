@@ -1074,6 +1074,7 @@ body:not(.vil):not(.world) .guide{display:none}
 /* שורת השמועה על נדירה (rares.js): מתחת למפה הקטנה, בצד שלה. שורת המטרה והקיצורים בצד השני */
 .grare{position:fixed;z-index:3;top:calc(var(--ctop,8px) + 64px + var(--mmap,96px));inset-inline-end:var(--cside,14px);max-width:min(34vw,300px);padding:3px 10px;border-radius:12px;border:1px solid #F7E27A88;
   background:rgba(18,22,36,.82);color:#F7E27A;font:700 var(--t1,12px) var(--body);line-height:1.25;text-shadow:0 0 3px #000;pointer-events:none}
+.grare{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(48vw,440px)}   /* one line: two lines reached down to the skills (Nir, 10.11) */
 .grare[hidden],body:not(.world) .grare,body.menu .grare{display:none}
 /* בקווסט הדרגה: הנדירות לפי אזור, צללית עד שצדת */
 .rlist{list-style:none;padding:0;margin:4px 0;font-size:.9em}
@@ -1176,6 +1177,10 @@ body:has(#vPanel:not([hidden])) #nav,body:has(#wPanel:not([hidden])) #nav{displa
 .world .hud .row{display:none}
 .world .hud{padding-top:var(--ctop)}
 .world .bossbar{max-width:36vw;margin-inline:auto}
+/* world boss bar (bosshud.js places it): the name on one line, the subtitle cut with … first, the weakness always whole */
+.world .bossname{white-space:nowrap;gap:8px}
+.world .bossname span{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.world .bossname em{flex:none}
 /* שורת המטרה (guide.js) וקו המעקב (qTrack): אותו מקום, מתחת ל"מי אני", עד שתי שורות */
 .vil .guide,.world .guide{left:auto;transform:none;inset-inline-start:var(--cside);top:calc(var(--ctop) + var(--b1) + 8px);max-width:min(32vw,340px)}
 .vil .guide button,.world .guide button{font-size:var(--t1);min-height:36px}

@@ -74,7 +74,7 @@ function msgBlocks(){
     if(r.width*r.height>vw*vh*0.4||(r.height>vh*0.6&&d>=3))return;   // חלון או שכבה על כל המסך (או עמוד גבוה): לא כפתור
     if((r.width>vw*0.5||r.height>vh*0.5)&&d<3){for(const k of e.children)add(k,d+1);return}
     // הודעות וכרטיסים שקופים למגע: לא חוסמים. אבל מיכל שקוף יכול להחזיק כפתורים (#qRail: ספר, קווסטים, גיבור. ביקורת 7.11.2026): בודקים את הילדים
-    if(cs.pointerEvents==='none'&&!e.closest('.whud,.vhud,.hud,#qTrack,.skills,#who')){if(d<3)for(const k of e.children)add(k,d+1);return}
+    if(cs.pointerEvents==='none'&&!e.closest('.whud,.vhud,.hud,#qTrack,.skills,#who,#rareLine')){if(d<3)for(const k of e.children)add(k,d+1);return}
     out.push({left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height,el:e});
     // ילדים שיוצאים מגבולות המיכל (קשת הסקילים ב-#skills: המיכל בגודל הכפתור הראשון, והשניים האחרים מחוץ לו. ניר, סרטון 7.11): נמדדים גם הם
     if(d<3)for(const k of e.children){const q=k.getBoundingClientRect();if(q.width>=2&&q.height>=2&&(q.left<r.left-1||q.right>r.right+1||q.top<r.top-1||q.bottom>r.bottom+1))add(k,d+1)}};
