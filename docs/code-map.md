@@ -152,6 +152,7 @@
 | `js/mb-rim.js` | משחקי השאול, השיפוץ: קו אור עדין על קצה הגיבורים הכהים ואור עצמי עדין (`MBRIM`, לפי ערכה, `?mbrim=0` מכבה). רק מראה. הצייד והמתנקש; tankX דרך gain ב-mb-tankx.js |
 | `js/mb-skbody.js` | משחקי השאול, השיפוץ: הגוף בסקילים של הלוחם, הצייד, הקוסמת והמתנקש (`MBSKBODY`): קטע של קליפ בפלג הגוף העליון ברגע ההטלה, לפי טבלה. רק מראה, לא נועל |
 | `tools/mb-anims.js` | השיפוץ: מוציא קליפים של KayKit שחסרו (Throw, Bow_Draw_Up/Release_Up, Magic_Raise, Crouching, Sneaking) מחבילות Rig_Medium לקבצי `js/m3d/anim_mbx_*.js` שנטענים לפי צורך |
+| `js/mb-mini.js` | משחקי השאול, השיפוץ: המפה הקטנה (`MBMINI`, `?mbmini=old` לישנה): פלטת אובסידיאן, בסיס כיהלום עם עיגול הבית, גיבור מת עמום, וחץ זהב לכיוון שלך. רק ציור, הראייה והמצלמה בלי שינוי |
 | `js/petx.js` | חיית המחמד: ניסוי קפיצות, מעיכה ונשימה בציור בלבד (`PETX`, `?petx=1`, כבוי). עוטף syncPet |
 | `js/retarget-tracks.js` | אנימציות של KayKit לשלד עם אורכי עצמות אחרים (ARI): `RETARGET.ratios`, `apply`, `applyRotOnly`, `dampen` (צעד קטן יותר בריצה), וטבלאות `TANKX` ו-`WANDERX` |
 | `js/moba-vision.js` | משחקי השאול: ראייה, ערפל ושיחים (`MBVIS`). כל קבוצה רואה רק מה שבטווח של הגיבורים, החיילים, המגדלים והבסיס שלה. `mbSeen(u,team)`, `mbInBush(u)` (השיחים של mbDecor, מקובצים לשיחים), `mbVisReveal(x,y,r,t,team)` לחשיפת אזור, `mbShow` ו-`mbVisPt` לציור. גיבור בשיח נסתר מהאויב, חוץ מאותו שיח או שנייה אחרי תקיפה. בוט שאיבד גיבור ליד שיח בודק אותו (`mbVisLost`). עוטף את mbCast ואת syncEnemy/syncPlayer (חבר בשיח שקוף) |
