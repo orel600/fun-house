@@ -69,12 +69,12 @@ const LOOK3D={
   // אגם הערפל (פרק 2): אבירים טבועים בכחול-ירוק חלוד, ערפלונים מרחפים, ושומר המים: ברבריאן גדול בכחול עמוק עם מטה מים
   drowned:{model:'warrior',h:62,foot:14,tint:'#2E7F8F',props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'water'}},
     anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
-  mistling:{model:'skelMage',h:46,foot:11,float:10,tint:'#BFE3F2',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  mistling:{model:'skelMage',h:46,foot:11,float:10,tint:'#6FC2E8',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   tidewarden:{model:'barbarian',h:84,foot:18,tint:'#1E5FD0',props:{staff:{prop:'staff',...HAND_R,tint:'water'}},anim:{run:'Running_B',die:'Death_A'}},
   // הרכס הקפוא (פרק 3): אבירי כפור בתכלת, רוחות שלג מרחפות, ושומר הקרח: ברבריאן גדול בלבן-תכלת עם מטה קרח
   rimeknight:{model:'warrior',h:64,foot:14,tint:'#9FD8F0',props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'ice'}},
     anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
-  frostwraith:{model:'skelMage',h:46,foot:11,float:10,tint:'#EAF8FF',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  frostwraith:{model:'skelMage',h:46,foot:11,float:10,tint:'#8FD8FF',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   frostwarden:{model:'barbarian',h:88,foot:18,tint:'#7FD4FF',props:{staff:{prop:'staff',...HAND_R,tint:'ice'}},anim:{run:'Running_B',die:'Death_A'}},
   // המדבר הבוער (פרק 4): עקרבי אבן-אש נמוכים בכתום, רוחות אש מרחפות, ושומר האש: ברבריאן גדול באדום-גחלים עם מטה אש
   cinderscorp:{model:'minion',h:46,foot:13,tint:'#D2582A',props:{blade:{prop:'blade',...HAND_R,tint:'fire'}},anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
@@ -83,7 +83,7 @@ const LOOK3D={
   // מגדלי הסערה (פרק 5): אבירי סערה בסגול עם מגן מחושמל, ניצוצות מרחפים, ושומר הסערה: ברבריאן גדול בסגול-חשמל עם מטה ברק
   stormknight:{model:'warrior',h:64,foot:14,tint:'#8A7BC8',props:{shield:{prop:'shield',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1],tint:'lightning'}},
     anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
-  sparkwisp:{model:'skelMage',h:44,foot:11,float:14,tint:'#E2CCFF',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+  sparkwisp:{model:'skelMage',h:44,foot:11,float:14,tint:'#B07CFF',anim:{run:'Running_C',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
   stormwarden:{model:'barbarian',h:92,foot:18,tint:'#7A4FE0',props:{staff:{prop:'staff',...HAND_R,tint:'lightning'}},anim:{run:'Running_B',die:'Death_A'}},
   // לב הצל (פרק 6): צללים כהים של אבירים ורוחות, והצל עצמו: ברבריאן ענק כמעט שחור עם מטה
   shadeknight:{model:'warrior',h:64,foot:14,tint:'#3A2A5C',anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
@@ -635,7 +635,7 @@ function syncEnemy(e,dt){
   // לאורך כל ההסתערות והסחרור (ניר, 7.11: "זקן-הקליפה לבן"). בהסתערות ובקפיצה עצמן: הזוהר האדום של המתקפה, במלואו
   else if((e.act==='dash'||e.act==='jump')&&!(e.flash>FOEATK3D.actFlash))setFlash(a,F.glowK[1],F.glow);
   else{let hit=e.flash>(e.act?FOEATK3D.actFlash:0),fk=0.9;
-    if(e.wboss){const G=GIANT.flash;a.flC=(a.flC??9)+dt;if(hit&&a.flC>=G.gap)a.flC=0;hit=a.flC<G.dur;fk=G.k}   // giant: a short weak blink, not white all fight (giant.js GIANT.flash)
+    if(typeof hitFlashHere==='function'&&hitFlashHere()){fk=hitFlash3d(a,L,hit,dt);hit=fk>0}   // world and village: a short weak blink, not white all fight (hitflash3d.js)
     setFlash(a,hit?fk:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,hit?0xffffff:C.blood)}
   if(a.sc0){const q=juiceSquash(e)+(e.act==='crouch'?F.squat*Math.max(0,tk):0);a.root.scale.set(a.sc0*(1+q),a.sc0*(1-q),a.sc0*(1+q))}   // מעיכה קטנה במכה (juice.js)
   // כשיש הרבה אויבים, כל אחד מונפש רק בכל פריים שני (חצי מהם בכל פריים). בעין זה לא נראה, ובטלפון זה חוסך הרבה
