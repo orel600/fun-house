@@ -14,7 +14,7 @@ const DOLL3D={
   yawBy:{bow:0.9,magic:-0.25},
   swayBy:{magic:0.2},        // המטה מורם ליד הראש: נדנוד קטן, כדי שהוא לא יעבור מול הפנים
   /* מסגרת (באג 9.11.2026, docs/weapon-audit-2026-11-09.md: 10 מ-17 נשקים נחתכו בקצה). המצלמה מתאימה את עצמה לקופסה של הדמות
-     ושל הנשק יחד, בכל הנדנוד ובתנוחת העמידה (dollFit). minH: הדמות תופסת לפחות חלק כזה מגובה הקנבס, גם כשהנשק ארוך (קשת הסערה ומטה הכוכב צריכים 0.45, חרבות וגרזנים 0.56 עד 0.75: הקנבס צר, 136 על 215, בין טורי המשבצות).
+     ושל הנשק יחד, בכל הנדנוד ובתנוחת העמידה (dollFit). minH: הדמות (עם הנשק) רוצה לתפוס לפחות חלק כזה מגובה הקנבס. כשהנשק רחב מדי לזה, הנדנוד קטן (dollCam), ולא חותכים (קשת הסערה ומטה הכוכב צריכים 0.45, חרבות וגרזנים 0.56 עד 0.75: הקנבס צר, 136 על 215, בין טורי המשבצות).
      pad: שוליים סביב הכל (חלק מהקנבס). badge: הפינה התחתונה בצד הסוף, שם תג המחלקה (.gfig b): הנשק לא נכנס אליה.
      poses: כמה רגעים בכל אנימציה נבדקים, swing: כמה נקודות בנדנוד */
   minH:0.45,pad:0.03,badge:{w:0.3,h:0.16},poses:4,swing:5,
@@ -80,16 +80,17 @@ function dollFit(D){
   for(const n of [D.idle]){   // רק העמידה: ההרעה (1.4 שניות אחרי שלובשים) הרימה את הנשק והקטינה את הדמות לכל הזמן (להב הדרקון 0.42 במקום 0.56)
     const x=act(a,n);if(!x)continue;const d=x.getClip().duration;x.reset().setEffectiveWeight(1).play();
     for(let k=0;k<P.poses;k++){x.time=d*k/P.poses;a.mixer.update(0);
-      for(let j=0;j<P.swing;j++){a.root.rotation.y=D.yaw+D.sway*(j/(P.swing-1)*2-1);const b=dollBox(a.root);if(b.isEmpty())continue;
-        for(const X of [b.min.x,b.max.x])for(const Y of [b.min.y,b.max.y])for(const Z of [b.min.z,b.max.z])pts.push(new THREE.Vector3(X,Y,Z))}}
+      for(let j=0;j<P.swing;j++){const s=j/(P.swing-1)*2-1;a.root.rotation.y=D.yaw+D.sway*s;const b=dollBox(a.root);if(b.isEmpty())continue;
+        for(const X of [b.min.x,b.max.x])for(const Y of [b.min.y,b.max.y])for(const Z of [b.min.z,b.max.z]){const v=new THREE.Vector3(X,Y,Z);v.s=Math.abs(s);pts.push(v)}}}
     x.stop()}
   a.root.rotation.y=D.yaw;loop(a,D.idle);const ix=act(a,D.idle);if(ix)ix.stopFading().setEffectiveWeight(1);a.mixer.update(0.01);   // בלי fadeIn: אחרת ברגע אחרי הבנייה הדמות בתנוחת T והנשק יוצא מהמסגרת (חרב רחבה, #585)
   D.pts=pts;dollCam(D);
 }
 /* מצלמה ישרה (מבט לאורך z): המרכז באמצע הקופסה, והמרחק הקטן שבו כל הנקודות בתוך הקנבס, בלי פינת התג.
-   הדמות לא קטנה מ-minH מהגובה: נשק ארוך מאוד ייחתך קצת, ולא הגיבור יהפוך לגפרור */
-function dollCam(D){
-  const P=DOLL3D,ty=Math.tan(P.fov*Math.PI/360),tx=ty*(D.cam.aspect||1),pts=D.pts;if(!pts||!pts.length)return;
+   הכל תמיד בתוך הקנבס, הגיבור וגם הנשק (באג 9.11.2026: בקנבס צר, להב הדרקון חתך חצי מהראש, כי המצלמה התקרבה בכוח עד minH והמרכז נשאר בין הדמות לנשק).
+   כשהדמות יוצאת קטנה מ-minH, מקטינים קודם את הנדנוד (D.sw: נשק רחב שמסתובב תופס הכי הרבה רוחב), ורק אם גם בלי נדנוד היא קטנה, היא נשארת קטנה */
+function dollFitAt(D,pts){
+  const P=DOLL3D,ty=Math.tan(P.fov*Math.PI/360),tx=ty*(D.cam.aspect||1);
   let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const p of pts){x0=Math.min(x0,p.x);x1=Math.max(x1,p.x);y0=Math.min(y0,p.y);y1=Math.max(y1,p.y)}
   const cx=(x0+x1)/2,cy=(y0+y1)/2,m=1-2*P.pad,bx=1-2*P.badge.w,by=-1+2*P.badge.h,end=document.documentElement.dir==='rtl'?-1:1;
   let dist=0;
@@ -97,8 +98,15 @@ function dollCam(D){
   // פינת התג: נקודה שנופלת בה מרחיקה את המצלמה עד שהיא יוצאת (בגובה או ברוחב, הקרוב מביניהם)
   for(let i=0;i<3;i++)for(const p of pts){const z=dist-p.z,sx=(p.x-cx)/(z*tx)*end,sy=(p.y-cy)/(z*ty);
     if(sx>bx&&sy<by)dist=Math.max(dist,p.z+Math.min((p.x-cx)*end/(tx*bx),(cy-p.y)/(ty*-by)))}
-  dist=Math.min(dist,D.h/(2*ty*P.minH));   // הגיבור לא קטן מ-minH
-  D.cam.position.set(cx,cy,dist);D.cam.lookAt(cx,cy,0);D.cam.updateProjectionMatrix();
+  return {cx,cy,dist};
+}
+function dollCam(D){
+  const P=DOLL3D,ty=Math.tan(P.fov*Math.PI/360),all=D.pts;if(!all||!all.length)return;
+  const far=D.h/(2*ty*P.minH);   // המרחק שבו הדמות בגובה minH מהקנבס
+  let f=null;
+  for(const k of [1,0.5,0]){const pts=all.filter(p=>p.s<=k+1e-6);if(!pts.length)continue;f=dollFitAt(D,pts);f.k=k;if(f.dist<=far)break}
+  D.sw=D.sway*f.k;
+  D.cam.position.set(f.cx,f.cy,f.dist);D.cam.lookAt(f.cx,f.cy,0);D.cam.updateProjectionMatrix();
 }
 /* מודל משלו (w_item_, נטען בעצלתיים ב-m3d.js) מתחיל לרדת כבר כשבוחרים נשק בתיק, ולא רק כשלובשים אותו.
    עד שהוא מוכן הדמות מחזיקה מודל זמני נייטרלי (heroLook ב-render3d.js), ו-dollFrame מחליף אותו כשהמודל מגיע */
@@ -125,7 +133,7 @@ function dollFrame(){
   if(w&&h&&(D.w!==w||D.hh!==h)){D.w=w;D.hh=h;D.r.setPixelRatio(Math.min(2,DPR||1));D.r.setSize(w,h,false);D.cam.aspect=w/h;dollCam(D)}
   if(D.mv!==M3D.v){D.mv=M3D.v;dollBuild(D)}   // מודל נטען בזמן שהחלון פתוח (m3d.js): הדמות נבנית מחדש עם הנשק האמיתי (באג 9.11: נשאר המודל הזמני)
   const a=D.a;a.mixer.update(dt);
-  a.root.rotation.y=(D.yaw||0)+Math.sin(D.t*DOLL3D.spin)*D.sway;
+  a.root.rotation.y=(D.yaw||0)+Math.sin(D.t*DOLL3D.spin)*(D.sw??D.sway);   // D.sw: הנדנוד שנכנס לקנבס (dollCam)
   if(a.one&&!a.one.isRunning()){a.one=null;loop(a,D.idle)}
   const n=D.orbs.children.length;D.orbs.children.forEach((m,i)=>{const t=D.t*DOLL3D.orb.spin+i*Math.PI*2/n,r=D.h*DOLL3D.orb.r;
     m.position.set(Math.cos(t)*r,D.cy+D.h*(DOLL3D.orb.y-0.5)+Math.sin(t*2)*D.h*0.04,Math.sin(t)*r)});

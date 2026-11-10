@@ -6,12 +6,13 @@
        בפריט עם מודל משלו (w_item_<id>, נטען בעצלתיים ב-m3d.js) נמדד גם הרגע שלפני שהמודל נטען: אז מוצג look.model עם זוהר הדרגה.
    (ב) מסגור: בחלון הציוד, בכמה זוויות של הנדנוד, האם הנשק נחתך בקצה הקנבס של הבובה, או מוסתר מתחת לחלק אחר של החלון.
    הרצה:  node tools/weapon-audit.js            (כ-15 דקות, התלת-ממד רץ על המעבד)
+          WA_IDS=dragonBlade,wardenHammer (רק אלה), WA_VIEW=640x360 (מסך אחר: שם קנבס הבובה צר), WA_OUT=<תיקייה>. (ב) בודק גם את הגיבור כולו (hero: יותר מ-1 = נחתך)
    פלט:   docs/weapon-audit/audit.json, docs/weapon-audit/sheet.png (תמונה מול הנשק ביד), ושורות במסוף.
    הדוח הכתוב (docs/weapon-audit-2026-11-09.md) נכתב ביד מתוך audit.json. */
 const {chromium}=require('playwright');
 const path=require('path'),fs=require('fs');
 const OUT=process.env.WA_OUT||path.resolve(__dirname,'..','docs','weapon-audit');   // WA_OUT: לתיקייה אחרת, כדי לא לדרוס את הדוח
-const VIEW={width:1280,height:590};
+const VIEW=process.env.WA_VIEW?(([w,h])=>({width:+w,height:+h}))(process.env.WA_VIEW.split('x')):{width:1280,height:590};   // WA_VIEW=640x360: מסך אחר (שם קנבס הבובה צר, 84 על 216)
 const HUE_TOL=45;   // מעלות: מעבר לזה הגוונים שונים
 const DARK=0.55;     // הנשק ביד כהה מפי זה מהתמונה: לא תואם (הבובה מוארת כהה יותר מהתמונה, בממוצע פי 0.75)
 const WORLD_MIN=40;  // פחות פיקסלים של הנשק בעולם: לא שופטים
@@ -107,17 +108,21 @@ function pageHelpers(){
     a.mixer.update(0.6);
     const cvs=D.cvs,rect=cvs.getBoundingClientRect();
     // גודל הקנבס כמו ב-dollFrame
-    const w=cvs.clientWidth,h=cvs.clientHeight;D.r.setPixelRatio(1);D.r.setSize(w,h,false);D.cam.aspect=w/h;D.cam.updateProjectionMatrix();D.w=w;D.hh=h;
+    const w=cvs.clientWidth,h=cvs.clientHeight;D.r.setPixelRatio(1);D.r.setSize(w,h,false);D.cam.aspect=w/h;D.w=w;D.hh=h;dollCam(D);
     const render=()=>{a.root.updateMatrixWorld(true);D.r.render(D.scene,D.cam)};
     const out={model:prop.children[0]&&prop.children[0].name||'',prop:a.L?Object.values(a.L.props||{}).find(p=>p).prop:'',rect:[rect.left,rect.top,rect.width,rect.height].map(Math.round),samples:[]};
     out.propName=(heroLook().props[use]||{}).prop;out.glow=(heroLook().props[use]||{}).glow||null;out.gk=(heroLook().props[use]||{}).gk||0;
     // מה חותך את הקנבס: אבות עם overflow שאינו visible, והמסך
     let clip=[0,0,innerWidth,innerHeight];for(let e=cvs.parentElement;e;e=e.parentElement){const s=getComputedStyle(e);if(s.overflow!=='visible'||s.overflowX!=='visible'||s.overflowY!=='visible'){const r=e.getBoundingClientRect();clip=[Math.max(clip[0],r.left),Math.max(clip[1],r.top),Math.min(clip[2],r.right),Math.min(clip[3],r.bottom)]}}
-    const ph=[0,Math.PI/2,Math.PI,Math.PI*1.5];   // הקצוות של הנדנוד: sin=±1
+    const ph=[0,Math.PI/2,Math.PI,Math.PI*1.5];
+    // הגיבור כולו (גוף, שריון ונשק, עם העצמות): כמה רחוק הוא יוצא מ-[-1,1]. באג 9.11: הגיבור עצמו נחתך בקנבס צר, והבדיקה מדדה רק את הנשק
+    let heroOut=0;const ndcAll=()=>{a.root.updateMatrixWorld(true);let mx=0;const v=new THREE.Vector3();
+      a.root.traverseVisible(o=>{if(!o.isMesh)return;const P=o.geometry.attributes.position;for(let i=0;i<P.count;i+=2){v.fromBufferAttribute(P,i);if(o.isSkinnedMesh)o.applyBoneTransform(i,v);v.applyMatrix4(o.matrixWorld).project(D.cam);mx=Math.max(mx,Math.abs(v.x),Math.abs(v.y))}});return mx};   // הקצוות של הנדנוד: sin=±1
     let first=null,clipped=0,hidden=0,offView=0,cover={},tot=0,edge=0,ndc=0;
     const ndcMax=obj=>{obj.updateMatrixWorld(true);let mx=0;const v=new THREE.Vector3();
       obj.traverse(o=>{if(!o.isMesh)return;const P=o.geometry.attributes.position;for(let i=0;i<P.count;i+=1){v.fromBufferAttribute(P,i).applyMatrix4(o.matrixWorld).project(D.cam);mx=Math.max(mx,Math.abs(v.x),Math.abs(v.y))}});return mx};
-    for(const p of ph){a.root.rotation.y=(D.yaw||0)+Math.sin(p)*D.sway;
+    for(const p of ph){a.root.rotation.y=(D.yaw||0)+Math.sin(p)*(D.sw??D.sway);   // D.sw: הנדנוד אחרי ההתאמה לקנבס (dollCam)
+      heroOut=Math.max(heroOut,ndcAll());
       const r=__wa.diff(cvs,render,[prop]);if(!first)first=r;
       edge=Math.max(edge,r.edge);
       // ההיטל המדויק של הנשק (כל הקודקודים): כמה רחוק הוא יוצא מ-[-1,1]. מזה מחשבים כמה הדמות תקטן אם המצלמה תתאים את עצמה לגוף+נשק
@@ -142,7 +147,7 @@ function pageHelpers(){
         D.r.render(D.scene,cam);const g=__wa.grab(cvs);const o=document.createElement('canvas');o.width=S2;o.height=S2;o.getContext('2d').drawImage(g.c,0,0);shots[k]=o.toDataURL('image/png')}
       for(const o of hid)o.visible=true;D.r.setSize(w,h,false)}
     a.root.rotation.y=D.yaw||0;
-    return {...out,ndc:+ndc.toFixed(2),ndcCheer:+ndcCheer.toFixed(2),fitScale:+(1/Math.max(1,ndc,ndcCheer)).toFixed(2),front:shots.front,side:shots.side,col:__colorStats(first.px),img:first.img,bb:first.bb,cw:first.w,ch:first.h,edgePx:edge,projOut:clipped,ofSamples:ph.length,
+    return {...out,heroNdc:+heroOut.toFixed(2),sw:+(D.sw??D.sway).toFixed(2),ndc:+ndc.toFixed(2),ndcCheer:+ndcCheer.toFixed(2),fitScale:+(1/Math.max(1,ndc,ndcCheer)).toFixed(2),front:shots.front,side:shots.side,col:__colorStats(first.px),img:first.img,bb:first.bb,cw:first.w,ch:first.h,edgePx:edge,projOut:clipped,ofSamples:ph.length,
       hidPct:tot?Math.round(hidden/tot*100):0,offPct:tot?Math.round(offView/tot*100):0,cover,clipRect:clip.map(Math.round)};
   },id);
 
@@ -192,7 +197,7 @@ function pageHelpers(){
   for(const id of ids){await wear(id);await page.waitForTimeout(1200);res[id].world=await world(id);process.stdout.write(',')}
   console.log('');
   // צילומי חלון לנשקים שנחתכו או הוסתרו
-  const bad=ids.filter(id=>{const d=res[id].doll||{};return d.edgePx>3||d.hidPct>=5||d.offPct>=5}).sort((a,b)=>(res[b].doll.edgePx||0)-(res[a].doll.edgePx||0));
+  const bad=ids.filter(id=>{const d=res[id].doll||{};return d.edgePx>3||d.hidPct>=5||d.offPct>=5||d.heroNdc>1}).sort((a,b)=>(res[b].doll.edgePx||0)-(res[a].doll.edgePx||0));
   await page.evaluate(()=>gearOpen());await page.waitForTimeout(500);
   for(const id of bad.slice(0,4)){await wear(id);await page.evaluate(()=>gearDraw());await page.waitForTimeout(700);await page.screenshot({path:path.join(OUT,'gear-window-'+id+'.png')})}
   await page.evaluate(()=>gearClose());
@@ -204,7 +209,7 @@ function pageHelpers(){
     const ok=c=>{const m=sameColor(pc,c,HUE_TOL);return m===null?null:m&&c.v/pc.v>=DARK};
     R.matchDoll=ok(R.doll&&R.doll.col);R.matchPre=R.dollPre?ok(R.dollPre.col):null;
     R.matchWorld=R.world&&R.world.n>=WORLD_MIN?ok(R.world.col):null;   // בעולם הגיבור קטן, ולפעמים הנשק מאחוריו: מתחת ל-WORLD_MIN פיקסלים לא שופטים
-    const d=R.doll||{};R.frameOk=!(d.edgePx>3||d.hidPct>=5||d.offPct>=5)}
+    const d=R.doll||{};R.frameOk=!(d.edgePx>3||d.hidPct>=5||d.offPct>=5||d.heroNdc>1)}
   // תמונת השוואה: תמונה | בבובה (לפני טעינה) | בבובה | בעולם
   const sheet=await browser.newPage({viewport:{width:1220,height:400},deviceScaleFactor:1});
   const cell=(img,c,ok)=>'<td>'+(img?'<img src="'+img+'">':'<i>—</i>')+(c?'<div><span class="sw" style="background:'+c.hex+'"></span>'+c.name+' '+(c.neutral?'':c.hue+'°')+'</div>':'')+(ok===false?'<div class="x">✗</div>':ok===true?'<div class="ok">✓</div>':'')+'</td>';
@@ -216,7 +221,7 @@ function pageHelpers(){
   fs.writeFileSync(path.join(OUT,'audit.json'),JSON.stringify({view:VIEW,hueTol:HUE_TOL,errors:errors.slice(0,10),weapons:slim},null,1));
   for(const id of ids){const R=res[id],c=x=>x?x.name+(x.neutral?'':'/'+x.hue):'-';
     console.log(id.padEnd(13)+' pic '+c(R.pic&&R.pic.col).padEnd(12)+' pre '+c(R.dollPre&&R.dollPre.col).padEnd(12)+' doll '+c(R.doll&&R.doll.col).padEnd(12)+' world '+c(R.world&&R.world.col).padEnd(12)+
-      ' '+(R.matchDoll===false?'✗doll':'✓doll')+(R.matchPre===false?' ✗pre':'')+(R.matchWorld===false?' ✗world':'')+(R.stale?' stale':'')+' model '+((R.doll||{}).propName)+(R.loadMs!=null&&R.own&&R.own.lazy?' load '+R.loadMs+'ms':'')+' fit×'+((R.doll||{}).fitScale)+' ndc '+((R.doll||{}).ndc)+'/'+((R.doll||{}).ndcCheer)+' '+(R.frameOk?'✓frame':'✗frame edge'+(R.doll||{}).edgePx+' proj'+(R.doll||{}).projOut+' hid'+(R.doll||{}).hidPct+'% off'+(R.doll||{}).offPct+'% '+JSON.stringify((R.doll||{}).cover||{})))}
+      ' '+(R.matchDoll===false?'✗doll':'✓doll')+(R.matchPre===false?' ✗pre':'')+(R.matchWorld===false?' ✗world':'')+(R.stale?' stale':'')+' model '+((R.doll||{}).propName)+(R.loadMs!=null&&R.own&&R.own.lazy?' load '+R.loadMs+'ms':'')+' hero '+((R.doll||{}).heroNdc)+' sway '+((R.doll||{}).sw)+' fit×'+((R.doll||{}).fitScale)+' ndc '+((R.doll||{}).ndc)+'/'+((R.doll||{}).ndcCheer)+' '+(R.frameOk?'✓frame':'✗frame edge'+(R.doll||{}).edgePx+' proj'+(R.doll||{}).projOut+' hid'+(R.doll||{}).hidPct+'% off'+(R.doll||{}).offPct+'% '+JSON.stringify((R.doll||{}).cover||{})))}
   if(errors.length)console.log('שגיאות בדף:',errors.slice(0,5));
   await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
