@@ -2077,8 +2077,8 @@ body.mb .skb.lock::after{content:none}
 @media (prefers-reduced-motion:reduce){.skb.afsoon{animation:none}}
 /* משחקי השאול, השיפוץ: מסגרת קריאה בזמן קרב (js/mb-hud.js, ?mbhud=0 מכבה, visual-direction-1.md של DANA). רק מראה */
 /* הודעות: פס קטן וקבוע מתחת לשעון (השעון: 4px עד 34px), ולא באמצע המסך מעל הקרב. ליד חדר ההימור נשאר למטה כמו קודם */
-body.mb.mbhud .banner{top:calc(env(safe-area-inset-top,0px) + 42px);left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:min(430px,calc(100% - 440px));font-size:14px;line-height:1.2;padding:3px 12px;border-radius:999px;background:#0B0806b3;text-shadow:0 1px 0 #000}
-body.mb.mbhud.mbgbnear .banner{top:58%}
+body.mb.mbhudon .banner{top:calc(env(safe-area-inset-top,0px) + 42px);left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:min(430px,calc(100% - 440px));font-size:14px;line-height:1.2;padding:3px 12px;border-radius:999px;background:#0B0806b3;text-shadow:0 1px 0 #000}
+body.mb.mbhudon.mbgbnear .banner{top:58%}
 /* הפינה הימנית העליונה: לפחות 10px גלויים בין הכפתורים, אחרי הטבעות שלהם (box-shadow של 3-4px) */
-body.mb.mbhud .mbping{gap:16px;right:calc(env(safe-area-inset-right,0px) + 70px)}
-body.mb.mbhud .mbshopbar{gap:16px;top:calc(env(safe-area-inset-top,0px) + 66px)}
+body.mb.mbhudon .mbping{gap:16px;right:calc(env(safe-area-inset-right,0px) + 70px)}
+body.mb.mbhudon .mbshopbar{gap:16px;top:calc(env(safe-area-inset-top,0px) + 66px)}

@@ -5,7 +5,7 @@
    - הודעות (התחלה, עלייה ברמה, גלים): פס קבוע מתחת לשעון למעלה, קטן, ולא באמצע המסך מעל הקרב (CSS: body.mb.mbhud .banner).
    - המפה הקטנה מתעמעמת בזמן קרב קבוצתי (fight: לפחות heroes גיבורים חיים בטווח r ממך, מהם לפחות אויב אחד שרואים), ונשארת כך hold שניות. הנגיעה בה לא משתנה.
    - הפינה הימנית העליונה: מרווחים של לפחות 10 פיקסלים בין הכפתורים, אחרי הטבעות שלהם (CSS בלבד).
-   ?mbhud=0 מכבה הכל. מחיקה: הקובץ, השורה ב-index.html, הכללים של body.mbhud ב-css/style.css, ושלוש הקריאות (mbNumAt ב-moba.js ו-moba-fx.js, mbHudText בשני הציורים) */
+   ?mbhud=0 מכבה הכל. מחיקה: הקובץ, השורה ב-index.html, הכללים של body.mbhudon ב-css/style.css, ושלוש הקריאות (mbNumAt ב-moba.js ו-moba-fx.js, mbHudText בשני הציורים) */
 const MBHUD={
   on:!/[?&]mbhud=0(&|$)/.test(location.search),
   num:{above:16,step:1.05,rows:4,healUp:10,drift:30,out:'#0B0A12',outW:0.2,outMin:3},   // above: כמה מעל הראש. step: הצעד בחיפוש מקום, ביחס לגודל המספר. rows: כמה שורות מעל לנסות. drift: מהירות העלייה של כולם
@@ -37,7 +37,7 @@ function mbHudText(txt,x,y,sz,col,a){
 }
 (function(){
   if(!MBHUD.on)return;
-  document.body.classList.add('mbhud');
+  document.body.classList.add('mbhudon');
   // קרב קבוצתי: בודקים כמה פעמים בשנייה, ומחזיקים את המצב hold שניות אחרי הקרב
   let next=0,fightAt=-99;
   if(typeof mobaUpdate==='function'){const b=mobaUpdate;mobaUpdate=function(){const r=b.apply(this,arguments);if(typeof MB!=='undefined'&&MB)mbHudPlace();
