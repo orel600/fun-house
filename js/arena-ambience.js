@@ -38,25 +38,25 @@ function arambMotes(ox,oy){
   const M=ARAMBC.motes,boss=S.boss&&!S.boss.dead?S.boss:null,vx=-ox,vy=-oy;
   let n=M.base,col='#FFE3A0',fall=-1,sz=1.8;
   if(boss){const d=Math.hypot(boss.x-P.x,boss.y-P.y),near=1-arshC((d-M.far)/(M.near-M.far));
-    n=M.boss+Math.round(M.bossNear*near)+Math.round(M.bossRage*arshC(boss.rage||0));col='#FF8A3D';fall=1;sz=4.5}
+    n=M.boss+Math.round(M.bossNear*near)+Math.round(M.bossRage*arshC(boss.rage||0));col='#FF8A3D';fall=1;sz=6}
   ctx.save();ctx.beginPath();
   for(let i=0;i<n;i++){
     const r1=arshR(11,i),r2=arshR(12,i),sp=0.04+0.05*arshR(13,i),u=((r1+S.t*sp*fall*0+0)%1+1)%1,
       v=(((r2+S.t*sp*fall)%1)+1)%1,x=vx+((u+Math.sin(S.t*0.7+i)*0.01)%1)*W,y=vy+v*H,z=sz*(0.6+0.8*arshR(14,i));
     ctx.moveTo(x,y-z*1.6);ctx.lineTo(x+z,y);ctx.lineTo(x,y+z*1.6);ctx.lineTo(x-z,y);
   }
-  ctx.globalAlpha=boss?0.9:0.45;ctx.fillStyle=col;ctx.fill();ctx.restore();ARAMB.stat.motes=n;
+  ctx.globalAlpha=boss?1:0.5;ctx.fillStyle=col;ctx.fill();ctx.restore();ARAMB.stat.motes=n;
 }
 function arambTells(ox,oy){
   const C=ARAMBC.tells;let n=0;ctx.save();
   for(let i=0;i<enemies.length&&n<C.max;i++){
     const e=enemies[i];if(e.dead||e.node||e.x+ox<-30||e.x+ox>W+30||e.y+oy<-30||e.y+oy>H+30)continue;
     const f=arambFam(e.type);if(!f)continue;n++;
-    const ph=((S.t+i*0.37)%C.each)/C.each,a=Math.min(1,(1-ph)*1.1),r=e.r*(e.big||1);
-    if(f==='ice'){ctx.fillStyle='#E8FBFF';ctx.globalAlpha=a;ctx.beginPath();ctx.arc(e.x+r*0.5+ph*12,e.y-r*1.5-ph*10,4+6*ph,0,7);ctx.fill()}   // אדי נשימה
-    else if(f==='stone'){ctx.fillStyle='#C9AE8C';ctx.globalAlpha=a;ctx.beginPath();ctx.arc(e.x-r*0.3-ph*10,e.y+r*0.5,4+7*ph,0,7);ctx.moveTo(e.x+r*0.3+ph*10+4+5*ph,e.y+r*0.5);ctx.arc(e.x+r*0.3+ph*10,e.y+r*0.5,4+5*ph,0,7);ctx.fill()}   // אבק צעדים
-    else if(f==='fire'){const x=e.x+Math.sin(i*2.1)*r*0.4,y=e.y-r*0.3+ph*r*1.6;ctx.fillStyle='#FFB347';ctx.globalAlpha=1-ph;ctx.beginPath();ctx.arc(x,y,3*(1-ph)+0.8,0,7);ctx.fill()}   // טפטוף גחלים
-    else{ctx.fillStyle='#C8F28A';ctx.globalAlpha=a;ctx.beginPath();for(let j=0;j<3;j++){const an=j*2.1+i;ctx.moveTo(e.x+Math.cos(an)*ph*r*1.2+3,e.y-r*0.6-ph*12);ctx.arc(e.x+Math.cos(an)*ph*r*1.2,e.y-r*0.6-ph*12,3,0,7)}ctx.fill()}   // נבגים
+    const ph=((S.t+i*0.37)%C.each)/C.each,a=Math.min(1,(1-ph)*1.6),r=e.r*(e.big||1);
+    if(f==='ice'){ctx.fillStyle='#E8FBFF';ctx.globalAlpha=a;ctx.beginPath();ctx.arc(e.x+r*0.5+ph*12,e.y-r*1.5-ph*10,7+10*ph,0,7);ctx.fill();ctx.strokeStyle=ARSHC.shade;ctx.lineWidth=1.5;ctx.stroke()}   // אדי נשימה
+    else if(f==='stone'){ctx.fillStyle='#C9AE8C';ctx.globalAlpha=a;ctx.beginPath();ctx.arc(e.x-r*0.3-ph*10,e.y+r*0.5,8+10*ph,0,7);ctx.moveTo(e.x+r*0.3+ph*12+8+8*ph,e.y+r*0.5);ctx.arc(e.x+r*0.3+ph*12,e.y+r*0.5,8+8*ph,0,7);ctx.fill()}   // אבק צעדים
+    else if(f==='fire'){const x=e.x+Math.sin(i*2.1)*r*0.4,y=e.y-r*0.3+ph*r*1.6;ctx.fillStyle='#FFB347';ctx.globalAlpha=1-ph;ctx.beginPath();ctx.arc(x,y,5.5*(1-ph)+1.2,0,7);ctx.fill()}   // טפטוף גחלים
+    else{ctx.fillStyle='#C8F28A';ctx.globalAlpha=a;ctx.beginPath();for(let j=0;j<3;j++){const an=j*2.1+i;ctx.moveTo(e.x+Math.cos(an)*ph*r*1.2+5,e.y-r*0.6-ph*14);ctx.arc(e.x+Math.cos(an)*ph*r*1.2,e.y-r*0.6-ph*14,5,0,7)}ctx.fill()}   // נבגים
   }
   ctx.restore();ARAMB.stat.tells=n;
 }
