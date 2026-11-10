@@ -328,7 +328,7 @@ function gTile(id,attrs,extra){
 }
 // תא בתרמיל: ▲/▼ מול מה שלבוש עם ההפרש במספר הכוח (power.js), ונקודה לחדש
 function gBagTile(k,n,attrs){
-  const m=gMark(k),d=m&&m>-2&&powVs(k)*m>0?powVs(k):null,pk=GUI.sell&&(GUI.pick||{})[k],x=(m===-2?'<i class="gmk req" aria-hidden="true">🔒</i>':m?'<i class="gmk '+(m>0?'up':'down')+'" aria-hidden="true">'+(m>0?'▲':'▼')+(d?'<bdi>'+Math.abs(d)+'</bdi>':'')+'</i>':'')+(gIsNew(k)?'<i class="gnew" aria-hidden="true"></i>':'')+
+  const m=gMark(k),d=m&&m>-2&&powVs(k)*m>0?powVs(k):null,pk=GUI.sell&&(GUI.pick||{})[k],x=(m===-2?irLockTag(k,'gmk req'):m?'<i class="gmk '+(m>0?'up':'down')+'" aria-hidden="true">'+(m>0?'▲':'▼')+(d?'<bdi>'+Math.abs(d)+'</bdi>':'')+'</i>':'')+(gIsNew(k)?'<i class="gnew" aria-hidden="true"></i>':'')+
     (gLocked(k)?'<i class="glk" aria-hidden="true">🔒</i>':'')+(pk?'<i class="gpk" aria-hidden="true">✓</i>':'');   // מכירה: ✓ על מה שנבחר
   return gTile(k,attrs,(n>1?'<small>×'+shortN(n)+'</small>':'')+x);
 }
@@ -479,7 +479,7 @@ function gDetailHtml(){
   const btn=(act,txt,ghost)=>'<button class="vbtn'+(ghost?' ghost':'')+'" data-act="'+act+'">'+txt+'</button>';
   let b='';
   if(sel.id&&it){const old=gGet(it.slot,gTarget(it));
-    d+=(old?'<p class="dim">'+T('gear.vs',gIcon(old)+' '+gName(old))+'</p>':'')+gCompare(k,old);b+=irCanWear(k)?btn('equip',T('gear.equip')):'<button class="vbtn" disabled>'+T('ir.cant')+'</button>'}
+    d+=(old?'<p class="dim">'+T('gear.vs',gIcon(old)+' '+gName(old))+'</p>':'')+gCompare(k,old);b+=irCanWear(k)?btn('equip',T('gear.equip')):'<button class="vbtn" disabled>'+irCantTxt(k)+'</button>'}
   if(it&&(sel.id||sel.slot))b+='<button class="vbtn ghost glock" data-act="lock" aria-pressed="'+gLocked(k)+'" aria-label="'+T(gLocked(k)?'gear.unlock':'gear.lock')+'" title="'+T(gLocked(k)?'gear.unlock':'gear.lock')+'">'+(gLocked(k)?'🔒':'🔓')+'</button>';   // נעול: לא נמכר
   if(sel.slot&&gCanOff(k))b+=btn('unequip',T('gear.unequip'),1);
   if(sel.id&&gStashOn())b+=btn('store',T('gear.store'),1);

@@ -1258,6 +1258,7 @@ const TEXT={
   'tip1.giant':{he:'בוס ענק. מכות כבדות עם הכנה: זוז הצידה ותקוף אחריהן.',en:'Giant boss. Heavy wind-up attacks: sidestep, then punish.'},
   'tip1.skill':{he:'סקיל חדש בספר. לחיצה ארוכה על כפתור סקיל פותחת את הספר.',en:'New skill in the book. Long-press a skill button to open it.'},
   'ir.req':{he:p=>'דרוש: '+p,en:p=>'Requires: '+p},'ir.lv':{he:n=>'רמה '+n,en:n=>'Level '+n},
+  'ir.ready':{en:n=>'Ready to equip: '+n},'ir.readyN':{en:n=>n+' items ready to equip'},'ir.readySt':{en:(n,st)=>n+': needs '+st},
   'ir.cant':{he:'עוד לא אפשר ללבוש',en:'Can\'t equip yet'},
   'ir.q':{he:q=>'איכות '+q,en:q=>'Quality '+q},
   'ir.cls':{he:(c,n)=>'בונוס ל'+c+': ⁦+'+n+'%⁩ לכל הסטטים',en:(c,n)=>c+' bonus: +'+n+'% to all stats'},

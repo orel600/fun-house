@@ -22,6 +22,7 @@
 .ictile.poor .icn{opacity:.6}
 .ictile:active{transform:scale(.95)}
 .iclock{position:absolute;top:2px;inset-inline-start:3px;font-size:11px;font-style:normal}
+.iclock bdi,.gtile .gmk.req bdi{font:900 10px/1 var(--body);color:#FFD27A;margin-inline-start:1px;text-shadow:0 0 3px #000,0 0 2px #000}   /* הרמה שחסרה, ליד המנעול (irLockTag ב-itemroll.js) */
 .icup{position:absolute;top:2px;inset-inline-end:3px;font:900 12px var(--body);font-style:normal;color:#5EE07A;text-shadow:0 1px 0 #000}
 
 /* ---- הכרטיס הגדול ---- */

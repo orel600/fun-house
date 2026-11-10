@@ -30,6 +30,15 @@ function irReq(id){const it=gItem(id);if(!it||it.slot==='orbit')return null;cons
 const irMeets=id=>{const r=irReq(id);return !r||heroLv()>=r.lv&&(!r.st||(stPts()[r.st]||0)>=r.n)};
 const irOn=()=>!ITEMROLL.skip&&typeof S!=='undefined'&&!!S&&!!(S.vil||S.wd);   // בכפר ובעולם. הזירה לא משתנה
 const irCanWear=id=>!irOn()||irMeets(id);
+// "דורש רמה X" (ניר, משימה 2ג): הרמה שעוד חסרה לחפץ, או 0. האריח מראה 🔒 עם המספר, והכפתור "🔒 Level 7" במקום "אי אפשר"
+const irLv=id=>{const r=irReq(id);return r&&irOn()&&heroLv()<r.lv?r.lv:0};
+const irLockTag=(id,cls)=>'<i class="'+cls+'" aria-hidden="true">🔒'+(irLv(id)?'<bdi>'+irLv(id)+'</bdi>':'')+'</i>';
+const irCantTxt=id=>irLv(id)?'🔒 '+T('ir.lv',irLv(id)):T('ir.cant');
+// בעלייה מרמה from ל-lv: חפצים בתרמיל שהרמה שלהם נפתחה עכשיו, לכרטיס העלייה (lpLevelUp ב-levelpath.js). אחד או שניים בשם, יותר במספר
+function irUnlocked(from,lv){const ks=Object.keys(SAVE.bag||{}).filter(k=>SAVE.bag[k]>0&&gItem(k)&&(r=>r&&r.lv>from&&r.lv<=lv)(irReq(k)));
+  if(!ks.length)return [];if(ks.length>2)return [{icon:'🔓',txt:T('ir.readyN',ks.length)}];
+  return ks.map(k=>{const r=irReq(k),ok=!r.st||(stPts()[r.st]||0)>=r.n;   // רמה כבר יש, אבל חסרות נקודות בתכונה: אומרים כמה
+    return {icon:'🔓',txt:ok?T('ir.ready',gName(k)):T('ir.readySt',gName(k),T('st.'+r.st)[0]+' '+r.n)}})}
 function irReqHtml(id){const r=irReq(id);if(!r||!irOn())return '';const ok=irMeets(id),lvOk=heroLv()>=r.lv,stOk=!r.st||(stPts()[r.st]||0)>=r.n;
   const p='<span class="'+(lvOk?'':'bad')+'">'+T('ir.lv','<bdi>'+r.lv+'</bdi>')+'</span>'+(r.st&&r.n?', <span class="'+(stOk?'':'bad')+'">'+T('st.'+r.st)[0]+' <bdi>'+r.n+'</bdi></span>':'');
   return '<p class="ireq'+(ok?'':' no')+'">'+T('ir.req',p)+'</p>'}
