@@ -74,7 +74,7 @@ function msgBlocks(){
     if(r.width*r.height>vw*vh*0.4||(r.height>vh*0.6&&d>=3))return;   // חלון או שכבה על כל המסך (או עמוד גבוה): לא כפתור
     if((r.width>vw*0.5||r.height>vh*0.5)&&d<3){for(const k of e.children)add(k,d+1);return}
     // הודעות וכרטיסים שקופים למגע: לא חוסמים. אבל מיכל שקוף יכול להחזיק כפתורים (#qRail: ספר, קווסטים, גיבור. ביקורת 7.11.2026): בודקים את הילדים
-    if(cs.pointerEvents==='none'&&!e.closest('.whud,.vhud,.hud,#qTrack,.skills,#who')){if(d<3)for(const k of e.children)add(k,d+1);return}
+    if(cs.pointerEvents==='none'&&!e.closest('.whud,.vhud,.hud,#qTrack,.skills,#who,#rareLine')){if(d<3)for(const k of e.children)add(k,d+1);return}
     out.push({left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height,el:e});
     // ילדים שיוצאים מגבולות המיכל (קשת הסקילים ב-#skills: המיכל בגודל הכפתור הראשון, והשניים האחרים מחוץ לו. ניר, סרטון 7.11): נמדדים גם הם
     if(d<3)for(const k of e.children){const q=k.getBoundingClientRect();if(q.width>=2&&q.height>=2&&(q.left<r.left-1||q.right>r.right+1||q.top<r.top-1||q.bottom>r.bottom+1))add(k,d+1)}};
@@ -127,5 +127,7 @@ setInterval(()=>{const el=msgEl();
   '.msglane>.cut{visibility:hidden}.msglane .mrow.on{opacity:1;transform:none}.msglane .mrow.big{order:0}#msgLane>.skoffer{order:1;pointer-events:auto}#msgLane>.flcard{order:2}#msgLane>.mutbar{order:3}.msglane .mrow:not(.big){order:4}'+
   '#msgLane>.skoffer,#msgLane>.flcard,#msgLane>.mutbar{position:static;transform:none;left:auto;top:auto;max-width:100%;flex:none;box-sizing:border-box}#msgLane>.flcard:not(.on),#msgLane>.mutbar:not(.on),#msgLane>[hidden]{display:none}'+
   '.msglane .mrow.big{color:var(--mc);font:800 clamp(14px,4.2vh,20px)/1.3 var(--display,Heebo),Heebo,system-ui,sans-serif;padding:3px 18px;border:1.5px solid var(--mc);background:linear-gradient(#3a2818ee,#20160ee6)}'+
+  // a card that just appeared waits up to 300 ms before it moves into the lane: until then it is invisible, not on top of the goal row (10.11: "New: Quake" covered Jump)
+  'body.world:not(.mb)>.skoffer,body.world:not(.mb)>.flcard,body.world:not(.mb)>.mutbar,body.vil:not(.mb)>.skoffer,body.vil:not(.mb)>.flcard,body.vil:not(.mb)>.mutbar{visibility:hidden}'+
   '@media (prefers-reduced-motion:reduce){.msglane .mrow{transition:none;transform:none}}';
   document.head.appendChild(st)})();

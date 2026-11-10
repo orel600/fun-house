@@ -243,11 +243,17 @@ const VIL3D={
   models:{castle:{model:'v_castle',w:190},forge:{model:'v_forge',w:140},mill:{model:'v_mill',w:140},mine:{model:'v_mine',w:140},market:{model:'v_market',w:150},tent:{model:'v_tent',w:105},
     /* הכפר גדל (docs/concept-village-growth.md, ניר 9.11): הרמות הנמוכות. vx_ נטענים בכניסה לכפר (m3d.js), ועד אז הפיגום */
     ruin:{model:'vx_ruin',w:150},stageA:{model:'vx_stageA',w:120},stageB:{model:'vx_stageB',w:130},stageC:{model:'vx_stageC',w:150},
-    pile:{model:'v_lumber',w:85},boulder:{model:'v_rock',w:90},stall:{model:'vx_pallet',w:70}},
+    pile:{model:'v_lumber',w:85},boulder:{model:'v_rock',w:90},stall:{model:'vx_pallet',w:70},
+    /* רמות שנראות אחרת (docs/concept-village-growth-2.md, ניר 10.11.2026): צבע הגג לפי הרמה. G ירוק = עץ פשוט (L3), בלי אות = הכחול (L4), R/Y אדום וזהב (L5) */
+    forgeG:{model:'vx_forgeG',w:140},forgeR:{model:'vx_forgeR',w:140},millG:{model:'vx_millG',w:140},millR:{model:'vx_millR',w:140},
+    mineG:{model:'vx_mineG',w:140},mineR:{model:'vx_mineR',w:140},marketG:{model:'vx_marketG',w:150},marketR:{model:'vx_marketR',w:150},
+    tavernG:{model:'vx_tavernG',w:135},tavern:{model:'vx_tavernB',w:135},tavernR:{model:'vx_tavernR',w:135},
+    homeG:{model:'vx_homeBG',w:115},home:{model:'vx_homeBB',w:115},homeR:{model:'vx_homeBR',w:115},castleY:{model:'vx_castleY',w:190}},
   site:{model:'v_site',w:135},gate:{model:'v_gate',w:150},
   deco:{flag:{model:'v_flag',w:46},crate:{model:'v_crate',w:30},barrel:{model:'v_barrel',w:28},
     tent:{model:'v_tent',w:62},lumber:{model:'v_lumber',w:42},stone:{model:'v_stone',w:42},rack:{model:'vx_rack',w:38},sack:{model:'vx_sack',w:24},wbarrow:{model:'vx_wbarrow',w:36},
-    bucket:{model:'vx_bucket',w:20},pallet:{model:'vx_pallet',w:36},ladder:{model:'vx_ladder',w:34},crateS:{model:'vx_crateS',w:22},fenceW:{model:'vx_fenceW',w:52},fenceS:{model:'vx_fenceS',w:52},towerB:{model:'vx_towerB',w:72}},
+    bucket:{model:'vx_bucket',w:20},pallet:{model:'vx_pallet',w:36},ladder:{model:'vx_ladder',w:34},crateS:{model:'vx_crateS',w:22},fenceW:{model:'vx_fenceW',w:52},fenceS:{model:'vx_fenceS',w:52},towerB:{model:'vx_towerB',w:72},
+    towerA:{model:'vx_towerA',w:62},flagR:{model:'vx_flagR',w:46},flagY:{model:'vx_flagY',w:46}},
   decor:{tree:{model:['v_treeA','v_treeB'],w:55},rock:{model:'v_rock',w:55},hills:{model:'v_hills',w:260}},
   stock:{mill:{model:'v_lumber',w:60},mine:{model:'v_stone',w:60}}
 };
@@ -634,7 +640,9 @@ function syncEnemy(e,dt){
   // לבן רק במכה אמיתית. foeai.js משאיר e.flash קטן (0.04) כל הפעולה, בשביל הדו-ממד, ובתלת-ממד זה צבע את המסתער בלבן מלא
   // לאורך כל ההסתערות והסחרור (ניר, 7.11: "זקן-הקליפה לבן"). בהסתערות ובקפיצה עצמן: הזוהר האדום של המתקפה, במלואו
   else if((e.act==='dash'||e.act==='jump')&&!(e.flash>FOEATK3D.actFlash))setFlash(a,F.glowK[1],F.glow);
-  else{const hit=e.flash>(e.act?FOEATK3D.actFlash:0);setFlash(a,hit?0.9:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,hit?0xffffff:C.blood)}
+  else{let hit=e.flash>(e.act?FOEATK3D.actFlash:0),fk=0.9;
+    if(e.wboss){const G=GIANT.flash;a.flC=(a.flC??9)+dt;if(hit&&a.flC>=G.gap)a.flC=0;hit=a.flC<G.dur;fk=G.k}   // giant: a short weak blink, not white all fight (giant.js GIANT.flash)
+    setFlash(a,hit?fk:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,hit?0xffffff:C.blood)}
   if(a.sc0){const q=juiceSquash(e)+(e.act==='crouch'?F.squat*Math.max(0,tk):0);a.root.scale.set(a.sc0*(1+q),a.sc0*(1-q),a.sc0*(1+q))}   // מעיכה קטנה במכה (juice.js)
   // כשיש הרבה אויבים, כל אחד מונפש רק בכל פריים שני (חצי מהם בכל פריים). בעין זה לא נראה, ובטלפון זה חוסך הרבה
   a.acc=(a.acc||0)+dt;
@@ -693,7 +701,7 @@ function syncVillage(){
     const key=lk?lk.model+lk.L:'site',cur=V.b[k];
     if(cur&&cur.key===key)continue;if(cur)for(const m of cur.all)V.g.remove(m);
     const D=lk?VIL3D.models[lk.model]:VIL3D.site,m=vPut(D.model,B.x,B.y,D.w*(lk?lk.size:1)),all=[m];
-    if(lk){if(lk.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(lk.glow).multiplyScalar(0.22)}});
+    if(lk){if(lk.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(lk.glow).multiplyScalar(0.1)}});
       lk.deco.forEach((d,i)=>{const [dx,dy]=VDECO[i%VDECO.length];all.push(vPut(VIL3D.deco[d].model,B.x+dx*B.r,B.y+dy*B.r,VIL3D.deco[d].w))})}
     V.b[k]={key,all};
   }

@@ -258,6 +258,7 @@ function hud(){
     $('bossfill').style.width=(100*Math.max(0,BS.hp)/BS.max)+'%';
     $('ragetrack').hidden=BS.rage<0.02;$('ragefill').style.width=(100*BS.rage)+'%'}
   else bb.hidden=true;
+  if(typeof bossHudPlace==='function')bossHudPlace();   // בעולם: במקום הפנוי, לא על הכפתורים (bosshud.js)
   let hint=false;
   // הכפתור פועם כשהאויב הקרוב עמיד לסוג הנזק שביד, והנשק השני עדיף נגדו. רק כשיש נשק שני לבוש
   if(S.mode==='play'&&!S.mb&&wHeld().length>1){const n=nearest(260),o=P.weapon==='sword'?'gun':'sword';if(n&&n.mult&&(n.mult[P.dt[P.weapon]]??1)<(n.mult[P.dt[o]]??1)&&(n.mult[P.dt[P.weapon]]??1)<=1)hint=true}
