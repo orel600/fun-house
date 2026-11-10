@@ -2887,14 +2887,14 @@ function worldBot(m,L,god){
           let g=$('goalChip');if(!g){g=document.createElement('span');g.id='goalChip';g.className='goalchip';$('whud').insertBefore(g,$('wBag'))}g.hidden=false;g.innerHTML='🪵<span class="gnum">0/15</span><small>Forge</small>';
           msgSay('🔥 '+T('weakTo',T('dt.fire')));hud();rareLineSync();bossHudPlace(true);rareLineFit();if(typeof msgPlace==='function')msgPlace();
           const bb=$('bossbar').getBoundingClientRect(),nm=$('bossnm');
-          out={clash:bossHudClash(),sk:S.sk.ids.length,rare:!$('rareLine').hidden,bar:!$('bossbar').hidden,w:Math.round(bb.width),cut:nm.scrollWidth>nm.clientWidth+1,orbs:S.orb.types.length};
+          out={clash:bossHudClash(),sk:S.sk.ids.length,rare:!$('rareLine').hidden,bar:!$('bossbar').hidden,w:Math.round(bb.width),cut:nm.scrollWidth>nm.clientWidth+1,orbs:S.orb.types.length,y:Math.round(bb.top),why:BOSSHUD.why};
           e.dead=true;S.wd.warden=null;S.wd.rare=null;m.hidden=true;g.hidden=true;msgClear();
         }catch(err){out={err:String(err)}}
         orbitParts=op;wsbWant=ow;return out},k);
       bh.push({k,vp:vp.width+'×'+vp.height,...r})}
     await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();bossHudPlace(true)});
-    const bad=bh.filter(x=>x.err||!x.bar||!x.rare||x.sk<3||x.orbs<4||x.clash.length);
-    check(!bad.length,'פס הבוס בעולם במקום הפנוי: '+bh.map(x=>x.k+' '+x.vp+(x.err?' שגיאה: '+x.err:(x.bar?' רוחב '+x.w+(x.cut?' (הכותרת מקוצרת)':''):' אין פס')+(x.clash&&x.clash.length?' · עולה על: '+x.clash.join(', '):' ✓')+(x.err||x.rare?'':' · אין שמועה')+(x.err||x.sk>=3?'':' · '+x.sk+' סקילים'))).join(' | '))}
+    const bad=bh.filter(x=>x.err||!x.bar||!x.rare||x.sk<3||x.orbs<4||x.clash.length||x.w<200);
+    check(!bad.length,'פס הבוס בעולם במקום הפנוי: '+bh.map(x=>x.k+' '+x.vp+(x.err?' שגיאה: '+x.err:(x.bar?' רוחב '+x.w+' בגובה '+x.y+(x.cut?' (הכותרת מקוצרת)':'')+(x.w<200?' צר מדי, בין '+x.why:''):' אין פס')+(x.clash&&x.clash.length?' · עולה על: '+x.clash.join(', '):' ✓')+(x.err||x.rare?'':' · אין שמועה')+(x.err||x.sk>=3?'':' · '+x.sk+' סקילים'))).join(' | '))}
   // העלילה, פרק 2 (story.js, WORLD.regions.lake): הדרך לאגם סגורה עד שפנס האדמה דולק, באגם יש אויבים רטובים (חלשים לברק),
   // והקווסטים מובילים לשומר המים, שמפיל את פנס המים
   const ch2=await page.evaluate(()=>{

@@ -35,11 +35,14 @@ function bossHudPlace(force){
   const B=BOSSHUD,vw=innerWidth,vh=innerHeight,bl=bossHudBlocks(bb),cx=vw/2,h=Math.max(30,bb.offsetHeight),who=$('who');
   const y0=who&&!who.hidden?who.getBoundingClientRect().top:8;
   const tops=[y0,...bl.map(r=>r.bottom+6)].filter(y=>y>=y0&&y<=vh*B.maxTop).sort((a,b)=>a-b);let best=null;
-  for(const y of tops){let L=B.gap,R=vw-B.gap;
-    for(const r of bl){if(r.bottom<=y||r.top>=y+h)continue;
-      if(r.right<=cx)L=Math.max(L,r.right+B.gap);else if(r.left>=cx)R=Math.min(R,r.left-B.gap);else{L=R;break}}
-    const w=R-L;if(!best||w>best.w)best={y,L,R,w};if(w>=B.minW){best={y,L,R,w};break}}
-  if(!best)return;
+  const nm=r=>r.el?(r.el.id||String(r.el.className).split(' ')[0]):'wisps';
+  // each row: the widest free stretch between what is in that band (closest to the center when two are equal)
+  for(const y of tops){const row=bl.filter(r=>r.bottom>y&&r.top<y+h).sort((a,b)=>a.left-b.left);let L=B.gap,lw='edge',g=null;
+    for(const r of [...row,{left:vw-B.gap+B.gap,right:vw,el:null,edge:1}]){const R=r.left-B.gap,w=R-L;
+      if(w>0&&(!g||w>g.w+1||Math.abs(w-g.w)<=1&&Math.abs((L+R)/2-cx)<Math.abs((g.L+g.R)/2-cx)))g={y,L,R,w,why:lw+'|'+(r.edge?'edge':nm(r))};
+      if(r.right+B.gap>L){L=r.right+B.gap;lw=nm(r)}}
+    if(!g)continue;if(!best||g.w>best.w)best=g;if(g.w>=B.minW){best=g;break}}
+  if(!best)return;B.why=best.why;
   const w=Math.max(120,Math.min(B.maxW,best.w)),x=Math.max(best.L,Math.min(best.R-w,cx-w/2));
   bb.dataset.bh=1;bb.style.position='fixed';bb.style.margin='0';bb.style.maxWidth='none';
   bb.style.top=Math.round(best.y)+'px';bb.style.left=Math.round(x)+'px';bb.style.width=Math.round(w)+'px';
