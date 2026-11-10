@@ -47,9 +47,14 @@ ARN.numbers=()=>{const o=[];for(const id of ARN.order)o.push(id+': '+JSON.string
 const arnR=(s,i)=>{const x=Math.sin(s*12.9898+i*78.233)*43758.5453;return x-Math.floor(x)};   // deterministic (the bot runs with a seed)
 const arnRgb=(hex,a)=>{const n=parseInt(hex.slice(1),16);return 'rgba('+(n>>16)+','+((n>>8)&255)+','+(n&255)+','+a+')'};
 const arnBig=e=>!!(e.isBoss||e.elite||e.champ||e.wanted);
+// visible area (game units, around the camera): targets and sky heights are kept on screen, so a telegraph never lands outside the view (the view is only ~+-210 px tall)
+const arnVis=(x,y,mx=60,my=70)=>({x:Math.max(S.cam.x-W/2+mx,Math.min(S.cam.x+W/2-mx,x)),y:Math.max(S.cam.y-H/2+my,Math.min(S.cam.y+H/2-my,y))});
+const arnH=(y,max,pad,min=70)=>Math.max(min,Math.min(max,y-(S.cam.y-H/2)+pad));   // drop height: starts just above the top edge of the screen instead of far outside it
+const arnEdge=(x,y,a,m=24)=>{const c=Math.cos(a),s=Math.sin(a);let t=1e9;if(c>1e-3)t=Math.min(t,(S.cam.x+W/2-m-x)/c);else if(c<-1e-3)t=Math.min(t,(S.cam.x-W/2+m-x)/c);if(s>1e-3)t=Math.min(t,(S.cam.y+H/2-m-y)/s);else if(s<-1e-3)t=Math.min(t,(S.cam.y-H/2+m-y)/s);return Math.max(0,t)};
 const arnFoes=()=>enemies.filter(e=>!e.dead&&!e.node);
 // densest cluster centre within range of the hero (first 60 foes), or a point ahead when nobody is there
-function arnPoint(range,r,ahead){
+function arnPoint(range,r,ahead){const q=arnPoint0(range,r,ahead);return arnVis(q.x,q.y)}
+function arnPoint0(range,r,ahead){
   const pool=arnFoes().filter(e=>Math.hypot(e.x-P.x,e.y-P.y)<range).slice(0,60);let best=null,bn=0;
   for(const e of pool){let n=0;for(const o of pool)if(Math.hypot(o.x-e.x,o.y-e.y)<r)n++;if(n>bn){bn=n;best=e}}
   if(best){let sx=0,sy=0,n=0;for(const o of pool)if(Math.hypot(o.x-best.x,o.y-best.y)<r){sx+=o.x;sy+=o.y;n++}return{x:sx/n,y:sy/n}}
@@ -118,7 +123,7 @@ ARN.dr.meteor=f=>{const D=ARN.D.meteor,col=dtCol(D.dt);
     if(!m.landed){   // small landing mark, then the meteor itself
       {const q=D.r*(m.big?D.lastK:1)*(1.25-0.4*p);arnPoly([[m.x,m.y-q*ARN.sq],[m.x+q,m.y],[m.x,m.y+q*ARN.sq],[m.x-q,m.y]]);arnSh(1.8,ARN.tg,0.9)}   // sharp diamond, not a ring, so it does not stack with the zone outline
       
-      const e=Math.pow(Math.min(1,p),1.5),hx=m.x+D.lean*(1-e),hy=m.y-D.height*(1-e),pe=Math.max(0,e-0.22),tx=m.x+D.lean*(1-pe),ty=m.y-D.height*(1-pe);
+      const MH=arnH(m.y,D.height,110),e=Math.pow(Math.min(1,p),1.5),hx=m.x+D.lean*(1-e),hy=m.y-MH*(1-e),pe=Math.max(0,e-0.22),tx=m.x+D.lean*(1-pe),ty=m.y-MH*(1-pe);
       const dx=hx-tx,dy=hy-ty,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,sz=m.big?2.0:1.55;
       arnStreak(tx,ty,hx,hy,8*sz,col,0.95);
       arnPoly([[hx+ux*13*sz,hy+uy*13*sz],[hx-uy*7*sz,hy+ux*7*sz],[hx-ux*10*sz,hy-uy*10*sz],[hx+uy*7*sz,hy-ux*7*sz]]);ctx.globalAlpha=1;ctx.fillStyle='#FFF3C4';ctx.fill();arnSh(1.4,col,1)}}
@@ -146,7 +151,7 @@ ARN.dr.rod=f=>{const D=ARN.D.rod,col=dtCol(D.dt),tl=D.first+(D.strikes-1)*D.gap;
   const ft=f.t-(tl+D.end*0.5),endk=ft>0?Math.min(1,ft/(D.end*0.5)):0;   // end: cloud collapses and the rod shatters
   // cue: the tip lights up just before each strike
   let cue=0;for(let i=0;i<D.strikes;i++){const ts=D.first+i*D.gap;if(f.t>ts-D.cue&&f.t<ts)cue=(f.t-(ts-D.cue))/D.cue}
-  const cl=Math.min(1,(f.t-D.fly)/D.cloud)*(1-endk),cx=f.x,cy=f.y-D.cloudH;
+  const cl=Math.min(1,(f.t-D.fly)/D.cloud)*(1-endk),cx=f.x,cy=f.y-arnH(f.y,D.cloudH,-25,95);
   if(cl>0){const S0=[[-80,0],[-60,-26],[-30,-14],[-8,-38],[22,-18],[52,-30],[78,-6],[50,10],[0,6],[-48,12]];
     arnPoly(S0.map(q=>[cx+q[0]*cl,cy+q[1]*cl*0.9]));ctx.globalAlpha=0.9*cl;ctx.fillStyle='#2A2144';ctx.fill();arnSh(1.6,col,0.9*cl)}
   if(endk<1){   // rod: shaft + sharp finial
@@ -206,9 +211,9 @@ ARN.dr.moon=f=>{const D=ARN.D.moon,col=dtCol(D.dt),T=D.tele;
     ctx.beginPath();for(let i=0;i<7;i++){const an=arnR(f.seed,i)*6.28,L=D.r*(0.7+0.5*arnR(f.seed,i+4));let x=f.x,y=f.y;ctx.moveTo(x,y);for(let s=1;s<=3;s++){x=f.x+Math.cos(an)*L*s/3+(arnR(f.seed,i*3+s)-0.5)*16;y=f.y+Math.sin(an)*L*s/3*ARN.sq+(arnR(f.seed,i*5+s)-0.5)*10;ctx.lineTo(x,y)}}arnSh(1.8,col,a*Math.max(0.3,1-(f.t-T)/1.2))}
   else{const p=Math.min(1,f.t/T);   // telegraph: one zone, the fill is the timer, plus a thin ominous column
     arnTgZone(f.x,f.y,D.r,p,1);
-    if(f.t>D.fallAt*0.5){ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(f.x,f.y-520);arnSh(1.2,col,0.35*p)}
+    if(f.t>D.fallAt*0.5){ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(f.x,S.cam.y-H/2);arnSh(1.2,col,0.35*p)}
     if(f.t>=D.fallAt){   // the shard: slow at first (ease-in), growing with perspective, long thin trail upward
-      const q=Math.min(1,(f.t-D.fallAt)/D.fallT),e=Math.pow(q,2.2),h=D.height*(1-e),sc=0.4+0.6*e,y=f.y-h,x=f.x+36*(1-e);
+      const q=Math.min(1,(f.t-D.fallAt)/D.fallT),e=Math.pow(q,2.2),h=arnH(f.y,D.height,230,130)*(1-e),sc=0.4+0.6*e,y=f.y-h,x=f.x+36*(1-e);
       arnStreak(x+16*(1-e),y-300*sc,x,y,12*sc,col,0.55);
       const P0=[[0,64],[-24,12],[-15,-52],[0,-74],[15,-52],[24,12]].map(p=>[x+p[0]*sc*1.7,y+p[1]*sc*1.7]);
       arnPoly(P0);ctx.globalAlpha=0.95;ctx.fillStyle='#DDF6FF';ctx.fill();
@@ -230,7 +235,7 @@ ARN.up.rift=(f,dt)=>{const D=ARN.D.rift;f.t+=dt;
     for(const e of enemies){if(e.dead||e.node||e.isBoss||Math.hypot(e.x-f.x,e.y-f.y)-e.r>D.popR)continue;const a=Math.atan2(e.y-f.y,e.x-f.x);e.kx+=Math.cos(a)*D.knock;e.ky+=Math.sin(a)*D.knock}
     sfx('imp_wall')}
   return !!f.pop&&f.t>f.pop+0.45};
-ARN.dr.rift=f=>{const D=ARN.D.rift,col=dtCol(D.dt),cx=f.x,cy=f.y-D.height;
+ARN.dr.rift=f=>{const D=ARN.D.rift,col=dtCol(D.dt),cx=f.x,cy=f.y-arnH(f.y,D.height,-30,80);
   const pulling=f.t>D.open&&!f.pop;
   if(!f.pop){const p=Math.min(1,f.t/D.open);   // warning: the zone outline while it opens (the only ground ring), then it thins out
     arnTgZone(f.x,f.y,D.r,pulling?1:p,pulling?0.45:1)}
@@ -250,17 +255,17 @@ ARN.dr.rift=f=>{const D=ARN.D.rift,col=dtCol(D.dt),cx=f.x,cy=f.y-D.height;
       const rr=D.popR*(0.2+0.8*k);ctx.beginPath();for(let i=0;i<6;i++){const an=i*1.0472;ctx.lineTo(f.x+Math.cos(an)*rr,f.y+Math.sin(an)*rr*ARN.sq)}ctx.closePath();arnSh(2.2,'#FFFFFF',1-k)}}};
 
 /* =============== 6. ARROW STORM: a marked lane, five rolling waves of arrows from near to far, shafts stay and fade near-to-far =============== */
-ARN.cast.arrows=function(D){const a=arnDir(D.range),ox=P.x+Math.cos(a)*D.start,oy=P.y+Math.sin(a)*D.start,seg=D.len/D.waves,seed=++ARN.n,ar=[];
+ARN.cast.arrows=function(D){const a=arnDir(D.range),ox=P.x+Math.cos(a)*D.start,oy=P.y+Math.sin(a)*D.start,LL=Math.max(D.len*0.55,Math.min(D.len,arnEdge(ox,oy,a))),seg=LL/D.waves,seed=++ARN.n,ar=[];
   for(let w=0;w<D.waves;w++){const n=D.per+(w===D.waves-1?Math.round(D.per*(D.lastExtra-1)):0);
     for(let i=0;i<n;i++){const u=seg*(w+arnR(seed,w*50+i)),v=(arnR(seed,w*50+i+400)-0.5)*2*D.half*0.92;
       ar.push({u,v,x:ox+Math.cos(a)*u-Math.sin(a)*v,y:oy+Math.sin(a)*u+Math.cos(a)*v,w,land:D.tele+w*D.gap+arnR(seed,w*50+i+800)*D.gap*0.7,tilt:(arnR(seed,i+w*7)-0.5)*0.5})}}
-  arnFx({k:'arrows',a,ox,oy,ar,seed,wdone:[],seg});return true};
+  arnFx({k:'arrows',a,ox,oy,ar,seed,wdone:[],seg,L:LL});return true};
 ARN.up.arrows=(f,dt)=>{const D=ARN.D.arrows;f.t+=dt;
   for(let w=0;w<D.waves;w++){if(f.wdone[w]||f.t<D.tele+w*D.gap+D.gap*0.5)continue;f.wdone[w]=1;sfx('shoot',1.2);   // each wave hits its stretch of the lane (rolling)
     const c=Math.cos(f.a),s=Math.sin(f.a),u0=f.seg*w-20,u1=f.seg*(w+1)+20;
     for(const e of enemies){if(e.dead||e.node)continue;const dx=e.x-f.ox,dy=e.y-f.oy,u=dx*c+dy*s,v=-dx*s+dy*c;if(u<u0||u>u1||Math.abs(v)>D.half+e.r)continue;damage(e,skBase()*D.dmg,'skill',f.a,D.dt);ARN.stat.hits++}}
   return f.t>D.tele+D.waves*D.gap+D.fall+D.stick+0.8};
-ARN.dr.arrows=f=>{const D=ARN.D.arrows,c=Math.cos(f.a),s=Math.sin(f.a),L=D.len,hw=D.half,col=dtCol(D.dt);
+ARN.dr.arrows=f=>{const D=ARN.D.arrows,c=Math.cos(f.a),s=Math.sin(f.a),L=f.L,hw=D.half,col=dtCol(D.dt);
   const P4=(u,v)=>[f.ox+c*u-s*v,f.oy+s*u+c*v],last=D.tele+D.waves*D.gap+0.2;
   if(f.t<last){const p=Math.min(1,f.t/D.tele),a=f.t<D.tele?1:Math.max(0,1-(f.t-D.tele)/(last-D.tele)*0.7);   // telegraph: the lane, with chevrons pointing the way it will roll
     arnPoly([P4(0,-hw),P4(L,-hw),P4(L,hw),P4(0,hw)]);ctx.globalAlpha=a*(0.04+0.12*p);ctx.fillStyle=ARN.tg;ctx.fill();ctx.setLineDash([10,7]);arnPoly([P4(0,-hw),P4(L,-hw),P4(L,hw),P4(0,hw)]);arnSh(2.2,ARN.tg,a*0.9);ctx.setLineDash([]);
@@ -272,7 +277,7 @@ ARN.dr.arrows=f=>{const D=ARN.D.arrows,c=Math.cos(f.a),s=Math.sin(f.a),L=D.len,h
     ctx.moveTo(r.x,r.y);ctx.lineTo(r.x+Math.sin(r.tilt)*4,r.y-27);ctx.moveTo(r.x+Math.sin(r.tilt)*3,r.y-17);ctx.lineTo(r.x-2,r.y-21);ctx.moveTo(r.x+Math.sin(r.tilt)*3,r.y-17);ctx.lineTo(r.x+4,r.y-21)}
   if(any){ctx.globalAlpha=0.32;ctx.strokeStyle=ARN.shade;ctx.lineWidth=3.2;ctx.stroke();ctx.globalAlpha=0.95;ctx.strokeStyle='#F3EAD0';ctx.lineWidth=2;ctx.stroke()}
   // arrows in the air: one batched path of sharp streaks, and a tiny strike tick on landing
-  ctx.beginPath();let air=0;for(const r of f.ar){const p=(f.t-r.land)/D.fall;if(p<0||p>=1)continue;air++;const e=p*p,hx=r.x+D.lean*(1-e),hy=r.y-D.height*(1-e),px=Math.max(0,e-0.14),tx=r.x+D.lean*(1-px),ty=r.y-D.height*(1-px);ctx.moveTo(tx,ty);ctx.lineTo(hx,hy)}
+  ctx.beginPath();let air=0;for(const r of f.ar){const p=(f.t-r.land)/D.fall;if(p<0||p>=1)continue;air++;const e=p*p,hx=r.x+D.lean*(1-e),hy=r.y-arnH(r.y,D.height,90,90)*(1-e),px=Math.max(0,e-0.14),tx=r.x+D.lean*(1-px),ty=r.y-arnH(r.y,D.height,90,90)*(1-px);ctx.moveTo(tx,ty);ctx.lineTo(hx,hy)}
   if(air){ctx.globalAlpha=0.4;ctx.strokeStyle=ARN.shade;ctx.lineWidth=3.6;ctx.stroke();ctx.globalAlpha=1;ctx.strokeStyle='#FFF3C4';ctx.lineWidth=2.8;ctx.stroke()}
   ctx.beginPath();let ticks=0;for(const r of f.ar){const age=f.t-(r.land+D.fall);if(age<0||age>0.14||r.w===D.waves-1)continue;ticks++;const k=1-age/0.14;ctx.moveTo(r.x-6*k,r.y);ctx.lineTo(r.x+6*k,r.y);ctx.moveTo(r.x,r.y-5*k);ctx.lineTo(r.x,r.y)}
   if(ticks){ctx.globalAlpha=0.9;ctx.strokeStyle='#FFFFFF';ctx.lineWidth=1.3;ctx.stroke()}
@@ -362,7 +367,8 @@ function arnBarMake(){
   b.innerHTML=ARN.order.map(id=>'<button type="button" class="arnb" data-arn="'+id+'" style="--dt:'+dtCol(ARN.D[id].dt)+'" aria-label="'+T('arn.'+id)+'" title="'+T('arn.'+id)+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="'+ARN_GLYPH[id]+'"/></svg></button>').join('');
   b.addEventListener('pointerdown',e=>{const x=e.target.closest('[data-arn]');if(!x)return;e.preventDefault();e.stopPropagation();arnCast(x.dataset.arn)});
   document.body.appendChild(b);ARN.bar=b}
-function arnHud(){
+function arnNeed(){if(typeof m3dNeed==='function'){m3dNeed('anim_mbx_gen');m3dNeed('anim_mbx_ranged')}}   // the real Throw / Ranged_Magic_Raise clips (lazy files, BOB), only loaded when the flag is on
+function arnHud(){arnNeed();
   const on=arnArena();if(ARN.bar.hidden===on)ARN.bar.hidden=!on;if(!on)return;const s=arnS();
   ARN.order.forEach((id,i)=>{const bt=ARN.bar.children[i],rem=Math.max(0,(s.cd[id]||0)-S.t),v=String(Math.round(20*rem/ARN.D[id].cd)/20),sec=rem>0?String(Math.ceil(rem)):'';
     if(bt.dataset.cd!==v){bt.dataset.cd=v;bt.style.setProperty('--cd',v)}if(bt.dataset.sec!==sec)bt.dataset.sec=sec})}
@@ -371,6 +377,6 @@ addEventListener('keydown',e=>{if(!ARN.on||!S||e.target!==document.body)return;c
 // switch on/off (the URL flag calls it at load; the bot toggles it)
 function arnEnable(on){
   ARN.on=!!on;
-  if(on){arnBarMake();if(typeof SKCAST!=='undefined')for(const k in ARN.anim)SKCAST.anim[k]=ARN.anim[k]}
+  if(on){arnBarMake();arnNeed();if(typeof SKCAST!=='undefined')for(const k in ARN.anim)SKCAST.anim[k]=ARN.anim[k]}
   else{ARN.s=null;if(ARN.bar)ARN.bar.hidden=true}}
 if(ARN.on)arnEnable(true);
