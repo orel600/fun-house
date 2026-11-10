@@ -4853,7 +4853,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       put(me,b1,MOBA.base.healR+Z.warn.pad+50);o.w0=mbZoneWarnK();put(me,b1,MOBA.base.healR+Z.warn.pad/2);o.wMid=mbZoneWarnK();put(me,b1,30);o.w1=mbZoneWarnK();
       me.x=b0.x+600;me.y=b0.y;const f0=Z.stat.flash;mbRecallStart(me);for(let i=0;i<400&&me.recall;i++)mbRecallTick(MB,1/60);o.flash=Z.stat.flash===f0+1;
     }catch(e){o.err=String(e&&e.stack||e)}Z.hurt.on=true;return o});
-  check(!zn.err&&zn.ticks===1&&zn.lost>0&&zn.lost<=zn.maxLoss+1e-6&&zn.outside&&zn.minion&&zn.off&&zn.heal&&zn.w0===0&&zn.wMid>0&&zn.wMid<1&&zn.w1===1&&zn.flash,
+  check(!zn.err&&(zn.hurtOn===false?zn.ticks===0&&zn.lost===0:zn.ticks===1&&zn.lost>0&&zn.lost<=zn.maxLoss+1e-6)&&zn.outside&&zn.minion&&zn.off&&zn.heal&&zn.w0===0&&zn.wMid>0&&zn.wMid<1&&zn.w1===1&&zn.flash,
     'underworld home zone: '+(zn.err||[zn.hurtOn===false?['enemy not punished (held in the overhaul)',zn.ticks===0&&zn.lost===0]:['enemy loses '+Math.round(zn.lost*1000)/10+'% per tick',zn.ticks===1&&zn.lost>0],['outside safe',zn.outside],['minions safe',zn.minion],['switch off',zn.off],['ally heal unchanged',zn.heal],['warning '+zn.w0+'/'+(+zn.wMid).toFixed(2)+'/'+zn.w1,zn.w0===0&&zn.wMid>0&&zn.w1===1],['recall flash',zn.flash]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', ')));
   // hero parts (mb-parts.js, ARI #552): the tank gets the stone hammer in the right hand and the crown on the head, with the barbarian's axe and fur hat hidden,
   // on bots and on your hero (kit look). A bot built before the parts loaded is rebuilt once. Switch: MBPARTS.tank.on. 2D: nothing to draw
