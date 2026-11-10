@@ -235,7 +235,7 @@ const ARSHD={
     const dx=e.x1-e.x0,dy=e.y1-e.y0,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,nx=-uy,ny=ux,a=1-k,head=arshE(arshC(t/0.08)),tailK=arshC((t-0.04)/(D.dur-0.04));
     arshLine([[e.x0+dx*tailK,e.y0+dy*tailK+6],[e.x0+dx*head,e.y0+dy*head+6]]);ctx.lineCap='round';arshShadeStroke(2.4,'#F5E8C8',0.7*a);ctx.lineCap='butt';   // קו ברצפה
     for(let i=0;i<D.bars;i++){const o=(i-1)*7,xa=e.x0+dx*tailK+nx*o,ya=e.y0+dy*tailK+ny*o-12,xb=e.x0+dx*head+nx*o,yb=e.y0+dy*head+ny*o-12;arshStreak(xa,ya,xb,yb,i===1?9:5,'#F5E8C8',a*(i===1?0.95:0.7),'#fff')}
-    if(!arshLess())for(let i=1;i<=D.ghosts;i++){const f=i/(D.ghosts+1),gx=e.x0+dx*f,gy=e.y0+dy*f,ga=a*(0.8-0.15*i)*arshC((t-f*0.06)/0.04);if(ga<=0.01)continue;
+    if(!arshLess())for(let i=1;i<=D.ghosts;i++){const f=i/(D.ghosts+1),gx=e.x0+dx*f,gy=e.y0+dy*f,ga=a*(0.95-0.17*i)*arshC((t-f*0.06)/0.04);if(ga<=0.01)continue;
       ctx.globalAlpha=ga;ctx.fillStyle='#F5E8C8';ctx.beginPath();ctx.ellipse(gx,gy-10,7,12,0,0,7);ctx.fill();ctx.beginPath();ctx.arc(gx,gy-26,5,0,7);ctx.fill()}   // צללית רפאים: גוף וראש
     if(t<0.14){const q=t/0.14;arshStar(e.x0,e.y0-6,30*(1-q*0.4),5,e.seed,'#F5E8C8',1-q,Math.atan2(-dy,-dx),1.6)}   // קוצים אחורה
     return true;
