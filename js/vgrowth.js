@@ -6,24 +6,24 @@
    חיבור: VILLAGE.radius ו-VILLAGE.gate ב-village.js, at ב-VILLAGE.props (props3d.js), vgBlock ב-villageUpdate, plot ב-syncVillage (render3d.js).
    עוטף מבחוץ את syncVillage (בנייה מחדש כשהרמה מתחלפת, והתוספות) */
 const VGROW={
-  radius:[620,620,660,700,750,800],   // גבול הכפר לפי רמת המרכז (היה 700 קבוע). מבנים רחוקים עד 631 מהמרכז, אז לא פחות מ-620
+  radius:[680,680,690,700,750,800],   // גבול הכפר לפי רמת המרכז (היה 700 קבוע). לא פחות מ-680: הבית של המרפאה (residents.js) ב-625 מהמרכז
   // תוספות: m מודל, x/y מקום, w רוחב, at מאיזו רמה, to עד איזו רמה (כולל). r סיבוב. block: רדיוס שאי אפשר לעבור דרכו
   items:[
     // בתים: ירוק (עץ) ב-L2-3, כחול ב-L4, אדום ב-L5
-    {m:'vx_homeAG',x:-235,y:-440,w:80,at:2,to:3},{m:'vx_homeAB',x:-235,y:-440,w:84,at:4,to:4},{m:'vx_homeAR',x:-235,y:-440,w:88,at:5},
+    {m:'vx_homeAG',x:-150,y:-560,w:80,at:2,to:3},{m:'vx_homeAB',x:-150,y:-560,w:84,at:4,to:4},{m:'vx_homeAR',x:-150,y:-560,w:88,at:5},
     {m:'vx_homeAG',x:235,y:-440,w:80,at:3,to:3},{m:'vx_homeAB',x:235,y:-440,w:84,at:4,to:4},{m:'vx_homeAR',x:235,y:-440,w:88,at:5},
-    {m:'vx_homeAG',x:-210,y:560,w:80,at:3,to:3},{m:'vx_homeAB',x:-210,y:560,w:84,at:4},
-    {m:'vx_homeAG',x:200,y:560,w:80,at:3,to:4},{m:'vx_homeAR',x:200,y:560,w:88,at:5},
+    {m:'vx_homeAG',x:-370,y:520,w:80,at:3,to:3},{m:'vx_homeAB',x:-370,y:520,w:84,at:4},
+    {m:'vx_homeAG',x:370,y:520,w:80,at:3,to:4},{m:'vx_homeAR',x:370,y:520,w:88,at:5},
     {m:'vx_homeBB',x:-560,y:300,w:95,at:4},{m:'vx_homeBR',x:600,y:-100,w:95,at:5},{m:'vx_homeAB',x:-610,y:-110,w:85,at:5},
-    {m:'vx_homeAR',x:560,y:330,w:85,at:4},{m:'vx_homeAG',x:120,y:-600,w:80,at:5},
+    {m:'vx_homeAR',x:650,y:180,w:85,at:4},{m:'vx_homeAG',x:120,y:-600,w:80,at:5},
     // הכיכר: באר מ-L2, דוכנים מ-L3, מזרקה ב-L5 (נבנית בקוד, vgFountain)
     {m:'vx_well',x:-185,y:-150,w:52,at:2,block:24},
     {m:'v_tent',x:195,y:-150,w:58,at:3,r:-0.5,block:24},{m:'v_crate',x:235,y:-115,w:24,at:3},{m:'vx_sack',x:160,y:-110,w:20,at:3},
     {m:'v_tent',x:-200,y:20,w:58,at:4,r:0.5,block:24},{m:'v_barrel',x:-165,y:50,w:22,at:4},
     {m:'fountain',x:0,y:-80,w:96,at:5,block:52},
     // שדות, טחנה, כנסייה
-    {m:'vx_grain',x:-620,y:-300,w:110,at:4},{m:'vx_grain',x:640,y:-310,w:110,at:4},
-    {m:'vx_windmill',x:500,y:470,w:120,at:5,block:50},{m:'vx_church',x:-310,y:-570,w:115,at:5,block:50},
+    {m:'vx_grain',x:-600,y:-320,w:110,at:4},{m:'vx_grain',x:600,y:-330,w:110,at:4},
+    {m:'vx_windmill',x:620,y:290,w:120,at:5,block:50},{m:'vx_church',x:-470,y:-480,w:115,at:5,block:50},
     // דגלים לאורך הדרך מהשער
     {m:'vx_flagR',x:-55,y:300,w:40,at:5},{m:'vx_flagR',x:55,y:300,w:40,at:5},{m:'vx_flagR',x:-55,y:500,w:40,at:5},{m:'vx_flagR',x:55,y:500,w:40,at:5},
     {m:'v_flag',x:-60,y:620,w:42,at:3,to:4},{m:'v_flag',x:60,y:620,w:42,at:3,to:4}
@@ -43,6 +43,8 @@ function vgLv(){
 const vgOn=(it,L)=>L>=it.at&&(!it.to||L<=it.to);
 // לא נכנסים לבאר, לדוכן, למזרקה, לטחנה ולכנסייה (מ-villageUpdate)
 function vgBlock(P){const L=vgLv();for(const it of VGROW.items){if(!it.block||!vgOn(it,L)||!vgFree(it))continue;const dx=P.x-it.x,dy=P.y-it.y,d=Math.hypot(dx,dy)||1,min=it.block+P.r;if(d<min){P.x=it.x+dx/d*min;P.y=it.y+dy/d*min}}}
+// התושבים (npcFree ב-npc.js) לא עומדים ולא הולכים בתוך בית, באר או מזרקה של הרמה הנוכחית
+const vgHit=(x,y,r)=>{const L=vgLv();return VGROW.items.some(it=>vgOn(it,L)&&it.w>=40&&Math.hypot(x-it.x,y-it.y)<it.w/2+r)};
 // לחנות הקישוטים (deco.js): לא מעמידים קישוט על בית או באר
 // כל התוספות מכל הרמות, כדי שהמקומות לא ישתנו כשהכפר גדל
 const vgDots=near=>VGROW.items.map(it=>[it.x,it.y,it.w/2+near]);
@@ -65,13 +67,13 @@ function vgFountain(x,y,w,g){
 // טבעת של חתיכות זהות בציור אחד לכל חלק במודל
 function vgRing(spec,R,g){
   const t=R3D.props[spec.m];if(!t)return;
-  const bb=t.userData.bb||(t.userData.bb=new THREE.Box3().setFromObject(t)),s=spec.seg/Math.max(bb.max.x-bb.min.x,1e-3);
+  const bb=t.userData.bb||(t.userData.bb=new THREE.Box3().setFromObject(t)),ex=bb.max.x-bb.min.x,ez=bb.max.z-bb.min.z,s=spec.seg/Math.max(ex,ez,1e-3),turn=ez>ex?Math.PI/2:0;   // החלק הארוך לאורך הטבעת (הגדר של KayKit שוכבת לאורך z)
   const at=[],n=Math.round(2*Math.PI*R/spec.seg);
   for(let i=0;i<n;i++){const a=(i+0.5)/n*Math.PI*2;if(Math.abs(Math.atan2(Math.sin(a-Math.PI/2),Math.cos(a-Math.PI/2)))<spec.gap)continue;at.push(a)}
   t.updateMatrixWorld(true);const M=new THREE.Matrix4(),Q=new THREE.Quaternion(),Y=new THREE.Vector3(0,1,0);
   t.traverse(o=>{if(!o.isMesh)return;
     const im=new THREE.InstancedMesh(o.geometry,o.material,at.length);im.frustumCulled=false;
-    at.forEach((a,i)=>{const x=Math.cos(a)*R,y=Math.sin(a)*R,rot=Math.atan2(-Math.cos(a)/SIN(),-Math.sin(a));
+    at.forEach((a,i)=>{const x=Math.cos(a)*R,y=Math.sin(a)*R,rot=Math.atan2(-Math.cos(a)/SIN(),-Math.sin(a))+turn;
       Q.setFromAxisAngle(Y,rot);M.compose(new THREE.Vector3(x,-bb.min.y*s,y/SIN()),Q,new THREE.Vector3(s,s,s)).multiply(o.matrixWorld);im.setMatrixAt(i,M)});
     g.add(im)});
 }
