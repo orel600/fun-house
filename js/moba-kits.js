@@ -70,10 +70,10 @@ function mbCast(u,slot,aim){
         on:o=>{mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});mbCC(o,'stun',s.stun,u);mbSlow(o,s.slow,s.slowT);mbfxHit(o,'cleave');mbAnimHit(o,s.dt)}};
       MB.shots.push(sh);mbAnimShot(sh,s,ang);mbfxCleave(u,ang,s);mbfxSk('sk_cleave',u.x+Math.cos(ang)*30,u.y+Math.sin(ang)*30-10,{rot:ang+Math.PI});break}
     case 'spin':{let got=0;for(const o of foesIn(u.x,u.y,s.r)){got+=mbDmg(u,o,s.dmg*k,s.dt);mbAnimHit(o,s.dt)}u.hp=Math.min(u.max,u.hp+got*s.heal);
-      if(got*s.heal>5){mbFloat(u.x,u.y-u.r-16,'+'+Math.round(got*s.heal),'#7BD88F');mbAnimHeal(u)}mbBoom(u.x,u.y,s.r,s.dt);mbfxSpin(u,s.r);mbfxSk('sk_spin',u.x,u.y,{r:s.r,follow:u});break}
+      if(got*s.heal>5){mbFloat(u.x,u.y-u.r-16,'+'+Math.round(got*s.heal),'#7BD88F');mbAnimHeal(u)}(typeof mbSharpBoom==='function'?mbSharpBoom('spin',u.x,u.y,s.r,s.dt):mbBoom(u.x,u.y,s.r,s.dt));mbfxSpin(u,s.r);mbfxSk('sk_spin',u.x,u.y,{r:s.r,follow:u});break}
     case 'rage':{Object.assign(u.st,{rage:s.t,rageK:s.dmg,rageSp:s.speed,rageCd:s.atkCd,rageDef:s.def,stun:0,taunt:0,root:0,bub:0,imm:s.imm,ice:0});
       for(const o of foesIn(u.x,u.y,s.r)){mbDmg(u,o,s.dmg0*k,'physical',{big:true});mbPush(o,Math.atan2(o.y-u.y,o.x-u.x),40);mbAnimHit(o,'physical')}
-      mbBoom(u.x,u.y,s.r,'physical');mbWord(u,'rage');mbfxSk('sk_rage',u.x,u.y,{follow:u,loop:true,dur:s.t});mbfxSk('sk_rage_glow',u.x,u.y,{follow:u,loop:true,dur:s.t});break}
+      (typeof mbSharpBoom==='function'?mbSharpBoom('rage',u.x,u.y,s.r,'physical'):mbBoom(u.x,u.y,s.r,'physical'));mbWord(u,'rage');mbfxSk('sk_rage',u.x,u.y,{follow:u,loop:true,dur:s.t});mbfxSk('sk_rage_glow',u.x,u.y,{follow:u,loop:true,dur:s.t});break}
     case 'pierce':case 'wave':{
       const L=s.id==='pierce',sh={kind:'line',x:u.x,y:u.y,vx:Math.cos(ang)*s.speed,vy:Math.sin(ang)*s.speed,left:s.range,w:s.w,team:u.team,src:u,hit:new Set(),dt:s.dt,
         on:o=>{mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});if(s.wet){o.st.wet=Math.max(o.st.wet,s.wet);mbSlow(o,s.slow,s.slowT)}
@@ -89,7 +89,7 @@ function mbCast(u,slot,aim){
         on:o=>{if(o.k!=='hero'||n.gone)return;n.gone=true;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'root',s.root,u)){mbWord(o,'root');MBFX_N(o).rootFx=mbfxSk('sk_net_root',o.x,o.y,{follow:o,loop:true,dur:o.st.root})}mbfxHit(o,'net');mbAnimHit(o,s.dt)}};
       MB.shots.push(n);mbfxSk('sk_net',u.x,u.y,{follow:n,loop:true,rot:ang+MBFXSK.netRot,dur:s.range/s.speed});break}
     case 'rain':{const p=pt();mbfxSk('sk_rain',p.x,p.y,{r:s.r,loop:true,dur:s.delay+s.t});mbZone(u,p.x,p.y,s.r,s.delay,null,'rain',{t:s.t,tick:(z,dt)=>{mbAnimRain(z);for(const o of foesIn(z.x,z.y,z.r)){mbDmg(u,o,s.dps*k*dt,s.dt,{quiet:true});mbSlow(o,s.slow,0.3);mbAnimTick(o)}
-      if(z.left-dt<=0){for(const o of foesIn(z.x,z.y,z.r)){mbDmg(u,o,s.end*k,s.dt,{big:true});mbAnimHit(o,s.dt)}mbBoom(z.x,z.y,z.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt));mbAnimLand('rain',z.x,z.y,s)}}});break}   // מטח אחרון
+      if(z.left-dt<=0){for(const o of foesIn(z.x,z.y,z.r)){mbDmg(u,o,s.end*k,s.dt,{big:true});mbAnimHit(o,s.dt)}if(typeof mbSharpBoom==='function'){mbSharpBoom('rain',z.x,z.y,z.r,s.dt);mbSharpBlast('rain',z.x,z.y,z.r,dtCol(s.dt))}else{mbBoom(z.x,z.y,z.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt))}mbAnimLand('rain',z.x,z.y,s)}}});break}   // מטח אחרון
     case 'bubble':{const p=pt();mbfxSk('sk_bubble_aura',p.x,p.y,{r:s.r,loop:true,dur:s.delay+0.3});mbZone(u,p.x,p.y,s.r,s.delay,z=>{   // כלא מים: אחרי רגע הבועה עולה, מרימה (הלם) ומרטיבה. רטוב + ברק או קרח = קומבו (moba.js)
       for(const o of foesIn(z.x,z.y,z.r)){mbDmg(u,o,s.dmg*k,s.dt,{big:o.k==='hero'});o.st.wet=Math.max(o.st.wet,s.wet);if(mbCC(o,'stun',s.lift,u)){o.st.bub=s.lift;MBFX_N(o).bubFx=mbfxSk('sk_bubble',o.x,o.y,{follow:o,loop:true,dur:s.lift})}mbAnimHit(o,s.dt)}
       mbBoom(z.x,z.y,s.r,s.dt);mbfxBubble(z.x,z.y,z.r);mbfxSk('sk_bubble_halo',z.x,z.y,{r:z.r});mbAnimLand('bubble',z.x,z.y,s)},'bubble');break}
@@ -112,7 +112,7 @@ function mbCast(u,slot,aim){
       if(t.mark)fxStop(t.mark.fx);
       t.mark={by:u,end:MB.t+s.t,share:s.share,endDmg:s.end*k,dmg:0,fx:mbfxSk('sk_deathmark',t.x,t.y,{follow:t,dy:-70,loop:true,dur:s.t})};   // יהלום סגול מסתובב (#485)
       mbWord(t,'marked');break}
-    case 'blizzard':{const p=pt();mbfxSk('sk_blizzard',p.x,p.y,{r:s.r,loop:true,dur:s.delay+0.4});mbZone(u,p.x,p.y,s.r,s.delay,z=>{for(const o of foesIn(z.x,z.y,z.r)){const wet=o.st.wet>0;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'stun',s.freeze*(wet?MOBA.combo.freeze:1),u)&&wet){o.st.wet=0;mbWord(o,'freeze');if(u.me)sfxCombo('freeze')}if(o.st.stun>0)o.st.ice=1;mbAnimHit(o,s.dt)}mbBoom(z.x,z.y,s.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt));mbfxSk('sk_blizzard_ice',z.x,z.y,{r:z.r});mbAnimLand('blizzard',z.x,z.y,s)},'blizzard');break}
+    case 'blizzard':{const p=pt();mbfxSk('sk_blizzard',p.x,p.y,{r:s.r,loop:true,dur:s.delay+0.4});mbZone(u,p.x,p.y,s.r,s.delay,z=>{for(const o of foesIn(z.x,z.y,z.r)){const wet=o.st.wet>0;mbDmg(u,o,s.dmg*k,s.dt,{big:true});if(mbCC(o,'stun',s.freeze*(wet?MOBA.combo.freeze:1),u)&&wet){o.st.wet=0;mbWord(o,'freeze');if(u.me)sfxCombo('freeze')}if(o.st.stun>0)o.st.ice=1;mbAnimHit(o,s.dt)}if(typeof mbSharpBoom==='function'){mbSharpBoom('blizzard',z.x,z.y,s.r,s.dt);mbSharpBlast('blizzard',z.x,z.y,z.r,dtCol(s.dt))}else{mbBoom(z.x,z.y,s.r,s.dt);mbfxBlast(z.x,z.y,z.r,dtCol(s.dt))}mbfxSk('sk_blizzard_ice',z.x,z.y,{r:z.r});mbAnimLand('blizzard',z.x,z.y,s)},'blizzard');break}
   }
   u.cd[slot]=s.cd*(1-mbIb(u).cdr);u.face=ang;u.aim=ang;
   if(u.me)sfxCast(s.dt||MBKIT[u.kit].dt,slot==='ult'?1.3:1);   // רק השחקן: הצליל של סוג הנזק, ובסקיל-על נמוך וחזק (audio.js)
