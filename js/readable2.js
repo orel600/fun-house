@@ -16,20 +16,20 @@ const READ2={
     col:{danger:'#FF4FD8',now:'#F4C74F',info:'#EDE8DA'},   // סכנה: מג'נטה כמו האזהרות על הרצפה (FXC.tg.col), אבל על רקע כהה משלה
     pri:{danger:3,now:2,info:1}},
   // מספרי נזק. hero: התיבה של הגיבור והמסלול מעליו (יחידות משחק): חצי רוחב, כמה למעלה מהרגליים, כמה למטה
-  nums:{near:120,cap:4,hero:{w:24,lane:62,up:64,down:14},gapX:6,crowd:6,crowdR:220,merge:0.4,mergeCrowd:0.65},
+  nums:{near:120,cap:4,hero:{w:24,lane:62,up:64,down:14},gapX:6,crowd:6,crowdR:220,drift:0.3,merge:0.4,mergeCrowd:0.65},
   lbl:{full:1,dim:0.32},   // בקרב: השם המלא (המטרה/החשוב) בלי שקיפות, והשאר עמומים יותר מ-LABELS.fight.a
   calm:0.35,               // כמה שניות בלי קרב עד שכרטיס או הודעה גדולה מופיעים
   cardWait:30,             // אחרי כמה שניות של קרב רצוף הכרטיס מופיע בכל זאת
-  stat:{head:0,headDanger:0,headOver:0,numPush:0,numStack:0,numCap:0,numOnHero:0,cardHeld:0,cardShown:0,lblDim:0,lblFix:0,bigHeld:0,crowd:0}
+  stat:{head:0,headDanger:0,headOver:0,numPush:0,numStack:0,numLbl:0,numCap:0,numOnHero:0,cardHeld:0,cardShown:0,lblDim:0,lblFix:0,bigHeld:0,crowd:0}
 };
-const R2={want:null,fix:[],fightT:-9,fight:false,crowd:0,fr:-1};
+const R2={want:null,fix:[],lbl:[],lblNext:[],fightT:-9,fight:false,crowd:0,fr:-1};
 const r2On=()=>READ2.on&&!!S&&!!S.wd&&!S.mb;
 const r2Now=()=>performance.now()/1000;
 const r2Calm=()=>typeof calmOn==='function'?calmOn():(typeof RM!=='undefined'&&RM);
 
 /* ---- מצב הקרב, פעם בפריים ---- */
 function r2Frame(){
-  R2.fix.length=0;if(!r2On())return;
+  R2.fix.length=0;R2.lbl=R2.lblNext;R2.lblNext=[];if(!r2On())return;
   const f=typeof msgFight==='function'?msgFight():false;R2.fight=f;if(f)R2.fightT=r2Now();
   let n=0;const N=READ2.nums,r=N.crowdR;
   if(f&&typeof enemies!=='undefined')for(const e of enemies)if(!e.dead&&Math.abs(e.x-P.x)<r&&Math.abs(e.y-P.y)<r)n++;
@@ -62,6 +62,8 @@ function r2HeadDraw(){
 }
 
 /* ---- 2. מספרי נזק ---- */
+const r2NumW=f=>f.txt.length*f.size*0.34+4;            // חצי רוחב של מספר (בערך)
+const r2NumH=f=>f.size*(f.crit?1.35:1.05);              // גובה של מספר
 function r2HeroHit(f){   // האם המספר (קו הבסיס y, גובה size) נופל על הגיבור או על המסלול מעליו
   const Hb=READ2.nums.hero,tw=f.txt.length*f.size*0.32+4,top=P.y-(P.r||14)-Hb.up,bot=P.y+Hb.down,lane=P.y-(P.r||14)-READ2.head.up+8;
   if(f.y<=top||f.y-f.size>=bot)return false;
@@ -76,10 +78,14 @@ function r2Num(e){
   // לא על הגיבור: הצידה, לצד שבו האויב (או לצד שהמספר כבר נוטה אליו)
   if(r2HeroHit(f)){const side=Math.sign(e.x-P.x)||(f.dx>=0?1:-1),tw=f.txt.length*f.size*0.32+4,hw=f.y-f.size<P.y-(P.r||14)-READ2.head.up+8?N.hero.lane:N.hero.w;
     f.x=P.x+side*(hw+tw+N.gapX);f.dx=Math.abs(f.dx)*side;st.numPush++}
-  // לא אחד על השני: מספר שעולה על מספר אחר עולה מעליו (עד 3 פעמים), כך שבקבוצה הם נפרשים מעל האויבים
-  const tw=f.txt.length*f.size*0.32+4;
-  for(let k=0;k<3;k++){let c=null;for(const g of J.n)if(g!==f&&Math.abs(g.x-f.x)<tw+g.txt.length*g.size*0.32+4&&Math.abs(g.y-f.y)<(f.size+g.size)*0.5){c=g;break}
-    if(!c)break;f.y=c.y-(f.size+c.size)*0.55-3;st.numStack++;if(r2HeroHit(f)){const side=Math.sign(f.x-P.x)||1;f.x=P.x+side*(N.hero.lane+tw+N.gapX)}}
+  // לא אחד על השני ולא על שם שנשאר ברור (מטרה, עלית, בוס: R2.lbl מהפריים הקודם): עולה מעליו, עד 4 פעמים,
+  // כך שבקבוצה המספרים נפרשים מעל האויבים. קריטי נמדד גבוה יותר, כי הוא קופץ גדול בהתחלה
+  f.dx*=N.drift;const tw=r2NumW(f);
+  for(let k=0;k<4;k++){let top=null;
+    for(const g of J.n)if(g!==f&&Math.abs(g.x-f.x)<tw+r2NumW(g)&&f.y>g.y-r2NumH(g)-2&&g.y>f.y-r2NumH(f)-2){top=g.y-r2NumH(g)-3;break}
+    if(top==null)for(const L of R2.lbl)if(f.x+tw>L.l&&f.x-tw<L.r&&f.y+3>L.t&&f.y-r2NumH(f)<L.b){top=L.t-3;st.numLbl++;break}
+    if(top==null)break;f.y=top;st.numStack++;
+    if(r2HeroHit(f)){const side=Math.sign(f.x-P.x)||1;f.x=P.x+side*(N.hero.lane+tw+N.gapX)}}
   // תקרה ליד הגיבור: הוותיק שאינו קריטי נזרק
   let near=0;for(const g of J.n)if(Math.hypot(g.x-P.x,g.y-P.y)<N.near)near++;
   while(near>N.cap){let k=-1;for(let i=0;i<J.n.length;i++){const g=J.n[i];if(g!==f&&!g.crit&&Math.hypot(g.x-P.x,g.y-P.y)<N.near){k=i;break}}
@@ -93,6 +99,8 @@ function r2NumsOnHero(){const J=S&&S.jc;if(!J)return 0;let n=0;for(const f of J.
 function r2LblA(full){if(!r2On())return null;if(!full)READ2.stat.lblDim++;return full?READ2.lbl.full:READ2.lbl.dim}
 // מקומות תפוסים שהשמות לא עולים עליהם (פיקסלים של מסך, כמו ב-lblFlush): שלטים של שערים והמסלול מעל הגיבור
 function r2Fix(x,y,w,h){if(r2On())R2.fix.push({l:x*ZOOM,r:(x+w)*ZOOM,t:y*ZOOM,b:(y+h)*ZOOM,fix:1})}
+// שם מלא שצויר (labels.js, קואורדינטות הציור): נשמר בקואורדינטות העולם, כדי שמספרי הנזק בפריים הבא לא יעלו עליו
+function r2LblPut(x,y,w,h){if(!r2On()||!S.cam)return;const ox=W/2-S.cam.x,oy=H/2-S.cam.y;R2.lblNext.push({l:x-ox,r:x+w-ox,t:y-oy,b:y+h-oy})}
 function r2Fixed(){
   const out=R2.fix;R2.fix=[];if(!r2On()||!S.cam)return out;
   const z=ZOOM||1,ox=W/2-S.cam.x,oy=H/2-S.cam.y,b=r2HeadBox(),hw=READ2.nums.hero.lane;

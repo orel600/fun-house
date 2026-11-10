@@ -57,7 +57,7 @@ function lblFlush(){
       if(c.fix&&(!low||c.b>low.b))low=c;
       y-=h+LABELS.gap/Z}
     if(!ok){st.hidden++;continue}
-    if(big)full++;st[big?'full':'icon']++;
+    if(big){full++;if(typeof r2LblPut==='function')r2LblPut(o.x-tw/2,y-fs*0.92,tw,h)}st[big?'full':'icon']++;   // מספרי הנזק לא עולים על שם מלא (readable2.js)
     if(fight){const a=typeof r2LblA==='function'?r2LblA(big):null;ctx.globalAlpha=a==null?LABELS.fight.a:a}   // בקרב: השם המלא (המטרה, החשוב) ברור, השאר עמומים (readable2.js)
     ctx.fillStyle=o.bg||LABELS.bg;ctx.fillRect(o.x-tw/2,y-fs*0.92,tw,h);ctx.fillStyle=o.col;ctx.fillText(t,o.x,y)}
   ctx.restore();ctx.direction=DIR;
