@@ -2177,6 +2177,8 @@ Object.assign(TEXT,{
   'cu.clear':{he:r=>'✨ הדרך אל '+r+' התפנתה!',en:r=>'✨ The way to '+r+' is clear!'},
   'cu.new':{he:r=>'משהו חדש '+r,en:r=>'Something new '+r},
   'cu.in.meadow':{he:'באחו',en:'in the Meadow'},'cu.in.lake':{he:'באגם הערפל',en:'at the Mist Lake'},'cu.in.ridge':{he:'ברכס הקפוא',en:'on the Frost Ridge'},
+  // הסקיל הראשון מלמד תזמון (skillteach.js)
+  'skt.out':{en:'Step out!'},'skt.now':{en:'Now!'},'skt.far':{en:'Get closer'},'skt.hit':{en:n=>n+' hit!'},
   'cu.in.desert':{he:'במדבר הבוער',en:'in the Burning Desert'},'cu.in.storm':{he:'במגדלי הסערה',en:'at the Storm Towers'},'cu.in.shadow':{he:'בלב הצל',en:'in the Heart of Shadow'}
 });
 
