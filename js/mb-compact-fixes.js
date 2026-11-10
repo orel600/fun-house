@@ -5,7 +5,7 @@
 const MBCFIX={on:true,
   keys:['w_item_staffOrb','w_item_bladeRed','w_item_dagger','w_item_bowGlow','w_item_tankHammer'],
   props:{
-    tank:{hammer:{prop:'w_item_tankHammer',bone:'handslotr',pos:[0,0,0],rot:[0,0,0,1],s:0.85}},   // s 0.85 (measured, QUINN's method): basic head 29 fwd / -2 lat / -3 high at the damage frame, anvil 24/6/15 -> 23/-1/9. At s 1 the basic head sank 13 into the floor; s 1.4 (the stone's effective size) sank 40   // ARI's basalt-and-gold hammer (grip at origin, handle along +y like the stone one). Its own key: w_item_stoneHammer is shared   // hammer prop stays BOB's (w_item_stoneHammer); only its carry rotation is driven below
+    tank:{hammer:{prop:'w_item_tankHammer',bone:'handslotr',pos:[0,0,0],rot:[0,0,0,1],s:1}},   // s 1: ARI's v2 export (head 15% closer to the grip, same head). Measured (QUINN's method) at the damage frame: basic head 29.6 fwd / -2.8 lat / -4.9 high (s 0.95: 28.9/-1.3/-2.0), anvil landing 24/5/13 -> 23/2/9. ARI's basalt-and-gold hammer: grip at origin, handle along +y, its own key (w_item_stoneHammer is shared)
     mage:{staff:{prop:'w_item_staffOrb',...HAND_R}},
     hunter:{bow:{prop:'w_item_bowGlow',bone:'handslotl',pos:[0,0,0],rot:[0,-0.7071,0,0.7071]}},
     warrior:{blade:{prop:'w_item_bladeRed',...HAND_R}},
