@@ -3165,7 +3165,7 @@ function worldBot(m,L,god){
       const sh=goalShow();o.miss=!!sh&&!sh.done&&(sh.r==='wood'||sh.r==='stone')&&sh.need===vCost('market')[sh.r];
       GOALW.t=0;GOALW.key='';goalUpdate(0.1);const chip=document.getElementById('goalChip');o.chip=!!chip&&!chip.hidden&&chip.textContent.includes(T('vil.market'))&&chip.textContent.includes('/'+sh.need)&&!chip.querySelector('b');   // לא b: שם האזור (‎.whud b‎) נעלם אחרי 5 שניות
       const p0=GOAL.stat.pulse;SAVE.bag[sh.r]=1;GOALW.t=0;goalUpdate(0.1);o.pulse=GOAL.stat.pulse===p0+1;
-      const c=vCost('market');for(const r of GOAL.res)if(c[r])SAVE.bag[r]=c[r];const d0=GOAL.stat.done;GOALW.t=0;goalUpdate(0.1);o.done=GOAL.stat.done===d0+1&&chip.textContent.includes('⌂');
+      const c=vCost('market');for(const r of GOAL.res.concat('coins'))if(c[r])SAVE.bag[r]=Math.max(SAVE.bag[r]||0,c[r]);const d0=GOAL.stat.done;GOALW.t=0;goalUpdate(0.1);o.done=GOAL.stat.done===d0+1&&chip.textContent.includes('⌂');
       GOALW.t=0;goalUpdate(0.1);o.once=GOAL.stat.done===d0+1;
       goalPin({k:'market'});o.unpin=!goalS().pin&&!!goalNow();
       o.blank=saveBlank().goal&&saveBlank().goal.pin===null;
@@ -3177,6 +3177,19 @@ function worldBot(m,L,god){
     (vlr.ok?', פטיש 2: מלא':', פטיש 2 לא עוזר')+(vlr.arena?', בזירה בלי שינוי':', הזירה השתנתה!')+(vlr.nores?', בלי "עמיד" על מקורות':', "עמיד" על מקור!')+(vlr.late?', רמה 4 ×1.3 עץ':', מחיר רמה 4 שגוי')+(vlr.opens?', מה נפתח ו-📌 בנפחייה':', אין "נפתח" או 📌')+
     (vlr.pin&&vlr.miss?', יעד מסומן ומה חסר':', היעד שגוי')+(vlr.chip?', שבב בעולם':', אין שבב')+(vlr.pulse?', פועם באיסוף':', לא פועם')+(vlr.done&&vlr.once?', ⌂ וחגיגה פעם אחת':', בלי ⌂ או חגיגה כפולה')+
     (vlr.unpin?', ביטול סימון':', הסימון נתקע')+(vlr.blank?', בשמירה':', לא בשמירה'))));
+  // השדרוג הראשון (firstup.js): המתנה לא מספיקה לנפחייה, יציאה אחת כן. היא היעד, ובנייה משחיזה את הנשק ל-‎+3 פעם אחת
+  const fu=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{if(!S.vil)enterVillage();SAVE.village.forge=0;delete SAVE.fu;goalS().pin=null;const b0=gearStats(),w=gBase(SAVE.gear.weapon);SAVE.gear.weapon=w;gearLive(b0);
+      SAVE.bag.coins=VILLAGE.gift.coins;SAVE.bag.wood=VILLAGE.gift.wood;SAVE.bag.stone=VILLAGE.gift.stone;
+      o.gift=vBlock('forge')==='cost';o.goal=goalKey(goalNow())==='b:forge';
+      const sh=goalShow();o.coins=!!sh&&sh.r==='coins';
+      o.info=fuInfo('forge',0).includes('➜')&&!fuInfo('forge',0).includes('fuok');
+      SAVE.bag.coins+=60;o.trip=!vBlock('forge')&&fuInfo('forge',0).includes('fuok');
+      o.built=vUpgrade('forge')&&gPlus(SAVE.gear.weapon)===FIRSTUP.plus&&SAVE.fu===1;
+      SAVE.village.forge=0;SAVE.bag.coins=999;vUpgrade('forge');o.once=gPlus(SAVE.gear.weapon)===FIRSTUP.plus&&!fuGoal();
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    const b2=gearStats();SAVE=JSON.parse(bak);gearLive(b2);return o});
+  check(!fu.err&&fu.gift&&fu.goal&&fu.coins&&fu.info&&fu.trip&&fu.built&&fu.once,'השדרוג הראשון: '+(fu.err||[fu.gift?'המתנה לא מספיקה לנפחייה':'המתנה מספיקה לנפחייה!',fu.goal?'היעד הוא הנפחייה':'היעד לא הנפחייה',fu.coins?'השבב מראה מטבעות':'השבב לא מראה מטבעות',fu.info?'לפני/אחרי בחלון':'אין לפני/אחרי',fu.trip?'אחרי יציאה אפשר':'אחרי יציאה עדיין לא',fu.built?'הנשק ‎+3':'הנשק לא הושחז',fu.once?'פעם אחת':'הושחז שוב'].join(', ')));
   // לולאת הכפר, שלב 2 (vproj.js): החוצבת בכפר → סדנה בשלושה שלבים → המחצבה העמוקה נפתחת (או ברמה 10), עם מקורות שצומחים מהר, והחלפה טובה יותר
   const vpr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
     try{const V=VPROJ,id='cutterShop',pl='deepQuarry',Q=QS();SAVE.vproj={st:{},seen:{}};SAVE.hero.level=1;delete Q.done[RESID.list.cutter.last];
