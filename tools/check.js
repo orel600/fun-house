@@ -1554,7 +1554,8 @@ function worldBot(m,L,god){
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];SH.list=[];
       const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;e.sw=0;e.scd=99;return e};
       const st={...SH.stat},calm0=SAVE.calm;SAVE.calm=false;
-      const hit=(w,e)=>{SH.fr=-1;damage(e,10,w,0.4);return SH.list[SH.list.length-1]};
+      const hit=(w,e)=>{SH.fr=-1;const R=Math.random,U=ufHit;Math.random=()=>0.999;ufHit=()=>1;   // בלי קריטי ובלי מכה כבדה (upfeel.js): אחרת מכת חרב קריטית נוטה כמו סקיל, והבדיקה תלויה במזל (נכשל פעם ב-seed 2026)
+        try{damage(e,10,w,0.4)}finally{Math.random=R;ufHit=U}return SH.list[SH.list.length-1]};
       const e1=mk(60,0),a=hit('sword',e1),k1=e1.hfK;r.sword=!!a&&!a.sk&&Math.abs(a.a-0.4)<1e-6&&SH.stat.basic===st.basic+1;
       const e2=mk(90,30),b=hit('gun',e2);r.bow=!!b&&!b.sk&&b.B===SHARP.basic.gun;
       const e3=mk(-80,0),c=hit('skill',e3),k3=e3.hfK;r.skill=!!c&&c.sk&&SH.stat.skill===st.skill+1;
