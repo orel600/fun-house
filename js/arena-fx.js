@@ -40,7 +40,9 @@ const ARFX={
   },
   glow:{near:220,on:8,off:5,size:120,alpha:0.8,every:0.5},   // כמה אויבים עד near מדליקים את הטבעת, ומתחת ל-off היא כבה
   // אייקון מצויר לכל סקיל בזירה (icons/ui/skills)
-  pic:{quake:'wQuake',splash:'vortex',frost:'mCircle',flame:'whirl',zap:'chain',comet:'meteor',lance:'shield',bloom:'spirit'},
+  pic:{quake:'quake',splash:'splash',frost:'frost',flame:'flame',zap:'zap',comet:'comet',lance:'lance',bloom:'bloom'},   // האייקונים המצוירים מהסט של אוראל (icons/uw/icon-arena-*-round.png, 10.11) במקום הסמלים השטוחים
+  picSp:{dash:'dash',heal:'heal',smite:'smite'},   // כפתור הלחש (#spell, מחליף ביניהם): אייקון מצויר לפי הלחש הנוכחי
+  picUlt:'ult-lantern-burst',   // כפתור העל (#ult): פנס הזיכרון המצויר
   keys:['KeyE','KeyR','KeyF'],
   win:{t:3.4,every:0.32}   // מסך הניצחון: כמה שניות של זיקוקים, וכל כמה זמן אחד חדש
 };
@@ -69,7 +71,7 @@ function arfxAim(h,b,a,k){if(!h)return;if(k==='aimed'){const s=h.size;h.rot=a+Ma
   const D=ARFX.tele[k];
   if(!D.wait){   // מוקשים: כבר מחכים בעצמם. אזהרה על כל מוקש חדש, לכל אורך הזמן שלו
     const n0=mines.length;old.apply(this,arguments);let w=99;
-    for(let i=n0;i<mines.length;i++){const m=mines[i];w=Math.min(w,m.t);fxPlay(D.fx,m.x,m.y,{size:150,fps:arfxFps(D.fx,m.t),dur:m.t,under:true})}
+    for(let i=n0;i<mines.length;i++){const m=mines[i];w=Math.min(w,m.t);if(!(typeof kineticHere==='function'&&kineticHere()))fxPlay(D.fx,m.x,m.y,{size:150,fps:arfxFps(D.fx,m.t),dur:m.t,under:true})}
     if(mines.length>n0)arfxTeleStat(k,w);return}
   b.arTele={k,t:0,max:D.wait,hs:arfxTeleFx(b,k,D.wait+(D.extra||0))};
 }}
@@ -105,6 +107,7 @@ function arfxFrame(){if(ARFXS.f===S.t)return;ARFXS.f=S.t;ARFXS.n=0}
 {const old=juiceHit;juiceHit=function(e,d,m,crit,t,ang){
   const r=old.apply(this,arguments);
   if(!arfxOn()||fxLess()||e.node||typeof AJ==='undefined'||!AJ.src||AJ.src.ch||!JUICE.arena.src[AJ.src.w])return r;
+  if(typeof kineticHere==='function'&&kineticHere()&&(AJ.src.w==='sword'||AJ.src.w==='gun'))return r; // one local contact, no stacked atlas burst/crit stamp
   if(AJ.src.w==='skill'&&typeof skAnimHit==='function'&&skAnimHit(e,d,t))return r;   // פגיעה מסקיל: פיצוץ ומצב מהגיליונות ב-skill-anim.js
   const H=ARFX.hit,big=ajBig(e);arfxFrame();ajFrame();
   if(ARFXS.n>=H.perFrame||(AJ.seen>H.crowd&&!crit&&!big))return r;
@@ -196,10 +199,16 @@ const arfxPicOk={};
     'color:#fff;background:#0009;border:1px solid #fff6;border-radius:4px;padding:2px 4px;pointer-events:none}'+
     '.arfxwin{position:fixed;inset:0;width:100vw;height:100vh;z-index:6;pointer-events:none}';
   document.head.appendChild(st);
+  const picCss=(sel,id)=>'body:not(.world) '+sel+'::before{content:"";position:absolute;inset:3px;border-radius:50%;background:#141019 url(icons/uw/icon-arena-'+id+'-round.png) center/cover;pointer-events:none;z-index:1}'+
+    'body:not(.world) '+sel+':not(.ready)::before{opacity:.45}body:not(.world) '+sel+' svg{display:none}'+
+    'body:not(.world) '+sel+' i{z-index:2}';
   for(const id in ARFX.pic){const im=new Image();im.onload=()=>{arfxPicOk[id]=true;
-      st.textContent+='body:not(.world) .skb:not(.gif)[data-sk="'+id+'"]::before{content:"";position:absolute;inset:3px;border-radius:50%;background:url(icons/ui/skills/'+ARFX.pic[id]+'.png) center/cover;pointer-events:none}'+
-        'body:not(.world) .skb:not(.gif)[data-sk="'+id+'"]:not(.ready)::before{opacity:.45}body:not(.world) .skb:not(.gif)[data-sk="'+id+'"] .dti{display:none}'};
-    im.src='icons/ui/skills/'+ARFX.pic[id]+'.png'}})();
+      st.textContent+=picCss('.skb[data-sk="'+id+'"]',id)};
+    im.src='icons/uw/icon-arena-'+ARFX.pic[id]+'-round.png'}
+  for(const id in ARFX.picSp){const im=new Image();im.onload=()=>{st.textContent+=picCss('#spell[data-sk="'+id+'"]',ARFX.picSp[id])+'#spell[data-sk="'+id+'"] svg{display:none}'};
+    im.src='icons/uw/icon-arena-'+ARFX.picSp[id]+'-round.png'}
+  {const im=new Image();im.onload=()=>{st.textContent+=picCss('#ult',ARFX.picUlt)+'#ult svg{display:none}'};
+    im.src='icons/uw/icon-arena-'+ARFX.picUlt+'-round.png'}})();
 {const old=skillsHud;skillsHud=function(){
   const r=old.apply(this,arguments),box=$('skills');
   if(!box.hidden&&!S.wd)for(let i=0;i<box.children.length&&i<ARFX.keys.length;i++){const b=box.children[i];

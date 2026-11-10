@@ -2075,3 +2075,6 @@ body.mb .skb.lock::after{content:none}
 /* arena-feel.js: הסקיל כמעט מוכן (ARFEEL.soon): הכפתור "מתנשף" רגע לפני */
 .skb.afsoon{animation:afsoon .12s ease-out infinite alternate}@keyframes afsoon{to{transform:scale(1.07);box-shadow:0 0 0 3px var(--dt),0 0 14px var(--dt)}}
 @media (prefers-reduced-motion:reduce){.skb.afsoon{animation:none}}
+/* Arena status belongs outside the combat centre. World/village/MOBA unchanged. */
+.banner.artop.arkin{top:auto!important;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);font-size:13px;line-height:1.25;padding:3px 10px;max-width:min(280px,calc(100% - 220px));opacity:0;pointer-events:none}
+.banner.artop.arkin.on{opacity:.9}

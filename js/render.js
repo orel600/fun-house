@@ -101,7 +101,7 @@ function drawEnemy(e){
 }
 function drawBoss(b){
   const fl=b.flash>0,glow=dtCol(b.weak);
-  if(b.charge&&b.charge.stage===0){
+  if(b.charge&&b.charge.stage===0&&!(typeof kineticHere==='function'&&kineticHere())){
     ctx.strokeStyle='rgba(239,78,87,0.18)';ctx.lineWidth=b.r*2;ctx.lineCap='butt';
     ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x+Math.cos(b.charge.a)*320,b.y+Math.sin(b.charge.a)*320);ctx.stroke();ctx.lineCap='round';
   }
@@ -154,9 +154,10 @@ function render(){
   mazeDraw(ox,oy);   // קירות זירת המבוך (maze.js)
   if(typeof awxDraw==='function')awxDraw();   // weather in the arena and boss fights: scenes and lightning for weather.js (arena-weather.js)
   // mines & waves
-  for(const mn of mines){const k=mn.t/1.3;ctx.strokeStyle='rgba(239,78,87,'+(0.5-k*0.3)+')';ctx.lineWidth=2;ctx.setLineDash([6,6]);ctx.beginPath();ctx.arc(mn.x,mn.y,58,0,7);ctx.stroke();ctx.setLineDash([]);
+  for(const mn of mines){if(typeof kineticMine==='function'&&kineticMine(mn))continue;const k=mn.t/1.3;ctx.strokeStyle='rgba(239,78,87,'+(0.5-k*0.3)+')';ctx.lineWidth=2;ctx.setLineDash([6,6]);ctx.beginPath();ctx.arc(mn.x,mn.y,58,0,7);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle=Math.floor(mn.t*(k<.4?16:6))%2?C.blood:C.ink;ctx.strokeStyle=C.blood;ctx.beginPath();ctx.arc(mn.x,mn.y,7,0,7);ctx.fill();ctx.stroke()}
   for(const w of waves){
+    if(typeof kineticWave==='function'&&kineticWave(w))continue;
     if(w.t<0){ctx.strokeStyle='rgba(199,166,255,0.35)';ctx.lineWidth=2;ctx.setLineDash([4,8]);ctx.beginPath();ctx.arc(w.x,w.y,w.max,0,7);ctx.stroke();ctx.setLineDash([])}
     else{ctx.strokeStyle='rgba(199,166,255,'+(0.9-w.t)+')';ctx.lineWidth=14;ctx.beginPath();ctx.arc(w.x,w.y,w.r,0,7);ctx.stroke()}}
   // orbs
@@ -187,6 +188,7 @@ function render(){
   // חצים: מוט, נוצות וחוד. קסם: כדור זוהר עם שובל (weapons.js)
   const gw=juiceOn()?wGrow():1,sc=dtCol(P.dt.gun),br=WEAPONS.bolt.r*gw,th=heroTheme();ctx.lineWidth=2;   // gw: נשק משודרג יורה חץ/קסם גדול יותר, בעולם ובכפר (weapons.js)
   for(const b of pb){
+    if(typeof kineticPlayerTrail==='function')kineticPlayerTrail(b);
     if(th){th.shot(b,sc);continue}   // דמות אישית: חלילים ותווים (flute.js) או להבונים (spark.js)
     if(b.shot==='bolt'){ctx.fillStyle=sc;
       for(let i=3;i>0;i--){ctx.globalAlpha=0.12*(4-i);ctx.beginPath();ctx.arc(b.x-b.vx*0.018*i,b.y-b.vy*0.018*i,br*(1-i*0.18),0,7);ctx.fill()}
@@ -196,7 +198,7 @@ function render(){
     ctx.beginPath();ctx.moveTo(-20,0);ctx.lineTo(0,0);ctx.moveTo(-17,0);ctx.lineTo(-22,-3.5);ctx.moveTo(-17,0);ctx.lineTo(-22,3.5);ctx.stroke();
     ctx.beginPath();ctx.moveTo(5,0);ctx.lineTo(-2,-3.5);ctx.lineTo(-2,3.5);ctx.closePath();ctx.fill();ctx.restore();
   }
-  for(const b of eb){ctx.fillStyle=C.blood;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();ctx.fillStyle='#FFD9DB';ctx.beginPath();ctx.arc(b.x,b.y,b.r*0.45,0,7);ctx.fill()}
+  for(const b of eb){if(typeof kineticBullet==='function'&&kineticBullet(b))continue;ctx.fillStyle=C.blood;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();ctx.fillStyle='#FFD9DB';ctx.beginPath();ctx.arc(b.x,b.y,b.r*0.45,0,7);ctx.fill()}
   for(const p of parts){ctx.globalAlpha=Math.max(0,p.life/p.max);ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill()}
   ctx.globalAlpha=1;
   juiceDraw();   // ניצוצות, עשן ומספרי נזק של קרב בעולם (juice.js)
@@ -207,11 +209,13 @@ function render(){
   // מכה קריטית קופצת לרגע ומקבלת מסגרת לבנה
   // בזירה הטקסט הצף לא עולה על הממשק העליון (בדיקת הזירה, 1.11.2026): מעל הקו שלו הוא שקוף, ומתחתיו מתגלה בהדרגה
   const hudY=S.wd||S.vil?-1e9:floatTop(),fadeK=y=>{const sy=(y+oy)*ZOOM-hudY;return sy>=HITFX.hudFade?1:Math.max(0,sy/HITFX.hudFade)};
-  for(const f of floats){const fk=fadeK(f.y);if(fk<=0)continue;ctx.direction=f.ltr||/^[+\-]\d/.test(f.txt)?'ltr':DIR;ctx.globalAlpha=Math.min(1,f.life*2)*fk;
+  const packed=typeof arenaFloatLayout==='function'?arenaFloatLayout(floats,ox,oy):new Map();
+  for(const f of floats){const fp=packed.get(f),fx=fp?fp.x:f.x,fy=fp?fp.y:f.y;const fk=fadeK(fy);if(fk<=0)continue;ctx.direction=f.ltr||/^[+\-]\d/.test(f.txt)?'ltr':DIR;ctx.globalAlpha=Math.min(1,f.life*2)*fk;
     const sz=f.crit?f.size*(1+Math.max(0,f.life-0.8)*4):f.size;ctx.font='800 '+sz+'px Heebo, system-ui, sans-serif';
-    if(f.crit){ctx.lineWidth=4;ctx.strokeStyle=C.gold;ctx.lineJoin='round';ctx.strokeText(f.txt,f.x,f.y)}
-    else{ctx.fillStyle='#0009';ctx.fillText(f.txt,f.x+1,f.y+1)}
-    ctx.fillStyle=f.crit?C.ink:f.col;ctx.fillText(f.txt,f.x,f.y);if(f.crit){ctx.lineWidth=1.5;ctx.strokeStyle=f.col;ctx.strokeText(f.txt,f.x,f.y)}}
+    if(f.crit){ctx.lineWidth=4;ctx.strokeStyle=C.gold;ctx.lineJoin='round';ctx.strokeText(f.txt,fx,fy)}
+    else if(fp){ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeStyle='#10131e';ctx.strokeText(f.txt,fx,fy)}
+    else{ctx.fillStyle='#0009';ctx.fillText(f.txt,fx+1,fy+1)}
+    ctx.fillStyle=f.crit?C.ink:f.col;ctx.fillText(f.txt,fx,fy);if(f.crit){ctx.lineWidth=1.5;ctx.strokeStyle=f.col;ctx.strokeText(f.txt,fx,fy)}}
   ctx.globalAlpha=1;ctx.direction=DIR;
   if(S.wd&&typeof fxcTgDraw==='function')fxcTgDraw();   // אזהרות על הרצפה בעולם: מעל הפגיעות והמספרים (fxcombat.js)
   // screen space (ביחידות של המשחק, כמו W,H)

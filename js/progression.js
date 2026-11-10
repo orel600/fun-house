@@ -59,6 +59,7 @@ let banT=null;
 // בזירה (לא בכפר, בעולם או במשחקי השאול) ההודעה עולה לפס קטן מתחת ל-HUD, כדי לא לכסות את הגיבור (.banner.artop ב-style.css)
 // בזירה ההודעה יושבת מתחת לפס הכי נמוך ב-HUD (גם פס הבוס). נקרא גם מ-hud() בכל פריים, כי פס הבוס מופיע רגע אחרי ההודעה "הבוס הגיע"
 function banTop(){const b=$('banner');if(!b.classList.contains('artop'))return;
+  b.classList.toggle('arkin',typeof kineticHere==='function'&&kineticHere());
   const bot=[document.querySelector('.hud'),$('bossbar'),$('runbar')].filter(e=>e&&!e.closest('[hidden]')&&e.getBoundingClientRect().height>0).reduce((m,e)=>Math.max(m,e.getBoundingClientRect().bottom),48),t=Math.round(bot+6)+'px';
   if(b.style.top!==t)b.style.top=t}
 function banner(txt,col){if(typeof msgOn==='function'&&msgOn())return msgSay(txt,col);   // בעולם ובכפר: עמודת ההודעות (msglane.js)

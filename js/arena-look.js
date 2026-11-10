@@ -12,16 +12,19 @@
    מתחבר בשורה אחת בכל אחד: look-hd.js (מתי, איזו קרקע, צללים), render3d.js (צבעי הרקע), render.js (דו-ממד). לא בחדר הבונוס ולא במשחקי השאול */
 const ARENA_LOOK={
   on:!/[?&]look=classic\b/.test(location.search),
+  floorNew:!/[?&]afloor=old\b/.test(location.search),   // רצפת הבזלת הכהה של השיפוץ (10.11). ?afloor=old מחזיר את החום הישן
   // פלטה לכל סוג זירה: stone/stone2 אבנים, dark כתמים כהים, mortar תפרים, crack סדקים, rune טבעות, ember זוהר הסדקים בסוף,
   // out מה שמעבר לקצה, bg השמיים מאחור, fog צבע האובך (לפני שמערבבים אותו עם השמיים של look-hd.js)
   pal:{
     classic:{stone:'#aaa395',stone2:'#948d7f',dark:'#5f5a52',mortar:'#4a453d',crack:'#2a2622',rune:'#e8d9a8',ember:'#ff7a2a',out:'#2a2733',bg:'#3c3a44',fog:'#6e6a66'},
+    dark:{stone:'#8E96A8',stone2:'#768096',dark:'#4A5064',mortar:'#333949',crack:'#1B1E2A',rune:'#F0E2B0',ember:'#FF8A3D',out:'#1A1C28',bg:'#262A3A',fog:'#4E5568'},   // שיפוץ 10.11: בזלת כחולה-אפורה, תפרים קרים, זוהר גחלים חם. לא כהה מדי: גיבורים כהים חייבים להיבדל
     waves:{stone:'#8a7fa6',stone2:'#746a92',dark:'#4a4066',mortar:'#352c4c',crack:'#221a33',rune:'#c9b6ff',ember:'#b06bff',out:'#1c1628',bg:'#33284D',fog:'#5a4f78'},   // זירת הגלים (arenas.js): אבן סגולה, כמו הרצפה שלה
     maze:{stone:'#7E9A9C',stone2:'#688588',dark:'#3A5558',mortar:'#283c3e',crack:'#142226',rune:'#B8F0E6',ember:'#4FD6C0',out:'#101C1F',bg:'#23424A',fog:'#47727A'},   // זירת המבוך: אבן כחולה-ירקרקה
     boss:{stone:'#a07c88',stone2:'#8a6874',dark:'#5e3f4a',mortar:'#412830',crack:'#2a141c',rune:'#ffb3a0',ember:'#ff6a4a',out:'#241218',bg:'#432A35',fog:'#6e4452'}   // זירת הבוסים: אבן בורדו
   },
   // הקו האמנותי המשותף לכל הזירות (icons/ui/res: עץ, פליז, אבן כהה). רק האבן עצמה משתנה בין זירות
   line:{brass:'#D9A85B',brassHi:'#F6D38A',wood:'#5A3A1E',wood2:'#3B2414',curb:'#2B2622'},
+  lineDark:{brass:'#D9A85B',brassHi:'#F6D38A',wood:'#4A3630',wood2:'#2E2226',curb:'#232028'},   // שיפוץ 10.11: אגוז כהה וקר ליד הבזלת; הפליז נשאר לאותה שפה
   // אבני ריצוף (W4, 8.11, במקום לבנים חוזרות): תאים לא סדירים (Worley), גודל ממוצע בפיקסלים, עיוות הרשת, רוחב התפר, כמה כל אבן שונה
   flag:{size:76,warp:0.35,mortar:0.09,tint:0.14,bevel:0.18,wear:0.35,grit:0.05},
   macro:620,                                // גודל הכתמים הגדולים, שמסתירים את החזרה
@@ -45,7 +48,9 @@ const ARENA_LOOK={
 
 // האם עכשיו בזירה, בתלת-ממד, עם המראה החדש
 function aLookHere(){return ARENA_LOOK.on&&typeof R3D!=='undefined'&&R3D.on&&R3D.ready&&!!S&&!S.vil&&!S.wd&&!S.room&&!S.mb}
-const aLookPal=()=>ARENA_LOOK.pal[S&&S.arena]||ARENA_LOOK.pal.classic;
+const aLookLine=()=>ARENA_LOOK.floorNew?ARENA_LOOK.lineDark:ARENA_LOOK.line;
+const aLookPal=()=>{const p=ARENA_LOOK.pal[S&&S.arena]||ARENA_LOOK.pal.classic;
+  return ARENA_LOOK.floorNew&&(p===ARENA_LOOK.pal.classic)?ARENA_LOOK.pal.dark:p};   // החום הישן מוחלף בבזלת של השיפוץ (אלא אם ?afloor=old)
 const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{},seen:{combos:0,swarms:0,boss:null,run:null}};
 
 (()=>{
@@ -100,14 +105,14 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
         float rg=aRing(d,${R[0]},${f(A.inlay.w[0])})+aRing(d,${R[1]},${f(A.inlay.w[1])})+aRing(d,${R[2]},${f(A.inlay.w[2])})+aRing(d,${R[3]},${f(A.inlay.w[3])});
         float seg=fract(ang/6.2832*${f(A.runes.n)}),rr=abs(d-${f(A.runes.r)});
         float rn=step(rr,14.0)*step(0.2,seg)*step(seg,0.8)*step(0.35,gH(vec2(floor(ang/6.2832*${f(A.runes.n)}),3.0)))*(1.0-smoothstep(abs(seg-0.5)*28.0,abs(seg-0.5)*28.0+3.0,rr+gH(vec2(floor(ang*7.6),1.0))*10.0));
-        float rune=clamp(rg+rn*${f(A.runes.a)},0.0,1.0);
+        float rune=clamp(rg+rn*${f(A.runes.a)},0.0,1.0)*${typeof KINETIC!=='undefined'&&KINETIC.on?'0.04':'1.0'};
         c=mix(c,cBrass*(${f(0.95-A.inlay.sparkle*0.5)}+${f(A.inlay.sparkle)}*gH(floor(p/5.0))),rune*${f(A.inlay.mix)});   // שיבוץ פליז ברצפה (A.inlay)
         glow+=cRune*rune*aPulse*0.9;
         // שש החותמות: עיגול עם כוכב, לכל סוג נזק, דולקות לפי השימוש
         for(int i=0;i<6;i++){float a=float(i)*1.0472+0.5236;vec2 sp=vec2(cos(a),sin(a))*${f(A.sigil.r)};vec2 q=p-sp;float sd=length(q),sa=atan(q.y,q.x);
           float star=abs(cos(3.0*sa))*0.35+0.45;
           float s=aRingSoft(sd,${f(A.sigil.size)},5.0)+aRingSoft(sd,${f(A.sigil.size*0.62)},3.0)+(1.0-smoothstep(${f(A.sigil.size)}*star-3.0,${f(A.sigil.size)}*star,sd))*0.35;
-          s*=step(sd,${f(A.sigil.size+6)});
+          s*=step(sd,${f(A.sigil.size+6)})*${typeof KINETIC!=='undefined'&&KINETIC.on?'0.06':'1.0'};
           c=mix(c,sCol[i]*0.6,s*0.45);glow+=sCol[i]*s*(sLit[i]+aPulse*0.3);}
         // הבוס נכנס: זוהר ברצפה סביבו
         float bd=length(p-aBoss.xy);glow+=cRune*aBoss.z*(1.0-smoothstep(0.0,${f(A.boss.r)},bd))*1.4+cEmber*aBoss.z*aRingSoft(bd,${f(A.boss.r*0.8)},8.0);
@@ -140,7 +145,7 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
     const u=m.userData.u;
     for(const k of ['stone','stone2','dark','mortar','crack','rune','ember','out'])u['c'+k[0].toUpperCase()+k.slice(1)].value.copy(v3(p[k]));
     // צבעי הקו המשותף נכנסים כ-sRGB ממש (THREE.Color ממיר ללינארי, והרצפה עושה pow 2.2 בעצמה: פעמיים = עץ שחור)
-    const L=A.line,sr=h=>new THREE.Vector3(parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255);
+    const L=aLookLine(),sr=h=>new THREE.Vector3(parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255);
     u.cBrass.value.copy(sr(L.brass));u.cWood.value.copy(sr(L.wood));u.cWood2.value.copy(sr(L.wood2));u.cCurb.value.copy(sr(L.curb));
     types().forEach((t,i)=>u.sCol.value[i].copy(v3(DMG.types[t].col)));
   }
@@ -172,6 +177,10 @@ const ALOOK={stat:{draws:0},mat:null,pulse:0,boss:0,bossAt:null,beam:null,lit:{}
     if(b&&k>0)u.aBoss.value.set(b.x,b.y,Math.sin(Math.min(1,k*1.2)*Math.PI*0.5)*Math.min(1,(1-k)*6));else u.aBoss.value.set(9e4,9e4,0);
     if(!ALOOK.beam)ALOOK.beam=beam();
     ALOOK.beam.visible=!!(b&&k>0);if(ALOOK.beam.visible){ALOOK.beam.position.set(b.x,0,b.y/SIN());ALOOK.beam.material.opacity=u.aBoss.value.z*0.55;ALOOK.beam.scale.set(1+0.15*Math.sin(S.t*9),1,1+0.15*Math.sin(S.t*9))}
+    if(typeof kineticHere==='function'&&kineticHere()){
+      // Local source cue replaces the900px entry column and150px full floor bloom.
+      ALOOK.beam.visible=false;u.aBoss.value.z*=.08;
+    }
     ALOOK.stat.draws++;ALOOK.stat.prog=u.aProg.value;ALOOK.stat.pulse=ALOOK.pulse;
   }
   // look-hd.js שואל: איזו קרקע בזירה. null = לא בזירה
@@ -263,15 +272,16 @@ function aLook2dFx(){
 // render.js קורא בכל פריים בדו-ממד, אחרי translate(ox,oy). מחזיר true כשצייר (אחרת render.js מצייר את הסימנים הישנים)
 function aLook2d(ox,oy){
   if(!ARENA_LOOK.on||!S||S.vil||S.wd||S.room||S.mb)return false;
-  const t0=performance.now(),A=ARENA_LOOK,L=A.line,M=A.map2d,p=aLookPal(),tile=aLook2dTile(5),B=A.border;   // 5: עד כמה מילישניות של אפייה בפריים, אם האריח עוד לא מוכן
+  const t0=performance.now(),A=ARENA_LOOK,L=aLookLine(),M=A.map2d,p=aLookPal(),tile=aLook2dTile(5),B=A.border;   // 5: עד כמה מילישניות של אפייה בפריים, אם האריח עוד לא מוכן
   const x0=-ox,y0=-oy,x1=x0+W,y1=y0+H,vis=(x,y,m)=>x>x0-m&&x<x1+m&&y>y0-m&&y<y1+m;
   // 1. הרצפה: דוגמה מהאריח, מיושרת לעולם (הקנבס כבר מוזז ל-ox,oy)
   if(tile){if(!ALOOK2.pat)ALOOK2.pat=ctx.createPattern(tile,'repeat');ctx.fillStyle=ALOOK2.pat;ctx.fillRect(x0,y0,W,H)}
   const dc=Math.hypot(Math.max(0,Math.max(x0,-x1)),Math.max(0,Math.max(y0,-y1))),dfar=Math.max(Math.hypot(x0,y0),Math.hypot(x1,y0),Math.hypot(x0,y1),Math.hypot(x1,y1));   // טווח המרחקים מהמרכז שעל המסך
   const ring=(r,w,col,al,dash)=>{if(r+w<dc||r-w>dfar)return;ctx.globalAlpha=al;ctx.strokeStyle=col;ctx.lineWidth=w;if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.arc(0,0,r,0,6.2832);ctx.stroke();if(dash)ctx.setLineDash([])};
   // 2. שיבוץ פליז במרכז: טבעות, רונות (קטעים על הטבעת החיצונית) ושש חותמות של סוגי הנזק, דולקות לפי השימוש
-  for(const r of A.rings)ring(r,A.inlay.w2d,L.brass,0.32);
-  const seg=6.2832*A.runes.r/A.runes.n;ring(A.runes.r,9,L.brass,0.16,[seg*0.55,seg*0.45]);
+  const quiet=typeof kineticHere==='function'&&kineticHere();
+  for(const r of A.rings)ring(r,A.inlay.w2d,L.brass,quiet?.015:0.32);
+  const seg=6.2832*A.runes.r/A.runes.n;ring(A.runes.r,9,L.brass,quiet?.01:0.16,[seg*0.55,seg*0.45]);
   if(A.sigil.r+60>dc&&A.sigil.r-60<dfar){const types=Object.keys(DMG.types).slice(0,6),hits=S.hits||{},tot=types.reduce((a,t)=>a+(hits[t]||0),0)||1,G=A.sigil;
     types.forEach((t,i)=>{const a=i*1.0472+0.5236,sx=Math.cos(a)*G.r,sy=Math.sin(a)*G.r;if(!vis(sx,sy,G.size+8))return;const sh=(hits[t]||0)/tot,lit=sh<G.min?0:Math.min(1,(sh-G.min)/(0.5-G.min));
       ctx.globalAlpha=0.22+0.5*lit;ctx.strokeStyle=DMG.types[t].col;ctx.lineWidth=3;ctx.beginPath();ctx.arc(sx,sy,G.size,0,7);ctx.moveTo(sx+G.size*0.62,sy);ctx.arc(sx,sy,G.size*0.62,0,7);ctx.stroke();
