@@ -59,12 +59,18 @@ if(MBCOMPACT.enabled('tank')&&typeof mbAtk3dTick==='function'){
 }
 // the strike grip: the stone hammer prop turns to grip.rot at the damage frame and eases back (pose only)
 function mbCompactGrip(a,hit,dt){
- const G=MBCOMPACT.tank.grip,L=a.L||{};if(!G||!a.props)return;
+ const G=MBCOMPACT.tank.grip;if(!G||!a.props)return;
  if(hit)a.cgT=0;else if(a.cgT!=null)a.cgT+=dt||0;
- const w=a.cgT==null?0:a.cgT<G.hold?1:Math.max(0,1-(a.cgT-G.hold)/G.back);if(w<=0)a.cgT=null;
- for(const k in a.props){const p=L.props&&L.props[k];if(!p||p.prop!=='w_item_stoneHammer')continue;const m=a.props[k];
-  if(!m.userData.cq0)m.userData.cq0=m.quaternion.clone();if(!m.userData.cq1)m.userData.cq1=m.userData.cq0.clone().multiply(new THREE.Quaternion(...G.rot));
-  m.quaternion.copy(m.userData.cq0).slerp(m.userData.cq1,w)}
+ a.cgW=a.cgT==null?0:a.cgT<G.hold?1:Math.max(0,1-(a.cgT-G.hold)/G.back);if(a.cgW<=0)a.cgT=null;
+ mbCompactGripApply(a,null);
+}
+// base: where the hammer is without the strike (the carry of mb-compact-fixes.js, or else the grip in the look). The strike pose is always the look grip turned by grip.rot (what was measured)
+function mbCompactGripApply(a,base){
+ const G=MBCOMPACT.tank.grip,L=a.L||{};if(!G||!a.props)return;const w=a.cgW||0;
+ for(const k in a.props){const p=L.props&&L.props[k];if(!p||p.prop!=='w_item_stoneHammer')continue;const m=a.props[k],U=m.userData;
+  if(!U.cq1){U.cq0=new THREE.Quaternion(...(p.rot||[0,0,0,1]));U.cq1=U.cq0.clone().multiply(new THREE.Quaternion(...G.rot))}
+  if(!base&&!w&&!U.cgOn)continue;U.cgOn=w>0;   // nothing to do between strikes: the look (or the carry) owns the grip
+  m.quaternion.copy(base?(U.cqB||(U.cqB=new THREE.Quaternion())).fromArray(base):U.cq0).slerp(U.cq1,w)}
 }
 /* Compact label layout v3. Append after compact adapter, no float edits. */
 const MBCOMPACTLABEL={map:new Map(),stats:{crowded:0,moved:0}};
