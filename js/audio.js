@@ -29,6 +29,13 @@ const SOUNDS={
   smite_chime: {file:'smite_chime.mp3', vol:0.4, pitch:0.04,max:1, gap:0.6, grp:'fx',where:'fight'},   // כישוף מכה (spell.js): צליל קדוש קצר
   blessing_chime:{file:'blessing_chime.mp3',vol:0.4,pitch:0.04,max:1,gap:0.6, grp:'fx',where:'fight'},  // בלום: פעמון ברכה ביצירת הבריכה
   crowd_amb:   {file:'crowd_amb.mp3',   vol:0.1, pitch:0,   max:1, gap:26,  grp:'fx',where:'fight'},   // מיטת קהל בזירה: לופ שקט (arena-snd.js מנגן אותו כלופ)
+  // צלילים סינתטיים מקוריים של NOVA (בלי דגימות מבחוץ): השביט, הזאפ וקיר האש בזירה, ושלושה לסקילים החדשים (arena-snd.js). ההתאמה לא נבדקה באוזן
+  fall_whistle:{file:'fall_whistle.mp3',vol:0.3, pitch:0.06,max:1, gap:0.5, grp:'fx',where:'fight'},   // שביט, מטר מטאורים: שריקת נפילה בהטלה
+  thunder_crack:{file:'thunder_crack.mp3',vol:0.5,pitch:0.06,max:1, gap:0.4, grp:'fx',where:'fight'},  // זאפ, מוט ברקים: סדק רעם
+  flame_loop:  {file:'flame_loop.mp3',  vol:0.35,pitch:0.05,max:1, gap:0.8, grp:'fx',where:'fight'},   // קיר האש, עוף החול: אש
+  beam_loop:   {file:'beam_loop.mp3',   vol:0.25,pitch:0.03,max:1, gap:1.5, grp:'fx',where:'fight'},   // קרן הדין: הקרן
+  vortex_loop: {file:'vortex_loop.mp3', vol:0.3, pitch:0.05,max:1, gap:1,   grp:'fx',where:'fight'},   // הקרע: מערבולת רוח
+  low_drone:   {file:'low_drone.mp3',   vol:0.25,pitch:0.04,max:1, gap:1,   grp:'fx',where:'fight'},   // נפילת הירח: רעם נמוך
   cast_physical: {file:'cast_physical.mp3', vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // הטלת סקיל פיזי: חבטה יבשה
   cast_fire:     {file:'cast_fire.mp3',     vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // אש: וושש והתלקחות
   cast_water:    {file:'cast_water.mp3',    vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // מים: התזה
