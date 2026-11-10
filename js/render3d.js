@@ -769,10 +769,10 @@ function syncWorld(){
     if(!m){const D=W3D.nodes[wKind(n.kind).shape],v=hash(n.x,n.y),md=Array.isArray(D.model)?D.model[v<0.5?0:1]:D.model;
       m=G.nodes[n.id]=vPut(md,n.x,n.y,D.w*(0.85+v*0.3),v*6.28,G.g);
       if(D.glow)m.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(D.glow).multiplyScalar(0.5)}})}
-    if(m.userData.lift==null){tLift(m);const L=W3D.log;if(wKind(n.kind).shape==='tree'){m.userData.log=vPut(L.model,n.x+n.r*L.dx,n.y+n.r*L.dy,L.w,hash(n.y,n.x)*6.28,G.g);tLift(m.userData.log)}}   // בול ליד עץ שאפשר לכרות
+    nzBig3d(n,m);if(m.userData.lift==null){tLift(m);const L=W3D.log;if(wKind(n.kind).shape==='tree'){m.userData.log=vPut(L.model,n.x+n.r*L.dx,n.y+n.r*L.dy,L.w,hash(n.y,n.x)*6.28,G.g);tLift(m.userData.log)}}   // בול ליד עץ שאפשר לכרות
     m.visible=!n.dead&&(!TR||Math.abs(n.x-S.cam.x)+Math.abs(n.y-S.cam.y)<TERRAIN.cull*1.4);   // באחו הגדול: מקור רחוק לא מצויר
     if(m.userData.log)m.userData.log.visible=m.visible;
-    gather3d(n,m,G.g);   // מתכווץ, מתנדנד, נופל, גדם ונבט (gather.js)
+    nzPulse(m);gather3d(n,m,G.g);   // nzBig3d/nzPulse: גדולים, ויקרים נושמים אור (nodesize.js). מתכווץ, מתנדנד, נופל, גדם ונבט (gather.js)
   }
 }
 // תושבי הכפר: דמות לכל תושב שנמצא בכפר, והקישוטים בפינה של מי שאין לו מבנה. המצב (הולך, עובד, מנופף) מגיע מ-npc.js
