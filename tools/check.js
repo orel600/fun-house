@@ -296,7 +296,7 @@ function villageBot(m,L){
   if(!document.getElementById('qLog').hidden){document.querySelector('#qLog [data-act="close"]').click();return steer(null,null,false,0,L)}
   if(vLv('mill')===0){   // הולכים למנסרה ובונים אותה
     if(enter('mill')){const before=bag(),btn=document.querySelector('#vPanel [data-act="up"]');L.panel=document.getElementById('vPanel').innerText.split('\n')[0];
-      if(btn&&!btn.disabled){btn.click();L.built=vLv('mill');L.fx=FX.length>0&&vLook('mill')===null;L.paid=Object.keys(before).filter(r=>(SAVE.bag[r]||0)<before[r]).map(r=>r+' -'+(before[r]-(SAVE.bag[r]||0))).join(', ');
+      if(btn&&!btn.disabled){btn.click();L.built=vLv('mill');L.fx=(FX.length>0||!!S.vil.bm)&&vLook('mill')===null;if(S.vil.bm)bmEnd(true);L.paid=Object.keys(before).filter(r=>(SAVE.bag[r]||0)<before[r]).map(r=>r+' -'+(before[r]-(SAVE.bag[r]||0))).join(', ');
         L.builtSaved=JSON.parse(localStorage.getItem(SAVE_STORE.key)).village.mill===1}else L.built=0}
     return steer(B.x,B.y,false,0,L)}
   if(!m.away){   // כאילו השחקן לא שיחק שעתיים: התוצרת מצטברת עד המחסן
@@ -396,7 +396,7 @@ function villageBot(m,L){
       if(!m.tapTry){m.tapTry=1;joy=null;ev('pointerdown');ev('pointerup');L.tapOpen=S.vil.open==='stash'&&!document.getElementById('vPanel').hidden}
       if(S.vil.open!=='stash'&&!enter('stash'))return steer(St.x,St.y,false,0,L)}
     m.stash=1;const q=s=>document.querySelector('#vPanel '+s),up=q('[data-act="up"]');
-    if(up&&!up.disabled)up.click();L.stashLv=vLv('stash');
+    if(up&&!up.disabled){up.click();if(S.vil.bm)bmEnd(true);if(S.vil.open!=='stash'){S.vil.open=S.vil.near='stash';S.vil.ui='';villageHud()}}L.stashLv=vLv('stash');   // מדלגים על רגע הבנייה, כמו נגיעה, והחלון חוזר
     // נגיעה מעבירה BWIN.move, ולחיצה ארוכה הכל (bwin.js מסמן אותה ב-data-n="all")
     const w0=SAVE.bag.wood||0,mv=(d,r,all)=>{const b=q('[data-act="stash"][data-dir="'+d+'"][data-r="'+r+'"]');if(b){if(all)b.dataset.n='all';b.click()}return!!b};
     const s0=SAVE.bag.oakSword||0;   // כמה חרבות עץ בתרמיל: הלוחם מקבל אחת בבחירה ועוד אחת במתנה
@@ -2513,6 +2513,30 @@ function worldBot(m,L,god){
   check(wl.prod&&wl.daily&&wl.quest&&wl.fx===1&&wl.fly&&wl.noWin,'בזמן שלא היית: נגיעה ב-📦 '+(wl.prod?'אספה '+wl.wood+' עץ':'לא אספה את הייצור')+(wl.daily?', מתנה יומית':', בלי המתנה היומית')+(wl.quest?', קווסט':', הקווסט לא נלקח')+
     ', '+wl.fx+' חגיגות (צפוי 1)'+(wl.fly?', מספרים עפים':', בלי מספרים עפים')+(wl.noWin?', בלי חלון':', ונפתח חלון'));
   check(wl.noPop&&wl.gone&&wl.empty,'בזמן שלא היית: '+(wl.noPop?'שום חלון לא קפץ אחרי האיסוף':'קפץ חלון אחרי האיסוף')+(wl.gone?', הכפתור נעלם':', הכפתור נשאר ('+wl.left+')')+(wl.empty?', ובלי כלום שמחכה הוא לא מופיע':', והופיע גם בלי כלום שמחכה'));
+  // רגע הבנייה (buildmoment.js, ניר 10.11): שדרוג נפחייה 2→3. החלון נסגר, המצלמה נוסעת למבנה, הישן (אוהל) שוקע, פיגום, החדש (נפחייה) קופץ,
+  // שורה "לפני → אחרי", והמצלמה חוזרת והחלון נפתח. אחר כך נגיעה מדלגת (3→4), והפחתת תנועה בלי מצלמה (4→5). הרמות והתרמיל חוזרים בסוף
+  {const bm=await page.evaluate(()=>{const o={},B=VILLAGE.b.forge;window.__bmKeep=JSON.stringify({v:SAVE.village,b:SAVE.bag,c:SAVE.calm});
+      welcomeClose();npcTalk(null);SAVE.calm=false;SAVE.village.center=5;SAVE.village.forge=2;
+      for(const L of [3,4,5]){const c=vCostAt('forge',L);for(const r in c)bagAdd(r,c[r])}
+      P.x=B.x;P.y=B.y+B.r+40;S.cam.x=P.x;S.cam.y=P.y;S.vil.open=S.vil.near='forge';S.vil.ui='';villageHud();
+      o.d0=Math.round(Math.hypot(S.cam.x-B.x,S.cam.y-B.y));vUpgrade('forge');
+      o.lv=vLv('forge');o.on=!!S.vil.bm;o.closed=document.getElementById('vPanel').hidden;return o});
+    const at=async(ms,f)=>{await page.clock.runFor(ms);return page.evaluate(f)};
+    bm.pan=await at(650,new Function('const B=VILLAGE.b.forge;return{d:Math.round(Math.hypot(S.cam.x-B.x,S.cam.y-B.y+B.r*BUILDM.lift)),look:(vLook("forge")||{}).model||"-"}'));
+    bm.rise=await at(700,()=>({look:vLook('forge')?vLook('forge').model:'site',fx:FX.length>0}));
+    bm.hold=await at(1200,()=>{const el=document.getElementById('bmLine');return{look:(vLook('forge')||{}).model,line:el&&!el.hidden?el.textContent:''}});await shot('build-moment');
+    bm.end=await at(2200,()=>{const B=VILLAGE.b.forge,o={on:!!S.vil.bm,open:S.vil.open,panel:!document.getElementById('vPanel').hidden,d:Math.round(Math.hypot(S.cam.x-P.x,S.cam.y-P.y)),log:BUILDM.log.slice(-1)[0]};
+      vUpgrade('forge');return o});
+    bm.skip=await at(400,()=>{dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true}));return{on:!!S.vil.bm,end:BUILDM.log.slice(-1)[0].end,lv:vLv('forge'),look:(vLook('forge')||{}).model}});
+    bm.calm=await at(300,()=>{SAVE.calm=true;const c0={x:S.cam.x,y:S.cam.y};vUpgrade('forge');const o={on:!!S.vil.bm,end:BUILDM.log.slice(-1)[0].end,lv:vLv('forge')};o.c0=c0;return o});
+    bm.calm2=await at(500,c=>({d:Math.round(Math.hypot(S.cam.x-P.x,S.cam.y-P.y))}));
+    await page.evaluate(()=>{const k=JSON.parse(window.__bmKeep);SAVE.village=k.v;SAVE.bag=k.b;SAVE.calm=k.c;S.vil.bm=null;S.vil.open=null;S.vil.raise={};S.vil.ui='';villageHud();saveNow()});
+    const L0=bm.end.log||{};
+    check(bm.lv===3&&bm.on&&bm.closed&&bm.pan.d<40&&bm.pan.look==='tent'&&bm.rise.look==='site'&&bm.rise.fx&&bm.hold.look==='forge'&&/→/.test(bm.hold.line)&&!bm.end.on&&bm.end.open==='forge'&&bm.end.panel&&bm.end.d<30&&L0.end==='done',
+      'Build moment (forge 2→3): '+(bm.on&&bm.closed?'window closes':'did not start')+', camera '+bm.d0+'→'+bm.pan.d+'px from the building, old look '+bm.pan.look+' → '+bm.rise.look+(bm.rise.fx?' with dust':' without dust!')+' → '+bm.hold.look+
+      (bm.hold.line?', line "'+bm.hold.line+'"':', no before → after line!')+', then '+(bm.end.on?'still running!':'camera back ('+bm.end.d+'px from hero)')+(bm.end.panel&&bm.end.open==='forge'?', window reopens':', window not reopened!'));
+    check(!bm.skip.on&&bm.skip.end==='skip'&&bm.skip.lv===4&&bm.skip.look==='forge'&&!bm.calm.on&&bm.calm.end==='calm'&&bm.calm.lv===5&&bm.calm2.d<5,
+      'Build moment: tap skips ('+(bm.skip.end||'-')+', level '+bm.skip.lv+', '+bm.skip.look+'), reduce motion: '+(bm.calm.end==='calm'&&!bm.calm.on?'no camera move ('+bm.calm2.d+'px)':'the moment still ran!'))}
   // צלילים: כמה פעמים כל צליל התבקש, אם הקבצים נטענו מ-file://, ואם כפתור ההשתקה עובד ונשמר
   // הכפתור פותח את חלון הצלילים: השתקה בתוכו, ועוצמה לכל ערוץ שנשמרת בטלפון
   const au=await page.evaluate(()=>{const $=id=>document.getElementById(id);$('muteBtn').click();const open=!$('ovSound').hidden;

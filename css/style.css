@@ -2075,3 +2075,9 @@ body.mb .skb.lock::after{content:none}
 /* arena-feel.js: הסקיל כמעט מוכן (ARFEEL.soon): הכפתור "מתנשף" רגע לפני */
 .skb.afsoon{animation:afsoon .12s ease-out infinite alternate}@keyframes afsoon{to{transform:scale(1.07);box-shadow:0 0 0 3px var(--dt),0 0 14px var(--dt)}}
 @media (prefers-reduced-motion:reduce){.skb.afsoon{animation:none}}
+/* רגע הבנייה בכפר (js/buildmoment.js): השורה "לפני → אחרי", באמצע מתחת לפס העליון. לא תופסת נגיעות */
+#bmLine{position:fixed;left:50%;top:19%;transform:translateX(-50%);z-index:30;pointer-events:none;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis;
+  font-family:var(--display);font-size:20px;font-weight:700;color:#F4C74F;background:rgba(20,16,12,.62);padding:6px 16px;border-radius:12px;text-shadow:0 2px 3px rgba(0,0,0,.7);opacity:0}
+#bmLine.on{animation:bmLine 2.4s ease-out forwards}
+@keyframes bmLine{0%{opacity:0;transform:translateX(-50%) scale(.85)}12%{opacity:1;transform:translateX(-50%) scale(1.04)}20%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){#bmLine.on{animation:none;opacity:1}}
