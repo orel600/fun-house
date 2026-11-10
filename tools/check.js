@@ -2924,6 +2924,24 @@ function worldBot(m,L,god){
     await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();bossHudPlace(true)});
     const bad=bh.filter(x=>x.err||!x.bar||!x.rare||x.sk<3||x.orbs<4||x.clash.length||x.w<200);
     check(!bad.length,'פס הבוס בעולם במקום הפנוי: '+bh.map(x=>x.k+' '+x.vp+(x.err?' שגיאה: '+x.err:(x.bar?' רוחב '+x.w+' בגובה '+x.y+(x.cut?' (הכותרת מקוצרת)':'')+(x.w<200?' צר מדי, בין '+x.why:''):' אין פס')+(x.clash&&x.clash.length?' · עולה על: '+x.clash.join(', '):' ✓')+(x.err||x.rare?'':' · אין שמועה')+(x.err||x.sk>=3?'':' · '+x.sk+' סקילים'))).join(' | '))}
+  // הבהוב פגיעה בתלת-ממד בעולם (hitflash3d.js, ניר 10.11: "do this for all monsters and bosses"): בלי לבן. פגיעה = בהיר יותר בצבעים שלו,
+  // הבהוב קצר לכל היותר פעם ב-gap, וחלש יותר לגדולים. ההיגיון לכל מראה בעולם (גם בדו-ממד), והצבע האמיתי מהפיקסלים בתלת-ממד:
+  // מכה כל 0.1 שנייה ב-120 פריימים, והרוויה הממוצעת בקרב קרובה לבלי פגיעות. כל המראות: node tools/flash-audit.js
+  {const fl=await page.evaluate(()=>{const o={bad:[],n:0,maxOn:0},F=HITFX3D;
+      const looks=[...new Set([...Object.keys(ETYPES).filter(t=>LOOK3D[t]&&LOOK3D[t].model).map(t=>LOOK3D[t]),...Object.keys(STORY.lanterns).map(k=>LOOK3D['wb_'+k]).filter(Boolean)])];
+      for(const L of looks){const a={},ks=[];for(let f=0;f<240;f++)ks.push(hitFlash3d(a,L,f%12<11,1/120));
+        const on=ks.filter(k=>k>0).length/ks.length,mx=Math.max(...ks);o.n++;o.maxOn=Math.max(o.maxOn,on);
+        if(on>F.dur/F.gap+0.05||mx>F.k[0]+1e-9||mx<F.k[1]-1e-9)o.bad.push(L.model+' '+Math.round(on*100)+'%')}
+      const s0=S.wd,v0=S.vil;S.wd=null;S.vil=null;o.arena=!hitFlashHere();S.wd=s0;S.vil=v0;return o});
+    let px=[];
+    if(CFG.gfx==='3d'){const FA=require('./flash-audit.js');await page.evaluate(src=>{window.measureLook=eval('('+src+')');window.__fa=null;window.__de=R3D.drawEvery;R3D.drawEvery=0},FA.measureLook.toString());
+      for(const key of ['t:grunt','t:wisp','t:frostwraith','g:fire']){let r=null;
+        for(let i=0;i<60&&!r;i++){r=await page.evaluate(k=>{try{return measureLook(k)}catch(err){return {key:k,err:String(err)}}},key);if(!r){await page.clock.runFor(250);await page.waitForTimeout(60)}}
+        px.push(r||{key,err:'model not loaded'})}
+      await page.evaluate(()=>{R3D.drawEvery=window.__de;if(window.__fa&&window.__fa.e)window.__fa.e.dead=true;if(S.wd&&S.wd.warden){S.wd.warden.dead=true;S.wd.warden=null}window.__fa=null;enterVillage()})}
+    const pbad=px.filter(r=>r.err||r.drop>0.1||r.s0<0.15);
+    check(!fl.bad.length&&fl.arena&&!pbad.length,'הבהוב פגיעה בעולם בלי לבן: '+fl.n+' מראות, דולק לכל היותר '+Math.round(fl.maxOn*100)+'% מהקרב'+(fl.bad.length?' · לא לפי HITFX3D: '+fl.bad.join(', '):'')+(fl.arena?'':' · השתנה גם בזירה!')+
+      (px.length?' · צבע בקרב (פיקסלים): '+px.map(r=>r.key.slice(2)+(r.err?' ✗ '+r.err:' רוויה '+r.s0+', איבוד '+Math.round(r.drop*100)+'%'+(r.s0<0.15?' חיוור גם בלי פגיעה':''))).join(', '):' · (הפיקסלים נבדקים בתלת-ממד)'))}
   // העלילה, פרק 2 (story.js, WORLD.regions.lake): הדרך לאגם סגורה עד שפנס האדמה דולק, באגם יש אויבים רטובים (חלשים לברק),
   // והקווסטים מובילים לשומר המים, שמפיל את פנס המים
   const ch2=await page.evaluate(()=>{
