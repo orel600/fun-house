@@ -145,6 +145,7 @@ const VGROW={
   vx_homeAG:{src:hex('buildings/green/building_home_A_green.gltf')},vx_homeAB:{src:hex('buildings/blue/building_home_A_blue.gltf')},vx_homeAR:{src:hex('buildings/red/building_home_A_red.gltf')},
   vx_well:{src:hex('buildings/blue/building_well_blue.gltf')},vx_windmill:{src:hex('buildings/yellow/building_windmill_yellow.gltf')},vx_church:{src:hex('buildings/yellow/building_church_yellow.gltf')},
   vx_wall:{src:hex('buildings/neutral/wall_straight.gltf')},vx_towerAB:{src:hex('buildings/blue/building_tower_A_blue.gltf')},
+  vx_hallG:{src:hex('buildings/green/building_barracks_green.gltf')},   // מרכז הכפר L3: אולם עץ עם גג ירוק
   vx_grain:{src:hex('buildings/neutral/building_grain.gltf')},vx_dirt:{src:hex('buildings/neutral/building_dirt.gltf')}
 };
 // טבע לכל אזור בעולם (KayKit Forest Nature Pack 1.0 FREE, CC0): עצים, עצים חשופים, סלעים, שיחים ועשב. המפתח מתחיל ב-n_, ומי משתמש במה: W3D.decor ב-js/render3d.js

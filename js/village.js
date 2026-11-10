@@ -25,7 +25,7 @@ const VILLAGE={
      מבנה חדש: מקום פנוי ברובע שלו, לפחות 200 פיקסלים ממבנה אחר, ולא על הדרך מהשער לכיכר (x בין -60 ל-60) */
   b:{
     center:{x:0,y:-330,r:92,
-      look:[{at:1,model:'ruin',scale:1,deco:['tent','barrel']},{at:2,model:'stageB',scale:1,deco:['lumber','stone','wbarrow']},{at:3,model:'stageC',scale:1,deco:['flag','lumber','fenceW']},{at:4,model:'castle',scale:0.9,deco:['flag','flag','fenceS']},{at:5,model:'castleY',scale:1.08,deco:['flagY','flagY','towerA','towerA'],glow:C.gold}],   // שיקום (ניר, 9.11): חורבה, שלד, קירות, טירה
+      look:[{at:1,model:'ruin',scale:1,deco:['tent','barrel']},{at:2,model:'stageB',scale:1.05,deco:['site','lumber','stone','wbarrow']},{at:3,model:'hallG',scale:0.72,deco:['flag','lumber','fenceW']},{at:4,model:'keep',scale:1.35,deco:['towerB','towerB','flag','flag']},{at:5,model:'castleY',scale:1.08,deco:['flagY','flagY','towerA','towerA'],glow:C.gold}],   // שיקום (ניר, 9.11): חורבה, שלד, קירות, טירה
       cost:[null,null,{coins:40,wood:30,stone:20},{coins:90,wood:60,stone:50,copper:10,cloth:5},{coins:180,wood:120,stone:100,iron:20,cloth:15},{coins:350,wood:220,stone:200,silver:15,gold:5,horn:1,star:1}]},
     forge:{x:-450,y:-230,r:66,     // נפחייה: כל רמה פותחת עוד שכבת ציוד ליצירה (GEAR.recipes ב-gear.js), ו-Aging לציוד (aging.js) עד ה-+ של הרמה
       look:[{at:1,model:'tent',scale:1,deco:['barrel']},{at:2,model:'stageA',scale:1,deco:['rack','bucket','lumber']},{at:3,model:'forgeG',scale:0.8,deco:['crate','barrel']},{at:4,model:'forge',scale:1,deco:['rack','fenceS','barrel']},{at:5,model:'forgeR',scale:1.12,deco:['flagR','flagR','rack','towerA'],glow:C.ember}],

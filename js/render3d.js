@@ -248,12 +248,12 @@ const VIL3D={
     forgeG:{model:'vx_forgeG',w:140},forgeR:{model:'vx_forgeR',w:140},millG:{model:'vx_millG',w:140},millR:{model:'vx_millR',w:140},
     mineG:{model:'vx_mineG',w:140},mineR:{model:'vx_mineR',w:140},marketG:{model:'vx_marketG',w:150},marketR:{model:'vx_marketR',w:150},
     tavernG:{model:'vx_tavernG',w:135},tavern:{model:'vx_tavernB',w:135},tavernR:{model:'vx_tavernR',w:135},
-    homeG:{model:'vx_homeBG',w:115},home:{model:'vx_homeBB',w:115},homeR:{model:'vx_homeBR',w:115},castleY:{model:'vx_castleY',w:190}},
+    homeG:{model:'vx_homeBG',w:115},home:{model:'vx_homeBB',w:115},homeR:{model:'vx_homeBR',w:115},castleY:{model:'vx_castleY',w:190},hallG:{model:'vx_hallG',w:170},keep:{model:'vx_towerAB',w:105}},
   site:{model:'v_site',w:135},plot:{model:'vx_dirt',w:120},gate:{model:'v_gate',w:150},
   deco:{flag:{model:'v_flag',w:46},crate:{model:'v_crate',w:30},barrel:{model:'v_barrel',w:28},
     tent:{model:'v_tent',w:62},lumber:{model:'v_lumber',w:42},stone:{model:'v_stone',w:42},rack:{model:'vx_rack',w:38},sack:{model:'vx_sack',w:24},wbarrow:{model:'vx_wbarrow',w:36},
     bucket:{model:'vx_bucket',w:20},pallet:{model:'vx_pallet',w:36},ladder:{model:'vx_ladder',w:34},crateS:{model:'vx_crateS',w:22},fenceW:{model:'vx_fenceW',w:52},fenceS:{model:'vx_fenceS',w:52},towerB:{model:'vx_towerB',w:72},
-    towerA:{model:'vx_towerA',w:62},flagR:{model:'vx_flagR',w:46},flagY:{model:'vx_flagY',w:46}},
+    towerA:{model:'vx_towerA',w:62},site:{model:'v_site',w:78},flagR:{model:'vx_flagR',w:46},flagY:{model:'vx_flagY',w:46}},
   decor:{tree:{model:['v_treeA','v_treeB'],w:55},rock:{model:'v_rock',w:55},hills:{model:'v_hills',w:260}},
   stock:{mill:{model:'v_lumber',w:60},mine:{model:'v_stone',w:60}}
 };

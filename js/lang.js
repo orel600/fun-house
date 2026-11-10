@@ -603,7 +603,7 @@ const TEXT={
   'bm.m.forgeG':{en:'Wooden smithy'},'bm.m.forgeR':{en:'Grand smithy'},'bm.m.millG':{en:'Wooden sawmill'},'bm.m.millR':{en:'Grand sawmill'},
   'bm.m.mineG':{en:'Timber mine'},'bm.m.mineR':{en:'Deep mine'},'bm.m.marketG':{en:'Wooden hall'},'bm.m.marketR':{en:'Grand bazaar'},
   'bm.m.tavernG':{en:'Wooden tavern'},'bm.m.tavern':{en:'Tavern'},'bm.m.tavernR':{en:'Grand tavern'},
-  'bm.m.homeG':{en:'Wooden storehouse'},'bm.m.home':{en:'Storehouse'},'bm.m.homeR':{en:'Grand storehouse'},'bm.m.castleY':{en:'Golden castle'},
+  'bm.m.homeG':{en:'Wooden storehouse'},'bm.m.home':{en:'Storehouse'},'bm.m.homeR':{en:'Grand storehouse'},'bm.m.castleY':{en:'Golden castle'},'bm.m.hallG':{en:'Wooden hall'},'bm.m.keep':{en:'Stone keep'},
   'bm.m.pile':{en:'Log pile'},'bm.m.boulder':{en:'Rock face'},'bm.m.stall':{en:'Stall'},
   'vil.mill':{he:'מנסרה',en:'Sawmill'},
   'vil.mine':{he:'מכרה',en:'Mine'},
