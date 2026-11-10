@@ -3,7 +3,12 @@
    Compact bodies already include their own crowns/headwear. */
 const MBCOMPACT={raw:(new URLSearchParams(location.search).get('compact')||''),
   keys:{tank:'compactTank',warrior:'compactWarrior',hunter:'compactHunter',mage:'compactMage',assassin:'compactAssassin'},
-  visualScale:Math.max(1,Math.min(2.2,Number(new URLSearchParams(location.search).get('compactscale'))||2)),stat:{built:0,loaded:0,fallback:0}};
+  visualScale:Math.max(1,Math.min(2.2,Number(new URLSearchParams(location.search).get('compactscale'))||2)),stat:{built:0,loaded:0,fallback:0},
+  // compact tank hammer: prop size and the strike window of Melee_2H_Attack_Chop (parts of its length). Pose only, the damage frame never moves (MAX 10.11: reach and height measured on a clean dummy)
+  tank:{hammerS:1,from:.55,to:.66,dur:.08,settle:.05,
+    // the compact hand stays at chest height through the chop, so the hammer turns head-down only for the strike: rot at the damage frame, held hold s, back to the normal grip over back s.
+    // Measured on a clean dummy (10.11): head ~32 forward and ~12 high at contact, target ~23 after the lunge (the regular tank: 41, 43). Idle and run keep the normal grip
+    grip:{rot:[0,0,-0.7071,0.7071],hold:.14,back:.2}}};
 MBCOMPACT.enabled=k=>MBCOMPACT.raw==='1'||MBCOMPACT.raw.split(',').includes(k);
 if(MBCOMPACT.raw){
  for(const [kit,key] of Object.entries(MBCOMPACT.keys))M3D_LAZY[key]=1;
@@ -16,7 +21,7 @@ if(MBCOMPACT.raw){
    if(kit==='tank'){
      if(!R3D.props.w_item_stoneHammer){m3dNeed('w_item_stoneHammer');return prior(B,kit)}
      delete props.shield;
-     props.hammer={prop:'w_item_stoneHammer',bone:'handslotr',pos:[0,0,0],rot:[0,0,0,1],s:1};
+     props.hammer={prop:'w_item_stoneHammer',bone:'handslotr',pos:[0,0,0],rot:[0,0,0,1],s:MBCOMPACT.tank.hammerS};
    }
    if(kit==='mage'){if(!R3D.props.w_staff_A){m3dNeed('w_staff_A');return prior(B,kit)}props.staff={prop:'w_staff_A',...HAND_R,tint:'water'}};
    const L=Object.assign({},B,{model:key,h:B.h*MBCOMPACT.visualScale,props,base:B,sig:'compact-v1|'+kit});
@@ -46,10 +51,20 @@ if(MBCOMPACT.enabled('tank')&&typeof mbAtk3dTick==='function'){
  mbAtk3dTick=function(u,a,C,dt){
   if(u.kit!=='tank'||a.L.model!=='compactTank')return oldCompactTick(u,a,C,dt);
   const hit=(u.atkT||0)>(u.atk3dLast==null?u.atkT||0:u.atk3dLast)+.05;
-  const compact=Object.assign({},C,{from:.55,to:.66,dur:.08,settle:.05});
+  const compact=Object.assign({},C,{from:MBCOMPACT.tank.from,to:MBCOMPACT.tank.to,dur:MBCOMPACT.tank.dur,settle:MBCOMPACT.tank.settle});
   oldCompactTick(u,a,compact,dt);
   if(hit&&a.mbA&&a.mbA.x){a.mbA.x.stopFading().setEffectiveWeight(1);a.mixer.update(0)}
+  mbCompactGrip(a,hit,dt);
  };
+}
+// the strike grip: the stone hammer prop turns to grip.rot at the damage frame and eases back (pose only)
+function mbCompactGrip(a,hit,dt){
+ const G=MBCOMPACT.tank.grip,L=a.L||{};if(!G||!a.props)return;
+ if(hit)a.cgT=0;else if(a.cgT!=null)a.cgT+=dt||0;
+ const w=a.cgT==null?0:a.cgT<G.hold?1:Math.max(0,1-(a.cgT-G.hold)/G.back);if(w<=0)a.cgT=null;
+ for(const k in a.props){const p=L.props&&L.props[k];if(!p||p.prop!=='w_item_stoneHammer')continue;const m=a.props[k];
+  if(!m.userData.cq0)m.userData.cq0=m.quaternion.clone();if(!m.userData.cq1)m.userData.cq1=m.userData.cq0.clone().multiply(new THREE.Quaternion(...G.rot));
+  m.quaternion.copy(m.userData.cq0).slerp(m.userData.cq1,w)}
 }
 /* Compact label layout v3. Append after compact adapter, no float edits. */
 const MBCOMPACTLABEL={map:new Map(),stats:{crowded:0,moved:0}};
