@@ -5,6 +5,7 @@
       מצוירת פעם אחת לקנבס נסתר (mbFloorCanvas), ומשמשת גם בדו-ממד (mbFloor2d) וגם כטקסטורה בתלת-ממד (moba3d.js). הלבה בשכבה נפרדת שפועמת.
    המספרים ב-MBLOOK */
 const MBLOOK={
+  baseRingA:0.38,   // the base heal circle in the floor: 0.38 of the old strength, quieter so heroes read; your own brightens while you heal in it (mbBaseGlow). ?mbbase=1 / 0.4 / 0.25 (outer ring only) / 0 for A/B. Visual only (healR 240 and the heal rule unchanged)
   // המצלמה במוד (אוראל, 3.11: "כיוון המצלמה קרוב מדי", כמו ב-MLBB): רחוקה וגבוהה יותר. zoom: מתחת ל-1 רואים יותר (0.58 = פי 1.7 לרוחב). tilt: מעלות מעל הקרקע.
   // ui: פסי החיים, התגים והמספרים מעל הדמויות גדלים בחזרה חלקית, כדי שיהיו קריאים גם כשהמצלמה רחוקה
   cam:{zoom:0.58,tilt:52,ui:0.8},
@@ -122,6 +123,15 @@ function mbDecor(){
 let MB_FLOOR=null;   // {stone, glow}: שני קנבסים, מצוירים פעם אחת
 let MB_FLOOR_OV=null;   // שכבת הסימנים בלי האבן, לתלת-ממד (W5)
 // marksOnly: רק הסימנים (צבע הקבוצות, השביל, הצללים, השפה, הבסיסים והלבה) על קנבס שקוף, מעל רצפת האבן של הזירה בתלת-ממד
+// the base heal circle's strength (visual only: MOBA.base.healR and the heal rule are untouched). ?mbbase=n overrides MBLOOK.baseRingA (default 1 if unset)
+function mbBaseA(){const q=location.search.match(/[?&]mbbase=([0-9.]+)(&|$)/);return q?Math.max(0,Math.min(1,+q[1])):(typeof MBLOOK.baseRingA==='number'?MBLOOK.baseRingA:1)}
+// your own base circle brightens (up to full) only while your hero stands inside its heal radius and is not at full health: a display signal of when it matters
+function mbBaseGlow(){
+  const me=MB&&MB.me,BA=mbBaseA();if(!me||BA>=1)return;const bx=(me.team?1:-1)*MOBA.base.x,r=MOBA.base.healR,col=MOBA.team[me.team];
+  const want=!me.dead&&Math.hypot(me.x-bx,me.y)<r&&me.hp<me.max?1:0;mbBaseGlow.k=(mbBaseGlow.k||0)+(want-(mbBaseGlow.k||0))*0.12;const a=(1-BA)*mbBaseGlow.k;if(a<0.02)return;
+  ctx.save();ctx.translate(bx,0);ctx.scale(1,0.9);ctx.globalAlpha=a;ctx.strokeStyle=col+'AA';ctx.lineWidth=6;ctx.beginPath();ctx.arc(0,0,r-6,0,7);ctx.stroke();
+  ctx.fillStyle=col+'88';for(let i=0;i<16;i++){const q=i/16*Math.PI*2;ctx.save();ctx.rotate(q);ctx.fillRect(r-19,-5,8,10);ctx.restore()}ctx.restore();ctx.globalAlpha=1;
+}
 function mbFloorCanvas(marksOnly){
   if(marksOnly?MB_FLOOR_OV:MB_FLOOR)return marksOnly?MB_FLOOR_OV:MB_FLOOR;
   const F=MBLOOK.floor,M=MBLOOK.map,L=MOBA.lane,s=F.px,Wd=Math.min(4096,Math.round((F.x1-F.x0)*s)),Ht=Math.min(4096,Math.round((F.y1-F.y0)*s));
@@ -169,14 +179,15 @@ function mbFloorCanvas(marksOnly){
     for(let x=x0,i=0;x<x1;i++){const w=46+R(i,sg*5)*40;g.fillStyle=F.rimCol;g.fillRect(x+2,y+3,w-4,F.rim-6);g.fillStyle='rgba(255,230,220,0.09)';g.fillRect(x+2,sg>0?y+3:y+F.rim-7,w-4,4);x+=w}
     g.fillStyle='rgba(0,0,0,0.5)';g.fillRect(x0,sg>0?L.half:-L.half-3,x1-x0,3)}
   // עיגולי הבסיס: כחול ואדום, עם טבעת רונות וזוהר
+  const BA=mbBaseA(),B6=BA===0.25;   // how strong the base circle is in the floor (MBLOOK.baseRingA, ?mbbase=n). 0.25: only the outer ring
   for(const tm of [0,1]){const bx=(tm?1:-1)*MOBA.base.x,r=MOBA.base.healR,col=MOBA.team[tm];
-    g.save();g.translate(bx,0);g.scale(1,0.9);
-    const rg=g.createRadialGradient(0,0,r*0.2,0,0,r);rg.addColorStop(0,col+'40');rg.addColorStop(1,col+'14');g.fillStyle=rg;g.beginPath();g.arc(0,0,r,0,7);g.fill();
+    g.save();g.translate(bx,0);g.scale(1,0.9);g.globalAlpha=BA;
+    const rg=g.createRadialGradient(0,0,r*0.2,0,0,r);rg.addColorStop(0,col+'40');rg.addColorStop(1,col+'14');if(!B6){g.fillStyle=rg;g.beginPath();g.arc(0,0,r,0,7);g.fill()}
     g.strokeStyle=col+'AA';g.lineWidth=6;g.beginPath();g.arc(0,0,r-6,0,7);g.stroke();
-    g.strokeStyle=col+'55';g.lineWidth=3;g.beginPath();g.arc(0,0,r-24,0,7);g.stroke();
-    g.fillStyle=col+'88';for(let i=0;i<16;i++){const a=i/16*Math.PI*2;g.save();g.rotate(a);g.fillRect(r-19,-5,8,10);g.restore()}
+    if(!B6){g.strokeStyle=col+'55';g.lineWidth=3;g.beginPath();g.arc(0,0,r-24,0,7);g.stroke()}
+    if(!B6)g.fillStyle=col+'88';if(!B6)for(let i=0;i<16;i++){const a=i/16*Math.PI*2;g.save();g.rotate(a);g.fillRect(r-19,-5,8,10);g.restore()}
     g.restore();
-    q.save();q.translate(bx,0);q.scale(1,0.9);q.strokeStyle=col;q.globalAlpha=0.5;q.lineWidth=8;q.beginPath();q.arc(0,0,r-6,0,7);q.stroke();q.restore()}
+    q.save();q.translate(bx,0);q.scale(1,0.9);q.strokeStyle=col;q.globalAlpha=0.5*BA;q.lineWidth=8;q.beginPath();q.arc(0,0,r-6,0,7);q.stroke();q.restore()}
   // עיגול באמצע הנתיב
   g.strokeStyle=F.rune+'66';g.lineWidth=3;g.beginPath();g.ellipse(0,0,110,96,0,0,7);g.stroke();g.strokeStyle=F.rune+'33';g.lineWidth=2;g.beginPath();g.ellipse(0,0,140,122,0,0,7);g.stroke();
   // סדקי לבה: לאורך השפה, וכמה שנכנסים קצת פנימה. בקנבס האבן כהים-אדומים, ובשכבת הזוהר בוהקים
