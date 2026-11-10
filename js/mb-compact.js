@@ -8,8 +8,8 @@ const MBCOMPACT={raw:(new URLSearchParams(location.search).get('compact')||''),
   // compact tank hammer: prop size and the strike window of Melee_2H_Attack_Chop (parts of its length). Pose only, the damage frame never moves (MAX 10.11: reach and height measured on a clean dummy)
   tank:{hammerS:1,from:.55,to:.66,dur:.08,settle:.05,
     // the compact hand stays at chest height through the chop, so the hammer turns head-down only for the strike: rot at the damage frame, held hold s, back to the normal grip over back s.
-    // Measured on a clean dummy (10.11): head ~32 forward and ~12 high at contact, target ~23 after the lunge (the regular tank: 41, 43). Idle and run keep the normal grip
-    grip:{rot:[0,0,-0.7071,0.7071],hold:.14,back:.2}}};
+    // rot = Euler XYZ (-75,0,-25). Measured on a clean dummy at the damage frame (10.11, compactscale 1.4): head 27 forward vs target 22, 0.7 sideways, 1 high (the old -90z grip landed 64 to the SIDE). Idle and run keep the normal grip
+    grip:{rot:[-0.5943,-0.1318,-0.1717,0.7745],hold:.14,back:.2}}};
 MBCOMPACT.enabled=k=>MBCOMPACT.raw==='1'||MBCOMPACT.raw.split(',').includes(k);
 if(MBCOMPACT.raw){
  for(const [kit,key] of Object.entries(MBCOMPACT.keys))M3D_LAZY[key]=1;
