@@ -14,7 +14,8 @@ const SHARP={
     gun:{len:58,w:4,life:0.08,core:7,rays:3,ray:16,lean:0.14}      // חץ: פס דק וארוך
   },
   skill:{len:70,w:9,life:0.16,core:18,rays:8,ray:40,ring:62,lean:0.3,leanT:0.32,heavy:{size:150,gap:0.15}},   // heavy: פגיעה גדולה מהגיליון של סוג הנזק (whit_<סוג> של fxcombat.js), לא hit_heavy הזהוב: זהב שמור לשלל,
-  alpha:0.95
+  alpha:0.95,
+  hero:{clear:56,min:0.2}   // הגיבור נשאר גלוי בקרב צפוף: אפקט שמרכזו קרוב מ-clear לגיבור דועך עד min, ובלי פגיעה גדולה מהספרייה
 };
 const SH={w:null,list:[],fr:-1,frN:0,heavyT:-9,stat:{basic:0,skill:0,heavy:0,capped:0,lean:0}};
 const shOn=()=>SHARP.on&&!!S&&!!S.wd&&!S.mb&&S.mode==='play';
@@ -36,14 +37,14 @@ function shAdd(e,w,t,ang,crit){
   if(fr!==SH.fr){SH.fr=fr;SH.frN=0}
   if(SH.frN>=SHARP.perFrame){SH.stat.capped++;return}SH.frN++;
   if(SH.list.length>=SHARP.max)SH.list.shift();
-  const hy=e.y-e.r*0.6,cx=e.x-Math.cos(ang)*e.r*0.3,cy=hy-Math.sin(ang)*e.r*0.3;
+  const cx=e.x,cy=e.y-e.r*0.6;   // על האויב עצמו, לא בצד שפונה לגיבור
   SH.list.push({x:cx,y:cy,a:ang,t0:jNow(),B,sk,col:dtCol(t),crit:!!crit,seed:Math.random()*6.28});
   sk?SH.stat.skill++:SH.stat.basic++;
   // הרתיעה: חזקה יותר מזו של hitfeel.js (שכבר התחילה בתוך juiceHit). בלי בוס, וכבוי בהפחתת תנועה
   if(!shCalm()&&e.hfT&&!e.isBoss){const k=B.lean*(crit?1.2:1)/(e.big||1);if(k>(e.hfK||0)){e.hfK=k;SH.stat.lean++}if(sk&&B.leanT)e.hfD=Math.max(e.hfD||0,B.leanT)}
   // סקיל: פיצוץ כבד מהספרייה, פעם אחת להטלה (לא על כל אויב בקבוצה)
   const H=sk&&B.heavy,now=jNow();
-  if(H&&now-SH.heavyT>H.gap&&typeof fxPlay==='function'&&!(typeof fxcRoom==='function'&&!fxcRoom())){SH.heavyT=now;SH.stat.heavy++;
+  if(H&&now-SH.heavyT>H.gap&&Math.hypot(cx-P.x,cy-P.y)>SHARP.hero.clear&&typeof fxPlay==='function'&&!(typeof fxcRoom==='function'&&!fxcRoom())){SH.heavyT=now;SH.stat.heavy++;
     const id=typeof FXC!=='undefined'&&FXC.type[t]?'whit_'+FXC.type[t]:null;
     if(id)try{fxPlay(id,cx,cy,{size:H.size*(shLess()?0.75:1),add:true,rot:SH.list[SH.list.length-1].seed})}catch(_){}}
 }
@@ -54,7 +55,7 @@ function shDraw(){
   const now=jNow(),less=shLess(),calm=shCalm();let j=0;
   ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
   for(const f of SH.list){const B=f.B,k=(now-f.t0)/B.life;if(k>=1||k<0)continue;SH.list[j++]=f;
-    const a=1-k,ca=Math.cos(f.a),sa=Math.sin(f.a),K=f.crit?1.2:1;
+    const hd=Math.hypot(f.x-P.x,f.y-P.y),hc=SHARP.hero,a=(1-k)*(hd<hc.clear?Math.max(hc.min,hd/hc.clear):1),ca=Math.cos(f.a),sa=Math.sin(f.a),K=f.crit?1.2:1;   // ליד הגיבור: דועך
     // פס הכיוון: נפתח מהר לאורך המכה ונעלם. צבע בחוץ, לבן בפנים
     const L=B.len*K*(0.55+0.45*Math.min(1,k*4)),x0=f.x-ca*L*0.55,y0=f.y-sa*L*0.55,x1=f.x+ca*L*0.45,y1=f.y+sa*L*0.45;
     ctx.globalAlpha=SHARP.alpha*a;ctx.strokeStyle=f.col;ctx.lineWidth=B.w*K*a+1;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
