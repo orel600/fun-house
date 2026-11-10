@@ -469,18 +469,20 @@ function mobaDraw(ox,oy){
   for(const b of M.u)if(b.dead&&b.fallT!==undefined&&(b.k==='tower'||b.k==='base'))mbfxBar(b,MOBA.team[b.team]);   // פס החיים של מבנה שנפל מתפרק
   // יחידות לפי עומק
   const list=M.u.filter(u=>!u.dead&&mbShow(u)&&onScreen(u.x+ox,u.y+oy)).sort((a,b)=>a.y-b.y);
+  if(typeof mbCompactLabelsBegin==='function')mbCompactLabelsBegin(list,ox,oy);
   for(const u of list){
     const col=MOBA.team[u.team];
     if(u.k==='tower'||u.k==='base'){mbDrawBuild(u,col);continue}
     mbRing(u,col);   // טבעת הקבוצה, ולגיבור שלך גם טבעת זהב (moba-look.js)
     if(!R3D.on||u.me&&!R3D.player){const G=MBLOOK.rig,hero=u.k==='hero',p=pose(u.x,u.y,u.ph,mbMoving(u),u.aim,10,mbRot(u),hero?G.hero:G.minion),c=u.flash>0?'#fff':hero?col:col+'AA';
       ctx.globalAlpha=mbVisFade(u);drawRig(p,{skin:LOOK.player,col:c,lw:(hero?G.lw.hero:G.lw.minion)*p.k});if(hero)mbWeapon2d(p,u.kit,c);ctx.globalAlpha=1}   // חבר בשיח: שקוף למחצה (moba-vision.js). גודל ונשק לפי ערכה (MBLOOK.rig)
-    const s=u.st,top=u.y-(u.k==='hero'?78:52);
+    const s=u.st,baseTop=u.y-(u.k==='hero'?78:52),top=typeof mbCompactVisualTop==='function'?mbCompactVisualTop(u,baseTop,oy):baseTop;
     if(s.armor>0&&!(typeof mbSharpNoBubble==='function'&&mbSharpNoBubble(u))){ctx.strokeStyle=C.ember;ctx.lineWidth=3;ctx.globalAlpha=0.6;ctx.beginPath();ctx.arc(u.x,u.y-24,30,0,7);ctx.stroke();ctx.globalAlpha=1}
     if(s.rage>0){ctx.fillStyle='rgba(239,78,87,0.18)';ctx.beginPath();ctx.arc(u.x,u.y-24,28,0,7);ctx.fill()}
     if(s.ice>0){ctx.fillStyle='rgba(70,211,230,0.35)';ctx.beginPath();ctx.arc(u.x,u.y-22,24,0,7);ctx.fill()}
     if(s.veil>0){ctx.fillStyle='rgba(120,116,140,0.22)';for(let i=0;i<3;i++){const a=M.t*1.6+i*2.1;ctx.beginPath();ctx.arc(u.x+Math.cos(a)*14,u.y-18+Math.sin(a)*6,13+3*Math.sin(M.t*3+i),0,7);ctx.fill()}}   // היעלמות: עשן קלוש סביבו
     // חיים, ולגיבור גם הרמה והסמל של הערכה
+    if(!(typeof mbCompactDrawLabels==='function'&&mbCompactDrawLabels(u,col))){
     ctx.save();ctx.translate(u.x,top+6);ctx.scale(uk,uk);ctx.translate(-u.x,-top-6);   // פסי החיים והסימנים: קריאים גם במצלמה הרחוקה
     const bw=u.k==='hero'?46:24;ctx.fillStyle='#000a';ctx.fillRect(u.x-bw/2-1,top-1,bw+2,u.k==='hero'?7:5);ctx.fillStyle=u.me?'#7BD88F':col;ctx.fillRect(u.x-bw/2,top,bw*Math.max(0,u.hp)/u.max,u.k==='hero'?5:3);
     if(u.k==='hero'){ctx.font='800 12px Heebo, system-ui, sans-serif';ctx.textAlign='center';ctx.direction='ltr';ctx.fillStyle=C.chalk;ctx.fillText(u.lvl,u.x-bw/2-9,top+6);ctx.direction=DIR;mbBadge(u,u.x,top-14)}   // תג הערכה מעל הראש: רואים מי זה (הבודק, 2.11). moba-look.js
@@ -489,6 +491,7 @@ function mobaDraw(ox,oy){
     if(s.taunt>0){ctx.fillStyle=C.ember;ctx.font='900 16px Heebo, system-ui, sans-serif';ctx.textAlign='center';ctx.fillText('!',u.x,ic);ic-=14}
     if(s.wet>0){ctx.fillStyle=dtCol('water');ctx.beginPath();ctx.arc(u.x+16,top-6,4,0,7);ctx.fill()}
     ctx.restore();
+    }
   }
   for(const s of M.shots){if(s.trail)mbPierceTrail(s);if(s.fx||s.lib||!mbVisPt(s.x,s.y))continue;   // trail: הפס של חץ הברק (moba-skill-anim.js), עם בדיקת ערפל משלו   // lib: היריה מצוירת מספריית האפקטים (mbfxShot)   // גל חרב ורשת: moba-fx.js מצייר אותם. בערפל: לא מצויר
     if(s.kind==='home'){const c=s.big?MOBA.team[s.team]:dtCol(s.dt);ctx.fillStyle=c;ctx.globalAlpha=0.35;ctx.beginPath();ctx.arc(s.x,s.y,s.big?11:7,0,7);ctx.fill();ctx.globalAlpha=1;ctx.beginPath();ctx.arc(s.x,s.y,s.big?6:3.5,0,7);ctx.fill()}

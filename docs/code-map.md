@@ -150,6 +150,7 @@
 | `js/mb-scale.js` | משחקי השאול, השיפוץ: גיבור לפחות פי 1.4 מגובה החייל (`MBSCALE`), לפי גובה הגוף האמיתי בעמידה. רק מראה, ה-hitbox לא משתנה. `?mbscale=0` מכבה |
 | `js/mb-dummy.js` | משחקי השאול, השיפוץ: מגרש אימון (`MBDUMMY`, `?mbdummy=1`): אתה מול גיבור אחד שעומד, לא תוקף וחוזר לחיים. `&dummy=<ערכה>`, `&dummyauto=1` תוקף ומפעיל סקילים לבד (לצילום) |
 | `js/mb-sharp.js` | משחקי השאול, השיפוץ: שפת אפקטים חדה (`MBSHARP`, `?mbsharp=0` מכבה): בלי הבזק ורעידה, בלי מעגל קסם מתחת למטיל, בלי טבעת הזוהר הגדולה של הקבוצה, והסדן בלי טבעות (רק המכה, האבנים, הסדקים וסימן ההלם) |
+| `js/mb-compact.js` | משחקי השאול, השיפוץ: גיבורים נמוכים ורחבים (`MBCOMPACT`, `?compact=1` או `?compact=tank,warrior`, `?compactscale=2`), רק מראה. גופים `compact*` (js/m3d, art/compact), פטיש האבן לטנק ומטה לקוסמת, פס החיים מעל הראש האמיתי ופריסת תוויות בלי חפיפה (`mbCompactVisualTop`, `mbCompactLabelsBegin`, `mbCompactDrawLabels`, חיבור אחד ב-moba.js). כלים: tools/compact-*.
 | `js/mb-rim.js` | משחקי השאול, השיפוץ: קו אור עדין על קצה הגיבורים הכהים ואור עצמי עדין (`MBRIM`, לפי ערכה, `?mbrim=0` מכבה). רק מראה. הצייד והמתנקש; tankX דרך gain ב-mb-tankx.js |
 | `js/mb-skbody.js` | משחקי השאול, השיפוץ: הגוף בסקילים של הלוחם, הצייד, הקוסמת והמתנקש (`MBSKBODY`): קטע של קליפ בפלג הגוף העליון ברגע ההטלה, לפי טבלה. רק מראה, לא נועל |
 | `tools/mb-anims.js` | השיפוץ: מוציא קליפים של KayKit שחסרו (Throw, Bow_Draw_Up/Release_Up, Magic_Raise, Crouching, Sneaking) מחבילות Rig_Medium לקבצי `js/m3d/anim_mbx_*.js` שנטענים לפי צורך |
