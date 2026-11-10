@@ -58,20 +58,31 @@ if(MBCOMPACT.enabled('tank')&&typeof mbAtk3dTick==='function'){
   mbCompactGrip(a,hit,dt);
  };
 }
-// the strike grip: the stone hammer prop turns to grip.rot at the damage frame and eases back (pose only)
-function mbCompactGrip(a,hit,dt){
+// the strike grip: at an action's damage frame the stone hammer turns head-down (grip.byAct[act] or grip.rot), holds, then eases back (pose only).
+// act: 'basic' (mbAtk3dTick), 'anvil' (s1 landing, below). Each rotation was measured at that action's damage frame
+function mbCompactGrip(a,hit,dt,act){
  const G=MBCOMPACT.tank.grip;if(!G||!a.props)return;
- if(hit)a.cgT=0;else if(a.cgT!=null)a.cgT+=dt||0;
+ if(hit){a.cgT=0;a.cgAct=act||'basic'}else if(a.cgT!=null)a.cgT+=dt||0;
  a.cgW=a.cgT==null?0:a.cgT<G.hold?1:Math.max(0,1-(a.cgT-G.hold)/G.back);if(a.cgW<=0)a.cgT=null;
  mbCompactGripApply(a,null);
 }
-// base: where the hammer is without the strike (the carry of mb-compact-fixes.js, or else the grip in the look). The strike pose is always the look grip turned by grip.rot (what was measured)
+// base: where the hammer is without the strike (the carry of mb-compact-fixes.js, or else the grip in the look). The strike pose is always the look grip turned by the action's rotation (what was measured)
 function mbCompactGripApply(a,base){
- const G=MBCOMPACT.tank.grip,L=a.L||{};if(!G||!a.props)return;const w=a.cgW||0;
+ const G=MBCOMPACT.tank.grip,L=a.L||{};if(!G||!a.props)return;const w=a.cgW||0,rot=G.byAct&&G.byAct[a.cgAct]||G.rot,key=String(rot);
  for(const k in a.props){const p=L.props&&L.props[k];if(!p||p.prop!=='w_item_stoneHammer')continue;const m=a.props[k],U=m.userData;
-  if(!U.cq1){U.cq0=new THREE.Quaternion(...(p.rot||[0,0,0,1]));U.cq1=U.cq0.clone().multiply(new THREE.Quaternion(...G.rot))}
+  if(!U.cq0)U.cq0=new THREE.Quaternion(...(p.rot||[0,0,0,1]));if(U.cqK!==key||!U.cq1){U.cqK=key;U.cq1=U.cq0.clone().multiply(new THREE.Quaternion(...rot))}
   if(!base&&!w&&!U.cgOn)continue;U.cgOn=w>0;   // nothing to do between strikes: the look (or the carry) owns the grip
   m.quaternion.copy(base?(U.cqB||(U.cqB=new THREE.Quaternion())).fromArray(base):U.cq0).slerp(U.cq1,w)}
+}
+// s1 (anvil) on the compact tank: the landing chop starts at the contact pose (MBCOMPACT.tank.anvil), and the strike grip turns on in that same landing frame. Compact only; the regular tank keeps MBANVIL as is
+if(MBCOMPACT.enabled('tank')&&typeof mbAnvilPre==='function'){
+ const oldPre=mbAnvilPre;
+ mbAnvilPre=function(u,a,L){
+  if(u.kit!=='tank'||!a||!a.L||a.L.model!=='compactTank')return oldPre.apply(this,arguments);
+  const wasAir=!!(a.anv&&a.anv.air),land0=MBANVIL.land;MBANVIL.land=Object.assign({},land0,MBCOMPACT.tank.anvil);
+  // at landing: no fade-in (the arms are already in the chop, not in the jump pose), and the strike grip on
+  try{const r=oldPre.apply(this,arguments);if(wasAir&&!a.anv.air){if(a.anv.x){a.anv.x.stopFading().setEffectiveWeight(1);a.mixer.update(0)}a.cgT=0;a.cgAct='anvil';a.cgW=1;mbCompactGripApply(a,null)}return r}finally{MBANVIL.land=land0}
+ };
 }
 /* Compact label layout v3. Append after compact adapter, no float edits. */
 const MBCOMPACTLABEL={map:new Map(),stats:{crowded:0,moved:0},
