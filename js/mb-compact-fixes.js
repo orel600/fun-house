@@ -42,3 +42,27 @@ if(typeof MBCOMPACT!=='undefined'&&MBCOMPACT.raw){
  const bu=mb3dUnit;mb3dUnit=function(e,dt){const r=bu.apply(this,arguments);const a=R3D.actors.get(e);if(a)carry(a,dt);return r};
  const bp=syncPlayer;syncPlayer=function(){const r=bp.apply(this,arguments);carry(R3D.player,arguments[0]);return r};
 }
+// warm-up (BOB 10.11, QUINN: a 0.5-0.9 s freeze at the first hit of a match). The compact bodies and these props were loaded lazily at match start and landed ~1.5 s in,
+// so every compact actor was rebuilt with new materials (new shaders) right at the first fight. Now, as soon as 3D is ready and no match runs (the menu):
+// load them all, build one actor per compact kit off-screen, compile its shaders, upload its textures, and leave it in the pool, where the match picks it up.
+// Same idea as the village and world warm-ups in render3d.js. MBCFIX.warm: done, ms, n
+MBCFIX.warm={done:false,ms:0,n:0};
+(function(){
+ if(typeof MBCOMPACT==='undefined'||!MBCOMPACT.raw)return;
+ const run=async()=>{
+  MBCFIX.warm.done=true;const t0=performance.now();
+  const parts=[];if(typeof MBPARTS!=='undefined')for(const kit in MBPARTS)for(const v of Object.values((MBPARTS[kit]&&MBPARTS[kit].add)||{}))if(v&&v.prop)parts.push(v.prop);   // ARI's parts (crowns, second dagger, crystal)
+  const keys=[...new Set([...Object.values(MBCOMPACT.keys),...MBCFIX.keys,'w_item_stoneHammer','w_staff_A',...parts,...(typeof MBSKBODY!=='undefined'?MBSKBODY.pre:[])])].filter(k=>k in M3D_LAZY);   // MBSKBODY.pre: the underworld clip packs (anim_mbx_*), otherwise decoded mid-match
+  await Promise.all(keys.map(k=>m3dGo(k).catch(()=>{})));
+  // each actor also gets the rim shader (mb-rim.js), which is part of its look in a match, so that variant is compiled here too
+  const made=[],sm=S.mb;S.mb=S.mb||{warm:1};   // the compact look is only built inside the underworld (S.mb): for a moment, only here
+  try{for(const kit in MBCOMPACT.keys){const B=LOOK3D['mb_'+kit];if(!B||!MBCOMPACT.enabled(kit))continue;const L=mbPartsLook(B,kit);if(!L||L.model!==MBCOMPACT.keys[kit])continue;
+    const a=makeActor(L);a.root.position.set(0,-5000,0);made.push(a);
+    if(typeof mbRimActor==='function'&&MBRIM.on&&MBRIM.kit[kit]&&(MBRIM.kit[kit].k>0||MBRIM.kit[kit].fill>0))mbRimActor(a,kit)}}catch(e){}finally{S.mb=sm}
+  const r=R3D.r;try{if(r.compileAsync)await r.compileAsync(R3D.scene,R3D.cam);else r.compile(R3D.scene,R3D.cam)}catch(e){}
+  if(r.initTexture)for(const a of made)a.root.traverse(o=>{for(const m of [].concat(o.material||[]))for(const k of ['map','emissiveMap','normalMap'])if(m[k])try{r.initTexture(m[k])}catch(e){}});
+  for(const a of made)freeActor(a);MBCFIX.warm.ms=Math.round(performance.now()-t0);MBCFIX.warm.n=made.length;
+ };
+ const tryRun=()=>{if(MBCFIX.warm.done)return;if(typeof R3D!=='undefined'&&R3D.ready&&R3D.r&&!(typeof S!=='undefined'&&S&&S.mb))run();else setTimeout(tryRun,300)};
+ setTimeout(tryRun,200);
+})();
