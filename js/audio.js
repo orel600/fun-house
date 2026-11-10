@@ -24,6 +24,11 @@ const SOUNDS={
   imp_hammer:{file:'imp_hammer.mp3',vol:0.4, pitch:0.15, max:2, gap:0.1,  grp:'fx',where:'fight'},     // הטנק בשאול: מכה של התקיפה הרגילה, באותו פריים של הנזק (mb-atk3d.js). CC0 (ARI, #546). לא נשמע עדיין במשחק
   imp_wall:{file:'imp_wall.mp3',vol:0.45,pitch:0.1, max:1, gap:0.5,  grp:'fx',where:'fight'},     // הטנק בשאול: חומת הברזל, רעידת אדמה וסלע נשבר (ARI #546, CC0)
   cry_war: {file:'cry_war.mp3', vol:0.4, pitch:0.1, max:1, gap:0.5,  grp:'fx',where:'fight'},     // הטנק בשאול: שאגת קריאת הקרב (ARI #546, CC0)
+  // צלילי הזירה (arena-snd.js, מחבילת v10, BOB 10.11): CC0, הקבצים זהים בבייטים למקור. הפירוט ב-sounds/README.md
+  heal_chime:  {file:'heal_chime.mp3',  vol:0.42,pitch:0.04,max:1, gap:0.6, grp:'fx',where:'fight'},   // כישוף ריפוי (spell.js): פעמון בהטלה
+  smite_chime: {file:'smite_chime.mp3', vol:0.4, pitch:0.04,max:1, gap:0.6, grp:'fx',where:'fight'},   // כישוף מכה (spell.js): צליל קדוש קצר
+  blessing_chime:{file:'blessing_chime.mp3',vol:0.4,pitch:0.04,max:1,gap:0.6, grp:'fx',where:'fight'},  // בלום: פעמון ברכה ביצירת הבריכה
+  crowd_amb:   {file:'crowd_amb.mp3',   vol:0.1, pitch:0,   max:1, gap:26,  grp:'fx',where:'fight'},   // מיטת קהל בזירה: לופ שקט (arena-snd.js מנגן אותו כלופ)
   cast_physical: {file:'cast_physical.mp3', vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // הטלת סקיל פיזי: חבטה יבשה
   cast_fire:     {file:'cast_fire.mp3',     vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // אש: וושש והתלקחות
   cast_water:    {file:'cast_water.mp3',    vol:0.35, pitch:0.12, max:2, gap:0.12, grp:'fx',where:'fight'},   // מים: התזה

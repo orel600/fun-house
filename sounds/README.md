@@ -39,6 +39,10 @@ https://creativecommons.org/publicdomain/zero/1.0/
 | imp_hammer.mp3 | **מוכן, לא מחובר:** חבטת הטנק (תקיפה בסיסית וסלאם). 0.38 שנ' | RPG Sound Pack (CC0, OpenGameArt) | bfh1_hit_01.ogg |
 | imp_wall.mp3 | **מוכן, לא מחובר:** חומת הברזל של הטנק. 1.2 שנ': רעידת אדמה (נחתכה מ-5 שנ') ומעליה סלע נשבר | Earthquake and Open Sesame (shake.ogg) + RPG Sound Pack (bfh1_rock_breaking_03.ogg), שניהם CC0 | shake.ogg, bfh1_rock_breaking_03.ogg |
 | cry_war.mp3 | **מוכן, לא מחובר:** שאגת הלעג של הטנק. 0.72 שנ' | mnstr5.wav (CC0, OpenGameArt) | mnstr5.wav |
+| heal_chime.mp3 | זירה: כישוף הריפוי | Cure Magic (CC0, OpenGameArt: opengameart.org/content/cure-magic) | Cure1.wav (זהה בבייטים) |
+| smite_chime.mp3 | זירה: כישוף המכה | Cure Magic (CC0, OpenGameArt: opengameart.org/content/cure-magic) | Cure2.wav (זהה בבייטים) |
+| blessing_chime.mp3 | זירה: בלום, ביצירת הבריכה | Cure Magic (CC0, OpenGameArt: opengameart.org/content/cure-magic) | Cure5.wav (זהה בבייטים) |
+| crowd_amb.mp3 | זירה: מיטת קהל שקטה (לופ של 12 שנ', הסוף נמזג בהתחלה) | Crowd Shouting/Speaking Ambience (CC0, OpenGameArt: opengameart.org/content/crowd-shoutingspeaking-ambience) | crowd_shouting.ogg (זהה בבייטים) |
 | gamble_lose.mp3 | הפסד בהימור | Kenney Digital Audio | lowDown |
 
 סבב צלילים 1 ו-2 (8.11.2026, docs/concept/sound.md): `cast_` ו-`ui` נבחרו בדף ההאזנה של ARI (MAX בחר במקום אוראל). צלילי הרגעים (סבב 2) נבחרו על ידי ARI, ומקודדים ב-48k כדי לעמוד בתקציב של 200KB. החלפה = קובץ אחר באותו שם, ו-`node tools/build-sounds.js`.
