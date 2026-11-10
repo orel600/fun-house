@@ -32,7 +32,7 @@ function bwUpgrade(k,L){
   if(why==='max')return '<p class="bwlead">⭐ '+T('vil.max')+'</p><p>'+vInfo(k,L)+'</p>';
   let h='<h4 class="bwup">'+(L?T('bw.upTo',L,L+1):T('bw.buildT'))+'</h4>';
   h+='<div class="bwcmp">'+(L?'<div><span class="sk">'+T('bw.now')+'</span><p>'+vInfo(k,L)+'</p></div><span class="bwarr" aria-hidden="true">➜</span>':'')+
-    '<div class="nxt"><span class="sk">'+T(L?'bw.after':'bw.gives')+'</span><p>'+vInfo(k,L+1)+'</p></div></div>';
+    '<div class="nxt"><span class="sk">'+T(L?'bw.after':'bw.gives')+'</span><p>'+vInfo(k,L+1)+'</p>'+fuInfo(k,L)+'</div></div>';   // fuInfo: השדרוג הראשון, מה הנשק מקבל (firstup.js)
   h+='<div class="bwpay"><span class="sk">'+T('bw.price')+'</span>'+bwCost(vCost(k))+'</div>';
   h+=!why?'<button class="vbtn vmain" data-act="up">'+(L?T('vil.up',L+1):T('vil.build'))+'</button>'
     :'<p class="bwbad">'+(why==='center'?T('bw.needCenter',L+1):T('bw.missing'))+'</p>';
@@ -42,9 +42,9 @@ function bwUpgrade(k,L){
 /* ---- מה עושים בכל מבנה (הלשונית הראשונה) ---- */
 // מנסרה ומכרה: מה מייצר בשעה, כמה מחכה מכל משאב (עם פס עד המקסימום), וכפתור לאסוף
 function bwProd(k,L){
-  const B=VILLAGE.b[k],p=vProd(k),rs=Object.keys(B.make).filter(r=>B.make[r][L]>0),n=vStock(k),full=rs.some(r=>(p.have[r]||0)>=B.cap[L]);
-  return '<p class="bwlead">'+T('bw.perHour',makeLine(B,L))+'</p><div class="bwstock">'+rs.map(r=>{const v=Math.floor(p.have[r]||0);
-      return '<div class="bwst"'+bwRar(r)+'><span class="ic">'+resPic(r)+'</span><span class="nm">'+resName(r)+'</span><b>'+v+' / '+B.cap[L]+'</b><i style="width:'+Math.min(100,v/B.cap[L]*100)+'%"></i></div>'}).join('')+'</div>'+
+  const B=VILLAGE.b[k],p=vProd(k),rs=Object.keys(B.make).filter(r=>B.make[r][L]>0),n=vStock(k),full=rs.some(r=>(p.have[r]||0)>=vCapOf(B,r,L));
+  return '<p class="bwlead">'+T('bw.perHour',makeLine(B,L))+'</p><div class="bwstock">'+rs.map(r=>{const v=Math.floor(p.have[r]||0),c=vCapOf(B,r,L);
+      return '<div class="bwst"'+bwRar(r)+'><span class="ic">'+resPic(r)+'</span><span class="nm">'+resName(r)+'</span><b>'+v+' / '+c+'</b><i style="width:'+Math.min(100,v/c*100)+'%"></i></div>'}).join('')+'</div>'+
     (full?'<p class="bwbad">'+T('bw.fullProd')+'</p>':'')+
     (n?'<button class="vbtn vmain" data-act="collect">'+T('vil.collect',n)+'</button>':'<p class="vwhy">'+T('vil.nothing')+'</p>');
 }
@@ -75,15 +75,31 @@ function bwForge(){
 $('vPanel').addEventListener('click',e=>{const b=e.target.closest('button[data-act="pick"]');if(!b||!S.vil)return;
   e.stopImmediatePropagation();BWIN.sel[S.vil.near]=b.dataset.id;S.vil.ui='';sfx('ui');villageHud()},true);   // ui='': villageHud בונה מחדש רק כשמשהו נשמר השתנה
 
-// לכל מבנה: הלשונית הראשונה (שם וגוף), או null כשאין בו מה לעשות חוץ משדרוג (מרכז הכפר, ומבנה שעוד לא נבנה)
+// לכל מבנה: הלשונית הראשונה (שם וגוף), או null כשאין בו מה לעשות חוץ משדרוג (מבנה שעוד לא נבנה). במרכז הכפר: מבט על הכפר
 function bwMain(k,L){
   if(L<1)return null;
+  if(k==='center')return{label:'🏘️ '+T('bw.tab.village'),html:bwVillage};
   if(k==='stash')return{label:'📦 '+T('bw.tab.stash'),html:()=>stashHtml()};   // stash.js
   if(k==='market')return{label:'🛒 '+T('vil.trade'),html:()=>bwTrade(L)};
   if(k==='forge')return{label:'⚒️ '+T('bw.tab.craft'),html:bwForge};
   if(k==='inn'){const s=innSvcs('inn')[0];return{label:s.label,html:s.html,dot:s.dot}}   // הלוח בפונדק (inn.js)
   if(VILLAGE.b[k].make)return{label:'📦 '+T('bw.tab.collect'),html:()=>bwProd(k,L),dot:vStock(k)>0};
   return null;
+}
+// מרכז הכפר: מבט על כל הכפר. לכל מבנה רמה, פס עד המקסימום, ומה הלאה (ניר, 10.11: ברמה 5 החלון היה כמעט ריק)
+function bwVillage(){
+  const ks=Object.keys(VILLAGE.b).filter(k=>k!=='center'),M=VILLAGE.max,top=ks.filter(k=>vLv(k)>=M).length;
+  const st=k=>{const L=vLv(k),w=vBlock(k);return !L?(w?'🔒 '+T('bw.v.none'):'🔨 '+T('bw.v.build')):w==='max'?'⭐ '+T('vil.max'):!w?'⬆️ '+T('bw.v.ready',L+1):w==='center'?'🔒 '+T('bw.v.center',L+1):'⛏️ '+T('bw.v.next',L+1)};
+  return '<p class="bwlead">'+T('bw.v.lead',top,ks.length)+'</p><div class="bwstock bwvil">'+ks.map(k=>{const L=vLv(k);
+    return '<div class="bwst" style="--rar:'+(VCOL[k]||'var(--gold)')+'"><span class="nm">'+T('vil.'+k)+'<small>'+st(k)+'</small></span><b>'+L+' / '+M+'</b><i style="width:'+L/M*100+'%"></i></div>'}).join('')+'</div>'+bwVilMake();
+}
+// כל מה שהכפר מייצר בשעה, מכל המבנים יחד, ומה מחכה לאיסוף
+function bwVilMake(){
+  const sum={};let wait=0;
+  for(const k in VILLAGE.b){const B=VILLAGE.b[k],L=vLv(k);if(!B.make||!L)continue;wait+=vStock(k);for(const r in B.make)if(B.make[r][L]>0)sum[r]=(sum[r]||0)+B.make[r][L]}
+  const rs=Object.keys(sum);if(!rs.length)return '';
+  return '<h4 class="bwup">'+T('bw.v.make')+'</h4><div class="bwstock">'+rs.map(r=>'<div class="bwst"'+bwRar(r)+'><span class="ic">'+resPic(r)+'</span><span class="nm">'+resName(r)+'</span><b>+'+sum[r]+'</b></div>').join('')+'</div>'+
+    (wait?'<p class="vwhy">'+T('bw.v.wait',wait)+'</p>':'');
 }
 // כל החלון של מבנה. הלשונית נשמרת לכל מבנה בנפרד (S.vil.tab), כדי שחזרה למבנה תפתח איפה שהיית
 function bwBuilding(k){

@@ -29,7 +29,8 @@ function mbSkBodyTick(u,a){
 (function(){
   if(!MBSKBODY.on||typeof mbCast!=='function')return;
   const bc=mbCast;mbCast=function(u,slot){const r=bc.apply(this,arguments);
-    if(r&&u&&u.k==='hero'&&MBSKBODY.kit[u.kit]&&MBSKBODY.kit[u.kit][slot]){u.skb={slot,n:((u.skb&&u.skb.n)||0)+1};MBSKBODY.stat.casts++}return r};
+    if(r&&u&&u.k==='hero'&&MBSKBODY.kit[u.kit]&&MBSKBODY.kit[u.kit][slot]){u.skb={slot,n:MBSKBODY.seq=(MBSKBODY.seq||0)+1};   // מונה אחד לכל המשחק: יחידה חדשה מתחילה מ-1 והדמות הישנה כבר ראתה 1 (כמו הטנק, BOB 10.11)
+      MBSKBODY.stat.casts++}return r};
   const bs=mobaStart;mobaStart=function(){const r=bs.apply(this,arguments);if(typeof R3D!=='undefined'&&R3D.on&&typeof m3dGo==='function')for(const k of MBSKBODY.pre)m3dGo(k).catch(()=>{});return r};
   const bu=mb3dUnit;mb3dUnit=function(e){const r=bu.apply(this,arguments);if(e&&e.k==='hero'&&e.skb){const a=R3D.actors.get(e);if(a)mbSkBodyTick(e,a)}return r};
   const bp=syncPlayer;syncPlayer=function(){const r=bp.apply(this,arguments);const u=S.mb&&MB&&MB.me;if(u&&u.skb&&R3D.player)mbSkBodyTick(u,R3D.player);return r};
