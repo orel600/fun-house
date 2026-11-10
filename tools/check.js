@@ -1585,6 +1585,39 @@ function worldBot(m,L,god){
       r.blockAfter=(()=>{for(const e of enemies)e.dead=true;enemies=[];run(0.05);return !sktTap(id)&&S.sk.cd[0]<=0})();
     }catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // קריאות שלב 2 (readable2.js): אזהרה אחת מעל הראש ומצוירת אחרונה; מספר נזק לא על הגיבור ותקרה לידו; מיזוג ארוך בקרב צפוף; שמות עמומים בקרב ולא על השלטים/הגיבור; כרטיס "New" מחכה לסוף הקרב; הכל נגמר
+  const rd2=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];const st=READ2.stat,s0={...st};
+      const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;e.sw=0;e.scd=99;return e};
+      const later=(t,f)=>{const p0=performance.now;performance.now=()=>p0.call(performance)+t*1000;try{f()}finally{performance.now=p0}};
+      // 1. המסלול: שתי תוויות באותו פריים, רק הסכנה מצוירת; פריים בלי תווית לא מצייר
+      r2Head('skt.now','now',1);r2Head('skt.out','danger',1);fxcTgDraw();r.head=st.head===s0.head+1&&st.headDanger===s0.headDanger+1;
+      fxcTgDraw();r.headEnd=st.head===s0.head+1;
+      // 2. מספרים: אויב צמוד מעל הגיבור, המספר שלו זז הצידה
+      const top=mk(0,-34);const R=Math.random;Math.random=()=>0.999;try{damage(top,10,'sword',0)}finally{Math.random=R}
+      r.push=st.numPush>s0.numPush&&r2NumsOnHero()===0;
+      const ring=[];for(let i=0;i<9;i++){const a=i/9*6.28;ring.push(mk(Math.cos(a)*55,Math.sin(a)*55))}
+      fxcTgDraw();r.crowd=R2.crowd>=READ2.nums.crowd&&JUICE.nums.merge===READ2.nums.mergeCrowd;
+      Math.random=()=>0.999;try{for(const e of ring)damage(e,10,'sword',0)}finally{Math.random=R}
+      const near=S.jc.n.filter(f=>Math.hypot(f.x-P.x,f.y-P.y)<READ2.nums.near).length;r.cap=near<=READ2.nums.cap&&st.numCap>s0.numCap&&r2NumsOnHero()===0;r.near=near;
+      later(2,()=>{try{juiceDraw()}catch(_){}});r.numsEnd=S.jc.n.length===0;
+      // 3. שמות בקרב: המלא ברור, השאר עמומים; לא על השלט ולא על המסלול מעל הגיבור
+      const ox=W/2-S.cam.x,oy=H/2-S.cam.y,hx=P.x+ox,hy=P.y+oy-(P.r||14)-READ2.head.up;
+      const L0={...LABELS.stat};lblBegin();
+      lblAdd({t:'Boss name',icon:'💀',x:hx+300,y:hy+80,col:'#fff',fs:13/ZOOM,pri:5,d:300});
+      lblAdd({t:'On the hero',icon:'💀',x:hx,y:hy+4,col:'#fff',fs:13/ZOOM,pri:1,d:10});
+      r2Fix(hx-260,hy+60,120,22);lblAdd({t:'On the sign',icon:'💀',x:hx-200,y:hy+76,col:'#fff',fs:13/ZOOM,pri:1,d:20});lblAdd({t:'Far foe',icon:'💀',x:hx+120,y:hy+150,col:'#fff',fs:13/ZOOM,pri:1,d:200});
+      lblFlush();const LS=LABELS.stat;r.lblDim=st.lblDim>s0.lblDim&&r2LblA(true)===1&&r2LblA(false)<LABELS.fight.a;r.lblFix=st.lblFix>=s0.lblFix+2&&LS.nudged+LS.hidden>=L0.nudged+L0.hidden+2;
+      // 4. כרטיס פגישה ראשונה: באמצע קרב מחכה, אחרי שהקרב נרגע מופיע
+      const ovs=[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden);for(const o of ovs)o.hidden=true;   // חלון פתוח מהבוט מסתיר את הכרטיס בכל מקרה (flOvOpen)
+      const L=flLore(),k=Object.keys(FOELORE.list)[0];delete L.met[k];FLC.q=[];FLC.on=null;flMeet(k);
+      const el=$('flCard');r.cardHeld=FLC.on===k&&el.hidden&&st.cardHeld>s0.cardHeld;
+      for(const e of enemies)e.dead=true;enemies=[];fxcTgDraw();R2.fightT-=READ2.calm+0.5;flCardVis();r.cardShown=!el.hidden&&st.cardShown>s0.cardShown;
+      fxcTgDraw();r.mergeBack=JUICE.nums.merge===READ2.nums.merge;
+      FLC.q=[];flCardNext();r.cardEnd=el.hidden&&!FLC.on;for(const o of ovs)o.hidden=false;
+      r.L=[LABELS.stat.nudged-L0.nudged,LABELS.stat.hidden-L0.hidden,LABELS.stat.full-L0.full,LABELS.stat.icon-L0.icon,st.lblFix-s0.lblFix];r.st={head:st.head-s0.head,push:st.numPush-s0.numPush,cap:st.numCap-s0.numCap,held:st.cardHeld-s0.cardHeld}
+    }catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // הגיבור מטיל סקיל (skillcast.js): בכל שימוש יש תנועה של פלג הגוף העליון ועיגול רונות בצבע סוג הנזק שנעלם לבד. בזירה לא
   const skc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];SAVE.hero.skSeen=[...(SAVE.hero.skSeen||[]),...S.sk.ids];
@@ -3874,6 +3907,7 @@ function worldBot(m,L,god){
     (rar.wait?'':', הגרלה חוזרת מוקדם מדי')+(rar.again?', הגרלה חוזרת באזור':', אין הגרלה חוזרת')+(rar.label?', שם ✨':', בלי שם ✨')+(rar.line?', שורת שמועה עם זמן':', אין שורת שמועה')+(rar.lineOff?'':', השורה לא נעלמת')+(rar.list?', רשימה בקווסט':', אין רשימה בקווסט'));
   // שמות ואופי לאויבים (foelore.js): לכל סוג בעולם שם, שם אישי לעלית, כרטיס בפגישה ראשונה שנסגר לבד ונשמר, בועה מעל הראש
   const flo=await page.evaluate(()=>{
+    const r2on=READ2.on;READ2.on=false;   // כאן נבדק הכרטיס עצמו, ליד אויב. ההמתנה לסוף הקרב נבדקת ב-rd2 (readable2.js)
     const o={},m0=JSON.stringify(SAVE.lore||null);SAVE.lore=null;FLC.q=[];flCardNext();   // כרטיסים שנשארו בתור מהמשחק של הבוט
     const types=[...new Set([WORLD,...Object.values(WORLD.regions||{})].flatMap(R=>(R.foes||[]).map(G=>G.type)))];
     o.missing=types.filter(k=>!flName(k)||/^fl\./.test(flName(k))||!flLine(k));
@@ -3888,7 +3922,7 @@ function worldBot(m,L,god){
     // חלון פתוח: הפס לא מופיע מעליו ולא נגמר מתחתיו, וחוזר כשהחלון נסגר
     const ov=document.querySelector('.ov[hidden]');ov.hidden=false;flMeet('shield');for(let i=0;i<70;i++)foeLoreUpdate(0.1);
     o.ovHide=flCardOn()&&$('flCard').hidden;ov.hidden=true;foeLoreUpdate(0.01);o.ovBack=flCardOn()&&!$('flCard').hidden;FLC.q=[];flCardNext();
-    enemies=[];enterVillage();SAVE.lore=JSON.parse(m0);return o});
+    enemies=[];enterVillage();SAVE.lore=JSON.parse(m0);READ2.on=r2on;return o});
   check(!flo.missing.length&&flo.eliteOk&&flo.pname&&flo.card&&flo.met&&flo.say&&flo.closed&&flo.once&&flo.saved&&flo.ovHide&&flo.ovBack,
     'שמות לאויבים: '+(flo.missing.length?'חסר שם ל-'+flo.missing.join(','):'לכל סוג בעולם יש שם')+', עלית: "'+flo.elite+'"'+(flo.pname?'':' (לא קיבל שם)')+(flo.card?', פס פגישה ראשונה':', אין פס')+
     (flo.closed?' שנסגר לבד':' שלא נסגר')+(flo.once?', פעם אחת':', חוזר')+(flo.saved?', נשמר':', לא נשמר')+(flo.say?', בועה':', בלי בועה')+(flo.ovHide?(flo.ovBack?', מחכה מתחת לחלון':', לא חוזר אחרי חלון'):', מופיע מעל חלון'));
@@ -3925,8 +3959,8 @@ function worldBot(m,L,god){
     enterWorld('home');o.gone=!S.wd.nemE;
     enemies=[];enterVillage();SAVE.nem=JSON.parse(n0);return o});
   check(Object.values(nm).every(Boolean),'בוס-נמסיס: '+Object.entries(nm).map(([k,v])=>(v?'':'✗')+k).join(', '));
-  // טיפ ראשון (firsttips.js): נמסיס ובוס ענק יחד: מוצג אחד, השני בתור. מחכה מתחת לחלון ולפס אחר, לא חוזר, נשמר. דרישה של חפץ: טיפ בתוך החלון שנעלם עם השורה. כבוי: כלום
-  const tp=await page.evaluate(()=>{
+  // טיפ ראשון (firsttips.js): נמסיס ובוס ענק יחד: מוצג אחד, השני בתור. מחכה מתחת לחלון ולפס אחר, לא חוזר, נשמר. דרישה של חפץ: שורה בכרטיס, בלי בועה. כבוי: כלום
+  const tp=await page.evaluate(()=>{const r2on=READ2.on;READ2.on=false;   // הכרטיס ליד אויב: ההמתנה לסוף הקרב נבדקת ב-rd2
     const o={},t0=JSON.stringify(SAVE.tips||null),off0=!!SAVE.tipsOff,n0=JSON.stringify(SAVE.nem||null),lo0=JSON.stringify(SAVE.lore||null);
     enterWorld('home');enemies=[];S.mode='play';FLC.q=[];flCardNext();nemCardOff();MUT.bar=null;skgOfferClose();tipClose();TIP1.q=[];TIP1.pendWin=null;
     SAVE.tipsOff=false;SAVE.tips={mut:1,skill:1,sklv:1,depths:1,req:1,q:1};SAVE.nem=null;
@@ -3947,11 +3981,12 @@ function worldBot(m,L,god){
     // בתוך חלון: חפץ שנעול בדרישה
     delete SAVE.tips.req;const id=Object.keys(GEAR.items).find(k=>GEAR.items[k].tier===3&&GEAR.items[k].slot!=='orbit'),lv0=ITEMROLL.req.lv[3],sk0=ITEMROLL.skip;ITEMROLL.req.lv[3]=99;ITEMROLL.skip=false;
     const d=document.createElement('div');d.innerHTML=itemCard(id);document.body.appendChild(d);tipTick(0.25);
-    o.req=!!TIP1.on&&TIP1.on.k==='req'&&TIP1.on.win&&$('tip1').textContent.includes('99');
+    // 10.11: בלי בועה מעל הכרטיס. הדרישה בשורה האדומה, ומאיפה מקבלים נקודות בשורה עמומה מתחתיה (irReqHtml)
+    const rq=d.querySelector('.ireq.no'),R=irReq(id);o.req=!TIP1.on&&!!rq&&rq.textContent.includes('99')&&(!R.st||!R.n||!!d.querySelector('.ireqh'));
     d.remove();tipTick(0.25);o.reqGone=!TIP1.on;ITEMROLL.req.lv[3]=lv0;ITEMROLL.skip=sk0;
     SAVE.tipsOff=true;o.off=!tipOnce('depths');
     S.wd.warden=w0;SAVE.nem=JSON.parse(n0);SAVE.lore=JSON.parse(lo0);SAVE.tips=JSON.parse(t0);SAVE.tipsOff=off0;tipClose();TIP1.q=[];
-    enemies=[];enterVillage();return o});
+    enemies=[];enterVillage();READ2.on=r2on;return o});
   check(Object.values(tp).every(Boolean),'טיפ ראשון: '+Object.entries(tp).map(([k,v])=>(v?'':'✗')+k).join(', '));
   // החיה מריחה ומובילה (petscent.js): מרחרחת, רצה למקום ומחכה עם חץ, תיבה נותנת שלל כשמגיעים, אויב מיוחד נותן שלל כשנופל, ומי שלא בא היא מוותרת
   const ps=await page.evaluate(()=>{
@@ -5100,6 +5135,12 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     'מכה חדה: '+(shk.err||[shk.sword?'חרב: פס בכיוון המכה':'חרב: אין',shk.bow?'קשת: פס דק':'קשת: אין',shk.skill?'סקיל':'סקיל: אין',
     shk.stronger?'הסקיל חזק יותר (רתיעה '+shk.lean.join(' מול ')+')':'הסקיל לא חזק יותר',shk.cap?'תקרה בפריים':'בלי תקרה',shk.near?'ליד הגיבור: עד 2, קטנים':'ליד הגיבור: בלי תקרה',shk.drawn&&shk.gone?'מצויר ונעלם':'לא נעלם',
     shk.calm?'הפחתת תנועה: בלי רתיעה נוספת':'רתיעה בהפחתת תנועה',shk.pet?'חיה לא':'גם חיה'].join(', ')));
+  check(!rd2.err&&rd2.head&&rd2.headEnd&&rd2.push&&rd2.crowd&&rd2.cap&&rd2.numsEnd&&rd2.lblDim&&rd2.lblFix&&rd2.cardHeld&&rd2.cardShown&&rd2.mergeBack&&rd2.cardEnd,
+    'קריאות בקרב צפוף: '+(rd2.err||[rd2.head&&rd2.headEnd?'אזהרה אחת מעל הראש, מצוירת אחרונה ונעלמת':'המסלול מעל הראש לא עובד',
+    rd2.push?'מספר נזק לא על הגיבור':'מספר נזק על הגיבור',rd2.cap?'ליד הגיבור '+rd2.near+' מספרים (תקרה '+4+')':'בלי תקרה ליד הגיבור ('+rd2.near+')',
+    rd2.crowd&&rd2.mergeBack?'מיזוג ארוך בקרב צפוף, וחוזר':'מיזוג לא משתנה',rd2.numsEnd?'המספרים נעלמים':'מספרים נשארים',
+    rd2.lblDim?'שמות עמומים בקרב, החשוב ברור':'שמות לא עמומים',rd2.lblFix?'שמות לא על השלט ולא על הגיבור':'שמות עולים על השלט או על הגיבור',
+    rd2.cardHeld&&rd2.cardShown&&rd2.cardEnd?'כרטיס "New" מחכה לסוף הקרב ונסגר':'כרטיס: מחכה '+rd2.cardHeld+', מופיע אחרי '+rd2.cardShown+', נסגר '+rd2.cardEnd].join(', ')));
   check(!skt.err&&skt.on&&skt.out&&skt.block&&skt.noCls&&skt.inR>=2&&skt.in&&skt.ring&&skt.danger&&skt.now&&skt.tap&&skt.group&&skt.end&&skt.blockAfter,
     'הסקיל הראשון מלמד ('+skt.id+'): '+(skt.err||[skt.on?'פועל':'לא פועל',skt.out&&skt.block&&skt.noCls?'נגיעה בלי מטרה לא מבזבזת':'נגיעה בלי מטרה בוזבזה',
     skt.in&&skt.ring?'מטרה בטווח: כפתור מואר וטבעת ('+skt.inR+')':'אין סימון טווח ('+skt.inR+')',skt.danger?'Step out בהכנה':'אין Step out',skt.now?'Now אחרי':'אין Now',

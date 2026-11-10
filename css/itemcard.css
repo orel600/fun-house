@@ -22,6 +22,7 @@
 .ictile.poor .icn{opacity:.6}
 .ictile:active{transform:scale(.95)}
 .iclock{position:absolute;top:2px;inset-inline-start:3px;font-size:11px;font-style:normal}
+.iclock bdi,.gtile .gmk.req bdi{font:900 10px/1 var(--body);color:#FFD27A;margin-inline-start:1px;text-shadow:0 0 3px #000,0 0 2px #000}   /* הרמה שחסרה, ליד המנעול (irLockTag ב-itemroll.js) */
 .icup{position:absolute;top:2px;inset-inline-end:3px;font:900 12px var(--body);font-style:normal;color:#5EE07A;text-shadow:0 1px 0 #000}
 
 /* ---- הכרטיס הגדול ---- */
@@ -58,6 +59,7 @@
 .icbuy .ri{width:var(--ic-s);height:var(--ic-s);vertical-align:middle}
 #vPanel.bw .icfoot .vbtn.icbuy:disabled{font-size:13px}
 .icbody .ireq,.icbody .icls,.icbody .iq{margin:0;font-size:12.5px}
+.icbody .ireqh{margin:-2px 0 0;font-size:11.5px;font-weight:600;color:var(--dim)}   /* מתחת לדרישה: מאיפה מקבלים נקודות (irReqHtml) */
 
 /* ---- בחלון הציוד (gCardHtml ב-gearui.js): הכרטיס בתוך הבועה (css/itemtip.css), עם ✕ בפינה ושני כפתורים גדולים ---- */
 #gDetail.gcard.itip{width:min(400px,calc(100vw - 12px))!important;padding:8px!important;gap:6px}
