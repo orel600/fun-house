@@ -1566,6 +1566,23 @@ function worldBot(m,L,god){
       r.pet=(()=>{const n=SH.list.length;SH.fr=-1;damage(e1,1,'pet',0);return SH.list.length===n})();
       for(const e of enemies)e.dead=true;enemies=[];SH.list=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // הסקיל הראשון מלמד תזמון (skillteach.js): נגיעה בלי מטרה לא מבזבזת, טבעת וכפתור מואר כשיש מטרה, "Step out!" בהכנה של אויב, "Now!" אחרי, "3 hit!" בקבוצה, ונעלם אחרי SKTEACH.uses
+  const skt=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.tipsOff=false;SAVE.hero.skTeach={n:0,u:0};enterWorld('home');enemies=[];SAVE.hero.skSeen=[...(SAVE.hero.skSeen||[]),...S.sk.ids];
+      const run=t=>{for(let i=0;i<t*60;i++){P.hp=P.maxHp;worldUpdate(1/60)}};
+      const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.hp=e.max=1e9;e.speed=0;e.dmg=0;e.sw=0;e.scd=99;return e};
+      run(0.1);hud();const id=S.sk.ids[0],b=$('skills').querySelector('[data-sk]');r.id=id;S.sk.cd[0]=0;run(0.02);
+      r.on=sktOn();r.out=b.classList.contains('skt-out');
+      const u0=S.sk.wUsed||0;r.block=!sktTap(id)&&S.sk.cd[0]<=0&&(S.sk.wUsed||0)===u0&&SKT.stat.blocked>0;run(0.05);r.noCls=b.classList.contains('skt-no');
+      const g=[mk(150,0),mk(165,14),mk(165,-14)];run(0.05);r.inR=SKT.inR;r.in=b.classList.contains('skt-in');
+      const r0=SKT.stat.ring;drawWSkill();r.ring=SKT.stat.ring>r0;
+      const e4=mk(0,30);e4.sw=0.5;run(0.05);r.danger=SKT.danger;e4.dead=true;enemies=enemies.filter(x=>!x.dead);run(0.1);r.now=SKT.now&&b.classList.contains('skt-now');
+      const gr0=SKT.stat.group;r.tap=sktTap(id);run(0.8);r.group=SKT.stat.group>gr0&&SKT.pops.length>0&&SAVE.hero.skTeach.n===1;
+      SAVE.hero.skTeach.n=SKTEACH.uses;S.sk.cd[0]=0;run(0.05);const r1=SKT.stat.ring;drawWSkill();
+      r.end=!sktOn()&&SKT.stat.ring===r1&&!['skt-in','skt-now','skt-out'].some(c=>b.classList.contains(c));
+      r.blockAfter=(()=>{for(const e of enemies)e.dead=true;enemies=[];run(0.05);return !sktTap(id)&&S.sk.cd[0]<=0})();
+    }catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // הגיבור מטיל סקיל (skillcast.js): בכל שימוש יש תנועה של פלג הגוף העליון ועיגול רונות בצבע סוג הנזק שנעלם לבד. בזירה לא
   const skc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];SAVE.hero.skSeen=[...(SAVE.hero.skSeen||[]),...S.sk.ids];
@@ -5030,6 +5047,10 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     'מכה חדה: '+(shk.err||[shk.sword?'חרב: פס בכיוון המכה':'חרב: אין',shk.bow?'קשת: פס דק':'קשת: אין',shk.skill?'סקיל':'סקיל: אין',
     shk.stronger?'הסקיל חזק יותר (רתיעה '+shk.lean.join(' מול ')+')':'הסקיל לא חזק יותר',shk.cap?'תקרה בפריים':'בלי תקרה',shk.drawn&&shk.gone?'מצויר ונעלם':'לא נעלם',
     shk.calm?'הפחתת תנועה: בלי רתיעה נוספת':'רתיעה בהפחתת תנועה',shk.pet?'חיה לא':'גם חיה'].join(', ')));
+  check(!skt.err&&skt.on&&skt.out&&skt.block&&skt.noCls&&skt.inR>=2&&skt.in&&skt.ring&&skt.danger&&skt.now&&skt.tap&&skt.group&&skt.end&&skt.blockAfter,
+    'הסקיל הראשון מלמד ('+skt.id+'): '+(skt.err||[skt.on?'פועל':'לא פועל',skt.out&&skt.block&&skt.noCls?'נגיעה בלי מטרה לא מבזבזת':'נגיעה בלי מטרה בוזבזה',
+    skt.in&&skt.ring?'מטרה בטווח: כפתור מואר וטבעת ('+skt.inR+')':'אין סימון טווח ('+skt.inR+')',skt.danger?'Step out בהכנה':'אין Step out',skt.now?'Now אחרי':'אין Now',
+    skt.tap&&skt.group?'פגיעה בקבוצה מסומנת':'אין סימון קבוצה',skt.end?'נעלם אחרי '+5:'לא נעלם',skt.blockAfter?'ההגנה נשארת':'ההגנה נעלמה'].join(', ')));
   check(!wsk.err&&wsk.btn&&wsk.place&&wsk.tap&&wsk.tapHit&&wsk.cd&&wsk.sec&&wsk.again&&wsk.drag&&wsk.dragHit&&wsk.aimDraw&&wsk.finger&&wsk.orbs===5&&wsk.orbHit&&wsk.orbDraw&&wsk.orbFlash,
     'סקילים בעולם ('+wsk.id+'): '+(wsk.err||[wsk.btn?'כפתור':'אין כפתור',wsk.place?'למטה מימין, מעל הסרגל':'הכפתור לא במקום',wsk.tap&&wsk.tapHit?'נגיעה יורה ופוגעת':'נגיעה לא פגעה',
     wsk.cd&&wsk.sec&&wsk.again?'קירור עם מספר':'אין קירור',wsk.drag&&wsk.dragHit?'גרירה מכוונת ופוגעת':'גרירה לא פגעה',wsk.aimDraw?'כוונת מצוירת':'אין כוונת',wsk.finger?'אצבע על הכפתור יורה':'אצבע לא ירתה',
