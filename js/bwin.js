@@ -32,7 +32,7 @@ function bwUpgrade(k,L){
   if(why==='max')return '<p class="bwlead">⭐ '+T('vil.max')+'</p><p>'+vInfo(k,L)+'</p>';
   let h='<h4 class="bwup">'+(L?T('bw.upTo',L,L+1):T('bw.buildT'))+'</h4>';
   h+='<div class="bwcmp">'+(L?'<div><span class="sk">'+T('bw.now')+'</span><p>'+vInfo(k,L)+'</p></div><span class="bwarr" aria-hidden="true">➜</span>':'')+
-    '<div class="nxt"><span class="sk">'+T(L?'bw.after':'bw.gives')+'</span><p>'+vInfo(k,L+1)+'</p></div></div>';
+    '<div class="nxt"><span class="sk">'+T(L?'bw.after':'bw.gives')+'</span><p>'+vInfo(k,L+1)+'</p>'+fuInfo(k,L)+'</div></div>';   // fuInfo: השדרוג הראשון, מה הנשק מקבל (firstup.js)
   h+='<div class="bwpay"><span class="sk">'+T('bw.price')+'</span>'+bwCost(vCost(k))+'</div>';
   h+=!why?'<button class="vbtn vmain" data-act="up">'+(L?T('vil.up',L+1):T('vil.build'))+'</button>'
     :'<p class="bwbad">'+(why==='center'?T('bw.needCenter',L+1):T('bw.missing'))+'</p>';

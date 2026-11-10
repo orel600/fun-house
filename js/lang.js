@@ -589,7 +589,7 @@ const TEXT={
 
   // הכפר (js/village.js)
   'vil.home':{he:'הכפר שלך',en:'Your village'},
-  'vil.gift':{he:'מתנת פתיחה: מספיק למנסרה ולמכרה',en:'A welcome gift: enough for a sawmill and a mine'},
+  'vil.gift':{he:'מתנת פתיחה: מספיק למנסרה ולמכרה',en:'A welcome gift: enough for a sawmill and a mine. Bring coins home for the Forge!'},
   'vil.won':{he:'ניצחת',en:'Victory'},
   'vil.noLoot':{he:'בלי שלל הפעם',en:'No loot this time'},
   'vil.center':{he:'מרכז הכפר',en:'Village Center'},
@@ -2115,6 +2115,8 @@ Object.assign(TEXT,{
   'uf.p.shock':{en:'Shockwave'},'uf.d.shock':{en:'heavy hits strike every foe around the target'},
   'uf.p.fury':{en:'Fury'},'uf.d.fury':{en:'a heavy hit every 3rd blow, even harder'},
   'uf.got':{en:n=>'New weapon power: '+n},
+  'fu.temper':{en:(w,n)=>'The smith sharpens your '+w+' to +'+n},'fu.afford':{en:'You can afford this now'},
+  'fu.done':{en:(w,s,a,b)=>w+': '+s+' '+a+' → '+b+' · Heavy Hit'},
   'uf.next':{en:(k,n,d)=>k+' more to '+n+': '+d},
   'jc.tip':{he:(d,b)=>d+' חלש כאן. נסו '+b,en:(d,b)=>d+' is weak here. Try '+b},
   'jc.tipN':{he:(n,d,b)=>n+' עמיד ל'+d+'. נסו '+b,en:(n,d,b)=>'The '+n+' resists '+d+'. Try '+b},
