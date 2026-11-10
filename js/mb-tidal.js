@@ -36,3 +36,19 @@ const MBTIDAL={
     return o.apply(this,arguments)}}
   if(typeof mbMiniBox==='function'){const o=mbMiniBox;mbMiniBox=function(){const l=o.apply(this,arguments);if(held()&&l.a<1){l.a=1;T.stat.fadeHeld++}return l}}
 })();
+/* ?tidalcull=1 (OFF by default; evidence for NOVA's phone-cost decision, MAX 11.11): per-instance frustum culling of the proof's shrub InstancedMesh.
+   The mesh, materials, colours and every instance matrix stay NOVA's. Each render pass, the instances whose bounding sphere is outside that pass's camera frustum
+   are left out by packing the visible ones first and lowering mesh.count. Footprint, cover and vision are untouched (they never read the mesh). */
+MBTIDAL.cull={on:MBTIDAL.on&&/[?&]tidalcull=1(&|$)/.test(location.search),meshes:0,last:{drawn:0,total:0}};
+(function(){
+  const K=MBTIDAL.cull;if(!K.on)return;
+  const hook=m=>{if(m.userData.bobCull||typeof THREE==='undefined')return;const n=m.count,base=m.instanceMatrix.array.slice(),col=m.instanceColor?m.instanceColor.array.slice():null;
+    if(!m.geometry.boundingSphere)m.geometry.computeBoundingSphere();const gs=m.geometry.boundingSphere,mt=new THREE.Matrix4(),sph=[];
+    for(let i=0;i<n;i++){mt.fromArray(base,i*16);sph.push(gs.clone().applyMatrix4(mt))}
+    const fr=new THREE.Frustum(),pv=new THREE.Matrix4();m.frustumCulled=false;m.userData.bobCull={n};K.meshes++;
+    m.onBeforeRender=function(r,s,cam){pv.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse);fr.setFromProjectionMatrix(pv);
+      const A=m.instanceMatrix.array,C=m.instanceColor&&m.instanceColor.array;let k=0;
+      for(let i=0;i<n;i++){if(!fr.intersectsSphere(sph[i]))continue;if(k!==i){A.set(base.subarray(i*16,i*16+16),k*16);if(C&&col)C.set(col.subarray(i*3,i*3+3),k*3)}else if(m.userData.bobCull.packed){A.set(base.subarray(i*16,i*16+16),k*16);if(C&&col)C.set(col.subarray(i*3,i*3+3),k*3)}k++}
+      m.userData.bobCull.packed=k<n;m.count=k;m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true;K.last={drawn:k,total:n}}};
+  setInterval(()=>{if(typeof M3==='undefined'||!M3.floor)return;for(const c of M3.floor.children)if(c.isInstancedMesh&&c.userData.tidal==='original-tripo-broadleaf-shrub')hook(c)},300);
+})();
