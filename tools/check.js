@@ -1586,7 +1586,7 @@ function worldBot(m,L,god){
     }catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // שובל ההנפה (fxworld.js): מתחיל בצד שהנשק באמת יוצא ממנו בתלת-ממד ועובר דרך החזית. חרב: מצד יד ימין. גרזן ופטיש: מלמעלה במסך. בשני הכיוונים
-  const swt=await page.evaluate(()=>{const r={bad:[]},P2=Math.PI*2,rel=(a,b)=>{let d=(a-b)%P2;if(d>Math.PI)d-=P2;if(d<-Math.PI)d+=P2;return d};
+  const swt=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={bad:[]},P2=Math.PI*2,rel=(a,b)=>{let d=(a-b)%P2;if(d>Math.PI)d-=P2;if(d<-Math.PI)d+=P2;return d};
     try{const T=FXW.trail;
       for(const kind of ['slash','axe','smash'])for(const ang of [0,Math.PI,0.6,Math.PI-0.6,-0.5]){
         const E=fxwTrailEnds(kind,ang),s=rel(E.start,ang),e=rel(E.end,ang);
@@ -1597,7 +1597,7 @@ function worldBot(m,L,god){
       if(SKR)skrEnd(false);enterWorld('home');const wt0=P.wt,a0=P.sw.ang;P.wt='sword';P.sw.ang=Math.PI;const h=fxwSwing();
       const o=fxwTrailRot('slash',Math.PI);r.live=!h||Math.abs(h.rot-o.rot)<1e-6&&h.flip===o.flip;r.h=!!h;P.wt=wt0;P.sw.ang=a0;if(h)fxStop(h);
     }catch(err){r.err=String(err&&err.stack||err)}
-    return r});
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // קריאות שלב 2 (readable2.js): אזהרה אחת מעל הראש ומצוירת אחרונה; מספר נזק לא על הגיבור ותקרה לידו; מיזוג ארוך בקרב צפוף; שמות עמומים בקרב ולא על השלטים/הגיבור; כרטיס "New" מחכה לסוף הקרב; הכל נגמר
   const rd2=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];const st=READ2.stat,s0={...st};
