@@ -2655,6 +2655,26 @@ function worldBot(m,L,god){
       $('gPages').querySelector('[data-page="char"]').click();o.gear.push(...[sc('gChar')].filter(Boolean));o.stv=$('ovGear').classList.contains('stv')&&!$('gChar').hidden&&$('ovGear').querySelector('.gbody').hidden;o.cut.push(...cut());gearClose();
       const id=Object.keys(NPC.list).find(npcHere);npcTalk(id);o.npc=sc('npcDlg');o.pager=document.querySelectorAll('#npcDlg .qc').length<=1;npcTalk(null);return o});
   }
+  // טור הסטטים בחלון הציוד (בודק חיצוני, 10.11.2026): עם כל השורות (הגנה, ריפוי, מזל, 6 עמידויות, מומחיות) הכל בתוך הטור, בלי "…",
+  // ו"המראה שלי" (כפתור בכותרת, heroLookBtn) בתוך המסך ולחיץ במרכזו, ונגיעה מחליפה מראה. ב-640×360, 844×390 ו-915×412 (הטלפון של ניר)
+  const gearStats={};
+  for(const [gw,gh] of [[640,360],[844,390],[915,412]]){
+    await page.setViewportSize({width:gw,height:gh});await page.clock.runFor(100);
+    gearStats[gw+'x'+gh]=await page.evaluate(()=>{const $=id=>document.getElementById(id),B={def:P.def,regen:P.regen,loot:P.loot,res:P.res,skin:SAVE.hero.skin},bad=[];
+      try{P.def=40;P.regen=1.5;P.loot=12;P.res={};for(const t in DMG.types)P.res[t]=10;
+        gearOpen();GUI.page='gear';GUI.view=null;GUI.sel=null;GUI.sell=null;gearDraw();
+        const d=$('gDetail'),pr=d.getBoundingClientRect();if(!d.classList.contains('gstatp'))bad.push('no stats panel');
+        for(const c of d.children){const r=c.getBoundingClientRect();if(r.height&&(r.bottom>pr.bottom+1||r.top<pr.top-1))bad.push('row outside: '+(c.className||c.tagName))}
+        if(!d.querySelector('.gres li'))bad.push('no resistances');
+        for(const e of d.querySelectorAll('*'))if(e.offsetParent&&e.scrollWidth>e.clientWidth+1&&getComputedStyle(e).textOverflow==='ellipsis')bad.push('cut: '+e.textContent.trim().slice(0,12));
+        const L=$('gLook'),lr=L&&L.getBoundingClientRect();
+        if(!lr||lr.width<40||lr.height<38||lr.left<0||lr.right>innerWidth||lr.top<0||lr.bottom>innerHeight)bad.push('look button not visible');
+        else{const h=document.elementFromPoint(lr.left+lr.width/2,lr.top+lr.height/2);if(!h||!L.contains(h))bad.push('look button not tappable');
+          const k0=heroSkin()||'none';L.click();if((heroSkin()||'none')===k0||L.dataset.look!==(heroSkin()||'none'))bad.push('look did not change')}
+      }finally{P.def=B.def;P.regen=B.regen;P.loot=B.loot;P.res=B.res;heroSkinSet(B.skin||'none');gearClose()}
+      return bad});
+  }
+  await page.setViewportSize(CFG.phone);await page.clock.runFor(100);
   // תמיד מטרה ברורה (guide.js): יש מטרה בשורה למעלה, החץ מצביע לכיוון הנכון גם כשהמטרה באזור אחר, והמטרה מתחלפת כשקווסט נגמר
   const gd=await page.evaluate(()=>{
     const keep=JSON.stringify({q:SAVE.quests,s:SAVE.story}),o={},Q=QS();SAVE.story.intro=true;   // בלי הקדמה של ראש הכפר באמצע (story.js)
@@ -5235,6 +5255,8 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     check(!bad.length&&!w.cover.length&&!w.open.length&&!(w.cut||[]).length,'חלונות לרוחב: '+Object.keys(w.wins).join(', ')+(bad.length?' · יושבים זה על זה: '+bad.map(([k,v])=>k+': '+v.slice(0,4).join(', ')).join(' | '):', שום דבר לא יושב על משהו אחר')+
       (w.cover.length?' · כרטיס "חדש" מעל: '+w.cover.join(', '):', כרטיס "חדש" לא מכסה חלון')+(w.open.length?' · לא נפתחו: '+w.open.join(', '):'')+((w.cut||[]).length?' · תוכן חתוך בלי סימן שיש עוד: '+w.cut.join(', '):', בלי תוכן חתוך'))}
   else check(false,'חלונות לרוחב: הבדיקה לא רצה');
+  {const bad=Object.entries(gearStats).filter(([k,v])=>v.length);
+    check(!bad.length,'חלון הציוד, טור הסטטים (640×360, 844×390, 915×412): '+(bad.length?bad.map(([k,v])=>k+': '+v.slice(0,4).join(', ')).join(' | '):'כל השורות בתוך הטור, בלי "…", וכפתור "המראה שלי" נראה, לחיץ ומחליף מראה'))}
   check(!fxOver.length,'אפקטים בממשק לא יושבים על חלון פתוח או על כרטיס עם טקסט (עלית רמה ועוד, FXUI.cards) בשום צילום'+(fxOver.length?': '+fxOver.join(' · '):''));
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
 

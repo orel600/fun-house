@@ -452,7 +452,7 @@ function gearDraw(){
   $('ovGear').querySelector('.gbody').hidden=ch;$('gChar').hidden=!ch||tv;$('gTree').hidden=!tv;
   const tcol=$('gTree').querySelector('.trcols'),tsc=tcol?tcol.scrollTop:0;   // הציור מחדש לא קופץ לראש העץ
   if(ch&&!tv)$('gChar').innerHTML=statsHtml();if(tv){$('gTree').innerHTML=treeHtml();const c=$('gTree').querySelector('.trcols');if(c)c.scrollTop=tsc}   // עץ הסקילים (stats.js)
-  $('ovGear').classList.toggle('stv',ch);
+  $('ovGear').classList.toggle('stv',ch);heroLookBtn();   // "המראה שלי" בכותרת (heroes.js)
 }
 // הפרטים: שם בצבע הנדירות, נדירות וחומר, רמת Aging, סטטים, השוואה למה שלבוש, וכפתורים
 function gDetailHtml(){
