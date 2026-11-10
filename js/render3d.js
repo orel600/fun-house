@@ -630,12 +630,14 @@ function syncEnemy(e,dt){
   place(a,e.x,e.y,e.wboss?L.foot:L.foot*(e.big||1),yaw,lift);hf3d(a,e);   // נוטה אחורה במכה (hitfeel.js)
   const rage=e.isBoss&&e.rage>0.05?e.rage:0;
   const tk=e.isBoss||e.wboss?-1:foeTele(e),F=FOEATK3D;   // מתכונן למתקפה: מאדים (strike.js מדליק e.flash קטן בהכנה, בשביל הדו-ממד. מכה אמיתית היא 0.09)
+  // world and village: a hit makes it brighter in its own colours, in a short gap-limited blink, never white (hitflash3d.js)
+  const wHit=typeof hitFlashHere==='function'&&hitFlashHere();if(wHit)hitBright(a,hitFlash3d(a,L,e.flash>(e.act?FOEATK3D.actFlash:0),dt));else if(a.hb)hitBright(a,0);
   if(tk>=0&&!(e.flash>0.06))setFlash(a,(F.glowK[0]+(F.glowK[1]-F.glowK[0])*tk)*(0.8+0.2*Math.sin(S.t*20)),F.glow);
   // לבן רק במכה אמיתית. foeai.js משאיר e.flash קטן (0.04) כל הפעולה, בשביל הדו-ממד, ובתלת-ממד זה צבע את המסתער בלבן מלא
   // לאורך כל ההסתערות והסחרור (ניר, 7.11: "זקן-הקליפה לבן"). בהסתערות ובקפיצה עצמן: הזוהר האדום של המתקפה, במלואו
   else if((e.act==='dash'||e.act==='jump')&&!(e.flash>FOEATK3D.actFlash))setFlash(a,F.glowK[1],F.glow);
   else{let hit=e.flash>(e.act?FOEATK3D.actFlash:0),fk=0.9;
-    if(typeof hitFlashHere==='function'&&hitFlashHere()){fk=hitFlash3d(a,L,hit,dt);hit=fk>0}   // world and village: a short weak blink, not white all fight (hitflash3d.js)
+    if(wHit)hit=false;   // world and village: no white, the blink is hitBright above (hitflash3d.js)
     setFlash(a,hit?fk:rage?0.15+0.35*rage*(0.6+0.4*Math.sin(S.t*14)):0,hit?0xffffff:C.blood)}
   if(a.sc0){const q=juiceSquash(e)+(e.act==='crouch'?F.squat*Math.max(0,tk):0);a.root.scale.set(a.sc0*(1+q),a.sc0*(1-q),a.sc0*(1+q))}   // מעיכה קטנה במכה (juice.js)
   // כשיש הרבה אויבים, כל אחד מונפש רק בכל פריים שני (חצי מהם בכל פריים). בעין זה לא נראה, ובטלפון זה חוסך הרבה
