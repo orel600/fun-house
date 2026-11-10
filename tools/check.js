@@ -4633,7 +4633,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
      r.glow=noGlow?!(me.fxh&&me.fxh.glow):!!(me.fxh&&me.fxh.glow&&e.fxh.glow&&e.fxh.glow.id==='glow_enemy');
      const tx=tw.x,ty=tw.y;tw.x=cx-150;tw.y=cy-60;tw.fxHit=-9;mbfxTower(tw);mbfxFall(tw);delete tw.fallT;tw.x=tx;tw.y=ty;
      e.hp=1;mbDmg(hu,e,999,'physical');const L=MBFX.log;
-     r.got=['shot_arrow','hit','slash','dmg_crit','levelup','levelup_ring','st_wet','ko','tower_hit','tower_fall','debris'].concat(noGlow?[]:['glow_ally','glow_enemy']).filter(id=>!L[id]);
+     r.got=['shot_arrow','hit','slash','dmg_crit','levelup','levelup_ring','st_wet','ko','tower_hit','tower_fall','debris'].concat(noGlow?[]:['glow_ally','glow_enemy']).filter(id=>!L[id]&&!(id==='slash'&&typeof MBATK3D!=='undefined'&&MBATK3D.slash&&Object.values(MBATK3D.slash).some(o=>L[o.fx])));   // slash: a hero with its own basic slash (MBATK3D.slash, the warrior's red slash) counts
      try{render();r.draw=true}catch(err){r.draw=err.message}
      MB.u=all;MB.shots.length=0;MBFX.log=null;Object.assign(me,{x:bk.x,y:bk.y,lvl:bk.lvl,xp:bk.xp,hp:bk.hp,dead:bk.dead});MB.score=bk.score;mbVisNow(true);o.lib=r}
     // זרימה (הבודק, 6.11): הקושי משנה את המוח של בוטי האויב בלבד, מגן מגדלים ב-3 הדקות הראשונות, זהב חזרה, חזרה מהירה בהתחלה, ריצה מהבסיס, ו-XP ברדיוס רחב
