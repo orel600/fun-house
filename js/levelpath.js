@@ -49,6 +49,7 @@ function lpLevelUp(from,lv){
   if(typeof wrLevelUp==='function')wrLevelUp(from,lv);   // רונה שנפתחה נכנסת לבד (wrunes.js)
   const got=[{icon:'⭐',txt:T('lp.pts',(lv-from)*STATS.perLevel)}];
   for(let l=from+1;l<=lv;l++)got.push(...lpAt(l));
+  if(typeof irUnlocked==='function')got.push(...irUnlocked(from,lv));   // ציוד שחיכה ברמה הזאת (itemroll.js)
   lpFlash();
   if(typeof R3D!=='undefined'&&R3D.on&&R3D.player&&(S.wd||S.vil))once(R3D.player,LOOK3D.player.anim.win,LEVELPATH.cheer);   // Cheering (render3d.js)
   sfx('levelup');
