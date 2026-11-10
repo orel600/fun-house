@@ -2871,6 +2871,30 @@ function worldBot(m,L,god){
     o.bar=!!giantBar()===false;P.maxHp=mx0;P.hp=hp0;P.inv=0;enterVillage();return o});
   check(!gnt.bad.length&&gnt.n===6&&gnt.arena,'בוסים ענקיים בעולם: '+gnt.rows.join(', ')+(gnt.n===6?' · מודל שונה לכל פרק':' · רק '+gnt.n+' מודלים')+
     (gnt.arena?' · בזירה הבוס הרגיל':' · הבוס בזירה השתנה!')+(gnt.bad.length?' · בעיות: '+gnt.bad.join(' '):' · קמים בלי לתקוף, נפגעים, מובסים וקורסים'));
+  // פס הבוס בעולם (bosshud.js, צילום של ניר 10.11): בקרב בוס, בשני גדלים של טלפון, עם HUD מלא (4 אורות, שבב האתגר, שבב המטרה, 3 סקילים ושמועה),
+  // השם בשורה אחת, פס החיים והחולשה לא עולים על אף כפתור, והשמועה וההודעות לא יושבות על הסקילים או על פס הבוס. הבוס של המדבר, והשם הכי ארוך במשחק
+  {const bh=[];
+    const long=await page.evaluate(()=>Object.keys(STORY.lanterns).sort((a,b)=>(T('story.'+b+'.name')+T('giant.t.'+b)).length-(T('story.'+a+'.name')+T('giant.t.'+a)).length)[0]);
+    for(const k of [...new Set(['fire',long])])for(const vp of [{width:915,height:412},{width:844,height:390}]){
+      await page.setViewportSize(vp);
+      const r=await page.evaluate(k=>{const op=orbitParts,ow=wsbWant,L=STORY.lanterns[k];let out;
+        try{enterWorld('home',L.reg);for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);P.x=L.x;P.y=L.y-260;P.maxHp=P.hp=1e9;
+          orbitParts=()=>['luck','attack','attack','attack'].map(t=>({t,k:'x'}));wsbWant=()=>{const a=ow();return a.concat(['zap','splash','quake'].filter(x=>!a.includes(x))).slice(0,3)};
+          const e=storyWarden(k,L.y+70);e.rise=0;
+          const rid=Object.keys(RARES.list).find(i=>RARES.list[i].reg===L.reg)||Object.keys(RARES.list)[0];rareSpawn(rid);S.wd.rare.rumor=0;S.wd.rare.t=219;
+          for(let i=0;i<6;i++){P.inv=1e9;worldUpdate(0.02)}
+          const m=mutChipEl();m.hidden=false;m.innerHTML='💨<span class="mprog">✓</span>';
+          let g=$('goalChip');if(!g){g=document.createElement('span');g.id='goalChip';g.className='goalchip';$('whud').insertBefore(g,$('wBag'))}g.hidden=false;g.innerHTML='🪵<span class="gnum">0/15</span><small>Forge</small>';
+          msgSay('🔥 '+T('weakTo',T('dt.fire')));hud();rareLineSync();bossHudPlace(true);rareLineFit();if(typeof msgPlace==='function')msgPlace();
+          const bb=$('bossbar').getBoundingClientRect(),nm=$('bossnm');
+          out={clash:bossHudClash(),sk:S.sk.ids.length,rare:!$('rareLine').hidden,bar:!$('bossbar').hidden,w:Math.round(bb.width),cut:nm.scrollWidth>nm.clientWidth+1,orbs:S.orb.types.length};
+          e.dead=true;S.wd.warden=null;S.wd.rare=null;m.hidden=true;g.hidden=true;msgClear();
+        }catch(err){out={err:String(err)}}
+        orbitParts=op;wsbWant=ow;return out},k);
+      bh.push({k,vp:vp.width+'×'+vp.height,...r})}
+    await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();bossHudPlace(true)});
+    const bad=bh.filter(x=>x.err||!x.bar||!x.rare||x.sk<3||x.orbs<4||x.clash.length);
+    check(!bad.length,'פס הבוס בעולם במקום הפנוי: '+bh.map(x=>x.k+' '+x.vp+(x.err?' שגיאה: '+x.err:(x.bar?' רוחב '+x.w+(x.cut?' (הכותרת מקוצרת)':''):' אין פס')+(x.clash&&x.clash.length?' · עולה על: '+x.clash.join(', '):' ✓')+(x.err||x.rare?'':' · אין שמועה')+(x.err||x.sk>=3?'':' · '+x.sk+' סקילים'))).join(' | '))}
   // העלילה, פרק 2 (story.js, WORLD.regions.lake): הדרך לאגם סגורה עד שפנס האדמה דולק, באגם יש אויבים רטובים (חלשים לברק),
   // והקווסטים מובילים לשומר המים, שמפיל את פנס המים
   const ch2=await page.evaluate(()=>{

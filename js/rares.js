@@ -151,6 +151,7 @@ function rareLineSync(){
   const el=typeof $==='function'&&$('rareLine');if(!el)return;const r=rareHeard();
   const txt=r?RARES.icon+' '+T('rare.line',rareAt(r.sp),rareClock(r.t)):'';
   if(el.textContent!==txt)el.textContent=txt;if(el.hidden!==!r)el.hidden=!r;
+  if(typeof rareLineFit==='function')rareLineFit();   // לא על הסקילים (bosshud.js)
 }
 // במפת העולם (wmDrawHere ב-worldmap.js): עיגול גס סביב האזור, לא הנקודה. at: מעולם לקנבס, k: קנה מידה
 function rareMapDraw(x,at,k){
