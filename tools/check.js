@@ -4916,7 +4916,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     for(const kit of ['tank','warrior','hunter','mage','assassin']){mobaStart(kit);S.mode='play';const me=MB.me;me.lvl=Math.max(me.lvl,MOBA.ultAt);const e=MB.u.find(u=>u.k==='hero'&&u.team!==me.team);
       for(const sl of ['s1','s2','ult']){const T=MBSND.cast[kit]||{},want=[T[sl]&&(T[sl].id||T[sl])].filter(Boolean);
         if(kit==='tank'&&sl==='s1')want.push(MBSND.land.anvil);if(kit==='hunter'&&sl==='s2')want.push(MBSND.net);if(kit==='hunter'&&sl==='ult')want.push(MBSND.land.rain);if(kit==='mage'&&sl==='s2')want.push(MBSND.land.bubble);if(kit==='mage'&&sl==='ult')want.push(MBSND.land.blizzard);if(kit==='assassin'&&sl==='ult')want.push(MBSND.markPop);
-        if(!want.length)continue;for(let i=0;i<60;i++)mobaUpdate(1/60);e.x=me.x+(kit==='hunter'||kit==='mage'?160:60);e.y=me.y;e.hp=e.max;e.dead=false;if(e.st)e.st.veil=0;me.cd[sl]=0;
+        if(!want.length)continue;for(let i=0;i<60;i++)mobaUpdate(1/60);const put=()=>{e.x=me.x+(kit==='hunter'||kit==='mage'?160:60);e.y=me.y;e.hp=e.max;e.dead=false;if(e.st)e.st.veil=0};put();for(let i=0;i<3;i++)mobaUpdate(1/60);put();me.cd[sl]=0;   // a few frames so vision (mbSeen) sees the moved enemy: unit skills (shadowstep) need it
         const c0=Object.assign({},AUDIO.count),ok=mbCast(me,sl,sl==='s2'&&kit==='tank'?me:e);for(let i=0;i<360;i++)mobaUpdate(1/60);
         for(const id of new Set(want)){const d=(AUDIO.count[id]||0)-(c0[id]||0);o.n++;if(!ok||d<1)o.bad.push(kit+' '+sl+' '+id+(ok?' ×'+d:' (no cast)'))}}}
   }catch(e){o.err=String(e&&e.message||e)}return o});
