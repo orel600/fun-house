@@ -13,7 +13,8 @@ const SHARP={
     sword:{len:46,w:7,life:0.09,core:9,rays:4,ray:20,lean:0.17},   // הנפה: פס רחב וקצר
     gun:{len:58,w:4,life:0.08,core:7,rays:3,ray:16,lean:0.14}      // חץ: פס דק וארוך
   },
-  skill:{len:70,w:9,life:0.16,core:18,rays:8,ray:40,ring:62,lean:0.3,leanT:0.32,heavy:{size:150,gap:0.15}},   // heavy: פגיעה גדולה מהגיליון של סוג הנזק (whit_<סוג> של fxcombat.js), לא hit_heavy הזהוב: זהב שמור לשלל,
+  // lean 0.36: מעל הנטייה של קריטי ב-hitfeel.js (0.3), כדי שסקיל תמיד מרגיש חזק יותר ממכה רגילה, גם קריטית (ניר: "הסקיל חזק בבירור")
+  skill:{len:70,w:9,life:0.16,core:18,rays:8,ray:40,ring:62,lean:0.36,leanT:0.32,heavy:{size:150,gap:0.15}},   // heavy: פגיעה גדולה מהגיליון של סוג הנזק (whit_<סוג> של fxcombat.js), לא hit_heavy הזהוב: זהב שמור לשלל,
   alpha:0.95,
   near:{r:90,perFrame:2,scale:0.6,alpha:0.6},   // קרוב לגיבור (עד r): לכל היותר perFrame חדשים בפריים, קטנים ועמומים יותר (הרכז, 10.11: הגיבור צריך להימצא בקלות)
   hero:{clear:56,min:0.2}   // הגיבור נשאר גלוי בקרב צפוף: אפקט שמרכזו קרוב מ-clear לגיבור דועך עד min, ובלי פגיעה גדולה מהספרייה
