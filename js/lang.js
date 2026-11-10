@@ -594,6 +594,13 @@ const TEXT={
   'vil.noLoot':{he:'בלי שלל הפעם',en:'No loot this time'},
   'vil.center':{he:'מרכז הכפר',en:'Village Center'},
   'vil.forge':{he:'נפחייה',en:'Forge'},
+  // רגע הבנייה (buildmoment.js): השורה "לפני → אחרי", ושם לכל מראה של מבנה (VIL3D.models)
+  'bm.line':{en:(b,x,y)=>b+' · '+x+' → '+y},
+  'bm.same':{en:(b,x,f,t)=>b+' · '+x+': Lv '+f+' → Lv '+t},
+  'bm.empty':{en:'Empty plot'},
+  'bm.m.ruin':{en:'Ruin'},'bm.m.stageA':{en:'Frame'},'bm.m.stageB':{en:'Scaffold'},'bm.m.stageC':{en:'Walls'},'bm.m.castle':{en:'Castle'},
+  'bm.m.tent':{en:'Tent'},'bm.m.forge':{en:'Smithy'},'bm.m.mill':{en:'Sawmill'},'bm.m.mine':{en:'Mine'},'bm.m.market':{en:'Hall'},
+  'bm.m.pile':{en:'Log pile'},'bm.m.boulder':{en:'Rock face'},'bm.m.stall':{en:'Stall'},
   'vil.mill':{he:'מנסרה',en:'Sawmill'},
   'vil.mine':{he:'מכרה',en:'Mine'},
   'vil.market':{he:'שוק',en:'Market'},

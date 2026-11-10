@@ -118,11 +118,9 @@ function vBlock(k){
 function vUpgrade(k){
   if(vBlock(k))return false;
   vSettle(k);const c=vCost(k);for(const r in c)bagTake(r,c[r]);
-  SAVE.village[k]=vLv(k)+1;questEvent('upgrade',k);saveNow();
-  // חגיגה: אבק ופיגום, ואז פרץ, עמוד אור ו-+1. בזמן האבק המבנה מוצג כפיגום
-  const B=VILLAGE.b[k],dust=celebrate(B.x,B.y,'upgrade','+1');S.vil.raise[k]=fxNow()+dust;
-  setTimeout(()=>{if(S.vil)S.shake=Math.max(S.shake,6)},dust*1000);
-  banner(T('vil.'+k)+' · '+T('level',vLv(k)),C.gold);
+  const from=vLv(k);SAVE.village[k]=from+1;questEvent('upgrade',k);saveNow();
+  // רגע הבנייה: המצלמה אל המבנה, הישן שוקע, פיגום ואבק, החדש קופץ, "לפני → אחרי" (buildmoment.js)
+  bmStart(k,from);
   return true;
 }
 
