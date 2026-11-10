@@ -9,10 +9,12 @@
 const READ3D={
   on:!/[?&]read=0/.test(location.search),
   see:{r:120,edge:0.3,keep:0.3,minY:24,lift:32,near:18,fade:5,skip:['v_gate']},   // skip: מודלים שלא נעשים שקופים (השער: הגיבור עומד מתחת לקשת ולא מוסתר בה, והגג קיבל נקודות. באג 8.11.2026). r: רדיוס העיגול (יחידות משחק) סביב אמצע הגוף. keep: כמה נשאר מהעץ. near: כמה לפני הגיבור מתחיל החיתוך. fade: כמה מהר נדלק בכניסה
+  // בזמן איסוף (כלי ביד, gtHeld ב-gtool.js): העץ או הסלע שמכים בו כמעט נעלם סביב הגיבור, כדי שרואים את הגיבור, את הכלי ואת המכה (מתאם, 10.11)
+  gather:{keep:0.08,r:1.3,fade:6},   // keep: כמה נשאר, r: פי כמה העיגול, fade: כמה מהר
   hero:{col:0xF4F7FF,op:0.8,r:22,in:0.72},          // הטבעת מתחת לגיבור: צבע, שקיפות, רדיוס, ועובי (in: הרדיוס הפנימי ביחס)
   foe:{shadow:0.38,sk:1.05,rim:0.6,rk:1.1,rkWeak:1.32,in:0.86}   // אויבים: צל נוסף, קו כהה (rk: רדיוס ביחס ל-e.r*1.15; עם חולשה מחוץ לטבעת שלה)
 };
-const RD={U:null,seen:new WeakSet(),k:0,stamp:'',n:0,v:null,v2:null};
+const RD={U:null,seen:new WeakSet(),k:0,g:0,stamp:'',n:0,v:null,v2:null};
 const rdHere=()=>READ3D.on&&typeof S!=='undefined'&&S&&!S.room&&!S.mb&&!!(S.vil||S.wd);
 
 // החיתוך בכרטיס הגרפי: מוסיף לחומר קיים (Lambert/Standard/Phong) בדיקה בתחילת ה-fragment. uniforms משותפים לכולם
@@ -51,7 +53,9 @@ function rdFrame(dt){
   const dir=c.getWorldDirection(RD.v3||(RD.v3=new THREE.Vector3()));
   v.set(p.x,p.y+Q.lift,p.z).addScaledVector(dir,-Q.near).project(c);U.occZ.value=v.z*0.5+0.5;
   v.set(p.x,p.y+Q.lift,p.z).project(c);const sx=(v.x*0.5+0.5)*b.x,sy=(v.y*0.5+0.5)*b.y;U.occP.value.set(sx,sy);
-  v.set(p.x+Q.r,p.y+Q.lift,p.z).project(c);U.occR.value=Math.abs((v.x*0.5+0.5)*b.x-sx);
+  const G=READ3D.gather,hold=typeof gtHeld==='function'&&!!gtHeld();RD.g=Math.max(0,Math.min(1,RD.g+(hold?1:-1)*Math.min(dt||0.016,0.05)*G.fade));
+  U.occKeep.value=Q.keep+(G.keep-Q.keep)*RD.g;   // איסוף: שקוף יותר
+  v.set(p.x+Q.r*(1+(G.r-1)*RD.g),p.y+Q.lift,p.z).project(c);U.occR.value=Math.abs((v.x*0.5+0.5)*b.x-sx);
 }
 
 // הסימנים החדשים על הקרקע: באותה שכבה כמו הצל של render3d (R3D.marks), אז הם מתאפסים ונשלחים לכרטיס איתם
