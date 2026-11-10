@@ -4889,7 +4889,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       const bot=MB.u.find(u=>u.k==='hero'&&u.kit==='tank'&&!u.me);if(bot){mb3dUnit(bot,1/60);mb3dUnit(bot,1/60);o.bot=R3D.actors.get(bot).L.model==='tankHF'}else o.bot=true;
       let arm=null;a.root.traverse(n=>{if(!arm&&n.isBone&&/arm|upper/i.test(n.name))arm=n});o.bad=[];
       for(const c of ['Idle_A','Running_B','Death_A','Melee_2H_Attack_Chop@up','Melee_2H_Idle','Jump_Idle','Taunt@up']){const C=R3D.clips[c];if(!C){o.bad.push(c+' missing');continue}
-        const x=a.mixer.clipAction(C);a.mixer.stopAllAction();x.reset().play();const q=arm.quaternion.clone();a.mixer.update(0.3);if(arm.quaternion.equals(q))o.bad.push(c);x.stop()}
+        const x=a.mixer.clipAction(C);a.mixer.stopAllAction();a.mixer.timeScale=1;x.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).play();const q=arm.quaternion.clone();a.mixer.update(0.3);   /* דמות מהמאגר: פעולה שנעצרה (timeScale 0) במכה קודמת */if(arm.quaternion.equals(q))o.bad.push(c);x.stop()}
       MBTANKHF.on=false;syncPlayer(1/60);o.off=R3D.player.L.model==='barbarian';
     }catch(e){o.err=String(e&&e.stack||e)}MBTANKHF.on=hf;return o});
   check(!thf.err&&(thf.d2||thf.me&&thf.bot&&thf.noStone&&!thf.bad.length&&thf.off),'underworld new tank body: '+(thf.err||(thf.d2?'2D, nothing to draw':[['yours, with hammer + crown',thf.me],['bots',thf.bot],['no stone shader on it',thf.noStone],['all 7 tank clips move it'+(thf.bad.length?' ('+thf.bad.join(',')+')':''),!thf.bad.length],['switch: barbarian back',thf.off]].map(([n,v])=>n+(v?' ✓':' ✗')).join(', '))));
@@ -4902,7 +4902,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
       for(const k in W){const [sw,hf,old]=W[k],on0=sw.on;sw.on=true;mobaStart(k);syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,r={};
         r.on=a.L.model===hf&&Object.values(a.props).some(p=>p.visible)&&!a.props.x_mask&&!a.props.x_circlet;
         let arm=null;a.root.traverse(n=>{if(!arm&&n.isBone&&/arm|upper/i.test(n.name))arm=n});r.bad=[];
-        for(const c of [a.L.anim.idle,a.L.anim.run,a.L.anim.die,'Spellcasting']){const C=R3D.clips[c];if(!C){r.bad.push(c+'?');continue}const x=a.mixer.clipAction(C);a.mixer.stopAllAction();x.reset().play();const q=arm.quaternion.clone();a.mixer.update(0.3);if(arm.quaternion.equals(q))r.bad.push(c);x.stop()}
+        for(const c of [a.L.anim.idle,a.L.anim.run,a.L.anim.die,'Spellcasting']){const C=R3D.clips[c];if(!C){r.bad.push(c+'?');continue}const x=a.mixer.clipAction(C);a.mixer.stopAllAction();a.mixer.timeScale=1;x.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).play();const q=arm.quaternion.clone();a.mixer.update(0.3);   /* דמות מהמאגר: פעולה שנעצרה (timeScale 0) במכה קודמת */if(arm.quaternion.equals(q))r.bad.push(c);x.stop()}
         sw.on=false;syncPlayer(1/60);r.off=R3D.player.L.model===old;sw.on=on0;o[k]=r}
     }catch(e){o.err=String(e&&e.stack||e)}return o});
   check(!hf3.err&&(hf3.d2||['warrior','mage','assassin'].every(k=>hf3[k]&&hf3[k].on&&!hf3[k].bad.length&&hf3[k].off)),'underworld new warrior/mage/assassin bodies: '+(hf3.err||(hf3.d2?'2D, nothing to draw':
