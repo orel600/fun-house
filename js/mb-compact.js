@@ -68,7 +68,9 @@ function mbCompactGrip(a,hit,dt){
   m.quaternion.copy(m.userData.cq0).slerp(m.userData.cq1,w)}
 }
 /* Compact label layout v3. Append after compact adapter, no float edits. */
-const MBCOMPACTLABEL={map:new Map(),stats:{crowded:0,moved:0}};
+const MBCOMPACTLABEL={map:new Map(),stats:{crowded:0,moved:0},
+  dy:[0,-10,-20,-30,10,20],dx:[0,-40,40,-80,80],gap:2,   // where a bar may move (screen px from its spot above the head) and the gap kept around bars and heads: short stems (QUINN: 30-50 px stems at every scale)
+  mini:{dx:9,k:0.62}};   // the small badge left of a crowded bar: how far left (px) and its size
 function mbCompactLabelsBegin(list,ox,oy){
  const Q=MBCOMPACTLABEL;Q.map.clear();Q.stats={crowded:0,moved:0};
  window.mbCompactLabelRects=[];window.mbCompactHeadRects=[];
@@ -83,30 +85,31 @@ function mbCompactLabelsBegin(list,ox,oy){
   const h=heads.find(h=>h.unit===u),cx=(u.x+ox)*z,base=h.y-15;
   const crowded=heads.some(o=>o!==h&&Math.abs(o.x-h.x)<55&&Math.abs(o.y-h.y)<64);
   let best=null,cost=Infinity;
-  for(const dy of [0,-12,-24,-36,-48,-60,12,24,36])for(const dx of [0,-44,44,-88,88,-132,132]){
+  for(const dy of MBCOMPACTLABEL.dy)for(const dx of MBCOMPACTLABEL.dx){
    const r={x:cx+dx-19,y:base+dy,w:38,h:6,unit:u,essential:true};
    if(r.x<15||r.x+r.w>sw-15||r.y<85||r.y+r.h>sh-65)continue;
-   if(occupied.some(o=>overlap(r,o,5))||heads.some(o=>overlap(r,o,5)))continue;
+   if(occupied.some(o=>overlap(r,o,MBCOMPACTLABEL.gap))||heads.some(o=>overlap(r,o,MBCOMPACTLABEL.gap)))continue;
    const c=Math.abs(dx)*.8+Math.abs(dy)+Math.abs(dy>0?dy:0)*.5;
    if(c<cost){cost=c;best=r}
   }
-  if(!best){best={x:Math.max(15,Math.min(sw-53,cx-19)),y:85+occupied.length*12,w:38,h:6,unit:u,essential:true}}
+  if(!best){best={x:Math.max(15,Math.min(sw-53,cx-19)),y:Math.max(85,base),w:38,h:6,unit:u,essential:true}}   // no free slot: stay at the hero (overlap is better than a bar far away on a long stem; BOB 10.11)
   occupied.push(best);window.mbCompactLabelRects.push(best);
   const moved=Math.abs(best.x+19-cx)>5||Math.abs(best.y-base)>5;
   Q.stats.crowded+=crowded?1:0;Q.stats.moved+=moved?1:0;
-  Q.map.set(u,{r:best,head:h,crowded,moved,x:(best.x+19)/z-ox,top:best.y/z-oy});
+  Q.map.set(u,{r:best,head:h,crowded,moved,x:(best.x+19)/z-ox,top:best.y/z-oy,oy});
  }
 }
 function mbCompactDrawLabels(u,col){
  const p=MBCOMPACTLABEL.map.get(u);if(!p)return false;
  const z=ZOOM,x=p.x,y=p.top,bw=38/z,bh=4/z;
  ctx.save();
- if(p.moved){ctx.globalAlpha=.38;ctx.strokeStyle=col;ctx.lineWidth=1/z;ctx.beginPath();ctx.moveTo(x,y+5/z);ctx.lineTo(u.x,(p.head.y-2)/z-R3D.oy);ctx.stroke();ctx.globalAlpha=1}
+ if(p.moved){ctx.globalAlpha=.38;ctx.strokeStyle=col;ctx.lineWidth=1/z;ctx.beginPath();ctx.moveTo(x,y+5/z);ctx.lineTo(u.x,(p.head.y-2)/z-p.oy);ctx.stroke();ctx.globalAlpha=1}
  ctx.fillStyle='#10131de8';ctx.fillRect(x-bw/2-1/z,y-1/z,bw+2/z,bh+2/z);
  ctx.fillStyle=u.me?'#7BD88F':col;ctx.fillRect(x-bw/2,y,bw*Math.max(0,u.hp)/u.max,bh);
  // Personal marker remains even in a crowded pile. Team health is never hidden.
  if(u.me){ctx.strokeStyle='#f7cf65';ctx.lineWidth=1/z;ctx.strokeRect(x-bw/2-2/z,y-2/z,bw+4/z,bh+4/z)}
  if(!p.crowded&&!p.moved){ctx.save();ctx.translate(x,y);ctx.scale(mbUiK(),mbUiK());ctx.translate(-x,-y);mbBadge(u,x,y-14);ctx.restore()}
+ else{const bx=x-bw/2-MBCOMPACTLABEL.mini.dx/z,by=y+bh/2,k=mbUiK()*MBCOMPACTLABEL.mini.k;ctx.save();ctx.translate(bx,by);ctx.scale(k,k);ctx.translate(-bx,-by);mbBadge(u,bx,by);ctx.restore()}   // crowded: a small class badge left of the bar, so who-is-who survives the pile (QUINN gate on 616)
  // Only critical CC, reduced to one small cue, never levels or a badge stack.
  if(u.st.stun>0||u.st.taunt>0){ctx.fillStyle=C.gold;ctx.beginPath();ctx.arc(x+bw/2+5/z,y+2/z,2/z,0,7);ctx.fill()}
  ctx.restore();return true;
