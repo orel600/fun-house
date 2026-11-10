@@ -5,7 +5,7 @@
    2. מספרי נזק: לא על גוף הגיבור ולא על המסלול שמעליו. מספר שנופל שם זז הצידה, לצד של האויב.
       לכל היותר READ2.nums.cap מספרים ליד הגיבור (הוותיק נזרק, קריטי נשאר), ובקרב צפוף מכות באותו אויב מתמזגות בחלון ארוך יותר.
    3. שמות (labels.js): בקרב השם המלא היחיד (המטרה, בוס, עלית) מלא, והשאר עמומים יותר. השמות לא עולים על השלטים של השערים ולא על המסלול מעל הגיבור.
-   4. כרטיס "New: <אויב>" (foelore.js) וההודעות הגדולות (msglane.js) מחכים עד שהקרב נרגע READ2.calm שניות, ואחרי READ2.cardWait מופיעים בכל זאת.
+   4. כרטיס "New: <אויב>" (foelore.js) וההודעות הגדולות (msglane.js) מחכים עד שהקרב נרגע READ2.calm שניות (בלי הבהוב כשאויב יוצא לרגע מהטווח), ואחרי READ2.cardWait מופיעים בכל זאת.
    רק בעולם. בזירה (של אוראל) לא משתנה כלום. הפחתת תנועה: בלי פעימה.
    חיבור: עוטף מבחוץ את juiceHit ו-fxcTgDraw (ציור המסלול, פעם בפריים), flCardVis ו-msgFight לשאלה "יש קרב".
    skillteach.js שולח את התווית ל-r2Head, labels.js קורא ל-r2Fixed ול-r2LblA, ו-world.js רושם את השלטים ב-r2Fix.
@@ -18,7 +18,7 @@ const READ2={
   // מספרי נזק. hero: התיבה של הגיבור והמסלול מעליו (יחידות משחק): חצי רוחב, כמה למעלה מהרגליים, כמה למטה
   nums:{near:120,cap:4,hero:{w:24,lane:62,up:64,down:14},gapX:6,crowd:6,crowdR:220,merge:0.4,mergeCrowd:0.65},
   lbl:{full:1,dim:0.32},   // בקרב: השם המלא (המטרה/החשוב) בלי שקיפות, והשאר עמומים יותר מ-LABELS.fight.a
-  calm:1.2,                // כמה שניות בלי קרב עד שכרטיס או הודעה גדולה מופיעים
+  calm:0.35,               // כמה שניות בלי קרב עד שכרטיס או הודעה גדולה מופיעים
   cardWait:30,             // אחרי כמה שניות של קרב רצוף הכרטיס מופיע בכל זאת
   stat:{head:0,headDanger:0,headOver:0,numPush:0,numStack:0,numCap:0,numOnHero:0,cardHeld:0,cardShown:0,lblDim:0,lblFix:0,bigHeld:0,crowd:0}
 };
@@ -30,14 +30,14 @@ const r2Calm=()=>typeof calmOn==='function'?calmOn():(typeof RM!=='undefined'&&R
 /* ---- מצב הקרב, פעם בפריים ---- */
 function r2Frame(){
   R2.fix.length=0;if(!r2On())return;
-  const f=typeof msgFight0==='function'?msgFight0():false;R2.fight=f;if(f)R2.fightT=r2Now();
+  const f=typeof msgFight==='function'?msgFight():false;R2.fight=f;if(f)R2.fightT=r2Now();
   let n=0;const N=READ2.nums,r=N.crowdR;
   if(f&&typeof enemies!=='undefined')for(const e of enemies)if(!e.dead&&Math.abs(e.x-P.x)<r&&Math.abs(e.y-P.y)<r)n++;
   R2.crowd=n;const crowd=n>=N.crowd;if(crowd)READ2.stat.crowd++;
   if(typeof JUICE!=='undefined')JUICE.nums.merge=crowd?N.mergeCrowd:N.merge;
 }
 // הקרב נרגע: אין אויב קרוב כבר READ2.calm שניות
-function r2Quiet(){if(msgFight0&&msgFight0()){R2.fight=true;R2.fightT=r2Now()}return !R2.fight&&r2Now()-R2.fightT>=READ2.calm}
+function r2Quiet(){const f=typeof msgFight==='function'&&msgFight();R2.fight=f;if(f)R2.fightT=r2Now();return !f&&r2Now()-R2.fightT>=READ2.calm}   // msgFight (לא העותק): מה שהעמודה עצמה חושבת
 
 /* ---- 1. המסלול מעל הראש ---- */
 // skillteach.js קורא בכל פריים עם התווית שהוא רוצה. החשובה בפריים מנצחת, ורק היא מצוירת
@@ -107,7 +107,7 @@ if(typeof fxcTgDraw==='function'){const o=fxcTgDraw;fxcTgDraw=function(){const r
 // "יש קרב" לעמודת ההודעות: הגדולה מחכה עד שהקרב באמת נרגע (ולא מהבהבת כשאויב יוצא לרגע מהטווח)
 var msgFight0=typeof msgFight==='function'?msgFight:null;
 if(msgFight0&&typeof msgBig==='function'){const ob=msgPump;msgPump=function(){
-  const hold=r2On()&&MQ.big.length&&!MQ.bigRow&&!r2Quiet()&&!msgFight0();
+  const hold=r2On()&&MQ.big.length&&!MQ.bigRow&&!r2Quiet()&&!msgFight();
   if(hold){READ2.stat.bigHeld++;const keep=MQ.big;MQ.big=[];try{return ob.apply(this,arguments)}finally{MQ.big=keep.concat(MQ.big)}}
   return ob.apply(this,arguments)}}
 // כרטיס פגישה ראשונה: מחכה לסוף הקרב, והזמן שלו לא רץ בינתיים
