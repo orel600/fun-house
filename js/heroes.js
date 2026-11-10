@@ -94,8 +94,12 @@ function heroSkinRow(){const cur=heroSkin()||'none';
     ['none',...Object.keys(HEROES.skins)].map(k=>'<button class="lang" data-skin="'+k+'" data-t="hero.look.'+k+'" aria-pressed="'+(k===cur)+'">'+T('hero.look.'+k)+'</button>').join('')+'</div></div>'}
 function heroSkinSet(k){SAVE.hero.skin=HEROES.skins[k]?k:null;heroSkinPet();saveNow();
   for(const b of document.querySelectorAll('[data-skin]'))b.setAttribute('aria-pressed',String(b.dataset.skin===(heroSkin()||'none')));
-  if($('heroSkin'))heroSkinBtn()}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-skin]');if(b){e.stopPropagation();heroSkinSet(b.dataset.skin)}});
+  if($('heroSkin'))heroSkinBtn();heroLookBtn()}
+// בכותרת חלון הציוד: כפתור אחד שעובר למראה הבא (רגיל, ניר, אוראל, וחוזר). בטור הסטטים שלוש השורות נחתכו בטלפון שוכב (בודק חיצוני, 10.11.2026)
+function heroLookBtn(){const b=$('gLook');if(!b)return;const k=heroSkin()||'none',t=T('hero.look')+': '+T('hero.look.'+k);
+  b.innerHTML='✨ '+T('hero.look.'+k);b.setAttribute('aria-label',t);b.title=t;b.dataset.look=k}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-skin]');if(b){e.stopPropagation();heroSkinSet(b.dataset.skin)}
+  if(e.target.closest('#gLook')){const ks=['none',...Object.keys(HEROES.skins)];heroSkinSet(ks[(ks.indexOf(heroSkin()||'none')+1)%ks.length])}});
 {const box=$('setSkin');if(box)box.outerHTML=heroSkinRow()}   // בהגדרות: נבנה פעם אחת, והכפתורים מתעדכנים בלחיצה
 $('ovHero').addEventListener('click',e=>{
   if(e.target.closest('#heroSkin')){const ks=Object.keys(HEROES.skins);SAVE.hero.skin=ks[ks.indexOf(heroSkin())+1]||null;heroSkinPet();heroSkinBtn();return}

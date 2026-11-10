@@ -1326,6 +1326,10 @@ body:not(.vil):not(.world) .dgift{display:none!important}
 .gpages button{appearance:none;position:relative;border:1px solid var(--line);background:var(--panel);color:var(--dim);border-radius:999px;min-height:38px;padding:4px 14px;font:800 var(--t1,14px) var(--body);cursor:pointer;white-space:nowrap}
 .gpages button[aria-pressed="true"]{color:var(--ink);background:var(--gold);border-color:var(--gold)}
 .gpages .gdot{position:absolute;top:-5px;inset-inline-end:-5px;min-width:18px;height:18px;border-radius:9px;background:#FF5A5A;color:#fff;font:800 11px/18px var(--body);font-style:normal;text-align:center;padding:0 4px}
+/* "המראה שלי" בכותרת חלון הציוד (heroLookBtn ב-heroes.js): כפתור אחד שעובר למראה הבא, באותו גובה של הלשוניות */
+#ovGear .glook{appearance:none;flex:none;border:1px solid var(--line);background:var(--panel);color:var(--chalk);border-radius:999px;min-height:40px;min-width:44px;padding:4px 12px;font:800 var(--t1,14px) var(--body);cursor:pointer;white-space:nowrap}
+#ovGear .glook:not([data-look="none"]){border-color:var(--gold);color:var(--gold)}
+@media (orientation:portrait){#ovGear .glook{display:none}}   /* טלפון עומד (המשחק מבקש לסובב): אין מקום בכותרת, וה-✕ יצא מהמסך. המראה בהגדרות ⚙️ */
 .ghead.whd>h2{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ghead.whd>#gHero{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (orientation:landscape){
@@ -1591,6 +1595,17 @@ html[dir="rtl"] #ovGear #gTabs{--fade-end:left}   /* הדהייה בסוף הש�
   .gres li{font:800 11px/clamp(17px,5.4vh,22px) var(--body);gap:2px}
   .gres svg{width:11px;height:11px}
 }
+/* טור הסטטים בטלפון שוכב (בודק חיצוני, 10.11.2026: נחתך ב-640×360 וב-844×390): בלי הכותרת "Stats" (מספר הכוח הוא הכותרת), ומספר הכוח נמוך יותר.
+   בטור צר "כאן" של ההגנה נעלם, כדי ש-Defense לא ייחתך ל-"Def…". הכל נבדק ב-tools/check.js (gearStats) */
+@media (orientation:landscape) and (max-height:500px){
+  #ovGear .gstatp>h3{display:none}
+  #ovGear .gstatp .gpow{padding:0 8px 2px}
+  #ovGear .gstatp .gpow b{font-size:22px}
+  #ovGear .gstatp .gpow .gpowi{font-size:15px}
+  #ovGear .gstatp .gsrows li{line-height:clamp(16px,4.9vh,21px);height:clamp(16px,4.9vh,21px)}
+  #ovGear .gstatp .gsrows .gsi{font-size:12px;line-height:1}
+}
+@media (orientation:landscape) and (max-width:760px){#ovGear .gstatp .gdh{display:none}#ovGear .gstatp .gsn{flex-shrink:0}}   /* צר: ההגנה רק באחוזים (הנקודות בדף הדמות) */
 /* מכירה (gear.js): בתרמיל נגיעה מסמנת ✓, נעול 🔒 לא לחיץ. "החזר" ו-🔒 בפרטים: כפתורים צרים */
 .gtile .gpk{position:absolute;top:2px;inset-inline-start:3px;font:900 13px/1 var(--body);font-style:normal;color:#5BD46B;text-shadow:0 0 2px #000,0 0 2px #000}
 .gtile .glk{position:absolute;top:1px;inset-inline-end:2px;font-size:11px;font-style:normal;line-height:1}

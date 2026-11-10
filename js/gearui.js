@@ -29,7 +29,7 @@ function gStatPanel(){
   const rows=GEARUI.rows.map(r=>{const v=r.v();if(gZero(v))return '';
     return '<li><span class="gsi" aria-hidden="true">'+r.icon+'</span><span class="gsn">'+T('gui.'+r.id)+'</span><b'+(r.col?' style="color:'+r.col()+'"':'')+'><bdi>'+v+'</bdi></b></li>'}).join('');
   const res=Object.keys(DMG.types).filter(t=>gResist(t)>0).map(t=>'<li style="--dt:'+dtCol(t)+'" title="'+T('dt.'+t)+'" aria-label="'+T('dt.'+t)+'">'+gDtPic(t)+'<bdi>'+gResist(t)+'%</bdi></li>').join('');
-  return powHeroHtml()+'<h3>'+T('gui.stats')+'</h3><ul class="gsrows">'+rows+'</ul>'+(res?'<h4>'+T('gui.res')+'</h4><ul class="gres">'+res+'</ul>':'')+gmHtml()+heroSkinRow();   // gmHtml: מומחיות איסוף (gmastery.js)
+  return powHeroHtml()+'<h3>'+T('gui.stats')+'</h3><ul class="gsrows">'+rows+'</ul>'+(res?'<h4>'+T('gui.res')+'</h4><ul class="gres">'+res+'</ul>':'')+gmHtml();   // gmHtml: מומחיות איסוף (gmastery.js). "המראה שלי" עבר לכותרת החלון (heroLookBtn ב-heroes.js): בטור הזה הוא נחתך בטלפון שוכב
 }
 // מעל הדמות: סט פעיל, בצבע שלו, עם כמה חלקים לבושים
 function gSetBadge(){
