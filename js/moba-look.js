@@ -5,6 +5,7 @@
       מצוירת פעם אחת לקנבס נסתר (mbFloorCanvas), ומשמשת גם בדו-ממד (mbFloor2d) וגם כטקסטורה בתלת-ממד (moba3d.js). הלבה בשכבה נפרדת שפועמת.
    המספרים ב-MBLOOK */
 const MBLOOK={
+  baseRingA:0.38,   // the base heal circle in the floor: 0.38 of the old strength, quieter so heroes read; your own brightens while you heal in it (mbBaseGlow). ?mbbase=1 / 0.4 / 0.25 (outer ring only) / 0 for A/B. Visual only (healR 240 and the heal rule unchanged)
   // המצלמה במוד (אוראל, 3.11: "כיוון המצלמה קרוב מדי", כמו ב-MLBB): רחוקה וגבוהה יותר. zoom: מתחת ל-1 רואים יותר (0.58 = פי 1.7 לרוחב). tilt: מעלות מעל הקרקע.
   // ui: פסי החיים, התגים והמספרים מעל הדמויות גדלים בחזרה חלקית, כדי שיהיו קריאים גם כשהמצלמה רחוקה
   cam:{zoom:0.58,tilt:52,ui:0.8},
@@ -122,6 +123,15 @@ function mbDecor(){
 let MB_FLOOR=null;   // {stone, glow}: שני קנבסים, מצוירים פעם אחת
 let MB_FLOOR_OV=null;   // שכבת הסימנים בלי האבן, לתלת-ממד (W5)
 // marksOnly: רק הסימנים (צבע הקבוצות, השביל, הצללים, השפה, הבסיסים והלבה) על קנבס שקוף, מעל רצפת האבן של הזירה בתלת-ממד
+// the base heal circle's strength (visual only: MOBA.base.healR and the heal rule are untouched). ?mbbase=n overrides MBLOOK.baseRingA (default 1 if unset)
+function mbBaseA(){const q=location.search.match(/[?&]mbbase=([0-9.]+)(&|$)/);return q?Math.max(0,Math.min(1,+q[1])):(typeof MBLOOK.baseRingA==='number'?MBLOOK.baseRingA:1)}
+// your own base circle brightens (up to full) only while your hero stands inside its heal radius and is not at full health: a display signal of when it matters
+function mbBaseGlow(){
+  const me=MB&&MB.me,BA=mbBaseA();if(!me||BA>=1)return;const bx=(me.team?1:-1)*MOBA.base.x,r=MOBA.base.healR,col=MOBA.team[me.team];
+  const want=!me.dead&&Math.hypot(me.x-bx,me.y)<r&&me.hp<me.max?1:0;mbBaseGlow.k=(mbBaseGlow.k||0)+(want-(mbBaseGlow.k||0))*0.12;const a=(1-BA)*mbBaseGlow.k;if(a<0.02)return;
+  ctx.save();ctx.translate(bx,0);ctx.scale(1,0.9);ctx.globalAlpha=a;ctx.strokeStyle=col+'AA';ctx.lineWidth=6;ctx.beginPath();ctx.arc(0,0,r-6,0,7);ctx.stroke();
+  ctx.fillStyle=col+'88';for(let i=0;i<16;i++){const q=i/16*Math.PI*2;ctx.save();ctx.rotate(q);ctx.fillRect(r-19,-5,8,10);ctx.restore()}ctx.restore();ctx.globalAlpha=1;
+}
 function mbFloorCanvas(marksOnly){
   if(marksOnly?MB_FLOOR_OV:MB_FLOOR)return marksOnly?MB_FLOOR_OV:MB_FLOOR;
   const F=MBLOOK.floor,M=MBLOOK.map,L=MOBA.lane,s=F.px,Wd=Math.min(4096,Math.round((F.x1-F.x0)*s)),Ht=Math.min(4096,Math.round((F.y1-F.y0)*s));
@@ -135,7 +145,7 @@ function mbFloorCanvas(marksOnly){
   // תהום מסביב, עם זוהר לבה עמום מתחת לשפה
   g.fillStyle=F.abyss;g.fillRect(F.x0,F.y0,F.x1-F.x0,F.y1-F.y0);
   for(const sg of [-1,1]){const gr=g.createLinearGradient(0,sg*A,0,sg*F.y1);
-    gr.addColorStop(0,'#4a160e');gr.addColorStop(0.3,'#22090b');gr.addColorStop(1,F.abyss);g.fillStyle=gr;g.fillRect(F.x0,Math.min(sg*A,sg*F.y1),F.x1-F.x0,F.y1-A)}
+    const ab=F.ob?F.ob.abyss:['#4a160e','#22090b'];gr.addColorStop(0,ab[0]);gr.addColorStop(0.3,ab[1]);gr.addColorStop(1,F.abyss);g.fillStyle=gr;g.fillRect(F.x0,Math.min(sg*A,sg*F.y1),F.x1-F.x0,F.y1-A)}
   // אבן כהה אחידה (W5): בסיס אחד, כתמים רכים בגוונים קרובים, וגרגור עדין. שבילי העקיפה בצדדים כהים יותר. בלי לבנים: הן רבו עם השיחים ועם המגדלים
   g.fillStyle=F.stone;g.fillRect(x0,-A,x1-x0,A*2);
   for(const sg of [-1,1]){const a=sg*M.side[0],b=sg*A,gr=g.createLinearGradient(0,a,0,b);gr.addColorStop(0,F.side+'00');gr.addColorStop(0.35,F.side);gr.addColorStop(1,F.side);g.fillStyle=gr;g.fillRect(x0,Math.min(a,b),x1-x0,Math.abs(b-a))}
@@ -144,12 +154,13 @@ function mbFloorCanvas(marksOnly){
   for(let i=0;i<2600;i++){const x=x0+R(i,23)*(x1-x0),y=-A+R(i,29)*A*2,k=R(i,31);g.fillStyle=k>0.5?'rgba(255,255,255,'+F.grain+')':'rgba(0,0,0,'+F.grain*1.6+')';g.fillRect(x,y,2+R(i,37)*4,1.5)}
   for(let i=0;i<70;i++){const x=x0+R(i,41)*(x1-x0),y=-A+R(i,43)*A*2;g.strokeStyle='rgba(10,4,8,0.4)';g.lineWidth=1.5;g.beginPath();g.moveTo(x,y);g.lineTo(x+(R(i,47)-0.5)*40,y+10+R(i,53)*30);g.lineTo(x+(R(i,59)-0.5)*60,y+30+R(i,61)*40);g.stroke()}   // סדקים בודדים
   }
+  if(marksOnly&&F.ob&&typeof mbObSlabs==='function')mbObSlabs(g,R,x0,x1);   // ?mbfloor=obsidian (mb-floor.js): לוחות אובסידיאן בשטח ההליכה
   // צבע הקבוצה: הצד הכחול קר והאדום חם, ומתערבבים באמצע
   {const gr=g.createLinearGradient(x0,0,x1,0),[b,rd]=MOBA.team,a=Math.round(F.tint*255).toString(16).padStart(2,'0');
-    gr.addColorStop(0,b+a);gr.addColorStop(0.42,b+'00');gr.addColorStop(0.58,rd+'00');gr.addColorStop(1,rd+a);g.fillStyle=gr;g.fillRect(x0,-A,x1-x0,A*2)}
+    if(F.ob&&F.ob.tint){const T=F.ob.tint,h=v=>Math.round(v*255).toString(16).padStart(2,'0');for(const [p,al] of T.stops){gr.addColorStop(p,T.blue+h(al));gr.addColorStop(1-p,T.red+h(al))}}else{gr.addColorStop(0,b+a);gr.addColorStop(0.42,b+'00');gr.addColorStop(0.58,rd+'00');gr.addColorStop(1,rd+a)}g.fillStyle=gr;g.fillRect(x0,-A,x1-x0,A*2)}
   // הנתיב הראשי: אבן שחוקה ובהירה יותר, עם קו גבול. ושבילי העקיפה: פס שחוק דק באמצע
   const pg=g.createLinearGradient(0,-M.mid,0,M.mid);
-  pg.addColorStop(0,'rgba(122,88,90,0)');pg.addColorStop(0.25,'rgba(122,88,90,0.38)');pg.addColorStop(0.75,'rgba(122,88,90,0.38)');pg.addColorStop(1,'rgba(122,88,90,0)');
+  const wc=F.ob&&F.ob.worn?F.ob.worn:{rgb:'122,88,90',a:0.38};pg.addColorStop(0,'rgba('+wc.rgb+',0)');pg.addColorStop(0.25,'rgba('+wc.rgb+','+wc.a+')');pg.addColorStop(0.75,'rgba('+wc.rgb+','+wc.a+')');pg.addColorStop(1,'rgba('+wc.rgb+',0)');
   g.fillStyle=pg;g.fillRect(x0,-M.mid,x1-x0,M.mid*2);
   g.setLineDash([26,30]);g.strokeStyle='rgba(236,210,200,0.12)';g.lineWidth=4;g.beginPath();g.moveTo(-L.len,0);g.lineTo(L.len,0);g.stroke();g.setLineDash([]);
   for(const sg of [-1,1]){const yc=sg*(M.side[0]+M.side[1])/2,sp=g.createLinearGradient(0,yc-50,0,yc+50);
@@ -166,17 +177,18 @@ function mbFloorCanvas(marksOnly){
   for(const sg of [-1,1]){const gr=g.createLinearGradient(0,sg*(L.half-60),0,sg*A);gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(1,'rgba(0,0,0,0.45)');g.fillStyle=gr;g.fillRect(x0,Math.min(sg*(L.half-60),sg*A),x1-x0,F.rim+60)}
   // שפת האבן: אבני גבול בהירות עם קו אור, מחוץ לשטח שהולכים בו
   for(const sg of [-1,1]){const y=sg>0?L.half:-A;g.fillStyle=F.mortar;g.fillRect(x0,y,x1-x0,F.rim);
-    for(let x=x0,i=0;x<x1;i++){const w=46+R(i,sg*5)*40;g.fillStyle=F.rimCol;g.fillRect(x+2,y+3,w-4,F.rim-6);g.fillStyle='rgba(255,230,220,0.09)';g.fillRect(x+2,sg>0?y+3:y+F.rim-7,w-4,4);x+=w}
+    for(let x=x0,i=0;x<x1;i++){const w=46+R(i,sg*5)*40;if(F.ob&&typeof mbObRim==='function')mbObRim(g,q,x,y,w,sg);else{g.fillStyle=F.rimCol;g.fillRect(x+2,y+3,w-4,F.rim-6);g.fillStyle='rgba(255,230,220,0.09)';g.fillRect(x+2,sg>0?y+3:y+F.rim-7,w-4,4)}x+=w}
     g.fillStyle='rgba(0,0,0,0.5)';g.fillRect(x0,sg>0?L.half:-L.half-3,x1-x0,3)}
   // עיגולי הבסיס: כחול ואדום, עם טבעת רונות וזוהר
+  const BA=mbBaseA(),B6=BA===0.25;   // how strong the base circle is in the floor (MBLOOK.baseRingA, ?mbbase=n). 0.25: only the outer ring
   for(const tm of [0,1]){const bx=(tm?1:-1)*MOBA.base.x,r=MOBA.base.healR,col=MOBA.team[tm];
-    g.save();g.translate(bx,0);g.scale(1,0.9);
-    const rg=g.createRadialGradient(0,0,r*0.2,0,0,r);rg.addColorStop(0,col+'40');rg.addColorStop(1,col+'14');g.fillStyle=rg;g.beginPath();g.arc(0,0,r,0,7);g.fill();
+    g.save();g.translate(bx,0);g.scale(1,0.9);g.globalAlpha=BA;
+    const rg=g.createRadialGradient(0,0,r*0.2,0,0,r);rg.addColorStop(0,col+'40');rg.addColorStop(1,col+'14');if(!B6){g.fillStyle=rg;g.beginPath();g.arc(0,0,r,0,7);g.fill()}
     g.strokeStyle=col+'AA';g.lineWidth=6;g.beginPath();g.arc(0,0,r-6,0,7);g.stroke();
-    g.strokeStyle=col+'55';g.lineWidth=3;g.beginPath();g.arc(0,0,r-24,0,7);g.stroke();
-    g.fillStyle=col+'88';for(let i=0;i<16;i++){const a=i/16*Math.PI*2;g.save();g.rotate(a);g.fillRect(r-19,-5,8,10);g.restore()}
+    if(!B6){g.strokeStyle=col+'55';g.lineWidth=3;g.beginPath();g.arc(0,0,r-24,0,7);g.stroke()}
+    if(!B6)g.fillStyle=col+'88';if(!B6)for(let i=0;i<16;i++){const a=i/16*Math.PI*2;g.save();g.rotate(a);g.fillRect(r-19,-5,8,10);g.restore()}
     g.restore();
-    q.save();q.translate(bx,0);q.scale(1,0.9);q.strokeStyle=col;q.globalAlpha=0.5;q.lineWidth=8;q.beginPath();q.arc(0,0,r-6,0,7);q.stroke();q.restore()}
+    q.save();q.translate(bx,0);q.scale(1,0.9);q.strokeStyle=col;q.globalAlpha=0.5*BA;q.lineWidth=8;q.beginPath();q.arc(0,0,r-6,0,7);q.stroke();q.restore()}
   // עיגול באמצע הנתיב
   g.strokeStyle=F.rune+'66';g.lineWidth=3;g.beginPath();g.ellipse(0,0,110,96,0,0,7);g.stroke();g.strokeStyle=F.rune+'33';g.lineWidth=2;g.beginPath();g.ellipse(0,0,140,122,0,0,7);g.stroke();
   // סדקי לבה: לאורך השפה, וכמה שנכנסים קצת פנימה. בקנבס האבן כהים-אדומים, ובשכבת הזוהר בוהקים
@@ -184,10 +196,11 @@ function mbFloorCanvas(marksOnly){
     q.lineCap=q.lineJoin='round';for(const [lw,col,a] of [[w*4,F.lava,0.35],[w*1.6,F.lava,0.9],[w*0.6,F.lavaHot,1]]){q.globalAlpha=a;q.strokeStyle=col;q.lineWidth=lw;q.beginPath();pts.forEach((p,i)=>i?q.lineTo(p[0],p[1]):q.moveTo(p[0],p[1]));q.stroke()}q.globalAlpha=1};
   for(const sg of [-1,1]){
     const edge=[];for(let x=x0;x<=x1;x+=34)edge.push([x,sg*(A+4+R(x,sg)*8)]);crack(edge,3.5);   // הסדק הארוך לאורך השפה
-    for(let i=0;i<30;i++){const cx=x0+(i+R(i,sg))*((x1-x0)/30);let x=cx,y=sg*(L.half-4);const pts=[[x,y]],n=2+Math.floor(R(sg,i)*2);
+    const nb=F.ob?F.ob.crackBranches:30;for(let i=0;i<nb;i++){const cx=x0+(i+R(i,sg))*((x1-x0)/nb);let x=cx,y=sg*(L.half-4);const pts=[[x,y]],n=2+Math.floor(R(sg,i)*2);
       for(let k=0;k<n;k++){x+=(R(i,k)-0.5)*40;y-=sg*(14+R(k,i)*26);pts.push([x,y])}crack(pts,1.8)}
     // לבה בתהום: נהר זוהר מעבר לשפה
     for(let x=F.x0;x<F.x1;x+=140){const y=sg*(A+90+R(x,1)*120),pts=[[x,y]];for(let k=1;k<5;k++)pts.push([x+k*35,y+(R(x,k)-0.5)*40]);crack(pts,2.5)}}
+  if(F.ob&&typeof mbObBounce==='function')mbObBounce(q,x0,x1,A);   // ?mbfloor=obsidian: זוהר הגחלים מהתהום שנכנס לשטח
   // זוהר עדין מתחת ללפידים
   for(const d of mbDecor())if(d.k==='fire'){const gr=q.createRadialGradient(d.x,d.y,0,d.x,d.y,90);gr.addColorStop(0,'rgba(255,150,70,0.5)');gr.addColorStop(1,'rgba(255,150,70,0)');q.fillStyle=gr;q.fillRect(d.x-90,d.y-90,180,180)}
   if(marksOnly)return MB_FLOOR_OV={stone:st,glow:gl};
