@@ -6,7 +6,7 @@
    - עיגול הטווח של מגדל של הקבוצה עמום יותר (rangeA, moba.js). עיגול של מגדל שמכוון אליך נשאר כמו שהוא: זו סכנה.
    מחיקה: הקובץ, השורה ב-index.html, הפלטה plates ב-mb-floor.js והקריאה ב-moba.js */
 const MBSCENE={
-  on:typeof MBFLOOR!=='undefined'&&MBFLOOR.on==='plates'&&!/[?&]mbscene=0(&|$)/.test(location.search),   // ?mbscene=0: רצפת הלוחות בלי שאר השינויים (להשוואה: מה מגיע מהרצפה ומה מהאור)
+  on:typeof MBFLOOR!=='undefined'&&(MBFLOOR.on==='plates'||MBFLOOR.on==='obsidian')&&!/[?&]mbscene=0(&|$)/.test(location.search),   // ?mbscene=0: רצפת הלוחות בלי שאר השינויים (להשוואה: מה מגיע מהרצפה ומה מהאור)
   rim:{tank:{k:0.5,lo:0.6,hi:0.92,fill:0.45},hunter:{k:0.9,fill:0.25},assassin:{k:1.2,fill:0.6},warrior:{k:0.5},mage:{k:0.5}},
   light:{hemi:1.35,sun:2.4,sunCol:'#ffe8c8',sky:'#e8eeff',ground:'#4a3c5c'},
   shadowA:0.6,ring:0.62,rangeA:'30',   // rangeA: שקיפות עיגול הטווח של מגדל של הקבוצה (hex, במקור 55)
