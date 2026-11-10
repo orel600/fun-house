@@ -531,7 +531,7 @@ function mbDrawBuild(b,col){
   const B=base?MOBA.base:MOBA.tower;
   const me=MB.me,foe=me&&b.team!==me.team&&!me.dead,near=foe&&mbDist(me,b)<B.range+MOBA.warnR;   // מגדל של האויב: טבעת אדומה כשמתקרבים, מלאה כשהוא מכוון אליך (הבודק, 2.11)
   if(near){ctx.strokeStyle=b.tgt===me?C.blood:'rgba(239,78,87,0.55)';ctx.lineWidth=b.tgt===me?3:2;ctx.setLineDash(b.tgt===me?[]:[8,8]);ctx.beginPath();ctx.arc(b.x,b.y,B.range,0,7);ctx.stroke();ctx.setLineDash([])}
-  else if(b.tgt&&!b.tgt.dead){ctx.strokeStyle=col+'55';ctx.lineWidth=1.5;ctx.setLineDash([4,6]);ctx.beginPath();ctx.arc(b.x,b.y,B.range,0,7);ctx.stroke();ctx.setLineDash([])}
+  else if(b.tgt&&!b.tgt.dead){ctx.strokeStyle=col+(typeof MBSCENE!=='undefined'&&MBSCENE.on?MBSCENE.rangeA:'55');ctx.lineWidth=1.5;ctx.setLineDash([4,6]);ctx.beginPath();ctx.arc(b.x,b.y,B.range,0,7);ctx.stroke();ctx.setLineDash([])}
   const bw=base?84:60,top=b.y-h-(base?48:38),uk=mbUiK();ctx.save();ctx.translate(b.x,top+8);ctx.scale(uk,uk);ctx.translate(-b.x,-top-8);ctx.fillStyle='#000a';ctx.fillRect(b.x-bw/2-1,top-1,bw+2,8);ctx.fillStyle=col;ctx.fillRect(b.x-bw/2,top,bw*b.hp/b.max,6);ctx.restore();
 }
 /* המגדל והבסיס בדו-ממד (אוראל, סבב גרפיקה 8.11): במקום משולש אפור, מגדל אבן בקו של שאר הממשק (אבן כהה, פליז, עץ).
