@@ -44,15 +44,8 @@ function tipWin(k,args,sel){
 /* ---- החיבור מכרטיס החפץ (itemCard ב-itemcard.js): דרישה שלא עומדים בה, או איכות ---- */
 function tipItem(id){
   if(!tipsOn()||typeof irReq!=='function'||!irOn())return;
-  const r=irReq(id);
-  if(r&&!irMeets(id)&&!tipDone('req')){
-    const st=r.st&&r.n?T('st.'+r.st)[0]:null;
-    tipWin('req',[r.lv,st,r.n],'.icard .ireq.no');return;
-  }
-  if(gQtag(id)&&!tipDone('q')){
-    const p=q=>icPow(id.replace(/~\d+/,'~'+q)),Q=gQ(id),v=Q>=TIPS.q.good?'good':Q<=TIPS.q.bad?'bad':'mid';
-    tipWin('q',[icPow(id),p(ITEMROLL.q.min)+'–'+p(ITEMROLL.q.max),T('tip1.q.'+v)],'.icard .iq');
-  }
+  // דרישה שלא עומדים בה: בלי בועה (ביקורת 10.11: חזרה על השורה האדומה וכיסתה כפתורים). ההסבר שורה עמומה בכרטיס עצמו (irReqHtml ב-itemroll.js)
+  // איכות: גם בלי בועה. ההערכה (גבוה, ממוצע, נמוך) בשורת האיכות בכרטיס (gQLine ב-gearui.js)
 }
 
 /* ---- מתי מותר להציג טיפ במשחק: אין חלון, אין פס אחר, ומשחקים ---- */

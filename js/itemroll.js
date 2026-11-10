@@ -41,7 +41,7 @@ function irUnlocked(from,lv){const ks=Object.keys(SAVE.bag||{}).filter(k=>SAVE.b
     return {icon:'🔓',txt:ok?T('ir.ready',gName(k)):T('ir.readySt',gName(k),T('st.'+r.st)[0]+' '+r.n)}})}
 function irReqHtml(id){const r=irReq(id);if(!r||!irOn())return '';const ok=irMeets(id),lvOk=heroLv()>=r.lv,stOk=!r.st||(stPts()[r.st]||0)>=r.n;
   const p='<span class="'+(lvOk?'':'bad')+'">'+T('ir.lv','<bdi>'+r.lv+'</bdi>')+'</span>'+(r.st&&r.n?', <span class="'+(stOk?'':'bad')+'">'+T('st.'+r.st)[0]+' <bdi>'+r.n+'</bdi></span>':'');
-  return '<p class="ireq'+(ok?'':' no')+'">'+T('ir.req',p)+'</p>'}
+  return '<p class="ireq'+(ok?'':' no')+'">'+T('ir.req',p)+'</p>'+(!ok&&r.st&&r.n?'<p class="ireqh dim">'+T('ir.stHint')+'</p>':'')}   // חסרות נקודות: מאיפה מקבלים אותן
 
 /* ---- בונוס מחלקה ---- */
 // המחלקה של החפץ: שריון לפי cls, נשק לפי arms ב-HEROES, מגן לפי cls.shield

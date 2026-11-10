@@ -59,6 +59,7 @@
 .icbuy .ri{width:var(--ic-s);height:var(--ic-s);vertical-align:middle}
 #vPanel.bw .icfoot .vbtn.icbuy:disabled{font-size:13px}
 .icbody .ireq,.icbody .icls,.icbody .iq{margin:0;font-size:12.5px}
+.icbody .ireqh{margin:-2px 0 0;font-size:11.5px;font-weight:600;color:var(--dim)}   /* מתחת לדרישה: מאיפה מקבלים נקודות (irReqHtml) */
 
 /* ---- בחלון הציוד (gCardHtml ב-gearui.js): הכרטיס בתוך הבועה (css/itemtip.css), עם ✕ בפינה ושני כפתורים גדולים ---- */
 #gDetail.gcard.itip{width:min(400px,calc(100vw - 12px))!important;padding:8px!important;gap:6px}
