@@ -423,6 +423,7 @@ const TEXT={
   'wr.d.meteor.lava':{he:'משאיר שלולית אש',en:'Leaves a pool of fire'},
   'skr.new':{he:n=>'✨ סקיל חדש: '+n,en:n=>'✨ New skill: '+n},
   'sk.quake':{he:'רקיעת אדמה',en:'Quake'},
+  'arn.group':{en:'Preview skills'},'arn.meteor':{en:'Meteor Shower'},'arn.rod':{en:'Lightning Rod'},'arn.blade':{en:'Skyblade Orbit'},'arn.moon':{en:'Moonfall'},'arn.rift':{en:'Gravitas Rift'},'arn.arrows':{en:'Arrow Storm'},'arn.phoenix':{en:'Phoenix Dash'},'arn.beam':{en:'Judgment Beam'},
   'sk.flame':{he:'פרץ להבה',en:'Flame Burst'},
   'sk.comet':{he:'שביט',en:'Comet'},
   'sk.lance':{he:'חנית קרח',en:'Ice Lance'},
