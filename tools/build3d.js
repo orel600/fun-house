@@ -140,7 +140,13 @@ const VGROW={
   vx_tavernG:{src:hex('buildings/green/building_tavern_green.gltf')},vx_tavernB:{src:hex('buildings/blue/building_tavern_blue.gltf')},vx_tavernR:{src:hex('buildings/red/building_tavern_red.gltf')},
   vx_homeBG:{src:hex('buildings/green/building_home_B_green.gltf')},vx_homeBB:{src:hex('buildings/blue/building_home_B_blue.gltf')},vx_homeBR:{src:hex('buildings/red/building_home_B_red.gltf')},
   vx_castleY:{src:hex('buildings/yellow/building_castle_yellow.gltf')},vx_towerA:{src:hex('buildings/red/building_tower_A_red.gltf')},
-  vx_flagR:{src:hex('decoration/props/flag_red.gltf')},vx_flagY:{src:hex('decoration/props/flag_yellow.gltf')}
+  vx_flagR:{src:hex('decoration/props/flag_red.gltf')},vx_flagY:{src:hex('decoration/props/flag_yellow.gltf')},
+  /* הכפר כולו גדל עם המרכז (vgrowth.js): בתים בשלושה צבעים, באר, טחנת רוח, כנסייה, חומה ומגדלים, שדה חיטה, וחלקת עפר למבנה שעוד לא נבנה */
+  vx_homeAG:{src:hex('buildings/green/building_home_A_green.gltf')},vx_homeAB:{src:hex('buildings/blue/building_home_A_blue.gltf')},vx_homeAR:{src:hex('buildings/red/building_home_A_red.gltf')},
+  vx_well:{src:hex('buildings/blue/building_well_blue.gltf')},vx_windmill:{src:hex('buildings/yellow/building_windmill_yellow.gltf')},vx_church:{src:hex('buildings/yellow/building_church_yellow.gltf')},
+  vx_wall:{src:hex('buildings/neutral/wall_straight.gltf')},vx_towerAB:{src:hex('buildings/blue/building_tower_A_blue.gltf')},
+  vx_hallG:{src:hex('buildings/green/building_barracks_green.gltf')},   // מרכז הכפר L3: אולם עץ עם גג ירוק
+  vx_grain:{src:hex('buildings/neutral/building_grain.gltf')},vx_dirt:{src:hex('buildings/neutral/building_dirt.gltf')}
 };
 // טבע לכל אזור בעולם (KayKit Forest Nature Pack 1.0 FREE, CC0): עצים, עצים חשופים, סלעים, שיחים ועשב. המפתח מתחיל ב-n_, ומי משתמש במה: W3D.decor ב-js/render3d.js
 //   kaylousberg.itch.io/kaykit-forest  KayKit_Forest_Nature_Pack_1.0_FREE -> C:/kk/forest

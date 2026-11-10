@@ -2520,6 +2520,28 @@ function worldBot(m,L,god){
         for(const m of [VIL3D.models[lk.model]&&VIL3D.models[lk.model].model,...lk.deco.map(d=>VIL3D.deco[d]&&VIL3D.deco[d].model)])if(!m||!has(m))miss.push(k+' L'+L+':'+(m||lk.model))}}
       return{n:Object.keys(VILLAGE.b).length,same,miss:[...new Set(miss)]}});
     check(!vl.same.length&&!vl.miss.length,'Village levels look different: '+vl.n+' buildings × 5 levels'+(vl.same.length?', same model and props as the level before: '+vl.same.join(', '):', every level changes model or props')+(vl.miss.length?', missing model: '+vl.miss.join(', '):''))}
+  // הכפר כולו גדל עם המרכז (vgrowth.js, ניר 10.11): ברמות 1, 3, 5 הגבול והשער זזים, יש יותר פנסים ותוספות, כל מבנה נגיש, והדרך מהכניסה לשער סבירה.
+  // אחר כך שדרוג המרכז 4→5: מבט על (זום החוצה) עם ניצוצות, וקישוט ישן של שחקן במקום של בית נשאר והבית מוותר
+  {const vg=await page.evaluate(()=>{window.__vgKeep=JSON.stringify({v:SAVE.village,b:SAVE.bag,d:SAVE.deco,c:SAVE.calm});welcomeClose();npcTalk(null);const o={lv:{}};
+      for(const L of [1,3,5]){SAVE.village.center=L;const R=VILLAGE.radius,far=Object.keys(VILLAGE.b).filter(k=>Math.hypot(VILLAGE.b[k].x,VILLAGE.b[k].y)-VILLAGE.b[k].r>R-20);
+        o.lv[L]={R,gate:VILLAGE.gate.y,lamps:VILLAGE.props.filter(d=>d.k==='lamp').length,items:VGROW.items.filter(it=>vgOn(it,L)).length,walk:Math.round(VILLAGE.gate.y-VILLAGE.spawn.y),far}}
+      return o});
+    // בתלת-ממד: התוספות נבנות לכל רמה (חומה בציור אחד)
+    if(CFG.gfx==='3d'){for(const L of [3,5]){await page.evaluate(L=>{SAVE.village.center=L;enterVillage();npcTalk(null);welcomeClose()},L);
+      for(let i=0;i<40;i++){await page.clock.runFor(200);if(await page.evaluate(L=>R3D.vil&&R3D.vil.vgDone===L,L))break}
+      vg['d3_'+L]=await page.evaluate(L=>{const V=R3D.vil;if(!V||V.vgDone!==L)return'not built';let inst=0,n=0;V.vg.traverse(o=>{if(o.isInstancedMesh){inst++;n=Math.max(n,o.count)}});return V.vg.children.length+' parts, ring '+n+' pieces in '+inst+' draw(s)'},L)}
+      await page.evaluate(()=>{P.x=0;P.y=-200;S.cam.x=0;S.cam.y=-200});await page.clock.runFor(600);await shot('village-L5')}
+    // שדרוג המרכז 4→5 עם מבט על. קישוט ישן במקום של בית אדום (L5) מבטל את הבית
+    Object.assign(vg,await page.evaluate(()=>{SAVE.calm=false;SAVE.village.center=4;const h=VGROW.items.find(it=>it.at===5&&it.m==='vx_homeAR');decoSave().put.push({k:'bush',x:h.x,y:h.y});
+      enterVillage();npcTalk(null);welcomeClose();const c=vCostAt('center',5);for(const r in c)bagAdd(r,c[r]);
+      const B=VILLAGE.b.center;P.x=B.x;P.y=B.y+B.r+40;S.cam.x=P.x;S.cam.y=P.y;window.__z0=camZoom();vUpgrade('center');return{free:vgFree(h),sp0:FX.length}}));
+    const ph=[];let zMin=9;for(let i=0;i<45;i++){await page.clock.runFor(150);const r=await page.evaluate(()=>{const m=S.vil.bm;return m?[bmPhase(m).n,camZoom()/window.__z0,FX.length]:['end',camZoom()/window.__z0,FX.length]});
+      if(ph[ph.length-1]!==r[0])ph.push(r[0]);if(r[0]==='over'){zMin=Math.min(zMin,r[1]);vg.spark=r[2]}if(r[0]==='over'&&!vg.shotOver){vg.shotOver=1;await shot('village-overview')}}
+    vg.zEnd=await page.evaluate(()=>+(camZoom()/window.__z0).toFixed(2));vg.ph=ph.join('>');vg.zMin=+zMin.toFixed(2);
+    await page.evaluate(()=>{const k=JSON.parse(window.__vgKeep);SAVE.village=k.v;SAVE.bag=k.b;SAVE.deco=k.d;SAVE.calm=k.c;S.vil.bm=null;enterVillage();npcTalk(null);welcomeClose();saveNow()});
+    const l=vg.lv,okL=[1,3,5].every(L=>l[L].gate===l[L].R&&!l[L].far.length&&l[L].walk<=520)&&l[1].R<l[3].R&&l[3].R<l[5].R&&l[1].lamps<l[3].lamps&&l[3].lamps<l[5].lamps&&l[1].items<l[3].items&&l[3].items<l[5].items;
+    check(okL&&(CFG.gfx!=='3d'||/ring/.test(vg.d3_5)&&/1 draw/.test(vg.d3_5)),'Village grows with the center: '+[1,3,5].map(L=>'L'+L+' edge '+l[L].R+', '+l[L].lamps+' lamps, '+l[L].items+' extras, gate walk '+l[L].walk+'px'+(l[L].far.length?' (out of reach: '+l[L].far+')':'')).join(' · ')+(CFG.gfx==='3d'?' · 3D L3: '+vg.d3_3+', L5: '+vg.d3_5:''));
+    check(/over/.test(vg.ph)&&vg.zMin<0.5&&vg.zEnd>0.95&&vg.spark>vg.sp0&&!vg.free,'Center 4→5 overview: '+vg.ph+', zoom ×'+vg.zMin+' then ×'+vg.zEnd+(vg.spark>vg.sp0?', sparks on what is new':', no sparks!')+(vg.free?', an old decoration under a new house!':', an old saved decoration keeps its spot (the house skips it)'))}
   // רגע הבנייה (buildmoment.js, ניר 10.11): שדרוג נפחייה 2→3. החלון נסגר, המצלמה נוסעת למבנה, הישן (אוהל) שוקע, פיגום, החדש (נפחייה) קופץ,
   // שורה "לפני → אחרי", והמצלמה חוזרת והחלון נפתח. אחר כך נגיעה מדלגת (3→4), והפחתת תנועה בלי מצלמה (4→5). הרמות והתרמיל חוזרים בסוף
   {const bm=await page.evaluate(()=>{const o={},B=VILLAGE.b.forge;window.__bmKeep=JSON.stringify({v:SAVE.village,b:SAVE.bag,c:SAVE.calm});
@@ -3264,6 +3286,19 @@ function worldBot(m,L,god){
     'כלי איסוף: '+(gtr.err||((gtr.t1?'דרגה 1 בקצב של היום והגרזן ביד':'דרגה 1 שונה!')+(gtr.t3?', דרגה 3 חזקה יותר':', בלי חיזוק')+(gtr.slow?', כסף עם פטיש חלש לאט':', כסף חסום או רגיל!')+
     (gtr.hard?', ובפטיש מתאים רגיל':', פטיש מתאים לא עוזר')+(gtr.bForge&&gtr.bGm?', תנאי נפחייה ומומחיות':', תנאים שגויים')+(gtr.start&&gtr.sign?', שעון ושלט בכפר':', השעון לא התחיל')+
     (gtr.done?', השעון נגמר והדרגה עלתה':', הדרגה לא עלתה')+(gtr.tab?', לשונית בנפחייה':', אין לשונית')+(gtr.look?', הכלים בדמות בתלת-ממד':', אין כלים בתלת-ממד')+(gtr.blank?', בשמירה':', לא בשמירה')+(gtr.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
+  // מקורות גדולים בעולם (nodesize.js, ניר 10.11): סלע ומתכת עם גבול גדול יותר, עץ עם אותו גזע, מקורות לא עולים זה על זה, ובזירה כמו קודם
+  const nzr=await page.evaluate(()=>{const o={};
+    try{enterWorld('home');enemies=[];const L=S.nd.list,sh=n=>wKind(n.kind).shape,K=NODES.kinds;
+      const rk=L.find(n=>['rock','vein','crystal'].includes(sh(n))),tr=L.find(n=>sh(n)==='tree');
+      o.rock=!!rk&&rk.r===nzR(rk.kind)&&rk.r>K[rk.kind].r;o.tree=!!tr&&tr.r===K[tr.kind].r;
+      o.over=L.filter(a=>L.some(b=>b!==a&&Math.hypot(a.x-b.x,a.y-b.y)<a.r+b.r)).length;o.n=L.length;
+      o.arena=K.rock.r===24&&K.tree.r===28;
+      if(R3D.on&&R3D.ready){syncWorld();o.big=NODESIZE.stat.big>0}else o.big=true;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];enterVillage();return o});
+  check(!nzr.err&&nzr.rock&&nzr.tree&&nzr.over===0&&nzr.arena&&nzr.big,
+    'מקורות גדולים: '+(nzr.err||((nzr.rock?'סלע עם גבול גדול':'סלע בגודל הישן!')+(nzr.tree?', עץ עם אותו גזע':', גזע השתנה!')+(nzr.over===0?', '+nzr.n+' מקורות בלי חפיפה':', '+nzr.over+' חופפים!')+
+    (nzr.arena?', בזירה כמו קודם':', הזירה השתנתה!')+(nzr.big?', המודלים גדלו':', המודלים לא גדלו!'))));
   // לולאת הכפר, שלב 1 (docs/concept-village-loop.md): הכלי מכפיל את החומר הראשי (לא את הנדירים), כלי חלש מדי = חצי שלל ולאט (רך, לא חסום),
   // רמות 4-5 של מבנים עולות ×1.3 עץ ואבן, ויעד ליד המשאבים: 📌 בכפר, שבב בעולם, ⌂ וחגיגה כשיש הכל
   const vlr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
