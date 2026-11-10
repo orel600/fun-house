@@ -27,11 +27,12 @@ function measureLook(key){
   const reg=kind==='g'?STORY.lanterns[id].reg:'meadow';if(!S.wd||S.wd.reg!==reg){enterWorld('home',reg);window.__fa=null}
   P.maxHp=P.hp=1e9;P.inv=1e9;
   let e=window.__fa&&window.__fa.key===key?window.__fa.e:null;
-  if(!e){for(const o of enemies)o.dead=true;enemies=enemies.filter(o=>!o.dead);if(S.wd.warden){S.wd.warden.dead=true;S.wd.warden=null}
+  if(!e){enterWorld('home',reg);for(const o of enemies)o.dead=true;enemies=enemies.filter(o=>!o.dead);if(S.wd.warden){S.wd.warden.dead=true;S.wd.warden=null}
     if(kind==='g'){const L=STORY.lanterns[id];P.x=L.x;P.y=L.y-160;e=storyWarden(id,L.y+70);e.rise=0}
     else{const t=kind==='w'?Object.keys(ETYPES)[0]:id;e=addEnemy(t,P.x,P.y-110,1e6);if(kind==='w')e.wanted=true}
     e.peace=1;e.speed=0;window.__fa={key,e}}
   e.x=P.x;e.y=e.wboss?P.y+e.r+60:P.y-110;e.flash=0;e.act=null;e.tel=null;e.dash=null;
+  if(S.cam){S.cam.x=P.x;S.cam.y=P.y}   // the camera follows the hero smoothly: after a jump it would still look at the old place
   const L=lookOf(e);if(!L)return {key,err:'no 3D look'};if(!m3dReady(L.model)){render();return null}
   render();const a=R3D.actors.get(e);if(!a)return null;
   const r=R3D.r,gl=r.getContext(),w=gl.drawingBufferWidth,h=gl.drawingBufferHeight;
