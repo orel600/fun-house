@@ -16,7 +16,8 @@ const MBTK3D_SLOT={s2:'taunt',ult:'wall'};
   // ההטלה: הצליל באותו פריים, והגוף מסומן לציור הבא
   const bc=mbCast;mbCast=function(u,slot){const r=bc.apply(this,arguments);
     const id=r&&MBTANK3D.on&&u&&u.k==='hero'&&u.kit===MBTANK3D.kit&&MBTK3D_SLOT[slot];
-    if(id){u.tk3d={id,n:((u.tk3d&&u.tk3d.n)||0)+1};MBTANK3D.stat[id+'s']++;
+    if(id){u.tk3d={id,n:MBTANK3D.seq=(MBTANK3D.seq||0)+1};   // מונה אחד לכל המשחק: יחידה חדשה (משחק חדש) מתחילה מ-1, והדמות הישנה כבר ראתה 1, אז ההטלה הראשונה לא הייתה מתנגנת (BOB 10.11)
+      MBTANK3D.stat[id+'s']++;
       const C=MBTANK3D[id];if(C.sound&&(u.me||typeof mbfxOn!=='function'||mbfxOn(u.x,u.y))){sfx(C.sound);MBTANK3D.stat.sounds++}}
     return r};
 })();
