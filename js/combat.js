@@ -15,6 +15,9 @@ function sparks(x,y,col,n,sp=180){n=Math.min(n,HITFX.parts-parts.length);for(let
 // ltr: מספר שנכתב תמיד משמאל לימין, גם בעברית. crit: מכה קריטית, גדולה ועם מסגרת
 function floatText(x,y,txt,col,size,ltr=false,crit=false){
   if(floats.length>=HITFX.floats){const i=floats.findIndex(f=>f!==S.gain);if(i>=0)floats.splice(i,1)}
+  // קריאות בקרב (10.11, שיפוץ חזותי בלבד): מספר חדש שנוחת על אשכול חי זז לנתיב אופקי, כדי שהגופות לא יכוסו
+  let lane=0;for(const f of floats)if(f!==S.gain&&Math.abs(f.x-x)<30&&Math.abs(f.y-y)<34)lane++;
+  if(lane&&!S.wd&&!S.vil)x+=((lane%2?1:-1)*Math.ceil(lane/2))*46;   // רק בזירה ובשאול: העולם והכפר (התחום של ניר) כמו קודם (BOB 10.11)
   floats.push({x,y,txt,col,size,ltr,crit,life:crit?.95:.75,vy:crit?-70:-55});
 }
 // w: הנשק שפגע. t: סוג הנזק, ברירת המחדל היא הסוג של הנשק (ופיזי למה שאינו נשק, כמו פצצה). chained: פגיעה של ברק שקפץ, שלא קופץ שוב
@@ -29,7 +32,7 @@ function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
   if(!e.isBoss&&!e.node){const kb=(w==='sword'?150:55)*(m>1?1.4:1)/(e.big||1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   const col=m>1?dtCol(t):m<1?C.dim:C.chalk,J=juiceHit(e,d,m,crit||uk>1,t,ang);   // אפקטים של קרב בעולם (juice.js)
   if(!J)dmgFloat(e,d,col,(m>1?21:m<1?12:15)*(crit?1.45:1),crit);   // מכות רצופות מתמזגות למספר אחד (arenaui.js)
-  if(m<1&&!e.told&&!J){e.told=true;floatText(e.x,e.y-e.r-26,T('immune'),C.dim,13)}   // בעולם ובכפר המספר עצמו אומר "עמיד" (juice.js)
+  if(m<1&&!e.told&&!J){e.told=true;floatText(e.x,typeof abodyHere==='function'&&abodyHere()?arenaDamageY(e,true)-18:e.y-e.r-26,T('immune'),C.dim,13)}   // בעולם ובכפר המספר עצמו אומר "עמיד" (juice.js)
   if(!J)sparks(e.x,e.y,col,m>1?8:3);
   if(m>1&&w==='sword'&&!J)S.hitstop=Math.max(S.hitstop,0.03);   // בעולם העצירה ב-juice.js
   onHit(e,d,base,w,t,ang,chained);ufAfter(e,base,w,t,ang,chained);   // התזה וגל הדף (upfeel.js)
