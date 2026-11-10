@@ -5,14 +5,14 @@
    המשחק לרוחב (ניר, 30.10.2026): הכפר פרוש לרוחב, התרמיל למעלה, הפאנל בצד, והפינה הימנית למטה נשארת פנויה לכפתורי כישורים */
 
 const VILLAGE={
-  radius:700,                     // גבול הכפר: עד כאן אפשר ללכת. השער יושב על הגבול, למטה. גדל מ-410 (ניר, 2.11: "צריך להגדיל את הכפר, הכל צפוף ועולה אחד על השני")
+  get radius(){return typeof vgLv==='function'?VGROW.radius[vgLv()]:700},   // גבול הכפר לפי רמת המרכז (vgrowth.js, ניר 10.11.2026): 620 במחנה עד 800 בעיירה עם חומה. היה 700 קבוע.                     // גבול הכפר: עד כאן אפשר ללכת. השער יושב על הגבול, למטה. גדל מ-410 (ניר, 2.11: "צריך להגדיל את הכפר, הכל צפוף ועולה אחד על השני")
   spawn:{x:0,y:330},             // איפה עומדים כשנכנסים בפעם הראשונה: על הדרך, בין השער לכיכר. חוזרים מהעולם ליד השער
   near:55,                        // כמה פיקסלים מקצה מבנה נחשב "לידו": מופיע כפתור "להיכנס" בסרגל (הפאנל נפתח רק בנגיעה)
   tap:{move:14,ms:400},           // נגיעה במבנה פותחת את הפאנל שלו: עד כמה פיקסלים זזה האצבע ועד כמה אלפיות שנייה, כדי שזה לא ייחשב תזוזה
   max:5,                          // הרמה הכי גבוהה. מבנה לא עולה מעל מרכז הכפר
   late:{from:4,k:1.3,res:['wood','stone']},   // רמות 4-5 עולות יותר עץ ואבן, כי הכלי נותן יותר מכל מקור (ניר 9.11, docs/concept-village-loop.md). רמות שכבר נבנו לא משתנות
   gift:{coins:25,wood:20,stone:12},   // מתנת פתיחה, פעם אחת: מספיק לבנות מנסרה ומכרה
-  gate:{x:0,y:700,r:44},
+  gate:{x:0,get y(){return VILLAGE.radius},r:44},   // השער על הגבול, וזז איתו כשהכפר גדל
   /* איך מבנה נראה לפי רמה, כדי שכל שדרוג ייראה (ניר: "שידרגתי בניין בכפר גם צריך להיות אפקט").
      look: רצועות רמה. at: מאיזו רמה. model: איזה מודל (השמות ב-VIL3D.models). scale: גודל. deco: קישוטים סביב (VIL3D.deco). glow: זוהר.
      בתוך רצועה המבנה גדל עוד grow בכל רמה, ובכל שדרוג יש חגיגה (celebrate ב-fx.js).
@@ -58,16 +58,19 @@ const VILLAGE={
   winDelay:2.5,                   // שניות אחרי שהבוס נופל, עד שחוזרים הביתה
   /* קישוטים בתוך הכפר, כדי שהמרחב לא ירגיש ריק. לא חוסמים, ולא עומדים על השבילים (ground.js) או על מבנים.
      k: tree/pine/bush (עצים), lamp (פנס רחוב), fence (גדר מ-x,y עד x2,y2), crate/barrel. בתלת-ממד: props3dVillage ב-props3d.js */
-  props:[
-    {k:'lamp',x:-80,y:180},{k:'lamp',x:80,y:180},{k:'lamp',x:-80,y:480},{k:'lamp',x:80,y:480},{k:'lamp',x:-130,y:-40},{k:'lamp',x:130,y:-40},
-    {k:'lamp',x:-300,y:-120},{k:'lamp',x:300,y:-120},{k:'lamp',x:-330,y:170},{k:'lamp',x:330,y:170},
+  // at: מאיזו רמת מרכז הקישוט מופיע (vgrowth.js, ניר 10.11.2026): במחנה 4 פנסים, בעיירה 16. props מחזיר רק את מה שמופיע עכשיו
+  get props(){const L=typeof vgLv==='function'?vgLv():5;return this.propsAt[L]||(this.propsAt[L]=this.propsAll.filter(d=>(!d.at||d.at<=L)&&(!d.to||L<=d.to)))},propsAt:{},
+  propsAll:[
+    {k:'lamp',x:-80,y:180},{k:'lamp',x:80,y:180},{k:'lamp',x:-80,y:480,at:2},{k:'lamp',x:80,y:480,at:2},{k:'lamp',x:-130,y:-40},{k:'lamp',x:130,y:-40},
+    {k:'lamp',x:-300,y:-120,at:3},{k:'lamp',x:300,y:-120,at:3},{k:'lamp',x:-330,y:170,at:3},{k:'lamp',x:330,y:170,at:3},
+    {k:'lamp',x:-470,y:-60,at:4},{k:'lamp',x:470,y:-60,at:4},{k:'lamp',x:-80,y:680,at:5},{k:'lamp',x:80,y:680,at:5},{k:'lamp',x:-190,y:-520,at:5},{k:'lamp',x:190,y:-520,at:5},
     {k:'tree',x:-190,y:-470},{k:'pine',x:-120,y:-540},{k:'tree',x:200,y:-470},{k:'pine',x:130,y:-545},{k:'bush',x:250,y:-520},
     {k:'pine',x:-640,y:-140},{k:'tree',x:-610,y:-260},{k:'pine',x:640,y:-140},{k:'tree',x:610,y:-260},
     {k:'tree',x:-170,y:640},{k:'bush',x:-110,y:600},{k:'tree',x:170,y:640},{k:'bush',x:110,y:600},
     {k:'tree',x:-560,y:330},{k:'bush',x:-600,y:250},{k:'tree',x:600,y:300},{k:'pine',x:410,y:560},
     {k:'bush',x:-200,y:80},{k:'bush',x:220,y:60},
     {k:'fence',x:-560,y:-360,x2:-420,y2:-400},{k:'fence',x:560,y:-360,x2:420,y2:-400},
-    {k:'fence',x:-650,y:-20,x2:-640,y2:150},{k:'fence',x:650,y:-20,x2:640,y2:150},
+    {k:'fence',x:-650,y:-20,x2:-640,y2:150,at:2,to:2},{k:'fence',x:650,y:-20,x2:640,y2:150,at:2,to:2},
     {k:'fence',x:-80,y:650,x2:-230,y2:590},{k:'fence',x:80,y:650,x2:230,y2:590},
     {k:'crate',x:380,y:-90},{k:'barrel',x:405,y:-80},{k:'crate',x:-470,y:-110},{k:'barrel',x:-500,y:-100}
   ],
@@ -185,6 +188,7 @@ function villageUpdate(dt){
   const {ix,iy}=movePlayer(dt);if(P.moving)P.aim=Math.atan2(iy,ix);
   // לא נכנסים לתוך מבנים, ולא יוצאים מהכפר
   for(const k in VILLAGE.b){const B=VILLAGE.b[k],dx=P.x-B.x,dy=P.y-B.y,d=Math.hypot(dx,dy)||1,min=B.r+P.r;if(d<min){P.x=B.x+dx/d*min;P.y=B.y+dy/d*min}}
+  if(typeof vgBlock==='function')vgBlock(P);   // באר, דוכנים, מזרקה (vgrowth.js)
   const R=VILLAGE.radius,d0=Math.hypot(P.x,P.y);if(d0>R){P.x*=R/d0;P.y*=R/d0}
   // ליד השער או מבנה לא נפתח שום חלון (בדיקת החוויה, 1.11: "פאנל נפתח לבד כשעוברים לידו"). מופיע כפתור "להיכנס" בסרגל,
   // והפאנל נפתח בו או בנגיעה במבנה. הריצה מתחילה רק בלחיצה (ניר: "נכנסתי לזירה בלי כוונה")
@@ -314,8 +318,8 @@ function vTapAt(cx,cy){
 /* ---- ציור ---- */
 // קישוטים סביב הגבול: עצים, סלעים וגבעות. תמיד באותם מקומות, ופתוח מול השער
 function villageDecor(){
-  if(villageDecor.list)return villageDecor.list;
-  const out=[],R=VILLAGE.radius;
+  const R=VILLAGE.radius;if(villageDecor.list&&villageDecor.r===R)return villageDecor.list;villageDecor.r=R;   // הכפר גדל: העצים מסביב זזים החוצה
+  const out=[];
   for(let i=0;i<84;i++){const a=i/84*Math.PI*2;if(Math.abs(angDiff(a,Math.PI/2))<0.13)continue;
     const r=R+50+hash(i,1)*90;out.push({kind:hash(i,2)<0.18?'rock':'tree',x:Math.cos(a)*r,y:Math.sin(a)*r,v:hash(i,3)})}
   for(let i=0;i<26;i++){const a=(i+0.5)/26*Math.PI*2;if(Math.abs(angDiff(a,Math.PI/2))<0.17)continue;

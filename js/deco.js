@@ -33,11 +33,13 @@ function decoSegD(x,y,a,b,c,d){const dx=c-a,dy=d-b,L=dx*dx+dy*dy||1,t=Math.max(0
 // כל המקומות שאפשר להציב בהם, הקרובים לכיכר קודם. מחושב פעם אחת: לכל המבנים, גם אלה שעוד לא נבנו, כדי שהמקומות לא יזוזו
 function decoSlots(){
   if(DECO._slots)return DECO._slots;
-  const Z=DECO.slot,R=VILLAGE.radius-Z.edge,G=typeof GROUND!=='undefined'?GROUND.village:{plaza:{x:0,y:-80},door:0.6},pz=G.plaza,
+  const Z=DECO.slot,R=700-Z.edge,   /* 700: הגבול של לפני שהכפר גדל (vgrowth.js), כדי שהמקומות לא יזוזו ושמירות ישנות יישארו במקום */
+    G=typeof GROUND!=='undefined'?GROUND.village:{plaza:{x:0,y:-80},door:0.6},pz=G.plaza,
     dots=[],segs=[],g=VILLAGE.gate;
   for(const k in VILLAGE.b){const B=VILLAGE.b[k];dots.push([B.x,B.y,B.r+Z.gap]);segs.push([pz.x,pz.y,B.x,B.y+B.r*(G.door||0.6)])}
   dots.push([g.x,g.y,g.r+Z.gap],[pz.x,pz.y,Z.plaza]);segs.push([g.x,g.y,pz.x,pz.y]);
   for(const p of VILLAGE.props)if(p.k==='fence')segs.push([p.x,p.y,p.x2,p.y2]);else dots.push([p.x,p.y,Z.near]);
+  if(typeof vgDots==='function')dots.push(...vgDots(Z.near));   // הבתים, הבאר והמזרקה של הכפר שגדל (vgrowth.js)
   if(typeof NPC!=='undefined')for(const id in NPC.list){const n=NPC.list[id];if(n.at)dots.push([n.at.x,n.at.y,Z.near]);if(n.spot){dots.push([n.spot.x,n.spot.y,Z.near+30]);segs.push([pz.x,pz.y,n.spot.x,n.spot.y])}}
   if(typeof RESID!=='undefined')for(const id in RESID.list){const h=RESID.list[id].house;dots.push([h.x,h.y,Z.near+40]);segs.push([pz.x,pz.y,h.x,h.y+30])}
   if(typeof HOME!=='undefined'&&typeof homePost==='function')for(const p of HOME.posts){const q=homePost(p);dots.push([q.x,q.y,Z.near])}
