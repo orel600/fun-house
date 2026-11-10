@@ -1192,7 +1192,7 @@ function worldBot(m,L,god){
       const ids=['quake','splash','frost','flame','zap'];S.sk.ids=ids;S.sk.cd=ids.map(()=>0);const an0=SKANIMS.stat.fx,l0=FXLIB.list.length;r.cast=ids.filter(id=>skillUse(id)).length;
       r.anim=[SKANIMS.stat.fx-an0,ids.filter(id=>SKANIMS.stat.cast[id]).length,FXLIB.list.length-l0<=FXLIB.max,SKANIM.perCast+SKANIM.hit.perFrame<=12];   // אנימציות מהגיליונות (skill-anim.js): כמה אפקטים, לכמה סקילים, בתוך התקרה
       comboShow(ens[0],'shock');comboShow(ens[1],'melt');r.combo=S.sk.fx.some(f=>f.combo);
-      const d0=SKFXS.drawn,o0=SKFXS.old;SKFXS.peak=0;ctx.save();for(let i=0;i<20;i++){skillsUpdate(1/60);drawSkills(0,0)}r.drawn=SKFXS.drawn-d0===20&&SKFXS.old===o0;r.peak=SKFXS.peak;r.max=SKFX.maxParts;
+      const d0=SKFXS.drawn,o0=SKFXS.old;SKFXS.peak=0;ctx.save();for(let i=0;i<20;i++){skillsUpdate(1/60);drawSkills(0,0)}r.drawn=SKFXS.drawn-d0===20&&SKFXS.old===o0;r.peak=SKFXS.peak||(typeof ARSH!=='undefined'&&ARSH.on&&ARSH.stat.peak>0?1:0);r.max=SKFX.maxParts;
       SAVE.fxLess=true;drawSkills(0,0);r.less=SKFXS.parts===0;SAVE.fxLess=false;
       S.wd=bak.wd||{};const o1=SKFXS.old;drawSkills(0,0);r.world=SKFXS.old===o1+1;S.wd=null;ctx.restore();
       for(const e of ens)e.dead=true;enemies=enemies.filter(e=>!e.dead)}catch(err){r.err=String(err&&err.stack||err)}
@@ -1498,7 +1498,7 @@ function worldBot(m,L,god){
       // בזירה (arena-juice.js): juice.js כבוי (בלי המספרים שלו), ומכה של הנשק מקבלת הבזק וניצוצות קטנים. חיית מחמד וברק שקפץ לא.
       // 250 אויבים: לא יותר מ-perFrame אפקטים בפריים, ניצוצות והבזקים מתחת לתקרה, בלי עצירה. פוף רק לאלוף. "פחות אפקטים" מכבה
       JUICE.where.arena=false;const A=JUICE.arena,a0=A.on,fl0=SAVE.fxLess;A.on=true;SAVE.fxLess=false;
-      const n0=J.n.length;J.fl=[];J.p=[];J.poofs=[];AJ.f=-1;e.flash=0;damage(e,10,'sword',0,'fire');r.arenaOff=J.n.length===n0;r.arOn=J.fl.length===1&&e.flash>=(A.flash??JUICE.flash)-1e-6&&J.p.length>0;   // A.flash: 60ms מ-arena-feel.js (#508)
+      const n0=J.n.length,kh0=typeof KINETIC!=='undefined'?KINETIC.hits.length:0;if(typeof KINETIC!=='undefined')KINETIC.lastHit=-9;J.fl=[];J.p=[];J.poofs=[];AJ.f=-1;e.flash=0;damage(e,10,'sword',0,'fire');r.arenaOff=J.n.length===n0;r.arOn=(typeof kineticHere==='function'&&kineticHere())?KINETIC.hits.length>kh0&&J.fl.length===0&&J.p.length===0&&e.flash>=(A.flash??JUICE.flash)-1e-6:J.fl.length===1&&e.flash>=(A.flash??JUICE.flash)-1e-6&&J.p.length>0;   // kinetic (v13): one local contact instead of the burst   // A.flash: 60ms מ-arena-feel.js (#508)
       AJ.f=-1;const fx0=AJ.stat.fx;damage(e,10,'pet',0,'fire');damage(e,10,'sword',0,'fire',true);r.arSrc=AJ.stat.fx===fx0;
       const many=[];for(let i=0;i<250;i++){const o=addEnemy('grunt',P.x+rand(-300,300),P.y+rand(-150,150));o.hp=o.max=1e9;o.elite=false;many.push(o)}
       AJ.f=-1;S.hitstop=0;const fx1=AJ.stat.fx;HITFX.crit=1;for(const o of many)damage(o,1,'gun',0,'fire');HITFX.crit=0;r.arN=AJ.stat.fx-fx1;r.arMax=A.perFrame;
@@ -2393,7 +2393,7 @@ function worldBot(m,L,god){
       o.calm=lighter===0&&maxW===ARDG.line;
       // 3D: the fill and edge are meshes on the floor (arena-danger3d.js), and the canvas draws no fill on top of the actors
       if(R3D.on&&R3D.ready){let cf=0;const f2=ctx.fill;ctx.fill=function(){cf++;return f2.apply(this,arguments)};try{ardgDrawUnder()}finally{ctx.fill=f2}
-        ardg3d();const s0=AD3.sl[0];o.d3=!!s0&&s0.fill.visible&&s0.edge.visible&&cf===0&&Math.abs(s0.edge.material.opacity-ARDG.lineA)<0.01;o.d3s=(s0&&s0.fill.visible)+'/'+cf}else o.d3=true;
+        ardg3d();const s0=AD3.sl[0];o.d3=!!s0&&cf===0&&((typeof kineticHere==='function'&&kineticHere())?!s0.fill.visible&&!s0.edge.visible&&FXLIB.list.some(x=>/^ar_warn_/.test(x.id)):s0.fill.visible&&s0.edge.visible&&Math.abs(s0.edge.material.opacity-ARDG.lineA)<0.01);o.d3s=(s0&&s0.fill.visible)+'/'+cf+((typeof kineticHere==='function'&&kineticHere())?' kinetic, warning sheets '+FXLIB.list.filter(x=>/^ar_warn_/.test(x.id)).length:'')}else o.d3=true;   // kinetic (arena-kinetic.js, v13): the floor meshes are hidden on purpose, the drawn warning sheets replace them. positive: the drawn warning sheet (ar_warn_*) must be playing, so a broken kinetic layer cannot pass by hiding
       SAVE.calm=calm0;
       // ghost (QUINN): a live warning, then a new run. Nothing of the old boss stays: no entries, no scorch, no visible 3D mesh
       b.patT=99;b.arTele=null;doPattern(b,'ring');update(1/60);ardgScorch(b.x,b.y,80);const had=ARDGS.b.size>0;reset();startRun();S.mode='play';
@@ -2416,6 +2416,7 @@ function worldBot(m,L,god){
       enemies=[];for(let i=0;i<150;i++){const e=addEnemy('grunt',(i%15-7)*4,(Math.floor(i/15)-5)*4);e.hp=e.max=1e9;e.elite=false}S.shake=0;got('quake');   // 150 בטווח: הרעידה עד max, לא 8 של הבוס
       o.qshake=(typeof calmOn==='function'&&calmOn())||S.shake===SKANIM.mo.quake.shake.max&&SKANIM.mo.quake.shake.max<ARFEEL.shake.big;o.qsh=S.shake;enemies=[];
       SAVE.fxLess=true;const lite=got('quake');o.less=!lite.ids.includes('step_dust')&&!lite.hold.length;
+      if(typeof ARSH!=='undefined'&&ARSH.on){const c=SKANIMS.stat.cast,sp=ARSH.stat.spawn;for(const k of ['quake','splash','frost','comet','lance','bloom'])o[k]=!!c[k];o.crater=!!sp.cometHit;o.qshake=S.shake===0;o.qsh=S.shake}   // שפת האפקטים החדה (arena-sharp.js): ההטלה נספרת, הנחיתה של השביט נוצרת, ובלי רעידה
     }catch(err){o.err=String(err&&err.stack||err)}
     SAVE.fxLess=fl;FXLIB.list.length=0;enemies=[];SAVE=JSON.parse(bak);reset();S.mode=mode;return o});
   {const ks={quake:'רעידה: אבק וסדקים שנשארים',splash:'התזה: טבעת גל',frost:'כפור שנשאר',comet:'שביט: שובל',crater:'מכתש',lance:'פס קרח',bloom:'עלי כותרת',heal:'מספר ריפוי ירוק',cap:'בתוך perCast',less:'פחות אפקטים',qshake:'רעידה ב-150 אויבים עד '+(smo.qsh??'?')+' (בוס 8)'};
@@ -2472,7 +2473,7 @@ function worldBot(m,L,god){
     if(L.qClaimed!=null||L.t>=CFG.time)break;   // חזרנו לכפר ולקחנו את פרס הקווסט: אין עוד מה לבדוק
   }
   await shot('end');
-  {const bs=[['banA','תחילת ריצה'],['banB','מול הבוס']].map(([k,n])=>[n,L[k]]),ok=b=>b&&b.top<=Math.max(b.H*.3,b.hud+12)&&b.bot<=b.H*.45&&!b.hit;   // למעלה, או מיד מתחת ל-HUD כשהוא גבוה (באנגלית השורה נשברת), ולא עד הגיבור באמצע
+  {const bs=[['banA','תחילת ריצה'],['banB','מול הבוס']].map(([k,n])=>[n,L[k]]),kin=await page.evaluate(()=>typeof kineticHere==='function'&&typeof KINETIC!=='undefined'&&KINETIC.on),ok=b=>b&&!b.hit&&(b.top<=Math.max(b.H*.3,b.hud+12)&&b.bot<=b.H*.45||kin&&b.top>=b.H*.8);   // kinetic (v13): at the bottom centre, outside the fight, on purpose   // למעלה, או מיד מתחת ל-HUD כשהוא גבוה (באנגלית השורה נשברת), ולא עד הגיבור באמצע
     check(bs.every(([,b])=>ok(b)),'הודעות בזירה למעלה, לא על הגיבור ולא על הפסים: '+bs.map(([n,b])=>n+' '+(b?b.top+'-'+b.bot+'/'+b.H+' (HUD '+b.hud+')'+(b.hit?', על פס':''):'לא נמדד')).join(', '))}
   {const f=L.fit||{},ks=['level','boss','over'];check(ks.every(k=>f[k]==='בפנים'),'חלונות הזירה בטלפון שוכב, בלי גלילה: '+ks.map(k=>({level:'עליית רמה',boss:'הבוס',over:'מסך הסוף'})[k]+' '+(f[k]||'לא הופיע')).join(', '))}
   check(L.v1&&!L.welFirst&&!L.dailyPop,'ביקור ראשון בכפר: '+(L.welFirst?'"בזמן שלא היית" קפץ, אבל השחקן עוד לא היה כאן':'בלי "בזמן שלא היית"')+(L.dailyPop?', אבל הלוח של 7 ימים קפץ':', והלוח של 7 ימים לא קפץ'));
@@ -4337,7 +4338,7 @@ function worldBot(m,L,god){
       try{draw();draw();o.here=aLookHere();o.mat=R3D.ground.material===ALOOK.mat;o.fog=!!R3D.scene.fog;
         S.hits={fire:50,ice:5};for(let i=0;i<20;i++){S.t+=0.1;draw()}o.sig=ALOOK.lit.fire>ALOOK.lit.ice+0.3;
         S.run.log.push({kind:'swarm',t:S.t});S.t+=0.05;draw();o.pulse=ALOOK.pulse>0.9;
-        const b=makeBoss();b.x=P.x+150;b.y=P.y;S.boss=b;enemies.push(b);for(let i=0;i<8;i++){S.t+=0.1;draw()}o.beam=ALOOK.beam.visible;
+        const b=makeBoss();b.x=P.x+150;b.y=P.y;S.boss=b;enemies.push(b);for(let i=0;i<8;i++){S.t+=0.1;draw()}o.beam=(typeof kineticHere==='function'&&kineticHere())?!ALOOK.beam.visible:ALOOK.beam.visible;   // kinetic (v13): no 900px column, a local cue instead
         S.boss=null;enemies.length=0;for(let i=0;i<150;i++){const a=i*2.4,d=60+(i*37)%400;addEnemy('grunt',P.x+Math.cos(a)*d,P.y+Math.sin(a)*d*0.6)}draw();
         o.noShadow=!R3D.scene.children.find(x=>x.isDirectionalLight).castShadow;
         S.room=true;o.room=!aLookHere();S.room=null;window.__alDraw=draw}catch(e){o.err=String(e)}
@@ -4364,8 +4365,8 @@ function worldBot(m,L,god){
       b.rage=1;draw();wxSync();o.storm=WX.run.boss.state;o.stormL=layers();
       const n0=AWX.bolts;WX.boltT=-99;S.t+=5;doPattern(b,'shock');draw();o.bolt=AWX.bolts-n0;o.boltPt=WX.pts.some(p=>/lightning_bolt/.test(p.id));o.tele=waves.some(w=>w.t<0)||!!(b.arTele&&b.arTele.k==='shock');   // with arena-fx.js the attack waits behind its warning
       mines.push({x:P.x+40,y:P.y,t:1});let at=null,fx=null;const sl=ctx.setLineDash,fd=window.fxDraw;
-      ctx.setLineDash=function(a){if(at==null&&a&&a[0]===6)at=WX.drawn===FRAME_T;return sl.apply(this,arguments)};window.fxDraw=function(){fx=WX.drawn===FRAME_T;return fd.apply(this,arguments)};
-      draw();ctx.setLineDash=sl;window.fxDraw=fd;o.under=at===true&&fx===true;
+      ctx.setLineDash=function(a){if(at==null&&a&&a[0]===6)at=WX.drawn===FRAME_T;return sl.apply(this,arguments)};const km=window.kineticMine;if(typeof km==='function')window.kineticMine=function(){if(at==null)at=WX.drawn===FRAME_T;return km.apply(this,arguments)};window.fxDraw=function(){fx=WX.drawn===FRAME_T;return fd.apply(this,arguments)};
+      draw();ctx.setLineDash=sl;window.fxDraw=fd;if(km)window.kineticMine=km;o.under=at===true&&fx===true;
       o.maxA=Math.max(0,...[...WX.layers.values()].map(f=>f.a));mines.length=0;waves.length=0;b.arTele=null;
     }catch(e){o.err=String(e&&e.stack||e)}
     return o});

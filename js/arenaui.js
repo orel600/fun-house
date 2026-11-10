@@ -11,12 +11,21 @@ const ARENAUI={
 };
 const hpBarOn=e=>e.elite||e.champ||e.wanted||S.t-(e.hitT??-99)<ARENAUI.hpFor;
 
+// Numbers start above the actual enlarged render body, not the collision radius.
+// The float pack still owns a stable offset for the entire living float.
+function arenaDamageY(e,crit){
+  if(typeof abodyHere==='function'&&abodyHere()){
+    const L=lookOf(e),k=e.big||1;
+    if(L&&L.h)return e.y+((L.foot||0)-L.h)*k-(crit?24:12);   // enemy type without a LOOK3D entry: the old anchor below (BOB 10.11: TypeError foot in 2D CI)
+  }
+  return e.y-e.r-(crit?24:8);
+}
 // מספר נזק: מצטרף למספר הצף של אותו אויב אם הוא עוד צעיר, אחרת מספר חדש
 function dmgFloat(e,d,col,size,crit){
   e.hitT=S.t;
   if(!crit){const f=floats.find(f=>f.e===e&&!f.crit&&f.life>0.75-ARENAUI.merge);
-    if(f){f.n+=d;f.txt=big(f.n);f.life=0.75;f.size=Math.min(size*ARENAUI.grow,Math.max(f.size,size)+0.6);f.x=e.x;f.y=e.y-e.r-8;if(col!==C.chalk)f.col=col;return}}
-  floatText(e.x+rand(-8,8),e.y-e.r-(crit?24:8),big(d)+(crit?'!':''),col,size,true,crit);   // קריטית קצת מעל, כדי לא לכסות את המספר המתמזג
+    if(f){f.n+=d;f.txt=big(f.n);f.life=0.75;f.size=Math.min(size*ARENAUI.grow,Math.max(f.size,size)+0.6);f.x=e.x;f.y=arenaDamageY(e,false);if(col!==C.chalk)f.col=col;return}}
+  floatText(e.x+rand(-8,8),arenaDamageY(e,crit),big(d)+(crit?'!':''),col,size,true,crit);   // קריטית קצת מעל, כדי לא לכסות את המספר המתמזג
   const f=floats[floats.length-1];if(f&&!crit){f.e=e;f.n=d}
 }
 

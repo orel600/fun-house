@@ -58,8 +58,8 @@ function ult3dLanterns(dt){
   }
   // עמוד האור והטבעת על הגיבור (כמו בהדלקת פנס בעולם)
   const B=ULTLS.beam,R=ULTLS.ring,bk=t/L.beam.t,rk=t/L.ring.t;
-  B.visible=!calm&&bk<1;if(B.visible){B.position.set(ULTLS.x,L.beam.h*0.5*Math.min(1,bk*3),ULTLS.y/sn);B.scale.set(1+bk,L.beam.h*Math.min(1,bk*3),1+bk);B.material.opacity=0.8*(1-bk)}
-  R.visible=rk<1;if(R.visible){R.position.set(ULTLS.x,1.5,ULTLS.y/sn);const rr=ULTLS.r*(0.15+0.85*(1-(1-rk)*(1-rk)));R.scale.set(rr,rr/sn,1);R.material.opacity=0.7*(1-rk)}
+  B.visible=!calm&&bk<1;if(B.visible){B.position.set(ULTLS.x,L.beam.h*0.5*Math.min(1,bk*3),ULTLS.y/sn);B.scale.set(1+bk,L.beam.h*Math.min(1,bk*3),1+bk);B.material.opacity=(typeof ARSH!=='undefined'&&ARSH.on?0.4:0.8)*(1-bk)}
+  R.visible=!(typeof ARSH!=='undefined'&&ARSH.on)&&rk<1;if(R.visible){R.position.set(ULTLS.x,1.5,ULTLS.y/sn);const rr=ULTLS.r*(0.15+0.85*(1-(1-rk)*(1-rk)));R.scale.set(rr,rr/sn,1);R.material.opacity=0.7*(1-rk)}
   if(!alive&&bk>=1&&rk>=1)ultl3dHide();
 }
 function ultl3dHide(){ULTLS.t=-1;for(const o of ULTLS.orbs){o.g.visible=false;for(const s of o.tr)s.visible=false}if(ULTLS.beam)ULTLS.beam.visible=ULTLS.ring.visible=false}

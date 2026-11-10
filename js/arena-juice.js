@@ -38,8 +38,9 @@ function ajHit(e,m,crit,t,ang){
   AJ.n++;AJ.stat.fx++;const J=juice();
   e.flash=Math.max(e.flash||0,A.flash??K.flash);e.jT=jNow();   // לבן (A.flash: מ-arena-feel.js, 60ms) ומעיכה קטנה בתלת-ממד
   const hy=e.y-e.r*0.6,P_=A.parts,n=Math.min(crit?P_.crit:m>1?P_.weak:P_.hit,P_.max-J.p.length);
-  if(n>0)jBurst(e.x,hy,t,n,ang);
-  if(m>=1||crit){while(J.fl.length>=A.impact.max)J.fl.shift();
+  const local=typeof kineticHere==='function'&&kineticHere()&&AJ.src&&(AJ.src.w==='sword'||AJ.src.w==='gun');
+  if(n>0&&!local)jBurst(e.x,hy,t,n,ang);
+  if(!local&&(m>=1||crit)){while(J.fl.length>=A.impact.max)J.fl.shift();
     J.fl.push({x:e.x-Math.cos(ang||0)*e.r*0.4,y:hy,t0:jNow(),r:(crit?K.impact.rCrit:K.impact.r*(m>1?1.25:1))*A.impact.r,col:dtCol(t),a:rand(0,1.6)})}
   if(crit&&big&&AJ.seen<=A.stopCrowd){const h0=S.hitstop;jStop(K.stop.crit);if(S.hitstop>h0)AJ.stat.stops++}
 }
