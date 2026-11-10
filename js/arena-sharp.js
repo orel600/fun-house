@@ -14,7 +14,7 @@ const ARSHC={
   flame:{n:20,front:0.22,burn:0.45,h:34,dur:0.62},
   splash:{n:7,travel:0.2,rise:0.12,hold:0.14,fall:0.34,h:[50,76],w:15,drops:6,dur:0.9},
   zap:{sky:330,skyT:0.26,arc:0.16,gap:0.07,jit:9,seg:6,star:16},
-  lance:{run:0.14,shaft:170,lift:80,gouge:0.5,star:28,dur:0.55},
+  lance:{run:0.14,shaft:170,lift:80,gouge:0.5,star:46,dur:0.55},
   comet:{start:0.2,sx:-110,sy:300,tail:150,dur:1.4,star:92,fwd:1.4,cracks:7,embers:6,snd:{id:'tower_fall',k:0.9}},
   bloom:{seed:0.3,open:0.35,petals:7,pr:36,motes:8,leave:0.7},
   dash:{dur:0.3,ghosts:3,bars:3},
@@ -138,14 +138,14 @@ const ARSHD={
       const an=arshR(e.seed,i)*6.283,d=e.R*Math.sqrt(arshR(e.seed,i+20))*0.92,px=e.x+Math.cos(an)*d,py=e.y+Math.sin(an)*d*0.85,del=i/n*F.rain,tf=t-del;if(tf<0)continue;
       const q=tf/F.fall;
       if(q<1){const hx=px-F.slant*(1-q),hy=py-F.high*(1-q),tx=hx-F.slant*0.26,ty=hy-60;
-        arshStreak(tx,ty,hx,hy,8,'#BFEFFF',0.95,'#fff');}
+        arshStreak(tx,ty,hx,hy,13,'#8FE3FF',1,'#fff');ctx.beginPath();ctx.arc(hx,hy,4,0,7);ctx.fillStyle='#fff';ctx.fill();}
       else{const lt=tf-F.fall,sh=arshC((lt-F.hold)/F.shatter);
-        if(lt<0.1){arshStar(px,py,15*(1-lt/0.1)+4,6,e.seed+i,'#E8FBFF',1-lt/0.1)}   // ניצוץ קצר בנחיתה
+        if(lt<0.1){arshStar(px,py,26*(1-lt/0.1)+6,6,e.seed+i,'#E8FBFF',1-lt/0.1)}   // ניצוץ קצר בנחיתה
         if(sh<=0){const gr=arshE(arshC(lt/0.06));   // גביש: שלושה קוצים
-          for(const [ox,h,w] of [[0,30,6],[-6,20,4.5],[6,16,4]]){const hh=h*gr;arshPoly([[px+ox-w,py],[px+ox*1.3,py-hh],[px+ox+w,py]]);ctx.globalAlpha=0.95;ctx.fillStyle='#7FD3EE';ctx.fill();
-            arshPoly([[px+ox-w*0.1,py],[px+ox*1.3,py-hh],[px+ox+w,py]]);ctx.fillStyle='#E8FBFF';ctx.fill();arshLine([[px+ox-w,py],[px+ox*1.3,py-hh],[px+ox+w,py]]);ctx.strokeStyle=ARSHC.shade;ctx.lineWidth=1;ctx.stroke()}}
+          for(const [ox,h,w] of [[0,46,9],[-9,32,7],[9,26,6]]){const hh=h*gr;arshPoly([[px+ox-w,py],[px+ox*1.3,py-hh],[px+ox+w,py]]);ctx.globalAlpha=0.95;ctx.fillStyle='#4FC3EE';ctx.fill();
+            arshPoly([[px+ox-w*0.1,py],[px+ox*1.3,py-hh],[px+ox+w,py]]);ctx.fillStyle='#E8FBFF';ctx.fill();arshLine([[px+ox-w,py],[px+ox*1.3,py-hh],[px+ox+w,py]]);ctx.strokeStyle=ARSHC.shade;ctx.lineWidth=1.6;ctx.stroke()}}
         else if(sh<1){ctx.beginPath();for(let j=0;j<4;j++){const a2=-1.2-j*0.55+(arshR(e.seed,i*4+j)-0.5)*0.4,sp=26+22*arshR(e.seed,i*4+j+9),x=px+Math.cos(a2)*sp*sh*1.1,y=py-14+Math.sin(a2)*sp*sh+90*sh*sh;
-            const z=4*(1-sh)+1;ctx.moveTo(x-z,y);ctx.lineTo(x,y-z*1.6);ctx.lineTo(x+z,y);ctx.lineTo(x,y+z)}ctx.globalAlpha=1-sh;ctx.fillStyle='#E8FBFF';ctx.fill()}   // התנפצות
+            const z=7*(1-sh)+1.5;ctx.moveTo(x-z,y);ctx.lineTo(x,y-z*1.6);ctx.lineTo(x+z,y);ctx.lineTo(x,y+z)}ctx.globalAlpha=1-sh;ctx.fillStyle='#E8FBFF';ctx.fill()}   // התנפצות
       }}
     return true;
   },
@@ -202,13 +202,13 @@ const ARSHD={
     const L_=ARSHC.lance,t=T-e.t0,k=t/L_.dur;if(k>=1)return false;
     const dx=e.bx-e.ax,dy=e.by-e.ay,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,s=arshE(arshC(t/L_.run)),tx=e.ax+dx*s,ty=e.ay+dy*s,fade=arshC((L_.dur-t)/0.2);
     const gouge=arshC(1-t/L_.gouge);
-    if(gouge>0){arshLine([[e.ax,e.ay],[tx,ty]]);ctx.lineCap='round';arshShadeStroke(1+3*gouge,'#7FE3FF',0.8*gouge);ctx.lineCap='butt'}   // חריץ זוהר לאורך הדרך
+    if(gouge>0){arshLine([[e.ax,e.ay],[tx,ty]]);ctx.lineCap='round';arshShadeStroke(3+6*gouge,'#7FE3FF',gouge);ctx.lineCap='butt'}   // חריץ זוהר לאורך הדרך
     const sh=Math.min(L_.shaft,L*0.7),ex=s<1?1:fade;
     if(ex>0){
       const p1=[tx-ux*sh*0.5,ty-uy*sh*0.5-L_.lift*0.28],p2=[tx-ux*sh,ty-uy*sh-L_.lift];   // הידית עולה אחורה למעלה, כאילו נכנסה מגבוה
       ctx.beginPath();ctx.moveTo(p2[0],p2[1]);ctx.quadraticCurveTo(p1[0],p1[1],tx,ty);ctx.lineCap='round';
-      ctx.globalAlpha=0.8*ex;ctx.strokeStyle=ARSHC.shade;ctx.lineWidth=7;ctx.stroke();ctx.globalAlpha=ex;ctx.strokeStyle='#7FE3FF';ctx.lineWidth=4.5;ctx.stroke();ctx.strokeStyle='#fff';ctx.lineWidth=1.6;ctx.stroke();ctx.lineCap='butt';
-      const nx=-uy,ny=ux;arshPoly([[tx+ux*14,ty+uy*14],[tx+nx*5,ty+ny*5],[tx-ux*7,ty-uy*7],[tx-nx*5,ty-ny*5]]);ctx.globalAlpha=ex;ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#7FE3FF';ctx.lineWidth=1.2;ctx.stroke()}   // ראש היהלום
+      ctx.globalAlpha=0.85*ex;ctx.strokeStyle=ARSHC.shade;ctx.lineWidth=14;ctx.stroke();ctx.globalAlpha=ex;ctx.strokeStyle='#5FD6FF';ctx.lineWidth=10;ctx.stroke();ctx.strokeStyle='#fff';ctx.lineWidth=3.4;ctx.stroke();ctx.lineCap='butt';
+      const nx=-uy,ny=ux;arshPoly([[tx+ux*26,ty+uy*26],[tx+nx*10,ty+ny*10],[tx-ux*12,ty-uy*12],[tx-nx*10,ty-ny*10]]);ctx.globalAlpha=ex;ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#7FE3FF';ctx.lineWidth=1.2;ctx.stroke()}   // ראש היהלום
     if(t>=L_.run&&t<L_.run+0.22){const q=(t-L_.run)/0.22;arshStar(e.bx,e.by,L_.star*(1-q*0.5),6,e.seed,'#E8FBFF',1-q,Math.atan2(dy,dx),1);}
     return true;
   },
