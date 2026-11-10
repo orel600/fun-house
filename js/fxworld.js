@@ -48,7 +48,13 @@ const FXW={
     kind:{sword:'slash',axe:'axe',hammer:'smash'},   // P.wt → סוג השובל. פטיש יש רק ב-amber/crimson (smashCol)
     smashCol:{crimson:'crimson'},smashDef:'amber',
     size:1.7,fps:60,dy:-12,   // גודל: פי size מטווח המכה. fps 60: 0.4 שנ'. הציור עולה לפי השטח, ראו docs/fx.md. 
-    rot:{slash:Math.PI,axe:Math.PI,smash:-Math.PI/2},   // לאן הגיליון פונה (שמאלה / למעלה), כדי לסובב לכיוון ההנפה
+    // השובל מתחיל איפה שהנשק באמת נמצא בהנפה בתלת-ממד (render3d.js), ולא הפוך (בודק חיצוני, 10.11: "השובל בצד השני מהנשק").
+    // face: לאן הגיליון פונה (שמאלה / למעלה). start/end: מאיפה לאן הקשת עוברת בגיליון (זווית, y למטה). כל הגיליונות מתחילים בצד ה"שלילי".
+    // from: מאיפה הנשק יוצא בתלת-ממד (נמדד 10.11 בקצה הלהב): 'hand' חרב (Slice_Horizontal) מהצד של יד ימין אל החזית,
+    // 'up' גרזן ופטיש (Chop) מעל הראש, כלומר מהצד שלמעלה במסך, אל החזית. כשהצד לא מתאים, הגיליון משתקף סביב הציר שלו (flip)
+    face:{slash:Math.PI,axe:Math.PI,smash:-Math.PI/2},
+    start:{slash:2.1,axe:Math.PI/2,smash:-2.36},end:{slash:-2.1,axe:-Math.PI/2,smash:-0.79},
+    from:{slash:'hand',axe:'up',smash:'up'},
     spin:{whirl:1},spinSize:2.6},                       // סקילים מסתובבים (wskbook.js): tr_spin בצבע הסקיל כל זמן שהם פועלים
   /* אווירה לפי אזור: כל every שניות אפקט אחד מהרשימה (לפי w), עד max בבת אחת. רק במסך, ליד המצלמה.
      size: פיקסלים, או חלק מרוחב המסך (≤3). at: any במסך, sky למעלה, low למטה, scr כל המסך, pond ליד בור לבה, forest בשולי יער.
@@ -157,9 +163,18 @@ function fxwUpdate(dt){
 /* ---- 7.11: הבאנדל של Mochi Lab בעולם ---- */
 // השובל לנשק ולסוג הנזק שביד. kind: slash/axe/smash/spin
 function fxwTrailId(kind,dt){const T=FXW.trail,c=T.col[dt]||T.col.physical;return kind==='smash'?'tr_smash_'+(T.smashCol[c]||T.smashDef):'tr_'+kind+'_'+c}
+// סיבוב ושיקוף של השובל: מתחיל בצד שהנשק באמת יוצא ממנו (from), ועובר אל החזית. ang: כיוון המכה
+// יד ימין = צד חיובי (ang+π/2, y למטה) בכל כיוון. 'up': הצד שלמעלה במסך (פונה ימינה: שלילי, שמאלה: חיובי)
+function fxwTrailRot(kind,ang){
+  const T=FXW.trail,f=T.face[kind]??Math.PI,want=T.from[kind]==='up'?(Math.cos(ang)>=0?-1:1):1;
+  const rot=ang-f;if(want<0)return{rot,flip:false};
+  return{rot:rot+2*f+Math.PI,flip:true};   // שיקוף סביב הציר של הגיליון (בזווית f): סיבוב 2f+π ואז היפוך x (fxlib.js)
+}
+// לבדיקה: הזווית בעולם (y למטה) שבה השובל מתחיל ונגמר, אחרי הסיבוב והשיקוף
+function fxwTrailEnds(kind,ang){const T=FXW.trail,o=fxwTrailRot(kind,ang),m=a=>(o.flip?Math.PI-a:a)+o.rot;return{start:m(T.start[kind]),end:m(T.end[kind])}}
 function fxwSwing(){
   const T=FXW.trail,s=P.sw,kind=T.kind[P.wt]||'slash',dt=P.dt&&P.dt.sword||'physical';
-  const id=fxwTrailId(kind,dt),o={rot:s.ang+T.rot[kind],size:s.range*T.size,alpha:T.alpha[dt]||T.a},h=FXW.trailH;
+  const id=fxwTrailId(kind,dt),o={...fxwTrailRot(kind,s.ang),size:s.range*T.size,alpha:T.alpha[dt]||T.a},h=FXW.trailH;
   // אחד לכל הגיבור: הנפה חדשה מתחילה מחדש את אותו שובל, כך שאף פעם אין שניים בבת אחת (רק שטח הציור עולה)
   if(fxwAlive(h)&&FXDATA[id]){fxImg(id);Object.assign(h,o,{id,D:FXDATA[id],t0:fxNowT()});return h}
   const n=fxwPlay(id,P.x,P.y,Object.assign({follow:P,dy:T.dy,fps:T.fps,add:T.add},o));if(n)n.trail=1;return FXW.trailH=n;
