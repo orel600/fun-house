@@ -45,6 +45,7 @@ function npcFree(x,y){
   const g=VILLAGE.gate,top=VILLAGE.b.center.y;
   if(Math.abs(x-g.x)<NPC.road&&y>top&&y<g.y+g.r)return false;
   for(const k in VILLAGE.b){const B=VILLAGE.b[k];if(Math.hypot(x-B.x,y-B.y)<B.r+NPC.r+6)return false}
+  if(typeof vgHit==='function'&&vgHit(x,y,NPC.r))return false;   // בתים, באר ומזרקה של הכפר שגדל (vgrowth.js)
   return Math.hypot(x,y)<VILLAGE.radius-NPC.r;
 }
 function npcPick(n){
