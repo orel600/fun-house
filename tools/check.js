@@ -4897,16 +4897,20 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   // the weapons stay, and each switch brings the old body back
   // הגופים והחלקים נטענים לפי צורך: מחכים להם קודם, אחרת זו תחרות עם שאר ההורדות ברקע (בענף השיפוץ יש יותר קבצים בתור)
   await page.evaluate(()=>typeof R3D!=='undefined'&&R3D.on&&typeof M3D_LAZY!=='undefined'?Promise.all(['assassinHF','warriorHF','mageHF','w_item_shadowDagger','w_item_mageCrystal'].filter(k=>k in M3D_LAZY).map(k=>m3dGo(k).catch(()=>{}))):0);
+  // and everything each body starts loading when it is built (parts, props, clip files): start it once and wait until no new load appears, or one lands mid-test,
+  // bumps M3D.v and rebuilds the actor (seed 2026 on #605/#607, 10.11)
+  await page.evaluate(async()=>{if(!(typeof R3D!=='undefined'&&R3D.on&&R3D.ready&&typeof M3D!=='undefined'))return;const W={warrior:MBWARHF,mage:MBMAGEHF,assassin:MBASNHF};
+    for(const k in W){const sw=W[k],on0=sw.on;sw.on=true;mobaStart(k);for(let i=0;i<8;i++){syncPlayer(1/60);const P=Object.values(M3D.p);await Promise.all(P);syncPlayer(1/60);if(Object.values(M3D.p).length===P.length)break}sw.on=on0}});
   const hf3=await page.evaluate(()=>{const o={},W={warrior:[MBWARHF,'warriorHF','knight'],mage:[MBMAGEHF,'mageHF','mage'],assassin:[MBASNHF,'assassinHF','rogue']};try{
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
       for(const k in W){const [sw,hf,old]=W[k],on0=sw.on;sw.on=true;mobaStart(k);syncPlayer(1/60);syncPlayer(1/60);const a=R3D.player,r={};
-        r.on=a.L.model===hf&&Object.values(a.props).some(p=>p.visible)&&!a.props.x_mask&&!a.props.x_circlet;
+        r.on=a.L.model===hf&&Object.values(a.props).some(p=>p.visible)&&!a.props.x_mask&&!a.props.x_circlet;if(!r.on)r.why=a.L.model+', props '+(Object.keys(a.props).join('/')||'none')+', loading '+(Object.keys(M3D.p).filter(q=>M3D.st[q]!=='ready'&&M3D.st[q]!=='fail').join('/')||'none');
         let arm=null;a.root.traverse(n=>{if(!arm&&n.isBone&&/arm|upper/i.test(n.name))arm=n});r.bad=[];
         for(const c of [a.L.anim.idle,a.L.anim.run,a.L.anim.die,'Spellcasting']){const C=R3D.clips[c];if(!C){r.bad.push(c+'?');continue}const x=a.mixer.clipAction(C);a.mixer.stopAllAction();a.mixer.timeScale=1;x.reset().setEffectiveTimeScale(1).setEffectiveWeight(1).play();const q=arm.quaternion.clone();a.mixer.update(0.3);   /* דמות מהמאגר: פעולה שנעצרה (timeScale 0) במכה קודמת */if(arm.quaternion.equals(q))r.bad.push(c);x.stop()}
         sw.on=false;syncPlayer(1/60);r.off=R3D.player.L.model===old;sw.on=on0;o[k]=r}
     }catch(e){o.err=String(e&&e.stack||e)}return o});
   check(!hf3.err&&(hf3.d2||['warrior','mage','assassin'].every(k=>hf3[k]&&hf3[k].on&&!hf3[k].bad.length&&hf3[k].off)),'underworld new warrior/mage/assassin bodies: '+(hf3.err||(hf3.d2?'2D, nothing to draw':
-    ['warrior','mage','assassin'].map(k=>{const r=hf3[k]||{};return k+(r.on?' ✓':' ✗')+(r.bad&&r.bad.length?' (clips '+r.bad.join(',')+')':'')+(r.off?'':' (switch ✗)')}).join(', '))));
+    ['warrior','mage','assassin'].map(k=>{const r=hf3[k]||{};return k+(r.on?' ✓':' ✗'+(r.why?' ('+r.why+')':''))+(r.bad&&r.bad.length?' (clips '+r.bad.join(',')+')':'')+(r.off?'':' (switch ✗)')}).join(', '))));
   // ARI #556/#557: the assassin's mask and second dagger, the mage's circlet (witch hat hidden) and floating crystal that bobs. 2D: nothing to draw
   const p2=await page.evaluate(()=>{const o={},hf=[MBMAGEHF.on,MBASNHF.on];MBMAGEHF.on=MBASNHF.on=false;try{   // the old bodies: the new ones carry their own mask and circlet
       if(!(R3D.on&&R3D.ready)){o.d2=true;return o}
