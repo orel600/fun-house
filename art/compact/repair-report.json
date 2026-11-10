@@ -1,0 +1,42 @@
+[
+  {
+    "hero": "Tank",
+    "rest_scale": 0.5706185567010309,
+    "vertices": 6148,
+    "rigid_head_vertices": 1283,
+    "arm_region_vertices": 1257,
+    "max_weight_sum_error": 1.7881393432617188e-07
+  },
+  {
+    "hero": "Warrior",
+    "rest_scale": 0.7479729729729729,
+    "vertices": 6446,
+    "rigid_head_vertices": 1845,
+    "arm_region_vertices": 836,
+    "max_weight_sum_error": 1.7881393432617188e-07
+  },
+  {
+    "hero": "Hunter",
+    "rest_scale": 0.6854489164086687,
+    "vertices": 6367,
+    "rigid_head_vertices": 1806,
+    "arm_region_vertices": 1089,
+    "max_weight_sum_error": 1.7881393432617188e-07
+  },
+  {
+    "hero": "Mage",
+    "rest_scale": 0.6016304347826087,
+    "vertices": 7104,
+    "rigid_head_vertices": 1413,
+    "arm_region_vertices": 1138,
+    "max_weight_sum_error": 1.7881393432617188e-07
+  },
+  {
+    "hero": "Assassin",
+    "rest_scale": 0.9171499585749793,
+    "vertices": 6611,
+    "rigid_head_vertices": 3002,
+    "arm_region_vertices": 965,
+    "max_weight_sum_error": 1.7881393432617188e-07
+  }
+]
