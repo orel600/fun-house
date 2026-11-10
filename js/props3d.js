@@ -19,7 +19,8 @@ const PROPS3D={
   lookout:{h:150,w:38},
   chest:{w:30,dx:18}   // dx: התיבה זזה הצידה מהסלע שמסתיר אותה, כמו בקנבס
 };
-const P3={mats:{},tex:null,t0:performance.now()};
+const P3={mats:{},geo:{},tex:null,t0:performance.now()};
+const p3Geo=(k,mk)=>P3.geo[k]||(P3.geo[k]=mk());   // צורות משותפות (פנס מרחף: כל הפנסים חולקים אותן)
 function p3Mat(c,glow){const k=c+(glow?'g':'');return P3.mats[k]||(P3.mats[k]=glow?new THREE.MeshBasicMaterial({color:c,toneMapped:false,fog:false}):new THREE.MeshLambertMaterial({color:c,flatShading:true}))}
 // עיגול רך לבן: להילות ולשלולית האור
 function p3Soft(){
@@ -54,6 +55,20 @@ function p3Lantern(col,mul){
   ring.rotation.x=-Math.PI/2;ring.position.y=1.2;g.add(ring);
   g.scale.setScalar(mul);
   g.userData.L={col:new THREE.Color(col),off:new THREE.Color(C.off),cr,halo,pool,beam,ring,cy,lit:null,ign:0,seed:Math.random()*9};
+  return g;
+}
+/* פנס מרחף לסקיל-על בזירה (ult-lantern3d.js, חבילת התיקונים של אוראל): כלוב, גביש דולק והילה, בלי בסיס, עמוד ושלולית.
+   הצורות משותפות לכל הפנסים (p3Geo), והחומרים של הברזל והזהב מהמטמון של p3Mat. הגביש וההילה לכל פנס, כי הצבע לפי סוג הנזק.
+   seed: לפי מספר, לא Math.random, כדי שבדיקות עם seed יישארו זהות */
+function p3LanternOrb(col,seed=0){
+  const C=PROPS3D.col,g=new THREE.Group(),ir=p3Mat(C.iron),au=p3Mat(C.gold);
+  p3Mesh(p3Geo('obF',()=>p3Cyl(12,9,4,6)),ir,0,-15,0,g);   // רצפת הכלוב
+  for(let i=0;i<6;i++){const a=i/6*Math.PI*2;p3Mesh(p3Geo('obB',()=>p3Box(1.8,26,1.8)),ir,Math.cos(a)*11,0,Math.sin(a)*11,g)}   // שישה מוטות
+  p3Mesh(p3Geo('obR',()=>new THREE.ConeGeometry(15,14,6)),ir,0,20,0,g);   // גג
+  p3Mesh(p3Geo('obG',()=>new THREE.SphereGeometry(3.2,6,4)),au,0,29,0,g);   // כדור זהב
+  const cr=p3Mesh(p3Geo('obC',()=>new THREE.OctahedronGeometry(10,0)),new THREE.MeshBasicMaterial({color:col,toneMapped:false}),0,0,0,g);cr.scale.y=1.45;   // הגביש, תמיד דולק
+  const halo=p3Halo(col,70,0,g);
+  g.userData.O={cr,halo,seed};
   return g;
 }
 // כל פריים: דולק או כבוי, הבהוב, וטקס ההדלקה. live: הפנס נראה כבר כבוי, אז מעבר לדולק הוא רגע שהשחקן רואה

@@ -456,8 +456,10 @@ function mobaDraw(ox,oy){
   // אזורים מסומנים: שלנו בכחול, של האויב באדום
   for(const z of M.zones){if(!mbZoneShown(z))continue;const col=ally(z.team)?MOBA.team[0]:C.blood;
     if(z.delay>0){const k=1-z.delay/z.t0;ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.stroke();
-      ctx.globalAlpha=0.28;ctx.fillStyle=col;ctx.beginPath();ctx.arc(z.x,z.y,z.r*k,0,7);ctx.fill();ctx.globalAlpha=1}
-    else{ctx.globalAlpha=0.22;ctx.fillStyle=col;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.fill();ctx.globalAlpha=0.8;ctx.strokeStyle=C.chalk;ctx.lineWidth=2;ctx.beginPath();
+      if(typeof MBSHARP!=='undefined'&&MBSHARP.on&&MBSHARP.edge[z.look]){ctx.globalAlpha=0.7;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(z.x,z.y,z.r*k,0,7);ctx.stroke()}   // שפה חדה (mb-sharp.js): הזמן עד הנחיתה כקו דק שגדל, בלי דיסק מלא
+      else{ctx.globalAlpha=0.28;ctx.fillStyle=col;ctx.beginPath();ctx.arc(z.x,z.y,z.r*k,0,7);ctx.fill()}ctx.globalAlpha=1}
+    else if(z.look==='anvil'){if(typeof MBSHARP!=='undefined'&&MBSHARP.on&&!MBSHARP.fieldEdge)continue;ctx.globalAlpha=0.55*Math.min(1,z.left/0.4);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.stroke();ctx.globalAlpha=1}   // שדה הסדקים של הסדן: הסדקים עצמם (sk_anvil, hold) הם המראה. כאן רק קו דק בצבע הקבוצה, שנמוג בסוף, בלי מילוי ובלי פסים
+    else{if(typeof MBSHARP!=='undefined'&&MBSHARP.on&&MBSHARP.edge[z.look]){ctx.globalAlpha=0.6;ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.stroke()}else{ctx.globalAlpha=0.22;ctx.fillStyle=col;ctx.beginPath();ctx.arc(z.x,z.y,z.r,0,7);ctx.fill()}ctx.globalAlpha=0.8;ctx.strokeStyle=C.chalk;ctx.lineWidth=2;ctx.beginPath();
       for(let i=0;i<8;i++){const a=hash(i,Math.floor(M.t*6))*7,d=hash(Math.floor(M.t*6),i)*z.r,x=z.x+Math.cos(a)*d,y=z.y+Math.sin(a)*d;ctx.moveTo(x,y-14);ctx.lineTo(x,y)}ctx.stroke();ctx.globalAlpha=1}}
   mbAimDraw();   // סימון הכיוון של סקיל בגרירה (moba-aim.js)
   mbAtkDraw();   // הטבעת האדומה על הנעול (moba-atk.js)
@@ -474,7 +476,7 @@ function mobaDraw(ox,oy){
     if(!R3D.on||u.me&&!R3D.player){const G=MBLOOK.rig,hero=u.k==='hero',p=pose(u.x,u.y,u.ph,mbMoving(u),u.aim,10,mbRot(u),hero?G.hero:G.minion),c=u.flash>0?'#fff':hero?col:col+'AA';
       ctx.globalAlpha=mbVisFade(u);drawRig(p,{skin:LOOK.player,col:c,lw:(hero?G.lw.hero:G.lw.minion)*p.k});if(hero)mbWeapon2d(p,u.kit,c);ctx.globalAlpha=1}   // חבר בשיח: שקוף למחצה (moba-vision.js). גודל ונשק לפי ערכה (MBLOOK.rig)
     const s=u.st,top=u.y-(u.k==='hero'?78:52);
-    if(s.armor>0){ctx.strokeStyle=C.ember;ctx.lineWidth=3;ctx.globalAlpha=0.6;ctx.beginPath();ctx.arc(u.x,u.y-24,30,0,7);ctx.stroke();ctx.globalAlpha=1}
+    if(s.armor>0&&!(typeof mbSharpNoBubble==='function'&&mbSharpNoBubble(u))){ctx.strokeStyle=C.ember;ctx.lineWidth=3;ctx.globalAlpha=0.6;ctx.beginPath();ctx.arc(u.x,u.y-24,30,0,7);ctx.stroke();ctx.globalAlpha=1}
     if(s.rage>0){ctx.fillStyle='rgba(239,78,87,0.18)';ctx.beginPath();ctx.arc(u.x,u.y-24,28,0,7);ctx.fill()}
     if(s.ice>0){ctx.fillStyle='rgba(70,211,230,0.35)';ctx.beginPath();ctx.arc(u.x,u.y-22,24,0,7);ctx.fill()}
     if(s.veil>0){ctx.fillStyle='rgba(120,116,140,0.22)';for(let i=0;i<3;i++){const a=M.t*1.6+i*2.1;ctx.beginPath();ctx.arc(u.x+Math.cos(a)*14,u.y-18+Math.sin(a)*6,13+3*Math.sin(M.t*3+i),0,7);ctx.fill()}}   // היעלמות: עשן קלוש סביבו
@@ -494,7 +496,7 @@ function mobaDraw(ox,oy){
       if(s.dt==='water'){ctx.beginPath();ctx.ellipse(0,0,12,s.w/2,0,0,7);ctx.fill()}else{ctx.fillRect(-26,-3,34,6);ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(4,-7);ctx.lineTo(4,7);ctx.fill()}
       ctx.restore();ctx.globalAlpha=1}
   }
-  for(const f of M.fx){if(!mbVisPt(f.x,f.y))continue;const k=f.life/0.45;ctx.strokeStyle=f.col;ctx.globalAlpha=k;ctx.lineWidth=6*k+1;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.1-k*0.4),0,7);ctx.stroke()}ctx.globalAlpha=1;
+  for(const f of M.fx){if(!mbVisPt(f.x,f.y))continue;if(f.sh){if(typeof mbSharpDraw==='function')mbSharpDraw(f);continue}const k=f.life/0.45;ctx.strokeStyle=f.col;ctx.globalAlpha=k;ctx.lineWidth=6*k+1;ctx.beginPath();ctx.arc(f.x,f.y,f.r*(1.1-k*0.4),0,7);ctx.stroke()}ctx.globalAlpha=1;
   mbRecallDraw();   // טבעת החזרה לבסיס (moba-recall.js)
   mbGambleTop();   // הגלגל של חדר ההימור מעל הגיבור (moba-gamble.js)
   typeof mbSpellDraw==='function'&&mbSpellDraw();   // לחשים: מואץ, מותש, נקי, ואזור חשוף (moba-spells.js)

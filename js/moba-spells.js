@@ -121,7 +121,7 @@ function mbSpellDraw(){
     if(s.haste>0)ring(L.haste.col,u.r+12+Math.sin(now*12)*2,0.75);
     if(s.exh>0)ring(L.exhaust.col,u.r+8,0.55+0.25*Math.sin(now*6));
     if(s.pure>0)ring(L.cleanse.col,u.r+16,0.8*s.pure);
-    if(s.shield>0&&s.shieldEnd>now){ctx.globalAlpha=0.22;ctx.fillStyle=L.barrier.col;ctx.beginPath();ctx.arc(u.x,u.y-u.r,u.r+10,0,7);ctx.fill()}}
+    if(s.shield>0&&s.shieldEnd>now&&!(typeof mbSharpNoBubble==='function'&&mbSharpNoBubble(u))){ctx.globalAlpha=0.22;ctx.fillStyle=L.barrier.col;ctx.beginPath();ctx.arc(u.x,u.y-u.r,u.r+10,0,7);ctx.fill()}}
   ctx.restore();
 }
 

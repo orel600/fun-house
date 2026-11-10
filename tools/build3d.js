@@ -64,7 +64,17 @@ const CHARS={
   nirHero:{src:path.join(ROOT,'art/heroes/NirHero.glb'),keep:['NirHero_'],tex:512,fmt:'jpeg'},
   // הדמות האישית של אוראל ("הנודד עם החליל"), מ-art/heroes/orel-sheet.jpg. בתנוחת T, אז rig.py בלי דגלים.
   // הדף מורכב משני דפים של ג'מיני: מלפנים ומאחור מהראשון (חד), ומהצד מהשני (בראשון היו פנים כפולות), מוגדל לאותו גובה והפוך כך שיפנה ימינה
-  orelHero:{src:path.join(ROOT,'art/heroes/OrelHeroHF.glb'),keep:['OrelHero_'],tex:512,fmt:'jpeg'}
+  orelHero:{src:path.join(ROOT,'art/heroes/OrelHeroHF.glb'),keep:['OrelHero_'],tex:512,fmt:'jpeg'},
+  // הצייד החדש (ARI, 9.11.2026): דף הדמות של אוראל, TRELLIS ו-tools/trellis/reskin.py על השלד של ה-Ranger. מפתח חדש, לא מחליף את ranger: עד שאוראל מאשר, שום LOOK3D לא משתמש בו
+  hunterHF:{src:path.join(ROOT,'art/heroes/HunterHF.glb'),keep:['Ranger_'],tex:512,fmt:'jpeg'},
+  // הטנק החדש (ARI, 9.11.2026): tools/blender/tankbody.js, גולם אובסידיאן וזהב על השלד של ה-Barbarian, פלטה בלי טקסטורת תמונה. מפתח חדש, לא מחליף את barbarian: LOOK3D לא משתמש בו עד שאוראל מאשר
+  tankHF:{src:path.join(ROOT,'art/heroes/TankHF.glb'),keep:['Barbarian_'],tex:64,fmt:'png'},
+  // הלוחם החדש (ARI, 9.11.2026): tools/blender/warriorbody.js, גלדיאטור חשוף חזה עם כתפית אריה וגלימה אדומה על שלד ה-Barbarian. מפתח חדש, לא מחליף את warrior
+  warriorHF:{src:path.join(ROOT,'art/heroes/WarriorHF.glb'),keep:['Barbarian_'],tex:64,fmt:'png'},
+  assassinHF:{src:path.join(ROOT,'art/heroes/AssassinHF.glb'),keep:['Barbarian_'],tex:64,fmt:'png'},   // הגוף החדש (ARI, 9.11.2026): tools/blender/assassinbody.js על שלד ה-Barbarian. מפתח חדש, לא מחליף כלום,
+  mageHF:{src:path.join(ROOT,'art/heroes/MageHF.glb'),keep:['Barbarian_'],tex:64,fmt:'png'},   // הגוף החדש (ARI, 9.11.2026): tools/blender/magebody.js על שלד ה-Barbarian. מפתח חדש, לא מחליף כלום
+  // ניסוי tankX (ARI, 9.11.2026, art/tankx): הטנק של אוראל (Tripo) על שלד Rig_Medium. מפתח חדש, לא מחליף כלום. עיבוד: tools/tankx/. טקסטורה 512
+  tankX:{src:path.join(ROOT,'art/heroes/TankX.glb'),keep:['Barbarian_'],tex:256,fmt:'png'}
 };
 // חפצים שנאחזים ביד של אויב (המיקום ביד מוגדר ב-render3d.js)
 const PROPS={
@@ -83,9 +93,9 @@ const WTIERS={cells:[[1,0],[2,0],[3,0],[5,1],[6,1]],size:64,
    כי כל 10 אנימציות הן בערך 300KB. מחכות למשימות הבאות: התחמקות וחסימה (סקילים), זימון (קוסם), עבודה, ישיבה, נפנוף והליכה (NPC בכפר) */
 const ANIMS={
   general:{src:anim('General'),keep:['Idle_A','Idle_B','Hit_A','Death_A']},
-  move:   {src:anim('MovementBasic'),keep:['Running_A','Running_B','Walking_A']},
+  move:   {src:anim('MovementBasic'),keep:['Running_A','Running_B','Walking_A','Jump_Start','Jump_Idle','Jump_Land','Jump_Full_Short','Jump_Full_Long']},
   moveAdv:{src:anim('MovementAdvanced'),keep:['Dodge_Forward','Dodge_Backward','Dodge_Left','Dodge_Right','Running_HoldingBow']},
-  melee:  {src:anim('CombatMelee'),keep:['Melee_1H_Attack_Slice_Horizontal','Melee_1H_Attack_Chop','Melee_2H_Attack_Spin','Melee_2H_Attack_Chop','Melee_Block','Melee_Blocking']},
+  melee:  {src:anim('CombatMelee'),keep:['Melee_1H_Attack_Slice_Horizontal','Melee_1H_Attack_Chop','Melee_2H_Attack_Spin','Melee_2H_Attack_Chop','Melee_2H_Idle','Melee_Block','Melee_Blocking']},
   ranged: {src:anim('CombatRanged'),keep:['Ranged_Bow_Draw','Ranged_Bow_Release','Ranged_Bow_Idle','Ranged_Magic_Shoot','Ranged_Magic_Spellcasting','Ranged_Magic_Summon']},
   life:   {src:anim('Simulation'),keep:['Cheering','Waving','Sit_Chair_Idle','Sit_Floor_Idle']},
   tools:  {src:anim('Tools'),keep:['Hammering','Digging']},
@@ -204,14 +214,25 @@ const ITEMS={
   goldBow:  {src:raw('goldBow'),ready:true,tex:128},
   stormBow: {src:raw('stormBow'),tris:4000,tex:512,len:2.4,grip:0.5,rot:[0,0,-90]},
   shield3:  {src:raw('shield3'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},   // יצא כבר כמו KayKit: הפנים ב-xy
-  shield4:  {src:raw('shield4'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]}
+  shield4:  {src:raw('shield4'),tris:4000,tex:512,len:1.35,grip:0.45,rot:[0,0,0]},
+  // פטיש האבן של הטנק: הטיוטה של אוראל (art/weapons/raw/stoneHammer.glb) אחרי tools/blender/vc2palette.js: הצירים והאחיזה של KayKit (ידית על y, האחיזה בראשית), פלטה ו-emissive. משקל וצורה כמו שהם: לא מקטינים
+  stoneHammer:{src:raw('stoneHammer'),ready:true,tex:64},
+  // חלקים לגיבורי השאול (ARI, art/parts/README.md): הפגיון השני של המתנקש והגביש המרחף של הקוסם. ההרכבה: js/mb-parts.js
+  shadowDagger:{src:path.join(ROOT,'art/parts/shadowDagger.glb'),ready:true,tex:64},
+  mageCrystal:{src:path.join(ROOT,'art/parts/mageCrystal.glb'),ready:true,tex:64},
+  // פטיש הטנק החדש (tankX): ready, גריפ בראשית וידית על y, טקסטורה 512 jpeg
+  tankXHammer:{src:raw('tankXHammer'),ready:true,tex:128,fmt:'png'}
 };
 /* כובעים (ניר, 6.11.2026: "הגרפיקה של הכובע חייבת שיפור"). הכובעים האמיתיים של KayKit, כחלק נפרד בלי שלד, במרחב של עצם הראש,
    כדי שאפשר לחבר כל כובע לכל דמות (armor3d ב-js/armor.js). השם במשחק: hat_<שם>.
    node: החלק בקובץ. חלק סטטי על עצם הראש נשאר במקום שלו יחסית לעצם. חלק עם שלד (הראש עם הברדס) עובר למרחב של העצם לפי ה-inverse bind שלו.
    parts: מחלקים את הכובע לחלקים לפי הצבע בטקסטורה, כדי לצבוע רק חלק אחד בצבע הדרגה. הסדר קובע: המשולש הולך לחלק הראשון שמתאים לו.
      rim: המשולשים של הבד שנוגעים בפנים (השוליים של הברדס), ו-rings טבעות סביבם. cut: מוחקים משולשים שיורדים מתחת לגובה הזה (הפרווה שתלויה מאחורי הגב) */
+/* hat ready:true: כתר או כובע שנבנה מחוץ ל-KayKit (art/hats/hat_<שם>.glb, כבר במרחב של עצם הראש, y למעלה). נכנס כמו שהוא, בלי חילוץ מדמות. node tools/build3d.js - --only hats --hats=tankCrown */
 const HATS={
+  tankCrown:{src:path.join(ROOT,'art/hats/hat_tankCrown.glb'),ready:true,tex:64},   // הכתר של הטנק (ARI, חבילת התיקונים). הצבת הכתר על עצם הראש: הקוד של BOB
+  assassinMask:{src:path.join(ROOT,'art/parts/assassinMask.glb'),ready:true,tex:64},   // חצי מסכה למתנקש (ARI). ההרכבה: js/mb-parts.js
+  mageCirclet:{src:path.join(ROOT,'art/parts/mageCirclet.glb'),ready:true,tex:64},     // עטרה לקוסם במקום כובע המכשפה (ARI)
   helm:{src:adv('Characters/gltf/Knight.glb'),node:'Knight_Helmet',parts:{metal:()=>true}},
   mage:{src:adv('Characters/gltf/Mage.glb'),node:'Mage_Hat',parts:{cloth:(r,g,b)=>b>r&&b>g-5,band:()=>true}},
   fur: {src:adv('Characters/gltf/Barbarian.glb'),node:'Barbarian_Hat',cut:-0.35,parts:{fur:()=>true}},
@@ -219,7 +240,10 @@ const HATS={
 };
 async function addHats(add){
   const {transformPrimitive}=require('@gltf-transform/functions');
+  const pickH=(process.argv.find(a=>a.startsWith('--hats='))||'').slice(7).split(',').filter(Boolean);
   for(const [k,c] of Object.entries(HATS)){
+    if(pickH.length&&!pickH.includes(k))continue;
+    if(c.ready){add('hat_'+k,await slim(await io.read(c.src),{tex:c.tex||64,fmt:'png'}));continue}
     const doc=await io.read(c.src),root=doc.getRoot(),N=root.listNodes().find(n=>n.getName()===c.node);
     if(!N||!N.getMesh())throw new Error('אין '+c.node+' ב-'+c.src);
     let M=N.getMatrix();const sk=N.getSkin();
@@ -260,7 +284,7 @@ async function addItems(add){
     if(!fs.existsSync(c.src)){console.log('אין עדיין קובץ ל-'+k+', מדלגים');continue}
     const doc=await io.read(c.src),root=doc.getRoot(),prims=root.listMeshes().flatMap(m=>m.listPrimitives());
     if(c.ready){for(const nd of root.listNodes())if(nd.getMesh()){prims.forEach(p=>transformPrimitive(p,nd.getMatrix()));nd.setTranslation([0,0,0]).setRotation([0,0,0,1]).setScale([1,1,1])}
-      add('w_item_'+k,await slim(doc,{tex:c.tex,fmt:'png'}));continue}   // png: הפלטה נשארת חדה
+      add('w_item_'+k,await slim(doc,{tex:c.tex,fmt:c.fmt||'png'}));continue}   // png: הפלטה נשארת חדה
     const n=prims.reduce((a,p)=>a+(p.getIndices()?p.getIndices().getCount():p.getAttribute('POSITION').getCount())/3,0);
     await doc.transform(weld(),simplify({simplifier:MeshoptSimplifier,ratio:Math.min(1,c.tris/n),error:0.002}));
     let lo=[1e9,1e9,1e9],hi=[-1e9,-1e9,-1e9];
@@ -347,6 +371,21 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
     M3IO.write(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(ONLY,Math.round(bin.byteLength/1024)+'KB');console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
   }
+  // node tools/build3d.js C:/kk --only anims: בונה מחדש רק את האנימציות (anim_*) בקובץ הקיים. צריך רק את anims
+  if(ONLY==='anims'){
+    const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
+    const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D=');
+    Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
+    for(const [k,c] of Object.entries(ANIMS)){
+      if(k==='dog'||k==='skel'||!fs.existsSync(c.src))continue;   // dog ו-skel מגיעים מחבילות אחרות: נשארים כמו שהם
+      const doc=await io.read(c.src),miss=c.keep.filter(n=>!doc.getRoot().listAnimations().some(a=>a.getName()===n));
+      if(miss.length)throw new Error('אנימציה חסרה ב-'+k+': '+miss.join(', '));
+      const before=(out['anim_'+k]||'').length;add('anim_'+k,await slim(doc,{keepMeshes:null,keepAnims:c.keep}));
+      sizes.push('  (היה '+Math.round(before*0.75/1024)+'KB)');
+    }
+    M3IO.write(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
+    console.log(sizes.join('\n'));return;
+  }
   if(ONLY==='nature'){
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
     const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D=');
@@ -373,7 +412,7 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
     const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D=');
     Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
-    for(const k in out)if(k.startsWith('hat_'))delete out[k];
+    {const pk=(process.argv.find(a=>a.startsWith('--hats='))||'').slice(7).split(',').filter(Boolean);for(const k in out)if(k.startsWith('hat_')&&(!pk.length||pk.includes(k.slice(4))))delete out[k]}
     await addHats(add);
     M3IO.write(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;

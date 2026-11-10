@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Kitbash parts in engine</title>
+<!-- חלקים על גוף KayKit קיים (ARI, 9.11.2026): שורה למעלה = הדמות במשחק היום, שורה למטה = עם החלקים החדשים, בקליפים האמיתיים ובתאורה של render3d.js. window.KIT: base (מפתח ב-MODELS3D), cur (מה שביד היום), add (החלקים החדשים), hide (שמות חלקים להסתיר בשורה החדשה), anims, title. מ-shoot-kit.js -->
+<style>body{margin:0;background:#1b2130;color:#eef;font:600 13px system-ui;width:1500px}h2{margin:8px 12px 2px;font-size:15px}.row{display:flex;gap:6px;padding:4px 12px 8px}
+figure{margin:0;text-align:center}figcaption{font-size:12px;color:#b9c3dc}canvas{border-radius:6px;display:block}</style></head><body><div id="out"></div>
+<script src="../../js/vendor/three-bundle.js"></script><script src="../../js/models3d.js"></script>
+<script>
+const b64buf=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
+const parse=buf=>new Promise((ok,bad)=>new THREE.GLTFLoader().setMeshoptDecoder(THREE.MeshoptDecoder).parse(buf,'',ok,bad));
+const lambert=root=>root.traverse(o=>{if(o.isMesh){const m=o.material;o.material=new THREE.MeshLambertMaterial({map:m.map,color:m.color,emissive:m.emissive,emissiveMap:m.emissiveMap,side:THREE.DoubleSide});o.frustumCulled=false}});
+const R=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});R.outputColorSpace=THREE.SRGBColorSpace;R.setPixelRatio(1);
+function scene(){const s=new THREE.Scene();s.background=new THREE.Color('#2f2a3c');s.add(new THREE.HemisphereLight(0xdfe6ff,0x2a2236,1.6*1.15));const l=new THREE.DirectionalLight(0xfff1dc,1.9*1.15);l.position.set(-0.5,1,0.6);s.add(l);return s}
+async function main(){
+  const K=window.KIT,base=await parse(b64buf(MODELS3D[K.base]));lambert(base.scene);
+  const wtex=new Image();wtex.src='data:image/png;base64,'+MODELS3D.wtex_iron;await wtex.decode();const iron=new THREE.Texture(wtex);iron.flipY=false;iron.colorSpace=THREE.SRGBColorSpace;iron.needsUpdate=true;
+  const cache={};const part=async p=>{const k=p.key||p.file;if(!cache[k]){const g=await parse(b64buf(p.key?MODELS3D[p.key]:p.b64));lambert(g.scene);if(p.key&&/^w_(?!item)/.test(p.key))g.scene.traverse(o=>{if(o.isMesh){o.material.map=iron}});cache[k]=g.scene}return cache[k]};
+  const clips={};for(const k of ['anim_general','anim_move','anim_ranged','anim_melee','anim_moveAdv']){const g=await parse(b64buf(MODELS3D[k]));for(const a of g.animations)clips[a.name]=new THREE.AnimationClip(a.name,a.duration,a.tracks.filter(t=>{const [n,p]=t.name.split('.');return !/IK|control/.test(n)&&(p==='quaternion'||p==='position'&&/^(root|hips|upperleg)/.test(n))}))}
+  const mk=async(list,hide)=>{const ch=THREE.SkeletonUtils.clone(base.scene);const bones={};ch.traverse(o=>{if(o.isBone)bones[o.name]=o;if(hide&&hide.some(h=>new RegExp(h).test(o.name)))o.visible=false});
+    for(const p of list){const w=(await part(p)).clone(true);w.position.fromArray(p.pos||[0,0,0]);w.quaternion.fromArray(p.rot||[0,0,0,1]);w.scale.setScalar(p.scale||1);if(p.tint)w.traverse(o=>{if(o.isMesh){o.material=o.material.clone();o.material.emissive.set(p.tint).multiplyScalar(p.glow||0.55)}});bones[p.bone].add(w)}return ch};
+  const out=document.getElementById('out'),H=(()=>{const c=THREE.SkeletonUtils.clone(base.scene),mx=new THREE.AnimationMixer(c);mx.clipAction(clips.Idle_A).play();mx.update(0);c.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(c);return b.max.y-b.min.y})();
+  for(const [vt,deg,sz] of [['Game camera (52 deg)',52,1],['Front (14 deg)',14,1],['Front close (14 deg, head)',14,0.45]]){const h=document.createElement('h2');h.textContent=K.title+' | '+vt+' | top: TODAY  bottom: NEW PARTS';out.append(h);
+    for(const [lab,list,hide] of [['today',K.cur,null],['new',[...K.cur,...K.add],K.hide]]){const row=document.createElement('div');row.className='row';out.append(row);
+      for(const [an,at] of K.anims){const s=scene(),ch=await mk(list,hide);ch.rotation.y=deg>30?-0.3:-0.4;s.add(ch);const mx=new THREE.AnimationMixer(ch);mx.clipAction(clips[an]).play();mx.update(at);ch.updateMatrixWorld(true);
+        const t=deg*Math.PI/180,cy=sz<1?(H*0.82):(H*0.42),half=sz<1?0.9:1.55,cam=new THREE.OrthographicCamera(-half*0.77,half*0.77,half,-half,0.01,100),C=new THREE.Vector3(0,cy,0);cam.position.copy(C).add(new THREE.Vector3(0,Math.sin(t),Math.cos(t)).multiplyScalar(10));cam.lookAt(C);cam.updateProjectionMatrix();
+        R.setSize(230,300);R.render(s,cam);const c=document.createElement('canvas');c.width=230;c.height=300;c.getContext('2d').drawImage(R.domElement,0,0);const f=document.createElement('figure');f.append(c);const cp=document.createElement('figcaption');cp.textContent=lab+' · '+an+' '+at+'s';f.append(cp);row.append(f)}}}
+  document.title='ready';
+}
+main().catch(e=>{document.title='ERR '+e.message;console.error(e)});
+</script></body></html>
