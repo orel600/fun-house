@@ -13,7 +13,7 @@ const MSG={
   fight:360,                        // אויב חי במרחק הזה (יחידות משחק) = באמצע קרב
   pad:8, gap:6, minW:220, maxW:540, // רווח מכל כפתור, רווח בין שורות, ורוחב העמודה
   hero:{up:95, side:70},            // הגיבור על המסך: כמה מעליו וכמה לצדדים שמורים לו (יחידות משחק, כפול ZOOM)
-  seen:[], stat:{small:0,big:0,down:0,waits:0,most:0,mostBig:0,held:0}   // לבדיקה (tools/check.js)
+  seen:[], stat:{small:0,big:0,down:0,waits:0,most:0,mostBig:0,held:0,card:0,both:0}   // לבדיקה (tools/check.js)
 };
 const MQ={small:[],big:[],rows:[],bigRow:null,t:0};
 function msgOn(){const bc=document.body.classList;return !!S&&!bc.contains('mb')&&(bc.contains('world')||bc.contains('vil'))}
@@ -41,15 +41,22 @@ function msgFight(){if(!S||!S.wd||typeof enemies==='undefined')return false;cons
 
 function msgRow(m,big){const d=document.createElement('div');d.className='mrow'+(big?' big':'');d.textContent=m.txt;d.style.setProperty('--mc',m.col);
   msgEl().appendChild(d);void d.offsetWidth;d.classList.add('on');msgNote(m.txt);return d}
+// The "New: skill" card (skguide.js) is up: a big line (region, rank, boss) waits in its queue, and does not drop to small meanwhile
+// (desert 11.11: the card sat on top of "The Burning Desert..." at 915x412)
+function msgCardUp(){const c=$('skOffer');return !!c&&!c.hidden}
 function msgPump(){
   const el=msgEl(),now=msgNow();if(!msgOn()){msgClear();return}
+  const card=msgCardUp();
+  if(card&&MQ.bigRow){msgGone(MQ.bigRow);MQ.big.unshift({txt:MQ.bigRow.txt,col:MQ.bigRow.col,at:now});MQ.bigRow=null}   // a big one already up when the card came: it steps back and comes after it
   // גדולה: רק כשאין גדולה על המסך ואין קרב. מחכה יותר מדי: יורדת לקטנה
   if(!MQ.bigRow&&MQ.big.length){const m=MQ.big[0];
-    if(!msgFight()){MQ.big.shift();MQ.bigRow={txt:m.txt,t:now,life:MSG.big.life,el:msgRow(m,true)};el.prepend(MQ.bigRow.el);MSG.stat.big++}
+    if(card){m.at=now;MSG.stat.card++}
+    else if(!msgFight()){MQ.big.shift();MQ.bigRow={txt:m.txt,col:m.col,t:now,life:MSG.big.life,el:msgRow(m,true)};el.prepend(MQ.bigRow.el);MSG.stat.big++}
     else if(now-m.at>MSG.big.wait){MQ.big.shift();MSG.stat.down++;MQ.small.unshift({txt:m.txt,col:m.col})}
     else MSG.stat.waits++}
   const cap=MQ.small.length&&msgFight()?MSG.small.fight:MSG.small.max;if(MQ.small.length&&MQ.rows.length>=cap&&cap<MSG.small.max)MSG.stat.held++;
-  while(MQ.small.length&&MQ.rows.length<cap){const m=MQ.small.shift();MQ.rows.push({txt:m.txt,t:now,el:msgRow(m)});MSG.stat.small++}
+  while(MQ.small.length&&MQ.rows.length<cap){const m=MQ.small.shift();MQ.rows.push({txt:m.txt,col:m.col,t:now,el:msgRow(m)});MSG.stat.small++}
+  if(card&&MQ.bigRow)MSG.stat.both++;   // for the check: a big line on screen together with the card
   MSG.stat.most=Math.max(MSG.stat.most,MQ.rows.length);MSG.stat.mostBig=Math.max(MSG.stat.mostBig,el.querySelectorAll('.mrow.big').length);
   msgPlace();
   if(!MQ.t&&(MQ.rows.length||MQ.bigRow||MQ.big.length||MQ.small.length))MQ.t=setInterval(msgTick,200);
