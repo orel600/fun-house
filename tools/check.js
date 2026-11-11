@@ -2851,7 +2851,9 @@ function worldBot(m,L,god){
       if(r.closed){o.open.push(r.k);continue}
       o.breaks.push(...r.breaks.map(s=>r.k+': '+s));o.lines.push(...r.lines.map(s=>r.k+': '+s));
       if((r.k.startsWith('b:')||r.k==='talk')&&!r.dim)o.dim.push(r.k);
-      // הדהייה: למעלה פעילה, ובסוף (אחרי פריים, ציר הגלילה מתעדכן) נעלמת
+      // הדהייה: למעלה פעילה, ובסוף נעלמת. אחרי פריים: ציר הגלילה מתעדכן רק בציור הבא (בלי זה, חלון שרק נפתח נמדד בלי דהייה)
+      await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');for(const x of sc)(x===':root'?root:all[x]).scrollTop=0},[i,r.sc]);
+      await page.clock.runFor(50);
       const top=await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');
         return sc.map(x=>{const e=x===':root'?root:all[x];e.scrollTop=0;const cs=getComputedStyle(e);return [(e.id||e.className||e.tagName).toString().slice(0,24),cs.maskImage!=='none'&&/^100% 100%/.test(cs.maskSize)]})},[i,r.sc]);
       await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');for(const x of sc){const e=x===':root'?root:all[x];e.scrollTop=e.scrollHeight}},[i,r.sc]);
