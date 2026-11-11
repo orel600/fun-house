@@ -102,7 +102,7 @@ All gameplay evidence from `tools/check.js` only (offline fixture: network block
 Nir approved the free pilot (A+B), then liked it (11.11: "אוהב את הסטייל החדש"). **Now on by default** in the village and open world; `?look=v1` turns it off for comparison. The arena and Underworld never change.
 
 **What's in it**
-- **Hero:** thin dark outline (about 2.5 px at the phone camera) + an edge-only light rim on the selected hero's own model. Model, skin and gear never replaced. The existing white ground ring (`readable3d.js`) is reused. The rim is `rim-world.js`'s own (merged in #664): look v2 only turns it up in daylight, so there's one rim shader, not two.
+- **Hero:** thin dark outline (about 2.5 px at the phone camera) + an edge-only light rim on the selected hero's own model. Model, skin and gear never replaced. The existing white ground ring (`readable3d.js`) is reused. The rim is `rim-world.js`'s own (merged in #664): look v2 only turns it up in daylight, so there's one rim shader, not two. (11.11 fix: vfx.js's warm rim was still on top and bleached the hero white; v2 now turns it off. Village NPCs also lose their emissive `tint`, which washed Avner, the merchant and the priest out.)
 - **One world enemy, new silhouette:** the world grunt is drawn as Quaternius Orc_Skull (CC0), reduced to **2,399 triangles** (today's grunt body: 5,288), 1 material, 128px texture, 43 joints. Same type, hp, size, hit size and timings. Only `foeKey(e)` in `render3d.js` changes, and only when `S.wd` is set.
 - **Village corner:** the street lamps around the plaza become rounder toy lamps. A round floor disc and a curb-stone ring were tried and removed (Nir didn't read the disc as a plaza; the stones alone read as scattered pebbles). Visual only.
 
