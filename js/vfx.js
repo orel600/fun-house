@@ -39,9 +39,9 @@ const VFX={
   rim:{col:0xffe2a8,k:1.2,pow:2.0},           // צבע הקו, חוזק, וכמה הוא דק (גבוה = דק יותר)
   // לילה בהיר יותר לפי מקום (ניר אישר, 9.11.2026, docs/concept-night-village.md): בשיא הלילה k, exp ו-vig מחליפים את הערכים של VFX.tod,
   // ו-gnd הוא "אור ירח" בצבע הקרקע. בשחר ובשקיעה המעבר הדרגתי. רק בכפר: בעולם החושך הוא חלק מהסיפור
-  night:{village:{k:0.72,exp:0.96,vig:1.15,gnd:0x9a8466}},
+  night:{village:{k:0.92,exp:1.1,vig:0.9,gnd:0xc0a882}},   // 11.11: עוד קצת בהיר (בדיקת משחק 8.11: "כפר בלילה חשוך מדי"). היה k:0.72,exp:0.96,vig:1.15,gnd:0x9a8466
   // כתמי אור חמים על הקרקע בכפר בלילה (כמו lamp של הגיבור, חיבורי): מתחת לכל פנס רחוב, וגדולים יותר בציוני הדרך. ביום כבויים
-  pools:{col:'255,200,120',lamp:{r:90,a:0.35},mark:{r:190,a:0.4,dy:40,at:['gate','center','forge','market']}}
+  pools:{col:'255,200,120',lamp:{r:100,a:0.42},mark:{r:200,a:0.46,dy:40,at:['gate','center','forge','market']}}
 };
 VFX.parts=(()=>{const m=location.search.match(/[?&]vfx=([\w,]+)/);return new Set(m&&m[1]!=='off'?m[1].split(',').filter(p=>VFX.parts.includes(p)):VFX.parts)})();
 VFX.has=p=>VFX.on&&VFX.parts.has(p);
