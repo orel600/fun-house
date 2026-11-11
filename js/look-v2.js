@@ -24,7 +24,7 @@ const LV2={
       padL:{prop:'lv2_pad',bone:'upperarml',pos:[0,0.1,0.12],rot:[0.7071,0,0,0.7071]},padR:{prop:'lv2_pad',bone:'upperarmr',pos:[0,0.1,0.12],rot:[0.7071,0,0,0.7071]}},
       anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
     w_sprite:{model:'mon_spriteBee',h:38,foot:10,float:10,anim:{run:'mon_spriteBee_Fast_Flying',die:'mon_spriteBee_Death'}},   // little bee, no longer the player's mage body
-    w_golem:{model:'mon_golemIdol',h:84,foot:18,anim:{run:'mon_golemIdol_Walk',die:'mon_golemIdol_Death'}}   // stone idol brute, no longer the smith's body
+    w_golem:{model:'mon_golemIdol',h:84,foot:18,tint:'#8A8478',anim:{run:'mon_golemIdol_Walk',die:'mon_golemIdol_Death'}}   // stone idol brute, no longer the smith's body. tint: a stone glow, like the old golem, so it isn't black at night
   },
   clips:{mon_orcSkull:{hit:'mon_orcSkull_Weapon'},mon_golemIdol:{hit:'mon_golemIdol_Punch'},
     mon_wispGhost:{cast:'mon_wispGhost_Punch',shoot:'mon_wispGhost_Punch'}},   // FOEATK3D.clip: what it plays when it attacks (strike.js)
