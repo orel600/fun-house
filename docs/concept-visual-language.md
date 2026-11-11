@@ -322,4 +322,9 @@ Meadow: a tree and a rock at half hp, then the tree broken (fall, stump).
 
 At 844×390 (`p844-*.jpg`, levels 2 and 4): 0 console errors, no failed load.
 
-**Still open:** the night run (in progress when this was written); the village's houses, walls and windmill (VGROW) are still KayKit; the meadow decor trees and rocks (not resource nodes) are still KayKit.
+Night (`?tod=night`, levels 3 and 5): 0 console errors, no failed load. L4/L5 windows and lanterns glow warm, L3 windows stay dark.
+![Inn L5 at night](concept/visual-language/phase4/p915-night-inn5.jpg)
+![Center L5 at night](concept/visual-language/phase4/p915-night-center5.jpg)
+![Sawmill L3 at night](concept/visual-language/phase4/p915-night-mill3.jpg)
+
+**Still open:** the village's houses, walls and windmill (VGROW) are still KayKit; the meadow decor trees and rocks (not resource nodes) are still KayKit.
