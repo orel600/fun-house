@@ -3146,7 +3146,8 @@ function worldBot(m,L,god){
       enterWorld('home','storm');P.inv=99;FXW.t=0;tick(2);r.under=core?![...FXW.wxl.keys()].length&&!String(fxDraw).includes('fxwWxDraw'):String(juiceDraw).includes('fxwWxDraw')&&!String(fxDraw).includes('fxwWxDraw');
       // 11.11 עולם חי, שלב 1 (docs/concept-living-world.md): ברקים רק רחוק, אובך חול, חצי בקרב, פחות תנועה בלי קווי רוח, ודג בנהר של האחו
       if(core){const St=WXW.stat,f0=St.far,n0=St.near;WXW.farT={};for(let i=0;i<30;i++){WX.boltT=-99;wxwFar(6,WXW.scene.storm)}r.farOnly=St.far-f0>=5&&St.near===n0;
-        r.sandWrap=String(wxDraw).includes('wxwSand');enterWorld('home','desert');P.inv=99;tick(1);WXW.reg='desert';WXW.st='storm';WXW.sandA=0.45;WXW.sandLast=performance.now();const s0=St.sand;wxwSand();r.sand=St.sand===s0+1&&WXW.sandA>0.3;
+        r.sandWrap=String(wxDraw).includes('wxwSand');enterWorld('home','desert');P.inv=99;tick(1);WXW.reg='desert';WXW.st='storm';WXW.sandA=0.45;WXW.sandLast=performance.now();const s0=St.sand;wxwSand();r.sand=St.sand===s0+1&&WXW.sandA>0.3;{const b0=St.sandBuild;for(let i=0;i<5;i++)wxwSand();r.sandCache=St.sandBuild===b0&&St.sand===s0+6}   // 11.11: השיפוע נבנה פעם אחת, לא בכל פריים
+        
         WXW.fightT=1;r.fightHalf=wxwCfg('desert').k===WXW.fight;WXW.fightT=0;r.fightHalf=r.fightHalf&&!wxwCfg('desert').k;
         const fl=SAVE.fxLess;SAVE.fxLess=true;r.calmNoGust=!wxwCfg('desert').storm.some(v=>/^wind_gust/.test(v[0]))&&!wxwCfg('ridge').calm.some(v=>/^wind_gust/.test(v[0]));SAVE.fxLess=fl;
         r.ridgeGust=wxwCfg('ridge').calm.some(v=>v[0]==='wind_gust')||!!RM}
@@ -3518,6 +3519,7 @@ function worldBot(m,L,god){
       o.sign=vpForPath('ridge')==='tunnelCrew'&&vpForPath('desert')==='caravan';
       pay('caravan');o.desert=vpDone('caravan')&&wPathOpen(pd)&&!storyOpen('ice')&&!storyOpen('fire');
       o.sell=vpSellK()>1.05&&vPrice('silver','sell')<vPrice('silver','buy');
+      {const B=VILLAGE.b.mine,mi=vInfo('mine',4);o.shown=mi.includes(T('vp.tunnelCrew'))&&mi.includes('>'+Math.round(B.make.stone[4]*1.1)+'<')&&vInfo('market',4).includes(T('vp.caravan'))}   // 11.11: the real number with the crew, and who added it
       // the moment near each road, once, in its own region
       const mom=(reg,pl,p)=>{enterWorld('home',reg);enemies=[];S.mode='play';const n0=V.stat.open;P.x=p.x;P.y=p.y+200;VPW.t=0;vpUpdate(1);const a=SAVE.vproj.seen[pl]===1&&V.stat.open===n0+1;VPW.t=0;vpUpdate(1);return a&&V.stat.open===n0+1};
       SAVE.vproj.seen.lakeRoad=1;o.mRidge=mom('lake','ridgeRoad',pr);o.mDesert=mom('ridge','desertRoad',pd);
@@ -3527,10 +3529,10 @@ function worldBot(m,L,god){
       SAVE.village.mill=3;pay('roadCrew');pay('tunnelCrew');o.quiet=SAVE.vproj.seen.ridgeRoad===1;
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     enemies=[];SAVE=JSON.parse(bak);goalS().pin=null;enterVillage();return o});
-  check(!r2.err&&r2.wait&&r2.tab&&r2.ridge&&r2.stone&&r2.sign&&r2.desert&&r2.sell&&r2.mRidge&&r2.mDesert&&r2.story&&r2.old&&r2.quiet,
+  check(!r2.err&&r2.wait&&r2.tab&&r2.ridge&&r2.stone&&r2.sign&&r2.desert&&r2.sell&&r2.shown&&r2.mRidge&&r2.mDesert&&r2.story&&r2.old&&r2.quiet,
     'Tunnel crew + bridge caravan: '+(r2.err||[r2.wait?'wait for the road before':'open too early!',r2.tab?'mine tab after the lake road':'no mine tab',
       r2.ridge?'ridge road open without the water lantern':'ridge still shut!',r2.stone?'mine +stone':'no stone bonus',r2.sign?'signs':'no sign',
-      r2.desert?'desert road open without the ice lantern':'desert still shut!',r2.sell?'market +10% sell':'no sell bonus',
+      r2.desert?'desert road open without the ice lantern':'desert still shut!',r2.sell?'market +10% sell':'no sell bonus',r2.shown?'bonus shown in the info':'bonus not shown!',
       r2.mRidge&&r2.mDesert?'moment once near each road':'moment missing or twice',r2.story?'lanterns still need the story':'story skipped!',
       r2.old?'old saves keep the roads':'old save locked out!',r2.quiet?'quiet when already open':'replays the moment'].join(', '))+
     ' · price vs village path: '+JSON.stringify(r2.ratio));
@@ -4227,12 +4229,25 @@ function worldBot(m,L,god){
     // נמסיס באזור אחר: סמן לכיוון הדרך אליו, בלי חץ במסך. בלי נמסיס: כלום
     const pk=Object.keys(WORLD.paths).find(k=>WORLD.regions[k]);
     if(pk){const pp=WORLD.paths[pk],op=pp.open;pp.open=()=>true;NS().list.push({id:'nx',reg:pk,type,n:N.n,rank:1,wins:1,esc:null,cause:'near'});
-      const m2=nemMark();o.other=!!m2&&!m2.here&&m2.N.reg===pk;NMK.drawn=0;nemMarkDraw(5000,5000);o.otherNoArrow=!NMK.drawn;
+      const m2=nemMark();o.other=!!m2&&!m2.here&&m2.N.reg===pk;{const c0=NMK.calc;for(let i=0;i<60;i++){nemMark();nemMarkDraw(0,0)}o.cached=NMK.calc===c0}   // 11.11: הדרך לאזור אחר לא מחושבת בכל פריים
+      NMK.drawn=0;nemMarkDraw(5000,5000);o.otherNoArrow=!NMK.drawn;
       NS().list.length=0;if(op)pp.open=op;else delete pp.open}
     o.none=!nemMark()&&T('nem.wait','A','B').includes('A');
     enterWorld('home');o.gone=!S.wd.nemE;
     enemies=[];enterVillage();SAVE.nem=JSON.parse(n0);return o});
   check(Object.values(nm).every(Boolean),'בוס-נמסיס: '+Object.entries(nm).map(([k,v])=>(v?'':'✗')+k).join(', '));
+  // 11.11 (ממצאי ביקורת Sonnet): כמה עולות בכל פריים שלוש פונקציות שרצות תמיד. מדידה בלבד, לא נכשלת. מיקרו-שניות לקריאה
+  const pf=await page.evaluate(()=>{const o={},n0=JSON.stringify(SAVE.nem||null),bak=JSON.stringify(SAVE.vproj||null);
+    try{const us=(n,f)=>{f();const t=performance.now();for(let i=0;i<n;i++)f();return +((performance.now()-t)*1000/n).toFixed(2)};
+      enterWorld('home','meadow');enemies=[];S.mode='play';const pk=Object.keys(WORLD.paths).find(k=>WORLD.regions[k]&&k!=='meadow');
+      SAVE.nem={list:[{id:'pf',reg:pk,type:WORLD.foes[0].type,n:1,rank:1,wins:1,esc:null,cause:'near'}],won:[]};
+      o.nem=us(2000,()=>{nemMarkDraw(0,0);nemMark()});   // החץ במסך והמפה הקטנה, כמו בפריים
+      enterWorld('home','desert');P.inv=99;WXW.reg='desert';WXW.st='storm';WXW.sandA=0.45;
+      o.sand=us(200,()=>{WXW.sandLast=performance.now();wxwSand()});
+      o.after=us(20000,()=>vpAfter('caravan'));
+    }catch(err){o.err=String(err).slice(0,120)}
+    SAVE.nem=JSON.parse(n0);SAVE.vproj=JSON.parse(bak);enemies=[];enterVillage();return o});
+  check(!pf.err,'Frame cost (µs per call): nemesis mark '+pf.nem+' · sand haze '+pf.sand+' · road lookup '+pf.after+(pf.err?' ✗ '+pf.err:''));
   // טיפ ראשון (firsttips.js): נמסיס ובוס ענק יחד: מוצג אחד, השני בתור. מחכה מתחת לחלון ולפס אחר, לא חוזר, נשמר. דרישה של חפץ: שורה בכרטיס, בלי בועה. כבוי: כלום
   const tp=await page.evaluate(()=>{const r2on=READ2.on;READ2.on=false;   // הכרטיס ליד אויב: ההמתנה לסוף הקרב נבדקת ב-rd2
     const o={},t0=JSON.stringify(SAVE.tips||null),off0=!!SAVE.tipsOff,n0=JSON.stringify(SAVE.nem||null),lo0=JSON.stringify(SAVE.lore||null);

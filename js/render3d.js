@@ -530,7 +530,8 @@ function once(a,name,dur,hold=false,skip=0){
 /* גיבור בלי הכנה (ניר, 7.11, מסרטון של מפתח Diablo 3: "לפעולות של השחקן אין הכנה"): תקיפה וסקיל מתחילים כבר באמצע התנועה.
    כמה מדלגים מכל אנימציה (חלק מהאורך). רק לגיבור, ורק בעולם ובכפר (SKCAST.where). לאויבים ולבוס ההכנה נשארת, כי היא האזהרה */
 const HERO_SKIP={Melee_1H_Attack_Chop:0.3,Melee_1H_Attack_Slice_Horizontal:0.25,Melee_2H_Attack_Chop:0.35,Melee_2H_Attack_Spin:0.2,
-  Ranged_Magic_Shoot:0.15,Ranged_Magic_Spellcasting:0.35,Ranged_Magic_Summon:0.3,Melee_Block:0.15,Ranged_Bow_Release:0,Throw:0.25};   // Throw: מהענף של אוראל (skillcast.js, SKCAST.pre)
+  Ranged_Magic_Shoot:0.15,Ranged_Magic_Spellcasting:0.35,Ranged_Magic_Summon:0.3,Melee_Block:0.15,Ranged_Bow_Release:0,Throw:0.25,
+  Ranged_Magic_Raise:0.3,Ranged_Bow_Release_Up:0};   // Throw, Raise, Release_Up: מהענף של אוראל (skillcast.js, SKCAST.pre). Release_Up כמו Release: הקליפ כבר מתחיל בשחרור
 const heroSkip=n=>SKCAST.where()?(HERO_SKIP[n]||0):0;
 function place(a,x,y,foot,yaw,lift=0){
   const S_=SIN();a.root.position.set(x,(lift+(TR&&S.wd?hAt(x,y):0))/COS(),(y+foot)/S_);   // hAt: על הרכס הדמות עומדת גבוה יותר (terrain.js)
