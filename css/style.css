@@ -2103,3 +2103,20 @@ body.mb .skb.lock::after{content:none}
 #bmLine.on{animation:bmLine 2.4s ease-out forwards}
 @keyframes bmLine{0%{opacity:0;transform:translateX(-50%) scale(.85)}12%{opacity:1;transform:translateX(-50%) scale(1.04)}20%{transform:translateX(-50%) scale(1)}80%{opacity:1}100%{opacity:0}}
 @media (prefers-reduced-motion:reduce){#bmLine.on{animation:none;opacity:1}}
+
+/* ---- מסכים ברורים (docs/concept-clear-screens.md, ניר אישר 11.11) ---- */
+/* 3. העולם מחשיך מאחורי שיחה (40%, שהתושב עוד נראה) ומאחורי חלון מבנה (55%, כמו .gearov). צל ענק סביב החלון: בלי אלמנט חדש,
+   ונגיעה בחוץ עוברת למשחק כמו קודם. בתפריט יש כבר רקע (.menubg), אז לא מחשיכים פעמיים */
+body:not(.menu) #npcDlg:not([hidden]){box-shadow:0 10px 30px #0009,0 0 0 200vmax rgba(10,12,20,.4)}
+body:not(.menu) #vPanel:not([hidden]){box-shadow:0 10px 30px #0009,0 0 0 200vmax rgba(10,12,20,.55)}
+/* 1. "יש עוד למטה": כל רשימה שגוללת נמוגה בתחתית, כך שהשורה האחרונה שנראית מציצה חצי-שקופה. רק כשבאמת יש עוד, ובלי JS:
+   המסכה נמצאת רק בתוך אנימציה על ציר הגלילה (scroll-timeline). רשימה שלא גוללת = ציר לא פעיל = אין מסכה בכלל.
+   בסוף הגלילה המסכה נמתחת 40px מעבר לתחתית, והדהייה יוצאת מהחלון בהדרגה, כך שהשורה האחרונה נראית שלמה */
+@keyframes fhFade{from,88%{mask:linear-gradient(to bottom,#000 calc(100% - 40px),#0003) 0 0/100% 100% no-repeat}
+  to{mask:linear-gradient(to bottom,#000 calc(100% - 40px),#0003) 0 0/100% calc(100% + 40px) no-repeat}}
+.bwgrid,.bwbody,.bkgrid,.icbody,#gItems{animation:fhFade linear both;animation-timeline:scroll(self block)}
+/* חלון שכולו גולל (קווסטים): הדהייה רק על התוכן, והמסגרת (border-image) נשארת שלמה: טבעת המסגרת + התוכן שנמוג */
+@keyframes fhFadeWin{from,88%{mask:linear-gradient(to bottom,#000 calc(100% - 40px),#0003) 0 0/100% 100% no-repeat padding-box,linear-gradient(#000 0 0) padding-box exclude,linear-gradient(#000 0 0) border-box}
+  to{mask:linear-gradient(to bottom,#000 calc(100% - 40px),#0003) 0 0/100% calc(100% + 40px) no-repeat padding-box,linear-gradient(#000 0 0) padding-box exclude,linear-gradient(#000 0 0) border-box}}
+.qlog.win:not(.bookwin):not(.wmapwin):not(.npcdlg){animation:winIn .16s ease-out,fhFadeWin linear both;animation-timeline:auto,scroll(self block)}   /* winIn: הפתיחה של .win נשארת */
+@media (prefers-reduced-motion:reduce){.qlog.win:not(.bookwin):not(.wmapwin):not(.npcdlg){animation:fhFadeWin linear both;animation-timeline:scroll(self block)}}
