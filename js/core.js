@@ -1,6 +1,11 @@
 /* בסיס: קנבס, צבעים, פונקציות עזר ושיא */
 const $=s=>document.getElementById(s);
 const cvs=$('c'),ctx=cvs.getContext('2d');
+// רדיוס שלילי (k שדועך או מתארך מעבר ל-1) זורק IndexSizeError ועוצר את כל הפריים (11.11.2026: drama.js, strike.js). רשת ביטחון לכל הקנבסים: רדיוס שלילי או NaN מצויר כ-0, ונספר
+const ARCSAFE={n:0};
+for(const f of ['arc','ellipse']){const o=CanvasRenderingContext2D.prototype[f];if(!o||o.__safe)continue;
+  const w=f==='arc'?function(x,y,r,...a){if(!(r>=0)){ARCSAFE.n++;r=0}return o.call(this,x,y,r,...a)}:function(x,y,rx,ry,...a){if(!(rx>=0)||!(ry>=0)){ARCSAFE.n++;rx=rx>=0?rx:0;ry=ry>=0?ry:0}return o.call(this,x,y,rx,ry,...a)};
+  w.__safe=1;CanvasRenderingContext2D.prototype[f]=w}
 const C={ink:'#121624',line:'#2A3249',chalk:'#ECE7DC',dim:'#8D94A8',ember:'#FF8A3D',tide:'#46D3E6',gold:'#F4C74F',blood:'#EF4E57',lilac:'#C7A6FF'};
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FONT="800 15px Heebo, system-ui, sans-serif";
