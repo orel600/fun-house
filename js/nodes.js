@@ -87,7 +87,7 @@ function nodeDown(n){
   n.dead=true;S.nd.broken++;svcNode(n);   // svcNode: המשפחה של היום בשוק (services.js)
   if(n.regrow)n.back=n.regrow;   // בעולם הפתוח הוא צומח מחדש (world.js)
   if(NODES.kinds[n.kind].shape==='chest')S.nd.chests=(S.nd.chests||0)+1;sfx('coin');
-  const K=NODES.kinds[n.kind],D=S.wd&&K.wdrop?Object.assign({},K.drop,K.wdrop):K.drop,got=runGive(gtDrop(n,D),n.x,n.y);S.nd.got.push(...got);   // gtDrop: הכלי מכפיל את החומר הראשי (gtool.js)
+  const K=NODES.kinds[n.kind],D=S.wd&&K.wdrop?Object.assign({},K.drop,K.wdrop):K.drop,got=runGive(ghDrop(n,gtDrop(n,D)),n.x,n.y);S.nd.got.push(...got);   // gtDrop: הכלי מכפיל את החומר הראשי (gtool.js). ghDrop: בלי מה שכבר נפל במכות (ghits.js)
   sparks(n.x,n.y,NODES.kinds[n.kind].col,14,200);gDown(null);
 }
 
