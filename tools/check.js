@@ -4627,8 +4627,9 @@ function worldBot(m,L,god){
     const n=lpNext(heroLv());o.next=!!n&&n.lv>heroLv()&&n.items.length>0;
     const lv0=heroLv();SAVE.hero.xp+=rankNeed(lv0)+1;rankSync();
     const c=document.getElementById('lpCard'),f=document.getElementById('lpFlash');
-    o.up=heroLv()===lv0+1;o.card=!!c&&c.classList.contains('on')&&c.querySelectorAll('li').length>=1&&c.textContent.includes(T('lp.up',heroLv()));
-    o.cardNext=!!c&&c.textContent.includes(T('lp.next'));o.flash=!!f&&f.classList.contains('on');
+    o.up=heroLv()===lv0+1;o.card=!!c&&c.classList.contains('on')&&c.textContent.trim()===T('lp.up',heroLv());   // just "Level N!" (Nir, 11.11)
+    o.cardNext=!!c&&!c.querySelector('ul,li,p')&&LEVELPATH.card.t<=2;o.flash=!!f&&f.classList.contains('on');
+    {const b=$('gBadge');o.badge=!!b&&!b.hidden&&+b.textContent>0}   // the points wait on the Hero button instead
     // the lane steps aside for the "Level N!" card (msglane.js, CI 11.11): lines wait (a big one too, not dropped to small), a new skill card waits, and all come after it
     {const mf=msgFight;msgFight=()=>false;if(typeof R2!=='undefined')R2.fightT=-99;
       try{o.laneOn=msgOn();msgSay('Lane lv');msgBig('Lane lv big');msgPump();const off=()=>{const e=$('skOffer');return !e||e.hidden};
@@ -4640,8 +4641,8 @@ function worldBot(m,L,god){
       finally{msgFight=mf;if(typeof skgOfferClose==='function')skgOfferClose();msgClear()}}
     gearOpen('char');const el=document.querySelector('#gChar .lpnext');o.win=!!el&&el.textContent.includes(T('lp.next'));gearClose();
     c.classList.remove('on');return o});
-  check(lp.orbit&&lp.rank&&lp.tree&&lp.next&&lp.up&&lp.card&&lp.cardNext&&lp.flash&&lp.win,
-    'מסלול רמות: '+(lp.orbit&&lp.rank&&lp.tree?'משבצת, דרגה ונקודת סקיל נמצאו':'חסר משהו בטבלה')+(lp.next?', יש "הבא"':', אין "הבא"')+(lp.card?', כרטיס בעליית רמה':', אין כרטיס')+(lp.cardNext?' עם הבא':'')+(lp.flash?', הבזק':', בלי הבזק')+(lp.win?', ובחלון הדמות':', לא בחלון הדמות'));
+  check(lp.orbit&&lp.rank&&lp.tree&&lp.next&&lp.up&&lp.card&&lp.cardNext&&lp.badge&&lp.flash&&lp.win,
+    'מסלול רמות: '+(lp.orbit&&lp.rank&&lp.tree?'משבצת, דרגה ונקודת סקיל נמצאו':'חסר משהו בטבלה')+(lp.next?', יש "הבא"':', אין "הבא"')+(lp.card?', a "Level N!" card':', no card or more than the level!')+(lp.cardNext?' only, short':', with extra lines or long!')+(lp.badge?', points on the Hero badge':', no badge for the points!')+(lp.flash?', הבזק':', בלי הבזק')+(lp.win?', ובחלון הדמות':', לא בחלון הדמות'));
   check(!lp.laneOn||lp.lvHold&&lp.lvKeep&&lp.lvCard&&lp.lvAfter&&lp.lvCardThen,'The lane steps aside for "Level N!": '+(!lp.laneOn?'lane off here':[lp.lvHold?'lines wait and the lane hides':'a line shows with the card!',
     lp.lvKeep?'the big one is not dropped to small':'the big one dropped to small!',lp.lvCard?'a new skill card waits':'the skill card shows over it!',
     lp.lvAfter?'card gone, the lines come':'lines lost!',lp.lvCardThen?'then the skill card':'the skill card never came!'].join(', ')));
