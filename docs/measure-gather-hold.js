@@ -52,7 +52,7 @@ function trial(o){
     await page.addInitScript(()=>{try{localStorage.setItem('zm-gfx','2d')}catch(e){}});
     await page.goto('file://'+path.join(ROOT,'index.html'));await page.waitForTimeout(500);
     await page.evaluate(c=>{$('ovStart').hidden=true;heroPick(c);for(const k of ['earth','water','ice','fire','bolt'])STO()[k]=true},cls);await page.waitForTimeout(300);
-    const LV={meadow:4,lake:9,ridge:15,desert:21,storm:27,shadow:33};
+    const LV=Object.assign({meadow:4,lake:9,ridge:15,desert:21,storm:27,shadow:33},JSON.parse(process.env.LV||'{}'));   // LV='{"ridge":9}': רמה אחרת לאזור (docs/measure-crew-gate.md)
     for(const reg of REGS)for(const zone of ['start','near','far'])for(const hold of HOLDS){
       const r=await page.evaluate(`(${trial})(${JSON.stringify({reg,zone,hold,T,lv:LV[reg]})})`);
       (out[reg]=out[reg]||{});(out[reg][zone]=out[reg][zone]||{});(out[reg][zone][hold]=out[reg][zone][hold]||[]).push(r);

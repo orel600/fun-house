@@ -3616,6 +3616,12 @@ function worldBot(m,L,god){
       o.wait=!vpHere('tunnelCrew')&&!vpHere('caravan')&&!wPathOpen(pr)&&vpBldTab('mine').label.includes('🔒')&&vpBldTab('mine').html().includes('reach');
       SAVE.village.mill=3;pay('roadCrew');o.tab=vpHere('tunnelCrew')&&!vpHere('caravan')&&vpBldTab('mine').html().includes('data-act="vp"');
       const s0=(()=>{const q=vProd('mine');q.t=Date.now()-3600e3;q.have={};vSettle('mine');return q.have.stone})();
+      // soft gate (docs/measure-crew-gate.md): the last stage waits for the hero level, says so on the tab, then builds
+      {const hl=SAVE.hero.level,P0=V.list.tunnelCrew,last=P0.stages.length-1;SAVE.hero.level=P0.hero-1;
+        for(let i=0;i<last;i++){for(const r in P0.stages[i])SAVE.bag[r]=(SAVE.bag[r]||0)+P0.stages[i][r];vpBuild('tunnelCrew')}
+        for(const r in P0.stages[last])SAVE.bag[r]=(SAVE.bag[r]||0)+P0.stages[last][r];
+        o.gate=vpStage('tunnelCrew')===last&&vpBlock('tunnelCrew')==='hero'&&!vpBuild('tunnelCrew')&&vpBldTab('mine').html().includes('needs hero level '+P0.hero)&&V.list.caravan.hero>0;
+        SAVE.hero.level=Math.max(hl||1,30);o.gate=o.gate&&vpBuild('tunnelCrew')}
       pay('tunnelCrew');o.ridge=vpDone('tunnelCrew')&&wPathOpen(pr)&&!wPathOpen(pd)&&!storyOpen('water')&&!storyOpen('ice');
       const s1=(()=>{const q=vProd('mine');q.t=Date.now()-3600e3;q.have={};vSettle('mine');return q.have.stone})();o.stone=s1>s0*1.05;
       o.sign=vpForPath('ridge')==='tunnelCrew'&&vpForPath('desert')==='caravan';
@@ -3631,8 +3637,8 @@ function worldBot(m,L,god){
       SAVE.village.mill=3;pay('roadCrew');pay('tunnelCrew');o.quiet=SAVE.vproj.seen.ridgeRoad===1;
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     enemies=[];SAVE=JSON.parse(bak);goalS().pin=null;enterVillage();return o});
-  check(!r2.err&&r2.wait&&r2.tab&&r2.ridge&&r2.stone&&r2.sign&&r2.desert&&r2.sell&&r2.shown&&r2.mRidge&&r2.mDesert&&r2.story&&r2.old&&r2.quiet,
-    'Tunnel crew + bridge caravan: '+(r2.err||[r2.wait?'wait for the road before':'open too early!',r2.tab?'mine tab after the lake road':'no mine tab',
+  check(!r2.err&&r2.wait&&r2.tab&&r2.gate&&r2.ridge&&r2.stone&&r2.sign&&r2.desert&&r2.sell&&r2.shown&&r2.mRidge&&r2.mDesert&&r2.story&&r2.old&&r2.quiet,
+    'Tunnel crew + bridge caravan: '+(r2.err||[r2.wait?'wait for the road before':'open too early!',r2.tab?'mine tab after the lake road':'no mine tab',r2.gate?'last stage waits for hero level':'no hero-level gate!',
       r2.ridge?'ridge road open without the water lantern':'ridge still shut!',r2.stone?'mine +stone':'no stone bonus',r2.sign?'signs':'no sign',
       r2.desert?'desert road open without the ice lantern':'desert still shut!',r2.sell?'market +10% sell':'no sell bonus',r2.shown?'bonus shown in the info':'bonus not shown!',
       r2.mRidge&&r2.mDesert?'moment once near each road':'moment missing or twice',r2.story?'lanterns still need the story':'story skipped!',
