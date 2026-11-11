@@ -8,8 +8,8 @@
       The model, skin and gear are never replaced. The white ground ring already exists (READ3D.hero in readable3d.js) and is reused.
    2. One world enemy with its own silhouette: the grunt in the open world is drawn as mon_orcSkull (Quaternius CC0,
       2,400 triangles, built by tools/build3d.js --only monsters --mon=orcSkull). Same type, hp, size, hit size and timings: only the look key.
-   3. One village corner: the plaza in front of the village center gets a ring of rounded curb stones (the round floor disc was removed, Nir 11.11),
-      and its street lamps become rounder toy lamps. Visual only: walkable space and collision are unchanged.
+   3. One village corner: the street lamps around the plaza in front of the village center become rounder toy lamps.
+      (A round floor disc and a ring of curb stones were tried and removed, 11.11: Nir didn't read the disc as a plaza, and the stones alone read as scattered pebbles.)
    Numbers live in LV2. A new world enemy look = one row in LV2.swap and one in LV2.looks. */
 const LV2={
   on:!/[?&]look=(v1|classic)\b/.test(location.search),
@@ -18,8 +18,7 @@ const LV2={
   clips:{mon_orcSkull:{hit:'mon_orcSkull_Weapon'}},   // FOEATK3D.clip: the swing it plays when it attacks (strike.js)
   outline:{col:0x1b1512,w:0.075},        // w: in model units (a KayKit hero is about 2.3 tall): about 2.5 px at the phone camera (0.045 was 1.5 px, too thin to read)
   rim:{k:0.5},   // edge rim on the hero, at least this strong in the village and world (rim-world.js: its color and where the edge starts)
-  plaza:{x:0,y:-185,r:125,curb:'#A08560',n:20,lampR:200,   // no floor disc: Nir didn't read it as a plaza (11.11)
-      // lampR: street lamps this close to the plaza center become v2 lamps
+  plaza:{x:0,y:-185,lampR:200,   // street lamps this close to the plaza center become v2 lamps
     lamp:{h:56,post:'#5A3E2B',base:'#9E9484',cap:'#B54A3C',glow:'#ffd38a',halo:46}}
 };
 const lv2Here=()=>LV2.on&&typeof S!=='undefined'&&S&&!S.room&&!S.mb&&!!(S.vil||S.wd);
@@ -37,7 +36,6 @@ if(LV2.on){
   {const sp=syncPlayer;syncPlayer=function(){const r=sp.apply(this,arguments);try{lv2Hero(R3D.player)}catch(e){}return r}}
   // 3. the plaza
   {const sl=p3StreetLamp;p3StreetLamp=function(x,y,g){const P0=LV2.plaza;return Math.hypot(x-P0.x,y-P0.y)<P0.lampR?lv2Lamp(x,y,g):sl(x,y,g)}}
-  {const vp=p3VillageProps;p3VillageProps=function(V){const r=vp.apply(this,arguments);if(!V.lv2){V.lv2=1;try{lv2Plaza(V.g)}catch(e){}}return r}}
 }
 
 /* ---- 1. hero: outline + rim ---- */
@@ -64,16 +62,8 @@ function lv2Hero(a){
   for(const [o,ol] of a.lv2ol)ol.visible=here&&o.visible;
 }
 
-/* ---- 3. the plaza: rounded curb ring, rounder lamps ---- */
+/* ---- 3. the plaza: rounder lamps ---- */
 function lv2Smooth(c){const k='lv2'+c;return P3.mats[k]||(P3.mats[k]=new THREE.MeshLambertMaterial({color:c}))}   // smooth shading: rounder than p3Mat (flat)
-function lv2Plaza(g){
-  const P0=LV2.plaza,grp=new THREE.Group(),sin=SIN();
-  const stone=new THREE.SphereGeometry(1,10,6),cm=lv2Smooth(P0.curb);
-  for(let i=0;i<P0.n;i++){const t=i/P0.n*Math.PI*2,x=Math.cos(t)*P0.r,y=Math.sin(t)*P0.r;
-    if(Math.abs(Math.sin(t)-1)<0.08)continue;   // a gap toward the village gate (+y): the road in stays open
-    const m=new THREE.Mesh(stone,cm);m.scale.set(13,4.5,9);m.position.set(x,1.5,y/sin);m.rotation.y=-t;grp.add(m)}
-  grp.position.set(P0.x,0,P0.y/sin);g.add(grp);LV2.plazaG=grp;return grp;
-}
 function lv2Lamp(x,y,g){
   const L=LV2.plaza.lamp,grp=new THREE.Group();
   const base=new THREE.Mesh(new THREE.SphereGeometry(8,14,8),lv2Smooth(L.base));base.scale.y=0.45;base.position.y=2;grp.add(base);
