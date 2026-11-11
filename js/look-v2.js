@@ -16,13 +16,13 @@ const LV2={
   swap:{grunt:'w_grunt'},   // world enemy type -> its v2 LOOK3D key
   looks:{w_grunt:{model:'mon_orcSkull',h:56,foot:13,anim:{run:'mon_orcSkull_Walk',die:'mon_orcSkull_Death'}}},
   clips:{mon_orcSkull:{hit:'mon_orcSkull_Weapon'}},   // FOEATK3D.clip: the swing it plays when it attacks (strike.js)
-  outline:{col:0x1b1512,w:0.045},        // w: in model units (a KayKit hero is about 2.3 tall), so about 2% of the height
-  rim:{col:[1,0.95,0.84],k:0.55,pow:2.2},// light rim on the hero: color (linear rgb), strength, how thin
+  outline:{col:0x1b1512,w:0.075},        // w: in model units (a KayKit hero is about 2.3 tall): about 2.5 px at the phone camera (0.045 was 1.5 px, too thin to read)
+  rim:{col:[1,0.95,0.84],k:0.5,lo:0.6,hi:0.92},   // light rim on the hero: color (linear rgb), strength, and where it starts/fills (1-cos, like rim-world.js): only the edges, the hero's own colors stay
   plaza:{x:0,y:-150,r:165,floor:'#D8C9AC',curb:'#B5A387',n:22,lampR:200,   // lampR: street lamps this close to the plaza center become v2 lamps
     lamp:{h:56,post:'#5A3E2B',base:'#9E9484',cap:'#B54A3C',glow:'#ffd38a',halo:46}}
 };
 const lv2Here=()=>LV2.on&&typeof S!=='undefined'&&S&&!S.room&&!S.mb&&!!(S.vil||S.wd);
-const LV2U={w:{value:LV2.outline.w},rimK:{value:0},rimC:{value:null},rimP:{value:LV2.rim.pow}};
+const LV2U={w:{value:LV2.outline.w},rimK:{value:0},rimC:{value:null},rimLo:{value:LV2.rim.lo},rimHi:{value:LV2.rim.hi}};
 
 if(LV2.on){
   Object.assign(LOOK3D,LV2.looks);
@@ -52,9 +52,9 @@ function lv2Rim(mat){   // chains any earlier onBeforeCompile (readable3d.js pat
   if(!mat||mat.userData.lv2||!mat.isMeshLambertMaterial)return;mat.userData.lv2=1;
   if(!LV2U.rimC.value)LV2U.rimC.value=new THREE.Vector3(...LV2.rim.col);
   const prev=mat.onBeforeCompile,pk=mat.customProgramCacheKey;
-  mat.onBeforeCompile=function(sh,r){if(prev)prev.call(this,sh,r);sh.uniforms.lv2RimK=LV2U.rimK;sh.uniforms.lv2RimC=LV2U.rimC;sh.uniforms.lv2RimP=LV2U.rimP;
-    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform float lv2RimK,lv2RimP;uniform vec3 lv2RimC;')
-      .replace('#include <opaque_fragment>','{vec3 lv2V=isOrthographic?vec3(0.0,0.0,1.0):normalize(vViewPosition);float lv2R=1.0-max(dot(normalize(normal),lv2V),0.0);outgoingLight+=lv2RimC*pow(lv2R,lv2RimP)*lv2RimK;}\n#include <opaque_fragment>')};
+  mat.onBeforeCompile=function(sh,r){if(prev)prev.call(this,sh,r);sh.uniforms.lv2RimK=LV2U.rimK;sh.uniforms.lv2RimC=LV2U.rimC;sh.uniforms.lv2RimLo=LV2U.rimLo;sh.uniforms.lv2RimHi=LV2U.rimHi;
+    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform float lv2RimK,lv2RimLo,lv2RimHi;uniform vec3 lv2RimC;')
+      .replace('#include <opaque_fragment>','{vec3 lv2V=isOrthographic?vec3(0.0,0.0,1.0):normalize(vViewPosition);float lv2R=smoothstep(lv2RimLo,lv2RimHi,1.0-clamp(dot(normal,lv2V),0.0,1.0));outgoingLight+=lv2RimC*lv2R*lv2RimK;}\n#include <opaque_fragment>')};
   mat.customProgramCacheKey=function(){return (pk?pk.call(this):'')+'|lv2rim'};
   mat.needsUpdate=true;
 }

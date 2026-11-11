@@ -27,7 +27,7 @@ async function session(browser,v2){
   for(let i=0;i<300;i++){const r=await page.evaluate(()=>R3D.ready||R3D.failed);if(r)break;await page.waitForTimeout(50);await page.clock.runFor(50)}
   // each step: the hero can't die, open windows close, and (when set) only the test's own enemies stay, so nothing else walks into the frame
   const run=async(ms,step=50)=>{for(let t=0;t<ms;t+=step){await page.evaluate(()=>{if(typeof P!=='undefined'&&P.maxHp)P.hp=P.maxHp;
-    for(const o of document.querySelectorAll('[id^="ov"]'))if(!o.hidden&&o.id!=='ovHud')o.hidden=true;
+    for(const o of document.querySelectorAll('[id^="ov"],.win'))if(!o.hidden&&o.id!=='ovHud')o.hidden=true;
     if(window.__only&&typeof enemies!=='undefined')for(let i=enemies.length-1;i>=0;i--)if(!enemies[i].lv2t)enemies.splice(i,1)});await page.clock.runFor(step)}};
   const noHud=v=>page.evaluate(v=>{for(const el of document.body.children)if(!el.querySelector('canvas')&&el.tagName!=='CANVAS')el.style.visibility=v?'hidden':''},v);
   const waitModel=async k=>{for(let i=0;i<200;i++){if(await page.evaluate(k=>!m3dLazy(k)||m3dReady(k),k))return true;await page.waitForTimeout(50);await page.clock.runFor(50)}return false};
@@ -64,20 +64,22 @@ async function session(browser,v2){
   // the page's clock is fake (performance.now stands still), so times are wall clock from here, around one frame each. Heap from CDP
   const cdp=await ctx.newCDPSession(page),heap=async()=>{const m=(await cdp.send('Performance.getMetrics')).metrics;return Math.round(m.find(x=>x.name==='JSHeapUsedSize').value/1e5)/10};
   await cdp.send('Performance.enable');
-  const frame=async(fn,arg)=>{const t=Date.now();await page.evaluate(fn,arg);return Date.now()-t};
-  await page.evaluate(()=>{enemies.length=0;window.__ft=performance.now()});const h0=await heap();
-  const idleMs=await frame(()=>{frameStep(window.__ft+=16)});
-  const spawn20=await frame(()=>{for(let i=0;i<20;i++){const a=i/20*Math.PI*2;const e=addEnemy('grunt',P.x+Math.cos(a)*150,P.y+Math.sin(a)*110);e.dmg=0;e.lv2t=1}frameStep(window.__ft+=16)});
-  const next=[];for(let i=0;i<5;i++)next.push(await frame(()=>{frameStep(window.__ft+=16)}));
-  await page.evaluate(()=>{enemies.length=0});await frame(()=>{frameStep(window.__ft+=16)});
-  const again20=await frame(()=>{for(let i=0;i<20;i++){const a=i/20*Math.PI*2;const e=addEnemy('grunt',P.x+Math.cos(a)*150,P.y+Math.sin(a)*110);e.dmg=0;e.lv2t=1}frameStep(window.__ft+=16)});
+  const frame=async(fn)=>{const t=Date.now();if(fn)await page.evaluate(fn);await page.clock.runFor(17);return Date.now()-t};   // one game frame (rAF on the game's own clock), wall time
+  await page.evaluate(()=>{enemies.length=0});const h0=await heap();
+  const idleMs=await frame();
+  const spawn20=await frame(()=>{for(let i=0;i<20;i++){const a=i/20*Math.PI*2;const e=addEnemy('grunt',P.x+Math.cos(a)*150,P.y+Math.sin(a)*110);e.dmg=0;e.lv2t=1}});
+  const next=[];for(let i=0;i<5;i++)next.push(await frame());
+  await page.evaluate(()=>{enemies.length=0});await frame();
+  const again20=await frame(()=>{for(let i=0;i<20;i++){const a=i/20*Math.PI*2;const e=addEnemy('grunt',P.x+Math.cos(a)*150,P.y+Math.sin(a)*110);e.dmg=0;e.lv2t=1}});
   const h1=await heap();
   R.perf=await page.evaluate(async()=>{const ri=R3D.r.info;
     const k=foeKey(enemies[0]),L=LOOK3D[k];let tris=0;const tm=R3D.tmpl[L.model];if(tm)tm.traverse(o=>{if(o.isMesh&&o.geometry.index)tris+=o.geometry.index.count/3});
     // HUD drift: the hp bar and the skill button must not move between consecutive frames, also after spawn protection ends
-    const els=['hpWrap','hpBar','sk1','skBtn','skills'].map(id=>document.getElementById(id)).filter(Boolean),pos=[];
-    for(let i=0;i<30;i++){frameStep(window.__ft+=16);pos.push(els.map(e=>{const r=e.getBoundingClientRect();return r.x.toFixed(1)+','+r.y.toFixed(1)}).join('|'))}
-    return {key:k,model:L.model,tris,geometries:ri.memory.geometries,textures:ri.memory.textures,hud:{els:els.map(e=>e.id),distinct:new Set(pos).size}}});
+    return {key:k,model:L.model,tris,geometries:ri.memory.geometries,textures:ri.memory.textures}});
+  // HUD drift: the hp bar, xp bar and skill buttons must not move between consecutive frames (also after spawn protection ends, ~1.5 s)
+  {const pos=[],ids=['hp','xp','skills'];for(let i=0;i<40;i++){await page.clock.runFor(17);if(i===20)await page.clock.runFor(1500);
+    pos.push(await page.evaluate(ids=>ids.map(id=>{const e=document.getElementById(id);if(!e)return '-';const r=e.getBoundingClientRect();return r.x.toFixed(1)+','+r.y.toFixed(1)}).join('|'),ids))}
+   R.perf.hud={ids,frames:pos.length,distinctPositions:new Set(pos).size}}
   Object.assign(R.perf,{wallMs:{idleFrame:idleMs,first20SpawnFrame:spawn20,next5:next,second20SpawnFrame:again20},heapMB:[h0,h1]});
   await run(300);R.world20=await shot('world-20');
   await ctx.close();return R;
