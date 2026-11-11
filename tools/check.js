@@ -1667,9 +1667,9 @@ function worldBot(m,L,god){
   const skx=await page.evaluate(async()=>{const r={on:!!(R3D.ready&&R3D.on)};if(!r.on)return r;const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode;
     try{const t0=performance.now();await Promise.all(SKCAST.pre.map(k=>m3dGo(k)));r.load=Math.round(performance.now()-t0);r.st=SKCAST.pre.map(k=>M3D.st[k]);
       r.kb=Math.round(SKCAST.pre.reduce((a,k)=>a+M3D_LAZY[k],0)*0.75/1024);
-      if(SKR)skrEnd(false);enterWorld('home');enemies=[];const a=R3D.player,k0=P.skCast;r.play={};r.ms={};
+      if(SKR)skrEnd(false);enterWorld('home');enemies=[];syncPlayer(1/60);const k0=P.skCast;r.play={};r.ms={};
       for(const k of ['trap','storm','meteor','rain']){P.skCast={n:(k0?k0.n:0)+100+Object.keys(r.play).length,k,at:performance.now()};const t1=performance.now();syncPlayer(1/60);
-        r.ms[k]=+(performance.now()-t1).toFixed(1);r.play[k]=a&&a.one?a.one.getClip().name.replace('@up',''):'-'}
+        const a=R3D.player;r.ms[k]=+(performance.now()-t1).toFixed(1);r.play[k]=a&&a.one?a.one.getClip().name.replace('@up',''):a?'none':'no-player'}
       P.skCast=k0;
       r.ok=r.st.every(x=>x==='ready')&&r.play.trap==='Throw'&&r.play.storm==='Ranged_Magic_Raise'&&r.play.meteor==='Ranged_Magic_Raise'&&/^(Ranged_Bow_Release_Up|Ranged_Magic_Raise)$/.test(r.play.rain)}
     catch(err){r.err=String(err&&err.stack||err)}
