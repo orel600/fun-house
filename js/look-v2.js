@@ -13,9 +13,21 @@
    Numbers live in LV2. A new world enemy look = one row in LV2.swap and one in LV2.looks. */
 const LV2={
   on:!/[?&]look=(v1|classic)\b/.test(location.search),
-  swap:{grunt:'w_grunt'},   // world enemy type -> its v2 LOOK3D key
-  looks:{w_grunt:{model:'mon_orcSkull',h:56,foot:13,anim:{run:'mon_orcSkull_Walk',die:'mon_orcSkull_Death'}}},
-  clips:{mon_orcSkull:{hit:'mon_orcSkull_Weapon'}},   // FOEATK3D.clip: the swing it plays when it attacks (strike.js)
+  // world enemy type -> its v2 LOOK3D key. Phase 2 (11.11): each role has its own body, so a crowd reads by shape, not color
+  swap:{grunt:'w_grunt',wisp:'w_wisp',shield:'w_shield',sprite:'w_sprite',golem:'w_golem'},
+  looks:{
+    w_grunt:{model:'mon_orcSkull',h:56,foot:13,anim:{run:'mon_orcSkull_Walk',die:'mon_orcSkull_Death'}},   // hunched orc, skull helmet, cleaver
+    w_wisp:{model:'mon_wispGhost',h:54,foot:12,float:8,anim:{run:'mon_wispGhost_Fast_Flying',die:'mon_wispGhost_Death'}},   // horned shadow, no legs, keeps the hover
+    // the same skeleton (all KayKit anims), but a tall tower shield and round shoulder pads: wide and square from above (gear built in code, lv2Gear)
+    w_shield:{model:'warrior',h:60,foot:14,props:{shield:{prop:'lv2_tower',bone:'handslotl',pos:[0,0.017,0.156],rot:[0,0,0,1]},
+      padL:{prop:'lv2_pad',bone:'upperarml',pos:[0,0.06,0],rot:[0,0,0,1]},padR:{prop:'lv2_pad',bone:'upperarmr',pos:[0,0.06,0],rot:[0,0,0,1]}},
+      anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+    w_sprite:{model:'mon_spriteBee',h:38,foot:10,float:10,anim:{run:'mon_spriteBee_Fast_Flying',die:'mon_spriteBee_Death'}},   // little bee, no longer the player's mage body
+    w_golem:{model:'mon_golemIdol',h:84,foot:18,anim:{run:'mon_golemIdol_Walk',die:'mon_golemIdol_Death'}}   // stone idol brute, no longer the smith's body
+  },
+  clips:{mon_orcSkull:{hit:'mon_orcSkull_Weapon'},mon_golemIdol:{hit:'mon_golemIdol_Punch'},
+    mon_wispGhost:{cast:'mon_wispGhost_Punch',shoot:'mon_wispGhost_Punch'}},   // FOEATK3D.clip: what it plays when it attacks (strike.js)
+  gear:{wood:'#6B4A2E',iron:'#8E949E',paint:'#A8473B',tower:[1.0,1.55,0.12],pad:0.3},   // tower: width, height, thickness (model units; the KayKit shield is 0.88x1.13)
   outline:{col:0x1b1512,w:0.075},        // w: in model units (a KayKit hero is about 2.3 tall): about 2.5 px at the phone camera (0.045 was 1.5 px, too thin to read)
   rim:{k:0.5},   // edge rim on the hero, at least this strong in the village and world (rim-world.js: its color and where the edge starts)
   plaza:{x:0,y:-185,lampR:200,   // street lamps this close to the plaza center become v2 lamps
@@ -27,7 +39,9 @@ const LV2U={w:{value:LV2.outline.w}};
 if(LV2.on){
   Object.assign(LOOK3D,LV2.looks);
   Object.assign(FOEATK3D.clip,LV2.clips);
-  // 2. the world enemy: same enemy, another look key, only in the open world
+  // the shield's gear is built once, before the first actor that wears it (makeActor, crowdOf)
+  {const ma=makeActor;makeActor=function(L){if(!R3D.props.lv2_tower)lv2Gear();return ma.apply(this,arguments)}}
+  // 2. the world enemies: same enemy, another look key, only in the open world
   {const fk=foeKey;foeKey=function(e){const k=fk(e);return S&&S.wd&&!S.mb&&!S.room&&LV2.swap[k]?LV2.swap[k]:k}}
   // the world warms up each enemy type before it is on screen (render3d.js wldWarmSet): warm the v2 body instead.
   // wldTypes stays a list of real enemy types (tools/check.js spawns each of them)
@@ -65,6 +79,19 @@ function lv2Hero(a){
   for(const [o,ol] of a.lv2ol)ol.visible=here&&o.visible;
 }
 
+/* ---- 2b. gear for the v2 shield: a tall tower shield and round shoulder pads, from simple shapes (no build step) ---- */
+function lv2Gear(){
+  const G=LV2.gear,[w,h,d]=G.tower,wood=lv2Smooth(G.wood),iron=lv2Smooth(G.iron),paint=lv2Smooth(G.paint);
+  const t=new THREE.Group();
+  p3Mesh(new THREE.BoxGeometry(w,h,d),wood,0,0,0,t);
+  p3Mesh(new THREE.BoxGeometry(w*0.62,h*0.7,d*0.4),paint,0,0,d*0.6,t);   // a painted band on the front
+  for(const y of [-h/2,h/2])p3Mesh(new THREE.BoxGeometry(w*1.06,0.09,d*1.4),iron,0,y,0,t);   // iron rims top and bottom
+  p3Mesh(new THREE.SphereGeometry(0.13,12,8),iron,0,0,d*0.9,t);   // the boss
+  R3D.props.lv2_tower=t;
+  const p=new THREE.Group(),dome=new THREE.Mesh(new THREE.SphereGeometry(G.pad,14,8,0,Math.PI*2,0,Math.PI/2),iron);dome.scale.set(1,0.75,1);p.add(dome);
+  p3Mesh(new THREE.TorusGeometry(G.pad*0.98,0.035,6,18),wood,0,0.01,0,p).rotation.x=Math.PI/2;
+  R3D.props.lv2_pad=p;
+}
 /* ---- 3. the plaza: rounder lamps ---- */
 function lv2Smooth(c){const k='lv2'+c;return P3.mats[k]||(P3.mats[k]=new THREE.MeshLambertMaterial({color:c}))}   // smooth shading: rounder than p3Mat (flat)
 function lv2Lamp(x,y,g){
