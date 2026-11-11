@@ -2611,6 +2611,20 @@ function worldBot(m,L,god){
       if(R3D.player)R3D.player.root.traverse(x=>{if(x.isMesh&&!x.userData.lv2ol)for(const m of [].concat(x.material))if(m.userData.vfxRim)o.hero++});
       return o});
     check(wl.off||wl.n>0&&!wl.bad.length&&!wl.hero,'Village characters without white light: '+(wl.off?'look v1, skipped':wl.n+' NPCs'+(wl.bad.length?', glowing: '+wl.bad.join(', '):', none glows')+(wl.hero?', the hero still has vfx.js rim on '+wl.hero+' materials':', the hero has one rim')))}
+  // Hero outline follows what is worn, a pooled actor drops it, and old village lamps are freed (Sonnet review 11.11, js/look-v2.js)
+  if(CFG.gfx==='3d'){const ol=await page.evaluate(()=>{if(typeof LV2==='undefined'||!LV2.on||!lv2Here())return{off:1};const o={},g0=JSON.stringify(SAVE.gear);
+      const lined=()=>{const a=R3D.player,has=new Set((a.lv2ol||[]).map(p=>p[0]));let n=0,m=0;a.root.traverse(x=>{if(x.isMesh&&!x.userData.lv2ol&&x.visible){n++;if(has.has(x))m++}});return [m,n]};
+      SAVE.gear.head=[];SAVE.gear.body=[];R3D._hl=null;syncPlayer(0.016);const before=(R3D.player.arG||[]).length;
+      SAVE.gear.head=['warriorHead0'];SAVE.gear.body=['warriorBody0'];R3D._hl=null;syncPlayer(0.016);
+      const a=R3D.player,[m,n]=lined();o.parts=(a.arG||[]).length;const src=new Set((a.lv2ol||[]).map(p=>p[0]));let am=0,al=0;for(const g of a.arG||[])g.traverse(x=>{if(x.isMesh&&!x.userData.lv2ol){am++;if(src.has(x))al++}});o.armor=o.parts>before&&am>0&&al===am;
+      o.all=m===n;o.mn=m+'/'+n;
+      const k0=(a.lv2ol||[]).length;syncPlayer(0.016);o.stable=(R3D.player.lv2ol||[]).length===k0;   // no rebuild when nothing changed
+      freeActor(a);let left=0;a.root.traverse(x=>{if(x.userData.lv2ol)left++});o.pool=left===0&&!a.lv2ol;R3D.player=null;
+      SAVE.gear=JSON.parse(g0);R3D._hl=null;syncPlayer(0.016);
+      const own=(LV2.own||[]).length,f0=LV2.freed||0;if(R3D.vil){R3D.scene.remove(R3D.vil.g);R3D.vil=null}syncVillage(0.016);o.lamps=own;o.freed=(LV2.freed||0)-f0;o.leak=own===0||o.freed>=own;
+      return o});
+    check(ol.off||ol.armor&&ol.all&&ol.stable&&ol.pool&&ol.leak,'Hero outline (look v2): '+(ol.off?'look v1, skipped':[ol.armor?'new armor ('+ol.parts+' parts) gets a line':'new armor without a line!',ol.all?'every visible part lined ('+ol.mn+')':'parts without a line: '+ol.mn,
+      ol.stable?'no rebuild each frame':'rebuilt every frame!',ol.pool?'pooled actor drops it':'pooled actor keeps the hero outline!',ol.leak?'old village lamps freed ('+ol.freed+'/'+ol.lamps+')':'old lamps not freed ('+ol.freed+'/'+ol.lamps+')'].join(', ')))}
   // כל רמה של כל מבנה נראית אחרת (docs/concept-village-growth-2.md, ניר 10.11): מודל, גודל, קישוטים או זוהר שונים מהרמה הקודמת, וכל מודל קיים (בליבה או ב-js/m3d)
   {const vl=await page.evaluate(()=>{const same=[],miss=[],sig=lk=>lk.model+'|'+lk.size.toFixed(2)+'|'+lk.deco.slice().sort().join(',')+'|'+(lk.glow||'');
       const has=m=>!!MODELS3D[m]||typeof M3D_LAZY!=='undefined'&&m in M3D_LAZY;
@@ -3702,6 +3716,11 @@ function worldBot(m,L,god){
         for(let i=0;i<last;i++){for(const r in P0.stages[i])SAVE.bag[r]=(SAVE.bag[r]||0)+P0.stages[i][r];vpBuild('tunnelCrew')}
         for(const r in P0.stages[last])SAVE.bag[r]=(SAVE.bag[r]||0)+P0.stages[last][r];
         o.gate=vpStage('tunnelCrew')===last&&vpBlock('tunnelCrew')==='hero'&&!vpBuild('tunnelCrew')&&vpBldTab('mine').html().includes('needs hero level '+P0.hero)&&V.list.caravan.hero>0;
+        // 11.11 review: a pinned crew goal with all materials but a low hero says the level, not "head home" (goal.js)
+        {const gp=goalS().pin;goalS().pin={p:'tunnelCrew'};const sh=goalShow(),wd=S.wd;S.wd=S.wd||{};GOALW.t=0;GOALW.key='';const d0=GOAL.stat.done;goalUpdate(0.1);const ch=$('goalChip');
+          o.goalHero=!!sh&&!sh.done&&sh.hero===P0.hero&&GOAL.stat.done===d0&&!!ch&&!ch.hidden&&!/head home/i.test(ch.textContent+ch.getAttribute('aria-label'))&&ch.getAttribute('aria-label').includes('Reach hero level '+P0.hero);
+          S.wd=wd;goalS().pin=gp;GOALW.key='';if(ch&&!S.wd)ch.hidden=true}
+        o.gate=o.gate&&o.goalHero;
         SAVE.hero.level=Math.max(hl||1,30);o.gate=o.gate&&vpBuild('tunnelCrew')}
       pay('tunnelCrew');o.ridge=vpDone('tunnelCrew')&&wPathOpen(pr)&&!wPathOpen(pd)&&!storyOpen('water')&&!storyOpen('ice');
       const s1=(()=>{const q=vProd('mine');q.t=Date.now()-3600e3;q.have={};vSettle('mine');return q.have.stone})();o.stone=s1>s0*1.05;
@@ -3719,7 +3738,7 @@ function worldBot(m,L,god){
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     enemies=[];SAVE=JSON.parse(bak);goalS().pin=null;enterVillage();return o});
   check(!r2.err&&r2.wait&&r2.tab&&r2.gate&&r2.ridge&&r2.stone&&r2.sign&&r2.desert&&r2.sell&&r2.shown&&r2.mRidge&&r2.mDesert&&r2.story&&r2.old&&r2.quiet,
-    'Tunnel crew + bridge caravan: '+(r2.err||[r2.wait?'wait for the road before':'open too early!',r2.tab?'mine tab after the lake road':'no mine tab',r2.gate?'last stage waits for hero level':'no hero-level gate!',
+    'Tunnel crew + bridge caravan: '+(r2.err||[r2.wait?'wait for the road before':'open too early!',r2.tab?'mine tab after the lake road':'no mine tab',r2.gate?'last stage waits for hero level (goal strip says the level)':(r2.goalHero?'no hero-level gate!':'goal strip says head home before hero level!'),
       r2.ridge?'ridge road open without the water lantern':'ridge still shut!',r2.stone?'mine +stone':'no stone bonus',r2.sign?'signs':'no sign',
       r2.desert?'desert road open without the ice lantern':'desert still shut!',r2.sell?'market +10% sell':'no sell bonus',r2.shown?'bonus shown in the info':'bonus not shown!',
       r2.mRidge&&r2.mDesert?'moment once near each road':'moment missing or twice',r2.story?'lanterns still need the story':'story skipped!',

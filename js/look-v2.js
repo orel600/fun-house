@@ -95,7 +95,7 @@ if(LV2.on){
   for(const k in LOOK3D){const id=k.slice(4),L0=LOOK3D[k];if(k.slice(0,4)!=='npc_'||!LV2.npc[id]&&!L0.tint)continue;
     const L=Object.assign({},L0,LV2.npc[id]);delete L.tint;LOOK3D['lv2npc_'+id]=L}
   {const vp=vPut;vPut=function(model,x,y,w,rot,group){const k=lv2VilKey(model,x,y);return vp.call(this,k||model,x,y,w,rot,group)}}
-  {const sv=syncVillage;syncVillage=function(){lv2VilReady();return sv.apply(this,arguments)}}
+  {const sv=syncVillage;syncVillage=function(){lv2VilReady();if(R3D.vil!==LV2.swV){LV2.swV=R3D.vil;lv2Sweep()}return sv.apply(this,arguments)}}   // a new village object: free the old one's lamps
   {const sn=syncNpcs;syncNpcs=function(){const keep={};
     for(const lk in LOOK3D){if(lk.slice(0,7)!=='lv2npc_')continue;const id=lk.slice(7),k='npc_'+id,v=LOOK3D[lk];keep[k]=LOOK3D[k];
       const L=lv2Here()&&S.vil&&m3dNeed(v.model)?v:keep[k],a=R3D.npcs&&R3D.npcs[id];LOOK3D[k]=L;
@@ -120,7 +120,9 @@ function lv2OutlineMat(){
 }
 function lv2Hero(a){
   if(!a)return;
-  if(a.lv2!==a.key){a.lv2=a.key;a.lv2ol=[];
+  // rebuilt when the body or what is worn changes (armor3d a.ar, gear3dParts a.g3), not every frame: parts added later need a line too (review 11.11)
+  const st=a.key+'|'+(a.ar||'')+'|'+(a.g3||'');
+  if(a.lv2!==st){lv2Unline(a);a.lv2=st;a.lv2ol=[];
     const src=[];a.root.traverse(o=>{if(o.isMesh&&!o.userData.lv2ol)src.push(o)});
     for(const o of src){let ol;
       if(o.isSkinnedMesh){ol=new THREE.SkinnedMesh(o.geometry,lv2OutlineMat());ol.bind(o.skeleton,o.bindMatrix);ol.bindMode=o.bindMode;
@@ -131,6 +133,10 @@ function lv2Hero(a){
   const here=lv2Here();if(typeof rimwActor==='function')for(const U of rimwActor(a))U.k.value=here?Math.max(U.k.value,LV2.rim.k):RIMW.on?U.k.value:0;   // ?rimw=0: nobody else resets it, so 0 here
   for(const [o,ol] of a.lv2ol)ol.visible=here&&o.visible;
 }
+
+// strips the hero's outlines (they share the source's geometry and one material: nothing to dispose). Also on a pooled actor (render3d.js freeActor),
+// so a non-hero that reuses it never shows them (review 11.11)
+function lv2Unline(a){for(const [,ol] of a.lv2ol||[])if(ol.parent)ol.parent.remove(ol);a.lv2ol=null;a.lv2=null}
 
 /* ---- 2b. gear for the v2 shield: a tall tower shield and round shoulder pads, from simple shapes (no build step) ---- */
 function lv2Gear(){
@@ -162,6 +168,7 @@ function lv2Lamp(x,y,g){
   p3Mesh(new THREE.SphereGeometry(9,14,7,0,Math.PI*2,0,Math.PI/2),lv2Smooth(L.cap),0,L.h+10,0,grp);
   p3Mesh(new THREE.SphereGeometry(2.2,10,6),lv2Smooth(L.cap),0,L.h+19,0,grp);
   p3Halo(L.glow,L.halo,L.h+6,grp);
+  (LV2.own||(LV2.own=[])).push(grp);   // its geometries and halo are its own: freed when the village drops it (lv2Sweep)
   return p3At(grp,x,y,g);
 }
 
@@ -174,9 +181,17 @@ function lv2VilKey(model,x,y){
     if(m3dNeed(k))return k;(LV2.wait||(LV2.wait=new Set)).add(k);return null}
   return null;
 }
+// frees the lamps of villages that left the scene (lv2VilReady, a new village level in vgrowth.js, camera.js): only what lv2Lamp made.
+// Materials from lv2Smooth/p3Mat and the soft texture are shared, so they stay
+function lv2Sweep(){
+  const L=LV2.own;if(!L||!L.length||!R3D.scene)return;
+  const inScene=o=>{while(o){if(o===R3D.scene)return true;o=o.parent}return false};
+  LV2.own=L.filter(grp=>{if(inScene(grp))return true;
+    grp.traverse(o=>{if(o.isSprite){if(o.material)o.material.dispose()}else if(o.isMesh&&o.geometry)o.geometry.dispose()});LV2.freed=(LV2.freed||0)+1;return false});
+}
 function lv2VilReady(){
   const W=LV2.wait;if(!W||!W.size||![...W].every(k=>m3dReady(k)||M3D.st[k]==='fail'))return;
-  LV2.wait=null;if(R3D.vil){R3D.scene.remove(R3D.vil.g);R3D.vil=null}   // rebuilt by syncVillage, like a new village level (vgrowth.js)
+  LV2.wait=null;if(R3D.vil){R3D.scene.remove(R3D.vil.g);R3D.vil=null;lv2Sweep()}   // rebuilt by syncVillage, like a new village level (vgrowth.js)
 }
 // what the village needs at the opening: the gate, the two bodies, and the v2 pieces of the forge and market looks and the plaza of this level
 function lv2VilBoot(){
