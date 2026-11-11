@@ -96,3 +96,51 @@ All gameplay evidence from `tools/check.js` only (offline fixture: network block
 1. **Does it answer what Nir asked, not an easier version?** Yes for the concept scope: look in words + mockups for player, enemies, village and UI; touch/don't-touch with the arena excluded; evidence plan; options with cost. Gap: the mockups are 2D images, not in-engine, so they show direction, not proof. The pilot is where in-engine proof comes from.
 2. **What did I miss?** (a) Shared `LOOK3D` keys: grunt/shield/wisp are used by both the arena and the world, so the new look must use world-only keys or the arena changes by accident. (b) NPCs share bodies with enemies and heroes; NPC renewal is in scope (village) but listed after enemies. (c) The village mock drifts toward voxel; the target is rounder blocks. (d) Orel's hero visits the village too: the readability layer touches it visually. It's opt-in, and Orel can veto it for his hero. (e) iPad framing is not mocked, only planned in evidence.
 3. **Code check: does it exist already, what's the risk?** KayKit palette method, Blender-from-code, Quaternius pipeline and lazy-loaded `js/m3d/` already exist, so most of this is content, not new systems. Risks: `js/m3d/` already 9MB, so every new body must replace weight, not just add it; outline shader cost on the phone must be measured; KayKit's rounded style vs "Roblox blocky" is a taste call only Nir can make after seeing the pilot.
+
+## 6. Pilot results (11.11.2026, PR #666, `?look=v2` only)
+
+Nir approved the free pilot (A+B). Built behind `?look=v2`; without it nothing changes. Village and open world only.
+
+**What's in it**
+- **Hero:** thin dark outline (about 2.5 px at the phone camera) + an edge-only light rim on the selected hero's own model. Model, skin and gear never replaced. The existing white ground ring (`readable3d.js`) is reused. The rim reuses `rimwMat` from `rim-world.js` (feature/world-hero-rim) when that is in the game, so there's one rim shader, not two.
+- **One world enemy, new silhouette:** the world grunt is drawn as Quaternius Orc_Skull (CC0), reduced to **2,399 triangles** (today's grunt body: 5,288), 1 material, 128px texture, 43 joints. Same type, hp, size, hit size and timings. Only `foeKey(e)` in `render3d.js` changes, and only when `S.wd` is set.
+- **Village corner:** the plaza in front of the village center gets a round warm paved floor, rounded curb stones and rounder toy lamps. Visual only.
+
+**Evidence** (`node tools/look-v2-shots.js`, offline: new browser context, every http(s) request answered locally, no real save. Same seed, before vs v2)
+
+![World crowd, phone](concept/visual-language/pilot/phone-world.jpg)
+World, phone 844×390: 8 grunts + 3 shields + 2 wisps. Before (left) grunts and shields are the same skeleton family; v2 (right) the grunts are green orcs, told apart by shape.
+
+![Hero close-up](concept/visual-language/pilot/phone-world-hero.jpg)
+![Village plaza, phone](concept/visual-language/pilot/phone-village.jpg)
+![World, iPad](concept/visual-language/pilot/ipad-world.jpg)
+![Village, iPad](concept/visual-language/pilot/ipad-village.jpg)
+
+![Motion strip](concept/visual-language/pilot/phone-motion.jpg)
+Motion, one grunt next to the hero (top: before, bottom: v2): spawn, spawn, walk, walk, attack, attack, death, death. Spawn, walk and death read clearly. **The attack frames are not usable in either row**: the enemy is not visible in them, before or v2. That's my test setup, not the new body, and it is still open (see below).
+
+![Arena, phone](concept/visual-language/pilot/phone-arena.jpg)
+**Arena untouched:** the arena scene (HUD hidden) is **pixel-identical** with and without `?look=v2`: 0 of 329,160 pixels (phone) and 0 of 967,600 (iPad). One earlier run differed only because the hero was mid hurt-blink (`render3d.js` hides the hero every other step while `P.inv>0`); shots now clear `P.inv` first.
+
+**Numbers** (SwiftShader on the CPU, so compare before vs v2, not absolute phone FPS. Full data: `pilot/phone-report.json`, `pilot/ipad-report.json`)
+| | before | v2 |
+|---|---|---|
+| Grunt body triangles | 5,288 | 2,399 |
+| Console errors (whole run) | 0 | 0 |
+| HUD positions over 40 frames (incl. after spawn protection) | 1 distinct | 1 distinct |
+| GPU geometries / textures (phone) | 336 / 137 | 345 / 131 |
+| Frame with 20 grunts spawning, wall ms (phone / iPad) | 29 / 15 | 24 / 24 |
+| Same again, warm (phone / iPad) | 18 / 21 | 23 / 13 |
+| JS heap MB after (phone / iPad) | 29.3 / 30.8 | 35.2 / 32.2 |
+| Added download | | 138 KB (`js/m3d/mon_orcSkull.js` + anims), lazy |
+
+- No spawn hitch measured: the first 20-at-once frame is in the same range as a normal frame in both modes. One v2 frame later in the phone run took 1,270 ms, and a before run in an earlier pass had a 1,103 ms frame. Both look like SwiftShader shader compiles or GC in this CPU-only browser, not a v2 cost. Worth one look on Nir's phone.
+- Heap: v2 is 1-6 MB higher in these runs (the extra body, animations, outline meshes). Run-to-run noise is about ±1 MB.
+
+**Roblox (targeted, not verified):** mon_orcSkull 2,399 tris, 1 material, 128×128 texture, 43 joints. Plaza and lamps: code-built primitives (spheres, cylinders, a disc), no textures. Nothing was imported to or tested in Roblox Studio.
+
+**Still open**
+1. Attack frames in the motion strip (test setup).
+2. Plaza floor color still reads cool-grey under the village's blue night light. Taste call for Nir.
+3. Outline cracks are possible at hard edges of flat-shaded parts (split normals). Not visible at phone size in these shots.
+4. Next steps only if Nir likes the pilot: more world enemies (shield, wisp), NPC bodies, the rest of the village.
