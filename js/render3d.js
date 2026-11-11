@@ -511,7 +511,7 @@ function makeActor(L){
   const a={root,mats,props,own,mixer:new THREE.AnimationMixer(root),L,key:lookKey(L),base:null,one:null,flash:0,dieT:0,pulse:a_pulse};
   R3D.scene.add(root);return a;
 }
-function freeActor(a){a.root.visible=false;a.mixer.stopAllAction();a.atk=null;const p=R3D.pool;(p[a.key]||(p[a.key]=[])).push(a)}
+function freeActor(a){if(a.lv2ol&&typeof lv2Unline==='function')lv2Unline(a);a.root.visible=false;a.mixer.stopAllAction();a.atk=null;const p=R3D.pool;(p[a.key]||(p[a.key]=[])).push(a)}
 function act(a,name){const c=R3D.clips[name];return c?a.mixer.clipAction(c):null}
 // אנימציית בסיס בלולאה (ריצה, עמידה). מעבר רך בין אנימציות
 function loop(a,name,speed=1){

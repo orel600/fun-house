@@ -41,6 +41,7 @@ function goalShow(){
   const k=GOALW.r;if(k&&GOALW.g===goalKey(g)&&c[k]&&(SAVE.bag[k]||0)<c[k])r=k;
   else for(const x of GOAL.res)if(c[x]){const f=(SAVE.bag[x]||0)/c[x];if(f<1&&f<low){low=f;r=x}}
   if(!r&&c.coins&&(SAVE.bag.coins||0)<c.coins)r='coins';   // מהעולם יש הכל, חסרים מטבעות: מראים אותם, ולא ⌂ שמזמין הביתה לשווא
+  if(!r&&g.p&&vpHeroNeed(g.p))return {g,hero:vpHeroNeed(g.p)};   // יש הכל, אבל השלב האחרון מחכה לרמת הגיבור (vproj.js): לא שולחים הביתה לשווא
   if(!r)return goalFrac(c)==null?null:{g,done:true};
   return {g,r,have:SAVE.bag[r]||0,need:c[r]};
 }
@@ -57,12 +58,13 @@ function goalUpdate(dt){
   const o=goalShow();let b=$('goalChip');
   if(!b){if(!o)return;b=document.createElement('span');b.id='goalChip';b.className='goalchip';const hud=$('whud'),bag=$('wBag');if(!hud)return;hud.insertBefore(b,bag||null)}
   b.hidden=!o;if(!o)return;
-  const key=goalKey(o.g)+'|'+(o.done?'done':o.r+'|'+o.have+'|'+o.need)+'|'+LANG;
+  const key=goalKey(o.g)+'|'+(o.hero?'hero'+o.hero:o.done?'done':o.r+'|'+o.have+'|'+o.need)+'|'+LANG;
   if(o.r&&o.r===GOALW.r&&o.have>GOALW.have&&goalKey(o.g)===GOALW.g){b.classList.remove('gpulse');void b.offsetWidth;b.classList.add('gpulse');GOAL.stat.pulse++}
   GOALW.r=o.r;GOALW.have=o.have||0;GOALW.g=goalKey(o.g);
   if(o.done&&goalS().hit!==goalLv(o.g)){goalS().hit=goalLv(o.g);saveNow();GOAL.stat.done++;celebrate(P.x,P.y-20,'gear','⌂');banner(T('goal.ready',goalName(o.g)),C.gold)}
   if(key===GOALW.key)return;GOALW.key=key;GOAL.stat.show++;
   // span ולא b: ‎.whud b‎ הוא שם האזור, שנעלם אחרי 5 שניות (style.css), והמספר היה נעלם איתו
+  if(o.hero){b.innerHTML='⭐ <span class="gnum">'+T('goal.lv',o.hero)+'</span><small>'+goalName(o.g)+'</small>';b.setAttribute('aria-label',T('goal.hero',o.hero,goalName(o.g)));return}
   b.innerHTML=o.done?'⌂ <span class="gnum">'+goalName(o.g)+'</span> ✓':resPic(o.r)+'<span class="gnum">'+shortN(o.have)+'/'+shortN(o.need)+'</span><small>'+goalName(o.g)+'</small>';
   b.setAttribute('aria-label',o.done?T('goal.ready',goalName(o.g)):T('goal.aria',resName(o.r),o.have,o.need,goalName(o.g)));
 }
