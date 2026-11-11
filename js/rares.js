@@ -131,7 +131,7 @@ function rareDraw(){
     if(tw<0.15)continue;const x=sp.x+Math.cos(a)*q,y=sp.y+Math.sin(a)*q*0.7,s=1.5+tw*2.5;
     ctx.globalAlpha=tw*0.85;ctx.beginPath();ctx.moveTo(x,y-s*2);ctx.lineTo(x+s*0.6,y);ctx.lineTo(x,y+s*2);ctx.lineTo(x-s*0.6,y);ctx.closePath();ctx.fill()}
   const e=r.e;if(!e.dead){const fg=rareFight(),k=fg?RARES.fight.size:1,ka=fg?RARES.fight.alpha:1;RARES.fight.on=fg;   // באמצע קרב: קטן ועמום
-    ctx.globalAlpha=(0.22+Math.sin(t*3)*0.08)*ka;ctx.beginPath();ctx.ellipse(e.x,e.y+e.r*0.6,e.r*1.9*k,e.r*0.9*k,0,0,7);ctx.fill();
+    ctx.globalAlpha=(0.22+Math.sin(t*3)*0.08)*ka;ctx.beginPath();ctx.ellipse(e.x,e.y+e.r*0.6,e.r*1.9*Math.max(0,k),e.r*0.9*Math.max(0,k),0,0,7);ctx.fill();
     const B=RARES.beam,bh=B.h*k,bw=B.w*k,gr=ctx.createLinearGradient(0,e.y-bh,0,e.y);gr.addColorStop(0,RARES.col+'00');gr.addColorStop(1,RARES.col+'aa');   // עמוד אור: רואים מרחוק איפה היא (כמו הקרן של שלל, drops.js)
     ctx.globalAlpha=(0.6+0.15*Math.sin(t*4))*ka;ctx.fillStyle=gr;ctx.fillRect(e.x-bw/2,e.y-bh,bw,bh);ctx.fillStyle='#fff';ctx.globalAlpha*=0.6;ctx.fillRect(e.x-bw/8,e.y-bh*0.9,bw/4,bh*0.9)}
   ctx.restore();

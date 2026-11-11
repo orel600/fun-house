@@ -3551,6 +3551,15 @@ function worldBot(m,L,god){
       rcr.done?'3 stages open the lake road without the earth lantern':'road still shut!',rcr.wood?'sawmill +wood':'no wood bonus',
       rcr.far&&rcr.moment?'moment near the road':'no moment '+rcr.why,rcr.once&&rcr.upd?'once':'twice! '+rcr.why,rcr.water?'water lantern still needs the story':'story skipped!',
       rcr.old?'old save keeps the road':'old save locked out!',rcr.quiet?'quiet when already open':'replays the moment',rcr.blank?'saved':'not saved'].join(', ')));
+  // Negative radius (11.11): a k past 1 (a wind-up that got longer, a mark whose timer grew) gave ctx.arc a negative radius, which throws and kills the frame.
+  // Forces it once: a pounce mark and a strike wind-up past their end, plus a raw negative arc/ellipse. Nothing may throw
+  const arcN=await page.evaluate(()=>{const o={};const bm=DM.marks,be=enemies;
+    try{const n0=ARCSAFE.n;ctx.save();ctx.beginPath();ctx.arc(0,0,-5,0,1);ctx.ellipse(0,0,-3,2,0,0,1);ctx.restore();o.raw=ARCSAFE.n===n0+2;
+      const e={x:P.x+80,y:P.y,r:14,hp:10,maxHp:10,sw:3,sw0:1,sa:0};DM.marks=[{e,x:P.x,y:P.y,t:3,t0:0.9,wk:1}];enemies=[e];
+      const n1=ARCSAFE.n;dmDraw();strikeDraw();o.drawn=ARCSAFE.n===n1}   // the clamps at the call sites: the safety net was not needed
+    catch(err){o.err=String(err&&err.message||err).slice(0,160)}
+    DM.marks=bm;enemies=be;return o});
+  check(!arcN.err&&arcN.raw&&arcN.drawn,'Negative radius: '+(arcN.err||[arcN.raw?'raw arc/ellipse safe':'raw arc not guarded!',arcN.drawn?'pounce mark + strike wind-up past the end draw clamped':'a call site still hands a negative radius'].join(', ')));
   // Tunnel crew + bridge caravan (vproj.js, docs/concept-village-region-2.md): mine 4 opens the ridge road, market 4 the desert road.
   // Each needs the road before it open (after), never locks an old save, never lights a lantern. Prints price vs the village path to that level (part 1 ≈ 0.6).
   const r2=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
