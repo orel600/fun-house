@@ -17,7 +17,10 @@ const ROOT=path.join(__dirname,'../..'),RAW=path.join(ROOT,'art/village-v2/raw')
 const io=new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({'meshopt.decoder':MeshoptDecoder,'meshopt.encoder':MeshoptEncoder});
 const BASE='barbarian';   // the body the smith and innkeeper had: its skeleton (23 KayKit bones) carries the new bodies
 const CHARS=['smith','inn'];   // art/village-v2/raw/npc_<id>.glb -> lv2_<id>
-const PROPS=['anvil','rack','barrel','bucket','crate','crateS','lumber','fence','banner','pennant','stall','sack','gate'];   // <id>.glb -> vx_lv2_<id>
+const PROPS=['anvil','rack','barrel','bucket','crate','crateS','lumber','fence','banner','pennant','stall','sack','gate',
+  // phase 4 (build_village4.py): every level of the other buildings, the camp and frame pieces, yard pieces, and the world's trees and rock
+  'ruin','stageA','stageB','tent','hallG','keepB','castleY','wbarrow','ladder','stones','towerA','towerB','pallet','flagB','treeA','treeB','rock',
+  ...['mill','mine','tavern','home','forge','market'].flatMap(b=>['G','B','R'].map(t=>b+t))];   // <id>.glb -> vx_lv2_<id>
 
 const all=()=>{const s=M3IO.src(),i=s.indexOf('const MODELS3D=');return {s,i,out:JSON.parse(s.slice(i+15).replace(/;\s*$/,''))}};
 // 4x4 column-major helpers
@@ -75,13 +78,14 @@ async function packProp(id){
   for(const t of R.listTextureInfos?R.listTextureInfos():[])t.setMagFilter(9728).setMinFilter(9728);
   for(const m of R.listMaterials()){m.setMetallicFactor(0).setRoughnessFactor(1);for(const ti of [m.getBaseColorTextureInfo(),m.getEmissiveTextureInfo()])if(ti)ti.setMagFilter(9728).setMinFilter(9728)}
   await doc.transform(prune({keepLeaves:true}),dedup(),textureCompress({encoder:sharp,targetFormat:'png'}));
-  await MeshoptEncoder.ready;doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({method:EXTMeshoptCompression.EncoderMethod.QUANTIZE});
+  await MeshoptEncoder.ready;await doc.transform(quantize({}));   // quantized like the bodies: about 40% smaller (phase 4; stage 2's props were packed without it)
+  doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({method:EXTMeshoptCompression.EncoderMethod.QUANTIZE});
   return {b64:Buffer.from(await io.writeBinary(doc)).toString('base64'),tris};
 }
-async function pack(){
-  await MeshoptDecoder.ready;const {s,i,out}=all(),rep=[];
-  for(const id of CHARS){const r=await packChar(id);out['lv2_'+id]=r.b64;rep.push(['lv2_'+id,r.tris,r.b64.length])}
-  for(const id of PROPS){if(!fs.existsSync(path.join(RAW,id+'.glb'))){console.log('skip',id);continue}const r=await packProp(id);out['vx_lv2_'+id]=r.b64;rep.push(['vx_lv2_'+id,r.tris,r.b64.length])}
+async function pack(){   // pack [ids...]: only those (the rest stay as they are in models3d.js)
+  await MeshoptDecoder.ready;const {s,i,out}=all(),rep=[],only=process.argv.slice(3),want=k=>!only.length||only.includes(k);
+  for(const id of CHARS.filter(want)){const r=await packChar(id);out['lv2_'+id]=r.b64;rep.push(['lv2_'+id,r.tris,r.b64.length])}
+  for(const id of PROPS.filter(want)){if(!fs.existsSync(path.join(RAW,id+'.glb'))){console.log('skip',id);continue}const r=await packProp(id);out['vx_lv2_'+id]=r.b64;rep.push(['vx_lv2_'+id,r.tris,r.b64.length])}
   M3IO.write(null,s.slice(0,i)+'const MODELS3D='+JSON.stringify(out)+';\n');
   for(const [k,t,b] of rep)console.log(k.padEnd(18),'tris',String(t).padStart(5),' KB',(b/1024).toFixed(1));
   console.log('total KB',(rep.reduce((a,r)=>a+r[2],0)/1024).toFixed(1));
