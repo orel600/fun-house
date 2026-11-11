@@ -20,7 +20,8 @@ const MBFIT={
   document.body.classList.add('mbfit');
   const st=document.createElement('style');st.id='mbfitCss';
   st.textContent=
-    'body.mbfit .mbkits{padding:5px 5px 7px}'+
+    'body.mbfit:not(.tidal-ui) .mbkits{padding:5px 5px 7px}'+   // under tidal the card row is NOVA's layout: our room for the frame ring pushed 40px ui3d cards into overflow at 844 (ARI)
+    
     'body.mbfit:not(.tidal-ui) .mbkit small{padding:1px 6px;text-wrap:balance}'+   // the role pill is NOVA's design under ?tidal=1 (min-height pills): ours applies only without it
     
     'body.mbfit:not(.tidal-ui) .mbkit small.mbfit-wrap{border-radius:9px}'+
