@@ -105,7 +105,8 @@ async function session(browser,v2){
   // every other region: its own enemies in a row (and their wardens), then the same row in flat black
   R.regions={};
   for(const reg of ['lake','ridge','desert','storm','shadow']){
-    await page.evaluate(r=>{enemies.length=0;enterWorld('home',r);window.__only=1},reg);await run(600);
+    await page.evaluate(r=>{enemies.length=0;enterWorld('home',r);window.__only=1},reg);await run(300);
+    await page.evaluate(()=>{P.y+=420});await run(600);   // off the gate: its safe ring fades enemies, and its signs cover the row
     const ks=await page.evaluate(r=>{const ks=wldTypes(r).filter(k=>k!=='wanted'&&ETYPES[k]);for(const k in ETYPES)if(ETYPES[k].warden&&!ks.includes(k)&&WORLD.regions[r]&&JSON.stringify(WORLD.regions[r]).includes('"'+k+'"'))ks.push(k);return ks.slice(0,7)},reg);
     for(const k of ks)await page.evaluate(k=>{const L=LOOK3D[foeKey({type:k})];if(L&&m3dLazy(L.model))m3dNeed(L.model)},k);
     for(let i=0;i<120&&!(await page.evaluate(ks=>ks.every(k=>{const L=LOOK3D[foeKey({type:k})];return !L||!m3dLazy(L.model)||m3dReady(L.model)}),ks));i++){await page.waitForTimeout(50);await page.clock.runFor(50)}
