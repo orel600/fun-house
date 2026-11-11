@@ -2608,7 +2608,8 @@ function worldBot(m,L,god){
       const lum=c=>c?0.2126*c.r+0.7152*c.g+0.0722*c.b:0;
       for(const id in R3D.npcs||{}){const a=R3D.npcs[id];o.n++;let e=0,r=0;for(const m of a.mats){e=Math.max(e,lum(m.emissive));if(m.userData.rimwU||m.userData.vfxRim)r=1}
         if(e>0.03||r)o.bad.push(id+(r?' rim':' glow '+e.toFixed(2)))}
-      if(R3D.player)R3D.player.root.traverse(x=>{if(x.isMesh&&!x.userData.lv2ol)for(const m of [].concat(x.material))if(m.userData.vfxRim)o.hero++});
+      const U=typeof VFX!=='undefined'&&VFX.rimU,lit=!U||U.value.r+U.value.g+U.value.b>0;   // vfx.js's rim stays compiled in (the arena keeps it), v2 sets its shared strength to 0 here
+      if(R3D.player&&lit)R3D.player.root.traverse(x=>{if(x.isMesh&&!x.userData.lv2ol)for(const m of [].concat(x.material))if(m.userData.vfxRim)o.hero++});
       return o});
     check(wl.off||wl.n>0&&!wl.bad.length&&!wl.hero,'Village characters without white light: '+(wl.off?'look v1, skipped':wl.n+' NPCs'+(wl.bad.length?', glowing: '+wl.bad.join(', '):', none glows')+(wl.hero?', the hero still has vfx.js rim on '+wl.hero+' materials':', the hero has one rim')))}
   // Hero outline follows what is worn, a pooled actor drops it, and old village lamps are freed (Sonnet review 11.11, js/look-v2.js)
