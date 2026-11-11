@@ -2049,7 +2049,7 @@ function worldBot(m,L,god){
           out:rows.some(r=>r.left<-1||r.top<-1||r.right>vw+1||r.bottom>vh+1),d:ln?[ln.style.top,ln.style.maxHeight,Math.round(h.top),ln.style.visibility||'-',ln.querySelectorAll('.cut').length,ln.children.length,Math.round(h.left)+'..'+Math.round(h.right),MSG.where||'-'].join('/'):'-',feed:document.querySelectorAll('#feedCol .frow').length,sk:document.querySelectorAll('#skills>*').length,keep:keep.length}};
       enterWorld('home');S.mode='play';enemies=[];FL.length=0;msgClear();{const lp=$('lpCard');if(lp)lp.classList.remove('on')}__lbak.ov=[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden);for(const o of __lbak.ov)o.hidden=true;   // חלון פתוח מסתיר את העמודה (msgWinOpen), אז בבדיקה כמו במשחק: בלי חלון
       for(const k in MSG.stat)MSG.stat[k]=0;
-      if(S.sk&&S.sk.ids.length<3){S.sk.ids=Object.keys(SKILLS.list).slice(0,3);S.sk.cd=S.sk.ids.map(()=>0)}if(typeof skillsHud==='function')skillsHud();   // כל שלושת הכפתורים בקשת: השלישי יוצא מגבולות #skills (הסרטון של ניר)
+      if(S.sk&&S.sk.ids.length<3){S.sk.ids=Object.keys(SKILLS.list).slice(0,3);S.sk.cd=S.sk.ids.map(()=>0)}if(typeof skillsHud==='function')skillsHud();if(S.sk){SAVE.hero.skSeen=[...(SAVE.hero.skSeen||[]),...S.sk.ids]}if(SKR)skrEnd(false);   // no new-skill moment here: the lane steps aside for it (msgPause)   // כל שלושת הכפתורים בקשת: השלישי יוצא מגבולות #skills (הסרטון של ניר)
       __lbak.hid={sig:$('sig').hidden,feed:$('feedBtn').hidden};$('sig').hidden=false;$('feedBtn').hidden=false;   // סקיל החתימה ו-🥕 גלויים, כמו בסרטון (ומוחזרים בסוף)
       for(let i=0;i<4;i++){const e=addEnemy('grunt',P.x+90+i*25,P.y+30);e.home=0;e.speed=0;e.dmg=0;e.hp=e.max=1e9}
       S.cam.x=P.x;S.cam.y=P.y;
@@ -2983,6 +2983,38 @@ function worldBot(m,L,god){
     await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();bossHudPlace(true)});
     const bad=bh.filter(x=>x.err||!x.bar||!x.rare||x.sk<3||x.orbs<4||x.clash.length||x.w<200);
     check(!bad.length,'פס הבוס בעולם במקום הפנוי: '+bh.map(x=>x.k+' '+x.vp+(x.err?' שגיאה: '+x.err:(x.bar?' רוחב '+x.w+' בגובה '+x.y+(x.cut?' (הכותרת מקוצרת)':'')+(x.w<200?' צר מדי, בין '+x.why:''):' אין פס')+(x.clash&&x.clash.length?' · עולה על: '+x.clash.join(', '):' ✓')+(x.err||x.rare?'':' · אין שמועה')+(x.err||x.sk>=3?'':' · '+x.sk+' סקילים'))).join(' | '))}
+  // Top strip without overlaps (coordinator, CI shots 11.11): in the village a free first tip ("Skill upgrade available...") joins the message lane,
+  // so it is not under the round top icons, not on a lane line and not on a building sign. In the world, a lane line ("Everything for Forge!...")
+  // steps aside while the new-skill icon rises over the hero and flies to its button, and comes back after. At 915x412 and 844x390
+  // its own random numbers, so the sequence the later checks depend on (the underworld games) does not move
+  {const ov=[];await page.evaluate(()=>{window.__rndTop=Math.random;let a=777;Math.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}});
+    for(const vp of [{width:915,height:412},{width:844,height:390}]){
+      await page.setViewportSize(vp);
+      await page.evaluate(()=>{welcomeClose();npcTalk(null);enterVillage();npcTalk(null);welcomeClose();{const lp=$('lpCard');if(lp)lp.classList.remove('on')}msgClear();P.x=0;P.y=-200;S.cam.x=0;S.cam.y=-200;
+        window.__tipKeep=JSON.stringify(SAVE.tips||{});tipClose();TIP1.q=[];
+        msgSay(T('goal.ready','Forge'));tipShow({k:'sklv',args:[T('npc.priest')[0]],at:null});VSIGN.t=0});
+      await page.clock.runFor(700);
+      const r=await page.evaluate(()=>{const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1;
+        tipPlace();msgPlace();const el=$('tip1'),t=el.getBoundingClientRect(),o={inLane:el.parentNode===$('msgLane'),vis:!el.hidden&&!el.classList.contains('cut')&&t.width>0,bad:[]};
+        for(const b of msgBlocks())if(hit(t,b))o.bad.push('tip on '+(b.el.id||b.el.className));
+        for(const m of document.querySelectorAll('#msgLane>.mrow.on')){const q=m.getBoundingClientRect();if(hit(t,q))o.bad.push('tip on line');
+          for(const b of msgBlocks())if(hit(q,b))o.bad.push('line on '+(b.el.id||b.el.className))}
+        const z=ZOOM||1;for(const g of VSIGN.rects||[]){const q={left:g.x*z,right:(g.x+g.w)*z,top:g.y*z,bottom:(g.y+g.h)*z};if(hit(t,q))o.bad.push('tip on sign '+g.txt)}
+        if(o.bad.length||!o.vis){const ln=$('msgLane').getBoundingClientRect();o.dbg='tip '+[t.left,t.top,t.width,t.height].map(Math.round)+' lane '+[ln.left,ln.top,ln.width,ln.height].map(Math.round)+' where '+MSG.where}
+        tipClose();SAVE.tips=JSON.parse(window.__tipKeep);msgClear();return o});
+      // world: the new-skill moment with a lane line up
+      const w=await page.evaluate(()=>{const o={},ovs=[...document.querySelectorAll('.ov,.win')].filter(x=>!x.hidden);try{for(const x of ovs)x.hidden=true;enterWorld('home');{const lp=$('lpCard');if(lp)lp.classList.remove('on')}for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);msgClear();
+        const seen=skrSeen().slice();msgSay(T('goal.ready','Forge'));o.before=MQ.rows.length;
+        skrStart('quake');msgPump();const ic=SKR&&SKR.el?SKR.el.getBoundingClientRect():null,lane=$('msgLane');
+        o.hidden=lane.style.visibility==='hidden';o.rowsDuring=MQ.rows.length;o.icon=!!ic;
+        skrEnd(true);msgPump();o.after=MQ.rows.some(r=>r.txt===T('goal.ready','Forge'));o.visAfter=lane.style.visibility!=='hidden';
+        if(!o.after||!o.visAfter)o.dbg='rows '+MQ.rows.map(r=>r.txt).join('/')+' small '+MQ.small.length+' win '+msgWinOpen()+' on '+msgOn()+' vis '+$('msgLane').style.visibility;
+        SAVE.hero.skSeen=seen;msgClear()}catch(err){o.err=String(err)}for(const x of ovs)x.hidden=false;enterVillage();return o});
+      ov.push({vp:vp.width+'×'+vp.height,...r,w})}
+    await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();msgClear();Math.random=window.__rndTop});
+    const bad=ov.filter(x=>!x.inLane||!x.vis||x.bad.length||x.w.err||!x.w.icon||!x.w.hidden||x.w.rowsDuring||!x.w.after||!x.w.visAfter);
+    check(!bad.length,'Top strip, no overlaps: '+ov.map(x=>x.vp+': village tip '+(x.inLane?'in the message lane':'NOT in the lane')+(x.vis?'':' (not shown)')+(x.bad.length?', overlaps: '+[...new Set(x.bad)].join(', '):', clear of icons, lines and signs')+(x.dbg?' ['+x.dbg+']':'')+
+      ' · world '+(x.w.err?'error: '+x.w.err:(x.w.hidden&&!x.w.rowsDuring?'lane steps aside during the new-skill icon':'lane line stays over the new-skill icon')+(x.w.after&&x.w.visAfter?' and comes back':', line lost after ['+x.w.dbg+']'))).join(' | '))}
   // הבהוב פגיעה בתלת-ממד בעולם (hitflash3d.js, ניר 10.11: "do this for all monsters and bosses"): בלי לבן. פגיעה = בהיר יותר בצבעים שלו,
   // הבהוב קצר לכל היותר פעם ב-gap, וחלש יותר לגדולים. ההיגיון לכל מראה בעולם (גם בדו-ממד), והצבע האמיתי מהפיקסלים בתלת-ממד:
   // מכה כל 0.1 שנייה ב-120 פריימים, והרוויה הממוצעת בקרב קרובה לבלי פגיעות. כל המראות: node tools/flash-audit.js

@@ -87,7 +87,12 @@ function tipClose(){
 function tipPlace(){
   const el=tipEl(),x=TIP1.on,a=x&&tipFind(x.at);
   el.classList.toggle('free',!a);
-  if(!a){el.style.left=el.style.top='';el.removeAttribute('data-up');return}
+  // free tip in the world and village: it joins the message lane (msglane.js), which is measured against every button and icon,
+  // so it never sits on the top icons or over another line (CI 11.11: "Skill upgrade available" sat under the two round top icons)
+  const lane=!a&&!(x&&x.win)&&typeof msgOn==='function'&&msgOn()?msgEl():null;
+  if(lane){if(el.parentNode!==lane){lane.appendChild(el);TIP1.stat.lane=(TIP1.stat.lane||0)+1}}else if(el.parentNode!==document.body)document.body.appendChild(el);
+  el.classList.toggle('inlane',!!lane);
+  if(!a){el.style.left=el.style.top='';el.removeAttribute('data-up');if(lane)msgPlace();return}
   const r=a.getBoundingClientRect(),w=el.offsetWidth||220,h=el.offsetHeight||44,m=8;
   // בתוך חלון: לא מכסים את הכרטיס שהשורה בו (ביקורת 10.11: הבועה של הדרישה כיסתה את הסטטים). מתחת לכרטיס, מעליו, לידו, ורק אם אין מקום: ליד השורה
   const box=x.win&&(a.closest('.gcard')||a.closest('.icard,.vwin,[role="dialog"]'));   // .gcard: כל הבועה של הפריט, עם הכפתורים
@@ -148,5 +153,6 @@ const tipShownN=()=>document.querySelectorAll('.tip1:not([hidden])').length;
   'display:flex;gap:8px;align-items:center;width:max-content;max-width:min(320px,44vw);padding:5px 12px 5px 10px;border-radius:12px;'+
   'background:linear-gradient(#4A3322f0,#2C1E14f0);border:1.5px solid #C9A24A;box-shadow:inset 0 1px 0 #ffffff1a,0 3px 10px #000a;color:#EDE8DA;font:500 12px/1.35 Heebo,system-ui,sans-serif;text-align:start}'+
   '.tip1.free{left:50%;top:calc(env(safe-area-inset-top,0px) + 54px)}.tip1.on{opacity:1;transform:translate(-50%,0)}'+
+  '#msgLane>.tip1{position:static;transform:none;left:auto;top:auto;max-width:100%;flex:none;box-sizing:border-box;order:1}#msgLane>.tip1.on{transform:none}'+
   '.tip1 .t1pic{font-size:20px;line-height:1;flex:none}.tip1 p{margin:0}.tip1 b{color:#F4C74F}';
   document.head.appendChild(st)})();
