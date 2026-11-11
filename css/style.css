@@ -1284,6 +1284,7 @@ body.menu .minimap{display:none!important}
 .lpcard ul{list-style:none;margin:0;padding:0;display:grid;gap:3px;font-size:14px}
 .lpcard li{display:flex;gap:8px;justify-content:center;align-items:center}
 .lpcard p{margin:8px 0 0;font-size:12px;opacity:.85}.lpcard p b{color:var(--gold)}
+.lpcard h3:only-child{margin:0}   /* only the level (Nir, 11.11) */
 .lpflash{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 55%,#fff8 0,#F4C74F55 35%,transparent 70%)}
 .lpflash.on{animation:lpflash .9s ease-out}
 @keyframes lpflash{0%{opacity:0}12%{opacity:var(--k,1)}100%{opacity:0}}
