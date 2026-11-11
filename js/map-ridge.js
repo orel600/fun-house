@@ -13,7 +13,7 @@ Object.assign(WORLD.regions.ridge,{
   home:{x:-540,y:-1800,r:44},                                         // 1 השער חזרה לאגם, בצפון
   gates:{},
   waystones:[{id:'pass',x:70,y:-350},{id:'abbey',x:-550,y:1150},{id:'lair',x:1520,y:1150}],   // 2 המעבר, 3 המנזר (חדש), 4 המאורה. השמות ב-lang.js ('ws.<id>')
-  paths:{desert:{x:-2600,y:-1780,r:44,need:'ice'}},                   // 6 מעבר למדבר, בפינה הצפון-מערבית (אחרי פנס הקרח)
+  paths:{desert:{x:-2600,y:-1780,r:44,need:'ice',open:()=>storyOpen('ice')||vpDone('caravan')}},   // 6 מעבר למדבר, בפינה הצפון-מערבית: אחרי פנס הקרח, או ששיירת הגשר מהכפר תיקנה את הגשר (vproj.js, ניר 11.11)
   ponds:[],                                                           // הסדקים עכשיו במפה (map.water)
   fields:[
     {kind:'pine',n:12,x:-2440,y:-1250,r:360},{kind:'pine',n:8,x:1030,y:1350,r:300},{kind:'pine',n:6,x:-1960,y:350,r:200},{kind:'pine',n:4,x:-850,y:-1650,r:150},
