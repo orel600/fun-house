@@ -50,14 +50,14 @@ async function session(browser,v2){
   await run(900);
   R.world=await shot('world-crowd');R.worldHero=await shot('world-hero',{x:VP.width/2-110,y:VP.height/2-120,width:220,height:200});
   // motion strip of one grunt, 60 px right of the hero, cropped around it
-  await page.evaluate(()=>{enemies.length=0;window.__g=addEnemy('grunt',P.x+70,P.y);__g.dmg=0;__g.lv2t=1});
+  await page.evaluate(()=>{enemies.length=0;window.__g=addEnemy('grunt',P.x+70,P.y);__g.dmg=0;__g.lv2t=1;__g.hp=__g.max=1e9});   // can't die from the hero's auto attack before its own frames
   const box=()=>page.evaluate(()=>{const s=document.getElementById('c3')||document.querySelector('canvas'),r=s.getBoundingClientRect();
     return {x:Math.max(0,Math.round(r.width/2-60)),y:Math.max(0,Math.round(r.height/2-95)),width:200,height:150}});
   const strip=[];
   for(const [ph,ms] of [['spawn',80],['spawn2',200],['walk',500],['walk2',300]]){await run(ms);strip.push(await shot('m-'+ph,await box()))}
   await page.evaluate(()=>{__g.sw=0.3;__g.flash=0});await run(100);strip.push(await shot('m-attack',await box()));
   await run(150);strip.push(await shot('m-attack2',await box()));
-  await page.evaluate(()=>{__g.hp=0;__g.dead=true});await run(250);strip.push(await shot('m-death',await box()));
+  await page.evaluate(()=>{__g.hp=0;kill(__g)});   // the game's own death (combat.js)await run(250);strip.push(await shot('m-death',await box()));
   await run(500);strip.push(await shot('m-death2',await box()));
   R.strip=strip;
   // numbers: 20 grunts in one frame, first-spawn cost, memory, draw calls, HUD drift
