@@ -6,13 +6,14 @@
 
 **מה עשיתי:** עברתי על 12 חלונות בתלת-ממד ברוחב טלפון, מול 6 העקרונות ששלחת.
 **מה כבר טוב:** התפריט (גיבור, קווסטים, ספר, מפה, הגדרות) כבר מחשיך את העולם. בספר ובנפחייה השורה הבאה כבר מציצה. במפה העולם כבר מחובר בקו.
-**מה חסר, 5 השינויים הכי שווים:**
+**מה חסר, 6 השינויים הכי שווים:**
 1. **שורה מציצה בכל רשימה** (שוק, תרמיל, מרכז הכפר): היום בשוק לא רואים אם יש עוד למטה. זול, ושווה הכי הרבה.
 2. **שלבי הצוותים על קו אחד** (המחנה, הכריתה, הדרך פתוחה), ומחיר על כל שלב. הדמיה למטה.
 3. **החשכה גם בשיחה ובחלונות המבנים.** שורה אחת בקוד.
-4. **פחות חזרות:** "צריך מרכז רמה 5" כתוב 6 פעמים, והקווסט שמוכן כתוב פעמיים.
-5. **פחות לחיצות:** לקחת פרס ישר מהפס של הקווסט, בלי לפתוח חלון.
-**מה מחכה לך:** לאשר את 5, להוריד או להוסיף. בלי עלות.
+4. **שמות לא נשברים באמצע מילה** (בשוק "Mushroo/m"): כלל טקסט לכל הכרטיסים. תיקון של שורה אחת.
+5. **פחות חזרות:** "צריך מרכז רמה 5" כתוב 6 פעמים, והקווסט שמוכן כתוב פעמיים.
+6. **פחות לחיצות:** לקחת פרס ישר מהפס של הקווסט, בלי לפתוח חלון.
+**מה מחכה לך:** לאשר את ה-6, להוריד או להוסיף. בלי עלות.
 
 ---
 
@@ -67,6 +68,17 @@ Plus Nir's note: the UI should belong to the new "toy" look (look v2, `docs/conc
 - P2 ✗ **most important**: the Buy column ends exactly on a card edge (Copper/Iron), so you can't tell if there is more. Same for Sell.
 - P3 ✗: 4 tabs + 18 cards. Each card repeats "You have N" (already shown on Sell). Buy cards could drop "You have".
 - Text: header subtitle truncated "Sell loot and buy resources for …". Drop the subtitle in the market (the tab says Trade).
+- **Names break (coordinator's find, 844×390):** item names can split mid-word ("Mushroo/m", "Moonflow/er"). Cause: `#vPanel.bw .tcard .nm{overflow-wrap:anywhere}` (css/bwin.css:71), which allows a break between any two letters once the column gets narrow. At 844 even when the break falls on a space, two-word names ("Healing herb", "Magical Carrot") take 2 lines and push "You have 0" against the card bottom:
+
+![market 844](concept/clear-screens/04-market-844.jpg)
+
+### Text rules for every card (new, from the market finding)
+1. **Never break inside a word.** Names use `overflow-wrap:normal; word-break:normal; hyphens:none`. `anywhere` / `break-all` are not allowed on names (only on URLs/codes).
+2. **A name gets max 2 lines**, then an ellipsis (`-webkit-line-clamp:2`), and the full name is in `aria-label`/the details view. A name that does not fit on 1 line at 844 is a sign the card is too narrow, not that the text should shrink.
+3. **Card minimum width**: 150 px for a card with icon + name + price (the forge grid already uses `minmax(150px,1fr)`). Below that, the grid drops a column instead of squeezing.
+4. **Fixed rows, not free flow:** icon | name (1–2 lines) | price on the right, `nowrap`; the secondary line ("You have N", "×5") is one line, `nowrap`, ellipsis. The card height is set for 2 name lines so cards in a row stay even.
+5. **Sizes stay ui-guide §2:** name 13 bold, secondary 11, price 14. No text under 11 to make it fit.
+6. **Bot check:** in every open window at 844×390, for each `.nm`, any line break whose previous character and next character are both letters = fail (Range `getClientRects` per character, or compare the word's width to its line). Also: no text box whose `scrollWidth > clientWidth` without an ellipsis.
 
 ### Sawmill: Output tab (building window)
 ![mill](concept/clear-screens/05-mill.jpg)
@@ -122,9 +134,10 @@ The welcome/daily windows (`#ovWelcome`, `#ovDaily`) and "How to play" open as f
 | 2 | **Stages on a line** for the 4 village projects (mockup) | High (P4, the new crews feature) | Medium: one render function in vproj.js, used by `vpBldTab` and `vpTab` | js/vproj.js, css |
 | 3 | **Dim behind talk and building windows** (`#npcDlg` 40%, `#vPanel` 55% like `.gearov`) | Medium (P1) | Very low: 2 CSS rules (a `body:has(...)` backdrop) | css/style.css |
 | 4 | **Cut repeats**: Center "Needs level 5" ×6 → 1 line; hide quest "Now" row when it is the waiting card; market Buy cards without "You have"; no market subtitle | Medium (P3) | Low | bwin.js, quests.js, lang.js (en only) |
+| 4b | **Text rules for cards** (no mid-word breaks, 2-line clamp, min card width 150): fixes the market names | Medium–high (looks broken today) | Very low: css/bwin.css:71 + a clamp; bot check | css/bwin.css, tools/check.js |
 | 5 | **Claim from the strip**: tapping "✅ Done: X" claims the reward right there (coins fly to the counter), no window | Medium (P5, the most repeated tap in the village) | Low–medium: `questAct` already exists | quests.js |
 
-Order: 3 and 1 first (CSS, one session, no conflicts), 2 in its own session (vproj.js), 4 and 5 together (quests.js + bwin.js). 2 does not touch the same files as 1/3 except CSS sections, so they can run in parallel.
+Order: 3, 1 and 4b first (CSS, one session, no conflicts), 2 in its own session (vproj.js), 4 and 5 together (quests.js + bwin.js). 2 does not touch the same files as 1/3 except CSS sections, so they can run in parallel.
 
 Bot check for each: 1: a list element whose last child is fully visible while `scrollHeight > clientHeight` = fail. 2: the crews tab has 3 nodes and 2 line segments. 3: computed backdrop under `#npcDlg` and `#vPanel` is not transparent. 5: tapping the strip raises coins and closes the quest.
 
