@@ -19,9 +19,8 @@ const FXUI={
   zone:'.win,.ov,#qRail,.bnav,#vTop,#menuRail,.qr,.gearbtn,.updbtn',
   // חלון שנפתח → אפקטים. at: 'win' = מרכז החלון, fit: גודל ביחס לחלון (במקום size)
   open:{
-    ovDaily:[['globe_frame',{fit:1.12,loop:true,behind:true}],['stars',{fit:1.25,loop:true,add:true,behind:true}]],   // המתנה היומית: מסגרת קסם מאחורי החלון
+    // המתנה היומית ו"בזמן שלא היית": בלי מסגרת קסם וכוכבים, כרטיס שקט (ניר, 11.11, קונספט #672)
     ovLevel:[['levelup',{fit:1.3,add:true,behind:true}]],                                              // עלית רמה בזירה
-    ovWelcome:[['ui_new',{fit:1.1,behind:true}]],                                                      // "בזמן שלא היית"
   },
   rare:{gold:'ui_epic',legend:'ui_legend'},   // שכבת נדירות (GEAR.tiers) → האפקט סביב התמונה
   rareTiles:4,     // כמה אריחים ברשימה זוהרים בבת אחת
