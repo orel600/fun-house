@@ -113,7 +113,7 @@ function bwBuilding(k){
   {const pj=vpBldTab(k);if(pj)tabs.push(pj)}   // פרויקט של המבנה: צוות הכורתים במנסרה (vproj.js)
   if(!main||vBlock(k)!=='max')tabs.push({id:'up',label:L?'⬆️ '+T('bw.tab.up'):'🔨 '+T('bw.tab.build'),dot:!!main&&!vBlock(k)});
   const TB=S.vil.tab||(S.vil.tab={});let cur=TB[k];if(!tabs.some(t=>t.id===cur))cur=tabs[0].id;
-  return bwHead(T('vil.'+k)+(L?' <small>'+T('level',L)+'</small>':''),k==='market'?'':T(k==='stash'&&L?'bw.why':'bw.do.'+k),tabs,cur,k==='market'||k==='forge'?bwCoins():'')+
+  return bwHead(T('vil.'+k)+(L?' <small>'+T('level',L)+'</small>':''),T(k==='stash'&&L?'bw.why':'bw.do.'+k),tabs,cur,k==='market'||k==='forge'?bwCoins():'')+
     '<div class="bwbody bw-'+k+' bw-'+cur+'">'+(cur==='main'?main.html():cur==='up'?bwUpgrade(k,L):tabs.find(t=>t.id===cur).html())+'</div>';
 }
 

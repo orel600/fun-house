@@ -2846,7 +2846,7 @@ function worldBot(m,L,god){
     $('guideMain').click();o.log=!$('qLog').hidden&&!!document.querySelector('#qLog .gnow');questLogOpen(false);
     // קונספט מסכים ברורים #672: "Done: X. Tap here for your reward" לוקח את הפרס מהשורה עצמה, בלי יומן (סעיף 5), וביומן "Now" לא כופל את הכרטיס שמחכה (סעיף 4)
     {const was=Q.active;Q.active={};delete Q.done.boots;qStart(QBY.boots);questEvent('gather','wood',5);tick();
-      o.rwG=guideG&&guideG.q==='boots'&&guideG.place===null&&/Tap here/.test($('guideTxt').textContent);
+      o.rwG=guideG&&guideG.q==='boots'&&guideG.place===null&&/Tap here/.test(guideG.text);
       questLogOpen(true);o.rwOne=!document.querySelector('#qLog .gnow')&&document.querySelectorAll('#qLog [data-act="claim"][data-q="boots"]').length===1;questLogOpen(false);
       const c0=SAVE.bag.coins||0;$('guideMain').click();o.rwClaim=!!Q.done.boots&&!Q.active.boots&&$('qLog').hidden&&(SAVE.bag.coins||0)>c0;
       tick();o.rwNext=!guideG||guideG.q!=='boots';Q.active=was}
