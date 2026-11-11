@@ -46,17 +46,20 @@ async function session(browser,v2){
     await run(600);await settle();
     await at(0,-60);await run(900);await settle();await noHud(true);R.shots['village'+L]=await shot('L'+L+'-village');await noHud(false);
     // frame time in the plaza: real wall ms of 30 steps (SwiftShader, CPU: a relative number, v1 against v2)
-    R.frames['L'+L]=await page.evaluate(async()=>{const t=[];for(let i=0;i<30;i++){const a=performance.now();if(typeof render3d==='function')render3d(R3D.ox,R3D.oy);t.push(performance.now()-a)}t.sort((a,b)=>a-b);return {med:Math.round(t[15]*10)/10,max:Math.round(t[29]*10)/10}});
+    R.frames['L'+L]=await page.evaluate(()=>R3D.stats&&{calls:R3D.stats.calls,tris:R3D.stats.tris});   // what the plaza view costs the GPU (draw calls and triangles), v1 against v2
     for(const k of BLD){
-      await page.evaluate(k=>{const B=VILLAGE.b[k];P.x=B.x+(B.x>0?-40:40);P.y=B.y+120;S.vil&&(S.vil.cam=null)},k);await run(900);
+      await page.evaluate(k=>{const B=VILLAGE.b[k];P.x=B.x+(B.x>0?-40:40);P.y=B.y+(k==='center'?175:120);S.vil&&(S.vil.cam=null)},k);await run(900);
       R.shots[k+L]=await shot('L'+L+'-'+k,crop(560,360,-40))}
   }
   // the meadow: one tree and one rock at half hp, next to the hero (the gather stages: gather.js shrinks and sways by hp)
   await page.evaluate(()=>{enemies.length=0;enterWorld('home')});await run(800);await settle();
   await page.evaluate(()=>{window.__only=1;enemies.length=0;const L=S.nd.list,near=(sh)=>L.filter(n=>!n.dead&&wKind(n.kind).shape===sh).sort((a,b)=>Math.hypot(a.x-P.x,a.y-P.y)-Math.hypot(b.x-P.x,b.y-P.y))[0];
-    const t=near('tree'),r=near('rock');window.__nodes=[t,r];if(t){P.x=t.x+60;P.y=t.y+70}if(r){r.x=t.x+130;r.y=t.y+10}for(const n of [t,r])if(n){n.hp=n.max*0.5}});
+    const t=near('tree'),r=near('rock');window.__nodes=[t,r];if(t){P.x=t.x+60;P.y=t.y+70}for(const n of [t,r])if(n){n.hp=n.max*0.5}});
   await run(900);await settle();await page.evaluate(()=>{enemies.length=0});await run(300);
-  R.shots.gather=await shot('meadow-gather',crop(620,380,-30));
+  R.shots.gather=await shot('meadow-tree',crop(620,380,-30));
+  await page.evaluate(()=>{const r=window.__nodes[1];if(r){P.x=r.x+60;P.y=r.y+70}enemies.length=0});await run(900);
+  R.shots.rock=await shot('meadow-rock',crop(620,380,-30));
+  await page.evaluate(()=>{const t=window.__nodes[0];P.x=t.x+60;P.y=t.y+70;enemies.length=0});await run(600);
   R.world=await page.evaluate(()=>({rebuilt:typeof LV2!=='undefined'&&LV2.rebuilt||0,nodes:(window.__nodes||[]).map(n=>{const G=R3D.wlds[S.wd.reg||'meadow'],m=n&&G&&G.nodes[n.id];return n&&{kind:n.kind,hp:n.hp,max:n.max,r:n.r,v2piece:m?m.userData.lv2w:null,scale:m?Math.round(m.scale.x*100)/100:null}})}));
   // break the tree: fall, stump, sprout (gather.js), then a wide meadow view
   await page.evaluate(()=>{const t=window.__nodes[0];if(t&&typeof gHit==='function'){t.hp=0;try{gHit(t,0,1)}catch(e){}}});await run(1500);

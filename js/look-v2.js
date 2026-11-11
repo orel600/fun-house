@@ -120,7 +120,11 @@ if(LV2.on){
   {const sw=syncWorld;syncWorld=function(){const N=W3D.nodes,Lg=W3D.log,keep=[N.tree.model,N.rock.model,Lg.model];
     if(lv2Here()&&S.wd){const W=LV2.world,ok=[...W.tree,W.rock,W.log].map(k=>m3dNeed(k)).every(Boolean);LV2.wOk=ok;if(ok){N.tree.model=W.tree;N.rock.model=W.rock;Lg.model=W.log}lv2WorldSwap(ok)}
     try{return sw.apply(this,arguments)}finally{N.tree.model=keep[0];N.rock.model=keep[1];Lg.model=keep[2];lv2WorldMark()}}}
-  {const sv=syncVillage;syncVillage=function(){lv2VilReady();if(R3D.vil!==LV2.swV){LV2.swV=R3D.vil;lv2Sweep()}return sv.apply(this,arguments)}}   // a new village object: free the old one's lamps
+  // a building shows its look only when its models are loaded (syncVillage: m3dNeed on the KayKit keys). In v2 it asks for the v2 pieces instead,
+  // so the old models it no longer draws are not downloaded (phase 4). A v2 piece that failed: the old model, as before
+  {const need={};for(const Z of LV2.vil)if(Z.at)for(const k in Z.map)if(m3dLazy(k))(need[k]||(need[k]=new Set)).add(Z.map[k]);
+    const mn=m3dNeed;m3dNeed=function(k){const vs=LV2.inSV&&need[k];if(vs&&![...vs].some(v=>M3D.st[v]==='fail'))return [...vs].map(v=>mn(v)).every(Boolean);return mn.apply(this,arguments)}}
+  {const sv=syncVillage;syncVillage=function(){lv2VilReady();if(R3D.vil!==LV2.swV){LV2.swV=R3D.vil;lv2Sweep()}LV2.inSV=lv2Here()&&!!S.vil;try{return sv.apply(this,arguments)}finally{LV2.inSV=false}}}   // a new village object: free the old one's lamps
   {const sn=syncNpcs;syncNpcs=function(){const keep={};
     for(const lk in LOOK3D){if(lk.slice(0,7)!=='lv2npc_')continue;const id=lk.slice(7),k='npc_'+id,v=LOOK3D[lk];keep[k]=LOOK3D[k];
       const L=lv2Here()&&S.vil&&m3dNeed(v.model)?v:keep[k],a=R3D.npcs&&R3D.npcs[id];LOOK3D[k]=L;
