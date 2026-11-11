@@ -36,6 +36,7 @@ const WXW={
   motion:/^wind_(gust|tornado)/,   // קווי רוח ועמודים: לא כשביקשו פחות תנועה או 'Fewer'
   // אובך החול במדבר: צבע אחד על כל המסך, שקוף בעיגול hole סביב הגיבור, ועד a[מצב] בשוליים. fade: שניות להגיע לעוצמה. less: פי כמה כשביקשו פחות
   sand:{reg:'desert',col:'205,160,102',hole:160,a:{building:0.22,storm:0.45,clearing:0.12},fade:3,less:0.5},
+  sandQ:4,        // אובך החול מצויר ברבע רזולוציה ונמתח (שיפוע רך, לא רואים הבדל)
   fade:3,                          // שניות מעבר בין מצבים
   night:[20,6],dusk:[17,20],
   // בלי ליבה: אריחים מהגיליונות הקיימים, נוסף על FXW.weather. [אפקט, שקיפות, 'full'] לפי אזור ומצב
@@ -114,8 +115,13 @@ function wxwSand(){
   const want=WXW.on&&S&&S.wd&&WXW.reg===Sd.reg?(Sd.a[WXW.st]||0)*(wxwFight()?WXW.fight:1)*(wxwCalm()?Sd.less:1):0;
   WXW.sandA+=(want-WXW.sandA)*Math.min(1,dt/Sd.fade);if(WXW.sandA<0.01||!P)return;
   const m=ctx.getTransform(),cv=ctx.canvas,hx=m.a*P.x+m.c*P.y+m.e,hy=m.b*P.x+m.d*P.y+m.f,sc=Math.hypot(m.a,m.b)||1,r0=Sd.hole*sc,r1=Math.max(cv.width,cv.height)*0.7,a=WXW.sandA;
-  const g=ctx.createRadialGradient(hx,hy,r0,hx,hy,Math.max(r0+1,r1));
-  g.addColorStop(0,'rgba('+Sd.col+',0)');g.addColorStop(0.35,'rgba('+Sd.col+','+(a*0.55).toFixed(3)+')');g.addColorStop(1,'rgba('+Sd.col+','+a.toFixed(3)+')');
-  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.fillStyle=g;ctx.fillRect(0,0,cv.width,cv.height);ctx.restore();
+  // השיפוע מצויר פעם אחת לקנבס קטן (רבע רזולוציה, פעמיים המסך סביב הגיבור) ונמתח. העוצמה ב-globalAlpha, אז בונים מחדש רק כשהגודל משתנה
+  const q=WXW.sandQ,cw=cv.width,ch=cv.height,key=cw+'x'+ch+'|'+Math.round(r0);
+  if(!WXW.sandCv||WXW.sandKey!==key){const c=WXW.sandCv||(WXW.sandCv=document.createElement('canvas')),w=c.width=Math.ceil(cw*2/q),h=c.height=Math.ceil(ch*2/q),x=c.getContext('2d');
+    const g=x.createRadialGradient(w/2,h/2,r0/q,w/2,h/2,Math.max(r0+1,r1)/q);
+    g.addColorStop(0,'rgba('+Sd.col+',0)');g.addColorStop(0.35,'rgba('+Sd.col+',0.55)');g.addColorStop(1,'rgba('+Sd.col+',1)');
+    x.fillStyle=g;x.fillRect(0,0,w,h);WXW.sandKey=key;WXW.stat.sandBuild=(WXW.stat.sandBuild||0)+1}
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=Math.min(1,a);ctx.globalCompositeOperation='source-over';ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(WXW.sandCv,hx-cw,hy-ch,cw*2,ch*2);ctx.restore();
   WXW.stat.sand++;
 }

@@ -44,7 +44,11 @@ const vpName=id=>T('vp.'+id);
 // אפשר לבנות רק כשהתושבת בכפר, או כשהמבנה ברמה (צוות הכורתים)
 const vpHere=id=>{const P0=VPROJ.list[id];return P0.bld?vLv(P0.bld)>=P0.lv&&vpAfter(id):typeof resMoved==='function'&&resMoved(P0.who)};
 // הדרך הקודמת פתוחה (after). בלי after: תמיד
-function vpAfter(id){const a=VPROJ.list[id].after;if(!a)return true;for(const R of [WORLD,...Object.values(WORLD.regions)])if(R.paths&&R.paths[a])return wPathOpen(R.paths[a]);return false}
+// הדרך נשמרת אחרי החיפוש הראשון (המפה קבועה), כי זה נקרא בכל פריים (vpSync3d, vpDraw2d, goal.js)
+const VPA={};VPROJ.stat.after=0;
+function vpAfter(id){const a=VPROJ.list[id].after;if(!a)return true;
+  let p=VPA[a];if(p===undefined){p=null;VPROJ.stat.after++;if(WORLD.paths&&WORLD.paths[a])p=WORLD.paths[a];else for(const k in WORLD.regions){const R=WORLD.regions[k];if(R.paths&&R.paths[a]){p=R.paths[a];break}}VPA[a]=p}
+  return !!p&&wPathOpen(p)}
 // הדרך (WORLD.paths או paths של אזור) של מקום
 const vpPathOf=P0=>(P0.reg==='meadow'?WORLD:WORLD.regions[P0.reg]).paths[P0.path];
 // איפה הפרויקט בכפר: ליד הבית של התושבת, או במקום משלו
@@ -53,6 +57,11 @@ function vpSpot(id){const P0=VPROJ.list[id];if(P0.spot)return P0.spot;const R=RE
 function vpMake(k,r){let m=1;for(const id in VPROJ.list){const M=VPROJ.list[id].make;if(M&&M[k]&&M[k][r]&&vpDone(id))m*=M[k][r]}return m}
 // פי כמה השוק משלם במכירה (vPrice ב-village.js)
 function vpSellK(){let m=1;for(const id in VPROJ.list){const s=VPROJ.list[id].sell;if(s&&vpDone(id))m*=s}return m}
+// מה שהפרויקטים הגמורים נותנים למבנה k (ייצור, או מכירה בשוק), להצגה: '+10% (Road crew)'. ריק כשאין
+function vpNote(k){const out=[];for(const id in VPROJ.list){const P0=VPROJ.list[id];if(!vpDone(id))continue;
+    const m=P0.make&&P0.make[k]?Math.max(...Object.values(P0.make[k])):k==='market'&&P0.sell?P0.sell:0;
+    if(m)out.push(T('vp.bonus',Math.round((m-1)*100),vpName(id)))}
+  return out.length?' <small class="vpnote">'+out.join(' · ')+'</small>':''}
 // הפרויקט של תושבת (לפי id ב-RESID.list), או null
 function vpOf(who){for(const id in VPROJ.list)if(VPROJ.list[id].who===who)return id;return null}
 // ההחלפה של התושבת אחרי שהסדנה נגמרה (resGet ב-residents.js), או null

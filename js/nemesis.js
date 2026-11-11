@@ -25,6 +25,7 @@ const NEMESIS={
     arrow:1.15, skull:15,                  // גודל החץ בקצה המסך וגודל הגולגולת
     gap:0.4,                               // פחות מזה (ברדיאנים) מהחץ של המטרה (guide.js): זזים הצידה כדי לא לכסות אותו
     skills:{w:230,h:180},                  // הפינה הימנית התחתונה (פיקסלים של המסך): שמורה לסקילים, החץ לא נכנס אליה
+    cache:250,                             // אלפיות שנייה: כל כמה מחשבים מחדש את הדרך לנמסיס באזור אחר (guideStep)
     top:165,                               // מעל זה (פיקסלים של המסך) יש את הפינות העליונות: מי אני, המטרה, הכפתורים והמפה הקטנה
     say:0.7}                               // שניות אחרי הכניסה לעולם: "X מחכה ליד Y"
 };
@@ -132,9 +133,15 @@ const nemCardOn=()=>NMC.t>0;
    הנמסיס באזור הזה: נקודה אדומה במקום שלו, וחץ בקצה המסך כשהוא לא נראה. באזור אחר: נקודה על קצה המפה הקטנה, לכיוון הדרך אליו (guideStep), ובלי חץ.
    אף פעם לא יותר מסמן אחד: קודם מי שכאן, אחרת הדרגה הכי גבוהה שיש אליו דרך. מנצחים אותו: הוא יוצא מהרשימה, והסמן נעלם לבד */
 const NMK={said:0};
-function nemMark(){
+// here: רק הנמסיס שבאזור הזה (לחץ במסך, בכל פריים). החיפוש באזורים אחרים (guideStep, BFS) נשמר רבע שנייה לכל אזור
+function nemMark(here){
   const w=S&&S.wd;if(!w||w.dp||!SAVE.nem)return null;
   const e=w.nemE;if(e&&!e.dead){const N=NS().list.find(x=>x.id===e.nem);if(N)return{N,here:true,x:e.x,y:e.y}}
+  if(here)return null;
+  const now=performance.now(),C=NMK.c;if(C&&C.reg===w.reg&&C.n===NS().list.length&&now-C.t<NEMESIS.mark.cache)return C.v;
+  NMK.c={reg:w.reg,n:NS().list.length,t:now,v:nemFar(w)};NMK.calc=(NMK.calc||0)+1;return NMK.c.v;
+}
+function nemFar(w){
   let best=null;
   for(const N of NS().list)if(N.reg!==w.reg&&(!best||N.rank>best.N.rank)){const st=typeof guideStep==='function'&&guideStep(N.reg);if(st)best={N,here:false,x:st.x,y:st.y}}
   return best;
@@ -156,7 +163,7 @@ function nemMmDraw(x,at,r){
 }
 // במסך: חץ אדום וגולגולת בקצה, רק כשהנמסיס באזור הזה ולא נראה
 function nemMarkDraw(ox,oy){
-  if(!P||!S.wd||S.mode!=='play')return;const M=nemMark();if(!M||!M.here)return;
+  if(!P||!S.wd||S.mode!=='play')return;const M=nemMark(1);if(!M)return;
   const sx=M.x+ox,sy=M.y+oy;if(sx>=-20&&sx<=W+20&&sy>=-20&&sy<=H+20)return;
   const K=NEMESIS.mark;let a=Math.atan2(sy-H/2,sx-W/2);
   const g=typeof guideG!=='undefined'&&guideG&&guideTarget(guideG);

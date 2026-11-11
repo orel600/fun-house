@@ -43,7 +43,7 @@ function bwUpgrade(k,L){
 // מנסרה ומכרה: מה מייצר בשעה, כמה מחכה מכל משאב (עם פס עד המקסימום), וכפתור לאסוף
 function bwProd(k,L){
   const B=VILLAGE.b[k],p=vProd(k),rs=Object.keys(B.make).filter(r=>B.make[r][L]>0),n=vStock(k),full=rs.some(r=>(p.have[r]||0)>=vCapOf(B,r,L));
-  return '<p class="bwlead">'+T('bw.perHour',makeLine(B,L))+'</p><div class="bwstock">'+rs.map(r=>{const v=Math.floor(p.have[r]||0),c=vCapOf(B,r,L);
+  return '<p class="bwlead">'+T('bw.perHour',makeLine(B,L,k))+'</p><div class="bwstock">'+rs.map(r=>{const v=Math.floor(p.have[r]||0),c=vCapOf(B,r,L);
       return '<div class="bwst"'+bwRar(r)+'><span class="ic">'+resPic(r)+'</span><span class="nm">'+resName(r)+'</span><b>'+v+' / '+c+'</b><i style="width:'+Math.min(100,v/c*100)+'%"></i></div>'}).join('')+'</div>'+
     (full?'<p class="bwbad">'+T('bw.fullProd')+'</p>':'')+
     (n?'<button class="vbtn vmain" data-act="collect">'+T('vil.collect',n)+'</button>':'<p class="vwhy">'+T('vil.nothing')+'</p>');
@@ -96,7 +96,7 @@ function bwVillage(){
 // כל מה שהכפר מייצר בשעה, מכל המבנים יחד, ומה מחכה לאיסוף
 function bwVilMake(){
   const sum={};let wait=0;
-  for(const k in VILLAGE.b){const B=VILLAGE.b[k],L=vLv(k);if(!B.make||!L)continue;wait+=vStock(k);for(const r in B.make)if(B.make[r][L]>0)sum[r]=(sum[r]||0)+B.make[r][L]}
+  for(const k in VILLAGE.b){const B=VILLAGE.b[k],L=vLv(k);if(!B.make||!L)continue;wait+=vStock(k);for(const r in B.make)if(B.make[r][L]>0)sum[r]=(sum[r]||0)+vMakeOf(k,r,L)}
   const rs=Object.keys(sum);if(!rs.length)return '';
   return '<h4 class="bwup">'+T('bw.v.make')+'</h4><div class="bwstock">'+rs.map(r=>'<div class="bwst"'+bwRar(r)+'><span class="ic">'+resPic(r)+'</span><span class="nm">'+resName(r)+'</span><b>+'+sum[r]+'</b></div>').join('')+'</div>'+
     (wait?'<p class="vwhy">'+T('bw.v.wait',wait)+'</p>':'');
