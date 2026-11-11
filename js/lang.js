@@ -1296,7 +1296,7 @@ const TEXT={
   'goal.pin':{en:'Track in the world'},'goal.pinned':{en:'Tracking'},'goal.ready':{en:n=>'Everything for '+n+'! Head home to build'},
   'vp.cutterShop':{en:'Stone workshop'},'vp.pl.deepQuarry':{en:'the Deep Quarry'},
   'vp.cutterShop.d':{en:(pl,lv)=>'Help me build a proper workshop. My crew will clear the rockfall in the quarry and open '+pl+'. Or come back at level '+lv+' and climb over it.'},
-  'vp.stage':{en:(a,b)=>'Stage '+a+'/'+b},'vp.build':{en:n=>'Build stage '+n},
+  'vp.stage':{en:(a,b)=>'Stage '+a+'/'+b},'vp.heroLv':{en:(n,l)=>'Stage '+n+' needs hero level '+l},'vp.heroBtn':{en:l=>'Hero level '+l},'vp.build':{en:n=>'Build stage '+n},
   'vp.done':{en:(n,pl)=>n+' is done! The crew cleared the way to '+pl},'vp.isDone':{en:(pl,n)=>'Done. '+pl[0].toUpperCase()+pl.slice(1)+' is open, and I trade '+n+' iron now.'},
   'vp.open':{en:pl=>pl[0].toUpperCase()+pl.slice(1)+' is open!'},
   'vp.bonus':{en:(p,n)=>'+'+p+'% ('+n+')'},
@@ -1312,7 +1312,7 @@ const TEXT={
   'vp.caravan.d':{en:pl=>'A broken bridge cuts '+pl+' in the north-west of the Frost Ridge. Fit out a caravan and it will rebuild the bridge, even before the ice lantern is lit.'},
   'vp.caravan.done':{en:pl=>'Done. The caravan rebuilt '+pl+', and the market pays 10% more for what you sell.'},
   // השלבים על קו אחד (vpPath, קונספט #672): משפט מטרה קצר, ושם לכל שלב
-  'vp.nDone':{en:'done'},'vp.buildS':{en:n=>'Build: '+n},'vp.hero':{en:n=>'Hero level '+n},
+  'vp.nDone':{en:'done'},'vp.buildS':{en:n=>'Build: '+n},
   'vp.cutterShop.g':{en:'Build a workshop so the crew can clear the quarry rockfall.'},
   'vp.cutterShop.s1':{en:'Stones'},'vp.cutterShop.s2':{en:'Scaffold'},'vp.cutterShop.s3':{en:'Workshop'},
   'vp.roadCrew.g':{en:'Clear the fallen tree on the road to the Mist Lake.'},

@@ -16,11 +16,13 @@ const VPROJ={
     roadCrew:{bld:'mill',lv:3,icon:'🪓',sic:['🪵','🪓','🛤️'],stages:[{wood:40},{wood:80,stone:30},{wood:120,copper:8,coins:60}],opens:'lakeRoad',spot:{x:-420,y:190},make:{mill:{wood:1.1}}},
     // חלק 2 (ניר אישר 11.11, docs/concept-village-region-2.md). after: הדרך הקודמת (מפתח ב-paths) חייבת להיות פתוחה, כי השער לאזור הבא נמצא באזור הקודם,
     // ומכרה 4 ושוק 4 נפתחים יחד. kit: איך המחנה נראה בכפר. sell: השוק משלם יותר במכירה (vpSellK ← vPrice ב-village.js).
+    // hero: השלב האחרון צריך גיבור ברמה הזו (שער רך, ממצא 7 בביקורת Sonnet 11.11, docs/measure-crew-gate.md): 3 מתחת לרמה המומלצת (CURIO.paths).
+    // בלי זה, שחקן שמשחק בהפסקות (הכפר מתמלא בינתיים) גמר את השיירה ברמה 12, 6 לפני המדבר. צוות שכבר נגמר נשאר פתוח
     // המחירים: כ-0.6 מכל מה שעולה להגיע למבנה ברמה הזו, כמו צוות הכורתים (בדיקת הבוט מדפיסה את היחס)
-    tunnelCrew:{bld:'mine',lv:4,after:'lake',icon:'⛏️',sic:['⛺','⛏️','🚇'],kit:'stone',stages:[{stone:80,wood:40},{stone:150,iron:10,aquaC:3},{stone:220,iron:20,copper:12,coins:150}],
-      opens:'ridgeRoad',spot:{x:-230,y:400},make:{mine:{stone:1.1}}},
+    tunnelCrew:{bld:'mine',lv:4,after:'lake',icon:'⛏️',sic:['⛺','⛏️','⛰️'],kit:'stone',stages:[{stone:80,wood:40},{stone:150,iron:10,aquaC:3},{stone:220,iron:20,copper:12,coins:150}],
+      opens:'ridgeRoad',spot:{x:-230,y:400},make:{mine:{stone:1.1}},hero:9},
     caravan:{bld:'market',lv:4,after:'ridge',icon:'🐪',sic:['📦','🐪','🌉'],kit:'crate',stages:[{wood:120,cloth:15},{wood:200,cloth:25,sapphireC:4},{coins:300,silver:10,iron:20,hide:15}],
-      opens:'desertRoad',spot:{x:330,y:-330},sell:1.1}
+      opens:'desertRoad',spot:{x:330,y:-330},sell:1.1,hero:15}
   },
   // reg: באיזה אזור. lv: נפתח גם מהרמה הזו. rubble: איפה המפולת עד שנפתח. fields: כמו WORLD.regions[..].fields, עם regrow מהיר
   places:{
@@ -75,7 +77,8 @@ function vpOpen(pl){const P0=VPROJ.places[pl];if(!P0)return false;
   return P0.lv!=null&&heroLv()>=P0.lv}
 
 /* ---- בכפר: לשונית בשיחה עם התושבת ---- */
-function vpBlock(id){if(!vpHere(id))return 'away';if(vpDone(id))return 'done';const c=vpCost(id);for(const r in c)if(!bagHas(r,c[r]))return 'cost';return null}
+const vpHeroNeed=id=>{const P0=VPROJ.list[id];return P0.hero&&vpStage(id)===P0.stages.length-1&&heroLv()<P0.hero?P0.hero:0};   // השלב האחרון מחכה לרמת הגיבור (hero)
+function vpBlock(id){if(!vpHere(id))return 'away';if(vpDone(id))return 'done';if(vpHeroNeed(id))return 'hero';const c=vpCost(id);for(const r in c)if(!bagHas(r,c[r]))return 'cost';return null}
 function vpBuild(id){
   if(vpBlock(id))return false;const c=vpCost(id);for(const r in c)bagTake(r,c[r]);
   VPS().st[id]=vpStage(id)+1;VPROJ.stat.build++;saveNow();
@@ -99,14 +102,14 @@ function vpBldTab(k){
   return null;
 }
 // השלבים על קו אחד (קונספט #672, פריט 2): עיגול לכל שלב (נבנה ✓ / הנוכחי / נעול), קו שמתמלא בזהב עד הנוכחי, והמחיר מתחת לכל עיגול.
-// המחיר אדום רק בשלב הנוכחי (מה שחסר עכשיו). hero בשלב (אם יוסיפו דרישת רמת גיבור): מוצג על העיגול, ולא נספר כמשאב
-const vpPrice=(c,cur)=>{const k=Object.keys(c).filter(r=>r!=='hero');return k.length?'<span class="vpc">'+k.map(r=>'<span'+(!cur||bagHas(r,c[r])?'':' class="miss"')+' data-tip="'+r+'" aria-label="'+resName(r)+'">'+resPic(r)+shortN(c[r])+'</span>').join('')+'</span>':''};
+// המחיר אדום רק בשלב הנוכחי (מה שחסר עכשיו). hero של הפרויקט (#675, השלב האחרון): מוצג על העיגול האחרון
+const vpPrice=(c,cur)=>{const k=Object.keys(c);return k.length?'<span class="vpc">'+k.map(r=>'<span'+(!cur||bagHas(r,c[r])?'':' class="miss"')+' data-tip="'+r+'" aria-label="'+resName(r)+'">'+resPic(r)+shortN(c[r])+'</span>').join('')+'</span>':''};
 function vpPath(id){
   const P0=VPROJ.list[id],st=vpStage(id),n=P0.stages.length;
   return '<ol class="vppath" style="--vpf:'+Math.min(st,n-1)/(n-1)+'">'+P0.stages.map((c,i)=>{
     const k=i<st?'done':i===st?'cur':'lock';
     return '<li class="vpn '+k+'"><span class="vpo">'+(P0.sic?P0.sic[i]:i+1)+'</span><b>'+T('vp.'+id+'.s'+(i+1))+'</b>'+
-      (k==='done'?'<small>✓ '+T('vp.nDone')+'</small>':vpPrice(c,k==='cur'))+(c.hero?'<small class="'+(heroLv()>=c.hero?'':'miss')+'">⭐ '+T('vp.hero',c.hero)+'</small>':'')+'</li>'}).join('')+'</ol>';
+      (k==='done'?'<small>✓ '+T('vp.nDone')+'</small>':vpPrice(c,k==='cur'))+(P0.hero&&i===n-1&&k!=='done'?'<small class="vph'+(heroLv()>=P0.hero?'':' miss')+'">⭐ '+T('vp.heroBtn',P0.hero)+'</small>':'')+'</li>'}).join('')+'</ol>';
 }
 function vpTabOf(id){
   const P0=VPROJ.list[id];
@@ -114,7 +117,7 @@ function vpTabOf(id){
     let h='<div class="fcook rserve vptab"><p class="bwlead">'+T('vp.'+id+'.g')+'</p>'+vpPath(id);
     if(vpDone(id))return h+'<p class="next">✓ '+(P0.get?T('vp.isDone',T('vp.pl.'+P0.opens),Object.values(P0.get)[0]):T('vp.'+id+'.done',T('vp.pl.'+P0.opens)))+'</p></div>';
     const why=vpBlock(id);
-    h+='<div class="gbtns"><button class="vbtn vmain" data-act="vp" data-k="'+id+'"'+(why?' disabled':'')+'>'+(T('vp.buildS',T('vp.'+id+'.s'+(vpStage(id)+1))))+'</button>'+goalPinBtn({p:id},'pinP')+'</div>';
+    h+='<div class="gbtns"><button class="vbtn vmain" data-act="vp" data-k="'+id+'"'+(why?' disabled':'')+'>'+(why==='hero'?'🔒 '+T('vp.heroLv',P0.stages.length,P0.hero):T('vp.buildS',T('vp.'+id+'.s'+(vpStage(id)+1))))+'</button>'+goalPinBtn({p:id},'pinP')+'</div>';
     return h+'</div>'}};
 }
 function vpAct(b){
