@@ -37,6 +37,7 @@ async function session(browser,v2){
   // the arena first (pixel-identical with and without v2)
   await page.evaluate(()=>startRun());await run(1500);
   await noHud(true);R.arenaScene=await shot('arena-scene');await noHud(false);
+  if(opt('arena')){await ctx.close();return R}   // --arena: only the arena compare (a control run)
   const C=VP.width/2,M=VP.height/2,crop=(w,h,dy=0)=>({x:Math.max(0,Math.round(C-w/2)),y:Math.max(0,Math.round(M-h/2+dy)),width:Math.min(VP.width,w),height:Math.min(VP.height,h)});
   const at=(x,y)=>page.evaluate(([x,y])=>{P.x=x;P.y=y;S.vil&&(S.vil.cam=null)},[x,y]);
   R.frames={};
@@ -72,7 +73,7 @@ async function session(browser,v2){
 
 (async()=>{
   const browser=await chromium.launch({args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']});
-  const A=await session(browser,false),B=await session(browser,true);
+  const A=await session(browser,!!opt('v2v2')),B=await session(browser,!opt('v1v1'));   // --v1v1 / --v2v2: the same look twice (a noise control)
   await browser.close();
   const sharp=(()=>{try{return require('sharp')}catch(e){return null}})();
   let arena='sharp not installed';
