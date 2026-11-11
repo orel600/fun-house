@@ -47,12 +47,12 @@ async function session(browser,v2){
   await page.evaluate(()=>{enterWorld('home')});await run(600);
   await page.evaluate(()=>{P.y+=380;window.__only=1});await run(600);   // away from the gate lantern, on open grass
   R.orcReady=v2?await waitModel('mon_orcSkull'):null;
-  if(v2)R.bodies={wisp:await waitModel('mon_wispGhost'),sprite:await waitModel('mon_spriteBee'),golem:await waitModel('mon_golemIdol')};
+  if(v2)R.bodies={wisp:await waitModel('mon_wispGhost'),sprite:await waitModel('mon_spriteBee'),golem:await waitModel('mon_golemIdol'),crawler:await waitModel('mon_crawlerSpiky')};
   // lineup: one of each world role in a row, and the first-spawn cost of each body (one new type per frame, wall clock)
-  const TYPES=['grunt','shield','wisp','sprite','golem'];R.firstSpawnMs={};
+  const TYPES=['grunt','shield','wisp','sprite','golem','treant','crawler'];R.firstSpawnMs={};
   await page.evaluate(()=>{enemies.length=0;window.__only=1});await page.clock.runFor(34);
   for(let i=0;i<TYPES.length;i++){const t0=Date.now();
-    await page.evaluate(([t,i])=>{const e=addEnemy(t,P.x-150+i*75,P.y+70);e.speed=0;e.dmg=0;e.lv2t=1;e.hp=e.max=1e9},[TYPES[i],i]);
+    await page.evaluate(([t,i])=>{const e=addEnemy(t,P.x-186+i*62,P.y+70);e.speed=0;e.dmg=0;e.lv2t=1;e.hp=e.max=1e9},[TYPES[i],i]);
     await page.clock.runFor(17);R.firstSpawnMs[TYPES[i]]=Date.now()-t0}
   await run(600);
   const lineClip={x:Math.max(0,VP.width/2-240),y:Math.max(0,VP.height/2-10),width:480,height:VP.height/2+10-4};   // the row below the hero, under the top bar
@@ -100,6 +100,18 @@ async function session(browser,v2){
    R.perf.hud={ids,frames:pos.length,distinctPositions:new Set(pos).size}}
   Object.assign(R.perf,{wallMs:{idleFrame:idleMs,first20SpawnFrame:spawn20,next5:next,second20SpawnFrame:again20},heapMB:[h0,h1]});
   await run(300);R.world20=await shot('world-20');
+  // every other region: its own enemies in a row (and their wardens), then the same row in flat black
+  R.regions={};
+  for(const reg of ['lake','ridge','desert','storm','shadow']){
+    await page.evaluate(r=>{enemies.length=0;enterWorld('home',r);window.__only=1},reg);await run(600);
+    const ks=await page.evaluate(r=>{const ks=wldTypes(r).filter(k=>k!=='wanted'&&ETYPES[k]);for(const k in ETYPES)if(ETYPES[k].warden&&!ks.includes(k)&&WORLD.regions[r]&&JSON.stringify(WORLD.regions[r]).includes('"'+k+'"'))ks.push(k);return ks.slice(0,7)},reg);
+    for(const k of ks)await page.evaluate(k=>{const L=LOOK3D[foeKey({type:k})];if(L&&m3dLazy(L.model))m3dNeed(L.model)},k);
+    for(let i=0;i<120&&!(await page.evaluate(ks=>ks.every(k=>{const L=LOOK3D[foeKey({type:k})];return !L||!m3dLazy(L.model)||m3dReady(L.model)}),ks));i++){await page.waitForTimeout(50);await page.clock.runFor(50)}
+    await page.evaluate(ks=>{ks.forEach((t,i)=>{const e=addEnemy(t,P.x-186+i*62,P.y+70);e.speed=0;e.dmg=0;e.lv2t=1;e.hp=e.max=1e9})},ks);
+    await run(700);R.regions[reg]={types:ks,lineup:await shot('lineup-'+reg,lineClip)};
+    await page.evaluate(()=>{const K=new THREE.MeshBasicMaterial({color:0});for(const a of R3D.actors.values())if(a!==R3D.player)a.root.traverse(o=>{if(o.isMesh)o.material=K})});
+    R.regions[reg].silhouette=await shot('silhouette-'+reg,lineClip);
+    await page.evaluate(()=>{enemies.length=0});await page.clock.runFor(34);await page.evaluate(()=>{R3D.pool={}})}
   await ctx.close();return R;
 }
 
