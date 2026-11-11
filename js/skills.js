@@ -101,7 +101,7 @@ function comboShow(e,kind){
 /* ---- ציור: הטבעות והברקים של הסקילים, והסימן של מצב מעל אויב (רטוב, קפוא, הלם) ---- */
 function drawSkills(ox,oy){
   if(!S.sk)return;
-  const th=heroTheme();
+  const th=heroTheme(),tidalClip=window.TIDAL_PROOF?.legacySkillClip?.();if(tidalClip){ctx.save();ctx.beginPath();ctx.rect(0,0,0,0);ctx.clip()}
   for(const f of S.sk.fx){const k=f.t/f.max;ctx.globalAlpha=1-k;ctx.strokeStyle=f.col;
     if(f.hand&&AGE_FX.tip){f.ax=AGE_FX.tip.x;f.ay=AGE_FX.tip.y}   // חרב: מקצה הלהב
     else if(f.hand&&AGE_FX.hand){const h=AGE_FX.hand,d=Math.hypot(f.bx-h.x,f.by-h.y)||1;f.ax=h.x+(f.bx-h.x)/d*SKILLS.tip;f.ay=h.y+(f.by-h.y)/d*SKILLS.tip}   // קשת או מטה: מהיד לכיוון המטרה
@@ -116,8 +116,9 @@ function drawSkills(ox,oy){
       const a=1-k;ctx.lineJoin='round';
       for(const [w,al,c] of [[9,0.18,f.col],[3,1,f.col],[1.2,0.9,'#fff']]){ctx.globalAlpha=a*al;ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke()}
       ctx.globalAlpha=a*0.5;ctx.fillStyle=f.col;ctx.beginPath();ctx.arc(f.bx,f.by,4+8*a,0,7);ctx.fill()}}
-  ctx.globalAlpha=1;
-  for(const e of enemies){
+  if(tidalClip)ctx.restore();ctx.globalAlpha=1;
+  for(const source of enemies){
+    const e=window.TIDAL_PROOF?.legacyStatusView?.(source)||source;
     if(e.dead||!(e.wet>0||e.frozen>0||e.stun>0.3)||!onScreen(e.x+ox,e.y+oy))continue;
     const y=e.y-e.r-14;
     if(e.frozen>0){ctx.strokeStyle=SKILLS.combo.freeze.col;ctx.lineWidth=3;ctx.beginPath();ctx.arc(e.x,e.y,e.r+5,0,7);ctx.stroke();dtIcon(e.x,y,'ice',13)}
