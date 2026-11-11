@@ -50,7 +50,8 @@ function m3dDecode(k,g){
 function m3dHint(ks){for(const k of ks)if(m3dLazy(k)&&!m3dReady(k)&&!M3D.hint.includes(k))M3D.hint.push(k)}
 // בכניסה לאזור (wldWarm): הענק של האזור, ואז מפלצות הזירה
 function m3dWorld(reg){
-  const ks=[];if(typeof STORY!=='undefined')for(const k in STORY.lanterns)if(STORY.lanterns[k].reg===reg&&LOOK3D['wb_'+k])ks.push(LOOK3D['wb_'+k].model);
+  const ks=typeof SKCAST!=='undefined'?[...SKCAST.pre]:[];   // קליפי ההטלה הנוספים של הגיבור (skillcast.js), קטנים, ולכן ראשונים
+  if(typeof STORY!=='undefined')for(const k in STORY.lanterns)if(STORY.lanterns[k].reg===reg&&LOOK3D['wb_'+k])ks.push(LOOK3D['wb_'+k].model);
   for(const t of M3D.arena)if(LOOK3D[t])ks.push(LOOK3D[t].model);
   m3dHint(ks);
 }
