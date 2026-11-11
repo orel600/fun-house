@@ -2072,8 +2072,14 @@ function worldBot(m,L,god){
       const L=LABELS.stat;for(const k in L)L[k]=0;S.cam.x=P.x;S.cam.y=P.y;
       const C2=CanvasRenderingContext2D.prototype,fr=C2.fillRect,rr=C2.roundRect,boxes=[];let on=false;C2.fillRect=function(x,y,w,h){if(on&&this.fillStyle.startsWith('rgba(10, 12, 20')){const t=this.getTransform(),d=devicePixelRatio||1;boxes.push({left:(t.a*x+t.e)/d,top:(t.d*y+t.f)/d,right:(t.a*(x+w)+t.e)/d,bottom:(t.d*(y+h)+t.f)/d})}return fr.apply(this,arguments)};
       C2.roundRect=function(x,y,w,h){if(on&&String(this.fillStyle).startsWith('rgba(250, 246, 232')){const t=this.getTransform(),d=devicePixelRatio||1;boxes.push({bub:1,left:(t.a*x+t.e)/d,top:(t.d*y+t.f)/d,right:(t.a*(x+w)+t.e)/d,bottom:(t.d*(y+h)+t.f)/d})}return rr.apply(this,arguments)};
+      const ft=C2.fillText,txt=[];C2.fillText=function(t){if(on)txt.push({t:String(t),c:String(this.fillStyle).toLowerCase()});return ft.apply(this,arguments)};   // name colors by rank (NAMECOL, labels.js, Nir 11.11)
       const lf=lblFlush;lblFlush=function(){on=true;try{return lf.apply(this,arguments)}finally{on=false}};
-      try{render()}finally{C2.fillRect=fr;C2.roundRect=rr;lblFlush=lf;S.wd.flSay=null}
+      try{render()}finally{C2.fillRect=fr;C2.roundRect=rr;C2.fillText=ft;lblFlush=lf;S.wd.flSay=null}
+      {const cols=Object.values(NAMECOL).map(c=>c.toLowerCase()),lab=txt.filter(x=>cols.includes(x.c));
+        o.nc={n:lab.length,word:txt.filter(x=>/Elite|Champion|Pack Leader|Armored|Elemental Shield/.test(x.t)).map(x=>x.t),
+          el:lab.filter(x=>x.c===NAMECOL.elite.toLowerCase()).length,
+          rank:nameRank({})==='normal'&&nameRank({affix:'tough'})==='elite'&&nameRank({leader:true})==='elite'&&nameRank({wanted:true})==='elite'&&nameRank({wboss:'quarry'})==='boss'&&nameRank({warden:true})==='boss'&&nameRank({hunt:true})==='boss'&&nameRank({nem:'x'})==='boss'&&nameRank({rare:'x'})==='boss'};
+        o.nc.ok=o.nc.n>0&&!o.nc.word.length&&o.nc.el>=1&&o.nc.rank}
       const hud=lblHud();o.bub=boxes.filter(b=>b.bub).length;o.n=boxes.length;o.full=L.full;o.icon=L.icon;o.over=boxes.some((a,i)=>boxes.some((b,j)=>j>i&&a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1));
       o.onHud=boxes.some(a=>hud.some(b=>hit(a,b)));
       // נדירה באמצע קרב (rares.js, fx.js): העמוד והחגיגה בחצי גודל. בלי אויבים: בגודל מלא
@@ -2082,7 +2088,7 @@ function worldBot(m,L,god){
     if(CFG.shots)await shot('msg-lane-'+vp.width);
     await page.evaluate(()=>{const k=__lbak;FLC.q=[];flCardNext();msgClear();$('sig').hidden=k.hid.sig;$('feedBtn').hidden=k.hid.feed;for(const o of k.ov)o.hidden=false;FL.length=0;enemies=[];if(typeof skgOfferClose==='function')skgOfferClose();worldUi(false);SAVE=JSON.parse(k.s);if(S.sk&&k.sk)S.sk.ids=JSON.parse(k.sk);if(k.vil)enterVillage();else{reset();S.mode=k.mode}});
     if(extra)await ownRnd(false);   // רק אחרי החזרה למצב הקודם (גם היא משתמשת באקראי)
-    lane[vp.width]={a,b,hb,ok:hb.feed&&hb.fx===0.5&&hb.fx0===1&&hb.full<=3&&hb.full>0&&!hb.over&&!hb.onHud&&a.n>0&&a.big===0&&a.waits>0&&!a.hero&&!a.ui&&!a.out&&a.feed>0&&b.big===1&&b.shown===1&&!b.hero&&!b.ui&&!b.out&&b.most<=3};
+    lane[vp.width]={a,b,hb,ok:hb.nc.ok&&hb.feed&&hb.fx===0.5&&hb.fx0===1&&hb.full<=3&&hb.full>0&&!hb.over&&!hb.onHud&&a.n>0&&a.big===0&&a.waits>0&&!a.hero&&!a.ui&&!a.out&&a.feed>0&&b.big===1&&b.shown===1&&!b.hero&&!b.ui&&!b.out&&b.most<=3};
   }
   if(laneCdp)await laneCdp.send('Emulation.setSafeAreaInsetsOverride',{insets:{left:0,right:0,top:0,bottom:0}}).catch(()=>{});
   // הפיד בכפר (ביקורת 7.11.2026, ממצא 2): "חדש בספר!" לא מתחת לכפתורי הצד (ספר, קווסטים, גיבור ב-#qRail), ב-848x388 וב-924x424
@@ -5349,7 +5355,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     wac.ring?'טבעת כפור':'אין טבעת כפור',wac.heal?'ריפוי בפיד':'ריפוי לא בפיד',wac.row?'שורת אייקונים':'אין שורת אייקונים',wac.hunt?'אש יוצאת לציד ופוגעת':'אין ציד'].join(', ')));
   check(!fxl.err&&fxl.first&&fxl.lane&&fxl.once&&fxl.btn&&fxl.half&&fxl.saved&&fxl.off,'כותרת אזור ופחות אפקטים: '+(fxl.err||[fxl.first?'כותרת בכניסה הראשונה':'אין כותרת',fxl.lane?'בעמודת ההודעות':'בקנבס, מעל ההודעות',fxl.once?'לא חוזרת':'חוזרת בכל כניסה',
     fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
-  for(const w in lane){const {a,b,hb}=lane[w];check(lane[w].ok,'עמודת הודעות '+w+': '+[(hb.feed?'🥕 לא נוגע בסקילים':'🥕 על כפתור סקיל'),'שמות אויבים: '+hb.full+' מלאים, '+hb.icon+' אייקונים, '+hb.bub+' בועות'+(hb.over?', עולים אחד על השני':'')+(hb.onHud?', על כפתור':''),hb.fx===0.5&&hb.fx0===1?'חגיגה בקרב בחצי גודל':'חגיגה בקרב: '+hb.fx+'/'+hb.fx0,a.waits>0&&a.big===0?'בקרב הגדולה מחכה':'גדולה באמצע קרב',b.big===1?'אחרי הקרב גדולה אחת':'גדולות: '+b.big,
+  for(const w in lane){const {a,b,hb}=lane[w];check(lane[w].ok,'עמודת הודעות '+w+': '+[(hb.feed?'🥕 לא נוגע בסקילים':'🥕 על כפתור סקיל'),'שמות אויבים: '+hb.full+' מלאים, '+hb.icon+' אייקונים, '+hb.bub+' בועות'+', name colors: '+(hb.nc.ok?'white/purple/red by rank, no rank word':'✗ '+JSON.stringify(hb.nc))+(hb.over?', עולים אחד על השני':'')+(hb.onHud?', על כפתור':''),hb.fx===0.5&&hb.fx0===1?'חגיגה בקרב בחצי גודל':'חגיגה בקרב: '+hb.fx+'/'+hb.fx0,a.waits>0&&a.big===0?'בקרב הגדולה מחכה':'גדולה באמצע קרב',b.big===1?'אחרי הקרב גדולה אחת':'גדולות: '+b.big,
     !a.hero&&!b.hero?'לא על הגיבור':'על הגיבור',!a.ui&&!b.ui?'לא על כפתורים, סקילים, קווסט ומפה':'על כפתור',!a.out&&!b.out?'הכל בתוך המסך':'נחתך בקצה',a.feed>0?'פיד בצד':'אין פיד','שורות '+a.n+'/'+b.n+', סקילים '+a.sk+', כפתורים '+a.keep,...(lane[w].ok?[]:['חלון: '+b.win+', פעיל: '+b.on+', מקום (top/max/hero/vis/cut/n/x): '+a.d+' → '+b.d])].join(', '))}
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
