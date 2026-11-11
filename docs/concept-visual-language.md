@@ -316,7 +316,10 @@ Meadow: a tree and a rock at half hp, then the tree broken (fall, stump).
 
 - **Console errors:** 0 before, 0 v2. No piece failed to load.
 - **Load (village L1-L5 + meadow):** before 2,787 KB of old KayKit village models; v2 806 KB old (houses, walls, windmill: not converted) + 993 KB v2 pieces = 1,799 KB. Each v2 piece 32-64 ms to load and decode (SwiftShader), lazily, the old look meanwhile.
-- **Arena:** 2,227 of 376,980 pixels differ, all on the hero's body (a slightly different animation frame). Every other pixel is identical, and v2 has no outline and no rim in the arena. Not proven yet with a main-vs-main control.
+- **Arena: pixel-identical, 0 of 376,980 pixels** (v1 vs v2, after the fix below). Control: v1 vs v1 gives 0 on main and on this branch, so the test is deterministic.
+  The first runs showed 2,227 pixels on the hero, **on main too** (stage 2's #681 removed vfx.js's warm hero rim everywhere, the arena included). Fixed here: the rim is one shared value (`VFX.rimU` in vfx.js), and v2 sets it to 0 only in the village and world.
 - **120 FPS:** each piece is one draw call like the KayKit model it replaces, with fewer triangles than most (KayKit buildings are 80-275 KB). Not measured on the phone.
 
-**Still open:** the 844×390 and night runs (in progress when this was written); the village's houses, walls and windmill (VGROW) are still KayKit; the meadow decor trees and rocks (not resource nodes) are still KayKit.
+At 844×390 (`p844-*.jpg`, levels 2 and 4): 0 console errors, no failed load.
+
+**Still open:** the night run (in progress when this was written); the village's houses, walls and windmill (VGROW) are still KayKit; the meadow decor trees and rocks (not resource nodes) are still KayKit.

@@ -104,12 +104,12 @@ if(LV2.on){
   // wldTypes stays a list of real enemy types (tools/check.js spawns each of them)
   {const ws=wldWarmSet;wldWarmSet=function(r,c,ks){return ws.call(this,r,c,ks.map(k=>LV2.swap[k]&&LOOK3D[LV2.swap[k]]?LV2.swap[k]:k))}}
   // 1. the hero
-  {const sp=syncPlayer;syncPlayer=function(){const r=sp.apply(this,arguments);try{lv2Hero(R3D.player)}catch(e){}return r}}
+  {const sp=syncPlayer;syncPlayer=function(){const r=sp.apply(this,arguments);try{lv2Hero(R3D.player);const U=typeof VFX!=='undefined'&&VFX.rimU;if(U){if(lv2Here())U.value.setRGB(0,0,0);else U.value.copy(U.base)}}catch(e){}return r}}
   // 3. the plaza
   {const sl=p3StreetLamp;p3StreetLamp=function(x,y,g){const P0=LV2.plaza;return Math.hypot(x-P0.x,y-P0.y)<P0.lampR?lv2Lamp(x,y,g):sl(x,y,g)}}
   // 1b. one rim on the hero, not two (Nir 11.11: "some of the characters have that strange white light"): vfx.js's warm, wide rim
   // (k 1.2, pow 2) on top of rim-world's edge bleached the hero's head and armor white. In v2 the hero's rim is rim-world's, plus the outline
-  if(typeof VFX!=='undefined'&&VFX.parts)VFX.parts.delete('rim');
+  // Only there: the rim is compiled into the hero's materials once, so it is turned to 0 per frame (VFX.rimU) and the arena keeps it (pixel-identical with v1)
   // 4. the village pieces and bodies. Every village NPC loses its tint (an emissive glow over the whole body: Avner and the merchant gold,
   // the priest lilac, washed out and glowing); the smith and the innkeeper also get their v2 bodies
   for(const k in LOOK3D){const id=k.slice(4),L0=LOOK3D[k];if(k.slice(0,4)!=='npc_'||!LV2.npc[id]&&!L0.tint)continue;
