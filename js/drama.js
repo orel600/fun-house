@@ -152,7 +152,7 @@ function dmDraw(){
   // סימני קפיצה: עיגול שמתמלא
   for(const m of DM.marks){const k=1-Math.max(0,m.t)/m.t0;ctx.save();ctx.strokeStyle=FXCOL();ctx.fillStyle=FXCOL();
     ctx.globalAlpha=0.85;ctx.lineWidth=3/z;ctx.beginPath();ctx.arc(m.x,m.y,DRAMA.weak.pounce.r,0,6.283);ctx.stroke();
-    ctx.globalAlpha=0.28;ctx.beginPath();ctx.arc(m.x,m.y,DRAMA.weak.pounce.r*k,0,6.283);ctx.fill();ctx.restore()}
+    ctx.globalAlpha=0.28;ctx.beginPath();ctx.arc(m.x,m.y,DRAMA.weak.pounce.r*Math.max(0,k),0,6.283);ctx.fill();ctx.restore()}
   DM.fx=DM.fx.filter(f=>now-f.t0<D.pile.t);
   for(const f of DM.fx){const s=now-f.t0;
     // הערימה: עצמות קטנות על הרצפה שדוהות

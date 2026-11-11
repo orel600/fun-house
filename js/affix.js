@@ -52,7 +52,7 @@ function affixUpdate(dt){
 function affixDraw(){
   const w=S.wd;if(!w||!w.blasts)return;const A=AFFIX.list.burst;
   for(const b of w.blasts){const k=1-b.t/b.max,pulse=0.5+0.5*Math.sin(fxNow()*(10+k*20));
-    ctx.globalAlpha=0.14+k*0.3;ctx.fillStyle=A.col;ctx.beginPath();ctx.arc(b.x,b.y,A.blast*k,0,7);ctx.fill();
+    ctx.globalAlpha=0.14+k*0.3;ctx.fillStyle=A.col;ctx.beginPath();ctx.arc(b.x,b.y,A.blast*Math.max(0,k),0,7);ctx.fill();
     ctx.globalAlpha=0.5+0.45*pulse;ctx.strokeStyle=A.col;ctx.lineWidth=3;ctx.setLineDash([10,7]);ctx.beginPath();ctx.arc(b.x,b.y,A.blast,0,7);ctx.stroke();ctx.setLineDash([]);
     ctx.globalAlpha=0.6*k;ctx.fillStyle='#FFE0B0';ctx.beginPath();ctx.arc(b.x,b.y,10+14*k*pulse,0,7);ctx.fill();ctx.globalAlpha=1}
 }

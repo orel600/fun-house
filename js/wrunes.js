@@ -117,7 +117,7 @@ function wrDraw(){
   for(const f of F){if(f.k!=='pool'||f.t<f.wait||typeof POOL3D!=='undefined'&&POOL3D.owns())continue;const a=Math.min(1,(f.dur-f.t)*2);   // בתלת-ממד: לבה ושלוליות חיות (skfx3d-pools.js)
     ctx.fillStyle=ctx.strokeStyle=f.col;ctx.globalAlpha=0.2*a;ctx.beginPath();ctx.ellipse(f.x,f.y,f.r,f.r*0.6,0,0,7);ctx.fill();
     ctx.globalAlpha=0.7*a;ctx.lineWidth=2;ctx.stroke();
-    if(!wsbLess()){ctx.globalAlpha=0.8*a;for(let i=0;i<3;i++){const s=(f.t*2+i/3)%1;ctx.beginPath();ctx.arc(f.x+Math.cos(i*2.1)*f.r*0.5,f.y-s*18,3*(1-s),0,7);ctx.fill()}}}
+    if(!wsbLess()){ctx.globalAlpha=0.8*a;for(let i=0;i<3;i++){const s=(f.t*2+i/3)%1;ctx.beginPath();ctx.arc(f.x+Math.cos(i*2.1)*f.r*0.5,f.y-s*18,3*Math.max(0,1-s),0,7);ctx.fill()}}}
   ctx.restore();
 }
 

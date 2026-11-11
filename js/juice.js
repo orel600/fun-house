@@ -171,7 +171,7 @@ function juiceDraw(){
   const I=JUICE.impact;ctx.globalCompositeOperation='lighter';
   for(const f of J.fl){const k=(now-f.t0)/I.life;if(k>=1)continue;J.fl[j++]=f;const r=f.r*(0.5+k*0.8);
     ctx.globalAlpha=0.9*(1-k)*(f.al||1);ctx.fillStyle=f.col;ctx.beginPath();ctx.arc(f.x,f.y,r*0.55,0,7);ctx.fill();
-    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(f.x,f.y,r*0.28*(1-k),0,7);ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(f.x,f.y,r*0.28*Math.max(0,1-k),0,7);ctx.fill();
     ctx.strokeStyle=f.col;ctx.lineWidth=3*(1-k)+0.5;ctx.beginPath();ctx.arc(f.x,f.y,r,0,7);ctx.stroke();
     ctx.lineWidth=2.5*(1-k)+0.5;ctx.strokeStyle='#fff';ctx.beginPath();
     for(let i=0;i<I.rays;i++){const a=f.a+i*Math.PI/I.rays*2,r0=r*0.4,r1=r*1.5;ctx.moveTo(f.x+Math.cos(a)*r0,f.y+Math.sin(a)*r0*0.8);ctx.lineTo(f.x+Math.cos(a)*r1,f.y+Math.sin(a)*r1*0.8)}
