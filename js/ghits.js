@@ -3,8 +3,8 @@
    max/hits מהחיים, בכל רמה ובכל סקיל. גיבור חלש עדיין צריך כמה מכות שהוא צריך היום (התקרה רק עוצרת למעלה).
    מכות שמגיעות ביחד (כמה חצים, סקיל שפוגע באזור, מכה צמודה של מומחיות) נספרות כמכה אחת: חלון win שניות לכל מקור.
    כלי איסוף טוב יותר = פחות מכות (tool), אבל אף פעם לא פחות מ-min. כלי חלש מדי למקור (gtWeak) = עוד weak מכות.
-   כל מכה גם משלמת: החלק של החומר הראשי שכבר ירד מהחיים נופל מיד עם "+N" (pay), והשאר כשהמקור נשבר. הסך הכל לא משתנה:
-   אותו הגרלה של gtDrop (gtool.js), רק מחולקת על המכות.
+   כל מכה גם משלמת: החלק של החומר הראשי שכבר ירד מהחיים נופל מיד עם "+N" (pay), והשאר כשהמקור נשבר.
+   הסך: ההגרלה של gtDrop (gtool.js) כפול yld, כי שבירה לוקחת יותר זמן.
    רק בעולם (gOn ב-gather.js). הזירה של אוראל לא משתנה.
    חיבור: ghCap מ-damage (combat.js) ומהמכה הצמודה (gmHit ב-gmastery.js), ghDrop מ-nodeDown (nodes.js) */
 const GHITS={
@@ -15,6 +15,7 @@ const GHITS={
   weak:1,                 // כלי חלש מדי למקור: עוד מכה (הכלי החלש כבר מאט בעצמו, GTOOL.slow)
   win:0.2,                // שניות: מכות על אותו מקור בתוך החלון נספרות כמכה אחת
   pay:true,               // החומר הראשי נופל בחלקים, בכל מכה
+  yld:1.2,                // פי כמה החומר הראשי ממקור בעולם: שבירה לוקחת עכשיו יותר זמן, אז כל מקור נותן קצת יותר (מדידה: ±20% לדקה לפי אזור, tools/gather-feel.js)
   off:false,              // כבוי: כמו לפני 11.11 (מדידת "לפני" ב-tools/gather-feel.js --off)
   stat:{cap:0,pay:0,paid:0}
 };
@@ -36,7 +37,7 @@ function ghCap(n,hp0){
 function ghMain(n){
   if(n.ghR!==undefined)return n.ghR;
   const K=NODES.kinds[n.kind],r=gtMain(n.kind);n.ghR=null;n.ghPaid=0;if(!K||!r)return null;
-  const D=gtDrop(n,K.drop);n.ghR=r;n.ghTot=D[r][1];return r;
+  const D=gtDrop(n,K.drop),a=D[r][1]*GHITS.yld;n.ghR=r;n.ghTot=Math.floor(a)+(Math.random()<a%1?1:0);return r;
 }
 function ghPay(n){
   if(!GHITS.pay||n.hp<=0)return;   // ההכה שוברת: הכל ב-ghDrop
