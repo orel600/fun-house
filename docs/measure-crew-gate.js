@@ -10,7 +10,7 @@ const {chromium}=require('playwright');const path=require('path'),fs=require('fs
 const {BAL,install}=require('../tools/balance-world.js');
 const CLS=(process.env.CLS||'warrior,hunter,mage').split(','),CH=+(process.env.CH||4),SEED=+(process.env.SEED||7),FILL=+(process.env.FILL||0);
 function addon(o){
-  const m=window.__bal,R=m.rep;const dd=dmDraw;dmDraw=function(){try{return dd.apply(this,arguments)}catch(e){R.drawErr=(R.drawErr||0)+1;ctx.restore&&ctx.restore()}};   // drama.js: arc עם רדיוס שלילי עצר ריצה (11.11), נספר ולא עוצר
+  const m=window.__bal,R=m.rep;const A0=CanvasRenderingContext2D.prototype.arc;CanvasRenderingContext2D.prototype.arc=function(x,y,r,...a){if(!(r>=0)){R.drawErr=(R.drawErr||0)+1;r=0}return A0.call(this,x,y,r,...a)};   // arc עם רדיוס שלילי (drama.js, strike.js) עצר ריצה ארוכה (11.11): נספר ולא עוצר
   R.ms={};R.vis=0;let lastG=m.gt;
   const ORDER=['center','mill','mine','market','forge','stash','inn'],CREWS=['roadCrew','tunnelCrew','caravan'];
   const hrs=()=>(m.gt*1.5+R.vis*90+R.deaths*45)/3600;
