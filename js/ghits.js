@@ -12,6 +12,7 @@ const GHITS={
   def:4,
   tool:[0,0,0,1,1,1],     // כמה מכות פחות לפי דרגת הכלי (gtool.js): 3 ומעלה מכה אחת פחות
   min:3,                  // אף פעם לא פחות
+  gm:1,                   // מומחיות בדרגת "מכה חזקה" (gmastery.js): מכה פחות
   weak:1,                 // כלי חלש מדי למקור: עוד מכה (הכלי החלש כבר מאט בעצמו, GTOOL.slow)
   win:0.2,                // שניות: מכות על אותו מקור בתוך החלון נספרות כמכה אחת
   pay:true,               // החומר הראשי נופל בחלקים, בכל מכה
@@ -23,6 +24,7 @@ const GHITS={
 function ghHits(n){
   const sh=gShape(n),k=gtOf(n),G=GHITS;let h=G.hits[sh]||G.def;
   if(k){h-=G.tool[gtTier(k)]||0;if(gtWeak(n))h+=G.weak}
+  if(gmTierOf(n)>=GMASTERY.power.from)h-=G.gm;   // מומחיות דרגה 4 ("מכה חזקה"): עם התקרה, הכוח הנוסף הוא מכה אחת פחות
   return Math.max(G.min,h);
 }
 // אחרי שמכה ירדה מהמקור n. hp0: החיים לפני המכה. מגביל, ומשלם את החלק שירד

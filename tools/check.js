@@ -3428,7 +3428,7 @@ function worldBot(m,L,god){
       for(let i=0;i<G.at[1];i++)gmGain(t);o.t2=gmTier('wood')===2&&st.up===up0+1&&SAVE.gm.wood===G.at[1];
       o.magnet=gmMagnet('wood')===G.magnet.k&&gmMagnet('stone')===1;
       SAVE.gm.wood=G.at[2];gHit(t,0,10);o.t3=nb.hp===1e4-10&&t.hp===1e4;
-      SAVE.gm.wood=G.at[3];t.hp=nb.hp=1e4;gHit(t,0,10);o.t4=t.hp===1e4-10*(G.power.k-1)&&nb.hp===1e4-10*G.power.k;
+      SAVE.gm.wood=G.at[3];t.hp=nb.hp=1e4;const nbm=nb.max;nb.max=1e6;gHit(t,0,10);nb.max=nbm;o.t4=t.hp===1e4-10*(G.power.k-1)&&nb.hp===1e4-10*G.power.k;
       SAVE.gm.wood=G.at[4];o.t5=gmTier('wood')===5&&gmGlint(t,2)===G.glint.col&&!gmGlint(t,1);
       o.win=gStatPanel().includes('gmrow')&&gmHtml().includes(T('gm.wood')+': '+T('gm.lv',5));o.blank=saveBlank().gm.wood===0;
       const wd=S.wd,g0=JSON.stringify(SAVE.gm),h0=t.hp;S.wd=null;
