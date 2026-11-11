@@ -3451,20 +3451,23 @@ function worldBot(m,L,god){
       const w1=(()=>{const q=vProd('mill');q.t=Date.now()-3600e3;q.have={};vSettle('mill');return q.have.wood})();o.wood=w1>w0*1.05;
       o.sign=vpForPath('lake')===id;
       enterWorld('home','meadow');enemies=[];S.mode='play';const o0=V.stat.open;
-      P.x=0;P.y=0;VPW.t=0;vpUpdate(1);o.far=!SAVE.vproj.seen[pl];
-      P.x=p.x;P.y=p.y+200;VPW.t=0;vpUpdate(1);o.moment=SAVE.vproj.seen[pl]===1&&V.stat.open===o0+1;
-      VPW.t=0;vpUpdate(1);o.once=V.stat.open===o0+1;
-      o.water=!qOn('s2Warden')&&!(QS().done||{}).s2Warden;
+      const PL=V.places[pl];P.x=0;P.y=0;vpRoad(pl,PL);o.far=!SAVE.vproj.seen[pl];
+      P.x=p.x;P.y=p.y+200;vpRoad(pl,PL);o.moment=SAVE.vproj.seen[pl]===1&&V.stat.open===o0+1;
+      vpRoad(pl,PL);o.once=V.stat.open===o0+1;
+      o.why=JSON.stringify({reg:S.wd&&S.wd.reg,room:!!S.room,open:vpOpen(pl),d:Math.round(Math.hypot(P.x-p.x,P.y-p.y)),seen:SAVE.vproj.seen,n:V.stat.open-o0});
+      VPW.t=0;vpUpdate(1);o.upd=V.stat.open===o0+1;   // the world loop does not replay it
+      // the water lantern still comes only from the story: the road does not light it, and its quest still needs the quest before it
+      o.water=!storyOpen('water')&&!!QBY.s2Warden&&!!(QBY.s2Warden.req||{}).quest;
       SAVE.vproj={st:{},seen:{}};sto.earth=true;o.old=wPathOpen(p);
       // already open by the story: finishing the project does not replay the moment
       for(const c of V.list[id].stages){for(const r in c)SAVE.bag[r]=(SAVE.bag[r]||0)+c[r];vpBuild(id)}o.quiet=SAVE.vproj.seen[pl]===1;
       o.blank=!!saveBlank().vproj;
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     enemies=[];SAVE=JSON.parse(bak);goalS().pin=null;enterVillage();return o});
-  check(!rcr.err&&rcr.shut&&rcr.tab&&rcr.goal&&rcr.sign&&rcr.done&&rcr.wood&&rcr.far&&rcr.moment&&rcr.once&&rcr.water&&rcr.old&&rcr.quiet&&rcr.blank,
+  check(!rcr.err&&rcr.shut&&rcr.tab&&rcr.goal&&rcr.sign&&rcr.done&&rcr.wood&&rcr.far&&rcr.moment&&rcr.once&&rcr.upd&&rcr.water&&rcr.old&&rcr.quiet&&rcr.blank,
     'Road crew: '+(rcr.err||[rcr.shut?'locked below sawmill 3, road shut':'open too early!',rcr.tab?'tab in the sawmill':'no sawmill tab',rcr.goal?'📌 goal':'no goal',
       rcr.done?'3 stages open the lake road without the earth lantern':'road still shut!',rcr.wood?'sawmill +wood':'no wood bonus',
-      rcr.far&&rcr.moment?'moment near the road':'no moment',rcr.once?'once':'twice!',rcr.water?'water lantern still needs the story':'story skipped!',
+      rcr.far&&rcr.moment?'moment near the road':'no moment '+rcr.why,rcr.once&&rcr.upd?'once':'twice! '+rcr.why,rcr.water?'water lantern still needs the story':'story skipped!',
       rcr.old?'old save keeps the road':'old save locked out!',rcr.quiet?'quiet when already open':'replays the moment',rcr.blank?'saved':'not saved'].join(', ')));
   // לולאת הכפר, שלב 3 (services.js): הנפח נותן כוח לבחירה, הזמנה רביעית בלוח הפונדק עם פרס ×1.25 שנוטה ליעד, והשוק משלם יותר על המשפחה של היום
   const svr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
