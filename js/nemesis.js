@@ -19,7 +19,14 @@ const NEMESIS={
   gear:{rolls:3, q:110},                   // חפץ אחד בשכבה טובה, באיכות הכי גבוהה (itemroll.js)
   won:12,                                  // כמה מנוצחים נשמרים לספר
   card:{dur:4.5},                          // שניות שהפס למעלה נשאר
-  icon:'👁️', col:'#B48CFF'
+  icon:'👁️', col:'#B48CFF',
+  // סמן נקמה (ניר, 8.11 ו-11.11): איפה הנמסיס מחכה. אדום כמו בוס. סמן אחד לכל היותר
+  mark:{col:'#EF4E57', icon:'💀', mm:4.5,  // צבע, אייקון ליד החץ, וגודל הנקודה במפה הקטנה (פיקסלים)
+    arrow:1.15, skull:15,                  // גודל החץ בקצה המסך וגודל הגולגולת
+    gap:0.4,                               // פחות מזה (ברדיאנים) מהחץ של המטרה (guide.js): זזים הצידה כדי לא לכסות אותו
+    skills:{w:230,h:180},                  // הפינה הימנית התחתונה (פיקסלים של המסך): שמורה לסקילים, החץ לא נכנס אליה
+    top:165,                               // מעל זה (פיקסלים של המסך) יש את הפינות העליונות: מי אני, המטרה, הכפתורים והמפה הקטנה
+    say:0.7}                               // שניות אחרי הכניסה לעולם: "X מחכה ליד Y"
 };
 
 const NS=()=>SAVE.nem||(SAVE.nem={list:[],won:[]});
@@ -56,6 +63,7 @@ function nemOnDeath(){
 /* ---- כניסה לאזור (enterWorld): אם יש כאן נמסיס, הוא מחכה ליד הלהקה שלו ---- */
 function nemEnter(){
   if(!S.wd)return;S.wd.nemE=null;if(S.wd.dp)return;   // עומק הצל (depths.js) שייך לכללים משלו
+  nemWaitSay();
  const N=nemOf(nemReg());if(!N||!ETYPES[N.type])return;
   const FO=WR().foes||[];let i=FO.findIndex(G=>G.type===N.type&&!G.creature);
   if(i<0)i=FO.findIndex(G=>ETYPES[G.type]&&!G.creature);if(i<0)return;
@@ -119,6 +127,54 @@ function nemCardTick(dt){if(NMC.t>0&&(NMC.t-=dt)<=0)nemCardOff()}
 function nemCardOff(){NMC.t=0;const el=document.getElementById('nemCard');if(el){el.classList.remove('on');el.hidden=true}}
 setInterval(()=>{if(NMC.t>0&&(!S||!S.wd))nemCardOff()},1000);   // יציאה מהעולם: לא משאירים פס תקוע
 const nemCardOn=()=>NMC.t>0;
+
+/* ---- סמן נקמה: במפה הקטנה (minimap.js), בחץ בקצה המסך (render.js), ובמפת העולם (worldmap.js) ----
+   הנמסיס באזור הזה: נקודה אדומה במקום שלו, וחץ בקצה המסך כשהוא לא נראה. באזור אחר: נקודה על קצה המפה הקטנה, לכיוון הדרך אליו (guideStep), ובלי חץ.
+   אף פעם לא יותר מסמן אחד: קודם מי שכאן, אחרת הדרגה הכי גבוהה שיש אליו דרך. מנצחים אותו: הוא יוצא מהרשימה, והסמן נעלם לבד */
+const NMK={said:0};
+function nemMark(){
+  const w=S&&S.wd;if(!w||w.dp||!SAVE.nem)return null;
+  const e=w.nemE;if(e&&!e.dead){const N=NS().list.find(x=>x.id===e.nem);if(N)return{N,here:true,x:e.x,y:e.y}}
+  let best=null;
+  for(const N of NS().list)if(N.reg!==w.reg&&(!best||N.rank>best.N.rank)){const st=typeof guideStep==='function'&&guideStep(N.reg);if(st)best={N,here:false,x:st.x,y:st.y}}
+  return best;
+}
+// "X מחכה ליד Y": פעם אחת בכל חזרה לעולם
+function nemWaitSay(){
+  if(NMK.said)return;NMK.said=1;const L=NS().list;if(!L.length)return;
+  const N=nemOf(nemReg())||L.slice().sort((a,b)=>b.rank-a.rank)[0];
+  setTimeout(()=>{if(S.wd&&NS().list.includes(N))banner(NEMESIS.mark.icon+' '+T('nem.wait',nemName(N),T('w.region.'+N.reg)),NEMESIS.mark.col)},NEMESIS.mark.say*1000);
+}
+setInterval(()=>{if(!S||!S.wd)NMK.said=0},1000);
+const nemPulse=()=>RM?1:1+Math.sin(fxNow()*4)*0.12;
+// במפה הקטנה: x הקנבס שלה, at ממיר נקודה בעולם, r חצי הרוחב
+function nemMmDraw(x,at,r){
+  const M=nemMark();if(!M)return;const K=NEMESIS.mark,rad=K.mm;let o=at(M.x,M.y);
+  const dx=o.x-r,dy=o.y-r,d=Math.hypot(dx,dy)||1,m=r-rad-2;if(d>m||!M.here)o={x:r+dx/d*m,y:r+dy/d*m};   // באזור אחר: תמיד על הקצה
+  x.beginPath();x.arc(o.x,o.y,rad*nemPulse(),0,Math.PI*2);x.fillStyle=K.col;x.fill();x.lineWidth=1.5;x.strokeStyle='#fff';x.stroke();
+  x.beginPath();x.arc(o.x,o.y,1.6,0,Math.PI*2);x.fillStyle='#fff';x.fill();   // מרכז המטרה
+}
+// במסך: חץ אדום וגולגולת בקצה, רק כשהנמסיס באזור הזה ולא נראה
+function nemMarkDraw(ox,oy){
+  if(!P||!S.wd||S.mode!=='play')return;const M=nemMark();if(!M||!M.here)return;
+  const sx=M.x+ox,sy=M.y+oy;if(sx>=-20&&sx<=W+20&&sy>=-20&&sy<=H+20)return;
+  const K=NEMESIS.mark;let a=Math.atan2(sy-H/2,sx-W/2);
+  const g=typeof guideG!=='undefined'&&guideG&&guideTarget(guideG);
+  if(g){const ga=Math.atan2(g.y+oy-H/2,g.x+ox-W/2);let df=Math.atan2(Math.sin(a-ga),Math.cos(a-ga));if(Math.abs(df)<K.gap)a=ga+(df<0?-K.gap:K.gap)}   // לא על החץ של המטרה
+  let ex=Math.max(28,Math.min(W-28,W/2+Math.cos(a)*W)),ey=Math.max(K.top/ZOOM,Math.min(H-40,H/2+Math.sin(a)*H));
+  const sw=K.skills.w/ZOOM,sh=K.skills.h/ZOOM;if(ex>W-sw&&ey>H-sh)ey=H-sh;   // הפינה של הסקילים
+  const s=K.arrow*nemPulse();
+  ctx.save();ctx.translate(ex,ey);ctx.rotate(a);ctx.scale(s,s);ctx.fillStyle=K.col;ctx.strokeStyle='#000a';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-7,-8);ctx.lineTo(-7,8);ctx.closePath();ctx.stroke();ctx.fill();ctx.restore();
+  ctx.save();ctx.font=K.skull+'px system-ui, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(K.icon,ex-Math.cos(a)*22,ey-Math.sin(a)*22);ctx.restore();
+  NMK.drawn=fxNow();   // לבדיקה (check.js)
+}
+// במפת העולם: גולגולת על האי של הנמסיס שהסמן מצביע אליו
+function nemMapMark(x,reg,p,rad){
+  const M=nemMark();if(!M||M.N.reg!==reg)return;
+  wmText(x,NEMESIS.mark.icon,p.x-rad*0.72,p.y-rad*0.62,Math.round(Math.max(16,rad*0.42)),NEMESIS.mark.col);
+}
 
 /* ---- ספר ההרפתקאות (book.js), בלשונית היצורים: הנמסיסים שלך, ומי שניצחת ---- */
 function nemBookHtml(){
