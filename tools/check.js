@@ -2988,7 +2988,7 @@ function worldBot(m,L,god){
   {const ov=[];
     for(const vp of [{width:915,height:412},{width:844,height:390}]){
       await page.setViewportSize(vp);
-      await page.evaluate(()=>{welcomeClose();npcTalk(null);enterVillage();npcTalk(null);welcomeClose();msgClear();P.x=0;P.y=-200;S.cam.x=0;S.cam.y=-200;
+      await page.evaluate(()=>{welcomeClose();npcTalk(null);enterVillage();npcTalk(null);welcomeClose();{const lp=$('lpCard');if(lp)lp.classList.remove('on')}msgClear();P.x=0;P.y=-200;S.cam.x=0;S.cam.y=-200;
         window.__tipKeep=JSON.stringify(SAVE.tips||{});tipClose();TIP1.q=[];
         msgSay(T('goal.ready','Forge'));tipShow({k:'sklv',args:[T('npc.priest')[0]],at:null});VSIGN.t=0});
       await page.clock.runFor(700);
@@ -3001,7 +3001,7 @@ function worldBot(m,L,god){
         if(o.bad.length||!o.vis){const ln=$('msgLane').getBoundingClientRect();o.dbg='tip '+[t.left,t.top,t.width,t.height].map(Math.round)+' lane '+[ln.left,ln.top,ln.width,ln.height].map(Math.round)+' where '+MSG.where}
         tipClose();SAVE.tips=JSON.parse(window.__tipKeep);msgClear();return o});
       // world: the new-skill moment with a lane line up
-      const w=await page.evaluate(()=>{const o={},ovs=[...document.querySelectorAll('.ov,.win')].filter(x=>!x.hidden);try{for(const x of ovs)x.hidden=true;enterWorld('home');for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);msgClear();
+      const w=await page.evaluate(()=>{const o={},ovs=[...document.querySelectorAll('.ov,.win')].filter(x=>!x.hidden);try{for(const x of ovs)x.hidden=true;enterWorld('home');{const lp=$('lpCard');if(lp)lp.classList.remove('on')}for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);msgClear();
         const seen=skrSeen().slice();msgSay(T('goal.ready','Forge'));o.before=MQ.rows.length;
         skrStart('quake');msgPump();const ic=SKR&&SKR.el?SKR.el.getBoundingClientRect():null,lane=$('msgLane');
         o.hidden=lane.style.visibility==='hidden';o.rowsDuring=MQ.rows.length;o.icon=!!ic;
