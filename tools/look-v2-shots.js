@@ -1,7 +1,7 @@
 /* Evidence for the look v2 pilot (?look=v2, js/look-v2.js; concept: docs/concept-visual-language.md). Not part of the game or of npm run check.
    Offline and disposable, like tools/check.js: a fresh browser context (its own empty storage), every http(s) request answered locally
    with an empty body (no cloud, no Supabase, no live site), Math.random seeded, the clock faked. No real save is ever read or written.
-   Same steps twice, without and with ?look=v2, in 3D on the CPU (SwiftShader), phone landscape 844x390 (and --ipad: 1180x820):
+   Same steps twice, with ?look=v1 (the old look) and the default (v2), in 3D on the CPU (SwiftShader), phone landscape 844x390 (and --ipad: 1180x820):
      village plaza, a world fight (8 grunts + 3 shields + 2 wisps around the hero), motion strips of one grunt (spawn, walk, attack, death),
      the arena right after it starts (must be identical with and without v2), and numbers: first-spawn cost of the new body,
      20 grunts spawning in one frame, JS heap, GPU geometries and textures, draw calls, triangles, and HUD drift over 30 frames.
@@ -23,7 +23,7 @@ async function session(browser,v2){
   await page.addInitScript(seed=>{let a=seed>>>0;Math.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
     try{localStorage.setItem('zm-gfx','3d')}catch(e){}},SEED);
   await page.clock.install({time:0});await page.clock.pauseAt(1000);
-  await page.goto('file://'+path.resolve(__dirname,'..','index.html')+(v2?'?look=v2':''),{timeout:120000});
+  await page.goto('file://'+path.resolve(__dirname,'..','index.html')+(v2?'':'?look=v1'),{timeout:120000});   // v2 is the default now; ?look=v1 is the old look
   await page.clock.runFor(300);
   for(let i=0;i<300;i++){const r=await page.evaluate(()=>R3D.ready||R3D.failed);if(r)break;await page.waitForTimeout(50);await page.clock.runFor(50)}
   // each step: the hero can't die, open windows close, and (when set) only the test's own enemies stay, so nothing else walks into the frame

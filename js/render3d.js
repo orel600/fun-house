@@ -483,7 +483,7 @@ function heroLook(){
   return R3D._hl=L;
 }
 function lookOf(e){return e===P?heroLook():e.wboss&&LOOK3D['wb_'+e.wboss]?LOOK3D['wb_'+e.wboss]:e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[foeKey(e)]}
-// איזה מראה של LOOK3D מצייר אויב רגיל: הסוג שלו. js/look-v2.js מחליף את זה בעולם (?look=v2) בלי לשנות את הזירה
+// איזה מראה של LOOK3D מצייר אויב רגיל: הסוג שלו. js/look-v2.js מחליף את זה בעולם (דלוק כברירת מחדל, ?look=v1 מכבה) בלי לשנות את הזירה
 function foeKey(e){return e.type}
 // מפתח למאגר: רק דמות זהה (מודל, חפצים, צבע, גודל, נשק מוסתר) חוזרת לשימוש. יצורי משאבים הם מודל קיים בצבע ובגודל אחר
 const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')+(p.glow||'')+(p.item||'')).join()+(L.tint?'|'+L.tint:'')+(L.paint?'|'+L.paint:'')+'|'+L.h+(L.own===false?'|x':'');

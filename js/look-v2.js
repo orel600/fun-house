@@ -1,5 +1,5 @@
 /* Look v2, pilot (Nir approved the free pilot, 11.11.2026; concept: docs/concept-visual-language.md).
-   Opt-in only: ?look=v2 in the address. Without it this file does nothing (not even LOOK3D entries).
+   On by default (Nir, 11.11: "אוהב את הסטייל החדש"). ?look=v1 (or ?look=classic) turns it off, for comparison: then this file does nothing.
    Village and open world only. The arena and the Underworld (Orel's) never change: lv2Here() is false there,
    the hero's outline is hidden and its rim strength is 0, so those frames are pixel-identical (tools/look-v2-shots.js proves it).
    Three parts, all from outside render3d.js (it only exposes foeKey(e), the LOOK3D key an ordinary enemy is drawn with):
@@ -8,17 +8,17 @@
       The model, skin and gear are never replaced. The white ground ring already exists (READ3D.hero in readable3d.js) and is reused.
    2. One world enemy with its own silhouette: the grunt in the open world is drawn as mon_orcSkull (Quaternius CC0,
       2,400 triangles, built by tools/build3d.js --only monsters --mon=orcSkull). Same type, hp, size, hit size and timings: only the look key.
-   3. One village corner: the plaza in front of the village center gets a round paved floor with rounded curb stones,
+   3. One village corner: the plaza in front of the village center gets a ring of rounded curb stones (the round floor disc was removed, Nir 11.11),
       and its street lamps become rounder toy lamps. Visual only: walkable space and collision are unchanged.
    Numbers live in LV2. A new world enemy look = one row in LV2.swap and one in LV2.looks. */
 const LV2={
-  on:/[?&]look=v2\b/.test(location.search),
+  on:!/[?&]look=(v1|classic)\b/.test(location.search),
   swap:{grunt:'w_grunt'},   // world enemy type -> its v2 LOOK3D key
   looks:{w_grunt:{model:'mon_orcSkull',h:56,foot:13,anim:{run:'mon_orcSkull_Walk',die:'mon_orcSkull_Death'}}},
   clips:{mon_orcSkull:{hit:'mon_orcSkull_Weapon'}},   // FOEATK3D.clip: the swing it plays when it attacks (strike.js)
   outline:{col:0x1b1512,w:0.075},        // w: in model units (a KayKit hero is about 2.3 tall): about 2.5 px at the phone camera (0.045 was 1.5 px, too thin to read)
   rim:{k:0.5},   // edge rim on the hero, at least this strong in the village and world (rim-world.js: its color and where the edge starts)
-  plaza:{x:0,y:-185,r:125,floor:'#BFA27A',curb:'#A08560',n:20,lampR:200,   // floor: warm sand. Village light is cool, so a pale floor read lilac (pilot shot 1)
+  plaza:{x:0,y:-185,r:125,curb:'#A08560',n:20,lampR:200,   // no floor disc: Nir didn't read it as a plaza (11.11)
       // lampR: street lamps this close to the plaza center become v2 lamps
     lamp:{h:56,post:'#5A3E2B',base:'#9E9484',cap:'#B54A3C',glow:'#ffd38a',halo:46}}
 };
@@ -30,8 +30,9 @@ if(LV2.on){
   Object.assign(FOEATK3D.clip,LV2.clips);
   // 2. the world enemy: same enemy, another look key, only in the open world
   {const fk=foeKey;foeKey=function(e){const k=fk(e);return S&&S.wd&&!S.mb&&!S.room&&LV2.swap[k]?LV2.swap[k]:k}}
-  // the world warms up every look that can appear (render3d.js wldTypes), so the new body is ready before it is on screen
-  {const wt=wldTypes;wldTypes=function(reg){const ks=wt(reg);for(const k in LV2.swap)if(ks.includes(k)&&!ks.includes(LV2.swap[k])&&LOOK3D[LV2.swap[k]])ks.push(LV2.swap[k]);return ks}}
+  // the world warms up each enemy type before it is on screen (render3d.js wldWarmSet): warm the v2 body instead.
+  // wldTypes stays a list of real enemy types (tools/check.js spawns each of them)
+  {const ws=wldWarmSet;wldWarmSet=function(r,c,ks){return ws.call(this,r,c,ks.map(k=>LV2.swap[k]&&LOOK3D[LV2.swap[k]]?LV2.swap[k]:k))}}
   // 1. the hero
   {const sp=syncPlayer;syncPlayer=function(){const r=sp.apply(this,arguments);try{lv2Hero(R3D.player)}catch(e){}return r}}
   // 3. the plaza
@@ -63,12 +64,10 @@ function lv2Hero(a){
   for(const [o,ol] of a.lv2ol)ol.visible=here&&o.visible;
 }
 
-/* ---- 3. the plaza: round floor, rounded curb, rounder lamps ---- */
+/* ---- 3. the plaza: rounded curb ring, rounder lamps ---- */
 function lv2Smooth(c){const k='lv2'+c;return P3.mats[k]||(P3.mats[k]=new THREE.MeshLambertMaterial({color:c}))}   // smooth shading: rounder than p3Mat (flat)
 function lv2Plaza(g){
   const P0=LV2.plaza,grp=new THREE.Group(),sin=SIN();
-  const floor=new THREE.Mesh(new THREE.CircleGeometry(P0.r,48).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({color:P0.floor,polygonOffset:true,polygonOffsetFactor:-2}));
-  floor.position.y=0.2;floor.scale.z=1/sin;grp.add(floor);   // below the shadow/ring marks (y 0.5), so nothing on it is hidden
   const stone=new THREE.SphereGeometry(1,10,6),cm=lv2Smooth(P0.curb);
   for(let i=0;i<P0.n;i++){const t=i/P0.n*Math.PI*2,x=Math.cos(t)*P0.r,y=Math.sin(t)*P0.r;
     if(Math.abs(Math.sin(t)-1)<0.08)continue;   // a gap toward the village gate (+y): the road in stays open
