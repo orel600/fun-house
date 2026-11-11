@@ -11,13 +11,18 @@ const SKCAST={
   where:()=>!!S&&(S.wd||S.vil)&&!S.room&&!S.mb,
   // kind (מהספר wskbook.js, ומסקיל החתימה sigskill.js) ← אנימציה. בלי kind: 'zap' לברק, 'ground' לאדמה, 'ring' לשאר
   anim:{
-    dash:'Melee_1H_Attack_Chop', aura:'Melee_2H_Attack_Spin', guard:'Melee_Block', trap:'Melee_1H_Attack_Chop',
+    dash:'Melee_1H_Attack_Chop', aura:'Melee_2H_Attack_Spin', guard:'Melee_Block', trap:'Throw',
     zone:'shot', chain:'shot', zap:'shot', ring:'Ranged_Magic_Shoot',
-    pull:'Ranged_Magic_Summon', summon:'Ranged_Magic_Summon', storm:'Ranged_Magic_Summon', rain:'Ranged_Magic_Summon',
-    meteor:'Ranged_Magic_Spellcasting', vortex:'Ranged_Magic_Spellcasting',
+    pull:'Ranged_Magic_Summon', summon:'Ranged_Magic_Summon', storm:'Ranged_Magic_Raise', rain:'shotUp',
+    meteor:'Ranged_Magic_Raise', vortex:'Ranged_Magic_Spellcasting',
     petrify:'Melee_2H_Attack_Chop', ground:'Melee_2H_Attack_Chop', nova:'Melee_2H_Attack_Chop', blade:'Melee_2H_Attack_Chop'
   },
   shot:{bow:'Ranged_Bow_Release',other:'Ranged_Magic_Shoot'},
+  shotUp:{bow:'Ranged_Bow_Release_Up',other:'Ranged_Magic_Raise'},   // גשם חצים: ירייה לשמיים עם קשת, ידיים למעלה בלי קשת
+  // קליפים נוספים מהענף של אוראל (overhaul/heroes, PR #604; ניר 11.11: "לעבור על מה שאוראל בונה ולהשתמש"): Throw, Ranged_Bow_Release_Up,
+  // Ranged_Magic_Raise. לא בליבה: נטענים ברקע בכניסה לעולם (m3dWorld ב-m3d.js), ובכפר בהטלה הראשונה. עד שהם מוכנים: הקליפ הישן (old)
+  pre:['anim_mbx_gen','anim_mbx_ranged'],
+  old:{trap:'Melee_1H_Attack_Chop',storm:'Ranged_Magic_Summon',rain:'Ranged_Magic_Summon',meteor:'Ranged_Magic_Spellcasting'},
   fallback:'Ranged_Magic_Spellcasting',
   // עיגול הרונות (ניר, 7.11: "שהעיגול קסם יהיה יותר משמעותי ודרמטי"). הרגע החזק הוא הלחיצה עצמה, בלי הכנה: העיגול נכנס בקפיצה (pop) עם קצת
   // מעבר מעל הגודל, הבזק על הקרקע, גל הדף שמתרחב וניצוצות שעולים. שתי טבעות שמסתובבות הפוך: טבעת סימנים בחוץ (band) ועיגול הרונות בפנים (in).
@@ -106,8 +111,10 @@ function skcZoom(){const R=skcRune;if(typeof RM!=='undefined'&&RM||!R||!R.T||!R.
 // איזו אנימציה לנגן (render3d.js). L: המראה של הגיבור (heroLook)
 function skcClip(L){
   const k=P.skCast&&P.skCast.k;let c=SKCAST.anim[k]||SKCAST.fallback;
-  if(c==='shot')c=L.anim.gunDraw&&P.weapon!=='sword'?SKCAST.shot.bow:SKCAST.shot.other;
-  return R3D.clips[c+'@up']?c:SKCAST.fallback;
+  if(c==='shot'||c==='shotUp')c=SKCAST[c][L.anim.gunDraw&&P.weapon!=='sword'?'bow':'other'];
+  if(R3D.clips[c+'@up'])return c;
+  if(typeof m3dHint==='function')m3dHint(SKCAST.pre);   // קליפ מבחוץ שעוד לא נטען: ברקע, ובינתיים הקליפ הישן
+  const o=SKCAST.old[k];return o&&R3D.clips[o+'@up']?o:SKCAST.fallback;
 }
 // העיגול הולך עם הגיבור. בתלת-ממד מזיזים את המדבקות, ובדו-ממד מציירים בקנבס, מתחת לדמויות
 const skcAlpha=f=>{const R=SKCAST.rune;return R.a*(skcRune?skcRune.a:1)*(f>1-R.fade?Math.max(0,(1-f)/R.fade):1)};
