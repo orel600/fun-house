@@ -52,13 +52,14 @@ async function session(browser,v2){
   const TYPES=['grunt','shield','wisp','sprite','golem'];R.firstSpawnMs={};
   await page.evaluate(()=>{enemies.length=0;window.__only=1});await page.clock.runFor(34);
   for(let i=0;i<TYPES.length;i++){const t0=Date.now();
-    await page.evaluate(([t,i])=>{const e=addEnemy(t,P.x-160+i*80,P.y+40);e.speed=0;e.dmg=0;e.lv2t=1;e.hp=e.max=1e9},[TYPES[i],i]);
+    await page.evaluate(([t,i])=>{const e=addEnemy(t,P.x-180+i*90,P.y-110);e.speed=0;e.dmg=0;e.lv2t=1;e.hp=e.max=1e9},[TYPES[i],i]);
     await page.clock.runFor(17);R.firstSpawnMs[TYPES[i]]=Date.now()-t0}
   await run(600);
-  const lineClip={x:Math.max(0,VP.width/2-230),y:Math.max(0,VP.height/2-110),width:460,height:230};
+  const lineClip={x:Math.max(0,VP.width/2-240),y:Math.max(0,VP.height/2-190),width:480,height:200};   // the row above the hero
   R.lineup=await shot('lineup',lineClip);
   // silhouette test: every enemy body (and its gear) drawn flat black, in this throwaway page only
-  await page.evaluate(()=>{for(const a of R3D.actors.values())if(a!==R3D.player)a.root.traverse(o=>{if(o.isMesh&&o.material){o.material.map=null;if(o.material.color)o.material.color.set(0);if(o.material.emissive)o.material.emissive.set(0)}})});
+  // one black material swapped in (the game re-applies colors and tints to its own materials every frame, so editing them doesn't stick)
+  await page.evaluate(()=>{const K=new THREE.MeshBasicMaterial({color:0});for(const a of R3D.actors.values())if(a!==R3D.player)a.root.traverse(o=>{if(o.isMesh)o.material=K})});
   R.silhouette=await shot('silhouette',lineClip);
   await page.evaluate(()=>{enemies.length=0});await page.clock.runFor(34);await page.evaluate(()=>{R3D.pool={}});   // the blackened actors go back to the pool: drop them so later shots build fresh ones
   await page.evaluate(()=>{enemies.length=0;const ts=[['grunt',4],['shield',3],['wisp',2],['sprite',2],['golem',2]];let i=0;
