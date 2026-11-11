@@ -102,7 +102,7 @@ All gameplay evidence from `tools/check.js` only (offline fixture: network block
 Nir approved the free pilot (A+B). Built behind `?look=v2`; without it nothing changes. Village and open world only.
 
 **What's in it**
-- **Hero:** thin dark outline (about 2.5 px at the phone camera) + an edge-only light rim on the selected hero's own model. Model, skin and gear never replaced. The existing white ground ring (`readable3d.js`) is reused. The rim reuses `rimwMat` from `rim-world.js` (feature/world-hero-rim) when that is in the game, so there's one rim shader, not two.
+- **Hero:** thin dark outline (about 2.5 px at the phone camera) + an edge-only light rim on the selected hero's own model. Model, skin and gear never replaced. The existing white ground ring (`readable3d.js`) is reused. The rim is `rim-world.js`'s own (merged in #664): look v2 only turns it up in daylight, so there's one rim shader, not two.
 - **One world enemy, new silhouette:** the world grunt is drawn as Quaternius Orc_Skull (CC0), reduced to **2,399 triangles** (today's grunt body: 5,288), 1 material, 128px texture, 43 joints. Same type, hp, size, hit size and timings. Only `foeKey(e)` in `render3d.js` changes, and only when `S.wd` is set.
 - **Village corner:** the plaza in front of the village center gets a round warm paved floor, rounded curb stones and rounder toy lamps. Visual only.
 
@@ -122,7 +122,7 @@ Motion, one grunt next to the hero (top: before, bottom: v2): spawn, spawn, walk
 ![Arena, phone](concept/visual-language/pilot/p915-arena-scene.jpg)
 **Arena untouched:** the arena scene (HUD hidden) is **pixel-identical** with and without `?look=v2`: 0 of 376,980 pixels (915×412), 0 of 329,160 (844×390) and 0 of 967,600 (iPad). One earlier run differed only because the hero was mid hurt-blink (`render3d.js` hides the hero every other step while `P.inv>0`); shots now clear `P.inv` first.
 
-**Numbers** (SwiftShader on the CPU, so compare before vs v2, not absolute phone FPS. Full data: `pilot/phone915-report.json`, `pilot/phone-report.json`, `pilot/ipad-report.json`. 915×412: 20-at-once frame 37 ms before / 24 ms v2, 0 errors, HUD steady)
+**Numbers** (SwiftShader on the CPU, so compare before vs v2, not absolute phone FPS. Full data: `pilot/phone915-report.json`, `pilot/phone-report.json`, `pilot/ipad-report.json`. 915×412, final code: 20-at-once frame 43 ms before / 20 ms v2, 0 errors, HUD steady)
 | | before | v2 |
 |---|---|---|
 | Grunt body triangles | 5,288 | 2,399 |

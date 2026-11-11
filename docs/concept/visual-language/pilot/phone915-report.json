@@ -29,19 +29,19 @@
    },
    "wallMs": {
     "idleFrame": 15,
-    "first20SpawnFrame": 37,
+    "first20SpawnFrame": 43,
     "next5": [
      24,
-     10,
-     8,
-     11,
-     19
+     30,
+     24,
+     20,
+     29
     ],
-    "second20SpawnFrame": 14
+    "second20SpawnFrame": 15
    },
    "heapMB": [
-    29.5,
-    31.1
+    30.5,
+    29.5
    ]
   }
  },
@@ -66,19 +66,19 @@
    },
    "wallMs": {
     "idleFrame": 9,
-    "first20SpawnFrame": 24,
+    "first20SpawnFrame": 20,
     "next5": [
+     8,
+     8,
+     8,
      9,
-     8,
-     10,
-     8,
-     13
+     8
     ],
-    "second20SpawnFrame": 14
+    "second20SpawnFrame": 20
    },
    "heapMB": [
-    28.9,
-    29.9
+    29.8,
+    30.9
    ]
   }
  }
