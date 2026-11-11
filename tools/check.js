@@ -3119,7 +3119,7 @@ function worldBot(m,L,god){
     // 7.11 (WXW, wxworld.js): מזג האוויר הנכון לכל אזור, סערה שמתקדמת במצבים, כפר עם גשם קל, ומצויר מתחת לאפקטים ולמספרי הנזק
     {const core=wxwCore(),r={},has=id=>[...FXW.wxl.values()].some(h=>h.id===id),run=n=>core&&WX.run[n]&&WX.run[n].state,cfg=n=>core&&WEATHER.scenes[n]||{};
       enterWorld('home','meadow');P.inv=99;tick(1);WXW.t=0;tick(1);r.cycle=WXW.st==='building'&&(!core||run('world')==='building');wxwSet('storm');tick(1);
-      r.meadow=core?run('world')==='storm'&&(cfg('world').storm||[]).some(v=>v[0]==='rain_heavy')&&!!cfg('world').ev:has('wx_rainheavy');
+      r.meadow=core?run('world')==='storm'&&(cfg('world').storm||[]).some(v=>v[0]==='rain_heavy')&&!!WXW.scene.meadow.bolts:has('wx_rainheavy');
       enterWorld('home','ridge');P.inv=99;tick(1);const rc=wxwCfg('ridge');r.ridge=WXW.reg==='ridge'&&(rc.theme==='arctic'||rc.theme==='night')&&rc.storm[0][0]==='snow_blizzard'&&(!core||cfg('world')[`storm`][0][0]==='snow_blizzard');
       enterWorld('home','desert');P.inv=99;tick(1);{const ds=wxwCfg('desert').storm;r.desert=wxwCfg('desert').theme!=='temperate'&&ds.some(v=>v[0]==='wind_dust')&&ds.some(v=>v[0]==='wind_gust')&&!ds.some(v=>v[0]==='wind_tornado')}   // 11.11: סופת חול בלי טורנדו על כל המסך
       enterWorld('home','storm');P.inv=99;tick(1);r.storm=WXW.st==='storm'&&!!WXW.scene.storm.far&&(!core||run('world')==='storm'&&!(cfg('world').ev&&cfg('world').ev.storm&&cfg('world').ev.storm.bolt));   // 11.11: ברקים דרך WXW.far, לא בנקודה אקראית של הליבה
