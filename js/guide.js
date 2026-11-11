@@ -149,7 +149,16 @@ function guideUpdate(){
   guideUi();
   if(typeof rareLineSync==='function')rareLineSync();   // שורת השמועה על נדירה, מתחת לשורה (rares.js)
 }
-$('guideMain').addEventListener('click',()=>{if(!S.vil&&!S.wd)return;if(typeof wmapOpen==='function'&&S.wd&&!$('wMap').hidden)wmapOpen(false);if($('qLog').hidden)menuShow('qBtn');sfx('ui')});   // היומן נפתח בתפריט הראשי (menu.js)
+// "Done: X. Tap here for your reward": נגיעה אחת לוקחת את הפרס מהשורה, בלי לפתוח את היומן (קונספט מסכים ברורים #672, סעיף 5)
+function guideClaim(){
+  const G=guideG;if(!G||!G.q||G.place!==null||G.icon!==GUIDE.icon.claim||!S||S.mode!=='play')return false;
+  const q=QBY[G.q];if(!q||!qReady(q))return false;
+  if(!questClaim(G.q))return false;
+  sfx('coin');if(typeof welcomeFly==='function')welcomeFly(q.reward,false,$('guideMain'));   // המטבעות עפים לפס העליון
+  guideT=0;guideKey='';guideUpdate();
+  return true;
+}
+$('guideMain').addEventListener('click',()=>{if(!S.vil&&!S.wd)return;if(guideClaim())return;if(typeof wmapOpen==='function'&&S.wd&&!$('wMap').hidden)wmapOpen(false);if($('qLog').hidden)menuShow('qBtn');sfx('ui')});   // היומן נפתח בתפריט הראשי (menu.js)
 $('guideJump').addEventListener('click',()=>{const to=$('guideJump').dataset.to;if(!to)return;
   const why=travelBlock();if(why){banner(T('g.noJump'),C.blood);return}travelGo(to)});
 $('guideMin').addEventListener('click',()=>{try{localStorage.setItem(GUIDE.key,guideMin()?'0':'1')}catch(e){}guideKey='';guideUi();sfx('ui')});
