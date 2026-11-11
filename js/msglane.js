@@ -13,7 +13,7 @@ const MSG={
   fight:360,                        // אויב חי במרחק הזה (יחידות משחק) = באמצע קרב
   pad:8, gap:6, minW:220, maxW:540, // רווח מכל כפתור, רווח בין שורות, ורוחב העמודה
   hero:{up:95, side:70},            // הגיבור על המסך: כמה מעליו וכמה לצדדים שמורים לו (יחידות משחק, כפול ZOOM)
-  seen:[], stat:{small:0,big:0,down:0,waits:0,most:0,mostBig:0,held:0,card:0,both:0}   // לבדיקה (tools/check.js)
+  seen:[], stat:{small:0,big:0,down:0,waits:0,most:0,mostBig:0,held:0,card:0,both:0,lv:0}   // לבדיקה (tools/check.js)
 };
 const MQ={small:[],big:[],rows:[],bigRow:null,t:0};
 function msgOn(){const bc=document.body.classList;return !!S&&!bc.contains('mb')&&(bc.contains('world')||bc.contains('vil'))}
@@ -44,8 +44,16 @@ function msgRow(m,big){const d=document.createElement('div');d.className='mrow'+
 // The "New: skill" card (skguide.js) is up: a big line (region, rank, boss) waits in its queue, and does not drop to small meanwhile
 // (desert 11.11: the card sat on top of "The Burning Desert..." at 915x412)
 function msgCardUp(){const c=$('skOffer');return !!c&&!c.hidden}
+// The "Level N!" card (levelpath.js, top center) is up: the whole lane steps aside until it is gone. Lines on screen go back to the front of
+// their queues, new ones wait (a big one does not drop to small), and the cards in the lane hide (CI 11.11: "Level 9!" touched "You beat Storm Warden again!")
+function msgLvUp(){const c=$('lpCard');return !!c&&c.classList.contains('on')}
 function msgPump(){
   const el=msgEl(),now=msgNow();if(!msgOn()){msgClear();return}
+  if(msgLvUp()){
+    if(MQ.bigRow){msgGone(MQ.bigRow);MQ.big.unshift({txt:MQ.bigRow.txt,col:MQ.bigRow.col,at:now});MQ.bigRow=null}
+    for(const r of MQ.rows.reverse()){msgGone(r);MQ.small.unshift({txt:r.txt,col:r.col})}MQ.rows=[];
+    for(const m of MQ.big)m.at=now;MSG.stat.lv++;el.style.visibility='hidden';
+    if(!MQ.t&&(MQ.big.length||MQ.small.length))MQ.t=setInterval(msgTick,200);return}
   const card=msgCardUp();
   if(card&&MQ.bigRow){msgGone(MQ.bigRow);MQ.big.unshift({txt:MQ.bigRow.txt,col:MQ.bigRow.col,at:now});MQ.bigRow=null}   // a big one already up when the card came: it steps back and comes after it
   // גדולה: רק כשאין גדולה על המסך ואין קרב. מחכה יותר מדי: יורדת לקטנה
@@ -121,7 +129,7 @@ const msgWinOpen=()=>[...document.querySelectorAll('.ov,.win')].some(o=>!o.hidde
 setInterval(()=>{const el=msgEl();
   if(!msgOn()){for(const id of MSG_CARDS){const c=$(id);if(c&&c.parentNode===el)document.body.appendChild(c)}return}
   for(const id of MSG_CARDS){const c=$(id);if(c&&c.parentNode!==el)el.appendChild(c)}
-  el.style.visibility=msgWinOpen()?'hidden':'';   // חלון פתוח: ההודעות לא מעליו
+  el.style.visibility=msgWinOpen()||msgLvUp()?'hidden':'';   // חלון פתוח (או כרטיס "Level N!"): ההודעות לא מעליו
   if([...el.children].some(c=>!c.hidden&&c.offsetHeight))msgPlace()},300);
 
 // כל banner בעולם ובכפר: ישר לעמודה, בלי התור של welcome.js (לעמודה יש תור משלה)
