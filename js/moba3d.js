@@ -58,6 +58,15 @@ function mb3dDecor(g){
   g.userData.fires=glows;
 }
 const mb3dOn=()=>typeof R3D!=='undefined'&&R3D.on&&R3D.ready&&typeof THREE!=='undefined'&&typeof p3Mesh==='function';
+// משחק חדש בונה מחדש את המגדלים והבסיסים, ולכן משחררים את הישנים מהזיכרון של הכרטיס הגרפי (דליפה של כ-100 צורות בכל משחק).
+// רק מה ש-mb3dBuild בנה כאן: הצורות שלו, והחומרים שנוצרו לכל מבנה (גביש, שלולית אור, הילה).
+// לא משחררים: החומרים המשותפים של p3Mat, הטקסטורה המשותפת P3.tex, ואת הצורה של Sprite (משותפת לכל ה-Sprites ב-three).
+const MB3D_OWN=new WeakSet();
+function mb3dFree(g){
+  if(!MB3D_OWN.has(g))return;MB3D_OWN.delete(g);
+  const shared=new Set(typeof P3!=='undefined'?Object.values(P3.mats):[]);
+  g.traverse(o=>{if(o.geometry&&!o.isSprite)o.geometry.dispose();if(o.material&&!shared.has(o.material))o.material.dispose()});
+}
 function mb3dBuild(b){
   const g=new THREE.Group(),isBase=b.k==='base',T=isBase?MB3D.base:MB3D.tower,k=1/COS(),c=MB3D.col,team=MOBA.team[b.team],H=T.h*k,parts=new THREE.Group();g.add(parts);
   const glow=p3Mat(team,true),gold=p3Mat(C.gold);
@@ -88,6 +97,7 @@ function mb3dBuild(b){
   for(let i=0;i<7;i++){const a=i/7*6.28,d=T.r*(0.3+0.5*hash(i,b.x)),s=T.r*(0.25+0.2*hash(b.x,i));
     p3Mesh(p3Box(s,s*0.7,s),p3Mat(i%2?c.stone:c.dark),Math.cos(a)*d,s*0.35,Math.sin(a)*d,rubble).rotation.y=a}
   g.userData={parts,cry,halo,rubble,team:new THREE.Color(team),dark:new THREE.Color(team).multiplyScalar(MB3D.dim),white:new THREE.Color('#ffffff')};
+  MB3D_OWN.add(g);
   return p3At(g,b.x,b.y,M3.g);
 }
 function mb3dSync(){
@@ -98,7 +108,7 @@ function mb3dSync(){
   M3.floor.visible=true;{const u=M3.floor.userData,p=mbPulse(),tt=performance.now()/1000;u.glow.material.opacity=p;u.glowLo.material.opacity=p;
     for(const [fl,halo,v] of u.fires){const f=0.85+0.15*Math.sin(tt*9+v*20);fl.scale.set(1,f,1);if(halo)halo.material.opacity=0.6+0.4*f;else fl.rotation.y=Math.sin(tt*2+v*9)*0.25}}
   if(!M3.g){M3.g=new THREE.Group();R3D.scene.add(M3.g)}
-  if(M3.mb!==S.mb){for(const g of M3.map.values())M3.g.remove(g);M3.map.clear();M3.mb=S.mb}   // משחק חדש: בונים מחדש
+  if(M3.mb!==S.mb){for(const g of M3.map.values()){M3.g.remove(g);mb3dFree(g)}M3.map.clear();M3.mb=S.mb}   // משחק חדש: בונים מחדש, ומשחררים את הישנים
   M3.g.visible=true;const t=performance.now()/1000;
   for(const b of S.mb.u){if(b.k!=='tower'&&b.k!=='base')continue;
     let g=M3.map.get(b);if(!g){g=mb3dBuild(b);M3.map.set(b,g)}
