@@ -2998,19 +2998,21 @@ function worldBot(m,L,god){
         for(const m of document.querySelectorAll('#msgLane>.mrow.on')){const q=m.getBoundingClientRect();if(hit(t,q))o.bad.push('tip on line');
           for(const b of msgBlocks())if(hit(q,b))o.bad.push('line on '+(b.el.id||b.el.className))}
         const z=ZOOM||1;for(const g of VSIGN.rects||[]){const q={left:g.x*z,right:(g.x+g.w)*z,top:g.y*z,bottom:(g.y+g.h)*z};if(hit(t,q))o.bad.push('tip on sign '+g.txt)}
+        if(o.bad.length||!o.vis){const ln=$('msgLane').getBoundingClientRect();o.dbg='tip '+[t.left,t.top,t.width,t.height].map(Math.round)+' lane '+[ln.left,ln.top,ln.width,ln.height].map(Math.round)+' where '+MSG.where}
         tipClose();SAVE.tips=JSON.parse(window.__tipKeep);msgClear();return o});
       // world: the new-skill moment with a lane line up
-      const w=await page.evaluate(()=>{const o={};try{enterWorld('home');for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);msgClear();
+      const w=await page.evaluate(()=>{const o={},ovs=[...document.querySelectorAll('.ov,.win')].filter(x=>!x.hidden);try{for(const x of ovs)x.hidden=true;enterWorld('home');for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);msgClear();
         const seen=skrSeen().slice();msgSay(T('goal.ready','Forge'));o.before=MQ.rows.length;
         skrStart('quake');msgPump();const ic=SKR&&SKR.el?SKR.el.getBoundingClientRect():null,lane=$('msgLane');
         o.hidden=lane.style.visibility==='hidden';o.rowsDuring=MQ.rows.length;o.icon=!!ic;
         skrEnd(true);msgPump();o.after=MQ.rows.some(r=>r.txt===T('goal.ready','Forge'));o.visAfter=lane.style.visibility!=='hidden';
-        SAVE.hero.skSeen=seen;msgClear()}catch(err){o.err=String(err)}enterVillage();return o});
+        if(!o.after||!o.visAfter)o.dbg='rows '+MQ.rows.map(r=>r.txt).join('/')+' small '+MQ.small.length+' win '+msgWinOpen()+' on '+msgOn()+' vis '+$('msgLane').style.visibility;
+        SAVE.hero.skSeen=seen;msgClear()}catch(err){o.err=String(err)}for(const x of ovs)x.hidden=false;enterVillage();return o});
       ov.push({vp:vp.width+'×'+vp.height,...r,w})}
     await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();msgClear()});
     const bad=ov.filter(x=>!x.inLane||!x.vis||x.bad.length||x.w.err||!x.w.icon||!x.w.hidden||x.w.rowsDuring||!x.w.after||!x.w.visAfter);
-    check(!bad.length,'Top strip, no overlaps: '+ov.map(x=>x.vp+': village tip '+(x.inLane?'in the message lane':'NOT in the lane')+(x.vis?'':' (not shown)')+(x.bad.length?', overlaps: '+[...new Set(x.bad)].join(', '):', clear of icons, lines and signs')+
-      ' · world '+(x.w.err?'error: '+x.w.err:(x.w.hidden&&!x.w.rowsDuring?'lane steps aside during the new-skill icon':'lane line stays over the new-skill icon')+(x.w.after&&x.w.visAfter?' and comes back':', line lost after'))).join(' | '))}
+    check(!bad.length,'Top strip, no overlaps: '+ov.map(x=>x.vp+': village tip '+(x.inLane?'in the message lane':'NOT in the lane')+(x.vis?'':' (not shown)')+(x.bad.length?', overlaps: '+[...new Set(x.bad)].join(', '):', clear of icons, lines and signs')+(x.dbg?' ['+x.dbg+']':'')+
+      ' · world '+(x.w.err?'error: '+x.w.err:(x.w.hidden&&!x.w.rowsDuring?'lane steps aside during the new-skill icon':'lane line stays over the new-skill icon')+(x.w.after&&x.w.visAfter?' and comes back':', line lost after ['+x.w.dbg+']'))).join(' | '))}
   // הבהוב פגיעה בתלת-ממד בעולם (hitflash3d.js, ניר 10.11: "do this for all monsters and bosses"): בלי לבן. פגיעה = בהיר יותר בצבעים שלו,
   // הבהוב קצר לכל היותר פעם ב-gap, וחלש יותר לגדולים. ההיגיון לכל מראה בעולם (גם בדו-ממד), והצבע האמיתי מהפיקסלים בתלת-ממד:
   // מכה כל 0.1 שנייה ב-120 פריימים, והרוויה הממוצעת בקרב קרובה לבלי פגיעות. כל המראות: node tools/flash-audit.js
