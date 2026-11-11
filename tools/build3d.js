@@ -180,11 +180,17 @@ const MONSTERS={   // anims: רק מה שאויב מנגן (תנועה ומוו�
   stoneGiant:{src:mon('Big','BlueDemon'),anims:['Walk','Death','Idle','Punch'],tex:128,stone:'#B8A68A'},   // stone: הטקסטורה נצבעת לגוון אחד (אבן), והבהירות נשארת
   fishGiant: {src:mon('Big','Fish'),anims:['Walk','Death','Idle','Punch'],tex:128},
   dragon:    {src:mon('Flying','Dragon_Evolved'),anims:['Fast_Flying','Death','Flying_Idle','Punch'],tex:128},
-  hywirl:    {src:mon('Flying','Hywirl'),anims:['Fast_Flying','Death','Flying_Idle','Punch'],tex:128}
+  hywirl:    {src:mon('Flying','Hywirl'),anims:['Fast_Flying','Death','Flying_Idle','Punch'],tex:128},
+  // מראה v2 (פיילוט, docs/concept-visual-language.md): גוף משלו לגרנט של העולם (LOOK3D.w_grunt, js/look-v2.js). tris: מוקטן למשולשים האלה, כי הוא בקהל
+  orcSkull:  {src:mon('Big','Orc_Skull'),anims:['Walk','Death','Weapon'],tex:128,tris:2400}
 };
-async function addMonsters(add){
+async function addMonsters(add,pick=[]){   // pick: רק המפלצות האלה (--mon=orcSkull). השאר נשארות בדיוק כמו שהן
   for(const [k,c] of Object.entries(MONSTERS)){
+    if(pick.length&&!pick.includes(k))continue;
     const md=await io.read(c.src);
+    if(c.tris){const {MeshoptSimplifier}=require('meshoptimizer');await MeshoptSimplifier.ready;const {weld,simplify}=require('@gltf-transform/functions');
+      const n=md.getRoot().listMeshes().flatMap(m=>m.listPrimitives()).reduce((a,p)=>a+(p.getIndices()?p.getIndices().getCount():p.getAttribute('POSITION').getCount())/3,0);
+      await md.transform(weld(),simplify({simplifier:MeshoptSimplifier,ratio:Math.min(1,c.tris/n),error:0.01}))}
     if(c.stone)for(const t of md.getRoot().listTextures())t.setImage(await sharp(Buffer.from(t.getImage())).tint(c.stone).png().toBuffer()).setMimeType('image/png');
     add('mon_'+k,await slim(md,{tex:c.tex}));
     const doc=await io.read(c.src),all=doc.getRoot().listAnimations(),miss=c.anims.filter(n=>!all.some(a=>a.getName()===n));
@@ -403,13 +409,14 @@ const ONLY=process.argv[3]==='--only'?process.argv[4]:null;
     M3IO.write(f,src.slice(0,i)+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
   }
-  // node tools/build3d.js C:/kk --only monsters: מוסיף רק את MONSTERS לקובץ הקיים
+  // node tools/build3d.js C:/kk --only monsters: מוסיף רק את MONSTERS לקובץ הקיים. --mon=orcSkull: רק המפלצת הזאת
   if(ONLY==='monsters'){
     const add=(k,bin)=>{out[k]=Buffer.from(bin).toString('base64');sizes.push(k+' '+Math.round(bin.byteLength/1024)+'KB')};
     const f=path.join(ROOT,'js/models3d.js'),src=M3IO.src(),i=src.indexOf('const MODELS3D=');
     Object.assign(out,JSON.parse(src.slice(i+15).replace(/;\s*$/,'')));
-    for(const k in out)if(k.startsWith('mon_')||k.startsWith('anim_mon_'))delete out[k];
-    await addMonsters(add);
+    const pick=(process.argv.find(a=>a.startsWith('--mon='))||'').slice(6).split(',').filter(Boolean);   // --mon=orcSkull: רק היא, בלי לבנות מחדש את השאר
+    for(const k in out)if((k.startsWith('mon_')||k.startsWith('anim_mon_'))&&(!pick.length||pick.includes(k.replace(/^(anim_)?mon_/,''))))delete out[k];
+    await addMonsters(add,pick);
     let head=src.slice(0,i);if(!head.includes('Quaternius'))head=head.replace(' רישיון CC0.',' רישיון CC0.\n   מפלצות: Ultimate Monsters מאת Quaternius (quaternius.com), רישיון CC0.');
     M3IO.write(f,head+'const MODELS3D='+JSON.stringify(out,null,0).replace(/","/g,'",\n"')+';\n');
     console.log(sizes.join('\n'));console.log('js/models3d.js',Math.round(fs.statSync(f).size/1024)+'KB');return;
