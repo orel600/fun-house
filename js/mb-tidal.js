@@ -20,7 +20,32 @@ const MBTIDAL={
   T.state='loading';T.t0=performance.now();
   const s=document.createElement('script');s.src=T.src;
   s.onload=()=>{T.state='loaded';const w=setInterval(()=>{const P=window.TIDAL_PROOF;if(!P)return;
-    if(P.ready){T.state='ready';T.readyMs=Math.round(performance.now()-T.t0);clearInterval(w)}else if(P.errors&&P.errors.length){T.state='error';T.err=P.errors[0];clearInterval(w)}},100)};
+    if(P.ready){T.state='ready';T.readyMs=Math.round(performance.now()-T.t0);clearInterval(w);T.redraw()}else if(P.errors&&P.errors.length){T.state='error';T.err=P.errors[0];clearInterval(w)}},100)};
+  /* A window opened while the ~45MB proof was still loading keeps the stock icons: the proof swaps icons by wrapping mbPic/mbSvg, and that only affects later draws
+     (ARI, 11.11: select-early-tidal-844). When the proof becomes ready, any open Underworld window is drawn again through its own open/draw function,
+     keeping its state (where Close returns to, build kit/tab, end result, scroll). */
+  T.stat.redraw=0;
+  if(typeof mbEndShow==='function'){const o=mbEndShow;mbEndShow=function(won){T.lastWon=won;return o.apply(this,arguments)}}
+  T.redraw=function(){
+    const vis=id=>{const e=document.getElementById(id);return !!(e&&!e.hidden&&!e.closest('[hidden]'))};
+    try{if(vis('ovMoba')){const w=document.getElementById('mbWin'),m=w.dataset.mode,from=w.dataset.from,top=w.scrollTop;
+      if(m==='pick'&&typeof mobaOpen==='function'){mobaOpen();w.dataset.from=from}
+      else if(m==='build'&&typeof mbBuildOpen==='function'&&w.dataset.bkit)mbBuildOpen(w.dataset.bkit,w.dataset.tab);
+      else if(m==='end'&&typeof mbEndShow==='function'&&T.lastWon!==undefined)mbEndShow(T.lastWon);
+      else return;
+      w.scrollTop=top;T.stat.redraw++}}catch(e){T.redrawErr=String(e)}
+    try{if(vis('ovMbShop')&&typeof mbShopDraw==='function'){const s=document.getElementById('mbShop'),top=s.scrollTop;mbShopDraw();s.scrollTop=top;T.stat.redraw++}}catch(e){T.redrawErr=String(e)}
+    try{T.redrawHud()}catch(e){T.redrawErr=String(e)}};
+  /* The skill buttons of a match started before the proof was ready: only the ICON inside each button is swapped (everything before its <i>),
+     built by the game's own builders. The buttons, their listeners, cooldown and aim state stay as they are (no mbUi rebuild mid-match). */
+  T.redrawHud=function(){
+    const sk=document.getElementById('mbSk');if(!sk||sk.hidden||typeof MB==='undefined'||!MB||typeof mbMe!=='function')return;const u=mbMe();if(!u)return;
+    const tmp=document.createElement('div');
+    tmp.innerHTML=MB_SLOTS.map(k=>'<button data-sk="'+k+'">'+mbPic(MBKIT[u.kit][k].id)+'<i></i></button>').join('')+(typeof mbSpellBtns==='function'?mbSpellBtns(u):'')+(typeof mbAtkBtn==='function'?mbAtkBtn():'');
+    const icon=b=>{const out=[];for(const n of b.childNodes){if(n.nodeName==='I')break;out.push(n)}return out};
+    for(const f of tmp.querySelectorAll('button')){const k=f.dataset.sk,b=k?sk.querySelector(':scope>[data-sk="'+k+'"]'):f.id?document.getElementById(f.id):null;if(!b)continue;
+      const old=icon(b),neu=icon(f);if(!neu.length)continue;const at=old.length?old[0]:b.firstChild;for(const n of neu)b.insertBefore(n,at);for(const n of old)n.remove();T.stat.redraw++}
+    if(typeof mbSvg==='function')for(const b of document.querySelectorAll('#mbPing [data-o] b'))b.innerHTML=mbSvg(b.parentNode.dataset.o,'mbpi')};
   s.onerror=()=>{T.state='missing'};
   document.body?document.body.appendChild(s):document.head.appendChild(s);
   if(!T.fix)return;
