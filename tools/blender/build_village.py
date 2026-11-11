@@ -264,22 +264,23 @@ def p_stall():
         for k in range(3):m.part(ball(Vector((x-0.07+0.07*k,-0.08,0.63)),0.06,seg=6,ring=4),col,'fruit')
     return m
 def p_gate():
-    # the village gate: two round stone-and-wood posts, a curved wooden arch with a sign, two warm lanterns. Open between the posts (VILLAGE.gate r)
-    m=fresh('gate');X=0.86
+    # the village gate: two chunky posts (stone base, wooden pillar, red cap), a thick beam under a little red roof, a hanging sign and two warm lanterns.
+    # Chunky like the KayKit gate it replaces (it reads as a gate from the high phone camera), open between the posts (VILLAGE.gate r)
+    m=fresh('gate');X=0.78
     for sx in (-1,1):
         x=sx*X
-        m.part(cyl(Vector((x,0,0)),Vector((x,0,0.28)),0.2,0.18,sides=12,bev=0.3),'stone','base')
-        m.part(cyl(Vector((x,0,0.26)),Vector((x,0,1.12)),0.12,sides=12,bev=0.2),'wood','post')
-        m.part(ball(Vector((x,0,1.18)),0.15,seg=12,ring=8),'roofR','cap')
-        m.part(ball(Vector((x,0,1.34)),0.05,seg=6,ring=4),'gold','knob')
-        # a lantern hanging from a little arm on the inside of each post
-        m.part(cyl(Vector((x,0,0.95)),Vector((x-sx*0.2,0,0.95)),0.02,sides=6),'woodD','arm')
-        m.part(rbox(Vector((x-sx*0.2,0,0.84)),(0.09,0.09,0.13),r=0.6),'lamp','lantern')
-        m.part(cyl(Vector((x-sx*0.2,0,0.9)),Vector((x-sx*0.2,0,0.94)),0.06,0.03,sides=8),'roofR','lid')
-    arc=[Vector((math.sin(t)*X*1.08,0,1.0+math.cos(t)*0.2)) for t in [-1.3+2.6*i/12 for i in range(13)]]
-    m.part(tube(arc,0.07,sides=10),'woodD','arch')
-    m.part(rbox(Vector((0,-0.03,1.02)),(0.62,0.05,0.2),r=0.5,seg=1),'wood','sign')
-    for sx in (-1,1):m.part(cyl(Vector((sx*0.24,-0.03,1.12)),Vector((sx*0.24,-0.03,1.18)),0.012,sides=5),'woodD','rope')
+        m.part(cyl(Vector((x,0,0)),Vector((x,0,0.38)),0.32,0.29,sides=12,bev=0.3),'stone','base')
+        m.part(cyl(Vector((x,0,0.36)),Vector((x,0,1.12)),0.2,sides=12,bev=0.25),'wood','post')
+        m.part(cyl(Vector((x,0,0.6)),Vector((x,0,0.66)),0.215,sides=12),'iron','ring')
+        m.part(rbox(Vector((x-sx*0.36,-0.02,0.86)),(0.15,0.15,0.2),r=0.6),'lamp','lantern')
+        m.part(cyl(Vector((x-sx*0.36,-0.02,0.96)),Vector((x-sx*0.36,-0.02,1.02)),0.1,0.04,sides=8),'roofR','lid')
+        m.part(cyl(Vector((x-sx*0.2,-0.02,1.0)),Vector((x-sx*0.36,-0.02,1.0)),0.025,sides=6),'woodD','arm')
+    m.part(rbox(Vector((0,0,1.17)),(2*X+0.6,0.3,0.24),r=0.5),'woodD','beam')
+    m.part(rbox(Vector((0,0,1.36)),(2*X+0.75,0.6,0.16),r=0.7),'roofR','roof')
+    m.part(rbox(Vector((0,0,1.47)),(2*X+0.3,0.36,0.12),r=0.8),'roofR','ridge')
+    for sx in (-1,1):m.part(ball(Vector((sx*(X+0.36),0,1.4)),0.08),'gold','knob')
+    m.part(rbox(Vector((0,-0.17,0.93)),(0.7,0.06,0.24),r=0.5,seg=1),'wood','sign')
+    for sx in (-1,1):m.part(cyl(Vector((sx*0.26,-0.17,1.04)),Vector((sx*0.26,-0.17,1.06)),0.015,sides=5),'woodD','rope')
     return m
 
 palette()
