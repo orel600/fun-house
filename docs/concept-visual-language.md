@@ -39,10 +39,13 @@ The rest is in English for the build sessions.
 ![Combat and UI](concept/visual-language/mock-combat-ui.jpg)
 **World fight + UI** at landscape phone framing. Shows the goal: the hero found in under a second, three enemy shapes, small VFX. *Caveat:* the ring colors in the mock are decorative; in the game they stay damage-type colors. Labels and button layout follow `docs/ui-guide.md`, not the mock.
 
-**Before (today, offline bot, 844×390 landscape, 3D):**
+**Before (today, 3D, offline bot):**
 
-![Before: village](concept/visual-language/before-village.png)
+![Before: village](concept/visual-language/before-village.jpg)
+Village center L3 today (from `docs/shots/village-whole-L3-plaza.jpg`, 10.11). Readable, but the hero is small and pale, and props and NPCs share its colors.
+
 ![Before: world](concept/visual-language/before-world.png)
+Open world today, from `node tools/check.js --shots` (offline fixture, phone landscape 844×390).
 
 **What the code shows today** (the real problem, not only taste):
 - In the open world (`world.js`) 7 enemy types use 4 bodies (`LOOK3D` in `render3d.js`): grunt and crawler = `minion`; shield and treant = `warrior` skeleton; wisp = `skelMage`; golem = `barbarian`; sprite = `mage`.
