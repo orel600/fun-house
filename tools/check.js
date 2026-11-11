@@ -537,7 +537,7 @@ function worldBot(m,L,god){
     const g=WORLD.gates.grove,pn=document.getElementById('wPanel'),wg=document.getElementById('wGo');
     if(W.near==='grove'&&!pn.hidden&&L.wGateAuto==null)L.wGateAuto=true;   // כרטיס נפתח לבד: לא אמור לקרות
     if(W.near==='grove'&&pn.hidden&&!wg.hidden&&(L.wFoeBack!=null||W.t-m.wt>90)){if(L.wGateAuto==null)L.wGateAuto=false;L.wGoBtn=wg.innerText.replace(/\s+/g,' ');
-      L.wPicked=dropStats().picked;m.runBag=bag();wg.click();L.wArena=!S.wd&&S.mode==='play';m.wp='arena';return L}
+      L.wPicked=dropStats().picked;m.runBag=bag();const tip0=wArenaTipped;wg.click();L.wArena=!S.wd&&S.mode==='play';const tipOn=floats.some(f=>f.txt===T('w.arenaTip'));L.wTip=tip0?!tipOn:tipOn;L.wTipFirst=!tip0;m.wp='arena';return L}
     return steer(g.x,g.y,false,0,L)}
   if(m.wp==='arena'){   // חזרנו מהזירה: לאותו שער, והשלל בתרמיל
     const g=WORLD.gates.grove;L.wBack=Math.round(Math.hypot(P.x-g.x,P.y-g.y));L.back=S.t;
@@ -1896,15 +1896,26 @@ function worldBot(m,L,god){
       SAVE.hero.skKnown=[];skgDots();await tick();r.dotOn=!$('skDot').hidden&&$('skills').classList.contains('sknew')&&!document.querySelector('#qRail [data-tab="gearBtn"] .qrdot').hidden;   // הנקודה על "דמות" בטור הקיצורים (menu.js)
       wsbOpenUi();await tick();r.dotOff=$('skDot').hidden&&!$('skills').classList.contains('sknew');wsbClose();
       const id=S.sk.ids[S.sk.ids.length-1];G.ovs=skgWins().filter(o=>o.classList.contains('ov'));for(const o of G.ovs)o.hidden=true;   // מסכים שנשארו פתוחים מהמשחק של הבוט (למשל ovHero): הכרטיס מחכה להם בצדק. מחזירים בסוף
+      msgClear();   // a big line from the bot's play would make the card wait (one big thing at a time in the lane)
       if(skgBlocked())throw 'הכרטיס חסום: '+[document.body.className,...skgWins().map(o=>o.id||o.className)].join(' | ');skgOffer(id);const of=$('skOffer');r.offer=!!of&&!of.hidden&&!!of.querySelector('[data-skg="book"]');
       of.querySelector('[data-skg="try"]').click();r.pStart=!!SKP&&SKP.dummies.length===SKPRACTICE.n&&of.hidden;
       const d=SKP&&SKP.dummies[0],x0=d&&d.x;run(2);r.pDummy=!!d&&!d.dead&&d.x===x0&&enemies.filter(e=>e.dummy&&!e.dead).length===SKPRACTICE.n&&!$('skpBar').hidden;
       $('skpBar').querySelector('[data-skp="x"]').click();run(0.05);r.pSkip=!SKP&&!enemies.some(e=>e.dummy)&&$('skpBar').hidden;
       skpStart(id);run(SKPRACTICE.t+0.5);r.pEnd=!SKP&&!enemies.some(e=>e.dummy);
-      skgOffer(id);$('skOffer').querySelector('[data-skg="book"]').click();r.offerBook=!ov.hidden;wsbClose();
+      msgClear();skgOffer(id);$('skOffer').querySelector('[data-skg="book"]').click();r.offerBook=!ov.hidden;wsbClose();
       // חלון פתוח: הכרטיס מחכה ולא יושב על הכותרת שלו. נפתח מעל כרטיס שכבר מוצג: מתחבא. נסגר: חוזר
       questLogOpen(true);skgOffer(id);r.offerWait=$('skOffer').hidden;questLogOpen(false);skgOfferTick();r.offerBack=!$('skOffer').hidden;
-      questLogOpen(true);skgOfferTick();r.offerHide=$('skOffer').hidden;questLogOpen(false);skgOfferTick();r.offerBack=r.offerBack&&!$('skOffer').hidden;skgOfferClose()}catch(err){r.err=String(err&&err.stack||err)}
+      questLogOpen(true);skgOfferTick();r.offerHide=$('skOffer').hidden;questLogOpen(false);skgOfferTick();r.offerBack=r.offerBack&&!$('skOffer').hidden;skgOfferClose();
+      // one big thing at a time in the lane (msglane.js, desert 11.11): card up → the region line waits (and does not drop to small).
+      // Card gone → the big one shows. Big one up → a new card waits for it, then comes
+      const mf=msgFight;msgFight=()=>false;if(typeof R2!=='undefined')R2.fightT=-99;
+      const ofH=()=>{const e=$('skOffer');return !e||e.hidden};   // msgClear can take the card out of the page with the lane: then skgOffer makes a new one
+      try{msgClear();const b0=MSG.stat.both,d0=MSG.stat.down;msgBig('Lane test');msgPump();const up=!!MQ.bigRow;skgOffer(id);r.lnFirst=up&&ofH();MQ.bigRow.t-=99;msgTick();skgOfferTick();
+        msgBig('Lane test 2');msgPump();r.lnHold=!ofH()&&!MQ.bigRow&&MQ.big.length===1;
+        MQ.big[0].at-=99;msgPump();r.lnKeep=!MQ.bigRow&&MQ.big.length===1&&MSG.stat.down===d0;
+        skgOfferClose();msgPump();r.lnAfter=!!MQ.bigRow&&MQ.bigRow.txt==='Lane test 2';
+        skgOffer(id);r.lnCardWait=ofH()&&!!MQ.bigRow;MQ.bigRow.t-=99;msgTick();skgOfferTick();r.lnCardBack=!ofH();
+        r.lnBoth=MSG.stat.both-b0}finally{msgFight=mf;skgOfferClose();msgClear()}}catch(err){r.err=String(err&&err.stack||err)}
     if(ov)ov.hidden=true;skgOfferClose();for(const o of G.ovs||[])o.hidden=false;if(SKP)skpEnd(true);if(S.mode==='gear')S.mode='play';if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(G.bak);
     if(G.vil)enterVillage();else{reset();S.mode=G.mode}delete window.__skg;return r});
   // שילובים בעולם (wcombo.js): לכל דמות שני סקילים מהספר בסדר הנכון יוצרים שילוב. לוחם: שריון קרח ואז הסתערות = ניפוץ.
@@ -2033,8 +2044,8 @@ function worldBot(m,L,god){
       banner(T('home.earth.gift'),C.gold);banner(T('rare.rumor',T('rare.at.reeds')),C.gold);banner(T('wn.found','Nessa'),C.gold);banner(T('skr.new','Xx'),C.gold);banner(HUNT.icon+' '+T('hunt.here','Grok'),HUNT.col);if(typeof skgOffer==='function')skgOffer(Object.keys(SKILLS.list)[0]);
       msgBig(T('bossDown','Test'),C.gold);if(innerWidth===848||innerWidth===924){SAVE.lore={met:{}};flMeet('grunt');FLC.t=99}feedRes('stone',3);feedGear('oakSword');feedAdd('🎯','Spotted the Wanted · '.repeat(4),C.gold,'w');render()});
     await page.clock.runFor(700);
-    const a=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();return {...__lmeas(),waits:MSG.stat.waits,shown:MSG.stat.big,win:msgWinOpen(),on:msgOn()}});
-    await page.evaluate(()=>{for(const e of enemies)e.dead=true;enemies=[];window.__lmf=msgFight;msgFight=()=>false;msgPump()});   // הקרב נגמר (העולם יכול להוליד להקה חדשה בזמן ההמתנה, אז הקרב נקבע כאן)
+    const a=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();return {...__lmeas(),waits:MSG.stat.waits+MSG.stat.card,shown:MSG.stat.big,win:msgWinOpen(),on:msgOn()}});
+    await page.evaluate(()=>{for(const e of enemies)e.dead=true;enemies=[];window.__lmf=msgFight;msgFight=()=>false;if(typeof skgOfferClose==='function')skgOfferClose();msgPump()});   // the skill card is done too: the lane is free for the big one   // הקרב נגמר (העולם יכול להוליד להקה חדשה בזמן ההמתנה, אז הקרב נקבע כאן)
     await page.clock.runFor(500);
     const b=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();const o={...__lmeas(),shown:MSG.stat.big,most:MSG.stat.most,win:msgWinOpen(),on:msgOn()};msgFight=__lmf;return o});
     // 🥕 "האכל" לא נוגע באף כפתור סקיל (מקום קבוע ב-style.css), ושמות האויבים (labels.js) לא על כפתור ולא אחד על השני
@@ -2042,6 +2053,7 @@ function worldBot(m,L,god){
     const hb=await page.evaluate(()=>{const R=e=>e.getBoundingClientRect(),hit=(a,b)=>a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
       $('sig').hidden=false;$('feedBtn').hidden=false;const f=R($('feedBtn')),sk=[...document.querySelectorAll('#skills>*,#sig,#ult')].filter(e=>!e.hidden&&!e.closest('[hidden]')&&e.getClientRects().length).map(R);
       const o={feed:f.width>0&&!sk.some(k=>hit(f,k))};
+      msgClear();   // the lane was measured above. Its lines (now not held under the skill card) would sit where these names go, right over the hero
       enemies=[];const nm=['Dardak Terror of Ducks','Pack Leader','Armored','Elemental Shield','Bruza the Almost-Brave'];
       for(let i=0;i<5;i++){const e=addEnemy('grunt',P.x+60+i*24,P.y+10-i*8);e.home=0;e.speed=0;e.dmg=0;e.hp=e.max=1e9;if(i===0||i===4){e.pname=nm[i];e.flSeen=true}if(i===1)e.leader=true;if(i===2)e.affix='tough';if(i===3)e.affix='shell'}
       S.wd.flSay={e:enemies[0],txt:'I am Dardak Who Ate a Lantern! Fear my bark!',t:99};   // בועת דיבור על העלית: עוברת באותו סידור כמו השמות (ביקורת 7.11.2026, ממצא 4)
@@ -3392,6 +3404,19 @@ function worldBot(m,L,god){
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     clearTimeout(FIRSTUP.timer);Math.random=rnd;const b2=gearStats();SAVE=JSON.parse(bak);gearLive(b2);return o});
   check(!fu.err&&fu.gift&&fu.goal&&fu.coins&&fu.info&&fu.trip&&fu.built&&fu.once,'השדרוג הראשון: '+(fu.err||[fu.gift?'המתנה לא מספיקה לנפחייה':'המתנה מספיקה לנפחייה!',fu.goal?'היעד הוא הנפחייה':'היעד לא הנפחייה',fu.coins?'השבב מראה מטבעות':'השבב לא מראה מטבעות',fu.info?'לפני/אחרי בחלון':'אין לפני/אחרי',fu.trip?'אחרי יציאה אפשר':'אחרי יציאה עדיין לא',fu.built?'הנשק ‎+3':'הנשק לא הושחז',fu.once?'פעם אחת':'הושחז שוב'].join(', ')));
+  // The first forge build in order (firstup.js after buildmoment.js): the build moment (camera, then its "before → after" line) plays first, and only then
+  // the hero's party and "Forged!" line. Sampled every 200 ms: m = camera moment, l = its line, P = the party already happened
+  {await page.evaluate(()=>{window.__foKeep=JSON.stringify(SAVE);if(!S.vil)enterVillage();welcomeClose();npcTalk(null);msgClear();SAVE.calm=false;SAVE.village.forge=0;delete SAVE.fu;
+      const b0=gearStats();SAVE.gear.weapon=gBase(SAVE.gear.weapon);gearLive(b0);const c=vCostAt('forge',1);for(const r in c)bagAdd(r,c[r]);
+      const B=VILLAGE.b.forge;P.x=B.x;P.y=B.y+B.r+40;S.cam.x=P.x;S.cam.y=P.y;FIRSTUP.stat.party=0;window.__foOk=vUpgrade('forge')});
+    const seq=[];for(let i=0;i<35;i++){await page.clock.runFor(200);seq.push(await page.evaluate(()=>{const l=document.getElementById('bmLine');
+      return (S.vil&&S.vil.bm?'m':l&&!l.hidden?'l':'-')+(FIRSTUP.stat.party?'P':'')}))}
+    const fo=await page.evaluate(()=>{const o={ok:!!window.__foOk,lane:[...document.querySelectorAll('#msgLane .mrow')].some(e=>/\+3|➜|→/.test(e.textContent))};
+      clearTimeout(FIRSTUP.timer);S.vil.bm=null;const b2=gearStats();SAVE=JSON.parse(window.__foKeep);gearLive(b2);S.vil.open=null;S.vil.raise={};villageHud();msgClear();saveNow();return o});
+    const i=seq.findIndex(x=>x.includes('P')),s=seq.join(' ');
+    check(fo.ok&&seq[0][0]==='m'&&seq.some(x=>x[0]==='l')&&i>0&&seq[i][0]==='-'&&!seq.slice(i).some(x=>x[0]!=='-'),
+      'First forge build in order: '+(!fo.ok?'the forge did not build!':i<0?'no party for the hero! ('+s+')':seq[i][0]!=='-'?'the party came during the build moment! ('+s+')':
+      'build moment, then its line, then the party at '+((i+1)*0.2).toFixed(1)+' s'+(fo.lane?' with the "Forged" line':'')))}
   // לולאת הכפר, שלב 2 (vproj.js): החוצבת בכפר → סדנה בשלושה שלבים → המחצבה העמוקה נפתחת (או ברמה 10), עם מקורות שצומחים מהר, והחלפה טובה יותר
   const vpr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
     try{const V=VPROJ,id='cutterShop',pl='deepQuarry',Q=QS();SAVE.vproj={st:{},seen:{}};SAVE.hero.level=1;delete Q.done[RESID.list.cutter.last];
@@ -4374,6 +4399,41 @@ function worldBot(m,L,god){
     }finally{const k=JSON.parse(keep);SAVE.gear=k.gear;SAVE.hero.start=k.start;SAVE.hero.skin=k.skin;R3D._hl=null;syncPlayer(0);if(R3D.doll&&R3D.doll.a)R3D.doll.key=null}
     return o});
     if(!hv.skip)check(!hv.bad.length&&!hv.same.length,'משבצת ראש ריקה: '+(hv.bad.length?'חלק ראש דלוק בלי קסדה ('+hv.bad.join(', ')+')':'בלי כובע או קסדה ב-3 המחלקות, בסקינים ובבובה')+(hv.same.length?', הקסדה לא שינתה כלום ('+hv.same.join(', ')+')':', וקסדה משנה את המראה'))}
+  // The crown as a rare hat (Nir, 11.11.2026, task D): item in the head slot, English name, drops only from lv ARMOR.crown.lv, equips, and in 3D sits on every class's head (world and Hero doll)
+  const crn=await page.evaluate(gfx=>{
+    const o={bad:[]},CR=ARMOR.crown,id=CR.id,it=GEAR.items[id],keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,lv:SAVE.hero.level,start:SAVE.hero.start,skin:SAVE.hero.skin,pts:SAVE.hero.pts||{}}),ch=CR.chance;
+    try{
+      o.item=!!it&&it.slot==='head'&&it.hat==='crown'&&it.tier===CR.tier&&!it.cls;
+      o.name=T('it.'+id);o.en=/^[\x20-\x7E]+$/.test(o.name)&&o.name!=='it.'+id&&/^[\x20-\x7E]+$/.test(gFlav(id));
+      o.pic=/flameCrown\.png/.test(gPic(id));
+      // drop: never below lv, always eligible from lv when the roll hits (chance forced to 1), and not in the arena pool (head is not in GEAR.loot.slots)
+      CR.chance=1;SAVE.hero.start='warrior';SAVE.hero.level=CR.lv-1;let lo=0;for(let i=0;i<50;i++)if(armorPick('head')(it))lo++;
+      SAVE.hero.level=CR.lv;let hi=0;for(let i=0;i<50;i++)if(armorPick('head')(it))hi++;CR.chance=ch;
+      o.drop=lo===0&&hi===50&&!GEAR.loot.slots.includes('head');o.dropTxt=lo+'/50 below lv'+CR.lv+', '+hi+'/50 from it';
+      o.never=(()=>{CR.chance=0;let n=0;for(let i=0;i<50;i++)if(armorPick('head')(it))n++;CR.chance=ch;return n===0})();
+      // equip
+      SAVE.hero.level=30;bagAdd(id);o.equip=!!gearEquip(id)&&gGet('head',0)===id;
+      if(gfx==='3d'&&R3D.on&&R3D.ready){
+        o.model=!!(R3D.hats&&R3D.hats.crown);
+        const fit=(a,tag)=>{const g=(a.arG||[]).find(m=>{let f=false;m.traverse(x=>{if(x.name==='crown')f=true});return f});
+          if(!g){o.bad.push(tag+': no crown');return}
+          const hb=bone(a.root,'head'),me=armorHeadFit(a);a.root.updateMatrixWorld(true);const inv=hb.matrixWorld.clone().invert(),b=new THREE.Box3(),v=new THREE.Vector3();
+          g.traverse(x=>{if(x.isMesh){const P=x.geometry.attributes.position;for(let i=0;i<P.count;i++){v.fromBufferAttribute(P,i).applyMatrix4(x.matrixWorld).applyMatrix4(inv);b.expandByPoint(v)}}});
+          const top=me.c[1]+me.z[1]/2,w=(b.max.x-b.min.x)/me.z[0],dx=Math.abs((b.min.x+b.max.x)/2-me.c[0])/me.z[0],dz=Math.abs((b.min.z+b.max.z)/2-me.c[2])/me.z[2],sink=(top-b.min.y)/me.z[1];
+          if(!(w>0.6&&w<1.1&&dx<0.12&&dz<0.15&&sink>-0.02&&sink<0.35))o.bad.push(tag+': width '+w.toFixed(2)+' off '+dx.toFixed(2)+'/'+dz.toFixed(2)+' sink '+sink.toFixed(2))
+          else o.ok=(o.ok||0)+1};
+        for(const [h,sk,doll] of [['warrior',null],['hunter',null],['mage',null],['warrior','nir'],['warrior','orel'],['mage',null,1],['hunter',null,1]]){
+          SAVE.hero.start=h;SAVE.hero.skin=sk;SAVE.gear.head=[id];R3D._hl=null;const tag=h+(sk?'/'+sk:'')+(doll?'/doll':'');
+          if(doll){const D=R3D.doll||dollInit();D.key=null;dollBuild(D);fit(D.a,tag)}else{syncPlayer(0);fit(R3D.player,tag)}}
+      }
+    }catch(e){o.err=e.message}
+    finally{CR.chance=ch;const k=JSON.parse(keep);SAVE.bag=k.bag;SAVE.gear=k.gear;SAVE.hero.level=k.lv;SAVE.hero.start=k.start;SAVE.hero.skin=k.skin;SAVE.hero.pts=k.pts;R3D._hl=null;
+      if(R3D.on&&R3D.ready){syncPlayer(0);if(R3D.doll&&R3D.doll.a)R3D.doll.key=null}saveNow()}
+    return o},CFG.gfx);
+  check(!crn.err&&crn.item&&crn.en&&crn.pic&&crn.drop&&crn.never&&crn.equip&&(CFG.gfx!=='3d'||crn.model&&!crn.bad.length&&crn.ok===7),
+    'Crown hat: '+(crn.err?'error '+crn.err:(crn.item?'head item':'not a head item ✗')+', "'+crn.name+'"'+(crn.en?'':' (not English ✗)')+(crn.pic?'':', no picture ✗')+
+    ', drop '+crn.dropTxt+(crn.drop&&crn.never?'':' ✗')+(crn.equip?', equips':', does not equip ✗')+
+    (CFG.gfx==='3d'?(crn.model?', model loaded':', no model ✗')+(crn.bad.length?', off the head: '+crn.bad.join('; ')+' ✗':', sits on '+crn.ok+' heads (3 classes, Nir, Orel, doll)'):'')));
   // חפצים כמו ב-Priston Tale (itemroll.js): איכות אקראית בשלל בעולם שנשמרת במזהה, דרישות רמה ותכונה שחוסמות לבישה (ומה שלבוש נשאר), ובונוס מחלקה
   const ir=await page.evaluate(()=>{
     const o={},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,pity:SAVE.clsPity,pts:SAVE.hero.pts||{},lv:SAVE.hero.level,start:SAVE.hero.start}),v0=S.vil,g0=gearStats(),c0=celebrate;celebrate=()=>{};
@@ -5172,7 +5232,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   const DA=JSON.parse(L.dropsArena||'{}');
   check(L.wDropGround&&L.wPicked>0&&DA.spawned>0&&DA.picked>0,'שלל על הרצפה: '+(L.wDropGround?'עץ נפל לרצפה לפני התרמיל':'נכנס לתרמיל בלי להיראות')+', בעולם נאספו '+(L.wPicked||0)+' בהליכה'+
     ' · בזירה נפלו '+(DA.spawned||0)+', נאספו בהליכה '+(DA.picked||0)+', ובסוף לבד '+(DA.auto||0));
-  check(L.wArena&&L.wGateAuto===false&&!!L.wGoBtn&&L.wBack!=null&&L.wBack<200,'שער לזירה: '+(L.wGateAuto?'כרטיס נפתח לבד':L.wGoBtn?'ליד השער רק עיגול "'+L.wGoBtn+'"':'אין עיגול ליד השער')+', '+(L.wArena?'לחיצה אחת מתחילה ריצה':'לחיצה על העיגול לא נכנסה לזירה')+(L.wBack!=null?', בסוף חזר לשער ('+L.wBack+' פיקסלים ממנו)':', לא חזר לעולם'));
+  check(L.wArena&&L.wTip&&L.wGateAuto===false&&!!L.wGoBtn&&L.wBack!=null&&L.wBack<200,'שער לזירה: '+(L.wGateAuto?'כרטיס נפתח לבד':L.wGoBtn?'ליד השער רק עיגול "'+L.wGoBtn+'"':'אין עיגול ליד השער')+', '+(L.wArena?'לחיצה אחת מתחילה ריצה':'לחיצה על העיגול לא נכנסה לזירה')+(L.wTipFirst?(L.wTip?', טיפ הזירה הופיע בכניסה הראשונה':', טיפ הזירה (w.arenaTip) לא הופיע בכניסה הראשונה'):(L.wTip?', טיפ הזירה לא חזר (כבר הוצג בסשן)':', טיפ הזירה הופיע שוב באותו סשן'))+(L.wBack!=null?', בסוף חזר לשער ('+L.wBack+' פיקסלים ממנו)':', לא חזר לעולם'));
   check(L.back!=null&&!!L.lootGot&&L.lootSaved,'שלל: '+(L.won!=null?'ניצחון '+t(L.won):L.died!=null?'נפל '+t(L.died):'הריצה לא נגמרה')+
     (L.back!=null?', חזר לשער. במסך: '+L.lootTxt+' · בתרמיל: '+(L.lootGot||'כלום')+(L.lootSaved?', נשמר':', לא נשמר'):''));
   const D=L.wDeath||{};
@@ -5225,6 +5285,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     skg.dotOn&&skg.dotOff?'נקודה אדומה מופיעה ונעלמת':'הנקודה האדומה לא עובדת',skg.offer&&skg.offerBook?'כרטיס אחרי הגילוי':'אין כרטיס',
     skg.offerWait&&skg.offerHide&&skg.offerBack?'הכרטיס מחכה כשחלון פתוח':'הכרטיס יושב על חלון פתוח',
     skg.pStart&&skg.pDummy&&skg.pSkip&&skg.pEnd?'אימון: בובות, דילוג וסוף':'האימון לא עובד'].join(', ')+(skg.err||Object.values(skg).every(Boolean)?'':' '+JSON.stringify(skg))));
+  check(!skg.err&&skg.lnFirst&&skg.lnHold&&skg.lnKeep&&skg.lnAfter&&skg.lnCardWait&&skg.lnCardBack&&skg.lnBoth===0,'One thing at a time in the lane: '+(skg.err||[skg.lnHold?'the "New: skill" card is up, the region line waits':'the region line shows with the card!',
+    skg.lnKeep?'a long wait does not drop it to small':'dropped to small under the card!',skg.lnAfter?'card gone, the region line shows':'region line lost!',
+    skg.lnFirst&&skg.lnCardWait&&skg.lnCardBack?'a new card waits for the region line, then comes':'the card does not wait for the region line!',skg.lnBoth?skg.lnBoth+' times the region line and the card together!':'never together'].join(', ')));
   check(!sig.err&&sig.noRank&&sig.all&&sig.reveal&&sig.btn&&!sig.bad.length&&sig.ok.length===sig.n&&sig.clean&&sig.arena,'סקיל חתימה: '+(sig.err||[sig.noRank?'בלי דרגה אין כפתור':'יש כפתור בלי דרגה',
     sig.all?'לכל דרגה סקיל':'יש דרגה בלי סקיל',sig.reveal?'רגע גילוי':'אין רגע גילוי',sig.btn?'כפתור בעולם':'אין כפתור בעולם','עובדים: '+sig.ok.join(', '),
     sig.bad.length?'נכשלו: '+sig.bad.join(', '):'',sig.clean?'נגמרים':'לא נגמרו',sig.arena?'':'כפתור בזירה'].filter(Boolean).join(' · ')));

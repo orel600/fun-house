@@ -663,6 +663,7 @@ const TEXT={
   'w.goHome':{he:'חזרה לכפר',en:'Back to the village'},
   'w.gate.grove':{he:'זירת החורשה',en:'Grove Arena'},
   'w.gate.pit':{he:'זירת הבור',en:'Quarry Pit Arena'},
+  'w.arenaTip':{en:'10 waves, boss at the end. Loot is kept even if you fall.'},   // world.js: טיפ חד-פעמי בכניסה הראשונה לזירה בסשן
   'w.arenaInfo':{he:'ריצה עד הבוס. השלל מהזירה נכנס לתרמיל גם אם נופלים, ובסוף חוזרים לשער הזה.',en:'A 10-wave gauntlet: shifting walls mid-run, a boss at the end. Arena loot goes in your bag even if you fall, and you come back to this gate.'},
   'w.enterArena':{he:'כניסה לזירה',en:'Enter the arena'},
   // הזירה: גלים (arenas.js)
@@ -1374,6 +1375,7 @@ const TEXT={
   'it.starterBoots':{he:'נעלי דרך מאובקות',en:'Dusty Trail Shoes'},'itf.starterBoots':{he:'אבנר נתן לך אותן. הוא אומר שהן מ"ההרפתקה הגדולה" שלו. הוא לא מפרט.',en:'Avner gave you these. He says they’re from his "great adventure". He doesn’t elaborate.'},
   'it.swiftBoots':{he:'מגפי רוח-האחו',en:'Meadowwind Boots'},'itf.swiftBoots':{he:'עם המגפיים האלה, אפילו פיוחו מתנשפת מאחור.',en:'In these boots, even Piocho is left panting behind.'},
   'it.goldAmulet':{he:'תליון אור-הבית',en:'Hearthlight Amulet'},'itf.goldAmulet':{he:'דודה פלפל החביאה בו פירור מהעוגה הראשונה של הכפר. "לבריאות", היא אומרת.',en:'Auntie Pepper hid a crumb of the village’s first cake inside. "For your health," she says.'},
+  'it.flameCrown':{en:'Crown of Twelve Flames'},'itf.flameCrown':{en:'Twelve tiny flames dance on its points. Nobody remembers who lit them, and nobody has ever put them out.'},   // הכתר ככובע נדיר (ARMOR.crown, armor.js)
   'it.crown':{he:'כתר ששת הפנסים',en:'Crown of Six Lanterns'},'itf.crown':{he:'שש אבנים, שש להבות קטנות. בכל פעם שפנס נדלק, אחת מהן מתחממת.',en:'Six stones, six tiny flames. Every time a lantern is lit, one of them grows warm.'},
   'it.wardenHammer':{he:'פטיש השומר האבן',en:'Stone Warden’s Mallet'},'itf.wardenHammer':{he:'נחצב במחצבה. כבד, עקשן ולא אוהב שינויים. בדיוק כמו השומר עצמו.',en:'Cut from the quarry. Heavy, stubborn, dislikes change. Just like the Warden himself.'},
   'it.wardenRing':{he:'טבעת לב-האבן',en:'Stoneheart Ring'},'itf.wardenRing':{he:'אפשר להרגיש אותה פועמת. לאט. מאוד לאט.',en:'You can feel it beating. Slowly. Very slowly.'},
