@@ -31,8 +31,16 @@ const ARMOR={
      fit: התאמה לכל מודל מעבר למדידת הראש (armorHeadFit): s גודל, y הרמה ביחידות של עצם הראש. הקוסם: השיער נמוך, והכובע ישב על העיניים */
   hat:{paint:{helm:{metal:1},hood:{cloth:0.3},mage:{band:1},fur:{fur:0.45}},
     tint:['#C8925A','#B4BCC6','#FFFFFF','#FFE27A','#FF8FC8'],glowFrom:{helm:0,hood:3,mage:0,fur:3},glowPart:{hood:['rim']},glowK:{fur:0.35},rim:3,
-    ref:{helm:[[-0.543,-0.026,-0.485],[0.543,1.073,0.532]],mage:[[-0.543,-0.174,-0.748],[0.543,0.961,0.519]],fur:[[-0.543,-0.107,-0.46],[0.543,0.945,0.526]],hood:[[-0.543,-0.026,-0.482],[0.543,1.043,0.532]]},
-    head:'Head',noHead:{hood:'fur'},none:['orelHero'],fit:{nirHero:{s:1.12},orelHero:{s:1.1},mage:{y:0.1}}},
+    ref:{crown:[[-0.55,-0.9,-0.55],[0.55,0.2,0.55]],helm:[[-0.543,-0.026,-0.485],[0.543,1.073,0.532]],mage:[[-0.543,-0.174,-0.748],[0.543,0.961,0.519]],fur:[[-0.543,-0.107,-0.46],[0.543,0.945,0.526]],hood:[[-0.543,-0.026,-0.482],[0.543,1.043,0.532]]},
+    head:'Head',noHead:{hood:'fur'},none:['orelHero'],
+    /* הכתר (ARMOR.crown): הפלטה והזוהר כבר במודל (emissiveMap: הלהבות הוורודות), אז לא צובעים אותו. glowMap: עוצמת הזוהר מהמודל.
+       ref: "ראש" ברוחב 1.1 שהקודקוד שלו ב-y=0.2, כלומר הכתר (רוחב 1) הוא כ-90% מרוחב הראש ושוקע מעט לתוכו. all: יושב גם על הברדס של אוראל */
+    glowMap:{crown:0.9},all:['crown'],fit:{nirHero:{s:1.12},orelHero:{s:1.1},mage:{y:0.1}}},
+  /* כתר שתים-עשרה הלהבות (ניר, 11.11.2026, משימה ד: "הכתר מפיילוט Hunyuan נכנס כפריט כובע נדיר"). כובע במשבצת הראש, לכל מחלקה (בלי cls),
+     והמודל שלו (hat_crown, tools/blender/hunyuan/crown_to_game.js) על הראש של כל דמות, כמו שאר הכובעים. בשכבת הזהב, קצת יותר טוב מכובע הזהב של המחלקה.
+     שלל: רק בעולם, דרך lootRoll, כשנפל כובע זהב. lv: מאיזו רמת דמות. chance: באיזה חלק מכובעי הזהב הכתר נכנס להגרלה (ואז חצי-חצי מול כובע הזהב).
+     לכן הוא נדיר ולא בתחילת המשחק: זהב בעולם נפוץ רק מדרגה 2 (tiers.js). מאוד בערך: כתר אחד בכל ~2,000 מפלצות ברמה 15 */
+  crown:{id:'flameCrown',tier:3,icon:'👑',stats:{def:49,hp:15,magnet:15},lv:12,chance:0.3},
   icon:{head:'🪖',body:'🧥',shield:'🛡️'},   // לשונית בתרמיל וצללית במשבצת ריקה
   /* מגן (המתאם, 2.11.2026: משבצת אמיתית במקום המגן שנגזר מהתכשיט). לא לפי מחלקה: מגן אחד לכל שכבה, 'shield0' עד 'shield4'.
      נראה ביד השנייה רק עם נשק של יד אחת (חרב, גרזן), כמו קודם (gear3dLook ב-render3d.js). gift: מגן עץ לכל אחד, פעם אחת */
@@ -57,6 +65,8 @@ const armorSlot=s=>s[0].toUpperCase()+s.slice(1);
 // בונה את הפריטים לתוך GEAR.items ואת השמות לתוך TEXT, פעם אחת בטעינה
 (function armorItems(){
   for(const s of [...ARMOR.slots,'shield']){GEAR.slots[s]=1;GEAR.filter[s]=ARMOR.icon[s]}
+  const CR=ARMOR.crown;GEAR.items[CR.id]={slot:'head',tier:CR.tier,icon:CR.icon,hat:'crown',stats:CR.stats,defMul:DEFENSE.tierMul[CR.tier],look:{glow:'#FF6FB5'}};
+  GEAR_PIC[CR.id]=1;   // icons/ui/gear/flameCrown.png: התמונה שממנה נבנה המודל
   // הבובה: ראש למעלה, הנשק והמגן, וגוף למטה. הלשוניות בתרמיל אחרי הנשק
   GEAR.doll.start=['head','weapon','shield','body'];
   const f=GEAR.filter,order=['weapon','shield','head','body','boots','acc','orbit'];GEAR.filter={};for(const k of order)if(f[k])GEAR.filter[k]=f[k];
@@ -75,8 +85,9 @@ function armorGift(){if(!SAVE.shieldGift){SAVE.shieldGift=true;bagAdd(ARMOR.shie
 
 /* ---- שלל: נקרא מ-lootRoll (loot.js) כשהמשבצת שהוגרלה היא שריון. מחזיר פילטר: שריון של המחלקה שלך, או לפעמים של אחרת ---- */
 function armorPick(slot){
-  const h=heroId();if(!ARMOR.slots.includes(slot)||!ARMOR.cls[h])return()=>true;
-  const mine=Math.random()<ARMOR.loot.mine;return it=>(it.cls===h)===mine;
+  const CR=ARMOR.crown,crown=slot==='head'&&heroLv()>=CR.lv&&Math.random()<CR.chance;   // הכתר: רק לפעמים בהגרלה (ARMOR.crown)
+  const h=heroId();if(!ARMOR.slots.includes(slot)||!ARMOR.cls[h])return it=>it.hat!=='crown'||crown;
+  const mine=Math.random()<ARMOR.loot.mine;return it=>it.hat==='crown'?crown:(it.cls===h)===mine;
 }
 
 /* ---- המראה בתלת-ממד: אחרי rankArmor3d ו-gear3dParts. נבנה מחדש רק כשהשריון, הדרגה או הציוד השתנו ---- */
@@ -110,14 +121,14 @@ function armorHeadFit(a,model){
 /* הכובע על עצם הראש של הדמות. כל כובע עובר מהראש שהוא נבנה בשבילו (ARMOR.hat.ref) לראש של הדמות:
    גודל לפי הרוחב והעומק, באמצע הראש, והקודקוד על הקודקוד. נבנה מחדש עם השריון (armor3d) */
 function armorHat(a,hd,head){
-  const H=ARMOR.hat,C_=ARMOR.cls[hd.cls],hb=bone(a.root,'head');let k=C_.head;
-  if(!hb||!R3D.hats||H.none.includes(a.L&&a.L.model))return;
+  const H=ARMOR.hat,hb=bone(a.root,'head');let k=hd.hat||ARMOR.cls[hd.cls].head;   // hd.hat: כובע של פריט מסוים (הכתר), לא של מחלקה
+  if(!hb||!R3D.hats||H.none.includes(a.L&&a.L.model)&&!H.all.includes(k))return;
   if(k==='hood'&&!head.length)k=H.noHead.hood;   // בלי ראש נפרד אי אפשר להחליף ראש
   const src=R3D.hats[k];if(!src)return;
   const g=src.clone(),t=hd.tier,col=new THREE.Color(H.tint[t]),tier=new THREE.Color(GEAR.tiers[t].col),P=H.paint[k]||{},
     glow=t>=(H.glowFrom[k]||0)?ARMOR.look.glow[t]*(H.glowK[k]||1):0,acc=a.L&&a.L.g3&&a.L.g3.head;
   g.traverse(o=>{if(!o.isMesh)return;const m=o.material=o.material.clone(),p=o.name.replace(/_\d+$/,'');   // three מוסיף _1 לשם כפול
-    let em=new THREE.Color(0);
+    let em=new THREE.Color(0xffffff).multiplyScalar(H.glowMap[k]||0);   // 0: בלי זוהר מהמודל. הכתר: הלהבות שב-emissiveMap
     if(P[p]!=null)m.color.set(0xffffff).lerp(col,P[p]);
     if(p==='rim'){if(t>=H.rim){m.map=null;m.color.copy(tier)}else m.color.set(0xffffff).lerp(col,P.cloth||0)}   // מדרגה 3: צבע נקי, בלי הירוק של הטקסטורה מתחתיו
     if(H.glowPart[k]?H.glowPart[k].includes(p):P[p]!=null)em=tier.clone().multiplyScalar(glow);
@@ -150,7 +161,7 @@ function armor3d(a){
   for(const k in parts)for(const o of parts[k])o.visible=false;
   // ראש: הכובע האמיתי (armorHat). "הצג כובע" כבוי בהגדרות (SAVE.showHat): ההגנה נשארת, רק לא רואים
   const hd=gItem(ids[0]);
-  if(hd&&hd.cls&&SAVE.showHat!==false)armorHat(a,hd,head);
+  if(hd&&(hd.cls||hd.hat)&&SAVE.showHat!==false)armorHat(a,hd,head);
   // גוף: הגלימה בצבע המחלקה, ועוד חלק לפי המחלקה
   const bd=gItem(ids[1]);
   if(bd){const C_=ARMOR.cls[bd.cls],tcol=GEAR.tiers[bd.tier].col,cape=new THREE.Color(C_.cape).lerp(new THREE.Color(tcol),LK.cape);
