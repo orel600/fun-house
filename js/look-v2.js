@@ -3,8 +3,8 @@
    Village and open world only. The arena and the Underworld (Orel's) never change: lv2Here() is false there,
    the hero's outline is hidden and its rim strength is 0, so those frames are pixel-identical (tools/look-v2-shots.js proves it).
    Three parts, all from outside render3d.js (it only exposes foeKey(e), the LOOK3D key an ordinary enemy is drawn with):
-   1. Hero readability: a thin dark outline (inverted hull) and a light rim on the selected hero's own model
-      (the rim reuses rimwMat from js/rim-world.js when it is loaded, otherwise lv2Rim below).
+   1. Hero readability: a thin dark outline (inverted hull) and a light edge rim on the selected hero's own model.
+      The rim is js/rim-world.js's (rimwMat, one shader for the hero): here it is only turned up in daylight too.
       The model, skin and gear are never replaced. The white ground ring already exists (READ3D.hero in readable3d.js) and is reused.
    2. One world enemy with its own silhouette: the grunt in the open world is drawn as mon_orcSkull (Quaternius CC0,
       2,400 triangles, built by tools/build3d.js --only monsters --mon=orcSkull). Same type, hp, size, hit size and timings: only the look key.
@@ -17,13 +17,13 @@ const LV2={
   looks:{w_grunt:{model:'mon_orcSkull',h:56,foot:13,anim:{run:'mon_orcSkull_Walk',die:'mon_orcSkull_Death'}}},
   clips:{mon_orcSkull:{hit:'mon_orcSkull_Weapon'}},   // FOEATK3D.clip: the swing it plays when it attacks (strike.js)
   outline:{col:0x1b1512,w:0.075},        // w: in model units (a KayKit hero is about 2.3 tall): about 2.5 px at the phone camera (0.045 was 1.5 px, too thin to read)
-  rim:{col:[1,0.95,0.84],k:0.5,lo:0.6,hi:0.92},   // light rim on the hero: color (linear rgb), strength, and where it starts/fills (1-cos, like rim-world.js): only the edges, the hero's own colors stay
+  rim:{k:0.5},   // edge rim on the hero, at least this strong in the village and world (rim-world.js: its color and where the edge starts)
   plaza:{x:0,y:-185,r:125,floor:'#BFA27A',curb:'#A08560',n:20,lampR:200,   // floor: warm sand. Village light is cool, so a pale floor read lilac (pilot shot 1)
       // lampR: street lamps this close to the plaza center become v2 lamps
     lamp:{h:56,post:'#5A3E2B',base:'#9E9484',cap:'#B54A3C',glow:'#ffd38a',halo:46}}
 };
 const lv2Here=()=>LV2.on&&typeof S!=='undefined'&&S&&!S.room&&!S.mb&&!!(S.vil||S.wd);
-const LV2U={w:{value:LV2.outline.w},rimK:{value:0},rimC:{value:null},rimLo:{value:LV2.rim.lo},rimHi:{value:LV2.rim.hi}};
+const LV2U={w:{value:LV2.outline.w}};
 
 if(LV2.on){
   Object.assign(LOOK3D,LV2.looks);
@@ -49,29 +49,17 @@ function lv2OutlineMat(){
   m.customProgramCacheKey=()=>'lv2-outline';
   return LV2.olMat=m;
 }
-function lv2Rim(mat){   // chains any earlier onBeforeCompile (readable3d.js patches the same materials)
-  if(!mat||mat.userData.lv2||!mat.isMeshLambertMaterial)return;mat.userData.lv2=1;
-  if(!LV2U.rimC.value)LV2U.rimC.value=new THREE.Vector3(...LV2.rim.col);
-  const prev=mat.onBeforeCompile,pk=mat.customProgramCacheKey;
-  mat.onBeforeCompile=function(sh,r){if(prev)prev.call(this,sh,r);sh.uniforms.lv2RimK=LV2U.rimK;sh.uniforms.lv2RimC=LV2U.rimC;sh.uniforms.lv2RimLo=LV2U.rimLo;sh.uniforms.lv2RimHi=LV2U.rimHi;
-    sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nuniform float lv2RimK,lv2RimLo,lv2RimHi;uniform vec3 lv2RimC;')
-      .replace('#include <opaque_fragment>','{vec3 lv2V=isOrthographic?vec3(0.0,0.0,1.0):normalize(vViewPosition);float lv2R=smoothstep(lv2RimLo,lv2RimHi,1.0-clamp(dot(normal,lv2V),0.0,1.0));outgoingLight+=lv2RimC*lv2R*lv2RimK;}\n#include <opaque_fragment>')};
-  mat.customProgramCacheKey=function(){return (pk?pk.call(this):'')+'|lv2rim'};
-  mat.needsUpdate=true;
-}
 function lv2Hero(a){
   if(!a)return;
   if(a.lv2!==a.key){a.lv2=a.key;a.lv2ol=[];
     const src=[];a.root.traverse(o=>{if(o.isMesh&&!o.userData.lv2ol)src.push(o)});
     for(const o of src){let ol;
       if(o.isSkinnedMesh){ol=new THREE.SkinnedMesh(o.geometry,lv2OutlineMat());ol.bind(o.skeleton,o.bindMatrix);ol.bindMode=o.bindMode;
-        ol.position.copy(o.position);ol.quaternion.copy(o.quaternion);ol.scale.copy(o.scale);o.parent.add(ol);if(typeof rimwActor!=='function')lv2Rim(o.material)}
+        ol.position.copy(o.position);ol.quaternion.copy(o.quaternion);ol.scale.copy(o.scale);o.parent.add(ol)}
       else{ol=new THREE.Mesh(o.geometry,lv2OutlineMat());o.add(ol)}   // weapons and props: outline only (their materials are shared with enemies)
       ol.userData.lv2ol=1;ol.frustumCulled=false;ol.renderOrder=-1;a.lv2ol.push([o,ol])}}
-  const here=lv2Here(),k=here?LV2.rim.k:0;
-  // one rim shader for the hero: when rim-world.js (the dark-zone rim, feature/world-hero-rim) is in the game, its material is reused,
-  // and this only raises its strength (it runs first, see index.html). lv2Rim is the fallback until then
-  if(typeof rimwActor==='function'){for(const U of rimwActor(a))U.k.value=Math.max(U.k.value,k)}else LV2U.rimK.value=k;
+  // the rim: rim-world.js's material (it ticks first, index.html), only raised to LV2.rim.k here. In the arena both are 0
+  const here=lv2Here();if(typeof rimwActor==='function')for(const U of rimwActor(a))U.k.value=here?Math.max(U.k.value,LV2.rim.k):RIMW.on?U.k.value:0;   // ?rimw=0: nobody else resets it, so 0 here
   for(const [o,ol] of a.lv2ol)ol.visible=here&&o.visible;
 }
 
