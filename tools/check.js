@@ -3137,13 +3137,21 @@ function worldBot(m,L,god){
     // 7.11 (WXW, wxworld.js): מזג האוויר הנכון לכל אזור, סערה שמתקדמת במצבים, כפר עם גשם קל, ומצויר מתחת לאפקטים ולמספרי הנזק
     {const core=wxwCore(),r={},has=id=>[...FXW.wxl.values()].some(h=>h.id===id),run=n=>core&&WX.run[n]&&WX.run[n].state,cfg=n=>core&&WEATHER.scenes[n]||{};
       enterWorld('home','meadow');P.inv=99;tick(1);WXW.t=0;tick(1);r.cycle=WXW.st==='building'&&(!core||run('world')==='building');wxwSet('storm');tick(1);
-      r.meadow=core?run('world')==='storm'&&(cfg('world').storm||[]).some(v=>v[0]==='rain_heavy')&&!!cfg('world').ev:has('wx_rainheavy');
+      r.meadow=core?run('world')==='storm'&&(cfg('world').storm||[]).some(v=>v[0]==='rain_heavy')&&!!WXW.scene.meadow.bolts:has('wx_rainheavy');
       enterWorld('home','ridge');P.inv=99;tick(1);const rc=wxwCfg('ridge');r.ridge=WXW.reg==='ridge'&&(rc.theme==='arctic'||rc.theme==='night')&&rc.storm[0][0]==='snow_blizzard'&&(!core||cfg('world')[`storm`][0][0]==='snow_blizzard');
-      enterWorld('home','desert');P.inv=99;tick(1);r.desert=wxwCfg('desert').theme!=='temperate'&&wxwCfg('desert').storm.some(v=>v[0]==='wind_tornado');
-      enterWorld('home','storm');P.inv=99;tick(1);r.storm=WXW.st==='storm'&&(!core||run('world')==='storm'&&!!cfg('world').ev.storm.bolt);
+      enterWorld('home','desert');P.inv=99;tick(1);{const ds=wxwCfg('desert').storm;r.desert=wxwCfg('desert').theme!=='temperate'&&ds.some(v=>v[0]==='wind_dust')&&ds.some(v=>v[0]==='wind_gust')&&!ds.some(v=>v[0]==='wind_tornado')}   // 11.11: סופת חול בלי טורנדו על כל המסך
+      enterWorld('home','storm');P.inv=99;tick(1);r.storm=WXW.st==='storm'&&!!WXW.scene.storm.far&&(!core||run('world')==='storm'&&!(cfg('world').ev&&cfg('world').ev.storm&&cfg('world').ev.storm.bolt));   // 11.11: ברקים דרך WXW.far, לא בנקודה אקראית של הליבה
       enterVillage();tick(1);wxwSet('storm');tick(1);r.village=core?run('village')==='storm'&&!!cfg('village').ev:has('rain');wxwSet('calm');tick(1);
       // מתחת לקרב: עם הליבה, FXW לא מצייר מזג אוויר משלו (אין אריחי w: ואין משב או הבזק), והליבה מציירת לפני הסקילים (render.js)
       enterWorld('home','storm');P.inv=99;FXW.t=0;tick(2);r.under=core?![...FXW.wxl.keys()].length&&!String(fxDraw).includes('fxwWxDraw'):String(juiceDraw).includes('fxwWxDraw')&&!String(fxDraw).includes('fxwWxDraw');
+      // 11.11 עולם חי, שלב 1 (docs/concept-living-world.md): ברקים רק רחוק, אובך חול, חצי בקרב, פחות תנועה בלי קווי רוח, ודג בנהר של האחו
+      if(core){const St=WXW.stat,f0=St.far,n0=St.near;WXW.farT={};for(let i=0;i<30;i++){WX.boltT=-99;wxwFar(6,WXW.scene.storm)}r.farOnly=St.far-f0>=5&&St.near===n0;
+        r.sandWrap=String(wxDraw).includes('wxwSand');enterWorld('home','desert');P.inv=99;tick(1);WXW.reg='desert';WXW.st='storm';WXW.sandA=0.45;WXW.sandLast=performance.now();const s0=St.sand;wxwSand();r.sand=St.sand===s0+1&&WXW.sandA>0.3;
+        WXW.fightT=1;r.fightHalf=wxwCfg('desert').k===WXW.fight;WXW.fightT=0;r.fightHalf=r.fightHalf&&!wxwCfg('desert').k;
+        const fl=SAVE.fxLess;SAVE.fxLess=true;r.calmNoGust=!wxwCfg('desert').storm.some(v=>/^wind_gust/.test(v[0]))&&!wxwCfg('ridge').calm.some(v=>/^wind_gust/.test(v[0]));SAVE.fxLess=fl;
+        r.ridgeGust=wxwCfg('ridge').calm.some(v=>v[0]==='wind_gust')||!!RM}
+      {enterWorld('home','meadow');P.inv=99;tick(1);const M=TR&&TR.map,rv=M&&M.rivers&&M.rivers[0];if(rv){const pt=rv.pts[Math.floor(rv.pts.length/2)];S.cam.x=pt[0];S.cam.y=pt[1];
+        let ok=0;for(let i=0;i<10;i++){const q=fxwRiverPt(M,FXW.jump.river.meadow.mid,W_()*0.42,H_()*0.4);if(q&&rv.pts.some((p,j)=>j&&segD(q.x,q.y,rv.pts[j-1][0],rv.pts[j-1][1],p[0],p[1])<=FXW.jump.river.meadow.mid+0.5))ok++}r.riverFish=ok>=8&&!!FXW.jump.reg.meadow}}
       o.wxw=r;o.wxwOk=Object.values(r).every(Boolean)}
     const wd=S.wd;S.wd=null;o.ids.clear();P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.arena=FXW.live.size===0&&FXW.wxl.size===0&&![...o.ids].some(i=>i.startsWith('tr_'));S.wd=wd;
     S.mode=md;P.weapon=wt;P.dt.sword=pdt;
@@ -3488,6 +3496,44 @@ function worldBot(m,L,god){
       rcr.done?'3 stages open the lake road without the earth lantern':'road still shut!',rcr.wood?'sawmill +wood':'no wood bonus',
       rcr.far&&rcr.moment?'moment near the road':'no moment '+rcr.why,rcr.once&&rcr.upd?'once':'twice! '+rcr.why,rcr.water?'water lantern still needs the story':'story skipped!',
       rcr.old?'old save keeps the road':'old save locked out!',rcr.quiet?'quiet when already open':'replays the moment',rcr.blank?'saved':'not saved'].join(', ')));
+  // Tunnel crew + bridge caravan (vproj.js, docs/concept-village-region-2.md): mine 4 opens the ridge road, market 4 the desert road.
+  // Each needs the road before it open (after), never locks an old save, never lights a lantern. Prints price vs the village path to that level (part 1 ≈ 0.6).
+  const r2=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{const V=VPROJ,sto=SAVE.story||(SAVE.story={}),R=WORLD.regions;
+      const val={coins:1,wood:1,stone:1,cloth:3,copper:3,iron:5,silver:8,hide:2,venom:3,aquaC:30,sapphireC:30};
+      const sum=(t,c)=>{for(const r in c||{})t.v+=c[r]*(val[r]||1);return t};
+      const ratio=id=>{const P0=V.list[id],t={v:0},p={v:0};for(const c of P0.stages)sum(t,c);
+        for(let i=2;i<=P0.lv;i++)sum(p,vCostAt('center',i));for(let i=1;i<=P0.lv;i++)sum(p,vCostAt(P0.bld,i));return +(t.v/p.v).toFixed(2)};
+      o.ratio={roadCrew:ratio('roadCrew'),tunnelCrew:ratio('tunnelCrew'),caravan:ratio('caravan')};
+      const pay=id=>{for(const c of V.list[id].stages){for(const r in c)SAVE.bag[r]=(SAVE.bag[r]||0)+c[r];vpBuild(id)}};
+      SAVE.vproj={st:{},seen:{deepQuarry:1}};for(const k of ['earth','water','ice','fire'])delete sto[k];
+      SAVE.village.center=4;SAVE.village.mine=4;SAVE.village.market=4;SAVE.village.mill=1;
+      const pr=R.lake.paths.ridge,pd=R.ridge.paths.desert;
+      // lake road shut: the tunnel crew waits, and its tab says why
+      o.wait=!vpHere('tunnelCrew')&&!vpHere('caravan')&&!wPathOpen(pr)&&vpBldTab('mine').label.includes('🔒')&&vpBldTab('mine').html().includes('reach');
+      SAVE.village.mill=3;pay('roadCrew');o.tab=vpHere('tunnelCrew')&&!vpHere('caravan')&&vpBldTab('mine').html().includes('data-act="vp"');
+      const s0=(()=>{const q=vProd('mine');q.t=Date.now()-3600e3;q.have={};vSettle('mine');return q.have.stone})();
+      pay('tunnelCrew');o.ridge=vpDone('tunnelCrew')&&wPathOpen(pr)&&!wPathOpen(pd)&&!storyOpen('water')&&!storyOpen('ice');
+      const s1=(()=>{const q=vProd('mine');q.t=Date.now()-3600e3;q.have={};vSettle('mine');return q.have.stone})();o.stone=s1>s0*1.05;
+      o.sign=vpForPath('ridge')==='tunnelCrew'&&vpForPath('desert')==='caravan';
+      pay('caravan');o.desert=vpDone('caravan')&&wPathOpen(pd)&&!storyOpen('ice')&&!storyOpen('fire');
+      o.sell=vpSellK()>1.05&&vPrice('silver','sell')<vPrice('silver','buy');
+      // the moment near each road, once, in its own region
+      const mom=(reg,pl,p)=>{enterWorld('home',reg);enemies=[];S.mode='play';const n0=V.stat.open;P.x=p.x;P.y=p.y+200;VPW.t=0;vpUpdate(1);const a=SAVE.vproj.seen[pl]===1&&V.stat.open===n0+1;VPW.t=0;vpUpdate(1);return a&&V.stat.open===n0+1};
+      SAVE.vproj.seen.lakeRoad=1;o.mRidge=mom('lake','ridgeRoad',pr);o.mDesert=mom('ridge','desertRoad',pd);
+      o.story=!!QBY.s3Warden&&!!(QBY.s3Warden.req||{}).quest&&!!QBY.s4Warden&&!!(QBY.s4Warden.req||{}).quest;
+      // old saves: the lantern alone keeps each road
+      SAVE.vproj={st:{},seen:{}};sto.water=true;sto.ice=true;o.old=wPathOpen(pr)&&wPathOpen(pd);
+      SAVE.village.mill=3;pay('roadCrew');pay('tunnelCrew');o.quiet=SAVE.vproj.seen.ridgeRoad===1;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];SAVE=JSON.parse(bak);goalS().pin=null;enterVillage();return o});
+  check(!r2.err&&r2.wait&&r2.tab&&r2.ridge&&r2.stone&&r2.sign&&r2.desert&&r2.sell&&r2.mRidge&&r2.mDesert&&r2.story&&r2.old&&r2.quiet,
+    'Tunnel crew + bridge caravan: '+(r2.err||[r2.wait?'wait for the road before':'open too early!',r2.tab?'mine tab after the lake road':'no mine tab',
+      r2.ridge?'ridge road open without the water lantern':'ridge still shut!',r2.stone?'mine +stone':'no stone bonus',r2.sign?'signs':'no sign',
+      r2.desert?'desert road open without the ice lantern':'desert still shut!',r2.sell?'market +10% sell':'no sell bonus',
+      r2.mRidge&&r2.mDesert?'moment once near each road':'moment missing or twice',r2.story?'lanterns still need the story':'story skipped!',
+      r2.old?'old saves keep the roads':'old save locked out!',r2.quiet?'quiet when already open':'replays the moment'].join(', '))+
+    ' · price vs village path: '+JSON.stringify(r2.ratio));
   // לולאת הכפר, שלב 3 (services.js): הנפח נותן כוח לבחירה, הזמנה רביעית בלוח הפונדק עם פרס ×1.25 שנוטה ליעד, והשוק משלם יותר על המשפחה של היום
   const svr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
     try{const V=SVC;SAVE.svc={n:0,day:'',fam:{}};

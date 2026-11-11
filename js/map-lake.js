@@ -13,7 +13,7 @@ Object.assign(WORLD.regions.lake,{
   home:{x:0,y:-1820,r:44},                                            // 1 השער חזרה לאחו, באמצע הצפון
   gates:{},
   waystones:[{id:'shore',x:1500,y:-500},{id:'isle',x:660,y:510},{id:'lair',x:-1450,y:780}],   // 2 החוף, 3 האי (חדש), 4 המאורה. השמות ב-lang.js ('ws.<id>')
-  paths:{ridge:{x:2440,y:-1720,r:44,need:'water'}},                   // 6 שביל לרכס, ליד ראש הנחל (אחרי פנס המים)
+  paths:{ridge:{x:2440,y:-1720,r:44,need:'water',open:()=>storyOpen('water')||vpDone('tunnelCrew')}},   // 6 שביל לרכס, ליד ראש הנחל: אחרי פנס המים, או שצוות המנהרה מהכפר פינה את המפולת (vproj.js, ניר 11.11)
   ponds:[],                                                           // המים עכשיו במפה (map.water). הדיג עובד בכל מים של האגם (fishing.js)
   fields:[
     {kind:'reeds',n:7,x:-1500,y:-760,r:200},{kind:'reeds',n:6,x:-2300,y:-200,r:200},{kind:'reeds',n:5,x:-700,y:-700,r:160},
