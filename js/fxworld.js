@@ -75,7 +75,8 @@ const FXW={
   // הגיבור במים: התזה (hit_water) כשהולכים במים רדודים, טיפות כשהולכים לאורך המים
   wet:{splash:'hit_water',splashSize:58,drop:'wt_droplet',dropSize:44,near:70},
   // גל על החוף (כל אזור עם מים במסך), ודג קופץ באגם
-  wave:{every:[2.4,4.6],size:110,a:0.85},jump:{reg:{lake:1},every:[7,13],size:96,a:0.95,edge:60},
+  wave:{every:[2.4,4.6],size:110,a:0.85},jump:{reg:{lake:1,meadow:1},every:[7,13],size:96,a:0.95,edge:60,
+    river:{meadow:{every:[10,18],size:72,mid:22}}},   // 11.11 (docs/concept-living-world.md): גם בנהר של האחו. mid: עד כמה פיקסלים מקו האמצע של הנהר (רוחבו 130)
   regrow:{size:110},   // עץ או מקור שצומחים מחדש (world.js, n.back)
   // מצבים על הגיבור: קטן וקצר, לכל היותר פעם ב-gap שניות לכל אחד
   status:{size:54,up:58,a:0.85,gap:3.5,heal:0.5},   // heal: כמה חיים צריך לעלות בין סנכרונים כדי שזה ייחשב ריפוי
@@ -233,10 +234,18 @@ function fxwMore(dt,reg){
     const b=tWaterNear(S.cam.x+rand(-cw*0.4,cw*0.4),S.cam.y+rand(-ch*0.4,ch*0.4));
     if(b&&Math.abs(b.x-S.cam.x)<cw/2&&Math.abs(b.y-S.cam.y)<ch/2)fxwPlay('wt_wave',b.x,b.y,{size:FXW.wave.size,alpha:FXW.wave.a,under:true})}
   // דג קופץ באגם: נקודה במים, רחוק מהשפה
-  const J=FXW.jump;if(M&&J.reg[reg]&&(FXW.jumpT-=dt)<=0){FXW.jumpT=rand(...J.every);
+  const J=FXW.jump,Jr=J.river[reg];if(M&&J.reg[reg]&&(FXW.jumpT-=dt)<=0){FXW.jumpT=rand(...(Jr?Jr.every:J.every));
     for(let i=0;i<4;i++){const x=S.cam.x+rand(-cw*0.42,cw*0.42),y=S.cam.y+rand(-ch*0.4,ch*0.4);
+      if(Jr){const q=fxwRiverPt(M,Jr.mid,cw*0.42,ch*0.4);if(q)fxwPlay('wt_jump',q.x,q.y,{size:Jr.size,alpha:J.a,under:true});break}   // אחו: נקודה באמצע הנהר שבמסך, לא על הגדה
       if((M.water||[]).some(Wp=>inPoly(x,y,Wp)&&polyDist(x,y,Wp)>J.edge)||M.sea&&tB(M).every(B=>!inPoly(x,y,B)&&polyDist(x,y,B)>J.edge)){fxwPlay('wt_jump',x,y,{size:J.size,alpha:J.a,under:true});break}}}   // במים של האגם, או בים שמחוץ לגבול
 }
+// נקודה באמצע נהר (TR.map.rivers: קו עם רוחב), עד mid פיקסלים מקו האמצע, בתוך המסך (hw,hh: חצי רוחב וגובה סביב המצלמה). אין נהר במסך: null
+function fxwRiverPt(M,mid,hw,hh){
+  const c=S.cam,on=(x,y)=>Math.abs(x-c.x)<hw&&Math.abs(y-c.y)<hh,L=[];
+  for(const r of M.rivers||[]){const p=r.pts;for(let i=1;i<p.length;i++)if(segD(c.x,c.y,p[i-1][0],p[i-1][1],p[i][0],p[i][1])<hw+hh)L.push([p[i-1],p[i]])}   // רק קטעים ליד המסך
+  for(let k=0;k<8&&L.length;k++){const [a,b]=L[Math.floor(Math.random()*L.length)],t=Math.random(),len=Math.hypot(b[0]-a[0],b[1]-a[1])||1,o=rand(-mid,mid),
+    x=a[0]+(b[0]-a[0])*t-(b[1]-a[1])/len*o,y=a[1]+(b[1]-a[1])*t+(b[0]-a[0])/len*o;if(on(x,y))return{x,y}}
+  return null}
 // פעמיים-שלוש בשנייה (עם fxwSync): יער ליד המצלמה, מקורות שצמחו מחדש, ומצבים על הגיבור
 function fxwSlow(){
   FXW.forest=fxwForestNear();

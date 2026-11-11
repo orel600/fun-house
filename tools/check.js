@@ -3121,11 +3121,19 @@ function worldBot(m,L,god){
       enterWorld('home','meadow');P.inv=99;tick(1);WXW.t=0;tick(1);r.cycle=WXW.st==='building'&&(!core||run('world')==='building');wxwSet('storm');tick(1);
       r.meadow=core?run('world')==='storm'&&(cfg('world').storm||[]).some(v=>v[0]==='rain_heavy')&&!!cfg('world').ev:has('wx_rainheavy');
       enterWorld('home','ridge');P.inv=99;tick(1);const rc=wxwCfg('ridge');r.ridge=WXW.reg==='ridge'&&(rc.theme==='arctic'||rc.theme==='night')&&rc.storm[0][0]==='snow_blizzard'&&(!core||cfg('world')[`storm`][0][0]==='snow_blizzard');
-      enterWorld('home','desert');P.inv=99;tick(1);r.desert=wxwCfg('desert').theme!=='temperate'&&wxwCfg('desert').storm.some(v=>v[0]==='wind_tornado');
-      enterWorld('home','storm');P.inv=99;tick(1);r.storm=WXW.st==='storm'&&(!core||run('world')==='storm'&&!!cfg('world').ev.storm.bolt);
+      enterWorld('home','desert');P.inv=99;tick(1);{const ds=wxwCfg('desert').storm;r.desert=wxwCfg('desert').theme!=='temperate'&&ds.some(v=>v[0]==='wind_dust')&&ds.some(v=>v[0]==='wind_gust')&&!ds.some(v=>v[0]==='wind_tornado')}   // 11.11: סופת חול בלי טורנדו על כל המסך
+      enterWorld('home','storm');P.inv=99;tick(1);r.storm=WXW.st==='storm'&&!!WXW.scene.storm.far&&(!core||run('world')==='storm'&&!(cfg('world').ev&&cfg('world').ev.storm&&cfg('world').ev.storm.bolt));   // 11.11: ברקים דרך WXW.far, לא בנקודה אקראית של הליבה
       enterVillage();tick(1);wxwSet('storm');tick(1);r.village=core?run('village')==='storm'&&!!cfg('village').ev:has('rain');wxwSet('calm');tick(1);
       // מתחת לקרב: עם הליבה, FXW לא מצייר מזג אוויר משלו (אין אריחי w: ואין משב או הבזק), והליבה מציירת לפני הסקילים (render.js)
       enterWorld('home','storm');P.inv=99;FXW.t=0;tick(2);r.under=core?![...FXW.wxl.keys()].length&&!String(fxDraw).includes('fxwWxDraw'):String(juiceDraw).includes('fxwWxDraw')&&!String(fxDraw).includes('fxwWxDraw');
+      // 11.11 עולם חי, שלב 1 (docs/concept-living-world.md): ברקים רק רחוק, אובך חול, חצי בקרב, פחות תנועה בלי קווי רוח, ודג בנהר של האחו
+      if(core){const St=WXW.stat,f0=St.far,n0=St.near;WXW.farT={};for(let i=0;i<30;i++){WX.boltT=-99;wxwFar(6,WXW.scene.storm)}r.farOnly=St.far-f0>=5&&St.near===n0;
+        r.sandWrap=String(wxDraw).includes('wxwSand');enterWorld('home','desert');P.inv=99;tick(1);WXW.reg='desert';WXW.st='storm';WXW.sandA=0.45;WXW.sandLast=performance.now();const s0=St.sand;wxwSand();r.sand=St.sand===s0+1&&WXW.sandA>0.3;
+        WXW.fightT=1;r.fightHalf=wxwCfg('desert').k===WXW.fight;WXW.fightT=0;r.fightHalf=r.fightHalf&&!wxwCfg('desert').k;
+        const fl=SAVE.fxLess;SAVE.fxLess=true;r.calmNoGust=!wxwCfg('desert').storm.some(v=>/^wind_gust/.test(v[0]))&&!wxwCfg('ridge').calm.some(v=>/^wind_gust/.test(v[0]));SAVE.fxLess=fl;
+        r.ridgeGust=wxwCfg('ridge').calm.some(v=>v[0]==='wind_gust')||!!RM}
+      {enterWorld('home','meadow');P.inv=99;tick(1);const M=TR&&TR.map,rv=M&&M.rivers&&M.rivers[0];if(rv){const pt=rv.pts[Math.floor(rv.pts.length/2)];S.cam.x=pt[0];S.cam.y=pt[1];
+        let ok=0;for(let i=0;i<10;i++){const q=fxwRiverPt(M,FXW.jump.river.meadow.mid,W_()*0.42,H_()*0.4);if(q&&rv.pts.some((p,j)=>j&&segD(q.x,q.y,rv.pts[j-1][0],rv.pts[j-1][1],p[0],p[1])<=FXW.jump.river.meadow.mid+0.5))ok++}r.riverFish=ok>=8&&!!FXW.jump.reg.meadow}}
       o.wxw=r;o.wxwOk=Object.values(r).every(Boolean)}
     const wd=S.wd;S.wd=null;o.ids.clear();P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.arena=FXW.live.size===0&&FXW.wxl.size===0&&![...o.ids].some(i=>i.startsWith('tr_'));S.wd=wd;
     S.mode=md;P.weapon=wt;P.dt.sword=pdt;
