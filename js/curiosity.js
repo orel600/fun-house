@@ -89,8 +89,8 @@ function curioScreen(ox,oy){
     ctx.fillStyle=lv>=s.lv?Z.ok:Z.low;ctx.fillText(txt,x,y+5);
     // דרך שנפתחת גם מהכפר (vproj.js): לוח שני, "או: צוות הכורתים בכפר (1/3)"
     const pj=!s.open&&typeof vpForPath==='function'&&vpForPath(s.k);
-    if(pj){const t2=T('cu.orVil',vpName(pj),vpStage(pj),VPROJ.list[pj].stages.length,VPROJ.list[pj].icon),w2=ctx.measureText(t2).width+16;
-      ctx.fillStyle='rgba(30,22,14,0.9)';ctx.strokeStyle=Z.ok;ctx.beginPath();ctx.roundRect(x-w2/2,y+15,w2,22,5);ctx.fill();ctx.stroke();ctx.fillStyle=Z.ok;ctx.fillText(t2,x,y+31)}
+    if(pj){const t2=T('cu.orVil',vpName(pj),vpStage(pj),VPROJ.list[pj].stages.length,VPROJ.list[pj].icon),w2=ctx.measureText(t2).width+16,x2=Math.max(w2/2+4,Math.min(W-w2/2-4,x));   // x2: הלוח הרחב נשאר בתוך המסך גם כשהשלט בקצה
+      ctx.fillStyle='rgba(30,22,14,0.9)';ctx.strokeStyle=Z.ok;ctx.beginPath();ctx.roundRect(x2-w2/2,y+15,w2,22,5);ctx.fill();ctx.stroke();ctx.fillStyle=Z.ok;ctx.fillText(t2,x2,y+31)}
     // חלש מדי לפרק הבא (ניר, 5.11: "הפתרון הוא הקווסטים"): כמה קווסטים פתוחים כאן, וחץ לקרוב (questboard.js)
     if(lv<s.lv&&onScreen(x,y)){if(qn===null)qn=sqOpenCount();if(qn>0){const q=T('cu.quests',qn),qw=ctx.measureText(q).width+16;
       ctx.fillStyle='rgba(30,22,14,0.9)';ctx.strokeStyle=Z.ok;ctx.beginPath();ctx.roundRect(x-qw/2,y-37,qw,22,5);ctx.fill();ctx.stroke();ctx.fillStyle=Z.ok;ctx.fillText(q,x,y-21);

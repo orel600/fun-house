@@ -241,13 +241,16 @@ const bagFams=(bag,only)=>Object.keys(RES.fams).filter(f=>!only||only==='all'||f
   return rs.length?'<div class="fam"><span class="sk">'+T('fam.'+f)+'</span><div class="bag">'+bagLine(bag,rs)+'</div></div>':''}).join('');
 function costLine(c){return Object.keys(c).map(r=>resChip(r,c[r],bagHas(r,c[r])?'':' miss')).join('')}
 // מה מבנה מייצר בשעה ברמה L, למשל '30🪵 4🧵'
-const makeLine=(B,L)=>Object.keys(B.make).filter(r=>B.make[r][L]>0).map(r=>'<bdi>'+B.make[r][L]+resIcon(r)+'</bdi>').join(' ');
+// k: המבנה (בלעדיו מחפשים לפי B). המספר כולל את הצוותים (vpMake), והערה קטנה מי הוסיף
+const vMakeOf=(k,r,L)=>Math.round(VILLAGE.b[k].make[r][L]*(typeof vpMake==='function'?vpMake(k,r):1));
+const makeLine=(B,L,k)=>{k=k||Object.keys(VILLAGE.b).find(x=>VILLAGE.b[x]===B);
+  return Object.keys(B.make).filter(r=>B.make[r][L]>0).map(r=>'<bdi>'+vMakeOf(k,r,L)+resIcon(r)+'</bdi>').join(' ')+(typeof vpNote==='function'?vpNote(k):'')};
 function vInfo(k,L){
   const B=VILLAGE.b[k];if(L<1)return T('vil.notBuilt');
   if(k==='center')return T('vil.info.center',L);
   if(k==='forge')return T('vil.info.forge',T('vil.tiers')[L-1],AGING.byForge[L]);
-  if(B.make)return T('vil.info.make',makeLine(B,L),B.cap[L]);
-  if(k==='market')return T('vil.info.market',Math.round(B.bonus*(L-1)*100));
+  if(B.make)return T('vil.info.make',makeLine(B,L,k),B.cap[L]);
+  if(k==='market')return T('vil.info.market',Math.round(B.bonus*(L-1)*100))+(typeof vpNote==='function'?vpNote(k):'');
   if(k==='stash')return T('vil.info.stash',B.cap[L]);
   if(k==='inn')return T('vil.info.inn',Math.round((INN.rest.xp+INN.rest.perLv*(L-1))*100));
 }
