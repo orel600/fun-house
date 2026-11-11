@@ -281,3 +281,42 @@ Each region's enemies, before over v2, read left to right: lake, ridge / desert,
 - **First spawn of each new body:** 11-43 ms. The living tree's first spawn is 36-43 ms because its crown meshes are built then; that is once per session. One frame of about 1 to 3 s showed up on a single type's first spawn in some runs, in v1 as well as v2 (for example crawler 2,900 ms in v1), from SwiftShader shader compiles.
 
 **Not covered by the shots:** the wardens appear only in their own encounters, so they are not in the region rows. Their look is the stone idol, the same body as the golem, which the shots do cover. The shadow region is very dark in both modes; v2 is a little brighter, but it is still a night scene.
+
+## 10. Phase 4: every village building, world trees and rocks (11.11.2026)
+
+Nir approved the toy style and asked to keep going. Same switch (`?look=v1` shows the old look), village and world only, visual only: positions, sizes, collision, hit sizes and gather stages are unchanged.
+
+**What's in it**
+- **Every level of the sawmill, mine, village center, inn and storehouse**, and the forge and market buildings (stage 2 only did their yards). L1 a camp (tent; the center a ruin), L2 a timber frame, L3 wood + green roof, L4 stone base + blue roof + lit windows + chimney or tower, L5 bigger + red roof + gold trim + banner. Center: ruin → frame → wooden hall with a bell turret → round keep, blue cone → golden castle with two towers.
+- **Shared yard pieces** (`LV2.yard`): tent, wheelbarrow, ladder, stone pile, stone and wooden watchtowers, blue flag, pallet.
+- **World resource trees and rocks** (meadow): two toy trees, a round boulder with a mossy top, and the log pile beside a tree. Regional kinds (pine, cactus, dead tree) and the decor keep their look. A node drawn before the pieces load is rebuilt once (`lv2WorldSwap`).
+- **Load:** v2 no longer downloads the old KayKit models it doesn't draw (`m3dNeed` asks for the v2 piece inside `syncVillage`).
+
+Built with `blender -b --python tools/blender/build_village4.py -- tools/blender art/village-v2/raw`, then `node tools/blender/village_v2.js pack <names>`. 35 pieces, 264 to 4,004 triangles, 1 material each, the same 64×16 palette (8 columns added at the end).
+
+**Evidence** (`node tools/look-v2-p4-shots.js`, offline, 3D, before = `?look=v1`, left before / right v2, 915×412)
+
+![Center L1-L5](concept/visual-language/phase4/p915-center-L1-5.jpg)
+Village center, levels 1 to 5 (top to bottom).
+
+![Sawmill L3](concept/visual-language/phase4/p915-mill3.jpg)
+![Sawmill L4](concept/visual-language/phase4/p915-mill4.jpg)
+![Sawmill L5](concept/visual-language/phase4/p915-mill5.jpg)
+![Mine L5](concept/visual-language/phase4/p915-mine5.jpg)
+![Inn L4](concept/visual-language/phase4/p915-inn4.jpg)
+![Inn L5](concept/visual-language/phase4/p915-inn5.jpg)
+![Storehouse L5](concept/visual-language/phase4/p915-stash5.jpg)
+![Forge L5](concept/visual-language/phase4/p915-forge5.jpg)
+![Market L4](concept/visual-language/phase4/p915-market4.jpg)
+
+![Tree mid-gather](concept/visual-language/phase4/p915-gather.jpg)
+![Rock mid-gather](concept/visual-language/phase4/p915-rock.jpg)
+![Broken tree](concept/visual-language/phase4/p915-broken.jpg)
+Meadow: a tree and a rock at half hp, then the tree broken (fall, stump).
+
+- **Console errors:** 0 before, 0 v2. No piece failed to load.
+- **Load (village L1-L5 + meadow):** before 2,787 KB of old KayKit village models; v2 806 KB old (houses, walls, windmill: not converted) + 993 KB v2 pieces = 1,799 KB. Each v2 piece 32-64 ms to load and decode (SwiftShader), lazily, the old look meanwhile.
+- **Arena:** 2,227 of 376,980 pixels differ, all on the hero's body (a slightly different animation frame). Every other pixel is identical, and v2 has no outline and no rim in the arena. Not proven yet with a main-vs-main control.
+- **120 FPS:** each piece is one draw call like the KayKit model it replaces, with fewer triangles than most (KayKit buildings are 80-275 KB). Not measured on the phone.
+
+**Still open:** the 844×390 and night runs (in progress when this was written); the village's houses, walls and windmill (VGROW) are still KayKit; the meadow decor trees and rocks (not resource nodes) are still KayKit.
