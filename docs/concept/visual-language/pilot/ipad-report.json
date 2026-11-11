@@ -1,0 +1,85 @@
+{
+ "seed": 5,
+ "viewport": {
+  "width": 1180,
+  "height": 820
+ },
+ "arena": {
+  "pixelsDiffer": 0,
+  "of": 967600
+ },
+ "before": {
+  "v2": false,
+  "errors": [],
+  "orcReady": null,
+  "perf": {
+   "key": "grunt",
+   "model": "minion",
+   "tris": 5288,
+   "geometries": 399,
+   "textures": 154,
+   "hud": {
+    "ids": [
+     "hp",
+     "xp",
+     "skills"
+    ],
+    "frames": 40,
+    "distinctPositions": 1
+   },
+   "wallMs": {
+    "idleFrame": 14,
+    "first20SpawnFrame": 15,
+    "next5": [
+     9,
+     15,
+     23,
+     19,
+     15
+    ],
+    "second20SpawnFrame": 21
+   },
+   "heapMB": [
+    31.1,
+    30.8
+   ]
+  }
+ },
+ "v2": {
+  "v2": true,
+  "errors": [],
+  "orcReady": true,
+  "perf": {
+   "key": "w_grunt",
+   "model": "mon_orcSkull",
+   "tris": 2399,
+   "geometries": 408,
+   "textures": 148,
+   "hud": {
+    "ids": [
+     "hp",
+     "xp",
+     "skills"
+    ],
+    "frames": 40,
+    "distinctPositions": 1
+   },
+   "wallMs": {
+    "idleFrame": 17,
+    "first20SpawnFrame": 24,
+    "next5": [
+     12,
+     11,
+     25,
+     19,
+     9
+    ],
+    "second20SpawnFrame": 13
+   },
+   "heapMB": [
+    31.4,
+    32.2
+   ]
+  }
+ }
+}
