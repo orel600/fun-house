@@ -21,8 +21,9 @@ const MBFIT={
   const st=document.createElement('style');st.id='mbfitCss';
   st.textContent=
     'body.mbfit .mbkits{padding:5px 5px 7px}'+
-    'body.mbfit .mbkit small{padding:1px 6px;text-wrap:balance}'+
-    'body.mbfit .mbkit small.mbfit-wrap{border-radius:9px}'+
+    'body.mbfit:not(.tidal-ui) .mbkit small{padding:1px 6px;text-wrap:balance}'+   // the role pill is NOVA's design under ?tidal=1 (min-height pills): ours applies only without it
+    
+    'body.mbfit:not(.tidal-ui) .mbkit small.mbfit-wrap{border-radius:9px}'+
     'body.mbfit .mbfit-cue{position:sticky;bottom:0;flex:none;display:block;height:0;pointer-events:none}'+'body.mbfit .mbfit-cue>b{position:absolute;left:0;right:0;bottom:0;height:'+F.cue.h+'px;opacity:0;transition:opacity .15s;'+
       'background:linear-gradient(to bottom,transparent 45%,color-mix(in srgb,var(--slate) 96%,transparent) 92%);text-align:center;color:var(--brass-hi);font:900 16px/'+F.cue.h+'px var(--body);text-shadow:0 1px 0 var(--wood);overflow:hidden}'+
     'body.mbfit .mbfit-cue.on>b{opacity:1}'+
@@ -33,7 +34,8 @@ const MBFIT={
   const cueOf=b=>{let c=b.querySelector(':scope>.mbfit-cue');if(!c){c=document.createElement('i');c.className='mbfit-cue';c.setAttribute('aria-hidden','true');c.innerHTML='<b>▾</b>';b.appendChild(c)}c.style.marginTop=-(parseFloat(getComputedStyle(b).rowGap)||0)+'px';return c};   // zero height; the negative margin cancels the box's own flex gap, so the cue never adds scroll height
   const update=b=>{if(!b||b.offsetParent===null)return;const c=cueOf(b),more=b.dataset.mode!=='end'&&b.scrollHeight-b.clientHeight-b.scrollTop>F.cue.min;   // end screen: the pinned buttons are the last thing, so no cue
   if(more&&!c.classList.contains('on'))F.stat.cueShown++;c.classList.toggle('on',more)};
-  const pills=b=>{for(const s of b.querySelectorAll('.mbkit small')){const lh=parseFloat(getComputedStyle(s).lineHeight)||14;s.classList.toggle('mbfit-wrap',s.getBoundingClientRect().height>lh*1.5)}};
+  const pills=b=>{if(document.body.classList.contains('tidal-ui'))return;for(const s of b.querySelectorAll('.mbkit small')){   // under tidal the pill has a min-height, so height can't tell wrapping; NOVA's pill stays as designed
+    const lh=parseFloat(getComputedStyle(s).lineHeight)||14;s.classList.toggle('mbfit-wrap',s.getBoundingClientRect().height>lh*1.5)}};
   F.refresh=function(){F.stat.refresh++;for(const id of F.boxes){const b=document.getElementById(id);if(!b)continue;if(id==='mbWin')pills(b);update(b)}};
   for(const id of F.boxes){const b=document.getElementById(id);if(b)b.addEventListener('scroll',()=>update(b),{passive:true})}
   addEventListener('resize',()=>requestAnimationFrame(F.refresh));
