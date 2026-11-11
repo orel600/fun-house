@@ -28,6 +28,33 @@ const CFG={
   phone:{width:844,height:390}       // טלפון לרוחב: ככה משחקים (ניר, 30.10.2026)
 };
 
+/* הדוח תמיד מודפס עד הסוף (11.11.2026: ב-GitHub process.exit חתך את הפלט באמצע שורה, ושורת ה-✗ אבדה).
+   results ברמת הקובץ, כדי שגם קריסה תדפיס את מה שכבר נבדק. report() מדפיס, מחכה שהפלט נכתב, ורק אז יוצא.
+   כל קריאה לדף זוכרת מאיזו שורה ב-check.js היא באה, כדי שקריסה או תקיעה יגידו איפה זה קרה. */
+const results=[];
+const check=(ok,txt)=>results.push((ok?'✓ ':'✗ ')+txt);
+const WHERE={line:'start',t0:Date.now()};
+const ME=path.basename(__filename),meRe=new RegExp(ME.replace(/\./g,'\\.')+':(\\d+)');
+const here=()=>{const m=meRe.exec(new Error().stack.split('\n').slice(3).join('\n'));return m?'tools/'+ME+':'+m[1]:WHERE.line};
+let reported=false;
+function report(head,crash){
+  if(reported)return;reported=true;
+  const bad=results.filter(r=>r.startsWith('✗'));
+  const out=[head,...results];
+  if(crash)out.push('✗ הבדיקה נעצרה: '+crash+' (שורה אחרונה שרצה: '+WHERE.line+', אחרי '+Math.round((Date.now()-WHERE.t0)/1000)+' שניות'+(results.length?', בדיקה אחרונה: '+results[results.length-1].slice(0,80):'')+')');
+  const fails=bad.length+(crash?1:0);
+  out.push('','סיכום: '+results.length+' בדיקות, '+fails+' נכשלו'+(fails?':':' ✓'),...bad.map(r=>r.split('\n')[0].slice(0,400)),...(crash?['✗ קריסה: '+crash.split(' | ')[0]]:[]));
+  const txt=out.join('\n')+'\n',code=fails?1:0;
+  try{fs.mkdirSync(path.join(__dirname,'shots'),{recursive:true});fs.writeFileSync(path.join(__dirname,'shots','report.txt'),txt)}catch(e){}   // עותק בקובץ, מצורף לריצה עם הצילומים
+  process.exitCode=code;
+  process.stdout.write(txt,()=>process.stderr.write('',()=>process.exit(code)));   // יוצאים רק אחרי שהכל נכתב
+}
+const crashed=(why,e)=>{const msg=why+': '+((e&&(e.stack||e.message))||e||'').toString().split('\n').slice(0,6).join(' | ');console.error(msg);report('ריצה: נעצרה באמצע',msg)};
+process.on('uncaughtException',e=>crashed('שגיאה לא צפויה',e));
+process.on('unhandledRejection',e=>crashed('שגיאה לא צפויה (promise)',e));
+// שעון עצירה: לפני ש-GitHub חותך את הריצה (40 דקות), מדפיסים מה נבדק ואיפה נתקענו. --limit בדקות
+setTimeout(()=>crashed('תקיעה','עברו '+(+(opt('limit')||36))+' דקות'),(+(opt('limit')||36))*60e3).unref();
+
 /* הבוט רץ בתוך הדף, עם גישה למשתנים הגלובליים של המשחק. הזיכרון שלו ב-window.__bot */
 function botStep({god,en}){
   const m=window.__bot||(window.__bot={log:{levels:0,swaps:0,taken:0,coins:0},faced:0,swapAt:0,atGate:0});
@@ -561,6 +588,7 @@ function worldBot(m,L,god){
   // תלת-ממד בלי כרטיס גרפי: WebGL רץ על המעבד (SwiftShader). איטי, אבל מספיק כדי לבדוק שהכל עולה ומצויר
   const browser=await chromium.launch({...(process.env.PW_CHANNEL?{channel:process.env.PW_CHANNEL}:{}),args:GPU.gpuOn()?GPU.GPU_ARGS:CFG.gfx==='3d'?['--use-angle=swiftshader','--enable-unsafe-swiftshader']:[]});   // רק בתלת-ממד: הדגל הזה מאט גם את הציור הרגיל  // ב-GitHub: ה-Chrome שכבר מותקן שם, בלי להוריד דפדפן
   const page=await browser.newPage({viewport:CFG.phone,deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  page.on('crash',()=>crashed('הדף קרס (page crash)',''));
   const errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
@@ -582,8 +610,10 @@ function worldBot(m,L,god){
       while((n=w.nextNode())){const s=n.nodeValue;if(s.indexOf('.')<0)continue;const el=n.parentElement;
         if(!el||el.closest('[hidden],script,style')||!el.getClientRects().length)continue;
         test(s,el.closest('[id]')?el.closest('[id]').id:el.tagName)}}});
-  {const rf=page.clock.runFor.bind(page.clock);let n=0;   // כל כמה צעדים של הבוט סורקים את המסך
-    page.clock.runFor=async ms=>{const r=await rf(ms);if(++n%6===0)await page.evaluate(()=>window.__rkScan&&__rkScan()).catch(()=>{});return r}}
+  {const rf=page.clock.runFor.bind(page.clock),ev0=page.evaluate.bind(page);let n=0;   // כל כמה צעדים של הבוט סורקים את המסך
+    page.clock.runFor=async ms=>{const r=await rf(ms);if(++n%6===0)await ev0(()=>window.__rkScan&&__rkScan()).catch(()=>{});return r}}
+  {const ev=page.evaluate.bind(page),rf=page.clock.runFor.bind(page.clock);   // זוכרים מאיזו שורה באה הקריאה האחרונה לדף
+    page.evaluate=(...a)=>{WHERE.line=here();return ev(...a)};page.clock.runFor=ms=>{WHERE.line=here();return rf(ms)}}
   await page.addInitScript(g=>{try{localStorage.setItem('zm-gfx',g);localStorage.setItem('zm-lang','he')}catch(e){}},CFG.gfx);   // zm-lang 'he': an old save, must migrate to en (English only, 7.11)
   // 5.11.2026: models3d.js כבר כ-16MB, ובמכונות של GitHub הטעינה עברה את 30 השניות של ברירת המחדל. הבדיקה לא בודקת זמן טעינה
   await page.goto('file://'+path.resolve(__dirname,'..','index.html'),{timeout:120000});
@@ -593,8 +623,6 @@ function worldBot(m,L,god){
   await page.evaluate(()=>{ITEMROLL.skip=true});   // הבוט לובש חפצים בלי לצבור נקודות. הבדיקה של itemroll.js מדליקה את הדרישות לבד
   let g3={};for(let i=0;i<200;i++){g3=await page.evaluate(()=>({ready:R3D.ready,failed:R3D.failed,on:R3D.on}));if(g3.ready||g3.failed||CFG.gfx==='2d')break;await page.waitForTimeout(50);await page.clock.runFor(50)}
 
-  const results=[];
-  const check=(ok,txt)=>results.push((ok?'✓ ':'✗ ')+txt);
   // מודלים לפי צורך (js/m3d.js): בפתיחה נטענת רק הליבה, ומבחוץ רק מה שהשמירה צריכה עכשיו (דמות אישית, חיה, חפץ לבוש)
   if(g3.ready){const b=await page.evaluate(()=>{const on=Object.keys(M3D_LAZY).filter(k=>MODELS3D[k]),want=new Set(M3D.bootKs||[]);
       return {n:Object.keys(M3D_LAZY).length,on,extra:on.filter(k=>!want.has(k)),core:Object.keys(MODELS3D).length-on.length,mb:(Object.values(M3D_LAZY).reduce((a,b)=>a+b,0)/1e6).toFixed(1)}});
@@ -2852,14 +2880,18 @@ function worldBot(m,L,god){
       if(r.closed){o.open.push(r.k);continue}
       o.breaks.push(...r.breaks.map(s=>r.k+': '+s));o.lines.push(...r.lines.map(s=>r.k+': '+s));
       if((r.k.startsWith('b:')||r.k==='talk')&&!r.dim)o.dim.push(r.k);
-      // הדהייה: למעלה פעילה, ובסוף נעלמת. אחרי פריים: ציר הגלילה מתעדכן רק בציור הבא (בלי זה, חלון שרק נפתח נמדד בלי דהייה)
+      // הדהייה: למעלה פעילה, ובסוף נעלמת. ציר הגלילה מתעדכן רק בציור הבא, והתוכן עוד יכול לגדול (תמונות, פריסה), ולכן מחכים
+      // עד שהמצב מתייצב: עד 40 פעמים (בזמן אמיתי) גוללים שוב לקצה, מריצים פריים וקוראים. נכשל רק אם המצב הנכון לא הגיע בכלל (11.11: #679 נכשל פעם אחת ב-seed 123)
+      const fadeAt=async end=>{let v=[];for(let k=0;k<40;k++){
+          v=await page.evaluate(([i,sc,end])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');
+            return sc.map(x=>{const e=x===':root'?root:all[x];e.scrollTop=end?e.scrollHeight:0;const cs=getComputedStyle(e);
+              return [(e.id||e.className||e.tagName).toString().slice(0,24),end?/\+ 40px/.test(cs.maskSize):cs.maskImage!=='none'&&/^100% 100%/.test(cs.maskSize)]})},[i,r.sc,end]);
+          if(v.every(x=>x[1]))break;
+          await page.clock.runFor(16);await page.waitForTimeout(25)}
+        return v};
+      const top=await fadeAt(false);
+      const end=(await fadeAt(true)).map(x=>x[1]);
       await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');for(const x of sc)(x===':root'?root:all[x]).scrollTop=0},[i,r.sc]);
-      await page.clock.runFor(50);
-      const top=await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');
-        return sc.map(x=>{const e=x===':root'?root:all[x];e.scrollTop=0;const cs=getComputedStyle(e);return [(e.id||e.className||e.tagName).toString().slice(0,24),cs.maskImage!=='none'&&/^100% 100%/.test(cs.maskSize)]})},[i,r.sc]);
-      await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');for(const x of sc){const e=x===':root'?root:all[x];e.scrollTop=e.scrollHeight}},[i,r.sc]);
-      await page.clock.runFor(50);
-      const end=await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');return sc.map(x=>{const e=x===':root'?root:all[x];const v=getComputedStyle(e).maskSize;e.scrollTop=0;return /\+ 40px/.test(v)})},[i,r.sc]);
       top.forEach(([n,v],j)=>{if(!v)o.fade.push(r.k+' '+n+': no fade');else if(!end[j])o.fade.push(r.k+' '+n+': fade at the end')});
       if(CFG.shots&&cw===915)await shot('clear-'+r.k.replace(':','-')+'-'+cw)}
     await page.evaluate(()=>{__clr.close();SAVE.village=JSON.parse(__clr.lv0);S.vil.ui='';villageHud();delete window.__clr});
@@ -5226,8 +5258,8 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
      mbItDie(victim,blue);r.bounty=Math.abs((blue.gold||0)-g0-MBITEM.gold.kill)<0.01&&!MBITEM.comeback;
      mbHeroes(1).forEach((x,i)=>x.gold=bk[i]);
      MB.t=30;r.resp=mbResp({lvl:1})===MOBA.respawn.base;r.late=mbResp({lvl:6})>mbResp({lvl:1})*4;MB.t=t0;
-     const hx=blue.x,hy=blue.y,ht=blue.hurtT;blue.x=blue.home.x;blue.y=blue.home.y;blue.hurtT=-99;const fast=mbSpeed(blue);blue.hurtT=MB.t;const hurt=mbSpeed(blue);blue.hurtT=-99;
-     blue.x=0;blue.y=0;const out=mbSpeed(blue);r.haste=Math.abs(fast/out-MOBA.haste.k)<0.01&&Math.abs(hurt-out)<0.01;blue.x=hx;blue.y=hy;blue.hurtT=ht;
+     const hx=blue.x,hy=blue.y,ht=blue.hurtT,hd=blue.dead;blue.dead=false;blue.x=blue.home.x;blue.y=blue.home.y;blue.hurtT=-99;const fast=mbSpeed(blue);blue.hurtT=MB.t;const hurt=mbSpeed(blue);blue.hurtT=-99;   // חי בזמן המדידה: mbHaste רק לחי, ובמשחק הבוטים הכחול יכול להיות מת כאן (seed 2026, 11.11)
+     blue.x=0;blue.y=0;const out=mbSpeed(blue);r.haste=Math.abs(fast/out-MOBA.haste.k)<0.01&&Math.abs(hurt-out)<0.01;r.hasteN=[fast,hurt,out].map(v=>Math.round(v*10)/10).join('/')+(r.haste?'':' st:'+Object.entries(blue.st).filter(([k,v])=>typeof v==='number'&&v).map(([k,v])=>k+'='+Math.round(v*100)/100).join(',')+' home:'+Math.round(blue.home.x)+','+Math.round(blue.home.y)+' team:'+blue.team+' t:'+Math.round(MB.t)+' r:'+MOBA.haste.r+' base:'+MOBA.base.x);blue.x=hx;blue.y=hy;blue.hurtT=ht;blue.dead=hd;
      const x0=blue.xp,l0=blue.lvl,mn=mbUnit({k:'minion',team:1,x:blue.x+MOBA.xp.share-40,y:blue.y,hp:1,max:1});MB.u.push(mn);const bd=blue.dead;blue.lvl=1;blue.dead=false;mbDie(mn,null);r.xp=blue.xp>x0;blue.lvl=l0;
      if(typeof mbRecallStart==='function'){blue.x=0;blue.y=0;blue.hurtT=-99;Object.assign(blue.st,{stun:0,dash:null});const on0=mbHaste(blue);   // חזרה לבסיס (moba-recall.js) + ריצה מהבסיס: מי שחזר רץ מהר כשהוא יוצא
        r.recall=!on0&&mbRecallStart(blue)&&(mbRecallTick(MB,MBRECALL.t+0.1),mbHaste(blue));blue.recall=null;blue.x=hx;blue.y=hy;blue.hurtT=ht}else r.recall=true;
@@ -5776,7 +5808,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     {const r=mb.fx||{};check(r.tank&&r.warrior&&r.shield&&r.cap&&r.stop&&r.ult,'משחקי השאול: טנק ולוחם מזנקים אל מטרה קצת רחוקה: '+(r.tank?'נפח ✓':'נפח ✗')+(r.warrior?' לוחם ✓':' לוחם ✗')+(r.shield?', מגן סופג':', המגן לא סופג')+' · פיצוצי: '+(r.cap?'חלקיקים מוגבלים':'חלקיקים בלי גבול')+(r.stop?', עצירת פריים בקריטי':', בלי עצירת פריים')+(r.ult?', רגע סקיל-על':', בלי רגע סקיל-על'))}
     {const d=mb.diff||{},r=mb.flow||{};
      check(d.n===3&&d.one&&d.saved&&d.back&&d.game&&r.diff,'משחקי השאול: קושי: '+(d.n===3?'3 כפתורים':(d.n||0)+' כפתורים')+(d.one?', אחד מסומן':', הסימון שגוי')+(d.saved&&d.back?', נשמר':', לא נשמר')+(d.game?', המשחק לפי הבחירה':', המשחק לא לפי הבחירה')+(r.diff?', משנה רק את המוח של האויבים':', לא משנה את הבוטים'));
-     check(r.shield&&r.bounty&&r.resp&&r.late&&r.haste&&r.xp&&r.recall,'משחקי השאול: זרימה: '+[r.shield?'מגן מגדל בהתחלה ✓':'מגן מגדל ✗',r.bounty?'בלי זהב קאמבק ✓':'זהב קאמבק עוד קיים ✗',r.resp&&r.late?'חזרה מהירה בהתחלה ✓':'זמן חזרה ✗',r.haste?'ריצה מהבסיס ✓':'ריצה מהבסיס ✗',r.recall?'גם אחרי חזרה לבסיס ✓':'אחרי חזרה לבסיס ✗',r.xp?'XP ברדיוס רחב ✓':'XP ✗'].join(', '))}
+     check(r.shield&&r.bounty&&r.resp&&r.late&&r.haste&&r.xp&&r.recall,'משחקי השאול: זרימה: '+[r.shield?'מגן מגדל בהתחלה ✓':'מגן מגדל ✗',r.bounty?'בלי זהב קאמבק ✓':'זהב קאמבק עוד קיים ✗',r.resp&&r.late?'חזרה מהירה בהתחלה ✓':'זמן חזרה ✗',r.haste?'ריצה מהבסיס ✓':'ריצה מהבסיס ✗ (בבסיס/נפגע/בחוץ '+r.hasteN+')',r.recall?'גם אחרי חזרה לבסיס ✓':'אחרי חזרה לבסיס ✗',r.xp?'XP ברדיוס רחב ✓':'XP ✗'].join(', '))}
     {const g=mb.gb||{};check(g.closed&&g.push&&g.tie&&g.enter&&g.busy&&g.lock&&g.win&&g.once&&g.lose,'משחקי השאול: חדר ההימור: '+(g.err?'שגיאה '+g.err+' · ':'')+[g.closed?'סגור לפני הזמן ✓':'פתוח לפני הזמן ✗',g.push?'אחר נדחף ✓':'אחר נכנס ✗',g.tie?'בשוויון אף אחד ✓':'שוויון ✗',
       g.enter?'הזכאי נכנס ✓':'הזכאי לא נכנס ✗',g.busy?'אחד בכל פעם ✓':'שניים יחד ✗',g.lock?'מקובע בהטלה ✓':'זז בהטלה ✗',g.win?'ניצחון = העשיר ביותר ✓':'ניצחון ✗',g.once?'פעם לקבוצה ✓':'יותר מפעם ✗',g.lose?'הפסד בלי פרס לאויב ✓':'הפסד ✗'].join(', '))}
     if(mb.wx&&mb.wx.ultY!=null)check(mb.wx.ultOk,'underworld: ult name above Recall: name '+mb.wx.ultY+'px, button '+mb.wx.recallTop+'px'+(mb.wx.ultOk?' ✓':' (on the button!)'));
@@ -5802,7 +5834,6 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(!fxOver.length,'אפקטים בממשק לא יושבים על חלון פתוח או על כרטיס עם טקסט (עלית רמה ועוד, FXUI.cards) בשום צילום'+(fxOver.length?': '+fxOver.join(' · '):''));
   check(errors.length===0,errors.length?'שגיאות בקונסול:\n    '+[...new Set(errors)].join('\n    '):'אין שגיאות בקונסול');
 
-  console.log('ריצה: seed '+CFG.seed+', '+t(L.t)+' זמן משחק'+(CFG.god?', עם חסינות':'')+(CFG.lang==='en'?', באנגלית':'')+(CFG.gfx==='2d'?', בדו-ממד':', בתלת-ממד')+(CFG.shots?', צילומים ב-'+CFG.shots:''));
-  console.log(results.join('\n'));
-  process.exit(results.some(r=>r.startsWith('✗'))?1:0);
-})().catch(e=>{console.error(e);process.exit(1)});
+  const head=('ריצה: seed '+CFG.seed+', '+t(L.t)+' זמן משחק'+(CFG.god?', עם חסינות':'')+(CFG.lang==='en'?', באנגלית':'')+(CFG.gfx==='2d'?', בדו-ממד':', בתלת-ממד')+(CFG.shots?', צילומים ב-'+CFG.shots:''));
+  report(head);
+})().catch(e=>crashed('שגיאה',e));
