@@ -381,9 +381,25 @@ h1{font-size:46px} h2{font-size:30px}
 .goalpin[aria-pressed="true"]{color:var(--gold,#F4C74F);border-color:var(--gold,#F4C74F)}
 h3 .goalpin{margin-inline-start:8px;vertical-align:middle}
 h3 .goalpin span{display:none}
-.vpst{display:flex;align-items:center;gap:5px;margin:4px 0}   /* שלבי הפרויקט (vproj.js) */
-.vpst i{width:22px;height:8px;border-radius:4px;background:rgba(255,255,255,.15)}
-.vpst i.on{background:var(--gold,#F4C74F)}
+/* שלבי הפרויקט על קו אחד (vpPath ב-vproj.js, קונספט #672): עיגולים על קו עבה שמתמלא בזהב עד השלב הנוכחי */
+.vppath{list-style:none;margin:10px 0 4px;padding:0;display:flex;justify-content:space-between;position:relative;
+  --vpo:58px;--vpin:calc(100%/6)}
+.vppath::before,.vppath::after{content:'';position:absolute;top:calc(var(--vpo)/2 - 3px);height:6px;border-radius:3px;inset-inline-start:var(--vpin)}
+.vppath::before{inset-inline-end:var(--vpin);background:rgba(255,255,255,.14)}
+.vppath::after{width:calc((100% - 2*var(--vpin)) * var(--vpf));background:var(--gold,#F4C74F)}
+.vpn{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;position:relative;z-index:1}
+.vpo{width:var(--vpo);height:var(--vpo);border-radius:50%;display:grid;place-items:center;font-size:28px;line-height:1;
+  background:#2A2F45;border:4px solid rgba(255,255,255,.18);box-sizing:border-box}
+.vpn.done .vpo{background:#3A3220;border-color:var(--gold,#F4C74F)}
+.vpn.cur .vpo{background:#3A3220;border-color:var(--gold,#F4C74F);box-shadow:0 0 0 3px rgba(244,199,79,.25),0 0 16px rgba(244,199,79,.6)}
+.vpn.lock .vpo{filter:grayscale(1);opacity:.55}
+.vpn b{font-size:14px;line-height:1.15}
+.vpn.lock b{opacity:.7}
+.vpn small{font-size:12px;opacity:.8}
+.vpn small.miss,.vpc .miss{color:#FF7A6B;opacity:1}
+.vpc{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 6px;font-size:12px;line-height:1.2}
+.vpc>span{display:inline-flex;align-items:center;gap:1px;white-space:nowrap}
+.vpc .ri{width:15px;height:15px}
 /* הלוח בפונדק עם 4 כרטיסים (ההזמנה מהכפר, services.js): צפוף יותר, כדי שכל הכפתורים ייראו בטלפון לרוחב */
 .innboard:has(>.qc:nth-child(4)){gap:5px}
 .innboard:has(>.qc:nth-child(4))>.qc{padding:5px 7px;gap:2px}
