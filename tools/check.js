@@ -3446,6 +3446,38 @@ function worldBot(m,L,god){
   check(!vpr.err&&vpr.away&&vpr.tab&&vpr.closed&&vpr.goal&&vpr.cost&&vpr.done&&vpr.nodes&&vpr.once&&vpr.lv&&vpr.blank,
     'סדנת החוצבת: '+(vpr.err||((vpr.away?'נסגר עד שהחוצבת בכפר':'פתוח בלי החוצבת!')+(vpr.tab?', לשונית בשיחה':', אין לשונית')+(vpr.closed?', המחצבה העמוקה סגורה':', פתוחה מההתחלה!')+(vpr.goal?', יעד 📌':', בלי יעד')+
     (vpr.cost?', חסום בלי אבן':', נבנה בלי אבן!')+(vpr.done?', 3 שלבים והחלפה טובה יותר':', לא הושלם')+(vpr.nodes?', נפתחה עם מקורות מהירים וחגיגה':', לא נפתחה')+(vpr.once?', פעם אחת':', כפול!')+(vpr.lv?', או ברמה 10':', לא ברמה 10')+(vpr.blank?', בשמירה':', לא בשמירה'))));
+  // Road crew (vproj.js, docs/concept-village-region.md): sawmill 3 opens a village project; when done, the lake road opens even without the earth lantern.
+  // Never a new lock: an old save with the earth lantern keeps the road. The water lantern still needs the story quests. The moment in the world plays once.
+  const rcr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{const id='roadCrew',pl='lakeRoad',V=VPROJ,p=WORLD.paths.lake,sto=SAVE.story||(SAVE.story={});
+      SAVE.vproj={st:{},seen:{deepQuarry:1}};delete sto.earth;delete sto.water;SAVE.village.mill=2;
+      o.shut=!wPathOpen(p)&&vpBlock(id)==='away'&&!!vpBldTab('mill')&&vpBldTab('mill').label.includes('🔒');
+      SAVE.village.mill=3;const tb=vpBldTab('mill');o.tab=!!tb&&tb.html().includes('data-act="vp"')&&bwBuilding('mill').includes('data-tab="proj"');
+      goalS().pin=null;goalPin({p:id});SAVE.bag.wood=0;const sh=goalShow();o.goal=!!sh&&sh.g.p===id&&sh.r==='wood';goalS().pin=null;
+      const w0=(()=>{const q=vProd('mill');q.t=Date.now()-3600e3;q.have={};vSettle('mill');return q.have.wood})();
+      for(const c of V.list[id].stages){for(const r in c)SAVE.bag[r]=(SAVE.bag[r]||0)+c[r];vpBuild(id)}
+      o.done=vpDone(id)&&wPathOpen(p)&&!storyOpen('earth')&&!storyOpen('water');
+      const w1=(()=>{const q=vProd('mill');q.t=Date.now()-3600e3;q.have={};vSettle('mill');return q.have.wood})();o.wood=w1>w0*1.05;
+      o.sign=vpForPath('lake')===id;
+      enterWorld('home','meadow');enemies=[];S.mode='play';const o0=V.stat.open;
+      const PL=V.places[pl];P.x=0;P.y=0;vpRoad(pl,PL);o.far=!SAVE.vproj.seen[pl];
+      P.x=p.x;P.y=p.y+200;vpRoad(pl,PL);o.moment=SAVE.vproj.seen[pl]===1&&V.stat.open===o0+1;
+      vpRoad(pl,PL);o.once=V.stat.open===o0+1;
+      o.why=JSON.stringify({reg:S.wd&&S.wd.reg,room:!!S.room,open:vpOpen(pl),d:Math.round(Math.hypot(P.x-p.x,P.y-p.y)),seen:SAVE.vproj.seen,n:V.stat.open-o0});
+      VPW.t=0;vpUpdate(1);o.upd=V.stat.open===o0+1;   // the world loop does not replay it (deepQuarry is marked seen above: at level 10 it would count too)
+      // the water lantern still comes only from the story: the road does not light it, and its quest still needs the quest before it
+      o.water=!storyOpen('water')&&!!QBY.s2Warden&&!!(QBY.s2Warden.req||{}).quest;
+      SAVE.vproj={st:{},seen:{}};sto.earth=true;o.old=wPathOpen(p);
+      // already open by the story: finishing the project does not replay the moment
+      for(const c of V.list[id].stages){for(const r in c)SAVE.bag[r]=(SAVE.bag[r]||0)+c[r];vpBuild(id)}o.quiet=SAVE.vproj.seen[pl]===1;
+      o.blank=!!saveBlank().vproj;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];SAVE=JSON.parse(bak);goalS().pin=null;enterVillage();return o});
+  check(!rcr.err&&rcr.shut&&rcr.tab&&rcr.goal&&rcr.sign&&rcr.done&&rcr.wood&&rcr.far&&rcr.moment&&rcr.once&&rcr.upd&&rcr.water&&rcr.old&&rcr.quiet&&rcr.blank,
+    'Road crew: '+(rcr.err||[rcr.shut?'locked below sawmill 3, road shut':'open too early!',rcr.tab?'tab in the sawmill':'no sawmill tab',rcr.goal?'📌 goal':'no goal',
+      rcr.done?'3 stages open the lake road without the earth lantern':'road still shut!',rcr.wood?'sawmill +wood':'no wood bonus',
+      rcr.far&&rcr.moment?'moment near the road':'no moment '+rcr.why,rcr.once&&rcr.upd?'once':'twice! '+rcr.why,rcr.water?'water lantern still needs the story':'story skipped!',
+      rcr.old?'old save keeps the road':'old save locked out!',rcr.quiet?'quiet when already open':'replays the moment',rcr.blank?'saved':'not saved'].join(', ')));
   // לולאת הכפר, שלב 3 (services.js): הנפח נותן כוח לבחירה, הזמנה רביעית בלוח הפונדק עם פרס ×1.25 שנוטה ליעד, והשוק משלם יותר על המשפחה של היום
   const svr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
     try{const V=SVC;SAVE.svc={n:0,day:'',fam:{}};
