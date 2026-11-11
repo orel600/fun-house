@@ -253,7 +253,7 @@ function hud(){
   drawRunBar();skillsHud();divineHud();ultHud();spellHud();shopHud();arenaQuiet();swapCheck();
   const bb=$('bossbar');
   const BS=S.boss||giantBar();   // בעולם: הענק של הפנס (giant.js)
-  if(BS){bb.hidden=false;$('bossnm').textContent=BS.name+' · '+BS.title;
+  if(BS){bb.hidden=false;$('bossnm').textContent=BS.name+' · '+BS.title;$('bossnm').style.color=S.boss?'':NAMECOL.boss;   // world boss name in red (labels.js, Nir 11.11). The arena (S.boss) keeps its own color
     const wk=$('bossweak');if(wk.dataset.k!==LANG+BS.weak){wk.dataset.k=LANG+BS.weak;wk.innerHTML=BS.weak?dtSvg(BS.weak)+T('weakTo',T('dt.'+BS.weak)):'';wk.style.color=BS.weak?dtCol(BS.weak):''}
     $('bossfill').style.width=(100*Math.max(0,BS.hp)/BS.max)+'%';
     $('ragetrack').hidden=BS.rage<0.02;$('ragefill').style.width=(100*BS.rage)+'%'}

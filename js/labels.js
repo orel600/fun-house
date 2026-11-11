@@ -18,6 +18,17 @@ const LABELS={
   fight:{max:1,a:0.45,npcA:0.4,bubA:0},   // bubA: בועות הדיבור של דמויות המחנה (wlife.js). 0 = לא מצוירות בקרב
   stat:{full:0,icon:0,nudged:0,hidden:0,hud:0,bubble:0,fight:0}   // לבדיקה (tools/check.js)
 };
+/* Name color by rank, world and village only (Nir, 11.11.2026: "no need to write that it's elite. A normal monster's name in white, elite purple, boss red").
+   This is Nir's explicit exception to "color = damage type" (CLAUDE.md): it applies to the NAME TEXT only. Rings, weapons and cards stay damage-type colored.
+   The rank word ("Armored", "Pack Leader") is not written any more: an elite shows its icon and a purple name. The arena (Orel's) does not use this */
+const NAMECOL={
+  normal:'#FFFFFF',   // a regular monster: white
+  elite:'#C77DFF',    // elite, champion, pack leader, affix, wanted thief: purple
+  boss:'#FF4D4D'      // world/region boss (giant, warden), daily hunt, nemesis, rare: red
+};
+// a monster's rank: 'boss', 'elite' or 'normal'
+const nameRank=e=>!e?'normal':(e.isBoss||e.wboss||e.warden||e.hunt||e.nem||e.rare)?'boss':(e.elite||e.champ||e.leader||e.affix||e.wanted||e.scent)?'elite':'normal';
+const nameCol=e=>NAMECOL[nameRank(e)];
 let LBQ=null,LBHUD=null,LBHUDT=0;addEventListener('resize',()=>{LBHUD=null});
 function lblBegin(){LBQ=[]}
 const lblFight=()=>!!S&&!!S.wd&&typeof msgFight==='function'&&msgFight();
