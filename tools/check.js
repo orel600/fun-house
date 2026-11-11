@@ -3476,6 +3476,18 @@ function worldBot(m,L,god){
     'כלי איסוף: '+(gtr.err||((gtr.t1?'דרגה 1 בקצב של היום והגרזן ביד':'דרגה 1 שונה!')+(gtr.t3?', דרגה 3 חזקה יותר':', בלי חיזוק')+(gtr.slow?', כסף עם פטיש חלש לאט':', כסף חסום או רגיל!')+
     (gtr.hard?', ובפטיש מתאים רגיל':', פטיש מתאים לא עוזר')+(gtr.bForge&&gtr.bGm?', תנאי נפחייה ומומחיות':', תנאים שגויים')+(gtr.start&&gtr.sign?', שעון ושלט בכפר':', השעון לא התחיל')+
     (gtr.done?', השעון נגמר והדרגה עלתה':', הדרגה לא עלתה')+(gtr.tab?', לשונית בנפחייה':', אין לשונית')+(gtr.look?', הכלים בדמות בתלת-ממד':', אין כלים בתלת-ממד')+(gtr.blank?', בשמירה':', לא בשמירה')+(gtr.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
+  // כמה מכות למקור (ghits.js, ניר 11.11: "נעלמים במכה אחת"): גיבור חזק מאוד עדיין צריך לפחות 3 מכות לסלע, גם עם כלי בדרגה 5,
+  // מכות ביחד (סקיל, כמה חצים) נספרות כמכה אחת, החומר הראשי נופל בחלקים, סך האבן כמו ההגרלה, ובזירה בלי שינוי
+  const ghr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{SAVE.gt={axe:5,hammer:5,job:{}};enterWorld('home');enemies=[];S.mode='play';const sh=n=>wKind(n.kind).shape;
+      const rk=S.nd.list.find(n=>!n.dead&&sh(n)==='rock');o.rock=!!rk;rk.hp=rk.max;
+      const p0=GHITS.stat.pay,st0=dropStats().spawned;let hits=0;
+      while(!rk.dead&&hits<20){S.wd.t+=0.5;hits++;for(let i=0;i<4;i++)if(!rk.dead)damage(rk,1e5,'sword',0)}   // 4 מכות ענק באותו רגע = מכה אחת
+      o.hits=hits;o.min=GHITS.min;o.pay=GHITS.stat.pay-p0;o.tot=rk.ghTot;o.spawned=dropStats().spawned-st0;
+      const wd=S.wd,a={node:true,kind:'rock',x:P.x+3000,y:P.y,r:24,hp:55,max:55,mult:{},flash:0};S.wd=null;try{S.nd.list.push(a);damage(a,1e5,'sword',0);o.arena=!!a.dead}finally{S.wd=wd;S.nd.list=S.nd.list.filter(n=>n!==a)}
+    }catch(e){o.err=String(e)}finally{Object.assign(SAVE,JSON.parse(bak))}return o});
+  check(!ghr.err&&ghr.rock&&ghr.hits>=3&&ghr.hits<=5&&ghr.pay>=1&&ghr.arena,'מכות למקור: '+(ghr.err||((ghr.hits>=3?'סלע לגיבור חזק ב-'+ghr.hits+' מכות':'סלע נשבר ב-'+ghr.hits+' מכות!')+
+    (ghr.pay>=1?', אבן נופלת גם במכות ('+ghr.pay+')':', שום דבר לא נופל במכות!')+(ghr.arena?', בזירה בלי שינוי':', הזירה השתנתה!'))));
   // מקורות גדולים בעולם (nodesize.js, ניר 10.11): סלע ומתכת עם גבול גדול יותר, עץ עם אותו גזע, מקורות לא עולים זה על זה, ובזירה כמו קודם
   const nzr=await page.evaluate(()=>{const o={};
     try{enterWorld('home');enemies=[];const L=S.nd.list,sh=n=>wKind(n.kind).shape,K=NODES.kinds;
