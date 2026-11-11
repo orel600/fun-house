@@ -2985,7 +2985,8 @@ function worldBot(m,L,god){
   // Top strip without overlaps (coordinator, CI shots 11.11): in the village a free first tip ("Skill upgrade available...") joins the message lane,
   // so it is not under the round top icons, not on a lane line and not on a building sign. In the world, a lane line ("Everything for Forge!...")
   // steps aside while the new-skill icon rises over the hero and flies to its button, and comes back after. At 915x412 and 844x390
-  {const ov=[];
+  // its own random numbers, so the sequence the later checks depend on (the underworld games) does not move
+  {const ov=[];await page.evaluate(()=>{window.__rndTop=Math.random;let a=777;Math.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}});
     for(const vp of [{width:915,height:412},{width:844,height:390}]){
       await page.setViewportSize(vp);
       await page.evaluate(()=>{welcomeClose();npcTalk(null);enterVillage();npcTalk(null);welcomeClose();{const lp=$('lpCard');if(lp)lp.classList.remove('on')}msgClear();P.x=0;P.y=-200;S.cam.x=0;S.cam.y=-200;
@@ -3009,7 +3010,7 @@ function worldBot(m,L,god){
         if(!o.after||!o.visAfter)o.dbg='rows '+MQ.rows.map(r=>r.txt).join('/')+' small '+MQ.small.length+' win '+msgWinOpen()+' on '+msgOn()+' vis '+$('msgLane').style.visibility;
         SAVE.hero.skSeen=seen;msgClear()}catch(err){o.err=String(err)}for(const x of ovs)x.hidden=false;enterVillage();return o});
       ov.push({vp:vp.width+'×'+vp.height,...r,w})}
-    await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();msgClear()});
+    await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();msgClear();Math.random=window.__rndTop});
     const bad=ov.filter(x=>!x.inLane||!x.vis||x.bad.length||x.w.err||!x.w.icon||!x.w.hidden||x.w.rowsDuring||!x.w.after||!x.w.visAfter);
     check(!bad.length,'Top strip, no overlaps: '+ov.map(x=>x.vp+': village tip '+(x.inLane?'in the message lane':'NOT in the lane')+(x.vis?'':' (not shown)')+(x.bad.length?', overlaps: '+[...new Set(x.bad)].join(', '):', clear of icons, lines and signs')+(x.dbg?' ['+x.dbg+']':'')+
       ' · world '+(x.w.err?'error: '+x.w.err:(x.w.hidden&&!x.w.rowsDuring?'lane steps aside during the new-skill icon':'lane line stays over the new-skill icon')+(x.w.after&&x.w.visAfter?' and comes back':', line lost after ['+x.w.dbg+']'))).join(' | '))}
