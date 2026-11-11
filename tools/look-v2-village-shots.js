@@ -22,7 +22,7 @@ async function session(browser,v2){
   await page.addInitScript(seed=>{let a=seed>>>0;Math.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
     try{localStorage.setItem('zm-gfx','3d')}catch(e){}},SEED);
   await page.clock.install({time:0});await page.clock.pauseAt(1000);
-  const q=[v2?'':'look=v1',NIGHT?'tod=night':'','m3dIdle=0'].filter(Boolean).join('&');
+  const q=[v2?'':'look=v1',NIGHT?'tod=night':'tod=day','m3dIdle=0'].filter(Boolean).join('&');
   await page.goto('file://'+path.resolve(__dirname,'..','index.html')+'?'+q,{timeout:120000});
   await page.clock.runFor(300);
   for(let i=0;i<300;i++){const r=await page.evaluate(()=>R3D.ready||R3D.failed);if(r)break;await page.waitForTimeout(50);await page.clock.runFor(50)}

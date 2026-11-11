@@ -144,3 +144,30 @@ Motion, one grunt next to the hero (top: before, bottom: v2): spawn, spawn, walk
 2. (Resolved: the plaza floor disc was removed.)
 3. Outline cracks are possible at hard edges of flat-shaded parts (split normals). Not visible at phone size in these shots.
 4. Next steps only if Nir likes the pilot: more world enemies (shield, wisp), NPC bodies, the rest of the village.
+
+## 7. Village stage 2 (11.11.2026)
+
+Nir approved the toy style (Roblox-like proportions, rounder blocks, flat colour, matte). Stage 2 is the village only, behind the same v2 switch (`?look=v1` shows the old look). Visual only: positions, sizes, collision, roles and timings are unchanged.
+
+**What's in it**
+- **Smith and innkeeper, own bodies.** They shared the golem's barbarian body. Now each is a toy figure made of rigid rounded parts (like Roblox R6 parts), skinned in `tools/blender/village_v2.js` onto the **same KayKit skeleton**, so every NPC animation (idle, walk, hammering, wave, cheer) plays unchanged. Smith: square beard, goggles on the forehead, red shirt, heavy leather apron, bracers, keeps his hammer. Innkeeper: ginger hair with a bun, curled moustache, green vest, cream apron, a mug in her hand. Same height, foot and props as before (`LOOK3D.npc_*`), no tint: the toy colours carry who they are.
+- **Forge yard:** anvil on a stump in front of a small blade rack, a coal bucket with glowing embers, barrel, crate, log pile, fence, red banner.
+- **Market row:** striped stalls with produce (the market's stall and tents, and the plaza stalls), sacks, crates, an apple crate, barrels, yellow pennants.
+- **Gate:** two chunky posts (stone base, wooden pillar, red cap), a thick beam under a red roof, a hanging sign, two warm lanterns. Open between the posts as before.
+- No decorative floor shapes (Nir didn't read the plaza disc).
+
+**How it's built** (`tools/blender/README.md` for the method): `node tools/blender/village_v2.js rig` (the skeleton from the existing barbarian), `blender -b --python tools/blender/build_village.py -- tools/blender art/village-v2/raw`, `node tools/blender/village_v2.js pack`. One tiny palette texture (64×16, nearest filtering) shared by every piece. In the game (`js/look-v2.js` part 4): each piece swaps one KayKit model inside a zone (`LV2.vil`, through `vPut`), the bodies swap `LOOK3D.npc_smith/inn` only while drawing (`syncNpcs`). A piece that is still loading is drawn the old way, and the village rebuilds once when it arrives. `tools/build3d.js` and the enemy keys are untouched.
+
+**Numbers**
+| piece | triangles | file (KB, lazy `js/m3d/`) |
+|---|---|---|
+| smith body (was barbarian, 5,285) | 4,276 | 54 |
+| innkeeper body | 3,456 | 47 |
+| gate | 1,432 | 27 |
+| stall | 1,776 | 32 |
+| anvil + rack | 1,752 | 30 |
+| barrel / crate / apple crate / sack | 484 / 628 / 964 / 456 | 13 / 13 / 18 / 11 |
+| coal bucket / logs / fence / banner / pennant | 484 / 1,380 / 856 / 400 / 80 | 17 / 25 / 17 / 10 / 6 |
+| **total added download** | | **about 320 KB**, lazy, only in the village with v2 |
+
+**Evidence** (`node tools/look-v2-village-shots.js`, offline: new browser context, every http(s) request answered locally, no real save, before = `?look=v1`):
