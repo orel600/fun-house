@@ -1662,6 +1662,18 @@ function worldBot(m,L,god){
       worldUi(false);reset();const c0=skcStat.casts;skCast(id);r.arena=skcStat.casts===c0;   // זירה: כלום
       enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // קליפי הטלה נוספים מהענף של אוראל (PR #604, SKCAST.pre): נטענים בכניסה לעולם, ומלכודת, סופה, מטאור וגשם חצים משתמשים בהם בפועל.
+  // ms: ההטלה הראשונה של כל קליפ (יצירת ה-action), כדי לראות שאין קפיצה
+  const skx=await page.evaluate(async()=>{const r={on:!!(R3D.ready&&R3D.on)};if(!r.on)return r;const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode;
+    try{const t0=performance.now();await Promise.all(SKCAST.pre.map(k=>m3dGo(k)));r.load=Math.round(performance.now()-t0);r.st=SKCAST.pre.map(k=>M3D.st[k]);
+      r.kb=Math.round(SKCAST.pre.reduce((a,k)=>a+M3D_LAZY[k],0)*0.75/1024);
+      if(SKR)skrEnd(false);enterWorld('home');enemies=[];const a=R3D.player,k0=P.skCast;r.play={};r.ms={};
+      for(const k of ['trap','storm','meteor','rain']){P.skCast={n:(k0?k0.n:0)+100+Object.keys(r.play).length,k,at:performance.now()};const t1=performance.now();syncPlayer(1/60);
+        r.ms[k]=+(performance.now()-t1).toFixed(1);r.play[k]=a&&a.one?a.one.getClip().name.replace('@up',''):'-'}
+      P.skCast=k0;
+      r.ok=r.st.every(x=>x==='ready')&&r.play.trap==='Throw'&&r.play.storm==='Ranged_Magic_Raise'&&r.play.meteor==='Ranged_Magic_Raise'&&/^(Ranged_Bow_Release_Up|Ranged_Magic_Raise)$/.test(r.play.rain)}
+    catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // רגע גילוי של סקיל חדש בעולם (skillreveal.js): מתחיל אחרי SKREVEAL.delay, עוצר את הזמן ומקרב, האייקון עף ונגמר לבד, פעם אחת לכל סקיל.
   // ההטלה הראשונה גדולה, נגיעה מדלגת, ודרגה גבוהה בעץ מגדילה ומחליפה צבע. אחר כך המשחק ממשיך
   const skr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
@@ -5336,6 +5348,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(!skc.err&&skc.cast&&skc.anim&&skc.clipOk&&skc.rune&&skc.band&&skc.gone&&skc.arena&&skc.combat,
     'הטלת סקיל ('+skc.id+'): '+(skc.err||[skc.anim?'תנועה '+skc.clip:'אין תנועה',skc.rune?'עיגול רונות '+skc.col+' ('+skc.tier+')'+(skc.r3d?' בתלת-ממד':'')+(skc.band?'':' בלי טבעת חיצונית'):'אין עיגול',skc.gone?'נעלם':'לא נעלם',skc.arena?'בזירה כבוי':'דולק בזירה',
       skc.combat?'בקרב קטן ×'+skc.fight[1]+' (גל עד '+Math.round(skc.fight[3])+', בלי קרב '+Math.round(skc.calm[3])+')':'בקרב לא קטן: '+JSON.stringify([skc.fight,skc.calm])].join(', ')));
+  if(skx.on)check(!skx.err&&skx.ok,'קליפי הטלה מאוראל (#604): '+(skx.err||[(skx.st||[]).join('/'),skx.kb+'KB, '+skx.load+'ms',Object.entries(skx.play||{}).map(([k,c])=>k+'→'+c+' ('+skx.ms[k]+'ms)').join(', ')].join(' · ')));
   check(!hold.err&&hold.open&&hold.still&&hold.closed&&hold.resume&&hold.vHold&&hold.prod,
     'חלון עוצר את העולם: '+(hold.err||[hold.open?'היומן נפתח בתפריט':'היומן לא נפתח',hold.still?'5 שניות בלי נזק ובלי תזוזה':'העולם המשיך מאחורי היומן',
       hold.closed&&hold.resume?'בסגירה הקרב חוזר':'הקרב לא חזר',hold.vHold&&hold.prod?'בכפר הייצור ממשיך לפי השעון':'הייצור בכפר נעצר'].join(', ')));
