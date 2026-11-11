@@ -243,3 +243,41 @@ Night (`?tod=night`, the village's brighter night) and other sizes:
 **Still open**
 1. The bodies are rigid parts: at strong bends (elbow, waist) the parts overlap or show a small gap, by design (toy figure). Not visible at phone size in these shots.
 2. Other NPCs (merchant, priest, residents) and the rest of the village (houses, mill, mine) are next, only if Nir wants them.
+
+## 9. Phase 3: living tree, metal crawler, regional enemies (11.11.2026, PR #674)
+
+| Enemy | Before | v2 |
+|---|---|---|
+| treant ("Living Tree") | the shield's skeleton, tinted green | same rig and anims in bark brown, under a big round **leaf crown** (code-built, `lv2Gear`). From above it reads as a tree top |
+| crawler ("Metal Crawler") | the grunt's skeleton, copper | low **spiky ball** in copper (Quaternius Blob GreenSpikyBlob, metal-tinted, 1,800 tris, +45 KB) |
+| mummy | the grunt's skeleton | the grunt's orc body in bandage sand |
+| knights: drowned, rimeknight, stormknight, shadeknight | warrior skeleton + small shield | the shield role: tower shield + pads, the shield glowing in the region's damage type |
+| wisps: mistling, frostwraith, flamewisp, sparkwisp, shadewisp | skeleton mage | the horned ghost, keeps the hover |
+| wardens: tide, frost, ember, storm | the smith's barbarian body + staff | the stone idol, bigger (h 92-100) |
+| cinderscorp | the grunt's skeleton | the spiky ball in fire orange |
+
+All regional looks come from the role templates in one table (`LV2.regions` in `js/look-v2.js`), so a new regional enemy is one row.
+
+**Contrast with the ground:**
+- **Ridge:** knights in dark steel blue (`#3F6FA8`). The old pale ice blue disappeared on the snow.
+- **Shadow:** knights in bright violet (`#7A5BC8`) and wisps in light violet.
+- **Lake, desert, storm:** keep their existing tints, which already contrast with the ground.
+
+**Shoulder pads:** dome radius 0.30 → 0.46, wider and higher on the shoulder, so they show at phone size.
+
+**Evidence** (`tools/look-v2-shots.js`, offline, 3D 915×412, before = `?look=v1`)
+
+![Meadow lineup](concept/visual-language/phase3/meadow-lineup.jpg)
+Meadow, all 7 roles (top: before, bottom: v2): grunt, shield, wisp, sprite, golem, living tree, metal crawler.
+
+![Meadow silhouettes](concept/visual-language/phase3/meadow-silhouette.jpg)
+The same row flat black: every role has its own outline in v2. The living tree's crown and the crawler's spikes are new.
+
+![Regions](concept/visual-language/phase3/regions.jpg)
+Each region's enemies, before over v2, read left to right: lake, ridge / desert, storm / shadow. The region rows also include that region's rare monster, whose look is unchanged. The faded figures on the right of each row are faded in v1 too.
+
+- **Arena untouched:** pixel-identical with v1 and v2 (0 of 376,980).
+- **Console errors:** 0.
+- **First spawn of each new body:** 11-43 ms. The living tree's first spawn is 36-43 ms because its crown meshes are built then; that is once per session. One frame of about 1 to 3 s showed up on a single type's first spawn in some runs, in v1 as well as v2 (for example crawler 2,900 ms in v1), from SwiftShader shader compiles.
+
+**Not covered by the shots:** the wardens appear only in their own encounters, so they are not in the region rows. Their look is the stone idol, the same body as the golem, which the shots do cover. The shadow region is very dark in both modes; v2 is a little brighter, but it is still a night scene.
