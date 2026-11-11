@@ -1177,6 +1177,7 @@ body:has(#vPanel:not([hidden])) #nav,body:has(#wPanel:not([hidden])) #nav{displa
 .world .hud .row{display:none}
 .world .hud{padding-top:var(--ctop)}
 .world .bossbar{max-width:36vw;margin-inline:auto}
+.world #bossnm{text-shadow:0 1px 2px #000,0 0 3px #000c}   /* red boss name (NAMECOL, labels.js) readable on snow and desert */
 /* world boss bar (bosshud.js places it): the name on one line, the subtitle cut with … first, the weakness always whole */
 .world .bossname{white-space:nowrap;gap:8px}
 .world .bossname span{min-width:0;overflow:hidden;text-overflow:ellipsis}
