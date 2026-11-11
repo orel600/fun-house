@@ -1896,15 +1896,26 @@ function worldBot(m,L,god){
       SAVE.hero.skKnown=[];skgDots();await tick();r.dotOn=!$('skDot').hidden&&$('skills').classList.contains('sknew')&&!document.querySelector('#qRail [data-tab="gearBtn"] .qrdot').hidden;   // הנקודה על "דמות" בטור הקיצורים (menu.js)
       wsbOpenUi();await tick();r.dotOff=$('skDot').hidden&&!$('skills').classList.contains('sknew');wsbClose();
       const id=S.sk.ids[S.sk.ids.length-1];G.ovs=skgWins().filter(o=>o.classList.contains('ov'));for(const o of G.ovs)o.hidden=true;   // מסכים שנשארו פתוחים מהמשחק של הבוט (למשל ovHero): הכרטיס מחכה להם בצדק. מחזירים בסוף
+      msgClear();   // a big line from the bot's play would make the card wait (one big thing at a time in the lane)
       if(skgBlocked())throw 'הכרטיס חסום: '+[document.body.className,...skgWins().map(o=>o.id||o.className)].join(' | ');skgOffer(id);const of=$('skOffer');r.offer=!!of&&!of.hidden&&!!of.querySelector('[data-skg="book"]');
       of.querySelector('[data-skg="try"]').click();r.pStart=!!SKP&&SKP.dummies.length===SKPRACTICE.n&&of.hidden;
       const d=SKP&&SKP.dummies[0],x0=d&&d.x;run(2);r.pDummy=!!d&&!d.dead&&d.x===x0&&enemies.filter(e=>e.dummy&&!e.dead).length===SKPRACTICE.n&&!$('skpBar').hidden;
       $('skpBar').querySelector('[data-skp="x"]').click();run(0.05);r.pSkip=!SKP&&!enemies.some(e=>e.dummy)&&$('skpBar').hidden;
       skpStart(id);run(SKPRACTICE.t+0.5);r.pEnd=!SKP&&!enemies.some(e=>e.dummy);
-      skgOffer(id);$('skOffer').querySelector('[data-skg="book"]').click();r.offerBook=!ov.hidden;wsbClose();
+      msgClear();skgOffer(id);$('skOffer').querySelector('[data-skg="book"]').click();r.offerBook=!ov.hidden;wsbClose();
       // חלון פתוח: הכרטיס מחכה ולא יושב על הכותרת שלו. נפתח מעל כרטיס שכבר מוצג: מתחבא. נסגר: חוזר
       questLogOpen(true);skgOffer(id);r.offerWait=$('skOffer').hidden;questLogOpen(false);skgOfferTick();r.offerBack=!$('skOffer').hidden;
-      questLogOpen(true);skgOfferTick();r.offerHide=$('skOffer').hidden;questLogOpen(false);skgOfferTick();r.offerBack=r.offerBack&&!$('skOffer').hidden;skgOfferClose()}catch(err){r.err=String(err&&err.stack||err)}
+      questLogOpen(true);skgOfferTick();r.offerHide=$('skOffer').hidden;questLogOpen(false);skgOfferTick();r.offerBack=r.offerBack&&!$('skOffer').hidden;skgOfferClose();
+      // one big thing at a time in the lane (msglane.js, desert 11.11): card up → the region line waits (and does not drop to small).
+      // Card gone → the big one shows. Big one up → a new card waits for it, then comes
+      const mf=msgFight;msgFight=()=>false;if(typeof R2!=='undefined')R2.fightT=-99;
+      const ofH=()=>{const e=$('skOffer');return !e||e.hidden};   // msgClear can take the card out of the page with the lane: then skgOffer makes a new one
+      try{msgClear();const b0=MSG.stat.both,d0=MSG.stat.down;msgBig('Lane test');msgPump();const up=!!MQ.bigRow;skgOffer(id);r.lnFirst=up&&ofH();MQ.bigRow.t-=99;msgTick();skgOfferTick();
+        msgBig('Lane test 2');msgPump();r.lnHold=!ofH()&&!MQ.bigRow&&MQ.big.length===1;
+        MQ.big[0].at-=99;msgPump();r.lnKeep=!MQ.bigRow&&MQ.big.length===1&&MSG.stat.down===d0;
+        skgOfferClose();msgPump();r.lnAfter=!!MQ.bigRow&&MQ.bigRow.txt==='Lane test 2';
+        skgOffer(id);r.lnCardWait=ofH()&&!!MQ.bigRow;MQ.bigRow.t-=99;msgTick();skgOfferTick();r.lnCardBack=!ofH();
+        r.lnBoth=MSG.stat.both-b0}finally{msgFight=mf;skgOfferClose();msgClear()}}catch(err){r.err=String(err&&err.stack||err)}
     if(ov)ov.hidden=true;skgOfferClose();for(const o of G.ovs||[])o.hidden=false;if(SKP)skpEnd(true);if(S.mode==='gear')S.mode='play';if(SKR)skrEnd(false);worldUi(false);SAVE=JSON.parse(G.bak);
     if(G.vil)enterVillage();else{reset();S.mode=G.mode}delete window.__skg;return r});
   // שילובים בעולם (wcombo.js): לכל דמות שני סקילים מהספר בסדר הנכון יוצרים שילוב. לוחם: שריון קרח ואז הסתערות = ניפוץ.
@@ -2033,8 +2044,8 @@ function worldBot(m,L,god){
       banner(T('home.earth.gift'),C.gold);banner(T('rare.rumor',T('rare.at.reeds')),C.gold);banner(T('wn.found','Nessa'),C.gold);banner(T('skr.new','Xx'),C.gold);banner(HUNT.icon+' '+T('hunt.here','Grok'),HUNT.col);if(typeof skgOffer==='function')skgOffer(Object.keys(SKILLS.list)[0]);
       msgBig(T('bossDown','Test'),C.gold);if(innerWidth===848||innerWidth===924){SAVE.lore={met:{}};flMeet('grunt');FLC.t=99}feedRes('stone',3);feedGear('oakSword');feedAdd('🎯','Spotted the Wanted · '.repeat(4),C.gold,'w');render()});
     await page.clock.runFor(700);
-    const a=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();return {...__lmeas(),waits:MSG.stat.waits,shown:MSG.stat.big,win:msgWinOpen(),on:msgOn()}});
-    await page.evaluate(()=>{for(const e of enemies)e.dead=true;enemies=[];window.__lmf=msgFight;msgFight=()=>false;msgPump()});   // הקרב נגמר (העולם יכול להוליד להקה חדשה בזמן ההמתנה, אז הקרב נקבע כאן)
+    const a=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();return {...__lmeas(),waits:MSG.stat.waits+MSG.stat.card,shown:MSG.stat.big,win:msgWinOpen(),on:msgOn()}});
+    await page.evaluate(()=>{for(const e of enemies)e.dead=true;enemies=[];window.__lmf=msgFight;msgFight=()=>false;if(typeof skgOfferClose==='function')skgOfferClose();msgPump()});   // the skill card is done too: the lane is free for the big one   // הקרב נגמר (העולם יכול להוליד להקה חדשה בזמן ההמתנה, אז הקרב נקבע כאן)
     await page.clock.runFor(500);
     const b=await page.evaluate(()=>{S.cam.x=P.x;S.cam.y=P.y;render();const o={...__lmeas(),shown:MSG.stat.big,most:MSG.stat.most,win:msgWinOpen(),on:msgOn()};msgFight=__lmf;return o});
     // 🥕 "האכל" לא נוגע באף כפתור סקיל (מקום קבוע ב-style.css), ושמות האויבים (labels.js) לא על כפתור ולא אחד על השני
@@ -2042,6 +2053,7 @@ function worldBot(m,L,god){
     const hb=await page.evaluate(()=>{const R=e=>e.getBoundingClientRect(),hit=(a,b)=>a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
       $('sig').hidden=false;$('feedBtn').hidden=false;const f=R($('feedBtn')),sk=[...document.querySelectorAll('#skills>*,#sig,#ult')].filter(e=>!e.hidden&&!e.closest('[hidden]')&&e.getClientRects().length).map(R);
       const o={feed:f.width>0&&!sk.some(k=>hit(f,k))};
+      msgClear();   // the lane was measured above. Its lines (now not held under the skill card) would sit where these names go, right over the hero
       enemies=[];const nm=['Dardak Terror of Ducks','Pack Leader','Armored','Elemental Shield','Bruza the Almost-Brave'];
       for(let i=0;i<5;i++){const e=addEnemy('grunt',P.x+60+i*24,P.y+10-i*8);e.home=0;e.speed=0;e.dmg=0;e.hp=e.max=1e9;if(i===0||i===4){e.pname=nm[i];e.flSeen=true}if(i===1)e.leader=true;if(i===2)e.affix='tough';if(i===3)e.affix='shell'}
       S.wd.flSay={e:enemies[0],txt:'I am Dardak Who Ate a Lantern! Fear my bark!',t:99};   // בועת דיבור על העלית: עוברת באותו סידור כמו השמות (ביקורת 7.11.2026, ממצא 4)
@@ -3392,6 +3404,19 @@ function worldBot(m,L,god){
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     clearTimeout(FIRSTUP.timer);Math.random=rnd;const b2=gearStats();SAVE=JSON.parse(bak);gearLive(b2);return o});
   check(!fu.err&&fu.gift&&fu.goal&&fu.coins&&fu.info&&fu.trip&&fu.built&&fu.once,'השדרוג הראשון: '+(fu.err||[fu.gift?'המתנה לא מספיקה לנפחייה':'המתנה מספיקה לנפחייה!',fu.goal?'היעד הוא הנפחייה':'היעד לא הנפחייה',fu.coins?'השבב מראה מטבעות':'השבב לא מראה מטבעות',fu.info?'לפני/אחרי בחלון':'אין לפני/אחרי',fu.trip?'אחרי יציאה אפשר':'אחרי יציאה עדיין לא',fu.built?'הנשק ‎+3':'הנשק לא הושחז',fu.once?'פעם אחת':'הושחז שוב'].join(', ')));
+  // The first forge build in order (firstup.js after buildmoment.js): the build moment (camera, then its "before → after" line) plays first, and only then
+  // the hero's party and "Forged!" line. Sampled every 200 ms: m = camera moment, l = its line, P = the party already happened
+  {await page.evaluate(()=>{window.__foKeep=JSON.stringify(SAVE);if(!S.vil)enterVillage();welcomeClose();npcTalk(null);msgClear();SAVE.calm=false;SAVE.village.forge=0;delete SAVE.fu;
+      const b0=gearStats();SAVE.gear.weapon=gBase(SAVE.gear.weapon);gearLive(b0);const c=vCostAt('forge',1);for(const r in c)bagAdd(r,c[r]);
+      const B=VILLAGE.b.forge;P.x=B.x;P.y=B.y+B.r+40;S.cam.x=P.x;S.cam.y=P.y;FIRSTUP.stat.party=0;window.__foOk=vUpgrade('forge')});
+    const seq=[];for(let i=0;i<35;i++){await page.clock.runFor(200);seq.push(await page.evaluate(()=>{const l=document.getElementById('bmLine');
+      return (S.vil&&S.vil.bm?'m':l&&!l.hidden?'l':'-')+(FIRSTUP.stat.party?'P':'')}))}
+    const fo=await page.evaluate(()=>{const o={ok:!!window.__foOk,lane:[...document.querySelectorAll('#msgLane .mrow')].some(e=>/\+3|➜|→/.test(e.textContent))};
+      clearTimeout(FIRSTUP.timer);S.vil.bm=null;const b2=gearStats();SAVE=JSON.parse(window.__foKeep);gearLive(b2);S.vil.open=null;S.vil.raise={};villageHud();msgClear();saveNow();return o});
+    const i=seq.findIndex(x=>x.includes('P')),s=seq.join(' ');
+    check(fo.ok&&seq[0][0]==='m'&&seq.some(x=>x[0]==='l')&&i>0&&seq[i][0]==='-'&&!seq.slice(i).some(x=>x[0]!=='-'),
+      'First forge build in order: '+(!fo.ok?'the forge did not build!':i<0?'no party for the hero! ('+s+')':seq[i][0]!=='-'?'the party came during the build moment! ('+s+')':
+      'build moment, then its line, then the party at '+((i+1)*0.2).toFixed(1)+' s'+(fo.lane?' with the "Forged" line':'')))}
   // לולאת הכפר, שלב 2 (vproj.js): החוצבת בכפר → סדנה בשלושה שלבים → המחצבה העמוקה נפתחת (או ברמה 10), עם מקורות שצומחים מהר, והחלפה טובה יותר
   const vpr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
     try{const V=VPROJ,id='cutterShop',pl='deepQuarry',Q=QS();SAVE.vproj={st:{},seen:{}};SAVE.hero.level=1;delete Q.done[RESID.list.cutter.last];
@@ -5260,6 +5285,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     skg.dotOn&&skg.dotOff?'נקודה אדומה מופיעה ונעלמת':'הנקודה האדומה לא עובדת',skg.offer&&skg.offerBook?'כרטיס אחרי הגילוי':'אין כרטיס',
     skg.offerWait&&skg.offerHide&&skg.offerBack?'הכרטיס מחכה כשחלון פתוח':'הכרטיס יושב על חלון פתוח',
     skg.pStart&&skg.pDummy&&skg.pSkip&&skg.pEnd?'אימון: בובות, דילוג וסוף':'האימון לא עובד'].join(', ')+(skg.err||Object.values(skg).every(Boolean)?'':' '+JSON.stringify(skg))));
+  check(!skg.err&&skg.lnFirst&&skg.lnHold&&skg.lnKeep&&skg.lnAfter&&skg.lnCardWait&&skg.lnCardBack&&skg.lnBoth===0,'One thing at a time in the lane: '+(skg.err||[skg.lnHold?'the "New: skill" card is up, the region line waits':'the region line shows with the card!',
+    skg.lnKeep?'a long wait does not drop it to small':'dropped to small under the card!',skg.lnAfter?'card gone, the region line shows':'region line lost!',
+    skg.lnFirst&&skg.lnCardWait&&skg.lnCardBack?'a new card waits for the region line, then comes':'the card does not wait for the region line!',skg.lnBoth?skg.lnBoth+' times the region line and the card together!':'never together'].join(', ')));
   check(!sig.err&&sig.noRank&&sig.all&&sig.reveal&&sig.btn&&!sig.bad.length&&sig.ok.length===sig.n&&sig.clean&&sig.arena,'סקיל חתימה: '+(sig.err||[sig.noRank?'בלי דרגה אין כפתור':'יש כפתור בלי דרגה',
     sig.all?'לכל דרגה סקיל':'יש דרגה בלי סקיל',sig.reveal?'רגע גילוי':'אין רגע גילוי',sig.btn?'כפתור בעולם':'אין כפתור בעולם','עובדים: '+sig.ok.join(', '),
     sig.bad.length?'נכשלו: '+sig.bad.join(', '):'',sig.clean?'נגמרים':'לא נגמרו',sig.arena?'':'כפתור בזירה'].filter(Boolean).join(' · ')));

@@ -57,9 +57,11 @@ let skgOfferT=0,skgPend=null;
 // רק מה שבאמת על המסך: חלון שמוסתר ב-CSS (display:none, גם של אבא) לא נחשב
 const skgWins=()=>[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden&&o.getClientRects().length);
 const skgBlocked=()=>document.body.classList.contains('menu')||skgWins().length>0||(typeof chBusy==='function'&&chBusy());   // chBusy: a chest is opening (chest.js), the card waits
+// a big line (region, rank, boss: msglane.js) is on screen: the card waits for it, one thing at a time in the lane
+const skgLaneBusy=()=>typeof MQ!=='undefined'&&!!MQ.bigRow&&typeof msgOn==='function'&&msgOn();
 function skgOffer(id){
   if(!S||!S.wd||!SKILLS.list[id])return;
-  if(skgBlocked()){skgPend=id;return}
+  if(skgBlocked()||skgLaneBusy()){skgPend=id;return}
   skgPend=null;let el=$('skOffer');
   if(!el){el=document.createElement('div');el.id='skOffer';el.className='skoffer';el.hidden=true;document.body.appendChild(el);
     el.addEventListener('click',e=>{const b=e.target.closest('[data-skg]');if(!b)return;e.stopPropagation();const k=b.dataset.skg,sid=el.dataset.id;skgOfferClose();
@@ -78,6 +80,6 @@ function skgOfferTick(){
   const el=$('skOffer');
   if(!S||!S.wd){if(skgPend||el&&!el.hidden)skgOfferClose();return}
   if(el&&!el.hidden&&skgBlocked()){const id=el.dataset.id;skgOfferClose();skgPend=id;return}
-  if(skgPend&&!skgBlocked())skgOffer(skgPend);
+  if(skgPend&&!skgBlocked()&&!skgLaneBusy())skgOffer(skgPend);
 }
 setInterval(()=>{try{skgOfferTick()}catch(e){}},250);
