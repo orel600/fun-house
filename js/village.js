@@ -96,7 +96,7 @@ function vProd(k){return SAVE.prod[k]||(SAVE.prod[k]={t:0,have:{}})}
 function vSettle(k){
   const B=VILLAGE.b[k];if(!B.make)return null;
   const p=vProd(k),now=Date.now(),L=vLv(k);
-  if(p.t&&L>0){const h=Math.max(0,now-p.t)/3600e3;for(const r in B.make)p.have[r]=Math.min(vCapOf(B,r,L),(p.have[r]||0)+B.make[r][L]*h)}
+  if(p.t&&L>0){const h=Math.max(0,now-p.t)/3600e3;for(const r in B.make)p.have[r]=Math.min(vCapOf(B,r,L),(p.have[r]||0)+B.make[r][L]*h*(typeof vpMake==="function"?vpMake(k,r):1))}   // vpMake: צוות הכורתים במנסרה (vproj.js)
   p.t=now;return p;
 }
 function vCollect(k){
@@ -274,6 +274,7 @@ $('vPanel').addEventListener('click',e=>{
   if(a&&a.startsWith('deco')){decoAct(a,b.dataset);villageHud();return}   // חנות הקישוטים בשוק (deco.js)
   if(!S.vil.near)return;
   if(goalAct(b)){villageHud();return}   // 📌 יעד בעולם (goal.js)
+  if(vpAct(b)){villageHud();return}   // פרויקט של מבנה, צוות הכורתים במנסרה (vproj.js)
   if(a==='forge'){forgeOpen();return}
   if(a==='collect'){if(vCollect(S.vil.near))sfx('coin');villageHud();return}
   if(a==='up')vUpgrade(S.vil.near);else if(a==='stash'){if(stashMove(b.dataset.dir,b.dataset.r,b.dataset.n==='all'?0:BWIN.move))sfx('coin')}else if(a==='stashAll'){if(stashAll(b.dataset.dir))sfx('coin')}else if(a==='craft')gearCraft(b.dataset.r);else vTrade(a,b.dataset.r);
