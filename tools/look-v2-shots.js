@@ -5,13 +5,14 @@
      village plaza, a world fight (8 grunts + 3 shields + 2 wisps around the hero), motion strips of one grunt (spawn, walk, attack, death),
      the arena right after it starts (must be identical with and without v2), and numbers: first-spawn cost of the new body,
      20 grunts spawning in one frame, JS heap, GPU geometries and textures, draw calls, triangles, and HUD drift over 30 frames.
-   Run: node tools/look-v2-shots.js [--out docs/concept/visual-language/pilot] [--seed 5] [--ipad]
+   Run: node tools/look-v2-shots.js [--out docs/concept/visual-language/pilot] [--seed 5] [--ipad | --vw 915 --vh 412]
    Output: <out>/*.png and <out>/look-v2-report.json, plus a summary in the console. */
 const {chromium}=require('playwright');
 const path=require('path'),fs=require('fs');
 const args=process.argv.slice(2),opt=k=>{const i=args.indexOf('--'+k);return i<0?null:(args[i+1]&&!args[i+1].startsWith('--')?args[i+1]:true)};
 const OUT=path.resolve(opt('out')||path.join(__dirname,'look-v2-shots')),SEED=+(opt('seed')||5);
-const VP=opt('ipad')?{width:1180,height:820}:{width:844,height:390},TAG=opt('ipad')?'ipad':'phone';
+// --vw/--vh: another phone size. Screenshots for Nir: 3D at 915x412 (Nir, 11.11)
+const VP=opt('ipad')?{width:1180,height:820}:{width:+(opt('vw')||844),height:+(opt('vh')||390)},TAG=opt('ipad')?'ipad':VP.width===844?'phone':'phone'+VP.width;
 fs.mkdirSync(OUT,{recursive:true});
 
 async function session(browser,v2){
