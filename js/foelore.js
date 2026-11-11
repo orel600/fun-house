@@ -13,7 +13,7 @@ const FOELORE={
   say:{chance:0.3, cd:9, dur:2.6},       // בועה: הסיכוי כשאויב מזהה אותך, כמה שניות לפחות בין בועות, וכמה זמן היא נשארת
   lowAt:0.25,                            // מתחת לכמה חיים אויב אומר משהו של בורח
   near:220,                              // השם מעל הראש: רק לאויב הקרוב ביותר עד המרחק הזה
-  label:{size:11, col:'#E8E4D8', elite:'#F4C74F'}, // גודל במסך (לא מתכווץ עם המצלמה), וצבעים: רגיל ושם אישי
+  label:{size:11}, // גודל במסך (לא מתכווץ עם המצלמה). הצבע לפי דרגה: NAMECOL ב-labels.js (ניר 11.11)
   bubble:{size:13, w:300}                // גודל הטקסט בבועה ורוחב מרבי
 };
 
@@ -98,11 +98,12 @@ function foeLoreScreen(ox,oy){
   let near=null,nd=F.near;
   for(const e of enemies){
     if(e.dead||e.hunt||e.warden)continue;
-    if(e.pname&&(e.flSeen||e.rare)){flTag(e.pname,e.x+ox,e.y+oy-e.r-(e.affix?46:30),e.rare?RARES.col:L.elite,fs,e,e.rare?5:4,e.rare?RARES.icon:'💀');continue}   // נדירה (rares.js): תמיד, בזוהר שלה   // עלית ומבוקש: תמיד
+    if(e.pname&&(e.flSeen||e.rare)){const ic=e.rare?RARES.icon:e.affix&&AFFIX.list[e.affix]?AFFIX.list[e.affix].icon:e.leader?'👑':'💀';   // no rank word (Nir 11.11): the affix/crown icon goes before the name, the color says the rank (NAMECOL, labels.js)
+      flTag((ic!=='💀'&&!e.rare?ic+' ':'')+e.pname,e.x+ox,e.y+oy-e.r-30,nameCol(e),fs,e,nameRank(e)==='boss'?5:4,ic);continue}   // נדירה (rares.js): תמיד, בזוהר שלה   // עלית ומבוקש: תמיד
     if(!flHas(e.type)||e.wanted)continue;
     const d=Math.hypot(P.x-e.x,P.y-e.y);if(d<nd&&(e.flSeen||e.hitT!=null)){nd=d;near=e}
   }
-  if(near&&!near.affix)flTag(flName(near.type),near.x+ox,near.y+oy-near.r-30,L.col,fs,near,1,'');
+  if(near&&!near.affix)flTag(flName(near.type),near.x+ox,near.y+oy-near.r-30,nameCol(near),fs,near,1,'');
   const s=w.flSay;
   if(s&&!s.e.dead){
     const B=F.bubble,bf=B.size/ZOOM,x=s.e.x+ox,y=s.e.y+oy-s.e.r-(s.e.pname||s.e.affix||s.e.hunt?66:50);
