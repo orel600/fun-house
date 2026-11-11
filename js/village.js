@@ -77,7 +77,7 @@ const VILLAGE={
   /* השלטים על המבנים (ניר, 2.11: השלטים "נדחסים זה על זה ועל הממשק העליון").
      near: שם של מבנה מופיע רק כשמתקרבים אליו עד כאן (פיקסלים במשחק). תג "יש לאסוף/לשדרג" מופיע מכל מרחק שעל המסך.
      שלט שחופף לשלט חשוב ממנו זז קצת למטה או למעלה (nudge), ואם אין מקום הוא לא מצויר. avoid: הממשק שהשלטים לא נכנסים מתחתיו */
-  signs:{near:330,nudge:[0,24,-24,48],pad:4,avoid:'#vBag,#who,#menuBtn,#nav,.dgift,#vTop,#qRail,#updBtn,#vEnter'}
+  signs:{near:330,nudge:[0,24,-24,48],pad:4,avoid:'#vBag,#who,#menuBtn,#nav,.dgift,#vTop,#qRail,#updBtn,#vEnter,#msgLane>*'}
 };
 
 const vLv=k=>SAVE.village[k]||0;
@@ -241,13 +241,16 @@ const bagFams=(bag,only)=>Object.keys(RES.fams).filter(f=>!only||only==='all'||f
   return rs.length?'<div class="fam"><span class="sk">'+T('fam.'+f)+'</span><div class="bag">'+bagLine(bag,rs)+'</div></div>':''}).join('');
 function costLine(c){return Object.keys(c).map(r=>resChip(r,c[r],bagHas(r,c[r])?'':' miss')).join('')}
 // מה מבנה מייצר בשעה ברמה L, למשל '30🪵 4🧵'
-const makeLine=(B,L)=>Object.keys(B.make).filter(r=>B.make[r][L]>0).map(r=>'<bdi>'+B.make[r][L]+resIcon(r)+'</bdi>').join(' ');
+// k: המבנה (בלעדיו מחפשים לפי B). המספר כולל את הצוותים (vpMake), והערה קטנה מי הוסיף
+const vMakeOf=(k,r,L)=>Math.round(VILLAGE.b[k].make[r][L]*(typeof vpMake==='function'?vpMake(k,r):1));
+const makeLine=(B,L,k)=>{k=k||Object.keys(VILLAGE.b).find(x=>VILLAGE.b[x]===B);
+  return Object.keys(B.make).filter(r=>B.make[r][L]>0).map(r=>'<bdi>'+vMakeOf(k,r,L)+resIcon(r)+'</bdi>').join(' ')+(typeof vpNote==='function'?vpNote(k):'')};
 function vInfo(k,L){
   const B=VILLAGE.b[k];if(L<1)return T('vil.notBuilt');
   if(k==='center')return T('vil.info.center',L);
   if(k==='forge')return T('vil.info.forge',T('vil.tiers')[L-1],AGING.byForge[L]);
-  if(B.make)return T('vil.info.make',makeLine(B,L),B.cap[L]);
-  if(k==='market')return T('vil.info.market',Math.round(B.bonus*(L-1)*100));
+  if(B.make)return T('vil.info.make',makeLine(B,L,k),B.cap[L]);
+  if(k==='market')return T('vil.info.market',Math.round(B.bonus*(L-1)*100))+(typeof vpNote==='function'?vpNote(k):'');
   if(k==='stash')return T('vil.info.stash',B.cap[L]);
   if(k==='inn')return T('vil.info.inn',Math.round((INN.rest.xp+INN.rest.perLv*(L-1))*100));
 }
@@ -386,7 +389,7 @@ function drawVillageScreen(ox,oy){
 /* ---- השלטים: בלי חפיפה, ולא מתחת לממשק ----
    vSign(x,y,טקסט,צבע,חשיבות): במסך, ביחידות של המשחק. נקרא מהכפר, מהתושבים (npc.js) ומהבתים (residents.js).
    vSignsFlush (render.js, אחרי כולם): מהחשוב לפחות חשוב, כל שלט במקום הראשון מתוך nudge שלא חופף לשלט אחר או לממשק */
-const VSIGN={list:[],avoid:[],t:0};
+const VSIGN={list:[],avoid:[],t:0,rects:[]};   // rects: where each sign was drawn (game units), for the bot
 function vSign(x,y,txt,col,prio){VSIGN.list.push({x,y,txt,col,prio})}
 // המלבנים של הממשק (פס המשאבים, ☰, הדמות, הסרגל), ביחידות של המשחק. נמדד מחדש פעם ב-30 פריימים
 function vAvoid(){
@@ -394,12 +397,12 @@ function vAvoid(){
   return VSIGN.avoid=[...document.querySelectorAll(VILLAGE.signs.avoid)].filter(e=>!e.hidden&&e.offsetParent!==null).map(e=>{const r=e.getBoundingClientRect();return{x:r.left/ZOOM,y:r.top/ZOOM,w:r.width/ZOOM,h:r.height/ZOOM}}).filter(r=>r.w>0&&r.h>0);
 }
 function vSignsFlush(){
-  const list=VSIGN.list;VSIGN.list=[];VSIGN.shown=[];if(!S||!S.vil||!list.length)return;
+  const list=VSIGN.list;VSIGN.list=[];VSIGN.shown=[];VSIGN.rects=[];if(!S||!S.vil||!list.length)return;
   const G=VILLAGE.signs,used=vAvoid().slice(),hit=r=>used.some(o=>r.x<o.x+o.w&&o.x<r.x+r.w&&r.y<o.y+o.h&&o.y<r.y+r.h);
   ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 13px Heebo, system-ui, sans-serif';
   list.sort((a,b)=>b.prio-a.prio);
   for(const s of list){const w=ctx.measureText(s.txt).width+16;
     for(const dy of G.nudge){const y=s.y+dy,r={x:s.x-w/2-G.pad,y:y-11-G.pad,w:w+G.pad*2,h:22+G.pad*2};
       if(r.x<0||r.y<0||r.x+r.w>W||r.y+r.h>H||hit(r))continue;
-      used.push(r);VSIGN.shown.push(s.txt);ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(s.x-w/2,y-11,w,22,11);ctx.fill();ctx.fillStyle=s.col;ctx.fillText(s.txt,s.x,y+5);break}}
+      used.push(r);VSIGN.shown.push(s.txt);VSIGN.rects.push({x:s.x-w/2,y:y-11,w,h:22,txt:s.txt});ctx.fillStyle='rgba(18,22,36,0.78)';ctx.beginPath();ctx.roundRect(s.x-w/2,y-11,w,22,11);ctx.fill();ctx.fillStyle=s.col;ctx.fillText(s.txt,s.x,y+5);break}}
 }

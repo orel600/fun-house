@@ -1298,6 +1298,7 @@ const TEXT={
   'vp.stage':{en:(a,b)=>'Stage '+a+'/'+b},'vp.build':{en:n=>'Build stage '+n},
   'vp.done':{en:(n,pl)=>n+' is done! The crew cleared the way to '+pl},'vp.isDone':{en:(pl,n)=>'Done. '+pl[0].toUpperCase()+pl.slice(1)+' is open, and I trade '+n+' iron now.'},
   'vp.open':{en:pl=>pl[0].toUpperCase()+pl.slice(1)+' is open!'},
+  'vp.bonus':{en:(p,n)=>'+'+p+'% ('+n+')'},
   'vp.roadCrew':{en:'Road crew'},'vp.pl.lakeRoad':{en:'the road to the Mist Lake'},
   'vp.roadCrew.d':{en:pl=>'A fallen tree blocks '+pl+' at the top of the forest trail. Build a loggers\' camp and the crew will clear it, even before the earth lantern is lit.'},
   'vp.roadCrew.done':{en:pl=>'Done. The crew cleared '+pl+', and the sawmill makes 10% more wood.'},
