@@ -1584,6 +1584,7 @@ const TEXT={
   // בוס-נמסיס בעולם (nemesis.js)
   'nem.born':{he:(n,r)=>n+' ניצח אותך, ועכשיו הוא זוכר אותך. הוא יחכה לך כאן',en:(n,r)=>n+' beat you, and now remembers you. It will wait for you here'},
   'nem.up':{he:(n,r)=>n+' ניצח שוב ועלה לדרגה '+r,en:(n,r)=>n+' won again and rose to rank '+r},
+  'nem.wait':{en:(n,p)=>n+' is waiting near '+p},
   'nem.down':{he:n=>n+' הובס! הנמסיס שלך כבר לא יחזור',en:n=>n+' is defeated! Your nemesis will not return'},
   'nem.tag':{he:r=>'נמסיס · דרגה '+r,en:r=>'Nemesis · rank '+r},
   'nem.say.esc':{he:h=>'שוב אתה? בפעם הקודמת ברחת עם '+h+' חיים',en:h=>'You again? Last time you ran off with '+h+' HP'},

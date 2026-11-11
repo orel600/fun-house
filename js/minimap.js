@@ -60,6 +60,7 @@ function mmDraw(){
   for(const id in gs)pin(at(gs[id].x,gs[id].y),D.gate,wGateCol(id));
   const ln=typeof wmLantern==='function'&&wmLantern(S.wd.reg);if(ln)pin(at(ln.L.x,ln.L.y),D.lantern,ln.lit?ln.L.glow:'#2A2F3E',ln.lit?'#fff':ln.L.glow);
   const t=typeof guideTarget==='function'&&guideG&&guideTarget(guideG);if(t)pin(at(t.x,t.y),D.goal,GUIDE.col,'#fff');
+  if(typeof nemMmDraw==='function')nemMmDraw(x,at,r);   // סמן נקמה (nemesis.js)
   // אתה: חץ זהוב במרכז, לכיוון ההליכה
   const a=P.face||0,m=D.me;x.beginPath();x.moveTo(r+Math.cos(a)*m*1.7,r+Math.sin(a)*m*1.7);x.lineTo(r+Math.cos(a+2.4)*m,r+Math.sin(a+2.4)*m);
   x.lineTo(r+Math.cos(a-2.4)*m,r+Math.sin(a-2.4)*m);x.closePath();x.fillStyle=C.gold;x.fill();x.lineWidth=1.5;x.strokeStyle='#000';x.stroke();

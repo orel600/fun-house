@@ -4151,6 +4151,7 @@ function worldBot(m,L,god){
     o.saved=((JSON.parse(localStorage.getItem(SAVE_STORE.key)).nem||{}).list||[]).length===1;
     const e5=addEnemy(type,P.x+50,P.y,1);e5.home=0;e5.leader=1;nemOnDeath();o.one=NS().list.length===1;   // אחד לאזור
     enterWorld('home');const a=S.wd.nemE;o.spawn=!!a&&a.nem===N.id&&a.pname===nemName(N)&&a.max>ETYPES[type].hp*2;
+    const mk=nemMark();o.mark=!!mk&&mk.here&&mk.N===N;NMK.drawn=0;nemMarkDraw(5000,5000);o.arrow=NMK.drawn>0;try{mmDraw();o.mm=true}catch(err){o.mm=false}   // סמן נקמה: במפה הקטנה ובחץ בקצה
     P.x=a.x+40;P.y=a.y;nemUpdate(0.05);o.say=!!S.wd.flSay&&S.wd.flSay.txt===T('nem.say.by',T('nem.cause.burst'))&&N.esc>0;
     enemies=[a];nemOnDeath();o.rank=N.rank===2&&N.wins===2&&N.esc==null;
     const m1=a.max;enterWorld('home');const b=S.wd.nemE;o.stronger=!!b&&b.max>m1;
@@ -4158,7 +4159,13 @@ function worldBot(m,L,god){
     for(let i=0;i<60;i++)nemCardTick(0.1);o.closed=!nemCardOn()&&$('nemCard').hidden;
     const c0=dropStats().spawned,f0=FX.length;damage(b,b.hp*10,'sword',0,'physical');nemUpdate(0.01);
     o.beat=!NS().list.length&&NS().won.length===1&&!S.wd.nemE;o.loot=dropStats().spawned>c0+1&&FX.length>f0;
-    o.book=nemBookHtml().includes(T('nem.wonIt'));
+    o.book=nemBookHtml().includes(T('nem.wonIt'));o.markGone=!nemMark();
+    // נמסיס באזור אחר: סמן לכיוון הדרך אליו, בלי חץ במסך. בלי נמסיס: כלום
+    const pk=Object.keys(WORLD.paths).find(k=>WORLD.regions[k]);
+    if(pk){const pp=WORLD.paths[pk],op=pp.open;pp.open=()=>true;NS().list.push({id:'nx',reg:pk,type,n:N.n,rank:1,wins:1,esc:null,cause:'near'});
+      const m2=nemMark();o.other=!!m2&&!m2.here&&m2.N.reg===pk;NMK.drawn=0;nemMarkDraw(5000,5000);o.otherNoArrow=!NMK.drawn;
+      NS().list.length=0;if(op)pp.open=op;else delete pp.open}
+    o.none=!nemMark()&&T('nem.wait','A','B').includes('A');
     enterWorld('home');o.gone=!S.wd.nemE;
     enemies=[];enterVillage();SAVE.nem=JSON.parse(n0);return o});
   check(Object.values(nm).every(Boolean),'בוס-נמסיס: '+Object.entries(nm).map(([k,v])=>(v?'':'✗')+k).join(', '));
