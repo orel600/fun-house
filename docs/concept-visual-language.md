@@ -189,7 +189,7 @@ Nir approved the toy style (Roblox-like proportions, rounder blocks, flat colour
 - **Gate:** two chunky posts (stone base, wooden pillar, red cap), a thick beam under a red roof, a hanging sign, two warm lanterns. Open between the posts as before.
 - No decorative floor shapes (Nir didn't read the plaza disc).
 
-**How it's built** (`tools/blender/README.md` for the method): `node tools/blender/village_v2.js rig` (the skeleton from the existing barbarian), `blender -b --python tools/blender/build_village.py -- tools/blender art/village-v2/raw`, `node tools/blender/village_v2.js pack`. One tiny palette texture (64×16, nearest filtering) shared by every piece. In the game (`js/look-v2.js` part 4): each piece swaps one KayKit model inside a zone (`LV2.vil`, through `vPut`), the bodies swap `LOOK3D.npc_smith/inn` only while drawing (`syncNpcs`). A piece that is still loading is drawn the old way, and the village rebuilds once when it arrives. `tools/build3d.js` and the enemy keys are untouched.
+**How it's built** (`tools/blender/README.md` for the method): `node tools/blender/village_v2.js rig` (the skeleton from the existing barbarian), `blender -b --python tools/blender/build_village.py -- tools/blender art/village-v2/raw`, and phase 4: `blender -b --python tools/blender/build_village4.py -- tools/blender art/village-v2/raw [names]`, `node tools/blender/village_v2.js pack`. One tiny palette texture (64×16, nearest filtering) shared by every piece. In the game (`js/look-v2.js` part 4): each piece swaps one KayKit model inside a zone (`LV2.vil`, through `vPut`), the bodies swap `LOOK3D.npc_smith/inn` only while drawing (`syncNpcs`). A piece that is still loading is drawn the old way, and the village rebuilds once when it arrives. `tools/build3d.js` and the enemy keys are untouched.
 
 **Numbers**
 | piece | triangles | file (KB, lazy `js/m3d/`) |
@@ -281,3 +281,50 @@ Each region's enemies, before over v2, read left to right: lake, ridge / desert,
 - **First spawn of each new body:** 11-43 ms. The living tree's first spawn is 36-43 ms because its crown meshes are built then; that is once per session. One frame of about 1 to 3 s showed up on a single type's first spawn in some runs, in v1 as well as v2 (for example crawler 2,900 ms in v1), from SwiftShader shader compiles.
 
 **Not covered by the shots:** the wardens appear only in their own encounters, so they are not in the region rows. Their look is the stone idol, the same body as the golem, which the shots do cover. The shadow region is very dark in both modes; v2 is a little brighter, but it is still a night scene.
+
+## 10. Phase 4: every village building, world trees and rocks (11.11.2026)
+
+Nir approved the toy style and asked to keep going. Same switch (`?look=v1` shows the old look), village and world only, visual only: positions, sizes, collision, hit sizes and gather stages are unchanged.
+
+**What's in it**
+- **Every level of the sawmill, mine, village center, inn and storehouse**, and the forge and market buildings (stage 2 only did their yards). L1 a camp (tent; the center a ruin), L2 a timber frame, L3 wood + green roof, L4 stone base + blue roof + lit windows + chimney or tower, L5 bigger + red roof + gold trim + banner. Center: ruin → frame → wooden hall with a bell turret → round keep, blue cone → golden castle with two towers.
+- **Shared yard pieces** (`LV2.yard`): tent, wheelbarrow, ladder, stone pile, stone and wooden watchtowers, blue flag, pallet.
+- **World resource trees and rocks** (meadow): two toy trees, a round boulder with a mossy top, and the log pile beside a tree. Regional kinds (pine, cactus, dead tree) and the decor keep their look. A node drawn before the pieces load is rebuilt once (`lv2WorldSwap`).
+- **Load:** v2 no longer downloads the old KayKit models it doesn't draw (`m3dNeed` asks for the v2 piece inside `syncVillage`).
+
+Built with `blender -b --python tools/blender/build_village4.py -- tools/blender art/village-v2/raw`, then `node tools/blender/village_v2.js pack <names>`. 35 pieces, 264 to 4,004 triangles, 1 material each, the same 64×16 palette (8 columns added at the end).
+
+**Evidence** (`node tools/look-v2-p4-shots.js`, offline, 3D, before = `?look=v1`, left before / right v2, 915×412)
+
+![Center L1-L5](concept/visual-language/phase4/p915-center-L1-5.jpg)
+Village center, levels 1 to 5 (top to bottom).
+
+![Sawmill L3](concept/visual-language/phase4/p915-mill3.jpg)
+![Sawmill L4](concept/visual-language/phase4/p915-mill4.jpg)
+![Sawmill L5](concept/visual-language/phase4/p915-mill5.jpg)
+![Mine L5](concept/visual-language/phase4/p915-mine5.jpg)
+![Inn L4](concept/visual-language/phase4/p915-inn4.jpg)
+![Inn L5](concept/visual-language/phase4/p915-inn5.jpg)
+![Storehouse L5](concept/visual-language/phase4/p915-stash5.jpg)
+![Forge L5](concept/visual-language/phase4/p915-forge5.jpg)
+![Market L4](concept/visual-language/phase4/p915-market4.jpg)
+
+![Tree mid-gather](concept/visual-language/phase4/p915-gather.jpg)
+![Rock mid-gather](concept/visual-language/phase4/p915-rock.jpg)
+![Broken tree](concept/visual-language/phase4/p915-broken.jpg)
+Meadow: a tree and a rock at half hp, then the tree broken (fall, stump).
+
+- **Console errors:** 0 before, 0 v2. No piece failed to load.
+- **Load (village L1-L5 + meadow):** before 2,787 KB of old KayKit village models; v2 806 KB old (houses, walls, windmill: not converted) + 993 KB v2 pieces = 1,799 KB. Each v2 piece 32-64 ms to load and decode (SwiftShader), lazily, the old look meanwhile.
+- **Arena: pixel-identical, 0 of 376,980 pixels** (v1 vs v2, after the fix below). Control: v1 vs v1 gives 0 on main and on this branch, so the test is deterministic.
+  The first runs showed 2,227 pixels on the hero, **on main too** (stage 2's #681 removed vfx.js's warm hero rim everywhere, the arena included). Fixed here: the rim is one shared value (`VFX.rimU` in vfx.js), and v2 sets it to 0 only in the village and world.
+- **120 FPS:** each piece is one draw call like the KayKit model it replaces, with fewer triangles than most (KayKit buildings are 80-275 KB). Not measured on the phone.
+
+At 844×390 (`p844-*.jpg`, levels 2 and 4): 0 console errors, no failed load.
+
+Night (`?tod=night`, levels 3 and 5): 0 console errors, no failed load. L4/L5 windows and lanterns glow warm, L3 windows stay dark.
+![Inn L5 at night](concept/visual-language/phase4/p915-night-inn5.jpg)
+![Center L5 at night](concept/visual-language/phase4/p915-night-center5.jpg)
+![Sawmill L3 at night](concept/visual-language/phase4/p915-night-mill3.jpg)
+
+**Still open:** the village's houses, walls and windmill (VGROW) are still KayKit; the meadow decor trees and rocks (not resource nodes) are still KayKit.

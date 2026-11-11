@@ -83,7 +83,7 @@ VFX.hour=()=>{const m=location.search.match(/[?&]tod=(\w+)/);if(m&&VFX.fixed[m[1
     if(m.userData.vfxRim||!m.isMeshLambertMaterial&&!m.isMeshStandardMaterial&&!m.isMeshPhongMaterial)return;
     m.userData.vfxRim=1;const R=VFX.rim,prev=m.onBeforeCompile;
     m.onBeforeCompile=(sh,rr)=>{if(prev)prev.call(m,sh,rr);
-      sh.uniforms.vfxRimC={value:new THREE.Color(R.col).multiplyScalar(R.k)};
+      sh.uniforms.vfxRimC=VFX.rimU||(VFX.rimU={value:new THREE.Color(R.col).multiplyScalar(R.k),base:new THREE.Color(R.col).multiplyScalar(R.k)});   // one shared value: look-v2.js turns it off in the village and world only
       sh.fragmentShader='uniform vec3 vfxRimC;\n'+sh.fragmentShader.replace('#include <emissivemap_fragment>',
         '#include <emissivemap_fragment>\nvec3 vfxV=isOrthographic?vec3(0.0,0.0,1.0):normalize(vViewPosition);\n'+
         'totalEmissiveRadiance+=vfxRimC*pow(1.0-clamp(abs(dot(normalize(normal),vfxV)),0.0,1.0),'+R.pow.toFixed(2)+');')};
