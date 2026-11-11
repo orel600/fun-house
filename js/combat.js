@@ -24,7 +24,7 @@ function damage(e,base,w,ang,t=P.dt[w]||'physical',chained=false){
   const uk=ufHit(e,w,chained);   // מכה כבדה מ-Aging (upfeel.js)
   const d=uk*base*m*(P.swapBuff>0?2:1)*(P.power>0?BONUS.powerDmg:1)*(crit?HITFX.critMul:1)*statDmgFx(w,e);   // עץ הסקילים (stats.js)
   statOnDamage(d);
-  const hp0=e.hp;e.hp-=d;e.flash=0.09;if(e.node)gHit(e,ang,d);   // מכה במקור משאבים בעולם: חתיכות ונדנוד (gather.js)
+  const hp0=e.hp;e.hp-=d;e.flash=0.09;if(e.node){gHit(e,ang,d);ghCap(e,hp0)}   // ghCap: לא פחות מכמה מכות למקור (ghits.js). מכה במקור משאבים בעולם: חתיכות ונדנוד (gather.js)
   sfx('hit',jSnd(m,crit));heroCount('dmg_'+w,d);   // סגנון המשחק (heroes.js)
   if(!e.isBoss&&!e.node){const kb=(w==='sword'?150:55)*(m>1?1.4:1)/(e.big||1);e.kx+=Math.cos(ang)*kb;e.ky+=Math.sin(ang)*kb}
   const col=m>1?dtCol(t):m<1?C.dim:C.chalk,J=juiceHit(e,d,m,crit||uk>1,t,ang);   // אפקטים של קרב בעולם (juice.js)

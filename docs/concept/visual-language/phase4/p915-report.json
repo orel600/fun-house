@@ -1,0 +1,425 @@
+{
+ "seed": 5,
+ "viewport": {
+  "width": 915,
+  "height": 412
+ },
+ "night": false,
+ "arena": {
+  "pixelsDiffer": 2227,
+  "of": 376980
+ },
+ "before": {
+  "errors": [],
+  "boot": {
+   "bootKs": [
+    "piocho1",
+    "vx_ruin",
+    "piocho2"
+   ],
+   "kb": 397
+  },
+  "frames": {
+   "L1": {
+    "calls": 1,
+    "tris": 2
+   },
+   "L2": {
+    "calls": 1,
+    "tris": 2
+   },
+   "L3": {
+    "calls": 1,
+    "tris": 2
+   },
+   "L4": {
+    "calls": 1,
+    "tris": 2
+   },
+   "L5": {
+    "calls": 1,
+    "tris": 2
+   }
+  },
+  "load": {
+   "log": [],
+   "fail": [],
+   "loadedKB": 0,
+   "loadedOldKB": 2787
+  },
+  "world": {
+   "rebuilt": 0,
+   "nodes": [
+    {
+     "kind": "tree",
+     "hp": -6.693333333333332,
+     "max": 40,
+     "r": 28,
+     "scale": 179.51
+    },
+    {
+     "kind": "rock",
+     "hp": 27.5,
+     "max": 55,
+     "r": 34,
+     "scale": 211.78
+    }
+   ]
+  }
+ },
+ "v2": {
+  "errors": [],
+  "boot": {
+   "bootKs": [
+    "piocho1",
+    "vx_ruin",
+    "piocho2"
+   ],
+   "kb": 397
+  },
+  "frames": {
+   "L1": {
+    "calls": 1,
+    "tris": 2
+   },
+   "L2": {
+    "calls": 1,
+    "tris": 2
+   },
+   "L3": {
+    "calls": 1,
+    "tris": 2
+   },
+   "L4": {
+    "calls": 1,
+    "tris": 2
+   },
+   "L5": {
+    "calls": 1,
+    "tris": 2
+   }
+  },
+  "load": {
+   "log": [
+    {
+     "k": "vx_lv2_gate",
+     "at": 304,
+     "ms": 16,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_lumber",
+     "at": 304,
+     "ms": 16,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_stones",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_ruin",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_stageB",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "lv2_smith",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "lv2_inn",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_crate",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_barrel",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_tent",
+     "at": 336,
+     "ms": 16,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_pallet",
+     "at": 2224,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_ladder",
+     "at": 2224,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_stall",
+     "at": 2224,
+     "ms": 45,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_bucket",
+     "at": 2272,
+     "ms": 47,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_crateS",
+     "at": 2272,
+     "ms": 47,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_rock",
+     "at": 2320,
+     "ms": 48,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_sack",
+     "at": 2320,
+     "ms": 49,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_wbarrow",
+     "at": 10768,
+     "ms": 34,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_stageA",
+     "at": 10768,
+     "ms": 34,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_rack",
+     "at": 10816,
+     "ms": 36,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_hallG",
+     "at": 19296,
+     "ms": 45,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_forgeG",
+     "at": 19296,
+     "ms": 45,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_millG",
+     "at": 19296,
+     "ms": 45,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_marketG",
+     "at": 19296,
+     "ms": 45,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_mineG",
+     "at": 19296,
+     "ms": 45,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_tavernG",
+     "at": 19296,
+     "ms": 45,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_homeG",
+     "at": 19296,
+     "ms": 45,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_fence",
+     "at": 19344,
+     "ms": 47,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_flagB",
+     "at": 19392,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_keepB",
+     "at": 27840,
+     "ms": 37,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_forgeB",
+     "at": 27840,
+     "ms": 37,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_towerB",
+     "at": 27840,
+     "ms": 37,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_marketB",
+     "at": 27840,
+     "ms": 37,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_homeB",
+     "at": 27840,
+     "ms": 37,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_tavernB",
+     "at": 27840,
+     "ms": 37,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_millB",
+     "at": 27840,
+     "ms": 37,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_mineB",
+     "at": 27888,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_millR",
+     "at": 36368,
+     "ms": 48,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_forgeR",
+     "at": 36368,
+     "ms": 48,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_castleY",
+     "at": 36368,
+     "ms": 48,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_mineR",
+     "at": 36368,
+     "ms": 48,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_marketR",
+     "at": 36368,
+     "ms": 48,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_tavernR",
+     "at": 36368,
+     "ms": 48,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_homeR",
+     "at": 36368,
+     "ms": 64,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_pennant",
+     "at": 36416,
+     "ms": 47,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_banner",
+     "at": 36416,
+     "ms": 48,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_towerA",
+     "at": 36464,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_treeA",
+     "at": 44912,
+     "ms": 37,
+     "where": "meadow"
+    },
+    {
+     "k": "vx_lv2_treeB",
+     "at": 44912,
+     "ms": 37,
+     "where": "meadow"
+    }
+   ],
+   "fail": [],
+   "loadedKB": 993,
+   "loadedOldKB": 806
+  },
+  "world": {
+   "rebuilt": 55,
+   "nodes": [
+    {
+     "kind": "tree",
+     "hp": -6.693333333333332,
+     "max": 40,
+     "r": 28,
+     "v2piece": 1,
+     "scale": 160.71
+    },
+    {
+     "kind": "rock",
+     "hp": 27.5,
+     "max": 55,
+     "r": 34,
+     "v2piece": 1,
+     "scale": 99.98
+    }
+   ]
+  }
+ }
+}

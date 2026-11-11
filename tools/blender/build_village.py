@@ -7,7 +7,7 @@
 # Props: built on the ground (z=0 in Blender), the same shape ratios as the KayKit pieces they replace (vPut scales by width), the front faces the camera (glTF +z).
 import bpy,bmesh,sys,math,json
 from mathutils import Vector,Matrix
-pdir,out=sys.argv[-2:]
+pdir,out=(sys.argv[sys.argv.index('--')+1:]+['',''])[:2] if '--' in sys.argv else sys.argv[-2:]   # also imported by build_village4.py (phase 4)
 # ---------- palette: 32 columns of 2 px (tiny file, read with nearest filtering), light at the top, dark at the bottom. Glow columns also go to the glow map ----------
 COLS=[  # name, top, middle, bottom, glow
  ('skin',(255,214,170),(240,180,135),(196,130,92),0),('beard',(150,96,60),(112,68,40),(70,42,26),0),
@@ -283,7 +283,8 @@ def p_gate():
     for sx in (-1,1):m.part(cyl(Vector((sx*0.26,-0.17,1.04)),Vector((sx*0.26,-0.17,1.06)),0.015,sides=5),'woodD','rope')
     return m
 
-palette()
-for name,o in (('smith',SMITH),('inn',INN)):body(name,o).export(join=False)
-for fn in (p_barrel,lambda:p_crate(),lambda:p_crate('crateS',True),p_sack,p_bucket,p_rack,p_lumber,p_fence,
+if __name__=='__main__':   # phase 4 (build_village4.py) imports the helpers above without rebuilding these
+ palette()
+ for name,o in (('smith',SMITH),('inn',INN)):body(name,o).export(join=False)
+ for fn in (p_barrel,lambda:p_crate(),lambda:p_crate('crateS',True),p_sack,p_bucket,p_rack,p_lumber,p_fence,
            lambda:p_flag('banner','roofR','gold'),lambda:p_flag('pennant','yellow','roofR'),p_stall,p_gate):fn().export(join=True)

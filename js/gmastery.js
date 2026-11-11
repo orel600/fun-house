@@ -48,7 +48,7 @@ function gmHit(n,d,ang){
   if(t<G.near.from)return;
   let left=G.near.n[t]||G.near.n[3];
   for(const o of S.nd.list){if(left<=0)break;if(o===n||o.dead||gmFam(o)!==f||Math.hypot(o.x-n.x,o.y-n.y)-o.r-n.r>G.near.r)continue;
-    o.hp-=d*k;o.flash=0.09;o.gmSide=true;gHit(o,ang);o.gmSide=false;G.stat.splash++;left--;
+    const h0=o.hp;o.hp-=d*k;o.flash=0.09;o.gmSide=true;gHit(o,ang);o.gmSide=false;ghCap(o,h0);G.stat.splash++;left--;
     if(o.hp<=0&&!o.dead)nodeDown(o)}
 }
 // דרגה 5: חתיכה בצבע זהב מדי פעם (gHit). i: מספר החתיכה במכה

@@ -15,6 +15,8 @@
       All built in Blender from code (tools/blender/build_village.py, village_v2.js): rigid parts on the same KayKit skeleton, so every NPC animation still plays.
       Only the drawn model changes: positions, sizes (vPut width), collision and roles stay. A piece that is still loading (js/m3d/) is drawn the old way,
       and the village is rebuilt once when it arrives. Village only: the world's gates and everything else keep their models.
+   5. Phase 4 (11.11.2026): every level of the sawmill, mine, village center, inn and storehouse, the forge and market buildings, their camp, frame and
+      yard pieces (tools/blender/build_village4.py), and the open world's resource trees and rocks. Same switch, same rules: only the drawn model changes.
    Numbers live in LV2. A new world enemy look = one row in LV2.swap and one in LV2.looks. A new village piece = one row in a LV2.vil zone. */
 const LV2={
   on:!/[?&]look=(v1|classic)\b/.test(location.search),
@@ -51,16 +53,34 @@ const LV2={
   rim:{k:0.5},   // edge rim on the hero, at least this strong in the village and world (rim-world.js: its color and where the edge starts)
   plaza:{x:0,y:-185,lampR:200,   // street lamps this close to the plaza center become v2 lamps
     lamp:{h:56,post:'#5A3E2B',base:'#9E9484',cap:'#B54A3C',glow:'#ffd38a',halo:46}},
-  // 4. the village: NPC bodies (same height, foot, props and animations as their LOOK3D.npc_<id>; no tint, the toy colours carry who they are)
+  // 4. the village: NPC bodies (same height, foot, props and animations as their LOOK3D.npc_<id>). No NPC keeps a tint, the toy colours carry who they are
   npc:{smith:{model:'lv2_smith'},inn:{model:'lv2_inn'}},
-  // village pieces by zone: a KayKit model drawn within r of (x,y) is drawn as its v2 piece instead (vx_lv2_*). at: a building of VILLAGE.b (its x,y), r in its radii
+  // village pieces by zone: a KayKit model drawn within r of (x,y) is drawn as its v2 piece instead (vx_lv2_*). at: a building of VILLAGE.b (its x,y), r in its radii.
+  // The first zone that maps a model wins, so a building's own zone comes before the plaza's
   vil:[
-    {at:'forge',r:2.4,map:{v_barrel:'vx_lv2_barrel',vx_bucket:'vx_lv2_bucket',vx_rack:'vx_lv2_rack',v_crate:'vx_lv2_crate',v_lumber:'vx_lv2_lumber',vx_fenceS:'vx_lv2_fence',vx_flagR:'vx_lv2_banner'}},
-    {at:'market',r:2.4,map:{vx_pallet:'vx_lv2_stall',v_tent:'vx_lv2_stall',vx_sack:'vx_lv2_sack',v_crate:'vx_lv2_crate',vx_crateS:'vx_lv2_crateS',v_barrel:'vx_lv2_barrel',vx_flagY:'vx_lv2_pennant'}},
+    {at:'forge',r:2.4,map:{v_barrel:'vx_lv2_barrel',vx_bucket:'vx_lv2_bucket',vx_rack:'vx_lv2_rack',v_crate:'vx_lv2_crate',v_lumber:'vx_lv2_lumber',vx_fenceS:'vx_lv2_fence',vx_flagR:'vx_lv2_banner',
+      vx_forgeG:'vx_lv2_forgeG',v_forge:'vx_lv2_forgeB',vx_forgeR:'vx_lv2_forgeR'}},
+    {at:'market',r:2.4,map:{vx_pallet:'vx_lv2_stall',v_tent:'vx_lv2_stall',vx_sack:'vx_lv2_sack',v_crate:'vx_lv2_crate',vx_crateS:'vx_lv2_crateS',v_barrel:'vx_lv2_barrel',vx_flagY:'vx_lv2_pennant',
+      vx_marketG:'vx_lv2_marketG',v_market:'vx_lv2_marketB',vx_marketR:'vx_lv2_marketR'}},
+    // phase 4 (11.11): every level of the other buildings. L1 a camp, L2 a timber frame, L3 green roof, L4 stone + blue roof + lit windows, L5 red (center: gold)
+    {at:'center',r:1.6,map:{vx_ruin:'vx_lv2_ruin',vx_hallG:'vx_lv2_hallG',vx_towerAB:'vx_lv2_keepB',vx_castleY:'vx_lv2_castleY'}},
+    {at:'mill',r:2.4,map:{vx_millG:'vx_lv2_millG',v_mill:'vx_lv2_millB',vx_millR:'vx_lv2_millR'}},
+    {at:'mine',r:2.4,map:{v_rock:'vx_lv2_rock',vx_mineG:'vx_lv2_mineG',v_mine:'vx_lv2_mineB',vx_mineR:'vx_lv2_mineR'}},
+    {at:'inn',r:2.4,map:{vx_tavernG:'vx_lv2_tavernG',vx_tavernB:'vx_lv2_tavernB',vx_tavernR:'vx_lv2_tavernR'}},
+    {at:'stash',r:2.4,map:{vx_homeBG:'vx_lv2_homeG',vx_homeBB:'vx_lv2_homeB',vx_homeBR:'vx_lv2_homeR'}},
     {x:0,y:-80,r:300,map:{v_tent:'vx_lv2_stall',v_crate:'vx_lv2_crate',vx_sack:'vx_lv2_sack',v_barrel:'vx_lv2_barrel'}},   // the plaza stalls (VGROW.items, vgrowth.js)
     {any:1,map:{v_gate:'vx_lv2_gate'}}   // the village gate, wherever the border puts it
-  ]
+  ],
+  // the yard pieces every building shares (the camp, the frame, the build site, goods, fences, flags, towers): added to each building zone above (lv2Yards)
+  yard:{v_tent:'vx_lv2_tent',vx_stageA:'vx_lv2_stageA',vx_stageB:'vx_lv2_stageB',v_site:'vx_lv2_stageB',v_lumber:'vx_lv2_lumber',v_barrel:'vx_lv2_barrel',v_crate:'vx_lv2_crate',
+    vx_crateS:'vx_lv2_crateS',vx_sack:'vx_lv2_sack',vx_bucket:'vx_lv2_bucket',vx_rack:'vx_lv2_rack',vx_fenceS:'vx_lv2_fence',vx_fenceW:'vx_lv2_fence',vx_flagR:'vx_lv2_banner',
+    vx_flagY:'vx_lv2_pennant',v_flag:'vx_lv2_flagB',vx_wbarrow:'vx_lv2_wbarrow',vx_ladder:'vx_lv2_ladder',v_stone:'vx_lv2_stones',vx_towerA:'vx_lv2_towerA',vx_towerB:'vx_lv2_towerB',vx_pallet:'vx_lv2_pallet'},
+  // 5. the open world's resource trees and rocks (phase 4): same node, size, hit size and gather stages (gather.js only moves and scales the model).
+  // Regional kinds (pine, cactus, ... W3D.kinds) and the decor keep their look. log: the little log pile beside a tree you can cut
+  world:{tree:['vx_lv2_treeA','vx_lv2_treeB'],rock:'vx_lv2_rock',log:'vx_lv2_lumber'}
 };
+// each building zone gets the shared yard pieces (its own entries win: the market's tent is a stall)
+for(const Z of LV2.vil)if(Z.at)Z.map=Object.assign({},LV2.yard,Z.map);
 const lv2Here=()=>LV2.on&&typeof S!=='undefined'&&S&&!S.room&&!S.mb&&!!(S.vil||S.wd);
 const LV2U={w:{value:LV2.outline.w}};
 
@@ -84,15 +104,29 @@ if(LV2.on){
   // wldTypes stays a list of real enemy types (tools/check.js spawns each of them)
   {const ws=wldWarmSet;wldWarmSet=function(r,c,ks){return ws.call(this,r,c,ks.map(k=>LV2.swap[k]&&LOOK3D[LV2.swap[k]]?LV2.swap[k]:k))}}
   // 1. the hero
-  {const sp=syncPlayer;syncPlayer=function(){const r=sp.apply(this,arguments);try{lv2Hero(R3D.player)}catch(e){}return r}}
+  {const sp=syncPlayer;syncPlayer=function(){const r=sp.apply(this,arguments);try{lv2Hero(R3D.player);const U=typeof VFX!=='undefined'&&VFX.rimU;if(U){if(lv2Here())U.value.setRGB(0,0,0);else U.value.copy(U.base)}}catch(e){}return r}}
   // 3. the plaza
   {const sl=p3StreetLamp;p3StreetLamp=function(x,y,g){const P0=LV2.plaza;return Math.hypot(x-P0.x,y-P0.y)<P0.lampR?lv2Lamp(x,y,g):sl(x,y,g)}}
-  // 4. the village pieces and bodies
-  for(const id in LV2.npc){const L0=LOOK3D['npc_'+id];if(L0){const L=Object.assign({},L0,LV2.npc[id]);delete L.tint;LOOK3D['lv2npc_'+id]=L}}
+  // 1b. one rim on the hero, not two (Nir 11.11: "some of the characters have that strange white light"): vfx.js's warm, wide rim
+  // (k 1.2, pow 2) on top of rim-world's edge bleached the hero's head and armor white. In v2 the hero's rim is rim-world's, plus the outline
+  // Only there: the rim is compiled into the hero's materials once, so it is turned to 0 per frame (VFX.rimU) and the arena keeps it (pixel-identical with v1)
+  // 4. the village pieces and bodies. Every village NPC loses its tint (an emissive glow over the whole body: Avner and the merchant gold,
+  // the priest lilac, washed out and glowing); the smith and the innkeeper also get their v2 bodies
+  for(const k in LOOK3D){const id=k.slice(4),L0=LOOK3D[k];if(k.slice(0,4)!=='npc_'||!LV2.npc[id]&&!L0.tint)continue;
+    const L=Object.assign({},L0,LV2.npc[id]);delete L.tint;LOOK3D['lv2npc_'+id]=L}
   {const vp=vPut;vPut=function(model,x,y,w,rot,group){const k=lv2VilKey(model,x,y);return vp.call(this,k||model,x,y,w,rot,group)}}
-  {const sv=syncVillage;syncVillage=function(){lv2VilReady();return sv.apply(this,arguments)}}
+  // 5. the world's trees and rocks: W3D's models are swapped only while syncWorld runs (the village and the decor keep theirs).
+  // Until the v2 pieces are loaded the nodes are drawn the old way; when they arrive those nodes are rebuilt once (lv2WorldSwap)
+  {const sw=syncWorld;syncWorld=function(){const N=W3D.nodes,Lg=W3D.log,keep=[N.tree.model,N.rock.model,Lg.model];
+    if(lv2Here()&&S.wd){const W=LV2.world,ok=[...W.tree,W.rock,W.log].map(k=>m3dNeed(k)).every(Boolean);LV2.wOk=ok;if(ok){N.tree.model=W.tree;N.rock.model=W.rock;Lg.model=W.log}lv2WorldSwap(ok)}
+    try{return sw.apply(this,arguments)}finally{N.tree.model=keep[0];N.rock.model=keep[1];Lg.model=keep[2];lv2WorldMark()}}}
+  // a building shows its look only when its models are loaded (syncVillage: m3dNeed on the KayKit keys). In v2 it asks for the v2 pieces instead,
+  // so the old models it no longer draws are not downloaded (phase 4). A v2 piece that failed: the old model, as before
+  {const need={};for(const Z of LV2.vil)if(Z.at)for(const k in Z.map)if(m3dLazy(k))(need[k]||(need[k]=new Set)).add(Z.map[k]);
+    const mn=m3dNeed;m3dNeed=function(k){const vs=LV2.inSV&&need[k];if(vs&&![...vs].some(v=>M3D.st[v]==='fail'))return [...vs].map(v=>mn(v)).every(Boolean);return mn.apply(this,arguments)}}
+  {const sv=syncVillage;syncVillage=function(){lv2VilReady();if(R3D.vil!==LV2.swV){LV2.swV=R3D.vil;lv2Sweep()}LV2.inSV=lv2Here()&&!!S.vil;try{return sv.apply(this,arguments)}finally{LV2.inSV=false}}}   // a new village object: free the old one's lamps
   {const sn=syncNpcs;syncNpcs=function(){const keep={};
-    for(const id in LV2.npc){const k='npc_'+id,v=LOOK3D['lv2npc_'+id];if(!v)continue;keep[k]=LOOK3D[k];
+    for(const lk in LOOK3D){if(lk.slice(0,7)!=='lv2npc_')continue;const id=lk.slice(7),k='npc_'+id,v=LOOK3D[lk];keep[k]=LOOK3D[k];
       const L=lv2Here()&&S.vil&&m3dNeed(v.model)?v:keep[k],a=R3D.npcs&&R3D.npcs[id];LOOK3D[k]=L;
       if(a&&a.L!==L){freeActor(a);delete R3D.npcs[id]}}   // the new body arrived (or v2 is off): a fresh actor, same place and state next frame
     try{return sn.apply(this,arguments)}finally{Object.assign(LOOK3D,keep)}}}   // LOOK3D.npc_* stays the classic look for everyone else
@@ -115,7 +149,9 @@ function lv2OutlineMat(){
 }
 function lv2Hero(a){
   if(!a)return;
-  if(a.lv2!==a.key){a.lv2=a.key;a.lv2ol=[];
+  // rebuilt when the body or what is worn changes (armor3d a.ar, gear3dParts a.g3), not every frame: parts added later need a line too (review 11.11)
+  const st=a.key+'|'+(a.ar||'')+'|'+(a.g3||'');
+  if(a.lv2!==st){lv2Unline(a);a.lv2=st;a.lv2ol=[];
     const src=[];a.root.traverse(o=>{if(o.isMesh&&!o.userData.lv2ol)src.push(o)});
     for(const o of src){let ol;
       if(o.isSkinnedMesh){ol=new THREE.SkinnedMesh(o.geometry,lv2OutlineMat());ol.bind(o.skeleton,o.bindMatrix);ol.bindMode=o.bindMode;
@@ -126,6 +162,10 @@ function lv2Hero(a){
   const here=lv2Here();if(typeof rimwActor==='function')for(const U of rimwActor(a))U.k.value=here?Math.max(U.k.value,LV2.rim.k):RIMW.on?U.k.value:0;   // ?rimw=0: nobody else resets it, so 0 here
   for(const [o,ol] of a.lv2ol)ol.visible=here&&o.visible;
 }
+
+// strips the hero's outlines (they share the source's geometry and one material: nothing to dispose). Also on a pooled actor (render3d.js freeActor),
+// so a non-hero that reuses it never shows them (review 11.11)
+function lv2Unline(a){for(const [,ol] of a.lv2ol||[])if(ol.parent)ol.parent.remove(ol);a.lv2ol=null;a.lv2=null}
 
 /* ---- 2b. gear for the v2 shield: a tall tower shield and round shoulder pads, from simple shapes (no build step) ---- */
 function lv2Gear(){
@@ -157,6 +197,7 @@ function lv2Lamp(x,y,g){
   p3Mesh(new THREE.SphereGeometry(9,14,7,0,Math.PI*2,0,Math.PI/2),lv2Smooth(L.cap),0,L.h+10,0,grp);
   p3Mesh(new THREE.SphereGeometry(2.2,10,6),lv2Smooth(L.cap),0,L.h+19,0,grp);
   p3Halo(L.glow,L.halo,L.h+6,grp);
+  (LV2.own||(LV2.own=[])).push(grp);   // its geometries and halo are its own: freed when the village drops it (lv2Sweep)
   return p3At(grp,x,y,g);
 }
 
@@ -169,9 +210,17 @@ function lv2VilKey(model,x,y){
     if(m3dNeed(k))return k;(LV2.wait||(LV2.wait=new Set)).add(k);return null}
   return null;
 }
+// frees the lamps of villages that left the scene (lv2VilReady, a new village level in vgrowth.js, camera.js): only what lv2Lamp made.
+// Materials from lv2Smooth/p3Mat and the soft texture are shared, so they stay
+function lv2Sweep(){
+  const L=LV2.own;if(!L||!L.length||!R3D.scene)return;
+  const inScene=o=>{while(o){if(o===R3D.scene)return true;o=o.parent}return false};
+  LV2.own=L.filter(grp=>{if(inScene(grp))return true;
+    grp.traverse(o=>{if(o.isSprite){if(o.material)o.material.dispose()}else if(o.isMesh&&o.geometry)o.geometry.dispose()});LV2.freed=(LV2.freed||0)+1;return false});
+}
 function lv2VilReady(){
   const W=LV2.wait;if(!W||!W.size||![...W].every(k=>m3dReady(k)||M3D.st[k]==='fail'))return;
-  LV2.wait=null;if(R3D.vil){R3D.scene.remove(R3D.vil.g);R3D.vil=null}   // rebuilt by syncVillage, like a new village level (vgrowth.js)
+  LV2.wait=null;if(R3D.vil){R3D.scene.remove(R3D.vil.g);R3D.vil=null;lv2Sweep()}   // rebuilt by syncVillage, like a new village level (vgrowth.js)
 }
 // what the village needs at the opening: the gate, the two bodies, and the v2 pieces of the forge and market looks and the plaza of this level
 function lv2VilBoot(){
@@ -183,3 +232,17 @@ function lv2VilBoot(){
     for(const it of VGROW.items)if(L>=it.at&&(!it.to||L<=it.to)&&Z.map[it.m]&&Math.hypot(it.x-Z.x,it.y-Z.y)<=Z.r)ks.push(Z.map[it.m])}
   return [...new Set(ks)];
 }
+
+/* ---- 5. the world's trees and rocks ---- */
+// which nodes are drawn from W3D.nodes tree/rock (not a regional kind, a vein or a chest)
+function lv2WorldNodes(cb){
+  const G=R3D.wlds&&S.wd&&R3D.wlds[S.wd.reg||'meadow'];if(!G)return;
+  for(const n of S.nd.list){const m=G.nodes[n.id];if(!m)continue;const sh=wKind(n.kind).shape;
+    if((sh==='tree'||sh==='rock')&&!(G.kinds&&W3D.kinds[n.kind]))cb(n,m,G)}
+}
+// a node built before the v2 pieces arrived: dropped (with its log and stump), syncWorld builds it again this frame in v2
+function lv2WorldSwap(ok){
+  if(!ok)return;lv2WorldNodes((n,m,G)=>{if(m.userData.lv2w!==0)return;const u=m.userData;
+    for(const o of [m,u.log,u.gSt])if(o&&o.parent)o.parent.remove(o);delete G.nodes[n.id];LV2.rebuilt=(LV2.rebuilt||0)+1})
+}
+function lv2WorldMark(){if(lv2Here()&&S.wd)lv2WorldNodes((n,m)=>{if(m.userData.lv2w==null)m.userData.lv2w=LV2.wOk?1:0})}

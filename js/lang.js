@@ -1294,6 +1294,7 @@ const TEXT={
   'gt.t.wood':{en:'Wooden'},'gt.t.copper':{en:'Copper'},'gt.t.iron':{en:'Iron'},'gt.t.silver':{en:'Silver'},'gt.t.gold':{en:'Golden'},
   'gt.next':{en:(n,y,m)=>'Next: '+n+' · +'+y+'% more per node · '+m+' min'},'gt.opens':{en:l=>'Next opens: '+l},
   'goal.pin':{en:'Track in the world'},'goal.pinned':{en:'Tracking'},'goal.ready':{en:n=>'Everything for '+n+'! Head home to build'},
+  'goal.hero':{en:(lv,n)=>'Reach hero level '+lv+' to build '+n},'goal.lv':{en:lv=>'Hero Lv '+lv},
   'vp.cutterShop':{en:'Stone workshop'},'vp.pl.deepQuarry':{en:'the Deep Quarry'},
   'vp.cutterShop.d':{en:(pl,lv)=>'Help me build a proper workshop. My crew will clear the rockfall in the quarry and open '+pl+'. Or come back at level '+lv+' and climb over it.'},
   'vp.stage':{en:(a,b)=>'Stage '+a+'/'+b},'vp.heroLv':{en:(n,l)=>'Stage '+n+' needs hero level '+l},'vp.heroBtn':{en:l=>'Hero level '+l},'vp.build':{en:n=>'Build stage '+n},
