@@ -537,7 +537,7 @@ function worldBot(m,L,god){
     const g=WORLD.gates.grove,pn=document.getElementById('wPanel'),wg=document.getElementById('wGo');
     if(W.near==='grove'&&!pn.hidden&&L.wGateAuto==null)L.wGateAuto=true;   // כרטיס נפתח לבד: לא אמור לקרות
     if(W.near==='grove'&&pn.hidden&&!wg.hidden&&(L.wFoeBack!=null||W.t-m.wt>90)){if(L.wGateAuto==null)L.wGateAuto=false;L.wGoBtn=wg.innerText.replace(/\s+/g,' ');
-      L.wPicked=dropStats().picked;m.runBag=bag();wg.click();L.wArena=!S.wd&&S.mode==='play';m.wp='arena';return L}
+      L.wPicked=dropStats().picked;m.runBag=bag();const tip0=wArenaTipped;wg.click();L.wArena=!S.wd&&S.mode==='play';const tipOn=floats.some(f=>f.txt===T('w.arenaTip'));L.wTip=tip0?!tipOn:tipOn;L.wTipFirst=!tip0;m.wp='arena';return L}
     return steer(g.x,g.y,false,0,L)}
   if(m.wp==='arena'){   // חזרנו מהזירה: לאותו שער, והשלל בתרמיל
     const g=WORLD.gates.grove;L.wBack=Math.round(Math.hypot(P.x-g.x,P.y-g.y));L.back=S.t;
@@ -5245,7 +5245,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   const DA=JSON.parse(L.dropsArena||'{}');
   check(L.wDropGround&&L.wPicked>0&&DA.spawned>0&&DA.picked>0,'שלל על הרצפה: '+(L.wDropGround?'עץ נפל לרצפה לפני התרמיל':'נכנס לתרמיל בלי להיראות')+', בעולם נאספו '+(L.wPicked||0)+' בהליכה'+
     ' · בזירה נפלו '+(DA.spawned||0)+', נאספו בהליכה '+(DA.picked||0)+', ובסוף לבד '+(DA.auto||0));
-  check(L.wArena&&L.wGateAuto===false&&!!L.wGoBtn&&L.wBack!=null&&L.wBack<200,'שער לזירה: '+(L.wGateAuto?'כרטיס נפתח לבד':L.wGoBtn?'ליד השער רק עיגול "'+L.wGoBtn+'"':'אין עיגול ליד השער')+', '+(L.wArena?'לחיצה אחת מתחילה ריצה':'לחיצה על העיגול לא נכנסה לזירה')+(L.wBack!=null?', בסוף חזר לשער ('+L.wBack+' פיקסלים ממנו)':', לא חזר לעולם'));
+  check(L.wArena&&L.wTip&&L.wGateAuto===false&&!!L.wGoBtn&&L.wBack!=null&&L.wBack<200,'שער לזירה: '+(L.wGateAuto?'כרטיס נפתח לבד':L.wGoBtn?'ליד השער רק עיגול "'+L.wGoBtn+'"':'אין עיגול ליד השער')+', '+(L.wArena?'לחיצה אחת מתחילה ריצה':'לחיצה על העיגול לא נכנסה לזירה')+(L.wTipFirst?(L.wTip?', טיפ הזירה הופיע בכניסה הראשונה':', טיפ הזירה (w.arenaTip) לא הופיע בכניסה הראשונה'):(L.wTip?', טיפ הזירה לא חזר (כבר הוצג בסשן)':', טיפ הזירה הופיע שוב באותו סשן'))+(L.wBack!=null?', בסוף חזר לשער ('+L.wBack+' פיקסלים ממנו)':', לא חזר לעולם'));
   check(L.back!=null&&!!L.lootGot&&L.lootSaved,'שלל: '+(L.won!=null?'ניצחון '+t(L.won):L.died!=null?'נפל '+t(L.died):'הריצה לא נגמרה')+
     (L.back!=null?', חזר לשער. במסך: '+L.lootTxt+' · בתרמיל: '+(L.lootGot||'כלום')+(L.lootSaved?', נשמר':', לא נשמר'):''));
   const D=L.wDeath||{};
