@@ -3519,7 +3519,7 @@ function worldBot(m,L,god){
       o.sign=vpForPath('ridge')==='tunnelCrew'&&vpForPath('desert')==='caravan';
       pay('caravan');o.desert=vpDone('caravan')&&wPathOpen(pd)&&!storyOpen('ice')&&!storyOpen('fire');
       o.sell=vpSellK()>1.05&&vPrice('silver','sell')<vPrice('silver','buy');
-      {const B=VILLAGE.b.mine,mi=vInfo('mine',4);o.shown=mi.includes(T('vp.tunnelCrew'))&&mi.includes('>'+Math.round(B.make.stone[4]*1.1)+'<')&&vInfo('market',4).includes(T('vp.caravan'))}   // 11.11: the real number with the crew, and who added it
+      {const B=VILLAGE.b.mine,mi=vInfo('mine',4);o.shown=mi.includes(T('vp.tunnelCrew'))&&mi.includes('<bdi>'+Math.round(B.make.stone[4]*1.1))&&vInfo('market',4).includes(T('vp.caravan'))}   // 11.11: the real number with the crew, and who added it
       // the moment near each road, once, in its own region
       const mom=(reg,pl,p)=>{enterWorld('home',reg);enemies=[];S.mode='play';const n0=V.stat.open;P.x=p.x;P.y=p.y+200;VPW.t=0;vpUpdate(1);const a=SAVE.vproj.seen[pl]===1&&V.stat.open===n0+1;VPW.t=0;vpUpdate(1);return a&&V.stat.open===n0+1};
       SAVE.vproj.seen.lakeRoad=1;o.mRidge=mom('lake','ridgeRoad',pr);o.mDesert=mom('ridge','desertRoad',pd);
@@ -4236,17 +4236,19 @@ function worldBot(m,L,god){
     enterWorld('home');o.gone=!S.wd.nemE;
     enemies=[];enterVillage();SAVE.nem=JSON.parse(n0);return o});
   check(Object.values(nm).every(Boolean),'בוס-נמסיס: '+Object.entries(nm).map(([k,v])=>(v?'':'✗')+k).join(', '));
-  // 11.11 (ממצאי ביקורת Sonnet): כמה עולות בכל פריים שלוש פונקציות שרצות תמיד. מדידה בלבד, לא נכשלת. מיקרו-שניות לקריאה
-  const pf=await page.evaluate(()=>{const o={},n0=JSON.stringify(SAVE.nem||null),bak=JSON.stringify(SAVE.vproj||null);
-    try{const us=(n,f)=>{f();const t=performance.now();for(let i=0;i<n;i++)f();return +((performance.now()-t)*1000/n).toFixed(2)};
-      enterWorld('home','meadow');enemies=[];S.mode='play';const pk=Object.keys(WORLD.paths).find(k=>WORLD.regions[k]&&k!=='meadow');
-      SAVE.nem={list:[{id:'pf',reg:pk,type:WORLD.foes[0].type,n:1,rank:1,wins:1,esc:null,cause:'near'}],won:[]};
-      o.nem=us(2000,()=>{nemMarkDraw(0,0);nemMark()});   // החץ במסך והמפה הקטנה, כמו בפריים
-      enterWorld('home','desert');P.inv=99;WXW.reg='desert';WXW.st='storm';WXW.sandA=0.45;
-      o.sand=us(200,()=>{WXW.sandLast=performance.now();wxwSand()});
-      o.after=us(20000,()=>vpAfter('caravan'));
-    }catch(err){o.err=String(err).slice(0,120)}
-    SAVE.nem=JSON.parse(n0);SAVE.vproj=JSON.parse(bak);enemies=[];enterVillage();return o});
+  // 11.11 (ממצאי ביקורת Sonnet): כמה עולות בכל פריים שלוש פונקציות שרצות תמיד. מדידה בלבד, לא נכשלת. מיקרו-שניות לקריאה.
+  // השעון בדף מזויף (page.clock), אז מודדים מבחוץ: לולאה של n קריאות פחות לולאה ריקה
+  const pf={};try{
+    await page.evaluate(()=>{window.__pf={n0:JSON.stringify(SAVE.nem||null),vp:JSON.stringify(SAVE.vproj||null)};enterWorld('home','meadow');enemies=[];S.mode='play';
+      const pk=Object.keys(WORLD.paths).find(k=>WORLD.regions[k]&&k!=='meadow');SAVE.nem={list:[{id:'pf',reg:pk,type:WORLD.foes[0].type,n:1,rank:1,wins:1,esc:null,cause:'near'}],won:[]}});
+    const us=async(n,src)=>{const run=async b=>{const t=process.hrtime.bigint();await page.evaluate(([n,b])=>{const f=new Function(b);for(let i=0;i<n;i++)f()},[n,b]);return Number(process.hrtime.bigint()-t)/1e3};
+      await run(src);const a=await run(src),z=await run('');return +(Math.max(0,a-z)/n).toFixed(2)};
+    pf.nem=await us(3000,'nemMarkDraw(0,0);nemMark()');   // החץ במסך והמפה הקטנה, כמו בפריים
+    await page.evaluate(()=>{enterWorld('home','desert');P.inv=99;WXW.reg='desert';WXW.st='storm';WXW.sandA=0.45});
+    pf.sand=await us(300,'WXW.sandA=0.45;wxwSand()');
+    pf.after=await us(30000,"vpAfter('caravan')");
+  }catch(err){pf.err=String(err).slice(0,120)}
+  await page.evaluate(()=>{const b=window.__pf;if(b){SAVE.nem=JSON.parse(b.n0);SAVE.vproj=JSON.parse(b.vp)}enemies=[];enterVillage()}).catch(()=>{});
   check(!pf.err,'Frame cost (µs per call): nemesis mark '+pf.nem+' · sand haze '+pf.sand+' · road lookup '+pf.after+(pf.err?' ✗ '+pf.err:''));
   // טיפ ראשון (firsttips.js): נמסיס ובוס ענק יחד: מוצג אחד, השני בתור. מחכה מתחת לחלון ולפס אחר, לא חוזר, נשמר. דרישה של חפץ: שורה בכרטיס, בלי בועה. כבוי: כלום
   const tp=await page.evaluate(()=>{const r2on=READ2.on;READ2.on=false;   // הכרטיס ליד אויב: ההמתנה לסוף הקרב נבדקת ב-rd2
