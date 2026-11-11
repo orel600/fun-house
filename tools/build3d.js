@@ -186,7 +186,9 @@ const MONSTERS={   // anims: רק מה שאויב מנגן (תנועה ומוו�
   // מראה v2, שלב 2: גוף משלו לעוד אויבי עולם (js/look-v2.js, LV2.looks). לא מפלצות של הזירה
   wispGhost: {src:mon('Flying','Ghost'),anims:['Fast_Flying','Death','Punch'],tex:64,tris:2000},      // wisp: רוח עם קרניים, מרחפת
   spriteBee: {src:mon('Flying','Armabee'),anims:['Fast_Flying','Death'],tex:32,tris:1800},           // sprite: פיית צמח, דבורה (לא הגוף של הקוסם של השחקן)
-  golemIdol: {src:mon('Big','Tribal'),anims:['Walk','Death','Punch'],tex:128,tris:2800,stone:'#D6CFC2'}   // light stone: a mid grey came out near black at the game camera   // golem: פסל אבן (לא הגוף של הנפח והפונדקאי)
+  golemIdol: {src:mon('Big','Tribal'),anims:['Walk','Death','Punch'],tex:128,tris:2800,stone:'#D6CFC2'},   // light stone: a mid grey came out near black at the game camera
+  // שלב 3: זוחל מתכת ועקרב גחלים: גוש קוצני נמוך, בגוון מתכת (הצבע של כל אזור מעליו ב-LV2.looks)
+  crawlerSpiky:{src:mon('Blob','GreenSpikyBlob'),anims:['Walk','Death'],tex:32,tris:1800,stone:'#B9B6AE'}   // golem: פסל אבן (לא הגוף של הנפח והפונדקאי)
 };
 async function addMonsters(add,pick=[]){   // pick: רק המפלצות האלה (--mon=orcSkull). השאר נשארות בדיוק כמו שהן
   for(const [k,c] of Object.entries(MONSTERS)){

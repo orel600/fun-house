@@ -19,21 +19,34 @@
 const LV2={
   on:!/[?&]look=(v1|classic)\b/.test(location.search),
   // world enemy type -> its v2 LOOK3D key. Phase 2 (11.11): each role has its own body, so a crowd reads by shape, not color
-  swap:{grunt:'w_grunt',wisp:'w_wisp',shield:'w_shield',sprite:'w_sprite',golem:'w_golem'},
+  swap:{grunt:'w_grunt',wisp:'w_wisp',shield:'w_shield',sprite:'w_sprite',golem:'w_golem',treant:'w_treant',crawler:'w_crawler',mummy:'w_mummy'},   // phase 3 adds the regions below (lv2Regions)
   looks:{
     w_grunt:{model:'mon_orcSkull',h:56,foot:13,anim:{run:'mon_orcSkull_Walk',die:'mon_orcSkull_Death'}},   // hunched orc, skull helmet, cleaver
     w_wisp:{model:'mon_wispGhost',h:54,foot:12,float:8,anim:{run:'mon_wispGhost_Fast_Flying',die:'mon_wispGhost_Death'}},   // horned shadow, no legs, keeps the hover
     // the same skeleton (all KayKit anims), but a tall tower shield and round shoulder pads: wide and square from above (gear built in code, lv2Gear)
     // hand frame while walking: forward is local +y, up is mostly local +x. Upper arm: up is local +z, so the pad dome is turned from +y to +z
     w_shield:{model:'warrior',h:60,foot:14,props:{shield:{prop:'lv2_tower',bone:'handslotl',pos:[0.1,0.12,0],rot:[0,0,0,1]},
-      padL:{prop:'lv2_pad',bone:'upperarml',pos:[0,0.1,0.12],rot:[0.7071,0,0,0.7071]},padR:{prop:'lv2_pad',bone:'upperarmr',pos:[0,0.1,0.12],rot:[0.7071,0,0,0.7071]}},
+      padL:{prop:'lv2_pad',bone:'upperarml',pos:[0,0.08,0.16],rot:[0.7071,0,0,0.7071]},padR:{prop:'lv2_pad',bone:'upperarmr',pos:[0,0.08,0.16],rot:[0.7071,0,0,0.7071]}},
       anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
     w_sprite:{model:'mon_spriteBee',h:38,foot:10,float:10,anim:{run:'mon_spriteBee_Fast_Flying',die:'mon_spriteBee_Death'}},   // little bee, no longer the player's mage body
-    w_golem:{model:'mon_golemIdol',h:84,foot:18,tint:'#8A8478',anim:{run:'mon_golemIdol_Walk',die:'mon_golemIdol_Death'}}   // stone idol brute, no longer the smith's body. tint: a stone glow, like the old golem, so it isn't black at night
+    w_golem:{model:'mon_golemIdol',h:84,foot:18,tint:'#8A8478',anim:{run:'mon_golemIdol_Walk',die:'mon_golemIdol_Death'}},   // stone idol brute, no longer the smith's body. tint: a stone glow, like the old golem, so it isn't black at night
+    // phase 3: the living tree keeps the skeleton rig and anims, under a big round leaf canopy (lv2Gear): from above it reads as a tree crown
+    w_treant:{model:'warrior',h:74,foot:16,tint:'#5C3E24',props:{crown:{prop:'lv2_crown',bone:'head',pos:[0,0.45,0],rot:[0,0,0,1]}},
+      anim:{run:'Walking_D_Skeletons',spawn:'Spawn_Ground_Skeletons',die:'Death_C_Skeletons'}},
+    w_crawler:{model:'mon_crawlerSpiky',h:36,foot:10,tint:'#C87533',anim:{run:'mon_crawlerSpiky_Walk',die:'mon_crawlerSpiky_Death'}},   // low spiky metal ball, copper
+    w_mummy:{model:'mon_orcSkull',h:56,foot:13,tint:'#D9C9A3',anim:{run:'mon_orcSkull_Walk',die:'mon_orcSkull_Death'}}   // desert walker: the grunt's body in bandage sand
+  },
+  /* phase 3: regional variants reuse the role bodies, in the region's color (tint: the body; shield: the tower's glow, a damage-type color).
+     Colors are picked for contrast with the region's ground: dark steel on the ridge's snow, bright violet in the shadow's dark */
+  regions:{
+    knight:{drowned:['#2E7F8F','water'],rimeknight:['#3F6FA8','ice'],stormknight:['#8A7BC8','lightning'],shadeknight:['#7A5BC8',null]},
+    wisp:{mistling:['#6FC2E8',46,10],frostwraith:['#3F7FC0',46,10],flamewisp:['#FFB04A',46,12],sparkwisp:['#B07CFF',44,14],shadewisp:['#A07CFF',44,14]},
+    warden:{tidewarden:['#1E5FD0',92],frostwarden:['#3F7FC0',96],emberwarden:['#E0502A',98],stormwarden:['#7A4FE0',100]},
+    crawler:{cinderscorp:['#D2582A',42]}
   },
   clips:{mon_orcSkull:{hit:'mon_orcSkull_Weapon'},mon_golemIdol:{hit:'mon_golemIdol_Punch'},
     mon_wispGhost:{cast:'mon_wispGhost_Punch',shoot:'mon_wispGhost_Punch'}},   // FOEATK3D.clip: what it plays when it attacks (strike.js)
-  gear:{wood:'#6B4A2E',iron:'#8E949E',paint:'#A8473B',tower:[1.0,1.55,0.12],pad:0.3},   // tower: width, height, thickness (model units; the KayKit shield is 0.88x1.13). pad: dome radius
+  gear:{wood:'#6B4A2E',iron:'#A3A9B3',paint:'#A8473B',tower:[1.0,1.55,0.12],pad:0.46,leaf:'#4E9A3C',leaf2:'#3C7E30'},   // tower: width, height, thickness (model units; the KayKit shield is 0.88x1.13). pad: dome radius (0.3 was too small to read at phone size)
   outline:{col:0x1b1512,w:0.075},        // w: in model units (a KayKit hero is about 2.3 tall): about 2.5 px at the phone camera (0.045 was 1.5 px, too thin to read)
   rim:{k:0.5},   // edge rim on the hero, at least this strong in the village and world (rim-world.js: its color and where the edge starts)
   plaza:{x:0,y:-185,lampR:200,   // street lamps this close to the plaza center become v2 lamps
@@ -51,7 +64,16 @@ const LV2={
 const lv2Here=()=>LV2.on&&typeof S!=='undefined'&&S&&!S.room&&!S.mb&&!!(S.vil||S.wd);
 const LV2U={w:{value:LV2.outline.w}};
 
+// the regional looks, from the role templates above
+function lv2Regions(){
+  const R=LV2.regions,L=LV2.looks,K=L.w_shield,W=L.w_wisp,G=L.w_golem,C=L.w_crawler;
+  for(const [k,[tint,dmg]] of Object.entries(R.knight)){L['w_'+k]={...K,h:64,tint,props:{...K.props,shield:{...K.props.shield,...(dmg?{tint:dmg}:{})}}};LV2.swap[k]='w_'+k}
+  for(const [k,[tint,h,float]] of Object.entries(R.wisp)){L['w_'+k]={...W,h,float,tint};LV2.swap[k]='w_'+k}
+  for(const [k,[tint,h]] of Object.entries(R.warden)){L['w_'+k]={...G,h,foot:20,tint};LV2.swap[k]='w_'+k}
+  for(const [k,[tint,h]] of Object.entries(R.crawler)){L['w_'+k]={...C,h,tint};LV2.swap[k]='w_'+k}
+}
 if(LV2.on){
+  lv2Regions();
   Object.assign(LOOK3D,LV2.looks);
   Object.assign(FOEATK3D.clip,LV2.clips);
   // the shield's gear is built once, before the first actor that wears it (makeActor, crowdOf)
@@ -115,9 +137,15 @@ function lv2Gear(){
   for(const x of [-h/2,h/2])p3Mesh(new THREE.BoxGeometry(0.09,d*1.4,w*1.06),iron,x,0,0,t);   // iron rims top and bottom
   p3Mesh(new THREE.SphereGeometry(0.13,12,8),iron,0,d*0.9,0,t);   // the boss
   R3D.props.lv2_tower=t;
-  const p=new THREE.Group(),dome=new THREE.Mesh(new THREE.SphereGeometry(G.pad,14,8,0,Math.PI*2,0,Math.PI/2),iron);dome.scale.set(1,0.75,1);p.add(dome);
-  p3Mesh(new THREE.TorusGeometry(G.pad*0.98,0.035,6,18),wood,0,0.01,0,p).rotation.x=Math.PI/2;
+  const p=new THREE.Group(),dome=new THREE.Mesh(new THREE.SphereGeometry(G.pad,14,8,0,Math.PI*2,0,Math.PI/2),iron);dome.scale.set(1.15,0.8,1);p.add(dome);
+  p3Mesh(new THREE.TorusGeometry(G.pad*0.98,0.05,6,18),wood,0,0.01,0,p).rotation.x=Math.PI/2;
   R3D.props.lv2_pad=p;
+  // the living tree's crown: three leaf balls over the head (head bone: up is +y)
+  const c=new THREE.Group(),lf=lv2Smooth(G.leaf),lf2=lv2Smooth(G.leaf2);
+  p3Mesh(new THREE.SphereGeometry(0.62,14,10),lf,0,0.25,0,c);
+  p3Mesh(new THREE.SphereGeometry(0.46,12,8),lf2,0.45,0,0.15,c);
+  p3Mesh(new THREE.SphereGeometry(0.44,12,8),lf2,-0.42,0.02,-0.12,c);
+  R3D.props.lv2_crown=c;
 }
 /* ---- 3. the plaza: rounder lamps ---- */
 function lv2Smooth(c){const k='lv2'+c;return P3.mats[k]||(P3.mats[k]=new THREE.MeshLambertMaterial({color:c}))}   // smooth shading: rounder than p3Mat (flat)
