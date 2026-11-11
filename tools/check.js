@@ -2049,7 +2049,7 @@ function worldBot(m,L,god){
           out:rows.some(r=>r.left<-1||r.top<-1||r.right>vw+1||r.bottom>vh+1),d:ln?[ln.style.top,ln.style.maxHeight,Math.round(h.top),ln.style.visibility||'-',ln.querySelectorAll('.cut').length,ln.children.length,Math.round(h.left)+'..'+Math.round(h.right),MSG.where||'-'].join('/'):'-',feed:document.querySelectorAll('#feedCol .frow').length,sk:document.querySelectorAll('#skills>*').length,keep:keep.length}};
       enterWorld('home');S.mode='play';enemies=[];FL.length=0;msgClear();{const lp=$('lpCard');if(lp)lp.classList.remove('on')}__lbak.ov=[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden);for(const o of __lbak.ov)o.hidden=true;   // חלון פתוח מסתיר את העמודה (msgWinOpen), אז בבדיקה כמו במשחק: בלי חלון
       for(const k in MSG.stat)MSG.stat[k]=0;
-      if(S.sk&&S.sk.ids.length<3){S.sk.ids=Object.keys(SKILLS.list).slice(0,3);S.sk.cd=S.sk.ids.map(()=>0)}if(typeof skillsHud==='function')skillsHud();   // כל שלושת הכפתורים בקשת: השלישי יוצא מגבולות #skills (הסרטון של ניר)
+      if(S.sk&&S.sk.ids.length<3){S.sk.ids=Object.keys(SKILLS.list).slice(0,3);S.sk.cd=S.sk.ids.map(()=>0)}if(typeof skillsHud==='function')skillsHud();if(S.sk){SAVE.hero.skSeen=[...(SAVE.hero.skSeen||[]),...S.sk.ids]}if(SKR)skrEnd(false);   // no new-skill moment here: the lane steps aside for it (msgPause)   // כל שלושת הכפתורים בקשת: השלישי יוצא מגבולות #skills (הסרטון של ניר)
       __lbak.hid={sig:$('sig').hidden,feed:$('feedBtn').hidden};$('sig').hidden=false;$('feedBtn').hidden=false;   // סקיל החתימה ו-🥕 גלויים, כמו בסרטון (ומוחזרים בסוף)
       for(let i=0;i<4;i++){const e=addEnemy('grunt',P.x+90+i*25,P.y+30);e.home=0;e.speed=0;e.dmg=0;e.hp=e.max=1e9}
       S.cam.x=P.x;S.cam.y=P.y;
@@ -2993,7 +2993,7 @@ function worldBot(m,L,god){
         msgSay(T('goal.ready','Forge'));tipShow({k:'sklv',args:[T('npc.priest')[0]],at:null});VSIGN.t=0});
       await page.clock.runFor(700);
       const r=await page.evaluate(()=>{const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1;
-        tipPlace();msgPlace();const el=$('tip1'),t=el.getBoundingClientRect(),o={inLane:el.parentNode===$('msgLane'),vis:!el.hidden&&t.width>0,bad:[]};
+        tipPlace();msgPlace();const el=$('tip1'),t=el.getBoundingClientRect(),o={inLane:el.parentNode===$('msgLane'),vis:!el.hidden&&!el.classList.contains('cut')&&t.width>0,bad:[]};
         for(const b of msgBlocks())if(hit(t,b))o.bad.push('tip on '+(b.el.id||b.el.className));
         for(const m of document.querySelectorAll('#msgLane>.mrow.on')){const q=m.getBoundingClientRect();if(hit(t,q))o.bad.push('tip on line');
           for(const b of msgBlocks())if(hit(q,b))o.bad.push('line on '+(b.el.id||b.el.className))}

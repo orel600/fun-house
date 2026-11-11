@@ -57,6 +57,7 @@ function msgPump(){
     for(const r of MQ.rows.reverse()){msgGone(r);MQ.small.unshift({txt:r.txt,col:r.col})}MQ.rows=[];
     for(const m of MQ.big)m.at=now;MSG.stat.lv++;el.style.visibility='hidden';
     if(!MQ.t&&(MQ.big.length||MQ.small.length))MQ.t=setInterval(msgTick,200);return}
+  if(el.style.visibility==='hidden'&&!msgWinOpen())el.style.visibility='';   // the pause just ended: the lane is back now, not at the next 300 ms check
   const card=msgCardUp();
   if(card&&MQ.bigRow){msgGone(MQ.bigRow);MQ.big.unshift({txt:MQ.bigRow.txt,col:MQ.bigRow.col,at:now});MQ.bigRow=null}   // a big one already up when the card came: it steps back and comes after it
   // גדולה: רק כשאין גדולה על המסך ואין קרב. מחכה יותר מדי: יורדת לקטנה
@@ -111,19 +112,24 @@ function msgPlace(){
   const vw=innerWidth,bl=msgBlocks(),h=Math.max(24,el.offsetHeight),pad=MSG.pad,hero=msgHero(),cx=hero?Math.min(vw*0.62,Math.max(vw*0.38,(hero.left+hero.right)/2)):vw/2;
   // מנסים גבהים מלמעלה למטה: בכל גובה, הפס הפנוי סביב מרכז המסך בין מה שתפוס משמאל ומימין
   // רק גבהים מעל הגיבור (או בחצי העליון), והפס נבדק בגובה של שורה-שתיים: מה שלא נכנס מתחת מוסתר בכל מקרה
-  const lim=hero?hero.top-26:innerHeight*0.45,hb=Math.min(h,60);
-  const tops=[pad,...bl.map(r=>r.bottom+pad)].filter(y=>y>=pad&&y<=lim).sort((a,b)=>a-b);let best=null;
-  for(const y of tops){let L=pad,R=vw-pad,hit=null;
+  const lim=hero?hero.top-26:innerHeight*0.45;
+  const tops=[pad,...bl.map(r=>r.bottom+pad)].filter(y=>y>=pad&&y<=lim).sort((a,b)=>a-b);
+  const scan=hb=>{let best=null;for(const y of tops){let L=pad,R=vw-pad,hit=null;
     for(const r of bl){if(r.bottom<=y||r.top>=y+hb)continue;
       if(r.right<=cx)L=Math.max(L,r.right+pad);else if(r.left>=cx)R=Math.min(R,r.left-pad);else{L=R;hit=r;break}}
-    const w=R-L;if(!best||w>best.w)best={y,L,R,w,hit};if(w>=MSG.minW){best={y,L,R,w};break}}
+    const w=R-L;if(!best||w>best.w)best={y,L,R,w,hit};if(w>=MSG.minW)return {y,L,R,w}}return best};
+  // the whole lane first (a tip or card under a line is taller than one row: CI 11.11, the tip reached the side buttons at 844x390), else one-two rows
+  let best=scan(h);if(!best||best.w<MSG.minW){const b2=scan(Math.min(h,60));if(b2&&(!best||b2.w>best.w))best=b2}
   if(!best||best.w<60)best={y:pad,L:pad,R:vw-pad,w:vw-2*pad,hit:best&&best.hit};   // אין פס פנוי: למעלה במרכז, כמו פעם
   MSG.where=best.hit?(best.hit.el.id||best.hit.el.className||best.hit.el.tagName):'';   // לבדיקה: מה חסם
   const w=Math.min(MSG.maxW,best.w),x=Math.max(best.L,Math.min(best.R-w,cx-w/2));
   el.style.top=Math.round(best.y)+'px';el.style.left=Math.round(x)+'px';el.style.width=Math.round(w)+'px';
   // לא יורדים על הגיבור: מה שלא נכנס מעליו מתקצר (הקטנות האחרונות נעלמות קודם)
   if(hero){const room=Math.max(26,Math.round(hero.top-best.y));el.style.maxHeight=room+'px';
-    for(const c of el.children)c.classList.toggle('cut',c.offsetTop+c.offsetHeight>room+1)}   // שורה שלא נכנסת כולה: מוסתרת, לא חצי
+    for(const c of el.children)c.classList.toggle('cut',c.offsetTop+c.offsetHeight>room+1)}
+  else for(const c of el.children)c.classList.remove('cut');
+  for(const c of el.children){if(c.classList.contains('cut')||!c.offsetHeight)continue;const q=c.getBoundingClientRect();   // still on a button (a tall lane in a narrow gap): that row hides, not covers it
+    if(bl.some(r=>q.left<r.right-1&&r.left<q.right-1&&q.top<r.bottom-1&&r.top<q.bottom-1))c.classList.add('cut')}   // שורה שלא נכנסת כולה: מוסתרת, לא חצי
 }
 addEventListener('resize',()=>{if(msgOn())msgPlace()});
 // הכרטיסים שכבר קיימים (פגישה ראשונה foelore.js, "היום בעולם" mutation.js) עוברים לגור בעמודה: אותו מקום, ולא עולים על הכפתורים
