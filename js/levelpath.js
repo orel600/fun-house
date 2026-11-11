@@ -9,7 +9,7 @@ const LEVELPATH={
   extra:{},
   big:['orbit','rank'],
   look:40,            // עד כמה רמות קדימה מחפשים
-  card:{t:4.5},
+  card:{t:1.5},       // seconds the "Level N!" card stays (only the level, Nir 11.11)
   flash:{t:0.9,less:0.4},   // less: כמה חזק ההבזק כשבחרו "פחות אפקטים"
   cheer:1.3
 };
@@ -47,16 +47,14 @@ function lpTitle(){const lv=heroLv(),n=lpNext(lv),b=lpNext(lv,true);if(!n)return
 function lpLevelUp(from,lv){
   if(typeof wsbLevelUp==='function')wsbLevelUp(from,lv);   // סקיל שנפתח נכנס למשבצת פנויה (wskbook.js)
   if(typeof wrLevelUp==='function')wrLevelUp(from,lv);   // רונה שנפתחה נכנסת לבד (wrunes.js)
-  const got=[{icon:'⭐',txt:T('lp.pts',(lv-from)*STATS.perLevel)}];
-  for(let l=from+1;l<=lv;l++)got.push(...lpAt(l));
-  if(typeof irUnlocked==='function')got.push(...irUnlocked(from,lv));   // ציוד שחיכה ברמה הזאת (itemroll.js)
+  if(typeof statBadge==='function')statBadge();   // the points wait as a number on the Hero button (stats.js), not on the card
   lpFlash();
   if(typeof R3D!=='undefined'&&R3D.on&&R3D.player&&(S.wd||S.vil))once(R3D.player,LOOK3D.player.anim.win,LEVELPATH.cheer);   // Cheering (render3d.js)
   sfx('levelup');
   let c=$('lpCard');
   if(!c){c=document.createElement('div');c.id='lpCard';c.className='lpcard';c.setAttribute('role','status');c.onclick=()=>{c.classList.remove('on')};document.body.appendChild(c)}
-  const n=lpNext(lv);
-  c.innerHTML='<h3>'+T('lp.up',lv)+'</h3><ul>'+got.map(x=>'<li><span>'+(x.pic||x.icon)+'</span><bdi>'+x.txt+'</bdi></li>').join('')+'</ul>'+(n?'<p><b>'+T('lp.next')+'</b> <bdi>'+lpLine(n)+'</bdi></p>':'');
+  // just the level (Nir, 11.11: "שפשוט יראה לאיזה רמה עלית וזהו"). What opened and what is next stay in the Hero window (lpHtml), the points on its red badge
+  c.innerHTML='<h3>'+T('lp.up',lv)+'</h3>';
   c.classList.add('on');clearTimeout(lpLevelUp.t);lpLevelUp.t=setTimeout(()=>c.classList.remove('on'),LEVELPATH.card.t*1000);
 }
 function lpFlash(){
