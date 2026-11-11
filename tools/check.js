@@ -1116,7 +1116,8 @@ function worldBot(m,L,god){
     const keep=[...document.querySelectorAll('.ov,'+WINS.map(w=>'#'+w.id).join(','))].map(e=>[e,e.hidden]);for(const [e] of keep)e.hidden=true;await tick();   // בלי חלון פתוח, ובסוף חוזרים למצב שהיה
     r.wrapped=['questClaim','shopBuy','rankUp','gearCraft','dailyClaim'].filter(f=>!(window[f]&&window[f].fxui));
     FXUI.hooks.questClaim(true,['bones',false]);FXUI.lastTap={x:innerWidth/2,y:innerHeight*0.7,t:performance.now()};FXUI.hooks.shopBuy(true);FXUI.hooks.rankUp('x');   // קנייה: בנגיעה, כמו במשחק
-    const d=$('ovDaily'),was=d.hidden;d.hidden=true;await tick();d.hidden=false;await tick();
+    const d=$('ovLevel'),was=d.hidden;   // ovDaily: כרטיס שקט בלי אפקט (#672)
+   d.hidden=true;await tick();d.hidden=false;await tick();
     d.hidden=was;
     const pl=FXUI.place;FXUI.place='fxtest';document.body.classList.toggle('fxtest');await tick();document.body.classList.toggle('fxtest');
     r.wipe=[...document.querySelectorAll('.fxd')].filter(e=>FXUI.never.some(id=>e.style.backgroundImage.includes(id+'.webp'))).length+(fxDom('ui_trans',100,100)?1:0);   // מעבר שממלא מסך לא מופיע כריבוע
@@ -2049,7 +2050,7 @@ function worldBot(m,L,god){
           out:rows.some(r=>r.left<-1||r.top<-1||r.right>vw+1||r.bottom>vh+1),d:ln?[ln.style.top,ln.style.maxHeight,Math.round(h.top),ln.style.visibility||'-',ln.querySelectorAll('.cut').length,ln.children.length,Math.round(h.left)+'..'+Math.round(h.right),MSG.where||'-'].join('/'):'-',feed:document.querySelectorAll('#feedCol .frow').length,sk:document.querySelectorAll('#skills>*').length,keep:keep.length}};
       enterWorld('home');S.mode='play';enemies=[];FL.length=0;msgClear();{const lp=$('lpCard');if(lp)lp.classList.remove('on')}__lbak.ov=[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden);for(const o of __lbak.ov)o.hidden=true;   // חלון פתוח מסתיר את העמודה (msgWinOpen), אז בבדיקה כמו במשחק: בלי חלון
       for(const k in MSG.stat)MSG.stat[k]=0;
-      if(S.sk&&S.sk.ids.length<3){S.sk.ids=Object.keys(SKILLS.list).slice(0,3);S.sk.cd=S.sk.ids.map(()=>0)}if(typeof skillsHud==='function')skillsHud();   // כל שלושת הכפתורים בקשת: השלישי יוצא מגבולות #skills (הסרטון של ניר)
+      if(S.sk&&S.sk.ids.length<3){S.sk.ids=Object.keys(SKILLS.list).slice(0,3);S.sk.cd=S.sk.ids.map(()=>0)}if(typeof skillsHud==='function')skillsHud();if(S.sk){SAVE.hero.skSeen=[...(SAVE.hero.skSeen||[]),...S.sk.ids]}if(SKR)skrEnd(false);   // no new-skill moment here: the lane steps aside for it (msgPause)   // כל שלושת הכפתורים בקשת: השלישי יוצא מגבולות #skills (הסרטון של ניר)
       __lbak.hid={sig:$('sig').hidden,feed:$('feedBtn').hidden};$('sig').hidden=false;$('feedBtn').hidden=false;   // סקיל החתימה ו-🥕 גלויים, כמו בסרטון (ומוחזרים בסוף)
       for(let i=0;i<4;i++){const e=addEnemy('grunt',P.x+90+i*25,P.y+30);e.home=0;e.speed=0;e.dmg=0;e.hp=e.max=1e9}
       S.cam.x=P.x;S.cam.y=P.y;
@@ -2210,8 +2211,9 @@ function worldBot(m,L,god){
           enterWorld('home',reg);S.mode='play';enemies=[];R3D.wWarm&&(R3D.wWarm.done[reg]=0);
           for(let i=0;i<400&&(i<6||R3D.wWarm.a||R3D.wWarm.q&&R3D.wWarm.q.length);i++)draw();   // ההכנה של האזור, והתור ברקע (בפעם הראשונה)
           const ks=wldTypes();let n=0,worst=[0,''];
-          for(const k of ks){const p0=I.programs.length,t0=I.memory.textures,crowd=k==='wanted'||k in R3D.crowd;
+          for(const k of ks){const p0=I.programs.length,t0=I.memory.textures;
             const e=addEnemy(k==='wanted'?'grunt':k,P.x+90,P.y+30,1);if(k==='wanted')e.wanted=true;e.flSeen=1;
+            const crowd=k==='wanted'||foeKey(e) in R3D.crowd;   // the crowd of the look that is drawn (foeKey: in the world a type can have its own v2 body, js/look-v2.js)
             const pool=((R3D.pool||{})[lookKey(lookOf(e))]||[]).length>0;   // דמות מוכנה (כבר צוירה) מחכה במאגר
             const t=performance.now();draw();const ms=performance.now()-t;if(ms>worst[0])worst=[ms,k];
             const dp=I.programs.length-p0,dt=I.memory.textures-t0;if(dp||dt||!crowd||!pool)o.bad.push(reg+'/'+k+(dp?' shader+'+dp:'')+(dt?' טקסטורה+'+dt:'')+(crowd?'':' בלי קהל')+(pool?'':' לא הוכן'));
@@ -2818,6 +2820,54 @@ function worldBot(m,L,god){
       }finally{P.def=B.def;P.regen=B.regen;P.loot=B.loot;P.res=B.res;heroSkinSet(B.skin||'none');gearClose()}
       return bad});
   }
+  // מסכים ברורים (docs/concept-clear-screens.md, ניר אישר 11.11), ב-915×412 וב-844×390, בכל חלון של הכפר:
+  // 4b: שם בכרטיס לא נשבר בין שתי אותיות (מודדים כל תו: שורה חדשה באמצע מילה = נכשל), ולכל היותר 2 שורות.
+  // 1: רשימה שגוללת נמוגה בתחתית כשיש עוד (mask מאנימציה על ציר הגלילה, style.css), והדהייה יוצאת כשמגיעים לסוף.
+  // 3: מאחורי חלון מבנה ושיחה העולם מוחשך (צל ענק סביב החלון)
+  const clear={};
+  for(const [cw,ch] of [[915,412],[844,390]]){
+    await page.setViewportSize({width:cw,height:ch});await page.clock.runFor(100);
+    const wins=await page.evaluate(()=>{const $=id=>document.getElementById(id),lv0=JSON.stringify(SAVE.village);
+      for(const k in VILLAGE.b)SAVE.village[k]=Math.max(SAVE.village[k]||0,Math.min(4,VILLAGE.b[k].max||4));
+      const bo=k=>()=>{S.vil.ui='';S.vil.open=S.vil.near=k;villageHud()};
+      const L=[...['market','stash','forge','center','mill'].filter(k=>VILLAGE.b[k]).map(k=>['b:'+k,bo(k),'vPanel']),['gear',()=>gearOpen(),'ovGear'],
+        ['quests',()=>questLogOpen(true),'qLog'],['book',()=>bookOpen(true),'bookWin'],
+        ...Object.keys(NPC.list).filter(npcHere).slice(0,1).map(id=>['talk',()=>{npcTalk(id);S.vil.dlgStay=true},'npcDlg'])];
+      window.__clr={L,lv0,close:()=>{S.vil.open=null;S.vil.ui='';villageHud();if(!$('ovGear').hidden)gearClose();questLogOpen(false);bookOpen(false);npcTalk(null);if(typeof menuClose==='function')menuClose();if(S.mode!=='play')S.mode='play'}};
+      return L.map(x=>x[0])});
+    const o={breaks:[],lines:[],fade:[],dim:[],open:[]};
+    for(let i=0;i<wins.length;i++){
+      const r=await page.evaluate(i=>{const C=__clr,[k,open,id]=C.L[i],$=x=>document.getElementById(x);C.close();open();if($(id).hidden)return {k,closed:1};
+        const root=$(id),res={k,breaks:[],lines:[],sc:[]},Lt=/\p{L}/u;
+        for(const e of root.querySelectorAll('.nm,.craft b')){if(!e.getClientRects().length)continue;
+          const lh=parseFloat(getComputedStyle(e).lineHeight)||16;if(e.getBoundingClientRect().height>lh*2+3)res.lines.push(e.textContent.trim().slice(0,20));
+          const w=document.createTreeWalker(e,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){const s=n.nodeValue;let top=null;
+            for(let j=0;j<s.length;j++){const g=document.createRange();g.setStart(n,j);g.setEnd(n,j+1);const q=g.getClientRects()[0];if(!q||!q.width)continue;
+              if(top!=null&&q.top>top+2&&Lt.test(s[j])&&Lt.test(s[j-1])){res.breaks.push(s.trim().slice(0,20));break}top=q.top}}}
+        // רשימות: כל מה שגולל בחלון (או החלון עצמו)
+        for(const e of [root,...root.querySelectorAll('*')]){if(!e.getClientRects().length)continue;const cs=getComputedStyle(e);
+          if(/auto|scroll/.test(cs.overflowY)&&e.scrollHeight>e.clientHeight+8)res.sc.push(e===root?':root':Array.prototype.indexOf.call(root.querySelectorAll('*'),e))}
+        const bs=getComputedStyle(root).boxShadow;res.dim=/rgba\(10, 12, 20, 0\.[1-9]\d*\) 0px 0px 0px [1-9]/.test(bs);
+        return res},i);
+      if(r.closed){o.open.push(r.k);continue}
+      o.breaks.push(...r.breaks.map(s=>r.k+': '+s));o.lines.push(...r.lines.map(s=>r.k+': '+s));
+      if((r.k.startsWith('b:')||r.k==='talk')&&!r.dim)o.dim.push(r.k);
+      // הדהייה: למעלה פעילה, ובסוף נעלמת. אחרי פריים: ציר הגלילה מתעדכן רק בציור הבא (בלי זה, חלון שרק נפתח נמדד בלי דהייה)
+      await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');for(const x of sc)(x===':root'?root:all[x]).scrollTop=0},[i,r.sc]);
+      await page.clock.runFor(50);
+      const top=await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');
+        return sc.map(x=>{const e=x===':root'?root:all[x];e.scrollTop=0;const cs=getComputedStyle(e);return [(e.id||e.className||e.tagName).toString().slice(0,24),cs.maskImage!=='none'&&/^100% 100%/.test(cs.maskSize)]})},[i,r.sc]);
+      await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');for(const x of sc){const e=x===':root'?root:all[x];e.scrollTop=e.scrollHeight}},[i,r.sc]);
+      await page.clock.runFor(50);
+      const end=await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');return sc.map(x=>{const e=x===':root'?root:all[x];const v=getComputedStyle(e).maskSize;e.scrollTop=0;return /\+ 40px/.test(v)})},[i,r.sc]);
+      top.forEach(([n,v],j)=>{if(!v)o.fade.push(r.k+' '+n+': no fade');else if(!end[j])o.fade.push(r.k+' '+n+': fade at the end')});
+      if(CFG.shots&&cw===915)await shot('clear-'+r.k.replace(':','-')+'-'+cw)}
+    await page.evaluate(()=>{__clr.close();SAVE.village=JSON.parse(__clr.lv0);S.vil.ui='';villageHud();delete window.__clr});
+    clear[cw+'x'+ch]=o}
+  for(const vp in clear){const o=clear[vp];
+    check(!o.breaks.length&&!o.lines.length,'Card names, '+vp+': '+(o.breaks.length?'broken mid-word: '+o.breaks.slice(0,4).join(' | '):'no mid-word breaks')+(o.lines.length?' · more than 2 lines: '+o.lines.slice(0,4).join(' | '):', max 2 lines'));
+    check(!o.fade.length,'Scroll lists, '+vp+': '+(o.fade.length?o.fade.slice(0,4).join(' | '):'every list with more below fades at the bottom, and the fade goes at the end'));
+    check(!o.dim.length&&!o.open.length,'Dim behind windows, '+vp+': '+(o.dim.length?'no dim behind '+o.dim.join(', '):'building windows and talk dim the world')+(o.open.length?' · did not open: '+o.open.join(', '):''))}
   await page.setViewportSize(CFG.phone);await page.clock.runFor(100);
   // תמיד מטרה ברורה (guide.js): יש מטרה בשורה למעלה, החץ מצביע לכיוון הנכון גם כשהמטרה באזור אחר, והמטרה מתחלפת כשקווסט נגמר
   const gd=await page.evaluate(()=>{
@@ -2842,6 +2892,12 @@ function worldBot(m,L,god){
     SAVE.story.earth=true;questClaim('s1Warden');tick();o.after=guideG.text;o.changed=before!==guideG.text&&guideG.q!=='s1Warden';
     $('guideMin').click();o.min=$('guide').classList.contains('min')&&(t=>t.length>0&&t.split(' ').length<=3)($('guideTxt').textContent);   // מכווצת: 2-3 מילים, לא ריקה$('guideMin').click();
     $('guideMain').click();o.log=!$('qLog').hidden&&!!document.querySelector('#qLog .gnow');questLogOpen(false);
+    // קונספט מסכים ברורים #672: "Done: X. Tap here for your reward" לוקח את הפרס מהשורה עצמה, בלי יומן (סעיף 5), וביומן "Now" לא כופל את הכרטיס שמחכה (סעיף 4)
+    {const was=Q.active;Q.active={};delete Q.done.boots;qStart(QBY.boots);questEvent('gather','wood',5);tick();
+      o.rwG=guideG&&guideG.q==='boots'&&guideG.place===null&&/Tap here/.test(guideG.text);
+      questLogOpen(true);o.rwOne=!document.querySelector('#qLog .gnow')&&document.querySelectorAll('#qLog [data-act="claim"][data-q="boots"]').length===1;questLogOpen(false);
+      const c0=SAVE.bag.coins||0;$('guideMain').click();o.rwClaim=!!Q.done.boots&&!Q.active.boots&&$('qLog').hidden&&(SAVE.bag.coins||0)>c0;
+      tick();o.rwNext=!guideG||guideG.q!=='boots';Q.active=was}
     // פרס אצל דמות באזור אחר (ניר, 10.11: זארה במדבר, השורה אמרה "here" באחו ולא קרה כלום): המטרה באזור שלה, ושם לוקחים את הפרס
     {const id='caravan',N=WNPC.list[id],qid='sqCar1',was=Q.active;Q.active={};delete Q.done[qid];Q.track=null;SAVE.met[id]=1;
       SAVE.story.earth=SAVE.story.water=SAVE.story.ice=true;qStart(QBY[qid]);for(const ob of QBY[qid].obj)questEvent(ob.type,ob.what,ob.n);   // הדרך מהאחו למדבר פתוחה (אגם, רכס)
@@ -2857,6 +2913,20 @@ function worldBot(m,L,god){
       Q.active=was}
     worldUi(false);startRun();tick();o.arena=$('guide').hidden;
     const k=JSON.parse(keep);SAVE.quests=k.q;k.s.intro=k.s.intro||SAVE.story.intro;SAVE.story=k.s;saveNow();enterVillage();npcTalk(null);   // הקדמה שכבר נאמרה נשארת אמורה. חוזרים לכפר רק אחרי השחזור, אחרת פנס האדמה הדלוק מפעיל שם סיפור (homecoming.js)
+    return o});
+  // קונספט מסכים ברורים #672: מרכז הכפר אומר "צריך מרכז" פעם אחת, כרטיסי הקנייה בשוק בלי "You have", והמתנה היומית כרטיס קטן שנגיעה אחת לוקחת וסוגרת
+  const clr=await page.evaluate(()=>{const o={},keepV=JSON.stringify(SAVE.village),keepG=JSON.stringify(dailySave()),c0=SAVE.bag.coins;
+    try{enterVillage();npcTalk(null);SAVE.village.center=2;for(const k in VILLAGE.b)if(k!=='center')SAVE.village[k]=2;
+      const open=k=>{S.vil.ui='';S.vil.open=S.vil.near=k;(S.vil.tab||(S.vil.tab={}))[k]='main';villageHud();return $('vPanel').textContent};
+      const t=open('center');o.capRep=(t.match(/Center level/g)||[]).length;o.capLine=document.querySelectorAll('#vPanel .bwcapl').length;
+      const g=document.querySelector('#vPanel .bwcapl [data-tab="up"]');if(g)g.click();o.capGo=!!g&&S.vil.tab.center==='up';
+      SAVE.bag.coins=5000;open('market');o.buyHave=[...document.querySelectorAll('#vPanel .tcard[data-act="buy"]')].filter(c=>/You have/.test(c.textContent)).length;
+      o.buyN=document.querySelectorAll('#vPanel .tcard[data-act="buy"]').length;S.vil.open=null;S.vil.ui='';villageHud();
+      dailySave().day='';dailyOpen();const r=$('dailyWin').getBoundingClientRect(),b=document.querySelector('#dailyWin [data-act="take"]');
+      o.dSmall=!$('ovDaily').hidden&&r.width<=innerWidth*0.5&&r.height<=innerHeight*0.8&&r.top>=0&&r.bottom<=innerHeight;o.dPips=document.querySelectorAll('#dailyWin .dpip').length;
+      const n0=dailySave().n;if(b)b.click();o.dOne=$('ovDaily').hidden&&dailySave().n!==n0&&S.mode==='play';
+      if(S.wd||!S.vil){o.dWorld=null}else{leaveVillage();dailySave().day='';dailyOpen();o.dWorld=$('ovDaily').hidden;dailyClose();enterVillage();npcTalk(null)}   // בעולם (קרב) לא נפתח
+    }finally{SAVE.village=JSON.parse(keepV);Object.assign(dailySave(),JSON.parse(keepG));SAVE.bag.coins=c0;S.vil&&(S.vil.open=null,S.vil.ui='');saveNow()}
     return o});
   // השורה עצמה (בלי פאנל פתוח): לא נוגעת בפס העליון, במפה, בהשתקה ובסרגל, בטלפון שוכב ועומד, בכפר ובעולם
   const gdHit={};
@@ -2982,6 +3052,38 @@ function worldBot(m,L,god){
     await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();bossHudPlace(true)});
     const bad=bh.filter(x=>x.err||!x.bar||!x.rare||x.sk<3||x.orbs<4||x.clash.length||x.w<200);
     check(!bad.length,'פס הבוס בעולם במקום הפנוי: '+bh.map(x=>x.k+' '+x.vp+(x.err?' שגיאה: '+x.err:(x.bar?' רוחב '+x.w+' בגובה '+x.y+(x.cut?' (הכותרת מקוצרת)':'')+(x.w<200?' צר מדי, בין '+x.why:''):' אין פס')+(x.clash&&x.clash.length?' · עולה על: '+x.clash.join(', '):' ✓')+(x.err||x.rare?'':' · אין שמועה')+(x.err||x.sk>=3?'':' · '+x.sk+' סקילים'))).join(' | '))}
+  // Top strip without overlaps (coordinator, CI shots 11.11): in the village a free first tip ("Skill upgrade available...") joins the message lane,
+  // so it is not under the round top icons, not on a lane line and not on a building sign. In the world, a lane line ("Everything for Forge!...")
+  // steps aside while the new-skill icon rises over the hero and flies to its button, and comes back after. At 915x412 and 844x390
+  // its own random numbers, so the sequence the later checks depend on (the underworld games) does not move
+  {const ov=[];await page.evaluate(()=>{window.__rndTop=Math.random;let a=777;Math.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}});
+    for(const vp of [{width:915,height:412},{width:844,height:390}]){
+      await page.setViewportSize(vp);
+      await page.evaluate(()=>{welcomeClose();npcTalk(null);enterVillage();npcTalk(null);welcomeClose();{const lp=$('lpCard');if(lp)lp.classList.remove('on')}msgClear();P.x=0;P.y=-200;S.cam.x=0;S.cam.y=-200;
+        window.__tipKeep=JSON.stringify(SAVE.tips||{});tipClose();TIP1.q=[];
+        msgSay(T('goal.ready','Forge'));tipShow({k:'sklv',args:[T('npc.priest')[0]],at:null});VSIGN.t=0});
+      await page.clock.runFor(700);
+      const r=await page.evaluate(()=>{const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1;
+        tipPlace();msgPlace();const el=$('tip1'),t=el.getBoundingClientRect(),o={inLane:el.parentNode===$('msgLane'),vis:!el.hidden&&!el.classList.contains('cut')&&t.width>0,bad:[]};
+        for(const b of msgBlocks())if(hit(t,b))o.bad.push('tip on '+(b.el.id||b.el.className));
+        for(const m of document.querySelectorAll('#msgLane>.mrow.on')){const q=m.getBoundingClientRect();if(hit(t,q))o.bad.push('tip on line');
+          for(const b of msgBlocks())if(hit(q,b))o.bad.push('line on '+(b.el.id||b.el.className))}
+        const z=ZOOM||1;for(const g of VSIGN.rects||[]){const q={left:g.x*z,right:(g.x+g.w)*z,top:g.y*z,bottom:(g.y+g.h)*z};if(hit(t,q))o.bad.push('tip on sign '+g.txt)}
+        if(o.bad.length||!o.vis){const ln=$('msgLane').getBoundingClientRect();o.dbg='tip '+[t.left,t.top,t.width,t.height].map(Math.round)+' lane '+[ln.left,ln.top,ln.width,ln.height].map(Math.round)+' where '+MSG.where}
+        tipClose();SAVE.tips=JSON.parse(window.__tipKeep);msgClear();return o});
+      // world: the new-skill moment with a lane line up
+      const w=await page.evaluate(()=>{const o={},ovs=[...document.querySelectorAll('.ov,.win')].filter(x=>!x.hidden);try{for(const x of ovs)x.hidden=true;enterWorld('home');{const lp=$('lpCard');if(lp)lp.classList.remove('on')}for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);msgClear();
+        const seen=skrSeen().slice();msgSay(T('goal.ready','Forge'));o.before=MQ.rows.length;
+        skrStart('quake');msgPump();const ic=SKR&&SKR.el?SKR.el.getBoundingClientRect():null,lane=$('msgLane');
+        o.hidden=lane.style.visibility==='hidden';o.rowsDuring=MQ.rows.length;o.icon=!!ic;
+        skrEnd(true);msgPump();o.after=MQ.rows.some(r=>r.txt===T('goal.ready','Forge'));o.visAfter=lane.style.visibility!=='hidden';
+        if(!o.after||!o.visAfter)o.dbg='rows '+MQ.rows.map(r=>r.txt).join('/')+' small '+MQ.small.length+' win '+msgWinOpen()+' on '+msgOn()+' vis '+$('msgLane').style.visibility;
+        SAVE.hero.skSeen=seen;msgClear()}catch(err){o.err=String(err)}for(const x of ovs)x.hidden=false;enterVillage();return o});
+      ov.push({vp:vp.width+'×'+vp.height,...r,w})}
+    await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();msgClear();Math.random=window.__rndTop});
+    const bad=ov.filter(x=>!x.inLane||!x.vis||x.bad.length||x.w.err||!x.w.icon||!x.w.hidden||x.w.rowsDuring||!x.w.after||!x.w.visAfter);
+    check(!bad.length,'Top strip, no overlaps: '+ov.map(x=>x.vp+': village tip '+(x.inLane?'in the message lane':'NOT in the lane')+(x.vis?'':' (not shown)')+(x.bad.length?', overlaps: '+[...new Set(x.bad)].join(', '):', clear of icons, lines and signs')+(x.dbg?' ['+x.dbg+']':'')+
+      ' · world '+(x.w.err?'error: '+x.w.err:(x.w.hidden&&!x.w.rowsDuring?'lane steps aside during the new-skill icon':'lane line stays over the new-skill icon')+(x.w.after&&x.w.visAfter?' and comes back':', line lost after ['+x.w.dbg+']'))).join(' | '))}
   // הבהוב פגיעה בתלת-ממד בעולם (hitflash3d.js, ניר 10.11: "do this for all monsters and bosses"): בלי לבן. פגיעה = בהיר יותר בצבעים שלו,
   // הבהוב קצר לכל היותר פעם ב-gap, וחלש יותר לגדולים. ההיגיון לכל מראה בעולם (גם בדו-ממד), והצבע האמיתי מהפיקסלים בתלת-ממד:
   // מכה כל 0.1 שנייה ב-120 פריימים, והרוויה הממוצעת בקרב קרובה לבלי פגיעות. כל המראות: node tools/flash-audit.js
@@ -3137,13 +3239,22 @@ function worldBot(m,L,god){
     // 7.11 (WXW, wxworld.js): מזג האוויר הנכון לכל אזור, סערה שמתקדמת במצבים, כפר עם גשם קל, ומצויר מתחת לאפקטים ולמספרי הנזק
     {const core=wxwCore(),r={},has=id=>[...FXW.wxl.values()].some(h=>h.id===id),run=n=>core&&WX.run[n]&&WX.run[n].state,cfg=n=>core&&WEATHER.scenes[n]||{};
       enterWorld('home','meadow');P.inv=99;tick(1);WXW.t=0;tick(1);r.cycle=WXW.st==='building'&&(!core||run('world')==='building');wxwSet('storm');tick(1);
-      r.meadow=core?run('world')==='storm'&&(cfg('world').storm||[]).some(v=>v[0]==='rain_heavy')&&!!cfg('world').ev:has('wx_rainheavy');
+      r.meadow=core?run('world')==='storm'&&(cfg('world').storm||[]).some(v=>v[0]==='rain_heavy')&&!!WXW.scene.meadow.bolts:has('wx_rainheavy');
       enterWorld('home','ridge');P.inv=99;tick(1);const rc=wxwCfg('ridge');r.ridge=WXW.reg==='ridge'&&(rc.theme==='arctic'||rc.theme==='night')&&rc.storm[0][0]==='snow_blizzard'&&(!core||cfg('world')[`storm`][0][0]==='snow_blizzard');
-      enterWorld('home','desert');P.inv=99;tick(1);r.desert=wxwCfg('desert').theme!=='temperate'&&wxwCfg('desert').storm.some(v=>v[0]==='wind_tornado');
-      enterWorld('home','storm');P.inv=99;tick(1);r.storm=WXW.st==='storm'&&(!core||run('world')==='storm'&&!!cfg('world').ev.storm.bolt);
+      enterWorld('home','desert');P.inv=99;tick(1);{const ds=wxwCfg('desert').storm;r.desert=wxwCfg('desert').theme!=='temperate'&&ds.some(v=>v[0]==='wind_dust')&&ds.some(v=>v[0]==='wind_gust')&&!ds.some(v=>v[0]==='wind_tornado')}   // 11.11: סופת חול בלי טורנדו על כל המסך
+      enterWorld('home','storm');P.inv=99;tick(1);r.storm=WXW.st==='storm'&&!!WXW.scene.storm.far&&(!core||run('world')==='storm'&&!(cfg('world').ev&&cfg('world').ev.storm&&cfg('world').ev.storm.bolt));   // 11.11: ברקים דרך WXW.far, לא בנקודה אקראית של הליבה
       enterVillage();tick(1);wxwSet('storm');tick(1);r.village=core?run('village')==='storm'&&!!cfg('village').ev:has('rain');wxwSet('calm');tick(1);
       // מתחת לקרב: עם הליבה, FXW לא מצייר מזג אוויר משלו (אין אריחי w: ואין משב או הבזק), והליבה מציירת לפני הסקילים (render.js)
       enterWorld('home','storm');P.inv=99;FXW.t=0;tick(2);r.under=core?![...FXW.wxl.keys()].length&&!String(fxDraw).includes('fxwWxDraw'):String(juiceDraw).includes('fxwWxDraw')&&!String(fxDraw).includes('fxwWxDraw');
+      // 11.11 עולם חי, שלב 1 (docs/concept-living-world.md): ברקים רק רחוק, אובך חול, חצי בקרב, פחות תנועה בלי קווי רוח, ודג בנהר של האחו
+      if(core){const St=WXW.stat,f0=St.far,n0=St.near;WXW.farT={};for(let i=0;i<30;i++){WX.boltT=-99;wxwFar(6,WXW.scene.storm)}r.farOnly=St.far-f0>=5&&St.near===n0;
+        r.sandWrap=String(wxDraw).includes('wxwSand');enterWorld('home','desert');P.inv=99;tick(1);WXW.reg='desert';WXW.st='storm';WXW.sandA=0.45;WXW.sandLast=performance.now();const s0=St.sand;wxwSand();r.sand=St.sand===s0+1&&WXW.sandA>0.3;{const b0=St.sandBuild;for(let i=0;i<5;i++)wxwSand();r.sandCache=St.sandBuild===b0&&St.sand===s0+6}   // 11.11: השיפוע נבנה פעם אחת, לא בכל פריים
+        
+        WXW.fightT=1;r.fightHalf=wxwCfg('desert').k===WXW.fight;WXW.fightT=0;r.fightHalf=r.fightHalf&&!wxwCfg('desert').k;
+        const fl=SAVE.fxLess;SAVE.fxLess=true;r.calmNoGust=!wxwCfg('desert').storm.some(v=>/^wind_gust/.test(v[0]))&&!wxwCfg('ridge').calm.some(v=>/^wind_gust/.test(v[0]));SAVE.fxLess=fl;
+        r.ridgeGust=wxwCfg('ridge').calm.some(v=>v[0]==='wind_gust')||!!RM}
+      {enterWorld('home','meadow');P.inv=99;tick(1);const M=TR&&TR.map,rv=M&&M.rivers&&M.rivers[0];if(rv){const pt=rv.pts[Math.floor(rv.pts.length/2)];S.cam.x=pt[0];S.cam.y=pt[1];
+        let ok=0;for(let i=0;i<10;i++){const q=fxwRiverPt(M,FXW.jump.river.meadow.mid,W_()*0.42,H_()*0.4);if(q&&rv.pts.some((p,j)=>j&&segD(q.x,q.y,rv.pts[j-1][0],rv.pts[j-1][1],p[0],p[1])<=FXW.jump.river.meadow.mid+0.5))ok++}r.riverFish=ok>=8&&!!FXW.jump.reg.meadow}}
       o.wxw=r;o.wxwOk=Object.values(r).every(Boolean)}
     const wd=S.wd;S.wd=null;o.ids.clear();P.sw.anim=0;tick(1);P.sw.anim=0.2;tick(1);o.arena=FXW.live.size===0&&FXW.wxl.size===0&&![...o.ids].some(i=>i.startsWith('tr_'));S.wd=wd;
     S.mode=md;P.weapon=wt;P.dt.sword=pdt;
@@ -3488,6 +3599,78 @@ function worldBot(m,L,god){
       rcr.done?'3 stages open the lake road without the earth lantern':'road still shut!',rcr.wood?'sawmill +wood':'no wood bonus',
       rcr.far&&rcr.moment?'moment near the road':'no moment '+rcr.why,rcr.once&&rcr.upd?'once':'twice! '+rcr.why,rcr.water?'water lantern still needs the story':'story skipped!',
       rcr.old?'old save keeps the road':'old save locked out!',rcr.quiet?'quiet when already open':'replays the moment',rcr.blank?'saved':'not saved'].join(', ')));
+  // Negative radius (11.11): a k past 1 (a wind-up that got longer, a mark whose timer grew) gave ctx.arc a negative radius, which throws and kills the frame.
+  // Forces it once: a pounce mark and a strike wind-up past their end, plus a raw negative arc/ellipse. Nothing may throw
+  const arcN=await page.evaluate(()=>{const o={};const bm=DM.marks,be=enemies;
+    try{const n0=ARCSAFE.n;ctx.save();ctx.beginPath();ctx.arc(0,0,-5,0,1);ctx.ellipse(0,0,-3,2,0,0,1);ctx.restore();o.raw=ARCSAFE.n===n0+2;
+      const e={x:P.x+80,y:P.y,r:14,hp:10,maxHp:10,sw:3,sw0:1,sa:0};DM.marks=[{e,x:P.x,y:P.y,t:3,t0:0.9,wk:1}];enemies=[e];
+      const n1=ARCSAFE.n;dmDraw();strikeDraw();o.drawn=ARCSAFE.n===n1}   // the clamps at the call sites: the safety net was not needed
+    catch(err){o.err=String(err&&err.message||err).slice(0,160)}
+    DM.marks=bm;enemies=be;return o});
+  check(!arcN.err&&arcN.raw&&arcN.drawn,'Negative radius: '+(arcN.err||[arcN.raw?'raw arc/ellipse safe':'raw arc not guarded!',arcN.drawn?'pounce mark + strike wind-up past the end draw clamped':'a call site still hands a negative radius'].join(', ')));
+  // Crew stages on one line (vpPath, concept #672 item 2): 3 nodes in one row (done / current / locked), a price under each not-done node,
+  // the gold line filled to the current node, and the one button builds the current stage (a real tap in the open sawmill window)
+  const cpa=await page.evaluate(()=>{window.__cpaBak=JSON.stringify(SAVE);const o={};
+    try{const id='roadCrew';enterVillage();npcTalk(null);welcomeClose();S.mode='play';SAVE.village.mill=3;SAVE.vproj={st:{[id]:1},seen:{deepQuarry:1}};
+      const c=VPROJ.list[id].stages[1];for(const r in c)SAVE.bag[r]=Math.max(SAVE.bag[r]||0,c[r]);(S.vil.tab||(S.vil.tab={})).mill='proj';vOpen('mill');villageHud();
+      const q=s=>[...document.querySelectorAll('#vPanel '+s)];const N=q('.vppath .vpn'),tops=N.map(n=>Math.round(n.getBoundingClientRect().top));
+      o.n=N.length;o.row=N.length===3&&tops.every(t=>Math.abs(t-tops[0])<=2);o.kinds=N.map(n=>n.className.replace('vpn ','')).join(',');
+      o.price=N.slice(1).every(n=>n.querySelector('.vpc'));o.fill=q('.vppath')[0]&&getComputedStyle(q('.vppath')[0],'::after').width;
+      const B=q('button[data-act="vp"]');o.one=B.length===1&&B[0].textContent.includes(T('vp.roadCrew.s2'));
+      o.inside=N.every(n=>{const r=n.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth});
+      if(B[0])B[0].click();villageHud();o.built=vpStage(id)===2&&q('.vppath .vpn.done').length===2&&q('.vppath .vpn.cur').length===1;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    return o});
+  if(CFG.shots&&!cpa.err)await shot('crews-path');
+  await page.evaluate(()=>{SAVE=JSON.parse(window.__cpaBak);delete window.__cpaBak;S.vil.open=null;enterVillage()}).catch(()=>{});
+  check(!cpa.err&&cpa.row&&cpa.kinds==='done,cur,lock'&&cpa.price&&cpa.one&&cpa.inside&&cpa.built,
+    'Crew stages on one line: '+(cpa.err||[cpa.row?'3 nodes in one row':'not one row ('+cpa.n+')',cpa.kinds,cpa.price?'price on each node':'no price on a node',
+      'line '+cpa.fill,cpa.one?'one build button':'not one button',cpa.inside?'inside the screen':'off screen!',cpa.built?'button builds the current stage':'button did not build'].join(', ')));
+  // Tunnel crew + bridge caravan (vproj.js, docs/concept-village-region-2.md): mine 4 opens the ridge road, market 4 the desert road.
+  // Each needs the road before it open (after), never locks an old save, never lights a lantern. Prints price vs the village path to that level (part 1 ≈ 0.6).
+  const r2=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{const V=VPROJ,sto=SAVE.story||(SAVE.story={}),R=WORLD.regions;
+      const val={coins:1,wood:1,stone:1,cloth:3,copper:3,iron:5,silver:8,hide:2,venom:3,aquaC:30,sapphireC:30};
+      const sum=(t,c)=>{for(const r in c||{})t.v+=c[r]*(val[r]||1);return t};
+      const ratio=id=>{const P0=V.list[id],t={v:0},p={v:0};for(const c of P0.stages)sum(t,c);
+        for(let i=2;i<=P0.lv;i++)sum(p,vCostAt('center',i));for(let i=1;i<=P0.lv;i++)sum(p,vCostAt(P0.bld,i));return +(t.v/p.v).toFixed(2)};
+      o.ratio={roadCrew:ratio('roadCrew'),tunnelCrew:ratio('tunnelCrew'),caravan:ratio('caravan')};
+      const pay=id=>{for(const c of V.list[id].stages){for(const r in c)SAVE.bag[r]=(SAVE.bag[r]||0)+c[r];vpBuild(id)}};
+      SAVE.vproj={st:{},seen:{deepQuarry:1}};for(const k of ['earth','water','ice','fire'])delete sto[k];
+      SAVE.village.center=4;SAVE.village.mine=4;SAVE.village.market=4;SAVE.village.mill=1;
+      const pr=R.lake.paths.ridge,pd=R.ridge.paths.desert;
+      // lake road shut: the tunnel crew waits, and its tab says why
+      o.wait=!vpHere('tunnelCrew')&&!vpHere('caravan')&&!wPathOpen(pr)&&vpBldTab('mine').label.includes('🔒')&&vpBldTab('mine').html().includes('reach');
+      SAVE.village.mill=3;pay('roadCrew');o.tab=vpHere('tunnelCrew')&&!vpHere('caravan')&&vpBldTab('mine').html().includes('data-act="vp"');
+      const s0=(()=>{const q=vProd('mine');q.t=Date.now()-3600e3;q.have={};vSettle('mine');return q.have.stone})();
+      // soft gate (docs/measure-crew-gate.md): the last stage waits for the hero level, says so on the tab, then builds
+      {const hl=SAVE.hero.level,P0=V.list.tunnelCrew,last=P0.stages.length-1;SAVE.hero.level=P0.hero-1;
+        for(let i=0;i<last;i++){for(const r in P0.stages[i])SAVE.bag[r]=(SAVE.bag[r]||0)+P0.stages[i][r];vpBuild('tunnelCrew')}
+        for(const r in P0.stages[last])SAVE.bag[r]=(SAVE.bag[r]||0)+P0.stages[last][r];
+        o.gate=vpStage('tunnelCrew')===last&&vpBlock('tunnelCrew')==='hero'&&!vpBuild('tunnelCrew')&&vpBldTab('mine').html().includes('needs hero level '+P0.hero)&&V.list.caravan.hero>0;
+        SAVE.hero.level=Math.max(hl||1,30);o.gate=o.gate&&vpBuild('tunnelCrew')}
+      pay('tunnelCrew');o.ridge=vpDone('tunnelCrew')&&wPathOpen(pr)&&!wPathOpen(pd)&&!storyOpen('water')&&!storyOpen('ice');
+      const s1=(()=>{const q=vProd('mine');q.t=Date.now()-3600e3;q.have={};vSettle('mine');return q.have.stone})();o.stone=s1>s0*1.05;
+      o.sign=vpForPath('ridge')==='tunnelCrew'&&vpForPath('desert')==='caravan';
+      pay('caravan');o.desert=vpDone('caravan')&&wPathOpen(pd)&&!storyOpen('ice')&&!storyOpen('fire');
+      o.sell=vpSellK()>1.05&&vPrice('silver','sell')<vPrice('silver','buy');
+      {const B=VILLAGE.b.mine,mi=vInfo('mine',4);o.shown=mi.includes(T('vp.tunnelCrew'))&&mi.includes('<bdi>'+Math.round(B.make.stone[4]*1.1))&&vInfo('market',4).includes(T('vp.caravan'))}   // 11.11: the real number with the crew, and who added it
+      // the moment near each road, once, in its own region
+      const mom=(reg,pl,p)=>{enterWorld('home',reg);enemies=[];S.mode='play';const n0=V.stat.open;P.x=p.x;P.y=p.y+200;VPW.t=0;vpUpdate(1);const a=SAVE.vproj.seen[pl]===1&&V.stat.open===n0+1;VPW.t=0;vpUpdate(1);return a&&V.stat.open===n0+1};
+      SAVE.vproj.seen.lakeRoad=1;o.mRidge=mom('lake','ridgeRoad',pr);o.mDesert=mom('ridge','desertRoad',pd);
+      o.story=!!QBY.s3Warden&&!!(QBY.s3Warden.req||{}).quest&&!!QBY.s4Warden&&!!(QBY.s4Warden.req||{}).quest;
+      // old saves: the lantern alone keeps each road
+      SAVE.vproj={st:{},seen:{}};sto.water=true;sto.ice=true;o.old=wPathOpen(pr)&&wPathOpen(pd);
+      SAVE.village.mill=3;pay('roadCrew');pay('tunnelCrew');o.quiet=SAVE.vproj.seen.ridgeRoad===1;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];SAVE=JSON.parse(bak);goalS().pin=null;enterVillage();return o});
+  check(!r2.err&&r2.wait&&r2.tab&&r2.gate&&r2.ridge&&r2.stone&&r2.sign&&r2.desert&&r2.sell&&r2.shown&&r2.mRidge&&r2.mDesert&&r2.story&&r2.old&&r2.quiet,
+    'Tunnel crew + bridge caravan: '+(r2.err||[r2.wait?'wait for the road before':'open too early!',r2.tab?'mine tab after the lake road':'no mine tab',r2.gate?'last stage waits for hero level':'no hero-level gate!',
+      r2.ridge?'ridge road open without the water lantern':'ridge still shut!',r2.stone?'mine +stone':'no stone bonus',r2.sign?'signs':'no sign',
+      r2.desert?'desert road open without the ice lantern':'desert still shut!',r2.sell?'market +10% sell':'no sell bonus',r2.shown?'bonus shown in the info':'bonus not shown!',
+      r2.mRidge&&r2.mDesert?'moment once near each road':'moment missing or twice',r2.story?'lanterns still need the story':'story skipped!',
+      r2.old?'old saves keep the roads':'old save locked out!',r2.quiet?'quiet when already open':'replays the moment'].join(', '))+
+    ' · price vs village path: '+JSON.stringify(r2.ratio));
   // לולאת הכפר, שלב 3 (services.js): הנפח נותן כוח לבחירה, הזמנה רביעית בלוח הפונדק עם פרס ×1.25 שנוטה ליעד, והשוק משלם יותר על המשפחה של היום
   const svr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
     try{const V=SVC;SAVE.svc={n:0,day:'',fam:{}};
@@ -4181,12 +4364,27 @@ function worldBot(m,L,god){
     // נמסיס באזור אחר: סמן לכיוון הדרך אליו, בלי חץ במסך. בלי נמסיס: כלום
     const pk=Object.keys(WORLD.paths).find(k=>WORLD.regions[k]);
     if(pk){const pp=WORLD.paths[pk],op=pp.open;pp.open=()=>true;NS().list.push({id:'nx',reg:pk,type,n:N.n,rank:1,wins:1,esc:null,cause:'near'});
-      const m2=nemMark();o.other=!!m2&&!m2.here&&m2.N.reg===pk;NMK.drawn=0;nemMarkDraw(5000,5000);o.otherNoArrow=!NMK.drawn;
+      const m2=nemMark();o.other=!!m2&&!m2.here&&m2.N.reg===pk;{const c0=NMK.calc;for(let i=0;i<60;i++){nemMark();nemMarkDraw(0,0)}o.cached=NMK.calc===c0}   // 11.11: הדרך לאזור אחר לא מחושבת בכל פריים
+      NMK.drawn=0;nemMarkDraw(5000,5000);o.otherNoArrow=!NMK.drawn;
       NS().list.length=0;if(op)pp.open=op;else delete pp.open}
     o.none=!nemMark()&&T('nem.wait','A','B').includes('A');
     enterWorld('home');o.gone=!S.wd.nemE;
     enemies=[];enterVillage();SAVE.nem=JSON.parse(n0);return o});
   check(Object.values(nm).every(Boolean),'בוס-נמסיס: '+Object.entries(nm).map(([k,v])=>(v?'':'✗')+k).join(', '));
+  // 11.11 (ממצאי ביקורת Sonnet): כמה עולות בכל פריים שלוש פונקציות שרצות תמיד. מדידה בלבד, לא נכשלת. מיקרו-שניות לקריאה.
+  // השעון בדף מזויף (page.clock), אז מודדים מבחוץ: לולאה של n קריאות פחות לולאה ריקה
+  const pf={};try{
+    await page.evaluate(()=>{window.__pf={n0:JSON.stringify(SAVE.nem||null),vp:JSON.stringify(SAVE.vproj||null)};enterWorld('home','meadow');enemies=[];S.mode='play';
+      const pk=Object.keys(WORLD.paths).find(k=>WORLD.regions[k]&&k!=='meadow');SAVE.nem={list:[{id:'pf',reg:pk,type:WORLD.foes[0].type,n:1,rank:1,wins:1,esc:null,cause:'near'}],won:[]}});
+    const us=async(n,src)=>{const run=async b=>{const t=process.hrtime.bigint();await page.evaluate(([n,b])=>{const f=new Function(b);for(let i=0;i<n;i++)f()},[n,b]);return Number(process.hrtime.bigint()-t)/1e3};
+      await run(src);const a=await run(src),z=await run('');return +(Math.max(0,a-z)/n).toFixed(2)};
+    pf.nem=await us(3000,'nemMarkDraw(0,0);nemMark()');   // החץ במסך והמפה הקטנה, כמו בפריים
+    await page.evaluate(()=>{enterWorld('home','desert');P.inv=99;WXW.reg='desert';WXW.st='storm';WXW.sandA=0.45});
+    pf.sand=await us(300,'WXW.sandA=0.45;wxwSand()');
+    pf.after=await us(30000,"vpAfter('caravan')");
+  }catch(err){pf.err=String(err).slice(0,120)}
+  await page.evaluate(()=>{const b=window.__pf;if(b){SAVE.nem=JSON.parse(b.n0);SAVE.vproj=JSON.parse(b.vp)}enemies=[];enterVillage()}).catch(()=>{});
+  check(!pf.err,'Frame cost (µs per call): nemesis mark '+pf.nem+' · sand haze '+pf.sand+' · road lookup '+pf.after+(pf.err?' ✗ '+pf.err:''));
   // טיפ ראשון (firsttips.js): נמסיס ובוס ענק יחד: מוצג אחד, השני בתור. מחכה מתחת לחלון ולפס אחר, לא חוזר, נשמר. דרישה של חפץ: שורה בכרטיס, בלי בועה. כבוי: כלום
   const tp=await page.evaluate(()=>{const r2on=READ2.on;READ2.on=false;   // הכרטיס ליד אויב: ההמתנה לסוף הקרב נבדקת ב-rd2
     const o={},t0=JSON.stringify(SAVE.tips||null),off0=!!SAVE.tipsOff,n0=JSON.stringify(SAVE.nem||null),lo0=JSON.stringify(SAVE.lore||null);
@@ -5227,6 +5425,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(gd.vil&&gd.vilGate&&gd.lantern&&gd.toWarden&&gd.lakeBack&&gd.jump==='earth'&&gd.claim&&gd.changed&&gd.min&&gd.log&&gd.arena,'מטרה ברורה: '+(gd.vil?'בכפר "'+gd.txt+'" '+gd.dist:'אין שורה בכפר')+(gd.vilGate?', החץ לשער':', החץ לא לשער')+
     (gd.lantern?', בעולם לפנס':', לא לפנס')+(gd.toWarden?', שומר ליד: המרחק אליו':', שומר ליד: עדיין לפנס')+(gd.lakeBack?', מהאגם לשער חזרה':', מהאגם לא לשער')+(gd.jump==='earth'?', ו"קפוץ" לפנס האדמה':', בלי "קפוץ" ('+gd.jump+')')+(gd.claim?', לפרס':', לא לפרס')+(gd.changed?', אחר כך: "'+gd.after+'"':', המטרה לא התחלפה')+
     (gd.min?', מתכווצת':', לא מתכווצת')+(gd.log?', נגיעה פותחת יומן עם "עכשיו"':', נגיעה לא פותחת יומן עם "עכשיו"')+(gd.arena?', בזירה מוסתרת':', מופיעה בזירה'));
+  check(clr.capRep===1&&clr.capLine===1&&clr.capGo&&clr.buyN>0&&clr.buyHave===0&&clr.dSmall&&clr.dPips===7&&clr.dOne&&clr.dWorld!==false,'Clear screens (#672): Center "Center level" x'+clr.capRep+(clr.capLine===1?' in one line':' (no single line)')+(clr.capGo?', the line opens Upgrade':', the line does not open Upgrade')+
+    ', market Buy cards with "You have": '+clr.buyHave+'/'+clr.buyN+(clr.dSmall?', daily gift is a small card':', daily gift is not small')+' ('+clr.dPips+' days)'+(clr.dOne?', one tap takes and closes':', take did not close')+(clr.dWorld===false?', opens in the world':''));
+  check(gd.rwG&&gd.rwOne&&gd.rwClaim&&gd.rwNext,'Claim from the strip (#672): '+(gd.rwG?'"Tap here" in the strip':'no "Tap here" in the strip')+(gd.rwOne?', Quests window shows the ready quest once':', ready quest shown twice in the Quests window')+(gd.rwClaim?', one tap claims (coins up, no window)':', tap did not claim')+(gd.rwNext?', strip moves on':', strip still shows it'));
   check(Object.values(gdHit).every(v=>v===''),'מטרה ברורה, מקום השורה: '+Object.entries(gdHit).map(([k,v])=>k+' '+(v||'פנוי')).join(', '));
   for(const nm in uiWel){const u=uiWel[nm];check(u.fit&&u.btn,'בזמן שלא היית, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(u.fit?'החלון כולו בתוך המסך':'החלון יוצא מהמסך')+(u.btn?', והכפתור "אסוף הכל" נראה':', והכפתור "אסוף הכל" לא נראה'))}
   const sty=L.style||{};

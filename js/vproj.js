@@ -8,11 +8,21 @@
    vpDraw2d/vpSync3d בכפר (residents.js), vpCost/vpName ליעד (goal.js) */
 const VPROJ={
   list:{
+    // sic: אייקון לכל שלב בשביל השלבים על קו אחד (vpPath, קונספט #672). השמות ב-lang.js: 'vp.<id>.s1..3'
     // who: התושבת שבונים איתה (RESID.list). stages: המחיר של כל שלב. get: ההחלפה שלה אחרי הסדנה. opens: איזה מקום נפתח
-    cutterShop:{who:'cutter',icon:'🏗️',stages:[{stone:20},{stone:40,wood:15},{copper:6,coins:30}],get:{iron:3},opens:'deepQuarry'},
+    cutterShop:{who:'cutter',icon:'🏗️',sic:['🪨','🪜','🏗️'],stages:[{stone:20},{stone:40,wood:15},{copper:6,coins:30}],get:{iron:3},opens:'deepQuarry'},
     // צוות הכורתים (ניר אישר 11.11, docs/concept-village-region.md): של מבנה ולא של תושבת. bld/lv: נפתח כשהמבנה ברמה הזו.
     // spot: איפה המחנה בכפר (ליד המנסרה). make: אחרי שנגמר, המבנה מייצר יותר (vpMake ← vSettle ב-village.js)
-    roadCrew:{bld:'mill',lv:3,icon:'🪓',stages:[{wood:40},{wood:80,stone:30},{wood:120,copper:8,coins:60}],opens:'lakeRoad',spot:{x:-420,y:190},make:{mill:{wood:1.1}}}
+    roadCrew:{bld:'mill',lv:3,icon:'🪓',sic:['🪵','🪓','🛤️'],stages:[{wood:40},{wood:80,stone:30},{wood:120,copper:8,coins:60}],opens:'lakeRoad',spot:{x:-420,y:190},make:{mill:{wood:1.1}}},
+    // חלק 2 (ניר אישר 11.11, docs/concept-village-region-2.md). after: הדרך הקודמת (מפתח ב-paths) חייבת להיות פתוחה, כי השער לאזור הבא נמצא באזור הקודם,
+    // ומכרה 4 ושוק 4 נפתחים יחד. kit: איך המחנה נראה בכפר. sell: השוק משלם יותר במכירה (vpSellK ← vPrice ב-village.js).
+    // hero: השלב האחרון צריך גיבור ברמה הזו (שער רך, ממצא 7 בביקורת Sonnet 11.11, docs/measure-crew-gate.md): 3 מתחת לרמה המומלצת (CURIO.paths).
+    // בלי זה, שחקן שמשחק בהפסקות (הכפר מתמלא בינתיים) גמר את השיירה ברמה 12, 6 לפני המדבר. צוות שכבר נגמר נשאר פתוח
+    // המחירים: כ-0.6 מכל מה שעולה להגיע למבנה ברמה הזו, כמו צוות הכורתים (בדיקת הבוט מדפיסה את היחס)
+    tunnelCrew:{bld:'mine',lv:4,after:'lake',icon:'⛏️',sic:['⛺','⛏️','⛰️'],kit:'stone',stages:[{stone:80,wood:40},{stone:150,iron:10,aquaC:3},{stone:220,iron:20,copper:12,coins:150}],
+      opens:'ridgeRoad',spot:{x:-230,y:400},make:{mine:{stone:1.1}},hero:9},
+    caravan:{bld:'market',lv:4,after:'ridge',icon:'🐪',sic:['📦','🐪','🌉'],kit:'crate',stages:[{wood:120,cloth:15},{wood:200,cloth:25,sapphireC:4},{coins:300,silver:10,iron:20,hide:15}],
+      opens:'desertRoad',spot:{x:330,y:-330},sell:1.1,hero:15}
   },
   // reg: באיזה אזור. lv: נפתח גם מהרמה הזו. rubble: איפה המפולת עד שנפתח. fields: כמו WORLD.regions[..].fields, עם regrow מהיר
   places:{
@@ -20,7 +30,10 @@ const VPROJ={
       fields:[{kind:'rock',n:5,x:2720,y:-860,r:150,regrow:30},{kind:'iron',n:2,x:2620,y:-760,r:90,regrow:30},{kind:'silver',n:1,x:2840,y:-760,r:60,regrow:30}]},
     // path: הדרך לאזור (WORLD.paths) שנפתחת גם מהפרויקט (open ב-world.js). בלי lv: רק הפרויקט או העלילה.
     // near: הרגע ("הדרך פתוחה!") קורה בפעם הראשונה שמגיעים עד כאן מהדרך, כדי שהשחקן יראה את המקום
-    lakeRoad:{reg:'meadow',path:'lake',near:560}
+    // left: מה נשאר בדרך אחרי שהצוות סיים (vpDraw): גדם, סלעים שבורים עם קורות, או גשר מתוקן
+    lakeRoad:{reg:'meadow',path:'lake',near:560,left:'stump'},
+    ridgeRoad:{reg:'lake',path:'ridge',near:560,left:'rocks'},
+    desertRoad:{reg:'ridge',path:'desert',near:560,left:'bridge'}
   },
   // הסדנה בכפר, ליד הבית של התושבת: dx/dy מהבית. בתלת-ממד: ערימת אבן, פיגום, ואז מבנה המכרה עם דגל
   look:{dx:115,dy:-25,w3d:[60,120,110]},   // בצד המזרחי של האוהל, רחוק מהמכרה האמיתי ומהדרך
@@ -32,11 +45,26 @@ const vpDone=id=>vpStage(id)>=VPROJ.list[id].stages.length;
 const vpCost=id=>vpDone(id)?null:VPROJ.list[id].stages[vpStage(id)];
 const vpName=id=>T('vp.'+id);
 // אפשר לבנות רק כשהתושבת בכפר, או כשהמבנה ברמה (צוות הכורתים)
-const vpHere=id=>{const P0=VPROJ.list[id];return P0.bld?vLv(P0.bld)>=P0.lv:typeof resMoved==='function'&&resMoved(P0.who)};
+const vpHere=id=>{const P0=VPROJ.list[id];return P0.bld?vLv(P0.bld)>=P0.lv&&vpAfter(id):typeof resMoved==='function'&&resMoved(P0.who)};
+// הדרך הקודמת פתוחה (after). בלי after: תמיד
+// הדרך נשמרת אחרי החיפוש הראשון (המפה קבועה), כי זה נקרא בכל פריים (vpSync3d, vpDraw2d, goal.js)
+const VPA={};VPROJ.stat.after=0;
+function vpAfter(id){const a=VPROJ.list[id].after;if(!a)return true;
+  let p=VPA[a];if(p===undefined){p=null;VPROJ.stat.after++;if(WORLD.paths&&WORLD.paths[a])p=WORLD.paths[a];else for(const k in WORLD.regions){const R=WORLD.regions[k];if(R.paths&&R.paths[a]){p=R.paths[a];break}}VPA[a]=p}
+  return !!p&&wPathOpen(p)}
+// הדרך (WORLD.paths או paths של אזור) של מקום
+const vpPathOf=P0=>(P0.reg==='meadow'?WORLD:WORLD.regions[P0.reg]).paths[P0.path];
 // איפה הפרויקט בכפר: ליד הבית של התושבת, או במקום משלו
 function vpSpot(id){const P0=VPROJ.list[id];if(P0.spot)return P0.spot;const R=RESID.list[P0.who],L=VPROJ.look;return {x:R.house.x+L.dx,y:R.house.y+L.dy}}
 // כמה המבנה מייצר מהמשאב אחרי שהפרויקט שלו נגמר (vSettle ב-village.js)
 function vpMake(k,r){let m=1;for(const id in VPROJ.list){const M=VPROJ.list[id].make;if(M&&M[k]&&M[k][r]&&vpDone(id))m*=M[k][r]}return m}
+// פי כמה השוק משלם במכירה (vPrice ב-village.js)
+function vpSellK(){let m=1;for(const id in VPROJ.list){const s=VPROJ.list[id].sell;if(s&&vpDone(id))m*=s}return m}
+// מה שהפרויקטים הגמורים נותנים למבנה k (ייצור, או מכירה בשוק), להצגה: '+10% (Road crew)'. ריק כשאין
+function vpNote(k){const out=[];for(const id in VPROJ.list){const P0=VPROJ.list[id];if(!vpDone(id))continue;
+    const m=P0.make&&P0.make[k]?Math.max(...Object.values(P0.make[k])):k==='market'&&P0.sell?P0.sell:0;
+    if(m)out.push(T('vp.bonus',Math.round((m-1)*100),vpName(id)))}
+  return out.length?' <small class="vpnote">'+out.join(' · ')+'</small>':''}
 // הפרויקט של תושבת (לפי id ב-RESID.list), או null
 function vpOf(who){for(const id in VPROJ.list)if(VPROJ.list[id].who===who)return id;return null}
 // ההחלפה של התושבת אחרי שהסדנה נגמרה (resGet ב-residents.js), או null
@@ -49,14 +77,15 @@ function vpOpen(pl){const P0=VPROJ.places[pl];if(!P0)return false;
   return P0.lv!=null&&heroLv()>=P0.lv}
 
 /* ---- בכפר: לשונית בשיחה עם התושבת ---- */
-function vpBlock(id){if(!vpHere(id))return 'away';if(vpDone(id))return 'done';const c=vpCost(id);for(const r in c)if(!bagHas(r,c[r]))return 'cost';return null}
+const vpHeroNeed=id=>{const P0=VPROJ.list[id];return P0.hero&&vpStage(id)===P0.stages.length-1&&heroLv()<P0.hero?P0.hero:0};   // השלב האחרון מחכה לרמת הגיבור (hero)
+function vpBlock(id){if(!vpHere(id))return 'away';if(vpDone(id))return 'done';if(vpHeroNeed(id))return 'hero';const c=vpCost(id);for(const r in c)if(!bagHas(r,c[r]))return 'cost';return null}
 function vpBuild(id){
   if(vpBlock(id))return false;const c=vpCost(id);for(const r in c)bagTake(r,c[r]);
   VPS().st[id]=vpStage(id)+1;VPROJ.stat.build++;saveNow();
   const {x,y}=vpSpot(id);
   celebrate(x,y,'upgrade','+1');sfx('celebrate');if(S.vil&&R3D.vil)R3D.vil.vpAt=-1;   // בתלת-ממד: לבנות מחדש את הסדנה
   if(vpDone(id)){const pl=VPROJ.list[id].opens,P1=VPROJ.places[pl];
-    if(P1.path&&wPathOpen(WORLD.paths[P1.path])&&storyOpen('earth'))VPS().seen[pl]=1;   // הדרך כבר פתוחה מהעלילה: אין רגע בעולם
+    if(P1.path&&[].concat(vpPathOf(P1).need).every(storyOpen))VPS().seen[pl]=1;   // הדרך כבר פתוחה מהעלילה (הפנס שלה דולק): אין רגע בעולם
     if(P1.path)VPROJ.stat.out++;   // הצוות יצא לדרך (לבדיקה)
     banner(T(P1.path?'vp.crewOut':'vp.done',vpName(id),T('vp.pl.'+pl)),C.gold);saveNow()}
   else banner(vpName(id)+' · '+T('vp.stage',vpStage(id),VPROJ.list[id].stages.length),C.gold);
@@ -68,18 +97,27 @@ function vpTab(who){const id=vpOf(who);return id&&vpHere(id)?vpTabOf(id):null}
 function vpBldTab(k){
   for(const id in VPROJ.list){const P0=VPROJ.list[id];if(P0.bld!==k||vLv(k)<1)continue;
     if(vpHere(id))return vpTabOf(id);
-    return {id:'proj',label:'🔒 '+vpName(id),html:()=>'<div class="fcook rserve"><p class="bwlead">'+T('vp.'+id+'.d',T('vp.pl.'+P0.opens))+'</p><p class="bwbad">🔒 '+T('vp.atLv',T('vil.'+k),P0.lv)+'</p></div>'}}
+    const why=vLv(k)<P0.lv?T('vp.atLv',T('vil.'+k),P0.lv):T('vp.after',T('w.region.'+P0.after));   // המבנה נמוך, או שהדרך הקודמת עוד סגורה
+    return {id:'proj',label:'🔒 '+vpName(id),html:()=>'<div class="fcook rserve"><p class="bwlead">'+T('vp.'+id+'.g')+'</p>'+vpPath(id)+'<p class="bwbad">🔒 '+why+'</p></div>'}}
   return null;
 }
+// השלבים על קו אחד (קונספט #672, פריט 2): עיגול לכל שלב (נבנה ✓ / הנוכחי / נעול), קו שמתמלא בזהב עד הנוכחי, והמחיר מתחת לכל עיגול.
+// המחיר אדום רק בשלב הנוכחי (מה שחסר עכשיו). hero של הפרויקט (#675, השלב האחרון): מוצג על העיגול האחרון
+const vpPrice=(c,cur)=>{const k=Object.keys(c);return k.length?'<span class="vpc">'+k.map(r=>'<span'+(!cur||bagHas(r,c[r])?'':' class="miss"')+' data-tip="'+r+'" aria-label="'+resName(r)+'">'+resPic(r)+shortN(c[r])+'</span>').join('')+'</span>':''};
+function vpPath(id){
+  const P0=VPROJ.list[id],st=vpStage(id),n=P0.stages.length;
+  return '<ol class="vppath" style="--vpf:'+Math.min(st,n-1)/(n-1)+'">'+P0.stages.map((c,i)=>{
+    const k=i<st?'done':i===st?'cur':'lock';
+    return '<li class="vpn '+k+'"><span class="vpo">'+(P0.sic?P0.sic[i]:i+1)+'</span><b>'+T('vp.'+id+'.s'+(i+1))+'</b>'+
+      (k==='done'?'<small>✓ '+T('vp.nDone')+'</small>':vpPrice(c,k==='cur'))+(P0.hero&&i===n-1&&k!=='done'?'<small class="vph'+(heroLv()>=P0.hero?'':' miss')+'">⭐ '+T('vp.heroBtn',P0.hero)+'</small>':'')+'</li>'}).join('')+'</ol>';
+}
 function vpTabOf(id){
-  const P0=VPROJ.list[id],n=P0.stages.length;
+  const P0=VPROJ.list[id];
   return {id:'proj',label:P0.icon+' '+vpName(id),dot:!vpDone(id)&&!vpBlock(id),html:()=>{
-    let h='<div class="fcook rserve"><p class="bwlead">'+T('vp.'+id+'.d',T('vp.pl.'+P0.opens),VPROJ.places[P0.opens].lv)+'</p>';
-    h+='<p class="vpst">'+Array.from({length:n},(_,i)=>'<i'+(i<vpStage(id)?' class="on"':'')+'></i>').join('')+' <b>'+T('vp.stage',vpStage(id),n)+'</b></p>';
+    let h='<div class="fcook rserve vptab"><p class="bwlead">'+T('vp.'+id+'.g')+'</p>'+vpPath(id);
     if(vpDone(id))return h+'<p class="next">✓ '+(P0.get?T('vp.isDone',T('vp.pl.'+P0.opens),Object.values(P0.get)[0]):T('vp.'+id+'.done',T('vp.pl.'+P0.opens)))+'</p></div>';
     const why=vpBlock(id);
-    h+='<div class="bwpay"><span class="sk">'+T('bw.price')+'</span>'+bwCost(vpCost(id))+'</div>';
-    h+='<div class="gbtns"><button class="vbtn vmain" data-act="vp" data-k="'+id+'"'+(why?' disabled':'')+'>'+(why==='cost'?T('bw.missing'):T('vp.build',vpStage(id)+1))+'</button>'+goalPinBtn({p:id},'pinP')+'</div>';
+    h+='<div class="gbtns"><button class="vbtn vmain" data-act="vp" data-k="'+id+'"'+(why?' disabled':'')+'>'+(why==='hero'?'🔒 '+T('vp.heroLv',P0.stages.length,P0.hero):T('vp.buildS',T('vp.'+id+'.s'+(vpStage(id)+1))))+'</button>'+goalPinBtn({p:id},'pinP')+'</div>';
     return h+'</div>'}};
 }
 function vpAct(b){
@@ -101,17 +139,33 @@ function vpUpdate(dt){
 }
 // הדרך שהצוות פינה: בפעם הראשונה שמגיעים קרוב, חגיגה. אם העלילה כבר פתחה אותה, בשקט (נרשם ב-vpBuild)
 function vpRoad(pl,P0){
-  if(VPS().seen[pl])return;const p=WORLD.paths[P0.path];if(Math.hypot(P.x-p.x,P.y-p.y)>P0.near)return;
+  if(VPS().seen[pl])return;const p=vpPathOf(P0);if(Math.hypot(P.x-p.x,P.y-p.y)>P0.near)return;
   VPS().seen[pl]=1;VPROJ.stat.open++;saveNow();
-  celebrate(p.x,p.y,'quest','🪓');sparks(p.x,p.y,C.gold,24,220);sfx('celebrate');banner(T('vp.roadOpen',T('w.region.'+P0.path)),C.gold);
+  let ic='🪓';for(const id in VPROJ.list)if(VPROJ.list[id].opens===pl)ic=VPROJ.list[id].icon;
+  celebrate(p.x,p.y,'quest',ic);sparks(p.x,p.y,C.gold,24,220);sfx('celebrate');banner(T('vp.roadOpen',T('w.region.'+P0.path)),C.gold);
 }
 // המפולת, עד שנפתח (בשני המצבים: בתלת-ממד היא מעל השכבה, כמו המכשולים של curiosity.js)
 function vpDraw(){
   if(!S.wd)return;
   for(const pl in VPROJ.places){const P0=VPROJ.places[pl];if(P0.reg!==S.wd.reg)continue;
-    if(P0.path){if(vpOpen(pl))vpStump(WORLD.paths[P0.path]);continue}   // בול העץ (curiosity.js) נעלם עם הדרך, ובמקומו גדם
+    if(P0.path){if(vpOpen(pl))vpLeft(P0.left,vpPathOf(P0));continue}   // המכשול (curiosity.js) נעלם עם הדרך, ובמקומו מה שהצוות השאיר
     if(vpOpen(pl))continue;const r=P0.rubble;
     cuObstacle('rock',r.x-26,r.y+8);cuObstacle('rock',r.x+30,r.y-6)}
+}
+function vpLeft(k,p){if(k==='rocks')vpRocks(p);else if(k==='bridge')vpBridge(p);else vpStump(p)}
+// צוות המנהרה: שני סלעים שבורים בצדדים, ומסגרת קורות עם פנס
+function vpRocks(p){
+  cuObstacle('rock',p.x-90,p.y+30);cuObstacle('rock',p.x+90,p.y+24);
+  const x=p.x+70,y=p.y+40,c=ctx;c.save();c.strokeStyle=C.ink;c.lineWidth=2;c.fillStyle='#7A5230';
+  c.fillRect(x-22,y-40,7,40);c.strokeRect(x-22,y-40,7,40);c.fillRect(x+15,y-40,7,40);c.strokeRect(x+15,y-40,7,40);c.fillRect(x-26,y-46,52,8);c.strokeRect(x-26,y-46,52,8);
+  c.fillStyle=C.gold;c.beginPath();c.arc(x,y-30,5,0,7);c.fill();c.stroke();c.restore();
+}
+// שיירת הגשר: גשר קצר עם קרשים חדשים ודגל
+function vpBridge(p){
+  const x=p.x+70,y=p.y+40,c=ctx;c.save();c.strokeStyle=C.ink;c.lineWidth=2;
+  for(let i=0;i<6;i++){c.fillStyle=i%2?'#B08050':'#C99A60';c.fillRect(x-36+i*12,y-14,11,28);c.strokeRect(x-36+i*12,y-14,11,28)}
+  c.strokeStyle='#4A3220';c.lineWidth=3;c.beginPath();c.moveTo(x-38,y-18);c.lineTo(x+36,y-18);c.moveTo(x-38,y+18);c.lineTo(x+36,y+18);c.stroke();
+  c.beginPath();c.moveTo(x+40,y-18);c.lineTo(x+40,y-56);c.stroke();c.fillStyle=C.gold;c.beginPath();c.moveTo(x+40,y-56);c.lineTo(x+60,y-50);c.lineTo(x+40,y-44);c.closePath();c.fill();c.restore();
 }
 // מה שהצוות השאיר: גדם עם טבעות, ושני חלקי הגזע בצד הדרך
 function vpStump(p){
@@ -129,7 +183,7 @@ function vpStump(p){
 function vpDraw2d(){
   if(!S.vil||R3D.on)return;const L=VPROJ.look;
   for(const id in VPROJ.list){const st=vpStage(id);if(!st||!vpHere(id))continue;const {x,y}=vpSpot(id);
-    if(VPROJ.list[id].bld){vpCamp2d(x,y,st);continue}
+    if(VPROJ.list[id].bld){vpCamp2d(x,y,st,VPROJ.list[id].kit);continue}
     ctx.fillStyle='rgba(5,7,13,0.4)';ctx.beginPath();ctx.ellipse(x,y+6,34,10,0,0,7);ctx.fill();
     ctx.fillStyle='#8A8F9E';for(let i=0;i<3;i++)ctx.fillRect(x-22+i*15,y-8,13,12);   // שלב 1: אבני יסוד
     if(st>=2){ctx.strokeStyle='#7A5230';ctx.lineWidth=3;ctx.strokeRect(x-24,y-44,48,38)}   // שלב 2: פיגום
@@ -137,11 +191,13 @@ function vpDraw2d(){
       ctx.beginPath();ctx.moveTo(x+18,y-40);ctx.lineTo(x+18,y-74);ctx.lineTo(x-14,y-74);ctx.stroke()}}   // שלב 3: מבנה ומנוף
 }
 // מחנה הכורתים: 1 אוהל וערימת בולים, 2 עגלה עם חבלים, 3 דגל ועוד ערימה
-function vpCamp2d(x,y,st){
+// kit: stone (צוות המנהרה, ערימות אבן) או crate (השיירה, ארגזים). בלי: בולי עץ
+function vpCamp2d(x,y,st,kit){
   const c=ctx;c.save();c.strokeStyle=C.ink;c.lineWidth=2;
   c.fillStyle='rgba(5,7,13,0.4)';c.beginPath();c.ellipse(x,y+8,60,14,0,0,7);c.fill();
   c.fillStyle='#B89B6A';c.beginPath();c.moveTo(x-46,y+4);c.lineTo(x-24,y-30);c.lineTo(x-2,y+4);c.closePath();c.fill();c.stroke();   // אוהל
-  const logs=(lx,ly)=>{c.fillStyle='#6B4A2B';for(let i=0;i<3;i++){c.beginPath();c.roundRect(lx-18+(i%2)*6,ly-i*7,36,7,3);c.fill();c.stroke()}};
+  const col=kit==='stone'?'#8A8F9E':kit==='crate'?'#B08050':'#6B4A2B',hh=kit==='crate'?12:7;
+  const logs=(lx,ly)=>{c.fillStyle=col;for(let i=0;i<3;i++){c.beginPath();c.roundRect(lx-18+(i%2)*6,ly-i*hh,kit==='crate'?24:36,hh,kit==='crate'?1:3);c.fill();c.stroke()}};
   logs(x+28,y);
   if(st>=2){c.fillStyle='#8A5A30';c.fillRect(x-8,y+10,40,12);c.strokeRect(x-8,y+10,40,12);   // עגלה
     c.fillStyle='#3A2A1A';for(const wx of [x,x+26]){c.beginPath();c.arc(wx,y+24,6,0,7);c.fill()}}
@@ -155,9 +211,10 @@ function vpSync3d(){
     if(H[id])for(const o of H[id].obj)V.g.remove(o);H[id]={st,obj:[]};if(!st)continue;
     const {x,y}=vpSpot(id),L=VPROJ.look,w=L.w3d[st-1],o=H[id].obj,D=VIL3D.deco;
     if(VPROJ.list[id].bld){   // מחנה הכורתים
-      o.push(vPut(D.tent.model,x-30,y,D.tent.w),vPut(D.lumber.model,x+30,y,D.lumber.w));
-      if(st>=2)o.push(vPut(D.barrel.model,x-5,y+30,D.barrel.w),vPut(D.crate.model,x+20,y+35,D.crate.w),vPut(D.lumber.model,x+60,y+20,D.lumber.w,0.6));
-      if(st>=3)o.push(vPut(D.flag.model,x-60,y-10,D.flag.w),vPut(D.lumber.model,x+40,y-30,D.lumber.w,1.2));
+      const kit=VPROJ.list[id].kit,K=kit==='stone'?D.stone:kit==='crate'?D.crate:D.lumber;   // מה נערם: אבן (המנהרה), ארגזים (השיירה) או עץ
+      o.push(vPut(D.tent.model,x-30,y,D.tent.w),vPut(K.model,x+30,y,K.w));
+      if(st>=2)o.push(vPut(D.barrel.model,x-5,y+30,D.barrel.w),vPut((kit==='stone'?D.wbarrow:D.crate).model,x+20,y+35,(kit==='stone'?D.wbarrow:D.crate).w),vPut(K.model,x+60,y+20,K.w,0.6));
+      if(st>=3)o.push(vPut(D.flag.model,x-60,y-10,D.flag.w),vPut(K.model,x+40,y-30,K.w,1.2));
       continue}
     if(st===1)o.push(vPut(VIL3D.stock.mine.model,x,y,w));
     else if(st===2){o.push(vPut(VIL3D.site.model,x,y,w));o.push(vPut(VIL3D.stock.mine.model,x+60,y+20,50))}

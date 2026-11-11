@@ -43,7 +43,7 @@ function bwUpgrade(k,L){
 // מנסרה ומכרה: מה מייצר בשעה, כמה מחכה מכל משאב (עם פס עד המקסימום), וכפתור לאסוף
 function bwProd(k,L){
   const B=VILLAGE.b[k],p=vProd(k),rs=Object.keys(B.make).filter(r=>B.make[r][L]>0),n=vStock(k),full=rs.some(r=>(p.have[r]||0)>=vCapOf(B,r,L));
-  return '<p class="bwlead">'+T('bw.perHour',makeLine(B,L))+'</p><div class="bwstock">'+rs.map(r=>{const v=Math.floor(p.have[r]||0),c=vCapOf(B,r,L);
+  return '<p class="bwlead">'+T('bw.perHour',makeLine(B,L,k))+'</p><div class="bwstock">'+rs.map(r=>{const v=Math.floor(p.have[r]||0),c=vCapOf(B,r,L);
       return '<div class="bwst"'+bwRar(r)+'><span class="ic">'+resPic(r)+'</span><span class="nm">'+resName(r)+'</span><b>'+v+' / '+c+'</b><i style="width:'+Math.min(100,v/c*100)+'%"></i></div>'}).join('')+'</div>'+
     (full?'<p class="bwbad">'+T('bw.fullProd')+'</p>':'')+
     (n?'<button class="vbtn vmain" data-act="collect">'+T('vil.collect',n)+'</button>':'<p class="vwhy">'+T('vil.nothing')+'</p>');
@@ -52,7 +52,7 @@ function bwProd(k,L){
 function bwTrade(L){
   const rs=Object.keys(RES.list),card=(kind,r,why,p)=>'<button class="tcard" data-act="'+kind+'" data-r="'+r+'"'+(why?' disabled':'')+bwRar(r)+' aria-label="'+T('vil.'+kind)+' '+resName(r)+'">'+
     '<span class="ic">'+resPic(r)+'</span><span class="nm">'+resName(r)+' <small>×'+vLot(r)+'</small></span><span class="pr"><bdi>'+p+'</bdi>'+resPic('coins')+'</span>'+
-    '<small class="hv'+(why?' tw':'')+'">'+(why||T('bw.have',shortN(SAVE.bag[r])))+'</small></button>';
+    (why||kind==='sell'?'<small class="hv'+(why?' tw':'')+'">'+(why||T('bw.have',shortN(SAVE.bag[r])))+'</small>':'')+'</button>';   // קנייה: בלי "You have" (כבר כתוב במכירה, קונספט #672)
   const sell=rs.filter(r=>vCanTrade('sell',r)&&bagHas(r)),
     buy=rs.filter(r=>resOf(r).buy).map(r=>{const p=vPrice(r,'buy')*vLot(r);return[r,p,!vCanTrade('buy',r)?'🔒 '+T('vil.mkLv',RES.rarity[resOf(r).rar].market):bagHas('coins',p)?'':T('vil.noCoins')]})
       .sort((a,b)=>(!!a[2]-!!b[2]));   // מה שאפשר לקנות עכשיו קודם
@@ -89,14 +89,17 @@ function bwMain(k,L){
 // מרכז הכפר: מבט על כל הכפר. לכל מבנה רמה, פס עד המקסימום, ומה הלאה (ניר, 10.11: ברמה 5 החלון היה כמעט ריק)
 function bwVillage(){
   const ks=Object.keys(VILLAGE.b).filter(k=>k!=='center'),M=VILLAGE.max,top=ks.filter(k=>vLv(k)>=M).length;
-  const st=k=>{const L=vLv(k),w=vBlock(k);return !L?(w?'🔒 '+T('bw.v.none'):'🔨 '+T('bw.v.build')):w==='max'?'⭐ '+T('vil.max'):!w?'⬆️ '+T('bw.v.ready',L+1):w==='center'?'🔒 '+T('bw.v.center',L+1):'⛏️ '+T('bw.v.next',L+1)};
-  return '<p class="bwlead">'+T('bw.v.lead',top,ks.length)+'</p><div class="bwstock bwvil">'+ks.map(k=>{const L=vLv(k);
+  // מבנים שהמרכז חוסם: שורה אחת למעלה, ולא "Needs Center level 5" על כל כרטיס (קונספט מסכים ברורים #672, סעיף 4)
+  const capped=ks.filter(k=>vLv(k)&&vBlock(k)==='center'),capLv=capped.length?Math.max(...capped.map(k=>vLv(k)+1)):0;
+  const st=k=>{const L=vLv(k),w=vBlock(k);return !L?(w?'🔒 '+T('bw.v.none'):'🔨 '+T('bw.v.build')):w==='max'?'⭐ '+T('vil.max'):!w?'⬆️ '+T('bw.v.ready',L+1):w==='center'?'🔒':'⛏️ '+T('bw.v.next',L+1)};
+  const cap=capped.length?'<div class="bwch bwcapl"><b>🔒 '+T('bw.v.cap',capped.length,capLv)+'</b><button class="vbtn bwall" data-act="tab" data-tab="up">⬆️ '+T('bw.v.capGo')+'</button></div>':'';
+  return '<p class="bwlead">'+T('bw.v.lead',top,ks.length)+'</p>'+cap+'<div class="bwstock bwvil">'+ks.map(k=>{const L=vLv(k);
     return '<div class="bwst" style="--rar:'+(VCOL[k]||'var(--gold)')+'"><span class="nm">'+T('vil.'+k)+'<small>'+st(k)+'</small></span><b>'+L+' / '+M+'</b><i style="width:'+L/M*100+'%"></i></div>'}).join('')+'</div>'+bwVilMake();
 }
 // כל מה שהכפר מייצר בשעה, מכל המבנים יחד, ומה מחכה לאיסוף
 function bwVilMake(){
   const sum={};let wait=0;
-  for(const k in VILLAGE.b){const B=VILLAGE.b[k],L=vLv(k);if(!B.make||!L)continue;wait+=vStock(k);for(const r in B.make)if(B.make[r][L]>0)sum[r]=(sum[r]||0)+B.make[r][L]}
+  for(const k in VILLAGE.b){const B=VILLAGE.b[k],L=vLv(k);if(!B.make||!L)continue;wait+=vStock(k);for(const r in B.make)if(B.make[r][L]>0)sum[r]=(sum[r]||0)+vMakeOf(k,r,L)}
   const rs=Object.keys(sum);if(!rs.length)return '';
   return '<h4 class="bwup">'+T('bw.v.make')+'</h4><div class="bwstock">'+rs.map(r=>'<div class="bwst"'+bwRar(r)+'><span class="ic">'+resPic(r)+'</span><span class="nm">'+resName(r)+'</span><b>+'+sum[r]+'</b></div>').join('')+'</div>'+
     (wait?'<p class="vwhy">'+T('bw.v.wait',wait)+'</p>':'');

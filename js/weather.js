@@ -24,6 +24,7 @@ const WEATHER={
   alpha:0.55,                  // intensity 1 = השקיפות הזו
   K:0.5,Ksmall:0.4,            // רזולוציית הקנבס הקטן מתוך המסך
   fade:1.6,                    // שניות לדעיכה, כשלא ביקשו אחרת
+  ease:0.8,                    // שניות (בערך) למעבר עוצמה של אותה שכבה, למשל חצי עוצמה בקרב
   sync:0.3,                    // כל כמה שניות מחשבים מחדש מה צריך להיות
   states:['calm','building','storm','clearing'],
   cycle:{calm:[70,150],building:[8,12],storm:[25,45],clearing:[8,11],chance:0.5},   // auto: כמה זמן בכל מצב, והסיכוי לסערה אחרי רגוע
@@ -82,7 +83,7 @@ function wxSet(slot,sp){
   const id=sp&&wxRes(sp.v,sp.theme,sp.exact);
   if(!id){if(old){L.delete(slot);wxDie(old,sp&&sp.fade)}return null}
   const v=wxV(sp.v),kind=sp.kind||wxKind(v);
-  if(old&&old.id===id&&old.kind===kind){old.a=sp.a;return old}
+  if(old&&old.id===id&&old.kind===kind){old.to=sp.a;return old}   // אותה שכבה בעוצמה אחרת (למשל קרב, wxworld.js): דועכת לשם, בלי קפיצה
   if(old)wxDie(old,sp.fade);
   const f={slot,id,v,D:FXDATA[id],kind,a:sp.a,add:sp.add!=null?!!sp.add:WEATHER.add.test(id),once:!!sp.once,fps:sp.fps||0,t0:WX.clk,cur:sp.once?1:0,
     fadeIn:sp.fade||WEATHER.fade,fadeOut:sp.fade||WEATHER.fade};
@@ -188,7 +189,7 @@ function wxTick(){
   if(WEATHER.scenes[sc]&&!WX.run[sc])weatherScene(sc,WEATHER.scenes[sc]);
   if(sc){wxDrive(sc,dt);wxEvents(dt)}
   if((WX.syncT-=dt)<=0){WX.syncT=WEATHER.sync;wxSync()}
-  for(const f of WX.layers.values())if(!f.once)f.cur=Math.min(1,f.cur+rd/f.fadeIn);
+  for(const f of WX.layers.values())if(!f.once){f.cur=Math.min(1,f.cur+rd/f.fadeIn);if(f.to!=null){f.a+=(f.to-f.a)*Math.min(1,rd/WEATHER.ease);if(Math.abs(f.to-f.a)<0.005){f.a=f.to;f.to=null}}}
   WX.dying=WX.dying.filter(f=>(f.cur-=rd/f.fadeOut)>0);
   return true;
 }

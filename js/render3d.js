@@ -450,7 +450,7 @@ function crowdOf(k){
 }
 function crowdAdd(e){
   const L=lookOf(e),k=e.big||1,lift=L.float?L.float+Math.sin(e.ph*0.6)*3:0,M=R3D._mx;
-  const parts=R3D.crowd[e.type][Math.floor(e.ph/1.6)%CROWD.poses.length];
+  const parts=R3D.crowd[foeKey(e)][Math.floor(e.ph/1.6)%CROWD.poses.length];
   R3D._p.set(e.x,lift/COS(),(e.y+L.foot*k)/SIN());R3D._q.setFromAxisAngle(R3D._up,yawOf(P.x-e.x,P.y-e.y));R3D._s.setScalar(k);
   M.compose(R3D._p,R3D._q,R3D._s);
   for(const m of parts)if(m.count<CROWD.max)m.setMatrixAt(m.count++,M);
@@ -482,7 +482,9 @@ function heroLook(){
   {const th=heroTheme();if(th&&th.grip){delete L.props.shield;th.grip(L)}}   // דמות אישית: חפץ ביד במקום הנשק, ובלי מגן ביד השנייה (החליל ב-flute.js)
   return R3D._hl=L;
 }
-function lookOf(e){return e===P?heroLook():e.wboss&&LOOK3D['wb_'+e.wboss]?LOOK3D['wb_'+e.wboss]:e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[e.type]}
+function lookOf(e){return e===P?heroLook():e.wboss&&LOOK3D['wb_'+e.wboss]?LOOK3D['wb_'+e.wboss]:e.isBoss?LOOK3D.boss:e.wanted?LOOK3D.wanted:LOOK3D[foeKey(e)]}
+// איזה מראה של LOOK3D מצייר אויב רגיל: הסוג שלו. js/look-v2.js מחליף את זה בעולם (דלוק כברירת מחדל, ?look=v1 מכבה) בלי לשנות את הזירה
+function foeKey(e){return e.type}
 // מפתח למאגר: רק דמות זהה (מודל, חפצים, צבע, גודל, נשק מוסתר) חוזרת לשימוש. יצורי משאבים הם מודל קיים בצבע ובגודל אחר
 const lookKey=L=>L.model+'|'+Object.values(L.props||{}).map(p=>p.prop+(p.tier||'')+(p.glow||'')+(p.item||'')).join()+(L.tint?'|'+L.tint:'')+(L.paint?'|'+L.paint:'')+'|'+L.h+(L.own===false?'|x':'');
 const TINT={ember:C.ember,tide:C.tide,gold:C.gold,...Object.fromEntries(Object.keys(DMG.types).map(k=>[k,DMG.types[k].col])),lilac:C.lilac};   // צבע לכל סוג נזק, ושמות הצבעים של המשחק
@@ -530,7 +532,8 @@ function once(a,name,dur,hold=false,skip=0){
 /* גיבור בלי הכנה (ניר, 7.11, מסרטון של מפתח Diablo 3: "לפעולות של השחקן אין הכנה"): תקיפה וסקיל מתחילים כבר באמצע התנועה.
    כמה מדלגים מכל אנימציה (חלק מהאורך). רק לגיבור, ורק בעולם ובכפר (SKCAST.where). לאויבים ולבוס ההכנה נשארת, כי היא האזהרה */
 const HERO_SKIP={Melee_1H_Attack_Chop:0.3,Melee_1H_Attack_Slice_Horizontal:0.25,Melee_2H_Attack_Chop:0.35,Melee_2H_Attack_Spin:0.2,
-  Ranged_Magic_Shoot:0.15,Ranged_Magic_Spellcasting:0.35,Ranged_Magic_Summon:0.3,Melee_Block:0.15,Ranged_Bow_Release:0,Throw:0.25};   // Throw: מהענף של אוראל (skillcast.js, SKCAST.pre)
+  Ranged_Magic_Shoot:0.15,Ranged_Magic_Spellcasting:0.35,Ranged_Magic_Summon:0.3,Melee_Block:0.15,Ranged_Bow_Release:0,Throw:0.25,
+  Ranged_Magic_Raise:0.3,Ranged_Bow_Release_Up:0};   // Throw, Raise, Release_Up: מהענף של אוראל (skillcast.js, SKCAST.pre). Release_Up כמו Release: הקליפ כבר מתחיל בשחרור
 const heroSkip=n=>SKCAST.where()?(HERO_SKIP[n]||0):0;
 function place(a,x,y,foot,yaw,lift=0){
   const S_=SIN();a.root.position.set(x,(lift+(TR&&S.wd?hAt(x,y):0))/COS(),(y+foot)/S_);   // hAt: על הרכס הדמות עומדת גבוה יותר (terrain.js)
@@ -904,7 +907,7 @@ function render3d(ox,oy){
     // בעולם: רק world הקרובים מונפשים, והשאר בקהל (דמות מונפשת היא רוב הזמן של הציור בעולם, מבקר 2)
     const full=S.wd?CROWD.world:CROWD.full;
     if(vis.length>full){const pr=e=>e.isBoss||e.wboss||e.wanted||e.elite||e.sw>0||e.act?-1:Math.hypot(e.x-P.x,e.y-P.y);vis.sort((a,b)=>pr(a)-pr(b))}   // מי שמתכונן למתקפה תמיד מונפש (FOEATK3D)
-    vis.forEach((e,i)=>i<full||e.isBoss||e.wboss||!crowdOf(e.type)?syncEnemy(e,dt):crowdAdd(e));
+    vis.forEach((e,i)=>i<full||e.isBoss||e.wboss||!crowdOf(foeKey(e))?syncEnemy(e,dt):crowdAdd(e));
     R3D.nDying=0;for(const a of R3D.actors.values())if(a.dieT>0.05)R3D.nDying++;
     for(const [e,a] of R3D.actors)if(a.seen!==R3D.frame||e.dead)retire(e,a,dt);
   }else{ // בחדר הבונוס אין אויבים, רק השחקן

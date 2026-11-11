@@ -1,0 +1,203 @@
+{
+ "seed": 5,
+ "viewport": {
+  "width": 915,
+  "height": 412
+ },
+ "arena": {
+  "pixelsDiffer": 0,
+  "of": 376980
+ },
+ "before": {
+  "v2": false,
+  "errors": [],
+  "orcReady": null,
+  "firstSpawnMs": {
+   "grunt": 14,
+   "shield": 9,
+   "wisp": 9,
+   "sprite": 8,
+   "golem": 9,
+   "treant": 11,
+   "crawler": 66
+  },
+  "perf": {
+   "key": "grunt",
+   "model": "minion",
+   "tris": 5288,
+   "geometries": 340,
+   "textures": 167,
+   "hud": {
+    "ids": [
+     "hp",
+     "xp",
+     "skills"
+    ],
+    "frames": 40,
+    "distinctPositions": 1
+   },
+   "wallMs": {
+    "idleFrame": 10,
+    "first20SpawnFrame": 36,
+    "next5": [
+     13,
+     13,
+     8,
+     8,
+     7
+    ],
+    "second20SpawnFrame": 10
+   },
+   "heapMB": [
+    30.2,
+    31.3
+   ]
+  },
+  "regions": {
+   "lake": {
+    "types": [
+     "mistling",
+     "drowned",
+     "treant",
+     "golem",
+     "pearl"
+    ]
+   },
+   "ridge": {
+    "types": [
+     "frostwraith",
+     "rimeknight",
+     "golem",
+     "hoarfrost"
+    ]
+   },
+   "desert": {
+    "types": [
+     "flamewisp",
+     "cinderscorp",
+     "treant",
+     "golem",
+     "ashmaw"
+    ]
+   },
+   "storm": {
+    "types": [
+     "sparkwisp",
+     "stormknight",
+     "golem",
+     "stormhide"
+    ]
+   },
+   "shadow": {
+    "types": [
+     "shadewisp",
+     "shadeknight",
+     "grunt",
+     "wisp",
+     "mistling",
+     "drowned",
+     "frostwraith"
+    ]
+   }
+  }
+ },
+ "v2": {
+  "v2": true,
+  "errors": [],
+  "orcReady": true,
+  "bodies": {
+   "wisp": true,
+   "sprite": true,
+   "golem": true,
+   "crawler": true
+  },
+  "firstSpawnMs": {
+   "grunt": 11,
+   "shield": 15,
+   "wisp": 12,
+   "sprite": 10,
+   "golem": 11,
+   "treant": 43,
+   "crawler": 11
+  },
+  "perf": {
+   "key": "w_grunt",
+   "model": "mon_orcSkull",
+   "tris": 2399,
+   "geometries": 394,
+   "textures": 135,
+   "hud": {
+    "ids": [
+     "hp",
+     "xp",
+     "skills"
+    ],
+    "frames": 40,
+    "distinctPositions": 1
+   },
+   "wallMs": {
+    "idleFrame": 9,
+    "first20SpawnFrame": 22,
+    "next5": [
+     33,
+     26,
+     14,
+     9,
+     7
+    ],
+    "second20SpawnFrame": 10
+   },
+   "heapMB": [
+    32.7,
+    32.3
+   ]
+  },
+  "regions": {
+   "lake": {
+    "types": [
+     "mistling",
+     "drowned",
+     "treant",
+     "golem",
+     "pearl"
+    ]
+   },
+   "ridge": {
+    "types": [
+     "frostwraith",
+     "rimeknight",
+     "golem",
+     "hoarfrost"
+    ]
+   },
+   "desert": {
+    "types": [
+     "flamewisp",
+     "cinderscorp",
+     "treant",
+     "golem",
+     "ashmaw"
+    ]
+   },
+   "storm": {
+    "types": [
+     "sparkwisp",
+     "stormknight",
+     "golem",
+     "stormhide"
+    ]
+   },
+   "shadow": {
+    "types": [
+     "shadewisp",
+     "shadeknight",
+     "grunt",
+     "wisp",
+     "mistling",
+     "drowned",
+     "frostwraith"
+    ]
+   }
+  }
+ }
+}

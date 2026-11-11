@@ -1,0 +1,135 @@
+/* Evidence for the look v2 pilot (?look=v2, js/look-v2.js; concept: docs/concept-visual-language.md). Not part of the game or of npm run check.
+   Offline and disposable, like tools/check.js: a fresh browser context (its own empty storage), every http(s) request answered locally
+   with an empty body (no cloud, no Supabase, no live site), Math.random seeded, the clock faked. No real save is ever read or written.
+   Same steps twice, with ?look=v1 (the old look) and the default (v2), in 3D on the CPU (SwiftShader), phone landscape 844x390 (and --ipad: 1180x820):
+     village plaza, a world fight (8 grunts + 3 shields + 2 wisps around the hero), motion strips of one grunt (spawn, walk, attack, death),
+     the arena right after it starts (must be identical with and without v2), and numbers: first-spawn cost of the new body,
+     20 grunts spawning in one frame, JS heap, GPU geometries and textures, draw calls, triangles, and HUD drift over 30 frames.
+   Run: node tools/look-v2-shots.js [--out docs/concept/visual-language/pilot] [--seed 5] [--ipad | --vw 915 --vh 412]
+   Output: <out>/*.png and <out>/look-v2-report.json, plus a summary in the console. */
+const {chromium}=require('playwright');
+const path=require('path'),fs=require('fs');
+const args=process.argv.slice(2),opt=k=>{const i=args.indexOf('--'+k);return i<0?null:(args[i+1]&&!args[i+1].startsWith('--')?args[i+1]:true)};
+const OUT=path.resolve(opt('out')||path.join(__dirname,'look-v2-shots')),SEED=+(opt('seed')||5);
+// --vw/--vh: another phone size. Screenshots for Nir: 3D at 915x412 (Nir, 11.11)
+const VP=opt('ipad')?{width:1180,height:820}:{width:+(opt('vw')||844),height:+(opt('vh')||390)},TAG=opt('ipad')?'ipad':VP.width===844?'phone':'phone'+VP.width;
+fs.mkdirSync(OUT,{recursive:true});
+
+async function session(browser,v2){
+  const ctx=await browser.newContext({viewport:VP,deviceScaleFactor:1,isMobile:true,hasTouch:true});   // new context = empty storage: no real save
+  const page=await ctx.newPage();const errors=[];
+  page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
+  await ctx.route(/^https?:/,r=>r.fulfill({status:200,contentType:'text/plain',body:''}));   // offline: nothing leaves the machine
+  await page.addInitScript(seed=>{let a=seed>>>0;Math.random=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+    try{localStorage.setItem('zm-gfx','3d')}catch(e){}},SEED);
+  await page.clock.install({time:0});await page.clock.pauseAt(1000);
+  await page.goto('file://'+path.resolve(__dirname,'..','index.html')+(v2?'':'?look=v1'),{timeout:120000});   // v2 is the default now; ?look=v1 is the old look
+  await page.clock.runFor(300);
+  for(let i=0;i<300;i++){const r=await page.evaluate(()=>R3D.ready||R3D.failed);if(r)break;await page.waitForTimeout(50);await page.clock.runFor(50)}
+  // each step: the hero can't die, open windows close, and (when set) only the test's own enemies stay, so nothing else walks into the frame
+  const run=async(ms,step=50)=>{for(let t=0;t<ms;t+=step){await page.evaluate(()=>{if(typeof P!=='undefined'&&P.maxHp){P.hp=P.maxHp;P.inv=0}   // inv 0: no hurt-blink (render3d.js hides the hero every other step while P.inv>0), so shots compare like for like
+    
+    for(const o of document.querySelectorAll('[id^="ov"],.win'))if(!o.hidden&&o.id!=='ovHud')o.hidden=true;
+    if(window.__only&&typeof enemies!=='undefined')for(let i=enemies.length-1;i>=0;i--)if(!enemies[i].lv2t)enemies.splice(i,1)});await page.clock.runFor(step)}};
+  const noHud=v=>page.evaluate(v=>{for(const el of document.body.children)if(!el.querySelector('canvas')&&el.tagName!=='CANVAS')el.style.visibility=v?'hidden':''},v);
+  const waitModel=async k=>{for(let i=0;i<200;i++){if(await page.evaluate(k=>!m3dLazy(k)||m3dReady(k),k))return true;await page.waitForTimeout(50);await page.clock.runFor(50)}return false};
+  const shot=async(name,clip)=>{await page.evaluate(()=>{if(typeof P!=='undefined')P.inv=0});await page.clock.runFor(17);const f=path.join(OUT,TAG+'-'+name+'-'+(v2?'v2':'before')+'.png');await page.screenshot({path:f,...(clip?{clip}:{})});return f};
+  const R={v2,errors};
+  // the arena first, straight from a fresh start: the same steps with and without v2
+  await page.evaluate(()=>{R3D.drawEvery=1;heroPick('warrior')});await run(400);
+  await page.evaluate(()=>startRun());await run(1500);
+  R.arena=await shot('arena');await noHud(true);R.arenaScene=await shot('arena-scene');await noHud(false);   // scene only: the HUD has its own animations
+  // village: the hero on the plaza
+  await page.evaluate(()=>{enterVillage()});await run(600);
+  await page.evaluate(()=>{P.x=40;P.y=-110});await run(1200);
+  R.village=await shot('village');R.villageHero=await shot('village-hero',{x:VP.width/2-110,y:VP.height/2-120,width:220,height:200});
+  // world: a crowd around the hero
+  await page.evaluate(()=>{enterWorld('home')});await run(600);
+  await page.evaluate(()=>{P.y+=380;window.__only=1});await run(600);   // away from the gate lantern, on open grass
+  R.orcReady=v2?await waitModel('mon_orcSkull'):null;
+  if(v2)R.bodies={wisp:await waitModel('mon_wispGhost'),sprite:await waitModel('mon_spriteBee'),golem:await waitModel('mon_golemIdol'),crawler:await waitModel('mon_crawlerSpiky')};
+  // lineup: one of each world role in a row, and the first-spawn cost of each body (one new type per frame, wall clock)
+  const TYPES=['grunt','shield','wisp','sprite','golem','treant','crawler'];
+  // the row stands just behind the hero (farther from the camera, so readable3d's see-through doesn't fade it), with a gap where the hero is
+  await page.evaluate(()=>{window.ROWX=[-230,-165,-100,70,135,200,265]});R.firstSpawnMs={};
+  await page.evaluate(()=>{enemies.length=0;window.__only=1});await page.clock.runFor(34);
+  for(let i=0;i<TYPES.length;i++){const t0=Date.now();
+    await page.evaluate(([t,i])=>{const e=addEnemy(t,P.x+ROWX[i],P.y-80);e.speed=0;e.dmg=0;e.lv2t=1;e.hp=e.max=1e9},[TYPES[i],i]);
+    await page.clock.runFor(17);R.firstSpawnMs[TYPES[i]]=Date.now()-t0}
+  await run(600);
+  const lineClip={x:Math.max(0,VP.width/2-290),y:Math.max(0,VP.height/2-175),width:620,height:205};   // the row behind the hero
+  R.lineup=await shot('lineup',lineClip);
+  // silhouette test: every enemy body (and its gear) drawn flat black, in this throwaway page only
+  // one black material swapped in (the game re-applies colors and tints to its own materials every frame, so editing them doesn't stick)
+  await page.evaluate(()=>{const K=new THREE.MeshBasicMaterial({color:0});for(const a of R3D.actors.values())if(a!==R3D.player)a.root.traverse(o=>{if(o.isMesh)o.material=K})});
+  R.silhouette=await shot('silhouette',lineClip);
+  await page.evaluate(()=>{enemies.length=0});await page.clock.runFor(34);await page.evaluate(()=>{R3D.pool={}});   // the blackened actors go back to the pool: drop them so later shots build fresh ones
+  await page.evaluate(()=>{enemies.length=0;const ts=[['grunt',4],['shield',3],['wisp',2],['sprite',2],['golem',2]];let i=0;
+    for(const [t,n] of ts)for(let j=0;j<n;j++,i++){const a=i/13*Math.PI*2;const e=addEnemy(t,P.x+Math.cos(a)*120,P.y+Math.sin(a)*90);e.speed=0;e.dmg=0;e.lv2t=1}});
+  await run(900);
+  R.world=await shot('world-crowd');R.worldHero=await shot('world-hero',{x:VP.width/2-110,y:VP.height/2-120,width:220,height:200});
+  // motion strip of one grunt, 60 px right of the hero, cropped around it
+  await page.evaluate(()=>{enemies.length=0;window.__g=addEnemy('grunt',P.x+70,P.y);__g.dmg=0;__g.lv2t=1;__g.hp=__g.max=1e9});   // can't die from the hero's auto attack before its own frames
+  const box=()=>page.evaluate(()=>{const s=document.getElementById('c3')||document.querySelector('canvas'),r=s.getBoundingClientRect();
+    return {x:Math.max(0,Math.round(r.width/2-60)),y:Math.max(0,Math.round(r.height/2-95)),width:200,height:150}});
+  const strip=[];
+  for(const [ph,ms] of [['spawn',80],['spawn2',200],['walk',500],['walk2',300]]){await run(ms);strip.push(await shot('m-'+ph,await box()))}
+  await page.evaluate(()=>{__g.sw=0.3;__g.flash=0});await run(100);strip.push(await shot('m-attack',await box()));
+  await run(150);strip.push(await shot('m-attack2',await box()));
+  await page.evaluate(()=>{__g.hp=0;kill(__g)});   // the game's own death (combat.js)
+  await run(250);strip.push(await shot('m-death',await box()));
+  await run(500);strip.push(await shot('m-death2',await box()));
+  R.strip=strip;
+  // numbers: 20 grunts in one frame, first-spawn cost, memory, draw calls, HUD drift
+  // the page's clock is fake (performance.now stands still), so times are wall clock from here, around one frame each. Heap from CDP
+  const cdp=await ctx.newCDPSession(page),heap=async()=>{const m=(await cdp.send('Performance.getMetrics')).metrics;return Math.round(m.find(x=>x.name==='JSHeapUsedSize').value/1e5)/10};
+  await cdp.send('Performance.enable');
+  const frame=async(fn)=>{const t=Date.now();if(fn)await page.evaluate(fn);await page.clock.runFor(17);return Date.now()-t};   // one game frame (rAF on the game's own clock), wall time
+  await page.evaluate(()=>{enemies.length=0});const h0=await heap();
+  const idleMs=await frame();
+  const spawn20=await frame(()=>{for(let i=0;i<20;i++){const a=i/20*Math.PI*2;const e=addEnemy('grunt',P.x+Math.cos(a)*150,P.y+Math.sin(a)*110);e.dmg=0;e.lv2t=1}});
+  const next=[];for(let i=0;i<5;i++)next.push(await frame());
+  await page.evaluate(()=>{enemies.length=0});await frame();
+  const again20=await frame(()=>{for(let i=0;i<20;i++){const a=i/20*Math.PI*2;const e=addEnemy('grunt',P.x+Math.cos(a)*150,P.y+Math.sin(a)*110);e.dmg=0;e.lv2t=1}});
+  const h1=await heap();
+  R.perf=await page.evaluate(async()=>{const ri=R3D.r.info;
+    const k=foeKey(enemies[0]),L=LOOK3D[k];let tris=0;const tm=R3D.tmpl[L.model];if(tm)tm.traverse(o=>{if(o.isMesh&&o.geometry.index)tris+=o.geometry.index.count/3});
+    // HUD drift: the hp bar and the skill button must not move between consecutive frames, also after spawn protection ends
+    return {key:k,model:L.model,tris,geometries:ri.memory.geometries,textures:ri.memory.textures}});
+  // HUD drift: the hp bar, xp bar and skill buttons must not move between consecutive frames (also after spawn protection ends, ~1.5 s)
+  {const pos=[],ids=['hp','xp','skills'];for(let i=0;i<40;i++){await page.clock.runFor(17);if(i===20)await page.clock.runFor(1500);
+    pos.push(await page.evaluate(ids=>ids.map(id=>{const e=document.getElementById(id);if(!e)return '-';const r=e.getBoundingClientRect();return r.x.toFixed(1)+','+r.y.toFixed(1)}).join('|'),ids))}
+   R.perf.hud={ids,frames:pos.length,distinctPositions:new Set(pos).size}}
+  Object.assign(R.perf,{wallMs:{idleFrame:idleMs,first20SpawnFrame:spawn20,next5:next,second20SpawnFrame:again20},heapMB:[h0,h1]});
+  await run(300);R.world20=await shot('world-20');
+  // every other region: its own enemies in a row (and their wardens), then the same row in flat black
+  R.regions={};
+  for(const reg of ['lake','ridge','desert','storm','shadow']){
+    await page.evaluate(r=>{enemies.length=0;enterWorld('home',r);window.__only=1},reg);await run(300);
+    await page.evaluate(()=>{P.y+=420});await run(600);   // off the gate: its safe ring fades enemies, and its signs cover the row
+    const ks=await page.evaluate(r=>{const ks=wldTypes(r).filter(k=>k!=='wanted'&&ETYPES[k]);for(const k in ETYPES)if(ETYPES[k].warden&&!ks.includes(k)&&WORLD.regions[r]&&JSON.stringify(WORLD.regions[r]).includes('"'+k+'"'))ks.push(k);return ks.slice(0,7)},reg);
+    for(const k of ks)await page.evaluate(k=>{const L=LOOK3D[foeKey({type:k})];if(L&&m3dLazy(L.model))m3dNeed(L.model)},k);
+    for(let i=0;i<120&&!(await page.evaluate(ks=>ks.every(k=>{const L=LOOK3D[foeKey({type:k})];return !L||!m3dLazy(L.model)||m3dReady(L.model)}),ks));i++){await page.waitForTimeout(50);await page.clock.runFor(50)}
+    await page.evaluate(ks=>{ks.forEach((t,i)=>{const e=addEnemy(t,P.x+ROWX[i],P.y-80);e.speed=0;e.dmg=0;e.lv2t=1;e.hp=e.max=1e9})},ks);
+    await run(700);R.regions[reg]={types:ks,lineup:await shot('lineup-'+reg,lineClip)};
+    await page.evaluate(()=>{const K=new THREE.MeshBasicMaterial({color:0});for(const a of R3D.actors.values())if(a!==R3D.player)a.root.traverse(o=>{if(o.isMesh)o.material=K})});
+    R.regions[reg].silhouette=await shot('silhouette-'+reg,lineClip);
+    await page.evaluate(()=>{enemies.length=0});await page.clock.runFor(34);await page.evaluate(()=>{R3D.pool={}})}
+  await ctx.close();return R;
+}
+
+(async()=>{
+  const browser=await chromium.launch({args:['--use-angle=swiftshader','--enable-unsafe-swiftshader','--enable-precise-memory-info']});
+  const A=await session(browser,false),B=await session(browser,true);
+  await browser.close();
+  // arena: pixel compare with and without v2
+  // needs sharp (the build3d.js packages, NODE_PATH). Without it: compare the two arena images by eye
+  const sharp=(()=>{try{return require('sharp')}catch(e){return null}})();
+  let arena='sharp not installed: compare the two arena images by eye';
+  if(sharp){const rd=f=>sharp(f).removeAlpha().raw().toBuffer({resolveWithObject:true});const [a,b]=await Promise.all([rd(A.arenaScene),rd(B.arenaScene)]);let d=0;
+    for(let i=0;i<a.data.length;i+=3)if(Math.abs(a.data[i]-b.data[i])+Math.abs(a.data[i+1]-b.data[i+1])+Math.abs(a.data[i+2]-b.data[i+2])>12)d++;
+    arena={pixelsDiffer:d,of:a.info.width*a.info.height}}
+  const rep={seed:SEED,viewport:VP,arena,before:A,v2:B};
+  fs.writeFileSync(path.join(OUT,TAG+'-look-v2-report.json'),JSON.stringify(rep,null,1));
+  console.log(JSON.stringify({arena,errors:[A.errors.length,B.errors.length],perfBefore:A.perf,perfV2:B.perf,orcReady:B.orcReady},null,1));
+})().catch(e=>{console.error(e);process.exit(1)});
