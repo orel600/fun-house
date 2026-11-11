@@ -1662,6 +1662,18 @@ function worldBot(m,L,god){
       worldUi(false);reset();const c0=skcStat.casts;skCast(id);r.arena=skcStat.casts===c0;   // זירה: כלום
       enemies=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // קליפי הטלה נוספים מהענף של אוראל (PR #604, SKCAST.pre): נטענים בכניסה לעולם, ומלכודת, סופה, מטאור וגשם חצים משתמשים בהם בפועל.
+  // ms: ההטלה הראשונה של כל קליפ (יצירת ה-action), כדי לראות שאין קפיצה
+  const skx=await page.evaluate(async()=>{const r={on:!!(R3D.ready&&R3D.on)};if(!r.on)return r;const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode;
+    try{const t0=performance.now();await Promise.all(SKCAST.pre.map(k=>m3dGo(k)));r.load=Math.round(performance.now()-t0);r.st=SKCAST.pre.map(k=>M3D.st[k]);
+      r.kb=Math.round(SKCAST.pre.reduce((a,k)=>a+M3D_LAZY[k],0)*0.75/1024);
+      if(SKR)skrEnd(false);enterWorld('home');enemies=[];syncPlayer(1/60);const k0=P.skCast;r.play={};r.ms={};
+      for(const k of ['trap','storm','meteor','rain']){P.skCast={n:(k0?k0.n:0)+100+Object.keys(r.play).length,k,at:performance.now()};const t1=performance.now();syncPlayer(1/60);
+        const a=R3D.player;r.ms[k]=+(performance.now()-t1).toFixed(1);r.play[k]=a&&a.one?a.one.getClip().name.replace('@up',''):a?'none':'no-player'}
+      P.skCast=k0;
+      r.ok=r.st.every(x=>x==='ready')&&r.play.trap==='Throw'&&r.play.storm==='Ranged_Magic_Raise'&&r.play.meteor==='Ranged_Magic_Raise'&&/^(Ranged_Bow_Release_Up|Ranged_Magic_Raise)$/.test(r.play.rain)}
+    catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // רגע גילוי של סקיל חדש בעולם (skillreveal.js): מתחיל אחרי SKREVEAL.delay, עוצר את הזמן ומקרב, האייקון עף ונגמר לבד, פעם אחת לכל סקיל.
   // ההטלה הראשונה גדולה, נגיעה מדלגת, ודרגה גבוהה בעץ מגדילה ומחליפה צבע. אחר כך המשחק ממשיך
   const skr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
@@ -2060,8 +2072,14 @@ function worldBot(m,L,god){
       const L=LABELS.stat;for(const k in L)L[k]=0;S.cam.x=P.x;S.cam.y=P.y;
       const C2=CanvasRenderingContext2D.prototype,fr=C2.fillRect,rr=C2.roundRect,boxes=[];let on=false;C2.fillRect=function(x,y,w,h){if(on&&this.fillStyle.startsWith('rgba(10, 12, 20')){const t=this.getTransform(),d=devicePixelRatio||1;boxes.push({left:(t.a*x+t.e)/d,top:(t.d*y+t.f)/d,right:(t.a*(x+w)+t.e)/d,bottom:(t.d*(y+h)+t.f)/d})}return fr.apply(this,arguments)};
       C2.roundRect=function(x,y,w,h){if(on&&String(this.fillStyle).startsWith('rgba(250, 246, 232')){const t=this.getTransform(),d=devicePixelRatio||1;boxes.push({bub:1,left:(t.a*x+t.e)/d,top:(t.d*y+t.f)/d,right:(t.a*(x+w)+t.e)/d,bottom:(t.d*(y+h)+t.f)/d})}return rr.apply(this,arguments)};
+      const ft=C2.fillText,txt=[];C2.fillText=function(t){if(on)txt.push({t:String(t),c:String(this.fillStyle).toLowerCase()});return ft.apply(this,arguments)};   // name colors by rank (NAMECOL, labels.js, Nir 11.11)
       const lf=lblFlush;lblFlush=function(){on=true;try{return lf.apply(this,arguments)}finally{on=false}};
-      try{render()}finally{C2.fillRect=fr;C2.roundRect=rr;lblFlush=lf;S.wd.flSay=null}
+      try{render()}finally{C2.fillRect=fr;C2.roundRect=rr;C2.fillText=ft;lblFlush=lf;S.wd.flSay=null}
+      {const cols=Object.values(NAMECOL).map(c=>c.toLowerCase()),lab=txt.filter(x=>cols.includes(x.c));
+        o.nc={n:lab.length,word:txt.filter(x=>/Elite|Champion|Pack Leader|Armored|Elemental Shield/.test(x.t)).map(x=>x.t),
+          el:lab.filter(x=>x.c===NAMECOL.elite.toLowerCase()).length,
+          rank:nameRank({})==='normal'&&nameRank({affix:'tough'})==='elite'&&nameRank({leader:true})==='elite'&&nameRank({wanted:true})==='elite'&&nameRank({wboss:'quarry'})==='boss'&&nameRank({warden:true})==='boss'&&nameRank({hunt:true})==='boss'&&nameRank({nem:'x'})==='boss'&&nameRank({rare:'x'})==='boss'};
+        o.nc.ok=o.nc.n>0&&!o.nc.word.length&&o.nc.el>=1&&o.nc.rank}
       const hud=lblHud();o.bub=boxes.filter(b=>b.bub).length;o.n=boxes.length;o.full=L.full;o.icon=L.icon;o.over=boxes.some((a,i)=>boxes.some((b,j)=>j>i&&a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1));
       o.onHud=boxes.some(a=>hud.some(b=>hit(a,b)));
       // נדירה באמצע קרב (rares.js, fx.js): העמוד והחגיגה בחצי גודל. בלי אויבים: בגודל מלא
@@ -2070,7 +2088,7 @@ function worldBot(m,L,god){
     if(CFG.shots)await shot('msg-lane-'+vp.width);
     await page.evaluate(()=>{const k=__lbak;FLC.q=[];flCardNext();msgClear();$('sig').hidden=k.hid.sig;$('feedBtn').hidden=k.hid.feed;for(const o of k.ov)o.hidden=false;FL.length=0;enemies=[];if(typeof skgOfferClose==='function')skgOfferClose();worldUi(false);SAVE=JSON.parse(k.s);if(S.sk&&k.sk)S.sk.ids=JSON.parse(k.sk);if(k.vil)enterVillage();else{reset();S.mode=k.mode}});
     if(extra)await ownRnd(false);   // רק אחרי החזרה למצב הקודם (גם היא משתמשת באקראי)
-    lane[vp.width]={a,b,hb,ok:hb.feed&&hb.fx===0.5&&hb.fx0===1&&hb.full<=3&&hb.full>0&&!hb.over&&!hb.onHud&&a.n>0&&a.big===0&&a.waits>0&&!a.hero&&!a.ui&&!a.out&&a.feed>0&&b.big===1&&b.shown===1&&!b.hero&&!b.ui&&!b.out&&b.most<=3};
+    lane[vp.width]={a,b,hb,ok:hb.nc.ok&&hb.feed&&hb.fx===0.5&&hb.fx0===1&&hb.full<=3&&hb.full>0&&!hb.over&&!hb.onHud&&a.n>0&&a.big===0&&a.waits>0&&!a.hero&&!a.ui&&!a.out&&a.feed>0&&b.big===1&&b.shown===1&&!b.hero&&!b.ui&&!b.out&&b.most<=3};
   }
   if(laneCdp)await laneCdp.send('Emulation.setSafeAreaInsetsOverride',{insets:{left:0,right:0,top:0,bottom:0}}).catch(()=>{});
   // הפיד בכפר (ביקורת 7.11.2026, ממצא 2): "חדש בספר!" לא מתחת לכפתורי הצד (ספר, קווסטים, גיבור ב-#qRail), ב-848x388 וב-924x424
@@ -3438,6 +3456,38 @@ function worldBot(m,L,god){
   check(!vpr.err&&vpr.away&&vpr.tab&&vpr.closed&&vpr.goal&&vpr.cost&&vpr.done&&vpr.nodes&&vpr.once&&vpr.lv&&vpr.blank,
     'סדנת החוצבת: '+(vpr.err||((vpr.away?'נסגר עד שהחוצבת בכפר':'פתוח בלי החוצבת!')+(vpr.tab?', לשונית בשיחה':', אין לשונית')+(vpr.closed?', המחצבה העמוקה סגורה':', פתוחה מההתחלה!')+(vpr.goal?', יעד 📌':', בלי יעד')+
     (vpr.cost?', חסום בלי אבן':', נבנה בלי אבן!')+(vpr.done?', 3 שלבים והחלפה טובה יותר':', לא הושלם')+(vpr.nodes?', נפתחה עם מקורות מהירים וחגיגה':', לא נפתחה')+(vpr.once?', פעם אחת':', כפול!')+(vpr.lv?', או ברמה 10':', לא ברמה 10')+(vpr.blank?', בשמירה':', לא בשמירה'))));
+  // Road crew (vproj.js, docs/concept-village-region.md): sawmill 3 opens a village project; when done, the lake road opens even without the earth lantern.
+  // Never a new lock: an old save with the earth lantern keeps the road. The water lantern still needs the story quests. The moment in the world plays once.
+  const rcr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{const id='roadCrew',pl='lakeRoad',V=VPROJ,p=WORLD.paths.lake,sto=SAVE.story||(SAVE.story={});
+      SAVE.vproj={st:{},seen:{deepQuarry:1}};delete sto.earth;delete sto.water;SAVE.village.mill=2;
+      o.shut=!wPathOpen(p)&&vpBlock(id)==='away'&&!!vpBldTab('mill')&&vpBldTab('mill').label.includes('🔒');
+      SAVE.village.mill=3;const tb=vpBldTab('mill');o.tab=!!tb&&tb.html().includes('data-act="vp"')&&bwBuilding('mill').includes('data-tab="proj"');
+      goalS().pin=null;goalPin({p:id});SAVE.bag.wood=0;const sh=goalShow();o.goal=!!sh&&sh.g.p===id&&sh.r==='wood';goalS().pin=null;
+      const w0=(()=>{const q=vProd('mill');q.t=Date.now()-3600e3;q.have={};vSettle('mill');return q.have.wood})();
+      for(const c of V.list[id].stages){for(const r in c)SAVE.bag[r]=(SAVE.bag[r]||0)+c[r];vpBuild(id)}
+      o.done=vpDone(id)&&wPathOpen(p)&&!storyOpen('earth')&&!storyOpen('water');
+      const w1=(()=>{const q=vProd('mill');q.t=Date.now()-3600e3;q.have={};vSettle('mill');return q.have.wood})();o.wood=w1>w0*1.05;
+      o.sign=vpForPath('lake')===id;
+      enterWorld('home','meadow');enemies=[];S.mode='play';const o0=V.stat.open;
+      const PL=V.places[pl];P.x=0;P.y=0;vpRoad(pl,PL);o.far=!SAVE.vproj.seen[pl];
+      P.x=p.x;P.y=p.y+200;vpRoad(pl,PL);o.moment=SAVE.vproj.seen[pl]===1&&V.stat.open===o0+1;
+      vpRoad(pl,PL);o.once=V.stat.open===o0+1;
+      o.why=JSON.stringify({reg:S.wd&&S.wd.reg,room:!!S.room,open:vpOpen(pl),d:Math.round(Math.hypot(P.x-p.x,P.y-p.y)),seen:SAVE.vproj.seen,n:V.stat.open-o0});
+      VPW.t=0;vpUpdate(1);o.upd=V.stat.open===o0+1;   // the world loop does not replay it (deepQuarry is marked seen above: at level 10 it would count too)
+      // the water lantern still comes only from the story: the road does not light it, and its quest still needs the quest before it
+      o.water=!storyOpen('water')&&!!QBY.s2Warden&&!!(QBY.s2Warden.req||{}).quest;
+      SAVE.vproj={st:{},seen:{}};sto.earth=true;o.old=wPathOpen(p);
+      // already open by the story: finishing the project does not replay the moment
+      for(const c of V.list[id].stages){for(const r in c)SAVE.bag[r]=(SAVE.bag[r]||0)+c[r];vpBuild(id)}o.quiet=SAVE.vproj.seen[pl]===1;
+      o.blank=!!saveBlank().vproj;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];SAVE=JSON.parse(bak);goalS().pin=null;enterVillage();return o});
+  check(!rcr.err&&rcr.shut&&rcr.tab&&rcr.goal&&rcr.sign&&rcr.done&&rcr.wood&&rcr.far&&rcr.moment&&rcr.once&&rcr.upd&&rcr.water&&rcr.old&&rcr.quiet&&rcr.blank,
+    'Road crew: '+(rcr.err||[rcr.shut?'locked below sawmill 3, road shut':'open too early!',rcr.tab?'tab in the sawmill':'no sawmill tab',rcr.goal?'📌 goal':'no goal',
+      rcr.done?'3 stages open the lake road without the earth lantern':'road still shut!',rcr.wood?'sawmill +wood':'no wood bonus',
+      rcr.far&&rcr.moment?'moment near the road':'no moment '+rcr.why,rcr.once&&rcr.upd?'once':'twice! '+rcr.why,rcr.water?'water lantern still needs the story':'story skipped!',
+      rcr.old?'old save keeps the road':'old save locked out!',rcr.quiet?'quiet when already open':'replays the moment',rcr.blank?'saved':'not saved'].join(', ')));
   // לולאת הכפר, שלב 3 (services.js): הנפח נותן כוח לבחירה, הזמנה רביעית בלוח הפונדק עם פרס ×1.25 שנוטה ליעד, והשוק משלם יותר על המשפחה של היום
   const svr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
     try{const V=SVC;SAVE.svc={n:0,day:'',fam:{}};
@@ -5297,7 +5347,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
     wac.ring?'טבעת כפור':'אין טבעת כפור',wac.heal?'ריפוי בפיד':'ריפוי לא בפיד',wac.row?'שורת אייקונים':'אין שורת אייקונים',wac.hunt?'אש יוצאת לציד ופוגעת':'אין ציד'].join(', ')));
   check(!fxl.err&&fxl.first&&fxl.lane&&fxl.once&&fxl.btn&&fxl.half&&fxl.saved&&fxl.off,'כותרת אזור ופחות אפקטים: '+(fxl.err||[fxl.first?'כותרת בכניסה הראשונה':'אין כותרת',fxl.lane?'בעמודת ההודעות':'בקנבס, מעל ההודעות',fxl.once?'לא חוזרת':'חוזרת בכל כניסה',
     fxl.btn?'כפתור בהגדרות':'אין כפתור',fxl.half?'פחות חלקיקים':'אותם חלקיקים',fxl.saved?'נשמר':'לא נשמר',fxl.off?'חוזר למלא':'לא חוזר'].join(', ')));
-  for(const w in lane){const {a,b,hb}=lane[w];check(lane[w].ok,'עמודת הודעות '+w+': '+[(hb.feed?'🥕 לא נוגע בסקילים':'🥕 על כפתור סקיל'),'שמות אויבים: '+hb.full+' מלאים, '+hb.icon+' אייקונים, '+hb.bub+' בועות'+(hb.over?', עולים אחד על השני':'')+(hb.onHud?', על כפתור':''),hb.fx===0.5&&hb.fx0===1?'חגיגה בקרב בחצי גודל':'חגיגה בקרב: '+hb.fx+'/'+hb.fx0,a.waits>0&&a.big===0?'בקרב הגדולה מחכה':'גדולה באמצע קרב',b.big===1?'אחרי הקרב גדולה אחת':'גדולות: '+b.big,
+  for(const w in lane){const {a,b,hb}=lane[w];check(lane[w].ok,'עמודת הודעות '+w+': '+[(hb.feed?'🥕 לא נוגע בסקילים':'🥕 על כפתור סקיל'),'שמות אויבים: '+hb.full+' מלאים, '+hb.icon+' אייקונים, '+hb.bub+' בועות'+', name colors: '+(hb.nc.ok?'white/purple/red by rank, no rank word':'✗ '+JSON.stringify(hb.nc))+(hb.over?', עולים אחד על השני':'')+(hb.onHud?', על כפתור':''),hb.fx===0.5&&hb.fx0===1?'חגיגה בקרב בחצי גודל':'חגיגה בקרב: '+hb.fx+'/'+hb.fx0,a.waits>0&&a.big===0?'בקרב הגדולה מחכה':'גדולה באמצע קרב',b.big===1?'אחרי הקרב גדולה אחת':'גדולות: '+b.big,
     !a.hero&&!b.hero?'לא על הגיבור':'על הגיבור',!a.ui&&!b.ui?'לא על כפתורים, סקילים, קווסט ומפה':'על כפתור',!a.out&&!b.out?'הכל בתוך המסך':'נחתך בקצה',a.feed>0?'פיד בצד':'אין פיד','שורות '+a.n+'/'+b.n+', סקילים '+a.sk+', כפתורים '+a.keep,...(lane[w].ok?[]:['חלון: '+b.win+', פעיל: '+b.on+', מקום (top/max/hero/vis/cut/n/x): '+a.d+' → '+b.d])].join(', '))}
   check(!feed.err&&feed.on&&feed.merge&&feed.noFloat&&feed.max&&feed.drawn&&feed.above&&feed.gone&&feed.arena,'פיד הודעות: '+(feed.err||[feed.on?'פועל בעולם':'כבוי בעולם',feed.merge?'עץ +3 ו-+2 התאחדו ל-+5':'לא התאחד',feed.noFloat?'בלי טקסט על הדמות':'טקסט על הדמות',
     feed.max?'עד 3 שורות':'יותר מדי שורות',feed.drawn?'מצויר':'לא מצויר',feed.above?'מעל הסקילים':'על הסקילים',feed.gone?'נעלם':'לא נעלם',feed.arena?'בזירה כבוי':'דולק בזירה'].join(', ')));
@@ -5357,6 +5407,7 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(!skc.err&&skc.cast&&skc.anim&&skc.clipOk&&skc.rune&&skc.band&&skc.gone&&skc.arena&&skc.combat,
     'הטלת סקיל ('+skc.id+'): '+(skc.err||[skc.anim?'תנועה '+skc.clip:'אין תנועה',skc.rune?'עיגול רונות '+skc.col+' ('+skc.tier+')'+(skc.r3d?' בתלת-ממד':'')+(skc.band?'':' בלי טבעת חיצונית'):'אין עיגול',skc.gone?'נעלם':'לא נעלם',skc.arena?'בזירה כבוי':'דולק בזירה',
       skc.combat?'בקרב קטן ×'+skc.fight[1]+' (גל עד '+Math.round(skc.fight[3])+', בלי קרב '+Math.round(skc.calm[3])+')':'בקרב לא קטן: '+JSON.stringify([skc.fight,skc.calm])].join(', ')));
+  if(skx.on)check(!skx.err&&skx.ok,'קליפי הטלה מאוראל (#604): '+(skx.err||[(skx.st||[]).join('/'),skx.kb+'KB, '+skx.load+'ms',Object.entries(skx.play||{}).map(([k,c])=>k+'→'+c+' ('+skx.ms[k]+'ms)').join(', ')].join(' · ')));
   check(!hold.err&&hold.open&&hold.still&&hold.closed&&hold.resume&&hold.vHold&&hold.prod,
     'חלון עוצר את העולם: '+(hold.err||[hold.open?'היומן נפתח בתפריט':'היומן לא נפתח',hold.still?'5 שניות בלי נזק ובלי תזוזה':'העולם המשיך מאחורי היומן',
       hold.closed&&hold.resume?'בסגירה הקרב חוזר':'הקרב לא חזר',hold.vHold&&hold.prod?'בכפר הייצור ממשיך לפי השעון':'הייצור בכפר נעצר'].join(', ')));
