@@ -66,7 +66,8 @@ function affixScreen(ox,oy){
   let first=true;
   for(const e of list){const x=e.x+ox,y=e.y+oy-e.r-30;if(!onScreen(x,y))continue;
     const A=AFFIX.list[e.affix],t=first?A.icon+' '+T('af.'+e.affix):A.icon;first=false;
-    if(typeof lblAdd==='function'&&lblAdd({t:A.icon+' '+T('af.'+e.affix),icon:A.icon,x,y,col:A.col,fs,pri:2,d:Math.hypot(e.x-P.x,e.y-P.y)}))continue;   // בעולם: labels.js מחליט מי מקבל שם מלא
+    if(e.pname&&e.flSeen)continue;   // has a name: the icon is already before it, in purple (foelore.js, Nir 11.11: no rank word)
+    if(typeof lblAdd==='function'&&lblAdd({t:A.icon,icon:A.icon,x,y,col:nameCol(e),fs,pri:2,d:Math.hypot(e.x-P.x,e.y-P.y)}))continue;   // בעולם: labels.js. Icon only, no "Armored"-style word
     const tw=ctx.measureText(t).width+10;if(box.some(b=>Math.abs(b.x-x)<(b.w+tw)/2+4&&Math.abs(b.y-y)<fs*1.6))continue;box.push({x,y,w:tw});
     ctx.fillStyle='rgba(10,12,20,0.7)';ctx.fillRect(x-tw/2,y-fs*0.92,tw,fs*1.25);
     ctx.fillStyle=AFFIX.list[e.affix].col;ctx.fillText(t,x,y)}
