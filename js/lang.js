@@ -663,6 +663,7 @@ const TEXT={
   'w.goHome':{he:'חזרה לכפר',en:'Back to the village'},
   'w.gate.grove':{he:'זירת החורשה',en:'Grove Arena'},
   'w.gate.pit':{he:'זירת הבור',en:'Quarry Pit Arena'},
+  'w.arenaTip':{en:'10 waves, boss at the end. Loot is kept even if you fall.'},   // world.js: טיפ חד-פעמי בכניסה הראשונה לזירה בסשן
   'w.arenaInfo':{he:'ריצה עד הבוס. השלל מהזירה נכנס לתרמיל גם אם נופלים, ובסוף חוזרים לשער הזה.',en:'A 10-wave gauntlet: shifting walls mid-run, a boss at the end. Arena loot goes in your bag even if you fall, and you come back to this gate.'},
   'w.enterArena':{he:'כניסה לזירה',en:'Enter the arena'},
   // הזירה: גלים (arenas.js)

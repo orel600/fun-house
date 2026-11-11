@@ -14,6 +14,7 @@ const WORLD={
   gates:{grove:{x:-2270,y:1480,r:44},pit:{x:1440,y:890,r:44}},   // 13 ו-14: שערים לזירה, בסוף שביל היער ומתחת לעלייה לרכס. השמות ב-lang.js ('w.gate.<id>')
   arrive:130,                            // כמה פיקסלים מתחת לשער עומדים כשמגיעים אליו
   near:55,                               // כמה פיקסלים מקצה שער נחשב "לידו": בועה מעליו וכפתור עגול. הכרטיס נפתח רק בלחיצה
+  arenaTip:{dy:66,size:13,show:5},       // טיפ חד-פעמי בכניסה הראשונה לזירה בסשן ('w.arenaTip'): כמה מתחת לגיבור (מתחת לטיפ ההתחמקות של arena-scale.js), גודל ושניות
   /* מקורות משאבים בשדות: kind (מ-NODES.kinds ב-nodes.js), כמה, מרכז ורדיוס. המקומות קבועים, כך שהיער תמיד באותו מקום. מקור שנופל במים או ביער מדולג (terrain.js).
      ההתקפה האוטומטית מכה בהם כמו בזירה (aimTarget ב-combat.js), והשלל בדרגות כמו בזירה (runGive ב-loot.js) */
   fields:[{kind:'tree',n:14,x:-1080,y:-1040,r:320},{kind:'tree',n:7,x:-680,y:-1480,r:220},{kind:'tree',n:6,x:1950,y:-250,r:220},{kind:'tree',n:6,x:-1300,y:700,r:240},{kind:'tree',n:5,x:300,y:1330,r:200},
@@ -220,7 +221,13 @@ function enterWorld(at,reg){
 }
 // דרך לאזור אחר. חוזרים לאזור הקודם ליד הדרך שממנה יצאו
 function wGo(to){if(depthsGo(to))return;const from=S.wd.reg;worldUi(false);enterWorld(WR().back===to?from:'home',to)}
-function wArena(id){wRet=id;worldUi(false);startRun();questEvent('reach','arena')}
+function wArena(id){wRet=id;worldUi(false);startRun();questEvent('reach','arena');wArenaTip()}
+// הכרטיס של השער כבר לא נפתח (לחיצה אחת נכנסת), אז ההסבר שלו מופיע פעם אחת בסשן, בכניסה הראשונה לזירה
+let wArenaTipped=false;
+function wArenaTip(){
+  if(wArenaTipped||S.mode!=='play')return;wArenaTipped=true;const A=WORLD.arenaTip;
+  floatText(P.x,P.y+A.dy,T('w.arenaTip'),C.chalk,A.size,false);const f=floats[floats.length-1];if(f){f.life=A.show;f.vy=-3}
+}
 function wHome(){worldUi(false);enterVillage()}
 
 /* ---- מקורות משאבים: אותם מקורות כמו ב-nodes.js, במקומות קבועים. שבור צומח מחדש אחרי regrow (nodeDown) ---- */
