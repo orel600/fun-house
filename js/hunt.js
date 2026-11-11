@@ -46,7 +46,7 @@ function huntKill(e){
 function huntScreen(ox,oy){
   const e=S.wd&&S.wd.hunt;if(!e||e.dead)return;
   const x=e.x+ox,y=e.y+oy-e.r-44,t=HUNT.icon+' '+huntNm(e.huntN);
-  if(onScreen(x,y)&&typeof lblAdd==='function'&&lblAdd({t,icon:HUNT.icon,x,y,col:HUNT.col,fs:14/ZOOM,pri:5,d:Math.hypot(e.x-P.x,e.y-P.y),bg:'rgba(10,12,20,0.75)'}));   // בעולם: labels.js
+  if(onScreen(x,y)&&typeof lblAdd==='function'&&lblAdd({t,icon:HUNT.icon,x,y,col:nameCol(e),fs:14/ZOOM,pri:5,d:Math.hypot(e.x-P.x,e.y-P.y),bg:'rgba(10,12,20,0.75)'}));   // בעולם: labels.js
   else if(onScreen(x,y)){ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 14px Heebo, system-ui, sans-serif';
     const w=ctx.measureText(t).width+12;ctx.fillStyle='rgba(10,12,20,0.75)';ctx.fillRect(x-w/2,y-13,w,18);ctx.fillStyle=HUNT.col;ctx.fillText(t,x,y)}
   else edgeArrow(e.x+ox,e.y+oy,HUNT.col,1.1,true);

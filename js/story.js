@@ -348,6 +348,6 @@ function storyScreen(ox,oy){
   // החץ לפנס כשהקווסט פעיל: guide.js
   // השם מעל השומר: גודל קבוע על המסך (14px, לא מתכווץ עם המצלמה) עם קו מתאר כהה, כדי שייקרא גם על דשא (ניר, 1.11)
   if(e&&!e.dead){if(!e.wboss){ctx.save();ctx.translate(e.x+ox,e.y+oy-e.r-56);ctx.scale(1/ZOOM,1/ZOOM);ctx.textAlign='center';ctx.direction=DIR;ctx.font='800 14px Heebo, system-ui, sans-serif';
-    ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle='#000c';ctx.strokeText(T('story.'+k+'.name'),0,0);ctx.fillStyle=L.col;ctx.fillText(T('story.'+k+'.name'),0,0);ctx.restore()}   // ענק: השם בפס הבוס למעלה (giantBar)
+    ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle='#000c';ctx.strokeText(T('story.'+k+'.name'),0,0);ctx.fillStyle=NAMECOL.boss;ctx.fillText(T('story.'+k+'.name'),0,0);ctx.restore()}   // boss rank: red (NAMECOL, labels.js, Nir 11.11)   // ענק: השם בפס הבוס למעלה (giantBar)
     if(e.say>0){ctx.globalAlpha=Math.min(1,e.say*2);ctx.fillStyle='#fff';ctx.font='700 13px Heebo, system-ui, sans-serif';ctx.fillText(T('story.ward.back'),e.x+ox,e.y+oy-e.r-76);ctx.globalAlpha=1}}
 }
