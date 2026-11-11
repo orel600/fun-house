@@ -10,7 +10,8 @@ const {chromium}=require('playwright');const path=require('path'),fs=require('fs
 const {BAL,install}=require('../tools/balance-world.js');
 const CLS=(process.env.CLS||'warrior,hunter,mage').split(','),CH=+(process.env.CH||4),SEED=+(process.env.SEED||7),FILL=+(process.env.FILL||0);
 function addon(o){
-  const m=window.__bal,R=m.rep;R.ms={};R.vis=0;let lastG=m.gt;
+  const m=window.__bal,R=m.rep;const dd=dmDraw;dmDraw=function(){try{return dd.apply(this,arguments)}catch(e){R.drawErr=(R.drawErr||0)+1;ctx.restore&&ctx.restore()}};   // drama.js: arc עם רדיוס שלילי עצר ריצה (11.11), נספר ולא עוצר
+  R.ms={};R.vis=0;let lastG=m.gt;
   const ORDER=['center','mill','mine','market','forge','stash','inn'],CREWS=['roadCrew','tunnelCrew','caravan'];
   const hrs=()=>(m.gt*1.5+R.vis*90+R.deaths*45)/3600;
   const mark=(k,extra)=>{if(R.ms[k])return;R.ms[k]=Object.assign({lv:heroLv(),gt:Math.round(m.gt),h:+hrs().toFixed(2),ch:m.ch},extra||{})};
@@ -58,7 +59,7 @@ function addon(o){
     while(!r.done){r=await page.evaluate(()=>__gRun(200));
       if(++n%40===0){const s=await page.evaluate(()=>({ch:__bal.ch,lv:heroLv(),gt:Math.round(__bal.gt),v:__bal.rep.vlv,ms:Object.keys(__bal.rep.ms).join(',')}));console.log(cls,'ch',s.ch+1,'lv',s.lv,s.gt+'s',s.v,'|',s.ms,Math.round((Date.now()-t0)/1000)+'s real')}}
     const R=await page.evaluate(()=>__bal.rep);
-    out[cls]={ms:R.ms,vlv:R.vlv,miss:R.miss,vis:R.vis,deaths:R.deaths,err:R.err,ch:R.ch.map(c=>({reg:c.reg,lv0:c.lv0,lv1:c.lv1,t:c.t,ok:c.ok,deaths:c.deaths,z:c.z}))};
+    out[cls]={ms:R.ms,vlv:R.vlv,miss:R.miss,vis:R.vis,deaths:R.deaths,err:R.err,drawErr:R.drawErr,ch:R.ch.map(c=>({reg:c.reg,lv0:c.lv0,lv1:c.lv1,t:c.t,ok:c.ok,deaths:c.deaths,z:c.z}))};
     console.log(cls,'DONE',JSON.stringify(out[cls].ms));
     await page.close()}));
   await browser.close();fs.writeFileSync(process.env.OUT||'crew.json',JSON.stringify(out,null,1));
