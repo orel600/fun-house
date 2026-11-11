@@ -28,20 +28,20 @@
     "distinctPositions": 1
    },
    "wallMs": {
-    "idleFrame": 14,
-    "first20SpawnFrame": 32,
+    "idleFrame": 10,
+    "first20SpawnFrame": 29,
     "next5": [
-     14,
+     13,
+     11,
+     10,
      9,
-     6,
-     1602,
-     20
+     9
     ],
-    "second20SpawnFrame": 9
+    "second20SpawnFrame": 19
    },
    "heapMB": [
-    37.7,
-    38.4
+    29.3,
+    29.5
    ]
   }
  },
@@ -65,20 +65,20 @@
     "distinctPositions": 1
    },
    "wallMs": {
-    "idleFrame": 14,
-    "first20SpawnFrame": 25,
+    "idleFrame": 9,
+    "first20SpawnFrame": 19,
     "next5": [
-     21,
-     9,
-     9,
-     11,
-     12
+     17,
+     16,
+     12,
+     7,
+     8
     ],
-    "second20SpawnFrame": 42
+    "second20SpawnFrame": 15
    },
    "heapMB": [
-    28.9,
-    29.4
+    30,
+    30.5
    ]
   }
  }
