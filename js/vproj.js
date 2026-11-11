@@ -8,19 +8,20 @@
    vpDraw2d/vpSync3d בכפר (residents.js), vpCost/vpName ליעד (goal.js) */
 const VPROJ={
   list:{
+    // sic: אייקון לכל שלב בשביל השלבים על קו אחד (vpPath, קונספט #672). השמות ב-lang.js: 'vp.<id>.s1..3'
     // who: התושבת שבונים איתה (RESID.list). stages: המחיר של כל שלב. get: ההחלפה שלה אחרי הסדנה. opens: איזה מקום נפתח
-    cutterShop:{who:'cutter',icon:'🏗️',stages:[{stone:20},{stone:40,wood:15},{copper:6,coins:30}],get:{iron:3},opens:'deepQuarry'},
+    cutterShop:{who:'cutter',icon:'🏗️',sic:['🪨','🪜','🏗️'],stages:[{stone:20},{stone:40,wood:15},{copper:6,coins:30}],get:{iron:3},opens:'deepQuarry'},
     // צוות הכורתים (ניר אישר 11.11, docs/concept-village-region.md): של מבנה ולא של תושבת. bld/lv: נפתח כשהמבנה ברמה הזו.
     // spot: איפה המחנה בכפר (ליד המנסרה). make: אחרי שנגמר, המבנה מייצר יותר (vpMake ← vSettle ב-village.js)
-    roadCrew:{bld:'mill',lv:3,icon:'🪓',stages:[{wood:40},{wood:80,stone:30},{wood:120,copper:8,coins:60}],opens:'lakeRoad',spot:{x:-420,y:190},make:{mill:{wood:1.1}}},
+    roadCrew:{bld:'mill',lv:3,icon:'🪓',sic:['🪵','🪓','🛤️'],stages:[{wood:40},{wood:80,stone:30},{wood:120,copper:8,coins:60}],opens:'lakeRoad',spot:{x:-420,y:190},make:{mill:{wood:1.1}}},
     // חלק 2 (ניר אישר 11.11, docs/concept-village-region-2.md). after: הדרך הקודמת (מפתח ב-paths) חייבת להיות פתוחה, כי השער לאזור הבא נמצא באזור הקודם,
     // ומכרה 4 ושוק 4 נפתחים יחד. kit: איך המחנה נראה בכפר. sell: השוק משלם יותר במכירה (vpSellK ← vPrice ב-village.js).
     // hero: השלב האחרון צריך גיבור ברמה הזו (שער רך, ממצא 7 בביקורת Sonnet 11.11, docs/measure-crew-gate.md): 3 מתחת לרמה המומלצת (CURIO.paths).
     // בלי זה, שחקן שמשחק בהפסקות (הכפר מתמלא בינתיים) גמר את השיירה ברמה 12, 6 לפני המדבר. צוות שכבר נגמר נשאר פתוח
     // המחירים: כ-0.6 מכל מה שעולה להגיע למבנה ברמה הזו, כמו צוות הכורתים (בדיקת הבוט מדפיסה את היחס)
-    tunnelCrew:{bld:'mine',lv:4,after:'lake',icon:'⛏️',kit:'stone',stages:[{stone:80,wood:40},{stone:150,iron:10,aquaC:3},{stone:220,iron:20,copper:12,coins:150}],
+    tunnelCrew:{bld:'mine',lv:4,after:'lake',icon:'⛏️',sic:['⛺','⛏️','⛰️'],kit:'stone',stages:[{stone:80,wood:40},{stone:150,iron:10,aquaC:3},{stone:220,iron:20,copper:12,coins:150}],
       opens:'ridgeRoad',spot:{x:-230,y:400},make:{mine:{stone:1.1}},hero:9},
-    caravan:{bld:'market',lv:4,after:'ridge',icon:'🐪',kit:'crate',stages:[{wood:120,cloth:15},{wood:200,cloth:25,sapphireC:4},{coins:300,silver:10,iron:20,hide:15}],
+    caravan:{bld:'market',lv:4,after:'ridge',icon:'🐪',sic:['📦','🐪','🌉'],kit:'crate',stages:[{wood:120,cloth:15},{wood:200,cloth:25,sapphireC:4},{coins:300,silver:10,iron:20,hide:15}],
       opens:'desertRoad',spot:{x:330,y:-330},sell:1.1,hero:15}
   },
   // reg: באיזה אזור. lv: נפתח גם מהרמה הזו. rubble: איפה המפולת עד שנפתח. fields: כמו WORLD.regions[..].fields, עם regrow מהיר
@@ -97,19 +98,26 @@ function vpBldTab(k){
   for(const id in VPROJ.list){const P0=VPROJ.list[id];if(P0.bld!==k||vLv(k)<1)continue;
     if(vpHere(id))return vpTabOf(id);
     const why=vLv(k)<P0.lv?T('vp.atLv',T('vil.'+k),P0.lv):T('vp.after',T('w.region.'+P0.after));   // המבנה נמוך, או שהדרך הקודמת עוד סגורה
-    return {id:'proj',label:'🔒 '+vpName(id),html:()=>'<div class="fcook rserve"><p class="bwlead">'+T('vp.'+id+'.d',T('vp.pl.'+P0.opens))+'</p><p class="bwbad">🔒 '+why+'</p></div>'}}
+    return {id:'proj',label:'🔒 '+vpName(id),html:()=>'<div class="fcook rserve"><p class="bwlead">'+T('vp.'+id+'.g')+'</p>'+vpPath(id)+'<p class="bwbad">🔒 '+why+'</p></div>'}}
   return null;
 }
+// השלבים על קו אחד (קונספט #672, פריט 2): עיגול לכל שלב (נבנה ✓ / הנוכחי / נעול), קו שמתמלא בזהב עד הנוכחי, והמחיר מתחת לכל עיגול.
+// המחיר אדום רק בשלב הנוכחי (מה שחסר עכשיו). hero של הפרויקט (#675, השלב האחרון): מוצג על העיגול האחרון
+const vpPrice=(c,cur)=>{const k=Object.keys(c);return k.length?'<span class="vpc">'+k.map(r=>'<span'+(!cur||bagHas(r,c[r])?'':' class="miss"')+' data-tip="'+r+'" aria-label="'+resName(r)+'">'+resPic(r)+shortN(c[r])+'</span>').join('')+'</span>':''};
+function vpPath(id){
+  const P0=VPROJ.list[id],st=vpStage(id),n=P0.stages.length;
+  return '<ol class="vppath" style="--vpf:'+Math.min(st,n-1)/(n-1)+'">'+P0.stages.map((c,i)=>{
+    const k=i<st?'done':i===st?'cur':'lock';
+    return '<li class="vpn '+k+'"><span class="vpo">'+(P0.sic?P0.sic[i]:i+1)+'</span><b>'+T('vp.'+id+'.s'+(i+1))+'</b>'+
+      (k==='done'?'<small>✓ '+T('vp.nDone')+'</small>':vpPrice(c,k==='cur'))+(P0.hero&&i===n-1&&k!=='done'?'<small class="vph'+(heroLv()>=P0.hero?'':' miss')+'">⭐ '+T('vp.heroBtn',P0.hero)+'</small>':'')+'</li>'}).join('')+'</ol>';
+}
 function vpTabOf(id){
-  const P0=VPROJ.list[id],n=P0.stages.length;
+  const P0=VPROJ.list[id];
   return {id:'proj',label:P0.icon+' '+vpName(id),dot:!vpDone(id)&&!vpBlock(id),html:()=>{
-    let h='<div class="fcook rserve"><p class="bwlead">'+T('vp.'+id+'.d',T('vp.pl.'+P0.opens),VPROJ.places[P0.opens].lv)+'</p>';
-    h+='<p class="vpst">'+Array.from({length:n},(_,i)=>'<i'+(i<vpStage(id)?' class="on"':'')+'></i>').join('')+' <b>'+T('vp.stage',vpStage(id),n)+'</b></p>';
+    let h='<div class="fcook rserve vptab"><p class="bwlead">'+T('vp.'+id+'.g')+'</p>'+vpPath(id);
     if(vpDone(id))return h+'<p class="next">✓ '+(P0.get?T('vp.isDone',T('vp.pl.'+P0.opens),Object.values(P0.get)[0]):T('vp.'+id+'.done',T('vp.pl.'+P0.opens)))+'</p></div>';
-    const why=vpBlock(id),hn=P0.hero&&!vpDone(id)?P0.hero:0;
-    if(hn)h+='<p class="'+(heroLv()<hn&&vpStage(id)===n-1?'bwbad':'next')+'">'+(heroLv()<hn?'🔒 ':'✓ ')+T('vp.heroLv',n,hn)+'</p>';
-    h+='<div class="bwpay"><span class="sk">'+T('bw.price')+'</span>'+bwCost(vpCost(id))+'</div>';
-    h+='<div class="gbtns"><button class="vbtn vmain" data-act="vp" data-k="'+id+'"'+(why?' disabled':'')+'>'+(why==='cost'?T('bw.missing'):why==='hero'?T('vp.heroBtn',P0.hero):T('vp.build',vpStage(id)+1))+'</button>'+goalPinBtn({p:id},'pinP')+'</div>';
+    const why=vpBlock(id);
+    h+='<div class="gbtns"><button class="vbtn vmain" data-act="vp" data-k="'+id+'"'+(why?' disabled':'')+'>'+(why==='hero'?'🔒 '+T('vp.heroLv',P0.stages.length,P0.hero):T('vp.buildS',T('vp.'+id+'.s'+(vpStage(id)+1))))+'</button>'+goalPinBtn({p:id},'pinP')+'</div>';
     return h+'</div>'}};
 }
 function vpAct(b){
