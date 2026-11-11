@@ -305,8 +305,9 @@ function questLog(){
   const sec=(k,cards)=>cards.length?'<details class="qsec"'+(k==='ready'?' open':'')+'><summary><h4>'+T('q.sec.'+k)+' · '+cards.length+'</h4></summary>'+cards.join('')+'</details>':'';
   let h=winHead(T('q.log'));   // ui.js
   // שני טורים לרוחב (.qcol, המבקר 2.11.2026): הסיפור והמשימה הנוכחית, ולידם היומיים וההישגים. בטלפון עומד אחד מתחת לשני
-  h+='<div class="qcol">'+guideCard();
-  h+=sec('ready',act.filter(q=>qReady(q)&&!qKind(q).talk).map(q=>qCard(q,'claim')));
+  const ready=act.filter(q=>qReady(q)&&!qKind(q).talk),G=typeof guideGoal==='function'&&(S.vil||S.wd)?guideGoal():null;
+  h+='<div class="qcol">'+(G&&ready.some(q=>q.id===G.q)?'':guideCard());   // "Now" הוא בדיוק הכרטיס שמחכה לאיסוף: לא כותבים פעמיים (קונספט #672)
+  h+=sec('ready',ready.map(q=>qCard(q,'claim')));
   h+=sec('active',act.filter(q=>(!qReady(q)||qKind(q).talk)&&!qKind(q).auto).map(q=>qCard(q,'track')));   // talk: הפרס אצל מי שנתן
   h+=sec('new',L.filter(q=>qOpen(q)&&!qKind(q).talk).map(q=>qCard(q,'accept')));
   h+='</div><div class="qcol">'+challengeCard()+huntCard();   // החוק והמשימה של היום (mutation.js), מבוקש היום (hunt.js)
