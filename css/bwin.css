@@ -41,7 +41,7 @@
 .bwch .bwhint{text-align:start}
 .bwch .bwcap{width:130px;height:18px}.bwch .bwcap span{font-size:12px;line-height:16px}
 .bwbody .bwall{width:auto;max-width:none;min-height:40px;padding:6px 2px;font-size:13px;align-self:auto}
-.bwgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;align-content:start;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;flex:1 1 auto;min-height:0;padding-bottom:4px}
+.bwgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;align-content:start;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;flex:1 1 auto;min-height:0;padding-bottom:4px}
 
 /* ---- כרטיס משאב (מחסן): אייקון, שם וכמה. הצבע לפי הנדירות ---- */
 .bwc{appearance:none;display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:6px;min-height:50px;padding:4px 8px;
@@ -51,7 +51,7 @@
 .bwc:disabled{opacity:.5;cursor:default}
 .bwc .ic{grid-row:1/span 2;font-size:24px;line-height:1}
 .bwc .ic .ri{width:var(--ic-m);height:var(--ic-m);vertical-align:middle;object-fit:contain}
-.bwc .nm{font:700 11px/1.15 var(--body);color:#C9CCD8;overflow-wrap:anywhere}
+.bwc .nm{font:700 11px/1.15 var(--body);color:#C9CCD8}
 .bwc b{font:800 15px var(--body);direction:ltr;text-align:start;font-variant-numeric:tabular-nums}
 
 /* ---- מחסן: פס תפוסה ושורה למה זה חשוב ---- */
@@ -63,12 +63,12 @@
 .bwnote{flex:1;min-width:0;font:700 12px/1.3 var(--body);color:#C9CCD8}
 
 /* ---- שוק: כרטיס בשורה, עם שם, כמה יש לך, והמחיר בצד ---- */
-#vPanel.bw .bwgrid.trade{grid-template-columns:repeat(auto-fill,minmax(146px,1fr))}
-#vPanel.bw .trade .tcard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:center;justify-items:start;column-gap:6px;row-gap:1px;min-height:50px;padding:4px 8px;text-align:start;
+#vPanel.bw .bwgrid.trade{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+#vPanel.bw .trade .tcard{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;align-items:center;justify-items:start;column-gap:6px;row-gap:1px;min-height:58px;padding:5px 8px;text-align:start;
   border-color:color-mix(in srgb,var(--rar,#3A4566) 65%,#2A3249)}
 #vPanel.bw .tcard .ic .ri{width:var(--ic-m);height:var(--ic-m);vertical-align:middle;object-fit:contain}
 #vPanel.bw .tcard .ic{grid-row:1/span 2;font-size:24px;line-height:1}
-#vPanel.bw .tcard .nm{font:800 13px/1.15 var(--body);color:var(--chalk);overflow-wrap:anywhere;min-width:0}
+#vPanel.bw .tcard .nm{font:800 13px/1.15 var(--body);color:var(--chalk);min-width:0}
 #vPanel.bw .tcard .nm small{font:800 11px var(--body);color:var(--dim)}
 #vPanel.bw .tcard .hv{grid-column:2/span 2;font:700 11px/1.15 var(--body);color:var(--dim);text-align:start}
 #vPanel.bw .tcard .hv.tw{color:#FF8A8F}
@@ -144,3 +144,10 @@
 .fuline{color:#F4C74F}
 .fucmp b{color:#7CE38B}
 .fuok{color:#7CE38B;margin-top:2px}
+
+/* ---- כללי טקסט לכרטיסים (docs/concept-clear-screens.md, 4b, ניר אישר 11.11): שם לא נשבר באמצע מילה, לכל היותר 2 שורות ואז "…",
+   ומה שמשני (כמה יש לך, מחיר, ×5) בשורה אחת. כרטיס צר מדי? הרשת מורידה טור (minmax למעלה), לא מקטינה טקסט ---- */
+.bwc .nm,#vPanel.bw .tcard .nm,.bwst .nm,#vPanel .craft b{overflow-wrap:normal;word-break:normal;hyphens:none;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;text-overflow:ellipsis}
+#vPanel.bw .tcard .nm small{white-space:nowrap}
+#vPanel.bw .tcard .hv,.bwc b,.bwpc small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
