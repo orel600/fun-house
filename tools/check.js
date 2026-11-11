@@ -1116,7 +1116,8 @@ function worldBot(m,L,god){
     const keep=[...document.querySelectorAll('.ov,'+WINS.map(w=>'#'+w.id).join(','))].map(e=>[e,e.hidden]);for(const [e] of keep)e.hidden=true;await tick();   // בלי חלון פתוח, ובסוף חוזרים למצב שהיה
     r.wrapped=['questClaim','shopBuy','rankUp','gearCraft','dailyClaim'].filter(f=>!(window[f]&&window[f].fxui));
     FXUI.hooks.questClaim(true,['bones',false]);FXUI.lastTap={x:innerWidth/2,y:innerHeight*0.7,t:performance.now()};FXUI.hooks.shopBuy(true);FXUI.hooks.rankUp('x');   // קנייה: בנגיעה, כמו במשחק
-    const d=$('ovDaily'),was=d.hidden;d.hidden=true;await tick();d.hidden=false;await tick();
+    const d=$('ovLevel'),was=d.hidden;   // ovDaily: כרטיס שקט בלי אפקט (#672)
+   d.hidden=true;await tick();d.hidden=false;await tick();
     d.hidden=was;
     const pl=FXUI.place;FXUI.place='fxtest';document.body.classList.toggle('fxtest');await tick();document.body.classList.toggle('fxtest');
     r.wipe=[...document.querySelectorAll('.fxd')].filter(e=>FXUI.never.some(id=>e.style.backgroundImage.includes(id+'.webp'))).length+(fxDom('ui_trans',100,100)?1:0);   // מעבר שממלא מסך לא מופיע כריבוע
@@ -2843,6 +2844,12 @@ function worldBot(m,L,god){
     SAVE.story.earth=true;questClaim('s1Warden');tick();o.after=guideG.text;o.changed=before!==guideG.text&&guideG.q!=='s1Warden';
     $('guideMin').click();o.min=$('guide').classList.contains('min')&&(t=>t.length>0&&t.split(' ').length<=3)($('guideTxt').textContent);   // מכווצת: 2-3 מילים, לא ריקה$('guideMin').click();
     $('guideMain').click();o.log=!$('qLog').hidden&&!!document.querySelector('#qLog .gnow');questLogOpen(false);
+    // קונספט מסכים ברורים #672: "Done: X. Tap here for your reward" לוקח את הפרס מהשורה עצמה, בלי יומן (סעיף 5), וביומן "Now" לא כופל את הכרטיס שמחכה (סעיף 4)
+    {const was=Q.active;Q.active={};delete Q.done.boots;qStart(QBY.boots);questEvent('gather','wood',5);tick();
+      o.rwG=guideG&&guideG.q==='boots'&&guideG.place===null&&/Tap here/.test(guideG.text);
+      questLogOpen(true);o.rwOne=!document.querySelector('#qLog .gnow')&&document.querySelectorAll('#qLog [data-act="claim"][data-q="boots"]').length===1;questLogOpen(false);
+      const c0=SAVE.bag.coins||0;$('guideMain').click();o.rwClaim=!!Q.done.boots&&!Q.active.boots&&$('qLog').hidden&&(SAVE.bag.coins||0)>c0;
+      tick();o.rwNext=!guideG||guideG.q!=='boots';Q.active=was}
     // פרס אצל דמות באזור אחר (ניר, 10.11: זארה במדבר, השורה אמרה "here" באחו ולא קרה כלום): המטרה באזור שלה, ושם לוקחים את הפרס
     {const id='caravan',N=WNPC.list[id],qid='sqCar1',was=Q.active;Q.active={};delete Q.done[qid];Q.track=null;SAVE.met[id]=1;
       SAVE.story.earth=SAVE.story.water=SAVE.story.ice=true;qStart(QBY[qid]);for(const ob of QBY[qid].obj)questEvent(ob.type,ob.what,ob.n);   // הדרך מהאחו למדבר פתוחה (אגם, רכס)
@@ -2858,6 +2865,20 @@ function worldBot(m,L,god){
       Q.active=was}
     worldUi(false);startRun();tick();o.arena=$('guide').hidden;
     const k=JSON.parse(keep);SAVE.quests=k.q;k.s.intro=k.s.intro||SAVE.story.intro;SAVE.story=k.s;saveNow();enterVillage();npcTalk(null);   // הקדמה שכבר נאמרה נשארת אמורה. חוזרים לכפר רק אחרי השחזור, אחרת פנס האדמה הדלוק מפעיל שם סיפור (homecoming.js)
+    return o});
+  // קונספט מסכים ברורים #672: מרכז הכפר אומר "צריך מרכז" פעם אחת, כרטיסי הקנייה בשוק בלי "You have", והמתנה היומית כרטיס קטן שנגיעה אחת לוקחת וסוגרת
+  const clr=await page.evaluate(()=>{const o={},keepV=JSON.stringify(SAVE.village),keepG=JSON.stringify(dailySave()),c0=SAVE.bag.coins;
+    try{enterVillage();npcTalk(null);SAVE.village.center=2;for(const k in VILLAGE.b)if(k!=='center')SAVE.village[k]=2;
+      const open=k=>{S.vil.ui='';S.vil.open=S.vil.near=k;(S.vil.tab||(S.vil.tab={}))[k]='main';villageHud();return $('vPanel').textContent};
+      const t=open('center');o.capRep=(t.match(/Center level/g)||[]).length;o.capLine=document.querySelectorAll('#vPanel .bwcapl').length;
+      const g=document.querySelector('#vPanel .bwcapl [data-tab="up"]');if(g)g.click();o.capGo=!!g&&S.vil.tab.center==='up';
+      SAVE.bag.coins=5000;open('market');o.buyHave=[...document.querySelectorAll('#vPanel .tcard[data-act="buy"]')].filter(c=>/You have/.test(c.textContent)).length;
+      o.buyN=document.querySelectorAll('#vPanel .tcard[data-act="buy"]').length;S.vil.open=null;S.vil.ui='';villageHud();
+      dailySave().day='';dailyOpen();const r=$('dailyWin').getBoundingClientRect(),b=document.querySelector('#dailyWin [data-act="take"]');
+      o.dSmall=!$('ovDaily').hidden&&r.width<=innerWidth*0.5&&r.height<=innerHeight*0.8&&r.top>=0&&r.bottom<=innerHeight;o.dPips=document.querySelectorAll('#dailyWin .dpip').length;
+      const n0=dailySave().n;if(b)b.click();o.dOne=$('ovDaily').hidden&&dailySave().n!==n0&&S.mode==='play';
+      if(S.wd||!S.vil){o.dWorld=null}else{leaveVillage();dailySave().day='';dailyOpen();o.dWorld=$('ovDaily').hidden;dailyClose();enterVillage();npcTalk(null)}   // בעולם (קרב) לא נפתח
+    }finally{SAVE.village=JSON.parse(keepV);Object.assign(dailySave(),JSON.parse(keepG));SAVE.bag.coins=c0;S.vil&&(S.vil.open=null,S.vil.ui='');saveNow()}
     return o});
   // השורה עצמה (בלי פאנל פתוח): לא נוגעת בפס העליון, במפה, בהשתקה ובסרגל, בטלפון שוכב ועומד, בכפר ובעולם
   const gdHit={};
@@ -5329,6 +5350,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(gd.vil&&gd.vilGate&&gd.lantern&&gd.toWarden&&gd.lakeBack&&gd.jump==='earth'&&gd.claim&&gd.changed&&gd.min&&gd.log&&gd.arena,'מטרה ברורה: '+(gd.vil?'בכפר "'+gd.txt+'" '+gd.dist:'אין שורה בכפר')+(gd.vilGate?', החץ לשער':', החץ לא לשער')+
     (gd.lantern?', בעולם לפנס':', לא לפנס')+(gd.toWarden?', שומר ליד: המרחק אליו':', שומר ליד: עדיין לפנס')+(gd.lakeBack?', מהאגם לשער חזרה':', מהאגם לא לשער')+(gd.jump==='earth'?', ו"קפוץ" לפנס האדמה':', בלי "קפוץ" ('+gd.jump+')')+(gd.claim?', לפרס':', לא לפרס')+(gd.changed?', אחר כך: "'+gd.after+'"':', המטרה לא התחלפה')+
     (gd.min?', מתכווצת':', לא מתכווצת')+(gd.log?', נגיעה פותחת יומן עם "עכשיו"':', נגיעה לא פותחת יומן עם "עכשיו"')+(gd.arena?', בזירה מוסתרת':', מופיעה בזירה'));
+  check(clr.capRep===1&&clr.capLine===1&&clr.capGo&&clr.buyN>0&&clr.buyHave===0&&clr.dSmall&&clr.dPips===7&&clr.dOne&&clr.dWorld!==false,'Clear screens (#672): Center "Center level" x'+clr.capRep+(clr.capLine===1?' in one line':' (no single line)')+(clr.capGo?', the line opens Upgrade':', the line does not open Upgrade')+
+    ', market Buy cards with "You have": '+clr.buyHave+'/'+clr.buyN+(clr.dSmall?', daily gift is a small card':', daily gift is not small')+' ('+clr.dPips+' days)'+(clr.dOne?', one tap takes and closes':', take did not close')+(clr.dWorld===false?', opens in the world':''));
+  check(gd.rwG&&gd.rwOne&&gd.rwClaim&&gd.rwNext,'Claim from the strip (#672): '+(gd.rwG?'"Tap here" in the strip':'no "Tap here" in the strip')+(gd.rwOne?', Quests window shows the ready quest once':', ready quest shown twice in the Quests window')+(gd.rwClaim?', one tap claims (coins up, no window)':', tap did not claim')+(gd.rwNext?', strip moves on':', strip still shows it'));
   check(Object.values(gdHit).every(v=>v===''),'מטרה ברורה, מקום השורה: '+Object.entries(gdHit).map(([k,v])=>k+' '+(v||'פנוי')).join(', '));
   for(const nm in uiWel){const u=uiWel[nm];check(u.fit&&u.btn,'בזמן שלא היית, '+(nm==='port'?'טלפון עומד 412×915':'לרוחב 844×390')+': '+(u.fit?'החלון כולו בתוך המסך':'החלון יוצא מהמסך')+(u.btn?', והכפתור "אסוף הכל" נראה':', והכפתור "אסוף הכל" לא נראה'))}
   const sty=L.style||{};
