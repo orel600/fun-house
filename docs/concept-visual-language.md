@@ -45,7 +45,7 @@ The rest is in English for the build sessions.
 Village center L3 today (from `docs/shots/village-whole-L3-plaza.jpg`, 10.11). Readable, but the hero is small and pale, and props and NPCs share its colors.
 
 ![Before: world](concept/visual-language/before-world.png)
-Open world today, from `node tools/check.js --shots` (offline fixture, phone landscape 844×390).
+Open world at the gate today, from `node tools/check.js --shots --seed 3` (offline fixture, 844×390, 3D). The hero (center) is a dark shape on dark grass; the enemy near the gate and the hero read at a similar value. This is the main readability gap.
 
 **What the code shows today** (the real problem, not only taste):
 - In the open world (`world.js`) 7 enemy types use 4 bodies (`LOOK3D` in `render3d.js`): grunt and crawler = `minion`; shield and treant = `warrior` skeleton; wisp = `skelMage`; golem = `barbarian`; sprite = `mage`.
