@@ -17,6 +17,7 @@ const GHITS={
   win:0.2,                // שניות: מכות על אותו מקור בתוך החלון נספרות כמכה אחת
   pay:true,               // החומר הראשי נופל בחלקים, בכל מכה
   yld:1.2,                // פי כמה החומר הראשי ממקור בעולם: שבירה לוקחת עכשיו יותר זמן, אז כל מקור נותן קצת יותר (מדידה: ±20% לדקה לפי אזור, tools/gather-feel.js)
+  reg:{lake:1.4/1.2},     // אזור שהמקורות בו צפופים: הזמן לשבירה קובע את הקצב, אז יותר לכל מקור (פי yld). נמדד לפי אזור
   off:false,              // כבוי: כמו לפני 11.11 (מדידת "לפני" ב-tools/gather-feel.js --off)
   stat:{cap:0,pay:0,paid:0}
 };
@@ -39,7 +40,7 @@ function ghCap(n,hp0){
 function ghMain(n){
   if(n.ghR!==undefined)return n.ghR;
   const K=NODES.kinds[n.kind],r=gtMain(n.kind);n.ghR=null;n.ghPaid=0;if(!K||!r)return null;
-  const D=gtDrop(n,K.drop),a=D[r][1]*GHITS.yld;n.ghR=r;n.ghTot=Math.floor(a)+(Math.random()<a%1?1:0);return r;
+  const D=gtDrop(n,K.drop),a=D[r][1]*GHITS.yld*(GHITS.reg[S.wd.reg]||1);n.ghR=r;n.ghTot=Math.floor(a)+(Math.random()<a%1?1:0);return r;
 }
 function ghPay(n){
   if(!GHITS.pay||n.hp<=0)return;   // ההכה שוברת: הכל ב-ghDrop
