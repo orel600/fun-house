@@ -3599,6 +3599,24 @@ function worldBot(m,L,god){
       rcr.done?'3 stages open the lake road without the earth lantern':'road still shut!',rcr.wood?'sawmill +wood':'no wood bonus',
       rcr.far&&rcr.moment?'moment near the road':'no moment '+rcr.why,rcr.once&&rcr.upd?'once':'twice! '+rcr.why,rcr.water?'water lantern still needs the story':'story skipped!',
       rcr.old?'old save keeps the road':'old save locked out!',rcr.quiet?'quiet when already open':'replays the moment',rcr.blank?'saved':'not saved'].join(', ')));
+  // Crew stages on one line (vpPath, concept #672 item 2): 3 nodes in one row (done / current / locked), a price under each not-done node,
+  // the gold line filled to the current node, and the one button builds the current stage (a real tap in the open sawmill window)
+  const cpa=await page.evaluate(()=>{window.__cpaBak=JSON.stringify(SAVE);const o={};
+    try{const id='roadCrew';enterVillage();npcTalk(null);welcomeClose();S.mode='play';SAVE.village.mill=3;SAVE.vproj={st:{[id]:1},seen:{deepQuarry:1}};
+      const c=VPROJ.list[id].stages[1];for(const r in c)SAVE.bag[r]=Math.max(SAVE.bag[r]||0,c[r]);(S.vil.tab||(S.vil.tab={})).mill='proj';vOpen('mill');villageHud();
+      const q=s=>[...document.querySelectorAll('#vPanel '+s)];const N=q('.vppath .vpn'),tops=N.map(n=>Math.round(n.getBoundingClientRect().top));
+      o.n=N.length;o.row=N.length===3&&tops.every(t=>Math.abs(t-tops[0])<=2);o.kinds=N.map(n=>n.className.replace('vpn ','')).join(',');
+      o.price=N.slice(1).every(n=>n.querySelector('.vpc'));o.fill=q('.vppath')[0]&&getComputedStyle(q('.vppath')[0],'::after').width;
+      const B=q('button[data-act="vp"]');o.one=B.length===1&&B[0].textContent.includes(T('vp.roadCrew.s2'));
+      o.inside=N.every(n=>{const r=n.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth});
+      if(B[0])B[0].click();villageHud();o.built=vpStage(id)===2&&q('.vppath .vpn.done').length===2&&q('.vppath .vpn.cur').length===1;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    return o});
+  if(CFG.shots&&!cpa.err)await shot('crews-path');
+  await page.evaluate(()=>{SAVE=JSON.parse(window.__cpaBak);delete window.__cpaBak;S.vil.open=null;enterVillage()}).catch(()=>{});
+  check(!cpa.err&&cpa.row&&cpa.kinds==='done,cur,lock'&&cpa.price&&cpa.one&&cpa.inside&&cpa.built,
+    'Crew stages on one line: '+(cpa.err||[cpa.row?'3 nodes in one row':'not one row ('+cpa.n+')',cpa.kinds,cpa.price?'price on each node':'no price on a node',
+      'line '+cpa.fill,cpa.one?'one build button':'not one button',cpa.inside?'inside the screen':'off screen!',cpa.built?'button builds the current stage':'button did not build'].join(', ')));
   // Tunnel crew + bridge caravan (vproj.js, docs/concept-village-region-2.md): mine 4 opens the ridge road, market 4 the desert road.
   // Each needs the road before it open (after), never locks an old save, never lights a lantern. Prints price vs the village path to that level (part 1 ≈ 0.6).
   const r2=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
