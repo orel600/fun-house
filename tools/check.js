@@ -3470,6 +3470,44 @@ function worldBot(m,L,god){
       rcr.done?'3 stages open the lake road without the earth lantern':'road still shut!',rcr.wood?'sawmill +wood':'no wood bonus',
       rcr.far&&rcr.moment?'moment near the road':'no moment '+rcr.why,rcr.once&&rcr.upd?'once':'twice! '+rcr.why,rcr.water?'water lantern still needs the story':'story skipped!',
       rcr.old?'old save keeps the road':'old save locked out!',rcr.quiet?'quiet when already open':'replays the moment',rcr.blank?'saved':'not saved'].join(', ')));
+  // Tunnel crew + bridge caravan (vproj.js, docs/concept-village-region-2.md): mine 4 opens the ridge road, market 4 the desert road.
+  // Each needs the road before it open (after), never locks an old save, never lights a lantern. Prints price vs the village path to that level (part 1 ≈ 0.6).
+  const r2=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    try{const V=VPROJ,sto=SAVE.story||(SAVE.story={}),R=WORLD.regions;
+      const val={coins:1,wood:1,stone:1,cloth:3,copper:3,iron:5,silver:8,hide:2,venom:3,aquaC:30,sapphireC:30};
+      const sum=(t,c)=>{for(const r in c||{})t.v+=c[r]*(val[r]||1);return t};
+      const ratio=id=>{const P0=V.list[id],t={v:0},p={v:0};for(const c of P0.stages)sum(t,c);
+        for(let i=2;i<=P0.lv;i++)sum(p,vCostAt('center',i));for(let i=1;i<=P0.lv;i++)sum(p,vCostAt(P0.bld,i));return +(t.v/p.v).toFixed(2)};
+      o.ratio={roadCrew:ratio('roadCrew'),tunnelCrew:ratio('tunnelCrew'),caravan:ratio('caravan')};
+      const pay=id=>{for(const c of V.list[id].stages){for(const r in c)SAVE.bag[r]=(SAVE.bag[r]||0)+c[r];vpBuild(id)}};
+      SAVE.vproj={st:{},seen:{deepQuarry:1}};for(const k of ['earth','water','ice','fire'])delete sto[k];
+      SAVE.village.center=4;SAVE.village.mine=4;SAVE.village.market=4;SAVE.village.mill=1;
+      const pr=R.lake.paths.ridge,pd=R.ridge.paths.desert;
+      // lake road shut: the tunnel crew waits, and its tab says why
+      o.wait=!vpHere('tunnelCrew')&&!vpHere('caravan')&&!wPathOpen(pr)&&vpBldTab('mine').label.includes('🔒')&&vpBldTab('mine').html().includes('reach');
+      SAVE.village.mill=3;pay('roadCrew');o.tab=vpHere('tunnelCrew')&&!vpHere('caravan')&&vpBldTab('mine').html().includes('data-act="vp"');
+      const s0=(()=>{const q=vProd('mine');q.t=Date.now()-3600e3;q.have={};vSettle('mine');return q.have.stone})();
+      pay('tunnelCrew');o.ridge=vpDone('tunnelCrew')&&wPathOpen(pr)&&!wPathOpen(pd)&&!storyOpen('water')&&!storyOpen('ice');
+      const s1=(()=>{const q=vProd('mine');q.t=Date.now()-3600e3;q.have={};vSettle('mine');return q.have.stone})();o.stone=s1>s0*1.05;
+      o.sign=vpForPath('ridge')==='tunnelCrew'&&vpForPath('desert')==='caravan';
+      pay('caravan');o.desert=vpDone('caravan')&&wPathOpen(pd)&&!storyOpen('ice')&&!storyOpen('fire');
+      o.sell=vpSellK()>1.05&&vPrice('silver','sell')<vPrice('silver','buy');
+      // the moment near each road, once, in its own region
+      const mom=(reg,pl,p)=>{enterWorld('home',reg);enemies=[];S.mode='play';const n0=V.stat.open;P.x=p.x;P.y=p.y+200;VPW.t=0;vpUpdate(1);const a=SAVE.vproj.seen[pl]===1&&V.stat.open===n0+1;VPW.t=0;vpUpdate(1);return a&&V.stat.open===n0+1};
+      SAVE.vproj.seen.lakeRoad=1;o.mRidge=mom('lake','ridgeRoad',pr);o.mDesert=mom('ridge','desertRoad',pd);
+      o.story=!!QBY.s3Warden&&!!(QBY.s3Warden.req||{}).quest&&!!QBY.s4Warden&&!!(QBY.s4Warden.req||{}).quest;
+      // old saves: the lantern alone keeps each road
+      SAVE.vproj={st:{},seen:{}};sto.water=true;sto.ice=true;o.old=wPathOpen(pr)&&wPathOpen(pd);
+      SAVE.village.mill=3;pay('roadCrew');pay('tunnelCrew');o.quiet=SAVE.vproj.seen.ridgeRoad===1;
+    }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
+    enemies=[];SAVE=JSON.parse(bak);goalS().pin=null;enterVillage();return o});
+  check(!r2.err&&r2.wait&&r2.tab&&r2.ridge&&r2.stone&&r2.sign&&r2.desert&&r2.sell&&r2.mRidge&&r2.mDesert&&r2.story&&r2.old&&r2.quiet,
+    'Tunnel crew + bridge caravan: '+(r2.err||[r2.wait?'wait for the road before':'open too early!',r2.tab?'mine tab after the lake road':'no mine tab',
+      r2.ridge?'ridge road open without the water lantern':'ridge still shut!',r2.stone?'mine +stone':'no stone bonus',r2.sign?'signs':'no sign',
+      r2.desert?'desert road open without the ice lantern':'desert still shut!',r2.sell?'market +10% sell':'no sell bonus',
+      r2.mRidge&&r2.mDesert?'moment once near each road':'moment missing or twice',r2.story?'lanterns still need the story':'story skipped!',
+      r2.old?'old saves keep the roads':'old save locked out!',r2.quiet?'quiet when already open':'replays the moment'].join(', '))+
+    ' · price vs village path: '+JSON.stringify(r2.ratio));
   // לולאת הכפר, שלב 3 (services.js): הנפח נותן כוח לבחירה, הזמנה רביעית בלוח הפונדק עם פרס ×1.25 שנוטה ליעד, והשוק משלם יותר על המשפחה של היום
   const svr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
     try{const V=SVC;SAVE.svc={n:0,day:'',fam:{}};

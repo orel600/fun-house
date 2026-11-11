@@ -132,7 +132,8 @@ function vUpgrade(k){
 /* ---- שוק ---- */
 // מחיר ליחידה. רמת שוק גבוהה משלמת יותר וגובה פחות, אבל קנייה תמיד יקרה ממכירה, אחרת אפשר להרוויח בלי לשחק
 function vPrice(r,kind){
-  const R=resOf(r),k=1+VILLAGE.b.market.bonus*Math.max(0,vLv('market')-1),sell=Math.round(R.sell*k);
+  const R=resOf(r),k=1+VILLAGE.b.market.bonus*Math.max(0,vLv('market')-1),sell=Math.round(R.sell*k*(typeof vpSellK==='function'?vpSellK():1));   // vpSellK: שיירת הגשר (vproj.js)
+ 
   const buy=Math.max(sell+1,Math.round(R.buy/k));
   return kind==='sell'?svcSell(r,sell,buy):buy;   // svcSell: המשפחה של היום נמכרת ביותר (services.js)
 }
