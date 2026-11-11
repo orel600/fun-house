@@ -4374,6 +4374,41 @@ function worldBot(m,L,god){
     }finally{const k=JSON.parse(keep);SAVE.gear=k.gear;SAVE.hero.start=k.start;SAVE.hero.skin=k.skin;R3D._hl=null;syncPlayer(0);if(R3D.doll&&R3D.doll.a)R3D.doll.key=null}
     return o});
     if(!hv.skip)check(!hv.bad.length&&!hv.same.length,'משבצת ראש ריקה: '+(hv.bad.length?'חלק ראש דלוק בלי קסדה ('+hv.bad.join(', ')+')':'בלי כובע או קסדה ב-3 המחלקות, בסקינים ובבובה')+(hv.same.length?', הקסדה לא שינתה כלום ('+hv.same.join(', ')+')':', וקסדה משנה את המראה'))}
+  // The crown as a rare hat (Nir, 11.11.2026, task D): item in the head slot, English name, drops only from lv ARMOR.crown.lv, equips, and in 3D sits on every class's head (world and Hero doll)
+  const crn=await page.evaluate(gfx=>{
+    const o={bad:[]},CR=ARMOR.crown,id=CR.id,it=GEAR.items[id],keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,lv:SAVE.hero.level,start:SAVE.hero.start,skin:SAVE.hero.skin,pts:SAVE.hero.pts||{}}),ch=CR.chance;
+    try{
+      o.item=!!it&&it.slot==='head'&&it.hat==='crown'&&it.tier===CR.tier&&!it.cls;
+      o.name=T('it.'+id);o.en=/^[\x20-\x7E]+$/.test(o.name)&&o.name!=='it.'+id&&/^[\x20-\x7E]+$/.test(gFlav(id));
+      o.pic=/flameCrown\.png/.test(gPic(id));
+      // drop: never below lv, always eligible from lv when the roll hits (chance forced to 1), and not in the arena pool (head is not in GEAR.loot.slots)
+      CR.chance=1;SAVE.hero.start='warrior';SAVE.hero.level=CR.lv-1;let lo=0;for(let i=0;i<50;i++)if(armorPick('head')(it))lo++;
+      SAVE.hero.level=CR.lv;let hi=0;for(let i=0;i<50;i++)if(armorPick('head')(it))hi++;CR.chance=ch;
+      o.drop=lo===0&&hi===50&&!GEAR.loot.slots.includes('head');o.dropTxt=lo+'/50 below lv'+CR.lv+', '+hi+'/50 from it';
+      o.never=(()=>{CR.chance=0;let n=0;for(let i=0;i<50;i++)if(armorPick('head')(it))n++;CR.chance=ch;return n===0})();
+      // equip
+      SAVE.hero.level=30;bagAdd(id);o.equip=!!gearEquip(id)&&gGet('head',0)===id;
+      if(gfx==='3d'&&R3D.on&&R3D.ready){
+        o.model=!!(R3D.hats&&R3D.hats.crown);
+        const fit=(a,tag)=>{const g=(a.arG||[]).find(m=>{let f=false;m.traverse(x=>{if(x.name==='crown')f=true});return f});
+          if(!g){o.bad.push(tag+': no crown');return}
+          const hb=bone(a.root,'head'),me=armorHeadFit(a);a.root.updateMatrixWorld(true);const inv=hb.matrixWorld.clone().invert(),b=new THREE.Box3(),v=new THREE.Vector3();
+          g.traverse(x=>{if(x.isMesh){const P=x.geometry.attributes.position;for(let i=0;i<P.count;i++){v.fromBufferAttribute(P,i).applyMatrix4(x.matrixWorld).applyMatrix4(inv);b.expandByPoint(v)}}});
+          const top=me.c[1]+me.z[1]/2,w=(b.max.x-b.min.x)/me.z[0],dx=Math.abs((b.min.x+b.max.x)/2-me.c[0])/me.z[0],dz=Math.abs((b.min.z+b.max.z)/2-me.c[2])/me.z[2],sink=(top-b.min.y)/me.z[1];
+          if(!(w>0.6&&w<1.1&&dx<0.12&&dz<0.15&&sink>-0.02&&sink<0.35))o.bad.push(tag+': width '+w.toFixed(2)+' off '+dx.toFixed(2)+'/'+dz.toFixed(2)+' sink '+sink.toFixed(2))
+          else o.ok=(o.ok||0)+1};
+        for(const [h,sk,doll] of [['warrior',null],['hunter',null],['mage',null],['warrior','nir'],['warrior','orel'],['mage',null,1],['hunter',null,1]]){
+          SAVE.hero.start=h;SAVE.hero.skin=sk;SAVE.gear.head=[id];R3D._hl=null;const tag=h+(sk?'/'+sk:'')+(doll?'/doll':'');
+          if(doll){const D=R3D.doll||dollInit();D.key=null;dollBuild(D);fit(D.a,tag)}else{syncPlayer(0);fit(R3D.player,tag)}}
+      }
+    }catch(e){o.err=e.message}
+    finally{CR.chance=ch;const k=JSON.parse(keep);SAVE.bag=k.bag;SAVE.gear=k.gear;SAVE.hero.level=k.lv;SAVE.hero.start=k.start;SAVE.hero.skin=k.skin;SAVE.hero.pts=k.pts;R3D._hl=null;
+      if(R3D.on&&R3D.ready){syncPlayer(0);if(R3D.doll&&R3D.doll.a)R3D.doll.key=null}saveNow()}
+    return o},CFG.gfx);
+  check(!crn.err&&crn.item&&crn.en&&crn.pic&&crn.drop&&crn.never&&crn.equip&&(CFG.gfx!=='3d'||crn.model&&!crn.bad.length&&crn.ok===7),
+    'Crown hat: '+(crn.err?'error '+crn.err:(crn.item?'head item':'not a head item ✗')+', "'+crn.name+'"'+(crn.en?'':' (not English ✗)')+(crn.pic?'':', no picture ✗')+
+    ', drop '+crn.dropTxt+(crn.drop&&crn.never?'':' ✗')+(crn.equip?', equips':', does not equip ✗')+
+    (CFG.gfx==='3d'?(crn.model?', model loaded':', no model ✗')+(crn.bad.length?', off the head: '+crn.bad.join('; ')+' ✗':', sits on '+crn.ok+' heads (3 classes, Nir, Orel, doll)'):'')));
   // חפצים כמו ב-Priston Tale (itemroll.js): איכות אקראית בשלל בעולם שנשמרת במזהה, דרישות רמה ותכונה שחוסמות לבישה (ומה שלבוש נשאר), ובונוס מחלקה
   const ir=await page.evaluate(()=>{
     const o={},keep=JSON.stringify({bag:SAVE.bag,gear:SAVE.gear,pity:SAVE.clsPity,pts:SAVE.hero.pts||{},lv:SAVE.hero.level,start:SAVE.hero.start}),v0=S.vil,g0=gearStats(),c0=celebrate;celebrate=()=>{};
