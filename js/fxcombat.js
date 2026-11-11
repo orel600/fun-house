@@ -102,8 +102,9 @@ function fxcHit(e,t,crit,m,y){
   if(FXC.hitFr!==FXC.fr){FXC.hitFr=FXC.fr;FXC.hits=0}
   if(FXC.hits>=FXC.hit.perFrame||!fxcRoom())return true;    // הרבה פגיעות בפריים אחד: מספיק מה שכבר נוגן
   if(m<1&&!crit)return true;                                // עמיד: בלי פיצוץ, רק המספר האפור
+  const hc=typeof hcFit==='function'?hcFit(e.x,y,e):{x:e.x,y,k:1,a:1};if(!hc)return true;   // ליד הגיבור: לצד של האויב, קטן ועמום (heroclear.js)
   FXC.hits++;const K=FXC.hit;
-  fxcOwn(fxPlay(id,e.x+rand(-4,4),y,{size:fxcSize(e,K)*(crit?K.crit:1),alpha:K.a,add:true,fps:K.fps,rot:rand(0,6.28)}));fxcCount(FXC.stat.hit,id);
+  fxcOwn(fxPlay(id,hc.x+rand(-4,4),hc.y,{size:fxcSize(e,K)*(crit?K.crit:1)*hc.k,alpha:K.a*hc.a,add:true,fps:K.fps,rot:rand(0,6.28)}));fxcCount(FXC.stat.hit,id);
   return true;
 }
 // מ-juiceKill. true = במקום ענן העשן
@@ -112,7 +113,8 @@ function fxcKill(e){
   const id='wko_'+fxcType(e.fxDt||'physical');if(!fxImg(id))return false;
   if(e.fxTg)fxcTgSet(e,null);
   if(!fxcRoom()&&!(e.isBoss||e.warden||e.elite))return true;
-  const K=FXC.ko;fxcOwn(fxPlay(id,e.x,e.y-e.r*0.3,{size:fxcSize(e,K),alpha:K.a,fps:K.fps}));fxcCount(FXC.stat.ko,id);
+  const big=e.isBoss||e.warden||e.elite,hc=!big&&typeof hcFit==='function'?hcFit(e.x,e.y-e.r*0.3,e):{x:e.x,y:e.y-e.r*0.3,k:1,a:1};if(!hc)return true;   // ליד הגיבור (heroclear.js). בוס ועלית: מלא
+  const K=FXC.ko;fxcOwn(fxPlay(id,hc.x,hc.y,{size:fxcSize(e,K)*hc.k,alpha:K.a*hc.a,fps:K.fps}));fxcCount(FXC.stat.ko,id);
   return true;
 }
 

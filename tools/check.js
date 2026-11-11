@@ -1568,6 +1568,21 @@ function worldBot(m,L,god){
       r.pet=(()=>{const n=SH.list.length;SH.fr=-1;damage(e1,1,'pet',0);return SH.list.length===n})();
       for(const e of enemies)e.dead=true;enemies=[];SH.list=[]}catch(err){r.err=String(err&&err.stack||err)}
     worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
+  // הגיבור נשאר גלוי (heroclear.js): עשן והבזק ליד הגיבור זזים לצד של האויב, קטנים ועמומים, עד perFrame בפריים; רחוק כמו קודם; הפחתת תנועה עמומה יותר
+  const hcl=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
+    try{if(SKR)skrEnd(false);SAVE.hero.level=99;enterWorld('home');enemies=[];const fx0=FXC.on,calm0=SAVE.calm;FXC.on=false;SAVE.calm=false;   // FXC כבוי: הדרך הישנה של juice.js (עננת העשן), זו שהסתירה את הגיבור
+      const mk=(dx,dy)=>{const e=addEnemy('grunt',P.x+dx,P.y+dy);e.home=0;e.mult={};e.speed=0;e.dmg=0;return e};
+      const J=juice(),near=[];HC.fr=-1;J.poofs.length=0;
+      for(let i=0;i<6;i++){const a=i/6*6.28,e=mk(Math.cos(a)*40,Math.sin(a)*40);near.push(e);kill(e)}
+      const pn=J.poofs.slice();r.cap=pn.length===HCLEAR.perFrame;r.n=pn.length;
+      r.small=pn.every(f=>f.k===HCLEAR.scale&&f.al<=HCLEAR.alpha);
+      r.side=pn.length>0&&pn.every(f=>{const e=near.reduce((b,x)=>Math.hypot(x.x-f.x,x.y-f.y)<Math.hypot(b.x-f.x,b.y-f.y)?x:b);
+        return Math.hypot(f.x-P.x,f.y-P.y)>Math.hypot(e.x-P.x,e.y-P.y)&&((f.x-P.x)*(e.x-P.x)+(f.y-P.y)*(e.y-P.y))>0});
+      HC.fr=-1;J.poofs.length=0;const far=mk(220,0);kill(far);r.far=J.poofs.length===1&&J.poofs[0].k===1&&J.poofs[0].al===1;
+      SAVE.calm=true;HC.fr=-1;J.poofs.length=0;kill(mk(0,40));r.calm=J.poofs.length===1&&J.poofs[0].al<HCLEAR.alpha;SAVE.calm=false;
+      try{juiceDraw()}catch(err){r.drawErr=String(err)}
+      FXC.on=fx0;SAVE.calm=calm0;for(const e of enemies)e.dead=true;enemies=[];J.poofs.length=0}catch(err){r.err=String(err&&err.stack||err)}
+    worldUi(false);SAVE=JSON.parse(bak);if(vil)enterVillage();else{reset();S.mode=mode}return r});
   // הסקיל הראשון מלמד תזמון (skillteach.js): נגיעה בלי מטרה לא מבזבזת, טבעת וכפתור מואר כשיש מטרה, "Step out!" בהכנה של אויב, "Now!" אחרי, "3 hit!" בקבוצה, ונעלם אחרי SKTEACH.uses
   const skt=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),vil=!!S.vil,mode=S.mode,r={};
     try{if(SKR)skrEnd(false);SAVE.hero.level=99;SAVE.tipsOff=false;SAVE.hero.skTeach={n:0,u:0};enterWorld('home');enemies=[];SAVE.hero.skSeen=[...(SAVE.hero.skSeen||[]),...S.sk.ids];
@@ -3171,6 +3186,7 @@ function worldBot(m,L,god){
   await page.evaluate(()=>fxcPreload());
   for(let i=0;i<60&&!await page.evaluate(()=>['wtg_cone','wtg_line','wtg_circle','wtg_circle_big','whit_fire','whit_phys','wko_ice','wmine_stone','wmine_gem_ruby'].every(id=>fxImg(id)));i++)await new Promise(r=>setTimeout(r,150));   // הגיליונות נטענים מהקבצים (שעון אמיתי, לא השעון של הבדיקה)
   const fxc=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
+    const hc0=HCLEAR.on;HCLEAR.on=false;   // כאן נבדקים הגיליונות עצמם, ליד הגיבור. הגיבור הגלוי (heroclear.js) נבדק ב-hcl
     try{enterWorld('home');enemies=[];S.mode='play';P.inv=99;const tick=()=>fxcUpdate(1/60),live=h=>!!h&&h.on&&(FXLIB.list.includes(h)||FXC.tgL.includes(h));
       const e=addEnemy('grunt',P.x+60,P.y,1);e.hp=e.max=1e6;
       // מכה מקרוב: משולש בזמן ההכנה, ונעלם כשהיא נגמרת
@@ -3193,6 +3209,7 @@ function worldBot(m,L,god){
       const m0=Object.assign({},FXC.stat.mine);nodeDown({kind:'rock',x:P.x,y:P.y,r:24,dead:true});nodeDown({kind:'emberRock',x:P.x,y:P.y,r:24,dead:true});
       o.mineStone=(FXC.stat.mine.wmine_stone||0)>(m0.wmine_stone||0);o.mineGem=(FXC.stat.mine.wmine_gem_ruby||0)>(m0.wmine_gem_ruby||0);
       o.all=FXLIB.list.length;o.max=FXLIB.max;o.img=!!fxImg('wtg_cone');
+    HCLEAR.on=hc0;
     }catch(err){o.err=String(err&&err.stack||err).slice(0,200)}
     enemies=[];SAVE=JSON.parse(bak);enterVillage();return o});
   check(!fxc.err&&(!fxc.img||fxc.cone&&fxc.coneGone&&fxc.leap&&fxc.charge&&fxc.chargeGone&&fxc.big&&fxc.hitFire&&fxc.koIce&&fxc.perFrame<=fxc.cap&&fxc.mineStone&&fxc.mineGem)&&fxc.all<=fxc.max,
@@ -5259,6 +5276,9 @@ const wf=MBWX.falls;MBWX.falls=0;MB.t=5;const k1=mbWxK(MB);MB.t=MOBA.maxT*0.9;co
   check(!hold.err&&hold.open&&hold.still&&hold.closed&&hold.resume&&hold.vHold&&hold.prod,
     'חלון עוצר את העולם: '+(hold.err||[hold.open?'היומן נפתח בתפריט':'היומן לא נפתח',hold.still?'5 שניות בלי נזק ובלי תזוזה':'העולם המשיך מאחורי היומן',
       hold.closed&&hold.resume?'בסגירה הקרב חוזר':'הקרב לא חזר',hold.vHold&&hold.prod?'בכפר הייצור ממשיך לפי השעון':'הייצור בכפר נעצר'].join(', ')));
+  check(!hcl.err&&!hcl.drawErr&&hcl.cap&&hcl.small&&hcl.side&&hcl.far&&hcl.calm,
+    'הגיבור גלוי בקרב צפוף: '+(hcl.err||hcl.drawErr||[hcl.cap?'ליד הגיבור עד '+hcl.n+' בפריים':'ליד הגיבור: '+hcl.n+' (בלי תקרה)',hcl.small?'קטן ועמום':'בגודל מלא',hcl.side?'בצד של האויב':'על הגיבור',
+    hcl.far?'רחוק: כמו קודם':'רחוק: השתנה',hcl.calm?'הפחתת תנועה: עמום יותר':'הפחתת תנועה: אותו דבר'].join(', ')));
   check(!shk.err&&shk.sword&&shk.bow&&shk.skill&&shk.stronger&&shk.cap&&shk.near&&shk.drawn&&shk.gone&&shk.calm&&shk.pet,
     'מכה חדה: '+(shk.err||[shk.sword?'חרב: פס בכיוון המכה':'חרב: אין',shk.bow?'קשת: פס דק':'קשת: אין',shk.skill?'סקיל':'סקיל: אין',
     shk.stronger?'הסקיל חזק יותר (רתיעה '+shk.lean.join(' מול ')+')':'הסקיל לא חזק יותר',shk.cap?'תקרה בפריים':'בלי תקרה',shk.near?'ליד הגיבור: עד 2, קטנים':'ליד הגיבור: בלי תקרה',shk.drawn&&shk.gone?'מצויר ונעלם':'לא נעלם',
