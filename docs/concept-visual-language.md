@@ -108,21 +108,21 @@ Nir approved the free pilot (A+B). Built behind `?look=v2`; without it nothing c
 
 **Evidence** (`node tools/look-v2-shots.js`, offline: new browser context, every http(s) request answered locally, no real save. Same seed, before vs v2)
 
-![World crowd, phone](concept/visual-language/pilot/phone-world.jpg)
-World, phone 844×390: 8 grunts + 3 shields + 2 wisps. Before (left) grunts and shields are the same skeleton family; v2 (right) the grunts are green orcs, told apart by shape.
+![World crowd, phone](concept/visual-language/pilot/p915-world-crowd.jpg)
+World, phone 915×412 (3D, Nir's screenshot size; 844×390 copies in the same folder): 8 grunts + 3 shields + 2 wisps. Before (left) grunts and shields are the same skeleton family; v2 (right) the grunts are green orcs, told apart by shape.
 
-![Hero close-up](concept/visual-language/pilot/phone-world-hero.jpg)
-![Village plaza, phone](concept/visual-language/pilot/phone-village.jpg)
+![Hero close-up](concept/visual-language/pilot/p915-world-hero.jpg)
+![Village plaza, phone](concept/visual-language/pilot/p915-village.jpg)
 ![World, iPad](concept/visual-language/pilot/ipad-world.jpg)
 ![Village, iPad](concept/visual-language/pilot/ipad-village.jpg)
 
-![Motion strip](concept/visual-language/pilot/phone-motion.jpg)
+![Motion strip](concept/visual-language/pilot/p915-motion.jpg)
 Motion, one grunt next to the hero (top: before, bottom: v2): spawn, spawn, walk, walk, attack, attack, death, death. Spawn, walk and death read clearly. **The attack frames are not usable in either row**: the enemy is not visible in them, before or v2. That's my test setup, not the new body, and it is still open (see below).
 
-![Arena, phone](concept/visual-language/pilot/phone-arena.jpg)
-**Arena untouched:** the arena scene (HUD hidden) is **pixel-identical** with and without `?look=v2`: 0 of 329,160 pixels (phone) and 0 of 967,600 (iPad). One earlier run differed only because the hero was mid hurt-blink (`render3d.js` hides the hero every other step while `P.inv>0`); shots now clear `P.inv` first.
+![Arena, phone](concept/visual-language/pilot/p915-arena-scene.jpg)
+**Arena untouched:** the arena scene (HUD hidden) is **pixel-identical** with and without `?look=v2`: 0 of 376,980 pixels (915×412), 0 of 329,160 (844×390) and 0 of 967,600 (iPad). One earlier run differed only because the hero was mid hurt-blink (`render3d.js` hides the hero every other step while `P.inv>0`); shots now clear `P.inv` first.
 
-**Numbers** (SwiftShader on the CPU, so compare before vs v2, not absolute phone FPS. Full data: `pilot/phone-report.json`, `pilot/ipad-report.json`)
+**Numbers** (SwiftShader on the CPU, so compare before vs v2, not absolute phone FPS. Full data: `pilot/phone915-report.json`, `pilot/phone-report.json`, `pilot/ipad-report.json`. 915×412: 20-at-once frame 37 ms before / 24 ms v2, 0 errors, HUD steady)
 | | before | v2 |
 |---|---|---|
 | Grunt body triangles | 5,288 | 2,399 |
