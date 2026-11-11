@@ -1,4 +1,4 @@
-/* Look v2, village stage 2 (Nir approved the "toy" style, 11.11.2026; docs/concept-visual-language.md §7).
+/* Look v2, village stage 2 (Nir approved the "toy" style, 11.11.2026; docs/concept-visual-language.md §8).
    The smith's and innkeeper's own bodies, and the forge yard, market row and gate pieces, built in Blender from code (build_village.py).
    This script is the glue on both sides of Blender. Not part of the game, not run by the check.
    1. node tools/blender/village_v2.js rig      the KayKit skeleton the NPCs already use (barbarian, from js/models3d.js) -> art/village-v2/raw/rig.json

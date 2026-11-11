@@ -2210,8 +2210,9 @@ function worldBot(m,L,god){
           enterWorld('home',reg);S.mode='play';enemies=[];R3D.wWarm&&(R3D.wWarm.done[reg]=0);
           for(let i=0;i<400&&(i<6||R3D.wWarm.a||R3D.wWarm.q&&R3D.wWarm.q.length);i++)draw();   // ההכנה של האזור, והתור ברקע (בפעם הראשונה)
           const ks=wldTypes();let n=0,worst=[0,''];
-          for(const k of ks){const p0=I.programs.length,t0=I.memory.textures,crowd=k==='wanted'||k in R3D.crowd;
+          for(const k of ks){const p0=I.programs.length,t0=I.memory.textures;
             const e=addEnemy(k==='wanted'?'grunt':k,P.x+90,P.y+30,1);if(k==='wanted')e.wanted=true;e.flSeen=1;
+            const crowd=k==='wanted'||foeKey(e) in R3D.crowd;   // the crowd of the look that is drawn (foeKey: in the world a type can have its own v2 body, js/look-v2.js)
             const pool=((R3D.pool||{})[lookKey(lookOf(e))]||[]).length>0;   // דמות מוכנה (כבר צוירה) מחכה במאגר
             const t=performance.now();draw();const ms=performance.now()-t;if(ms>worst[0])worst=[ms,k];
             const dp=I.programs.length-p0,dt=I.memory.textures-t0;if(dp||dt||!crowd||!pool)o.bad.push(reg+'/'+k+(dp?' shader+'+dp:'')+(dt?' טקסטורה+'+dt:'')+(crowd?'':' בלי קהל')+(pool?'':' לא הוכן'));

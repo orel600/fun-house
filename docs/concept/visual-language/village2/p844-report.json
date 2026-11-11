@@ -1,0 +1,145 @@
+{
+ "seed": 5,
+ "viewport": {
+  "width": 844,
+  "height": 390
+ },
+ "night": false,
+ "arena": {
+  "pixelsDiffer": 1453,
+  "of": 329160
+ },
+ "before": {
+  "errors": [],
+  "boot": {
+   "bootKs": [
+    "piocho1",
+    "vx_ruin",
+    "piocho2"
+   ],
+   "lv2Boot": [],
+   "kb": 0
+  }
+ },
+ "v2": {
+  "errors": [],
+  "boot": {
+   "bootKs": [
+    "piocho1",
+    "vx_ruin",
+    "piocho2"
+   ],
+   "lv2Boot": [],
+   "kb": 0
+  },
+  "load": {
+   "log": [
+    {
+     "k": "vx_lv2_gate",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_stall",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "lv2_smith",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "lv2_inn",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_crate",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_barrel",
+     "at": 304,
+     "ms": 32,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_sack",
+     "at": 2272,
+     "ms": 47,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_rack",
+     "at": 2320,
+     "ms": 48,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_fence",
+     "at": 2320,
+     "ms": 48,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_crateS",
+     "at": 9488,
+     "ms": 16,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_bucket",
+     "at": 9504,
+     "ms": 34,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_lumber",
+     "at": 9504,
+     "ms": 48,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_pennant",
+     "at": 12272,
+     "ms": 30,
+     "where": "vil"
+    },
+    {
+     "k": "vx_lv2_banner",
+     "at": 12304,
+     "ms": 16,
+     "where": "vil"
+    }
+   ],
+   "fail": [],
+   "sizesKB": {
+    "lv2_smith": 53.8,
+    "lv2_inn": 46.7,
+    "vx_lv2_gate": 27,
+    "vx_lv2_rack": 29.9,
+    "vx_lv2_barrel": 12.9,
+    "vx_lv2_bucket": 17.4,
+    "vx_lv2_crate": 13.1,
+    "vx_lv2_crateS": 17.7,
+    "vx_lv2_lumber": 25.2,
+    "vx_lv2_fence": 16.9,
+    "vx_lv2_banner": 9.9,
+    "vx_lv2_pennant": 5.7,
+    "vx_lv2_stall": 32.1,
+    "vx_lv2_sack": 11.5
+   },
+   "npc": {
+    "smith": "lv2_smith",
+    "inn": "lv2_inn"
+   }
+  }
+ }
+}

@@ -145,7 +145,40 @@ Motion, one grunt next to the hero (top: before, bottom: v2): spawn, spawn, walk
 3. Outline cracks are possible at hard edges of flat-shaded parts (split normals). Not visible at phone size in these shots.
 4. Next steps only if Nir likes the pilot: more world enemies (shield, wisp), NPC bodies, the rest of the village.
 
-## 7. Village stage 2 (11.11.2026)
+## 7. Phase 2: four more world enemies (11.11.2026, PR #671)
+
+Each common world role now has its own body, so a crowd reads by shape, not by color. Same type, hp, size, hit size and timings; only the look key (`LV2.swap` / `LV2.looks` in `js/look-v2.js`). Village and world only, on by default, `?look=v1` turns it off.
+
+| Enemy | Before | v2 | Triangles | Why |
+|---|---|---|---|---|
+| grunt (phase 1) | KayKit skeleton minion | orc with skull helmet (Quaternius Orc_Skull) | 2,399 | |
+| wisp | skeleton mage + staff | horned shadow, no legs, keeps the hover (Quaternius Flying "Ghost") | 2,000 | magic flyer |
+| shield | skeleton warrior + small round shield | same skeleton and anims, a tall upright tower shield + round shoulder pads, built in code (`lv2Gear`) | rig + ~300 | wide and square from above |
+| sprite | **the player mage's body**, tinted green | small bee (Quaternius Flying "Armabee") | 1,799 | plant fairy, no longer the player's body |
+| golem | **the smith/innkeeper's body**, tinted | stone idol brute (Quaternius Big "Tribal", tinted stone) | 2,799 | no longer a villager's body |
+
+All Quaternius models are CC0, not used by the arena, and lazy-loaded (`js/m3d/`, +309 KB in total). Built with `node tools/build3d.js <kk> --only monsters --mon=wispGhost,spriteBee,golemIdol` (only those; the arena's monsters are untouched).
+
+**Evidence** (`tools/look-v2-shots.js`, offline, fresh context, no save writes; 3D; before = `?look=v1`)
+
+![Lineup](concept/visual-language/phase2/p915-lineup.jpg)
+One of each role, 915×412 (top: before, bottom: v2). Left to right: grunt, shield, wisp, sprite, golem.
+
+![Silhouettes](concept/visual-language/phase2/p915-silhouette.jpg)
+Silhouette test: the same row with every enemy drawn flat black. Before, four of the five are round-headed humanoids of about the same outline. In v2 every role has its own outline: hunched spiky orc, tall slab shield, horned legless ghost, winged bee, crested heavy idol.
+
+![World crowd](concept/visual-language/phase2/p915-world.jpg)
+A crowd of 13 (4 grunts, 3 shields, 2 wisps, 2 sprites, 2 golems), 915×412. Also at 844×390: `phase2/p844-*.jpg`.
+
+- **Arena untouched:** the arena scene is pixel-identical with v1 and v2: 0 of 376,980 pixels (915×412) and 0 of 329,160 (844×390).
+- **Console errors:** 0 in every run.
+- **First-spawn cost** (wall ms of the frame in which each type first appears, SwiftShader; v1 / v2, 915×412): grunt 11 / 1,484, shield 8 / 11, wisp 10 / 18, sprite 8 / 13, golem 8 / 13. At 844×390: grunt 1,310 / 18, others 8-22 in both. The one ~1.3-1.5 s frame shows up on the first enemy of the session in **both** modes (the first enemy shader compile in this CPU-only browser), not on a new body. Every new v2 body costs 11-19 ms on its first frame.
+- **HUD:** steady over 40 frames in both modes.
+- **Roblox (targeted, not verified):** each body is 1 material and one 32-128 px palette texture, 13-43 joints. The shield gear is primitives (boxes, spheres, a torus).
+
+**Still open:** the motion strip's attack frames (test setup, as in phase 1). The shoulder pads are small at phone size; the tower shield carries the silhouette.
+
+## 8. Village stage 2 (11.11.2026)
 
 Nir approved the toy style (Roblox-like proportions, rounder blocks, flat colour, matte). Stage 2 is the village only, behind the same v2 switch (`?look=v1` shows the old look). Visual only: positions, sizes, collision, roles and timings are unchanged.
 
@@ -171,3 +204,42 @@ Nir approved the toy style (Roblox-like proportions, rounder blocks, flat colour
 | **total added download** | | **about 320 KB**, lazy, only in the village with v2 |
 
 **Evidence** (`node tools/look-v2-village-shots.js`, offline: new browser context, every http(s) request answered locally, no real save, before = `?look=v1`):
+
+All images 3D, before (left, `?look=v1`) and v2 (right), same seed. Phone 915×412 (Nir's size), daytime (`?tod=day`):
+
+![Village, phone](concept/visual-language/village2/p915-village.jpg)
+The plaza at village level 4: striped stalls with goods instead of the plain tents, the smith (left) in his own body.
+
+![Forge L2](concept/visual-language/village2/p915-forge2.jpg)
+![Forge L4](concept/visual-language/village2/p915-forge4.jpg)
+![Forge L5](concept/visual-language/village2/p915-forge5.jpg)
+Forge yard at levels 2, 4 and 5: coal bucket, logs, anvil + blade rack, barrel, fence, red banners.
+
+![Market L4](concept/visual-language/village2/p915-market4.jpg)
+![Market L5](concept/visual-language/village2/p915-market5.jpg)
+![Plaza stalls](concept/visual-language/village2/p915-plaza4.jpg)
+Market row: stalls, sacks, crates, apple crate, yellow pennants.
+
+![Gate](concept/visual-language/village2/p915-gate.jpg)
+The gate. The hero stands just behind it, so the game's see-through effect (`readable3d.js`) dithers the part of the roof in front of him: an existing feature, the same for any object between the camera and the hero.
+
+![Smith](concept/visual-language/village2/p915-smith.jpg)
+![Innkeeper](concept/visual-language/village2/p915-inn.jpg)
+
+Night (`?tod=night`, the village's brighter night) and other sizes:
+
+![Village at night](concept/visual-language/village2/p915-night-village.jpg)
+![Gate at night](concept/visual-language/village2/p915-night-gate.jpg)
+![Village, 844×390](concept/visual-language/village2/p844-village.jpg)
+![Village, iPad](concept/visual-language/village2/ipad-village.jpg)
+![Market, iPad](concept/visual-language/village2/ipad-market4.jpg)
+
+**Checks** (reports: `village2/*-report.json`)
+- **Arena untouched:** the arena scene (HUD hidden) is pixel-identical before and v2: 0 of 376,980 pixels (915×412, day and night), 0 of 967,600 (iPad), 0 of 329,160 (844×390, night run). One 844×390 day run had 1,453 scattered pixels (and one earlier 915 run 1,476): small dark specks, the scene identical by eye. A separate arena-only check (v1, v2, v2 again, v1 again, all in one browser) gave 0 differences in every pair, so this is run-to-run noise in the long evidence script, not v2. Look v2 does nothing in the arena (`lv2Here()` is false there, `lv2VilKey` only runs with `S.vil`).
+- **Console errors:** 0 before, 0 v2, in all 7 runs (4 sizes/times × village levels 2, 4, 5).
+- **Load:** every v2 piece loaded, none failed. Decode time per piece 10 to 80 ms (SwiftShader, CPU), lazily in the village only; the old model shows meanwhile and the village rebuilds once. With a save that has a village, the opening fetches the pieces the current village shows (`M3D.bootKs`, `lv2VilBoot`), so `tools/check.js` still sees nothing loaded without need.
+- **Roblox (targeted, not verified):** bodies 4,276 / 3,456 tris, 1 material, 64×16 texture, the 23 KayKit bones (+18 helper bones, unused) with rigid weights; props 80 to 1,776 tris, 1 material each. Nothing imported to Roblox Studio.
+
+**Still open**
+1. The bodies are rigid parts: at strong bends (elbow, waist) the parts overlap or show a small gap, by design (toy figure). Not visible at phone size in these shots.
+2. Other NPCs (merchant, priest, residents) and the rest of the village (houses, mill, mine) are next, only if Nir wants them.

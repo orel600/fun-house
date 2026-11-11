@@ -1,4 +1,4 @@
-/* Evidence for look v2, village stage 2 (js/look-v2.js part 4; concept: docs/concept-visual-language.md §7). Not part of the game or of npm run check.
+/* Evidence for look v2, village stage 2 (js/look-v2.js part 4; concept: docs/concept-visual-language.md §8). Not part of the game or of npm run check.
    Offline and disposable like tools/look-v2-shots.js: a fresh browser context (empty storage), every http(s) request answered locally (no cloud, no live site),
    Math.random seeded, the clock faked. The village levels are set on the in-memory save of that empty context only.
    Same steps twice, ?look=v1 (before) and the default (v2), in 3D (SwiftShader): the whole village, then close-ups of the forge yard, the market row,
