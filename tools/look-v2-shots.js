@@ -26,12 +26,13 @@ async function session(browser,v2){
   await page.clock.runFor(300);
   for(let i=0;i<300;i++){const r=await page.evaluate(()=>R3D.ready||R3D.failed);if(r)break;await page.waitForTimeout(50);await page.clock.runFor(50)}
   // each step: the hero can't die, open windows close, and (when set) only the test's own enemies stay, so nothing else walks into the frame
-  const run=async(ms,step=50)=>{for(let t=0;t<ms;t+=step){await page.evaluate(()=>{if(typeof P!=='undefined'&&P.maxHp)P.hp=P.maxHp;
+  const run=async(ms,step=50)=>{for(let t=0;t<ms;t+=step){await page.evaluate(()=>{if(typeof P!=='undefined'&&P.maxHp){P.hp=P.maxHp;P.inv=0}   // inv 0: no hurt-blink (render3d.js hides the hero every other step while P.inv>0), so shots compare like for like
+    
     for(const o of document.querySelectorAll('[id^="ov"],.win'))if(!o.hidden&&o.id!=='ovHud')o.hidden=true;
     if(window.__only&&typeof enemies!=='undefined')for(let i=enemies.length-1;i>=0;i--)if(!enemies[i].lv2t)enemies.splice(i,1)});await page.clock.runFor(step)}};
   const noHud=v=>page.evaluate(v=>{for(const el of document.body.children)if(!el.querySelector('canvas')&&el.tagName!=='CANVAS')el.style.visibility=v?'hidden':''},v);
   const waitModel=async k=>{for(let i=0;i<200;i++){if(await page.evaluate(k=>!m3dLazy(k)||m3dReady(k),k))return true;await page.waitForTimeout(50);await page.clock.runFor(50)}return false};
-  const shot=async(name,clip)=>{const f=path.join(OUT,TAG+'-'+name+'-'+(v2?'v2':'before')+'.png');await page.screenshot({path:f,...(clip?{clip}:{})});return f};
+  const shot=async(name,clip)=>{await page.evaluate(()=>{if(typeof P!=='undefined')P.inv=0});await page.clock.runFor(17);const f=path.join(OUT,TAG+'-'+name+'-'+(v2?'v2':'before')+'.png');await page.screenshot({path:f,...(clip?{clip}:{})});return f};
   const R={v2,errors};
   // the arena first, straight from a fresh start: the same steps with and without v2
   await page.evaluate(()=>{R3D.drawEvery=1;heroPick('warrior')});await run(400);
@@ -57,7 +58,8 @@ async function session(browser,v2){
   for(const [ph,ms] of [['spawn',80],['spawn2',200],['walk',500],['walk2',300]]){await run(ms);strip.push(await shot('m-'+ph,await box()))}
   await page.evaluate(()=>{__g.sw=0.3;__g.flash=0});await run(100);strip.push(await shot('m-attack',await box()));
   await run(150);strip.push(await shot('m-attack2',await box()));
-  await page.evaluate(()=>{__g.hp=0;kill(__g)});   // the game's own death (combat.js)await run(250);strip.push(await shot('m-death',await box()));
+  await page.evaluate(()=>{__g.hp=0;kill(__g)});   // the game's own death (combat.js)
+  await run(250);strip.push(await shot('m-death',await box()));
   await run(500);strip.push(await shot('m-death2',await box()));
   R.strip=strip;
   // numbers: 20 grunts in one frame, first-spawn cost, memory, draw calls, HUD drift
