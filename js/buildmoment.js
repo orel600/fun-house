@@ -39,6 +39,8 @@ function bmShowLine(txt){
   el.textContent=txt;el.hidden=false;el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
   clearTimeout(bmShowLine.t);bmShowLine.t=setTimeout(()=>{el.classList.remove('on');el.hidden=true},BUILDM.lineFor*1000);
 }
+// the moment is still on screen: the camera trip, or its "before → after" line. The first-upgrade party (firstup.js) waits for it
+function bmBusy(){const el=$('bmLine');return !!(S&&S.vil&&S.vil.bm)||!!(el&&!el.hidden)}
 const bmName=lk=>lk?T('bm.m.'+lk.model):T('bm.empty');
 // השורה "לפני → אחרי": מראה אחר = שני השמות, אותו מראה = שתי הרמות
 function bmLine(k,from,to){

@@ -9,7 +9,8 @@
 const FIRSTUP={
   at:'forge',   // המבנה שהוא השדרוג הראשון
   plus:3,       // עד איזה ‎+ הנשק מושחז. ‎+3 פותח את המכה הכבדה (UPFEEL.perks)
-  stat:{built:0,temper:0}
+  poll:300,     // ms: how often the party checks whether the build moment is over
+  stat:{built:0,temper:0,party:0}
 };
 // מה הנשק יקבל: {id,from,to,k,a,b} או null (אין נשק, כבר חזק מספיק, או שכבר קיבל)
 function fuGives(){
@@ -33,10 +34,11 @@ function fuBuilt(k){
   const g=fuGives();SAVE.fu=1;
   if(g){const before=gearStats();gSet('weapon',0,g.nid);gearLive(before);FIRSTUP.stat.temper++;
     if(typeof ufUp==='function')ufUp();   // מספרי הנזק בזהב ביציאה הבאה (upfeel.js)
-    FIRSTUP.timer=setTimeout(function go(){if(!S.vil)return;if(S.vil.bm){FIRSTUP.timer=setTimeout(go,300);return}   // אחרי רגע הבנייה (buildmoment.js), כשהמצלמה חזרה לגיבור
+    // after the whole build moment (buildmoment.js): camera back on the hero and its "before → after" line gone. Then the hero's party
+    FIRSTUP.timer=setTimeout(function go(){if(!S.vil)return;if(S.vil.bm||typeof bmBusy==='function'&&bmBusy()){FIRSTUP.timer=setTimeout(go,FIRSTUP.poll);return}
       if(S.vil.open===k){S.vil.open=null;villageHud()}   // החלון נסגר, כדי לראות את החגיגה על הגיבור
-      celebrate(P.x,P.y-30,'aging','+'+g.to);
-      banner(T('fu.done',gName(g.nid),fuStat(g),g.a,g.b),C.gold)},1800)}
+      FIRSTUP.stat.party++;celebrate(P.x,P.y-30,'aging','+'+g.to);
+      banner(T('fu.done',gName(g.nid),fuStat(g),g.a,g.b),C.gold)},FIRSTUP.poll)}
   saveNow();
 }
 // היעד בעולם (goal.js): עד שהשדרוג הראשון נבנה, הוא היעד
