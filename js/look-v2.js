@@ -51,7 +51,7 @@ const LV2={
   rim:{k:0.5},   // edge rim on the hero, at least this strong in the village and world (rim-world.js: its color and where the edge starts)
   plaza:{x:0,y:-185,lampR:200,   // street lamps this close to the plaza center become v2 lamps
     lamp:{h:56,post:'#5A3E2B',base:'#9E9484',cap:'#B54A3C',glow:'#ffd38a',halo:46}},
-  // 4. the village: NPC bodies (same height, foot, props and animations as their LOOK3D.npc_<id>; no tint, the toy colours carry who they are)
+  // 4. the village: NPC bodies (same height, foot, props and animations as their LOOK3D.npc_<id>). No NPC keeps a tint, the toy colours carry who they are
   npc:{smith:{model:'lv2_smith'},inn:{model:'lv2_inn'}},
   // village pieces by zone: a KayKit model drawn within r of (x,y) is drawn as its v2 piece instead (vx_lv2_*). at: a building of VILLAGE.b (its x,y), r in its radii
   vil:[
@@ -87,12 +87,17 @@ if(LV2.on){
   {const sp=syncPlayer;syncPlayer=function(){const r=sp.apply(this,arguments);try{lv2Hero(R3D.player)}catch(e){}return r}}
   // 3. the plaza
   {const sl=p3StreetLamp;p3StreetLamp=function(x,y,g){const P0=LV2.plaza;return Math.hypot(x-P0.x,y-P0.y)<P0.lampR?lv2Lamp(x,y,g):sl(x,y,g)}}
-  // 4. the village pieces and bodies
-  for(const id in LV2.npc){const L0=LOOK3D['npc_'+id];if(L0){const L=Object.assign({},L0,LV2.npc[id]);delete L.tint;LOOK3D['lv2npc_'+id]=L}}
+  // 1b. one rim on the hero, not two (Nir 11.11: "some of the characters have that strange white light"): vfx.js's warm, wide rim
+  // (k 1.2, pow 2) on top of rim-world's edge bleached the hero's head and armor white. In v2 the hero's rim is rim-world's, plus the outline
+  if(typeof VFX!=='undefined'&&VFX.parts)VFX.parts.delete('rim');
+  // 4. the village pieces and bodies. Every village NPC loses its tint (an emissive glow over the whole body: Avner and the merchant gold,
+  // the priest lilac, washed out and glowing); the smith and the innkeeper also get their v2 bodies
+  for(const k in LOOK3D){const id=k.slice(4),L0=LOOK3D[k];if(k.slice(0,4)!=='npc_'||!LV2.npc[id]&&!L0.tint)continue;
+    const L=Object.assign({},L0,LV2.npc[id]);delete L.tint;LOOK3D['lv2npc_'+id]=L}
   {const vp=vPut;vPut=function(model,x,y,w,rot,group){const k=lv2VilKey(model,x,y);return vp.call(this,k||model,x,y,w,rot,group)}}
   {const sv=syncVillage;syncVillage=function(){lv2VilReady();return sv.apply(this,arguments)}}
   {const sn=syncNpcs;syncNpcs=function(){const keep={};
-    for(const id in LV2.npc){const k='npc_'+id,v=LOOK3D['lv2npc_'+id];if(!v)continue;keep[k]=LOOK3D[k];
+    for(const lk in LOOK3D){if(lk.slice(0,7)!=='lv2npc_')continue;const id=lk.slice(7),k='npc_'+id,v=LOOK3D[lk];keep[k]=LOOK3D[k];
       const L=lv2Here()&&S.vil&&m3dNeed(v.model)?v:keep[k],a=R3D.npcs&&R3D.npcs[id];LOOK3D[k]=L;
       if(a&&a.L!==L){freeActor(a);delete R3D.npcs[id]}}   // the new body arrived (or v2 is off): a fresh actor, same place and state next frame
     try{return sn.apply(this,arguments)}finally{Object.assign(LOOK3D,keep)}}}   // LOOK3D.npc_* stays the classic look for everyone else

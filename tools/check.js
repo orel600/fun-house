@@ -2601,6 +2601,16 @@ function worldBot(m,L,god){
   check(wl.prod&&wl.daily&&wl.quest&&wl.fx===1&&wl.fly&&wl.noWin,'בזמן שלא היית: נגיעה ב-📦 '+(wl.prod?'אספה '+wl.wood+' עץ':'לא אספה את הייצור')+(wl.daily?', מתנה יומית':', בלי המתנה היומית')+(wl.quest?', קווסט':', הקווסט לא נלקח')+
     ', '+wl.fx+' חגיגות (צפוי 1)'+(wl.fly?', מספרים עפים':', בלי מספרים עפים')+(wl.noWin?', בלי חלון':', ונפתח חלון'));
   check(wl.noPop&&wl.gone&&wl.empty,'בזמן שלא היית: '+(wl.noPop?'שום חלון לא קפץ אחרי האיסוף':'קפץ חלון אחרי האיסוף')+(wl.gone?', הכפתור נעלם':', הכפתור נשאר ('+wl.left+')')+(wl.empty?', ובלי כלום שמחכה הוא לא מופיע':', והופיע גם בלי כלום שמחכה'));
+  // No white light on village characters (Nir 11.11: "some of the characters have that strange white light"). In v2: no NPC body glows
+  // (emissive tint, rim shader), and the hero has one rim (rim-world.js), not also vfx.js's warm one that bleached its head
+  if(CFG.gfx==='3d'){await page.evaluate(()=>{enterVillage();npcTalk(null);welcomeClose()});await page.clock.runFor(1500);
+    const wl=await page.evaluate(()=>{if(typeof LV2==='undefined'||!LV2.on)return{off:1};const o={n:0,bad:[],hero:0};
+      const lum=c=>c?0.2126*c.r+0.7152*c.g+0.0722*c.b:0;
+      for(const id in R3D.npcs||{}){const a=R3D.npcs[id];o.n++;let e=0,r=0;for(const m of a.mats){e=Math.max(e,lum(m.emissive));if(m.userData.rimwU||m.userData.vfxRim)r=1}
+        if(e>0.03||r)o.bad.push(id+(r?' rim':' glow '+e.toFixed(2)))}
+      if(R3D.player)R3D.player.root.traverse(x=>{if(x.isMesh&&!x.userData.lv2ol)for(const m of [].concat(x.material))if(m.userData.vfxRim)o.hero++});
+      return o});
+    check(wl.off||wl.n>0&&!wl.bad.length&&!wl.hero,'Village characters without white light: '+(wl.off?'look v1, skipped':wl.n+' NPCs'+(wl.bad.length?', glowing: '+wl.bad.join(', '):', none glows')+(wl.hero?', the hero still has vfx.js rim on '+wl.hero+' materials':', the hero has one rim')))}
   // כל רמה של כל מבנה נראית אחרת (docs/concept-village-growth-2.md, ניר 10.11): מודל, גודל, קישוטים או זוהר שונים מהרמה הקודמת, וכל מודל קיים (בליבה או ב-js/m3d)
   {const vl=await page.evaluate(()=>{const same=[],miss=[],sig=lk=>lk.model+'|'+lk.size.toFixed(2)+'|'+lk.deco.slice().sort().join(',')+'|'+(lk.glow||'');
       const has=m=>!!MODELS3D[m]||typeof M3D_LAZY!=='undefined'&&m in M3D_LAZY;
