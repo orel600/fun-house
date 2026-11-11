@@ -39,19 +39,16 @@ function dailyClaim(day=dailyDay()){
 /* ---- החלון ---- */
 const dIcon=r=>GEAR.items[r]?gPic(r):resPic(r);
 const dName=r=>GEAR.items[r]?gName(r):T('res.'+r);
+// כרטיס קטן ושקט (ניר, 11.11, קונספט מסכים ברורים #672): לא חלון גדול שנראה כמו פרסומת. אותו מידע: 7 ימים כשורת עיגולים, מה מקבלים היום, וכפתור אחד.
+// "לקחת" לוקח וסוגר מיד (נגיעה אחת). נגיעה מחוץ לכרטיס או ✕ סוגרים. רק בכפר, אז אף פעם לא באמצע קרב
 function dailyDraw(){
-  const i=dailyIdx(),can=dailyCan();
-  let s=winHead(T('daily.title'),T('daily.sub'),'h2')+'<div class="dbody"><div class="dgrid">';
-  DAILY.days.forEach((D,k)=>{
-    const st=k<i||(k===i&&!can)?'done':k===i?'now':'';
-    const main=D.chest?'<img class="dchest" src="icons/ui/daily-chest.png" alt="">':dIcon(Object.keys(D).find(r=>r!=='coins')||'coins');
-    s+='<div class="dday '+st+(D.chest?' big':'')+'"><small>'+T('daily.day',k+1)+'</small>'+main+'<span>'+resPic('coins')+shortN(D.coins||0)+'</span>'+(st==='done'?'<i>✓</i>':'')+'</div>';
-  });
-  const D=DAILY.days[i];
-  s+='</div><div class="dside"><h3>'+T('daily.day',i+1)+'</h3><ul>';
-  for(const r in D)s+='<li>'+(r==='chest'?'<img class="ri" src="icons/ui/daily-chest.png" alt="">'+T('daily.chest'):dIcon(r)+' '+dName(r)+' <b>×'+D[r]+'</b>')+'</li>';
-  s+='</ul><p class="dim">'+T(can?'daily.keep':'daily.back')+'</p>'+
-    (can?'<button class="vbtn" data-act="take">'+T('daily.take')+'</button>':'<button class="vbtn ghost" data-act="close">'+T('q.close')+'</button>')+'</div></div>';
+  const i=dailyIdx(),can=dailyCan(),D=DAILY.days[i];
+  let s=winHead('🎁 '+T('daily.title'),T('daily.day',i+1)+'/'+DAILY.days.length,'h3')+'<div class="dpips">';
+  DAILY.days.forEach((d,k)=>{const st=k<i||(k===i&&!can)?'done':k===i?'now':'';
+    s+='<span class="dpip '+st+(d.chest?' big':'')+'" aria-label="'+T('daily.day',k+1)+'">'+(st==='done'?'✓':d.chest?'<img class="ri" src="icons/ui/daily-chest.png" alt="">':k+1)+'</span>'});
+  s+='</div><div class="dgot">';
+  for(const r in D)s+=r==='chest'?'<span class="res" title="'+T('daily.chest')+'"><img class="ri" src="icons/ui/daily-chest.png" alt="">'+T('daily.chestS')+'</span>':'<span class="res">'+dIcon(r)+' '+shortN(D[r])+'</span>';
+  s+='</div>'+(can?'<button class="vbtn" data-act="take">'+T('daily.take')+'</button>':'<p class="dim">'+T('daily.back')+'</p>');
   $('dailyWin').innerHTML=s;
 }
 function dailyOpen(){if(!S||S.mode!=='play'||!S.vil)return;S.mode='daily';joy=null;dailyDraw();$('ovDaily').hidden=false}
@@ -66,6 +63,6 @@ $('dailyWin').addEventListener('click',e=>{
   if(b.dataset.act==='take'){const r=dailyClaim();if(!r)return;
     celebrate(P.x,P.y,r.big?'rank':'quest',r.big?'🎁':'+');
     banner(T('daily.got',Object.keys(r.got).map(k=>'+'+r.got[k]+' '+dName(k)).join(' · ')),C.gold);
-    dailyDraw();dailyBtn();setTimeout(()=>{if(!$('ovDaily').hidden)dailyClose()},r.big?1400:900)}
+    dailyClose()}   // נגיעה אחת: לוקחים וסוגרים
 });
 $('dBtn').addEventListener('click',()=>{dailyOpen();sfx('ui')});

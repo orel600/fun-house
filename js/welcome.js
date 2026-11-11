@@ -108,8 +108,8 @@ function welcomeCollect(quick){
   return got;
 }
 // המספרים עפים מהכפתור אל הפס העליון. רק קישוט: אם אין אנימציה בדפדפן, פשוט לא רואים
-function welcomeFly(got,quick){
-  const from=quick?$('welBtn'):$('welWin').querySelector('.welgo'),to=$('vBag');if(!from||!to||!from.animate)return;
+function welcomeFly(got,quick,src){   // src: מאיפה עפים (השורה למעלה, guide.js)
+  const from=src||(quick?$('welBtn'):$('welWin').querySelector('.welgo')),to=S&&S.wd?$('wBag'):$('vBag');if(!from||!to||!from.animate)return;
   const a=from.getBoundingClientRect(),b=to.getBoundingClientRect();
   Object.keys(got).filter(k=>resOf(k)).slice(0,WELCOME.flyMax).forEach((k,i)=>{
     const el=document.createElement('div');el.className='welfly';el.innerHTML=resPic(k)+'+'+shortN(got[k]);
