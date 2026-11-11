@@ -86,7 +86,8 @@ MBTIDAL.cull={on:MBTIDAL.on&&/[?&]tidalcull=1(&|$)/.test(location.search),meshes
 /* The proof's cover (shrub) meshes, and a one-call footprint check (?tidal=1 only).
    cover(): NOVA's stable key userData.tidalRole==='cover' when present (component 23); otherwise the structural match
    (a NOVA-tagged InstancedMesh in the floor group with one instance per source bush circle), because component 21 renamed the tag.
-   footprint(): per bush circle, the mesh's half-extent along x and along y (game units, y = world z * sin(tilt)) divided by the logic radius r.
+   footprint(): per bush circle (every vertex), the mesh's radial max (the hiding check is a circle in game units) and its half-extent along x and along y (game units, y = world z * sin(tilt)) divided by the logic radius r.
+   Measured from the LOGIC circle centre (what hiding uses). originOffMax is only how far an instance origin sits from its circle centre (component 26 centres the rotated geometry by shifting the origin).
    1.0 means the shrub base matches the hiding circle. Component 20/21 measured x about 0.98 and y about 0.78 (the z scale was r, not r/sn). */
 (function(){
   const T=MBTIDAL;if(!T.on)return;window.MBTIDAL=T;
@@ -98,11 +99,12 @@ MBTIDAL.cull={on:MBTIDAL.on&&/[?&]tidalcull=1(&|$)/.test(location.search),meshes
     const ms=T.cover();if(!ms.length||typeof THREE==='undefined')return {ok:false,why:'no cover mesh (proof not ready, or not in a match)'};
     const sn=SIN(),L=typeof mbBushes==='function'?mbBushes().list:[],m=new THREE.Matrix4(),v=new THREE.Vector3(),c=new THREE.Vector3(),q=new THREE.Quaternion(),s=new THREE.Vector3(),per=[];
     for(const o of ms){const pos=o.geometry.attributes.position,n=o.userData.bobCull?o.userData.bobCull.n:o.count,base=o.userData.bobCullBase;
-      for(let i=0;i<n;i++){if(base)m.fromArray(base,i*16);else o.getMatrixAt(i,m);m.decompose(c,q,s);let x=0,y=0;
-        for(let k=0;k<pos.count;k+=2){v.fromBufferAttribute(pos,k).applyMatrix4(m);x=Math.max(x,Math.abs(v.x-c.x));y=Math.max(y,Math.abs(v.z-c.z)*sn)}
+      for(let i=0;i<n;i++){if(base)m.fromArray(base,i*16);else o.getMatrixAt(i,m);m.decompose(c,q,s);let x=0,y=0,rad=0;
         const gx=c.x,gy=c.z*sn;let best=null,bd=1e9;for(const b of L){const d=Math.hypot(b.x-gx,b.y-gy);if(d<bd){bd=d;best=b}}
-        const e=per[i]||(per[i]={r:best?best.r:NaN,off:bd,x:0,y:0});e.x=Math.max(e.x,x);e.y=Math.max(e.y,y)}}
+        const ox=best?best.x:gx,oy=best?best.y:gy;   // measured from the LOGIC circle centre (what hiding uses), not the instance origin
+        for(let k=0;k<pos.count;k++){v.fromBufferAttribute(pos,k).applyMatrix4(m);const dx=v.x-ox,dy=v.z*sn-oy;x=Math.max(x,Math.abs(dx));y=Math.max(y,Math.abs(dy));rad=Math.max(rad,Math.hypot(dx,dy))}
+        const e=per[i]||(per[i]={r:best?best.r:NaN,off:bd,x:0,y:0,rad:0});e.x=Math.max(e.x,x);e.y=Math.max(e.y,y);e.rad=Math.max(e.rad,rad)}}
     const f=a=>({min:+Math.min(...a).toFixed(3),max:+Math.max(...a).toFixed(3),mean:+(a.reduce((p,q)=>p+q,0)/a.length).toFixed(3)});
     return {ok:true,via:ms[0].userData.tidalRole==='cover'?'tidalRole':'structure',meshes:ms.length,circles:L.length,instances:per.length,
-      xOverR:f(per.map(e=>e.x/e.r)),yOverR:f(per.map(e=>e.y/e.r)),centerOffMax:+Math.max(...per.map(e=>e.off)).toFixed(2),sn:+sn.toFixed(3)}};
+      xOverR:f(per.map(e=>e.x/e.r)),yOverR:f(per.map(e=>e.y/e.r)),radialOverR:f(per.map(e=>e.rad/e.r)),overR:per.filter(e=>e.rad/e.r>1.0005).length,originOffMax:+Math.max(...per.map(e=>e.off)).toFixed(2),sn:+sn.toFixed(3)}};
 })();
