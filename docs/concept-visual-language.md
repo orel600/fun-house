@@ -177,3 +177,69 @@ A crowd of 13 (4 grunts, 3 shields, 2 wisps, 2 sprites, 2 golems), 915×412. Als
 - **Roblox (targeted, not verified):** each body is 1 material and one 32-128 px palette texture, 13-43 joints. The shield gear is primitives (boxes, spheres, a torus).
 
 **Still open:** the motion strip's attack frames (test setup, as in phase 1). The shoulder pads are small at phone size; the tower shield carries the silhouette.
+
+## 8. Village stage 2 (11.11.2026)
+
+Nir approved the toy style (Roblox-like proportions, rounder blocks, flat colour, matte). Stage 2 is the village only, behind the same v2 switch (`?look=v1` shows the old look). Visual only: positions, sizes, collision, roles and timings are unchanged.
+
+**What's in it**
+- **Smith and innkeeper, own bodies.** They shared the golem's barbarian body. Now each is a toy figure made of rigid rounded parts (like Roblox R6 parts), skinned in `tools/blender/village_v2.js` onto the **same KayKit skeleton**, so every NPC animation (idle, walk, hammering, wave, cheer) plays unchanged. Smith: square beard, goggles on the forehead, red shirt, heavy leather apron, bracers, keeps his hammer. Innkeeper: ginger hair with a bun, curled moustache, green vest, cream apron, a mug in her hand. Same height, foot and props as before (`LOOK3D.npc_*`), no tint: the toy colours carry who they are.
+- **Forge yard:** anvil on a stump in front of a small blade rack, a coal bucket with glowing embers, barrel, crate, log pile, fence, red banner.
+- **Market row:** striped stalls with produce (the market's stall and tents, and the plaza stalls), sacks, crates, an apple crate, barrels, yellow pennants.
+- **Gate:** two chunky posts (stone base, wooden pillar, red cap), a thick beam under a red roof, a hanging sign, two warm lanterns. Open between the posts as before.
+- No decorative floor shapes (Nir didn't read the plaza disc).
+
+**How it's built** (`tools/blender/README.md` for the method): `node tools/blender/village_v2.js rig` (the skeleton from the existing barbarian), `blender -b --python tools/blender/build_village.py -- tools/blender art/village-v2/raw`, `node tools/blender/village_v2.js pack`. One tiny palette texture (64×16, nearest filtering) shared by every piece. In the game (`js/look-v2.js` part 4): each piece swaps one KayKit model inside a zone (`LV2.vil`, through `vPut`), the bodies swap `LOOK3D.npc_smith/inn` only while drawing (`syncNpcs`). A piece that is still loading is drawn the old way, and the village rebuilds once when it arrives. `tools/build3d.js` and the enemy keys are untouched.
+
+**Numbers**
+| piece | triangles | file (KB, lazy `js/m3d/`) |
+|---|---|---|
+| smith body (was barbarian, 5,285) | 4,276 | 54 |
+| innkeeper body | 3,456 | 47 |
+| gate | 1,432 | 27 |
+| stall | 1,776 | 32 |
+| anvil + rack | 1,752 | 30 |
+| barrel / crate / apple crate / sack | 484 / 628 / 964 / 456 | 13 / 13 / 18 / 11 |
+| coal bucket / logs / fence / banner / pennant | 484 / 1,380 / 856 / 400 / 80 | 17 / 25 / 17 / 10 / 6 |
+| **total added download** | | **about 320 KB**, lazy, only in the village with v2 |
+
+**Evidence** (`node tools/look-v2-village-shots.js`, offline: new browser context, every http(s) request answered locally, no real save, before = `?look=v1`):
+
+All images 3D, before (left, `?look=v1`) and v2 (right), same seed. Phone 915×412 (Nir's size), daytime (`?tod=day`):
+
+![Village, phone](concept/visual-language/village2/p915-village.jpg)
+The plaza at village level 4: striped stalls with goods instead of the plain tents, the smith (left) in his own body.
+
+![Forge L2](concept/visual-language/village2/p915-forge2.jpg)
+![Forge L4](concept/visual-language/village2/p915-forge4.jpg)
+![Forge L5](concept/visual-language/village2/p915-forge5.jpg)
+Forge yard at levels 2, 4 and 5: coal bucket, logs, anvil + blade rack, barrel, fence, red banners.
+
+![Market L4](concept/visual-language/village2/p915-market4.jpg)
+![Market L5](concept/visual-language/village2/p915-market5.jpg)
+![Plaza stalls](concept/visual-language/village2/p915-plaza4.jpg)
+Market row: stalls, sacks, crates, apple crate, yellow pennants.
+
+![Gate](concept/visual-language/village2/p915-gate.jpg)
+The gate. The hero stands just behind it, so the game's see-through effect (`readable3d.js`) dithers the part of the roof in front of him: an existing feature, the same for any object between the camera and the hero.
+
+![Smith](concept/visual-language/village2/p915-smith.jpg)
+![Innkeeper](concept/visual-language/village2/p915-inn.jpg)
+
+Night (`?tod=night`, the village's brighter night) and other sizes:
+
+![Village at night](concept/visual-language/village2/p915-night-village.jpg)
+![Gate at night](concept/visual-language/village2/p915-night-gate.jpg)
+![Village, 844×390](concept/visual-language/village2/p844-village.jpg)
+![Village, iPad](concept/visual-language/village2/ipad-village.jpg)
+![Market, iPad](concept/visual-language/village2/ipad-market4.jpg)
+
+**Checks** (reports: `village2/*-report.json`)
+- **Arena untouched:** the arena scene (HUD hidden) is pixel-identical before and v2: 0 of 376,980 pixels (915×412, day and night), 0 of 967,600 (iPad), 0 of 329,160 (844×390, night run). One 844×390 day run had 1,453 scattered pixels (and one earlier 915 run 1,476): small dark specks, the scene identical by eye. A separate arena-only check (v1, v2, v2 again, v1 again, all in one browser) gave 0 differences in every pair, so this is run-to-run noise in the long evidence script, not v2. Look v2 does nothing in the arena (`lv2Here()` is false there, `lv2VilKey` only runs with `S.vil`).
+- **Console errors:** 0 before, 0 v2, in all 7 runs (4 sizes/times × village levels 2, 4, 5).
+- **Load:** every v2 piece loaded, none failed. Decode time per piece 10 to 80 ms (SwiftShader, CPU), lazily in the village only; the old model shows meanwhile and the village rebuilds once. With a save that has a village, the opening fetches the pieces the current village shows (`M3D.bootKs`, `lv2VilBoot`), so `tools/check.js` still sees nothing loaded without need.
+- **Roblox (targeted, not verified):** bodies 4,276 / 3,456 tris, 1 material, 64×16 texture, the 23 KayKit bones (+18 helper bones, unused) with rigid weights; props 80 to 1,776 tris, 1 material each. Nothing imported to Roblox Studio.
+
+**Still open**
+1. The bodies are rigid parts: at strong bends (elbow, waist) the parts overlap or show a small gap, by design (toy figure). Not visible at phone size in these shots.
+2. Other NPCs (merchant, priest, residents) and the rest of the village (houses, mill, mine) are next, only if Nir wants them.
