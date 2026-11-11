@@ -43,11 +43,12 @@ function lv2OutlineMat(){
   if(LV2.olMat)return LV2.olMat;
   // Lambert, not Basic: code that walks weapon props reads material.emissive (glow, hit flash, tools/check.js), and Basic has none
   // (giving Basic a fake emissive breaks three's uniform refresh). Dark color, black emissive: a near-black line, no glow
-  const m=new THREE.MeshLambertMaterial({color:LV2.outline.col,emissive:0x000000,side:THREE.BackSide,fog:false});
+  const m=new THREE.MeshLambertMaterial({color:0x000000,emissive:0x000000,side:THREE.BackSide,fog:false});   // black and unlit-looking
   m.onBeforeCompile=sh=>{sh.uniforms.lv2W=LV2U.w;
     sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float lv2W;')
       .replace('#include <project_vertex>','#ifdef USE_SKINNING\ntransformed+=normalize(objectNormal)*lv2W;\n#else\ntransformed+=normalize(normal)*lv2W;\n#endif\n#include <project_vertex>')};
   m.customProgramCacheKey=()=>'lv2-outline';
+  m.userData.vfxRim=1;   // vfx.js rimOn skips it: its edge glow made the outline pale beige
   return LV2.olMat=m;
 }
 function lv2Hero(a){
