@@ -28,20 +28,20 @@
     "distinctPositions": 1
    },
    "wallMs": {
-    "idleFrame": 15,
-    "first20SpawnFrame": 43,
+    "idleFrame": 14,
+    "first20SpawnFrame": 32,
     "next5": [
-     24,
-     30,
-     24,
-     20,
-     29
+     14,
+     9,
+     6,
+     1602,
+     20
     ],
-    "second20SpawnFrame": 15
+    "second20SpawnFrame": 9
    },
    "heapMB": [
-    30.5,
-    29.5
+    37.7,
+    38.4
    ]
   }
  },
@@ -53,8 +53,8 @@
    "key": "w_grunt",
    "model": "mon_orcSkull",
    "tris": 2399,
-   "geometries": 349,
-   "textures": 131,
+   "geometries": 341,
+   "textures": 129,
    "hud": {
     "ids": [
      "hp",
@@ -65,20 +65,20 @@
     "distinctPositions": 1
    },
    "wallMs": {
-    "idleFrame": 9,
-    "first20SpawnFrame": 20,
+    "idleFrame": 14,
+    "first20SpawnFrame": 25,
     "next5": [
-     8,
-     8,
-     8,
+     21,
      9,
-     8
+     9,
+     11,
+     12
     ],
-    "second20SpawnFrame": 20
+    "second20SpawnFrame": 42
    },
    "heapMB": [
-    29.8,
-    30.9
+    28.9,
+    29.4
    ]
   }
  }
