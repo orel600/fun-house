@@ -46,6 +46,7 @@ function lv2OutlineMat(){
     sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nuniform float lv2W;')
       .replace('#include <project_vertex>','#ifdef USE_SKINNING\ntransformed+=normalize(objectNormal)*lv2W;\n#else\ntransformed+=normalize(normal)*lv2W;\n#endif\n#include <project_vertex>')};
   m.customProgramCacheKey=()=>'lv2-outline';
+  m.emissive=new THREE.Color(0);   // the outline sits inside weapon props, and code that walks their meshes reads material.emissive (glow, hit flash, tools/check.js). Black: no glow
   return LV2.olMat=m;
 }
 function lv2Hero(a){
