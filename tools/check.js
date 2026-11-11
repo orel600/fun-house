@@ -2820,6 +2820,54 @@ function worldBot(m,L,god){
       }finally{P.def=B.def;P.regen=B.regen;P.loot=B.loot;P.res=B.res;heroSkinSet(B.skin||'none');gearClose()}
       return bad});
   }
+  // מסכים ברורים (docs/concept-clear-screens.md, ניר אישר 11.11), ב-915×412 וב-844×390, בכל חלון של הכפר:
+  // 4b: שם בכרטיס לא נשבר בין שתי אותיות (מודדים כל תו: שורה חדשה באמצע מילה = נכשל), ולכל היותר 2 שורות.
+  // 1: רשימה שגוללת נמוגה בתחתית כשיש עוד (mask מאנימציה על ציר הגלילה, style.css), והדהייה יוצאת כשמגיעים לסוף.
+  // 3: מאחורי חלון מבנה ושיחה העולם מוחשך (צל ענק סביב החלון)
+  const clear={};
+  for(const [cw,ch] of [[915,412],[844,390]]){
+    await page.setViewportSize({width:cw,height:ch});await page.clock.runFor(100);
+    const wins=await page.evaluate(()=>{const $=id=>document.getElementById(id),lv0=JSON.stringify(SAVE.village);
+      for(const k in VILLAGE.b)SAVE.village[k]=Math.max(SAVE.village[k]||0,Math.min(4,VILLAGE.b[k].max||4));
+      const bo=k=>()=>{S.vil.ui='';S.vil.open=S.vil.near=k;villageHud()};
+      const L=[...['market','stash','forge','center','mill'].filter(k=>VILLAGE.b[k]).map(k=>['b:'+k,bo(k),'vPanel']),['gear',()=>gearOpen(),'ovGear'],
+        ['quests',()=>questLogOpen(true),'qLog'],['book',()=>bookOpen(true),'bookWin'],
+        ...Object.keys(NPC.list).filter(npcHere).slice(0,1).map(id=>['talk',()=>{npcTalk(id);S.vil.dlgStay=true},'npcDlg'])];
+      window.__clr={L,lv0,close:()=>{S.vil.open=null;S.vil.ui='';villageHud();if(!$('ovGear').hidden)gearClose();questLogOpen(false);bookOpen(false);npcTalk(null);if(typeof menuClose==='function')menuClose();if(S.mode!=='play')S.mode='play'}};
+      return L.map(x=>x[0])});
+    const o={breaks:[],lines:[],fade:[],dim:[],open:[]};
+    for(let i=0;i<wins.length;i++){
+      const r=await page.evaluate(i=>{const C=__clr,[k,open,id]=C.L[i],$=x=>document.getElementById(x);C.close();open();if($(id).hidden)return {k,closed:1};
+        const root=$(id),res={k,breaks:[],lines:[],sc:[]},Lt=/\p{L}/u;
+        for(const e of root.querySelectorAll('.nm,.craft b')){if(!e.getClientRects().length)continue;
+          const lh=parseFloat(getComputedStyle(e).lineHeight)||16;if(e.getBoundingClientRect().height>lh*2+3)res.lines.push(e.textContent.trim().slice(0,20));
+          const w=document.createTreeWalker(e,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){const s=n.nodeValue;let top=null;
+            for(let j=0;j<s.length;j++){const g=document.createRange();g.setStart(n,j);g.setEnd(n,j+1);const q=g.getClientRects()[0];if(!q||!q.width)continue;
+              if(top!=null&&q.top>top+2&&Lt.test(s[j])&&Lt.test(s[j-1])){res.breaks.push(s.trim().slice(0,20));break}top=q.top}}}
+        // רשימות: כל מה שגולל בחלון (או החלון עצמו)
+        for(const e of [root,...root.querySelectorAll('*')]){if(!e.getClientRects().length)continue;const cs=getComputedStyle(e);
+          if(/auto|scroll/.test(cs.overflowY)&&e.scrollHeight>e.clientHeight+8)res.sc.push(e===root?':root':Array.prototype.indexOf.call(root.querySelectorAll('*'),e))}
+        const bs=getComputedStyle(root).boxShadow;res.dim=/rgba\(10, 12, 20, 0\.[1-9]\d*\) 0px 0px 0px [1-9]/.test(bs);
+        return res},i);
+      if(r.closed){o.open.push(r.k);continue}
+      o.breaks.push(...r.breaks.map(s=>r.k+': '+s));o.lines.push(...r.lines.map(s=>r.k+': '+s));
+      if((r.k.startsWith('b:')||r.k==='talk')&&!r.dim)o.dim.push(r.k);
+      // הדהייה: למעלה פעילה, ובסוף נעלמת. אחרי פריים: ציר הגלילה מתעדכן רק בציור הבא (בלי זה, חלון שרק נפתח נמדד בלי דהייה)
+      await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');for(const x of sc)(x===':root'?root:all[x]).scrollTop=0},[i,r.sc]);
+      await page.clock.runFor(50);
+      const top=await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');
+        return sc.map(x=>{const e=x===':root'?root:all[x];e.scrollTop=0;const cs=getComputedStyle(e);return [(e.id||e.className||e.tagName).toString().slice(0,24),cs.maskImage!=='none'&&/^100% 100%/.test(cs.maskSize)]})},[i,r.sc]);
+      await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');for(const x of sc){const e=x===':root'?root:all[x];e.scrollTop=e.scrollHeight}},[i,r.sc]);
+      await page.clock.runFor(50);
+      const end=await page.evaluate(([i,sc])=>{const root=document.getElementById(__clr.L[i][2]),all=root.querySelectorAll('*');return sc.map(x=>{const e=x===':root'?root:all[x];const v=getComputedStyle(e).maskSize;e.scrollTop=0;return /\+ 40px/.test(v)})},[i,r.sc]);
+      top.forEach(([n,v],j)=>{if(!v)o.fade.push(r.k+' '+n+': no fade');else if(!end[j])o.fade.push(r.k+' '+n+': fade at the end')});
+      if(CFG.shots&&cw===915)await shot('clear-'+r.k.replace(':','-')+'-'+cw)}
+    await page.evaluate(()=>{__clr.close();SAVE.village=JSON.parse(__clr.lv0);S.vil.ui='';villageHud();delete window.__clr});
+    clear[cw+'x'+ch]=o}
+  for(const vp in clear){const o=clear[vp];
+    check(!o.breaks.length&&!o.lines.length,'Card names, '+vp+': '+(o.breaks.length?'broken mid-word: '+o.breaks.slice(0,4).join(' | '):'no mid-word breaks')+(o.lines.length?' · more than 2 lines: '+o.lines.slice(0,4).join(' | '):', max 2 lines'));
+    check(!o.fade.length,'Scroll lists, '+vp+': '+(o.fade.length?o.fade.slice(0,4).join(' | '):'every list with more below fades at the bottom, and the fade goes at the end'));
+    check(!o.dim.length&&!o.open.length,'Dim behind windows, '+vp+': '+(o.dim.length?'no dim behind '+o.dim.join(', '):'building windows and talk dim the world')+(o.open.length?' · did not open: '+o.open.join(', '):''))}
   await page.setViewportSize(CFG.phone);await page.clock.runFor(100);
   // תמיד מטרה ברורה (guide.js): יש מטרה בשורה למעלה, החץ מצביע לכיוון הנכון גם כשהמטרה באזור אחר, והמטרה מתחלפת כשקווסט נגמר
   const gd=await page.evaluate(()=>{
