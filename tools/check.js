@@ -2053,6 +2053,7 @@ function worldBot(m,L,god){
     const hb=await page.evaluate(()=>{const R=e=>e.getBoundingClientRect(),hit=(a,b)=>a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
       $('sig').hidden=false;$('feedBtn').hidden=false;const f=R($('feedBtn')),sk=[...document.querySelectorAll('#skills>*,#sig,#ult')].filter(e=>!e.hidden&&!e.closest('[hidden]')&&e.getClientRects().length).map(R);
       const o={feed:f.width>0&&!sk.some(k=>hit(f,k))};
+      msgClear();   // the lane was measured above. Its lines (now not held under the skill card) would sit where these names go, right over the hero
       enemies=[];const nm=['Dardak Terror of Ducks','Pack Leader','Armored','Elemental Shield','Bruza the Almost-Brave'];
       for(let i=0;i<5;i++){const e=addEnemy('grunt',P.x+60+i*24,P.y+10-i*8);e.home=0;e.speed=0;e.dmg=0;e.hp=e.max=1e9;if(i===0||i===4){e.pname=nm[i];e.flSeen=true}if(i===1)e.leader=true;if(i===2)e.affix='tough';if(i===3)e.affix='shell'}
       S.wd.flSay={e:enemies[0],txt:'I am Dardak Who Ate a Lantern! Fear my bark!',t:99};   // בועת דיבור על העלית: עוברת באותו סידור כמו השמות (ביקורת 7.11.2026, ממצא 4)

@@ -69,7 +69,9 @@ function msgTick(){
   msgPump();
   if(!MQ.rows.length&&!MQ.bigRow&&!MQ.big.length&&!MQ.small.length){clearInterval(MQ.t);MQ.t=0}
 }
-function msgClear(){MQ.small=[];MQ.big=[];MQ.rows=[];MQ.bigRow=null;clearInterval(MQ.t);MQ.t=0;const el=$('msgLane');if(el)el.textContent=''}
+function msgClear(){MQ.small=[];MQ.big=[];MQ.rows=[];MQ.bigRow=null;clearInterval(MQ.t);MQ.t=0;const el=$('msgLane');if(!el)return;
+  for(const id of MSG_CARDS){const c=$(id);if(c&&c.parentNode===el)document.body.appendChild(c)}   // the cards that live in the lane (skill, first meeting, "today in the world") stay in the page
+  el.textContent=''}
 
 /* ---- המקום: מה תפוס על המסך ---- */
 // כל מה שגלוי ונראה על המסך (כפתורים, פסים, מפה, קווסט, סקילים). מכל מיכל רחב לוקחים את הילדים, כי האמצע שלו שקוף
