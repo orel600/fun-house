@@ -7,7 +7,6 @@
      - while the circle is held with a free camera, a moving joystick does not snap the camera back (same as the stock map drag, MBCAM.pid);
      - while the circle is held, the fight fade (mb-hud.js) does not fade it (same exemption the stock map drag has).
    No gameplay, vision, cover, targeting, price or topology change. Delete: this file and its script line. */
-const mbTidalT=(...a)=>T(...a);   // the game's text function; inside the IIFEs below, T is the local MBTIDAL
 const MBTIDAL={
   on:/[?&]tidal=1(&|$)/.test(location.search),
   fix:!/[?&]tidalfix=0(&|$)/.test(location.search),
@@ -50,12 +49,9 @@ const MBTIDAL={
     for(const b of document.querySelectorAll('#mbPing [data-o] b'))b.innerHTML=mbSvg(b.parentNode.dataset.o,'mbpi');
     // my class portrait in the HP panel (moba.js draws it only when the kit changes)
     const por=document.getElementById('mbPor');if(por){por.innerHTML=mbSvg('k_'+u.kit);por.dataset.kit=u.kit;T.stat.redraw++}
-    // kill-feed rows still on screen (kill and gamble rows): each hero's kit is found from the name shown next to it, and the middle kill icon is redrawn
-    const feed=document.getElementById('mbFeed');if(!feed)return;
-    const names=new Map();for(const h of MB.u){if(h.k!=='hero')continue;names.set(h.me?mbTidalT('mb.you'):mbTidalT('mb.k.'+h.kit),h.kit);if(typeof mbGbName==='function')try{names.set(mbGbName(h),h.kit)}catch(e){}}
-    const swap=(old,html)=>{const t=document.createElement('span');t.innerHTML=html;for(const x of [...t.childNodes])old.parentNode.insertBefore(x,old);old.remove();T.stat.redraw++};
-    for(const sp of feed.querySelectorAll('.mbfh')){const em=sp.querySelector('em'),kit=em&&names.get(em.textContent);const ic=[...sp.children].find(c=>c!==em);if(kit&&ic)swap(ic,mbSvg('k_'+kit))}
-    for(const ic of feed.querySelectorAll('.mbfr>.mbfx'))swap(ic,mbSvg('k_warrior','mbfx'))};
+    // Kill/gamble feed rows are deliberately NOT redrawn (MAX, 11.11). The proof's feed portraits have no size rule yet (tidal-ui.css sizes .tidal-portrait at 100%
+    // of a container, and the feed has none), so they render at 60-256px. Early rows keep their correctly sized stock icons and expire within MOBA.feed.t seconds.
+  };
   s.onerror=()=>{T.state='missing'};
   document.body?document.body.appendChild(s):document.head.appendChild(s);
   if(!T.fix)return;
