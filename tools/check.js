@@ -1896,7 +1896,7 @@ function worldBot(m,L,god){
       SAVE.hero.skKnown=[];skgDots();await tick();r.dotOn=!$('skDot').hidden&&$('skills').classList.contains('sknew')&&!document.querySelector('#qRail [data-tab="gearBtn"] .qrdot').hidden;   // הנקודה על "דמות" בטור הקיצורים (menu.js)
       wsbOpenUi();await tick();r.dotOff=$('skDot').hidden&&!$('skills').classList.contains('sknew');wsbClose();
       const id=S.sk.ids[S.sk.ids.length-1];G.ovs=skgWins().filter(o=>o.classList.contains('ov'));for(const o of G.ovs)o.hidden=true;   // מסכים שנשארו פתוחים מהמשחק של הבוט (למשל ovHero): הכרטיס מחכה להם בצדק. מחזירים בסוף
-      msgClear();   // a big line from the bot's play would make the card wait (one big thing at a time in the lane)
+      msgClear();{const lp=$('lpCard');if(lp)lp.classList.remove('on')}   // a big line or a "Level N!" card from the bot's play would make the card wait (one big thing at a time in the lane)
       if(skgBlocked())throw 'הכרטיס חסום: '+[document.body.className,...skgWins().map(o=>o.id||o.className)].join(' | ');skgOffer(id);const of=$('skOffer');r.offer=!!of&&!of.hidden&&!!of.querySelector('[data-skg="book"]');
       of.querySelector('[data-skg="try"]').click();r.pStart=!!SKP&&SKP.dummies.length===SKPRACTICE.n&&of.hidden;
       const d=SKP&&SKP.dummies[0],x0=d&&d.x;run(2);r.pDummy=!!d&&!d.dead&&d.x===x0&&enemies.filter(e=>e.dummy&&!e.dead).length===SKPRACTICE.n&&!$('skpBar').hidden;
@@ -2035,7 +2035,7 @@ function worldBot(m,L,god){
         const keep=[...document.querySelectorAll('#skills>*,#ult,#sig,#nav>*,#qTrack,#miniMap,#menuBtn,#whud>*,#who')].filter(vis).map(R),h=msgHero();
         return {n:rows.length,big:[...document.querySelectorAll('#msgLane .mrow.big')].filter(vis).length,hero:rows.some(r=>hit(r,h)),ui:rows.some(r=>keep.some(k=>hit(r,k))),
           out:rows.some(r=>r.left<-1||r.top<-1||r.right>vw+1||r.bottom>vh+1),d:ln?[ln.style.top,ln.style.maxHeight,Math.round(h.top),ln.style.visibility||'-',ln.querySelectorAll('.cut').length,ln.children.length,Math.round(h.left)+'..'+Math.round(h.right),MSG.where||'-'].join('/'):'-',feed:document.querySelectorAll('#feedCol .frow').length,sk:document.querySelectorAll('#skills>*').length,keep:keep.length}};
-      enterWorld('home');S.mode='play';enemies=[];FL.length=0;msgClear();__lbak.ov=[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden);for(const o of __lbak.ov)o.hidden=true;   // חלון פתוח מסתיר את העמודה (msgWinOpen), אז בבדיקה כמו במשחק: בלי חלון
+      enterWorld('home');S.mode='play';enemies=[];FL.length=0;msgClear();{const lp=$('lpCard');if(lp)lp.classList.remove('on')}__lbak.ov=[...document.querySelectorAll('.ov,.win')].filter(o=>!o.hidden);for(const o of __lbak.ov)o.hidden=true;   // חלון פתוח מסתיר את העמודה (msgWinOpen), אז בבדיקה כמו במשחק: בלי חלון
       for(const k in MSG.stat)MSG.stat[k]=0;
       if(S.sk&&S.sk.ids.length<3){S.sk.ids=Object.keys(SKILLS.list).slice(0,3);S.sk.cd=S.sk.ids.map(()=>0)}if(typeof skillsHud==='function')skillsHud();   // כל שלושת הכפתורים בקשת: השלישי יוצא מגבולות #skills (הסרטון של ניר)
       __lbak.hid={sig:$('sig').hidden,feed:$('feedBtn').hidden};$('sig').hidden=false;$('feedBtn').hidden=false;   // סקיל החתימה ו-🥕 גלויים, כמו בסרטון (ומוחזרים בסוף)
@@ -3250,6 +3250,7 @@ function worldBot(m,L,god){
       o.lbl=LABELS.stat.fight>l0;
       FLC.q=[];flCardNext();nemCardOff();MUT.bar=null;if(typeof skgOfferClose==='function')skgOfferClose();   // פסים אחרים שמעכבים טיפ גם בלי קרב (כמו בבדיקת הטיפים)
       delete tipSeen().inn;tipOnce('inn');tipTick(0.25);o.tipHeld=!(TIP1.on&&TIP1.on.k==='inn')&&TIP1.q.some(x=>x.k==='inn');
+      {const lp=$('lpCard');if(lp)lp.classList.remove('on')}   // a "Level N!" card from the bot's play would hold the lane (msglane.js)
       o.lane=msgOn();if(o.lane){banner('one',C.gold);banner('two',C.gold);banner('three',C.gold);o.laneFight=MQ.rows.length}
       e.sw=0;fxcUpdate(1/60);for(const f of enemies)f.dead=true;enemies=[];
       tipTick(0.25);o.tipAfter=!!TIP1.on&&TIP1.on.k==='inn';o.tipWhy=tipBusy()?'busy':'q='+TIP1.q.map(x=>x.k);
@@ -4126,6 +4127,7 @@ function worldBot(m,L,god){
     o.saved=((JSON.parse(localStorage.getItem(SAVE_STORE.key)).nem||{}).list||[]).length===1;
     const e5=addEnemy(type,P.x+50,P.y,1);e5.home=0;e5.leader=1;nemOnDeath();o.one=NS().list.length===1;   // אחד לאזור
     enterWorld('home');const a=S.wd.nemE;o.spawn=!!a&&a.nem===N.id&&a.pname===nemName(N)&&a.max>ETYPES[type].hp*2;
+    const mk=nemMark();o.mark=!!mk&&mk.here&&mk.N===N;NMK.drawn=0;nemMarkDraw(5000,5000);o.arrow=NMK.drawn>0;try{mmDraw();o.mm=true}catch(err){o.mm=false}   // סמן נקמה: במפה הקטנה ובחץ בקצה
     P.x=a.x+40;P.y=a.y;nemUpdate(0.05);o.say=!!S.wd.flSay&&S.wd.flSay.txt===T('nem.say.by',T('nem.cause.burst'))&&N.esc>0;
     enemies=[a];nemOnDeath();o.rank=N.rank===2&&N.wins===2&&N.esc==null;
     const m1=a.max;enterWorld('home');const b=S.wd.nemE;o.stronger=!!b&&b.max>m1;
@@ -4133,7 +4135,13 @@ function worldBot(m,L,god){
     for(let i=0;i<60;i++)nemCardTick(0.1);o.closed=!nemCardOn()&&$('nemCard').hidden;
     const c0=dropStats().spawned,f0=FX.length;damage(b,b.hp*10,'sword',0,'physical');nemUpdate(0.01);
     o.beat=!NS().list.length&&NS().won.length===1&&!S.wd.nemE;o.loot=dropStats().spawned>c0+1&&FX.length>f0;
-    o.book=nemBookHtml().includes(T('nem.wonIt'));
+    o.book=nemBookHtml().includes(T('nem.wonIt'));o.markGone=!nemMark();
+    // נמסיס באזור אחר: סמן לכיוון הדרך אליו, בלי חץ במסך. בלי נמסיס: כלום
+    const pk=Object.keys(WORLD.paths).find(k=>WORLD.regions[k]);
+    if(pk){const pp=WORLD.paths[pk],op=pp.open;pp.open=()=>true;NS().list.push({id:'nx',reg:pk,type,n:N.n,rank:1,wins:1,esc:null,cause:'near'});
+      const m2=nemMark();o.other=!!m2&&!m2.here&&m2.N.reg===pk;NMK.drawn=0;nemMarkDraw(5000,5000);o.otherNoArrow=!NMK.drawn;
+      NS().list.length=0;if(op)pp.open=op;else delete pp.open}
+    o.none=!nemMark()&&T('nem.wait','A','B').includes('A');
     enterWorld('home');o.gone=!S.wd.nemE;
     enemies=[];enterVillage();SAVE.nem=JSON.parse(n0);return o});
   check(Object.values(nm).every(Boolean),'בוס-נמסיס: '+Object.entries(nm).map(([k,v])=>(v?'':'✗')+k).join(', '));
@@ -4634,12 +4642,25 @@ function worldBot(m,L,god){
     const n=lpNext(heroLv());o.next=!!n&&n.lv>heroLv()&&n.items.length>0;
     const lv0=heroLv();SAVE.hero.xp+=rankNeed(lv0)+1;rankSync();
     const c=document.getElementById('lpCard'),f=document.getElementById('lpFlash');
-    o.up=heroLv()===lv0+1;o.card=!!c&&c.classList.contains('on')&&c.querySelectorAll('li').length>=1&&c.textContent.includes(T('lp.up',heroLv()));
-    o.cardNext=!!c&&c.textContent.includes(T('lp.next'));o.flash=!!f&&f.classList.contains('on');
+    o.up=heroLv()===lv0+1;o.card=!!c&&c.classList.contains('on')&&c.textContent.trim()===T('lp.up',heroLv());   // just "Level N!" (Nir, 11.11)
+    o.cardNext=!!c&&!c.querySelector('ul,li,p')&&LEVELPATH.card.t<=2;o.flash=!!f&&f.classList.contains('on');
+    {const b=$('gBadge');o.badge=!!b&&!b.hidden&&+b.textContent>0}   // the points wait on the Hero button instead
+    // the lane steps aside for the "Level N!" card (msglane.js, CI 11.11): lines wait (a big one too, not dropped to small), a new skill card waits, and all come after it
+    {const mf=msgFight;msgFight=()=>false;if(typeof R2!=='undefined')R2.fightT=-99;
+      try{o.laneOn=msgOn();msgSay('Lane lv');msgBig('Lane lv big');msgPump();const off=()=>{const e=$('skOffer');return !e||e.hidden};
+        o.lvHold=!MQ.rows.length&&!MQ.bigRow&&MQ.small.some(m=>m.txt==='Lane lv')&&MQ.big.some(m=>m.txt==='Lane lv big')&&$('msgLane').style.visibility==='hidden';
+        MQ.big.forEach(m=>m.at-=99);msgPump();o.lvKeep=MQ.big.some(m=>m.txt==='Lane lv big');
+        skgOffer(Object.keys(SKILLS.list)[0]);o.lvCard=off();
+        c.classList.remove('on');msgPump();o.lvAfter=!!MQ.bigRow||MQ.rows.length>0;
+        for(let i=0;i<4&&off();i++){if(MQ.bigRow)MQ.bigRow.t-=99;msgTick();skgOfferTick()}o.lvCardThen=!off();c.classList.add('on')}
+      finally{msgFight=mf;if(typeof skgOfferClose==='function')skgOfferClose();msgClear()}}
     gearOpen('char');const el=document.querySelector('#gChar .lpnext');o.win=!!el&&el.textContent.includes(T('lp.next'));gearClose();
     c.classList.remove('on');return o});
-  check(lp.orbit&&lp.rank&&lp.tree&&lp.next&&lp.up&&lp.card&&lp.cardNext&&lp.flash&&lp.win,
-    'מסלול רמות: '+(lp.orbit&&lp.rank&&lp.tree?'משבצת, דרגה ונקודת סקיל נמצאו':'חסר משהו בטבלה')+(lp.next?', יש "הבא"':', אין "הבא"')+(lp.card?', כרטיס בעליית רמה':', אין כרטיס')+(lp.cardNext?' עם הבא':'')+(lp.flash?', הבזק':', בלי הבזק')+(lp.win?', ובחלון הדמות':', לא בחלון הדמות'));
+  check(lp.orbit&&lp.rank&&lp.tree&&lp.next&&lp.up&&lp.card&&lp.cardNext&&lp.badge&&lp.flash&&lp.win,
+    'מסלול רמות: '+(lp.orbit&&lp.rank&&lp.tree?'משבצת, דרגה ונקודת סקיל נמצאו':'חסר משהו בטבלה')+(lp.next?', יש "הבא"':', אין "הבא"')+(lp.card?', a "Level N!" card':', no card or more than the level!')+(lp.cardNext?' only, short':', with extra lines or long!')+(lp.badge?', points on the Hero badge':', no badge for the points!')+(lp.flash?', הבזק':', בלי הבזק')+(lp.win?', ובחלון הדמות':', לא בחלון הדמות'));
+  check(!lp.laneOn||lp.lvHold&&lp.lvKeep&&lp.lvCard&&lp.lvAfter&&lp.lvCardThen,'The lane steps aside for "Level N!": '+(!lp.laneOn?'lane off here':[lp.lvHold?'lines wait and the lane hides':'a line shows with the card!',
+    lp.lvKeep?'the big one is not dropped to small':'the big one dropped to small!',lp.lvCard?'a new skill card waits':'the skill card shows over it!',
+    lp.lvAfter?'card gone, the lines come':'lines lost!',lp.lvCardThen?'then the skill card':'the skill card never came!'].join(', ')));
   // סקרנות וחקירה (curiosity.js): שלט "רמה מומלצת" ומכשול בדרך הסגורה, שומרים בכניסה, המכשול נעלם ברמה. סוד לפי רמה נעול לפני ופתוח אחרי, ובמסלול הרמות ובמפה
   const cu=await page.evaluate(()=>{
     const o={},lv0=SAVE.hero.level,sc0=JSON.stringify(SAVE.secrets||{found:{},read:{}}),cu0=JSON.stringify(CU()),st0=JSON.stringify(SAVE.story);
