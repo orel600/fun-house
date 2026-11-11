@@ -65,16 +65,16 @@ const skmEll=(x,y,r)=>{ctx.beginPath();ctx.ellipse(x,y,Math.max(0.1,r),Math.max(
   const parts=typeof skfxParts==='function'?skfxParts():!fxLess();
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
   // בריכה: מילוי רך, שפה דקה, ואדווה אחת שיוצאת מהמרכז. דועכת בשנייה האחרונה
-  for(const o of m.pools){const b=SKMORE.list.bloom,a=Math.min(1,(o.max-o.t)/0.8,o.t/0.2),r=b.r*(0.6+0.4*Math.min(1,o.t/0.3));
+  for(const o of m.pools){if(window.TIDAL_PROOF?.specialReplaced?.(o))continue;const b=SKMORE.list.bloom,a=Math.min(1,(o.max-o.t)/0.8,o.t/0.2),r=b.r*(0.6+0.4*Math.min(1,o.t/0.3));
     ctx.fillStyle=o.col;ctx.globalAlpha=a*0.13;skmEll(o.x,o.y,r);ctx.fill();skmShade(1.6,o.col,a*0.8);
     if(parts){const q=(o.t%SKMORE.life.ripple)/SKMORE.life.ripple;skmEll(o.x,o.y,r*(0.2+0.8*q));skmShade(1.2,'#DDF0FF',a*(1-q)*0.8)}}
   // שביט: טבעת דקה שמתכווצת אל המטרה, ובשבריר האחרון קו אש שיורד מלמעלה
-  for(const p of m.pend){const d=SKMORE.list.comet,k=p.t/p.max,r=d.r*(1.5-0.5*k);
+  for(const p of m.pend){if(window.TIDAL_PROOF?.specialReplaced?.(p))continue;const d=SKMORE.list.comet,k=p.t/p.max,r=d.r*(1.5-0.5*k);
     skmEll(p.x,p.y,r);ctx.setLineDash([7,6]);skmShade(1.8,p.col,0.5+0.4*k);ctx.setLineDash([]);
     skmEll(p.x,p.y,d.r*k*0.9);ctx.fillStyle=p.col;ctx.globalAlpha=0.1+0.14*k;ctx.fill();
     if(k>0.65){const q=(k-0.65)/0.35,hy=p.y-260*(1-q);ctx.beginPath();ctx.moveTo(p.x+70*(1-q)+30,hy-70);ctx.lineTo(p.x+70*(1-q),hy);
       skmShade(3,'#FFD84D',0.9);ctx.beginPath();ctx.arc(p.x+70*(1-q),hy,4,0,7);ctx.fillStyle='#fff';ctx.globalAlpha=1;ctx.fill()}}
-  for(const f of m.fx){const k=f.t/f.max,a=1-k;
+  for(const f of m.fx){if(window.TIDAL_PROOF?.specialReplaced?.(f))continue;const k=f.t/f.max,a=1-k;
     if(f.k==='boom'){const r=f.r*(0.3+0.7*(1-(1-k)*(1-k)));
       ctx.fillStyle='#fff';ctx.globalAlpha=a*a*0.55;skmEll(f.x,f.y,r*0.5*(1-k));ctx.fill();
       ctx.fillStyle=f.col;ctx.globalAlpha=a*0.2;skmEll(f.x,f.y,r);ctx.fill();skmEll(f.x,f.y,r);skmShade(2+3*a,f.col,a);
