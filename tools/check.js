@@ -2982,6 +2982,35 @@ function worldBot(m,L,god){
     await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();bossHudPlace(true)});
     const bad=bh.filter(x=>x.err||!x.bar||!x.rare||x.sk<3||x.orbs<4||x.clash.length||x.w<200);
     check(!bad.length,'פס הבוס בעולם במקום הפנוי: '+bh.map(x=>x.k+' '+x.vp+(x.err?' שגיאה: '+x.err:(x.bar?' רוחב '+x.w+' בגובה '+x.y+(x.cut?' (הכותרת מקוצרת)':'')+(x.w<200?' צר מדי, בין '+x.why:''):' אין פס')+(x.clash&&x.clash.length?' · עולה על: '+x.clash.join(', '):' ✓')+(x.err||x.rare?'':' · אין שמועה')+(x.err||x.sk>=3?'':' · '+x.sk+' סקילים'))).join(' | '))}
+  // Top strip without overlaps (coordinator, CI shots 11.11): in the village a free first tip ("Skill upgrade available...") joins the message lane,
+  // so it is not under the round top icons, not on a lane line and not on a building sign. In the world, a lane line ("Everything for Forge!...")
+  // steps aside while the new-skill icon rises over the hero and flies to its button, and comes back after. At 915x412 and 844x390
+  {const ov=[];
+    for(const vp of [{width:915,height:412},{width:844,height:390}]){
+      await page.setViewportSize(vp);
+      await page.evaluate(()=>{welcomeClose();npcTalk(null);enterVillage();npcTalk(null);welcomeClose();msgClear();P.x=0;P.y=-200;S.cam.x=0;S.cam.y=-200;
+        window.__tipKeep=JSON.stringify(SAVE.tips||{});tipClose();TIP1.q=[];
+        msgSay(T('goal.ready','Forge'));tipShow({k:'sklv',args:[T('npc.priest')[0]],at:null});VSIGN.t=0});
+      await page.clock.runFor(700);
+      const r=await page.evaluate(()=>{const hit=(a,b)=>a.left<b.right-1&&b.left<a.right-1&&a.top<b.bottom-1&&b.top<a.bottom-1;
+        tipPlace();msgPlace();const el=$('tip1'),t=el.getBoundingClientRect(),o={inLane:el.parentNode===$('msgLane'),vis:!el.hidden&&t.width>0,bad:[]};
+        for(const b of msgBlocks())if(hit(t,b))o.bad.push('tip on '+(b.el.id||b.el.className));
+        for(const m of document.querySelectorAll('#msgLane>.mrow.on')){const q=m.getBoundingClientRect();if(hit(t,q))o.bad.push('tip on line');
+          for(const b of msgBlocks())if(hit(q,b))o.bad.push('line on '+(b.el.id||b.el.className))}
+        const z=ZOOM||1;for(const g of VSIGN.rects||[]){const q={left:g.x*z,right:(g.x+g.w)*z,top:g.y*z,bottom:(g.y+g.h)*z};if(hit(t,q))o.bad.push('tip on sign '+g.txt)}
+        tipClose();SAVE.tips=JSON.parse(window.__tipKeep);msgClear();return o});
+      // world: the new-skill moment with a lane line up
+      const w=await page.evaluate(()=>{const o={};try{enterWorld('home');for(const e of enemies)e.dead=true;enemies=enemies.filter(e=>!e.dead);msgClear();
+        const seen=skrSeen().slice();msgSay(T('goal.ready','Forge'));o.before=MQ.rows.length;
+        skrStart('quake');msgPump();const ic=SKR&&SKR.el?SKR.el.getBoundingClientRect():null,lane=$('msgLane');
+        o.hidden=lane.style.visibility==='hidden';o.rowsDuring=MQ.rows.length;o.icon=!!ic;
+        skrEnd(true);msgPump();o.after=MQ.rows.some(r=>r.txt===T('goal.ready','Forge'));o.visAfter=lane.style.visibility!=='hidden';
+        SAVE.hero.skSeen=seen;msgClear()}catch(err){o.err=String(err)}enterVillage();return o});
+      ov.push({vp:vp.width+'×'+vp.height,...r,w})}
+    await page.setViewportSize(CFG.phone);await page.evaluate(()=>{enterVillage();msgClear()});
+    const bad=ov.filter(x=>!x.inLane||!x.vis||x.bad.length||x.w.err||!x.w.icon||!x.w.hidden||x.w.rowsDuring||!x.w.after||!x.w.visAfter);
+    check(!bad.length,'Top strip, no overlaps: '+ov.map(x=>x.vp+': village tip '+(x.inLane?'in the message lane':'NOT in the lane')+(x.vis?'':' (not shown)')+(x.bad.length?', overlaps: '+[...new Set(x.bad)].join(', '):', clear of icons, lines and signs')+
+      ' · world '+(x.w.err?'error: '+x.w.err:(x.w.hidden&&!x.w.rowsDuring?'lane steps aside during the new-skill icon':'lane line stays over the new-skill icon')+(x.w.after&&x.w.visAfter?' and comes back':', line lost after'))).join(' | '))}
   // הבהוב פגיעה בתלת-ממד בעולם (hitflash3d.js, ניר 10.11: "do this for all monsters and bosses"): בלי לבן. פגיעה = בהיר יותר בצבעים שלו,
   // הבהוב קצר לכל היותר פעם ב-gap, וחלש יותר לגדולים. ההיגיון לכל מראה בעולם (גם בדו-ממד), והצבע האמיתי מהפיקסלים בתלת-ממד:
   // מכה כל 0.1 שנייה ב-120 פריימים, והרוויה הממוצעת בקרב קרובה לבלי פגיעות. כל המראות: node tools/flash-audit.js

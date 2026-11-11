@@ -47,9 +47,12 @@ function msgCardUp(){const c=$('skOffer');return !!c&&!c.hidden}
 // The "Level N!" card (levelpath.js, top center) is up: the whole lane steps aside until it is gone. Lines on screen go back to the front of
 // their queues, new ones wait (a big one does not drop to small), and the cards in the lane hide (CI 11.11: "Level 9!" touched "You beat Storm Warden again!")
 function msgLvUp(){const c=$('lpCard');return !!c&&c.classList.contains('on')}
+// The new-skill moment (skillreveal.js): the icon rises over the hero and flies to its button, right where the lane sits at the top center.
+// The lane steps aside the same way until it ends (CI 11.11: "Everything for Forge! Head home to build" ran over the flying quake icon at 915x412)
+function msgPause(){if(msgLvUp())return true;if(typeof SKR!=='undefined'&&SKR&&!SKR.done){MSG.stat.skr=(MSG.stat.skr||0)+1;return true}return false}
 function msgPump(){
   const el=msgEl(),now=msgNow();if(!msgOn()){msgClear();return}
-  if(msgLvUp()){
+  if(msgPause()){
     if(MQ.bigRow){msgGone(MQ.bigRow);MQ.big.unshift({txt:MQ.bigRow.txt,col:MQ.bigRow.col,at:now});MQ.bigRow=null}
     for(const r of MQ.rows.reverse()){msgGone(r);MQ.small.unshift({txt:r.txt,col:r.col})}MQ.rows=[];
     for(const m of MQ.big)m.at=now;MSG.stat.lv++;el.style.visibility='hidden';
@@ -78,7 +81,7 @@ function msgTick(){
   if(!MQ.rows.length&&!MQ.bigRow&&!MQ.big.length&&!MQ.small.length){clearInterval(MQ.t);MQ.t=0}
 }
 function msgClear(){MQ.small=[];MQ.big=[];MQ.rows=[];MQ.bigRow=null;clearInterval(MQ.t);MQ.t=0;const el=$('msgLane');if(!el)return;
-  for(const id of MSG_CARDS){const c=$(id);if(c&&c.parentNode===el)document.body.appendChild(c)}   // the cards that live in the lane (skill, first meeting, "today in the world") stay in the page
+  for(const id of [...MSG_CARDS,'tip1']){const c=$(id);if(c&&c.parentNode===el)document.body.appendChild(c)}   // the cards that live in the lane (skill, first meeting, "today in the world") stay in the page
   el.textContent=''}
 
 /* ---- המקום: מה תפוס על המסך ---- */
@@ -127,9 +130,9 @@ addEventListener('resize',()=>{if(msgOn())msgPlace()});
 const MSG_CARDS=['skOffer','flCard','mutBar'];   // skOffer: "חדש: סקיל" עם כפתורים (skguide.js)
 const msgWinOpen=()=>[...document.querySelectorAll('.ov,.win')].some(o=>!o.hidden&&!o.closest('[hidden]')&&o.getClientRects().length>0);   // רק חלון שבאמת על המסך (גם display:none של אבא לא נחשב, כמו skgWins)
 setInterval(()=>{const el=msgEl();
-  if(!msgOn()){for(const id of MSG_CARDS){const c=$(id);if(c&&c.parentNode===el)document.body.appendChild(c)}return}
+  if(!msgOn()){for(const id of [...MSG_CARDS,'tip1']){const c=$(id);if(c&&c.parentNode===el)document.body.appendChild(c)}return}
   for(const id of MSG_CARDS){const c=$(id);if(c&&c.parentNode!==el)el.appendChild(c)}
-  el.style.visibility=msgWinOpen()||msgLvUp()?'hidden':'';   // חלון פתוח (או כרטיס "Level N!"): ההודעות לא מעליו
+  el.style.visibility=msgWinOpen()||msgPause()?'hidden':'';   // חלון פתוח (או כרטיס "Level N!"): ההודעות לא מעליו
   if([...el.children].some(c=>!c.hidden&&c.offsetHeight))msgPlace()},300);
 
 // כל banner בעולם ובכפר: ישר לעמודה, בלי התור של welcome.js (לעמודה יש תור משלה)
