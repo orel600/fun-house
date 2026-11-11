@@ -3442,7 +3442,7 @@ function worldBot(m,L,god){
   // Never a new lock: an old save with the earth lantern keeps the road. The water lantern still needs the story quests. The moment in the world plays once.
   const rcr=await page.evaluate(()=>{const bak=JSON.stringify(SAVE),o={};
     try{const id='roadCrew',pl='lakeRoad',V=VPROJ,p=WORLD.paths.lake,sto=SAVE.story||(SAVE.story={});
-      SAVE.vproj={st:{},seen:{}};delete sto.earth;delete sto.water;SAVE.village.mill=2;
+      SAVE.vproj={st:{},seen:{deepQuarry:1}};delete sto.earth;delete sto.water;SAVE.village.mill=2;
       o.shut=!wPathOpen(p)&&vpBlock(id)==='away'&&!!vpBldTab('mill')&&vpBldTab('mill').label.includes('🔒');
       SAVE.village.mill=3;const tb=vpBldTab('mill');o.tab=!!tb&&tb.html().includes('data-act="vp"')&&bwBuilding('mill').includes('data-tab="proj"');
       goalS().pin=null;goalPin({p:id});SAVE.bag.wood=0;const sh=goalShow();o.goal=!!sh&&sh.g.p===id&&sh.r==='wood';goalS().pin=null;
@@ -3456,7 +3456,7 @@ function worldBot(m,L,god){
       P.x=p.x;P.y=p.y+200;vpRoad(pl,PL);o.moment=SAVE.vproj.seen[pl]===1&&V.stat.open===o0+1;
       vpRoad(pl,PL);o.once=V.stat.open===o0+1;
       o.why=JSON.stringify({reg:S.wd&&S.wd.reg,room:!!S.room,open:vpOpen(pl),d:Math.round(Math.hypot(P.x-p.x,P.y-p.y)),seen:SAVE.vproj.seen,n:V.stat.open-o0});
-      VPW.t=0;vpUpdate(1);o.upd=V.stat.open===o0+1;   // the world loop does not replay it
+      VPW.t=0;vpUpdate(1);o.upd=V.stat.open===o0+1;   // the world loop does not replay it (deepQuarry is marked seen above: at level 10 it would count too)
       // the water lantern still comes only from the story: the road does not light it, and its quest still needs the quest before it
       o.water=!storyOpen('water')&&!!QBY.s2Warden&&!!(QBY.s2Warden.req||{}).quest;
       SAVE.vproj={st:{},seen:{}};sto.earth=true;o.old=wPathOpen(p);
