@@ -23,7 +23,7 @@ process.stdin.on('data',d=>raw+=d).on('end',()=>{
   if(!cmd)process.exit(0);
   const cwd=inp.cwd||process.env.CLAUDE_PROJECT_DIR||process.cwd();
   let branch=null;
-  try{branch=execFileSync('git',['rev-parse','--abbrev-ref','HEAD'],{cwd,encoding:'utf8',timeout:5000,stdio:['ignore','pipe','ignore']}).trim()}catch(e){}
+  try{branch=execFileSync('git',['rev-parse','--abbrev-ref','HEAD'],{cwd,encoding:'utf8',timeout:5000,stdio:['ignore','pipe','ignore'],windowsHide:true}).trim()}catch(e){}
   // פקודה שיוצרת ענף לפני ה-commit לא עובדת על main
   const onMain=(branch==='main'||branch==='master')&&!/\b(switch\s+(-c|--create)|checkout\s+-b)\b/.test(cmd);
 
