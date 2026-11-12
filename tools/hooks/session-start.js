@@ -5,7 +5,7 @@ const {execFileSync}=require('child_process');
 const fs=require('fs'),path=require('path');
 
 const root=process.env.CLAUDE_PROJECT_DIR||process.cwd();
-const run=(cmd,args,timeout=20000)=>execFileSync(cmd,args,{cwd:root,encoding:'utf8',timeout,stdio:['ignore','pipe','pipe']}).trimEnd();
+const run=(cmd,args,timeout=20000)=>execFileSync(cmd,args,{cwd:root,encoding:'utf8',timeout,stdio:['ignore','pipe','pipe'],windowsHide:true}).trimEnd();
 const git=(...a)=>{try{return run('git',a)}catch(e){return null}};
 const count=range=>+(git('rev-list','--count',range)||0);
 const info=[],todo=[];
